@@ -78,7 +78,7 @@ class BatchSampler(maxSample: Int = 1, maxTrials: Int = 50,
       // Generate sampled_bbox in the normalized space [0, 1].
       val sampledBox = sampleBox()
       // Transform the sampled_bbox w.r.t. source_bbox.
-      BboxUtil.locateBBox(sourceBox, sampledBox, sampledBox)
+      sourceBox.locateBBox(sampledBox, sampledBox)
       // Determine if the sampled bbox is positive or negative by the constraint.
       if (satisfySampleConstraint(sampledBox, target)) {
         found += 1
@@ -108,7 +108,7 @@ class BatchSampler(maxSample: Int = 1, maxTrials: Int = 50,
       gtBoxes.valueAt(i, 3),
       gtBoxes.valueAt(i, 4))
 
-    BboxUtil.jaccardOverlap(bbox, gtBox)
+    bbox.jaccardOverlap(gtBox)
   }
 
 }

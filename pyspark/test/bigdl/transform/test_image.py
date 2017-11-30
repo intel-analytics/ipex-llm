@@ -78,5 +78,42 @@ class TestLayer():
         transformer = HFlip()
         self.transformer_test(transformer)
 
+    def test_colorjitter(self):
+        color = ColorJitter(random_order_prob=1.0, shuffle=True)
+        self.transformer_test(color)
+
+    def test_resize(self):
+        resize = Resize(200, 200, 1)
+        self.transformer_test(resize)
+
+    def test_fixed_crop_norm(self):
+        crop = FixedCrop(0.0, 0.0, 0.5, 1.0)
+        self.transformer_test(crop)
+
+    def test_fixed_crop_unnorm(self):
+        crop = FixedCrop(0.0, 0.0, 200.0, 200., False)
+        self.transformer_test(crop)
+
+    def test_center_crop(self):
+        crop = CenterCrop(200, 200)
+        self.transformer_test(crop)
+
+    def test_random_crop(self):
+        crop = RandomCrop(200, 200)
+        self.transformer_test(crop)
+
+    def test_expand(self):
+        expand = Expand(means_r=123, means_g=117, means_b=104,
+                        max_expand_ratio=2.0)
+        self.transformer_test(expand)
+
+    def test_random_transformer(self):
+        transformer = RandomTransformer(HFlip(), 0.5)
+        self.transformer_test(transformer)
+
+    def test_pipeline(self):
+        transformer = Pipeline([ColorJitter(), HFlip(), Resize(200, 200, 1)])
+        self.transformer_test(transformer)
+
 if __name__ == "__main__":
     pytest.main([__file__])

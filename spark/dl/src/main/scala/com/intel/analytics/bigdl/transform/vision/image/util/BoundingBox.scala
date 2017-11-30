@@ -19,13 +19,6 @@ package com.intel.analytics.bigdl.transform.vision.image.util
 class BoundingBox(var x1: Float, var y1: Float, var x2: Float, var y2: Float,
   normalized: Boolean = true) {
 
-  if (normalized) {
-    require(x1 >= 0 && x1 <= 1, s"x1 $x1 is not in range [0, 1]")
-    require(y1 >= 0 && y1 <= 1, s"x1 $y1 is not in range [0, 1]")
-    require(x2 >= 0 && x2 <= 1, s"x1 $x2 is not in range [0, 1]")
-    require(y2 >= 0 && y2 <= 1, s"x1 $y2 is not in range [0, 1]")
-  }
-
   var label: Float = -1
 
   def setLabel(l: Float): this.type = {
@@ -78,6 +71,70 @@ class BoundingBox(var x1: Float, var y1: Float, var x2: Float, var y2: Float,
     scaledBox.y2 = y2 * height
   }
 
+  /**
+   * Whether the center of given bbox lies in current bbox
+   */
+  def meetEmitCenterConstraint(bbox: BoundingBox): Boolean = {
+    val xCenter = bbox.centerX()
+    val yCenter = bbox.centerY()
+    if (xCenter >= x1 && xCenter <= x2 &&
+      yCenter >= y1 && yCenter <= y2) {
+      true
+    } else {
+      false
+    }
+  }
+
+  /**
+   * whether overlaps with given bbox
+   */
+  def isOverlap(bbox: BoundingBox): Boolean = {
+    if (bbox.x1 >= x2 || bbox.x2 <= x1 || bbox.y1 >= y2 || bbox.y2 <= y1) {
+      false
+    } else {
+      true
+    }
+  }
+
+  def jaccardOverlap(bbox: BoundingBox): Float = {
+    val w = math.min(x2, bbox.x2) - math.max(x1, bbox.x1)
+    if (w < 0) return 0
+    val h = math.min(y2, bbox.y2) - math.max(y1, bbox.y1)
+    if (h < 0) return 0
+    val overlap = w * h
+    overlap / ((area() + bbox.area()) - overlap)
+  }
+
+  /**
+   * Project bbox onto the coordinate system defined by current bbox.
+   * @param bbox
+   * @param projBox
+   * @return
+   */
+  def projectBbox(bbox: BoundingBox, projBox: BoundingBox): Boolean = {
+    if (!isOverlap(bbox)) {
+      return false
+    }
+    val srcWidth = width()
+    val srcHeight = height()
+    projBox.x1 = (bbox.x1 - x1) / srcWidth
+    projBox.y1 = (bbox.y1 - y1) / srcHeight
+    projBox.x2 = (bbox.x2 - x1) / srcWidth
+    projBox.y2 = (bbox.y2 - y1) / srcHeight
+    projBox.clipBox(projBox)
+    if (projBox.area() > 0) true else false
+  }
+
+  def locateBBox(box: BoundingBox, locBox: BoundingBox)
+  : Unit = {
+    val srcW = width()
+    val srcH = height()
+    locBox.x1 = x1 + box.x1 * srcW
+    locBox.y1 = y1 + box.y1 * srcH
+    locBox.x2 = x1 + box.x2 * srcW
+    locBox.y2 = y1 + box.y2 * srcH
+  }
+
   override def equals(obj: Any): Boolean = {
     obj match {
       case box: BoundingBox =>
@@ -97,13 +154,14 @@ class BoundingBox(var x1: Float, var y1: Float, var x2: Float, var y2: Float,
 
     hash
   }
+
+  override def toString: String = {
+    s"BoundingBox ($x1, $y1, $x2, $y2)"
+  }
 }
 
 object BoundingBox {
-  def apply(x1: Float, y1: Float, x2: Float, y2: Float): BoundingBox =
-    new BoundingBox(x1, y1, x2, y2)
-
-  def apply(box: (Float, Float, Float, Float)): BoundingBox = {
-    new BoundingBox(box._1, box._2, box._3, box._4)
-  }
+  def apply(x1: Float, y1: Float, x2: Float, y2: Float,
+    normalized: Boolean = true): BoundingBox =
+    new BoundingBox(x1, y1, x2, y2, normalized)
 }

@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.transform.vision.image.augmentation
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.transform.vision.image.{FeatureTransformer, ImageFeature}
 import com.intel.analytics.bigdl.transform.vision.image.opencv.OpenCVMat
-import com.intel.analytics.bigdl.transform.vision.image.util.BboxUtil
+import com.intel.analytics.bigdl.transform.vision.image.util.{BboxUtil, BoundingBox}
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import org.opencv.core.Rect
 
@@ -36,14 +36,14 @@ abstract class Crop(normalized: Boolean = true, isClip: Boolean = true) extends 
    * @param feature image feature
    * @return crop roi
    */
-  def generateRoi(feature: ImageFeature): (Float, Float, Float, Float)
+  def generateRoi(feature: ImageFeature): BoundingBox
 
   override def transformMat(feature: ImageFeature): Unit = {
     val cropBox = generateRoi(feature)
     Crop.transform(feature.opencvMat(), feature.opencvMat(),
-      cropBox._1, cropBox._2, cropBox._3, cropBox._4, normalized, isClip)
+      cropBox.x1, cropBox.y1, cropBox.x2, cropBox.y2, normalized, isClip)
     if (feature.hasLabel()) {
-      feature(ImageFeature.cropBbox) = cropBox
+      feature(ImageFeature.boundingBox) = cropBox
     }
   }
 }
@@ -81,13 +81,13 @@ object Crop {
  * @param cropHeight height after crop
  */
 class CenterCrop(cropWidth: Int, cropHeight: Int, isClip: Boolean) extends Crop(false, isClip) {
-  override def generateRoi(feature: ImageFeature): (Float, Float, Float, Float) = {
+  override def generateRoi(feature: ImageFeature): BoundingBox = {
     val mat = feature.opencvMat()
     val height = mat.height().toFloat
     val width = mat.width().toFloat
     val startH = (height - cropHeight) / 2
     val startW = (width - cropWidth) / 2
-    (startW, startH, startW + cropWidth, startH + cropHeight)
+    BoundingBox(startW, startH, startW + cropWidth, startH + cropHeight, false)
   }
 }
 
@@ -105,13 +105,13 @@ object CenterCrop {
  */
 class RandomCrop(cropWidth: Int, cropHeight: Int, isClip: Boolean) extends Crop(false, isClip) {
 
-  override def generateRoi(feature: ImageFeature): (Float, Float, Float, Float) = {
+  override def generateRoi(feature: ImageFeature): BoundingBox = {
     val mat = feature.opencvMat()
     val height = mat.height().toFloat
     val width = mat.width().toFloat
     val startH = math.ceil(RNG.uniform(1e-2, height - cropHeight)).toFloat
     val startW = math.ceil(RNG.uniform(1e-2, width - cropWidth)).toFloat
-    (startW, startH, startW + cropWidth, startH + cropHeight)
+    BoundingBox(startW, startH, startW + cropWidth, startH + cropHeight, false)
   }
 }
 
@@ -133,9 +133,9 @@ class FixedCrop(wStart: Float, hStart: Float, wEnd: Float, hEnd: Float, normaliz
   isClip: Boolean)
   extends Crop(normalized, isClip) {
 
-  val cropBox = (wStart.toFloat, hStart.toFloat, wEnd.toFloat, hEnd.toFloat)
+  val cropBox = BoundingBox(wStart.toFloat, hStart.toFloat, wEnd.toFloat, hEnd.toFloat)
 
-  override def generateRoi(feature: ImageFeature): (Float, Float, Float, Float) = {
+  override def generateRoi(feature: ImageFeature): BoundingBox = {
     cropBox
   }
 }
@@ -155,16 +155,17 @@ object FixedCrop {
  */
 class DetectionCrop(roiKey: String, normalized: Boolean = true) extends Crop(normalized, true) {
 
-  override def generateRoi(feature: ImageFeature): (Float, Float, Float, Float) = {
+  override def generateRoi(feature: ImageFeature): BoundingBox = {
     require(feature(roiKey).isInstanceOf[Tensor[Float]], "currently only support tensor detection")
     var roi = feature(roiKey).asInstanceOf[Tensor[Float]]
     if (roi.dim() == 1) {
       roi = BboxUtil.decodeRois(roi)
     }
     if (roi.nElement() >= 6 && roi.dim() == 2) {
-      (roi.valueAt(1, 3), roi.valueAt(1, 4), roi.valueAt(1, 5), roi.valueAt(1, 6))
+      BoundingBox(roi.valueAt(1, 3), roi.valueAt(1, 4),
+        roi.valueAt(1, 5), roi.valueAt(1, 6), normalized)
     } else {
-      (0, 0, 1, 1)
+      BoundingBox(0, 0, 1, 1, normalized)
     }
   }
 }

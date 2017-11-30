@@ -41,28 +41,26 @@ class RandomSampler extends Crop {
     new BatchSampler(minScale = 0.3, minAspectRatio = 0.5, maxAspectRatio = 2,
       maxOverlap = Some(1.0)))
 
-  def generateRoi(feature: ImageFeature): (Float, Float, Float, Float) = {
+  def generateRoi(feature: ImageFeature): BoundingBox = {
     val roiLabel = feature(ImageFeature.label).asInstanceOf[RoiLabel]
     val boxesBuffer = new ArrayBuffer[BoundingBox]()
     BatchSampler.generateBatchSamples(roiLabel,
       batchSamplers, boxesBuffer)
 
-    val cropedImage = new Mat()
     // randomly pick up one as input data
     if (boxesBuffer.nonEmpty) {
       // Randomly pick a sampled bbox and crop the expand_datum.
       val index = (RNG.uniform(0, 1) * boxesBuffer.length).toInt
-      val bbox = boxesBuffer(index)
-      (bbox.x1, bbox.y1, bbox.x2, bbox.y2)
+      boxesBuffer(index)
     } else {
-      (0, 0, 1, 1)
+      BoundingBox(0, 0, 1, 1)
     }
   }
 }
 
 object RandomSampler {
   def apply(): FeatureTransformer = {
-    new RandomSampler() -> RoiCrop()
+    new RandomSampler() -> RoiProject()
   }
 }
 

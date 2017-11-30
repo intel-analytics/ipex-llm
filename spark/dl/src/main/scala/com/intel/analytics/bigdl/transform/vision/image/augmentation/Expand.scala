@@ -78,7 +78,7 @@ class Expand(meansR: Int = 123, meansG: Int = 117, meansB: Int = 104,
       val expandBbox = transform(mat, expandMat)
       expandMat.copyTo(mat)
       if (prev.hasLabel()) {
-        prev(ImageFeature.expandBbox) = expandBbox
+        prev(ImageFeature.boundingBox) = expandBbox
       }
       if (null != expandMat) expandMat.release()
     }

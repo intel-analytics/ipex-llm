@@ -265,3 +265,140 @@ class HFlip(FeatureTransformer):
 
     def __init__(self, bigdl_type="float"):
             super(HFlip, self).__init__(bigdl_type)
+
+class Resize(FeatureTransformer):
+
+    def __init__(self, resize_h, resize_w, resize_mode = 1, bigdl_type="float"):
+        super(Resize, self).__init__(bigdl_type, resize_h, resize_w, resize_mode)
+
+class Brightness(FeatureTransformer):
+
+    def __init__(self, delta_low, delta_high, bigdl_type="float"):
+        super(Brightness, self).__init__(bigdl_type, delta_low, delta_high)
+
+class ChannelOrder(FeatureTransformer):
+
+    def __init__(self, bigdl_type="float"):
+        super(ChannelOrder, self).__init__(bigdl_type)
+
+class Contrast(FeatureTransformer):
+
+    def __init__(self, delta_low, delta_high, bigdl_type="float"):
+        super(Contrast, self).__init__(bigdl_type, delta_low, delta_high)
+
+class Saturation(FeatureTransformer):
+
+    def __init__(self, delta_low, delta_high, bigdl_type="float"):
+        super(Saturation, self).__init__(bigdl_type, delta_low, delta_high)
+
+class Hue(FeatureTransformer):
+
+    def __init__(self, delta_low, delta_high, bigdl_type="float"):
+        super(Hue, self).__init__(bigdl_type, delta_low, delta_high)
+
+class ChannelNormalize(FeatureTransformer):
+
+    def __init__(self, mean_r, mean_b, mean_g, std_r, std_g, std_b, bigdl_type="float"):
+        super(ChannelNormalize, self).__init__(bigdl_type, mean_r, mean_g, mean_b, std_r, std_g, std_b)
+
+
+class RandomCrop(FeatureTransformer):
+
+    def __init__(self, crop_width, crop_height, is_clip=True, bigdl_type="float"):
+        super(RandomCrop, self).__init__(bigdl_type, crop_width, crop_height, is_clip)
+
+class CenterCrop(FeatureTransformer):
+
+    def __init__(self, crop_width, crop_height, is_clip=True, bigdl_type="float"):
+        super(CenterCrop, self).__init__(bigdl_type, crop_width, crop_height, is_clip)
+
+class FixedCrop(FeatureTransformer):
+
+    def __init__(self, x1, y1, x2, y2, normalized=True, is_clip=True, bigdl_type="float"):
+        super(FixedCrop, self).__init__(bigdl_type, x1, y1, x2, y2, normalized, is_clip)
+
+class DetectionCrop(FeatureTransformer):
+
+    def __init__(self, roi_key, normalized=True, bigdl_type="float"):
+        super(DetectionCrop, self).__init__(bigdl_type, roi_key, normalized)
+
+class HFlip(FeatureTransformer):
+
+    def __init__(self, bigdl_type="float"):
+        super(HFlip, self).__init__(bigdl_type)
+
+class Expand(FeatureTransformer):
+
+    def __init__(self, means_r=123, means_g=117, means_b=104,
+                 max_expand_ratio=4.0, bigdl_type="float"):
+        super(Expand, self).__init__(bigdl_type, means_r, means_g, means_b, max_expand_ratio)
+
+class RandomTransformer(FeatureTransformer):
+
+    def __init__(self, transformer, prob, bigdl_type="float"):
+        super(RandomTransformer, self).__init__(bigdl_type, transformer, prob)
+
+
+class ColorJitter(FeatureTransformer):
+
+    def __init__(self, brightness_prob = 0.5,
+                 brightness_delta = 32.0,
+                 contrast_prob = 0.5,
+                 contrast_lower = 0.5,
+                 contrast_upper = 1.5,
+                 hue_prob = 0.5,
+                 hue_delta = 18.0,
+                 saturation_prob = 0.5,
+                 saturation_lower = 0.5,
+                 saturation_upper = 1.5,
+                 random_order_prob = 0.0,
+                 shuffle = False,
+                 bigdl_type="float"):
+        super(ColorJitter, self).__init__(bigdl_type, brightness_prob,
+                                          brightness_delta,
+                                          contrast_prob,
+                                          contrast_lower,
+                                          contrast_upper,
+                                          hue_prob,
+                                          hue_delta,
+                                          saturation_prob,
+                                          saturation_lower,
+                                          saturation_upper,
+                                          random_order_prob,
+                                          shuffle)
+
+class RandomSampler(FeatureTransformer):
+
+    def __init__(self):
+        super(RandomSampler, self).__init__(bigdl_type)
+
+class RoiCrop(FeatureTransformer):
+
+    def __init__(self, bigdl_type="float"):
+        super(RoiCrop, self).__init__(bigdl_type)
+
+class RoiExpand(FeatureTransformer):
+
+    def __init__(self, bigdl_type="float"):
+        super(RoiExpand, self).__init__(bigdl_type)
+
+class RoiHFlip(FeatureTransformer):
+
+    def __init__(self, normalized=True, bigdl_type="float"):
+        super(RoiHFlip, self).__init__(bigdl_type, normalized)
+
+class RoiNormalize(FeatureTransformer):
+
+    def __init__(self, bigdl_type="float"):
+        super(RoiNormalize, self).__init__(bigdl_type)
+
+class MatToFloats(FeatureTransformer):
+
+    def __init__(self, valid_height=300, valid_width=300, valid_channel=300,
+                 mean_r=-1.0, mean_g=-1.0, mean_b=-1.0, out_key = "floats", bigdl_type="float"):
+        super(MatToFloats, self).__init__(bigdl_type, valid_height, valid_width, valid_channel,
+                                          mean_r, mean_g, mean_b, out_key)
+class AspectScale(FeatureTransformer):
+
+    def __init__(self, scale, scale_multiple_of = 1, max_size = 1000, bigdl_type="float"):
+        super(AspectScale, self).__init__(bigdl_type, scale, scale_multiple_of, max_size)

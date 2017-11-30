@@ -21,7 +21,9 @@ import com.intel.analytics.bigdl.transform.vision.image.{FeatureTransformer, Ima
 
 import scala.collection.mutable.ArrayBuffer
 
-
+/**
+ * Normalize Roi to [0, 1]
+ */
 case class RoiNormalize() extends FeatureTransformer {
   override def transformMat(feature: ImageFeature): Unit = {
     val height = feature.getHeight()
@@ -31,38 +33,12 @@ case class RoiNormalize() extends FeatureTransformer {
   }
 }
 
-
-case class RoiCrop() extends FeatureTransformer {
-  override def transformMat(feature: ImageFeature): Unit = {
-    val height = feature.getHeight()
-    val width = feature.getWidth()
-    val bbox = feature(ImageFeature.cropBbox).asInstanceOf[(Float, Float, Float, Float)]
-    val target = feature(ImageFeature.label).asInstanceOf[RoiLabel]
-    val transformedAnnot = new ArrayBuffer[BoundingBox]()
-    // Transform the annotation according to crop_bbox.
-    AnnotationTransformer.transformAnnotation(width, height,
-      BoundingBox(bbox), false, target,
-      transformedAnnot)
-
-    target.bboxes.resize(transformedAnnot.length, 4)
-    target.classes.resize(2, transformedAnnot.length)
-
-    var i = 1
-    while (i <= transformedAnnot.length) {
-      target.bboxes.setValue(i, 1, transformedAnnot(i - 1).x1)
-      target.bboxes.setValue(i, 2, transformedAnnot(i - 1).y1)
-      target.bboxes.setValue(i, 3, transformedAnnot(i - 1).x2)
-      target.bboxes.setValue(i, 4, transformedAnnot(i - 1).y2)
-      target.classes.setValue(1, i, transformedAnnot(i - 1).label)
-      target.classes.setValue(2, i, transformedAnnot(i - 1).difficult)
-      i += 1
-    }
-  }
-}
-
+/**
+ * horizontally flip the roi
+ * @param normalized whether the roi is normalized, i.e. in range [0, 1]
+ */
 case class RoiHFlip(normalized: Boolean = true) extends FeatureTransformer {
   override def transformMat(feature: ImageFeature): Unit = {
-    require(feature.hasLabel())
     val roiLabel = feature.getLabel[RoiLabel]
     var i = 1
     val width = if (normalized) 1 else feature.getWidth()
@@ -75,23 +51,55 @@ case class RoiHFlip(normalized: Boolean = true) extends FeatureTransformer {
   }
 }
 
-case class RoiExpand() extends FeatureTransformer {
-
+/**
+ * resize the roi according to scale
+ * @param normalized whether the roi is normalized, i.e. in range [0, 1]
+ */
+case class RoiResize(normalized: Boolean = false) extends FeatureTransformer {
   override def transformMat(feature: ImageFeature): Unit = {
-    require(feature.hasLabel())
-    val transformedAnnot = new ArrayBuffer[BoundingBox]()
-    val expandBbox = feature(ImageFeature.expandBbox).asInstanceOf[BoundingBox]
-    val height = feature.getHeight()
-    val width = feature.getWidth()
-    val target = feature.getLabel[RoiLabel]
-    AnnotationTransformer.transformAnnotation(width, height, expandBbox, false,
-      target, transformedAnnot)
+    if (!normalized) {
+      val scaledW = feature.getWidth().toFloat / feature.getOriginalWidth
+      val scaledH = feature.getHeight().toFloat / feature.getOriginalHeight
+      val target = feature.getLabel[RoiLabel]
+      BboxUtil.scaleBBox(target.bboxes, scaledH, scaledW)
+    }
+  }
+}
 
-
+/**
+ * Project gt boxes onto the coordinate system defined by image boundary
+ * @param needMeetCenterConstraint whether need to meet center constraint, i.e., the center of
+ * gt box need be within image boundary
+ */
+case class RoiProject(needMeetCenterConstraint: Boolean = true) extends FeatureTransformer {
+  val transformedAnnot = new ArrayBuffer[BoundingBox]()
+  override def transformMat(feature: ImageFeature): Unit = {
+    val imageBoundary = feature[BoundingBox](ImageFeature.boundingBox)
+    val target = feature[RoiLabel](ImageFeature.label)
+    transformedAnnot.clear()
+    // Transform the annotation according to bounding box.
+    var i = 1
+    while (i <= target.size()) {
+      val gtBoxes = BoundingBox(target.bboxes.valueAt(i, 1),
+        target.bboxes.valueAt(i, 2),
+        target.bboxes.valueAt(i, 3),
+        target.bboxes.valueAt(i, 4))
+      if (!needMeetCenterConstraint ||
+        imageBoundary.meetEmitCenterConstraint(gtBoxes)) {
+        val transformedBox = new BoundingBox()
+        if (imageBoundary.projectBbox(gtBoxes, transformedBox)) {
+          transformedBox.setLabel(target.classes.valueAt(1, i))
+          transformedBox.setDifficult(target.classes.valueAt(2, i))
+          transformedAnnot.append(transformedBox)
+        }
+      }
+      i += 1
+    }
+    // write the transformed annotation back to target
     target.bboxes.resize(transformedAnnot.length, 4)
     target.classes.resize(2, transformedAnnot.length)
 
-    var i = 1
+    i = 1
     while (i <= transformedAnnot.length) {
       target.bboxes.setValue(i, 1, transformedAnnot(i - 1).x1)
       target.bboxes.setValue(i, 2, transformedAnnot(i - 1).y1)
@@ -99,46 +107,6 @@ case class RoiExpand() extends FeatureTransformer {
       target.bboxes.setValue(i, 4, transformedAnnot(i - 1).y2)
       target.classes.setValue(1, i, transformedAnnot(i - 1).label)
       target.classes.setValue(2, i, transformedAnnot(i - 1).difficult)
-      i += 1
-    }
-  }
-}
-
-case class RoiResize(normalized: Boolean = false) extends FeatureTransformer {
-  override def transformMat(feature: ImageFeature): Unit = {
-    require(feature.hasLabel())
-    if (!normalized) {
-      val scaledW = feature.getWidth().toFloat / feature.getOriginalWidth
-      val scaledH = feature.getHeight().toFloat / feature.getOriginalHeight
-      val target = feature.getLabel[RoiLabel]
-        BboxUtil.scaleBBox(target.bboxes, scaledH, scaledW)
-    }
-  }
-}
-
-object AnnotationTransformer {
-  def transformAnnotation(imgWidth: Int, imgHeigth: Int, cropedBox: BoundingBox,
-                          doMirror: Boolean, target: RoiLabel,
-                          transformd: ArrayBuffer[BoundingBox]): Unit = {
-    var i = 1
-    while (i <= target.size()) {
-      val resizedBox = BoundingBox(target.bboxes.valueAt(i, 1),
-        target.bboxes.valueAt(i, 2),
-        target.bboxes.valueAt(i, 3),
-        target.bboxes.valueAt(i, 4))
-      if (BboxUtil.meetEmitCenterConstraint(cropedBox, resizedBox)) {
-        val transformedBox = new BoundingBox()
-        if (BboxUtil.projectBbox(cropedBox, resizedBox, transformedBox)) {
-          if (doMirror) {
-            val temp = transformedBox.x1
-            transformedBox.x1 = 1 - transformedBox.x2
-            transformedBox.x2 = 1 - temp
-          }
-          transformedBox.setLabel(target.classes.valueAt(1, i))
-          transformedBox.setDifficult(target.classes.valueAt(2, i))
-          transformd.append(transformedBox)
-        }
-      }
       i += 1
     }
   }

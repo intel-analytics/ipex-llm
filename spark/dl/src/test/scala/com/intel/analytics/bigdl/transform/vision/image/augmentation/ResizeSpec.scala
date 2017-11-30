@@ -16,6 +16,7 @@
 
 package com.intel.analytics.bigdl.transform.vision.image.augmentation
 
+import com.intel.analytics.bigdl.transform.vision.image.opencv.OpenCVMat
 import com.intel.analytics.bigdl.transform.vision.image.{BytesToMat, ImageFrame, LocalImageFrame}
 import org.scalatest.{FlatSpec, Matchers}
 
@@ -43,5 +44,12 @@ class ResizeSpec extends FlatSpec with Matchers {
     val transformed = transformer(data).asInstanceOf[LocalImageFrame]
     transformed.array(0).getHeight() should be(750)
     transformed.array(0).getWidth() should be(1000)
+  }
+
+  "getWidthHeightAfterRatioScale" should "work" in {
+    val img = OpenCVMat.read(resource.getFile + "/000025.jpg")
+    val (height, width) = AspectScale.getHeightWidthAfterRatioScale(img, 600, 1000, 1)
+    height should be (600)
+    width should be (800)
   }
 }
