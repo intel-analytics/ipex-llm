@@ -2100,15 +2100,6 @@ criterion = KullbackLeiblerDivergenceCriterion()
 
 compute Kullback Leibler Divergence Criterion error for intput and target
 
-**Scala:**
-```scala
-val criterion = KullbackLeiblerDivergenceCriterion()
-```
-**Python:**
-```python
-criterion = KullbackLeiblerDivergenceCriterion()
-```
-
 **Scala example:**
 ```scala
 import com.intel.analytics.bigdl.tensor.Tensor
