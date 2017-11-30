@@ -26,9 +26,8 @@ class TestLayer():
         """ setup any state tied to the execution of the given method in a
         class.  setup_method is invoked for every test method of a class.
         """
-        sparkConf = create_spark_conf()
-        self.sc = SparkContext(master="local[4]", appName="test model",
-                               conf=sparkConf)
+        sparkConf = create_spark_conf().setMaster("local[4]").setAppName("test model")
+        self.sc = get_spark_context(sparkConf)
         init_engine()
         resource_path = os.path.join(os.path.split(__file__)[0], "../resources")
         self.image_path = os.path.join(resource_path, "image/000025.jpg")
