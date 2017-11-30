@@ -25,7 +25,7 @@ class KullbackLeiblerDivergenceSpec extends KerasBaseSpec {
       """
         |input_tensor = Input(shape=[3])
         |target_tensor = Input(shape=[3])
-        |loss = kullback_leibler_divergence(input_tensor, target_tensor)
+        |loss = kullback_leibler_divergence(target_tensor, input_tensor)
         |input = np.random.uniform(0, 1, [2, 3])
         |Y = np.random.uniform(0, 1, [2, 3])
       """.stripMargin

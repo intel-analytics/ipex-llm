@@ -34,19 +34,25 @@ import scala.reflect.ClassTag
 class KullbackLeiblerDivergenceCriterion[T: ClassTag]
   (implicit ev: TensorNumeric[T]) extends TensorCriterion[T] {
 
-  private val epsilon: T = ev.fromType(1e-07)
+  private val epsilon: T = ev.fromType(1e-08)
 
   override def updateOutput(input: Tensor[T], target : Tensor[T]): T = {
-    val buffer1 = Tensor[T]()
-    val buffer2 = Tensor[T]()
-    buffer1.resizeAs(target).copy(target)
-    buffer2.resizeAs(input).copy(input)
+    val bufferInput = Tensor[T]()
+    val bufferTarget = Tensor[T]()
+    bufferInput.resizeAs(input).copy(input)
+    bufferTarget.resizeAs(target).copy(target)
 
-    buffer1.apply1(e => ev.clip(e, epsilon, ev.fromType(1.0)))
-    buffer2.apply1(e => ev.clip(e, epsilon, ev.fromType(1.0)))
+    bufferInput.apply1(e => ev.clip(e, epsilon, ev.fromType(1.0)))
+    bufferTarget.apply1(e => ev.clip(e, epsilon, ev.fromType(1.0)))
 
-    val mul = buffer1.div(buffer2).log().cmul(buffer1).mean()
-    mul
+    val mul = bufferTarget.div(bufferInput).log().cmul(target).sum()
+    val batchSize = if (input.nDimension() == 1) {
+      1
+    } else {
+      input.size(1)
+    }
+
+    ev.divide(mul, ev.fromType(batchSize))
   }
 
   override def updateGradInput(input: Tensor[T], target: Tensor[T]): Tensor[T] = {
