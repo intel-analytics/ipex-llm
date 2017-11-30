@@ -28,20 +28,25 @@ import scala.reflect.ClassTag
 class CategoricalCrossEntropy[T: ClassTag]()(implicit ev: TensorNumeric[T])
   extends AbstractCriterion[Tensor[T], Tensor[T], T]{
 
-  private val crossEntropy = CrossEntropyCriterion[T]()
+  private val crxEntropy = CrossEntropyCriterion[T]()
 
   import CategoricalCrossEntropy._
 
+  private val buffer = Tensor[T]()
+
   override def updateOutput(input: Tensor[T], target: Tensor[T]): T = {
-    crossEntropy.forward(input, convertTensor(target))
+    buffer.resizeAs(input)
+    crxEntropy.forward(buffer.log(input), convertTensor(target))
   }
 
   override def backward(input: Tensor[T], target: Tensor[T]): Tensor[T] = {
-    crossEntropy.backward(input, convertTensor(target))
+    gradInput = crxEntropy.backward(buffer, convertTensor(target))
+    gradInput.div(input)
   }
 
   override def updateGradInput(input: Tensor[T], target: Tensor[T]): Tensor[T] = {
-    crossEntropy.updateGradInput(input, convertTensor(target))
+    gradInput = crxEntropy.updateGradInput(buffer, convertTensor(target))
+    gradInput.div(input)
   }
 }
 

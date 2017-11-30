@@ -24,7 +24,7 @@ class CategoricalCrossEntropySpec extends  KerasBaseSpec{
       """
         |input_tensor = Input(shape=[3])
         |target_tensor = Input(shape=[3])
-        |loss = categorical_crossentropy(input_tensor, target_tensor)
+        |loss = categorical_crossentropy(target_tensor, input_tensor)
         |input = np.random.uniform(0, 1, [2, 3])
         |Y = np.zeros((2, 3))
         |index = np.array([1, 2])
