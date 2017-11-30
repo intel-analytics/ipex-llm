@@ -17,48 +17,85 @@
 package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.nn.abstractnn.TensorCriterion
-import com.intel.analytics.bigdl.tensor.{DenseTensorApply, Tensor, TensorFunc2}
+import com.intel.analytics.bigdl.tensor.{DenseTensorApply, Tensor, TensorFunc6}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
 import scala.reflect.ClassTag
 
 /**
  * This method is same as `kullback_leibler_divergence` loss in keras.
- * It calculates:
+ * Loss calculated as:
  * y_true = K.clip(y_true, K.epsilon(), 1)
  * y_pred = K.clip(y_pred, K.epsilon(), 1)
  * and output K.sum(y_true * K.log(y_true / y_pred), axis=-1)
- * @param ev
  * @tparam T The numeric type in the criterion, usually which are [[Float]] or [[Double]]
  */
 class KullbackLeiblerDivergenceCriterion[T: ClassTag]
   (implicit ev: TensorNumeric[T]) extends TensorCriterion[T] {
 
-  private val epsilon: T = ev.fromType(1e-08)
+  private val epsilon: T = ev.fromType(1e-7)
+  private val upperlimit = ev.fromType(1.0)
 
   val bufferInput = Tensor[T]()
   val bufferTarget = Tensor[T]()
 
+  /**
+   * It calculates:
+   * y_true = K.clip(y_true, K.epsilon(), 1)
+   * y_pred = K.clip(y_pred, K.epsilon(), 1)
+   * and output K.sum(y_true * K.log(y_true / y_pred), axis=-1)
+   */
   override def updateOutput(input: Tensor[T], target : Tensor[T]): T = {
+    require(input.isSameSizeAs(target),
+      s"Input should have the same size as target. input size: (${input.size().mkString(", ")});" +
+        s" target size: (${target.size().mkString(", ")}).")
 
     bufferInput.resizeAs(input).copy(input)
     bufferTarget.resizeAs(target).copy(target)
-    bufferInput.apply1(e => ev.clip(e, epsilon, ev.fromType(1.0)))
-    bufferTarget.apply1(e => ev.clip(e, epsilon, ev.fromType(1.0)))
+    bufferInput.apply1(e => ev.clip(e, epsilon, upperlimit))
+    bufferTarget.apply1(e => ev.clip(e, epsilon, upperlimit))
+    gradInput = bufferTarget.clone().div(bufferInput)
 
-    gradInput = bufferTarget.div(bufferInput).clone()
-    val mul = bufferTarget.log().cmul(target).sum()
+    // use bufferInput hold the intermediate value
+    bufferInput.copy(gradInput)
+    val mul = bufferInput.log().cmul(bufferTarget).sum()
     val batchSize = if (input.nDimension() == 1) 1 else input.size(1)
     ev.divide(mul, ev.fromType(batchSize))
   }
 
+  /**
+   * back propagation with: - target / input
+   */
   override def updateGradInput(input: Tensor[T], target: Tensor[T]): Tensor[T] = {
+    require(input.isSameSizeAs(target),
+      s"Input should have the same size as target. input size: (${input.size().mkString(", ")});" +
+        s" target size: (${target.size().mkString(", ")}).")
+
     val batchSize = if (input.nDimension() == 1) 1 else input.size(1)
     gradInput.div(ev.fromType(-batchSize))
+
+    // keep consistent with Keras for values out of clip boundary
+    val func1 = new TensorFunc6[T] {
+      private val nonGradient = ev.fromType(0)
+      override def apply(
+          data1: Array[T], offset1: Int,
+          data2: Array[T], offset2: Int,
+          data3: Array[T], offset3: Int
+          ): Unit = {
+        if (ev.isGreater(data2(offset2), upperlimit) && ev.isGreater(data3(offset3), upperlimit)) {
+          data1(offset1) = nonGradient
+        } else if (ev.isGreater(epsilon, data2(offset2))) {
+          data1(offset1) = nonGradient
+        }
+      }
+    }
+
+    DenseTensorApply.apply3[T](gradInput, input, target, func1)
+    gradInput
   }
 }
 
 object KullbackLeiblerDivergenceCriterion {
-  def apply[T : ClassTag]()(implicit ev: TensorNumeric[T]): KullbackLeiblerDivergenceCriterion[T]
-  = new KullbackLeiblerDivergenceCriterion[T]()
+  def apply[T : ClassTag]()(implicit ev: TensorNumeric[T]): KullbackLeiblerDivergenceCriterion[T] =
+    new KullbackLeiblerDivergenceCriterion[T]()
 }

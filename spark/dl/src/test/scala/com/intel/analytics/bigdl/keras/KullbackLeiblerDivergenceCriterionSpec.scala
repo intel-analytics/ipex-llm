@@ -16,11 +16,10 @@
 package com.intel.analytics.bigdl.keras
 
 import com.intel.analytics.bigdl.nn.KullbackLeiblerDivergenceCriterion
-import com.intel.analytics.bigdl.tensor.Tensor
 
-class KullbackLeiblerDivergenceSpec extends KerasBaseSpec {
+class KullbackLeiblerDivergenceCriterionSpec extends KerasBaseSpec {
 
-  "KullbackLeiblerDivergenceCriterion" should "be ok" in {
+  "KullbackLeiblerDivergenceCriterion" should "match Keras for batch input" in {
     val kerasCode =
       """
         |input_tensor = Input(shape=[3])
@@ -28,6 +27,19 @@ class KullbackLeiblerDivergenceSpec extends KerasBaseSpec {
         |loss = kullback_leibler_divergence(target_tensor, input_tensor)
         |input = np.random.uniform(0, 1, [2, 3])
         |Y = np.random.uniform(0, 1, [2, 3])
+      """.stripMargin
+    val kld = new KullbackLeiblerDivergenceCriterion[Float]()
+    checkOutputAndGradForLoss(kld, kerasCode)
+  }
+
+  "KullbackLeiblerDivergenceCriterion" should "match Keras for values out of clip boundary" in {
+    val kerasCode =
+      """
+        |input_tensor = Input(shape=[3])
+        |target_tensor = Input(shape=[3])
+        |loss = kullback_leibler_divergence(target_tensor, input_tensor)
+        |input = np.random.uniform(-1, 2, [2, 3])
+        |Y = np.random.uniform(-1, 2, [2, 3])
       """.stripMargin
     val kld = new KullbackLeiblerDivergenceCriterion[Float]()
     checkOutputAndGradForLoss(kld, kerasCode)

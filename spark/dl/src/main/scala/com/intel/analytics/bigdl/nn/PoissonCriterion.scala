@@ -16,44 +16,46 @@
 
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.nn.abstractnn.{TensorCriterion, TensorModule}
-import com.intel.analytics.bigdl.tensor.{DenseTensorApply, Tensor, TensorFunc2, TensorFunc6}
+import com.intel.analytics.bigdl.nn.abstractnn.TensorCriterion
+import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
 import scala.reflect.ClassTag
 
 /**
  * This class is same as `Poisson` loss in keras.
- * @param ev
+ * Loss calculated as:
+ * K.mean(y_pred - y_true * K.log(y_pred + K.epsilon()), axis=-1)
  * @tparam T The numeric type in the criterion, usually which are [[Float]] or [[Double]]
  */
 class PoissonCriterion[T: ClassTag]
 (implicit ev: TensorNumeric[T]) extends TensorCriterion[T] {
 
-  private val epsilon: T = ev.fromType(1e-08)
+  private val epsilon: T = ev.fromType(1e-07)
 
-  // K.mean(y_pred - y_true * K.log(y_pred + K.epsilon()), axis=-1)
+  /*
+   * K.mean(y_pred - y_true * K.log(y_pred + K.epsilon()), axis=-1)
+   */
   override def updateOutput(input: Tensor[T], target: Tensor[T]): T = {
-    val buffer = Tensor[T]()
-    buffer.resizeAs(input).copy(input)
-
-    buffer.apply1(e => ev.plus(e, epsilon))
-    buffer.log().cmul(target)
-    buffer.negative(buffer).add(input).mean()
+    require(input.isSameSizeAs(target),
+      s"Input should have the same size as target. input size: (${input.size().mkString(", ")});" +
+        s" target size: (${target.size().mkString(", ")}).")
+    // use gradInput as buffer
+    gradInput.resizeAs(input).copy(input)
+    gradInput.add(epsilon).log().cmul(target).negative(gradInput).add(input).mean()
   }
 
-  // 1 - y_true/y_pred
+  /*
+   * back propagation with: 1 - y_true/y_pred
+   */
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
     require(input.isSameSizeAs(gradOutput),
-      "Input should have the same size as gradOutput" +
-        s"input size(${input.dim()}) gradOutput size(${gradOutput.dim()})")
+      s"Input should have the same size as target. input size: (${input.size().mkString(", ")});" +
+        s" target size: (${gradOutput.size().mkString(", ")}).")
 
     gradInput.resizeAs(gradOutput).copy(gradOutput)
-    gradInput.div(input)
-    gradInput.negative(gradInput).add(ev.fromType[Double](1.0))
+    gradInput.div(input).negative(gradInput).add(ev.fromType[Double](1.0))
       .div(ev.fromType[Int](input.nElement()))
-
-    gradInput
   }
 }
 
