@@ -474,6 +474,9 @@ def _java2py(sc, r, encoding="bytes"):
         if clsName == 'DataFrame':
             return DataFrame(r, get_spark_sql_context(sc))
 
+        if clsName == 'Dataset':
+            return DataFrame(r, get_spark_sql_context(sc))
+
         if clsName in _picklable_classes:
             r = sc._jvm.org.apache.spark.bigdl.api.python.BigDLSerDe.dumps(r)
         elif isinstance(r, (JavaArray, JavaList, JavaMap)):
