@@ -176,9 +176,7 @@
         <breeze.version>0.11.2</breeze.version>
         <spark-scope>provided</spark-scope>
 
-        <mkl-java-os-version>mkl-java</mkl-java-os-version>
-        <bigquant-java-os-version>bigquant-java</bigquant-java-os-version>
-
+        <bigdl-core-all-scope>compile</bigdl-core-all-scope>
     </properties>
 
     <modules>
@@ -580,23 +578,18 @@
         <profile>
             <id>mac</id>
             <properties>
-                <mkl-java-os-version>mkl-java-mac</mkl-java-os-version>
-                <bigquant-java-os-version>bigquant-java-mac</bigquant-java-os-version>
                 <os-flag>mac</os-flag>
             </properties>
         </profile>
         <profile>
             <id>rh5</id>
             <properties>
-                <mkl-java-os-version>mkl-java-rh5</mkl-java-os-version>
-                <bigquant-java-os-version>bigquant-java-rh5</bigquant-java-os-version>
+                <os-flag>rh5</os-flag>
             </properties>
         </profile>
         <profile>
             <id>win64</id>
             <properties>
-                <mkl-java-os-version>mkl-java-win64</mkl-java-os-version>
-                <bigquant-java-os-version>bigquant-java-win64</bigquant-java-os-version>
                 <os-flag>win64</os-flag>
             </properties>
         </profile>

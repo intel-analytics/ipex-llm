@@ -28,7 +28,8 @@ from pyspark.mllib.common import callJavaFunc
 from pyspark import SparkConf
 import numpy as np
 import threading
-from bigdl.util.engine import get_bigdl_classpath, is_spark_below_2_2
+import tempfile
+from bigdl.util.engine import prepare_env, get_bigdl_classpath, is_spark_below_2_2
 
 INTMAX = 2147483647
 INTMIN = -2147483648
@@ -439,7 +440,7 @@ def get_spark_context(conf = None):
         return SparkContext.getOrCreate(conf=conf or create_spark_conf())
     else:
         # Might have threading issue but we cann't add _lock here
-        # as it's not RLock in spark1.5
+        # as it's not RLock in spark1.5;
         if SparkContext._active_spark_context is None:
             SparkContext(conf=conf or create_spark_conf())
         return SparkContext._active_spark_context
@@ -458,7 +459,6 @@ def callBigDlFunc(bigdl_type, name, *args):
     api = getattr(jinstance, name)
     return callJavaFunc(sc, api, *args)
 
-
 def _java2py(sc, r, encoding="bytes"):
     if isinstance(r, JavaObject):
         clsName = r.getClass().getSimpleName()
@@ -472,6 +472,9 @@ def _java2py(sc, r, encoding="bytes"):
             return RDD(jrdd, sc)
 
         if clsName == 'DataFrame':
+            return DataFrame(r, get_spark_sql_context(sc))
+
+        if clsName == 'Dataset':
             return DataFrame(r, get_spark_sql_context(sc))
 
         if clsName in _picklable_classes:
@@ -536,6 +539,40 @@ def _py2java(sc, obj):
         obj = sc._jvm.org.apache.spark.bigdl.api.python.BigDLSerDe.loads(data)
     return obj
 
+
+def create_tmp_path():
+    tmp_file = tempfile.NamedTemporaryFile(prefix="bigdl")
+    tmp_file.close()
+    return tmp_file.name
+
+
+def get_activation_by_name(activation_name, activation_id=None):
+    """ Convert to a bigdl activation layer
+        given the name of the activation as a string  """
+    import bigdl.nn.layer as BLayer
+    activation = None
+    activation_name = activation_name.lower()
+    if activation_name == "tanh":
+        activation = BLayer.Tanh()
+    elif activation_name == "sigmoid":
+        activation = BLayer.Sigmoid()
+    elif activation_name == "hard_sigmoid":
+        activation = BLayer.HardSigmoid()
+    elif activation_name == "relu":
+        activation = BLayer.ReLU()
+    elif activation_name == "softmax":
+        activation = BLayer.SoftMax()
+    elif activation_name == "softplus":
+        activation = BLayer.SoftPlus(beta=1.0)
+    elif activation_name == "softsign":
+        activation = BLayer.SoftSign()
+    elif activation_name == "linear":
+        activation = BLayer.Identity()
+    else:
+        raise Exception("Unsupported activation type: %s" % activation_name)
+    if not activation_id:
+        activation.set_name(activation_id)
+    return activation
 
 def _test():
     import doctest

@@ -373,10 +373,11 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
   }
 
   override def set(): Tensor[T] = {
-    this.resize(0)
-    if(this._storage != null) {
+    if (this._storage != null) {
       this._storage.resize(0)
     }
+    this.nDimension = 0
+    this._size = Array[Int]()
     this
   }
 
@@ -2133,6 +2134,19 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
   override def inv(): Tensor[T] = {
     this.apply1(a => ev.inv(a))
   }
+
+  override def reduce(dim: Int, result: Tensor[T], reducer: (T, T) => T): Tensor[T] = {
+    DenseTensorDimApply.dimApply2[T](result.asInstanceOf[DenseTensor[T]], this, dim - 1,
+      (r, rOffset, rStride, rSize, t, tOffset, tStride, tSize) => {
+        r(rOffset) = t(tOffset)
+        var i = 1
+        while(i < tSize) {
+          r(rOffset) = reducer(r(rOffset), t(tOffset + i * tStride))
+          i += 1
+        }
+      })
+    result
+  }
 }
 
 object DenseTensor {
@@ -2234,19 +2248,14 @@ object DenseTensor {
     var hasCorrectSize = true
     var nDim_ = 0
     var d = 0
-    var break = false
-    while (d < nDim && !break) {
-      if (_size(d) > 0) {
-        nDim_ = nDim_ + 1
-        if (self.nDimension > d && _size(d) != self._size(d)) {
-          hasCorrectSize = false
-        }
-        if (self.nDimension > d && _stride != null && _stride(d) >= 0 &&
-          _stride(d) != self._stride(d)) {
-          hasCorrectSize = false
-        }
-      } else {
-        break = true
+    while (d < nDim) {
+      nDim_ = nDim_ + 1
+      if (self.nDimension > d && _size(d) != self._size(d)) {
+        hasCorrectSize = false
+      }
+      if (self.nDimension > d && _stride != null && _stride(d) >= 0 &&
+        _stride(d) != self._stride(d)) {
+        hasCorrectSize = false
       }
       d += 1
     }

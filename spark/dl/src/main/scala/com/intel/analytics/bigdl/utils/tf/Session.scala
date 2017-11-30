@@ -601,7 +601,7 @@ class BigDLSessionImpl[T: ClassTag](graph: Seq[NodeDef], context: Context[T],
       endPoints,
       ByteOrder.LITTLE_ENDIAN,
       "",
-      None,
+      Some(context),
       generatedBackward = false
     ).asInstanceOf[Graph[T]]
 
@@ -666,7 +666,7 @@ class BigDLSessionImpl[T: ClassTag](graph: Seq[NodeDef], context: Context[T],
    *        the end of this execution, that is split each tensor by their first dimension.
    * @return
    */
-  private[bigdl] def getRDD(endPoints: Seq[String], sc: SparkContext,
+  def getRDD(endPoints: Seq[String], sc: SparkContext,
                             hasToBatch: Boolean = true): RDD[Table] = {
     val cache = new mutable.HashMap[String, Array[Seq[Table]]]()
     val result = if (!hasToBatch) {

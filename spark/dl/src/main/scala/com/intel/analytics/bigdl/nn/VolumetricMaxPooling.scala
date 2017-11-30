@@ -552,7 +552,7 @@ object VolumetricMaxPooling extends ModuleSerializable {
   def apply[@specialized(Float, Double) T: ClassTag]
   (kT: Int, kW: Int, kH: Int, dT: Int, dW: Int, dH: Int,
     padT: Int = 0, padW: Int = 0, padH: Int = 0)(implicit ev: TensorNumeric[T])
-  : VolumetricMaxPooling[T] = new VolumetricMaxPooling[T](kT, kW, kH, dT, dW, dH, padT, padW)
+  : VolumetricMaxPooling[T] = new VolumetricMaxPooling[T](kT, kW, kH, dT, dW, dH, padT, padW, padH)
 
   def apply[@specialized(Float, Double) T: ClassTag]
   (kT: Int, kW: Int, kH: Int)(implicit ev: TensorNumeric[T])

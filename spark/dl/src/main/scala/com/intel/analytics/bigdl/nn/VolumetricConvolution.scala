@@ -129,7 +129,8 @@ class VolumetricConvolution[T: ClassTag](
 
   private def updateOutputFrame(input: Tensor[T], output: Tensor[T], weight: Tensor[T],
     bias: Tensor[T], fInput: Tensor[T], kT: Int, kW: Int, kH: Int, dT: Int, dW: Int,
-    dH: Int, pT: Int, pW: Int, pH: Int, nInputPlane: Int, inputDepth: Int,
+    dH: Int, padFront: Int, padLeft: Int, padTop: Int, padBack: Int, padRight: Int, padBottom: Int,
+    nInputPlane: Int, inputDepth: Int,
     inputWidth: Int, inputHeight: Int, nOutputPlane: Int, outputDepth: Int, outputWidth: Int,
     outputHeight: Int): Unit = {
     val output2d = output.view(nOutputPlane, outputDepth * outputHeight * outputWidth)
@@ -137,11 +138,15 @@ class VolumetricConvolution[T: ClassTag](
     ev.getType() match {
       case DoubleType =>
         NNPrimitive.unfoldedCopyVolDouble(fInput.asInstanceOf[Tensor[Double]],
-          input.asInstanceOf[Tensor[Double]], kT, kW, kH, dT, dW, dH, pT, pW, pH, nInputPlane,
+          input.asInstanceOf[Tensor[Double]], kT, kW, kH, dT, dW, dH,
+          padFront, padLeft, padTop, padBack, padRight, padBottom,
+          nInputPlane,
           inputDepth, inputWidth, inputHeight, outputDepth, outputWidth, outputHeight)
       case FloatType =>
         NNPrimitive.unfoldedCopyVolFloat(fInput.asInstanceOf[Tensor[Float]],
-          input.asInstanceOf[Tensor[Float]], kT, kW, kH, dT, dW, dH, pT, pW, pH, nInputPlane,
+          input.asInstanceOf[Tensor[Float]], kT, kW, kH, dT, dW, dH,
+          padFront, padLeft, padTop, padBack, padRight, padBottom,
+          nInputPlane,
           inputDepth, inputWidth, inputHeight, outputDepth, outputWidth, outputHeight)
     }
 
@@ -174,9 +179,23 @@ class VolumetricConvolution[T: ClassTag](
     val inputHeight = input.size(dimHeight)
     val inputDepth = input.size(dimDepth)
 
-    val outputDepth = (inputDepth + 2 * padT - kT) / dT + 1
-    val outputHeight = (inputHeight + 2 * padH - kH) / dH + 1
-    val outputWidth = (inputWidth + 2 * padW - kW) / dW + 1
+    val sizes = if (padW == -1 && padH == -1 && padT == -1) {
+      Utils.getSAMEOutSizeAndPadding(inputHeight, inputWidth, dH,
+        dW, kH, kW, inputDepth, dT, kT)
+    } else {
+      Utils.getOutSizeAndPadding(inputHeight, inputWidth, dH,
+        dW, kH, kW, padH, padW, ceilMode = false, inputdepth = inputDepth,
+        dt = dT, kt = kT, padt = padT)
+    }
+    val padFront = sizes(0)
+    val padBack = sizes(1)
+    val padLeft = sizes(4)
+    val padRight = sizes(5)
+    val padTop = sizes(2)
+    val padBottom = sizes(3)
+    val outputDepth = sizes(6)
+    val outputHeight = sizes(7)
+    val outputWidth = sizes(8)
 
     require(outputWidth >= 1 && outputDepth >= 1 && outputHeight >= 1,
       s"Given input size: (${ input.size().mkString("x") })." +
@@ -199,7 +218,8 @@ class VolumetricConvolution[T: ClassTag](
       fInput.resize(kT * kW * kH * nInputPlane, outputDepth * outputHeight * outputWidth)
       output.resize(nOutputPlane, outputDepth, outputHeight, outputWidth)
       updateOutputFrame(input, output, weightMM, bias, fInput, kT, kW, kH, dT, dW, dH,
-        padT, padW, padH, nInputPlane, inputDepth, inputWidth, inputHeight,
+        padFront, padLeft, padTop, padBack, padRight, padBottom, nInputPlane,
+        inputDepth, inputWidth, inputHeight,
         nOutputPlane, outputDepth, outputWidth, outputHeight)
     } else {
       fInput.resize(input.size(1), kT * kW * kH * nInputPlane,
@@ -214,7 +234,7 @@ class VolumetricConvolution[T: ClassTag](
         updateOutputFrame(inputT, outputT, weightMM, bias, fInputT,
           kT, kW, kH,
           dT, dW, dH,
-          padT, padW, padH,
+          padFront, padLeft, padTop, padBack, padRight, padBottom,
           nInputPlane, inputDepth, inputWidth, inputHeight,
           nOutputPlane, outputDepth, outputWidth, outputHeight)
         t += 1
@@ -225,7 +245,8 @@ class VolumetricConvolution[T: ClassTag](
 
   private def updateGradInputFrame(gradInput: Tensor[T], gradOutput: Tensor[T], weight: Tensor[T],
     fGradInput: Tensor[T], kT: Int, kW: Int, kH: Int, dT: Int, dW: Int, dH: Int,
-    pT: Int, pW: Int, pH: Int): Unit = {
+    padFront: Int, padLeft: Int, padTop: Int, padBack: Int, padRight: Int, padBottom: Int):
+    Unit = {
     val gradOutput2d = gradOutput.view(gradOutput.size(1),
       gradOutput.size(2) * gradOutput.size(3) * gradOutput.size(4))
     fGradInput.addmm(ev.zero, fGradInput,
@@ -235,12 +256,14 @@ class VolumetricConvolution[T: ClassTag](
     ev.getType() match {
       case DoubleType =>
         NNPrimitive.unfoldedAccVolDouble(fGradInput.asInstanceOf[Tensor[Double]],
-          gradInput.asInstanceOf[Tensor[Double]], kT, kW, kH, dT, dW, dH, pT, pW, pH,
+          gradInput.asInstanceOf[Tensor[Double]], kT, kW, kH, dT, dW, dH,
+          padFront, padLeft, padTop, padBack, padRight, padBottom,
           gradInput.size(1), gradInput.size(2), gradInput.size(4), gradInput.size(3),
           gradOutput.size(2), gradOutput.size(4), gradOutput.size(3))
       case FloatType =>
         NNPrimitive.unfoldedAccVolFloat(fGradInput.asInstanceOf[Tensor[Float]],
-          gradInput.asInstanceOf[Tensor[Float]], kT, kW, kH, dT, dW, dH, pT, pW, pH,
+          gradInput.asInstanceOf[Tensor[Float]], kT, kW, kH, dT, dW, dH,
+          padFront, padLeft, padTop, padBack, padRight, padBottom,
           gradInput.size(1), gradInput.size(2), gradInput.size(4), gradInput.size(3),
           gradOutput.size(2), gradOutput.size(4), gradOutput.size(3))
     }
@@ -257,6 +280,29 @@ class VolumetricConvolution[T: ClassTag](
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
     require(input.dim() == 4 || input.dim() == 5,
       s"4D or 5D (batch mode) tensor expected for input, but got: ${ input.dim() }d")
+
+    val dimDepth = if (input.dim() == 4) 2 else 3
+    val dimWidth = if (input.dim() == 4) 4 else 5
+    val dimHeight = if (input.dim() == 4) 3 else 4
+
+    val inputWidth = input.size(dimWidth)
+    val inputHeight = input.size(dimHeight)
+    val inputDepth = input.size(dimDepth)
+    val sizes = if (padW == -1 && padH == -1 && padT == -1) {
+      Utils.getSAMEOutSizeAndPadding(inputHeight, inputWidth, dH,
+        dW, kH, kW, inputDepth, dT, kT)
+    } else {
+      Utils.getOutSizeAndPadding(inputHeight, inputWidth, dH,
+        dW, kH, kW, padH, padW, ceilMode = false, inputdepth = inputDepth,
+      dt = dT, kt = kT, padt = padT)
+    }
+    val padFront = sizes(0)
+    val padBack = sizes(1)
+    val padLeft = sizes(4)
+    val padRight = sizes(5)
+    val padTop = sizes(2)
+    val padBottom = sizes(3)
+
     gradInput.resizeAs(input)
     fGradInput.resizeAs(fInput).zero()
     if (input.dim() == 4) {
@@ -264,7 +310,7 @@ class VolumetricConvolution[T: ClassTag](
       updateGradInputFrame(gradInput, gradOutput, weightMM.transpose(1, 2), fGradInput,
         kT, kW, kH,
         dT, dW, dH,
-        padT, padW, padH)
+        padFront, padLeft, padTop, padBack, padRight, padBottom)
     } else {
       // batch mode
       var t = 1
@@ -276,7 +322,7 @@ class VolumetricConvolution[T: ClassTag](
         updateGradInputFrame(gradInputT, gradOutputT, weightMM.transpose(1, 2), fGradInputT,
           kT, kW, kH,
           dT, dW, dH,
-          padT, padW, padH)
+          padFront, padLeft, padTop, padBack, padRight, padBottom)
         t += 1
       }
     }

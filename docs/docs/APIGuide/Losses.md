@@ -263,24 +263,25 @@ Gives the gradInput,
 
 **Scala:**
 ```scala
-val criterion = ClassNLLCriterion(weights = null, sizeAverage = true)
+val criterion = ClassNLLCriterion(weights = null, sizeAverage = true, logProbAsInput=true)
 ```
 **Python:**
 ```python
-criterion = ClassNLLCriterion(weights=None, size_average=True)
+criterion = ClassNLLCriterion(weights=None, size_average=True, logProbAsInput=true)
 ```
 
 The negative log likelihood criterion. It is useful to train a classification problem with n
 classes. If provided, the optional argument weights should be a 1D Tensor assigning weight to
 each of the classes. This is particularly useful when you have an unbalanced training set.
 
-The input given through a `forward()` is expected to contain log-probabilities of each class:
-input has to be a 1D Tensor of size `n`. Obtaining log-probabilities in a neural network is easily
-achieved by adding a `LogSoftMax` layer in the last layer of your neural network. You may use
+The input given through a `forward()` is expected to contain log-probabilities/probabilities of each class:
+input has to be a 1D Tensor of size `n`. Obtaining log-probabilities/probabilities in a neural network is easily
+achieved by adding a `LogSoftMax`/`SoftMax` layer in the last layer of your neural network. You may use
 `CrossEntropyCriterion` instead, if you prefer not to add an extra layer to your network. This
 criterion expects a class index (1 to the number of class) as target when calling
 `forward(input, target)` and `backward(input, target)`.
 
+ In the log-probabilities case,
  The loss can be described as:
      `loss(x, class) = -x[class]`
  or in the case of the weights argument it is specified as follows:
@@ -300,6 +301,8 @@ Parameters:
 * `weights` weights of each element of the input
 * `sizeAverage` A boolean indicating whether normalizing by the number of elements in the input.
                   Default: true
+* `logProbAsInput` indicating whether to accept log-probabilities or probabilities as input. True means accepting
+               log-probabilities as input.
 
 **Scala example:**
 ```scala
@@ -799,16 +802,17 @@ creating: createHingeEmbeddingCriterion
 
 **Scala:**
 ```scala
-criterion = MarginCriterion(margin=1.0, sizeAverage=true)
+criterion = MarginCriterion(margin=1.0, sizeAverage=true, squared=false)
 ```
 **Python:**
 ```python
-criterion = MarginCriterion(margin=1.0, sizeAverage=true, bigdl_type="float")
+criterion = MarginCriterion(margin=1.0, sizeAverage=True, squared=False, bigdl_type="float")
 ```
 
-Creates a criterion that optimizes a two-class classification hinge loss (margin-based loss) between input x (a Tensor of dimension 1) and output y.
+Creates a criterion that optimizes a two-class classification (squared) hinge loss (margin-based loss) between input x (a Tensor of dimension 1) and output y.
  * `margin` if unspecified, is by default 1.
  * `sizeAverage` whether to average the loss, is by default true
+ * `squared` whether to calculate the squared hinge loss
 
 **Scala example:**
 ```scala
@@ -1932,4 +1936,54 @@ loss = criterion.forward(input, target)
 
 > loss
 34562.04
+```
+
+## CosineProximityCriterion ##
+
+**Scala:**
+```scala
+val criterion = CosineProximityCriterion()
+```
+**Python:**
+```python
+criterion = CosineProximityCriterion()
+```
+
+Computes the negative of the mean cosine proximity between predictions and targets.
+
+**Scala example:**
+```scala
+import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+import com.intel.analytics.bigdl.nn.CosineProximityCriterion
+
+val criterion = CosineProximityCriterion()
+
+val input = Tensor[Float](2, 3).rand()
+
+val target = Tensor[Float](2, 3).rand()
+
+val loss = criterion.forward(input, target)
+
+> loss
+loss: Float = -0.28007346
+```
+
+**Python example:**
+```python
+import numpy as np
+from bigdl.nn.criterion import *
+
+criterion = CosineProximityCriterion()
+
+input = np.arange(1, 7, 1).astype("float32")
+input = input.reshape(2, 3)
+target = np.arange(2, 13, 2).astype("float32")
+target = target.reshape(2, 3)
+
+loss = criterion.forward(input, target)
+
+> loss
+-0.3333333
 ```

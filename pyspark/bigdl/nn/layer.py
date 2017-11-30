@@ -18,6 +18,7 @@
 import sys
 
 import numpy as np
+import six
 
 from bigdl.util.common import JTensor
 from bigdl.util.common import JavaValue
@@ -26,6 +27,7 @@ from bigdl.util.common import callJavaFunc
 from bigdl.util.common import get_spark_context
 from bigdl.util.common import to_list
 from bigdl.util.common import INTMAX, INTMIN, DOUBLEMAX
+from bigdl.util.common import get_activation_by_name
 from bigdl.optim.optimizer import L1Regularizer, L2Regularizer, L1L2Regularizer
 from py4j.java_gateway import JavaObject
 
@@ -65,6 +67,22 @@ class Layer(JavaValue):
             self.value = callBigDlFunc(
                 bigdl_type, JavaValue.jvm_class_constructor(self), *args)
         self.bigdl_type = bigdl_type
+
+    def set_running_mean(self, running_mean):
+        """
+        :param running_mean: a ndarray
+        """
+        callBigDlFunc(self.bigdl_type, "setRunningMean",
+                      self.value, JTensor.from_ndarray(running_mean))
+        return self
+
+    def set_running_std(self, running_std):
+        """
+        :param running_mean: a ndarray
+        """
+        callBigDlFunc(self.bigdl_type, "setRunningStd",
+                      self.value, JTensor.from_ndarray(running_std))
+        return self
 
     def __str__(self):
         """
@@ -267,6 +285,43 @@ class Layer(JavaValue):
         else:
             raise Exception("Error when calling evaluate(): it takes no argument or exactly three arguments only")
 
+    def _to_jtensors(self, x):
+        x = to_list(x)
+        if isinstance(x[0], np.ndarray):
+            return [JTensor.from_ndarray(i) for i in x]
+        elif isinstance(x[0], JTensor):
+            return x
+        else:
+            raise Exception("Not supported type: %s" % type(x[0]))
+
+
+    def predict_local(self, X):
+        """
+        :param X: X can be a ndarray or list of ndarray if the model has multiple inputs.
+                  The first dimension of X should be batch.
+        :return: a ndarray as the prediction result.
+        """
+
+        jresults = callBigDlFunc(self.bigdl_type,
+                             "predictLocal",
+                               self.value,
+                               self._to_jtensors(X))
+
+        return np.stack([j.to_ndarray()for j in jresults])
+
+    def predict_local_class(self, X):
+        """
+
+        :param X: X can be a ndarray or list of ndarray if the model has multiple inputs.
+                  The first dimension of X should be batch.
+        :return: a ndarray as the prediction result.
+        """
+        result = callBigDlFunc(self.bigdl_type,
+                             "predictLocalClass",
+                               self.value,
+                               self._to_jtensors(X))
+        return np.stack(result)
+
     def predict(self, data_rdd):
         """
         Model inference base on the given data.
@@ -350,6 +405,10 @@ class Layer(JavaValue):
             print("The layer does not have weight/bias")
             return None
 
+    def is_with_weights(self):
+        return callBigDlFunc(self.bigdl_type,
+                  "isWithWeights", self.value)
+
     def save(self, path, over_write = False):
         callBigDlFunc(self.bigdl_type, "modelSave", self.value, path,
                       over_write)
@@ -413,17 +472,20 @@ class Layer(JavaValue):
         callBigDlFunc(self.bigdl_type, "unFreeze", self.value, names)
         return self
 
-    def training(self):
+    def training(self, is_training=True):
         '''
-        Set this layer in the training mode 
+        Set this layer in the training mode or in predition mode if is_training=False
         '''
-        callJavaFunc(get_spark_context(), self.value.training)
+        if is_training:
+            callJavaFunc(get_spark_context(), self.value.training)
+        else:
+            callJavaFunc(get_spark_context(), self.value.evaluate)
         return self
 
     def is_training(self):
         '''
         :return: Whether this layer is in the training mode
-        
+
         >>> layer = Dropout()
         creating: createDropout
         >>> layer = layer.evaluate()
@@ -442,7 +504,7 @@ class Layer(JavaValue):
 
         >>> fc = Linear(4, 2)
         creating: createLinear
-        >>> fc.set_weights([np.ones((4, 2)), np.ones((2,))])
+        >>> fc.set_weights([np.ones((2, 4)), np.ones((2,))])
         >>> input = np.ones((2, 4))
         >>> fc.forward(input)
         array([[ 5.,  5.],
@@ -531,6 +593,18 @@ class Container(Layer):
         self.value.add(model.value)
         return self
 
+    @property
+    def layers(self):
+        jlayers = callBigDlFunc(self.bigdl_type, "getContainerModules" , self)
+        layers = [Layer.of(jlayer) for jlayer in jlayers]
+        return layers
+
+    @property
+    def flattened_layers(self):
+        jlayers = callBigDlFunc(self.bigdl_type, "getFlattenModules", self)
+        layers = [Layer.of(jlayer) for jlayer in jlayers]
+        return layers
+
 
 class Model(Container):
     """
@@ -562,16 +636,34 @@ class Model(Container):
     def __init__(self,
                  inputs,
                  outputs,
+                 jvalue=None,
                  bigdl_type="float", byte_order="little_endian", model_type="bigdl"):
-        if model_type == "bigdl":
+        if jvalue:
+            self.value = jvalue
+            self.bigdl_type = bigdl_type
+        elif model_type == "bigdl":
             super(Model, self).__init__(None, bigdl_type,
                                     to_list(inputs),
                                     to_list(outputs))
         else:
             from bigdl.util.tf_utils import convert
             model = convert(to_list(inputs), to_list(outputs), byte_order, bigdl_type)
-            super(Model, self).__init__(model, bigdl_type)
+            super(Model, self).__init__(model.value, bigdl_type)
 
+
+    @staticmethod
+    def from_jvalue(jvalue, bigdl_type="float"):
+        """
+        Create a Python Model base on the given java value
+        :param jvalue: Java object create by Py4j
+        :return: A Python Model
+        """
+        model = Model([], [], jvalue=jvalue)
+        model.value = jvalue
+        return model
+
+    def __str__(self):
+        return "->".join(self.layers())
 
     @staticmethod
     def load(path, bigdl_type="float"):
@@ -607,6 +699,22 @@ class Model(Container):
         return Layer.of(jmodel)
 
     @staticmethod
+    def load_keras(def_path, weights_path=None, by_name=False):
+        """
+        Load a pre-trained Keras model.
+
+        :param def_path: The json path containing the keras model definition.
+        :param weights_path: The HDF5 path containing the pre-trained keras model weights.
+        :return: A pre-trained model.
+        """
+        from bigdl.keras.converter import DefinitionLoader, WeightLoader
+        if weights_path:
+            return WeightLoader.load_weights_from_json_hdf5(def_path, weights_path, by_name=by_name)
+        else:
+            return DefinitionLoader.from_json_path(def_path)
+        return bmodel
+
+    @staticmethod
     def load_caffe(model, defPath, modelPath, match_all=True, bigdl_type="float"):
         """
         Load a pre-trained Caffe model.
@@ -634,13 +742,18 @@ class Model(Container):
         return Layer.of(jmodel)
 
     @staticmethod
-    def load_tensorflow(path, inputs, outputs, byte_order = "little_endian", bigdl_type="float"):
+    def load_tensorflow(path, inputs, outputs, byte_order = "little_endian",
+                        bin_file = None, bigdl_type="float"):
         """
         Load a pre-trained Tensorflow model.
         :param path: The path containing the pre-trained model.
+        :param inputs: The input node of this graph
+        :param outputs: The output node of this graph
+        :param byte_order: byte_order of the file, `little_endian` or `big_endian`
+        :param bin_file: the optional bin file produced by bigdl dump_model util function to store the weights
         :return: A pre-trained model.
         """
-        jmodel = callBigDlFunc(bigdl_type, "loadTF", path, inputs, outputs, byte_order)
+        jmodel = callBigDlFunc(bigdl_type, "loadTF", path, inputs, outputs, byte_order, bin_file)
         return Model.of(jmodel)
 
     @staticmethod
@@ -840,6 +953,21 @@ class Tanh(Layer):
 
     def __init__(self, bigdl_type="float"):
         super(Tanh, self).__init__(None, bigdl_type)
+
+
+class Sigmoid(Layer):
+
+    '''
+    Applies the Sigmoid function element-wise to the input Tensor,
+    thus outputting a Tensor of the same dimension.
+
+    >>> sigmoid = Sigmoid()
+    creating: createSigmoid
+    '''
+
+    def __init__(self,
+                 bigdl_type="float"):
+        super(Sigmoid, self).__init__(None, bigdl_type)
 
 
 class Echo(Layer):
@@ -1188,12 +1316,12 @@ class Recurrent(Container):
         
         :return: list of hidden state and cell
         """
-        state = callBigDlFunc(self.bigdl_type, "getHiddenState", self.value)        
+        state = callBigDlFunc(self.bigdl_type, "getHiddenState", self.value)
         for idx, tensor in enumerate(state):
             state[idx] = tensor.to_ndarray()
 
         return state
-    
+
     def set_hidden_state(self, states):
         """
         set hidden state and cell at first time step.
@@ -1232,21 +1360,37 @@ class LSTM(Layer):
 
     :param inputSize: the size of each input vector
     :param hiddenSize: Hidden unit size in the LSTM
-    :param  p: is used for [[Dropout]] probability. For more details aboutRNN dropouts, please refer to[RnnDrop: A Novel Dropout for RNNs in ASR](http://www.stat.berkeley.edu/~tsmoon/files/Conference/asru2015.pdf)[A Theoretically Grounded Application of Dropout in Recurrent Neural Networks](https://arxiv.org/pdf/1512.05287.pdf)
+    :param p: is used for [[Dropout]] probability. For more details aboutRNN dropouts, please refer to[RnnDrop: A Novel Dropout for RNNs in ASR](http://www.stat.berkeley.edu/~tsmoon/files/Conference/asru2015.pdf)[A Theoretically Grounded Application of Dropout in Recurrent Neural Networks](https://arxiv.org/pdf/1512.05287.pdf)
+    :param activation: activation function, by default to be Tanh if not specified.
+                        It can also be the name of an existing activation as a string.
+    :param inner_activation: activation function for the inner cells, by default to be Sigmoid if not specified.
+                            It can also be the name of an existing activation as a string.
     :param wRegularizer: instance of [[Regularizer]](eg. L1 or L2 regularization), applied to the input weights matrices.
     :param uRegularizer: instance [[Regularizer]](eg. L1 or L2 regularization), applied to the recurrent weights matrices.
     :param bRegularizer: instance of [[Regularizer]]applied to the bias.
 
 
-    >>> lstm = LSTM(4, 3, 0.5, L1Regularizer(0.5), L1Regularizer(0.5), L1Regularizer(0.5))
+    >>> lstm = LSTM(4, 3, 0.5, 'tanh', Sigmoid(), L1Regularizer(0.5), L1Regularizer(0.5), L1Regularizer(0.5))
+    creating: createSigmoid
     creating: createL1Regularizer
     creating: createL1Regularizer
     creating: createL1Regularizer
+    creating: createTanh
     creating: createLSTM
     '''
 
-    def __init__(self, input_size, hidden_size, p=0.0, wRegularizer=None, uRegularizer=None, bRegularizer=None, bigdl_type="float"):
-        super(LSTM, self).__init__(None, bigdl_type, input_size, hidden_size, p, wRegularizer, uRegularizer, bRegularizer)
+    def __init__(self, input_size, hidden_size, p=0.0, activation=None, inner_activation=None,
+                 wRegularizer=None, uRegularizer=None, bRegularizer=None, bigdl_type="float"):
+        if not activation:
+            activation = Tanh()
+        if not inner_activation:
+            inner_activation = Sigmoid()
+        if isinstance(activation, six.string_types):
+            activation = get_activation_by_name(activation)
+        if isinstance(inner_activation, six.string_types):
+            inner_activation = get_activation_by_name(inner_activation)
+        super(LSTM, self).__init__(None, bigdl_type, input_size, hidden_size, p,
+                                   activation, inner_activation, wRegularizer, uRegularizer, bRegularizer)
 
 
 class LSTMPeephole(Layer):
@@ -1290,22 +1434,38 @@ class GRU(Layer):
 
     :param input_size: the size of each input vector
     :param hidden_size: Hidden unit size in GRU
-    :param  p: is used for [[Dropout]] probability. For more details aboutRNN dropouts, please refer to[RnnDrop: A Novel Dropout for RNNs in ASR](http://www.stat.berkeley.edu/~tsmoon/files/Conference/asru2015.pdf)[A Theoretically Grounded Application of Dropout in Recurrent Neural Networks](https://arxiv.org/pdf/1512.05287.pdf)
+    :param p: is used for [[Dropout]] probability. For more details aboutRNN dropouts, please refer to[RnnDrop: A Novel Dropout for RNNs in ASR](http://www.stat.berkeley.edu/~tsmoon/files/Conference/asru2015.pdf)[A Theoretically Grounded Application of Dropout in Recurrent Neural Networks](https://arxiv.org/pdf/1512.05287.pdf)
+    :param activation: activation function, by default to be Tanh if not specified.
+                        It can also be the name of an existing activation as a string.
+    :param inner_activation: activation function for the inner cells, by default to be Sigmoid if not specified.
+                            It can also be the name of an existing activation as a string.
     :param wRegularizer: instance of [[Regularizer]](eg. L1 or L2 regularization), applied to the input weights matrices.
     :param uRegularizer: instance [[Regularizer]](eg. L1 or L2 regularization), applied to the recurrent weights matrices.
     :param bRegularizer: instance of [[Regularizer]]applied to the bias.
 
 
 
-    >>> gru = GRU(4, 3, 0.5, L1Regularizer(0.5), L1Regularizer(0.5), L1Regularizer(0.5))
+    >>> gru = GRU(4, 3, 0.5, Tanh(), Sigmoid(), L1Regularizer(0.5), L1Regularizer(0.5), L1Regularizer(0.5))
+    creating: createTanh
+    creating: createSigmoid
     creating: createL1Regularizer
     creating: createL1Regularizer
     creating: createL1Regularizer
     creating: createGRU
     '''
 
-    def __init__(self,  input_size, hidden_size, p=0.0, wRegularizer=None, uRegularizer=None, bRegularizer=None, bigdl_type="float"):
-        super(GRU, self).__init__(None, bigdl_type, input_size, hidden_size, p, wRegularizer, uRegularizer, bRegularizer)
+    def __init__(self,  input_size, hidden_size, p=0.0, activation=None, inner_activation=None,
+                 wRegularizer=None, uRegularizer=None, bRegularizer=None, bigdl_type="float"):
+        if not activation:
+            activation = Tanh()
+        if not inner_activation:
+            inner_activation = Sigmoid()
+        if isinstance(activation, six.string_types):
+            activation = get_activation_by_name(activation)
+        if isinstance(inner_activation, six.string_types):
+            inner_activation = get_activation_by_name(inner_activation)
+        super(GRU, self).__init__(None, bigdl_type, input_size, hidden_size, p, activation, inner_activation,
+                                  wRegularizer, uRegularizer, bRegularizer)
 
 
 class RnnCell(Layer):
@@ -1315,16 +1475,15 @@ class RnnCell(Layer):
 
     :param input_size: the size of each input vector
     :param hidden_size: Hidden unit size in simple RNN
-    :param activation: activation function
+    :param activation: activation function. It can also be the name of an existing activation as a string.
     :param isInputWithBias: boolean
     :param isHiddenWithBias: boolean
-
     :param wRegularizer: instance of [[Regularizer]](eg. L1 or L2 regularization), applied to the input weights matrices.
     :param uRegularizer: instance [[Regularizer]](eg. L1 or L2 regularization), applied to the recurrent weights matrices.
     :param bRegularizer: instance of [[Regularizer]](../regularizers.md),applied to the bias.
 
 
-    >>> reshape = RnnCell(4, 3, Tanh(), True, True, L1Regularizer(0.5), L1Regularizer(0.5), L1Regularizer(0.5))
+    >>> rnn = RnnCell(4, 3, Tanh(), True, True, L1Regularizer(0.5), L1Regularizer(0.5), L1Regularizer(0.5))
     creating: createTanh
     creating: createL1Regularizer
     creating: createL1Regularizer
@@ -1342,6 +1501,8 @@ class RnnCell(Layer):
                  uRegularizer=None,
                  bRegularizer=None,
                  bigdl_type="float"):
+        if isinstance(activation, six.string_types):
+            activation = get_activation_by_name(activation)
         super(RnnCell, self).__init__(None, bigdl_type, input_size, hidden_size, activation, isInputWithBias, isHiddenWithBias, wRegularizer, uRegularizer, bRegularizer)
 
 
@@ -1589,6 +1750,49 @@ class Dropout(Layer):
                                       scale)
 
 
+class GaussianDropout(Layer):
+
+    '''
+    Apply multiplicative 1-centered Gaussian noise.
+    The multiplicative noise will have standard deviation `sqrt(rate / (1 - rate)).
+
+    As it is a regularization layer, it is only active at training time.
+
+    :param rate: drop probability (as with `Dropout`).
+
+
+    >>> GaussianDropout = GaussianDropout(0.5)
+    creating: createGaussianDropout
+    '''
+
+    def __init__(self,
+                 rate,
+                 bigdl_type="float"):
+        super(GaussianDropout, self).__init__(None, bigdl_type,
+                                              rate)
+
+
+class GaussianNoise(Layer):
+
+    '''
+    Apply additive zero-centered Gaussian noise.
+    This is useful to mitigate overfitting
+    (you could see it as a form of random data augmentation).
+    Gaussian Noise (GS) is a natural choice as corruption process for real valued inputs.
+
+    As it is a regularization layer, it is only active at training time.
+
+    :param stdev: standard deviation of the noise distribution
+
+    >>> GaussianNoise = GaussianNoise(0.5)
+    creating: createGaussianNoise
+    '''
+    def __init__(self,
+                 stddev,
+                 bigdl_type="float"):
+        super(GaussianNoise, self).__init__(None, bigdl_type,
+                                            stddev)
+
 class View(Layer):
 
     '''
@@ -1730,6 +1934,7 @@ class BatchNormalization(Layer):
                                                  JTensor.from_ndarray(init_bias),
                                                  JTensor.from_ndarray(init_grad_weight),
                                                  JTensor.from_ndarray(init_grad_bias))
+
     def set_init_method(self, weight_init_method = None, bias_init_method = None):
         callBigDlFunc(self.bigdl_type, "setInitMethod", self.value,
                       weight_init_method, bias_init_method)
@@ -1874,6 +2079,26 @@ class CAddTable(Layer):
                  inplace=False,
                  bigdl_type="float"):
         super(CAddTable, self).__init__(None, bigdl_type,
+                                        inplace)
+
+class CAveTable(Layer):
+
+    '''
+    Merge the input tensors in the input table by element wise taking the average. The input
+    table is actually an array of tensor with same size.
+
+
+    :param inplace: reuse the input memory
+
+
+    >>> cAveTable = CAveTable(True)
+    creating: createCAveTable
+    '''
+
+    def __init__(self,
+                 inplace=False,
+                 bigdl_type="float"):
+        super(CAveTable, self).__init__(None, bigdl_type,
                                         inplace)
 
 
@@ -3111,21 +3336,6 @@ class SelectTable(Layer):
                                           index)
 
 
-class Sigmoid(Layer):
-
-    '''
-    Applies the Sigmoid function element-wise to the input Tensor,
-    thus outputting a Tensor of the same dimension.
-
-    >>> sigmoid = Sigmoid()
-    creating: createSigmoid
-    '''
-
-    def __init__(self,
-                 bigdl_type="float"):
-        super(Sigmoid, self).__init__(None, bigdl_type)
-
-
 class SoftMax(Layer):
 
     '''
@@ -3642,6 +3852,57 @@ class VolumetricMaxPooling(Layer):
                                                     pad_w,
                                                     pad_h)
 
+
+class VolumetricAveragePooling(Layer):
+
+    '''
+    Applies 3D average-pooling operation in kTxkWxkH regions by step size dTxdWxdH.
+    The number of output features is equal to the number of input planes / dT.
+    The input can optionally be padded with zeros. Padding should be smaller than
+    half of kernel size. That is, padT < kT/2, padW < kW/2 and padH < kH/2
+
+    :param k_t: The kernel size
+    :param k_w: The kernel width
+    :param k_h: The kernel height
+    :param d_t: The step in the time dimension
+    :param d_w: The step in the width dimension
+    :param d_h: The step in the height dimension
+    :param pad_t: The padding in the time dimension
+    :param pad_w: The padding in the width dimension
+    :param pad_h: The padding in the height dimension
+    :param count_include_pad: whether to include padding when dividing the number of elements in pooling region
+    :param ceil_mode: whether the output size is to be ceiled or floored
+
+
+    >>> volumetricAveragePooling = VolumetricAveragePooling(5, 5, 5, 1, 1, 1)
+    creating: createVolumetricAveragePooling
+    '''
+
+    def __init__(self,
+                 k_t,
+                 k_w,
+                 k_h,
+                 d_t,
+                 d_w,
+                 d_h,
+                 pad_t=0,
+                 pad_w=0,
+                 pad_h=0,
+                 count_include_pad=True,
+                 ceil_mode=False,
+                 bigdl_type="float"):
+        super(VolumetricAveragePooling, self).__init__(None, bigdl_type,
+                                                        k_t,
+                                                        k_w,
+                                                        k_h,
+                                                        d_t,
+                                                        d_w,
+                                                        d_h,
+                                                        pad_t,
+                                                        pad_w,
+                                                        pad_h,
+                                                        count_include_pad,
+                                                        ceil_mode)
 
 class SpatialZeroPadding(Layer):
 
@@ -4204,16 +4465,23 @@ class ConvLSTMPeephole(Layer):
 
     :param input_size: number of input planes in the image given into forward()
     :param output_size: number of output planes the convolution layer will produce
-    :param kernel_i Convolutional filter size to convolve input
-    :param kernel_c Convolutional filter size to convolve cell
-    :param stride The step of the convolution
+    :param kernel_i: Convolutional filter size to convolve input
+    :param kernel_c: Convolutional filter size to convolve cell
+    :param stride: The step of the convolution, default is 1
+    :param padding: The additional zeros added, default is -1
+    :param activation: activation function, by default to be Tanh if not specified.
+                        It can also be the name of an existing activation as a string.
+    :param inner_activation: activation function for the inner cells, by default to be Sigmoid if not specified.
+                            It can also be the name of an existing activation as a string.
     :param wRegularizer: instance of [[Regularizer]](eg. L1 or L2 regularization), applied to the input weights matrices
     :param uRegularizer: instance [[Regularizer]](eg. L1 or L2 regularization), applied to the recurrent weights matrices
     :param bRegularizer: instance of [[Regularizer]]applied to the bias.
     :param cRegularizer: instance of [[Regularizer]]applied to peephole.
     :param with_peephole: whether use last cell status control a gate.
 
-    >>> convlstm = ConvLSTMPeephole(4, 3, 3, 3, 1, L1Regularizer(0.5), L1Regularizer(0.5), L1Regularizer(0.5), L1Regularizer(0.5))
+    >>> convlstm = ConvLSTMPeephole(4, 3, 3, 3, 1, -1, Tanh(), HardSigmoid(), L1Regularizer(0.5), L1Regularizer(0.5), L1Regularizer(0.5), L1Regularizer(0.5))
+    creating: createTanh
+    creating: createHardSigmoid
     creating: createL1Regularizer
     creating: createL1Regularizer
     creating: createL1Regularizer
@@ -4221,10 +4489,21 @@ class ConvLSTMPeephole(Layer):
     creating: createConvLSTMPeephole
     '''
 
-    def __init__(self, input_size, output_size, kernel_i, kernel_c, stride, wRegularizer=None, uRegularizer=None,
-                 bRegularizer=None, cRegularizer=None, with_peephole=True, bigdl_type="float"):
-        super(ConvLSTMPeephole, self).__init__(None, bigdl_type, input_size, output_size, kernel_i, kernel_c, stride,
-                                                 wRegularizer, uRegularizer, bRegularizer, cRegularizer, with_peephole)
+    def __init__(self, input_size, output_size, kernel_i, kernel_c, stride=1, padding=-1,
+                 activation=None, inner_activation=None,
+                 wRegularizer=None, uRegularizer=None, bRegularizer=None, cRegularizer=None,
+                 with_peephole=True, bigdl_type="float"):
+        if not activation:
+            activation = Tanh()
+        if not inner_activation:
+            inner_activation = Sigmoid()
+        if isinstance(activation, six.string_types):
+            activation = get_activation_by_name(activation)
+        if isinstance(inner_activation, six.string_types):
+            inner_activation = get_activation_by_name(inner_activation)
+        super(ConvLSTMPeephole, self).__init__(None, bigdl_type, input_size, output_size, kernel_i, kernel_c,
+                                               stride, padding, activation, inner_activation,
+                                               wRegularizer, uRegularizer, bRegularizer, cRegularizer, with_peephole)
 
 class Tile(Layer):
     '''
@@ -4253,13 +4532,14 @@ class ConvLSTMPeephole3D(Layer):
     :param kernel_i Convolutional filter size to convolve input
     :param kernel_c Convolutional filter size to convolve cell
     :param stride The step of the convolution
+    :param padding The additional zeros added
     :param wRegularizer: instance of [[Regularizer]](eg. L1 or L2 regularization), applied to the input weights matrices
     :param uRegularizer: instance [[Regularizer]](eg. L1 or L2 regularization), applied to the recurrent weights matrices
     :param bRegularizer: instance of [[Regularizer]]applied to the bias.
     :param cRegularizer: instance of [[Regularizer]]applied to peephole.
     :param with_peephole: whether use last cell status control a gate.
 
-    >>> convlstm = ConvLSTMPeephole3D(4, 3, 3, 3, 1, L1Regularizer(0.5), L1Regularizer(0.5), L1Regularizer(0.5), L1Regularizer(0.5))
+    >>> convlstm = ConvLSTMPeephole3D(4, 3, 3, 3, 1, -1, L1Regularizer(0.5), L1Regularizer(0.5), L1Regularizer(0.5), L1Regularizer(0.5))
     creating: createL1Regularizer
     creating: createL1Regularizer
     creating: createL1Regularizer
@@ -4267,20 +4547,20 @@ class ConvLSTMPeephole3D(Layer):
     creating: createConvLSTMPeephole3D
     '''
 
-    def __init__(self, input_size, output_size, kernel_i, kernel_c, stride, wRegularizer=None, uRegularizer=None,
+    def __init__(self, input_size, output_size, kernel_i, kernel_c, stride=1, padding=-1, wRegularizer=None, uRegularizer=None,
                  bRegularizer=None, cRegularizer=None, with_peephole=True, bigdl_type="float"):
         super(ConvLSTMPeephole3D, self).__init__(None, bigdl_type, input_size, output_size, kernel_i, kernel_c, stride,
-                                                 wRegularizer, uRegularizer, bRegularizer, cRegularizer, with_peephole)
+                                                 padding, wRegularizer, uRegularizer, bRegularizer, cRegularizer, with_peephole)
 
 class ResizeBilinear(Layer):
     """
     Resize the input image with bilinear interpolation. The input image must be a float tensor with
     NHWC layout
-    
+
     :param output_height: output height
     :param output_width: output width
     :param align_corner: align corner or not
-    
+
     >>> resizeBilinear = ResizeBilinear(10, 20, False)
     creating: createResizeBilinear
     """
@@ -4295,6 +4575,51 @@ class GaussianSampler(Layer):
     """
     def __init__(self, bigdl_type="float"):
         super(GaussianSampler, self).__init__(None, bigdl_type)
+
+class HardSigmoid(Layer):
+    """
+    Apply Hard-sigmoid function
+```   
+               |  0, if x < -2.5
+        f(x) = |  1, if x > 2.5
+               |  0.2 * x + 0.5, otherwise
+```
+    >>> hardSigmoid = HardSigmoid()
+    creating: createHardSigmoid
+    """
+    def __init__(self, bigdl_type="float"):
+        super(HardSigmoid, self).__init__(None, bigdl_type)
+
+class Highway(Layer):
+    """
+    Densely connected highway network.
+    Highway layers are a natural extension of LSTMs to feedforward networks.
+
+    :param size input size
+    :param with_bias whether to include a bias
+    :param activation name of activation function to use
+    :param wRegularizer: instance of [[Regularizer]](eg. L1 or L2 regularization), applied to the input weights matrices.
+    :param bRegularizer: instance of [[Regularizer]]applied to the bias.
+
+    >>> highway = Highway(2)
+    creating: createHighway
+    """
+    def __init__(self, size, with_bias=True, activation = None, wRegularizer=None, bRegularizer=None, bigdl_type="float"):
+        super(Highway, self).__init__(None, bigdl_type, size, with_bias, activation, wRegularizer, bRegularizer)
+
+class UpSampling3D(Layer):
+    """
+    Upsampling layer for 3D inputs.
+    Repeats the 1st, 2nd and 3rd dimensions
+    of the data by size[0], size[1] and size[2] respectively.
+    The input data is assumed to be of the form `minibatch x channels x depth x height x width`.
+
+    :param size Repeats the depth, height, width dimensions of the data by
+    >>> upsample3d = UpSampling3D([1, 2, 3])
+    creating: createUpSampling3D
+    """
+    def __init__(self, size, bigdl_type="float"):
+        super(UpSampling3D, self).__init__(None, bigdl_type, size)
 
 def _test():
     import doctest
