@@ -19,19 +19,22 @@ package com.intel.analytics.bigdl.transform.vision.image
 import com.google.common.io.Files
 import com.intel.analytics.bigdl.utils.Engine
 import org.apache.commons.io.FileUtils
-import org.apache.spark.sql.SparkSession
+import org.apache.spark.SparkContext
+import org.apache.spark.sql.{SQLContext}
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 class ImageFrameSpec extends FlatSpec with Matchers with BeforeAndAfter {
-  var spark: SparkSession = null
   val resource = getClass.getClassLoader.getResource("pascal/")
+  var sc: SparkContext = null
+  var sqlContext: SQLContext = null
   before {
     val conf = Engine.createSparkConf().setAppName("ImageSpec").setMaster("local[2]")
-    spark = SparkSession.builder().config(conf).getOrCreate()
+    sc = new SparkContext(conf)
+    sqlContext = new SQLContext(sc)
   }
 
   after {
-    if (null != spark) spark.stop()
+    if (null != sc) sc.stop()
   }
 
   "read LocalImageFrame" should "work properly" in {
@@ -45,14 +48,14 @@ class ImageFrameSpec extends FlatSpec with Matchers with BeforeAndAfter {
   "LocalImageFrame toDistributed" should "work properly" in {
     val local = ImageFrame.read(resource.getFile).asInstanceOf[LocalImageFrame]
     local.array.foreach(x => println(x.uri, x.bytes.length))
-    val imageFeature = local.toDistributed(spark.sparkContext).rdd.first()
+    val imageFeature = local.toDistributed(sc).rdd.first()
     assert(imageFeature.uri.endsWith("000025.jpg"))
     assert(imageFeature.bytes.length == 95959)
     imageFeature.opencvMat().shape() should be((375, 500, 3))
   }
 
   "read DistributedImageFrame" should "work properly" in {
-    val distributed = ImageFrame.read(resource.getFile, spark.sparkContext)
+    val distributed = ImageFrame.read(resource.getFile, sc)
       .asInstanceOf[DistributedImageFrame]
     val imageFeature = distributed.rdd.first()
     assert(imageFeature.uri.endsWith("000025.jpg"))
@@ -63,9 +66,9 @@ class ImageFrameSpec extends FlatSpec with Matchers with BeforeAndAfter {
   "SequenceFile write and read" should "work properly" in {
     val tmpFile = Files.createTempDir()
     val dir = tmpFile.toString + "/parque"
-    ImageFrame.writeParquet(resource.getFile, dir, spark)
+    ImageFrame.writeParquet(resource.getFile, dir, sqlContext)
 
-    val distributed = ImageFrame.readParquet(dir, spark)
+    val distributed = ImageFrame.readParquet(dir, sqlContext)
     val imageFeature = distributed.rdd.first()
     assert(imageFeature.uri.endsWith("000025.jpg"))
     assert(imageFeature.bytes.length == 95959)

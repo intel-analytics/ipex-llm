@@ -19,22 +19,38 @@ package com.intel.analytics.bigdl.transform.vision.image
 import com.intel.analytics.bigdl.dataset.{ChainedTransformer, Transformer}
 import com.intel.analytics.bigdl.opencv.OpenCV
 import com.intel.analytics.bigdl.transform.vision.image.opencv.OpenCVMat
-import com.intel.analytics.bigdl.utils.RandomGenerator._
 import org.apache.log4j.Logger
 
+/**
+ * FeatureTransformer is a transformer that transform ImageFeature
+ */
 abstract class FeatureTransformer() extends Transformer[ImageFeature, ImageFeature] {
 
   import FeatureTransformer.logger
 
   private var outKey: Option[String] = None
 
+  /**
+   * set the output key to store current transformed result
+   * if the key is not set, or same as default, then the transformed result
+   * will be overwritted by the following transformer
+   * @param key output key
+   */
   def setOutKey(key: String): this.type = {
     outKey = Some(key)
     this
   }
 
+  /**
+   * transform mat
+   */
   protected def transformMat(feature: ImageFeature): Unit = {}
 
+  /**
+   * transform feature
+   * @param feature ImageFeature
+   * @return ImageFeature
+   */
   def transform(feature: ImageFeature): ImageFeature = {
     require(OpenCV.isOpenCVLoaded, "opencv isn't loaded")
     if (!feature.isValid) return feature
@@ -85,7 +101,9 @@ object FeatureTransformer {
   val logger = Logger.getLogger(getClass)
 }
 
-
+/**
+ * A transformer chain two FeatureTransformer together.
+ */
 class ChainedFeatureTransformer(first: FeatureTransformer, last: FeatureTransformer) extends
   FeatureTransformer {
 

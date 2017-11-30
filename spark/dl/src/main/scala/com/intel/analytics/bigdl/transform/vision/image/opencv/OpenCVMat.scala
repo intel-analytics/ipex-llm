@@ -23,6 +23,9 @@ import org.apache.commons.io.FileUtils
 import org.opencv.core.{CvType, Mat, MatOfByte}
 import org.opencv.imgcodecs.Imgcodecs
 
+/**
+ * OpenCVMat is a Serializable wrapper of original Mat
+ */
 class OpenCVMat() extends Mat with Serializable {
 
   def this(mat: Mat) {
@@ -115,7 +118,7 @@ object OpenCVMat {
    * @param encoding encoding type
    * @return bytes that represent an image
    */
-  def imencode(mat: Mat, encoding: String = "png"): Array[Byte] = {
+  def imencode(mat: OpenCVMat, encoding: String = "png"): Array[Byte] = {
     val buf = new MatOfByte()
     try {
       Imgcodecs.imencode("." + encoding, mat, buf)

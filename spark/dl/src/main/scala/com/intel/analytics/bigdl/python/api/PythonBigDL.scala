@@ -44,14 +44,10 @@ import com.intel.analytics.bigdl.utils.tf.{TensorflowDataFormat, TensorflowSaver
 import com.intel.analytics.bigdl.utils.tf.TensorflowLoader.{buildBigDLModel, buildTFGraph, parse}
 import com.intel.analytics.bigdl.utils.tf._
 import org.apache.spark.ml.{DLClassifier, DLClassifierModel, DLEstimator, DLModel}
-import org.apache.spark.sql.{DataFrame, SparkSession}
+import org.apache.spark.sql.{DataFrame, SQLContext}
 import org.apache.log4j._
-import org.apache.spark.SparkContext
-import org.opencv.imgproc.Imgproc
-import org.tensorflow.framework.NodeDef
 
 import scala.collection.JavaConverters._
-import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 import scala.language.existentials
 import scala.reflect.ClassTag
@@ -2439,8 +2435,8 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     if (sc == null) ImageFrame.read(path, null) else ImageFrame.read(path, sc.sc)
   }
 
-  def readParquet(path: String, ss: SparkSession): DistributedImageFrame = {
-    ImageFrame.readParquet(path, ss)
+  def readParquet(path: String, sqlContext: SQLContext): DistributedImageFrame = {
+    ImageFrame.readParquet(path, sqlContext)
   }
 
   def isLocal(imageFrame: ImageFrame): Boolean = imageFrame.isLocal()

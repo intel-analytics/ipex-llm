@@ -25,21 +25,33 @@ if sys.version >= '3':
 
 
 class FeatureTransformer(JavaValue):
+    """
+    FeatureTransformer is a transformer that transform ImageFeature
+    """
 
     def __init__(self, bigdl_type="float", *args):
         self.value = callBigDlFunc(
                 bigdl_type, JavaValue.jvm_class_constructor(self), *args)
 
     def transform(self, image_feature, bigdl_type="float"):
+        """
+        transform ImageFeature
+        """
         callBigDlFunc(bigdl_type, "transformImageFeature", self.value, image_feature)
         return image_feature
 
     def __call__(self, image_frame, bigdl_type="float"):
+        """
+        transform ImageFrame
+        """
         jframe = callBigDlFunc(bigdl_type,
                              "transformImageFrame", self.value, image_frame)
         return ImageFrame(jvalue=jframe)
 
 class Pipeline(FeatureTransformer):
+    """
+    Pipeline of FeatureTransformer
+    """
 
     def __init__(self, transformers, bigdl_type="float"):
         for transfomer in transformers:
@@ -48,6 +60,14 @@ class Pipeline(FeatureTransformer):
         super(Pipeline, self).__init__(bigdl_type, transformers)
 
 class ImageFeature(JavaValue):
+    """
+    Each ImageFeature keeps information about single image,
+    it can include various status of an image,
+    e.g. original bytes read from image file, an opencv mat,
+    pixels in float array, image label, meta data and so on.
+    it uses HashMap to store all these data,
+    the key is string that identify the corresponding value
+    """
 
     def __init__(self, image=None, label=None, path=None, bigdl_type="float"):
         image_tensor = JTensor.from_ndarray(image) if image is not None else None
@@ -57,21 +77,36 @@ class ImageFeature(JavaValue):
             bigdl_type, JavaValue.jvm_class_constructor(self), image_tensor, label_tensor, path)
 
     def to_sample(self, float_key="floats", to_chw=True, with_im_info=False):
+        """
+        ImageFeature to sample
+        """
         return callBigDlFunc(self.bigdl_type, "imageFeatureToSample", self.value, float_key, to_chw, with_im_info)
 
     def get_image(self, float_key="floats", to_chw=True):
+        """
+        get image as ndarray from ImageFeature
+        """
         tensor = callBigDlFunc(self.bigdl_type, "imageFeatureToImageTensor", self.value,
                                float_key, to_chw)
         return tensor.to_ndarray()
 
     def get_label(self):
+        """
+        get label as ndarray from ImageFeature
+        """
         label = callBigDlFunc(self.bigdl_type, "imageFeatureToLabelTensor", self.value)
         return label.to_ndarray()
 
     def keys(self):
+        """
+        get key set from ImageFeature
+        """
         return callBigDlFunc(self.bigdl_type, "imageFeatureGetKeys", self.value)
 
 class ImageFrame(JavaValue):
+    """
+    ImageFrame wraps a set of ImageFeature
+    """
 
     def __init__(self, jvalue, bigdl_type="float"):
         self.value = jvalue
@@ -84,30 +119,61 @@ class ImageFrame(JavaValue):
 
     @classmethod
     def read(cls, path, sc=None, bigdl_type="float"):
+        """
+        Read images as Image Frame
+        if sc is defined, Read image as DistributedImageFrame from local file system or HDFS
+        if sc is null, Read image as LocalImageFrame from local file system
+        :param path path to read images
+        if sc is defined, path can be local or HDFS. Wildcard character are supported.
+        if sc is null, path is local directory/image file/image file with wildcard character
+        :param sc SparkContext
+        :return ImageFrame
+        """
         return ImageFrame(jvalue=callBigDlFunc(bigdl_type, "read", path, sc))
 
     @classmethod
-    def readParquet(cls, path, ss, bigdl_type="float"):
-        return DistributedImageFrame(jvalue=callBigDlFunc(bigdl_type, "readParquet", path, ss))
+    def readParquet(cls, path, sql_context, bigdl_type="float"):
+        """
+        Read parquet file as DistributedImageFrame
+        """
+        return DistributedImageFrame(jvalue=callBigDlFunc(bigdl_type, "readParquet", path, sql_context))
 
     def is_local(self):
+        """
+        whether this is a LocalImageFrame
+        """
         return callBigDlFunc(self.bigdl_type, "isLocal", self.value)
 
     def is_distributed(self):
+        """
+        whether this is a DistributedImageFrame
+        """
         return callBigDlFunc(self.bigdl_type, "isDistributed", self.value)
 
     def transform(self, transformer, bigdl_type="float"):
+        """
+        transformImageFrame
+        """
         self.value = callBigDlFunc(bigdl_type,
                                  "transformImageFrame", transformer, self.value)
         return self
 
     def get_image(self, float_key="floats", to_chw=True):
+        """
+        get image from ImageFrame
+        """
         return self.image_frame.get_image(float_key, to_chw)
 
     def get_label(self):
+        """
+        get label from ImageFrame
+        """
         return self.image_frame.get_label()
 
     def to_sample(self, float_key="floats", to_chw=True, with_im_info=False):
+        """
+        ImageFrame toSample
+        """
         return self.image_frame.to_sample(float_key, to_chw, with_im_info)
 
 
@@ -193,6 +259,8 @@ class DistributedImageFrame(ImageFrame):
                              "distributedImageFrameToSampleRdd", self.value, float_key, to_chw, with_im_info)
 
 class HFlip(FeatureTransformer):
-
+    """
+    Flip the image horizontally
+    """
     def __init__(self, bigdl_type="float"):
             super(HFlip, self).__init__(bigdl_type)

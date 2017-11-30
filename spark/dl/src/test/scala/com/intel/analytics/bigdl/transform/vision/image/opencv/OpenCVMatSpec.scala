@@ -18,7 +18,9 @@ package com.intel.analytics.bigdl.transform.vision.image.opencv
 
 import java.io.File
 
+import com.intel.analytics.bigdl.opencv.OpenCV
 import org.apache.commons.io.FileUtils
+import org.opencv.imgcodecs.Imgcodecs
 import org.scalatest.{FlatSpec, Matchers}
 
 class OpenCVMatSpec extends FlatSpec with Matchers {
@@ -55,10 +57,13 @@ class OpenCVMatSpec extends FlatSpec with Matchers {
   }
 
   "fromImageBytes" should "work properly" in {
-    val img = OpenCVMat.read(resource.getFile)
+    OpenCV.isOpenCVLoaded
+    val img = Imgcodecs.imread(resource.getFile)
     val bytes = FileUtils.readFileToByteArray(new File(resource.getFile))
     val mat = OpenCVMat.fromImageBytes(bytes)
-    img.shape() should be(mat.shape())
+    img.height() should be (mat.height())
+    img.width() should be (mat.width())
+    img.channels() should be (mat.channels())
     val bytes1 = OpenCVMat.toBytePixels(img)
     val bytes2 = OpenCVMat.toBytePixels(mat)
     bytes1._1 should equal(bytes2._1)

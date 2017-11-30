@@ -24,12 +24,20 @@ import org.apache.log4j.Logger
 import scala.collection.{Set, mutable}
 import scala.reflect.ClassTag
 
+/**
+ * Each ImageFeature keeps information about single image,
+ * it can include various status of an image,
+ * e.g. original bytes read from image file, an opencv mat,
+ * pixels in float array, image label, meta data and so on.
+ * it uses HashMap to store all these data,
+ * the key is string that identify the corresponding value
+ */
 class ImageFeature extends Serializable {
 
   import ImageFeature.logger
 
   /**
-   * Create ImageFeature
+   * Create ImageFeature from original image in byte array, label and uri
    *
    * @param bytes image file in bytes
    * @param label label
@@ -48,6 +56,9 @@ class ImageFeature extends Serializable {
 
   private val state = new mutable.HashMap[String, Any]()
 
+  /**
+   * whether this image feature is valid
+   */
   var isValid = true
 
   def apply[T](key: String): T = {
@@ -65,6 +76,10 @@ class ImageFeature extends Serializable {
 
   def keys(): Set[String] = state.keySet
 
+  /**
+   * whether this ImageFeature contains label
+   * @return
+   */
   def hasLabel(): Boolean = state.contains(ImageFeature.label)
 
   /**
@@ -72,24 +87,28 @@ class ImageFeature extends Serializable {
    */
   def bytes(): Array[Byte] = apply[Array[Byte]](ImageFeature.bytes)
 
+  /**
+   * get uri from ImageFeature
+   * @return
+   */
   def uri(): String = apply[String](ImageFeature.uri)
 
   /**
    * image pixels in float array
    *
-   * @param key key that map float array
+   * @param key key that maps float array
    * @return float array
    */
   def floats(key: String = ImageFeature.floats): Array[Float] = {
     apply[Array[Float]](key)
   }
 
-  def feature(key: String = ImageFeature.predict): Any = {
+  /**
+   * get prediction result from ImageFeature
+   * @param key key that maps prediction result
+   */
+  def predict(key: String = ImageFeature.predict): Any = {
     apply(key)
-  }
-
-  def tensorFeature(key: String = ImageFeature.predict): Tensor[Float] = {
-    feature(key).asInstanceOf[Tensor[Float]]
   }
 
   /**
@@ -108,10 +127,19 @@ class ImageFeature extends Serializable {
     }
   }
 
+  /**
+   * get current height
+   */
   def getHeight(): Int = getSize._1
 
+  /**
+   * get current width
+   */
   def getWidth(): Int = getSize._2
 
+  /**
+   * get current channel
+   */
   def getChannel(): Int = getSize._3
 
   /**
@@ -128,10 +156,19 @@ class ImageFeature extends Serializable {
     }
   }
 
+  /**
+   * get original width
+   */
   def getOriginalWidth: Int = getOriginalSize._2
 
+  /**
+   * get original height
+   */
   def getOriginalHeight: Int = getOriginalSize._1
 
+  /**
+   * get label from ImageFeature
+   */
   def getLabel[T: ClassTag]: T = apply[T](ImageFeature.label)
 
   /**
@@ -144,12 +181,22 @@ class ImageFeature extends Serializable {
     Tensor[Float](T(height, width, height.toFloat / oh, width.toFloat / ow))
   }
 
+  /**
+   * clear ImageFeature
+   */
   def clear(): Unit = {
     state.clear()
     isValid = true
   }
 
 
+  /**
+   * copy the float array to a storage
+   * @param storage destination array
+   * @param offset offset to copy
+   * @param floatKey key that maps float array
+   * @param toRGB BGR to RGB
+   */
   def copyTo(storage: Array[Float], offset: Int, floatKey: String = ImageFeature.floats,
              toRGB: Boolean = true): Unit = {
     require(contains(floatKey), s"there should be ${floatKey} in ImageFeature")
@@ -204,21 +251,45 @@ class ImageFeature extends Serializable {
 }
 
 object ImageFeature {
-  val label = "label"
+  /**
+   * key: uri that identifies image
+   */
   val uri = "uri"
-  // image in OpenCVMat
+  /**
+   * key: image in OpenCVMat
+   */
   val mat = "mat"
-  // image file in bytes
+  /**
+   * key: image file in bytes
+   */
   val bytes = "bytes"
-  // image pixels in float array
+  /**
+   * key: image pixels in float array
+   */
   val floats = "floats"
-  // current image size
+  /**
+   * key: current image size
+   */
   val size = "size"
-  // original image size
+  /**
+   * key: original image size
+   */
   val originalSize = "originalSize"
-  // image prediction result
+  /**
+   * key: label
+   */
+  val label = "label"
+  /**
+   * key: image prediction result
+   */
   val predict = "predict"
+  /**
+   * key: store cropped box in Crop
+   */
   val cropBbox = "cropBbox"
+  /**
+   * key: store expand box in Expand
+   */
   val expandBbox = "expandBbox"
 
   /**

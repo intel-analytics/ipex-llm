@@ -23,13 +23,21 @@ import org.apache.commons.io.filefilter.WildcardFileFilter
 import org.apache.log4j.Logger
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.{SQLContext}
 
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
+/**
+ * ImageFrame wraps a set of ImageFeature
+ */
 trait ImageFrame {
 
+  /**
+   * transform ImageFrame
+   * @param transformer FeatureTransformer
+   * @return transformed ImageFrame
+   */
   def transform(transformer: FeatureTransformer): ImageFrame
 
   // scalastyle:off methodName
@@ -38,8 +46,14 @@ trait ImageFrame {
     this.transform(transformer)
   }
 
+  /**
+   * whether this is a LocalImageFrame
+   */
   def isLocal(): Boolean
 
+  /**
+   * whether this is a DistributedImageFrame
+   */
   def isDistributed(): Boolean
 }
 
@@ -115,8 +129,8 @@ object ImageFrame {
    * @param path Parquet file path
    * @return DistributedImageFrame
    */
-  def readParquet(path: String, spark: SparkSession): DistributedImageFrame = {
-    val df = spark.sqlContext.read.parquet(path)
+  def readParquet(path: String, sqlContext: SQLContext): DistributedImageFrame = {
+    val df = sqlContext.read.parquet(path)
     val images = df.rdd.map(row => {
       val uri = row.getAs[String](ImageFeature.uri)
       val image = row.getAs[Array[Byte]](ImageFeature.bytes)
@@ -131,9 +145,9 @@ object ImageFrame {
    * @param path path to read images. Local or HDFS. Wildcard character are supported.
    * @param output Parquet file path
    */
-  def writeParquet(path: String, output: String, spark: SparkSession): Unit = {
-    import spark.implicits._
-    val df = spark.sparkContext.binaryFiles(path)
+  def writeParquet(path: String, output: String, sqlContext: SQLContext): Unit = {
+    import sqlContext.implicits._
+    val df = sqlContext.sparkContext.binaryFiles(path)
       .map { case (p, stream) =>
         (p, stream.toArray())
       }.toDF(ImageFeature.uri, ImageFeature.bytes)
@@ -141,6 +155,10 @@ object ImageFrame {
   }
 }
 
+/**
+ * Local ImageFrame, keeps an array of ImageFeature
+ * @param array array of ImageFeature
+ */
 class LocalImageFrame(var array: Array[ImageFeature]) extends ImageFrame {
 
   def toDistributed(sc: SparkContext): DistributedImageFrame = {
@@ -157,6 +175,10 @@ class LocalImageFrame(var array: Array[ImageFeature]) extends ImageFrame {
   override def isDistributed(): Boolean = false
 }
 
+/**
+ * Distributerd ImageFrame, it keeps an rdd of ImageFeature
+ * @param rdd rdd of ImageFeature
+ */
 class DistributedImageFrame(var rdd: RDD[ImageFeature]) extends ImageFrame {
 
   override def transform(transformer: FeatureTransformer): ImageFrame = {
