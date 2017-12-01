@@ -43,7 +43,6 @@ pages:
   - Run on Amazon EC2: ProgrammingGuide/run-on-ec2.md
   - Run on Google Cloud Dataproc: ProgrammingGuide/run-on-dataproc.md
   - Tensorflow Support: ProgrammingGuide/tensorflow-support.md
-  - Caffe Support: ProgrammingGuide/caffe-support.md
   - Quantization Support: ProgrammingGuide/quantization-support.md
   - Define new Layer/Criterion: ProgrammingGuide/add-layer-criterion.md
 - API Guide:
