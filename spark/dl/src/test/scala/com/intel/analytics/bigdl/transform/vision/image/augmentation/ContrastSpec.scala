@@ -26,11 +26,12 @@ class ContrastSpec extends FlatSpec with Matchers {
     val data = ImageFrame.read(resource.getFile)
     val transformer = Contrast(0.5, 1.5)
     val transformed = transformer(data)
-    transformed.head.getHeight() should be (transformed.head.getOriginalHeight)
-    transformed.head.getWidth() should be (transformed.head.getOriginalWidth)
+    val imf = transformed.asInstanceOf[LocalImageFrame].array(0)
+    imf.getHeight() should be (imf.getOriginalHeight)
+    imf.getWidth() should be (imf.getOriginalWidth)
 
     val tmpFile = java.io.File.createTempFile("module", ".jpg")
-    Imgcodecs.imwrite(tmpFile.toString, transformed.head.opencvMat())
+    Imgcodecs.imwrite(tmpFile.toString, imf.opencvMat())
     println(tmpFile)
   }
 }

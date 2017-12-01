@@ -26,15 +26,17 @@ class RandomTransformerSpec extends FlatSpec with Matchers {
     val data = ImageFrame.read(resource.getFile)
     val transformer = RandomTransformer(FixedCrop(0, 0, 50, 50, false), 0)
     val transformed = transformer(data)
-    transformed.head.getHeight() should be(375)
-    transformed.head.getWidth() should be(500)
+    val imageFeature = transformed.asInstanceOf[LocalImageFrame].array(0)
+    imageFeature.getHeight() should be(375)
+    imageFeature.getWidth() should be(500)
   }
 
   "RandomTransformer with 1" should "work properly" in {
     val data = ImageFrame.read(resource.getFile)
     val transformer = RandomTransformer(FixedCrop(0, 0, 50, 50, false), 1)
     val transformed = transformer(data)
-    transformed.head.getHeight() should be(50)
-    transformed.head.getWidth() should be(50)
+    val imageFeature = transformed.asInstanceOf[LocalImageFrame].array(0)
+    imageFeature.getHeight() should be(50)
+    imageFeature.getWidth() should be(50)
   }
 }

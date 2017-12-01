@@ -25,12 +25,12 @@ class HFlipSpec extends FlatSpec with Matchers {
   "HFlip" should "work properly" in {
     val data = ImageFrame.read(resource.getFile)
     val hFlip = HFlip()
-    val transformed = hFlip(data)
-    transformed.head.getHeight() should be (transformed.head.getOriginalHeight)
-    transformed.head.getWidth() should be (transformed.head.getOriginalWidth)
+    val transformed = hFlip(data).asInstanceOf[LocalImageFrame]
+    transformed.array(0).getHeight() should be (transformed.array(0).getOriginalHeight)
+    transformed.array(0).getWidth() should be (transformed.array(0).getOriginalWidth)
 
     val tmpFile = java.io.File.createTempFile("module", ".jpg")
-    Imgcodecs.imwrite(tmpFile.toString, transformed.head.opencvMat())
+    Imgcodecs.imwrite(tmpFile.toString, transformed.array(0).opencvMat())
     println(tmpFile)
   }
 }

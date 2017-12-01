@@ -27,11 +27,12 @@ class ResizeSpec extends FlatSpec with Matchers {
     val data = ImageFrame.read(resource.getFile)
     val transformer = Resize(300, 300)
     val transformed = transformer(data)
-    transformed.head.getHeight() should be(300)
-    transformed.head.getWidth() should be(300)
+    val imageFeature = transformed.asInstanceOf[LocalImageFrame].array(0)
+    imageFeature.getHeight() should be(300)
+    imageFeature.getWidth() should be(300)
 
     val tmpFile = java.io.File.createTempFile("module", ".jpg")
-    Imgcodecs.imwrite(tmpFile.toString, transformed.head.opencvMat())
+    Imgcodecs.imwrite(tmpFile.toString, imageFeature.opencvMat())
     println(tmpFile)
   }
 
@@ -39,12 +40,13 @@ class ResizeSpec extends FlatSpec with Matchers {
     val data = ImageFrame.read(resource.getFile)
     val transformer = AspectScale(750, maxSize = 3000)
     val transformed = transformer(data)
-    transformed.head.getHeight() should be(750)
-    transformed.head.getWidth() should be(1000)
+    val imageFeature = transformed.asInstanceOf[LocalImageFrame].array(0)
+    imageFeature.getHeight() should be(750)
+    imageFeature.getWidth() should be(1000)
 
 
     val tmpFile = java.io.File.createTempFile("module", ".jpg")
-    Imgcodecs.imwrite(tmpFile.toString, transformed.head.opencvMat())
+    Imgcodecs.imwrite(tmpFile.toString, imageFeature.opencvMat())
     println(tmpFile)
   }
 
@@ -52,8 +54,9 @@ class ResizeSpec extends FlatSpec with Matchers {
     val data = ImageFrame.read(resource.getFile)
     val transformer = RandomAspectScale(Array(750), maxSize = 3000)
     val transformed = transformer(data)
-    transformed.head.getHeight() should be(750)
-    transformed.head.getWidth() should be(1000)
+    val imageFeature = transformed.asInstanceOf[LocalImageFrame].array(0)
+    imageFeature.getHeight() should be(750)
+    imageFeature.getWidth() should be(1000)
   }
 
   "getWidthHeightAfterRatioScale" should "work" in {

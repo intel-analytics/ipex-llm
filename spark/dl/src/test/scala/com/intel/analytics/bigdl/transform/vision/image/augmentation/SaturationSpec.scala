@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.transform.vision.image.augmentation
 
-import com.intel.analytics.bigdl.transform.vision.image.{BytesToMat, ImageFrame, LocalImageFrame}
+import com.intel.analytics.bigdl.transform.vision.image.{BytesToMat, ImageFeature, ImageFrame, LocalImageFrame}
 import org.opencv.imgcodecs.Imgcodecs
 import org.scalatest.{FlatSpec, Matchers}
 
@@ -26,11 +26,12 @@ class SaturationSpec extends FlatSpec with Matchers {
     val data = ImageFrame.read(resource.getFile)
     val transformer = Saturation(10, 20)
     val transformed = transformer(data)
-    transformed.head.getHeight() should be (transformed.head.getOriginalHeight)
-    transformed.head.getWidth() should be (transformed.head.getOriginalWidth)
+    val imageFeature = transformed.asInstanceOf[LocalImageFrame].array(0)
+    imageFeature.getHeight() should be (imageFeature.getOriginalHeight)
+    imageFeature.getWidth() should be (imageFeature.getOriginalWidth)
 
     val tmpFile = java.io.File.createTempFile("module", ".jpg")
-    Imgcodecs.imwrite(tmpFile.toString, transformed.head.opencvMat())
+    Imgcodecs.imwrite(tmpFile.toString, imageFeature.opencvMat())
     println(tmpFile)
   }
 }

@@ -26,11 +26,12 @@ class HueSpec extends FlatSpec with Matchers {
     val data = ImageFrame.read(resource.getFile)
     val transformer = Hue(-18, 18)
     val transformed = transformer(data)
-    transformed.head.getHeight() should be (transformed.head.getOriginalHeight)
-    transformed.head.getWidth() should be (transformed.head.getOriginalWidth)
+    val imageFeature = transformed.asInstanceOf[LocalImageFrame].array(0)
+    imageFeature.getHeight() should be (imageFeature.getOriginalHeight)
+    imageFeature.getWidth() should be (imageFeature.getOriginalWidth)
 
     val tmpFile = java.io.File.createTempFile("module", ".jpg")
-    Imgcodecs.imwrite(tmpFile.toString, transformed.head.opencvMat())
+    Imgcodecs.imwrite(tmpFile.toString, imageFeature.opencvMat())
     println(tmpFile)
   }
 }

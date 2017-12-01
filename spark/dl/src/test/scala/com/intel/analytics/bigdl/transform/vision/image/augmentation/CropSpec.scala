@@ -28,11 +28,12 @@ class CropSpec extends FlatSpec with Matchers {
     val data = ImageFrame.read(resource.getFile)
     val transformer = CenterCrop(50, 50)
     val transformed = transformer(data)
-    transformed.head.getHeight() should be (50)
-    transformed.head.getWidth() should be (50)
+    val imf = transformed.asInstanceOf[LocalImageFrame].array(0)
+    imf.getHeight() should be (50)
+    imf.getWidth() should be (50)
 
     val tmpFile = java.io.File.createTempFile("module", ".jpg")
-    Imgcodecs.imwrite(tmpFile.toString, transformed.head.opencvMat())
+    Imgcodecs.imwrite(tmpFile.toString, imf.opencvMat())
     println(tmpFile)
   }
 
@@ -40,12 +41,13 @@ class CropSpec extends FlatSpec with Matchers {
     val data = ImageFrame.read(resource.getFile)
     val transformer = RandomCrop(200, 200)
     val transformed = transformer(data)
-    transformed.head.getHeight() should be (200)
-    transformed.head.getWidth() should be (200)
+    val imf = transformed.asInstanceOf[LocalImageFrame].array(0)
+    imf.getHeight() should be (200)
+    imf.getWidth() should be (200)
 
 
     val tmpFile = java.io.File.createTempFile("module", ".jpg")
-    Imgcodecs.imwrite(tmpFile.toString, transformed.head.opencvMat())
+    Imgcodecs.imwrite(tmpFile.toString, imf.opencvMat())
     println(tmpFile)
   }
 
@@ -53,11 +55,12 @@ class CropSpec extends FlatSpec with Matchers {
     val data = ImageFrame.read(resource.getFile)
     val transformer = FixedCrop(0, 0, 50, 50, false)
     val transformed = transformer(data)
-    transformed.head.getHeight() should be (50)
-    transformed.head.getWidth() should be (50)
+    val imf = transformed.asInstanceOf[LocalImageFrame].array(0)
+    imf.getHeight() should be (50)
+    imf.getWidth() should be (50)
 
     val tmpFile = java.io.File.createTempFile("module", ".jpg")
-    Imgcodecs.imwrite(tmpFile.toString, transformed.head.opencvMat())
+    Imgcodecs.imwrite(tmpFile.toString, imf.opencvMat())
     println(tmpFile)
   }
 
@@ -65,11 +68,12 @@ class CropSpec extends FlatSpec with Matchers {
     val data = ImageFrame.read(resource.getFile)
     val transformer = FixedCrop(0, 0, 50 / 500f, 50 / 375f, true)
     val transformed = transformer(data)
-    transformed.head.getHeight() should be (50)
-    transformed.head.getWidth() should be (50)
+    val imf = transformed.asInstanceOf[LocalImageFrame].array(0)
+    imf.getHeight() should be (50)
+    imf.getWidth() should be (50)
 
     val tmpFile = java.io.File.createTempFile("module", ".jpg")
-    Imgcodecs.imwrite(tmpFile.toString, transformed.head.opencvMat())
+    Imgcodecs.imwrite(tmpFile.toString, imf.opencvMat())
     println(tmpFile)
   }
 
@@ -77,24 +81,26 @@ class CropSpec extends FlatSpec with Matchers {
     val data = ImageFrame.read(resource.getFile)
     val transformer = FixedCrop(0, 0, 600f, 700f, true)
     val transformed = transformer(data)
-    transformed.head.getHeight() should be (375)
-    transformed.head.getWidth() should be (500)
+    val imf = transformed.asInstanceOf[LocalImageFrame].array(0)
+    imf.getHeight() should be (375)
+    imf.getWidth() should be (500)
 
     val tmpFile = java.io.File.createTempFile("module", ".jpg")
-    Imgcodecs.imwrite(tmpFile.toString, transformed.head.opencvMat())
+    Imgcodecs.imwrite(tmpFile.toString, imf.opencvMat())
     println(tmpFile)
   }
 
   "Detection Crop" should "work properly" in {
     val data = ImageFrame.read(resource.getFile)
-    data.head()("roi") = Tensor[Float](T(1, 1, 0.2, 0, 0, 0.5, 0.5))
+    val imf = data.asInstanceOf[LocalImageFrame].array(0)
+    imf("roi") = Tensor[Float](T(1, 1, 0.2, 0, 0, 0.5, 0.5))
     val transformer = DetectionCrop("roi")
-    val transformed = transformer(data)
-    transformed.head.getHeight() should be (187)
-    transformed.head.getWidth() should be (250)
+    transformer(data)
+    imf.getHeight() should be (187)
+    imf.getWidth() should be (250)
 
     val tmpFile = java.io.File.createTempFile("module", ".jpg")
-    Imgcodecs.imwrite(tmpFile.toString, transformed.head.opencvMat())
+    Imgcodecs.imwrite(tmpFile.toString, imf.opencvMat())
     println(tmpFile)
   }
 }

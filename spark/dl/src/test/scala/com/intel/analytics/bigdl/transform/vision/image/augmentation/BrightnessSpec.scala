@@ -26,12 +26,13 @@ class BrightnessSpec extends FlatSpec with Matchers {
   "Brightness" should "work properly" in {
     val data = ImageFrame.read(resource.getFile)
     val transformer = Brightness(0, 32)
-    val transformed = transformer(data)
-    transformed.head.getHeight() should be (transformed.head.getOriginalHeight)
-    transformed.head.getWidth() should be (transformed.head.getOriginalWidth)
+    val transformed = transformer(data).asInstanceOf[LocalImageFrame]
+    val imf = transformed.array.head
+    imf.getHeight() should be (imf.getOriginalHeight)
+    imf.getWidth() should be (imf.getOriginalWidth)
 
     val tmpFile = java.io.File.createTempFile("module", ".jpg")
-    Imgcodecs.imwrite(tmpFile.toString, transformed.head.opencvMat())
+    Imgcodecs.imwrite(tmpFile.toString, imf.opencvMat())
     println(tmpFile)
   }
 }

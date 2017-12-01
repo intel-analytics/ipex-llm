@@ -27,11 +27,12 @@ class ExpandSpec extends FlatSpec with Matchers {
     val data = ImageFrame.read(resource.getFile)
     val transformer = Expand(minExpandRatio = 2, maxExpandRatio = 2)
     val transformed = transformer(data)
-    transformed.head.getHeight() should be (375 * 2)
-    transformed.head.getWidth() should be (500 * 2)
+    val imf = transformed.asInstanceOf[LocalImageFrame].array(0)
+    imf.getHeight() should be (375 * 2)
+    imf.getWidth() should be (500 * 2)
 
     val tmpFile = java.io.File.createTempFile("module", ".jpg")
-    Imgcodecs.imwrite(tmpFile.toString, transformed.head.opencvMat())
+    Imgcodecs.imwrite(tmpFile.toString, imf.opencvMat())
     println(tmpFile)
   }
 }

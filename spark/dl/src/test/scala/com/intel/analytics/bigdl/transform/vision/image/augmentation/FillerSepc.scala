@@ -27,14 +27,16 @@ class FillerSepc extends FlatSpec with Matchers {
     val data = ImageFrame.read(resource.getFile)
     val transformer = Filler(0, 0, 1, 1, 255) -> MatToFloats()
     val transformed = transformer(data)
-    transformed.head.floats().forall(x => x == 255) should be (true)
+    val imf = transformed.asInstanceOf[LocalImageFrame].array(0)
+    imf.floats().forall(x => x == 255) should be (true)
   }
 
   "Filler part" should "work properly" in {
     val data = ImageFrame.read(resource.getFile)
     val transformer = Filler(0, 0, 1, 0.5f, 255) -> MatToFloats()
     val transformed = transformer(data)
-    transformed.head.floats().slice(0, 3 * 375 * 250).forall(_ == 255) should be (true)
+    val imf = transformed.asInstanceOf[LocalImageFrame].array(0)
+    imf.floats().slice(0, 3 * 375 * 250).forall(_ == 255) should be (true)
   }
 
   "Filler part2" should "work properly" in {
@@ -43,7 +45,8 @@ class FillerSepc extends FlatSpec with Matchers {
     val transformed = transformer(data)
 
     val tmpFile = java.io.File.createTempFile("module", ".jpg")
-    Imgcodecs.imwrite(tmpFile.toString, transformed.head.opencvMat())
+    val imf = transformed.asInstanceOf[LocalImageFrame].array(0)
+    Imgcodecs.imwrite(tmpFile.toString, imf.opencvMat())
     println(tmpFile)
   }
 }

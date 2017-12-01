@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.transform.vision.image.augmentation
 
-import com.intel.analytics.bigdl.transform.vision.image.{ImageFrame, MatToFloats}
+import com.intel.analytics.bigdl.transform.vision.image.{ImageFrame, LocalImageFrame, MatToFloats}
 import org.scalatest.{FlatSpec, Matchers}
 
 class ChannelNormalizeSpec extends FlatSpec with Matchers {
@@ -26,24 +26,28 @@ class ChannelNormalizeSpec extends FlatSpec with Matchers {
     val data = ImageFrame.read(resource.getFile)
     val transformer = ChannelNormalize(100, 200, 300) -> MatToFloats()
     val transformed = transformer(data)
+    val imf = transformed.asInstanceOf[LocalImageFrame].array(0)
 
     val toFloat = MatToFloats(meanRGB = Some(100f, 200f, 300f))
     val data2 = ImageFrame.read(resource.getFile)
     val transformed2 = toFloat(data2)
-    transformed2.head.floats().length should be (375 * 500 * 3)
-    transformed2.head.floats() should equal(transformed.head.floats())
+    val imf2 = transformed2.asInstanceOf[LocalImageFrame].array(0)
+    imf2.floats().length should be (375 * 500 * 3)
+    imf2.floats() should equal(imf.floats())
   }
 
   "ChannelNormalize with std not 1" should "work properly" in {
     val data = ImageFrame.read(resource.getFile)
     val transformer = ChannelNormalize(100, 200, 300, 2, 2, 2) -> MatToFloats()
     val transformed = transformer(data)
+    val imf = transformed.asInstanceOf[LocalImageFrame].array(0)
 
     val data2 = ImageFrame.read(resource.getFile)
     val toFloat = MatToFloats(meanRGB = Some(100f, 200f, 300f))
     val transformed2 = toFloat(data2)
+    val imf2 = transformed2.asInstanceOf[LocalImageFrame].array(0)
 
-    transformed2.head.floats().length should be (375 * 500 * 3)
-    transformed2.head.floats().map(_ / 2) should equal(transformed.head.floats())
+    imf2.floats().length should be (375 * 500 * 3)
+    imf2.floats().map(_ / 2) should equal(imf.floats())
   }
 }

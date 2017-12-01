@@ -41,9 +41,10 @@ class ImageFrameSpec extends FlatSpec with Matchers with BeforeAndAfter {
   "read LocalImageFrame" should "work properly" in {
     val local = ImageFrame.read(resource.getFile).asInstanceOf[LocalImageFrame]
     local.array.length should be(1)
-    assert(local.head().uri.endsWith("000025.jpg"))
-    assert(local.head().bytes.length == 95959)
-    local.head().opencvMat().shape() should be((375, 500, 3))
+    val imf = local.array(0)
+    assert(imf.uri.endsWith("000025.jpg"))
+    assert(imf.bytes.length == 95959)
+    imf.opencvMat().shape() should be((375, 500, 3))
   }
 
   "LocalImageFrame toDistributed" should "work properly" in {

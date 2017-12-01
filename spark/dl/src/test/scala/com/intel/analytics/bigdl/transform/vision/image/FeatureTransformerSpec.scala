@@ -31,14 +31,14 @@ class FeatureTransformerSpec extends FlatSpec with Matchers {
 
   "Image Transformer with empty byte input" should "work properly" in {
     val img = Array[Byte]()
-    val byteImage = ImageFeature(img)
-    val imageFrame = new LocalImageFrame(Array(byteImage))
+    val imageFeature = ImageFeature(img)
+    val imageFrame = new LocalImageFrame(Array(imageFeature))
     val imgAug = Resize(1, 1, -1) ->
       FixedCrop(-1, -1, -1, -1, normalized = false) ->
       MatToFloats(validHeight = 1, validWidth = 1)
     val out = imgAug(imageFrame)
-    out.head().floats().length should be(3)
-    out.head().isValid should be(false)
+    imageFeature.floats().length should be(3)
+    imageFeature.isValid should be(false)
   }
 
   "Image Transformer with exception" should "work properly" in {
@@ -47,8 +47,9 @@ class FeatureTransformerSpec extends FlatSpec with Matchers {
       Resize(300, 300, -1) ->
       MatToFloats(validHeight = 300, validWidth = 300)
     val out = imgAug(images)
-    out.head().floats().length should be(3 * 300 * 300)
-    out.head().isValid should be(false)
+    val imageFeature = out.asInstanceOf[LocalImageFrame].array(0)
+    imageFeature.floats().length should be(3 * 300 * 300)
+    imageFeature.isValid should be(false)
   }
 
   "ImageAugmentation with label and random" should "work properly" in {
@@ -81,17 +82,17 @@ class FeatureTransformerSpec extends FlatSpec with Matchers {
     val imageFrame = new LocalImageFrame(Array(feature))
     val out = imgAug(imageFrame)
 
-    out.head().isValid should be(true)
-    out.head().getOriginalHeight should be (375)
-    out.head().getOriginalWidth should be (500)
-    out.head().getHeight should be (300)
-    out.head().getWidth should be (300)
+    feature.isValid should be(true)
+    feature.getOriginalHeight should be (375)
+    feature.getOriginalWidth should be (500)
+    feature.getHeight should be (300)
+    feature.getWidth should be (300)
 
-    val bboxes = out.head().getLabel[RoiLabel].bboxes
+    val bboxes = feature.getLabel[RoiLabel].bboxes
     BboxUtil.scaleBBox(bboxes, 300, 300)
-    visualize(out.head().opencvMat(), out.head().getLabel[RoiLabel].bboxes)
+    visualize(feature.opencvMat(), feature.getLabel[RoiLabel].bboxes)
     val tmpFile = java.io.File.createTempFile("module", ".jpg")
-    Imgcodecs.imwrite(tmpFile.toString, out.head().opencvMat())
+    Imgcodecs.imwrite(tmpFile.toString, feature.opencvMat())
     println(tmpFile)
   }
 
@@ -112,10 +113,11 @@ class FeatureTransformerSpec extends FlatSpec with Matchers {
       ChannelNormalize(123, 117, 104) ->
       MatToFloats(validHeight = 300, validWidth = 300)
     val out = imgAug(imageFrame)
-    out.head().isValid should be(true)
-    out.head().getOriginalHeight should be (375)
-    out.head().getOriginalWidth should be (500)
-    out.head().getHeight should be (300)
-    out.head().getWidth should be (300)
+    val feature = out.asInstanceOf[LocalImageFrame].array(0)
+    feature.isValid should be(true)
+    feature.getOriginalHeight should be (375)
+    feature.getOriginalWidth should be (500)
+    feature.getHeight should be (300)
+    feature.getWidth should be (300)
   }
 }
