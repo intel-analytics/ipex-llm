@@ -26,25 +26,28 @@ import scala.reflect.ClassTag
 
 class VisionPredictor[T: ClassTag](
   model: Module[T],
-  postProcessor: PostProcessor)
+  postProcessor: PostProcessor = null)
   (implicit ev: TensorNumeric[T]) extends Serializable {
 
-  def predict(imageFrame: DistributedImageFrame,
+  def predict(imageFrame: ImageFrame,
     shareBuffer: Boolean = false,
     batchPerPartition: Int = 4): DistributedImageFrame = {
-    val modelBroad = ModelBroadcast[T]().broadcast(imageFrame.rdd.sparkContext, model.evaluate())
-    val partitionNum = imageFrame.rdd.partitions.length
-    val toBatchBroad = imageFrame.rdd.sparkContext.broadcast(SampleToMiniBatch(
+    require(imageFrame.isDistributed(), "please provide a distributed imageframe")
+    val rdd = imageFrame.asInstanceOf[DistributedImageFrame].rdd
+    val modelBroad = ModelBroadcast[T]().broadcast(rdd.sparkContext, model.evaluate())
+    val partitionNum = rdd.partitions.length
+    val toBatchBroad = rdd.sparkContext.broadcast(SampleToMiniBatch(
       batchSize = partitionNum * batchPerPartition,
       partitionNum = Some(partitionNum)), shareBuffer)
-    val postProcessorBroad = imageFrame.rdd.sparkContext.broadcast(postProcessor)
-    val result = imageFrame.rdd.mapPartitions(partition => {
+    val postProcessorBroad = rdd.sparkContext.broadcast(postProcessor)
+    val result = rdd.mapPartitions(partition => {
       val localModel = modelBroad.value()
       val localToBatch = toBatchBroad.value._1.cloneTransformer()
       val localPostProcessor = postProcessorBroad.value
 
       partition.grouped(batchPerPartition).flatMap(imageFeatures => {
-        val samples = imageFeatures.map(x => x[Sample[T]](ImageFeature.sample))
+        val validImageFeatures = imageFeatures.filter(_.isValid)
+        val samples = validImageFeatures.map(x => x[Sample[T]](ImageFeature.sample))
         val batch = localToBatch(samples.toIterator).next()
         val result = localModel.forward(batch.getInput()).toTensor[T]
         val batchOut = if (result.dim() == 1) {
@@ -52,14 +55,13 @@ class VisionPredictor[T: ClassTag](
         } else {
           result.split(1)
         }
-        imageFeatures.zip(batchOut).map(tuple => {
+        validImageFeatures.zip(batchOut).foreach(tuple => {
           tuple._1(ImageFeature.predict) = tuple._2
           if (localPostProcessor != null) {
             localPostProcessor.process(tuple._1)
-          } else {
-            tuple._1
           }
         })
+        imageFeatures
       })
     })
     ImageFrame.rdd(result)

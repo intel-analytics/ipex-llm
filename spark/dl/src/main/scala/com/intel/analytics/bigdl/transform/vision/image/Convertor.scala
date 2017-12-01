@@ -16,8 +16,13 @@
 
 package com.intel.analytics.bigdl.transform.vision.image
 
+import com.intel.analytics.bigdl.dataset.ArraySample
+import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.transform.vision.image.opencv.OpenCVMat
 import org.apache.log4j.Logger
+
+import scala.reflect._
 
 /**
  * Transform byte array(original image file in byte) to OpenCVMat
@@ -116,4 +121,79 @@ object MatToFloats {
     meanRGB: Option[(Float, Float, Float)] = None,
     outKey: String = ImageFeature.floats): MatToFloats =
     new MatToFloats(validHeight, validWidth, validChannels, meanRGB, outKey)
+}
+
+class FloatsToTensor[T: ClassTag](toRGB: Boolean = false,
+  floatKey: String = ImageFeature.floats,
+  tensorKey: String = ImageFeature.imageTensor)(implicit ev: TensorNumeric[T])
+  extends FeatureTransformer {
+  private val imageTensor = Tensor[T]()
+
+  override def transform(feature: ImageFeature): ImageFeature = {
+    if (!feature.isValid) return feature
+    try {
+      imageTensor.resize(3, feature.getHeight(), feature.getWidth())
+      feature.copyTo[T](imageTensor.storage().array(), 0, floatKey, toRGB)
+      feature(tensorKey) = imageTensor
+    } catch {
+      case e: Exception =>
+        val uri = feature.uri()
+        FloatsToTensor.logger.warn(s"float to tensor fail for ${uri}")
+        feature.isValid = false
+    }
+    feature
+  }
+}
+
+object FloatsToTensor {
+  val logger = Logger.getLogger(getClass)
+
+  def apply[T: ClassTag](toRGB: Boolean = false, floatKey: String = ImageFeature.floats,
+    tensorKey: String = ImageFeature.imageTensor)(implicit ev: TensorNumeric[T])
+  : FloatsToTensor[T] = new FloatsToTensor[T](toRGB, floatKey, tensorKey)
+}
+
+class ImageFrameToSample[T: ClassTag](inputKeys: Array[String] = Array(ImageFeature.imageTensor),
+  targetKeys: Array[String] = null,
+  sampleKey: String = ImageFeature.sample)
+  (implicit ev: TensorNumeric[T]) extends FeatureTransformer {
+
+
+  override def transform(feature: ImageFeature): ImageFeature = {
+    if (!feature.isValid) return feature
+    try {
+      val inputs = inputKeys.map(key => {
+        val input = feature(key)
+        require(input.isInstanceOf[Tensor[T]], s"the input $key should be tensor")
+        input.asInstanceOf[Tensor[T]]
+      })
+      val sample = if (targetKeys == null) {
+        ArraySample[T](inputs)
+      } else {
+        val targets = targetKeys.map(key => {
+          val target = feature(key)
+          require(target.isInstanceOf[Tensor[T]], s"the target $key should be tensor")
+          target.asInstanceOf[Tensor[T]]
+        })
+        ArraySample[T](inputs, targets)
+      }
+      feature(sampleKey) = sample
+    } catch {
+      case e: Exception =>
+        val uri = feature.uri()
+        ImageFrameToSample.logger.warn(s"convert byte to mat fail for $uri")
+        feature(ImageFeature.originalSize) = (-1, -1, -1)
+        feature.isValid = false
+    }
+    feature
+  }
+}
+
+object ImageFrameToSample {
+  val logger = Logger.getLogger(getClass)
+
+  def apply[T: ClassTag](inputKeys: Array[String] = Array(ImageFeature.imageTensor),
+    targetKeys: Array[String] = null,
+    sampleKey: String = ImageFeature.sample)(implicit ev: TensorNumeric[T])
+  : ImageFrameToSample[T] = new ImageFrameToSample[T](inputKeys, targetKeys, sampleKey)
 }
