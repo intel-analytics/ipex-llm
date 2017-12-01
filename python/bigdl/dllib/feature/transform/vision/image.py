@@ -262,5 +262,305 @@ class HFlip(FeatureTransformer):
     """
     Flip the image horizontally
     """
+
     def __init__(self, bigdl_type="float"):
             super(HFlip, self).__init__(bigdl_type)
+
+class Resize(FeatureTransformer):
+    """
+    Resize image
+    :param resize_h height after resize
+    :param resize_w width after resize
+    :param resize_mode if resizeMode = -1, random select a mode from (Imgproc.INTER_LINEAR,
+     Imgproc.INTER_CUBIC, Imgproc.INTER_AREA, Imgproc.INTER_NEAREST, Imgproc.INTER_LANCZOS4)
+    """
+
+    def __init__(self, resize_h, resize_w, resize_mode = 1, bigdl_type="float"):
+        super(Resize, self).__init__(bigdl_type, resize_h, resize_w, resize_mode)
+
+class Brightness(FeatureTransformer):
+    """
+    adjust the image brightness
+    :param deltaLow brightness parameter: low bound
+    :param deltaHigh brightness parameter: high bound
+    """
+
+    def __init__(self, delta_low, delta_high, bigdl_type="float"):
+        super(Brightness, self).__init__(bigdl_type, delta_low, delta_high)
+
+class ChannelOrder(FeatureTransformer):
+    """
+    random change the channel of an image
+    """
+
+    def __init__(self, bigdl_type="float"):
+        super(ChannelOrder, self).__init__(bigdl_type)
+
+class Contrast(FeatureTransformer):
+    """
+    Adjust the image contrast
+    :param delta_low contrast parameter low bound
+    :param delta_high contrast parameter high bound
+    """
+
+    def __init__(self, delta_low, delta_high, bigdl_type="float"):
+        super(Contrast, self).__init__(bigdl_type, delta_low, delta_high)
+
+class Saturation(FeatureTransformer):
+    """
+    Adjust image saturation
+    """
+
+    def __init__(self, delta_low, delta_high, bigdl_type="float"):
+        super(Saturation, self).__init__(bigdl_type, delta_low, delta_high)
+
+class Hue(FeatureTransformer):
+    """
+    Adjust image hue
+    :param delta_low hue parameter: low bound
+    :param delta_high hue parameter: high bound
+    """
+
+    def __init__(self, delta_low, delta_high, bigdl_type="float"):
+        super(Hue, self).__init__(bigdl_type, delta_low, delta_high)
+
+class ChannelNormalize(FeatureTransformer):
+    """
+    image channel normalize
+    :param mean_r mean value in R channel
+    :param mean_g mean value in G channel
+    :param meanB_b mean value in B channel
+    :param std_r std value in R channel
+    :param std_g std value in G channel
+    :param std_b std value in B channel
+    """
+    def __init__(self, mean_r, mean_b, mean_g, std_r=1.0, std_g=1.0, std_b=1.0, bigdl_type="float"):
+        super(ChannelNormalize, self).__init__(bigdl_type, mean_r, mean_g, mean_b, std_r, std_g, std_b)
+        
+class PixelNormalize(FeatureTransformer):
+    """
+    Pixel level normalizer, data(i) = data(i) - mean(i)
+
+    :param means pixel level mean, following H * W * C order
+    """
+    
+    def __init__(self, means, bigdl_type="float"):
+        super(PixelNormalize, self).__init__(bigdl_type, means)
+
+
+class RandomCrop(FeatureTransformer):
+    """
+    Random crop a `cropWidth` x `cropHeight` patch from an image.
+    The patch size should be less than the image size.
+    
+    :param crop_width width after crop
+    :param crop_height height after crop
+    :param is_clip whether to clip the roi to image boundaries
+    """
+    
+    def __init__(self, crop_width, crop_height, is_clip=True, bigdl_type="float"):
+        super(RandomCrop, self).__init__(bigdl_type, crop_width, crop_height, is_clip)
+
+class CenterCrop(FeatureTransformer):
+    """
+    Crop a `cropWidth` x `cropHeight` patch from center of image.
+    The patch size should be less than the image size.
+    :param crop_width width after crop
+    :param crop_height height after crop
+    :param is_clip  clip cropping box boundary
+    """
+
+    def __init__(self, crop_width, crop_height, is_clip=True, bigdl_type="float"):
+        super(CenterCrop, self).__init__(bigdl_type, crop_width, crop_height, is_clip)
+
+class FixedCrop(FeatureTransformer):
+    """
+    Crop a fixed area of image
+
+    :param x1 start in width
+    :param y1 start in height
+    :param x2 end in width
+    :param y2 end in height
+    :param normalized whether args are normalized, i.e. in range [0, 1]
+    :param is_clip whether to clip the roi to image boundaries
+    """
+
+    def __init__(self, x1, y1, x2, y2, normalized=True, is_clip=True, bigdl_type="float"):
+        super(FixedCrop, self).__init__(bigdl_type, x1, y1, x2, y2, normalized, is_clip)
+
+class DetectionCrop(FeatureTransformer):
+    """
+    Crop from object detections, each image should has a tensor detection,
+    which is stored in ImageFeature
+    :param roi_key key that map a tensor detection
+    :param normalized whether is detection is normalized, i.e. in range [0, 1]
+    """
+
+    def __init__(self, roi_key, normalized=True, bigdl_type="float"):
+        super(DetectionCrop, self).__init__(bigdl_type, roi_key, normalized)
+
+
+class Expand(FeatureTransformer):
+    """
+    expand image, fill the blank part with the meanR, meanG, meanB
+
+    :param means_r means in R channel
+    :param means_g means in G channel
+    :param means_b means in B channel
+    :param min_expand_ratio min expand ratio
+    :param max_expand_ratio max expand ratio
+    """
+
+    def __init__(self, means_r=123, means_g=117, means_b=104,
+                 min_expand_ratio=1.0,
+                 max_expand_ratio=4.0, bigdl_type="float"):
+        super(Expand, self).__init__(bigdl_type, means_r, means_g, means_b,
+                                     min_expand_ratio, max_expand_ratio)
+        
+class Filler(FeatureTransformer):
+    """
+    Fill part of image with certain pixel value
+    :param start_x start x ratio
+    :param start_y start y ratio
+    :param end_x end x ratio
+    :param end_y end y ratio
+    :param value filling value
+    """
+    
+    def __init__(self, start_x, start_y, end_x, end_y, value = 255, bigdl_type="float"):
+        super(Filler, self).__init__(bigdl_type, start_x,
+                                     start_y,
+                                     end_x,
+                                     end_y,
+                                     value)
+
+class RandomTransformer(FeatureTransformer):
+    """
+    It is a wrapper for transformers to control the transform probability
+    :param transformer transformer to apply randomness
+    :param prob max prob
+    """
+
+    def __init__(self, transformer, prob, bigdl_type="float"):
+        super(RandomTransformer, self).__init__(bigdl_type, transformer, prob)
+
+
+class ColorJitter(FeatureTransformer):
+    """
+    Random adjust brightness, contrast, hue, saturation
+    :param brightness_prob probability to adjust brightness
+    :param brightness_delta brightness parameter
+    :param contrast_prob probability to adjust contrast
+    :param contrast_lower contrast lower parameter
+    :param contrast_upper contrast upper parameter
+    :param hue_prob probability to adjust hue
+    :param hue_delta hue parameter
+    :param saturation_prob probability to adjust saturation
+    :param saturation_lower saturation lower parameter
+    :param saturation_upper saturation upper parameter
+    :param random_order_prob random order for different operation
+    :param shuffle  shuffle the transformers
+    """
+    def __init__(self, brightness_prob = 0.5,
+                 brightness_delta = 32.0,
+                 contrast_prob = 0.5,
+                 contrast_lower = 0.5,
+                 contrast_upper = 1.5,
+                 hue_prob = 0.5,
+                 hue_delta = 18.0,
+                 saturation_prob = 0.5,
+                 saturation_lower = 0.5,
+                 saturation_upper = 1.5,
+                 random_order_prob = 0.0,
+                 shuffle = False,
+                 bigdl_type="float"):
+        super(ColorJitter, self).__init__(bigdl_type, brightness_prob,
+                                          brightness_delta,
+                                          contrast_prob,
+                                          contrast_lower,
+                                          contrast_upper,
+                                          hue_prob,
+                                          hue_delta,
+                                          saturation_prob,
+                                          saturation_lower,
+                                          saturation_upper,
+                                          random_order_prob,
+                                          shuffle)
+
+class RandomSampler(FeatureTransformer):
+    """
+    Random sample a bounding box given some constraints and crop the image
+    This is used in SSD training augmentation
+    """
+
+    def __init__(self):
+        super(RandomSampler, self).__init__(bigdl_type)
+
+class RoiProject(FeatureTransformer):
+    """
+    Project gt boxes onto the coordinate system defined by image boundary
+    :param need_meet_center_constraint whether need to meet center constraint, i.e., the center of gt box need be within image boundary
+    """
+
+    def __init__(self, need_meet_center_constraint, bigdl_type="float"):
+        super(RoiProject, self).__init__(bigdl_type, need_meet_center_constraint)
+
+class RoiHFlip(FeatureTransformer):
+    """
+    horizontally flip the roi
+    :param normalized whether the roi is normalized, i.e. in range [0, 1]
+    """
+
+    def __init__(self, normalized=True, bigdl_type="float"):
+        super(RoiHFlip, self).__init__(bigdl_type, normalized)
+        
+class RoiResize(FeatureTransformer):
+    """
+    resize the roi according to scale
+    :param normalized whether the roi is normalized, i.e. in range [0, 1]
+    """
+    def __init__(self, normalized=True, bigdl_type="float"):
+        super(RoiResize, self).__init__(bigdl_type, normalized)
+
+class RoiNormalize(FeatureTransformer):
+    """
+    Normalize Roi to [0, 1]
+    """
+
+    def __init__(self, bigdl_type="float"):
+        super(RoiNormalize, self).__init__(bigdl_type)
+
+class MatToFloats(FeatureTransformer):
+
+    def __init__(self, valid_height=300, valid_width=300, valid_channel=300,
+                 mean_r=-1.0, mean_g=-1.0, mean_b=-1.0, out_key = "floats", bigdl_type="float"):
+        super(MatToFloats, self).__init__(bigdl_type, valid_height, valid_width, valid_channel,
+                                          mean_r, mean_g, mean_b, out_key)
+class AspectScale(FeatureTransformer):
+    """
+    Resize the image, keep the aspect ratio. scale according to the short edge
+    :param scale scale size, apply to short edge
+    :param scale_multiple_of make the scaled size multiple of some value
+    :param max_size max size after scale
+    """
+
+    def __init__(self, scale, scale_multiple_of = 1, max_size = 1000, bigdl_type="float"):
+        super(AspectScale, self).__init__(bigdl_type, scale, scale_multiple_of, max_size)
+        
+class RandomAspectScale(FeatureTransformer):
+    """
+    resize the image by randomly choosing a scale
+    :param scales array of scale options that for random choice
+    :param scaleMultipleOf Resize test images so that its width and height are multiples of
+    :param maxSize Max pixel size of the longest side of a scaled input image
+    """
+    def __init__(self, scales, scale_multiple_of = 1, max_size = 1000, bigdl_type="float"):
+        super(RandomAspectScale, self).__init__(bigdl_type, scales, scale_multiple_of, max_size)
+
+class BytesToMat(FeatureTransformer):
+    """
+    Transform byte array(original image file in byte) to OpenCVMat
+    """
+    def __init__(self, bigdl_type="float"):
+        super(BytesToMat, self).__init__(bigdl_type)
+
