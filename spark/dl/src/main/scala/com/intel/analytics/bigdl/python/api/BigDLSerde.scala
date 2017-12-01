@@ -34,6 +34,7 @@ import org.apache.spark.mllib.api.python.SerDe
 import org.apache.spark.rdd.RDD
 
 import scala.collection.JavaConverters._
+import scala.collection.immutable.ListMap
 import scala.language.existentials
 import scala.reflect.ClassTag
 
@@ -228,17 +229,18 @@ object BigDLSerDe extends BigDLSerDeBase with Serializable {
 
   private[python] class JActivityPickler extends BigDLBasePickler[JActivity] {
     private def doConvertTable(table: Table): Any = {
-      val tMap = table.getState()
-      if (tMap.isEmpty) {
+      val sortedList = table.getState().toList.sortWith(
+        _._1.asInstanceOf[Int] < _._1.asInstanceOf[Int])
+      if (sortedList.isEmpty) {
         throw new RuntimeException("Found empty table")
       }
-      if (tMap.values.iterator.next().isInstanceOf[Activity]) {
-        return tMap.values.map { value =>
-          doConvertActivity(value.asInstanceOf[Activity])
-        }.toList.asJava
+      if (sortedList.iterator.next()._2.isInstanceOf[Activity]) {
+        return sortedList.map { item =>
+          doConvertActivity(item._2.asInstanceOf[Activity])
+        }.asJava
       } else {
         throw new RuntimeException(s"""not supported type:
-          ${tMap.values.iterator.next().getClass.getSimpleName}""")
+          ${sortedList.iterator.next().getClass.getSimpleName}""")
       }
     }
     private def doConvertActivity(activity: Activity): Any = {

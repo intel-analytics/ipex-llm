@@ -54,15 +54,14 @@ class TestPickler():
         back = callBigDlFunc("float", "testActivityWithTableOfTensor")
         assert isinstance(back.value, list)
         assert isinstance(back.value[0], JTensor)
-        print(back)
+        assert back.value[0].to_ndarray()[0] < back.value[1].to_ndarray()[0]
+        assert back.value[1].to_ndarray()[0] < back.value[2].to_ndarray()[0]
 
     def test_activity_with_table_of_table(self):
         back = callBigDlFunc("float", "testActivityWithTableOfTable")
         assert isinstance(back.value, list)
         assert isinstance(back.value[0], list)
         assert isinstance(back.value[0][0], JTensor)
-        print(back)
-
 
 if __name__ == "__main__":
     pytest.main([__file__])

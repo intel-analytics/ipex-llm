@@ -59,10 +59,13 @@ class PythonBigDLValidator[T: ClassTag](implicit ev: TensorNumeric[T]) extends P
   }
 
   def testActivityWithTableOfTensor(): JActivity = {
-    val tensor = Tensor(Array(1.0f, 2.0f, 3.0f, 4.0f), Array(4, 1))
+    val tensor1 = Tensor(Array(1.0f, 1.0f), Array(2))
+    val tensor2 = Tensor(Array(2.0f, 2.0f), Array(2))
+    val tensor3 = Tensor(Array(3.0f, 3.0f), Array(2))
     val table = new Table()
-    table.insert(tensor)
-    table.insert(tensor)
+    table.insert(tensor1)
+    table.insert(tensor2)
+    table.insert(tensor3)
     return JActivity(table)
   }
 
