@@ -928,6 +928,10 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     SReLU[T](argv)
   }
 
+  def createActivityRegularization(l1: Double, l2: Double): ActivityRegularization[T] = {
+    ActivityRegularization[T](l1, l2)
+  }
+
   def createPadding(dim: Int,
     pad: Int,
     nInputDim: Int,

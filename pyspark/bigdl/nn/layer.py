@@ -3292,6 +3292,25 @@ class SReLU(Layer):
                       tLeftInit, aLeftInit, tRightInit, aRightInit)
         return self
 
+class ActivityRegularization(Layer):
+
+    '''
+    Layer that applies an update to the cost function based input activity.
+
+    :param l1: L1 regularization factor (positive float).
+    :param l2: L2 regularization factor (positive float).
+
+
+    >>> ar = ActivityRegularization(0.1, 0.02)
+    creating: createActivityRegularization
+    '''
+
+    def __init__(self,
+                 l1=0.0,
+                 l2=0.0,
+                 bigdl_type="float"):
+        super(ActivityRegularization, self).__init__(None, bigdl_type, l1, l2)
+
 class Replicate(Layer):
 
     '''
