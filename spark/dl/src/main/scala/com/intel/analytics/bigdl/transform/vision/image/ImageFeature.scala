@@ -290,6 +290,11 @@ object ImageFeature {
   val boundingBox = "boundingBox"
 
   /**
+   * key: sample
+   */
+  val sample = "sample"
+
+  /**
    * Create ImageFeature
    *
    * @param bytes image file in bytes
