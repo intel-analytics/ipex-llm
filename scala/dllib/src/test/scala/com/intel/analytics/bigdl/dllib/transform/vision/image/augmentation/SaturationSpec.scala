@@ -16,21 +16,22 @@
 
 package com.intel.analytics.bigdl.transform.vision.image.augmentation
 
-import com.intel.analytics.bigdl.transform.vision.image.{BytesToMat, ImageFrame, LocalImageFrame}
+import com.intel.analytics.bigdl.transform.vision.image.{BytesToMat, ImageFeature, ImageFrame, LocalImageFrame}
 import org.opencv.imgcodecs.Imgcodecs
 import org.scalatest.{FlatSpec, Matchers}
 
-class HFlipSpec extends FlatSpec with Matchers {
+class SaturationSpec extends FlatSpec with Matchers {
   val resource = getClass.getClassLoader.getResource("pascal/")
-  "HFlip" should "work properly" in {
+  "Saturation" should "work properly" in {
     val data = ImageFrame.read(resource.getFile)
-    val hFlip = HFlip()
-    val transformed = hFlip(data).asInstanceOf[LocalImageFrame]
-    transformed.array(0).getHeight() should be (transformed.array(0).getOriginalHeight)
-    transformed.array(0).getWidth() should be (transformed.array(0).getOriginalWidth)
+    val transformer = Saturation(10, 20)
+    val transformed = transformer(data)
+    val imageFeature = transformed.asInstanceOf[LocalImageFrame].array(0)
+    imageFeature.getHeight() should be (imageFeature.getOriginalHeight)
+    imageFeature.getWidth() should be (imageFeature.getOriginalWidth)
 
     val tmpFile = java.io.File.createTempFile("module", ".jpg")
-    Imgcodecs.imwrite(tmpFile.toString, transformed.array(0).opencvMat())
+    Imgcodecs.imwrite(tmpFile.toString, imageFeature.opencvMat())
     println(tmpFile)
   }
 }
