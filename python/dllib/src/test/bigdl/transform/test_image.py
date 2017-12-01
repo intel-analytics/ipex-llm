@@ -78,5 +78,83 @@ class TestLayer():
         transformer = HFlip()
         self.transformer_test(transformer)
 
+    def test_colorjitter(self):
+        color = ColorJitter(random_order_prob=1.0, shuffle=True)
+        self.transformer_test(color)
+
+    def test_resize(self):
+        resize = Resize(200, 200, 1)
+        self.transformer_test(resize)
+
+    def test_brightness(self):
+        brightness = Brightness(0.0, 32.0)
+        self.transformer_test(brightness)
+
+    def test_channel_order(self):
+        transformer = ChannelOrder()
+        self.transformer_test(transformer)
+
+    def test_aspect_scale(self):
+        transformer = AspectScale(300)
+        self.transformer_test(transformer)
+
+    def test_random_aspect_scale(self):
+        transformer = RandomAspectScale([300, 400])
+        self.transformer_test(transformer)
+
+    def test_contrast(self):
+        transformer = Contrast(0.5, 1.5)
+        self.transformer_test(transformer)
+
+    def test_saturation(self):
+        transformer = Saturation(0.5, 1.5)
+        self.transformer_test(transformer)
+
+    def test_hue(self):
+        transformer = Hue(0.5, 1.5)
+        self.transformer_test(transformer)
+
+    def test_channel_normalize(self):
+        transformer = ChannelNormalize(100.0, 200.0, 300.0, 2.0, 2.0, 2.0)
+        self.transformer_test(transformer)
+
+    def test_pixel_normalize(self):
+        means = [2.0] * 3 * 500 * 375
+        transformer = PixelNormalize(means)
+        self.transformer_test(transformer)
+
+    def test_fixed_crop_norm(self):
+        crop = FixedCrop(0.0, 0.0, 0.5, 1.0)
+        self.transformer_test(crop)
+
+    def test_fixed_crop_unnorm(self):
+        crop = FixedCrop(0.0, 0.0, 200.0, 200., False)
+        self.transformer_test(crop)
+
+    def test_center_crop(self):
+        crop = CenterCrop(200, 200)
+        self.transformer_test(crop)
+
+    def test_random_crop(self):
+        crop = RandomCrop(200, 200)
+        self.transformer_test(crop)
+
+    def test_filler(self):
+        filler = Filler(0.0, 0.0, 0.1, 0.2)
+        self.transformer_test(filler)
+
+    def test_expand(self):
+        expand = Expand(means_r=123, means_g=117, means_b=104,
+                        max_expand_ratio=2.0)
+        self.transformer_test(expand)
+
+    def test_random_transformer(self):
+        transformer = RandomTransformer(HFlip(), 0.5)
+        self.transformer_test(transformer)
+
+    def test_pipeline(self):
+        transformer = Pipeline([ColorJitter(), HFlip(), Resize(200, 200, 1)])
+        self.transformer_test(transformer)
+
 if __name__ == "__main__":
     pytest.main([__file__])
