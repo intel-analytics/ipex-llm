@@ -37,6 +37,7 @@ object Utils {
     checkpoint: Option[String] = None,
     modelSnapshot: Option[String] = None,
     stateSnapshot: Option[String] = None,
+    summaryPath: Option[String] = None,
     batchSize: Int = 112,
     maxEpoch: Int = 90,
     overWriteCheckpoint: Boolean = false,
@@ -58,6 +59,9 @@ object Utils {
     opt[String]("checkpoint")
       .text("where to cache the model and state")
       .action((x, c) => c.copy(checkpoint = Some(x)))
+    opt[String]("summary")
+      .text("where to store the training summary")
+      .action((x, c) => c.copy(summaryPath = Some(x)))
     opt[Int]('e', "maxEpoch")
       .text("epoch numbers")
       .action((x, c) => c.copy(maxEpoch = x))
