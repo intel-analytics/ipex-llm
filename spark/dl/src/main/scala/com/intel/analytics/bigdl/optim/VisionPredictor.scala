@@ -25,6 +25,12 @@ import com.intel.analytics.bigdl.transform.vision.image.{DistributedImageFrame, 
 
 import scala.reflect.ClassTag
 
+/**
+ * VisionPredictor is a predictor for images
+ *
+ * @param model prediction model
+ * @param postProcessor post process after model forward
+ */
 class VisionPredictor[T: ClassTag](
   model: Module[T],
   postProcessor: PostProcessor = null)
@@ -52,18 +58,20 @@ class VisionPredictor[T: ClassTag](
         val validImageFeatures = imageFeatures.filter(_.isValid)
         val samples = validImageFeatures.map(x => x[Sample[T]](ImageFeature.sample))
         val batch = localToBatch(samples.toIterator).next()
-        val result = localModel.forward(batch.getInput()).toTensor[T]
-        val batchOut = if (result.dim() == 1) {
-          Array(result)
-        } else {
-          result.split(1)
-        }
-        validImageFeatures.zip(batchOut).foreach(tuple => {
-          tuple._1(ImageFeature.predict) = tuple._2
-          if (localPostProcessor != null) {
-            localPostProcessor.process(tuple._1)
+        if (batch != null) {
+          val result = localModel.forward(batch.getInput()).toTensor[T]
+          val batchOut = if (result.dim() == 1) {
+            Array(result)
+          } else {
+            result.split(1)
           }
-        })
+          validImageFeatures.zip(batchOut).foreach(tuple => {
+            tuple._1(ImageFeature.predict) = tuple._2
+            if (localPostProcessor != null) {
+              localPostProcessor.process(tuple._1)
+            }
+          })
+        }
         imageFeatures
       })
     })

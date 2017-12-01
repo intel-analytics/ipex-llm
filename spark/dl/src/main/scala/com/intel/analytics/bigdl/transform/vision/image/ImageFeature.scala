@@ -119,7 +119,7 @@ class ImageFeature extends Serializable {
    */
   def getSize: (Int, Int, Int) = {
     val mat = opencvMat()
-    if (!mat.isReleased) {
+    if (mat != null && !mat.isReleased) {
       mat.shape()
     } else if (contains(ImageFeature.size)) {
       apply[(Int, Int, Int)](ImageFeature.size)

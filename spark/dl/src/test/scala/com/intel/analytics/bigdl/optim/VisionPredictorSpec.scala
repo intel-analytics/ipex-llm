@@ -16,11 +16,11 @@
 
 package com.intel.analytics.bigdl.optim
 
-import com.intel.analytics.bigdl.dataset.image._
 import com.intel.analytics.bigdl.models.inception.Inception_v1_NoAuxClassifier
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
-import com.intel.analytics.bigdl.transform.vision.image.{FloatsToTensor, ImageFeature, ImageFrame, ImageFrameToSample}
-import com.intel.analytics.bigdl.utils.Engine
+import com.intel.analytics.bigdl.transform.vision.image.augmentation.{CenterCrop, ChannelNormalize, HFlip, Resize}
+import com.intel.analytics.bigdl.transform.vision.image._
+import com.intel.analytics.bigdl.utils.{Engine, LoggerFilter}
 import org.apache.spark.SparkContext
 import org.apache.spark.sql.SQLContext
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
@@ -39,10 +39,12 @@ class VisionPredictorSpec extends FlatSpec with Matchers with BeforeAndAfter {
   after {
     if (null != sc) sc.stop()
   }
+
+  LoggerFilter.redirectSparkInfoLogs()
   "VisionPredictor" should "work" in {
     val imageFrame = ImageFrame.read(resource.getFile, sc) ->
       Resize(256, 256) -> CenterCrop(224, 224) ->
-      HFlip(0.5) -> ChannelNormalize(0.485, 0.456, 0.406, 0.229, 0.224, 0.225) -> MatToFloats() ->
+      ChannelNormalize(0.485f, 0.456f, 0.406f, 0.229f, 0.224f, 0.225f) -> MatToFloats() ->
       FloatsToTensor() -> ImageFrameToSample()
     val model = Inception_v1_NoAuxClassifier(classNum = 20)
     val predictor = new VisionPredictor(model)

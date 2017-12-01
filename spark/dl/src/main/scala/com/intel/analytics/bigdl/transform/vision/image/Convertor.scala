@@ -50,6 +50,7 @@ object BytesToMat {
       feature(ImageFeature.originalSize) = mat.shape()
     } catch {
       case e: Exception =>
+        e.printStackTrace()
         val uri = feature.uri()
         logger.warn(s"convert byte to mat fail for $uri")
         feature(ImageFeature.originalSize) = (-1, -1, -1)
@@ -106,6 +107,7 @@ class MatToFloats(validHeight: Int, validWidth: Int, validChannels: Int,
         }
       } finally {
         if (null != input) input.release()
+        feature(ImageFeature.mat) = null
       }
     }
     feature(outKey) = data
@@ -139,6 +141,7 @@ class FloatsToTensor[T: ClassTag](toRGB: Boolean = false,
       case e: Exception =>
         val uri = feature.uri()
         FloatsToTensor.logger.warn(s"float to tensor fail for ${uri}")
+        e.printStackTrace()
         feature.isValid = false
     }
     feature
@@ -163,7 +166,7 @@ class ImageFrameToSample[T: ClassTag](inputKeys: Array[String] = Array(ImageFeat
     if (!feature.isValid) return feature
     try {
       val inputs = inputKeys.map(key => {
-        val input = feature(key)
+        val input = feature[Tensor[T]](key)
         require(input.isInstanceOf[Tensor[T]], s"the input $key should be tensor")
         input.asInstanceOf[Tensor[T]]
       })
@@ -171,7 +174,7 @@ class ImageFrameToSample[T: ClassTag](inputKeys: Array[String] = Array(ImageFeat
         ArraySample[T](inputs)
       } else {
         val targets = targetKeys.map(key => {
-          val target = feature(key)
+          val target = feature[Tensor[T]](key)
           require(target.isInstanceOf[Tensor[T]], s"the target $key should be tensor")
           target.asInstanceOf[Tensor[T]]
         })
@@ -180,8 +183,9 @@ class ImageFrameToSample[T: ClassTag](inputKeys: Array[String] = Array(ImageFeat
       feature(sampleKey) = sample
     } catch {
       case e: Exception =>
+        e.printStackTrace()
         val uri = feature.uri()
-        ImageFrameToSample.logger.warn(s"convert byte to mat fail for $uri")
+        ImageFrameToSample.logger.warn(s"convert imageframe to sample fail for $uri")
         feature(ImageFeature.originalSize) = (-1, -1, -1)
         feature.isValid = false
     }
