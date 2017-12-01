@@ -36,8 +36,8 @@ class KullbackLeiblerDivergenceCriterion[T: ClassTag]
   private val epsilon: T = ev.fromType(1e-7)
   private val upperlimit = ev.fromType(1.0)
 
-  val bufferInput = Tensor[T]()
-  val bufferTarget = Tensor[T]()
+  @transient val bufferInput = Tensor[T]()
+  @transient val bufferTarget = Tensor[T]()
 
   /**
    * It calculates:
