@@ -25,7 +25,6 @@ import java.util.{ArrayList => JArrayList, HashMap => JHashMap, List => JList, M
 
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.python.api._
-import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.Table
 import net.razorvine.pickle._
 import org.apache.spark.api.java.JavaRDD
@@ -34,7 +33,6 @@ import org.apache.spark.mllib.api.python.SerDe
 import org.apache.spark.rdd.RDD
 
 import scala.collection.JavaConverters._
-import scala.collection.immutable.ListMap
 import scala.language.existentials
 import scala.reflect.ClassTag
 
