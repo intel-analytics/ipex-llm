@@ -406,7 +406,7 @@ def get_bigdl_conf():
                     if sys.version_info >= (3,):
                         content = str(content, 'latin-1')
                     return load_conf(content)
-    raise Exception("Cannot find spark-bigdl.conf.Pls add it to PYTHONPATH.")
+    return {}
 
 
 def to_list(a):
@@ -437,13 +437,21 @@ def get_spark_context(conf = None):
     :return: SparkContext
     """
     if hasattr(SparkContext, "getOrCreate"):
-        return SparkContext.getOrCreate(conf=conf or create_spark_conf())
+        with SparkContext._lock:
+            if SparkContext._active_spark_context is None:
+                spark_conf = create_spark_conf() if conf is None else conf
+                return SparkContext.getOrCreate(spark_conf)
+            else:
+                return SparkContext.getOrCreate()
+
     else:
         # Might have threading issue but we cann't add _lock here
         # as it's not RLock in spark1.5;
         if SparkContext._active_spark_context is None:
-            SparkContext(conf=conf or create_spark_conf())
-        return SparkContext._active_spark_context
+            spark_conf = create_spark_conf() if conf is None else conf
+            return SparkContext(conf=spark_conf)
+        else:
+            return SparkContext._active_spark_context
 
 
 def get_spark_sql_context(sc):
