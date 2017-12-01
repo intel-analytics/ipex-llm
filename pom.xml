@@ -175,7 +175,7 @@
         <spark-version.project>1.5-plus</spark-version.project>
         <spark.version>1.5.1</spark.version>
         <breeze.version>0.11.2</breeze.version>
-        <spark-scope>provided</spark-scope>
+        <spark-scope>compile</spark-scope>
 
         <bigdl-core-all-scope>compile</bigdl-core-all-scope>
     </properties>
