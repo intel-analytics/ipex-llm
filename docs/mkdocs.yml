@@ -43,6 +43,7 @@ pages:
   - Run on Amazon EC2: ProgrammingGuide/run-on-ec2.md
   - Run on Google Cloud Dataproc: ProgrammingGuide/run-on-dataproc.md
   - Tensorflow Support: ProgrammingGuide/tensorflow-support.md
+  - Caffe Support: ProgrammingGuide/caffe-support.md
   - Quantization Support: ProgrammingGuide/quantization-support.md
   - Define new Layer/Criterion: ProgrammingGuide/add-layer-criterion.md
 - API Guide:
@@ -75,7 +76,6 @@ pages:
   - Triggers: APIGuide/Triggers.md
   - Metrics:  APIGuide/Metrics.md
   - ML Pipeline: APIGuide/MLPipeline/DLEstimator_DLClassifier.md
-  - Caffe: APIGuide/Caffe.md
   - Full API docs:
     - Scala Docs: APIGuide/scaladoc.md
     - Python API Docs: APIGuide/python-api-doc.md
