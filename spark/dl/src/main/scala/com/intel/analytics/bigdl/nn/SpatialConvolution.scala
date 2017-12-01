@@ -145,13 +145,18 @@ class SpatialConvolution[T: ClassTag](
     false
   }
 
-  {
-    val stdv = 1.0 / math.sqrt(kernelW * kernelH * nInputPlane)
-    val wInit: InitializationMethod = RandomUniform(-stdv, stdv)
-    val bInit: InitializationMethod = if (withBias) RandomUniform(-stdv, stdv)
-      else null
-    setInitMethod(wInit, bInit)
+  private val weightStdv = 1.0 / math.sqrt(kernelW * kernelH * nInputPlane)
+
+  private var weightInitMethod: InitializationMethod = RandomUniform(-weightStdv, weightStdv)
+
+  private var biasInitMethod: InitializationMethod = if (withBias) RandomUniform(-weightStdv, weightStdv) else null
+
+  override protected def setInitMethodInternal(initMethods: Array[InitializationMethod]): Unit = {
+    weightInitMethod = initMethods(0)
+    biasInitMethod = initMethods(1)
   }
+
+  reset()
 
   protected var im2colTime = 0L
   protected var col2imTime = 0L

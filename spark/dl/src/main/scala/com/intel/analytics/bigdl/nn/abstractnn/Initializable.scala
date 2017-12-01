@@ -22,18 +22,11 @@ import com.intel.analytics.bigdl.nn.{InitializationMethod, Zeros}
  */
 trait Initializable {
 
-  protected var weightInitMethod: InitializationMethod = Zeros
-  protected var biasInitMethod: InitializationMethod = Zeros
 
-  def setInitMethod(weightInitMethod: InitializationMethod = null,
-                    biasInitMethod: InitializationMethod = null): this.type = {
-    if (weightInitMethod != null) {
-      this.weightInitMethod = weightInitMethod
-    }
+  protected def setInitMethodInternal(initMethods: Array[InitializationMethod]): Unit
 
-    if (biasInitMethod != null) {
-      this.biasInitMethod = biasInitMethod
-    }
+  def setInitMethod(initMethods: Array[InitializationMethod]): this.type = {
+    setInitMethodInternal(initMethods)
     reset()
     this
   }
