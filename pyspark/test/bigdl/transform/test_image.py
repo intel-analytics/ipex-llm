@@ -86,6 +86,43 @@ class TestLayer():
         resize = Resize(200, 200, 1)
         self.transformer_test(resize)
 
+    def test_brightness(self):
+        brightness = Brightness(0.0, 32.0)
+        self.transformer_test(brightness)
+
+    def test_channel_order(self):
+        transformer = ChannelOrder()
+        self.transformer_test(transformer)
+
+    def test_aspect_scale(self):
+        transformer = AspectScale(300)
+        self.transformer_test(transformer)
+
+    def test_random_aspect_scale(self):
+        transformer = RandomAspectScale([300, 400])
+        self.transformer_test(transformer)
+
+    def test_contrast(self):
+        transformer = Contrast(0.5, 1.5)
+        self.transformer_test(transformer)
+
+    def test_saturation(self):
+        transformer = Saturation(0.5, 1.5)
+        self.transformer_test(transformer)
+
+    def test_hue(self):
+        transformer = Hue(0.5, 1.5)
+        self.transformer_test(transformer)
+
+    def test_channel_normalize(self):
+        transformer = ChannelNormalize(100.0, 200.0, 300.0, 2.0, 2.0, 2.0)
+        self.transformer_test(transformer)
+
+    def test_pixel_normalize(self):
+        means = [2.0] * 3 * 500 * 375
+        transformer = PixelNormalize(means)
+        self.transformer_test(transformer)
+
     def test_fixed_crop_norm(self):
         crop = FixedCrop(0.0, 0.0, 0.5, 1.0)
         self.transformer_test(crop)
