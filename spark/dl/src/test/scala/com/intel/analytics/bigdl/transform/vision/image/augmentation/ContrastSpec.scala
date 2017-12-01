@@ -22,7 +22,7 @@ import org.scalatest.{FlatSpec, Matchers}
 class ContrastSpec extends FlatSpec with Matchers {
   val resource = getClass.getClassLoader.getResource("pascal/")
   "Contrast" should "work properly" in {
-    val data = ImageFrame.read(resource.getFile) -> BytesToMat()
+    val data = ImageFrame.read(resource.getFile)
     val transformer = Contrast(-1, 1)
     val transformed = transformer(data).asInstanceOf[LocalImageFrame]
     transformed.array(0).getHeight() should be (transformed.array(0).getOriginalHeight)

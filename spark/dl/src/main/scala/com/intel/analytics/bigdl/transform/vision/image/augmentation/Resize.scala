@@ -115,7 +115,7 @@ object AspectScale {
  * @param scaleMultipleOf Resize test images so that its width and height are multiples of
  * @param maxSize Max pixel size of the longest side of a scaled input image
  */
-case class RandomAspectScale(scales: Array[Int], scaleMultipleOf: Int = 1,
+class RandomAspectScale(scales: Array[Int], scaleMultipleOf: Int = 1,
   maxSize: Int = 1000) extends FeatureTransformer {
 
   override def transformMat(feature: ImageFeature): Unit = {

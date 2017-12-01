@@ -552,3 +552,11 @@ class RandomAspectScale(FeatureTransformer):
     """
     def __init__(self, scales, scale_multiple_of = 1, max_size = 1000, bigdl_type="float"):
         super(RandomAspectScale, self).__init__(bigdl_type, scales, scale_multiple_of, max_size)
+
+class BytesToMat(FeatureTransformer):
+    """
+    Transform byte array(original image file in byte) to OpenCVMat
+    """
+    def __init__(self, bigdl_type="float"):
+        super(BytesToMat, self).__init__(bigdl_type)
+

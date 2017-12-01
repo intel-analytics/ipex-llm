@@ -23,7 +23,7 @@ import org.scalatest.{FlatSpec, Matchers}
 class ResizeSpec extends FlatSpec with Matchers {
   val resource = getClass.getClassLoader.getResource("pascal/")
   "resize" should "work properly" in {
-    val data = ImageFrame.read(resource.getFile) -> BytesToMat()
+    val data = ImageFrame.read(resource.getFile)
     val transformer = Resize(300, 300)
     val transformed = transformer(data).asInstanceOf[LocalImageFrame]
     transformed.array(0).getHeight() should be(300)
@@ -31,7 +31,7 @@ class ResizeSpec extends FlatSpec with Matchers {
   }
 
   "AspectScale" should "work properly" in {
-    val data = ImageFrame.read(resource.getFile) -> BytesToMat()
+    val data = ImageFrame.read(resource.getFile)
     val transformer = AspectScale(750, maxSize = 3000)
     val transformed = transformer(data).asInstanceOf[LocalImageFrame]
     transformed.array(0).getHeight() should be(750)
@@ -39,7 +39,7 @@ class ResizeSpec extends FlatSpec with Matchers {
   }
 
   "RandomAspectScale" should "work properly" in {
-    val data = ImageFrame.read(resource.getFile) -> BytesToMat()
+    val data = ImageFrame.read(resource.getFile)
     val transformer = RandomAspectScale(Array(750), maxSize = 3000)
     val transformed = transformer(data).asInstanceOf[LocalImageFrame]
     transformed.array(0).getHeight() should be(750)

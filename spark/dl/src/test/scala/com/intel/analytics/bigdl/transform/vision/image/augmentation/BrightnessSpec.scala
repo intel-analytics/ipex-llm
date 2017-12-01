@@ -23,7 +23,7 @@ class BrightnessSpec extends FlatSpec with Matchers {
   val resource = getClass.getClassLoader.getResource("pascal/")
 
   "Brightness" should "work properly" in {
-    val data = ImageFrame.read(resource.getFile) -> BytesToMat()
+    val data = ImageFrame.read(resource.getFile)
     val transformer = Brightness(-32, 32)
     val transformed = transformer(data).asInstanceOf[LocalImageFrame]
     transformed.array(0).getHeight() should be (transformed.array(0).getOriginalHeight)

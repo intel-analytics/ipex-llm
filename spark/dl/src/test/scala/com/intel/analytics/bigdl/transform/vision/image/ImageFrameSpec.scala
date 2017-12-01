@@ -43,6 +43,7 @@ class ImageFrameSpec extends FlatSpec with Matchers with BeforeAndAfter {
     local.array.length should be(1)
     assert(local.array(0).uri.endsWith("000025.jpg"))
     assert(local.array(0).bytes.length == 95959)
+    local.array(0).opencvMat().shape() should be((375, 500, 3))
   }
 
   "LocalImageFrame toDistributed" should "work properly" in {
@@ -51,6 +52,7 @@ class ImageFrameSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val imageFeature = local.toDistributed(sc).rdd.first()
     assert(imageFeature.uri.endsWith("000025.jpg"))
     assert(imageFeature.bytes.length == 95959)
+    imageFeature.opencvMat().shape() should be((375, 500, 3))
   }
 
   "read DistributedImageFrame" should "work properly" in {
@@ -59,6 +61,7 @@ class ImageFrameSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val imageFeature = distributed.rdd.first()
     assert(imageFeature.uri.endsWith("000025.jpg"))
     assert(imageFeature.bytes.length == 95959)
+    imageFeature.opencvMat().shape() should be((375, 500, 3))
   }
 
   "SequenceFile write and read" should "work properly" in {

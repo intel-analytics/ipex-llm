@@ -22,7 +22,7 @@ import org.scalatest.{FlatSpec, Matchers}
 class ColorJitterSpec extends FlatSpec with Matchers {
   val resource = getClass.getClassLoader.getResource("pascal/")
   "ColorJitter" should "work properly" in {
-    val data = ImageFrame.read(resource.getFile) -> BytesToMat()
+    val data = ImageFrame.read(resource.getFile)
     val transformer = ColorJitter()
     val transformed = transformer(data).asInstanceOf[LocalImageFrame]
     transformed.array(0).getHeight() should be (transformed.array(0).getOriginalHeight)
@@ -30,7 +30,7 @@ class ColorJitterSpec extends FlatSpec with Matchers {
   }
 
   "ColorJitter shuffle" should "work properly" in {
-    val data = ImageFrame.read(resource.getFile) -> BytesToMat()
+    val data = ImageFrame.read(resource.getFile)
     val transformer = ColorJitter(shuffle = true)
     val transformed = transformer(data).asInstanceOf[LocalImageFrame]
     transformed.array(0).getHeight() should be (transformed.array(0).getOriginalHeight)

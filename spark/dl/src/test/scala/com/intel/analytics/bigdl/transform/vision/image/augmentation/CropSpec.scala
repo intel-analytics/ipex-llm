@@ -24,7 +24,7 @@ import org.scalatest.{FlatSpec, Matchers}
 class CropSpec extends FlatSpec with Matchers {
   val resource = getClass.getClassLoader.getResource("pascal/")
   "centercrop" should "work properly" in {
-    val data = ImageFrame.read(resource.getFile) -> BytesToMat()
+    val data = ImageFrame.read(resource.getFile)
     val transformer = CenterCrop(50, 50)
     val transformed = transformer(data).asInstanceOf[LocalImageFrame]
     transformed.array(0).getHeight() should be (50)
@@ -32,7 +32,7 @@ class CropSpec extends FlatSpec with Matchers {
   }
 
   "randomcrop" should "work properly" in {
-    val data = ImageFrame.read(resource.getFile) -> BytesToMat()
+    val data = ImageFrame.read(resource.getFile)
     val transformer = RandomCrop(50, 50)
     val transformed = transformer(data).asInstanceOf[LocalImageFrame]
     transformed.array(0).getHeight() should be (50)
@@ -40,7 +40,7 @@ class CropSpec extends FlatSpec with Matchers {
   }
 
   "fixedCrop" should "work properly" in {
-    val data = ImageFrame.read(resource.getFile) -> BytesToMat()
+    val data = ImageFrame.read(resource.getFile)
     val transformer = FixedCrop(0, 0, 50, 50, false)
     val transformed = transformer(data).asInstanceOf[LocalImageFrame]
     transformed.array(0).getHeight() should be (50)
@@ -48,7 +48,7 @@ class CropSpec extends FlatSpec with Matchers {
   }
 
   "fixedCrop normalized" should "work properly" in {
-    val data = ImageFrame.read(resource.getFile) -> BytesToMat()
+    val data = ImageFrame.read(resource.getFile)
     val transformer = FixedCrop(0, 0, 50 / 500f, 50 / 375f, true)
     val transformed = transformer(data).asInstanceOf[LocalImageFrame]
     transformed.array(0).getHeight() should be (50)
@@ -56,7 +56,7 @@ class CropSpec extends FlatSpec with Matchers {
   }
 
   "fixedCrop clip" should "work properly" in {
-    val data = ImageFrame.read(resource.getFile) -> BytesToMat()
+    val data = ImageFrame.read(resource.getFile)
     val transformer = FixedCrop(0, 0, 600f, 700f, true)
     val transformed = transformer(data).asInstanceOf[LocalImageFrame]
     transformed.array(0).getHeight() should be (375)
@@ -64,7 +64,7 @@ class CropSpec extends FlatSpec with Matchers {
   }
 
   "Detection Crop" should "work properly" in {
-    val data = ImageFrame.read(resource.getFile) -> BytesToMat()
+    val data = ImageFrame.read(resource.getFile)
     data.asInstanceOf[LocalImageFrame].array(0)("roi") = Tensor[Float](T(1, 1, 0.2, 0, 0, 0.5, 0.5))
     val transformer = DetectionCrop("roi")
     val transformed = transformer(data).asInstanceOf[LocalImageFrame]

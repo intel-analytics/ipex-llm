@@ -23,7 +23,7 @@ class RandomTransformerSpec extends FlatSpec with Matchers {
   val resource = getClass.getClassLoader.getResource("pascal/")
 
   "RandomTransformer with 0" should "work properly" in {
-    val data = ImageFrame.read(resource.getFile) -> BytesToMat()
+    val data = ImageFrame.read(resource.getFile)
     val transformer = RandomTransformer(FixedCrop(0, 0, 50, 50, false), 0)
     val transformed = transformer(data).asInstanceOf[LocalImageFrame]
     transformed.array(0).getHeight() should be(375)
@@ -31,7 +31,7 @@ class RandomTransformerSpec extends FlatSpec with Matchers {
   }
 
   "RandomTransformer with 1" should "work properly" in {
-    val data = ImageFrame.read(resource.getFile) -> BytesToMat()
+    val data = ImageFrame.read(resource.getFile)
     val transformer = RandomTransformer(FixedCrop(0, 0, 50, 50, false), 1)
     val transformed = transformer(data).asInstanceOf[LocalImageFrame]
     transformed.array(0).getHeight() should be(50)

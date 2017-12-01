@@ -102,6 +102,10 @@ class TestLayer():
         crop = RandomCrop(200, 200)
         self.transformer_test(crop)
 
+    def test_filler(self):
+        filler = Filler(0.0, 0.0, 0.1, 0.2)
+        self.transformer_test(filler)
+
     def test_expand(self):
         expand = Expand(means_r=123, means_g=117, means_b=104,
                         max_expand_ratio=2.0)

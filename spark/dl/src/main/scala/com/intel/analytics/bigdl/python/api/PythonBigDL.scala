@@ -2343,9 +2343,10 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     CenterCrop(cropWidth, cropHeight, isClip)
   }
 
-  def createFixedCrop(wStart: Float, hStart: Float, wEnd: Float, hEnd: Float, normalized: Boolean,
+  def createFixedCrop(wStart: Double,
+    hStart: Double, wEnd: Double, hEnd: Double, normalized: Boolean,
     isClip: Boolean): FixedCrop = {
-    FixedCrop(wStart, hStart, wEnd, hEnd, normalized, isClip)
+    FixedCrop(wStart.toFloat, hStart.toFloat, wEnd.toFloat, hEnd.toFloat, normalized, isClip)
   }
 
   def createDetectionCrop(roiKey: String, normalized: Boolean): DetectionCrop = {
@@ -2389,9 +2390,9 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     AspectScale(scale, scaleMultipleOf, maxSize)
   }
 
-  def createFiller(startX: Float, startY: Float, endX: Float, endY: Float,
+  def createFiller(startX: Double, startY: Double, endX: Double, endY: Double,
     value: Int = 255): Filler = {
-    Filler(startX, startY, endX, endY, value)
+    Filler(startX.toFloat, startY.toFloat, endX.toFloat, endY.toFloat, value)
   }
 
   def createPixelNormalize(means: JList[Double]): PixelNormalizer = {
@@ -2548,6 +2549,10 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
 
   def readParquet(path: String, sqlContext: SQLContext): DistributedImageFrame = {
     ImageFrame.readParquet(path, sqlContext)
+  }
+
+  def createBytesToMat(): BytesToMat = {
+    BytesToMat()
   }
 
   def isLocal(imageFrame: ImageFrame): Boolean = imageFrame.isLocal()

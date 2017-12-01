@@ -23,7 +23,7 @@ import org.scalatest.{FlatSpec, Matchers}
 class ExpandSpec extends FlatSpec with Matchers {
   val resource = getClass.getClassLoader.getResource("pascal/")
   "expand" should "work properly" in {
-    val data = ImageFrame.read(resource.getFile) -> BytesToMat()
+    val data = ImageFrame.read(resource.getFile)
     val transformer = Expand(minExpandRatio = 2, maxExpandRatio = 2)
     val transformed = transformer(data).asInstanceOf[LocalImageFrame]
     transformed.array(0).getHeight() should be (375 * 2)

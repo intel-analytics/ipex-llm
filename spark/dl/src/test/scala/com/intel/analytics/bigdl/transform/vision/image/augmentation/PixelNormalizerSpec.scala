@@ -23,7 +23,7 @@ class PixelNormalizerSpec extends FlatSpec with Matchers {
   val resource = getClass.getClassLoader.getResource("pascal/")
 
   "PixelNormalizer" should "work properly" in {
-    val data = ImageFrame.read(resource.getFile) -> BytesToMat()
+    val data = ImageFrame.read(resource.getFile)
     val means = new Array[Float](375 * 500 * 3)
     var i = 0
     while (i < 375 * 500 * 3) {
@@ -35,7 +35,7 @@ class PixelNormalizerSpec extends FlatSpec with Matchers {
     val transformer = PixelNormalizer(means) -> MatToFloats()
     val transformed = transformer(data).asInstanceOf[LocalImageFrame]
 
-    val data2 = ImageFrame.read(resource.getFile) -> BytesToMat()
+    val data2 = ImageFrame.read(resource.getFile)
     val toFloat = MatToFloats(meanRGB = Some(100f, 200f, 300f))
     val transformed2 = toFloat(data2).asInstanceOf[LocalImageFrame]
 

@@ -30,8 +30,7 @@ class FeatureTransformerSpec extends FlatSpec with Matchers {
     val img = Array[Byte]()
     val byteImage = ImageFeature(img)
     val imageFrame = new LocalImageFrame(Array(byteImage))
-    val imgAug = BytesToMat() ->
-      Resize(1, 1, -1) ->
+    val imgAug = Resize(1, 1, -1) ->
       FixedCrop(-1, -1, -1, -1, normalized = false) ->
       MatToFloats(validHeight = 1, validWidth = 1)
     val out = imgAug(imageFrame)
@@ -41,8 +40,7 @@ class FeatureTransformerSpec extends FlatSpec with Matchers {
 
   "Image Transformer with exception" should "work properly" in {
     val images = ImageFrame.read(resource.getFile)
-    val imgAug = BytesToMat() ->
-      FixedCrop(-1, -1, -1, -1, normalized = false) ->
+    val imgAug = FixedCrop(-1, -1, -1, -1, normalized = false) ->
       Resize(300, 300, -1) ->
       MatToFloats(validHeight = 300, validWidth = 300)
     val out = imgAug(images)
@@ -70,8 +68,7 @@ class FeatureTransformerSpec extends FlatSpec with Matchers {
       Tensor(Storage(boxes)).resize(11, 4))
 
     val feature = ImageFeature(img, label, resource.getFile)
-    val imgAug = BytesToMat() ->
-      RoiNormalize() ->
+    val imgAug = BytesToMat() -> RoiNormalize() ->
       ColorJitter() ->
       RandomTransformer(Expand() -> RoiProject(), 0.5) ->
       RandomSampler() ->
@@ -91,8 +88,7 @@ class FeatureTransformerSpec extends FlatSpec with Matchers {
 
   "ImageAugmentation" should "work properly" in {
     val imageFrame = ImageFrame.read(resource.getFile)
-    val imgAug = BytesToMat() ->
-      ColorJitter() ->
+    val imgAug = ColorJitter() ->
       Expand() ->
       Resize(300, 300, -1) ->
       HFlip() ->

@@ -48,7 +48,7 @@ class RoiTransformerSpec extends FlatSpec with Matchers {
 
   "RoiNormalize" should "work properly" in {
     val label = getLables
-    val images = ImageFrame.read(resource.getFile) -> BytesToMat()
+    val images = ImageFrame.read(resource.getFile)
     images.asInstanceOf[LocalImageFrame].array(0)(ImageFeature.label) = label
 
     val transformer = RoiNormalize()
@@ -74,7 +74,7 @@ class RoiTransformerSpec extends FlatSpec with Matchers {
 
   "RoiHFlip" should "work properly" in {
     val label = getLables
-    val images = ImageFrame.read(resource.getFile) -> BytesToMat()
+    val images = ImageFrame.read(resource.getFile)
     images.asInstanceOf[LocalImageFrame].array(0)(ImageFeature.label) = label
 
     val transformer = RoiHFlip(false)
@@ -100,7 +100,7 @@ class RoiTransformerSpec extends FlatSpec with Matchers {
 
   "RoiHFlip normalized" should "work properly" in {
     val label = getLables
-    val images = ImageFrame.read(resource.getFile) -> BytesToMat()
+    val images = ImageFrame.read(resource.getFile)
     images.asInstanceOf[LocalImageFrame].array(0)(ImageFeature.label) = label
 
     val transformer = RoiNormalize() -> RoiHFlip()
@@ -126,7 +126,7 @@ class RoiTransformerSpec extends FlatSpec with Matchers {
 
   "RoiResize normalized" should "work properly" in {
     val label = getLables
-    val images = ImageFrame.read(resource.getFile) -> BytesToMat() -> Resize(300, 300)
+    val images = ImageFrame.read(resource.getFile) -> Resize(300, 300)
     images.asInstanceOf[LocalImageFrame].array(0)(ImageFeature.label) = label
 
     val transformer = RoiNormalize() -> RoiResize()
@@ -152,7 +152,7 @@ class RoiTransformerSpec extends FlatSpec with Matchers {
 
   "RoiResize normalized == false" should "work properly" in {
     val label = getLables
-    val images = ImageFrame.read(resource.getFile) -> BytesToMat() -> Resize(300, 300)
+    val images = ImageFrame.read(resource.getFile) -> Resize(300, 300)
     images.asInstanceOf[LocalImageFrame].array(0)(ImageFeature.label) = label
 
     val transformer = RoiResize()
@@ -178,7 +178,7 @@ class RoiTransformerSpec extends FlatSpec with Matchers {
 
   "RoiProject" should "work properly" in {
     val label = getLables
-    val images = ImageFrame.read(resource.getFile) -> BytesToMat()
+    val images = ImageFrame.read(resource.getFile)
 
     val imageFeature = images.asInstanceOf[LocalImageFrame].array(0)
     imageFeature(ImageFeature.label) = label
