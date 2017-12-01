@@ -105,7 +105,7 @@ class OpenCVMatSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val img = OpenCVMat.read(resource.getFile)
     img.release()
     img.isReleased should be (true)
-    img.shape() should be (0, 0, 0)
+    img.shape() should be (0, 0, 3)
   }
 
   "drawBoundingBox" should "work properly" in {
