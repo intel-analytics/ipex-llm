@@ -34,7 +34,7 @@ do
     --ignore=../../../pyspark/bigdl/keras \
     --ignore=../../../pyspark/test/bigdl/keras/test_application.py \
     --ignore=../../../pyspark/bigdl/models/ && \
-    $p -m pytest -v -n 4 ../../../pyspark/test/ \
+    $p -m pytest -v ../../../pyspark/test/ \
     --ignore=../../../pyspark/test/bigdl/caffe/ \
     --ignore=../../../pyspark/test/bigdl/keras/ \
     --ignore=../../../pyspark/test/bigdl/test_utils.py

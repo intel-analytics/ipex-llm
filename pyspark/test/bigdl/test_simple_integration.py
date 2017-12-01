@@ -45,6 +45,20 @@ class TestSimple():
         """
         self.sc.stop()
 
+    def test_ignore_check_conf(self):
+        path_backup = sys.path
+        sys.path = [path for path in sys.path if "python-api.zip" not in path and "spark-bigdl.conf" not in path]  # noqa
+        conf = get_bigdl_conf()
+        assert len(conf) == 0, "bigdl conf should be empty as it has been removed"
+        sc = get_spark_context()  # getting existing sc without checking spark-bigdl.conf
+        sc.stop()
+        ssc = get_spark_context()
+        assert ssc is not None
+        with pytest.raises(Exception) as excinfo:
+            init_engine()
+        assert "Engine.init: Can not find" in str(excinfo.value)
+        sys.path = path_backup
+
     def test_training(self):
         cadd = CAdd([5, 1])
         y = np.ones([5, 4])
