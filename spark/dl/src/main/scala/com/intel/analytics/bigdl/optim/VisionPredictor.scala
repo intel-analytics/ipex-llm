@@ -19,6 +19,7 @@ package com.intel.analytics.bigdl.optim
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dataset.{Sample, SampleToMiniBatch}
 import com.intel.analytics.bigdl.models.utils.ModelBroadcast
+import com.intel.analytics.bigdl.nn.SpatialShareConvolution
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.transform.vision.image.{DistributedImageFrame, ImageFeature, ImageFrame}
 
@@ -28,6 +29,8 @@ class VisionPredictor[T: ClassTag](
   model: Module[T],
   postProcessor: PostProcessor = null)
   (implicit ev: TensorNumeric[T]) extends Serializable {
+
+  SpatialShareConvolution.shareConvolution(model)
 
   def predict(imageFrame: ImageFrame,
     shareBuffer: Boolean = false,
