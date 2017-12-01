@@ -20,17 +20,30 @@ import com.intel.analytics.bigdl.transform.vision.image.{BytesToMat, ImageFrame,
 import org.opencv.imgcodecs.Imgcodecs
 import org.scalatest.{FlatSpec, Matchers}
 
-class HFlipSpec extends FlatSpec with Matchers {
+class ColorJitterSpec extends FlatSpec with Matchers {
   val resource = getClass.getClassLoader.getResource("pascal/")
-  "HFlip" should "work properly" in {
+  "ColorJitter" should "work properly" in {
     val data = ImageFrame.read(resource.getFile)
-    val hFlip = HFlip()
-    val transformed = hFlip(data).asInstanceOf[LocalImageFrame]
-    transformed.array(0).getHeight() should be (transformed.array(0).getOriginalHeight)
-    transformed.array(0).getWidth() should be (transformed.array(0).getOriginalWidth)
+    val transformer = ColorJitter()
+    val transformed = transformer(data)
+    val imf = transformed.asInstanceOf[LocalImageFrame].array(0)
+    imf.getHeight() should be (imf.getOriginalHeight)
+    imf.getWidth() should be (imf.getOriginalWidth)
 
     val tmpFile = java.io.File.createTempFile("module", ".jpg")
-    Imgcodecs.imwrite(tmpFile.toString, transformed.array(0).opencvMat())
+    Imgcodecs.imwrite(tmpFile.toString, imf.opencvMat())
+    println(tmpFile)
+  }
+
+  "ColorJitter shuffle" should "work properly" in {
+    val data = ImageFrame.read(resource.getFile)
+    val transformer = ColorJitter(shuffle = true)
+    val transformed = transformer(data)
+    val imf = transformed.asInstanceOf[LocalImageFrame].array(0)
+    imf.getHeight() should be (imf.getOriginalHeight)
+    imf.getWidth() should be (imf.getOriginalWidth)
+    val tmpFile = java.io.File.createTempFile("module", ".jpg")
+    Imgcodecs.imwrite(tmpFile.toString, imf.opencvMat())
     println(tmpFile)
   }
 }

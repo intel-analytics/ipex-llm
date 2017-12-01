@@ -91,14 +91,14 @@ object ImageFrame {
     if (null != sc) {
       val images = sc.binaryFiles(path).map { case (p, stream) =>
         ImageFeature(stream.toArray(), uri = p)
-      }.map(BytesToMat.transform)
-      ImageFrame.rdd(images)
+      }
+      ImageFrame.rdd(images) -> BytesToMat()
     } else {
       val files = listLocalFiles(path)
       val images = files.map { p =>
         ImageFeature(FileUtils.readFileToByteArray(p), uri = p.getAbsolutePath)
-      }.map(BytesToMat.transform)
-      ImageFrame.array(images)
+      }
+      ImageFrame.array(images) -> BytesToMat()
     }
   }
 

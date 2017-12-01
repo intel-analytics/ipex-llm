@@ -17,20 +17,26 @@
 package com.intel.analytics.bigdl.transform.vision.image.augmentation
 
 import com.intel.analytics.bigdl.transform.vision.image.{BytesToMat, ImageFrame, LocalImageFrame}
-import org.opencv.imgcodecs.Imgcodecs
 import org.scalatest.{FlatSpec, Matchers}
 
-class HFlipSpec extends FlatSpec with Matchers {
+class RandomTransformerSpec extends FlatSpec with Matchers {
   val resource = getClass.getClassLoader.getResource("pascal/")
-  "HFlip" should "work properly" in {
-    val data = ImageFrame.read(resource.getFile)
-    val hFlip = HFlip()
-    val transformed = hFlip(data).asInstanceOf[LocalImageFrame]
-    transformed.array(0).getHeight() should be (transformed.array(0).getOriginalHeight)
-    transformed.array(0).getWidth() should be (transformed.array(0).getOriginalWidth)
 
-    val tmpFile = java.io.File.createTempFile("module", ".jpg")
-    Imgcodecs.imwrite(tmpFile.toString, transformed.array(0).opencvMat())
-    println(tmpFile)
+  "RandomTransformer with 0" should "work properly" in {
+    val data = ImageFrame.read(resource.getFile)
+    val transformer = RandomTransformer(FixedCrop(0, 0, 50, 50, false), 0)
+    val transformed = transformer(data)
+    val imageFeature = transformed.asInstanceOf[LocalImageFrame].array(0)
+    imageFeature.getHeight() should be(375)
+    imageFeature.getWidth() should be(500)
+  }
+
+  "RandomTransformer with 1" should "work properly" in {
+    val data = ImageFrame.read(resource.getFile)
+    val transformer = RandomTransformer(FixedCrop(0, 0, 50, 50, false), 1)
+    val transformed = transformer(data)
+    val imageFeature = transformed.asInstanceOf[LocalImageFrame].array(0)
+    imageFeature.getHeight() should be(50)
+    imageFeature.getWidth() should be(50)
   }
 }
