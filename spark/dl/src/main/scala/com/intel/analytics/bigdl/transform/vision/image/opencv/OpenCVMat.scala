@@ -19,9 +19,11 @@ package com.intel.analytics.bigdl.transform.vision.image.opencv
 import java.io.{File, IOException, ObjectInputStream, ObjectOutputStream}
 
 import com.intel.analytics.bigdl.opencv.OpenCV
+import com.intel.analytics.bigdl.transform.vision.image.util.BoundingBox
 import org.apache.commons.io.FileUtils
-import org.opencv.core.{CvType, Mat, MatOfByte}
+import org.opencv.core._
 import org.opencv.imgcodecs.Imgcodecs
+import org.opencv.imgproc.Imgproc
 
 /**
  * OpenCVMat is a Serializable wrapper of original Mat
@@ -58,6 +60,7 @@ class OpenCVMat() extends Mat with Serializable {
   }
 
   var isReleased: Boolean = false
+
   override def release(): Unit = {
     super.release()
     isReleased = true
@@ -65,10 +68,35 @@ class OpenCVMat() extends Mat with Serializable {
 
   /**
    * get shape of mat
+   *
    * @return (height, width, channel)
    */
   def shape(): (Int, Int, Int) = {
     (height(), width(), channels())
+  }
+
+  /**
+   * draw bounding box on current mat
+   * @param bbox bounding box
+   * @param text text
+   * @param font text fond
+   * @param boxColor bounding box color
+   * @param textColor text color
+   * @return
+   */
+  def drawBoundingBox(bbox: BoundingBox, text: String,
+    font: Int = Core.FONT_HERSHEY_COMPLEX_SMALL,
+    boxColor: (Double, Double, Double) = (0, 255, 0),
+    textColor: (Double, Double, Double) = (255, 255, 255)): this.type = {
+    Imgproc.rectangle(this,
+      new Point(bbox.x1, bbox.y1),
+      new Point(bbox.x2, bbox.y2),
+      new Scalar(boxColor._1, boxColor._2, boxColor._3), 3)
+    Imgproc.putText(this, text,
+      new Point(bbox.x1, bbox.y1 - 2),
+      font, 1,
+      new Scalar(textColor._1, textColor._2, textColor._3), 1)
+    this
   }
 }
 

@@ -17,10 +17,11 @@
 package com.intel.analytics.bigdl.transform.vision.image
 
 import com.google.common.io.Files
+import com.intel.analytics.bigdl.transform.vision.image.augmentation.HFlip
 import com.intel.analytics.bigdl.utils.Engine
 import org.apache.commons.io.FileUtils
 import org.apache.spark.SparkContext
-import org.apache.spark.sql.{SQLContext}
+import org.apache.spark.sql.SQLContext
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 class ImageFrameSpec extends FlatSpec with Matchers with BeforeAndAfter {
@@ -40,9 +41,10 @@ class ImageFrameSpec extends FlatSpec with Matchers with BeforeAndAfter {
   "read LocalImageFrame" should "work properly" in {
     val local = ImageFrame.read(resource.getFile).asInstanceOf[LocalImageFrame]
     local.array.length should be(1)
-    assert(local.array(0).uri.endsWith("000025.jpg"))
-    assert(local.array(0).bytes.length == 95959)
-    local.array(0).opencvMat().shape() should be((375, 500, 3))
+    val imf = local.array(0)
+    assert(imf.uri.endsWith("000025.jpg"))
+    assert(imf.bytes.length == 95959)
+    imf.opencvMat().shape() should be((375, 500, 3))
   }
 
   "LocalImageFrame toDistributed" should "work properly" in {
@@ -87,5 +89,11 @@ class ImageFrameSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
     val images4 = ImageFrame.read(resource.getFile + "0000251.jpg").asInstanceOf[LocalImageFrame]
     images4.array.length should be (0)
+  }
+
+  "transform" should "work" in {
+    val transformer = BytesToMat() -> HFlip()
+    val images = ImageFrame.read(resource.getFile)
+    images.transform(transformer)
   }
 }

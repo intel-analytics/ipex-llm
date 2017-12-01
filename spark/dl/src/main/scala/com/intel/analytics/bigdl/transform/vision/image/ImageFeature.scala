@@ -284,13 +284,10 @@ object ImageFeature {
    */
   val predict = "predict"
   /**
-   * key: store cropped box in Crop
+   * key: store boundingBox of current image
+   * it may be used in crop/expand that may change the size of image
    */
-  val cropBbox = "cropBbox"
-  /**
-   * key: store expand box in Expand
-   */
-  val expandBbox = "expandBbox"
+  val boundingBox = "boundingBox"
 
   /**
    * Create ImageFeature
