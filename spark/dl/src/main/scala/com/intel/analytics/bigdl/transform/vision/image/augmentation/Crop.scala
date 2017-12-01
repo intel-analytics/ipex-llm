@@ -136,7 +136,7 @@ class FixedCrop(x1: Float, y1: Float, x2: Float, y2: Float, normalized: Boolean,
   isClip: Boolean)
   extends Crop(normalized, isClip) {
 
-  private var cropBox: BoundingBox = _
+  @transient private var cropBox: BoundingBox = _
 
   override def generateRoi(feature: ImageFeature): BoundingBox = {
     if (null == cropBox) cropBox = BoundingBox(x1, y1, x2, y2, normalized)
