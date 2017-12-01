@@ -17,7 +17,8 @@ spark-submit --master local[physical_core_number] \
 dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
 -f Cifar-folder \
 -b batch_size \
---checkpoint ~/model
+--summary ./log \
+--checkpoint ./model
 ```
 
 Standalone cluster mode, example command
@@ -30,6 +31,7 @@ spark-submit \
 dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
 -f Cifar-folder \
 -b batchsize \
+--summary ./log \
 --checkpoint ./model
 ```
 Yarn cluster mode, example command
@@ -44,6 +46,7 @@ spark-submit \
 dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
 -f Cifar-folder \
 -b batch_size \
+--summary ./log \
 --checkpoint ./model
 ```
 In the above commands
@@ -54,6 +57,7 @@ model.#iteration_number, and train state will be named as state.#iteration_numbe
 there are some files already exist in the folder, the old file will not be overwrite for the
 safety of your model files.
 * -b: The mini-batch size. It is expected that the mini-batch size is a multiple of node_number * core_number.
+* --summary: Where you store the training metainfo, which can be visualized in tensorboard
 ## Test Model
 Example command for running in Spark local mode
 ```
