@@ -28,8 +28,6 @@ BigDL_JAR_PATH=${BigDL_HOME}/lib/bigdl*.jar
 #use local mode or cluster mode
 MASTER="local[4]"
 
-source ${BigDL_HOME}/bin/bigdl.sh
-
 export PYTHONPATH=${PYTHON_API_ZIP_PATH}:$PYTHONPATH
 export PYSPARK_DRIVER_PYTHON=jupyter
 export PYSPARK_DRIVER_PYTHON_OPTS="notebook --notebook-dir=./  --ip=* --no-browser --NotebookApp.token=''"
