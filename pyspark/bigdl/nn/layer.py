@@ -1197,6 +1197,7 @@ class LocallyConnected1D(Layer):
                  init_grad_bias=None,
                  bigdl_type="float"):
         super(LocallyConnected1D, self).__init__(None, bigdl_type,
+<<<<<<< HEAD
                                                  n_input_frame,
                                                  input_frame_size,
                                                  output_frame_size,
@@ -1209,6 +1210,20 @@ class LocallyConnected1D(Layer):
                                                  JTensor.from_ndarray(init_bias),
                                                  JTensor.from_ndarray(init_grad_weight),
                                                  JTensor.from_ndarray(init_grad_bias))
+=======
+                                                  n_input_frame,
+                                                  input_frame_size,
+                                                  output_frame_size,
+                                                  kernel_w,
+                                                  stride_w,
+                                                  propagate_back,
+                                                  weight_regularizer,
+                                                  bias_regularizer,
+                                                  JTensor.from_ndarray(init_weight),
+                                                  JTensor.from_ndarray(init_bias),
+                                                  JTensor.from_ndarray(init_grad_weight),
+                                                  JTensor.from_ndarray(init_grad_bias))
+>>>>>>> tmp stash
 
     def set_init_method(self, weight_init_method=None, bias_init_method=None):
         callBigDlFunc(self.bigdl_type, "setInitMethod", self.value,
