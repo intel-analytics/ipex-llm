@@ -39,6 +39,7 @@ import com.intel.analytics.bigdl.nn.Graph._
 import com.intel.analytics.bigdl.nn.tf.{Const, Fill, Shape, SplitAndSelect}
 import com.intel.analytics.bigdl.transform.vision.image._
 import com.intel.analytics.bigdl.transform.vision.image.augmentation._
+import com.intel.analytics.bigdl.transform.vision.image.label.roi._
 import com.intel.analytics.bigdl.transform.vision.image.opencv.OpenCVMat
 import com.intel.analytics.bigdl.utils.tf.{TensorflowDataFormat, TensorflowSaver}
 import com.intel.analytics.bigdl.utils.tf.TensorflowLoader.{buildBigDLModel, buildTFGraph, parse}
@@ -46,6 +47,7 @@ import com.intel.analytics.bigdl.utils.tf._
 import org.apache.spark.ml.{DLClassifier, DLClassifierModel, DLEstimator, DLModel}
 import org.apache.spark.sql.{DataFrame, SQLContext}
 import org.apache.log4j._
+import org.opencv.imgproc.Imgproc
 
 import scala.collection.JavaConverters._
 import scala.collection.mutable.ArrayBuffer
@@ -2307,6 +2309,112 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     HFlip()
   }
 
+  def createResize(resizeH: Int, resizeW: Int, resizeMode: Int = Imgproc.INTER_LINEAR): Resize = {
+    Resize(resizeH, resizeW, resizeMode)
+  }
+
+  def createColorJitter(brightnessProb: Double = 0.5, brightnessDelta: Double = 32,
+    contrastProb: Double = 0.5, contrastLower: Double = 0.5, contrastUpper: Double = 1.5,
+    hueProb: Double = 0.5, hueDelta: Double = 18,
+    saturationProb: Double = 0.5, saturationLower: Double = 0.5, saturationUpper: Double = 1.5,
+    randomOrderProb: Double = 0, shuffle: Boolean = false): ColorJitter = {
+    ColorJitter(brightnessProb, brightnessDelta, contrastProb,
+      contrastLower, contrastUpper, hueProb, hueDelta, saturationProb,
+      saturationLower, saturationUpper, randomOrderProb, shuffle)
+  }
+
+  def createBrightness(deltaLow: Double, deltaHigh: Double): Brightness = {
+    Brightness(deltaLow, deltaHigh)
+  }
+
+  def createChannelOrder(): ChannelOrder = {
+    ChannelOrder()
+  }
+
+  def createContrast(deltaLow: Double, deltaHigh: Double): Contrast = {
+    Contrast(deltaLow, deltaHigh)
+  }
+
+  def createRandomCrop(cropWidth: Int, cropHeight: Int, isClip: Boolean): RandomCrop = {
+    RandomCrop(cropWidth, cropHeight, isClip)
+  }
+
+  def createCenterCrop(cropWidth: Int, cropHeight: Int, isClip: Boolean): CenterCrop = {
+    CenterCrop(cropWidth, cropHeight, isClip)
+  }
+
+  def createFixedCrop(wStart: Double,
+    hStart: Double, wEnd: Double, hEnd: Double, normalized: Boolean,
+    isClip: Boolean): FixedCrop = {
+    FixedCrop(wStart.toFloat, hStart.toFloat, wEnd.toFloat, hEnd.toFloat, normalized, isClip)
+  }
+
+  def createDetectionCrop(roiKey: String, normalized: Boolean): DetectionCrop = {
+    DetectionCrop(roiKey, normalized)
+  }
+
+  def createExpand(meansR: Int = 123, meansG: Int = 117, meansB: Int = 104,
+    minExpandRatio: Double = 1.0,
+    maxExpandRatio: Double = 4.0): Expand = {
+    Expand(meansR, meansG, meansB, minExpandRatio, maxExpandRatio)
+  }
+
+  def createRandomAspectScale(scales: JList[Int], scaleMultipleOf: Int = 1,
+    maxSize: Int = 1000): RandomAspectScale = {
+    RandomAspectScale(scales.asScala.toArray, scaleMultipleOf, maxSize)
+  }
+
+  def createHue(deltaLow: Double, deltaHigh: Double): Hue = {
+    Hue(deltaLow, deltaHigh)
+  }
+
+  def createRandomTransformer(transformer: FeatureTransformer, prob: Double): RandomTransformer = {
+    RandomTransformer(transformer, prob)
+  }
+
+  def createSaturation(deltaLow: Double, deltaHigh: Double): Saturation = {
+    Saturation(deltaLow, deltaHigh)
+  }
+
+  def createRandomSampler(): FeatureTransformer = {
+    RandomSampler()
+  }
+
+  def createChannelNormalize(meanR: Double, meanG: Double, meanB: Double,
+    stdR: Double = 1, stdG: Double = 1, stdB: Double = 1): FeatureTransformer = {
+    ChannelNormalize(meanR.toFloat, meanG.toFloat, meanB.toFloat,
+      stdR.toFloat, stdG.toFloat, stdB.toFloat)
+  }
+
+  def createAspectScale(scale: Int, scaleMultipleOf: Int, maxSize: Int): FeatureTransformer = {
+    AspectScale(scale, scaleMultipleOf, maxSize)
+  }
+
+  def createFiller(startX: Double, startY: Double, endX: Double, endY: Double,
+    value: Int = 255): Filler = {
+    Filler(startX.toFloat, startY.toFloat, endX.toFloat, endY.toFloat, value)
+  }
+
+  def createPixelNormalize(means: JList[Double]): PixelNormalizer = {
+    PixelNormalizer(means.asScala.toArray.map(_.toFloat))
+  }
+
+  def createRoiProject(needMeetCenterConstraint: Boolean): RoiProject = {
+    RoiProject(needMeetCenterConstraint)
+  }
+
+  def createRoiResize(normalized: Boolean): RoiResize = {
+    RoiResize(normalized)
+  }
+
+  def createRoiHFlip(normalized: Boolean = true): RoiHFlip = {
+    RoiHFlip(normalized)
+  }
+
+  def createRoiNormalize(): RoiNormalize = {
+    RoiNormalize()
+  }
+
   def transformImageFeature(transformer: FeatureTransformer, feature: ImageFeature)
   : ImageFeature = {
     transformer.transform(feature)
@@ -2441,6 +2549,10 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
 
   def readParquet(path: String, sqlContext: SQLContext): DistributedImageFrame = {
     ImageFrame.readParquet(path, sqlContext)
+  }
+
+  def createBytesToMat(): BytesToMat = {
+    BytesToMat()
   }
 
   def isLocal(imageFrame: ImageFrame): Boolean = imageFrame.isLocal()
