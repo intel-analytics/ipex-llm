@@ -488,6 +488,10 @@ class ColorJitter(FeatureTransformer):
                                           shuffle)
 
 class RandomSampler(FeatureTransformer):
+    """
+    Random sample a bounding box given some constraints and crop the image
+    This is used in SSD training augmentation
+    """
 
     def __init__(self):
         super(RandomSampler, self).__init__(bigdl_type)

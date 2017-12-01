@@ -24,6 +24,10 @@ import org.opencv.core.Mat
 
 import scala.collection.mutable.ArrayBuffer
 
+/**
+ * Random sample a bounding box given some constraints and crop the image
+ * This is used in SSD training augmentation
+ */
 class RandomSampler extends Crop {
   // random cropping samplers
   val batchSamplers = Array(
@@ -63,4 +67,3 @@ object RandomSampler {
     new RandomSampler() -> RoiProject()
   }
 }
-

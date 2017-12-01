@@ -32,11 +32,11 @@ object BboxUtil {
   }
 
   // inplace scale
-  def scaleBBox(classBboxes: Tensor[Float], height: Float, width: Float): Unit = {
-    if (classBboxes.nElement() == 0) return
-    classBboxes.select(2, 1).mul(width)
-    classBboxes.select(2, 2).mul(height)
-    classBboxes.select(2, 3).mul(width)
-    classBboxes.select(2, 4).mul(height)
+  def scaleBBox(bboxes: Tensor[Float], height: Float, width: Float): Unit = {
+    if (bboxes.nElement() == 0) return
+    bboxes.select(2, 1).mul(width)
+    bboxes.select(2, 2).mul(height)
+    bboxes.select(2, 3).mul(width)
+    bboxes.select(2, 4).mul(height)
   }
 }

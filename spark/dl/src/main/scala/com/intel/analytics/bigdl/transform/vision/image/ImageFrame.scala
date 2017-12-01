@@ -55,6 +55,11 @@ trait ImageFrame {
    * whether this is a DistributedImageFrame
    */
   def isDistributed(): Boolean
+
+  /**
+   * this is to take the first image feature from imageFrame
+   */
+  def head(): ImageFeature
 }
 
 object ImageFrame {
@@ -173,6 +178,10 @@ class LocalImageFrame(var array: Array[ImageFeature]) extends ImageFrame {
   override def isLocal(): Boolean = true
 
   override def isDistributed(): Boolean = false
+
+  override def head(): ImageFeature = {
+    if (array.nonEmpty) array.head else null
+  }
 }
 
 /**
@@ -189,4 +198,8 @@ class DistributedImageFrame(var rdd: RDD[ImageFeature]) extends ImageFrame {
   override def isLocal(): Boolean = false
 
   override def isDistributed(): Boolean = true
+
+  override def head(): ImageFeature = {
+    rdd.take(1)(0)
+  }
 }

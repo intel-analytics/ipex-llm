@@ -19,6 +19,7 @@ package com.intel.analytics.bigdl.transform.vision.image.augmentation
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.transform.vision.image.{BytesToMat, ImageFrame, LocalImageFrame}
 import com.intel.analytics.bigdl.utils.T
+import org.opencv.imgcodecs.Imgcodecs
 import org.scalatest.{FlatSpec, Matchers}
 
 class CropSpec extends FlatSpec with Matchers {
@@ -26,49 +27,74 @@ class CropSpec extends FlatSpec with Matchers {
   "centercrop" should "work properly" in {
     val data = ImageFrame.read(resource.getFile)
     val transformer = CenterCrop(50, 50)
-    val transformed = transformer(data).asInstanceOf[LocalImageFrame]
-    transformed.array(0).getHeight() should be (50)
-    transformed.array(0).getWidth() should be (50)
+    val transformed = transformer(data)
+    transformed.head.getHeight() should be (50)
+    transformed.head.getWidth() should be (50)
+
+    val tmpFile = java.io.File.createTempFile("module", ".jpg")
+    Imgcodecs.imwrite(tmpFile.toString, transformed.head.opencvMat())
+    println(tmpFile)
   }
 
   "randomcrop" should "work properly" in {
     val data = ImageFrame.read(resource.getFile)
-    val transformer = RandomCrop(50, 50)
-    val transformed = transformer(data).asInstanceOf[LocalImageFrame]
-    transformed.array(0).getHeight() should be (50)
-    transformed.array(0).getWidth() should be (50)
+    val transformer = RandomCrop(200, 200)
+    val transformed = transformer(data)
+    transformed.head.getHeight() should be (200)
+    transformed.head.getWidth() should be (200)
+
+
+    val tmpFile = java.io.File.createTempFile("module", ".jpg")
+    Imgcodecs.imwrite(tmpFile.toString, transformed.head.opencvMat())
+    println(tmpFile)
   }
 
   "fixedCrop" should "work properly" in {
     val data = ImageFrame.read(resource.getFile)
     val transformer = FixedCrop(0, 0, 50, 50, false)
-    val transformed = transformer(data).asInstanceOf[LocalImageFrame]
-    transformed.array(0).getHeight() should be (50)
-    transformed.array(0).getWidth() should be (50)
+    val transformed = transformer(data)
+    transformed.head.getHeight() should be (50)
+    transformed.head.getWidth() should be (50)
+
+    val tmpFile = java.io.File.createTempFile("module", ".jpg")
+    Imgcodecs.imwrite(tmpFile.toString, transformed.head.opencvMat())
+    println(tmpFile)
   }
 
   "fixedCrop normalized" should "work properly" in {
     val data = ImageFrame.read(resource.getFile)
     val transformer = FixedCrop(0, 0, 50 / 500f, 50 / 375f, true)
-    val transformed = transformer(data).asInstanceOf[LocalImageFrame]
-    transformed.array(0).getHeight() should be (50)
-    transformed.array(0).getWidth() should be (50)
+    val transformed = transformer(data)
+    transformed.head.getHeight() should be (50)
+    transformed.head.getWidth() should be (50)
+
+    val tmpFile = java.io.File.createTempFile("module", ".jpg")
+    Imgcodecs.imwrite(tmpFile.toString, transformed.head.opencvMat())
+    println(tmpFile)
   }
 
   "fixedCrop clip" should "work properly" in {
     val data = ImageFrame.read(resource.getFile)
     val transformer = FixedCrop(0, 0, 600f, 700f, true)
-    val transformed = transformer(data).asInstanceOf[LocalImageFrame]
-    transformed.array(0).getHeight() should be (375)
-    transformed.array(0).getWidth() should be (500)
+    val transformed = transformer(data)
+    transformed.head.getHeight() should be (375)
+    transformed.head.getWidth() should be (500)
+
+    val tmpFile = java.io.File.createTempFile("module", ".jpg")
+    Imgcodecs.imwrite(tmpFile.toString, transformed.head.opencvMat())
+    println(tmpFile)
   }
 
   "Detection Crop" should "work properly" in {
     val data = ImageFrame.read(resource.getFile)
-    data.asInstanceOf[LocalImageFrame].array(0)("roi") = Tensor[Float](T(1, 1, 0.2, 0, 0, 0.5, 0.5))
+    data.head()("roi") = Tensor[Float](T(1, 1, 0.2, 0, 0, 0.5, 0.5))
     val transformer = DetectionCrop("roi")
-    val transformed = transformer(data).asInstanceOf[LocalImageFrame]
-    transformed.array(0).getHeight() should be (187)
-    transformed.array(0).getWidth() should be (250)
+    val transformed = transformer(data)
+    transformed.head.getHeight() should be (187)
+    transformed.head.getWidth() should be (250)
+
+    val tmpFile = java.io.File.createTempFile("module", ".jpg")
+    Imgcodecs.imwrite(tmpFile.toString, transformed.head.opencvMat())
+    println(tmpFile)
   }
 }

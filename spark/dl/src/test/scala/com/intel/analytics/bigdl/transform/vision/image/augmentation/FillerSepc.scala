@@ -17,6 +17,7 @@
 package com.intel.analytics.bigdl.transform.vision.image.augmentation
 
 import com.intel.analytics.bigdl.transform.vision.image.{BytesToMat, ImageFrame, LocalImageFrame, MatToFloats}
+import org.opencv.imgcodecs.Imgcodecs
 import org.scalatest.{FlatSpec, Matchers}
 
 class FillerSepc extends FlatSpec with Matchers {
@@ -25,14 +26,24 @@ class FillerSepc extends FlatSpec with Matchers {
   "Filler all" should "work properly" in {
     val data = ImageFrame.read(resource.getFile)
     val transformer = Filler(0, 0, 1, 1, 255) -> MatToFloats()
-    val transformed = transformer(data).asInstanceOf[LocalImageFrame]
-    transformed.array(0).floats().forall(x => x == 255) should be (true)
+    val transformed = transformer(data)
+    transformed.head.floats().forall(x => x == 255) should be (true)
   }
 
   "Filler part" should "work properly" in {
     val data = ImageFrame.read(resource.getFile)
     val transformer = Filler(0, 0, 1, 0.5f, 255) -> MatToFloats()
-    val transformed = transformer(data).asInstanceOf[LocalImageFrame]
-    transformed.array(0).floats().slice(0, 3 * 375 * 250).forall(_ == 255) should be (true)
+    val transformed = transformer(data)
+    transformed.head.floats().slice(0, 3 * 375 * 250).forall(_ == 255) should be (true)
+  }
+
+  "Filler part2" should "work properly" in {
+    val data = ImageFrame.read(resource.getFile)
+    val transformer = Filler(0, 0, 1, 0.5f, 255)
+    val transformed = transformer(data)
+
+    val tmpFile = java.io.File.createTempFile("module", ".jpg")
+    Imgcodecs.imwrite(tmpFile.toString, transformed.head.opencvMat())
+    println(tmpFile)
   }
 }

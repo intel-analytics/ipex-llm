@@ -17,15 +17,26 @@
 package com.intel.analytics.bigdl.transform.vision.image.label.roi
 
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
-import com.intel.analytics.bigdl.transform.vision.image.augmentation.{CenterCrop, Resize}
+import com.intel.analytics.bigdl.transform.vision.image.augmentation.{CenterCrop, HFlip, Resize}
+import com.intel.analytics.bigdl.transform.vision.image.opencv.OpenCVMat
+import com.intel.analytics.bigdl.transform.vision.image.util.{BboxUtil, BoundingBox}
 import com.intel.analytics.bigdl.transform.vision.image.{BytesToMat, ImageFeature, ImageFrame, LocalImageFrame}
 import com.intel.analytics.bigdl.utils.T
+import org.opencv.imgcodecs.Imgcodecs
 import org.scalatest.{FlatSpec, Matchers}
 
 class RoiTransformerSpec extends FlatSpec with Matchers {
   private def classes = Array(11.0, 11.0, 11.0, 16.0, 16.0, 16.0, 11.0, 16.0,
     16.0, 16.0, 16.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
     0.0, 0.0, 0.0, 0.0, 1.0).map(_.toFloat)
+
+  private def visualize(mat: OpenCVMat, boxes: Tensor[Float]): Unit = {
+    (1 to boxes.size(1)).foreach(i => {
+      val bbox = BoundingBox(boxes.valueAt(i, 1), boxes.valueAt(i, 2),
+        boxes.valueAt(i, 3), boxes.valueAt(i, 4))
+      mat.drawBoundingBox(bbox, "")
+    })
+  }
 
   private def boxes = Array(2.0, 84.0, 59.0, 248.0,
     68.0, 115.0, 233.0, 279.0,
@@ -49,11 +60,11 @@ class RoiTransformerSpec extends FlatSpec with Matchers {
   "RoiNormalize" should "work properly" in {
     val label = getLables
     val images = ImageFrame.read(resource.getFile)
-    images.asInstanceOf[LocalImageFrame].array(0)(ImageFeature.label) = label
+    images.head()(ImageFeature.label) = label
 
     val transformer = RoiNormalize()
     transformer(images)
-    val imageFeature = images.asInstanceOf[LocalImageFrame].array(0)
+    val imageFeature = images.head()
 
     imageFeature.getLabel[RoiLabel].classes should be(label.classes)
 
@@ -75,11 +86,11 @@ class RoiTransformerSpec extends FlatSpec with Matchers {
   "RoiHFlip" should "work properly" in {
     val label = getLables
     val images = ImageFrame.read(resource.getFile)
-    images.asInstanceOf[LocalImageFrame].array(0)(ImageFeature.label) = label
+    images.head()(ImageFeature.label) = label
 
-    val transformer = RoiHFlip(false)
+    val transformer = HFlip() -> RoiHFlip(false)
     transformer(images)
-    val imageFeature = images.asInstanceOf[LocalImageFrame].array(0)
+    val imageFeature = images.head()
 
     imageFeature.getLabel[RoiLabel].classes should be(label.classes)
 
@@ -96,16 +107,21 @@ class RoiTransformerSpec extends FlatSpec with Matchers {
       156.0, 22.0, 180.0, 96.0,
       110.0, 1.0, 163.0, 107.0)).resize(11, 4)
     boxes should be(expected)
+
+    visualize(imageFeature.opencvMat(), expected)
+    val tmpFile = java.io.File.createTempFile("module", ".jpg")
+    Imgcodecs.imwrite(tmpFile.toString, imageFeature.opencvMat())
+    println(tmpFile)
   }
 
   "RoiHFlip normalized" should "work properly" in {
     val label = getLables
     val images = ImageFrame.read(resource.getFile)
-    images.asInstanceOf[LocalImageFrame].array(0)(ImageFeature.label) = label
+    images.head()(ImageFeature.label) = label
 
     val transformer = RoiNormalize() -> RoiHFlip()
     transformer(images)
-    val imageFeature = images.asInstanceOf[LocalImageFrame].array(0)
+    val imageFeature = images.head()
 
     imageFeature.getLabel[RoiLabel].classes should be(label.classes)
 
@@ -127,11 +143,11 @@ class RoiTransformerSpec extends FlatSpec with Matchers {
   "RoiResize normalized" should "work properly" in {
     val label = getLables
     val images = ImageFrame.read(resource.getFile) -> Resize(300, 300)
-    images.asInstanceOf[LocalImageFrame].array(0)(ImageFeature.label) = label
+    images.head()(ImageFeature.label) = label
 
     val transformer = RoiNormalize() -> RoiResize()
     transformer(images)
-    val imageFeature = images.asInstanceOf[LocalImageFrame].array(0)
+    val imageFeature = images.head()
 
     imageFeature.getLabel[RoiLabel].classes should be(label.classes)
 
@@ -153,11 +169,11 @@ class RoiTransformerSpec extends FlatSpec with Matchers {
   "RoiResize normalized == false" should "work properly" in {
     val label = getLables
     val images = ImageFrame.read(resource.getFile) -> Resize(300, 300)
-    images.asInstanceOf[LocalImageFrame].array(0)(ImageFeature.label) = label
+    images.head()(ImageFeature.label) = label
 
     val transformer = RoiResize()
     transformer(images)
-    val imageFeature = images.asInstanceOf[LocalImageFrame].array(0)
+    val imageFeature = images.head()
 
     imageFeature.getLabel[RoiLabel].classes should be(label.classes)
 
@@ -174,13 +190,18 @@ class RoiTransformerSpec extends FlatSpec with Matchers {
       192.0, 17.6, 206.40001, 76.8,
       202.20001, 0.8, 234.00002, 85.6)).resize(11, 4)
     boxes should be(expected)
+
+    visualize(imageFeature.opencvMat(), expected)
+    val tmpFile = java.io.File.createTempFile("module", ".jpg")
+    Imgcodecs.imwrite(tmpFile.toString, imageFeature.opencvMat())
+    println(tmpFile)
   }
 
   "RoiProject" should "work properly" in {
     val label = getLables
     val images = ImageFrame.read(resource.getFile)
 
-    val imageFeature = images.asInstanceOf[LocalImageFrame].array(0)
+    val imageFeature = images.head()
     imageFeature(ImageFeature.label) = label
 
     val transformer = CenterCrop(300, 300) -> RoiNormalize() -> RoiProject()
@@ -196,8 +217,10 @@ class RoiTransformerSpec extends FlatSpec with Matchers {
       0.73333335, 0.0, 0.8133333, 0.195,
       0.78999996, 0.0, 0.9666667, 0.23166668)).resize(8, 4)
     boxes should be(expected)
-//    (1 to boxes.size(1)).foreach { i =>
-//      println((1 to boxes.size(2)).map(j => boxes.valueAt(i, j)).mkString(", ") + ",")
-//    }
+
+    BboxUtil.scaleBBox(expected, 300, 300)
+    visualize(imageFeature.opencvMat(), expected)
+    val tmpFile = java.io.File.createTempFile("module", ".jpg")
+    Imgcodecs.imwrite(tmpFile.toString, imageFeature.opencvMat())
   }
 }

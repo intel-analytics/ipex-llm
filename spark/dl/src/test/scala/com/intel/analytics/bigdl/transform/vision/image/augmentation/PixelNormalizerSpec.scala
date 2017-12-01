@@ -33,13 +33,13 @@ class PixelNormalizerSpec extends FlatSpec with Matchers {
       i += 3
     }
     val transformer = PixelNormalizer(means) -> MatToFloats()
-    val transformed = transformer(data).asInstanceOf[LocalImageFrame]
+    val transformed = transformer(data)
 
     val data2 = ImageFrame.read(resource.getFile)
     val toFloat = MatToFloats(meanRGB = Some(100f, 200f, 300f))
-    val transformed2 = toFloat(data2).asInstanceOf[LocalImageFrame]
+    val transformed2 = toFloat(data2)
 
-    transformed2.array(0).floats().length should be (375 * 500 * 3)
-    transformed2.array(0).floats() should equal(transformed.array(0).floats())
+    transformed2.head.floats().length should be (375 * 500 * 3)
+    transformed2.head.floats() should equal(transformed.head.floats())
   }
 }

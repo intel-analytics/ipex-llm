@@ -102,7 +102,7 @@ class BatchSampler(maxSample: Int = 1, maxTrials: Int = 50,
     BoundingBox(x1, y1, x2, y2)
   }
 
-  def jaccardOverlap(bbox: BoundingBox, gtBoxes: Tensor[Float], i: Int): Float = {
+  private def jaccardOverlap(bbox: BoundingBox, gtBoxes: Tensor[Float], i: Int): Float = {
     val gtBox = BoundingBox(gtBoxes.valueAt(i, 1),
       gtBoxes.valueAt(i, 2),
       gtBoxes.valueAt(i, 3),
@@ -116,7 +116,7 @@ class BatchSampler(maxSample: Int = 1, maxTrials: Int = 50,
 object BatchSampler {
 
   /**
-   *
+   * generate batch samples
    * @param label normalized
    * @param batchSamplers
    * @param sampledBoxes

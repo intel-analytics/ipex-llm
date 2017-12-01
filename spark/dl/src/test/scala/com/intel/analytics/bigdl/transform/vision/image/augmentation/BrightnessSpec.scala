@@ -17,6 +17,7 @@
 package com.intel.analytics.bigdl.transform.vision.image.augmentation
 
 import com.intel.analytics.bigdl.transform.vision.image.{BytesToMat, ImageFrame, LocalImageFrame}
+import org.opencv.imgcodecs.Imgcodecs
 import org.scalatest.{FlatSpec, Matchers}
 
 class BrightnessSpec extends FlatSpec with Matchers {
@@ -24,9 +25,13 @@ class BrightnessSpec extends FlatSpec with Matchers {
 
   "Brightness" should "work properly" in {
     val data = ImageFrame.read(resource.getFile)
-    val transformer = Brightness(-32, 32)
-    val transformed = transformer(data).asInstanceOf[LocalImageFrame]
-    transformed.array(0).getHeight() should be (transformed.array(0).getOriginalHeight)
-    transformed.array(0).getWidth() should be (transformed.array(0).getOriginalWidth)
+    val transformer = Brightness(0, 32)
+    val transformed = transformer(data)
+    transformed.head.getHeight() should be (transformed.head.getOriginalHeight)
+    transformed.head.getWidth() should be (transformed.head.getOriginalWidth)
+
+    val tmpFile = java.io.File.createTempFile("module", ".jpg")
+    Imgcodecs.imwrite(tmpFile.toString, transformed.head.opencvMat())
+    println(tmpFile)
   }
 }

@@ -21,6 +21,9 @@ import java.nio.file.{Files, Paths}
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.transform.vision.image.augmentation._
 import com.intel.analytics.bigdl.transform.vision.image.label.roi._
+import com.intel.analytics.bigdl.transform.vision.image.opencv.OpenCVMat
+import com.intel.analytics.bigdl.transform.vision.image.util.{BboxUtil, BoundingBox}
+import org.opencv.imgcodecs.Imgcodecs
 import org.scalatest.{FlatSpec, Matchers}
 
 class FeatureTransformerSpec extends FlatSpec with Matchers {
@@ -34,8 +37,8 @@ class FeatureTransformerSpec extends FlatSpec with Matchers {
       FixedCrop(-1, -1, -1, -1, normalized = false) ->
       MatToFloats(validHeight = 1, validWidth = 1)
     val out = imgAug(imageFrame)
-    out.asInstanceOf[LocalImageFrame].array(0).floats().length should be(3)
-    out.asInstanceOf[LocalImageFrame].array(0).isValid should be(false)
+    out.head().floats().length should be(3)
+    out.head().isValid should be(false)
   }
 
   "Image Transformer with exception" should "work properly" in {
@@ -44,8 +47,8 @@ class FeatureTransformerSpec extends FlatSpec with Matchers {
       Resize(300, 300, -1) ->
       MatToFloats(validHeight = 300, validWidth = 300)
     val out = imgAug(images)
-    out.asInstanceOf[LocalImageFrame].array(0).floats().length should be(3 * 300 * 300)
-    out.asInstanceOf[LocalImageFrame].array(0).isValid should be(false)
+    out.head().floats().length should be(3 * 300 * 300)
+    out.head().isValid should be(false)
   }
 
   "ImageAugmentation with label and random" should "work properly" in {
@@ -73,17 +76,31 @@ class FeatureTransformerSpec extends FlatSpec with Matchers {
       RandomTransformer(Expand() -> RoiProject(), 0.5) ->
       RandomSampler() ->
       Resize(300, 300, -1) ->
-      RandomTransformer(HFlip() -> RoiHFlip(), 0.5) ->
-      MatToFloats(validHeight = 300, validWidth = 300)
+      RandomTransformer(HFlip() -> RoiHFlip(), 0.5)
 
     val imageFrame = new LocalImageFrame(Array(feature))
     val out = imgAug(imageFrame)
 
-    out.asInstanceOf[LocalImageFrame].array(0).isValid should be(true)
-    out.asInstanceOf[LocalImageFrame].array(0).getOriginalHeight should be (375)
-    out.asInstanceOf[LocalImageFrame].array(0).getOriginalWidth should be (500)
-    out.asInstanceOf[LocalImageFrame].array(0).getHeight should be (300)
-    out.asInstanceOf[LocalImageFrame].array(0).getWidth should be (300)
+    out.head().isValid should be(true)
+    out.head().getOriginalHeight should be (375)
+    out.head().getOriginalWidth should be (500)
+    out.head().getHeight should be (300)
+    out.head().getWidth should be (300)
+
+    val bboxes = out.head().getLabel[RoiLabel].bboxes
+    BboxUtil.scaleBBox(bboxes, 300, 300)
+    visualize(out.head().opencvMat(), out.head().getLabel[RoiLabel].bboxes)
+    val tmpFile = java.io.File.createTempFile("module", ".jpg")
+    Imgcodecs.imwrite(tmpFile.toString, out.head().opencvMat())
+    println(tmpFile)
+  }
+
+  private def visualize(mat: OpenCVMat, boxes: Tensor[Float]): Unit = {
+    (1 to boxes.size(1)).foreach(i => {
+      val bbox = BoundingBox(boxes.valueAt(i, 1), boxes.valueAt(i, 2),
+        boxes.valueAt(i, 3), boxes.valueAt(i, 4))
+      mat.drawBoundingBox(bbox, "")
+    })
   }
 
   "ImageAugmentation" should "work properly" in {
@@ -95,10 +112,10 @@ class FeatureTransformerSpec extends FlatSpec with Matchers {
       ChannelNormalize(123, 117, 104) ->
       MatToFloats(validHeight = 300, validWidth = 300)
     val out = imgAug(imageFrame)
-    out.asInstanceOf[LocalImageFrame].array(0).isValid should be(true)
-    out.asInstanceOf[LocalImageFrame].array(0).getOriginalHeight should be (375)
-    out.asInstanceOf[LocalImageFrame].array(0).getOriginalWidth should be (500)
-    out.asInstanceOf[LocalImageFrame].array(0).getHeight should be (300)
-    out.asInstanceOf[LocalImageFrame].array(0).getWidth should be (300)
+    out.head().isValid should be(true)
+    out.head().getOriginalHeight should be (375)
+    out.head().getOriginalWidth should be (500)
+    out.head().getHeight should be (300)
+    out.head().getWidth should be (300)
   }
 }

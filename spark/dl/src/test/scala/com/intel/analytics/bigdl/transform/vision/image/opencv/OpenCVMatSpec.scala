@@ -19,6 +19,7 @@ package com.intel.analytics.bigdl.transform.vision.image.opencv
 import java.io.File
 
 import com.intel.analytics.bigdl.opencv.OpenCV
+import com.intel.analytics.bigdl.transform.vision.image.util.BoundingBox
 import com.intel.analytics.bigdl.utils.Engine
 import org.apache.commons.io.FileUtils
 import org.apache.spark.SparkContext
@@ -98,5 +99,23 @@ class OpenCVMatSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val rdd = sc.parallelize(Array(img))
     val collect = rdd.collect()
     collect(0).shape() should be(shape)
+  }
+
+  "release" should "work properly" in {
+    val img = OpenCVMat.read(resource.getFile)
+    img.release()
+    img.isReleased should be (true)
+    img.shape() should be (0, 0, 0)
+  }
+
+  "drawBoundingBox" should "work properly" in {
+    val img = OpenCVMat.read(resource.getFile)
+    val boundingBox = BoundingBox(2.0f, 84.0f, 59.0f, 248.0f, false)
+    val boundingBox2 = BoundingBox(68.0f, 115.0f, 233.0f, 279.0f, false)
+    img.drawBoundingBox(boundingBox, "boundingBox")
+    img.drawBoundingBox(boundingBox2, "boundingBox2")
+    val tmpFile = java.io.File.createTempFile("module", ".jpg")
+    Imgcodecs.imwrite(tmpFile.toString, img)
+    println(tmpFile)
   }
 }
