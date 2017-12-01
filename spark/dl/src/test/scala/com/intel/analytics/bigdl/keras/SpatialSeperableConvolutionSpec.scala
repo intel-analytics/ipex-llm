@@ -15,22 +15,20 @@
  */
 package com.intel.analytics.bigdl.keras
 
-import com.intel.analytics.bigdl.nn.CategoricalCrossEntropy
+import com.intel.analytics.bigdl.nn.abstractnn.DataFormat
+import com.intel.analytics.bigdl.nn.{CategoricalCrossEntropy, SpatialSeperableConvolution}
 
 class SpatialSeperableConvolutionSpec extends KerasBaseSpec {
   "SpatialSeperableConvolution" should "be ok" in {
     ifskipTest()
     val kerasCode =
       """
-        |input_tensor = Input(shape=[3])
-        |target_tensor = Input(shape=[3])
-        |loss = categorical_crossentropy(input_tensor, target_tensor)
-        |input = np.random.uniform(0, 1, [2, 3])
-        |Y = np.zeros((2, 3))
-        |index = np.array([1, 2])
-        |Y[np.arange(2), index] = 1
+        |input_tensor = Input(shape=[28, 28, 3])
+        |output_tensor = SeparableConv2D(6, (3, 3))(input_tensor)
+        |model = Model(input=input_tensor, output=output_tensor)
+        |input = np.random.uniform(0, 1, [4, 28, 28, 3])
       """.stripMargin
-    val criterion = CategoricalCrossEntropy[Float]()
-    checkOutputAndGradForLoss(criterion, kerasCode)
+    val layer = SpatialSeperableConvolution[Float](3, 6, 1, 3, 3, dataFormat = DataFormat.NHWC)
+    checkOutputAndGrad(layer, kerasCode)
   }
 }
