@@ -1693,8 +1693,10 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def modelPredictRDD(model: AbstractModule[Activity, Activity, T],
-                      dataRdd: JavaRDD[Sample]): JavaRDD[JTensor] = {
-    val tensorRDD = model.predict(dataRdd.rdd.map(toJSample(_)))
+                      dataRdd: JavaRDD[Sample],
+                      batchSize: Int = -1,
+                      shareBuffer: Boolean = false): JavaRDD[JTensor] = {
+    val tensorRDD = model.predict(dataRdd.rdd.map(toJSample(_)), batchSize, shareBuffer)
     val listRDD = tensorRDD.map { res =>
       val tensor = res.asInstanceOf[Tensor[T]]
       val cloneTensor = tensor.clone()
@@ -1710,9 +1712,9 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def modelPredictClass(model: AbstractModule[Activity, Activity, T],
-                      dataRdd: JavaRDD[Sample]): JavaRDD[Int] = {
+    dataRdd: JavaRDD[Sample], batchSize: Int = -1): JavaRDD[Int] = {
     val sampleRdd = toJSample(dataRdd)
-    val tensorRDD = model.predictClass(sampleRdd)
+    val tensorRDD = model.predictClass(sampleRdd, batchSize)
     new JavaRDD[Int](tensorRDD)
   }
 
