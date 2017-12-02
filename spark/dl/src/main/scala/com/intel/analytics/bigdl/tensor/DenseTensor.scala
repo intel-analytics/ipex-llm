@@ -373,10 +373,11 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
   }
 
   override def set(): Tensor[T] = {
-    this.resize(0)
-    if(this._storage != null) {
+    if (this._storage != null) {
       this._storage.resize(0)
     }
+    this.nDimension = 0
+    this._size = Array[Int]()
     this
   }
 
@@ -1160,6 +1161,10 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
    */
   override def cmax(x: Tensor[T], y: Tensor[T]): Tensor[T] = DenseTensorMath.cmax(this, x, y)
 
+  override def cmin(y: Tensor[T]): Tensor[T] = DenseTensorMath.cmin(this, this, y)
+
+  override def cmin(x: Tensor[T], y: Tensor[T]): Tensor[T] = DenseTensorMath.cmin(this, x, y)
+
   override def mul(x: Tensor[T], value: T): Tensor[T] = DenseTensorMath.mul(this, x, value)
 
   override def mul(value: T): Tensor[T] = DenseTensorMath.mul(this, null, value)
@@ -1646,7 +1651,7 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
   }
 
   override def topk(k: Int, dim: Int, increase: Boolean, result: Tensor[T],
-    indices: Tensor[T]): (Tensor[T], Tensor[T]) = {
+    indices: Tensor[T], sortedResult: Boolean = true): (Tensor[T], Tensor[T]) = {
     val selectDim = if (dim == -1) this.dim() else dim
     require(selectDim > 0 && selectDim <= this.nDimension)
 
@@ -1676,8 +1681,13 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
           if (increase) ev.isGreater(r._1, l._1) else ev.isGreater(l._1, r._1))
         i = 0
         while (i < k) {
-          vdata(voffset + i * vstride) = sorted(i)._1
-          idata(ioffset + i * istride) = ev.fromType(sorted(i)._2)
+          if (sortedResult) {
+            vdata(voffset + i * vstride) = sorted(i)._1
+            idata(ioffset + i * istride) = ev.fromType(sorted(i)._2)
+          } else {
+            vdata(voffset + (k - i - 1) * vstride) = sorted(i)._1
+            idata(ioffset + (k - i - 1) * istride) = ev.fromType(sorted(i)._2)
+          }
           i += 1
         }
       })
@@ -1688,6 +1698,8 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
   override def pow(x: Tensor[T], n: T): Tensor[T] = DenseTensorMath.pow[T](this, x, n)
 
   override def pow(n: T): Tensor[T] = DenseTensorMath.pow[T](this, this, n)
+
+  override def square(): Tensor[T] = pow(ev.fromType(2.0))
 
   override def log(x: Tensor[T]): Tensor[T] = DenseTensorMath.log[T](this, x)
 
@@ -1932,12 +1944,12 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
   override def sign(): Tensor[T] = {
     val func = new TensorFunc2[T] {
       override def apply(data1: Array[T], offset1: Int): Unit = {
-        if (ev.isGreater(data1(offset1), ev.fromType(0))) {
-          data1(offset1) = ev.fromType(1)
-        } else if (ev.isGreater(ev.fromType(0), data1(offset1))) {
+        if (ev.isGreater(data1(offset1), ev.zero)) {
+          data1(offset1) = ev.one
+        } else if (ev.isGreater(ev.zero, data1(offset1))) {
           data1(offset1) = ev.fromType(-1)
         } else {
-          data1(offset1) = ev.fromType(0)
+          data1(offset1) = ev.zero
         }
       }
     }
@@ -2110,9 +2122,30 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
     this.apply1(a => ev.floor(a))
   }
 
+  override def ceil(): Tensor[T] = {
+    this.apply1(a => ev.ceil(a))
+  }
+
   override def negative(x: Tensor[T]): Tensor[T] = {
     this.map(x, (a, b) => ev.negative(b))
     this
+  }
+
+  override def inv(): Tensor[T] = {
+    this.apply1(a => ev.inv(a))
+  }
+
+  override def reduce(dim: Int, result: Tensor[T], reducer: (T, T) => T): Tensor[T] = {
+    DenseTensorDimApply.dimApply2[T](result.asInstanceOf[DenseTensor[T]], this, dim - 1,
+      (r, rOffset, rStride, rSize, t, tOffset, tStride, tSize) => {
+        r(rOffset) = t(tOffset)
+        var i = 1
+        while(i < tSize) {
+          r(rOffset) = reducer(r(rOffset), t(tOffset + i * tStride))
+          i += 1
+        }
+      })
+    result
   }
 }
 
@@ -2215,19 +2248,14 @@ object DenseTensor {
     var hasCorrectSize = true
     var nDim_ = 0
     var d = 0
-    var break = false
-    while (d < nDim && !break) {
-      if (_size(d) > 0) {
-        nDim_ = nDim_ + 1
-        if (self.nDimension > d && _size(d) != self._size(d)) {
-          hasCorrectSize = false
-        }
-        if (self.nDimension > d && _stride != null && _stride(d) >= 0 &&
-          _stride(d) != self._stride(d)) {
-          hasCorrectSize = false
-        }
-      } else {
-        break = true
+    while (d < nDim) {
+      nDim_ = nDim_ + 1
+      if (self.nDimension > d && _size(d) != self._size(d)) {
+        hasCorrectSize = false
+      }
+      if (self.nDimension > d && _stride != null && _stride(d) >= 0 &&
+        _stride(d) != self._stride(d)) {
+        hasCorrectSize = false
       }
       d += 1
     }

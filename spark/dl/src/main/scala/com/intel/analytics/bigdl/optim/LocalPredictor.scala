@@ -17,12 +17,12 @@
 package com.intel.analytics.bigdl.optim
 
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.dataset.{LocalDataSet, MiniBatch, Sample, SampleToBatch}
+import com.intel.analytics.bigdl.dataset._
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{Engine, MklBlas}
-
+import com.intel.analytics.bigdl.dataset.SampleToMiniBatch
 
 import scala.reflect.ClassTag
 
@@ -102,8 +102,8 @@ class LocalPredictor[T: ClassTag] private[optim](model: Module[T], weightsBias: 
 
   def predict(dataSet: Array[Sample[T]]): Array[Activity] = {
     val iter = dataSet.iterator
-    val transformer = SampleToBatch[T](
-      batchSize = batchPerCore * subModelNumber, None, None, None,
+    val transformer = SampleToMiniBatch[T](
+      batchSize = batchPerCore * subModelNumber, None, None,
       partitionNum = Some(1))
     val dataIter = transformer(iter)
 
@@ -126,7 +126,7 @@ class LocalPredictor[T: ClassTag] private[optim](model: Module[T], weightsBias: 
             val currentMiniBatch = batch.slice(offset, length)
             val input = currentMiniBatch.getInput()
             val output = workingModels(b).forward(input).toTensor[T]
-            output
+            output.clone()
 
           }
         )

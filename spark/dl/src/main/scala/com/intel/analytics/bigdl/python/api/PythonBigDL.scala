@@ -29,21 +29,27 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{Table, _}
 import com.intel.analytics.bigdl.visualization.{Summary, TrainSummary, ValidationSummary}
 import com.intel.analytics.bigdl.nn.Zeros
-import org.apache.spark.api.java.JavaRDD
+import org.apache.spark.api.java.{JavaRDD, JavaSparkContext}
 import org.apache.spark.rdd.RDD
 import java.lang.{Integer, Boolean => JBoolean}
 import java.nio.ByteOrder
+import java.util
 
 import com.intel.analytics.bigdl.nn.Graph._
 import com.intel.analytics.bigdl.nn.tf.{Const, Fill, Shape, SplitAndSelect}
+import com.intel.analytics.bigdl.transform.vision.image._
+import com.intel.analytics.bigdl.transform.vision.image.augmentation._
+import com.intel.analytics.bigdl.transform.vision.image.label.roi._
+import com.intel.analytics.bigdl.transform.vision.image.opencv.OpenCVMat
+import com.intel.analytics.bigdl.utils.tf.{TensorflowDataFormat, TensorflowSaver}
 import com.intel.analytics.bigdl.utils.tf.TensorflowLoader.{buildBigDLModel, buildTFGraph, parse}
-import com.intel.analytics.bigdl.utils.tf.{BigDLSessionImpl, Context, TensorflowDataFormat, TensorflowSaver}
+import com.intel.analytics.bigdl.utils.tf._
+import org.apache.spark.ml.{DLClassifier, DLClassifierModel, DLEstimator, DLModel}
+import org.apache.spark.sql.{DataFrame, SQLContext}
 import org.apache.log4j._
-import org.apache.spark.SparkContext
-import org.tensorflow.framework.NodeDef
+import org.opencv.imgproc.Imgproc
 
 import scala.collection.JavaConverters._
-import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 import scala.language.existentials
 import scala.reflect.ClassTag
@@ -126,13 +132,21 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     this.typeName match {
       case "float" =>
         if (null == jTensor.indices) {
-          Tensor(jTensor.storage.map(x => ev.fromType(x)), jTensor.shape)
+          if (jTensor.shape == null || jTensor.shape.length == 0) {
+            Tensor()
+          } else {
+            Tensor(jTensor.storage.map(x => ev.fromType(x)), jTensor.shape)
+          }
         } else {
           Tensor.sparse(jTensor.indices, jTensor.storage.map(x => ev.fromType(x)), jTensor.shape)
         }
       case "double" =>
         if (null == jTensor.indices) {
-          Tensor(jTensor.storage.map(x => ev.fromType(x.toDouble)), jTensor.shape)
+          if (jTensor.shape == null || jTensor.shape.length == 0) {
+            Tensor()
+          } else {
+            Tensor(jTensor.storage.map(x => ev.fromType(x.toDouble)), jTensor.shape)
+          }
         } else {
           Tensor.sparse(jTensor.indices,
             jTensor.storage.map(x => ev.fromType(x.toDouble)), jTensor.shape)
@@ -159,7 +173,11 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
         }
       case DenseType =>
         if (tensor.nElement() == 0) {
-          JTensor(Array(), Array(0), bigdlType = typeName)
+          if (tensor.dim() == 0) {
+            JTensor(null, null, bigdlType = typeName)
+          } else {
+            JTensor(Array(), tensor.size(), bigdlType = typeName)
+          }
         } else {
           val cloneTensor = tensor.clone()
           val result = JTensor(cloneTensor.storage().array().map(i => ev.toType[Float](i)),
@@ -179,21 +197,62 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
 
 
   def testSample(sample: Sample): Sample = {
-    val jsample = toSample(sample)
+    val jsample = toJSample(sample)
     toPySample(jsample)
   }
 
-  def toSample(record: Sample): JSample[T] = {
+  def toJSample(record: Sample): JSample[T] = {
     require(record.bigdlType == this.typeName,
       s"record.bigdlType: ${record.bigdlType} == this.typeName: ${this.typeName}")
     JSample[T](record.features.asScala.toArray.map(toTensor(_)), toTensor(record.label))
   }
 
-  private def batching(rdd: RDD[Sample], batchSize: Int)
-  : DistributedDataSet[MiniBatch[T]] = {
-    val recordRDD = rdd.map(toSample(_))
-    (DataSet.rdd(recordRDD) -> SampleToMiniBatch[T](batchSize))
-      .asInstanceOf[DistributedDataSet[MiniBatch[T]]]
+  def toJSample(psamples: RDD[Sample]): RDD[JSample[T]] = {
+    psamples.map(toJSample(_))
+  }
+
+  // The first dimension is batch for both X and y
+  private def toSampleArray(Xs: List[Tensor[T]], y: Tensor[T] = null): Array[JSample[T]] = {
+    require(!Xs.isEmpty, "Xs should not be empty")
+    val totalNum = Xs(0).size()(0)
+    var i = 1
+    val samples = new Array[JSample[T]](totalNum)
+
+    if (y != null) {
+      require(Xs(0).size()(0) == y.size()(0),
+        s"The batch dim should be equal, but we got: ${Xs(0).size()(0)} vs ${y.size()(0)}")
+      while (i <= totalNum) {
+        samples(i-1) = JSample(Xs.map{X => X.select(1, i)}.toArray, y.select(1, i))
+        i += 1
+      }
+    } else {
+      val dummyTensor = Tensor[T](1).fill(ev.fromType(1))
+      while (i <= totalNum) {
+        samples(i-1) = JSample(Xs.map{X => X.select(1, i)}.toArray, dummyTensor)
+        i += 1
+      }
+    }
+
+    samples
+  }
+
+
+  def batching(dataset: DataSet[JSample[T]], batchSize: Int)
+  : DataSet[MiniBatch[T]] = {
+    dataset -> SampleToMiniBatch[T](batchSize)
+  }
+
+  private def enrichOptimizer[T](optimizer: Optimizer[T, MiniBatch[T]],
+                                 endTrigger: Trigger,
+                                 optimMethod: OptimMethod[T]): Optimizer[T, MiniBatch[T]] = {
+    optimizer.setEndWhen(endTrigger)
+
+    optimizer.setOptimMethod(optimMethod)
+
+    // TODO: remove this
+    optimizer.disableCheckSingleton()
+
+    optimizer
   }
 
   def createSequential(): Sequential[T] = {
@@ -279,20 +338,26 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     inputSize: Int,
     outputSize: Int,
     p: Double = 0,
+    activation: TensorModule[T] = null,
+    innerActivation: TensorModule[T] = null,
     wRegularizer: Regularizer[T] = null,
     uRegularizer: Regularizer[T] = null,
     bRegularizer: Regularizer[T] = null): GRU[T] = {
-    GRU[T](inputSize, outputSize, p, wRegularizer, uRegularizer, bRegularizer)
+    GRU[T](inputSize, outputSize, p, activation, innerActivation,
+      wRegularizer, uRegularizer, bRegularizer)
   }
 
   def createLSTM(
     inputSize: Int,
     hiddenSize: Int,
     p: Double = 0,
+    activation: TensorModule[T] = null,
+    innerActivation: TensorModule[T] = null,
     wRegularizer: Regularizer[T] = null,
     uRegularizer: Regularizer[T] = null,
     bRegularizer: Regularizer[T] = null): LSTM[T] = {
-    LSTM[T](inputSize, hiddenSize, p, wRegularizer, uRegularizer, bRegularizer)
+    LSTM[T](inputSize, hiddenSize, p, activation, innerActivation,
+      wRegularizer, uRegularizer, bRegularizer)
   }
 
   def createLSTMPeephole(
@@ -319,12 +384,16 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     kernelI: Int,
     kernelC: Int,
     stride: Int = 1,
+    padding: Int = -1,
+    activation: TensorModule[T] = null,
+    innerActivation: TensorModule[T] = null,
     wRegularizer: Regularizer[T] = null,
     uRegularizer: Regularizer[T] = null,
     bRegularizer: Regularizer[T] = null,
     cRegularizer: Regularizer[T] = null,
     withPeephole: Boolean = true): ConvLSTMPeephole[T] = {
-    ConvLSTMPeephole[T](inputSize, outputSize, kernelI, kernelC, stride,
+    ConvLSTMPeephole[T](inputSize, outputSize, kernelI, kernelC,
+      stride, padding, activation, innerActivation,
       wRegularizer, uRegularizer, bRegularizer, cRegularizer, withPeephole)
   }
 
@@ -334,12 +403,13 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     kernelI: Int,
     kernelC: Int,
     stride: Int = 1,
+    padding: Int = -1,
     wRegularizer: Regularizer[T] = null,
     uRegularizer: Regularizer[T] = null,
     bRegularizer: Regularizer[T] = null,
     cRegularizer: Regularizer[T] = null,
     withPeephole: Boolean = true): ConvLSTMPeephole3D[T] = {
-    ConvLSTMPeephole3D[T](inputSize, outputSize, kernelI, kernelC, stride,
+    ConvLSTMPeephole3D[T](inputSize, outputSize, kernelI, kernelC, stride, padding,
       wRegularizer, uRegularizer, bRegularizer, cRegularizer, withPeephole)
   }
 
@@ -478,13 +548,23 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     Dropout[T](initP, inplace, scale)
   }
 
+  def createGaussianDropout(rate: Double)
+  : GaussianDropout[T] = {
+    GaussianDropout[T](rate)
+  }
+
+  def createGaussianNoise(stddev: Double)
+  : GaussianNoise[T] = {
+    GaussianNoise[T](stddev)
+  }
+
   def createView(sizes: JList[Int], num_input_dims: Int = 0): View[T] = {
     View[T](sizes.asScala.toArray).setNumInputDims(num_input_dims)
   }
 
   def createAbs()
-  : Abs[T] = {
-    Abs[T]()
+  : Abs[T, T] = {
+    Abs[T, T]()
   }
 
   def createAdd(inputSize: Int)
@@ -554,6 +634,11 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     CAddTable[T](inplace)
   }
 
+  def createCAveTable(inplace: Boolean = false)
+  : CAveTable[T] = {
+    CAveTable[T](inplace)
+  }
+
   def createCDivTable()
   : CDivTable[T] = {
     CDivTable[T]()
@@ -587,8 +672,8 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
 
   def createClamp(min: Int,
     max: Int)
-  : Clamp[T] = {
-    Clamp[T](min,
+  : Clamp[T, T] = {
+    Clamp[T, T](min,
       max)
   }
 
@@ -627,8 +712,8 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
 
   def createELU(alpha: Double = 1.0,
     inplace: Boolean = false)
-  : ELU[T] = {
-    ELU[T](alpha,
+  : ELU[T, T] = {
+    ELU[T, T](alpha,
       inplace)
   }
 
@@ -664,8 +749,8 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   def createHardTanh(minValue: Double = -1,
     maxValue: Double = 1,
     inplace: Boolean = false)
-  : HardTanh[T] = {
-    HardTanh[T](minValue,
+  : HardTanh[T, T] = {
+    HardTanh[T, T](minValue,
       maxValue,
       inplace)
   }
@@ -714,8 +799,8 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def createLog()
-  : Log[T] = {
-    Log[T]()
+  : Log[T, T] = {
+    Log[T, T]()
   }
 
   def createLogSigmoid()
@@ -853,8 +938,8 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   def createPower(power: Double,
     scale: Double = 1,
     shift: Double = 0)
-  : Power[T] = {
-    Power[T](power,
+  : Power[T, T] = {
+    Power[T, T](power,
       scale,
       shift)
   }
@@ -869,8 +954,8 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def createReLU6(inplace: Boolean = false)
-  : ReLU6[T] = {
-    ReLU6[T](inplace)
+  : ReLU6[T, T] = {
+    ReLU6[T, T](inplace)
   }
 
   def createReplicate(nFeatures: Int,
@@ -922,8 +1007,8 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def createSoftPlus(beta: Double = 1.0)
-  : SoftPlus[T] = {
-    SoftPlus[T](beta)
+  : SoftPlus[T, T] = {
+    SoftPlus[T, T](beta)
   }
 
   def createSoftShrink(lambda: Double = 0.5)
@@ -932,8 +1017,8 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def createSoftSign()
-  : SoftSign[T] = {
-    SoftSign[T]()
+  : SoftSign[T, T] = {
+    SoftSign[T, T]()
   }
 
   def createSpatialDilatedConvolution(nInputPlane: Int,
@@ -1137,13 +1222,13 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def createSqrt()
-  : Sqrt[T] = {
-    Sqrt[T]()
+  : Sqrt[T, T] = {
+    Sqrt[T, T]()
   }
 
   def createSquare()
-  : Square[T] = {
-    Square[T]()
+  : Square[T, T] = {
+    Square[T, T]()
   }
 
   def createSqueeze(dim: Int = Int.MinValue,
@@ -1319,6 +1404,21 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     VolumetricMaxPooling[T](kT, kW, kH, dT, dW, dH, padT, padW, padH)
   }
 
+  def createVolumetricAveragePooling(kT: Int,
+                                 kW: Int,
+                                 kH: Int,
+                                 dT: Int,
+                                 dW: Int,
+                                 dH: Int,
+                                 padT: Int = 0,
+                                 padW: Int = 0,
+                                 padH: Int = 0,
+                                 countIncludePad: Boolean = true,
+                                 ceilMode: Boolean = false):
+  VolumetricAveragePooling[T] = {
+    VolumetricAveragePooling[T](kT, kW, kH, dT, dW, dH, padT, padW, padH, countIncludePad, ceilMode)
+  }
+
   def createSpatialDivisiveNormalization(nInputPlane: Int = 1,
     kernel: JTensor = null,
     threshold: Double = 1e-4,
@@ -1371,10 +1471,10 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def createClassNLLCriterion(weights: JTensor = null,
-    sizeAverage: Boolean = true)
+    sizeAverage: Boolean = true, logProbAsInput: Boolean = true)
   : ClassNLLCriterion[T] = {
     ClassNLLCriterion[T](if (weights == null) null else toTensor(weights),
-      sizeAverage)
+      sizeAverage, logProbAsInput)
   }
 
   def createMSECriterion: MSECriterion[T] = {
@@ -1422,10 +1522,10 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def createMarginCriterion(margin: Double = 1.0,
-    sizeAverage: Boolean = true)
+    sizeAverage: Boolean = true, squared: Boolean = false)
   : MarginCriterion[T] = {
     MarginCriterion[T](margin,
-      sizeAverage)
+      sizeAverage, squared)
   }
 
   def createMarginRankingCriterion(margin: Double = 1.0,
@@ -1492,16 +1592,24 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     Pack(dimension)
   }
 
+  def createTile(dim : Int, copies : Int): Tile[T] = {
+    Tile(dim, copies)
+  }
+
+  def createBinaryThreshold(th: Double, ip: Boolean): BinaryThreshold[T] = {
+    BinaryThreshold(th, ip)
+  }
+
   def setModelSeed(seed: Long): Unit = {
     RandomGenerator.RNG.setSeed(seed)
   }
 
   def modelEvaluate(model: AbstractModule[Activity, Activity, T],
-    valRDD: JavaRDD[Sample],
-    batchSize: Int,
-    valMethods: JList[ValidationMethod[T]])
+                    valRDD: JavaRDD[Sample],
+                    batchSize: Int,
+                    valMethods: JList[ValidationMethod[T]])
   : JList[EvaluatedResult] = {
-    val resultArray = model.evaluate(valRDD.rdd.map(toSample(_)),
+    val resultArray = model.evaluate(valRDD.rdd.map(toJSample(_)),
       valMethods.asScala.toArray, Some(batchSize))
     val testResultArray = resultArray.map { result =>
       EvaluatedResult(result._1.result()._1, result._1.result()._2,
@@ -1534,13 +1642,13 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def loadTF(path: String, inputs: JList[String], outputs: JList[String],
-    byteOrder: String): AbstractModule[Activity, Activity, T] = {
+    byteOrder: String, binFile: String = null): AbstractModule[Activity, Activity, T] = {
     val order = byteOrder match {
       case "little_endian" => ByteOrder.LITTLE_ENDIAN
       case "big_endian" => ByteOrder.BIG_ENDIAN
       case _ => throw new IllegalArgumentException(s"No support byte order $byteOrder")
     }
-    Module.loadTF[T](path, inputs.asScala, outputs.asScala, order)
+    Module.loadTF[T](path, inputs.asScala, outputs.asScala, order, Option(binFile))
   }
 
   def saveTF(model: AbstractModule[Activity, Activity, T],
@@ -1568,11 +1676,27 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     model.saveTF(scalaInputs, path, order, format)
   }
 
+  def predictLocal(model: AbstractModule[Activity, Activity, T],
+                   features: JList[JTensor]): JList[JTensor] = {
+    val sampleArray = toSampleArray(features.asScala.toList.map{f => toTensor(f)})
+    val localModel = LocalModule(model)
+    val result = localModel.predict(sampleArray)
+    result.map{a => toJTensor(a.asInstanceOf[Tensor[T]])}.toList.asJava
+  }
+
+  def predictLocalClass(model: AbstractModule[Activity, Activity, T],
+                        features: JList[JTensor]): JList[Int] = {
+    val sampleArray = toSampleArray(features.asScala.toList.map{f => toTensor(f)})
+    val localModel = LocalModule(model)
+    val result = localModel.predictClass(sampleArray)
+    result.toList.asJava
+  }
+
   def modelPredictRDD(model: AbstractModule[Activity, Activity, T],
                       dataRdd: JavaRDD[Sample],
                       batchSize: Int = -1,
                       shareBuffer: Boolean = false): JavaRDD[JTensor] = {
-    val tensorRDD = model.predict(dataRdd.rdd.map(toSample(_)), batchSize, shareBuffer)
+    val tensorRDD = model.predict(dataRdd.rdd.map(toJSample(_)), batchSize, shareBuffer)
     val listRDD = tensorRDD.map { res =>
       val tensor = res.asInstanceOf[Tensor[T]]
       val cloneTensor = tensor.clone()
@@ -1589,7 +1713,8 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
 
   def modelPredictClass(model: AbstractModule[Activity, Activity, T],
     dataRdd: JavaRDD[Sample], batchSize: Int = -1): JavaRDD[Int] = {
-    val tensorRDD = model.predictClass(dataRdd.rdd.map(toSample(_)), batchSize)
+    val sampleRdd = toJSample(dataRdd)
+    val tensorRDD = model.predictClass(sampleRdd, batchSize)
     new JavaRDD[Int](tensorRDD)
   }
 
@@ -1789,45 +1914,58 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def trainTF(
-    modelPath: String,
-    output: String,
-    samples: JavaRDD[Sample],
-    optMethod: OptimMethod[T],
-    criterion: Criterion[T],
-    batchSize: Int,
-    endWhen: Trigger): AbstractModule[Activity, Activity, T] = {
+               modelPath: String,
+               output: String,
+               samples: JavaRDD[Sample],
+               optMethod: OptimMethod[T],
+               criterion: Criterion[T],
+               batchSize: Int,
+               endWhen: Trigger): AbstractModule[Activity, Activity, T] = {
     val nodeList = parse(modelPath)
 
     val context = new Context[T]()
     val session = new BigDLSessionImpl[T](nodeList.asScala, context, ByteOrder.LITTLE_ENDIAN)
-    val dataset = batching(samples, batchSize)
-
+    val dataset = batching(DataSet.rdd(toJSample(samples)),
+      batchSize).asInstanceOf[DistributedDataSet[MiniBatch[T]]]
     val model = session.train(Seq(output), dataset,
       optMethod, criterion, endWhen)
     model
   }
 
-  def createOptimizer(model: AbstractModule[Activity, Activity, T],
-    trainingRdd: JavaRDD[Sample],
-    criterion: Criterion[T],
-    optimMethod: OptimMethod[T],
-    endTrigger: Trigger,
-    batchSize: Int): Optimizer[T, MiniBatch[T]] = {
+  def createLocalOptimizer(features: JList[JTensor],
+                           y: JTensor,
+                           model: AbstractModule[Activity, Activity, T],
+                           criterion: Criterion[T],
+                           optimMethod: OptimMethod[T],
+                           endTrigger: Trigger,
+                           batchSize: Int,
+                           localCores: Int): Optimizer[T, MiniBatch[T]] = {
+    val sampleArray = toSampleArray(features.asScala.toList.map{f => toTensor(f)}, toTensor(y))
+    val optimizer = new LocalOptimizer[T](
+      model,
+      batching(DataSet.array(sampleArray), batchSize)
+        .asInstanceOf[LocalDataSet[MiniBatch[T]]],
+      criterion
+    ).asInstanceOf[Optimizer[T, MiniBatch[T]]]
+    Engine.setNodeAndCore(1, localCores)
+    enrichOptimizer(optimizer, endTrigger, optimMethod)
+  }
+
+  def createDistriOptimizer(model: AbstractModule[Activity, Activity, T],
+                            trainingRdd: JavaRDD[Sample],
+                            criterion: Criterion[T],
+                            optimMethod: OptimMethod[T],
+                            endTrigger: Trigger,
+                            batchSize: Int): Optimizer[T, MiniBatch[T]] = {
+    val sampleRDD = toJSample(trainingRdd)
+
     val optimizer = new DistriOptimizer(
       _model = model,
-      dataset = batching(trainingRdd, batchSize),
+      dataset = batching(DataSet.rdd(sampleRDD), batchSize)
+        .asInstanceOf[DistributedDataSet[MiniBatch[T]]],
       criterion = criterion
     ).asInstanceOf[Optimizer[T, MiniBatch[T]]]
-    // TODO: we should provide a more convenient way to create Table
-
-    optimizer.setEndWhen(endTrigger)
-
-    optimizer.setOptimMethod(optimMethod)
-
-    // TODO: remove this
-    optimizer.disableCheckSingleton()
-
-    optimizer
+    enrichOptimizer(optimizer, endTrigger, optimMethod)
   }
 
   def createL1L2Regularizer(l1: Double, l2: Double): L1L2Regularizer[T] = {
@@ -1843,11 +1981,13 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def setValidation(optimizer: Optimizer[T, MiniBatch[T]],
-    batchSize: Int,
-    trigger: Trigger,
-    valRdd: JavaRDD[Sample],
-    vMethods: JList[ValidationMethod[T]]): Unit = {
-    optimizer.setValidation(trigger, batching(valRdd, batchSize.toInt), vMethods.asScala.toArray)
+                    batchSize: Int,
+                    trigger: Trigger,
+                    valRdd: JavaRDD[Sample],
+                    vMethods: JList[ValidationMethod[T]]): Unit = {
+    val sampleRDD = toJSample(valRdd)
+    optimizer.setValidation(trigger, batching(DataSet.rdd(sampleRDD), batchSize.toInt),
+      vMethods.asScala.toArray)
   }
 
   def setCheckPoint(optimizer: Optimizer[T, MiniBatch[T]],
@@ -1967,8 +2107,16 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     Xavier
   }
 
+  def createMsraFiller(varianceNormAverage: Boolean = true): MsraFiller = {
+    MsraFiller(varianceNormAverage)
+  }
+
   def createBilinearFiller(): BilinearFiller.type = {
     BilinearFiller
+  }
+
+  def createHardSigmoid : HardSigmoid[T] = {
+    HardSigmoid()
   }
 
   def setInitMethod(layer: Initializable, weightInitMethod: InitializationMethod,
@@ -2017,6 +2165,16 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
       alignCorner)
   }
 
+  def createHighway(size: Int, withBias: Boolean, activation: String,
+    wRegularizer: Regularizer[T] = null,
+    bRegularizer: Regularizer[T] = null): Graph[T] = {
+    Highway(size, withBias, activation, wRegularizer, bRegularizer)
+  }
+
+  def createUpSampling3D(size: JList[Int]): UpSampling3D[T] = {
+    UpSampling3D(size.asScala.toArray)
+  }
+
   def redirectSparkLogs(logPath: String): Unit = {
     LoggerFilter.redirectSparkInfoLogs(logPath)
   }
@@ -2028,6 +2186,380 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   def quantize(module: AbstractModule[Activity, Activity, T]): Module[T] = {
     module.quantize()
   }
+
+  def createDLEstimator(model: Module[T], criterion: Criterion[T],
+                        featureSize: JArrayList[Int],
+                        labelSize: JArrayList[Int]): DLEstimator[T] = {
+    new DLEstimator[T](model, criterion, featureSize.asScala.toArray, labelSize.asScala.toArray)
+  }
+
+  def createDLClassifier(model: Module[T], criterion: Criterion[T],
+                         featureSize: JArrayList[Int],
+                         labelSize: JArrayList[Int]): DLClassifier[T] = {
+    new DLClassifier[T](model, criterion, featureSize.asScala.toArray)
+  }
+
+  def fitEstimator(estimator: DLEstimator[T], dataSet: DataFrame): DLModel[T] = {
+    estimator.fit(dataSet)
+  }
+
+  def fitClassifier(classifier: DLClassifier[T], dataSet: DataFrame): DLModel[T] = {
+    classifier.fit(dataSet)
+  }
+
+  def setBatchSizeDLEstimator(estimator: DLEstimator[T], batchSize: Int): DLEstimator[T] = {
+    estimator.setBatchSize(batchSize)
+  }
+
+  def setBatchSizeDLClassifier(classifier: DLClassifier[T], batchSize: Int): DLClassifier[T] = {
+    classifier.setBatchSize(batchSize)
+  }
+
+  def setMaxEpochDLEstimator(estimator: DLEstimator[T], maxEpoch: Int): DLEstimator[T] = {
+    estimator.setMaxEpoch(maxEpoch)
+  }
+
+  def setMaxEpochDLClassifier(classifier: DLClassifier[T], maxEpoch: Int): DLClassifier[T] = {
+    classifier.setMaxEpoch(maxEpoch)
+  }
+
+  def setLearningRateDLEstimator(estimator: DLEstimator[T], lr: Double): DLEstimator[T] = {
+    estimator.setLearningRate(lr)
+  }
+
+  def setLearningRateDLClassifier(classifier: DLClassifier[T], lr: Double): DLClassifier[T] = {
+    classifier.setLearningRate(lr)
+  }
+
+  def createDLModel(model: Module[T], featureSize: JArrayList[Int]): DLModel[T] = {
+    new DLModel[T](model, featureSize.asScala.toArray)
+  }
+
+  def createDLClassifierModel(model: Module[T],
+                              featureSize: JArrayList[Int]): DLClassifierModel[T] = {
+    new DLClassifierModel[T](model, featureSize.asScala.toArray)
+  }
+
+  def dlModelTransform(dlModel: DLModel[T], dataSet: DataFrame): DataFrame = {
+    dlModel.transform(dataSet)
+  }
+
+  def dlClassifierModelTransform(dlClassifierModel: DLClassifierModel[T],
+                                 dataSet: DataFrame): DataFrame = {
+    dlClassifierModel.transform(dataSet)
+  }
+
+  def setFeatureSizeDLModel(dlModel: DLModel[T], featureSize: JArrayList[Int]): DLModel[T] = {
+    dlModel.setFeatureSize(featureSize.asScala.toArray)
+  }
+
+  def setFeatureSizeDLClassifierModel(dlClassifierModel: DLClassifierModel[T],
+                                      featureSize: JArrayList[Int]): DLClassifierModel[T] = {
+    dlClassifierModel.setFeatureSize(featureSize.asScala.toArray)
+  }
+
+  def setBatchSizeDLModel(dlModel: DLModel[T], batchSize: Int): DLModel[T] = {
+    dlModel.setBatchSize(batchSize)
+  }
+
+  def setBatchSizeDLClassifierModel(dlClassifierModel: DLClassifierModel[T],
+                                    batchSize: Int): DLClassifierModel[T] = {
+    dlClassifierModel.setBatchSize(batchSize)
+  }
+
+  def getContainerModules(module: Container[Activity, Activity, T])
+  : JList[AbstractModule[Activity, Activity, T]] = {
+    module.modules.toList.asJava
+  }
+
+  def getFlattenModules(module: Container[Activity, Activity, T])
+  : JList[AbstractModule[Activity, Activity, T]] = {
+    val result = ArrayBuffer[AbstractModule[Activity, Activity, T]]()
+    doGetFlattenModules(module, result)
+    result.toList.asJava
+  }
+
+  private def doGetFlattenModules(module: Container[Activity, Activity, T],
+    result: ArrayBuffer[AbstractModule[Activity, Activity, T]]): Unit = {
+    module.modules.foreach {m =>
+      if (m.isInstanceOf[Container[Activity, Activity, T]]) {
+        doGetFlattenModules(m.asInstanceOf[Container[Activity, Activity, T]], result)
+      } else {
+        result.append(m)
+      }
+    }
+  }
+
+  def isWithWeights(module: Module[T]): Boolean = {
+    val weights = module.getWeightsBias()
+    return weights != null && !weights.isEmpty
+  }
+
+  def setRunningMean(module: BatchNormalization[T], runningMean: JTensor): Unit = {
+    module.runningMean.set(toTensor(runningMean))
+  }
+
+  def setRunningStd(module: BatchNormalization[T], runningStd: JTensor): Unit = {
+    module.runningVar.set(toTensor(runningStd))
+  }
+
+  def createCosineProximityCriterion(): CosineProximityCriterion[T] = {
+    CosineProximityCriterion[T]()
+  }
+
+  def createHFlip(): HFlip = {
+    HFlip()
+  }
+
+  def createResize(resizeH: Int, resizeW: Int, resizeMode: Int = Imgproc.INTER_LINEAR): Resize = {
+    Resize(resizeH, resizeW, resizeMode)
+  }
+
+  def createColorJitter(brightnessProb: Double = 0.5, brightnessDelta: Double = 32,
+    contrastProb: Double = 0.5, contrastLower: Double = 0.5, contrastUpper: Double = 1.5,
+    hueProb: Double = 0.5, hueDelta: Double = 18,
+    saturationProb: Double = 0.5, saturationLower: Double = 0.5, saturationUpper: Double = 1.5,
+    randomOrderProb: Double = 0, shuffle: Boolean = false): ColorJitter = {
+    ColorJitter(brightnessProb, brightnessDelta, contrastProb,
+      contrastLower, contrastUpper, hueProb, hueDelta, saturationProb,
+      saturationLower, saturationUpper, randomOrderProb, shuffle)
+  }
+
+  def createBrightness(deltaLow: Double, deltaHigh: Double): Brightness = {
+    Brightness(deltaLow, deltaHigh)
+  }
+
+  def createChannelOrder(): ChannelOrder = {
+    ChannelOrder()
+  }
+
+  def createContrast(deltaLow: Double, deltaHigh: Double): Contrast = {
+    Contrast(deltaLow, deltaHigh)
+  }
+
+  def createRandomCrop(cropWidth: Int, cropHeight: Int, isClip: Boolean): RandomCrop = {
+    RandomCrop(cropWidth, cropHeight, isClip)
+  }
+
+  def createCenterCrop(cropWidth: Int, cropHeight: Int, isClip: Boolean): CenterCrop = {
+    CenterCrop(cropWidth, cropHeight, isClip)
+  }
+
+  def createFixedCrop(wStart: Double,
+    hStart: Double, wEnd: Double, hEnd: Double, normalized: Boolean,
+    isClip: Boolean): FixedCrop = {
+    FixedCrop(wStart.toFloat, hStart.toFloat, wEnd.toFloat, hEnd.toFloat, normalized, isClip)
+  }
+
+  def createDetectionCrop(roiKey: String, normalized: Boolean): DetectionCrop = {
+    DetectionCrop(roiKey, normalized)
+  }
+
+  def createExpand(meansR: Int = 123, meansG: Int = 117, meansB: Int = 104,
+    minExpandRatio: Double = 1.0,
+    maxExpandRatio: Double = 4.0): Expand = {
+    Expand(meansR, meansG, meansB, minExpandRatio, maxExpandRatio)
+  }
+
+  def createRandomAspectScale(scales: JList[Int], scaleMultipleOf: Int = 1,
+    maxSize: Int = 1000): RandomAspectScale = {
+    RandomAspectScale(scales.asScala.toArray, scaleMultipleOf, maxSize)
+  }
+
+  def createHue(deltaLow: Double, deltaHigh: Double): Hue = {
+    Hue(deltaLow, deltaHigh)
+  }
+
+  def createRandomTransformer(transformer: FeatureTransformer, prob: Double): RandomTransformer = {
+    RandomTransformer(transformer, prob)
+  }
+
+  def createSaturation(deltaLow: Double, deltaHigh: Double): Saturation = {
+    Saturation(deltaLow, deltaHigh)
+  }
+
+  def createRandomSampler(): FeatureTransformer = {
+    RandomSampler()
+  }
+
+  def createChannelNormalize(meanR: Double, meanG: Double, meanB: Double,
+    stdR: Double = 1, stdG: Double = 1, stdB: Double = 1): FeatureTransformer = {
+    ChannelNormalize(meanR.toFloat, meanG.toFloat, meanB.toFloat,
+      stdR.toFloat, stdG.toFloat, stdB.toFloat)
+  }
+
+  def createAspectScale(scale: Int, scaleMultipleOf: Int, maxSize: Int): FeatureTransformer = {
+    AspectScale(scale, scaleMultipleOf, maxSize)
+  }
+
+  def createFiller(startX: Double, startY: Double, endX: Double, endY: Double,
+    value: Int = 255): Filler = {
+    Filler(startX.toFloat, startY.toFloat, endX.toFloat, endY.toFloat, value)
+  }
+
+  def createPixelNormalize(means: JList[Double]): PixelNormalizer = {
+    PixelNormalizer(means.asScala.toArray.map(_.toFloat))
+  }
+
+  def createRoiProject(needMeetCenterConstraint: Boolean): RoiProject = {
+    RoiProject(needMeetCenterConstraint)
+  }
+
+  def createRoiResize(normalized: Boolean): RoiResize = {
+    RoiResize(normalized)
+  }
+
+  def createRoiHFlip(normalized: Boolean = true): RoiHFlip = {
+    RoiHFlip(normalized)
+  }
+
+  def createRoiNormalize(): RoiNormalize = {
+    RoiNormalize()
+  }
+
+  def transformImageFeature(transformer: FeatureTransformer, feature: ImageFeature)
+  : ImageFeature = {
+    transformer.transform(feature)
+  }
+
+
+  def transformImageFrame(transformer: FeatureTransformer,
+    imageFrame: ImageFrame): ImageFrame = {
+    imageFrame.transform(transformer)
+  }
+
+  def createDistributedImageFrame(imageRdd: JavaRDD[JTensor], labelRdd: JavaRDD[JTensor])
+  : DistributedImageFrame = {
+    require(null != imageRdd, "imageRdd cannot be null")
+    val featureRdd = if (null != labelRdd) {
+      imageRdd.rdd.zip(labelRdd.rdd).map(data => {
+        createImageFeature(data._1, data._2)
+      })
+    } else {
+      imageRdd.rdd.map(image => {
+        createImageFeature(image, null)
+      })
+    }
+    new DistributedImageFrame(featureRdd)
+  }
+
+  def createLocalImageFrame(images: JList[JTensor], labels: JList[JTensor])
+  : LocalImageFrame = {
+    require(null != images, "images cannot be null")
+    val features = if (null != labels) {
+      (0 until images.size()).map(i => {
+        createImageFeature(images.get(i), labels.get(i))
+      })
+    } else {
+      (0 until images.size()).map(i => {
+        createImageFeature(images.get(i), null)
+      })
+    }
+    new LocalImageFrame(features.toArray)
+  }
+
+  def createPipeline(list: JList[FeatureTransformer]): FeatureTransformer = {
+    var cur = list.get(0)
+    (1 until list.size()).foreach(t => cur = cur -> list.get(t))
+    cur
+  }
+
+
+  def createImageFeature(data: JTensor = null, label: JTensor = null, uri: String = null)
+  : ImageFeature = {
+    val feature = new ImageFeature()
+    if (null != data) {
+      val mat = OpenCVMat.fromFloats(data.storage, data.shape(0), data.shape(1))
+      feature(ImageFeature.mat) = mat
+      feature(ImageFeature.size) = mat.shape()
+    }
+    if (null != label) {
+      // todo: may need a method to change label format if needed
+      feature(ImageFeature.label) = toTensor(label)
+    }
+    if (null != uri) {
+      feature(ImageFeature.uri) = uri
+    }
+    feature
+  }
+
+  def imageFeatureToSample(imageFeature: ImageFeature,
+    floatKey: String = ImageFeature.floats, toChw: Boolean = true,
+    withImInfo: Boolean = false): Sample = {
+    val imageTensor = imageFeatureToImageTensor(imageFeature, floatKey, toChw)
+    val features = new util.ArrayList[JTensor]()
+    features.add(imageTensor)
+    if (withImInfo) {
+      val imInfo = imageFeature.getImInfo()
+      features.add(toJTensor(imInfo.asInstanceOf[Tensor[T]]))
+    }
+    val label = imageFeatureToLabelTensor(imageFeature)
+    Sample(features, label, "float")
+  }
+
+  def imageFeatureGetKeys(imageFeature: ImageFeature): JList[String] = {
+    imageFeature.keys().toList.asJava
+  }
+
+  def distributedImageFrameToSampleRdd(imageFrame: DistributedImageFrame,
+    floatKey: String = ImageFeature.floats, toChw: Boolean = true, withImInfo: Boolean = false)
+  : JavaRDD[Sample] = {
+    imageFrame.rdd.map(imageFeatureToSample(_, floatKey, toChw, withImInfo)).toJavaRDD()
+  }
+
+  def distributedImageFrameToImageTensorRdd(imageFrame: DistributedImageFrame,
+    floatKey: String = ImageFeature.floats, toChw: Boolean = true): JavaRDD[JTensor] = {
+    imageFrame.rdd.map(imageFeatureToImageTensor(_, floatKey, toChw)).toJavaRDD()
+  }
+
+  def distributedImageFrameToLabelTensorRdd(imageFrame: DistributedImageFrame): JavaRDD[JTensor] = {
+    imageFrame.rdd.map(imageFeatureToLabelTensor).toJavaRDD()
+  }
+
+  def localImageFrameToSample(imageFrame: LocalImageFrame,
+    floatKey: String = ImageFeature.floats, toChw: Boolean = true, withImInfo: Boolean = false)
+  : JList[Sample] = {
+    imageFrame.array.map(imageFeatureToSample(_, floatKey, toChw, withImInfo)).toList.asJava
+  }
+
+  def localImageFrameToImageTensor(imageFrame: LocalImageFrame,
+    floatKey: String = ImageFeature.floats, toChw: Boolean = true): JList[JTensor] = {
+    imageFrame.array.map(imageFeatureToImageTensor(_, floatKey, toChw)).toList.asJava
+  }
+
+  def localImageFrameToLabelTensor(imageFrame: LocalImageFrame): JList[JTensor] = {
+    imageFrame.array.map(imageFeatureToLabelTensor).toList.asJava
+  }
+
+  def imageFeatureToImageTensor(imageFeature: ImageFeature,
+    floatKey: String = ImageFeature.floats, toChw: Boolean = true): JTensor = {
+    toJTensor(imageFeature.toTensor(floatKey, toChw).asInstanceOf[Tensor[T]])
+  }
+
+  def imageFeatureToLabelTensor(imageFeature: ImageFeature): JTensor = {
+    val label = if (imageFeature.hasLabel()) {
+      imageFeature.getLabel[Tensor[T]]
+    } else {
+      Tensor[T](1).fill(ev.fromType[Float](-1f))
+    }
+    toJTensor(label)
+  }
+
+  def read(path: String, sc: JavaSparkContext): ImageFrame = {
+    if (sc == null) ImageFrame.read(path, null) else ImageFrame.read(path, sc.sc)
+  }
+
+  def readParquet(path: String, sqlContext: SQLContext): DistributedImageFrame = {
+    ImageFrame.readParquet(path, sqlContext)
+  }
+
+  def createBytesToMat(): BytesToMat = {
+    BytesToMat()
+  }
+
+  def isLocal(imageFrame: ImageFrame): Boolean = imageFrame.isLocal()
+
+  def isDistributed(imageFrame: ImageFrame): Boolean = imageFrame.isDistributed()
 }
 
 object PythonBigDLUtils {

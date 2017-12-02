@@ -31,9 +31,10 @@ private[bigdl] class Linear[T: ClassTag](
   val outputSize: Int,
   val withBias: Boolean = true
 )(implicit ev: TensorNumeric[T]) extends QuantizedModule[T](outputSize) {
-
+  val params = LinearWeightParams(outputSize, inputSize)
   private val data: QuantizedTensor[T] = QuantizedDummyTensor[T]()
-  var weight: QuantizedTensor[T] = _
+  val weight: QuantizedTensor[T] = QuantizedTensor[T](Tensor[T](
+    Array(outputSize, inputSize)), params)
   val bias: Tensor[T] = Tensor[T](outputSize)
 
   private def initWeightAndBias(weightFP32: Tensor[T], biasFP32: Tensor[T]): this.type = {
@@ -44,8 +45,8 @@ private[bigdl] class Linear[T: ClassTag](
     }
 
     val weightFP32Tmp = weightFP32.view(Array(outputSize, inputSize))
-    val params = LinearWeightParams(outputSize, inputSize)
-    weight = QuantizedTensor[T](weightFP32Tmp, params)
+    weight.release()
+    weight.set(QuantizedTensor[T](weightFP32Tmp, params))
 
     this
   }
@@ -175,7 +176,9 @@ object Linear extends QuantSerializer {
     module: ModuleData[T])(implicit ev: TensorNumeric[T]): Unit = {
     val linear = module.module.asInstanceOf[Linear[T]]
     val attrMap = context.bigdlModule.getAttrMap
-    linear.weight = DataConverter.getAttributeValue(context, attrMap.get("weight"))
+    val weight = DataConverter.getAttributeValue(context, attrMap.get("weight"))
       .asInstanceOf[QuantizedTensor[T]]
+    linear.weight.release()
+    linear.weight.set(weight)
   }
 }

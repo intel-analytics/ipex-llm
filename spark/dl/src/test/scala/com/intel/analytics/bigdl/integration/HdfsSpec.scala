@@ -29,13 +29,15 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericDouble
 import com.intel.analytics.bigdl.utils.caffe.{CaffeLoader, CaffePersister}
-import com.intel.analytics.bigdl.utils.tf.{Tensorflow, TensorflowLoader, TensorflowSaver}
+import com.intel.analytics.bigdl.utils.tf._
 import com.intel.analytics.bigdl.utils.{Engine, File}
 import com.intel.analytics.bigdl.visualization.Summary
 import com.intel.analytics.bigdl.visualization.tensorboard.{FileReader, FileWriter}
 import org.apache.commons.compress.utils.IOUtils
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
+import org.apache.hadoop.io.{BytesWritable, NullWritable}
+import org.apache.spark.SparkContext
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.collection.mutable
@@ -207,5 +209,38 @@ class HdfsSpec extends FlatSpec with Matchers with BeforeAndAfter{
 
     res1 should be (res2)
 
+  }
+
+  "Read and write TFRecord file to HDFS " should "work" in {
+    val resource = getClass().getClassLoader().getResource("tf")
+    val filePath = processPath(resource.getPath()) + "/mnist_train.tfrecord"
+    val hdfsDir = hdfs + s"/${com.google.common.io.Files.createTempDir().getPath()}"
+
+    val conf = Engine.createSparkConf()
+    conf.set("spark.master", "local[1]")
+    conf.set("spark.app.name", "hdfsSpec")
+    val sc = new SparkContext(conf)
+    Engine.init
+    Engine.model.setPoolSize(1)
+
+    TFUtils.saveToHDFS(Seq(filePath), hdfsDir, 4, sc)
+
+    val rdd = sc.newAPIHadoopFile[BytesWritable, NullWritable, TFRecordInputFormat](hdfsDir)
+
+    val result = rdd.map(_._1.copyBytes()).collect()
+
+    val sorted = result.sortBy(_.sum)
+    val expectedSorted = TFRecordIterator(new java.io.File(filePath)).toArray.sortBy(_.sum)
+
+    sorted should be (expectedSorted)
+
+    // clean up
+    val dest = new Path(hdfsDir)
+    val fs = dest.getFileSystem(new Configuration())
+    if (fs.exists(dest)) {
+      fs.delete(dest, true)
+    }
+    sc.stop()
+    fs.close()
   }
 }

@@ -335,12 +335,18 @@ class SpatialAveragePooling[T: ClassTag](
       kW = inputWidth
     }
 
-    val (padTop, padBottom, padLeft, padRight, outputHeight, outputWidth) =
+    val sizes =
       if (padW == -1 && padH == -1) {
         Utils.getSAMEOutSizeAndPadding(inputHeight, inputWidth, dH, dW, kH, kW)
       } else {
         Utils.getOutSizeAndPadding(inputHeight, inputWidth, dH, dW, kH, kW, padH, padW, ceilMode)
       }
+    val padTop = sizes(0)
+    val padBottom = sizes(1)
+    val padLeft = sizes(2)
+    val padRight = sizes(3)
+    val outputHeight = sizes(4)
+    val outputWidth = sizes(5)
 
     if (input.dim() == 3) {
       format match {
@@ -628,16 +634,23 @@ class SpatialAveragePooling[T: ClassTag](
   }
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
-    require(input.dim() == 3 || input.dim() == 4,
+    val inputSize = input.size()
+    updateGradInputInternal(inputSize, gradOutput)
+  }
+
+  private[bigdl] def updateGradInputInternal(inputSize: Array[Int],
+                                             gradOutput: Tensor[T]): Tensor[T] = {
+    require(inputSize.length == 3 || inputSize.length == 4,
       "SpatialAveragePooling: " + ErrorInfo.constrainInputAs3DOrBatch +
-    s"input dimension ${input.dim()}")
-    val (dimh, dimw, dimc) = format.getHWCDims(input.dim())
+    s"input dimension ${inputSize.length}")
+    // dimh, dimw, dimc start with 1
+    val (dimh, dimw, dimc) = format.getHWCDims(inputSize.length)
 
-    val nInputPlane = input.size(dimc)
-    val inputHeight = input.size(dimh)
-    val inputWidth = input.size(dimw)
+    val nInputPlane = inputSize(dimc - 1)
+    val inputHeight = inputSize(dimh - 1)
+    val inputWidth = inputSize(dimw - 1)
 
-    val (padTop, padBottom, padLeft, padRight, outputHeight, outputWidth) =
+    val sizes =
       if (padW == -1 && padH == -1) {
         // no ceil/floor mode in SAME padding
         Utils.getSAMEOutSizeAndPadding(inputHeight, inputWidth, dH, dW, kH, kW)
@@ -647,9 +660,15 @@ class SpatialAveragePooling[T: ClassTag](
         require(kW / 2 >= padW && kH / 2 >= padH, "pad should be smaller than half of kernel size")
         Utils.getOutSizeAndPadding(inputHeight, inputWidth, dH, dW, kH, kW, padH, padW, ceilMode)
       }
+    val padTop = sizes(0)
+    val padBottom = sizes(1)
+    val padLeft = sizes(2)
+    val padRight = sizes(3)
+    val outputHeight = sizes(4)
+    val outputWidth = sizes(5)
 
-    gradInput.resizeAs(input).zero()
-    if (input.dim() == 3) {
+    gradInput.resize(inputSize).zero()
+    if (inputSize.length == 3) {
       format match {
         case DataFormat.NCHW =>
           if (classTag[T] == classTag[Double]) {
@@ -677,7 +696,7 @@ class SpatialAveragePooling[T: ClassTag](
           }
       }
     } else {
-      val nBatch = input.size(1)
+      val nBatch = inputSize(0)
 
       if (results == null || results.length != nBatch) {
         results = new Array[Future[Unit]](nBatch)

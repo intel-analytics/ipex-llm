@@ -139,8 +139,7 @@ object TemporalConvolutionToTF extends BigDLToTensorflow {
     require(inputs.length == 1, "SpatialConvolution only accept one input")
     val spatialConv = module.asInstanceOf[TemporalConvolution[_]]
 
-    val const1 = const(Tensor[Float](1).setValue(1, 1.0f),
-      spatialConv.getName() + "/dim1", byteOrder, true, DataType.DT_INT32)
+    val const1 = const(Tensor.scalar[Int](1), spatialConv.getName() + "/dim1", byteOrder)
     val expandDimsInput = expandDims(inputs.head, const1,
       spatialConv.getName() + "/expandDimsInput")
 
@@ -151,8 +150,7 @@ object TemporalConvolutionToTF extends BigDLToTensorflow {
     val filter = const(filterTensor, spatialConv.getName() + "/filter", byteOrder)
     val filterReader = identity(filter, spatialConv.getName() + "/filterReader")
 
-    val const2 = const(Tensor[Float](1).setValue(1, 0.0f),
-      spatialConv.getName() + "/dim2", byteOrder, true, DataType.DT_INT32)
+    val const2 = const(Tensor.scalar[Int](0), spatialConv.getName() + "/dim2", byteOrder)
     val expandDimsWeight = expandDims(filterReader, const2,
       spatialConv.getName() + "/expandDimsWeight")
 
@@ -193,13 +191,13 @@ object ReshapeToTF extends BigDLToTensorflow {
                        byteOrder: ByteOrder): Seq[NodeDef] = {
     require(inputs.length == 1, "Reshape only accept one input")
     val rh = module.asInstanceOf[Reshape[_]]
-    val size = Tensor[Float](rh.size.length)
+    val size = Tensor[Int](rh.size.length)
     var i = 0
     while(i < rh.size.length) {
       size.setValue(i + 1, rh.size(i))
       i += 1
     }
-    val shape = const(size, rh.getName() + "/shape", byteOrder, false, DataType.DT_INT32)
+    val shape = const(size, rh.getName() + "/shape", byteOrder)
     val reshapeNode = reshape(inputs(0), shape, rh.getName())
     Seq(reshapeNode, shape)
   }
@@ -210,13 +208,13 @@ object ViewToTF extends BigDLToTensorflow {
                        byteOrder: ByteOrder): Seq[NodeDef] = {
     require(inputs.length == 1, "Reshape only accept one input")
     val viewLayer = module.asInstanceOf[View[_]]
-    val size = Tensor[Float](viewLayer.sizes.length)
+    val size = Tensor[Int](viewLayer.sizes.length)
     var i = 0
     while(i < viewLayer.sizes.length) {
       size.setValue(i + 1, viewLayer.sizes(i))
       i += 1
     }
-    val shape = const(size, viewLayer.getName() + "/shape", byteOrder, false, DataType.DT_INT32)
+    val shape = const(size, viewLayer.getName() + "/shape", byteOrder)
     val reshapeNode = reshape(inputs(0), shape, viewLayer.getName())
     Seq(reshapeNode, shape)
   }
@@ -244,15 +242,14 @@ object PaddingToTF extends BigDLToTensorflow {
     val layer = module.asInstanceOf[Padding[_]]
     require(layer.nIndex == 1, "only support padding nIndex == 1")
     require(layer.nInputDim > 0, "nInputDim must be explicit specified")
-    val padding = Tensor[Float](layer.nInputDim, 2).zero()
+    val padding = Tensor[Int](layer.nInputDim, 2).zero()
     if (layer.pad < 0) {
       padding.setValue(layer.dim, 1, -layer.pad)
     }
     else {
       padding.setValue(layer.dim, 2, layer.pad)
     }
-    val paddingsNode = const(padding, layer.getName() + "/padding", byteOrder,
-      false, DataType.DT_INT32)
+    val paddingsNode = const(padding, layer.getName() + "/padding", byteOrder)
     val padNode = pad(inputs(0), paddingsNode, layer.getName() + "/output")
     Seq(padNode, paddingsNode)
   }
@@ -312,8 +309,7 @@ object JoinTableToTF extends BigDLToTensorflow {
   override def toTFDef(module: AbstractModule[_, _, _], inputs: Seq[NodeDef],
                        byteOrder: ByteOrder): Seq[NodeDef] = {
     val layer = module.asInstanceOf[JoinTable[_]]
-    val axis = const(Tensor[Float](T((layer.dimension - 1).toFloat)), layer.getName() + "/axis",
-      byteOrder, true, DataType.DT_INT32)
+    val axis = const(Tensor.scalar[Int](layer.dimension - 1), layer.getName() + "/axis", byteOrder)
     val updateInputs = new ArrayBuffer[NodeDef]()
     updateInputs ++= inputs.reverse
     updateInputs.append(axis)
@@ -327,10 +323,10 @@ object MeanToTF extends BigDLToTensorflow {
     require(inputs.length == 1, "Mean only accept one input")
     val layer = module.asInstanceOf[Mean[_, _]]
     require(layer.squeeze == true, "Mean must squeeze input")
-    val dimsTensor = Tensor[Float](layer.dimension)
+    val dimsTensor = Tensor[Int](layer.dimension)
     dimsTensor.setValue(1, layer.dimension - 1)
 
-    val dims = const(dimsTensor, layer.getName() + "/dims", byteOrder, false, DataType.DT_INT32)
+    val dims = const(dimsTensor, layer.getName() + "/dims", byteOrder)
     val mean = reduceMean(inputs(0), dims, false, layer.getName() + "/output")
     Seq(mean, dims)
   }
@@ -359,19 +355,15 @@ object BatchNorm2DToTF extends BigDLToTensorflow {
     val layer = module.asInstanceOf[SpatialBatchNormalization[_]]
     require(!layer.isTraining(), "Only support evaluate mode batch norm")
     // reshape to nchw
-    val size = Tensor[Float](layer.nDim)
+    val size = Tensor[Int](layer.nDim)
     for (i <- 0 until layer.nDim) {
       size.setValue(i + 1, 1)
     }
     size(2) = layer.weight.size(1)
-    val shapeVar = const(size, layer.getName() + "/reshape_1/shape",
-      byteOrder, false, DataType.DT_INT32)
-    val shapeMean = const(size, layer.getName() + "/reshape_2/shape",
-      byteOrder, false, DataType.DT_INT32)
-    val shapeScale = const(size, layer.getName() + "/reshape_3/shape",
-      byteOrder, false, DataType.DT_INT32)
-    val shapeOffset = const(size, layer.getName() + "/reshape_4/shape",
-      byteOrder, false, DataType.DT_INT32)
+    val shapeVar = const(size, layer.getName() + "/reshape_1/shape", byteOrder)
+    val shapeMean = const(size, layer.getName() + "/reshape_2/shape", byteOrder)
+    val shapeScale = const(size, layer.getName() + "/reshape_3/shape", byteOrder)
+    val shapeOffset = const(size, layer.getName() + "/reshape_4/shape", byteOrder)
     val varNode = const(layer.runningVar, layer.getName() + "/std", byteOrder)
     val mean = const(layer.runningMean, layer.getName() + "/mean", byteOrder)
     val scale = const(layer.weight, layer.getName() + "/scale", byteOrder)

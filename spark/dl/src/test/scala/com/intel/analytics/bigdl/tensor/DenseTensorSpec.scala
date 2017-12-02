@@ -317,6 +317,38 @@ class DenseTensorSpec extends FlatSpec with Matchers {
     t.storage().size should be(t1.storage().size)
   }
 
+  "resize 0 tensor" should "work properly" in {
+    val t = Tensor[Double](10)
+    t.resize(0)
+    t.nElement() should be (0)
+    t.dim() should be (1)
+  }
+
+  "resize 2d tensor to 0" should "work properly" in {
+    val t = Tensor[Double](2, 10)
+    t.resize(0, 10)
+    t.nElement() should be (0)
+    t.dim() should be (2)
+
+    val t1 = Tensor[Double](2, 10)
+    t1.resize(10, 0)
+    t1.nElement() should be (0)
+    t1.dim() should be (2)
+  }
+
+  "resize 0 element 2d tensor to > 0 element" should "work properly" in {
+    val t = Tensor[Double](0, 10)
+    t.resize(1, 10)
+    t.nElement() should be (10)
+    t.dim() should be (2)
+
+    val t1 = Tensor[Double](10, 0)
+    t1.resize(10, 1)
+    t1.nElement() should be (10)
+    t1.dim() should be (2)
+  }
+
+
   "nElement" should "return correct value" in {
     val t: Tensor[Double] = new DenseTensor[Double](3, 4)
     t.nElement() should be(12)
@@ -1033,5 +1065,13 @@ class DenseTensorSpec extends FlatSpec with Matchers {
     o.mm(x, y)
     o.mm(x, y)
     o should be(Tensor[Float](T(T(22, 28), T(49, 64))))
+  }
+
+  "set" should "work properly" in {
+    val t = Tensor[Float](1, 3)
+    t.set()
+    t.size() should be (Array[Int]())
+    t.nElement() should be (0)
+    t.dim() should be (0)
   }
 }

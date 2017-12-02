@@ -104,7 +104,7 @@ trait ModuleSerializable extends Loadable with Savable{
     val cls = Class.forName(moduleType)
     val constructorMirror = getCostructorMirror(cls)
     val constructorFullParams = constructorMirror.symbol.paramss
-    val args = new Array[Object](constructorFullParams(0).size + constructorFullParams(1).size)
+    val args = new Array[Object](constructorFullParams.map(_.size).sum)
     var i = 0;
     lock.synchronized {
       constructorFullParams.foreach(map => {

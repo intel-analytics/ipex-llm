@@ -72,19 +72,6 @@ class GreaterSpec extends FlatSpec with Matchers {
     output should be(expectOutput)
   }
 
-  "Greater String operation" should "works correctly" in {
-    val input =
-      T(
-        Tensor[String](T("abc", "bbb", "baa")),
-        Tensor[String](T("aaa", "ccc", "aaa"))
-      )
-
-    val expectOutput = Tensor[Boolean](T(true, false, true))
-
-    val output = Greater[Float]().forward(input)
-    output should be(expectOutput)
-  }
-
   "Greater Short operation" should "works correctly" in {
     val input =
       T(

@@ -15,16 +15,20 @@
  */
 package com.intel.analytics.bigdl.utils.serializer
 
+import com.google.protobuf.{ByteString, CodedOutputStream}
 import com.intel.analytics.bigdl.Module
+import com.intel.analytics.bigdl.models.lenet.LeNet5
 import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
+import com.intel.analytics.bigdl.nn.ops.ParseExample
 import com.intel.analytics.bigdl.nn.{VolumetricFullConvolution, _}
-import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
+import com.intel.analytics.bigdl.tensor._
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
 import com.intel.analytics.bigdl.utils.caffe.CaffeLoader
 import com.intel.analytics.bigdl.utils.{T, Table}
 import org.scalatest.{FlatSpec, Matchers}
+import org.tensorflow.example._
 import serialization.Bigdl
 import serialization.Bigdl.AttrValue
 import serializer.TestCustomData
@@ -212,6 +216,37 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     val loadedCaddTable = ModuleLoader.loadFromFile("/tmp/caddTable.bigdl")
     val res2 = loadedCaddTable.forward(input)
     res1 should be (res2)
+  }
+
+  "CAveTable serializer" should "work properly" in {
+    val input1 = Tensor(5, 5).apply1(e => Random.nextFloat())
+    val input2 = Tensor(5, 5).apply1(e => Random.nextFloat())
+    var input = new Table()
+    input(1.toFloat) = input1
+    input(2.toFloat) = input2
+
+    val caveTable = CAveTable(false)
+
+    val res1 = caveTable.forward(input)
+    ModulePersister.saveToFile("/tmp/caveTable.bigdl", caveTable, true)
+    val loadedCaddTable = ModuleLoader.loadFromFile("/tmp/caveTable.bigdl")
+    val res2 = loadedCaddTable.forward(input)
+    res1 should be (res2)
+  }
+
+  "VolumetricAveragePooling serializer" should "work properly" in {
+        val volumetricAveragePooling = VolumetricAveragePooling(2, 2, 2, 1, 1, 1, 0, 0, 0)
+        val input1 = Tensor(1, 2, 3, 3).apply1(_ => Random.nextFloat())
+        val input2 = Tensor(1, 2, 3, 3)
+        input2.copy(input1)
+        val res1 = volumetricAveragePooling.forward(input1)
+
+        ModulePersister.saveToFile("/tmp/volumetricAveragePooling.bigdl",
+          volumetricAveragePooling, true)
+        val loadedVolumetricAveragePooling =
+          ModuleLoader.loadFromFile("/tmp/volumetricAveragePooling.bigdl")
+        val res2 = loadedVolumetricAveragePooling.forward(input1)
+        res1 should be (res2)
   }
 
 
@@ -569,6 +604,38 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     res1 should be (res2)
   }
 
+  "GaussianDropout serializer" should "work properly" in {
+    RNG.setSeed(100)
+    val gd = GaussianDropout(0.5)
+
+    val tensor1 = Tensor(10).apply1(_ => Random.nextFloat())
+    val tensor2 = Tensor()
+    tensor2.resizeAs(tensor1).copy(tensor1)
+    val res1 = gd.forward(tensor1)
+
+    ModulePersister.saveToFile("/tmp/gaussianDropout.bigdl", gd, true)
+    RNG.setSeed(100)
+    val loadedGd = ModuleLoader.loadFromFile("/tmp/gaussianDropout.bigdl")
+    val res2 = loadedGd.forward(tensor2)
+    res1 should be (res2)
+  }
+
+  "GaussianNoise serializer" should "work properly" in {
+    RNG.setSeed(100)
+    val gn = GaussianNoise(0.5)
+
+    val tensor1 = Tensor(10).apply1(_ => Random.nextFloat())
+    val tensor2 = Tensor()
+    tensor2.resizeAs(tensor1).copy(tensor1)
+    val res1 = gn.forward(tensor1)
+
+    ModulePersister.saveToFile("/tmp/gaussianNoise.bigdl", gn, true)
+    RNG.setSeed(100)
+    val loadedGn = ModuleLoader.loadFromFile("/tmp/gaussianNoise.bigdl")
+    val res2 = loadedGn.forward(tensor2)
+    res1 should be (res2)
+  }
+
   "GradientReversal serializer" should "work properly" in {
     val gradientReversal = GradientReversal()
 
@@ -596,13 +663,13 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     res1 should be (res2)
   }
 
-  "Graph with variables serializer " should "work properly" in {
+  "Graph with variables serializer" should "work properly" in {
     val linear = Linear(2, 2)
     val linearNode = linear.inputs()
     val linearWeight = linear.weight
     val linearBias = linear.bias
     val variables = Some(Array(linearWeight), Array(linearBias))
-    val graph = Graph(Array(linearNode), Array(linearNode), variables)
+    val graph = Graph(Array(linearNode), Array(linearNode), variables, false)
     val tensor1 = Tensor(2).apply1(_ => Random.nextFloat())
     val tensor2 = Tensor()
     val res1 = graph.forward(tensor1)
@@ -1880,6 +1947,37 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     res1 should be (res2)
   }
 
+  "bigquant.SpatialDilatedConvolution serializer" should "work properly " in {
+    val nInputPlane = 1
+    val nOutputPlane = 1
+    val kW = 2
+    val kH = 2
+    val dW = 1
+    val dH = 1
+    val padW = 0
+    val padH = 0
+
+    val kernelData = Array(
+      2.0f, 3f,
+      4f, 5f
+    )
+
+    val biasData = Array(0.0f)
+
+    val input = Tensor(1, 1, 3, 3).apply1(_ => Random.nextFloat())
+    val weight = Tensor(Storage(kernelData), 1, Array(nOutputPlane, nInputPlane, kH, kW))
+    val bias = Tensor(Storage(biasData), 1, Array(nOutputPlane))
+    val conv = quantized.SpatialDilatedConvolution[Float](nInputPlane, nOutputPlane,
+      kW, kH, dW, dH, padW, padH, initWeight = weight, initBias = bias)
+
+    val res1 = conv.forward(input)
+
+    ModulePersister.saveToFile("/tmp/bigquant.dilated.conv.bigdl", conv, true)
+    val loadedConv = ModuleLoader.loadFromFile("/tmp/bigquant.dilated.conv.bigdl")
+    val res2 = loadedConv.forward(input)
+    res1 should be (res2)
+  }
+
   "bigquant.Linear serializer" should "work properly " in {
     val outputSize = 2
     val inputSize = 2
@@ -1904,7 +2002,53 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     val res2 = loadedLinear.forward(input)
     res1 should be (res2)
   }
+  "ParseExample serializer" should "work properly" in {
+    import com.intel.analytics.bigdl.utils.tf.TFTensorNumeric.NumericByteString
 
+    val floatBuilder = FloatList.newBuilder()
+      .addValue(0.0f).addValue(1.0f).addValue(2.0f)
+    val floatFeature = Feature.newBuilder().setFloatList(floatBuilder).build()
+
+    val longBuilder = Int64List.newBuilder()
+      .addValue(0).addValue(1).addValue(2)
+    val longFeature = Feature.newBuilder().setInt64List(longBuilder).build()
+
+    val bytesBuilder = BytesList.newBuilder().addValue(ByteString.copyFromUtf8("abcd"))
+    val bytesFeature = Feature.newBuilder().setBytesList(bytesBuilder).build()
+
+    val features = Features.newBuilder()
+      .putFeature("floatFeature", floatFeature)
+      .putFeature("longFeature", longFeature)
+      .putFeature("bytesFeature", bytesFeature)
+    val example = Example.newBuilder().setFeatures(features).build()
+    val length = example.getSerializedSize
+    val data = new Array[Byte](length)
+    val outputStream = CodedOutputStream.newInstance(data)
+    example.writeTo(outputStream)
+
+    val exampleParser = new ParseExample[Float](3,
+      Seq(FloatType, LongType, StringType), Seq(Array(3), Array(3), Array()))
+
+    val serialized = Tensor[ByteString](Array(ByteString.copyFrom(data)), Array[Int](1))
+    val names = Tensor[ByteString]()
+    val key1 = Tensor[ByteString](Array(ByteString.copyFromUtf8("floatFeature")), Array[Int]())
+    val key2 = Tensor[ByteString](Array(ByteString.copyFromUtf8("longFeature")), Array[Int]())
+    val key3 = Tensor[ByteString](Array(ByteString.copyFromUtf8("bytesFeature")), Array[Int]())
+
+    val default1 = Tensor[Float]()
+    val default2 = Tensor[Long]()
+    val default3 = Tensor[ByteString]()
+
+    val input = T(serialized, names, key1, key2, key3, default1, default2, default3)
+
+    val res1 = exampleParser.forward(input)
+
+    ModulePersister.saveToFile("/tmp/exampleParser.bigdl", exampleParser, true)
+    val loadedExampleParser = ModuleLoader.loadFromFile[Float]("/tmp/exampleParser.bigdl")
+    val res2 = loadedExampleParser.forward(input)
+    res1 should be (res2)
+
+  }
   "Customized Module " should "work properly" in {
     val testModule = new TestModule(CustomData(1.0))
     DataConverter.registerConverter(universe.typeOf[CustomData].toString, TestCustomDataConverter)
@@ -1975,6 +2119,20 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     val loadedModel = ModuleLoader.loadFromFile("/tmp/mstr.bigdl")
 
     loadedModel.isTraining() should be (false)
+  }
+
+  "HardSigmoid serialization" should "work properly" in {
+    val hardSigmoid = HardSigmoid()
+    ModulePersister.saveToFile("/tmp/hardSigmoid.bigdl", hardSigmoid, true)
+    val loadedModel = ModuleLoader.loadFromFile("/tmp/hardSigmoid.bigdl")
+
+    val input = Tensor(2, 2).rand()
+
+    val res1 = hardSigmoid.forward(input)
+
+    val res2 = loadedModel.forward(input)
+
+    res1 should be (res2)
   }
 
 }

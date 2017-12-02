@@ -1130,6 +1130,9 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
   override def pow(n: T): Tensor[T] =
     throw new UnsupportedOperationException(errorString)
 
+  override def square(): Tensor[T] =
+    throw new UnsupportedOperationException(errorString)
+
   /**
    * Get the top k smallest values and their indices.
    *
@@ -1141,7 +1144,7 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
    * @return
    */
   override def topk(k: Int, dim: Int, increase: Boolean, result: Tensor[T],
-    indices: Tensor[T]): (Tensor[T], Tensor[T]) =
+    indices: Tensor[T], sortedResult: Boolean = true): (Tensor[T], Tensor[T]) =
     throw new UnsupportedOperationException(errorString)
 
   /**
@@ -1316,6 +1319,16 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
     throw new UnsupportedOperationException(errorString)
 
   /**
+   * stores the element-wise maximum of x and y in x.
+   * x.cmin(y) = min(x, y)
+   *
+   * @param y tensor
+   * @return current tensor
+   */
+  override def cmin(y: Tensor[T]): Tensor[T] =
+    throw new UnsupportedOperationException(errorString)
+
+  /**
    * stores the element-wise maximum of x and y in z.
    * z.cmax(x, y) means z = max(x, y)
    *
@@ -1323,6 +1336,16 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
    * @param y tensor
    */
   override def cmax(x: Tensor[T], y: Tensor[T]): Tensor[T] =
+    throw new UnsupportedOperationException(errorString)
+
+  /**
+   * stores the element-wise maximum of x and y in z.
+   * z.cmin(x, y) means z = min(x, y)
+   *
+   * @param x tensor
+   * @param y tensor
+   */
+  override def cmin(x: Tensor[T], y: Tensor[T]): Tensor[T] =
     throw new UnsupportedOperationException(errorString)
 
   /**
@@ -1393,7 +1416,14 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
 
   override def floor(): Tensor[T] = throw new UnsupportedOperationException(errorString)
 
+  override def ceil(): Tensor[T] = throw new UnsupportedOperationException(errorString)
+
   override def negative(x: Tensor[T]): Tensor[T] =
     throw new UnsupportedOperationException(errorString)
 
+  override def inv(): Tensor[T] =
+    throw new UnsupportedOperationException(errorString)
+
+  override def reduce(dim: Int, result: Tensor[T], reducer: (T, T) => T): Tensor[T] =
+    throw new UnsupportedOperationException(errorString)
 }

@@ -33,7 +33,13 @@ import scala.reflect.ClassTag
  * @param outputSize number of output planes the convolution layer will produce
  * @param kernelI Convolutional filter size to convolve input
  * @param kernelC Convolutional filter size to convolve cell
- * @param stride The step of the convolution
+ * @param stride The step of the convolution, default is 1
+ * @param padding The step of the convolution, default is -1,
+ *                behaves same with SAME padding in tensorflow.
+ *                Default stride,padding ensure last 2 dim of output shape is the same with input
+ * @param activation: activation function, by default to be Tanh if not specified.
+ * @param innerActivation: activation function for inner cells,
+ *                       by default to be Sigmoid if not specified.
  * @param wRegularizer: instance of [[Regularizer]]
             (eg. L1 or L2 regularization), applied to the input weights matrices.
  * @param uRegularizer: instance [[Regularizer]]
@@ -49,7 +55,10 @@ class ConvLSTMPeephole[T : ClassTag](
   val outputSize: Int,
   val kernelI: Int,
   val kernelC: Int,
-  val stride: Int,
+  val stride: Int = 1,
+  val padding: Int = -1,
+  var activation: TensorModule[T] = null,
+  var innerActivation: TensorModule[T] = null,
   var wRegularizer: Regularizer[T] = null,
   var uRegularizer: Regularizer[T] = null,
   var bRegularizer: Regularizer[T] = null,
@@ -65,12 +74,13 @@ class ConvLSTMPeephole[T : ClassTag](
   var outputGate: Sequential[T] = _
   var hiddenLayer: Sequential[T] = _
   var cellLayer: Sequential[T] = _
+  if (activation == null) activation = Tanh[T]()
+  if (innerActivation == null) innerActivation = Sigmoid[T]()
 
   override var cell: AbstractModule[Activity, Activity, T] = buildModel()
 //  val joinDim = 2
 
   override var preTopology: TensorModule[T] = null
-
 //  override var preTopology: AbstractModule[Activity, Activity, T] = null
 //  override def preTopology: AbstractModule[Activity, Activity, T] =
 //    Sequential()
@@ -80,17 +90,17 @@ class ConvLSTMPeephole[T : ClassTag](
 
 //  def buildGate(offset: Int, length: Int): Sequential[T] = {
 //    val i2g = Narrow(joinDim, offset, length)
-  def buildGate(): Sequential[T] = {
+  def buildGate(name: String = null): Sequential[T] = {
     val i2g = Sequential()
       .add(Contiguous())
       .add(SpatialConvolution(inputSize, outputSize, kernelI, kernelI,
-        stride, stride, kernelI/2, kernelI/2, wRegularizer = wRegularizer,
-        bRegularizer = bRegularizer))
+        stride, stride, padding, padding, wRegularizer = wRegularizer,
+        bRegularizer = bRegularizer).setName(name + "_i2g"))
     val h2g = Sequential()
       .add(Contiguous())
       .add(SpatialConvolution(outputSize, outputSize, kernelC, kernelC,
-      stride, stride, kernelC/2, kernelC/2, withBias = false,
-      wRegularizer = uRegularizer))
+      stride, stride, padding, padding, withBias = false,
+      wRegularizer = uRegularizer).setName(name + "_h2g"))
 
     val gate = Sequential()
     if (withPeephole) {
@@ -107,25 +117,29 @@ class ConvLSTMPeephole[T : ClassTag](
           .add(h2g))
     }
 
+    // make a new instance of inner activation for each build gate
+    val inner = innerActivation.cloneModule()
+    inner.setName(Integer.toHexString(java.util.UUID.randomUUID().hashCode()))
+
     gate.add(CAddTable())
-      .add(Sigmoid())
+      .add(inner)
   }
 
   def buildInputGate(): Sequential[T] = {
 //    inputGate = buildGate(1 + outputSize, outputSize)
-    inputGate = buildGate()
+    inputGate = buildGate("InputGate")
     inputGate
   }
 
   def buildForgetGate(): Sequential[T] = {
 //    forgetGate = buildGate(1, outputSize)
-    forgetGate = buildGate()
+    forgetGate = buildGate("ForgetGate")
     forgetGate
   }
 
   def buildOutputGate(): Sequential[T] = {
 //    outputGate = buildGate(1 + 3 * outputSize, outputSize)
-    outputGate = buildGate()
+    outputGate = buildGate("OutputGate")
     outputGate
   }
 
@@ -137,20 +151,20 @@ class ConvLSTMPeephole[T : ClassTag](
     val i2h = Sequential()
       .add(Contiguous())
       .add(SpatialConvolution(inputSize, outputSize, kernelI, kernelI,
-        stride, stride, kernelI/2, kernelI/2, wRegularizer = wRegularizer,
-        bRegularizer = bRegularizer))
+        stride, stride, padding, padding, wRegularizer = wRegularizer,
+        bRegularizer = bRegularizer).setName("Hidden_i2h"))
     val h2h = Sequential()
       .add(Contiguous())
       .add(SpatialConvolution(outputSize, outputSize, kernelC, kernelC,
-      stride, stride, kernelC/2, kernelC/2, withBias = false,
-      wRegularizer = uRegularizer))
+      stride, stride, padding, padding, withBias = false,
+      wRegularizer = uRegularizer).setName("Hidden_h2h"))
 
     hidden
       .add(ParallelTable()
         .add(i2h)
         .add(h2h))
       .add(CAddTable())
-      .add(Tanh())
+      .add(activation)
 
     this.hiddenLayer = hidden
     hidden
@@ -187,6 +201,9 @@ class ConvLSTMPeephole[T : ClassTag](
     buildCell()
     buildOutputGate()
 
+    val activation2 = activation.cloneModule()
+    activation2.setName(Integer.toHexString(java.util.UUID.randomUUID().hashCode()))
+
     val convlstm = Sequential()
       .add(FlattenTable())
       .add(ConcatTable()
@@ -200,7 +217,7 @@ class ConvLSTMPeephole[T : ClassTag](
             .add(outputGate)
             .add(Sequential()
               .add(SelectTable(3))
-              .add(Tanh())))
+              .add(activation2)))
           .add(CMulTable())
           .add(Contiguous()))
         .add(SelectTable(3)))
@@ -248,13 +265,17 @@ object ConvLSTMPeephole {
     kernelI: Int,
     kernelC: Int,
     stride: Int = 1,
+    padding: Int = -1,
+    activation: TensorModule[T] = null,
+    innerActivation: TensorModule[T] = null,
     wRegularizer: Regularizer[T] = null,
     uRegularizer: Regularizer[T] = null,
     bRegularizer: Regularizer[T] = null,
     cRegularizer: Regularizer[T] = null,
     withPeephole: Boolean = true
   )(implicit ev: TensorNumeric[T]): ConvLSTMPeephole[T] = {
-    new ConvLSTMPeephole[T](inputSize, outputSize, kernelI, kernelC, stride,
+    new ConvLSTMPeephole[T](inputSize, outputSize, kernelI, kernelC,
+      stride, padding, activation, innerActivation,
       wRegularizer, uRegularizer, bRegularizer, cRegularizer, withPeephole)
   }
 }

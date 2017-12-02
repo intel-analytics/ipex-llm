@@ -72,7 +72,7 @@ import org.tensorflow.framework.GraphDef
 class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
   private val outputs : Seq[ModuleNode[T]],
   private val variables: Option[(Array[Tensor[T]], Array[Tensor[T]])] = None,
-  generateBackward: Boolean = true
+  private val generateBackward: Boolean = true
 )(implicit ev: TensorNumeric[T])
     extends Container[Activity, Activity, T]{
 
@@ -379,7 +379,7 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
 
   private def checkRoots: Unit = {
     require(forwardNodes.map(_.element.getName()).distinct.length == forwardNodes.length,
-      s"the name of node in the graph should be unique, but find dumplicated name " +
+      s"the name of node in the graph should be unique, but find duplicated name " +
         s"${duplicatedNames(forwardNodes.map(_.element.getName())).mkString(", ")}")
     val roots = forwardNodes.filter(_.prevNodes.size == 0)
       .filter(node => !node.element.isInstanceOf[WithoutInput]
@@ -508,17 +508,19 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
         require(activity.isTensor, "Cannot add a table to a tensor")
         activity.toTensor[T].add(other.toTensor[T])
       } else {
+        // if 'activity' and 'other' are both table, we need to merge 'other' to 'activity'
+        // if 'other' and 'activity' both contains the index, update 'activity' by sum
+        // if 'other' contains the index while 'activity' does not,
+        // just insert the corresponding tensor of 'other' to 'activity'
         val actTable = activity.toTable
-        val actLen = actTable.length()
         val otherTable = other.toTable
-        val otherLen = otherTable.length()
-        require(actLen == otherLen, "table length is not equal")
-        var i = 1
-        while(i <= actLen) {
-          require(actTable[Activity](i) != null, "Invalid table element")
-          accActivity(actTable[Activity](i), otherTable[Activity](i))
-          i += 1
-        }
+        otherTable.keySet.foreach(index => {
+          if (actTable.contains(index)) {
+            accActivity(actTable[Activity](index), otherTable[Activity](index))
+          } else {
+            actTable.insert(index.asInstanceOf[Int], otherTable(index))
+          }
+        })
         actTable
       }
     }
@@ -665,7 +667,11 @@ object Graph extends ContainerSerializable {
         .asInstanceOf[Array[Tensor[T]]]
       sharedVariables = Some(weightArray, biasArray)
     }
-    Graph[T](inputs.toArray, outputs.toArray, sharedVariables)
+
+    val generateBackward = DataConverter.getAttributeValue(context, attributes
+      .get("generateBackward")).asInstanceOf[Boolean]
+
+    Graph[T](inputs.toArray, outputs.toArray, sharedVariables, generateBackward)
   }
 
   override def doSerializeModule[T: ClassTag](context: SerializeContext[T],
@@ -730,6 +736,11 @@ object Graph extends ContainerSerializable {
     DataConverter.setAttributeValue(context, outputNamesBuilder,
       outputsNames, universe.typeOf[Array[String]])
     graphBuilder.putAttr("outputNames", outputNamesBuilder.build)
+
+    val generateBackwardBuilder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(context, generateBackwardBuilder,
+      graph.generateBackward, universe.typeOf[Boolean])
+    graphBuilder.putAttr("generateBackward", generateBackwardBuilder.build)
 
   }
 }

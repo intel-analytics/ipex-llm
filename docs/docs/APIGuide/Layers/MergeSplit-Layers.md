@@ -863,6 +863,83 @@ Gives the output,
 ```
 [array([ 2.,  4.,  6.], dtype=float32)]
 ```
+
+---
+## CAveTable ##
+
+**Scala:**
+```scala
+val model = CAveTable(inplace=false)
+```
+**Python:**
+```python
+model = CAveTable(inplace=False)
+```
+
+CAveTable merges the input tensors in the input table by element-wise taking the average. The input table is actually an array of tensor with same size.
+
+**Scala example:**
+```scala
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.tensor._
+import com.intel.analytics.bigdl.utils.T
+
+val model = CAveTable()
+val input1 = Tensor(5).rand()
+val input2 = Tensor(5).rand()
+val input = T(input1, input2)
+val output = model.forward(input)
+```
+Gives the output,
+```
+input1: com.intel.analytics.bigdl.tensor.Tensor[Float] =
+0.6061657
+0.55972266
+0.972365
+0.5624792
+0.7495829
+[com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 5]
+
+input2: com.intel.analytics.bigdl.tensor.Tensor[Float] =
+0.3897284
+0.82165825
+0.46275142
+0.95935726
+0.64157426
+[com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 5]
+
+output: com.intel.analytics.bigdl.tensor.Tensor[Float] =
+0.49794704
+0.69069046
+0.7175582
+0.76091826
+0.6955786
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 5]
+```
+
+**Python example:**
+```python
+from bigdl.nn.layer import *
+import numpy as np
+
+model = CAveTable()
+input1 = np.random.rand(5)
+input2 = np.random.rand(5)
+input = [input1, input2]
+output = model.forward(input)
+
+print(input1)
+print(input2)
+print(output)
+```
+Gives the output,
+```
+[array([ 0.26202468  0.15868397  0.27812652  0.45931689  0.32100054], dtype=float32)]
+[array([ 0.51839282  0.26194293  0.97608528  0.73281455  0.11527423], dtype=float32)]
+[array([ 0.39020872  0.21031344  0.62710589  0.5960657   0.21813738], dtype=float32)]
+```
+
 ---
 ## CMulTable ##
 

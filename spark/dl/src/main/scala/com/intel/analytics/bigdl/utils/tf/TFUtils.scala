@@ -19,12 +19,30 @@ import java.nio.{ByteBuffer, ByteOrder}
 
 import com.google.protobuf.ByteString
 import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.utils.T
+import org.apache.hadoop.io.{BytesWritable, NullWritable}
+import org.apache.spark.SparkContext
 import org.tensorflow.framework.{DataType, TensorProto}
+
 import scala.collection.JavaConverters._
 
 
 object TFUtils {
   import TFTensorNumeric.NumericByteString
+
+  /**
+   * Read the local files into RDD and write to specified path in HDFS
+   */
+  def saveToHDFS(localFiles: Seq[String], outputPath: String,
+                 numPartitions: Int, sc: SparkContext): Unit = {
+    val result = localFiles.flatMap { file =>
+      val iter = TFRecordIterator(new java.io.File(file))
+      iter
+    }
+    sc.parallelize(result, numPartitions)
+      .map(bytes => (new BytesWritable(bytes), NullWritable.get()))
+      .saveAsNewAPIHadoopFile[TFRecordOutputFormat](outputPath)
+  }
 
   private def parseTensorFromContent(
     dataType: DataType, content: Array[Byte], shape: Array[Int], endian: ByteOrder) = {
@@ -114,6 +132,17 @@ object TFUtils {
         var j = 0
         while (j < params.capacity()) {
           tmp(j) = params.get(j) & 0xffff
+          j += 1
+        }
+        Tensor(tmp, shape)
+      case DataType.DT_BOOL =>
+        val buffer = ByteBuffer.wrap(content)
+        buffer.order(endian)
+        val params = buffer
+        val tmp = new Array[Boolean](params.capacity())
+        var j = 0
+        while (j < params.capacity()) {
+          tmp(j) = if (params.get(j) == 0) false else true
           j += 1
         }
         Tensor(tmp, shape)
