@@ -134,6 +134,13 @@ class BatchNormalization[T: ClassTag](
   protected val _input = Tensor[T]()
   protected val _gradOutput = Tensor[T]()
 
+  override def clearState(): this.type = {
+    super.clearState()
+    gMean.set()
+    gxMean.set()
+    this
+  }
+
   override def copyStatus(src: Module[T]): this.type = {
     require(canEqual(src), s"copyStatus: type mismatch, $src is different from $this")
     val srcModule = src.asInstanceOf[BatchNormalization[T]]
