@@ -132,7 +132,8 @@
         <lifecycle-mapping.version>1.0.0</lifecycle-mapping.version>
         <maven-checkstyle-plugin.version>2.15</maven-checkstyle-plugin.version>
         <checkstyle.version>6.6</checkstyle.version>
-        <os-flag>linux64</os-flag>
+        <os-flag>linux</os-flag>
+        <dist-os-name>all</dist-os-name>
 
 
         <!-- Plugin versions and config -->
@@ -612,6 +613,12 @@
                     </plugin>
                 </plugins>
             </build>
+        </profile>
+        <profile>
+            <id>per_platform</id>
+            <properties>
+                <dist-os-name>${os-flag}</dist-os-name>
+            </properties>
         </profile>
     </profiles>
 </project>
