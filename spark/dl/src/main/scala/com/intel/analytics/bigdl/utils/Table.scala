@@ -59,7 +59,7 @@ class Table private[bigdl](
    */
   override def isTable: Boolean = true
 
-  def getState(): ImmutableMap[Any, Any] = {
+  private[bigdl] def getState(): ImmutableMap[Any, Any] = {
     return state.toMap
   }
   /**
@@ -295,10 +295,10 @@ class Table private[bigdl](
    * the integers between 1 to this.length(),
    * the values are all Tensor[T]
    */
-  def toSeq[T]: Seq[Tensor[T]] = {
+  def toSeq[T]: Seq[Activity] = {
     for (i <- 0 until this.length()) yield {
       try {
-        this(i + 1).asInstanceOf[Tensor[T]]
+        this(i + 1).asInstanceOf[Activity]
       } catch {
         case e: NoSuchElementException =>
           throw new UnsupportedOperationException("toSeq requires the key of this table are" +

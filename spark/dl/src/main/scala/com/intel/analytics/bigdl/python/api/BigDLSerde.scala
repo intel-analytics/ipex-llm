@@ -227,19 +227,11 @@ object BigDLSerDe extends BigDLSerDeBase with Serializable {
 
   private[python] class JActivityPickler extends BigDLBasePickler[JActivity] {
     private def doConvertTable(table: Table): Any = {
-      val sortedList = table.getState().toList.sortWith(
-        _._1.asInstanceOf[Int] < _._1.asInstanceOf[Int])
-      if (sortedList.isEmpty) {
+      val valuesOrderByKey = table.toSeq[Float]
+      if (valuesOrderByKey.isEmpty) {
         throw new RuntimeException("Found empty table")
       }
-      if (sortedList.iterator.next()._2.isInstanceOf[Activity]) {
-        return sortedList.map { item =>
-          doConvertActivity(item._2.asInstanceOf[Activity])
-        }.asJava
-      } else {
-        throw new RuntimeException(s"""not supported type:
-          ${sortedList.iterator.next().getClass.getSimpleName}""")
-      }
+      return valuesOrderByKey.map { item => doConvertActivity(item) }.asJava
     }
     private def doConvertActivity(activity: Activity): Any = {
       if (activity.isTable) {
