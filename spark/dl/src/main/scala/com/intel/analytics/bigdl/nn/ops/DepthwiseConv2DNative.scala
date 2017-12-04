@@ -29,6 +29,8 @@ class DepthwiseConv2DNative[T: ClassTag](
   dataFormat: DataFormat
 )(implicit ev: TensorNumeric[T])
 extends Operation[Table, Tensor[T], T] {
+  private val conv2D = SpatialConvolution()
+
   override def updateOutput(input: Table): Tensor[T] = {
     require(input.length() == 2, "Input must contain 2 inputs")
     val data = input[Tensor[T]](1)
