@@ -296,6 +296,20 @@ class TestLayer(BigDLTestCase):
                        dump_weights=True,
                        is_training=False)
 
+    def test_nested_with_combo_bigdl_layer_lstm(self):
+        branch1 = Sequential()
+        branch1.add(LSTM(64, input_dim=10, input_length=10, return_sequences=True,
+                         inner_activation='sigmoid'))
+        branch2 = Sequential()
+        branch2.add(Reshape((10, 2), input_shape=(20, )))
+
+        input_data = [np.random.random([3, 10, 10]), np.random.random([3, 20])]
+
+        kmodel = Sequential()
+        kmodel.add(Merge([branch1, branch2], mode='concat'))
+        kmodel.add(Activation('sigmoid'))
+        self.modelTest(input_data, kmodel, dump_weights=True)
+
     def test_merge_method_mix_concat(self):
         input_data1 = np.random.random_sample([2, 4])
         input_data2 = np.random.random_sample([2, 3])
