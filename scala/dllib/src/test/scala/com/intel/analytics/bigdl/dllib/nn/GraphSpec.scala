@@ -1238,6 +1238,28 @@ class GraphSpec extends FlatSpec with Matchers {
     isExecuted2 should be(false)
     isExecuted3 should be(false)
   }
+
+  "Graph get name" should "be correct" in {
+    val data = Identity().setName("input").inputs()
+    val const = Const(Tensor(T(1, 2))).setName("const").inputs()
+    var isExecuted1 = false
+    val l1 = Echo().setName("l1").setBeval((a, b, c) => isExecuted1 = true).inputs(const)
+    val cadd = CAddTable().setName("cadd").inputs(data, l1)
+    val l2 = Identity().setName("l2").inputs(cadd)
+    var isExecuted2 = false
+    var isExecuted3 = false
+    val echo = Echo().setName("echo")
+      .setFeval((a, b) => isExecuted2 = true)
+      .setBeval((a, b, c) => isExecuted3 = true).inputs(cadd)
+    val l3 = Identity().setName("l3").inputs(echo)
+
+    val model = Graph(data, l2)
+    model.node("l1") should be(l1)
+
+    intercept[NoSuchElementException] {
+      model.node("ll1")
+    }
+  }
 }
 
 object ModelUntils {
