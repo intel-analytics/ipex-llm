@@ -295,7 +295,26 @@ class Table private[bigdl](
    * the integers between 1 to this.length(),
    * the values are all Tensor[T]
    */
-  def toSeq[T]: Seq[Activity] = {
+  def toSeq[T]: Seq[Tensor[T]] = {
+    for (i <- 0 until this.length()) yield {
+      try {
+        this(i + 1).asInstanceOf[Tensor[T]]
+      } catch {
+        case e: NoSuchElementException =>
+          throw new UnsupportedOperationException("toSeq requires the key of this table are" +
+            " all the integers between 1 to this.length()", e)
+      }
+
+    }
+  }
+
+  /**
+   * Return the elements of this table as a Seq.
+   * This method assumes the key of this table are all
+   * the integers between 1 to this.length(),
+   * the values are all Activity
+   */
+  def toSeqActivity[T]: Seq[Activity] = {
     for (i <- 0 until this.length()) yield {
       try {
         this(i + 1).asInstanceOf[Activity]
