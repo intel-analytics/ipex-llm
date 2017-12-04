@@ -262,7 +262,7 @@ class Sample(object):
         """
         User should always use Sample.from_ndarray to construct Sample.
         :param features: a list of JTensors
-        :param label: a JTensor
+        :param label: a list of JTensors
         :param bigdl_type: "double" or "float"
         """
         self.features = features
@@ -274,7 +274,7 @@ class Sample(object):
         """
         Convert a ndarray of features and label to Sample, which would be used in Java side.
         :param features: an ndarray or a list of ndarrays
-        :param label: an ndarray or a scalar
+        :param label: an ndarray or a list of ndarrays or a scalar
         :param bigdl_type: "double" or "float"
 
         >>> import numpy as np
@@ -284,7 +284,7 @@ class Sample(object):
         >>> sample = Sample.from_ndarray(np.random.random((2,3)), np.random.random((2,3)))
         >>> sample_back = callBigDlFunc("float", "testSample", sample)
         >>> assert_allclose(sample.features[0].to_ndarray(), sample_back.features[0].to_ndarray())
-        >>> assert_allclose(sample.label.to_ndarray(), sample_back.label.to_ndarray())
+        >>> assert_allclose(sample.label[0].to_ndarray(), sample_back.label[0].to_ndarray())
         >>> print(sample)
         Sample: features: [JTensor: storage: [[ 0.69646919  0.28613934  0.22685145]
          [ 0.55131477  0.71946895  0.42310646]], shape: [2 3], float], label: JTensor: storage: [[ 0.98076421  0.68482971  0.48093191]
@@ -295,11 +295,16 @@ class Sample(object):
         else:
             assert all(isinstance(feature, np.ndarray) for feature in features), \
                 "features should be a list of np.ndarray, not %s" % type(features)
-        if not isinstance(label, np.ndarray): # in case label is a scalar.
-            label = np.array(label)
+        if np.isscalar(label):  # in case label is a scalar.
+            label = [np.array(label)]
+        elif isinstance(label, np.ndarray):
+            label = [label]
+        else:
+            assert all(isinstance(l, np.ndarray) for l in label), \
+                "label should be a list of np.ndarray, not %s" % type(label)
         return cls(
             features=[JTensor.from_ndarray(f) for f in features],
-            label=JTensor.from_ndarray(label),
+            label=[JTensor.from_ndarray(l) for l in label],
             bigdl_type=bigdl_type)
 
     @classmethod
