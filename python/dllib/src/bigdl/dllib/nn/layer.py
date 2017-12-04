@@ -782,6 +782,17 @@ class Model(Container):
         callBigDlFunc(bigdl_type, "setStopGradient", self.value, stop_layers)
         return self
 
+    def node(self, name, bigdl_type="float"):
+        """
+        Return the corresponding node has the given name. If the given name doesn't match any node,
+        an exception will be thrown
+        :param name: node name
+        :param bigdl_type: 
+        :return: 
+        """
+        jnode = callBigDlFunc(bigdl_type, "findGraphNode", self.value, name)
+        return Node.of(jnode)
+
     def save_graph_topology(self, log_path, bigdl_type="float"):
         """
         save current model graph to a folder, which can be display in tensorboard by running
