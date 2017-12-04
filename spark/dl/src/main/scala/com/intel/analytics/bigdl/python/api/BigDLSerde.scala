@@ -227,7 +227,7 @@ object BigDLSerDe extends BigDLSerDeBase with Serializable {
 
   private[python] class JActivityPickler extends BigDLBasePickler[JActivity] {
     private def doConvertTable(table: Table): Any = {
-      val valuesOrderByKey = table.toSeqActivity
+      val valuesOrderByKey = table.toSeq[Activity]
       if (valuesOrderByKey.isEmpty) {
         throw new RuntimeException("Found empty table")
       }
