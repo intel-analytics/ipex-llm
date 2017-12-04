@@ -599,9 +599,8 @@ class Container(Layer):
         layers = [Layer.of(jlayer) for jlayer in jlayers]
         return layers
 
-    @property
-    def flattened_layers(self):
-        jlayers = callBigDlFunc(self.bigdl_type, "getFlattenModules", self)
+    def flattened_layers(self, include_container=False):
+        jlayers = callBigDlFunc(self.bigdl_type, "getFlattenModules", self, include_container)
         layers = [Layer.of(jlayer) for jlayer in jlayers]
         return layers
 
