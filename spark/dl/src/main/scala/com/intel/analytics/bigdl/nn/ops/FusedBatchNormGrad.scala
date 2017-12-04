@@ -23,6 +23,23 @@ import com.intel.analytics.bigdl.utils.Table
 
 import scala.reflect.ClassTag
 
+/**
+ * This is the gradient operation coressponding to the FusedBatchNorm. It will calculate the
+ * activity, weight and bias gradients of the spatial batch normalization.
+ *
+ * The formula is
+ *      x_backprop = scale * rsqrt(variance + epsilon) * [y_backprop - mean(y_backprop) -
+ *     (x - mean(x)) * mean(y_backprop * (x - mean(x))) / (variance + epsilon)]
+ *     weight_backprop = sum(y_backprop * (x - mean(x)) * rsqrt(variance + epsilon))
+ *     bias_backprop = sum(y_backprop)
+ *
+ * @param epsilon
+ * @param dataFormat
+ * @param isTraining
+ * @param ev$1
+ * @param ev
+ * @tparam T Numeric type. Only support float/double now
+ */
 class FusedBatchNormGrad[T: ClassTag](
   epsilon: Float, dataFormat: DataFormat, isTraining: Boolean)(implicit ev: TensorNumeric[T])
   extends Operation[Table, Table, T]{

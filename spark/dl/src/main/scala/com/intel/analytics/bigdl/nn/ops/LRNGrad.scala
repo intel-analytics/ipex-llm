@@ -22,6 +22,18 @@ import com.intel.analytics.bigdl.utils.Table
 
 import scala.reflect.ClassTag
 
+/**
+ * LRNGrad calculate the backprop gradients of the Local response normalization layer.
+ *
+ * @param depthRadius
+ * @param bias
+ * @param alpha
+ * @param beta
+ * @param ev$1
+ * @param ev
+ * @param ev2
+ * @tparam T Numeric type. Only support float/double now
+ */
 class LRNGrad[T: ClassTag](
   depthRadius: Int = 5,
   bias: Float = 1.0f,

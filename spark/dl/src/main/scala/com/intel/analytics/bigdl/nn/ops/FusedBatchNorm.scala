@@ -23,6 +23,31 @@ import com.intel.analytics.bigdl.utils.Table
 
 import scala.reflect.ClassTag
 
+/**
+ * This is similar to SpatialBatchNormalization.
+ *
+ * When isTraining is true, it takes three tensors as inputs, which is image,
+ * scale, offset.
+ *
+ * The operation implemented is:
+ *
+ *         ( image - batch-mean(x) )
+ * y = ---------------------------------- * weight + offset
+ *      batch-standard-deviation(x)
+ *
+ * The operation will output y, mean and variance tensors.
+ *
+ * If the isTraining is false, it takes five tensors as inputs, which is image, scale, offset, mean,
+ * and variance.
+ *
+ * @param epsilon
+ * @param isTraining
+ * @param momentum
+ * @param dataFormat
+ * @param ev$1
+ * @param ev
+ * @tparam T Numeric type. Only support float/double now
+ */
 class FusedBatchNorm[T: ClassTag](
   epsilon: Float = 0.0001f,
   isTraining: Boolean = true,
