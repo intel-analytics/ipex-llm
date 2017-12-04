@@ -160,6 +160,16 @@ class TestSimple():
         assert_allclose(gradInput[1],
                         np.array([6.0, 6.0, 6.0, 6.0]))
 
+    def test_get_node(self):
+        fc1 = Linear(4, 2)()
+        fc2 = Linear(4, 2)()
+        fc1.element().set_name("fc1")
+        cadd = CAddTable()([fc1, fc2])
+        output1 = ReLU()(cadd)
+        model = Model([fc1, fc2], [output1])
+        res = model.node("fc1")
+        assert res.element().name() == "fc1"
+
     def test_save_graph_topology(self):
         fc1 = Linear(4, 2)()
         fc2 = Linear(4, 2)()
