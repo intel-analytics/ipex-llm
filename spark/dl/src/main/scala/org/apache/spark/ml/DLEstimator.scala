@@ -114,7 +114,8 @@ class DLEstimator[@specialized(Float, Double) T: ClassTag](
   def setLearningRateDecay(value: Double): this.type = set(learningRateDecay, value)
 
   override def transformSchema(schema : StructType): StructType = {
-    validateSchema(schema)
+    super.validateSchema(schema, $(featuresCol))
+    super.validateSchema(schema, $(labelCol))
     SchemaUtils.appendColumn(schema, $(predictionCol), ArrayType(DoubleType, false))
   }
 
@@ -254,7 +255,7 @@ class DLModel[@specialized(Float, Double) T: ClassTag](
   }
 
   override def transformSchema(schema : StructType): StructType = {
-    validateSchema(schema)
+    validateSchema(schema, $(featuresCol))
     SchemaUtils.appendColumn(schema, $(predictionCol), ArrayType(DoubleType, false))
   }
 

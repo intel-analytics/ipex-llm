@@ -49,7 +49,7 @@ class DLClassifier[@specialized(Float, Double) T: ClassTag](
   }
 
   override def transformSchema(schema : StructType): StructType = {
-    validateSchema(schema)
+    validateSchema(schema, $(featuresCol))
     SchemaUtils.appendColumn(schema, $(predictionCol), DoubleType)
   }
 
@@ -82,7 +82,7 @@ class DLClassifierModel[@specialized(Float, Double) T: ClassTag](
   }
 
   override def transformSchema(schema : StructType): StructType = {
-    validateSchema(schema)
+    validateSchema(schema, $(featuresCol))
     SchemaUtils.appendColumn(schema, $(predictionCol), DoubleType)
   }
 }

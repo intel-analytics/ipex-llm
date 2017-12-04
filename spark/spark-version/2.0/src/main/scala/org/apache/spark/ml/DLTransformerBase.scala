@@ -34,17 +34,16 @@ private[ml] abstract class DLTransformerBase[M <: DLTransformerBase[M]]
 
   override def transform(dataset: Dataset[_]): DataFrame = {
     transformSchema(dataset.schema, logging = true)
-    internalTransform(toArrayType(dataset.toDF()), dataset.toDF())
+    val df = dataset.toDF()
+    internalTransform(toArrayType(df), df)
   }
 
   /**
    * convert feature columns to Seq format
    */
   protected def toArrayType(dataset: DataFrame): RDD[Seq[AnyVal]] = {
-
     val featureType = dataset.schema($(featuresCol)).dataType
     val featureColIndex = dataset.schema.fieldIndex($(featuresCol))
-
     dataset.rdd.map { row =>
       val features = supportedTypesToSeq(row, featureType, featureColIndex)
       features

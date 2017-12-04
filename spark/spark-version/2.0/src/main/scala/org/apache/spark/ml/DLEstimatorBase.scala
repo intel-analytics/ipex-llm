@@ -22,18 +22,24 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{DataFrame, Dataset, Row}
 
-
+/**
+ * Common trait for DLEstimator and DLModel
+ */
 private[ml] trait DLParams extends HasFeaturesCol with HasPredictionCol {
 
   /**
    * only validate feature columns here
    */
-  protected def validateSchema(schema: StructType): Unit = {
+  protected def validateSchema(schema: StructType, colName: String): Unit = {
     val dataTypes = Seq(
       new ArrayType(DoubleType, false),
+      new ArrayType(DoubleType, true),
       new ArrayType(FloatType, false),
+      new ArrayType(FloatType, true),
       new VectorUDT,
-      new org.apache.spark.mllib.linalg.VectorUDT
+      new org.apache.spark.mllib.linalg.VectorUDT,
+      DoubleType,
+      FloatType
     )
 
     // TODO use SchemaUtils.checkColumnTypes after convert to 2.0
@@ -48,9 +54,13 @@ private[ml] trait DLParams extends HasFeaturesCol with HasPredictionCol {
       row.getAs[Vector](index).toArray.toSeq
     } else if (colType == new org.apache.spark.mllib.linalg.VectorUDT) {
       row.getAs[org.apache.spark.mllib.linalg.Vector](index).toArray.toSeq
-    } else if (colType == ArrayType(DoubleType, false)) {
+    } else if (colType == ArrayType(DoubleType, containsNull = false)) {
       row.getSeq[Double](index)
-    } else if (colType == ArrayType(FloatType, false)) {
+    } else if (colType == ArrayType(DoubleType, containsNull = true)) {
+      row.getSeq[Double](index)
+    } else if (colType == ArrayType(FloatType, containsNull = false)) {
+      row.getSeq[Float](index)
+    } else if (colType == ArrayType(FloatType, containsNull = true)) {
       row.getSeq[Float](index)
     } else if (colType == DoubleType) {
       Seq[Double](row.getDouble(index))
@@ -58,7 +68,6 @@ private[ml] trait DLParams extends HasFeaturesCol with HasPredictionCol {
     featureArr.asInstanceOf[Seq[AnyVal]]
   }
 
-  protected def getFeatureArrayCol: String = $(featuresCol) + "_Array"
 }
 
 
@@ -70,8 +79,6 @@ private[ml] trait DLParams extends HasFeaturesCol with HasPredictionCol {
 private[ml] abstract class DLEstimatorBase[Learner <: DLEstimatorBase[Learner, M],
     M <: DLTransformerBase[M]]
   extends Estimator[M] with DLParams with HasLabelCol {
-
-  protected def getLabelArrayCol: String = $(labelCol) + "_Array"
 
   protected def internalFit(featureAndLabel: RDD[(Seq[AnyVal], Seq[AnyVal])]): M
 
@@ -96,28 +103,8 @@ private[ml] abstract class DLEstimatorBase[Learner <: DLEstimatorBase[Learner, M
     }
   }
 
-  /**
-   * validate both feature and label columns
-   */
-  protected override def validateSchema(schema: StructType): Unit = {
-    // validate feature column
-    super.validateSchema(schema)
-
-    // validate label column
-    val dataTypes = Seq(
-      new ArrayType(DoubleType, false),
-      new ArrayType(FloatType, false),
-      new VectorUDT,
-      DoubleType)
-
-    // TODO use SchemaUtils.checkColumnTypes after convert to 2.0
-    val actualDataType = schema($(labelCol)).dataType
-    require(dataTypes.exists(actualDataType.equals),
-      s"Column ${$(labelCol)} must be of type equal to one of the following types: " +
-        s"${dataTypes.mkString("[", ", ", "]")} but was actually of type $actualDataType.")
-  }
-
   override def copy(extra: ParamMap): Learner = defaultCopy(extra)
+
 }
 
 
