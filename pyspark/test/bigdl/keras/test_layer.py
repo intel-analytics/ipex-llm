@@ -299,7 +299,7 @@ class TestLayer(BigDLTestCase):
     def test_nested_with_combo_bigdl_layer_lstm(self):
         branch1 = Sequential()
         branch1.add(LSTM(64, input_dim=10, input_length=10, return_sequences=True,
-                        inner_activation='sigmoid'))
+                         inner_activation='sigmoid'))
         branch2 = Sequential()
         branch2.add(Reshape((10, 2), input_shape=(20, )))
 
