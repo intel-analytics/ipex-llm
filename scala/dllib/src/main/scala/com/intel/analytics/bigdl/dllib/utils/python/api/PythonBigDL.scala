@@ -2270,18 +2270,25 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     module.modules.toList.asJava
   }
 
-  def getFlattenModules(module: Container[Activity, Activity, T])
+  def getFlattenModules(module: Container[Activity, Activity, T],
+  includeContainer: Boolean)
   : JList[AbstractModule[Activity, Activity, T]] = {
     val result = ArrayBuffer[AbstractModule[Activity, Activity, T]]()
-    doGetFlattenModules(module, result)
+    doGetFlattenModules(module, includeContainer, result)
     result.toList.asJava
   }
 
   private def doGetFlattenModules(module: Container[Activity, Activity, T],
+    includeContainer: Boolean,
     result: ArrayBuffer[AbstractModule[Activity, Activity, T]]): Unit = {
+    if (includeContainer) {
+      result.append(module)
+    }
     module.modules.foreach {m =>
       if (m.isInstanceOf[Container[Activity, Activity, T]]) {
-        doGetFlattenModules(m.asInstanceOf[Container[Activity, Activity, T]], result)
+        doGetFlattenModules(m.asInstanceOf[Container[Activity, Activity, T]],
+          includeContainer,
+          result)
       } else {
         result.append(m)
       }
