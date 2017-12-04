@@ -38,11 +38,12 @@ object ModuleLoader {
   /**
    * load module from `modelPath`
    * @param modelPath  path where protobuf formatted module is stored
+   * @param weightPath optional : weight path
    * @param ev numeric ops
    * @tparam T data type
    * @return loaded BigDL module
    */
-  def loadFromFile[T: ClassTag](modelPath : String)
+  def loadFromFile[T: ClassTag](modelPath : String, weightPath : String = null)
     (implicit ev: TensorNumeric[T]) : AbstractModule[Activity, Activity, T] = {
     val modelBuilder = BigDLModule.newBuilder
     val inputBytes = File.readBytes(modelPath)
@@ -51,30 +52,14 @@ object ModuleLoader {
     modelBuilder.mergeFrom(cis)
     val bigDLModel = modelBuilder.build()
     val storages = new mutable.HashMap[Int, Any]()
-    val deserializationContext = DeserializeContext(bigDLModel, storages, ProtoStorageType)
-    initTensorStorage(deserializationContext)
-    ModuleSerializer.load(DeserializeContext(bigDLModel, storages, ProtoStorageType)).module
-  }
-
-  /**
-   * load module from `modelPath` and `weightPath``
-   * @param modelPath  path where protobuf formatted module is stored
-   * @param weightPath path where weight is stored
-   * @param ev numeric ops
-   * @tparam T data type
-   * @return loaded BigDL module
-   */
-  def loadFromFile[T: ClassTag](modelPath : String, weightPath : String)
-    (implicit ev: TensorNumeric[T]) : AbstractModule[Activity, Activity, T] = {
-    val modelBuilder = BigDLModule.newBuilder
-    val inputBytes = File.readBytes(modelPath)
-    var cis : CodedInputStream = CodedInputStream.newInstance(new ByteArrayInputStream(inputBytes))
-    cis.setSizeLimit(Integer.MAX_VALUE)
-    modelBuilder.mergeFrom(cis)
-    val bigDLModel = modelBuilder.build()
-    val storages = new mutable.HashMap[Int, Any]()
-    val deserializationContext = DeserializeContext(bigDLModel, storages, BigDLStorage)
-    initTensorStorage(deserializationContext, weightPath)
+    var deserializationContext : DeserializeContext = null
+    if (weightPath == null) {
+      deserializationContext = DeserializeContext(bigDLModel, storages, ProtoStorageType)
+      initTensorStorage(deserializationContext)
+    } else {
+      deserializationContext = DeserializeContext(bigDLModel, storages, BigDLStorage)
+      initTensorStorage(deserializationContext, weightPath)
+    }
     ModuleSerializer.load(deserializationContext).module
   }
 
@@ -240,39 +225,31 @@ object ModulePersister {
    * @param ev  numeric ops
    * @tparam T data type
    */
-  def saveToFile[T: ClassTag](modelPath: String, module: AbstractModule[Activity, Activity, T],
-                              overwrite: Boolean = false)
-                             (implicit ev: TensorNumeric[T]): Unit = {
-    val bigDLModule = ModuleData(module
-      , new ArrayBuffer[String](), new ArrayBuffer[String]())
-    val storages = new mutable.HashMap[Int, Any]()
-    val context = SerializeContext(bigDLModule, storages, ProtoStorageType)
-    val serializeResult = ModuleSerializer.serialize(context)
-    setTensorStorage(serializeResult.bigDLModule, serializeResult.storages)
-    File.saveBytes(serializeResult.bigDLModule.build.toByteArray, modelPath, overwrite)
-  }
-
-  /**
-   * Persist module & weights to specified paths
-   * @param modelPath path to persist module to
-   * @param weightPath path to persist weight to
-   * @param module  module to be persisted
-   * @param overwrite if overwrite module file if exists
-   * @param ev  numeric ops
-   * @tparam T data type
-   */
-  def saveToFile[T: ClassTag](modelPath: String, weightPath: String,
+  def saveToFile[T: ClassTag](modelPath: String,
+                              weightPath: String = null,
                               module: AbstractModule[Activity, Activity, T],
                               overwrite: Boolean = false)
                              (implicit ev: TensorNumeric[T]): Unit = {
+
+    if (weightPath == null) {
+      val serializeResult = serializeModule(module, ProtoStorageType)
+      setTensorStorage(serializeResult.bigDLModule, serializeResult.storages)
+      File.saveBytes(serializeResult.bigDLModule.build.toByteArray, modelPath, overwrite)
+    } else {
+      val serializeResult = serializeModule(module, BigDLStorage)
+      val tensorStorages = serializeResult.storages.filter(_._2.isInstanceOf[Array[_]])
+      File.saveBytes(serializeResult.bigDLModule.build.toByteArray, modelPath, overwrite)
+      saveWeightsToFile(weightPath, tensorStorages, overwrite)
+    }
+  }
+
+  private def serializeModule[T : ClassTag](module: AbstractModule[Activity, Activity, T],
+    storageType: StorageType)(implicit ev: TensorNumeric[T]): SerializeResult = {
     val bigDLModule = ModuleData(module
       , new ArrayBuffer[String](), new ArrayBuffer[String]())
     val storages = new mutable.HashMap[Int, Any]()
-    val context = SerializeContext(bigDLModule, storages, BigDLStorage)
-    val serializeResult = ModuleSerializer.serialize(context)
-    val tensorStorages = storages.filter(_._2.isInstanceOf[Array[_]])
-    File.saveBytes(serializeResult.bigDLModule.build.toByteArray, modelPath, overwrite)
-    saveWeightsToFile(weightPath, tensorStorages, overwrite)
+    val context = SerializeContext(bigDLModule, storages, storageType)
+    ModuleSerializer.serialize(context)
   }
 
   private def saveWeightsToFile(weightPath: String, storages: mutable.HashMap[Int, Any],

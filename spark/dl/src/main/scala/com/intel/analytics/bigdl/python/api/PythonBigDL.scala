@@ -1620,8 +1620,9 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     Module.load[T](path)
   }
 
-  def loadBigDLModule(path: String): AbstractModule[Activity, Activity, T] = {
-    Module.loadModule[T](path)
+  def loadBigDLModule(modulePath: String,
+    weightPath : String): AbstractModule[Activity, Activity, T] = {
+    Module.loadModule[T](modulePath, weightPath)
   }
 
   def loadTorch(path: String): AbstractModule[Activity, Activity, T] = {
@@ -1740,8 +1741,8 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def saveBigDLModule(module: AbstractModule[Activity, Activity, T],
-    path: String, overWrite: Boolean): Unit = {
-    module.saveModule(path, overWrite)
+    modulePath: String, weightPath: String, overWrite: Boolean): Unit = {
+    module.saveModule(modulePath, weightPath, overWrite)
   }
 
   def saveCaffe(module: AbstractModule[Activity, Activity, T],

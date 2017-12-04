@@ -17,10 +17,13 @@ package com.intel.analytics.bigdl.utils.serializer
 
 import java.io.{DataInputStream, DataOutputStream}
 
+import com.google.protobuf.ByteString
 import com.intel.analytics.bigdl.tensor.Storage
 import com.intel.analytics.bigdl.utils.serializer.BigDLDataType.BigDLDataType
 
-
+/**
+ * DataReaderWriter defines how to read/write weight data from bin file
+ */
 trait DataReaderWriter {
   def write(outputStream: DataOutputStream, data: Array[_]): Unit
   def read(inputStream: DataInputStream, size: Int): Any
@@ -94,7 +97,7 @@ object BoolReaderWriter extends DataReaderWriter {
 object StringReaderWriter extends DataReaderWriter {
   override def write(outputStream: DataOutputStream, data: Array[_]): Unit = {
     data.foreach(str => {
-      val value = data.asInstanceOf[String].getBytes("utf-8")
+      val value = str.asInstanceOf[String].getBytes("utf-8")
       outputStream.writeInt(value.size)
       outputStream.write(value)
     })
@@ -130,6 +133,61 @@ object IntReaderWriter extends DataReaderWriter {
   def dataType(): BigDLDataType = BigDLDataType.INT
 }
 
+object ShortReaderWriter extends DataReaderWriter {
+  override def write(outputStream: DataOutputStream, data: Array[_]): Unit = {
+    data.foreach(d => outputStream.writeShort(d.asInstanceOf[Short]))
+  }
+
+  override def read(inputStream: DataInputStream, size: Int): Any = {
+    val data = new Array[Short](size)
+    for (i <- 0 until size) {
+      data(i) = inputStream.readShort
+    }
+    Storage[Short](data)
+  }
+
+  def dataType(): BigDLDataType = BigDLDataType.SHORT
+}
+
+object LongReaderWriter extends DataReaderWriter {
+  override def write(outputStream: DataOutputStream, data: Array[_]): Unit = {
+    data.foreach(d => outputStream.writeLong(d.asInstanceOf[Long]))
+  }
+
+  override def read(inputStream: DataInputStream, size: Int): Any = {
+    val data = new Array[Long](size)
+    for (i <- 0 until size) {
+      data(i) = inputStream.readLong
+    }
+    Storage[Long](data)
+  }
+
+  def dataType(): BigDLDataType = BigDLDataType.LONG
+}
+
+object ByteStringReaderWriter extends DataReaderWriter {
+  override def write(outputStream: DataOutputStream, data: Array[_]): Unit = {
+    data.foreach(str => {
+      val value = str.asInstanceOf[ByteString].toByteArray
+      outputStream.writeInt(value.size)
+      outputStream.write(value)
+    })
+  }
+
+  override def read(inputStream: DataInputStream, size: Int): Any = {
+    val data = new Array[ByteString](size)
+    for (i <- 0 until size) {
+      val ssize = inputStream.readInt
+      val buffer = new Array[Byte](ssize)
+      inputStream.read(buffer)
+      data(i) = ByteString.copyFrom(buffer)
+    }
+    Storage[ByteString](data)
+  }
+
+  def dataType(): BigDLDataType = BigDLDataType.BYTESTRING
+}
+
 object ByteReaderWriter extends DataReaderWriter {
 
   override def write(outputStream: DataOutputStream, data: Array[_]): Unit = {
@@ -139,7 +197,7 @@ object ByteReaderWriter extends DataReaderWriter {
   override def read(inputStream: DataInputStream, size: Int): Any = {
     val data = new Array[Byte](size)
     inputStream.read(data)
-    data
+    Storage[Byte](data)
   }
 
   override def dataType(): BigDLDataType = BigDLDataType.BYTE
@@ -153,8 +211,12 @@ object DataReaderWriter {
       case chs: Array[Char] => CharReaderWriter
       case bools: Array[Boolean] => BoolReaderWriter
       case strs : Array[String] => StringReaderWriter
+      case ints : Array[Int] => IntReaderWriter
+      case shorts : Array[Short] => ShortReaderWriter
+      case longs : Array[Long] => LongReaderWriter
+      case bytestrs : Array[ByteString] => ByteStringReaderWriter
       case bytes : Array[Byte] => ByteReaderWriter
-      case _ => throw new RuntimeException("Not Supported Type")
+      case _ => throw new RuntimeException("Unsupported Type")
     }
   }
 
@@ -165,7 +227,12 @@ object DataReaderWriter {
       case BigDLDataType.CHAR => CharReaderWriter
       case BigDLDataType.BOOL => BoolReaderWriter
       case BigDLDataType.STRING => StringReaderWriter
+      case BigDLDataType.INT => IntReaderWriter
+      case BigDLDataType.SHORT => ShortReaderWriter
+      case BigDLDataType.LONG => LongReaderWriter
+      case BigDLDataType.BYTESTRING => ByteStringReaderWriter
       case BigDLDataType.BYTE => ByteReaderWriter
+      case _ => throw new RuntimeException("Unsupported Type")
     }
   }
 }
