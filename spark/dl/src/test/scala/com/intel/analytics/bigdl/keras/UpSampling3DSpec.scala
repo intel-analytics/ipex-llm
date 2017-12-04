@@ -62,7 +62,7 @@ class UpSampling3DSpec extends KerasBaseSpec {
     val input = Tensor[Float](1, 2, 2, 2, 2).randn()
     val res1 = module.forward(input).clone()
     val tmpFile = java.io.File.createTempFile("module", ".bigdl")
-    module.saveModule(tmpFile.getAbsolutePath, true)
+    module.saveModule(tmpFile.getAbsolutePath, null, true)
     val loaded = Module.loadModule[Float](tmpFile.getAbsolutePath)
     val res2 = loaded.forward(input)
     res1 should be(res2)

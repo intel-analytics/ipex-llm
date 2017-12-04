@@ -15,6 +15,8 @@
  */
 package com.intel.analytics.bigdl.utils.serializer
 
+import java.io.File
+
 import com.google.protobuf.{ByteString, CodedOutputStream}
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.models.lenet.LeNet5
@@ -2135,12 +2137,22 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     res1 should be (res2)
   }
 
-  "Save bigsize model" should "work properly" in {
-    val linear = Linear(40000, 8000)
-    linear.saveModule("/tmp/linear.def", "linear.bin", true)
+  "Save model and weight separately" should "work properly" in {
+    val linear = Linear(3, 2)
+    val input = Tensor(2, 3).rand()
+    linear.saveModule("/tmp/linear.def", "/tmp/linear.bin", true)
+    val loaded = Module.loadModule("/tmp/linear.def", "/tmp/linear.bin")
+    val res1 = linear.forward(input)
 
+    val res2 = loaded.forward(input)
+
+    res1 should be (res2)
   }
 
+  "FindPath" should "work properly" in {
+    val file = new File("linear.bin")
+    println(file.getAbsolutePath)
+  }
 }
 
 class TestModule[T: ClassTag](val custom: CustomData)
