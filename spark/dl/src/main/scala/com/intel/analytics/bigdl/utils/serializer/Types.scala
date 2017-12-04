@@ -43,3 +43,9 @@ object BigDLDataType extends Enumeration{
   type BigDLDataType = Value
   val FLOAT, DOUBLE, CHAR, BOOL, STRING, INT, SHORT, LONG, BYTESTRING, BYTE = Value
 }
+
+object SerConst {
+  val MAGIC_NO = 3721
+  val DIGEST_TYPE = "MD5"
+  val GLOBAL_STORAGE = "global_storage"
+}

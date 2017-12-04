@@ -65,7 +65,7 @@ object ModuleLoader {
 
   private def initTensorStorage[T: ClassTag](context: DeserializeContext, weightPath : String)
                                             (implicit ev: TensorNumeric[T]): Unit = {
-    val magicNo = 3721
+    val magicNo = SerConst.MAGIC_NO
     var fr: FileReader = null
     var in: InputStream = null
     var objFile: ObjectInputStream = null
@@ -73,7 +73,7 @@ object ModuleLoader {
     try {
       fr = FileReader(weightPath)
       in = fr.open()
-      val digest = MessageDigest.getInstance("MD5")
+      val digest = MessageDigest.getInstance(SerConst.DIGEST_TYPE)
       val digestInputStream = new DigestInputStream(in, digest)
       val dataInputStream = new DataInputStream(digestInputStream)
       digestInputStream.on(true)
@@ -118,7 +118,7 @@ object ModuleLoader {
                                             (implicit ev: TensorNumeric[T]): Unit = {
     val attrMap = context.bigdlModule.getAttrMap
 
-    val storagesMap = attrMap.get("global_storage").getNameAttrListValue.getAttrMap
+    val storagesMap = attrMap.get(SerConst.GLOBAL_STORAGE).getNameAttrListValue.getAttrMap
 
     storagesMap.asScala.foreach(map => {
       val storages = context.storages
@@ -254,7 +254,7 @@ object ModulePersister {
 
   private def saveWeightsToFile(weightPath: String, storages: mutable.HashMap[Int, Any],
     overwrite: Boolean = false): Unit = {
-    val magicNo = 3721
+    val magicNo = SerConst.MAGIC_NO
     val total = storages.size
     var fw: FileWriter = null
     var out: OutputStream = null
@@ -264,7 +264,7 @@ object ModulePersister {
     try {
       fw = FileWriter(weightPath)
       out = fw.create(overwrite)
-      val digest = MessageDigest.getInstance("MD5")
+      val digest = MessageDigest.getInstance(SerConst.DIGEST_TYPE)
       digestOutputStream = new DigestOutputStream(out, digest);
       dataOutputStream = new DataOutputStream(digestOutputStream)
       digestOutputStream.on(true)
@@ -302,7 +302,7 @@ object ModulePersister {
     storages: mutable.HashMap[Int, Any]) : Unit = {
     val storageIds = new mutable.HashSet[Int]
     val tensorStorages = storages.filter(_._2.isInstanceOf[TensorStorage])
-    var nameAttributes = NameAttrList.newBuilder().setName("global_storage")
+    var nameAttributes = NameAttrList.newBuilder().setName(SerConst.GLOBAL_STORAGE)
     storages.values.filter(_.isInstanceOf[BigDLTensor]).foreach(storage => {
       val bigdlTensor = storage.asInstanceOf[BigDLTensor]
       val storageId = bigdlTensor.getStorage.getId
@@ -320,7 +320,7 @@ object ModulePersister {
     })
     val attrValueBuilder = AttrValue.newBuilder
     attrValueBuilder.setNameAttrListValue(nameAttributes)
-    bigDLModule.putAttr("global_storage", attrValueBuilder.build)
+    bigDLModule.putAttr(SerConst.GLOBAL_STORAGE, attrValueBuilder.build)
   }
 
   /**
