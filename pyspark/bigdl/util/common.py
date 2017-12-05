@@ -287,8 +287,8 @@ class Sample(object):
         >>> assert_allclose(sample.label[0].to_ndarray(), sample_back.label[0].to_ndarray())
         >>> print(sample)
         Sample: features: [JTensor: storage: [[ 0.69646919  0.28613934  0.22685145]
-         [ 0.55131477  0.71946895  0.42310646]], shape: [2 3], float], label: JTensor: storage: [[ 0.98076421  0.68482971  0.48093191]
-         [ 0.39211753  0.343178    0.72904968]], shape: [2 3], float,
+         [ 0.55131477  0.71946895  0.42310646]], shape: [2 3], float], label: [JTensor: storage: [[ 0.98076421  0.68482971  0.48093191]
+         [ 0.39211753  0.343178    0.72904968]], shape: [2 3], float],
         """
         if isinstance(features, np.ndarray):
             features = [features]
