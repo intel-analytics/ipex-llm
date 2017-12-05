@@ -1654,6 +1654,14 @@ class SpatialBatchNormalization(Layer):
 
     where gamma and beta are learnable parameters.
     The learning of gamma and beta is optional.
+    
+    :param n_output: output feature map number
+    :param eps: avoid divide zero
+    :param momentum: momentum for weight update
+    :param affine: affine operation on output or not
+    :param data_format a string value (or DataFormat Object in Scala) of "NHWC" or "NCHW" to specify the input data format of this layer. In "NHWC" format
+                        data is stored in the order of [batch_size, height, width, channels], in "NCHW" format data is stored
+                        in the order of [batch_size, channels, height, width].
 
 
     >>> spatialBatchNormalization = SpatialBatchNormalization(1)
@@ -1664,6 +1672,8 @@ class SpatialBatchNormalization(Layer):
     >>> init_bias = np.array([0.0])
     >>> init_grad_bias = np.array([0.0])
     >>> spatialBatchNormalization = SpatialBatchNormalization(1, 1e-5, 0.1, True, init_weight, init_bias, init_grad_weight, init_grad_bias)
+    creating: createSpatialBatchNormalization
+    >>> spatialBatchNormalization = SpatialBatchNormalization(1, 1e-5, 0.1, True, init_weight, init_bias, init_grad_weight, init_grad_bias, "NHWC")
     creating: createSpatialBatchNormalization
     '''
 
@@ -1676,6 +1686,7 @@ class SpatialBatchNormalization(Layer):
                  init_bias=None,
                  init_grad_weight=None,
                  init_grad_bias=None,
+                 data_format="NCHW",
                  bigdl_type="float"):
         super(SpatialBatchNormalization, self).__init__(None, bigdl_type,
                                                         n_output,
@@ -1685,7 +1696,8 @@ class SpatialBatchNormalization(Layer):
                                                         JTensor.from_ndarray(init_weight),
                                                         JTensor.from_ndarray(init_bias),
                                                         JTensor.from_ndarray(init_grad_weight),
-                                                        JTensor.from_ndarray(init_grad_bias))
+                                                        JTensor.from_ndarray(init_grad_bias),
+                                                        data_format)
 
     def set_init_method(self, weight_init_method = None, bias_init_method = None):
         callBigDlFunc(self.bigdl_type, "setInitMethod", self.value,
@@ -1712,9 +1724,14 @@ class SpatialCrossMapLRN(Layer):
     :param alpha:  the scaling parameter
     :param beta:   the exponent
     :param k: a constant
+    :param data_format a string value (or DataFormat Object in Scala) of "NHWC" or "NCHW" to specify the input data format of this layer. In "NHWC" format
+                        data is stored in the order of [batch_size, height, width, channels], in "NCHW" format data is stored
+                        in the order of [batch_size, channels, height, width]
 
 
     >>> spatialCrossMapLRN = SpatialCrossMapLRN()
+    creating: createSpatialCrossMapLRN
+    >>> spatialCrossMapLRN = SpatialCrossMapLRN(5, 1.0, 0.75, 1.0, "NHWC")
     creating: createSpatialCrossMapLRN
     '''
 
@@ -1723,12 +1740,13 @@ class SpatialCrossMapLRN(Layer):
                  alpha=1.0,
                  beta=0.75,
                  k=1.0,
+                 data_format="NCHW",
                  bigdl_type="float"):
         super(SpatialCrossMapLRN, self).__init__(None, bigdl_type,
                                                  size,
                                                  alpha,
                                                  beta,
-                                                 k)
+                                                 k, data_format)
 
 
 class Dropout(Layer):
