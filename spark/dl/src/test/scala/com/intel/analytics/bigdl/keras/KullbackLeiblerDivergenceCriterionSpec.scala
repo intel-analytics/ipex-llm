@@ -45,4 +45,17 @@ class KullbackLeiblerDivergenceCriterionSpec extends KerasBaseSpec {
     checkOutputAndGradForLoss(kld, kerasCode)
   }
 
+  "KullbackLeiblerDivergenceCriterion" should "be ok with input close to epsilon" in {
+    val kerasCode =
+      """
+        |input_tensor = Input(shape=[3])
+        |target_tensor = Input(shape=[3])
+        |loss = kullback_leibler_divergence(target_tensor, input_tensor)
+        |input = np.array([[1e-8, 1e-7, 1e-6]])
+        |Y = np.array([[1.0, 1.0, 1.0]])
+      """.stripMargin
+    val criterion = KullbackLeiblerDivergenceCriterion[Float]()
+    checkOutputAndGradForLoss(criterion, kerasCode)
+  }
+
 }

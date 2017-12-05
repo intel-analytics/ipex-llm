@@ -78,14 +78,15 @@ class KullbackLeiblerDivergenceCriterion[T: ClassTag]
     val func1 = new TensorFunc6[T] {
       private val nonGradient = ev.fromType(0)
       override def apply(
-          data1: Array[T], offset1: Int,
-          data2: Array[T], offset2: Int,
-          data3: Array[T], offset3: Int
+          gradInputBuf: Array[T], gradInputOffset: Int,
+          inputBuf: Array[T], InputOffset: Int,
+          targetBuf: Array[T], targetOffset: Int
           ): Unit = {
-        if (ev.isGreater(data2(offset2), upperlimit) && ev.isGreater(data3(offset3), upperlimit)) {
-          data1(offset1) = nonGradient
-        } else if (ev.isGreater(epsilon, data2(offset2))) {
-          data1(offset1) = nonGradient
+        if (ev.isGreater(inputBuf(InputOffset), upperlimit)
+          && ev.isGreater(targetBuf(targetOffset), upperlimit)) {
+          gradInputBuf(gradInputOffset) = nonGradient
+        } else if (ev.isGreater(epsilon, inputBuf(InputOffset))) {
+          gradInputBuf(gradInputOffset) = nonGradient
         }
       }
     }
