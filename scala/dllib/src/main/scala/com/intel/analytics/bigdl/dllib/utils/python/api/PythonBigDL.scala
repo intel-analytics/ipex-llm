@@ -531,18 +531,21 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     initWeight: JTensor = null,
     initBias: JTensor = null,
     initGradWeight: JTensor = null,
-    initGradBias: JTensor = null)
+    initGradBias: JTensor = null, dataFormat: String = "NCHW")
   : SpatialBatchNormalization[T] = {
     SpatialBatchNormalization[T](nOutput, eps, momentum, affine,
-      toTensor(initWeight), toTensor(initBias), toTensor(initGradWeight), toTensor(initBias))
+      toTensor(initWeight), toTensor(initBias), toTensor(initGradWeight), toTensor(initBias),
+      DataFormat(dataFormat)
+    )
   }
 
   def createSpatialCrossMapLRN(size: Int = 5,
     alpha: Double = 1.0,
     beta: Double = 0.75,
-    k: Double = 1.0)
+    k: Double = 1.0,
+    dataFormat: String = "NCHW")
   : SpatialCrossMapLRN[T] = {
-    SpatialCrossMapLRN[T](size, alpha, beta, k)
+    SpatialCrossMapLRN[T](size, alpha, beta, k, DataFormat(dataFormat))
   }
 
   def createDropout(initP: Double = 0.5,
