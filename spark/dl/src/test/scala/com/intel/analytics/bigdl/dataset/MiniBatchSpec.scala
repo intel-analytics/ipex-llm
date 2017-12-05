@@ -90,8 +90,8 @@ class MiniBatchSpec extends FlatSpec with Matchers {
     val b2 = Tensor[Float](5).range(6, 10, 1)
     val c1 = Tensor[Float](1).fill(1)
     val c2 = Tensor[Float](1).fill(0)
-    val sample1 = TensorSample[Float](Array(a1, b1), Array(c1))
-    val sample2 = TensorSample[Float](Array(a2, b2), Array(c2))
+    val sample1 = TableSample[Float](Array(a1, b1), Array(c1))
+    val sample2 = TableSample[Float](Array(a2, b2), Array(c2))
     val miniBatch = TableMiniBatch[Float](2, 1)
     miniBatch.set(Array(sample1, sample2))
 

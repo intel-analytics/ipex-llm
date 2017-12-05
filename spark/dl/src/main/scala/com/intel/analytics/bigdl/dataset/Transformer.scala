@@ -336,7 +336,7 @@ class SampleToMiniBatch[T: ClassTag] private[bigdl](
           if (null == miniBatchBuffer) {
             val firstSample = sampleData(0)
             miniBatchBuffer = firstSample match {
-              case sample: TensorSample[T] =>
+              case sample: TableSample[T] =>
                 TableMiniBatch(sample.numFeature(), sample.numLabel())
               case _ =>
                 MiniBatch(firstSample.numFeature(), firstSample.numLabel(),

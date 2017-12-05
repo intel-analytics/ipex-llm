@@ -414,9 +414,9 @@ object MiniBatch {
   }
 
   private[bigdl] def copy[T: ClassTag](
-       samples: Seq[TensorSample[T]],
-       miniBatch: TableMiniBatch[T],
-       unlabeled: Boolean)(implicit ev: TensorNumeric[T]): MiniBatch[T] = {
+                                        samples: Seq[TableSample[T]],
+                                        miniBatch: TableMiniBatch[T],
+                                        unlabeled: Boolean)(implicit ev: TensorNumeric[T]): MiniBatch[T] = {
     val inputs = miniBatch.inputData
     val targets = miniBatch.targetData
 
@@ -678,8 +678,8 @@ class TableMiniBatch[T: ClassTag](
 
   override def set(samples: Seq[Sample[T]])(implicit ev: TensorNumeric[T]): this.type = {
     require(samples.length > 0, "samples is empty")
-    require(samples(0).isInstanceOf[TensorSample[T]])
-    val _samples = samples.map(_.asInstanceOf[TensorSample[T]])
+    require(samples(0).isInstanceOf[TableSample[T]])
+    val _samples = samples.map(_.asInstanceOf[TableSample[T]])
     require(batchSize == 0 || samples.length <= batchSize, "setValue: samples's size doesn't " +
       s"match mini batch size, excepted ${size()} got ${samples.length}")
     val features = _samples.map(_.features)
