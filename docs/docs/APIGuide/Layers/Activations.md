@@ -1439,3 +1439,71 @@ array([[ 0.20981129,  0.14356437],
 
 ```
 
+## SReLU ##
+
+S-shaped Rectified Linear Unit based on paper [Deep Learning with S-shaped Rectified Linear Activation Units](http://arxiv.org/abs/1512.07030).
+
+```
+     ⎧ t^r + a^r(x - t^r) if x >= t^r
+ y = ⎨ x                  if t^r > x > t^l
+     ⎩ t^l + a^l(x - t^l) if x <= t^l
+```
+
+```scala
+import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.tensor.Tensor
+
+val input = Tensor[Float](2, 3, 4).rand()
+val gradOutput = Tensor[Float](2, 3, 4).rand()
+val srelu = SReLU[Float]()
+val output = srelu.forward(input)
+val gradInput = srelu.backward(input, gradOutput)
+
+println(input)
+println(gradInput)
+```
+
+The input is,
+
+```
+(1,.,.) =
+0.4835907       0.53359604      0.37766683      0.32341897
+0.96768993      0.78638965      0.6921552       0.49003857
+0.10896994      0.22801183      0.9023593       0.43514457
+
+(2,.,.) =
+0.6720485       0.5893981       0.45753896      0.28696498
+0.16126601      0.75192916      0.79481035      0.24795102
+0.7665252       0.775531        0.74594253      0.23907393
+```
+
+The output is,
+
+```
+srelu: com.intel.analytics.bigdl.nn.SReLU[Float] = SReLU[71e3de13]
+output: com.intel.analytics.bigdl.tensor.Tensor[Float] =
+(1,.,.) =                   
+0.4835907       0.53359604      0.37766683      0.32341897
+0.96768993      0.78638965      0.6921552       0.49003857
+0.10896994      0.22801183      0.9023593       0.43514457
+
+(2,.,.) =                                                                    
+0.6720485       0.5893981       0.45753896      0.28696498
+0.16126601      0.75192916      0.79481035      0.24795102
+0.7665252       0.775531        0.74594253      0.23907393
+```
+
+The python code is,
+
+```python
+from bigdl.nn.layer import *
+import numpy as np
+
+module = SReLU()
+input = np.random.randn(2, 3, 4)
+output = module.forward(input)
+gradOutput = np.random.randn(2, 3, 4)
+gradInput = module.backward(input, gradOutput)
+print output
+print gradInput
+```

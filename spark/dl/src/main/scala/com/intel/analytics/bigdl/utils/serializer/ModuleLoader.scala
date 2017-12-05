@@ -16,6 +16,8 @@
 package com.intel.analytics.bigdl.utils.serializer
 
 import java.io._
+import java.nio.ByteBuffer
+import java.security.{DigestInputStream, DigestOutputStream, MessageDigest}
 
 import scala.collection.JavaConverters._
 import com.google.protobuf.CodedInputStream
@@ -24,7 +26,7 @@ import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.{DenseType, QuantizedTensor, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.serializer.DataConverter.TensorConverter
-import com.intel.analytics.bigdl.utils.{File, Table}
+import com.intel.analytics.bigdl.utils.{File, FileReader, FileWriter, Table}
 import serialization.Bigdl._
 
 import scala.collection.mutable
@@ -36,11 +38,12 @@ object ModuleLoader {
   /**
    * load module from `modelPath`
    * @param modelPath  path where protobuf formatted module is stored
+   * @param weightPath optional : weight path
    * @param ev numeric ops
    * @tparam T data type
    * @return loaded BigDL module
    */
-  def loadFromFile[T: ClassTag](modelPath : String)
+  def loadFromFile[T: ClassTag](modelPath : String, weightPath : String = null)
     (implicit ev: TensorNumeric[T]) : AbstractModule[Activity, Activity, T] = {
     val modelBuilder = BigDLModule.newBuilder
     val inputBytes = File.readBytes(modelPath)
@@ -49,16 +52,73 @@ object ModuleLoader {
     modelBuilder.mergeFrom(cis)
     val bigDLModel = modelBuilder.build()
     val storages = new mutable.HashMap[Int, Any]()
-    val deserializationContext = DeserializeContext(bigDLModel, storages, ProtoStorageType)
-    initTensorStorage(deserializationContext)
-    ModuleSerializer.load(DeserializeContext(bigDLModel, storages, ProtoStorageType)).module
+    var deserializationContext : DeserializeContext = null
+    if (weightPath == null) {
+      deserializationContext = DeserializeContext(bigDLModel, storages, ProtoStorageType)
+      initTensorStorage(deserializationContext)
+    } else {
+      deserializationContext = DeserializeContext(bigDLModel, storages, BigDLStorage)
+      initTensorStorage(deserializationContext, weightPath)
+    }
+    ModuleSerializer.load(deserializationContext).module
+  }
+
+  private def initTensorStorage[T: ClassTag](context: DeserializeContext, weightPath : String)
+                                            (implicit ev: TensorNumeric[T]): Unit = {
+    val magicNo = SerConst.MAGIC_NO
+    var fr: FileReader = null
+    var in: InputStream = null
+    var objFile: ObjectInputStream = null
+    val storages = context.storages
+    try {
+      fr = FileReader(weightPath)
+      in = fr.open()
+      val digest = MessageDigest.getInstance(SerConst.DIGEST_TYPE)
+      val digestInputStream = new DigestInputStream(in, digest)
+      val dataInputStream = new DataInputStream(digestInputStream)
+      digestInputStream.on(true)
+      val magicNumber = dataInputStream.readInt
+      require(magicNumber == magicNo,
+        s"Magic number mismatch, expected $magicNo, actual $magicNumber")
+
+      val totalCount = dataInputStream.readInt
+      // Read each storage data and convert to storage
+      for (i <- 0 until totalCount) {
+        val storageId = dataInputStream.readInt
+        val dataType = BigDLDataType(dataInputStream.readInt)
+        val reader = DataReaderWriter(dataType)
+        val size = dataInputStream.readInt
+        val data = reader.read(dataInputStream, size)
+        storages(storageId) = data
+      }
+      digestInputStream.on(false)
+
+      val digestLen = dataInputStream.readInt
+
+      val storedDigest = new Array[Byte](digestLen)
+
+      dataInputStream.read(storedDigest)
+
+      val calculatedDigest = digestInputStream.getMessageDigest.digest
+
+      require(calculatedDigest.length == digestLen, "checksum error, size mismatch")
+
+      for (i <- 0 until digestLen) {
+        require(calculatedDigest(i) == storedDigest(i), "check sum error, please check weight file")
+      }
+
+    } finally {
+      if (null != in) in.close()
+      if (null != fr) fr.close()
+      if (null != objFile) objFile.close()
+    }
   }
 
   private def initTensorStorage[T: ClassTag](context: DeserializeContext)
                                             (implicit ev: TensorNumeric[T]): Unit = {
     val attrMap = context.bigdlModule.getAttrMap
 
-    val storagesMap = attrMap.get("global_storage").getNameAttrListValue.getAttrMap
+    val storagesMap = attrMap.get(SerConst.GLOBAL_STORAGE).getNameAttrListValue.getAttrMap
 
     storagesMap.asScala.foreach(map => {
       val storages = context.storages
@@ -165,23 +225,84 @@ object ModulePersister {
    * @param ev  numeric ops
    * @tparam T data type
    */
-  def saveToFile[T: ClassTag](modelPath: String, module: AbstractModule[Activity, Activity, T],
+  def saveToFile[T: ClassTag](modelPath: String,
+                              weightPath: String = null,
+                              module: AbstractModule[Activity, Activity, T],
                               overwrite: Boolean = false)
                              (implicit ev: TensorNumeric[T]): Unit = {
+
+    if (weightPath == null) {
+      val serializeResult = serializeModule(module, ProtoStorageType)
+      setTensorStorage(serializeResult.bigDLModule, serializeResult.storages)
+      File.saveBytes(serializeResult.bigDLModule.build.toByteArray, modelPath, overwrite)
+    } else {
+      val serializeResult = serializeModule(module, BigDLStorage)
+      val tensorStorages = serializeResult.storages.filter(_._2.isInstanceOf[Array[_]])
+      File.saveBytes(serializeResult.bigDLModule.build.toByteArray, modelPath, overwrite)
+      saveWeightsToFile(weightPath, tensorStorages, overwrite)
+    }
+  }
+
+  private def serializeModule[T : ClassTag](module: AbstractModule[Activity, Activity, T],
+    storageType: StorageType)(implicit ev: TensorNumeric[T]): SerializeResult = {
     val bigDLModule = ModuleData(module
       , new ArrayBuffer[String](), new ArrayBuffer[String]())
     val storages = new mutable.HashMap[Int, Any]()
-    val context = SerializeContext(bigDLModule, storages, ProtoStorageType)
-    val serializeResult = ModuleSerializer.serialize(context)
-    setTensorStorage(serializeResult.bigDLModule, serializeResult.storages)
-    File.saveBytes(serializeResult.bigDLModule.build.toByteArray, modelPath, overwrite)
+    val context = SerializeContext(bigDLModule, storages, storageType)
+    ModuleSerializer.serialize(context)
   }
+
+  private def saveWeightsToFile(weightPath: String, storages: mutable.HashMap[Int, Any],
+    overwrite: Boolean = false): Unit = {
+    val magicNo = SerConst.MAGIC_NO
+    val total = storages.size
+    var fw: FileWriter = null
+    var out: OutputStream = null
+    var objFile: ObjectOutputStream = null
+    var digestOutputStream : DigestOutputStream = null
+    var dataOutputStream: DataOutputStream = null
+    try {
+      fw = FileWriter(weightPath)
+      out = fw.create(overwrite)
+      val digest = MessageDigest.getInstance(SerConst.DIGEST_TYPE)
+      digestOutputStream = new DigestOutputStream(out, digest);
+      dataOutputStream = new DataOutputStream(digestOutputStream)
+      digestOutputStream.on(true)
+      dataOutputStream.writeInt(magicNo)
+      dataOutputStream.writeInt(total)
+      storages.foreach(storage => {
+        val storageId = storage._1
+        val dataArray = storage._2.asInstanceOf[Array[_]]
+        val writer = DataReaderWriter(dataArray)
+        dataOutputStream.writeInt(storageId)
+        dataOutputStream.writeInt(writer.dataType().id)
+        dataOutputStream.writeInt(dataArray.size)
+        writer.write(dataOutputStream, dataArray)
+      })
+      digestOutputStream.on(false)
+      val digestContent = digestOutputStream.getMessageDigest.digest
+      dataOutputStream.writeInt(digestContent.length)
+      dataOutputStream.write(digestContent)
+    } finally {
+      if (null != objFile) objFile.close()
+      if (null != out) out.close()
+      if (null != fw) fw.close()
+      if (null != digestOutputStream) {
+        digestOutputStream.flush()
+        digestOutputStream.close()
+      }
+      if (null != dataOutputStream) {
+        dataOutputStream.close()
+      }
+    }
+  }
+
 
   private def setTensorStorage(bigDLModule: BigDLModule.Builder,
     storages: mutable.HashMap[Int, Any]) : Unit = {
     val storageIds = new mutable.HashSet[Int]
     val tensorStorages = storages.filter(_._2.isInstanceOf[TensorStorage])
-    var nameAttributes = NameAttrList.newBuilder().setName("global_storage")
+    var nameAttributes = NameAttrList.newBuilder().setName(SerConst.GLOBAL_STORAGE)
     storages.values.filter(_.isInstanceOf[BigDLTensor]).foreach(storage => {
       val bigdlTensor = storage.asInstanceOf[BigDLTensor]
       val storageId = bigdlTensor.getStorage.getId
@@ -199,7 +320,7 @@ object ModulePersister {
     })
     val attrValueBuilder = AttrValue.newBuilder
     attrValueBuilder.setNameAttrListValue(nameAttributes)
-    bigDLModule.putAttr("global_storage", attrValueBuilder.build)
+    bigDLModule.putAttr(SerConst.GLOBAL_STORAGE, attrValueBuilder.build)
   }
 
   /**

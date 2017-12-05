@@ -22,19 +22,18 @@ import com.intel.analytics.bigdl.utils.RandomGenerator._
 import org.scalatest.{FlatSpec, Matchers}
 
 class TimeDistributedSpec extends FlatSpec with Matchers {
-  "A TimeDistributed Module" should " copyStatus correctly" in {
+  "A TimeDistributed Module" should "copyStatus correctly" in {
     RNG.setSeed(100)
     val batchSize = 5
     val times = 5
-    val inputDim = 3
-    val outputDim = 4
+    val channels = 3
     val timeDim = 1
-    val input1 = Tensor[Float](Array(batchSize, times, inputDim)).randn()
-    val gradOutput1 = Tensor[Float](Array(batchSize, times, outputDim)).randn()
-    val input2 = Tensor[Float](Array(batchSize, times, inputDim)).randn()
-    val gradOutput2 = Tensor[Float](Array(batchSize, times, outputDim)).randn()
-    val bnorm1 = BatchNormalization[Float](inputDim, outputDim)
-    val bnorm2 = BatchNormalization[Float](inputDim, outputDim)
+    val input1 = Tensor[Float](Array(batchSize, times, channels)).randn()
+    val gradOutput1 = Tensor[Float](Array(batchSize, times, channels)).randn()
+    val input2 = Tensor[Float](Array(batchSize, times, channels)).randn()
+    val gradOutput2 = Tensor[Float](Array(batchSize, times, channels)).randn()
+    val bnorm1 = BatchNormalization[Float](channels)
+    val bnorm2 = BatchNormalization[Float](channels)
     val model1 = TimeDistributed[Float](bnorm1)
     val model2 = TimeDistributed[Float](bnorm2)
 
@@ -50,7 +49,7 @@ class TimeDistributedSpec extends FlatSpec with Matchers {
     bnorm1.runningVar should be (bnorm2.runningVar)
   }
 
-  "A TimeDistributed Module" should " reset correctly" in {
+  "A TimeDistributed Module" should "reset correctly" in {
     RNG.setSeed(100)
     val batchSize = 5
     val times = 5
@@ -71,7 +70,7 @@ class TimeDistributedSpec extends FlatSpec with Matchers {
     gradInput should not be (null)
   }
 
-  "A TimeDistributed Module" should " hash code correctly" in {
+  "A TimeDistributed Module" should "hash code correctly" in {
     RNG.setSeed(100)
     val batchSize = 5
     val times = 5
@@ -95,7 +94,7 @@ class TimeDistributedSpec extends FlatSpec with Matchers {
     val hashCode2 = model2.hashCode()
     hashCode1 should be(hashCode2)
   }
-  "A TimeDistributed Module" should " getParaemtersTable correctly" in {
+  "A TimeDistributed Module" should "getParaemtersTable correctly" in {
     RNG.setSeed(100)
 
     val batchSize = 5

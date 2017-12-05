@@ -22,9 +22,9 @@ np.random.seed(1337)  # for reproducibility
 from keras.layers.core import *
 from keras.layers.convolutional import *
 from keras.layers import Dense, Input
+from keras.regularizers import l1, l2, l1l2
 from bigdl.keras.converter import *
 from test.bigdl.test_utils import BigDLTestCase
-from keras.regularizers import l1, l2, l1l2
 
 
 class TestLayer(BigDLTestCase):
@@ -257,19 +257,162 @@ class TestLayer(BigDLTestCase):
         layer = RepeatVector(4, input_shape=(3, ))
         self.modelTestSingleLayer(input_data, layer)
 
-    def test_merge_concat(self):
-        # input_data1 = np.random.random_sample([2, 3, 5])
-        # input_data2 = np.random.random_sample([2, 3, 6])
-        # model1 = Sequential()
-        # model1.add(Dense(20, input_dim=2))
-        # model1.add(Dense(20, input_dim=2))
-        #
-        # model2 = Sequential()
-        # model2.add(Input(input_dim=32))
-        #
-        # merged_model = Sequential()
-        # merged_model.add(Merge([model1, model2], mode='concat', concat_axis=0))
+    def test_nested_model_seq_concat(self):
+        input_data1 = np.random.random_sample([2, 3])
+        input1 = Input((3,))
+        out1 = Dense(3)(input1)
+        out1_1 = Dense(3)(out1)
 
+        branch1 = Model(input=[input1], output=out1_1)
+
+        branch2 = Sequential()
+        branch2.add(Dense(3, input_shape=[3]))
+        branch2.add(Dense(3))
+        branch2.add(branch1)
+        branch2_tensor = branch2(input1)
+
+        kmodel = Model(input=[input1], output=branch2_tensor)
+        kmodel.predict([input_data1])
+        self.modelTest(input_data1,
+                       kmodel,
+                       random_weights=False,
+                       dump_weights=True,
+                       is_training=False)
+
+    def test_merge_method_cos(self):
+        input_data1 = np.random.random_sample([2, 4])
+        input_data2 = np.random.random_sample([2, 4])
+        input1 = Input((4,))
+        input2 = Input((4,))
+        out1 = Dense(4)(input1)
+        out2 = Dense(4)(input2)
+        from keras.engine import merge
+        m = merge([out1, out2], mode="cos", dot_axes=1)
+        kmodel = Model(input=[input1, input2], output=m)
+        self.modelTest([input_data1, input_data2],
+                       kmodel,
+                       random_weights=False,
+                       dump_weights=True,
+                       is_training=False)
+
+    def test_merge_method_concat(self):
+        input_data1 = np.random.random_sample([2, 4])
+        input_data2 = np.random.random_sample([2, 3])
+        input1 = Input((4,))
+        input2 = Input((3,))
+        out1 = Dense(4)(input1)
+        out2 = Dense(3)(input2)
+        from keras.engine import merge
+        m = merge([out1, out2], mode="concat", concat_axis=1)
+        kmodel = Model(input=[input1, input2], output=m)
+
+        self.modelTest([input_data1, input_data2],
+                       kmodel,
+                       random_weights=False,
+                       dump_weights=True,
+                       is_training=False)
+
+    def test_nested_with_combo_bigdl_layer_lstm(self):
+        branch1 = Sequential()
+        branch1.add(LSTM(64, input_dim=10, input_length=10, return_sequences=True,
+                         inner_activation='sigmoid'))
+        branch2 = Sequential()
+        branch2.add(Reshape((10, 2), input_shape=(20, )))
+
+        input_data = [np.random.random([3, 10, 10]), np.random.random([3, 20])]
+
+        kmodel = Sequential()
+        kmodel.add(Merge([branch1, branch2], mode='concat'))
+        kmodel.add(Activation('sigmoid'))
+        self.modelTest(input_data, kmodel, dump_weights=True)
+
+    def test_merge_method_mix_concat(self):
+        input_data1 = np.random.random_sample([2, 4])
+        input_data2 = np.random.random_sample([2, 3])
+        input1 = Input((4,))
+        input2 = Input((3,))
+        out1 = Dense(4)(input1)
+        branch1 = Model(input1, out1)(input1)
+        branch2 = Dense(3)(input2)
+        from keras.engine import merge
+        m = merge([branch1, branch2], mode="concat", concat_axis=1)
+        kmodel = Model(input=[input1, input2], output=m)
+
+        self.modelTest([input_data1, input_data2],
+                       kmodel,
+                       random_weights=False,
+                       dump_weights=True,
+                       is_training=False)
+
+    def test_merge_model_seq_concat(self):
+        input_data1 = np.random.random_sample([2, 4])
+        input_data2 = np.random.random_sample([2, 3])
+        input1 = Input((4,))
+        input2 = Input((3,))
+        out1 = Dense(4)(input1)
+        out1_1 = Dense(4)(out1)
+
+        branch1 = Model(input=[input1], output=out1_1)
+        branch2 = Sequential()
+        branch2.add(Dense(3, input_shape=[3]))
+        branch2.add(Dense(3))
+        branch1_tensor = branch1(input1)
+        branch2_tensor = branch2(input2)
+
+        from keras.engine import merge
+        m = merge([branch1_tensor, branch2_tensor], mode="concat", concat_axis=1)
+        kmodel = Model(input=[input1, input2], output=m)
+        kmodel.predict([input_data1, input_data2])
+        self.modelTest([input_data1, input_data2],
+                       kmodel,
+                       random_weights=False,
+                       dump_weights=True,
+                       is_training=False)
+
+    def test_merge_model_model_concat(self):
+        input_data1 = np.random.random_sample([2, 4])
+        input_data2 = np.random.random_sample([2, 3])
+        input1 = Input((4,))
+        input2 = Input((3,))
+        out1 = Dense(4)(input1)
+        out1_1 = Dense(4)(out1)
+
+        out2 = Dense(3)(input2)
+        out2_1 = Dense(3)(out2)
+
+        branch1 = Model(input=[input1], output=out1_1)
+        branch2 = Model(input=[input2], output=out2_1)
+        branch1_tensor = branch1(input1)
+        branch2_tensor = branch2(input2)
+
+        from keras.engine import merge
+        m = merge([branch1_tensor, branch2_tensor], mode="concat", concat_axis=1)
+        kmodel = Model(input=[input1, input2], output=m)
+
+        self.modelTest([input_data1, input_data2],
+                       kmodel,
+                       random_weights=False,
+                       dump_weights=True,
+                       is_training=False)
+
+    def test_merge_seq_seq_concat(self):
+        input_data1 = np.random.random_sample([2, 4])
+        input_data2 = np.random.random_sample([2, 3])
+        branch1 = Sequential()
+        branch1.add(Dense(20, input_shape=[4]))
+
+        branch2 = Sequential()
+        branch2.add(Dense(10, input_shape=[3]))
+
+        merged_model = Sequential()
+        merged_model.add(Merge([branch1, branch2], mode='concat', concat_axis=1))
+
+        self.modelTestSingleLayer([input_data1, input_data2],
+                                  Merge([branch1, branch2], mode='concat', concat_axis=1),
+                                  dump_weights=True,
+                                  functional_apis=[False])
+
+    def test_merge_concat(self):
         inputLayer1 = InputLayer(input_shape=(3, 6, 7))
         inputLayer2 = InputLayer(input_shape=(3, 6, 8))
         inputLayer3 = InputLayer(input_shape=(3, 6, 9))
@@ -401,22 +544,28 @@ class TestLayer(BigDLTestCase):
 
     def test_lstm(self):
         input_data = np.random.random([3, 4, 5])
-        layer = LSTM(5, input_shape=(4, 5), return_sequences=True, inner_activation='sigmoid')
+        layer = LSTM(5, input_shape=(4, 5), return_sequences=True)
         self.modelTestSingleLayer(input_data, layer, dump_weights=True)
-        layer2 = LSTM(3, input_shape=(4, 5), return_sequences=False, inner_activation='sigmoid')
+        layer2 = LSTM(3, input_shape=(4, 5), return_sequences=False,
+                      activation='relu', inner_activation='sigmoid')
         self.modelTestSingleLayer(input_data, layer2, dump_weights=True)
 
     def test_convlstm2d(self):
         input_data = np.random.random_sample([4, 8, 40, 40, 32])
-        layer = ConvLSTM2D(32, 4, 4, input_shape=(8, 40, 40, 32), return_sequences=True,
-                           inner_activation='sigmoid', border_mode='same')
+        layer = ConvLSTM2D(32, 4, 4, input_shape=(8, 40, 40, 32),
+                           return_sequences=True, border_mode='same')
         self.modelTestSingleLayer(input_data, layer, dump_weights=True, random_weights=True)
+        layer2 = ConvLSTM2D(32, 4, 4, input_shape=(8, 40, 40, 32), return_sequences=True,
+                            activation='relu', inner_activation='sigmoid', border_mode='same')
+        self.modelTestSingleLayer(input_data, layer2, dump_weights=True,
+                                  random_weights=True, rtol=1e-5, atol=1e-5)
 
     def test_gru(self):
         input_data = np.random.random([3, 4, 5])
-        layer = GRU(4, input_shape=(4, 5), return_sequences=True, inner_activation='sigmoid')
+        layer = GRU(4, input_shape=(4, 5), return_sequences=True)
         self.modelTestSingleLayer(input_data, layer, dump_weights=True)
-        layer2 = GRU(8, input_shape=(4, 5), return_sequences=False, inner_activation='sigmoid')
+        layer2 = GRU(8, input_shape=(4, 5), return_sequences=False,
+                     activation='relu', inner_activation='sigmoid')
         self.modelTestSingleLayer(input_data, layer2, dump_weights=True)
 
     # TODO: Support share weights training.
@@ -438,6 +587,7 @@ class TestLayer(BigDLTestCase):
             def_path, w_path = self._dump_keras(model2)
             bigdl_model = DefinitionLoader.from_json_path(def_path)
         assert str(excinfo.value) == """Convolution2D doesn't support multiple inputs with shared weights"""  # noqa
+
 
 if __name__ == "__main__":
     pytest.main([__file__])

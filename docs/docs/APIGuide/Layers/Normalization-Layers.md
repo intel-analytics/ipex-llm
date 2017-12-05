@@ -124,6 +124,9 @@ The operation implemented is:
 + `initBias`  initial bias tensor
 + `initGradWeight` initial gradient weight 
 + `initGradBias` initial gradient bias
++ `data_format` a string value (or DataFormat Object in Scala) of "NHWC" or "NCHW" to specify the input data format of this layer. In "NHWC" format
+                        data is stored in the order of \[batch_size, height, width, channels\], in "NCHW" format data is stored
+                        in the order of \[batch_size, channels, height, width\].
  
  
 **Scala example:**
@@ -209,6 +212,14 @@ SpatialCrossMapLRN applies Spatial Local Response Normalization between differen
           
 where  l1 corresponds to `max(0,f-ceil(size/2))` and l2 to `min(F, f-ceil(size/2) + size)`, `F` is the number  of feature maps       
 ```
+
++ `size`  the number of channels to sum over
++ `alpha`  the scaling parameter
++ `beta`   the exponent
++ `k` a constant
++ `data_format` a string value (or DataFormat Object in Scala) of "NHWC" or "NCHW" to specify the input data format of this layer. In "NHWC" format
+                        data is stored in the order of \[batch_size, height, width, channels\], in "NCHW" format data is stored
+                        in the order of \[batch_size, channels, height, width\]
 
 **Scala example:**
 ```scala

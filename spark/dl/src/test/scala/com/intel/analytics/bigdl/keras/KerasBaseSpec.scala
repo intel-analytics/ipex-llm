@@ -34,11 +34,6 @@ abstract class KerasBaseSpec extends BigDLSpecHelper {
 
   private def defaultWeightConverter(in: Array[Tensor[Float]]) = in
 
-  private def getFieldByReflect(obj: Object, name: String): Object = {
-    val fieldDefinition = obj.getClass().getDeclaredField(name)
-    fieldDefinition.setAccessible(true)
-    return fieldDefinition.get(obj)
-  }
   // weightConverter: convert keras weight to BigDL format,
   // do nothing for the default converter
   def checkOutputAndGrad(bmodel: AbstractModule[Tensor[Float], Tensor[Float], Float],
@@ -56,17 +51,15 @@ abstract class KerasBaseSpec extends BigDLSpecHelper {
     val boutput = bmodel.forward(input)
     boutput.almostEqual(output, precision) should be(true)
 
-    val bgradInput = bmodel.backward(input, boutput.clone().fill(1))
+    val bgradInput = bmodel.backward(input, boutput.clone())
     bgradInput.almostEqual(gradInput, precision) should be(true)
 
-    // assuming the first one is weight, the second one is bias
-    if (gradWeight != null) {
-      val bgradWeight = getFieldByReflect(bmodel, "gradWeight").asInstanceOf[Tensor[Float]]
-      bgradWeight.almostEqual(weightConverter(gradWeight)(0), precision) should be(true)
 
-      if (gradWeight.length > 1) {
-        val bgradBias = getFieldByReflect(bmodel, "gradBias").asInstanceOf[Tensor[Float]]
-        bgradBias.almostEqual(weightConverter(gradWeight)(1), precision) should be(true)
+    val parameters = bmodel.parameters()
+    if (parameters != null) {
+      val bgradWeights = parameters._2
+      (bgradWeights, weightConverter(gradWeight)).zipped.foreach { (bgrad, kgrad) =>
+        bgrad.almostEqual(kgrad, precision) should be(true)
       }
     }
   }
@@ -77,15 +70,14 @@ abstract class KerasBaseSpec extends BigDLSpecHelper {
     ifskipTest()
 
     val (gradInput, gradWeight, weights, input, target, output) =
-      KerasRunner.run(kerasCode, is_loss = true)
+      KerasRunner.run(kerasCode, Loss)
 
     val boutput = bmodel.forward(input, target)
-    require(output.nElement() == 1, s"output should only contain 1 element, but we got: ${output}")
-    NumericFloat.nearlyEqual(boutput, output.storage.array()(0), precision) should be(true)
-
+    val koutput = output.mean()  // the return value from keras is not always averaged.
+    NumericFloat.nearlyEqual(boutput, koutput, precision) should be(true)
+    val kgradInput = gradInput.div(output.nElement())  // div is an in-place operation.
     val bgradInput = bmodel.backward(input, target.clone())
-    bgradInput.almostEqual(gradInput, precision) should be(true)
-
+    bgradInput.almostEqual(kgradInput, precision) should be(true)
   }
 }
 

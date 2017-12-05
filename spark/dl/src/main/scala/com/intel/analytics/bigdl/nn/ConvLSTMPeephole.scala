@@ -35,8 +35,11 @@ import scala.reflect.ClassTag
  * @param kernelC Convolutional filter size to convolve cell
  * @param stride The step of the convolution, default is 1
  * @param padding The step of the convolution, default is -1,
-  *               behaves same with SAME padding in tensorflow.
+ *                behaves same with SAME padding in tensorflow.
  *                Default stride,padding ensure last 2 dim of output shape is the same with input
+ * @param activation: activation function, by default to be Tanh if not specified.
+ * @param innerActivation: activation function for inner cells,
+ *                       by default to be Sigmoid if not specified.
  * @param wRegularizer: instance of [[Regularizer]]
             (eg. L1 or L2 regularization), applied to the input weights matrices.
  * @param uRegularizer: instance [[Regularizer]]
@@ -54,6 +57,8 @@ class ConvLSTMPeephole[T : ClassTag](
   val kernelC: Int,
   val stride: Int = 1,
   val padding: Int = -1,
+  var activation: TensorModule[T] = null,
+  var innerActivation: TensorModule[T] = null,
   var wRegularizer: Regularizer[T] = null,
   var uRegularizer: Regularizer[T] = null,
   var bRegularizer: Regularizer[T] = null,
@@ -69,6 +74,8 @@ class ConvLSTMPeephole[T : ClassTag](
   var outputGate: Sequential[T] = _
   var hiddenLayer: Sequential[T] = _
   var cellLayer: Sequential[T] = _
+  if (activation == null) activation = Tanh[T]()
+  if (innerActivation == null) innerActivation = Sigmoid[T]()
 
   override var cell: AbstractModule[Activity, Activity, T] = buildModel()
 //  val joinDim = 2
@@ -110,8 +117,12 @@ class ConvLSTMPeephole[T : ClassTag](
           .add(h2g))
     }
 
+    // make a new instance of inner activation for each build gate
+    val inner = innerActivation.cloneModule()
+    inner.setName(Integer.toHexString(java.util.UUID.randomUUID().hashCode()))
+
     gate.add(CAddTable())
-      .add(Sigmoid())
+      .add(inner)
   }
 
   def buildInputGate(): Sequential[T] = {
@@ -153,7 +164,7 @@ class ConvLSTMPeephole[T : ClassTag](
         .add(i2h)
         .add(h2h))
       .add(CAddTable())
-      .add(Tanh())
+      .add(activation)
 
     this.hiddenLayer = hidden
     hidden
@@ -190,6 +201,9 @@ class ConvLSTMPeephole[T : ClassTag](
     buildCell()
     buildOutputGate()
 
+    val activation2 = activation.cloneModule()
+    activation2.setName(Integer.toHexString(java.util.UUID.randomUUID().hashCode()))
+
     val convlstm = Sequential()
       .add(FlattenTable())
       .add(ConcatTable()
@@ -203,7 +217,7 @@ class ConvLSTMPeephole[T : ClassTag](
             .add(outputGate)
             .add(Sequential()
               .add(SelectTable(3))
-              .add(Tanh())))
+              .add(activation2)))
           .add(CMulTable())
           .add(Contiguous()))
         .add(SelectTable(3)))
@@ -252,13 +266,16 @@ object ConvLSTMPeephole {
     kernelC: Int,
     stride: Int = 1,
     padding: Int = -1,
+    activation: TensorModule[T] = null,
+    innerActivation: TensorModule[T] = null,
     wRegularizer: Regularizer[T] = null,
     uRegularizer: Regularizer[T] = null,
     bRegularizer: Regularizer[T] = null,
     cRegularizer: Regularizer[T] = null,
     withPeephole: Boolean = true
   )(implicit ev: TensorNumeric[T]): ConvLSTMPeephole[T] = {
-    new ConvLSTMPeephole[T](inputSize, outputSize, kernelI, kernelC, stride, padding,
+    new ConvLSTMPeephole[T](inputSize, outputSize, kernelI, kernelC,
+      stride, padding, activation, innerActivation,
       wRegularizer, uRegularizer, bRegularizer, cRegularizer, withPeephole)
   }
 }

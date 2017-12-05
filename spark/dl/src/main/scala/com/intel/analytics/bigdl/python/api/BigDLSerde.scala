@@ -23,7 +23,9 @@ import java.nio.charset.StandardCharsets
 import java.nio.{ByteBuffer, ByteOrder}
 import java.util.{ArrayList => JArrayList, HashMap => JHashMap, List => JList, Map => JMap}
 
-import com.intel.analytics.bigdl.python.api.{EvaluatedResult, JTensor, Sample}
+import com.intel.analytics.bigdl.nn.abstractnn.Activity
+import com.intel.analytics.bigdl.python.api._
+import com.intel.analytics.bigdl.utils.Table
 import net.razorvine.pickle._
 import org.apache.spark.api.java.JavaRDD
 import org.apache.spark.api.python.SerDeUtil
@@ -223,6 +225,38 @@ object BigDLSerDe extends BigDLSerDeBase with Serializable {
     }
   }
 
+  private[python] class JActivityPickler extends BigDLBasePickler[JActivity] {
+    private def doConvertTable(table: Table): Any = {
+      val valuesOrderByKey = table.toSeq[Activity]
+      if (valuesOrderByKey.isEmpty) {
+        throw new RuntimeException("Found empty table")
+      }
+      return valuesOrderByKey.map { item => doConvertActivity(item) }.asJava
+    }
+    private def doConvertActivity(activity: Activity): Any = {
+      if (activity.isTable) {
+        return doConvertTable(activity.toTable)
+      } else if (activity.isTensor) {
+        return PythonBigDL.ofFloat().toJTensor(activity.toTensor)
+      } else {
+        throw new RuntimeException(s"""not supported type:
+          ${activity.getClass.getSimpleName}""")
+      }
+    }
+
+    def saveState(obj: Object, out: OutputStream, pickler: Pickler): Unit = {
+      val record = obj.asInstanceOf[JActivity]
+      saveObjects(out,
+        pickler,
+        doConvertActivity(record.value))
+    }
+
+    def construct(args: Array[Object]): Object = {
+      throw new RuntimeException("haven't be implemented")
+    }
+  }
+
+
   private[python] class TestResultPickler extends BigDLBasePickler[EvaluatedResult] {
 
     def saveState(obj: Object, out: OutputStream, pickler: Pickler): Unit = {
@@ -286,6 +320,7 @@ object BigDLSerDe extends BigDLSerDeBase with Serializable {
         new SamplePickler().register()
         new TestResultPickler().register()
         new JTensorPickler().register()
+        new JActivityPickler().register()
         initialized = true
       }
     }

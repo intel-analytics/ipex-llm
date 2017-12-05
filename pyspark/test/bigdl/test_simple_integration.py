@@ -35,9 +35,8 @@ class TestSimple():
         """ setup any state tied to the execution of the given method in a
         class.  setup_method is invoked for every test method of a class.
         """
-        sparkConf = create_spark_conf()
-        self.sc = SparkContext(master="local[4]", appName="test model",
-                               conf=sparkConf)
+        sparkConf = create_spark_conf().setMaster("local[4]").setAppName("test model")
+        self.sc = get_spark_context(sparkConf)
         init_engine()
 
     def teardown_method(self, method):
@@ -86,7 +85,7 @@ class TestSimple():
         fc1 = Linear(4, 2)
         fc1.set_weights([np.ones((4, 2)), np.ones((2,))])
         tmp_path = tempfile.mktemp()
-        fc1.saveModel(tmp_path, True)
+        fc1.saveModel(tmp_path, None, True)
         fc1_loaded = Model.loadModel(tmp_path)
         assert_allclose(fc1_loaded.get_weights()[0],
                         fc1.get_weights()[0])
@@ -160,6 +159,16 @@ class TestSimple():
                         np.array([3.0, 3.0, 3.0, 3.0]))
         assert_allclose(gradInput[1],
                         np.array([6.0, 6.0, 6.0, 6.0]))
+
+    def test_get_node(self):
+        fc1 = Linear(4, 2)()
+        fc2 = Linear(4, 2)()
+        fc1.element().set_name("fc1")
+        cadd = CAddTable()([fc1, fc2])
+        output1 = ReLU()(cadd)
+        model = Model([fc1, fc2], [output1])
+        res = model.node("fc1")
+        assert res.element().name() == "fc1"
 
     def test_save_graph_topology(self):
         fc1 = Linear(4, 2)()
