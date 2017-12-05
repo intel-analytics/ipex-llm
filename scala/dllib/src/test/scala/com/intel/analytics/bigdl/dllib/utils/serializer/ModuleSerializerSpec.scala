@@ -2141,6 +2141,17 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     res1 should be (res2)
   }
 
+  "SReLU serialize" should "work correctly" in {
+    val srelu = SReLU[Float]()
+    val input = Tensor[Float](5, 2, 3, 4).randn()
+    val res1 = srelu.forward(input)
+
+    ModulePersister.saveToFile[Float]("/tmp/srelu.bigdl", null, srelu, true)
+    val loadSrelu = ModuleLoader.loadFromFile[Float]("/tmp/srelu.bigdl")
+    val res2 = loadSrelu.forward(input)
+    res1 should be (res2)
+  }
+
   "Save model and weight separately" should "work properly" in {
     val linear = Linear(3, 2)
     val input = Tensor(2, 3).rand()

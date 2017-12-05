@@ -190,3 +190,4 @@ case class L2Regularizer[T: ClassTag](
   override val l2: Double
 ) (implicit ev: TensorNumeric[T])
   extends L1L2Regularizer[T](0, l2)
+
