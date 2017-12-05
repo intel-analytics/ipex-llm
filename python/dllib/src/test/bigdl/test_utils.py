@@ -16,7 +16,6 @@
 from __future__ import print_function
 import numpy as np
 from keras.models import Sequential, Model
-from bigdl.keras.converter import WeightLoader, WeightsConverter
 np.random.seed(1337)  # for reproducibility
 from keras.layers.core import *
 from keras.layers.convolutional import *
@@ -24,6 +23,7 @@ from keras.layers import Dense, Dropout, Input
 from keras.optimizers import RMSprop
 from bigdl.util.common import create_tmp_path
 from bigdl.keras.converter import *
+from bigdl.keras.converter import WeightLoader, WeightsConverter
 import numpy as np
 from unittest import TestCase
 import keras
