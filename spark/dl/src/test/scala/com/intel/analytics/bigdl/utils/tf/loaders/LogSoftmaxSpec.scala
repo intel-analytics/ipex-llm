@@ -15,10 +15,22 @@
  */
 package com.intel.analytics.bigdl.utils.tf.loaders
 import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.utils.tf.Tensorflow.typeAttr
+import com.intel.analytics.bigdl.utils.tf.TensorflowSpecHelper
+import org.tensorflow.framework.{DataType, NodeDef}
 
 
-class LogSoftmaxSpec extends UnaryOpBaseSpec {
-  override def getOpName: String = "LogSoftmax"
+class LogSoftmaxSpec extends TensorflowSpecHelper {
 
-  override def getInput: Tensor[_] = Tensor[Float](4, 32).rand()
+
+  s"LogSoftmax forward with double model " should "be correct" in {
+    compare[Float](
+      NodeDef.newBuilder()
+        .setName(s"LogSoftmaxTest")
+        .setOp(s"LogSoftmax")
+        .putAttr("T", typeAttr(DataType.DT_FLOAT)),
+      Seq(Tensor[Float](4, 10).rand()),
+      0
+    )
+  }
 }
