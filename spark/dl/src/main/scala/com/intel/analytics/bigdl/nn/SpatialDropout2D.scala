@@ -56,7 +56,8 @@ class SpatialDropout2D[T: ClassTag](
         } else if (format == DataFormat.NHWC) {
           noise.resize(Array(1, 1, inputSize(2)))
         } else {
-          throw new RuntimeException("DataFormat: " + format + " is not supported")
+          throw new RuntimeException("SpatialDropout2D:" +
+            " DataFormat: " + format + " is not supported")
         }
       } else if (input.dim() == 4) {
         if (format == DataFormat.NCHW) {
@@ -64,10 +65,12 @@ class SpatialDropout2D[T: ClassTag](
         } else if (format == DataFormat.NHWC)  {
           noise.resize(Array(inputSize(0), 1, 1, inputSize(3)))
         } else {
-          throw new RuntimeException("DataFormat: " + format + " is not supported")
+          throw new RuntimeException("SpatialDropout2D: " +
+            "DataFormat: " + format + " is not supported")
         }
       } else {
-        throw new RuntimeException("Input must be 4D or 3D")
+        throw new RuntimeException("SpatialDropout2D: " +
+          "Input must be 4D or 3D")
       }
       noise.bernoulli(1 - p)
       output.cmul(noise.expandAs(input))
@@ -81,7 +84,8 @@ class SpatialDropout2D[T: ClassTag](
       gradInput.resizeAs(gradOutput).copy(gradOutput)
       gradInput.cmul(noise.expandAs(input))
     } else {
-      throw new RuntimeException("backprop only defined while training")
+      throw new RuntimeException("SpatialDropout2D: " +
+        "backprop only defined while training")
     }
 
     this.gradInput

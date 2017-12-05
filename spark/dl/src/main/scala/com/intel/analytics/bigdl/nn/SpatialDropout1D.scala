@@ -51,7 +51,7 @@ class SpatialDropout1D[T: ClassTag](
       } else if (input.dim() == 3) {
           noise.resize(Array(inputSize(0), 1, inputSize(2)))
       } else {
-        throw new RuntimeException("Input must be 3D or 4D")
+        throw new RuntimeException("SpatialDropout1D: Input must be 3D or 4D")
       }
       noise.bernoulli(1 - p)
       output.cmul(noise.expandAs(input))
@@ -65,7 +65,7 @@ class SpatialDropout1D[T: ClassTag](
       gradInput.resizeAs(gradOutput).copy(gradOutput)
       gradInput.cmul(noise.expandAs(input))
     } else {
-      throw new RuntimeException("backprop only defined while training")
+      throw new RuntimeException("SpatialDropout1D: backprop only defined while training")
     }
 
     this.gradInput
