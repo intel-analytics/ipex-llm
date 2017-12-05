@@ -270,19 +270,15 @@ trait ModuleSerializable extends Loadable with Savable{
       }
       else null
       val storageType = context.storageType
-      if (storageType == ProtoStorageType) {
-        if (weight != null) {
-          val weightAttr = AttrValue.newBuilder
-          TensorConverter.setAttributeValue(context, weightAttr, weight)
-          modelBuilder.setWeight(weightAttr.getTensorValue)
-        }
-        if (bias != null) {
-          val biasAttr = AttrValue.newBuilder
-          TensorConverter.setAttributeValue(context, biasAttr, bias)
-          modelBuilder.setBias(biasAttr.getTensorValue)
-        }
-      } else {
-        throw new IllegalArgumentException(s"$storageType not supported!")
+      if (weight != null) {
+        val weightAttr = AttrValue.newBuilder
+        TensorConverter.setAttributeValue(context, weightAttr, weight)
+        modelBuilder.setWeight(weightAttr.getTensorValue)
+      }
+      if (bias != null) {
+        val biasAttr = AttrValue.newBuilder
+        TensorConverter.setAttributeValue(context, biasAttr, bias)
+        modelBuilder.setBias(biasAttr.getTensorValue)
       }
     }
   }
@@ -322,20 +318,6 @@ trait ContainerSerializable extends ModuleSerializable {
 
 object ContainerSerializer extends ContainerSerializable
 
-trait StorageType
-object ProtoStorageType extends StorageType
-
-case class SerializeContext[T: ClassTag](moduleData: ModuleData[T],
-                                         storages: mutable.HashMap[Int, Any],
-                                         storageType: StorageType)
-case class DeserializeContext(bigdlModule : BigDLModule,
-                              storages: mutable.HashMap[Int, Any],
-                              storageType: StorageType)
-
-case class SerializeResult(bigDLModule: BigDLModule.Builder, storages: mutable.HashMap[Int, Any])
-
-case class ModuleData[T: ClassTag](module : AbstractModule[Activity, Activity, T],
-                                    pre : Seq[String], next : Seq[String])
 trait Loadable {
 
   def loadModule[T: ClassTag](context: DeserializeContext)

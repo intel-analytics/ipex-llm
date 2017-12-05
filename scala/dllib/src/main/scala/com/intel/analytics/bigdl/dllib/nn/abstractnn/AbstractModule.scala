@@ -464,12 +464,14 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
    * @param path path to save module, local file system, HDFS and Amazon S3 is supported.
    *             HDFS path should be like "hdfs://[host]:[port]/xxx"
    *             Amazon S3 path should be like "s3a://bucket/xxx"
+   * @param weightPath where to store weight
    * @param overWrite if overwrite
    * @return self
    */
-  def saveModule(path : String, overWrite: Boolean = false) : this.type = {
+  def saveModule(path : String, weightPath : String = null,
+                 overWrite: Boolean = false) : this.type = {
     this.clearState()
-    ModulePersister.saveToFile(path, this, overWrite)
+    ModulePersister.saveToFile(path, weightPath, this, overWrite)
     this
   }
 

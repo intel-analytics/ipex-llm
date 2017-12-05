@@ -250,7 +250,7 @@ object DataConverter extends DataConverter{
     private def isEmptyTensor(tensor : Tensor[_]): Boolean = {
       val emptyTensor = tensor.getTensorType match {
         case DenseType =>
-          tensor.isEmpty
+          tensor.storage == null
         case QuantizedType =>
           tensor.asInstanceOf[QuantizedTensor[_]].getStorage == null
       }
@@ -284,7 +284,12 @@ object DataConverter extends DataConverter{
       }
 
       def quant(): Tensor[T] = {
-        val bytes = serializedStorage.getBytesDataList.asScala.toArray.head.toByteArray
+        var bytes: Array[Byte] = null
+        if (context.storageType == ProtoStorageType) {
+          bytes = serializedStorage.getBytesDataList.asScala.toArray.head.toByteArray
+        } else {
+          created
+        }
         val serializedParams = serializedStorage.getIntDataList.asScala.toArray.map(_.intValue())
         val paramsNum = serializedParams.head
         val paramsArray = serializedParams.slice(1, paramsNum + 1)
@@ -450,126 +455,11 @@ object DataConverter extends DataConverter{
 
     private def setStorage[T: ClassTag](context: SerializeContext[T],
       tensorBuilder: BigDLTensor.Builder, tensor: Tensor[_]): Unit = {
-      val tensorNumeric = tensor.getTensorNumeric()
       val storageType = context.storageType
-
-      val isEmpty = isEmptyTensor(tensor)
-
-      val storageId = tensor.getTensorType match {
-        case DenseType =>
-          if (isEmpty) -1 else System.identityHashCode(tensor.storage().array())
-        case QuantizedType =>
-          if (isEmpty) {
-            -1
-          } else {
-            System.identityHashCode(tensor.asInstanceOf[QuantizedTensor[T]].getStorage)
-          }
-      }
-      val storages = context.storages
       if (storageType == ProtoStorageType) {
-        if (storages.contains(storageId)) {
-          val storage = storages(storageId).asInstanceOf[TensorStorage]
-          tensorBuilder.setStorage(resetStorage(storage))
-          // we should set back the datatype from existed storage
-          tensorBuilder.setDatatype(storage.getDatatype)
-        } else {
-          val storageBuilder = TensorStorage.newBuilder
-          if (tensorNumeric == NumericFloat) {
-            tensorBuilder.setDatatype(DataType.FLOAT)
-            storageBuilder.setDatatype(DataType.FLOAT)
-            if(!isEmpty) {
-              tensor.getTensorType match {
-                case DenseType =>
-                  tensor.storage().array().asInstanceOf[Array[Float]].
-                    foreach(data => storageBuilder.addFloatData(data))
-                case QuantizedType =>
-                  val quantTensor = tensor.asInstanceOf[QuantizedTensor[Float]]
-                  val bytes = quantTensor.getStorage
-                  val bs = ByteString.copyFrom(bytes)
-                  storageBuilder.addBytesData(bs)
-
-                // max, min, and sum
-                quantTensor.maxOfRow.foreach(data => storageBuilder.addFloatData(data))
-                quantTensor.minOfRow.foreach(data => storageBuilder.addFloatData(data))
-                quantTensor.sumOfRow.foreach(data => storageBuilder.addFloatData(data))
-
-                // params and desc type
-                val params = quantTensor.params.array
-                storageBuilder.addIntData(params.length)
-                params.foreach(param => storageBuilder.addIntData(param.asInstanceOf[Int]))
-
-                quantTensor.params.getType match {
-                  case ConvData => storageBuilder.addIntData(0)
-                  case ConvWeight => storageBuilder.addIntData(1)
-                  case LinearData => storageBuilder.addIntData(2)
-                  case LinearWeight => storageBuilder.addIntData(3)
-                }
-              }
-            }
-          } else if (tensorNumeric == NumericDouble) {
-            tensorBuilder.setDatatype(DataType.DOUBLE)
-            storageBuilder.setDatatype(DataType.DOUBLE)
-            if(!tensor.isEmpty) {
-              tensor.storage().array().asInstanceOf[Array[Double]].
-                foreach(data => storageBuilder.addDoubleData(data))
-            }
-          } else if (tensorNumeric == NumericChar) {
-            tensorBuilder.setDatatype(DataType.CHAR)
-            storageBuilder.setDatatype(DataType.CHAR)
-            if(!isEmpty) {
-              tensor.storage().array().asInstanceOf[Array[Char]].
-                foreach(data => storageBuilder.addIntData(data))
-            }
-          } else if (tensorNumeric == NumericBoolean) {
-            tensorBuilder.setDatatype(DataType.BOOL)
-            storageBuilder.setDatatype(DataType.BOOL)
-            if(!isEmpty) {
-              tensor.storage().array().asInstanceOf[Array[Boolean]].
-                foreach(data => storageBuilder.addBoolData(data))
-            }
-          } else if (tensorNumeric == NumericString) {
-            tensorBuilder.setDatatype(DataType.STRING)
-            storageBuilder.setDatatype(DataType.STRING)
-            if(!isEmpty) {
-              tensor.storage().array().asInstanceOf[Array[String]].
-                foreach(data => storageBuilder.addStringData(data))
-            }
-          } else if (tensorNumeric == NumericInt) {
-            tensorBuilder.setDatatype(DataType.INT32)
-            storageBuilder.setDatatype(DataType.INT32)
-            if(!isEmpty) {
-              tensor.storage().array().asInstanceOf[Array[Int]].
-                foreach(data => storageBuilder.addIntData(data))
-            }
-          } else if (tensorNumeric == NumericShort) {
-            tensorBuilder.setDatatype(DataType.SHORT)
-            storageBuilder.setDatatype(DataType.SHORT)
-            if(!isEmpty) {
-              tensor.storage().array().asInstanceOf[Array[Short]].
-                foreach(data => storageBuilder.addIntData(data))
-            }
-          } else if (tensorNumeric == NumericLong) {
-            tensorBuilder.setDatatype(DataType.INT64)
-            storageBuilder.setDatatype(DataType.INT64)
-            if(!isEmpty) {
-              tensor.storage().array().asInstanceOf[Array[Long]].
-                foreach(data => storageBuilder.addLongData(data))
-            }
-          } else if (tensorNumeric == NumericByteString) {
-            tensorBuilder.setDatatype(DataType.BYTES)
-            storageBuilder.setDatatype(DataType.BYTES)
-            if(!isEmpty) {
-              tensor.storage().array().asInstanceOf[Array[ByteString]].
-                foreach(data => storageBuilder.addBytesData(data))
-            }
-          }
-          storageBuilder.setId(storageId)
-          val storage = storageBuilder.build
-          tensorBuilder.setStorage(resetStorage(storage))
-          if (storageId != -1) {
-            storages(storageId) = storage
-          }
-        }
+        ProtoTensorStorageManager.setStorage(context, tensorBuilder, tensor)
+      } else if (storageType == BigDLStorage) {
+        BigDLTensorStorageManager.setStorage(context, tensorBuilder, tensor)
       } else {
         throw new IllegalArgumentException(s"$storageType not supported")
       }
@@ -631,7 +521,9 @@ object DataConverter extends DataConverter{
       tensorBuilder.clearStorage
       tensorBuilder.setDatatype(originTensor.getDatatype)
       tensorBuilder.setId(originTensor.getId)
-      tensorBuilder.setStorage(resetStorage(originTensor.getStorage))
+      if (originTensor.hasStorage) {
+        tensorBuilder.setStorage(resetStorage(originTensor.getStorage))
+      }
       tensorBuilder.build
     }
   }

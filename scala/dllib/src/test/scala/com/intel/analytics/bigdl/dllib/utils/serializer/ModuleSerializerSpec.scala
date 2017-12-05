@@ -15,6 +15,8 @@
  */
 package com.intel.analytics.bigdl.utils.serializer
 
+import java.io.File
+
 import com.google.protobuf.{ByteString, CodedOutputStream}
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.models.lenet.LeNet5
@@ -45,7 +47,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     val tensor2 = Tensor()
     val res1 = abs.forward(tensor1)
     tensor2.resizeAs(tensor1).copy(tensor1)
-    ModulePersister.saveToFile("/tmp/abs.bigdl", abs, true)
+    ModulePersister.saveToFile("/tmp/abs.bigdl", null, abs, true)
     val loadedModule = ModuleLoader.loadFromFile("/tmp/abs.bigdl")
     val res2 = loadedModule.forward(tensor2)
     res1 should be (res2)
@@ -57,7 +59,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     val tensor2 = Tensor()
     val res1 = add.forward(tensor1)
     tensor2.resizeAs(tensor1).copy(tensor1)
-    ModulePersister.saveToFile("/tmp/add.bigdl", add, true)
+    ModulePersister.saveToFile("/tmp/add.bigdl", null, add, true)
     val loadedAdd = ModuleLoader.loadFromFile("/tmp/add.bigdl")
     val res2 = loadedAdd.forward(tensor2)
     res1 should be (res2)
@@ -69,7 +71,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     val tensor2 = Tensor()
     val res1 = addconst.forward(tensor1)
     tensor2.resizeAs(tensor1).copy(tensor1)
-    ModulePersister.saveToFile("/tmp/addconst.bigdl", addconst, true)
+    ModulePersister.saveToFile("/tmp/addconst.bigdl", null, addconst, true)
     val loadedAddConst = ModuleLoader.loadFromFile("/tmp/addconst.bigdl")
     val res2 = loadedAddConst.forward(tensor2)
     res1 should be (res2)
@@ -81,7 +83,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     val tensor2 = Tensor()
     tensor2.resizeAs(tensor1).copy(tensor1)
     val res1 = batchNorm.forward(tensor1)
-    ModulePersister.saveToFile("/tmp/batchNorm.bigdl", batchNorm, true)
+    ModulePersister.saveToFile("/tmp/batchNorm.bigdl", null, batchNorm, true)
     val loadedBatchNorm = ModuleLoader.loadFromFile("/tmp/batchNorm.bigdl")
     val res2 = loadedBatchNorm.forward(tensor2)
     res1 should be (res2)
@@ -96,7 +98,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
 
     val biLinear = Bilinear(5, 3, 2)
     val res1 = biLinear.forward(input)
-    ModulePersister.saveToFile("/tmp/biLinear.bigdl", biLinear, true)
+    ModulePersister.saveToFile("/tmp/biLinear.bigdl", null, biLinear, true)
     val loadedBiLinear = ModuleLoader.loadFromFile("/tmp/biLinear.bigdl")
     val res2 = loadedBiLinear.forward(input)
     res1 should be (res2)
@@ -126,7 +128,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     val res1 = binaryTreeLSTM.forward(input)
     val res11 = binaryTreeLSTM.forward(input)
     res1 should be (res11)
-    ModulePersister.saveToFile("/tmp/binaryTreeLSTM.bigdl", binaryTreeLSTM, true)
+    ModulePersister.saveToFile("/tmp/binaryTreeLSTM.bigdl", null, binaryTreeLSTM, true)
     RNG.setSeed(1000)
     val loadedBinaryTreeLSTM = ModuleLoader.loadFromFile("/tmp/binaryTreeLSTM.bigdl")
     val res2 = loadedBinaryTreeLSTM.forward(input)
@@ -141,7 +143,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     RNG.setSeed(100)
     val biRecurrent = BiRecurrent().add(RnnCell(6, 4, Sigmoid()))
     val res1 = biRecurrent.forward(input1)
-    ModulePersister.saveToFile("/tmp/biRecurrent.bigdl", biRecurrent, true)
+    ModulePersister.saveToFile("/tmp/biRecurrent.bigdl", null, biRecurrent, true)
     RNG.setSeed(100)
     val loadedRecurent = ModuleLoader.loadFromFile("/tmp/biRecurrent.bigdl")
     val res2 = loadedRecurent.forward(input2)
@@ -155,7 +157,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     RNG.setSeed(100)
     val biRecurrent = BiRecurrent(batchNormParams = BatchNormParams()).add(RnnCell(6, 4, Sigmoid()))
     val res1 = biRecurrent.forward(input1)
-    ModulePersister.saveToFile("/tmp/biRecurrent.bigdl", biRecurrent, true)
+    ModulePersister.saveToFile("/tmp/biRecurrent.bigdl", null, biRecurrent, true)
     RNG.setSeed(100)
     val loadedRecurent = ModuleLoader.loadFromFile("/tmp/biRecurrent.bigdl")
     val res2 = loadedRecurent.forward(input2)
@@ -169,7 +171,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     RNG.setSeed(100)
     val biRecurrent = BiRecurrent(isSplitInput = false).add(RnnCell(6, 4, Sigmoid()))
     val res1 = biRecurrent.forward(input1)
-    ModulePersister.saveToFile("/tmp/biRecurrent.bigdl", biRecurrent, true)
+    ModulePersister.saveToFile("/tmp/biRecurrent.bigdl", null, biRecurrent, true)
     RNG.setSeed(100)
     val loadedRecurent = ModuleLoader.loadFromFile("/tmp/biRecurrent.bigdl")
     val res2 = loadedRecurent.forward(input2)
@@ -184,7 +186,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     val bottle = new Bottle(Linear(10, 2).asInstanceOf[Module[Float]], 2, 2)
 
     val res1 = bottle.forward(input1)
-    ModulePersister.saveToFile("/tmp/bottle.bigdl", bottle, true)
+    ModulePersister.saveToFile("/tmp/bottle.bigdl", null, bottle, true)
     val loadedBottle = ModuleLoader.loadFromFile("/tmp/bottle.bigdl")
     val res2 = loadedBottle.forward(input2)
     res1 should be (res2)
@@ -196,7 +198,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     input2.resizeAs(input1).copy(input1)
     val cadd = CAdd(Array(5, 1))
     val res1 = cadd.forward(input1)
-    ModulePersister.saveToFile("/tmp/cadd.bigdl", cadd, true)
+    ModulePersister.saveToFile("/tmp/cadd.bigdl", null, cadd, true)
     val loadedCadd = ModuleLoader.loadFromFile("/tmp/cadd.bigdl")
     val res2 = loadedCadd.forward(input2)
     res1 should be (res2)
@@ -212,7 +214,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     val caddTable = CAddTable(false)
 
     val res1 = caddTable.forward(input)
-    ModulePersister.saveToFile("/tmp/caddTable.bigdl", caddTable, true)
+    ModulePersister.saveToFile("/tmp/caddTable.bigdl", null, caddTable, true)
     val loadedCaddTable = ModuleLoader.loadFromFile("/tmp/caddTable.bigdl")
     val res2 = loadedCaddTable.forward(input)
     res1 should be (res2)
@@ -228,7 +230,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     val caveTable = CAveTable(false)
 
     val res1 = caveTable.forward(input)
-    ModulePersister.saveToFile("/tmp/caveTable.bigdl", caveTable, true)
+    ModulePersister.saveToFile("/tmp/caveTable.bigdl", null, caveTable, true)
     val loadedCaddTable = ModuleLoader.loadFromFile("/tmp/caveTable.bigdl")
     val res2 = loadedCaddTable.forward(input)
     res1 should be (res2)
@@ -241,7 +243,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
         input2.copy(input1)
         val res1 = volumetricAveragePooling.forward(input1)
 
-        ModulePersister.saveToFile("/tmp/volumetricAveragePooling.bigdl",
+        ModulePersister.saveToFile("/tmp/volumetricAveragePooling.bigdl", null,
           volumetricAveragePooling, true)
         val loadedVolumetricAveragePooling =
           ModuleLoader.loadFromFile("/tmp/volumetricAveragePooling.bigdl")
@@ -260,7 +262,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
 
     val res1 = cdivTable.forward(input)
 
-    ModulePersister.saveToFile("/tmp/cdivTable.bigdl", cdivTable, true)
+    ModulePersister.saveToFile("/tmp/cdivTable.bigdl", null, cdivTable, true)
     val loadedCdivTable = ModuleLoader.loadFromFile("/tmp/cdivTable.bigdl")
     val res2 = cdivTable.forward(input)
     res1 should be (res2)
@@ -276,7 +278,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     val clamp = Clamp(1, 10)
     val res1 = clamp.forward(input1)
 
-    ModulePersister.saveToFile("/tmp/clamp.bigdl", clamp, true)
+    ModulePersister.saveToFile("/tmp/clamp.bigdl", null, clamp, true)
     val loadedClamp = ModuleLoader.loadFromFile("/tmp/clamp.bigdl")
     val res2 = loadedClamp.forward(input2)
     res1 should be (res2)
@@ -292,7 +294,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
 
     val res1 = cmaxTable.forward(input)
 
-    ModulePersister.saveToFile("/tmp/cmaxTable.bigdl", cmaxTable, true)
+    ModulePersister.saveToFile("/tmp/cmaxTable.bigdl", null, cmaxTable, true)
     val loadedCmaxTable = ModuleLoader.loadFromFile("/tmp/cmaxTable.bigdl")
     val res2 = loadedCmaxTable.forward(input)
     res1 should be (res2)
@@ -308,7 +310,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
 
     val res1 = cminTable.forward(input)
 
-    ModulePersister.saveToFile("/tmp/cminTable.bigdl", cminTable, true)
+    ModulePersister.saveToFile("/tmp/cminTable.bigdl", null, cminTable, true)
     val loadedCminTable = ModuleLoader.loadFromFile("/tmp/cminTable.bigdl")
     val res2 = loadedCminTable.forward(input)
     res1 should be (res2)
@@ -322,7 +324,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     val cmul = CMul(Array(5, 1))
 
     val res1 = cmul.forward(input1)
-    ModulePersister.saveToFile("/tmp/cmul.bigdl", cmul, true)
+    ModulePersister.saveToFile("/tmp/cmul.bigdl", null, cmul, true)
     val loadedCmul = ModuleLoader.loadFromFile("/tmp/cmul.bigdl")
     val res2 = loadedCmul.forward(input2)
     res1 should be (res2)
@@ -338,7 +340,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     val cmulTable = CMulTable()
 
     val res1 = cmulTable.forward(input)
-    ModulePersister.saveToFile("/tmp/cmulTable.bigdl", cmulTable, true)
+    ModulePersister.saveToFile("/tmp/cmulTable.bigdl", null, cmulTable, true)
     val loadedCmulTable = ModuleLoader.loadFromFile("/tmp/cmulTable.bigdl")
     val res2 = loadedCmulTable.forward(input)
     res1 should be (res2)
@@ -355,7 +357,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     concat.add(Abs())
 
     val res1 = concat.forward(input1)
-    ModulePersister.saveToFile("/tmp/concat.bigdl", concat, true)
+    ModulePersister.saveToFile("/tmp/concat.bigdl", null, concat, true)
     val loadedConcat = ModuleLoader.loadFromFile("/tmp/concat.bigdl")
     val res2 = loadedConcat.forward(input2)
     res1 should be (res2)
@@ -371,7 +373,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     tensor2.resizeAs(tensor1).copy(tensor1)
     val res1 = concatTable.forward(tensor1)
 
-    ModulePersister.saveToFile("/tmp/concatTable.bigdl", concatTable, true)
+    ModulePersister.saveToFile("/tmp/concatTable.bigdl", null, concatTable, true)
     val loadedConcatTable = ModuleLoader.loadFromFile("/tmp/concatTable.bigdl")
     val res2 = loadedConcatTable.forward(tensor2)
     res1 should be (res2)
@@ -386,7 +388,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
 
     val res1 = contiguous.forward(tensor1)
 
-    ModulePersister.saveToFile("/tmp/contiguous.bigdl", contiguous, true)
+    ModulePersister.saveToFile("/tmp/contiguous.bigdl", null, contiguous, true)
     val loadedContiguous = ModuleLoader.loadFromFile("/tmp/contiguous.bigdl")
     val res2 = loadedContiguous.forward(tensor2)
     res1 should be (res2)
@@ -415,7 +417,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     val input2 = Tensor()
     input2.resizeAs(input1).copy(input1)
     val res1 = convLSTMPeephole2d.forward(input1)
-    ModulePersister.saveToFile("/tmp/convLSTMPeephole2d.bigdl", convLSTMPeephole2d, true)
+    ModulePersister.saveToFile("/tmp/convLSTMPeephole2d.bigdl", null, convLSTMPeephole2d, true)
     val loadedConvLSTMPeephole2d = ModuleLoader.loadFromFile("/tmp/convLSTMPeephole2d.bigdl")
     val res2 = loadedConvLSTMPeephole2d.forward(input2)
     res1 should be (res2)
@@ -444,7 +446,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     val input2 = Tensor()
     input2.resizeAs(input1).copy(input1)
     val res1 = convLSTMPeephole3d.forward(input1)
-    ModulePersister.saveToFile("/tmp/convLSTMPeephole3d.bigdl", convLSTMPeephole3d, true)
+    ModulePersister.saveToFile("/tmp/convLSTMPeephole3d.bigdl", null, convLSTMPeephole3d, true)
     val loadedConvLSTMPeephole3d = ModuleLoader.loadFromFile("/tmp/convLSTMPeephole3d.bigdl")
     val res2 = loadedConvLSTMPeephole3d.forward(input2)
     res1 should be (res2)
@@ -459,7 +461,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
 
     val res1 = cosine.forward(tensor1)
 
-    ModulePersister.saveToFile("/tmp/cosine.bigdl", cosine, true)
+    ModulePersister.saveToFile("/tmp/cosine.bigdl", null, cosine, true)
     val loadedCosine = ModuleLoader.loadFromFile("/tmp/cosine.bigdl")
     val res2 = loadedCosine.forward(tensor2)
     res1 should be (res2)
@@ -476,7 +478,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
 
     val res1 = cosineDistance.forward(input)
 
-    ModulePersister.saveToFile("/tmp/cosineDistance.bigdl", cosineDistance, true)
+    ModulePersister.saveToFile("/tmp/cosineDistance.bigdl", null, cosineDistance, true)
     val loadedCosineDistance = ModuleLoader.loadFromFile("/tmp/cosineDistance.bigdl")
     val res2 = loadedCosineDistance.forward(input)
     res1 should be (res2)
@@ -493,7 +495,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
 
     val res1 = csubTable.forward(input)
 
-    ModulePersister.saveToFile("/tmp/csubTable.bigdl", csubTable, true)
+    ModulePersister.saveToFile("/tmp/csubTable.bigdl", null, csubTable, true)
     val loadedCSubTable = ModuleLoader.loadFromFile("/tmp/csubTable.bigdl")
     val res2 = loadedCSubTable.forward(input)
     res1 should be (res2)
@@ -511,7 +513,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
 
     val res1 = dotProduct.forward(input)
 
-    ModulePersister.saveToFile("/tmp/dotProduct.bigdl", dotProduct, true)
+    ModulePersister.saveToFile("/tmp/dotProduct.bigdl", null, dotProduct, true)
     val loadedDotProduct = ModuleLoader.loadFromFile("/tmp/dotProduct.bigdl")
     val res2 = loadedDotProduct.forward(input)
     res1 should be (res2)
@@ -526,7 +528,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     tensor2.resizeAs(tensor1).copy(tensor1)
     val res1 = dropout.forward(tensor1)
 
-    ModulePersister.saveToFile("/tmp/dropout.bigdl", dropout, true)
+    ModulePersister.saveToFile("/tmp/dropout.bigdl", null, dropout, true)
     RNG.setSeed(100)
     val loadedDropout = ModuleLoader.loadFromFile("/tmp/dropout.bigdl")
     val res2 = loadedDropout.forward(tensor2)
@@ -539,7 +541,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     val tensor2 = Tensor()
     tensor2.resizeAs(tensor1).copy(tensor1)
     val res1 = echo.forward(tensor1)
-    ModulePersister.saveToFile("/tmp/echo.bigdl", echo, true)
+    ModulePersister.saveToFile("/tmp/echo.bigdl", null, echo, true)
     val loadedEcho = ModuleLoader.loadFromFile("/tmp/echo.bigdl")
     val res2 = loadedEcho.forward(tensor2)
     res1 should be (res2)
@@ -553,7 +555,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     tensor2.resizeAs(tensor1).copy(tensor1)
     val res1 = elu.forward(tensor1)
 
-    ModulePersister.saveToFile("/tmp/elu.bigdl", elu, true)
+    ModulePersister.saveToFile("/tmp/elu.bigdl", null, elu, true)
     val loadedElu = ModuleLoader.loadFromFile("/tmp/elu.bigdl")
     val res2 = loadedElu.forward(tensor2)
     res1 should be (res2)
@@ -567,7 +569,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     tensor2.resizeAs(tensor1).copy(tensor1)
     val res1 = euclidean.forward(tensor1)
 
-    ModulePersister.saveToFile("/tmp/euclidean.bigdl", euclidean, true)
+    ModulePersister.saveToFile("/tmp/euclidean.bigdl", null, euclidean, true)
     val loadedEuclidean = ModuleLoader.loadFromFile("/tmp/euclidean.bigdl")
     val res2 = loadedEuclidean.forward(tensor2)
     res1 should be (res2)
@@ -581,7 +583,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     tensor2.resizeAs(tensor1).copy(tensor1)
     val res1 = exp.forward(tensor1)
 
-    ModulePersister.saveToFile("/tmp/exp.bigdl", exp, true)
+    ModulePersister.saveToFile("/tmp/exp.bigdl", null, exp, true)
     val loadedExp = ModuleLoader.loadFromFile("/tmp/exp.bigdl")
     val res2 = loadedExp.forward(tensor2)
     res1 should be (res2)
@@ -598,7 +600,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
 
     val res1 = flattenTable.forward(input)
 
-    ModulePersister.saveToFile("/tmp/flattenTable.bigdl", flattenTable, true)
+    ModulePersister.saveToFile("/tmp/flattenTable.bigdl", null, flattenTable, true)
     val loadedFlattenTable = ModuleLoader.loadFromFile("/tmp/flattenTable.bigdl")
     val res2 = loadedFlattenTable.forward(input)
     res1 should be (res2)
@@ -613,7 +615,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     tensor2.resizeAs(tensor1).copy(tensor1)
     val res1 = gd.forward(tensor1)
 
-    ModulePersister.saveToFile("/tmp/gaussianDropout.bigdl", gd, true)
+    ModulePersister.saveToFile("/tmp/gaussianDropout.bigdl", null, gd, true)
     RNG.setSeed(100)
     val loadedGd = ModuleLoader.loadFromFile("/tmp/gaussianDropout.bigdl")
     val res2 = loadedGd.forward(tensor2)
@@ -629,7 +631,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     tensor2.resizeAs(tensor1).copy(tensor1)
     val res1 = gn.forward(tensor1)
 
-    ModulePersister.saveToFile("/tmp/gaussianNoise.bigdl", gn, true)
+    ModulePersister.saveToFile("/tmp/gaussianNoise.bigdl", null, gn, true)
     RNG.setSeed(100)
     val loadedGn = ModuleLoader.loadFromFile("/tmp/gaussianNoise.bigdl")
     val res2 = loadedGn.forward(tensor2)
@@ -644,7 +646,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     tensor2.resizeAs(tensor1).copy(tensor1)
     val res1 = gradientReversal.forward(tensor1)
 
-    ModulePersister.saveToFile("/tmp/gradientReversal.bigdl", gradientReversal, true)
+    ModulePersister.saveToFile("/tmp/gradientReversal.bigdl", null, gradientReversal, true)
     val loadedGradientReversal = ModuleLoader.loadFromFile("/tmp/gradientReversal.bigdl")
     val res2 = loadedGradientReversal.forward(tensor2)
     res1 should be (res2)
@@ -657,7 +659,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     val tensor2 = Tensor()
     val res1 = graph.forward(tensor1)
     tensor2.resizeAs(tensor1).copy(tensor1)
-    ModulePersister.saveToFile("/tmp/graph.bigdl", graph, true)
+    ModulePersister.saveToFile("/tmp/graph.bigdl", null, graph, true)
     val loadedGraph = ModuleLoader.loadFromFile("/tmp/graph.bigdl")
     val res2 = loadedGraph.forward(tensor2)
     res1 should be (res2)
@@ -674,7 +676,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     val tensor2 = Tensor()
     val res1 = graph.forward(tensor1)
     tensor2.resizeAs(tensor1).copy(tensor1)
-    ModulePersister.saveToFile("/tmp/graph.bigdl", graph, true)
+    ModulePersister.saveToFile("/tmp/graph.bigdl", null, graph, true)
     val loadedGraph = ModuleLoader.loadFromFile("/tmp/graph.bigdl")
     val res2 = loadedGraph.forward(tensor2)
     res1 should be (res2)
@@ -689,7 +691,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
 
     RNG.setSeed(100)
     val res1 = gru.forward(input1)
-    ModulePersister.saveToFile("/tmp/gru.bigdl", gru, true)
+    ModulePersister.saveToFile("/tmp/gru.bigdl", null, gru, true)
     RNG.setSeed(100)
     val loadedGRU = ModuleLoader.loadFromFile("/tmp/gru.bigdl")
     RNG.setSeed(100)
@@ -705,7 +707,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     tensor2.resizeAs(tensor1).copy(tensor1)
     val res1 = hardShrink.forward(tensor1)
 
-    ModulePersister.saveToFile("/tmp/hardShrink.bigdl", hardShrink, true)
+    ModulePersister.saveToFile("/tmp/hardShrink.bigdl", null, hardShrink, true)
     val loadedHardShrink = ModuleLoader.loadFromFile("/tmp/hardShrink.bigdl")
     val res2 = loadedHardShrink.forward(tensor2)
     res1 should be (res2)
@@ -719,7 +721,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     tensor2.resizeAs(tensor1).copy(tensor1)
     val res1 = hardTanh.forward(tensor1)
 
-    ModulePersister.saveToFile("/tmp/hardTanh.bigdl", hardTanh, true)
+    ModulePersister.saveToFile("/tmp/hardTanh.bigdl", null, hardTanh, true)
     val loadedHardTanh = ModuleLoader.loadFromFile("/tmp/hardTanh.bigdl")
     val res2 = loadedHardTanh.forward(tensor2)
     res1 should be (res2)
@@ -733,7 +735,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     tensor2.resizeAs(tensor1).copy(tensor1)
     val res1 = identity.forward(tensor1)
 
-    ModulePersister.saveToFile("/tmp/identity.bigdl", identity, true)
+    ModulePersister.saveToFile("/tmp/identity.bigdl", null, identity, true)
     val loadedIdentity = ModuleLoader.loadFromFile("/tmp/identity.bigdl")
     val res2 = loadedIdentity.forward(tensor2)
     res1 should be (res2)
@@ -756,7 +758,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
 
     val res1 = index.forward(input)
 
-    ModulePersister.saveToFile("/tmp/index.bigdl", index, true)
+    ModulePersister.saveToFile("/tmp/index.bigdl", null, index, true)
     val loadedIndex = ModuleLoader.loadFromFile("/tmp/index.bigdl")
     val res2 = loadedIndex.forward(input)
     res1 should be (res2)
@@ -769,7 +771,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     tensor2.resizeAs(tensor1).copy(tensor1)
     val res1 = inferReshape.forward(tensor1)
 
-    ModulePersister.saveToFile("/tmp/inferReshape.bigdl", inferReshape, true)
+    ModulePersister.saveToFile("/tmp/inferReshape.bigdl", null, inferReshape, true)
     val loadedInferReshape = ModuleLoader.loadFromFile("/tmp/inferReshape.bigdl")
     val res2 = loadedInferReshape.forward(tensor2)
     res1 should be (res2)
@@ -783,7 +785,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
 
     val res1 = input.forward(tensor1)
 
-    ModulePersister.saveToFile("/tmp/input.bigdl", input, true)
+    ModulePersister.saveToFile("/tmp/input.bigdl", null, input, true)
     val loadedInferInput = ModuleLoader.loadFromFile("/tmp/input.bigdl")
     val res2 = loadedInferInput.forward(tensor2)
     res1 should be (res2)
@@ -800,7 +802,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
 
     val res1 = joinTable.forward(input)
 
-    ModulePersister.saveToFile("/tmp/joinTable.bigdl", joinTable, true)
+    ModulePersister.saveToFile("/tmp/joinTable.bigdl", null, joinTable, true)
     val loadedJoinTable = ModuleLoader.loadFromFile("/tmp/joinTable.bigdl")
     val res2 = loadedJoinTable.forward(input)
     res1 should be (res2)
@@ -816,7 +818,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
 
     val res1 = l1Penalty.forward(tensor1)
 
-    ModulePersister.saveToFile("/tmp/l1Penalty.bigdl", l1Penalty, true)
+    ModulePersister.saveToFile("/tmp/l1Penalty.bigdl", null, l1Penalty, true)
 
     val loadedL1Penalty = ModuleLoader.loadFromFile("/tmp/l1Penalty.bigdl")
 
@@ -833,7 +835,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
 
     val res1 = leakyReLU.forward(tensor1)
 
-    ModulePersister.saveToFile("/tmp/leakyReLU.bigdl", leakyReLU, true)
+    ModulePersister.saveToFile("/tmp/leakyReLU.bigdl", null, leakyReLU, true)
 
     val loadedLeakyReLU = ModuleLoader.loadFromFile("/tmp/leakyReLU.bigdl")
 
@@ -847,7 +849,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     val tensor2 = Tensor()
     val res1 = linear.forward(tensor1)
     tensor2.resizeAs(tensor1).copy(tensor1)
-    ModulePersister.saveToFile("/tmp/linear.bigdl", linear, true)
+    ModulePersister.saveToFile("/tmp/linear.bigdl", null, linear, true)
     val loadedLinear = ModuleLoader.loadFromFile("/tmp/linear.bigdl")
     val res2 = loadedLinear.forward(tensor2)
     res1 should be (res2)
@@ -859,7 +861,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     val tensor2 = Tensor()
     val res1 = log.forward(tensor1)
     tensor2.resizeAs(tensor1).copy(tensor1)
-    ModulePersister.saveToFile("/tmp/log.bigdl", log, true)
+    ModulePersister.saveToFile("/tmp/log.bigdl", null, log, true)
     val loadedLog = ModuleLoader.loadFromFile("/tmp/log.bigdl")
     val res2 = loadedLog.forward(tensor2)
     res1 should be (res2)
@@ -871,7 +873,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     val tensor2 = Tensor()
     val res1 = logSigmoid.forward(tensor1)
     tensor2.resizeAs(tensor1).copy(tensor1)
-    ModulePersister.saveToFile("/tmp/logSigmoid.bigdl", logSigmoid, true)
+    ModulePersister.saveToFile("/tmp/logSigmoid.bigdl", null, logSigmoid, true)
     val loadedLogSigmoid = ModuleLoader.loadFromFile("/tmp/logSigmoid.bigdl")
     val res2 = loadedLogSigmoid.forward(tensor2)
     res1 should be (res2)
@@ -883,7 +885,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     val tensor2 = Tensor()
     val res1 = logSigmoid.forward(tensor1)
     tensor2.resizeAs(tensor1).copy(tensor1)
-    ModulePersister.saveToFile("/tmp/logSigmoid.bigdl", logSigmoid, true)
+    ModulePersister.saveToFile("/tmp/logSigmoid.bigdl", null, logSigmoid, true)
     val loadedLogSigmoid = ModuleLoader.loadFromFile("/tmp/logSigmoid.bigdl")
     val res2 = loadedLogSigmoid.forward(tensor2)
     res1 should be (res2)
@@ -903,7 +905,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
 
     val res1 = lookupTable.forward(tensor1)
 
-    ModulePersister.saveToFile("/tmp/lookupTable.bigdl", lookupTable, true)
+    ModulePersister.saveToFile("/tmp/lookupTable.bigdl", null, lookupTable, true)
     val loadedLookupTable = ModuleLoader.loadFromFile("/tmp/lookupTable.bigdl")
     val res2 = loadedLookupTable.forward(tensor2)
     res1 should be (res2)
@@ -919,7 +921,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
 
     val res1 = lstm.forward(input1)
 
-    ModulePersister.saveToFile("/tmp/lstm.bigdl", lstm, true)
+    ModulePersister.saveToFile("/tmp/lstm.bigdl", null, lstm, true)
     val loadedLSTM = ModuleLoader.loadFromFile("/tmp/lstm.bigdl")
     val res2 = loadedLSTM.forward(input1)
     res1 should be (res2)
@@ -935,7 +937,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
 
     val res1 = lstmPeephole.forward(input1)
 
-    ModulePersister.saveToFile("/tmp/lstmPeephole.bigdl", lstmPeephole, true)
+    ModulePersister.saveToFile("/tmp/lstmPeephole.bigdl", null, lstmPeephole, true)
     val loadedLSTMPeephole = ModuleLoader.loadFromFile("/tmp/lstmPeephole.bigdl")
     val res2 = loadedLSTMPeephole.forward(input2)
     res1 should be (res2)
@@ -954,7 +956,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
 
     val res1 = mapTable.forward(input)
 
-    ModulePersister.saveToFile("/tmp/mapTable.bigdl", mapTable, true)
+    ModulePersister.saveToFile("/tmp/mapTable.bigdl", null, mapTable, true)
     val loadedMapTable = ModuleLoader.loadFromFile("/tmp/mapTable.bigdl")
     val res2 = loadedMapTable.forward(input)
     res1 should be (res2)
@@ -978,7 +980,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
 
     val gradInput = maskedSelect.backward(input, gradOutput)
 
-    ModulePersister.saveToFile("/tmp/maskedSelect.bigdl", maskedSelect, true)
+    ModulePersister.saveToFile("/tmp/maskedSelect.bigdl", null, maskedSelect, true)
     val loadedMaskedSelect = ModuleLoader.loadFromFile("/tmp/maskedSelect.bigdl")
     val res2 = loadedMaskedSelect.forward(input)
     res1 should be (res2)
@@ -993,7 +995,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
 
     val res1 = max.forward(input1)
 
-    ModulePersister.saveToFile("/tmp/max.bigdl", max, true)
+    ModulePersister.saveToFile("/tmp/max.bigdl", null, max, true)
     val loadedMax = ModuleLoader.loadFromFile("/tmp/max.bigdl")
     val res2 = loadedMax.forward(input2)
     res1 should be (res2)
@@ -1006,7 +1008,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     input2.resizeAs(input1).copy(input1)
     val res1 = mean.forward(input1)
 
-    ModulePersister.saveToFile("/tmp/mean.bigdl", mean, true)
+    ModulePersister.saveToFile("/tmp/mean.bigdl", null, mean, true)
     val loadedMean = ModuleLoader.loadFromFile("/tmp/mean.bigdl")
     val res2 = loadedMean.forward(input2)
     res1 should be (res2)
@@ -1019,7 +1021,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     input2.resizeAs(input1).copy(input1)
     val res1 = min.forward(input1)
 
-    ModulePersister.saveToFile("/tmp/min.bigdl", min, true)
+    ModulePersister.saveToFile("/tmp/min.bigdl", null, min, true)
     val loadedMin = ModuleLoader.loadFromFile("/tmp/min.bigdl")
     val res2 = loadedMin.forward(input2)
     res1 should be (res2)
@@ -1036,7 +1038,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
 
     val res1 = mixTureTable.forward(input)
 
-    ModulePersister.saveToFile("/tmp/mixTureTable.bigdl", mixTureTable, true)
+    ModulePersister.saveToFile("/tmp/mixTureTable.bigdl", null, mixTureTable, true)
     val loadedMixtureTable = ModuleLoader.loadFromFile("/tmp/mixTureTable.bigdl")
     val res2 = loadedMixtureTable.forward(input)
     res1 should be (res2)
@@ -1054,7 +1056,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
 
     val res1 = mm.forward(input)
 
-    ModulePersister.saveToFile("/tmp/mm.bigdl", mm, true)
+    ModulePersister.saveToFile("/tmp/mm.bigdl", null, mm, true)
     val loadedMM = ModuleLoader.loadFromFile("/tmp/mm.bigdl")
     val res2 = loadedMM.forward(input)
     res1 should be (res2)
@@ -1069,7 +1071,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
 
     val res1 = mul.forward(input1)
 
-    ModulePersister.saveToFile("/tmp/mul.bigdl", mul, true)
+    ModulePersister.saveToFile("/tmp/mul.bigdl", null, mul, true)
     val loadedMul = ModuleLoader.loadFromFile("/tmp/mul.bigdl")
     val res2 = loadedMul.forward(input2)
     res1 should be (res2)
@@ -1083,7 +1085,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
 
     val res1 = mulConst.forward(input1)
 
-    ModulePersister.saveToFile("/tmp/mulConst.bigdl", mulConst, true)
+    ModulePersister.saveToFile("/tmp/mulConst.bigdl", null, mulConst, true)
     val loadedMulConstant = ModuleLoader.loadFromFile("/tmp/mulConst.bigdl")
     val res2 = loadedMulConstant.forward(input2)
     res1 should be (res2)
@@ -1100,7 +1102,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
 
     val res1 = mv.forward(input)
 
-    ModulePersister.saveToFile("/tmp/mv.bigdl", mv, true)
+    ModulePersister.saveToFile("/tmp/mv.bigdl", null, mv, true)
     val loadedMV = ModuleLoader.loadFromFile("/tmp/mv.bigdl")
     val res2 = loadedMV.forward(input)
     res1 should be (res2)
@@ -1114,7 +1116,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
 
     val res1 = narrow.forward(input1)
 
-    ModulePersister.saveToFile("/tmp/narrow.bigdl", narrow, true)
+    ModulePersister.saveToFile("/tmp/narrow.bigdl", null, narrow, true)
     val loadedNarrow = ModuleLoader.loadFromFile("/tmp/narrow.bigdl")
     val res2 = loadedNarrow.forward(input2)
     res1 should be (res2)
@@ -1128,7 +1130,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     input(3.0) = Tensor(2, 2).apply1(e => Random.nextFloat())
     val res1 = narrowTable.forward(input)
 
-    ModulePersister.saveToFile("/tmp/narrowTable.bigdl", narrowTable, true)
+    ModulePersister.saveToFile("/tmp/narrowTable.bigdl", null, narrowTable, true)
     val loadedNarrowTable = ModuleLoader.loadFromFile("/tmp/narrowTable.bigdl")
     val res2 = loadedNarrowTable.forward(input)
     res1 should be (res2)
@@ -1142,7 +1144,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
 
     val res1 = normalizer.forward(input1)
 
-    ModulePersister.saveToFile("/tmp/normalizer.bigdl", normalizer, true)
+    ModulePersister.saveToFile("/tmp/normalizer.bigdl", null, normalizer, true)
     val loadedNormalize = ModuleLoader.loadFromFile("/tmp/normalizer.bigdl")
     val res2 = loadedNormalize.forward(input2)
     res1 should be (res2)
@@ -1156,7 +1158,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     input(1.0f) = input1
     input(2.0f) = input2
     val res1 = pack.forward(input)
-    ModulePersister.saveToFile("/tmp/pack.bigdl", pack, true)
+    ModulePersister.saveToFile("/tmp/pack.bigdl", null, pack, true)
     val loadedPack = ModuleLoader.loadFromFile("/tmp/pack.bigdl")
     val res2 = loadedPack.forward(input)
     res1 should be (res2)
@@ -1167,7 +1169,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     val padding = Padding(1, -1, 4, -0.8999761, 14)
     val input = Tensor(3, 13, 11).apply1(e => Random.nextFloat())
     val res1 = padding.forward(input)
-    ModulePersister.saveToFile("/tmp/padding.bigdl", padding, true)
+    ModulePersister.saveToFile("/tmp/padding.bigdl", null, padding, true)
     val loadedPadding = ModuleLoader.loadFromFile("/tmp/padding.bigdl")
     val res2 = loadedPadding.forward(input)
     res1 should be (res2)
@@ -1179,7 +1181,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     val input2 = Tensor(3, 3).apply1(e => Random.nextFloat())
     val input = T(1.0f -> input1, 2.0f -> input2)
     val res1 = pairwiseDistance.forward(input)
-    ModulePersister.saveToFile("/tmp/pairwiseDistance.bigdl", pairwiseDistance, true)
+    ModulePersister.saveToFile("/tmp/pairwiseDistance.bigdl", null, pairwiseDistance, true)
     val loadedPairwiseDistance = ModuleLoader.loadFromFile("/tmp/pairwiseDistance.bigdl")
     val res2 = loadedPairwiseDistance.forward(input)
     res1 should be (res2)
@@ -1198,7 +1200,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     val input1 = T(1.0f -> input11, 2.0f -> input12)
     val input2 = T(1.0f -> input21, 2.0f -> input22)
     val res1 = parallelTable.forward(input1)
-    ModulePersister.saveToFile("/tmp/parallelTable.bigdl", parallelTable, true)
+    ModulePersister.saveToFile("/tmp/parallelTable.bigdl", null, parallelTable, true)
     val loadedParallelTable = ModuleLoader.loadFromFile("/tmp/parallelTable.bigdl")
     val res2 = loadedParallelTable.forward(input1)
     res1 should be (res2)
@@ -1212,7 +1214,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
 
     val res1 = power.forward(input1)
 
-    ModulePersister.saveToFile("/tmp/power.bigdl", power, true)
+    ModulePersister.saveToFile("/tmp/power.bigdl", null, power, true)
     val loadedPower = ModuleLoader.loadFromFile("/tmp/power.bigdl")
     val res2 = loadedPower.forward(input1)
     res1 should be (res2)
@@ -1225,7 +1227,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     input2.copy(input1)
     val res1 = preLu.forward(input1)
 
-    ModulePersister.saveToFile("/tmp/preLu.bigdl", preLu, true)
+    ModulePersister.saveToFile("/tmp/preLu.bigdl", null, preLu, true)
     val loadedPReLU = ModuleLoader.loadFromFile("/tmp/preLu.bigdl")
     val res2 = loadedPReLU.forward(input1)
     res1 should be (res2)
@@ -1240,7 +1242,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     input2.copy(input1)
     val res1 = recurrent.forward(input1)
 
-    ModulePersister.saveToFile("/tmp/recurrent.bigdl", recurrent, true)
+    ModulePersister.saveToFile("/tmp/recurrent.bigdl", null, recurrent, true)
     val loadedRecurrent = ModuleLoader.loadFromFile("/tmp/recurrent.bigdl")
     val res2 = loadedRecurrent.forward(input1)
     res1 should be (res2)
@@ -1256,7 +1258,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     input2.copy(input1)
     val res1 = recurrent.forward(input1)
 
-    ModulePersister.saveToFile("/tmp/recurrent.bigdl", recurrent, true)
+    ModulePersister.saveToFile("/tmp/recurrent.bigdl", null, recurrent, true)
     val loadedRecurrent = ModuleLoader.loadFromFile("/tmp/recurrent.bigdl")
     val res2 = loadedRecurrent.forward(input1)
     res1 should be (res2)
@@ -1270,7 +1272,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     input2.copy(input1)
     val res1 = relu.forward(input1)
 
-    ModulePersister.saveToFile("/tmp/relu.bigdl", relu, true)
+    ModulePersister.saveToFile("/tmp/relu.bigdl", null, relu, true)
     val loadedReLU = ModuleLoader.loadFromFile("/tmp/relu.bigdl")
     val res2 = loadedReLU.forward(input1)
     res1 should be (res2)
@@ -1283,7 +1285,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     input2.resizeAs(input1).copy(input1)
     val res1 = relu6.forward(input1)
 
-    ModulePersister.saveToFile("/tmp/relu6.bigdl", relu6, true)
+    ModulePersister.saveToFile("/tmp/relu6.bigdl", null, relu6, true)
     val loadedReLU6 = ModuleLoader.loadFromFile("/tmp/relu6.bigdl")
     val res2 = loadedReLU6.forward(input2)
     res1 should be (res2)
@@ -1295,7 +1297,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     val input2 = Tensor(10)
     input2.copy(input1)
     val res1 = replicate.forward(input1)
-    ModulePersister.saveToFile("/tmp/replicate.bigdl", replicate, true)
+    ModulePersister.saveToFile("/tmp/replicate.bigdl", null, replicate, true)
     val loadedReplicate = ModuleLoader.loadFromFile("/tmp/replicate.bigdl")
     val res2 = loadedReplicate.forward(input2)
     res1 should be (res2)
@@ -1307,7 +1309,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     val input2 = Tensor(2, 2, 5)
     input2.copy(input1)
     val res1 = reshape.forward(input1)
-    ModulePersister.saveToFile("/tmp/reshape.bigdl", reshape, true)
+    ModulePersister.saveToFile("/tmp/reshape.bigdl", null, reshape, true)
     val loadedReshape = ModuleLoader.loadFromFile("/tmp/reshape.bigdl")
     val res2 = loadedReshape.forward(input2)
     res1 should be (res2)
@@ -1319,7 +1321,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     val input2 = Tensor(10)
     input2.copy(input1)
     val res1 = reverse.forward(input1)
-    ModulePersister.saveToFile("/tmp/reverse.bigdl", reverse, true)
+    ModulePersister.saveToFile("/tmp/reverse.bigdl", null, reverse, true)
     val loadedReverse = ModuleLoader.loadFromFile("/tmp/reverse.bigdl")
     val res2 = loadedReverse.forward(input2)
     res1 should be (res2)
@@ -1338,7 +1340,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     input(2.0f) = input2
     val res1 = rnnCell.forward(input)
 
-    ModulePersister.saveToFile("/tmp/rnnCell.bigdl", rnnCell, true)
+    ModulePersister.saveToFile("/tmp/rnnCell.bigdl", null, rnnCell, true)
     val loadedRnnCell = ModuleLoader.loadFromFile("/tmp/rnnCell.bigdl")
     val res2 = loadedRnnCell.forward(input)
     res1 should be (res2)
@@ -1361,7 +1363,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     val roiPooling = new RoiPooling[Float](pooledW = 3, pooledH = 2, 1.0f)
     val res1 = roiPooling.forward(input1)
     val res3 = roiPooling.forward(input1)
-    ModulePersister.saveToFile("/tmp/roiPooling.bigdl", roiPooling, true)
+    ModulePersister.saveToFile("/tmp/roiPooling.bigdl", null, roiPooling, true)
     val loadedRoiPooling = ModuleLoader.loadFromFile("/tmp/roiPooling.bigdl")
     val res2 = loadedRoiPooling.forward(input2)
     res1 should be (res2)
@@ -1373,7 +1375,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     val input2 = Tensor(2, 2, 2)
     input2.copy(input1)
     val res1 = rrelu.forward(input1)
-    ModulePersister.saveToFile("/tmp/rrelu.bigdl", rrelu, true)
+    ModulePersister.saveToFile("/tmp/rrelu.bigdl", null, rrelu, true)
     val loadedRReLU = ModuleLoader.loadFromFile("/tmp/rrelu.bigdl")
     val res2 = loadedRReLU.forward(input2)
     res1 should be (res2)
@@ -1385,7 +1387,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     val input2 = Tensor(1, 4, 5, 6)
     input2.copy(input1)
     val res1 = scale.forward(input1)
-    ModulePersister.saveToFile("/tmp/scale.bigdl", scale, true)
+    ModulePersister.saveToFile("/tmp/scale.bigdl", null, scale, true)
     val loadedScale = ModuleLoader.loadFromFile("/tmp/scale.bigdl")
     val res2 = loadedScale.forward(input2)
     res1 should be (res2)
@@ -1398,7 +1400,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     val input2 = Tensor(5, 5, 5)
     input2.copy(input1)
     val res1 = select.forward(input1)
-    ModulePersister.saveToFile("/tmp/select.bigdl", select, true)
+    ModulePersister.saveToFile("/tmp/select.bigdl", null, select, true)
     val loadedSelect = ModuleLoader.loadFromFile("/tmp/select.bigdl")
     val res2 = loadedSelect.forward(input2)
     res1 should be (res2)
@@ -1411,7 +1413,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     val input3 = Tensor(10).apply1(_ => Random.nextFloat())
     val input = T(1.0 -> input1, 2.0 -> input2, 3.0 -> input3)
     val res1 = selectTable.forward(input)
-    ModulePersister.saveToFile("/tmp/selectTable.bigdl", selectTable, true)
+    ModulePersister.saveToFile("/tmp/selectTable.bigdl", null, selectTable, true)
     val loadedSelectTable = ModuleLoader.loadFromFile("/tmp/selectTable.bigdl")
     val res2 = loadedSelectTable.forward(input)
     res1 should be (res2)
@@ -1425,7 +1427,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     val input2 = Tensor()
     input2.resizeAs(input1).copy(input1)
     val res1 = sequential.forward(input1)
-    ModulePersister.saveToFile("/tmp/sequential.bigdl", sequential, true)
+    ModulePersister.saveToFile("/tmp/sequential.bigdl", null, sequential, true)
     val loadedSequential = ModuleLoader.loadFromFile("/tmp/sequential.bigdl")
     val res2 = loadedSequential.forward(input2)
     res1 should be (res2)
@@ -1437,7 +1439,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     val input2 = Tensor()
     input2.resizeAs(input1).copy(input1)
     val res1 = sigmoid.forward(input1)
-    ModulePersister.saveToFile("/tmp/sigmoid.bigdl", sigmoid, true)
+    ModulePersister.saveToFile("/tmp/sigmoid.bigdl", null, sigmoid, true)
     val loadedSigmoid = ModuleLoader.loadFromFile("/tmp/sigmoid.bigdl")
     val res2 = loadedSigmoid.forward(input2)
     res1 should be (res2)
@@ -1449,7 +1451,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     val input2 = Tensor()
     input2.resizeAs(input1).copy(input1)
     val res1 = softMax.forward(input1)
-    ModulePersister.saveToFile("/tmp/softMax.bigdl", softMax, true)
+    ModulePersister.saveToFile("/tmp/softMax.bigdl", null, softMax, true)
     val loadedSoftMax = ModuleLoader.loadFromFile("/tmp/softMax.bigdl")
     val res2 = loadedSoftMax.forward(input2)
     res1 should be (res2)
@@ -1461,7 +1463,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     val input2 = Tensor()
     input2.resizeAs(input1).copy(input1)
     val res1 = softMin.forward(input1)
-    ModulePersister.saveToFile("/tmp/softMin.bigdl", softMin, true)
+    ModulePersister.saveToFile("/tmp/softMin.bigdl", null, softMin, true)
     val loadedSoftMin = ModuleLoader.loadFromFile("/tmp/softMin.bigdl")
     val res2 = loadedSoftMin.forward(input2)
     res1 should be (res2)
@@ -1473,7 +1475,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     val input2 = Tensor()
     input2.resizeAs(input1).copy(input1)
     val res1 = softPlus.forward(input1)
-    ModulePersister.saveToFile("/tmp/softPlus.bigdl", softPlus, true)
+    ModulePersister.saveToFile("/tmp/softPlus.bigdl", null, softPlus, true)
     val loadedSoftPlus = ModuleLoader.loadFromFile("/tmp/softPlus.bigdl")
     val res2 = loadedSoftPlus.forward(input2)
     res1 should be (res2)
@@ -1485,7 +1487,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     val input2 = Tensor()
     input2.resizeAs(input1).copy(input1)
     val res1 = softShrink.forward(input1)
-    ModulePersister.saveToFile("/tmp/softShrink.bigdl", softShrink, true)
+    ModulePersister.saveToFile("/tmp/softShrink.bigdl", null, softShrink, true)
     val loadedSoftShrink = ModuleLoader.loadFromFile("/tmp/softShrink.bigdl")
     val res2 = loadedSoftShrink.forward(input2)
     res1 should be (res2)
@@ -1497,7 +1499,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     val input2 = Tensor()
     input2.resizeAs(input1).copy(input1)
     val res1 = softSign.forward(input1)
-    ModulePersister.saveToFile("/tmp/softSign.bigdl", softSign, true)
+    ModulePersister.saveToFile("/tmp/softSign.bigdl", null, softSign, true)
     val loadedSoftSign = ModuleLoader.loadFromFile("/tmp/softSign.bigdl")
     val res2 = loadedSoftSign.forward(input2)
     res1 should be (res2)
@@ -1509,7 +1511,8 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     val input2 = Tensor()
     input2.resizeAs(input1).copy(input1)
     val res1 = spatialAveragePooling.forward(input1)
-    ModulePersister.saveToFile("/tmp/spatialAveragePooling.bigdl", spatialAveragePooling, true)
+    ModulePersister.saveToFile("/tmp/spatialAveragePooling.bigdl",
+      null, spatialAveragePooling, true)
     val loadedSpatialAveragePooling = ModuleLoader.loadFromFile("/tmp/spatialAveragePooling.bigdl")
     val res2 = loadedSpatialAveragePooling.forward(input2)
     res1 should be (res2)
@@ -1521,7 +1524,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     val input2 = Tensor()
     input2.resizeAs(input1).copy(input1)
     val res1 = spatialBatchNorm.forward(input1)
-    ModulePersister.saveToFile("/tmp/spatialBatchNorm.bigdl", spatialBatchNorm, true)
+    ModulePersister.saveToFile("/tmp/spatialBatchNorm.bigdl", null, spatialBatchNorm, true)
     val loadedSpatialBatchNorm = ModuleLoader.loadFromFile("/tmp/spatialBatchNorm.bigdl")
     val res2 = loadedSpatialBatchNorm.forward(input2)
     res1 should be (res2)
@@ -1534,7 +1537,8 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     val input2 = Tensor()
     input2.resizeAs(input1).copy(input1)
     val res1 = spatialContrastiveNorm.forward(input1)
-    ModulePersister.saveToFile("/tmp/spatialContrastiveNorm.bigdl", spatialContrastiveNorm, true)
+    ModulePersister.saveToFile("/tmp/spatialContrastiveNorm.bigdl",
+      null, spatialContrastiveNorm, true)
     RNG.setSeed(100)
     val loadedSpatialContrastiveNorm = ModuleLoader.
       loadFromFile("/tmp/spatialContrastiveNorm.bigdl")
@@ -1548,7 +1552,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     val input2 = Tensor()
     input2.resizeAs(input1).copy(input1)
     val res1 = spatialConvolution.forward(input1)
-    ModulePersister.saveToFile("/tmp/spatialConvolution.bigdl", spatialConvolution, true)
+    ModulePersister.saveToFile("/tmp/spatialConvolution.bigdl", null, spatialConvolution, true)
     val loadedSpatialConvolution = ModuleLoader.loadFromFile("/tmp/spatialConvolution.bigdl")
     val res2 = loadedSpatialConvolution.forward(input2)
     res1 should be (res2)
@@ -1561,7 +1565,8 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     val input2 = Tensor()
     input2.resizeAs(input1).copy(input1)
     val res1 = spatialConvolutionMap.forward(input1)
-    ModulePersister.saveToFile("/tmp/spatialConvolutionMap.bigdl", spatialConvolutionMap, true)
+    ModulePersister.saveToFile("/tmp/spatialConvolutionMap.bigdl",
+      null, spatialConvolutionMap, true)
     val loadedSpatialConvolutionMap = ModuleLoader.
       loadFromFile("/tmp/spatialConvolutionMap.bigdl")
     val res2 = loadedSpatialConvolutionMap.forward(input2)
@@ -1574,7 +1579,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     val input2 = Tensor()
     input2.resizeAs(input1).copy(input1)
     val res1 = spatialCrossMapLRN.forward(input1)
-    ModulePersister.saveToFile("/tmp/spatialCrossMapLRN.bigdl", spatialCrossMapLRN, true)
+    ModulePersister.saveToFile("/tmp/spatialCrossMapLRN.bigdl", null, spatialCrossMapLRN, true)
     val loadedSpatialCrossMapLRN = ModuleLoader.loadFromFile("/tmp/spatialCrossMapLRN.bigdl")
     val res2 = loadedSpatialCrossMapLRN.forward(input2)
     res1 should be (res2)
@@ -1588,7 +1593,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     val input2 = Tensor()
     input2.resizeAs(input1).copy(input1)
     val res1 = spatialDilatedConvolution.forward(input1)
-    ModulePersister.saveToFile("/tmp/spatialDilatedConvolution.bigdl",
+    ModulePersister.saveToFile("/tmp/spatialDilatedConvolution.bigdl", null,
       spatialDilatedConvolution, true)
     val loadedSpatialDilatedConvolution = ModuleLoader.
       loadFromFile("/tmp/spatialDilatedConvolution.bigdl")
@@ -1603,7 +1608,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     input2.copy(input1)
 
     val res1 = spatialDivisiveNormalization.forward(input1)
-    ModulePersister.saveToFile("/tmp/spatialDivisiveNormalization.bigdl",
+    ModulePersister.saveToFile("/tmp/spatialDivisiveNormalization.bigdl", null,
       spatialDivisiveNormalization, true)
     val loadedSpatialDivisiveNormalization = ModuleLoader.
       loadFromFile("/tmp/spatialDivisiveNormalization.bigdl")
@@ -1621,7 +1626,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     input2.copy(input1)
 
     val res1 = spatialFullConvolution.forward(input1)
-    ModulePersister.saveToFile("/tmp/spatialFullConvolution.bigdl",
+    ModulePersister.saveToFile("/tmp/spatialFullConvolution.bigdl", null,
       spatialFullConvolution, true)
     val loadedSpatialFullConvolution = ModuleLoader.
       loadFromFile("/tmp/spatialFullConvolution.bigdl")
@@ -1635,7 +1640,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     val input2 = Tensor()
     input2.resizeAs(input1).copy(input1)
     val res1 = spatialMaxPooling.forward(input1)
-    ModulePersister.saveToFile("/tmp/spatialMaxPooling.bigdl",
+    ModulePersister.saveToFile("/tmp/spatialMaxPooling.bigdl", null,
       spatialMaxPooling, true)
     val loadedSpatialMaxPooling = ModuleLoader.
       loadFromFile("/tmp/spatialMaxPooling.bigdl")
@@ -1649,7 +1654,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     val input2 = Tensor()
     input2.resizeAs(input1).copy(input1)
     val res1 = spatialShareConvolution.forward(input1)
-    ModulePersister.saveToFile("/tmp/spatialShareConvolution.bigdl",
+    ModulePersister.saveToFile("/tmp/spatialShareConvolution.bigdl", null,
       spatialShareConvolution, true)
     val loadedSpatialShareConvolution = ModuleLoader.
       loadFromFile("/tmp/spatialShareConvolution.bigdl")
@@ -1664,7 +1669,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     val input2 = Tensor()
     input2.resizeAs(input1).copy(input1)
     val res1 = spatialSubtractiveNormalization.forward(input1)
-    ModulePersister.saveToFile("/tmp/spatialSubtractiveNormalization.bigdl",
+    ModulePersister.saveToFile("/tmp/spatialSubtractiveNormalization.bigdl", null,
       spatialSubtractiveNormalization, true)
     val loadedSpatialSubtractiveNormalization = ModuleLoader.
       loadFromFile("/tmp/spatialSubtractiveNormalization.bigdl")
@@ -1678,7 +1683,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     val input2 = Tensor()
     input2.resizeAs(input1).copy(input1)
     val res1 = spatialWithinChannelLRN.forward(input1)
-    ModulePersister.saveToFile("/tmp/spatialWithinChannelLRN.bigdl",
+    ModulePersister.saveToFile("/tmp/spatialWithinChannelLRN.bigdl", null,
       spatialWithinChannelLRN, true)
     val loadedSpatialWithinChannelLRN = ModuleLoader.
       loadFromFile("/tmp/spatialWithinChannelLRN.bigdl")
@@ -1692,7 +1697,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     val input2 = Tensor(3, 3, 3)
     input2.copy(input1)
     val res1 = spatialZeroPadding.forward(input1)
-    ModulePersister.saveToFile("/tmp/spatialZeroPadding.bigdl",
+    ModulePersister.saveToFile("/tmp/spatialZeroPadding.bigdl", null,
       spatialZeroPadding, true)
     val loadedSpatialSpatialZeroPadding = ModuleLoader.
       loadFromFile("/tmp/spatialZeroPadding.bigdl")
@@ -1707,7 +1712,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     val input2 = Tensor()
     input2.resizeAs(input1).copy(input1)
     val res1 = splitTable.forward(input1)
-    ModulePersister.saveToFile("/tmp/splitTable.bigdl", splitTable, true)
+    ModulePersister.saveToFile("/tmp/splitTable.bigdl", null, splitTable, true)
     val loadedSplitTable = ModuleLoader.loadFromFile("/tmp/splitTable.bigdl")
     val res2 = loadedSplitTable.forward(input2)
     res1 should be (res2)
@@ -1719,7 +1724,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     val input2 = Tensor()
     input2.resizeAs(input1).copy(input1)
     val res1 = sqrt.forward(input1)
-    ModulePersister.saveToFile("/tmp/sqrt.bigdl", sqrt, true)
+    ModulePersister.saveToFile("/tmp/sqrt.bigdl", null, sqrt, true)
     val loadedSqrt = ModuleLoader.loadFromFile("/tmp/sqrt.bigdl")
     val res2 = loadedSqrt.forward(input2)
     res1 should be (res2)
@@ -1731,7 +1736,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     val input2 = Tensor()
     input2.resizeAs(input1).copy(input1)
     val res1 = square.forward(input1)
-    ModulePersister.saveToFile("/tmp/square.bigdl", square, true)
+    ModulePersister.saveToFile("/tmp/square.bigdl", null, square, true)
     val loadedSquare = ModuleLoader.loadFromFile("/tmp/square.bigdl")
     val res2 = loadedSquare.forward(input2)
     res1 should be (res2)
@@ -1743,7 +1748,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     val input2 = Tensor()
     input2.resizeAs(input1).copy(input1)
     val res1 = squeeze.forward(input1)
-    ModulePersister.saveToFile("/tmp/squeeze.bigdl", squeeze, true)
+    ModulePersister.saveToFile("/tmp/squeeze.bigdl", null, squeeze, true)
     val loadedSqueeze = ModuleLoader.loadFromFile("/tmp/squeeze.bigdl")
     val res2 = loadedSqueeze.forward(input2)
     res1 should be (res2)
@@ -1756,7 +1761,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     input2.resizeAs(input1).copy(input1)
     val res1 = sum.forward(input1)
 
-    ModulePersister.saveToFile("/tmp/sum.bigdl", sum, true)
+    ModulePersister.saveToFile("/tmp/sum.bigdl", null, sum, true)
     val loadedSum = ModuleLoader.loadFromFile("/tmp/sum.bigdl")
     val res2 = loadedSum.forward(input2)
     res1 should be (res2)
@@ -1769,7 +1774,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     input2.resizeAs(input1).copy(input1)
     val res1 = tanh.forward(input1)
 
-    ModulePersister.saveToFile("/tmp/tanh.bigdl", tanh, true)
+    ModulePersister.saveToFile("/tmp/tanh.bigdl", null, tanh, true)
     val loadedTanh = ModuleLoader.loadFromFile("/tmp/tanh.bigdl")
     val res2 = loadedTanh.forward(input2)
     res1 should be (res2)
@@ -1782,7 +1787,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     input2.resizeAs(input1).copy(input1)
     val res1 = tanhShrink.forward(input1)
 
-    ModulePersister.saveToFile("/tmp/tanhShrink.bigdl", tanhShrink, true)
+    ModulePersister.saveToFile("/tmp/tanhShrink.bigdl", null, tanhShrink, true)
     val loadedTanhShrink = ModuleLoader.loadFromFile("/tmp/tanhShrink.bigdl")
     val res2 = loadedTanhShrink.forward(input2)
     res1 should be (res2)
@@ -1796,7 +1801,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
 
     val res1 = temporalConvolution.forward(input1)
 
-    ModulePersister.saveToFile("/tmp/temporalConvolution.bigdl", temporalConvolution, true)
+    ModulePersister.saveToFile("/tmp/temporalConvolution.bigdl", null, temporalConvolution, true)
     val loadedTemporalConvolution = ModuleLoader.loadFromFile("/tmp/temporalConvolution.bigdl")
     val res2 = loadedTemporalConvolution.forward(input2)
     res1 should be (res2)
@@ -1809,7 +1814,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     input2.copy(input1)
     val res1 = threshold.forward(input1)
 
-    ModulePersister.saveToFile("/tmp/threshold.bigdl", threshold, true)
+    ModulePersister.saveToFile("/tmp/threshold.bigdl", null, threshold, true)
     val loadedThreshold = ModuleLoader.loadFromFile("/tmp/threshold.bigdl")
     val res2 = loadedThreshold.forward(input1)
     res1 should be (res2)
@@ -1822,7 +1827,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     input2.copy(input1)
     val res1 = timeDistributed.forward(input1)
 
-    ModulePersister.saveToFile("/tmp/timeDistributed.bigdl", timeDistributed, true)
+    ModulePersister.saveToFile("/tmp/timeDistributed.bigdl", null, timeDistributed, true)
     val loadedTimeDistributed = ModuleLoader.loadFromFile("/tmp/timeDistributed.bigdl")
     val res2 = loadedTimeDistributed.forward(input1)
     res1 should be (res2)
@@ -1836,7 +1841,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
 
     val res1 = transpose.forward(input1)
 
-    ModulePersister.saveToFile("/tmp/transpose.bigdl", transpose, true)
+    ModulePersister.saveToFile("/tmp/transpose.bigdl", null, transpose, true)
     val loadedTranspose = ModuleLoader.loadFromFile("/tmp/transpose.bigdl")
     val res2 = loadedTranspose.forward(input1)
     res1 should be (res2)
@@ -1850,7 +1855,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     input2.copy(input1)
     val res1 = unsqueeze.forward(input1)
 
-    ModulePersister.saveToFile("/tmp/unsqueeze.bigdl", unsqueeze, true)
+    ModulePersister.saveToFile("/tmp/unsqueeze.bigdl", null, unsqueeze, true)
     val loadedUnsqueeze = ModuleLoader.loadFromFile("/tmp/unsqueeze.bigdl")
     val res2 = loadedUnsqueeze.forward(input1)
     res1 should be (res2)
@@ -1863,7 +1868,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     input2.copy(input1)
     val res1 = view.forward(input1)
 
-    ModulePersister.saveToFile("/tmp/view.bigdl", view, true)
+    ModulePersister.saveToFile("/tmp/view.bigdl", null, view, true)
     val loadedView = ModuleLoader.loadFromFile("/tmp/view.bigdl")
     val res2 = loadedView.forward(input1)
     res1 should be (res2)
@@ -1877,7 +1882,8 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     input2.copy(input1)
     val res1 = volumetricConvolution.forward(input1)
 
-    ModulePersister.saveToFile("/tmp/volumetricConvolution.bigdl", volumetricConvolution, true)
+    ModulePersister.saveToFile("/tmp/volumetricConvolution.bigdl",
+      null, volumetricConvolution, true)
     val loadedVolumetricConvolution = ModuleLoader.loadFromFile("/tmp/volumetricConvolution.bigdl")
     val res2 = loadedVolumetricConvolution.forward(input1)
     res1 should be (res2)
@@ -1893,7 +1899,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
 
     val res1 = volumetricFullConvolution.forward(input1)
 
-    ModulePersister.saveToFile("/tmp/volumetricFullConvolution.bigdl",
+    ModulePersister.saveToFile("/tmp/volumetricFullConvolution.bigdl", null,
       volumetricFullConvolution, true)
     val loadedVolumetricFullConvolution = ModuleLoader.
       loadFromFile("/tmp/volumetricFullConvolution.bigdl")
@@ -1909,7 +1915,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     input2.copy(input1)
     val res1 = volumetricMaxPooling.forward(input1)
 
-    ModulePersister.saveToFile("/tmp/volumetricMaxPooling.bigdl", volumetricMaxPooling, true)
+    ModulePersister.saveToFile("/tmp/volumetricMaxPooling.bigdl", null, volumetricMaxPooling, true)
     val loadedVolumetricMaxPooling = ModuleLoader.loadFromFile("/tmp/volumetricMaxPooling.bigdl")
     val res2 = loadedVolumetricMaxPooling.forward(input1)
     res1 should be (res2)
@@ -1941,7 +1947,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
 
     val res1 = conv.forward(input)
 
-    ModulePersister.saveToFile("/tmp/bigquant.conv.bigdl", conv, true)
+    ModulePersister.saveToFile("/tmp/bigquant.conv.bigdl", null, conv, true)
     val loadedConv = ModuleLoader.loadFromFile("/tmp/bigquant.conv.bigdl")
     val res2 = loadedConv.forward(input)
     res1 should be (res2)
@@ -1972,7 +1978,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
 
     val res1 = conv.forward(input)
 
-    ModulePersister.saveToFile("/tmp/bigquant.dilated.conv.bigdl", conv, true)
+    ModulePersister.saveToFile("/tmp/bigquant.dilated.conv.bigdl", null, conv, true)
     val loadedConv = ModuleLoader.loadFromFile("/tmp/bigquant.dilated.conv.bigdl")
     val res2 = loadedConv.forward(input)
     res1 should be (res2)
@@ -1997,7 +2003,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
 
     val res1 = linear.forward(input)
 
-    ModulePersister.saveToFile("/tmp/bigquant.linear.bigdl", linear, true)
+    ModulePersister.saveToFile("/tmp/bigquant.linear.bigdl", null, linear, true)
     val loadedLinear = ModuleLoader.loadFromFile("/tmp/bigquant.linear.bigdl")
     val res2 = loadedLinear.forward(input)
     res1 should be (res2)
@@ -2043,7 +2049,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
 
     val res1 = exampleParser.forward(input)
 
-    ModulePersister.saveToFile("/tmp/exampleParser.bigdl", exampleParser, true)
+    ModulePersister.saveToFile("/tmp/exampleParser.bigdl", null, exampleParser, true)
     val loadedExampleParser = ModuleLoader.loadFromFile[Float]("/tmp/exampleParser.bigdl")
     val res2 = loadedExampleParser.forward(input)
     res1 should be (res2)
@@ -2056,7 +2062,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     val tensor2 = Tensor()
     tensor2.resizeAs(tensor1).copy(tensor1)
     val res1 = testModule.forward(tensor1)
-    ModulePersister.saveToFile("/tmp/testModule.bigdl", testModule, true)
+    ModulePersister.saveToFile("/tmp/testModule.bigdl", null, testModule, true)
     val loadedModule = ModuleLoader.loadFromFile("/tmp/testModule.bigdl")
     val res2 = loadedModule.forward(tensor2)
     res1 should be (res2)
@@ -2075,7 +2081,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
 
     val res1 = model.forward(input)
 
-    ModulePersister.saveToFile("/tmp/2linears.with.a.storage.bigdl", model, true)
+    ModulePersister.saveToFile("/tmp/2linears.with.a.storage.bigdl", null, model, true)
     val loadedModel = ModuleLoader.loadFromFile("/tmp/2linears.with.a.storage.bigdl")
     val res2 = loadedModel.forward(input)
 
@@ -2085,7 +2091,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
   "Load by definition " should " work properly" in {
     val linear1 = Linear(2, 2).setName("linear")
     val sequential = Sequential().setName("sequential").add(linear1)
-    ModulePersister.saveToFile("/tmp/loadDef.bigdl", sequential, true)
+    ModulePersister.saveToFile("/tmp/loadDef.bigdl", null, sequential, true)
     val linear2 = Linear(2, 2).setName("linear")
     val definition = Sequential().setName("sequential").add(linear2)
     ModuleLoader.loadFromDefinition(definition, "/tmp/loadDef.bigdl")
@@ -2099,7 +2105,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
 
   "Module toString" should "have same result" in {
     val linear = Linear(2, 2)
-    ModulePersister.saveToFile("/tmp/mstr.bigdl", linear, true)
+    ModulePersister.saveToFile("/tmp/mstr.bigdl", null, linear, true)
     val loadedModel = ModuleLoader.loadFromFile("/tmp/mstr.bigdl")
 
     linear.toString() should be (loadedModel.toString())
@@ -2107,7 +2113,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
 
   "Module in tain " should " keep the  state" in {
     val linear = Linear(2, 2).training()
-    ModulePersister.saveToFile("/tmp/mstr.bigdl", linear, true)
+    ModulePersister.saveToFile("/tmp/mstr.bigdl", null, linear, true)
     val loadedModel = ModuleLoader.loadFromFile("/tmp/mstr.bigdl")
 
     loadedModel.isTraining() should be (true)
@@ -2115,7 +2121,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
 
   "Module in evaluate " should " keep the  state" in {
     val linear = Linear(2, 2).evaluate()
-    ModulePersister.saveToFile("/tmp/mstr.bigdl", linear, true)
+    ModulePersister.saveToFile("/tmp/mstr.bigdl", null, linear, true)
     val loadedModel = ModuleLoader.loadFromFile("/tmp/mstr.bigdl")
 
     loadedModel.isTraining() should be (false)
@@ -2123,7 +2129,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
 
   "HardSigmoid serialization" should "work properly" in {
     val hardSigmoid = HardSigmoid()
-    ModulePersister.saveToFile("/tmp/hardSigmoid.bigdl", hardSigmoid, true)
+    ModulePersister.saveToFile("/tmp/hardSigmoid.bigdl", null, hardSigmoid, true)
     val loadedModel = ModuleLoader.loadFromFile("/tmp/hardSigmoid.bigdl")
 
     val input = Tensor(2, 2).rand()
@@ -2135,6 +2141,22 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     res1 should be (res2)
   }
 
+  "Save model and weight separately" should "work properly" in {
+    val linear = Linear(3, 2)
+    val input = Tensor(2, 3).rand()
+    linear.saveModule("/tmp/linear.def", "/tmp/linear.bin", true)
+    val loaded = Module.loadModule("/tmp/linear.def", "/tmp/linear.bin")
+    val res1 = linear.forward(input)
+
+    val res2 = loaded.forward(input)
+
+    res1 should be (res2)
+  }
+
+  "FindPath" should "work properly" in {
+    val file = new File("linear.bin")
+    println(file.getAbsolutePath)
+  }
 }
 
 class TestModule[T: ClassTag](val custom: CustomData)

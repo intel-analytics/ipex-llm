@@ -411,7 +411,7 @@ class DataConverterSpec extends FlatSpec with Matchers{
     val linear = Linear(5, 5).setName("linear")
     val moduleData = ModuleData(linear, Seq(), Seq())
     map.clear()
-    ModulePersister.saveToFile("/tmp/linear.bigdl", linear, true)
+    ModulePersister.saveToFile("/tmp/linear.bigdl", null, linear, true)
     map.clear()
     val retrievedValue = ModuleLoader.loadFromFile("/tmp/linear.bigdl")
     retrievedValue should be (linear)
