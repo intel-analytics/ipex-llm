@@ -51,6 +51,8 @@ import org.opencv.imgproc.Imgproc
 
 import scala.collection.JavaConverters._
 import scala.collection.mutable.ArrayBuffer
+import scala.collection.mutable
+import scala.collection.mutable.{ArrayBuffer, Map}
 import scala.language.existentials
 import scala.reflect.ClassTag
 
@@ -67,6 +69,8 @@ case class Sample(features: JList[JTensor],
 
 case class JTensor(storage: Array[Float], shape: Array[Int],
                    bigdlType: String, indices: Array[Array[Int]] = null)
+
+case class JActivity(value: Activity)
 
 /**
  * [[ValidationResult]] for python
