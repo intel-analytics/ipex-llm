@@ -193,6 +193,7 @@ val sample = Sample(feature, label)
 ```
 
 **Python example:**
+
 Note: Please always use `Sample.from_ndarray` to construct `Sample` in Python.
 
 The case where feature is one ndarray with a 1-element label.
