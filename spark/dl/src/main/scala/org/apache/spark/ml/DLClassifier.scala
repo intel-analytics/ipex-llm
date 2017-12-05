@@ -50,6 +50,7 @@ class DLClassifier[@specialized(Float, Double) T: ClassTag](
 
   override def transformSchema(schema : StructType): StructType = {
     validateDataType(schema, $(featuresCol))
+    validateDataType(schema, $(labelCol))
     SchemaUtils.appendColumn(schema, $(predictionCol), DoubleType)
   }
 

@@ -41,7 +41,7 @@ private[ml] trait HasBatchSize extends Params {
  * Common trait for DLEstimator and DLModel
  */
 private[ml] trait DLParams[@specialized(Float, Double) T] extends HasFeaturesCol
-  with HasPredictionCol with VectorCompatibility {
+  with HasPredictionCol with VectorCompatibility with HasBatchSize {
 
   /**
    * optimization method to be used. BigDL supports many optimization methods like Adam,
@@ -75,6 +75,8 @@ private[ml] trait DLParams[@specialized(Float, Double) T] extends HasFeaturesCol
   final val learningRateDecay = new DoubleParam(this, "learningRateDecay", "learningRateDecay")
 
   def getLearningRateDecay: Double = $(learningRateDecay)
+
+  setDefault(batchSize -> 1)
 
   protected def validateDataType(schema: StructType, colName: String): Unit = {
     val dataTypes = Seq(
@@ -116,7 +118,6 @@ private[ml] trait DLParams[@specialized(Float, Double) T] extends HasFeaturesCol
         }
     }
   }
-
 }
 
 
@@ -147,7 +148,7 @@ class DLEstimator[@specialized(Float, Double) T: ClassTag](
     val featureSize : Array[Int],
     val labelSize : Array[Int],
     override val uid: String = "DLEstimator")(implicit ev: TensorNumeric[T])
-  extends DLEstimatorBase[DLEstimator[T], DLModel[T]] with DLParams[T] with HasBatchSize {
+  extends DLEstimatorBase[DLEstimator[T], DLModel[T]] with DLParams[T] {
 
   def setFeaturesCol(featuresColName: String): this.type = set(featuresCol, featuresColName)
 
@@ -156,7 +157,6 @@ class DLEstimator[@specialized(Float, Double) T: ClassTag](
   def setPredictionCol(value: String): this.type = set(predictionCol, value)
 
   def setBatchSize(value: Int): this.type = set(batchSize, value)
-  setDefault(batchSize -> 1)
 
   def setOptimMethod(value: OptimMethod[T]): this.type = set(optimMethod, value)
 
@@ -170,8 +170,8 @@ class DLEstimator[@specialized(Float, Double) T: ClassTag](
   setDefault(learningRateDecay -> 0.0)
 
   override def transformSchema(schema : StructType): StructType = {
-    super.validateDataType(schema, $(featuresCol))
-    super.validateDataType(schema, $(labelCol))
+    validateDataType(schema, $(featuresCol))
+    validateDataType(schema, $(labelCol))
     SchemaUtils.appendColumn(schema, $(predictionCol), ArrayType(DoubleType, false))
   }
 
