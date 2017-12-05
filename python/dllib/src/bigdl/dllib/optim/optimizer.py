@@ -818,6 +818,16 @@ class L1L2Regularizer(JavaValue):
     def __init__(self, l1, l2, bigdl_type="float"):
         JavaValue.__init__(self, None, bigdl_type, l1, l2)
 
+class ActivityRegularization(JavaValue):
+    """
+    Apply both L1 and L2 regularization
+
+    :param l1 l1 regularization rate
+    :param l2 l2 regularization rate
+
+    """
+    def __init__(self, l1, l2, bigdl_type="float"):
+        JavaValue.__init__(self, None, bigdl_type, l1, l2)
 
 class L1Regularizer(JavaValue):
     """
