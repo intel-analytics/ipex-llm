@@ -35,7 +35,7 @@ class AssignSpec extends FlatSpec with Matchers {
   }
 
   "Assign operation Double" should "works correctly" in {
-    import com.intel.analytics.bigdl.numeric.NumericDouble
+    import com.intel.analytics.bigdl.numeric.NumericFloat
     val input =
       T(
         Tensor(T(1.0f, 2.0f, 3.0f)),
@@ -44,7 +44,7 @@ class AssignSpec extends FlatSpec with Matchers {
 
     val expectOutput = Tensor(T(2.0f, 2.0f, 4.0f))
 
-    val output = Assign().forward(input)
+    val output = Assign[Double]().forward(input)
     output should be(expectOutput)
   }
 }
