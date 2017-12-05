@@ -41,7 +41,16 @@ object VariableFormat {
    * The default VariableFormat used when we do not care about
    * the specified format of this variable.
    */
-  case object Default extends VariableFormat
+  case object Default extends VariableFormat {
+    override def getFanIn(shape: Array[Int]): Int = {
+      shape.product
+    }
+
+    override def getFanOut(shape: Array[Int]): Int = {
+      shape.product
+    }
+
+  }
 
   case object ONE_D extends VariableFormat {
     override def getFanIn(shape: Array[Int]): Int = {
@@ -143,7 +152,6 @@ object VariableFormat {
       shape(3) * receptiveFieldSize
     }
   }
-
 }
 
 /**

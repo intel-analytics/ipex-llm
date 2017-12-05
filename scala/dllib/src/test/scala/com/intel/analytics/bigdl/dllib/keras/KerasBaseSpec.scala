@@ -70,7 +70,7 @@ abstract class KerasBaseSpec extends BigDLSpecHelper {
     ifskipTest()
 
     val (gradInput, gradWeight, weights, input, target, output) =
-      KerasRunner.run(kerasCode, is_loss = true)
+      KerasRunner.run(kerasCode, Loss)
 
     val boutput = bmodel.forward(input, target)
     val koutput = output.mean()  // the return value from keras is not always averaged.
