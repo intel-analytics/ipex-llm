@@ -35,6 +35,9 @@ class SoftSign[T: ClassTag, D: ClassTag]()
   @transient private var temp: Tensor[D] = null
   @transient private var tempGrad: Tensor[D] = null
 
+  output = Tensor[D]()
+  gradInput = Tensor[D]()
+
   override def updateOutput(input: Tensor[D]): Tensor[D] = {
     if (null == temp) {
       temp = input.clone()

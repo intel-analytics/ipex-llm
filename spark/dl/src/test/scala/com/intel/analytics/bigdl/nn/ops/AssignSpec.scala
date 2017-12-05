@@ -38,11 +38,11 @@ class AssignSpec extends FlatSpec with Matchers {
     import com.intel.analytics.bigdl.numeric.NumericDouble
     val input =
       T(
-        Tensor(T(1.0, 2.0, 3.0)),
-        Tensor(T(2.0, 2.0, 4.0))
+        Tensor(T(1.0f, 2.0f, 3.0f)),
+        Tensor(T(2.0f, 2.0f, 4.0f))
       )
 
-    val expectOutput = Tensor(T(2.0, 2.0, 4.0))
+    val expectOutput = Tensor(T(2.0f, 2.0f, 4.0f))
 
     val output = Assign().forward(input)
     output should be(expectOutput)

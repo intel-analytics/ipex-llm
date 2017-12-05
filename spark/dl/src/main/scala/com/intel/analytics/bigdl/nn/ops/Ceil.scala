@@ -22,10 +22,10 @@ import scala.reflect.ClassTag
 
 class Ceil[T: ClassTag, D: ClassTag]()(implicit ev: TensorNumeric[T], ev2: TensorNumeric[D])
   extends Operation[Tensor[D], Tensor[D], T] {
+
+  output = Tensor[D]()
+
   override def updateOutput(input: Tensor[D]): Tensor[D] = {
-    if (input.getType() != output.getType()) {
-      output = input.emptyInstance()
-    }
     output.resizeAs(input)
     output.copy(input).ceil()
     output

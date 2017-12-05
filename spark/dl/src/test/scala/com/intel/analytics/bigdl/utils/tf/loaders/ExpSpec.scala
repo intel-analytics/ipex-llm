@@ -23,8 +23,8 @@ import org.tensorflow.framework.{DataType, NodeDef}
 
 class ExpSpec extends TensorflowSpecHelper {
 
-  "Exp" should "be correct for float" in {
-    compare(
+  "Exp with model float" should "be correct for float" in {
+    compare[Float](
       NodeDef.newBuilder()
         .setName("exp_test")
         .putAttr("T", typeAttr(DataType.DT_FLOAT))
@@ -34,8 +34,30 @@ class ExpSpec extends TensorflowSpecHelper {
     )
   }
 
-  "Exp" should "be correct for double" in {
-    compare(
+  "Exp with model float" should "be correct for double" in {
+    compare[Float](
+      NodeDef.newBuilder()
+        .setName("exp_test")
+        .putAttr("T", typeAttr(DataType.DT_DOUBLE))
+        .setOp("Exp"),
+      Seq(Tensor[Double](10).rand()),
+      0
+    )
+  }
+
+  "Exp with model double" should "be correct for float" in {
+    compare[Double](
+      NodeDef.newBuilder()
+        .setName("exp_test")
+        .putAttr("T", typeAttr(DataType.DT_FLOAT))
+        .setOp("Exp"),
+      Seq(Tensor[Float](10).rand()),
+      0
+    )
+  }
+
+  "Exp with model double" should "be correct for double" in {
+    compare[Double](
       NodeDef.newBuilder()
         .setName("exp_test")
         .putAttr("T", typeAttr(DataType.DT_DOUBLE))

@@ -23,11 +23,12 @@ import com.google.protobuf.CodedOutputStream
 import com.intel.analytics.bigdl.nn.Module
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.NumericWildCard
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.{NumericWildCard, TensorNumeric}
 import com.intel.analytics.bigdl.utils.{BigDLSpecHelper, FileWriter, T}
 import com.intel.analytics.bigdl.utils.tf.Tensorflow.const
 import org.tensorflow.framework.{GraphDef, NodeDef}
 
+import scala.reflect.ClassTag
 import scala.sys.process._
 import scala.util.control.NonFatal
 
@@ -72,34 +73,35 @@ abstract class TensorflowSpecHelper extends BigDLSpecHelper {
    * @param outputIndex start from 0
    * @param delta error tolerant
    */
-  protected def compare(nodeDefBuilder: NodeDef.Builder, inputs: Seq[Tensor[_]], outputIndex: Int,
-      delta: Double = 1e-5)
+  protected def compare[T: ClassTag](nodeDefBuilder: NodeDef.Builder,
+                           inputs: Seq[Tensor[_]], outputIndex: Int,
+      delta: Double = 1e-5)(implicit ev: TensorNumeric[T])
   : Unit = {
     val graphFile = saveGraph(nodeDefBuilder, inputs)
-    val bigdlOutput = runGraphBigDL(graphFile, nodeDefBuilder.getName)
+    val bigdlOutput = runGraphBigDL[T](graphFile, nodeDefBuilder.getName)
     val bigdlOutputTensor = if (bigdlOutput.isTensor) {
       require(outputIndex == 0, s"invalid output index $outputIndex")
       bigdlOutput.asInstanceOf[Tensor[_]]
     } else {
       bigdlOutput.toTable.apply[Tensor[_]](outputIndex + 1)
     }
-    val tfOutput = runGraphTF(graphFile, nodeDefBuilder.getName + s":$outputIndex")
+    val tfOutput = runGraphTF[T](graphFile, nodeDefBuilder.getName + s":$outputIndex")
     bigdlOutputTensor.asInstanceOf[Tensor[NumericWildCard]]
       .almostEqual(tfOutput.asInstanceOf[Tensor[NumericWildCard]], delta) should be(true)
   }
 
-  protected def getResult[T](nodeDefBuilder: NodeDef.Builder, inputs: Seq[Tensor[_]],
-    outputIndex: Int): (Tensor[T], Tensor[T]) = {
+  protected def getResult[T: ClassTag, D](nodeDefBuilder: NodeDef.Builder, inputs: Seq[Tensor[_]],
+    outputIndex: Int)(implicit ev: TensorNumeric[T]): (Tensor[D], Tensor[D]) = {
     val graphFile = saveGraph(nodeDefBuilder, inputs)
-    val bigdlOutput = runGraphBigDL(graphFile, nodeDefBuilder.getName)
+    val bigdlOutput = runGraphBigDL[T](graphFile, nodeDefBuilder.getName)
     val bigdlOutputTensor = if (bigdlOutput.isTensor) {
       require(outputIndex == 0, s"invalid output index $outputIndex")
-      bigdlOutput.asInstanceOf[Tensor[T]]
+      bigdlOutput.asInstanceOf[Tensor[D]]
     } else {
-      bigdlOutput.toTable.apply[Tensor[T]](outputIndex + 1)
+      bigdlOutput.toTable.apply[Tensor[D]](outputIndex + 1)
     }
     val tfOutput = runGraphTF(graphFile, nodeDefBuilder.getName + s":$outputIndex")
-    (bigdlOutputTensor, tfOutput.asInstanceOf[Tensor[T]])
+    (bigdlOutputTensor, tfOutput.asInstanceOf[Tensor[D]])
   }
 
   private def saveGraph(nodeDefBuilder: NodeDef.Builder, inputs: Seq[Tensor[_]]): String = {
@@ -132,12 +134,14 @@ abstract class TensorflowSpecHelper extends BigDLSpecHelper {
     }
   }
 
-  private def runGraphBigDL(graph: String, output: String): Activity = {
-    val m = Module.loadTF[Float](graph, Seq(), Seq(output))
+  private def runGraphBigDL[T: ClassTag](graph: String, output: String)
+                                        (implicit ev: TensorNumeric[T]): Activity = {
+    val m = Module.loadTF[T](graph, Seq(), Seq(output))
     m.forward(null)
   }
 
-  private def runGraphTF(graph: String, output: String): Tensor[_] = {
+  private def runGraphTF[T: ClassTag](graph: String, output: String)
+                                     (implicit ev: TensorNumeric[T]): Tensor[_] = {
     tfCheck()
     val outputFile = createTmpFile()
     val outputFolder = getFileFolder(outputFile.getAbsolutePath())
@@ -146,7 +150,7 @@ abstract class TensorflowSpecHelper extends BigDLSpecHelper {
     val path = processPath(resource.getPath()) + JFile.separator +
       s"run-graph.py $graph $output $outputFolder $outputFileName result"
     runPython(path)
-    val m = Module.loadTF[Float](outputFile.getAbsolutePath, Seq(), Seq("result"))
+    val m = Module.loadTF[T](outputFile.getAbsolutePath, Seq(), Seq("result"))
     m.forward(null).asInstanceOf[Tensor[_]]
   }
 }

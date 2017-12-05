@@ -29,13 +29,12 @@ class Sum[T: ClassTag, D: ClassTag](keepDims: Boolean, startFromZero: Boolean = 
 
   private val sum: SumLayer[T, D] = SumLayer[T, D](squeeze = !keepDims)
 
+  output = Tensor[D]()
+
   override def updateOutput(input: Table): Tensor[D] = {
     val data = input[Tensor[D]](1)
     val dims = input[Tensor[Int]](2)
 
-    if (output.getType() != data.getType()) {
-      output = data.emptyInstance()
-    }
     output.resizeAs(data).copy(data)
 
     val sumDims = if (dims.isEmpty) {

@@ -23,7 +23,7 @@ import com.intel.analytics.bigdl.utils.tf.Tensorflow._
 
 class RangeSpec extends TensorflowSpecHelper {
   "Range" should "be correct when input is int" in {
-    compare(
+    compare[Float](
       NodeDef.newBuilder()
       .setName("range_test")
       .setOp("Range")
@@ -33,7 +33,7 @@ class RangeSpec extends TensorflowSpecHelper {
   }
 
   "Range" should "be correct when input is float" in {
-    compare(
+    compare[Float](
       NodeDef.newBuilder()
         .setName("range_test")
         .setOp("Range")

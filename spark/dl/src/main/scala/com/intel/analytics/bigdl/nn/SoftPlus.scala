@@ -40,6 +40,9 @@ class SoftPlus[T: ClassTag, D: ClassTag](
   private val threshold = ev2.fromType[Double](20.0)
   private val betaT = ev2.fromType[Double](beta)
 
+  output = Tensor[D]()
+  gradInput = Tensor[D]()
+
   override def updateOutput(input: Tensor[D]): Tensor[D] = {
     output.resizeAs(input)
 

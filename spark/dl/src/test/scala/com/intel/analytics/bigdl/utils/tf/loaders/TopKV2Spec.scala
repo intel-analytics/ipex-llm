@@ -22,7 +22,7 @@ import org.tensorflow.framework.{DataType, NodeDef}
 
 class TopKV2Spec extends TensorflowSpecHelper {
   "TopKV2" should "be correct for float tensor" in {
-    compare(
+    compare[Float](
       NodeDef.newBuilder()
         .setName("topk_test")
         .putAttr("T", typeAttr(DataType.DT_FLOAT))
@@ -31,7 +31,7 @@ class TopKV2Spec extends TensorflowSpecHelper {
       0
     )
 
-    compare(
+    compare[Float](
       NodeDef.newBuilder()
         .setName("topk_test")
         .putAttr("T", typeAttr(DataType.DT_FLOAT))
@@ -42,7 +42,7 @@ class TopKV2Spec extends TensorflowSpecHelper {
   }
 
   "TopKV2" should "be correct for 1D float tensor" in {
-    compare(
+    compare[Float](
       NodeDef.newBuilder()
         .setName("topk_test")
         .putAttr("T", typeAttr(DataType.DT_FLOAT))
@@ -51,7 +51,7 @@ class TopKV2Spec extends TensorflowSpecHelper {
       0
     )
 
-    compare(
+    compare[Float](
       NodeDef.newBuilder()
         .setName("topk_test")
         .putAttr("T", typeAttr(DataType.DT_FLOAT))
@@ -62,7 +62,7 @@ class TopKV2Spec extends TensorflowSpecHelper {
   }
 
   "TopKV2" should "be correct for float tensor when sorted is false" in {
-    compare(
+    compare[Float](
       NodeDef.newBuilder()
         .setName("topk_test")
         .putAttr("T", typeAttr(DataType.DT_FLOAT))
@@ -72,7 +72,7 @@ class TopKV2Spec extends TensorflowSpecHelper {
       0
     )
 
-    compare(
+    compare[Float](
       NodeDef.newBuilder()
         .setName("topk_test")
         .putAttr("T", typeAttr(DataType.DT_FLOAT))

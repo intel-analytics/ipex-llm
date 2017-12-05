@@ -21,6 +21,7 @@ import org.tensorflow.framework.{DataType, NodeDef}
 import com.intel.analytics.bigdl.utils.tf.Tensorflow._
 
 class AvgPoolSpec extends TensorflowSpecHelper {
+  import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
   "Avg forward" should "be correct" in {
     compare(
       NodeDef.newBuilder()

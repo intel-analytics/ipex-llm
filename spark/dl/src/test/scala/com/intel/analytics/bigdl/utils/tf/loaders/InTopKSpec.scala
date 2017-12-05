@@ -23,7 +23,7 @@ import org.tensorflow.framework.{DataType, NodeDef}
 
 class InTopKSpec extends TensorflowSpecHelper {
   "InTopK" should "be correct" in {
-    val (a, b) = getResult[Boolean](
+    val (a, b) = getResult[Float, Boolean](
       NodeDef.newBuilder()
         .setName("inv_grad_test")
         .putAttr("T", typeAttr(DataType.DT_INT32))
