@@ -255,6 +255,8 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
   private[tensor] def this()(implicit ev: TensorNumeric[T]) = this(null, 0, null, null, 0)
 
   override def fill(v: T): Tensor[T] = {
+    if (this.storage() == null) return this
+
     if (this.isContiguous()) {
       this.storage().fill(v, this.storageOffset(), this.nElement())
     } else {
@@ -273,7 +275,7 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
   }
 
   override def zero(): Tensor[T] = {
-    this.fill(ev.fromType[Int](0))
+    this.fill(ev.zero)
   }
 
   override def randn(): Tensor[T] = {
