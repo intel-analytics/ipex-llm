@@ -1763,7 +1763,67 @@ class SpatialCrossMapLRN(Layer):
                                                  alpha,
                                                  beta,
                                                  k, data_format)
+class SpatialDropout3D(Layer):
+    '''
+    This version performs the same function as Dropout, however it drops
+    entire 3D feature maps instead of individual elements. If adjacent voxels
+    within feature maps are strongly correlated (as is normally the case in
+    early convolution layers) then regular dropout will not regularize the
+    activations and will otherwise just result in an effective learning rate
+    decrease. In this case, SpatialDropout3D will help promote independence
+    between feature maps and should be used instead.
 
+    :param initP the probability p
+    :param format  'NCHW' or 'NHWC'.
+        In 'NCHW' mode, the channels dimension (the depth)
+        is at index 1, in 'NHWC' mode is it at index 4.
+    '''
+    def __init__(self,
+                 init_p=0.5,
+                 data_format="NCHW",
+                 bigdl_type="float"):
+        super(Dropout, self).__init__(None, bigdl_type, data_format,
+                                      init_p)
+
+class SpatialDropout2D(Layer):
+    '''
+    This version performs the same function as Dropout, however it drops
+    entire 2D feature maps instead of individual elements. If adjacent pixels
+    within feature maps are strongly correlated (as is normally the case in
+    early convolution layers) then regular dropout will not regularize the
+    activations and will otherwise just result in an effective learning rate
+    decrease. In this case, SpatialDropout2D will help promote independence
+    between feature maps and should be used instead.
+
+    :param initP the probability p
+    :param format  'NCHW' or 'NHWC'.
+        In 'NCHW' mode, the channels dimension (the depth)
+        is at index 1, in 'NHWC' mode is it at index 4.
+    '''
+    def __init__(self,
+                 init_p=0.5,
+                 data_format="NCHW",
+                 bigdl_type="float"):
+        super(Dropout, self).__init__(None, bigdl_type, data_format,
+                                      init_p)
+
+class SpatialDropout1D(Layer):
+    '''
+    This version performs the same function as Dropout, however it drops
+    entire 1D feature maps instead of individual elements. If adjacent frames
+    within feature maps are strongly correlated (as is normally the case in
+    early convolution layers) then regular dropout will not regularize the
+    activations and will otherwise just result in an effective learning rate
+    decrease. In this case, SpatialDropout1D will help promote independence
+    between feature maps and should be used instead.
+
+    :param initP the probability p
+    '''
+    def __init__(self,
+                 init_p=0.5,
+                 bigdl_type="float"):
+        super(Dropout, self).__init__(None, bigdl_type,
+                                      init_p)
 
 class Dropout(Layer):
 
