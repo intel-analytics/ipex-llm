@@ -540,7 +540,12 @@ class LayerConverter:
                 inplace=False,
                 bigdl_type="float")
         elif klayer.mode in ['cos']:
-            raise Exception("Merge mode `%s` not supported for now" % klayer.mode)
+            if len(input_shape[0]) >= 3:
+                raise Exception("For merge mode cos, 3D input or above is not supported for now.")
+            if klayer.dot_axes != [1, 1]:
+                raise Exception("For merge mode cos, only dot_axes=1 is supported for now.")
+            blayer = BLayer.Sequential()
+            blayer.add(BLayer.CosineDistance(bigdl_type="float")).add(BLayer.Reshape([1, 1], True))
         else:  # invalid mode or lambda functions
             raise Exception("Invalid merge mode: `%s`. Lambda/function as merge mode is not supported for now." % klayer.mode)
         if self.__is_from_sequential(klayer, kclayer):
