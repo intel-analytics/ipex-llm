@@ -22,7 +22,7 @@ import java.util.{ArrayList => JArrayList, List => JList, Map => JMap}
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.optim.{Loss, SGD, Top1Accuracy, Trigger}
-import com.intel.analytics.bigdl.utils.{Engine, T, TestUtils}
+import com.intel.analytics.bigdl.utils.{Engine, T, Table, TestUtils}
 import com.intel.analytics.bigdl.visualization.{TrainSummary, ValidationSummary}
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
@@ -52,6 +52,15 @@ class PythonSpec extends FlatSpec with Matchers with BeforeAndAfter {
     if (sc != null) {
       sc.stop()
     }
+  }
+
+  "pickle activity" should "be test" in {
+    val tensor = Tensor(Array(1.0f, 2.0f, 3.0f, 4.0f), Array(4, 1))
+    val table = new Table()
+    table.insert(tensor)
+    table.insert(tensor)
+    val r = JActivity(table)
+    org.apache.spark.bigdl.api.python.BigDLSerDe.dumps(r)
   }
 
   "model forward and backward with sigle tensor input" should "be test" in {
