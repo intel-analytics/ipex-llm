@@ -41,11 +41,26 @@ class SReLUSpec extends KerasBaseSpec {
         |input_tensor = Input(shape=[2, 3, 4])
         |input = np.random.uniform(-1, 1, [5, 2, 3, 4])
         |share_axes = [1, 2]
-        |output_tensor = SReLU()(input_tensor)
+        |output_tensor = SReLU(shared_axes = share_axes)(input_tensor)
         |model = Model(input=input_tensor, output=output_tensor)
       """.stripMargin
 
     val srelu = SReLU[Float](Array(1, 2))
+    checkOutputAndGrad(srelu, keras)
+  }
+
+  "SReLU with share axes not contiguous" should "same as keras" in {
+
+    val keras =
+      """
+        |input_tensor = Input(shape=[2, 3, 4, 5])
+        |input = np.random.uniform(-1, 1, [6, 2, 3, 4, 5])
+        |share_axes = [2, 4]
+        |output_tensor = SReLU(shared_axes = share_axes)(input_tensor)
+        |model = Model(input=input_tensor, output=output_tensor)
+      """.stripMargin
+
+    val srelu = SReLU[Float](Array(2, 4))
     checkOutputAndGrad(srelu, keras)
   }
 

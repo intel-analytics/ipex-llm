@@ -34,7 +34,7 @@ import scala.reflect.ClassTag
  *
  * [Deep Learning with S-shaped Rectified Linear Activation Units](http://arxiv.org/abs/1512.07030)
  *
- * @param shared_axes the axes along which to share learnable parameters
+ * @param sharedAxes the axes along which to share learnable parameters
  *                    for the activation function.
  *                    For example, if the incoming feature maps are from a 2D convolution
  *                    with output shape `(batch, height, width, channels)`,
@@ -44,7 +44,7 @@ import scala.reflect.ClassTag
  */
 
 @SerialVersionUID(7173457290010080259L)
-class SReLU[T: ClassTag](shared_axes: Array[Int] = null)(
+class SReLU[T: ClassTag](sharedAxes: Array[Int] = null)(
   implicit ev: TensorNumeric[T]) extends TensorModule[T] {
   import SReLU._
   val weightsLen = 4
@@ -53,14 +53,15 @@ class SReLU[T: ClassTag](shared_axes: Array[Int] = null)(
 
   val weightsInit: Array[InitializationMethod] = Array(Zeros, Xavier, Xavier, Ones)
 
+  // this attribute for computing the offset in weight because of sharedAxes
+  private var indexes: Array[Int] = null
+
   private def init(input: Tensor[T]): Unit = {
     val shape = input.size().slice(1, input.size().length)
-    if (shared_axes != null) {
-      var i = 1
-      while (i < shape.length) {
-        if (shared_axes.contains(i)) {
-          shape(i) = 1
-        }
+    if (sharedAxes != null) {
+      var i = 0
+      while (i < sharedAxes.length) {
+        shape(sharedAxes(i) - 1) = 1
         i += 1
       }
     }
@@ -87,8 +88,23 @@ class SReLU[T: ClassTag](shared_axes: Array[Int] = null)(
     weights(tRight).abs().add(weights(tLeft))
   }
 
-  private def getValue(w: Array[Tensor[T]], i: Int, t: Int): T = {
-    w(t).storage().array()(w(t).storageOffset() - 1 + i)
+  private def getIndex(indexes: Array[Int], stride: Array[Int], ndim: Int, offset: Int): Unit = {
+    var i = 0
+    var tmp = offset
+    while (i < ndim) {
+      indexes(i) = tmp / stride(i) + 1 // 1 based
+      tmp = tmp % stride(i)
+      i += 1
+    }
+
+    // set back the shared axes
+    if (sharedAxes != null) {
+      i = 0
+      while (i < sharedAxes.length) {
+        indexes(sharedAxes(i) - 1) = 1
+        i += 1
+      }
+    }
   }
 
   private def setValue(w: Array[Tensor[T]], i: Int, t: Int, v: T): Unit = {
@@ -97,13 +113,18 @@ class SReLU[T: ClassTag](shared_axes: Array[Int] = null)(
       v)
   }
 
-
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
+    require(input.isContiguous(), s"the input of SReLU must be contiguous")
     output.resizeAs(input)
 
     // the weight's size depends on the input
     if (weights.exists(_.isEmpty)) {
       init(input)
+    }
+
+    // temp buf for indexes
+    if (indexes == null) {
+      indexes = new Array[Int](weights(tRight).nDimension())
     }
 
     var batch = 0
@@ -113,41 +134,32 @@ class SReLU[T: ClassTag](shared_axes: Array[Int] = null)(
 
       val xArr = sliceInput.storage().array()
       val yArr = sliceOutput.storage().array()
-      var yOffset = sliceOutput.storageOffset() - 1
-      var xOffset = sliceInput.storageOffset() - 1
+      val yOffset = sliceOutput.storageOffset() - 1
+      val xOffset = sliceInput.storageOffset() - 1
 
-      // if share axes array is not null, do some groups
-      val groups = sliceInput.nElement() / weights(tLeft).nElement()
+      var i = 0
+      while (i < sliceInput.nElement()) {
+        getIndex(indexes, sliceInput.stride(), sliceInput.nDimension(), i)
 
-      var g = 0
-      while (g < groups) {
-        var i = 0
-        val len = weights(tLeft).nElement()
+        val tr = weights(tRight).apply(indexes)
+        val ar = weights(aRight).apply(indexes)
+        val tl = weights(tLeft).apply(indexes)
+        val al = weights(aLeft).apply(indexes)
 
-        xOffset += (i * len)
-        yOffset += (i * len)
+        val x = xArr(xOffset + i)
 
-        while (i < len) {
-          val tr = getValue(weights, i, tRight)
-          val ar = getValue(weights, i, aRight)
-          val tl = getValue(weights, i, tLeft)
-          val al = getValue(weights, i, aLeft)
-          val x = xArr(xOffset + i)
-
-          yArr(yOffset + i) = if (ev.isGreaterEq(x, getValue(weights, i, tRight))) {
-            // right: x_i >= t_i^r
-            ev.plus(tr, ev.times(ar, ev.minus(x, tr)))
-          } else if (ev.isGreaterEq(tl, x)) {
-            // left: x_i <= t_i^l
-            ev.plus(tl, ev.times(al, ev.minus(x, tl)))
-          } else {
-            // else x_i = x_i
-            x
-          }
-
-          i += 1
+        yArr(yOffset + i) = if (ev.isGreaterEq(x, tr)) {
+          // right: x_i >= t_i^r
+          ev.plus(tr, ev.times(ar, ev.minus(x, tr)))
+        } else if (ev.isGreaterEq(tl, x)) {
+          // left: x_i <= t_i^l
+          ev.plus(tl, ev.times(al, ev.minus(x, tl)))
+        } else {
+          // else x_i = x_i
+          x
         }
-        g += 1
+
+        i += 1
       }
 
       batch += 1
@@ -156,6 +168,8 @@ class SReLU[T: ClassTag](shared_axes: Array[Int] = null)(
   }
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
+    require(input.isContiguous(), s"the input of SReLU must be contiguous")
+    require(gradOutput.isContiguous(), s"the gradOutput of SReLU must be contiguous")
     gradInput.resizeAs(input)
 
     var batch = 0
@@ -173,36 +187,26 @@ class SReLU[T: ClassTag](shared_axes: Array[Int] = null)(
       val zArr = sliceGradOutput.storage().array()
       var zOffset = sliceGradOutput.storageOffset() - 1
 
-      // if share axes array is not null, do some groups
-      val groups = sliceInput.nElement() / weights(tLeft).nElement()
+      var i = 0
 
-      var g = 0
-      while (g < groups) {
-        var i = 0
-        val len = weights(tLeft).nElement()
+      while (i < sliceGradInput.nElement()) {
+        getIndex(indexes, sliceInput.stride(), sliceInput.nDimension(), i)
 
-        xOffset += (i * len)
-        yOffset += (i * len)
-        zOffset += (i * len)
+        val tr = weights(tRight).apply(indexes)
+        val ar = weights(aRight).apply(indexes)
+        val tl = weights(tLeft).apply(indexes)
+        val al = weights(aLeft).apply(indexes)
+        val x = xArr(xOffset + i)
 
-        while (i < len) {
-          val tr = getValue(weights, i, tRight)
-          val ar = getValue(weights, i, aRight)
-          val tl = getValue(weights, i, tLeft)
-          val al = getValue(weights, i, aLeft)
-          val x = xArr(xOffset + i)
-
-          val t = if (ev.isGreaterEq(x, tr)) {
-            ev.times(ar, zArr(zOffset + i))
-          } else if (ev.isGreaterEq(tl, x)) {
-            ev.times(al, zArr(zOffset + i))
-          } else {
-            zArr(zOffset + i)
-          }
-          yArr(yOffset + i) = ev.plus(yArr(yOffset + i), t)
-          i += 1
+        val t = if (ev.isGreaterEq(x, tr)) {
+          ev.times(ar, zArr(zOffset + i))
+        } else if (ev.isGreaterEq(tl, x)) {
+          ev.times(al, zArr(zOffset + i))
+        } else {
+          zArr(zOffset + i)
         }
-        g += 1
+        yArr(yOffset + i) = ev.plus(yArr(yOffset + i), t)
+        i += 1
       }
 
       batch += 1
@@ -217,37 +221,49 @@ class SReLU[T: ClassTag](shared_axes: Array[Int] = null)(
       val sliceInput = input.select(1, batch + 1)
       val sliceGradOutput = gradOutput.select(1, batch + 1)
 
-      val x = sliceInput.storage().array()
+      val xArr = sliceInput.storage().array()
       val xOffset = sliceInput.storageOffset() - 1
 
-      val z = sliceGradOutput.storage().array()
+      val zArr = sliceGradOutput.storage().array()
       val zOffset = sliceGradOutput.storageOffset() - 1
 
       var i = 0
       while (i < sliceInput.nElement()) {
+        getIndex(indexes, sliceInput.stride(), sliceInput.nDimension(), i)
 
-        if (ev.isGreaterEq(x(xOffset + i), getValue(weights, i, tRight))) {
-          setValue(gradWeights, i, tRight, ev.times(ev.minus(ev.fromType(1),
-            getValue(weights, i, aRight)),
-            z(zOffset + i)))
-          setValue(gradWeights, i, aRight, ev.times(ev.minus(x(xOffset + i),
-            getValue(weights, i, tRight)),
-            z(zOffset + i)))
-        } else {
-          setValue(gradWeights, i, tRight, ev.fromType(0))
-          setValue(gradWeights, i, aRight, ev.fromType(0))
+        // weight offset
+        var wOffset = 0
+        var j = 0
+        while (j < indexes.length) {
+          // because indexes is 1 based, so we should minus 1 here
+          wOffset += (indexes(j) - 1) * gradWeights(tLeft).stride(j + 1)
+          j += 1
         }
 
-        if (ev.isGreaterEq(getValue(weights, i, tLeft), x(xOffset + i))) {
-          setValue(gradWeights, i, tLeft, ev.times(ev.minus(ev.fromType(1),
-            getValue(weights, i, aLeft)),
-            z(zOffset + i)))
-          setValue(gradWeights, i, aLeft, ev.times(ev.minus(x(xOffset + i),
-            getValue(weights, i, tLeft)),
-            z(zOffset + i)))
+        val tr = weights(tRight).apply(indexes)
+        val ar = weights(aRight).apply(indexes)
+        val tl = weights(tLeft).apply(indexes)
+        val al = weights(aLeft).apply(indexes)
+        val x = xArr(xOffset + i)
+
+        if (ev.isGreaterEq(x, tr)) {
+          setValue(gradWeights, wOffset, tRight, ev.times(ev.minus(ev.fromType(1), ar),
+            zArr(zOffset + i)))
+          setValue(gradWeights, wOffset, aRight, ev.times(ev.minus(x, tr),
+            zArr(zOffset + i)))
         } else {
-          setValue(gradWeights, i, tLeft, ev.fromType(0))
-          setValue(gradWeights, i, aLeft, ev.fromType(0))
+          setValue(gradWeights, wOffset, tRight, ev.fromType(0))
+          setValue(gradWeights, wOffset, aRight, ev.fromType(0))
+        }
+
+        if (ev.isGreaterEq(tl, x)) {
+          setValue(gradWeights, wOffset, tLeft, ev.times(ev.minus(ev.fromType(1), al),
+            zArr(zOffset + i)))
+          setValue(gradWeights, wOffset, aLeft, ev.times(ev.minus(xArr(xOffset + i), tl),
+            zArr(zOffset + i)))
+        } else {
+          setValue(gradWeights, wOffset, tLeft, ev.fromType(0))
+          setValue(gradWeights, wOffset, aLeft, ev.fromType(0))
         }
 
         i += 1
