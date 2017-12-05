@@ -1998,7 +1998,7 @@ val criterion = MeanSquaredLogarithmicCriterion()
 criterion = MeanSquaredLogarithmicCriterion()
 ```
 
-compute mean absolute percentage error for intput and target
+compute mean squared logarithmic error for intput and target
 
 **Scala example:**
 ```scala

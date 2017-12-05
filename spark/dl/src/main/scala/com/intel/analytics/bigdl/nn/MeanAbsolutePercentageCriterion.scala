@@ -16,15 +16,16 @@
 
 package com.intel.analytics.bigdl.nn
 
+import breeze.linalg.sum
 import com.intel.analytics.bigdl.nn.abstractnn.TensorCriterion
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.tensor.{DenseTensorApply, Tensor, TensorFunc6}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
 import scala.reflect.ClassTag
 
 /**
  * This method is same as `mean_absolute_percentage_error` loss in keras.
- * It caculates diff = K.abs((x - y) / K.clip(K.abs(x), K.epsilon(), None))
+ * It caculates diff = K.abs((x - y) / K.clip(K.abs(x), K.epsilon(), Double.MaxValue))
  * and return 100 * K.mean(diff) as outpout
  * Here, the x and y can have or not have a batch.
  * @param ev$1
@@ -63,51 +64,44 @@ class MeanAbsolutePercentageCriterion[T: ClassTag]
     buffer2.resizeAs(target).copy(target)
     gradInput.resizeAs(input).copy(input)
 
-    val bufferArray1 = buffer1.storage().array()
-    val bufferOffset1 = buffer1.storageOffset() - 1
+    val func = new TensorFunc6[T] {
+      override def apply(data1: Array[T], offset1: Int, data2: Array[T], offset2: Int,
+                         data3: Array[T], offset3: Int): Unit = {
+        val a = data1(offset1)
+        val b = data2(offset2)
 
-    val bufferArray2 = buffer2.storage().array()
-    val bufferOffset2 = buffer2.storageOffset() - 1
-
-    val gradBuffer = gradInput.storage().array()
-    val gradOffset = gradInput.storageOffset() - 1
-
-    var i = 0
-    while (i < input.nElement()) {
-      val a = bufferArray1(i + bufferOffset1)
-      val b = bufferArray2(i + bufferOffset2)
-
-      if (ev.isGreater(a, b)) { // x > y
-        if (ev.isGreaterEq(ev.abs(a), epsilon) && ev.isGreaterEq(maxValue, ev.abs(a))) {
-          if (ev.isGreater(a, ev.zero)) {
-            gradBuffer(i + gradOffset) = ev.divide(b, ev.times(a, a)) // y/x^2
+        if (ev.isGreater(a, b)) { // x > y
+          if (ev.isGreaterEq(ev.abs(a), epsilon) && ev.isGreaterEq(maxValue, ev.abs(a))) {
+            if (ev.isGreater(a, ev.zero)) {
+              data3(offset3) = ev.divide(b, ev.times(a, a)) // y/x^2
+            } else {
+              data3(offset3) = ev.divide(b, ev.times(a, a))
+              data3(offset3) = ev.times(data3(offset3), negtiveOne) // -y/x^2
+            }
+          } else if (ev.isGreater(epsilon, ev.abs(a))) {
+            data3(offset3) = ev.divide(ev.one, epsilon) // 1/epsilon
           } else {
-            gradBuffer(i + gradOffset) = ev.divide(b, ev.times(a, a)) // -y/x^2
-            gradBuffer(i + gradOffset) = ev.times(gradBuffer(i + gradOffset), negtiveOne)
+            data3(offset3) = ev.divide(ev.one, maxValue) // 1/Double.MaxValue
           }
-        } else if (ev.isGreater(epsilon, ev.abs(a))) {
-          gradBuffer(i + gradOffset) = ev.divide(ev.one, epsilon)
-        } else {
-          gradBuffer(i + gradOffset) = ev.divide(ev.one, maxValue)
-        }
-      } else if (ev.isGreater(b, a)) { // x < y
-        if (ev.isGreaterEq(ev.abs(a), epsilon) && ev.isGreaterEq(maxValue, ev.abs(a))) {
-          if (ev.isGreater(a, ev.zero)) {
-            gradBuffer(i + gradOffset) = ev.divide(b, ev.times(a, a)) // -y/x^2
-            gradBuffer(i + gradOffset) = ev.times(gradBuffer(i + gradOffset), negtiveOne)
+        } else if (ev.isGreater(b, a)) { // x < y
+          if (ev.isGreaterEq(ev.abs(a), epsilon) && ev.isGreaterEq(maxValue, ev.abs(a))) {
+            if (ev.isGreater(a, ev.zero)) {
+              data3(offset3) = ev.divide(b, ev.times(a, a))
+              data3(offset3) = ev.times(data3(offset3), negtiveOne) // -y/x^2
+            } else {
+              data3(offset3) = ev.divide(b, ev.times(a, a)) // y/x^2
+            }
+          } else if (ev.isGreater(epsilon, ev.abs(a))) {
+            data3(offset3) = ev.divide(negtiveOne, epsilon) // -1/epsilon
           } else {
-            gradBuffer(i + gradOffset) = ev.divide(b, ev.times(a, a)) // y/x^2
+            data3(offset3) = ev.divide(negtiveOne, maxValue) // -1/Double.MaxValue
           }
-        } else if (ev.isGreater(epsilon, ev.abs(a))) {
-          gradBuffer(i + gradOffset) = ev.divide(negtiveOne, epsilon)
         } else {
-          gradBuffer(i + gradOffset) = ev.divide(negtiveOne, maxValue)
+          data3(offset3) = ev.zero
         }
-      } else {
-        gradBuffer(i + gradOffset) = ev.zero
       }
-      i += 1
     }
+    DenseTensorApply.apply3(buffer1, buffer2, gradInput, func)
 
     gradInput.mul(norm)
     gradInput

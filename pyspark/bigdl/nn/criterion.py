@@ -807,7 +807,7 @@ class MeanAbsolutePercentageCriterion(Criterion):
 
     '''
     This method is same as `mean_absolute_percentage_error` loss in keras.
-    It caculates diff = K.abs((x - y) / K.clip(K.abs(x), K.epsilon(), None))
+    It caculates diff = K.abs((x - y) / K.clip(K.abs(x), K.epsilon(), Double.MaxValue))
     and return 100 * K.mean(diff) as outpout. Here, the x and y can have or not have a batch.
     >>> error = MeanAbsolutePercentageCriterion()
     creating: createMeanAbsolutePercentageCriterion
@@ -821,8 +821,8 @@ class MeanSquaredLogarithmicCriterion(Criterion):
 
     '''
     This method is same as `mean_squared_logarithmic_error` loss in keras.
-    It calculates: first_log = K.log(K.clip(y, K.epsilon(), None) + 1.)
-    second_log = K.log(K.clip(x, K.epsilon(), None) + 1.)
+    It calculates: first_log = K.log(K.clip(y, K.epsilon(),  Double.MaxValue) + 1.)
+    second_log = K.log(K.clip(x, K.epsilon(),  Double.MaxValue) + 1.)
     and output K.mean(K.square(first_log - second_log)). Here, the x and y can have or not have a batch.
     >>> error = MeanSquaredLogarithmicCriterion()
     creating: createMeanSquaredLogarithmicCriterion

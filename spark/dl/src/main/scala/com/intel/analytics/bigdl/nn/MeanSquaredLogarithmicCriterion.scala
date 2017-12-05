@@ -26,8 +26,8 @@ import scala.reflect.ClassTag
 /**
  * This method is same as `mean_squared_logarithmic_error` loss in keras.
  * It calculates:
- * first_log = K.log(K.clip(y, K.epsilon(), None) + 1.)
- * second_log = K.log(K.clip(x, K.epsilon(), None) + 1.)
+ * first_log = K.log(K.clip(y, K.epsilon(), Double.MaxValue) + 1.)
+ * second_log = K.log(K.clip(x, K.epsilon(), Double.MaxValue) + 1.)
  * and output K.mean(K.square(first_log - second_log))
  * Here, the x and y can have or not have a batch.
  * @param ev$1
@@ -56,7 +56,7 @@ class MeanSquaredLogarithmicCriterion[T: ClassTag]
 
     buffer2.apply1(e => ev.clip(e, epsilon, ev.fromType(Double.MaxValue)))
     buffer2.add(ev.one)
-    gradInput.resizeAs(buffer2).copy(buffer2) // keep result K.clip(y, K.epsilon(), None) + 1.
+    gradInput.resizeAs(buffer2).copy(buffer2) // keep result K.clip(x K.epsilon(), Double.MaxValue) + 1.
     buffer2.log()
 
     buffer1.sub(buffer2)
