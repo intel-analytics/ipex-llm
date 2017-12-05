@@ -22,6 +22,11 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import scala.io.Source
 import scala.sys.process._
 
+sealed trait MainCodeType
+object Loss extends MainCodeType
+object Layer extends MainCodeType
+object Regularizer extends MainCodeType
+
 object KerasRunner {
   // scalastyle:off
   val code_head =
@@ -88,6 +93,17 @@ object KerasRunner {
       |
     """.stripMargin
 
+  val code_for_regularizer =
+    """
+      |Y = K.get_session().run(model.losses, feed_dict={input_tensor: input})
+      |output = model.predict(input)
+      |grad_input = K.get_session().run(K.gradients(model.losses, [input_tensor]),
+      |                           feed_dict={input_tensor: input})
+      |grad_input += output # they're two branches, we should gather them.
+      |weights = []
+      |grad_weight = []
+    """.stripMargin
+
   // scalastyle:on
   private def getWeightRelate(pvalues: Map[String, Array[Float]],
                               keyName: String): Array[Tensor[Float]] = {
@@ -115,13 +131,18 @@ object KerasRunner {
   }
 
   // return: (grad_input, grad_weight, weights, input, target, output)
-  def run(code: String, is_loss: Boolean = false): (Tensor[Float], Array[Tensor[Float]],
+  def run(code: String, codeType: MainCodeType = Layer): (Tensor[Float], Array[Tensor[Float]],
     Array[Tensor[Float]], Tensor[Float], Tensor[Float], Tensor[Float]) = {
     val pcodeFile = java.io.File.createTempFile("UnitTest", "keras")
     val writer = new PrintWriter(pcodeFile)
     writer.write(code_head)
     writer.write(code)
-    writer.write(if (is_loss) {code_for_loss} else {code_for_layer})
+    writer.write(
+      codeType match {
+        case Layer => code_for_layer
+        case Loss => code_for_loss
+        case Regularizer => code_for_regularizer
+      })
     writer.write(code_for_save)
     writer.close()
     val pcodeFileAbsPath = pcodeFile.getAbsolutePath
