@@ -199,6 +199,7 @@ object ModuleSerializer extends ModuleSerializable{
     registerModule("com.intel.analytics.bigdl.nn.quantized.Linear",
       quantized.Linear)
     registerModule("com.intel.analytics.bigdl.nn.ops.ParseExample", ParseExample)
+    registerModule("com.intel.analytics.bigdl.nn.SReLU", SReLU)
   }
 }
 
