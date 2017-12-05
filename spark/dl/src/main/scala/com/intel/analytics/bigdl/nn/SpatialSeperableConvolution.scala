@@ -64,15 +64,15 @@ class SpatialSeperableConvolution[T: ClassTag](
   private val channelDim = if (dataFormat == DataFormat.NCHW) 2 else 4
 
   private val depthWeight = if (dataFormat == DataFormat.NCHW) {
-    Tensor[T](nInputChannel, 1, kW, kH)
+    Tensor[T](depthMultiplier, nInputChannel, kW, kH)
   } else {
-    Tensor[T](kW, kH, nInputChannel, 1)
+    Tensor[T](kW, kH, nInputChannel, depthMultiplier)
   }
 
   private val depthGradWeight = Tensor[T].resizeAs(depthWeight)
 
   private val pointWeight = if (dataFormat == DataFormat.NCHW) {
-    Tensor[T](internalChannel, nOutputChannel, 1, 1)
+    Tensor[T](nOutputChannel, internalChannel, 1, 1)
   } else {
     Tensor[T](1, 1, internalChannel, nOutputChannel)
   }
@@ -83,24 +83,20 @@ class SpatialSeperableConvolution[T: ClassTag](
 
   private val gradBias = Tensor[T].resizeAs(bias)
 
-  private val weightInputChannelDim = if (dataFormat == DataFormat.NCHW) 1 else 3
-
-  private val conv2Ds = (1 to nInputChannel).map(i =>
-    SpatialConvolution[T](
-      nInputPlane = 1,
-      nOutputPlane = depthMultiplier,
-      kernelW = kW,
-      kernelH = kH,
-      strideW = sW,
-      strideH = sH,
-      padW = pW,
-      padH = pH,
-      wRegularizer = wRegularizer,
-      bRegularizer = null,
-      withBias = false,
-      format = dataFormat
-    )
-  ).toArray
+  private val depthConv = SpatialConvolution[T](
+    nInputPlane = nInputChannel,
+    nOutputPlane = internalChannel,
+    kernelW = kW,
+    kernelH = kH,
+    strideW = sW,
+    strideH = sH,
+    padW = pW,
+    padH = pH,
+    wRegularizer = wRegularizer,
+    bRegularizer = null,
+    withBias = false,
+    format = dataFormat
+  )
 
   private val pointWiseConv2D = SpatialConvolution[T](
     nInputPlane = internalChannel,
@@ -121,26 +117,7 @@ class SpatialSeperableConvolution[T: ClassTag](
     initGradBias = gradBias
   )
 
-  private val splitTable = SplitTable[T](channelDim, -1, true, true).inputs()
-
-  private val joinTable = JoinTable[T](channelDim, -1)
-
-  private val graph = {
-    val depthWiseOutputs = conv2Ds.zipWithIndex.map { case (n, i) =>
-      n.inputs((splitTable, i + 1))
-    }
-    val join = joinTable.inputs(depthWiseOutputs)
-    val outputNode = pointWiseConv2D.inputs(join)
-
-    Graph[T](splitTable, outputNode)
-  }
-
   override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
-    conv2Ds.zipWithIndex.map{
-      case (m, i) =>
-        depthWeight.narrow(weightInputChannelDim, i + 1, 1).copy(m.weight)
-        depthGradWeight.narrow(weightInputChannelDim, i + 1, 1).copy(m.gradWeight)
-    }
     (Array(depthWeight, pointWeight, bias), Array(depthGradWeight, pointGradWeight, gradBias))
   }
 
@@ -149,7 +126,22 @@ class SpatialSeperableConvolution[T: ClassTag](
     require(input.isContiguous(), "SpatialSeperableConvolution require contiguous input")
     require(nInputChannel == input.size(channelDim),
       "input tensor channel dimension size doesn't match layer nInputChannel")
-    output = graph.forward(input).asInstanceOf[Tensor[T]]
+
+    // Copy weight
+    depthConv.weight.zero()
+    var in = 0
+    while(in < input.size(channelDim)) {
+      var out = 0
+      while(out < depthMultiplier) {
+        depthConv.weight.select(4, in + 1).select(4, in * depthMultiplier + out + 1)
+          .copy(depthWeight.select(3, in + 1).select(3, out + 1))
+        out += 1
+      }
+      in += 1
+    }
+
+    depthConv.forward(input)
+    output = pointWiseConv2D.forward(depthConv.output)
     output
   }
 
@@ -164,7 +156,9 @@ class SpatialSeperableConvolution[T: ClassTag](
     require(nOutputChannel == gradOutput.size(channelDim),
       "gradOutput tensor channel dimension size doesn't match layer nOutputChannel")
 
-    gradInput = graph.backward(input, gradOutput).asInstanceOf[Tensor[T]]
+    pointWiseConv2D.backward(depthConv.output, gradOutput)
+    gradInput = depthConv.backward(input, pointWiseConv2D.gradInput)
+    copyDepthGradWeight()
     gradInput
   }
 
@@ -179,7 +173,8 @@ class SpatialSeperableConvolution[T: ClassTag](
     require(nOutputChannel == gradOutput.size(channelDim),
       "gradOutput tensor channel dimension size doesn't match layer nOutputChannel")
 
-    gradInput = graph.updateGradInput(input, gradOutput).asInstanceOf[Tensor[T]]
+    pointWiseConv2D.updateGradInput(depthConv.output, gradOutput)
+    gradInput = depthConv.updateGradInput(input, pointWiseConv2D.gradInput)
     gradInput
   }
 
@@ -194,7 +189,22 @@ class SpatialSeperableConvolution[T: ClassTag](
     require(nOutputChannel == gradOutput.size(channelDim),
       "gradOutput tensor channel dimension size doesn't match layer nOutputChannel")
 
-    graph.accGradParameters(input, gradOutput).asInstanceOf[Tensor[T]]
+    pointWiseConv2D.accGradParameters(depthConv.output, gradOutput)
+    depthConv.accGradParameters(input, pointWiseConv2D.gradInput)
+    copyDepthGradWeight()
+  }
+
+  private def copyDepthGradWeight(): Unit = {
+    var in = 0
+    while(in < nInputChannel) {
+      var out = 0
+      while(out < depthMultiplier) {
+        depthGradWeight.select(3, in + 1).select(3, out + 1)
+          .copy(depthConv.gradWeight.select(4, in + 1).select(4, in * depthMultiplier + out + 1))
+        out += 1
+      }
+      in += 1
+    }
   }
 }
 

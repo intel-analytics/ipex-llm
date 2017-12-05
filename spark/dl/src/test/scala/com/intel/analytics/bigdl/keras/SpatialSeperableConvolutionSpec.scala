@@ -23,12 +23,25 @@ class SpatialSeperableConvolutionSpec extends KerasBaseSpec {
     ifskipTest()
     val kerasCode =
       """
-        |input_tensor = Input(shape=[28, 28, 3])
-        |output_tensor = SeparableConv2D(6, (3, 3))(input_tensor)
+        |input_tensor = Input(shape=[5, 5, 2])
+        |output_tensor = SeparableConv2D(2, (2, 2))(input_tensor)
         |model = Model(input=input_tensor, output=output_tensor)
-        |input = np.random.uniform(0, 1, [4, 28, 28, 3])
+        |input = np.random.uniform(0, 1, [2, 5, 5, 2])
       """.stripMargin
-    val layer = SpatialSeperableConvolution[Float](3, 6, 1, 3, 3, dataFormat = DataFormat.NHWC)
+    val layer = SpatialSeperableConvolution[Float](2, 2, 1, 2, 2, dataFormat = DataFormat.NHWC)
+    checkOutputAndGrad(layer, kerasCode)
+  }
+
+  "SpatialSeperableConvolution" should "be ok when depth multipler is not 1" in {
+    ifskipTest()
+    val kerasCode =
+      """
+        |input_tensor = Input(shape=[5, 5, 2])
+        |output_tensor = SeparableConv2D(4, (2, 2), depth_multiplier=2)(input_tensor)
+        |model = Model(input=input_tensor, output=output_tensor)
+        |input = np.random.uniform(0, 1, [2, 5, 5, 2])
+      """.stripMargin
+    val layer = SpatialSeperableConvolution[Float](2, 4, 2, 2, 2, dataFormat = DataFormat.NHWC)
     checkOutputAndGrad(layer, kerasCode)
   }
 }
