@@ -3251,6 +3251,65 @@ class ReLU6(Layer):
         super(ReLU6, self).__init__(None, bigdl_type,
                                     inplace)
 
+class SReLU(Layer):
+
+    '''S-shaped Rectified Linear Unit.
+
+    It follows:
+    `f(x) = t^r + a^r(x - t^r) for x >= t^r`,
+    `f(x) = x for t^r > x > t^l`,
+    `f(x) = t^l + a^l(x - t^l) for x <= t^l`.
+
+    # References
+        - [Deep Learning with S-shaped Rectified Linear Activation Units](http://arxiv.org/abs/1512.07030)
+
+
+
+    :param shared_axes: the axes along which to share learnable
+            parameters for the activation function.
+            For example, if the incoming feature maps
+            are from a 2D convolution
+            with output shape `(batch, height, width, channels)`,
+            and you wish to share parameters across space
+            so that each filter only has one set of parameters,
+            set `shared_axes=[1, 2]`.
+
+    >>> srelu = SReLU()
+    creating: createSReLU
+    >>> srelu = SReLU((1, 2))
+    creating: createSReLU
+    '''
+
+    def __init__(self,
+                 share_axes=None,
+                 bigdl_type="float"):
+        super(SReLU, self).__init__(None, bigdl_type,
+                                    share_axes)
+
+    def set_init_method(self, tLeftInit = None, aLeftInit = None,
+                        tRightInit = None, aRightInit = None):
+        callBigDlFunc(self.bigdl_type, "setInitMethod", self.value,
+                      tLeftInit, aLeftInit, tRightInit, aRightInit)
+        return self
+
+class ActivityRegularization(Layer):
+
+    '''
+    Layer that applies an update to the cost function based input activity.
+
+    :param l1: L1 regularization factor (positive float).
+    :param l2: L2 regularization factor (positive float).
+
+
+    >>> ar = ActivityRegularization(0.1, 0.02)
+    creating: createActivityRegularization
+    '''
+
+    def __init__(self,
+                 l1=0.0,
+                 l2=0.0,
+                 bigdl_type="float"):
+        super(ActivityRegularization, self).__init__(None, bigdl_type, l1, l2)
 
 class Replicate(Layer):
 
