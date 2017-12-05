@@ -67,13 +67,9 @@ class FusedBatchNormGrad[T: ClassTag](
     val gradWeight = output[Tensor[Float]](2)
     val gradBias = output[Tensor[Float]](3)
 
-    if (isTraining) {
-      SpatialBatchNormalization.updateGradInputNHWCTrainFloat(
-        x, gradOutput, gradInput, scale, saveMean, saveStd, gMean, gxMean)
-    } else {
-      SpatialBatchNormalization.updateGradInputNHWCInferFloat(
-        gradOutput, gradInput, scale, saveStd)
-    }
+    SpatialBatchNormalization.updateGradInputNHWCTrainFloat(
+      x, gradOutput, gradInput, scale, saveMean, saveStd, gMean, gxMean)
+
     gradWeight.zero()
     gradBias.zero()
     SpatialBatchNormalization.accGradientNHWCFloat(
