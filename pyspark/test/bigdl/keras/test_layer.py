@@ -537,7 +537,7 @@ class TestLayer(BigDLTestCase):
         input_data = np.random.random([3, 4, 5])
         layer = SimpleRNN(5, input_shape=(4, 5), return_sequences=True)
         self.modelTestSingleLayer(input_data, layer, dump_weights=True)
-        layer2 = SimpleRNN(3, input_shape=(4, 5), return_sequences=False)
+        layer2 = SimpleRNN(3, input_shape=(4, 5), go_backwards=True)
         self.modelTestSingleLayer(input_data, layer2, dump_weights=True)
         layer3 = SimpleRNN(3, input_shape=(4, 5), activation='relu')
         self.modelTestSingleLayer(input_data, layer3, dump_weights=True)
@@ -546,27 +546,28 @@ class TestLayer(BigDLTestCase):
         input_data = np.random.random([3, 4, 5])
         layer = LSTM(5, input_shape=(4, 5), return_sequences=True)
         self.modelTestSingleLayer(input_data, layer, dump_weights=True)
-        layer2 = LSTM(3, input_shape=(4, 5), return_sequences=False,
+        layer2 = LSTM(3, input_shape=(4, 5), go_backwards=True,
                       activation='relu', inner_activation='sigmoid')
         self.modelTestSingleLayer(input_data, layer2, dump_weights=True)
 
     def test_convlstm2d(self):
         input_data = np.random.random_sample([4, 8, 40, 40, 32])
         layer = ConvLSTM2D(32, 4, 4, input_shape=(8, 40, 40, 32),
-                           return_sequences=True, border_mode='same')
-        self.modelTestSingleLayer(input_data, layer, dump_weights=True, random_weights=True)
+                           border_mode='same', go_backwards=True)
+        self.modelTestSingleLayer(input_data, layer, dump_weights=True)
         layer2 = ConvLSTM2D(32, 4, 4, input_shape=(8, 40, 40, 32), return_sequences=True,
                             activation='relu', inner_activation='sigmoid', border_mode='same')
-        self.modelTestSingleLayer(input_data, layer2, dump_weights=True,
-                                  random_weights=True, rtol=1e-5, atol=1e-5)
+        self.modelTestSingleLayer(input_data, layer2, dump_weights=True, rtol=1e-5, atol=1e-5)
 
     def test_gru(self):
         input_data = np.random.random([3, 4, 5])
         layer = GRU(4, input_shape=(4, 5), return_sequences=True)
         self.modelTestSingleLayer(input_data, layer, dump_weights=True)
-        layer2 = GRU(8, input_shape=(4, 5), return_sequences=False,
+        layer2 = GRU(8, input_shape=(4, 5), go_backwards=True,
                      activation='relu', inner_activation='sigmoid')
         self.modelTestSingleLayer(input_data, layer2, dump_weights=True)
+        layer3 = GRU(512, input_shape=(4, 5), go_backwards=True, return_sequences=True)
+        self.modelTestSingleLayer(input_data, layer3, dump_weights=True)
 
     # TODO: Support share weights training.
     def test_multiple_inputs_share_weights(self):
@@ -587,6 +588,36 @@ class TestLayer(BigDLTestCase):
             def_path, w_path = self._dump_keras(model2)
             bigdl_model = DefinitionLoader.from_json_path(def_path)
         assert str(excinfo.value) == """Convolution2D doesn't support multiple inputs with shared weights"""  # noqa
+
+    def test_wrapper_timedistributed(self):
+        input_data = np.random.random_sample([3, 32, 64])
+        layer = TimeDistributed(Dense(6), input_shape=(32, 64))
+        self.modelTestSingleLayer(input_data, layer, dump_weights=True)
+
+        input_data2 = np.random.random_sample([2, 10, 3, 32, 32])
+        layer2 = TimeDistributed(Convolution2D(64, 3, 3), input_shape=(10, 3, 32, 32))
+        self.modelTestSingleLayer(input_data2, layer2, dump_weights=True)
+
+    def test_wrapper_bidirectional(self):
+        input_data = np.random.random([5, 32, 64])
+        layer = Bidirectional(SimpleRNN(12, return_sequences=True),
+                              input_shape=(32, 64))
+        self.modelTestSingleLayer(input_data, layer, dump_weights=True)
+        layer2 = Bidirectional(LSTM(8, return_sequences=True),
+                               input_shape=(32, 64), merge_mode='sum')
+        self.modelTestSingleLayer(input_data, layer2, dump_weights=True)
+        layer3 = Bidirectional(GRU(12, return_sequences=True),
+                               input_shape=(32, 64), merge_mode='mul')
+        self.modelTestSingleLayer(input_data, layer3, dump_weights=True)
+        layer4 = Bidirectional(LSTM(64, return_sequences=True),
+                               input_shape=(32, 64))
+        self.modelTestSingleLayer(input_data, layer4, dump_weights=True)
+
+        input_data2 = np.random.random_sample([4, 8, 40, 40, 32])
+        layer5 = Bidirectional(ConvLSTM2D(32, 4, 4, border_mode='same',
+                                          return_sequences=True),
+                               input_shape=(8, 40, 40, 32), merge_mode='ave')
+        self.modelTestSingleLayer(input_data2, layer5, dump_weights=True)
 
 
 if __name__ == "__main__":
