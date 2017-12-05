@@ -414,9 +414,9 @@ object MiniBatch {
   }
 
   private[bigdl] def copy[T: ClassTag](
-                                        samples: Seq[TableSample[T]],
-                                        miniBatch: TableMiniBatch[T],
-                                        unlabeled: Boolean)(implicit ev: TensorNumeric[T]): MiniBatch[T] = {
+         samples: Seq[TableSample[T]],
+         miniBatch: TableMiniBatch[T],
+         unlabeled: Boolean)(implicit ev: TensorNumeric[T]): MiniBatch[T] = {
     val inputs = miniBatch.inputData
     val targets = miniBatch.targetData
 
@@ -711,19 +711,25 @@ class TableMiniBatch[T: ClassTag](
     this
   }
 
-  override def size(): Int = batchSize
+  override def size(): Int = {
+    if (inputData[Tensor[NumericWildCard]](1).nElement() == 0) {
+      0
+    } else {
+      inputData[Tensor[NumericWildCard]](1).size(1)
+    }
+  }
 
   override def slice(offset: Int, length: Int): MiniBatch[T] = {
     val inputs = T()
     val targets = T()
-    var b = 0
-    while(b < inputData.length()) {
-      inputs(b) = inputData[Tensor[NumericWildCard]](b).narrow(1, offset, length)
+    var b = 1
+    while(b <= nInputs) {
+      inputs.insert(b, inputData[Tensor[NumericWildCard]](b).narrow(1, offset, length))
       b += 1
     }
-    b = 0
-    while(b < targetData.length()) {
-      targets(b) = targetData[Tensor[NumericWildCard]](b).narrow(1, offset, length)
+    b = 1
+    while(b <= nTargets) {
+      targets.insert(b, targetData[Tensor[NumericWildCard]](b).narrow(1, offset, length))
       b += 1
     }
 
