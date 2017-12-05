@@ -446,7 +446,7 @@ class BigDLSessionImpl[T: ClassTag](graph: Seq[NodeDef], context: Context[T],
               iter.next()
             }
 
-          val batch = tables.map(_.toSeq)
+          val batch = tables.map(_.toSeq[Tensor[T]])
           val firstSeq = batch.head
           val sizes = firstSeq.map { tensor =>
             val nDim = tensor.nDimension()
@@ -732,7 +732,7 @@ object BigDLSessionImpl {
   private def toSample[T: ClassTag](rdd: RDD[Table])
                            (implicit ev: TensorNumeric[T]): RDD[Sample[T]] = {
     rdd.map{ t =>
-      val arr = t.toSeq[T].toArray
+      val arr = t.toSeq[Tensor[T]].toArray
       Sample[T](arr)
     }
   }
