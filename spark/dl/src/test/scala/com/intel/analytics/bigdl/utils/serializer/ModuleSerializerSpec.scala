@@ -1511,7 +1511,8 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     val input2 = Tensor()
     input2.resizeAs(input1).copy(input1)
     val res1 = spatialAveragePooling.forward(input1)
-    ModulePersister.saveToFile("/tmp/spatialAveragePooling.bigdl", null, spatialAveragePooling, true)
+    ModulePersister.saveToFile("/tmp/spatialAveragePooling.bigdl",
+      null, spatialAveragePooling, true)
     val loadedSpatialAveragePooling = ModuleLoader.loadFromFile("/tmp/spatialAveragePooling.bigdl")
     val res2 = loadedSpatialAveragePooling.forward(input2)
     res1 should be (res2)
@@ -1536,7 +1537,8 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     val input2 = Tensor()
     input2.resizeAs(input1).copy(input1)
     val res1 = spatialContrastiveNorm.forward(input1)
-    ModulePersister.saveToFile("/tmp/spatialContrastiveNorm.bigdl", null, spatialContrastiveNorm, true)
+    ModulePersister.saveToFile("/tmp/spatialContrastiveNorm.bigdl",
+      null, spatialContrastiveNorm, true)
     RNG.setSeed(100)
     val loadedSpatialContrastiveNorm = ModuleLoader.
       loadFromFile("/tmp/spatialContrastiveNorm.bigdl")
@@ -1563,7 +1565,8 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     val input2 = Tensor()
     input2.resizeAs(input1).copy(input1)
     val res1 = spatialConvolutionMap.forward(input1)
-    ModulePersister.saveToFile("/tmp/spatialConvolutionMap.bigdl", null, spatialConvolutionMap, true)
+    ModulePersister.saveToFile("/tmp/spatialConvolutionMap.bigdl",
+      null, spatialConvolutionMap, true)
     val loadedSpatialConvolutionMap = ModuleLoader.
       loadFromFile("/tmp/spatialConvolutionMap.bigdl")
     val res2 = loadedSpatialConvolutionMap.forward(input2)
@@ -1879,7 +1882,8 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     input2.copy(input1)
     val res1 = volumetricConvolution.forward(input1)
 
-    ModulePersister.saveToFile("/tmp/volumetricConvolution.bigdl", null, volumetricConvolution, true)
+    ModulePersister.saveToFile("/tmp/volumetricConvolution.bigdl",
+      null, volumetricConvolution, true)
     val loadedVolumetricConvolution = ModuleLoader.loadFromFile("/tmp/volumetricConvolution.bigdl")
     val res2 = loadedVolumetricConvolution.forward(input1)
     res1 should be (res2)
