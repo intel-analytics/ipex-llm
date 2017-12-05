@@ -78,6 +78,10 @@ private[ml] trait DLParams[@specialized(Float, Double) T] extends HasFeaturesCol
 
   setDefault(batchSize -> 1)
 
+  /**
+   * Validate if feature and label columns are of supported data types.
+   * Default: 0
+   */
   protected def validateDataType(schema: StructType, colName: String): Unit = {
     val dataTypes = Seq(
       new ArrayType(DoubleType, false),
@@ -95,6 +99,10 @@ private[ml] trait DLParams[@specialized(Float, Double) T] extends HasFeaturesCol
         s"${dataTypes.mkString("[", ", ", "]")} but was actually of type $actualDataType.")
   }
 
+  /**
+   * Get conversion function to extract data from original DataFrame
+   * Default: 0
+   */
   protected def getConvertFunc(colType: DataType): (Row, Int) => Seq[AnyVal] = {
     colType match {
       case ArrayType(DoubleType, false) =>
@@ -203,8 +211,7 @@ class DLEstimator[@specialized(Float, Double) T: ClassTag](
       }
       (feature, label)
     }.map { case (feature, label) =>
-      val fArr = feature.toArray
-      Sample(Tensor(fArr, featureSize), Tensor(label.toArray, labelSize))
+      Sample(Tensor(feature.toArray, featureSize), Tensor(label.toArray, labelSize))
     }
 
     if(!isDefined(optimMethod)) {
@@ -269,8 +276,6 @@ class DLModel[@specialized(Float, Double) T: ClassTag](
 
   /**
    * Perform a prediction on featureCol, and write result to the predictionCol.
-   * @param dataFrame featureData in the format of Seq
-   * @return output DataFrame
    */
   protected override def internalTransform(dataFrame: DataFrame): DataFrame = {
     val featureType = dataFrame.schema($(featuresCol)).dataType
