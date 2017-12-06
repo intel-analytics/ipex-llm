@@ -66,6 +66,13 @@ abstract class Optimizer[T: ClassTag, D](
   protected var computeThresholdbatchSize: Int = 100
   protected var warmupIterationNum: Int = 200
 
+  protected var constantClippingEnable: Boolean = false
+  protected var minValueClip: Double = 0.0
+  protected var maxValueClip: Double = 0.0
+
+  protected var globalNorm2ClippingEnable: Boolean = false
+  protected var clipNormThreshold: Double = 0.0
+
   /**
    * Trigger the optimization process
    * @return the model to be trained
@@ -337,6 +344,32 @@ abstract class Optimizer[T: ClassTag, D](
   }
 
   def prepareInput(): Unit = {}
+
+  /**
+    * Set constant gradient clipping
+    * @param min the minimum value to clip by
+    * @param max the maximum value to clip by
+    * @return
+    */
+  def setConstantGradientClipping(min: Double, max: Double)
+  : this.type = {
+    this.constantClippingEnable = true
+    this.minValueClip = min
+    this.maxValueClip = max
+    this
+  }
+
+  /**
+    * Clip gradient to a maximum L2-norm
+    * @param clipNorm gradient L2-Norm threshold
+    * @return
+    */
+  def setGradientClippingByNorm(clipNorm: Double)
+  : this.type = {
+    this.globalNorm2ClippingEnable = true
+    this.clipNormThreshold = clipNorm
+    this
+  }
 }
 
 object Optimizer {
