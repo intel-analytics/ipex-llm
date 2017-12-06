@@ -102,7 +102,5 @@ class TestPickler():
         back = back.toPy()
         assert back.value[0][0].shape == (2, 3)
 
-
-
 if __name__ == "__main__":
     pytest.main([__file__])
