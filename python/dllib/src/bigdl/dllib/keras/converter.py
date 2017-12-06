@@ -221,6 +221,14 @@ class WeightsConverter:
         w4 = weights[7].T
         return [w1, w2, w3, w4]
 
+    @staticmethod
+    def convert_maxoutdense(weights):
+        k_weights = weights[0]
+        b_weights = k_weights[0].T
+        for i in range(1, k_weights.shape[0]):
+            b_weights = np.concatenate((b_weights, k_weights[i].T))        
+        return [b_weights, weights[1]]
+
 
 class DefinitionLoader:
 
