@@ -785,6 +785,24 @@ class L1Cost(Criterion):
                  bigdl_type="float"):
         super(L1Cost, self).__init__(None, bigdl_type)
 
+class CosineProximityCriterion(Criterion):
+
+    '''
+    compute the negative of the mean cosine proximity between predictions and targets.
+```
+   x'(i) = x(i) / sqrt(max(sum(x(i)^2), 1e-12))
+   y'(i) = y(i) / sqrt(max(sum(x(i)^2), 1e-12))
+   cosine_proximity(x, y) = sum_i(-1 * x'(i) * y'(i))
+```
+
+    >>> cosineProximityCriterion = CosineProximityCriterion()
+    creating: createCosineProximityCriterion
+    '''
+
+    def __init__(self,
+                 bigdl_type="float"):
+        super(CosineProximityCriterion, self).__init__(None, bigdl_type)
+
 def _test():
     import doctest
     from pyspark import SparkContext

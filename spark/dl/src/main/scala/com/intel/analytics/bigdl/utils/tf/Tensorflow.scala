@@ -461,6 +461,10 @@ object Tensorflow {
     AttrValue.newBuilder().setI(value).build()
   }
 
+  private[bigdl] def floatAttr(value: Float): AttrValue = {
+    AttrValue.newBuilder().setF(value).build()
+  }
+
   private[bigdl] def listIntAttr(value: Seq[Int]): AttrValue = {
     val list = ListValue.newBuilder()
     value.foreach(list.addI(_))

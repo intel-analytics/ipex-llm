@@ -9,7 +9,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>dist-spark-${spark.version}-scala-${scala.version}-${os-flag}</artifactId>
+    <artifactId>dist-spark-${spark.version}-scala-${scala.version}-${dist-os-name}</artifactId>
     <packaging>jar</packaging>
 
     <build>
@@ -40,7 +40,7 @@
                             <goal>single</goal>
                         </goals>
                         <configuration>
-                            <finalName>bigdl-${project.version}-spark-${spark.version}-scala-${scala.version}-${os-flag}</finalName>
+                            <finalName>bigdl-${project.version}-spark-${spark.version}-scala-${scala.version}-${dist-os-name}</finalName>
                             <descriptors>
                                 <descriptor>assembly/dist.xml</descriptor>
                             </descriptors>

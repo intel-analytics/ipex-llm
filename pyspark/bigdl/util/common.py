@@ -118,6 +118,13 @@ def get_dtype(bigdl_type):
     # Always return float32 for now
     return "float32"
 
+
+class JActivity(object):
+
+    def __init__(self, value):
+        self.value = value
+
+
 class JTensor(object):
     """
     A wrapper to easy our work when need to pass or return Tensor to/from Scala.
@@ -262,7 +269,7 @@ class Sample(object):
         """
         User should always use Sample.from_ndarray to construct Sample.
         :param features: a list of JTensors
-        :param label: a JTensor
+        :param label: a list of JTensors
         :param bigdl_type: "double" or "float"
         """
         self.features = features
@@ -274,7 +281,7 @@ class Sample(object):
         """
         Convert a ndarray of features and label to Sample, which would be used in Java side.
         :param features: an ndarray or a list of ndarrays
-        :param label: an ndarray or a scalar
+        :param label: an ndarray or a list of ndarrays or a scalar
         :param bigdl_type: "double" or "float"
 
         >>> import numpy as np
@@ -284,22 +291,27 @@ class Sample(object):
         >>> sample = Sample.from_ndarray(np.random.random((2,3)), np.random.random((2,3)))
         >>> sample_back = callBigDlFunc("float", "testSample", sample)
         >>> assert_allclose(sample.features[0].to_ndarray(), sample_back.features[0].to_ndarray())
-        >>> assert_allclose(sample.label.to_ndarray(), sample_back.label.to_ndarray())
+        >>> assert_allclose(sample.label[0].to_ndarray(), sample_back.label[0].to_ndarray())
         >>> print(sample)
         Sample: features: [JTensor: storage: [[ 0.69646919  0.28613934  0.22685145]
-         [ 0.55131477  0.71946895  0.42310646]], shape: [2 3], float], label: JTensor: storage: [[ 0.98076421  0.68482971  0.48093191]
-         [ 0.39211753  0.343178    0.72904968]], shape: [2 3], float,
+         [ 0.55131477  0.71946895  0.42310646]], shape: [2 3], float], label: [JTensor: storage: [[ 0.98076421  0.68482971  0.48093191]
+         [ 0.39211753  0.343178    0.72904968]], shape: [2 3], float],
         """
         if isinstance(features, np.ndarray):
             features = [features]
         else:
             assert all(isinstance(feature, np.ndarray) for feature in features), \
                 "features should be a list of np.ndarray, not %s" % type(features)
-        if not isinstance(label, np.ndarray): # in case label is a scalar.
-            label = np.array(label)
+        if np.isscalar(label):  # in case label is a scalar.
+            label = [np.array(label)]
+        elif isinstance(label, np.ndarray):
+            label = [label]
+        else:
+            assert all(isinstance(l, np.ndarray) for l in label), \
+                "label should be a list of np.ndarray, not %s" % type(label)
         return cls(
             features=[JTensor.from_ndarray(f) for f in features],
-            label=JTensor.from_ndarray(label),
+            label=[JTensor.from_ndarray(l) for l in label],
             bigdl_type=bigdl_type)
 
     @classmethod
@@ -362,7 +374,8 @@ _picklable_classes = [
     'LabeledPoint',
     'Sample',
     'EvaluatedResult',
-    'JTensor'
+    'JTensor',
+    'JActivity'
 ]
 
 
@@ -406,7 +419,7 @@ def get_bigdl_conf():
                     if sys.version_info >= (3,):
                         content = str(content, 'latin-1')
                     return load_conf(content)
-    raise Exception("Cannot find spark-bigdl.conf.Pls add it to PYTHONPATH.")
+    return {}
 
 
 def to_list(a):
@@ -437,13 +450,21 @@ def get_spark_context(conf = None):
     :return: SparkContext
     """
     if hasattr(SparkContext, "getOrCreate"):
-        return SparkContext.getOrCreate(conf=conf or create_spark_conf())
+        with SparkContext._lock:
+            if SparkContext._active_spark_context is None:
+                spark_conf = create_spark_conf() if conf is None else conf
+                return SparkContext.getOrCreate(spark_conf)
+            else:
+                return SparkContext.getOrCreate()
+
     else:
         # Might have threading issue but we cann't add _lock here
         # as it's not RLock in spark1.5;
         if SparkContext._active_spark_context is None:
-            SparkContext(conf=conf or create_spark_conf())
-        return SparkContext._active_spark_context
+            spark_conf = create_spark_conf() if conf is None else conf
+            return SparkContext(conf=spark_conf)
+        else:
+            return SparkContext._active_spark_context
 
 
 def get_spark_sql_context(sc):
@@ -472,6 +493,9 @@ def _java2py(sc, r, encoding="bytes"):
             return RDD(jrdd, sc)
 
         if clsName == 'DataFrame':
+            return DataFrame(r, get_spark_sql_context(sc))
+
+        if clsName == 'Dataset':
             return DataFrame(r, get_spark_sql_context(sc))
 
         if clsName in _picklable_classes:
@@ -536,11 +560,40 @@ def _py2java(sc, obj):
         obj = sc._jvm.org.apache.spark.bigdl.api.python.BigDLSerDe.loads(data)
     return obj
 
+
 def create_tmp_path():
     tmp_file = tempfile.NamedTemporaryFile(prefix="bigdl")
     tmp_file.close()
     return tmp_file.name
 
+
+def get_activation_by_name(activation_name, activation_id=None):
+    """ Convert to a bigdl activation layer
+        given the name of the activation as a string  """
+    import bigdl.nn.layer as BLayer
+    activation = None
+    activation_name = activation_name.lower()
+    if activation_name == "tanh":
+        activation = BLayer.Tanh()
+    elif activation_name == "sigmoid":
+        activation = BLayer.Sigmoid()
+    elif activation_name == "hard_sigmoid":
+        activation = BLayer.HardSigmoid()
+    elif activation_name == "relu":
+        activation = BLayer.ReLU()
+    elif activation_name == "softmax":
+        activation = BLayer.SoftMax()
+    elif activation_name == "softplus":
+        activation = BLayer.SoftPlus(beta=1.0)
+    elif activation_name == "softsign":
+        activation = BLayer.SoftSign()
+    elif activation_name == "linear":
+        activation = BLayer.Identity()
+    else:
+        raise Exception("Unsupported activation type: %s" % activation_name)
+    if not activation_id:
+        activation.set_name(activation_id)
+    return activation
 
 def _test():
     import doctest

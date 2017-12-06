@@ -30,9 +30,8 @@ class TestDLClassifer():
         """ setup any state tied to the execution of the given method in a
         class.  setup_method is invoked for every test method of a class.
         """
-        sparkConf = create_spark_conf()
-        self.sc = SparkContext(master="local[1]", appName="test model",
-                               conf=sparkConf)
+        sparkConf = create_spark_conf().setMaster("local[1]").setAppName("test model")
+        self.sc = get_spark_context(sparkConf)
         self.sqlContext = SQLContext(self.sc)
         init_engine()
 
@@ -126,7 +125,9 @@ class TestDLClassifer():
         df = self.sqlContext.createDataFrame(data, schema)
         dlModel = estimator.fit(df)
 
-        dlModel.transform(df).registerTempTable("dlModelDF")  # Compatible with spark 1.6
+        res = dlModel.transform(df)
+        assert type(res).__name__ == 'DataFrame'
+        res.registerTempTable("dlModelDF")  # Compatible with spark 1.6
         results = self.sqlContext.table("dlModelDF")
 
         count = results.rdd.count()
@@ -155,7 +156,9 @@ class TestDLClassifer():
         df = self.sqlContext.createDataFrame(data, schema)
         dlClassifierModel = classifier.fit(df)
 
-        dlClassifierModel.transform(df).registerTempTable("dlClassifierModelDF")
+        res = dlClassifierModel.transform(df)
+        assert type(res).__name__ == 'DataFrame'
+        res.registerTempTable("dlClassifierModelDF")
         results = self.sqlContext.table("dlClassifierModelDF")
 
         count = results.rdd.count()

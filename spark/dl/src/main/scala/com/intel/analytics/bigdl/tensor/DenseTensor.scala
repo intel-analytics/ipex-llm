@@ -255,6 +255,8 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
   private[tensor] def this()(implicit ev: TensorNumeric[T]) = this(null, 0, null, null, 0)
 
   override def fill(v: T): Tensor[T] = {
+    if (this.storage() == null) return this
+
     if (this.isContiguous()) {
       this.storage().fill(v, this.storageOffset(), this.nElement())
     } else {
@@ -273,7 +275,7 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
   }
 
   override def zero(): Tensor[T] = {
-    this.fill(ev.fromType[Int](0))
+    this.fill(ev.zero)
   }
 
   override def randn(): Tensor[T] = {
@@ -373,10 +375,11 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
   }
 
   override def set(): Tensor[T] = {
-    this.resize(0)
-    if(this._storage != null) {
+    if (this._storage != null) {
       this._storage.resize(0)
     }
+    this.nDimension = 0
+    this._size = Array[Int]()
     this
   }
 
@@ -2247,19 +2250,14 @@ object DenseTensor {
     var hasCorrectSize = true
     var nDim_ = 0
     var d = 0
-    var break = false
-    while (d < nDim && !break) {
-      if (_size(d) > 0) {
-        nDim_ = nDim_ + 1
-        if (self.nDimension > d && _size(d) != self._size(d)) {
-          hasCorrectSize = false
-        }
-        if (self.nDimension > d && _stride != null && _stride(d) >= 0 &&
-          _stride(d) != self._stride(d)) {
-          hasCorrectSize = false
-        }
-      } else {
-        break = true
+    while (d < nDim) {
+      nDim_ = nDim_ + 1
+      if (self.nDimension > d && _size(d) != self._size(d)) {
+        hasCorrectSize = false
+      }
+      if (self.nDimension > d && _stride != null && _stride(d) >= 0 &&
+        _stride(d) != self._stride(d)) {
+        hasCorrectSize = false
       }
       d += 1
     }

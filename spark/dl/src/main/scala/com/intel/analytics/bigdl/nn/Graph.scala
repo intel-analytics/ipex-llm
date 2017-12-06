@@ -72,7 +72,7 @@ import org.tensorflow.framework.GraphDef
 class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
   private val outputs : Seq[ModuleNode[T]],
   private val variables: Option[(Array[Tensor[T]], Array[Tensor[T]])] = None,
-  generateBackward: Boolean = true
+  private val generateBackward: Boolean = true
 )(implicit ev: TensorNumeric[T])
     extends Container[Activity, Activity, T]{
 
@@ -282,6 +282,21 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
   // todo: expand the graph
   override def toGraph(startNodes: ModuleNode[T]*): Graph[T] = this
 
+  /**
+   * Return the corresponding node has the given name. If the given name doesn't match any node,
+   * NoSuchElementException will be thrown
+   * @param name
+   * @return
+   */
+  def node(name: String): ModuleNode[T] = {
+    val matchNodes = backGraph.BFS.filter(_.element.getName() == name).toArray
+    if (matchNodes.length == 0) {
+      throw new NoSuchElementException(s"Can not find node with name $name")
+    } else {
+      return matchNodes.head
+    }
+  }
+
   // Add a dummy output node, to get an one end graph. So the nodes that are not dependent by
   // the outputs will be excluded
   private val dummyOutput = new ModuleNode[T](new Identity[T]())
@@ -379,7 +394,7 @@ class Graph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
 
   private def checkRoots: Unit = {
     require(forwardNodes.map(_.element.getName()).distinct.length == forwardNodes.length,
-      s"the name of node in the graph should be unique, but find dumplicated name " +
+      s"the name of node in the graph should be unique, but find duplicated name " +
         s"${duplicatedNames(forwardNodes.map(_.element.getName())).mkString(", ")}")
     val roots = forwardNodes.filter(_.prevNodes.size == 0)
       .filter(node => !node.element.isInstanceOf[WithoutInput]
@@ -667,7 +682,11 @@ object Graph extends ContainerSerializable {
         .asInstanceOf[Array[Tensor[T]]]
       sharedVariables = Some(weightArray, biasArray)
     }
-    Graph[T](inputs.toArray, outputs.toArray, sharedVariables)
+
+    val generateBackward = DataConverter.getAttributeValue(context, attributes
+      .get("generateBackward")).asInstanceOf[Boolean]
+
+    Graph[T](inputs.toArray, outputs.toArray, sharedVariables, generateBackward)
   }
 
   override def doSerializeModule[T: ClassTag](context: SerializeContext[T],
@@ -732,6 +751,11 @@ object Graph extends ContainerSerializable {
     DataConverter.setAttributeValue(context, outputNamesBuilder,
       outputsNames, universe.typeOf[Array[String]])
     graphBuilder.putAttr("outputNames", outputNamesBuilder.build)
+
+    val generateBackwardBuilder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(context, generateBackwardBuilder,
+      graph.generateBackward, universe.typeOf[Boolean])
+    graphBuilder.putAttr("generateBackward", generateBackwardBuilder.build)
 
   }
 }

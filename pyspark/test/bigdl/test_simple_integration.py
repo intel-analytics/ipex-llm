@@ -35,9 +35,8 @@ class TestSimple():
         """ setup any state tied to the execution of the given method in a
         class.  setup_method is invoked for every test method of a class.
         """
-        sparkConf = create_spark_conf()
-        self.sc = SparkContext(master="local[4]", appName="test model",
-                               conf=sparkConf)
+        sparkConf = create_spark_conf().setMaster("local[4]").setAppName("test model")
+        self.sc = get_spark_context(sparkConf)
         init_engine()
 
     def teardown_method(self, method):
@@ -86,7 +85,7 @@ class TestSimple():
         fc1 = Linear(4, 2)
         fc1.set_weights([np.ones((4, 2)), np.ones((2,))])
         tmp_path = tempfile.mktemp()
-        fc1.saveModel(tmp_path, True)
+        fc1.saveModel(tmp_path, None, True)
         fc1_loaded = Model.loadModel(tmp_path)
         assert_allclose(fc1_loaded.get_weights()[0],
                         fc1.get_weights()[0])
@@ -160,6 +159,16 @@ class TestSimple():
                         np.array([3.0, 3.0, 3.0, 3.0]))
         assert_allclose(gradInput[1],
                         np.array([6.0, 6.0, 6.0, 6.0]))
+
+    def test_get_node(self):
+        fc1 = Linear(4, 2)()
+        fc2 = Linear(4, 2)()
+        fc1.element().set_name("fc1")
+        cadd = CAddTable()([fc1, fc2])
+        output1 = ReLU()(cadd)
+        model = Model([fc1, fc2], [output1])
+        res = model.node("fc1")
+        assert res.element().name() == "fc1"
 
     def test_save_graph_topology(self):
         fc1 = Linear(4, 2)()
@@ -313,6 +322,36 @@ class TestSimple():
             val_method=[Top1Accuracy()]
         )
 
+        optimizer.optimize()
+
+    def test_table_label(self):
+        """
+        Test for table as label in Sample.
+        For test purpose only.
+        """
+        def gen_rand_sample():
+            features1 = np.random.uniform(0, 1, 3)
+            features2 = np.random.uniform(0, 1, 3)
+            label = np.array((2 * (features1 + features2)).sum() + 0.4)
+            return Sample.from_ndarray([features1, features2], [label, label])
+
+        training_data = self.sc.parallelize(range(0, 50)).map(
+            lambda i: gen_rand_sample())
+
+        model_test = Sequential()
+        branches = ParallelTable()
+        branch1 = Sequential().add(Linear(3, 1)).add(Tanh())
+        branch2 = Sequential().add(Linear(3, 1)).add(ReLU())
+        branches.add(branch1).add(branch2)
+        model_test.add(branches)
+
+        optimizer = Optimizer(
+            model=model_test,
+            training_rdd=training_data,
+            criterion=MarginRankingCriterion(),
+            optim_method=SGD(),
+            end_trigger=MaxEpoch(5),
+            batch_size=32)
         optimizer.optimize()
 
     def test_forward_backward(self):

@@ -22,7 +22,7 @@ import java.util.{ArrayList => JArrayList, List => JList, Map => JMap}
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.optim.{Loss, SGD, Top1Accuracy, Trigger}
-import com.intel.analytics.bigdl.utils.{Engine, T, TestUtils}
+import com.intel.analytics.bigdl.utils.{Engine, T, Table, TestUtils}
 import com.intel.analytics.bigdl.visualization.{TrainSummary, ValidationSummary}
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
@@ -52,6 +52,15 @@ class PythonSpec extends FlatSpec with Matchers with BeforeAndAfter {
     if (sc != null) {
       sc.stop()
     }
+  }
+
+  "pickle activity" should "be test" in {
+    val tensor = Tensor(Array(1.0f, 2.0f, 3.0f, 4.0f), Array(4, 1))
+    val table = new Table()
+    table.insert(tensor)
+    table.insert(tensor)
+    val r = JActivity(table)
+    org.apache.spark.bigdl.api.python.BigDLSerDe.dumps(r)
   }
 
   "model forward and backward with sigle tensor input" should "be test" in {
@@ -160,11 +169,13 @@ class PythonSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val labelShape = util.Arrays.asList(1)
 
     val data = sc.parallelize(0 to 100).map {i =>
-      val label = JTensor(Array(i % 2 + 1.0f), Array(1), "double")
+      val l = JTensor(Array(i % 2 + 1.0f), Array(1), "double")
       val feature = JTensor(Range(0, 100).map(_ => Random.nextFloat()).toArray,
         Array(100), "double")
       val features = new JArrayList[JTensor]()
       features.add(feature)
+      val label = new JArrayList[JTensor]()
+      label.add(l)
       Sample(features, label, "double")
     }
 

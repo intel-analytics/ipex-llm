@@ -50,12 +50,14 @@ object Module {
    * @param path path to save module, local file system, HDFS and Amazon S3 is supported.
    *             HDFS path should be like "hdfs://[host]:[port]/xxx"
    *             Amazon S3 path should be like "s3a://bucket/xxx"
+   * @param weightPath : where weight is stored
    * @tparam T numeric type
    * @return model loaded from path
    */
-  def loadModule[T: ClassTag](path : String)(implicit ev: TensorNumeric[T])
+  def loadModule[T: ClassTag](path : String,
+    weightPath : String = null)(implicit ev: TensorNumeric[T])
   : AbstractModule[Activity, Activity, T] = {
-    ModuleLoader.loadFromFile(path)
+    ModuleLoader.loadFromFile(path, weightPath)
   }
 
   def loadTorch[T: ClassTag](path : String) : AbstractModule[Activity, Activity, T] = {
