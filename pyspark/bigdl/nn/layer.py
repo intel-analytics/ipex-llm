@@ -1329,12 +1329,6 @@ class Recurrent(Container):
         states = callBigDlFunc(self.bigdl_type, "getHiddenState", self.value)
         return states
 
-    def set_hidden_state(self, states):
-        """
-        set hidden state and cell at first time step.
-        """
-        callBigDlFunc(self.bigdl_type, "setHiddenState", self.value, states)
-
 class RecurrentDecoder(Recurrent):
     '''
     RecurrentDecoder module is a container of rnn cells which used to make

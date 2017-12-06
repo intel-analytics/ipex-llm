@@ -2147,10 +2147,6 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     JActivity(rec.getHiddenState())
   }
 
-  def setHiddenState(rec: Recurrent[T], states: JActivity): Unit = {
-    rec.setHiddenState(states.value)
-  }
-
   def freeze(model: AbstractModule[Activity, Activity, T], freezeLayers: JList[String])
   : AbstractModule[Activity, Activity, T] = {
     if (null == freezeLayers) model.freeze() else model.freeze(freezeLayers.asScala: _*)

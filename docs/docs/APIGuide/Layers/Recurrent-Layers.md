@@ -80,7 +80,6 @@ input[0][4][0] = 1
 output = module.forward(input)
 
 res = module.get_hidden_state()
-module.set_hidden_state(res)
 
 > input
 [[[ 0.  0.  0.  0.  1.]
