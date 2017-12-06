@@ -158,7 +158,8 @@ class SpatialSeperableConvolution[T: ClassTag](
 
     pointWiseConv2D.backward(depthConv.output, gradOutput)
     gradInput = depthConv.backward(input, pointWiseConv2D.gradInput)
-    copyDepthGradWeight()
+    SpatialSeperableConvolution.copyDepthGradWeight(nInputChannel, depthMultiplier,
+      depthConv.gradWeight, depthGradWeight)
     gradInput
   }
 
@@ -191,21 +192,11 @@ class SpatialSeperableConvolution[T: ClassTag](
 
     pointWiseConv2D.accGradParameters(depthConv.output, gradOutput)
     depthConv.accGradParameters(input, pointWiseConv2D.gradInput)
-    copyDepthGradWeight()
+    SpatialSeperableConvolution.copyDepthGradWeight(nInputChannel, depthMultiplier,
+      depthConv.gradWeight, depthGradWeight)
   }
 
-  private def copyDepthGradWeight(): Unit = {
-    var in = 0
-    while(in < nInputChannel) {
-      var out = 0
-      while(out < depthMultiplier) {
-        depthGradWeight.select(3, in + 1).select(3, out + 1)
-          .copy(depthConv.gradWeight.select(4, in + 1).select(4, in * depthMultiplier + out + 1))
-        out += 1
-      }
-      in += 1
-    }
-  }
+
 }
 
 object SpatialSeperableConvolution {
@@ -217,4 +208,20 @@ object SpatialSeperableConvolution {
   : SpatialSeperableConvolution[T] = new SpatialSeperableConvolution(nInputChannel,
     nOutputChannel, depthMultiplier, kW, kH, sW, sH, pW, pH, hasBias, dataFormat, wRegularizer,
     bRegularizer)
+
+  private[bigdl] def copyDepthGradWeight[T](
+    nInputChannel: Int, depthMultiplier: Int,
+    sourceGrad: Tensor[T], targetGrad: Tensor[T]
+  ): Unit = {
+    var in = 0
+    while(in < nInputChannel) {
+      var out = 0
+      while(out < depthMultiplier) {
+        targetGrad.select(3, in + 1).select(3, out + 1)
+          .copy(sourceGrad.select(4, in + 1).select(4, in * depthMultiplier + out + 1))
+        out += 1
+      }
+      in += 1
+    }
+  }
 }
