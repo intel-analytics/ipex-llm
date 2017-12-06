@@ -48,10 +48,12 @@ class TestPickler():
 
     def test_activity_with_jtensor(self):
         back = callBigDlFunc("float", "testActivityWithTensor")
+        back = back.toPy()
         assert isinstance(back.value, np.ndarray)
 
     def test_activity_with_table_of_tensor(self):
         back = callBigDlFunc("float", "testActivityWithTableOfTensor")
+        back = back.toPy()
         assert isinstance(back.value, list)
         assert isinstance(back.value[0], np.ndarray)
         assert back.value[0][0] < back.value[1][0]
@@ -59,11 +61,23 @@ class TestPickler():
 
     def test_activity_with_table_of_table(self):
         back = callBigDlFunc("float", "testActivityWithTableOfTable")
+        back = back.toPy()
         assert isinstance(back.value, list)
         assert isinstance(back.value[0], list)
         assert isinstance(back.value[0][0], np.ndarray)
 
         back_again = callBigDlFunc("float", "testPyToJavaActivity", back)
+        back_again = back_again.toPy()
+        assert isinstance(back_again.value, list)
+        assert isinstance(back_again.value[0], list)
+        assert isinstance(back_again.value[0][0], np.ndarray)
+
+    def test_activity_without_serialization(self):
+        back = callBigDlFunc("float", "testActivityWithTableOfTable")
+        assert isinstance(back, JavaObject)
+        back_again = callBigDlFunc("float", "testPyToJavaActivity", back)
+        assert isinstance(back_again, JavaObject)
+        back_again = back_again.toPy()
         assert isinstance(back_again.value, list)
         assert isinstance(back_again.value[0], list)
         assert isinstance(back_again.value[0][0], np.ndarray)
@@ -71,6 +85,7 @@ class TestPickler():
     def test_activity_py_to_java(self):
         back = callBigDlFunc("float", "testPyToJavaActivity",
                              JActivity(np.random.random_sample([2, 3])))
+        back = back.toPy()
         assert back.value.shape == (2, 3)
 
     def test_nested_activity_py_to_java(self):
@@ -80,9 +95,11 @@ class TestPickler():
         nested2 = JActivity([list_value, list_value])
         back = callBigDlFunc("float", "testPyToJavaActivity",
                              nested1)
+        back = back.toPy()
         assert back.value[0].shape == (2, 3)
         back = callBigDlFunc("float", "testPyToJavaActivity",
                              nested2)
+        back = back.toPy()
         assert back.value[0][0].shape == (2, 3)
 
 

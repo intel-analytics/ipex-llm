@@ -396,9 +396,7 @@ _picklable_classes = [
     'LabeledPoint',
     'Sample',
     'EvaluatedResult',
-    'JTensor',
-    'JActivity'
-]
+    'JTensor']
 
 
 def init_engine(bigdl_type="float"):
@@ -502,6 +500,18 @@ def callBigDlFunc(bigdl_type, name, *args):
     api = getattr(jinstance, name)
     return callJavaFunc(sc, api, *args)
 
+
+def to_py(r):
+    r = get_spark_context()._jvm.org.apache.spark.bigdl.api.python.BigDLSerDe.dumps(r)
+    return PickleSerializer().loads(bytes(r), encoding="bytes")
+
+
+def bind(instance, method):
+    def binding_scope_fn(*args, **kwargs):
+        return method(instance, *args, **kwargs)
+    return binding_scope_fn
+
+
 def _java2py(sc, r, encoding="bytes"):
     if isinstance(r, JavaObject):
         clsName = r.getClass().getSimpleName()
@@ -531,6 +541,8 @@ def _java2py(sc, r, encoding="bytes"):
 
     if isinstance(r, (bytearray, bytes)):
         r = PickleSerializer().loads(bytes(r), encoding=encoding)
+    if r:
+        r.toPy = bind(r, to_py)
     return r
 
 
