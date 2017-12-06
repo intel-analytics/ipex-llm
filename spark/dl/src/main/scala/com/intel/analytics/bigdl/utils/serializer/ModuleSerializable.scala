@@ -97,6 +97,9 @@ trait ModuleSerializable extends Loadable with Savable{
   protected def doLoadModule[T: ClassTag](context: DeserializeContext)
     (implicit ev: TensorNumeric[T]) : AbstractModule[Activity, Activity, T] = {
 
+    val (tags, numerics) = getTypes(context)
+    val tagIter = tags.iterator
+    val numericIter = numerics.iterator
     val evidence = scala.reflect.classTag[T]
     val model = context.bigdlModule
     val modelAttributes = model.getAttrMap
@@ -105,7 +108,7 @@ trait ModuleSerializable extends Loadable with Savable{
     val constructorMirror = getCostructorMirror(cls)
     val constructorFullParams = constructorMirror.symbol.paramss
     val args = new Array[Object](constructorFullParams.map(_.size).sum)
-    var i = 0;
+    var i = 0
     lock.synchronized {
       constructorFullParams.foreach(map => {
         map.foreach(param => {
@@ -113,10 +116,10 @@ trait ModuleSerializable extends Loadable with Savable{
           val ptype = param.typeSignature
           if (ptype <:< universe.typeOf[ClassTag[_]]||
             ptype.typeSymbol == universe.typeOf[ClassTag[_]].typeSymbol) {
-            args(i) = evidence
+            args(i) = tagIter.next
           } else if (ptype <:< universe.typeOf[TensorNumeric[_]]
             || ptype.typeSymbol == universe.typeOf[TensorNumeric[_]].typeSymbol) {
-            args(i) = ev
+            args(i) = numericIter.next
           } else {
             require(modelAttributes.containsKey(name), s"$name value cannot be found")
             val attribute = modelAttributes.get(name)
@@ -129,6 +132,16 @@ trait ModuleSerializable extends Loadable with Savable{
     }
    constructorMirror.apply(args : _*).
       asInstanceOf[AbstractModule[Activity, Activity, T]]
+  }
+
+  private def getTypes(context: DeserializeContext):
+  (Array[ClassTag[_]], Array[TensorNumeric[_]]) = {
+    val attrMap = context.bigdlModule.getAttrMap
+    val tags = attrMap.get(SerConst.MODULE_TAGES).getArrayValue.getStrList.asScala
+      .map(ClassTagMapper.apply(_)).toArray
+    val numeris = attrMap.get(SerConst.MODULE_NUMERICS).getArrayValue.getStrList.
+      asScala.map(TensorNumericMapper.apply(_)).toArray
+    (tags, numeris)
   }
 
   /**
@@ -150,11 +163,29 @@ trait ModuleSerializable extends Loadable with Savable{
     // step 2: set module type
     bigDLModelBuilder.setModuleType(cls.getName)
 
-    // step 3 : apply module specific logic to create module
+    // step 3 : set data types (ClassTag and TensorNumric)
+    setDataTypes(context, bigDLModelBuilder)
+
+    // step 4 : apply module specific logic to create module
     doSerializeModule(context, bigDLModelBuilder)
 
-    // step 4 : copy params (weight & bias) a and linkage
+    // step 5 : copy params (weight & bias) a and linkage
     createSerializeBigDLModule(bigDLModelBuilder, context)
+  }
+
+  protected def setDataTypes[T: ClassTag](context: SerializeContext[T],
+    bigDLModelBuilder: BigDLModule.Builder)(implicit ev: TensorNumeric[T]): Unit = {
+    val (tags, numerics) = context.moduleData.module.getClassTagNumerics
+    val tagsSer = tags.map(ClassTagMapper.apply(_))
+    val tagAttrValue = AttrValue.newBuilder
+    DataConverter.setAttributeValue[T](context, tagAttrValue,
+      tagsSer, universe.typeOf[Array[String]])
+    bigDLModelBuilder.putAttr(SerConst.MODULE_TAGES, tagAttrValue.build)
+    val numericAttrValue = AttrValue.newBuilder
+    val numericSer = numerics.map(TensorNumericMapper.apply(_))
+    DataConverter.setAttributeValue[T](context,
+      numericAttrValue, numericSer, universe.typeOf[Array[String]])
+    bigDLModelBuilder.putAttr(SerConst.MODULE_NUMERICS, numericAttrValue.build)
   }
 
   protected def doSerializeModule[T: ClassTag](context: SerializeContext[T],

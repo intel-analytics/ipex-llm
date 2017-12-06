@@ -736,5 +736,9 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
     val endNodes = this.getEndNodes(starts)
     Graph(starts, endNodes)
   }
+
+  def getClassTagNumerics() : (Array[ClassTag[_]], Array[TensorNumeric[_]]) = {
+    (Array(scala.reflect.classTag[T]), Array(ev))
+  }
 }
 

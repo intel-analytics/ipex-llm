@@ -38,6 +38,11 @@ class TruncatedNormal[T: ClassTag, DataType: ClassTag](
 
     output
   }
+
+  override def getClassTagNumerics() : (Array[ClassTag[_]], Array[TensorNumeric[_]]) = {
+    (Array[ClassTag[_]](scala.reflect.classTag[T], scala.reflect.classTag[DataType]),
+      Array[TensorNumeric[_]](ev))
+  }
 }
 
 object TruncatedNormal {
