@@ -127,18 +127,8 @@ class SpatialSeperableConvolution[T: ClassTag](
     require(nInputChannel == input.size(channelDim),
       "input tensor channel dimension size doesn't match layer nInputChannel")
 
-    // Copy weight
-    depthConv.weight.zero()
-    var in = 0
-    while(in < input.size(channelDim)) {
-      var out = 0
-      while(out < depthMultiplier) {
-        depthConv.weight.select(4, in + 1).select(4, in * depthMultiplier + out + 1)
-          .copy(depthWeight.select(3, in + 1).select(3, out + 1))
-        out += 1
-      }
-      in += 1
-    }
+    SpatialSeperableConvolution.copyWeight(depthConv.weight, input.size(channelDim),
+      depthMultiplier, depthWeight, dataFormat)
 
     depthConv.forward(input)
     output = pointWiseConv2D.forward(depthConv.output)
@@ -159,7 +149,7 @@ class SpatialSeperableConvolution[T: ClassTag](
     pointWiseConv2D.backward(depthConv.output, gradOutput)
     gradInput = depthConv.backward(input, pointWiseConv2D.gradInput)
     SpatialSeperableConvolution.copyDepthGradWeight(nInputChannel, depthMultiplier,
-      depthConv.gradWeight, depthGradWeight)
+      depthConv.gradWeight, depthGradWeight, dataFormat)
     gradInput
   }
 
@@ -193,7 +183,7 @@ class SpatialSeperableConvolution[T: ClassTag](
     pointWiseConv2D.accGradParameters(depthConv.output, gradOutput)
     depthConv.accGradParameters(input, pointWiseConv2D.gradInput)
     SpatialSeperableConvolution.copyDepthGradWeight(nInputChannel, depthMultiplier,
-      depthConv.gradWeight, depthGradWeight)
+      depthConv.gradWeight, depthGradWeight, dataFormat)
   }
 
 
@@ -209,16 +199,37 @@ object SpatialSeperableConvolution {
     nOutputChannel, depthMultiplier, kW, kH, sW, sH, pW, pH, hasBias, dataFormat, wRegularizer,
     bRegularizer)
 
-  private[bigdl] def copyDepthGradWeight[T](
-    nInputChannel: Int, depthMultiplier: Int,
-    sourceGrad: Tensor[T], targetGrad: Tensor[T]
-  ): Unit = {
+  private[bigdl] def copyWeight[T](weight: Tensor[T], nInputChannel: Int,
+    depthMultiplier: Int, sourceWeight: Tensor[T], dataFormat: DataFormat): Unit = {
+    val kInputDim = if (dataFormat == DataFormat.NHWC) 3 else 2
+    val kOutputDim = if (dataFormat == DataFormat.NHWC) 4 else 1
+    weight.zero()
     var in = 0
     while(in < nInputChannel) {
       var out = 0
       while(out < depthMultiplier) {
-        targetGrad.select(3, in + 1).select(3, out + 1)
-          .copy(sourceGrad.select(4, in + 1).select(4, in * depthMultiplier + out + 1))
+        // weight is a 5D tensor with a group dimension
+        weight.select(kInputDim + 1, in + 1).select(kOutputDim, in * depthMultiplier + out + 1)
+          .copy(sourceWeight.select(kInputDim, in + 1).select(kOutputDim - 1, out + 1))
+        out += 1
+      }
+      in += 1
+    }
+  }
+
+  private[bigdl] def copyDepthGradWeight[T](
+    nInputChannel: Int, depthMultiplier: Int,
+    sourceGrad: Tensor[T], targetGrad: Tensor[T], dataFormat: DataFormat
+  ): Unit = {
+    val kInputDim = if (dataFormat == DataFormat.NHWC) 3 else 2
+    val kOutputDim = if (dataFormat == DataFormat.NHWC) 4 else 1
+    var in = 0
+    while(in < nInputChannel) {
+      var out = 0
+      while(out < depthMultiplier) {
+        targetGrad.select(kInputDim, in + 1).select(kOutputDim - 1, out + 1)
+          .copy(sourceGrad.select(kInputDim + 1, in + 1).select(kOutputDim,
+            in * depthMultiplier + out + 1))
         out += 1
       }
       in += 1

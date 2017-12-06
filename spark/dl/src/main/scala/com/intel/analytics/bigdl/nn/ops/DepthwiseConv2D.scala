@@ -41,7 +41,7 @@ class DepthwiseConv2D[T: ClassTag](
     val kWDim = if (dataFormat == DataFormat.NHWC) 2 else 4
 
     if (conv == null) {
-      channelMultiplier = filter.size(4)
+      channelMultiplier = filter.size(channelDim)
       conv = SpatialConvolution(
         nInputPlane = input.size(channelDim),
         nOutputPlane = channelMultiplier * input.size(channelDim),
@@ -57,18 +57,8 @@ class DepthwiseConv2D[T: ClassTag](
       conv.weight.zero()
     }
 
-    // Copy weight
-    var in = 0
-    while(in < input.size(channelDim)) {
-      var out = 0
-      while(out < channelMultiplier) {
-        conv.weight.select(4, in + 1).select(4, in * channelMultiplier + out + 1)
-          .copy(filter.select(3, in + 1).select(3, out + 1))
-        out += 1
-      }
-      in += 1
-    }
-
+    SpatialSeperableConvolution.copyWeight(conv.weight, input.size(channelDim), channelMultiplier,
+      filter, dataFormat)
     output = conv.forward(input)
     output
   }
@@ -100,8 +90,7 @@ class DepthwiseConv2DBackpropInput[T: ClassTag](
     val channelDim = if (dataFormat == DataFormat.NHWC) 4 else 2
     val kHDim = if (dataFormat == DataFormat.NHWC) 1 else 3
     val kWDim = if (dataFormat == DataFormat.NHWC) 2 else 4
-    dummyInput.resize(inputSize.valueAt(1), inputSize.valueAt(2), inputSize.valueAt(3),
-      inputSize.valueAt(4))
+    dummyInput.resize(inputSize.toArray())
 
     if (conv == null) {
       channelMultiplier = filter.size(4)
@@ -121,18 +110,8 @@ class DepthwiseConv2DBackpropInput[T: ClassTag](
       conv.forward(dummyInput)
     }
 
-    // Copy weight
-    var in = 0
-    while(in < inputSize.valueAt(channelDim)) {
-      var out = 0
-      while(out < channelMultiplier) {
-        conv.weight.select(4, in + 1).select(4, in * channelMultiplier + out + 1)
-          .copy(filter.select(3, in + 1).select(3, out + 1))
-        out += 1
-      }
-      in += 1
-    }
-
+    SpatialSeperableConvolution.copyWeight(conv.weight, inputSize.valueAt(channelDim),
+      channelMultiplier, filter, dataFormat)
     output = conv.updateGradInput(dummyInput, gradOutput)
     output
   }
@@ -187,7 +166,7 @@ class DepthwiseConv2DBackpropFilter[T: ClassTag](
     output.resize(filterSize.toArray())
 
     SpatialSeperableConvolution.copyDepthGradWeight(input.size(channelDim), channelMultiplier,
-      conv.gradWeight, output)
+      conv.gradWeight, output, dataFormat)
 
     output
   }
