@@ -122,7 +122,34 @@ def get_dtype(bigdl_type):
 class JActivity(object):
 
     def __init__(self, value):
-        self.value = value
+        self.value = self.__to_np(value)  # self.value is a ndarray or nested list of ndarray
+
+    @staticmethod
+    def __to_np(v):
+        """
+        This method would convert the JTensor to ndarray
+        :return: ndarray or nested list of ndarray
+        """
+        if isinstance(v, JTensor):
+            return v.to_ndarray()
+        elif isinstance(v, list):
+            return [JActivity.__to_np(i) for i in v]
+        elif isinstance(v, np.ndarray):
+            return v
+        else:
+            raise Exception("Unsupported type: %s", type(v))
+
+    @staticmethod
+    def __do_convertion(v):
+        if isinstance(v, np.ndarray):
+            return JTensor.from_ndarray(v)
+        elif isinstance(v, list):
+            return [JActivity.__do_convertion(i) for i in v]
+        else:
+            raise Exception("Unsupported type: %s", type(v))
+
+    def __reduce__(self):
+        return JActivity, (JActivity.__do_convertion(self.value),)
 
 
 class JTensor(object):

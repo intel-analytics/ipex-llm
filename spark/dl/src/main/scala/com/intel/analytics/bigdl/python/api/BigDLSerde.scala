@@ -25,6 +25,7 @@ import java.util.{ArrayList => JArrayList, HashMap => JHashMap, List => JList, M
 
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.python.api._
+import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.Table
 import net.razorvine.pickle._
 import org.apache.spark.api.java.JavaRDD
@@ -250,9 +251,26 @@ object BigDLSerDe extends BigDLSerDeBase with Serializable {
         pickler,
         doConvertActivity(record.value))
     }
+    val pythonBigDL = PythonBigDL.ofFloat()
+    private def convertPyToJava(obj: Object): JActivity = {
+      if (obj.isInstanceOf[JTensor]) {
+        return JActivity(pythonBigDL.toTensor(obj.asInstanceOf[JTensor]))
+      } else if (obj.isInstanceOf[JList[Object]]) {
+        val table = new Table()
+        obj.asInstanceOf[JList[Object]].asScala.foreach {obj =>
+          table.insert[Activity](convertPyToJava(obj).value)
+        }
+        return JActivity(table)
+      } else {
+        throw new RuntimeException(s"not supported type: ${obj}")
+      }
+    }
 
     def construct(args: Array[Object]): Object = {
-      throw new RuntimeException("haven't be implemented")
+      if (args.length != 1) {
+        throw new PickleException("should be 1, not : " + args.length)
+      }
+      convertPyToJava(args(0))
     }
   }
 

@@ -48,20 +48,44 @@ class TestPickler():
 
     def test_activity_with_jtensor(self):
         back = callBigDlFunc("float", "testActivityWithTensor")
-        assert isinstance(back.value, JTensor)
+        assert isinstance(back.value, np.ndarray)
 
     def test_activity_with_table_of_tensor(self):
         back = callBigDlFunc("float", "testActivityWithTableOfTensor")
         assert isinstance(back.value, list)
-        assert isinstance(back.value[0], JTensor)
-        assert back.value[0].to_ndarray()[0] < back.value[1].to_ndarray()[0]
-        assert back.value[1].to_ndarray()[0] < back.value[2].to_ndarray()[0]
+        assert isinstance(back.value[0], np.ndarray)
+        assert back.value[0][0] < back.value[1][0]
+        assert back.value[1][0] < back.value[2][0]
 
     def test_activity_with_table_of_table(self):
         back = callBigDlFunc("float", "testActivityWithTableOfTable")
         assert isinstance(back.value, list)
         assert isinstance(back.value[0], list)
-        assert isinstance(back.value[0][0], JTensor)
+        assert isinstance(back.value[0][0], np.ndarray)
+
+        back_again = callBigDlFunc("float", "testPyToJavaActivity", back)
+        assert isinstance(back_again.value, list)
+        assert isinstance(back_again.value[0], list)
+        assert isinstance(back_again.value[0][0], np.ndarray)
+
+    def test_activity_py_to_java(self):
+        back = callBigDlFunc("float", "testPyToJavaActivity",
+                             JActivity(np.random.random_sample([2, 3])))
+        assert back.value.shape == (2, 3)
+
+    def test_nested_activity_py_to_java(self):
+        value = np.random.random_sample([2, 3])
+        list_value = [value, value]
+        nested1 = JActivity(list_value)
+        nested2 = JActivity([list_value, list_value])
+        back = callBigDlFunc("float", "testPyToJavaActivity",
+                             nested1)
+        assert back.value[0].shape == (2, 3)
+        back = callBigDlFunc("float", "testPyToJavaActivity",
+                             nested2)
+        assert back.value[0][0].shape == (2, 3)
+
+
 
 if __name__ == "__main__":
     pytest.main([__file__])
