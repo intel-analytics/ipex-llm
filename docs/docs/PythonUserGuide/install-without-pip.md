@@ -1,8 +1,5 @@
-
 ## **Install without pip**
 __NOTE__: Only __Python 2.7__ and __Python 3.5__ are supported for now.
-
-**This is mainly for development purpose**. For regular user, we strong suggest you use pip to install bigdl
 
 1. [Download Spark](https://spark.apache.org/downloads.html)
 
