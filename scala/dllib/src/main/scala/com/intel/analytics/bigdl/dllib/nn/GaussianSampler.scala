@@ -26,7 +26,7 @@ import scala.reflect.ClassTag
 /**
  * Takes {mean, log_variance} as input and samples from the Gaussian distribution
  */
-class GaussianSampler[@specialized(Float, Double) T: ClassTag](
+class GaussianSampler[T: ClassTag](
   implicit ev: TensorNumeric[T]) extends AbstractModule[Table, Tensor[T], T] {
 
   val eps = Tensor[T]()

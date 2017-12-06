@@ -34,6 +34,11 @@ class TruncateDiv[T: ClassTag, D: ClassTag]()(implicit ev: TensorNumeric[T], ev2
     output.div(input2).apply1(ev2.truncate(_))
     output
   }
+
+  override def getClassTagNumerics() : (Array[ClassTag[_]], Array[TensorNumeric[_]]) = {
+    (Array[ClassTag[_]](scala.reflect.classTag[T], scala.reflect.classTag[D]),
+      Array[TensorNumeric[_]](ev, ev2))
+  }
 }
 
 object TruncateDiv {
