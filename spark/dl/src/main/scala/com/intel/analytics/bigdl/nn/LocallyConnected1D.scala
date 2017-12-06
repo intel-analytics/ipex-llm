@@ -85,7 +85,7 @@ class LocallyConnected1D[T: ClassTag](val nInputFrame: Int,
     Tensor[T](nOutputFrame, outputFrameSize, inputFrameSize * kernelW)
   }
 
-  val gradBias: Tensor[T] = if (initBias != null) {
+  val gradBias: Tensor[T] = if (initGradBias != null) {
     initGradBias
   } else {
     Tensor[T](nOutputFrame, outputFrameSize)
@@ -128,15 +128,25 @@ class LocallyConnected1D[T: ClassTag](val nInputFrame: Int,
   *
   * */
 
-  override def updateOutput(input: Tensor[T]): Tensor[T] = {
+  def convert3DTensor(input:Tensor[T]):Tensor[T] = {
+    if(input.dim() == 2){
+       input.reshape(Array(1,input.size(1),input.size(2)))
+    } else {
+      input
+    }
+  }
+
+  override def updateOutput(_input: Tensor[T]): Tensor[T] = {
     // Require input of 2 dimensions or 3 dimensions
     // 2d input format: time x feature
     // 3d input format: batch x time x feature
-    require(input.dim() == 2 || input.dim() == 3,
+    require(_input.dim() == 2 || _input.dim() == 3,
       "LocallyConvolution1D: 2D or 3D(batch mode) tensor expected for input, " +
-        s"but got ${input.dim()}")
+        s"but got ${_input.dim()}")
     // Require input to be contiguous
-    require(input.isContiguous())
+    require(_input.isContiguous())
+
+    val input = convert3DTensor(_input)
 
     var dimSeq = input.dim() - 1 // 1
     var dimFeat = dimSeq + 1 // 2
@@ -155,116 +165,69 @@ class LocallyConnected1D[T: ClassTag](val nInputFrame: Int,
     require(nOutputFrame >= 1, "Input sequence smaller than kernel size. Got: " +
       s"$nInputFrame, Expected: $kernelW")
 
-    println("weight size:" + weight.size().mkString("|")) // tensor 28 x 96
+    val batchSize = input.size(1)
+    val pageSize = weight.size(2) * weight.size(3)
 
-    if (input.dim() == 2) {
-      output.resize(nOutputFrame, outputFrameSize) // tesnor 8 x 28
-      // Add bias first
-      var j = 1
-      while (j <= nOutputFrame) {
-        biasWindow.set(bias.storage(), bias.storageOffset() + (j - 1) * output.size(dimFeat),
-          Array(1, output.size(dimFeat)),
-          Array(1, 1))
-        outputWindow = output.select(dimSeq, j) // setup up bias for each ouputframe
-        outputWindow.copy(biasWindow)
-        j += 1
-      }
+    output.resize(batchSize, nOutputFrame, outputFrameSize)
 
-      // Add the convolution part
-      j = 0
-      while (j < nOutputFrame) {
-
-        println("in updateOutput j:" + j)
-        println("input offset:" + (input.storageOffset() + j * strideW * input.size(dimFeat)))
-        inputWindow.set(input.storage(), input.storageOffset() + j * strideW * input.size(dimFeat),
-          Array(1, kernelW * input.size(dimFeat)),
-          Array(1, 1))
-
-        outputWindow.set(output.storage(), output.storageOffset() + j * output.size(dimFeat),
-          Array(1, output.size(dimFeat)),
-          Array(1, 1))
-
-        println("weight offset:" + (weight.storageOffset() + j * strideW * input.size(dimFeat) * output.size(dimFeat)))
-        val pageSize = weight.size(2) * weight.size(3)
-        val weightT = weightWindow.set(weight.storage(), weight.storageOffset() + j * strideW * input.size(dimFeat) * output.size(dimFeat),
-          Array(output.size(dimFeat), kernelW * input.size(dimFeat)),
-          Array(kernelW * input.size(dimFeat) * output.size(dimFeat), 1)
-        ).transpose(1, 2)
-
-        println("convolution weight:" + weightT.size().mkString("|"))
-
-        outputWindow.addmm(ev.fromType[Int](1), outputWindow,
-          ev.fromType[Int](1), inputWindow, weightT)
-        j += 1
-      }
-    } else {
-      val batchSize = input.size(1)
-      output.resize(batchSize, nOutputFrame, outputFrameSize)
       if (results == null || results.length != batchSize) {
         results = new Array[Future[Unit]](batchSize)
       }
-      var i = 0
-      while (i < batchSize) {
+
+      (0 to batchSize-1).map( i=> {
+
         results(i) = Engine.model.invoke(() => {
+
           val inputSample = input.select(1, i + 1)
           val outputSample = output.select(1, i + 1)
-          var nOutputSampleFrame = nOutputFrame
           // Add bias first
-          var j = 1
-          while (j <= nOutputFrame) {
-            biasWindow.set(bias.storage(), bias.storageOffset() + (j - 1) * output.size(dimFeat),
-              Array(1, output.size(dimFeat)),
-              Array(1, 1))
-            outputWindow = output.select(dimSeq, j) // setup up bias for each ouputframe
+          (1 to nOutputFrame).map( j=> {
+            biasWindow = bias.select(1, j)
+            outputWindow = outputSample.select(dimSeq - 1, j) // setup up bias for each ouputframe
             outputWindow.copy(biasWindow)
-            j += 1
-          }
+          })
+
           // Add the convolution part
-          j = 0
-          while (j < nOutputFrame) {
-            println("in  3d updateOutput j:" + j)
-            println("j:" + j)
-            println("input offset:" + (input.storageOffset() + j * strideW * input.size(dimFeat)))
-            inputWindow.set(input.storage(), input.storageOffset() + j * strideW * input.size(dimFeat),
+
+          (0 to nOutputFrame -1).map( j=>{
+            inputWindow.set(inputSample.storage(), inputSample.storageOffset() +
+              j * strideW * input.size(dimFeat),
               Array(1, kernelW * input.size(dimFeat)),
               Array(1, 1))
 
-            outputWindow.set(output.storage(), output.storageOffset() + j * output.size(dimFeat),
+            outputWindow.set(outputSample.storage(), outputSample.storageOffset() +
+              j * output.size(dimFeat),
               Array(1, output.size(dimFeat)),
               Array(1, 1))
 
-            println("weight offset:" + (weight.storageOffset() + j * strideW * input.size(dimFeat) * output.size(dimFeat)))
-            val pageSize = weight.size(2) * weight.size(3)
-            val weightT = weightWindow.set(weight.storage(), weight.storageOffset() + j * strideW * input.size(dimFeat) * output.size(dimFeat),
+            val weightT = weightWindow.set(weight.storage(), weight.storageOffset() +
+              j * pageSize,
               Array(output.size(dimFeat), kernelW * input.size(dimFeat)),
-              Array(kernelW * input.size(dimFeat) * output.size(dimFeat), 1)
+              Array(kernelW * input.size(dimFeat), 1)
             ).transpose(1, 2)
-
-            println("convolution weight:" + weightT.size().mkString("|"))
 
             outputWindow.addmm(ev.fromType[Int](1), outputWindow,
               ev.fromType[Int](1), inputWindow, weightT)
-            j += 1
-          }
-        }
-        )
-        i += 1
-      }
-    }
+          })
+        })
+      })
+
     output
   }
 
-  override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T]
+  override def updateGradInput(_input: Tensor[T], _gradOutput: Tensor[T]): Tensor[T] = {
 
-  = {
     // Require input of 2 dimensions or 3 dimensions
     // 2d input format: time x feature
     // 3d input format: batch x time x feature
-    require(input.dim() == 2 || input.dim() == 3,
+    require(_input.dim() == 2 || _input.dim() == 3,
       "TemporalConvolution: 2D or 3D(batch mode) tensor expected for input, " +
-        s"but got ${input.dim()}")
+        s"but got ${_input.dim()}")
     // Require input to be contiguous
-    require(input.isContiguous())
+    require(_input.isContiguous())
+
+    val input = convert3DTensor(_input)
+    val gradOutput = convert3DTensor(_gradOutput)
 
     val dimSeq = if (input.dim() == 2) 1 else 2
     val dimFeat = if (input.dim() == 2) 2 else 3
@@ -284,109 +247,61 @@ class LocallyConnected1D[T: ClassTag](val nInputFrame: Int,
     gradInput.resizeAs(input)
     gradInput.zero()
 
-    if (gradOutput.dim() == 2) {
-      var i = 0
-      while (nOutputFrame > 0) {
-        val outputFrameStride = (kernelW - 1) / strideW + 1
-        val inputFrameStride = outputFrameStride * strideW
-        val nFrame = (nInputFrame - i * strideW - kernelW) / inputFrameStride + 1
-        nOutputFrame -= 1
-
-        println("in updateGradInput i:" + i)
-        gradOutputWindow.set(gradOutput.storage(), gradOutput.storageOffset() + i * gradOutput.size(dimFeat),
-          Array(1, gradOutput.size(dimFeat)),
-          Array(1, 1))
-
-        println("output offset:" + (gradOutput.storageOffset() + i * strideW * gradOutput.size(dimFeat)))
-        println("grad output window:" + gradOutputWindow.size().mkString("|"))
-
-        gradInputWindow.set(gradInput.storage(), gradInput.storageOffset() + i * strideW * gradInput.size(dimFeat),
-          Array(1, kernelW * gradInput.size(dimFeat)),
-          Array(1, 1))
-
-        println("output offset:" + (gradInput.storageOffset() + i * strideW * gradInput.size(dimFeat)))
-        println("grad output window:" + gradInputWindow.size().mkString("|"))
-
-
-        val pageSize = weight.size(2) * weight.size(3)
-        weightWindow.set(weight.storage(), weight.storageOffset() + i * strideW * gradInput.size(dimFeat) * gradOutput.size(dimFeat),
-          Array(gradOutput.size(dimFeat), kernelW * gradInput.size(dimFeat)),
-          Array(kernelW * gradInput.size(dimFeat) * gradOutput.size(dimFeat), 1)
-        )
-
-        println("weight offset:" + (weight.storageOffset() + i * strideW * gradInput.size(dimFeat) * gradOutput.size(dimFeat)))
-        println("weight:" + weightWindow.size().mkString("|"))
-
-        gradInputWindow.addmm(ev.fromType[Int](1), gradInputWindow,
-          ev.fromType[Int](1), gradOutputWindow, weightWindow)
-        i += 1
-      }
-    } else {
       val batchSize = input.size(1)
+      val pageSize = weight.size(2) * weight.size(3)
+
       var gradOutputSample = Tensor[T]()
       var gradInputSample = Tensor[T]()
-      var i = 0
-      while (i < batchSize) {
-        results(i) = Engine.model.invoke(() => {
-          gradInputSample = gradInput.select(1, i + 1)
-          gradOutputSample = gradOutput.select(1, i + 1)
-          var nOutputSampleFrame = nOutputFrame
-          var j = 0
-          while (nOutputSampleFrame > 0) {
-            val outputFrameStride = (kernelW - 1) / strideW + 1
-            val inputFrameStride = outputFrameStride * strideW
-            val nFrame = (nInputFrame - j * strideW - kernelW) / inputFrameStride + 1
-            nOutputSampleFrame -= nFrame
 
-            gradOutputWindow.set(gradOutputSample.storage(), gradOutputSample.storageOffset() +
-              j * gradOutputSample.size(dimFeat - 1),
-              Array(nFrame, gradOutputSample.size(dimFeat - 1)),
-              Array(outputFrameStride * gradOutputSample.size(dimFeat - 1), 1))
-            gradInputWindow.set(gradInputSample.storage(), gradInputSample.storageOffset() +
-              j * strideW * gradInputSample.size(dimFeat - 1),
-              Array(nFrame, kernelW * gradInputSample.size(dimFeat - 1)),
-              Array(inputFrameStride * gradInputSample.size(dimFeat - 1), 1))
+     (0 to batchSize -1).map( i=> {
 
+          results(i) = Engine.model.invoke(() => {
 
-            println("i:" + i)
-            gradOutputWindow.set(gradOutput.storage(), gradOutput.storageOffset() + i * gradOutput.size(dimFeat),
-              Array(1, gradOutput.size(dimFeat)),
-              Array(1, 1))
+            gradInputSample = gradInput.select(1, i + 1)
+            gradOutputSample = gradOutput.select(1, i + 1)
+            var nOutputSampleFrame = nOutputFrame
 
-            println("input offset:" + (input.storageOffset() + i * strideW * input.size(dimFeat)))
-            inputWindow.set(gradInput.storage(), gradInput.storageOffset() + i * strideW * gradInput.size(dimFeat),
-              Array(1, kernelW * gradInput.size(dimFeat)),
-              Array(1, 1))
+            var j = 0
 
-            println("weight offset:" + (weight.storageOffset() + i * strideW * input.size(dimFeat) * output.size(dimFeat)))
+            (0 to nOutputSampleFrame - 1).map(j => {
 
-            val pageSize = weight.size(2) * weight.size(3)
-            weightWindow.set(weight.storage(), weight.storageOffset() + i * strideW * input.size(dimFeat) * output.size(dimFeat),
-              Array(output.size(dimFeat), kernelW * input.size(dimFeat)),
-              Array(kernelW * input.size(dimFeat) * output.size(dimFeat), 1)
-            )
+              gradOutputWindow.set(gradOutputSample.storage(), gradOutputSample.storageOffset() +
+                j * gradOutput.size(dimFeat),
+                Array(1, gradOutput.size(dimFeat)),
+                Array(1, 1))
 
+              gradInputWindow.set(gradInputSample.storage(), gradInputSample.storageOffset() +
+                j * strideW * gradInput.size(dimFeat),
+                Array(1, kernelW * gradInput.size(dimFeat)),
+                Array(1, 1))
 
-            gradInputWindow.addmm(ev.fromType[Int](1), gradInputWindow,
-              ev.fromType[Int](1), gradOutputWindow, weight)
-            j += 1
-          }
+              weightWindow.set(weight.storage(), weight.storageOffset() + j * pageSize,
+                Array(output.size(dimFeat), kernelW * input.size(dimFeat)),
+                Array(kernelW * input.size(dimFeat), 1)
+              )
+
+              gradInputWindow.addmm(ev.fromType[Int](1), gradInputWindow,
+                ev.fromType[Int](1), gradOutputWindow, weightWindow)
+
+            })
+
+          })
         })
-        i += 1
-      }
-    }
+
     gradInput
   }
 
-  override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T]): Unit
+  override def accGradParameters(_input: Tensor[T], _gradOutput: Tensor[T]): Unit = {
 
-  = {
     // Require input of 2 dimensions or 3 dimensions
-    require(input.nDimension() == 2 || input.nDimension() == 3,
+    require(_input.nDimension() == 2 || _input.nDimension() == 3,
       "Only support 2D or 3D input, " +
-        s"input ${input.nDimension()}")
+        s"input ${_input.nDimension()}")
     // Require input to be contiguous
-    require(gradOutput.isContiguous())
+    require(_gradOutput.isContiguous())
+
+    val input = convert3DTensor(_input)
+    val gradOutput = convert3DTensor(_gradOutput)
 
     val dimSeq = if (input.dim() == 2) 1 else 2
     val dimFeat = if (input.dim() == 2) 2 else 3
@@ -396,89 +311,52 @@ class LocallyConnected1D[T: ClassTag](val nInputFrame: Int,
     if (gradOutputWindow == null) gradOutputWindow = Tensor[T]()
     if (inputWindow == null) inputWindow = Tensor[T]()
     if (gradWeightWindow == null) gradWeightWindow = Tensor[T]()
+    if (biasWindow == null) biasWindow = Tensor[T]()
 
-    if (input.nDimension() == 2) {
-      var j = 0
-
-      gradOutputWindow.set(gradOutput)
-      gradBias.add(gradBias, ev.fromType[Double](scaleB), gradOutput)
-
-      while (nOutputFrame > 0) {
-
-        nOutputFrame -= 1
-        println("in accGradParameters j:" + j)
-
-        println("input offset:" + (input.storageOffset() + j * strideW * input.size(dimFeat)))
-        inputWindow.set(input.storage(), input.storageOffset() + j * strideW * input.size(dimFeat),
-          Array(1, kernelW * input.size(dimFeat)),
-          Array(1, 1))
-
-        println("inputWindow:" + inputWindow.size().mkString("|"))
-
-        gradOutputWindow.set(gradOutput.storage(), gradOutput.storageOffset() + j * gradOutput.size(dimFeat),
-          Array(1, gradOutput.size(dimFeat)),
-          Array(1, 1))
-
-        println("gradOutputWindow:" + gradOutputWindow.size().mkString("|"))
-
-        val gradOutputWindowT = gradOutputWindow.transpose(1, 2)
-
-        val pageSize = gradWeight.size(2) * gradWeight.size(3)
-        gradWeightWindow.set(gradWeight.storage(), gradWeight.storageOffset() + j * strideW * input.size(dimFeat) * gradOutput.size(dimFeat),
-          Array(gradOutput.size(dimFeat), kernelW * input.size(dimFeat)),
-          Array(kernelW * input.size(dimFeat) * gradOutput.size(dimFeat), 1)
-        )
-
-        println("weight offset:" + (gradWeight.storageOffset() + j * strideW * input.size(dimFeat) * gradOutput.size(dimFeat)))
-        println("weight:" + gradWeightWindow.size().mkString("|"))
-
-
-        println("gradWeight:" + gradWeightWindow.size().mkString("|"))
-        gradWeightWindow.addmm(ev.fromType[Int](1), gradWeightWindow, ev.fromType[Double](scaleW),
-          gradOutputWindowT, inputWindow)
-        j += 1
-      }
-    } else {
       val batchSize = input.size(1)
+
       var gradOutputSample = Tensor[T]()
       var inputSample = Tensor[T]()
       var i = 0
-      while (i < batchSize) {
-        results(i) = Engine.model.invoke(() => {
-          gradOutputSample = gradOutput.select(1, i + 1)
-          inputSample = input.select(1, i + 1)
-          var nOutputSampleFrame = nOutputFrame
-          var j = 0
-          while (j < nOutputFrame) {
-            gradOutputWindow.set(gradOutputSample.select(1, j + 1))
-            gradBias.add(gradBias, ev.fromType[Double](scaleB), gradOutputWindow)
-            j += 1
-          }
-          j = 0
-          while (nOutputSampleFrame > 0) {
-            val outputFrameStride = (kernelW - 1) / strideW + 1
-            val inputFrameStride = outputFrameStride * strideW
-            val nFrame = (nInputFrame - j * strideW - kernelW) / inputFrameStride + 1
-            nOutputSampleFrame -= nFrame
+     (0 to batchSize -1).map( i => {
+       results(i) = Engine.model.invoke(() => {
+         gradOutputSample = gradOutput.select(1, i + 1)
+         inputSample = input.select(1, i + 1)
+         var nOutputSampleFrame = nOutputFrame
 
-            inputWindow.set(inputSample.storage(), inputSample.storageOffset() +
-              j * strideW * inputSample.size(dimFeat - 1),
-              Array(nFrame, kernelW * inputSample.size(dimFeat - 1)),
-              Array(inputFrameStride * inputSample.size(dimFeat - 1), 1))
-            gradOutputWindow.set(gradOutputSample.storage(), gradOutputSample.storageOffset() +
-              j * gradOutputSample.size(dimFeat - 1),
-              Array(nFrame, gradOutputSample.size(dimFeat - 1)),
-              Array(outputFrameStride * gradOutputSample.size(dimFeat - 1), 1))
+         (0 to nOutputFrame - 1).map(j => {
+           biasWindow.set(gradBias.storage(), gradBias.storageOffset() + j * gradOutput.size(dimFeat),
+             Array(1, gradOutput.size(dimFeat)),
+             Array(1, 1))
+           gradOutputWindow.set(gradOutputSample.select(1, j + 1))
+           biasWindow.add(biasWindow, ev.fromType[Double](scaleB), gradOutputWindow)
+         })
 
-            val gradOutputWindowT = gradOutputWindow.transpose(1, 2)
-            gradWeight.addmm(ev.fromType[Int](1), gradWeight, ev.fromType[Double](scaleW),
-              gradOutputWindowT, inputWindow)
-            j += 1
-          }
-        })
-        i += 1
-      }
-    }
+         (0 to nOutputSampleFrame - 1).map(j => {
+           inputWindow.set(inputSample.storage(), inputSample.storageOffset() +
+             j * strideW * input.size(dimFeat),
+             Array(1, kernelW * input.size(dimFeat)),
+             Array(1, 1))
+
+           gradOutputWindow.set(gradOutputSample.storage(), gradOutputSample.storageOffset() +
+             j * gradOutput.size(dimFeat),
+             Array(1, gradOutput.size(dimFeat)),
+             Array(1, 1))
+
+           val gradOutputWindowT = gradOutputWindow.transpose(1, 2)
+
+           val pageSize = weight.size(2) * weight.size(3)
+           gradWeightWindow.set(gradWeight.storage(), gradWeight.storageOffset() +
+             j * pageSize,
+             Array(gradOutput.size(dimFeat), kernelW * input.size(dimFeat)),
+             Array(kernelW * input.size(dimFeat), 1))
+
+           gradWeightWindow.addmm(ev.fromType[Int](1), gradWeightWindow, ev.fromType[Double](scaleW),
+             gradOutputWindowT, inputWindow)
+
+         })
+       })
+     })
 
     if (null != wRegularizer) {
       wRegularizer.accRegularization(weight, gradWeight, scaleW)

@@ -43,32 +43,40 @@ class LocallyConnected1DSpec extends KerasBaseSpec {
   "LocallyConnected1D" should "be ok" in {
     ifskipTest()
     val kerasCode =
+    //      """
+    //        |input_tensor = Input(shape=[100,10])
+    //        |input = input = np.random.rand(1,100,10)
+    //        |output_tensor = LocallyConnected1D(2,3,subsample_length=3,input_shape=(100,10))(input_tensor)
+    //        |model = Model(input=input_tensor, output=output_tensor)
+    //      """.stripMargin
+    //     val locallyConnected1d = LocallyConnected1D[Float](100, 10, 2, 3, 3)
+
       """
-        |input_tensor = Input(shape=[100,10])
-        |input = np.random.rand(1,100,10)
-        |output_tensor = LocallyConnected1D(8,5,subsample_length=2,input_shape=(100,10))(input_tensor)
+        |input_tensor = Input(shape=[6,2])
+        |input = np.array([[[1,2], [2,3], [3,4],[4,5],[5,6],[6,7]]])
+        |weights = [np.array([[[1],[2]],[[3],[4]],[[5],[6]],[[7],[8]],[[9],[10]]]),np.zeros([5,1])]
+        |output_tensor = LocallyConnected1D(2,3,subsample_length=1,input_shape=(6,2))(input_tensor)
         |model = Model(input=input_tensor, output=output_tensor)
       """.stripMargin
-    val locallyConnected1d = LocallyConnected1D[Float](100, 10, 8, 5, 2)
-    checkOutputAndGrad(locallyConnected1d, kerasCode)
+    val locallyConnected1d = LocallyConnected1D[Float](6, 2, outputFrameSize = 2, kernelW = 3, 1)
 
-
-    val inputSize = 10
-    val maxoutNumber = 2
-    val outputSize = 2
 
     val wc = (data: Array[Tensor[Float]]) => {
 
-      val output = Tensor[Float](data.length,data(0).size(0),data(0).size(1))
-
       val out = new Array[Tensor[Float]](data.length)
-      out(0) = Tensor(inputSize, maxoutNumber * outputSize)
-      val weight = out.head.storage().array()
-      var index = 0
-      for (i <- 1 to maxoutNumber) {
-        val sliceW = data(0).select(1, i).t.clone().storage().array()
-        System.arraycopy(sliceW, 0, weight, index, sliceW.size)
-        index += sliceW.size
+      val d1l: Int = data(0).size(1)
+      val d2l: Int = data(0).size(2)
+      val d3l: Int = data(0).size(3)
+
+      out(0) = Tensor(d1l, d3l, d2l)
+
+      val page: Int = d2l * d3l
+      for (i <- 0 to d1l * d2l * d3l - 1) {
+        val d1 = i / page + 1
+        val d2 = (i % page) / (d3l) + 1
+        val d3 = (i % page) % d3l + 1
+        val v = data(0).valueAt(d1, d2, d3)
+        out(0).setValue(d1, d3, d2, v)
       }
 
       if (data.length > 1) {
@@ -77,6 +85,32 @@ class LocallyConnected1DSpec extends KerasBaseSpec {
       out
     }
 
+    checkOutputAndGrad(locallyConnected1d, kerasCode, wc)
+
+  }
+
+
+  "LocallyConnected1D reshape" should "be ok" in {
+
+    val locallyConnected1d = LocallyConnected1D[Float](6, 1, 3, 3)
+
+    val d1l = 2
+    val d2l = 3
+
+    val tensor = Tensor[Float](d1l, d2l)
+
+    for (i <- 0 to d1l * d2l - 1) {
+      val d1 = i / d2l + 1
+      val d2 = i % d2l + 1
+      tensor.setValue(d1, d2, i)
+    }
+
+    val tensor3D = locallyConnected1d.convert3DTensor(tensor)
+
+    val size = Array(1, d1l, d2l)
+
+    tensor3D.size() should be(size)
+    tensor.storage().map(x => x.toInt).toArray should be(tensor3D.storage().map(x => x.toInt).toArray)
   }
 
 }
