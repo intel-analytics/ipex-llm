@@ -654,7 +654,7 @@ class Optimizer(JavaValue):
         """
         self.value.setModel(model.value)
 
-    def set_dataset(self, training_rdd, batch_size):
+    def set_traindata(self, training_rdd, batch_size):
         """
         Set new training dataset, for optimizer reuse
 
@@ -662,7 +662,7 @@ class Optimizer(JavaValue):
         :param batch_size: training batch size
         :return:
         """
-        callBigDlFunc(self.bigdl_type, "setDataset", self.value,
+        callBigDlFunc(self.bigdl_type, "setTrainData", self.value,
                      training_rdd, batch_size)
 
     def set_criterion(self, criterion):
