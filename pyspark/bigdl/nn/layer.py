@@ -4636,11 +4636,10 @@ class MultiRNNCell(Layer):
 
     >>> cells = []
     >>> cells.append(ConvLSTMPeephole3D(4, 3, 3, 3, 1))
-    >>> cells.append(ConvLSTMPeephole3D(4, 3, 3, 3, 1))
-    >>> stacked_convlstm = MultiRNNCell(cells)
     creating: createConvLSTMPeephole3D
-    creating: createConvLSTMPeephole3D    
-    creating: createRecurrent
+    >>> cells.append(ConvLSTMPeephole3D(4, 3, 3, 3, 1))
+    creating: createConvLSTMPeephole3D
+    >>> stacked_convlstm = MultiRNNCell(cells)
     creating: createMultiRNNCell
     '''
 
