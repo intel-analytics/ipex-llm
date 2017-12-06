@@ -2143,37 +2143,12 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     layer.setInitMethod(weightInitMethod, biasInitMethod)
   }
 
-  def getHiddenStates(rec: Recurrent[T]): JList[JList[JTensor]] = {
-    val states = rec.getHiddenState()
-    var res: Array[JList[JTensor]] = null
-    if (!rec.containMultiRNNCell) {
-      res = new Array[JList[JTensor]](1)
-      res(0) = activityToJTensors(states)
-    }
-    else {
-      res = new Array[JList[JTensor]](states.toTable.getState().size)
-      states.toTable.getState().foreach { pair => {
-          val index = pair._1.asInstanceOf[Int]
-          res(index) = activityToJTensors(pair._2.asInstanceOf[Activity])
-        }
-      }
-    }
-    res.toList.asJava
+  def getHiddenState(rec: Recurrent[T]): JActivity = {
+    JActivity(rec.getHiddenState())
   }
 
-  def setHiddenStates(rec: Recurrent[T], states: JList[JList[JTensor]],
-                isTable: JList[Boolean]): Unit = {
-    if (rec.containMultiRNNCell) {
-      val activities = (states.asScala, isTable.asScala).zipped.map { (state, table) =>
-        jTensorsToActivity(state, table)}.toArray
-      val newStates = T()
-      for((activity, i) <- activities.view.zipWithIndex) {
-        newStates(i) = activity
-      }
-      rec.setHiddenState(newStates)
-    } else {
-      rec.setHiddenState(jTensorsToActivity(states.asScala.head, isTable.asScala.head))
-    }
+  def setHiddenState(rec: Recurrent[T], states: JActivity): Unit = {
+    rec.setHiddenState(states.value)
   }
 
   def containMultiRNNCell(rec: Recurrent[T]): Boolean = rec.containMultiRNNCell
@@ -2212,6 +2187,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
 
   def createMultiRNNCell(cells: JList[Cell[T]]): MultiRNNCell[T] = {
     MultiRNNCell(cells.asScala.toArray)
+  }
 
   def createHighway(size: Int, withBias: Boolean, activation: String,
     wRegularizer: Regularizer[T] = null,
