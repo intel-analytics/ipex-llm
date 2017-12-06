@@ -471,8 +471,6 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
     cells.clear()
   }
 
-  lazy val containMultiRNNCell: Boolean = topology.isInstanceOf[MultiRNNCell[T]]
-
   override def canEqual(other: Any): Boolean = other.isInstanceOf[Recurrent[T]]
 
   override def equals(other: Any): Boolean = other match {

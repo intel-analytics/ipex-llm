@@ -1320,9 +1320,6 @@ class Recurrent(Container):
     def __init__(self, bigdl_type="float"):
         super(Recurrent, self).__init__(None, bigdl_type)
 
-    def contain_multiRNNCell(self):
-            callBigDlFunc(self.bigdl_type, "containMultiRNNCell", self.value)
-
     def get_hidden_state(self):
         """
         get hidden state and cell at last time step.
@@ -1330,31 +1327,12 @@ class Recurrent(Container):
         :return: list of hidden state and cell
         """
         states = callBigDlFunc(self.bigdl_type, "getHiddenState", self.value)
-        # for state in states:
-        #     for idx, tensor in enumerate(state):
-        #         state[idx] = tensor.to_ndarray()
-        # 
-        # if self.contain_multiRNNCell == True:
-        #     return states
-        # else:
-        #     return states[0]
         return states
 
     def set_hidden_state(self, states):
         """
         set hidden state and cell at first time step.
         """
-        # if self.contain_multiRNNCell:
-        #     jStates = []
-        #     state_is_tables = []
-        #     for state in states:
-        #         jstate, state_is_table = self.check_input(state)
-        #         jStates.append(jstate)
-        #         state_is_tables.append(state_is_table)
-        #     callBigDlFunc(self.bigdl_type, "setHiddenState", self.value, jStates, state_is_tables)
-        # else:
-        #     jstate, state_is_table = self.check_input(states)
-        #     callBigDlFunc(self.bigdl_type, "setHiddenState", self.value, jstate, state_is_table)
         callBigDlFunc(self.bigdl_type, "setHiddenState", self.value, states)
 
 class RecurrentDecoder(Recurrent):

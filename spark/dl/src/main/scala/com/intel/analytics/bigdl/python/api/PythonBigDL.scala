@@ -2151,8 +2151,6 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     rec.setHiddenState(states.value)
   }
 
-  def containMultiRNNCell(rec: Recurrent[T]): Boolean = rec.containMultiRNNCell
-
   def freeze(model: AbstractModule[Activity, Activity, T], freezeLayers: JList[String])
   : AbstractModule[Activity, Activity, T] = {
     if (null == freezeLayers) model.freeze() else model.freeze(freezeLayers.asScala: _*)
