@@ -324,6 +324,36 @@ class TestSimple():
 
         optimizer.optimize()
 
+    def test_table_label(self):
+        """
+        Test for table as label in Sample.
+        For test purpose only.
+        """
+        def gen_rand_sample():
+            features1 = np.random.uniform(0, 1, 3)
+            features2 = np.random.uniform(0, 1, 3)
+            label = np.array((2 * (features1 + features2)).sum() + 0.4)
+            return Sample.from_ndarray([features1, features2], [label, label])
+
+        training_data = self.sc.parallelize(range(0, 50)).map(
+            lambda i: gen_rand_sample())
+
+        model_test = Sequential()
+        branches = ParallelTable()
+        branch1 = Sequential().add(Linear(3, 1)).add(Tanh())
+        branch2 = Sequential().add(Linear(3, 1)).add(ReLU())
+        branches.add(branch1).add(branch2)
+        model_test.add(branches)
+
+        optimizer = Optimizer(
+            model=model_test,
+            training_rdd=training_data,
+            criterion=MarginRankingCriterion(),
+            optim_method=SGD(),
+            end_trigger=MaxEpoch(5),
+            batch_size=32)
+        optimizer.optimize()
+
     def test_forward_backward(self):
         from bigdl.nn.layer import Linear
         rng = RNG()
