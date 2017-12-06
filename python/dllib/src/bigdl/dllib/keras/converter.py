@@ -107,13 +107,13 @@ class WeightsConverter:
     @staticmethod
     # weights is a list of ndarray or a ndarray
     # convert keras weights per layer to bigdl format
-    def to_bigdl_weights(class_name, weights):
-        return WeightsConverter.get_converter(class_name)(weights)
+    def to_bigdl_weights(klayer, weights):
+        return WeightsConverter.get_converter(klayer.__class__.__name__)(klayer, weights)
 
     @staticmethod
     def get_bigdl_weights_from_klayer(klayer):
         # we should use get_weights instead of klayer.weights
-        return WeightsConverter.to_bigdl_weights(klayer.__class__.__name__, klayer.get_weights())
+        return WeightsConverter.to_bigdl_weights(klayer, klayer.get_weights())
 
     @staticmethod
     def get_weights_from_kmodel(kmodel):
@@ -126,36 +126,48 @@ class WeightsConverter:
         layers_with_weights = [layer for layer in kmodel.layers if layer.weights]
         bweights = []
         for klayer in layers_with_weights:
-            # bws would be [weiths, bias] or [weights]
+            # bws would be [weights, bias] or [weights]
             bws = WeightsConverter.get_bigdl_weights_from_klayer(klayer)
             for w in bws:
                 bweights.append(w)
         return bweights
 
     @staticmethod
-    def convert_dense(weights):
+    def convert_timedistributed(klayer, weights):
+        return WeightsConverter.to_bigdl_weights(klayer.layer, weights)
+
+    @staticmethod
+    def convert_bidirectional(klayer, weights):
+        kweights_forward = weights[:int(len(weights) / 2)]
+        kweights_backward = weights[int(len(weights) / 2):]
+        bweights_forward = WeightsConverter.to_bigdl_weights(klayer.layer, kweights_forward)
+        bweights_backward = WeightsConverter.to_bigdl_weights(klayer.layer, kweights_backward)
+        return bweights_forward + bweights_backward
+
+    @staticmethod
+    def convert_dense(klayer, weights):
         return [np.transpose(weights[0]), weights[1]]
 
     @staticmethod
-    def convert_timedistributeddense(weights):
+    def convert_timedistributeddense(klayer, weights):
         return [np.transpose(weights[0]), weights[1]]
 
     @staticmethod
-    def convert_batchnormalization(weights):
+    def convert_batchnormalization(klayer, weights):
         gamma = weights[0]
         beta = weights[1]
         return [gamma, beta]
 
     @staticmethod
-    def convert_atrousconvolution2d(weights):
+    def convert_atrousconvolution2d(klayer, weights):
         return weights
 
     @staticmethod
-    def convert_atrousconvolution1d(weights):
+    def convert_atrousconvolution1d(klayer, weights):
         return [np.transpose(weights[0], (3, 2, 0, 1)), weights[1]]
 
     @staticmethod
-    def convert_deconvolution2d(weights):
+    def convert_deconvolution2d(klayer, weights):
         w = np.transpose(weights[0], (1, 0, 2, 3))
         weight = np.expand_dims(w, 0)
         if len(weights) > 1:
@@ -164,7 +176,7 @@ class WeightsConverter:
             return [weight]
 
     @staticmethod
-    def convert_convolution2d(weights):
+    def convert_convolution2d(klayer, weights):
         weight = np.expand_dims(weights[0], 0)  # bigdl has a leading dim with value 1
         if len(weights) > 1:
             return [weight, weights[1]]
@@ -172,37 +184,37 @@ class WeightsConverter:
             return [weight]
 
     @staticmethod
-    def convert_convolution1d(weights):
-        return WeightsConverter.convert_convolution2d(weights)
+    def convert_convolution1d(klayer, weights):
+        return WeightsConverter.convert_convolution2d(klayer, weights)
 
     @staticmethod
-    def convert_convolution3d(weights):
+    def convert_convolution3d(klayer, weights):
         return weights
 
     @staticmethod
-    def convert_embedding(weights):
+    def convert_embedding(klayer, weights):
         return weights
 
     @staticmethod
-    def convert_simplernn(weights):
+    def convert_simplernn(klayer, weights):
         return [np.transpose(weights[0]), np.transpose(weights[1]), weights[2]]
 
     @staticmethod
-    def convert_lstm(weights):
+    def convert_lstm(klayer, weights):
         w1 = np.concatenate((weights[0].T, weights[3].T, weights[6].T, weights[9].T))
         w2 = np.concatenate((weights[2], weights[5], weights[8], weights[11]))
         w3 = np.concatenate((weights[1].T, weights[4].T, weights[7].T, weights[10].T))
         return [w1, w2, w3]
 
     @staticmethod
-    def convert_convlstm2d(weights):
+    def convert_convlstm2d(klayer, weights):
         return [np.expand_dims(weights[6], 0), weights[8], np.expand_dims(weights[7], 0),
                 np.expand_dims(weights[0], 0), weights[2], np.expand_dims(weights[1], 0),
                 np.expand_dims(weights[3], 0), weights[5], np.expand_dims(weights[4], 0),
                 np.expand_dims(weights[9], 0), weights[11], np.expand_dims(weights[10], 0)]
 
     @staticmethod
-    def convert_gru(weights):
+    def convert_gru(klayer, weights):
         w1 = np.concatenate((weights[3].T, weights[0].T, weights[6].T))
         w2 = np.concatenate((weights[5], weights[2], weights[8]))
         w3 = np.concatenate((weights[4].T, weights[1].T))
@@ -261,8 +273,8 @@ class DefinitionLoader:
         elif isinstance(self.kmodel, Model):
             bigdlmodel = self._construct_bigdl_model()
         elif isinstance(self.kmodel, Layer):
-            bigdlmodel = LayerConverter().create(self.kmodel,
-                                                 self.node_id_to_config_layer[self.kmodel.name])
+            bigdlmodel = LayerConverter(self.kmodel,
+                                        self.node_id_to_config_layer[self.kmodel.name]).create()
         else:
             raise Exception("Should not enter here: %s" % self.kmodel)
         return bigdlmodel
@@ -298,7 +310,7 @@ class DefinitionLoader:
                                          self.node_id_to_config_layer[out_name])
                 bigdl_in_nodes.append(self.node_id_to_instance[out_name])
 
-        blayer = LayerConverter().create(layer, clayer)
+        blayer = LayerConverter(layer, clayer).create()
         new_bnode = blayer(bigdl_in_nodes)
         self.node_id_to_instance[layer.name] = new_bnode
         return new_bnode
@@ -320,16 +332,27 @@ class DefinitionLoader:
 
     def _construct_bigdl_sequence(self):
         bseq = BLayer.Sequential()
-        layerConverter = LayerConverter()
         for layer in self.kmodel.layers:
             # recursive logic is within create method.
-            blayer = layerConverter.create(layer, self.node_id_to_config_layer[layer.name])
+            blayer = LayerConverter(layer, self.node_id_to_config_layer[layer.name]).create()
             bseq.add(blayer)
         return bseq
 
 class LayerConverter:
 
-    def __check_is_share_weights(self, kclayer):
+    def __init__(self, klayer, kclayer, input_shape=None):
+        self.klayer = klayer
+        self.kclayer = kclayer
+        if "config" in kclayer:
+            self.config = kclayer["config"]
+        else:
+            self.config = {}
+        if not input_shape:
+            self.input_shape = klayer.get_input_shape_at(0)
+        else:
+            self.input_shape = input_shape
+
+    def __check_is_share_weights(self):
         # For Merge layer len(kclayer["inbound_nodes"]) is equal to 1
         # "inbound_nodes": [
         #                      [
@@ -355,108 +378,127 @@ class LayerConverter:
         #                          ]
         #                      ]
         #                  ],
-        if "inbound_nodes" in kclayer and len(kclayer["inbound_nodes"]) > 1:
+        if "inbound_nodes" in self.kclayer and len(self.kclayer["inbound_nodes"]) > 1:
             raise Exception(
-                "%s doesn't support multiple inputs with shared weights" % kclayer["class_name"])
+                "%s doesn't support multiple inputs with shared weights" % self.kclayer["class_name"])
 
-    def create(self, klayer, kclayer):
-        class_name = klayer.__class__.__name__
+    def create(self):
+        class_name = self.klayer.__class__.__name__
 
-        self.__check_is_share_weights(kclayer)
+        self.__check_is_share_weights()
 
-        if (hasattr(klayer, "b_constraint") and klayer.b_constraint) or \
-           (hasattr(klayer, "W_constraint") and klayer.W_constraint):
+        if (hasattr(self.klayer, "b_constraint") and self.klayer.b_constraint) or \
+           (hasattr(self.klayer, "W_constraint") and self.klayer.W_constraint):
             raise Exception("We don't support constraint for now")
 
-        if (hasattr(klayer, "activity_regularizer") and klayer.activity_regularizer):
+        if (hasattr(self.klayer, "activity_regularizer") and self.klayer.activity_regularizer):
             raise Exception("We don't support activity_regularizer for now")
 
         function_name = "create_" + class_name.lower()
         if not hasattr(self, function_name):
             raise Exception("We don't support layer: %s for now" % class_name )
 
-        api = getattr(self, function_name)
-        blayer = api(klayer, kclayer)
-        return blayer.set_name(klayer.name)
+        blayer_creator = getattr(self, function_name)
+        blayer = blayer_creator()
+        return blayer.set_name(self.klayer.name)
 
-    def create_model(self, klayer, kclayer):
-        return DefinitionLoader.from_kmodel(klayer)
+    def create_model(self):
+        return DefinitionLoader.from_kmodel(self.klayer)
 
-    def create_sequential(self, klayer, kclayer):
-        return DefinitionLoader.from_kmodel(klayer)
+    def create_sequential(self):
+        return DefinitionLoader.from_kmodel(self.klayer)
 
-    def create_inputlayer(self, klayer, kclayer):
+    def create_inputlayer(self):
         return BLayer.Identity()
 
-    def create_dense(self, klayer, kclayer):
-        config = kclayer["config"]
+    def create_dense(self):
         # Multiple inputs should share the same input_dim for Dense layer
         # We don't need to respect the tensor index for method `get_input_shape_at`
         # which is internal implementation and `get_input_shape_at` has hided that for us,
         # What we need to use is the input index, not node index, not tensor index.
-        input_shape = klayer.get_input_shape_at(0)
+        if len(self.input_shape) > 2:
+            raise Exception("Input for Dense must be 1D or 2D")
         blayer = BLayer.Linear(
-            input_size=int(input_shape[1]),
-            output_size=config["output_dim"],
-            with_bias=config["bias"],
-            wRegularizer=self.to_bigdl_reg(config["W_regularizer"]),
-            bRegularizer=self.to_bigdl_reg(config["b_regularizer"])
+            input_size=int(self.input_shape[-1]),  # last dim is input_dim
+            output_size=self.config["output_dim"],
+            with_bias=self.config["bias"],
+            wRegularizer=self.to_bigdl_reg(self.config["W_regularizer"]),
+            bRegularizer=self.to_bigdl_reg(self.config["b_regularizer"])
         )
-        return self.combo_parameter_layer(blayer, config)
+        return self.combo_parameter_layer(blayer, self.config)
 
-    def create_timedistributeddense(self, klayer, kclayer):
-        config = kclayer["config"]
-        input_shape = klayer.get_input_shape_at(0)
+    def create_timedistributeddense(self):
         blayer = BLayer.TimeDistributed(BLayer.Linear(
-            input_size=int(input_shape[2]),
-            output_size=config["output_dim"],
-            with_bias=config["bias"],
-            wRegularizer=self.to_bigdl_reg(config["W_regularizer"]),
-            bRegularizer=self.to_bigdl_reg(config["b_regularizer"])
+            input_size=int(self.input_shape[-1]),
+            output_size=self.config["output_dim"],
+            with_bias=self.config["bias"],
+            wRegularizer=self.to_bigdl_reg(self.config["W_regularizer"]),
+            bRegularizer=self.to_bigdl_reg(self.config["b_regularizer"])
         ))
-        return self.combo_parameter_layer(blayer, config)
+        return self.combo_parameter_layer(blayer, self.config)
 
-    def create_embedding(self, klayer, kclayer):
-        config = kclayer["config"]
-        input_shape = klayer.get_input_shape_at(0) # batch, seq_len
-        seq_len = int(input_shape[1])
-        if klayer.input_length and klayer.input_length != seq_len:
+    def create_timedistributed(self):
+        # input_shape is (batch, time, other dims)
+        inner_input_shape = (self.input_shape[0], ) + self.input_shape[2:]
+        blayer = LayerConverter(self.klayer.layer, self.config['layer'], inner_input_shape).create()
+        return BLayer.TimeDistributed(blayer)
+
+    def create_bidirectional(self):
+        if not self.klayer.layer.return_sequences:
+            raise Exception("Only return_sequences=True is supported for RNNs for now")
+        recurrent_name = "generate_" + self.klayer.layer.__class__.__name__.lower() + "_cell"
+
+        recurrent_creator = getattr(self, recurrent_name)
+        recurrent = recurrent_creator(self.klayer.layer, self.config['layer'], self.input_shape)
+        if self.klayer.merge_mode == "concat":
+            merge = BLayer.JoinTable(len(self.input_shape) - 1, len(self.input_shape) - 1)
+        elif self.klayer.merge_mode == "sum":
+            merge = BLayer.CAddTable()
+        elif self.klayer.merge_mode == "mul":
+            merge = BLayer.CMulTable()
+        elif self.klayer.merge_mode == "ave":
+            merge = BLayer.CAveTable()
+        else:
+            raise Exception("Invalid merge mode: %s" % self.klayer.merge_mode)
+        blayer = BLayer.BiRecurrent(merge).add(recurrent)
+        return blayer
+
+    def create_embedding(self):
+        seq_len = int(self.input_shape[1])
+        if self.klayer.input_length and self.klayer.input_length != seq_len:
             raise Exception(
-                "The input_length doesn't match: %s vs %s" % (seq_len, klayer.input_length))
+                "The input_length doesn't match: %s vs %s" % (seq_len, self.klayer.input_length))
 
-        if (hasattr(klayer, "dropout") and klayer.dropout != 0):
+        if (hasattr(self.klayer, "dropout") and self.klayer.dropout != 0):
             raise Exception("We don't support dropout for now")
 
-        if (hasattr(klayer, "mask_zero") and klayer.mask_zero != False):
+        if (hasattr(self.klayer, "mask_zero") and self.klayer.mask_zero != False):
             raise Exception("We don't support mask_zero for now")
 
         bseq = BLayer.Sequential()
         blayer = BLayer.LookupTable(
-                 n_index = klayer.input_dim,
-                 n_output = klayer.output_dim,
+                 n_index=self.klayer.input_dim,
+                 n_output=self.klayer.output_dim,
                  padding_value=0.0,
                  norm_type=2.0,
                  should_scale_grad_by_freq=False,
-                 wRegularizer= self.to_bigdl_reg(config["W_regularizer"]),
+                 wRegularizer=self.to_bigdl_reg(self.config["W_regularizer"]),
                  bigdl_type="float")
-        bseq.add(BLayer.AddConstant(1.0, inplace=True)) # Add 1 as BigDL is one-based index
+        bseq.add(BLayer.AddConstant(1.0, inplace=True))  # Add 1 as BigDL is one-based index
         bseq.add(blayer)
         return bseq
 
-    def create_activation(self, klayer, kclayer):
-        config = kclayer["config"]
-        return get_activation_by_name(config["activation"], klayer.name)
+    def create_activation(self):
+        return get_activation_by_name(self.config["activation"], self.klayer.name)
 
-    def create_dropout(self, klayer, kclayer):
-        return BLayer.Dropout(klayer.p)
+    def create_dropout(self):
+        return BLayer.Dropout(self.klayer.p)
 
-    def create_flatten(self, klayer, kclayer):
-        input_shape = klayer.input_shape
-        blayer = BLayer.Reshape([int(np.prod(input_shape[1:]))], None)
-        return blayer
+    def create_flatten(self):
+        return BLayer.Reshape([int(np.prod(self.input_shape[1:]))], None)
 
-    def create_permute(self, klayer, kclayer):
-        swaps = self.__perm_to_pair(list(klayer.dims))
+    def create_permute(self):
+        swaps = self.__perm_to_pair(list(self.klayer.dims))
         swaps.reverse()
         swaps = map(lambda pair: (pair[0]+1, pair[1]+1), swaps)
         return BLayer.Transpose(list(swaps))
@@ -494,64 +536,64 @@ class LayerConverter:
 
         return list(filter(lambda pair: pair[0] != pair[1], pairs))
 
-    def create_reshape(self, klayer, kclayer):
-        blayer = BLayer.Reshape(klayer.target_shape, None)
+    def create_reshape(self):
+        blayer = BLayer.Reshape(self.klayer.target_shape, None)
         return blayer
 
-    def create_repeatvector(self, klayer, kclayer):
-        return BLayer.Replicate(n_features=klayer.n,
+    def create_repeatvector(self):
+        return BLayer.Replicate(n_features=self.klayer.n,
                                 n_dim=1,
                                 bigdl_type="float")
 
-    def __is_from_sequential(self, klayer, kclayer):
-        return "layers" in kclayer["config"] and hasattr(klayer, "layers") and klayer.layers is not None  # noqa
+    def __is_from_sequential(self):
+        return "layers" in self.kclayer["config"] and hasattr(self.klayer, "layers") and self.klayer.layers is not None  # noqa
 
-    def create_merge(self, klayer, kclayer):
-        input_shape = klayer.get_input_shape_at(0)
-        if klayer.output_shape and not isinstance(klayer.output_shape, tuple):
+    def create_merge(self):
+        if self.klayer.output_shape and not isinstance(self.klayer.output_shape, tuple):
             raise Exception("Only output_shape=None or a shape tuple is supported for now")
-        if klayer.node_indices and not all(0 == i for i in klayer.node_indices):
+        if self.klayer.node_indices and not all(0 == i for i in self.klayer.node_indices):
             unsupport_exp("node_indices")
-        if klayer.output_mask:
+        if self.klayer.output_mask:
             unsupport_exp("output_mask")
-        if klayer.mode == "concat":
+        if self.klayer.mode == "concat":
             blayer = BLayer.JoinTable(
-                dimension=klayer.concat_axis,
-                n_input_dims=len(input_shape[0]) - 1,
+                dimension=self.klayer.concat_axis,
+                n_input_dims=len(self.input_shape[0]) - 1,
                 bigdl_type="float")
-        elif klayer.mode == "sum":
+        elif self.klayer.mode == "sum":
             blayer = BLayer.CAddTable(
                 inplace=False,
                 bigdl_type="float")
-        elif klayer.mode == "mul":
+        elif self.klayer.mode == "mul":
             blayer = BLayer.CMulTable(bigdl_type="float")
-        elif klayer.mode == "max":
+        elif self.klayer.mode == "max":
             blayer = BLayer.CMaxTable(bigdl_type="float")
-        elif klayer.mode == "dot":
-            if len(input_shape[0]) >= 3:
+        elif self.klayer.mode == "dot":
+            if len(self.input_shape[0]) >= 3:
                 raise Exception("For merge mode dot, 3D input or above is not supported for now.")
-            if klayer.dot_axes != [1, 1]:
+            if self.klayer.dot_axes != [1, 1]:
                 raise Exception("For merge mode dot, only dot_axes=1 is supported for now.")
             model = BLayer.Sequential()
             blayer = model.add(BLayer.DotProduct(bigdl_type="float"))\
                 .add(BLayer.Reshape([1], True))
-        elif klayer.mode == "ave":
+        elif self.klayer.mode == "ave":
             blayer = BLayer.CAveTable(
                 inplace=False,
                 bigdl_type="float")
-        elif klayer.mode in ['cos']:
-            if len(input_shape[0]) >= 3:
+        elif self.klayer.mode in ['cos']:
+            if len(self.input_shape[0]) >= 3:
                 raise Exception("For merge mode cos, 3D input or above is not supported for now.")
-            if klayer.dot_axes != [1, 1]:
+            if self.klayer.dot_axes != [1, 1]:
                 raise Exception("For merge mode cos, only dot_axes=1 is supported for now.")
             blayer = BLayer.Sequential()
             blayer.add(BLayer.CosineDistance(bigdl_type="float")).add(BLayer.Reshape([1, 1], True))
         else:  # invalid mode or lambda functions
-            raise Exception("Invalid merge mode: `%s`. Lambda/function as merge mode is not supported for now." % klayer.mode)
-        if self.__is_from_sequential(klayer, kclayer):
+            raise Exception("Invalid merge mode: `%s`. Lambda/function as merge mode is not supported for now."
+                            % self.klayer.mode)
+        if self.__is_from_sequential():
             bseq = BLayer.Sequential()
             parallel_table = BLayer.ParallelTable()
-            for l in klayer.layers:
+            for l in self.klayer.layers:
                 bl = DefinitionLoader.from_kmodel(l)
                 parallel_table.add(bl)
             bseq.add(parallel_table)
@@ -560,24 +602,24 @@ class LayerConverter:
         else:
             return blayer
 
-    def create_elu(self, klayer, kclayer):
-        return BLayer.ELU(alpha=float(klayer.alpha),
+    def create_elu(self):
+        return BLayer.ELU(alpha=float(self.klayer.alpha),
                           inplace=False,
                           bigdl_type="float")
 
-    def create_prelu(self, klayer, kclayer):
+    def create_prelu(self):
         return BLayer.PReLU(n_output_plane=0,
                             bigdl_type="float")
 
-    def create_leakyrelu(self, klayer, kclayer):
-        return BLayer.LeakyReLU(negval=float(klayer.alpha),
+    def create_leakyrelu(self):
+        return BLayer.LeakyReLU(negval=float(self.klayer.alpha),
                                 inplace=False,
                                 bigdl_type="float")
 
-    def create_parametricsoftplus(self, klayer, kclayer):
-        alpha = float(klayer.alpha_init)
-        beta = float(klayer.beta_init)
-        if klayer.shared_axes != [None]:
+    def create_parametricsoftplus(self):
+        alpha = float(self.klayer.alpha_init)
+        beta = float(self.klayer.beta_init)
+        if self.klayer.shared_axes != [None]:
             unsupport_exp("shared_axes")
         if round(alpha * beta, 4) == 1.0:
             return BLayer.SoftPlus(beta=beta,
@@ -585,8 +627,8 @@ class LayerConverter:
         else:
             raise Exception("Only alpha_init = 1/beta_init is supported for now")
 
-    def create_thresholdedrelu(self, klayer, kclayer):
-        return BLayer.Threshold(th=float(klayer.theta),
+    def create_thresholdedrelu(self):
+        return BLayer.Threshold(th=float(self.klayer.theta),
                                 v=0.0,
                                 ip=False,
                                 bigdl_type="float")
@@ -598,8 +640,8 @@ class LayerConverter:
                                          pad_bottom=pad_bottom,
                                          bigdl_type="float")
 
-    def create_zeropadding1d(self, klayer, kclayer):
-        padding = klayer.padding
+    def create_zeropadding1d(self):
+        padding = self.klayer.padding
         if isinstance(padding, int):
             return self.__generate_zeropadding1d(padding, padding)
         elif isinstance(padding, dict):
@@ -641,66 +683,64 @@ class LayerConverter:
         return model
 
     # NB: zeropadding doesn't serialize dim_ording to json file
-    def create_zeropadding2d(self, klayer, kclayer):
-        padding = klayer.padding
-        input_shape = klayer.get_input_shape_at(0)
+    def create_zeropadding2d(self):
+        padding = self.klayer.padding
         dim = 1
-        if klayer.dim_ordering == "th":
+        if self.klayer.dim_ordering == "th":
             dim = 2
         if isinstance(padding, dict):  # dictionary
-            return self.__generate_zeropadding2d(dim, dim+1, len(input_shape) - 1,
+            return self.__generate_zeropadding2d(dim, dim+1, len(self.input_shape) - 1,
                                                  -padding.get('top_pad', 0), padding.get('bottom_pad', 0),
                                                  -padding.get('left_pad', 0), padding.get('right_pad', 0))
         else:  # tuple of int
             padding = tuple(padding)
             if len(padding) == 2:
-                return self.__generate_zeropadding2d(dim, dim+1, len(input_shape) - 1,
+                return self.__generate_zeropadding2d(dim, dim+1, len(self.input_shape) - 1,
                                                      -padding[0], padding[0], -padding[1], padding[1])
             elif len(padding) == 4:
-                return self.__generate_zeropadding2d(dim, dim+1, len(input_shape) - 1,
+                return self.__generate_zeropadding2d(dim, dim+1, len(self.input_shape) - 1,
                                                      -padding[0], padding[1], -padding[2], padding[3])
 
     # NB: zeropadding doesn't serialize dim_ording to json file
-    def create_zeropadding3d(self, klayer, kclayer):
-        padding = tuple(klayer.padding)
-        input_shape = klayer.get_input_shape_at(0)
+    def create_zeropadding3d(self):
+        padding = tuple(self.klayer.padding)
         dim = 1
-        if klayer.dim_ordering == "th":
+        if self.klayer.dim_ordering == "th":
             dim = 2
         model = BLayer.Sequential()
         paddinglayer1 = BLayer.Padding(dim=dim,
                                        pad=-padding[0],
-                                       n_input_dim=len(input_shape) - 1,
+                                       n_input_dim=len(self.input_shape) - 1,
                                        value=0.0,
                                        n_index=1,
                                        bigdl_type="float")
         paddinglayer2 = BLayer.Padding(dim=dim,
                                        pad=padding[0],
-                                       n_input_dim=len(input_shape) - 1,
+                                       n_input_dim=len(self.input_shape) - 1,
                                        value=0.0,
                                        n_index=1,
                                        bigdl_type="float")
         paddinglayer3 = BLayer.Padding(dim=dim+1,
                                        pad=-padding[1],
-                                       n_input_dim=len(input_shape) - 1,
+                                       n_input_dim=len(self.input_shape) - 1,
                                        value=0.0,
                                        n_index=1,
                                        bigdl_type="float")
         paddinglayer4 = BLayer.Padding(dim=dim+1,
                                        pad=padding[1],
-                                       n_input_dim=len(input_shape) - 1,
+                                       n_input_dim=len(self.input_shape) - 1,
                                        value=0.0,
                                        n_index=1,
                                        bigdl_type="float")
         paddinglayer5 = BLayer.Padding(dim=dim+2,
                                        pad=-padding[2],
-                                       n_input_dim=len(input_shape) - 1,
+                                       n_input_dim=len(self.input_shape) - 1,
                                        value=0.0,
                                        n_index=1,
                                        bigdl_type="float")
         paddinglayer6 = BLayer.Padding(dim=dim+2,
                                        pad=padding[2],
-                                       n_input_dim=len(input_shape) - 1,
+                                       n_input_dim=len(self.input_shape) - 1,
                                        value=0.0,
                                        n_index=1,
                                        bigdl_type="float")
@@ -712,27 +752,34 @@ class LayerConverter:
         model.add(paddinglayer6)
         return model
 
-    def create_cropping1d(self, klayer, kclayer):
-        cropping = tuple(klayer.cropping)
+    def create_cropping1d(self):
+        cropping = tuple(self.klayer.cropping)
         return BLayer.SpatialZeroPadding(0, 0, -cropping[0], -cropping[1])
 
-    def __return_sequences(self, return_sequences, blayer):
-        # For recurrent layers, handle whether to return the last output sentence or the full sequence.
-        if return_sequences:
-            return blayer
-        else:
-            model = BLayer.Sequential()
-            model.add(blayer)
-            model.add(BLayer.Select(2, -1))
-            return model
+    def __check_recurrent_parameters(self, klayer):
+        if klayer.stateful:
+            raise Exception("Only stateful=False for recurrent layers is supported for now")
+        if hasattr(klayer, "consume_less") and klayer.consume_less == "gpu":
+            raise Exception("consume_less=gpu is not supported for now")
 
-    def create_simplernn(self, klayer, kclayer):
-        rec = BLayer.Recurrent()
-        input_shape = klayer.get_input_shape_at(0)
+    def __process_recurrent_layer(self, return_sequences, go_backwards, blayer):
+        # For recurrent layers,
+        # handle whether to return the last output sentence or the full sequence;
+        # handle whether the input will go backwards
+        model = BLayer.Sequential()
+        if go_backwards:
+            model.add(BLayer.Reverse(2))
+        model.add(blayer)
+        if not return_sequences:
+            model.add(BLayer.Select(2, -1))
+        return model
+
+    def generate_simplernn_cell(self, klayer, kclayer, input_shape):  # create a simplernn cell only
+        self.__check_recurrent_parameters(klayer)
         config = kclayer["config"]
         self.check_constraint_in_config(config)
         activation = get_activation_by_name(config["activation"],
-                                              "%s_%s" % (config["name"], config["activation"]))
+                                            "%s_%s" % (config["name"], config["activation"]))
         rnn = BLayer.RnnCell(input_size=int(input_shape[2]),
                              hidden_size=klayer.output_dim,
                              activation=activation,
@@ -741,17 +788,22 @@ class LayerConverter:
                              uRegularizer=self.to_bigdl_reg(config["U_regularizer"]),
                              bRegularizer=self.to_bigdl_reg(config["b_regularizer"]),
                              bigdl_type="float")
-        return self.__return_sequences(klayer.return_sequences, rec.add(rnn))
+        return rnn
 
-    def create_lstm(self, klayer, kclayer):
+    def create_simplernn(self):
         rec = BLayer.Recurrent()
-        input_shape = klayer.get_input_shape_at(0)
+        rnn = self.generate_simplernn_cell(self.klayer, self.kclayer, self.input_shape)
+        return self.__process_recurrent_layer(self.klayer.return_sequences,
+                                              self.klayer.go_backwards, rec.add(rnn))
+
+    def generate_lstm_cell(self, klayer, kclayer, input_shape):  # create a lstm cell only
+        self.__check_recurrent_parameters(klayer)
         config = kclayer["config"]
         self.check_constraint_in_config(config)
         activation = get_activation_by_name(config["activation"],
-                                              "%s_%s" % (config["name"], config["activation"]))
+                                            "%s_%s" % (config["name"], config["activation"]))
         inner_activation = get_activation_by_name(config["inner_activation"],
-                                              "%s_%s" % (config["name"], config["inner_activation"]))
+                                                  "%s_%s" % (config["name"], config["inner_activation"]))
         lstm = BLayer.LSTM(input_size=int(input_shape[2]),
                            hidden_size=klayer.output_dim,
                            p=0.0,
@@ -761,55 +813,66 @@ class LayerConverter:
                            uRegularizer=self.to_bigdl_reg(config["U_regularizer"]),
                            bRegularizer=self.to_bigdl_reg(config["b_regularizer"]),
                            bigdl_type="float")
-        return self.__return_sequences(klayer.return_sequences, rec.add(lstm))
+        return lstm
 
-    def create_convlstm2d(self, klayer, kclayer):
+    def create_lstm(self):
         rec = BLayer.Recurrent()
-        input_shape = klayer.get_input_shape_at(0)
+        lstm = self.generate_lstm_cell(self.klayer, self.kclayer, self.input_shape)
+        return self.__process_recurrent_layer(self.klayer.return_sequences,
+                                              self.klayer.go_backwards, rec.add(lstm))
+
+    def generate_convlstm2d_cell(self, klayer, kclayer, input_shape):  # create a convlstm2d cell only
+        self.__check_recurrent_parameters(klayer)
         config = kclayer["config"]
         self.check_constraint_in_config(config)
         activation = get_activation_by_name(config["activation"],
-                                              "%s_%s" % (config["name"], config["activation"]))
+                                            "%s_%s" % (config["name"], config["activation"]))
         inner_activation = get_activation_by_name(config["inner_activation"],
-                                                    "%s_%s" % (config["name"], config["inner_activation"]))
+                                                  "%s_%s" % (config["name"], config["inner_activation"]))
 
-        #TODO: border_mode = 'valid'
-        if config["border_mode"] != 'same':
+        convlstm = BLayer.ConvLSTMPeephole(input_size=int(input_shape[2]),
+                                           output_size=config["nb_filter"],
+                                           kernel_i=config["nb_col"],
+                                           kernel_c=config["nb_row"],
+                                           # NB: ConvLSTM doesn't serialize subsample to json file
+                                           stride=klayer.subsample[0],
+                                           padding=-1,
+                                           activation=activation,
+                                           inner_activation=inner_activation,
+                                           # NB: ConvLSTM doesn't serialize regularizers to json file
+                                           # wRegularizer=self.to_bigdl_reg(config["W_regularizer"]),
+                                           # uRegularizer=self.to_bigdl_reg(config["U_regularizer"]),
+                                           # bRegularizer=self.to_bigdl_reg(config["b_regularizer"]),
+                                           cRegularizer=None,
+                                           with_peephole=False,
+                                           bigdl_type="float")
+        return convlstm
+
+    def create_convlstm2d(self):
+        # TODO: border_mode = 'valid'
+        if self.config["border_mode"] != 'same':
             raise Exception("Unsupported border_mode: valid")
 
-        if config["nb_row"] != config["nb_col"]:
+        if self.config["nb_row"] != self.config["nb_col"]:
             raise Exception("Only square kernel is supported for now. Please set nb_row=nb_col.")
-        if klayer.subsample[0] != klayer.subsample[1]:
+        if self.klayer.subsample[0] != self.klayer.subsample[1]:
             raise Exception("Only equal stride is supported for now. "
                             "Please set subsample to be a tuple with equal values.")
 
-        blayer = BLayer.ConvLSTMPeephole(input_size=int(input_shape[2]),
-                                         output_size=config["nb_filter"],
-                                         kernel_i=config["nb_col"],
-                                         kernel_c=config["nb_row"],
-                                         # NB: ConvLSTM doesn't serialize subsample to json file
-                                         stride=klayer.subsample[0],
-                                         padding=-1,
-                                         activation=activation,
-                                         inner_activation=inner_activation,
-                                         # NB: ConvLSTM doesn't serialize regularizers to json file
-                                         # wRegularizer=self.to_bigdl_reg(config["W_regularizer"]),
-                                         # uRegularizer=self.to_bigdl_reg(config["U_regularizer"]),
-                                         # bRegularizer=self.to_bigdl_reg(config["b_regularizer"]),
-                                         cRegularizer=None,
-                                         with_peephole=False,
-                                         bigdl_type="float")
-        return self.__return_sequences(klayer.return_sequences, rec.add(blayer))
-
-    def create_gru(self, klayer, kclayer):
         rec = BLayer.Recurrent()
-        input_shape = klayer.get_input_shape_at(0)
+        convlstm = self.generate_convlstm2d_cell(self.klayer,
+                                                 self.kclayer, self.input_shape)
+        return self.__process_recurrent_layer(self.klayer.return_sequences,
+                                              self.klayer.go_backwards, rec.add(convlstm))
+
+    def generate_gru_cell(self, klayer, kclayer, input_shape):  # create a gru cell only
+        self.__check_recurrent_parameters(klayer)
         config = kclayer["config"]
         self.check_constraint_in_config(config)
         activation = get_activation_by_name(config["activation"],
-                                              "%s_%s" % (config["name"], config["activation"]))
+                                            "%s_%s" % (config["name"], config["activation"]))
         inner_activation = get_activation_by_name(config["inner_activation"],
-                                                    "%s_%s" % (config["name"], config["inner_activation"]))
+                                                  "%s_%s" % (config["name"], config["inner_activation"]))
         gru = BLayer.GRU(input_size=int(input_shape[2]),
                          hidden_size=klayer.output_dim,
                          p=0.0,
@@ -819,36 +882,40 @@ class LayerConverter:
                          uRegularizer=self.to_bigdl_reg(config["U_regularizer"]),
                          bRegularizer=self.to_bigdl_reg(config["b_regularizer"]),
                          bigdl_type="float")
-        return self.__return_sequences(klayer.return_sequences, rec.add(gru))
+        return gru
 
-    def create_batchnormalization(self, klayer, kclayer):
-        config = kclayer["config"]
-        if keras.backend.image_dim_ordering() != "th" or klayer.axis != 1:
+    def create_gru(self):
+        rec = BLayer.Recurrent()
+        gru = self.generate_gru_cell(self.klayer, self.kclayer, self.input_shape)
+        return self.__process_recurrent_layer(self.klayer.return_sequences,
+                                              self.klayer.go_backwards, rec.add(gru))
+
+    def create_batchnormalization(self):
+        if keras.backend.image_dim_ordering() != "th" or self.klayer.axis != 1:
             raise Exception("""For BatchNormalization, we only support th image ordering (i.e. NCHW) """ +
                             """with axis = 1 for now, but the current order is %s and axis is %s
-            """ % (keras.backend.image_dim_ordering(), klayer.axis))  # noqa
-        if klayer.mode != 0:
+            """ % (keras.backend.image_dim_ordering(), self.klayer.axis))  # noqa
+        if self.klayer.mode != 0:
             raise Exception(
-                "Only support mode = 0 for now, but the current mode is: %s", klayer.mode)
+                "Only support mode = 0 for now, but the current mode is: %s", self.klayer.mode)
 
-        if config["gamma_regularizer"]:
+        if self.config["gamma_regularizer"]:
             raise Exception("We don't support gamma_regularizer for now")
 
-        if config["beta_regularizer"]:
+        if self.config["beta_regularizer"]:
             raise Exception("We don't support beta_regularizer for now")
 
-        input_shape = klayer.get_input_shape_at(0)
-        n_input_channel = int(input_shape[klayer.axis])  # default is -1 which is channel-last
+        n_input_channel = int(self.input_shape[self.klayer.axis])  # default is -1 which is channel-last
 
         # init gamma and beta
         # TODO: replace this with to_bigdl_init in the future
-        gamma = self.get_value_from_init(klayer.gamma_init.__name__, (n_input_channel,))
-        beta = self.get_value_from_init(klayer.beta_init.__name__, (n_input_channel,))
+        gamma = self.get_value_from_init(self.klayer.gamma_init.__name__, (n_input_channel,))
+        beta = self.get_value_from_init(self.klayer.beta_init.__name__, (n_input_channel,))
 
         blayer = BLayer.SpatialBatchNormalization(
                  n_output=n_input_channel,
-                 eps=klayer.epsilon,
-                 momentum=klayer.momentum,
+                 eps=self.klayer.epsilon,
+                 momentum=self.klayer.momentum,
                  affine=True,
                  init_weight=gamma,
                  init_bias=beta,
@@ -856,22 +923,19 @@ class LayerConverter:
                  init_grad_bias=None,
                  bigdl_type="float")
 
-        k_running_mean = keras.backend.eval(klayer.running_mean)
-        k_running_std = keras.backend.eval(klayer.running_std)
+        k_running_mean = keras.backend.eval(self.klayer.running_mean)
+        k_running_std = keras.backend.eval(self.klayer.running_std)
         blayer.set_running_mean(k_running_mean)
         blayer.set_running_std(k_running_std)
         return blayer
 
-    def get_bdim_order(self, kclayer):
-        return self.to_bigdl_2d_ordering(self.get_kdim_order(kclayer))
-
-    def get_kdim_order(self, kclayer):
-        config = kclayer["config"]
-        if "dim_ordering" in config:
-            return config["dim_ordering"]
+    def get_bdim_order(self):  # get bigdl dim_ordering from keras dim_ordering
+        if "dim_ordering" in self.config:
+            order = self.config["dim_ordering"]
         else:
-            warnings.warn("Cannot find dim_ordering from json definition. Use default instead.")
-            return keras.backend.image_dim_ordering()
+            warnings.warn("Cannot find dim_ordering from json definition. Using the default instead.")
+            order = keras.backend.image_dim_ordering()
+        return self.to_bigdl_2d_ordering(order)
 
     def to_bigdl_2d_ordering(self, order):
         if order == "tf":
@@ -879,7 +943,7 @@ class LayerConverter:
         elif order == "th":
             return "NCHW"
         else:
-            raise Exception("Unsupport ordering: %s" % order)
+            raise Exception("Unsupported dim_ordering: %s" % order)
 
     def to_bigdl_3d_padding(self, border_mode):
         if border_mode == "valid":
@@ -906,212 +970,200 @@ class LayerConverter:
         else:
             raise Exception("Unsupported border mode: %s" % border_mode)
 
-    def create_convolution1d(self, klayer, kclayer):
-        config = kclayer["config"]
-        input_shape = klayer.get_input_shape_at(0)
+    def create_convolution1d(self):
         # batch, steps, dim, batch is None here, so you cannot use it directly.
-        stack_size = int(input_shape[2])
+        stack_size = int(self.input_shape[2])
 
-        bpadW, bpadH = self.to_bigdl_2d_padding(klayer.border_mode)
+        bpadW, bpadH = self.to_bigdl_2d_padding(self.klayer.border_mode)
         seq = BLayer.Sequential()
-        seq.add(BLayer.Reshape([int(input_shape[1]), 1, int(input_shape[2])], True))
+        seq.add(BLayer.Reshape([int(self.input_shape[1]), 1, int(self.input_shape[2])], True))
         blayer = BLayer.SpatialConvolution(
                  n_input_plane=stack_size,
-                 n_output_plane=klayer.nb_filter,
+                 n_output_plane=self.klayer.nb_filter,
                  kernel_w=1,
-                 kernel_h=klayer.filter_length,
+                 kernel_h=self.klayer.filter_length,
                  stride_w=1,
-                 stride_h=klayer.subsample_length,
+                 stride_h=self.klayer.subsample_length,
                  pad_w=bpadW,
                  pad_h=bpadH,
                  n_group=1,
                  propagate_back=True,
-                 wRegularizer=self.to_bigdl_reg(config["W_regularizer"]),
-                 bRegularizer=self.to_bigdl_reg(config["b_regularizer"]),
+                 wRegularizer=self.to_bigdl_reg(self.config["W_regularizer"]),
+                 bRegularizer=self.to_bigdl_reg(self.config["b_regularizer"]),
                  init_weight=None,
                  init_bias=None,
                  init_grad_weight=None,
                  init_grad_bias=None,
-                 with_bias=config["bias"],
+                 with_bias=self.config["bias"],
                  data_format="NHWC",
                  bigdl_type="float")
         seq.add(blayer)
         seq.add(BLayer.Squeeze(3))
-        return self.combo_parameter_layer(seq, config)
+        return self.combo_parameter_layer(seq, self.config)
 
-    def create_convolution2d(self, klayer, kclayer):
-        config = kclayer["config"]
-        bigdl_order = self.get_bdim_order(kclayer)
-        input_shape = klayer.get_input_shape_at(0)
+    def create_convolution2d(self):
+        bigdl_order = self.get_bdim_order()
 
         if bigdl_order == "NCHW":
-            stack_size = int(input_shape[1])
+            stack_size = int(self.input_shape[1])
         elif bigdl_order == "NHWC":
-            stack_size = int(input_shape[3])
+            stack_size = int(self.input_shape[3])
 
-        bpadW, bpadH = self.to_bigdl_2d_padding(klayer.border_mode)
+        bpadW, bpadH = self.to_bigdl_2d_padding(self.klayer.border_mode)
         blayer = BLayer.SpatialConvolution(
                  n_input_plane=stack_size,
-                 n_output_plane=klayer.nb_filter,
-                 kernel_w=klayer.nb_col,
-                 kernel_h=klayer.nb_row,
-                 stride_w=klayer.subsample[0],
-                 stride_h=klayer.subsample[1],
+                 n_output_plane=self.klayer.nb_filter,
+                 kernel_w=self.klayer.nb_col,
+                 kernel_h=self.klayer.nb_row,
+                 stride_w=self.klayer.subsample[0],
+                 stride_h=self.klayer.subsample[1],
                  pad_w=bpadW,
                  pad_h=bpadH,
                  n_group=1,
                  propagate_back=True,
-                 wRegularizer=self.to_bigdl_reg(config["W_regularizer"]),
-                 bRegularizer=self.to_bigdl_reg(config["b_regularizer"]),
+                 wRegularizer=self.to_bigdl_reg(self.config["W_regularizer"]),
+                 bRegularizer=self.to_bigdl_reg(self.config["b_regularizer"]),
                  init_weight=None,
                  init_bias=None,
                  init_grad_weight=None,
                  init_grad_bias=None,
-                 with_bias=config["bias"],
+                 with_bias=self.config["bias"],
                  data_format=bigdl_order,
                  bigdl_type="float")
 
-        return self.combo_parameter_layer(blayer, config)
+        return self.combo_parameter_layer(blayer, self.config)
 
-    def create_convolution3d(self, klayer, kclayer):
-        config = kclayer["config"]
-        if klayer.dim_ordering != "th":
-            raise Exception("Please use `th` for `dim_ordering`. `%s` is not supported for now." % klayer.dim_ordering)
-        input_shape = klayer.get_input_shape_at(0)
+    def create_convolution3d(self):
+        if self.klayer.dim_ordering != "th":
+            raise Exception("Please use `th` for `dim_ordering`. `%s` is not supported for now." % self.klayer.dim_ordering)
 
-        bpadT, bpadW, bpadH = self.to_bigdl_3d_padding(klayer.border_mode)
+        bpadT, bpadW, bpadH = self.to_bigdl_3d_padding(self.klayer.border_mode)
         blayer = BLayer.VolumetricConvolution(
-            n_input_plane=int(input_shape[1]),
-            n_output_plane=klayer.nb_filter,
-            k_t=klayer.kernel_dim1,
-            k_w=klayer.kernel_dim3,
-            k_h=klayer.kernel_dim2,
-            d_t=klayer.subsample[0],
-            d_w=klayer.subsample[2],
-            d_h=klayer.subsample[1],
+            n_input_plane=int(self.input_shape[1]),
+            n_output_plane=self.klayer.nb_filter,
+            k_t=self.klayer.kernel_dim1,
+            k_w=self.klayer.kernel_dim3,
+            k_h=self.klayer.kernel_dim2,
+            d_t=self.klayer.subsample[0],
+            d_w=self.klayer.subsample[2],
+            d_h=self.klayer.subsample[1],
             pad_t=bpadT,
             pad_w=bpadW,
             pad_h=bpadH,
-            with_bias=config["bias"],
-            wRegularizer=self.to_bigdl_reg(config["W_regularizer"]),
-            bRegularizer=self.to_bigdl_reg(config["b_regularizer"]),
+            with_bias=self.config["bias"],
+            wRegularizer=self.to_bigdl_reg(self.config["W_regularizer"]),
+            bRegularizer=self.to_bigdl_reg(self.config["b_regularizer"]),
             bigdl_type="float")
 
-        return self.combo_parameter_layer(blayer, config)
+        return self.combo_parameter_layer(blayer, self.config)
 
-    def create_atrousconvolution1d(self, klayer, kclayer):
-        config = kclayer["config"]
-        if not config["bias"]:
+    def create_atrousconvolution1d(self):
+        if not self.config["bias"]:
             raise Exception("Please set `bias=True` for AtrousConvolution1D")
-        input_shape = klayer.get_input_shape_at(0)
 
         # TODO: border_mode=`same`
-        if klayer.border_mode == "same":
-            raise Exception("Unsupported border mode: %s" % klayer.border_mode)
-        bpadW, bpadH = self.to_bigdl_2d_padding(klayer.border_mode)
+        if self.klayer.border_mode == "same":
+            raise Exception("Unsupported border mode: %s" % self.klayer.border_mode)
+        bpadW, bpadH = self.to_bigdl_2d_padding(self.klayer.border_mode)
         seq = BLayer.Sequential()
         seq.add(BLayer.Transpose([(2, 3)]))
-        seq.add(BLayer.Reshape([int(input_shape[2]), int(input_shape[1]), 1], True))
+        seq.add(BLayer.Reshape([int(self.input_shape[2]), int(self.input_shape[1]), 1], True))
         blayer = BLayer.SpatialDilatedConvolution(
-            n_input_plane=int(input_shape[2]),
-            n_output_plane=config["nb_filter"],
+            n_input_plane=int(self.input_shape[2]),
+            n_output_plane=self.config["nb_filter"],
             kw=1,
-            kh=config["filter_length"],
+            kh=self.config["filter_length"],
             dw=1,
-            dh=config["subsample_length"],
+            dh=self.config["subsample_length"],
             pad_w=bpadW,
             pad_h=bpadH,
             dilation_w=1,
-            dilation_h=config["atrous_rate"],
-            wRegularizer=self.to_bigdl_reg(config["W_regularizer"]),
-            bRegularizer=self.to_bigdl_reg(config["b_regularizer"]),
+            dilation_h=self.config["atrous_rate"],
+            wRegularizer=self.to_bigdl_reg(self.config["W_regularizer"]),
+            bRegularizer=self.to_bigdl_reg(self.config["b_regularizer"]),
             bigdl_type="float")
 
         seq.add(blayer)
         seq.add(BLayer.Transpose([(2, 3)]))
         seq.add(BLayer.Squeeze(4))
-        return self.combo_parameter_layer(seq, config)
+        return self.combo_parameter_layer(seq, self.config)
 
-    def create_atrousconvolution2d(self, klayer, kclayer):
-        config = kclayer["config"]
-        if klayer.dim_ordering != "th":
-            raise Exception("Please use `th` for `dim_ordering`. `%s` is not supported for now." % klayer.dim_ordering)
-        if not config["bias"]:
+    def create_atrousconvolution2d(self):
+        if self.klayer.dim_ordering != "th":
+            raise Exception("Please use `th` for `dim_ordering`. `%s` is not supported for now." % self.klayer.dim_ordering)
+        if not self.config["bias"]:
             raise Exception("Please set `bias=True` for AtrousConvolution2D")
-        input_shape = klayer.get_input_shape_at(0)
 
         # TODO: border_mode=`same`
-        if klayer.border_mode == "same":
-            raise Exception("Unsupported border mode: %s" % klayer.border_mode)
-        bpadW, bpadH = self.to_bigdl_2d_padding(klayer.border_mode)
+        if self.klayer.border_mode == "same":
+            raise Exception("Unsupported border mode: %s" % self.klayer.border_mode)
+        bpadW, bpadH = self.to_bigdl_2d_padding(self.klayer.border_mode)
         blayer = BLayer.SpatialDilatedConvolution(
-            n_input_plane=int(input_shape[1]),
-            n_output_plane=config["nb_filter"],
-            kw=config["nb_col"],
-            kh=config["nb_row"],
-            dw=config["subsample"][1],
-            dh=config["subsample"][0],
+            n_input_plane=int(self.input_shape[1]),
+            n_output_plane=self.config["nb_filter"],
+            kw=self.config["nb_col"],
+            kh=self.config["nb_row"],
+            dw=self.config["subsample"][1],
+            dh=self.config["subsample"][0],
             pad_w=bpadW,
             pad_h=bpadH,
-            dilation_w=config["atrous_rate"][1],
-            dilation_h=config["atrous_rate"][0],
-            wRegularizer=self.to_bigdl_reg(config["W_regularizer"]),
-            bRegularizer=self.to_bigdl_reg(config["b_regularizer"]),
+            dilation_w=self.config["atrous_rate"][1],
+            dilation_h=self.config["atrous_rate"][0],
+            wRegularizer=self.to_bigdl_reg(self.config["W_regularizer"]),
+            bRegularizer=self.to_bigdl_reg(self.config["b_regularizer"]),
             bigdl_type="float")
 
-        return self.combo_parameter_layer(blayer, config)
+        return self.combo_parameter_layer(blayer, self.config)
 
-    def create_deconvolution2d(self, klayer, kclayer):
-        config = kclayer["config"]
-        if klayer.dim_ordering != "th":
-            raise Exception("Please use `th` for `dim_ordering`. `%s` is not supported for now." % klayer.dim_ordering)
-        input_shape = klayer.get_input_shape_at(0)
+    def create_deconvolution2d(self):
+        if self.klayer.dim_ordering != "th":
+            raise Exception("Please use `th` for `dim_ordering`. `%s` is not supported for now." % self.klayer.dim_ordering)
 
-        bpadW, bpadH = self.to_bigdl_2d_padding(klayer.border_mode)
+        bpadW, bpadH = self.to_bigdl_2d_padding(self.klayer.border_mode)
         blayer = BLayer.SpatialFullConvolution(
-            n_input_plane=int(input_shape[1]),
-            n_output_plane=klayer.nb_filter,
-            kw=klayer.nb_col,
-            kh=klayer.nb_row,
-            dw=klayer.subsample[1],
-            dh=klayer.subsample[0],
+            n_input_plane=int(self.input_shape[1]),
+            n_output_plane=self.klayer.nb_filter,
+            kw=self.klayer.nb_col,
+            kh=self.klayer.nb_row,
+            dw=self.klayer.subsample[1],
+            dh=self.klayer.subsample[0],
             pad_w=bpadW,
             pad_h=bpadH,
             adj_w=0,
             adj_h=0,
             n_group=1,
             no_bias=False,
-            wRegularizer=self.to_bigdl_reg(config["W_regularizer"]),
-            bRegularizer=self.to_bigdl_reg(config["b_regularizer"]),
+            wRegularizer=self.to_bigdl_reg(self.config["W_regularizer"]),
+            bRegularizer=self.to_bigdl_reg(self.config["b_regularizer"]),
             bigdl_type="float")
 
-        return self.combo_parameter_layer(blayer, config)
+        return self.combo_parameter_layer(blayer, self.config)
 
-    def create_maxpooling3d(self, klayer, kclayer):
-        if klayer.dim_ordering != "th":
-            raise Exception("Please use `th` for `dim_ordering`. `%s` is not supported for now." % klayer.dim_ordering)
-        bpadT, bpadW, bpadH = self.to_bigdl_3d_padding(klayer.border_mode)
+    def create_maxpooling3d(self):
+        if self.klayer.dim_ordering != "th":
+            raise Exception("Please use `th` for `dim_ordering`. `%s` is not supported for now." % self.klayer.dim_ordering)
+        bpadT, bpadW, bpadH = self.to_bigdl_3d_padding(self.klayer.border_mode)
         blayer = BLayer.VolumetricMaxPooling(
-                k_t=klayer.pool_size[0],
-                k_w=klayer.pool_size[2],
-                k_h=klayer.pool_size[1],
-                d_t=klayer.strides[0],
-                d_w=klayer.strides[2],
-                d_h=klayer.strides[1],
+                k_t=self.klayer.pool_size[0],
+                k_w=self.klayer.pool_size[2],
+                k_h=self.klayer.pool_size[1],
+                d_t=self.klayer.strides[0],
+                d_w=self.klayer.strides[2],
+                d_h=self.klayer.strides[1],
                 pad_t=bpadT,
                 pad_w=bpadW,
                 pad_h=bpadH,
                 bigdl_type="float")
         return blayer
 
-    def create_maxpooling2d(self, klayer, kclayer):
-        bigdl_order = self.get_bdim_order(kclayer)
-        bpadW, bpadH = self.to_bigdl_2d_padding(klayer.border_mode)
+    def create_maxpooling2d(self):
+        bigdl_order = self.get_bdim_order()
+        bpadW, bpadH = self.to_bigdl_2d_padding(self.klayer.border_mode)
         blayer = BLayer.SpatialMaxPooling(
-                 kw=klayer.pool_size[1],
-                 kh=klayer.pool_size[0],
-                 dw=klayer.strides[1],
-                 dh=klayer.strides[0],
+                 kw=self.klayer.pool_size[1],
+                 kh=self.klayer.pool_size[0],
+                 dw=self.klayer.strides[1],
+                 dh=self.klayer.strides[0],
                  pad_w=bpadW,
                  pad_h=bpadH,
                  to_ceil=False,
@@ -1119,14 +1171,13 @@ class LayerConverter:
                  bigdl_type="float")
         return blayer
 
-    def create_globalmaxpooling3d(self, klayer, kclayer):
-        input_shape = klayer.get_input_shape_at(0)
-        if klayer.dim_ordering == "th":
-            b_kt = int(input_shape[2])
-            b_kw = int(input_shape[4])
-            b_kh = int(input_shape[3])
+    def create_globalmaxpooling3d(self):
+        if self.klayer.dim_ordering == "th":
+            b_kt = int(self.input_shape[2])
+            b_kw = int(self.input_shape[4])
+            b_kh = int(self.input_shape[3])
         else:
-            raise Exception("Please use `th` for dim_ordering. `%s` is not supported for now." % klayer.dim_ordering)
+            raise Exception("Please use `th` for dim_ordering. `%s` is not supported for now." % self.klayer.dim_ordering)
 
         seq = BLayer.Sequential()
         blayer = BLayer.VolumetricMaxPooling(
@@ -1148,14 +1199,13 @@ class LayerConverter:
 
         return seq
 
-    def create_globalaveragepooling3d(self, klayer, kclayer):
-        input_shape = klayer.get_input_shape_at(0)
-        if klayer.dim_ordering == "th":
-            b_kt = int(input_shape[2])
-            b_kw = int(input_shape[4])
-            b_kh = int(input_shape[3])
+    def create_globalaveragepooling3d(self):
+        if self.klayer.dim_ordering == "th":
+            b_kt = int(self.input_shape[2])
+            b_kw = int(self.input_shape[4])
+            b_kh = int(self.input_shape[3])
         else:
-            raise Exception("Please use `th` for dim_ordering. `%s` is not supported for now." % klayer.dim_ordering)
+            raise Exception("Please use `th` for dim_ordering. `%s` is not supported for now." % self.klayer.dim_ordering)
 
         seq = BLayer.Sequential()
         blayer = BLayer.VolumetricAveragePooling(
@@ -1178,14 +1228,14 @@ class LayerConverter:
 
         return seq
 
-    def create_averagepooling2d(self, klayer, kclayer):
-        bigdl_order = self.get_bdim_order(kclayer)
-        bpadW, bpadH = self.to_bigdl_2d_padding(klayer.border_mode)
+    def create_averagepooling2d(self):
+        bigdl_order = self.get_bdim_order()
+        bpadW, bpadH = self.to_bigdl_2d_padding(self.klayer.border_mode)
         blayer = BLayer.SpatialAveragePooling(
-            kw=klayer.pool_size[1],
-            kh=klayer.pool_size[0],
-            dw=klayer.strides[1],
-            dh=klayer.strides[0],
+            kw=self.klayer.pool_size[1],
+            kh=self.klayer.pool_size[0],
+            dw=self.klayer.strides[1],
+            dh=self.klayer.strides[0],
             pad_w=bpadW,
             pad_h=bpadH,
             global_pooling=False,
@@ -1197,17 +1247,17 @@ class LayerConverter:
         )
         return blayer
 
-    def create_averagepooling3d(self, klayer, kclayer):
-        if klayer.dim_ordering != "th":
-            raise Exception("Please use `th` for `dim_ordering`. `%s` is not supported for now." % klayer.dim_ordering)
-        bpadT, bpadW, bpadH = self.to_bigdl_3d_padding(klayer.border_mode)
+    def create_averagepooling3d(self):
+        if self.klayer.dim_ordering != "th":
+            raise Exception("Please use `th` for `dim_ordering`. `%s` is not supported for now." % self.klayer.dim_ordering)
+        bpadT, bpadW, bpadH = self.to_bigdl_3d_padding(self.klayer.border_mode)
         blayer = BLayer.VolumetricAveragePooling(
-                k_t=klayer.pool_size[0],
-                k_w=klayer.pool_size[2],
-                k_h=klayer.pool_size[1],
-                d_t=klayer.strides[0],
-                d_w=klayer.strides[2],
-                d_h=klayer.strides[1],
+                k_t=self.klayer.pool_size[0],
+                k_w=self.klayer.pool_size[2],
+                k_h=self.klayer.pool_size[1],
+                d_t=self.klayer.strides[0],
+                d_w=self.klayer.strides[2],
+                d_h=self.klayer.strides[1],
                 pad_t=bpadT,
                 pad_w=bpadW,
                 pad_h=bpadH,
@@ -1215,15 +1265,14 @@ class LayerConverter:
                 bigdl_type="float")
         return blayer
 
-    def create_globalmaxpooling2d(self, klayer, kclayer):
-        bigdl_order = self.get_bdim_order(kclayer)
-        input_shape = klayer.get_input_shape_at(0)
+    def create_globalmaxpooling2d(self):
+        bigdl_order = self.get_bdim_order()
         if bigdl_order == "NCHW":
-            b_kw = int(input_shape[3])
-            b_kh = int(input_shape[2])
+            b_kw = int(self.input_shape[3])
+            b_kh = int(self.input_shape[2])
         else:
-            b_kw = int(input_shape[2])
-            b_kh = int(input_shape[1])
+            b_kw = int(self.input_shape[2])
+            b_kh = int(self.input_shape[1])
 
         seq = BLayer.Sequential()
         blayer = BLayer.SpatialMaxPooling(
@@ -1246,13 +1295,12 @@ class LayerConverter:
             seq.add(BLayer.Squeeze(1, num_input_dims=2))
         return seq
 
-    def create_globalmaxpooling1d(self, klayer, kclayer):
-        input_shape = klayer.get_input_shape_at(0) # batch, step, dim
+    def create_globalmaxpooling1d(self):
         b_kw = 1
-        b_kh = int(input_shape[1])
+        b_kh = int(self.input_shape[1])
 
         seq = BLayer.Sequential()
-        seq.add(BLayer.View([int(input_shape[1]), 1, int(input_shape[2])], num_input_dims=2))
+        seq.add(BLayer.View([int(self.input_shape[1]), 1, int(self.input_shape[2])], num_input_dims=2))
         blayer = BLayer.SpatialMaxPooling(
             kw=b_kw,
             kh=b_kh,
@@ -1269,13 +1317,12 @@ class LayerConverter:
         seq.add(BLayer.Squeeze(1, num_input_dims=1))
         return seq
 
-    def create_globalaveragepooling1d(self, klayer, kclayer):
-        input_shape = klayer.get_input_shape_at(0) # batch, step, dim
+    def create_globalaveragepooling1d(self):
         b_kw = 1
-        b_kh = int(input_shape[1])
+        b_kh = int(self.input_shape[1])
 
         seq = BLayer.Sequential()
-        seq.add(BLayer.View([int(input_shape[1]), 1, int(input_shape[2])], num_input_dims=2))
+        seq.add(BLayer.View([int(self.input_shape[1]), 1, int(self.input_shape[2])], num_input_dims=2))
         blayer = BLayer.SpatialAveragePooling(
             kw=b_kw,
             kh=b_kh,
@@ -1291,22 +1338,21 @@ class LayerConverter:
             bigdl_type="float"
         )
         seq.add(blayer)
-        seq.add(BLayer.Squeeze(2, num_input_dims=2)) # the index start from one but without batch
+        seq.add(BLayer.Squeeze(2, num_input_dims=2))  # the index start from one but without batch
         seq.add(BLayer.Squeeze(1, num_input_dims=1))
 
         return seq
 
-    def create_maxpooling1d(self, klayer, kclayer):
-        input_shape = klayer.get_input_shape_at(0)  # batch, steps, dim
-        bpadW, bpadH = self.to_bigdl_2d_padding(klayer.border_mode)
+    def create_maxpooling1d(self):
+        bpadW, bpadH = self.to_bigdl_2d_padding(self.klayer.border_mode)
 
         seq = BLayer.Sequential()
-        seq.add(BLayer.Reshape([int(input_shape[1]), 1, int(input_shape[2])], True))
+        seq.add(BLayer.Reshape([int(self.input_shape[1]), 1, int(self.input_shape[2])], True))
         blayer = BLayer.SpatialMaxPooling(
             kw=1,
-            kh=klayer.pool_length,
+            kh=self.klayer.pool_length,
             dw=1,
-            dh=klayer.stride,
+            dh=self.klayer.stride,
             pad_w=bpadW,
             pad_h=bpadH,
             to_ceil=False,
@@ -1317,17 +1363,16 @@ class LayerConverter:
         seq.add(BLayer.Squeeze(3))
         return seq
 
-    def create_averagepooling1d(self, klayer, kclayer):
-        input_shape = klayer.get_input_shape_at(0)  # batch, steps, dim
-        bpadW, bpadH = self.to_bigdl_2d_padding(klayer.border_mode)
+    def create_averagepooling1d(self):
+        bpadW, bpadH = self.to_bigdl_2d_padding(self.klayer.border_mode)
 
         seq = BLayer.Sequential()
-        seq.add(BLayer.Reshape([int(input_shape[1]), 1, int(input_shape[2])], True))
+        seq.add(BLayer.Reshape([int(self.input_shape[1]), 1, int(self.input_shape[2])], True))
         blayer = BLayer.SpatialAveragePooling(
             kw=1,
-            kh=klayer.pool_length,
+            kh=self.klayer.pool_length,
             dw=1,
-            dh=klayer.stride,
+            dh=self.klayer.stride,
             pad_w=bpadW,
             pad_h=bpadH,
             global_pooling=False,
@@ -1341,15 +1386,14 @@ class LayerConverter:
         seq.add(BLayer.Squeeze(3))
         return seq
 
-    def create_globalaveragepooling2d(self, klayer, kclayer):
-        bigdl_order = self.get_bdim_order(kclayer)
-        input_shape = klayer.get_input_shape_at(0)
+    def create_globalaveragepooling2d(self):
+        bigdl_order = self.get_bdim_order()
         if bigdl_order == "NCHW":
-            b_kw = int(input_shape[3])
-            b_kh = int(input_shape[2])
+            b_kw = int(self.input_shape[3])
+            b_kh = int(self.input_shape[2])
         else:
-            b_kw = int(input_shape[2])
-            b_kh = int(input_shape[1])
+            b_kw = int(self.input_shape[2])
+            b_kh = int(self.input_shape[1])
 
         seq = BLayer.Sequential()
         blayer = BLayer.SpatialAveragePooling(
@@ -1415,7 +1459,7 @@ class LayerConverter:
         elif kinit_method == "zero":
             init = BInit.Zeros()
         else:
-            raise Exception("Unsupported init type: %s" % init)
+            raise Exception("Unsupported init type: %s" % kinit_method)
         return init
 
     def to_bigdl_reg(self, reg):  # reg is a dict
