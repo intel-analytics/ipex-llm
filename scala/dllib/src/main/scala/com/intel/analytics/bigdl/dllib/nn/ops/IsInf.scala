@@ -31,6 +31,11 @@ class IsInf[T: ClassTag, D: ClassTag]()(implicit ev: TensorNumeric[T], ev2: Tens
       ev2.isInf(b)
     })
   }
+
+  override def getClassTagNumerics() : (Array[ClassTag[_]], Array[TensorNumeric[_]]) = {
+    (Array[ClassTag[_]](scala.reflect.classTag[T], scala.reflect.classTag[D]),
+      Array[TensorNumeric[_]](ev, ev2))
+  }
 }
 
 object IsInf {
