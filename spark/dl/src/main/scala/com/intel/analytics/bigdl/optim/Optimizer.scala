@@ -233,12 +233,12 @@ abstract class Optimizer[T: ClassTag, D](
   }
 
   /**
-    * set new dataset
-    *
-    * @param sampleRDD training Samples
-    * @param batchSize mini batch size
-    * @return the Optimizer
-    */
+   * Set new train dataset
+   *
+   * @param sampleRDD training Samples
+   * @param batchSize mini batch size
+   * @return the Optimizer
+   */
   def setTrainData(sampleRDD: RDD[Sample[T]],
                  batchSize: Int): this.type = {
     throw new UnsupportedOperationException(
@@ -248,14 +248,13 @@ abstract class Optimizer[T: ClassTag, D](
   }
 
   /**
-    * set new dataset
-    *
-    * @param sampleRDD training Samples
-    * @param batchSize mini batch size
-    * @param miniBatch An User-Defined MiniBatch to construct a mini batch.
-    * @return the Optimizer
-    */
-
+   * Set new train dataset
+   *
+   * @param sampleRDD training Samples
+   * @param batchSize mini batch size
+   * @param miniBatch An User-Defined MiniBatch to construct a mini batch.
+   * @return the Optimizer
+   */
   def setTrainData(sampleRDD: RDD[Sample[T]],
                  batchSize: Int,
                  miniBatch: MiniBatch[T]): this.type = {
@@ -266,16 +265,16 @@ abstract class Optimizer[T: ClassTag, D](
   }
 
   /**
-    * set new dataset with padding specifications.
-    *
-    * @param sampleRDD           training Samples
-    * @param batchSize           mini batch size
-    * @param featurePaddingParam feature padding strategy, see
-    *                            [[com.intel.analytics.bigdl.dataset.PaddingParam]] for details.
-    * @param labelPaddingParam   label padding strategy, see
-    *                            [[com.intel.analytics.bigdl.dataset.PaddingParam]] for details.
-    * @return the optimizer
-    */
+   * Set new train dataset with padding specifications.
+   *
+   * @param sampleRDD           training Samples
+   * @param batchSize           mini batch size
+   * @param featurePaddingParam feature padding strategy, see
+   *                            [[com.intel.analytics.bigdl.dataset.PaddingParam]] for details.
+   * @param labelPaddingParam   label padding strategy, see
+   *                            [[com.intel.analytics.bigdl.dataset.PaddingParam]] for details.
+   * @return the optimizer
+   */
   def setTrainData(sampleRDD: RDD[Sample[T]],
                  batchSize: Int,
                  featurePaddingParam: PaddingParam[T],
@@ -287,14 +286,14 @@ abstract class Optimizer[T: ClassTag, D](
   }
 
   /**
-    * set new dataset with padding specifications.
-    *
-    * @param sampleRDD           training Samples
-    * @param batchSize           mini batch size
-    * @param featurePaddingParam feature padding strategy, see
-    *                            [[com.intel.analytics.bigdl.dataset.PaddingParam]] for details.
-    * @return the optimizer
-    */
+   * Set new train dataset with padding specifications.
+   *
+   * @param sampleRDD           training Samples
+   * @param batchSize           mini batch size
+   * @param featurePaddingParam feature padding strategy, see
+   *                            [[com.intel.analytics.bigdl.dataset.PaddingParam]] for details.
+   * @return the optimizer
+   */
   def setTrainData(sampleRDD: RDD[Sample[T]],
                  batchSize: Int,
                  featurePaddingParam: PaddingParam[T]): this.type = {
@@ -305,10 +304,10 @@ abstract class Optimizer[T: ClassTag, D](
   }
 
   /**
-    * Set a new criterion to the optimizer
-    *
-    * @param newCriterion new criterion
-    */
+   * Set a new criterion to the optimizer
+   *
+   * @param newCriterion new criterion
+   */
   def setCriterion(newCriterion: Criterion[T]): this.type = {
     this.criterion = newCriterion
     this
