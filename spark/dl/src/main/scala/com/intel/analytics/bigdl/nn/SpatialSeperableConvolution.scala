@@ -55,7 +55,10 @@ class SpatialSeperableConvolution[T: ClassTag](
   val dataFormat: DataFormat,
   var wRegularizer: Regularizer[T] = null,
   var bRegularizer: Regularizer[T] = null,
-  var pRegularizer: Regularizer[T] = null
+  var pRegularizer: Regularizer[T] = null,
+  val initDepthWeight: Tensor[T] = null,
+  val initPointWeight: Tensor[T] = null,
+  val initBias: Tensor[T] = null
 )(implicit ev: TensorNumeric[T])
   extends AbstractModule[Tensor[T], Tensor[T], T]{
 
@@ -63,15 +66,19 @@ class SpatialSeperableConvolution[T: ClassTag](
 
   private val channelDim = if (dataFormat == DataFormat.NCHW) 2 else 4
 
-  private val depthWeight = if (dataFormat == DataFormat.NCHW) {
+  private val depthWeight = if (initDepthWeight != null) {
+    initDepthWeight
+  } else if (dataFormat == DataFormat.NCHW) {
     Tensor[T](depthMultiplier, nInputChannel, kW, kH)
   } else {
-    Tensor[T](kW, kH, nInputChannel, depthMultiplier)
+      Tensor[T](kW, kH, nInputChannel, depthMultiplier)
   }
 
   private val depthGradWeight = Tensor[T].resizeAs(depthWeight)
 
-  private val pointWeight = if (dataFormat == DataFormat.NCHW) {
+  private val pointWeight = if (initPointWeight != null) {
+    initPointWeight
+  } else if (dataFormat == DataFormat.NCHW) {
     Tensor[T](nOutputChannel, internalChannel, 1, 1)
   } else {
     Tensor[T](1, 1, internalChannel, nOutputChannel)
@@ -79,7 +86,7 @@ class SpatialSeperableConvolution[T: ClassTag](
 
   private val pointGradWeight = Tensor[T].resizeAs(pointWeight)
 
-  private val bias = Tensor[T](nOutputChannel)
+  private val bias = if (initBias != null) initBias else Tensor[T](nOutputChannel)
 
   private val gradBias = Tensor[T].resizeAs(bias)
 
@@ -117,6 +124,8 @@ class SpatialSeperableConvolution[T: ClassTag](
     initGradBias = gradBias
   )
 
+  reset()
+
   override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
     (Array(depthWeight, pointWeight, bias), Array(depthGradWeight, pointGradWeight, gradBias))
   }
@@ -125,7 +134,8 @@ class SpatialSeperableConvolution[T: ClassTag](
     require(input.nDimension() == 4, "SpatialSeperableConvolution only accept 4D input")
     require(input.isContiguous(), "SpatialSeperableConvolution require contiguous input")
     require(nInputChannel == input.size(channelDim),
-      "input tensor channel dimension size doesn't match layer nInputChannel")
+      s"input tensor channel dimension size(${input.size(channelDim)}) doesn't " +
+        s"match layer nInputChannel $nInputChannel")
 
     SpatialSeperableConvolution.copyWeight(depthConv.weight, input.size(channelDim),
       depthMultiplier, depthWeight, dataFormat)
@@ -186,7 +196,12 @@ class SpatialSeperableConvolution[T: ClassTag](
       depthConv.gradWeight, depthGradWeight, dataFormat)
   }
 
-
+  override def reset(): Unit = {
+    if (initDepthWeight == null) depthWeight.rand()
+    if (initPointWeight == null) pointWeight.rand()
+    if (initBias == null) bias.zero()
+    zeroGradParameters()
+  }
 }
 
 object SpatialSeperableConvolution {
@@ -194,23 +209,27 @@ object SpatialSeperableConvolution {
     kW: Int, kH: Int, sW: Int = 1, sH: Int = 1, pW: Int = 0, pH: Int = 0,
     hasBias: Boolean = true, dataFormat: DataFormat = DataFormat.NCHW,
     wRegularizer: Regularizer[T] = null, bRegularizer: Regularizer[T] = null,
-    pRegularizer: Regularizer[T] = null)(implicit ev: TensorNumeric[T])
-  : SpatialSeperableConvolution[T] = new SpatialSeperableConvolution(nInputChannel,
+    pRegularizer: Regularizer[T] = null, initDepthWeight: Tensor[T] = null,
+    initPointWeight: Tensor[T] = null, initBias: Tensor[T] = null
+  )(implicit ev: TensorNumeric[T])
+  : SpatialSeperableConvolution[T] = new SpatialSeperableConvolution[T](nInputChannel,
     nOutputChannel, depthMultiplier, kW, kH, sW, sH, pW, pH, hasBias, dataFormat, wRegularizer,
-    bRegularizer)
+    bRegularizer, pRegularizer, initDepthWeight, initPointWeight, initBias)
 
   private[bigdl] def copyWeight[T](weight: Tensor[T], nInputChannel: Int,
     depthMultiplier: Int, sourceWeight: Tensor[T], dataFormat: DataFormat): Unit = {
     val kInputDim = if (dataFormat == DataFormat.NHWC) 3 else 2
     val kOutputDim = if (dataFormat == DataFormat.NHWC) 4 else 1
+    val delta = if (dataFormat == DataFormat.NHWC) 0 else 1
     weight.zero()
     var in = 0
     while(in < nInputChannel) {
       var out = 0
       while(out < depthMultiplier) {
         // weight is a 5D tensor with a group dimension
-        weight.select(kInputDim + 1, in + 1).select(kOutputDim, in * depthMultiplier + out + 1)
-          .copy(sourceWeight.select(kInputDim, in + 1).select(kOutputDim - 1, out + 1))
+        weight.select(kInputDim + 1, in + 1)
+          .select(kOutputDim + delta, in * depthMultiplier + out + 1)
+          .copy(sourceWeight.select(kInputDim, in + 1).select(kOutputDim - 1 + delta, out + 1))
         out += 1
       }
       in += 1
@@ -223,12 +242,13 @@ object SpatialSeperableConvolution {
   ): Unit = {
     val kInputDim = if (dataFormat == DataFormat.NHWC) 3 else 2
     val kOutputDim = if (dataFormat == DataFormat.NHWC) 4 else 1
+    val delta = if (dataFormat == DataFormat.NHWC) 0 else 1
     var in = 0
     while(in < nInputChannel) {
       var out = 0
       while(out < depthMultiplier) {
-        targetGrad.select(kInputDim, in + 1).select(kOutputDim - 1, out + 1)
-          .copy(sourceGrad.select(kInputDim + 1, in + 1).select(kOutputDim,
+        targetGrad.select(kInputDim, in + 1).select(kOutputDim - 1 + delta, out + 1)
+          .copy(sourceGrad.select(kInputDim + 1, in + 1).select(kOutputDim + delta,
             in * depthMultiplier + out + 1))
         out += 1
       }
