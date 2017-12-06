@@ -12,12 +12,14 @@ module = Recurrent()
 Recurrent module is a container of rnn cells. Different types of rnn cells can be added using add() function.  
 
 Recurrent supports returning state and cell of its rnn cells at last time step by using getHiddenState. output of getHiddenState
-is an Activity and it can be directly used for setHiddenState function, which will set hidden state and cell at the first time step.  
+is an Activity.
 
 If contained cell is simple rnn, getHiddenState return value is a tensor(hidden state) which is `batch x hiddenSize`.  
 If contained cell is lstm, getHiddenState return value is a table [hidden state, cell], both size is `batch x hiddenSize`.  
 If contained cell is convlstm, getHiddenState return value is a table [hidden state, cell], both size is `batch x outputPlane x height x width`.  
 If contained cell is convlstm3D, getHiddenState return value is a table [hidden state, cell], both size is `batch x outputPlane x height x width x length`.
+
+Recurrent also support init hidden state by using setHiddenState, currently only scala version. After we get hidden state from getHiddenState, we can directly used it in setHiddenState, which will set hidden state and cell at the first time step.
 
 **Scala example:**
 ```scala
@@ -1673,7 +1675,7 @@ Only works with RecurrentDecoder. If you want to stack multiple cells with Recur
 
 Parameters:
 
-* `cells` list of RNNCells that will be composed in this order.
+* `cells` list of RNNCell that will be composed in this order.
 
 **Scala example:**
 ```scala
