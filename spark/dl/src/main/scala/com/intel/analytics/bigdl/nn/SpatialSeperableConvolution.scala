@@ -202,6 +202,12 @@ class SpatialSeperableConvolution[T: ClassTag](
     if (initBias == null) bias.zero()
     zeroGradParameters()
   }
+
+  override def zeroGradParameters(): Unit = {
+    depthWeight.zero()
+    pointWeight.zero()
+    bias.zero()
+  }
 }
 
 object SpatialSeperableConvolution {
