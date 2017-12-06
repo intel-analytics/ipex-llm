@@ -18,8 +18,24 @@ val optimizer = Opimizer[T: ClassTag](
 `sampleRDD`: an RDD of training Sample.  
 `criterion`: the Loss function.  
 `batchSize`: size of minibatch. 
+ <br>
 
+```scala
+val optimizer = Opimizer[T: ClassTag](
+  model: Module[T],
+  sampleRDD: RDD[Sample[T]],
+  criterion: Criterion[T],
+  batchSize: Int,
+  miniBatch: MiniBatch[T]
+```
+`T`: the numeric type(Float/Double).
+`model`: the model will be optimized.
+`sampleRDD`: an RDD of training Sample.
+`criterion`: the Loss function.
+`batchSize`: size of minibatch.
+`miniBatch`: An User-Defined MiniBatch to construct a mini batch.
 
+ <br>
 ```scala
 val optimizer = Opimizer[T: ClassTag, D](
   model: Module[T],
@@ -31,9 +47,10 @@ val optimizer = Opimizer[T: ClassTag, D](
 `model`: the model will be optimized.  
 `dataset`: the training DataSet.  
 `criterion`: the Loss function.
+ <br>
 
 ```scala
-def apply[T: ClassTag](
+val optimizer = Opimizer[T: ClassTag, D](
       model: Module[T],
       sampleRDD: RDD[Sample[T]],
       criterion: Criterion[T],
@@ -49,10 +66,10 @@ Apply an Optimizer who could apply padding to the Samples with a padding strateg
 `featurePaddingParam`: feature padding strategy.  
 `labelPaddingParam`: label padding strategy.
 
-
+ <br>
 
 ```scala
-def apply[T: ClassTag](
+val optimizer = Opimizer[T: ClassTag, D](
       model: Module[T],
       sampleRDD: RDD[Sample[T]],
       criterion: Criterion[T],
@@ -65,6 +82,7 @@ Apply an optimizer with User-Defined `MiniBatch`.
 `criterion`: loss function.  
 `batchSize`: mini batch size.  
 `miniBatch`: An User-Defined MiniBatch to construct a mini batch.
+ <br>
 
 ***Validation***
 
@@ -90,7 +108,7 @@ optimizer.setValidation(
 `sampleRDD`: validate data set in type of RDD[Sample].  
 `vMethods`: a set of ValidationMethod.  
 `batchSize`: size of mini batch.
-
+ <br>
 ***Checkpoint***
 ```scala
 optimizer.setCheckpoint(path: String, trigger: Trigger)
@@ -135,6 +153,41 @@ optimizer.setModel(newModel: Module[T])
 Function setModel will set a new model to the optimizer.  
 `newModel`: a model will replace the old model in optimizer.  
  <br>
+```scala
+optimizer.setTrainData(sampleRDD: RDD[Sample[T]],
+                 batchSize: Int)
+
+optimizer.setTrainData(sampleRDD: RDD[Sample[T]],
+                 batchSize: Int,
+                 miniBatch: MiniBatch[T])
+
+optimizer.setTrainData(sampleRDD: RDD[Sample[T]],
+
+                 batchSize: Int,
+                 featurePaddingParam: PaddingParam[T],
+                 labelPaddingParam: PaddingParam[T])
+
+optimizer.setTrainData(sampleRDD: RDD[Sample[T]],
+                        batchSize: Int,
+                        featurePaddingParam: PaddingParam[T])
+```
+the overloaded set of methods `setTrainData` allows user to replace the trainig data before calling optimize(). The mearning of arguments are the same as in the Factory methods:
+`model`: model will be optimized.
+`sampleRDD`: training Samples.
+`criterion`: loss function.
+`batchSize`: mini batch size.
+`featurePaddingParam`: feature padding strategy.
+`labelPaddingParam`: label padding strategy.
+`miniBatch`: An User-Defined MiniBatch to construct a mini batch.
+ <br>
+
+```scala
+optimizer.setCriterion(newCriterion: Criterion[T])
+```
+`setCriterion` allows user to set a new criterion to replace the old one. 
+`newCriterion`: the new Criterion.
+ <br>
+
 ```scala
 optimizer.setState(state: Table)
 ```
@@ -242,6 +295,18 @@ optimizer.set_model(model)
 ```
 Function setModel will set a new model to the optimizer.  
 `model`: a model will replace the old model in optimizer.
+
+***Set Train Data***
+```python
+optimizer.set_traindata(sample_rdd, batch_size)
+```
+set_traindata allows user to replace the train data (for optimizer reuse)
+
+***Set Criterion***
+```python
+optimizer.set_criterion(criterion)
+```
+set_criterion allows user to replace the criterion (for optimizer reuse)
 
 ### Python example ###
 Here is an example to new an Optimizer with SGD for optimizing LeNet5 model.
