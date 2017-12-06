@@ -41,8 +41,8 @@ import scala.reflect.ClassTag
 // TODO: remove D to be MiniBatch[T]
 abstract class Optimizer[T: ClassTag, D](
   protected var model: Module[T],
-  protected val dataset: DataSet[D],
-  protected val criterion: Criterion[T])(implicit ev : TensorNumeric[T])
+  protected var dataset: DataSet[D],
+  protected var criterion: Criterion[T])(implicit ev : TensorNumeric[T])
 {
   protected var state: Table = T()
   protected var optimMethod: OptimMethod[T] = new SGD[T]()
@@ -233,6 +233,89 @@ abstract class Optimizer[T: ClassTag, D](
   }
 
   /**
+    * set new dataset
+    *
+    * @param sampleRDD training Samples
+    * @param batchSize mini batch size
+    * @return the Optimizer
+    */
+  def setTrainData(sampleRDD: RDD[Sample[T]],
+                 batchSize: Int): this.type = {
+    throw new UnsupportedOperationException(
+      s"setTrainData(sampleRDD, batchSize) " +
+        s"is only supported in distributed optimizer")
+    this
+  }
+
+  /**
+    * set new dataset
+    *
+    * @param sampleRDD training Samples
+    * @param batchSize mini batch size
+    * @param miniBatch An User-Defined MiniBatch to construct a mini batch.
+    * @return the Optimizer
+    */
+
+  def setTrainData(sampleRDD: RDD[Sample[T]],
+                 batchSize: Int,
+                 miniBatch: MiniBatch[T]): this.type = {
+    throw new UnsupportedOperationException(
+      s"setTrainData(sampleRDD, batchSize,miniBatch) " +
+        s"is only supported in distributed optimizer")
+    this
+  }
+
+  /**
+    * set new dataset with padding specifications.
+    *
+    * @param sampleRDD           training Samples
+    * @param batchSize           mini batch size
+    * @param featurePaddingParam feature padding strategy, see
+    *                            [[com.intel.analytics.bigdl.dataset.PaddingParam]] for details.
+    * @param labelPaddingParam   label padding strategy, see
+    *                            [[com.intel.analytics.bigdl.dataset.PaddingParam]] for details.
+    * @return the optimizer
+    */
+  def setTrainData(sampleRDD: RDD[Sample[T]],
+                 batchSize: Int,
+                 featurePaddingParam: PaddingParam[T],
+                 labelPaddingParam: PaddingParam[T]): this.type = {
+    throw new UnsupportedOperationException(
+      s"setTrainData(sampleRDD,batchSize,featurePaddingParam,labelPaddingParam) " +
+        s"is only supported in distributed optimizer")
+    this
+  }
+
+  /**
+    * set new dataset with padding specifications.
+    *
+    * @param sampleRDD           training Samples
+    * @param batchSize           mini batch size
+    * @param featurePaddingParam feature padding strategy, see
+    *                            [[com.intel.analytics.bigdl.dataset.PaddingParam]] for details.
+    * @return the optimizer
+    */
+  def setTrainData(sampleRDD: RDD[Sample[T]],
+                 batchSize: Int,
+                 featurePaddingParam: PaddingParam[T]): this.type = {
+    throw new UnsupportedOperationException(
+      s"setTrainData(sampleRDD,batchSize,featurePaddingParam) " +
+        s"is only supported in distributed optimizer")
+    this
+  }
+
+  /**
+    * Set a new criterion to the optimizer
+    *
+    * @param newCriterion new criterion
+    */
+  def setCriterion(newCriterion: Criterion[T]): this.type = {
+    this.criterion = newCriterion
+    this
+  }
+
+
+  /**
    * Set a state(learning rate, epochs...) to the optimizer
    *
    * @param state the state to be saved
@@ -342,6 +425,16 @@ object Optimizer {
     }
   }
 
+  /**
+   * Apply an Optimizer
+   *
+   * @param model               model will be optimizied
+   * @param sampleRDD           training Samples
+   * @param criterion           loss function
+   * @param batchSize           mini batch size
+   *
+   * @return An optimizer
+   */
   def apply[T: ClassTag](
       model: Module[T],
       sampleRDD: RDD[Sample[T]],
@@ -350,9 +443,9 @@ object Optimizer {
       )(implicit ev: TensorNumeric[T]): Optimizer[T, MiniBatch[T]] = {
     new DistriOptimizer[T](
       _model = model,
-      dataset = (DataSet.rdd(sampleRDD) -> SampleToMiniBatch(batchSize))
+      _dataset = (DataSet.rdd(sampleRDD) -> SampleToMiniBatch(batchSize))
         .asInstanceOf[DistributedDataSet[MiniBatch[T]]],
-      criterion = criterion
+      _criterion = criterion
     ).asInstanceOf[Optimizer[T, MiniBatch[T]]]
   }
 
@@ -380,10 +473,10 @@ object Optimizer {
          )(implicit ev: TensorNumeric[T]): Optimizer[T, MiniBatch[T]] = {
     new DistriOptimizer[T](
       _model = model,
-      dataset = (DataSet.rdd(sampleRDD) ->
+      _dataset = (DataSet.rdd(sampleRDD) ->
         SampleToMiniBatch(batchSize, Some(featurePaddingParam), Some(labelPaddingParam)))
         .asInstanceOf[DistributedDataSet[MiniBatch[T]]],
-      criterion = criterion
+      _criterion = criterion
     ).asInstanceOf[Optimizer[T, MiniBatch[T]]]
   }
 
@@ -396,10 +489,10 @@ object Optimizer {
       )(implicit ev: TensorNumeric[T]): Optimizer[T, MiniBatch[T]] = {
     new DistriOptimizer[T](
       _model = model,
-      dataset = (DataSet.rdd(sampleRDD) ->
+      _dataset = (DataSet.rdd(sampleRDD) ->
         SampleToMiniBatch(batchSize, Some(featurePaddingParam)))
         .asInstanceOf[DistributedDataSet[MiniBatch[T]]],
-      criterion = criterion
+      _criterion = criterion
     ).asInstanceOf[Optimizer[T, MiniBatch[T]]]
   }
 
@@ -422,10 +515,10 @@ object Optimizer {
         )(implicit ev: TensorNumeric[T]): Optimizer[T, MiniBatch[T]] = {
     new DistriOptimizer[T](
       _model = model,
-      dataset = (DataSet.rdd(sampleRDD) ->
+      _dataset = (DataSet.rdd(sampleRDD) ->
         SampleToMiniBatch(miniBatch, batchSize, None))
         .asInstanceOf[DistributedDataSet[MiniBatch[T]]],
-      criterion = criterion
+      _criterion = criterion
     ).asInstanceOf[Optimizer[T, MiniBatch[T]]]
   }
 
@@ -438,8 +531,8 @@ object Optimizer {
       case d: DistributedDataSet[_] =>
         new DistriOptimizer[T](
           _model = model,
-          dataset = d.asInstanceOf[DistributedDataSet[MiniBatch[T]]],
-          criterion = criterion
+          _dataset = d.asInstanceOf[DistributedDataSet[MiniBatch[T]]],
+          _criterion = criterion
         ).asInstanceOf[Optimizer[T, D]]
       case d: LocalDataSet[_] =>
         new LocalOptimizer[T](
