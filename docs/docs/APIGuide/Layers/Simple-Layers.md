@@ -1078,3 +1078,275 @@ Gives the gradInput,
        [  8.,  10.,  12.]], dtype=float32), array([[  0.73362803,   1.98743176,  -7.66922569],
        [-15.81199932, -10.7408371 , -17.73489189]], dtype=float32)]
 ```
+
+## Masking ##
+
+Use a mask value to skip timesteps for a sequence
+
+**Scala:**
+```scala
+val mask = Masking(0.0)
+```
+
+**Python:**
+```python
+mask = Masking(0.0)
+```
+
+**Scala example:**
+```scala
+import com.intel.analytics.bigdl.nn.Masking
+import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+import com.intel.analytics.bigdl.utils.T
+
+val batchSize = 3
+val times = 5
+val features = 2
+val inputData = Array[Double](1.0, 1, 2, 2, 3, 3, 4, 4, 5, 5, -1, 1, 2, 2, 3, 3, 4, 4, 5, 5,
+  1, 1, -1, -1, 3, 3, 4, 4, 5, 5)
+val input = Tensor[Double](inputData, Array(batchSize, times, features))
+val gradOutput = Tensor[Double](Array(batchSize, times, features)).fill(1.0)
+val maskValue = -1
+
+val mask = Masking(maskValue)
+val output = mask.forward(input)
+println(output)
+
+val gradInput = mask.backward(input, gradOutput)
+println(gradOutput)
+```
+Gives the output,
+```
+output: = 
+(1,.,.) =
+1.0	1.0	
+2.0	2.0	
+3.0	3.0	
+4.0	4.0	
+5.0	5.0	
+
+(2,.,.) =
+-1.0	1.0	
+2.0	2.0	
+3.0	3.0	
+4.0	4.0	
+5.0	5.0	
+
+(3,.,.) =
+1.0	1.0	
+0.0	0.0	
+3.0	3.0	
+4.0	4.0	
+5.0	5.0	
+
+[com.intel.analytics.bigdl.tensor.DenseTensor$mcD$sp of size 3x5x2]
+```
+Gives the gradInput,
+
+```
+gradInput: 
+(1,.,.) =
+1.0	1.0	
+1.0	1.0	
+1.0	1.0	
+1.0	1.0	
+1.0	1.0	
+
+(2,.,.) =
+1.0	1.0	
+1.0	1.0	
+1.0	1.0	
+1.0	1.0	
+1.0	1.0	
+
+(3,.,.) =
+1.0	1.0	
+0.0	0.0	
+1.0	1.0	
+1.0	1.0	
+1.0	1.0	
+
+[com.intel.analytics.bigdl.tensor.DenseTensor$mcD$sp of size 3x5x2]
+```
+
+**Python example:**
+```python
+from bigdl.nn.layer import *
+from bigdl.util.common import *
+import numpy as np
+
+n_samples = 3
+n_timesteps = 7
+n_features = 2
+mask_value = -1.0
+input = np.array([1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, -1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7,
+                 1, 1, 2, 2, 3, 3, -1, -1, 5, 5, 6, 6, 7, 7]).reshape(n_samples, n_timesteps, n_features)
+gradOutput = np.ones((n_samples, n_timesteps, n_features))
+model = Sequential()
+model.add(Masking(mask_value=mask_value))
+
+output = model.forward(input)
+gradInput = model.backward(input, gradOutput)
+
+```
+Gives the output,
+```
+>>> print output
+[[[ 1.  1.]
+  [ 2.  2.]
+  [ 3.  3.]
+  [ 4.  4.]
+  [ 5.  5.]
+  [ 6.  6.]
+  [ 7.  7.]]
+
+ [[-1.  1.]
+  [ 2.  2.]
+  [ 3.  3.]
+  [ 4.  4.]
+  [ 5.  5.]
+  [ 6.  6.]
+  [ 7.  7.]]
+
+ [[ 1.  1.]
+  [ 2.  2.]
+  [ 3.  3.]
+  [ 0.  0.]
+  [ 5.  5.]
+  [ 6.  6.]
+  [ 7.  7.]]]
+```
+
+Gives the gradInput,
+
+```
+>>> print gradInput
+[[[ 1.  1.]
+  [ 1.  1.]
+  [ 1.  1.]
+  [ 1.  1.]
+  [ 1.  1.]
+  [ 1.  1.]
+  [ 1.  1.]]
+
+ [[ 1.  1.]
+  [ 1.  1.]
+  [ 1.  1.]
+  [ 1.  1.]
+  [ 1.  1.]
+  [ 1.  1.]
+  [ 1.  1.]]
+
+ [[ 1.  1.]
+  [ 1.  1.]
+  [ 1.  1.]
+  [ 0.  0.]
+  [ 1.  1.]
+  [ 1.  1.]
+  [ 1.  1.]]]
+```
+
+## Maxout ##    
+
+**Scala:**
+```scala
+val maxout = Maxout(2, 5, 3,
+                    withBias = true,
+                    wRegularizer = null,
+                    bRegularizer = null,
+                    initWeight = null,
+                    initBias = null)
+```
+
+**Python:**
+```python
+maxout = Maxout(2, 5, 3,
+                 with_bias = True,
+                 w_regularizer=None,
+                 b_regularizer=None,
+                 init_weight=None,
+                 init_bias=None)
+```
+
+Maxout layer select the element-wise maximum value of maxoutNumber Linear(inputSize, outputSize) layers
+
+parameters:
+* `inputSize` the size the each input sample
+* `outputSize` the size of the module output of each sample
+* `maxoutNumber` number of Linear layers to use
+* `withBias` whether use bias in Linear
+* `wRegularizer` instance of [[Regularizer]](eg. L1 or L2 regularization), applied to the input weights matrices.
+* `bRegularizer` instance of [[Regularizer]] applied to the bias.
+* `initWeight` initial weight
+* `initBias` initial bias
+
+**Scala example:**
+```scala
+import com.intel.analytics.bigdl.nn.Maxout
+import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+import com.intel.analytics.bigdl.utils.T
+
+val input_size = 2
+val batch_size = 3
+val output_size = 5
+val maxout_number = 3
+
+val input = Tensor[Float](batch_size, input_size).rand()
+val layer = Maxout[Float](input_size, output_size, maxout_number)
+val output = layer.forward(input)
+val gradOutput = Tensor[Float](batch_size, output_size)
+val gradInput = layer.backward(input, gradOutput)
+```
+Gives the output,
+```
+0.19078568	0.94480306	0.25038794	0.8114594	0.7753764	
+0.2822805	0.9095781	0.2815394	0.82958585	0.784589	
+0.35188058	0.7629706	0.18096384	0.7100433	0.6680352	
+[com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 3x5]
+```
+Gives the gradInput,
+
+```
+gradInput: 
+-0.18932924	0.9426162	
+-0.3118648	0.67255044	
+-0.31795382	1.944398	
+[com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 3x2]
+```
+
+**Python example:**
+```python
+from bigdl.nn.layer import *
+from bigdl.util.common import *
+import numpy as np
+
+val input_size = 2
+val batch_size = 3
+val output_size = 5
+val maxout_number = 3
+
+val input = Tensor[Float](batch_size, input_size).rand()
+val layer = Maxout[Float](input_size, output_size, maxout_number)
+val output = layer.forward(input)
+val gradOutput = Tensor[Float](batch_size, output_size).rand()
+val gradInput = layer.backward(input, gradOutput)
+
+```
+Gives the output,
+```
+>>> print output
+[[ 0.12344513  0.19081372  0.15130989  0.6341747   0.70982581]
+ [ 0.04154952 -0.13281995  0.2648508   0.36793122  0.67043799]
+ [ 0.41355255  0.17691913  0.15496807  0.5880245   0.74583203]]
+```
+
+Gives the gradInput,
+
+```
+>>> print gradInput
+[[ 0.53398496  0.01809531]
+ [-0.20667852  0.4962275 ]
+ [ 0.37912956  0.08742841]]
+```
