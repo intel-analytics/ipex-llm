@@ -25,6 +25,11 @@ class SoftplusGrad[T: ClassTag, D: ClassTag]
   extends UnaryGrad[T, D](true, true) {
 
   override val module: Module = SoftPlus[T, D]()
+
+  override def getClassTagNumerics() : (Array[ClassTag[_]], Array[TensorNumeric[_]]) = {
+    (Array[ClassTag[_]](scala.reflect.classTag[T], scala.reflect.classTag[D]),
+      Array[TensorNumeric[_]](ev, ev2))
+  }
 }
 
 object SoftplusGrad {

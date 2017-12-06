@@ -65,6 +65,11 @@ private[bigdl] class Const[T: ClassTag, B: ClassTag](val value: Tensor[B])
     }
     gradInput
   }
+
+  override def getClassTagNumerics() : (Array[ClassTag[_]], Array[TensorNumeric[_]]) = {
+    (Array[ClassTag[_]](scala.reflect.classTag[T], scala.reflect.classTag[B]),
+      Array[TensorNumeric[_]](ev))
+  }
 }
 
 private[bigdl] object Const {
