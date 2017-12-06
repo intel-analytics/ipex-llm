@@ -541,7 +541,7 @@ def _java2py(sc, r, encoding="bytes"):
 
     if isinstance(r, (bytearray, bytes)):
         r = PickleSerializer().loads(bytes(r), encoding=encoding)
-    if r:
+    if isinstance(r, JavaObject):
         r.toPy = bind(r, to_py)
     return r
 
