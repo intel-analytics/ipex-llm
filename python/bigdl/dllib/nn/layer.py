@@ -4663,6 +4663,57 @@ class GaussianSampler(Layer):
     def __init__(self, bigdl_type="float"):
         super(GaussianSampler, self).__init__(None, bigdl_type)
 
+class Masking(Layer):
+
+    '''
+    Use a mask value to skip timesteps for a sequence
+    ```
+   :param mask_value: mask value
+
+    >>> masking = Masking(0.0)
+    creating: createMasking
+    '''
+
+    def __init__(self,
+                 mask_value,
+                 bigdl_type="float"):
+        super(Masking, self).__init__(None, bigdl_type,
+                                         mask_value)
+
+class Maxout(Layer):
+    
+    '''
+    A linear maxout layer Maxout layer select the element-wise maximum value of
+    maxoutNumber Linear(inputSize, outputSize) layers
+    ```    
+    :param input_size: the size the each input sample
+    :param output_size: the size of the module output of each sample
+    :param maxout_number: number of Linear layers to use
+    :param with_bias: whether use bias in Linear
+    :param w_regularizer: instance of [[Regularizer]]
+          (eg. L1 or L2 regularization), applied to the input weights matrices.
+    :param b_regularizer: instance of [[Regularizer]]
+           applied to the bias.
+    :param init_weight: initial weight
+    :param init_bias: initial bias
+    
+    >>> maxout = Maxout(2, 5, 3)
+    creating: createMaxout
+    '''    
+    def __init__(self,
+                 input_size,
+                 output_size,
+                 maxout_number,
+                 with_bias = True,
+                 w_regularizer=None,
+                 b_regularizer=None,
+                 init_weight=None,
+                 init_bias=None,
+                 bigdl_type="float"):
+        super(Maxout, self).__init__(None, bigdl_type,
+                                      input_size, output_size, maxout_number, with_bias,
+                                      w_regularizer, b_regularizer, init_weight, init_bias)
+
 class HardSigmoid(Layer):
     """
     Apply Hard-sigmoid function
