@@ -24,7 +24,7 @@ class SpatialSeperableConvolutionSpec extends KerasBaseSpec {
     val kerasCode =
       """
         |input_tensor = Input(shape=[5, 5, 2])
-        |output_tensor = SeparableConv2D(2, (2, 2))(input_tensor)
+        |output_tensor = SeparableConv2D(2, 2, 2)(input_tensor)
         |model = Model(input=input_tensor, output=output_tensor)
         |input = np.random.uniform(0, 1, [2, 5, 5, 2])
       """.stripMargin
@@ -37,7 +37,7 @@ class SpatialSeperableConvolutionSpec extends KerasBaseSpec {
     val kerasCode =
       """
         |input_tensor = Input(shape=[5, 5, 2])
-        |output_tensor = SeparableConv2D(4, (2, 2), depth_multiplier=2)(input_tensor)
+        |output_tensor = SeparableConv2D(4, 2, 2, depth_multiplier=2)(input_tensor)
         |model = Model(input=input_tensor, output=output_tensor)
         |input = np.random.uniform(0, 1, [2, 5, 5, 2])
       """.stripMargin
