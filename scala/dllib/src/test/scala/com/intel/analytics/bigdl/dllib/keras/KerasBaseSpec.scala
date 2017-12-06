@@ -54,7 +54,6 @@ abstract class KerasBaseSpec extends BigDLSpecHelper {
     val bgradInput = bmodel.backward(input, boutput.clone())
     bgradInput.almostEqual(gradInput, precision) should be(true)
 
-
     val parameters = bmodel.parameters()
     if (parameters != null) {
       val bgradWeights = parameters._2

@@ -763,6 +763,22 @@ trait Tensor[T] extends Serializable with TensorMath[T] with Activity {
     })
     return result
   }
+
+  /**
+   * Element wise inequality between tensor and given value
+   * @param value
+   * @return
+   */
+  def notEqualValue(value : Double): Boolean = {
+    var j = 0
+    while (j < this.nElement()) {
+      if (this.storage.apply(j + this.storageOffset() - 1) != value) {
+        return true
+      }
+      j += 1
+    }
+    return false
+  }
 }
 
 /**
