@@ -220,7 +220,7 @@ object BigDLSerDe extends BigDLSerDeBase with Serializable {
         throw new PickleException("should be 3, not : " + args.length)
       }
       Sample(args(0).asInstanceOf[JList[JTensor]],
-        args(1).asInstanceOf[JTensor],
+        args(1).asInstanceOf[JList[JTensor]],
         args(2).asInstanceOf[String])
     }
   }
