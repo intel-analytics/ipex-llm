@@ -18,10 +18,6 @@
 
 . `dirname $0`/prepare_env.sh
 
-#if [ $# -ne 0 ]; then
-#    export PYTHON_EXECUTABLES=$@
-#fi
-
 cd "`dirname $0`"
 
 export DL_CORE_NUMBER=4
