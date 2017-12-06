@@ -56,7 +56,8 @@ class MeanSquaredLogarithmicCriterion[T: ClassTag]
 
     buffer2.apply1(e => ev.clip(e, epsilon, ev.fromType(Double.MaxValue)))
     buffer2.add(ev.one)
-    gradInput.resizeAs(buffer2).copy(buffer2) // keep result K.clip(x K.epsilon(), Double.MaxValue) + 1.
+    // keep result K.clip(x K.epsilon(), Double.MaxValue) + 1.
+    gradInput.resizeAs(buffer2).copy(buffer2)
     buffer2.log()
 
     buffer1.sub(buffer2)

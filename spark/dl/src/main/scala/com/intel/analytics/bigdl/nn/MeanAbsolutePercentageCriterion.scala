@@ -16,7 +16,6 @@
 
 package com.intel.analytics.bigdl.nn
 
-import breeze.linalg.sum
 import com.intel.analytics.bigdl.nn.abstractnn.TensorCriterion
 import com.intel.analytics.bigdl.tensor.{DenseTensorApply, Tensor, TensorFunc6}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -41,7 +40,7 @@ class MeanAbsolutePercentageCriterion[T: ClassTag]
   private var buffer2 : Tensor[T] = null
   private val epsilon: T = ev.fromType(1e-07)
   private val maxValue: T = ev.fromType(Double.MaxValue)
-  private val negtiveOne: T = ev.fromType(-1)
+  private val negativeOne: T = ev.fromType(-1)
 
 
   override def updateOutput(input: Tensor[T], target : Tensor[T]): T = {
@@ -62,42 +61,34 @@ class MeanAbsolutePercentageCriterion[T: ClassTag]
 
     buffer1.resizeAs(input).copy(input)
     buffer2.resizeAs(target).copy(target)
-    gradInput.resizeAs(input).copy(input)
+    gradInput.resizeAs(input)
 
     val func = new TensorFunc6[T] {
-      override def apply(data1: Array[T], offset1: Int, data2: Array[T], offset2: Int,
-                         data3: Array[T], offset3: Int): Unit = {
-        val a = data1(offset1)
-        val b = data2(offset2)
+      override def apply(inputBuf: Array[T], inputOffset: Int, targetBuf: Array[T],
+                         targetOffset: Int, gradInputBuf: Array[T], gradInputOffset: Int): Unit = {
+        val a = inputBuf(inputOffset)
+        val b = targetBuf(targetOffset)
 
-        if (ev.isGreater(a, b)) { // x > y
-          if (ev.isGreaterEq(ev.abs(a), epsilon) && ev.isGreaterEq(maxValue, ev.abs(a))) {
-            if (ev.isGreater(a, ev.zero)) {
-              data3(offset3) = ev.divide(b, ev.times(a, a)) // y/x^2
-            } else {
-              data3(offset3) = ev.divide(b, ev.times(a, a))
-              data3(offset3) = ev.times(data3(offset3), negtiveOne) // -y/x^2
-            }
-          } else if (ev.isGreater(epsilon, ev.abs(a))) {
-            data3(offset3) = ev.divide(ev.one, epsilon) // 1/epsilon
-          } else {
-            data3(offset3) = ev.divide(ev.one, maxValue) // 1/Double.MaxValue
-          }
-        } else if (ev.isGreater(b, a)) { // x < y
-          if (ev.isGreaterEq(ev.abs(a), epsilon) && ev.isGreaterEq(maxValue, ev.abs(a))) {
-            if (ev.isGreater(a, ev.zero)) {
-              data3(offset3) = ev.divide(b, ev.times(a, a))
-              data3(offset3) = ev.times(data3(offset3), negtiveOne) // -y/x^2
-            } else {
-              data3(offset3) = ev.divide(b, ev.times(a, a)) // y/x^2
-            }
-          } else if (ev.isGreater(epsilon, ev.abs(a))) {
-            data3(offset3) = ev.divide(negtiveOne, epsilon) // -1/epsilon
-          } else {
-            data3(offset3) = ev.divide(negtiveOne, maxValue) // -1/Double.MaxValue
-          }
+        if (a == b) {
+          gradInputBuf(gradInputOffset) = ev.zero
         } else {
-          data3(offset3) = ev.zero
+          // default calculate results of (x>y). results of (x<y) are negative values of (x>y)
+          if (ev.isGreaterEq(ev.abs(a), epsilon) && ev.isGreaterEq(maxValue, ev.abs(a))) {
+            val v = ev.divide(b, ev.times(a, a)) // y/x^2
+            if (ev.isGreater(a, ev.zero)) {
+              gradInputBuf(gradInputOffset) = v // y/x^2
+            } else {
+              gradInputBuf(gradInputOffset) = ev.times(v, negativeOne) // -y/x^2
+            }
+          } else if (ev.isGreater(epsilon, ev.abs(a))) {
+            gradInputBuf(gradInputOffset) = ev.divide(ev.one, epsilon) // 1/epsilon
+          } else {
+            gradInputBuf(gradInputOffset) = ev.divide(ev.one, maxValue) // 1/Double.MaxValue
+          }
+
+          if (ev.isGreater(b, a)) { // x < y
+            gradInputBuf(gradInputOffset) = ev.times(gradInputBuf(gradInputOffset), negativeOne)
+          }
         }
       }
     }
