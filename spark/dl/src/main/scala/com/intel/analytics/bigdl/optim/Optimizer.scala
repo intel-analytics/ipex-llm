@@ -65,13 +65,8 @@ abstract class Optimizer[T: ClassTag, D](
   protected var maxDropPercentage: Double = 0.0
   protected var computeThresholdbatchSize: Int = 100
   protected var warmupIterationNum: Int = 200
-
-  protected var constantClippingEnable: Boolean = false
-  protected var minValueClip: Double = 0.0
-  protected var maxValueClip: Double = 0.0
-
-  protected var globalNorm2ClippingEnable: Boolean = false
-  protected var clipNormThreshold: Double = 0.0
+  
+  protected val gradientClippingParams = GradientClippingParams(false, 0.0f, 0.0f, false, 0.0f)
 
   /**
    * Trigger the optimization process
@@ -351,11 +346,11 @@ abstract class Optimizer[T: ClassTag, D](
     * @param max the maximum value to clip by
     * @return
     */
-  def setConstantGradientClipping(min: Double, max: Double)
+  def setConstantGradientClipping(min: Float, max: Float)
   : this.type = {
-    this.constantClippingEnable = true
-    this.minValueClip = min
-    this.maxValueClip = max
+    gradientClippingParams.enableConstantClipping = true
+    gradientClippingParams.minValueClip = min
+    gradientClippingParams.maxValueClip = max
     this
   }
 
@@ -364,10 +359,10 @@ abstract class Optimizer[T: ClassTag, D](
     * @param clipNorm gradient L2-Norm threshold
     * @return
     */
-  def setGradientClippingByNorm(clipNorm: Double)
+  def setGradientClippingByNorm(clipNorm: Float)
   : this.type = {
-    this.globalNorm2ClippingEnable = true
-    this.clipNormThreshold = clipNorm
+    gradientClippingParams.enableL2NormClipping = true
+    gradientClippingParams.normValueClip = clipNorm
     this
   }
 }
@@ -523,3 +518,10 @@ object Optimizer {
     }
   }
 }
+
+case class GradientClippingParams(
+   var enableConstantClipping: Boolean,
+   var minValueClip: Float,
+   var maxValueClip: Float,
+   var enableL2NormClipping: Boolean,   
+   var normValueClip: Float)

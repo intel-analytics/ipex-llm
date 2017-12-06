@@ -107,6 +107,7 @@ object TrainInceptionV1 {
         .setValidation(testTrigger,
           valSet, Array(new Top1Accuracy[Float], new Top5Accuracy[Float]))
         .setEndWhen(endTrigger)
+        .setConstantGradientClipping(-5.0f, 5.0f)
         .optimize()
       sc.stop()
     })

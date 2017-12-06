@@ -303,20 +303,6 @@ class AllReduceParameter[T: ClassTag](id: Long, partitionNum: Int, size: Int) ex
     BlockManagerWrapper.putBytes(blockId,
       SerializerInstance.serialize(weightPartition).bytes(), StorageLevel.MEMORY_ONLY_SER)
   }
-
-  def clipByValue(min: Double, max: Double): Unit = {
-    val gradientMaxT = ev.fromType[Double](max)
-    val gradientMinT = ev.fromType[Double](min)
-    gradientPartition.apply1 { v =>
-      if (ev.isGreater(v, gradientMaxT)) {
-        gradientMaxT
-      } else if (ev.isGreater(gradientMinT, v)) {
-        gradientMinT
-      } else {
-        v
-      }
-    }
-  }
 }
 
 private[bigdl] class FutureResult[T](private val futures: Seq[Future[T]]) {
