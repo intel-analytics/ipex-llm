@@ -42,9 +42,9 @@ import scala.util.Random
 class ModuleSerializerSpec extends FlatSpec with Matchers {
 
   "Abs serializer" should "work properly" in {
-    val abs = Abs().setName("abs")
-    val tensor1 = Tensor(5, 5).apply1(_ => Random.nextFloat())
-    val tensor2 = Tensor()
+    val abs = Abs[Float, Float]().setName("abs")
+    val tensor1 = Tensor[Float](5, 5).apply1(_ => Random.nextFloat())
+    val tensor2 = Tensor[Float]()
     val res1 = abs.forward(tensor1)
     tensor2.resizeAs(tensor1).copy(tensor1)
     ModulePersister.saveToFile("/tmp/abs.bigdl", null, abs, true)

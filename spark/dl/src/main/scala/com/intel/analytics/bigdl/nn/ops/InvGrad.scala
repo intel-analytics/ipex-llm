@@ -37,6 +37,11 @@ class InvGrad[T: ClassTag, D: ClassTag]()(implicit ev: TensorNumeric[T], ev2: Te
     output.copy(x).pow(ev2.fromType(2)).cmul(d).mul(ev2.fromType(-1))
     output
   }
+
+  override def getClassTagNumerics() : (Array[ClassTag[_]], Array[TensorNumeric[_]]) = {
+    (Array[ClassTag[_]](scala.reflect.classTag[T], scala.reflect.classTag[D]),
+      Array[TensorNumeric[_]](ev, ev2))
+  }
 }
 
 object InvGrad {

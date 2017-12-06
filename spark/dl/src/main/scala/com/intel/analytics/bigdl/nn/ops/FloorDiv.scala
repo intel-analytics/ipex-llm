@@ -33,6 +33,11 @@ class FloorDiv[T: ClassTag, D: ClassTag]()(implicit ev: TensorNumeric[T], ev2: T
     output.map(input2, (a, b) => {ev2.floorDiv(a, b)})
     output
   }
+
+  override def getClassTagNumerics() : (Array[ClassTag[_]], Array[TensorNumeric[_]]) = {
+    (Array[ClassTag[_]](scala.reflect.classTag[T], scala.reflect.classTag[D]),
+      Array[TensorNumeric[_]](ev, ev2))
+  }
 }
 
 object FloorDiv {

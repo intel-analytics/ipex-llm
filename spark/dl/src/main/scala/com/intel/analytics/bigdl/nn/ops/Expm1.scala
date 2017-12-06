@@ -29,6 +29,11 @@ class Expm1[T: ClassTag, D: ClassTag]()(implicit ev: TensorNumeric[T], ev2: Tens
     output.resizeAs(input)
     output.map(input, (a, b) => ev2.minus(ev2.exp(b), ev2.one))
   }
+
+  override def getClassTagNumerics() : (Array[ClassTag[_]], Array[TensorNumeric[_]]) = {
+    (Array[ClassTag[_]](scala.reflect.classTag[T], scala.reflect.classTag[D]),
+      Array[TensorNumeric[_]](ev, ev2))
+  }
 }
 
 object Expm1 {
