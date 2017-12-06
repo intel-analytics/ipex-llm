@@ -58,26 +58,6 @@ def get_mnist(sc, data_type="train", location="/tmp/mnist"):
 
 
 if __name__ == "__main__":
-    from bigdl.nn.layer import *
-    import numpy as np
-
-    hiddenSize = 5
-
-    inputSize = 5
-    # module = Recurrent().add(RnnCell(inputSize, hiddenSize, Tanh()))
-    # input = np.random.rand(1, 5, inputSize)
-
-    cells = []
-    cells.append(LSTM(inputSize, hiddenSize))
-    cells.append(LSTM(inputSize, hiddenSize))
-    module = RecurrentDecoder(5).add(MultiRNNCell(cells))
-    input = np.random.randn(1, 5)
-
-    output = module.forward(input)
-
-    res = module.get_hidden_state()
-    module.set_hidden_state(res)
-
     parser = OptionParser()
     parser.add_option("-a", "--action", dest="action", default="train")
     parser.add_option("-b", "--batchSize", type=int, dest="batchSize", default="128")
