@@ -580,6 +580,19 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
   }
 
   /**
+    * Get gradient weight and bias for the module
+    * @return array of gradient weights and bias
+    *
+    */
+  def getGradWeightsBias(): Array[Tensor[T]] = {
+    if (parameters() != null) {
+      parameters()._2
+    } else {
+      null
+    }
+  }
+
+  /**
    * save weights and bias to file
    * @param path file to save
    * @param overWrite whether to overwrite or not

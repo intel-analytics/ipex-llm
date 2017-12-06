@@ -2091,6 +2091,15 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     }
   }
 
+  def getGradWeights(model: AbstractModule[Activity, Activity, T]): JList[JTensor] = {
+    val weights = model.getGradWeightsBias()
+    if (weights != null) {
+      weights.map(toJTensor(_)).toList.asJava
+    } else {
+      null
+    }
+  }
+
   def updateParameters(model: AbstractModule[Activity, Activity, T], lr: Double): Unit = {
     model.updateParameters(ev.fromType(lr))
   }

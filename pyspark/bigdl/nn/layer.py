@@ -398,11 +398,25 @@ class Layer(JavaValue):
         :return: list of numpy arrays which represent weight and bias
         """
         tensorWeights = callBigDlFunc(self.bigdl_type,
-                              "getWeights", self.value)
+                                      "getWeights", self.value)
         if tensorWeights is not None:
             return [tensor.to_ndarray() for tensor in tensorWeights]
         else:
             print("The layer does not have weight/bias")
+            return None
+
+    def get_grad_weights(self):
+        """
+        Get gradient weights for this layer
+
+        :return: list of numpy arrays which represent gradient weight and bias
+        """
+        tensorWeights = callBigDlFunc(self.bigdl_type,
+                                      "getGradWeights", self.value)
+        if tensorWeights is not None:
+            return [tensor.to_ndarray() for tensor in tensorWeights]
+        else:
+            print("The layer does not have gradient weight/bias")
             return None
 
     def is_with_weights(self):

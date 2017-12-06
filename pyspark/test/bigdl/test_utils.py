@@ -255,17 +255,11 @@ class BigDLTestCase(TestCase):
                                  atol=atol)
 
         # compare gradient weights if the layer has weights
-        if keras_model.trainable_weights:
+        if dump_weights:
             weight_converter = WeightsConverter.get_converter(keras_model.layers[1].__class__.__name__)
             keras_grad_weights = weight_converter(sess.run(K.gradients(keras_model.output * keras_output, keras_model.trainable_weights),
                                                   feed_dict=feed_dict))
-            bgrad_weights = bigdl_model.parameters()
-            bigdl_grad_weights = []
-            for layer in bgrad_weights.keys():
-                if 'gradWeight' in bgrad_weights[layer]:
-                    bigdl_grad_weights.append(bgrad_weights[layer]['gradWeight'])
-                if 'gradBias' in bgrad_weights[layer]:
-                    bigdl_grad_weights.append(bgrad_weights[layer]['gradBias'])
+            bigdl_grad_weights = bigdl_model.get_grad_weights()
             for k in range(0, len(keras_grad_weights)):
                 self.assert_allclose(bigdl_grad_weights[k],
                                      keras_grad_weights[k],

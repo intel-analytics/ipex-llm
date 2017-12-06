@@ -170,24 +170,24 @@ class TestLayer(BigDLTestCase):
         layer = AtrousConvolution2D(64, 3, 4, atrous_rate=(2, 2), dim_ordering="th",
                                     border_mode="valid", activation='tanh',
                                     input_shape=(3, 128, 128))
-        self.modelTestSingleLayer(input_data, layer, dump_weights=True, rtol=1e-4, atol=1e-4)
+        self.modelTestSingleLayer(input_data, layer, dump_weights=True, rtol=1e-3, atol=1e-3)
 
     def test_deconvolution2d(self):
         input_data = np.random.random_sample([32, 3, 12, 12])
         layer = Deconvolution2D(3, 3, 3, output_shape=(None, 3, 14, 14),
                                 border_mode="valid", dim_ordering="th",
                                 input_shape=(3, 12, 12))
-        self.modelTestSingleLayer(input_data, layer, dump_weights=True)
+        self.modelTestSingleLayer(input_data, layer, dump_weights=True, rtol=1e-5, atol=1e-5)
         layer2 = Deconvolution2D(3, 3, 3, output_shape=(None, 3, 25, 25),
                                  border_mode="valid", subsample=(2, 2),
                                  dim_ordering="th", input_shape=(3, 12, 12))
-        self.modelTestSingleLayer(input_data, layer2, dump_weights=True)
+        self.modelTestSingleLayer(input_data, layer2, dump_weights=True, rtol=1e-5, atol=1e-5)
 
     def test_maxpooling3d(self):
         input_data = np.random.random_sample([1, 3, 20, 15, 35])
         layer = MaxPooling3D(pool_size=(2, 2, 3), strides=(1, 2, 3), dim_ordering="th",
                              border_mode="valid", input_shape=(3, 20, 15, 35))
-        self.modelTestSingleLayer(input_data, layer)
+        self.modelTestSingleLayer(input_data, layer, rtol=1e-5, atol=1e-5)
 
     def test_maxpooling2d(self):
         input_data = np.random.random_sample([1, 3, 20, 20])
