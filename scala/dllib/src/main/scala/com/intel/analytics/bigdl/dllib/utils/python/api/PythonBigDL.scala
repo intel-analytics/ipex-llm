@@ -64,7 +64,7 @@ import scala.reflect.ClassTag
  * @param bigdlType bigdl numeric type
  */
 case class Sample(features: JList[JTensor],
-                  label: JTensor,
+                  label: JList[JTensor],
                   bigdlType: String)
 
 case class JTensor(storage: Array[Float], shape: Array[Int],
@@ -127,7 +127,9 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     val cls = implicitly[ClassTag[T]].runtimeClass
     val features = new JArrayList[JTensor]()
     features.add(toJTensor(sample.feature()))
-    Sample(features, toJTensor(sample.label()), cls.getSimpleName)
+    val label = new JArrayList[JTensor]()
+    label.add(toJTensor(sample.label()))
+    Sample(features, label, cls.getSimpleName)
   }
 
   def toTensor(jTensor: JTensor): Tensor[T] = {
@@ -208,7 +210,8 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   def toJSample(record: Sample): JSample[T] = {
     require(record.bigdlType == this.typeName,
       s"record.bigdlType: ${record.bigdlType} == this.typeName: ${this.typeName}")
-    JSample[T](record.features.asScala.toArray.map(toTensor(_)), toTensor(record.label))
+    JSample[T](record.features.asScala.toArray.map(toTensor(_)),
+      record.label.asScala.toArray.map(toTensor(_)))
   }
 
   def toJSample(psamples: RDD[Sample]): RDD[JSample[T]] = {
@@ -2523,7 +2526,8 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
       val imInfo = imageFeature.getImInfo()
       features.add(toJTensor(imInfo.asInstanceOf[Tensor[T]]))
     }
-    val label = imageFeatureToLabelTensor(imageFeature)
+    val label = new util.ArrayList[JTensor]()
+    label.add(imageFeatureToLabelTensor(imageFeature))
     Sample(features, label, "float")
   }
 
