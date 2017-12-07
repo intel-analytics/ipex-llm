@@ -2146,13 +2146,8 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     layer.setInitMethod(weightInitMethod, biasInitMethod)
   }
 
-  def getHiddenStates(rec: Recurrent[T]): JList[JTensor] = {
-    val states = rec.getHiddenState()
-    activityToJTensors(states)
-  }
-
-  def setHiddenStates(rec: Recurrent[T], hiddenStates: JList[JTensor], isTable: Boolean): Unit = {
-      rec.setHiddenState(jTensorsToActivity(hiddenStates, isTable))
+  def getHiddenState(rec: Recurrent[T]): JActivity = {
+    JActivity(rec.getHiddenState())
   }
 
   def freeze(model: AbstractModule[Activity, Activity, T], freezeLayers: JList[String])
@@ -2185,6 +2180,10 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     ResizeBilinear[T](outputHeight,
       outputWidth,
       alignCorner)
+  }
+
+  def createMultiRNNCell(cells: JList[Cell[T]]): MultiRNNCell[T] = {
+    MultiRNNCell(cells.asScala.toArray)
   }
 
   def createHighway(size: Int, withBias: Boolean, activation: String,
