@@ -211,7 +211,7 @@ object BigDLSerDe extends BigDLSerDeBase with Serializable {
       saveObjects(out,
         pickler,
         record.features,
-        record.label,
+        record.labels,
         record.bigdlType)
     }
 
