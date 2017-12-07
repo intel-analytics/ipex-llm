@@ -314,7 +314,7 @@ class RecurrentDecoderSpec extends FlatSpec with BeforeAndAfter with Matchers {
     require(gradient.almostEqual(gradient2, 1e-8) == true)
   }
 
-  "A ConvLSTMPeepwhole " should "work with RecurrentDecoder get/setStates" in {
+  "A ConvLSTMPeepwhole " should "work with RecurrentDecoder get/setHiddenStates" in {
     import com.intel.analytics.bigdl.numeric.NumericDouble
     val hiddenSize = 3
     val inputSize = 3
