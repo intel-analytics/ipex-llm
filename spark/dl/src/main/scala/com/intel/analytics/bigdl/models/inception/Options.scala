@@ -34,7 +34,9 @@ object Options {
     maxIteration: Int = 62000,
     weightDecay: Double = 0.0001,
     checkpointIteration: Int = 620,
-    graphModel: Boolean = false
+    graphModel: Boolean = false,
+    warmupEpoch: Option[Int] = None,
+    maxLr: Double = 0.1
   )
 
   val trainParser = new OptionParser[TrainParams]("BigDL Inception Example") {
@@ -79,6 +81,12 @@ object Options {
     opt[Unit]('g', "graphModel")
       .text("use graph model")
       .action((x, c) => c.copy(graphModel = true))
+    opt[Int]('w', "warmupEpoch")
+      .text("warm up epoch numbers")
+      .action((x, c) => c.copy(warmupEpoch = Some(x)))
+    opt[Double]("maxLr")
+      .text("max Lr after warm up")
+      .action((x, c) => c.copy(maxLr = x))
   }
 
   case class TestParams(

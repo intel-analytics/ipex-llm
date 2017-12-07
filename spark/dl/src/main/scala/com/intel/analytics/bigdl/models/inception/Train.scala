@@ -68,10 +68,29 @@ object TrainInceptionV1 {
       val optimMethod = if (param.stateSnapshot.isDefined) {
         OptimMethod.load[Float](param.stateSnapshot.get)
       } else if (param.maxEpoch.isDefined) {
-        new SGD[Float](learningRate = param.learningRate, learningRateDecay = 0.0,
-          weightDecay = param.weightDecay, momentum = 0.9, dampening = 0.0, nesterov = false,
-          learningRateSchedule =
-            SGD.Poly(0.5, math.ceil(1281167.toDouble / param.batchSize).toInt * param.maxEpoch.get))
+        if (param.warmupEpoch.isDefined) {
+          val iterationsPerEpoch = math.ceil(1281167.toFloat / param.batchSize).toInt
+          val warmUpIteration = iterationsPerEpoch * param.warmupEpoch.get
+          val maxLr = param.maxLr
+          val delta = (maxLr - param.learningRate) / warmUpIteration
+
+          println(s"warmUpIteraion: $warmUpIteration, startLr: ${param.learningRate}, " +
+            s"maxLr: $maxLr, delta: $delta")
+
+          new SGD[Float](learningRate = param.learningRate,
+            learningRateDecay = 0.0,
+            weightDecay = param.weightDecay, momentum = 0.9,
+            dampening = 0.0, nesterov = false,
+            learningRateSchedule =
+              SGD.PolyWithWarmUp(warmUpIteration, delta,
+                0.5, math.ceil(1281167.toDouble / param.batchSize).toInt * param.maxEpoch.get)
+          )
+        } else {
+          new SGD[Float](learningRate = param.learningRate, learningRateDecay = 0.0,
+            weightDecay = param.weightDecay, momentum = 0.9, dampening = 0.0, nesterov = false,
+            learningRateSchedule = SGD.Poly(0.5,
+              math.ceil(1281167.toDouble / param.batchSize).toInt * param.maxEpoch.get))
+        }
       } else {
         new SGD[Float](learningRate = param.learningRate, learningRateDecay = 0.0,
           weightDecay = param.weightDecay, momentum = 0.9, dampening = 0.0, nesterov = false,
@@ -107,7 +126,7 @@ object TrainInceptionV1 {
         .setValidation(testTrigger,
           valSet, Array(new Top1Accuracy[Float], new Top5Accuracy[Float]))
         .setEndWhen(endTrigger)
-        .setConstantGradientClipping(-5.0f, 5.0f)
+//        .setConstantGradientClipping(-5.0f, 5.0f)
         .optimize()
       sc.stop()
     })
