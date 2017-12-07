@@ -330,11 +330,11 @@ object DistriOptimizer {
           if (validationMethods.isDefined) {
             modelCache.optimMethod.state.update("score", driverState[Float]("score"))
           }
+          var time = System.nanoTime()
           // gradient clipping
           if (constantClippingEnable) {
             parameters.gradientPartition.clamp(minValueClip, maxValueClip)
           }
-          var time = System.nanoTime()
           modelCache.optimMethod.optimize(_ => (ev.fromType(value), parameters.gradientPartition),
             parameters.weightPartition)
           driverMetrics.add("compute weight average", System.nanoTime() - time)
@@ -362,7 +362,7 @@ object DistriOptimizer {
         logger.info(s"${_header} Trained ${recordsNum.value} records in ${(end - start) / 1e9} " +
           s"seconds. Throughput is ${driverState("Throughput")} records/second. Loss is ${
             driverState("Loss")}. ${optimMethod.getHyperParameter()}")
-        logger.debug("\n" + metrics.summary())
+        logger.info("\n" + metrics.summary())
         logger.debug("Dropped modules: " + (driverSubModelNum - numFinishedModelUpdates))
         lossArray = new Array[Double](_subModelNumber)
 
