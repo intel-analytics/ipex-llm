@@ -136,6 +136,14 @@ class LocallyConnected1D[T: ClassTag](val nInputFrame: Int,
     }
   }
 
+  def reShapeOutputTensor(input:Tensor[T], output:Tensor[T]):Tensor[T] = {
+    if(input.dim() == 2){
+      output.reshape(Array(output.size(2),output.size(3)))
+    } else {
+      output
+    }
+  }
+
   override def updateOutput(_input: Tensor[T]): Tensor[T] = {
     // Require input of 2 dimensions or 3 dimensions
     // 2d input format: time x feature
@@ -212,6 +220,7 @@ class LocallyConnected1D[T: ClassTag](val nInputFrame: Int,
         })
       })
 
+    output = reShapeOutputTensor(_input,output)
     output
   }
 
@@ -261,8 +270,6 @@ class LocallyConnected1D[T: ClassTag](val nInputFrame: Int,
             gradOutputSample = gradOutput.select(1, i + 1)
             var nOutputSampleFrame = nOutputFrame
 
-            var j = 0
-
             (0 to nOutputSampleFrame - 1).map(j => {
 
               gradOutputWindow.set(gradOutputSample.storage(), gradOutputSample.storageOffset() +
@@ -282,12 +289,11 @@ class LocallyConnected1D[T: ClassTag](val nInputFrame: Int,
 
               gradInputWindow.addmm(ev.fromType[Int](1), gradInputWindow,
                 ev.fromType[Int](1), gradOutputWindow, weightWindow)
-
             })
-
           })
         })
 
+    gradInput = reShapeOutputTensor(_gradOutput,gradInput)
     gradInput
   }
 
@@ -317,7 +323,7 @@ class LocallyConnected1D[T: ClassTag](val nInputFrame: Int,
 
       var gradOutputSample = Tensor[T]()
       var inputSample = Tensor[T]()
-      var i = 0
+
      (0 to batchSize -1).map( i => {
        results(i) = Engine.model.invoke(() => {
          gradOutputSample = gradOutput.select(1, i + 1)
@@ -353,7 +359,6 @@ class LocallyConnected1D[T: ClassTag](val nInputFrame: Int,
 
            gradWeightWindow.addmm(ev.fromType[Int](1), gradWeightWindow, ev.fromType[Double](scaleW),
              gradOutputWindowT, inputWindow)
-
          })
        })
      })
