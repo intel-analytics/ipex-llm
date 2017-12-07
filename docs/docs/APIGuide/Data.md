@@ -187,16 +187,16 @@ import com.intel.analytics.bigdl.dataset.Sample
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.numeric.NumericFloat
 
-val feature = Array(Tensor(2, 2).rand, Tensor(2, 2).rand)
-val label = Array(Tensor(1).fill(1), Tensor(1).fill(-1))
-val sample = Sample(feature, label)
+val features = Array(Tensor(2, 2).rand, Tensor(2, 2).rand)
+val labels = Array(Tensor(1).fill(1), Tensor(1).fill(-1))
+val sample = Sample(features, labels)
 ```
 
 **Python example:**
 
 Note: Please always use `Sample.from_ndarray` to construct `Sample` in Python.
 
-The case where feature is one ndarray with a 1-element label.
+The case where feature is one tensor with a 1-element label.
 
 ```python
 from bigdl.util.common import Sample
@@ -213,9 +213,9 @@ The case where feature is a few tensors and label is also a few tensors.
 from bigdl.util.common import Sample
 import numpy as np
 
-feature = [np.random.rand(3, 8, 16), np.random.rand(3, 8, 16)]
-label = [np.array(1), np.array(-1)]
-sample = Sample.from_ndarray(feature, label)
+features = [np.random.rand(3, 8, 16), np.random.rand(3, 8, 16)]
+labels = [np.array(1), np.array(-1)]
+sample = Sample.from_ndarray(features, labels)
 ```
 
 ---
