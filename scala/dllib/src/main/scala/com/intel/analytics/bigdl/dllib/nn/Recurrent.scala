@@ -74,6 +74,9 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
   override def add(module: AbstractModule[_ <: Activity, _ <: Activity, T]): Recurrent.this.type = {
     require(module.isInstanceOf[Cell[T]],
       "Recurrent: added module should be Cell type!")
+    require(!module.isInstanceOf[MultiRNNCell[T]],
+      "Recurrent: added module cannot be MultiRNNCell," +
+        "use Sequential().add(Recurrent(cell)).add(Recurrent(cell))... instead!")
 
     topology = module.asInstanceOf[Cell[T]]
     preTopology = if (topology.preTopology != null) {
