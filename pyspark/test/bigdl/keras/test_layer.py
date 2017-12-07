@@ -264,7 +264,7 @@ class TestLayer(BigDLTestCase):
     def test_batchnormalization(self):
         input_data = np.random.random_sample([2, 6, 128, 128])
         layer = BatchNormalization(input_shape=(6, 128, 128), axis=1)
-        self.modelTestSingleLayer(input_data, layer, dump_weights=True, random_weights=False)
+        self.modelTestSingleLayer(input_data, layer, dump_weights=True)
 
     def test_flatten(self):
         input_data = np.random.random_sample([1, 2, 3])
@@ -631,7 +631,7 @@ class TestLayer(BigDLTestCase):
 
         input_data2 = np.random.random_sample([2, 10, 3, 32, 32])
         layer2 = TimeDistributed(Convolution2D(64, 3, 3), input_shape=(10, 3, 32, 32))
-        self.modelTestSingleLayer(input_data2, layer2, dump_weights=True)
+        self.modelTestSingleLayer(input_data2, layer2, dump_weights=True, rtol=1e-5, atol=1e-5)
 
     def test_wrapper_bidirectional(self):
         input_data = np.random.random([5, 32, 64])
