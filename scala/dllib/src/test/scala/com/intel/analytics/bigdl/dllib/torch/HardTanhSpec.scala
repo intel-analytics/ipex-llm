@@ -146,7 +146,7 @@ class HardTanhSpec  extends TorchSpec {
   "A HardTanh Module " should
     "generate correct output and grad inplace with not contiguous input" in {
     torchCheck()
-    val module = new HardTanh[Double, Double](inplace = true)
+    val module = new HardTanh[Float, Double](inplace = true)
     val input = Tensor[Double](2, 2)
     input(Array(1, 1)) = -0.97008799016476
     input(Array(1, 2)) = -0.65073125436902

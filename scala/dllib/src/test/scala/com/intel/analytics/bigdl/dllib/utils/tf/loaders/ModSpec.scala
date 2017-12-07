@@ -24,7 +24,7 @@ import org.tensorflow.framework.{DataType, NodeDef}
 class ModSpec extends TensorflowSpecHelper {
 
   "Mod" should "be correct for Int" in {
-    compare(
+    compare[Float](
       NodeDef.newBuilder()
         .setName("mod_test")
         .putAttr("T", typeAttr(DataType.DT_INT32))
@@ -36,7 +36,7 @@ class ModSpec extends TensorflowSpecHelper {
   }
 
   "Mod" should "be correct for float" in {
-    compare(
+    compare[Float](
       NodeDef.newBuilder()
         .setName("mod_test")
         .putAttr("T", typeAttr(DataType.DT_FLOAT))

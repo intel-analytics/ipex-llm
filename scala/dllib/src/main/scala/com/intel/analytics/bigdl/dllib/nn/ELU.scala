@@ -33,6 +33,10 @@ class ELU[T: ClassTag, D: ClassTag](
   val inplace: Boolean = false)(
   implicit ev: TensorNumeric[T], ev2: TensorNumeric[D])
   extends AbstractModule[Tensor[D], Tensor[D], T]  {
+
+  output = Tensor[D]()
+  gradInput = Tensor[D]()
+
   val _alpha = ev2.fromType[Double](alpha)
 
   // Todo: Improve the performance of contiguous tensor
