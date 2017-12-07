@@ -44,6 +44,9 @@ class HardTanh[T: ClassTag, D: ClassTag](
     s"maxValue ${maxValue}, " +
     s"minValue ${minValue}")
 
+  output = Tensor[D]()
+  gradInput = Tensor[D]()
+
   val min = ev2.fromType[Double](minValue)
   val max = ev2.fromType[Double](maxValue)
 

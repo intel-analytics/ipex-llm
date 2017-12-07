@@ -23,7 +23,7 @@ import org.tensorflow.framework.{DataType, NodeDef}
 
 class RoundSpec extends TensorflowSpecHelper {
   "Round" should "be correct for float" in {
-    compare(
+    compare[Float](
       NodeDef.newBuilder()
         .setName("round_test")
         .putAttr("T", typeAttr(DataType.DT_FLOAT))
@@ -35,7 +35,7 @@ class RoundSpec extends TensorflowSpecHelper {
 
 
   "Round" should "be correct for double" in {
-    compare(
+    compare[Float](
       NodeDef.newBuilder()
         .setName("round_test")
         .putAttr("T", typeAttr(DataType.DT_DOUBLE))

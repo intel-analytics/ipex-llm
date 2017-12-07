@@ -23,7 +23,7 @@ import org.tensorflow.framework.{DataType, NodeDef}
 class SqueezeSpec extends TensorflowSpecHelper {
 
   s"Squeeze forward float" should "be correct" in {
-    compare(
+    compare[Float](
       NodeDef.newBuilder()
         .setName("SqueezeTest")
         .setOp(s"Squeeze")
@@ -33,7 +33,7 @@ class SqueezeSpec extends TensorflowSpecHelper {
       0
     )
 
-    compare(
+    compare[Float](
       NodeDef.newBuilder()
         .setName("SqueezeTest")
         .setOp(s"Squeeze")

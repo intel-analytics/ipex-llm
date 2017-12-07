@@ -21,8 +21,19 @@ import com.intel.analytics.bigdl.utils.tf.TensorflowSpecHelper
 import org.tensorflow.framework.{DataType, NodeDef}
 
 class CeilSpec extends TensorflowSpecHelper {
-  "Ceil" should "be correct for float tensor" in {
-    compare(
+  "Ceil with model float" should "be correct for float tensor" in {
+    compare[Float](
+      NodeDef.newBuilder()
+        .setName("ceil_test")
+        .putAttr("T", typeAttr(DataType.DT_FLOAT))
+        .setOp("Ceil"),
+      Seq(Tensor[Float](4, 32, 32, 3).rand()),
+      0
+    )
+  }
+
+  "Ceil with model double" should "be correct for float tensor" in {
+    compare[Double](
       NodeDef.newBuilder()
         .setName("ceil_test")
         .putAttr("T", typeAttr(DataType.DT_FLOAT))

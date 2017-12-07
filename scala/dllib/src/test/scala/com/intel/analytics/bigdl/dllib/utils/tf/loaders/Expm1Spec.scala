@@ -22,7 +22,7 @@ import org.tensorflow.framework.{DataType, NodeDef}
 
 class Expm1Spec extends TensorflowSpecHelper {
   "Expm1" should "be correct for float" in {
-    compare(
+    compare[Float](
       NodeDef.newBuilder()
         .setName("expm1_test")
         .putAttr("T", typeAttr(DataType.DT_FLOAT))
@@ -33,7 +33,7 @@ class Expm1Spec extends TensorflowSpecHelper {
   }
 
   "Expm1" should "be correct for double" in {
-    compare(
+    compare[Float](
       NodeDef.newBuilder()
         .setName("expm1_test")
         .putAttr("T", typeAttr(DataType.DT_DOUBLE))

@@ -28,7 +28,7 @@ class LRNGradSpec extends TensorflowSpecHelper {
     val input = Tensor[Float](4, 8, 8, 3).rand()
     val t = op.forward(input)
     val g = Tensor[Float](4, 8, 8, 3).rand()
-    compare(
+    compare[Float](
       NodeDef.newBuilder()
         .setName("lrn_grad_test")
         .putAttr("T", typeAttr(DataType.DT_FLOAT))
@@ -47,7 +47,7 @@ class LRNGradSpec extends TensorflowSpecHelper {
     val input = Tensor[Float](4, 8, 8, 3).rand()
     val t = op.forward(input)
     val g = Tensor[Float](4, 8, 8, 3).rand()
-    compare(
+    compare[Float](
       NodeDef.newBuilder()
         .setName("lrn_grad_test")
         .putAttr("T", typeAttr(DataType.DT_FLOAT))

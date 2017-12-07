@@ -29,6 +29,10 @@ class Abs[T: ClassTag, D: ClassTag]
  (implicit ev: TensorNumeric[T], ev2: TensorNumeric[D])
   extends AbstractModule[Tensor[D], Tensor[D], T] {
 
+  output = Tensor[D]()
+
+  gradInput = Tensor[D]()
+
   override def updateOutput(input: Tensor[D]): Tensor[D] = {
     output.resizeAs(input)
     output.abs(input)
