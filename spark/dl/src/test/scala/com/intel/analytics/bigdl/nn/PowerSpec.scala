@@ -33,6 +33,18 @@ class PowerSpec extends FlatSpec with Matchers {
     powerOutput should be (output)
   }
 
+  "A float Power" should "generate correct output" in {
+    val input = Tensor(Storage[Double](Array(1.0, 2, 3, 4, 5, 6)), 1, Array(2, 3))
+
+    val output = Tensor(Storage(Array(1.0, 4, 9, 16, 25, 36)), 1, Array(2, 3))
+
+    val power = new Power[Float, Double](2)
+
+    val powerOutput = power.forward(input)
+
+    powerOutput should be (output)
+  }
+
   "A Power with scale" should "generate correct output" in {
     val input = Tensor(Storage[Double](Array(1.0, 2, 3, 4, 5, 6)), 1, Array(2, 3))
 

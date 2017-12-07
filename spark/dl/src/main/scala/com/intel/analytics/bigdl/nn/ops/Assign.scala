@@ -54,6 +54,10 @@ class Assign[T: ClassTag](
     require(input1.getType() == input2.getType(),
       "ref and value must have the same tensor numeric type")
 
+    if (output.getType() != input2.getType()) {
+      output = input2.emptyInstance()
+    }
+
     if (validateShape) {
       var i = 1
       while (i <= input1.dim()) {

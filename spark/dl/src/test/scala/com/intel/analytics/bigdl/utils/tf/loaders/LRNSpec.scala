@@ -22,7 +22,7 @@ import org.tensorflow.framework.{DataType, NodeDef}
 
 class LRNSpec extends TensorflowSpecHelper {
   "LRN" should "be correct for float tensor" in {
-    compare(
+    compare[Float](
       NodeDef.newBuilder()
         .setName("lrn_test")
         .putAttr("T", typeAttr(DataType.DT_FLOAT))
@@ -38,7 +38,7 @@ class LRNSpec extends TensorflowSpecHelper {
 
   "LRN" should "be correct for float tensor2" in {
     val t = Tensor[Float](4, 8, 8, 3).fill(1f)
-    compare(
+    compare[Float](
       NodeDef.newBuilder()
         .setName("lrn_test")
         .putAttr("T", typeAttr(DataType.DT_FLOAT))

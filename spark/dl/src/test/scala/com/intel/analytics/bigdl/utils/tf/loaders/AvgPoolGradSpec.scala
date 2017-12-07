@@ -23,7 +23,7 @@ import com.intel.analytics.bigdl.utils.tf.Tensorflow._
 
 class AvgPoolGradSpec extends TensorflowSpecHelper {
   "Avg forward" should "be correct" in {
-    compare(
+    compare[Float](
       NodeDef.newBuilder()
         .setName("avg_pool_grad_test")
         .setOp("AvgPoolGrad")
@@ -36,7 +36,7 @@ class AvgPoolGradSpec extends TensorflowSpecHelper {
       0
     )
 
-    compare(
+    compare[Float](
       NodeDef.newBuilder()
         .setName("avg_pool_grad_test")
         .setOp("AvgPoolGrad")

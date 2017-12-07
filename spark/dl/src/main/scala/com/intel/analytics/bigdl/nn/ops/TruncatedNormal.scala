@@ -26,7 +26,10 @@ class TruncatedNormal[T: ClassTag, DataType: ClassTag](
   stddev: DataType = 1.0,
   seed: Int = 0
 )
-  (implicit ev: TensorNumeric[T]) extends Operation[Tensor[Int], Tensor[DataType], T] {
+  (implicit ev: TensorNumeric[T], ev2: TensorNumeric[DataType])
+  extends Operation[Tensor[Int], Tensor[DataType], T] {
+
+  output = Tensor[DataType]()
 
   def updateOutput(input: Tensor[Int]): Tensor[DataType] = {
     require(input.nDimension() == 1, "the shape should be a one-dimensional tensor.")
