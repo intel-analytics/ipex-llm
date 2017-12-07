@@ -144,7 +144,6 @@ class LSTMPeephole[T : ClassTag] (
     /**
      * f(input1 + W * input2)
      */
-
     var i2h: ModuleNode[T] = null
     var h2h: ModuleNode[T] = null
     if (p != 0) {

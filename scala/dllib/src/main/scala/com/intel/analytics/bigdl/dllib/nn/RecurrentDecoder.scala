@@ -46,8 +46,8 @@ class RecurrentDecoder[T : ClassTag](val seqLength: Int)
 
   /**
    *
-   *  modules: -- preTopology
-   *           |- topology (cell)
+   * modules: -- preTopology
+   * |- topology (cell)
    *
    * The topology (or cell) will be cloned for N times w.r.t the time dimension.
    * The preTopology will be execute only once before the recurrence.
@@ -56,9 +56,8 @@ class RecurrentDecoder[T : ClassTag](val seqLength: Int)
    * @return this container
    */
   override def add(module: AbstractModule[_ <: Activity, _ <: Activity, T]):
-    RecurrentDecoder.this.type = {
-    require(module.isInstanceOf[Cell[T]],
-      "Recurrent: contained module should be Cell type")
+  RecurrentDecoder.this.type = {
+    require(module.isInstanceOf[Cell[T]], "Recurrent: contained module should be Cell type")
 
     topology = module.asInstanceOf[Cell[T]]
     preTopology = topology.preTopology
@@ -89,6 +88,7 @@ class RecurrentDecoder[T : ClassTag](val seqLength: Int)
     output.resize(Array(batchSize, times) ++ featureSizes)
     // Clone N modules along the sequence dimension.
     initHidden(featureSizes)
+    cloneCells()
 
     /**
      * currentInput forms a T() type. It contains two elements, hidden and input.
@@ -97,8 +97,6 @@ class RecurrentDecoder[T : ClassTag](val seqLength: Int)
      * identical elements T(output, output). One of the elements from the cell output is
      * the updated hidden. Thus the currentInput will update its hidden element with this output.
      */
-    // Clone N modules along the sequence dimension.
-    cloneCells()
 
     var i = 1
     while (i <= times) {
