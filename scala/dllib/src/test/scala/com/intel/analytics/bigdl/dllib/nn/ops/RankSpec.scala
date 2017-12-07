@@ -26,7 +26,7 @@ class RankSpec extends FlatSpec with Matchers {
 
     val expectOutput = Tensor.scalar(1)
 
-    val output = Rank[Int]().forward(input)
+    val output = Rank[Float]().forward(input)
     output should be(expectOutput)
   }
 
@@ -36,7 +36,7 @@ class RankSpec extends FlatSpec with Matchers {
 
     val expectOutput = Tensor.scalar(1)
 
-    val output = Rank[Int]().forward(input)
+    val output = Rank[Float]().forward(input)
     output should be(expectOutput)
   }
 
@@ -46,7 +46,7 @@ class RankSpec extends FlatSpec with Matchers {
 
     val expectOutput = Tensor.scalar(1)
 
-    val output = Rank[Int]().forward(input)
+    val output = Rank[Float]().forward(input)
     output should be(expectOutput)
   }
 
@@ -56,7 +56,7 @@ class RankSpec extends FlatSpec with Matchers {
 
     val expectOutput = Tensor.scalar(1)
 
-    val output = Rank[Int]().forward(input)
+    val output = Rank[Float]().forward(input)
     output should be(expectOutput)
   }
 
@@ -66,7 +66,7 @@ class RankSpec extends FlatSpec with Matchers {
 
     val expectOutput = Tensor.scalar(1)
 
-    val output = Rank[Int]().forward(input)
+    val output = Rank[Float]().forward(input)
     output should be(expectOutput)
   }
 
@@ -76,7 +76,7 @@ class RankSpec extends FlatSpec with Matchers {
 
     val expectOutput = Tensor.scalar(1)
 
-    val output = Rank[Int]().forward(input)
+    val output = Rank[Float]().forward(input)
     output should be(expectOutput)
   }
 
@@ -86,7 +86,7 @@ class RankSpec extends FlatSpec with Matchers {
 
     val expectOutput = Tensor.scalar(1)
 
-    val output = Rank[Int]().forward(input)
+    val output = Rank[Float]().forward(input)
     output should be(expectOutput)
   }
 
@@ -96,7 +96,7 @@ class RankSpec extends FlatSpec with Matchers {
 
     val expectOutput = Tensor.scalar(1)
 
-    val output = Rank[Int]().forward(input)
+    val output = Rank[Float]().forward(input)
     output should be(expectOutput)
   }
 }

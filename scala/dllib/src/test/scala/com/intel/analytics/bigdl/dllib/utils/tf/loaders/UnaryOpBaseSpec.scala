@@ -26,8 +26,19 @@ abstract class UnaryOpBaseSpec extends TensorflowSpecHelper {
 
   def getInput: Tensor[_]
 
-  s"$getOpName forward float" should "be correct" in {
-    compare(
+  s"$getOpName forward with float model" should "be correct" in {
+    compare[Float](
+      NodeDef.newBuilder()
+        .setName(s"${getOpName}Test")
+        .setOp(s"$getOpName")
+        .putAttr("T", typeAttr(DataType.DT_FLOAT)),
+      Seq(getInput),
+      0
+    )
+  }
+
+  s"$getOpName forward with double model " should "be correct" in {
+    compare[Double](
       NodeDef.newBuilder()
         .setName(s"${getOpName}Test")
         .setOp(s"$getOpName")

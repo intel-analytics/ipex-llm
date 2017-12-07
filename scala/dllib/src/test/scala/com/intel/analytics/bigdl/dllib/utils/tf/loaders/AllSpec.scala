@@ -25,7 +25,7 @@ class AllSpec extends TensorflowSpecHelper {
   "All ops" should "be correct when keep_dims is true" in {
     val data = Tensor[Boolean](T(T(true, true, false), T(false, true, true)))
     val indice = Tensor[Int](T(1))
-    val (t1, t2) = getResult[Boolean](
+    val (t1, t2) = getResult[Float, Boolean](
       NodeDef.newBuilder()
         .setName("all_test")
         .putAttr("keep_dims", booleanAttr(true))
@@ -42,7 +42,7 @@ class AllSpec extends TensorflowSpecHelper {
   "All ops" should "be correct when indice contains several value" in {
     val data = Tensor[Boolean](T(T(true, true, false), T(false, true, true)))
     val indice = Tensor[Int](T(0, 1))
-    val (t1, t2) = getResult[Boolean](
+    val (t1, t2) = getResult[Float, Boolean](
       NodeDef.newBuilder()
         .setName("all_test")
         .putAttr("keep_dims", booleanAttr(true))
@@ -59,7 +59,7 @@ class AllSpec extends TensorflowSpecHelper {
   "All ops" should "be correct when keep_dims is false" in {
     val data = Tensor[Boolean](T(T(true, true, false), T(false, true, true)))
     val indice = Tensor[Int](T(1))
-    val (t1, t2) = getResult[Boolean](
+    val (t1, t2) = getResult[Float, Boolean](
       NodeDef.newBuilder()
         .setName("all_test")
         .putAttr("keep_dims", booleanAttr(false))
@@ -76,7 +76,7 @@ class AllSpec extends TensorflowSpecHelper {
   "All ops" should "be correct when indice is scalar" in {
     val data = Tensor[Boolean](T(T(true, true, false), T(false, true, true)))
     val indice = Tensor.scalar[Int](1)
-    val (t1, t2) = getResult[Boolean](
+    val (t1, t2) = getResult[Float, Boolean](
       NodeDef.newBuilder()
         .setName("all_test")
         .putAttr("keep_dims", booleanAttr(false))

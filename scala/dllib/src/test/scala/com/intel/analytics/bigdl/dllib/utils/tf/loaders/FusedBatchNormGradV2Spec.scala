@@ -30,7 +30,7 @@ class FusedBatchNormGradV2Spec extends TensorflowSpecHelper {
     val mean = Tensor[Float](256).rand()
     val variance = Tensor[Float](256).rand()
 
-    compare(
+    compare[Float](
       NodeDef.newBuilder()
         .setName("fusedbn_grad_test")
         .putAttr("T", typeAttr(DataType.DT_FLOAT))
@@ -52,7 +52,7 @@ class FusedBatchNormGradV2Spec extends TensorflowSpecHelper {
     val mean = Tensor[Float](256).rand()
     val variance = Tensor[Float](256).rand()
 
-    compare(
+    compare[Float](
       NodeDef.newBuilder()
         .setName("fusedbn_grad_test")
         .putAttr("T", typeAttr(DataType.DT_FLOAT))
@@ -74,7 +74,7 @@ class FusedBatchNormGradV2Spec extends TensorflowSpecHelper {
     val mean = Tensor[Float](256).rand()
     val variance = Tensor[Float](256).rand()
 
-    compare(
+    compare[Float](
       NodeDef.newBuilder()
         .setName("fusedbn_grad_test")
         .putAttr("T", typeAttr(DataType.DT_FLOAT))
@@ -96,7 +96,7 @@ class FusedBatchNormGradV2Spec extends TensorflowSpecHelper {
     val mean = Tensor[Float](256).rand()
     val variance = Tensor[Float](256).rand()
 
-    compare(
+    compare[Float](
       NodeDef.newBuilder()
         .setName("fusedbn_grad_test")
         .putAttr("T", typeAttr(DataType.DT_FLOAT))
@@ -118,7 +118,7 @@ class FusedBatchNormGradV2Spec extends TensorflowSpecHelper {
     val mean = Tensor[Float](256).rand()
     val variance = Tensor[Float](256).rand()
 
-    compare(
+    compare[Float](
       NodeDef.newBuilder()
         .setName("fusedbn_grad_test")
         .putAttr("T", typeAttr(DataType.DT_FLOAT))
@@ -140,7 +140,7 @@ class FusedBatchNormGradV2Spec extends TensorflowSpecHelper {
     val mean = Tensor[Float](256).rand()
     val variance = Tensor[Float](256).rand()
 
-    compare(
+    compare[Float](
       NodeDef.newBuilder()
         .setName("fusedbn_grad_test")
         .putAttr("T", typeAttr(DataType.DT_FLOAT))

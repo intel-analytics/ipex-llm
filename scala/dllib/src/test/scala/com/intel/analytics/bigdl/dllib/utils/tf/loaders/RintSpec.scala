@@ -23,7 +23,7 @@ import org.tensorflow.framework.{DataType, NodeDef}
 
 class RintSpec extends TensorflowSpecHelper {
   "Rint" should "be correct" in {
-    compare(
+    compare[Float](
       NodeDef.newBuilder()
         .setName("rint_test")
         .putAttr("T", typeAttr(DataType.DT_FLOAT))

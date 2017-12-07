@@ -23,7 +23,7 @@ import org.tensorflow.framework.{DataType, NodeDef}
 
 class InvGradSpec extends TensorflowSpecHelper {
   "Invgrad" should "be correct for float tensor" in {
-    compare(
+    compare[Float](
       NodeDef.newBuilder()
         .setName("inv_grad_test")
         .putAttr("T", typeAttr(DataType.DT_FLOAT))
