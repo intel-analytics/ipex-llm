@@ -1326,18 +1326,8 @@ class Recurrent(Container):
         
         :return: list of hidden state and cell
         """
-        state = callBigDlFunc(self.bigdl_type, "getHiddenState", self.value)
-        for idx, tensor in enumerate(state):
-            state[idx] = tensor.to_ndarray()
-
-        return state
-
-    def set_hidden_state(self, states):
-        """
-        set hidden state and cell at first time step.
-        """
-        jstate, state_is_table = self.check_input(states)
-        callBigDlFunc(self.bigdl_type, "setHiddenState", self.value, jstate, state_is_table)
+        states = callBigDlFunc(self.bigdl_type, "getHiddenState", self.value)
+        return states
 
 class RecurrentDecoder(Recurrent):
     '''
@@ -4638,6 +4628,23 @@ class ConvLSTMPeephole3D(Layer):
                  bRegularizer=None, cRegularizer=None, with_peephole=True, bigdl_type="float"):
         super(ConvLSTMPeephole3D, self).__init__(None, bigdl_type, input_size, output_size, kernel_i, kernel_c, stride,
                                                  padding, wRegularizer, uRegularizer, bRegularizer, cRegularizer, with_peephole)
+
+
+class MultiRNNCell(Layer):
+    '''
+    A cell that enables stack multiple simple rnn cells
+
+    >>> cells = []
+    >>> cells.append(ConvLSTMPeephole3D(4, 3, 3, 3, 1))
+    creating: createConvLSTMPeephole3D
+    >>> cells.append(ConvLSTMPeephole3D(4, 3, 3, 3, 1))
+    creating: createConvLSTMPeephole3D
+    >>> stacked_convlstm = MultiRNNCell(cells)
+    creating: createMultiRNNCell
+    '''
+
+    def __init__(self, cells, bigdl_type="float"):
+        super(MultiRNNCell, self).__init__(None, bigdl_type, cells)
 
 class ResizeBilinear(Layer):
     """
