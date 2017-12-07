@@ -25,10 +25,10 @@ import scala.reflect.ClassTag
 class ArgMax[T: ClassTag]()(implicit ev: TensorNumeric[T])
   extends Operation[Table, Tensor[Int], T] {
 
+  output = Tensor[Int]()
+
   override def updateOutput(input: Table): Tensor[Int] = {
-    if (output.getType() != IntType) {
-      output = Tensor[Int]()
-    }
+
     val inputTensor = input[Tensor[_]](1)
     val dimension = input[Tensor[Int]](2).value() + 1
 

@@ -24,10 +24,10 @@ import scala.reflect.ClassTag
 class Rank[T: ClassTag]()
   (implicit ev: TensorNumeric[T]) extends Operation[Tensor[_], Tensor[Int], T] {
 
+  output = Tensor[Int]()
+
   override def updateOutput(input: Tensor[_]): Tensor[Int] = {
-    if (output.getType() != IntType) {
-      output = Tensor[Int]()
-    }
+
     output.resize(Array[Int]())
     output.setValue(input.nDimension())
 

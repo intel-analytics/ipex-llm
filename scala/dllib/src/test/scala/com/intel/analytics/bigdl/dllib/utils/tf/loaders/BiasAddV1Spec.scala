@@ -20,10 +20,16 @@ import com.intel.analytics.bigdl.utils.tf.{PaddingType, TensorflowDataFormat, Te
 import org.tensorflow.framework.{DataType, NodeDef}
 import com.intel.analytics.bigdl.utils.tf.Tensorflow._
 
-class BiasAddV1Spec extends BinaryOpBaseSpec {
+class BiasAddV1Spec extends TensorflowSpecHelper {
 
-  override def getOpName: String = "BiasAddV1"
-
-  override def getInputs: Seq[Tensor[_]] =
-    Seq(Tensor[Float](4, 32, 32, 3).rand(), Tensor[Float](3).rand())
+  "BatchMatMul with two dim forward" should "be correct" in {
+    compare[Float](
+      NodeDef.newBuilder()
+        .setName("BiasAddV1_test")
+        .setOp("BiasAddV1")
+        .putAttr("T", typeAttr(DataType.DT_FLOAT)),
+      Seq(Tensor[Float](4, 32, 32, 3).rand(), Tensor[Float](3).rand()),
+      0
+    )
+  }
 }

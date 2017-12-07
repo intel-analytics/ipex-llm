@@ -24,6 +24,9 @@ import scala.reflect.ClassTag
 class Minimum[T: ClassTag, D: ClassTag]
 (implicit ev: TensorNumeric[T], ev2: TensorNumeric[D])
   extends Operation[Table, Tensor[D], T] {
+
+  output = Tensor[D]()
+
   override def updateOutput(input: Table): Tensor[D] = {
     val x = input[Tensor[D]](1)
     val y = input[Tensor[D]](2)

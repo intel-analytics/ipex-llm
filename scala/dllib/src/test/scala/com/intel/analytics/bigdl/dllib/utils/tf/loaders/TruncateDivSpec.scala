@@ -24,7 +24,7 @@ import org.tensorflow.framework.{DataType, NodeDef}
 class TruncateDivSpec extends TensorflowSpecHelper {
 
   "TruncateDiv" should "be correct for int" in {
-    compare(
+    compare[Float](
       NodeDef.newBuilder()
         .setName("truncateDiv_test")
         .putAttr("T", typeAttr(DataType.DT_INT32))

@@ -30,7 +30,7 @@ abstract class BinaryOpBaseSpec extends TensorflowSpecHelper {
 
   def compareExactly: Boolean = false
 
-  s"$getOpName forward" should "be correct" in {
+  s"$getOpName forward with float model" should "be correct" in {
 
     val builder = NodeDef.newBuilder()
       .setName(s"${getOpName}Test")
@@ -42,13 +42,36 @@ abstract class BinaryOpBaseSpec extends TensorflowSpecHelper {
     }
 
     if (!compareExactly) {
-      compare(
+      compare[Float](
         builder,
         getInputs,
         0
       )
     } else {
-      val (bigdl, tf) = getResult(builder, getInputs, 0)
+      val (bigdl, tf) = getResult[Float, Float](builder, getInputs, 0)
+      bigdl should be (tf)
+    }
+  }
+
+  s"$getOpName forward with double model" should "be correct" in {
+
+    val builder = NodeDef.newBuilder()
+      .setName(s"${getOpName}Test")
+      .setOp(getOpName)
+      .putAttr("T", typeAttr(DataType.DT_FLOAT))
+
+    for ((k, v) <- getAttrs) {
+      builder.putAttr(k, v)
+    }
+
+    if (!compareExactly) {
+      compare[Double](
+        builder,
+        getInputs,
+        0
+      )
+    } else {
+      val (bigdl, tf) = getResult[Double, Float](builder, getInputs, 0)
       bigdl should be (tf)
     }
   }

@@ -23,7 +23,7 @@ import org.tensorflow.framework.{DataType, NodeDef}
 
 class FloorDivSpec extends TensorflowSpecHelper {
   "FloorDiv" should "be correct for float" in {
-    compare(
+    compare[Float](
       NodeDef.newBuilder()
         .setName("floorDiv_test")
         .putAttr("T", typeAttr(DataType.DT_FLOAT))
@@ -35,7 +35,7 @@ class FloorDivSpec extends TensorflowSpecHelper {
   }
 
   "FloorDiv" should "be correct for Int" in {
-    compare(
+    compare[Float](
       NodeDef.newBuilder()
         .setName("floorDiv_test")
         .putAttr("T", typeAttr(DataType.DT_INT32))
@@ -47,7 +47,7 @@ class FloorDivSpec extends TensorflowSpecHelper {
   }
 
   "FloorDiv" should "be correct for double" in {
-    compare(
+    compare[Float](
       NodeDef.newBuilder()
         .setName("floorDiv_test")
         .putAttr("T", typeAttr(DataType.DT_DOUBLE))

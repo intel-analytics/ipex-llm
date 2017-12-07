@@ -23,7 +23,7 @@ import org.tensorflow.framework.{DataType, NodeDef}
 
 class FloorModSpec extends TensorflowSpecHelper {
   "FloorMod" should "be correct for Int" in {
-    compare(
+    compare[Float](
       NodeDef.newBuilder()
         .setName("floor_mod_test")
         .putAttr("T", typeAttr(DataType.DT_INT32))
@@ -35,7 +35,7 @@ class FloorModSpec extends TensorflowSpecHelper {
   }
 
   "FloorMod" should "be correct for float" in {
-    compare(
+    compare[Float](
       NodeDef.newBuilder()
         .setName("floor_mod_test")
         .putAttr("T", typeAttr(DataType.DT_FLOAT))
