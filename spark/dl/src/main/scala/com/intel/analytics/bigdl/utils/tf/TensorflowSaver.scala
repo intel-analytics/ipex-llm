@@ -51,24 +51,25 @@ object TensorflowSaver {
       byteOrder: ByteOrder = ByteOrder.LITTLE_ENDIAN,
       extraNodes: Set[NodeDef] = Set()): Unit = {
     val inputNodeCache =
-      new mutable.HashMap[AbstractModule[Activity, Activity, T], ArrayBuffer[NodeDef]]()
+      new mutable.HashMap[String, ArrayBuffer[NodeDef]]()
     model.inputs.zip(inputs).foreach(n => {
-      inputNodeCache(n._1.element) = ArrayBuffer(n._2)
+      inputNodeCache(n._1.element.getName()) = ArrayBuffer(n._2)
     })
 
     val graphBuilder = GraphDef.newBuilder()
     inputs.foreach(graphBuilder.addNode(_))
 
     model.getSortedForwardExecutions.foreach(n => {
-      val nodeDefs = maps(n.element.getClass.getName).toTFDef(n.element, inputNodeCache(n.element),
+      val nodeDefs = maps(n.element.getClass.getName).toTFDef(n.element,
+        inputNodeCache(n.element.getName()),
         byteOrder)
       nodeDefs.foreach(nDef => {
         graphBuilder.addNode(nDef)
       })
       n.nextNodes.foreach(n => {
-        val list = inputNodeCache.getOrElse(n.element, ArrayBuffer())
+        val list = inputNodeCache.getOrElse(n.element.getName(), ArrayBuffer())
         list.append(nodeDefs(0))
-        inputNodeCache(n.element) = list
+        inputNodeCache(n.element.getName()) = list
       })
     })
 
@@ -154,7 +155,8 @@ object TensorflowSaver {
     getNameFromObj(LogSoftMax.getClass.getName) -> LogSoftMaxToTF,
     getNameFromObj(SpatialBatchNormalization.getClass.getName) -> BatchNorm2DToTF,
     getNameFromObj(Input.getClass.getName) -> InputToTF,
-    getNameFromObj(Sigmoid.getClass.getName) -> SigmoidToTF
+    getNameFromObj(Sigmoid.getClass.getName) -> SigmoidToTF,
+    getNameFromObj(SpatialCrossMapLRN.getClass.getName) -> LRNToTF
   )
 
   private def getNameFromObj(name: String) : String = name.substring(0, name.length - 1)

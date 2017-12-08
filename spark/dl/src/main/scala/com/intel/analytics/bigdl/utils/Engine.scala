@@ -21,8 +21,7 @@ import java.util.Locale
 import java.util.concurrent.atomic.AtomicBoolean
 
 import org.apache.log4j.Logger
-import org.apache.spark.{SparkConf, SparkContext}
-
+import org.apache.spark.{SparkConf, SparkContext, SparkException}
 import com.intel.analytics.bigdl.mkl.MKL
 
 /**
@@ -342,7 +341,17 @@ object Engine {
    * @return (nExecutor, executorCore)
    */
   private[utils] def sparkExecutorAndCore(): Option[(Int, Int)] = {
-    parseExecutorAndCore(SparkContext.getOrCreate().getConf)
+    try {
+      parseExecutorAndCore(SparkContext.getOrCreate().getConf)
+    } catch {
+      case s: SparkException =>
+        if (s.getMessage.contains("A master URL must be set in your configuration")) {
+          throw new IllegalArgumentException("A master URL must be set in your configuration." +
+            " Or if you want to run BigDL in a local JVM environment, you should set Java " +
+            "property bigdl.localMode=true")
+        }
+        throw s
+    }
   }
 
   /**

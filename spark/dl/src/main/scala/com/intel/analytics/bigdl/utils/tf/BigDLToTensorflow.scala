@@ -97,8 +97,8 @@ object LinearToTF extends BigDLToTensorflow {
     val mm = matmul(inputs(0), weightReader, linear.getName() + "/matmul")
     val bias = const(linear.bias, linear.getName() + "/bias", byteOrder)
     val biasReader = identity(bias, linear.getName() + "/biasReader")
-    val add = biasAdd(mm, biasReader, getDataFormat(), linear.getName() + "/biasAdd")
-    Seq(add, biasReader, bias, mm, weightReader, weight)
+    val addNode = add(mm, biasReader, linear.getName() + "/add")
+    Seq(addNode, biasReader, bias, mm, weightReader, weight)
   }
 }
 
@@ -107,9 +107,7 @@ object SpatialConvolutionToTF extends BigDLToTensorflow {
                        byteOrder: ByteOrder): Seq[NodeDef] = {
     require(inputs.length == 1, "SpatialConvolution only accept one input")
     val spatialConv = module.asInstanceOf[SpatialConvolution[_]]
-    // squeeze will modify the weight tensor
-    // GOIHW -> HWIO
-    require(spatialConv.weight.size(1) == 1, "convolution group is not supported")
+    require(spatialConv.nGroup == 1, "convolution group is not supported")
     val (dataFormat, filterTensor) = if (spatialConv.format == DataFormat.NCHW) {
       (TensorflowDataFormat.NCHW,
         spatialConv.weight.select(1, 1)
@@ -125,11 +123,15 @@ object SpatialConvolutionToTF extends BigDLToTensorflow {
     val conv = conv2D(inputs(0), filterReader, spatialConv.strideW, spatialConv.strideH,
       spatialConv.kernelW, spatialConv.kernelH, spatialConv.padW, spatialConv.padH,
       dataFormat, spatialConv.getName() + "/conv2D")
-    val bias = const(spatialConv.bias, spatialConv.getName() + "/bias", byteOrder)
-    val biasReader = identity(bias, spatialConv.getName() + "/biasReader")
-    val add = biasAdd(conv, biasReader, dataFormat,
-      spatialConv.getName() + "/biasAdd")
-    Seq(add, biasReader, bias, conv, filterReader, filter)
+    if (spatialConv.bias != null) {
+      val bias = const(spatialConv.bias, spatialConv.getName() + "/bias", byteOrder)
+      val biasReader = identity(bias, spatialConv.getName() + "/biasReader")
+      val add = biasAdd(conv, biasReader, dataFormat,
+        spatialConv.getName() + "/biasAdd")
+      Seq(add, biasReader, bias, conv, filterReader, filter)
+    } else {
+      Seq(conv, filterReader, filter)
+    }
   }
 }
 
@@ -208,12 +210,13 @@ object ViewToTF extends BigDLToTensorflow {
                        byteOrder: ByteOrder): Seq[NodeDef] = {
     require(inputs.length == 1, "Reshape only accept one input")
     val viewLayer = module.asInstanceOf[View[_]]
-    val size = Tensor[Int](viewLayer.sizes.length)
-    var i = 0
-    while(i < viewLayer.sizes.length) {
-      size.setValue(i + 1, viewLayer.sizes(i))
+    val size = Tensor[Int](viewLayer.sizes.length + 1).setValue(1, -1)
+    var i = 1
+    while(i < viewLayer.sizes.length + 1) {
+      size.setValue(i + 1, viewLayer.sizes(i - 1))
       i += 1
     }
+
     val shape = const(size, viewLayer.getName() + "/shape", byteOrder)
     val reshapeNode = reshape(inputs(0), shape, viewLayer.getName())
     Seq(reshapeNode, shape)
@@ -231,7 +234,7 @@ object MaxpoolToTF extends BigDLToTensorflow {
       TensorflowDataFormat.NCHW
     }
     Seq(maxPool(inputs(0), layer.kW, layer.kH, layer.padW, layer.padH,
-      layer.dW, layer.dH, dataFormat, layer.getName()))
+      layer.dW, layer.dH, dataFormat, layer.getName(), layer.ceilMode))
   }
 }
 
@@ -359,28 +362,68 @@ object BatchNorm2DToTF extends BigDLToTensorflow {
     for (i <- 0 until layer.nDim) {
       size.setValue(i + 1, 1)
     }
-    size(2) = layer.weight.size(1)
-    val shapeVar = const(size, layer.getName() + "/reshape_1/shape", byteOrder)
-    val shapeMean = const(size, layer.getName() + "/reshape_2/shape", byteOrder)
-    val shapeScale = const(size, layer.getName() + "/reshape_3/shape", byteOrder)
-    val shapeOffset = const(size, layer.getName() + "/reshape_4/shape", byteOrder)
-    val varNode = const(layer.runningVar, layer.getName() + "/std", byteOrder)
-    val mean = const(layer.runningMean, layer.getName() + "/mean", byteOrder)
-    val scale = const(layer.weight, layer.getName() + "/scale", byteOrder)
-    val offset = const(layer.bias, layer.getName() + "/offset", byteOrder)
-    val reshapeVar = reshape(varNode, shapeVar, s"${layer.getName()}/reshape_1")
-    val reshapeMean = reshape(mean, shapeMean, s"${layer.getName()}/reshape_2")
-    val reshapeScale = reshape(scale, shapeScale, s"${layer.getName()}/reshape_3")
-    val reshapeOffset = reshape(offset, shapeOffset, s"${layer.getName()}/reshape_4")
-    // construct graph
-    val sqrtVar = rsqrt(reshapeVar, layer.getName() + "/stdvar")
-    val mul0 = multiply(reshapeScale, sqrtVar, layer.getName() + "/mul0")
-    val mul1 = multiply(inputs(0), mul0, layer.getName() + "/mul1")
-    val mul2 = multiply(reshapeMean, mul0, layer.getName() + "/mul2")
-    val sub = subtract(reshapeOffset, mul2, layer.getName() + "/sub")
-    val output = add(mul1, sub, layer.getName() + "/output")
-    Seq(output, sub, mul2, mul1, mul0, reshapeOffset, reshapeMean, reshapeScale,
-      shapeOffset, shapeMean, shapeScale, offset, scale, mean,
-      sqrtVar, reshapeVar, shapeVar, varNode)
+
+    size(2) = layer.runningVar.size(1)
+    if (layer.weight != null) {
+      val shapeVar = const(size, layer.getName() + "/reshape_1/shape", byteOrder)
+      val shapeMean = const(size, layer.getName() + "/reshape_2/shape", byteOrder)
+      val shapeScale = const(size, layer.getName() + "/reshape_3/shape", byteOrder)
+      val shapeOffset = const(size, layer.getName() + "/reshape_4/shape", byteOrder)
+
+      val varNode = const(layer.runningVar, layer.getName() + "/var", byteOrder)
+      val mean = const(layer.runningMean, layer.getName() + "/mean", byteOrder)
+      val scale = const(layer.weight, layer.getName() + "/scale", byteOrder)
+      val offset = const(layer.bias, layer.getName() + "/offset", byteOrder)
+      val reshapeVar = reshape(varNode, shapeVar, s"${layer.getName()}/reshape_1")
+      val reshapeMean = reshape(mean, shapeMean, s"${layer.getName()}/reshape_2")
+      val reshapeScale = reshape(scale, shapeScale, s"${layer.getName()}/reshape_3")
+      val reshapeOffset = reshape(offset, shapeOffset, s"${layer.getName()}/reshape_4")
+      // construct graph
+      val sqrtVar = rsqrt(reshapeVar, layer.getName() + "/sqrtvar")
+      val mul0 = multiply(reshapeScale, sqrtVar, layer.getName() + "/mul0")
+      val mul1 = multiply(inputs(0), mul0, layer.getName() + "/mul1")
+      val mul2 = multiply(reshapeMean, mul0, layer.getName() + "/mul2")
+      val sub = subtract(reshapeOffset, mul2, layer.getName() + "/sub")
+      val output = add(mul1, sub, layer.getName() + "/output")
+      Seq(output, sub, mul2, mul1, mul0, reshapeOffset, reshapeMean, reshapeScale,
+        shapeOffset, shapeMean, shapeScale, offset, scale, mean,
+        sqrtVar, reshapeVar, shapeVar, varNode)
+    } else {
+      val shapeVar = const(size, layer.getName() + "/reshape_1/shape", byteOrder)
+      val shapeMean = const(size, layer.getName() + "/reshape_2/shape", byteOrder)
+
+      val varNode = const(layer.runningVar, layer.getName() + "/var", byteOrder)
+      val mean = const(layer.runningMean, layer.getName() + "/mean", byteOrder)
+      val reshapeVar = reshape(varNode, shapeVar, s"${layer.getName()}/reshape_1")
+      val reshapeMean = reshape(mean, shapeMean, s"${layer.getName()}/reshape_2")
+      // construct graph
+      val sqrtVar = rsqrt(reshapeVar, layer.getName() + "/sqrtvar")
+      val mul1 = multiply(inputs(0), sqrtVar, layer.getName() + "/mul1")
+      val mul2 = multiply(reshapeMean, sqrtVar, layer.getName() + "/mul2")
+      val output = subtract(mul1, mul2, layer.getName() + "/output")
+      Seq(output, mul2, mul1, reshapeMean, shapeMean, mean, sqrtVar, reshapeVar, shapeVar, varNode)
+    }
+  }
+}
+
+object LRNToTF extends BigDLToTensorflow {
+  override def toTFDef(module: AbstractModule[_, _, _], inputs: Seq[NodeDef],
+    byteOrder: ByteOrder): Seq[NodeDef] = {
+    val layer = module.asInstanceOf[SpatialCrossMapLRN[_]]
+    if (layer.format == DataFormat.NHWC) {
+      Seq(lrn(inputs(0), (layer.size - 1) / 2, layer.k.toFloat, (layer.alpha / layer.size).toFloat,
+        layer.beta.toFloat, module.getName()))
+    } else {
+      val perm1 = const(Tensor[Int](T(0, 2, 3, 1)), module.getName() + "/perm1",
+        ByteOrder.LITTLE_ENDIAN)
+      val transpose1 = transpose(inputs(0), perm1, module.getName() + "/transpose1")
+      val lrnNode = lrn(transpose1, (layer.size - 1) / 2, layer.k.toFloat,
+        (layer.alpha / layer.size).toFloat,
+        layer.beta.toFloat, module.getName() + "/lrn")
+      val perm2 = const(Tensor[Int](T(0, 3, 1, 2)), module.getName() + "/perm2",
+        ByteOrder.LITTLE_ENDIAN)
+      val output = transpose(lrnNode, perm2, module.getName() + "/transpose2")
+      Seq(output, perm1, transpose1, lrnNode, perm2)
+    }
   }
 }
