@@ -26,7 +26,18 @@ import com.intel.analytics.bigdl.utils.{DirectedGraph, Node, T, Table}
 
 import scala.reflect.ClassTag
 
-class StaticGraph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
+/**
+ * A graph container. The modules in the container are connected as a DAG graph.
+ *
+ * @param inputs inputs modules, user can feed data into these modules in the forward method
+ * @param outputs output modules
+ * @param variables
+ * @param ev$1
+ * @param ev
+ * @tparam T Numeric type. Only support float/double now
+ */
+class StaticGraph[T: ClassTag](
+  val inputs : Seq[ModuleNode[T]],
   private val outputs : Seq[ModuleNode[T]],
   private val variables: Option[(Array[Tensor[T]], Array[Tensor[T]])] = None)
   (implicit ev: TensorNumeric[T])

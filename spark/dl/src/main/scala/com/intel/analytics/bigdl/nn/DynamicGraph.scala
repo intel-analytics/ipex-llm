@@ -25,7 +25,9 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{DirectedGraph, Node, T, Table}
 import com.intel.analytics.bigdl.utils.tf.Tensorflow
+import com.intel.analytics.bigdl.visualization.tensorboard.{FileWriter => TFFileWriter}
 import org.tensorflow.framework.GraphDef
+import scala.collection.JavaConverters._
 
 import scala.collection.mutable
 import scala.reflect.ClassTag
@@ -235,13 +237,13 @@ class DynamicGraph[T: ClassTag](val inputs : Seq[ModuleNode[T]],
     }
   }
 
-  override def add(module: AbstractModule[_ <: Activity, _ <: Activity, T]): Graph.this.type = {
+  override def add(module: AbstractModule[_ <: Activity, _ <: Activity, T]): this.type = {
     throw new IllegalArgumentException("Graph: Please don't use add method in Graph container. " +
       "A graph container should not be changed after it is constructed")
   }
 
   // todo: expand the graph
-  override def toGraph(startNodes: ModuleNode[T]*): Graph[T] = this
+  override def toGraph(startNodes: ModuleNode[T]*): Graph[T] = null
 
   /**
    * Return the corresponding node has the given name. If the given name doesn't match any node,
