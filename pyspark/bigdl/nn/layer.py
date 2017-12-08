@@ -51,6 +51,7 @@ class Node(JavaValue):
     def element(self):
         return Layer.of(self.value.element())
 
+    @property
     def pre_nodes(self):
         jnodes = callBigDlFunc(self.bigdl_type, "getPreNodes", self.value)
         return [Node.of(jnode.value()) for jnode in jnodes]
@@ -262,7 +263,8 @@ class Layer(JavaValue):
         return dict((layer_name, to_ndarray(params)) for layer_name, params in
                 name_to_params.items())
 
-    def forwardNodes(self):
+    @property
+    def forward_nodes(self):
         """
         Get nodes in the forwarding path
         """

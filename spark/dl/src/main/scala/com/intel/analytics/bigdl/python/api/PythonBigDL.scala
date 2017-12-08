@@ -2302,7 +2302,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   def getForwardNodesFromGraph(model: Graph[T]):
   JList[JNode] = {
     return model.getForwardExecutions.map{n =>
-      new JNode(n.asInstanceOf[ModuleNode[Float]])}.toList.asJava
+      new JNode(n.asInstanceOf[ModuleNode[Float]])}.toList.reverse.asJava
   }
 
   def getContainerModules(module: Container[Activity, Activity, T])

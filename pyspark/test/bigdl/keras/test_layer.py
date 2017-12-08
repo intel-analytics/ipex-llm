@@ -285,11 +285,11 @@ class TestLayer(BigDLTestCase):
 
         input1 = Input((4, 5))
         input2 = Input((4, 5))
-        # out1 = LSTM(5, input_shape=(4, 5))(input1)
+        out1 = LSTM(5, input_shape=(4, 5))(input1)
         out2 = LSTM(6, input_shape=(4, 5))(input2)
-
-        kmodel = Model(input=input2, output=out2)
-        self.modelTest(input_data2,
+        m = merge([out1, out2], mode='concat', concat_axis=1)
+        kmodel = Model(input=[input1, input2], output=m)
+        self.modelTest([input_data1, input_data2],
                        kmodel,
                        random_weights=False,
                        dump_weights=True,
