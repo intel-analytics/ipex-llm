@@ -28,7 +28,7 @@ class MeanAbsolutePercentageCriterionSpec extends KerasBaseSpec {
       """
         |input_tensor = Input(shape=[10])
         |target_tensor = Input(shape=[10])
-        |loss = mean_absolute_percentage_error(input_tensor, target_tensor)
+        |loss = mean_absolute_percentage_error(target_tensor, input_tensor)
         |input = np.random.uniform(-1000, 1000, [2, 10])
         |Y = np.random.uniform(-1000, 1000, [2, 10])
       """.stripMargin
@@ -41,7 +41,7 @@ class MeanAbsolutePercentageCriterionSpec extends KerasBaseSpec {
       """
         |input_tensor = Input(shape=[3])
         |target_tensor = Input(shape=[3])
-        |loss = mean_absolute_percentage_error(input_tensor, target_tensor)
+        |loss = mean_absolute_percentage_error(target_tensor, input_tensor)
         |input = np.array([[1e-07, 1e-06, 1e-08]])
         |Y = np.array([[1, 2, 3]])
       """.stripMargin

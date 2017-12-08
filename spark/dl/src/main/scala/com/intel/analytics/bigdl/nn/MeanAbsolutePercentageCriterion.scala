@@ -24,7 +24,7 @@ import scala.reflect.ClassTag
 
 /**
  * This method is same as `mean_absolute_percentage_error` loss in keras.
- * It caculates diff = K.abs((x - y) / K.clip(K.abs(x), K.epsilon(), Double.MaxValue))
+ * It caculates diff = K.abs((y - x) / K.clip(K.abs(y), K.epsilon(), Double.MaxValue))
  * and return 100 * K.mean(diff) as outpout
  * Here, the x and y can have or not have a batch.
  * @param ev$1
@@ -47,8 +47,9 @@ class MeanAbsolutePercentageCriterion[T: ClassTag]
     if (buffer1 == null) buffer1 = Tensor[T]()
     if (buffer2 == null) buffer2 = Tensor[T]()
     buffer1.resizeAs(input).copy(input)
-    buffer2.resizeAs(input).copy(input)
+    buffer2.resizeAs(target).copy(target)
     buffer1.sub(target).abs()
+    // buffer2 = K.clip(K.abs(y), K.epsilon(), Double.MaxValue)
     buffer2.apply1(e => ev.clip(ev.abs(e), epsilon, maxValue))
     buffer1.div(buffer2)
 
@@ -60,35 +61,24 @@ class MeanAbsolutePercentageCriterion[T: ClassTag]
     val norm : T = ev.fromType(100.0 / input.nElement())
 
     buffer1.resizeAs(input).copy(input)
-    buffer2.resizeAs(target).copy(target)
-    gradInput.resizeAs(input)
+    gradInput.resizeAs(target).copy(target)
 
     val func = new TensorFunc6[T] {
-      override def apply(inputBuf: Array[T], inputOffset: Int, targetBuf: Array[T],
-                         targetOffset: Int, gradInputBuf: Array[T], gradInputOffset: Int): Unit = {
+      override def apply(inputBuf: Array[T], inputOffset: Int, targetClipBuf: Array[T],
+        targetClipOffset: Int, gradInputBuf: Array[T], gradInputOffset: Int): Unit = {
         val a = inputBuf(inputOffset)
-        val b = targetBuf(targetOffset)
+        val b = targetClipBuf(targetClipOffset)
+        val c = gradInputBuf(gradInputOffset)
 
-        if (a == b) {
+        if (a == c) {
+          // x=y, gradInput value = 0
           gradInputBuf(gradInputOffset) = ev.zero
+        } else if (ev.isGreater(a, c)) {
+          // x > y, gradInput value = 1/K.clip(K.abs(y), K.epsilon(), Double.MaxValue)
+          gradInputBuf(gradInputOffset) = ev.divide(ev.one, b)
         } else {
-          // default calculate results of (x>y). results of (x<y) are negative values of (x>y)
-          if (ev.isGreaterEq(ev.abs(a), epsilon) && ev.isGreaterEq(maxValue, ev.abs(a))) {
-            val v = ev.divide(b, ev.times(a, a)) // y/x^2
-            if (ev.isGreater(a, ev.zero)) {
-              gradInputBuf(gradInputOffset) = v // y/x^2
-            } else {
-              gradInputBuf(gradInputOffset) = ev.times(v, negativeOne) // -y/x^2
-            }
-          } else if (ev.isGreater(epsilon, ev.abs(a))) {
-            gradInputBuf(gradInputOffset) = ev.divide(ev.one, epsilon) // 1/epsilon
-          } else {
-            gradInputBuf(gradInputOffset) = ev.divide(ev.one, maxValue) // 1/Double.MaxValue
-          }
-
-          if (ev.isGreater(b, a)) { // x < y
-            gradInputBuf(gradInputOffset) = ev.times(gradInputBuf(gradInputOffset), negativeOne)
-          }
+          // x < y, , gradInput value = -1/K.clip(K.abs(y), K.epsilon(), Double.MaxValue)
+          gradInputBuf(gradInputOffset) = ev.divide(negativeOne, b)
         }
       }
     }
