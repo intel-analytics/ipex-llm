@@ -434,11 +434,9 @@ Parameters:
   For Python, one can also pass the name of an existing activation as a string, eg. 'tanh', 'relu', 'sigmoid', 'hard_sigmoid', 'softmax' etc.
 * `innerActivation` activation function for inner cells, by default to be `Sigmoid` if not specified.
   For Python, one can also pass the name of an existing activation as a string, eg. 'tanh', 'relu', 'sigmoid', 'hard_sigmoid', 'softmax' etc.
-* `wRegularizer` instance of [[Regularizer]]
-                   (eg. L1 or L2 regularization), applied to the input weights matrices.
-* `uRegularizer` instance [[Regularizer]]
-          (eg. L1 or L2 regularization), applied to the recurrent weights matrices.
-* `bRegularizer` instance of [[Regularizer]] applied to the bias.
+* `wRegularizer` instance of [[Regularizer]] (eg. L1 or L2 regularization), applied to the input weights matrices.
+* `uRegularizer` instance of [[Regularizer]] (eg. L1 or L2 regularization), applied to the recurrent weights matrices.
+* `bRegularizer` instance of [[Regularizer]], applied to the bias.
 
 **Scala example:**
 ```scala
@@ -584,11 +582,9 @@ Parameters:
            (http://www.stat.berkeley.edu/~tsmoon/files/Conference/asru2015.pdf)
            [A Theoretically Grounded Application of Dropout in Recurrent Neural Networks]
            (https://arxiv.org/pdf/1512.05287.pdf)
-* `wRegularizer` instance of [[Regularizer]]
-                   (eg. L1 or L2 regularization), applied to the input weights matrices.
-* `uRegularizer` instance [[Regularizer]]
-          (eg. L1 or L2 regularization), applied to the recurrent weights matrices.
-* `bRegularizer` instance of [[Regularizer]] applied to the bias.
+* `wRegularizer` instance of [[Regularizer]] (eg. L1 or L2 regularization), applied to the input weights matrices.
+* `uRegularizer` instance of [[Regularizer]] (eg. L1 or L2 regularization), applied to the recurrent weights matrices.
+* `bRegularizer` instance of [[Regularizer]], applied to the bias.
 
 **Scala example:**
 ```scala
@@ -860,14 +856,10 @@ Parameters:
   For Python, one can also pass the name of an existing activation as a string, eg. 'tanh', 'relu', 'sigmoid', 'hard_sigmoid', 'softmax' etc.
 * `innerActivation` activation function for inner cells, by default to be `Sigmoid` if not specified.
   For Python, one can also pass the name of an existing activation as a string, eg. 'tanh', 'relu', 'sigmoid', 'hard_sigmoid', 'softmax' etc.
-* `wRegularizer` instance of [[Regularizer]]
-                   (eg. L1 or L2 regularization), applied to the input weights matrices.
-* `uRegularizer` instance [[Regularizer]]
-          (eg. L1 or L2 regularization), applied to the recurrent weights matrices.
-* `bRegularizer` instance of [[Regularizer]]
-          applied to the bias.
-* `cRegularizer` instance of [[Regularizer]]
-        applied to peephole.
+* `wRegularizer` instance of [[Regularizer]] (eg. L1 or L2 regularization), applied to the input weights matrices.
+* `uRegularizer` instance of [[Regularizer]] (eg. L1 or L2 regularization), applied to the recurrent weights matrices.
+* `bRegularizer` instance of [[Regularizer]], applied to the bias.
+* `cRegularizer` instance of [[Regularizer]], applied to peephole.
 * `withPeephole` whether use last cell status control a gate
 
 **Scala example:**
@@ -1097,14 +1089,10 @@ Parameters:
 * `stride` step of the convolution, default is 1
 * `padding` step of the convolution, default is -1, behaves same with SAME padding in tensorflow
                  Default stride,padding value ensure last 3 dim of output shape is the same with input
-* `wRegularizer` instance of [[Regularizer]]
-                   (eg. L1 or L2 regularization), applied to the input weights matrices.
-* `uRegularizer` instance [[Regularizer]]
-          (eg. L1 or L2 regularization), applied to the recurrent weights matrices.
-* `bRegularizer` instance of [[Regularizer]]
-          applied to the bias.
-* `cRegularizer` instance of [[Regularizer]]
-          applied to peephole.
+* `wRegularizer` instance of [[Regularizer]] (eg. L1 or L2 regularization), applied to the input weights matrices.
+* `uRegularizer` instance of [[Regularizer]] (eg. L1 or L2 regularization), applied to the recurrent weights matrices.
+* `bRegularizer` instance of [[Regularizer]], applied to the bias.
+* `cRegularizer` instance of [[Regularizer]], applied to peephole.
 * `withPeephole` whether use last cell status control a gate
 
 **Scala example:**
@@ -1905,6 +1893,15 @@ layer = Highway(size, with_bias=True,
 
 This layer is Densely connected highway network.
 Highway layers are a natural extension of LSTMs to feedforward networks.
+
+Parameters:
+
+* `size` input size
+* `with_bias` whether to include a bias
+* `activation` activation function, by default no activation will be used.
+  For Python, one can also pass the name of an existing activation as a string, eg. 'tanh', 'relu', 'sigmoid', 'hard_sigmoid', 'softmax' etc.
+* `wRegularizer` instance of [[Regularizer]] (eg. L1 or L2 regularization), applied to the input weights matrices.
+* `bRegularizer` instance of [[Regularizer]], applied to the bias.
 
 **Scala example:**
 ```scala
