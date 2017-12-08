@@ -97,20 +97,27 @@ class LocallyConnected1DSpec extends KerasBaseSpec {
     val d1l = 2
     val d2l = 3
 
-    val tensor = Tensor[Float](d1l, d2l)
+    val _input = Tensor[Float](d1l, d2l)
+    val _output = Tensor[Float](1,d1l,d2l)
 
     for (i <- 0 to d1l * d2l - 1) {
       val d1 = i / d2l + 1
       val d2 = i % d2l + 1
-      tensor.setValue(d1, d2, i)
+      _input.setValue(d1, d2, i)
+      _output.setValue(1,d1,d2,i)
     }
 
-    val tensor3D = locallyConnected1d.convert3DTensor(tensor)
+
+    val input = locallyConnected1d.reshapeInput(_input)
+    val output = locallyConnected1d.reshapeOutput(_input, _output)
 
     val size = Array(1, d1l, d2l)
 
-    tensor3D.size() should be(size)
-    tensor.storage().map(x => x.toInt).toArray should be(tensor3D.storage().map(x => x.toInt).toArray)
+    input.size() should be(size)
+    _input.storage().map(x => x.toInt).toArray should be(input.storage().map(x => x.toInt).toArray)
+
+    output.size() should be(Array(d1l,d2l))
+    _output.storage().map(x=> x.toInt).toArray should be(output.storage().map(x=> x.toInt).toArray)
   }
 
 }
