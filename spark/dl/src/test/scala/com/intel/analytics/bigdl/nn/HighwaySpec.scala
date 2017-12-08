@@ -28,7 +28,7 @@ class HighwaySpec extends KerasBaseSpec {
         |output_tensor = Highway(activation='tanh')(input_tensor)
         |model = Model(input=input_tensor, output=output_tensor)
       """.stripMargin
-    val highway = Highway[Float](2, activation = "tanh")
+    val highway = Highway[Float](2, activation = Tanh[Float])
     def weightConverter(in: Array[Tensor[Float]]): Array[Tensor[Float]] =
       Array(in(1).t(), in(3), in(0).t(), in(2))
     checkHighwayOutputAndGrad(highway, kerasCode, weightConverter)
@@ -42,7 +42,7 @@ class HighwaySpec extends KerasBaseSpec {
         |output_tensor = Highway(activation='tanh', bias=None)(input_tensor)
         |model = Model(input=input_tensor, output=output_tensor)
       """.stripMargin
-    val highway = Highway[Float](2, activation = "tanh", withBias = false)
+    val highway = Highway[Float](2, activation = Tanh[Float], withBias = false)
     def weightConverter(in: Array[Tensor[Float]]): Array[Tensor[Float]] =
       Array(in(1).t(), in(0).t())
 
@@ -82,7 +82,7 @@ class HighwaySpec extends KerasBaseSpec {
   }
 
   "Highway serializer" should "work properly" in {
-    val module = Highway[Float](2, activation = "tanh")
+    val module = Highway[Float](2, activation = Tanh[Float])
 
     val input = Tensor[Float](3, 2).randn()
     val res1 = module.forward(input.clone()).toTensor[Float].clone()
