@@ -90,6 +90,7 @@ class TestBackend(BigDLTestCase):
         model.evaluate(X_train, y_train, is_distributed=True)
         print(model)
 
+    @pytest.mark.skip(reason="need to support evaluate locally before running the test")
     def test_text_classification(self):
         '''This example demonstrates the use of Convolution1D for text classification.
            This example is from Keras
