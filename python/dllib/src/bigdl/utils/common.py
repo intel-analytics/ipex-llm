@@ -265,23 +265,25 @@ class JTensor(object):
 
 
 class Sample(object):
-    def __init__(self, features, label, bigdl_type="float"):
+    def __init__(self, features, labels, bigdl_type="float"):
         """
         User should always use Sample.from_ndarray to construct Sample.
         :param features: a list of JTensors
-        :param label: a list of JTensors
+        :param labels: a list of JTensors
         :param bigdl_type: "double" or "float"
         """
+        self.feature = features[0]
         self.features = features
-        self.label = label
+        self.label = labels[0]
         self.bigdl_type = bigdl_type
+        self.labels = labels
 
     @classmethod
-    def from_ndarray(cls, features, label, bigdl_type="float"):
+    def from_ndarray(cls, features, labels, bigdl_type="float"):
         """
-        Convert a ndarray of features and label to Sample, which would be used in Java side.
+        Convert a ndarray of features and labels to Sample, which would be used in Java side.
         :param features: an ndarray or a list of ndarrays
-        :param label: an ndarray or a list of ndarrays or a scalar
+        :param labels: an ndarray or a list of ndarrays or a scalar
         :param bigdl_type: "double" or "float"
 
         >>> import numpy as np
@@ -291,10 +293,10 @@ class Sample(object):
         >>> sample = Sample.from_ndarray(np.random.random((2,3)), np.random.random((2,3)))
         >>> sample_back = callBigDlFunc("float", "testSample", sample)
         >>> assert_allclose(sample.features[0].to_ndarray(), sample_back.features[0].to_ndarray())
-        >>> assert_allclose(sample.label[0].to_ndarray(), sample_back.label[0].to_ndarray())
+        >>> assert_allclose(sample.label.to_ndarray(), sample_back.label.to_ndarray())
         >>> print(sample)
         Sample: features: [JTensor: storage: [[ 0.69646919  0.28613934  0.22685145]
-         [ 0.55131477  0.71946895  0.42310646]], shape: [2 3], float], label: [JTensor: storage: [[ 0.98076421  0.68482971  0.48093191]
+         [ 0.55131477  0.71946895  0.42310646]], shape: [2 3], float], labels: [JTensor: storage: [[ 0.98076421  0.68482971  0.48093191]
          [ 0.39211753  0.343178    0.72904968]], shape: [2 3], float],
         """
         if isinstance(features, np.ndarray):
@@ -302,24 +304,24 @@ class Sample(object):
         else:
             assert all(isinstance(feature, np.ndarray) for feature in features), \
                 "features should be a list of np.ndarray, not %s" % type(features)
-        if np.isscalar(label):  # in case label is a scalar.
-            label = [np.array(label)]
-        elif isinstance(label, np.ndarray):
-            label = [label]
+        if np.isscalar(labels):  # in case labels is a scalar.
+            labels = [np.array(labels)]
+        elif isinstance(labels, np.ndarray):
+            labels = [labels]
         else:
-            assert all(isinstance(l, np.ndarray) for l in label), \
-                "label should be a list of np.ndarray, not %s" % type(label)
+            assert all(isinstance(label, np.ndarray) for label in labels), \
+                "labels should be a list of np.ndarray, not %s" % type(labels)
         return cls(
-            features=[JTensor.from_ndarray(f) for f in features],
-            label=[JTensor.from_ndarray(l) for l in label],
+            features=[JTensor.from_ndarray(feature) for feature in features],
+            labels=[JTensor.from_ndarray(label) for label in labels],
             bigdl_type=bigdl_type)
 
     @classmethod
-    def from_jtensor(cls, features, label, bigdl_type="float"):
+    def from_jtensor(cls, features, labels, bigdl_type="float"):
         """
         Convert a sequence of JTensor to Sample, which would be used in Java side.
         :param features: an JTensor or a list of JTensor
-        :param label: an JTensor or a scalar
+        :param labels: an JTensor or a list of JTensor or a scalar
         :param bigdl_type: "double" or "float"
 
         >>> import numpy as np
@@ -335,21 +337,26 @@ class Sample(object):
         else:
             assert all(isinstance(feature, JTensor) for feature in features), \
                 "features should be a list of JTensor, not %s" % type(features)
-        if not isinstance(label, JTensor): # in case label is a scalar.
-            label = JTensor.from_ndarray(np.array(label))
+        if np.isscalar(labels):  # in case labels is a scalar.
+            labels = [JTensor.from_ndarray(np.array(labels))]
+        elif isinstance(labels, JTensor):
+            labels = [labels]
+        else:
+            assert all(isinstance(label, JTensor) for label in labels), \
+                "labels should be a list of np.ndarray, not %s" % type(labels)
         return cls(
             features=features,
-            label=label,
+            labels=labels,
             bigdl_type=bigdl_type)
 
     def __reduce__(self):
-        return Sample, (self.features, self.label, self.bigdl_type)
+        return Sample, (self.features, self.labels, self.bigdl_type)
 
     def __str__(self):
-        return "Sample: features: %s, label: %s," % (self.features, self.label)
+        return "Sample: features: %s, labels: %s," % (self.features, self.labels)
 
     def __repr__(self):
-        return "Sample: features: %s, label: %s" % (self.features, self.label)
+        return "Sample: features: %s, labels: %s" % (self.features, self.labels)
 
 class RNG():
     """
