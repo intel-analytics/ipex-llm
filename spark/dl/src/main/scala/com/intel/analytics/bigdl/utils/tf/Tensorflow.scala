@@ -305,7 +305,13 @@ object Tensorflow {
   }
 
   def avgPool(value: NodeDef, kW: Int, kH: Int, pW: Int, pH: Int, sW: Int, sH: Int,
-              dataFormat: TensorflowDataFormat, name: String): NodeDef = {
+              dataFormat: TensorflowDataFormat, name: String, ceilMode: Boolean): NodeDef = {
+    val paddingType = if (ceilMode) {
+      PaddingType.PADDING_SAME.value
+    } else {
+      getPaddingType(pW, pH, kW, kH, sW, sH).value
+    }
+
     NodeDef.newBuilder()
       .setName(name)
       .setOp("AvgPool")
@@ -313,7 +319,7 @@ object Tensorflow {
       .addInput(value.getName)
       .putAttr("data_format", dataFormat.value)
       .putAttr("ksize", kernelAttr(kW, kH, dataFormat))
-      .putAttr("padding", getPaddingType(pW, pH, kW, kH, sW, sH).value)
+      .putAttr("padding", paddingType)
       .putAttr("strides", strideAttr(sW, sH, dataFormat))
       .build()
   }
@@ -409,7 +415,7 @@ object Tensorflow {
     node.build()
   }
 
-  def concat(inputs: Seq[NodeDef], axis: Int, name: String): NodeDef = {
+  def concat(inputs: Seq[NodeDef], name: String): NodeDef = {
     require(inputs.length >= 1, "at least one inputs for addN")
 
     val node = NodeDef.newBuilder()
@@ -445,6 +451,25 @@ object Tensorflow {
       .addInput(inputTensor.getName)
       .addInput(axis.getName)
       .build()
+  }
+
+  def split(splitDim: NodeDef, value: NodeDef, numSplit: Int, name: String): Seq[NodeDef] = {
+    val splitNode = NodeDef.newBuilder()
+      .setName(name + "/split")
+      .setOp("Split")
+      .putAttr("T", getDataType(value))
+      .putAttr("num_split", intAttr(numSplit))
+      .addInput(splitDim.getName)
+      .addInput(value.getName)
+      .build()
+    (0 until numSplit).map(i => {
+      NodeDef.newBuilder()
+        .setName(name + s"/reader$i")
+        .setOp("Identity")
+        .addInput(name + s"/split:$i")
+        .putAttr("T", getDataType(value))
+        .build()
+    }) ++ Seq(splitNode)
   }
 
   def softmax(logits: NodeDef, name: String): NodeDef = {
@@ -518,7 +543,7 @@ object Tensorflow {
     val (content, dtype) = if (value.getType() == DoubleType) {
       val array = value.asInstanceOf[Tensor[Double]].storage().array()
       val offset = value.storageOffset() - 1
-      val buffer = ByteBuffer.allocate(array.length * 8)
+      val buffer = ByteBuffer.allocate(value.nElement() * 8)
       buffer.order(byteOrder)
       var i = 0
       while (i < value.nElement()) {
@@ -529,7 +554,7 @@ object Tensorflow {
     } else if (value.getType() == FloatType) {
       val array = value.asInstanceOf[Tensor[Float]].storage().array()
       val offset = value.storageOffset() - 1
-      val buffer = ByteBuffer.allocate(array.length * 4)
+      val buffer = ByteBuffer.allocate(value.nElement() * 4)
       buffer.order(byteOrder)
       var i = 0
       while (i < value.nElement()) {
@@ -540,7 +565,7 @@ object Tensorflow {
     } else if (value.getType() == IntType) {
       val array = value.asInstanceOf[Tensor[Int]].storage().array()
       val offset = value.storageOffset() - 1
-      val buffer = ByteBuffer.allocate(array.length * 4)
+      val buffer = ByteBuffer.allocate(value.nElement() * 4)
       buffer.order(byteOrder)
       var i = 0
       while (i < value.nElement()) {
@@ -551,7 +576,7 @@ object Tensorflow {
     } else if (value.getType() == BooleanType) {
       val array = value.asInstanceOf[Tensor[Boolean]].storage().array()
       val offset = value.storageOffset() - 1
-      val buffer = ByteBuffer.allocate(array.length)
+      val buffer = ByteBuffer.allocate(value.nElement())
       buffer.order(byteOrder)
       val t : Byte = 1
       val f : Byte = 0
@@ -646,5 +671,16 @@ object Tensorflow {
       Seq(1, 1, sH, sW)
     }
     listIntAttr(sSize)
+  }
+}
+
+object Test {
+  def main(args: Array[String]): Unit = {
+    val model = Module.loadCaffeModel[Float]("/home/yihengw/model_zoo/mobilenet/deploy.prototxt",
+        "/home/yihengw/model_zoo/mobilenet/mobilenet.caffemodel")
+    model.evaluate()
+    Engine.init
+    model.asInstanceOf[Graph[Float]].saveGraphTopology("/home/yihengw/testlog")
+    model.saveTF(Seq(("input", Seq(1, 3, 224, 224))), "/home/yihengw/test.pb")
   }
 }

@@ -107,30 +107,71 @@ object SpatialConvolutionToTF extends BigDLToTensorflow {
                        byteOrder: ByteOrder): Seq[NodeDef] = {
     require(inputs.length == 1, "SpatialConvolution only accept one input")
     val spatialConv = module.asInstanceOf[SpatialConvolution[_]]
-    require(spatialConv.nGroup == 1, "convolution group is not supported")
-    val (dataFormat, filterTensor) = if (spatialConv.format == DataFormat.NCHW) {
-      (TensorflowDataFormat.NCHW,
-        spatialConv.weight.select(1, 1)
+    if (spatialConv.nGroup == 1) {
+      val (dataFormat, filterTensor) = if (spatialConv.format == DataFormat.NCHW) {
+        (TensorflowDataFormat.NCHW,
+          spatialConv.weight.select(1, 1)
+            .transpose(2, 3).transpose(3, 4)
+            .transpose(1, 2).transpose(2, 3)
+            .transpose(3, 4).contiguous())
+      } else {
+        (TensorflowDataFormat.NHWC, spatialConv.weight.select(1, 1))
+      }
+
+      val filter = const(filterTensor, spatialConv.getName() + "/filter", byteOrder)
+      val filterReader = identity(filter, spatialConv.getName() + "/filterReader")
+      val conv = conv2D(inputs(0), filterReader, spatialConv.strideW, spatialConv.strideH,
+        spatialConv.kernelW, spatialConv.kernelH, spatialConv.padW, spatialConv.padH,
+        dataFormat, spatialConv.getName() + "/conv2D")
+      if (spatialConv.bias != null) {
+        val bias = const(spatialConv.bias, spatialConv.getName() + "/bias", byteOrder)
+        val biasReader = identity(bias, spatialConv.getName() + "/biasReader")
+        val add = biasAdd(conv, biasReader, dataFormat,
+          spatialConv.getName() + "/biasAdd")
+        Seq(add, biasReader, bias, conv, filterReader, filter)
+      } else {
+        Seq(conv, filterReader, filter)
+      }
+    } else {
+      require(spatialConv.format == DataFormat.NCHW, "Only NCHW support conv group")
+      val nodes = new ArrayBuffer[NodeDef]()
+      val splitDim = const(Tensor.scalar[Int](1), spatialConv.getName() + "/split_dim",
+        ByteOrder.LITTLE_ENDIAN)
+      val splits = split(splitDim, inputs(0), spatialConv.nGroup, spatialConv.getName() + "/split")
+      nodes.append(splitDim)
+      nodes.appendAll(splits)
+      val axis = const(Tensor.scalar[Int](1), spatialConv.getName() + "/concat/axis",
+        ByteOrder.LITTLE_ENDIAN)
+      nodes.append(axis)
+      val outputs = (0 until spatialConv.nGroup).map(g => {
+        val filterTensor = spatialConv.weight.select(1, g + 1)
           .transpose(2, 3).transpose(3, 4)
           .transpose(1, 2).transpose(2, 3)
-          .transpose(3, 4).contiguous())
-    } else {
-      (TensorflowDataFormat.NHWC, spatialConv.weight.select(1, 1))
-    }
+          .transpose(3, 4).contiguous()
 
-    val filter = const(filterTensor, spatialConv.getName() + "/filter", byteOrder)
-    val filterReader = identity(filter, spatialConv.getName() + "/filterReader")
-    val conv = conv2D(inputs(0), filterReader, spatialConv.strideW, spatialConv.strideH,
-      spatialConv.kernelW, spatialConv.kernelH, spatialConv.padW, spatialConv.padH,
-      dataFormat, spatialConv.getName() + "/conv2D")
-    if (spatialConv.bias != null) {
-      val bias = const(spatialConv.bias, spatialConv.getName() + "/bias", byteOrder)
-      val biasReader = identity(bias, spatialConv.getName() + "/biasReader")
-      val add = biasAdd(conv, biasReader, dataFormat,
-        spatialConv.getName() + "/biasAdd")
-      Seq(add, biasReader, bias, conv, filterReader, filter)
-    } else {
-      Seq(conv, filterReader, filter)
+        val filter = const(filterTensor, spatialConv.getName() + s"/group$g/filter", byteOrder)
+        val filterReader = identity(filter, spatialConv.getName() + s"/group$g/filterReader")
+        val conv = conv2D(splits(g), filterReader, spatialConv.strideW, spatialConv.strideH,
+          spatialConv.kernelW, spatialConv.kernelH, spatialConv.padW, spatialConv.padH,
+          TensorflowDataFormat.NCHW, spatialConv.getName() + s"/group$g/conv2D")
+        if (spatialConv.bias != null) {
+          val bias = const(spatialConv.bias.narrow(1,
+            g * spatialConv.nOutputPlane / spatialConv.nGroup + 1,
+            spatialConv.nOutputPlane / spatialConv.nGroup),
+            spatialConv.getName() + s"/group$g/bias", byteOrder)
+          val biasReader = identity(bias, spatialConv.getName() + s"/group$g/biasReader")
+          val add = biasAdd(conv, biasReader, TensorflowDataFormat.NCHW,
+            spatialConv.getName() + s"/group$g/biasAdd")
+          nodes.append(add, biasReader, bias, conv, filterReader, filter)
+          add
+        } else {
+          nodes.append(conv, filterReader, filter)
+          conv
+        }
+      }) ++ Seq(axis)
+
+      val concatNode = concat(outputs, spatialConv.getName() + "/concat/output")
+      Seq(concatNode) ++ nodes
     }
   }
 }
@@ -269,7 +310,7 @@ object AvgpoolToTF extends BigDLToTensorflow {
       TensorflowDataFormat.NCHW
     }
     Seq(avgPool(inputs(0), layer.kW, layer.kH, layer.padW, layer.padH,
-      layer.dW, layer.dH, dataFormat, layer.getName()))
+      layer.dW, layer.dH, dataFormat, layer.getName(), layer.ceilMode))
   }
 }
 
@@ -316,7 +357,7 @@ object JoinTableToTF extends BigDLToTensorflow {
     val updateInputs = new ArrayBuffer[NodeDef]()
     updateInputs ++= inputs.reverse
     updateInputs.append(axis)
-    Seq(concat(updateInputs, layer.dimension - 1, layer.getName()), axis)
+    Seq(concat(updateInputs, layer.getName()), axis)
   }
 }
 
