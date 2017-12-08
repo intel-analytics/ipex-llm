@@ -26,7 +26,7 @@ object BlockManagerWrapper {
     bytes: ByteBuffer,
     level: StorageLevel): Unit = {
     require(bytes != null, "Bytes is null")
-    SparkEnv.get.blockManager.removeBlock(blockId)
+//    SparkEnv.get.blockManager.removeBlock(blockId)
     SparkEnv.get.blockManager.putBytes(blockId, bytes, level)
   }
 

@@ -299,7 +299,9 @@ object DistriOptimizer {
         // enough records were processed for this batch, so update the model
         val value = lossSum.value / numFinishedModelUpdates
         
-        val l2Norm = if (normClippingEnable) {
+        var l2Norm = 0.0f
+        var scale = ev.fromType(numFinishedModelUpdates)
+        if (normClippingEnable) {
           val sumSquare = models.mapPartitions(modelIter => {
             val getG = System.nanoTime()
             parameters.aggregateGradientPartition()
@@ -307,21 +309,19 @@ object DistriOptimizer {
               System.nanoTime() - getG)
             Iterator.single(ev.toType[Double](parameters.gradientPartition.sumSquare()))
           }).reduce(_ + _)
-          (math.sqrt(sumSquare) / numFinishedModelUpdates).toFloat
-        } else 0.0f
+          l2Norm = (math.sqrt(sumSquare) / numFinishedModelUpdates).toFloat
+          if (l2Norm > normValueClip) {
+            scale = ev.fromType[Double]((l2Norm * numFinishedModelUpdates) / normValueClip)
+          }
+        }
         
         models.mapPartitions { modelIter =>
           val modelCache = modelIter.next()
-          val scale = if (!normClippingEnable) {
+          if (!normClippingEnable) {
             val getG = System.nanoTime()
             parameters.aggregateGradientPartition()
             driverMetrics.add("aggregrateGradientParition average executor",
               System.nanoTime() - getG)
-            ev.fromType(numFinishedModelUpdates)
-          } else {
-            if (l2Norm > normValueClip) {
-              ev.fromType[Double]((l2Norm * numFinishedModelUpdates) / normValueClip)
-            } else ev.fromType(numFinishedModelUpdates)
           }
           parameters.gradientPartition.div(scale)
           modelCache.optimMethod.state.update("epoch", driverState[Int]("epoch"))
@@ -361,7 +361,7 @@ object DistriOptimizer {
           driverState[Int]("neval"), wallClockTime)
         logger.info(s"${_header} Trained ${recordsNum.value} records in ${(end - start) / 1e9} " +
           s"seconds. Throughput is ${driverState("Throughput")} records/second. Loss is ${
-            driverState("Loss")}. ${optimMethod.getHyperParameter()}")
+            driverState("Loss")}. l2norm: $l2Norm. ${optimMethod.getHyperParameter()}")
         logger.info("\n" + metrics.summary())
         logger.debug("Dropped modules: " + (driverSubModelNum - numFinishedModelUpdates))
         lossArray = new Array[Double](_subModelNumber)
