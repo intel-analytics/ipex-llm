@@ -33,7 +33,11 @@ export PYTHONPATH=$PYTHONPATH:$PYSPARK_ZIP:$DL_PYTHON_HOME:$DL_PYTHON_HOME/:$DL_
 export BIGDL_CLASSPATH=$(find $BIGDL_HOME/spark/dl/target/ -name "*with-dependencies.jar" | head -n 1)
 echo "BIGDL_CLASSPATH": $BIGDL_CLASSPATH
 
-export PYTHON_EXECUTABLES=("python2.7" "python3.5")
+if [[ ($SPARK_HOME == *"2.2.0"*) || ($SPARK_HOME == *"2.1.1"*) || ($SPARK_HOME == *"1.6.4"*) ]]; then
+    export PYTHON_EXECUTABLES=("python2.7" "python3.5" "python3.6")
+else
+    export PYTHON_EXECUTABLES=("python2.7" "python3.5")
+fi
 
 function run_notebook() {
     notebook_path=$1
