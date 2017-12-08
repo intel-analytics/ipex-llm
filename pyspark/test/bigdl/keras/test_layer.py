@@ -65,13 +65,10 @@ class TestLayer(BigDLTestCase):
         self.modelTestSingleLayer(input_data, layer)
 
     def test_dense(self):
-        # problem with weight regularizer
         input_data = np.random.random_sample([1, 10])
-        layer = Dense(2, init='one', activation="relu",
-                      input_shape=(10, ))
+        layer = Dense(2, init='one', activation="relu", input_shape=(10, ))
         self.modelTestSingleLayer(input_data, layer, dump_weights=True)
-        layer2 = Dense(2, init='one', activation="softplus",
-                       input_shape=(10, ))
+        layer2 = Dense(2, init='one', activation="softplus", input_shape=(10, ))
         self.modelTestSingleLayer(input_data, layer2, dump_weights=True)
         layer3 = Dense(2, init='one', input_shape=(10, ))
         self.modelTestSingleLayer(input_data, layer3, dump_weights=True)
@@ -264,7 +261,7 @@ class TestLayer(BigDLTestCase):
     def test_batchnormalization(self):
         input_data = np.random.random_sample([2, 6, 128, 128])
         layer = BatchNormalization(input_shape=(6, 128, 128), axis=1)
-        self.modelTestSingleLayer(input_data, layer, dump_weights=True)
+        self.modelTestSingleLayer(input_data, layer, dump_weights=True, test_grad=False)
 
     def test_flatten(self):
         input_data = np.random.random_sample([1, 2, 3])

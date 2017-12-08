@@ -195,13 +195,58 @@ class BigDLTestCase(TestCase):
             new_weights.append(np.random.random(list(weight.shape)))
         return new_weights
 
+    def __test_grad(self,
+                    input_data,
+                    keras_model,
+                    bigdl_model,
+                    keras_output,
+                    bigdl_output,
+                    dump_weights=True,
+                    rtol=1e-6,
+                    atol=1e-6):
+        # compare gradient input
+        sess = K.get_session()
+        feed_dict = {K.learning_phase(): 1}
+        if isinstance(input_data, list):  # for merge layers
+            for i in range(0, len(input_data)):
+                feed_dict[keras_model.input[i]] = input_data[i]
+        else:
+            feed_dict[keras_model.input] = input_data
+        keras_grad_input = sess.run(K.gradients(keras_model.output * keras_output, keras_model.input),
+                                    feed_dict=feed_dict)
+        bigdl_grad_input = bigdl_model.backward(input_data, bigdl_output)
+        if isinstance(bigdl_grad_input, list):  # for merge layers
+            for j in range(0, len(keras_grad_input)):
+                self.assert_allclose(bigdl_grad_input[j],
+                                     keras_grad_input[j],
+                                     rtol=rtol,
+                                     atol=atol)
+        else:  # for other layers, keras return a singleton list of ndarray while bigdl returns an ndarray
+            self.assert_allclose(bigdl_grad_input,
+                                 keras_grad_input[0],
+                                 rtol=rtol,
+                                 atol=atol)
+
+        # compare gradient weights if the layer has weights
+        if dump_weights:
+            weight_converter = WeightsConverter.get_converter(keras_model.layers[1].__class__.__name__)
+            keras_grad_weights = weight_converter(keras_model.layers[1],
+                                                  sess.run(K.gradients(keras_model.output * keras_output, keras_model.trainable_weights),
+                                                           feed_dict=feed_dict))
+            bigdl_grad_weights = bigdl_model.get_grad_weights()
+            for k in range(0, len(keras_grad_weights)):
+                self.assert_allclose(bigdl_grad_weights[k],
+                                     keras_grad_weights[k],
+                                     rtol=rtol,
+                                     atol=atol)
+
     def modelTest(self,
                   input_data,
                   keras_model,
                   random_weights=True,
                   dump_weights=False,
-                  weight_converter=None,
                   is_training=False,
+                  test_grad=True,
                   rtol=1e-6,
                   atol=1e-6):
         if random_weights:
@@ -229,42 +274,15 @@ class BigDLTestCase(TestCase):
                              keras_output,
                              rtol=rtol,
                              atol=atol)
-
-        # compare gradient input
-        sess = K.get_session()
-        feed_dict = {K.learning_phase(): 1}
-        if isinstance(input_data, list):  # for merge layers
-            for i in range(0, len(input_data)):
-                feed_dict[keras_model.input[i]] = input_data[i]
-        else:
-            feed_dict[keras_model.input] = input_data
-        keras_grad_input = sess.run(K.gradients(keras_model.output * keras_output, keras_model.input),
-                                    feed_dict=feed_dict)
-        bigdl_grad_input = bigdl_model.backward(input_data, bigdl_output2)
-        if isinstance(bigdl_grad_input, list):  # for merge layers
-            for j in range(0, len(keras_grad_input)):
-                self.assert_allclose(bigdl_grad_input[j],
-                                     keras_grad_input[j],
-                                     rtol=rtol,
-                                     atol=atol)
-        else:  # for other layers, keras return a singleton list of ndarray while bigdl returns an ndarray
-            self.assert_allclose(bigdl_grad_input,
-                                 keras_grad_input[0],
-                                 rtol=rtol,
-                                 atol=atol)
-
-        # compare gradient weights if the layer has weights
-        if dump_weights:
-            weight_converter = WeightsConverter.get_converter(keras_model.layers[1].__class__.__name__)
-            keras_grad_weights = weight_converter(keras_model.layers[1],
-                                                  sess.run(K.gradients(keras_model.output * keras_output, keras_model.trainable_weights),
-                                                           feed_dict=feed_dict))
-            bigdl_grad_weights = bigdl_model.get_grad_weights()
-            for k in range(0, len(keras_grad_weights)):
-                self.assert_allclose(bigdl_grad_weights[k],
-                                     keras_grad_weights[k],
-                                     rtol=rtol,
-                                     atol=atol)
+        if test_grad:
+            self.__test_grad(input_data,
+                             keras_model,
+                             bigdl_model,
+                             keras_output,
+                             bigdl_output2,
+                             dump_weights,
+                             rtol=rtol,
+                             atol=atol)
 
 
     def modelTestSingleLayerWithOrdersModes(self,
@@ -274,7 +292,6 @@ class BigDLTestCase(TestCase):
                                             border_modes=["valid", "same"],
                                             random_weights=True,
                                             dump_weights=False,
-                                            weight_converter=None,
                                             is_training=False,
                                             rtol=1e-6,
                                             atol=1e-6):
@@ -295,7 +312,6 @@ class BigDLTestCase(TestCase):
                                           output_layer,  # a keras layer
                                           random_weights,
                                           dump_weights,
-                                          weight_converter,
                                           is_training,
                                           rtol,
                                           atol)
@@ -305,8 +321,8 @@ class BigDLTestCase(TestCase):
                              output_layer,  # a keras layer
                              random_weights=True,
                              dump_weights=False,
-                             weight_converter=None,
                              is_training=False,
+                             test_grad=True,
                              rtol=1e-6,
                              atol=1e-6,
                              functional_apis=[True, False]):
@@ -317,8 +333,8 @@ class BigDLTestCase(TestCase):
                 functional_api=api,
                 random_weights=random_weights,
                 dump_weights=dump_weights,
-                weight_converter=weight_converter,
                 is_training=is_training,
+                test_grad=test_grad,
                 rtol=rtol,
                 atol=atol)
 
@@ -328,8 +344,8 @@ class BigDLTestCase(TestCase):
                                  functional_api=True,
                                  random_weights=True,
                                  dump_weights=False,
-                                 weight_converter=None,
                                  is_training=False,
+                                 test_grad=True,
                                  rtol=1e-6,
                                  atol=1e-6):
         keras_model = self.__generate_keras_model(functional_api=functional_api,
@@ -339,7 +355,7 @@ class BigDLTestCase(TestCase):
                        keras_model,
                        random_weights=random_weights,
                        dump_weights=dump_weights,
-                       weight_converter=weight_converter,
                        is_training=is_training,
+                       test_grad=test_grad,
                        rtol=rtol,
                        atol=atol)
