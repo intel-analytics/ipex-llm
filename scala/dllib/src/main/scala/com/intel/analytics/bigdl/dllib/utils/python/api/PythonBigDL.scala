@@ -60,11 +60,11 @@ import scala.reflect.ClassTag
 /**
  * [[com.intel.analytics.bigdl.dataset.Sample]] for python.
  * @param features features
- * @param label labels
+ * @param labels labels
  * @param bigdlType bigdl numeric type
  */
 case class Sample(features: JList[JTensor],
-                  label: JList[JTensor],
+                  labels: JList[JTensor],
                   bigdlType: String)
 
 case class JTensor(storage: Array[Float], shape: Array[Int],
@@ -127,9 +127,9 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     val cls = implicitly[ClassTag[T]].runtimeClass
     val features = new JArrayList[JTensor]()
     features.add(toJTensor(sample.feature()))
-    val label = new JArrayList[JTensor]()
-    label.add(toJTensor(sample.label()))
-    Sample(features, label, cls.getSimpleName)
+    val labels = new JArrayList[JTensor]()
+    labels.add(toJTensor(sample.label()))
+    Sample(features, labels, cls.getSimpleName)
   }
 
   def toTensor(jTensor: JTensor): Tensor[T] = {
@@ -211,7 +211,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     require(record.bigdlType == this.typeName,
       s"record.bigdlType: ${record.bigdlType} == this.typeName: ${this.typeName}")
     JSample[T](record.features.asScala.toArray.map(toTensor(_)),
-      record.label.asScala.toArray.map(toTensor(_)))
+      record.labels.asScala.toArray.map(toTensor(_)))
   }
 
   def toJSample(psamples: RDD[Sample]): RDD[JSample[T]] = {
@@ -2538,9 +2538,9 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
       val imInfo = imageFeature.getImInfo()
       features.add(toJTensor(imInfo.asInstanceOf[Tensor[T]]))
     }
-    val label = new util.ArrayList[JTensor]()
-    label.add(imageFeatureToLabelTensor(imageFeature))
-    Sample(features, label, "float")
+    val labels = new util.ArrayList[JTensor]()
+    labels.add(imageFeatureToLabelTensor(imageFeature))
+    Sample(features, labels, "float")
   }
 
   def imageFeatureGetKeys(imageFeature: ImageFeature): JList[String] = {
