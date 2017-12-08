@@ -797,7 +797,6 @@ class LayerConverter:
     def generate_simplernn_cell(self, klayer, kclayer, input_shape):  # create a simplernn cell only
         self.__check_recurrent_parameters(klayer)
         config = kclayer["config"]
-        self.check_constraint_in_config(config)
         activation = get_activation_by_name(config["activation"],
                                             "%s_%s" % (config["name"], config["activation"]))
         rnn = BLayer.RnnCell(input_size=int(input_shape[2]),
@@ -819,7 +818,6 @@ class LayerConverter:
     def generate_lstm_cell(self, klayer, kclayer, input_shape):  # create a lstm cell only
         self.__check_recurrent_parameters(klayer)
         config = kclayer["config"]
-        self.check_constraint_in_config(config)
         activation = get_activation_by_name(config["activation"],
                                             "%s_%s" % (config["name"], config["activation"]))
         inner_activation = get_activation_by_name(config["inner_activation"],
@@ -844,7 +842,6 @@ class LayerConverter:
     def generate_convlstm2d_cell(self, klayer, kclayer, input_shape):  # create a convlstm2d cell only
         self.__check_recurrent_parameters(klayer)
         config = kclayer["config"]
-        self.check_constraint_in_config(config)
         activation = get_activation_by_name(config["activation"],
                                             "%s_%s" % (config["name"], config["activation"]))
         inner_activation = get_activation_by_name(config["inner_activation"],
@@ -888,7 +885,6 @@ class LayerConverter:
     def generate_gru_cell(self, klayer, kclayer, input_shape):  # create a gru cell only
         self.__check_recurrent_parameters(klayer)
         config = kclayer["config"]
-        self.check_constraint_in_config(config)
         activation = get_activation_by_name(config["activation"],
                                             "%s_%s" % (config["name"], config["activation"]))
         inner_activation = get_activation_by_name(config["inner_activation"],
@@ -977,16 +973,6 @@ class LayerConverter:
             return -1, -1
         elif border_mode == "valid":
             return 0, 0
-        else:
-            raise Exception("Unsupported border mode: %s" % border_mode)
-
-    def to_bigdl_1d_padding(self, border_mode, kernel_w):
-        if border_mode == "same":
-            raise Exception("We don't support padding for now")
-            # TODO: support padding
-            # return int((kernel_w -1) / 2)
-        elif border_mode == "valid":
-            return 0
         else:
             raise Exception("Unsupported border mode: %s" % border_mode)
 
@@ -1453,7 +1439,6 @@ class LayerConverter:
         return BLayer.GaussianDropout(float(self.klayer.p))
 
     def create_highway(self):
-        self.check_constraint_in_config(self.config)
         if self.config["activation"] == 'linear':
             activation = None
         else:
@@ -1467,7 +1452,6 @@ class LayerConverter:
         return blayer
 
     def create_maxoutdense(self):
-        self.check_constraint_in_config(self.config)
         if self.config["W_regularizer"]:
             raise Exception("W_regularizer is not supported for MaxoutDense")
         if self.config["b_regularizer"]:
@@ -1489,17 +1473,7 @@ class LayerConverter:
         else:
             return BLayer.SReLU(self.klayer.shared_axes)
 
-    def check_constraint_in_config(self, config):
-        if "W_constraint" in config:
-            if config["W_constraint"]:
-                raise Exception("W_constraint is not supported for now")
-        if "b_constraint" in config:
-            if config["b_constraint"]:
-                raise Exception("b_constraint is not supported for now")
-
     def combo_parameter_layer(self, blayer, config):
-        self.check_constraint_in_config(config)
-
         blayer.set_name(config["name"])
         if hasattr(blayer, "set_init_method"):
             blayer.set_init_method(self.to_bigdl_init(config["init"]),
