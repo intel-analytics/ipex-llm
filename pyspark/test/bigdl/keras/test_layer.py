@@ -91,10 +91,10 @@ class TestLayer(BigDLTestCase):
                           W_constraint=None,
                           mask_zero=False,
                           weights=None, dropout=0.)
-        self.modelTestSingleLayer(input_data, layer, dump_weights=True)
+        self.modelTestSingleLayer(input_data, layer, dump_weights=True, test_grad=False)
         # Random input
         input_data2 = np.random.randint(100, size=(10, 128))  # batch: 20, seqlen 128
-        self.modelTestSingleLayer(input_data2, layer, dump_weights=True)
+        self.modelTestSingleLayer(input_data2, layer, dump_weights=True, test_grad=False)
 
         # TODO: add test that exception would be raised if input_lenght == 6
         with pytest.raises(Exception) as excinfo:

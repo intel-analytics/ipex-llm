@@ -293,6 +293,7 @@ class BigDLTestCase(TestCase):
                                             random_weights=True,
                                             dump_weights=False,
                                             is_training=False,
+                                            test_grad=True,
                                             rtol=1e-6,
                                             atol=1e-6):
         for dim_ordering in dim_orderings:
@@ -313,6 +314,7 @@ class BigDLTestCase(TestCase):
                                           random_weights,
                                           dump_weights,
                                           is_training,
+                                          test_grad,
                                           rtol,
                                           atol)
 
