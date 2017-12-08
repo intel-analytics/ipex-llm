@@ -119,7 +119,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers with BeforeAndAfterAll
     val res1 = upsampling.forward(tensor1)
     tensor2.resizeAs(tensor1).copy(tensor1)
     val localPath = java.io.File.createTempFile("upsampling1d", ".bigdl").getAbsolutePath
-    ModulePersister.saveToFile(localPath, upsampling, true)
+    ModulePersister.saveToFile(localPath, null, upsampling, true)
     val loadedModule = ModuleLoader.loadFromFile(localPath)
     val res2 = loadedModule.forward(tensor2)
     res1 should be (res2)
@@ -132,7 +132,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers with BeforeAndAfterAll
     val res1 = upsampling.forward(tensor1)
     tensor2.resizeAs(tensor1).copy(tensor1)
     val localPath = java.io.File.createTempFile("upsampling2d", ".bigdl").getAbsolutePath
-    ModulePersister.saveToFile(localPath, upsampling, true)
+    ModulePersister.saveToFile(localPath, null, upsampling, true)
     val loadedModule = ModuleLoader.loadFromFile(localPath)
     val res2 = loadedModule.forward(tensor2)
     res1 should be (res2)
