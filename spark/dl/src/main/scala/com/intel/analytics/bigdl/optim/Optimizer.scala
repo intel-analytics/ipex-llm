@@ -523,5 +523,5 @@ case class GradientClippingParams(
    var enableConstantClipping: Boolean,
    var minValueClip: Float,
    var maxValueClip: Float,
-   var enableL2NormClipping: Boolean,   
+   var enableL2NormClipping: Boolean,
    var normValueClip: Float)

@@ -152,8 +152,19 @@ class LocalOptimizer[T: ClassTag] (
           })
       )
       val loss = lossSum / parallelism
-      grad.div(ev.fromType(parallelism))
+      var scale = ev.fromType(parallelism)
+      if (gradientClippingParams.enableL2NormClipping) {
+        val l2Norm =
+          (math.sqrt(ev.toType[Double](grad.sumSquare())) / parallelism).toFloat
+        if (l2Norm > gradientClippingParams.normValueClip) {
+          scale = ev.fromType[Float]((l2Norm * parallelism) / gradientClippingParams.normValueClip)
+        }
+      }
+      grad.div(scale)
 
+      if (gradientClippingParams.enableConstantClipping) {
+        grad.clamp(gradientClippingParams.minValueClip, gradientClippingParams.maxValueClip)
+      }
       optimMethod.state.update("epoch", state.get("epoch"))
       optimMethod.state.update("neval", state.get("neval"))
       optimMethod.optimize(_ => (ev.fromType(loss), grad), weight)
