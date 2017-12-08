@@ -272,6 +272,7 @@ class Sample(object):
         :param labels: a list of JTensors
         :param bigdl_type: "double" or "float"
         """
+        self.feature = features[0]
         self.features = features
         self.label = labels[0]
         self.bigdl_type = bigdl_type
