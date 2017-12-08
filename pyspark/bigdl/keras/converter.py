@@ -1449,6 +1449,7 @@ class LayerConverter:
         return BLayer.GaussianDropout(float(self.klayer.p))
 
     def create_highway(self):
+        self.check_constraint_in_config(self.config)
         if self.config["activation"] == 'linear':
             activation = None
         else:
@@ -1459,6 +1460,19 @@ class LayerConverter:
                                 activation=activation,
                                 wRegularizer=self.to_bigdl_reg(self.config["W_regularizer"]),
                                 bRegularizer=self.to_bigdl_reg(self.config["b_regularizer"]))
+        return blayer
+
+    def create_maxoutdense(self):
+        self.check_constraint_in_config(self.config)
+        if self.config["W_regularizer"]:
+            raise Exception("W_regularizer is not supported for MaxoutDense")
+        if self.config["b_regularizer"]:
+            raise Exception("b_regularizer is not supported for MaxoutDense")
+        if not self.config["bias"]:
+            raise Exception("Please set bias=True for MaxoutDense")
+        blayer = BLayer.Maxout(input_size=self.input_shape[1],
+                               output_size=self.klayer.output_dim,
+                               maxout_number=self.klayer.nb_feature)
         return blayer
 
     def check_constraint_in_config(self, config):

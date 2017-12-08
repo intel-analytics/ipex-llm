@@ -633,6 +633,11 @@ class TestLayer(BigDLTestCase):
         layer2 = Highway(activation='sigmoid', bias=False, input_shape=(6, ))
         self.modelTestSingleLayer(input_data, layer2, dump_weights=True)
 
+    def test_maxoutdense(self):
+        input_data = np.random.random([4, 6])
+        layer = MaxoutDense(3, 5)
+        self.modelTestSingleLayer(input_data, layer, dump_weights=True)
+
 
 if __name__ == "__main__":
     pytest.main([__file__])
