@@ -619,6 +619,34 @@ class TestLayer(BigDLTestCase):
                                input_shape=(8, 40, 40, 32), merge_mode='ave')
         self.modelTestSingleLayer(input_data2, layer5, dump_weights=True)
 
+    def test_upsampling3d(self):
+        input_data = np.random.random([2, 5, 12, 12, 12])
+        layer1 = UpSampling3D(input_shape=(5, 12, 12, 12))
+        self.modelTestSingleLayer(input_data, layer1)
+        layer2 = UpSampling3D(size=(1, 2, 4), input_shape=(5, 12, 12, 12))
+        self.modelTestSingleLayer(input_data, layer2)
+
+    def test_highway(self):
+        input_data = np.random.random([4, 6])
+        layer = Highway(input_shape=(6, ))
+        self.modelTestSingleLayer(input_data, layer, dump_weights=True)
+        layer2 = Highway(activation='sigmoid', bias=False, input_shape=(6, ))
+        self.modelTestSingleLayer(input_data, layer2, dump_weights=True)
+
+    def test_maxoutdense(self):
+        input_data = np.random.random([4, 6])
+        layer = MaxoutDense(3, 5)
+        self.modelTestSingleLayer(input_data, layer, dump_weights=True)
+
+    def test_masking(self):
+        input_data = np.array([[[0, 1, 2], [-1, 1, 0], [3, 4, 1], [0, 0, 0]]])
+        layer = Masking(-1, input_shape=(4, 3))
+        self.modelTestSingleLayer(input_data, layer)
+
+    def test_srelu(self):
+        input_data = np.random.random_sample([2, 4, 6])
+        layer = SReLU(input_shape=(4, 6))
+        self.modelTestSingleLayer(input_data, layer, dump_weights=True)
 
 if __name__ == "__main__":
     pytest.main([__file__])
