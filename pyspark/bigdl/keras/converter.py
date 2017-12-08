@@ -248,7 +248,7 @@ class WeightsConverter:
         b_weights = k_weights[0].T
         for i in range(1, k_weights.shape[0]):
             b_weights = np.concatenate((b_weights, k_weights[i].T))        
-        return [b_weights, weights[1]]
+        return [b_weights, weights[1].reshape(k_weights.shape[0]*k_weights.shape[2], )]
 
     @staticmethod
     def convert_srelu(klayer, weights):
