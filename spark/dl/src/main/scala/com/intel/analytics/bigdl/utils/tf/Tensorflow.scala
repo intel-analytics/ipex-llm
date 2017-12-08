@@ -673,14 +673,3 @@ object Tensorflow {
     listIntAttr(sSize)
   }
 }
-
-object Test {
-  def main(args: Array[String]): Unit = {
-    val model = Module.loadCaffeModel[Float]("/home/yihengw/model_zoo/densenet/deploy161.prototxt",
-        "/home/yihengw/model_zoo/densenet/DenseNet_161.caffemodel")
-    model.evaluate()
-    Engine.init
-    model.asInstanceOf[Graph[Float]].saveGraphTopology("/home/yihengw/testlog")
-    model.saveTF(Seq(("input", Seq(1, 3, 224, 224))), "/home/yihengw/test.pb")
-  }
-}
