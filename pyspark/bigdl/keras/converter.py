@@ -1475,6 +1475,9 @@ class LayerConverter:
                                maxout_number=self.klayer.nb_feature)
         return blayer
 
+    def create_masking(self):
+        return BLayer.Masking(float(self.klayer.mask_value))
+
     def check_constraint_in_config(self, config):
         if "W_constraint" in config:
             if config["W_constraint"]:

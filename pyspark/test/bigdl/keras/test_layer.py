@@ -638,6 +638,10 @@ class TestLayer(BigDLTestCase):
         layer = MaxoutDense(3, 5)
         self.modelTestSingleLayer(input_data, layer, dump_weights=True)
 
+    def test_masking(self):
+        input_data = np.array([[[0, 1, 2], [-1, 1, 0], [3, 4, 1], [0, 0, 0]]])
+        layer = Masking(-1, input_shape=(4, 3))
+        self.modelTestSingleLayer(input_data, layer)
 
 if __name__ == "__main__":
     pytest.main([__file__])
