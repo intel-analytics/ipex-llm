@@ -222,12 +222,22 @@ class WeightsConverter:
         return [w1, w2, w3, w4]
 
     @staticmethod
-    def convert_maxoutdense(weights):
+    def convert_highway(klayer, weights):
+        if len(weights) == 2:  # if without bias
+            return [weights[1].T, weights[0].T]
+        return [weights[1].T, weights[3], weights[0].T, weights[2]]
+
+    @staticmethod
+    def convert_maxoutdense(klayer, weights):
         k_weights = weights[0]
         b_weights = k_weights[0].T
         for i in range(1, k_weights.shape[0]):
             b_weights = np.concatenate((b_weights, k_weights[i].T))        
         return [b_weights, weights[1]]
+
+    @staticmethod
+    def convert_srelu(klayer, weights):
+        return weights
 
 
 class DefinitionLoader:
@@ -694,6 +704,7 @@ class LayerConverter:
     def create_zeropadding2d(self):
         padding = self.klayer.padding
         dim = 1
+        warnings.warn("Cannot find dim_ordering from json definition. Using the default instead.")
         if self.klayer.dim_ordering == "th":
             dim = 2
         if isinstance(padding, dict):  # dictionary
@@ -713,6 +724,7 @@ class LayerConverter:
     def create_zeropadding3d(self):
         padding = tuple(self.klayer.padding)
         dim = 1
+        warnings.warn("Cannot find dim_ordering from json definition. Using the default instead.")
         if self.klayer.dim_ordering == "th":
             dim = 2
         model = BLayer.Sequential()
@@ -785,7 +797,6 @@ class LayerConverter:
     def generate_simplernn_cell(self, klayer, kclayer, input_shape):  # create a simplernn cell only
         self.__check_recurrent_parameters(klayer)
         config = kclayer["config"]
-        self.check_constraint_in_config(config)
         activation = get_activation_by_name(config["activation"],
                                             "%s_%s" % (config["name"], config["activation"]))
         rnn = BLayer.RnnCell(input_size=int(input_shape[2]),
@@ -807,7 +818,6 @@ class LayerConverter:
     def generate_lstm_cell(self, klayer, kclayer, input_shape):  # create a lstm cell only
         self.__check_recurrent_parameters(klayer)
         config = kclayer["config"]
-        self.check_constraint_in_config(config)
         activation = get_activation_by_name(config["activation"],
                                             "%s_%s" % (config["name"], config["activation"]))
         inner_activation = get_activation_by_name(config["inner_activation"],
@@ -832,7 +842,6 @@ class LayerConverter:
     def generate_convlstm2d_cell(self, klayer, kclayer, input_shape):  # create a convlstm2d cell only
         self.__check_recurrent_parameters(klayer)
         config = kclayer["config"]
-        self.check_constraint_in_config(config)
         activation = get_activation_by_name(config["activation"],
                                             "%s_%s" % (config["name"], config["activation"]))
         inner_activation = get_activation_by_name(config["inner_activation"],
@@ -876,7 +885,6 @@ class LayerConverter:
     def generate_gru_cell(self, klayer, kclayer, input_shape):  # create a gru cell only
         self.__check_recurrent_parameters(klayer)
         config = kclayer["config"]
-        self.check_constraint_in_config(config)
         activation = get_activation_by_name(config["activation"],
                                             "%s_%s" % (config["name"], config["activation"]))
         inner_activation = get_activation_by_name(config["inner_activation"],
@@ -965,16 +973,6 @@ class LayerConverter:
             return -1, -1
         elif border_mode == "valid":
             return 0, 0
-        else:
-            raise Exception("Unsupported border mode: %s" % border_mode)
-
-    def to_bigdl_1d_padding(self, border_mode, kernel_w):
-        if border_mode == "same":
-            raise Exception("We don't support padding for now")
-            # TODO: support padding
-            # return int((kernel_w -1) / 2)
-        elif border_mode == "valid":
-            return 0
         else:
             raise Exception("Unsupported border mode: %s" % border_mode)
 
@@ -1427,17 +1425,55 @@ class LayerConverter:
             seq.add(BLayer.Squeeze(1, num_input_dims=2))
         return seq
 
-    def check_constraint_in_config(self, config):
-        if "W_constraint" in config:
-            if config["W_constraint"]:
-                raise Exception("W_constraint is not supported for now")
-        if "b_constraint" in config:
-            if config["b_constraint"]:
-                raise Exception("b_constraint is not supported for now")
+    def create_upsampling3d(self):
+        if self.klayer.dim_ordering != "th":
+            raise Exception("Please use th for dim_ordering. %s is not supported for now." % self.klayer.dim_ordering)
+        warnings.warn("Cannot find dim_ordering from json definition. Using the default instead."
+                      "We only support th for now.")
+        return BLayer.UpSampling3D(self.klayer.size)
+
+    def create_gaussiannoise(self):
+        return BLayer.GaussianNoise(float(self.klayer.sigma))
+
+    def create_gaussiandropout(self):
+        return BLayer.GaussianDropout(float(self.klayer.p))
+
+    def create_highway(self):
+        if self.config["activation"] == 'linear':
+            activation = None
+        else:
+            activation = get_activation_by_name(self.config["activation"],
+                                                "%s_%s" % (self.config["name"], self.config["activation"]))
+        blayer = BLayer.Highway(size=self.input_shape[1],
+                                with_bias=self.klayer.bias,
+                                activation=activation,
+                                wRegularizer=self.to_bigdl_reg(self.config["W_regularizer"]),
+                                bRegularizer=self.to_bigdl_reg(self.config["b_regularizer"]))
+        return blayer
+
+    def create_maxoutdense(self):
+        if self.config["W_regularizer"]:
+            raise Exception("W_regularizer is not supported for MaxoutDense")
+        if self.config["b_regularizer"]:
+            raise Exception("b_regularizer is not supported for MaxoutDense")
+        if not self.config["bias"]:
+            raise Exception("Please set bias=True for MaxoutDense")
+        blayer = BLayer.Maxout(input_size=self.input_shape[1],
+                               output_size=self.klayer.output_dim,
+                               maxout_number=self.klayer.nb_feature)
+        return blayer
+
+    def create_masking(self):
+        return BLayer.Masking(float(self.klayer.mask_value))
+
+    def create_srelu(self):
+        warnings.warn("Cannot find shared_axes from json definition. Using shared_axes=None instead.")
+        if self.klayer.shared_axes == [None]:
+            return BLayer.SReLU()
+        else:
+            return BLayer.SReLU(self.klayer.shared_axes)
 
     def combo_parameter_layer(self, blayer, config):
-        self.check_constraint_in_config(config)
-
         blayer.set_name(config["name"])
         if hasattr(blayer, "set_init_method"):
             blayer.set_init_method(self.to_bigdl_init(config["init"]),
@@ -1445,7 +1481,7 @@ class LayerConverter:
         # "linear" means doing nothing
         if config["activation"] != "linear":
             activation = get_activation_by_name(config["activation"],
-                                                  "%s_%s" % (config["name"], config["activation"]))
+                                                "%s_%s" % (config["name"], config["activation"]))
             return self.fuse(blayer, activation)
         else:
             return blayer
