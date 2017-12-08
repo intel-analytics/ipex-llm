@@ -164,11 +164,11 @@ A `Sample` represents one record of your data set, which is comprised of `featur
 
 For example, one image and its category in image classification, one word in word2vec and one sentence and its label in RNN language model are all `Sample`.
 
-Every Sample is actually a set of tensors, and them will be transformed to the input/output of the model. For example, in the case of image classification, a `Sample` has two tensors. One is a 3D tensor representing an image; another is a 1-element tensor representing its category. For the 1-element label, you also can use a `T` instead of tensor.
+Every `Sample` is actually a set of tensors, and them will be transformed to the input/output of the model. For example, in the case of image classification, a `Sample` has two tensors. One is a 3D tensor representing an image; another is a 1-element tensor representing its category. For the 1-element label, you also can use a `T` instead of tensor.
 
 **Scala example:**
 
-The case where feature is one tensor with a 1-element label.
+- The case where feature is one tensor with a 1-element label.
 
 ```scala
 import com.intel.analytics.bigdl.dataset.Sample
@@ -180,23 +180,25 @@ val label = 1f
 val sample = Sample(image, label)
 ```
 
-The case where feature is a few tensors and label is also a few tensors.
+- The case where feature is a few tensors and label is also a few tensors.
 
 ```scala
 import com.intel.analytics.bigdl.dataset.Sample
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.numeric.NumericFloat
 
-val feature = Array(Tensor(2, 2).rand, Tensor(2, 2).rand)
-val label = Array(Tensor(1).fill(1), Tensor(1).fill(-1))
-val sample = Sample(feature, label)
+val features = Array(Tensor(2, 2).rand, Tensor(2, 2).rand)
+val labels = Array(Tensor(1).fill(1), Tensor(1).fill(-1))
+val sample = Sample(features, labels)
 ```
 
 **Python example:**
 
-Note: Please always use `Sample.from_ndarray` to construct `Sample` in Python.
+__Note__: Please always use `Sample.from_ndarray` to construct a `Sample` in Python.
 
-The case where feature is one ndarray with a 1-element label.
+- The case where feature is one tensor with a 1-element label.
+
+After constructing a `Sample` in this case, you can use `Sample.feature` and `Sample.label` to retrieve its feature and label, each as a tensor, respectively.
 
 ```python
 from bigdl.util.common import Sample
@@ -205,18 +207,29 @@ import numpy as np
 image = np.random.rand(3, 32, 32)
 label = np.array(1)
 sample = Sample.from_ndarray(image, label)
+
+# Retrieve feature and label from a Sample
+sample.feature
+sample.label
 ```
 
-The case where feature is a few tensors and label is also a few tensors.
+- The case where feature is a few tensors and label is also a few tensors.
+
+After constructing a `Sample` in this case, you can use `Sample.features` and `Sample.labels` to retrieve its features and labels, each as a list of tensors, respectively.
 
 ```python
 from bigdl.util.common import Sample
 import numpy as np
 
-feature = [np.random.rand(3, 8, 16), np.random.rand(3, 8, 16)]
-label = [np.array(1), np.array(-1)]
-sample = Sample.from_ndarray(feature, label)
+features = [np.random.rand(3, 8, 16), np.random.rand(3, 8, 16)]
+labels = [np.array(1), np.array(-1)]
+sample = Sample.from_ndarray(features, labels)
+
+# Retrieve features and labels from a Sample
+sample.features
+sample.labels
 ```
+Note that essentially `Sample.label` is equivalent to `Sample.labels[0]`. You can choose to use the former if label is only one tensor and use the latter if label is a list of tensors. Similarly, `Sample.feature` is equivalent to `Sample.features[0]`.
 
 ---
 ## **MiniBatch**
