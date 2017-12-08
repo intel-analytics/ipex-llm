@@ -235,6 +235,10 @@ class WeightsConverter:
             b_weights = np.concatenate((b_weights, k_weights[i].T))        
         return [b_weights, weights[1]]
 
+    @staticmethod
+    def convert_srelu(klayer, weights):
+        return weights
+
 
 class DefinitionLoader:
 
@@ -1477,6 +1481,13 @@ class LayerConverter:
 
     def create_masking(self):
         return BLayer.Masking(float(self.klayer.mask_value))
+
+    def create_srelu(self):
+        warnings.warn("Cannot find shared_axes from json definition. Using shared_axes=None instead.")
+        if self.klayer.shared_axes == [None]:
+            return BLayer.SReLU()
+        else:
+            return BLayer.SReLU(self.klayer.shared_axes)
 
     def check_constraint_in_config(self, config):
         if "W_constraint" in config:

@@ -3276,8 +3276,8 @@ class SReLU(Layer):
         super(SReLU, self).__init__(None, bigdl_type,
                                     share_axes)
 
-    def set_init_method(self, tLeftInit = None, aLeftInit = None,
-                        tRightInit = None, aRightInit = None):
+    def set_init_method(self, tLeftInit=None, aLeftInit=None,
+                        tRightInit=None, aRightInit=None):
         callBigDlFunc(self.bigdl_type, "setInitMethod", self.value,
                       tLeftInit, aLeftInit, tRightInit, aRightInit)
         return self
