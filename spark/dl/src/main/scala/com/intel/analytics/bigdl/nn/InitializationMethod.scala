@@ -289,6 +289,99 @@ case object Xavier extends InitializationMethod {
 
 }
 
+
+/**
+ * Xavier normal initializer.
+ */
+case object XavierNormal extends InitializationMethod {
+  def init[T](variable: Tensor[T], dataFormat: VariableFormat)
+             (implicit ev: TensorNumeric[T]): Unit = {
+    val shape = variable.size()
+    val fanIn = dataFormat.getFanIn(shape)
+    val fanOut = dataFormat.getFanOut(shape)
+    val stdv = math.sqrt(2.0 / (fanIn + fanOut))
+    variable.randn(0.0, stdv)
+  }
+
+}
+
+/**
+ * He normal initializer.
+ * It draws samples from a truncated normal distribution centered on 0
+ * with stdv = sqrt(2 / fan_in)
+ * where fan_in is the number of input units in the weight tensor.
+ *
+ * References: He et al., http://arxiv.org/abs/1502.01852
+ */
+case object HeNormal extends InitializationMethod {
+  def init[T](variable: Tensor[T], dataFormat: VariableFormat)
+             (implicit ev: TensorNumeric[T]): Unit = {
+    val shape = variable.size()
+    val fanIn = dataFormat.getFanIn(shape)
+    val stdv = math.sqrt(2.0 / fanIn)
+    variable.randn(0.0, stdv)
+  }
+
+}
+
+/**
+ * He uniform variance scaling initializer.
+ * It draws samples from a uniform distribution within [-limit, limit]
+ * where limit is sqrt(6 / fan_in)
+ * where fan_in is the number of input units in the weight tensor.
+ *
+ * References: He et al., http://arxiv.org/abs/1502.01852
+ */
+case object HeUniform extends InitializationMethod {
+  def init[T](variable: Tensor[T], dataFormat: VariableFormat)
+             (implicit ev: TensorNumeric[T]): Unit = {
+    val shape = variable.size()
+    val fanIn = dataFormat.getFanIn(shape)
+    val stdv = math.sqrt(6.0 / fanIn)
+    variable.rand(-stdv, stdv)
+  }
+
+}
+
+/**
+ * LeCun uniform initializer.
+ * It draws samples from a uniform distribution within [-limit, limit]
+ * where limit is sqrt(3 / fan_in)
+ * where fan_in is the number of input units in the weight tensor.
+ *
+ * References: LeCun 98, Efficient Backprop, http://yann.lecun.com/exdb/publis/pdf/lecun-98b.pdf
+ */
+case object LeCunUniform extends InitializationMethod {
+  def init[T](variable: Tensor[T], dataFormat: VariableFormat)
+             (implicit ev: TensorNumeric[T]): Unit = {
+    val shape = variable.size()
+    val fanIn = dataFormat.getFanIn(shape)
+    val stdv = math.sqrt(3.0 / fanIn)
+    variable.rand(-stdv, stdv)
+  }
+
+}
+
+/**
+ * LeCun normal initializer.
+ * It draws samples from a truncated normal distribution centered on 0
+ * where stddev = sqrt(1 / fan_in)
+ * where fan_in is the number of input units in the weight tensor.
+ *
+ * References: LeCun 98, Efficient Backprop, http://yann.lecun.com/exdb/publis/pdf/lecun-98b.pdf
+ */
+case object LeCunNormal extends InitializationMethod {
+  def init[T](variable: Tensor[T], dataFormat: VariableFormat)
+             (implicit ev: TensorNumeric[T]): Unit = {
+    val shape = variable.size()
+    val fanIn = dataFormat.getFanIn(shape)
+    val stdv = math.sqrt(1.0 / fanIn)
+    variable.randn(0.0, stdv)
+  }
+
+}
+
+
 /**
  * A Filler based on the paper [He, Zhang, Ren and Sun 2015]: Specifically
  * accounts for ReLU nonlinearities.
