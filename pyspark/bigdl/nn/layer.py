@@ -51,6 +51,10 @@ class Node(JavaValue):
     def element(self):
         return Layer.of(self.value.element())
 
+    def pre_nodes(self):
+        jnodes = callBigDlFunc(self.bigdl_type, "getPreNodes", self.value)
+        return [Node.of(jnode.value()) for jnode in jnodes]
+
 
 class Layer(JavaValue):
     """
@@ -257,6 +261,14 @@ class Layer(JavaValue):
 
         return dict((layer_name, to_ndarray(params)) for layer_name, params in
                 name_to_params.items())
+
+    def forwardNodes(self):
+        """
+        Get nodes in the forwarding path
+        """
+        jnodes = callBigDlFunc(self.bigdl_type,
+                                       "getForwardNodesFromGraph", self.value)
+        return [Node.of(jnode.value()) for jnode in jnodes]
 
     def evaluate(self, *args):
         """
@@ -595,11 +607,17 @@ class Container(Layer):
 
     @property
     def layers(self):
+        """
+        Get layers or sub-containers at the first level of the current Container
+        """
         jlayers = callBigDlFunc(self.bigdl_type, "getContainerModules" , self)
         layers = [Layer.of(jlayer) for jlayer in jlayers]
         return layers
 
     def flattened_layers(self, include_container=False):
+        """
+        Get layers or sub-containers recursively
+        """
         jlayers = callBigDlFunc(self.bigdl_type, "getFlattenModules", self, include_container)
         layers = [Layer.of(jlayer) for jlayer in jlayers]
         return layers

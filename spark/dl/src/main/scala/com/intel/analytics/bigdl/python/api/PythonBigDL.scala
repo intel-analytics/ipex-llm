@@ -35,7 +35,7 @@ import java.lang.{Integer, Boolean => JBoolean}
 import java.nio.ByteOrder
 import java.util
 
-import com.intel.analytics.bigdl.nn.Graph._
+import com.intel.analytics.bigdl.nn.Graph.{ModuleNode, _}
 import com.intel.analytics.bigdl.nn.tf.{Const, Fill, Shape, SplitAndSelect}
 import com.intel.analytics.bigdl.transform.vision.image._
 import com.intel.analytics.bigdl.transform.vision.image.augmentation._
@@ -80,6 +80,8 @@ case class JActivity(value: Activity)
  */
 
 case class EvaluatedResult(val result: Float, totalNum: Int, method: String)
+
+class JNode(val value: ModuleNode[Float])
 
 object PythonBigDL {
 
@@ -2291,6 +2293,16 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
 
   def findGraphNode(model: Graph[T], name: String): ModuleNode[T] = {
     model.node(name)
+  }
+
+  def getPreNodes(node: ModuleNode[T]): JList[JNode] = {
+    return node.prevNodes.map(n => new JNode(n.asInstanceOf[ModuleNode[Float]])).toList.asJava
+  }
+
+  def getForwardNodesFromGraph(model: Graph[T]):
+  JList[JNode] = {
+    return model.getForwardExecutions.map{n =>
+      new JNode(n.asInstanceOf[ModuleNode[Float]])}.toList.asJava
   }
 
   def getContainerModules(module: Container[Activity, Activity, T])
