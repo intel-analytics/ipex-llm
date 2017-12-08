@@ -59,15 +59,15 @@ def get_python_classes(nn_root):
 scala_layers = get_scala_classes(scala_nn_root)
 python_layers = get_python_classes(python_nn_root)
 
-print "scala_layers: {0}, {1}".format(len(scala_layers), scala_layers)
+print("scala_layers: {0}, {1}".format(len(scala_layers), scala_layers))
 print("\n")
-print "python_layers: {0}, {1}".format(len(python_layers), python_layers)
+print("python_layers: {0}, {1}".format(len(python_layers), python_layers))
 
-print "In scala, not in python: ",
+print("In scala, not in python: "),
 diff_count = 0
 for name in scala_layers:
     if name not in python_layers and scala_to_python[name] not in python_layers:
-        print name,
+        print(name),
         diff_count += 1
 
 if diff_count > 0:

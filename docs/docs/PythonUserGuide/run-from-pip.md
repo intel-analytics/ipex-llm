@@ -4,7 +4,8 @@
 
 ## **Use an Interactive Shell**
  * Type `python` in the command line to start a REPL
- * __NOTE__: Only __Python 2.7__ and __Python 3.5__ are supported for now.
+ * Only __Python 2.7__, __Python 3.5__ and __Python 3.6__ are supported for now.
+ * Note that __Python 3.6__ is only compatible with Spark 1.6.4, 2.0.3, 2.1.1 and 2.2.0. See [this issue](https://issues.apache.org/jira/browse/SPARK-19019) for more discussion.
 
 ## **Use Jupyter Notebook**
  * Just start jupyter notebook as you normally do, e.g.
