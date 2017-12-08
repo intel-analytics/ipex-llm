@@ -22,11 +22,13 @@ if sys.version >= '3':
     long = int
     unicode = str
 
+
 class InitializationMethod(JavaValue):
     """
     Initialization method to initialize bias and weight.
     The init method will be called in Module.reset()
     """
+
 
 class Zeros(InitializationMethod):
     """
@@ -35,12 +37,14 @@ class Zeros(InitializationMethod):
     def __init__(self, bigdl_type="float"):
         JavaValue.__init__(self, None, bigdl_type)
 
+
 class Ones(InitializationMethod):
     """
     Initializer that generates tensors with ones.
     """
     def __init__(self, bigdl_type="float"):
         JavaValue.__init__(self, None, bigdl_type)
+
 
 class RandomUniform(InitializationMethod):
     """
@@ -57,6 +61,7 @@ class RandomUniform(InitializationMethod):
         else:
             JavaValue.__init__(self, None, bigdl_type)
 
+
 class RandomNormal(InitializationMethod):
     """
      Initializer that generates tensors with a normal distribution.
@@ -66,6 +71,7 @@ class RandomNormal(InitializationMethod):
         stdv = stdv + 0.0
         JavaValue.__init__(self, None, bigdl_type, mean, stdv)
 
+
 class ConstInitMethod(InitializationMethod):
     """
     Initializer that generates tensors with certain constant double.
@@ -74,12 +80,54 @@ class ConstInitMethod(InitializationMethod):
         value = value + 0.0
         JavaValue.__init__(self, None, bigdl_type, value)
 
+
 class Xavier(InitializationMethod):
     """
     Xavier Initializer. See http://jmlr.org/proceedings/papers/v9/glorot10a/glorot10a.pdf
     """
     def __init__(self, bigdl_type="float"):
         JavaValue.__init__(self, None, bigdl_type)
+
+
+class XavierNormal(InitializationMethod):
+    """
+    Xavier Normal Initializer.
+    """
+    def __init__(self, bigdl_type="float"):
+        JavaValue.__init__(self, None, bigdl_type)
+
+
+class HeNormal(InitializationMethod):
+    """
+    He Normal Initializer. See http://arxiv.org/abs/1502.01852
+    """
+    def __init__(self, bigdl_type="float"):
+        JavaValue.__init__(self, None, bigdl_type)
+
+
+class HeUniform(InitializationMethod):
+    """
+    He Uniform Initializer. See http://arxiv.org/abs/1502.01852
+    """
+    def __init__(self, bigdl_type="float"):
+        JavaValue.__init__(self, None, bigdl_type)
+
+
+class LeCunUniform(InitializationMethod):
+    """
+    LeCun Uniform Initializer. See http://yann.lecun.com/exdb/publis/pdf/lecun-98b.pdf
+    """
+    def __init__(self, bigdl_type="float"):
+        JavaValue.__init__(self, None, bigdl_type)
+
+
+class LeCunNormal(InitializationMethod):
+    """
+    LeCun Normal Initializer. See http://yann.lecun.com/exdb/publis/pdf/lecun-98b.pdf
+    """
+    def __init__(self, bigdl_type="float"):
+        JavaValue.__init__(self, None, bigdl_type)
+
 
 class MsraFiller(InitializationMethod):
     """
@@ -88,6 +136,7 @@ class MsraFiller(InitializationMethod):
     """
     def __init__(self, varianceNormAverage=True, bigdl_type="float"):
         JavaValue.__init__(self, None, bigdl_type, varianceNormAverage)
+
 
 class BilinearFiller(InitializationMethod):
     """
