@@ -190,6 +190,7 @@ object TensorflowSaver {
     getNameFromObj(SpatialBatchNormalization.getClass.getName) -> BatchNorm2DToTF,
     getNameFromObj(Input.getClass.getName) -> InputToTF,
     getNameFromObj(Sigmoid.getClass.getName) -> SigmoidToTF,
+    getNameFromObj(Scale.getClass.getName) -> ScaleToTF,
     getNameFromObj(SpatialCrossMapLRN.getClass.getName) -> LRNToTF
   )
 

@@ -171,6 +171,12 @@ class TensorflowSaverSpec extends TensorflowSpecHelper {
     test(layer, input, "/concat/output") should be(true)
   }
 
+  "Scale" should "be correctly saved" in {
+    val layer = Scale[Float](Array(10))
+    val input = Tensor[Float](4, 10)
+    test(layer, input, "/add/add") should be(true)
+  }
+
   "TemporalConvolution" should "be correctly saved" in {
     val layer = TemporalConvolution(3, 5, 2, 2)
     val input = Tensor[Float](4, 16, 3).rand()

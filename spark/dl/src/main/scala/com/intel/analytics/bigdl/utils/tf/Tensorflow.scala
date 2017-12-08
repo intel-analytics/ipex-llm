@@ -676,8 +676,8 @@ object Tensorflow {
 
 object Test {
   def main(args: Array[String]): Unit = {
-    val model = Module.loadCaffeModel[Float]("/home/yihengw/model_zoo/mobilenet/deploy.prototxt",
-        "/home/yihengw/model_zoo/mobilenet/mobilenet.caffemodel")
+    val model = Module.loadCaffeModel[Float]("/home/yihengw/model_zoo/densenet/deploy161.prototxt",
+        "/home/yihengw/model_zoo/densenet/DenseNet_161.caffemodel")
     model.evaluate()
     Engine.init
     model.asInstanceOf[Graph[Float]].saveGraphTopology("/home/yihengw/testlog")

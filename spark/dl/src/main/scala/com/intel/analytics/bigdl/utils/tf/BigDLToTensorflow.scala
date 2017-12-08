@@ -333,6 +333,18 @@ object DropoutToTF extends BigDLToTensorflow {
   }
 }
 
+object ScaleToTF extends BigDLToTensorflow {
+  override def toTFDef(module: AbstractModule[_, _, _], inputs: Seq[NodeDef],
+    byteOrder: ByteOrder): Seq[NodeDef] = {
+    val layer = module.asInstanceOf[Scale[_]]
+    val weight = const(layer.cmul.weight, layer.getName() + "/mul/weight", ByteOrder.LITTLE_ENDIAN)
+    val mulNode = multiply(weight, inputs(0), layer.getName() + "/mul/mul")
+    val bias = const(layer.cadd.bias, layer.getName() + "/add/bias", ByteOrder.LITTLE_ENDIAN)
+    val output = add(mulNode, bias, layer.getName() + "/add/add")
+    Seq(output, bias, mulNode, weight)
+  }
+}
+
 object CAddTableToTF extends BigDLToTensorflow {
   override def toTFDef(module: AbstractModule[_, _, _], inputs: Seq[NodeDef],
                        byteOrder: ByteOrder): Seq[NodeDef] = {
