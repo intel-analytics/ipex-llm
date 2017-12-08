@@ -194,7 +194,7 @@ val sample = Sample(features, labels)
 
 **Python example:**
 
-Note: Please always use `Sample.from_ndarray` to construct a `Sample` in Python.
+__Note__: Please always use `Sample.from_ndarray` to construct a `Sample` in Python.
 
 - The case where feature is one tensor with a 1-element label.
 
@@ -225,7 +225,7 @@ features = [np.random.rand(3, 8, 16), np.random.rand(3, 8, 16)]
 labels = [np.array(1), np.array(-1)]
 sample = Sample.from_ndarray(features, labels)
 
-# Extract feature and label from a Sample
+# Retrieve features and labels from a Sample
 sample.features
 sample.labels
 ```
