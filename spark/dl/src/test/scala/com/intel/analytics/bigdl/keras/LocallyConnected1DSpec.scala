@@ -58,7 +58,7 @@ class LocallyConnected1DSpec extends KerasBaseSpec {
         |output_tensor = LocallyConnected1D(2,3,subsample_length=1,input_shape=(6,2))(input_tensor)
         |model = Model(input=input_tensor, output=output_tensor)
       """.stripMargin
-    val locallyConnected1d = LocallyConnected1D[Float](6, 2, outputFrameSize = 2, kernelW = 3, 1)
+    val locallyConnected1d = LocallyConnected1D[Float](6, 2, outputFrameSize = 2, kernelW = 3, strideW = 1)
 
 
     val wc = (data: Array[Tensor[Float]]) => {
@@ -92,19 +92,19 @@ class LocallyConnected1DSpec extends KerasBaseSpec {
 
   "LocallyConnected1D reshape" should "be ok" in {
 
-    val locallyConnected1d = LocallyConnected1D[Float](6, 1, 3, 3)
+    val locallyConnected1d = LocallyConnected1D[Float](6, 2, outputFrameSize = 2, kernelW = 3, strideW = 1)
 
     val d1l = 2
     val d2l = 3
 
     val _input = Tensor[Float](d1l, d2l)
-    val _output = Tensor[Float](1,d1l,d2l)
+    val _output = Tensor[Float](1, d1l, d2l)
 
     for (i <- 0 to d1l * d2l - 1) {
       val d1 = i / d2l + 1
       val d2 = i % d2l + 1
       _input.setValue(d1, d2, i)
-      _output.setValue(1,d1,d2,i)
+      _output.setValue(1, d1, d2, i)
     }
 
 
@@ -116,8 +116,8 @@ class LocallyConnected1DSpec extends KerasBaseSpec {
     input.size() should be(size)
     _input.storage().map(x => x.toInt).toArray should be(input.storage().map(x => x.toInt).toArray)
 
-    output.size() should be(Array(d1l,d2l))
-    _output.storage().map(x=> x.toInt).toArray should be(output.storage().map(x=> x.toInt).toArray)
+    output.size() should be(Array(d1l, d2l))
+    _output.storage().map(x => x.toInt).toArray should be(output.storage().map(x => x.toInt).toArray)
   }
 
 }
