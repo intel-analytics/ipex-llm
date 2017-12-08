@@ -222,7 +222,13 @@ class WeightsConverter:
         return [w1, w2, w3, w4]
 
     @staticmethod
-    def convert_maxoutdense(weights):
+    def convert_highway(klayer, weights):
+        if len(weights) == 2:  # if without bias
+            return [weights[1].T, weights[0].T]
+        return [weights[1].T, weights[3], weights[0].T, weights[2]]
+
+    @staticmethod
+    def convert_maxoutdense(klayer, weights):
         k_weights = weights[0]
         b_weights = k_weights[0].T
         for i in range(1, k_weights.shape[0]):
@@ -694,6 +700,7 @@ class LayerConverter:
     def create_zeropadding2d(self):
         padding = self.klayer.padding
         dim = 1
+        warnings.warn("Cannot find dim_ordering from json definition. Using the default instead.")
         if self.klayer.dim_ordering == "th":
             dim = 2
         if isinstance(padding, dict):  # dictionary
@@ -713,6 +720,7 @@ class LayerConverter:
     def create_zeropadding3d(self):
         padding = tuple(self.klayer.padding)
         dim = 1
+        warnings.warn("Cannot find dim_ordering from json definition. Using the default instead.")
         if self.klayer.dim_ordering == "th":
             dim = 2
         model = BLayer.Sequential()
@@ -1427,6 +1435,32 @@ class LayerConverter:
             seq.add(BLayer.Squeeze(1, num_input_dims=2))
         return seq
 
+    def create_upsampling3d(self):
+        if self.klayer.dim_ordering != "th":
+            raise Exception("Please use th for dim_ordering. %s is not supported for now." % self.klayer.dim_ordering)
+        warnings.warn("Cannot find dim_ordering from json definition. Using the default instead."
+                      "We only support th for now.")
+        return BLayer.UpSampling3D(self.klayer.size)
+
+    def create_gaussiannoise(self):
+        return BLayer.GaussianNoise(float(self.klayer.sigma))
+
+    def create_gaussiandropout(self):
+        return BLayer.GaussianDropout(float(self.klayer.p))
+
+    def create_highway(self):
+        if self.config["activation"] == 'linear':
+            activation = None
+        else:
+            activation = get_activation_by_name(self.config["activation"],
+                                                "%s_%s" % (self.config["name"], self.config["activation"]))
+        blayer = BLayer.Highway(size=self.input_shape[1],
+                                with_bias=self.klayer.bias,
+                                activation=activation,
+                                wRegularizer=self.to_bigdl_reg(self.config["W_regularizer"]),
+                                bRegularizer=self.to_bigdl_reg(self.config["b_regularizer"]))
+        return blayer
+
     def check_constraint_in_config(self, config):
         if "W_constraint" in config:
             if config["W_constraint"]:
@@ -1445,7 +1479,7 @@ class LayerConverter:
         # "linear" means doing nothing
         if config["activation"] != "linear":
             activation = get_activation_by_name(config["activation"],
-                                                  "%s_%s" % (config["name"], config["activation"]))
+                                                "%s_%s" % (config["name"], config["activation"]))
             return self.fuse(blayer, activation)
         else:
             return blayer

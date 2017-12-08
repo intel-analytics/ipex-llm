@@ -1890,13 +1890,17 @@ model.set_states(states)
 
 **Scala:**
 ```scala
-val layer = Highway(size: Int, withBias: Boolean, activation: String,
-                        wRegularizer: Regularizer[T] = null,
-                        bRegularizer: Regularizer[T] = null)
+val layer = Highway(size, withBias = true,
+                    activation = null,
+                    wRegularizer = null,
+                    bRegularizer = null)
 ```
 **Python:**
 ```python
-layer = Highway(size, with_bias, activation, wRegularizer, bRegularizer)
+layer = Highway(size, with_bias=True,
+                activation=None,
+                wRegularizer=None,
+                bRegularizer=None)
 ```
 
 This layer is Densely connected highway network.
@@ -1908,7 +1912,7 @@ import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
 
-val module = Highway(2, activation = "tanh")
+val module = Highway(2, activation = Tanh())
 
 val input = Tensor(3, 2).randn()
 println(input)
@@ -1935,7 +1939,7 @@ import numpy as np
 input = np.random.rand(3, 2)
 print "input is :",input
 
-m = Highway(2, activation = "tanh")
+m = Highway(2, activation=Tanh())
 out = m.forward(input)
 print "output is :",out
 ```

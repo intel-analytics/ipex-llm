@@ -4742,14 +4742,14 @@ class Highway(Layer):
 
     :param size input size
     :param with_bias whether to include a bias
-    :param activation name of activation function to use
+    :param activation activation function
     :param wRegularizer: instance of [[Regularizer]](eg. L1 or L2 regularization), applied to the input weights matrices.
     :param bRegularizer: instance of [[Regularizer]]applied to the bias.
 
     >>> highway = Highway(2)
     creating: createHighway
     """
-    def __init__(self, size, with_bias=True, activation = None, wRegularizer=None, bRegularizer=None, bigdl_type="float"):
+    def __init__(self, size, with_bias=True, activation=None, wRegularizer=None, bRegularizer=None, bigdl_type="float"):
         super(Highway, self).__init__(None, bigdl_type, size, with_bias, activation, wRegularizer, bRegularizer)
 
 class UpSampling3D(Layer):

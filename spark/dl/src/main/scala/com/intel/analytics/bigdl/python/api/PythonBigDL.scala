@@ -2186,7 +2186,8 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     MultiRNNCell(cells.asScala.toArray)
   }
 
-  def createHighway(size: Int, withBias: Boolean, activation: String,
+  def createHighway(size: Int, withBias: Boolean,
+    activation: TensorModule[T] = null,
     wRegularizer: Regularizer[T] = null,
     bRegularizer: Regularizer[T] = null): Graph[T] = {
     Highway(size, withBias, activation, wRegularizer, bRegularizer)
