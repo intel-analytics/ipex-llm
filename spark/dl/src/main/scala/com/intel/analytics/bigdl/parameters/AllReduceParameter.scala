@@ -291,19 +291,6 @@ class AllReduceParameter[T: ClassTag](id: Long, partitionNum: Int, size: Int) ex
    * Weights are placed locally, then pulled when needed by other partitions.
    */
   def sendWeightPartition(): Unit = {
-    //    val blockId = getWeightBlockId(partitionId)
-    //    val weightsId = getWeightPartitionId()
-    //    require(weightPartition != null,
-    // "Cannot send the weights for this partition until they have" +
-    //      " been updated by the optimizer!")
-    //    BlockManagerWrapper.removeBlock(blockId)
-    //    BlockManagerWrapper.unlock(weightsId)
-    //    BlockManagerWrapper.removeBlock(weightsId)
-    //    BlockManagerWrapper.putSingle(weightsId,
-    //      weightPartition, StorageLevel.MEMORY_AND_DISK, tellMaster = false)
-//        BlockManagerWrapper.putBytes(blockId,
-//          SerializerInstance.serialize(weightPartition).bytes(), StorageLevel.MEMORY_ONLY_SER)
-
     val blockId = getWeightBlockId(partitionId)
     val localBuffer = BlockManagerWrapper.getLocalBytes(blockId).getOrElse {
       throw new RuntimeException(s"Didn't find weight block $blockId in the block " +

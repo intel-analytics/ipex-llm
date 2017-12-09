@@ -361,8 +361,8 @@ object DistriOptimizer {
           driverState[Int]("neval"), wallClockTime)
         logger.info(s"${_header} Trained ${recordsNum.value} records in ${(end - start) / 1e9} " +
           s"seconds. Throughput is ${driverState("Throughput")} records/second. Loss is ${
-            driverState("Loss")}. l2norm: $l2Norm. ${optimMethod.getHyperParameter()}")
-        logger.info("\n" + metrics.summary())
+            driverState("Loss")}. ${optimMethod.getHyperParameter()}")
+        logger.debug("\n" + metrics.summary())
         logger.debug("Dropped modules: " + (driverSubModelNum - numFinishedModelUpdates))
         lossArray = new Array[Double](_subModelNumber)
 
