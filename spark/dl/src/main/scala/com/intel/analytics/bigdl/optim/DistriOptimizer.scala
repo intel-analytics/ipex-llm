@@ -298,7 +298,7 @@ object DistriOptimizer {
         numFinishedModelUpdates >= driverSubModelNum * (1.0 - maxDropPercentage)) {
         // enough records were processed for this batch, so update the model
         val value = lossSum.value / numFinishedModelUpdates
-        
+
         var l2Norm = 0.0f
         var scale = ev.fromType(numFinishedModelUpdates)
         if (normClippingEnable) {
@@ -314,7 +314,7 @@ object DistriOptimizer {
             scale = ev.fromType[Double]((l2Norm * numFinishedModelUpdates) / normValueClip)
           }
         }
-        
+
         models.mapPartitions { modelIter =>
           val modelCache = modelIter.next()
           if (!normClippingEnable) {

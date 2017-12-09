@@ -293,7 +293,8 @@ class AllReduceParameter[T: ClassTag](id: Long, partitionNum: Int, size: Int) ex
   def sendWeightPartition(): Unit = {
     //    val blockId = getWeightBlockId(partitionId)
     //    val weightsId = getWeightPartitionId()
-    //    require(weightPartition != null, "Cannot send the weights for this partition until they have" +
+    //    require(weightPartition != null,
+    // "Cannot send the weights for this partition until they have" +
     //      " been updated by the optimizer!")
     //    BlockManagerWrapper.removeBlock(blockId)
     //    BlockManagerWrapper.unlock(weightsId)

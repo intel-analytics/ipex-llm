@@ -690,6 +690,25 @@ class Optimizer(JavaValue):
         callBigDlFunc(self.bigdl_type, "setCheckPoint", self.value,
                       checkpoint_trigger, checkpoint_path, isOverWrite)
 
+    def set_constant_clipping(self, min_value, max_value):
+        """
+        Configure constant clipping settings.
+
+
+        :param min_value: the minimum value to clip by
+        :param max_value: the maxmimum value to clip by
+        """
+        callBigDlFunc(self.bigdl_type, "setConstantClip", self.value, min_value, max_value)
+
+    def set_l2norm_clipping(self, clip_norm):
+        """
+        Configure L2 norm clipping settings.
+    
+    
+        :param clip_norm: gradient L2-Norm threshold        
+        """
+        callBigDlFunc(self.bigdl_type, "setL2NormClip", self.value, clip_norm)
+
     # return a module
     def optimize(self):
         """
