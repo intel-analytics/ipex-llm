@@ -36,8 +36,8 @@ class KullbackLeiblerDivergenceCriterion[T: ClassTag]
   private val epsilon: T = ev.fromType(1e-7)
   private val upperlimit = ev.fromType(1.0)
 
-  @transient val bufferInput = Tensor[T]()
-  @transient val bufferTarget = Tensor[T]()
+  @transient var bufferInput: Tensor[T] = null
+  @transient var bufferTarget: Tensor[T] = null
 
   /**
    * It calculates:
@@ -46,6 +46,8 @@ class KullbackLeiblerDivergenceCriterion[T: ClassTag]
    * and output K.sum(y_true * K.log(y_true / y_pred), axis=-1)
    */
   override def updateOutput(input: Tensor[T], target : Tensor[T]): T = {
+    if (bufferInput == null) bufferInput = Tensor[T]()
+    if (bufferTarget == null) bufferTarget = Tensor[T]()
     require(input.isSameSizeAs(target),
       s"Input should have the same size as target. input size: (${input.size().mkString(", ")});" +
         s" target size: (${target.size().mkString(", ")}).")
