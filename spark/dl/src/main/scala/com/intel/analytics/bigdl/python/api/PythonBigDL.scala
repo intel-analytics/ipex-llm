@@ -1728,12 +1728,14 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     new JavaRDD[JTensor](listRDD)
   }
 
-  def modelPredictImage(model: AbstractModule[Activity, Activity, T], imageFrame: ImageFrame,
+  def modelPredictImage(model: AbstractModule[Activity, Activity, T],
+    imageFrame: ImageFrame,
     featLayerName: String,
     shareBuffer: Boolean,
-    batchPerPartition: Int)
+    batchPerPartition: Int,
+    predictKey: String)
   : DistributedImageFrame = {
-    model.predictImage(imageFrame, featLayerName, shareBuffer, batchPerPartition)
+    model.predictImage(imageFrame, featLayerName, shareBuffer, batchPerPartition, predictKey)
   }
 
   def evaluate(module: AbstractModule[Activity, Activity, T]):
@@ -2552,8 +2554,8 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
 
 
   def distributedImageFrameToPredict(imageFrame: DistributedImageFrame, key: String)
-  : JavaRDD[(String, JTensor)] = {
-    imageFrame.rdd.map(x => (x.uri(), toJTensor(x[Tensor[T]](key))))
+  : JavaRDD[JList[Any]] = {
+    imageFrame.rdd.map(x => List[Any](x.uri(), toJTensor(x[Tensor[T]](key))).asJava)
   }
 
   def localImageFrameToPredict(imageFrame: LocalImageFrame, key: String)
@@ -2600,8 +2602,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     outKey: String = ImageFeature.floats): MatToFloats =
     new MatToFloats(validHeight, validWidth, validChannels, outKey)
 
-  def createMatToTensor(toRGB: Boolean = false, floatKey: String = ImageFeature.floats,
-  tensorKey: String = ImageFeature.imageTensor)
+  def createMatToTensor(toRGB: Boolean = false, tensorKey: String = ImageFeature.imageTensor)
   : MatToTensor[T] = new MatToTensor[T](toRGB, tensorKey)
 
   def isLocal(imageFrame: ImageFrame): Boolean = imageFrame.isLocal()
@@ -2610,7 +2611,8 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
 
   def createImageFrameToSample(inputKeys: JList[String],
     targetKeys: JList[String], sampleKey: String): ImageFrameToSample[T] = {
-    ImageFrameToSample[T](inputKeys.asScala.toArray, targetKeys.asScala.toArray, sampleKey)
+    val targets = if (targetKeys == null) null else targetKeys.asScala.toArray
+    ImageFrameToSample[T](inputKeys.asScala.toArray, targets, sampleKey)
   }
 }
 

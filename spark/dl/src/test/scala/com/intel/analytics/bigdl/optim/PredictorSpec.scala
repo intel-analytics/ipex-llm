@@ -19,6 +19,7 @@ package com.intel.analytics.bigdl.optim
 import com.intel.analytics.bigdl.dataset.Sample
 import com.intel.analytics.bigdl.models.inception.Inception_v1_NoAuxClassifier
 import com.intel.analytics.bigdl.models.lenet.LeNet5
+import com.intel.analytics.bigdl.nn.{Sequential, SpatialConvolution, Tanh}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.transform.vision.image._
 import com.intel.analytics.bigdl.transform.vision.image.augmentation.{CenterCrop, ChannelNormalize, Resize}
@@ -122,7 +123,28 @@ class PredictorSpec extends FlatSpec with Matchers with BeforeAndAfter{
       ChannelNormalize(0.485f, 0.456f, 0.406f, 0.229f, 0.224f, 0.225f) ->
       MatToTensor() -> ImageFrameToSample()
     val model = Inception_v1_NoAuxClassifier(classNum = 20)
-    // val predictor = new Predictor(model)
+    val detection = model.predictImage(imageFrame)
+    val feature = detection.rdd.first()
+    println(feature(ImageFeature.predict))
+
+    val imageFeatures = detection.rdd.collect()
+    val prob = imageFeatures.map(x => x[Tensor[Float]](ImageFeature.predict))
+    val data = imageFeatures.map(_[Sample[Float]](ImageFeature.sample))
+    prob(0) should be (model.forward(data(0).feature.reshape(Array(1, 3, 224, 224)))
+      .toTensor[Float].split(1)(0))
+  }
+
+  "model.predictImage with simple model" should "be correct" in {
+    import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+    RNG.setSeed(100)
+    val resource = getClass.getClassLoader.getResource("pascal/")
+    val imageFrame = ImageFrame.read(resource.getFile, sc) ->
+      Resize(256, 256) -> CenterCrop(224, 224) ->
+      ChannelNormalize(0.485f, 0.456f, 0.406f, 0.229f, 0.224f, 0.225f) ->
+      MatToTensor() -> ImageFrameToSample()
+    val model = Sequential()
+    model.add(SpatialConvolution(3, 6, 5, 5))
+    model.add(Tanh())
     val detection = model.predictImage(imageFrame)
     val feature = detection.rdd.first()
     println(feature(ImageFeature.predict))

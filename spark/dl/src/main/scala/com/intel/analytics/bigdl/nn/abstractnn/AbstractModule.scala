@@ -30,7 +30,7 @@ import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.dataset.{LocalDataSet, MiniBatch, Sample}
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.nn.quantized.Quantization
-import com.intel.analytics.bigdl.transform.vision.image.{DistributedImageFrame, FeatureTransformer, ImageFrame}
+import com.intel.analytics.bigdl.transform.vision.image.{DistributedImageFrame, ImageFeature, ImageFrame}
 import com.intel.analytics.bigdl.utils.caffe.CaffePersister
 import com.intel.analytics.bigdl.utils.serializer.ModulePersister
 import com.intel.analytics.bigdl.utils.tf.{TensorflowDataFormat, TensorflowSaver}
@@ -547,18 +547,20 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
   /**
    * model predict images, return imageFrame with predicted tensor
    * @param imageFrame imageFrame that contains images
-   * @param featLayerName if featLayerName is not null, the output of layer that matches
-   *                      featLayerName will be used as predicted output
+   * @param outputLayer if outputLayer is not null, the output of layer that matches
+   *                      outputLayer will be used as predicted output
    * @param shareBuffer whether to share same memory for each batch predict results
    * @param batchPerPartition batch size per partition, default is 4
+   * @param predictKey key to store predicted result
    * @return
    */
   def predictImage(imageFrame: ImageFrame,
-    featLayerName: String = null,
+    outputLayer: String = null,
     shareBuffer: Boolean = false,
-    batchPerPartition: Int = 4): DistributedImageFrame = {
-    Predictor(this).predictImage(imageFrame, featLayerName,
-      shareBuffer, batchPerPartition)
+    batchPerPartition: Int = 4,
+    predictKey: String = ImageFeature.predict): DistributedImageFrame = {
+    Predictor(this).predictImage(imageFrame, outputLayer,
+      shareBuffer, batchPerPartition, predictKey)
   }
 
   /**

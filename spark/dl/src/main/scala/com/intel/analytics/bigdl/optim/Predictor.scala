@@ -84,15 +84,17 @@ class Predictor[T: ClassTag] private[optim](
   /**
    * model predict images, return imageFrame with predicted tensor
    * @param imageFrame imageFrame that contains images
-   * @param featLayerName if featLayerName is not null, the output of layer that matches
-   *                      featLayerName will be used as predicted output
+   * @param outputLayer if outputLayer is not null, the output of layer that matches
+   *                      outputLayer will be used as predicted output
    * @param shareBuffer whether to share same memory for each batch predict results
    * @param batchPerPartition batch size per partition, default is 4
+   * @param predictKey key to store predicted result
    */
   def predictImage(imageFrame: ImageFrame,
-    featLayerName: String = null,
+    outputLayer: String = null,
     shareBuffer: Boolean = false,
-    batchPerPartition: Int = 4): DistributedImageFrame = {
+    batchPerPartition: Int = 4,
+    predictKey: String = ImageFeature.predict): DistributedImageFrame = {
     require(imageFrame.isDistributed(), "please provide a distributed imageframe")
     // share convolution fInput
     SpatialShareConvolution.shareConvolution(model)
@@ -112,10 +114,10 @@ class Predictor[T: ClassTag] private[optim](
         val batch = localToBatch(samples.toIterator).next()
         if (batch != null) {
           localModel.forward(batch.getInput())
-          val result = if (featLayerName == null) {
+          val result = if (outputLayer == null) {
             localModel.output.toTensor[T]
           } else {
-            localModel(featLayerName).get.output.toTensor[T]
+            localModel(outputLayer).get.output.toTensor[T]
           }
           val batchOut = if (result.dim() == 1) {
             Array(result)
@@ -123,7 +125,7 @@ class Predictor[T: ClassTag] private[optim](
             result.split(1)
           }
           validImageFeatures.zip(batchOut).foreach(tuple => {
-            tuple._1(ImageFeature.predict) = tuple._2
+            tuple._1(predictKey) = tuple._2
           })
         }
         imageFeatures

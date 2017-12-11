@@ -164,11 +164,11 @@ class ImageFrame(JavaValue):
         """
         return self.image_frame.get_label()
 
-    def get_predict(self):
+    def get_predict(self, key="predict"):
         """
         get prediction from ImageFrame
         """
-        return self.image_frame.get_predict()
+        return self.image_frame.get_predict(key)
 
 
 class LocalImageFrame(ImageFrame):
@@ -203,12 +203,12 @@ class LocalImageFrame(ImageFrame):
         labels = callBigDlFunc(self.bigdl_type, "localImageFrameToLabelTensor", self.value)
         return map(lambda tensor: tensor.to_ndarray(), labels)
 
-    def get_predict(self):
+    def get_predict(self, key="predict"):
         """
         get prediction list from ImageFrame
         """
-        predicts = callBigDlFunc(self.bigdl_type, "localImageFrameToPredict", self.value)
-        return map(lambda uri, predict: (uri, predict.to_ndarray()), predicts)
+        predicts = callBigDlFunc(self.bigdl_type, "localImageFrameToPredict", self.value, key)
+        return map(lambda (uri, predict): (uri, predict.to_ndarray()), predicts)
 
 
 
@@ -245,12 +245,12 @@ class DistributedImageFrame(ImageFrame):
         tensor_rdd = callBigDlFunc(self.bigdl_type, "distributedImageFrameToLabelTensorRdd", self.value)
         return tensor_rdd.map(lambda tensor: tensor.to_ndarray())
 
-    def get_predict(self):
+    def get_predict(self, key="predict"):
         """
         get prediction rdd from ImageFrame
         """
-        predicts = callBigDlFunc(self.bigdl_type, "distributedImageFrameToPredict", self.value)
-        return predicts.map(lambda uri, predict: (uri, predict.to_ndarray()))
+        predicts = callBigDlFunc(self.bigdl_type, "distributedImageFrameToPredict", self.value, key)
+        return predicts.map(lambda (uri, predict): (uri, predict.to_ndarray()))
 
 
 class HFlip(FeatureTransformer):
@@ -546,7 +546,7 @@ class MatToTensor(FeatureTransformer):
     :param tensor_key key to store transformed tensor
     """
 
-    def __init__(self, to_rgb=False, tensor_key="tensor", bigdl_type="float"):
+    def __init__(self, to_rgb=False, tensor_key="imageTensor", bigdl_type="float"):
         super(MatToTensor, self).__init__(bigdl_type, to_rgb, tensor_key)
 
 class AspectScale(FeatureTransformer):
