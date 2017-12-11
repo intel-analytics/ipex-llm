@@ -230,11 +230,14 @@ object RecurrentDecoder extends ContainerSerializable {
     new RecurrentDecoder[T](outputLength)
   }
 
-  override def loadModule[T: ClassTag](context: DeserializeContext)
-    (implicit ev: TensorNumeric[T]) : ModuleData[T] = {
-    val moduleData = super.loadModule(context)
-    val recurrentDecoder = moduleData.module.asInstanceOf[RecurrentDecoder[T]]
+  override def doLoadModule[T: ClassTag](context: DeserializeContext)
+    (implicit ev: TensorNumeric[T]) : AbstractModule[Activity, Activity, T] = {
+
     val attrMap = context.bigdlModule.getAttrMap
+    // val module = super.doLoadModule(context)
+
+    val seqLen = attrMap.get("seqLength")
+    val recurrentDecoder = RecurrentDecoder[T](seqLen.getInt32Value)
 
     val topologyAttr = attrMap.get("topology")
     recurrentDecoder.topology = DataConverter.
@@ -250,27 +253,33 @@ object RecurrentDecoder extends ContainerSerializable {
     }
     recurrentDecoder.modules.append(recurrentDecoder.topology)
 
-    moduleData
+    recurrentDecoder
   }
 
-  override def serializeModule[T: ClassTag](context: SerializeContext[T])
-    (implicit ev: TensorNumeric[T]) : SerializeResult = {
-    val containerBuilder = (super.serializeModule(context).bigDLModule)
+  override def doSerializeModule[T: ClassTag](context: SerializeContext[T],
+                                              recurrentBuilder : BigDLModule.Builder)
+                                             (implicit ev: TensorNumeric[T]) : Unit = {
 
     val recurrentDecoder = context.moduleData.module.asInstanceOf[RecurrentDecoder[T]]
+
+    val outputLengthBuilder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(context,
+      outputLengthBuilder, recurrentDecoder.seqLength,
+      universe.typeOf[Int])
+    recurrentBuilder.putAttr("seqLength", outputLengthBuilder.build)
 
     val topologyBuilder = AttrValue.newBuilder
     DataConverter.setAttributeValue(context,
       topologyBuilder, recurrentDecoder.topology,
       ModuleSerializer.abstractModuleType)
-    containerBuilder.putAttr("topology", topologyBuilder.build)
+    recurrentBuilder.putAttr("topology", topologyBuilder.build)
 
     val preTopologyBuilder = AttrValue.newBuilder
     DataConverter.setAttributeValue(context,
       preTopologyBuilder, recurrentDecoder.preTopology,
       ModuleSerializer.tensorModuleType)
-    containerBuilder.putAttr("preTopology", topologyBuilder.build)
+    recurrentBuilder.putAttr("preTopology", topologyBuilder.build)
 
-    SerializeResult(containerBuilder, context.storages)
   }
+
 }
