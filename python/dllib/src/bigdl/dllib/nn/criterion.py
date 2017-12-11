@@ -803,6 +803,35 @@ class CosineProximityCriterion(Criterion):
                  bigdl_type="float"):
         super(CosineProximityCriterion, self).__init__(None, bigdl_type)
 
+class MeanAbsolutePercentageCriterion(Criterion):
+
+    '''
+    This method is same as `mean_absolute_percentage_error` loss in keras.
+    It caculates diff = K.abs((y - x) / K.clip(K.abs(y), K.epsilon(), Double.MaxValue))
+    and return 100 * K.mean(diff) as outpout. Here, the x and y can have or not have a batch.
+    >>> error = MeanAbsolutePercentageCriterion()
+    creating: createMeanAbsolutePercentageCriterion
+    '''
+
+    def __init__(self,
+                 bigdl_type="float"):
+        super(MeanAbsolutePercentageCriterion, self).__init__(None, bigdl_type)
+
+class MeanSquaredLogarithmicCriterion(Criterion):
+
+    '''
+    This method is same as `mean_squared_logarithmic_error` loss in keras.
+    It calculates: first_log = K.log(K.clip(y, K.epsilon(),  Double.MaxValue) + 1.)
+    second_log = K.log(K.clip(x, K.epsilon(),  Double.MaxValue) + 1.)
+    and output K.mean(K.square(first_log - second_log)). Here, the x and y can have or not have a batch.
+    >>> error = MeanSquaredLogarithmicCriterion()
+    creating: createMeanSquaredLogarithmicCriterion
+    '''
+
+    def __init__(self,
+                 bigdl_type="float"):
+        super(MeanSquaredLogarithmicCriterion, self).__init__(None, bigdl_type)
+
 def _test():
     import doctest
     from pyspark import SparkContext
