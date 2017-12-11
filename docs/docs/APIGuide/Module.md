@@ -451,7 +451,7 @@ Model.load_caffe(model, defPath, modelPath, match_all = True)
 ```
 
 `model` is pre-defined BigDL model. Similar to `loadCaffeModel`, `defPath` and `modelPath` specify network deploy file and weight file,
-the forth parameter `math_all` specifies if layer definition should be exactly matched between pre-defined `model` and the one from `defPath`
+the 4th parameter `match_all` specifies if layer definition should be exactly matched between pre-defined `model` and the one from `defPath`
 
 **Scala example:**
 ```scala
