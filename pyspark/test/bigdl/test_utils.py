@@ -234,10 +234,10 @@ class BigDLTestCase(TestCase):
         if dump_weights and test_grad_weights:
             weight_converter = WeightsConverter.get_converter(
                 keras_model.layers[1].__class__.__name__)
-            keras_grad_weights = weight_converter(keras_model.layers[1],
-                                                  sess.run(K.gradients(keras_model.output * keras_output,
-                                                                       keras_model.trainable_weights),
-                                                           feed_dict=feed_dict))
+            keras_grad_weights = sess.run(K.gradients(keras_model.output * keras_output,
+                                                      keras_model.trainable_weights),
+                                          feed_dict=feed_dict)
+            keras_grad_weights = weight_converter(keras_model.layers[1], keras_grad_weights)
             bigdl_grad_weights = bigdl_model.get_grad_weights()
             for k in range(0, len(keras_grad_weights)):
                 self.assert_allclose(bigdl_grad_weights[k],

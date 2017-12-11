@@ -184,7 +184,7 @@ class TestLayer(BigDLTestCase):
         input_data = np.random.random_sample([1, 3, 20, 15, 35])
         layer = MaxPooling3D(pool_size=(2, 2, 3), strides=(1, 2, 3), dim_ordering="th",
                              border_mode="valid", input_shape=(3, 20, 15, 35))
-        self.modelTestSingleLayer(input_data, layer)
+        self.modelTestSingleLayer(input_data, layer, rtol=1e-5, atol=1e-5)
 
     def test_maxpooling2d(self):
         input_data = np.random.random_sample([1, 3, 20, 20])
@@ -575,11 +575,11 @@ class TestLayer(BigDLTestCase):
     def test_simplernn(self):
         input_data = np.random.random([3, 4, 5])
         layer = SimpleRNN(5, input_shape=(4, 5), return_sequences=True)
-        self.modelTestSingleLayer(input_data, layer, dump_weights=True)
+        self.modelTestSingleLayer(input_data, layer, dump_weights=True, rtol=1e-5, atol=1e-5)
         layer2 = SimpleRNN(3, input_shape=(4, 5), go_backwards=True)
-        self.modelTestSingleLayer(input_data, layer2, dump_weights=True)
+        self.modelTestSingleLayer(input_data, layer2, dump_weights=True, rtol=1e-5, atol=1e-5)
         layer3 = SimpleRNN(3, input_shape=(4, 5), activation='relu')
-        self.modelTestSingleLayer(input_data, layer3, dump_weights=True)
+        self.modelTestSingleLayer(input_data, layer3, dump_weights=True, rtol=1e-5, atol=1e-5)
 
     def test_lstm(self):
         input_data = np.random.random([3, 4, 5])
@@ -587,7 +587,7 @@ class TestLayer(BigDLTestCase):
         self.modelTestSingleLayer(input_data, layer, dump_weights=True)
         layer2 = LSTM(3, input_shape=(4, 5), go_backwards=True,
                       activation='relu', inner_activation='sigmoid')
-        self.modelTestSingleLayer(input_data, layer2, dump_weights=True)
+        self.modelTestSingleLayer(input_data, layer2, dump_weights=True, rtol=1e-5, atol=1e-5)
 
     def test_convlstm2d(self):
         input_data = np.random.random_sample([4, 8, 40, 40, 32])
