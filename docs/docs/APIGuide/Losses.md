@@ -1987,3 +1987,102 @@ loss = criterion.forward(input, target)
 > loss
 -0.3333333
 ```
+
+## MeanSquaredLogarithmicCriterion ##
+**Scala:**
+```scala
+val criterion = MeanSquaredLogarithmicCriterion()
+```
+**Python:**
+```python
+criterion = MeanSquaredLogarithmicCriterion()
+```
+
+compute mean squared logarithmic error for input and target
+
+**Scala example:**
+```scala
+import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+import com.intel.analytics.bigdl.nn.MeanSquaredLogarithmicCriterion
+import com.intel.analytics.bigdl.utils.T
+
+val criterion = MeanSquaredLogarithmicCriterion()
+val input = Tensor[Float](2, 3).range(1, 6, 1)
+val target = Tensor[Float](2, 3).range(2, 13, 2)
+val loss = criterion.forward(input, target)
+
+> loss
+loss: Float = 0.30576965
+```
+
+**Python example:**
+```python
+import numpy as np
+from bigdl.nn.criterion import *
+from bigdl.optim.optimizer import *
+from bigdl.util.common import *
+
+criterion = MeanSquaredLogarithmicCriterion()
+
+input = np.arange(1, 7, 1).astype("float32")
+input = input.reshape(2, 3)
+target = np.arange(2, 13, 2).astype("float32")
+target = target.reshape(2, 3)
+
+loss = criterion.forward(input, target)
+
+> loss
+0.30576965
+```
+
+## MeanAbsolutePercentageCriterion ##
+**Scala:**
+```scala
+val criterion = MeanAbsolutePercentageCriterion()
+```
+**Python:**
+```python
+criterion = MeanAbsolutePercentageCriterion()
+```
+
+compute mean absolute percentage error for intput and target
+
+**Scala example:**
+```scala
+import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+import com.intel.analytics.bigdl.nn.MeanAbsolutePercentageCriterion
+import com.intel.analytics.bigdl.utils.T
+
+val criterion = MeanAbsolutePercentageCriterion()
+
+val input = Tensor[Float](2, 3).range(1, 6, 1)
+val target = Tensor[Float](2, 3).range(2, 13, 2)
+val loss = criterion.forward(input, target)
+
+> loss
+loss: Float = 50.0
+```
+
+**Python example:**
+```python
+import numpy as np
+from bigdl.nn.criterion import *
+from bigdl.optim.optimizer import *
+from bigdl.util.common import *
+
+criterion = MeanAbsolutePercentageCriterion()
+
+input = np.arange(1, 7, 1).astype("float32")
+input = input.reshape(2, 3)
+target = np.arange(2, 13, 2).astype("float32")
+target = target.reshape(2, 3)
+
+loss = criterion.forward(input, target)
+
+> loss
+50.0
+```

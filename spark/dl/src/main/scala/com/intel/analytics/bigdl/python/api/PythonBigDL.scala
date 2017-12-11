@@ -2141,6 +2141,14 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     HardSigmoid()
   }
 
+  def createMeanAbsolutePercentageCriterion: MeanAbsolutePercentageCriterion[T] = {
+    MeanAbsolutePercentageCriterion()
+  }
+
+  def createMeanSquaredLogarithmicCriterion: MeanSquaredLogarithmicCriterion[T] = {
+    MeanSquaredLogarithmicCriterion()
+  }
+
   def setInitMethod(layer: Initializable, weightInitMethod: InitializationMethod,
     biasInitMethod: InitializationMethod): layer.type = {
     layer.setInitMethod(weightInitMethod, biasInitMethod)
