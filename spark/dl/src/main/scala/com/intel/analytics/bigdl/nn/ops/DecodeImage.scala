@@ -380,7 +380,7 @@ class DecodeRaw[T: ClassTag](val outType: DataType,
 object DecodeRawSerializer extends ModuleSerializable {
 
   override def doLoadModule[T: ClassTag](context: DeserializeContext)
-                                        (implicit ev: TensorNumeric[T]): AbstractModule[Activity, Activity, T] = {
+    (implicit ev: TensorNumeric[T]): AbstractModule[Activity, Activity, T] = {
     val attrMap = context.bigdlModule.getAttrMap
     // val module = super.doLoadModule(context)
     val outType = attrMap.get("outType").getInt32Value
@@ -389,7 +389,7 @@ object DecodeRawSerializer extends ModuleSerializable {
   }
 
   override def doSerializeModule[T: ClassTag](context: SerializeContext[T],
-                                              bigDLModelBuilder: BigDLModule.Builder)(implicit ev: TensorNumeric[T]): Unit = {
+    bigDLModelBuilder: BigDLModule.Builder)(implicit ev: TensorNumeric[T]): Unit = {
     val decodeImage = context.moduleData.module.asInstanceOf[DecodeRaw[_]]
     val outTypeBuilder = AttrValue.newBuilder
     DataConverter.setAttributeValue(context,

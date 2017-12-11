@@ -67,7 +67,7 @@ private[bigdl] object StrideSlice extends ModuleSerializable {
   }
 
   override def doLoadModule[T: ClassTag](context: DeserializeContext)
-                                        (implicit ev: TensorNumeric[T]) : AbstractModule[Activity, Activity, T] = {
+    (implicit ev: TensorNumeric[T]) : AbstractModule[Activity, Activity, T] = {
 
     val attrMap = context.bigdlModule.getAttrMap
     // val module = super.doLoadModule(context)
