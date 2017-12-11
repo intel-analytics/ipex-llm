@@ -683,10 +683,9 @@ class TestLayer(BigDLTestCase):
         self.modelTestSingleLayer(input_data, layer)
 
     def test_srelu(self):
-        input_data = np.random.random([2, 3, 5])
-        layer = SReLU(input_shape=(3, 5))
-        self._do_modelTestSingleLayer(input_data, layer, dump_weights=True, functional_api=True)
-        # self._do_modelTestSingleLayer(input_data, layer, dump_weights=True, functional_api=False)
+        input_data = np.random.random([2, 3, 4])
+        layer = SReLU(input_shape=(3, 4))
+        self.modelTestSingleLayer(input_data, layer, dump_weights=True, functional_apis=[True])
 
 if __name__ == "__main__":
     pytest.main([__file__])
