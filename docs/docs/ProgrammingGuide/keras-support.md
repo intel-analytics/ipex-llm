@@ -12,6 +12,8 @@ See [here](https://faroit.github.io/keras-docs/1.2.2/getting-started/faq/#how-ca
 
 The API `load_keras` can be used directly to load the Keras model into BigDL.
 
+__Remark__: `tensorflow`, `keras==1.2.2` and `h5py` need to be installed beforehand. You can use `pip` to install them easily.
+
 ```python
 from bigdl.nn.layer import *
 
