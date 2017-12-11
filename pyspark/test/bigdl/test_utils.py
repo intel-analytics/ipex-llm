@@ -202,6 +202,7 @@ class BigDLTestCase(TestCase):
                     keras_output,
                     bigdl_output,
                     dump_weights=True,
+                    test_grad_weights=True,
                     rtol=1e-6,
                     atol=1e-6):
         # compare gradient input
@@ -228,7 +229,7 @@ class BigDLTestCase(TestCase):
                                  atol=atol)
 
         # compare gradient weights if the layer has weights
-        if dump_weights:
+        if dump_weights and test_grad_weights:
             weight_converter = WeightsConverter.get_converter(keras_model.layers[1].__class__.__name__)
             keras_grad_weights = weight_converter(keras_model.layers[1],
                                                   sess.run(K.gradients(keras_model.output * keras_output, keras_model.trainable_weights),
@@ -246,7 +247,8 @@ class BigDLTestCase(TestCase):
                   random_weights=True,
                   dump_weights=False,
                   is_training=False,
-                  test_grad=True,
+                  test_grad_input=True,
+                  test_grad_weights=True,
                   rtol=1e-6,
                   atol=1e-6):
         if random_weights:
@@ -274,13 +276,14 @@ class BigDLTestCase(TestCase):
                              keras_output,
                              rtol=rtol,
                              atol=atol)
-        if test_grad:
+        if test_grad_input:
             self.__test_grad(input_data,
                              keras_model,
                              bigdl_model,
                              keras_output,
                              bigdl_output2,
                              dump_weights,
+                             test_grad_weights,
                              rtol=rtol,
                              atol=atol)
 
@@ -293,7 +296,8 @@ class BigDLTestCase(TestCase):
                                             random_weights=True,
                                             dump_weights=False,
                                             is_training=False,
-                                            test_grad=True,
+                                            test_grad_input=True,
+                                            test_grad_weights=True,
                                             rtol=1e-6,
                                             atol=1e-6):
         for dim_ordering in dim_orderings:
@@ -314,7 +318,8 @@ class BigDLTestCase(TestCase):
                                           random_weights,
                                           dump_weights,
                                           is_training,
-                                          test_grad,
+                                          test_grad_input,
+                                          test_grad_weights,
                                           rtol,
                                           atol)
 
@@ -324,7 +329,8 @@ class BigDLTestCase(TestCase):
                              random_weights=True,
                              dump_weights=False,
                              is_training=False,
-                             test_grad=True,
+                             test_grad_input=True,
+                             test_grad_weights=True,
                              rtol=1e-6,
                              atol=1e-6,
                              functional_apis=[True, False]):
@@ -336,7 +342,8 @@ class BigDLTestCase(TestCase):
                 random_weights=random_weights,
                 dump_weights=dump_weights,
                 is_training=is_training,
-                test_grad=test_grad,
+                test_grad_input=test_grad_input,
+                test_grad_weights=test_grad_weights,
                 rtol=rtol,
                 atol=atol)
 
@@ -347,7 +354,8 @@ class BigDLTestCase(TestCase):
                                  random_weights=True,
                                  dump_weights=False,
                                  is_training=False,
-                                 test_grad=True,
+                                 test_grad_input=True,
+                                 test_grad_weights=True,
                                  rtol=1e-6,
                                  atol=1e-6):
         keras_model = self.__generate_keras_model(functional_api=functional_api,
@@ -358,6 +366,7 @@ class BigDLTestCase(TestCase):
                        random_weights=random_weights,
                        dump_weights=dump_weights,
                        is_training=is_training,
-                       test_grad=test_grad,
+                       test_grad_input=test_grad_input,
+                       test_grad_weights=test_grad_weights,
                        rtol=rtol,
                        atol=atol)

@@ -91,10 +91,10 @@ class TestLayer(BigDLTestCase):
                           W_constraint=None,
                           mask_zero=False,
                           weights=None, dropout=0.)
-        self.modelTestSingleLayer(input_data, layer, dump_weights=True, test_grad=False)
+        self.modelTestSingleLayer(input_data, layer, dump_weights=True, test_grad_input=False)
         # Random input
         input_data2 = np.random.randint(100, size=(10, 128))  # batch: 20, seqlen 128
-        self.modelTestSingleLayer(input_data2, layer, dump_weights=True, test_grad=False)
+        self.modelTestSingleLayer(input_data2, layer, dump_weights=True, test_grad_input=False)
 
         # TODO: add test that exception would be raised if input_lenght == 6
         with pytest.raises(Exception) as excinfo:
@@ -261,7 +261,7 @@ class TestLayer(BigDLTestCase):
     def test_batchnormalization(self):
         input_data = np.random.random_sample([2, 6, 128, 128])
         layer = BatchNormalization(input_shape=(6, 128, 128), axis=1)
-        self.modelTestSingleLayer(input_data, layer, dump_weights=True, test_grad=False)
+        self.modelTestSingleLayer(input_data, layer, dump_weights=True, test_grad_input=False)
 
     def test_flatten(self):
         input_data = np.random.random_sample([1, 2, 3])
@@ -309,6 +309,7 @@ class TestLayer(BigDLTestCase):
                        kmodel,
                        random_weights=False,
                        dump_weights=True,
+                       test_grad_weights=False,
                        is_training=False)
 
     def test_merge_method_cos(self):
@@ -325,6 +326,7 @@ class TestLayer(BigDLTestCase):
                        kmodel,
                        random_weights=False,
                        dump_weights=True,
+                       test_grad_weights=False,
                        is_training=False)
 
     def test_merge_method_concat(self):
@@ -342,6 +344,7 @@ class TestLayer(BigDLTestCase):
                        kmodel,
                        random_weights=False,
                        dump_weights=True,
+                       test_grad_weights=False,
                        is_training=False)
 
     def test_nested_with_combo_bigdl_layer_lstm(self):
@@ -356,7 +359,7 @@ class TestLayer(BigDLTestCase):
         kmodel = Sequential()
         kmodel.add(Merge([branch1, branch2], mode='concat'))
         kmodel.add(Activation('sigmoid'))
-        self.modelTest(input_data, kmodel, dump_weights=True)
+        self.modelTest(input_data, kmodel, dump_weights=True, test_grad_weights=False)
 
     def test_merge_method_mix_concat(self):
         input_data1 = np.random.random_sample([2, 4])
@@ -374,6 +377,7 @@ class TestLayer(BigDLTestCase):
                        kmodel,
                        random_weights=False,
                        dump_weights=True,
+                       test_grad_weights=False,
                        is_training=False)
 
     def test_merge_model_seq_concat(self):
@@ -399,6 +403,7 @@ class TestLayer(BigDLTestCase):
                        kmodel,
                        random_weights=False,
                        dump_weights=True,
+                       test_grad_weights=False,
                        is_training=False)
 
     def test_merge_model_model_concat(self):
@@ -425,6 +430,7 @@ class TestLayer(BigDLTestCase):
                        kmodel,
                        random_weights=False,
                        dump_weights=True,
+                       test_grad_weights=False,
                        is_training=False)
 
     def test_merge_seq_seq_concat(self):
@@ -442,6 +448,7 @@ class TestLayer(BigDLTestCase):
         self.modelTestSingleLayer([input_data1, input_data2],
                                   Merge([branch1, branch2], mode='concat', concat_axis=1),
                                   dump_weights=True,
+                                  test_grad_weights=False,
                                   functional_apis=[False])
 
     def test_merge_concat(self):
@@ -599,7 +606,7 @@ class TestLayer(BigDLTestCase):
                      activation='relu', inner_activation='sigmoid')
         self.modelTestSingleLayer(input_data, layer2, dump_weights=True)
         layer3 = GRU(512, input_shape=(4, 5), go_backwards=True, return_sequences=True)
-        self.modelTestSingleLayer(input_data, layer3, dump_weights=True)
+        self.modelTestSingleLayer(input_data, layer3, dump_weights=True, rtol=1e-5, atol=1e-5)
 
     # TODO: Support share weights training.
     def test_multiple_inputs_share_weights(self):
@@ -676,9 +683,10 @@ class TestLayer(BigDLTestCase):
         self.modelTestSingleLayer(input_data, layer)
 
     def test_srelu(self):
-        input_data = np.random.random_sample([2, 4, 6])
-        layer = SReLU(input_shape=(4, 6))
-        self.modelTestSingleLayer(input_data, layer, dump_weights=True, rtol=1e-5, atol=1e-5)
+        input_data = np.random.random([2, 3, 5])
+        layer = SReLU(input_shape=(3, 5))
+        self._do_modelTestSingleLayer(input_data, layer, dump_weights=True, functional_api=True)
+        # self._do_modelTestSingleLayer(input_data, layer, dump_weights=True, functional_api=False)
 
 if __name__ == "__main__":
     pytest.main([__file__])
