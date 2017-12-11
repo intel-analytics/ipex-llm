@@ -270,7 +270,7 @@ class Layer(JavaValue):
         :param val_rdd: the input data
         :param batch_size: batch size
         :param val_methods: a list of validation methods. i.e: Top1Accuracy,Top5Accuracy and Loss.
-        :return:
+        :return: a list of the metrics result
         """
         if len(args) == 0:
             callBigDlFunc(self.bigdl_type,
