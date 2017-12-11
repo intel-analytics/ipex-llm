@@ -426,9 +426,9 @@ object Engine {
       val coreString = conf.get("spark.executor.cores", null)
       val maxString = conf.get("spark.cores.max", null)
       require(coreString != null, "Engine.init: Can't find executor core number" +
-        ", do you submit with --executor-cores option")
+        ", do you submit with --conf spark.executor.cores option")
       require(maxString != null, "Engine.init: Can't find total core number" +
-        ". Do you submit with --total-executor-cores")
+        ". Do you submit with --conf spark.cores.max option")
       val core = coreString.toInt
       val nodeNum = dynamicAllocationExecutor(conf).getOrElse {
         val total = maxString.toInt
