@@ -15,17 +15,20 @@
  */
 package com.intel.analytics.bigdl.nn.ops
 
-import com.intel.analytics.bigdl.nn.abstractnn.Activity
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor._
 import com.intel.analytics.bigdl.utils.RandomGenerator
+import com.intel.analytics.bigdl.utils.serializer.{DataConverter, DeserializeContext, ModuleSerializable, SerializeContext}
+import serialization.Bigdl.{AttrValue, BigDLModule}
 
 import scala.reflect.ClassTag
+import scala.reflect.runtime.universe
 
 private[bigdl] trait RandomNode
 
 class RandomUniform[T: ClassTag, D: ClassTag](
-  minVal: D, maxVal: D, seed: Option[Int] = None
+  val minVal: Double, val maxVal: Double, val seed: Option[Int] = None
 )(implicit ev: TensorNumeric[T], ev2: TensorNumeric[D])
   extends Operation[Tensor[Int], Tensor[D], T] with RandomNode {
 
@@ -40,8 +43,8 @@ class RandomUniform[T: ClassTag, D: ClassTag](
 
     val shape = input.storage().toArray
     output.resize(shape).rand(
-      ev2.toType[Double](minVal),
-      ev2.toType[Double](maxVal))
+      minVal,
+      maxVal)
 
     output
   }
@@ -52,12 +55,47 @@ class RandomUniform[T: ClassTag, D: ClassTag](
   }
 }
 
-object RandomUniform {
+object RandomUniform extends ModuleSerializable {
   def apply[T: ClassTag, D: ClassTag](
-    minVal: D,
-    maxVal: D,
-    seed: Option[Int] = None)
-    (implicit ev: TensorNumeric[T], ev2: TensorNumeric[D]):
+                                       minVal: Double,
+                                       maxVal: Double,
+                                       seed: Option[Int] = None)
+                                     (implicit ev: TensorNumeric[T], ev2: TensorNumeric[D]):
   Operation[Activity, Activity, T]
-  = ModuleToOperation[T](new RandomUniform(minVal, maxVal, seed))
+  = ModuleToOperation[T](new RandomUniform[T, D](minVal, maxVal, seed))
+
+  override def doSerializeModule[T: ClassTag](context: SerializeContext[T],
+    bigDLModelBuilder: BigDLModule.Builder)(implicit ev: TensorNumeric[T]): Unit = {
+    val randomUniform = context.moduleData.module.asInstanceOf[RandomUniform[T, _]]
+
+    val minValBuilder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(context, minValBuilder, randomUniform.minVal,
+      universe.typeOf[Double])
+    bigDLModelBuilder.putAttr("minVal", minValBuilder.build)
+
+    val maxValBuilder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(context, maxValBuilder, randomUniform.maxVal,
+      universe.typeOf[Double])
+    bigDLModelBuilder.putAttr("maxVal", maxValBuilder.build)
+
+    if (randomUniform.seed.isDefined) {
+      val seedBuilder = AttrValue.newBuilder
+      DataConverter.setAttributeValue(context, seedBuilder, randomUniform.seed.get,
+        universe.typeOf[Int])
+      bigDLModelBuilder.putAttr("seed", seedBuilder.build)
+    }
+  }
+
+  override def doLoadModule[T: ClassTag](context: DeserializeContext)
+    (implicit ev: TensorNumeric[T]): AbstractModule[Activity, Activity, T] = {
+    val attrMap = context.bigdlModule.getAttrMap
+    val minVal = attrMap.get("minVal").getDoubleValue
+    val maxVal = attrMap.get("maxVal").getDoubleValue
+    var seed : Option[Int] = None
+    if (attrMap.containsKey("seed")) {
+      seed = Option[Int](attrMap.get("seed").getInt32Value)
+    }
+    RandomUniform(minVal, maxVal, seed)
+  }
 }
+

@@ -42,8 +42,8 @@ import scala.reflect.ClassTag
  * @tparam T Numeric type. Only support float/double now
  */
 class Assign[T: ClassTag](
-  validateShape: Boolean = true,
-  useLocking: Boolean = true
+  val validateShape: Boolean = true,
+  val useLocking: Boolean = true
 )
   (implicit ev: TensorNumeric[T]) extends Operation[Table, Tensor[_], T] {
 

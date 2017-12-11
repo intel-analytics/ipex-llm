@@ -39,7 +39,7 @@ class Split extends TensorflowOpsLoader {
   }
 }
 
-class SplitLoadTF[T: ClassTag](numSplit: Int)(implicit ev: TensorNumeric[T])
+class SplitLoadTF[T: ClassTag](val numSplit: Int)(implicit ev: TensorNumeric[T])
   extends Adapter[T](Array(1)) {
   override def build(tensorArrays: Array[Tensor[_]]): AbstractModule[Activity, Activity, T] = {
     val dim = tensorArrays(0).asInstanceOf[Tensor[Int]].value() + 1
