@@ -1998,7 +1998,7 @@ val criterion = MeanSquaredLogarithmicCriterion()
 criterion = MeanSquaredLogarithmicCriterion()
 ```
 
-compute mean squared logarithmic error for intput and target
+compute mean squared logarithmic error for input and target
 
 **Scala example:**
 ```scala
@@ -2064,7 +2064,7 @@ val target = Tensor[Float](2, 3).range(2, 13, 2)
 val loss = criterion.forward(input, target)
 
 > loss
-loss: Float = 100.0
+loss: Float = 50.0
 ```
 
 **Python example:**
@@ -2084,5 +2084,5 @@ target = target.reshape(2, 3)
 loss = criterion.forward(input, target)
 
 > loss
-100.0
+50.0
 ```
