@@ -59,7 +59,8 @@ class Mean extends TensorflowOpsLoader {
   }
 }
 
-class MeanLoadTF[T: ClassTag](dataType: String, squeeze: Boolean)(implicit ev: TensorNumeric[T])
+class MeanLoadTF[T: ClassTag](val dataType: String,
+                              val squeeze: Boolean)(implicit ev: TensorNumeric[T])
   extends Adapter[T](Array(2)) {
   override def build(tensorArrays: Array[Tensor[_]]): AbstractModule[Activity, Activity, T] = {
     val dims = tensorArrays(0).asInstanceOf[Tensor[Int]]

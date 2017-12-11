@@ -22,9 +22,9 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import scala.reflect.ClassTag
 
 class TruncatedNormal[T: ClassTag, DataType: ClassTag](
-  mean: DataType = 0.0,
-  stddev: DataType = 1.0,
-  seed: Int = 0
+  val mean: Double = 0.0,
+  val stddev: Double = 1.0,
+  val seed: Int = 0
 )
   (implicit ev: TensorNumeric[T], ev2: TensorNumeric[DataType])
   extends Operation[Tensor[Int], Tensor[DataType], T] {
@@ -44,7 +44,7 @@ class TruncatedNormal[T: ClassTag, DataType: ClassTag](
 
   override def getClassTagNumerics() : (Array[ClassTag[_]], Array[TensorNumeric[_]]) = {
     (Array[ClassTag[_]](scala.reflect.classTag[T], scala.reflect.classTag[DataType]),
-      Array[TensorNumeric[_]](ev))
+      Array[TensorNumeric[_]](ev, ev2))
   }
 }
 
@@ -53,7 +53,8 @@ object TruncatedNormal {
     mean: Double = 0.0,
     stddev: Double = 1.0,
     seed: Int = 0)
-    (implicit ev: TensorNumeric[T]): Operation[Activity, Activity, T]
+    (implicit ev: TensorNumeric[T], ev2: TensorNumeric[DataType]
+    ): Operation[Activity, Activity, T]
   = ModuleToOperation[T](
-    new TruncatedNormal(mean, stddev, seed))
+    new TruncatedNormal[T, DataType](mean, stddev, seed))
 }
