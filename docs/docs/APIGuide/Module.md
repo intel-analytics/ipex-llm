@@ -121,6 +121,24 @@ model = Model.load_tensorflow(model_def, inputs, outputs, byte_order = "little_e
 model = Model.load_tensorflow(model_def, inputs, outputs, byte_order = "little_endian", bigdl_type="float", bin_file=model_variable)
 ```
 
+### Load Keras model
+
+BigDL also supports loading pre-defined Keras models. See [keras support](https://bigdl-project.github.io/master/#ProgrammingGuide/keras-support/)
+for more details. The Keras version we support and test is [__Keras 1.2.2__](https://faroit.github.io/keras-docs/1.2.2/).
+
+A Keras model definition in __JSON__ file can be loaded as a BigDL model.
+Saved weights in __HDF5__ file can also be loaded together with the architecture of a model.
+
+You can directly use the API `load_keras` to load the Keras model into BigDL.
+
+__Remark__: `tensorflow`, `keras==1.2.2` and `h5py` need to be installed beforehand. They can be installed via `pip` easily.
+
+```python
+from bigdl.nn.layer import *
+
+bigdl_model = Model.load_keras(def_path, weights_path=None, by_name=False)
+```
+
 ## Model Evaluation
 **Scala**
 ```scala
