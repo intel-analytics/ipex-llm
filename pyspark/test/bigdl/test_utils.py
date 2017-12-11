@@ -213,7 +213,8 @@ class BigDLTestCase(TestCase):
                 feed_dict[keras_model.input[i]] = input_data[i]
         else:
             feed_dict[keras_model.input] = input_data
-        keras_grad_input = sess.run(K.gradients(keras_model.output * keras_output, keras_model.input),
+        keras_grad_input = sess.run(K.gradients(keras_model.output * keras_output,
+                                                keras_model.input),
                                     feed_dict=feed_dict)
         bigdl_grad_input = bigdl_model.backward(input_data, bigdl_output)
         if isinstance(bigdl_grad_input, list):  # for merge layers
@@ -222,7 +223,8 @@ class BigDLTestCase(TestCase):
                                      keras_grad_input[j],
                                      rtol=rtol,
                                      atol=atol)
-        else:  # for other layers, keras return a singleton list of ndarray while bigdl returns an ndarray
+        # for other layers, keras return a singleton list while bigdl returns an ndarray
+        else:
             self.assert_allclose(bigdl_grad_input,
                                  keras_grad_input[0],
                                  rtol=rtol,
@@ -230,9 +232,11 @@ class BigDLTestCase(TestCase):
 
         # compare gradient weights if the layer has weights
         if dump_weights and test_grad_weights:
-            weight_converter = WeightsConverter.get_converter(keras_model.layers[1].__class__.__name__)
+            weight_converter = WeightsConverter.get_converter(
+                keras_model.layers[1].__class__.__name__)
             keras_grad_weights = weight_converter(keras_model.layers[1],
-                                                  sess.run(K.gradients(keras_model.output * keras_output, keras_model.trainable_weights),
+                                                  sess.run(K.gradients(keras_model.output * keras_output,
+                                                                       keras_model.trainable_weights),
                                                            feed_dict=feed_dict))
             bigdl_grad_weights = bigdl_model.get_grad_weights()
             for k in range(0, len(keras_grad_weights)):
@@ -286,7 +290,6 @@ class BigDLTestCase(TestCase):
                              test_grad_weights,
                              rtol=rtol,
                              atol=atol)
-
 
     def modelTestSingleLayerWithOrdersModes(self,
                                             input_data,

@@ -580,10 +580,10 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
   }
 
   /**
-    * Get gradient weight and bias for the module
-    * @return array of gradient weights and bias
-    *
-    */
+   * Get gradient weight and bias for the module
+   * @return array of gradient weights and bias
+   *
+   */
   def getGradWeightsBias(): Array[Tensor[T]] = {
     if (parameters() != null) {
       parameters()._2
