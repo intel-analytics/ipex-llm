@@ -23,7 +23,7 @@ import com.intel.analytics.bigdl.nn.{Sum => SumLayer}
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
-class Sum[T: ClassTag, D: ClassTag](keepDims: Boolean, startFromZero: Boolean = false)
+class Sum[T: ClassTag, D: ClassTag](val keepDims: Boolean, val startFromZero: Boolean = false)
   (implicit ev: TensorNumeric[T], ev2: TensorNumeric[D])
   extends Operation[Table, Tensor[D], T] {
 

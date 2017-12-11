@@ -22,9 +22,9 @@ import com.intel.analytics.bigdl.utils.{T, Table}
 import scala.reflect.ClassTag
 
 class TopK[T: ClassTag, D: ClassTag](
-  k: Int,
-  sorted: Boolean = true,
-  startIndex: Int = 1
+  val k: Int,
+  val sorted: Boolean = true,
+  val startIndex: Int = 1
 )(implicit ev: TensorNumeric[T], ev2: TensorNumeric[D])
   extends Operation[Tensor[D], Table, T] {
 
