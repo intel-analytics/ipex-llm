@@ -429,6 +429,8 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericF
 val model = Module.loadCaffeModel("/tmp/deploy.prototxt", "/tmp/caffe.caffemodel")
 ```
 
+In above `defPath` specifies the path for the network deploy file while `modelPath` specifies the path for the weight file 
+
 **Python example:**
 
 ``` python
@@ -436,7 +438,7 @@ from bigdl.nn.layer import *
 model = Model.load_caffe_model("/tmp/deploy.prototxt", "/tmp/caffe.caffemodel")
 ```
 
-### Load weight from Caffe into pre-defined Model
+### Load weight from Caffe into pre-defined model
 
 **Scala:**
 
@@ -448,6 +450,9 @@ Module.loadCaffe(model, defPath, modelPath, match_all = true)
 Model.load_caffe(model, defPath, modelPath, match_all = True)
 ```
 
+`model` is pre-defined BigDL model. Similar to `loadCaffemModule`, `defPath` and `modelPath` specify network deploy file and weight file,
+the forth parameter `math_all` specifies if layer definition should be exactly matched between pre-defined `mode` and the one from `defPath`
+
 **Scala example:**
 ```scala
 import com.intel.analytics.bigdl.nn.Module
@@ -456,6 +461,7 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericF
 val model = Sequential().add(Linear(3, 4))
 val loadedModel = Module.loadCaffe(model, "/tmp/deploy.prototxt", "/tmp/caffe.caffemodel", true)
 ```
+
 
 **Python example:**
 
@@ -476,6 +482,11 @@ bigdlModel.saveCaffe(prototxtPath, modelPath, useV2 = true, overwrite = false)
 ```python
 bigdl_model.save_caffe(prototxt_path, model_path, use_v2 = True, overwrite = False)
 ```
+
+`prototxtPath` defines where to store the network, `modelPath` defines where to store the weight, `useV2` 
+defines whether to store as V2Layer format, and `overwrite` defines whether to overwrite if the files already exist.
+
+Only Graph model is supported for now.
 
 **Scala example:**
 ```scala
