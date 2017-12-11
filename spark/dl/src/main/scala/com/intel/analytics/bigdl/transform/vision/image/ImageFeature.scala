@@ -319,7 +319,7 @@ object ImageFeature {
   /**
    * key: Image Tensor
    */
-  val imageTensor = "tensor"
+  val imageTensor = "imageTensor"
 
   /**
    * Create ImageFeature

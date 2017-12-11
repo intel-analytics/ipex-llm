@@ -346,6 +346,23 @@ class Layer(JavaValue):
                                "modelPredictClass", self.value, data_rdd)
         return result
 
+    def predict_image(self, image_frame, feat_layer_name=None, share_buffer=False,
+                      batch_per_partition=4):
+        """
+        model predict images, return imageFrame with predicted tensor
+        :param image_frame imageFrame that contains images
+        :param feat_layer_name if featLayerName is not null, the output of layer that matches
+        featLayerName will be used as predicted output
+        :param share_buffer whether to share same memory for each batch predict results
+        :param batch_per_partition batch size per partition, default is 4
+        """
+
+        return callBigDlFunc(self.bigdl_type, "modelPredictImage", self.value,
+                             image_frame,
+                             feat_layer_name,
+                             share_buffer,
+                             batch_per_partition)
+
     def set_weights(self, weights):
         """
         Set weights for this layer

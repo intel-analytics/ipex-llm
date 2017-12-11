@@ -42,13 +42,14 @@ class TestLayer():
         image_frame = ImageFrame.read(self.image_path)
         transformer(image_frame)
         image_frame.transform(transformer)
-        image_frame.to_sample()
+        images = image_frame.get_image()
+        images.count()
 
         image_frame = ImageFrame.read(self.image_path, self.sc)
         transformer(image_frame)
         image_frame.transform(transformer)
-        sample = image_frame.to_sample()
-        sample.count()
+        images = image_frame.get_image()
+        images.count()
 
     def test_get_image(self):
         image_frame = ImageFrame.read(self.image_path)
@@ -57,10 +58,6 @@ class TestLayer():
     def test_get_label(self):
         image_frame = ImageFrame.read(self.image_path)
         image_frame.get_label()
-
-    def test_to_sample(self):
-        image_frame = ImageFrame.read(self.image_path)
-        image_frame.to_sample()
 
     def test_is_local(self):
         image_frame = ImageFrame.read(self.image_path)
@@ -155,6 +152,19 @@ class TestLayer():
     def test_pipeline(self):
         transformer = Pipeline([ColorJitter(), HFlip(), Resize(200, 200, 1)])
         self.transformer_test(transformer)
+
+    def test_mat_to_floats(self):
+        transformer = MatToFloats()
+        self.transformer_test(transformer)
+
+    def test_mat_to_tensor(self):
+        transformer = MatToTensor()
+        self.transformer_test(transformer)
+
+    def testImageFrameToSample(self):
+        transformer = Pipeline(MatToTensor(), ImageFrameToSample())
+        self.transformer_test(transformer)
+
 
 if __name__ == "__main__":
     pytest.main([__file__])
