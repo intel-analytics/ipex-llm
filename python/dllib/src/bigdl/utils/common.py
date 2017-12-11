@@ -435,6 +435,21 @@ def to_list(a):
     return [a]
 
 
+def to_sample_rdd(x, y, numSlices=None):
+    """
+    Conver x and y into RDD[Sample]
+    :param x: ndarray and the first dimension should be batch
+    :param y: ndarray and the first dimension should be batch
+    :param numSlices:
+    :return:
+    """
+    sc = get_spark_context()
+    from bigdl.util.common import Sample
+    x_rdd = sc.parallelize(x, numSlices)
+    y_rdd = sc.parallelize(y, numSlices)
+    return x_rdd.zip(y_rdd).map(lambda item: Sample.from_ndarray(item[0], item[1]))
+
+
 def extend_spark_driver_cp(sparkConf, path):
     original_driver_classpath = ":" + sparkConf.get("spark.driver.extraClassPath") \
         if sparkConf.contains("spark.driver.extraClassPath") else ""
