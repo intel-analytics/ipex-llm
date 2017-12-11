@@ -2309,9 +2309,6 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   private def doGetFlattenModules(module: Container[Activity, Activity, T],
     includeContainer: Boolean,
     result: ArrayBuffer[AbstractModule[Activity, Activity, T]]): Unit = {
-    if (includeContainer) {
-      result.append(module)
-    }
     module.modules.foreach {m =>
       if (m.isInstanceOf[Container[Activity, Activity, T]]) {
         doGetFlattenModules(m.asInstanceOf[Container[Activity, Activity, T]],
@@ -2320,6 +2317,9 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
       } else {
         result.append(m)
       }
+    }
+    if (includeContainer) {
+      result.append(module)
     }
   }
 
