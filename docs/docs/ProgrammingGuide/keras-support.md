@@ -26,6 +26,6 @@ Parameters:
 ### **Limitation**
 We have tested the model loading functionality with some standard [Keras applications](https://faroit.github.io/keras-docs/1.2.2/applications/) and [examples](https://github.com/fchollet/keras/tree/1.2.2/examples).
 
-There still exist some arguments for Keras layers that are not supported in BigDL for now. We haven't supported self-defined layers, but one can still define your customized layer converter and weight converter method for new layers.
+There still exist some arguments for Keras layers that are not supported in BigDL for now. We haven't supported self-defined Keras layers, but one can still define your customized layer converter and weight converter method for new layers.
 
 In our future work, we will continue add functionality and better support running Keras on BigDL.
