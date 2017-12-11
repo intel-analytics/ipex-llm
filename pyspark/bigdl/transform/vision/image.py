@@ -208,7 +208,7 @@ class LocalImageFrame(ImageFrame):
         get prediction list from ImageFrame
         """
         predicts = callBigDlFunc(self.bigdl_type, "localImageFrameToPredict", self.value, key)
-        return map(lambda (uri, predict): (uri, predict.to_ndarray()), predicts)
+        return map(lambda predict: (predict[0], predict[1].to_ndarray()), predicts)
 
 
 
@@ -250,7 +250,7 @@ class DistributedImageFrame(ImageFrame):
         get prediction rdd from ImageFrame
         """
         predicts = callBigDlFunc(self.bigdl_type, "distributedImageFrameToPredict", self.value, key)
-        return predicts.map(lambda (uri, predict): (uri, predict.to_ndarray()))
+        return predicts.map(lambda predict: (predict[0], predict[1].to_ndarray()))
 
 
 class HFlip(FeatureTransformer):
