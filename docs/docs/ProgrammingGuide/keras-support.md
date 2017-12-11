@@ -4,7 +4,7 @@ BigDL supports loading pre-defined Keras models and running the models in a dist
 
 The Keras version we support and test is [__Keras 1.2.2__](https://faroit.github.io/keras-docs/1.2.2/).
 
-## **Loading a Keras model into BigDL**
+## **Load a Keras model into BigDL**
 
 A Keras model definition in __JSON__ file can be loaded as a BigDL model.
 Saved weights in __HDF5__ file can also be loaded together with the architecture of a model.
@@ -12,7 +12,7 @@ See [here](https://faroit.github.io/keras-docs/1.2.2/getting-started/faq/#how-ca
 
 You can directly use the API `load_keras` to load the Keras model into BigDL.
 
-__Remark__: `tensorflow`, `keras==1.2.2` and `h5py` need to be installed beforehand. They can be installed via `pip` easily.
+__Remark__: Packages `tensorflow`, `keras==1.2.2` and `h5py` are required. They can be installed via `pip` easily.
 
 ```python
 from bigdl.nn.layer import *
@@ -23,7 +23,7 @@ Parameters:
 
 * `def_path` The JSON file path containing the keras model definition to be loaded.
 * `weights_path`  The HDF5 file path containing the pre-trained keras model weights. Default to be `None` if you choose not to load weights. In this case, initialized weights will be used for the model.
-* `by_name`  Whether to load the weights of layers by name. Use this option only when you do load the pre-trained weights. Default to be `False`, meaning that  weights are loaded based on the network's execution order topology. Otherwise, only those layers with the same name will be loaded with weights.
+* `by_name`  Whether to load the weights of layers by name. Use this option only when you load the pre-trained weights. Default to be `False`, meaning that  weights are loaded based on the network's execution order topology. Otherwise, if it is set to be `True`, only those layers with the same name will be loaded with weights.
 
 ## **Example**
 
@@ -100,9 +100,9 @@ optimizer.set_validation(
 optimizer.optimize()
 ```
 
-### **Limitation**
+### **Limitations**
 We have tested the model loading functionality with some standard [Keras applications](https://faroit.github.io/keras-docs/1.2.2/applications/) and [examples](https://github.com/fchollet/keras/tree/1.2.2/examples).
 
-There still exist some arguments for Keras layers that are not supported in BigDL for now. We haven't supported self-defined Keras layers, but one can still define your customized layer converter and weight converter method for new layers.
+There still exist some arguments for Keras layers that are not supported in BigDL for now. We haven't supported self-defined Keras layers, but one can still define your customized layer converter and weight converter method for new layers if you wish.
 
 In our future work, we will continue add functionality and better support running Keras on BigDL.
