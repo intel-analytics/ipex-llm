@@ -25,14 +25,14 @@ if (( $# < 1)); then
 fi
 
 cd "`dirname $0`"
-
+p=$1  # executable python 
 export DL_CORE_NUMBER=4
 
 echo "${cyan}Using python version: $p${reset}"
 export PYTHON_EXECUTABLE=$p
 export PYSPARK_PYTHON=$p
 export PYSPARK_DRIVER_PYTHON=$p
-$1 -m pytest -v  ../../../pyspark/test/bigdl/keras
+$p -m pytest -v  ../../../pyspark/test/bigdl/keras
 
 exit_status=$?
 if [ $exit_status -ne 0 ];
