@@ -26,7 +26,8 @@ import scala.reflect.ClassTag
  * then select the [[index]]th one
  */
 @SerialVersionUID(-9096120159559947483L)
-private[bigdl] class SplitAndSelect[T: ClassTag](dimension: Int, index: Int, numSplit: Int)
+private[bigdl] class SplitAndSelect[T: ClassTag]
+  (val dimension: Int, val index: Int, val numSplit: Int)
                          (implicit ev: TensorNumeric[T]) extends TensorModule[T] {
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
