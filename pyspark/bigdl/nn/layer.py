@@ -732,7 +732,6 @@ class Model(Container):
             return WeightLoader.load_weights_from_json_hdf5(def_path, weights_path, by_name=by_name)
         else:
             return DefinitionLoader.from_json_path(def_path)
-        return bmodel
 
     @staticmethod
     def load_caffe(model, defPath, modelPath, match_all=True, bigdl_type="float"):
