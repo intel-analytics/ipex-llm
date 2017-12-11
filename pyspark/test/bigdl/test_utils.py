@@ -21,7 +21,7 @@ from keras.layers.core import *
 from keras.layers.convolutional import *
 from keras.layers import Dense, Dropout, Input
 from keras.optimizers import RMSprop
-from bigdl.util.common import create_tmp_path
+from bigdl.util.common import *
 from bigdl.keras.converter import *
 from bigdl.keras.converter import WeightLoader, WeightsConverter
 import numpy as np
@@ -105,6 +105,21 @@ class TestModels:
 
 
 class BigDLTestCase(TestCase):
+
+    def setup_method(self, method):
+        """ setup any state tied to the execution of the given method in a
+        class.  setup_method is invoked for every test method of a class.
+        """
+        sparkConf = create_spark_conf().setMaster("local[4]").setAppName("test model")
+        self.sc = get_spark_context(sparkConf)
+        self.sqlContext = SQLContext(self.sc)
+        init_engine()
+
+    def teardown_method(self, method):
+        """ teardown any state that was previously setup with a setup_method
+        call.
+        """
+        self.sc.stop()
 
     def __generate_model(self, input_data, output_layer):
         def without_batch(batch_shape):
