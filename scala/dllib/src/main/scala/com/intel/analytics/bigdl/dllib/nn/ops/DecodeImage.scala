@@ -24,9 +24,12 @@ import com.google.protobuf.ByteString
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor._
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.serializer.{DataConverter, DeserializeContext, ModuleSerializable, SerializeContext}
 import org.tensorflow.framework.DataType
+import serialization.Bigdl.{AttrValue, BigDLModule}
 
 import scala.reflect.ClassTag
+import scala.reflect.runtime.universe
 
 class DecodeImage[T: ClassTag](val channels: Int)(implicit ev: TensorNumeric[T])
   extends Operation[Tensor[ByteString], Tensor[Int], T] {
@@ -91,7 +94,7 @@ class DecodeImage[T: ClassTag](val channels: Int)(implicit ev: TensorNumeric[T])
   }
 }
 
-class DecodeJpeg[T: ClassTag](channels: Int, ratio: Int = 1)(implicit ev: TensorNumeric[T])
+class DecodeJpeg[T: ClassTag](channels: Int, val ratio: Int = 1)(implicit ev: TensorNumeric[T])
   extends DecodeImage[T](channels) {
   require(ratio == 1, "currently not supported sub-sampling")
 }
@@ -371,6 +374,33 @@ class DecodeRaw[T: ClassTag](val outType: DataType,
   override def updateGradInput(input: Tensor[ByteString], gradOutput: Activity):
   Tensor[ByteString] = {
     throw new IllegalArgumentException()
+  }
+}
+
+object DecodeRawSerializer extends ModuleSerializable {
+
+  override def doLoadModule[T: ClassTag](context: DeserializeContext)
+    (implicit ev: TensorNumeric[T]): AbstractModule[Activity, Activity, T] = {
+    val attrMap = context.bigdlModule.getAttrMap
+    // val module = super.doLoadModule(context)
+    val outType = attrMap.get("outType").getInt32Value
+    val littleBoolean = attrMap.get("littleEndian").getBoolValue
+    new DecodeRaw[T](DataType.forNumber(outType), littleBoolean)
+  }
+
+  override def doSerializeModule[T: ClassTag](context: SerializeContext[T],
+    bigDLModelBuilder: BigDLModule.Builder)(implicit ev: TensorNumeric[T]): Unit = {
+    val decodeImage = context.moduleData.module.asInstanceOf[DecodeRaw[_]]
+    val outTypeBuilder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(context,
+      outTypeBuilder, decodeImage.outType.getNumber,
+      universe.typeOf[Int])
+    bigDLModelBuilder.putAttr("outType", outTypeBuilder.build)
+    val littleEndianBuilder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(context,
+      outTypeBuilder, decodeImage.littleEndian,
+      universe.typeOf[Boolean])
+    bigDLModelBuilder.putAttr("littleEndian", littleEndianBuilder.build)
   }
 }
 
