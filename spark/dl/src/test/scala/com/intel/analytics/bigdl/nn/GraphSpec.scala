@@ -483,14 +483,6 @@ class GraphSpec extends FlatSpec with Matchers {
     seqModel.getParameters()._2 should be(funcModel.getParameters()._2)
   }
 
-  "shift" should "be correct" in {
-    val node = Reshape(Array(1, 28, 28)).inputs()
-    val test = Graph(node, node)
-    test.shift(Array(1, 2, 3, 4), 1, 1) should be(Array(1, 2, 3, 4))
-    test.shift(Array(1, 2, 3, 4), 1, 3) should be(Array(1, 3, 4, 2))
-    test.shift(Array(1, 2, 3, 4), 3, 1) should be(Array(1, 4, 2, 3))
-  }
-
   "ResNet-18 basic block shortcut type A" should "be correct" in {
     RandomGenerator.RNG.setSeed(1000)
     val seqModel = ModelUntils.ResNet.basicBlockSeq(16, 16, 1, "A")
@@ -1022,7 +1014,7 @@ class GraphSpec extends FlatSpec with Matchers {
 
     // reset propagateBack
     graphNoBack.reset()
-    graphNoBack.build()
+    graphNoBack.buildBackwardGraph()
     graphNoBack.zeroGradParameters()
     graphNoBack.forward(input) should be (graph.forward(input))
     graphNoBack.backward(input, gradOutput)

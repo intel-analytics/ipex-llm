@@ -119,7 +119,7 @@ object GraphQuantizer extends Quantizable {
     // modules in container need to rebuild
     graph.resetModules()
     // nodes in backward executions need to rebuild
-    graph.build()
+    graph.buildBackwardGraph()
 
     graph
   }
