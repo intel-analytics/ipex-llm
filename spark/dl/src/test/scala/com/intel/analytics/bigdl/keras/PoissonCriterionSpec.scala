@@ -31,4 +31,5 @@ class PoissonCriterionSpec extends KerasBaseSpec {
     val kld = new PoissonCriterion[Float]()
     checkOutputAndGradForLoss(kld, kerasCode)
   }
+
 }
