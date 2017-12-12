@@ -589,6 +589,25 @@ def create_tmp_path():
     return tmp_file.name
 
 
+def text_from_path(path):
+    sc = get_spark_context()
+    return sc.textFile(path).collect()[0]
+
+
+def get_local_file(a_path):
+    if not is_distributed(a_path):
+        return a_path
+    path, data = get_spark_context().binaryFiles(a_path).collect()[0]
+    local_file_path = create_tmp_path()
+    with open(local_file_path, 'w') as local_file:
+        local_file.write(data)
+    return local_file_path
+
+
+def is_distributed(path):
+    return "://" in path
+
+
 def get_activation_by_name(activation_name, activation_id=None):
     """ Convert to a bigdl activation layer
         given the name of the activation as a string  """

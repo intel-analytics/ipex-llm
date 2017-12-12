@@ -20,6 +20,7 @@ import bigdl.nn.layer as BLayer
 from bigdl.optim.optimizer import L1L2Regularizer as BRegularizer
 import bigdl.optim.optimizer as boptimizer
 import bigdl.nn.criterion as bcriterion
+import bigdl.util.common as BCommon
 from bigdl.util.common import get_activation_by_name
 import keras.optimizers as koptimizers
 from keras.models import model_from_json
@@ -55,16 +56,22 @@ class WeightLoader:
 
     @staticmethod
     def load_weights_from_json_hdf5(def_json, weights_hdf5, by_name=False):
-        with open(def_json, "r") as jp:
-            kmodel = model_from_json(jp.read())
+        """
+        The file path can be stored in a local file system, HDFS, S3,
+        or any Hadoop-supported file system.
+        """
         bmodel = DefinitionLoader.from_json_path(def_json)
+        def_value = BCommon.text_from_path(def_json)
+        kmodel = model_from_json(def_value)
         WeightLoader.load_weights_from_hdf5(bmodel, kmodel, weights_hdf5, by_name)
         return bmodel
+
 
     @staticmethod
     def load_weights_from_hdf5(bmodel, kmodel, filepath, by_name=False):
         '''Loads all layer weights from a HDF5 save file.
-
+        filepath can be stored in a local file system, HDFS, S3,
+        or any Hadoop-supported file system.
         If `by_name` is False (default) weights are loaded
         based on the network's execution order topology,
         meaning layers in the execution seq should be exactly the same
@@ -75,7 +82,8 @@ class WeightLoader:
         for fine-tuning or transfer-learning models where
         some of the layers have changed.
         '''
-        kmodel.load_weights(filepath=filepath, by_name=by_name)
+        local_file_path = BCommon.get_local_file(filepath)
+        kmodel.load_weights(filepath=local_file_path, by_name=by_name)
         WeightLoader.load_weights_from_kmodel(bmodel, kmodel)
 
     @staticmethod
@@ -318,8 +326,12 @@ class DefinitionLoader:
 
     @classmethod
     def from_json_path(cls, json_path):
-        with open(json_path, "r") as jp:
-            return DefinitionLoader.from_json_str(jp.read())
+        """
+        :param json_path: definition path which can be stored in a local file system, HDFS, S3,  or any Hadoop-supported file system.
+        :return: BigDL Model
+        """
+        json_str = BCommon.text_from_path(json_path)
+        return DefinitionLoader.from_json_str(json_str)
 
     @classmethod
     def from_json_str(cls, json_str):
