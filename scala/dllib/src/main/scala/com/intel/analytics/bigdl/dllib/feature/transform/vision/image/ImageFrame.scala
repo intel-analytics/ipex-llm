@@ -42,7 +42,7 @@ trait ImageFrame {
 
   // scalastyle:off methodName
   // scalastyle:off noSpaceBeforeLeftBracket
-  def -> [C: ClassTag](transformer: FeatureTransformer): ImageFrame = {
+  def -> (transformer: FeatureTransformer): ImageFrame = {
     this.transform(transformer)
   }
 
