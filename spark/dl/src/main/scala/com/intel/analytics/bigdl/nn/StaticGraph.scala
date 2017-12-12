@@ -41,8 +41,6 @@ class StaticGraph[T: ClassTag](
   (implicit ev: TensorNumeric[T])
   extends Graph[T](_inputs, _outputs, _variables) {
 
-  private val inputCache = new util.HashMap[String, Activity]()
-  private val gradOutputCache = new util.HashMap[String, Activity]()
   private val forwardExecution = forwardGraph.topologySort.reverse
   private var backwardExecution: Array[Node[AbstractModule[Activity, Activity, T]]] = _
 
@@ -52,23 +50,8 @@ class StaticGraph[T: ClassTag](
     var i = 0
     while(i < forwardExecution.length) {
       val node = forwardExecution(i)
-      val nodeInput = if (node.prevNodes.isEmpty && !node.element.isInstanceOf[WithoutInput]) {
-        getInput(node, input)
-      } else {
-        val prevActivities = node.prevNodesAndEdges.map(n => {
-          n._2.fromIndex match {
-            case Some(i) => n._1.element.output.toTable.apply[Activity](i)
-            case None => n._1.element.output
-          }
-        })
-        if (prevActivities.length == 1) {
-          prevActivities.head
-        } else {
-          T.seq(prevActivities)
-        }
-      }
+      val nodeInput = findInput(node, input)
       node.element.forward(nodeInput)
-      inputCache.put(node.element.getName(), nodeInput)
       i += 1
     }
 
@@ -87,16 +70,6 @@ class StaticGraph[T: ClassTag](
     backwardExecution(input, gradOutput, false)
   }
 
-  override def accGradParameters(input: Activity, gradOutput: Activity): Unit = {
-    var i = 0
-    while (i < backwardExecution.length) {
-      val curNode = backwardExecution(i)
-      curNode.element.accGradParameters(inputCache.get(curNode.element.getName()),
-        gradOutputCache.get(curNode.element.getName()))
-      i += 1
-    }
-  }
-
   override def buildBackwardGraph(): this.type = {
     super.buildBackwardGraph()
     backwardExecution = backwardGraph.topologySort.reverse
@@ -110,46 +83,20 @@ class StaticGraph[T: ClassTag](
     var i = 0
     while (i < backwardExecution.length - 1) {  // do not execute the dummy backward end
       val curNode = backwardExecution(i)
-      var curGradOutput : Activity = if (curNode.eq(dummyOutputGrad)) gradOutput else null
-
-      curNode.prevNodesAndEdges.foreach(n => {
-        val otherActivity = if (n._1.element.gradInput.isTensor || n._1.nextEdges.length == 1) {
-          n._1.element.gradInput
-        } else {
-          val index = n._1.nextEdges.indexOf(n._2) + 1
-          n._1.element.gradInput.toTable.apply[Activity](index)
-        }
-
-        n._2.fromIndex match {
-          case Some(i) =>
-            if (curNode.element.output.isTable && curGradOutput == null) {
-              curGradOutput = T()
-            }
-            val curActivity = curGradOutput.toTable.getOrElse[Activity](i, null)
-            curGradOutput.toTable(i) = accActivity(curActivity, otherActivity)
-          case None =>
-            curGradOutput = accActivity(curGradOutput, otherActivity)
-        }
-      })
-
-      gradOutputCache.put(curNode.element.getName(), curGradOutput)
+      val curGradOutput = findGradOutput(curNode, gradOutput)
       if (!isStopGradient(curNode.element)) {
         if (executeBackward) {
-          curNode.element.backward(inputCache.get(curNode.element.getName()), curGradOutput)
+          curNode.element.backward(inputCache(curNode.element.getName()), curGradOutput)
         } else {
-          curNode.element.updateGradInput(inputCache.get(curNode.element.getName()), curGradOutput)
+          curNode.element.updateGradInput(inputCache(curNode.element.getName()), curGradOutput)
         }
       } else if (executeBackward) {
-        curNode.element.accGradParameters(inputCache.get(curNode.element.getName()), curGradOutput)
+        curNode.element.accGradParameters(inputCache(curNode.element.getName()), curGradOutput)
       }
       i += 1
     }
 
-    gradInput = if (inputs.length == 1) {
-      inputs.head.element.gradInput
-    } else {
-      T.seq(inputs.map(n => n.element.gradInput))
-    }
+    gradInput = fetchModelGradInput()
     gradInput
   }
 }

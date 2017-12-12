@@ -133,6 +133,18 @@ abstract class Graph[T: ClassTag](
   // todo: expand the graph
   override def toGraph(startNodes: ModuleNode[T]*): Graph[T] = this
 
+
+  override def accGradParameters(input: Activity, gradOutput: Activity): Unit = {
+    var i = 0
+    while (i < backwardNodes.length) {
+      val curNode = backwardNodes(i)
+      curNode.element.accGradParameters(inputCache(curNode.element.getName()),
+        gradOutputCache(curNode.element.getName()))
+      i += 1
+    }
+  }
+
+
   /**
    * Return the corresponding node has the given name. If the given name doesn't match any node,
    * NoSuchElementException will be thrown
@@ -274,6 +286,9 @@ abstract class Graph[T: ClassTag](
     nodes.filter(_.prevNodes.length == 0).foreach(removeStopNodes(_))
   }
 
+  protected val inputCache = new mutable.HashMap[String, Activity]()
+  protected val gradOutputCache = new mutable.HashMap[String, Activity]()
+
   protected def getInput(
     node: Node[AbstractModule[Activity, Activity, T]],
     input: Activity
@@ -285,6 +300,77 @@ abstract class Graph[T: ClassTag](
       val i = inputs.indexOf(node)
       require(i != -1, "input node is not in the input list")
       input.toTable[Tensor[T]](i + 1)
+    }
+  }
+
+  protected def findInput(node: ModuleNode[T], input: Activity): Activity = {
+    val nodeInput = if (node.prevNodes.isEmpty && !node.element.isInstanceOf[WithoutInput]) {
+      getInput(node, input)
+    } else {
+      val prevActivities = node.prevNodesAndEdges
+        .filterNot(n => n._1.element.isInstanceOf[ControlDependency[T]])
+        .map(n => {
+          n._2.fromIndex match {
+            case Some(i) =>
+              if (n._1.element.output == null || (i == 1 && n._1.element.output.isTensor)) {
+                n._1.element.output
+              } else {
+                n._1.element.output.toTable.apply[Activity](i)
+              }
+            case None => n._1.element.output
+          }
+        })
+      if (prevActivities.length == 1) {
+        prevActivities.head
+      } else {
+        T.seq(prevActivities)
+      }
+    }
+    inputCache(node.element.getName()) = nodeInput
+    nodeInput
+  }
+
+  protected def findGradOutput(curNode: ModuleNode[T], gradOutput: Activity): Activity = {
+    var curGradOutput : Activity = if (curNode.eq(dummyOutputGrad)) gradOutput else null
+
+    curNode.prevNodesAndEdges.filterNot(n => n._1.element.isInstanceOf[ControlDependency[T]])
+      .foreach(n => {
+        val otherActivity = if (n._1.element.gradInput.isTensor || n._1.nextEdges.length == 1) {
+          n._1.element.gradInput
+        } else {
+          val index = n._1.nextEdges.indexOf(n._2) + 1
+          n._1.element.gradInput.toTable.apply[Activity](index)
+        }
+
+        n._2.fromIndex match {
+          case Some(i) =>
+            if (i == 1 && curNode.element.output.isTensor) {
+              curGradOutput = accActivity(curGradOutput, otherActivity)
+            } else {
+              if (curNode.element.output.isTable && curGradOutput == null) {
+                curGradOutput = T()
+              }
+              val curActivity = curGradOutput.toTable.getOrElse[Activity](i, null)
+              curGradOutput.toTable(i) = accActivity(curActivity, otherActivity)
+            }
+          case None =>
+            curGradOutput = accActivity(curGradOutput, otherActivity)
+        }
+      })
+
+    if (curNode.element.output.isTable) {
+      addZeroTensorToMissingGradOutput(curNode.element.output.toTable, curGradOutput.toTable)
+    }
+
+    gradOutputCache(curNode.element.getName()) = curGradOutput
+    curGradOutput
+  }
+
+  protected def fetchModelGradInput(): Activity = {
+    if (inputs.length == 1) {
+      inputs.head.element.gradInput
+    } else {
+      T.seq(inputs.map(n => n.element.gradInput))
     }
   }
 
