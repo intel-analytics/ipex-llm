@@ -2802,6 +2802,44 @@ class LookupTable(Layer):
         return self
 
 
+class LookupTableSparse(Layer):
+
+    '''
+    LookupTable for multi-values.
+    Also called embedding_lookup_sparse in TensorFlow.
+
+    The input of LookupTableSparse should be a 2D SparseTensor of a Table.
+    If the input is a SparseTensor, the values are positive integer ids,
+    values in each row of this SparseTensor will be turned into a dense vector.
+    If the input is a Table, the first tensor in this table should be the integer ids, just
+    like the SparseTensor input. And the second tensor in this table is the corresponding
+    weights of the integer ids.
+
+    :param wRegularizer: instance of [[Regularizer]](eg. L1 or L2 regularization), applied to the input weights matrices.
+
+    >>> lookupTableSparse = LookupTableSparse(20, 5, "mean", 2, L1Regularizer(0.5))
+    creating: createL1Regularizer
+    creating: createLookupTableSparse
+    '''
+
+    def __init__(self,
+                 n_index,
+                 n_output,
+                 combiner="sum",
+                 max_norm=-1,
+                 wRegularizer=None,
+                 bigdl_type="float"):
+        super(LookupTableSparse, self).__init__(None, bigdl_type,
+                                          n_index,
+                                          n_output,
+                                          combiner,
+                                          max_norm,
+                                          wRegularizer)
+    def set_init_method(self, weight_init_method = None, bias_init_method = None):
+        callBigDlFunc(self.bigdl_type, "setInitMethod", self.value,
+                      weight_init_method, bias_init_method)
+        return self
+
 class MM(Layer):
 
     '''
