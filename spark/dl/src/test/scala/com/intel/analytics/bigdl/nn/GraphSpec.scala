@@ -1024,6 +1024,24 @@ class GraphSpec extends FlatSpec with Matchers {
     graphNoBack.parameters()._2 should be (graph.parameters()._2)
   }
 
+  "graph backpropagation" should "ignore nodes on non output path" in {
+    val node1 = Identity[Float]().setName("node1").inputs()
+    val node2 = Identity[Float]().setName("node2").inputs(node1)
+    val node3 = Identity[Float]().setName("node3").inputs(node2)
+    val node4 = Identity[Float]().setName("node4").inputs(node2)
+
+    val model1 = Graph[Float](node1, node3)
+    model1.forward(Tensor[Float](T(1.0f, 2.0f))) should be(Tensor[Float](T(1.0f, 2.0f)))
+    model1.backward(Tensor[Float](T(1.0f, 2.0f)), Tensor[Float](T(3.0f, 4.0f))) should be(
+      Tensor[Float](T(3.0f, 4.0f)))
+
+    val model2 = Graph[Float](node1, Array(node3, node4))
+    model2.forward(Tensor[Float](T(1.0f, 2.0f))) should be(T(Tensor[Float](T(1.0f, 2.0f)),
+      Tensor[Float](T(1.0f, 2.0f))))
+    model2.backward(Tensor[Float](T(1.0f, 2.0f)), T(Tensor[Float](T(3.0f, 4.0f)),
+      Tensor[Float](T(7.0f, 10.0f)))) should be(
+      Tensor[Float](T(10.0f, 14.0f)))
+  }
 
   "markdown test" should "work" in {
     val reshape = Reshape(Array(4)).inputs()
@@ -1034,8 +1052,6 @@ class GraphSpec extends FlatSpec with Matchers {
     val output2_1 = Threshold(10.0).inputs(cadd_1)
 
     val model = Graph(Array(reshape, fc1), Array(output1_1, output2_1))
-
-
 
     val input = T(Tensor(T(0.1f, 0.2f, -0.3f, -0.4f)),
       Tensor(T(0.5f, 0.4f, -0.2f, -0.1f)))
@@ -1078,6 +1094,7 @@ class GraphSpec extends FlatSpec with Matchers {
     println("fc1 weight \n", fc1.element.parameters()._1(0))
     println("fc2 weight \n", fc2.element.parameters()._1(0))
   }
+
   "graph setFreeze" should "work properly" in {
     RandomGenerator.RNG.setSeed(1000)
     val fc1 = Linear(4, 2).inputs()

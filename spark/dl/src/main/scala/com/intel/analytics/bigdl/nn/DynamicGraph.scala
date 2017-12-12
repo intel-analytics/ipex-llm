@@ -57,7 +57,7 @@ class DynamicGraph[T: ClassTag](
         if (prevActivities.length == 1) {
           prevActivities.head
         } else {
-          T(prevActivities)
+          T.seq(prevActivities)
         }
       }
       node.element.forward(nodeInput)
@@ -119,7 +119,7 @@ class DynamicGraph[T: ClassTag](
     gradInput = if (inputs.length == 1) {
       inputs.head.element.gradInput
     } else {
-      T(inputs.map(n => n.element.gradInput))
+      T.seq(inputs.map(n => n.element.gradInput))
     }
     backwardTime = System.nanoTime() - before
     gradInput
@@ -172,7 +172,7 @@ class DynamicGraph[T: ClassTag](
     gradInput = if (inputs.length == 1) {
       inputs.head.element.gradInput
     } else {
-      T(inputs.map(n => n.element.gradInput))
+      T.seq(inputs.map(n => n.element.gradInput))
     }
     gradInput
   }

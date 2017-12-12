@@ -203,11 +203,12 @@ abstract class Graph[T: ClassTag](
    * Generate backward graph and apply the stopGrad
    */
   private[bigdl] def buildBackwardGraph(): this.type = {
+    // Clone the forward graph and reverse the edge
     val gradGraph = forwardGraph.cloneGraph(reverseEdge = true)
     dummyOutputGrad = gradGraph.source
-    val originalNodes = gradGraph.DFS
-    originalNodes.filter(x => isStopGradient(x.element)).foreach(removeStopNodes(_))
-    backwardNodes = gradGraph.DFS.filterNot(_.eq(dummyOutputGrad))
+    gradGraph.DFS.filter(x => isStopGradient(x.element)).foreach(removeStopNodes(_))
+    backwardNodes = gradGraph.DFS
+      .filterNot(_.eq(dummyOutputGrad))
       .filterNot(_.element.isInstanceOf[ControlDependency[_]]).toArray
 
     val inputNames = inputs.map(_.element.getName()).toSet
@@ -217,9 +218,6 @@ abstract class Graph[T: ClassTag](
         || inputNames.contains(n.element.getName()))
     backwardTargets.foreach(_ -> dummyBackwardEnd)
     backwardGraph = dummyBackwardEnd.graph(true)
-
-
-    dummyBackwardEnd.removePrevEdges()
     clearState()
     this
   }
