@@ -25,6 +25,16 @@ Parameters:
 * `weights_path`  The HDF5 file path containing the pre-trained keras model weights. Default to be `None` if you choose not to load weights. In this case, initialized weights will be used for the model.
 * `by_name`  Whether to load the weights of layers by name. Use this option only when you load the pre-trained weights. Default to be `False`, meaning that  weights are loaded based on the network's execution order topology. Otherwise, if it is set to be `True`, only those layers with the same name will be loaded with weights.
 
+We support loading files from any Hadoop-supported file system URI.
+```python
+# load from local file system
+bigdl_model = Model.load_keras("/tmp/model.json")
+# load from HDFS
+bigdl_model = Model.load_keras("hdfs://...")
+# load from S3
+bigdl_model = Model.load_keras("s3://...")
+```
+
 ## **Example**
 
 Here we illustrate with a concrete [LeNet example](https://github.com/fchollet/keras/blob/1.2.2/examples/mnist_cnn.py) from Keras.
