@@ -76,12 +76,6 @@ class ImageFeature(JavaValue):
         self.value = callBigDlFunc(
             bigdl_type, JavaValue.jvm_class_constructor(self), image_tensor, label_tensor, path)
 
-    def to_sample(self, float_key="floats", to_chw=True, with_im_info=False):
-        """
-        ImageFeature to sample
-        """
-        return callBigDlFunc(self.bigdl_type, "imageFeatureToSample", self.value, float_key, to_chw, with_im_info)
-
     def get_image(self, float_key="floats", to_chw=True):
         """
         get image as ndarray from ImageFeature
@@ -170,11 +164,11 @@ class ImageFrame(JavaValue):
         """
         return self.image_frame.get_label()
 
-    def to_sample(self, float_key="floats", to_chw=True, with_im_info=False):
+    def get_predict(self, key="predict"):
         """
-        ImageFrame toSample
+        get prediction from ImageFrame
         """
-        return self.image_frame.to_sample(float_key, to_chw, with_im_info)
+        return self.image_frame.get_predict(key)
 
 
 class LocalImageFrame(ImageFrame):
@@ -209,12 +203,12 @@ class LocalImageFrame(ImageFrame):
         labels = callBigDlFunc(self.bigdl_type, "localImageFrameToLabelTensor", self.value)
         return map(lambda tensor: tensor.to_ndarray(), labels)
 
-    def to_sample(self, float_key="floats", to_chw=True, with_im_info=False):
+    def get_predict(self, key="predict"):
         """
-        to sample list
+        get prediction list from ImageFrame
         """
-        return callBigDlFunc(self.bigdl_type,
-                             "localImageFrameToSample", self.value, float_key, to_chw, with_im_info)
+        predicts = callBigDlFunc(self.bigdl_type, "localImageFrameToPredict", self.value, key)
+        return map(lambda predict: (predict[0], predict[1].to_ndarray()), predicts)
 
 
 
@@ -251,12 +245,13 @@ class DistributedImageFrame(ImageFrame):
         tensor_rdd = callBigDlFunc(self.bigdl_type, "distributedImageFrameToLabelTensorRdd", self.value)
         return tensor_rdd.map(lambda tensor: tensor.to_ndarray())
 
-    def to_sample(self, float_key="floats", to_chw=True, with_im_info=False):
+    def get_predict(self, key="predict"):
         """
-        to sample rdd
+        get prediction rdd from ImageFrame
         """
-        return callBigDlFunc(self.bigdl_type,
-                             "distributedImageFrameToSampleRdd", self.value, float_key, to_chw, with_im_info)
+        predicts = callBigDlFunc(self.bigdl_type, "distributedImageFrameToPredict", self.value, key)
+        return predicts.map(lambda predict: (predict[0], predict[1].to_ndarray()))
+
 
 class HFlip(FeatureTransformer):
     """
@@ -531,11 +526,29 @@ class RoiNormalize(FeatureTransformer):
         super(RoiNormalize, self).__init__(bigdl_type)
 
 class MatToFloats(FeatureTransformer):
+    """
+    Transform OpenCVMat to float array, note that in this transformer, the mat is released
+    :param valid_height valid height in case the mat is invalid
+    :param valid_width valid width in case the mat is invalid
+    :param valid_channel valid channel in case the mat is invalid
+    :param out_key key to store float array
+    """
 
     def __init__(self, valid_height=300, valid_width=300, valid_channel=300,
-                 mean_r=-1.0, mean_g=-1.0, mean_b=-1.0, out_key = "floats", bigdl_type="float"):
+                 out_key = "floats", bigdl_type="float"):
         super(MatToFloats, self).__init__(bigdl_type, valid_height, valid_width, valid_channel,
-                                          mean_r, mean_g, mean_b, out_key)
+                                          out_key)
+
+class MatToTensor(FeatureTransformer):
+    """
+    transform opencv mat to tensor
+    :param to_rgb BGR to RGB (default is BGR)
+    :param tensor_key key to store transformed tensor
+    """
+
+    def __init__(self, to_rgb=False, tensor_key="imageTensor", bigdl_type="float"):
+        super(MatToTensor, self).__init__(bigdl_type, to_rgb, tensor_key)
+
 class AspectScale(FeatureTransformer):
     """
     Resize the image, keep the aspect ratio. scale according to the short edge
@@ -563,4 +576,15 @@ class BytesToMat(FeatureTransformer):
     """
     def __init__(self, bigdl_type="float"):
         super(BytesToMat, self).__init__(bigdl_type)
+
+class ImageFrameToSample(FeatureTransformer):
+    """
+    transform imageframe to samples
+    :param input_keys keys that maps inputs (each input should be a tensor)
+    :param target_keys keys that maps targets (each target should be a tensor)
+    :param sample_key key to store sample
+    """
+    def __init__(self, input_keys=["imageTensor"], target_keys=None,
+                 sample_key="sample", bigdl_type="float"):
+        super(ImageFrameToSample, self).__init__(bigdl_type, input_keys, target_keys, sample_key)
 
