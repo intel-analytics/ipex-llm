@@ -34,6 +34,8 @@ class DynamicGraph[T: ClassTag](
 )(implicit ev: TensorNumeric[T])
   extends Graph[T](_inputs, _outputs, _variables) {
 
+  buildBackwardGraph()
+
   override def updateOutput(input: Activity): Activity = {
     forwardScheduler.reset()
     while (!forwardScheduler.isFinished()) {
@@ -92,6 +94,11 @@ class DynamicGraph[T: ClassTag](
    * Generate backward graph and apply the stopGrad
    */
   override private[bigdl] def buildBackwardGraph(): this.type = {
+    if (!generateBackward) return this
+
+    forwardNodes.foreach(n => require(!n.element.isInstanceOf[ControlOps[_]],
+      "Not suppot generate back graph with control ops node"))
+
     super.buildBackwardGraph()
     val forwardNodeNames = forwardNodes.map(_.element.getName()).toSet
     val executableNodes = backwardGraph.DFS.map(_.element.getName())
@@ -109,11 +116,5 @@ class DynamicGraph[T: ClassTag](
     )
     clearState()
     this
-  }
-
-  if (generateBackward) {
-    forwardNodes.foreach(n => require(!n.element.isInstanceOf[ControlOps[_]],
-      "Not suppot generate back graph with control ops node"))
-    buildBackwardGraph()
   }
 }
