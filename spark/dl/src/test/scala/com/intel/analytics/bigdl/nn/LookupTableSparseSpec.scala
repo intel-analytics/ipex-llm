@@ -17,17 +17,87 @@
 package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.RandomGenerator._
 import org.scalatest.{FlatSpec, Matchers}
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.utils.T
 
 @com.intel.analytics.bigdl.tags.Parallel
 class LookupTableSparseSpec extends FlatSpec with Matchers {
+  "A LookupTableSparse without weight" should "generate correct output and gradient" in {
+    val indices1 = Array(0, 0, 1, 2)
+    val indices2 = Array(0, 1, 0, 3)
+    val values = Array(2f, 4, 1, 2)
+    val input = Tensor.sparse(Array(indices1, indices2), values, Array(3, 4))
+
+    val layer1 = LookupTableSparse(10, 4, "sum")
+    layer1.weight.range(1, 40, 1)
+    val output = layer1.forward(input)
+    val exceptedOutput = Tensor(3, 4)
+    exceptedOutput.select(1, 1).range(18, 24, 2)
+    exceptedOutput.select(1, 2).range(1, 4)
+    exceptedOutput.select(1, 3).range(5, 8)
+
+    val gradOutput = Tensor(T(
+      1.1f, 2.1f, 3.1f, 4.1f,
+      5.01f, 6.01f, 7.01f, 8.01f,
+      9.001f, 10.001f, 11.001f, 12.001f
+    )).resizeAs(output)
+
+    layer1.backward(input, gradOutput)
+
+    val exceptedGradWeight = Tensor(10, 4)
+    exceptedGradWeight.select(1, 1).copy(Tensor(T(
+      5.01f, 6.01f, 7.01f, 8.01f
+    )))
+    exceptedGradWeight.select(1, 2).copy(Tensor(T(
+      10.101f, 12.101f, 14.101f, 16.101f
+    )))
+    exceptedGradWeight.select(1, 4).copy(Tensor(T(
+      1.1f, 2.1f, 3.1f, 4.1f
+    )))
+
+    output should be (exceptedOutput)
+    layer1.gradWeight should be (exceptedGradWeight)
+  }
+
+  "A LookupTableSparse mean without weight" should "generate correct output and gradient" in {
+    val indices1 = Array(0, 0, 1, 2)
+    val indices2 = Array(0, 1, 0, 3)
+    val values = Array(2f, 4, 1, 2)
+    val input = Tensor.sparse(Array(indices1, indices2), values, Array(3, 4))
+
+    val layer1 = LookupTableSparse(10, 4, "mean")
+    layer1.weight.range(1, 40, 1)
+    val output = layer1.forward(input)
+    val exceptedOutput = Tensor(3, 4)
+    exceptedOutput.select(1, 1).range(9, 12)
+    exceptedOutput.select(1, 2).range(1, 4)
+    exceptedOutput.select(1, 3).range(5, 8)
+
+    val gradOutput = Tensor(T(
+      1.1f, 2.1f, 3.1f, 4.1f,
+      5.01f, 6.01f, 7.01f, 8.01f,
+      9.001f, 10.001f, 11.001f, 12.001f
+    )).resizeAs(output)
+
+    layer1.backward(input, gradOutput)
+
+    val exceptedGradWeight = Tensor(10, 4)
+    exceptedGradWeight.select(1, 1).copy(Tensor(T(
+      5.01f, 6.01f, 7.01f, 8.01f
+    )))
+    exceptedGradWeight.select(1, 2).copy(Tensor(T(
+      9.551f, 11.051f, 12.551f, 14.051f
+    )))
+    exceptedGradWeight.select(1, 4).copy(Tensor(T(
+      0.55f, 1.05f, 1.55f, 2.05f
+    )))
+
+    output should be (exceptedOutput)
+    layer1.gradWeight should be (exceptedGradWeight)
+  }
 
   "A LookupTableSparse" should "generate correct output and gradient" in {
-    val seed = 100
-    RNG.setSeed(seed)
     val indices1 = Array(0, 0, 1, 2)
     val indices2 = Array(0, 1, 0, 3)
     val values = Array(2f, 4, 1, 2)
@@ -67,8 +137,6 @@ class LookupTableSparseSpec extends FlatSpec with Matchers {
   }
 
   "A LookupTableSparse sum" should "generate correct output and gradient" in {
-    val seed = 100
-    RNG.setSeed(seed)
     val indices1 = Array(0, 0, 1, 2)
     val indices2 = Array(0, 1, 0, 3)
     val values = Array(2f, 4, 1, 2)
@@ -105,8 +173,6 @@ class LookupTableSparseSpec extends FlatSpec with Matchers {
   }
 
   "A LookupTableSparse sqrtn" should "generate correct output" in {
-    val seed = 100
-    RNG.setSeed(seed)
     val indices1 = Array(0, 0, 1, 2)
     val indices2 = Array(0, 1, 0, 3)
     val values = Array(2f, 4, 1, 2)
@@ -146,8 +212,6 @@ class LookupTableSparseSpec extends FlatSpec with Matchers {
   }
 
   "A LookupTableSparse sum with norm2" should "generate correct output and gradient" in {
-    val seed = 100
-    RNG.setSeed(seed)
     val indices1 = Array(0, 0, 1, 2)
     val indices2 = Array(0, 1, 0, 3)
     val values = Array(2f, 4, 1, 2)
@@ -184,8 +248,6 @@ class LookupTableSparseSpec extends FlatSpec with Matchers {
   }
 
   "A LookupTableSparse mean with norm2" should "generate correct output and gradient" in {
-    val seed = 100
-    RNG.setSeed(seed)
     val indices1 = Array(0, 0, 1, 2)
     val indices2 = Array(0, 1, 0, 3)
     val values = Array(2f, 4, 1, 2)
@@ -222,13 +284,10 @@ class LookupTableSparseSpec extends FlatSpec with Matchers {
   }
 
   "A LookupTableSparse sqrtn with norm2" should "generate correct output and gradient" in {
-    val seed = 100
-    RNG.setSeed(seed)
     val indices1 = Array(0, 0, 1, 2)
     val indices2 = Array(0, 1, 0, 3)
     val values = Array(2f, 4, 1, 2)
     val weightValues = Array(2f, 0.5f, 1, 3)
-//    val weightValues = Array(1f, 1f, 1, 1)
     val input = Tensor.sparse(Array(indices1, indices2), values, Array(3, 4))
     val weight = Tensor.sparse(Array(indices1, indices2), weightValues, Array(3, 4))
 

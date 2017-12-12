@@ -25,7 +25,7 @@ import scala.collection.mutable
 import scala.reflect.ClassTag
 
 /**
- * LookupTable for multi-values.
+ *LookupTable for multi-values.
  * Also called embedding_lookup_sparse in TensorFlow.
  *
  * The input of LookupTableSparse should be a 2D SparseTensor of a Table.
@@ -179,7 +179,7 @@ class LookupTableSparse[T: ClassTag](
 
         if (normScale != null && normScale.contains(index)) {
           val weightFrame = weight.select(1, index)
-          // sum = (weightFrame * gradOutputFrame).sum * maxNorm * sp_weights * batchScale
+          // sum = sum(weightFrame * gradOutputFrame) * maxNorm * sp_weights * batchScale
           val sum = ev.times(frameBuffer.resizeAs(weightFrame).copy(weightFrame)
             .cmul(gradOutputFrame).sum,
             ev.times(ev.fromType(maxNorm), ev.divide(scale, normScale(index))))

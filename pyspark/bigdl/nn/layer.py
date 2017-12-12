@@ -2826,7 +2826,7 @@ class LookupTableSparse(Layer):
                  n_index,
                  n_output,
                  combiner="sum",
-                 max_norm=-1,
+                 max_norm=-1.0,
                  wRegularizer=None,
                  bigdl_type="float"):
         super(LookupTableSparse, self).__init__(None, bigdl_type,

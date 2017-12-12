@@ -875,7 +875,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def createLookupTableSparse(nIndex: Int, nOutput: Int,
-    maxNorm: Double = -1, combiner: String = "sum",
+    combiner: String = "sum", maxNorm: Double = -1,
     wRegularizer: Regularizer[T] = null)
   : LookupTableSparse[T] = {
     LookupTableSparse[T](nIndex,
