@@ -24,6 +24,15 @@ import com.intel.analytics.bigdl.utils.{T, Table}
 
 import scala.reflect.ClassTag
 
+/**
+ * NormalizeScale is conposed of normalize and scale, this is equal to caffe Normalize layer
+ * @param p L_p norm
+ * @param eps smoothing parameter
+ * @param scale scale parameter
+ * @param size size of scale input
+ * @param wRegularizer weight regularizer
+ * @tparam T The numeric type in the criterion, usually which are [[Float]] or [[Double]]
+ */
 @SerialVersionUID(8394549762420197622L)
 class NormalizeScale[T: ClassTag](val p: Double, val eps: Double = 1e-10,
   val scale: Double, val size: Array[Int],

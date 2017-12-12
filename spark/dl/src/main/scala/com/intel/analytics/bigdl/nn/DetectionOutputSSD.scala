@@ -25,12 +25,28 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.transform.vision.image.util.BboxUtil
 import com.intel.analytics.bigdl.utils.Table
 import org.apache.log4j.Logger
-import DetectionOutput.logger
+import DetectionOutputSSD.logger
 
 import scala.reflect.ClassTag
 
+/**
+ * Layer to Post-process SSD output
+ * @param nClasses number of classes
+ * @param shareLocation whether to share location, default is true
+ * @param bgLabel background label
+ * @param nmsThresh nms threshold
+ * @param nmsTopk nms topk
+ * @param keepTopK result topk
+ * @param confThresh confidence threshold
+ * @param varianceEncodedInTarget if variance is encoded in target,
+ *                                we simply need to retore the offset predictions,
+ *                                else if variance is encoded in bbox,
+ *                                we need to scale the offset accordingly.
+ * @param confPostProcess whether add some additional post process to confidence prediction
+ * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now
+ */
 @SerialVersionUID(5253792953255433914L)
-class DetectionOutput[T: ClassTag](val nClasses: Int = 21,
+class DetectionOutputSSD[T: ClassTag](val nClasses: Int = 21,
   val shareLocation: Boolean = true,
   val bgLabel: Int = 0,
   val nmsThresh: Float = 0.45f,
@@ -38,7 +54,7 @@ class DetectionOutput[T: ClassTag](val nClasses: Int = 21,
   var keepTopK: Int = 200,
   val confThresh: Float = 0.01f,
   val varianceEncodedInTarget: Boolean = false,
-  val postProcess: Boolean = true)
+  val confPostProcess: Boolean = true)
   (implicit ev: TensorNumeric[T])
   extends AbstractModule[Table, Activity, T] {
   @transient private var nms: Nms = _
@@ -158,7 +174,7 @@ class DetectionOutput[T: ClassTag](val nClasses: Int = 21,
   }
 
 
-  private val confPost = if (postProcess) {
+  private val confPost = if (confPostProcess) {
     Sequential[T]()
       .add(InferReshape[T](Array(0, -1, nClasses)).setName("mbox_conf_reshape"))
       .add(TimeDistributed[T](SoftMax[T]()).setName("mbox_conf_softmax"))
@@ -174,7 +190,7 @@ class DetectionOutput[T: ClassTag](val nClasses: Int = 21,
     }
     if (nms == null) nms = new Nms()
     val loc = input[Tensor[Float]](1)
-    val conf = if (postProcess) {
+    val conf = if (confPostProcess) {
       confPost.forward(input[Tensor[Float]](2)).toTensor[Float]
     } else {
       input[Tensor[Float]](2)
@@ -223,7 +239,6 @@ class DetectionOutput[T: ClassTag](val nClasses: Int = 21,
             val indicesNum = allIndicesNum(i)(c)
             val locLabel = if (shareLocation) allDecodedBboxes(i).length - 1 else c
             val bboxes = allDecodedBboxes(i)(locLabel)
-            var bboxesOffset = allDecodedBboxes(i)(locLabel).storageOffset() - 1
             var j = 0
             while (j < indicesNum) {
               val idx = indices(j)
@@ -251,7 +266,7 @@ class DetectionOutput[T: ClassTag](val nClasses: Int = 21,
     gradInput
   }
 
-  override def clearState(): DetectionOutput.this.type = {
+  override def clearState(): DetectionOutputSSD.this.type = {
     nms = null
     allLocPreds = null
     allConfScores = null
@@ -262,12 +277,13 @@ class DetectionOutput[T: ClassTag](val nClasses: Int = 21,
   }
 }
 
-object DetectionOutput {
+object DetectionOutputSSD {
   val logger = Logger.getLogger(getClass)
 
-  def apply[@specialized(Float) T: ClassTag](param: PostProcessParam, postProcess: Boolean = true)
-    (implicit ev: TensorNumeric[T]): DetectionOutput[T] =
-    new DetectionOutput[T](param.nClasses,
+  def apply[@specialized(Float) T: ClassTag]
+  (param: DetectionOutputParam, postProcess: Boolean = true)
+    (implicit ev: TensorNumeric[T]): DetectionOutputSSD[T] =
+    new DetectionOutputSSD[T](param.nClasses,
       param.shareLocation,
       param.bgLabel,
       param.nmsThresh,
@@ -279,7 +295,7 @@ object DetectionOutput {
 }
 
 
-case class PostProcessParam(nClasses: Int = 21, shareLocation: Boolean = true, bgLabel: Int = 0,
+case class DetectionOutputParam(nClasses: Int = 21, shareLocation: Boolean = true, bgLabel: Int = 0,
   nmsThresh: Float = 0.45f, nmsTopk: Int = 400, var keepTopK: Int = 200,
   confThresh: Float = 0.01f,
   varianceEncodedInTarget: Boolean = false)

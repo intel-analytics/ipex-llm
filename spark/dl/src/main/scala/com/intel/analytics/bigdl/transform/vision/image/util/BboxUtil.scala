@@ -433,4 +433,48 @@ object BboxUtil {
     }
     areas
   }
+
+  def getGroundTruths(result: Tensor[Float]): Map[Int, Tensor[Float]] = {
+    val indices = getGroundTruthIndices(result).toArray.sortBy(_._1)
+    var gtMap = Map[Int, Tensor[Float]]()
+    var ind = 0
+    val iter = indices.iterator
+    while (iter.hasNext) {
+      val x = iter.next()
+      val gt = result.narrow(1, x._2._1, x._2._2)
+      // -1 represent those images without label
+      if (gt.size(1) > 1 || gt.valueAt(1, 2) != -1) {
+        gtMap += (ind -> gt)
+      }
+      ind += 1
+    }
+    gtMap
+    //    indices.map(x => x._1 -> result.narrow(1, x._2._1, x._2._2))
+  }
+
+  def getGroundTruthIndices(result: Tensor[Float]): Map[Int, (Int, Int)] = {
+    var indices = Map[Int, (Int, Int)]()
+    if (result.nElement() == 0) return indices
+    var prev = -1f
+    var i = 1
+    var start = 1
+    if (result.size(1) == 1) {
+      indices += (result.valueAt(i, 1).toInt -> (1, 1))
+      return indices
+    }
+    while (i <= result.size(1)) {
+      if (prev != result.valueAt(i, 1)) {
+        if (prev >= 0) {
+          indices += (prev.toInt -> (start, i - start))
+        }
+        start = i
+      }
+      prev = result.valueAt(i, 1)
+      if (i == result.size(1)) {
+        indices += (prev.toInt -> (start, i - start + 1))
+      }
+      i += 1
+    }
+    indices
+  }
 }

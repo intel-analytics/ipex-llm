@@ -22,34 +22,37 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.transform.vision.image.label.roi.RoiLabel
 import com.intel.analytics.bigdl.transform.vision.image.util.BboxUtil
 import com.intel.analytics.bigdl.utils.Table
-import org.apache.commons.lang3.SerializationUtils
 import org.apache.log4j.Logger
 
 import scala.collection.mutable.ArrayBuffer
 
 
-object FrcnnPostprocessor {
+object DetectionOutputFrcnn {
   val logger = Logger.getLogger(this.getClass)
 
   def apply(nmsThresh: Float = 0.3f, nClasses: Int,
   bboxVote: Boolean, maxPerImage: Int = 100, thresh: Double = 0.05)(
-    implicit ev: TensorNumeric[Float]): FrcnnPostprocessor =
-    new FrcnnPostprocessor(nmsThresh, nClasses, bboxVote, maxPerImage, thresh)
+    implicit ev: TensorNumeric[Float]): DetectionOutputFrcnn =
+    new DetectionOutputFrcnn(nmsThresh, nClasses, bboxVote, maxPerImage, thresh)
 }
 
+/**
+ * Post process Faster-RCNN models
+ * @param nmsThresh nms threshold
+ * @param nClasses number of classes
+ * @param bboxVote whether to vote for detections
+ * @param maxPerImage limit max number of detections per image
+ * @param thresh score threshold
+ */
 @SerialVersionUID(5253792953255433914L)
-class FrcnnPostprocessor(var nmsThresh: Float = 0.3f, val nClasses: Int,
+class DetectionOutputFrcnn(var nmsThresh: Float = 0.3f, val nClasses: Int,
   var bboxVote: Boolean, var maxPerImage: Int = 100, var thresh: Double = 0.05)(
   implicit ev: TensorNumeric[Float]) extends AbstractModule[Table, Activity, Float] {
 
   @transient var nmsTool: Nms = _
 
-  /**
-   *
-   * @param scores (N, clsNum)
-   * @param boxes (N, 4 * clsNum)
-   * @return
-   */
+  // scores (N, clsNum)
+  // boxes (N, 4 * clsNum)
   private def postProcess(scores: Tensor[Float], boxes: Tensor[Float])
   : Array[RoiLabel] = {
     require(scores.size(1) == boxes.size(1))
@@ -195,7 +198,6 @@ class FrcnnPostprocessor(var nmsThresh: Float = 0.3f, val nClasses: Int,
           val selectedScores = selectTensor(results(j).classes, keep, 1)
           val selectedBoxes = selectTensor(results(j).bboxes, keep, 1)
           if (selectedScores.nElement() == 0) {
-            // todo: there is a bug in tensor to resizeAs empty tensor
             results(j).classes.set()
             results(j).bboxes.set()
           } else {
@@ -226,11 +228,6 @@ class FrcnnPostprocessor(var nmsThresh: Float = 0.3f, val nClasses: Int,
       imInfo.valueAt(1, 2) / imInfo.valueAt(1, 4))
     val res = postProcess(scores, predBoxes)
     res
-  }
-
-
-  override def clone(): FrcnnPostprocessor = {
-    SerializationUtils.clone(this)
   }
 
   override def updateOutput(input: Table): Activity = {

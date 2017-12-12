@@ -202,4 +202,3 @@ object Proposal {
     (implicit ev: TensorNumeric[Float]): Proposal
   = new Proposal(preNmsTopN, postNmsTopN, ratios, scales, rpnPreNmsTopNTrain, rpnPostNmsTopNTrain)
 }
-

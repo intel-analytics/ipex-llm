@@ -29,20 +29,12 @@ import scala.reflect._
  * all dimensions (H * W)
  * Intended for use with MultiBox detection method to generate prior
  *
- * @param minSizes      minimum box size in pixels. can be multiple. required!
- * @param maxSizes      maximum box size in pixels. can be ignored or same as the
- *                      # of min_size.
+ * @param minSizes minimum box size in pixels. can be multiple. required!
+ * @param maxSizes maximum box size in pixels. can be ignored or same as the
+ * # of min_size.
  * @param _aspectRatios optional aspect ratios of the boxes. can be multiple
- * @param isFlip        optional bool, default true. if set, flip the aspect ratio.
- * @param isClip        whether to clip the prior's coordidate such that it is within [0, 1]
- * @param variances
- * @param offset
- * @param imgH
- * @param imgW
- * @param imgSize
- * @param stepH
- * @param stepW
- * @param step
+ * @param isFlip optional bool, default true. if set, flip the aspect ratio.
+ * @param isClip whether to clip the prior's coordidate such that it is within [0, 1]
  * @tparam T Numeric type. Only support float/double now
  */
 @SerialVersionUID(7934178172129260471L)
@@ -125,6 +117,7 @@ class PriorBox[T: ClassTag](minSizes: Array[Float], maxSizes: Array[Float] = nul
   /**
    * Computes the output using the current parameter set of the class and input. This function
    * returns the result which is stored in the output field.
+   *
    * @param input
    * @return
    */
@@ -312,19 +305,10 @@ class PriorBox[T: ClassTag](minSizes: Array[Float], maxSizes: Array[Float] = nul
     }
   }
 
-  /**
-   * Computing the gradient of the module with respect to its own input. This is returned in
-   * gradInput. Also, the gradInput state variable is updated accordingly.
-   * @param input
-   * @param gradOutput
-   * @return
-   */
   override def updateGradInput(input: Activity, gradOutput: Tensor[T]): Activity = {
     gradInput = null
     gradInput
   }
-
-  override def toString: String = getName()
 }
 
 object PriorBox {

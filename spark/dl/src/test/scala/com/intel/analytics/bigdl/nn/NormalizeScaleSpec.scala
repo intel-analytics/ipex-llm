@@ -221,7 +221,7 @@ class NormalizeScaleSpec extends FlatSpec with Matchers {
       -1.9749751091, -10.5258388519)
       .map(x => x.toFloat))).reshape(Array(2, 5, 3, 3))
 
-    val module = new NormalizeScale[Float](2, scale = 20, size = Array(1, 5, 1, 1))
+    val module = NormalizeScale[Float](2, scale = 20, size = Array(1, 5, 1, 1))
 
     val out = module.forward(input)
     out should be(expectedOutput)
