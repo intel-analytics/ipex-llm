@@ -2144,6 +2144,18 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
       vMethods.asScala.toArray)
   }
 
+  def setValidation(optimizer: Optimizer[T, MiniBatch[T]],
+                    batchSize: Int,
+                    trigger: Trigger,
+                    xVal: JList[JTensor],
+                    yVal: JTensor,
+                    vMethods: JList[ValidationMethod[T]]): Unit = {
+
+    val sampleArray = toSampleArray(xVal.asScala.toList.map{f => toTensor(f)}, toTensor(yVal))
+    optimizer.setValidation(trigger, batching(DataSet.array(sampleArray), batchSize),
+      vMethods.asScala.toArray)
+  }
+
   def setTrainData(optimizer: Optimizer[T, MiniBatch[T]],
                  trainingRdd: JavaRDD[Sample],
                  batchSize: Int): Unit = {

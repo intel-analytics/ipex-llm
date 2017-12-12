@@ -118,9 +118,9 @@ class TestSimple():
         assert optim_method.momentum() == sgd.value.momentum()
         assert optim_method.nesterov() == sgd.value.nesterov()
 
-        optimizer = Optimizer(
+        optimizer = Optimizer.create(
             model=model,
-            training_rdd=trainingData,
+            training_set=trainingData,
             criterion=MSECriterion(),
             optim_method=optim_method,
             end_trigger=MaxEpoch(epoch_num),
@@ -233,9 +233,9 @@ class TestSimple():
         optim_method = SGD(learningrate=0.01, learningrate_decay=0.0002, weightdecay=0.0,
                            momentum=0.0, dampening=0.0, nesterov=False,
                            leaningrate_schedule=Poly(0.5, int((data_len / batch_size) * epoch_num)))
-        optimizer = Optimizer(
+        optimizer = Optimizer.create(
             model=model_test,
-            training_rdd=trainingData,
+            training_set=trainingData,
             criterion=MSECriterion(),
             optim_method=optim_method,
             end_trigger=MaxEpoch(epoch_num),
@@ -309,9 +309,9 @@ class TestSimple():
         optim_method = SGD(learningrate=0.01, learningrate_decay=0.0002, weightdecay=0.0,
                            momentum=0.0, dampening=0.0, nesterov=False,
                            leaningrate_schedule=Poly(0.5, int((data_len / batch_size) * epoch_num)))
-        optimizer = Optimizer(
+        optimizer = Optimizer.create(
             model=model_test,
-            training_rdd=trainingData,
+            training_set=trainingData,
             criterion=MSECriterion(),
             optim_method=optim_method,
             end_trigger=MaxEpoch(epoch_num),
@@ -346,9 +346,9 @@ class TestSimple():
         branches.add(branch1).add(branch2)
         model_test.add(branches)
 
-        optimizer = Optimizer(
+        optimizer = Optimizer.create(
             model=model_test,
-            training_rdd=training_data,
+            training_set=training_data,
             criterion=MarginRankingCriterion(),
             optim_method=SGD(),
             end_trigger=MaxEpoch(5),
@@ -554,14 +554,14 @@ class TestSimple():
         l1 = Linear(feature_num, 1)
         model.add(l1)
 
-        localOptimizer = LocalOptimizer(
+        localOptimizer = Optimizer.create(
             model=model,
-            X=X_,
-            y=y_,
+            training_set=(X_, y_),
             criterion=MSECriterion(),
             optim_method=SGD(learningrate=1e-2),
             end_trigger=MaxEpoch(epoch_num),
             batch_size=batch_size)
+
         trained_model = localOptimizer.optimize()
         trained_model = model
         w = trained_model.get_weights()
