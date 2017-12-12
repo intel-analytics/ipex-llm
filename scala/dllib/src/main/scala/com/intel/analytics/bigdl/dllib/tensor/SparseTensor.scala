@@ -1041,6 +1041,10 @@ private[tensor] class SparseTensor[@specialized(Float, Double) T: ClassTag](
   override def reduce(dim: Int, result: Tensor[T], reducer: (T, T) => T): Tensor[T] = {
     throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
   }
+
+  override def toArray(): Array[T] = {
+    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+  }
 }
 
 object SparseTensor{
