@@ -76,7 +76,8 @@ object VggForCifar10 {
     vggBnDo
   }
 
-  def graph(classNum: Int, hasDropout: Boolean = true): Module[Float] = {
+  def graph(classNum: Int, hasDropout: Boolean = true, isDynamic: Boolean = false)
+  : Module[Float] = {
     val input = Input()
     def convBNReLU(nInputPlane: Int, nOutPutPlane: Int)(input: ModuleNode[Float])
     : ModuleNode[Float] = {
@@ -123,7 +124,7 @@ object VggForCifar10 {
     val drop10 = if (hasDropout) Dropout(0.5).inputs(relu) else relu
     val linear2 = Linear(512, classNum).inputs(drop10)
     val output = LogSoftMax().inputs(linear2)
-    Graph(input, output)
+    if(isDynamic) Graph.dynamic(input, output) else Graph(input, output)
   }
 }
 
@@ -179,7 +180,8 @@ object Vgg_16 {
     model
   }
 
-  def graph(classNum: Int, hasDropout: Boolean = true): Module[Float] = {
+  def graph(classNum: Int, hasDropout: Boolean = true, isDynamic: Boolean = false)
+  : Module[Float] = {
     val conv1 = SpatialConvolution(3, 64, 3, 3, 1, 1, 1, 1).inputs()
     val relu1 = ReLU(true).inputs(conv1)
     val conv2 = SpatialConvolution(64, 64, 3, 3, 1, 1, 1, 1).inputs(relu1)
@@ -226,7 +228,7 @@ object Vgg_16 {
     val linear3 = Linear(4096, classNum).inputs(drop2)
     val output = LogSoftMax().inputs(linear3)
 
-    Graph(conv1, output)
+    if(isDynamic) Graph.dynamic(conv1, output) else Graph(conv1, output)
   }
 }
 
@@ -288,7 +290,8 @@ object Vgg_19 {
     model
   }
 
-  def graph(classNum: Int, hasDropout: Boolean = true): Module[Float] = {
+  def graph(classNum: Int, hasDropout: Boolean = true, isDynamic: Boolean = false)
+  : Module[Float] = {
     val conv1 = SpatialConvolution(3, 64, 3, 3, 1, 1, 1, 1).inputs()
     val relu1 = ReLU(true).inputs(conv1)
     val conv2 = SpatialConvolution(64, 64, 3, 3, 1, 1, 1, 1).inputs(relu1)
@@ -341,6 +344,6 @@ object Vgg_19 {
     val linear3 = Linear(4096, classNum).inputs(drop2)
     val output = LogSoftMax().inputs(linear3)
 
-    Graph(conv1, output)
+    if(isDynamic) Graph.dynamic(conv1, output) else Graph(conv1, output)
   }
 }

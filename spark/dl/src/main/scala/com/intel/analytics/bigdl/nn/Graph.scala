@@ -400,7 +400,7 @@ object Graph extends ContainerSerializable {
     input : Array[ModuleNode[T]],
     output : Array[ModuleNode[T]],
     variables: Option[(Array[Tensor[T]], Array[Tensor[T]])] = None,
-    generateBackward: Boolean)(implicit ev: TensorNumeric[T]) : Graph[T] = {
+    generateBackward: Boolean = true)(implicit ev: TensorNumeric[T]) : Graph[T] = {
     new DynamicGraph[T](input, output, variables, generateBackward)
   }
 
@@ -415,6 +415,11 @@ object Graph extends ContainerSerializable {
     new StaticGraph[T](Seq(input), output)
   }
 
+  def dynamic[T: ClassTag](input : ModuleNode[T], output : Array[ModuleNode[T]])
+    (implicit ev: TensorNumeric[T]) : Graph[T] = {
+    new DynamicGraph[T](Array(input), output, None, true)
+  }
+
   /**
    * Build a multiple inputs, single output graph container
    * @param input input nodes
@@ -426,6 +431,11 @@ object Graph extends ContainerSerializable {
     new StaticGraph[T](input, Seq(output))
   }
 
+  def dynamic[T: ClassTag](input : Array[ModuleNode[T]], output : ModuleNode[T])
+    (implicit ev: TensorNumeric[T]) : Graph[T] = {
+    new DynamicGraph[T](input, Array(output), None, true)
+  }
+
   /**
    * Build a single input, single output graph container
    * @param input input nodes
@@ -435,6 +445,11 @@ object Graph extends ContainerSerializable {
   def apply[T: ClassTag](input : ModuleNode[T], output : ModuleNode[T])
     (implicit ev: TensorNumeric[T]) : Graph[T] = {
     new StaticGraph[T](Seq(input), Seq(output))
+  }
+
+  def dynamic[T: ClassTag](input : ModuleNode[T], output : ModuleNode[T])
+    (implicit ev: TensorNumeric[T]) : Graph[T] = {
+    new DynamicGraph[T](Array(input), Array(output), None, true)
   }
 
   override def doLoadModule[T: ClassTag](context: DeserializeContext)
