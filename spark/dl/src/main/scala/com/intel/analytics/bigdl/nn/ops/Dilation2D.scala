@@ -36,7 +36,7 @@ import scala.reflect.ClassTag
  * output[b, y, x, c] =
  *     max_{dy, dx} input[b,
  *                        strides[1] * y + rates[1] * dy,
- *                        strides[2] * x +, rates[2] * dx,
+ *                        strides[2] * x + rates[2] * dx,
  *                        c] +
  *                  filter[dy, dx, c]
  *
@@ -47,7 +47,9 @@ import scala.reflect.ClassTag
  * erosion of `-input` by the reflected `filter`.
  *
  */
-class Dilation2D[T: ClassTag, D: ClassTag](strides: Seq[Int], rates: Seq[Int], padding: String)
+class Dilation2D[T: ClassTag, D: ClassTag](val strides: Seq[Int],
+                                           val rates: Seq[Int],
+                                           val padding: String)
        (implicit ev: TensorNumeric[T], ev2: TensorNumeric[D])
   extends Operation[Table, Tensor[D], T] {
 

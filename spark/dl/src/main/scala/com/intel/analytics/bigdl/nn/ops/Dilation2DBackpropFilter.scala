@@ -15,6 +15,7 @@
  */
 package com.intel.analytics.bigdl.nn.ops
 
+import com.intel.analytics.bigdl.nn.Utils
 import com.intel.analytics.bigdl.tensor.{DoubleType, FloatType, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Table
@@ -27,27 +28,13 @@ class Dilation2DBackpropFilter[T: ClassTag, D: ClassTag](
          padding: String)(implicit ev: TensorNumeric[T], ev2: TensorNumeric[D])
   extends Operation[Table, Tensor[D], T]{
 
-  private def getOutputSize(inputSize: Int, filterSize: Int, stride: Int, padding: String) = {
-    padding.toLowerCase() match {
-      case "valid" =>
-        val outputSize = (inputSize - filterSize + stride) / stride
-        (outputSize, 0, 0)
-      case "same" =>
-        val outputSize = (inputSize + stride - 1) / stride
-        val paddingNeeded = math.max(0, (outputSize - 1) * stride + filterSize - inputSize)
-        val padBefore = paddingNeeded / 2
-        val padAfter = paddingNeeded - padBefore
-        (outputSize, padBefore, padAfter)
-    }
-  }
-
   private def dilation2DBackpropFilterFloat(
-                                         input: Tensor[Float],
-                                         filter: Tensor[Float],
-                                         outBackprop: Tensor[Float],
-                                         filterBackprop: Tensor[Float],
-                                         strideRows: Int, strideCols: Int,
-                                         rateRows: Int, rateCols: Int) = {
+       input: Tensor[Float],
+       filter: Tensor[Float],
+       outBackprop: Tensor[Float],
+       filterBackprop: Tensor[Float],
+       strideRows: Int, strideCols: Int,
+       rateRows: Int, rateCols: Int) = {
 
     val batch = input.size(1)
     val inputRows = input.size(2)
@@ -61,9 +48,9 @@ class Dilation2DBackpropFilter[T: ClassTag, D: ClassTag](
     val filterColsEff = filterCols + (filterCols - 1) * (rateCols - 1)
 
     val (outputRows, padTop, _) =
-      getOutputSize(inputRows, filterRowsEff, strideRows, padding)
+      Utils.getOutputSize(inputRows, filterRowsEff, strideRows, padding)
     val (outputCols, padLeft, _) =
-      getOutputSize(inputCols, filterColsEff, strideCols, padding)
+      Utils.getOutputSize(inputCols, filterColsEff, strideCols, padding)
 
     filterBackprop.resizeAs(filter)
 
