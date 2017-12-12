@@ -1641,14 +1641,11 @@ res: com.intel.analytics.bigdl.tensor.Tensor[Float] =
 [com.intel.analytics.bigdl.tensor.DenseTensor of size 2x6x3]
 ```
 
->>>>>>> Update Convolution-Layers.md
-
 **Python example:**
 ```python
 from bigdl.nn.layer import *
 import numpy as np
 
-<<<<<<< 9cdea9becf90df1739bcb8d86716d7823c10e389
 input = np.random.rand(1,2,2,2,2)
 print "input is :",input
 
@@ -1713,7 +1710,6 @@ output m is : [[[[[ 0.80314147  0.80314147  0.7915861   0.7915861 ]
     [ 0.74973559  0.74973559  0.2245238   0.2245238 ]
     [ 0.74973559  0.74973559  0.2245238   0.2245238 ]]]]]
 ```
-=======
 module = UpSampling1D(2)
 input = np.arange(1, 19).reshape(2, 3, 3)
 module.forward(input)
