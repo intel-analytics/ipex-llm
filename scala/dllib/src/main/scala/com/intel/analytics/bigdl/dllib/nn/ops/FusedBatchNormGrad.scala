@@ -35,14 +35,16 @@ import scala.reflect.ClassTag
  *
  * @param epsilon
  * @param dataFormat
- * @param isTraining
+ * @param isTrain
  * @param ev$1
  * @param ev
  * @tparam T Numeric type. Only support float/double now
  */
 class FusedBatchNormGrad[T: ClassTag](
-  epsilon: Float, dataFormat: DataFormat, isTraining: Boolean)(implicit ev: TensorNumeric[T])
+  val epsilon: Float, val dataFormat: DataFormat,
+  val isTrain: Boolean = false)(implicit ev: TensorNumeric[T])
   extends Operation[Table, Table, T]{
+
 
   private val gMean = Tensor[Float]()
   private val gxMean = Tensor[Float]()

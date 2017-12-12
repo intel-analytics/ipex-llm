@@ -309,31 +309,32 @@ abstract class Cell[T : ClassTag](
 
 object CellSerializer extends ModuleSerializable {
 
-  override def doLoadModule[T: ClassTag](context : DeserializeContext)
+  private[nn] def populateCellAttributes[T: ClassTag](context : DeserializeContext,
+                                                   cell : Cell[T])
     (implicit ev: TensorNumeric[T]) : AbstractModule[Activity, Activity, T] = {
-    val module = super.doLoadModule(context)
-    val cellModule = module.asInstanceOf[Cell[T]]
-
     val attrMap = context.bigdlModule.getAttrMap
-    cellModule.cell = DataConverter.getAttributeValue(context, attrMap.get("cell")).
+    cell.cell = DataConverter.getAttributeValue(context, attrMap.get("cell")).
       asInstanceOf[AbstractModule[Activity, Activity, T]]
 
     val preTopologyAttr = attrMap.get("preTopology")
-    cellModule.preTopology = DataConverter.getAttributeValue(context, preTopologyAttr).
+    cell.preTopology = DataConverter.getAttributeValue(context, preTopologyAttr).
       asInstanceOf[TensorModule[T]]
 
     val includePreTopologyAttr = attrMap.get("includePreTopology")
-    cellModule.includePreTopology = DataConverter.getAttributeValue(context,
+    cell.includePreTopology = DataConverter.getAttributeValue(context,
       includePreTopologyAttr).asInstanceOf[Boolean]
-
-    cellModule
+    cell
   }
 
-  override def doSerializeModule[T: ClassTag](context: SerializeContext[T],
-                                              cellModuleBuilder : BigDLModule.Builder)
-                                           (implicit ev: TensorNumeric[T]) : Unit = {
+  override def doLoadModule[T: ClassTag](context : DeserializeContext)
+    (implicit ev: TensorNumeric[T]) : AbstractModule[Activity, Activity, T] = {
+    val cell = super.doLoadModule(context).asInstanceOf[Cell[T]]
+    populateCellAttributes(context, cell)
+  }
 
-    super.doSerializeModule(context, cellModuleBuilder)
+  private[nn] def saveCellAttributes[T: ClassTag](context: SerializeContext[T],
+    cellModuleBuilder : BigDLModule.Builder)
+    (implicit ev: TensorNumeric[T]) : Unit = {
     val cellModule = context.moduleData.module.asInstanceOf[Cell[T]]
 
     val cellSerializerFlagBuilder = AttrValue.newBuilder
@@ -355,5 +356,13 @@ object CellSerializer extends ModuleSerializable {
     DataConverter.setAttributeValue(context, includePreTopologyBuilder,
       cellModule.includePreTopology, scala.reflect.runtime.universe.typeOf[Boolean])
     cellModuleBuilder.putAttr("includePreTopology", includePreTopologyBuilder.build)
+  }
+
+  override def doSerializeModule[T: ClassTag](context: SerializeContext[T],
+                                              cellModuleBuilder : BigDLModule.Builder)
+                                           (implicit ev: TensorNumeric[T]) : Unit = {
+
+    super.doSerializeModule(context, cellModuleBuilder)
+    saveCellAttributes(context, cellModuleBuilder)
   }
 }
