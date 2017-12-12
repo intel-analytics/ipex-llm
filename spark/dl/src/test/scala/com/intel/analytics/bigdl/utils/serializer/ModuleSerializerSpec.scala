@@ -648,7 +648,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers with BeforeAndAfterAll
     runSerializationTest(lstmModel, input, lstm.getClass)
   }
 
-  "LookupTableSparse serializer " should " work properly" in {
+  "LookupTableSparse serializer" should "work properly" in {
     val lookupTableSparse = LookupTableSparse[Float](20, 10, "sum", 1)
     val indices1 = Array(0, 0, 1, 2)
     val indices2 = Array(0, 1, 0, 3)
