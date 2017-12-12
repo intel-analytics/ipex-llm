@@ -174,7 +174,7 @@ object Inception_v1_NoAuxClassifier {
       .setName("loss3/classifier").inputs(view)
     val loss = LogSoftMax().setName("loss3/loss3").inputs(classifier)
 
-    val model = if(isDynamic) Graph.dynamic(input, loss) else Graph(input, loss)
+    val model = if (isDynamic) Graph.dynamic(input, loss) else Graph(input, loss)
     model
   }
 }
