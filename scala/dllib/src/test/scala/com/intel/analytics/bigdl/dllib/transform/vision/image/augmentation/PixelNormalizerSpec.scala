@@ -36,7 +36,7 @@ class PixelNormalizerSpec extends FlatSpec with Matchers {
     val transformed = transformer(data)
 
     val data2 = ImageFrame.read(resource.getFile)
-    val toFloat = MatToFloats(meanRGB = Some(100f, 200f, 300f))
+    val toFloat = new MatToFloatsWithNorm(meanRGB = Some(100f, 200f, 300f))
     val transformed2 = toFloat(data2)
 
     val imageFeature = transformed.asInstanceOf[LocalImageFrame].array(0)

@@ -1766,6 +1766,16 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     new JavaRDD[JTensor](listRDD)
   }
 
+  def modelPredictImage(model: AbstractModule[Activity, Activity, T],
+    imageFrame: ImageFrame,
+    featLayerName: String,
+    shareBuffer: Boolean,
+    batchPerPartition: Int,
+    predictKey: String)
+  : DistributedImageFrame = {
+    model.predictImage(imageFrame, featLayerName, shareBuffer, batchPerPartition, predictKey)
+  }
+
   def evaluate(module: AbstractModule[Activity, Activity, T]):
   AbstractModule[Activity, Activity, T] = {
     module.evaluate()
@@ -2623,29 +2633,8 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     feature
   }
 
-  def imageFeatureToSample(imageFeature: ImageFeature,
-    floatKey: String = ImageFeature.floats, toChw: Boolean = true,
-    withImInfo: Boolean = false): Sample = {
-    val imageTensor = imageFeatureToImageTensor(imageFeature, floatKey, toChw)
-    val features = new util.ArrayList[JTensor]()
-    features.add(imageTensor)
-    if (withImInfo) {
-      val imInfo = imageFeature.getImInfo()
-      features.add(toJTensor(imInfo.asInstanceOf[Tensor[T]]))
-    }
-    val labels = new util.ArrayList[JTensor]()
-    labels.add(imageFeatureToLabelTensor(imageFeature))
-    Sample(features, labels, "float")
-  }
-
   def imageFeatureGetKeys(imageFeature: ImageFeature): JList[String] = {
     imageFeature.keys().toList.asJava
-  }
-
-  def distributedImageFrameToSampleRdd(imageFrame: DistributedImageFrame,
-    floatKey: String = ImageFeature.floats, toChw: Boolean = true, withImInfo: Boolean = false)
-  : JavaRDD[Sample] = {
-    imageFrame.rdd.map(imageFeatureToSample(_, floatKey, toChw, withImInfo)).toJavaRDD()
   }
 
   def distributedImageFrameToImageTensorRdd(imageFrame: DistributedImageFrame,
@@ -2657,10 +2646,15 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     imageFrame.rdd.map(imageFeatureToLabelTensor).toJavaRDD()
   }
 
-  def localImageFrameToSample(imageFrame: LocalImageFrame,
-    floatKey: String = ImageFeature.floats, toChw: Boolean = true, withImInfo: Boolean = false)
-  : JList[Sample] = {
-    imageFrame.array.map(imageFeatureToSample(_, floatKey, toChw, withImInfo)).toList.asJava
+
+  def distributedImageFrameToPredict(imageFrame: DistributedImageFrame, key: String)
+  : JavaRDD[JList[Any]] = {
+    imageFrame.rdd.map(x => List[Any](x.uri(), toJTensor(x[Tensor[T]](key))).asJava)
+  }
+
+  def localImageFrameToPredict(imageFrame: LocalImageFrame, key: String)
+  : JList[(String, JTensor)] = {
+    imageFrame.array.map(x => (x.uri(), toJTensor(x[Tensor[T]](key)))).toList.asJava
   }
 
   def localImageFrameToImageTensor(imageFrame: LocalImageFrame,
@@ -2698,9 +2692,22 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     BytesToMat()
   }
 
+  def createMatToFloats(validHeight: Int = 300, validWidth: Int = 300, validChannels: Int = 3,
+    outKey: String = ImageFeature.floats): MatToFloats =
+    new MatToFloats(validHeight, validWidth, validChannels, outKey)
+
+  def createMatToTensor(toRGB: Boolean = false, tensorKey: String = ImageFeature.imageTensor)
+  : MatToTensor[T] = new MatToTensor[T](toRGB, tensorKey)
+
   def isLocal(imageFrame: ImageFrame): Boolean = imageFrame.isLocal()
 
   def isDistributed(imageFrame: ImageFrame): Boolean = imageFrame.isDistributed()
+
+  def createImageFrameToSample(inputKeys: JList[String],
+    targetKeys: JList[String], sampleKey: String): ImageFrameToSample[T] = {
+    val targets = if (targetKeys == null) null else targetKeys.asScala.toArray
+    ImageFrameToSample[T](inputKeys.asScala.toArray, targets, sampleKey)
+  }
 }
 
 object PythonBigDLUtils {
