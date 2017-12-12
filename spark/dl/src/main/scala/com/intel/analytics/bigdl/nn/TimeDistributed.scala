@@ -224,6 +224,10 @@ class TimeDistributed[T : ClassTag] (val layer: TensorModule[T])
    */
   override def getParametersTable(): Table = layer.getParametersTable()
 
+  override def getExtraState(): Array[Tensor[T]] = {
+    layer.getExtraState()
+  }
+
   /**
    * Copy the useful running status from src to this.
    *

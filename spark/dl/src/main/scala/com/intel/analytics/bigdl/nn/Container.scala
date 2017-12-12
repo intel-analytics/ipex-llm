@@ -107,6 +107,17 @@ abstract class Container[A <: Activity : ClassTag,
     (weights.toArray, gradWeights.toArray)
   }
 
+  override def getExtraState(): Array[Tensor[T]] = {
+    val extraState = new ArrayBuffer[Tensor[T]]()
+    modules.foreach(m => {
+      val state = m.getExtraState()
+      if (state != null) {
+        extraState ++= state
+      }
+    })
+    extraState.toArray
+  }
+
   override def getParametersTable(): Table = {
     val pt = T()
     modules.foreach(m => {

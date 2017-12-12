@@ -368,6 +368,15 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
   def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = null
 
   /**
+   * Get some extra status in this module. Such as runningMean and runningVar of BatchNormalization.
+   *
+   * The subclass should override this method if it has some parameters besides weight and bias.
+   *
+   * @return
+   */
+  def getExtraState(): Array[Tensor[T]] = null
+
+  /**
    * This function returns a table contains ModuleName, the parameter names and parameter value
    * in this module.
    * The result table is a structure of Table(ModuleName -> Table(ParameterName -> ParameterValue)),
