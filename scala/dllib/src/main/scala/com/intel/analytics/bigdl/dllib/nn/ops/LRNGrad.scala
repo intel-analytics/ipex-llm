@@ -63,6 +63,11 @@ class LRNGrad[T: ClassTag](
     }
     output
   }
+
+  override def getClassTagNumerics() : (Array[ClassTag[_]], Array[TensorNumeric[_]]) = {
+    (Array[ClassTag[_]](scala.reflect.classTag[T]),
+      Array[TensorNumeric[_]](ev, ev2))
+  }
 }
 
 object LRNGrad {
