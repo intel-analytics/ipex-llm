@@ -51,7 +51,7 @@ class Anchor(ratios: Array[Float], scales: Array[Float]) extends Serializable {
    * @param featStride stride to move
    * @return shiftX and shiftY
    */
-  private[pipeline] def generateShifts(width: Int, height: Int, featStride: Float):
+  private[nn] def generateShifts(width: Int, height: Int, featStride: Float):
   (Tensor[Float], Tensor[Float]) = {
     if (shiftX == null) {
       shiftX = Tensor[Float]
@@ -118,7 +118,7 @@ class Anchor(ratios: Array[Float], scales: Array[Float]) extends Serializable {
    * 1. generate anchors for different ratios (N, 4)
    * 2. for each anchors generated in 1, scale them to get scaled anchors (M*N, 4)
    */
-  private[pipeline] def generateBasicAnchors(_ratios: Array[Float], _scales: Array[Float],
+  private[nn] def generateBasicAnchors(_ratios: Array[Float], _scales: Array[Float],
     baseSize: Float = 16): Tensor[Float] = {
     val ratios = Tensor(Storage(_ratios))
     val scales = Tensor(Storage(_scales))
