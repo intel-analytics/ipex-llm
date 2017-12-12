@@ -129,8 +129,8 @@ class TestLayer(BigDLTestCase):
 
     def test_atrousconvolution2d(self):
         input_data = np.random.random([1, 3, 128, 128])
-        layer = lambda: AtrousConvolution2D(64, 5, 7, atrous_rate=(2, 2), dim_ordering="th",
-                                            border_mode="same", input_shape=(3, 128, 128))
+        layer = lambda: AtrousConvolution2D(64, 5, 7, atrous_rate=(2, 2),
+                                            dim_ordering="th", input_shape=(3, 128, 128))
         self.modelTestSingleLayerWithOrdersModes(input_data, layer, dim_orderings=["th"],
                                                  dump_weights=True)
 
