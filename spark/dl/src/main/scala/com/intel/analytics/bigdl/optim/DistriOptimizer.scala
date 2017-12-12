@@ -319,8 +319,7 @@ object DistriOptimizer {
               squares(tid) = ev.toType[Double](
                 parameters.gradientPartition.narrow(1, offset + 1, length).sumSquare())
             }))
-            var sum = 0.0
-            squares.foreach(sum += _)
+            var sum = 0.0            
             var i = 0
             while (i < parallelNum) {
               sum += squares(i)

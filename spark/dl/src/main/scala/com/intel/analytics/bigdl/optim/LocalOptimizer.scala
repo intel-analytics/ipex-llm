@@ -154,8 +154,20 @@ class LocalOptimizer[T: ClassTag] (
       val loss = lossSum / parallelism
       var scale = ev.fromType(parallelism)
       if (gradientClippingParams.enableL2NormClipping) {
-        val l2Norm =
-          (math.sqrt(ev.toType[Double](grad.sumSquare())) / parallelism).toFloat
+        val squares = new Array[Double](syncGradParallelNum)
+        Engine.default.invokeAndWait((0 until syncGradParallelNum).map(tid => () => {
+          val offset = tid * syncGradTaskSize + math.min(tid, syncGradExtraTask)
+          val length = syncGradTaskSize + (if (tid < syncGradExtraTask) 1 else 0)
+          squares(tid) = ev.toType[Double](grad.narrow(1, offset + 1, length).sumSquare())
+        }))
+        var sum = 0.0
+        var i = 0
+        while (i < squares.size) {
+          sum += squares(i)
+          i += 1
+        }
+        val l2Norm = (math.sqrt(sum) / parallelism).toFloat
+        
         if (l2Norm > gradientClippingParams.normValueClip) {
           scale = ev.fromType[Float]((l2Norm * parallelism) / gradientClippingParams.normValueClip)
         }
