@@ -184,7 +184,7 @@ class TestLayer(BigDLTestCase):
         input_data = np.random.random_sample([1, 3, 20, 15, 35])
         layer = MaxPooling3D(pool_size=(2, 2, 3), strides=(1, 2, 3), dim_ordering="th",
                              border_mode="valid", input_shape=(3, 20, 15, 35))
-        self.modelTestSingleLayer(input_data, layer, rtol=1e-5, atol=1e-5)
+        self.modelTestSingleLayer(input_data, layer, rtol=1e-4, atol=1e-4)
 
     def test_maxpooling2d(self):
         input_data = np.random.random_sample([1, 3, 20, 20])
@@ -685,7 +685,7 @@ class TestLayer(BigDLTestCase):
     def test_srelu(self):
         input_data = np.random.random([2, 3, 4])
         layer = SReLU(input_shape=(3, 4))
-        self.modelTestSingleLayer(input_data, layer, dump_weights=True, functional_apis=[True])
+        self.modelTestSingleLayer(input_data, layer, dump_weights=True, test_grad_weights=False)
 
 if __name__ == "__main__":
     pytest.main([__file__])
