@@ -195,12 +195,64 @@ class BigDLTestCase(TestCase):
             new_weights.append(np.random.random(list(weight.shape)))
         return new_weights
 
+    def __test_grad(self,
+                    input_data,
+                    keras_model,
+                    bigdl_model,
+                    keras_output,
+                    bigdl_output,
+                    dump_weights=True,
+                    test_grad_weights=True,
+                    rtol=1e-6,
+                    atol=1e-6):
+        # compare gradient input
+        sess = K.get_session()
+        feed_dict = {K.learning_phase(): 1}
+        if isinstance(input_data, list):  # for merge layers
+            for i in range(0, len(input_data)):
+                feed_dict[keras_model.input[i]] = input_data[i]
+        else:
+            feed_dict[keras_model.input] = input_data
+        keras_grad_input = sess.run(K.gradients(keras_model.output * keras_output,
+                                                keras_model.input),
+                                    feed_dict=feed_dict)
+        bigdl_grad_input = bigdl_model.backward(input_data, bigdl_output)
+        if isinstance(bigdl_grad_input, list):  # for merge layers
+            for j in range(0, len(keras_grad_input)):
+                self.assert_allclose(bigdl_grad_input[j],
+                                     keras_grad_input[j],
+                                     rtol=rtol,
+                                     atol=atol)
+        # for other layers, keras return a singleton list while bigdl returns an ndarray
+        else:
+            self.assert_allclose(bigdl_grad_input,
+                                 keras_grad_input[0],
+                                 rtol=rtol,
+                                 atol=atol)
+
+        # compare gradient weights if the layer has weights
+        if dump_weights and test_grad_weights:
+            weight_converter = WeightsConverter.get_converter(
+                keras_model.layers[1].__class__.__name__)
+            keras_grad_weights = sess.run(K.gradients(keras_model.output * keras_output,
+                                                      keras_model.trainable_weights),
+                                          feed_dict=feed_dict)
+            keras_grad_weights = weight_converter(keras_model.layers[1], keras_grad_weights)
+            bigdl_grad_weights = bigdl_model.get_grad_weights()
+            for k in range(0, len(keras_grad_weights)):
+                self.assert_allclose(bigdl_grad_weights[k],
+                                     keras_grad_weights[k],
+                                     rtol=rtol,
+                                     atol=atol)
+
     def modelTest(self,
                   input_data,
                   keras_model,
                   random_weights=True,
                   dump_weights=False,
                   is_training=False,
+                  test_grad_input=True,
+                  test_grad_weights=True,
                   rtol=1e-6,
                   atol=1e-6):
         if random_weights:
@@ -228,6 +280,16 @@ class BigDLTestCase(TestCase):
                              keras_output,
                              rtol=rtol,
                              atol=atol)
+        if test_grad_input:
+            self.__test_grad(input_data,
+                             keras_model,
+                             bigdl_model,
+                             keras_output,
+                             bigdl_output2,
+                             dump_weights,
+                             test_grad_weights,
+                             rtol=rtol,
+                             atol=atol)
 
     def modelTestSingleLayerWithOrdersModes(self,
                                             input_data,
@@ -237,6 +299,8 @@ class BigDLTestCase(TestCase):
                                             random_weights=True,
                                             dump_weights=False,
                                             is_training=False,
+                                            test_grad_input=True,
+                                            test_grad_weights=True,
                                             rtol=1e-6,
                                             atol=1e-6):
         for dim_ordering in dim_orderings:
@@ -257,6 +321,8 @@ class BigDLTestCase(TestCase):
                                           random_weights,
                                           dump_weights,
                                           is_training,
+                                          test_grad_input,
+                                          test_grad_weights,
                                           rtol,
                                           atol)
 
@@ -266,6 +332,8 @@ class BigDLTestCase(TestCase):
                              random_weights=True,
                              dump_weights=False,
                              is_training=False,
+                             test_grad_input=True,
+                             test_grad_weights=True,
                              rtol=1e-6,
                              atol=1e-6,
                              functional_apis=[True, False]):
@@ -277,6 +345,8 @@ class BigDLTestCase(TestCase):
                 random_weights=random_weights,
                 dump_weights=dump_weights,
                 is_training=is_training,
+                test_grad_input=test_grad_input,
+                test_grad_weights=test_grad_weights,
                 rtol=rtol,
                 atol=atol)
 
@@ -287,6 +357,8 @@ class BigDLTestCase(TestCase):
                                  random_weights=True,
                                  dump_weights=False,
                                  is_training=False,
+                                 test_grad_input=True,
+                                 test_grad_weights=True,
                                  rtol=1e-6,
                                  atol=1e-6):
         keras_model = self.__generate_keras_model(functional_api=functional_api,
@@ -297,5 +369,7 @@ class BigDLTestCase(TestCase):
                        random_weights=random_weights,
                        dump_weights=dump_weights,
                        is_training=is_training,
+                       test_grad_input=test_grad_input,
+                       test_grad_weights=test_grad_weights,
                        rtol=rtol,
                        atol=atol)

@@ -40,7 +40,8 @@ class TestApplication(BigDLTestCase):
 
     def test_lenet(self):
         kmodel, input_data, output_data = TestModels.kmodel_seq_lenet_mnist()
-        self.modelTest(input_data, kmodel, dump_weights=True)
+        self.modelTest(input_data, kmodel, dump_weights=True,
+                       test_grad_weights=False, is_training=True)
 
     @pytest.mark.skip(reason="need to fix todo before running the test")
     def test_text_classification(self):

@@ -248,7 +248,7 @@ class WeightsConverter:
         b_weights = k_weights[0].T
         for i in range(1, k_weights.shape[0]):
             b_weights = np.concatenate((b_weights, k_weights[i].T))        
-        return [b_weights, weights[1]]
+        return [b_weights, weights[1].reshape(k_weights.shape[0]*k_weights.shape[2], )]
 
     @staticmethod
     def convert_srelu(klayer, weights):
@@ -719,7 +719,8 @@ class LayerConverter:
     def create_zeropadding2d(self):
         padding = self.klayer.padding
         dim = 1
-        warnings.warn("Cannot find dim_ordering from json definition. Using the default instead.")
+        if "dim_ordering" in self.config:
+            warnings.warn("Cannot find dim_ordering from json definition. Using the default instead.")
         if self.klayer.dim_ordering == "th":
             dim = 2
         if isinstance(padding, dict):  # dictionary
@@ -739,7 +740,8 @@ class LayerConverter:
     def create_zeropadding3d(self):
         padding = tuple(self.klayer.padding)
         dim = 1
-        warnings.warn("Cannot find dim_ordering from json definition. Using the default instead.")
+        if "dim_ordering" in self.config:
+            warnings.warn("Cannot find dim_ordering from json definition. Using the default instead.")
         if self.klayer.dim_ordering == "th":
             dim = 2
         model = BLayer.Sequential()
@@ -1443,8 +1445,9 @@ class LayerConverter:
     def create_upsampling3d(self):
         if self.klayer.dim_ordering != "th":
             raise Exception("Please use th for dim_ordering. %s is not supported for now." % self.klayer.dim_ordering)
-        warnings.warn("Cannot find dim_ordering from json definition. Using the default instead."
-                      "We only support th for now.")
+        if "dim_ordering" not in self.config:
+            warnings.warn("Cannot find dim_ordering from json definition. Using the default instead."
+                          "We only support th for now.")
         return BLayer.UpSampling3D(self.klayer.size)
 
     def create_gaussiannoise(self):
@@ -1482,7 +1485,8 @@ class LayerConverter:
         return BLayer.Masking(float(self.klayer.mask_value))
 
     def create_srelu(self):
-        warnings.warn("Cannot find shared_axes from json definition. Using shared_axes=None instead.")
+        if "shared_axes" not in self.config:
+            warnings.warn("Cannot find shared_axes from json definition. Using shared_axes=None instead.")
         if self.klayer.shared_axes == [None]:
             return BLayer.SReLU()
         else:

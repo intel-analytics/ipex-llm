@@ -29,16 +29,48 @@ from test.bigdl.test_utils import BigDLTestCase
 
 class TestLayer(BigDLTestCase):
 
+    def test_relu(self):
+        input_data = np.random.random_sample([2, 3, 5])
+        layer = Activation('relu')
+        self.modelTestSingleLayer(input_data, layer)
+
+    def test_tanh(self):
+        input_data = np.random.random_sample([2, 3, 5])
+        layer = Activation('tanh')
+        self.modelTestSingleLayer(input_data, layer)
+
+    def test_sigmoid(self):
+        input_data = np.random.random_sample([2, 3, 5])
+        layer = Activation('sigmoid')
+        self.modelTestSingleLayer(input_data, layer)
+
+    def test_hard_sigmoid(self):
+        input_data = np.random.random_sample([2, 3, 5])
+        layer = Activation('hard_sigmoid')
+        self.modelTestSingleLayer(input_data, layer)
+
+    def test_softmax(self):
+        input_data = np.random.random_sample([5, 6])
+        layer = Activation('softmax')
+        self.modelTestSingleLayer(input_data, layer)
+
+    def test_softplus(self):
+        input_data = np.random.random_sample([2, 3, 5])
+        layer = Activation('softplus')
+        self.modelTestSingleLayer(input_data, layer)
+
+    def test_softsign(self):
+        input_data = np.random.random_sample([2, 3, 5])
+        layer = Activation('softsign')
+        self.modelTestSingleLayer(input_data, layer)
+
     def test_dense(self):
         input_data = np.random.random_sample([1, 10])
-        layer = Dense(2, init='one', activation="relu",
-                      input_shape=(10, ), W_regularizer=l1l2(l1=0.01, l2=0.02))
+        layer = Dense(2, init='one', activation="relu", input_shape=(10, ))
         self.modelTestSingleLayer(input_data, layer, dump_weights=True)
-        layer2 = Dense(2, init='one', activation="softplus",
-                       input_shape=(10, ), b_regularizer=l2(0.02))
+        layer2 = Dense(2, init='one', activation="softplus", input_shape=(10, ))
         self.modelTestSingleLayer(input_data, layer2, dump_weights=True)
-        layer3 = Dense(2, init='one', input_shape=(10, ),
-                       W_regularizer=keras.regularizers.WeightRegularizer(l1=0.1))
+        layer3 = Dense(2, init='one', input_shape=(10, ))
         self.modelTestSingleLayer(input_data, layer3, dump_weights=True)
         layer4 = Dense(2, init='glorot_uniform', activation="hard_sigmoid", input_shape=(10, ))
         self.modelTestSingleLayer(input_data, layer4, dump_weights=True)
@@ -59,10 +91,10 @@ class TestLayer(BigDLTestCase):
                           W_constraint=None,
                           mask_zero=False,
                           weights=None, dropout=0.)
-        self.modelTestSingleLayer(input_data, layer, dump_weights=True)
+        self.modelTestSingleLayer(input_data, layer, dump_weights=True, test_grad_input=False)
         # Random input
         input_data2 = np.random.randint(100, size=(10, 128))  # batch: 20, seqlen 128
-        self.modelTestSingleLayer(input_data2, layer, dump_weights=True)
+        self.modelTestSingleLayer(input_data2, layer, dump_weights=True, test_grad_input=False)
 
         # TODO: add test that exception would be raised if input_lenght == 6
         with pytest.raises(Exception) as excinfo:
@@ -135,24 +167,24 @@ class TestLayer(BigDLTestCase):
         layer = AtrousConvolution2D(64, 3, 4, atrous_rate=(2, 2), dim_ordering="th",
                                     border_mode="valid", activation='tanh',
                                     input_shape=(3, 128, 128))
-        self.modelTestSingleLayer(input_data, layer, dump_weights=True)
+        self.modelTestSingleLayer(input_data, layer, dump_weights=True, rtol=1e-3, atol=1e-3)
 
     def test_deconvolution2d(self):
         input_data = np.random.random_sample([32, 3, 12, 12])
         layer = Deconvolution2D(3, 3, 3, output_shape=(None, 3, 14, 14),
                                 border_mode="valid", dim_ordering="th",
                                 input_shape=(3, 12, 12))
-        self.modelTestSingleLayer(input_data, layer, dump_weights=True)
+        self.modelTestSingleLayer(input_data, layer, dump_weights=True, rtol=1e-5, atol=1e-5)
         layer2 = Deconvolution2D(3, 3, 3, output_shape=(None, 3, 25, 25),
                                  border_mode="valid", subsample=(2, 2),
                                  dim_ordering="th", input_shape=(3, 12, 12))
-        self.modelTestSingleLayer(input_data, layer2, dump_weights=True)
+        self.modelTestSingleLayer(input_data, layer2, dump_weights=True, rtol=1e-5, atol=1e-5)
 
     def test_maxpooling3d(self):
         input_data = np.random.random_sample([1, 3, 20, 15, 35])
-        layer = MaxPooling3D(pool_size=(2, 2, 4), strides=(3, 1, 5), dim_ordering="th",
+        layer = MaxPooling3D(pool_size=(2, 2, 3), strides=(1, 2, 3), dim_ordering="th",
                              border_mode="valid", input_shape=(3, 20, 15, 35))
-        self.modelTestSingleLayer(input_data, layer)
+        self.modelTestSingleLayer(input_data, layer, rtol=1e-4, atol=1e-4)
 
     def test_maxpooling2d(self):
         input_data = np.random.random_sample([1, 3, 20, 20])
@@ -191,16 +223,16 @@ class TestLayer(BigDLTestCase):
 
     def test_averagepooling3d(self):
         input_data = np.random.random_sample([2, 6, 20, 15, 35])
-        layer = AveragePooling3D(pool_size=(2, 3, 4), strides=(3, 1, 5), dim_ordering="th",
+        layer = AveragePooling3D(pool_size=(2, 3, 4), strides=(1, 2, 3), dim_ordering="th",
                                  border_mode="valid", input_shape=(3, 20, 15, 35))
         self.modelTestSingleLayer(input_data, layer)
 
     def test_averagepooling2d(self):
         input_data = np.random.random_sample([1, 3, 20, 20])
-        layer = lambda: AveragePooling2D(pool_size=[2, 3], strides=[4, 2],
+        layer = lambda: AveragePooling2D(pool_size=[2, 3], strides=[1, 2],
                                          border_mode="valid", input_shape=(3, 20, 20))
         self.modelTestSingleLayerWithOrdersModes(input_data, layer)
-        layer2 = lambda: AveragePooling2D(pool_size=[1, 1], strides=[2, 2],
+        layer2 = lambda: AveragePooling2D(pool_size=[3, 3], strides=[2, 2],
                                           border_mode="valid", input_shape=(3, 20, 20))
         self.modelTestSingleLayerWithOrdersModes(input_data, layer2)
 
@@ -229,7 +261,7 @@ class TestLayer(BigDLTestCase):
     def test_batchnormalization(self):
         input_data = np.random.random_sample([2, 6, 128, 128])
         layer = BatchNormalization(input_shape=(6, 128, 128), axis=1)
-        self.modelTestSingleLayer(input_data, layer, dump_weights=True, random_weights=False)
+        self.modelTestSingleLayer(input_data, layer, dump_weights=True, test_grad_input=False)
 
     def test_flatten(self):
         input_data = np.random.random_sample([1, 2, 3])
@@ -277,6 +309,7 @@ class TestLayer(BigDLTestCase):
                        kmodel,
                        random_weights=False,
                        dump_weights=True,
+                       test_grad_weights=False,
                        is_training=False)
 
     def test_merge_method_cos(self):
@@ -293,6 +326,7 @@ class TestLayer(BigDLTestCase):
                        kmodel,
                        random_weights=False,
                        dump_weights=True,
+                       test_grad_weights=False,
                        is_training=False)
 
     def test_merge_method_concat(self):
@@ -310,6 +344,7 @@ class TestLayer(BigDLTestCase):
                        kmodel,
                        random_weights=False,
                        dump_weights=True,
+                       test_grad_weights=False,
                        is_training=False)
 
     def test_nested_with_combo_bigdl_layer_lstm(self):
@@ -324,7 +359,7 @@ class TestLayer(BigDLTestCase):
         kmodel = Sequential()
         kmodel.add(Merge([branch1, branch2], mode='concat'))
         kmodel.add(Activation('sigmoid'))
-        self.modelTest(input_data, kmodel, dump_weights=True)
+        self.modelTest(input_data, kmodel, dump_weights=True, test_grad_weights=False)
 
     def test_merge_method_mix_concat(self):
         input_data1 = np.random.random_sample([2, 4])
@@ -342,6 +377,7 @@ class TestLayer(BigDLTestCase):
                        kmodel,
                        random_weights=False,
                        dump_weights=True,
+                       test_grad_weights=False,
                        is_training=False)
 
     def test_merge_model_seq_concat(self):
@@ -367,6 +403,7 @@ class TestLayer(BigDLTestCase):
                        kmodel,
                        random_weights=False,
                        dump_weights=True,
+                       test_grad_weights=False,
                        is_training=False)
 
     def test_merge_model_model_concat(self):
@@ -393,6 +430,7 @@ class TestLayer(BigDLTestCase):
                        kmodel,
                        random_weights=False,
                        dump_weights=True,
+                       test_grad_weights=False,
                        is_training=False)
 
     def test_merge_seq_seq_concat(self):
@@ -410,6 +448,7 @@ class TestLayer(BigDLTestCase):
         self.modelTestSingleLayer([input_data1, input_data2],
                                   Merge([branch1, branch2], mode='concat', concat_axis=1),
                                   dump_weights=True,
+                                  test_grad_weights=False,
                                   functional_apis=[False])
 
     def test_merge_concat(self):
@@ -536,11 +575,11 @@ class TestLayer(BigDLTestCase):
     def test_simplernn(self):
         input_data = np.random.random([3, 4, 5])
         layer = SimpleRNN(5, input_shape=(4, 5), return_sequences=True)
-        self.modelTestSingleLayer(input_data, layer, dump_weights=True)
+        self.modelTestSingleLayer(input_data, layer, dump_weights=True, rtol=1e-5, atol=1e-5)
         layer2 = SimpleRNN(3, input_shape=(4, 5), go_backwards=True)
-        self.modelTestSingleLayer(input_data, layer2, dump_weights=True)
+        self.modelTestSingleLayer(input_data, layer2, dump_weights=True, rtol=1e-5, atol=1e-5)
         layer3 = SimpleRNN(3, input_shape=(4, 5), activation='relu')
-        self.modelTestSingleLayer(input_data, layer3, dump_weights=True)
+        self.modelTestSingleLayer(input_data, layer3, dump_weights=True, rtol=1e-5, atol=1e-5)
 
     def test_lstm(self):
         input_data = np.random.random([3, 4, 5])
@@ -548,7 +587,7 @@ class TestLayer(BigDLTestCase):
         self.modelTestSingleLayer(input_data, layer, dump_weights=True)
         layer2 = LSTM(3, input_shape=(4, 5), go_backwards=True,
                       activation='relu', inner_activation='sigmoid')
-        self.modelTestSingleLayer(input_data, layer2, dump_weights=True)
+        self.modelTestSingleLayer(input_data, layer2, dump_weights=True, rtol=1e-5, atol=1e-5)
 
     def test_convlstm2d(self):
         input_data = np.random.random_sample([4, 8, 40, 40, 32])
@@ -567,7 +606,7 @@ class TestLayer(BigDLTestCase):
                      activation='relu', inner_activation='sigmoid')
         self.modelTestSingleLayer(input_data, layer2, dump_weights=True)
         layer3 = GRU(512, input_shape=(4, 5), go_backwards=True, return_sequences=True)
-        self.modelTestSingleLayer(input_data, layer3, dump_weights=True)
+        self.modelTestSingleLayer(input_data, layer3, dump_weights=True, rtol=1e-5, atol=1e-5)
 
     # TODO: Support share weights training.
     def test_multiple_inputs_share_weights(self):
@@ -596,7 +635,7 @@ class TestLayer(BigDLTestCase):
 
         input_data2 = np.random.random_sample([2, 10, 3, 32, 32])
         layer2 = TimeDistributed(Convolution2D(64, 3, 3), input_shape=(10, 3, 32, 32))
-        self.modelTestSingleLayer(input_data2, layer2, dump_weights=True)
+        self.modelTestSingleLayer(input_data2, layer2, dump_weights=True, rtol=1e-5, atol=1e-5)
 
     def test_wrapper_bidirectional(self):
         input_data = np.random.random([5, 32, 64])
@@ -644,9 +683,9 @@ class TestLayer(BigDLTestCase):
         self.modelTestSingleLayer(input_data, layer)
 
     def test_srelu(self):
-        input_data = np.random.random_sample([2, 4, 6])
-        layer = SReLU(input_shape=(4, 6))
-        self.modelTestSingleLayer(input_data, layer, dump_weights=True)
+        input_data = np.random.random([2, 3, 4])
+        layer = SReLU(input_shape=(3, 4))
+        self.modelTestSingleLayer(input_data, layer, dump_weights=True, test_grad_weights=False)
 
 if __name__ == "__main__":
     pytest.main([__file__])
