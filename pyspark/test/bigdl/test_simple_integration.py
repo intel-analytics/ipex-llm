@@ -27,6 +27,7 @@ import tempfile
 import pytest
 from numpy.testing import assert_allclose, assert_array_equal
 from bigdl.util.engine import compare_version
+from bigdl.transform.vision.image import *
 np.random.seed(1337)  # for reproducibility
 
 
@@ -475,6 +476,23 @@ class TestSimple():
         predict_labels = predict_class.take(6)
         for i in range(0, total_length):
             assert predict_labels[i] == 1
+
+    def test_predict_image(self):
+        resource_path = os.path.join(os.path.split(__file__)[0], "resources")
+        image_path = os.path.join(resource_path, "pascal/000025.jpg")
+        image_frame = ImageFrame.read(image_path, self.sc)
+        transformer = Pipeline([Resize(256, 256), CenterCrop(224, 224),
+                                ChannelNormalize(0.485, 0.456, 0.406, 0.229, 0.224, 0.225),
+                                MatToTensor(), ImageFrameToSample()])
+        image_frame.transform(transformer)
+
+        model = Sequential()
+        model.add(SpatialConvolution(3, 6, 5, 5))
+        model.add(Tanh())
+
+        image_frame = model.predict_image(image_frame)
+        predicts = image_frame.get_predict()
+        predicts.collect()
 
     def test_rng(self):
         rng = RNG()
