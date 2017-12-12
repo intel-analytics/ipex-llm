@@ -64,5 +64,21 @@ class TestLoadModel(BigDLTestCase):
         kmodel, input_data, output_data = TestModels.kmodel_seq_lenet_mnist()
         self.__kmodel_load_def_weight_test(kmodel, input_data)
 
+    def test_load_definition(self):
+        kmodel, input_data, output_data = TestModels.kmodel_seq_lenet_mnist()
+        keras_model_json_path, keras_model_hdf5_path = self._dump_keras(kmodel, dump_weights=True)
+        bmodel = DefinitionLoader.from_json_path(keras_model_json_path)
+        WeightLoader.load_weights_from_kmodel(bmodel, kmodel)
+        self.assert_allclose(bmodel.forward(input_data), kmodel.predict(input_data))
+
+    def test_load_weights(self):
+        kmodel, input_data, output_data = TestModels.kmodel_graph_1_layer()
+        keras_model_json_path, keras_model_hdf5_path = self._dump_keras(kmodel, dump_weights=True)
+        bmodel = DefinitionLoader.from_json_path(keras_model_json_path)
+        kmodel.set_weights([kmodel.get_weights()[0] + 100, kmodel.get_weights()[1]])
+        WeightLoader.load_weights_from_hdf5(bmodel, kmodel, filepath=keras_model_hdf5_path)
+        self.assert_allclose(bmodel.forward(input_data), kmodel.predict(input_data))
+
+
 if __name__ == "__main__":
     pytest.main([__file__])
