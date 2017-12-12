@@ -22,7 +22,7 @@ import com.intel.analytics.bigdl.utils.tf.Tensorflow._
 
 class Dilation2DSpec extends TensorflowSpecHelper {
   "Dilation2D forward" should "be correct" in {
-    compare(
+    compare[Float](
       NodeDef.newBuilder()
         .setName("Dilation2D_test")
         .setOp("Dilation2D")
@@ -34,7 +34,33 @@ class Dilation2DSpec extends TensorflowSpecHelper {
       0
     )
 
-    compare(
+    compare[Float](
+      NodeDef.newBuilder()
+        .setName("Dilation2D_test")
+        .setOp("Dilation2D")
+        .putAttr("T", typeAttr(DataType.DT_FLOAT))
+        .putAttr("rates", listIntAttr(Seq(1, 2, 3, 1)))
+        .putAttr("strides", listIntAttr(Seq(1, 3, 2, 1)))
+        .putAttr("padding", PaddingType.PADDING_VALID.value),
+      Seq(Tensor[Float](4, 32, 32, 3).rand(), Tensor[Float](3, 4, 3).rand()),
+      0
+    )
+  }
+
+  "Dilation2D forward with double model" should "be correct" in {
+    compare[Double](
+      NodeDef.newBuilder()
+        .setName("Dilation2D_test")
+        .setOp("Dilation2D")
+        .putAttr("T", typeAttr(DataType.DT_FLOAT))
+        .putAttr("rates", listIntAttr(Seq(1, 2, 3, 1)))
+        .putAttr("strides", listIntAttr(Seq(1, 3, 2, 1)))
+        .putAttr("padding", PaddingType.PADDING_SAME.value),
+      Seq(Tensor[Float](4, 32, 32, 3).rand(), Tensor[Float](3, 4, 3).rand()),
+      0
+    )
+
+    compare[Double](
       NodeDef.newBuilder()
         .setName("Dilation2D_test")
         .setOp("Dilation2D")

@@ -28,6 +28,8 @@ class Dilation2DBackpropFilter[T: ClassTag, D: ClassTag](
          padding: String)(implicit ev: TensorNumeric[T], ev2: TensorNumeric[D])
   extends Operation[Table, Tensor[D], T]{
 
+  output = Tensor[D]()
+
   private def dilation2DBackpropFilterFloat(
        input: Tensor[Float],
        filter: Tensor[Float],
@@ -140,9 +142,9 @@ class Dilation2DBackpropFilter[T: ClassTag, D: ClassTag](
     val filterColsEff = filterCols + (filterCols - 1) * (rateCols - 1)
 
     val (outputRows, padTop, _) =
-      getOutputSize(inputRows, filterRowsEff, strideRows, padding)
+      Utils.getOutputSize(inputRows, filterRowsEff, strideRows, padding)
     val (outputCols, padLeft, _) =
-      getOutputSize(inputCols, filterColsEff, strideCols, padding)
+      Utils.getOutputSize(inputCols, filterColsEff, strideCols, padding)
 
     filterBackprop.resizeAs(filter)
 

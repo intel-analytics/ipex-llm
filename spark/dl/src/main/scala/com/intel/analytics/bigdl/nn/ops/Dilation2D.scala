@@ -53,6 +53,8 @@ class Dilation2D[T: ClassTag, D: ClassTag](val strides: Seq[Int],
        (implicit ev: TensorNumeric[T], ev2: TensorNumeric[D])
   extends Operation[Table, Tensor[D], T] {
 
+  output = Tensor[D]()
+
   require(strides.length == 4, s"strides must have a length of 4, but got ${strides.length}")
   require(rates.length == 4, s"rates must have a lenght of 4, but got ${rates.length}")
   require(padding.toLowerCase() == "same" || padding.toLowerCase() == "valid",

@@ -28,6 +28,8 @@ class Dilation2DBackpropInput[T: ClassTag, D: ClassTag](strides: Seq[Int],
          (implicit ev: TensorNumeric[T], ev2: TensorNumeric[D])
   extends Operation[Table, Tensor[D], T]{
 
+  output = Tensor[D]
+
   private def dilationBackpropInputFloat(input: Tensor[Float],
                                     filter: Tensor[Float],
                                     outBackprop: Tensor[Float],
