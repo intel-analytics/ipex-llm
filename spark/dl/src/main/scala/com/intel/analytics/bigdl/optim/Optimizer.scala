@@ -460,13 +460,13 @@ object Optimizer {
   }
 
   /**
-    * Apply an optimizer.
-    *
-    * @param model model will be optimizied
-    * @param dataset the input dataset - determines the type of optimizer
-    * @param criterion loss function
-    * @return an new Optimizer
-    */
+   * Apply an optimizer.
+   *
+   * @param model model will be optimizied
+   * @param dataset the input dataset - determines the type of optimizer
+   * @param criterion loss function
+   * @return an new Optimizer
+   */
   def apply[T: ClassTag, D](
     model: Module[T],
     dataset: DataSet[D],
