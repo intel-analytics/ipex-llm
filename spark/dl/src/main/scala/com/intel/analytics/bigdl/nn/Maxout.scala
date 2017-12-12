@@ -40,9 +40,10 @@ import scala.reflect.ClassTag
  * @param initWeight: initial weight
  * @param initBias: initial bias
  */
-class Maxout[T: ClassTag](inputSize: Int, outputSize: Int, maxoutNumber: Int,
-  withBias: Boolean = true, wRegularizer: Regularizer[T] = null,
-  bRegularizer: Regularizer[T] = null, initWeight: Tensor[T] = null, initBias: Tensor[T] = null)
+class Maxout[T: ClassTag](val inputSize: Int, val outputSize: Int, val maxoutNumber: Int,
+  val withBias: Boolean = true, val wRegularizer: Regularizer[T] = null,
+  val bRegularizer: Regularizer[T] = null, val initWeight: Tensor[T] = null,
+                          val initBias: Tensor[T] = null)
   (implicit ev: TensorNumeric[T]) extends TensorModule[T] {
   val layer = Sequential().add(Linear(inputSize, outputSize * maxoutNumber, withBias = withBias,
     wRegularizer = wRegularizer, bRegularizer = bRegularizer, initWeight = initWeight,
