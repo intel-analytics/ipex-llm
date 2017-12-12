@@ -25,7 +25,7 @@ import com.intel.analytics.bigdl.nn.abstractnn.DataFormat.NHWC
 
 import scala.collection.JavaConverters._
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, DataFormat}
-import com.intel.analytics.bigdl.nn.ops.{All, Any, ApproximateEqual, ArgMax, Assert, Assign, AssignGrad, AvgPoolGrad, BatchMatMul, BiasAddGrad, BroadcastGradientArgs, Cast, Ceil, Conv2D, Conv2DBackFilter, Conv2DTranspose, CrossEntropy, DecodeImage, EluGrad, Equal, Expm1, Floor, FloorDiv, FloorMod, FusedBatchNorm, FusedBatchNormGrad, Greater, GreaterEqual, InTopK, Inv, InvGrad, IsFinite, IsInf, IsNan, L2Loss, LRNGrad, Less, LessEqual, LogicalAnd, LogicalNot, LogicalOr, MaxPool, MaxPoolGrad, Maximum, MergeOps, Minimum, Mod, ModuleToOperation, NoOp, NotEqual, OneHot, Pad, ParseExample, Prod, RandomUniform, RangeOps, Rank, Relu6Grad, ReluGrad, ResizeBilinearOps, Rint, Round, RsqrtGrad, SigmoidGrad, Sign, Slice, SoftplusGrad, SoftsignGrad, SqrtGrad, SquaredDifference, Substr, SwitchOps, TopK, TruncateDiv, TruncatedNormal, Add => AddOps, DecodeGif => DecodeGifOps, DecodeJpeg => DecodeJpegOps, DecodePng => DecodePngOps, DecodeRaw => DecodeRawOps, Exp => ExpOps, Pow => PowOps, Select => SelectOps, Sum => SumOps, Tile => TileOps}
+import com.intel.analytics.bigdl.nn.ops.{All, Any, ApproximateEqual, ArgMax, Assert, Assign, AssignGrad, AvgPoolGrad, BatchMatMul, BiasAddGrad, BroadcastGradientArgs, Cast, Ceil, Conv2D, Conv2DBackFilter, Conv2DTranspose, CrossEntropy, DecodeImage, DepthwiseConv2D, DepthwiseConv2DBackpropFilter, DepthwiseConv2DBackpropInput, EluGrad, Equal, Expm1, Floor, FloorDiv, FloorMod, FusedBatchNorm, FusedBatchNormGrad, Greater, GreaterEqual, InTopK, Inv, InvGrad, IsFinite, IsInf, IsNan, L2Loss, LRNGrad, Less, LessEqual, LogicalAnd, LogicalNot, LogicalOr, MaxPool, MaxPoolGrad, Maximum, MergeOps, Minimum, Mod, ModuleToOperation, NoOp, NotEqual, OneHot, Pad, ParseExample, Prod, RandomUniform, RangeOps, Rank, Relu6Grad, ReluGrad, ResizeBilinearOps, Rint, Round, RsqrtGrad, SigmoidGrad, Sign, Slice, SoftplusGrad, SoftsignGrad, SqrtGrad, SquaredDifference, Substr, SwitchOps, TopK, TruncateDiv, TruncatedNormal, Add => AddOps, DecodeGif => DecodeGifOps, DecodeJpeg => DecodeJpegOps, DecodePng => DecodePngOps, DecodeRaw => DecodeRawOps, Exp => ExpOps, Pow => PowOps, Select => SelectOps, Sum => SumOps, Tile => TileOps}
 import com.intel.analytics.bigdl.nn.tf._
 import com.intel.analytics.bigdl.nn.{DenseToSparse, _}
 import com.intel.analytics.bigdl.tensor._
@@ -62,7 +62,12 @@ class ModuleSerializerSpec extends FlatSpec with Matchers with BeforeAndAfterAll
 
   override protected def beforeAll() = {
     addExcluded
-    val reflections = new Reflections(pkg)
+    val reflections = new Reflections(new ConfigurationBuilder()
+      .filterInputsBy(new FilterBuilder().
+        excludePackage("com.intel.analytics.bigdl.utils.tf.loaders"))
+      .setUrls(ClasspathHelper.forPackage(pkg))
+      .setScanners(new SubTypesScanner()))
+
     val subTypes = reflections.getSubTypesOf(classOf[AbstractModule[_, _, _]])
       .asScala.filter(sub => !Modifier.isAbstract(sub.getModifiers)).
       filter(sub => !excluded.contains(sub.getName))
@@ -1084,6 +1089,13 @@ class ModuleSerializerSpec extends FlatSpec with Matchers with BeforeAndAfterAll
     runSerializationTest(spatialZeroPadding, input)
   }
 
+  "SpatialSeperableConvolution serializer" should "work properly" in {
+    val seprableConv = SpatialSeperableConvolution[Float](2, 2, 1, 2, 2,
+      dataFormat = DataFormat.NHWC).setName("seprableConv")
+    val input = Tensor[Float](1, 5, 5, 2).apply1( e => Random.nextFloat())
+    runSerializationTest(seprableConv, input)
+  }
+
   "SplitTable serializer" should "work properly" in {
     val splitTable = SplitTable[Float](2).setName("splitTable")
     val input = Tensor[Float](2, 10).apply1( e => Random.nextFloat())
@@ -1514,6 +1526,32 @@ class ModuleSerializerSpec extends FlatSpec with Matchers with BeforeAndAfterAll
     val decodeRaw = new DecodeRawOps[Float](DataType.DT_UINT8, true).setName("decodeRaw")
     val input = getInputs("raw")
     runSerializationTest(decodeRaw, input)
+  }
+
+  "DepthwiseConv2DBackpropInput serializer" should "work properly" in {
+    val depWiseBackprop =
+      DepthwiseConv2DBackpropInput[Float](1, 1, 0, 0, DataFormat.NHWC).
+      setName("depWiseBackprop")
+    val input = T(Tensor[Int](T(4, 24, 24, 3)),
+      Tensor[Float](2, 2, 3, 1).apply1(_ => Random.nextFloat()),
+      Tensor[Float](4, 23, 23, 3).apply1(_ => Random.nextFloat()))
+    runSerializationTest(depWiseBackprop, input)
+  }
+
+  "DepthwiseConv2D serializer" should "work properly" in {
+    val depWIseConv2d = DepthwiseConv2D[Float](1, 1, 0, 0).setName("depWIseConv2d")
+    val input = T(Tensor[Float](4, 24, 24, 3).apply1(_ => Random.nextFloat()),
+      Tensor[Float](2, 2, 3, 1).apply1(_ => Random.nextFloat()))
+    runSerializationTest(depWIseConv2d, input)
+  }
+
+  "DepthwiseConv2DBackpropFilter serializer" should "work properly" in {
+    val depWiseConv2dBackProp = DepthwiseConv2DBackpropFilter[Float](1,
+      1, 0, 0, DataFormat.NHWC).setName("depWiseConv2dBackProp")
+    val input = T(Tensor[Float](4, 24, 24, 3).apply1(_ => Random.nextFloat()),
+    Tensor[Int](T(2, 2, 3, 1)),
+    Tensor[Float](4, 23, 23, 3).apply1(_ => Random.nextFloat()))
+    runSerializationTest(depWiseConv2dBackProp, input)
   }
 
   "EluGrad serializer" should "work properly" in {
@@ -2146,9 +2184,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers with BeforeAndAfterAll
     var total = 0
     expected.foreach(exp => {
       require(tested.contains(exp), s" $exp not included in the test!")
-      if (tested.contains(exp)) {
-        total += 1
-      }
+      total += 1
     })
     println(s"total $total, remaining ${expected.size - total}")
   }
