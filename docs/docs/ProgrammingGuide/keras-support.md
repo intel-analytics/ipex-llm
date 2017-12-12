@@ -1,6 +1,6 @@
 # **Keras Support**
 
-BigDL supports loading pre-defined Keras models. After loading a model, you can training, evaluating or tuning a model on BigDL in a distributed manner.
+BigDL supports loading pre-defined Keras models. After loading a model, you can train, evaluate or tune a model on BigDL in a distributed manner.
 
 The Keras version we support and test is [__Keras 1.2.2__](https://faroit.github.io/keras-docs/1.2.2/).
 
