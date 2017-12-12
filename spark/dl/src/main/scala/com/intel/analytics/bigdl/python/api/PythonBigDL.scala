@@ -498,6 +498,40 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     )
   }
 
+  def createSpatialSeperableConvolution(
+    nInputChannel: Int,
+    nOutputChannel: Int,
+    depthMultiplier: Int,
+    kW: Int,
+    kH: Int,
+    sW: Int = 1,
+    sH: Int = 1,
+    pW: Int = 0,
+    pH: Int = 0,
+    withBias: Boolean = true,
+    dataFormat: String = "NCHW",
+    wRegularizer: Regularizer[T] = null,
+    bRegularizer: Regularizer[T] = null,
+    pRegularizer: Regularizer[T] = null
+  )
+  : SpatialSeperableConvolution[T] = {
+    SpatialSeperableConvolution[T](nInputChannel,
+      nOutputChannel,
+      depthMultiplier,
+      kW,
+      kH,
+      sW,
+      sH,
+      pW,
+      pH,
+      withBias,
+      DataFormat(dataFormat),
+      wRegularizer,
+      bRegularizer,
+      pRegularizer
+    )
+  }
+
   def createReshape(size: JList[Int], batchMode: JBoolean = null): Reshape[T] = {
     val mappedBatchMode = batchMode match {
       case JBoolean.TRUE => Some(true)
@@ -1465,6 +1499,10 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     SoftMarginCriterion[T](sizeAverage)
   }
 
+  def createCategoricalCrossEntropy(): CategoricalCrossEntropy[T] = {
+    CategoricalCrossEntropy[T]()
+  }
+
   //   Optimizer
   def createPoly(power: Double, maxIteration: Int): SGD.Poly = {
     SGD.Poly(power, maxIteration)
@@ -2139,6 +2177,22 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
 
   def createHardSigmoid : HardSigmoid[T] = {
     HardSigmoid()
+  }
+
+  def createMeanAbsolutePercentageCriterion: MeanAbsolutePercentageCriterion[T] = {
+    MeanAbsolutePercentageCriterion()
+  }
+
+  def createMeanSquaredLogarithmicCriterion: MeanSquaredLogarithmicCriterion[T] = {
+    MeanSquaredLogarithmicCriterion()
+  }
+
+  def createKullbackLeiblerDivergenceCriterion: KullbackLeiblerDivergenceCriterion[T] = {
+    KullbackLeiblerDivergenceCriterion()
+  }
+
+  def createPoissonCriterion: PoissonCriterion[T] = {
+    PoissonCriterion()
   }
 
   def setInitMethod(layer: Initializable, weightInitMethod: InitializationMethod,

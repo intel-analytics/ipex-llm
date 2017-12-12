@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.utils.tf.loaders
 import com.intel.analytics.bigdl.nn.SpatialCrossMapLRN
 import com.intel.analytics.bigdl.nn.abstractnn.DataFormat
 import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.utils.RandomGenerator
 import com.intel.analytics.bigdl.utils.tf.Tensorflow.{floatAttr, intAttr, typeAttr}
 import com.intel.analytics.bigdl.utils.tf.TensorflowSpecHelper
 import org.tensorflow.framework.{DataType, NodeDef}
@@ -43,6 +44,7 @@ class LRNGradSpec extends TensorflowSpecHelper {
   }
 
   "LRNGrad" should "be correct for float tensor2" in {
+    RandomGenerator.RNG.setSeed(1000)
     val op = SpatialCrossMapLRN[Float](3, 3, 1, 0, DataFormat.NHWC)
     val input = Tensor[Float](4, 8, 8, 3).rand()
     val t = op.forward(input)

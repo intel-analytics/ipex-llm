@@ -663,6 +663,19 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
 
   /**
    * Build graph: some other modules point to current module
+   * @param nodes upstream module nodes in an array
+   * @return node containing current module
+   */
+  def inputs(nodes : Array[ModuleNode[T]]): ModuleNode[T] = {
+    val curNode = new ModuleNode[T](this)
+    nodes.foreach(node => {
+      node.add(curNode, Edge())
+    })
+    curNode
+  }
+
+  /**
+   * Build graph: some other modules point to current module
    * @param first distinguish from another inputs when input parameter list is empty
    * @param nodesWithIndex upstream module nodes and the output tensor index. The start index is 1.
    * @return node containing current module
