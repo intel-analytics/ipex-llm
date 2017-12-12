@@ -27,6 +27,7 @@ from keras.models import model_from_json
 from keras.models import Sequential, Model, Layer
 import keras
 import warnings
+from math import ceil
 
 
 def unsupport_exp(name):
@@ -255,7 +256,7 @@ class WeightsConverter:
         k_weights = weights[0]
         b_weights = k_weights[0].T
         for i in range(1, k_weights.shape[0]):
-            b_weights = np.concatenate((b_weights, k_weights[i].T))        
+            b_weights = np.concatenate((b_weights, k_weights[i].T))
         return [b_weights, weights[1]]
 
     @staticmethod
@@ -991,13 +992,28 @@ class LayerConverter:
     def to_bigdl_3d_padding(self, border_mode):
         if border_mode == "valid":
             return 0, 0, 0
-        # TODO: border_mode=`same`
+        elif border_mode == "same":
+            return -1, -1, -1
         else:
             raise Exception("Unsupported border mode: %s" % border_mode)
 
-    def to_bigdl_2d_padding(self, border_mode):
+    def __calculate_2d_same_padding(self, x, kx, dx, dilation_x):
+        return int(ceil((x * (dx - 1) + dilation_x * (kx - 1) - dx + 1) / 2))
+
+    def to_bigdl_2d_padding(self, border_mode, *args):
         if border_mode == "same":
-            return -1, -1
+            if len(args) == 0:  # if -1 for same padding is supported
+                return -1, -1
+            # calculate padding by given parameters
+            elif len(args) == 4:  # used by 1d layers constructed from 2d, just need one pad
+                h, kh, dh, dilation_h = args
+                pad_h = self.__calculate_2d_same_padding(h, kh, dh, dilation_h)
+                return pad_h, 0
+            elif len(args) == 8:
+                h, kh, dh, dilation_h, w, kw, dw, dilation_w = args
+                pad_h = self.__calculate_2d_same_padding(h, kh, dh, dilation_h)
+                pad_w = self.__calculate_2d_same_padding(w, kw, dw, dilation_w)
+                return pad_h, pad_w
         elif border_mode == "valid":
             return 0, 0
         else:
@@ -1094,10 +1110,11 @@ class LayerConverter:
         if not self.config["bias"]:
             raise Exception("Please set `bias=True` for AtrousConvolution1D")
 
-        # TODO: border_mode=`same`
-        if self.klayer.border_mode == "same":
-            raise Exception("Unsupported border mode: %s" % self.klayer.border_mode)
-        bpadW, bpadH = self.to_bigdl_2d_padding(self.klayer.border_mode)
+        h = self.input_shape[2]
+        kh = self.config["filter_length"]
+        dh = self.config["subsample_length"]
+        dilation_h = self.config["atrous_rate"]
+        pad_h, pad_w = self.to_bigdl_2d_padding(self.config["border_mode"], h, kh, dh, dilation_h)
         seq = BLayer.Sequential()
         seq.add(BLayer.Transpose([(2, 3)]))
         seq.add(BLayer.Reshape([int(self.input_shape[2]), int(self.input_shape[1]), 1], True))
@@ -1105,13 +1122,13 @@ class LayerConverter:
             n_input_plane=int(self.input_shape[2]),
             n_output_plane=self.config["nb_filter"],
             kw=1,
-            kh=self.config["filter_length"],
+            kh=kh,
             dw=1,
-            dh=self.config["subsample_length"],
-            pad_w=bpadW,
-            pad_h=bpadH,
+            dh=dh,
+            pad_w=pad_w,
+            pad_h=pad_h,
             dilation_w=1,
-            dilation_h=self.config["atrous_rate"],
+            dilation_h=dilation_h,
             wRegularizer=self.to_bigdl_reg(self.config["W_regularizer"]),
             bRegularizer=self.to_bigdl_reg(self.config["b_regularizer"]),
             bigdl_type="float")
@@ -1127,21 +1144,27 @@ class LayerConverter:
         if not self.config["bias"]:
             raise Exception("Please set `bias=True` for AtrousConvolution2D")
 
-        # TODO: border_mode=`same`
-        if self.klayer.border_mode == "same":
-            raise Exception("Unsupported border mode: %s" % self.klayer.border_mode)
-        bpadW, bpadH = self.to_bigdl_2d_padding(self.klayer.border_mode)
+        h = self.input_shape[2]
+        w = self.input_shape[3]
+        kh = self.config["nb_row"]
+        kw = self.config["nb_col"]
+        dh = self.config["subsample"][0]
+        dw = self.config["subsample"][1]
+        dilation_h = self.config["atrous_rate"][0]
+        dilation_w = self.config["atrous_rate"][1]
+        pad_h, pad_w = self.to_bigdl_2d_padding(self.config["border_mode"], h, kh, dh, dilation_h,
+                                                w, kw, dw, dilation_w)
         blayer = BLayer.SpatialDilatedConvolution(
             n_input_plane=int(self.input_shape[1]),
             n_output_plane=self.config["nb_filter"],
-            kw=self.config["nb_col"],
-            kh=self.config["nb_row"],
-            dw=self.config["subsample"][1],
-            dh=self.config["subsample"][0],
-            pad_w=bpadW,
-            pad_h=bpadH,
-            dilation_w=self.config["atrous_rate"][1],
-            dilation_h=self.config["atrous_rate"][0],
+            kw=kw,
+            kh=kh,
+            dw=dw,
+            dh=dh,
+            pad_w=pad_w,
+            pad_h=pad_h,
+            dilation_w=dilation_w,
+            dilation_h=dilation_h,
             wRegularizer=self.to_bigdl_reg(self.config["W_regularizer"]),
             bRegularizer=self.to_bigdl_reg(self.config["b_regularizer"]),
             bigdl_type="float")
@@ -1151,8 +1174,31 @@ class LayerConverter:
     def create_deconvolution2d(self):
         if self.klayer.dim_ordering != "th":
             raise Exception("Please use `th` for `dim_ordering`. `%s` is not supported for now." % self.klayer.dim_ordering)
+        output_shape = self.config["output_shape"]
 
-        bpadW, bpadH = self.to_bigdl_2d_padding(self.klayer.border_mode)
+        h = self.input_shape[2]
+        w = self.input_shape[3]
+        kh = self.config["nb_row"]
+        kw = self.config["nb_col"]
+        dh = self.config["subsample"][0]
+        dw = self.config["subsample"][1]
+        output_h = output_shape[2]
+        output_w = output_shape[3]
+        pad_w = 0
+        pad_h = 0
+        if self.config["border_mode"] == "same":
+            two_pad_h = (h - 1) * dh + kh - output_h  # 2 times pad_h
+            two_pad_w = (w - 1) * dw + kw - output_w  # 2 times pad_w
+            if two_pad_h % 2 == 0:  # we only support pad_h as an int
+                pad_h = int(two_pad_h / 2)
+            else:
+                raise Exception("For same padding, we only support padding on both sides for now. "
+                                "Please make `(input_row - 1) * subsample[0] + nb_row - output_row` an even integer.")
+            if two_pad_w % 2 == 0:  # we only support pad_w as an int
+                pad_w = int(two_pad_w / 2)
+            else:
+                raise Exception("For same padding, we only support padding on both sides for now. "
+                                "Please make `(input_col - 1) * subsample[1] + nb_col - output_col` an even integer.")
         blayer = BLayer.SpatialFullConvolution(
             n_input_plane=int(self.input_shape[1]),
             n_output_plane=self.klayer.nb_filter,
@@ -1160,8 +1206,8 @@ class LayerConverter:
             kh=self.klayer.nb_row,
             dw=self.klayer.subsample[1],
             dh=self.klayer.subsample[0],
-            pad_w=bpadW,
-            pad_h=bpadH,
+            pad_w=pad_w,
+            pad_h=pad_h,
             adj_w=0,
             adj_h=0,
             n_group=1,
@@ -1174,7 +1220,11 @@ class LayerConverter:
 
     def create_maxpooling3d(self):
         if self.klayer.dim_ordering != "th":
-            raise Exception("Please use `th` for `dim_ordering`. `%s` is not supported for now." % self.klayer.dim_ordering)
+            raise Exception("Please use `th` for `dim_ordering`. `%s` is not supported for now." % klayer.dim_ordering)
+        # TODO: border_mode = 'same'
+        if self.klayer.border_mode == 'same':
+            raise Exception("Unsupported border_mode: same")
+
         bpadT, bpadW, bpadH = self.to_bigdl_3d_padding(self.klayer.border_mode)
         blayer = BLayer.VolumetricMaxPooling(
                 k_t=self.klayer.pool_size[0],
@@ -1282,7 +1332,11 @@ class LayerConverter:
 
     def create_averagepooling3d(self):
         if self.klayer.dim_ordering != "th":
-            raise Exception("Please use `th` for `dim_ordering`. `%s` is not supported for now." % self.klayer.dim_ordering)
+            raise Exception("Please use `th` for `dim_ordering`. `%s` is not supported for now." % klayer.dim_ordering)
+        # TODO: border_mode = 'same'
+        if self.klayer.border_mode == 'same':
+            raise Exception("Unsupported border_mode: same")
+
         bpadT, bpadW, bpadH = self.to_bigdl_3d_padding(self.klayer.border_mode)
         blayer = BLayer.VolumetricAveragePooling(
                 k_t=self.klayer.pool_size[0],
