@@ -71,7 +71,7 @@ with open(def_path, "w") as json_file:
 from bigdl.nn.layer import *
 bigdl_model = Model.load_keras(def_path=def_path)
 ```
-After loading the model into BigDL, you can train it with MNIST dataset. See [here](https://github.com/intel-analytics/BigDL/blob/master/pyspark/bigdl/keras/examples/keras_lenet.py) for the full example code which includes the training and validation after model load.
+After loading the model into BigDL, you can train it with MNIST dataset. See [here](https://github.com/intel-analytics/BigDL/blob/master/pyspark/bigdl/keras/examples/keras_lenet.py) for the full example code which includes the training and validation after model load. After 12 epochs, accuracy >97% can be achieved.
 
 ### **Limitations**
 We have tested the model loading functionality with several standard [Keras applications](https://faroit.github.io/keras-docs/1.2.2/applications/) and [examples](https://github.com/fchollet/keras/tree/1.2.2/examples).
