@@ -16,13 +16,14 @@
 
 package com.intel.analytics.bigdl.transform.vision.image
 
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.transform.vision.image.opencv.OpenCVMat
 import com.intel.analytics.bigdl.utils.T
 import org.apache.log4j.Logger
 
 import scala.collection.{Set, mutable}
-import scala.reflect.ClassTag
+import scala.reflect._
 
 /**
  * Each ImageFeature keeps information about single image,
@@ -118,7 +119,7 @@ class ImageFeature extends Serializable {
    */
   def getSize: (Int, Int, Int) = {
     val mat = opencvMat()
-    if (!mat.isReleased) {
+    if (mat != null && !mat.isReleased) {
       mat.shape()
     } else if (contains(ImageFeature.size)) {
       apply[(Int, Int, Int)](ImageFeature.size)
@@ -197,28 +198,49 @@ class ImageFeature extends Serializable {
    * @param floatKey key that maps float array
    * @param toRGB BGR to RGB
    */
-  def copyTo(storage: Array[Float], offset: Int, floatKey: String = ImageFeature.floats,
-             toRGB: Boolean = true): Unit = {
+  def copyTo[T: ClassTag](storage: Array[T], offset: Int, floatKey: String = ImageFeature.floats,
+    toRGB: Boolean = true)(implicit ev: TensorNumeric[T]): Unit = {
     require(contains(floatKey), s"there should be ${floatKey} in ImageFeature")
     val data = floats(floatKey)
     require(data.length >= getWidth() * getHeight() * 3,
       s"float array length should be larger than 3 * ${getWidth()} * ${getHeight()}")
     val frameLength = getWidth() * getHeight()
     require(frameLength * 3 + offset <= storage.length)
-    var j = 0
-    if (toRGB) {
-      while (j < frameLength) {
-        storage(offset + j) = data(j * 3 + 2)
-        storage(offset + j + frameLength) = data(j * 3 + 1)
-        storage(offset + j + frameLength * 2) = data(j * 3)
-        j += 1
+    if (classTag[T] == classTag[Float]) {
+      val storageFloat = storage.asInstanceOf[Array[Float]]
+      var j = 0
+      if (toRGB) {
+        while (j < frameLength) {
+          storageFloat(offset + j) = data(j * 3 + 2)
+          storageFloat(offset + j + frameLength) = data(j * 3 + 1)
+          storageFloat(offset + j + frameLength * 2) = data(j * 3)
+          j += 1
+        }
+      } else {
+        while (j < frameLength) {
+          storageFloat(offset + j) = data(j * 3)
+          storageFloat(offset + j + frameLength) = data(j * 3 + 1)
+          storageFloat(offset + j + frameLength * 2) = data(j * 3 + 2)
+          j += 1
+        }
       }
-    } else {
-      while (j < frameLength) {
-        storage(offset + j) = data(j * 3)
-        storage(offset + j + frameLength) = data(j * 3 + 1)
-        storage(offset + j + frameLength * 2) = data(j * 3 + 2)
-        j += 1
+    } else if (classTag[T] == classTag[Double]) {
+      val storageDouble = storage.asInstanceOf[Array[Double]]
+      var j = 0
+      if (toRGB) {
+        while (j < frameLength) {
+          storageDouble(offset + j) = data(j * 3 + 2)
+          storageDouble(offset + j + frameLength) = data(j * 3 + 1)
+          storageDouble(offset + j + frameLength * 2) = data(j * 3)
+          j += 1
+        }
+      } else {
+        while (j < frameLength) {
+          storageDouble(offset + j) = data(j * 3)
+          storageDouble(offset + j + frameLength) = data(j * 3 + 1)
+          storageDouble(offset + j + frameLength * 2) = data(j * 3 + 2)
+          j += 1
+        }
       }
     }
   }
@@ -288,6 +310,16 @@ object ImageFeature {
    * it may be used in crop/expand that may change the size of image
    */
   val boundingBox = "boundingBox"
+
+  /**
+   * key: sample
+   */
+  val sample = "sample"
+
+  /**
+   * key: Image Tensor
+   */
+  val imageTensor = "imageTensor"
 
   /**
    * Create ImageFeature
