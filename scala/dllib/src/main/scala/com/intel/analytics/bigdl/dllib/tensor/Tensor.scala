@@ -765,6 +765,12 @@ trait Tensor[T] extends Serializable with TensorMath[T] with Activity {
   }
 
   /**
+   * Convert 1D tensor to an array. If the tensor is not 1D, an exception will be thrown out.
+   * @return
+   */
+  def toArray(): Array[T]
+
+  /**
    * Element wise inequality between tensor and given value
    * @param value
    * @return

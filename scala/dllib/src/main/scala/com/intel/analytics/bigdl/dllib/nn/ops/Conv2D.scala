@@ -37,12 +37,17 @@ class Conv2D[T: ClassTag](
     val input: Tensor[T] = inputs[Tensor[T]](1)
     val filter: Tensor[T] = inputs[Tensor[T]](2)
 
+
+    val channelDim = if (format == DataFormat.NHWC) 4 else 2
+    val kHDim = if (format == DataFormat.NHWC) 1 else 3
+    val kWDim = if (format == DataFormat.NHWC) 2 else 4
+
     if (conv == null) {
       conv = SpatialConvolution(
-        nInputPlane = input.size(4),
-        nOutputPlane = filter.size(4),
-        kernelH = filter.size(1),
-        kernelW = filter.size(2),
+        nInputPlane = input.size(channelDim),
+        nOutputPlane = filter.size(channelDim),
+        kernelH = filter.size(kHDim),
+        kernelW = filter.size(kWDim),
         strideH = strideH,
         strideW = strideW,
         padH = padH,
@@ -53,7 +58,7 @@ class Conv2D[T: ClassTag](
     }
 
     conv.setWeightsBias(Array(filter))
-    output = conv.updateOutput(input)
+    output = conv.forward(input)
     output
   }
 }
@@ -99,12 +104,16 @@ class Conv2DTranspose[T: ClassTag](
       (data.size(4), inputSizes.valueAt(4))
     }
 
+    val kHDim = if (format == DataFormat.NHWC) 1 else 3
+    val kWDim = if (format == DataFormat.NHWC) 2 else 4
+
+
     if (module == null) {
       module = new SpatialConvolution[T](
         nInputPlane = nInputPlane,
         nOutputPlane = nOutputPlane,
-        kernelW = kernel.size(2),
-        kernelH = kernel.size(1),
+        kernelW = kernel.size(kWDim),
+        kernelH = kernel.size(kHDim),
         strideH = strideH,
         strideW = strideW,
         padH = padH,
@@ -116,7 +125,6 @@ class Conv2DTranspose[T: ClassTag](
 
       dummyInput = Tensor[T](inputSizes.valueAt(1), inputSizes.valueAt(2), inputSizes.valueAt(3),
         inputSizes.valueAt(4))
-      module.forward(dummyInput)
     } else {
       val (nOutputPlanbe, nInputPlane) = if (format == DataFormat.NCHW) {
         (data.size(2), inputSizes.valueAt(2))
@@ -126,8 +134,8 @@ class Conv2DTranspose[T: ClassTag](
 
       require(module.nInputPlane == nInputPlane, "nInputPlane is not valid")
       require(module.nOutputPlane == nOutputPlane, "nOutputPlane is not valid")
-      require(module.kernelH == kernel.size(1), "kernelH is not valid")
-      require(module.kernelW == kernel.size(2), "kernelW is not valid")
+      require(module.kernelH == kernel.size(kWDim), "kernelH is not valid")
+      require(module.kernelW == kernel.size(kWDim), "kernelW is not valid")
       require(kernel.size(3) == nInputPlane, "kernel nInputPlane is not valid")
       require(kernel.size(4) == nOutputPlane, "kernel nOutputPlane is not valid")
       require(dummyInput.size(1) == inputSizes.valueAt(1), "size 1 is not correct")
@@ -136,6 +144,7 @@ class Conv2DTranspose[T: ClassTag](
       require(dummyInput.size(4) == inputSizes.valueAt(4), "size 1 is not correct")
     }
 
+    module.forward(dummyInput)
     module.weight.set(kernel)
     module.updateGradInput(dummyInput, data)
     output = module.gradInput
@@ -198,7 +207,6 @@ class Conv2DBackFilter[T: ClassTag](
         format = format,
         withBias = false
       )
-      module.forward(inputActivity)
     } else {
       val (nOutputPlane, nInputPlane) = if (format == DataFormat.NCHW) {
         (grads.size(2), inputActivity.size(2))
@@ -214,6 +222,7 @@ class Conv2DBackFilter[T: ClassTag](
       require(kernelSize.valueAt(4) == nOutputPlane, "kernel nOutputPlane is not valid")
     }
 
+    module.forward(inputActivity)
     gradWeight.zero()
     module.accGradParameters(inputActivity, grads)
     output = module.gradWeight

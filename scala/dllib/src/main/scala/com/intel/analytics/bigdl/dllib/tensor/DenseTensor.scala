@@ -2149,6 +2149,19 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
       })
     result
   }
+
+  override def toArray(): Array[T] = {
+    require(this.dim() == 1, "toArray only support 1D tensor")
+    val n = this.nElement()
+    val array = new Array[T](n)
+    var i = 0
+    while(i < n) {
+      array(i) = this.valueAt(i + 1)
+      i += 1
+    }
+
+    array
+  }
 }
 
 object DenseTensor {
