@@ -4832,7 +4832,7 @@ class Proposal(Layer):
     rois: holds R regions of interest, each is a 5-tuple
     (n, x1, y1, x2, y2) specifying an image batch index n and a rectangle (x1, y1, x2, y2)
     scores: holds scores for R regions of interest
-    >>> layer = Proposal(1000, 200, [0.1, 0.2], [2, 3])
+    >>> layer = Proposal(1000, 200, [0.1, 0.2], [2.0, 3.0])
     creating: createProposal
     """
     def __init__(self, pre_nms_topn, post_nms_topn, ratios, scales,
