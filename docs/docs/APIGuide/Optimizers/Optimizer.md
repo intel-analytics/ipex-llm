@@ -6,36 +6,33 @@ An optimizer is in general to minimize any function with respect to a set of par
 
 ***Factory method***
 
-```scala
-val optimizer = Opimizer[T: ClassTag](
-  model: Module[T],
-  sampleRDD: RDD[Sample[T]],
-  criterion: Criterion[T],
-  batchSize: Int)
-```
-`T`: the numeric type(Float/Double).  
-`model`: the model will be optimized.  
-`sampleRDD`: an RDD of training Sample.  
-`criterion`: the Loss function.  
-`batchSize`: size of minibatch. 
- <br>
+In summary, you need to supply 3 kinds of paramters to create an optimizer:
+1) train data: You could supply 
+   a) a sampleRDD and batchSize (with optional featurePadding and labelPadding), or 
+   b) a sampleRDD and batchSize and a customized implemenation of trait MiniBatch, or
+   c) a DataSet - the type of optimizer created will be dermined by the type of Dataset. 
+2) a model
+3) a criterion (i.e. loss)
+as shown in below interfaces:
 
 ```scala
-val optimizer = Opimizer[T: ClassTag](
-  model: Module[T],
-  sampleRDD: RDD[Sample[T]],
-  criterion: Criterion[T],
-  batchSize: Int,
-  miniBatch: MiniBatch[T]
+val optimizer = Opimizer[T: ClassTag, D](
+      model: Module[T],
+      sampleRDD: RDD[Sample[T]],
+      criterion: Criterion[T],
+      batchSize: Int,
+      featurePaddingParam: PaddingParam[T]=null,
+      labelPaddingParam: PaddingParam[T]=null)
 ```
-`T`: the numeric type(Float/Double).
-`model`: the model will be optimized.
-`sampleRDD`: an RDD of training Sample.
-`criterion`: the Loss function.
-`batchSize`: size of minibatch.
-`miniBatch`: An User-Defined MiniBatch to construct a mini batch.
-
+The meaning of parameters are as below:
+`model`: model will be optimized.
+`sampleRDD`: training Samples.
+`criterion`: loss function.
+`batchSize`: mini batch size.
+`featurePaddingParam`(optional): feature padding strategy.
+`labelPaddingParam`(optional): label padding strategy.
  <br>
+
 ```scala
 val optimizer = Opimizer[T: ClassTag, D](
   model: Module[T],
@@ -55,25 +52,6 @@ val optimizer = Opimizer[T: ClassTag, D](
       sampleRDD: RDD[Sample[T]],
       criterion: Criterion[T],
       batchSize: Int,
-      featurePaddingParam: PaddingParam[T],
-      labelPaddingParam: PaddingParam[T])
-```
-Apply an Optimizer who could apply padding to the Samples with a padding strategy.  
-`model`: model will be optimized.  
-`sampleRDD`: training Samples.  
-`criterion`: loss function.  
-`batchSize`: mini batch size.  
-`featurePaddingParam`: feature padding strategy.  
-`labelPaddingParam`: label padding strategy.
-
- <br>
-
-```scala
-val optimizer = Opimizer[T: ClassTag, D](
-      model: Module[T],
-      sampleRDD: RDD[Sample[T]],
-      criterion: Criterion[T],
-      batchSize: Int,
       miniBatch: MiniBatch[T])
 ```
 Apply an optimizer with User-Defined `MiniBatch`.  
@@ -81,7 +59,7 @@ Apply an optimizer with User-Defined `MiniBatch`.
 `sampleRDD`: training Samples.  
 `criterion`: loss function.  
 `batchSize`: mini batch size.  
-`miniBatch`: An User-Defined MiniBatch to construct a mini batch.
+`miniBatch`: An User-Defined MiniBatch implementation.
  <br>
 
 ***Validation***
@@ -154,31 +132,23 @@ Function setModel will set a new model to the optimizer.
 `newModel`: a model will replace the old model in optimizer.  
  <br>
 ```scala
-optimizer.setTrainData(sampleRDD: RDD[Sample[T]],
-                 batchSize: Int)
 
 optimizer.setTrainData(sampleRDD: RDD[Sample[T]],
                  batchSize: Int,
                  miniBatch: MiniBatch[T])
 
 optimizer.setTrainData(sampleRDD: RDD[Sample[T]],
-
                  batchSize: Int,
-                 featurePaddingParam: PaddingParam[T],
-                 labelPaddingParam: PaddingParam[T])
+                 featurePaddingParam: PaddingParam[T]=null,
+                 labelPaddingParam: PaddingParam[T])=null
 
-optimizer.setTrainData(sampleRDD: RDD[Sample[T]],
-                        batchSize: Int,
-                        featurePaddingParam: PaddingParam[T])
 ```
-the overloaded set of methods `setTrainData` allows user to replace the trainig data before calling optimize(). The mearning of arguments are the same as in the Factory methods:
-`model`: model will be optimized.
+the overloaded set of methods `setTrainData` allows user to replace the training data. Each time setTrainData is called, the dataset is replaced and the following call to optimize() will use the new dataset. The meaning of arguments are the same as in the Factory methods:
 `sampleRDD`: training Samples.
-`criterion`: loss function.
 `batchSize`: mini batch size.
 `featurePaddingParam`: feature padding strategy.
 `labelPaddingParam`: label padding strategy.
-`miniBatch`: An User-Defined MiniBatch to construct a mini batch.
+`miniBatch`: An User-Defined MiniBatch implemenation.
  <br>
 
 ```scala

@@ -751,12 +751,6 @@ class DistriOptimizer[T: ClassTag] (
     }).count()
   }
 
-  override def setTrainData(sampleRDD: RDD[Sample[T]],
-                 batchSize: Int): this.type = {
-    this.dataset = (DataSet.rdd(sampleRDD) -> SampleToMiniBatch(batchSize))
-      .asInstanceOf[DistributedDataSet[MiniBatch[T]]]
-    this
-  }
 
   override def setTrainData(sampleRDD: RDD[Sample[T]],
                  batchSize: Int,
@@ -769,22 +763,16 @@ class DistriOptimizer[T: ClassTag] (
 
   override def setTrainData(sampleRDD: RDD[Sample[T]],
                  batchSize: Int,
-                 featurePaddingParam: PaddingParam[T],
-                 labelPaddingParam: PaddingParam[T]): this.type = {
+                 featurePaddingParam: PaddingParam[T] = null,
+                 labelPaddingParam: PaddingParam[T] = null) : this.type = {
+    val _featurePaddingParam = if (featurePaddingParam != null) Some(featurePaddingParam) else None
+    val _labelPaddingParam = if (labelPaddingParam != null) Some(labelPaddingParam) else None
     dataset = (DataSet.rdd(sampleRDD) ->
-      SampleToMiniBatch(batchSize, Some(featurePaddingParam), Some(labelPaddingParam)))
+      SampleToMiniBatch(batchSize, _featurePaddingParam, _labelPaddingParam))
       .asInstanceOf[DistributedDataSet[MiniBatch[T]]]
     this
   }
 
-  override def setTrainData(sampleRDD: RDD[Sample[T]],
-                 batchSize: Int,
-                 featurePaddingParam: PaddingParam[T]): this.type = {
-    dataset = (DataSet.rdd(sampleRDD) ->
-      SampleToMiniBatch(batchSize, Some(featurePaddingParam)))
-      .asInstanceOf[DistributedDataSet[MiniBatch[T]]]
-    this
-  }
 
   override def prepareInput(): Unit = {
     import DistriOptimizer._
