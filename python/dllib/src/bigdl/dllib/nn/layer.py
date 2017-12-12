@@ -30,6 +30,7 @@ from bigdl.util.common import INTMAX, INTMIN, DOUBLEMAX
 from bigdl.util.common import get_activation_by_name
 from bigdl.optim.optimizer import L1Regularizer, L2Regularizer, L1L2Regularizer
 from py4j.java_gateway import JavaObject
+from bigdl.transform.vision.image import ImageFrame
 
 if sys.version >= '3':
     long = int
@@ -345,6 +346,26 @@ class Layer(JavaValue):
         result = callBigDlFunc(self.bigdl_type,
                                "modelPredictClass", self.value, data_rdd)
         return result
+
+    def predict_image(self, image_frame, output_layer=None, share_buffer=False,
+                      batch_per_partition=4, predict_key="predict"):
+        """
+        model predict images, return imageFrame with predicted tensor
+        :param image_frame imageFrame that contains images
+        :param output_layer if output_layer is not null, the output of layer that matches
+        output_layer will be used as predicted output
+        :param share_buffer whether to share same memory for each batch predict results
+        :param batch_per_partition batch size per partition, default is 4
+        :param predict_key key to store predicted results
+        """
+
+        image_frame = callBigDlFunc(self.bigdl_type, "modelPredictImage", self.value,
+                             image_frame,
+                             output_layer,
+                             share_buffer,
+                             batch_per_partition,
+                             predict_key)
+        return ImageFrame(image_frame)
 
     def set_weights(self, weights):
         """
