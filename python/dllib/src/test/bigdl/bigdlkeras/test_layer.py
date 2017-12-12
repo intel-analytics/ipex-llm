@@ -117,25 +117,22 @@ class TestLayer(BigDLTestCase):
 
     def test_conv3D(self):
         input_data = np.random.random_sample([1, 3, 32, 32, 32])
-        layer = Convolution3D(12, 5, 3, 4, dim_ordering="th",
-                              border_mode="valid", subsample=(1, 1, 2),
-                              input_shape=(3, 32, 32, 32))
-        self.modelTestSingleLayer(input_data, layer,
-                                  dump_weights=True, rtol=1e-5, atol=1e-5)
+        layer = lambda: Convolution3D(12, 5, 3, 4, dim_ordering="th", subsample=(1, 2, 3),
+                                      input_shape=(3, 32, 32, 32))
+        self.modelTestSingleLayerWithOrdersModes(input_data, layer, dim_orderings=["th"],
+                                                 dump_weights=True, rtol=1e-5, atol=1e-5)
 
     def test_atrousconvolution1d(self):
         input_data = np.random.random_sample([2, 10, 32])
-        layer = AtrousConvolution1D(64, 3, atrous_rate=2,
-                                    border_mode="valid", activation='relu',
-                                    input_shape=(10, 32))
-        self.modelTestSingleLayer(input_data, layer, dump_weights=True)
+        layer = lambda: AtrousConvolution1D(64, 3, atrous_rate=2, input_shape=(10, 32))
+        self.modelTestSingleLayerWithOrdersModes(input_data, layer, dump_weights=True)
 
     def test_atrousconvolution2d(self):
-        input_data = np.random.random_sample([1, 3, 128, 128])
-        layer = AtrousConvolution2D(64, 3, 4, atrous_rate=(2, 2), dim_ordering="th",
-                                    border_mode="valid", activation='tanh',
-                                    input_shape=(3, 128, 128))
-        self.modelTestSingleLayer(input_data, layer, dump_weights=True)
+        input_data = np.random.random([1, 3, 128, 128])
+        layer = lambda: AtrousConvolution2D(64, 5, 7, atrous_rate=(2, 2),
+                                            dim_ordering="th", input_shape=(3, 128, 128))
+        self.modelTestSingleLayerWithOrdersModes(input_data, layer, dim_orderings=["th"],
+                                                 dump_weights=True)
 
     def test_deconvolution2d(self):
         input_data = np.random.random_sample([32, 3, 12, 12])
@@ -147,6 +144,10 @@ class TestLayer(BigDLTestCase):
                                  border_mode="valid", subsample=(2, 2),
                                  dim_ordering="th", input_shape=(3, 12, 12))
         self.modelTestSingleLayer(input_data, layer2, dump_weights=True)
+        layer3 = Deconvolution2D(3, 4, 4, output_shape=(None, 3, 24, 24),
+                                 border_mode="same", subsample=(2, 2),
+                                 dim_ordering="th", input_shape=(3, 12, 12))
+        self.modelTestSingleLayer(input_data, layer3, dump_weights=True)
 
     def test_maxpooling3d(self):
         input_data = np.random.random_sample([1, 3, 20, 15, 35])
