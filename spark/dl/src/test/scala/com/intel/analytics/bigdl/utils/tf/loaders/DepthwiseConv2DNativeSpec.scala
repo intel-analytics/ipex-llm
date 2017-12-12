@@ -26,7 +26,7 @@ class DepthwiseConv2DNativeSpec extends TensorflowSpecHelper {
   "DepthwiseConv2DNative forward" should "be correct when depth multiplyer is 1" in {
     RNG.setSeed(100)
     val filter = Tensor[Float](2, 2, 3, 1).rand()
-    compare(
+    compare[Float](
       NodeDef.newBuilder()
         .setName("depthwise_conv2d_test")
         .putAttr("T", typeAttr(DataType.DT_FLOAT))
@@ -42,7 +42,7 @@ class DepthwiseConv2DNativeSpec extends TensorflowSpecHelper {
   "DepthwiseConv2DNative forward" should "be correct when depth multiplyer is 2" in {
     RNG.setSeed(100)
     val filter = Tensor[Float](2, 2, 3, 2).rand()
-    compare(
+    compare[Float](
       NodeDef.newBuilder()
         .setName("depthwise_conv2d_test")
         .putAttr("T", typeAttr(DataType.DT_FLOAT))

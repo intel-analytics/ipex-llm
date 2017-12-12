@@ -17,9 +17,9 @@ package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.nn.abstractnn.DataFormat
 import com.intel.analytics.bigdl.tensor.Tensor
-import org.scalatest.{FlatSpec, Matchers}
+import com.intel.analytics.bigdl.utils.BigDLSpecHelper
 
-class SpatialSeperableConvolutionSpec extends FlatSpec with Matchers {
+class SpatialSeperableConvolutionSpec extends BigDLSpecHelper {
   "SpatialSeperableConvolution NHWC and NCHW" should "have same output" in {
     val depthWeightNHWC = Tensor[Float](2, 2, 3, 1).rand()
     val depthWeightNCHW = depthWeightNHWC.transpose(1, 4).transpose(2, 4).transpose(2, 3)
@@ -86,5 +86,12 @@ class SpatialSeperableConvolutionSpec extends FlatSpec with Matchers {
         p1.almostEqual(p2, 1e-3) should be(true)
       }
     }
+  }
+
+  "SpatialSeperableConvolution" should "be able to serialized" in {
+    val conv = SpatialSeperableConvolution[Float](3, 6, 2, 2, 2)
+    val file = createTmpFile()
+    conv.saveModule(file.getAbsolutePath, overWrite = true)
+    val conv2 = Module.loadModule[Float](file.getAbsolutePath)
   }
 }

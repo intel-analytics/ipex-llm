@@ -27,7 +27,7 @@ class DepthwiseConv2dNativeBackpropInputSpec extends TensorflowSpecHelper {
     RNG.setSeed(100)
     val filter = Tensor[Float](2, 2, 3, 1).rand()
     val size = Tensor[Int](T(4, 24, 24, 3))
-    compare(
+    compare[Float](
       NodeDef.newBuilder()
         .setName("depthwise_conv2d_backinput_test")
         .putAttr("T", typeAttr(DataType.DT_FLOAT))
@@ -44,7 +44,7 @@ class DepthwiseConv2dNativeBackpropInputSpec extends TensorflowSpecHelper {
     RNG.setSeed(100)
     val filter = Tensor[Float](2, 2, 3, 2).rand()
     val size = Tensor[Int](T(4, 24, 24, 3))
-    compare(
+    compare[Float](
       NodeDef.newBuilder()
         .setName("depthwise_conv2d_backinput_test")
         .putAttr("T", typeAttr(DataType.DT_FLOAT))
