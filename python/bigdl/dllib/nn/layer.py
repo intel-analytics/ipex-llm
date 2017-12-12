@@ -3221,6 +3221,76 @@ class RReLU(Layer):
                                     upper,
                                     inplace)
 
+class SpatialSeperableConvolution(Layer):
+
+    '''
+    Separable convolutions consist in first performing a depthwise spatial convolution (which acts
+    on each input channel separately) followed by a pointwise convolution which mixes together the
+    resulting output channels. The  depth_multiplier argument controls how many output channels are
+    generated per input channel in the depthwise step.
+
+    :param n_input_channel The number of expected input planes in the image given into forward()
+    :param n_output_channel The number of output planes the convolution layer will produce.
+    :param depth_multiplier how many internal channels are generated per input channel
+    :param kernel_w The kernel width of the convolution
+    :param kernel_h The kernel height of the convolution
+    :param stride_w The step of the convolution in the width dimension.
+    :param stride_h The step of the convolution in the height dimension
+    :param pad_w The additional zeros added per width to the input planes.
+    :param pad_h The additional zeros added per height to the input planes.
+    :param with_bias: the optional initial value for if need bias
+    :param data_format: a string value of "NHWC" or "NCHW" to specify the input data format of this layer. In "NHWC" format
+                       data is stored in the order of [batch_size, height, width, channels], in "NCHW" format data is stored
+                       in the order of [batch_size, channels, height, width].
+    :param wRegularizer: instance of [[Regularizer]](eg. L1 or L2 regularization), applied to the depth weights matrices.
+    :param bRegularizer: instance of [[Regularizer]]applied to the pointwise bias.
+    :param pRegularizer: instance of [[Regularizer]]applied to the pointwise weights.
+
+    >>> conv = SpatialSeperableConvolution(6, 12, 1, 5, 5)
+    creating: createSpatialSeperableConvolution
+    >>> conv.setWRegularizer(L1Regularizer(0.5))
+    creating: createL1Regularizer
+    >>> conv.setBRegularizer(L1Regularizer(0.5))
+    creating: createL1Regularizer
+    >>> conv = SpatialSeperableConvolution(6, 12, 1, 5, 5, 1, 1, 0, 0, True, "NCHW", L1Regularizer(0.5), L1Regularizer(0.5), L1Regularizer(0.5))
+    creating: createL1Regularizer
+    creating: createL1Regularizer
+    creating: createL1Regularizer
+    creating: createSpatialSeperableConvolution
+    '''
+
+    def __init__(self,
+                 n_input_channel,
+                 n_output_channel,
+                 depth_multiplier,
+                 kernel_w,
+                 kernel_h,
+                 stride_w=1,
+                 stride_h=1,
+                 pad_w=0,
+                 pad_h=0,
+                 with_bias=True,
+                 data_format="NCHW",
+                 w_regularizer=None,
+                 b_regularizer=None,
+                 p_regularizer=None,
+                 bigdl_type="float"):
+        super(SpatialSeperableConvolution, self).__init__(None, bigdl_type,
+                                                 n_input_channel,
+                                                 n_output_channel,
+                                                 depth_multiplier,
+                                                 kernel_w,
+                                                 kernel_h,
+                                                 stride_w,
+                                                 stride_h,
+                                                 pad_w,
+                                                 pad_h,
+                                                 with_bias,
+                                                 data_format,
+                                                 w_regularizer,
+                                                 b_regularizer,
+                                                 p_regularizer,
+                                                 )
 
 class ReLU6(Layer):
 
