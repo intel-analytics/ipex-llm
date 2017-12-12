@@ -192,7 +192,7 @@ class AllReduceParameter[T: ClassTag](id: Long, partitionNum: Int, size: Int) ex
               val start = pid * taskSize + math.min(pid, extraSize)
               val length = taskSize + (if (pid < extraSize) 1 else 0)
               require(localBuffer.array().length == length * 2)
-              SerializerInstance.serialize(localBuffer).deCompress(0, localParameter, start, length)
+              SerializerInstance.create(localBuffer).deCompress(0, localParameter, start, length)
               BlockManagerWrapper.unlock(blockId)
               pid
             } catch {
@@ -222,7 +222,7 @@ class AllReduceParameter[T: ClassTag](id: Long, partitionNum: Int, size: Int) ex
           try {
             val blockId = getGradientBlockId(pid, partitionId)
             val tmp = BlockManagerWrapper.getLocalOrRemoteBytes(blockId).get
-            params(pid) = SerializerInstance.serialize(tmp)
+            params(pid) = SerializerInstance.create(tmp)
             BlockManagerWrapper.unlock(blockId)
             pid
           } catch {
@@ -296,7 +296,7 @@ class AllReduceParameter[T: ClassTag](id: Long, partitionNum: Int, size: Int) ex
       throw new RuntimeException(s"Didn't find weight block $blockId in the block " +
         s"manager. Did you initialize this AllReduceParameter on every executor?")
     }
-    SerializerInstance.serialize(localBuffer).compress(weightPartition)
+    SerializerInstance.create(localBuffer).compress(weightPartition)
 
     val weightsId = getWeightPartitionId()
     val weights = BlockManagerWrapper.getLocal(weightsId)

@@ -307,7 +307,26 @@ object DistriOptimizer {
             parameters.aggregateGradientPartition()
             driverMetrics.add("aggregrateGradientParition average executor",
               System.nanoTime() - getG)
-            Iterator.single(ev.toType[Double](parameters.gradientPartition.sumSquare()))
+            
+            val gradLength = parameters.gradientPartition.nElement()
+            val taskSize = gradLength / _subModelNumber
+            val extraTask = gradLength % _subModelNumber
+            val parallelNum = if (taskSize == 0) extraTask else _subModelNumber
+            val squares = new Array[Double](parallelNum)
+            Engine.default.invokeAndWait((0 until parallelNum).map(tid => () => {
+              val offset = tid * taskSize + math.min(tid, extraTask)
+              val length = taskSize + (if (tid < extraTask) 1 else 0)
+              squares(tid) = ev.toType[Double](
+                parameters.gradientPartition.narrow(1, offset + 1, length).sumSquare())
+            }))
+            var sum = 0.0
+            squares.foreach(sum += _)
+            var i = 0
+            while (i < parallelNum) {
+              sum += squares(i)
+              i += 1
+            }
+            Iterator.single(sum)
           }).reduce(_ + _)
           l2Norm = (math.sqrt(sumSquare) / numFinishedModelUpdates).toFloat
           if (l2Norm > normValueClip) {
@@ -333,7 +352,17 @@ object DistriOptimizer {
           var time = System.nanoTime()
           // gradient clipping
           if (constantClippingEnable) {
-            parameters.gradientPartition.clamp(minValueClip, maxValueClip)
+            val gradLength = parameters.gradientPartition.nElement()
+            val taskSize = gradLength / _subModelNumber
+            val extraTask = gradLength % _subModelNumber
+            val parallelNum = if (taskSize == 0) extraTask else _subModelNumber
+            Engine.default.invokeAndWait((0 until parallelNum).map(tid => () => {
+              val offset = tid * taskSize + math.min(tid, extraTask)
+              val length = taskSize + (if (tid < extraTask) 1 else 0)
+              parameters.gradientPartition.narrow(1, offset + 1, length)
+                .clamp(minValueClip, maxValueClip)
+            }))
+//            parameters.gradientPartition.clamp(minValueClip, maxValueClip)
           }
           modelCache.optimMethod.optimize(_ => (ev.fromType(value), parameters.gradientPartition),
             parameters.weightPartition)
@@ -362,7 +391,7 @@ object DistriOptimizer {
         logger.info(s"${_header} Trained ${recordsNum.value} records in ${(end - start) / 1e9} " +
           s"seconds. Throughput is ${driverState("Throughput")} records/second. Loss is ${
             driverState("Loss")}. ${optimMethod.getHyperParameter()}")
-        logger.debug("\n" + metrics.summary())
+        logger.info("\n" + metrics.summary())
         logger.debug("Dropped modules: " + (driverSubModelNum - numFinishedModelUpdates))
         lossArray = new Array[Double](_subModelNumber)
 

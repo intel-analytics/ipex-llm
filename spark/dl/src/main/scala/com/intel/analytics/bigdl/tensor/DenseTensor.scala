@@ -877,8 +877,12 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
     res
   }
 
+//  override def sumSquare(): T = {
+//    sumNSquare(ev.fromType[Int](2))
+//  }
+
   override def sumSquare(): T = {
-    sumNSquare(ev.fromType[Int](2))
+    this.dot(this)
   }
 
   override def clamp(min: Float, max: Float): Tensor[T] = {
