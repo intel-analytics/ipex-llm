@@ -100,7 +100,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers with BeforeAndAfterAll
   }
 
   "ActivityRegularization serializer" should "work properly" in {
-    val activityRegularization = ActivityRegularization[Float](l1=0.01, l2=0.01).
+    val activityRegularization = ActivityRegularization[Float](l1 = 0.01, l2 = 0.01).
       setName("activityRegularization")
     val input = Tensor[Float](5, 5).apply1(_ => Random.nextFloat())
     runSerializationTest(activityRegularization, input)
