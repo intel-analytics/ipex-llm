@@ -16,107 +16,154 @@
 package com.intel.analytics.bigdl.utils.serializer
 
 import java.io.File
+import java.io.{File => JFile}
+import java.lang.reflect.Modifier
 
 import com.google.protobuf.{ByteString, CodedOutputStream}
 import com.intel.analytics.bigdl.Module
-import com.intel.analytics.bigdl.models.lenet.LeNet5
-import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
-import com.intel.analytics.bigdl.nn.ops.ParseExample
-import com.intel.analytics.bigdl.nn.{VolumetricFullConvolution, _}
-import com.intel.analytics.bigdl.tensor._
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.numeric.NumericFloat
-import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
-import com.intel.analytics.bigdl.utils.caffe.CaffeLoader
-import com.intel.analytics.bigdl.utils.{T, Table}
-import org.scalatest.{FlatSpec, Matchers}
-import org.tensorflow.example._
-import serialization.Bigdl
-import serialization.Bigdl.AttrValue
-import serializer.TestCustomData
+import com.intel.analytics.bigdl.nn.abstractnn.DataFormat.NHWC
 
-import scala.reflect.ClassTag
-import scala.reflect.runtime.universe
+import scala.collection.JavaConverters._
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, DataFormat}
+import com.intel.analytics.bigdl.nn.ops.{All, Any, ApproximateEqual, ArgMax, Assert, Assign, AssignGrad, AvgPoolGrad, BatchMatMul, BiasAddGrad, BroadcastGradientArgs, Cast, Ceil, Conv2D, Conv2DBackFilter, Conv2DTranspose, CrossEntropy, DecodeImage, DepthwiseConv2D, DepthwiseConv2DBackpropFilter, DepthwiseConv2DBackpropInput, EluGrad, Equal, Expm1, Floor, FloorDiv, FloorMod, FusedBatchNorm, FusedBatchNormGrad, Greater, GreaterEqual, InTopK, Inv, InvGrad, IsFinite, IsInf, IsNan, L2Loss, LRNGrad, Less, LessEqual, LogicalAnd, LogicalNot, LogicalOr, MaxPool, MaxPoolGrad, Maximum, MergeOps, Minimum, Mod, ModuleToOperation, NoOp, NotEqual, OneHot, Pad, ParseExample, Prod, RandomUniform, RangeOps, Rank, Relu6Grad, ReluGrad, ResizeBilinearOps, Rint, Round, RsqrtGrad, SigmoidGrad, Sign, Slice, SoftplusGrad, SoftsignGrad, SqrtGrad, SquaredDifference, Substr, SwitchOps, TopK, TruncateDiv, TruncatedNormal, Add => AddOps, DecodeGif => DecodeGifOps, DecodeJpeg => DecodeJpegOps, DecodePng => DecodePngOps, DecodeRaw => DecodeRawOps, Exp => ExpOps, Pow => PowOps, Select => SelectOps, Sum => SumOps, Tile => TileOps}
+import com.intel.analytics.bigdl.nn.tf._
+import com.intel.analytics.bigdl.nn.{DenseToSparse, _}
+import com.intel.analytics.bigdl.tensor._
+import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
+import com.intel.analytics.bigdl.utils.tf.TFRecordIterator
+import com.intel.analytics.bigdl.utils.tf.loaders.{Pack => _, _}
+import com.intel.analytics.bigdl.utils.{T, Table}
+import org.reflections.Reflections
+import org.reflections.scanners.SubTypesScanner
+import org.reflections.util.{ClasspathHelper, ConfigurationBuilder, FilterBuilder}
+import org.scalatest.{BeforeAndAfterAll, FlatSpec, Matchers}
+import org.tensorflow.example._
+import org.tensorflow.framework.DataType
+
+import scala.collection.mutable
 import scala.util.Random
 
-class ModuleSerializerSpec extends FlatSpec with Matchers {
+
+class ModuleSerializerSpec extends FlatSpec with Matchers with BeforeAndAfterAll {
+
+  val pkg = "com.intel.analytics.bigdl.nn"
+  val postFix = "bigdl"
+  val excluded = new mutable.HashSet[String]()
+  val expected = new mutable.HashSet[String]()
+  val tested = new mutable.HashSet[String]()
+
+  private def addExcluded(): Unit = {
+    excluded.add("com.intel.analytics.bigdl.nn.CellUnit")
+    excluded.add("com.intel.analytics.bigdl.nn.tf.ControlDependency")
+    excluded.add("com.intel.analytics.bigdl.utils.tf.AdapterForTest")
+    excluded.add("com.intel.analytics.bigdl.utils.serializer.TestModule")
+    excluded.add("com.intel.analytics.bigdl.utils.ExceptionTest")
+  }
+
+  override protected def beforeAll() = {
+    addExcluded
+    val reflections = new Reflections(new ConfigurationBuilder()
+      .filterInputsBy(new FilterBuilder().
+        excludePackage("com.intel.analytics.bigdl.utils.tf.loaders"))
+      .setUrls(ClasspathHelper.forPackage(pkg))
+      .setScanners(new SubTypesScanner()))
+
+    val subTypes = reflections.getSubTypesOf(classOf[AbstractModule[_, _, _]])
+      .asScala.filter(sub => !Modifier.isAbstract(sub.getModifiers)).
+      filter(sub => !excluded.contains(sub.getName))
+    subTypes.foreach(sub => expected.add(sub.getName))
+  }
+
+  private def runSerializationTest(module : AbstractModule[_, _, Float],
+                                  input : Activity, cls: Class[_] = null) : Unit = {
+    val name = module.getName
+    val serFile = File.createTempFile(name, postFix)
+    val originForward = module.evaluate().forward(input)
+
+    ModulePersister.saveToFile[Float](serFile.getAbsolutePath, null, module.evaluate(), true)
+    RNG.setSeed(1000)
+    val loadedModule = ModuleLoader.loadFromFile[Float](serFile.getAbsolutePath)
+
+    val afterLoadForward = loadedModule.forward(input)
+
+    if (serFile.exists) {
+      serFile.delete
+    }
+
+    afterLoadForward should be (originForward)
+    if (cls != null) {
+      tested.add(cls.getName)
+    } else {
+      tested.add(module.getClass.getName)
+    }
+  }
 
   "Abs serializer" should "work properly" in {
     val abs = Abs[Float, Float]().setName("abs")
-    val tensor1 = Tensor[Float](5, 5).apply1(_ => Random.nextFloat())
-    val tensor2 = Tensor[Float]()
-    val res1 = abs.forward(tensor1)
-    tensor2.resizeAs(tensor1).copy(tensor1)
-    ModulePersister.saveToFile("/tmp/abs.bigdl", null, abs, true)
-    val loadedModule = ModuleLoader.loadFromFile("/tmp/abs.bigdl")
-    val res2 = loadedModule.forward(tensor2)
-    res1 should be (res2)
+    val input = Tensor[Float](5, 5).apply1(_ => Random.nextFloat())
+    runSerializationTest(abs, input)
+  }
+
+  "ActivityRegularization serializer" should "work properly" in {
+    val activityRegularization = ActivityRegularization[Float](l1 = 0.01, l2 = 0.01).
+      setName("activityRegularization")
+    val input = Tensor[Float](5, 5).apply1(_ => Random.nextFloat())
+    runSerializationTest(activityRegularization, input)
   }
 
   "Add serializer" should "work properly" in {
-    val add = Add(5)
-    val tensor1 = Tensor(5).apply1(_ => Random.nextFloat())
-    val tensor2 = Tensor()
-    val res1 = add.forward(tensor1)
-    tensor2.resizeAs(tensor1).copy(tensor1)
-    ModulePersister.saveToFile("/tmp/add.bigdl", null, add, true)
-    val loadedAdd = ModuleLoader.loadFromFile("/tmp/add.bigdl")
-    val res2 = loadedAdd.forward(tensor2)
-    res1 should be (res2)
+    val add = Add[Float](5).setName("add")
+    val input = Tensor[Float](5).apply1(_ => Random.nextFloat())
+    runSerializationTest(add, input)
   }
 
   "AddConst serializer" should "work properly" in {
-    val addconst = AddConstant(5)
-    val tensor1 = Tensor(5).apply1(_ => Random.nextFloat())
-    val tensor2 = Tensor()
-    val res1 = addconst.forward(tensor1)
-    tensor2.resizeAs(tensor1).copy(tensor1)
-    ModulePersister.saveToFile("/tmp/addconst.bigdl", null, addconst, true)
-    val loadedAddConst = ModuleLoader.loadFromFile("/tmp/addconst.bigdl")
-    val res2 = loadedAddConst.forward(tensor2)
-    res1 should be (res2)
+    val addconst = AddConstant[Float](5).setName("addconst")
+    val input = Tensor[Float](5).apply1(_ => Random.nextFloat())
+    runSerializationTest(addconst, input)
   }
 
   "BatchNormalization serializer" should "work properly" in {
-    val batchNorm = BatchNormalization(5)
-    val tensor1 = Tensor(2, 5).apply1(_ => Random.nextFloat())
-    val tensor2 = Tensor()
-    tensor2.resizeAs(tensor1).copy(tensor1)
-    val res1 = batchNorm.forward(tensor1)
-    ModulePersister.saveToFile("/tmp/batchNorm.bigdl", null, batchNorm, true)
-    val loadedBatchNorm = ModuleLoader.loadFromFile("/tmp/batchNorm.bigdl")
-    val res2 = loadedBatchNorm.forward(tensor2)
-    res1 should be (res2)
+    val batchNorm = BatchNormalization[Float](5).setName("batchNorm")
+    val input = Tensor[Float](2, 5).apply1(_ => Random.nextFloat())
+    runSerializationTest(batchNorm, input)
+  }
+
+  "BifurcateSplitTable serializer" should "work properly" in {
+    val batchNorm = BifurcateSplitTable[Float](1).setName("batchNorm")
+    val input = Tensor[Float](2, 5).apply1(_ => Random.nextFloat())
+    runSerializationTest(batchNorm, input)
   }
 
   "BiLinear serializer" should "work properly" in {
-    val input1 = Tensor(5, 5).apply1(e => Random.nextFloat())
-    val input2 = Tensor(5, 3).apply1(e => Random.nextFloat())
+    val input1 = Tensor[Float](5, 5).apply1(e => Random.nextFloat())
+    val input2 = Tensor[Float](5, 3).apply1(e => Random.nextFloat())
     var input = new Table()
     input(1.toFloat) = input1
     input(2.toFloat) = input2
+    val biLinear = Bilinear[Float](5, 3, 2)
+    runSerializationTest(biLinear, input)
+  }
 
-    val biLinear = Bilinear(5, 3, 2)
-    val res1 = biLinear.forward(input)
-    ModulePersister.saveToFile("/tmp/biLinear.bigdl", null, biLinear, true)
-    val loadedBiLinear = ModuleLoader.loadFromFile("/tmp/biLinear.bigdl")
-    val res2 = loadedBiLinear.forward(input)
-    res1 should be (res2)
+  "BinaryThreshold serializer" should "work properly" in {
+    val binaryThreshold = BinaryThreshold[Float]().setName("binaryThreshold")
+    val input = Tensor[Float](2, 5).apply1(_ => Random.nextFloat())
+    runSerializationTest(binaryThreshold, input)
   }
 
   "BinaryTreeLSTM serializer" should "work properly" in {
 
     RNG.setSeed(1000)
-    val binaryTreeLSTM = BinaryTreeLSTM(2, 2)
+    val binaryTreeLSTM = BinaryTreeLSTM[Float](2, 2).setName("binaryTreeLSTM")
 
     val inputs =
-      Tensor(
+      Tensor[Float](
         T(T(T(1f, 2f),
           T(2f, 3f),
           T(4f, 5f))))
 
     val tree =
-      Tensor(
+      Tensor[Float](
         T(T(T(2f, 5f, -1f),
           T(0f, 0f, 1f),
           T(0f, 0f, 2f),
@@ -125,1803 +172,1064 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
 
     val input = T(inputs, tree)
 
-    val res1 = binaryTreeLSTM.forward(input)
-    val res11 = binaryTreeLSTM.forward(input)
-    res1 should be (res11)
-    ModulePersister.saveToFile("/tmp/binaryTreeLSTM.bigdl", null, binaryTreeLSTM, true)
-    RNG.setSeed(1000)
-    val loadedBinaryTreeLSTM = ModuleLoader.loadFromFile("/tmp/binaryTreeLSTM.bigdl")
-    val res2 = loadedBinaryTreeLSTM.forward(input)
-    res1 should be (res2)
-
+    runSerializationTest(binaryTreeLSTM, input)
   }
 
   "BiRecurrent serializer" should "work properly" in {
-    val input1 = Tensor(1, 5, 6).apply1(e => Random.nextFloat()).transpose(1, 2)
-    val input2 = Tensor()
-    input2.resizeAs(input1).copy(input1)
+    val input = Tensor[Float](1, 5, 6).apply1(e => Random.nextFloat()).transpose(1, 2)
     RNG.setSeed(100)
-    val biRecurrent = BiRecurrent().add(RnnCell(6, 4, Sigmoid()))
-    val res1 = biRecurrent.forward(input1)
-    ModulePersister.saveToFile("/tmp/biRecurrent.bigdl", null, biRecurrent, true)
-    RNG.setSeed(100)
-    val loadedRecurent = ModuleLoader.loadFromFile("/tmp/biRecurrent.bigdl")
-    val res2 = loadedRecurent.forward(input2)
-    res1 should be (res2)
+    val biRecurrent = BiRecurrent[Float]().add(RnnCell[Float](6, 4,
+      Sigmoid[Float]())).setName("biRecurrent")
+    runSerializationTest(biRecurrent, input)
   }
 
-  "BiRecurrent serializer" should "work properly with BatchNormParams" in {
-    val input1 = Tensor(1, 5, 6).apply1(e => Random.nextFloat()).transpose(1, 2)
-    val input2 = Tensor()
-    input2.resizeAs(input1).copy(input1)
+  "BiRecurrent serializer with BatchNormParams" should "work properly" in {
+    val input = Tensor[Float](1, 5, 6).apply1(e => Random.nextFloat()).transpose(1, 2)
     RNG.setSeed(100)
-    val biRecurrent = BiRecurrent(batchNormParams = BatchNormParams()).add(RnnCell(6, 4, Sigmoid()))
-    val res1 = biRecurrent.forward(input1)
-    ModulePersister.saveToFile("/tmp/biRecurrent.bigdl", null, biRecurrent, true)
-    RNG.setSeed(100)
-    val loadedRecurent = ModuleLoader.loadFromFile("/tmp/biRecurrent.bigdl")
-    val res2 = loadedRecurent.forward(input2)
-    res1 should be (res2)
+    val biRecurrent = BiRecurrent[Float](batchNormParams =
+      BatchNormParams()).add(RnnCell[Float](6, 4, Sigmoid[Float]())).setName("biRecurrentWithNorm")
+    runSerializationTest(biRecurrent, input)
   }
+
 
   "BiRecurrent serializer" should "work properly with isSplitInput" in {
-    val input1 = Tensor(1, 5, 6).apply1(e => Random.nextFloat()).transpose(1, 2)
-    val input2 = Tensor()
-    input2.resizeAs(input1).copy(input1)
-    RNG.setSeed(100)
-    val biRecurrent = BiRecurrent(isSplitInput = false).add(RnnCell(6, 4, Sigmoid()))
-    val res1 = biRecurrent.forward(input1)
-    ModulePersister.saveToFile("/tmp/biRecurrent.bigdl", null, biRecurrent, true)
-    RNG.setSeed(100)
-    val loadedRecurent = ModuleLoader.loadFromFile("/tmp/biRecurrent.bigdl")
-    val res2 = loadedRecurent.forward(input2)
-    res1 should be (res2)
+    val input = Tensor[Float](1, 5, 6).apply1(e => Random.nextFloat()).transpose(1, 2)
+    val biRecurrent = BiRecurrent[Float](isSplitInput = false)
+      .add(RnnCell[Float](6, 4, Sigmoid[Float]())).setName("biRecurrentWithSplit")
+    runSerializationTest(biRecurrent, input)
   }
 
   "Bottle serializer" should "work properly" in {
-    val input1 = Tensor(10).apply1(e => Random.nextFloat())
-    val input2 = Tensor()
-    input2.resizeAs(input1).copy(input1)
+    val input = Tensor[Float](10).apply1(e => Random.nextFloat())
 
-    val bottle = new Bottle(Linear(10, 2).asInstanceOf[Module[Float]], 2, 2)
-
-    val res1 = bottle.forward(input1)
-    ModulePersister.saveToFile("/tmp/bottle.bigdl", null, bottle, true)
-    val loadedBottle = ModuleLoader.loadFromFile("/tmp/bottle.bigdl")
-    val res2 = loadedBottle.forward(input2)
-    res1 should be (res2)
+    val bottle = new Bottle[Float](Linear[Float](10, 2).
+      asInstanceOf[Module[Float]], 2, 2).setName("bottle")
+    runSerializationTest(bottle, input)
   }
 
   "Caddserializer" should "work properly" in {
-    val input1 = Tensor(5, 1).apply1(e => Random.nextFloat())
-    val input2 = Tensor()
-    input2.resizeAs(input1).copy(input1)
-    val cadd = CAdd(Array(5, 1))
-    val res1 = cadd.forward(input1)
-    ModulePersister.saveToFile("/tmp/cadd.bigdl", null, cadd, true)
-    val loadedCadd = ModuleLoader.loadFromFile("/tmp/cadd.bigdl")
-    val res2 = loadedCadd.forward(input2)
-    res1 should be (res2)
+    val input = Tensor[Float](5, 1).apply1(e => Random.nextFloat())
+    val cadd = CAdd[Float](Array(5, 1)).setName("cadd")
+    runSerializationTest(cadd, input)
   }
 
   "CaddTable serializer" should "work properly" in {
-    val input1 = Tensor(5, 5).apply1(e => Random.nextFloat())
-    val input2 = Tensor(5, 5).apply1(e => Random.nextFloat())
+    val input1 = Tensor[Float](5, 5).apply1(e => Random.nextFloat())
+    val input2 = Tensor[Float](5, 5).apply1(e => Random.nextFloat())
     var input = new Table()
     input(1.toFloat) = input1
     input(2.toFloat) = input2
-
-    val caddTable = CAddTable(false)
-
-    val res1 = caddTable.forward(input)
-    ModulePersister.saveToFile("/tmp/caddTable.bigdl", null, caddTable, true)
-    val loadedCaddTable = ModuleLoader.loadFromFile("/tmp/caddTable.bigdl")
-    val res2 = loadedCaddTable.forward(input)
-    res1 should be (res2)
+    val caddTable = CAddTable[Float](false).setName("caddTable")
+    runSerializationTest(caddTable, input)
   }
 
   "CAveTable serializer" should "work properly" in {
-    val input1 = Tensor(5, 5).apply1(e => Random.nextFloat())
-    val input2 = Tensor(5, 5).apply1(e => Random.nextFloat())
+    val input1 = Tensor[Float](5, 5).apply1(e => Random.nextFloat())
+    val input2 = Tensor[Float](5, 5).apply1(e => Random.nextFloat())
     var input = new Table()
     input(1.toFloat) = input1
     input(2.toFloat) = input2
-
-    val caveTable = CAveTable(false)
-
-    val res1 = caveTable.forward(input)
-    ModulePersister.saveToFile("/tmp/caveTable.bigdl", null, caveTable, true)
-    val loadedCaddTable = ModuleLoader.loadFromFile("/tmp/caveTable.bigdl")
-    val res2 = loadedCaddTable.forward(input)
-    res1 should be (res2)
+    val caveTable = CAveTable[Float](false).setName("caveTable")
+    runSerializationTest(caveTable, input)
   }
-
-  "VolumetricAveragePooling serializer" should "work properly" in {
-        val volumetricAveragePooling = VolumetricAveragePooling(2, 2, 2, 1, 1, 1, 0, 0, 0)
-        val input1 = Tensor(1, 2, 3, 3).apply1(_ => Random.nextFloat())
-        val input2 = Tensor(1, 2, 3, 3)
-        input2.copy(input1)
-        val res1 = volumetricAveragePooling.forward(input1)
-
-        ModulePersister.saveToFile("/tmp/volumetricAveragePooling.bigdl", null,
-          volumetricAveragePooling, true)
-        val loadedVolumetricAveragePooling =
-          ModuleLoader.loadFromFile("/tmp/volumetricAveragePooling.bigdl")
-        val res2 = loadedVolumetricAveragePooling.forward(input1)
-        res1 should be (res2)
-  }
-
 
   "CDivTable serializer" should "work properly" in {
-    val cdivTable = new CDivTable()
-    val input1 = Tensor(10).apply1(e => Random.nextFloat())
-    val input2 = Tensor(10).apply1(e => Random.nextFloat())
+    val cdivTable = new CDivTable[Float]().setName("cdivTable")
+    val input1 = Tensor[Float](10).apply1(e => Random.nextFloat())
+    val input2 = Tensor[Float](10).apply1(e => Random.nextFloat())
     var input = new Table()
     input(1.toFloat) = input1
     input(2.toFloat) = input2
-
-    val res1 = cdivTable.forward(input)
-
-    ModulePersister.saveToFile("/tmp/cdivTable.bigdl", null, cdivTable, true)
-    val loadedCdivTable = ModuleLoader.loadFromFile("/tmp/cdivTable.bigdl")
-    val res2 = cdivTable.forward(input)
-    res1 should be (res2)
+    runSerializationTest(cdivTable, input)
   }
 
   "Clamp serializer" should "work properly" in {
 
-    val input1 = Tensor(10).apply1(e => Random.nextFloat())
-
-    val input2 = Tensor()
-    input2.resizeAs(input1).copy(input1)
-
-    val clamp = Clamp(1, 10)
-    val res1 = clamp.forward(input1)
-
-    ModulePersister.saveToFile("/tmp/clamp.bigdl", null, clamp, true)
-    val loadedClamp = ModuleLoader.loadFromFile("/tmp/clamp.bigdl")
-    val res2 = loadedClamp.forward(input2)
-    res1 should be (res2)
+    val input = Tensor[Float](10).apply1(e => Random.nextFloat())
+    val clamp = Clamp[Float, Float](1, 10).setName("clamp")
+    runSerializationTest(clamp, input)
   }
 
   "CMaxTable serializer" should "work properly" in {
-    val cmaxTable = new CMaxTable()
-    val input1 = Tensor(10).apply1(e => Random.nextFloat())
-    val input2 = Tensor(10).apply1(e => Random.nextFloat())
+    val cmaxTable = new CMaxTable[Float]().setName("cmaxTable")
+    val input1 = Tensor[Float](10).apply1(e => Random.nextFloat())
+    val input2 = Tensor[Float](10).apply1(e => Random.nextFloat())
     var input = new Table()
     input(1.toFloat) = input1
     input(2.toFloat) = input2
-
-    val res1 = cmaxTable.forward(input)
-
-    ModulePersister.saveToFile("/tmp/cmaxTable.bigdl", null, cmaxTable, true)
-    val loadedCmaxTable = ModuleLoader.loadFromFile("/tmp/cmaxTable.bigdl")
-    val res2 = loadedCmaxTable.forward(input)
-    res1 should be (res2)
+    runSerializationTest(cmaxTable, input)
   }
 
   "CMinTable serializer" should "work properly" in {
-    val cminTable = new CMinTable()
-    val input1 = Tensor(10).apply1(e => Random.nextFloat())
-    val input2 = Tensor(10).apply1(e => Random.nextFloat())
+    val cminTable = new CMinTable[Float]().setName("cminTable")
+    val input1 = Tensor[Float](10).apply1(e => Random.nextFloat())
+    val input2 = Tensor[Float](10).apply1(e => Random.nextFloat())
     var input = new Table()
     input(1.toFloat) = input1
     input(2.toFloat) = input2
-
-    val res1 = cminTable.forward(input)
-
-    ModulePersister.saveToFile("/tmp/cminTable.bigdl", null, cminTable, true)
-    val loadedCminTable = ModuleLoader.loadFromFile("/tmp/cminTable.bigdl")
-    val res2 = loadedCminTable.forward(input)
-    res1 should be (res2)
+    runSerializationTest(cminTable, input)
   }
 
-  "CMulserializer" should "work properly" in {
-    val input1 = Tensor(5, 1).apply1(e => Random.nextFloat())
-    val input2 = Tensor()
-    input2.resizeAs(input1).copy(input1)
-
-    val cmul = CMul(Array(5, 1))
-
-    val res1 = cmul.forward(input1)
-    ModulePersister.saveToFile("/tmp/cmul.bigdl", null, cmul, true)
-    val loadedCmul = ModuleLoader.loadFromFile("/tmp/cmul.bigdl")
-    val res2 = loadedCmul.forward(input2)
-    res1 should be (res2)
+  "CMul serializer" should "work properly" in {
+    val input = Tensor[Float](5, 1).apply1(e => Random.nextFloat())
+    val cmul = CMul[Float](Array(5, 1)).setName("cmul")
+    runSerializationTest(cmul, input)
   }
 
   "CMulTable serializer" should "work properly" in {
-    val input1 = Tensor(5, 5).apply1(e => Random.nextFloat())
-    val input2 = Tensor(5, 5).apply1(e => Random.nextFloat())
+    val input1 = Tensor[Float](5, 5).apply1(e => Random.nextFloat())
+    val input2 = Tensor[Float](5, 5).apply1(e => Random.nextFloat())
     var input = new Table()
     input(1.toFloat) = input1
     input(2.toFloat) = input2
 
-    val cmulTable = CMulTable()
-
-    val res1 = cmulTable.forward(input)
-    ModulePersister.saveToFile("/tmp/cmulTable.bigdl", null, cmulTable, true)
-    val loadedCmulTable = ModuleLoader.loadFromFile("/tmp/cmulTable.bigdl")
-    val res2 = loadedCmulTable.forward(input)
-    res1 should be (res2)
+    val cmulTable = CMulTable[Float]().setName("cmulTable")
+    runSerializationTest(cmulTable, input)
   }
 
   "Concatserializer" should "work properly" in {
-    val input1 = Tensor(2, 2, 2).apply1(e => Random.nextFloat())
-    val input2 = Tensor()
-    input2.resizeAs(input1).copy(input1)
-
-    val concat = Concat(2)
-
-    concat.add(Abs())
-    concat.add(Abs())
-
-    val res1 = concat.forward(input1)
-    ModulePersister.saveToFile("/tmp/concat.bigdl", null, concat, true)
-    val loadedConcat = ModuleLoader.loadFromFile("/tmp/concat.bigdl")
-    val res2 = loadedConcat.forward(input2)
-    res1 should be (res2)
+    val input = Tensor[Float](2, 2, 2).apply1(e => Random.nextFloat())
+    val concat = Concat[Float](2).setName("concat")
+    concat.add(Abs[Float, Float]())
+    concat.add(Abs[Float, Float]())
+    runSerializationTest(concat, input)
   }
 
   "ConcatTable serializer" should "work properly" in {
-    val concatTable = ConcatTable()
-    concatTable.add(Linear(10, 2))
-    concatTable.add(Linear(10, 2))
-
-    val tensor1 = Tensor(10).apply1(_ => Random.nextFloat())
-    val tensor2 = Tensor()
-    tensor2.resizeAs(tensor1).copy(tensor1)
-    val res1 = concatTable.forward(tensor1)
-
-    ModulePersister.saveToFile("/tmp/concatTable.bigdl", null, concatTable, true)
-    val loadedConcatTable = ModuleLoader.loadFromFile("/tmp/concatTable.bigdl")
-    val res2 = loadedConcatTable.forward(tensor2)
-    res1 should be (res2)
+    val concatTable = new  ConcatTable[Float]().setName("concatTable")
+    concatTable.add(Linear[Float](10, 2))
+    concatTable.add(Linear[Float](10, 2))
+    val input = Tensor[Float](10).apply1(_ => Random.nextFloat())
+    runSerializationTest(concatTable, input)
   }
 
   "Contiguous serializer" should "work properly" in {
-    val contiguous = Contiguous()
-
-    val tensor1 = Tensor(10).apply1(_ => Random.nextFloat())
-    val tensor2 = Tensor()
-    tensor2.resizeAs(tensor1).copy(tensor1)
-
-    val res1 = contiguous.forward(tensor1)
-
-    ModulePersister.saveToFile("/tmp/contiguous.bigdl", null, contiguous, true)
-    val loadedContiguous = ModuleLoader.loadFromFile("/tmp/contiguous.bigdl")
-    val res2 = loadedContiguous.forward(tensor2)
-    res1 should be (res2)
+    val contiguous = Contiguous[Float]().setName("contiguous")
+    val input = Tensor[Float](10).apply1(_ => Random.nextFloat())
+    runSerializationTest(contiguous, input)
   }
 
-  "ConvLSTMPeephole2D serializer" should " work properly" in {
+  "ConvLSTMPeephole2D serializer" should "work properly" in {
     val hiddenSize = 5
     val inputSize = 3
     val seqLength = 4
     val batchSize = 2
     val kernalW = 3
     val kernalH = 3
-    val convLSTMPeephole2d = Recurrent()
-    val model = Sequential()
+    val c2d = ConvLSTMPeephole[Float](
+      inputSize,
+      hiddenSize,
+      kernalW, kernalH,
+      1,
+      withPeephole = false)
+    val convLSTMPeephole2d = Recurrent[Float]().setName("convLSTMPeephole2d")
+    val model = Sequential[Float]()
       .add(convLSTMPeephole2d
-        .add(ConvLSTMPeephole(
-          inputSize,
-          hiddenSize,
-          kernalW, kernalH,
-          1,
-          withPeephole = false)))
-      .add(View(hiddenSize * kernalH * kernalW))
+        .add(c2d))
+      .add(View[Float](hiddenSize * kernalH * kernalW))
 
-    val input1 = Tensor(batchSize, seqLength, inputSize, kernalW, kernalH).rand
-
-    val input2 = Tensor()
-    input2.resizeAs(input1).copy(input1)
-    val res1 = convLSTMPeephole2d.forward(input1)
-    ModulePersister.saveToFile("/tmp/convLSTMPeephole2d.bigdl", null, convLSTMPeephole2d, true)
-    val loadedConvLSTMPeephole2d = ModuleLoader.loadFromFile("/tmp/convLSTMPeephole2d.bigdl")
-    val res2 = loadedConvLSTMPeephole2d.forward(input2)
-    res1 should be (res2)
+    val input = Tensor[Float](batchSize, seqLength, inputSize, kernalW, kernalH).rand
+    runSerializationTest(convLSTMPeephole2d, input, c2d.getClass)
   }
 
-  "ConvLSTMPeephole3D serializer" should " work properly" in {
+  "ConvLSTMPeephole3D serializer" should "work properly" in {
     val hiddenSize = 5
     val inputSize = 3
     val seqLength = 4
     val batchSize = 2
     val kernalW = 3
     val kernalH = 3
-    val convLSTMPeephole3d = Recurrent()
-    val model = Sequential()
+    val c3d = ConvLSTMPeephole3D[Float](
+      inputSize,
+      hiddenSize,
+      kernalW, kernalH,
+      1,
+      withPeephole = false)
+    val convLSTMPeephole3d = Recurrent[Float]().setName("convLSTMPeephole3d")
+    val model = Sequential[Float]()
       .add(convLSTMPeephole3d
-        .add(ConvLSTMPeephole3D(
-          inputSize,
-          hiddenSize,
-          kernalW, kernalH,
-          1,
-          withPeephole = false)))
-      .add(View(hiddenSize * kernalH * kernalW))
+        .add(c3d))
+      .add(View[Float](hiddenSize * kernalH * kernalW))
 
-    val input1 = Tensor(batchSize, seqLength, inputSize, kernalW, kernalH, 3).rand
-
-    val input2 = Tensor()
-    input2.resizeAs(input1).copy(input1)
-    val res1 = convLSTMPeephole3d.forward(input1)
-    ModulePersister.saveToFile("/tmp/convLSTMPeephole3d.bigdl", null, convLSTMPeephole3d, true)
-    val loadedConvLSTMPeephole3d = ModuleLoader.loadFromFile("/tmp/convLSTMPeephole3d.bigdl")
-    val res2 = loadedConvLSTMPeephole3d.forward(input2)
-    res1 should be (res2)
+    val input = Tensor[Float](batchSize, seqLength, inputSize, kernalW, kernalH, 3).rand
+    runSerializationTest(convLSTMPeephole3d, input, c3d.getClass)
   }
 
   "Cosine serializer" should "work properly" in {
-    val cosine = Cosine(5, 5)
-
-    val tensor1 = Tensor(5).apply1(_ => Random.nextFloat())
-    val tensor2 = Tensor()
-    tensor2.resizeAs(tensor1).copy(tensor1)
-
-    val res1 = cosine.forward(tensor1)
-
-    ModulePersister.saveToFile("/tmp/cosine.bigdl", null, cosine, true)
-    val loadedCosine = ModuleLoader.loadFromFile("/tmp/cosine.bigdl")
-    val res2 = loadedCosine.forward(tensor2)
-    res1 should be (res2)
+    val cosine = Cosine[Float](5, 5).setName("cosine")
+    val input = Tensor[Float](5).apply1(_ => Random.nextFloat())
+    runSerializationTest(cosine, input)
   }
 
   "CosineDistance serializer" should "work properly" in {
-    val cosineDistance = CosineDistance()
-
-    val input1 = Tensor(5, 5).apply1(e => Random.nextFloat())
-    val input2 = Tensor(5, 5).apply1(e => Random.nextFloat())
+    val cosineDistance = CosineDistance[Float]().setName("cosineDistance")
+    val input1 = Tensor[Float](5, 5).apply1(e => Random.nextFloat())
+    val input2 = Tensor[Float](5, 5).apply1(e => Random.nextFloat())
     var input = new Table()
     input(1.toFloat) = input1
     input(2.toFloat) = input2
-
-    val res1 = cosineDistance.forward(input)
-
-    ModulePersister.saveToFile("/tmp/cosineDistance.bigdl", null, cosineDistance, true)
-    val loadedCosineDistance = ModuleLoader.loadFromFile("/tmp/cosineDistance.bigdl")
-    val res2 = loadedCosineDistance.forward(input)
-    res1 should be (res2)
+    runSerializationTest(cosineDistance, input)
   }
 
   "CSubTable serializer" should "work properly" in {
-    val csubTable = CSubTable()
+    val csubTable = CSubTable[Float]().setName("csubTable")
 
-    val input1 = Tensor(5, 5).apply1(e => Random.nextFloat())
-    val input2 = Tensor(5, 5).apply1(e => Random.nextFloat())
+    val input1 = Tensor[Float](5, 5).apply1(e => Random.nextFloat())
+    val input2 = Tensor[Float](5, 5).apply1(e => Random.nextFloat())
     var input = new Table()
     input(1.toFloat) = input1
     input(2.toFloat) = input2
+    runSerializationTest(csubTable, input)
+  }
 
-    val res1 = csubTable.forward(input)
-
-    ModulePersister.saveToFile("/tmp/csubTable.bigdl", null, csubTable, true)
-    val loadedCSubTable = ModuleLoader.loadFromFile("/tmp/csubTable.bigdl")
-    val res2 = loadedCSubTable.forward(input)
-    res1 should be (res2)
+  "DenseToSparse serializer" should "work properly" in {
+    val denseToSparse = DenseToSparse[Float]().setName("denseToSparse")
+    val input = Tensor.range[Float](1, 12, 1)
+    runSerializationTest(denseToSparse, input)
   }
 
   "Dotproduct serializer" should "work properly" in {
-
-    val dotProduct = DotProduct()
-
-    val input1 = Tensor(5, 5).apply1(e => Random.nextFloat())
-    val input2 = Tensor(5, 5).apply1(e => Random.nextFloat())
+    val dotProduct = DotProduct[Float]().setName("dotProduct")
+    val input1 = Tensor[Float](5, 5).apply1(e => Random.nextFloat())
+    val input2 = Tensor[Float](5, 5).apply1(e => Random.nextFloat())
     var input = new Table()
     input(1.toFloat) = input1
     input(2.toFloat) = input2
-
-    val res1 = dotProduct.forward(input)
-
-    ModulePersister.saveToFile("/tmp/dotProduct.bigdl", null, dotProduct, true)
-    val loadedDotProduct = ModuleLoader.loadFromFile("/tmp/dotProduct.bigdl")
-    val res2 = loadedDotProduct.forward(input)
-    res1 should be (res2)
+    runSerializationTest(dotProduct, input)
   }
 
   "Dropout serializer" should "work properly" in {
     RNG.setSeed(100)
-    val dropout = Dropout()
-
-    val tensor1 = Tensor(10).apply1(_ => Random.nextFloat())
-    val tensor2 = Tensor()
-    tensor2.resizeAs(tensor1).copy(tensor1)
-    val res1 = dropout.forward(tensor1)
-
-    ModulePersister.saveToFile("/tmp/dropout.bigdl", null, dropout, true)
-    RNG.setSeed(100)
-    val loadedDropout = ModuleLoader.loadFromFile("/tmp/dropout.bigdl")
-    val res2 = loadedDropout.forward(tensor2)
-    res1 should be (res2)
+    val dropout = Dropout[Float]().setName("dropout")
+    val input = Tensor[Float](10).apply1(_ => Random.nextFloat())
+    runSerializationTest(dropout, input)
   }
 
   "Echo serializer" should "work properly" in {
-    val echo = Echo()
-    val tensor1 = Tensor(10).apply1(_ => Random.nextFloat())
-    val tensor2 = Tensor()
-    tensor2.resizeAs(tensor1).copy(tensor1)
-    val res1 = echo.forward(tensor1)
-    ModulePersister.saveToFile("/tmp/echo.bigdl", null, echo, true)
-    val loadedEcho = ModuleLoader.loadFromFile("/tmp/echo.bigdl")
-    val res2 = loadedEcho.forward(tensor2)
-    res1 should be (res2)
+    val echo = Echo[Float]().setName("echo")
+    val input = Tensor[Float](10).apply1(_ => Random.nextFloat())
+    runSerializationTest(echo, input)
   }
 
   "ELU serializer" should "work properly" in {
-    val elu = ELU()
-
-    val tensor1 = Tensor(10).apply1(_ => Random.nextFloat())
-    val tensor2 = Tensor()
-    tensor2.resizeAs(tensor1).copy(tensor1)
-    val res1 = elu.forward(tensor1)
-
-    ModulePersister.saveToFile("/tmp/elu.bigdl", null, elu, true)
-    val loadedElu = ModuleLoader.loadFromFile("/tmp/elu.bigdl")
-    val res2 = loadedElu.forward(tensor2)
-    res1 should be (res2)
+    val elu = ELU[Float, Float]().setName("elu")
+    val input = Tensor[Float](10).apply1(_ => Random.nextFloat())
+    runSerializationTest(elu, input)
   }
 
   "Euclidena serializer" should "work properly" in {
-    val euclidean = Euclidean(7, 7)
-
-    val tensor1 = Tensor(8, 7).apply1(_ => Random.nextFloat())
-    val tensor2 = Tensor()
-    tensor2.resizeAs(tensor1).copy(tensor1)
-    val res1 = euclidean.forward(tensor1)
-
-    ModulePersister.saveToFile("/tmp/euclidean.bigdl", null, euclidean, true)
-    val loadedEuclidean = ModuleLoader.loadFromFile("/tmp/euclidean.bigdl")
-    val res2 = loadedEuclidean.forward(tensor2)
-    res1 should be (res2)
+    val euclidean = Euclidean[Float](7, 7).setName("euclidean")
+    val input = Tensor[Float](8, 7).apply1(_ => Random.nextFloat())
+    runSerializationTest(euclidean, input)
   }
 
   "Exp serializer" should "work properly" in {
-    val exp = Exp()
-
-    val tensor1 = Tensor(10).apply1(_ => Random.nextFloat())
-    val tensor2 = Tensor()
-    tensor2.resizeAs(tensor1).copy(tensor1)
-    val res1 = exp.forward(tensor1)
-
-    ModulePersister.saveToFile("/tmp/exp.bigdl", null, exp, true)
-    val loadedExp = ModuleLoader.loadFromFile("/tmp/exp.bigdl")
-    val res2 = loadedExp.forward(tensor2)
-    res1 should be (res2)
+    val exp = Exp[Float]().setName("exp")
+    val input = Tensor[Float](10).apply1(_ => Random.nextFloat())
+    runSerializationTest(exp, input)
   }
 
   "FlattenTable serializer" should "work properly" in {
-    val flattenTable = FlattenTable()
-
-    val input1 = Tensor(5, 5).apply1(e => Random.nextFloat())
-    val input2 = Tensor(5, 5).apply1(e => Random.nextFloat())
+    val flattenTable = FlattenTable[Float]().setName("flattenTable")
+    val input1 = Tensor[Float](5, 5).apply1(e => Random.nextFloat())
+    val input2 = Tensor[Float](5, 5).apply1(e => Random.nextFloat())
     var input = new Table()
     input(1.toFloat) = input1
     input(2.toFloat) = input2
-
-    val res1 = flattenTable.forward(input)
-
-    ModulePersister.saveToFile("/tmp/flattenTable.bigdl", null, flattenTable, true)
-    val loadedFlattenTable = ModuleLoader.loadFromFile("/tmp/flattenTable.bigdl")
-    val res2 = loadedFlattenTable.forward(input)
-    res1 should be (res2)
+    runSerializationTest(flattenTable, input)
   }
 
   "GaussianDropout serializer" should "work properly" in {
-    RNG.setSeed(100)
-    val gd = GaussianDropout(0.5)
-
-    val tensor1 = Tensor(10).apply1(_ => Random.nextFloat())
-    val tensor2 = Tensor()
-    tensor2.resizeAs(tensor1).copy(tensor1)
-    val res1 = gd.forward(tensor1)
-
-    ModulePersister.saveToFile("/tmp/gaussianDropout.bigdl", null, gd, true)
-    RNG.setSeed(100)
-    val loadedGd = ModuleLoader.loadFromFile("/tmp/gaussianDropout.bigdl")
-    val res2 = loadedGd.forward(tensor2)
-    res1 should be (res2)
+    RNG.setSeed(1000)
+    val gaussianDropout = GaussianDropout[Float](0.5).setName("gaussianDropout")
+    val input = Tensor[Float](10).apply1(_ => Random.nextFloat())
+    runSerializationTest(gaussianDropout, input)
   }
 
   "GaussianNoise serializer" should "work properly" in {
-    RNG.setSeed(100)
-    val gn = GaussianNoise(0.5)
+    RNG.setSeed(1000)
+    val gaussianNoise = GaussianNoise[Float](0.5).setName("gaussianNoise")
+    val input = Tensor[Float](10).apply1(_ => Random.nextFloat())
+    runSerializationTest(gaussianNoise, input)
+  }
 
-    val tensor1 = Tensor(10).apply1(_ => Random.nextFloat())
-    val tensor2 = Tensor()
-    tensor2.resizeAs(tensor1).copy(tensor1)
-    val res1 = gn.forward(tensor1)
-
-    ModulePersister.saveToFile("/tmp/gaussianNoise.bigdl", null, gn, true)
-    RNG.setSeed(100)
-    val loadedGn = ModuleLoader.loadFromFile("/tmp/gaussianNoise.bigdl")
-    val res2 = loadedGn.forward(tensor2)
-    res1 should be (res2)
+  "GaussianSampler serializer" should "work properly" in {
+    val input1 = Tensor[Float](2, 3).apply1(x => RNG.uniform(0, 1).toFloat)
+    val input2 = Tensor[Float](2, 3).apply1(x => RNG.uniform(0, 1).toFloat)
+    val input = T(input1, input2)
+    RNG.setSeed(1000)
+    val gaussianSampler = GaussianSampler[Float]().setName("gaussianSampler")
+    runSerializationTest(gaussianSampler, input)
   }
 
   "GradientReversal serializer" should "work properly" in {
-    val gradientReversal = GradientReversal()
-
-    val tensor1 = Tensor(10).apply1(_ => Random.nextFloat())
-    val tensor2 = Tensor()
-    tensor2.resizeAs(tensor1).copy(tensor1)
-    val res1 = gradientReversal.forward(tensor1)
-
-    ModulePersister.saveToFile("/tmp/gradientReversal.bigdl", null, gradientReversal, true)
-    val loadedGradientReversal = ModuleLoader.loadFromFile("/tmp/gradientReversal.bigdl")
-    val res2 = loadedGradientReversal.forward(tensor2)
-    res1 should be (res2)
+    val gradientReversal = GradientReversal[Float]().setName("gradientReversal")
+    val input = Tensor[Float](10).apply1(_ => Random.nextFloat())
+    runSerializationTest(gradientReversal, input)
   }
 
-  "Graph serializer " should "work properly" in {
-    val linear = Linear(10, 2).inputs()
-    val graph = Graph(linear, linear)
-    val tensor1 = Tensor(10).apply1(_ => Random.nextFloat())
-    val tensor2 = Tensor()
-    val res1 = graph.forward(tensor1)
-    tensor2.resizeAs(tensor1).copy(tensor1)
-    ModulePersister.saveToFile("/tmp/graph.bigdl", null, graph, true)
-    val loadedGraph = ModuleLoader.loadFromFile("/tmp/graph.bigdl")
-    val res2 = loadedGraph.forward(tensor2)
-    res1 should be (res2)
+  "Graph serializer" should "work properly" in {
+    val linear = Linear[Float](10, 2).inputs()
+    val graph = Graph[Float](linear, linear).setName("graph")
+    val input = Tensor[Float](10).apply1(_ => Random.nextFloat())
+    runSerializationTest(graph, input)
   }
 
   "Graph with variables serializer" should "work properly" in {
-    val linear = Linear(2, 2)
+    val linear = Linear[Float](2, 2)
     val linearNode = linear.inputs()
     val linearWeight = linear.weight
     val linearBias = linear.bias
     val variables = Some(Array(linearWeight), Array(linearBias))
-    val graph = Graph(Array(linearNode), Array(linearNode), variables, false)
-    val tensor1 = Tensor(2).apply1(_ => Random.nextFloat())
-    val tensor2 = Tensor()
-    val res1 = graph.forward(tensor1)
-    tensor2.resizeAs(tensor1).copy(tensor1)
-    ModulePersister.saveToFile("/tmp/graph.bigdl", null, graph, true)
-    val loadedGraph = ModuleLoader.loadFromFile("/tmp/graph.bigdl")
-    val res2 = loadedGraph.forward(tensor2)
-    res1 should be (res2)
+    val graphWithVariable = Graph[Float](Array(linearNode), Array(linearNode),
+      variables, false).setName("graphWithVariable")
+    val input = Tensor[Float](2).apply1(_ => Random.nextFloat())
+    runSerializationTest(graphWithVariable, input)
   }
 
-  "GRU serializer " should "work properly" in {
+  "GRU serializer" should "work properly" in {
     RNG.setSeed(100)
-    val gru = Recurrent().add(GRU(100, 100))
-    val input1 = Tensor(2, 20, 100).apply1(e => Random.nextFloat())
-    val input2 = Tensor(2, 20, 100)
-    input2.copy(input1)
-
-    RNG.setSeed(100)
-    val res1 = gru.forward(input1)
-    ModulePersister.saveToFile("/tmp/gru.bigdl", null, gru, true)
-    RNG.setSeed(100)
-    val loadedGRU = ModuleLoader.loadFromFile("/tmp/gru.bigdl")
-    RNG.setSeed(100)
-    val res2 = loadedGRU.forward(input2)
-    res1 should be (res2)
+    val gru = GRU[Float](100, 100)
+    val gruModel = Recurrent[Float]().add(gru).setName("gru")
+    val input = Tensor[Float](2, 20, 100).apply1(e => Random.nextFloat())
+    runSerializationTest(gruModel, input, gru.getClass)
   }
 
   "HardShrink serializer" should "work properly" in {
-    val hardShrink = HardShrink()
-
-    val tensor1 = Tensor(10).apply1(_ => Random.nextFloat())
-    val tensor2 = Tensor()
-    tensor2.resizeAs(tensor1).copy(tensor1)
-    val res1 = hardShrink.forward(tensor1)
-
-    ModulePersister.saveToFile("/tmp/hardShrink.bigdl", null, hardShrink, true)
-    val loadedHardShrink = ModuleLoader.loadFromFile("/tmp/hardShrink.bigdl")
-    val res2 = loadedHardShrink.forward(tensor2)
-    res1 should be (res2)
+    val hardShrink = HardShrink[Float]().setName("hardShrink")
+    val input = Tensor[Float](10).apply1(_ => Random.nextFloat())
+    runSerializationTest(hardShrink, input)
   }
 
   "HardTanh serializer" should "work properly" in {
-    val hardTanh = HardTanh()
+    val hardTanh = HardTanh[Float, Float]().setName("hardTanh")
+    val input = Tensor[Float](10).apply1(_ => Random.nextFloat())
+    runSerializationTest(hardTanh, input)
+  }
 
-    val tensor1 = Tensor(10).apply1(_ => Random.nextFloat())
-    val tensor2 = Tensor()
-    tensor2.resizeAs(tensor1).copy(tensor1)
-    val res1 = hardTanh.forward(tensor1)
-
-    ModulePersister.saveToFile("/tmp/hardTanh.bigdl", null, hardTanh, true)
-    val loadedHardTanh = ModuleLoader.loadFromFile("/tmp/hardTanh.bigdl")
-    val res2 = loadedHardTanh.forward(tensor2)
-    res1 should be (res2)
+  "HardSigmoid serialization" should "work properly" in {
+    val hardSigmoid = HardSigmoid[Float]().setName("hardSigmoid")
+    val input = Tensor[Float](2, 2).rand()
+    runSerializationTest(hardSigmoid, input)
   }
 
   "Identity serializer" should "work properly" in {
-    val identity = Identity()
-
-    val tensor1 = Tensor(10).apply1(_ => Random.nextFloat())
-    val tensor2 = Tensor()
-    tensor2.resizeAs(tensor1).copy(tensor1)
-    val res1 = identity.forward(tensor1)
-
-    ModulePersister.saveToFile("/tmp/identity.bigdl", null, identity, true)
-    val loadedIdentity = ModuleLoader.loadFromFile("/tmp/identity.bigdl")
-    val res2 = loadedIdentity.forward(tensor2)
-    res1 should be (res2)
+    val identity = Identity[Float]().setName("identity")
+    val input = Tensor[Float](10).apply1(_ => Random.nextFloat())
+    runSerializationTest(identity, input)
   }
 
   "Index serializer" should "work properly" in {
-    val index = Index(1)
-
-    val input1 = Tensor(3).apply1(e => Random.nextFloat())
-    val input2 = Tensor(4)
+    val index = Index[Float](1).setName("index")
+    val input1 = Tensor[Float](3).apply1(e => Random.nextFloat())
+    val input2 = Tensor[Float](4)
     input2(Array(1)) = 1
     input2(Array(2)) = 2
     input2(Array(3)) = 2
     input2(Array(4)) = 3
-    val gradOutput = Tensor(4).apply1(e => Random.nextFloat())
-
     val input = new Table()
     input(1.toFloat) = input1
     input(2.toFloat) = input2
-
-    val res1 = index.forward(input)
-
-    ModulePersister.saveToFile("/tmp/index.bigdl", null, index, true)
-    val loadedIndex = ModuleLoader.loadFromFile("/tmp/index.bigdl")
-    val res2 = loadedIndex.forward(input)
-    res1 should be (res2)
+    runSerializationTest(index, input)
   }
 
-  "InferReshape serializer" should " work properly" in {
-    val inferReshape = InferReshape(Array(-1, 2, 0, 5))
-    val tensor1 = Tensor(2, 5, 2, 2).apply1(_ => Random.nextFloat())
-    val tensor2 = Tensor()
-    tensor2.resizeAs(tensor1).copy(tensor1)
-    val res1 = inferReshape.forward(tensor1)
-
-    ModulePersister.saveToFile("/tmp/inferReshape.bigdl", null, inferReshape, true)
-    val loadedInferReshape = ModuleLoader.loadFromFile("/tmp/inferReshape.bigdl")
-    val res2 = loadedInferReshape.forward(tensor2)
-    res1 should be (res2)
+  "InferReshape serializer" should "work properly" in {
+    val inferReshape = InferReshape[Float](Array(-1, 2, 0, 5)).setName("inferReshape")
+    val input = Tensor[Float](2, 5, 2, 2).apply1(_ => Random.nextFloat())
+    runSerializationTest(inferReshape, input)
   }
 
-  "Input serializer " should " work properly " in {
-    val input = Input().element
-    val tensor1 = Tensor(10).apply1(_ => Random.nextFloat())
-    val tensor2 = Tensor(10)
-    tensor2.copy(tensor1)
-
-    val res1 = input.forward(tensor1)
-
-    ModulePersister.saveToFile("/tmp/input.bigdl", null, input, true)
-    val loadedInferInput = ModuleLoader.loadFromFile("/tmp/input.bigdl")
-    val res2 = loadedInferInput.forward(tensor2)
-    res1 should be (res2)
+  "Input serializer" should "work properly " in {
+    val inputl = Input[Float]().element.setName("input")
+    val input = Tensor[Float](10).apply1(_ => Random.nextFloat())
+    runSerializationTest(inputl, input)
   }
 
-  "JoinTable serializer " should "work  properly" in {
-    val joinTable = JoinTable(2, 2)
-    val input1 = Tensor(2, 2).apply1(_ => Random.nextFloat())
-    val input2 = Tensor(2, 2).apply1(_ => Random.nextFloat())
-
+  "JoinTable serializer" should "work  properly" in {
+    val joinTable = JoinTable[Float](2, 2).setName("joinTable")
+    val input1 = Tensor[Float](2, 2).apply1(_ => Random.nextFloat())
+    val input2 = Tensor[Float](2, 2).apply1(_ => Random.nextFloat())
     val input = T()
     input(1.toFloat) = input1
     input(2.toFloat) = input2
-
-    val res1 = joinTable.forward(input)
-
-    ModulePersister.saveToFile("/tmp/joinTable.bigdl", null, joinTable, true)
-    val loadedJoinTable = ModuleLoader.loadFromFile("/tmp/joinTable.bigdl")
-    val res2 = loadedJoinTable.forward(input)
-    res1 should be (res2)
+    runSerializationTest(joinTable, input)
 
   }
 
-  "L1Penalty serializer " should " work properly" in {
-    val l1Penalty = L1Penalty(1, true, true)
-
-    val tensor1 = Tensor(3, 3).apply1(_ => Random.nextFloat())
-    val tensor2 = Tensor()
-    tensor2.resizeAs(tensor1).copy(tensor1)
-
-    val res1 = l1Penalty.forward(tensor1)
-
-    ModulePersister.saveToFile("/tmp/l1Penalty.bigdl", null, l1Penalty, true)
-
-    val loadedL1Penalty = ModuleLoader.loadFromFile("/tmp/l1Penalty.bigdl")
-
-    val res2 = loadedL1Penalty.forward(tensor2)
-    res1 should be (res2)
+  "L1Penalty serializer" should "work properly" in {
+    val l1Penalty = L1Penalty[Float](1, true, true).setName("l1Penalty")
+    val input = Tensor[Float](3, 3).apply1(_ => Random.nextFloat())
+    runSerializationTest(l1Penalty, input)
   }
 
-  "LeakReLu serializer " should " work properly" in {
-    val leakyReLU = LeakyReLU(0.01, true)
-
-    val tensor1 = Tensor(3, 3).apply1(_ => Random.nextFloat())
-    val tensor2 = Tensor()
-    tensor2.resizeAs(tensor1).copy(tensor1)
-
-    val res1 = leakyReLU.forward(tensor1)
-
-    ModulePersister.saveToFile("/tmp/leakyReLU.bigdl", null, leakyReLU, true)
-
-    val loadedLeakyReLU = ModuleLoader.loadFromFile("/tmp/leakyReLU.bigdl")
-
-    val res2 = loadedLeakyReLU.forward(tensor2)
-    res1 should be (res2)
+  "LeakReLu serializer" should  "work properly" in {
+    val leakyReLU = LeakyReLU[Float](0.01, true).setName("leakyReLU")
+    val input = Tensor[Float](3, 3).apply1(_ => Random.nextFloat())
+    runSerializationTest(leakyReLU, input)
   }
 
-  "Linear serializer " should "work properly" in {
-    val linear = Linear(10, 2)
-    val tensor1 = Tensor(10).apply1(_ => Random.nextFloat())
-    val tensor2 = Tensor()
-    val res1 = linear.forward(tensor1)
-    tensor2.resizeAs(tensor1).copy(tensor1)
-    ModulePersister.saveToFile("/tmp/linear.bigdl", null, linear, true)
-    val loadedLinear = ModuleLoader.loadFromFile("/tmp/linear.bigdl")
-    val res2 = loadedLinear.forward(tensor2)
-    res1 should be (res2)
+  "Linear serializer" should "work properly" in {
+    val linear = Linear[Float](10, 2).setName("linear")
+    val input = Tensor[Float](10).apply1(_ => Random.nextFloat())
+    runSerializationTest(linear, input)
   }
 
-  "Log Serializer " should " work properly" in {
-    val log = Log()
-    val tensor1 = Tensor(10).apply1(_ => Random.nextFloat())
-    val tensor2 = Tensor()
-    val res1 = log.forward(tensor1)
-    tensor2.resizeAs(tensor1).copy(tensor1)
-    ModulePersister.saveToFile("/tmp/log.bigdl", null, log, true)
-    val loadedLog = ModuleLoader.loadFromFile("/tmp/log.bigdl")
-    val res2 = loadedLog.forward(tensor2)
-    res1 should be (res2)
+  "Log Serializer" should "work properly" in {
+    val log = Log[Float, Float]().setName("log")
+    val input = Tensor[Float](10).apply1(_ => Random.nextFloat())
+    runSerializationTest(log, input)
   }
 
-  "LogSigmoid serializer" should " work properly" in {
-    val logSigmoid = LogSigmoid()
-    val tensor1 = Tensor(10).apply1(_ => Random.nextFloat())
-    val tensor2 = Tensor()
-    val res1 = logSigmoid.forward(tensor1)
-    tensor2.resizeAs(tensor1).copy(tensor1)
-    ModulePersister.saveToFile("/tmp/logSigmoid.bigdl", null, logSigmoid, true)
-    val loadedLogSigmoid = ModuleLoader.loadFromFile("/tmp/logSigmoid.bigdl")
-    val res2 = loadedLogSigmoid.forward(tensor2)
-    res1 should be (res2)
+  "LogSigmoid serializer" should "work properly" in {
+    val logSigmoid = LogSigmoid[Float]().setName("logSigmoid")
+    val input = Tensor[Float](10).apply1(_ => Random.nextFloat())
+    runSerializationTest(logSigmoid, input)
   }
 
-  "LogSogMax serializer" should " work properly" in {
-    val logSigmoid = LogSoftMax()
-    val tensor1 = Tensor(10).apply1(_ => Random.nextFloat())
-    val tensor2 = Tensor()
-    val res1 = logSigmoid.forward(tensor1)
-    tensor2.resizeAs(tensor1).copy(tensor1)
-    ModulePersister.saveToFile("/tmp/logSigmoid.bigdl", null, logSigmoid, true)
-    val loadedLogSigmoid = ModuleLoader.loadFromFile("/tmp/logSigmoid.bigdl")
-    val res2 = loadedLogSigmoid.forward(tensor2)
-    res1 should be (res2)
+  "LogSogMax serializer" should "work properly" in {
+    val logSoftMax = LogSoftMax[Float]().setName("logSoftMax")
+    val input = Tensor[Float](10).apply1(_ => Random.nextFloat())
+    runSerializationTest(logSoftMax, input)
   }
 
-  "LookupTable serializer " should " work properly" in {
-    val lookupTable = LookupTable(9, 4, 2, 0.1, 2.0, true)
-    val tensor1 = Tensor(5)
-    tensor1(Array(1)) = 5
-    tensor1(Array(2)) = 2
-    tensor1(Array(3)) = 6
-    tensor1(Array(4)) = 9
-    tensor1(Array(5)) = 4
-
-    val tensor2 = Tensor(5)
-    tensor2.copy(tensor1)
-
-    val res1 = lookupTable.forward(tensor1)
-
-    ModulePersister.saveToFile("/tmp/lookupTable.bigdl", null, lookupTable, true)
-    val loadedLookupTable = ModuleLoader.loadFromFile("/tmp/lookupTable.bigdl")
-    val res2 = loadedLookupTable.forward(tensor2)
-    res1 should be (res2)
+  "LookupTable serializer" should "work properly" in {
+    val lookupTable = LookupTable[Float](9, 4, 2, 0.1, 2.0, true).setName("lookupTable")
+    val input = Tensor[Float](5)
+    input(Array(1)) = 5
+    input(Array(2)) = 2
+    input(Array(3)) = 6
+    input(Array(4)) = 9
+    input(Array(5)) = 4
+    runSerializationTest(lookupTable, input)
   }
 
-  "LSTM serializer " should " work properly" in {
-
-    val lstm = Recurrent().add(LSTM(6, 4))
-
-    val input1 = Tensor(Array(1, 5, 6)).apply1(_ => Random.nextFloat())
-    val input2 = Tensor(1, 5, 6)
-    input2.copy(input1)
-
-    val res1 = lstm.forward(input1)
-
-    ModulePersister.saveToFile("/tmp/lstm.bigdl", null, lstm, true)
-    val loadedLSTM = ModuleLoader.loadFromFile("/tmp/lstm.bigdl")
-    val res2 = loadedLSTM.forward(input1)
-    res1 should be (res2)
-
+  "LSTM serializer" should "work properly" in {
+    val lstm = LSTM[Float](6, 4)
+    val lstmModel = Recurrent[Float]().add(lstm).setName("lstm")
+    val input = Tensor[Float](Array(1, 5, 6)).apply1(_ => Random.nextFloat())
+    runSerializationTest(lstmModel, input, lstm.getClass)
   }
 
-  "LSTMPeephole serializer " should " work properly" in {
-    val lstmPeephole = Recurrent().add(LSTMPeephole(6, 4))
-
-    val input1 = Tensor(Array(1, 5, 6)).apply1(_ => Random.nextFloat())
-    val input2 = Tensor(1, 5, 6)
-    input2.copy(input1)
-
-    val res1 = lstmPeephole.forward(input1)
-
-    ModulePersister.saveToFile("/tmp/lstmPeephole.bigdl", null, lstmPeephole, true)
-    val loadedLSTMPeephole = ModuleLoader.loadFromFile("/tmp/lstmPeephole.bigdl")
-    val res2 = loadedLSTMPeephole.forward(input2)
-    res1 should be (res2)
-
+  "LSTMPeephole serializer" should "work properly" in {
+    val lstmPeephole = LSTMPeephole[Float](6, 4)
+    val lstmPeepholeModel = Recurrent[Float]().add(lstmPeephole).setName("lstmPeephole")
+    val input = Tensor[Float](Array(1, 5, 6)).apply1(_ => Random.nextFloat())
+    runSerializationTest(lstmPeepholeModel, input, lstmPeephole.getClass)
   }
 
-  "MapTable serializer " should " work properly" in {
-    val linear = Linear(2, 2)
-    val mapTable = new MapTable()
+  "MapTable serializer" should "work properly" in {
+    val linear = Linear[Float](2, 2)
+    val mapTable = new MapTable[Float]().setName("mapTable")
     mapTable.add(linear)
-    val input1 = Tensor(2).apply1(_ => Random.nextFloat())
-    val input2 = Tensor(2).apply1(_ => Random.nextFloat())
+    val input1 = Tensor[Float](2).apply1(_ => Random.nextFloat())
+    val input2 = Tensor[Float](2).apply1(_ => Random.nextFloat())
     val input = T()
     input(1.0.toFloat) = input1
     input(2.0.toFloat) = input2
-
-    val res1 = mapTable.forward(input)
-
-    ModulePersister.saveToFile("/tmp/mapTable.bigdl", null, mapTable, true)
-    val loadedMapTable = ModuleLoader.loadFromFile("/tmp/mapTable.bigdl")
-    val res2 = loadedMapTable.forward(input)
-    res1 should be (res2)
+    runSerializationTest(mapTable, input)
   }
 
-  "MaskedSelect serializer" should " work properly" in {
-    val maskedSelect = MaskedSelect()
-    val input1 = Tensor(2, 2).apply1(e => Random.nextFloat())
-    val input2 = Tensor(2, 2)
+  "MaskedSelect serializer" should "work properly" in {
+    val maskedSelect = MaskedSelect[Float]().setName("maskedSelect")
+    val input1 = Tensor[Float](2, 2).apply1(e => Random.nextFloat())
+    val input2 = Tensor[Float](2, 2)
     input2(Array(1, 1)) = 1
     input2(Array(1, 2)) = 0
     input2(Array(2, 1)) = 0
     input2(Array(2, 2)) = 1
-    val gradOutput = Tensor(5).apply1(e => Random.nextFloat())
-
     val input = new Table()
     input(1.0f) = input1
     input(2.0f) = input2
-
-    val res1 = maskedSelect.forward(input)
-
-    val gradInput = maskedSelect.backward(input, gradOutput)
-
-    ModulePersister.saveToFile("/tmp/maskedSelect.bigdl", null, maskedSelect, true)
-    val loadedMaskedSelect = ModuleLoader.loadFromFile("/tmp/maskedSelect.bigdl")
-    val res2 = loadedMaskedSelect.forward(input)
-    res1 should be (res2)
-
+    runSerializationTest(maskedSelect, input)
   }
 
-  "Max serializer " should " work properly" in {
-    val max = new Max(2)
-    val input1 = Tensor(2, 3, 4).apply1(_ => Random.nextFloat())
-    val input2 = Tensor()
-    input2.resizeAs(input1).copy(input1)
-
-    val res1 = max.forward(input1)
-
-    ModulePersister.saveToFile("/tmp/max.bigdl", null, max, true)
-    val loadedMax = ModuleLoader.loadFromFile("/tmp/max.bigdl")
-    val res2 = loadedMax.forward(input2)
-    res1 should be (res2)
+  "Masking serializer" should "work properly" in {
+    val masking = Masking[Float](0.1).setName("masking")
+    val input = Tensor[Float](2, 3, 4).apply1(_ => Random.nextFloat())
+    runSerializationTest(masking, input)
   }
 
-  "Mean serializer " should " work properly " in {
-    val mean = Mean(2)
-    val input1 = Tensor(5, 5).apply1(_ => Random.nextFloat())
-    val input2 = Tensor()
-    input2.resizeAs(input1).copy(input1)
-    val res1 = mean.forward(input1)
-
-    ModulePersister.saveToFile("/tmp/mean.bigdl", null, mean, true)
-    val loadedMean = ModuleLoader.loadFromFile("/tmp/mean.bigdl")
-    val res2 = loadedMean.forward(input2)
-    res1 should be (res2)
+  "Max serializer" should "work properly" in {
+    val max = new Max[Float](2).setName("max")
+    val input = Tensor[Float](2, 3, 4).apply1(_ => Random.nextFloat())
+    runSerializationTest(max, input)
   }
 
-  "Min serializer " should " work properly " in {
-    val min = Min(2)
-    val input1 = Tensor(5, 5).apply1(_ => Random.nextFloat())
-    val input2 = Tensor()
-    input2.resizeAs(input1).copy(input1)
-    val res1 = min.forward(input1)
-
-    ModulePersister.saveToFile("/tmp/min.bigdl", null, min, true)
-    val loadedMin = ModuleLoader.loadFromFile("/tmp/min.bigdl")
-    val res2 = loadedMin.forward(input2)
-    res1 should be (res2)
+  "Maxout serializer" should "work properly" in {
+    val maxout = Maxout[Float](2, 4, 5).setName("maxout")
+    val input = Tensor[Float](2).apply1(_ => Random.nextFloat())
+    runSerializationTest(maxout, input)
   }
 
-  "MixtureTable Serializer " should " work properly " in {
-    val mixTureTable = MixtureTable()
-    val input1 = Tensor(2, 2).apply1(e => Random.nextFloat())
-    val input2 = Tensor(2, 2).apply1(e => Random.nextFloat())
+  "Mean serializer" should "work properly " in {
+    val mean = Mean[Float](2).setName("mean")
+    val input = Tensor[Float](5, 5).apply1(_ => Random.nextFloat())
+    runSerializationTest(mean, input)
+  }
 
+  "Min serializer" should "work properly " in {
+    val min = Min[Float](2).setName("min")
+    val input = Tensor[Float](5, 5).apply1(_ => Random.nextFloat())
+    runSerializationTest(min, input)
+  }
+
+  "MixtureTable Serializer" should "work properly " in {
+    val mixTureTable = MixtureTable[Float]().setName("mixTureTable")
+    val input1 = Tensor[Float](2, 2).apply1(e => Random.nextFloat())
+    val input2 = Tensor[Float](2, 2).apply1(e => Random.nextFloat())
     val input = new Table()
     input(1.0f) = input1
     input(2.0f) = input2
-
-    val res1 = mixTureTable.forward(input)
-
-    ModulePersister.saveToFile("/tmp/mixTureTable.bigdl", null, mixTureTable, true)
-    val loadedMixtureTable = ModuleLoader.loadFromFile("/tmp/mixTureTable.bigdl")
-    val res2 = loadedMixtureTable.forward(input)
-    res1 should be (res2)
+    runSerializationTest(mixTureTable, input)
   }
 
   "MM Serializer" should "work properly" in {
-    val mm = MM()
-
-    val input1 = Tensor(2, 3).apply1(e => Random.nextFloat())
-    val input2 = Tensor(3, 4).apply1(e => Random.nextFloat())
-
+    val mm = MM[Float]().setName("mm_layer")
+    val input1 = Tensor[Float](2, 3).apply1(e => Random.nextFloat())
+    val input2 = Tensor[Float](3, 4).apply1(e => Random.nextFloat())
     val input = new Table()
     input(1.0f) = input1
     input(2.0f) = input2
-
-    val res1 = mm.forward(input)
-
-    ModulePersister.saveToFile("/tmp/mm.bigdl", null, mm, true)
-    val loadedMM = ModuleLoader.loadFromFile("/tmp/mm.bigdl")
-    val res2 = loadedMM.forward(input)
-    res1 should be (res2)
-
+    runSerializationTest(mm, input)
   }
 
-  "Mul Serializer " should "work properly" in {
-    val mul = Mul()
-    val input1 = Tensor(10, 10).apply1(_ => Random.nextFloat())
-    val input2 = Tensor(10, 10)
-    input2.copy(input1)
-
-    val res1 = mul.forward(input1)
-
-    ModulePersister.saveToFile("/tmp/mul.bigdl", null, mul, true)
-    val loadedMul = ModuleLoader.loadFromFile("/tmp/mul.bigdl")
-    val res2 = loadedMul.forward(input2)
-    res1 should be (res2)
+  "Mul Serializer" should "work properly" in {
+    val mul = Mul[Float]().setName("mul")
+    val input = Tensor[Float](10, 10).apply1(_ => Random.nextFloat())
+    runSerializationTest(mul, input)
   }
 
-  "MulConst Serializer " should "work properly" in {
-    val mulConst = MulConstant(1.0)
-    val input1 = Tensor(10, 10).apply1(_ => Random.nextFloat())
-    val input2 = Tensor(10, 10)
-    input2.copy(input1)
-
-    val res1 = mulConst.forward(input1)
-
-    ModulePersister.saveToFile("/tmp/mulConst.bigdl", null, mulConst, true)
-    val loadedMulConstant = ModuleLoader.loadFromFile("/tmp/mulConst.bigdl")
-    val res2 = loadedMulConstant.forward(input2)
-    res1 should be (res2)
+  "MulConst Serializer" should "work properly" in {
+    val mulConst = MulConstant[Float](1.0).setName("mulConst")
+    val input = Tensor[Float](10, 10).apply1(_ => Random.nextFloat())
+    runSerializationTest(mulConst, input)
   }
 
-  "MV Serializer " should " work properly" in {
-    val mv = MV()
-    val input1 = Tensor(2, 3).apply1(e => Random.nextFloat())
-    val input2 = Tensor(3).apply1(e => Random.nextFloat())
+  "MultiRNNCell serializer" should "work properly" in {
+    val hiddenSize = 5
+    val inputSize = 5
+    val seqLength = 4
+    val batchSize = 2
+    val kernalW = 3
+    val kernalH = 3
+    val rec = RecurrentDecoder[Float](seqLength)
+    val cells = Array(ConvLSTMPeephole[Float](
+      inputSize,
+      hiddenSize,
+      kernalW, kernalH,
+      1), ConvLSTMPeephole[Float](
+      inputSize,
+      hiddenSize,
+      kernalW, kernalH,
+      1), ConvLSTMPeephole[Float](
+      inputSize,
+      hiddenSize,
+      kernalW, kernalH,
+      1)).asInstanceOf[Array[Cell[Float]]]
 
+    val multiRNNCell = MultiRNNCell[Float](cells)
+
+    val model = Sequential[Float]()
+      .add(rec
+        .add(multiRNNCell)).setName("multiRNNCell")
+
+    val input = Tensor[Float](batchSize, inputSize, 10, 10).apply1(_ => Random.nextFloat())
+    runSerializationTest(model, input, multiRNNCell.getClass)
+  }
+
+  "MV Serializer" should "work properly" in {
+    val mv = MV[Float]().setName("mv_layer")
+    val input1 = Tensor[Float](2, 3).apply1(e => Random.nextFloat())
+    val input2 = Tensor[Float](3).apply1(e => Random.nextFloat())
     val input = new Table()
     input(1.0f) = input1
     input(2.0f) = input2
-
-    val res1 = mv.forward(input)
-
-    ModulePersister.saveToFile("/tmp/mv.bigdl", null, mv, true)
-    val loadedMV = ModuleLoader.loadFromFile("/tmp/mv.bigdl")
-    val res2 = loadedMV.forward(input)
-    res1 should be (res2)
+    runSerializationTest(mv, input)
   }
 
-  "Narrow serializer " should " work properly" in {
-    val narrow = Narrow(1, 3, -3)
-    val input1 = Tensor(9, 4, 14).apply1(e => Random.nextFloat())
-    val input2 = Tensor(9, 4, 14)
-    input2.copy(input1)
-
-    val res1 = narrow.forward(input1)
-
-    ModulePersister.saveToFile("/tmp/narrow.bigdl", null, narrow, true)
-    val loadedNarrow = ModuleLoader.loadFromFile("/tmp/narrow.bigdl")
-    val res2 = loadedNarrow.forward(input2)
-    res1 should be (res2)
+  "Narrow serializer" should "work properly" in {
+    val narrow = Narrow[Float](1, 3, -3).setName("narrow")
+    val input = Tensor[Float](9, 4, 14).apply1(e => Random.nextFloat())
+    runSerializationTest(narrow, input)
   }
 
-  "NarrowTable serializer " should " work properly" in {
-    val narrowTable = NarrowTable(1, 1)
+  "NarrowTable serializer" should "work properly" in {
+    val narrowTable = NarrowTable[Float](1, 1)
     val input = T()
-    input(1.0) = Tensor(2, 2).apply1(e => Random.nextFloat())
-    input(2.0) = Tensor(2, 2).apply1(e => Random.nextFloat())
-    input(3.0) = Tensor(2, 2).apply1(e => Random.nextFloat())
-    val res1 = narrowTable.forward(input)
-
-    ModulePersister.saveToFile("/tmp/narrowTable.bigdl", null, narrowTable, true)
-    val loadedNarrowTable = ModuleLoader.loadFromFile("/tmp/narrowTable.bigdl")
-    val res2 = loadedNarrowTable.forward(input)
-    res1 should be (res2)
+    input(1.0) = Tensor[Float](2, 2).apply1(e => Random.nextFloat())
+    input(2.0) = Tensor[Float](2, 2).apply1(e => Random.nextFloat())
+    input(3.0) = Tensor[Float](2, 2).apply1(e => Random.nextFloat())
+    runSerializationTest(narrowTable, input)
   }
 
-  "Normlize serializer " should " work properly" in {
-    val normalizer = Normalize(2)
-    val input1 = Tensor(2, 3, 4, 4).apply1(e => Random.nextFloat())
-    val input2 = Tensor(2, 3, 4, 4)
-    input2.copy(input1)
-
-    val res1 = normalizer.forward(input1)
-
-    ModulePersister.saveToFile("/tmp/normalizer.bigdl", null, normalizer, true)
-    val loadedNormalize = ModuleLoader.loadFromFile("/tmp/normalizer.bigdl")
-    val res2 = loadedNormalize.forward(input2)
-    res1 should be (res2)
+  "Negative serializer" should "work properly" in {
+    val negative = Negative[Float]().setName("negative")
+    val input = Tensor[Float](10).apply1(e => Random.nextFloat())
+    runSerializationTest(negative, input)
   }
 
-  "Pack serializer " should " work properly" in {
-    val pack = new Pack(1)
-    val input1 = Tensor(2, 2).apply1(e => Random.nextFloat())
-    val input2 = Tensor(2, 2).apply1(e => Random.nextFloat())
+  "Normlize serializer" should "work properly" in {
+    val normalizer = Normalize[Float](2).setName("normalizer")
+    val input = Tensor[Float](2, 3, 4, 4).apply1(e => Random.nextFloat())
+    runSerializationTest(normalizer, input)
+  }
+
+  "Pack serializer" should "work properly" in {
+    val pack = new Pack[Float](1).setName("pack")
+    val input1 = Tensor[Float](2, 2).apply1(e => Random.nextFloat())
+    val input2 = Tensor[Float](2, 2).apply1(e => Random.nextFloat())
     val input = T()
     input(1.0f) = input1
     input(2.0f) = input2
-    val res1 = pack.forward(input)
-    ModulePersister.saveToFile("/tmp/pack.bigdl", null, pack, true)
-    val loadedPack = ModuleLoader.loadFromFile("/tmp/pack.bigdl")
-    val res2 = loadedPack.forward(input)
-    res1 should be (res2)
-
+    runSerializationTest(pack, input)
   }
 
-  "Padding serializer " should " work properly" in {
-    val padding = Padding(1, -1, 4, -0.8999761, 14)
-    val input = Tensor(3, 13, 11).apply1(e => Random.nextFloat())
-    val res1 = padding.forward(input)
-    ModulePersister.saveToFile("/tmp/padding.bigdl", null, padding, true)
-    val loadedPadding = ModuleLoader.loadFromFile("/tmp/padding.bigdl")
-    val res2 = loadedPadding.forward(input)
-    res1 should be (res2)
+  "Padding serializer" should "work properly" in {
+    val padding = Padding[Float](1, -1, 4, -0.8999761, 14).setName("padding")
+    val input = Tensor[Float](3, 13, 11).apply1(e => Random.nextFloat())
+    runSerializationTest(padding, input)
   }
 
-  "PairwiseDistance serializer " should " work properly" in {
-    val pairwiseDistance = new PairwiseDistance(3)
-    val input1 = Tensor(3, 3).apply1(e => Random.nextFloat())
-    val input2 = Tensor(3, 3).apply1(e => Random.nextFloat())
+  "PairwiseDistance serializer" should "work properly" in {
+    val pairwiseDistance = new PairwiseDistance[Float](3).setName("pairwiseDistance")
+    val input1 = Tensor[Float](3, 3).apply1(e => Random.nextFloat())
+    val input2 = Tensor[Float](3, 3).apply1(e => Random.nextFloat())
     val input = T(1.0f -> input1, 2.0f -> input2)
-    val res1 = pairwiseDistance.forward(input)
-    ModulePersister.saveToFile("/tmp/pairwiseDistance.bigdl", null, pairwiseDistance, true)
-    val loadedPairwiseDistance = ModuleLoader.loadFromFile("/tmp/pairwiseDistance.bigdl")
-    val res2 = loadedPairwiseDistance.forward(input)
-    res1 should be (res2)
+    runSerializationTest(pairwiseDistance, input)
   }
 
-  "ParallelTable serializer " should " work properly" in {
-    val parallelTable = ParallelTable()
-    parallelTable.add(Linear(2, 2))
-    parallelTable.add(Linear(2, 2))
-    val input11 = Tensor(2, 2).apply1(e => Random.nextFloat())
-    val input21 = Tensor(2, 2)
-    input21.copy(input11)
-    val input12 = Tensor(2, 2).apply1(e => Random.nextFloat())
-    val input22 = Tensor(2, 2)
-    input22.copy(input12)
-    val input1 = T(1.0f -> input11, 2.0f -> input12)
-    val input2 = T(1.0f -> input21, 2.0f -> input22)
-    val res1 = parallelTable.forward(input1)
-    ModulePersister.saveToFile("/tmp/parallelTable.bigdl", null, parallelTable, true)
-    val loadedParallelTable = ModuleLoader.loadFromFile("/tmp/parallelTable.bigdl")
-    val res2 = loadedParallelTable.forward(input1)
-    res1 should be (res2)
+  "ParallelTable serializer" should "work properly" in {
+    val parallelTable = ParallelTable[Float]().setName("parallelTable")
+    parallelTable.add(Linear[Float](2, 2))
+    parallelTable.add(Linear[Float](2, 2))
+    val input1 = Tensor[Float](2, 2).apply1(e => Random.nextFloat())
+    val input2 = Tensor[Float](2, 2).apply1(e => Random.nextFloat())
+    val input = T(1.0f -> input1, 2.0f -> input2)
+    runSerializationTest(parallelTable, input)
   }
 
-  "Power serializer " should " work properly" in {
-    val power = Power(2.0)
-    val input1 = Tensor(2, 2).apply1(e => Random.nextFloat())
-    val input2 = Tensor(2, 2)
-    input2.copy(input1)
-
-    val res1 = power.forward(input1)
-
-    ModulePersister.saveToFile("/tmp/power.bigdl", null, power, true)
-    val loadedPower = ModuleLoader.loadFromFile("/tmp/power.bigdl")
-    val res2 = loadedPower.forward(input1)
-    res1 should be (res2)
+  "Power serializer" should "work properly" in {
+    val power = Power[Float, Float](2.0).setName("power")
+    val input = Tensor[Float](2, 2).apply1(e => Random.nextFloat())
+    runSerializationTest(power, input)
   }
 
-  "PReLU serializer " should " work properly" in {
-    val preLu = PReLU(2)
-    val input1 = Tensor(2, 3, 4).apply1(_ => Random.nextFloat())
-    val input2 = Tensor(2, 3, 4)
-    input2.copy(input1)
-    val res1 = preLu.forward(input1)
-
-    ModulePersister.saveToFile("/tmp/preLu.bigdl", null, preLu, true)
-    val loadedPReLU = ModuleLoader.loadFromFile("/tmp/preLu.bigdl")
-    val res2 = loadedPReLU.forward(input1)
-    res1 should be (res2)
+  "PReLU serializer" should "work properly" in {
+    val preLu = PReLU[Float](2).setName("preLu")
+    val input = Tensor[Float](2, 3, 4).apply1(_ => Random.nextFloat())
+    runSerializationTest(preLu, input)
   }
 
-  "Recurrent serializer " should "work properly" in {
-    val recurrent = Recurrent()
-      .add(RnnCell(5, 4, Tanh()))
-    val input1 = Tensor(Array(10, 5, 5))
-
-    val input2 = Tensor(10, 5, 5)
-    input2.copy(input1)
-    val res1 = recurrent.forward(input1)
-
-    ModulePersister.saveToFile("/tmp/recurrent.bigdl", null, recurrent, true)
-    val loadedRecurrent = ModuleLoader.loadFromFile("/tmp/recurrent.bigdl")
-    val res2 = loadedRecurrent.forward(input1)
-    res1 should be (res2)
-
+  "Recurrent serializer" should "work properly" in {
+    val recurrent = Recurrent[Float]().setName("recurrent")
+      .add(RnnCell[Float](5, 4, Tanh[Float]()))
+    val input = Tensor[Float](Array(10, 5, 5)).apply1(_ => Random.nextFloat())
+    runSerializationTest(recurrent, input)
   }
 
-  "Recurrent serializer " should "work properly with BatchNormParams" in {
-    val recurrent = Recurrent(BatchNormParams())
-      .add(RnnCell(5, 4, Tanh()))
-    val input1 = Tensor(Array(10, 5, 5))
-
-    val input2 = Tensor(10, 5, 5)
-    input2.copy(input1)
-    val res1 = recurrent.forward(input1)
-
-    ModulePersister.saveToFile("/tmp/recurrent.bigdl", null, recurrent, true)
-    val loadedRecurrent = ModuleLoader.loadFromFile("/tmp/recurrent.bigdl")
-    val res2 = loadedRecurrent.forward(input1)
-    res1 should be (res2)
-
+  "Recurrent serializer" should "work properly with BatchNormParams" in {
+    val recurrent = Recurrent[Float](BatchNormParams()).setName("recurrentWithNorm")
+      .add(RnnCell[Float](5, 4, Tanh[Float]()))
+    val input = Tensor[Float](Array(10, 5, 5)).apply1(_ => Random.nextFloat())
+    runSerializationTest(recurrent, input)
   }
 
-  "ReLU serializer " should " work properly" in {
-    val relu = ReLU()
-    val input1 = Tensor(5, 5).apply1(_ => Random.nextFloat())
-    val input2 = Tensor(5, 5)
-    input2.copy(input1)
-    val res1 = relu.forward(input1)
-
-    ModulePersister.saveToFile("/tmp/relu.bigdl", null, relu, true)
-    val loadedReLU = ModuleLoader.loadFromFile("/tmp/relu.bigdl")
-    val res2 = loadedReLU.forward(input1)
-    res1 should be (res2)
+  "RecurrentDecoder serializer" should "work properly" in {
+    val recDecoder = RecurrentDecoder[Float](5).
+      add(ConvLSTMPeephole[Float](7, 7, 3, 3, 1))
+    val input = Tensor[Float](4, 7, 5, 5).apply1(_ => Random.nextFloat())
+    runSerializationTest(recDecoder, input)
   }
 
-  "ReLU6 serializer" should " work properly " in {
-    val relu6 = ReLU6(false)
-    val input1 = Tensor(10).apply1(_ => Random.nextFloat())
-    val input2 = Tensor()
-    input2.resizeAs(input1).copy(input1)
-    val res1 = relu6.forward(input1)
-
-    ModulePersister.saveToFile("/tmp/relu6.bigdl", null, relu6, true)
-    val loadedReLU6 = ModuleLoader.loadFromFile("/tmp/relu6.bigdl")
-    val res2 = loadedReLU6.forward(input2)
-    res1 should be (res2)
+  "ReLU serializer" should "work properly" in {
+    val relu = ReLU[Float]().setName("relu")
+    val input = Tensor[Float](5, 5).apply1(_ => Random.nextFloat())
+    runSerializationTest(relu, input)
   }
 
-  "Replicate serializer " should " work properly" in {
-    val replicate = new Replicate(3)
-    val input1 = Tensor(10).apply1(_ => Random.nextFloat())
-    val input2 = Tensor(10)
-    input2.copy(input1)
-    val res1 = replicate.forward(input1)
-    ModulePersister.saveToFile("/tmp/replicate.bigdl", null, replicate, true)
-    val loadedReplicate = ModuleLoader.loadFromFile("/tmp/replicate.bigdl")
-    val res2 = loadedReplicate.forward(input2)
-    res1 should be (res2)
+  "ReLU6 serializer" should "work properly" in {
+    val relu6 = ReLU6[Float, Float](false).setName("relu6")
+    val input = Tensor[Float](10).apply1(_ => Random.nextFloat())
+    runSerializationTest(relu6, input)
   }
 
-  "Reshape serializer " should " work properly " in {
-    val reshape = Reshape(Array(1, 4, 5))
-    val input1 = Tensor(2, 2, 5).apply1( _ => Random.nextFloat())
-    val input2 = Tensor(2, 2, 5)
-    input2.copy(input1)
-    val res1 = reshape.forward(input1)
-    ModulePersister.saveToFile("/tmp/reshape.bigdl", null, reshape, true)
-    val loadedReshape = ModuleLoader.loadFromFile("/tmp/reshape.bigdl")
-    val res2 = loadedReshape.forward(input2)
-    res1 should be (res2)
+  "Replicate serializer" should "work properly" in {
+    val replicate = new Replicate[Float](3).setName("replicate")
+    val input = Tensor[Float](10).apply1(_ => Random.nextFloat())
+    runSerializationTest(replicate, input)
   }
 
-  "Reverse serializer " should " work properly " in {
-    val reverse = Reverse()
-    val input1 = Tensor(10).apply1(_ => Random.nextFloat())
-    val input2 = Tensor(10)
-    input2.copy(input1)
-    val res1 = reverse.forward(input1)
-    ModulePersister.saveToFile("/tmp/reverse.bigdl", null, reverse, true)
-    val loadedReverse = ModuleLoader.loadFromFile("/tmp/reverse.bigdl")
-    val res2 = loadedReverse.forward(input2)
-    res1 should be (res2)
+  "Reshape serializer" should "work properly" in {
+    val reshape = Reshape[Float](Array(1, 4, 5)).setName("reshape")
+    val input = Tensor[Float](2, 2, 5).apply1( _ => Random.nextFloat())
+    runSerializationTest(reshape, input)
   }
 
-  "RnnCell serializer " should " work properly " in {
+  "ResizeBilinear serializer" should "work properly" in {
+    val input = Tensor[Float](1, 3, 2, 3).apply1( _ => Random.nextFloat())
+    val resizeBilinear = ResizeBilinear[Float](3, 2).setName("resizeBilinear")
+    runSerializationTest(resizeBilinear, input)
+  }
 
-    val rnnCell = RnnCell(6, 4, Sigmoid())
+  "Reverse serializer" should "work properly" in {
+    val reverse = Reverse[Float]().setName("reverse")
+    val input = Tensor[Float](10).apply1(_ => Random.nextFloat())
+    runSerializationTest(reverse, input)
+  }
 
-    val input1 = Tensor(Array(1, 4)).apply1(_ => Random.nextFloat())
-
-    val input2 = Tensor(Array(1, 4)).apply1(_ => Random.nextFloat())
-
+  "RnnCell serializer" should "work properly" in {
+    val rnnCell = RnnCell[Float](6, 4, Sigmoid[Float]()).setName("rnnCell")
+    val input1 = Tensor[Float](Array(1, 4)).apply1(_ => Random.nextFloat())
+    val input2 = Tensor[Float](Array(1, 4)).apply1(_ => Random.nextFloat())
     val input = T()
     input(1.0f) = input1
     input(2.0f) = input2
-    val res1 = rnnCell.forward(input)
-
-    ModulePersister.saveToFile("/tmp/rnnCell.bigdl", null, rnnCell, true)
-    val loadedRnnCell = ModuleLoader.loadFromFile("/tmp/rnnCell.bigdl")
-    val res2 = loadedRnnCell.forward(input)
-    res1 should be (res2)
+    runSerializationTest(rnnCell, input)
   }
 
-  "RoiPooling serializer " should " work properly " in {
-    val input1 = T()
-    val input2 = T()
-    val input11 = Tensor(1, 1, 2, 2).apply1(_ => Random.nextFloat())
-    val input21 = Tensor(1, 1, 2, 2)
-    input21.copy(input11)
-    val input12 = Tensor(1, 5).apply1(_ => Random.nextFloat())
-    val input22 = Tensor(1, 5)
-    input22.copy(input12)
-    input1(1.0f) = input11
-    input1(2.0f) = input12
-    input2(1.0f) = input21
-    input2(2.0f) = input22
-
-    val roiPooling = new RoiPooling[Float](pooledW = 3, pooledH = 2, 1.0f)
-    val res1 = roiPooling.forward(input1)
-    val res3 = roiPooling.forward(input1)
-    ModulePersister.saveToFile("/tmp/roiPooling.bigdl", null, roiPooling, true)
-    val loadedRoiPooling = ModuleLoader.loadFromFile("/tmp/roiPooling.bigdl")
-    val res2 = loadedRoiPooling.forward(input2)
-    res1 should be (res2)
+  "RoiPooling serializer" should " work properly" in {
+    val input = T()
+    val input1 = Tensor[Float](1, 1, 2, 2).apply1(_ => Random.nextFloat())
+    val input2 = Tensor[Float](1, 5).apply1(_ => Random.nextFloat())
+    input(1.0f) = input1
+    input(2.0f) = input2
+    val roiPooling = new RoiPooling[Float](pooledW = 3,
+      pooledH = 2, 1.0f).setName("roiPooling")
+    runSerializationTest(roiPooling, input)
   }
 
-  "RReLU serializer " should " work properly " in {
-    val rrelu = new RReLU(inplace = false)
-    val input1 = Tensor(2, 2, 2).apply1(_ => Random.nextFloat())
-    val input2 = Tensor(2, 2, 2)
-    input2.copy(input1)
-    val res1 = rrelu.forward(input1)
-    ModulePersister.saveToFile("/tmp/rrelu.bigdl", null, rrelu, true)
-    val loadedRReLU = ModuleLoader.loadFromFile("/tmp/rrelu.bigdl")
-    val res2 = loadedRReLU.forward(input2)
-    res1 should be (res2)
+  "RReLU serializer" should "work properly" in {
+    val rrelu = new RReLU[Float](inplace = false).setName("rrelu")
+    val input = Tensor[Float](2, 2, 2).apply1(_ => Random.nextFloat())
+    runSerializationTest(rrelu, input)
   }
 
-  "Scale serializer " should " work properly " in {
-    val scale = Scale(Array(1, 4, 1, 1))
-    val input1 = Tensor(1, 4, 5, 6).apply1(_ => Random.nextFloat())
-    val input2 = Tensor(1, 4, 5, 6)
-    input2.copy(input1)
-    val res1 = scale.forward(input1)
-    ModulePersister.saveToFile("/tmp/scale.bigdl", null, scale, true)
-    val loadedScale = ModuleLoader.loadFromFile("/tmp/scale.bigdl")
-    val res2 = loadedScale.forward(input2)
-    res1 should be (res2)
-
+  "Scale serializer" should "work properly" in {
+    val scale = Scale[Float](Array(1, 4, 1, 1)).setName("scale")
+    val input = Tensor[Float](1, 4, 5, 6).apply1(_ => Random.nextFloat())
+    runSerializationTest(scale, input)
   }
 
-  "Select serializer " should " work properly " in {
-    val select = Select(2, 2)
-    val input1 = Tensor(5, 5, 5).apply1(_ => Random.nextFloat())
-    val input2 = Tensor(5, 5, 5)
-    input2.copy(input1)
-    val res1 = select.forward(input1)
-    ModulePersister.saveToFile("/tmp/select.bigdl", null, select, true)
-    val loadedSelect = ModuleLoader.loadFromFile("/tmp/select.bigdl")
-    val res2 = loadedSelect.forward(input2)
-    res1 should be (res2)
+  "Select serializer" should "work properly" in {
+    val select = Select[Float](2, 2).setName("select")
+    val input = Tensor[Float](5, 5, 5).apply1(_ => Random.nextFloat())
+    runSerializationTest(select, input)
   }
 
-  "SelectTable serializer " should " work properly " in {
-    val selectTable = SelectTable(2)
-    val input1 = Tensor(10).apply1(_ => Random.nextFloat())
-    val input2 = Tensor(10).apply1(_ => Random.nextFloat())
-    val input3 = Tensor(10).apply1(_ => Random.nextFloat())
+  "SelectTable serializer" should "work properly" in {
+    val selectTable = SelectTable[Float](2).setName("selectTable")
+    val input1 = Tensor[Float](10).apply1(_ => Random.nextFloat())
+    val input2 = Tensor[Float](10).apply1(_ => Random.nextFloat())
+    val input3 = Tensor[Float](10).apply1(_ => Random.nextFloat())
     val input = T(1.0 -> input1, 2.0 -> input2, 3.0 -> input3)
-    val res1 = selectTable.forward(input)
-    ModulePersister.saveToFile("/tmp/selectTable.bigdl", null, selectTable, true)
-    val loadedSelectTable = ModuleLoader.loadFromFile("/tmp/selectTable.bigdl")
-    val res2 = loadedSelectTable.forward(input)
-    res1 should be (res2)
+    runSerializationTest(selectTable, input)
   }
 
   "Sequential Container" should "work properly" in {
-    val sequential = Sequential()
-    val linear = Linear(10, 2)
+    val sequential = Sequential[Float]().setName("sequential")
+    val linear = Linear[Float](10, 2)
     sequential.add(linear)
-    val input1 = Tensor(10).apply1(_ => Random.nextFloat())
-    val input2 = Tensor()
-    input2.resizeAs(input1).copy(input1)
-    val res1 = sequential.forward(input1)
-    ModulePersister.saveToFile("/tmp/sequential.bigdl", null, sequential, true)
-    val loadedSequential = ModuleLoader.loadFromFile("/tmp/sequential.bigdl")
-    val res2 = loadedSequential.forward(input2)
-    res1 should be (res2)
+    val input = Tensor[Float](10).apply1(_ => Random.nextFloat())
+    runSerializationTest(sequential, input)
   }
 
-  "Sigmoid serializer " should " work properly" in {
-    val sigmoid = Sigmoid()
-    val input1 = Tensor(10).apply1(_ => Random.nextFloat())
-    val input2 = Tensor()
-    input2.resizeAs(input1).copy(input1)
-    val res1 = sigmoid.forward(input1)
-    ModulePersister.saveToFile("/tmp/sigmoid.bigdl", null, sigmoid, true)
-    val loadedSigmoid = ModuleLoader.loadFromFile("/tmp/sigmoid.bigdl")
-    val res2 = loadedSigmoid.forward(input2)
-    res1 should be (res2)
+  "Sigmoid serializer" should "work properly" in {
+    val sigmoid = Sigmoid[Float]().setName("sigmoid")
+    val input = Tensor[Float](10).apply1(_ => Random.nextFloat())
+    runSerializationTest(sigmoid, input)
   }
 
-  "SoftMax serializer " should " work properly" in {
-    val softMax = SoftMax()
-    val input1 = Tensor(10).apply1(_ => Random.nextFloat())
-    val input2 = Tensor()
-    input2.resizeAs(input1).copy(input1)
-    val res1 = softMax.forward(input1)
-    ModulePersister.saveToFile("/tmp/softMax.bigdl", null, softMax, true)
-    val loadedSoftMax = ModuleLoader.loadFromFile("/tmp/softMax.bigdl")
-    val res2 = loadedSoftMax.forward(input2)
-    res1 should be (res2)
+  "SoftMax serializer" should  "work properly" in {
+    val softMax = SoftMax[Float]().setName("softMax")
+    val input = Tensor[Float](10).apply1(_ => Random.nextFloat())
+    runSerializationTest(softMax, input)
   }
 
-  "SoftMin serializer " should " work properly " in {
-    val softMin = SoftMin()
-    val input1 = Tensor(10).apply1(_ => Random.nextFloat())
-    val input2 = Tensor()
-    input2.resizeAs(input1).copy(input1)
-    val res1 = softMin.forward(input1)
-    ModulePersister.saveToFile("/tmp/softMin.bigdl", null, softMin, true)
-    val loadedSoftMin = ModuleLoader.loadFromFile("/tmp/softMin.bigdl")
-    val res2 = loadedSoftMin.forward(input2)
-    res1 should be (res2)
+  "SoftMin serializer" should "work properly" in {
+    val softMin = SoftMin[Float]().setName("softMin")
+    val input = Tensor[Float](10).apply1(_ => Random.nextFloat())
+    runSerializationTest(softMin, input)
   }
 
-  "SoftPlus serializer " should " work properly" in {
-    val softPlus = SoftPlus()
-    val input1 = Tensor(10).apply1(_ => Random.nextFloat())
-    val input2 = Tensor()
-    input2.resizeAs(input1).copy(input1)
-    val res1 = softPlus.forward(input1)
-    ModulePersister.saveToFile("/tmp/softPlus.bigdl", null, softPlus, true)
-    val loadedSoftPlus = ModuleLoader.loadFromFile("/tmp/softPlus.bigdl")
-    val res2 = loadedSoftPlus.forward(input2)
-    res1 should be (res2)
+  "SoftPlus serializer" should "work properly" in {
+    val softPlus = SoftPlus[Float, Float]().setName("softPlus")
+    val input = Tensor[Float](10).apply1(_ => Random.nextFloat())
+    runSerializationTest(softPlus, input)
   }
 
-  "SoftShrink serializer " should " work properly" in {
-    val softShrink = SoftShrink()
-    val input1 = Tensor(10, 10).apply1(_ => Random.nextFloat())
-    val input2 = Tensor()
-    input2.resizeAs(input1).copy(input1)
-    val res1 = softShrink.forward(input1)
-    ModulePersister.saveToFile("/tmp/softShrink.bigdl", null, softShrink, true)
-    val loadedSoftShrink = ModuleLoader.loadFromFile("/tmp/softShrink.bigdl")
-    val res2 = loadedSoftShrink.forward(input2)
-    res1 should be (res2)
+  "SoftShrink serializer" should "work properly" in {
+    val softShrink = SoftShrink[Float]().setName("softShrink")
+    val input = Tensor[Float](10, 10).apply1(_ => Random.nextFloat())
+    runSerializationTest(softShrink, input)
   }
 
-  "SoftSign serializer " should "work properly" in {
-    val softSign = SoftSign()
-    val input1 = Tensor(10, 10).apply1(_ => Random.nextFloat())
-    val input2 = Tensor()
-    input2.resizeAs(input1).copy(input1)
-    val res1 = softSign.forward(input1)
-    ModulePersister.saveToFile("/tmp/softSign.bigdl", null, softSign, true)
-    val loadedSoftSign = ModuleLoader.loadFromFile("/tmp/softSign.bigdl")
-    val res2 = loadedSoftSign.forward(input2)
-    res1 should be (res2)
+  "SoftSign serializer" should "work properly" in {
+    val softSign = SoftSign[Float, Float]().setName("softSign")
+    val input = Tensor[Float](10, 10).apply1(_ => Random.nextFloat())
+    runSerializationTest(softSign, input)
   }
 
-  "SpatialAveragePooling serializer " should " work properly " in {
-    val spatialAveragePooling = new SpatialAveragePooling(3, 2, 2, 1)
-    val input1 = Tensor(1, 4, 3).apply1(_ => Random.nextFloat())
-    val input2 = Tensor()
-    input2.resizeAs(input1).copy(input1)
-    val res1 = spatialAveragePooling.forward(input1)
-    ModulePersister.saveToFile("/tmp/spatialAveragePooling.bigdl",
-      null, spatialAveragePooling, true)
-    val loadedSpatialAveragePooling = ModuleLoader.loadFromFile("/tmp/spatialAveragePooling.bigdl")
-    val res2 = loadedSpatialAveragePooling.forward(input2)
-    res1 should be (res2)
+  "SparseJoinTable serializer" should "work properly" in {
+    val sparseJoinTable = SparseJoinTable[Float](2).setName("sparseJoinTable")
+    val sparseModel = Sequential[Float]().
+      add(ParallelTable[Float]().add(Identity[Float]()).add(Identity[Float]()))
+      .add(sparseJoinTable)
+    val input1 = Tensor[Float](4, 3).apply1(_ => Random.nextInt(2) * Random.nextFloat())
+    val input2 = Tensor[Float](4, 2).apply1(_ => Random.nextInt(2) * Random.nextFloat())
+    val sparseInput = T(Tensor.sparse(input1), Tensor.sparse(input2))
+    runSerializationTest(sparseJoinTable, sparseInput)
   }
 
-  "SpatialBatchNormalization serializer " should " work properly " in {
-    val spatialBatchNorm = SpatialBatchNormalization(5)
-    val input1 = Tensor(2, 5, 4, 5).apply1(_ => Random.nextFloat())
-    val input2 = Tensor()
-    input2.resizeAs(input1).copy(input1)
-    val res1 = spatialBatchNorm.forward(input1)
-    ModulePersister.saveToFile("/tmp/spatialBatchNorm.bigdl", null, spatialBatchNorm, true)
-    val loadedSpatialBatchNorm = ModuleLoader.loadFromFile("/tmp/spatialBatchNorm.bigdl")
-    val res2 = loadedSpatialBatchNorm.forward(input2)
-    res1 should be (res2)
+  "SparseLinear serializer" should "work properly" in {
+    val sparseLinear = SparseLinear[Float](4, 2).setName("sparseLinear")
+    val input = Tensor[Float](2, 4).apply1(_ => Random.nextFloat())
+    val sparseInput = Tensor.sparse(input)
+    runSerializationTest(sparseLinear, sparseInput)
   }
 
-  "SpatialContrastiveNormalization serializer " should " work properly" in {
+  "SpatialAveragePooling serializer" should "work properly" in {
+    val spatialAveragePooling = new SpatialAveragePooling[Float](3, 2, 2, 1).
+      setName("spatialAveragePooling")
+    val input = Tensor[Float](1, 4, 3).apply1(_ => Random.nextFloat())
+    runSerializationTest(spatialAveragePooling, input)
+  }
+
+  "SpatialBatchNormalization serializer" should "work properly" in {
+    val spatialBatchNorm = SpatialBatchNormalization[Float](5).
+      setName("spatialBatchNorm")
+    val input = Tensor[Float](2, 5, 4, 5).apply1(_ => Random.nextFloat())
+    runSerializationTest(spatialBatchNorm, input)
+  }
+
+  "SpatialContrastiveNormalization serializer" should "work properly" in {
     RNG.setSeed(100)
-    val spatialContrastiveNorm = new SpatialContrastiveNormalization()
-    val input1 = Tensor(1, 5, 5).apply1(_ => Random.nextFloat())
-    val input2 = Tensor()
-    input2.resizeAs(input1).copy(input1)
-    val res1 = spatialContrastiveNorm.forward(input1)
-    ModulePersister.saveToFile("/tmp/spatialContrastiveNorm.bigdl",
-      null, spatialContrastiveNorm, true)
-    RNG.setSeed(100)
-    val loadedSpatialContrastiveNorm = ModuleLoader.
-      loadFromFile("/tmp/spatialContrastiveNorm.bigdl")
-    val res2 = loadedSpatialContrastiveNorm.forward(input2)
-    res1 should be (res2)
+    val spatialContrastiveNorm = new SpatialContrastiveNormalization[Float]().
+      setName("spatialContrastiveNorm")
+    val input = Tensor[Float](1, 5, 5).apply1(_ => Random.nextFloat())
+    runSerializationTest(spatialContrastiveNorm, input)
   }
 
-  "SpatialConvolution serializer " should " work properly" in {
-    val spatialConvolution = SpatialConvolution(3, 4, 2, 2)
-    val input1 = Tensor(1, 3, 5, 5).apply1( e => Random.nextFloat())
-    val input2 = Tensor()
-    input2.resizeAs(input1).copy(input1)
-    val res1 = spatialConvolution.forward(input1)
-    ModulePersister.saveToFile("/tmp/spatialConvolution.bigdl", null, spatialConvolution, true)
-    val loadedSpatialConvolution = ModuleLoader.loadFromFile("/tmp/spatialConvolution.bigdl")
-    val res2 = loadedSpatialConvolution.forward(input2)
-    res1 should be (res2)
+  "SpatialConvolution serializer" should "work properly" in {
+    val spatialConvolution = SpatialConvolution[Float](3, 4, 2, 2).
+      setName("spatialConvolution")
+    val input = Tensor[Float](1, 3, 5, 5).apply1( e => Random.nextFloat())
+    runSerializationTest(spatialConvolution, input)
   }
 
-  "SpatialConvolutionMap serializer" should " work properly" in {
-    val spatialConvolutionMap = SpatialConvolutionMap(
-      SpatialConvolutionMap.random(1, 1, 1), 2, 2)
-    val input1 = Tensor(1, 3, 3).apply1( e => Random.nextFloat())
-    val input2 = Tensor()
-    input2.resizeAs(input1).copy(input1)
-    val res1 = spatialConvolutionMap.forward(input1)
-    ModulePersister.saveToFile("/tmp/spatialConvolutionMap.bigdl",
-      null, spatialConvolutionMap, true)
-    val loadedSpatialConvolutionMap = ModuleLoader.
-      loadFromFile("/tmp/spatialConvolutionMap.bigdl")
-    val res2 = loadedSpatialConvolutionMap.forward(input2)
-    res1 should be (res2)
+  "SpatialConvolutionMap serializer" should "work properly" in {
+    val spatialConvolutionMap = SpatialConvolutionMap[Float](
+      SpatialConvolutionMap.random(1, 1, 1), 2, 2).setName("spatialConvolutionMap")
+    val input = Tensor[Float](1, 3, 3).apply1( e => Random.nextFloat())
+    runSerializationTest(spatialConvolutionMap, input)
   }
 
-  "SpatialCrossMapLRN serializer " should " work properly " in {
-    val spatialCrossMapLRN = SpatialCrossMapLRN(5, 0.01, 0.75, 1.0)
-    val input1 = Tensor(2, 2, 2, 2).apply1( e => Random.nextFloat())
-    val input2 = Tensor()
-    input2.resizeAs(input1).copy(input1)
-    val res1 = spatialCrossMapLRN.forward(input1)
-    ModulePersister.saveToFile("/tmp/spatialCrossMapLRN.bigdl", null, spatialCrossMapLRN, true)
-    val loadedSpatialCrossMapLRN = ModuleLoader.loadFromFile("/tmp/spatialCrossMapLRN.bigdl")
-    val res2 = loadedSpatialCrossMapLRN.forward(input2)
-    res1 should be (res2)
+  "SpatialCrossMapLRN serializer" should "work properly" in {
+    val spatialCrossMapLRN = SpatialCrossMapLRN[Float](5, 0.01, 0.75, 1.0).
+      setName("spatialCrossMapLRN")
+    val input = Tensor[Float](2, 2, 2, 2).apply1( e => Random.nextFloat())
+    runSerializationTest(spatialCrossMapLRN, input)
   }
 
-  "SpatialDilatedConvolution serializer " should "work properly" in {
+  "SpatialDilatedConvolution serializer" should "work properly" in {
 
-    val spatialDilatedConvolution = SpatialDilatedConvolution(1, 1,
-      2, 2, 1, 1, 0, 0)
-    val input1 = Tensor(1, 3, 3).apply1( e => Random.nextFloat())
-    val input2 = Tensor()
-    input2.resizeAs(input1).copy(input1)
-    val res1 = spatialDilatedConvolution.forward(input1)
-    ModulePersister.saveToFile("/tmp/spatialDilatedConvolution.bigdl", null,
-      spatialDilatedConvolution, true)
-    val loadedSpatialDilatedConvolution = ModuleLoader.
-      loadFromFile("/tmp/spatialDilatedConvolution.bigdl")
-    val res2 = loadedSpatialDilatedConvolution.forward(input2)
-    res1 should be (res2)
+    val spatialDilatedConvolution = SpatialDilatedConvolution[Float](1, 1,
+      2, 2, 1, 1, 0, 0).setName("spatialDilatedConvolution")
+    val input = Tensor[Float](1, 3, 3).apply1( e => Random.nextFloat())
+    runSerializationTest(spatialDilatedConvolution, input)
   }
 
-  "SpatialDivisiveNormalization serializer " should " work properly" in {
-    val spatialDivisiveNormalization = SpatialDivisiveNormalization()
-    val input1 = Tensor(1, 5, 5).apply1(e => Random.nextFloat())
-    val input2 = Tensor(1, 5, 5)
-    input2.copy(input1)
-
-    val res1 = spatialDivisiveNormalization.forward(input1)
-    ModulePersister.saveToFile("/tmp/spatialDivisiveNormalization.bigdl", null,
-      spatialDivisiveNormalization, true)
-    val loadedSpatialDivisiveNormalization = ModuleLoader.
-      loadFromFile("/tmp/spatialDivisiveNormalization.bigdl")
-    val res2 = loadedSpatialDivisiveNormalization.forward(input2)
-    res1 should be (res2)
-
+  "SpatialDivisiveNormalization serializer" should "work properly" in {
+    val spatialDivisiveNormalization = SpatialDivisiveNormalization[Float]().
+      setName("spatialDivisiveNormalization")
+    val input = Tensor[Float](1, 5, 5).apply1(e => Random.nextFloat())
+    runSerializationTest(spatialDivisiveNormalization, input)
   }
 
-  "SpatialFullConvolution serializer " should " work properly" in {
+  "SpatialFullConvolution serializer" should "work properly" in {
 
-    val spatialFullConvolution = SpatialFullConvolution(1, 1,
-      2, 2, 1, 1, 0, 0)
-    val input1 = Tensor(1, 3, 3).apply1(e => Random.nextFloat())
-    val input2 = Tensor(1, 3, 3)
-    input2.copy(input1)
-
-    val res1 = spatialFullConvolution.forward(input1)
-    ModulePersister.saveToFile("/tmp/spatialFullConvolution.bigdl", null,
-      spatialFullConvolution, true)
-    val loadedSpatialFullConvolution = ModuleLoader.
-      loadFromFile("/tmp/spatialFullConvolution.bigdl")
-    val res2 = loadedSpatialFullConvolution.forward(input2)
-    res1 should be (res2)
+    val spatialFullConvolution = SpatialFullConvolution[Float](1, 1,
+      2, 2, 1, 1, 0, 0).setName("spatialFullConvolution")
+    val input = Tensor[Float](1, 3, 3).apply1(e => Random.nextFloat())
+    runSerializationTest(spatialFullConvolution, input)
   }
 
-  "SpatialMaxPooling serializer " should " work properly " in {
-    val spatialMaxPooling = SpatialMaxPooling(2, 2, 2, 2)
-    val input1 = Tensor(1, 3, 3).apply1( e => Random.nextFloat())
-    val input2 = Tensor()
-    input2.resizeAs(input1).copy(input1)
-    val res1 = spatialMaxPooling.forward(input1)
-    ModulePersister.saveToFile("/tmp/spatialMaxPooling.bigdl", null,
-      spatialMaxPooling, true)
-    val loadedSpatialMaxPooling = ModuleLoader.
-      loadFromFile("/tmp/spatialMaxPooling.bigdl")
-    val res2 = loadedSpatialMaxPooling.forward(input2)
-    res1 should be (res2)
+  "SpatialMaxPooling serializer" should "work properly" in {
+    val spatialMaxPooling = SpatialMaxPooling[Float](2, 2, 2, 2).
+      setName("spatialMaxPooling")
+    val input = Tensor[Float](1, 3, 3).apply1( e => Random.nextFloat())
+    runSerializationTest(spatialMaxPooling, input)
   }
 
-  "SpatialShareConvolution serializer " should "work properly" in {
-    val spatialShareConvolution = SpatialShareConvolution(1, 1, 2, 2, 1, 1)
-    val input1 = Tensor(3, 1, 3, 4).apply1( e => Random.nextFloat())
-    val input2 = Tensor()
-    input2.resizeAs(input1).copy(input1)
-    val res1 = spatialShareConvolution.forward(input1)
-    ModulePersister.saveToFile("/tmp/spatialShareConvolution.bigdl", null,
-      spatialShareConvolution, true)
-    val loadedSpatialShareConvolution = ModuleLoader.
-      loadFromFile("/tmp/spatialShareConvolution.bigdl")
-    val res2 = loadedSpatialShareConvolution.forward(input2)
-    res1 should be (res2)
+  "SpatialShareConvolution serializer" should "work properly" in {
+    val spatialShareConvolution = SpatialShareConvolution[Float](1, 1, 2, 2, 1, 1).
+      setName("spatialShareConvolution")
+    val input = Tensor[Float](3, 1, 3, 4).apply1( e => Random.nextFloat())
+    runSerializationTest(spatialShareConvolution, input)
   }
 
-  "SpatialSubtractiveNormalization serializer " should " work properly" in {
-    val kernel = Tensor(3, 3).apply1( e => Random.nextFloat())
-    val spatialSubtractiveNormalization = SpatialSubtractiveNormalization(1, kernel)
-    val input1 = Tensor(1, 1, 1, 5).apply1( e => Random.nextFloat())
-    val input2 = Tensor()
-    input2.resizeAs(input1).copy(input1)
-    val res1 = spatialSubtractiveNormalization.forward(input1)
-    ModulePersister.saveToFile("/tmp/spatialSubtractiveNormalization.bigdl", null,
-      spatialSubtractiveNormalization, true)
-    val loadedSpatialSubtractiveNormalization = ModuleLoader.
-      loadFromFile("/tmp/spatialSubtractiveNormalization.bigdl")
-    val res2 = loadedSpatialSubtractiveNormalization.forward(input2)
-    res1 should be (res2)
+  "SpatialSubtractiveNormalization serializer" should "work properly" in {
+    val kernel = Tensor[Float](3, 3).apply1( e => Random.nextFloat())
+    val spatialSubtractiveNormalization = SpatialSubtractiveNormalization[Float](1, kernel).
+      setName("spatialSubtractiveNormalization")
+    val input = Tensor[Float](1, 1, 1, 5).apply1( e => Random.nextFloat())
+    runSerializationTest(spatialSubtractiveNormalization, input)
   }
 
-  "SpatialWithinChannelLRN serializer " should " work properly" in {
-    val spatialWithinChannelLRN = new SpatialWithinChannelLRN[Float](5, 5e-4, 0.75)
-    val input1 = Tensor(1, 4, 7, 6).apply1( e => Random.nextFloat())
-    val input2 = Tensor()
-    input2.resizeAs(input1).copy(input1)
-    val res1 = spatialWithinChannelLRN.forward(input1)
-    ModulePersister.saveToFile("/tmp/spatialWithinChannelLRN.bigdl", null,
-      spatialWithinChannelLRN, true)
-    val loadedSpatialWithinChannelLRN = ModuleLoader.
-      loadFromFile("/tmp/spatialWithinChannelLRN.bigdl")
-    val res2 = loadedSpatialWithinChannelLRN.forward(input2)
-    res1 should be (res2)
+  "SpatialWithinChannelLRN serializer" should "work properly" in {
+    val spatialWithinChannelLRN = new SpatialWithinChannelLRN[Float](5, 5e-4, 0.75).
+      setName("spatialWithinChannelLRN")
+    val input = Tensor[Float](1, 4, 7, 6).apply1( e => Random.nextFloat())
+    runSerializationTest(spatialWithinChannelLRN, input)
   }
 
-  "SpatialZeroPadding serializer " should " work properly" in {
-    val spatialZeroPadding = SpatialZeroPadding(1, 0, -1, 0)
-    val input1 = Tensor(3, 3, 3).apply1(_ => Random.nextFloat())
-    val input2 = Tensor(3, 3, 3)
-    input2.copy(input1)
-    val res1 = spatialZeroPadding.forward(input1)
-    ModulePersister.saveToFile("/tmp/spatialZeroPadding.bigdl", null,
-      spatialZeroPadding, true)
-    val loadedSpatialSpatialZeroPadding = ModuleLoader.
-      loadFromFile("/tmp/spatialZeroPadding.bigdl")
-    val res2 = loadedSpatialSpatialZeroPadding.forward(input2)
-    res1 should be (res2)
-
+  "SpatialZeroPadding serializer" should "work properly" in {
+    val spatialZeroPadding = SpatialZeroPadding[Float](1, 0, -1, 0).
+      setName("spatialZeroPadding")
+    val input = Tensor[Float](3, 3, 3).apply1(_ => Random.nextFloat())
+    runSerializationTest(spatialZeroPadding, input)
   }
 
-  "SplitTable serializer " should " work properly" in {
-    val splitTable = SplitTable(2)
-    val input1 = Tensor(2, 10).apply1( e => Random.nextFloat())
-    val input2 = Tensor()
-    input2.resizeAs(input1).copy(input1)
-    val res1 = splitTable.forward(input1)
-    ModulePersister.saveToFile("/tmp/splitTable.bigdl", null, splitTable, true)
-    val loadedSplitTable = ModuleLoader.loadFromFile("/tmp/splitTable.bigdl")
-    val res2 = loadedSplitTable.forward(input2)
-    res1 should be (res2)
+  "SpatialSeperableConvolution serializer" should "work properly" in {
+    val seprableConv = SpatialSeperableConvolution[Float](2, 2, 1, 2, 2,
+      dataFormat = DataFormat.NHWC).setName("seprableConv")
+    val input = Tensor[Float](1, 5, 5, 2).apply1( e => Random.nextFloat())
+    runSerializationTest(seprableConv, input)
   }
 
-  "Sqrt serializer " should " work properly" in {
-    val sqrt = Sqrt()
-    val input1 = Tensor(10).apply1( e => Random.nextFloat())
-    val input2 = Tensor()
-    input2.resizeAs(input1).copy(input1)
-    val res1 = sqrt.forward(input1)
-    ModulePersister.saveToFile("/tmp/sqrt.bigdl", null, sqrt, true)
-    val loadedSqrt = ModuleLoader.loadFromFile("/tmp/sqrt.bigdl")
-    val res2 = loadedSqrt.forward(input2)
-    res1 should be (res2)
+  "SplitTable serializer" should "work properly" in {
+    val splitTable = SplitTable[Float](2).setName("splitTable")
+    val input = Tensor[Float](2, 10).apply1( e => Random.nextFloat())
+    runSerializationTest(splitTable, input)
   }
 
-  "Square serializer " should " work properly " in {
-    val square = Square()
-    val input1 = Tensor(10).apply1( e => Random.nextFloat())
-    val input2 = Tensor()
-    input2.resizeAs(input1).copy(input1)
-    val res1 = square.forward(input1)
-    ModulePersister.saveToFile("/tmp/square.bigdl", null, square, true)
-    val loadedSquare = ModuleLoader.loadFromFile("/tmp/square.bigdl")
-    val res2 = loadedSquare.forward(input2)
-    res1 should be (res2)
+  "Sqrt serializer" should "work properly" in {
+    val sqrt = Sqrt[Float, Float]().setName("sqrt")
+    val input = Tensor[Float](10).apply1( e => Random.nextFloat())
+    runSerializationTest(sqrt, input)
   }
 
-  "Squeeze serializer " should " work properly" in {
-    val squeeze = Squeeze(2)
-    val input1 = Tensor(2, 1, 2).apply1( e => Random.nextFloat())
-    val input2 = Tensor()
-    input2.resizeAs(input1).copy(input1)
-    val res1 = squeeze.forward(input1)
-    ModulePersister.saveToFile("/tmp/squeeze.bigdl", null, squeeze, true)
-    val loadedSqueeze = ModuleLoader.loadFromFile("/tmp/squeeze.bigdl")
-    val res2 = loadedSqueeze.forward(input2)
-    res1 should be (res2)
+  "Square serializer" should "work properly" in {
+    val square = Square[Float, Float]().setName("square")
+    val input = Tensor[Float](10).apply1( e => Random.nextFloat())
+    runSerializationTest(square, input)
+  }
+
+  "Squeeze serializer" should "work properly" in {
+    val squeeze = Squeeze[Float](2).setName("squeeze")
+    val input = Tensor[Float](2, 1, 2).apply1( e => Random.nextFloat())
+    runSerializationTest(squeeze, input)
+  }
+
+  "SReLU serilalizer" should "work properly" in {
+    val srelu = SReLU[Float]().setName("srelu")
+    val input = Tensor[Float](3, 4).apply1( e => Random.nextFloat())
+    runSerializationTest(srelu, input)
   }
 
   "Sum serializer" should "work properly" in {
-    val sum = Sum(2)
-    val input1 = Tensor(5, 5).apply1(_ => Random.nextFloat())
-    val input2 = Tensor()
-    input2.resizeAs(input1).copy(input1)
-    val res1 = sum.forward(input1)
-
-    ModulePersister.saveToFile("/tmp/sum.bigdl", null, sum, true)
-    val loadedSum = ModuleLoader.loadFromFile("/tmp/sum.bigdl")
-    val res2 = loadedSum.forward(input2)
-    res1 should be (res2)
+    val sum = Sum[Float, Float](2).setName("sum")
+    val input = Tensor[Float](5, 5).apply1(_ => Random.nextFloat())
+    runSerializationTest(sum, input)
   }
 
-  "Tanh serializer" should " work properly" in {
-    val tanh = Tanh()
-    val input1 = Tensor(5, 5).apply1(_ => Random.nextFloat())
-    val input2 = Tensor()
-    input2.resizeAs(input1).copy(input1)
-    val res1 = tanh.forward(input1)
-
-    ModulePersister.saveToFile("/tmp/tanh.bigdl", null, tanh, true)
-    val loadedTanh = ModuleLoader.loadFromFile("/tmp/tanh.bigdl")
-    val res2 = loadedTanh.forward(input2)
-    res1 should be (res2)
+  "Tanh serializer" should "work properly" in {
+    val tanh = Tanh[Float]().setName("tanh")
+    val input = Tensor[Float](5, 5).apply1(_ => Random.nextFloat())
+    runSerializationTest(tanh, input)
   }
 
-  "TanhShrink serializer " should " work properly" in {
-    val tanhShrink = TanhShrink()
-    val input1 = Tensor(5, 5).apply1(_ => Random.nextFloat())
-    val input2 = Tensor()
-    input2.resizeAs(input1).copy(input1)
-    val res1 = tanhShrink.forward(input1)
-
-    ModulePersister.saveToFile("/tmp/tanhShrink.bigdl", null, tanhShrink, true)
-    val loadedTanhShrink = ModuleLoader.loadFromFile("/tmp/tanhShrink.bigdl")
-    val res2 = loadedTanhShrink.forward(input2)
-    res1 should be (res2)
+  "TanhShrink serializer" should "work properly" in {
+    val tanhShrink = TanhShrink[Float]().setName("tanhShrink")
+    val input = Tensor[Float](5, 5).apply1(_ => Random.nextFloat())
+    runSerializationTest(tanhShrink, input)
   }
 
-  "TemporalConvolution serializer " should " work properly" in {
-    val temporalConvolution = TemporalConvolution(10, 8, 5, 2)
-    val input1 = Tensor(100, 10).apply1(e => Random.nextFloat())
-    val input2 = Tensor(100, 10)
-    input2.copy(input1)
-
-    val res1 = temporalConvolution.forward(input1)
-
-    ModulePersister.saveToFile("/tmp/temporalConvolution.bigdl", null, temporalConvolution, true)
-    val loadedTemporalConvolution = ModuleLoader.loadFromFile("/tmp/temporalConvolution.bigdl")
-    val res2 = loadedTemporalConvolution.forward(input2)
-    res1 should be (res2)
+  "TemporalConvolution serializer" should "work properly" in {
+    val temporalConvolution = TemporalConvolution[Float](10, 8, 5, 2).
+      setName("temporalConvolution")
+    val input = Tensor[Float](100, 10).apply1(e => Random.nextFloat())
+    runSerializationTest(temporalConvolution, input)
   }
 
-  "Threshold serializer " should " work properly" in {
-    val threshold = Threshold(0.5)
-    val input1 = Tensor(5, 5).apply1(_ => Random.nextFloat())
-    val input2 = Tensor(5, 5)
-    input2.copy(input1)
-    val res1 = threshold.forward(input1)
-
-    ModulePersister.saveToFile("/tmp/threshold.bigdl", null, threshold, true)
-    val loadedThreshold = ModuleLoader.loadFromFile("/tmp/threshold.bigdl")
-    val res2 = loadedThreshold.forward(input1)
-    res1 should be (res2)
+  "TemporalMaxPooling serializer" should "work properly" in {
+    val temporalMaxPooling = new TemporalMaxPooling[Float](4).setName("temporalMaxPooling")
+    val input = Tensor[Float](5, 4, 5).apply1(e => Random.nextFloat())
+    runSerializationTest(temporalMaxPooling, input)
   }
 
-  "TimeDistributed serializer " should " work properly" in {
-    val timeDistributed = TimeDistributed(Linear(5, 5))
-    val input1 = Tensor(2, 5, 5).apply1(_ => Random.nextFloat())
-    val input2 = Tensor(2, 5, 5)
-    input2.copy(input1)
-    val res1 = timeDistributed.forward(input1)
-
-    ModulePersister.saveToFile("/tmp/timeDistributed.bigdl", null, timeDistributed, true)
-    val loadedTimeDistributed = ModuleLoader.loadFromFile("/tmp/timeDistributed.bigdl")
-    val res2 = loadedTimeDistributed.forward(input1)
-    res1 should be (res2)
+  "Threshold serializer" should "work properly" in {
+    val threshold = Threshold[Float](0.5).setName("threshold")
+    val input = Tensor[Float](5, 5).apply1(_ => Random.nextFloat())
+    runSerializationTest(threshold, input)
   }
 
-  "Transpose serializer " should " work properly" in {
-    val transpose = Transpose(Array((1, 2)))
-    val input1 = Tensor().resize(Array(2, 3)).apply1(_ => Random.nextFloat())
-    val input2 = Tensor(2, 3)
-    input2.copy(input1)
-
-    val res1 = transpose.forward(input1)
-
-    ModulePersister.saveToFile("/tmp/transpose.bigdl", null, transpose, true)
-    val loadedTranspose = ModuleLoader.loadFromFile("/tmp/transpose.bigdl")
-    val res2 = loadedTranspose.forward(input1)
-    res1 should be (res2)
-
+  "Tile serializer" should "work properly" in {
+    val tile = Tile[Float](1).setName("tile")
+    val input = Tensor[Float](5, 5).apply1(_ => Random.nextFloat())
+    runSerializationTest(tile, input)
   }
 
-  "Unsqueeze serializer" should " work properly" in {
-    val unsqueeze = Unsqueeze(2)
-    val input1 = Tensor(2, 2, 2).apply1(_ => Random.nextFloat())
-    val input2 = Tensor(2, 2, 2)
-    input2.copy(input1)
-    val res1 = unsqueeze.forward(input1)
-
-    ModulePersister.saveToFile("/tmp/unsqueeze.bigdl", null, unsqueeze, true)
-    val loadedUnsqueeze = ModuleLoader.loadFromFile("/tmp/unsqueeze.bigdl")
-    val res2 = loadedUnsqueeze.forward(input1)
-    res1 should be (res2)
+  "TimeDistributed serializer" should "work properly" in {
+    val timeDistributed = TimeDistributed[Float](Linear[Float](5, 5)).
+      setName("timeDistributed")
+    val input = Tensor[Float](2, 5, 5).apply1(_ => Random.nextFloat())
+    runSerializationTest(timeDistributed, input)
   }
 
-  "View serializer" should " work properly " in {
-    val view = View(Array(2, 5))
-    val input1 = Tensor(1, 10).apply1(_ => Random.nextFloat())
-    val input2 = Tensor(1, 10)
-    input2.copy(input1)
-    val res1 = view.forward(input1)
-
-    ModulePersister.saveToFile("/tmp/view.bigdl", null, view, true)
-    val loadedView = ModuleLoader.loadFromFile("/tmp/view.bigdl")
-    val res2 = loadedView.forward(input1)
-    res1 should be (res2)
+  "Transpose serializer" should "work properly" in {
+    val transpose = Transpose[Float](Array((1, 2))).setName("transpose")
+    val input = Tensor[Float]().resize(Array(2, 3)).apply1(_ => Random.nextFloat())
+    runSerializationTest(transpose, input)
   }
 
-  "VolumetricConvolution serializer " should " work properly " in {
-    val volumetricConvolution = VolumetricConvolution(2, 3, 2, 2, 2, dT = 1, dW = 1, dH = 1,
-      padT = 0, padW = 0, padH = 0, withBias = true)
-    val input1 = Tensor(2, 2, 2, 2).apply1(_ => Random.nextFloat())
-    val input2 = Tensor(2, 2, 2, 2)
-    input2.copy(input1)
-    val res1 = volumetricConvolution.forward(input1)
-
-    ModulePersister.saveToFile("/tmp/volumetricConvolution.bigdl",
-      null, volumetricConvolution, true)
-    val loadedVolumetricConvolution = ModuleLoader.loadFromFile("/tmp/volumetricConvolution.bigdl")
-    val res2 = loadedVolumetricConvolution.forward(input1)
-    res1 should be (res2)
+  "Unsqueeze serializer" should "work properly" in {
+    val unsqueeze = Unsqueeze[Float](2).setName("unsqueeze")
+    val input = Tensor[Float](2, 2, 2).apply1(_ => Random.nextFloat())
+    runSerializationTest(unsqueeze, input)
   }
 
-  "VolumetricFullConvolution serializer " should " work properly " in {
-
-    val volumetricFullConvolution = new VolumetricFullConvolution(3, 6,
-      4, 3, 3, 2, 1, 1, 2, 2, 2)
-
-    val input1 = Tensor(3, 3, 3, 6, 6).apply1(e => Random.nextFloat())
-    val input2 = Tensor(3, 3, 3, 6, 6).copy(input1)
-
-    val res1 = volumetricFullConvolution.forward(input1)
-
-    ModulePersister.saveToFile("/tmp/volumetricFullConvolution.bigdl", null,
-      volumetricFullConvolution, true)
-    val loadedVolumetricFullConvolution = ModuleLoader.
-      loadFromFile("/tmp/volumetricFullConvolution.bigdl")
-    val res2 = loadedVolumetricFullConvolution.forward(input1)
-    res1 should be (res2)
-
+  "UpSampling3D serializer" should "work properly" in {
+    val upSampling3D = UpSampling3D[Float](Array(2, 2, 2)).setName("upSampling3D")
+    val input = Tensor[Float](1, 2, 2, 2, 2).apply1(_ => Random.nextFloat())
+    runSerializationTest(upSampling3D, input)
   }
 
-  "VolumetricMaxPooling serializer " should " work properly " in {
-    val volumetricMaxPooling = VolumetricMaxPooling(2, 2, 2, 1, 1, 1, 0, 0, 0)
-    val input1 = Tensor(1, 2, 3, 3).apply1(_ => Random.nextFloat())
-    val input2 = Tensor(1, 2, 3, 3)
-    input2.copy(input1)
-    val res1 = volumetricMaxPooling.forward(input1)
-
-    ModulePersister.saveToFile("/tmp/volumetricMaxPooling.bigdl", null, volumetricMaxPooling, true)
-    val loadedVolumetricMaxPooling = ModuleLoader.loadFromFile("/tmp/volumetricMaxPooling.bigdl")
-    val res2 = loadedVolumetricMaxPooling.forward(input1)
-    res1 should be (res2)
+  "View serializer" should "work properly" in {
+    val view = View[Float](Array(2, 5)).setName("view")
+    val input = Tensor[Float](1, 10).apply1(_ => Random.nextFloat())
+    runSerializationTest(view, input)
   }
 
-  "bigquant.SpatialConvolution serializer" should "work properly " in {
+  "VolumetricAveragePooling serializer" should "work properly" in {
+    val volumetricAveragePooling = VolumetricAveragePooling[Float](2, 2, 2, 1, 1, 1, 0, 0, 0).
+        setName("volumetricAveragePooling")
+    val input = Tensor[Float](1, 2, 3, 3).apply1(_ => Random.nextFloat())
+    runSerializationTest(volumetricAveragePooling, input)
+  }
+
+  "VolumetricConvolution serializer" should "work properly" in {
+    val volumetricConvolution = VolumetricConvolution[Float](2, 3, 2, 2, 2, dT = 1, dW = 1, dH = 1,
+      padT = 0, padW = 0, padH = 0, withBias = true).setName("volumetricConvolution")
+    val input = Tensor[Float](2, 2, 2, 2).apply1(_ => Random.nextFloat())
+    runSerializationTest(volumetricConvolution, input)
+  }
+
+  "VolumetricFullConvolution serializer" should "work properly" in {
+
+    val volumetricFullConvolution = new VolumetricFullConvolution[Float](3, 6,
+      4, 3, 3, 2, 1, 1, 2, 2, 2).setName("volumetricFullConvolution")
+    val input = Tensor[Float](3, 3, 3, 6, 6).apply1(e => Random.nextFloat())
+    runSerializationTest(volumetricFullConvolution, input)
+  }
+
+  "VolumetricMaxPooling serializer" should "work properly" in {
+    val volumetricMaxPooling = VolumetricMaxPooling[Float](2, 2, 2, 1, 1, 1, 0, 0, 0).
+      setName("volumetricMaxPooling")
+    val input = Tensor[Float](1, 2, 3, 3).apply1(_ => Random.nextFloat())
+    runSerializationTest(volumetricMaxPooling, input)
+  }
+
+  "bigquant.SpatialConvolution serializer" should "work properly" in {
     val nInputPlane = 1
     val nOutputPlane = 1
     val kW = 2
@@ -1938,22 +1246,16 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
 
     val biasData = Array(0.0f)
 
-    val input = Tensor(1, 1, 3, 3).apply1(_ => Random.nextFloat())
-    val weight = Tensor(Storage(kernelData), 1, Array(nOutputPlane, nInputPlane, kH, kW))
-    val bias = Tensor(Storage(biasData), 1, Array(nOutputPlane))
+    val input = Tensor[Float](1, 1, 3, 3).apply1(_ => Random.nextFloat())
+    val weight = Tensor[Float](Storage(kernelData), 1, Array(nOutputPlane, nInputPlane, kH, kW))
+    val bias = Tensor[Float](Storage(biasData), 1, Array(nOutputPlane))
     val conv = quantized.SpatialConvolution[Float](nInputPlane, nOutputPlane,
-      kW, kH, dW, dH, padW, padH, initWeight = weight, initBias = bias)
+      kW, kH, dW, dH, padW, padH, initWeight = weight, initBias = bias).setName("quantConv")
 
-
-    val res1 = conv.forward(input)
-
-    ModulePersister.saveToFile("/tmp/bigquant.conv.bigdl", null, conv, true)
-    val loadedConv = ModuleLoader.loadFromFile("/tmp/bigquant.conv.bigdl")
-    val res2 = loadedConv.forward(input)
-    res1 should be (res2)
+    runSerializationTest(conv, input)
   }
 
-  "bigquant.SpatialDilatedConvolution serializer" should "work properly " in {
+  "bigquant.SpatialDilatedConvolution serializer" should "work properly" in {
     val nInputPlane = 1
     val nOutputPlane = 1
     val kW = 2
@@ -1970,18 +1272,14 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
 
     val biasData = Array(0.0f)
 
-    val input = Tensor(1, 1, 3, 3).apply1(_ => Random.nextFloat())
-    val weight = Tensor(Storage(kernelData), 1, Array(nOutputPlane, nInputPlane, kH, kW))
-    val bias = Tensor(Storage(biasData), 1, Array(nOutputPlane))
+    val input = Tensor[Float](1, 1, 3, 3).apply1(_ => Random.nextFloat())
+    val weight = Tensor[Float](Storage(kernelData), 1, Array(nOutputPlane, nInputPlane, kH, kW))
+    val bias = Tensor[Float](Storage(biasData), 1, Array(nOutputPlane))
     val conv = quantized.SpatialDilatedConvolution[Float](nInputPlane, nOutputPlane,
       kW, kH, dW, dH, padW, padH, initWeight = weight, initBias = bias)
+      .setName("quantDilatedConv")
 
-    val res1 = conv.forward(input)
-
-    ModulePersister.saveToFile("/tmp/bigquant.dilated.conv.bigdl", null, conv, true)
-    val loadedConv = ModuleLoader.loadFromFile("/tmp/bigquant.dilated.conv.bigdl")
-    val res2 = loadedConv.forward(input)
-    res1 should be (res2)
+    runSerializationTest(conv, input)
   }
 
   "bigquant.Linear serializer" should "work properly " in {
@@ -1995,19 +1293,532 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
 
     val biasData = Array(0.0f, 0.1f)
 
-    val input = Tensor(2, 2).apply1(_ => Random.nextFloat())
-    val weight = Tensor(Storage(kernelData), 1, Array(outputSize, inputSize))
-    val bias = Tensor(Storage(biasData), 1, Array(outputSize))
+    val input = Tensor[Float](2, 2).apply1(_ => Random.nextFloat())
+    val weight = Tensor[Float](Storage(kernelData), 1, Array(outputSize, inputSize))
+    val bias = Tensor[Float](Storage(biasData), 1, Array(outputSize))
     val linear = quantized.Linear[Float](outputSize, inputSize, initWeight = weight,
-      initBias = bias)
-
-    val res1 = linear.forward(input)
-
-    ModulePersister.saveToFile("/tmp/bigquant.linear.bigdl", null, linear, true)
-    val loadedLinear = ModuleLoader.loadFromFile("/tmp/bigquant.linear.bigdl")
-    val res2 = loadedLinear.forward(input)
-    res1 should be (res2)
+      initBias = bias).setName("quantLinear")
+    runSerializationTest(linear, input)
   }
+
+  // Below are TF Ops
+  "All serializer" should "work properly" in {
+    val all = All[Float]().setName("all")
+    val input1 = Tensor[Boolean](T(T(true, true, false), T(false, true, true)))
+    val input2 = Tensor[Int](T(2, 1, 2))
+    val input = T()
+    input(1.toFloat) = input1
+    input(2.toFloat) = input2
+    runSerializationTest(all, input)
+  }
+
+  "Any serializer" should "work properly" in {
+    val any = Any[Float]().setName("any")
+    val input1 = Tensor[Boolean](T(T(true, true, false), T(false, true, true)))
+    val input2 = Tensor[Int](T(2, 1, 2))
+    val input = T()
+    input(1.toFloat) = input1
+    input(2.toFloat) = input2
+    runSerializationTest(any, input)
+  }
+
+  "ApproximateEqual serializer" should "work properly" in {
+    val approximateEqual = ApproximateEqual[Float](0.01f).setName("approximateEqual")
+    val input = T(Tensor[Float](5).apply1(_ => Random.nextFloat()),
+      Tensor[Float](5).apply1(_ => Random.nextFloat()))
+    runSerializationTest(approximateEqual, input, approximateEqual.
+      asInstanceOf[ModuleToOperation[Float]].module.getClass
+    )
+  }
+
+  "ArgMax serializer" should "work properly" in {
+    val argMax = ArgMax[Float].setName("argMax")
+    val dataTensor = Tensor[Float](T(T(1.0f, 2.0f), T(3.0f, 4.0f)))
+    val dimensionTensor = Tensor.scalar[Int](1)
+    val input = T(dataTensor, dimensionTensor)
+    runSerializationTest(argMax, input)
+  }
+
+  "Assert serializer" should "work properly" in {
+    import com.intel.analytics.bigdl.utils.tf.TFTensorNumeric.NumericByteString
+    val assert = new Assert[Float]().setName("assert")
+    val predictTensor = Tensor[Boolean](Array(1))
+    predictTensor.setValue(1, true)
+    val msg = Tensor[ByteString](Array(1))
+    msg.setValue(1, ByteString.copyFromUtf8("must be true"))
+    val input = T(predictTensor, msg)
+    runSerializationTest(assert, input)
+  }
+
+  "Assign serializer" should "work properly" in {
+    val assign = new Assign[Float]().setName("assign")
+    val input =
+      T(
+        Tensor[Float](T(1f, 2f, 3f)),
+        Tensor[Float](T(2f, 2f, 4f))
+      )
+    runSerializationTest(assign, input)
+  }
+
+  "AssignGrad serializer" should "work properly" in {
+    val grad = Tensor[Float](5).apply1(_ => Random.nextFloat())
+    val assignGrad = new AssignGrad[Float](grad).setName("assignGrad")
+    val input = Tensor[Float](5).apply1(_ => Random.nextFloat())
+    runSerializationTest(assignGrad, input)
+  }
+
+  "AvgPoolGrad serializer" should "work properly" in {
+    val avgPoolGrad = AvgPoolGrad[Float](4, 4, 1, 1, -1, -1, DataFormat.NHWC).
+      setName("avgPoolGrad")
+    val input1 = Tensor[Int](T(4, 32, 32, 3))
+    val input2 = Tensor[Float](4, 32, 32, 3).apply1(_ => Random.nextFloat())
+    val input = T(input1, input2)
+    runSerializationTest(avgPoolGrad, input)
+  }
+
+  "BatchMatMul serializer" should "work properly" in {
+    val batchMatMul = BatchMatMul[Float, Float]().setName("batchMatMul")
+    val input =
+      T(
+        Tensor[Float](2, 2).apply1(_ => Random.nextFloat()),
+        Tensor[Float](2, 2).apply1(_ => Random.nextFloat())
+      )
+    runSerializationTest(batchMatMul, input)
+  }
+
+  "BiasAddGrad serializer" should "work properly" in {
+    val biasAddGrad = BiasAddGrad[Float](DataFormat.NCHW).
+      setName("biasAddGrad")
+    val input = Tensor[Float](2, 2, 2).apply1(_ => Random.nextFloat())
+    runSerializationTest(biasAddGrad, input)
+  }
+
+  "BroadcastGradientArgs serializer" should "work properly" in {
+    val broadcastGradientArgs = BroadcastGradientArgs[Float]().
+      setName("broadcastGradientArgs")
+    val input =
+      T(
+        Tensor[Int](T(1, 2, 3)),
+        Tensor[Int](T(2, 2, 1))
+      )
+    runSerializationTest(broadcastGradientArgs, input, broadcastGradientArgs.
+      asInstanceOf[ModuleToOperation[Float]].module.getClass)
+  }
+
+  "Cast serializer" should "work properly" in {
+    val cast = Cast[Float, Float]().setName("cast")
+    val input = Tensor[Float](2, 2).apply1(_ => Random.nextFloat())
+    runSerializationTest(cast, input, cast.
+      asInstanceOf[ModuleToOperation[Float]].module.getClass)
+  }
+
+  "Ceil serializer" should "work properly" in {
+    val ceil = Ceil[Float, Float]().setName("ceil")
+    val input = Tensor[Float](2, 2).apply1(_ => Random.nextFloat())
+    runSerializationTest(ceil, input)
+  }
+
+  "MergeOps serializer" should "work properly" in {
+    val mergeOps = new MergeOps[Float](1).setName("mergeOps")
+    val input =
+      T(
+        Tensor[Float](T(1.0f, 2.0f, 3.0f)),
+        Tensor[Float](T(2.0f, 2.0f, 1.0f))
+      )
+    runSerializationTest(mergeOps, input)
+  }
+
+  "SwitchOps serializer" should "work properly" in {
+    val switchOps = new SwitchOps[Float]().setName("switchOps")
+    val input =
+      T(
+        Tensor[Float](T(1.0f, 2.0f, 3.0f)),
+        Tensor[Boolean](T(true))
+      )
+    runSerializationTest(switchOps, input)
+  }
+
+  "Conv2D serializer" should "work properly" in {
+    val conv2d = Conv2D[Float](2, 1, -1, -1).setName("conv2d")
+    val inputTensor = Tensor[Float](1, 4, 3, 3).apply1(_ => Random.nextFloat())
+    val filter = Tensor[Float](4, 3, 3, 2).apply1(_ => Random.nextFloat())
+    val input = T(inputTensor, filter)
+    runSerializationTest(conv2d, input)
+  }
+
+  "Conv2DBackFilter serializer" should "work properly" in {
+    val conv2dBackFilter = Conv2DBackFilter[Float](2, 2, -1, -1, DataFormat.NHWC).
+      setName("conv2dBackFilter")
+    val inputTensor = Tensor[Float](1, 4, 3, 3).apply1(_ => Random.nextFloat())
+    val kernelSize = Tensor[Int](T(2, 2, 3, 3))
+    val grad = Tensor[Float](1, 2, 2, 3).apply1(_ => Random.nextFloat())
+    val input = T(inputTensor, kernelSize, grad)
+    runSerializationTest(conv2dBackFilter, input)
+  }
+
+  "Conv2DTranspose Serializer" should "work properly" in {
+    val conv2dTranspose = Conv2DTranspose[Float](2, 2, -1, -1, DataFormat.NHWC).
+      setName("conv2dTranspose")
+    val inputTensor = Tensor[Int](T(1, 4, 3, 3))
+    val kernelSize = Tensor[Float](2, 2, 3, 3).apply1(_ => Random.nextFloat())
+    val data = Tensor[Float](1, 2, 2, 3)apply1(_ => Random.nextFloat())
+    val input = T(inputTensor, kernelSize, data)
+    runSerializationTest(conv2dTranspose, input)
+  }
+
+  "CrossEntropy serializer" should "work properly" in {
+    val crossEntropy = CrossEntropy[Float]().setName("crossEntropy")
+    val output = Tensor[Float](2, 5).apply1(_ => Random.nextFloat())
+    val label = Tensor[Float](2, 5).apply1(_ => Random.nextFloat())
+    val input = T(output, label)
+    runSerializationTest(crossEntropy, input)
+  }
+
+  private def getInputs(name: String): Tensor[ByteString] = {
+    import com.intel.analytics.bigdl.utils.tf.TFTensorNumeric.NumericByteString
+    val index = name match {
+      case "png" => 0
+      case "jpeg" => 1
+      case "gif" => 2
+      case "raw" => 3
+    }
+
+    val resource = getClass.getClassLoader.getResource("tf")
+    val path = resource.getPath + JFile.separator + "decode_image_test_case.tfrecord"
+    val file = new JFile(path)
+
+    val bytesVector = TFRecordIterator(file).toVector
+    val pngBytes = bytesVector(index)
+
+    val example = Example.parseFrom(pngBytes)
+    val imageByteString = example.getFeatures.getFeatureMap.get("image/encoded")
+      .getBytesList.getValueList.get(0)
+
+    Tensor[ByteString](Array(imageByteString), Array[Int]())
+  }
+
+  "DecodeImage Serializer" should "work properly" in {
+    val decodeImage = new DecodeImage[Float](1).setName("decodeImage")
+    val input = getInputs("png")
+    runSerializationTest(decodeImage, input)
+  }
+
+  "DecodeGif Serializer" should "work properly" in {
+    val decodeGif = new DecodeGifOps[Float]().setName("decodeGif")
+    val input = getInputs("gif")
+    runSerializationTest(decodeGif, input)
+  }
+
+  "DecodeJpeg Serializer" should "work properly" in {
+    val decodeJpeg = new DecodeJpegOps[Float](1).setName("decodeJpeg")
+    val input = getInputs("jpeg")
+    runSerializationTest(decodeJpeg, input)
+  }
+
+  "DecodePng Serializer" should "work properly" in {
+    val decodePng = new DecodePngOps[Float](1).setName("decodePng")
+    val input = getInputs("png")
+    runSerializationTest(decodePng, input)
+  }
+
+
+  "DecodeRaw Serializer" should "work properly" in {
+    val decodeRaw = new DecodeRawOps[Float](DataType.DT_UINT8, true).setName("decodeRaw")
+    val input = getInputs("raw")
+    runSerializationTest(decodeRaw, input)
+  }
+
+  "DepthwiseConv2DBackpropInput serializer" should "work properly" in {
+    val depWiseBackprop =
+      DepthwiseConv2DBackpropInput[Float](1, 1, 0, 0, DataFormat.NHWC).
+      setName("depWiseBackprop")
+    val input = T(Tensor[Int](T(4, 24, 24, 3)),
+      Tensor[Float](2, 2, 3, 1).apply1(_ => Random.nextFloat()),
+      Tensor[Float](4, 23, 23, 3).apply1(_ => Random.nextFloat()))
+    runSerializationTest(depWiseBackprop, input)
+  }
+
+  "DepthwiseConv2D serializer" should "work properly" in {
+    val depWIseConv2d = DepthwiseConv2D[Float](1, 1, 0, 0).setName("depWIseConv2d")
+    val input = T(Tensor[Float](4, 24, 24, 3).apply1(_ => Random.nextFloat()),
+      Tensor[Float](2, 2, 3, 1).apply1(_ => Random.nextFloat()))
+    runSerializationTest(depWIseConv2d, input)
+  }
+
+  "DepthwiseConv2DBackpropFilter serializer" should "work properly" in {
+    val depWiseConv2dBackProp = DepthwiseConv2DBackpropFilter[Float](1,
+      1, 0, 0, DataFormat.NHWC).setName("depWiseConv2dBackProp")
+    val input = T(Tensor[Float](4, 24, 24, 3).apply1(_ => Random.nextFloat()),
+    Tensor[Int](T(2, 2, 3, 1)),
+    Tensor[Float](4, 23, 23, 3).apply1(_ => Random.nextFloat()))
+    runSerializationTest(depWiseConv2dBackProp, input)
+  }
+
+  "EluGrad serializer" should "work properly" in {
+    val eluGrad = EluGrad[Float, Float]().setName("eluGrad")
+    val inputTensor = Tensor[Float](5).apply1(_ => Random.nextFloat())
+    val grad = Tensor[Float](5).apply1(_ => Random.nextFloat())
+    val input = T(inputTensor, grad)
+    runSerializationTest(eluGrad, input)
+  }
+
+  "Equal serializer" should "work properly" in {
+    val equal = Equal[Float]().setName("equal")
+    val input = T(Tensor[Float](5).apply1(_ => Random.nextFloat()),
+      Tensor[Float](5).apply1(_ => Random.nextFloat()))
+    runSerializationTest(equal, input,
+      equal.asInstanceOf[ModuleToOperation[Float]].module.getClass)
+  }
+
+  "ExpOps serializer" should "work properly" in {
+    val expOps = ExpOps[Float, Float]().setName("expOps")
+    val input = Tensor[Float](5).apply1(_ => Random.nextFloat())
+    runSerializationTest(expOps, input)
+  }
+
+  "Expm1 serializer" should "work properly" in {
+    val expm1 = Expm1[Float, Float]().setName("expm1")
+    val input = Tensor[Float](5).apply1(_ => Random.nextFloat())
+    runSerializationTest(expm1, input)
+  }
+
+  "Floor serializer" should "work properly" in {
+    val floor = Floor[Float]().setName("floor")
+    val input = Tensor[Float](5).apply1(_ => Random.nextFloat())
+    runSerializationTest(floor, input, floor.
+      asInstanceOf[ModuleToOperation[Float]].module.getClass)
+  }
+
+  "FloorDiv serializer" should "work properly" in {
+    val floorDiv = FloorDiv[Float, Float]().setName("floorDiv")
+    val input1 = Tensor[Float](5).fill(1.0f)
+    val input2 = Tensor[Float](5).fill(2.0f)
+    val input = T(input1, input2)
+    runSerializationTest(floorDiv, input)
+  }
+
+  "FloorMod serializer" should "work properly" in {
+    val floorMod = FloorMod[Float, Float]().setName("floorMod")
+    val input1 = Tensor[Float](5).fill(1.0f)
+    val input2 = Tensor[Float](5).fill(2.0f)
+    val input = T(input1, input2)
+    runSerializationTest(floorMod, input)
+  }
+
+  "FusedBatchNorm serializer" should "work properly" in {
+    val fusedBatchNorm = FusedBatchNorm[Float]().setName("fusedBatchNorm")
+    val input = T(Tensor[Float](4, 8, 8, 256).apply1(_ => Random.nextFloat()),
+    Tensor[Float](256).apply1(_ => Random.nextFloat()),
+    Tensor[Float](256).apply1(_ => Random.nextFloat()),
+    Tensor[Float](0),
+    Tensor[Float](0))
+    runSerializationTest(fusedBatchNorm, input)
+  }
+
+  "FusedBatchNormGrad serializer" should "work properly" in {
+    val fbatchNormGrad = FusedBatchNormGrad[Float]().setName("fbatchNormGrad")
+    val input = T(Tensor[Float](4, 8, 8, 256).rand(),
+    Tensor[Float](4, 8, 8, 256).apply1(_ => Random.nextFloat()),
+    Tensor[Float](256).apply1(_ => Random.nextFloat()),
+    Tensor[Float](256).apply1(_ => Random.nextFloat()),
+    Tensor[Float](256).apply1(_ => Random.nextFloat()))
+    runSerializationTest(fbatchNormGrad, input)
+  }
+
+  "Greater serializer" should "work properly" in {
+    val greater = Greater[Float]().setName("greater")
+    val input1 = Tensor[Float](5).apply1(_ => Random.nextFloat())
+    val input2 = Tensor[Float](5).apply1(_ => Random.nextFloat())
+    val input = T(input1, input2)
+    runSerializationTest(greater, input, greater.
+      asInstanceOf[ModuleToOperation[Float]].module.getClass)
+  }
+
+  "GreaterEqual serializer" should "work properly" in {
+    val greaterEqual = GreaterEqual[Float]().setName("greaterEqual")
+    val input1 = Tensor[Float](5).apply1(_ => Random.nextFloat())
+    val input2 = Tensor[Float](5).apply1(_ => Random.nextFloat())
+    val input = T(input1, input2)
+    runSerializationTest(greaterEqual, input, greaterEqual
+      .asInstanceOf[ModuleToOperation[Float]].module.getClass)
+  }
+
+  "InTopK serializer" should "work properly" in {
+    val inTopK = InTopK[Float](2).setName("inTopK")
+    val input1 = Tensor[Float](2, 5).apply1(_ => Random.nextFloat())
+    val input2 = Tensor[Int](2).fill(1)
+    val input = T(input1, input2)
+    runSerializationTest(inTopK, input)
+  }
+
+  "Inv serializer" should "work properly" in {
+    val inv = Inv[Float, Float]().setName("inv")
+    val input = Tensor[Float](2, 5).apply1(_ => Random.nextFloat())
+    runSerializationTest(inv, input)
+  }
+
+  "InvGrad serializer" should "work properly" in {
+    val invGrad = InvGrad[Float, Float]().setName("invGrad")
+    val input = T(Tensor[Float](2, 5).apply1(_ => Random.nextFloat()),
+      Tensor[Float](2, 5).apply1(_ => Random.nextFloat()))
+    runSerializationTest(invGrad, input)
+  }
+
+  "IsFinite serializer" should "work properly" in {
+    val isFinite = IsFinite[Float, Float]().setName("isFinite")
+    val input = Tensor[Float](2, 5).apply1(_ => Random.nextFloat())
+    runSerializationTest(isFinite, input)
+  }
+
+  "IsInf serializer" should "work properly" in {
+    val isInf = IsInf[Float, Float]().setName("isInf")
+    val input = Tensor[Float](2, 5).apply1(_ => Random.nextFloat())
+    runSerializationTest(isInf, input)
+  }
+
+  "IsNan serializer" should "work properly" in {
+    val isNan = IsNan[Float, Float]().setName("isInf")
+    val input = Tensor[Float](2, 5).apply1(_ => Random.nextFloat())
+    runSerializationTest(isNan, input)
+  }
+
+  "L2Loss serializer" should "work properly" in {
+    val l2loss = L2Loss[Float]().setName("l2loss")
+    val input = Tensor[Float](2, 5).apply1(_ => Random.nextFloat())
+    runSerializationTest(l2loss, input,
+      l2loss.asInstanceOf[ModuleToOperation[Float]].module.getClass)
+  }
+
+  "Less serializer" should "work properly" in {
+    val less = Less[Float]().setName("less")
+    val input1 = Tensor[Float](5).apply1(_ => Random.nextFloat())
+    val input2 = Tensor[Float](5).apply1(_ => Random.nextFloat())
+    val input = T(input1, input2)
+    runSerializationTest(less, input, less
+      .asInstanceOf[ModuleToOperation[Float]].module.getClass)
+  }
+
+  "LessEqual serializer" should "work properly" in {
+    val lessEqual = LessEqual[Float]().setName("lessEqual")
+    val input1 = Tensor[Float](5).apply1(_ => Random.nextFloat())
+    val input2 = Tensor[Float](5).apply1(_ => Random.nextFloat())
+    val input = T(input1, input2)
+    runSerializationTest(lessEqual, input, lessEqual
+      .asInstanceOf[ModuleToOperation[Float]].module.getClass)
+  }
+
+  "LogicalAnd serializer" should "work properly" in {
+    val logicalAnd = LogicalAnd[Float].setName("logicalAnd")
+    val input = T(Tensor[Boolean](T(true, false)), Tensor[Boolean](T(true, false)))
+    runSerializationTest(logicalAnd, input, logicalAnd.
+      asInstanceOf[ModuleToOperation[Float]].module.getClass)
+  }
+
+  "LogicalNot serializer" should "work properly" in {
+    val logicalNot = LogicalNot[Float].setName("logicalNot")
+    val input = Tensor[Boolean](T(true, false))
+    runSerializationTest(logicalNot, input, logicalNot
+      .asInstanceOf[ModuleToOperation[Float]].module.getClass)
+  }
+
+  "LogicalOr serializer" should "work properly" in {
+    val logicalOr = LogicalOr[Float].setName("logicalOr")
+    val input = T(Tensor[Boolean](T(true, false)), Tensor[Boolean](T(true, false)))
+    runSerializationTest(logicalOr, input, logicalOr
+      .asInstanceOf[ModuleToOperation[Float]].module.getClass)
+  }
+
+  "LRNGrad serializer" should "work properly" in {
+    val lrnGrad = LRNGrad[Float]().setName("lrnGrad")
+    val input = T(Tensor[Float](4, 8, 8, 3).apply1(_ => Random.nextFloat()),
+      Tensor[Float](4, 8, 8, 3).apply1(_ => Random.nextFloat()),
+      Tensor[Float](4, 8, 8, 3).apply1(_ => Random.nextFloat())
+    )
+    runSerializationTest(lrnGrad, input)
+  }
+
+  "Maximum serializer" should "work properly" in {
+    val maxiMum = Maximum[Float, Float]().setName("maxiMum")
+    val input = T(Tensor[Float](5).apply1(_ => Random.nextFloat()),
+      Tensor[Float](5).apply1(_ => Random.nextFloat()))
+    runSerializationTest(maxiMum, input)
+  }
+
+  "MaxPool serializer" should "work properly" in {
+    val maxPool = MaxPool[Float](
+      Array(1, 2, 3, 1),
+      Array(1, 2, 1, 1),
+      "VALID").setName("maxPool")
+    val input = Tensor[Float](1, 4, 3, 3).apply1(_ => Random.nextFloat())
+    runSerializationTest(maxPool, input, maxPool.
+      asInstanceOf[ModuleToOperation[Float]].module.getClass)
+
+  }
+
+  "MaxPoolGrad serializer" should "work properly" in {
+    val maxPoolGrad = MaxPoolGrad[Float](2, 1, 1, 1, 0, 0, DataFormat.NCHW).
+      setName("maxPoolGrad")
+    val input = T(Tensor[Float](1, 3, 3).apply1(_ => Random.nextFloat()),
+      Tensor[Float](),
+      Tensor[Float](1, 1, 1).apply1(_ => Random.nextFloat()))
+    runSerializationTest(maxPoolGrad, input)
+  }
+
+  "Mimimum serializer" should "work properly" in {
+    val minimum = Minimum[Float, Float]().setName("minimum")
+    val input = T(Tensor[Float](5).apply1(_ => Random.nextFloat()),
+      Tensor[Float](5).apply1(_ => Random.nextFloat()))
+    runSerializationTest(minimum, input)
+  }
+
+  "Mod serializer" should "work properly" in {
+    val mod = Mod[Float, Float]().setName("mod")
+    val input1 = Tensor[Float](5).fill(1.0f)
+    val input2 = Tensor[Float](5).fill(2.0f)
+    val input = T(input1, input2)
+    runSerializationTest(mod, input)
+  }
+
+  "ModuleToOperation serializer" should "work properly" in {
+    val moduleToOperation = ModuleToOperation[Float](new LogicalOr()).
+      setName("moduleToOperation")
+    val input = T(Tensor[Boolean](T(true, false)), Tensor[Boolean](T(true, false)))
+    runSerializationTest(moduleToOperation, input)
+  }
+
+  "NoOp serializer" should "work properly" in {
+    val noOp = NoOp[Float]().setName("noOp")
+    val input = Tensor[Float](5).apply1(_ => Random.nextFloat())
+    runSerializationTest(noOp, input)
+  }
+
+  "NotEqual serializer" should "work properly" in {
+    val notEqual = NotEqual[Float].setName("notEqual")
+    val input = T(Tensor[Boolean](T(true, false)), Tensor[Boolean](T(true, false)))
+    runSerializationTest(notEqual, input, notEqual
+      .asInstanceOf[ModuleToOperation[Float]].module.getClass)
+  }
+
+  "OneHot serializer" should "work properly" in {
+    val oneHot = OneHot[Float, Float](axis = -1).setName("oneHot")
+    val input =
+      T(Tensor[Long](T(0, 2, -1, 1)),
+        Tensor[Int](Array(3), shape = Array[Int]()),
+        Tensor[Float](Array(0.5f), shape = Array[Int]()),
+        Tensor[Float](Array(0.0f), shape = Array[Int]()))
+    runSerializationTest(oneHot, input, oneHot
+      .asInstanceOf[ModuleToOperation[Float]].module.getClass)
+  }
+
+  "Pad serializer" should "work properly" in {
+    val pad = Pad[Float, Float](mode = "CONSTANT", 0.0f).setName("pad")
+    val inputTensor = Tensor[Float](2, 2, 3).apply1(_ => Random.nextFloat())
+    val padding = Tensor[Int](T(T(1, 2), T(1, 2), T(1, 2)))
+    val input = T(inputTensor, padding)
+    runSerializationTest(pad, input, pad.
+      asInstanceOf[ModuleToOperation[Float]].module.getClass)
+  }
+
   "ParseExample serializer" should "work properly" in {
     import com.intel.analytics.bigdl.utils.tf.TFTensorNumeric.NumericByteString
 
@@ -2032,8 +1843,8 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     val outputStream = CodedOutputStream.newInstance(data)
     example.writeTo(outputStream)
 
-    val exampleParser = new ParseExample[Float](3,
-      Seq(FloatType, LongType, StringType), Seq(Array(3), Array(3), Array()))
+    val exampleParser = new ParseExample[Float](3, Seq(FloatType, LongType, StringType),
+      Seq(Array(3), Array(3), Array())).setName("parseExample")
 
     val serialized = Tensor[ByteString](Array(ByteString.copyFrom(data)), Array[Int](1))
     val names = Tensor[ByteString]()
@@ -2044,163 +1855,339 @@ class ModuleSerializerSpec extends FlatSpec with Matchers {
     val default1 = Tensor[Float]()
     val default2 = Tensor[Long]()
     val default3 = Tensor[ByteString]()
-
     val input = T(serialized, names, key1, key2, key3, default1, default2, default3)
-
-    val res1 = exampleParser.forward(input)
-
-    ModulePersister.saveToFile("/tmp/exampleParser.bigdl", null, exampleParser, true)
-    val loadedExampleParser = ModuleLoader.loadFromFile[Float]("/tmp/exampleParser.bigdl")
-    val res2 = loadedExampleParser.forward(input)
-    res1 should be (res2)
-
-  }
-  "Customized Module " should "work properly" in {
-    val testModule = new TestModule(CustomData(1.0))
-    DataConverter.registerConverter(universe.typeOf[CustomData].toString, TestCustomDataConverter)
-    val tensor1 = Tensor(10).apply1(_ => Random.nextFloat())
-    val tensor2 = Tensor()
-    tensor2.resizeAs(tensor1).copy(tensor1)
-    val res1 = testModule.forward(tensor1)
-    ModulePersister.saveToFile("/tmp/testModule.bigdl", null, testModule, true)
-    val loadedModule = ModuleLoader.loadFromFile("/tmp/testModule.bigdl")
-    val res2 = loadedModule.forward(tensor2)
-    res1 should be (res2)
+    runSerializationTest(exampleParser, input)
   }
 
-  "2 Linears's weights use same storage" should "work properly" in {
-    val weight = Array(0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.6f, 0.7f, 0.8f)
-    val weight1 = Tensor(Storage(weight), 1, Array(2, 2))
-    val weight2 = Tensor(Storage(weight), 5, Array(2, 2))
-
-    val linear1 = Linear(2, 2, initWeight = weight1)
-    val linear2 = Linear(2, 2, initWeight = weight2)
-    val model = Sequential().add(linear1).add(linear2)
-
-    val input = Tensor(4, 2).rand
-
-    val res1 = model.forward(input)
-
-    ModulePersister.saveToFile("/tmp/2linears.with.a.storage.bigdl", null, model, true)
-    val loadedModel = ModuleLoader.loadFromFile("/tmp/2linears.with.a.storage.bigdl")
-    val res2 = loadedModel.forward(input)
-
-    res1 should be (res2)
+  "PowOps serializer" should "work properly" in {
+    val pow = PowOps[Float]().setName("powOps")
+    val v = Tensor[Float](T(2))
+    val t = Tensor[Float](T(1, 2, 3))
+    val input = (T(t, v))
+    runSerializationTest(pow, input)
   }
 
-  "Load by definition " should " work properly" in {
-    val linear1 = Linear(2, 2).setName("linear")
-    val sequential = Sequential().setName("sequential").add(linear1)
-    ModulePersister.saveToFile("/tmp/loadDef.bigdl", null, sequential, true)
-    val linear2 = Linear(2, 2).setName("linear")
-    val definition = Sequential().setName("sequential").add(linear2)
-    ModuleLoader.loadFromDefinition(definition, "/tmp/loadDef.bigdl")
-
-    val weight1 = linear1.weight
-
-    val weight2 = linear2.weight
-
-    weight1 should be (weight2)
+  "Prod serializer" should "work properly" in {
+    val prod = Prod[Float](-1, false).setName("prod")
+    val input = Tensor[Float](3, 3).apply1(_ => Random.nextFloat())
+    runSerializationTest(prod, input, prod.
+      asInstanceOf[ModuleToOperation[Float]].module.getClass)
   }
 
-  "Module toString" should "have same result" in {
-    val linear = Linear(2, 2)
-    ModulePersister.saveToFile("/tmp/mstr.bigdl", null, linear, true)
-    val loadedModel = ModuleLoader.loadFromFile("/tmp/mstr.bigdl")
-
-    linear.toString() should be (loadedModel.toString())
+  "RandomUniform serializer" should "work properly" in {
+    val randomUniform = RandomUniform[Float, Float](10, 20).
+      setName("randomUniform")
+    val input = Tensor[Int](T(1, 2, 3))
+    runSerializationTest(randomUniform, input, randomUniform.
+      asInstanceOf[ModuleToOperation[Float]].module.getClass)
   }
 
-  "Module in tain " should " keep the  state" in {
-    val linear = Linear(2, 2).training()
-    ModulePersister.saveToFile("/tmp/mstr.bigdl", null, linear, true)
-    val loadedModel = ModuleLoader.loadFromFile("/tmp/mstr.bigdl")
-
-    loadedModel.isTraining() should be (true)
+  "RangeOps serializer" should "work properly" in {
+    val rangeOps = RangeOps[Float, Float]().setName("rangeOps")
+    val input = T(Tensor[Float](T(1)), Tensor[Float](T(10)), Tensor[Float](T(1)))
+    runSerializationTest(rangeOps, input)
   }
 
-  "Module in evaluate " should " keep the  state" in {
-    val linear = Linear(2, 2).evaluate()
-    ModulePersister.saveToFile("/tmp/mstr.bigdl", null, linear, true)
-    val loadedModel = ModuleLoader.loadFromFile("/tmp/mstr.bigdl")
-
-    loadedModel.isTraining() should be (false)
+  "Rank serializer" should "work properly" in {
+    val rank = Rank[Float].setName("rank")
+    val input = Tensor[Float](3, 3).apply1(_ => Random.nextFloat())
+    runSerializationTest(rank, input, rank.
+      asInstanceOf[ModuleToOperation[Float]].module.getClass)
   }
 
-  "HardSigmoid serialization" should "work properly" in {
-    val hardSigmoid = HardSigmoid()
-    ModulePersister.saveToFile("/tmp/hardSigmoid.bigdl", null, hardSigmoid, true)
-    val loadedModel = ModuleLoader.loadFromFile("/tmp/hardSigmoid.bigdl")
-
-    val input = Tensor(2, 2).rand()
-
-    val res1 = hardSigmoid.forward(input)
-
-    val res2 = loadedModel.forward(input)
-
-    res1 should be (res2)
+  "Relu6Grad serializer" should "work properly" in {
+    val relu6Grad = Relu6Grad[Float, Float]().setName("relu6Grad")
+    val input = T(Tensor[Float](5).apply1(_ => Random.nextFloat()),
+      Tensor[Float](5).apply1(_ => Random.nextFloat()))
+    runSerializationTest(relu6Grad, input)
   }
 
-  "SReLU serialize" should "work correctly" in {
-    val srelu = SReLU[Float]()
-    val input = Tensor[Float](5, 2, 3, 4).randn()
-    val res1 = srelu.forward(input)
-
-    ModulePersister.saveToFile[Float]("/tmp/srelu.bigdl", null, srelu, true)
-    val loadSrelu = ModuleLoader.loadFromFile[Float]("/tmp/srelu.bigdl")
-    val res2 = loadSrelu.forward(input)
-    res1 should be (res2)
+  "ReluGrad serializer" should "work properly" in {
+    val reluGrad = ReluGrad[Float]
+    val input = T(Tensor[Float](2, 2, 2).apply1(_ => Random.nextFloat()),
+      Tensor[Float](2, 2, 2).apply1(_ => Random.nextFloat()))
+    runSerializationTest(reluGrad, input)
   }
 
-  "Save model and weight separately" should "work properly" in {
-    val linear = Linear(3, 2)
-    val input = Tensor(2, 3).rand()
-    linear.saveModule("/tmp/linear.def", "/tmp/linear.bin", true)
-    val loaded = Module.loadModule("/tmp/linear.def", "/tmp/linear.bin")
-    val res1 = linear.forward(input)
-
-    val res2 = loaded.forward(input)
-
-    res1 should be (res2)
+  "ResizeBilinearOps serializer" should "work properly" in {
+    val resizeBilinearOps = ResizeBilinearOps[Float](false).
+      setName("resizeBiLinearOps")
+    val input = T(Tensor[Float](1, 3, 2, 3).apply1(_ => Random.nextFloat()),
+      Tensor[Int](T(3, 2)))
+    runSerializationTest(resizeBilinearOps, input)
   }
 
-  "FindPath" should "work properly" in {
-    val file = new File("linear.bin")
-    println(file.getAbsolutePath)
+  "Rint serializer" should "work properly" in {
+    val rint = Rint[Float]().setName("rint")
+    val input = Tensor[Float](3, 3).apply1(_ => Random.nextFloat())
+    runSerializationTest(rint, input)
   }
+
+  "Round serializer" should "work properly" in {
+    val round = Round[Float, Float]().setName("round")
+    val input = Tensor[Float](3, 3).apply1(_ => Random.nextFloat())
+    runSerializationTest(round, input)
+  }
+
+  "RsqrtGrad serializer" should "work properly" in {
+    val rsqrtGrad = RsqrtGrad[Float, Float].setName("rsqrtGrad")
+    val input = T(Tensor[Float](3, 3).apply1(_ => Random.nextFloat()),
+      Tensor[Float](3, 3).apply1(_ => Random.nextFloat()))
+    runSerializationTest(rsqrtGrad, input)
+  }
+
+  "SelectOps serializer" should "work properly" in {
+    val select = SelectOps[Float]().setName("select")
+    val cond = Tensor.scalar[Boolean](true)
+    val t = Tensor[Int](T(1))
+    val e = Tensor[Int](T(2))
+    val input = T(cond, t, e)
+    runSerializationTest(select, input)
+  }
+
+  "SigmoidGrad serializer" should "work properly" in {
+    val sigMoidGrad = SigmoidGrad[Float, Float]().setName("sigMoidGrad")
+    val input = T(Tensor[Float](2, 2, 2).apply1(_ => Random.nextFloat()),
+      Tensor[Float](2, 2, 2).apply1(_ => Random.nextFloat()))
+    runSerializationTest(sigMoidGrad, input)
+  }
+
+  "Sign serializer" should "work properly" in {
+    val sign = Sign[Float, Float]().setName("sign")
+    val input = Tensor[Float](3, 3).apply1(_ => Random.nextFloat())
+    runSerializationTest(sign, input)
+  }
+
+  "Slice serializer" should "work properly" in {
+    val slice = Slice[Float](begin = Array(0, 1, 1),
+      size = Array(2, -1, 1)).setName("slice")
+    val input = Tensor[Float](3, 2, 3).apply1(_ => Random.nextFloat())
+    runSerializationTest(slice, input, slice.
+      asInstanceOf[ModuleToOperation[Float]].module.getClass)
+  }
+
+  "SoftplusGrad serializer" should "work properly" in {
+    val sofplusGrad = SoftplusGrad[Float, Float].setName("sofplusGrad")
+    val input = T(Tensor[Float](2, 2, 2).apply1(_ => Random.nextFloat()),
+      Tensor[Float](2, 2, 2).apply1(_ => Random.nextFloat()))
+    runSerializationTest(sofplusGrad, input)
+  }
+
+  "SoftSignGrad serializer" should "work properly" in {
+    val softSign = SoftsignGrad[Float, Float].setName("softSign")
+    val input = T(Tensor[Float](2, 2, 2).apply1(_ => Random.nextFloat()),
+      Tensor[Float](2, 2, 2).apply1(_ => Random.nextFloat()))
+    runSerializationTest(softSign, input)
+  }
+
+  "SqrtGrad serializer" should "work properly" in {
+    val sqrtGrad = SqrtGrad[Float, Float].setName("sqrtGrad")
+    val input = T(Tensor[Float](2, 2, 2).apply1(_ => Random.nextFloat()),
+      Tensor[Float](2, 2, 2).apply1(_ => Random.nextFloat()))
+    runSerializationTest(sqrtGrad, input)
+  }
+
+  "SquaredDifference serializer" should "work properly" in {
+    val squareDiff = SquaredDifference[Float]().setName("squareDiff")
+    val input = T(Tensor[Float](2, 2, 2).apply1(_ => Random.nextFloat()),
+      Tensor[Float](2, 2, 2).apply1(_ => Random.nextFloat()))
+    runSerializationTest(squareDiff, input)
+  }
+
+  "Substr serializer" should "work properly" in {
+    import com.intel.analytics.bigdl.utils.tf.TFTensorNumeric.NumericByteString
+    val subStr = Substr[Float]().setName("subStr")
+    val input = T(Tensor.scalar[ByteString](ByteString.copyFromUtf8("HelloBigDL")),
+    Tensor.scalar[Int](0), Tensor.scalar[Int](5))
+    runSerializationTest(subStr, input)
+  }
+
+  "SumOps serializer" should "work properly" in {
+    val sumOps = SumOps[Float, Float]().setName("sumOps")
+    val input = T(Tensor[Float](2, 2).apply1(_ => Random.nextFloat()),
+    Tensor[Float]())
+    runSerializationTest(sumOps, input)
+  }
+
+  "TileOps serializer" should "work properly" in {
+    val tileOps = TileOps[Float]().setName("tileOps")
+    val input = T(Tensor[Float](2, 3, 3).apply1(_ => Random.nextFloat()),
+      Tensor[Int](T(2, 1, 2)))
+    runSerializationTest(tileOps, input, tileOps.
+      asInstanceOf[ModuleToOperation[Float]].module.getClass)
+  }
+
+  "TopK serializer" should "work properly" in {
+    val topk = TopK[Float, Float](2).setName("topK")
+    val input = Tensor[Float](3, 3).apply1(_ => Random.nextFloat())
+    runSerializationTest(topk, input)
+  }
+
+  "TruncateDiv serializer" should "work properly" in {
+    val truncateDiv = TruncateDiv[Float, Float]().setName("truncateDiv")
+    val input = T(Tensor[Float](5).fill(1.0f), Tensor[Float](5).fill(2.0f))
+    runSerializationTest(truncateDiv, input)
+  }
+
+  "TruncatedNormal serializer" should "work properly" in {
+    val truncateNormal = TruncatedNormal[Float, Float](10, 20).setName("truncateNormal")
+    val input = Tensor[Int](T(1, 2, 3))
+    runSerializationTest(truncateNormal, input, truncateNormal.
+      asInstanceOf[ModuleToOperation[Float]].module.getClass)
+  }
+
+  // nn.tf package
+
+  "BiasAdd serializer" should "work properly" in {
+    val biasAdd = BiasAdd[Float]().setName("biasAdd")
+    val input = T(Tensor[Float](2, 3, 3).apply1(_ => Random.nextFloat()),
+      Tensor[Float](3).apply1(_ => Random.nextFloat()))
+    runSerializationTest(biasAdd, input)
+  }
+  "Const serializer" should "work properly" in {
+    val value = Tensor[Float](3).apply1(_ => Random.nextFloat())
+    val const = Const[Float, Float](value).setName("const")
+    val input = Tensor[Float](3).apply1(_ => Random.nextFloat())
+    runSerializationTest(const, input)
+  }
+
+  "Fill serializer" should "work properly" in {
+    val fill = Fill[Float]().setName("fill")
+    val shape = Tensor[Int](T(2, 3))
+    val value = Tensor[Float](Array(0.1f), Array[Int]())
+    val input = T(shape, value)
+    runSerializationTest(fill, input)
+  }
+
+  "Log1p serializer" should "work properly" in {
+    val log1p = Log1p[Float, Float]().setName("log1p")
+    val input = Tensor[Float](3).apply1(_ => Random.nextFloat())
+    runSerializationTest(log1p, input)
+  }
+
+  "Shape serializer" should "work properly" in {
+    val shape = Shape[Float]().setName("shape")
+    val input = Tensor[Float](3).apply1(_ => Random.nextFloat())
+    runSerializationTest(shape, input)
+  }
+
+  "SplitAndSelect serializer" should "work properly" in {
+    val splitAndSelect = SplitAndSelect[Float](2, 1, 2).setName("splitSelect")
+    val input = Tensor[Float](1, 6, 2).apply1(_ => Random.nextFloat())
+    runSerializationTest(splitAndSelect, input)
+  }
+
+  "StrideSlice serialier" should "work properly" in {
+    val strideSlice = new StrideSlice[Float](Array((1, 1, 2, 1))).setName("strideSlice")
+    val input = Tensor[Float](2, 2, 2).apply1(_ => Random.nextFloat())
+    runSerializationTest(strideSlice, input)
+  }
+
+  "Variable serializer" should "work properly" in {
+    val out = Tensor[Float](2, 2, 2).apply1(_ => Random.nextFloat())
+    val grad = Tensor[Float](2, 2, 2).apply1(_ => Random.nextFloat())
+    val variable = Variable[Float](out, grad).setName("variable")
+    val input = Tensor[Float](2, 2, 2).apply1(_ => Random.nextFloat())
+    runSerializationTest(variable, input)
+  }
+
+  // tf.loaders
+
+  "MeanLoadTF serializer" should "work properly" in {
+    val meanLoadTF = new MeanLoadTF[Float]("Float", false).setName("meanLoadTF")
+    val input = T(Tensor[Float](1, 2).apply1(_ => Random.nextFloat()),
+      Tensor[Int](T(1, 1)))
+    runSerializationTest(meanLoadTF, input)
+  }
+
+  "ConcatV2LoadTF serializer" should "work properly" in {
+    val concatv2 = new ConcatV2LoadTF[Float]().setName("concatv2LoadTF")
+    val input = T(Tensor[Float](1, 2).apply1(_ => Random.nextFloat()),
+      Tensor[Float](1, 2).apply1(_ => Random.nextFloat()),
+      Tensor[Int](T(1)))
+    runSerializationTest(concatv2, input)
+  }
+
+  "ExpandDimsLoadTF serializer" should "work properly" in {
+    val expandDim = new ExpandDimsLoadTF[Float]().setName("expandDim")
+    val input = T(Tensor[Float](1, 2).apply1(_ => Random.nextFloat()),
+      Tensor.scalar[Int](1))
+    runSerializationTest(expandDim, input)
+  }
+
+  "PadLoadTF serializer" should "work properly" in {
+    val padLoadTF = new PadLoadTF[Float]().setName("PadLoadTF")
+    val input = T(Tensor[Float](5, 5, 5).apply1(_ => Random.nextFloat()),
+      Tensor[Int](T(T(1, 1), T(1, 1))))
+    runSerializationTest(padLoadTF, input)
+  }
+
+  "ProdLoadTF serializer" should "work properly" in {
+    val prodLoadTF = new ProdLoadTF[Float]().setName("prodLoadTF")
+    val input = T(Tensor[Float](5, 5, 5).apply1(_ => Random.nextFloat()),
+      Tensor.scalar[Int](1))
+    runSerializationTest(prodLoadTF, input)
+  }
+
+  "ReshapeLoadTF serializer" should "work properly" in {
+    val reshapeLoadTF = new ReshapeLoadTF[Float]().setName("reshapeLoadTF")
+    val input = T(Tensor[Float](5, 5, 5).apply1(_ => Random.nextFloat()),
+      Tensor[Int](T(1, 5, 25)))
+    runSerializationTest(reshapeLoadTF, input)
+  }
+
+  "SliceLoadTF serializer" should "work properly" in {
+    val sliceLoadTF = new SliceLoadTF[Float]().setName("sliceLoadTF")
+    val input = T(Tensor[Float](3, 2, 3).apply1(_ => Random.nextFloat()),
+      Tensor[Int](T(0, 1, 1)),
+      Tensor[Int](T(2, -1, 1)))
+    runSerializationTest(sliceLoadTF, input)
+  }
+
+  "StridedSliceLoadTF serializer" should "work properly" in {
+    val strideSliceLoadTF = new StridedSliceLoadTF[Float]().
+      setName("strideSliceLoadTF")
+    val input = T(Tensor[Float](2, 2, 2).apply1(_ => Random.nextFloat()),
+      Tensor[Int](T(0)),
+        Tensor[Int](T(1)),
+      Tensor[Int](T(1))
+    )
+    runSerializationTest(strideSliceLoadTF, input)
+  }
+
+  "SplitLoadTF serializer" should "work properly" in {
+    val splitLoadTF = new SplitLoadTF[Float](1).setName("splitLoadTD")
+    val input = T(Tensor[Int](T(1)),
+      Tensor[Float](1, 6, 2).apply1(_ => Random.nextFloat())
+    )
+    runSerializationTest(splitLoadTF, input)
+  }
+
+  "TransposeLoadTF serializer" should "work properly" in {
+    val transposeLoadTF = new TransposeLoadTF[Float]().setName("transposeLoadTF")
+    val input = T(Tensor[Float](1, 6, 2).apply1(_ => Random.nextFloat()),
+      Tensor[Int](T(0, 1))
+    )
+    runSerializationTest(transposeLoadTF, input)
+  }
+
+  "TopKV2LoadTF serializer" should "work properly" in {
+    val topkv2LoadTF = new TopKV2LoadTF[Float](false, "Float").
+      setName("topkv2LoadTF")
+    val input = T(Tensor[Float](3, 3).apply1(_ => Random.nextFloat()),
+      Tensor.scalar[Int](2)
+    )
+    runSerializationTest(topkv2LoadTF, input)
+  }
+
+  override protected def afterAll() = {
+    var total = 0
+    expected.foreach(exp => {
+      require(tested.contains(exp), s" $exp not included in the test!")
+      total += 1
+    })
+    println(s"total $total, remaining ${expected.size - total}")
+  }
+
 }
 
-class TestModule[T: ClassTag](val custom: CustomData)
-                             (implicit ev: TensorNumeric[T]) extends TensorModule[T] {
-  val addConst = AddConstant(custom.constant_scalar)
-  override def updateOutput(input: Tensor[T]): Tensor[T] = {
-    output = addConst.forward(input).asInstanceOf[Tensor[T]]
-    output
-  }
-
-  override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
-    gradInput = addConst.updateGradInput(input, gradOutput).asInstanceOf[Tensor[T]]
-    gradInput
-  }
-}
-case class CustomData(val constant_scalar: Double)
-case object TestSerializer extends ModuleSerializable
-
-object TestCustomDataConverter extends DataConverter {
-
-  override def getAttributeValue[T: ClassTag](context: DeserializeContext,
-                                              attribute: Bigdl.AttrValue)
-    (implicit ev: TensorNumeric[T]): AnyRef = {
-    val customData = attribute.getCustomValue
-    val customMsg = customData.unpack(classOf[TestCustomData.CustomData])
-    CustomData(customMsg.getScalar)
-  }
-
-  override def setAttributeValue[T: ClassTag](context: SerializeContext[T],
-    attributeBuilder: AttrValue.Builder, value: Any, valueType: universe.Type)
-    (implicit ev: TensorNumeric[T]): Unit = {
-    val testCustomData = TestCustomData.CustomData.newBuilder
-    testCustomData.setScalar(value.asInstanceOf[CustomData].constant_scalar)
-    attributeBuilder.setCustomValue(com.google.protobuf.Any.pack(testCustomData.build()))
-  }
-}

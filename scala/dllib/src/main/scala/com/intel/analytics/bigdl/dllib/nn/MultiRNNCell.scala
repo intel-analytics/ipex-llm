@@ -19,8 +19,10 @@ package com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.serializer.{DataConverter, ModuleData, ModuleSerializable, ModuleSerializer}
+import com.intel.analytics.bigdl.utils.serializer.DataConverter.ArrayConverter
+import com.intel.analytics.bigdl.utils.serializer._
 import com.intel.analytics.bigdl.utils.{T, Table}
+import serialization.Bigdl.{AttrValue, BigDLModule}
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
@@ -171,9 +173,37 @@ class MultiRNNCell[T : ClassTag](val cells: Array[Cell[T]])(implicit ev: TensorN
   }
 }
 
-object MultiRNNCell {
+object MultiRNNCell extends ModuleSerializable {
   def apply[@specialized(Float, Double) T: ClassTag](cells: Array[Cell[T]]
     )(implicit ev: TensorNumeric[T]): MultiRNNCell[T] = {
     new MultiRNNCell[T](cells)
   }
+
+  override def doLoadModule[T: ClassTag](context : DeserializeContext)
+    (implicit ev: TensorNumeric[T]) : AbstractModule[Activity, Activity, T] = {
+
+    val attrMap = context.bigdlModule.getAttrMap
+
+    val cells = DataConverter.getAttributeValue(context, attrMap.get("cells")).
+      asInstanceOf[Array[AbstractModule[_, _, T]]].map(_.asInstanceOf[Cell[T]])
+
+    val multiRNNCell = MultiRNNCell[T](cells)
+
+    CellSerializer.populateCellAttributes(context, multiRNNCell)
+  }
+
+  override def doSerializeModule[T: ClassTag](context: SerializeContext[T],
+                                              cellModuleBuilder : BigDLModule.Builder)
+                                             (implicit ev: TensorNumeric[T]) : Unit = {
+
+    CellSerializer.saveCellAttributes(context, cellModuleBuilder)
+
+    val cellsBuilder = AttrValue.newBuilder
+    ArrayConverter.setAttributeValue(context, cellsBuilder,
+      context.moduleData.module.asInstanceOf[MultiRNNCell[T]].cells,
+      scala.reflect.runtime.universe.typeOf[Array[_ <:
+        AbstractModule[_ <: Activity, _ <:  Activity, _ <: Any]]])
+    cellModuleBuilder.putAttr("cells", cellsBuilder.build)
+  }
+
 }
