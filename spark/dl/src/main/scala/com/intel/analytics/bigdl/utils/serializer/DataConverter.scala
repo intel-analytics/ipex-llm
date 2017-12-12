@@ -984,7 +984,7 @@ object DataConverter extends DataConverter{
           arrayBuilder.setSize(methods.size)
         }
       } else if (valueType <:< universe.
-        typeOf[Array[_ <: AbstractModule[Activity, Activity, _ <: Any]]]) {
+        typeOf[Array[_ <: AbstractModule[_ <: Activity, _ <:  Activity, _ <: Any]]]) {
         arrayBuilder.setDatatype(DataType.MODULE)
         if (value != null) {
           val modules = value.asInstanceOf[Array[_ <: AbstractModule[Activity, Activity, T]]]
