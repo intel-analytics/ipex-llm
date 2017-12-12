@@ -997,7 +997,7 @@ class LayerConverter:
         else:
             raise Exception("Unsupported border mode: %s" % border_mode)
 
-    def calculate_2d_same_padding(self, x, kx, dx, dilation_x):
+    def __calculate_2d_same_padding(self, x, kx, dx, dilation_x):
         return int(ceil((x * (dx - 1) + dilation_x * (kx - 1) - dx + 1) / 2))
 
     def to_bigdl_2d_padding(self, border_mode, *args):
@@ -1007,12 +1007,12 @@ class LayerConverter:
             # calculate padding by given parameters
             elif len(args) == 4:  # used by 1d layers constructed from 2d, just need one pad
                 h, kh, dh, dilation_h = args
-                pad_h = self.calculate_2d_same_padding(h, kh, dh, dilation_h)
+                pad_h = self.__calculate_2d_same_padding(h, kh, dh, dilation_h)
                 return pad_h, 0
             elif len(args) == 8:
                 h, kh, dh, dilation_h, w, kw, dw, dilation_w = args
-                pad_h = self.calculate_2d_same_padding(h, kh, dh, dilation_h)
-                pad_w = self.calculate_2d_same_padding(w, kw, dw, dilation_w)
+                pad_h = self.__calculate_2d_same_padding(h, kh, dh, dilation_h)
+                pad_w = self.__calculate_2d_same_padding(w, kw, dw, dilation_w)
                 return pad_h, pad_w
         elif border_mode == "valid":
             return 0, 0
@@ -1172,8 +1172,8 @@ class LayerConverter:
         return self.combo_parameter_layer(blayer, self.config)
 
     def create_deconvolution2d(self):
-        if klayer.dim_ordering != "th":
-            raise Exception("Please use `th` for `dim_ordering`. `%s` is not supported for now." % klayer.dim_ordering)
+        if self.klayer.dim_ordering != "th":
+            raise Exception("Please use `th` for `dim_ordering`. `%s` is not supported for now." % self.klayer.dim_ordering)
         output_shape = self.config["output_shape"]
 
         h = self.input_shape[2]
