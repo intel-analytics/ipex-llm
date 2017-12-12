@@ -832,6 +832,36 @@ class MeanSquaredLogarithmicCriterion(Criterion):
                  bigdl_type="float"):
         super(MeanSquaredLogarithmicCriterion, self).__init__(None, bigdl_type)
 
+class KullbackLeiblerDivergenceCriterion(Criterion):
+
+    '''
+    compute Kullback Leibler DivergenceCriterion error for intput and target
+    This method is same as `kullback_leibler_divergence` loss in keras. Loss calculated as:
+    y_true = K.clip(input, K.epsilon(), 1)
+    y_pred = K.clip(target, K.epsilon(), 1)
+    and output K.sum(y_true * K.log(y_true / y_pred), axis=-1)
+
+    >>> error = KullbackLeiblerDivergenceCriterion()
+    creating: createKullbackLeiblerDivergenceCriterion
+    '''
+
+    def __init__(self,
+                 bigdl_type="float"):
+        super(KullbackLeiblerDivergenceCriterion, self).__init__(None, bigdl_type)
+
+class PoissonCriterion(Criterion):
+
+    '''
+    compute Poisson error for input and target, loss calculated as:
+    mean(input - target * K.log(input + K.epsilon()), axis=-1)
+    >>> error = PoissonCriterion()
+    creating: createPoissonCriterion
+    '''
+
+    def __init__(self,
+                 bigdl_type="float"):
+        super(PoissonCriterion, self).__init__(None, bigdl_type)
+
 def _test():
     import doctest
     from pyspark import SparkContext
