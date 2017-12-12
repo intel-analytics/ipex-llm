@@ -2407,6 +2407,46 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     CosineProximityCriterion[T]()
   }
 
+  def createPriorBox(minSizes: JList[Double], maxSizes: JList[Double] = null,
+    aspectRatios: JList[Double] = null, isFlip: Boolean = true, isClip: Boolean = false,
+    variances: JList[Double] = null, offset: Float = 0.5f,
+    imgH: Int = 0, imgW: Int = 0, imgSize: Int = 0,
+    stepH: Float = 0, stepW: Float = 0, step: Float = 0): PriorBox[T] = {
+    val maxS = if (maxSizes == null) null else maxSizes.asScala.toArray.map(_.toFloat)
+    val aspectR = if (aspectRatios == null) null else aspectRatios.asScala.toArray.map(_.toFloat)
+    val vars = if (variances == null) null else variances.asScala.toArray.map(_.toFloat)
+    new PriorBox[T](minSizes.asScala.toArray.map(_.toFloat),
+      maxS, aspectR, isFlip, isClip, vars, offset, imgH, imgW, imgSize, stepH, stepW, step)
+  }
+
+  def createNormalizeScale(p: Double, eps: Double = 1e-10, scale: Double, size: JList[Int],
+    wRegularizer: Regularizer[T] = null): NormalizeScale[T] =
+    new NormalizeScale[T](p, eps, scale, size.asScala.toArray, wRegularizer)
+
+  def createDetectionOutputSSD(nClasses: Int,
+    shareLocation: Boolean,
+    bgLabel: Int,
+    nmsThresh: Double,
+    nmsTopk: Int,
+    keepTopK: Int,
+    confThresh: Double,
+    varianceEncodedInTarget: Boolean,
+    confPostProcess: Boolean): DetectionOutputSSD[T] =
+    new DetectionOutputSSD[T](nClasses, shareLocation, bgLabel, nmsThresh.toFloat,
+      nmsTopk, keepTopK, confThresh.toFloat, varianceEncodedInTarget, confPostProcess)
+
+  def createDetectionOutputFrcnn(nmsThresh: Float = 0.3f, nClasses: Int,
+    bboxVote: Boolean, maxPerImage: Int = 100, thresh: Double = 0.05): DetectionOutputFrcnn = {
+    new DetectionOutputFrcnn(nmsThresh, nClasses, bboxVote, maxPerImage, thresh)
+  }
+
+  def createProposal(preNmsTopN: Int, postNmsTopN: Int,
+    ratios: JList[Double], scales: JList[Double],
+    rpnPreNmsTopNTrain: Int = 12000, rpnPostNmsTopNTrain: Int = 2000): Proposal = {
+    new Proposal(preNmsTopN, postNmsTopN, ratios.asScala.toArray.map(_.toFloat),
+      scales.asScala.toArray.map(_.toFloat), rpnPreNmsTopNTrain, rpnPostNmsTopNTrain)
+  }
+
   def createHFlip(): HFlip = {
     HFlip()
   }

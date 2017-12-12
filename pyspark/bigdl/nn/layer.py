@@ -4838,6 +4838,147 @@ class UpSampling3D(Layer):
     def __init__(self, size, bigdl_type="float"):
         super(UpSampling3D, self).__init__(None, bigdl_type, size)
 
+class PriorBox(Layer):
+    """
+    Generate the prior boxes of designated sizes and aspect ratios across
+    all dimensions (H * W)
+    Intended for use with MultiBox detection method to generate prior
+    :param min_sizes minimum box size in pixels. can be multiple. required!
+    :param max_sizes maximum box size in pixels. can be ignored or same as the # of min_size.
+    :param aspect_ratios optional aspect ratios of the boxes. can be multiple
+    :param is_flip optional bool, default true. if set, flip the aspect ratio.
+    :param is_clip whether to clip the prior's coordidate such that it is within [0, 1]
+    >>> layer = PriorBox([0.1])
+    creating: createPriorBox
+    """
+    def __init__(self, min_sizes,
+                 max_sizes=None,
+                 aspect_ratios=None,
+                 is_flip=True,
+                 is_clip=False,
+                 variances=None,
+                 offset = 0.5,
+                 img_h=0,
+                 img_w=0,
+                 img_size=0,
+                 step_h=0.0,
+                 step_w=0.0,
+                 step=0.0,
+                 bigdl_type="float"):
+        super(PriorBox, self).__init__(None, bigdl_type,
+                                       min_sizes,
+                                       max_sizes,
+                                       aspect_ratios,
+                                       is_flip,
+                                       is_clip,
+                                       variances,
+                                       offset,
+                                       img_h,
+                                       img_w,
+                                       img_size,
+                                       step_h,
+                                       step_w,
+                                       step)
+
+class NormalizeScale(Layer):
+    """
+    NormalizeScale is conposed of normalize and scale, this is equal to caffe Normalize layer
+    :param p L_p norm
+    :param eps smoothing parameter
+    :param scale scale parameter
+    :param size size of scale input
+    :param w_regularizer weight regularizer
+    >>> layer = NormalizeScale(2.0, scale = 20.0, size = [1, 5, 1, 1])
+    creating: createNormalizeScale
+    """
+    def __init__(self, p, scale, size, w_regularizer=None, eps=1e-10,
+                 bigdl_type="float"):
+        super(NormalizeScale, self).__init__(None, bigdl_type, p, eps, scale, size, w_regularizer)
+
+class Proposal(Layer):
+    """
+    Outputs object detection proposals by applying estimated bounding-box
+    transformations to a set of regular boxes (called "anchors").
+    rois: holds R regions of interest, each is a 5-tuple
+    (n, x1, y1, x2, y2) specifying an image batch index n and a rectangle (x1, y1, x2, y2)
+    scores: holds scores for R regions of interest
+    >>> layer = Proposal(1000, 200, [0.1, 0.2], [2.0, 3.0])
+    creating: createProposal
+    """
+    def __init__(self, pre_nms_topn, post_nms_topn, ratios, scales,
+                 rpn_pre_nms_topn_train=12000, rpn_post_nms_topn_train=2000,
+                 bigdl_type="float"):
+        super(Proposal, self).__init__(None, bigdl_type,
+                                       pre_nms_topn,
+                                       post_nms_topn,
+                                       ratios,
+                                       scales,
+                                       rpn_pre_nms_topn_train,
+                                       rpn_post_nms_topn_train)
+
+class DetectionOutputSSD(Layer):
+    """
+    Layer to Post-process SSD output
+    :param n_classes number of classes
+    :param share_location whether to share location, default is true
+    :param bg_label background label
+    :param nms_thresh nms threshold
+    :param nms_topk nms topk
+    :param keep_top_k result topk
+    :param conf_thresh confidence threshold
+    :param variance_encoded_in_target if variance is encoded in target,
+    we simply need to retore the offset predictions,
+    else if variance is encoded in bbox,
+    we need to scale the offset accordingly.
+    :param conf_post_process whether add some additional post process to confidence prediction
+    >>> layer = DetectionOutputSSD()
+    creating: createDetectionOutputSSD
+    """
+
+    def __init__(self, n_classes=21,
+                 share_location=True,
+                 bg_label=0,
+                 nms_thresh=0.45,
+                 nms_topk=400,
+                 keep_top_k=200,
+                 conf_thresh=0.01,
+                 variance_encoded_in_target=False,
+                 conf_post_process=True,
+                 bigdl_type="float"):
+        super(DetectionOutputSSD, self).__init__(None,
+                                                 bigdl_type,
+                                                 n_classes,
+                                                 share_location,
+                                                 bg_label,
+                                                 nms_thresh,
+                                                 nms_topk,
+                                                 keep_top_k,
+                                                 conf_thresh,
+                                                 variance_encoded_in_target,
+                                                 conf_post_process)
+
+class DetectionOutputFrcnn(Layer):
+    """
+    Post process Faster-RCNN models
+    :param nms_thresh nms threshold
+    :param n_classes number of classes
+    :param bbox_vote whether to vote for detections
+    :param max_per_image limit max number of detections per image
+    :param thresh score threshold
+    >>> layer = DetectionOutputFrcnn(21, True)
+    creating: createDetectionOutputFrcnn
+    """
+
+    def __init__(self, n_classes, bbox_vote, nms_thresh = 0.3,
+                 max_per_image=100, thresh=0.05,
+                 bigdl_type="float"):
+        super(DetectionOutputFrcnn, self).__init__(None, bigdl_type, nms_thresh,
+                                                   n_classes,
+                                                   bbox_vote,
+                                                   max_per_image,
+                                                   thresh)
+
+
 def _test():
     import doctest
     from pyspark import SparkContext
