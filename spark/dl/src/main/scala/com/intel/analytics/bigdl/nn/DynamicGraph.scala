@@ -30,7 +30,7 @@ class DynamicGraph[T: ClassTag](
   private val _inputs : Seq[ModuleNode[T]],
   private val _outputs : Seq[ModuleNode[T]],
   private val _variables: Option[(Array[Tensor[T]], Array[Tensor[T]])] = None,
-  private val generateBackward: Boolean = true
+  val generateBackward: Boolean = true
 )(implicit ev: TensorNumeric[T])
   extends Graph[T](_inputs, _outputs, _variables) {
 

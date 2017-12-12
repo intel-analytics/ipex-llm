@@ -1138,7 +1138,7 @@ class GraphSpec extends FlatSpec with Matchers {
     val echo1 = Echo().inputs(swtich.trueEdge())
     val echo2 = Echo().inputs(swtich.falseEdge())
 
-    val model = Graph(Array(data, condition), Array(echo1), None, false)
+    val model = Graph.dynamic(Array(data, condition), Array(echo1), None, false)
     val result = model.forward(T(Tensor[Float](T(1)), Tensor[Boolean](T(true))))
     result.toTensor should be(Tensor[Float](T(1)))
 
@@ -1158,7 +1158,7 @@ class GraphSpec extends FlatSpec with Matchers {
     val merge = ControlNodes.merge(add1, add5)
     val output = Identity().inputs(merge)
 
-    val model = Graph(Array(data, condition), Array(output), None, false)
+    val model = Graph.dynamic(Array(data, condition), Array(output), None, false)
     var result = model.forward(T(Tensor[Float](T(1)), Tensor[Boolean](T(true))))
     result.toTensor should be(Tensor[Float](T(2)))
     result = model.forward(T(Tensor[Float](T(1)), Tensor[Boolean](T(false))))

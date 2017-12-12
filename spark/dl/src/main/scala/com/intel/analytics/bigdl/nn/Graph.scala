@@ -70,8 +70,7 @@ import org.tensorflow.framework.GraphDef
 abstract class Graph[T: ClassTag](
   val inputs : Seq[ModuleNode[T]],
   private val outputs : Seq[ModuleNode[T]],
-  private val variables: Option[(Array[Tensor[T]], Array[Tensor[T]])] = None,
-  private val generateBackward: Boolean = true
+  private val variables: Option[(Array[Tensor[T]], Array[Tensor[T]])] = None
 )(implicit ev: TensorNumeric[T]) extends Container[Activity, Activity, T]{
 
   /**
@@ -394,13 +393,17 @@ object Graph extends ContainerSerializable {
   def apply[T: ClassTag](
     input : Array[ModuleNode[T]],
     output : Array[ModuleNode[T]],
+    variables: Option[(Array[Tensor[T]], Array[Tensor[T]])] = None
+  )(implicit ev: TensorNumeric[T]) : Graph[T] = {
+    new StaticGraph[T](input, output, variables)
+  }
+
+  def dynamic[T: ClassTag](
+    input : Array[ModuleNode[T]],
+    output : Array[ModuleNode[T]],
     variables: Option[(Array[Tensor[T]], Array[Tensor[T]])] = None,
-    generateBackward: Boolean = true)(implicit ev: TensorNumeric[T]) : Graph[T] = {
-    if (hasControlOps(output)) {
-      new DynamicGraph[T](input, output, variables, generateBackward)
-    } else {
-      new StaticGraph[T](input, output, variables)
-    }
+    generateBackward: Boolean)(implicit ev: TensorNumeric[T]) : Graph[T] = {
+    new DynamicGraph[T](input, output, variables, generateBackward)
   }
 
   /**
@@ -411,11 +414,7 @@ object Graph extends ContainerSerializable {
    */
   def apply[T: ClassTag](input : ModuleNode[T], output : Array[ModuleNode[T]])
     (implicit ev: TensorNumeric[T]) : Graph[T] = {
-    if (hasControlOps(output)) {
-      new DynamicGraph[T](Array(input), output)
-    } else {
-      new StaticGraph[T](Array(input), output)
-    }
+    new StaticGraph[T](Seq(input), output)
   }
 
   /**
@@ -426,11 +425,7 @@ object Graph extends ContainerSerializable {
    */
   def apply[T: ClassTag](input : Array[ModuleNode[T]], output : ModuleNode[T])
     (implicit ev: TensorNumeric[T]) : Graph[T] = {
-    if (hasControlOps(Array(output))) {
-      new DynamicGraph[T](input, Array(output))
-    } else {
-      new StaticGraph[T](input, Array(output))
-    }
+    new StaticGraph[T](input, Seq(output))
   }
 
   /**
@@ -441,25 +436,7 @@ object Graph extends ContainerSerializable {
    */
   def apply[T: ClassTag](input : ModuleNode[T], output : ModuleNode[T])
     (implicit ev: TensorNumeric[T]) : Graph[T] = {
-    if (hasControlOps(Array(output))) {
-      new DynamicGraph[T](Array(input), Array(output))
-    } else {
-      new StaticGraph[T](Array(input), Array(output))
-    }
-  }
-
-  def hasControlOps[T: ClassTag](outputs: Array[ModuleNode[T]])(implicit ev: TensorNumeric[T])
-  : Boolean = {
-    val dummyOutput = new ModuleNode[T](new Identity[T]())
-    outputs.foreach(_ -> dummyOutput)
-    dummyOutput.graph(true).BFS.foreach(n => {
-      if (n.element.isInstanceOf[ControlOps[_]]) {
-        dummyOutput.removePrevEdges()
-        return true
-      }
-    })
-    dummyOutput.removePrevEdges()
-    return false
+    new StaticGraph[T](Seq(input), Seq(output))
   }
 
   override def doLoadModule[T: ClassTag](context: DeserializeContext)
@@ -519,10 +496,14 @@ object Graph extends ContainerSerializable {
       sharedVariables = Some(weightArray, biasArray)
     }
 
-    val generateBackward = DataConverter.getAttributeValue(context, attributes
-      .get("generateBackward")).asInstanceOf[Boolean]
-
-    Graph[T](inputs.toArray, outputs.toArray, sharedVariables, generateBackward)
+    val generateBackwardValue = attributes.get("generateBackward")
+    if (generateBackwardValue != null) {
+      val generateBackward = DataConverter.getAttributeValue(context, generateBackwardValue)
+        .asInstanceOf[Boolean]
+      Graph.dynamic[T](inputs.toArray, outputs.toArray, sharedVariables, generateBackward)
+    } else {
+      Graph[T](inputs.toArray, outputs.toArray, sharedVariables)
+    }
   }
 
   override def doSerializeModule[T: ClassTag](context: SerializeContext[T],
@@ -588,10 +569,11 @@ object Graph extends ContainerSerializable {
       outputsNames, universe.typeOf[Array[String]])
     graphBuilder.putAttr("outputNames", outputNamesBuilder.build)
 
-    val generateBackwardBuilder = AttrValue.newBuilder
-    DataConverter.setAttributeValue(context, generateBackwardBuilder,
-      graph.generateBackward, universe.typeOf[Boolean])
-    graphBuilder.putAttr("generateBackward", generateBackwardBuilder.build)
-
+    if (graph.isInstanceOf[DynamicGraph[_]]) {
+      val generateBackwardBuilder = AttrValue.newBuilder
+      DataConverter.setAttributeValue(context, generateBackwardBuilder,
+        graph.asInstanceOf[DynamicGraph[_]].generateBackward, universe.typeOf[Boolean])
+      graphBuilder.putAttr("generateBackward", generateBackwardBuilder.build)
+    }
   }
 }
