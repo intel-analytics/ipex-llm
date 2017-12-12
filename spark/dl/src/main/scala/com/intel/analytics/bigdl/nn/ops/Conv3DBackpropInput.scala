@@ -92,6 +92,12 @@ class Conv3DBackpropInput[T: ClassTag](
     }
     output
   }
+
+  override def clearState(): Conv3DBackpropInput[T] = {
+    super.clearState()
+    fGradInput.set()
+    this
+  }
 }
 
 object Conv3DBackpropInput {

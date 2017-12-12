@@ -24,18 +24,10 @@ import com.intel.analytics.bigdl.utils.Table
 import scala.reflect.ClassTag
 
 class Conv3D[T: ClassTag](
-                           dT: Int,
-                           dH: Int,
-                           dW: Int,
-                           padT: Int,
-                           padH: Int,
-                           padW: Int,
-                           format: DataFormat
-                         )(implicit ev: TensorNumeric[T]) extends Operation[Table, Tensor[T], T] {
-
-  private val onesBias = null
-
-  private val bias = null
+       dT: Int, dH: Int, dW: Int,
+       padT: Int, padH: Int, padW: Int,
+       format: DataFormat)
+       (implicit ev: TensorNumeric[T]) extends Operation[Table, Tensor[T], T] {
 
   private val fInput = Tensor[T]()
 
@@ -68,7 +60,7 @@ class Conv3D[T: ClassTag](
     transWeight = transWeight.contiguous()
     val weightMM = transWeight.view(nOutputPlane, nInputPlane * kT * kH * kW)
 
-    VolumetricConvolution.conv3d(transInput, output, weightMM, bias, onesBias, fInput,
+    VolumetricConvolution.conv3d(transInput, output, weightMM, bias = null, onesBias = null, fInput,
       nInputPlane, nOutputPlane, withBias = false, kT, kW, kH, dT, dW, dH, padT, padW, padH)
 
     if (format == DataFormat.NHWC) {
@@ -78,6 +70,12 @@ class Conv3D[T: ClassTag](
       output = output.contiguous()
     }
     output
+  }
+
+  override def clearState(): Conv3D[T] = {
+    super.clearState()
+    fInput.set()
+    this
   }
 }
 
