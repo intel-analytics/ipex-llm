@@ -235,7 +235,7 @@ object Utils {
       s"$src and $dst is not the same type.")
     dstParameters.copy(srcParameters)
     // copy running status
-    dst.copyStatus(src)
+    dst.setExtraParameter(src.getExtraParameter())
     dst
   }
 

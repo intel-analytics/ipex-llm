@@ -141,6 +141,7 @@ class BatchNormalization[T: ClassTag](
     this
   }
 
+  @deprecated("Please use get/setExtraParameter API", "since 0.4.0")
   override def copyStatus(src: Module[T]): this.type = {
     require(canEqual(src), s"copyStatus: type mismatch, $src is different from $this")
     val srcModule = src.asInstanceOf[BatchNormalization[T]]
@@ -162,6 +163,10 @@ class BatchNormalization[T: ClassTag](
     } else {
       null
     }
+  }
+
+  override def getExtraParameter(): Array[Tensor[T]] = {
+    Array(runningMean, runningVar)
   }
 
   override def getParametersTable(): Table = {

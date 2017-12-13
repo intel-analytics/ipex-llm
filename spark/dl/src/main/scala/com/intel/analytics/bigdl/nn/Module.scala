@@ -162,19 +162,4 @@ object Module {
 
     return Tensor(storage)
   }
-
-  def setExtraState[@specialized(Float, Double) T: ClassTag](
-      module: Module[T],
-      state: Array[Tensor[T]])(
-    implicit ev: TensorNumeric[T]): Module[T] = {
-    val currentState = module.getExtraState()
-    require(state.length == currentState.length, "state's length doesn't match, excepted:" +
-      s"${currentState.length}, but got  ${state.length}")
-    var i = 0
-    while (i < state.length) {
-      currentState(i).copy(state(i))
-      i += 1
-    }
-    module
-  }
 }

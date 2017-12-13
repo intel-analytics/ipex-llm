@@ -697,8 +697,8 @@ object DistriOptimizer {
       parameters: AllReduceParameter[T],
       trainingModel: Module[T]): Module[T] = {
     val partitionNum = models.partitions.length
-    val extraState = models.map(_.localModels.head.getExtraState()).first()
-    Module.setExtraState(trainingModel, extraState)
+    val extraState = models.map(_.localModels.head.getExtraParameter()).first()
+    trainingModel.setExtraParameter(extraState)
     val (weights, gradients) = models.mapPartitions(iter => {
       val cached = iter.next()
       val curPartitionId = TaskContext.getPartitionId()

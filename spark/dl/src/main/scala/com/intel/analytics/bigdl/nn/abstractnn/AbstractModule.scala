@@ -125,6 +125,7 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
    * @param src source Module
    * @return this
    */
+  @deprecated("Please use get/setExtraParameter API", "since 0.4.0")
   def copyStatus(src: Module[T]) : this.type = {
     this
   }
@@ -368,13 +369,34 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
   def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = null
 
   /**
-   * Get some extra status in this module. Such as runningMean and runningVar of BatchNormalization.
+   * Get extra parameter in this module.
+   * Extra parameter means the trainable parameters beside weight and bias. Such as runningMean
+   * and runningVar in BatchNormalization.
    *
    * The subclass should override this method if it has some parameters besides weight and bias.
    *
-   * @return
+   * @return an array of tensor
    */
-  def getExtraState(): Array[Tensor[T]] = null
+  def getExtraParameter(): Array[Tensor[T]] = null
+
+  /**
+   * Set extra parameter to this module.
+   * Extra parameter means the trainable parameters beside weight and bias. Such as runningMean
+   * and runningVar in BatchNormalization.
+   *
+   * @return this
+   */
+  def setExtraParameter(state: Array[Tensor[T]]): this.type = {
+    val currentState = this.getExtraParameter()
+    require(state.length == currentState.length, "state's length doesn't match, excepted:" +
+      s"${currentState.length}, but got  ${state.length}")
+    var i = 0
+    while (i < state.length) {
+      currentState(i).copy(state(i))
+      i += 1
+    }
+    this
+  }
 
   /**
    * This function returns a table contains ModuleName, the parameter names and parameter value
