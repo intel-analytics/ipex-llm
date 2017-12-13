@@ -63,6 +63,8 @@ class View[T: ClassTag](val sizes: Array[Int])(
     this
   }
 
+  def getNumInputDims(): Int = numInputDims
+
   private def batchSize(
     input: Tensor[T], size: Array[Int], numberInputDims: Int, numElements: Int): Int = {
     val ind = input.nDimension()
