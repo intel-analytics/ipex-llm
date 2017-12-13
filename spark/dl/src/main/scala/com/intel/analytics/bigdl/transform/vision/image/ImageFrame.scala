@@ -145,10 +145,12 @@ object ImageFrame {
    *
    * @param path path to read images. Local or HDFS. Wildcard character are supported.
    * @param output Parquet file path
+   * @param partitionNum partition number
    */
-  def writeParquet(path: String, output: String, sqlContext: SQLContext): Unit = {
+  def writeParquet(path: String, output: String, sqlContext: SQLContext,
+    partitionNum: Int = 1): Unit = {
     import sqlContext.implicits._
-    val df = sqlContext.sparkContext.binaryFiles(path)
+    val df = sqlContext.sparkContext.binaryFiles(path, partitionNum)
       .map { case (p, stream) =>
         (p, stream.toArray())
       }.toDF(ImageFeature.uri, ImageFeature.bytes)
