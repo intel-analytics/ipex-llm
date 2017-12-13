@@ -2778,7 +2778,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
 
   def setL2NormClip(optimizer: Optimizer[T, MiniBatch[T]],
                     normValue: Float): Unit = {
-    optimizer.setGradientClippingByNorm(normValue)
+    optimizer.setGradientClippingByl2Norm(normValue)
   }
 }
 

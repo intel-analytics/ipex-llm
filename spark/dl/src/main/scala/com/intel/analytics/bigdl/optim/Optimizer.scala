@@ -341,6 +341,17 @@ abstract class Optimizer[T: ClassTag, D](
   def prepareInput(): Unit = {}
 
   /**
+    * Disable gradient clipping
+    * @return
+    */
+  def disableGradientClipping()
+  : this.type = {
+    gradientClippingParams.enableConstantClipping = false
+    gradientClippingParams.enableL2NormClipping = false
+    this
+  }
+
+  /**
    * Set constant gradient clipping
    * @param min the minimum value to clip by
    * @param max the maximum value to clip by
@@ -360,7 +371,7 @@ abstract class Optimizer[T: ClassTag, D](
    * @param clipNorm gradient L2-Norm threshold
    * @return
    */
-  def setGradientClippingByNorm(clipNorm: Float)
+  def setGradientClippingByl2Norm(clipNorm: Float)
   : this.type = {
     gradientClippingParams.enableL2NormClipping = true
     gradientClippingParams.normValueClip = clipNorm
