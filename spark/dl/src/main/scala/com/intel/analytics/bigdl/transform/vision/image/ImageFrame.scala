@@ -85,11 +85,12 @@ object ImageFrame {
    * if sc is defined, path can be local or HDFS. Wildcard character are supported.
    * if sc is null, path is local directory/image file/image file with wildcard character
    * @param sc SparkContext
+   * @param partitionNum partition number is required if sc is not null
    * @return ImageFrame
    */
-  def read(path: String, sc: SparkContext = null): ImageFrame = {
+  def read(path: String, sc: SparkContext = null, partitionNum: Int = 1): ImageFrame = {
     if (null != sc) {
-      val images = sc.binaryFiles(path).map { case (p, stream) =>
+      val images = sc.binaryFiles(path, partitionNum).map { case (p, stream) =>
         ImageFeature(stream.toArray(), uri = p)
       }
       ImageFrame.rdd(images) -> BytesToMat()
