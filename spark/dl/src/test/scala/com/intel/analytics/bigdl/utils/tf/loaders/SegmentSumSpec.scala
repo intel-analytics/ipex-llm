@@ -25,7 +25,7 @@ class SegmentSumSpec extends TensorflowSpecHelper {
 
   "SegmentSum forward" should "work correctly" in {
 
-    compare(
+    compare[Float](
       NodeDef.newBuilder()
         .setName("segment_sum")
         .setOp("SegmentSum")
