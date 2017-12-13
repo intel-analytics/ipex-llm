@@ -237,7 +237,6 @@ class TimeDistributed[T : ClassTag] (val layer: TensorModule[T])
    * @param src source Module
    * @return this
    */
-  @deprecated("Please use get/setExtraParameter API", "since 0.4.0")
   override def copyStatus(src: Module[T]): TimeDistributed.this.type = {
     val other = src.asInstanceOf[TimeDistributed[T]]
     layer.copyStatus(other.layer.asInstanceOf[Module[T]])

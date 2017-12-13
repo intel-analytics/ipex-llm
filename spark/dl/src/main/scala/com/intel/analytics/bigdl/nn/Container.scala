@@ -148,7 +148,6 @@ abstract class Container[A <: Activity : ClassTag,
     nodes
   }
 
-  @deprecated("Please use get/setExtraParameter API", "since 0.4.0")
   override def copyStatus(src: Module[T]): this.type = {
     require(canEqual(src), s"copyStatus: type mismatch, $src is different from $this")
     val srcContainer = src.asInstanceOf[Container[A, B, T]]

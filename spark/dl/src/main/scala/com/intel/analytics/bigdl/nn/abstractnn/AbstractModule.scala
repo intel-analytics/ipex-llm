@@ -125,7 +125,6 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
    * @param src source Module
    * @return this
    */
-  @deprecated("Please use get/setExtraParameter API", "since 0.4.0")
   def copyStatus(src: Module[T]) : this.type = {
     this
   }
