@@ -1,7 +1,7 @@
 ---
 ## Model Save
 
-BigDL supports saving models to local file system, HDFS and AWS S3. After a model is created, you can use `save` on created model to save it. Below example shows how to save a model.
+BigDL supports saving models to local file system, HDFS and AWS S3. After a model is created, you can use `saveModule` (Scala) or 'saveModel' (python) on created model to save it. Below example shows how to save a model.
 
 **Scala example**
 ```scala
@@ -28,7 +28,7 @@ model.saveModel("/tmp/model.bigdl", "/tmp/model.bin", True) //save to local fs
 model.saveModel("hdfs://...") //save to hdfs
 model.saveModel("s3://...") //save to s3
 ```
-In `model.save`, the first parameter is the path where we want to save our model network, the second parameter is the path where we want to save the model weights, the third parameter is to specify if we need to overwrite the file if it already exists, it's set to false by default
+In `model.saveModel`, the first parameter is the path where we want to save our model network, the second parameter is the path where we want to save the model weights, the third parameter is to specify if we need to overwrite the file if it already exists, it's set to false by default
 Please notice that if the second parameter is not specified, weights will be saved into the same file as model network. Save weights separately usually handles the situation that the model is big in size
 
 
@@ -36,7 +36,7 @@ Please notice that if the second parameter is not specified, weights will be sav
 
 ### Load BigDL model
 
-Use `Module.load`(in Scala) or `Model.load` (in Python) to load an existing model.  `Module` (Scala) or `Model`(Python) is a utility class provided in BigDL. We just need to specify the model path and optionally weight path if exists where we previously saved the model to load it to memory for resume training or prediction purpose.
+Use `Module.loadModule`(in Scala) or `Model.loadModel` (in Python) to load an existing model.  `Module` (Scala) or `Model`(Python) is a utility class provided in BigDL. We just need to specify the model path and optionally weight path if exists where we previously saved the model to load it to memory for resume training or prediction purpose.
 
 **Scala example**
 ```scala
