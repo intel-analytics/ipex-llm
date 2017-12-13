@@ -1,7 +1,7 @@
 ---
 ## Model Save
 
-BigDL supports saving models to local file system, HDFS and AWS S3. After a model is created, you can use `save` on created model to save it. Below example shows how to save a model.
+BigDL supports saving models to local file system, HDFS and AWS S3. After a model is created, you can use `saveModule` (Scala) or 'saveModel' (python) on created model to save it. Below example shows how to save a model.
 
 **Scala example**
 ```scala
@@ -11,9 +11,9 @@ import com.intel.analytics.bigdl.numeric.NumericFloat
 val model = Sequential().add(Linear(10, 5)).add(Sigmoid()).add(SoftMax())
 //...train
 
-model.save("/tmp/model.bigdl", true) //save to local fs
-model.save("hdfs://...") //save to hdfs
-model.save("s3://...") //save to s3
+model.saveModule("/tmp/model.bigdl", "/tmp/model.bin", true) //save to local fs
+model.saveModule("hdfs://...") //save to hdfs
+model.saveModule("s3://...") //save to s3
 
 ```
 **Python example**
@@ -24,31 +24,32 @@ from bigdl.optim.optimizer import *
 
 model = Sequential().add(Linear(10, 5)).add(Sigmoid()).add(SoftMax())
 //...train
-model.save("/tmp/model.bigdl", True) //save to local fs
-model.save("hdfs://...") //save to hdfs
-model.save("s3://...") //save to s3
+model.saveModel("/tmp/model.bigdl", "/tmp/model.bin", True) //save to local fs
+model.saveModel("hdfs://...") //save to hdfs
+model.saveModel("s3://...") //save to s3
 ```
-In `model.save`, the first parameter is the path where we want to save our model, the second parameter is to specify if we need to overwrite the file if it already exists, it's set to false by default
+In `model.saveModel`, the first parameter is the path where we want to save our model network, the second parameter is the path where we want to save the model weights, the third parameter is to specify if we need to overwrite the file if it already exists, it's set to false by default
+Please notice that if the second parameter is not specified, weights will be saved into the same file as model network. Save weights separately usually handles the situation that the model is big in size
 
 
 ## Model Load
 
 ### Load BigDL model
 
-Use `Module.load`(in Scala) or `Model.load` (in Python) to load an existing model.  `Module` (Scala) or `Model`(Python) is a utility class provided in BigDL. We just need to specify the model path where we previously saved the model to load it to memory for resume training or prediction purpose.
+Use `Module.loadModule`(in Scala) or `Model.loadModel` (in Python) to load an existing model.  `Module` (Scala) or `Model`(Python) is a utility class provided in BigDL. We just need to specify the model path and optionally weight path if exists where we previously saved the model to load it to memory for resume training or prediction purpose.
 
 **Scala example**
 ```scala
-val model = Module.load("/tmp/model.bigdl") //load from local fs
-val model = Module.load("hdfs://...") //load from hdfs
-val model = Module.load("s3://...") //load from s3
+val model = Module.loadModule("/tmp/model.bigdl", "/tmp/model.bin") //load from local fs
+val model = Module.loadModule("hdfs://...") //load from hdfs
+val model = Module.loadModule("s3://...") //load from s3
 ```
 
 **Python example**
 ```python
-model = Model.load("/tmp/model.bigdl") //load from local fs
-model = Model.load("hdfs://...") //load from hdfs
-model = Model.load("s3://...") //load from s3
+model = Model.loadModel("/tmp/model.bigdl", "/tmp/model.bin") //load from local fs
+model = Model.loadModel("hdfs://...") //load from hdfs
+model = Model.loadModel("s3://...") //load from s3
 ```
 
 ### Load Tensorflow model
