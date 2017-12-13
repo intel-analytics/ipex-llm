@@ -2031,9 +2031,9 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
 
     val optimizer = new DistriOptimizer(
       _model = model,
-      dataset = batching(DataSet.rdd(sampleRDD), batchSize)
+      _dataset = batching(DataSet.rdd(sampleRDD), batchSize)
         .asInstanceOf[DistributedDataSet[MiniBatch[T]]],
-      criterion = criterion
+      _criterion = criterion
     ).asInstanceOf[Optimizer[T, MiniBatch[T]]]
     enrichOptimizer(optimizer, endTrigger, optimMethod)
   }
@@ -2058,6 +2058,18 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     val sampleRDD = toJSample(valRdd)
     optimizer.setValidation(trigger, batching(DataSet.rdd(sampleRDD), batchSize.toInt),
       vMethods.asScala.toArray)
+  }
+
+  def setTrainData(optimizer: Optimizer[T, MiniBatch[T]],
+                 trainingRdd: JavaRDD[Sample],
+                 batchSize: Int): Unit = {
+    val sampleRDD = toJSample(trainingRdd)
+    optimizer.setTrainData(sampleRDD, batchSize)
+  }
+
+  def setCriterion(optimizer: Optimizer[T, MiniBatch[T]],
+                   criterion: Criterion[T]): Unit = {
+    optimizer.setCriterion(criterion)
   }
 
   def setCheckPoint(optimizer: Optimizer[T, MiniBatch[T]],
