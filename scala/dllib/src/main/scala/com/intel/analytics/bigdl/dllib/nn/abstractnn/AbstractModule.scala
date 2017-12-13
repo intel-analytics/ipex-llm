@@ -510,7 +510,14 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
               dataFormat: TensorflowDataFormat = TensorflowDataFormat.NHWC): this.type = {
     require(this.isInstanceOf[Graph[T]], "only Graph container can be saved as Tensorflow model")
     this.clearState()
+    val inTrainMode = train
+    if (inTrainMode) {
+      this.evaluate()
+    }
     TensorflowSaver.saveGraph(this.asInstanceOf[Graph[T]], inputs, path, byteOrder, dataFormat)
+    if (inTrainMode) {
+      this.training()
+    }
     this
   }
 
