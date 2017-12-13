@@ -112,7 +112,7 @@ class ImageFrame(JavaValue):
 
 
     @classmethod
-    def read(cls, path, sc=None, bigdl_type="float"):
+    def read(cls, path, sc=None, min_partitions=1, bigdl_type="float"):
         """
         Read images as Image Frame
         if sc is defined, Read image as DistributedImageFrame from local file system or HDFS
@@ -121,12 +121,13 @@ class ImageFrame(JavaValue):
         if sc is defined, path can be local or HDFS. Wildcard character are supported.
         if sc is null, path is local directory/image file/image file with wildcard character
         :param sc SparkContext
+        :param min_partitions A suggestion value of the minimal splitting number for input data.
         :return ImageFrame
         """
-        return ImageFrame(jvalue=callBigDlFunc(bigdl_type, "read", path, sc))
+        return ImageFrame(jvalue=callBigDlFunc(bigdl_type, "read", path, sc, min_partitions))
 
     @classmethod
-    def readParquet(cls, path, sql_context, bigdl_type="float"):
+    def read_parquet(cls, path, sql_context, bigdl_type="float"):
         """
         Read parquet file as DistributedImageFrame
         """
