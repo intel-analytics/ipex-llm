@@ -114,13 +114,13 @@ class ModuleSerializerSpec extends FlatSpec with Matchers with BeforeAndAfterAll
 
   "UpSampling1D serializer" should "work properly" in {
     val upsampling = UpSampling1D[Float](2).setName("upsampling")
-    val input = Tensor(2, 5, 5).apply1(_ => Random.nextFloat())
+    val input = Tensor[Float](2, 5, 5).apply1(_ => Random.nextFloat())
     runSerializationTest(upsampling, input)
   }
 
   "UpSampling2D serializer" should "work properly" in {
     val upsampling = UpSampling2D[Float](Array(2, 3)).setName("upsampling")
-    val input = Tensor(2, 3, 5, 5).apply1(_ => Random.nextFloat())
+    val input = Tensor[Float](2, 3, 5, 5).apply1(_ => Random.nextFloat())
     runSerializationTest(upsampling, input)
   }
 
