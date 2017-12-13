@@ -30,8 +30,8 @@ import scala.collection.mutable.ArrayBuffer
 object DetectionOutputFrcnn {
   val logger = Logger.getLogger(this.getClass)
 
-  def apply(nmsThresh: Float = 0.3f, nClasses: Int,
-  bboxVote: Boolean, maxPerImage: Int = 100, thresh: Double = 0.05)(
+  def apply(nmsThresh: Float = 0.3f, nClasses: Int = 21,
+  bboxVote: Boolean = false, maxPerImage: Int = 100, thresh: Double = 0.05)(
     implicit ev: TensorNumeric[Float]): DetectionOutputFrcnn =
     new DetectionOutputFrcnn(nmsThresh, nClasses, bboxVote, maxPerImage, thresh)
 }
@@ -45,8 +45,8 @@ object DetectionOutputFrcnn {
  * @param thresh score threshold
  */
 @SerialVersionUID(5253792953255433914L)
-class DetectionOutputFrcnn(var nmsThresh: Float = 0.3f, val nClasses: Int,
-  var bboxVote: Boolean, var maxPerImage: Int = 100, var thresh: Double = 0.05)(
+class DetectionOutputFrcnn(var nmsThresh: Float = 0.3f, val nClasses: Int = 21,
+  var bboxVote: Boolean = false, var maxPerImage: Int = 100, var thresh: Double = 0.05)(
   implicit ev: TensorNumeric[Float]) extends AbstractModule[Table, Activity, Float] {
 
   @transient var nmsTool: Nms = _
