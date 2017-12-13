@@ -31,7 +31,7 @@ class Conv3DBackpropFilterV2[T: ClassTag](
         padW: Int,
         format: DataFormat)
         (implicit ev: TensorNumeric[T])
-  extends Conv3DBackpropFilter(dT, dH, dW, padT, padH, padW, format) {
+  extends Conv3DBackpropFilter[T](dT, dH, dW, padT, padH, padW, format) {
 
   override protected def getParams(inputs: Table): (Int, Int, Int, Int, Int) = {
     val filterSize: Tensor[Int] = inputs[Tensor[Int]](2)

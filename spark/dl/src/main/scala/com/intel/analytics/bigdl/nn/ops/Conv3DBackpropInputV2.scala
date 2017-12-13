@@ -27,7 +27,7 @@ class Conv3DBackpropInputV2[T: ClassTag](dT: Int, dH: Int, dW: Int,
                                         padT: Int, padH: Int, padW: Int,
                                          format: DataFormat)
  (implicit ev: TensorNumeric[T])
-  extends Conv3DBackpropInput(dT, dH, dW, padT, padH, padW, format) {
+  extends Conv3DBackpropInput[T](dT, dH, dW, padT, padH, padW, format) {
 
   private val fGradInput = Tensor[T]()
 
