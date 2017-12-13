@@ -35,12 +35,12 @@ object Autoencoder {
     model
   }
 
-  def graph(classNum: Int, isDynamic: Boolean = false): Module[Float] = {
+  def graph(classNum: Int): Module[Float] = {
     val input = Reshape(Array(featureSize)).inputs()
     val linear1 = Linear(featureSize, classNum).inputs(input)
     val relu = ReLU().inputs(linear1)
     val linear2 = Linear(classNum, featureSize).inputs(relu)
     val output = Sigmoid().inputs(linear2)
-    if (isDynamic) Graph.dynamic(input, output) else Graph(input, output)
+    Graph(input, output)
   }
 }

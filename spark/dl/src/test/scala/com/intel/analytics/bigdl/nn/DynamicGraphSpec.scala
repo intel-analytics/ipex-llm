@@ -17,6 +17,7 @@ package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.Module
+import com.intel.analytics.bigdl.models.DynamicTestModels
 import com.intel.analytics.bigdl.models.autoencoder.Autoencoder
 import com.intel.analytics.bigdl.models.inception.Inception_v1_NoAuxClassifier
 import com.intel.analytics.bigdl.models.lenet.LeNet5
@@ -632,7 +633,7 @@ class DynamicGraphSpec  extends FlatSpec with Matchers {
     RNG.setSeed(1000)
     val model = Autoencoder(32)
     RNG.setSeed(1000)
-    val graphModel = Autoencoder.graph(32, true)
+    val graphModel = DynamicTestModels.Autoencoder.graph(32)
 
     val output1 = model.forward(input).toTensor[Float]
     val output2 = graphModel.forward(input).toTensor[Float]
@@ -654,7 +655,7 @@ class DynamicGraphSpec  extends FlatSpec with Matchers {
     RNG.setSeed(1000)
     val model = LeNet5(10)
     RNG.setSeed(1000)
-    val graphModel = LeNet5.graph(10, true)
+    val graphModel = LeNet5.graph(10)
 
     val output1 = model.forward(input).toTensor[Float]
     val output2 = graphModel.forward(input).toTensor[Float]
@@ -675,7 +676,7 @@ class DynamicGraphSpec  extends FlatSpec with Matchers {
     RNG.setSeed(1000)
     val model = VggForCifar10(10, false)
     RNG.setSeed(1000)
-    val graphModel = VggForCifar10.graph(10, false, true)
+    val graphModel = DynamicTestModels.VggForCifar10.graph(10, false)
 
     val output1 = model.forward(input).toTensor[Float]
     val output2 = graphModel.forward(input).toTensor[Float]
@@ -696,7 +697,7 @@ class DynamicGraphSpec  extends FlatSpec with Matchers {
     RNG.setSeed(1000)
     val model = Vgg_16(1000, false)
     RNG.setSeed(1000)
-    val graphModel = Vgg_16.graph(1000, false, true)
+    val graphModel = DynamicTestModels.Vgg_16.graph(1000, false)
 
     val output1 = model.forward(input).toTensor[Float]
     val output2 = graphModel.forward(input).toTensor[Float]
@@ -717,7 +718,7 @@ class DynamicGraphSpec  extends FlatSpec with Matchers {
     RNG.setSeed(1000)
     val model = Vgg_19(1000, false)
     RNG.setSeed(1000)
-    val graphModel = Vgg_19.graph(1000, false, true)
+    val graphModel = DynamicTestModels.Vgg_19.graph(1000, false)
 
     val output1 = model.forward(input).toTensor[Float]
     val output2 = graphModel.forward(input).toTensor[Float]
@@ -1147,7 +1148,8 @@ class DynamicGraphSpec  extends FlatSpec with Matchers {
     val absolutePath = tmpFile.getAbsolutePath
     tmpFile.delete()
 
-    val model = Inception_v1_NoAuxClassifier.graph(1000, true, true).asInstanceOf[Graph[Float]]
+    val model = DynamicTestModels.Inception_v1_NoAuxClassifier.graph(1000, true)
+      .asInstanceOf[Graph[Float]]
     model.saveGraphTopology(absolutePath)
     System.clearProperty("bigdl.localMode")
   }

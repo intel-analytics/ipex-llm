@@ -131,7 +131,7 @@ object Inception_v1_NoAuxClassifier {
     model
   }
 
-  def graph(classNum: Int, hasDropout: Boolean = true, isDynamic: Boolean = false)
+  def graph(classNum: Int, hasDropout: Boolean = true)
   : Module[Float] = {
    val input = SpatialConvolution(3, 64, 7, 7, 2, 2, 3, 3, 1, false)
       .setInitMethod(weightInitMethod = Xavier, Zeros).setName("conv1/7x7_s2").inputs()
@@ -174,8 +174,7 @@ object Inception_v1_NoAuxClassifier {
       .setName("loss3/classifier").inputs(view)
     val loss = LogSoftMax().setName("loss3/loss3").inputs(classifier)
 
-    val model = if (isDynamic) Graph.dynamic(input, loss) else Graph(input, loss)
-    model
+    Graph(input, loss)
   }
 }
 

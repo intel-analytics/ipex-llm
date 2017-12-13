@@ -36,7 +36,7 @@ object LeNet5 {
       .add(Linear(100, classNum).setName("fc2"))
       .add(LogSoftMax())
   }
-  def graph(classNum: Int, isDynamic: Boolean = false): Module[Float] = {
+  def graph(classNum: Int): Module[Float] = {
     val input = Reshape(Array(1, 28, 28)).inputs()
     val conv1 = SpatialConvolution(1, 6, 5, 5).setName("conv1_5x5").inputs(input)
     val tanh1 = Tanh().inputs(conv1)
@@ -50,6 +50,6 @@ object LeNet5 {
     val fc2 = Linear(100, classNum).setName("fc2").inputs(tanh3)
     val output = LogSoftMax().inputs(fc2)
 
-    if(isDynamic) Graph.dynamic(input, output) else Graph(input, output)
+    Graph(input, output)
   }
 }
