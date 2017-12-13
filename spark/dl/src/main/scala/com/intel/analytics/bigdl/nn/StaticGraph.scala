@@ -19,11 +19,12 @@ import java.util
 
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
-import com.intel.analytics.bigdl.nn.tf.WithoutInput
+import com.intel.analytics.bigdl.nn.tf.{ControlDependency, WithoutInput}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{Node, T}
 
+import scala.collection.mutable
 import scala.reflect.ClassTag
 
 /**
@@ -37,12 +38,13 @@ import scala.reflect.ClassTag
 class StaticGraph[T: ClassTag](
   private val _inputs : Seq[ModuleNode[T]],
   private val _outputs : Seq[ModuleNode[T]],
-  private val _variables: Option[(Array[Tensor[T]], Array[Tensor[T]])] = None)
-  (implicit ev: TensorNumeric[T])
-  extends Graph[T](_inputs, _outputs, _variables) {
-
+  private val _variables: Option[(Array[Tensor[T]], Array[Tensor[T]])] = None
+)(implicit ev: TensorNumeric[T]) extends Graph[T](_inputs, _outputs, _variables) {
   private val forwardExecution = forwardGraph.topologySort.reverse
   private var backwardExecution: Array[Node[AbstractModule[Activity, Activity, T]]] = _
+  private val inputCache = new Array[Activity](forwardExecution.length)
+  private var backId2ForwardId: Array[Int] = _
+  private var gradOutputCache: Array[Activity] = _
 
   buildBackwardGraph()
 
@@ -51,6 +53,7 @@ class StaticGraph[T: ClassTag](
     while(i < forwardExecution.length) {
       val node = forwardExecution(i)
       val nodeInput = findInput(node, input)
+      inputCache(i) = nodeInput
       node.element.forward(nodeInput)
       i += 1
     }
@@ -70,11 +73,41 @@ class StaticGraph[T: ClassTag](
     backwardExecution(input, gradOutput, false)
   }
 
+
   override def buildBackwardGraph(): this.type = {
     super.buildBackwardGraph()
     backwardExecution = backwardGraph.topologySort.reverse
+    backId2ForwardId = new Array[Int](backwardExecution.length)
+    gradOutputCache = new Array[Activity](backwardExecution.length)
+
+    var i = 0
+    while(i < backwardExecution.length - 1) {
+      var j = 0
+      var find = false
+      while(j < forwardExecution.length) {
+        if (forwardExecution(j).element.getName() == backwardExecution(i).element.getName()) {
+          backId2ForwardId(i) = j
+          find = true
+        }
+        j += 1
+      }
+      require(find, "Cannot find backward layer in forward executions")
+      i += 1
+    }
+
     this
   }
+
+  override def accGradParameters(input: Activity, gradOutput: Activity): Unit = {
+    var i = 0
+    while (i < backwardExecution.length - 1) {
+      val curNode = backwardExecution(i)
+      val curInput = inputCache(backId2ForwardId(i))
+      curNode.element.accGradParameters(curInput, gradOutputCache(i))
+      i += 1
+    }
+  }
+
 
   private def backwardExecution(input: Activity, gradOutput: Activity,
     executeBackward: Boolean): Activity = {
@@ -84,14 +117,16 @@ class StaticGraph[T: ClassTag](
     while (i < backwardExecution.length - 1) {  // do not execute the dummy backward end
       val curNode = backwardExecution(i)
       val curGradOutput = findGradOutput(curNode, gradOutput)
+      gradOutputCache(i) = curGradOutput
+      val curInput = inputCache(backId2ForwardId(i))
       if (!isStopGradient(curNode.element)) {
         if (executeBackward) {
-          curNode.element.backward(inputCache(curNode.element.getName()), curGradOutput)
+          curNode.element.backward(curInput, curGradOutput)
         } else {
-          curNode.element.updateGradInput(inputCache(curNode.element.getName()), curGradOutput)
+          curNode.element.updateGradInput(curInput, curGradOutput)
         }
       } else if (executeBackward) {
-        curNode.element.accGradParameters(inputCache(curNode.element.getName()), curGradOutput)
+        curNode.element.accGradParameters(curInput, curGradOutput)
       }
       i += 1
     }

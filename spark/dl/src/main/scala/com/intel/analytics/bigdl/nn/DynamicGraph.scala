@@ -31,8 +31,15 @@ class DynamicGraph[T: ClassTag](
   private val _outputs : Seq[ModuleNode[T]],
   private val _variables: Option[(Array[Tensor[T]], Array[Tensor[T]])] = None,
   val generateBackward: Boolean = true
-)(implicit ev: TensorNumeric[T])
-  extends Graph[T](_inputs, _outputs, _variables) {
+)(implicit ev: TensorNumeric[T]) extends Graph[T](_inputs, _outputs, _variables) {
+  private val forwardScheduler = new Scheduler(
+    forwardNodes.filter(_.prevNodes.length == 0),
+    Seq(dummyOutput),
+    forwardNodes.map(_.element.getName()).toSet
+  )
+  private var backwardScheduler : Scheduler[T] = _
+  private val inputCache = new mutable.HashMap[String, Activity]()
+  private val gradOutputCache = new mutable.HashMap[String, Activity]()
 
   buildBackwardGraph()
 
@@ -41,6 +48,7 @@ class DynamicGraph[T: ClassTag](
     while (!forwardScheduler.isFinished()) {
       val node = forwardScheduler.fetch()
       val nodeInput = findInput(node, input)
+      inputCache(node.element.getName()) = nodeInput
       node.element.forward(nodeInput)
       forwardScheduler.schedule(node)
     }
@@ -59,36 +67,6 @@ class DynamicGraph[T: ClassTag](
   override def updateGradInput(input: Activity, gradOutput: Activity): Activity = {
     backwardExecution(input, gradOutput, false)
   }
-
-  private def backwardExecution(input: Activity, gradOutput: Activity, isBackward: Boolean)
-  : Activity = {
-    if (!generateBackward) return null
-    backwardScheduler.reset()
-    while (!backwardScheduler.isFinished()) {
-      val curNode = backwardScheduler.fetch()
-      val curGradOutput = findGradOutput(curNode, gradOutput)
-      if (!isStopGradient(curNode.element)) {
-        if (isBackward) {
-          curNode.element.backward(inputCache(curNode.element.getName()), curGradOutput)
-        } else {
-          curNode.element.updateGradInput(inputCache(curNode.element.getName()), curGradOutput)
-        }
-      } else if (isBackward) {
-        curNode.element.accGradParameters(inputCache(curNode.element.getName()), curGradOutput)
-      }
-      backwardScheduler.schedule(curNode)
-    }
-
-    gradInput = fetchModelGradInput()
-    gradInput
-  }
-
-  private val forwardScheduler = new Scheduler(
-    forwardNodes.filter(_.prevNodes.length == 0),
-    Seq(dummyOutput),
-    forwardNodes.map(_.element.getName()).toSet
-  )
-  private var backwardScheduler : Scheduler[T] = _
 
   /**
    * Generate backward graph and apply the stopGrad
@@ -116,5 +94,39 @@ class DynamicGraph[T: ClassTag](
     )
     clearState()
     this
+  }
+
+  override def accGradParameters(input: Activity, gradOutput: Activity): Unit = {
+    var i = 0
+    while (i < backwardNodes.length) {
+      val curNode = backwardNodes(i)
+      curNode.element.accGradParameters(inputCache(curNode.element.getName()),
+        gradOutputCache(curNode.element.getName()))
+      i += 1
+    }
+  }
+
+  private def backwardExecution(input: Activity, gradOutput: Activity, isBackward: Boolean)
+  : Activity = {
+    if (!generateBackward) return null
+    backwardScheduler.reset()
+    while (!backwardScheduler.isFinished()) {
+      val curNode = backwardScheduler.fetch()
+      val curGradOutput = findGradOutput(curNode, gradOutput)
+      gradOutputCache(curNode.element.getName()) = curGradOutput
+      if (!isStopGradient(curNode.element)) {
+        if (isBackward) {
+          curNode.element.backward(inputCache(curNode.element.getName()), curGradOutput)
+        } else {
+          curNode.element.updateGradInput(inputCache(curNode.element.getName()), curGradOutput)
+        }
+      } else if (isBackward) {
+        curNode.element.accGradParameters(inputCache(curNode.element.getName()), curGradOutput)
+      }
+      backwardScheduler.schedule(curNode)
+    }
+
+    gradInput = fetchModelGradInput()
+    gradInput
   }
 }

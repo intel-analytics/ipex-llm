@@ -133,18 +133,6 @@ abstract class Graph[T: ClassTag](
   // todo: expand the graph
   override def toGraph(startNodes: ModuleNode[T]*): Graph[T] = this
 
-
-  override def accGradParameters(input: Activity, gradOutput: Activity): Unit = {
-    var i = 0
-    while (i < backwardNodes.length) {
-      val curNode = backwardNodes(i)
-      curNode.element.accGradParameters(inputCache(curNode.element.getName()),
-        gradOutputCache(curNode.element.getName()))
-      i += 1
-    }
-  }
-
-
   /**
    * Return the corresponding node has the given name. If the given name doesn't match any node,
    * NoSuchElementException will be thrown
@@ -286,8 +274,6 @@ abstract class Graph[T: ClassTag](
     nodes.filter(_.prevNodes.length == 0).foreach(removeStopNodes(_))
   }
 
-  protected val inputCache = new mutable.HashMap[String, Activity]()
-  protected val gradOutputCache = new mutable.HashMap[String, Activity]()
 
   protected def getInput(
     node: Node[AbstractModule[Activity, Activity, T]],
@@ -326,7 +312,6 @@ abstract class Graph[T: ClassTag](
         T.seq(prevActivities)
       }
     }
-    inputCache(node.element.getName()) = nodeInput
     nodeInput
   }
 
@@ -362,7 +347,6 @@ abstract class Graph[T: ClassTag](
       addZeroTensorToMissingGradOutput(curNode.element.output.toTable, curGradOutput.toTable)
     }
 
-    gradOutputCache(curNode.element.getName()) = curGradOutput
     curGradOutput
   }
 
