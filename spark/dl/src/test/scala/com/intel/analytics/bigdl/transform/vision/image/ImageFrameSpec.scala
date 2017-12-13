@@ -75,9 +75,9 @@ class ImageFrameSpec extends FlatSpec with Matchers with BeforeAndAfter {
       Files.copy(new File(resource.getFile + "000025.jpg"), new File(dir + s"/$i.jpg"))
     })
 
-    val distributed = ImageFrame.read(dir.toString, sc, 2)
+    val distributed = ImageFrame.read(dir.toString, sc, 5)
       .asInstanceOf[DistributedImageFrame]
-    distributed.rdd.partitions.length should be (2)
+    assert(distributed.rdd.partitions.length >= 5)
     if (tmpFile.exists()) FileUtils.deleteDirectory(tmpFile)
   }
 
