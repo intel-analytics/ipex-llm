@@ -160,12 +160,14 @@ class TensorflowSaverSpec extends TensorflowSpecHelper {
   }
 
   "SpatialConvolution NCHW with conv group" should "be correctly saved" in {
+    cancel("tf cpu only support NHWC, this can be test on tf with MKL")
     val layer = SpatialConvolution(6, 10, 2, 2, nGroup = 2)
     val input = Tensor[Float](4, 6, 24, 24).rand()
     test(layer, input, "/concat/output") should be(true)
   }
 
   "SpatialConvolution NCHW with conv group without bias" should "be correctly saved" in {
+    cancel("tf cpu only support NHWC, this can be test on tf with MKL")
     val layer = SpatialConvolution(6, 10, 2, 2, nGroup = 2, withBias = false)
     val input = Tensor[Float](4, 6, 24, 24).rand()
     test(layer, input, "/concat/output") should be(true)
