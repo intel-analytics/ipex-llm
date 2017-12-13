@@ -2808,7 +2808,7 @@ class LookupTableSparse(Layer):
     LookupTable for multi-values.
     Also called embedding_lookup_sparse in TensorFlow.
 
-    The input of LookupTableSparse should be a 2D SparseTensor of a Table.
+    The input of LookupTableSparse should be a 2D SparseTensor or a Table.
     If the input is a SparseTensor, the values are positive integer ids,
     values in each row of this SparseTensor will be turned into a dense vector.
     If the input is a Table, the first tensor in this table should be the integer ids, just
