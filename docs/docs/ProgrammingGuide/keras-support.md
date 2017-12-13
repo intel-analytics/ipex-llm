@@ -4,7 +4,7 @@ For __Python__ users, BigDL supports loading pre-defined Keras models. After loa
 
 The Keras version we support and test is [__Keras 1.2.2__](https://faroit.github.io/keras-docs/1.2.2/) with TensorFlow backend.
 
-You may refer to Python User Guide on how to (install)[../PythonUserGuide/install-from-pip.md] and (run)[../PythonUserGuide/run-from-pip.md] BigDL for Python users.
+You may refer to Python User Guide on how to [install](../PythonUserGuide/install-from-pip.md) and [run](../PythonUserGuide/run-from-pip.md) BigDL for Python users.
 
 ## **Load a Keras model into BigDL**
 
