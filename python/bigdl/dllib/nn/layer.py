@@ -2327,6 +2327,39 @@ class CosineDistance(Layer):
                  bigdl_type="float"):
         super(CosineDistance, self).__init__(None, bigdl_type)
 
+
+class UpSampling2D(Layer):
+    """
+    Upsampling layer for 2D inputs.
+    Repeats the heights and widths of the data by size[0] and size[1] respectively.
+
+    If input's dataformat is NCHW, then the size of output is (N, C, H * size[0], W * size[1])
+
+    :param size tuple of 2 integers. The upsampling factors for heights and widths.
+    :param format DataFormat, NCHW or NHWC
+
+    >>> upsampled2d = UpSampling2D([2, 3])
+    creating: createUpSampling2D
+    """
+    def __init__(self, size, data_format="nchw", bigdl_type="float"):
+        super(UpSampling2D, self).__init__(None, bigdl_type, size, data_format)
+
+
+class UpSampling1D(Layer):
+    """
+    Upsampling layer for 1D inputs.
+    Repeats each temporal step length times along the time axis.
+
+    If input's size is (batch, steps, features),
+    then the output's size is (batch, steps * length, features)
+
+    :param length integer, upsampling factor.
+    >>> upsampled1d = UpSampling1D(2)
+    creating: createUpSampling1D
+    """
+    def __init__(self, length, bigdl_type="float"):
+        super(UpSampling1D, self).__init__(None, bigdl_type, length)
+
 class Input(Node):
 
     '''
