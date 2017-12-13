@@ -40,10 +40,10 @@ import scala.reflect.ClassTag
  * @param dataFormat: Cropping3D.CHANNEL_FIRST or Cropping3D.CHANNEL_LAST
  */
 class Cropping3D[T: ClassTag](
-    dim1Crop: Array[Int],
-    dim2Crop: Array[Int],
-    dim3Crop: Array[Int],
-    dataFormat: String = Cropping3D.CHANNEL_FIRST
+    val dim1Crop: Array[Int],
+    val dim2Crop: Array[Int],
+    val dim3Crop: Array[Int],
+    val dataFormat: String = Cropping3D.CHANNEL_FIRST
   )(implicit ev: TensorNumeric[T]) extends TensorModule[T] {
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {

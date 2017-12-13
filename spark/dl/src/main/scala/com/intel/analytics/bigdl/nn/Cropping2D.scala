@@ -37,10 +37,11 @@ import scala.reflect.ClassTag
  *                  and end of the width dimension
  * @param dataFormat: DataFormat.NCHW or DataFormat.NHWC
  */
+@SerialVersionUID(3462228835945094156L)
 class Cropping2D[T: ClassTag](
-    heightCrop: Array[Int],
-    widthCrop: Array[Int],
-    dataFormat: DataFormat = DataFormat.NCHW
+    val heightCrop: Array[Int],
+    val widthCrop: Array[Int],
+    val dataFormat: DataFormat = DataFormat.NCHW
   )(implicit ev: TensorNumeric[T]) extends TensorModule[T] {
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
