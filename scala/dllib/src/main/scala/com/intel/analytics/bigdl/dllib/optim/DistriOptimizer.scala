@@ -17,7 +17,8 @@
 package com.intel.analytics.bigdl.optim
 
 import com.intel.analytics.bigdl.{Module, _}
-import com.intel.analytics.bigdl.dataset.{DistributedDataSet, MiniBatch}
+import com.intel.analytics.bigdl.dataset.{DataSet, DistributedDataSet,
+                        MiniBatch, SampleToMiniBatch, Sample, PaddingParam}
 import com.intel.analytics.bigdl.nn.{Module, Utils}
 import com.intel.analytics.bigdl.parameters.AllReduceParameter
 import com.intel.analytics.bigdl.tensor.Tensor
@@ -722,16 +723,16 @@ object DistriOptimizer {
  * The optimizer run on a distributed cluster.
  *
  * @param _model train model
- * @param dataset train dataset
- * @param criterion loss function
+ * @param _dataset train dataset
+ * @param _criterion loss function
  */
 class DistriOptimizer[T: ClassTag] (
   _model: Module[T],
-  dataset: DistributedDataSet[MiniBatch[T]],
-  criterion: Criterion[T]
+  _dataset: DistributedDataSet[MiniBatch[T]],
+  _criterion: Criterion[T]
 )(implicit ev: TensorNumeric[T])
   extends Optimizer[T, MiniBatch[T]](
-    _model, dataset, criterion) {
+    _model, _dataset, _criterion) {
   val metrics = new Metrics
 
   private var models: RDD[DistriOptimizer.Cache[T]] = null
@@ -750,15 +751,41 @@ class DistriOptimizer[T: ClassTag] (
     }).count()
   }
 
+
+  override def setTrainData(sampleRDD: RDD[Sample[T]],
+                 batchSize: Int,
+                 miniBatch: MiniBatch[T]): this.type = {
+    this.dataset = (DataSet.rdd(sampleRDD) ->
+      SampleToMiniBatch(miniBatch, batchSize, None))
+      .asInstanceOf[DistributedDataSet[MiniBatch[T]]]
+    this
+  }
+
+  override def setTrainData(sampleRDD: RDD[Sample[T]],
+                 batchSize: Int,
+                 featurePaddingParam: PaddingParam[T] = null,
+                 labelPaddingParam: PaddingParam[T] = null) : this.type = {
+    val _featurePaddingParam = if (featurePaddingParam != null) Some(featurePaddingParam) else None
+    val _labelPaddingParam = if (labelPaddingParam != null) Some(labelPaddingParam) else None
+    dataset = (DataSet.rdd(sampleRDD) ->
+      SampleToMiniBatch(batchSize, _featurePaddingParam, _labelPaddingParam))
+      .asInstanceOf[DistributedDataSet[MiniBatch[T]]]
+    this
+  }
+
+
   override def prepareInput(): Unit = {
     import DistriOptimizer._
-    if (!dataset.isCached) {
+    if (!dataset.asInstanceOf[DistributedDataSet[MiniBatch[T]]].isCached) {
       logger.info("caching training rdd ...")
-      dataset.cache()
+      dataset.asInstanceOf[DistributedDataSet[MiniBatch[T]]].cache()
     }
   }
 
   override def optimize(): Module[T] = {
+
+    val distDataset = dataset.asInstanceOf[DistributedDataSet[MiniBatch[T]]]
+
     optimMethod.clearHistory()
     optimMethod.loadFromTable(state)
     state("dropPercentage") = dropPercentage
@@ -770,13 +797,13 @@ class DistriOptimizer[T: ClassTag] (
     val nodeNumber = Engine.nodeNumber()
     val coresPerNode = Engine.coreNumber()
 
-    val partitionNum = dataset.originRDD().partitions.length
+    val partitionNum = distDataset.originRDD().partitions.length
     val size = model.getParameters()._1.nElement()
     val parameters = AllReduceParameter.newParameter(partitionNum, size)
 
     prepareInput()
 
-    models = DistriOptimizer.initThreadModels(model, dataset, criterion, state,
+    models = DistriOptimizer.initThreadModels(model, distDataset, criterion, state,
       nodeNumber, coresPerNode, checkSingleton, parameters, validationMethods, optimMethod)
 
     if (checkpointPath.isDefined) {
@@ -790,10 +817,11 @@ class DistriOptimizer[T: ClassTag] (
     val maxRetry = System.getProperty("bigdl.failure.retryTimes", "5").toInt
     val retryTimeInterval = System.getProperty("bigdl.failure.retryTimeInterval", "120").toInt
     var lastFailureTimestamp = System.nanoTime()
+
     while (retryNum < maxRetry) {
       try {
         DistriOptimizer.optimize(
-          dataset,
+          distDataset,
           coresPerNode,
           state,
           endWhen,
@@ -846,7 +874,7 @@ class DistriOptimizer[T: ClassTag] (
               DistriOptimizer.logger.info("Recover from origin model")
             }
             optimMethod.clearHistory()
-            models = DistriOptimizer.initThreadModels(newModel, dataset, criterion, state,
+            models = DistriOptimizer.initThreadModels(newModel, distDataset, criterion, state,
               nodeNumber, coresPerNode, checkSingleton, parameters, validationMethods, optimMethod)
           } else {
             throw t
