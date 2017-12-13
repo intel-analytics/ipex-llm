@@ -41,6 +41,11 @@ class Tanh[T: ClassTag](
   }
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
+    updateGradInputInternal(output, gradOutput)
+  }
+
+  private[bigdl] def updateGradInputInternal(output: Tensor[T],
+                                            gradOutput: Tensor[T]): Tensor[T] = {
     gradInput.resizeAs(gradOutput)
     buffer.resizeAs(output)
     buffer.pow(output, ev.fromType(2)).cmul(gradOutput)

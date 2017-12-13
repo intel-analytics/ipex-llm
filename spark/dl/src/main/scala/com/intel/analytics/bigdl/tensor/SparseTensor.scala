@@ -1045,6 +1045,22 @@ private[tensor] class SparseTensor[@specialized(Float, Double) T: ClassTag](
   override def toArray(): Array[T] = {
     throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
   }
+
+  override def erf(): Tensor[T] = {
+    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+  }
+
+  override def erfc(): Tensor[T] = {
+    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+  }
+
+  override def logGamma(): Tensor[T] = {
+    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+  }
+
+  override def digamma(): Tensor[T] = {
+    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+  }
 }
 
 object SparseTensor{
