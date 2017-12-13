@@ -16,6 +16,8 @@
 
 package com.intel.analytics.bigdl.transform.vision.image
 
+import java.io.File
+
 import com.google.common.io.Files
 import com.intel.analytics.bigdl.transform.vision.image.augmentation.HFlip
 import com.intel.analytics.bigdl.utils.Engine
@@ -65,10 +67,23 @@ class ImageFrameSpec extends FlatSpec with Matchers with BeforeAndAfter {
     imageFeature.opencvMat().shape() should be((375, 500, 3))
   }
 
+  "read DistributedImageFrame with partition number" should "work properly" in {
+    val tmpFile = Files.createTempDir()
+    val dir = new File(tmpFile.toString + "/images")
+    dir.mkdir()
+    (1 to 10).foreach(i => {
+      Files.copy(new File(resource.getFile + "000025.jpg"), new File(dir + s"/$i.jpg"))
+    })
+
+    val distributed = ImageFrame.read(dir.toString, sc, 5)
+      .asInstanceOf[DistributedImageFrame]
+    if (tmpFile.exists()) FileUtils.deleteDirectory(tmpFile)
+  }
+
   "SequenceFile write and read" should "work properly" in {
     val tmpFile = Files.createTempDir()
     val dir = tmpFile.toString + "/parque"
-    ImageFrame.writeParquet(resource.getFile, dir, sqlContext)
+    ImageFrame.writeParquet(resource.getFile, dir, sqlContext, 1)
 
     val distributed = ImageFrame.readParquet(dir, sqlContext)
     val imageFeature = distributed.rdd.first()
