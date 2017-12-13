@@ -2230,6 +2230,19 @@ class ModuleSerializerSpec extends FlatSpec with Matchers with BeforeAndAfterAll
     tested.add(module.getClass.getName)
   }
 
+  "PriorBox serializer" should "work properly" in {
+    val isClip = false
+    val isFlip = true
+    val variances = Array(0.1f, 0.1f, 0.2f, 0.2f)
+    val minSizes = Array(460.8f)
+    val maxSizes = Array(537.6f)
+    val aspectRatios = Array(2f)
+    val module = PriorBox[Float](minSizes = minSizes, maxSizes = maxSizes,
+      _aspectRatios = aspectRatios, isFlip = isFlip, isClip = isClip,
+      variances = variances, step = 0, offset = 0.5f, imgH = 512, imgW = 512)
+    val input = Tensor[Float](8, 256, 1, 1)
+    runSerializationTest(module, input)
+  }
 
   override protected def afterAll() = {
     var total = 0
