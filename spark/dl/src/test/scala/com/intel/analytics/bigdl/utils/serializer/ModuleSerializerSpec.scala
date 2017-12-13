@@ -28,6 +28,7 @@ import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, DataFo
 import com.intel.analytics.bigdl.nn.ops.{All, Any, ApproximateEqual, ArgMax, Assert, Assign, AssignGrad, AvgPoolGrad, BatchMatMul, BiasAddGrad, BroadcastGradientArgs, Cast, Ceil, Conv2D, Conv2DBackFilter, Conv2DTranspose, CrossEntropy, DecodeImage, DepthwiseConv2D, DepthwiseConv2DBackpropFilter, DepthwiseConv2DBackpropInput, EluGrad, Equal, Expm1, Floor, FloorDiv, FloorMod, FusedBatchNorm, FusedBatchNormGrad, Greater, GreaterEqual, InTopK, Inv, InvGrad, IsFinite, IsInf, IsNan, L2Loss, LRNGrad, Less, LessEqual, LogicalAnd, LogicalNot, LogicalOr, MaxPool, MaxPoolGrad, Maximum, MergeOps, Minimum, Mod, ModuleToOperation, NoOp, NotEqual, OneHot, Pad, ParseExample, Prod, RandomUniform, RangeOps, Rank, Relu6Grad, ReluGrad, ResizeBilinearOps, Rint, Round, RsqrtGrad, SigmoidGrad, Sign, Slice, SoftplusGrad, SoftsignGrad, SqrtGrad, SquaredDifference, Substr, SwitchOps, TopK, TruncateDiv, TruncatedNormal, Add => AddOps, DecodeGif => DecodeGifOps, DecodeJpeg => DecodeJpegOps, DecodePng => DecodePngOps, DecodeRaw => DecodeRawOps, Exp => ExpOps, Pow => PowOps, Select => SelectOps, Sum => SumOps, Tile => TileOps}
 import com.intel.analytics.bigdl.nn.tf._
 import com.intel.analytics.bigdl.nn.{DenseToSparse, _}
+import com.intel.analytics.bigdl.optim.L2Regularizer
 import com.intel.analytics.bigdl.tensor._
 import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
 import com.intel.analytics.bigdl.utils.tf.TFRecordIterator
@@ -2179,6 +2180,56 @@ class ModuleSerializerSpec extends FlatSpec with Matchers with BeforeAndAfterAll
     )
     runSerializationTest(topkv2LoadTF, input)
   }
+
+  "Proposal serializer" should "work properly" in {
+    val proposal = Proposal(200, 100, Array[Float](0.1f, 0.2f, 0.3f), Array[Float](4, 5, 6))
+    val score = Tensor[Float](1, 18, 20, 30).randn()
+    val boxes = Tensor[Float](1, 36, 20, 30).randn()
+    val imInfo = Tensor[Float](T(300, 300, 1, 1)).resize(1, 4)
+    val input = T(score, boxes, imInfo)
+    runSerializationTest(proposal, input)
+  }
+
+  "NormalizeScale serializer" should "work properly" in {
+    val module = NormalizeScale[Float](2, scale = 20, size = Array(1, 5, 1, 1),
+      wRegularizer = L2Regularizer[Float](0.2)).setName("NormalizeScale")
+
+    val input = Tensor[Float](1, 5, 3, 4).randn()
+    runSerializationTest(module, input)
+  }
+
+  "DetectionOutputSSD serializer" should "work properly" in {
+    val module = DetectionOutputSSD[Float](DetectionOutputParam()).setName("DetectionOutputSSD")
+    val name = module.getName
+    val serFile = File.createTempFile(name, postFix)
+
+    ModulePersister.saveToFile[Float](serFile.getAbsolutePath, null, module.evaluate(), true)
+    RNG.setSeed(1000)
+    val loadedModule = ModuleLoader.loadFromFile[Float](serFile.getAbsolutePath)
+
+
+    if (serFile.exists) {
+      serFile.delete
+    }
+    tested.add(module.getClass.getName)
+  }
+
+  "DetectionOutputFrcnn serializer" should "work properly" in {
+    val module = DetectionOutputFrcnn().setName("DetectionOutputFrcnn")
+    val name = module.getName
+    val serFile = File.createTempFile(name, postFix)
+
+    ModulePersister.saveToFile[Float](serFile.getAbsolutePath, null, module.evaluate(), true)
+    RNG.setSeed(1000)
+    val loadedModule = ModuleLoader.loadFromFile[Float](serFile.getAbsolutePath)
+
+
+    if (serFile.exists) {
+      serFile.delete
+    }
+    tested.add(module.getClass.getName)
+  }
+
 
   override protected def afterAll() = {
     var total = 0
