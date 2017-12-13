@@ -1,8 +1,10 @@
 # **Keras Support**
 
-BigDL supports loading pre-defined Keras models. After loading a model, you can train, evaluate or tune a model on BigDL in a distributed manner.
+For __Python__ users, BigDL supports loading pre-defined Keras models. After loading a model, you can train, evaluate or tune a model on BigDL in a distributed manner.
 
-The Keras version we support and test is [__Keras 1.2.2__](https://faroit.github.io/keras-docs/1.2.2/).
+The Keras version we support and test is [__Keras 1.2.2__](https://faroit.github.io/keras-docs/1.2.2/) with TensorFlow backend.
+
+You may refer to Python User Guide on how to (install)[../PythonUserGuide/install-from-pip.md] and (run)[../PythonUserGuide/run-from-pip.md] BigDL for Python users.
 
 ## **Load a Keras model into BigDL**
 
@@ -12,7 +14,7 @@ See [here](https://faroit.github.io/keras-docs/1.2.2/getting-started/faq/#how-ca
 
 You can directly use the API `load_keras` to load the Keras model into BigDL.
 
-__Remark__: Packages `tensorflow`, `keras==1.2.2` and `h5py` are required. They can be installed via `pip` easily.
+__Remark__: Packages `keras==1.2.2`, `tensorflow` and `h5py` are required. They can be installed via `pip` easily.
 
 ```python
 from bigdl.nn.layer import *
@@ -37,7 +39,7 @@ bigdl_model = Model.load_keras("s3://...")
 
 ## **LeNet Example**
 
-Here we show an example on how to load a Keras model into BigDL. The model used in this example is a [CNN](https://github.com/fchollet/keras/blob/1.2.2/examples/mnist_cnn.py) from Keras.
+Here we show a simple example on how to load a Keras model into BigDL. The model used in this example is a [CNN](https://github.com/fchollet/keras/blob/1.2.2/examples/mnist_cnn.py) from Keras.
 
 ```python
 from keras.models import Sequential
