@@ -152,7 +152,7 @@ abstract class Graph[T: ClassTag](
    * @return
    */
   def node(name: String): ModuleNode[T] = {
-    val matchNodes = forwardGraph.BFS.filter(_.element.getName() == name).toArray
+    val matchNodes = forwardNodes.filter(_.element.getName() == name).toArray
     if (matchNodes.length == 0) {
       throw new NoSuchElementException(s"Can not find node with name $name")
     } else {
