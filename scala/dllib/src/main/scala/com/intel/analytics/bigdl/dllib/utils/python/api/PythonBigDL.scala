@@ -826,6 +826,14 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     L1Cost[T]()
   }
 
+  def createUpSampling1D(length: Int): UpSampling1D[T] = {
+    UpSampling1D(length)
+  }
+
+  def createUpSampling2D(size: JList[Int], dataFormat: String): UpSampling2D[T] = {
+    UpSampling2D(size.asScala.toArray, DataFormat(dataFormat))
+  }
+
   def createL1Penalty(l1weight: Int,
     sizeAverage: Boolean = false,
     provideOutput: Boolean = true)
