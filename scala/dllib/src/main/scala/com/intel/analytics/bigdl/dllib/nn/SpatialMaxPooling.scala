@@ -119,6 +119,10 @@ class SpatialMaxPooling[T: ClassTag](
     val oHeight = sizes(4)
     val oWidth = sizes(5)
 
+    if (ceilMode && padW == 0 && (inputWidth - kW) % dW == 0) {
+      ceilMode = false // The ceil mode is not needed.
+    }
+
     if (input.dim() == 3) {
       format match {
         case DataFormat.NCHW =>
