@@ -709,6 +709,12 @@ class Optimizer(JavaValue):
         """
         callBigDlFunc(self.bigdl_type, "setL2NormClip", self.value, clip_norm)
 
+    def disable_gradclip(self):
+        """
+        disable clipping.
+        """
+        callBigDlFunc(self.bigdl_type, "disableClip", self.value)
+
     # return a module
     def optimize(self):
         """

@@ -94,8 +94,6 @@ object Train {
         .setValidation(Trigger.everyEpoch, validateSet, Array(new Top1Accuracy[Float]))
         .setOptimMethod(optimMethod)
         .setEndWhen(Trigger.maxEpoch(param.maxEpoch))
-//        .setGradientClippingByNorm(1.0f)
-          .setConstantGradientClipping(-1.0f, 1.0f)
         .optimize()
 
       sc.stop()
