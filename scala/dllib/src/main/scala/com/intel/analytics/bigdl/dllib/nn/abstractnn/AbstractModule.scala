@@ -41,7 +41,7 @@ import scala.reflect.ClassTag
  * [[TensorModule]] is an abstract sub-class of [[AbstractModule]], whose
  * input and output type both are [[Tensor]].
  *
- * @tparam T The numeric type in the criterion, usually which are [[Float]] or [[Double]]
+ * @tparam T The numeric type in this module, usually which are [[Float]] or [[Double]]
  */
 abstract class TensorModule[T: ClassTag]
   (implicit ev: TensorNumeric[T]) extends AbstractModule[Tensor[T], Tensor[T], T]
