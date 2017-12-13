@@ -411,6 +411,21 @@ object Utils {
     }
   }
 
+  private[nn] def getOutputSize(inputSize: Int, filterSize: Int,
+                    stride: Int, padding: String) = {
+    padding.toLowerCase() match {
+      case "valid" =>
+        val outputSize = (inputSize - filterSize + stride) / stride
+        (outputSize, 0, 0)
+      case "same" =>
+        val outputSize = (inputSize + stride - 1) / stride
+        val paddingNeeded = math.max(0, (outputSize - 1) * stride + filterSize - inputSize)
+        val padBefore = paddingNeeded / 2
+        val padAfter = paddingNeeded - padBefore
+        (outputSize, padBefore, padAfter)
+    }
+  }
+
   def shuffle[T: ClassTag](src: Tensor[T], permutation: Array[Int], buffer: Tensor[T] = null)(
     implicit ev: TensorNumeric[T]): Tensor[T] = {
     require(permutation.length == src.nDimension,
