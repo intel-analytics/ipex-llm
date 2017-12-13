@@ -113,29 +113,15 @@ class ModuleSerializerSpec extends FlatSpec with Matchers with BeforeAndAfterAll
   }
 
   "UpSampling1D serializer" should "work properly" in {
-    val upsampling = UpSampling1D(2).setName("upsampling")
-    val tensor1 = Tensor(2, 5, 5).apply1(_ => Random.nextFloat())
-    val tensor2 = Tensor()
-    val res1 = upsampling.forward(tensor1)
-    tensor2.resizeAs(tensor1).copy(tensor1)
-    val localPath = java.io.File.createTempFile("upsampling1d", ".bigdl").getAbsolutePath
-    ModulePersister.saveToFile(localPath, null, upsampling, true)
-    val loadedModule = ModuleLoader.loadFromFile(localPath)
-    val res2 = loadedModule.forward(tensor2)
-    res1 should be (res2)
+    val upsampling = UpSampling1D[Float](2).setName("upsampling")
+    val input = Tensor(2, 5, 5).apply1(_ => Random.nextFloat())
+    runSerializationTest(upsampling, input)
   }
 
   "UpSampling2D serializer" should "work properly" in {
-    val upsampling = UpSampling2D(Array(2, 3)).setName("upsampling")
-    val tensor1 = Tensor(2, 3, 5, 5).apply1(_ => Random.nextFloat())
-    val tensor2 = Tensor()
-    val res1 = upsampling.forward(tensor1)
-    tensor2.resizeAs(tensor1).copy(tensor1)
-    val localPath = java.io.File.createTempFile("upsampling2d", ".bigdl").getAbsolutePath
-    ModulePersister.saveToFile(localPath, null, upsampling, true)
-    val loadedModule = ModuleLoader.loadFromFile(localPath)
-    val res2 = loadedModule.forward(tensor2)
-    res1 should be (res2)
+    val upsampling = UpSampling2D[Float](Array(2, 3)).setName("upsampling")
+    val input = Tensor(2, 3, 5, 5).apply1(_ => Random.nextFloat())
+    runSerializationTest(upsampling, input)
   }
 
   "Add serializer" should "work properly" in {
