@@ -25,7 +25,7 @@ import com.intel.analytics.bigdl.nn.abstractnn.DataFormat.NHWC
 
 import scala.collection.JavaConverters._
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, DataFormat}
-import com.intel.analytics.bigdl.nn.ops.{All, Any, ApproximateEqual, ArgMax, Assert, Assign, AssignGrad, AvgPoolGrad, BatchMatMul, BiasAddGrad, BroadcastGradientArgs, Cast, Ceil, Conv2D, Conv2DBackFilter, Conv2DTranspose, CrossEntropy, DecodeImage, DepthwiseConv2D, DepthwiseConv2DBackpropFilter, DepthwiseConv2DBackpropInput, EluGrad, Equal, Expm1, Floor, FloorDiv, FloorMod, FusedBatchNorm, FusedBatchNormGrad, Greater, GreaterEqual, InTopK, Inv, InvGrad, IsFinite, IsInf, IsNan, L2Loss, LRNGrad, Less, LessEqual, LogicalAnd, LogicalNot, LogicalOr, MaxPool, MaxPoolGrad, Maximum, MergeOps, Minimum, Mod, ModuleToOperation, NoOp, NotEqual, OneHot, Pad, ParseExample, Prod, RandomUniform, RangeOps, Rank, Relu6Grad, ReluGrad, ResizeBilinearOps, Rint, Round, RsqrtGrad, SigmoidGrad, Sign, Slice, SoftplusGrad, SoftsignGrad, SqrtGrad, SquaredDifference, Substr, SwitchOps, TopK, TruncateDiv, TruncatedNormal, Add => AddOps, DecodeGif => DecodeGifOps, DecodeJpeg => DecodeJpegOps, DecodePng => DecodePngOps, DecodeRaw => DecodeRawOps, Exp => ExpOps, Pow => PowOps, Select => SelectOps, Sum => SumOps, Tile => TileOps}
+import com.intel.analytics.bigdl.nn.ops.{All, Any, ApproximateEqual, ArgMax, Assert, Assign, AssignGrad, AvgPoolGrad, BatchMatMul, BiasAddGrad, BroadcastGradientArgs, Cast, Ceil, Conv2D, Conv2DBackFilter, Conv2DTranspose, CrossEntropy, DecodeImage, DepthwiseConv2D, DepthwiseConv2DBackpropFilter, DepthwiseConv2DBackpropInput, Digamma, EluGrad, Equal, Erf, Erfc, Expm1, Floor, FloorDiv, FloorMod, FusedBatchNorm, FusedBatchNormGrad, Greater, GreaterEqual, InTopK, Inv, InvGrad, IsFinite, IsInf, IsNan, L2Loss, LRNGrad, Less, LessEqual, Lgamma, LogicalAnd, LogicalNot, LogicalOr, MaxPool, MaxPoolGrad, Maximum, MergeOps, Minimum, Mod, ModuleToOperation, NoOp, NotEqual, OneHot, Pad, ParseExample, Prod, RandomUniform, RangeOps, Rank, Relu6Grad, ReluGrad, ResizeBilinearOps, Rint, Round, RsqrtGrad, SigmoidGrad, Sign, Slice, SoftplusGrad, SoftsignGrad, SqrtGrad, SquaredDifference, Substr, SwitchOps, TanhGrad, TopK, TruncateDiv, TruncatedNormal, Add => AddOps, DecodeGif => DecodeGifOps, DecodeJpeg => DecodeJpegOps, DecodePng => DecodePngOps, DecodeRaw => DecodeRawOps, Exp => ExpOps, Pow => PowOps, Select => SelectOps, Sum => SumOps, Tile => TileOps}
 import com.intel.analytics.bigdl.nn.tf._
 import com.intel.analytics.bigdl.nn.{DenseToSparse, _}
 import com.intel.analytics.bigdl.optim.L2Regularizer
@@ -2207,6 +2207,41 @@ class ModuleSerializerSpec extends FlatSpec with Matchers with BeforeAndAfterAll
       wRegularizer = L2Regularizer[Float](0.2)).setName("NormalizeScale")
 
     val input = Tensor[Float](1, 5, 3, 4).randn()
+    runSerializationTest(module, input)
+  }
+
+  "Digamma serializer" should "work properly" in {
+    val module = Digamma[Float, Float]()
+
+    val input = Tensor[Float](1, 5, 3, 4).rand()
+    runSerializationTest(module, input)
+  }
+
+  "Lgamma serializer" should "work properly" in {
+    val module = Lgamma[Float, Float]()
+
+    val input = Tensor[Float](1, 5, 3, 4).rand()
+    runSerializationTest(module, input)
+  }
+
+  "Erf serializer" should "work properly" in {
+    val module = Erf[Float, Float]()
+
+    val input = Tensor[Float](1, 5, 3, 4).rand()
+    runSerializationTest(module, input)
+  }
+
+  "Erfc serializer" should "work properly" in {
+    val module = Erfc[Float, Float]()
+
+    val input = Tensor[Float](1, 5, 3, 4).rand()
+    runSerializationTest(module, input)
+  }
+
+  "TanhGrad serializer" should "work properly" in {
+    val module = TanhGrad[Float, Float]()
+
+    val input = T(Tensor[Float](1, 5, 3, 4).rand(), Tensor[Float](1, 5, 3, 4).rand())
     runSerializationTest(module, input)
   }
 

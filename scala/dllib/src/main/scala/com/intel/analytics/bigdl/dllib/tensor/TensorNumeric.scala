@@ -138,6 +138,14 @@ object TensorNumericMath {
 
     def inv(v: T): T
 
+    def erf(v: T): T
+
+    def erfc(v: T): T
+
+    def logGamma(v: T): T
+
+    def digamma(v: T): T
+
     def add(n: Int, a: Array[T], offset: Int, v: T, stride: Int): Unit
 
     def sub(n: Int, a: Array[T], offset: Int, v: T, stride: Int): Unit
@@ -456,6 +464,22 @@ object TensorNumericMath {
     def clip(a: T, lower: T, upper: T): T =
       throw new UnsupportedOperationException(typeName +
         " in tensor does not support clip operation")
+
+    def erf(x: T): T =
+      throw new UnsupportedOperationException(typeName +
+        " in tensor does not support erf operation")
+
+    def erfc(x: T): T =
+      throw new UnsupportedOperationException(typeName +
+        " in tensor does not support erf operation")
+
+    def logGamma(v: T): T =
+      throw new UnsupportedOperationException(typeName +
+        " in tensor does not support erf operation")
+
+    def digamma(v: T): T =
+      throw new UnsupportedOperationException(typeName +
+        " in tensor does not support erf operation")
   }
 
   /**
@@ -771,6 +795,15 @@ object TensorNumericMath {
         math.min(math.max(a, lower), upper)
       }
 
+      override def erf(a: Float): Float = org.apache.commons.math3.special.Erf.erf(a).toFloat
+
+      override def erfc(a: Float): Float = org.apache.commons.math3.special.Erf.erfc(a).toFloat
+
+      override def logGamma(a: Float): Float =
+        org.apache.commons.math3.special.Gamma.logGamma(a).toFloat
+
+      override def digamma(a: Float): Float =
+        org.apache.commons.math3.special.Gamma.digamma(a).toFloat
     }
 
     implicit object NumericDouble extends UndefinedTensorNumeric[Double]("Double") {
@@ -1075,6 +1108,16 @@ object TensorNumericMath {
         require(lower <= upper, "lower bound must be less or equal than upper bound")
         math.min(math.max(a, lower), upper)
       }
+
+      override def erf(a: Double): Double = org.apache.commons.math3.special.Erf.erf(a)
+
+      override def erfc(a: Double): Double = org.apache.commons.math3.special.Erf.erfc(a)
+
+      override def logGamma(a: Double): Double =
+        org.apache.commons.math3.special.Gamma.logGamma(a)
+
+      override def digamma(a: Double): Double =
+        org.apache.commons.math3.special.Gamma.digamma(a)
     }
 
     implicit object NumericString extends UndefinedTensorNumeric[String]("String") {
