@@ -41,10 +41,7 @@ class V1LayerConverter[T: ClassTag](implicit ev: TensorNumeric[T]) extends Conve
     val param = getConvolutionParam(layer).get
     val weightBlob = getBlob(layer, 0).get
     val biasBlob = getBlob(layer, 1)
-    if (!biasBlob.isDefined) {
-      throw new CaffeConversionException(s"${getLayerName(layer)} " +
-        s"without bias is not supported now")
-    }
+    val withBias = biasBlob.isDefined
     val group = if (param.getGroup == 0)  1 else param.getGroup
     val channel = if (weightBlob.getShape.getDimCount > 1) weightBlob.getShape.getDim(1).toInt
     else weightBlob.getChannels
@@ -78,10 +75,12 @@ class V1LayerConverter[T: ClassTag](implicit ev: TensorNumeric[T]) extends Conve
     }
     val layerType = getLayerType(layer).toUpperCase
     if ("DECONVOLUTION" == layerType) {
-      Seq(SpatialFullConvolution[T](nOutPlane, nInputPlane, kw, kh, dw, dh, pw, ph, 0, 0, group)
+      Seq(SpatialFullConvolution[T](nOutPlane, nInputPlane, kw, kh, dw, dh, pw, ph, 0, 0, group,
+      noBias = !withBias)
         .setName(getLayerName(layer)).inputs())
     } else {
-      Seq(SpatialConvolution[T](nInputPlane, nOutPlane, kw, kh, dw, dh, pw, ph, group)
+      Seq(SpatialConvolution[T](nInputPlane, nOutPlane, kw, kh, dw, dh, pw, ph, group,
+      withBias = withBias)
         .setName(getLayerName(layer)).inputs())
     }
   }

@@ -146,7 +146,8 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
         val weightLayer = layers(name)
         builder.addLayers(copyBlobs(weightLayer, v1Layer).asInstanceOf[V1LayerParameter])
       } else {
-        builder.addLayers(v1Layer)
+        throw new CaffeConversionException(s"layer $name " +
+          s"only exists in deploy file but not in weight file, please double check!")
       }
     })
 
@@ -156,7 +157,8 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
         val weightLayer = layers(name)
         builder.addLayer(copyBlobs(weightLayer, v2Layer).asInstanceOf[LayerParameter])
       } else {
-        builder.addLayer(v2Layer)
+        throw new CaffeConversionException(s"layer $name " +
+          s"only exists in deploy file but not in weight file, please double check!")
       }
     })
     builder.build
