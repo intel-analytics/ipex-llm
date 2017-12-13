@@ -1429,4 +1429,17 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
 
   override def toArray(): Array[T] =
     throw new UnsupportedOperationException(errorString)
+
+  override def erf(): Tensor[T] =
+    throw new UnsupportedOperationException(errorString)
+
+  override def erfc(): Tensor[T] =
+    throw new UnsupportedOperationException(errorString)
+
+  override def logGamma(): Tensor[T] =
+    throw new UnsupportedOperationException(errorString)
+
+  override def digamma(): Tensor[T] =
+
+    throw new UnsupportedOperationException(errorString)
 }
