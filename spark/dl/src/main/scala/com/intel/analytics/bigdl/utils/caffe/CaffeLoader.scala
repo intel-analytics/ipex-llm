@@ -19,6 +19,7 @@ import java.io._
 
 import caffe.Caffe
 import caffe.Caffe._
+import com.google.protobuf.TextFormat.ParseException
 import com.google.protobuf.{CodedInputStream, GeneratedMessage, TextFormat}
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
@@ -255,7 +256,8 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
   private def copyParameter(name: String, params: Table): Unit = {
     if (params == null || (!params.contains("weight") && !params.contains("bias"))) return
     if (!name2LayerV2.contains(name) && !name2LayerV1.contains(name)) {
-      if (matchAll) throw new Exception(s"module $name cannot map a layer in caffe model")
+      if (matchAll) throw new CaffeConversionException(s"module $name " +
+        s"cannot map a layer in caffe model")
       logger.info(s"$name uses initialized parameters")
       return
     }
@@ -525,8 +527,8 @@ object CaffeLoader {
   }
 
 /**
- * load caffe model dynamically from binary and prototxt file
- * @param defPath prototxt file which illustrate the caffe model structure
+ * load caffe model dynamically from prototxt and binary files
+ * @param defPath prototxt file which illustrates the caffe model structure
  * @param modelPath binary file containing the weight and bias
  * @param customizedConverters customized layer converter
  * @param outputNames additional output layer names besides the default(layers without next nodes)
@@ -537,7 +539,16 @@ object CaffeLoader {
     customizedConverters : mutable.HashMap[String, Customizable[T]] = null,
     outputNames: Array[String] = Array[String]())
                               (implicit ev: TensorNumeric[T]): (Module[T], ParallelCriterion[T]) = {
-    val caffeLoader = new CaffeLoader[T](defPath, modelPath, true, customizedConverters)
-    caffeLoader.createCaffeModel(outputNames)
+    try {
+      val caffeLoader = new CaffeLoader[T](defPath, modelPath, true, customizedConverters)
+      caffeLoader.createCaffeModel(outputNames)
+    } catch {
+      case parseException : ParseException =>
+        throw new CaffeConversionException("Parsing caffe model error," +
+          "only standard Caffe format is supported"
+          , parseException)
+      case conversionExcepion : CaffeConversionException =>
+        throw  conversionExcepion
+    }
   }
 }
