@@ -36,8 +36,8 @@ import scala.reflect.ClassTag
 class Scale[T: ClassTag](val size: Array[Int])
   (implicit ev: TensorNumeric[T]) extends AbstractModule[Tensor[T], Tensor[T], T] {
 
-  private var cmul = new CMul[T](size)
-  private var cadd = new CAdd[T](size)
+  private[bigdl] var cmul = new CMul[T](size)
+  private[bigdl] var cadd = new CAdd[T](size)
 
   /**
    * Computes the output using the current parameter set of the class and input. This function

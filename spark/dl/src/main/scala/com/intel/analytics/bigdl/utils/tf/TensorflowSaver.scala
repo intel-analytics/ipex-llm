@@ -22,13 +22,16 @@ import com.google.protobuf.CodedOutputStream
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.{File, FileWriter}
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.{File, FileWriter, T}
 import org.apache.log4j.Logger
 import org.tensorflow.framework._
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 import com.intel.analytics.bigdl.utils.tf.Tensorflow._
+
+import scala.reflect.ClassTag
 
 object TensorflowSaver {
   /**
@@ -51,24 +54,25 @@ object TensorflowSaver {
       byteOrder: ByteOrder = ByteOrder.LITTLE_ENDIAN,
       extraNodes: Set[NodeDef] = Set()): Unit = {
     val inputNodeCache =
-      new mutable.HashMap[AbstractModule[Activity, Activity, T], ArrayBuffer[NodeDef]]()
+      new mutable.HashMap[String, ArrayBuffer[NodeDef]]()
     model.inputs.zip(inputs).foreach(n => {
-      inputNodeCache(n._1.element) = ArrayBuffer(n._2)
+      inputNodeCache(n._1.element.getName()) = ArrayBuffer(n._2)
     })
 
     val graphBuilder = GraphDef.newBuilder()
     inputs.foreach(graphBuilder.addNode(_))
 
     model.getSortedForwardExecutions.foreach(n => {
-      val nodeDefs = maps(n.element.getClass.getName).toTFDef(n.element, inputNodeCache(n.element),
+      val nodeDefs = maps(n.element.getClass.getName).toTFDef(n.element,
+        inputNodeCache(n.element.getName()),
         byteOrder)
       nodeDefs.foreach(nDef => {
         graphBuilder.addNode(nDef)
       })
       n.nextNodes.foreach(n => {
-        val list = inputNodeCache.getOrElse(n.element, ArrayBuffer())
+        val list = inputNodeCache.getOrElse(n.element.getName(), ArrayBuffer())
         list.append(nodeDefs(0))
-        inputNodeCache(n.element) = list
+        inputNodeCache(n.element.getName()) = list
       })
     })
 
@@ -109,12 +113,43 @@ object TensorflowSaver {
    * @param dataFormat model data format
    * @tparam T
    */
-  def saveGraph[T](
+  def saveGraph[T: ClassTag](
       model : Graph[T],
       inputs : Seq[(String, Seq[Int])],
       path: String,
       byteOrder: ByteOrder = ByteOrder.LITTLE_ENDIAN,
-      dataFormat: TensorflowDataFormat = TensorflowDataFormat.NHWC): Unit = {
+      dataFormat: TensorflowDataFormat = TensorflowDataFormat.NHWC)(
+    implicit ev: TensorNumeric[T]): Unit = {
+    // Check if there's pooling layer in which ceilMode is enable and pad is zero, we need double
+    // check if the ceilMode is real needed
+    val ceiledPoolingModules = model.modules.filter(m =>
+      if (m.isInstanceOf[SpatialMaxPooling[_]]) {
+        val a = m.asInstanceOf[SpatialMaxPooling[_]]
+        a.ceilMode == true && a.padH == 0 && a.padW == 0
+      } else if (m.isInstanceOf[SpatialAveragePooling[_]]) {
+        val a = m.asInstanceOf[SpatialAveragePooling[_]]
+        a.ceilMode == true && a.padH == 0 && a.padW == 0
+      } else {
+        false
+      })
+
+    if (ceiledPoolingModules.size != 0) {
+      val inputTensors = inputs.map(shape => Tensor[T]().resize(shape._2.toArray))
+      val inputActivity = if (inputTensors.size == 1) {
+        inputTensors.head
+      } else {
+        val t = T()
+        var i = 1
+        inputTensors.foreach(tensor => {
+          t(i) = tensor
+          i += 1
+        })
+        t
+      }
+      model.forward(inputActivity)
+    }
+
+
     val inputNodeDefs = inputs.map(input =>
       placeholder(model.getNumericType(), input._2, input._1)
     )
@@ -154,7 +189,9 @@ object TensorflowSaver {
     getNameFromObj(LogSoftMax.getClass.getName) -> LogSoftMaxToTF,
     getNameFromObj(SpatialBatchNormalization.getClass.getName) -> BatchNorm2DToTF,
     getNameFromObj(Input.getClass.getName) -> InputToTF,
-    getNameFromObj(Sigmoid.getClass.getName) -> SigmoidToTF
+    getNameFromObj(Sigmoid.getClass.getName) -> SigmoidToTF,
+    getNameFromObj(Scale.getClass.getName) -> ScaleToTF,
+    getNameFromObj(SpatialCrossMapLRN.getClass.getName) -> LRNToTF
   )
 
   private def getNameFromObj(name: String) : String = name.substring(0, name.length - 1)
