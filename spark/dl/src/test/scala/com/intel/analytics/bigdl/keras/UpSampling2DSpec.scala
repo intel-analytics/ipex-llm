@@ -25,7 +25,7 @@ class UpSampling2DSpec extends KerasBaseSpec {
       """
         |input_tensor = Input(shape=[5, 3, 4])
         |input = np.random.uniform(-1, 1, [2, 5, 3, 4])
-        |output_tensor = UpSampling2D(size=[2, 3], data_format="th")(input_tensor)
+        |output_tensor = UpSampling2D(size=[2, 3], dim_ordering="th")(input_tensor)
         |model = Model(input=input_tensor, output=output_tensor)
       """.stripMargin
     val model = UpSampling2D[Float](Array(2, 3))
@@ -37,7 +37,7 @@ class UpSampling2DSpec extends KerasBaseSpec {
       """
         |input_tensor = Input(shape=[3, 4, 5])
         |input = np.random.uniform(-1, 1, [2, 3, 4, 5])
-        |output_tensor = UpSampling2D([2, 3], data_format="tf")(input_tensor)
+        |output_tensor = UpSampling2D([2, 3], dim_ordering="tf")(input_tensor)
         |model = Model(input=input_tensor, output=output_tensor)
       """.stripMargin
     val model = UpSampling2D[Float](Array(2, 3), DataFormat.NHWC)

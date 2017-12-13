@@ -24,7 +24,7 @@ class UpSampling1DSpec extends KerasBaseSpec {
       """
         |input_tensor = Input(shape=[3, 4])
         |input = np.random.uniform(-1, 1, [2, 3, 4])
-        |output_tensor = UpSampling1D(size=1)(input_tensor)
+        |output_tensor = UpSampling1D(1)(input_tensor)
         |model = Model(input=input_tensor, output=output_tensor)
       """.stripMargin
     val model = UpSampling1D[Float](1)
