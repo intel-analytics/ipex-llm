@@ -584,6 +584,32 @@ trait TensorMath[T] {
   def inv(): Tensor[T]
 
   /**
+   * Computes the reciprocal of this tensor element-wise and update the content inplace
+   * @return
+   */
+  def erf(): Tensor[T]
+
+  /**
+   * Computes the reciprocal of this tensor element-wise and update the content inplace
+   * @return
+   */
+  def erfc(): Tensor[T]
+
+  /**
+   * Computes the log of the absolute value of `Gamma(x)` element-wise,
+   * and update the content inplace
+   * @return
+   */
+  def logGamma(): Tensor[T]
+
+  /**
+   * Computes Psi, the derivative of Lgamma (the log of the absolute value of
+   * `Gamma(x)`), element-wise and update the content inplace
+   * @return
+   */
+  def digamma(): Tensor[T]
+
+  /**
    * Get the top k smallest values and their indices.
    *
    * @param result   result buffer
