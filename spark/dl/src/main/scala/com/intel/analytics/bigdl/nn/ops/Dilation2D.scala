@@ -47,8 +47,8 @@ import scala.reflect.ClassTag
  * erosion of `-input` by the reflected `filter`.
  *
  */
-class Dilation2D[T: ClassTag, D: ClassTag](val strides: Seq[Int],
-                                           val rates: Seq[Int],
+class Dilation2D[T: ClassTag, D: ClassTag](val strides: Array[Int],
+                                           val rates: Array[Int],
                                            val padding: String)
        (implicit ev: TensorNumeric[T], ev2: TensorNumeric[D])
   extends Operation[Table, Tensor[D], T] {
@@ -265,10 +265,14 @@ class Dilation2D[T: ClassTag, D: ClassTag](val strides: Seq[Int],
     }
     output
   }
+
+  override def getClassTagNumerics() : (Array[ClassTag[_]], Array[TensorNumeric[_]]) = {
+    (Array(scala.reflect.classTag[T], scala.reflect.classTag[D]), Array(ev, ev2))
+  }
 }
 
 object Dilation2D {
-  def apply[T: ClassTag, D: ClassTag](strides: Seq[Int], rates: Seq[Int], padding: String)
+  def apply[T: ClassTag, D: ClassTag](strides: Array[Int], rates: Array[Int], padding: String)
            (implicit ev: TensorNumeric[T], ev2: TensorNumeric[D]): Dilation2D[T, D] =
     new Dilation2D(strides, rates, padding)
 }

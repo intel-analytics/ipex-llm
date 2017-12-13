@@ -34,8 +34,8 @@ class Dilation2D extends TensorflowOpsLoader {
                                   context: Context[T])(implicit ev: TensorNumeric[T]): Module[T] = {
     val attributes = nodeDef.getAttrMap
     val padding = getString(attributes, "padding")
-    val strides = getIntList(attributes, "strides")
-    val rates = getIntList(attributes, "rates")
+    val strides = getIntList(attributes, "strides").toArray
+    val rates = getIntList(attributes, "rates").toArray
     val t = getType(nodeDef.getAttrMap, "T")
 
     if (t == DataType.DT_FLOAT) {
