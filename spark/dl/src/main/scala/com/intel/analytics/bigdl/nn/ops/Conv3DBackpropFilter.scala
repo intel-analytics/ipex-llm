@@ -81,7 +81,7 @@ class Conv3DBackpropFilter[T: ClassTag](
     output
   }
 
-  override def clearState(): Conv3DBackpropFilter[T] = {
+  override def clearState(): Conv3DBackpropFilter.this.type = {
     super.clearState()
     fInput.set()
     this

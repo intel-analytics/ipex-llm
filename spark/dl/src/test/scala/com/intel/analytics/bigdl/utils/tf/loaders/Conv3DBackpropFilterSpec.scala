@@ -29,18 +29,20 @@ class Conv3DBackpropFilterSpec extends TensorflowSpecHelper {
       .setName(s"Conv3DBackpropFilterTest")
       .setOp("Conv3DBackpropFilter")
       .putAttr("T", typeAttr(DataType.DT_FLOAT))
-      .putAttr("strides", listIntAttr(Seq(1, 1, 1, 1, 1)))
+      .putAttr("strides", listIntAttr(Seq(1, 1, 2, 3, 1)))
       .putAttr("padding", PaddingType.PADDING_VALID.value)
 
     val input = Tensor[Float](4, 20, 30, 40, 3).rand()
     val filter = Tensor[Float](2, 3, 4, 3, 4).rand()
-    val outputBackprop = Tensor[Float](4, 19, 28, 37, 4)
+    val outputBackprop = Tensor[Float](4, 19, 14, 13, 4).rand()
 
-    compare(
+    // the output in this case is typical the scale of thousands,
+    // so it is ok to have 1e-2 absolute error tolerance
+    compare[Float](
       builder,
       Seq(input, filter, outputBackprop),
       0,
-      1e-4
+      1e-2
     )
   }
 
@@ -50,18 +52,20 @@ class Conv3DBackpropFilterSpec extends TensorflowSpecHelper {
       .setName(s"Conv3DBackpropFilterTest")
       .setOp("Conv3DBackpropFilter")
       .putAttr("T", typeAttr(DataType.DT_FLOAT))
-      .putAttr("strides", listIntAttr(Seq(1, 1, 1, 1, 1)))
+      .putAttr("strides", listIntAttr(Seq(1, 1, 2, 3, 1)))
       .putAttr("padding", PaddingType.PADDING_SAME.value)
 
     val input = Tensor[Float](4, 20, 30, 40, 3).rand()
     val filter = Tensor[Float](2, 3, 4, 3, 4).rand()
-    val outputBackprop = Tensor[Float](4, 20, 30, 40, 4)
+    val outputBackprop = Tensor[Float](4, 20, 15, 14, 4).rand()
 
-    compare(
+    // the output in this case is typical the scale of thousands,
+    // so it is ok to have 1e-2 absolute error tolerance
+    compare[Float](
       builder,
       Seq(input, filter, outputBackprop),
       0,
-      1e-4
+      1e-2
     )
   }
 }

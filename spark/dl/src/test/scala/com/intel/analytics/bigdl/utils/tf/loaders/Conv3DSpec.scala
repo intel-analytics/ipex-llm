@@ -34,14 +34,14 @@ class Conv3DSpec extends TensorflowSpecHelper {
       .setName(s"Conv3DTest")
       .setOp("Conv3D")
       .putAttr("T", typeAttr(DataType.DT_FLOAT))
-      .putAttr("strides", listIntAttr(Seq(1, 1, 1, 1, 1)))
+      .putAttr("strides", listIntAttr(Seq(1, 1, 2, 3, 1)))
       .putAttr("padding", PaddingType.PADDING_VALID.value)
       .putAttr("data_format", dataFormat)
 
     val input = Tensor[Float](4, 20, 30, 40, 3).rand()
     val filter = Tensor[Float](2, 3, 4, 3, 4).rand()
 
-    compare(
+    compare[Float](
       builder,
       Seq(input, filter),
       0,
@@ -58,14 +58,14 @@ class Conv3DSpec extends TensorflowSpecHelper {
       .setName(s"Conv3DTest")
       .setOp("Conv3D")
       .putAttr("T", typeAttr(DataType.DT_FLOAT))
-      .putAttr("strides", listIntAttr(Seq(1, 1, 1, 1, 1)))
+      .putAttr("strides", listIntAttr(Seq(1, 1, 2, 3, 1)))
       .putAttr("padding", PaddingType.PADDING_SAME.value)
       .putAttr("data_format", dataFormat)
 
     val input = Tensor[Float](4, 20, 30, 40, 3).rand()
     val filter = Tensor[Float](2, 3, 4, 3, 4).rand()
 
-    compare(
+    compare[Float](
       builder,
       Seq(input, filter),
       0,

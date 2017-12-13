@@ -72,7 +72,7 @@ class Conv3D[T: ClassTag](
     output
   }
 
-  override def clearState(): Conv3D[T] = {
+  override def clearState(): Conv3D.this.type = {
     super.clearState()
     fInput.set()
     this

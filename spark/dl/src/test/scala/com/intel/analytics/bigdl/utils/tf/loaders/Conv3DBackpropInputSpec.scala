@@ -28,14 +28,14 @@ class Conv3DBackpropInputSpec extends TensorflowSpecHelper {
       .setName(s"Conv3DBackpropInputTest")
       .setOp("Conv3DBackpropInput")
       .putAttr("T", typeAttr(DataType.DT_FLOAT))
-      .putAttr("strides", listIntAttr(Seq(1, 1, 1, 1, 1)))
+      .putAttr("strides", listIntAttr(Seq(1, 1, 2, 3, 1)))
       .putAttr("padding", PaddingType.PADDING_VALID.value)
 
     val input = Tensor[Float](4, 20, 30, 40, 3).rand()
     val filter = Tensor[Float](2, 3, 4, 3, 4).rand()
-    val outputBackprop = Tensor[Float](4, 19, 28, 37, 4)
+    val outputBackprop = Tensor[Float](4, 19, 14, 13, 4).rand()
 
-    compare(
+    compare[Float](
       builder,
       Seq(input, filter, outputBackprop),
       0,
@@ -49,14 +49,14 @@ class Conv3DBackpropInputSpec extends TensorflowSpecHelper {
       .setName(s"Conv3DBackpropInputTest")
       .setOp("Conv3DBackpropInput")
       .putAttr("T", typeAttr(DataType.DT_FLOAT))
-      .putAttr("strides", listIntAttr(Seq(1, 1, 1, 1, 1)))
+      .putAttr("strides", listIntAttr(Seq(1, 1, 2, 3, 1)))
       .putAttr("padding", PaddingType.PADDING_SAME.value)
 
     val input = Tensor[Float](4, 20, 30, 40, 3).rand()
     val filter = Tensor[Float](2, 3, 4, 3, 4).rand()
-    val outputBackprop = Tensor[Float](4, 20, 30, 40, 4)
+    val outputBackprop = Tensor[Float](4, 20, 15, 14, 4).rand()
 
-    compare(
+    compare[Float](
       builder,
       Seq(input, filter, outputBackprop),
       0,

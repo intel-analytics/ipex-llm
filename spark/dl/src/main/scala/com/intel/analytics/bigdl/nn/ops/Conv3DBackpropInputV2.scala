@@ -51,7 +51,7 @@ class Conv3DBackpropInputV2[T: ClassTag](dT: Int, dH: Int, dW: Int,
     }
   }
 
-  override def clearState(): Conv3DBackpropInputV2[T] = {
+  override def clearState(): Conv3DBackpropInputV2.this.type = {
     super.clearState()
     fGradInput.set()
     this
