@@ -2680,11 +2680,11 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     toJTensor(label)
   }
 
-  def read(path: String, sc: JavaSparkContext, partitionNum: Int): ImageFrame = {
+  def read(path: String, sc: JavaSparkContext, minPartitions: Int): ImageFrame = {
     if (sc == null) {
-      ImageFrame.read(path, null, partitionNum)
+      ImageFrame.read(path, null, minPartitions)
     } else {
-      ImageFrame.read(path, sc.sc, partitionNum)
+      ImageFrame.read(path, sc.sc, minPartitions)
     }
   }
 
