@@ -385,16 +385,24 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
    *
    * @return this
    */
-  def setExtraParameter(state: Array[Tensor[T]]): this.type = {
-    val currentState = this.getExtraParameter()
-    require(state.length == currentState.length, "state's length doesn't match, excepted:" +
-      s"${currentState.length}, but got  ${state.length}")
-    var i = 0
-    while (i < state.length) {
-      currentState(i).copy(state(i))
-      i += 1
+  def setExtraParameter(extraParam: Array[Tensor[T]]): this.type = {
+    val currentExtraParam = this.getExtraParameter()
+    if (extraParam != null && currentExtraParam != null) {
+      require(extraParam.length == currentExtraParam.length,
+        "state's length doesn't match, excepted:" +
+        s"${currentExtraParam.length}, but got  ${extraParam.length}")
+      var i = 0
+      while (i < extraParam.length) {
+        currentExtraParam(i).copy(extraParam(i))
+        i += 1
+      }
+      this
+    } else if (extraParam == null && currentExtraParam == null) {
+      this
+    } else {
+      throw new IllegalArgumentException(s"module's extraParameter is $currentExtraParam" +
+        s", while setting param is ${extraParam}")
     }
-    this
   }
 
   /**

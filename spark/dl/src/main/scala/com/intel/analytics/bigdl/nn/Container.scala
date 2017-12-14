@@ -108,14 +108,14 @@ abstract class Container[A <: Activity : ClassTag,
   }
 
   override def getExtraParameter(): Array[Tensor[T]] = {
-    val extraState = new ArrayBuffer[Tensor[T]]()
+    val extraParam = new ArrayBuffer[Tensor[T]]()
     modules.foreach(m => {
       val state = m.getExtraParameter()
       if (state != null) {
-        extraState ++= state
+        extraParam ++= state
       }
     })
-    extraState.toArray
+    extraParam.toArray
   }
 
   override def getParametersTable(): Table = {

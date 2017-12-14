@@ -294,4 +294,37 @@ class AbstractModuleSpec extends FlatSpec with Matchers {
     model2.setExtraParameter(extp)
     model2 should be (model)
   }
+
+  "get/set extra parameter" should "work fine 2" in {
+    val model = Sequential()
+      .add(SpatialConvolution(3, 5, 3, 3))
+      .add(SpatialConvolution(5, 2, 3, 3))
+
+    val model2 = model.cloneModule()
+    model2 should be (model)
+    val extp = model.getExtraParameter()
+    model2.setExtraParameter(extp)
+    model2 should be (model)
+  }
+
+  "get/set extra parameter" should "work fine 3" in {
+    val model = BatchNormalization(5)
+
+    val model2 = model.cloneModule()
+    model.runningMean.range(1, 5)
+    model2 should not be (model)
+    val extp = model.getExtraParameter()
+    model2.setExtraParameter(extp)
+    model2 should be (model)
+  }
+
+  "get/set extra parameter" should "work fine 4" in {
+    val model = SpatialConvolution(3, 5, 3, 3)
+
+    val model2 = model.cloneModule()
+    model2 should be (model)
+    val extp = model.getExtraParameter()
+    model2.setExtraParameter(extp)
+    model2 should be (model)
+  }
 }
