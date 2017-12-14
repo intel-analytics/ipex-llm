@@ -148,20 +148,6 @@ abstract class Container[A <: Activity : ClassTag,
     nodes
   }
 
-  override def copyStatus(src: Module[T]): this.type = {
-    require(canEqual(src), s"copyStatus: type mismatch, $src is different from $this")
-    val srcContainer = src.asInstanceOf[Container[A, B, T]]
-    require(srcContainer.modules.length == modules.length,
-      s"copyStatus: container's length mismatch" +
-        s"excepted ${modules.length}, but get ${srcContainer.modules.length}")
-    var i = 0
-    while (i < modules.length) {
-      modules(i).copyStatus(srcContainer.modules(i))
-      i += 1
-    }
-    this
-  }
-
   override def clearState() : this.type = {
     super.clearState()
     modules.foreach(_.clearState())
