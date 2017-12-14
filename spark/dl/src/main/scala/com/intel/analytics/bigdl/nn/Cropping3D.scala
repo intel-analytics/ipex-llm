@@ -60,12 +60,11 @@ class Cropping3D[T: ClassTag](
     require(dim3Cropped > 0, s"dim3Crop: ${dim3Crop.mkString(", ")} is too large. dim3" +
       s" dimension length: ${input.size(dim3)}")
 
-    this.output = input
+    val cropped = input
       .narrow(dim1, dim1Start, dim1Cropped)
       .narrow(dim2, dim2Start, dim2Cropped)
       .narrow(dim3, dim3Start, dim3Cropped)
-      .contiguous()
-    output
+    output.resizeAs(cropped).copy(cropped)
   }
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
@@ -109,6 +108,25 @@ class Cropping3D[T: ClassTag](
     s"$getPrintName(dim1: ${dim1Crop.mkString(", ")};" +
       s" dim2Crop: ${dim2Crop.mkString(", ")};" +
       s" dim3Crop: ${dim3Crop.mkString(", ")})"
+  }
+
+  override def canEqual(other: Any): Boolean = other.isInstanceOf[Cropping3D[T]]
+
+  override def equals(other: Any): Boolean = other match {
+    case that: Cropping3D[T] =>
+      super.equals(that) &&
+        (that canEqual this) &&
+        dim1Crop.sameElements(that.dim1Crop) &&
+        dim2Crop.sameElements(that.dim2Crop) &&
+        dim3Crop.sameElements(that.dim3Crop) &&
+        dataFormat == that.dataFormat
+    case _ => false
+  }
+
+  override def hashCode(): Int = {
+    def getHashCode(a: Any): Int = if (a == null) 0 else a.hashCode()
+    val state = Seq(super.hashCode(), dim1Crop, dim2Crop, dim3Crop, dataFormat)
+    state.map(getHashCode).foldLeft(0)((a, b) => 37 * a + b)
   }
 }
 

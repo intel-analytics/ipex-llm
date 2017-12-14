@@ -55,11 +55,10 @@ class Cropping2D[T: ClassTag](
     require(lenWCropped > 0, s"widthCrop: ${widthCrop.mkString(", ")} is too large. Width" +
       s" dimension length: ${input.size(wdim)}")
 
-    this.output = input
+    val cropped = input
       .narrow(hdim, hStart, lenHCropped)
       .narrow(wdim, wStart, lenWCropped)
-      .contiguous()
-    output
+    output.resizeAs(cropped).copy(cropped)
   }
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
@@ -95,6 +94,24 @@ class Cropping2D[T: ClassTag](
   override def toString(): String = {
     s"$getPrintName(heightCrop: ${heightCrop.mkString(", ")};" +
       s" widthCrop: ${widthCrop.mkString(", ")}.)"
+  }
+
+  override def canEqual(other: Any): Boolean = other.isInstanceOf[Cropping2D[T]]
+
+  override def equals(other: Any): Boolean = other match {
+    case that: Cropping2D[T] =>
+      super.equals(that) &&
+        (that canEqual this) &&
+        heightCrop.sameElements(that.heightCrop) &&
+        widthCrop.sameElements(that.heightCrop) &&
+        dataFormat == that.dataFormat
+    case _ => false
+  }
+
+  override def hashCode(): Int = {
+    def getHashCode(a: Any): Int = if (a == null) 0 else a.hashCode()
+    val state = Seq(super.hashCode(), heightCrop, widthCrop, dataFormat)
+    state.map(getHashCode).foldLeft(0)((a, b) => 37 * a + b)
   }
 }
 
