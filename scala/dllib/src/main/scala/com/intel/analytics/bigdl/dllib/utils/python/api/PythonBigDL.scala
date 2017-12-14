@@ -1780,8 +1780,9 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     shareBuffer: Boolean,
     batchPerPartition: Int,
     predictKey: String)
-  : DistributedImageFrame = {
-    model.predictImage(imageFrame, featLayerName, shareBuffer, batchPerPartition, predictKey)
+  : ImageFrame = {
+    model.predictImage(imageFrame,
+      featLayerName, shareBuffer, batchPerPartition, predictKey)
   }
 
   def evaluate(module: AbstractModule[Activity, Activity, T]):
@@ -2673,8 +2674,9 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def localImageFrameToPredict(imageFrame: LocalImageFrame, key: String)
-  : JList[(String, JTensor)] = {
-    imageFrame.array.map(x => (x.uri(), toJTensor(x[Tensor[T]](key)))).toList.asJava
+  : JList[JList[Any]] = {
+    imageFrame.array.map(x =>
+      List[Any](x.uri(), toJTensor(x[Tensor[T]](key))).asJava).toList.asJava
   }
 
   def localImageFrameToImageTensor(imageFrame: LocalImageFrame,
