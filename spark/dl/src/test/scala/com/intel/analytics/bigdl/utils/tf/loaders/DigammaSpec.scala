@@ -22,7 +22,4 @@ class DigammaSpec extends UnaryOpBaseSpec {
 
   override def getInput: Tensor[_] = Tensor[Float](4, 32, 32, 3).rand()
 
-  override def getDelta: Double = 1e-3
-
-
 }

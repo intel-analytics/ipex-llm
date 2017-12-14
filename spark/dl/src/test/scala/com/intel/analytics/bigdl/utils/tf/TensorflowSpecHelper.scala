@@ -87,7 +87,7 @@ abstract class TensorflowSpecHelper extends BigDLSpecHelper {
     }
     val tfOutput = runGraphTF[T](graphFile, nodeDefBuilder.getName + s":$outputIndex")
     bigdlOutputTensor.asInstanceOf[Tensor[NumericWildCard]]
-      .almostEqual(tfOutput.asInstanceOf[Tensor[NumericWildCard]], delta) should be(true)
+      .almostEqual(tfOutput.asInstanceOf[Tensor[NumericWildCard]], delta, false) should be(true)
   }
 
   protected def getResult[T: ClassTag, D](nodeDefBuilder: NodeDef.Builder, inputs: Seq[Tensor[_]],

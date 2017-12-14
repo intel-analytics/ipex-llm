@@ -750,14 +750,19 @@ trait Tensor[T] extends Serializable with TensorMath[T] with Activity {
    * If element wise difference is less than delta, return true.
    * @param other
    * @param delta
+   * @param absolute whether test on the absolute error
    * @return
    */
-  def almostEqual(other: Tensor[T], delta : Double): Boolean = {
+  def almostEqual(other: Tensor[T], delta : Double, absolute: Boolean = true): Boolean = {
     var result = true
     this.map(other, (a, b) => {
       val tn = getTensorNumeric()
-      if (tn.isGreater(tn.abs(tn.minus(a, b)), tn.fromType(delta))) {
-        result = false
+      if (absolute) {
+        result = !tn.isGreater(tn.abs(tn.minus(a, b)), tn.fromType(delta))
+      } else {
+        val error = tn.abs(tn.minus(a, b))
+        val average = tn.abs(tn.divide(tn.plus(a, b), tn.fromType(2.0)))
+        result = !tn.isGreater(tn.divide(error, average), tn.fromType(delta))
       }
       a
     })
