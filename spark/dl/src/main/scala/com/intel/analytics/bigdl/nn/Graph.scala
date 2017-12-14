@@ -290,7 +290,9 @@ abstract class Graph[T: ClassTag](
   }
 
   protected def findInput(node: ModuleNode[T], input: Activity): Activity = {
-    val nodeInput = if (node.prevNodes.isEmpty && !node.element.isInstanceOf[WithoutInput]) {
+    if (node.element.isInstanceOf[WithoutInput]) return null
+
+    val nodeInput = if (node.prevNodes.isEmpty) {
       getInput(node, input)
     } else {
       val prevActivities = node.prevNodesAndEdges
