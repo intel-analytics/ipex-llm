@@ -494,6 +494,22 @@ class TestSimple():
         predicts = image_frame.get_predict()
         predicts.collect()
 
+    def test_predict_image_local(self):
+        resource_path = os.path.join(os.path.split(__file__)[0], "resources")
+        image_path = os.path.join(resource_path, "pascal/000025.jpg")
+        image_frame = ImageFrame.read(image_path)
+        transformer = Pipeline([Resize(256, 256), CenterCrop(224, 224),
+                                ChannelNormalize(0.485, 0.456, 0.406, 0.229, 0.224, 0.225),
+                                MatToTensor(), ImageFrameToSample()])
+        image_frame.transform(transformer)
+
+        model = Sequential()
+        model.add(SpatialConvolution(3, 6, 5, 5))
+        model.add(Tanh())
+
+        image_frame = model.predict_image(image_frame)
+        predicts = image_frame.get_predict()
+
     def test_rng(self):
         rng = RNG()
         rng.set_seed(100)
