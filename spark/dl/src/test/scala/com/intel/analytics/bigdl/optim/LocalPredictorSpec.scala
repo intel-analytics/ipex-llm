@@ -24,13 +24,23 @@ import com.intel.analytics.bigdl.transform.vision.image._
 import com.intel.analytics.bigdl.transform.vision.image.augmentation.{CenterCrop, ChannelNormalize, Resize}
 import com.intel.analytics.bigdl.utils.{Engine, LocalModule}
 import com.intel.analytics.bigdl.utils.RandomGenerator._
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
-class LocalPredictorSpec extends FlatSpec with Matchers {
+class LocalPredictorSpec extends FlatSpec with Matchers with BeforeAndAfter {
+
+  private val nodeNumber = 1
+  private val coreNumber = 4
+
+  before {
+    System.setProperty("bigdl.localMode", "true")
+    Engine.init(nodeNumber, coreNumber, false)
+  }
+
+  after {
+    System.clearProperty("bigdl.localMode")
+  }
 
   "predictImage" should "work properly" in {
-    System.setProperty("bigdl.localMode", "true")
-    Engine.init
     import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
     RNG.setSeed(100)
     val resource = getClass.getClassLoader.getResource("pascal/")
@@ -52,8 +62,6 @@ class LocalPredictorSpec extends FlatSpec with Matchers {
   }
 
   "predictImage with more data" should "work properly" in {
-    System.setProperty("bigdl.localMode", "true")
-    Engine.init
     import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
     RNG.setSeed(100)
     val resource = getClass.getClassLoader.getResource("pascal/")
