@@ -552,7 +552,7 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
   }
 
   /**
-   * local model predict images, return imageFrame with predicted tensor
+   * model predict images, return imageFrame with predicted tensor
    * @param imageFrame imageFrame that contains images
    * @param outputLayer if outputLayer is not null, the output of layer that matches
    *                      outputLayer will be used as predicted output
