@@ -17,6 +17,7 @@ package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.Module
+import com.intel.analytics.bigdl.models.DynamicTestModels
 import com.intel.analytics.bigdl.models.autoencoder.Autoencoder
 import com.intel.analytics.bigdl.models.inception.Inception_v1_NoAuxClassifier
 import com.intel.analytics.bigdl.models.lenet.LeNet5
@@ -33,45 +34,44 @@ import scala.reflect.ClassTag
 import scala.util.Random
 import org.scalatest.{FlatSpec, Matchers}
 
-@com.intel.analytics.bigdl.tags.Parallel
-class StaticGraphSpec extends FlatSpec with Matchers {
-  "Graph init" should "throw exceptions when there's cycle" in {
+class DynamicGraphSpec  extends FlatSpec with Matchers {
+  "Dynamic Graph init" should "throw exceptions when there's cycle" in {
     val fc1 = Linear(4, 2).inputs()
     val relu1 = ReLU().inputs(fc1)
     relu1 -> fc1
 
     intercept[IllegalArgumentException] {
-      Graph(fc1, relu1)
+      Graph.dynamic(fc1, relu1)
     }
   }
 
-  "Graph init" should "be successful when inputs node are same with outputs node" in {
+  "Dynamic Graph init" should "be successful when inputs node are same with outputs node" in {
     val fc1 = Linear(4, 2).inputs()
-    val graph = Graph(fc1, fc1)
+    val graph = Graph.dynamic(fc1, fc1)
 
     val inputData = Tensor(4, 4)
     fc1.element.parameters()._1(1).zero() // bias is set to 0
     graph.forward(inputData) should be((inputData * fc1.element.parameters()._1(0).t()))
   }
 
-  "Graph init" should "throw exceptions when some inputs are ignored" in {
+  "Dynamic Graph init" should "throw exceptions when some inputs are ignored" in {
     val fc1 = Linear(4, 2).inputs()
     val fc2 = Linear(4, 2).inputs()
     val output = CAddTable().inputs(fc1, fc2)
 
     intercept[IllegalArgumentException] {
-      Graph(fc1, output)
+      Graph.dynamic(fc1, output)
     }
   }
 
-  "Graph init" should "be successful output are ignored" in {
+  "Dynamic Graph init" should "be successful output are ignored" in {
     val fc1 = Linear(4, 2).inputs()
     val fc2 = Linear(4, 2).inputs()
     val cadd = CAddTable().inputs(fc1, fc2)
     val output1 = ReLU().inputs(cadd)
     val output2 = ReLU().inputs(cadd)
 
-    val graph = Graph(Array(fc1, fc2), Array(output1))
+    val graph = Graph.dynamic(Array(fc1, fc2), Array(output1))
     fc1.element.getParameters()._1.apply1(_ => 1.0f)
     fc2.element.getParameters()._1.apply1(_ => 1.0f)
     val output = graph.forward(T(Tensor(T(0.1f, 0.2f, -0.3f, -0.4f)),
@@ -79,20 +79,20 @@ class StaticGraphSpec extends FlatSpec with Matchers {
     output should be(Tensor(T(2.2f, 2.2f)))
   }
 
-  "Graph init" should "throw exceptions when input a tensor while a table is required" in {
+  "Dynamic Graph init" should "throw exceptions when input a tensor while a table is required" in {
     val fc1 = Linear(4, 2).inputs()
     val fc2 = Linear(4, 2).inputs()
     val cadd = CAddTable().inputs(fc1, fc2)
     val output1 = ReLU().inputs(cadd)
     val output2 = ReLU().inputs(cadd)
 
-    val graph = Graph(Array(fc1, fc2), Array(output1, output2))
+    val graph = Graph.dynamic(Array(fc1, fc2), Array(output1, output2))
     intercept[LayerException] {
       graph.forward(Tensor(T(0.1f, 0.2f, -0.3f, -0.4f)))
     }
   }
 
-  "Graph init" should "throw exceptions when inputs has pre-nodes" in {
+  "Dynamic Graph init" should "throw exceptions when inputs has pre-nodes" in {
     val fc1 = Linear(4, 2).inputs()
     val fc2 = Linear(4, 2).inputs()
     val tanh1 = Tanh().inputs(fc1)
@@ -103,12 +103,12 @@ class StaticGraphSpec extends FlatSpec with Matchers {
     val output2 = ReLU().inputs(cadd)
 
     intercept[IllegalArgumentException] {
-      Graph(Array(tanh1, tanh2), Array(output1, output2))
+      Graph.dynamic(Array(tanh1, tanh2), Array(output1, output2))
     }
   }
 
-  "Graph init" should "throw exceptions when inputs has nothing to do with the graph but same " +
-    "number with the roots node in the graph" in {
+  "Dynamic Graph init" should "throw exceptions when inputs has nothing to do with the " +
+    "graph but same number with the roots node in the graph" in {
     val fc1 = Linear(4, 2).inputs()
     val fc2 = Linear(4, 2).inputs()
     val fc3 = Linear(4, 2).inputs()
@@ -121,18 +121,18 @@ class StaticGraphSpec extends FlatSpec with Matchers {
     val output2 = ReLU().inputs(cadd)
 
     intercept[IllegalArgumentException] {
-      Graph(Array(fc3, fc4), Array(output1, output2))
+      Graph.dynamic(Array(fc3, fc4), Array(output1, output2))
     }
   }
 
-  "Graph forward" should "be successful" in {
+  "Dynamic Graph forward" should "be successful" in {
     val fc1 = Linear(4, 2).inputs()
     val fc2 = Linear(4, 2).inputs()
     val cadd = CAddTable().inputs(fc1, fc2)
     val output1 = ReLU().inputs(cadd)
     val output2 = Threshold(10.0).inputs(cadd)
 
-    val graph = Graph(Array(fc1, fc2), Array(output1, output2))
+    val graph = Graph.dynamic(Array(fc1, fc2), Array(output1, output2))
     fc1.element.getParameters()._1.apply1(_ => 1.0f)
     fc2.element.getParameters()._1.apply1(_ => 1.0f)
     val output = graph.forward(T(Tensor(T(0.1f, 0.2f, -0.3f, -0.4f)),
@@ -140,11 +140,12 @@ class StaticGraphSpec extends FlatSpec with Matchers {
     output should be(T(Tensor(T(2.2f, 2.2f)), Tensor(T(.0f, .0f))))
   }
 
-  "Graph forward" should "throw exceptions when input a table while a tensor is required" in {
+  "Dynamic Graph forward" should "throw exceptions when input a table while " +
+    "a tensor is required" in {
     val fc1 = Linear(4, 2).inputs()
     val output1 = ReLU().inputs(fc1)
 
-    val graph = Graph(Array(fc1), Array(output1))
+    val graph = Graph.dynamic(Array(fc1), Array(output1))
 
     intercept[LayerException] {
       graph.forward(T(Tensor(T(0.1f, 0.2f, -0.3f, -0.4f)),
@@ -152,24 +153,24 @@ class StaticGraphSpec extends FlatSpec with Matchers {
     }
   }
 
-  "Graph forward" should "be successful when first node accept multiple tensors input" in {
+  "Dynamic Graph forward" should "be successful when first node accept multiple tensors input" in {
     val input1 = Input()
     val input2 = Input()
     val cadd = CAddTable().inputs(input1, input2)
-    val graph = Graph(Array(input1, input2), cadd)
+    val graph = Graph.dynamic(Array(input1, input2), cadd)
     val output = graph.forward(T(Tensor(T(0.1f, 0.2f, -0.3f, -0.4f)),
       Tensor(T(0.5f, 0.4f, -0.2f, -0.1f))))
     output should be(Tensor(T(0.6f, 0.6f, -0.5f, -0.5f)))
   }
 
-  "Graph forward" should "be successful when exchange input order" in {
+  "Dynamic Graph forward" should "be successful when exchange input order" in {
     val fc1 = Linear(4, 2).inputs()
     val fc2 = Linear(4, 2).inputs()
     val cadd = CAddTable().inputs(fc1, fc2)
     val output1 = ReLU().inputs(cadd)
     val output2 = Threshold(10.0).inputs(cadd)
 
-    val graph = Graph(Array(fc2, fc1), Array(output1, output2))
+    val graph = Graph.dynamic(Array(fc2, fc1), Array(output1, output2))
     fc1.element.getParameters()._1.apply1(_ => 1.0f)
     fc2.element.getParameters()._1.apply1(_ => 2.0f)
     val output = graph.forward(T(Tensor(T(0.1f, 0.2f, -0.3f, -0.4f)),
@@ -177,7 +178,7 @@ class StaticGraphSpec extends FlatSpec with Matchers {
     output should be(T(Tensor(T(2.8f, 2.8f)), Tensor(T(0.0f, 0.0f))))
   }
 
-  "Graph forward" should "be successful when paths has different length" in {
+  "Dynamic Graph forward" should "be successful when paths has different length" in {
     val fc1 = Linear(4, 2).inputs()
     val thd1 = Threshold(-10.0).inputs(fc1)
     val thd2 = Threshold(-10.0).inputs(thd1)
@@ -188,7 +189,7 @@ class StaticGraphSpec extends FlatSpec with Matchers {
     val output1 = ReLU().inputs(cadd)
     val output2 = Threshold(10.0).inputs(cadd)
 
-    val graph = Graph(Array(fc1, fc2), Array(output1, output2))
+    val graph = Graph.dynamic(Array(fc1, fc2), Array(output1, output2))
     fc1.element.getParameters()._1.apply1(_ => 1.0f)
     fc2.element.getParameters()._1.apply1(_ => 1.0f)
     val output = graph.forward(T(Tensor(T(0.1f, 0.2f, -0.3f, -0.4f)),
@@ -196,14 +197,14 @@ class StaticGraphSpec extends FlatSpec with Matchers {
     output should be(T(Tensor(T(2.2f, 2.2f)), Tensor(T(.0f, .0f))))
   }
 
-  "Graph forward" should "be successful when exchange output order" in {
+  "Dynamic Graph forward" should "be successful when exchange output order" in {
     val fc1 = Linear(4, 2).inputs()
     val fc2 = Linear(4, 2).inputs()
     val cadd = CAddTable().inputs(fc1, fc2)
     val output1 = ReLU().inputs(cadd)
     val output2 = Threshold(10.0).inputs(cadd)
 
-    val graph = Graph(Array(fc1, fc2), Array(output2, output1))
+    val graph = Graph.dynamic(Array(fc1, fc2), Array(output2, output1))
     fc1.element.getParameters()._1.apply1(_ => 1.0f)
     fc2.element.getParameters()._1.apply1(_ => 2.0f)
     val output = graph.forward(T(Tensor(T(0.1f, 0.2f, -0.3f, -0.4f)),
@@ -211,42 +212,42 @@ class StaticGraphSpec extends FlatSpec with Matchers {
     output should be(T(Tensor(T(0.0f, 0.0f)), Tensor(T(3.8f, 3.8f))))
   }
 
-  "Graph forward" should "be correct when contains multi output node" in {
+  "Dynamic Graph forward" should "be correct when contains multi output node" in {
     val x = SplitTable(1).inputs()
     val y1 = Identity().inputs(x(1))
     val y2 = Identity().inputs(x(2))
     val z = CAddTable().inputs(y1, y2)
 
-    val graph = Graph(x, z)
+    val graph = Graph.dynamic(x, z)
     val output = graph.forward(Tensor(T(T(1, 2, 3), T(4, 2, 7))))
     output should be(Tensor(T(5, 4, 10)))
   }
 
-  "Graph forward" should "be correct when connect a table to a node" in {
+  "Dynamic Graph forward" should "be correct when connect a table to a node" in {
     val x = SplitTable(1).inputs()
     val y = CAddTable().inputs(x)
 
-    val graph = Graph(x, y)
+    val graph = Graph.dynamic(x, y)
     val output = graph.forward(Tensor(T(T(1, 2, 3), T(4, 2, 7))))
     output should be(Tensor(T(5, 4, 10)))
   }
 
-  "Graph forward" should "be correct when contains multi output node with table output" in {
+  "Dynamic Graph forward" should "be correct when contains multi output node with table output" in {
     val x = Identity().inputs()
     val y = SplitTable(1).inputs(x)
 
-    val graph = Graph(x, y)
+    val graph = Graph.dynamic(x, y)
     val output = graph.forward(Tensor(T(T(1, 2, 3), T(4, 2, 7))))
     output.toTable[Tensor[Float]](1) should be(Tensor(T(1, 2, 3)))
     output.toTable[Tensor[Float]](2) should be(Tensor(T(4, 2, 7)))
   }
 
-  "Graph forward" should "be correct when contains nested output" in {
+  "Dynamic Graph forward" should "be correct when contains nested output" in {
     val x = Identity().inputs()
     val y1 = SplitTable(1).inputs(x)
     val y2 = Identity().inputs(y1(1))
 
-    val graph = Graph(x, Array(y1, y2))
+    val graph = Graph.dynamic(x, Array(y1, y2))
     val output = graph.forward(Tensor(T(T(1, 2, 3), T(4, 2, 7))))
     val t1 = output.toTable[Table](1)
     t1[Tensor[Float]](1) should be(Tensor(T(1, 2, 3)))
@@ -254,14 +255,14 @@ class StaticGraphSpec extends FlatSpec with Matchers {
     output.toTable[Tensor[Float]](2) should be(Tensor(T(1, 2, 3)))
   }
 
-  "Graph backward" should "be successful" in {
+  "Dynamic Graph backward" should "be successful" in {
     val fc1 = Linear(4, 2).inputs()
     val fc2 = Linear(4, 2).inputs()
     val cadd = CAddTable().inputs(fc1, fc2)
     val output1 = ReLU().inputs(cadd)
     val output2 = Threshold(10.0).inputs(cadd)
 
-    val graph = Graph(Array(fc1, fc2), Array(output1, output2))
+    val graph = Graph.dynamic(Array(fc1, fc2), Array(output1, output2))
     fc1.element.getParameters()._1.apply1(_ => 1.0f)
     fc2.element.getParameters()._1.apply1(_ => 2.0f)
     val output = graph.forward(T(Tensor(T(0.1f, 0.2f, -0.3f, -0.4f)),
@@ -278,11 +279,11 @@ class StaticGraphSpec extends FlatSpec with Matchers {
     fc2.element.parameters()._2(1) should be(Tensor(T(1.0f, 2.0f)))
   }
 
-  "Graph backward" should "be successful when first node accept multiple tensors input" in {
+  "Dynamic Graph backward" should "be successful when first node accept multiple tensors input" in {
     val input1 = Input()
     val input2 = Input()
     val cadd = CAddTable().inputs(input1, input2)
-    val graph = Graph(Array(input1, input2), cadd)
+    val graph = Graph.dynamic(Array(input1, input2), cadd)
     val output = graph.forward(T(Tensor(T(0.1f, 0.2f, -0.3f, -0.4f)),
       Tensor(T(0.5f, 0.4f, -0.2f, -0.1f))))
     output should be(Tensor(T(0.6f, 0.6f, -0.5f, -0.5f)))
@@ -291,7 +292,7 @@ class StaticGraphSpec extends FlatSpec with Matchers {
     gradient should be(T(Tensor(T(0.1f, 0.1f, 0.1f, 0.1f)), Tensor(T(0.1f, 0.1f, 0.1f, 0.1f))))
   }
 
-  "Graph backward" should "be successful when paths have different length" in {
+  "Dynamic Graph backward" should "be successful when paths have different length" in {
     val fc1 = Linear(4, 2).inputs()
     val thd1 = Threshold(-10.0).inputs(fc1)
     val thd2 = Threshold(-10.0).inputs(thd1)
@@ -302,7 +303,7 @@ class StaticGraphSpec extends FlatSpec with Matchers {
     val output1 = ReLU().inputs(cadd)
     val output2 = Threshold(10.0).inputs(cadd)
 
-    val graph = Graph(Array(fc1, fc2), Array(output1, output2))
+    val graph = Graph.dynamic(Array(fc1, fc2), Array(output1, output2))
     fc1.element.getParameters()._1.apply1(_ => 1.0f)
     fc2.element.getParameters()._1.apply1(_ => 2.0f)
     val output = graph.forward(T(Tensor(T(0.1f, 0.2f, -0.3f, -0.4f)),
@@ -319,14 +320,14 @@ class StaticGraphSpec extends FlatSpec with Matchers {
     fc2.element.parameters()._2(1) should be(Tensor(T(1.0f, 2.0f)))
   }
 
-  "Graph backward" should "be successful when exchange input order" in {
+  "Dynamic Graph backward" should "be successful when exchange input order" in {
     val fc1 = Linear(4, 2).inputs()
     val fc2 = Linear(4, 2).inputs()
     val cadd = CAddTable().inputs(fc1, fc2)
     val output1 = ReLU().inputs(cadd)
     val output2 = Threshold(10.0).inputs(cadd)
 
-    val graph = Graph(Array(fc2, fc1), Array(output1, output2))
+    val graph = Graph.dynamic(Array(fc2, fc1), Array(output1, output2))
     fc1.element.getParameters()._1.apply1(_ => 1.0f)
     fc2.element.getParameters()._1.apply1(_ => 2.0f)
     val output = graph.forward(T(Tensor(T(0.1f, 0.2f, -0.3f, -0.4f)),
@@ -342,14 +343,14 @@ class StaticGraphSpec extends FlatSpec with Matchers {
     fc2.element.parameters()._2(1) should be(Tensor(T(1.0f, 2.0f)))
   }
 
-  "Graph backward" should "be successful when exchange output order" in {
+  "Dynamic Graph backward" should "be successful when exchange output order" in {
     val fc1 = Linear(4, 2).inputs()
     val fc2 = Linear(4, 2).inputs()
     val cadd = CAddTable().inputs(fc1, fc2)
     val output1 = ReLU().inputs(cadd)
     val output2 = Threshold(10.0).inputs(cadd)
 
-    val graph = Graph(Array(fc1, fc2), Array(output2, output1))
+    val graph = Graph.dynamic(Array(fc1, fc2), Array(output2, output1))
     fc1.element.getParameters()._1.apply1(_ => 1.0f)
     fc2.element.getParameters()._1.apply1(_ => 2.0f)
     val output = graph.forward(T(Tensor(T(0.1f, 0.2f, -0.3f, -0.4f)),
@@ -365,52 +366,54 @@ class StaticGraphSpec extends FlatSpec with Matchers {
     fc2.element.parameters()._2(1) should be(Tensor(T(3.0f, 4.0f)))
   }
 
-  "Graph backward" should "be correct when contains multi output node" in {
+  "Dynamic Graph backward" should "be correct when contains multi output node" in {
     val x = SplitTable(1).inputs()
     val y1 = Identity().inputs(x(1))
     val y2 = Identity().inputs(x(2))
     val z = CAddTable().inputs(y1, y2)
 
-    val graph = Graph(x, z)
+    val graph = Graph.dynamic(x, z)
     val output = graph.forward(Tensor(T(T(1, 2, 3), T(4, 2, 7))))
     val grads = graph.backward(Tensor(T(T(1, 2, 3), T(4, 2, 7))), Tensor(T(5, 4, 10)))
     grads should be(Tensor(T(T(5, 4, 10), T(5, 4, 10))))
   }
 
-  "Graph backward" should "be correct when contains multi output node with table output" in {
+  "Dynamic Graph backward" should "be correct when contains multi output " +
+    "node with table output" in {
     val x = Identity().inputs()
     val y = SplitTable(1).inputs(x)
 
-    val graph = Graph(x, y)
+    val graph = Graph.dynamic(x, y)
     val output = graph.forward(Tensor(T(T(1, 2, 3), T(4, 2, 7))))
     val grad = graph.backward(Tensor(T(T(1, 2, 3), T(4, 2, 7))),
       T(Tensor(T(3, 2, 1)), Tensor(T(5, 7, 9))))
     grad should be(Tensor(T(T(3, 2, 1), T(5, 7, 9))))
   }
 
-  "Graph backward" should "be correct when connect a table to a node" in {
+  "Dynamic Graph backward" should "be correct when connect a table to a node" in {
     val x = SplitTable(1).inputs()
     val y = CAddTable().inputs(x)
 
-    val graph = Graph(x, y)
+    val graph = Graph.dynamic(x, y)
     val output = graph.forward(Tensor(T(T(1, 2, 3), T(4, 2, 7))))
     val grads = graph.backward(Tensor(T(T(1, 2, 3), T(4, 2, 7))), Tensor(T(5, 4, 10)))
     grads should be(Tensor(T(T(5, 4, 10), T(5, 4, 10))))
   }
 
-  "Graph backward" should "be correct when contains nested output" in {
+  "Dynamic Graph backward" should "be correct when contains nested output" in {
     val x = Identity().inputs()
     val y1 = SplitTable(1).inputs(x)
     val y2 = Identity().inputs(y1(1))
 
-    val graph = Graph(x, Array(y1, y2))
+    val graph = Graph.dynamic(x, Array(y1, y2))
     val output = graph.forward(Tensor(T(T(1, 2, 3), T(4, 2, 7))))
     val result = graph.backward(Tensor(T(T(1, 2, 3), T(4, 2, 7))),
       T(T(Tensor(T(2, 7, 8)), Tensor(T(1, 5, 3))), Tensor(T(5, 4, 10))))
     result should be(Tensor(T(T(7, 11, 18), T(1, 5, 3))))
   }
 
-  "Graph forward/backward" should "be successful when there's output from internal node" in {
+  "Dynamic Graph forward/backward" should "be successful when there's output " +
+    "from internal node" in {
     val input1 = Input()
     val input2 = Input()
     val add = CAddTable().inputs(input1, input2)
@@ -458,7 +461,7 @@ class StaticGraphSpec extends FlatSpec with Matchers {
     val fc2 = Linear(100, 10).inputs(tanh3)
     val output = LogSoftMax().inputs(fc2)
 
-    val funcModel = Graph(input, output)
+    val funcModel = Graph.dynamic(input, output)
 
     val inputData = Tensor(4, 28 * 28).rand()
     val outputData1 = seqModel.forward(inputData) // warm up
@@ -489,7 +492,7 @@ class StaticGraphSpec extends FlatSpec with Matchers {
     RandomGenerator.RNG.setSeed(1000)
     val input = Input()
     val output = ModelUntils.ResNet.basicBlockSeq(16, 16, 1, "A").inputs(input)
-    val funcModel = Graph(input, output)
+    val funcModel = Graph.dynamic(input, output)
 
     println(seqModel)
     val inputData = Tensor(4, 16, 32, 32).rand()
@@ -521,7 +524,7 @@ class StaticGraphSpec extends FlatSpec with Matchers {
     RandomGenerator.RNG.setSeed(1000)
     val input = Input()
     val output = ModelUntils.ResNet.basicBlockFunc(16, 16, 1, "C")(input)
-    val funcModel = Graph(input, output)
+    val funcModel = Graph.dynamic(input, output)
 
     println(seqModel)
     val inputData = Tensor(4, 16, 32, 32).rand()
@@ -571,7 +574,7 @@ class StaticGraphSpec extends FlatSpec with Matchers {
     val input = Input()
     val output = ModelUntils.Inception.inceptionLayerV1Func(
       2, T(T(4), T(96, 128), T(16, 32), T(32)))(input)
-    val funcModel = Graph(input, output)
+    val funcModel = Graph.dynamic(input, output)
 
     println(seqModel)
     val inputData = Tensor(1, 2, 4, 4).rand()
@@ -630,7 +633,7 @@ class StaticGraphSpec extends FlatSpec with Matchers {
     RNG.setSeed(1000)
     val model = Autoencoder(32)
     RNG.setSeed(1000)
-    val graphModel = Autoencoder.graph(32)
+    val graphModel = DynamicTestModels.Autoencoder.graph(32)
 
     val output1 = model.forward(input).toTensor[Float]
     val output2 = graphModel.forward(input).toTensor[Float]
@@ -673,7 +676,7 @@ class StaticGraphSpec extends FlatSpec with Matchers {
     RNG.setSeed(1000)
     val model = VggForCifar10(10, false)
     RNG.setSeed(1000)
-    val graphModel = VggForCifar10.graph(10, false)
+    val graphModel = DynamicTestModels.VggForCifar10.graph(10, false)
 
     val output1 = model.forward(input).toTensor[Float]
     val output2 = graphModel.forward(input).toTensor[Float]
@@ -694,7 +697,7 @@ class StaticGraphSpec extends FlatSpec with Matchers {
     RNG.setSeed(1000)
     val model = Vgg_16(1000, false)
     RNG.setSeed(1000)
-    val graphModel = Vgg_16.graph(1000, false)
+    val graphModel = DynamicTestModels.Vgg_16.graph(1000, false)
 
     val output1 = model.forward(input).toTensor[Float]
     val output2 = graphModel.forward(input).toTensor[Float]
@@ -715,7 +718,7 @@ class StaticGraphSpec extends FlatSpec with Matchers {
     RNG.setSeed(1000)
     val model = Vgg_19(1000, false)
     RNG.setSeed(1000)
-    val graphModel = Vgg_19.graph(1000, false)
+    val graphModel = DynamicTestModels.Vgg_19.graph(1000, false)
 
     val output1 = model.forward(input).toTensor[Float]
     val output2 = graphModel.forward(input).toTensor[Float]
@@ -727,7 +730,8 @@ class StaticGraphSpec extends FlatSpec with Matchers {
     model.getParameters().equals(graphModel.getParameters()) should be(true)
   }
 
-  "Graph backward sequential with propagateBack false in the first" should "work properly" in {
+  "Dynamic Graph backward sequential with propagateBack false in the " +
+    "first" should "work properly" in {
     RandomGenerator.RNG.setSeed(1000)
     val input = Reshape(Array(1, 28, 28)).setName("reshape").inputs()
     val conv1 = SpatialConvolution(1, 6, 5, 5).setName("conv1").inputs(input)
@@ -756,8 +760,8 @@ class StaticGraphSpec extends FlatSpec with Matchers {
     val fc2_2 = Linear(100, 10).inputs(tanh3_2)
     val output_2 = LogSoftMax().inputs(fc2_2)
 
-    val funcModelNoBack = Graph(input, output)
-    val funcModelOriginal = Graph(input2, output_2)
+    val funcModelNoBack = Graph.dynamic(input, output)
+    val funcModelOriginal = Graph.dynamic(input2, output_2)
 
     funcModelNoBack.stopGradient(Array("reshape"))
 
@@ -788,7 +792,8 @@ class StaticGraphSpec extends FlatSpec with Matchers {
     funcModelOriginal.getParameters()._2 should be(funcModelNoBack.getParameters()._2)
   }
 
-  "Graph backward propagateBack false in the middle" should "work properly in sequential lenet" in {
+  "Dynamic Graph backward propagateBack false in the middle" should "work properly " +
+    "in sequential lenet" in {
     RandomGenerator.RNG.setSeed(1000)
     val input = Reshape(Array(1, 28, 28)).setName("r1").inputs()
     val conv1 = SpatialConvolution(1, 6, 5, 5).setName("conv1").inputs(input)
@@ -817,9 +822,9 @@ class StaticGraphSpec extends FlatSpec with Matchers {
     val fc2_2 = Linear(100, 10).inputs(tanh3_2)
     val output_2 = LogSoftMax().inputs(fc2_2)
 
-    val funcModelNoBack = Graph(input, output)
+    val funcModelNoBack = Graph.dynamic(input, output)
     funcModelNoBack.stopGradient(Array("pool1"))
-    val funcModelOriginal = Graph(input2, output_2)
+    val funcModelOriginal = Graph.dynamic(input2, output_2)
 
     val inputData = Tensor(4, 28 * 28).rand()
     val outputData1 = funcModelOriginal.forward(inputData)
@@ -842,7 +847,7 @@ class StaticGraphSpec extends FlatSpec with Matchers {
       namedModule2("conv2").asInstanceOf[SpatialConvolution[Float]].parameters()._2)
   }
 
-  "graph propagate false in subpath" should "work properly" in {
+  "Dynamic Graph propagate false in subpath" should "work properly" in {
     RandomGenerator.RNG.setSeed(1000)
     val fc1 = Linear(4, 2).inputs()
     val fc2 = Linear(4, 2).inputs()
@@ -850,7 +855,7 @@ class StaticGraphSpec extends FlatSpec with Matchers {
     val output1 = ReLU().inputs(cadd)
     val output2 = Threshold(10.0).inputs(cadd)
 
-    val graph = Graph(Array(fc2, fc1), Array(output1, output2))
+    val graph = Graph.dynamic(Array(fc2, fc1), Array(output1, output2))
     RandomGenerator.RNG.setSeed(1000)
     val fc1_1 = Linear(4, 2).inputs()
     val fc2_1 = Linear(4, 2).inputs()
@@ -858,7 +863,7 @@ class StaticGraphSpec extends FlatSpec with Matchers {
     val output1_1 = ReLU().setName("relu").inputs(cadd_1)
     val output2_1 = Threshold(10.0).inputs(cadd_1)
 
-    val graphNoBack = Graph(Array(fc2_1, fc1_1), Array(output1_1, output2_1))
+    val graphNoBack = Graph.dynamic(Array(fc2_1, fc1_1), Array(output1_1, output2_1))
     graphNoBack.stopGradient(Array("relu"))
 
     RandomGenerator.RNG.setSeed(1000)
@@ -867,7 +872,7 @@ class StaticGraphSpec extends FlatSpec with Matchers {
     val cadd_2 = CAddTable().inputs(fc1_2, fc2_2)
     val output2_2 = Threshold(10.0).inputs(cadd_2)
 
-    val graphNoBackExpect = Graph(Array(fc2_2, fc1_2), Array(output2_2))
+    val graphNoBackExpect = Graph.dynamic(Array(fc2_2, fc1_2), Array(output2_2))
 
     fc1.element.getParameters()._1.apply1(_ => 1.0f)
     fc2.element.getParameters()._1.apply1(_ => 2.0f)
@@ -895,7 +900,7 @@ class StaticGraphSpec extends FlatSpec with Matchers {
     output2.element.gradInput should be (output2_1.element.gradInput)
   }
 
-  "graph propagate false in concat subpath" should "work properly" in {
+  "Dynamic Graph propagate false in concat subpath" should "work properly" in {
     RandomGenerator.RNG.setSeed(1000)
     val fc1 = Linear(4, 2).inputs()
     val fc2 = Linear(4, 2).inputs()
@@ -903,7 +908,7 @@ class StaticGraphSpec extends FlatSpec with Matchers {
     val output1 = ReLU().inputs(cadd)
     val output2 = Threshold(10.0).inputs(cadd)
 
-    val graph = Graph(Array(fc2, fc1), Array(output1, output2))
+    val graph = Graph.dynamic(Array(fc2, fc1), Array(output1, output2))
     RandomGenerator.RNG.setSeed(1000)
     val fc1_1 = Linear(4, 2).inputs()
     val fc2_1 = Linear(4, 2).setName("fc2_1").inputs()
@@ -911,7 +916,7 @@ class StaticGraphSpec extends FlatSpec with Matchers {
     val output1_1 = ReLU().inputs(cadd_1)
     val output2_1 = Threshold(10.0).inputs(cadd_1)
 
-    val graphNoBack = Graph(Array(fc2_1, fc1_1), Array(output1_1, output2_1))
+    val graphNoBack = Graph.dynamic(Array(fc2_1, fc1_1), Array(output1_1, output2_1))
     graphNoBack.stopGradient(Array("fc2_1"))
 
     fc1.element.getParameters()._1.apply1(_ => 1.0f)
@@ -934,7 +939,7 @@ class StaticGraphSpec extends FlatSpec with Matchers {
     fc1_1.element.parameters()._2 should be (fc1.element.parameters()._2)
   }
 
-  "graph propagate false in concat subpath with longer edge" should "work properly" in {
+  "Dynamic Graph propagate false in concat subpath with longer edge" should "work properly" in {
     RandomGenerator.RNG.setSeed(1000)
     val fc1 = Linear(4, 2).inputs()
     val fc2 = Linear(4, 2).inputs()
@@ -942,7 +947,7 @@ class StaticGraphSpec extends FlatSpec with Matchers {
     val output1 = ReLU().inputs(cadd)
     val output2 = Threshold(10.0).inputs(cadd)
 
-    val graph = Graph(Array(fc2, fc1), Array(output1, output2))
+    val graph = Graph.dynamic(Array(fc2, fc1), Array(output1, output2))
     RandomGenerator.RNG.setSeed(1000)
     val reshape = Reshape(Array(4)).inputs()
     val fc1_1 = Linear(4, 2).inputs()
@@ -951,7 +956,7 @@ class StaticGraphSpec extends FlatSpec with Matchers {
     val output1_1 = ReLU().inputs(cadd_1)
     val output2_1 = Threshold(10.0).inputs(cadd_1)
 
-    val graphNoBack = Graph(Array(reshape, fc1_1), Array(output1_1, output2_1))
+    val graphNoBack = Graph.dynamic(Array(reshape, fc1_1), Array(output1_1, output2_1))
     graphNoBack.stopGradient(Array("fc2_1"))
     fc1.element.getParameters()._1.apply1(_ => 1.0f)
     fc2.element.getParameters()._1.apply1(_ => 2.0f)
@@ -974,7 +979,7 @@ class StaticGraphSpec extends FlatSpec with Matchers {
     reshape.element.gradInput.toTensor.nElement() should be (0)
   }
 
-  "graph propagate false reset to true" should "work properly" in {
+  "Dynamic Graph propagate false reset to true" should "work properly" in {
     RandomGenerator.RNG.setSeed(1000)
     val fc1 = Linear(4, 2).inputs()
     val fc2 = Linear(4, 2).inputs()
@@ -982,7 +987,7 @@ class StaticGraphSpec extends FlatSpec with Matchers {
     val output1 = ReLU().inputs(cadd)
     val output2 = Threshold(10.0).inputs(cadd)
 
-    val graph = Graph(Array(fc2, fc1), Array(output1, output2))
+    val graph = Graph.dynamic(Array(fc2, fc1), Array(output1, output2))
     RandomGenerator.RNG.setSeed(1000)
     val fc1_1 = Linear(4, 2).inputs()
     val fc2_1 = Linear(4, 2).setName("fc2_1").inputs()
@@ -990,7 +995,7 @@ class StaticGraphSpec extends FlatSpec with Matchers {
     val output1_1 = ReLU().inputs(cadd_1)
     val output2_1 = Threshold(10.0).inputs(cadd_1)
 
-    val graphNoBack = Graph(Array(fc2_1, fc1_1), Array(output1_1, output2_1))
+    val graphNoBack = Graph.dynamic(Array(fc2_1, fc1_1), Array(output1_1, output2_1))
     graphNoBack.stopGradient(Array("fc2_1"))
 
     fc1.element.getParameters()._1.apply1(_ => 1.0f)
@@ -1024,7 +1029,7 @@ class StaticGraphSpec extends FlatSpec with Matchers {
     graphNoBack.parameters()._2 should be (graph.parameters()._2)
   }
 
-  "graph backpropagation" should "ignore nodes on non output path" in {
+  "Dynamic Graph backpropagation" should "ignore nodes on non output path" in {
     val node1 = Identity[Float]().setName("node1").inputs()
     val node2 = Identity[Float]().setName("node2").inputs(node1)
     val node3 = Identity[Float]().setName("node3").inputs(node2)
@@ -1051,7 +1056,7 @@ class StaticGraphSpec extends FlatSpec with Matchers {
     val output1_1 = ReLU().inputs(cadd_1)
     val output2_1 = Threshold(10.0).inputs(cadd_1)
 
-    val model = Graph(Array(reshape, fc1), Array(output1_1, output2_1))
+    val model = Graph.dynamic(Array(reshape, fc1), Array(output1_1, output2_1))
 
     val input = T(Tensor(T(0.1f, 0.2f, -0.3f, -0.4f)),
       Tensor(T(0.5f, 0.4f, -0.2f, -0.1f)))
@@ -1095,7 +1100,7 @@ class StaticGraphSpec extends FlatSpec with Matchers {
     println("fc2 weight \n", fc2.element.parameters()._1(0))
   }
 
-  "graph setFreeze" should "work properly" in {
+  "Dynamic Graph setFreeze" should "work properly" in {
     RandomGenerator.RNG.setSeed(1000)
     val fc1 = Linear(4, 2).inputs()
     val fc2 = Linear(4, 2).inputs()
@@ -1103,7 +1108,7 @@ class StaticGraphSpec extends FlatSpec with Matchers {
     val output1 = ReLU().inputs(cadd)
     val output2 = Threshold(10.0).inputs(cadd)
 
-    val graph = Graph(Array(fc2, fc1), Array(output1, output2))
+    val graph = Graph.dynamic(Array(fc2, fc1), Array(output1, output2))
     RandomGenerator.RNG.setSeed(1000)
     val reshape = Reshape(Array(4)).inputs()
     val fc1_1 = Linear(4, 2).inputs()
@@ -1112,7 +1117,7 @@ class StaticGraphSpec extends FlatSpec with Matchers {
     val output1_1 = ReLU().inputs(cadd_1)
     val output2_1 = Threshold(10.0).inputs(cadd_1)
 
-    val graphNoBack = Graph(Array(reshape, fc1_1), Array(output1_1, output2_1))
+    val graphNoBack = Graph.dynamic(Array(reshape, fc1_1), Array(output1_1, output2_1))
     graphNoBack.stopGradient(Array("fc2_1"))
 
     fc1.element.getParameters()._1.apply1(_ => 1.0f)
@@ -1139,16 +1144,17 @@ class StaticGraphSpec extends FlatSpec with Matchers {
   "save graph to tensorboard log dir" should "work" in {
     System.setProperty("bigdl.localMode", "true")
     Engine.init
-    val tmpFile = java.io.File.createTempFile("graph", "tensorboard")
+    val tmpFile = java.io.File.createTempFile("Dynamic Graph", "tensorboard")
     val absolutePath = tmpFile.getAbsolutePath
     tmpFile.delete()
 
-    val model = Inception_v1_NoAuxClassifier.graph(1000).asInstanceOf[Graph[Float]]
+    val model = DynamicTestModels.Inception_v1_NoAuxClassifier.graph(1000, true)
+      .asInstanceOf[Graph[Float]]
     model.saveGraphTopology(absolutePath)
     System.clearProperty("bigdl.localMode")
   }
 
-  "graph" should "support switch with two branch" in {
+  "Dynamic Graph" should "support switch with two branch" in {
     val data = Input("data")
     val condition = Input("condition")
     val swtich = ControlNodes.switch(condition, data)
@@ -1164,7 +1170,7 @@ class StaticGraphSpec extends FlatSpec with Matchers {
     }
   }
 
-  "graph" should "support switch with two branch with merge" in {
+  "Dynamic Graph" should "support switch with two branch with merge" in {
     val data = Input("data")
     val condition = Input("condition")
     val swtich = ControlNodes.switch(condition, data)
@@ -1182,7 +1188,7 @@ class StaticGraphSpec extends FlatSpec with Matchers {
     result.toTensor should be(Tensor[Float](T(6)))
   }
 
-  "graph backward with stopGradient" should "not remove stopGradient recursive" in {
+  "Dynamic Graph backward with stopGradient" should "not remove stopGradient recursive" in {
     val data = Input()
     val d1 = Identity().inputs(data)
     val d2 = Identity().inputs(d1)
@@ -1190,7 +1196,7 @@ class StaticGraphSpec extends FlatSpec with Matchers {
     val d4 = Identity().setName("d4").inputs(d3)
     val d5 = Identity().inputs(d4)
 
-    val model = Graph(data, Array(d2, d5))
+    val model = Graph.dynamic(data, Array(d2, d5))
     val output = model.forward(Tensor[Float](T(1, 2, 3))).toTable
     output[Tensor[Float]](1) should be(Tensor[Float](T(1, 2, 3)))
     output[Tensor[Float]](2) should be(Tensor[Float](T(1, 2, 3)))
@@ -1200,7 +1206,7 @@ class StaticGraphSpec extends FlatSpec with Matchers {
       Tensor[Float](T(1, 3, 5)))) should be(Tensor[Float](T(2, 7, 9)))
   }
 
-  "Graph forward" should "not execute unrelated node" in {
+  "Dynamic Graph forward" should "not execute unrelated node" in {
     val data = Identity().setName("input").inputs()
     var isExecuted = false
     val l1 = Identity().setName("l1").inputs(data)
@@ -1208,25 +1214,25 @@ class StaticGraphSpec extends FlatSpec with Matchers {
     val l3 = Identity().setName("l3").inputs(l2)
     val l4 = Echo().setName("l4").setFeval((a, b) => isExecuted = true).inputs(l1)
 
-    val model = Graph(data, l3)
+    val model = Graph.dynamic(data, l3)
     model.forward(Tensor(T(1)))
     isExecuted should be(false)
   }
 
-  "Graph backward" should "not execute unrelated node" in {
+  "Dynamic Graph backward" should "not execute unrelated node" in {
     val data = Identity().setName("input").inputs()
     val const = Const(Tensor(T(1, 2))).setName("const").inputs()
     var isExecuted = false
     val l1 = Echo().setName("l1").setBeval((a, b, c) => isExecuted = true).inputs(const)
     val cadd = CAddTable().setName("cadd").inputs(data, l1)
 
-    val model = Graph(data, cadd)
+    val model = Graph.dynamic(data, cadd)
     model.forward(Tensor(T(3, 5))) should be(Tensor(T(4, 7)))
     model.backward(Tensor(T(3, 5)), Tensor(T(1, 2))) should be(Tensor(T(1, 2)))
     isExecuted should be(false)
   }
 
-  "Graph backward" should "not execute unrelated node 2" in {
+  "Dynamic Graph backward" should "not execute unrelated node 2" in {
     val data = Identity().setName("input").inputs()
     val const = Const(Tensor(T(1, 2))).setName("const").inputs()
     var isExecuted1 = false
@@ -1240,7 +1246,7 @@ class StaticGraphSpec extends FlatSpec with Matchers {
       .setBeval((a, b, c) => isExecuted3 = true).inputs(cadd)
     val l3 = Identity().setName("l3").inputs(echo)
 
-    val model = Graph(data, l2)
+    val model = Graph.dynamic(data, l2)
     model.forward(Tensor(T(3, 5))) should be(Tensor(T(4, 7)))
     model.backward(Tensor(T(3, 5)), Tensor(T(1, 2))) should be(Tensor(T(1, 2)))
     isExecuted1 should be(false)
@@ -1248,7 +1254,7 @@ class StaticGraphSpec extends FlatSpec with Matchers {
     isExecuted3 should be(false)
   }
 
-  "Graph get name" should "be correct" in {
+  "Dynamic Graph get name" should "be correct" in {
     val data = Identity().setName("input").inputs()
     val const = Const(Tensor(T(1, 2))).setName("const").inputs()
     var isExecuted1 = false
@@ -1262,147 +1268,11 @@ class StaticGraphSpec extends FlatSpec with Matchers {
       .setBeval((a, b, c) => isExecuted3 = true).inputs(cadd)
     val l3 = Identity().setName("l3").inputs(echo)
 
-    val model = Graph(data, l2)
+    val model = Graph.dynamic(data, l2)
     model.node("l1") should be(l1)
 
     intercept[NoSuchElementException] {
       model.node("ll1")
-    }
-  }
-}
-
-object ModelUntils {
-  object Inception {
-    def inceptionLayerV1Func(inputSize: Int, config: Table)(input : ModuleNode[Float])
-    : ModuleNode[Float] = {
-      val conv1x1 = SpatialConvolution(inputSize, config[Table](1)(1), 1, 1, 1, 1)
-        .setName("conv1x1").inputs(input)
-      val relu1x1 = ReLU(true).inputs(conv1x1)
-
-      val conv3x3_1 = SpatialConvolution(inputSize, config[Table](2)(1), 1, 1, 1, 1)
-        .setName("conv3x3_1").inputs(input)
-      val relu3x3_1 = ReLU(true).inputs(conv3x3_1)
-      val conv3x3_2 = SpatialConvolution(
-        config[Table](2)(1), config[Table](2)(2), 3, 3, 1, 1, 1, 1)
-        .setName("conv3x3_2").inputs(relu3x3_1)
-      val relu3x3_2 = ReLU(true).inputs(conv3x3_2)
-
-      val conv5x5_1 = SpatialConvolution(inputSize, config[Table](3)(1), 1, 1, 1, 1)
-        .setName("conv5x5_1").inputs(input)
-      val relu5x5_1 = ReLU(true).inputs(conv5x5_1)
-      val conv5x5_2 = SpatialConvolution(
-        config[Table](3)(1), config[Table](3)(2), 5, 5, 1, 1, 2, 2)
-        .setName("conv5x5_2").inputs(relu5x5_1)
-      val relu5x5_2 = ReLU(true).inputs(conv5x5_2)
-
-      val pool = SpatialMaxPooling(3, 3, 1, 1, 1, 1).ceil()
-        .setName("pool").inputs(input)
-      val convPool = SpatialConvolution(inputSize, config[Table](4)(1), 1, 1, 1, 1)
-        .setName("pool_conv").inputs(pool)
-      val reluPool = ReLU(true).inputs(convPool)
-
-      JoinTable(2, 4).inputs(relu1x1, relu3x3_2, relu5x5_2, reluPool)
-    }
-    def inceptionLayerV1Seq(inputSize: Int, config: Table) : Module[Float] = {
-      val concat = Concat(2)
-      val conv1 = Sequential()
-      conv1.add(SpatialConvolution(inputSize, config[Table](1)(1), 1, 1, 1, 1)
-        .setName("conv1x1"))
-      conv1.add(ReLU(true))
-      concat.add(conv1)
-      val conv3 = Sequential()
-      conv3.add(SpatialConvolution(inputSize, config[Table](2)(1), 1, 1, 1, 1)
-        .setName("conv3x3_1"))
-      conv3.add(ReLU(true))
-      conv3.add(SpatialConvolution(config[Table](2)(1), config[Table](2)(2), 3, 3, 1, 1, 1, 1)
-        .setName("conv3x3_2"))
-      conv3.add(ReLU(true))
-      concat.add(conv3)
-      val conv5 = Sequential()
-      conv5.add(SpatialConvolution(inputSize, config[Table](3)(1), 1, 1, 1, 1)
-        .setName("conv5x5_1"))
-      conv5.add(ReLU(true))
-      conv5.add(SpatialConvolution(config[Table](3)(1), config[Table](3)(2), 5, 5, 1, 1, 2, 2)
-        .setName("conv5x5_2"))
-      conv5.add(ReLU(true))
-      concat.add(conv5)
-      val pool = Sequential()
-      pool.add(SpatialMaxPooling(3, 3, 1, 1, 1, 1).ceil()
-        .setName("pool"))
-      pool.add(SpatialConvolution(inputSize, config[Table](4)(1), 1, 1, 1, 1).setName("pool_conv"))
-      pool.add(ReLU(true))
-      concat.add(pool)
-      concat
-    }
-  }
-  object ResNet {
-    def basicBlockFunc(nInputPlane: Int, n: Int, stride: Int, shortcutType : String)(
-      input : ModuleNode[Float]) : ModuleNode[Float] = {
-      val conv1 = SpatialConvolution(nInputPlane, n, 3, 3, stride, stride, 1, 1)
-        .setName("conv1").inputs(input)
-      val bn1 = SpatialBatchNormalization(n).setName("bn1").inputs(conv1)
-      val relu1 = ReLU(true).inputs(bn1)
-      val conv2 = SpatialConvolution(n, n, 3, 3, 1, 1, 1, 1)
-        .setName("conv2").inputs(relu1)
-      val bn2 = SpatialBatchNormalization(n).setName("bn2").inputs(conv2)
-      val shortcut = shortcutFunc(nInputPlane, n, stride, shortcutType)(input)
-      val add = CAddTable(true).inputs(bn2, shortcut)
-      val output = ReLU(true).inputs(add)
-      output
-    }
-
-    def basicBlockSeq(nInputPlane: Int, n: Int, stride: Int, shortcutType : String)
-    : Module[Float] = {
-      val s = Sequential()
-      s.add(SpatialConvolution(nInputPlane, n, 3, 3, stride, stride, 1, 1).setName("conv1"))
-      s.add(SpatialBatchNormalization(n).setName("bn1"))
-      s.add(ReLU(true))
-      s.add(SpatialConvolution(n, n, 3, 3, 1, 1, 1, 1).setName("conv2"))
-      s.add(SpatialBatchNormalization(n).setName("bn2"))
-
-      Sequential()
-        .add(ConcatTable()
-          .add(s)
-          .add(shortcutSeq(nInputPlane, n, stride, shortcutType)))
-        .add(CAddTable(true))
-        .add(ReLU(true))
-    }
-
-    def shortcutFunc(nInputPlane: Int, nOutputPlane: Int, stride: Int,
-                     shortcutType : String)(input : ModuleNode[Float]) : ModuleNode[Float] = {
-      val useConv = shortcutType == "C" || (shortcutType == "B" && nInputPlane != nOutputPlane)
-
-      if (useConv) {
-        val conv1 = SpatialConvolution(nInputPlane, nOutputPlane, 1, 1, stride, stride)
-          .inputs(input)
-        val bn1 = SpatialBatchNormalization(nOutputPlane).inputs(conv1)
-        bn1
-      } else if (nInputPlane != nOutputPlane) {
-        val pool1 = SpatialAveragePooling(1, 1, stride, stride).inputs(input)
-        val mul1 = MulConstant(0f).inputs(pool1)
-        val concat = JoinTable(2, 3).inputs(pool1, mul1)
-        concat
-      } else {
-        input
-      }
-    }
-    def shortcutSeq(nInputPlane: Int, nOutputPlane: Int, stride: Int, shortcutType : String)
-    : Module[Float] = {
-      val useConv = shortcutType == "C" || (shortcutType == "B" && nInputPlane != nOutputPlane)
-
-      if (useConv) {
-        Sequential()
-          .add(SpatialConvolution(nInputPlane, nOutputPlane, 1, 1, stride, stride))
-          .add(SpatialBatchNormalization(nOutputPlane))
-      } else if (nInputPlane != nOutputPlane) {
-        Sequential()
-          .add(SpatialAveragePooling(1, 1, stride, stride))
-          .add(Concat(2)
-            .add(Identity())
-            .add(MulConstant(0f)))
-      } else {
-        Identity()
-      }
     }
   }
 }
