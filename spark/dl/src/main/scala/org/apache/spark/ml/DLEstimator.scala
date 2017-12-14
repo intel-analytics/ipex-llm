@@ -17,6 +17,7 @@ package org.apache.spark.ml
 
 import com.intel.analytics.bigdl.{Criterion, Module}
 import com.intel.analytics.bigdl.dataset._
+import com.intel.analytics.bigdl.models.utils.ModelBroadcast
 import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
@@ -281,25 +282,31 @@ class DLModel[@specialized(Float, Double) T: ClassTag](
     val featureType = dataFrame.schema($(featuresCol)).dataType
     val featureColIndex = dataFrame.schema.fieldIndex($(featuresCol))
     val featureFunc = getConvertFunc(featureType)
+    val sc = dataFrame.sqlContext.sparkContext
+    val modelBroadCast = ModelBroadcast[T]().broadcast(sc, model)
+    val localBatchSize = $(batchSize)
 
-    val samplesRDD = dataFrame.rdd.map { row =>
-      val features = featureFunc(row, featureColIndex)
-      val featureBuffer = features.head match {
-        case dd: Double => features.asInstanceOf[Seq[Double]].map(ev.fromType(_))
-        case ff: Float => features.asInstanceOf[Seq[Float]].map(ev.fromType(_))
+    val resultRDD = dataFrame.rdd.mapPartitions { rowIter =>
+      val rows = rowIter.toArray
+      val localModel = modelBroadCast.value()
+      val features = rows.map { row =>
+        val features = featureFunc(row, featureColIndex)
+        val featureBuffer = features.head match {
+          case dd: Double => features.asInstanceOf[Seq[Double]].map(ev.fromType(_))
+          case ff: Float => features.asInstanceOf[Seq[Float]].map(ev.fromType(_))
+        }
+        Sample(Tensor(featureBuffer.toArray, featureSize))
+      }.toIterator
+
+      val outputs = SampleToMiniBatch(localBatchSize).apply(features).flatMap { batch =>
+        val batchResult = localModel.forward(batch.getInput())
+        batchResult.toTensor.split(1).map(outputToPrediction)
       }
-      Sample(Tensor(featureBuffer.toArray, featureSize), Tensor[T](1))
-    }
-
-    val prediction = model.asInstanceOf[Module[T]]
-      .predict(samplesRDD, $(batchSize))
-      .map { t => outputToPrediction(t.asInstanceOf[Tensor[T]]) }
-
-    val resultRDD = dataFrame.rdd.zipWithIndex().map(_.swap)
-      .join(prediction.zipWithIndex().map(_.swap)).values
-      .map { case (row, predict) =>
+      rows.toIterator.zip(outputs).map { case (row, predict) =>
         Row.fromSeq(row.toSeq ++ Seq(predict))
       }
+    }
+
     val resultSchema = transformSchema(dataFrame.schema)
     dataFrame.sqlContext.createDataFrame(resultRDD, resultSchema)
   }
