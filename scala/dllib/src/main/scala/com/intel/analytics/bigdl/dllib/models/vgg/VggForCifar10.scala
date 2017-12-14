@@ -76,7 +76,8 @@ object VggForCifar10 {
     vggBnDo
   }
 
-  def graph(classNum: Int, hasDropout: Boolean = true): Module[Float] = {
+  def graph(classNum: Int, hasDropout: Boolean = true)
+  : Module[Float] = {
     val input = Input()
     def convBNReLU(nInputPlane: Int, nOutPutPlane: Int)(input: ModuleNode[Float])
     : ModuleNode[Float] = {
@@ -179,7 +180,8 @@ object Vgg_16 {
     model
   }
 
-  def graph(classNum: Int, hasDropout: Boolean = true): Module[Float] = {
+  def graph(classNum: Int, hasDropout: Boolean = true)
+  : Module[Float] = {
     val conv1 = SpatialConvolution(3, 64, 3, 3, 1, 1, 1, 1).inputs()
     val relu1 = ReLU(true).inputs(conv1)
     val conv2 = SpatialConvolution(64, 64, 3, 3, 1, 1, 1, 1).inputs(relu1)
@@ -288,7 +290,8 @@ object Vgg_19 {
     model
   }
 
-  def graph(classNum: Int, hasDropout: Boolean = true): Module[Float] = {
+  def graph(classNum: Int, hasDropout: Boolean = true)
+  : Module[Float] = {
     val conv1 = SpatialConvolution(3, 64, 3, 3, 1, 1, 1, 1).inputs()
     val relu1 = ReLU(true).inputs(conv1)
     val conv2 = SpatialConvolution(64, 64, 3, 3, 1, 1, 1, 1).inputs(relu1)
