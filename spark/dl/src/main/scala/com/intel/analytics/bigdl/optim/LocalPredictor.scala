@@ -155,7 +155,7 @@ class LocalPredictor[T: ClassTag] private[optim](model: Module[T], weightsBias: 
    * local model predict images, return imageFrame with predicted tensor
    * @param imageFrame imageFrame that contains images
    * @param outputLayer if outputLayer is not null, the output of layer that matches
-   *                      outputLayer will be used as predicted output
+   * outputLayer will be used as predicted output
    * @param shareBuffer whether to share same memory for each batch predict results
    * @param batchPerCore batch size per core, default is 4
    * @param predictKey key to store predicted result
@@ -167,10 +167,8 @@ class LocalPredictor[T: ClassTag] private[optim](model: Module[T], weightsBias: 
     predictKey: String = ImageFeature.predict): LocalImageFrame = {
     // share convolution fInput
     SpatialShareConvolution.shareConvolution(model)
-    val dataIter = imageFrame.data(batchPerCore)
-    val toBatch = SampleToMiniBatch[T](
-      batchSize = batchPerCore * subModelNumber, None, None,
-      partitionNum = Some(1))
+
+    val dataIter = imageFrame.array.grouped(batchPerCore * subModelNumber)
 
     val workingModels = (1 to subModelNumber).map(_ => {
       val submodel = model.cloneModule().evaluate()
@@ -178,38 +176,27 @@ class LocalPredictor[T: ClassTag] private[optim](model: Module[T], weightsBias: 
       submodel
     }).toArray
 
-    val parallelism = subModelNumber
-    val result = Engine.default.invokeAndWait(
-      (0 until parallelism).map(b =>
-        () => {
-          if (dataIter.hasNext) {
-            val imageFeatures = dataIter.next()
-            val validImageFeatures = imageFeatures.filter(_.isValid)
-            val samples = validImageFeatures.map(x => x[Sample[T]](ImageFeature.sample))
-            val batch = toBatch(samples.toIterator).next()
-            if (batch != null) {
-              workingModels(b).forward(batch.getInput())
-              val result = if (outputLayer == null) {
-                workingModels(b).output.toTensor[T]
-              } else {
-                workingModels(b)(outputLayer).get.output.toTensor[T]
-              }
-              val batchOut = if (result.dim() == 1) {
-                Array(result)
-              } else {
-                result.split(1)
-              }
-              validImageFeatures.zip(batchOut).foreach(tuple => {
-                tuple._1(predictKey) = tuple._2
-              })
-            }
-            imageFeatures
-          } else {
-            Array[ImageFeature]()
+    val workingToBatch = (1 to subModelNumber).map(_ => {
+      SampleToMiniBatch[T](
+        batchSize = batchPerCore * subModelNumber,
+        partitionNum = Some(subModelNumber))
+    }).toArray
+
+    val result = dataIter.map(batch => {
+      val groupedImages = batch.grouped(batchPerCore).toArray
+      Engine.default.invokeAndWait(
+        groupedImages.indices.map(b =>
+          () => {
+            val imageFeatures = groupedImages(b)
+            val model = workingModels(b)
+            val toBatch = workingToBatch(b)
+            Predictor.predictImageBatch[T](model, imageFeatures, outputLayer, predictKey,
+              toBatch, shareBuffer)
           }
-        }
-      )
-    ).flatten
+        )
+      ).flatten
+    }).flatten
+
     ImageFrame.array(result.toArray)
   }
 }

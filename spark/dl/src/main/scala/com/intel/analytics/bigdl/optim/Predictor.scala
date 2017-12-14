@@ -17,7 +17,7 @@
 package com.intel.analytics.bigdl.optim
 
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.dataset.{MiniBatch, Sample, SampleToMiniBatch, Utils, DataSet => _}
+import com.intel.analytics.bigdl.dataset.{MiniBatch, Sample, SampleToMiniBatch, Transformer, Utils, DataSet => _}
 import com.intel.analytics.bigdl.models.utils.ModelBroadcast
 import com.intel.analytics.bigdl.nn.SpatialShareConvolution
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
@@ -30,6 +30,34 @@ import scala.reflect.ClassTag
 object Predictor {
   def apply[T: ClassTag](model: Module[T])(implicit ev: TensorNumeric[T]): Predictor[T] = {
     new Predictor[T](model)
+  }
+
+  private[optim] def predictImageBatch[T: ClassTag](
+    localModel: Module[T], imageFeatures: Seq[ImageFeature],
+    outputLayer: String, predictKey: String,
+    localToBatch: Transformer[Sample[T], MiniBatch[T]],
+    shareBuffer: Boolean)(implicit ev: TensorNumeric[T]): Seq[ImageFeature] = {
+    val validImageFeatures = imageFeatures.filter(_.isValid)
+    val samples = validImageFeatures.map(x => x[Sample[T]](ImageFeature.sample))
+    val batch = localToBatch(samples.toIterator).next()
+    if (batch != null) {
+      localModel.forward(batch.getInput())
+      val output = if (outputLayer == null) {
+        localModel.output.toTensor[T]
+      } else {
+        localModel(outputLayer).get.output.toTensor[T]
+      }
+      val result = if (shareBuffer) output else output.clone()
+      val batchOut = if (result.dim() == 1) {
+        Array(result)
+      } else {
+        result.split(1)
+      }
+      validImageFeatures.zip(batchOut).foreach(tuple => {
+        tuple._1(predictKey) = tuple._2
+      })
+    }
+    imageFeatures
   }
 }
 
@@ -108,26 +136,8 @@ class Predictor[T: ClassTag] private[optim](
       val localToBatch = toBatchBroad.value._1.cloneTransformer()
 
       partition.grouped(batchPerPartition).flatMap(imageFeatures => {
-        val validImageFeatures = imageFeatures.filter(_.isValid)
-        val samples = validImageFeatures.map(x => x[Sample[T]](ImageFeature.sample))
-        val batch = localToBatch(samples.toIterator).next()
-        if (batch != null) {
-          localModel.forward(batch.getInput())
-          val result = if (outputLayer == null) {
-            localModel.output.toTensor[T]
-          } else {
-            localModel(outputLayer).get.output.toTensor[T]
-          }
-          val batchOut = if (result.dim() == 1) {
-            Array(result)
-          } else {
-            result.split(1)
-          }
-          validImageFeatures.zip(batchOut).foreach(tuple => {
-            tuple._1(predictKey) = tuple._2
-          })
-        }
-        imageFeatures
+        Predictor.predictImageBatch[T](localModel, imageFeatures, outputLayer, predictKey,
+          localToBatch, shareBuffer)
       })
     })
     ImageFrame.rdd(result)
