@@ -25,7 +25,7 @@ import com.intel.analytics.bigdl.nn.abstractnn.DataFormat.NHWC
 
 import scala.collection.JavaConverters._
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, DataFormat}
-import com.intel.analytics.bigdl.nn.ops.{All, Any, ApproximateEqual, ArgMax, Assert, Assign, AssignGrad, AvgPoolGrad, BatchMatMul, BiasAddGrad, BroadcastGradientArgs, Cast, Ceil, Conv2D, Conv2DBackFilter, Conv2DTranspose, CrossEntropy, DecodeImage, DepthwiseConv2D, DepthwiseConv2DBackpropFilter, DepthwiseConv2DBackpropInput, Digamma, Dilation2D, Dilation2DBackpropFilter, Dilation2DBackpropInput, EluGrad, Equal, Erf, Erfc, Expm1, Floor, FloorDiv, FloorMod, FusedBatchNorm, FusedBatchNormGrad, Greater, GreaterEqual, InTopK, Inv, InvGrad, IsFinite, IsInf, IsNan, L2Loss, LRNGrad, Less, LessEqual, Lgamma, LogicalAnd, LogicalNot, LogicalOr, MaxPool, MaxPoolGrad, Maximum, MergeOps, Minimum, Mod, ModuleToOperation, NoOp, NotEqual, OneHot, Pad, ParseExample, Prod, RandomUniform, RangeOps, Rank, Relu6Grad, ReluGrad, ResizeBilinearOps, Rint, Round, RsqrtGrad, SigmoidGrad, Sign, Slice, SoftplusGrad, SoftsignGrad, SqrtGrad, SquaredDifference, Substr, SwitchOps, TanhGrad, TopK, TruncateDiv, TruncatedNormal, Add => AddOps, DecodeGif => DecodeGifOps, DecodeJpeg => DecodeJpegOps, DecodePng => DecodePngOps, DecodeRaw => DecodeRawOps, Exp => ExpOps, Pow => PowOps, Select => SelectOps, Sum => SumOps, Tile => TileOps}
+import com.intel.analytics.bigdl.nn.ops.{All, Any, ApproximateEqual, ArgMax, Assert, Assign, AssignGrad, AvgPoolGrad, BatchMatMul, BiasAddGrad, BroadcastGradientArgs, Cast, Ceil, Conv2D, Conv2DBackFilter, Conv2DTranspose, Conv3D, Conv3DBackpropFilter, Conv3DBackpropFilterV2, Conv3DBackpropInput, Conv3DBackpropInputV2, CrossEntropy, DecodeImage, DepthwiseConv2D, DepthwiseConv2DBackpropFilter, DepthwiseConv2DBackpropInput, Digamma, Dilation2D, Dilation2DBackpropFilter, Dilation2DBackpropInput, EluGrad, Equal, Erf, Erfc, Expm1, Floor, FloorDiv, FloorMod, FusedBatchNorm, FusedBatchNormGrad, Greater, GreaterEqual, InTopK, Inv, InvGrad, IsFinite, IsInf, IsNan, L2Loss, LRNGrad, Less, LessEqual, Lgamma, LogicalAnd, LogicalNot, LogicalOr, MaxPool, MaxPoolGrad, Maximum, MergeOps, Minimum, Mod, ModuleToOperation, NoOp, NotEqual, OneHot, Pad, ParseExample, Prod, RandomUniform, RangeOps, Rank, Relu6Grad, ReluGrad, ResizeBilinearOps, Rint, Round, RsqrtGrad, SigmoidGrad, Sign, Slice, SoftplusGrad, SoftsignGrad, SqrtGrad, SquaredDifference, Substr, SwitchOps, TanhGrad, TopK, TruncateDiv, TruncatedNormal, Add => AddOps, DecodeGif => DecodeGifOps, DecodeJpeg => DecodeJpegOps, DecodePng => DecodePngOps, DecodeRaw => DecodeRawOps, Exp => ExpOps, Pow => PowOps, Select => SelectOps, Sum => SumOps, Tile => TileOps}
 import com.intel.analytics.bigdl.nn.tf._
 import com.intel.analytics.bigdl.nn.{DenseToSparse, _}
 import com.intel.analytics.bigdl.optim.L2Regularizer
@@ -2275,6 +2275,49 @@ class ModuleSerializerSpec extends FlatSpec with Matchers with BeforeAndAfterAll
       Tensor[Float](4, 11, 16, 3).rand())
 
     runSerializationTest(module, input)
+  }
+
+  "Conv3D serializer" should "work properly" in {
+    val module = Conv3D[Float](1, 2, 3, 0, 0, 0, DataFormat.NHWC)
+    val input = Tensor[Float](4, 20, 30, 40, 3).rand()
+    val filter = Tensor[Float](2, 3, 4, 3, 4).rand()
+    runSerializationTest(module, T(input, filter))
+  }
+
+  "Conv3DBackpropFilter serializer" should "work properly" in {
+    val module = Conv3DBackpropFilter[Float](1, 2, 3, 0, 0, 0, DataFormat.NHWC)
+    val input = Tensor[Float](4, 20, 30, 40, 3).rand()
+    val filter = Tensor[Float](2, 3, 4, 3, 4).rand()
+    val outputBackprop = Tensor[Float](4, 19, 14, 13, 4)
+
+    runSerializationTest(module, T(input, filter, outputBackprop))
+  }
+
+  "Conv3DBackpropInput serializer" should "work properly" in {
+    val module = Conv3DBackpropInput[Float](1, 2, 3, 0, 0, 0, DataFormat.NHWC)
+    val input = Tensor[Float](4, 20, 30, 40, 3).rand()
+    val filter = Tensor[Float](2, 3, 4, 3, 4).rand()
+    val outputBackprop = Tensor[Float](4, 19, 14, 13, 4).rand()
+
+    runSerializationTest(module, T(input, filter, outputBackprop))
+  }
+
+  "Conv3DBackpropFilterV2 serializer" should "work properly" in {
+    val module = Conv3DBackpropFilterV2[Float](1, 2, 3, 0, 0, 0, DataFormat.NHWC)
+    val input = Tensor[Float](4, 20, 30, 40, 3).rand()
+    val filter = Tensor[Int](Array(2, 3, 4, 3, 4), Array(5))
+    val outputBackprop = Tensor[Float](4, 19, 14, 13, 4).rand()
+
+    runSerializationTest(module, T(input, filter, outputBackprop))
+  }
+
+  "Conv3DBackpropInputV2 serializer" should "work properly" in {
+    val module = Conv3DBackpropInputV2[Float](1, 2, 3, 0, 0, 0, DataFormat.NHWC)
+    val inputSize = Tensor[Int](Array(4, 20, 30, 40, 3), Array(5))
+    val filter = Tensor[Float](2, 3, 4, 3, 4).rand()
+    val outputBackprop = Tensor[Float](4, 19, 14, 13, 4).rand()
+
+    runSerializationTest(module, T(inputSize, filter, outputBackprop))
   }
 
   "DetectionOutputSSD serializer" should "work properly" in {
