@@ -19,10 +19,9 @@ package com.intel.analytics.bigdl.optim
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dataset.{MiniBatch, Sample, SampleToMiniBatch, Transformer, Utils, DataSet => _}
 import com.intel.analytics.bigdl.models.utils.ModelBroadcast
-import com.intel.analytics.bigdl.nn.SpatialShareConvolution
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.transform.vision.image.{DistributedImageFrame, FeatureTransformer, ImageFeature, ImageFrame}
+import com.intel.analytics.bigdl.transform.vision.image.{DistributedImageFrame, ImageFeature, ImageFrame}
 import org.apache.spark.rdd.RDD
 
 import scala.reflect.ClassTag

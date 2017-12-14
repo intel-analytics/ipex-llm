@@ -23,7 +23,6 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{Engine, MklBlas}
 import com.intel.analytics.bigdl.dataset.SampleToMiniBatch
-import com.intel.analytics.bigdl.nn.SpatialShareConvolution
 import com.intel.analytics.bigdl.transform.vision.image.{ImageFeature, ImageFrame, LocalImageFrame}
 
 import scala.reflect.ClassTag
