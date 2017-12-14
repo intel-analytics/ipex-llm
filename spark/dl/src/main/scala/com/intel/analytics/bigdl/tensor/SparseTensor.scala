@@ -1144,6 +1144,63 @@ object SparseTensor{
   }
 
   /**
+   * Find index of last occurrence of value in the array from start index to end index.
+   * The array should be ordered ascending.
+   *
+   * @param array the array will be searched.
+   * @param value the element value to search for.
+   * @param start start index
+   * @param end last index
+   * @return index of last occurrence of value
+   */
+  private def lastIndexOf[T: ClassTag](
+        array: Array[T],
+        value: T,
+        start: Int,
+        end: Int)(implicit ev: TensorNumeric[T]): Int = {
+    if (start > end) return -1
+    require(end <= array.length - 1, s"indexOf end should't exceed array size ${array.length - 1}" +
+      s", but got $end")
+    var i = start
+    while (i < end && array(i) == value) {
+      i += 1
+    }
+    if (array(i) == value) {
+      i
+    } else {
+      i - 1
+    }
+  }
+
+  /**
+   * Find index of first occurrence of value in the array from start index to end index.
+   *
+   * @param array the array will be searched.
+   * @param value the element value to search for.
+   * @param start start index
+   * @param end last index
+   * @return index of first occurrence of value
+   */
+  private def firstIndexOf[T: ClassTag](
+        array: Array[T],
+        value: T,
+        start: Int,
+        end: Int)(implicit ev: TensorNumeric[T]): Int = {
+    if (start > end) return -1
+    require(end <= array.length - 1, s"indexOf end should't exceed array size ${array.length - 1}" +
+      s", but got $end")
+    var i = start
+    while (i <= end && array(i) != value) {
+      i += 1
+    }
+    if (i > end) {
+      -1
+    } else {
+      i
+    }
+  }
+
+  /**
    * Concatenate a sequence of SparseTensor of n-dim to n-dim SparseTensor.
    * The size at n-dim will be concated.
    *
@@ -1198,6 +1255,7 @@ object SparseTensor{
         var start = res._storageOffset
         var end = res._storageOffset
         val tensorsOffset = tensors.map(_.storageOffset() - 1).toArray
+        val tensorsMaxIndex = tensors.map(v => v.storageOffset() + v.nElement() - 2).toArray
         var j = 0
         while (j < res.size(dim - 1)) {
           var index = 0
@@ -1205,10 +1263,12 @@ object SparseTensor{
           while (index < tensors.size) {
             val currentTensor = tensors(index)
             val currentIndicesOffset = currentTensor._indicesOffset
-            val findIndexStart = currentTensor._indices(0).array().indexOf(
-              j + currentIndicesOffset(0), tensorsOffset(index))
-            val findIndexEnd = currentTensor._indices(0).array().lastIndexOf(
-              j + currentIndicesOffset(0))
+            val findIndexStart =
+              firstIndexOf(currentTensor._indices(0).array(), j + currentIndicesOffset(0),
+                tensorsOffset(index), tensorsMaxIndex(index))
+            val findIndexEnd =
+              lastIndexOf(currentTensor._indices(0).array(), j + currentIndicesOffset(0),
+                tensorsOffset(index), tensorsMaxIndex(index))
             val curLength = if (findIndexStart != -1 && findIndexEnd != -1) {
               findIndexEnd - findIndexStart + 1
             } else {
