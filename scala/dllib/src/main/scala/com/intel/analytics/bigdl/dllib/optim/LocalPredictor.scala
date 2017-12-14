@@ -23,6 +23,7 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{Engine, MklBlas}
 import com.intel.analytics.bigdl.dataset.SampleToMiniBatch
+import com.intel.analytics.bigdl.transform.vision.image.{ImageFeature, ImageFrame, LocalImageFrame}
 
 import scala.reflect.ClassTag
 
@@ -149,6 +150,52 @@ class LocalPredictor[T: ClassTag] private[optim](model: Module[T], weightsBias: 
     }
   }
 
+  /**
+   * local model predict images, return imageFrame with predicted tensor
+   * @param imageFrame imageFrame that contains images
+   * @param outputLayer if outputLayer is not null, the output of layer that matches
+   * outputLayer will be used as predicted output
+   * @param shareBuffer whether to share same memory for each batch predict results
+   * @param batchPerCore batch size per core, default is 4
+   * @param predictKey key to store predicted result
+   */
+  def predictImage(imageFrame: LocalImageFrame,
+    outputLayer: String = null,
+    shareBuffer: Boolean = false,
+    batchPerCore: Int = 4,
+    predictKey: String = ImageFeature.predict): LocalImageFrame = {
+
+    val dataIter = imageFrame.array.grouped(batchPerCore * subModelNumber)
+
+    val workingModels = (1 to subModelNumber).map(_ => {
+      val submodel = model.cloneModule().evaluate()
+      putWeightBias(weightsBias, submodel)
+      submodel
+    }).toArray
+
+    val workingToBatch = (1 to subModelNumber).map(_ => {
+      SampleToMiniBatch[T](
+        batchSize = batchPerCore * subModelNumber,
+        partitionNum = Some(subModelNumber))
+    }).toArray
+
+    val result = dataIter.map(batch => {
+      val groupedImages = batch.grouped(batchPerCore).toArray
+      Engine.default.invokeAndWait(
+        groupedImages.indices.map(b =>
+          () => {
+            val imageFeatures = groupedImages(b)
+            val model = workingModels(b)
+            val toBatch = workingToBatch(b)
+            Predictor.predictImageBatch[T](model, imageFeatures, outputLayer, predictKey,
+              toBatch, shareBuffer)
+          }
+        )
+      ).flatten
+    }).flatten
+
+    ImageFrame.array(result.toArray)
+  }
 }
 
 
