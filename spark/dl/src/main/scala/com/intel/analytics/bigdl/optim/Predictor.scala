@@ -123,8 +123,6 @@ class Predictor[T: ClassTag] private[optim](
     shareBuffer: Boolean = false,
     batchPerPartition: Int = 4,
     predictKey: String = ImageFeature.predict): DistributedImageFrame = {
-    // share convolution fInput
-    SpatialShareConvolution.shareConvolution(model)
     val rdd = imageFrame.asInstanceOf[DistributedImageFrame].rdd
     val modelBroad = ModelBroadcast[T]().broadcast(rdd.sparkContext, model.evaluate())
     val partitionNum = rdd.partitions.length

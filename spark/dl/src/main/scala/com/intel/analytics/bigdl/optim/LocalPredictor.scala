@@ -165,8 +165,6 @@ class LocalPredictor[T: ClassTag] private[optim](model: Module[T], weightsBias: 
     shareBuffer: Boolean = false,
     batchPerCore: Int = 4,
     predictKey: String = ImageFeature.predict): LocalImageFrame = {
-    // share convolution fInput
-    SpatialShareConvolution.shareConvolution(model)
 
     val dataIter = imageFrame.array.grouped(batchPerCore * subModelNumber)
 
