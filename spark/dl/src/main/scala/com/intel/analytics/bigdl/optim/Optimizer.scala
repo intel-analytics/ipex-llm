@@ -341,9 +341,9 @@ abstract class Optimizer[T: ClassTag, D](
   def prepareInput(): Unit = {}
 
   /**
-    * Disable gradient clipping
-    * @return
-    */
+   * Disable gradient clipping
+   * @return
+   */
   def disableGradientClipping()
   : this.type = {
     gradientClippingParams.enableConstantClipping = false
