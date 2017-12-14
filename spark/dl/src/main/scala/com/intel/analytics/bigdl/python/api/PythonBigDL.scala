@@ -1762,17 +1762,6 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     result.toList.asJava
   }
 
-  def predictLocalImage(model: AbstractModule[Activity, Activity, T],
-    imageFrame: ImageFrame,
-    outputLayer: String = null,
-    shareBuffer: Boolean = false,
-    batchPerCore: Int = 4,
-    predictKey: String = ImageFeature.predict): LocalImageFrame = {
-    val localModel = LocalModule(model)
-    localModel.predictImage(imageFrame.toLocal(), outputLayer, shareBuffer, batchPerCore,
-      predictKey)
-  }
-
   def modelPredictRDD(model: AbstractModule[Activity, Activity, T],
                       dataRdd: JavaRDD[Sample]): JavaRDD[JTensor] = {
     val tensorRDD = model.predict(dataRdd.rdd.map(toJSample(_)))
@@ -1791,8 +1780,8 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     shareBuffer: Boolean,
     batchPerPartition: Int,
     predictKey: String)
-  : DistributedImageFrame = {
-    model.predictImage(imageFrame.toDistributed(),
+  : ImageFrame = {
+    model.predictImage(imageFrame,
       featLayerName, shareBuffer, batchPerPartition, predictKey)
   }
 

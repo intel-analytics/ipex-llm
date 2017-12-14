@@ -49,8 +49,7 @@ class LocalPredictorSpec extends FlatSpec with Matchers with BeforeAndAfter {
       ChannelNormalize(0.485f, 0.456f, 0.406f, 0.229f, 0.224f, 0.225f) ->
       MatToTensor() -> ImageFrameToSample()
     val model = Inception_v1_NoAuxClassifier(classNum = 20)
-    val localModel = LocalModule(model)
-    val detection = localModel.predictImage(imageFrame.toLocal())
+    val detection = model.predictImage(imageFrame).toLocal()
     val feature = detection.array.head
     println(feature(ImageFeature.predict))
 
@@ -76,8 +75,7 @@ class LocalPredictorSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val model = Sequential()
     model.add(SpatialConvolution(3, 6, 5, 5))
     model.add(Tanh())
-    val localModel = LocalModule(model)
-    val detection = localModel.predictImage(imageFrame.toLocal())
+    val detection = model.predictImage(imageFrame).toLocal()
     val feature = detection.array.head
 
     val imageFeatures = detection.array

@@ -30,7 +30,7 @@ import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.dataset.{LocalDataSet, MiniBatch, Sample}
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.nn.quantized.Quantization
-import com.intel.analytics.bigdl.transform.vision.image.{DistributedImageFrame, ImageFeature, ImageFrame}
+import com.intel.analytics.bigdl.transform.vision.image.{DistributedImageFrame, ImageFeature, ImageFrame, LocalImageFrame}
 import com.intel.analytics.bigdl.utils.caffe.CaffePersister
 import com.intel.analytics.bigdl.utils.serializer.ModulePersister
 import com.intel.analytics.bigdl.utils.tf.{TensorflowDataFormat, TensorflowSaver}
@@ -561,13 +561,19 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
    * @param predictKey key to store predicted result
    * @return
    */
-  def predictImage(imageFrame: DistributedImageFrame,
+  def predictImage(imageFrame: ImageFrame,
     outputLayer: String = null,
     shareBuffer: Boolean = false,
     batchPerPartition: Int = 4,
-    predictKey: String = ImageFeature.predict): DistributedImageFrame = {
-    Predictor(this).predictImage(imageFrame, outputLayer,
-      shareBuffer, batchPerPartition, predictKey)
+    predictKey: String = ImageFeature.predict): ImageFrame = {
+    imageFrame match {
+      case distributedImageFrame: DistributedImageFrame =>
+        Predictor(this).predictImage(distributedImageFrame, outputLayer,
+          shareBuffer, batchPerPartition, predictKey)
+      case localImageFrame: LocalImageFrame =>
+        LocalModule[T](this).predictImage(localImageFrame, outputLayer,
+          shareBuffer, batchPerPartition, predictKey)
+    }
   }
 
   /**

@@ -507,7 +507,7 @@ class TestSimple():
         model.add(SpatialConvolution(3, 6, 5, 5))
         model.add(Tanh())
 
-        image_frame = model.predict_local_image(image_frame)
+        image_frame = model.predict_image(image_frame)
         predicts = image_frame.get_predict()
 
     def test_rng(self):
