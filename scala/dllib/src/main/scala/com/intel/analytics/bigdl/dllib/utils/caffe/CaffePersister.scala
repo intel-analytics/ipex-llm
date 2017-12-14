@@ -70,7 +70,8 @@ class CaffePersister[T: ClassTag](val prototxtPath: String,
       return module.asInstanceOf[Graph[T]]
     }
     // other containers/layers to be supported later
-    throw  new UnsupportedOperationException(s"container $module is not supported!")
+    throw new CaffeConversionException(s"container $module is not supported," +
+      s"only graph supported")
   }
   // create caffe layers graph based on BigDL execution plan
   private def convertToCaffe() : Unit = {
