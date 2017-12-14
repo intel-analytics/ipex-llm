@@ -19,6 +19,7 @@ import java.io._
 
 import caffe.Caffe
 import caffe.Caffe._
+import com.google.protobuf.TextFormat.ParseException
 import com.google.protobuf.{CodedInputStream, GeneratedMessage, TextFormat}
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
@@ -146,6 +147,11 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
         builder.addLayers(copyBlobs(weightLayer, v1Layer).asInstanceOf[V1LayerParameter])
       } else {
         builder.addLayers(v1Layer)
+        if (customizedConverters ==null ||
+          !customizedConverters.contains(v1Layer.getType.toString.toUpperCase)) {
+          logger.warn(s"layer $name if type ${v1Layer.getType.toString}" +
+            s"does not exist in weight file")
+        }
       }
     })
 
@@ -156,6 +162,10 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
         builder.addLayer(copyBlobs(weightLayer, v2Layer).asInstanceOf[LayerParameter])
       } else {
         builder.addLayer(v2Layer)
+        if (customizedConverters ==null ||
+          !customizedConverters.contains(v2Layer.getType.toUpperCase)) {
+          logger.warn(s"layer $name if type ${v2Layer.getType} does not exist in weight file")
+        }
       }
     })
     builder.build
@@ -255,7 +265,8 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
   private def copyParameter(name: String, params: Table): Unit = {
     if (params == null || (!params.contains("weight") && !params.contains("bias"))) return
     if (!name2LayerV2.contains(name) && !name2LayerV1.contains(name)) {
-      if (matchAll) throw new Exception(s"module $name cannot map a layer in caffe model")
+      if (matchAll) throw new CaffeConversionException(s"module $name " +
+        s"cannot map a layer in caffe model")
       logger.info(s"$name uses initialized parameters")
       return
     }
@@ -517,16 +528,28 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
 
 object CaffeLoader {
 
+  /**
+   * Load weight for pre-defined model
+   * @param model pre-defined model
+   * @param defPath prototxt file which defines the network
+   * @param modelPath weight file which contains the parameters
+   * @param matchAll  if we need to match all layers from prototxt in weight file
+   * @param customizedConverters customized converters
+   * @param ev tensor numeric
+   * @tparam T data type
+   * @return pre-defined model populated with weights
+   */
   def load[T: ClassTag](model: Module[T],
-                        defPath: String, modelPath: String, matchAll: Boolean = true)
+                        defPath: String, modelPath: String, matchAll: Boolean = true,
+                        customizedConverters : mutable.HashMap[String, Customizable[T]] = null)
                        (implicit ev: TensorNumeric[T]): Module[T] = {
-    val caffeLoader = new CaffeLoader[T](defPath, modelPath, matchAll)
+    val caffeLoader = new CaffeLoader[T](defPath, modelPath, matchAll, customizedConverters)
     caffeLoader.copyParameters(model)
   }
 
 /**
- * load caffe model dynamically from binary and prototxt file
- * @param defPath prototxt file which illustrate the caffe model structure
+ * load caffe model dynamically from prototxt and binary files
+ * @param defPath prototxt file which illustrates the caffe model structure
  * @param modelPath binary file containing the weight and bias
  * @param customizedConverters customized layer converter
  * @param outputNames additional output layer names besides the default(layers without next nodes)
@@ -537,7 +560,16 @@ object CaffeLoader {
     customizedConverters : mutable.HashMap[String, Customizable[T]] = null,
     outputNames: Array[String] = Array[String]())
                               (implicit ev: TensorNumeric[T]): (Module[T], ParallelCriterion[T]) = {
-    val caffeLoader = new CaffeLoader[T](defPath, modelPath, true, customizedConverters)
-    caffeLoader.createCaffeModel(outputNames)
+    try {
+      val caffeLoader = new CaffeLoader[T](defPath, modelPath, true, customizedConverters)
+      caffeLoader.createCaffeModel(outputNames)
+    } catch {
+      case parseException : ParseException =>
+        throw new CaffeConversionException("Parsing caffe model error," +
+          "only standard Caffe format is supported"
+          , parseException)
+      case conversionExcepion : CaffeConversionException =>
+        throw  conversionExcepion
+    }
   }
 }
