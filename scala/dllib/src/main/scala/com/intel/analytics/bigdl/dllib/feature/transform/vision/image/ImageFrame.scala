@@ -23,10 +23,9 @@ import org.apache.commons.io.filefilter.WildcardFileFilter
 import org.apache.log4j.Logger
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.{SQLContext}
+import org.apache.spark.sql.SQLContext
 
 import scala.collection.mutable.ArrayBuffer
-import scala.reflect.ClassTag
 
 /**
  * ImageFrame wraps a set of ImageFeature
@@ -55,6 +54,16 @@ trait ImageFrame {
    * whether this is a DistributedImageFrame
    */
   def isDistributed(): Boolean
+
+  /**
+   * return LocalImageFrame
+   */
+  def toLocal(): LocalImageFrame = this.asInstanceOf[LocalImageFrame]
+
+  /**
+   * return DistributedImageFrame
+   */
+  def toDistributed(): DistributedImageFrame = this.asInstanceOf[DistributedImageFrame]
 }
 
 object ImageFrame {
