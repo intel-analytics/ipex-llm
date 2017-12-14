@@ -42,13 +42,11 @@ class Conv3DBackpropFilterV2Spec extends TensorflowSpecHelper {
     val filter = Tensor[Int](Array(2, 3, 4, 3, 4), Array(5))
     val outputBackprop = Tensor[Float](4, 19, 14, 13, 4).rand()
 
-    // the output in this case is typical the scale of thousands,
-    // so it is ok to have 1e-2 absolute error tolerance
     compare[Float](
       builder,
       Seq(input, filter, outputBackprop),
       0,
-      1e-2
+      1e-4
     )
   }
 
@@ -69,13 +67,11 @@ class Conv3DBackpropFilterV2Spec extends TensorflowSpecHelper {
     val filter = Tensor[Int](Array(2, 3, 4, 3, 4), Array(5))
     val outputBackprop = Tensor[Float](4, 20, 15, 14, 4).rand()
 
-    // the output in this case is typical the scale of thousands,
-    // so it is ok to have 1e-2 absolute error tolerance
     compare[Float](
       builder,
       Seq(input, filter, outputBackprop),
       0,
-      1e-2
+      1e-4
     )
   }
 }
