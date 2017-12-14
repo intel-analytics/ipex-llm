@@ -495,6 +495,18 @@ class ModuleSerializerSpec extends FlatSpec with Matchers with BeforeAndAfterAll
     val linearBias = linear.bias
     val variables = Some(Array(linearWeight), Array(linearBias))
     val graphWithVariable = Graph[Float](Array(linearNode), Array(linearNode),
+      variables).setName("graphWithVariable")
+    val input = Tensor[Float](2).apply1(_ => Random.nextFloat())
+    runSerializationTest(graphWithVariable, input)
+  }
+
+  "Dynamic Graph with variables serializer" should "work properly" in {
+    val linear = Linear[Float](2, 2)
+    val linearNode = linear.inputs()
+    val linearWeight = linear.weight
+    val linearBias = linear.bias
+    val variables = Some(Array(linearWeight), Array(linearBias))
+    val graphWithVariable = Graph.dynamic[Float](Array(linearNode), Array(linearNode),
       variables, false).setName("graphWithVariable")
     val input = Tensor[Float](2).apply1(_ => Random.nextFloat())
     runSerializationTest(graphWithVariable, input)
