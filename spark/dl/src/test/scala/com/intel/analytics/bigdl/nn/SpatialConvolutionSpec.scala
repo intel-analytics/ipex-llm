@@ -34,7 +34,7 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
     import com.intel.analytics.bigdl.numeric.NumericDouble
 
     val nInputPlane = 1
-    val nOutputPlane = 1
+    val nOutputPlane = 3
     val kW = 2
     val kH = 2
     val dW = 1
@@ -117,16 +117,20 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
   "SpatialConvolution L2 regularizer set outside" should "works correctly" in {
     import com.intel.analytics.bigdl.numeric.NumericDouble
 
-    val nInputPlane = 1
-    val nOutputPlane = 1
-    val kW = 2
+    val nInputPlane = 2
+    val nOutputPlane = 3
+    val kW = 1
     val kH = 2
     val dW = 1
     val dH = 1
-    val padW = 0
-    val padH = 0
+    val padW = 1
+    val padH = 1
 
     val inputData = Array(
+      1.0, 2, 3,
+      4, 5, 6,
+      1.0, 2, 3,
+      4, 5, 6,
       1.0, 2, 3,
       4, 5, 6,
       7, 8, 9
@@ -142,16 +146,16 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
     val batchSize = 5
     val criterion = new MSECriterion[Double]
 
-    val input = Tensor[Double](Storage(inputData), 1, Array(1, 3, 3))
+    val input = Tensor[Double](Storage(inputData), 1, Array(2, 3, 3))
     val labels = Tensor[Double](4).rand()
 
     val model1 = Sequential()
-      .add(new SpatialConvolution[Double](nInputPlane, nOutputPlane,
+      .add(new LocallyConnected2D[Double](3, 3, nInputPlane, nOutputPlane,
         kW, kH, dW, dH, padW, padH))
       .add(Sigmoid())
     val (weights1, grad1) = model1.getParameters()
 
-    val conv = SpatialConvolution[Double](nInputPlane, nOutputPlane,
+    val conv = LocallyConnected2D[Double](3, 3, nInputPlane, nOutputPlane,
       kW, kH, dW, dH, padW, padH)
     conv.wRegularizer = L2Regularizer(0.1)
     conv.bRegularizer = L2Regularizer(0.1)

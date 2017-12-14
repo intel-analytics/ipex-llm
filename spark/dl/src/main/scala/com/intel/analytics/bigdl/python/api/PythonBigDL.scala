@@ -457,6 +457,49 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     else maxpooling
   }
 
+  def createLocallyConnected2D(
+    nInputPlane: Int,
+    inputWidth: Int,
+    inputHeight: Int,
+    nOutputPlane: Int,
+    kernelW: Int,
+    kernelH: Int,
+    strideW: Int = 1,
+    strideH: Int = 1,
+    padW: Int = 0,
+    padH: Int = 0,
+    propagateBack: Boolean = true,
+    wRegularizer: Regularizer[T] = null,
+    bRegularizer: Regularizer[T] = null,
+    initWeight: JTensor = null,
+    initBias: JTensor = null,
+    initGradWeight: JTensor = null,
+    initGradBias: JTensor = null,
+    withBias: Boolean = true,
+    dataFormat: String = "NCHW"): LocallyConnected2D[T] = {
+    LocallyConnected2D[T](
+      nInputPlane,
+      inputWidth,
+      inputHeight,
+      nOutputPlane,
+      kernelW,
+      kernelH,
+      strideW,
+      strideH,
+      padW,
+      padH,
+      propagateBack,
+      wRegularizer,
+      bRegularizer,
+      toTensor(initWeight),
+      toTensor(initBias),
+      toTensor(initGradWeight),
+      toTensor(initGradBias),
+      withBias,
+      DataFormat(dataFormat)
+    )
+  }
+
   def createSpatialConvolution(nInputPlane: Int,
     nOutputPlane: Int,
     kernelW: Int,
