@@ -52,4 +52,30 @@ object Util {
     swap(arr, l + pivot, r);
     partition(arr, l, r);
   }
+
+  private[bigdl] def shift[B](data : Array[B], from : Int, to : Int): Array[B] = {
+    require(from < data.length && from >= 0, s"invalid from $from array length is ${data.length}")
+    require(to < data.length && to >= 0, s"invalid to $to array length is ${data.length}")
+    if (from == to) {
+      data
+    } else if (from < to) {
+      var i = from
+      while(i < to) {
+        val tmp = data(i)
+        data(i) = data(i + 1)
+        data(i + 1) = tmp
+        i += 1
+      }
+      data
+    } else {
+      var i = from
+      while(i > to) {
+        val tmp = data(i)
+        data(i) = data(i - 1)
+        data(i - 1) = tmp
+        i -= 1
+      }
+      data
+    }
+  }
 }
