@@ -462,6 +462,17 @@ def create_spark_conf():
     sparkConf.setAll(bigdl_conf.items())
     if not is_spark_below_2_2():
         extend_spark_driver_cp(sparkConf, get_bigdl_classpath())
+
+    # add content in PYSPARK_FILES in spark.submit.pyFiles
+    # This is a workaround for current Spark on k8s
+    python_lib = os.environ.get('PYSPARK_FILES', None)
+    if python_lib:
+        existing_py_files = sparkConf.get("spark.submit.pyFiles")
+        if existing_py_files:
+            sparkConf.set(key="spark.submit.pyFiles", value="%s,%s" % (python_lib, existing_py_files))
+        else:
+            sparkConf.set(key="spark.submit.pyFiles", value=python_lib)
+
     return sparkConf
 
 
