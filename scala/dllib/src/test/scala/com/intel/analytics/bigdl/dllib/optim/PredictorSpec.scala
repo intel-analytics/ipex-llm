@@ -123,7 +123,7 @@ class PredictorSpec extends FlatSpec with Matchers with BeforeAndAfter{
       ChannelNormalize(0.485f, 0.456f, 0.406f, 0.229f, 0.224f, 0.225f) ->
       MatToTensor() -> ImageFrameToSample()
     val model = Inception_v1_NoAuxClassifier(classNum = 20)
-    val detection = model.predictImage(imageFrame)
+    val detection = model.predictImage(imageFrame).toDistributed()
     val feature = detection.rdd.first()
     println(feature(ImageFeature.predict))
 
@@ -145,7 +145,7 @@ class PredictorSpec extends FlatSpec with Matchers with BeforeAndAfter{
     val model = Sequential()
     model.add(SpatialConvolution(3, 6, 5, 5))
     model.add(Tanh())
-    val detection = model.predictImage(imageFrame)
+    val detection = model.predictImage(imageFrame).toDistributed()
     val feature = detection.rdd.first()
     println(feature(ImageFeature.predict))
 

@@ -21,6 +21,7 @@ import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.optim.LocalPredictor
+import com.intel.analytics.bigdl.transform.vision.image.{ImageFeature, LocalImageFrame}
 
 import scala.reflect.ClassTag
 
@@ -78,6 +79,27 @@ class LocalModule[T: ClassTag] private(model: Module[T], weightsBias: Array[Tens
 
   def predict(dataSet: Array[Sample[T]]): Array[Activity] = {
     predictor.predict(dataSet)
+  }
+
+  /**
+   * local model predict image, return imageFrame with predicted tensor
+   * @param imageFrame imageFrame that contains images
+   * @param outputLayer if outputLayer is not null, the output of layer that matches
+   *                      outputLayer will be used as predicted output
+   * @param shareBuffer whether to share same memory for each batch predict results
+   * @param batchPerCore batch size per partition, default is 4
+   * @param predictKey key to store predicted result
+   */
+  def predictImage(imageFrame: LocalImageFrame,
+    outputLayer: String = null,
+    shareBuffer: Boolean = false,
+    batchPerCore: Int = 4,
+    predictKey: String = ImageFeature.predict): LocalImageFrame = {
+    predictor.predictImage(imageFrame,
+      outputLayer,
+      shareBuffer,
+      batchPerCore,
+      predictKey)
   }
 }
 
