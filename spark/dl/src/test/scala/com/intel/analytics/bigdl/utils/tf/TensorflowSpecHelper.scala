@@ -24,7 +24,7 @@ import com.intel.analytics.bigdl.nn.Module
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.{NumericWildCard, TensorNumeric}
-import com.intel.analytics.bigdl.utils.{BigDLSpecHelper, FileWriter, T}
+import com.intel.analytics.bigdl.utils.{BigDLSpecHelper, FileWriter, RandomGenerator, T}
 import com.intel.analytics.bigdl.utils.tf.Tensorflow.const
 import org.tensorflow.framework.{GraphDef, NodeDef}
 
@@ -33,6 +33,11 @@ import scala.sys.process._
 import scala.util.control.NonFatal
 
 abstract class TensorflowSpecHelper extends BigDLSpecHelper {
+
+  override def doBefore(): Unit = {
+    super.doBefore()
+    RandomGenerator.RNG.setSeed(1L)
+  }
 
   protected def tfCheck(): Unit = {
     var exitValue : String = ""
