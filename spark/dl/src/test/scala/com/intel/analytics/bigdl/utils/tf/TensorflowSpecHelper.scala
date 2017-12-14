@@ -34,11 +34,6 @@ import scala.util.control.NonFatal
 
 abstract class TensorflowSpecHelper extends BigDLSpecHelper {
 
-  override def doBefore(): Unit = {
-    super.doBefore()
-    RandomGenerator.RNG.setSeed(1L)
-  }
-
   protected def tfCheck(): Unit = {
     var exitValue : String = ""
     try {

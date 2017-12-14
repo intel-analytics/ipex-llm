@@ -16,11 +16,18 @@
 package com.intel.analytics.bigdl.utils.tf.loaders
 
 import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.utils.RandomGenerator
 import com.intel.analytics.bigdl.utils.tf.Tensorflow.{booleanAttr, intAttr, typeAttr}
 import com.intel.analytics.bigdl.utils.tf.TensorflowSpecHelper
 import org.tensorflow.framework.{DataType, NodeDef}
 
 class TopKV2Spec extends TensorflowSpecHelper {
+
+  override def doBefore(): Unit = {
+    super.doBefore()
+    RandomGenerator.RNG.setSeed(1L)
+  }
+
   "TopKV2" should "be correct for float tensor" in {
     compare[Float](
       NodeDef.newBuilder()
