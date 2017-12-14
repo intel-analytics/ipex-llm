@@ -26,7 +26,7 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import org.scalatest.{FlatSpec, Matchers}
 import com.intel.analytics.bigdl.numeric.NumericDouble
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.caffe.{CaffeLoader, CaffePersister, Customizable}
+import com.intel.analytics.bigdl.utils.caffe.{CaffeConversionException, CaffeLoader, CaffePersister, Customizable}
 
 import scala.collection.mutable
 import scala.reflect.ClassTag
@@ -118,7 +118,7 @@ class CaffePersisterSpec extends FlatSpec with Matchers{
       .add(Convolution(4, 3, 2, 2).setName("conv2"))
       .add(View(27)).setName("view")
       .add(Linear(2, 27, withBias = false).setName("ip"))
-    intercept[UnsupportedOperationException] {
+    intercept[CaffeConversionException] {
       CaffePersister.persist("/tmp/test.prototxt", "/tmp/test.caffemodel", module)
     }
 
