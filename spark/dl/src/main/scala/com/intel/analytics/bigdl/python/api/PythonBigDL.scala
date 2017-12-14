@@ -1781,7 +1781,8 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     batchPerPartition: Int,
     predictKey: String)
   : DistributedImageFrame = {
-    model.predictImage(imageFrame, featLayerName, shareBuffer, batchPerPartition, predictKey)
+    model.predictImage(imageFrame.toDistributed(),
+      featLayerName, shareBuffer, batchPerPartition, predictKey)
   }
 
   def evaluate(module: AbstractModule[Activity, Activity, T]):

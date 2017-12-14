@@ -17,16 +17,16 @@
 package com.intel.analytics.bigdl.transform.vision.image
 
 import java.io.{File, FilenameFilter}
+import java.util.concurrent.atomic.AtomicInteger
 
 import org.apache.commons.io.FileUtils
 import org.apache.commons.io.filefilter.WildcardFileFilter
 import org.apache.log4j.Logger
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.{SQLContext}
+import org.apache.spark.sql.SQLContext
 
 import scala.collection.mutable.ArrayBuffer
-import scala.reflect.ClassTag
 
 /**
  * ImageFrame wraps a set of ImageFeature
@@ -55,6 +55,16 @@ trait ImageFrame {
    * whether this is a DistributedImageFrame
    */
   def isDistributed(): Boolean
+
+  /**
+   * return LocalImageFrame
+   */
+  def toLocal(): LocalImageFrame = this.asInstanceOf[LocalImageFrame]
+
+  /**
+   * return DistributedImageFrame
+   */
+  def toDistributed(): DistributedImageFrame = this.asInstanceOf[DistributedImageFrame]
 }
 
 object ImageFrame {
@@ -171,6 +181,30 @@ class LocalImageFrame(var array: Array[ImageFeature]) extends ImageFrame {
   override def transform(transformer: FeatureTransformer): ImageFrame = {
     array = array.map(transformer.transform)
     this
+  }
+
+  /**
+   * get synchronized iterator of images for the purpose of batching
+   * @param batch batch size of images
+   */
+  def data(batch: Int): Iterator[Array[ImageFeature]] = {
+    val groupedImages = array.grouped(batch).toArray
+    new Iterator[Array[ImageFeature]] {
+      private val index = new AtomicInteger()
+
+      override def hasNext: Boolean = {
+        index.get() < groupedImages.length
+      }
+
+      override def next(): Array[ImageFeature] = {
+        val curIndex = index.getAndIncrement()
+        if (curIndex < groupedImages.length) {
+          groupedImages(curIndex)
+        } else {
+          null.asInstanceOf[Array[ImageFeature]]
+        }
+      }
+    }
   }
 
   override def isLocal(): Boolean = true

@@ -82,7 +82,7 @@ class Predictor[T: ClassTag] private[optim](
 
 
   /**
-   * model predict images, return imageFrame with predicted tensor
+   * model predict DistributedImageFrame, return imageFrame with predicted tensor
    * @param imageFrame imageFrame that contains images
    * @param outputLayer if outputLayer is not null, the output of layer that matches
    *                      outputLayer will be used as predicted output
@@ -90,12 +90,11 @@ class Predictor[T: ClassTag] private[optim](
    * @param batchPerPartition batch size per partition, default is 4
    * @param predictKey key to store predicted result
    */
-  def predictImage(imageFrame: ImageFrame,
+  def predictImage(imageFrame: DistributedImageFrame,
     outputLayer: String = null,
     shareBuffer: Boolean = false,
     batchPerPartition: Int = 4,
     predictKey: String = ImageFeature.predict): DistributedImageFrame = {
-    require(imageFrame.isDistributed(), "please provide a distributed imageframe")
     // share convolution fInput
     SpatialShareConvolution.shareConvolution(model)
     val rdd = imageFrame.asInstanceOf[DistributedImageFrame].rdd
