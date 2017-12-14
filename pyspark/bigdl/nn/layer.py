@@ -323,6 +323,28 @@ class Layer(JavaValue):
                                self._to_jtensors(X))
         return np.stack(result)
 
+    def predict_local_image(self, image_frame,
+                            output_layer=None,
+                            share_buffer=False,
+                            batch_per_core=4,
+                            predict_key="predict"):
+        """
+        local model predict image, return imageFrame with predicted tensor
+        :param image_frame imageFrame that contains images
+        :param output_layer if outputLayer is not null, the output of layer that matches
+         outputLayer will be used as predicted output
+        :param share_buffer whether to share same memory for each batch predict results
+        :param batch_per_core batch size per partition, default is 4
+        :param predict_key key to store predicted result
+        """
+        result = callBigDlFunc(self.bigdl_type, "predictLocalImage", self.value,
+                               image_frame,
+                               output_layer,
+                               share_buffer,
+                               batch_per_core,
+                               predict_key)
+        return ImageFrame(result)
+
     def predict(self, data_rdd):
         """
         Model inference base on the given data.
