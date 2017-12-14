@@ -28,7 +28,7 @@ The images are as follows:
 |PySpark Driver Image|intelanalytics/spark-driver-py:v2.2.0-kubernetes-0.5.0|
 |PySpark Executor Image|intelanalytics/spark-executor-py:v2.2.0-kubernetes-0.5.0|
 
-You may also build your own customized images.
+You may also build your own customized images. see instructions [here](https://github.com/intel-analytics/BigDL/tree/master/docker/BigDL).
 
 ---
 ## **Run BigDL examples**
