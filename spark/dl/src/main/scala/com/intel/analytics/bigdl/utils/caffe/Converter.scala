@@ -189,9 +189,11 @@ abstract class Converter[T: ClassTag](implicit ev: TensorNumeric[T]) {
 
   private def fromCaffePreLU(layer : GeneratedMessage) : Seq[ModuleNode[T]] = {
     val layerName = getLayerName(layer)
-    val weightBlob = getBlob(layer, 0).get
-    val nOutPlane = if (weightBlob.hasShape) weightBlob.getShape.getDim(0)
-    else weightBlob.getNum
+    val weightBlob = getBlob(layer, 0)
+    sanityBlobCheck(layer, "weight", weightBlob)
+    val weight = weightBlob.get
+    val nOutPlane = if (weight.hasShape) weight.getShape.getDim(0)
+    else weight.getNum
     Seq(PReLU[T](nOutPlane.toInt).setName(layerName).inputs())
   }
 
@@ -615,6 +617,15 @@ abstract class Converter[T: ClassTag](implicit ev: TensorNumeric[T]) {
   }
 
   protected def getBlob(layer : GeneratedMessage, ind: Int): Option[Caffe.BlobProto]
+
+  protected def sanityBlobCheck(layer : GeneratedMessage, blobInfo: String,
+                                blob : Option[Caffe.BlobProto]) : Unit = {
+    val name = getLayerName(layer)
+    val tpe = getLayerType(layer)
+    if (!blob.isDefined) {
+      throw new CaffeConversionException(s"$tpe : $name missing $blobInfo in binary file")
+    }
+  }
 
   private def init() = {
     caffe2BigDL("CONVOLUTION") = fromCaffeConvolution

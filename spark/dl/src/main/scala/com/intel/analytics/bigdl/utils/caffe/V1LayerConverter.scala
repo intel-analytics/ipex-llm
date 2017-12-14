@@ -39,12 +39,14 @@ class V1LayerConverter[T: ClassTag](implicit ev: TensorNumeric[T]) extends Conve
 
   override protected def fromCaffeConvolution(layer : GeneratedMessage) : Seq[ModuleNode[T]] = {
     val param = getConvolutionParam(layer).get
-    val weightBlob = getBlob(layer, 0).get
+    val weightBlob = getBlob(layer, 0)
+    sanityBlobCheck(layer, "weight", weightBlob)
+    val weight = weightBlob.get
     val biasBlob = getBlob(layer, 1)
     val withBias = biasBlob.isDefined
     val group = if (param.getGroup == 0)  1 else param.getGroup
-    val channel = if (weightBlob.getShape.getDimCount > 1) weightBlob.getShape.getDim(1).toInt
-    else weightBlob.getChannels
+    val channel = if (weight.getShape.getDimCount > 1) weight.getShape.getDim(1).toInt
+    else weight.getChannels
     val nInputPlane = channel * group
     val nOutPlane = param.getNumOutput
     var kw = param.getKernelW
@@ -89,9 +91,11 @@ class V1LayerConverter[T: ClassTag](implicit ev: TensorNumeric[T]) extends Conve
     val param = getInnerProductParam(layer).get
     val withBias = param.getBiasTerm
     val layerName = getLayerName(layer)
-    val weightBlob = getBlob(layer.asInstanceOf[V1LayerParameter], 0).get
-    val nInputPlane = if (weightBlob.getShape.getDimCount > 1) weightBlob.getShape.getDim(1).toInt
-    else weightBlob.getWidth
+    val weightBlob = getBlob(layer.asInstanceOf[V1LayerParameter], 0)
+    sanityBlobCheck(layer, "weight", weightBlob)
+    val weight = weightBlob.get
+    val nInputPlane = if (weight.getShape.getDimCount > 1) weight.getShape.getDim(1).toInt
+    else weight.getWidth
     val nOutputPlane = param.getNumOutput
     val linear = Linear[T](nInputPlane, nOutputPlane, withBias = withBias).setName(layerName)
     val node = linear.inputs()
