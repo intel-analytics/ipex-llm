@@ -732,6 +732,7 @@ class Model(Container):
             import tensorflow
         except ImportError:
             os.environ['KERAS_BACKEND'] = "theano"
+            from theano import ifelse
         from bigdl.keras.converter import DefinitionLoader, WeightLoader
         if weights_path:
             return WeightLoader.load_weights_from_json_hdf5(def_path, weights_path, by_name=by_name)

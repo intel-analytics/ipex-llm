@@ -310,5 +310,8 @@ class BigDLTestCase(TestCase):
     def __set_keras_backend(self, backend):
         if K.backend() != backend:
             os.environ['KERAS_BACKEND'] = backend
-            reload(K)
+            from six.moves import reload_module
+            reload_module(K)
             assert K.backend() == backend
+        if backend == "theano":
+            from theano import ifelse
