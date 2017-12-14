@@ -421,6 +421,23 @@ object Engine {
         total / core
       }
       Some(nodeNum, core)
+    } else if (master.toLowerCase.startsWith("k8s")) {
+      // Spark-on-kubernetes mode
+      val coreString = conf.get("spark.executor.cores", null)
+      val maxString = conf.get("spark.cores.max", null)
+      require(coreString != null, "Engine.init: Can't find executor core number" +
+        ", do you submit with --conf spark.executor.cores option")
+      require(maxString != null, "Engine.init: Can't find total core number" +
+        ". Do you submit with --conf spark.cores.max option")
+      val core = coreString.toInt
+      val nodeNum = dynamicAllocationExecutor(conf).getOrElse {
+        val total = maxString.toInt
+        require(total >= core && total % core == 0, s"Engine.init: total core " +
+          s"number($total) can't be divided " +
+          s"by single core number($core) provided to spark-submit")
+        total / core
+      }
+      Some(nodeNum, core)
     } else {
       throw new IllegalArgumentException(s"Engine.init: Unsupported master format $master")
     }
