@@ -15,14 +15,19 @@
  */
 package com.intel.analytics.bigdl.utils.tf.loaders
 import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.utils.RandomGenerator
 
 
 class DigammaSpec extends UnaryOpBaseSpec {
+
+  override def doBefore(): Unit = {
+    super.doBefore()
+    RandomGenerator.RNG.setSeed(1L)
+  }
+
   override def getOpName: String = "Digamma"
 
   override def getInput: Tensor[_] = Tensor[Float](4, 32, 32, 3).rand()
 
   override def getDelta: Double = 1e-3
-
-
 }
