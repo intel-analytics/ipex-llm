@@ -2282,6 +2282,22 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     UpSampling3D(size.asScala.toArray)
   }
 
+  def createCropping2D(
+      heightCrop: JList[Int],
+      widthCrop: JList[Int],
+      dataFormat: String = "NCHW"): Cropping2D[T] = {
+    Cropping2D(heightCrop.asScala.toArray, widthCrop.asScala.toArray, DataFormat(dataFormat))
+  }
+
+  def createCropping3D(
+      dim1Crop: JList[Int],
+      dim2Crop: JList[Int],
+      dim3Crop: JList[Int],
+      dataFormat: String = Cropping3D.CHANNEL_FIRST): Cropping3D[T] = {
+    Cropping3D(
+      dim1Crop.asScala.toArray, dim2Crop.asScala.toArray, dim3Crop.asScala.toArray, dataFormat)
+  }
+
   def redirectSparkLogs(logPath: String): Unit = {
     LoggerFilter.redirectSparkInfoLogs(logPath)
   }
