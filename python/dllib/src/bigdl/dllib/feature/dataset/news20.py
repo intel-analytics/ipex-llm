@@ -19,17 +19,17 @@ from bigdl.dataset import base
 import os
 import sys
 
-NEWS20_URL = 'http://qwone.com/~jason/20Newsgroups/20news-19997.tar.gz'  # noqa
+NEWS20_URL = 'http://qwone.com/~jason/20Newsgroups/20news-18828.tar.gz'  # noqa
 GLOVE_URL = 'http://nlp.stanford.edu/data/glove.6B.zip'  # noqa
 
 CLASS_NUM = 20
 
 
 def download_news20(dest_dir):
-    file_name = "20news-19997.tar.gz"
+    file_name = "20news-18828.tar.gz"
     file_abs_path = base.maybe_download(file_name, dest_dir, NEWS20_URL)
     tar = tarfile.open(file_abs_path, "r:gz")
-    extracted_to = os.path.join(dest_dir, "20_newsgroups")
+    extracted_to = os.path.join(dest_dir, "20news-18828")
     if not os.path.exists(extracted_to):
         print("Extracting %s to %s" % (file_abs_path, extracted_to))
         tar.extractall(dest_dir)
@@ -50,7 +50,7 @@ def download_glove_w2v(dest_dir):
     return extracted_to
 
 
-def get_news20(source_dir="/tmp/news20/"):
+def get_news20(source_dir="./data/news20/"):
     """
     Parse or download news20 if source_dir is empty.
 
@@ -79,7 +79,7 @@ def get_news20(source_dir="/tmp/news20/"):
     return texts
 
 
-def get_glove_w2v(source_dir="/tmp/news20/", dim=100):
+def get_glove_w2v(source_dir="./data/news20/", dim=100):
     """
     Parse or download the pre-trained glove word2vec if source_dir is empty.
 
@@ -102,5 +102,5 @@ def get_glove_w2v(source_dir="/tmp/news20/", dim=100):
 
 
 if __name__ == "__main__":
-    get_news20("/tmp/news20/")
-    get_glove_w2v("/tmp/news20/")
+    get_news20("./data/news20/")
+    get_glove_w2v("./data/news20/")
