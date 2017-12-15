@@ -384,6 +384,19 @@ class ModuleSerializerSpec extends FlatSpec with Matchers with BeforeAndAfterAll
     runSerializationTest(cosineDistance, input)
   }
 
+  "Cropping2d serializer" should "work properly" in {
+    val cropping2d = Cropping2D[Float](Array(2, 2), Array(2, 2), DataFormat.NCHW)
+      .setName("Cropping2D")
+    val input = Tensor[Float](1, 9, 9, 9).apply1(_ => Random.nextFloat())
+    runSerializationTest(cropping2d, input)
+  }
+
+  "Cropping3d serializer" should "work properly" in {
+    val cropping3d = Cropping3D[Float](Array(2, 2), Array(2, 2), Array(2, 2)).setName("Cropping3D")
+    val input = Tensor[Float](1, 9, 9, 9, 9).apply1(_ => Random.nextFloat())
+    runSerializationTest(cropping3d, input)
+  }
+
   "CSubTable serializer" should "work properly" in {
     val csubTable = CSubTable[Float]().setName("csubTable")
 
