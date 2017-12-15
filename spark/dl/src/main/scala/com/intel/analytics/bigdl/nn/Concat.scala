@@ -73,6 +73,8 @@ class Concat[T: ClassTag](val dimension: Int)(
       results = new Array[Future[Unit]](this.modules.length)
     }
 
+    checkOutputs(outs, dimension)
+
     var offset = 1
     i = 0
     while (i < this.modules.length) {
@@ -106,6 +108,27 @@ class Concat[T: ClassTag](val dimension: Int)(
     forwardTimeOverhead += System.nanoTime() - before
 
     this.output
+  }
+
+  private def checkOutputs(outputs : Array[Tensor[T]], dim : Int) : Unit = {
+    if (outputs == null || outputs.length == 0) {
+      return
+    }
+    val size = outputs(0).size()
+    val dim = size.length
+    for ( i <- 1 until outputs.length) {
+      val currSize = outputs(i).size()
+      require(currSize.length == dim, s"output for each concat " +
+        s"module should have the same dim, ${i}th output dim" +
+        s"not equals to first output dim ${currSize.length} != ${dim}")
+      for (j <- 0 until dim) {
+        if (j != (dim - 1)) {
+          require(size(j) == currSize(j), s"output for each concat module should be of the " +
+            s"same size at dimension ${dim}, while ${i}th output at ${j} dimension not" +
+            s"equals to first output at ${j}th dimension ${currSize(j)} != ${size(j)}")
+        }
+      }
+    }
   }
 
   override def getTimes(): Array[(AbstractModule[_ <: Activity, _ <: Activity, T], Long, Long)] = {
