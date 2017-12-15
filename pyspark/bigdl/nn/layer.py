@@ -2826,12 +2826,12 @@ class LookupTableSparse(Layer):
     >>> input = JTensor.sparse(values, indices, np.array([3, 4]))
     >>> weight = JTensor.sparse(weightValues, indices, np.array([3, 4]))
     >>> layer1 = LookupTableSparse(10, 4, "mean")
+    creating: createLookupTableSparse
     >>> layer1.set_weights(np.arange(1, 41, 1).reshape(10, 4)) # set weight to 1 to 40
-    >>> output = layer1.forward([input, weight])
-    >>> print(output)
+    >>> layer1.forward([input, weight])
     array([[ 6.5999999 ,  7.60000038,  8.60000038,  9.60000038],
-       [ 1.        ,  2.        ,  3.        ,  4.        ],
-       [ 5.        ,  6.        ,  7.        ,  8.        ]], dtype=float32)
+           [ 1.        ,  2.        ,  3.        ,  4.        ],
+           [ 5.        ,  6.        ,  7.        ,  8.        ]], dtype=float32)
     '''
 
     def __init__(self,
