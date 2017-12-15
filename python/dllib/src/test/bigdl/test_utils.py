@@ -210,9 +210,15 @@ class BigDLTestCase(TestCase):
             keras_model.set_weights(new_kweights)
         # weight_converter is a function keras [ndarray]-> bigdl [ndarray]
         keras_model_json_path, keras_model_hdf5_path = self._dump_keras(keras_model, dump_weights)
+
+        # Use Theano backend to load as a bigdl model
+        self.__set_keras_backend("theano")
         bigdl_model = DefinitionLoader.from_json_path(keras_model_json_path)
         bigdl_model.training(is_training)
         bigdl_output = bigdl_model.forward(input_data)
+
+        # Use TensorFlow backend to compare results
+        self.__set_keras_backend("tensorflow")
         keras_output = keras_model.predict(input_data)
         # TODO: we should verify bigdl_output and keras_output here
         #  init result is not the same, so we disable the verification  for now
@@ -289,6 +295,7 @@ class BigDLTestCase(TestCase):
                                  is_training=False,
                                  rtol=1e-6,
                                  atol=1e-6):
+        self.__set_keras_backend("tensorflow")
         keras_model = self.__generate_keras_model(functional_api=functional_api,
                                                   input_data=input_data,
                                                   output_layer=output_layer)
@@ -299,3 +306,12 @@ class BigDLTestCase(TestCase):
                        is_training=is_training,
                        rtol=rtol,
                        atol=atol)
+
+    def __set_keras_backend(self, backend):
+        if K.backend() != backend:
+            os.environ['KERAS_BACKEND'] = backend
+            from six.moves import reload_module
+            reload_module(K)
+            assert K.backend() == backend
+        if backend == "theano":
+            from theano import ifelse
