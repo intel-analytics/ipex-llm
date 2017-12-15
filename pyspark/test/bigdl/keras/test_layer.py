@@ -700,24 +700,6 @@ class TestLayer(BigDLTestCase):
         layer = SReLU(input_shape=(4, 6))
         self.modelTestSingleLayer(input_data, layer, dump_weights=True)
 
-    def test_separableconvolution2d(self):
-        input_data = np.random.random_sample([2, 3, 128, 128])
-        layer1 = lambda: SeparableConvolution2D(4, 2, 2, input_shape=(3, 128, 128))
-        self.modelTestSingleLayerWithOrdersModes(input_data, layer1,
-                                                 dump_weights=True, dim_orderings=["tf"])
-        layer2 = lambda: SeparableConvolution2D(5, 3, 3, depth_multiplier=2,
-                                                input_shape=(3, 128, 128))
-        self.modelTestSingleLayerWithOrdersModes(input_data, layer2, dim_orderings=["tf"],
-                                                 dump_weights=True, rtol=1e-5, atol=1e-5)
-        layer3 = lambda: SeparableConvolution2D(5, 2, 2, activation='relu',
-                                                input_shape=(3, 128, 128))
-        self.modelTestSingleLayerWithOrdersModes(input_data, layer3,
-                                                 dump_weights=True, dim_orderings=["tf"])
-        layer4 = lambda: SeparableConvolution2D(5, 2, 2, bias=False,
-                                                input_shape=(3, 128, 128))
-        self.modelTestSingleLayerWithOrdersModes(input_data, layer4, 
-                                                 dump_weights=True, dim_orderings=["tf"])
-
 
 if __name__ == "__main__":
     pytest.main([__file__])

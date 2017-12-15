@@ -1584,6 +1584,9 @@ class LayerConverter:
             return BLayer.SReLU(self.klayer.shared_axes)
 
     def create_separableconvolution2d(self):
+        if keras.backend.backend() != 'tensorflow':
+            raise Exception('Please use tensorflow backend for keras 1.2.2 '
+                            'if you want to load SeparableConv2D')
         bigdl_order = self.get_bdim_order()
 
         if bigdl_order == "NCHW":
