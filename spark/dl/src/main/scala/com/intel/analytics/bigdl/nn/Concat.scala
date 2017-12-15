@@ -71,7 +71,7 @@ class Concat[T: ClassTag](val dimension: Int)(
           if (size._2 != dimension -1) {
             require(size._1 == currentOutput.size(size._2 + 1),
             s"${this.modules(i).getName} output size at dimension ${size._2 + 1} mismatch," +
-              s"expected ${size._1}, actual : ${currentOutput.size(size._2)}")
+              s"expected ${size._1}, actual : ${currentOutput.size(size._2) + 1}")
           }
         })
       }
