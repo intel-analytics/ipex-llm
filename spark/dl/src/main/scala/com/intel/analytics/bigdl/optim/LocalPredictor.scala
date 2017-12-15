@@ -158,16 +158,12 @@ class LocalPredictor[T: ClassTag] private[optim](model: Module[T], weightsBias: 
    * @param shareBuffer whether to share same memory for each batch predict results
    * @param batchPerCore batch size per core, default is 4
    * @param predictKey key to store predicted result
-   * @param variableFeature whether the size of feature is variable
    */
   def predictImage(imageFrame: LocalImageFrame,
     outputLayer: String = null,
     shareBuffer: Boolean = false,
     batchPerCore: Int = 4,
-    predictKey: String = ImageFeature.predict,
-    variableFeature: Boolean = false): LocalImageFrame = {
-    if (variableFeature) require(batchPerCore == 1, "If your input feature has variable" +
-      "sizes, batchPerCore need to be 1, please adjust it")
+    predictKey: String = ImageFeature.predict): LocalImageFrame = {
 
     val dataIter = imageFrame.array.grouped(batchPerCore * subModelNumber)
 
@@ -177,7 +173,8 @@ class LocalPredictor[T: ClassTag] private[optim](model: Module[T], weightsBias: 
       submodel
     }).toArray
 
-    def featurePaddingParam = if (variableFeature) Some(PaddingParam[T]()) else None
+    // If batchPerCore == 1, will resize the feature every time in SampleToBatch
+    def featurePaddingParam = if (batchPerCore == 1) Some(PaddingParam[T]()) else None
 
     val workingToBatch = (1 to subModelNumber).map(_ => {
       SampleToMiniBatch[T](

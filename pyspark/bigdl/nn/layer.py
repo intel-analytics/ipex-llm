@@ -348,7 +348,7 @@ class Layer(JavaValue):
         return result
 
     def predict_image(self, image_frame, output_layer=None, share_buffer=False,
-                      batch_per_partition=4, predict_key="predict", variable_feature=False):
+                      batch_per_partition=4, predict_key="predict"):
         """
         model predict images, return imageFrame with predicted tensor
         :param image_frame imageFrame that contains images
@@ -357,7 +357,6 @@ class Layer(JavaValue):
         :param share_buffer whether to share same memory for each batch predict results
         :param batch_per_partition batch size per partition, default is 4
         :param predict_key key to store predicted results
-        :param variable_feature whether the size of feature is variable
         """
 
         image_frame = callBigDlFunc(self.bigdl_type, "modelPredictImage", self.value,
@@ -365,8 +364,7 @@ class Layer(JavaValue):
                              output_layer,
                              share_buffer,
                              batch_per_partition,
-                             predict_key,
-                             variable_feature)
+                             predict_key)
         return ImageFrame(image_frame)
 
     def set_weights(self, weights):

@@ -171,8 +171,7 @@ class PredictorSpec extends FlatSpec with Matchers with BeforeAndAfter{
     val model = Sequential()
     model.add(SpatialConvolution(3, 6, 5, 5))
     model.add(Tanh())
-    val detection = model.predictImage(imageFrame, batchPerPartition = 1, shareBuffer = false,
-      variableFeature = true)
+    val detection = model.predictImage(imageFrame, batchPerPartition = 1, shareBuffer = false)
       .toDistributed()
     val imageFeatures = detection.rdd.collect()
     (1 to 20).foreach(x => {
@@ -183,26 +182,5 @@ class PredictorSpec extends FlatSpec with Matchers with BeforeAndAfter{
       println(x, imageFeatures(x - 1).predict().asInstanceOf[Tensor[Float]].size().mkString("x"))
       assert(imageFeatures(x - 1).predict() != null)
     })
-  }
-
-  "predictImage with variant feature data" should "throw exception" in {
-    import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
-    RNG.setSeed(100)
-    val ims = (1 to 50).map(x => {
-      val size = RNG.uniform(20, 30).toInt
-      val im = ImageFeature()
-      im(ImageFeature.uri) = x.toString
-      im(ImageFeature.imageTensor) = Tensor[Float](3, size, size).randn()
-      im
-    })
-
-    val imageFrame = ImageFrame.array(ims.toArray).toDistributed(sc) -> ImageFrameToSample()
-    val model = Sequential()
-    model.add(SpatialConvolution(3, 6, 5, 5))
-    model.add(Tanh())
-    intercept[IllegalArgumentException] {
-      val detection = model.predictImage(imageFrame, batchPerPartition = 2,
-        variableFeature = true)
-    }
   }
 }

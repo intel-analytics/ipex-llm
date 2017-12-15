@@ -116,20 +116,17 @@ class Predictor[T: ClassTag] private[optim](
    * @param shareBuffer whether to share same memory for each batch predict results
    * @param batchPerPartition batch size per partition, default is 4
    * @param predictKey key to store predicted result
-   * @param variableFeature whether the size of feature is variable
    */
   def predictImage(imageFrame: DistributedImageFrame,
     outputLayer: String = null,
     shareBuffer: Boolean = false,
     batchPerPartition: Int = 4,
-    predictKey: String = ImageFeature.predict,
-    variableFeature: Boolean = false): DistributedImageFrame = {
+    predictKey: String = ImageFeature.predict): DistributedImageFrame = {
     val rdd = imageFrame.asInstanceOf[DistributedImageFrame].rdd
     val modelBroad = ModelBroadcast[T]().broadcast(rdd.sparkContext, model.evaluate())
     val partitionNum = rdd.partitions.length
-    if (variableFeature) require(batchPerPartition == 1, "If your input feature has variable" +
-      "sizes, batchPerPartition need to be 1, please adjust it")
-    def featurePaddingParam = if (variableFeature) Some(PaddingParam[T]()) else None
+    // If batchPerPartition == 1, will resize the feature every time in SampleToBatch
+    def featurePaddingParam = if (batchPerPartition == 1) Some(PaddingParam[T]()) else None
     val toBatchBroad = rdd.sparkContext.broadcast(SampleToMiniBatch(
       batchSize = partitionNum * batchPerPartition,
       partitionNum = Some(partitionNum),

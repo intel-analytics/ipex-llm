@@ -559,22 +559,20 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
    * @param shareBuffer whether to share same memory for each batch predict results
    * @param batchPerPartition batch size per partition, default is 4
    * @param predictKey key to store predicted result
-   * @param variableFeature whether the size of feature is variable
    * @return
    */
   def predictImage(imageFrame: ImageFrame,
     outputLayer: String = null,
     shareBuffer: Boolean = false,
     batchPerPartition: Int = 4,
-    predictKey: String = ImageFeature.predict,
-    variableFeature: Boolean = false): ImageFrame = {
+    predictKey: String = ImageFeature.predict): ImageFrame = {
     imageFrame match {
       case distributedImageFrame: DistributedImageFrame =>
         Predictor(this).predictImage(distributedImageFrame, outputLayer,
-          shareBuffer, batchPerPartition, predictKey, variableFeature)
+          shareBuffer, batchPerPartition, predictKey)
       case localImageFrame: LocalImageFrame =>
         LocalModule[T](this).predictImage(localImageFrame, outputLayer,
-          shareBuffer, batchPerPartition, predictKey, variableFeature)
+          shareBuffer, batchPerPartition, predictKey)
     }
   }
 

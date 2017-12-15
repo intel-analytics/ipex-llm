@@ -1779,11 +1779,10 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     featLayerName: String,
     shareBuffer: Boolean,
     batchPerPartition: Int,
-    predictKey: String,
-    variableFeature: Boolean)
+    predictKey: String)
   : ImageFrame = {
     model.predictImage(imageFrame,
-      featLayerName, shareBuffer, batchPerPartition, predictKey, variableFeature)
+      featLayerName, shareBuffer, batchPerPartition, predictKey)
   }
 
   def evaluate(module: AbstractModule[Activity, Activity, T]):
