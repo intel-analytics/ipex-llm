@@ -29,6 +29,41 @@ from test.bigdl.test_utils import BigDLTestCase
 
 class TestLayer(BigDLTestCase):
 
+    def test_relu(self):
+        input_data = np.random.random_sample([2, 3, 5])
+        layer = Activation('relu')
+        self.modelTestSingleLayer(input_data, layer)
+
+    def test_tanh(self):
+        input_data = np.random.random_sample([2, 3, 5])
+        layer = Activation('tanh')
+        self.modelTestSingleLayer(input_data, layer)
+
+    def test_sigmoid(self):
+        input_data = np.random.random_sample([2, 3, 5])
+        layer = Activation('sigmoid')
+        self.modelTestSingleLayer(input_data, layer)
+
+    def test_hard_sigmoid(self):
+        input_data = np.random.random_sample([2, 3, 5])
+        layer = Activation('hard_sigmoid')
+        self.modelTestSingleLayer(input_data, layer)
+
+    def test_softmax(self):
+        input_data = np.random.random_sample([5, 6])
+        layer = Activation('softmax')
+        self.modelTestSingleLayer(input_data, layer)
+
+    def test_softplus(self):
+        input_data = np.random.random_sample([2, 3, 5])
+        layer = Activation('softplus')
+        self.modelTestSingleLayer(input_data, layer)
+
+    def test_softsign(self):
+        input_data = np.random.random_sample([2, 3, 5])
+        layer = Activation('softsign')
+        self.modelTestSingleLayer(input_data, layer)
+
     def test_dense(self):
         input_data = np.random.random_sample([1, 10])
         layer = Dense(2, init='one', activation="relu",
@@ -82,18 +117,16 @@ class TestLayer(BigDLTestCase):
     def test_conv1D(self):
         input_data = np.random.random_sample([1, 10, 32])
         layer = lambda: Convolution1D(64, 3, border_mode='valid', input_shape=(10, 32))
-        self.modelTestSingleLayerWithOrdersModes(input_data, layer,
-                                                 dump_weights=True, dim_orderings=["tf"])
-
+        self.modelTestSingleLayerWithOrdersModes(input_data, layer, dump_weights=True)
         layer2 = lambda: Convolution1D(64, 3, border_mode='same',
                                        input_shape=(10, 32))
-        self.modelTestSingleLayerWithOrdersModes(input_data, layer2,
-                                                 dump_weights=True, dim_orderings=["tf"])
-
+        self.modelTestSingleLayerWithOrdersModes(input_data, layer2, dump_weights=True)
         layer3 = lambda: Convolution1D(64, 3, border_mode='same',
                                        activation="relu", input_shape=(10, 32))
-        self.modelTestSingleLayerWithOrdersModes(input_data, layer3,
-                                                 dump_weights=True, dim_orderings=["tf"])
+        self.modelTestSingleLayerWithOrdersModes(input_data, layer3, dump_weights=True)
+        layer4 = lambda: Convolution1D(32, 4, border_mode='same',
+                                       bias=False, input_shape=(10, 32))
+        self.modelTestSingleLayerWithOrdersModes(input_data, layer4, dump_weights=True)
 
     def _load_keras(self, json_path, hdf5_path):
         with open(json_path, "r") as jp:
@@ -105,14 +138,18 @@ class TestLayer(BigDLTestCase):
 
     def test_conv2D(self):
         input_data = np.random.random_sample([1, 3, 128, 128])
-        layer = lambda: Convolution2D(64, 1, 20, input_shape=(3, 128, 128))
-        self.modelTestSingleLayerWithOrdersModes(input_data,
-                                                 layer,
-                                                 dump_weights=True, rtol=1e-5, atol=1e-5)
-        # Test if alias works or not
-        layer = lambda: Conv2D(64, 3, 1, input_shape=(3, 128, 128))
-        self.modelTestSingleLayerWithOrdersModes(input_data,
-                                                 layer,
+        layer1 = lambda: Convolution2D(64, 1, 20, input_shape=(3, 128, 128))
+        self.modelTestSingleLayerWithOrdersModes(input_data, layer1, dump_weights=True)
+        layer2 = lambda: Convolution2D(64, 1, 20, subsample=(2, 3),
+                                       input_shape=(3, 128, 128))
+        self.modelTestSingleLayerWithOrdersModes(input_data, layer2, dump_weights=True)
+        layer3 = lambda: Convolution2D(32, 3, 3, activation='sigmoid',
+                                       bias=False, input_shape=(3, 128, 128))
+        self.modelTestSingleLayerWithOrdersModes(input_data, layer3,
+                                                 dump_weights=True)
+        # # Test if alias works or not
+        layer4 = lambda: Conv2D(64, 3, 1, input_shape=(3, 128, 128))
+        self.modelTestSingleLayerWithOrdersModes(input_data, layer4,
                                                  dump_weights=True, rtol=1e-5, atol=1e-5)
 
     def test_conv3D(self):
@@ -597,7 +634,7 @@ class TestLayer(BigDLTestCase):
 
         input_data2 = np.random.random_sample([2, 10, 3, 32, 32])
         layer2 = TimeDistributed(Convolution2D(64, 3, 3), input_shape=(10, 3, 32, 32))
-        self.modelTestSingleLayer(input_data2, layer2, dump_weights=True)
+        self.modelTestSingleLayer(input_data2, layer2, dump_weights=True, rtol=1e-5, atol=1e-5)
 
     def test_wrapper_bidirectional(self):
         input_data = np.random.random([5, 32, 64])
@@ -619,6 +656,20 @@ class TestLayer(BigDLTestCase):
                                           return_sequences=True),
                                input_shape=(8, 40, 40, 32), merge_mode='ave')
         self.modelTestSingleLayer(input_data2, layer5, dump_weights=True)
+
+    def test_upsampling1d(self):
+        input_data = np.random.random([2, 5, 8])
+        layer1 = UpSampling1D(input_shape=(5, 8))
+        self.modelTestSingleLayer(input_data, layer1)
+        layer2 = UpSampling1D(length=3, input_shape=(5, 8))
+        self.modelTestSingleLayer(input_data, layer2)
+
+    def test_upsampling2d(self):
+        input_data = np.random.random([2, 5, 6, 8])
+        layer1 = UpSampling2D(input_shape=(5, 6, 8))
+        self.modelTestSingleLayer(input_data, layer1)
+        layer2 = UpSampling2D(size=(1, 3), input_shape=(5, 6, 8))
+        self.modelTestSingleLayer(input_data, layer2)
 
     def test_upsampling3d(self):
         input_data = np.random.random([2, 5, 12, 12, 12])
