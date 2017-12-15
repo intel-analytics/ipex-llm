@@ -39,6 +39,7 @@ class TestApplication(BigDLTestCase):
         self.assert_allclose(keras_output, bigdl_output, rtol=rtol, atol=atol)
 
     def test_lenet(self):
+        K.set_image_dim_ordering("th")
         kmodel, input_data, output_data = TestModels.kmodel_seq_lenet_mnist()
         self.modelTest(input_data, kmodel, dump_weights=True)
 

@@ -25,6 +25,7 @@ from bigdl.keras.converter import DefinitionLoader
 
 np.random.seed(1337)  # for reproducibility
 from test.bigdl.test_utils import BigDLTestCase, TestModels
+import keras.backend as K
 
 
 class TestLoadModel(BigDLTestCase):
@@ -41,6 +42,7 @@ class TestLoadModel(BigDLTestCase):
         assert_allclose(boutput, koutput, rtol=1e-5)
 
     def test_load_api_with_hdf5(self):
+        K.set_image_dim_ordering("th")
         kmodel, input_data, output_data = TestModels.kmodel_graph_1_layer()
         keras_model_json_path, keras_model_hdf5_path = self._dump_keras(kmodel, dump_weights=True)
         bmodel = BLayer.Model.load_keras(keras_model_json_path, keras_model_hdf5_path)
@@ -48,23 +50,28 @@ class TestLoadModel(BigDLTestCase):
                              bmodel.forward(input_data))
 
     def test_load_api_no_hdf5(self):
+        K.set_image_dim_ordering("th")
         kmodel, input_data, output_data = TestModels.kmodel_graph_1_layer()
         keras_model_json_path, keras_model_hdf5_path = self._dump_keras(kmodel, dump_weights=True)
         bmodel = BLayer.Model.load_keras(keras_model_json_path)
 
     def test_load_def_weights_graph_1_layer(self):
+        K.set_image_dim_ordering("th")
         kmodel, input_data, output_data = TestModels.kmodel_graph_1_layer()
         self.__kmodel_load_def_weight_test(kmodel, input_data)
 
     def test_load_def_weights_graph_activation(self):
+        K.set_image_dim_ordering("th")
         kmodel, input_data, output_data = TestModels.kmodel_graph_activation_is_layer()
         self.__kmodel_load_def_weight_test(kmodel, input_data)
 
     def test_load_def_weights_kmodel_seq_lenet_mnist(self):
+        K.set_image_dim_ordering("th")
         kmodel, input_data, output_data = TestModels.kmodel_seq_lenet_mnist()
         self.__kmodel_load_def_weight_test(kmodel, input_data)
 
     def test_load_definition(self):
+        K.set_image_dim_ordering("th")
         kmodel, input_data, output_data = TestModels.kmodel_seq_lenet_mnist()
         keras_model_json_path, keras_model_hdf5_path = self._dump_keras(kmodel, dump_weights=True)
         bmodel = DefinitionLoader.from_json_path(keras_model_json_path)
@@ -72,6 +79,7 @@ class TestLoadModel(BigDLTestCase):
         self.assert_allclose(bmodel.forward(input_data), kmodel.predict(input_data))
 
     def test_load_weights(self):
+        K.set_image_dim_ordering("th")
         kmodel, input_data, output_data = TestModels.kmodel_graph_1_layer()
         keras_model_json_path, keras_model_hdf5_path = self._dump_keras(kmodel, dump_weights=True)
         bmodel = DefinitionLoader.from_json_path(keras_model_json_path)
