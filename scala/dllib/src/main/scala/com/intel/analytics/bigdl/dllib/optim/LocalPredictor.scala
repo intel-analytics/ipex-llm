@@ -54,7 +54,7 @@ class LocalPredictor[T: ClassTag] private[optim](model: Module[T], weightsBias: 
     result.map(output => {
       val _output = output.toTensor[T]
       require(_output.dim() == 1, s"Predictor.predictClass:" +
-        s"Only support one sample has one lable, but got ${_output.dim()} label")
+        s"Only support one sample has one label, but got ${_output.dim()} label")
       ev.toType[Int](_output.max(1)._2.valueAt(1))
     })
   }
