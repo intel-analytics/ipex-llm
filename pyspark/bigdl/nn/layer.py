@@ -2811,8 +2811,8 @@ class LookupTableSparse(Layer):
     The input of LookupTableSparse should be a 2D SparseTensor or two 2D SparseTensors.
     If the input is a SparseTensor, the values are positive integer ids,
     values in each row of this SparseTensor will be turned into a dense vector.
-    If the input is a Table, the first tensor in this table should be the integer ids, just
-    like the SparseTensor input. And the second tensor in this table is the corresponding
+    If the input is two SparseTensors, the first tensor should be the integer ids, just
+    like the SparseTensor input. And the second tensor is the corresponding
     weights of the integer ids.
 
     :param wRegularizer: instance of [[Regularizer]](eg. L1 or L2 regularization), applied to the input weights matrices.
