@@ -1086,6 +1086,27 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     SoftSign[T, T]()
   }
 
+
+  def createSpatialDropout1D(
+    initP: Double = 0.5
+  ): SpatialDropout1D[T] = {
+    SpatialDropout1D[T](initP)
+  }
+
+  def createSpatialDropout2D(
+    initP: Double = 0.5,
+    dataFormat: String = "NCHW"
+  ): SpatialDropout2D[T] = {
+    SpatialDropout2D[T](initP, DataFormat(dataFormat))
+  }
+
+  def createSpatialDropout3D(
+    initP: Double = 0.5,
+    dataFormat: String = "NCHW"
+  ): SpatialDropout3D[T] = {
+    SpatialDropout3D[T](initP, DataFormat(dataFormat))
+  }
+
   def createSpatialDilatedConvolution(nInputPlane: Int,
     nOutputPlane: Int,
     kW: Int,
