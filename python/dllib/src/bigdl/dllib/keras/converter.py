@@ -257,10 +257,20 @@ class WeightsConverter:
         b_weights = k_weights[0].T
         for i in range(1, k_weights.shape[0]):
             b_weights = np.concatenate((b_weights, k_weights[i].T))
-        return [b_weights, weights[1]]
+        return [b_weights, weights[1].reshape(k_weights.shape[0]*k_weights.shape[2], )]
 
     @staticmethod
     def convert_srelu(klayer, weights):
+        return weights
+
+    @staticmethod
+    def convert_separableconvolution2d(klayer, weights):
+        if len(weights) == 2:  # if without bias
+            if klayer.dim_ordering == "th":
+                bias = weights[1].shape[0]
+            else:
+                bias = weights[1].shape[3]
+            return [weights[0], weights[1], np.zeros(bias, )]
         return weights
 
 
@@ -732,7 +742,8 @@ class LayerConverter:
     def create_zeropadding2d(self):
         padding = self.klayer.padding
         dim = 1
-        warnings.warn("Cannot find dim_ordering from json definition. Using the default instead.")
+        if "dim_ordering" not in self.config:
+            warnings.warn("Cannot find dim_ordering from json definition. Using the default instead.")
         if self.klayer.dim_ordering == "th":
             dim = 2
         if isinstance(padding, dict):  # dictionary
@@ -752,7 +763,8 @@ class LayerConverter:
     def create_zeropadding3d(self):
         padding = tuple(self.klayer.padding)
         dim = 1
-        warnings.warn("Cannot find dim_ordering from json definition. Using the default instead.")
+        if "dim_ordering" not in self.config:
+            warnings.warn("Cannot find dim_ordering from json definition. Using the default instead.")
         if self.klayer.dim_ordering == "th":
             dim = 2
         model = BLayer.Sequential()
@@ -935,10 +947,14 @@ class LayerConverter:
                                               self.klayer.go_backwards, rec.add(gru))
 
     def create_batchnormalization(self):
-        if keras.backend.image_dim_ordering() != "th" or self.klayer.axis != 1:
-            raise Exception("""For BatchNormalization, we only support th image ordering (i.e. NCHW) """ +
-                            """with axis = 1 for now, but the current order is %s and axis is %s
-            """ % (keras.backend.image_dim_ordering(), self.klayer.axis))  # noqa
+        if keras.backend.image_dim_ordering() == "th" and self.klayer.axis != 1:
+            raise Exception("""For BatchNormalization with th image ordering, we only support """ +
+                            """axis = 1 for now, but the current axis is %s
+                            """ % self.klayer.axis)  # noqa
+        if keras.backend.image_dim_ordering() == "tf" and self.klayer.axis != -1:
+            raise Exception("""For BatchNormalization with tf image ordering, we only support """ +
+                            """axis = -1 for now, but the current axis is %s
+                            """ % self.klayer.axis)
         if self.klayer.mode != 0:
             raise Exception(
                 "Only support mode = 0 for now, but the current mode is: %s", self.klayer.mode)
@@ -949,7 +965,8 @@ class LayerConverter:
         if self.config["beta_regularizer"]:
             raise Exception("We don't support beta_regularizer for now")
 
-        n_input_channel = int(self.input_shape[self.klayer.axis])  # default is -1 which is channel-last
+        bigdl_order = self.to_bigdl_2d_ordering(keras.backend.image_dim_ordering())
+        n_input_channel = int(self.input_shape[self.klayer.axis])
 
         # init gamma and beta
         # TODO: replace this with to_bigdl_init in the future
@@ -965,6 +982,7 @@ class LayerConverter:
                  init_bias=beta,
                  init_grad_weight=None,
                  init_grad_bias=None,
+                 data_format=bigdl_order,
                  bigdl_type="float")
 
         k_running_mean = keras.backend.eval(self.klayer.running_mean)
@@ -1064,8 +1082,8 @@ class LayerConverter:
                  n_output_plane=self.klayer.nb_filter,
                  kernel_w=self.klayer.nb_col,
                  kernel_h=self.klayer.nb_row,
-                 stride_w=self.klayer.subsample[0],
-                 stride_h=self.klayer.subsample[1],
+                 stride_w=self.klayer.subsample[1],
+                 stride_h=self.klayer.subsample[0],
                  pad_w=bpadW,
                  pad_h=bpadH,
                  n_group=1,
@@ -1108,7 +1126,7 @@ class LayerConverter:
 
     def create_atrousconvolution1d(self):
         if not self.config["bias"]:
-            raise Exception("Please set `bias=True` for AtrousConvolution1D")
+            raise Exception("Only bias=True is supported for AtrousConvolution1D")
 
         h = self.input_shape[2]
         kh = self.config["filter_length"]
@@ -1142,7 +1160,7 @@ class LayerConverter:
         if self.klayer.dim_ordering != "th":
             raise Exception("Please use `th` for `dim_ordering`. `%s` is not supported for now." % self.klayer.dim_ordering)
         if not self.config["bias"]:
-            raise Exception("Please set `bias=True` for AtrousConvolution2D")
+            raise Exception("Only bias=True is supported for AtrousConvolution2D")
 
         h = self.input_shape[2]
         w = self.input_shape[3]
@@ -1506,11 +1524,21 @@ class LayerConverter:
             seq.add(BLayer.Squeeze(1, num_input_dims=2))
         return seq
 
+    def create_upsampling1d(self):
+        return BLayer.UpSampling1D(self.klayer.length)
+
+    def create_upsampling2d(self):
+        if "dim_ordering" not in self.config:
+            warnings.warn("Cannot find dim_ordering from json definition. Using the default instead.")
+        bigdl_order = self.get_bdim_order()
+        return BLayer.UpSampling2D(self.klayer.size, bigdl_order)
+
     def create_upsampling3d(self):
         if self.klayer.dim_ordering != "th":
             raise Exception("Please use th for dim_ordering. %s is not supported for now." % self.klayer.dim_ordering)
-        warnings.warn("Cannot find dim_ordering from json definition. Using the default instead."
-                      "We only support th for now.")
+        if "dim_ordering" not in self.config:
+            warnings.warn("Cannot find dim_ordering from json definition. Using the default instead."
+                          "We only support th for now.")
         return BLayer.UpSampling3D(self.klayer.size)
 
     def create_gaussiannoise(self):
@@ -1538,7 +1566,7 @@ class LayerConverter:
         if self.config["b_regularizer"]:
             raise Exception("b_regularizer is not supported for MaxoutDense")
         if not self.config["bias"]:
-            raise Exception("Please set bias=True for MaxoutDense")
+            raise Exception("Only bias=True is supported for MaxoutDense")
         blayer = BLayer.Maxout(input_size=self.input_shape[1],
                                output_size=self.klayer.output_dim,
                                maxout_number=self.klayer.nb_feature)
@@ -1548,11 +1576,46 @@ class LayerConverter:
         return BLayer.Masking(float(self.klayer.mask_value))
 
     def create_srelu(self):
-        warnings.warn("Cannot find shared_axes from json definition. Using shared_axes=None instead.")
+        if "shared_axes" not in self.config:
+            warnings.warn("Cannot find shared_axes from json definition. Using shared_axes=None instead.")
         if self.klayer.shared_axes == [None]:
             return BLayer.SReLU()
         else:
             return BLayer.SReLU(self.klayer.shared_axes)
+
+    def create_separableconvolution2d(self):
+        if keras.backend.backend() != 'tensorflow':
+            raise Exception('Please use tensorflow backend for keras 1.2.2 '
+                            'if you want to load SeparableConv2D')
+        bigdl_order = self.get_bdim_order()
+
+        if bigdl_order == "NCHW":
+            stack_size = int(self.input_shape[1])
+        elif bigdl_order == "NHWC":
+            stack_size = int(self.input_shape[3])
+
+        bpadW, bpadH = self.to_bigdl_2d_padding(self.klayer.border_mode)
+        blayer = BLayer.SpatialSeperableConvolution(
+            n_input_channel=stack_size,
+            n_output_channel=self.klayer.nb_filter,
+            depth_multiplier=self.klayer.depth_multiplier,
+            kernel_w=self.klayer.nb_col,
+            kernel_h=self.klayer.nb_row,
+            stride_w=self.klayer.subsample[1],
+            stride_h=self.klayer.subsample[0],
+            pad_w=bpadW,
+            pad_h=bpadH,
+            with_bias=self.klayer.bias,
+            data_format=bigdl_order,
+            w_regularizer=self.to_bigdl_reg(self.config["depthwise_regularizer"]),
+            b_regularizer=self.to_bigdl_reg(self.config["b_regularizer"]),
+            p_regularizer=self.to_bigdl_reg(self.config["pointwise_regularizer"])
+        )
+
+        return self.combo_parameter_layer(blayer, self.config)
+
+    def create_activityregularization(self):
+        return BLayer.ActivityRegularization(l1=self.klayer.l1, l2=self.klayer.l2)
 
     def combo_parameter_layer(self, blayer, config):
         blayer.set_name(config["name"])
