@@ -265,7 +265,7 @@ class WeightsConverter:
 
     @staticmethod
     def convert_separableconvolution2d(klayer, weights):
-        if len(weights) == 2:
+        if len(weights) == 2:  # if without bias
             if klayer.dim_ordering == "th":
                 bias = weights[1].shape[0]
             else:
@@ -950,11 +950,11 @@ class LayerConverter:
         if keras.backend.image_dim_ordering() == "th" and self.klayer.axis != 1:
             raise Exception("""For BatchNormalization with th image ordering, we only support """ +
                             """axis = 1 for now, but the current axis is %s
-                            """ % (self.klayer.axis))  # noqa
+                            """ % self.klayer.axis)  # noqa
         if keras.backend.image_dim_ordering() == "tf" and self.klayer.axis != -1:
             raise Exception("""For BatchNormalization with tf image ordering, we only support """ +
                             """axis = -1 for now, but the current axis is %s
-                            """ % (self.klayer.axis))
+                            """ % self.klayer.axis)
         if self.klayer.mode != 0:
             raise Exception(
                 "Only support mode = 0 for now, but the current mode is: %s", self.klayer.mode)
@@ -1126,7 +1126,7 @@ class LayerConverter:
 
     def create_atrousconvolution1d(self):
         if not self.config["bias"]:
-            raise Exception("Please set `bias=True` for AtrousConvolution1D")
+            raise Exception("Only bias=True is supported for AtrousConvolution1D")
 
         h = self.input_shape[2]
         kh = self.config["filter_length"]
@@ -1160,7 +1160,7 @@ class LayerConverter:
         if self.klayer.dim_ordering != "th":
             raise Exception("Please use `th` for `dim_ordering`. `%s` is not supported for now." % self.klayer.dim_ordering)
         if not self.config["bias"]:
-            raise Exception("Please set `bias=True` for AtrousConvolution2D")
+            raise Exception("Only bias=True is supported for AtrousConvolution2D")
 
         h = self.input_shape[2]
         w = self.input_shape[3]
@@ -1566,7 +1566,7 @@ class LayerConverter:
         if self.config["b_regularizer"]:
             raise Exception("b_regularizer is not supported for MaxoutDense")
         if not self.config["bias"]:
-            raise Exception("Please set bias=True for MaxoutDense")
+            raise Exception("Only bias=True is supported for MaxoutDense")
         blayer = BLayer.Maxout(input_size=self.input_shape[1],
                                output_size=self.klayer.output_dim,
                                maxout_number=self.klayer.nb_feature)
@@ -1593,7 +1593,7 @@ class LayerConverter:
 
         bpadW, bpadH = self.to_bigdl_2d_padding(self.klayer.border_mode)
         blayer = BLayer.SpatialSeperableConvolution(
-            n_input_channel= stack_size,
+            n_input_channel=stack_size,
             n_output_channel=self.klayer.nb_filter,
             depth_multiplier=self.klayer.depth_multiplier,
             kernel_w=self.klayer.nb_col,
