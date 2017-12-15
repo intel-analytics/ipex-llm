@@ -117,19 +117,6 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
   }
 
   /**
-   * Copy the useful running status from src to this.
-   *
-   * The subclass should override this method if it has some parameters besides weight and bias.
-   * Such as runningMean and runningVar of BatchNormalization.
-   *
-   * @param src source Module
-   * @return this
-   */
-  def copyStatus(src: Module[T]) : this.type = {
-    this
-  }
-
-  /**
    * Clear cached activities to save storage space or network bandwidth. Note that we use
    * Tensor.set to keep some information like tensor share
    *
@@ -366,6 +353,44 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
    * @return (Array of weights, Array of grad)
    */
   def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = null
+
+  /**
+   * Get extra parameter in this module.
+   * Extra parameter means the trainable parameters beside weight and bias. Such as runningMean
+   * and runningVar in BatchNormalization.
+   *
+   * The subclass should override this method if it has some parameters besides weight and bias.
+   *
+   * @return an array of tensor
+   */
+  def getExtraParameter(): Array[Tensor[T]] = null
+
+  /**
+   * Set extra parameter to this module.
+   * Extra parameter means the trainable parameters beside weight and bias. Such as runningMean
+   * and runningVar in BatchNormalization.
+   *
+   * @return this
+   */
+  def setExtraParameter(extraParam: Array[Tensor[T]]): this.type = {
+    val currentExtraParam = this.getExtraParameter()
+    if (extraParam != null && currentExtraParam != null) {
+      require(extraParam.length == currentExtraParam.length,
+        "state's length doesn't match, excepted:" +
+        s"${currentExtraParam.length}, but got  ${extraParam.length}")
+      var i = 0
+      while (i < extraParam.length) {
+        currentExtraParam(i).copy(extraParam(i))
+        i += 1
+      }
+      this
+    } else if (extraParam == null && currentExtraParam == null) {
+      this
+    } else {
+      throw new IllegalArgumentException(s"module's extraParameter is $currentExtraParam" +
+        s", while setting param is ${extraParam}")
+    }
+  }
 
   /**
    * This function returns a table contains ModuleName, the parameter names and parameter value
