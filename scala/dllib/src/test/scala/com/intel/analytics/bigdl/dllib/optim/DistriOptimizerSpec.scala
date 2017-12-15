@@ -361,13 +361,13 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
       new ClassNLLCriterion[Double]()
     )
     optimizer.setState(T("learningRate" -> 20.0))
-    .setCheckpoint(filePath, Trigger.everyEpoch)
-    .setEndWhen(Trigger.maxEpoch(2))
-    .optimize()
+      .setCheckpoint(filePath, Trigger.everyEpoch)
+      .setEndWhen(Trigger.maxEpoch(2))
+      .optimize()
 
     val numIterations = dataSet.data(train = false).count() / nodeNumber + 1
     val optimMethod = OptimMethod.load[Double](optimizer.getCheckpointPath().get +
-        s"/optimMethod.$numIterations")
+      s"/optimMethod.$numIterations")
 
     optimMethod.state.get[Int]("epoch").get should be (2)
     optimMethod.state.get[Int]("neval").get should be (numIterations)
