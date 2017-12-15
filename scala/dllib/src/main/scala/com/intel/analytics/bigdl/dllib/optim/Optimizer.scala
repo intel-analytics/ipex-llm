@@ -66,6 +66,8 @@ abstract class Optimizer[T: ClassTag, D](
   protected var computeThresholdbatchSize: Int = 100
   protected var warmupIterationNum: Int = 200
 
+  protected val gradientClippingParams = GradientClippingParams(false, 0.0f, 0.0f, false, 0.0f)
+
   /**
    * Trigger the optimization process
    * @return the model to be trained
@@ -337,6 +339,44 @@ abstract class Optimizer[T: ClassTag, D](
   }
 
   def prepareInput(): Unit = {}
+
+  /**
+   * Disable gradient clipping
+   * @return
+   */
+  def disableGradientClipping()
+  : this.type = {
+    gradientClippingParams.enableConstantClipping = false
+    gradientClippingParams.enableL2NormClipping = false
+    this
+  }
+
+  /**
+   * Set constant gradient clipping
+   * @param min the minimum value to clip by
+   * @param max the maximum value to clip by
+   * @return
+   */
+  def setConstantGradientClipping(min: Float, max: Float)
+  : this.type = {
+    require(min < max, "min value must be smaller than max")
+    gradientClippingParams.enableConstantClipping = true
+    gradientClippingParams.minValueClip = min
+    gradientClippingParams.maxValueClip = max
+    this
+  }
+
+  /**
+   * Clip gradient to a maximum L2-norm
+   * @param clipNorm gradient L2-Norm threshold
+   * @return
+   */
+  def setGradientClippingByl2Norm(clipNorm: Float)
+  : this.type = {
+    gradientClippingParams.enableL2NormClipping = true
+    gradientClippingParams.normValueClip = clipNorm
+    this
+  }
 }
 
 object Optimizer {
@@ -490,3 +530,10 @@ object Optimizer {
     }
   }
 }
+
+case class GradientClippingParams(
+   var enableConstantClipping: Boolean,
+   var minValueClip: Float,
+   var maxValueClip: Float,
+   var enableL2NormClipping: Boolean,
+   var normValueClip: Float)

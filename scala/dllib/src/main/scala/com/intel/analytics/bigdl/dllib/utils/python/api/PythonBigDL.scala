@@ -2771,6 +2771,20 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     val targets = if (targetKeys == null) null else targetKeys.asScala.toArray
     ImageFrameToSample[T](inputKeys.asScala.toArray, targets, sampleKey)
   }
+
+  def setConstantClip(optimizer: Optimizer[T, MiniBatch[T]],
+                      min: Float, max: Float): Unit = {
+    optimizer.setConstantGradientClipping(min, max)
+  }
+
+  def setL2NormClip(optimizer: Optimizer[T, MiniBatch[T]],
+                    normValue: Float): Unit = {
+    optimizer.setGradientClippingByl2Norm(normValue)
+  }
+
+  def disableClip(optimizer: Optimizer[T, MiniBatch[T]]): Unit = {
+    optimizer.disableGradientClipping()
+  }
 }
 
 object PythonBigDLUtils {
