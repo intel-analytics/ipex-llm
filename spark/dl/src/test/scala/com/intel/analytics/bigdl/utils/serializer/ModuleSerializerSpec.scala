@@ -170,6 +170,18 @@ class ModuleSerializerSpec extends FlatSpec with Matchers with BeforeAndAfterAll
     runSerializationTest(spatialDropout1D, input)
   }
 
+  "SpatialDropout2D serializer" should "work properly" in {
+    val spatialDropout2D = SpatialDropout2D[Float]()
+    val input = Tensor[Float](2, 5).apply1(_ => Random.nextFloat())
+    runSerializationTest(spatialDropout2D, input)
+  }
+
+  "SpatialDropout3D serializer" should "work properly" in {
+    val spatialDropout3D = SpatialDropout3D[Float]()
+    val input = Tensor[Float](2, 5).apply1(_ => Random.nextFloat())
+    runSerializationTest(spatialDropout3D, input)
+  }
+
   "BinaryTreeLSTM serializer" should "work properly" in {
 
     RNG.setSeed(1000)
