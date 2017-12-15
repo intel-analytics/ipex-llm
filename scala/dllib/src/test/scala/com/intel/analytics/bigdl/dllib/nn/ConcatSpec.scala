@@ -17,6 +17,7 @@
 package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
+import com.intel.analytics.bigdl.utils.LayerException
 import org.scalatest.{FlatSpec, Matchers}
 
 @com.intel.analytics.bigdl.tags.Parallel
@@ -72,5 +73,17 @@ class ConcatSpec extends FlatSpec with Matchers {
     val expectedGradInput = Tensor[Float](2, 2, 2, 2).apply1(_ => 5f)
     output should be (expectedOutput)
     gradInput should be (expectedGradInput)
+  }
+
+  "Concat with incorrec input" should "throw expected exception" in {
+    val model = Concat[Float](2)
+    model.add(Reshape[Float](Array(5, 2)))
+    model.add(Reshape[Float](Array(2, 5)))
+    val input = Tensor[Float](10)
+    val caught = intercept[LayerException] {
+      model.forward(input)
+    }
+    val contains = caught.error.getMessage.contains("output size at dimension 1 mismatch")
+    contains should be (true)
   }
 }
