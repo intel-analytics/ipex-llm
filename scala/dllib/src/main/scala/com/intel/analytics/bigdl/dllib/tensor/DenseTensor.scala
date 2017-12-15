@@ -866,6 +866,23 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
     (values, indices)
   }
 
+  override def sumSquare(): T = {
+    this.dot(this)
+  }
+
+  override def clamp(min: Float, max: Float): Tensor[T] = {
+    val maxT = ev.fromType[Float](max)
+    val minT = ev.fromType[Float](min)
+    val func = new TensorFunc2[T] {
+      override def apply(data1: Array[T], offset1: Int): Unit = {
+        if (ev.isGreater(data1(offset1), maxT)) data1(offset1) = maxT
+        else if (ev.isGreater(minT, data1(offset1))) data1(offset1) = minT
+      }
+    }
+    DenseTensorApply.apply1[T](this, func)
+    this
+  }
+
   def scatter(dim: Int, index: Tensor[T], src: Tensor[T]): Tensor[T] = {
     require(src.dim() == this.dim(), "Input tensor must have same dimensions as output tensor")
     require(dim <= this.dim(), "Index dimension is out of bounds")

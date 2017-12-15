@@ -1440,6 +1440,11 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
     throw new UnsupportedOperationException(errorString)
 
   override def digamma(): Tensor[T] =
+    throw new UnsupportedOperationException(errorString)
 
+  override def clamp(minValue: Float, maxValue: Float): Tensor[T] =
+    throw new UnsupportedOperationException(errorString)
+
+  override def sumSquare(): T =
     throw new UnsupportedOperationException(errorString)
 }
