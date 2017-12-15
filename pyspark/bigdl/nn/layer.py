@@ -2833,7 +2833,7 @@ class LookupTableSparse(Layer):
                                           n_index,
                                           n_output,
                                           combiner,
-                                          max_norm,
+                                          max_norm + 0.0,
                                           wRegularizer)
     def set_init_method(self, weight_init_method = None, bias_init_method = None):
         callBigDlFunc(self.bigdl_type, "setInitMethod", self.value,
