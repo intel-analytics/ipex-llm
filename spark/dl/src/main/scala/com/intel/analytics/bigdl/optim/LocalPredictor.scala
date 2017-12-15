@@ -173,10 +173,14 @@ class LocalPredictor[T: ClassTag] private[optim](model: Module[T], weightsBias: 
       submodel
     }).toArray
 
+    // If batchPerCore == 1, will resize the feature every time in SampleToBatch
+    def featurePaddingParam = if (batchPerCore == 1) Some(PaddingParam[T]()) else None
+
     val workingToBatch = (1 to subModelNumber).map(_ => {
       SampleToMiniBatch[T](
         batchSize = batchPerCore * subModelNumber,
-        partitionNum = Some(subModelNumber))
+        partitionNum = Some(subModelNumber),
+        featurePaddingParam = featurePaddingParam)
     }).toArray
 
     val result = dataIter.map(batch => {
