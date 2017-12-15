@@ -121,7 +121,7 @@ class Concat[T: ClassTag](val dimension: Int)(
       require(currSize.length == dim, s"output for each concat " +
         s"module should have the same dim, ${i}th output dim" +
         s"not equals to first output dim ${currSize.length} != ${dim}")
-      for (j <- 0 until dim) {
+      for (j <- 0 until dimension) {
         if (j != (dim - 1)) {
           require(size(j) == currSize(j), s"output for each concat module should be of the " +
             s"same size at dimension ${dim}, while ${i}th output at ${j} dimension not" +
