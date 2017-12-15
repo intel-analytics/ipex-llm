@@ -61,7 +61,7 @@ class LookupTableSparse[T: ClassTag](
   protected val frameBuffer: Tensor[T] = Tensor()
   protected val ids: Tensor[T] = Tensor()
   protected val indices: Tensor[Int] = Tensor[Int]()
-  protected val scaleBuffer: Tensor[T] = Tensor[T]()
+  protected val batchScaleBuffer: Tensor[T] = Tensor[T]()
   protected var nonZeroCount: Array[Int] = _
   protected var normScale: mutable.HashMap[Int, T] = _
 
@@ -103,13 +103,15 @@ class LookupTableSparse[T: ClassTag](
 
     nonZeroCount = inputTensor.numNonZeroByRow()
     output.resize(batchSize, nOutput).zero()
-    scaleBuffer.resize(batchSize)
+    batchScaleBuffer.resize(batchSize)
+
+    var i = 0 // index for all the ids in the input
     var b = 0
-    var i = 0
     while (b < batchSize) {
       val times = nonZeroCount(b)
+      // compute a overall scale for this batch
       val batchScale = if (combiner == "sum") {
-        // batchScale = 1
+        // if combiner == sum, batchScale = 1
         ev.one
       } else {
         var count = times.toFloat
@@ -126,14 +128,16 @@ class LookupTableSparse[T: ClassTag](
           }
         }
         if (combiner == "mean") {
-          // batchScale = sum(inputWeightBuffer) / times
+          // if combiner == mean, batchScale = sum(inputWeightBuffer) / times
           ev.fromType(1f / count)
         } else {
-          // batchScale = sqrt(sum(inputWeightBuffer^2)) / times
+          // if combiner == sqrtn, batchScale = sqrt(sum(inputWeightBuffer^2)) / times
           ev.fromType(1f / math.sqrt(count))
         }
       }
-      scaleBuffer.setValue(b + 1, batchScale)
+      // save this batchScale
+      batchScaleBuffer.setValue(b + 1, batchScale)
+
       var j = 0
       while (j < times) {
         val index = ev.toType[Int](inputBuffer.valueAt(i + 1))
@@ -142,6 +146,7 @@ class LookupTableSparse[T: ClassTag](
           if (normScale != null && normScale.contains(index)) normScale(index) else ev.one,
           ev.times(batchScale,
             if (weightTensor.isDefined) inputWeightBuffer.valueAt(i + 1) else ev.one))
+        // output += scale * weight(index)
         output.select(1, b + 1).add(scale, weight.select(1, index))
         i += 1
         j += 1
@@ -153,6 +158,7 @@ class LookupTableSparse[T: ClassTag](
   }
 
   override def updateGradInput(input: Activity, gradOutput: Tensor[T]): Activity = {
+    // Input is not derivable
     gradInput
   }
 
@@ -171,12 +177,13 @@ class LookupTableSparse[T: ClassTag](
         val gradOutputFrame = gradOutput.select(1, b + 1)
         // scale = normScale * batchScale * sp_weights
         val scale = ev.times(
-          if (normScale != null && normScale.contains(index)) normScale(index) else ev.one,
-          ev.times(scaleBuffer.valueAt(b + 1),
+          if (normScale != null) normScale.getOrElse(index, ev.one) else ev.one,
+          ev.times(batchScaleBuffer.valueAt(b + 1),
             if (!inputWeightBuffer.isEmpty) inputWeightBuffer.valueAt(i + 1) else ev.one))
         // gradWeight += gradOutput * scale
         gradWeightFrame.add(scale, gradOutputFrame)
 
+        // if norm2 clipping is invoked, need to compute the clipping's gradient.
         if (normScale != null && normScale.contains(index)) {
           val weightFrame = weight.select(1, index)
           // sum = sum(weightFrame * gradOutputFrame) * maxNorm * sp_weights * batchScale
@@ -229,7 +236,7 @@ class LookupTableSparse[T: ClassTag](
     frameBuffer.set()
     ids.set()
     indices.set()
-    scaleBuffer.set()
+    batchScaleBuffer.set()
     nonZeroCount = null
     normScale = null
     this

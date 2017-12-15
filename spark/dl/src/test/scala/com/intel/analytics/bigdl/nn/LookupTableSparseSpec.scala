@@ -97,6 +97,45 @@ class LookupTableSparseSpec extends FlatSpec with Matchers {
     layer1.gradWeight should be (exceptedGradWeight)
   }
 
+  "A LookupTableSparse sqrtn without weight" should "generate correct output and gradient" in {
+    val indices1 = Array(0, 0, 1, 2)
+    val indices2 = Array(0, 1, 0, 3)
+    val values = Array(2f, 4, 1, 2)
+    val input = Tensor.sparse(Array(indices1, indices2), values, Array(3, 4))
+
+    val layer1 = LookupTableSparse(10, 4, "sqrtn")
+    layer1.weight.range(1, 40, 1)
+    val output = layer1.forward(input)
+    val exceptedOutput = Tensor(3, 4)
+    exceptedOutput.select(1, 1).copy(Tensor(T(
+      12.72792244f, 14.14213562f, 15.55634975f, 16.97056389f
+    )))
+    exceptedOutput.select(1, 2).range(1, 4)
+    exceptedOutput.select(1, 3).range(5, 8)
+
+    val gradOutput = Tensor(T(
+      1.1f, 2.1f, 3.1f, 4.1f,
+      5.01f, 6.01f, 7.01f, 8.01f,
+      9.001f, 10.001f, 11.001f, 12.001f
+    )).resizeAs(output)
+
+    layer1.backward(input, gradOutput)
+
+    val exceptedGradWeight = Tensor(10, 4)
+    exceptedGradWeight.select(1, 1).copy(Tensor(T(
+      5.01f, 6.01f, 7.01f, 8.01f
+    )))
+    exceptedGradWeight.select(1, 2).copy(Tensor(T(
+      9.77881813f, 11.48592472f, 13.19303131f, 14.9001379f
+    )))
+    exceptedGradWeight.select(1, 4).copy(Tensor(T(
+      0.77781749f, 1.4849242f, 2.19203091f, 2.89913774f
+    )))
+
+    output should be (exceptedOutput)
+    layer1.gradWeight should be (exceptedGradWeight)
+  }
+
   "A LookupTableSparse" should "generate correct output and gradient" in {
     val indices1 = Array(0, 0, 1, 2)
     val indices2 = Array(0, 1, 0, 3)
