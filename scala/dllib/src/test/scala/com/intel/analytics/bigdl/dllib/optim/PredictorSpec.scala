@@ -155,4 +155,32 @@ class PredictorSpec extends FlatSpec with Matchers with BeforeAndAfter{
     prob(0) should be (model.forward(data(0).feature.reshape(Array(1, 3, 224, 224)))
       .toTensor[Float].split(1)(0))
   }
+
+  "predictImage with variant feature data" should "work" in {
+    import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+    RNG.setSeed(100)
+    val ims = (1 to 50).map(x => {
+      val size = RNG.uniform(20, 30).toInt
+      val im = ImageFeature()
+      im(ImageFeature.uri) = x.toString
+      im(ImageFeature.imageTensor) = Tensor[Float](3, size, size).randn()
+      im
+    })
+
+    val imageFrame = ImageFrame.array(ims.toArray).toDistributed(sc) -> ImageFrameToSample()
+    val model = Sequential()
+    model.add(SpatialConvolution(3, 6, 5, 5))
+    model.add(Tanh())
+    val detection = model.predictImage(imageFrame, batchPerPartition = 1, shareBuffer = false)
+      .toDistributed()
+    val imageFeatures = detection.rdd.collect()
+    (1 to 20).foreach(x => {
+      imageFeatures(x - 1).uri() should be (x.toString)
+      println(imageFeatures(x - 1)[Tensor[Float]](ImageFeature.imageTensor).size().mkString("x"))
+      println(imageFeatures(x - 1)[Sample[Float]](ImageFeature.sample)
+        .getFeatureSize()(0).mkString("x"))
+      println(x, imageFeatures(x - 1).predict().asInstanceOf[Tensor[Float]].size().mkString("x"))
+      assert(imageFeatures(x - 1).predict() != null)
+    })
+  }
 }
