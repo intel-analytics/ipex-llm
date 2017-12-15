@@ -141,14 +141,6 @@ class BatchNormalization[T: ClassTag](
     this
   }
 
-  override def copyStatus(src: Module[T]): this.type = {
-    require(canEqual(src), s"copyStatus: type mismatch, $src is different from $this")
-    val srcModule = src.asInstanceOf[BatchNormalization[T]]
-    runningMean.copy(srcModule.runningMean)
-    runningVar.copy(srcModule.runningVar)
-    this
-  }
-
   override def zeroGradParameters(): Unit = {
     if (affine) {
       gradWeight.zero()
@@ -162,6 +154,10 @@ class BatchNormalization[T: ClassTag](
     } else {
       null
     }
+  }
+
+  override def getExtraParameter(): Array[Tensor[T]] = {
+    Array(runningMean, runningVar)
   }
 
   override def getParametersTable(): Table = {

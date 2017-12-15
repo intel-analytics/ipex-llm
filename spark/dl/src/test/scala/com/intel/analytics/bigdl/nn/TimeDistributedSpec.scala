@@ -22,7 +22,7 @@ import com.intel.analytics.bigdl.utils.RandomGenerator._
 import org.scalatest.{FlatSpec, Matchers}
 
 class TimeDistributedSpec extends FlatSpec with Matchers {
-  "A TimeDistributed Module" should "copyStatus correctly" in {
+  "A TimeDistributed Module" should "setExtraParam works correctly" in {
     RNG.setSeed(100)
     val batchSize = 5
     val times = 5
@@ -43,7 +43,8 @@ class TimeDistributedSpec extends FlatSpec with Matchers {
     model2.forward(input2)
     model2.backward(input2, gradOutput2)
 
-    model1.copyStatus(model2.asInstanceOf[AbstractModule[Activity, Activity, Float]])
+    model1.setExtraParameter(
+      model2.asInstanceOf[AbstractModule[Activity, Activity, Float]].getExtraParameter())
 
     bnorm1.runningMean should be (bnorm2.runningMean)
     bnorm1.runningVar should be (bnorm2.runningVar)

@@ -182,7 +182,7 @@ class LocalOptimizer[T: ClassTag] (
     }
 
     // copy running status from workingModels to model
-    model.copyStatus(workingModels.head)
+    model.setExtraParameter(workingModels.head.getExtraParameter())
 
     model
   }

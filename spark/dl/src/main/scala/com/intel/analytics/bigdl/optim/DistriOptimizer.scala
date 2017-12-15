@@ -87,6 +87,7 @@ object DistriOptimizer {
    * @param isOverWrite  if overwrite the checkpoint
    */
   private[optim] def optimize[T: ClassTag](
+    trainingModel: Module[T],
     dataset: DistributedDataSet[MiniBatch[T]],
     coresPerNode: Int,
     state: Table,
@@ -396,7 +397,8 @@ object DistriOptimizer {
             summary,
             models,
             driverState,
-            parameters
+            parameters,
+            trainingModel
           )
         }
 
@@ -408,7 +410,8 @@ object DistriOptimizer {
           models,
           driverState,
           parameters,
-          optimMethod
+          optimMethod,
+          trainingModel
         )
 
       } else {
@@ -439,12 +442,13 @@ object DistriOptimizer {
       models: RDD[Cache[T]],
       state: Table,
       parameters: AllReduceParameter[T],
-      optimMethod: OptimMethod[T]): Unit = {
+      optimMethod: OptimMethod[T],
+      trainingModel: Module[T]): Unit = {
     cacheTrigger.foreach { trigger =>
       cachePath.foreach { path =>
         if (trigger(state)) {
           println(s"[Wall Clock ${wallClockTime / 1e9}s] Save model to $path")
-          saveModel(getModel(models, parameters), cachePath, isOverWrite,
+          saveModel(getModel(models, parameters, trainingModel), cachePath, isOverWrite,
             s".${state[Int]("neval")}")
           optimMethod.state.update("epoch", state[Int]("epoch"))
           optimMethod.state.update("neval", state[Int]("neval"))
@@ -466,11 +470,12 @@ object DistriOptimizer {
         trainSummary: TrainSummary,
         models: RDD[Cache[T]],
         driverState: Table,
-        parameters: AllReduceParameter[T])(implicit ev: TensorNumeric[T]): Unit = {
+        parameters: AllReduceParameter[T],
+        trainingModel: Module[T])(implicit ev: TensorNumeric[T]): Unit = {
     val currentIteration = driverState[Int]("neval") - 1
       val parametersTrigger = trainSummary.getSummaryTrigger("Parameters")
       if (parametersTrigger.isDefined && parametersTrigger.get(driverState)) {
-        val model = getModel(models, parameters)
+        val model = getModel(models, parameters, trainingModel)
         val parametersTable = model.getParametersTable()
         // Parallelize to create Histogram.
         Engine.default.invokeAndWait(
@@ -680,17 +685,20 @@ object DistriOptimizer {
   }
 
   /**
-   * Fetch current model to driver.
+   * Fetch current model parameters to driver, and copy to trainingModel.
    *
    * @param models cached models
    * @param parameters [[AllReduceParameter]]
-   * @return current model
+   * @param trainingModel the model is trained by optimizer
+   * @return trained model
    */
   private def getModel[T: ClassTag](
       models: RDD[Cache[T]],
-      parameters: AllReduceParameter[T]): Module[T] = {
+      parameters: AllReduceParameter[T],
+      trainingModel: Module[T]): Module[T] = {
     val partitionNum = models.partitions.length
-    val trainedModel = models.map(_.localModels.head.clearState()).first()
+    val extraState = models.map(_.localModels.head.getExtraParameter()).first()
+    trainingModel.setExtraParameter(extraState)
     val (weights, gradients) = models.mapPartitions(iter => {
       val cached = iter.next()
       val curPartitionId = TaskContext.getPartitionId()
@@ -698,11 +706,11 @@ object DistriOptimizer {
         Map(curPartitionId -> parameters.gradientPartition)))
     }).reduce((a, b) => (a._1 ++ b._1, a._2 ++ b._2))
 
-    val parameterArray = trainedModel.parameters()
+    val parameterArray = trainingModel.parameters()
     (0 until parameterArray._2.length).foreach(i =>
       parameterArray._2(i).resizeAs(parameterArray._1(i))
     )
-    val (parameter, gradientParameter) = trainedModel.getParameters()
+    val (parameter, gradientParameter) = trainingModel.getParameters()
     val parameterLength = parameter.nElement()
     val taskSize = parameterLength / partitionNum
     require(taskSize != 0, "parameter length should not less than partition number")
@@ -715,7 +723,7 @@ object DistriOptimizer {
       gradientParameter.narrow(1, start + 1, length).copy(gradients(pid))
     })
 
-    trainedModel
+    trainingModel
   }
 }
 
@@ -821,6 +829,7 @@ class DistriOptimizer[T: ClassTag] (
     while (retryNum < maxRetry) {
       try {
         DistriOptimizer.optimize(
+          model,
           distDataset,
           coresPerNode,
           state,
@@ -882,9 +891,7 @@ class DistriOptimizer[T: ClassTag] (
       }
     }
 
-    val trainedModel = DistriOptimizer.getModel(models, parameters)
-
-    nn.Utils.copyModule(trainedModel, model)
+    DistriOptimizer.getModel(models, parameters, model)
 
     // Reset some internal states, so this or other optimizers can run optimize again
     clearState()

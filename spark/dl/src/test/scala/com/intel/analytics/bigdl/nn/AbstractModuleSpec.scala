@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl._
 import org.scalatest.{FlatSpec, Matchers}
 import com.intel.analytics.bigdl.numeric.NumericFloat
+import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.{T, Table}
 
 class AbstractModuleSpec extends FlatSpec with Matchers {
@@ -275,5 +276,55 @@ class AbstractModuleSpec extends FlatSpec with Matchers {
     model("conv1x1").get.getScaleB() should be(1)
     model("conv3x3_1").get.getScaleW() should be(3)
     model("conv3x3_1").get.getScaleB() should be(1.5)
+  }
+
+  "get/set extra parameter" should "work fine" in {
+    val bn = SpatialBatchNormalization(5)
+    val model = Sequential()
+        .add(SpatialConvolution(3, 5, 3, 3))
+      .add(bn)
+      .add(SpatialConvolution(5, 2, 3, 3))
+      .add(BatchNormalization(2))
+
+    val model2 = model.cloneModule()
+    bn.runningMean.range(1, 5)
+    model2 should not be (model)
+    val extp = model.getExtraParameter()
+    extp(0) should be (Tensor().range(1, 5))
+    model2.setExtraParameter(extp)
+    model2 should be (model)
+  }
+
+  "get/set extra parameter" should "work fine 2" in {
+    val model = Sequential()
+      .add(SpatialConvolution(3, 5, 3, 3))
+      .add(SpatialConvolution(5, 2, 3, 3))
+
+    val model2 = model.cloneModule()
+    model2 should be (model)
+    val extp = model.getExtraParameter()
+    model2.setExtraParameter(extp)
+    model2 should be (model)
+  }
+
+  "get/set extra parameter" should "work fine 3" in {
+    val model = BatchNormalization(5)
+
+    val model2 = model.cloneModule()
+    model.runningMean.range(1, 5)
+    model2 should not be (model)
+    val extp = model.getExtraParameter()
+    model2.setExtraParameter(extp)
+    model2 should be (model)
+  }
+
+  "get/set extra parameter" should "work fine 4" in {
+    val model = SpatialConvolution(3, 5, 3, 3)
+
+    val model2 = model.cloneModule()
+    model2 should be (model)
+    val extp = model.getExtraParameter()
+    model2.setExtraParameter(extp)
+    model2 should be (model)
   }
 }
