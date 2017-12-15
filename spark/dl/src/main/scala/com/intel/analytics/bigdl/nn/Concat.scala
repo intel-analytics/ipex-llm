@@ -64,6 +64,16 @@ class Concat[T: ClassTag](val dimension: Int)(
         this.size = currentOutput.size()
       } else {
         this.size(this.dimension - 1) += currentOutput.size(this.dimension)
+        require(this.size.length == currentOutput.size.length,
+        s"${this.modules(i).getName} output size mismatch, expected : ${this.size.length}," +
+          s"actual ${currentOutput.size.length}")
+        this.size.zipWithIndex.foreach(size => {
+          if (size._2 != dimension -1) {
+            require(size._1 == currentOutput.size(size._2 + 1),
+            s"${this.modules(i).getName} output size at dimension ${size._2 + 1} mismatch," +
+              s"expected ${size._1}, actual : ${currentOutput.size(size._2)}")
+          }
+        })
       }
       i += 1
     }
@@ -72,8 +82,6 @@ class Concat[T: ClassTag](val dimension: Int)(
     if (results == null || results.length != this.modules.length) {
       results = new Array[Future[Unit]](this.modules.length)
     }
-
-    checkOutputs(outs, dimension)
 
     var offset = 1
     i = 0
@@ -108,27 +116,6 @@ class Concat[T: ClassTag](val dimension: Int)(
     forwardTimeOverhead += System.nanoTime() - before
 
     this.output
-  }
-
-  private def checkOutputs(outputs : Array[Tensor[T]], dim : Int) : Unit = {
-    if (outputs == null || outputs.length == 0) {
-      return
-    }
-    val size = outputs(0).size()
-    val dim = size.length
-    for ( i <- 1 until outputs.length) {
-      val currSize = outputs(i).size()
-      require(currSize.length == dim, s"output for each concat " +
-        s"module should have the same dim, ${i}th output dim" +
-        s"not equals to first output dim ${currSize.length} != ${dim}")
-      for (j <- 0 until dimension) {
-        if (j != (dim - 1)) {
-          require(size(j) == currSize(j), s"output for each concat module should be of the " +
-            s"same size at dimension ${dim}, while ${i}th output at ${j} dimension not" +
-            s"equals to first output at ${j}th dimension ${currSize(j)} != ${size(j)}")
-        }
-      }
-    }
   }
 
   override def getTimes(): Array[(AbstractModule[_ <: Activity, _ <: Activity, T], Long, Long)] = {
