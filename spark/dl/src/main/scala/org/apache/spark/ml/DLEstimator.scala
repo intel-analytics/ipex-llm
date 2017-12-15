@@ -170,7 +170,7 @@ class DLEstimator[@specialized(Float, Double) T: ClassTag](
   def setOptimMethod(value: OptimMethod[T]): this.type = set(optimMethod, value)
 
   def setMaxEpoch(value: Int): this.type = set(maxEpoch, value)
-  setDefault(maxEpoch -> 100)
+  setDefault(maxEpoch -> 50)
 
   def setLearningRate(value: Double): this.type = set(learningRate, value)
   setDefault(learningRate -> 1e-3)
