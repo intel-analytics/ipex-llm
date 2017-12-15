@@ -27,7 +27,7 @@ import scala.collection.JavaConverters._
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, DataFormat}
 import com.intel.analytics.bigdl.nn.ops.{All, Any, ApproximateEqual, ArgMax, Assert, Assign, AssignGrad, AvgPoolGrad, BatchMatMul, BiasAddGrad, BroadcastGradientArgs, Cast, Ceil, Conv2D, Conv2DBackFilter, Conv2DTranspose, Conv3D, Conv3DBackpropFilter, Conv3DBackpropFilterV2, Conv3DBackpropInput, Conv3DBackpropInputV2, CrossEntropy, DecodeImage, DepthwiseConv2D, DepthwiseConv2DBackpropFilter, DepthwiseConv2DBackpropInput, Digamma, Dilation2D, Dilation2DBackpropFilter, Dilation2DBackpropInput, EluGrad, Equal, Erf, Erfc, Expm1, Floor, FloorDiv, FloorMod, FusedBatchNorm, FusedBatchNormGrad, Greater, GreaterEqual, InTopK, Inv, InvGrad, IsFinite, IsInf, IsNan, L2Loss, LRNGrad, Less, LessEqual, Lgamma, LogicalAnd, LogicalNot, LogicalOr, MaxPool, MaxPoolGrad, Maximum, MergeOps, Minimum, Mod, ModuleToOperation, NoOp, NotEqual, OneHot, Pad, ParseExample, Prod, RandomUniform, RangeOps, Rank, Relu6Grad, ReluGrad, ResizeBilinearOps, Rint, Round, RsqrtGrad, SegmentSum, SigmoidGrad, Sign, Slice, SoftplusGrad, SoftsignGrad, SqrtGrad, SquaredDifference, Substr, SwitchOps, TanhGrad, TopK, TruncateDiv, TruncatedNormal, Add => AddOps, DecodeGif => DecodeGifOps, DecodeJpeg => DecodeJpegOps, DecodePng => DecodePngOps, DecodeRaw => DecodeRawOps, Exp => ExpOps, Pow => PowOps, Select => SelectOps, Sum => SumOps, Tile => TileOps}
 import com.intel.analytics.bigdl.nn.tf._
-import com.intel.analytics.bigdl.nn.{DenseToSparse, _}
+import com.intel.analytics.bigdl.nn.{DenseToSparse, SpatialDropout1D, _}
 import com.intel.analytics.bigdl.optim.L2Regularizer
 import com.intel.analytics.bigdl.tensor._
 import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
@@ -162,6 +162,24 @@ class ModuleSerializerSpec extends FlatSpec with Matchers with BeforeAndAfterAll
     val binaryThreshold = BinaryThreshold[Float]().setName("binaryThreshold")
     val input = Tensor[Float](2, 5).apply1(_ => Random.nextFloat())
     runSerializationTest(binaryThreshold, input)
+  }
+
+  "SpatialDropout1D serializer" should "work properly" in {
+    val spatialDropout1D = SpatialDropout1D[Float]()
+    val input = Tensor[Float](2, 5).apply1(_ => Random.nextFloat())
+    runSerializationTest(spatialDropout1D, input)
+  }
+
+  "SpatialDropout2D serializer" should "work properly" in {
+    val spatialDropout2D = SpatialDropout2D[Float]()
+    val input = Tensor[Float](2, 5).apply1(_ => Random.nextFloat())
+    runSerializationTest(spatialDropout2D, input)
+  }
+
+  "SpatialDropout3D serializer" should "work properly" in {
+    val spatialDropout3D = SpatialDropout3D[Float]()
+    val input = Tensor[Float](2, 5).apply1(_ => Random.nextFloat())
+    runSerializationTest(spatialDropout3D, input)
   }
 
   "BinaryTreeLSTM serializer" should "work properly" in {
