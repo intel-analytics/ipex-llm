@@ -286,8 +286,6 @@ object LookupTableSparse {
       maxNorm: T,
       scaleBuffer: mutable.HashMap[Int, T])(
       implicit ev: TensorNumeric[T]): mutable.HashMap[Int, T] = {
-    val scaleBuffer = mutable.HashMap[Int, T]()
-
     val indicesArray = indices.storage.array()
     var i = indices.storageOffset() - 1
     while (i < indices.nElement() + indices.storageOffset() - 1) {
