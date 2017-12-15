@@ -1200,7 +1200,7 @@ class LocallyConnected2D(Layer):
                  with_bias=True,
                  data_format="NCHW",
                  bigdl_type="float"):
-        super(SpatialConvolution, self).__init__(None, bigdl_type,
+        super(LocallyConnected2D, self).__init__(None, bigdl_type,
                                                  n_input_plane,
                                                  input_width,
                                                  input_height,
