@@ -52,6 +52,9 @@ object TextClassifier {
       opt[String]('z', "batchSize")
         .text("batchSize")
         .action((x, c) => c.copy(batchSize = x.toInt))
+      opt[Int]('l', "learningRate")
+        .text("learningRate")
+        .action((x, c) => c.copy(learningRate = x))
     }
 
     localParser.parse(args, TextClassificationParams()).map { param =>
