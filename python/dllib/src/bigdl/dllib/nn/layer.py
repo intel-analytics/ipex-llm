@@ -5037,6 +5037,56 @@ class DetectionOutputFrcnn(Layer):
                                                    max_per_image,
                                                    thresh)
 
+class Cropping2D(Layer):
+    """
+    Cropping layer for 2D input (e.g. picture).
+    It crops along spatial dimensions, i.e. width and height.
+
+    # Input shape
+        4D tensor with shape:
+        `(batchSize, channels, first_axis_to_crop, second_axis_to_crop)`
+
+    # Output shape
+        4D tensor with shape:
+        `(batchSize, channels, first_cropped_axis, second_cropped_axis)`
+
+    :param heightCrop Array of length 2. How many units should be trimmed off at the beginning
+                      and end of the height dimension.
+    :param widthCrop Array of length 2. How many units should be trimmed off at the beginning
+                      and end of the width dimension.
+    :param data_format a string value (or DataFormat Object in Scala) of "NHWC" or "NCHW" to specify the input data format of this layer. In "NHWC" format
+                        data is stored in the order of [batch_size, height, width, channels], in "NCHW" format data is stored
+                        in the order of [batch_size, channels, height, width].
+    >>> cropping2D = Cropping2D([1, 1], [2, 2])
+    creating: createCropping2D
+    """
+    def __init__(self, heightCrop, widthCrop, data_format="NCHW", bigdl_type="float"):
+        super(Cropping2D, self).__init__(None, bigdl_type, heightCrop, widthCrop, data_format)
+
+class Cropping3D(Layer):
+    """
+    Cropping layer for 3D data (e.g. spatial or spatio-temporal).
+
+    # Input shape
+        5D tensor with shape:
+        `(batchSize, channels, first_axis_to_crop, second_axis_to_crop, third_axis_to_crop)`
+
+    # Output shape
+        5D tensor with shape:
+        `(batchSize, channels, first_cropped_axis, second_cropped_axis, third_cropped_axis)`
+
+    :param dim1Crop Array of length 2. How many units should be trimmed off at the beginning
+                      and end of the first dimension.
+    :param dim2Crop Array of length 2. How many units should be trimmed off at the beginning
+                      and end of the second dimension.
+    :param dim3Crop Array of length 2. How many units should be trimmed off at the beginning
+                      and end of the third dimension.
+    :param data_format a string value. "channel_first" or "channel_last"
+    >>> cropping3D = Cropping3D([1, 1], [2, 2], [1, 1])
+    creating: createCropping3D
+    """
+    def __init__(self, dim1Crop, dim2Crop, dim3Crop, data_format="channel_first", bigdl_type="float"):
+        super(Cropping3D, self).__init__(None, bigdl_type, dim1Crop, dim2Crop, dim3Crop, data_format)
 
 def _test():
     import doctest
