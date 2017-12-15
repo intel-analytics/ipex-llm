@@ -1090,7 +1090,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   def createSpatialDropout1D(
     initP: Double = 0.5
   ): SpatialDropout1D[T] = {
-    SpatialDropout1D[T](initP, format)
+    SpatialDropout1D[T](initP)
   }
 
   def createSpatialDropout2D(

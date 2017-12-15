@@ -87,6 +87,6 @@ object SpatialDropout1D {
   def apply[T: ClassTag](
     initP: Double = 0.5
   )(implicit ev: TensorNumeric[T]) : SpatialDropout1D[T] = {
-    new SpatialDropout1D[T](initP, format)
+    new SpatialDropout1D[T](initP)
   }
 }

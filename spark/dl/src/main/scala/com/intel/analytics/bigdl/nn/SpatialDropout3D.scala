@@ -32,6 +32,9 @@ import scala.reflect.ClassTag
  *  between feature maps and should be used instead.
  *
  * @param initP the probability p
+ * @param format  'NCHW' or 'NHWC'.
+            In 'NCHW' mode, the channels dimension (the depth)
+            is at index 1, in 'NHWC' mode is it at index 4.
  * @tparam T The numeric type in the criterion, usually which are [[Float]] or [[Double]]
  */
 @SerialVersionUID(- 4636332259181125718L)
