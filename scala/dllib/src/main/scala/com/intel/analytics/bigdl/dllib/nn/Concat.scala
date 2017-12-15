@@ -63,6 +63,19 @@ class Concat[T: ClassTag](val dimension: Int)(
       if (i == 0) {
         this.size = currentOutput.size()
       } else {
+        require(this.size.length == currentOutput.size.length,
+        s"${this.modules(i).getName} output size mismatch, expected : ${this.size.length}," +
+          s"actual ${currentOutput.size.length}")
+        var index = 0
+        val ssize = this.size.length
+        while (index < ssize) {
+          if (index != dimension - 1) {
+            require(this.size(index) == currentOutput.size(index + 1),
+              s"${this.modules(i).getName} output size at dimension ${index + 1} mismatch," +
+                s"expected ${this.size(index)}, actual : ${currentOutput.size(index + 1)}")
+          }
+          index += 1
+        }
         this.size(this.dimension - 1) += currentOutput.size(this.dimension)
       }
       i += 1
