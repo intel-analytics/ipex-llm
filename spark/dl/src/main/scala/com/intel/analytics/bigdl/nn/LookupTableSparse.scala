@@ -28,7 +28,7 @@ import scala.reflect.ClassTag
  *LookupTable for multi-values.
  * Also called embedding_lookup_sparse in TensorFlow.
  *
- * The input of LookupTableSparse should be a 2D SparseTensor or a Table.
+ * The input of LookupTableSparse should be a 2D SparseTensor or two 2D sparseTensors.
  * If the input is a SparseTensor, the values are positive integer ids,
  * values in each row of this SparseTensor will be turned into a dense vector.
  * If the input is a Table, the first tensor in this table should be the integer ids, just
@@ -63,7 +63,7 @@ class LookupTableSparse[T: ClassTag](
   protected val indices: Tensor[Int] = Tensor[Int]()
   protected val batchScaleBuffer: Tensor[T] = Tensor[T]()
   protected var nonZeroCount: Array[Int] = _
-  protected var normScale: mutable.HashMap[Int, T] = _
+  protected val normScale: mutable.HashMap[Int, T] = mutable.HashMap[Int, T]()
 
   {
     val wInit = RandomNormal(0, 1)
@@ -97,8 +97,9 @@ class LookupTableSparse[T: ClassTag](
     Tensor.unique(inputBuffer, ids, indices)
 
     if (maxNorm > 0) {
-      normScale = LookupTableSparse.norm2ScaleWithIndices[T](
-          weight, ids, ev.fromType(maxNorm))
+      normScale.clear()
+      LookupTableSparse.norm2ScaleWithIndices[T](
+          weight, ids, ev.fromType(maxNorm), normScale)
     }
 
     nonZeroCount = inputTensor.numNonZeroByRow()
@@ -238,7 +239,7 @@ class LookupTableSparse[T: ClassTag](
     indices.set()
     batchScaleBuffer.set()
     nonZeroCount = null
-    normScale = null
+    normScale.clear()
     this
   }
 
@@ -282,19 +283,21 @@ object LookupTableSparse {
   protected def norm2ScaleWithIndices[T: ClassTag](
       tensor: Tensor[T],
       indices: Tensor[T],
-      maxNorm: T)(implicit ev: TensorNumeric[T]): mutable.HashMap[Int, T] = {
-    val scale = mutable.HashMap[Int, T]()
+      maxNorm: T,
+      scaleBuffer: mutable.HashMap[Int, T])(
+      implicit ev: TensorNumeric[T]): mutable.HashMap[Int, T] = {
+    val scaleBuffer = mutable.HashMap[Int, T]()
 
     val indicesArray = indices.storage.array()
     var i = indices.storageOffset() - 1
     while (i < indices.nElement() + indices.storageOffset() - 1) {
       val index = ev.toType[Int](indicesArray(i))
       val norm = tensor(index).norm(2)
-      if (ev.isGreater(norm, maxNorm)) scale(index) = ev.divide(maxNorm, norm)
+      if (ev.isGreater(norm, maxNorm)) scaleBuffer(index) = ev.divide(maxNorm, norm)
       i += 1
     }
 
-    scale
+    scaleBuffer
   }
 
 }

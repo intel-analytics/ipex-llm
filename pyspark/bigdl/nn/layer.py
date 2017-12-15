@@ -2808,7 +2808,7 @@ class LookupTableSparse(Layer):
     LookupTable for multi-values.
     Also called embedding_lookup_sparse in TensorFlow.
 
-    The input of LookupTableSparse should be a 2D SparseTensor or a Table.
+    The input of LookupTableSparse should be a 2D SparseTensor or two 2D SparseTensors.
     If the input is a SparseTensor, the values are positive integer ids,
     values in each row of this SparseTensor will be turned into a dense vector.
     If the input is a Table, the first tensor in this table should be the integer ids, just
@@ -2820,6 +2820,18 @@ class LookupTableSparse(Layer):
     >>> lookupTableSparse = LookupTableSparse(20, 5, "mean", 2, L1Regularizer(0.5))
     creating: createL1Regularizer
     creating: createLookupTableSparse
+    >>> indices = np.array([[0, 0, 1, 2], [0, 1, 0, 3]])
+    >>> values = np.array([2, 4, 1, 2])
+    >>> weightValues = np.array([2, 0.5, 1, 3])
+    >>> input = JTensor.sparse(values, indices, np.array([3, 4]))
+    >>> weight = JTensor.sparse(weightValues, indices, np.array([3, 4]))
+    >>> layer1 = LookupTableSparse(10, 4, "mean")
+    >>> layer1.set_weights(np.arange(1, 41, 1).reshape(10, 4)) # set weight to 1 to 40
+    >>> output = layer1.forward([input, weight])
+    >>> print(output)
+    array([[ 6.5999999 ,  7.60000038,  8.60000038,  9.60000038],
+       [ 1.        ,  2.        ,  3.        ,  4.        ],
+       [ 5.        ,  6.        ,  7.        ,  8.        ]], dtype=float32)
     '''
 
     def __init__(self,
