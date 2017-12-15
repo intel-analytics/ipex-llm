@@ -65,7 +65,8 @@ private[ml] trait DLParams[@specialized(Float, Double) T] extends HasFeaturesCol
    * learning rate for the optimizer in the DLEstimator.
    * Default: 0.001
    */
-  final val learningRate = new DoubleParam(this, "learningRate", "learningRate", ParamValidators.gt(0))
+  final val learningRate = new DoubleParam(
+    this, "learningRate", "learningRate", ParamValidators.gt(0))
 
   def getLearningRate: Double = $(learningRate)
 
