@@ -5077,7 +5077,7 @@ class Cropping3D(Layer):
     :param dim3Crop Array of length 2. How many units should be trimmed off at the beginning
                       and end of the third dimension.
     :param data_format a string value. "channel_first" or "channel_last"
-    >>> cropping3D = Cropping3D([1, 1], [2, 2])
+    >>> cropping3D = Cropping3D([1, 1], [2, 2], [1, 1])
     creating: createCropping3D
     """
     def __init__(self, dim1Crop, dim2Crop, dim3Crop, data_format="channel_first", bigdl_type="float"):
