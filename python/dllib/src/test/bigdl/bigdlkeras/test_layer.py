@@ -649,5 +649,6 @@ class TestLayer(BigDLTestCase):
         layer = SReLU(input_shape=(4, 6))
         self.modelTestSingleLayer(input_data, layer, dump_weights=True)
 
+
 if __name__ == "__main__":
     pytest.main([__file__])
