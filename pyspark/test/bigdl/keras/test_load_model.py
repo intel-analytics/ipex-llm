@@ -25,6 +25,7 @@ from bigdl.keras.converter import DefinitionLoader
 
 np.random.seed(1337)  # for reproducibility
 from test.bigdl.test_utils import BigDLTestCase, TestModels
+import keras.backend as K
 
 
 class TestLoadModel(BigDLTestCase):
@@ -61,10 +62,12 @@ class TestLoadModel(BigDLTestCase):
         self.__kmodel_load_def_weight_test(kmodel, input_data)
 
     def test_load_def_weights_kmodel_seq_lenet_mnist(self):
+        K.set_image_dim_ordering("th")
         kmodel, input_data, output_data = TestModels.kmodel_seq_lenet_mnist()
         self.__kmodel_load_def_weight_test(kmodel, input_data)
 
     def test_load_definition(self):
+        K.set_image_dim_ordering("th")
         kmodel, input_data, output_data = TestModels.kmodel_seq_lenet_mnist()
         keras_model_json_path, keras_model_hdf5_path = self._dump_keras(kmodel, dump_weights=True)
         bmodel = DefinitionLoader.from_json_path(keras_model_json_path)

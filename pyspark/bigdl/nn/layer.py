@@ -3301,9 +3301,9 @@ class SpatialSeperableConvolution(Layer):
     :param data_format: a string value of "NHWC" or "NCHW" to specify the input data format of this layer. In "NHWC" format
                        data is stored in the order of [batch_size, height, width, channels], in "NCHW" format data is stored
                        in the order of [batch_size, channels, height, width].
-    :param wRegularizer: instance of [[Regularizer]](eg. L1 or L2 regularization), applied to the depth weights matrices.
-    :param bRegularizer: instance of [[Regularizer]]applied to the pointwise bias.
-    :param pRegularizer: instance of [[Regularizer]]applied to the pointwise weights.
+    :param w_regularizer: instance of [[Regularizer]](eg. L1 or L2 regularization), applied to the depth weights matrices.
+    :param b_regularizer: instance of [[Regularizer]]applied to the pointwise bias.
+    :param p_regularizer: instance of [[Regularizer]]applied to the pointwise weights.
 
     >>> conv = SpatialSeperableConvolution(6, 12, 1, 5, 5)
     creating: createSpatialSeperableConvolution

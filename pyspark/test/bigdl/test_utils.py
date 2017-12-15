@@ -275,6 +275,7 @@ class BigDLTestCase(TestCase):
                              rtol=1e-6,
                              atol=1e-6,
                              functional_apis=[True, False]):
+        keras.backend.set_image_dim_ordering("th")
         for api in functional_apis:
             self._do_modelTestSingleLayer(
                 input_data,
