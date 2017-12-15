@@ -25,7 +25,8 @@ class Cropping3DSpec extends KerasBaseSpec {
       """
         |input_tensor = Input(shape=[3, 4, 5, 6])
         |input = np.random.uniform(-1, 1, [2, 3, 4, 5, 6])
-        |output_tensor = Cropping3D(cropping=((1, 1), (1, 1), (1, 1)), dim_ordering='th')(input_tensor)
+        |output_tensor = Cropping3D(
+        |    cropping=((1, 1), (1, 1), (1, 1)), dim_ordering='th')(input_tensor)
         |model = Model(input=input_tensor, output=output_tensor)
       """.stripMargin
     val model = Cropping3D[Float](Array(1, 1), Array(1, 1), Array(1, 1), Cropping3D.CHANNEL_FIRST)
@@ -37,7 +38,8 @@ class Cropping3DSpec extends KerasBaseSpec {
       """
         |input_tensor = Input(shape=[3, 4, 5, 6])
         |input = np.random.uniform(-1, 1, [2, 3, 4, 5, 6])
-        |output_tensor = Cropping3D(cropping=((1, 1), (1, 1), (1, 1)), dim_ordering='tf')(input_tensor)
+        |output_tensor = Cropping3D(
+        |    cropping=((1, 1), (1, 1), (1, 1)), dim_ordering='tf')(input_tensor)
         |model = Model(input=input_tensor, output=output_tensor)
       """.stripMargin
     val model = Cropping3D[Float](Array(1, 1), Array(1, 1), Array(1, 1), Cropping3D.CHANNEL_LAST)
