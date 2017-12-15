@@ -866,21 +866,6 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
     (values, indices)
   }
 
-  protected def sumNSquare(n: T): T = {
-    var res: T = ev.fromType(0)
-    val func = new TensorFunc2[T] {
-      override def apply(data1: Array[T], offset1: Int): Unit = {
-        res = ev.plus(res, ev.pow(ev.abs(data1(offset1)), n))
-      }
-    }
-    DenseTensorApply.apply1[T](this, func)
-    res
-  }
-
-//  override def sumSquare(): T = {
-//    sumNSquare(ev.fromType[Int](2))
-//  }
-
   override def sumSquare(): T = {
     this.dot(this)
   }
