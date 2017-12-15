@@ -89,17 +89,20 @@ class LocalModule[T: ClassTag] private(model: Module[T], weightsBias: Array[Tens
    * @param shareBuffer whether to share same memory for each batch predict results
    * @param batchPerCore batch size per partition, default is 4
    * @param predictKey key to store predicted result
+   * @param variableFeature whether the size of feature is variable
    */
   def predictImage(imageFrame: LocalImageFrame,
     outputLayer: String = null,
     shareBuffer: Boolean = false,
     batchPerCore: Int = 4,
-    predictKey: String = ImageFeature.predict): LocalImageFrame = {
+    predictKey: String = ImageFeature.predict,
+    variableFeature: Boolean = false): LocalImageFrame = {
     predictor.predictImage(imageFrame,
       outputLayer,
       shareBuffer,
       batchPerCore,
-      predictKey)
+      predictKey,
+      variableFeature)
   }
 }
 

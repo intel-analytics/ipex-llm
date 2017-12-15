@@ -17,7 +17,7 @@
 package com.intel.analytics.bigdl.optim
 
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.dataset.{MiniBatch, Sample, SampleToMiniBatch, Transformer, Utils, DataSet => _}
+import com.intel.analytics.bigdl.dataset.{MiniBatch, PaddingParam, Sample, SampleToMiniBatch, Transformer, Utils, DataSet => _}
 import com.intel.analytics.bigdl.models.utils.ModelBroadcast
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -116,18 +116,24 @@ class Predictor[T: ClassTag] private[optim](
    * @param shareBuffer whether to share same memory for each batch predict results
    * @param batchPerPartition batch size per partition, default is 4
    * @param predictKey key to store predicted result
+   * @param variableFeature whether the size of feature is variable
    */
   def predictImage(imageFrame: DistributedImageFrame,
     outputLayer: String = null,
     shareBuffer: Boolean = false,
     batchPerPartition: Int = 4,
-    predictKey: String = ImageFeature.predict): DistributedImageFrame = {
+    predictKey: String = ImageFeature.predict,
+    variableFeature: Boolean = false): DistributedImageFrame = {
     val rdd = imageFrame.asInstanceOf[DistributedImageFrame].rdd
     val modelBroad = ModelBroadcast[T]().broadcast(rdd.sparkContext, model.evaluate())
     val partitionNum = rdd.partitions.length
+    if (variableFeature) require(batchPerPartition == 1, "If your input feature has variable" +
+      "sizes, batchPerPartition need to be 1, please adjust it")
+    def featurePaddingParam = if (variableFeature) Some(PaddingParam[T]()) else None
     val toBatchBroad = rdd.sparkContext.broadcast(SampleToMiniBatch(
       batchSize = partitionNum * batchPerPartition,
-      partitionNum = Some(partitionNum)), shareBuffer)
+      partitionNum = Some(partitionNum),
+      featurePaddingParam = featurePaddingParam), shareBuffer)
     val result = rdd.mapPartitions(partition => {
       val localModel = modelBroad.value()
       val localToBatch = toBatchBroad.value._1.cloneTransformer()
