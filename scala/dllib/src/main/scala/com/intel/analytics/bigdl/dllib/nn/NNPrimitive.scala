@@ -1006,9 +1006,9 @@ private[nn] object NNPrimitive {
 
       var y = 0
       while (y < frameSize) {
-        val maxIndex = xp + y
+        val maxIndex = indices(xp + y).toInt - 1
         if (maxIndex != -1) {
-          gradInput(gip + maxIndex * frameSize + y) =
+          gradInput(gip + maxIndex * frameSize + y) +=
             gradOutput(gop + y)
         }
         y += 1
