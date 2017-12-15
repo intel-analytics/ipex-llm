@@ -192,7 +192,7 @@ class AllReduceParameter[T: ClassTag](id: Long, partitionNum: Int, size: Int) ex
               val start = pid * taskSize + math.min(pid, extraSize)
               val length = taskSize + (if (pid < extraSize) 1 else 0)
               require(localBuffer.array().length == length * 2)
-              SerializerInstance.serialize(localBuffer).deCompress(0, localParameter, start, length)
+              SerializerInstance.create(localBuffer).deCompress(0, localParameter, start, length)
               BlockManagerWrapper.unlock(blockId)
               pid
             } catch {
@@ -222,7 +222,7 @@ class AllReduceParameter[T: ClassTag](id: Long, partitionNum: Int, size: Int) ex
           try {
             val blockId = getGradientBlockId(pid, partitionId)
             val tmp = BlockManagerWrapper.getLocalOrRemoteBytes(blockId).get
-            params(pid) = SerializerInstance.serialize(tmp)
+            params(pid) = SerializerInstance.create(tmp)
             BlockManagerWrapper.unlock(blockId)
             pid
           } catch {
@@ -292,16 +292,17 @@ class AllReduceParameter[T: ClassTag](id: Long, partitionNum: Int, size: Int) ex
    */
   def sendWeightPartition(): Unit = {
     val blockId = getWeightBlockId(partitionId)
+    val localBuffer = BlockManagerWrapper.getLocalBytes(blockId).getOrElse {
+      throw new RuntimeException(s"Didn't find weight block $blockId in the block " +
+        s"manager. Did you initialize this AllReduceParameter on every executor?")
+    }
+    SerializerInstance.create(localBuffer).compress(weightPartition)
+
     val weightsId = getWeightPartitionId()
-    require(weightPartition != null, "Cannot send the weights for this partition until they have" +
-      " been updated by the optimizer!")
-    BlockManagerWrapper.removeBlock(blockId)
-    BlockManagerWrapper.unlock(weightsId)
-    BlockManagerWrapper.removeBlock(weightsId)
-    BlockManagerWrapper.putSingle(weightsId,
-      weightPartition, StorageLevel.MEMORY_AND_DISK, tellMaster = false)
-    BlockManagerWrapper.putBytes(blockId,
-      SerializerInstance.serialize(weightPartition).bytes(), StorageLevel.MEMORY_ONLY_SER)
+    val weights = BlockManagerWrapper.getLocal(weightsId)
+      .map(_.data.next().asInstanceOf[Tensor[T]])
+      .getOrElse(throw new IllegalStateException("Please initialize AllReduceParameter first!"))
+    weights.copy(weightPartition)
   }
 }
 

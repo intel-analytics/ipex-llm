@@ -85,6 +85,7 @@ object DistriOptimizer {
    * @param trainSummary train summary
    * @param validationSummary validation summary
    * @param isOverWrite  if overwrite the checkpoint
+   * @param clippingParams  gradient clipping configurations
    */
   private[optim] def optimize[T: ClassTag](
     trainingModel: Module[T],
@@ -103,7 +104,8 @@ object DistriOptimizer {
     cachePath: Option[String],
     trainSummary: Option[TrainSummary],
     validationSummary: Option[ValidationSummary],
-    isOverWrite: Boolean
+    isOverWrite: Boolean,
+    clippingParams: GradientClippingParams
   )(implicit ev: TensorNumeric[T]): Unit = {
     val sc = dataset.originRDD().sparkContext
     val partitionNum = dataset.originRDD().partitions.length
@@ -149,6 +151,13 @@ object DistriOptimizer {
     val driverSubModelNum = partitionNum * _subModelNumber
     var dropModelNumBatch = 0
     var lossArray = new Array[Double](_subModelNumber)
+
+    // gradient clip settings
+    val constantClippingEnable = clippingParams.enableConstantClipping
+    val normClippingEnable = clippingParams.enableL2NormClipping
+    val maxValueClip = clippingParams.maxValueClip
+    val minValueClip = clippingParams.minValueClip
+    val normValueClip = clippingParams.normValueClip
 
     var epochStart = System.nanoTime()
     var dataRDD = dataset.data(train = true)
@@ -256,8 +265,8 @@ object DistriOptimizer {
               val length = taskSize + (if (tid < extraTask) 1 else 0)
               var i = 1
               while (i < finishedGradients.length) {
-                  finishedGradients(0).narrow(1, offset + 1, length)
-                    .add(finishedGradients(i).narrow(1, offset + 1, length))
+                finishedGradients(0).narrow(1, offset + 1, length)
+                  .add(finishedGradients(i).narrow(1, offset + 1, length))
                 i += 1
               }
             }))
@@ -284,26 +293,67 @@ object DistriOptimizer {
           }
           Iterator.single(finishedThreads.size)
         }
-      }.reduce(_ + _)
+        }.reduce(_ + _)
 
       dropModelNumBatch += (driverSubModelNum - numFinishedModelUpdates)
       if (dropPercentage == 0.0 ||
         numFinishedModelUpdates >= driverSubModelNum * (1.0 - maxDropPercentage)) {
         // enough records were processed for this batch, so update the model
         val value = lossSum.value / numFinishedModelUpdates
+
+        var l2Norm = 0.0f
+        var scale = ev.fromType(numFinishedModelUpdates)
+        if (normClippingEnable) {
+          val sumSquare = models.mapPartitions(modelIter => {
+            val getG = System.nanoTime()
+            parameters.aggregateGradientPartition()
+            driverMetrics.add("aggregrateGradientParition average executor",
+              System.nanoTime() - getG)
+
+            val gradLength = parameters.gradientPartition.nElement()
+            val taskSize = gradLength / _subModelNumber
+            val extraTask = gradLength % _subModelNumber
+            val parallelNum = if (taskSize == 0) extraTask else _subModelNumber
+            val squares = new Array[Double](parallelNum)
+            Engine.default.invokeAndWait((0 until parallelNum).map(tid => () => {
+              val offset = tid * taskSize + math.min(tid, extraTask)
+              val length = taskSize + (if (tid < extraTask) 1 else 0)
+              squares(tid) = ev.toType[Double](
+                parameters.gradientPartition.narrow(1, offset + 1, length).sumSquare())
+            }))
+            var sum = 0.0
+            var i = 0
+            while (i < parallelNum) {
+              sum += squares(i)
+              i += 1
+            }
+            Iterator.single(sum)
+          }).reduce(_ + _)
+          l2Norm = (math.sqrt(sumSquare) / numFinishedModelUpdates).toFloat
+          if (l2Norm > normValueClip) {
+            scale = ev.fromType[Double]((l2Norm * numFinishedModelUpdates) / normValueClip)
+          }
+        }
+
         models.mapPartitions { modelIter =>
           val modelCache = modelIter.next()
-          val getG = System.nanoTime()
-          parameters.aggregateGradientPartition()
-          driverMetrics.add("aggregrateGradientParition average executor",
-            System.nanoTime() - getG)
-          var time = System.nanoTime()
-          parameters.gradientPartition.div(ev.fromType(numFinishedModelUpdates))
+          if (!normClippingEnable) {
+            val getG = System.nanoTime()
+            parameters.aggregateGradientPartition()
+            driverMetrics.add("aggregrateGradientParition average executor",
+              System.nanoTime() - getG)
+          }
+          parameters.gradientPartition.div(scale)
           modelCache.optimMethod.state.update("epoch", driverState[Int]("epoch"))
           modelCache.optimMethod.state.update("neval", driverState[Int]("neval"))
           modelCache.optimMethod.state.update("Loss", driverState[Float]("Loss"))
           if (validationMethods.isDefined) {
             modelCache.optimMethod.state.update("score", driverState[Float]("score"))
+          }
+          var time = System.nanoTime()
+          // gradient clipping
+          if (constantClippingEnable) {
+            parameters.gradientPartition.clamp(minValueClip, maxValueClip)
           }
           modelCache.optimMethod.optimize(_ => (ev.fromType(value), parameters.gradientPartition),
             parameters.weightPartition)
@@ -435,15 +485,15 @@ object DistriOptimizer {
    * @param parameters all reduce parameters
    */
   private def checkpoint[T: ClassTag](
-      cacheTrigger: Option[Trigger],
-      cachePath: Option[String],
-      isOverWrite: Boolean,
-      wallClockTime: Long,
-      models: RDD[Cache[T]],
-      state: Table,
-      parameters: AllReduceParameter[T],
-      optimMethod: OptimMethod[T],
-      trainingModel: Module[T]): Unit = {
+    cacheTrigger: Option[Trigger],
+    cachePath: Option[String],
+    isOverWrite: Boolean,
+    wallClockTime: Long,
+    models: RDD[Cache[T]],
+    state: Table,
+    parameters: AllReduceParameter[T],
+    optimMethod: OptimMethod[T],
+    trainingModel: Module[T]): Unit = {
     cacheTrigger.foreach { trigger =>
       cachePath.foreach { path =>
         if (trigger(state)) {
@@ -467,36 +517,36 @@ object DistriOptimizer {
    * @param parameters [[AllReduceParameter]]
    */
   private def saveSummary[T: ClassTag](
-        trainSummary: TrainSummary,
-        models: RDD[Cache[T]],
-        driverState: Table,
-        parameters: AllReduceParameter[T],
-        trainingModel: Module[T])(implicit ev: TensorNumeric[T]): Unit = {
+    trainSummary: TrainSummary,
+    models: RDD[Cache[T]],
+    driverState: Table,
+    parameters: AllReduceParameter[T],
+    trainingModel: Module[T])(implicit ev: TensorNumeric[T]): Unit = {
     val currentIteration = driverState[Int]("neval") - 1
-      val parametersTrigger = trainSummary.getSummaryTrigger("Parameters")
-      if (parametersTrigger.isDefined && parametersTrigger.get(driverState)) {
-        val model = getModel(models, parameters, trainingModel)
-        val parametersTable = model.getParametersTable()
-        // Parallelize to create Histogram.
-        Engine.default.invokeAndWait(
-          parametersTable.keySet.toSeq.map(moduleName => () => {
-            val paramTable = parametersTable[Table](moduleName)
-            paramTable.keySet.foreach { paramName =>
-              trainSummary.addHistogram(
-                s"$moduleName/$paramName", paramTable[Tensor[T]](paramName), currentIteration)}
-          }))
+    val parametersTrigger = trainSummary.getSummaryTrigger("Parameters")
+    if (parametersTrigger.isDefined && parametersTrigger.get(driverState)) {
+      val model = getModel(models, parameters, trainingModel)
+      val parametersTable = model.getParametersTable()
+      // Parallelize to create Histogram.
+      Engine.default.invokeAndWait(
+        parametersTable.keySet.toSeq.map(moduleName => () => {
+          val paramTable = parametersTable[Table](moduleName)
+          paramTable.keySet.foreach { paramName =>
+            trainSummary.addHistogram(
+              s"$moduleName/$paramName", paramTable[Tensor[T]](paramName), currentIteration)}
+        }))
+    }
+    val scalarTrigger = trainSummary.getScalarTriggers()
+    // Not parallelizable, because driverState is changing each iteration.
+    scalarTrigger.foreach { v =>
+      if (v._2(driverState)) {
+        require(driverState.contains(v._1), s"DistriOptimizer.saveSummary: Summary ${v._1} " +
+          s"is not supported now.")
+        trainSummary.addScalar(
+          v._1, driverState[Float](v._1), currentIteration
+        )
       }
-      val scalarTrigger = trainSummary.getScalarTriggers()
-      // Not parallelizable, because driverState is changing each iteration.
-      scalarTrigger.foreach { v =>
-        if (v._2(driverState)) {
-          require(driverState.contains(v._1), s"DistriOptimizer.saveSummary: Summary ${v._1} " +
-            s"is not supported now.")
-          trainSummary.addScalar(
-            v._1, driverState[Float](v._1), currentIteration
-          )
-        }
-      }
+    }
   }
 
   /**
@@ -525,7 +575,7 @@ object DistriOptimizer {
     parameters: AllReduceParameter[T],
     validationMethods: Option[Array[ValidationMethod[T]]],
     optimMethod: OptimMethod[T]
-    )(implicit ev: TensorNumeric[T]) = {
+  )(implicit ev: TensorNumeric[T]) = {
     val sc = dataset.originRDD().sparkContext
     val broadcast = sc.broadcast((criterion, state, validationMethods, optimMethod))
     // ensure model's parameter is compacted for getting a better performance when broadcasting
@@ -693,9 +743,9 @@ object DistriOptimizer {
    * @return trained model
    */
   private def getModel[T: ClassTag](
-      models: RDD[Cache[T]],
-      parameters: AllReduceParameter[T],
-      trainingModel: Module[T]): Module[T] = {
+    models: RDD[Cache[T]],
+    parameters: AllReduceParameter[T],
+    trainingModel: Module[T]): Module[T] = {
     val partitionNum = models.partitions.length
     val extraState = models.map(_.localModels.head.getExtraParameter()).first()
     trainingModel.setExtraParameter(extraState)
@@ -738,7 +788,7 @@ class DistriOptimizer[T: ClassTag] (
   _model: Module[T],
   _dataset: DistributedDataSet[MiniBatch[T]],
   _criterion: Criterion[T]
-)(implicit ev: TensorNumeric[T])
+ )(implicit ev: TensorNumeric[T])
   extends Optimizer[T, MiniBatch[T]](
     _model, _dataset, _criterion) {
   val metrics = new Metrics
@@ -761,8 +811,8 @@ class DistriOptimizer[T: ClassTag] (
 
 
   override def setTrainData(sampleRDD: RDD[Sample[T]],
-                 batchSize: Int,
-                 miniBatch: MiniBatch[T]): this.type = {
+    batchSize: Int,
+    miniBatch: MiniBatch[T]): this.type = {
     this.dataset = (DataSet.rdd(sampleRDD) ->
       SampleToMiniBatch(miniBatch, batchSize, None))
       .asInstanceOf[DistributedDataSet[MiniBatch[T]]]
@@ -770,9 +820,9 @@ class DistriOptimizer[T: ClassTag] (
   }
 
   override def setTrainData(sampleRDD: RDD[Sample[T]],
-                 batchSize: Int,
-                 featurePaddingParam: PaddingParam[T] = null,
-                 labelPaddingParam: PaddingParam[T] = null) : this.type = {
+    batchSize: Int,
+    featurePaddingParam: PaddingParam[T] = null,
+    labelPaddingParam: PaddingParam[T] = null) : this.type = {
     val _featurePaddingParam = if (featurePaddingParam != null) Some(featurePaddingParam) else None
     val _labelPaddingParam = if (labelPaddingParam != null) Some(labelPaddingParam) else None
     dataset = (DataSet.rdd(sampleRDD) ->
@@ -845,7 +895,8 @@ class DistriOptimizer[T: ClassTag] (
           checkpointPath,
           trainSummary,
           validationSummary,
-          isOverWrite
+          isOverWrite,
+          gradientClippingParams
         )
         retryNum = Int.MaxValue
       } catch {
