@@ -288,23 +288,23 @@ class DLModel[@specialized(Float, Double) T: ClassTag](
     val localBatchSize = $(batchSize)
 
     val resultRDD = dataFrame.rdd.mapPartitions { rowIter =>
-      val rows = rowIter.toArray
       val localModel = modelBroadCast.value()
-      val features = rows.map { row =>
-        val features = featureFunc(row, featureColIndex)
-        val featureBuffer = features.head match {
-          case dd: Double => features.asInstanceOf[Seq[Double]].map(ev.fromType(_))
-          case ff: Float => features.asInstanceOf[Seq[Float]].map(ev.fromType(_))
+      rowIter.grouped(localBatchSize).flatMap { rowBatch =>
+        val samples = rowBatch.map { row =>
+          val features = featureFunc(row, featureColIndex)
+          val featureBuffer = features.head match {
+            case dd: Double => features.asInstanceOf[Seq[Double]].map(ev.fromType(_))
+            case ff: Float => features.asInstanceOf[Seq[Float]].map(ev.fromType(_))
+          }
+          Sample(Tensor(featureBuffer.toArray, featureSize))
+        }.toIterator
+        val predictions = SampleToMiniBatch(localBatchSize).apply(samples).flatMap { batch =>
+          val batchResult = localModel.forward(batch.getInput())
+          batchResult.toTensor.split(1).map(outputToPrediction)
         }
-        Sample(Tensor(featureBuffer.toArray, featureSize))
-      }.toIterator
-
-      val outputs = SampleToMiniBatch(localBatchSize).apply(features).flatMap { batch =>
-        val batchResult = localModel.forward(batch.getInput())
-        batchResult.toTensor.split(1).map(outputToPrediction)
-      }
-      rows.toIterator.zip(outputs).map { case (row, predict) =>
-        Row.fromSeq(row.toSeq ++ Seq(predict))
+        rowBatch.toIterator.zip(predictions).map { case (row, predict) =>
+          Row.fromSeq(row.toSeq ++ Seq(predict))
+        }
       }
     }
 
