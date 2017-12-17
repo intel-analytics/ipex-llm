@@ -62,7 +62,7 @@ class DLClassifierSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val estimator = new DLClassifier[Float](model, criterion, Array(10))
     assert(estimator.getFeaturesCol == "features")
     assert(estimator.getLabelCol == "label")
-    assert(estimator.getMaxEpoch == 100)
+    assert(estimator.getMaxEpoch == 50)
     assert(estimator.getBatchSize == 1)
     assert(estimator.getLearningRate == 1e-3)
     assert(estimator.getLearningRateDecay == 0)
