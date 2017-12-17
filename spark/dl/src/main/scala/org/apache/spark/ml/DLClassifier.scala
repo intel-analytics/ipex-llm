@@ -35,7 +35,7 @@ import scala.reflect.ClassTag
  * @param featureSize The size (Tensor dimensions) of the feature data.
  */
 class DLClassifier[@specialized(Float, Double) T: ClassTag](
-    override val model: Module[T],
+    @transient override val model: Module[T],
     override val criterion : Criterion[T],
     override val featureSize : Array[Int],
     override val uid: String = Identifiable.randomUID("dlClassifier")
@@ -49,7 +49,8 @@ class DLClassifier[@specialized(Float, Double) T: ClassTag](
   }
 
   override def transformSchema(schema : StructType): StructType = {
-    validateSchema(schema)
+    validateDataType(schema, $(featuresCol))
+    validateDataType(schema, $(labelCol))
     SchemaUtils.appendColumn(schema, $(predictionCol), DoubleType)
   }
 
@@ -66,23 +67,17 @@ class DLClassifier[@specialized(Float, Double) T: ClassTag](
  * @param featureSize The size (Tensor dimensions) of the feature data.
  */
 class DLClassifierModel[@specialized(Float, Double) T: ClassTag](
-    override val model: Module[T],
+    @transient override val model: Module[T],
     featureSize : Array[Int],
     override val uid: String = "DLClassifierModel"
   )(implicit ev: TensorNumeric[T]) extends DLModel[T](model, featureSize) {
 
-  override protected def batchOutputToPrediction(output: Tensor[T]): Iterable[_] = {
-    output.split(1)
-    val result = if (output.dim == 2) {
-      output.split(1).map(t => t.max(1)._2.storage().head)
-    } else {
-      throw new IllegalArgumentException
-    }
-    result.map(ev.toType[Double])
+  protected override def outputToPrediction(output: Tensor[T]): Any = {
+    ev.toType[Double](output.max(1)._2.valueAt(1))
   }
 
   override def transformSchema(schema : StructType): StructType = {
-    validateSchema(schema)
+    validateDataType(schema, $(featuresCol))
     SchemaUtils.appendColumn(schema, $(predictionCol), DoubleType)
   }
 }
