@@ -704,14 +704,13 @@ object SpatialBatchNormalization {
     require(gradOutput.nDimension() == 4, "BN require a 4D gradient")
     require(gradOutput.isContiguous(), "gradient is not contiguous")
     val nChannel = gradOutput.size(4)
-    require(scale.size(1) == nChannel, "scale length is not consist with channel number")
-    require(saveMean.size(1) == nChannel, "saveMean length is not consist with channel number")
-    require(saveStd.size(1) == nChannel, "saveStd length is not consist with channel number")
+    require(saveMean.size(1) == nChannel, "saveMean length is not consistent with channel number")
+    require(saveStd.size(1) == nChannel, "saveStd length is not consistent with channel number")
 
     gradInput.resizeAs(gradOutput)
     if (gMean.isEmpty) {
-      gMean.resize(scale.size(1))
-      gxMean.resize(scale.size(1))
+      gMean.resize(nChannel)
+      gxMean.resize(nChannel)
     }
 
     val inputData = input.storage().array()
@@ -749,6 +748,8 @@ object SpatialBatchNormalization {
     }
 
     if (scale != null) {
+      require(scale.size(1) == nChannel, "scale length is not consistent with channel number")
+
       val scaleData = scale.storage().array()
       val scaleOffset = scale.storageOffset() - 1
       i = 0
@@ -796,14 +797,13 @@ object SpatialBatchNormalization {
     require(gradOutput.nDimension() == 4, "BN require a 4D gradient")
     require(gradOutput.isContiguous(), "gradient is not contiguous")
     val nChannel = gradOutput.size(4)
-    require(scale.size(1) == nChannel, "scale length is not consist with channel number")
-    require(saveMean.size(1) == nChannel, "saveMean length is not consist with channel number")
-    require(saveStd.size(1) == nChannel, "saveStd length is not consist with channel number")
+    require(saveMean.size(1) == nChannel, "saveMean length is not consistent with channel number")
+    require(saveStd.size(1) == nChannel, "saveStd length is not consistent with channel number")
 
     gradInput.resizeAs(gradOutput)
     if (gMean.isEmpty) {
-      gMean.resize(scale.size(1))
-      gxMean.resize(scale.size(1))
+      gMean.resize(nChannel)
+      gxMean.resize(nChannel)
     }
 
     val inputData = input.storage().array()
@@ -841,6 +841,7 @@ object SpatialBatchNormalization {
     }
 
     if (scale != null) {
+      require(scale.size(1) == nChannel, "scale length is not consistent with channel number")
       val scaleData = scale.storage().array()
       val scaleOffset = scale.storageOffset() - 1
       i = 0
@@ -882,8 +883,7 @@ object SpatialBatchNormalization {
     require(gradOutput.nDimension() == 4, "BN require a 4D gradient")
     require(gradOutput.isContiguous(), "gradient is not contiguous")
     val nChannel = gradOutput.size(4)
-    require(scale.size(1) == nChannel, "scale length is not consist with channel number")
-    require(saveStd.size(1) == nChannel, "saveStd length is not consist with channel number")
+    require(saveStd.size(1) == nChannel, "saveStd length is not consistent with channel number")
 
     gradInput.resizeAs(gradOutput)
     val gradOutputData = gradOutput.storage().array()
@@ -896,6 +896,7 @@ object SpatialBatchNormalization {
     val n = gradOutput.nElement()
 
     if (scale != null) {
+      require(scale.size(1) == nChannel, "scale length is not consistent with channel number")
       val scaleData = scale.storage().array()
       val scaleOffset = scale.storageOffset() - 1
       var i = 0
@@ -933,8 +934,7 @@ object SpatialBatchNormalization {
     require(gradOutput.nDimension() == 4, "BN require a 4D gradient")
     require(gradOutput.isContiguous(), "gradient is not contiguous")
     val nChannel = gradOutput.size(4)
-    require(scale.size(1) == nChannel, "scale length is not consist with channel number")
-    require(saveStd.size(1) == nChannel, "saveStd length is not consist with channel number")
+    require(saveStd.size(1) == nChannel, "saveStd length is not consistent with channel number")
 
     gradInput.resizeAs(gradOutput)
     val gradOutputData = gradOutput.storage().array()
@@ -948,6 +948,7 @@ object SpatialBatchNormalization {
     var i = 0
 
     if (scale != null) {
+      require(scale.size(1) == nChannel, "scale length is not consistent with channel number")
       val scaleData = scale.storage().array()
       val scaleOffset = scale.storageOffset() - 1
       while (i < n) {
@@ -989,14 +990,13 @@ object SpatialBatchNormalization {
     require(gradOutput.nDimension() == 4, "BN require a 4D gradient")
     require(gradOutput.isContiguous(), "gradient is not contiguous")
     val nChannel = gradOutput.size(2)
-    require(scale.size(1) == nChannel, "scale length is not consist with channel number")
-    require(saveMean.size(1) == nChannel, "saveMean length is not consist with channel number")
-    require(saveStd.size(1) == nChannel, "saveStd length is not consist with channel number")
+    require(saveMean.size(1) == nChannel, "saveMean length is not consistent with channel number")
+    require(saveStd.size(1) == nChannel, "saveStd length is not consistent with channel number")
 
     gradInput.resizeAs(gradOutput)
     if (gMean.isEmpty) {
-      gMean.resize(scale.size(1))
-      gxMean.resize(scale.size(1))
+      gMean.resize(nChannel)
+      gxMean.resize(nChannel)
     }
 
     val inputData = input.storage().array()
@@ -1044,6 +1044,7 @@ object SpatialBatchNormalization {
     i = 0
     b = 0
     if (scale != null) {
+      require(scale.size(1) == nChannel, "scale length is not consistent with channel number")
       val scaleData = scale.storage().array()
       val scaleOffset = scale.storageOffset() - 1
       while (b < nBatch) {
@@ -1401,8 +1402,8 @@ object SpatialBatchNormalization {
     require(gradOutput.nDimension() == 4, "BN require a 4D gradient")
     require(gradOutput.isContiguous(), "gradient is not contiguous")
     val nChannel = gradOutput.size(2)
-    require(saveMean.size(1) == nChannel, "saveMean length is not consist with channel number")
-    require(saveStd.size(1) == nChannel, "saveStd length is not consist with channel number")
+    require(saveMean.size(1) == nChannel, "saveMean length is not consistent with channel number")
+    require(saveStd.size(1) == nChannel, "saveStd length is not consistent with channel number")
 
     gradInput.resizeAs(gradOutput)
     if (gMean.isEmpty) {
@@ -1458,7 +1459,7 @@ object SpatialBatchNormalization {
     if (scale != null) {
       val scaleData = scale.storage().array()
       val scaleOffset = scale.storageOffset() - 1
-      require(scale.size(1) == nChannel, "scale length is not consist with channel number")
+      require(scale.size(1) == nChannel, "scale length is not consistent with channel number")
       while (b < nBatch) {
         var c = 0
         while (c < nChannel) {
@@ -1504,8 +1505,7 @@ object SpatialBatchNormalization {
     require(gradOutput.nDimension() == 4, "BN require a 4D gradient")
     require(gradOutput.isContiguous(), "gradient is not contiguous")
     val nChannel = gradOutput.size(2)
-    require(scale.size(1) == nChannel, "scale length is not consist with channel number")
-    require(saveStd.size(1) == nChannel, "saveStd length is not consist with channel number")
+    require(saveStd.size(1) == nChannel, "saveStd length is not consistent with channel number")
 
     gradInput.resizeAs(gradOutput)
     val gradOutputData = gradOutput.storage().array()
@@ -1520,6 +1520,7 @@ object SpatialBatchNormalization {
     var b = 0
     var i = 0
     if (scale != null) {
+      require(scale.size(1) == nChannel, "scale length is not consistent with channel number")
       val scaleData = scale.storage().array()
       val scaleOffset = scale.storageOffset() - 1
       while (b < nBatch) {
@@ -1565,8 +1566,7 @@ object SpatialBatchNormalization {
     require(gradOutput.nDimension() == 4, "BN require a 4D gradient")
     require(gradOutput.isContiguous(), "gradient is not contiguous")
     val nChannel = gradOutput.size(2)
-    require(scale.size(1) == nChannel, "scale length is not consist with channel number")
-    require(saveStd.size(1) == nChannel, "saveStd length is not consist with channel number")
+    require(saveStd.size(1) == nChannel, "saveStd length is not consistent with channel number")
 
     gradInput.resizeAs(gradOutput)
     val gradOutputData = gradOutput.storage().array()
@@ -1581,6 +1581,7 @@ object SpatialBatchNormalization {
     var b = 0
     var i = 0
     if (scale != null) {
+      require(scale.size(1) == nChannel, "scale length is not consistent with channel number")
       val scaleData = scale.storage().array()
       val scaleOffset = scale.storageOffset() - 1
       while (b < nBatch) {
