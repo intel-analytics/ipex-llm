@@ -5,7 +5,7 @@ please refer to <http://yann.lecun.com/exdb/lenet/>.
 
 ## Install dependencies
  * [Install dependencies](../../../README.md#install.dependencies)
- 
+
 ## How to run this example:
 Please note that due to some permission issue, this example **cannot** be run on Windows.
 
