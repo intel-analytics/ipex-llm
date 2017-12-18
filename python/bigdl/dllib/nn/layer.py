@@ -1142,6 +1142,89 @@ class BinaryTreeLSTM(Layer):
                                              gate_output,
                                              with_graph)
 
+class LocallyConnected2D(Layer):
+
+    '''
+    The LocallyConnected2D layer works similarly to the [[SpatialConvolution]] layer,
+    except that weights are unshared, that is, a different set of filters
+    is applied at each different patch of the input.
+
+    :param n_input_plane The number of expected input planes in the image given into forward()
+    :param input_width The expected width of input
+    :param input_height The expected height of input
+    :param n_output_plane The number of output planes the convolution layer will produce.
+    :param kernel_w The kernel width of the convolution
+    :param kernel_h The kernel height of the convolution
+    :param stride_w The step of the convolution in the width dimension.
+    :param stride_h The step of the convolution in the height dimension
+    :param pad_w The additional zeros added per width to the input planes.
+    :param pad_h The additional zeros added per height to the input planes.
+    :param propagate_back Propagate gradient back
+    :param wRegularizer: instance of [[Regularizer]](eg. L1 or L2 regularization), applied to the input weights matrices.
+    :param bRegularizer: instance of [[Regularizer]]applied to the bias.
+    :param init_weight: the optional initial value for the weight
+    :param init_bias: the optional initial value for the bias
+    :param init_grad_weight: the optional initial value for the grad_weight
+    :param init_grad_bias: the optional initial value for the grad_bias
+    :param with_bias: the optional initial value for if need bias
+    :param data_format: a string value of "NHWC" or "NCHW" to specify the input data format of this layer. In "NHWC" format
+                       data is stored in the order of [batch_size, height, width, channels], in "NCHW" format data is stored
+                       in the order of [batch_size, channels, height, width].
+
+    >>> locallyConnected2D = LocallyConnected2D(6, 2, 4, 12, 5, 5)
+    creating: createLocallyConnected2D
+    >>> locallyConnected2D.setWRegularizer(L1Regularizer(0.5))
+    creating: createL1Regularizer
+    >>> locallyConnected2D.setBRegularizer(L1Regularizer(0.5))
+    creating: createL1Regularizer
+    '''
+
+    def __init__(self,
+                 n_input_plane,
+                 input_width,
+                 input_height,
+                 n_output_plane,
+                 kernel_w,
+                 kernel_h,
+                 stride_w=1,
+                 stride_h=1,
+                 pad_w=0,
+                 pad_h=0,
+                 propagate_back=True,
+                 wRegularizer=None,
+                 bRegularizer=None,
+                 init_weight=None,
+                 init_bias=None,
+                 init_grad_weight=None,
+                 init_grad_bias=None,
+                 with_bias=True,
+                 data_format="NCHW",
+                 bigdl_type="float"):
+        super(LocallyConnected2D, self).__init__(None, bigdl_type,
+                                                 n_input_plane,
+                                                 input_width,
+                                                 input_height,
+                                                 n_output_plane,
+                                                 kernel_w,
+                                                 kernel_h,
+                                                 stride_w,
+                                                 stride_h,
+                                                 pad_w,
+                                                 pad_h,
+                                                 propagate_back,
+                                                 wRegularizer,
+                                                 bRegularizer,
+                                                 JTensor.from_ndarray(init_weight),
+                                                 JTensor.from_ndarray(init_bias),
+                                                 JTensor.from_ndarray(init_grad_weight),
+                                                 JTensor.from_ndarray(init_grad_bias),
+                                                 with_bias,
+                                                 data_format)
+    def set_init_method(self, weight_init_method = None, bias_init_method = None):
+        callBigDlFunc(self.bigdl_type, "setInitMethod", self.value,
+                      weight_init_method, bias_init_method)
+        return self
+
 class SpatialConvolution(Layer):
 
     '''
