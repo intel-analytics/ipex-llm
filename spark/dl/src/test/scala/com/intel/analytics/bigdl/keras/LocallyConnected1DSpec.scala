@@ -17,7 +17,7 @@
 
 package com.intel.analytics.bigdl.keras
 
-import com.intel.analytics.bigdl.nn.{HardSigmoid, LocallyConnected1D}
+import com.intel.analytics.bigdl.nn.{HardSigmoid, LocallyConnected1D, Module}
 import com.intel.analytics.bigdl.tensor.Tensor
 
 
@@ -118,6 +118,23 @@ class LocallyConnected1DSpec extends KerasBaseSpec {
 
     output.size() should be(Array(d1l, d2l))
     _output.storage().map(x => x.toInt).toArray should be(output.storage().map(x => x.toInt).toArray)
+  }
+
+
+  "LocallyConnected1D serializer" should "be ok" in {
+    val module = LocallyConnected1D[Float](6, 2, outputFrameSize = 2, kernelW = 3, strideW = 1)
+
+    val input = Tensor[Float](6, 2).randn()
+
+    val res1 = module.forward(input).clone()
+    val tmpFile = java.io.File.createTempFile("module", ".bigdl")
+    module.saveModule(tmpFile.getAbsolutePath, null, true)
+    val loaded = Module.loadModule[Float](tmpFile.getAbsolutePath)
+    val res2 = loaded.forward(input)
+    res1 should be(res2)
+    if (tmpFile.exists()) {
+      tmpFile.delete()
+    }
   }
 
 }
