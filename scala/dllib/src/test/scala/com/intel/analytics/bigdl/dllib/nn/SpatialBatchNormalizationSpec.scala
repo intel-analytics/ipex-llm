@@ -34,6 +34,16 @@ class SpatialBatchNormalizationSpec extends FlatSpec with Matchers {
     checker.checkLayer[Double](sbn, input, 1e-3) should be(true)
   }
 
+  "SpatialBatchNormalization backward" should "be good when affine is false" in {
+    val layer = SpatialBatchNormalization[Float](3, affine = false)
+    val input = Tensor[Float](4, 3, 24, 24).fill(1)
+    val gradOutput = Tensor[Float](4, 3, 24, 24).fill(1)
+    val output = layer.forward(input)
+    output should be(Tensor[Float](4, 3, 24, 24).fill(0))
+    val gradInput = layer.backward(input, gradOutput)
+    gradInput should be(Tensor[Float](4, 3, 24, 24).fill(0))
+  }
+
   "SpatialBatchNormalization module in batch mode" should "be good in gradient check " +
     "for weight" in {
     val seed = 100
