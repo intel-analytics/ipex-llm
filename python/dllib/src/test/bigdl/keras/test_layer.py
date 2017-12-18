@@ -50,7 +50,7 @@ class TestLayer(BigDLTestCase):
         self.modelTestSingleLayer(input_data, layer)
 
     def test_softmax(self):
-        input_data = np.random.random_sample([5, 6])
+        input_data = np.random.random_sample([2, 3, 5])
         layer = Activation('softmax')
         self.modelTestSingleLayer(input_data, layer)
 
@@ -571,6 +571,20 @@ class TestLayer(BigDLTestCase):
         layer = Cropping1D(cropping=(1, 2))
         self.modelTestSingleLayer(input_data, layer)
 
+    def test_cropping2d(self):
+        input_data = np.random.random([2, 3, 28, 28])
+        layer1 = Cropping2D(cropping=((2, 2), (4, 4)))
+        self.modelTestSingleLayer(input_data, layer1)
+        layer2 = Cropping2D(cropping=((0, 2), (3, 1)))
+        self.modelTestSingleLayer(input_data, layer2)
+
+    def test_cropping3d(self):
+        input_data = np.random.random([2, 10, 28, 28, 32])
+        layer1 = Cropping3D(cropping=((1, 1), (2, 2), (4, 4)))
+        self.modelTestSingleLayer(input_data, layer1)
+        layer2 = Cropping3D(cropping=((0, 2), (3, 1), (2, 3)))
+        self.modelTestSingleLayer(input_data, layer2)
+
     def test_simplernn(self):
         input_data = np.random.random([3, 4, 5])
         layer = SimpleRNN(5, input_shape=(4, 5), return_sequences=True)
@@ -699,6 +713,17 @@ class TestLayer(BigDLTestCase):
         input_data = np.random.random_sample([2, 4, 6])
         layer = SReLU(input_shape=(4, 6))
         self.modelTestSingleLayer(input_data, layer, dump_weights=True)
+
+    def test_locallyconnected2d(self):
+        input_data = np.random.random_sample([2, 3, 6, 8])
+        layer1 = LocallyConnected2D(3, 1, 2, input_shape=(3, 6, 8))
+        self.modelTestSingleLayer(input_data, layer1, dump_weights=True)
+        layer2 = LocallyConnected2D(4, 2, 1, activation='sigmoid', input_shape=(3, 6, 8))
+        self.modelTestSingleLayer(input_data, layer2, dump_weights=True)
+        layer3 = LocallyConnected2D(2, 2, 1, bias=False, input_shape=(3, 6, 8))
+        self.modelTestSingleLayer(input_data, layer3, dump_weights=True)
+        layer4 = LocallyConnected2D(4, 2, 2, dim_ordering="tf", input_shape=(3, 6, 8))
+        self.modelTestSingleLayer(input_data, layer4, dump_weights=True)
 
 
 if __name__ == "__main__":
