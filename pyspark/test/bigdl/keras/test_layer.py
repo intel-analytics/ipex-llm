@@ -571,6 +571,20 @@ class TestLayer(BigDLTestCase):
         layer = Cropping1D(cropping=(1, 2))
         self.modelTestSingleLayer(input_data, layer)
 
+    def test_cropping2d(self):
+        input_data = np.random.random([2, 3, 28, 28])
+        layer1 = Cropping2D(cropping=((2, 2), (4, 4)))
+        self.modelTestSingleLayer(input_data, layer1)
+        layer2 = Cropping2D(cropping=((0, 2), (3, 1)))
+        self.modelTestSingleLayer(input_data, layer2)
+
+    def test_cropping3d(self):
+        input_data = np.random.random([2, 10, 28, 28, 32])
+        layer1 = Cropping3D(cropping=((1, 1), (2, 2), (4, 4)))
+        self.modelTestSingleLayer(input_data, layer1)
+        layer2 = Cropping3D(cropping=((0, 2), (3, 1), (2, 3)))
+        self.modelTestSingleLayer(input_data, layer2)
+
     def test_simplernn(self):
         input_data = np.random.random([3, 4, 5])
         layer = SimpleRNN(5, input_shape=(4, 5), return_sequences=True)

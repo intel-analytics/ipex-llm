@@ -816,6 +816,31 @@ class LayerConverter:
         cropping = tuple(self.klayer.cropping)
         return BLayer.SpatialZeroPadding(0, 0, -cropping[0], -cropping[1])
 
+    def create_cropping2d(self):
+        if "dim_ordering" not in self.config:
+            warnings.warn("Cannot find dim_ordering from json definition. Using the default instead.")
+
+        bigdl_order = self.get_bdim_order()
+        blayer = BLayer.Cropping2D(heightCrop=self.klayer.cropping[0],
+                                   widthCrop=self.klayer.cropping[1],
+                                   data_format=bigdl_order)
+        return blayer
+
+    def create_cropping3d(self):
+        if "dim_ordering" not in self.config:
+            warnings.warn("Cannot find dim_ordering from json definition. Using the default instead.")
+        if self.klayer.dim_ordering == "th":
+            bigdl_order = "channel_first"
+        elif self.klayer.dim_ordering == "tf":
+            bigdl_order = "channel_last"
+        else:
+            raise Exception("Unsupported dim_ordering. Please use tf or th.")
+        blayer = BLayer.Cropping3D(dim1Crop=self.klayer.cropping[0],
+                                   dim2Crop=self.klayer.cropping[1],
+                                   dim3Crop=self.klayer.cropping[2],
+                                   data_format=bigdl_order)
+        return blayer
+
     def __check_recurrent_parameters(self, klayer):
         if klayer.stateful:
             raise Exception("Only stateful=False for recurrent layers is supported for now")
