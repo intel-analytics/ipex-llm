@@ -824,14 +824,7 @@ class LayerConverter:
         return blayer
 
     def create_cropping3d(self):
-        if "dim_ordering" not in self.config:
-            warnings.warn("Cannot find dim_ordering from json definition. Using the default instead.")
-        if self.klayer.dim_ordering == "th":
-            bigdl_order = "channel_first"
-        elif self.klayer.dim_ordering == "tf":
-            bigdl_order = "channel_last"
-        else:
-            raise Exception("Unsupported dim_ordering. Please use tf or th.")
+        bigdl_order = self.get_bdim_order("3D")
         blayer = BLayer.Cropping3D(dim1Crop=self.klayer.cropping[0],
                                    dim2Crop=self.klayer.cropping[1],
                                    dim3Crop=self.klayer.cropping[2],
@@ -1013,12 +1006,14 @@ class LayerConverter:
         blayer.set_running_std(k_running_std)
         return blayer
 
-    def get_bdim_order(self):  # get bigdl dim_ordering from keras dim_ordering
+    def get_bdim_order(self, dim="2D"):  # get bigdl dim_ordering from keras dim_ordering
         if "dim_ordering" in self.config:
             order = self.config["dim_ordering"]
         else:
             warnings.warn("Cannot find dim_ordering from json definition. Using the default instead.")
             order = keras.backend.image_dim_ordering()
+        if dim == "3D":
+            return self.to_bigdl_3d_ordering(order)
         return self.to_bigdl_2d_ordering(order)
 
     def to_bigdl_2d_ordering(self, order):
@@ -1026,6 +1021,14 @@ class LayerConverter:
             return "NHWC"
         elif order == "th":
             return "NCHW"
+        else:
+            raise Exception("Unsupported dim_ordering: %s" % order)
+
+    def to_bigdl_3d_ordering(self, order):
+        if order == "tf":
+            return "channel_last"
+        elif order == "th":
+            return "channel_first"
         else:
             raise Exception("Unsupported dim_ordering: %s" % order)
 
