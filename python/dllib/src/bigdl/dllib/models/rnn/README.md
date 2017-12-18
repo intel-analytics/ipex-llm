@@ -9,7 +9,7 @@ The implementation of RNNs in this code is referred to in the [Keras Recurrent](
 
 ## Get the BigDL files
 
-Please build BigDL referring to [Build Page](https://github.com/intel-analytics/BigDL/wiki/Build-Page).
+Please build BigDL referring to [Build Page](https://bigdl-project.github.io/master/#ScalaUserGuide/install-build-src/).
 
 
 ## Prepare the Input Data
