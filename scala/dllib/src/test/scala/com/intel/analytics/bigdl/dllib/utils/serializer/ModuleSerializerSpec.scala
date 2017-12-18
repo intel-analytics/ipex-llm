@@ -666,6 +666,15 @@ class ModuleSerializerSpec extends FlatSpec with Matchers with BeforeAndAfterAll
     runSerializationTest(lstmModel, input, lstm.getClass)
   }
 
+  "LookupTableSparse serializer" should "work properly" in {
+    val lookupTableSparse = LookupTableSparse[Float](20, 10, "sum", 1)
+    val indices1 = Array(0, 0, 1, 2)
+    val indices2 = Array(0, 1, 0, 3)
+    val values = Array(2f, 4, 1, 2)
+    val input = Tensor.sparse[Float](Array(indices1, indices2), values, Array(3, 4))
+    runSerializationTest(lookupTableSparse, input, lookupTableSparse.getClass)
+  }
+
   "LSTMPeephole serializer" should "work properly" in {
     val lstmPeephole = LSTMPeephole[Float](6, 4)
     val lstmPeepholeModel = Recurrent[Float]().add(lstmPeephole).setName("lstmPeephole")
