@@ -142,7 +142,7 @@ class KerasModelWrapper():
             raise unsupport_exp("validation_data")
         bopt = boptimizer.LocalOptimizer(
             X=x,
-            y=y,
+            Y=y,
             model=self.bmodel,
             criterion=self.criterion,
             end_trigger=boptimizer.MaxEpoch(nb_epoch),
