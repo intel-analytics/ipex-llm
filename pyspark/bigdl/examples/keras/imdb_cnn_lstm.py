@@ -24,7 +24,8 @@ from bigdl.examples.keras.keras_utils import *
 
 def load_imdb():
     """
-    Load and import IMDB dataset
+    Load IMDB dataset
+    Transform input data into an RDD of Sample
     """
     from keras.preprocessing import sequence
     from keras.datasets import imdb
@@ -68,7 +69,7 @@ if __name__ == "__main__":
     from bigdl.optim.optimizer import *
     from bigdl.nn.criterion import *
 
-    # Load the HDF5 file to a BigDL model
+    # Load the HDF5 file with weights to a BigDL model
     bigdl_model = Model.load_keras(hdf5_path=hdf5_path)
 
     sc = get_spark_context(conf=create_spark_conf())
