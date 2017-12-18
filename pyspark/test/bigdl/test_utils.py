@@ -198,7 +198,8 @@ class BigDLTestCase(TestCase):
             new_kweights = self.__generate_random_weights(kweights)
             keras_model.set_weights(new_kweights)
         # weight_converter is a function keras [ndarray]-> bigdl [ndarray]
-        keras_model_json_path, keras_model_hdf5_path = dump_keras(keras_model, dump_weights=dump_weights)
+        keras_model_json_path, keras_model_hdf5_path = dump_keras(keras_model,
+                                                                  dump_weights=dump_weights)
 
         # Use Theano backend to load as a bigdl model
         self.__set_keras_backend("theano")
