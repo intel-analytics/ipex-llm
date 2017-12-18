@@ -233,9 +233,9 @@ class TestSimple():
         optim_method = SGD(learningrate=0.01, learningrate_decay=0.0002, weightdecay=0.0,
                            momentum=0.0, dampening=0.0, nesterov=False,
                            leaningrate_schedule=Poly(0.5, int((data_len / batch_size) * epoch_num)))
-        optimizer = Optimizer(
+        optimizer = Optimizer.create(
             model=model_test,
-            training_rdd=trainingData,
+            training_set=trainingData,
             criterion=MSECriterion(),
             optim_method=optim_method,
             end_trigger=MaxEpoch(epoch_num),
@@ -309,9 +309,9 @@ class TestSimple():
         optim_method = SGD(learningrate=0.01, learningrate_decay=0.0002, weightdecay=0.0,
                            momentum=0.0, dampening=0.0, nesterov=False,
                            leaningrate_schedule=Poly(0.5, int((data_len / batch_size) * epoch_num)))
-        optimizer = Optimizer(
+        optimizer = Optimizer.create(
             model=model_test,
-            training_rdd=trainingData,
+            training_set=trainingData,
             criterion=MSECriterion(),
             optim_method=optim_method,
             end_trigger=MaxEpoch(epoch_num),
@@ -346,9 +346,9 @@ class TestSimple():
         branches.add(branch1).add(branch2)
         model_test.add(branches)
 
-        optimizer = Optimizer(
+        optimizer = Optimizer.create(
             model=model_test,
-            training_rdd=training_data,
+            training_set=training_data,
             criterion=MarginRankingCriterion(),
             optim_method=SGD(),
             end_trigger=MaxEpoch(5),
@@ -554,14 +554,14 @@ class TestSimple():
         l1 = Linear(feature_num, 1)
         model.add(l1)
 
-        localOptimizer = LocalOptimizer(
+        localOptimizer = Optimizer.create(
             model=model,
-            X=X_,
-            y=y_,
+            training_set=(X_, y_),
             criterion=MSECriterion(),
             optim_method=SGD(learningrate=1e-2),
             end_trigger=MaxEpoch(epoch_num),
             batch_size=batch_size)
+
         trained_model = localOptimizer.optimize()
         trained_model = model
         w = trained_model.get_weights()
@@ -580,7 +580,7 @@ class TestSimple():
         model.add(l1)
         model.add(Sigmoid())
         model.set_seed(1234).reset()
-        predict_result = model.predict_local_class(X_)
+        predict_result = model.predict_class(X_)
         assert_array_equal(predict_result, np.ones([3]))
 
     def test_local_predict_multiple_input(self):
@@ -590,14 +590,14 @@ class TestSimple():
         model = Model(inputs=[l1, l2], outputs=joinTable)
         result = model.predict_local([np.ones([4, 3]), np.ones([4, 3])])
         assert result.shape == (4, 5)
-        result2 = model.predict_local_class([np.ones([4, 3]), np.ones([4, 3])])
+        result2 = model.predict_class([np.ones([4, 3]), np.ones([4, 3])])
         assert result2.shape == (4,)
 
         result3 = model.predict_local([JTensor.from_ndarray(np.ones([4, 3])),
                                        JTensor.from_ndarray(np.ones([4, 3]))])
         assert result3.shape == (4, 5)
-        result4 = model.predict_local_class([JTensor.from_ndarray(np.ones([4, 3])),
-                                             JTensor.from_ndarray(np.ones([4, 3]))])
+        result4 = model.predict_class([JTensor.from_ndarray(np.ones([4, 3])),
+                                       JTensor.from_ndarray(np.ones([4, 3]))])
         assert result4.shape == (4,)
 
 
