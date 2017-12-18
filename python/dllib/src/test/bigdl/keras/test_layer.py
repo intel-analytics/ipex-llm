@@ -25,6 +25,7 @@ from keras.layers import Dense, Input
 from keras.regularizers import l1, l2, l1l2
 from bigdl.keras.converter import *
 from test.bigdl.test_utils import BigDLTestCase
+from bigdl.examples.keras.keras_utils import *
 
 
 class TestLayer(BigDLTestCase):
@@ -637,7 +638,7 @@ class TestLayer(BigDLTestCase):
             out3 = Dense(7)(tensor1)
             out4 = Dense(8)(tensor2)
             model2 = Model(input=[input_node1, input_node2], output=[out3, out4])
-            def_path, w_path = self._dump_keras(model2)
+            def_path, w_path = dump_keras(model2)
             bigdl_model = DefinitionLoader.from_json_path(def_path)
         assert str(excinfo.value) == """Convolution2D doesn't support multiple inputs with shared weights"""  # noqa
 
