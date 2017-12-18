@@ -38,8 +38,7 @@ object Predictor {
     shareBuffer: Boolean)(implicit ev: TensorNumeric[T]): Seq[ImageFeature] = {
     val validImageFeatures = imageFeatures.filter(_.isValid)
     val samples = validImageFeatures.map(x => x[Sample[T]](ImageFeature.sample))
-    val batch = localToBatch(samples.toIterator).next()
-    if (batch != null) {
+    val batchOut = localToBatch(samples.toIterator).flatMap(batch => {
       localModel.forward(batch.getInput())
       val output = if (outputLayer == null) {
         localModel.output.toTensor[T]
@@ -47,15 +46,15 @@ object Predictor {
         localModel(outputLayer).get.output.toTensor[T]
       }
       val result = if (shareBuffer) output else output.clone()
-      val batchOut = if (result.dim() == 1) {
+      if (result.dim() == 1) {
         Array(result)
       } else {
         result.split(1)
       }
-      validImageFeatures.zip(batchOut).foreach(tuple => {
-        tuple._1(predictKey) = tuple._2
-      })
-    }
+    })
+    validImageFeatures.toIterator.zip(batchOut).foreach(tuple => {
+      tuple._1(predictKey) = tuple._2
+    })
     imageFeatures
   }
 }
