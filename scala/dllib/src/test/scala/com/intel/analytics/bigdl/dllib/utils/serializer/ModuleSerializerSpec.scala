@@ -1081,6 +1081,13 @@ class ModuleSerializerSpec extends FlatSpec with Matchers with BeforeAndAfterAll
     runSerializationTest(spatialConvolution, input)
   }
 
+  "LocallyConnected2D serializer" should "work properly" in {
+    val locallyConnected2D = LocallyConnected2D[Float](3, 5, 5, 4, 2, 2).
+      setName("locallyConnected2D")
+    val input = Tensor[Float](1, 3, 5, 5).apply1( e => Random.nextFloat())
+    runSerializationTest(locallyConnected2D, input)
+  }
+
   "SpatialConvolutionMap serializer" should "work properly" in {
     val spatialConvolutionMap = SpatialConvolutionMap[Float](
       SpatialConvolutionMap.random(1, 1, 1), 2, 2).setName("spatialConvolutionMap")
