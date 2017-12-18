@@ -59,7 +59,7 @@ if __name__ == "__main__":
     init_engine()
     (X_train, Y_train) = get_mnist("train")
     (X_test, Y_test) = get_mnist("test")
-    optimizer = LocalOptimizer(
+    optimizer = Optimizer.create(
         model=build_model(10),
         training_set=(X_train, Y_train),
         criterion=ClassNLLCriterion(),

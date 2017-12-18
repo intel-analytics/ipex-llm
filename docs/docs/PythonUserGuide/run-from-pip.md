@@ -14,10 +14,9 @@
 
  ```
     # X_train, Y_train, X_test are all ndarray and the first dimension is the sample number.
-    local_optimizer = LocalOptimizer(
+    local_optimizer = Optimizer.create(
         model=model_definition,
-        X=X_train,
-        Y=Y_train)
+        training_set=(X_train, Y_train))
     local_optimizer.predict(X_test)
     local_optimizer.predict_class(X_test)
  ```
