@@ -27,6 +27,7 @@ from bigdl.keras.converter import WeightLoader, WeightsConverter
 import numpy as np
 from unittest import TestCase
 import keras
+from bigdl.examples.keras.keras_utils import *
 
 
 class TestModels:
@@ -147,18 +148,6 @@ class BigDLTestCase(TestCase):
         WeightLoader.load_weights_from_hdf5(bmodel, kmodel, hdf5_path)
         return kmodel, bmodel
 
-    def _dump_keras(self, keras_model, dump_weights=False):
-        keras_model_path = create_tmp_path()
-        keras_model_json_path = keras_model_path + ".json"
-        keras_model_hdf5_path = keras_model_path + ".hdf5"
-        with open(keras_model_json_path, "w") as json_file:
-            json_file.write(keras_model.to_json())
-        print("json path: " + keras_model_json_path)
-        if dump_weights:
-            keras_model.save(keras_model_hdf5_path)
-            print("hdf5 path: " + keras_model_hdf5_path)
-        return keras_model_json_path, keras_model_hdf5_path
-
     def assert_allclose(self, a, b, rtol=1e-6, atol=1e-6, msg=None):
         # from tensorflow
         self.assertEqual(a.shape, b.shape, "Shape mismatch: expected %s, got %s." %
@@ -209,7 +198,7 @@ class BigDLTestCase(TestCase):
             new_kweights = self.__generate_random_weights(kweights)
             keras_model.set_weights(new_kweights)
         # weight_converter is a function keras [ndarray]-> bigdl [ndarray]
-        keras_model_json_path, keras_model_hdf5_path = self._dump_keras(keras_model, dump_weights)
+        keras_model_json_path, keras_model_hdf5_path = dump_keras(keras_model, dump_weights=dump_weights)
 
         # Use Theano backend to load as a bigdl model
         self.__set_keras_backend("theano")
