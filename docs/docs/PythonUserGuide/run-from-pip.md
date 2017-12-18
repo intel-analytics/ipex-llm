@@ -9,7 +9,7 @@
 
 
 ## **Run as a local program**
- * If the input data is NDarray type instead of RDD or DataFrame, the model would be trained or validated in local mode.
+ * If the type of input data is ndarray instead of RDD or DataFrame, the model would be trained or validated in local mode.
  * Check [LeNet](../../../../pyspark/bigdl/models/local_lenet/README.md) for more details
 
  ```
