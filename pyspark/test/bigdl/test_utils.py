@@ -114,14 +114,12 @@ class BigDLTestCase(TestCase):
         self.sc = get_spark_context(sparkConf)
         self.sqlContext = SQLContext(self.sc)
         init_engine()
-        # keras.backend.set_image_dim_ordering("th")
 
     def teardown_method(self, method):
         """ teardown any state that was previously setup with a setup_method
         call.
         """
         self.sc.stop()
-        # keras.backend.set_image_dim_ordering("th")
 
     def __generate_model(self, input_data, output_layer):
         def without_batch(batch_shape):
