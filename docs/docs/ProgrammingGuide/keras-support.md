@@ -27,18 +27,18 @@ Parameters:
 * `hdf5_path` The HDF5 file path containing the pre-trained Keras model weights with or without the model architecture. Default to be `None` if you choose to only load the model definition from JSON but not to load weights. In this case, initialized weights will be used for the model.
 * `by_name`  Whether to load the weights of layers by name. Use this option only when you provide a HDF5 file. Default to be `False`, meaning that  weights are loaded based on the network's execution order topology. Otherwise, if it is set to be `True`, only those layers with the same name will be loaded with weights.
 
-__NOTES__: 
+__NOTES__:
 
 Please provide either `json_path` or `hdf5_path` when you call `load_keras`. You can provide `json_path` only to just load the model definition. You can provide `json_path` and `hdf5_path` together if you have separate files for the model architecture and pre-trained weights. Also, you can provide `hdf5_path` only if you save the model architecture and weights in a single HDF5 file.
 
-JSON and HDF5 files can be loaded from any Hadoop-supported file system URI.
+JSON and HDF5 files can be loaded from any Hadoop-supported file system URI. For example,
 ```python
 # load from local file system
-bigdl_model = Model.load_keras("/tmp/model.json")
+bigdl_model = Model.load_keras(json_path="/tmp/model.json")
 # load from HDFS
-bigdl_model = Model.load_keras("hdfs://...")
+bigdl_model = Model.load_keras(hdf5_path="hdfs://...")
 # load from S3
-bigdl_model = Model.load_keras("s3://...")
+bigdl_model = Model.load_keras(hdf5_path="s3://...")
 ```
 
 ## **LeNet Example**
