@@ -7,7 +7,7 @@ You can download CIFAR-10 dataset from [this webpage](https://www.cs.toronto.edu
 
 ## Get the JAR
 You can build one by refer to the
-[Build Page](https://github.com/intel-analytics/BigDL/wiki/Build-Page) from the source code.
+[Build Page](https://bigdl-project.github.io/master/#ScalaUserGuide/install-build-src/) from the source code.
 
 ## Train Model on Spark
 Example command for running in Spark cluster mode

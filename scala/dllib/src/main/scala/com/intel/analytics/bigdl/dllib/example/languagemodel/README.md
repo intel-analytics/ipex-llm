@@ -8,7 +8,7 @@ Here we use [Penn Tree Bank (PTB)](https://catalog.ldc.upenn.edu/ldc99t42) as t
 
 ## Get BigDL jar
 
-Please build BigDL referring to [Build Page](https://github.com/intel-analytics/BigDL/wiki/Build-Page).
+Please build BigDL referring to [Build Page](https://bigdl-project.github.io/master/#ScalaUserGuide/install-build-src/).
 
 ## Prepare PTB Data
 Download PTB dataset from [Tomas Mikolov's webpage](http://www.fit.vutbr.cz/~imikolov/rnnlm/simple-examples.tgz)
