@@ -352,6 +352,21 @@ private[tensor] class SparseTensor[@specialized(Float, Double) T: ClassTag](
     }
   }
 
+  private var nonZeroCounting: Array[Int] = _
+
+  override def numNonZeroByRow(): Array[Int] = {
+    if (null == nonZeroCounting || nonZeroCounting.length != size(1)) {
+      nonZeroCounting = new Array[Int](size(1))
+    }
+    java.util.Arrays.fill(nonZeroCounting, 0)
+    var i = _storageOffset
+    while (i < _storageOffset + nElement()) {
+      nonZeroCounting(_indices(0).array()(i) - _indicesOffset(0)) += 1
+      i += 1
+    }
+    nonZeroCounting
+  }
+
   override def copy(other: Tensor[T]): Tensor[T] = {
     throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
   }
@@ -531,7 +546,15 @@ private[tensor] class SparseTensor[@specialized(Float, Double) T: ClassTag](
   }
 
   override def sum(x: Tensor[T], dim: Int): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    require(x.dim == 1 && x.size(1) == size(1))
+    x.zero()
+    var i = _storageOffset
+    while (i < nElement() + _storageOffset) {
+      val index = _indices(0).array()(i) - _indicesOffset(0)
+      x.setValue(index, ev.plus(x.valueAt(index), _values.array()(i)))
+      i += 1
+    }
+    x
   }
 
   override def mean(): T = {
