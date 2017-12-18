@@ -2862,6 +2862,56 @@ class LookupTable(Layer):
         return self
 
 
+class LookupTableSparse(Layer):
+
+    '''
+    LookupTable for multi-values.
+    Also called embedding_lookup_sparse in TensorFlow.
+
+    The input of LookupTableSparse should be a 2D SparseTensor or two 2D SparseTensors.
+    If the input is a SparseTensor, the values are positive integer ids,
+    values in each row of this SparseTensor will be turned into a dense vector.
+    If the input is two SparseTensors, the first tensor should be the integer ids, just
+    like the SparseTensor input. And the second tensor is the corresponding
+    weights of the integer ids.
+
+    :param wRegularizer: instance of [[Regularizer]](eg. L1 or L2 regularization), applied to the input weights matrices.
+
+    >>> lookupTableSparse = LookupTableSparse(20, 5, "mean", 2, L1Regularizer(0.5))
+    creating: createL1Regularizer
+    creating: createLookupTableSparse
+    >>> indices = np.array([[0, 0, 1, 2], [0, 1, 0, 3]])
+    >>> values = np.array([2, 4, 1, 2])
+    >>> weightValues = np.array([2, 0.5, 1, 3])
+    >>> input = JTensor.sparse(values, indices, np.array([3, 4]))
+    >>> weight = JTensor.sparse(weightValues, indices, np.array([3, 4]))
+    >>> layer1 = LookupTableSparse(10, 4, "mean")
+    creating: createLookupTableSparse
+    >>> layer1.set_weights(np.arange(1, 41, 1).reshape(10, 4)) # set weight to 1 to 40
+    >>> layer1.forward([input, weight])
+    array([[ 6.5999999 ,  7.60000038,  8.60000038,  9.60000038],
+           [ 1.        ,  2.        ,  3.        ,  4.        ],
+           [ 5.        ,  6.        ,  7.        ,  8.        ]], dtype=float32)
+    '''
+
+    def __init__(self,
+                 n_index,
+                 n_output,
+                 combiner="sum",
+                 max_norm=-1.0,
+                 wRegularizer=None,
+                 bigdl_type="float"):
+        super(LookupTableSparse, self).__init__(None, bigdl_type,
+                                          n_index,
+                                          n_output,
+                                          combiner,
+                                          max_norm + 0.0,
+                                          wRegularizer)
+    def set_init_method(self, weight_init_method = None, bias_init_method = None):
+        callBigDlFunc(self.bigdl_type, "setInitMethod", self.value,
+                      weight_init_method, bias_init_method)
+        return self
+
 class MM(Layer):
 
     '''
