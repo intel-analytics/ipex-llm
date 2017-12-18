@@ -67,8 +67,8 @@ def build_keras_model():
 
 if __name__ == "__main__":
     keras_model = build_keras_model()
-    def_path = "/tmp/lenet.json"
-    save_keras_definition(keras_model, def_path)
+    json_path = "/tmp/lenet.json"
+    save_keras_definition(keras_model, json_path)
 
     from bigdl.util.common import *
     from bigdl.nn.layer import *
@@ -76,7 +76,7 @@ if __name__ == "__main__":
     from bigdl.nn.criterion import *
 
     # Load the JSON file to a BigDL model
-    bigdl_model = Model.load_keras(json_path=def_path)
+    bigdl_model = Model.load_keras(json_path=json_path)
 
     sc = get_spark_context(conf=create_spark_conf())
     redire_spark_logs()

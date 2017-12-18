@@ -60,16 +60,16 @@ def build_keras_model():
 
 if __name__ == "__main__":
     keras_model = build_keras_model()
-    def_path = "/tmp/imdb.json"
-    save_keras_definition(keras_model, def_path)
+    hdf5_path = "/tmp/imdb.h5"
+    keras_model.save(hdf5_path)
 
     from bigdl.util.common import *
     from bigdl.nn.layer import *
     from bigdl.optim.optimizer import *
     from bigdl.nn.criterion import *
 
-    # Load the JSON file to a BigDL model
-    bigdl_model = Model.load_keras(json_path=def_path)
+    # Load the HDF5 file to a BigDL model
+    bigdl_model = Model.load_keras(hdf5_path=hdf5_path)
 
     sc = get_spark_context(conf=create_spark_conf())
     redire_spark_logs()
