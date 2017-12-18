@@ -66,9 +66,10 @@ class TestLayer(BigDLTestCase):
         self.modelTestSingleLayer(input_data, layer)
 
     def test_dense(self):
-        input_data = np.random.random_sample([1, 10])
+        input_data = np.random.random_sample([2, 10, 5, 7])
         layer = Dense(2, init='one', activation="relu",
                       input_shape=(10, ), W_regularizer=l1l2(l1=0.01, l2=0.02))
+        input_data = np.random.random_sample([2, 10])
         self.modelTestSingleLayer(input_data, layer, dump_weights=True)
         layer2 = Dense(2, init='one', activation="softplus",
                        input_shape=(10, ), b_regularizer=l2(0.02))
