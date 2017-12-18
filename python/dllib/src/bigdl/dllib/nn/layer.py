@@ -1860,13 +1860,16 @@ class SpatialDropout3D(Layer):
     :param format  'NCHW' or 'NHWC'.
         In 'NCHW' mode, the channels dimension (the depth)
         is at index 1, in 'NHWC' mode is it at index 4.
+
+    >>> dropout = SpatialDropout3D(0.5, "NHWC")
+    creating: createSpatialDropout3D
     '''
     def __init__(self,
                  init_p=0.5,
                  data_format="NCHW",
                  bigdl_type="float"):
-        super(Dropout, self).__init__(None, bigdl_type, data_format,
-                                      init_p)
+        super(SpatialDropout3D, self).__init__(None, bigdl_type,
+                                               init_p, data_format)
 
 class SpatialDropout2D(Layer):
     '''
@@ -1882,13 +1885,16 @@ class SpatialDropout2D(Layer):
     :param format  'NCHW' or 'NHWC'.
         In 'NCHW' mode, the channels dimension (the depth)
         is at index 1, in 'NHWC' mode is it at index 4.
+
+    >>> dropout = SpatialDropout2D(0.4, "NHWC")
+    creating: createSpatialDropout2D
     '''
     def __init__(self,
                  init_p=0.5,
                  data_format="NCHW",
                  bigdl_type="float"):
-        super(Dropout, self).__init__(None, bigdl_type, data_format,
-                                      init_p)
+        super(SpatialDropout2D, self).__init__(None, bigdl_type,
+                                               init_p, data_format)
 
 class SpatialDropout1D(Layer):
     '''
@@ -1901,12 +1907,15 @@ class SpatialDropout1D(Layer):
     between feature maps and should be used instead.
 
     :param initP the probability p
+
+    >>> dropout = SpatialDropout1D(0.4)
+    creating: createSpatialDropout1D
     '''
     def __init__(self,
                  init_p=0.5,
                  bigdl_type="float"):
-        super(Dropout, self).__init__(None, bigdl_type,
-                                      init_p)
+        super(SpatialDropout1D, self).__init__(None, bigdl_type,
+                                               init_p)
 
 class Dropout(Layer):
 
