@@ -65,18 +65,18 @@ class TestLayer(BigDLTestCase):
         self.modelTestSingleLayer(input_data, layer)
 
     def test_dense(self):
-        input_data = np.random.random_sample([1, 10])
+        input_data = np.random.random_sample([1, 10, 5, 7])
         layer = Dense(2, init='one', activation="relu",
                       input_shape=(10, ), W_regularizer=l1l2(l1=0.01, l2=0.02))
         self.modelTestSingleLayer(input_data, layer, dump_weights=True)
-        layer2 = Dense(2, init='one', activation="softplus",
-                       input_shape=(10, ), b_regularizer=l2(0.02))
-        self.modelTestSingleLayer(input_data, layer2, dump_weights=True)
-        layer3 = Dense(2, init='one', input_shape=(10, ),
-                       W_regularizer=keras.regularizers.WeightRegularizer(l1=0.1))
-        self.modelTestSingleLayer(input_data, layer3, dump_weights=True)
-        layer4 = Dense(2, init='glorot_uniform', activation="hard_sigmoid", input_shape=(10, ))
-        self.modelTestSingleLayer(input_data, layer4, dump_weights=True)
+        # layer2 = Dense(2, init='one', activation="softplus",
+        #                input_shape=(10, ), b_regularizer=l2(0.02))
+        # self.modelTestSingleLayer(input_data, layer2, dump_weights=True)
+        # layer3 = Dense(2, init='one', input_shape=(10, ),
+        #                W_regularizer=keras.regularizers.WeightRegularizer(l1=0.1))
+        # self.modelTestSingleLayer(input_data, layer3, dump_weights=True)
+        # layer4 = Dense(2, init='glorot_uniform', activation="hard_sigmoid", input_shape=(10, ))
+        # self.modelTestSingleLayer(input_data, layer4, dump_weights=True)
 
     def test_timedistributeddense(self):
         input_data = np.random.random_sample([2, 4, 5])
