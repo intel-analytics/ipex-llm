@@ -817,9 +817,6 @@ class LayerConverter:
         return BLayer.SpatialZeroPadding(0, 0, -cropping[0], -cropping[1])
 
     def create_cropping2d(self):
-        if "dim_ordering" not in self.config:
-            warnings.warn("Cannot find dim_ordering from json definition. Using the default instead.")
-
         bigdl_order = self.get_bdim_order()
         blayer = BLayer.Cropping2D(heightCrop=self.klayer.cropping[0],
                                    widthCrop=self.klayer.cropping[1],
@@ -1553,10 +1550,9 @@ class LayerConverter:
         return BLayer.UpSampling1D(self.klayer.length)
 
     def create_upsampling2d(self):
-        if "dim_ordering" not in self.config:
-            warnings.warn("Cannot find dim_ordering from json definition. Using the default instead.")
         bigdl_order = self.get_bdim_order()
-        return BLayer.UpSampling2D(self.klayer.size, bigdl_order)
+        return BLayer.UpSampling2D(size=self.klayer.size,
+                                   data_format=bigdl_order)
 
     def create_upsampling3d(self):
         if self.klayer.dim_ordering != "th":
@@ -1641,6 +1637,22 @@ class LayerConverter:
 
     def create_activityregularization(self):
         return BLayer.ActivityRegularization(l1=self.klayer.l1, l2=self.klayer.l2)
+
+    def create_spatialdropout1d(self):
+        return BLayer.SpatialDropout1D(init_p=float(self.klayer.p))
+
+    def create_spatialdropout2d(self):
+        bigdl_order = self.get_bdim_order()
+        blayer = BLayer.SpatialDropout2D(init_p=float(self.klayer.p),
+                                         data_format=bigdl_order)
+        return blayer
+
+    def create_spatialdropout3d(self):
+
+        bigdl_order = self.get_bdim_order()
+        blayer = BLayer.SpatialDropout3D(init_p=float(self.klayer.p),
+                                         data_format=bigdl_order)
+        return blayer
 
     def combo_parameter_layer(self, blayer, config):
         blayer.set_name(config["name"])
