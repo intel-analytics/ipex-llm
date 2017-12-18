@@ -553,7 +553,16 @@ class LayerConverter:
         return bseq
 
     def create_activation(self):
-        return get_activation_by_name(self.config["activation"], self.klayer.name)
+        blayer = get_activation_by_name(self.config["activation"], self.klayer.name)
+
+        # SoftMax is different between Keras and BigDL for 3D inputs
+        if self.config["activation"] == "softmax" and len(self.input_shape) == 3:
+            model = BLayer.Sequential()
+            model.add(BLayer.Transpose([(1, 3)]))
+            model.add(blayer)
+            model.add(BLayer.Transpose([(1, 3)]))
+            return model
+        return blayer
 
     def create_dropout(self):
         return BLayer.Dropout(self.klayer.p)
