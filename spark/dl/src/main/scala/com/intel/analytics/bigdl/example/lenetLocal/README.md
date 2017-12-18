@@ -16,7 +16,7 @@ There're four files. **train-images-idx3-ubyte** contains train images,
 
 ## Get the JAR
 You can build one by refer to the
-[Build Page](https://github.com/intel-analytics/BigDL/wiki/Build-Page) from the source code.
+[Build Page](https://bigdl-project.github.io/master/#ScalaUserGuide/install-build-src/) from the source code.
 
 ## Train the Model
 Example command

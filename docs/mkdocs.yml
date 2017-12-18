@@ -47,9 +47,10 @@ pages:
   - Quantization Support: ProgrammingGuide/quantization-support.md
   - Define new Layer/Criterion: ProgrammingGuide/add-layer-criterion.md
 - API Guide:
+  - Engine: APIGuide/Engine.md
   - Data: APIGuide/Data.md
   - Model: APIGuide/Module.md
-  - Layers: 
+  - Layers:
     - Containers:  APIGuide/Layers/Containers.md
     - Simple Layers: APIGuide/Layers/Simple-Layers.md
     - Convolution Layers: APIGuide/Layers/Convolution-Layers.md
