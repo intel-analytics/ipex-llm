@@ -19,13 +19,15 @@ __Remark__: `keras==1.2.2` is required. If you need to load weights, you also ne
 ```python
 from bigdl.nn.layer import *
 
-bigdl_model = Model.load_keras(def_path, weights_path=None, by_name=False)
+bigdl_model = Model.load_keras(json_path=None, hdf5_path=None, by_name=False)
 ```
 Parameters:
 
-* `def_path` The JSON file path containing the keras model definition to be loaded.
-* `weights_path`  The HDF5 file path containing the pre-trained keras model weights. Default to be `None` if you choose not to load weights. In this case, initialized weights will be used for the model.
-* `by_name`  Whether to load the weights of layers by name. Use this option only when you load pre-trained weights. Default to be `False`, meaning that  weights are loaded based on the network's execution order topology. Otherwise, if it is set to be `True`, only those layers with the same name will be loaded with weights.
+* `json_path` The JSON file path containing the Keras model definition to be loaded. Default to be `None` if you choose to load the Keras model from HDF5 file.
+* `hdf5_path` The HDF5 file path containing the pre-trained Keras model weights with or without the model architecture. Default to be `None` if you choose to load the model definition from JSON and not to load weights. In this case, initialized weights will be used for the model.
+* `by_name`  Whether to load the weights of layers by name. Use this option only when you load with an HDF5 file. Default to be `False`, meaning that  weights are loaded based on the network's execution order topology. Otherwise, if it is set to be `True`, only those layers with the same name will be loaded with weights.
+
+__Remark__: Please provide either `json_path` or `hdf5_path` when you call `load_keras`. You can provide `json_path` only to just load the model definition. You can provide `json_path` and `hdf5_path` together if you have separate files for model architecture and pre-trained weights. Also, you can only `hdf5_path` if you save the model architecture and weights in a single HDF5 file.
 
 Model and weight files can be loaded from any Hadoop-supported file system URI.
 ```python

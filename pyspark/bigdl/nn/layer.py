@@ -723,9 +723,9 @@ class Model(Container):
         """
         Load a pre-trained Keras model.
 
-        :param def_path: The json path containing the keras model definition.
-        :param weights_path: The HDF5 path containing the pre-trained keras model weights.
-        :return: A pre-trained model.
+        :param json_path: The json path containing the keras model definition.
+        :param hdf5_path: The HDF5 path containing the pre-trained keras model weights with or without the model architecture.
+        :return: A bigdl model.
         """
         import os
         try:
