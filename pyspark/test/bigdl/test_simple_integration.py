@@ -118,9 +118,9 @@ class TestSimple():
         assert optim_method.momentum() == sgd.value.momentum()
         assert optim_method.nesterov() == sgd.value.nesterov()
 
-        optimizer = Optimizer.create(
+        optimizer = Optimizer(
             model=model,
-            training_set=trainingData,
+            training_rdd=trainingData,
             criterion=MSECriterion(),
             optim_method=optim_method,
             end_trigger=MaxEpoch(epoch_num),

@@ -522,55 +522,7 @@ class MultiStep(JavaValue):
         JavaValue.__init__(self, None, bigdl_type, step_sizes, gamma)
 
 
-class Optimizer(JavaValue):
-
-    def __init__(self):
-        raise Exception("Please use create method instead")
-
-    @staticmethod
-    def create(model,
-               training_set,
-               criterion,
-               end_trigger=MaxEpoch(1),
-               batch_size=32,
-               optim_method=SGD(),
-               cores=None,
-               bigdl_type="float"):
-        """
-        Create an optimizer.
-        Depend on the input type, the returning optimizer can be a local optimizer \
-        or a distributed optimizer.
-
-        :param model: the neural net model
-        :param training_set: (features, label) for local mode. RDD[Sample] for distributed mode.
-        :param criterion: the loss function
-        :param optim_method: the algorithm to use for optimization,
-           e.g. SGD, Adagrad, etc. If optim_method is None, the default algorithm is SGD.
-        :param end_trigger: when to end the optimization
-        :param batch_size: training batch size
-        :param cores: This is for local optimizer only and use total physical cores as the default value
-        """
-        if isinstance(training_set, RDD):
-            return DistriOptimizer(model=model,
-                                   training_rdd=training_set,
-                                   criterion=criterion,
-                                   end_trigger=end_trigger,
-                                   batch_size=batch_size,
-                                   optim_method=optim_method,
-                                   bigdl_type=bigdl_type)
-        elif isinstance(training_set, tuple) and len(training_set) == 2:
-            x, y = training_set
-            return LocalOptimizer(X=x,
-                                  Y=y,
-                                  model=model,
-                                  criterion=criterion,
-                                  end_trigger=end_trigger,
-                                  batch_size=batch_size,
-                                  optim_method=optim_method,
-                                  cores=cores,
-                                  bigdl_type="float")
-        else:
-            raise Exception("Not supported training set: %s" % type(training_set))
+class BaseOptimizer(JavaValue):
 
     def set_model(self, model):
         """
@@ -679,7 +631,87 @@ class Optimizer(JavaValue):
         self.value.prepareInput()
 
 
-class DistriOptimizer(Optimizer):
+class Optimizer(BaseOptimizer):
+
+    # NOTE: This is a deprecated method, you should use `create` method instead.
+    def __init__(self,
+                 model,
+                 training_rdd,
+                 criterion,
+                 end_trigger,
+                 batch_size,
+                 optim_method=None,
+                 bigdl_type="float"):
+        """
+        Create a distributed optimizer.
+
+
+        :param model: the neural net model
+        :param training_rdd: the training dataset
+        :param criterion: the loss function
+        :param optim_method: the algorithm to use for optimization,
+           e.g. SGD, Adagrad, etc. If optim_method is None, the default algorithm is SGD.
+        :param end_trigger: when to end the optimization
+        :param batch_size: training batch size
+        """
+        self.pvalue = DistriOptimizer(model,
+                                      training_rdd,
+                                      criterion,
+                                      end_trigger,
+                                      batch_size,
+                                      optim_method,
+                                      bigdl_type)
+        self.value = self.pvalue.value
+        self.bigdl_type = self.pvalue.bigdl_type
+
+    @staticmethod
+    def create(model,
+               training_set,
+               criterion,
+               end_trigger=MaxEpoch(1),
+               batch_size=32,
+               optim_method=SGD(),
+               cores=None,
+               bigdl_type="float"):
+        """
+        Create an optimizer.
+        Depend on the input type, the returning optimizer can be a local optimizer \
+        or a distributed optimizer.
+
+        :param model: the neural net model
+        :param training_set: (features, label) for local mode. RDD[Sample] for distributed mode.
+        :param criterion: the loss function
+        :param optim_method: the algorithm to use for optimization,
+           e.g. SGD, Adagrad, etc. If optim_method is None, the default algorithm is SGD.
+        :param end_trigger: when to end the optimization
+        :param batch_size: training batch size
+        :param cores: This is for local optimizer only and use total physical cores as the default value
+        """
+        if isinstance(training_set, RDD):
+            return DistriOptimizer(model=model,
+                                   training_rdd=training_set,
+                                   criterion=criterion,
+                                   end_trigger=end_trigger,
+                                   batch_size=batch_size,
+                                   optim_method=optim_method,
+                                   bigdl_type=bigdl_type)
+        elif isinstance(training_set, tuple) and len(training_set) == 2:
+            x, y = training_set
+            return LocalOptimizer(X=x,
+                                  Y=y,
+                                  model=model,
+                                  criterion=criterion,
+                                  end_trigger=end_trigger,
+                                  batch_size=batch_size,
+                                  optim_method=optim_method,
+                                  cores=cores,
+                                  bigdl_type="float")
+        else:
+            raise Exception("Not supported training set: %s" % type(training_set))
+
+
+
+class DistriOptimizer(BaseOptimizer):
     def __init__(self,
                  model,
                  training_rdd,
@@ -731,7 +763,7 @@ class DistriOptimizer(Optimizer):
                      training_rdd, batch_size)
 
 
-class LocalOptimizer(Optimizer):
+class LocalOptimizer(BaseOptimizer):
     """
     Create an optimizer.
 
