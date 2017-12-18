@@ -491,16 +491,25 @@ class LayerConverter:
         # We don't need to respect the tensor index for method `get_input_shape_at`
         # which is internal implementation and `get_input_shape_at` has hided that for us,
         # What we need to use is the input index, not node index, not tensor index.
-        if len(self.input_shape) > 2:
-            raise Exception("Input for Dense must be 1D or 2D")
+
+        out_dim = self.config["output_dim"]
+        in_dim = int(self.input_shape[-1])
         blayer = BLayer.Linear(
-            input_size=int(self.input_shape[-1]),  # last dim is input_dim
-            output_size=self.config["output_dim"],
+            input_size=in_dim,
+            output_size=out_dim,
             with_bias=self.config["bias"],
             wRegularizer=self.to_bigdl_reg(self.config["W_regularizer"]),
             bRegularizer=self.to_bigdl_reg(self.config["b_regularizer"])
         )
-        return self.combo_parameter_layer(blayer, self.config)
+
+        if len(self.input_shape) <= 2:
+            return self.combo_parameter_layer(blayer, self.config)
+        else:
+            seq = BLayer.Sequential()
+            seq.add(BLayer.InferReshape([-1, out_dim], False))
+            seq.add(blayer)
+            seq.add(BLayer.InferReshape([-1] + list(self.input_shape[1:-1]) + [out_dim], False))
+            return self.combo_parameter_layer(seq, self.config)
 
     def create_timedistributeddense(self):
         blayer = BLayer.TimeDistributed(BLayer.Linear(
