@@ -59,7 +59,6 @@ keras_model.add(Convolution2D(32, 3, 3))
 keras_model.add(Activation('relu'))
 keras_model.add(MaxPooling2D(pool_size=(2, 2)))
 keras_model.add(Dropout(0.25))
-
 keras_model.add(Flatten())
 keras_model.add(Dense(128))
 keras_model.add(Activation('relu'))
