@@ -236,6 +236,15 @@ class BatchNormalizationSpec extends FlatSpec with Matchers {
 
     bn2.gradWeight should be(bn1.gradWeight.mul(0.5))
     bn2.gradBias should be(bn1.gradBias.mul(2))
+  }
 
+  "BatchNormalization backward" should "be good when affine is false" in {
+    val layer = BatchNormalization[Float](3, affine = false)
+    val input = Tensor[Float](4, 3).fill(1)
+    val gradOutput = Tensor[Float](4, 3).fill(1)
+    val output = layer.forward(input)
+    output should be(Tensor[Float](4, 3).fill(0))
+    val gradInput = layer.backward(input, gradOutput)
+    gradInput should be(Tensor[Float](4, 3).fill(0))
   }
 }
