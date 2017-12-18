@@ -580,7 +580,7 @@ class TestSimple():
         model.add(l1)
         model.add(Sigmoid())
         model.set_seed(1234).reset()
-        predict_result = model.predict_local_class(X_)
+        predict_result = model.predict_class(X_)
         assert_array_equal(predict_result, np.ones([3]))
 
     def test_local_predict_multiple_input(self):
@@ -590,13 +590,13 @@ class TestSimple():
         model = Model(inputs=[l1, l2], outputs=joinTable)
         result = model.predict_local([np.ones([4, 3]), np.ones([4, 3])])
         assert result.shape == (4, 5)
-        result2 = model.predict_local_class([np.ones([4, 3]), np.ones([4, 3])])
+        result2 = model.predict_class([np.ones([4, 3]), np.ones([4, 3])])
         assert result2.shape == (4,)
 
         result3 = model.predict_local([JTensor.from_ndarray(np.ones([4, 3])),
                                        JTensor.from_ndarray(np.ones([4, 3]))])
         assert result3.shape == (4, 5)
-        result4 = model.predict_local_class([JTensor.from_ndarray(np.ones([4, 3])),
+        result4 = model.predict_class([JTensor.from_ndarray(np.ones([4, 3])),
                                              JTensor.from_ndarray(np.ones([4, 3]))])
         assert result4.shape == (4,)
 
