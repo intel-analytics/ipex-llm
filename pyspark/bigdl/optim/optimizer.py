@@ -606,8 +606,6 @@ class Optimizer(JavaValue):
         callBigDlFunc(self.bigdl_type, "setCheckPoint", self.value,
                       checkpoint_trigger, checkpoint_path, isOverWrite)
 
-        # return a module
-
     def set_gradclip_const(self, min_value, max_value):
         """
         Configure constant clipping settings.
