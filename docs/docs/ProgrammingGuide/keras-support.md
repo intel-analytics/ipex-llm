@@ -38,7 +38,7 @@ bigdl_model = Model.load_keras(json_path="/tmp/model.json", hdf5_path="/tmp/weig
 # load from HDFS
 bigdl_model = Model.load_keras(hdf5_path="hdfs://model.h5")
 # load from S3
-bigdl_model = Model.load_keras(json_path="s3://model.h5")
+bigdl_model = Model.load_keras(hdf5_path="s3://model.h5")
 ```
 
 ## **LeNet Example**
