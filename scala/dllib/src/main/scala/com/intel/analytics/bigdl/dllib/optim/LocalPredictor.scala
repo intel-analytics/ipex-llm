@@ -22,6 +22,7 @@ import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{Engine, MklBlas}
+import com.intel.analytics.bigdl.utils.Util._
 import com.intel.analytics.bigdl.dataset.SampleToMiniBatch
 import com.intel.analytics.bigdl.transform.vision.image.{ImageFeature, ImageFrame, LocalImageFrame}
 
@@ -136,18 +137,6 @@ class LocalPredictor[T: ClassTag] private[optim](model: Module[T], weightsBias: 
       batchResult
     }).toArray.flatten
 
-  }
-
-  private def putWeightBias(weightBias: Array[Tensor[T]],
-                            localModel: Module[T]): Unit = {
-    val localWeightBias = localModel.parameters()._1
-    var i = 0
-    while (i < localWeightBias.length) {
-      if (localWeightBias(i) != null) {
-        localWeightBias(i).set(weightBias(i))
-      }
-      i += 1
-    }
   }
 
   /**
