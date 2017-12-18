@@ -136,4 +136,19 @@ class LocalPredictorSpec extends FlatSpec with Matchers with BeforeAndAfter {
     prob(0) should be(model.evaluate().forward(data(0).feature.reshape(Array(1, 3, 224, 224)))
       .toTensor[Float].split(1)(0))
   }
+
+  "predictImage empty" should "work properly" in {
+    import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+    RNG.setSeed(100)
+    val images = ImageFrame.array(Array[ImageFeature]())
+    val imageFrame = images ->
+      Resize(256, 256) -> CenterCrop(224, 224) ->
+      ChannelNormalize(0.485f, 0.456f, 0.406f, 0.229f, 0.224f, 0.225f) ->
+      MatToTensor() -> ImageFrameToSample()
+    val model = Inception_v1_NoAuxClassifier(classNum = 20)
+    val detection = model.predictImage(imageFrame).toLocal()
+
+    val imageFeatures = detection.array
+    imageFeatures.length should be (0)
+  }
 }
