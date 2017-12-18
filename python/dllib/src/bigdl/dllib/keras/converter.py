@@ -344,9 +344,20 @@ class DefinitionLoader:
         return cls(kmodel).__to_bigdl()
 
     @classmethod
+    def from_hdf5_path(cls, hdf5_path):
+        """
+        :param hdf5_path: hdf5 path which can be stored in a local file system, HDFS, S3, or any Hadoop-supported file system.
+        :return: BigDL Model
+        """
+        from keras.models import load_model
+        hdf5_local_path = BCommon.get_local_file(hdf5_path)
+        kmodel = load_model(hdf5_local_path)
+        return kmodel, DefinitionLoader.from_kmodel(kmodel)
+
+    @classmethod
     def from_json_path(cls, json_path):
         """
-        :param json_path: definition path which can be stored in a local file system, HDFS, S3,  or any Hadoop-supported file system.
+        :param json_path: definition path which can be stored in a local file system, HDFS, S3, or any Hadoop-supported file system.
         :return: BigDL Model
         """
         json_str = BCommon.text_from_path(json_path)
