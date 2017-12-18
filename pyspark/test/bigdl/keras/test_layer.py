@@ -714,6 +714,17 @@ class TestLayer(BigDLTestCase):
         layer = SReLU(input_shape=(4, 6))
         self.modelTestSingleLayer(input_data, layer, dump_weights=True)
 
+    def test_locallyconnected2d(self):
+        input_data = np.random.random_sample([2, 3, 6, 8])
+        layer1 = LocallyConnected2D(3, 1, 2, input_shape=(3, 6, 8))
+        self.modelTestSingleLayer(input_data, layer1, dump_weights=True)
+        layer2 = LocallyConnected2D(4, 2, 1, activation='sigmoid', input_shape=(3, 6, 8))
+        self.modelTestSingleLayer(input_data, layer2, dump_weights=True)
+        layer3 = LocallyConnected2D(2, 2, 1, bias=False, input_shape=(3, 6, 8))
+        self.modelTestSingleLayer(input_data, layer3, dump_weights=True)
+        layer4 = LocallyConnected2D(4, 2, 2, dim_ordering="tf", input_shape=(3, 6, 8))
+        self.modelTestSingleLayer(input_data, layer4, dump_weights=True)
+
 
 if __name__ == "__main__":
     pytest.main([__file__])
