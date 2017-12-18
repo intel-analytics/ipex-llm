@@ -130,7 +130,7 @@ Note that the Keras version we support and test is [__Keras 1.2.2__](https://far
 A Keras model definition in __JSON__ file can be loaded as a BigDL model.
 Saved weights in __HDF5__ file can also be loaded together with the architecture of a Keras model.
 
-You can directly use the API `Model.load_keras` to load a Keras model into BigDL.
+You can directly call the API `Model.load_keras` to load a Keras model into BigDL.
 
 __Remark__: `keras==1.2.2` is required. If you need to load a HDF5 file, you also need to install `h5py`. These packages can be installed via `pip` easily.
 
