@@ -15,6 +15,14 @@
 #
 
 
+# MNIST CNN Example on BigDL
+# Reference: https://github.com/fchollet/keras/blob/1.2.2/examples/mnist_cnn.py
+#            ../../models/lenet/lenet5.py
+# The Keras version we support and test is Keras 1.2.2 with TensorFlow backend.
+
+from bigdl.examples.keras.keras_utils import *
+
+
 def get_mnist(sc, data_type="train", location="/tmp/mnist"):
     """
     Download or load MNIST dataset.
@@ -34,7 +42,7 @@ def get_mnist(sc, data_type="train", location="/tmp/mnist"):
 
 def build_keras_model():
     """
-    Define a convnet model in Keras
+    Define a convnet model in Keras 1.2.2
     """
     from keras.models import Sequential
     from keras.layers import Dense, Dropout, Activation, Flatten
@@ -48,30 +56,19 @@ def build_keras_model():
     keras_model.add(Activation('relu'))
     keras_model.add(MaxPooling2D(pool_size=(2, 2)))
     keras_model.add(Dropout(0.25))
-
     keras_model.add(Flatten())
     keras_model.add(Dense(128))
     keras_model.add(Activation('relu'))
     keras_model.add(Dropout(0.5))
     keras_model.add(Dense(10))
     keras_model.add(Activation('softmax'))
-
     return keras_model
-
-
-def save_keras_model(keras_model, path):
-    """
-    Save a Keras model to JSON with given path
-    """
-    model_json = keras_model.to_json()
-    with open(path, "w") as json_file:
-        json_file.write(model_json)
 
 
 if __name__ == "__main__":
     keras_model = build_keras_model()
-    def_path = "/tmp/lenet.json"
-    save_keras_model(keras_model, def_path)
+    json_path = "/tmp/lenet.json"
+    save_keras_definition(keras_model, json_path)
 
     from bigdl.util.common import *
     from bigdl.nn.layer import *
@@ -79,7 +76,7 @@ if __name__ == "__main__":
     from bigdl.nn.criterion import *
 
     # Load the JSON file to a BigDL model
-    bigdl_model = Model.load_keras(def_path=def_path)
+    bigdl_model = Model.load_keras(json_path=json_path)
 
     sc = get_spark_context(conf=create_spark_conf())
     redire_spark_logs()
