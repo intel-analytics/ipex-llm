@@ -130,12 +130,12 @@ Saved weights in __HDF5__ file can also be loaded together with the architecture
 
 You can directly use the API `load_keras` to load the Keras model into BigDL.
 
-__Remark__: `keras==1.2.2` is required. If you need to load weights, you also need to install `h5py`. These packages can be installed via `pip` easily.
+__Remark__: `keras==1.2.2` is required. If you need to load a hdf5 file, you also need to install `h5py`. These packages can be installed via `pip` easily.
 
 ```python
 from bigdl.nn.layer import *
 
-bigdl_model = Model.load_keras(def_path, weights_path=None, by_name=False)
+bigdl_model = Model.load_keras(json_path=None, hdf5_path=None, by_name=False)
 ```
 
 ## Model Evaluation
