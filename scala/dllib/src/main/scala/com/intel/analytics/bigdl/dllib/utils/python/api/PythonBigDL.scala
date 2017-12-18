@@ -1217,6 +1217,37 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     )
   }
 
+  def createLocallyConnected1D(
+                                nInputFrame: Int,
+                                inputFrameSize: Int,
+                                outputFrameSize: Int,
+                                kernelW: Int,
+                                strideW: Int = 1,
+                                propagateBack: Boolean = true,
+                                wRegularizer: Regularizer[T] = null,
+                                bRegularizer: Regularizer[T] = null,
+                                initWeight: JTensor = null,
+                                initBias: JTensor = null,
+                                initGradWeight: JTensor = null,
+                                initGradBias: JTensor = null
+                              )
+  : LocallyConnected1D[T] = {
+    LocallyConnected1D[T](
+      nInputFrame,
+      inputFrameSize,
+      outputFrameSize,
+      kernelW,
+      strideW,
+      propagateBack,
+      wRegularizer,
+      bRegularizer,
+      toTensor(initWeight),
+      toTensor(initBias),
+      toTensor(initGradWeight),
+      toTensor(initGradBias)
+    )
+  }
+
   def createBinaryTreeLSTM(
     inputSize: Int,
     hiddenSize: Int,
