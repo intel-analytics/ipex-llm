@@ -34,14 +34,14 @@ case object MklBlas extends EngineType
 
 object Engine {
   @deprecated(
-    "See https://github.com/intel-analytics/BigDL/wiki/Programming-Guide#engine",
+    "See https://bigdl-project.github.io/master/#APIGuide/Engine/",
     "0.1.0")
   def init(nExecutor: Int,
            executorCores: Int,
            onSpark: Boolean): Option[SparkConf] = {
     logger.warn("Engine.init(nExecutor, executorCores, onSpark) is deprecated. " +
       "Please refer to " +
-      "https://github.com/intel-analytics/BigDL/wiki/Programming-Guide#engine")
+      "https://bigdl-project.github.io/master/#APIGuide/Engine/")
     setNodeAndCore(nExecutor, executorCores)
     val res = if (onSpark) {
       require(localMode == false,
@@ -119,10 +119,10 @@ object Engine {
 
   private val NOT_INIT_ERROR =
     "Do you call Engine.init? See more at " +
-      "https://github.com/intel-analytics/BigDL/wiki/Programming-Guide#engine"
+      "https://bigdl-project.github.io/master/#APIGuide/Engine/"
 
   private val SPARK_CONF_ERROR = "For details please check " +
-    "https://github.com/intel-analytics/BigDL/wiki/Programming-Guide#engine"
+    "https://bigdl-project.github.io/master/#APIGuide/Engine/"
 
   /**
    * Notice: Please use property bigdl.engineType to set engineType.

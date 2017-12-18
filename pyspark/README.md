@@ -11,7 +11,7 @@ This Python binding has been tested with Python 2.7 and Spark 1.6.0 / Spark 2.0.
 <a name="install.dependencies"></a>
 ## Installing on Ubuntu
 1. Build BigDL
-[Build Page](https://github.com/intel-analytics/BigDL/wiki/Build-Page)
+[Build Page](https://bigdl-project.github.io/master/#ScalaUserGuide/install-build-src/)
     * With Spark 1.6: ```  $BIGDL_HOME/make-dist.sh -P spark_1.6``` 
     * With Spark 2.0 or later: ``` $BIGDL_HOME/make-dist.sh -P spark_2.x ```
 
