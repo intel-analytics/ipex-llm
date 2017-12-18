@@ -58,19 +58,18 @@ class LocalOptimizer[T: ClassTag] (
   }
 
   private val workingModels = {
-    val modelBroadcast = ModelBroadcast()
     model.getParameters()
-    val wb = modelBroadcast.getAndClearWeightBias(model.parameters())
+    val wb = Util.getAndClearWeightBias(model.parameters())
 
     val models = (1 to subModelNumber).map(i => {
       logger.info(s"Clone $i model...")
       val m = model.cloneModule()
-      modelBroadcast.putWeightBias(wb, m)
-      modelBroadcast.initGradWeightBias(wb, m)
+      Util.putWeightBias(wb, m)
+      Util.initGradWeightBias(wb, m)
       m
     }).toArray
-    modelBroadcast.putWeightBias(wb, model)
-    modelBroadcast.initGradWeightBias(wb, model)
+    Util.putWeightBias(wb, model)
+    Util.initGradWeightBias(wb, model)
     models
   }
   private val (weight, grad) = model.getParameters()
