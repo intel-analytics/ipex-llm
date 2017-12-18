@@ -30,6 +30,7 @@ from bigdl.util.common import INTMAX, INTMIN, DOUBLEMAX
 from bigdl.util.common import get_activation_by_name
 from bigdl.optim.optimizer import L1Regularizer, L2Regularizer, L1L2Regularizer
 from py4j.java_gateway import JavaObject
+from pyspark.rdd import RDD
 from bigdl.transform.vision.image import ImageFrame
 
 if sys.version >= '3':
@@ -310,7 +311,7 @@ class Layer(JavaValue):
 
         return np.stack([j.to_ndarray()for j in jresults])
 
-    def predict_local_class(self, X):
+    def predict_class_local(self, X):
         """
 
         :param X: X can be a ndarray or list of ndarray if the model has multiple inputs.
@@ -323,7 +324,31 @@ class Layer(JavaValue):
                                self._to_jtensors(X))
         return np.stack(result)
 
-    def predict(self, data_rdd):
+    def predict(self, features):
+        """
+        Model inference base on the given data.
+        :param features: it can be a ndarray or list of ndarray for locally inference
+                         or RDD[Sample] for running in distributed fashion
+        :return: ndarray or RDD[Sample] depend on the the type of features.
+        """
+        if isinstance(features, RDD):
+            return self.predict_distributed(features)
+        else:
+            return self.predict_local(features)
+
+    def predict_class(self, features):
+        """
+        Model inference base on the given data which returning label
+        :param features: it can be a ndarray or list of ndarray for locally inference
+                         or RDD[Sample] for running in distributed fashion
+        :return: ndarray or RDD[Sample] depend on the the type of features.
+        """
+        if isinstance(features, RDD):
+            return self.predict_class_distributed(features)
+        else:
+            return self.predict_class_local(features)
+
+    def predict_distributed(self, data_rdd):
         """
         Model inference base on the given data.
         You need to invoke collect() to trigger those action \
@@ -336,7 +361,7 @@ class Layer(JavaValue):
                              "modelPredictRDD", self.value, data_rdd)
         return result.map(lambda data: data.to_ndarray())
 
-    def predict_class(self, data_rdd):
+    def predict_class_distributed(self, data_rdd):
         """
         module predict, return the predict label
 
