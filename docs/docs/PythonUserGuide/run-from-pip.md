@@ -7,6 +7,20 @@
  * Only __Python 2.7__, __Python 3.5__ and __Python 3.6__ are supported for now.
  * Note that __Python 3.6__ is only compatible with Spark 1.6.4, 2.0.3, 2.1.1 and 2.2.0. See [this issue](https://issues.apache.org/jira/browse/SPARK-19019) for more discussion.
 
+
+## **Run as a local program**
+ * If the type of input data is ndarray instead of RDD or DataFrame, the model would be trained or validated in local mode.
+ * Check [LeNet](../../../../pyspark/bigdl/models/local_lenet/README.md) for more details
+
+ ```
+    # X_train, Y_train, X_test are all ndarray and the first dimension is the sample number.
+    local_optimizer = Optimizer.create(
+        model=model_definition,
+        training_set=(X_train, Y_train))
+    local_optimizer.predict(X_test)
+    local_optimizer.predict_class(X_test)
+ ```
+
 ## **Use Jupyter Notebook**
  * Just start jupyter notebook as you normally do, e.g.
 ```bash

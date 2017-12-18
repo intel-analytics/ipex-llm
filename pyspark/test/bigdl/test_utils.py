@@ -110,6 +110,7 @@ class BigDLTestCase(TestCase):
         """ setup any state tied to the execution of the given method in a
         class.  setup_method is invoked for every test method of a class.
         """
+        keras.backend.set_image_dim_ordering("th")
         sparkConf = create_spark_conf().setMaster("local[4]").setAppName("test model")
         self.sc = get_spark_context(sparkConf)
         self.sqlContext = SQLContext(self.sc)
@@ -119,6 +120,7 @@ class BigDLTestCase(TestCase):
         """ teardown any state that was previously setup with a setup_method
         call.
         """
+        keras.backend.set_image_dim_ordering("th")
         self.sc.stop()
 
     def __generate_model(self, input_data, output_layer):
