@@ -273,6 +273,14 @@ class WeightsConverter:
             return [weights[0], weights[1], np.zeros(bias, )]
         return weights
 
+    @staticmethod
+    def convert_locallyconnected2d(klayer, weights):
+        bweights1 = np.transpose(weights[0], (0, 2, 1))
+        if len(weights) == 1:  # if without bias
+            return [bweights1]
+        bweights2 = weights[1].reshape(weights[1].shape[0]*weights[1].shape[1], weights[1].shape[2])
+        return[bweights1, bweights2]
+
 
 class DefinitionLoader:
 
@@ -545,7 +553,16 @@ class LayerConverter:
         return bseq
 
     def create_activation(self):
-        return get_activation_by_name(self.config["activation"], self.klayer.name)
+        blayer = get_activation_by_name(self.config["activation"], self.klayer.name)
+
+        # SoftMax is different between Keras and BigDL for 3D inputs
+        if self.config["activation"] == "softmax" and len(self.input_shape) == 3:
+            model = BLayer.Sequential()
+            model.add(BLayer.Transpose([(1, 3)]))
+            model.add(blayer)
+            model.add(BLayer.Transpose([(1, 3)]))
+            return model
+        return blayer
 
     def create_dropout(self):
         return BLayer.Dropout(self.klayer.p)
@@ -816,6 +833,21 @@ class LayerConverter:
         cropping = tuple(self.klayer.cropping)
         return BLayer.SpatialZeroPadding(0, 0, -cropping[0], -cropping[1])
 
+    def create_cropping2d(self):
+        bigdl_order = self.get_bdim_order()
+        blayer = BLayer.Cropping2D(heightCrop=self.klayer.cropping[0],
+                                   widthCrop=self.klayer.cropping[1],
+                                   data_format=bigdl_order)
+        return blayer
+
+    def create_cropping3d(self):
+        bigdl_order = self.get_bdim_order("3D")
+        blayer = BLayer.Cropping3D(dim1Crop=self.klayer.cropping[0],
+                                   dim2Crop=self.klayer.cropping[1],
+                                   dim3Crop=self.klayer.cropping[2],
+                                   data_format=bigdl_order)
+        return blayer
+
     def __check_recurrent_parameters(self, klayer):
         if klayer.stateful:
             raise Exception("Only stateful=False for recurrent layers is supported for now")
@@ -991,12 +1023,14 @@ class LayerConverter:
         blayer.set_running_std(k_running_std)
         return blayer
 
-    def get_bdim_order(self):  # get bigdl dim_ordering from keras dim_ordering
+    def get_bdim_order(self, dim="2D"):  # get bigdl dim_ordering from keras dim_ordering
         if "dim_ordering" in self.config:
             order = self.config["dim_ordering"]
         else:
             warnings.warn("Cannot find dim_ordering from json definition. Using the default instead.")
             order = keras.backend.image_dim_ordering()
+        if dim == "3D":
+            return self.to_bigdl_3d_ordering(order)
         return self.to_bigdl_2d_ordering(order)
 
     def to_bigdl_2d_ordering(self, order):
@@ -1004,6 +1038,14 @@ class LayerConverter:
             return "NHWC"
         elif order == "th":
             return "NCHW"
+        else:
+            raise Exception("Unsupported dim_ordering: %s" % order)
+
+    def to_bigdl_3d_ordering(self, order):
+        if order == "tf":
+            return "channel_last"
+        elif order == "th":
+            return "channel_first"
         else:
             raise Exception("Unsupported dim_ordering: %s" % order)
 
@@ -1528,10 +1570,9 @@ class LayerConverter:
         return BLayer.UpSampling1D(self.klayer.length)
 
     def create_upsampling2d(self):
-        if "dim_ordering" not in self.config:
-            warnings.warn("Cannot find dim_ordering from json definition. Using the default instead.")
         bigdl_order = self.get_bdim_order()
-        return BLayer.UpSampling2D(self.klayer.size, bigdl_order)
+        return BLayer.UpSampling2D(size=self.klayer.size,
+                                   data_format=bigdl_order)
 
     def create_upsampling3d(self):
         if self.klayer.dim_ordering != "th":
@@ -1616,6 +1657,56 @@ class LayerConverter:
 
     def create_activityregularization(self):
         return BLayer.ActivityRegularization(l1=self.klayer.l1, l2=self.klayer.l2)
+
+    def create_spatialdropout1d(self):
+        return BLayer.SpatialDropout1D(init_p=float(self.klayer.p))
+
+    def create_spatialdropout2d(self):
+        bigdl_order = self.get_bdim_order()
+        blayer = BLayer.SpatialDropout2D(init_p=float(self.klayer.p),
+                                         data_format=bigdl_order)
+        return blayer
+
+    def create_spatialdropout3d(self):
+        bigdl_order = self.get_bdim_order()
+        blayer = BLayer.SpatialDropout3D(init_p=float(self.klayer.p),
+                                         data_format=bigdl_order)
+        return blayer
+
+    def create_locallyconnected2d(self):
+        bigdl_order = self.get_bdim_order()
+
+        if bigdl_order == "NCHW":
+            stack_size = int(self.input_shape[1])
+            input_width = int(self.input_shape[3])
+            input_height = int(self.input_shape[2])
+        elif bigdl_order == "NHWC":
+            stack_size = int(self.input_shape[3])
+            input_width = int(self.input_shape[2])
+            input_height = int(self.input_shape[1])
+
+        bpadW, bpadH = self.to_bigdl_2d_padding(self.klayer.border_mode)
+        blayer = BLayer.LocallyConnected2D(n_input_plane=stack_size,
+                                           input_width=input_width,
+                                           input_height=input_height,
+                                           n_output_plane=self.klayer.nb_filter,
+                                           kernel_w=self.klayer.nb_col,
+                                           kernel_h=self.klayer.nb_row,
+                                           stride_w=self.klayer.subsample[1],
+                                           stride_h=self.klayer.subsample[0],
+                                           pad_w=bpadW,
+                                           pad_h=bpadH,
+                                           wRegularizer=self.to_bigdl_reg(self.config["W_regularizer"]),
+                                           bRegularizer=self.to_bigdl_reg(self.config["b_regularizer"]),
+                                           with_bias=self.klayer.bias,
+                                           data_format=bigdl_order)
+
+        if self.config["activation"] != "linear":
+            activation = get_activation_by_name(self.config["activation"],
+                                                "%s_%s" % (self.config["name"], self.config["activation"]))
+            return self.fuse(blayer, activation)
+        else:
+            return blayer
 
     def combo_parameter_layer(self, blayer, config):
         blayer.set_name(config["name"])
