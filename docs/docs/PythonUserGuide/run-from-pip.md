@@ -9,7 +9,7 @@
 
 
 ## **Run as a local program**
- * If you use `LocalOptimizer`, the model would be trained or validated in local which only base on Ndarray without using RDD or DataFrame.
+ * If the input data is NDarray type instead of RDD or DataFrame, the model would be trained or validated in local mode.
  * Check [LeNet](../../../../pyspark/bigdl/models/local_lenet/README.md) for more details
 
  ```
