@@ -709,33 +709,6 @@ class Optimizer(BaseOptimizer):
         else:
             raise Exception("Not supported training set: %s" % type(training_set))
 
-
-
-class DistriOptimizer(BaseOptimizer):
-    def __init__(self,
-                 model,
-                 training_rdd,
-                 criterion,
-                 end_trigger,
-                 batch_size,
-                 optim_method=None,
-                 bigdl_type="float"):
-        """
-        Create an optimizer.
-
-
-        :param model: the neural net model
-        :param training_data: the training dataset
-        :param criterion: the loss function
-        :param optim_method: the algorithm to use for optimization,
-           e.g. SGD, Adagrad, etc. If optim_method is None, the default algorithm is SGD.
-        :param end_trigger: when to end the optimization
-        :param batch_size: training batch size
-        """
-        JavaValue.__init__(self, None, bigdl_type, model.value,
-                           training_rdd, criterion,
-                           optim_method if optim_method else SGD(), end_trigger, batch_size)
-
     def set_validation(self, batch_size, val_rdd, trigger, val_method=None):
         """
         Configure validation settings.
@@ -761,6 +734,33 @@ class DistriOptimizer(BaseOptimizer):
         """
         callBigDlFunc(self.bigdl_type, "setTrainData", self.value,
                      training_rdd, batch_size)
+
+
+
+class DistriOptimizer(Optimizer):
+    def __init__(self,
+                 model,
+                 training_rdd,
+                 criterion,
+                 end_trigger,
+                 batch_size,
+                 optim_method=None,
+                 bigdl_type="float"):
+        """
+        Create an optimizer.
+
+
+        :param model: the neural net model
+        :param training_data: the training dataset
+        :param criterion: the loss function
+        :param optim_method: the algorithm to use for optimization,
+           e.g. SGD, Adagrad, etc. If optim_method is None, the default algorithm is SGD.
+        :param end_trigger: when to end the optimization
+        :param batch_size: training batch size
+        """
+        JavaValue.__init__(self, None, bigdl_type, model.value,
+                           training_rdd, criterion,
+                           optim_method if optim_method else SGD(), end_trigger, batch_size)
 
 
 class LocalOptimizer(BaseOptimizer):
