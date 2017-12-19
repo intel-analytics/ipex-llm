@@ -293,7 +293,7 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
     (module, criterions)
   }
 
-  private val dataLayerList = Array("INPUT", "DATA", "DUMMYDATA", "ANNOTATEDDATA")
+  private val dataLayerList = Array("INPUT", "DATA", "DUMMYDATA", "ANNOTATEDDATA", "MEMORYDATA")
 
   private def tryConvertInput(layer: GeneratedMessage, layerType: String,
     layers: ArrayBuffer[ModuleNode[T]],
@@ -446,7 +446,7 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
         }
       })
     })
-    layers
+    layers.filter(layer => !(layer.prevNodes.isEmpty && layer.nextNodes.isEmpty))
   }
 
   private def convertCaffeLayer(layer : GeneratedMessage): Seq[ModuleNode[T]] = {
