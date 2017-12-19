@@ -92,15 +92,8 @@ class LocallyConnected1DSpec extends KerasBaseSpec {
     (input.storage().map(x => x.toInt).toArray)
 
     output.size() should be(Array(d1l, d2l))
-<<<<<<< HEAD
     _output.storage().map(x => x.toInt).toArray should be
     (output.storage().map(x => x.toInt).toArray)
   }
 
 }
-=======
-    _output.storage().map(x => x.toInt).toArray should be(output.storage().map(x => x.toInt).toArray)
-  }
-
-}
->>>>>>> serilizer
