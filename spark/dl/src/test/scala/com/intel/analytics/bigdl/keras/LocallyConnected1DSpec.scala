@@ -11,28 +11,18 @@
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
-// * limitations under the License.
+ * limitations under the License.
  */
-
 package com.intel.analytics.bigdl.keras
 
 import com.intel.analytics.bigdl.nn.LocallyConnected1D
 import com.intel.analytics.bigdl.tensor.Tensor
-
 
 class LocallyConnected1DSpec extends KerasBaseSpec {
 
   "LocallyConnected1D" should "be ok" in {
     ifskipTest()
     val kerasCode =
-    //      """
-    //        |input_tensor = Input(shape=[100,10])
-    //        |input = input = np.random.rand(1,100,10)
-    //        |output_tensor = LocallyConnected1D(2,3,subsample_length=3,input_shape=(100,10))(input_tensor)
-    //        |model = Model(input=input_tensor, output=output_tensor)
-    //      """.stripMargin
-    //     val locallyConnected1d = LocallyConnected1D[Float](100, 10, 2, 3, 3)
-
       """
         |input_tensor = Input(shape=[6,2])
         |input = np.array([[[1,2], [2,3], [3,4],[4,5],[5,6],[6,7]]])
@@ -40,7 +30,8 @@ class LocallyConnected1DSpec extends KerasBaseSpec {
         |output_tensor = LocallyConnected1D(2,3,subsample_length=1,input_shape=(6,2))(input_tensor)
         |model = Model(input=input_tensor, output=output_tensor)
       """.stripMargin
-    val locallyConnected1d = LocallyConnected1D[Float](6, 2, outputFrameSize = 2, kernelW = 3, strideW = 1)
+    val locallyConnected1d = LocallyConnected1D[Float](6, 2,
+      outputFrameSize = 2, kernelW = 3, strideW = 1)
 
 
     val wc = (data: Array[Tensor[Float]]) => {
@@ -74,7 +65,8 @@ class LocallyConnected1DSpec extends KerasBaseSpec {
 
   "LocallyConnected1D reshape" should "be ok" in {
 
-    val locallyConnected1d = LocallyConnected1D[Float](6, 2, outputFrameSize = 2, kernelW = 3, strideW = 1)
+    val locallyConnected1d = LocallyConnected1D[Float](6, 2,
+      outputFrameSize = 2, kernelW = 3, strideW = 1)
 
     val d1l = 2
     val d2l = 3
@@ -96,10 +88,12 @@ class LocallyConnected1DSpec extends KerasBaseSpec {
     val size = Array(1, d1l, d2l)
 
     input.size() should be(size)
-    _input.storage().map(x => x.toInt).toArray should be(input.storage().map(x => x.toInt).toArray)
+    _input.storage().map(x => x.toInt).toArray should be
+    (input.storage().map(x => x.toInt).toArray)
 
     output.size() should be(Array(d1l, d2l))
-    _output.storage().map(x => x.toInt).toArray should be(output.storage().map(x => x.toInt).toArray)
+    _output.storage().map(x => x.toInt).toArray should be
+    (output.storage().map(x => x.toInt).toArray)
   }
 
 }
