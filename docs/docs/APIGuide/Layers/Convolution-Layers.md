@@ -919,7 +919,7 @@ Gives the output,
         [ 0.68707776,  0.73219943,  0.77732348],
         [ 0.86757064,  0.91269422,  0.95781779]]], dtype=float32)]
 ```
-
+---
 ## TemporalConvolution ##
 
 **Scala:**
@@ -1033,7 +1033,126 @@ gradInput = layer.backward(input, gradOutput)
  [ 0.          0.          0.          0.          0.        ]]
 
 ```
+---
+## LocallyConnected1D ##
 
+**Scala:**
+```scala
+val module = LocallyConnected1D(
+  nInputFrame,inputFrameSize, outputFrameSize, kernelW, strideW = 1, propagateBack = true,
+  wRegularizer = null, bRegularizer = null, initWeight = null, initBias = null,
+  initGradWeight = null, initGradBias = null
+  )
+```
+**Python:**
+```python
+module = LocallyConnected1D(
+  n_input_frame, input_frame_size, output_frame_size, kernel_w, stride_w = 1, propagate_back = True,
+  w_regularizer = None, b_regularizer = None, init_weight = None, init_bias = None,
+  init_grad_weight = None, init_grad_bias = None
+  )
+```
+
+ Applies a 1D convolution over an input sequence composed of nInputFrame frames with unshared weights.
+ The input tensor in `forward(input)` is expected to be a 3D tensor
+ (`nBatchFrame` x `nInputFrame` x `inputFrameSize`) or a 2D tensor
+ (`nInputFrame` x `inputFrameSize`).
+ Output of `forward(input)` is expected to be a 3D tensor
+ (`nBatchFrame` x `nOutputFrame` x `outputFrameSize`) or a 2D tensor
+ (`nOutputFrame` x `outputFrameSize`).
+
+ * `nInputFrame` Length of the input frame expected in sequences given into `forward()`.
+ * `inputFrameSize` The input frame size expected in sequences given into `forward()`.
+ * `outputFrameSize` The output frame size the convolution layer will produce.
+ * `kernelW` The kernel width of the convolution
+ * `strideW` The step of the convolution in the width dimension.
+ * `propagateBack` Whether propagate gradient back, default is true.
+ * `wRegularizer` instance of `Regularizer`
+                     (eg. L1 or L2 regularization), applied to the input weights matrices.
+ * `bRegularizer` instance of `Regularizer`
+                     applied to the bias.
+ * `initWeight` Initial weight
+ * `initBias` Initial bias
+ * `initGradWeight` Initial gradient weight
+ * `initGradBias` Initial gradient bias
+ * `T` The numeric type in the criterion, usually which are `Float` or `Double`
+ 
+**Scala example:**
+```scala
+import com.intel.analytics.bigdl.numeric.NumericFloat
+val seed = 100
+RNG.setSeed(seed)
+val nInputFrame = 10
+val inputFrameSize = 5
+val outputFrameSize = 3
+val kW = 5
+val dW = 2
+val layer = LocallyConnected1D(nInputFrame, inputFrameSize, outputFrameSize, kW, dW)
+
+Random.setSeed(seed)
+val input = Tensor(10, 5).apply1(e => Random.nextFloat())
+val gradOutput = Tensor(3, 3).apply1(e => Random.nextFloat())
+
+val output = layer.updateOutput(input)
+> println(output)
+(1,.,.) =
+-0.2896616	0.018883035	-0.45641226	
+-0.41183263	-0.33292565	0.27988705	
+0.076636955	-0.39710814	0.59631383	
+
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 3x3]
+
+val gradInput = layer.updateGradInput(input, gradOutput)
+> println(gradInput)
+(1,.,.) =
+0.018415622	-0.10201519	-0.15641063	-0.08271551	-0.060939234	
+0.13609992	0.14934899	0.06083451	-0.13943195	-0.11092151	
+-0.08760113	0.06923811	-0.07376863	0.06743649	0.042455398	
+0.064692274	0.15720972	0.13673763	0.03617531	0.12507091	
+-0.078272685	-0.25193688	0.10712688	-0.11330205	-0.19239372	
+-0.10032463	-0.06266674	0.1048636	0.26058376	-0.40386787	
+-0.10379471	0.07291742	-0.28790376	0.06023993	0.057165086	
+0.15167418	0.07384029	-0.052450493	-0.07709345	-0.016432922	
+-0.1044948	0.060714033	0.08341185	-0.082587965	0.052750245	
+0.0	0.0	0.0	0.0	0.0	
+
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 10x5]
+```
+
+**Python example:**
+```python
+from bigdl.nn.layer import LocallyConnected1D
+import numpy as np
+nInputFrame = 10
+inputFrameSize = 5
+outputFrameSize = 3
+kW = 5
+dW = 2
+layer = LocallyConnected1D(nInputFrame, inputFrameSize, outputFrameSize, kW, dW)
+
+input = np.random.rand(10, 5)
+gradOutput = np.random.rand(3, 3)
+
+output = layer.forward(input)
+> print(output)
+[[ 0.37944531 -0.25905907 -0.02284177]
+  [-0.06727666 -0.48430425 -0.12338555]
+  [ 0.5237388  -0.72521925 -0.21979821]]
+ 
+gradInput = layer.backward(input, gradOutput)
+> print(gradInput)
+[[-0.22256926 -0.11267932  0.05445758 -0.06569604  0.00799843]
+  [ 0.08402308  0.00340014  0.04202492 -0.05055574  0.11835655]
+  [ 0.00352848 -0.02568576 -0.08056175  0.06994451  0.09152003]
+  [ 0.04089724 -0.19517297  0.19212601 -0.21531224  0.03563112]
+  [-0.28906721  0.07873128 -0.01326483 -0.18504807  0.02452871]
+  [-0.09979478 -0.1009931  -0.25594842  0.14314197 -0.30875987]
+  [-0.00814501 -0.02431242 -0.1140819  -0.14522757 -0.09230929]
+  [-0.11231296  0.0053857   0.00582423  0.18309449  0.13369997]
+  [-0.01302226 -0.13035376  0.02006471  0.09794775 -0.08067283]
+  [ 0.          0.          0.          0.          0.        ]]
+
+```
 ---
 ## TemporalMaxPooling
 
