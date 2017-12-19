@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-// scalastyle:off
 package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.nn.abstractnn.{Initializable, TensorModule}
