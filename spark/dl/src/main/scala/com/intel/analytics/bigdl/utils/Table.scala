@@ -31,7 +31,7 @@ import scala.collection.immutable.{Map => ImmutableMap}
  * @param state
  * @param topIndex
  */
-class Table private[bigdl](
+class Table (
   private val state: Map[Any, Any] = new mutable.HashMap[Any, Any](),
   // index of last element in the contiguous numeric number indexed elements start from 1
   private var topIndex: Int = 0

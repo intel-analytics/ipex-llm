@@ -78,4 +78,8 @@ class PythonBigDLValidator[T: ClassTag](implicit ev: TensorNumeric[T]) extends P
     nestedTable.insert(table)
     return JActivity(nestedTable)
   }
+
+  def testPyToJavaActivity(jactivity: JActivity): JActivity = {
+    jactivity
+  }
 }
