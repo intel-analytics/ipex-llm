@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-// scalastyle:off
 package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.nn.abstractnn.{Initializable, TensorModule}
@@ -63,7 +62,8 @@ class LocallyConnected1D[T: ClassTag](val nInputFrame: Int,
                                       val initBias: Tensor[T] = null,
                                       val initGradWeight: Tensor[T] = null,
                                       val initGradBias: Tensor[T] = null
-                                     )(implicit ev: TensorNumeric[T]) extends TensorModule[T] with Initializable {
+                                     )(implicit ev: TensorNumeric[T])
+                                      extends TensorModule[T] with Initializable {
 
   val nOutputFrame = (nInputFrame - kernelW) / strideW + 1
 
@@ -334,7 +334,8 @@ class LocallyConnected1D[T: ClassTag](val nInputFrame: Int,
 
         var j = 0
         while (j < nOutputFrame) {
-          biasWindow.set(gradBias.storage(), gradBias.storageOffset() + j * gradOutput.size(dimFeat),
+          biasWindow.set(gradBias.storage(),
+            gradBias.storageOffset() + j * gradOutput.size(dimFeat),
             Array(1, gradOutput.size(dimFeat)),
             Array(1, 1))
           gradOutputWindow.set(gradOutputSample.select(1, j + 1))
@@ -476,7 +477,8 @@ object LocallyConnected1D {
                                                       initBias: Tensor[T] = null,
                                                       initGradWeight: Tensor[T] = null,
                                                       initGradBias: Tensor[T] = null
-                                                    )(implicit ev: TensorNumeric[T]): LocallyConnected1D[T] = {
+                                                    )(implicit ev: TensorNumeric[T]):
+                                                     LocallyConnected1D[T] = {
     new LocallyConnected1D[T](nInputFrame, inputFrameSize, outputFrameSize, kernelW,
       strideW, propagateBack,
       wRegularizer, bRegularizer, initWeight, initBias, initGradWeight, initGradBias)
