@@ -22,6 +22,7 @@ import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.visualization.{TrainSummary, ValidationSummary}
 import org.apache.spark.ml.param.shared.{HasFeaturesCol, HasPredictionCol}
 import org.apache.spark.ml.param.{IntParam, ParamMap, ParamValidators, _}
 import org.apache.spark.ml.util.SchemaUtils
@@ -79,6 +80,32 @@ private[ml] trait DLParams[@specialized(Float, Double) T] extends HasFeaturesCol
   def getLearningRateDecay: Double = $(learningRateDecay)
 
   setDefault(batchSize -> 1)
+
+  /**
+   * Statistics (LearningRate, Loss, Throughput, Parameters) collected during training for the
+   * training data, which can be used for visualization via Tensorboard.
+   * Use setTrainSummary to enable train logger. Then the log will be saved to
+   * logDir/appName/train as specified by the parameters of TrainSummary.
+   *
+   * Default: Not enabled
+   */
+  final val trainSummary = new Param[TrainSummary](
+    this, "trainSummary", "Statistics for training data")
+
+  def getTrainSummary: TrainSummary = $(trainSummary)
+
+  /**
+   * Statistics (LearningRate, Loss, Throughput, Parameters) collected during training for the
+   * validation data if validation data is set, which can be used for visualization via
+   * Tensorboard. Use setValidationSummary to enable validation logger. Then the log will be
+   * saved to logDir/appName/train as specified by the parameters of validationSummary.
+   *
+   * Default: Not enabled
+   */
+  final val validationSummary = new Param[ValidationSummary](
+    this, "validationSummary", "Statistics for validation data")
+
+  def getValidationSummary: ValidationSummary = $(validationSummary)
 
   /**
    * Validate if feature and label columns are of supported data types.
@@ -169,6 +196,7 @@ class DLEstimator[@specialized(Float, Double) T: ClassTag](
   def setBatchSize(value: Int): this.type = set(batchSize, value)
 
   def setOptimMethod(value: OptimMethod[T]): this.type = set(optimMethod, value)
+  set(optimMethod, new SGD[T])
 
   def setMaxEpoch(value: Int): this.type = set(maxEpoch, value)
   setDefault(maxEpoch -> 50)
@@ -178,6 +206,10 @@ class DLEstimator[@specialized(Float, Double) T: ClassTag](
 
   def setLearningRateDecay(value: Double): this.type = set(learningRateDecay, value)
   setDefault(learningRateDecay -> 0.0)
+
+  def setTrainSummary(value: TrainSummary): this.type = set(trainSummary, value)
+
+  def setValidationSummary(value: ValidationSummary): this.type = set(validationSummary, value)
 
   override def transformSchema(schema : StructType): StructType = {
     validateDataType(schema, $(featuresCol))
@@ -216,9 +248,9 @@ class DLEstimator[@specialized(Float, Double) T: ClassTag](
       Sample(Tensor(feature.toArray, featureSize), Tensor(label.toArray, labelSize))
     }
 
-    if(!isDefined(optimMethod)) {
-      set(optimMethod, new SGD[T])
-    }
+//    if(!isDefined(optimMethod)) {
+//      set(optimMethod, new SGD[T])
+//    }
     val state = T("learningRate" -> $(learningRate), "learningRateDecay" -> $(learningRateDecay))
     val optimizer = Optimizer(model, samples, criterion, $(batchSize))
       .setState(state)
