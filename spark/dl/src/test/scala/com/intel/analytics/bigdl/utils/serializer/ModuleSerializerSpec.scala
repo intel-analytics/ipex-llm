@@ -183,7 +183,8 @@ class ModuleSerializerSpec extends FlatSpec with Matchers with BeforeAndAfterAll
   }
 
   "LocallyConnected1D serializer" should "work properly" in {
-    val localyConnected1d = LocallyConnected1D[Float](6, 2, outputFrameSize = 2, kernelW = 3, strideW = 1)
+    val localyConnected1d =
+      LocallyConnected1D[Float](6, 2, outputFrameSize = 2, kernelW = 3, strideW = 1)
     val input = Tensor[Float](6, 2).randn()
     runSerializationTest(localyConnected1d, input)
   }
