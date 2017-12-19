@@ -6,8 +6,8 @@ https://github.com/intel-analytics/analytics-zoo/tree/master/pipeline/fraudDetec
 
 How to run the notebook:
 
-1. Refer to [toree home page | https://github.com/apache/incubator-toree/blob/master/README.md] for
-how to support scala in Jupyter notebook.
+1. Refer to [Apache Toree](https://github.com/apache/incubator-toree/blob/master/README.md) for
+how to use scala in Jupyter notebook.
 
 An outline is:
 ```bash
