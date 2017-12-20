@@ -26,7 +26,7 @@ import org.opencv.imgcodecs.Imgcodecs
 import org.opencv.imgproc.Imgproc
 
 /**
- * OpenCVMat is a Serializable wrapper of original Mat
+ * OpenCVMat is a Serializable wrapper of org.opencv.core.Mat
  */
 class OpenCVMat() extends Mat with Serializable {
 

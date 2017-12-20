@@ -391,6 +391,27 @@ Output may be
 
 [com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 1x3x3]
 ```
+---
+## **OpenCVMat**
+OpenCVMat is a Serializable wrapper of org.opencv.core.Mat.
+
+It can be created by
+* `read`: read local image path as opencv mat
+* `fromImageBytes`: convert image file in bytes to opencv mat
+* `fromFloats`: convert float array(pixels) to OpenCV mat
+
+**Scala example:**
+```scala
+// read local image path as OpenCVMat
+val mat = OpenCVMat.read("/tmp/test.jpg")
+
+// convert image file in bytes to OpenCVMat
+val bytes = FileUtils.readFileToByteArray(new File(path))
+val mat2 = OpenCVMat.fromImageBytes(bytes)
+
+// Convert float array(pixels) to OpenCVMat
+val mat3 = OpenCVMat.fromFloats(floatPixels, height=300, width=300)
+```
 
 ---
 ## **ImageFeature**
@@ -408,8 +429,8 @@ Some predefined keys are listed as follows:
 * predict: image prediction result
 * boundingBox: store boundingBox of current image,
 it may be used in crop/expand that may change the size of image
-* sample: sample
-* imageTensor: Image Tensor
+* sample: image (and label if available) stored as Sample
+* imageTensor: image pixels in Tensor
 
 Besides the above keys, you can also define your key and store information needed
 in the prediction pipeline.
