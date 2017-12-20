@@ -3,9 +3,12 @@
 ---
 ## **Before You Start**
 
-Before using BigDL on Dataproc, you need setup a project and create a cluster on Dataproc(you may refer to [https://cloud.google.com/sdk/docs/how-to](https://cloud.google.com/dataproc/docs/how-to) for more instructions). 
-Please disable spark.dynamicAllocation when create cluster. Or please set --conf "spark.dynamicAllocation.enabled=false" when submit spark jobs
-eg. gcloud dataproc clusters create bigdl --project $PROJECT_NAME --worker-machine-type $MACHINETYPE --master-machine-type $MACHINETYPE --num-workers $WORKERNUMBER --properties spark:spark.dynamicAllocation.enabled=false
+Before using BigDL on Dataproc, you need setup a project and create a cluster on Dataproc(you may refer to [https://cloud.google.com/sdk/docs/how-to](https://cloud.google.com/dataproc/docs/how-to) for more instructions).  
+
+Please disable spark.dynamicAllocation when create cluster.  
+eg. gcloud dataproc clusters create bigdl --project $PROJECT_NAME --worker-machine-type $MACHINETYPE --master-machine-type $MACHINETYPE --num-workers $WORKERNUMBER --properties spark:spark.dynamicAllocation.enabled=false   
+
+ Or please set --conf "spark.dynamicAllocation.enabled=false" when submit spark jobs
 
 
 ---
@@ -59,25 +62,26 @@ You can run BigDL examples using the `run.example.sh` script with following para
 
     * `-l|--learning-rate` by default the the example will use an initial learning rate of "0.01"; you can specify a different value here
 
-After the training, you can check the log files and generated models in the home directory  
+After the training, you can check the log files and generated models  
 
-eg: ./run.example.sh --model lenet --nodes 2 --cores 4 --memory 1g --batch-size 16 -j lib/$BIGDLJAR -p spark_buildIn
+eg: ./bin/run.example.sh --model lenet --nodes 2 --cores 2 --memory 1g --batch-size 16 -j lib/$BIGDLJAR -p spark_buildIn
 
-You can also run lenet examples in below command:
- spark-submit \
- --master yarn \
- --deploy-mode client \
- --executor-cores 4 \
+You can also run lenet examples in below command:   
+```bash
+spark-submit \
+ --executor-cores 2 \
  --num-executors 2 \
  --driver-class-path ./lib/$BIGDLJAR \
  --class com.intel.analytics.bigdl.models.lenet.Train \
  ./lib/$BIGDLJAR \
  -f ./mnist \
- -b 32 \
-
+ -b 16
+```
 ---
 ## **Run BigDL Python example**
 Download lenet5.py from https://github.com/intel-analytics/BigDL/blob/master/pyspark/bigdl/models/lenet/lenet5.py
+```bash 
+wget https://github.com/intel-analytics/BigDL/blob/master/pyspark/bigdl/models/lenet/lenet5.py
 
 MASTER=yarn-client
 PYTHON_API_ZIP_PATH=./lib/$BIGDLJAR
@@ -98,3 +102,4 @@ spark-submit \
         ./BigDL/pyspark/bigdl/models/lenet/lenet5.py \
         --action train \
         --dataPath ./mnist
+```
