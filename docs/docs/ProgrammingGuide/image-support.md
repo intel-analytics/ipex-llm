@@ -20,11 +20,6 @@ or you can directly construct a ImageFrame from RDD[ImageFeature] or Array[Image
 **Scala example:**
 
 ```scala
-import com.intel.analytics.bigdl.transform.vision.image.ImageFrame
-import com.intel.analytics.bigdl.transform.vision.image.ImageFeature
-import com.intel.analytics.bigdl.utils.Engine
-import org.apache.spark.SparkContext
-
 // create LocalImageFrame from an image folder
 val localImageFrame = ImageFrame.read("/tmp/image/")
 
@@ -35,13 +30,6 @@ val distributedImageFrame2 = ImageFrame.read("/tmp/image/", sc, 2)
 **Python example:**
 
 ```python
-from bigdl.util.common import *
-from bigdl.transform.vision.image import *
-
-sparkConf = create_spark_conf().setMaster("local[2]").setAppName("test image")
-sc = get_spark_context(sparkConf)
-init_engine()
-
 # create LocalImageFrame from an image folder
 local_image_frame2 = ImageFrame.read("/tmp/image/")
 
@@ -49,7 +37,7 @@ local_image_frame2 = ImageFrame.read("/tmp/image/")
 distributed_image_frame = ImageFrame.read("/tmp/image/", sc, 2)
 ```
 
-More examples can be found [here](../APIGuide/Data.md)
+More examples can be found [here](../APIGuide/Data.md#imageframe)
 
 
 ## **Image Transformer**
