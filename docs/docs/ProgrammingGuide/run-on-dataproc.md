@@ -1,6 +1,4 @@
----
 
----
 ## **Before You Start**
 
 Before using BigDL on Dataproc, you need setup a project and create a cluster on Dataproc(you may refer to [https://cloud.google.com/sdk/docs/how-to](https://cloud.google.com/dataproc/docs/how-to) for more instructions).  
@@ -64,7 +62,7 @@ You can run BigDL examples using the `run.example.sh` script with following para
 
 After the training, you can check the log files and generated models  
 
-Replace $BIGDLJAR with bigdl binary name in ./lib, eg: bigdl-SPARK_2.2-0.3.0-jar-with-dependencies.jar  
+Replace $BIGDLJAR with bigdl binary name in ./lib in below command, eg: bigdl-SPARK_2.2-0.3.0-jar-with-dependencies.jar  
 
 eg: ./bin/run.example.sh --model lenet --nodes 2 --cores 2 --memory 1g --batch-size 16 -j lib/$BIGDLJAR -p spark_buildIn
 
