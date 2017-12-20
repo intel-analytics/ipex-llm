@@ -1,4 +1,4 @@
-# Support Caffe Layers
+# Supported Caffe Layers
 
 * Convolution
 * Deconvolution

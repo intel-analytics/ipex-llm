@@ -1,4 +1,4 @@
-# Support Tensorflow Operations
+# Supported Tensorflow Operations
 
 * Abs
 * Adapter
