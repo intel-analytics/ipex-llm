@@ -19,6 +19,7 @@
 # Reference: https://github.com/fchollet/keras/blob/1.2.2/examples/mnist_cnn.py
 #            ../../models/lenet/lenet5.py
 # The Keras version we support and test is Keras 1.2.2 with TensorFlow backend.
+# See README.md for how to run this example.
 
 from bigdl.examples.keras.keras_utils import *
 
