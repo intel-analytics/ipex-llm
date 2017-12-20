@@ -668,9 +668,9 @@ class Optimizer(BaseOptimizer):
     def create(model,
                training_set,
                criterion,
-               end_trigger=MaxEpoch(1),
+               end_trigger=None,
                batch_size=32,
-               optim_method=SGD(),
+               optim_method=None,
                cores=None,
                bigdl_type="float"):
         """
@@ -683,10 +683,14 @@ class Optimizer(BaseOptimizer):
         :param criterion: the loss function
         :param optim_method: the algorithm to use for optimization,
            e.g. SGD, Adagrad, etc. If optim_method is None, the default algorithm is SGD.
-        :param end_trigger: when to end the optimization
+        :param end_trigger: when to end the optimization. default value is MapEpoch(1)
         :param batch_size: training batch size
         :param cores: This is for local optimizer only and use total physical cores as the default value
         """
+        if not end_trigger:
+            end_trigger = MaxEpoch(1)
+        if not optim_method:
+            optim_method = SGD()
         if isinstance(training_set, RDD):
             return DistriOptimizer(model=model,
                                    training_rdd=training_set,
