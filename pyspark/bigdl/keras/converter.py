@@ -1631,7 +1631,7 @@ class LayerConverter:
         return blayer
 
     def create_maxoutdense(self):
-        blayer = BLayer.Maxout(input_size=self.input_shape[1],
+        blayer = BLayer.Maxout(input_size=int(self.input_shape[1]),
                                output_size=self.klayer.output_dim,
                                maxout_number=self.klayer.nb_feature,
                                with_bias=self.klayer.bias,
