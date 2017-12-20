@@ -28,6 +28,7 @@ if keras.backend.image_dim_ordering() == "th":
 else:
     input_shape = (28, 28, 1)
 
+
 def get_mnist(sc, data_type="train", location="/tmp/mnist"):
     """
     Download or load MNIST dataset.
