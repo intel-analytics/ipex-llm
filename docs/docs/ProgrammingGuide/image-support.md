@@ -88,13 +88,16 @@ val imgAug = BytesToMat() -> ColorJitter() ->
       ChannelNormalize(123, 117, 104) ->
       MatToTensor() -> ImageFrameToSample()
 ```
-Assume
 In the above example, the transformations will perform sequentially.
+
 Assume you have an ImageFrame containing original bytes array,
 `BytesToMat` will transform the bytes array to `OpenCVMat`.
+
 `ColorJitter`, `Expand`, `Resize`, `HFlip` and `ChannelNormalize` will transform over `OpenCVMat`,
 note that `OpenCVMat` is overwrite by default.
+
 `MatToTensor` transform `OpenCVMat` to `Tensor`, and `OpenCVMat` is released in this step.
+
 `ImageFrameToSample` transform the tensors that map inputKeys and targetKeys to sample,
 which can be used by the following prediction or training tasks.
 

@@ -463,7 +463,7 @@ print image_feature.keys()
 output is
 ```
 creating: createImageFeature
-[u'originalSize', u'mat']
+[u'originalSize', u'mat', u'bytes']
 ```
 
 ---
