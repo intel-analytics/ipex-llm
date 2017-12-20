@@ -20,10 +20,10 @@
 #echo $SPARK_VERSION
 
 if [[ $BIGDL_VERSION == *"SNAPSHOT"* ]]; then
-  NIGHTLY_VERSION=$(echo $(echo `wget -qO - https://oss.sonatype.org/content/repositories/snapshots/com/intel/analytics/bigdl/dist-spark-$SPARK_VERSION-scala-2.11.8-linux64/$BIGDL_VERSION/maven-metadata.xml | sed -n '/<value>[0-9]*\.[0-9]*\.[0-9]*-[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*.*value>/p' | head -n1 | awk -F'>' '{print $2}' | tr '</value' ' '`))
-  wget https://oss.sonatype.org/content/repositories/snapshots/com/intel/analytics/bigdl/dist-spark-$SPARK_VERSION-scala-2.11.8-linux64/$BIGDL_VERSION/dist-spark-$SPARK_VERSION-scala-2.11.8-linux64-$NIGHTLY_VERSION-dist.zip
-  unzip dist-spark-$SPARK_VERSION-scala-2.11.8-linux64-$NIGHTLY_VERSION-dist.zip -d $BIGDL_HOME
+  NIGHTLY_VERSION=$(echo $(echo `wget -qO - https://oss.sonatype.org/content/repositories/snapshots/com/intel/analytics/bigdl/dist-spark-$SPARK_VERSION-scala-2.11.8-all/$BIGDL_VERSION/maven-metadata.xml | sed -n '/<value>[0-9]*\.[0-9]*\.[0-9]*-[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*.*value>/p' | head -n1 | awk -F'>' '{print $2}' | tr '</value' ' '`))
+  wget https://oss.sonatype.org/content/repositories/snapshots/com/intel/analytics/bigdl/dist-spark-$SPARK_VERSION-scala-2.11.8-all/$BIGDL_VERSION/dist-spark-$SPARK_VERSION-scala-2.11.8-all-$NIGHTLY_VERSION-dist.zip
+  unzip dist-spark-$SPARK_VERSION-scala-2.11.8-all-$NIGHTLY_VERSION-dist.zip -d $BIGDL_HOME
 else
-  wget https://repo1.maven.org/maven2/com/intel/analytics/bigdl/dist-spark-$SPARK_VERSION-scala-2.11.8-linux64/$BIGDL_VERSION/dist-spark-$SPARK_VERSION-scala-2.11.8-linux64-$BIGDL_VERSION-dist.zip
-  unzip dist-spark-$SPARK_VERSION-scala-2.11.8-linux64-$BIGDL_VERSION-dist.zip -d $BIGDL_HOME  
+  wget https://repo1.maven.org/maven2/com/intel/analytics/bigdl/dist-spark-$SPARK_VERSION-scala-2.11.8-all/$BIGDL_VERSION/dist-spark-$SPARK_VERSION-scala-2.11.8-all-$BIGDL_VERSION-dist.zip
+  unzip dist-spark-$SPARK_VERSION-scala-2.11.8-all-$BIGDL_VERSION-dist.zip -d $BIGDL_HOME  
 fi

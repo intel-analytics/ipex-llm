@@ -132,7 +132,7 @@
         <lifecycle-mapping.version>1.0.0</lifecycle-mapping.version>
         <maven-checkstyle-plugin.version>2.15</maven-checkstyle-plugin.version>
         <checkstyle.version>6.6</checkstyle.version>
-        <os-flag>linux</os-flag>
+        <os-flag>linux64</os-flag>
         <dist-os-name>all</dist-os-name>
 
 
