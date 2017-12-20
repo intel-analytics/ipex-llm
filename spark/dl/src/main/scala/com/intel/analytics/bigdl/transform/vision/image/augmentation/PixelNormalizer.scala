@@ -38,7 +38,8 @@ class PixelNormalizer(means: Array[Float]) extends FeatureTransformer {
       data = new Array[Float](means.length)
     }
     require(data.length == openCVMat.height() * openCVMat.width() * openCVMat.channels(),
-      "the means provided must have the same length as image")
+      s"the means (${means.length}) provided must have the same length as image" +
+        s" ${openCVMat.height() * openCVMat.width() * openCVMat.channels()}")
     openCVMat.get(0, 0, data)
 
     require(means.length == data.length, s"Image size expected :" +

@@ -51,6 +51,7 @@ pages:
 - API Guide:
   - Engine: APIGuide/Engine.md
   - Data: APIGuide/Data.md
+  - Transformer: APIGuide/Transformer.md
   - Model: APIGuide/Module.md
   - Layers:
     - Containers:  APIGuide/Layers/Containers.md

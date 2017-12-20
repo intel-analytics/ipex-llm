@@ -182,8 +182,8 @@ class LocalImageFrame(ImageFrame):
             self.value = jvalue
         else:
             # init from image ndarray list and label rdd(optional)
-            image_tensor_list = image_list.map(lambda image: JTensor.from_ndarray(image))
-            label_tensor_list = label_list.map(lambda label: JTensor.from_ndarray(label)) if label_list else None
+            image_tensor_list = map(lambda image: JTensor.from_ndarray(image), image_list)
+            label_tensor_list = map(lambda label: JTensor.from_ndarray(label), label_list) if label_list else None
             self.value = callBigDlFunc(bigdl_type, JavaValue.jvm_class_constructor(self),
                                        image_tensor_list, label_tensor_list)
 
@@ -251,7 +251,7 @@ class DistributedImageFrame(ImageFrame):
         get prediction rdd from ImageFrame
         """
         predicts = callBigDlFunc(self.bigdl_type, "distributedImageFrameToPredict", self.value, key)
-        return predicts.map(lambda predict: (predict[0], predict[1].to_ndarray()))
+        return predicts.map(lambda predict: (predict[0], predict[1].to_ndarray()) if predict[1] else (predict[0], None))
 
 
 class HFlip(FeatureTransformer):
@@ -269,10 +269,15 @@ class Resize(FeatureTransformer):
     :param resize_w width after resize
     :param resize_mode if resizeMode = -1, random select a mode from (Imgproc.INTER_LINEAR,
      Imgproc.INTER_CUBIC, Imgproc.INTER_AREA, Imgproc.INTER_NEAREST, Imgproc.INTER_LANCZOS4)
+    :param use_scale_factor if true, scale factor fx and fy is used, fx = fy = 0
+    note that the result of the following are different
+    Imgproc.resize(mat, mat, new Size(resizeWH, resizeWH), 0, 0, Imgproc.INTER_LINEAR)
+    Imgproc.resize(mat, mat, new Size(resizeWH, resizeWH))
     """
 
-    def __init__(self, resize_h, resize_w, resize_mode = 1, bigdl_type="float"):
-        super(Resize, self).__init__(bigdl_type, resize_h, resize_w, resize_mode)
+    def __init__(self, resize_h, resize_w, resize_mode = 1, use_scale_factor=True,
+                 bigdl_type="float"):
+        super(Resize, self).__init__(bigdl_type, resize_h, resize_w, resize_mode, use_scale_factor)
 
 class Brightness(FeatureTransformer):
     """
