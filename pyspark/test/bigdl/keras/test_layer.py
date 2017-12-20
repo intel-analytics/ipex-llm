@@ -161,11 +161,11 @@ class TestLayer(BigDLTestCase):
         self.modelTestSingleLayerWithOrdersModes(input_data, layer, dim_orderings=["th"],
                                                  dump_weights=True, rtol=1e-5, atol=1e-5)
         layer2 = lambda: Convolution3D(8, 6, 4, 2, dim_ordering="th", activation='sigmoid',
-                                      input_shape=(3, 32, 32, 32))
+                                       input_shape=(3, 32, 32, 32))
         self.modelTestSingleLayerWithOrdersModes(input_data, layer2, dim_orderings=["th"],
                                                  dump_weights=True, rtol=1e-5, atol=1e-5)
         layer3 = lambda: Convolution3D(16, 2, 2, 2, dim_ordering="th", bias=False,
-                                      input_shape=(3, 32, 32, 32))
+                                       input_shape=(3, 32, 32, 32))
         self.modelTestSingleLayerWithOrdersModes(input_data, layer3, dim_orderings=["th"],
                                                  dump_weights=True, rtol=1e-5, atol=1e-5)
 
