@@ -64,6 +64,8 @@ You can run BigDL examples using the `run.example.sh` script with following para
 
 After the training, you can check the log files and generated models  
 
+Replace $BIGDLJAR with bigdl binary name in ./lib, eg: bigdl-SPARK_2.2-0.3.0-jar-with-dependencies.jar  
+
 eg: ./bin/run.example.sh --model lenet --nodes 2 --cores 2 --memory 1g --batch-size 16 -j lib/$BIGDLJAR -p spark_buildIn
 
 You can also run lenet examples in below command:   
@@ -81,25 +83,26 @@ spark-submit \
 ## **Run BigDL Python example**
 Download lenet5.py from https://github.com/intel-analytics/BigDL/blob/master/pyspark/bigdl/models/lenet/lenet5.py
 ```bash 
-wget https://github.com/intel-analytics/BigDL/blob/master/pyspark/bigdl/models/lenet/lenet5.py
+wget https://raw.githubusercontent.com/intel-analytics/BigDL/master/pyspark/bigdl/models/lenet/lenet5.py
+```
 
-MASTER=yarn-client
-PYTHON_API_ZIP_PATH=./lib/$BIGDLJAR
+Replace $BIGDLJAR with bigdl binary name in ./lib, eg: bigdl-SPARK_2.2-0.3.0-jar-with-dependencies.jar  
+Replace $BIGDL_PYTHON_ZIP with bigdl python binary name in ./lib, eg: bigdl-0.3.0-python-api.zip
+```bash
+PYTHON_API_ZIP_PATH=./lib/$BIGDL_PYTHON_ZIP
 BigDL_JAR_PATH=./lib/$BIGDLJAR
 PYTHONPATH=${PYTHON_API_ZIP_PATH}:$PYTHONPATH
 spark-submit \
-        --master ${MASTER} \
         --driver-cores 2  \
         --driver-memory 2g  \
         --num-executors 2  \
         --executor-cores 2  \
         --executor-memory 4g \
-        --py-files ${PYTHON_API_ZIP_PATH},./BigDL/pyspark/bigdl/models/lenet/lenet5.py  \
+        --py-files ${PYTHON_API_ZIP_PATH},./lenet5.py  \
         --properties-file ./conf/spark-bigdl.conf \
         --jars ${BigDL_JAR_PATH} \
         --conf spark.driver.extraClassPath=${BigDL_JAR_PATH} \
         --conf spark.executor.extraClassPath=${BigDL_JAR_PATH} \
-        ./BigDL/pyspark/bigdl/models/lenet/lenet5.py \
-        --action train \
-        --dataPath ./mnist
+        ./lenet5.py \
+        --action train
 ```
