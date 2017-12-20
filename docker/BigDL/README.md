@@ -26,7 +26,7 @@
 * download-bigdl.sh is used for downloading BigDL distributions.
 * start-notebook.sh is used for starting the jupyter notebook. You can specify the environment settings and spark settings to start a specified jupyter notebook.
 * bigdl-${BIGDL_VERSION} is the BigDL home of BigDL distribution.
-* dist-spark-x.x.x-scala-x.x.x-linux64-x.x.x-dist.zip is the zip file of BigDL distribution.
+* dist-spark-x.x.x-scala-x.x.x-all-x.x.x-dist.zip is the zip file of BigDL distribution.
 * spark-${SPARK_VERSION} is the Spark home.
 * BigDL-Tutorials is cloned from https://github.com/intel-analytics/BigDL-Tutorials, contains the Deep Leaning Tutorials on Apache Spark using BigDL.
 
