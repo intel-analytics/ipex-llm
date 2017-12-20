@@ -278,14 +278,19 @@ object SGD {
    * @param power coeffient of decay, refer to calculation formula
    * @param maxIteration max iteration when lr becomes zero
    */
-  case class Poly(power : Double, maxIteration : Int) extends LearningRateSchedule {
+  case class Poly(power : Double, maxIteration : Int, warmupIteration: Int = 0,
+                  warmupDelta: Double = 0.0) extends LearningRateSchedule {
     override def updateHyperParameter(config: Table, state: Table): Unit = {
       val lr = config.get[Double]("learningRate").getOrElse(1e-3)
       val nevals = state.get[Int]("evalCounter").getOrElse(0)
       val clr = if (nevals > maxIteration) {
         0.0
+      } else if (nevals < warmupIteration) {
+        -lr - warmupDelta * nevals
       } else {
-        -lr * math.pow(1.0 - nevals.toDouble / maxIteration, power)
+        -(lr + warmupDelta * warmupIteration) *
+          math.pow(1.0 - (nevals - warmupIteration).toDouble
+            / (maxIteration - warmupIteration), power)
       }
       println(s"iteration is : ${nevals}. current learning rate is $clr")
       state("evalCounter") = nevals + 1
@@ -297,9 +302,13 @@ object SGD {
       val nevals = optimMethod.state.get[Int]("evalCounter").getOrElse(0)
       val clr = if (nevals > maxIteration) {
         0.0
-      } else {
-        -lr * math.pow(1.0 - nevals.toDouble / maxIteration, power)
-      }
+      } else if (nevals < warmupIteration) {
+          -lr - warmupDelta * nevals
+        } else {
+          - (lr + warmupDelta * warmupIteration) *
+            math.pow(1.0 - (nevals - warmupIteration).toDouble
+            / (maxIteration - warmupIteration), power)
+        }
       println(s"iteration is : ${nevals}. current learning rate is $clr")
       optimMethod.state("evalCounter") = nevals + 1
       currentRate = clr
@@ -382,22 +391,35 @@ object SGD {
    *
    * @param decayType is a function with number of run epochs as the argument
    */
-  case class EpochDecay(decayType: (Int) => Double) extends LearningRateSchedule {
+  case class EpochDecay(decayType: (Int) => Double, warmupIteration: Int = 0,
+    warmupDelta: Double = 0.0) extends LearningRateSchedule {
     override def updateHyperParameter(config: Table, state: Table): Unit = {
       val lr = config.get[Double]("learningRate").getOrElse(1e-1)
-      var clr = -lr
-      val epoch = state[Int]("epoch")
-      val decay = decayType(epoch)
-      clr = clr * math.pow(0.1, decay)
+      val nevals = state.get[Int]("evalCounter").getOrElse(0)
+      val clr = if (nevals < warmupIteration) {
+        -lr - warmupDelta * nevals
+      } else {
+        val epoch = state[Int]("epoch")
+        val decay = decayType(epoch)
+        val maxLr = lr + warmupDelta * warmupIteration
+        -maxLr * math.pow(0.1, decay)
+      }
+      state("evalCounter") = nevals + 1
       config("clr") = clr
     }
 
     override def updateHyperParameter[T](optimMethod: SGD[T]): Unit = {
       val lr = optimMethod.learningRate
-      var clr = -lr
-      val epoch = optimMethod.state[Int]("epoch")
-      val decay = decayType(epoch)
-      clr = clr * math.pow(0.1, decay)
+      val nevals = optimMethod.state.get[Int]("evalCounter").getOrElse(0)
+      val clr = if (nevals < warmupIteration) {
+        - lr - warmupDelta * nevals
+      } else {
+        val epoch = optimMethod.state[Int]("epoch")
+        val decay = decayType(epoch)
+        val maxLr = lr + warmupDelta * warmupIteration
+        - maxLr * math.pow(0.1, decay)
+      }
+      optimMethod.state("evalCounter") = nevals + 1
       currentRate = clr
     }
   }

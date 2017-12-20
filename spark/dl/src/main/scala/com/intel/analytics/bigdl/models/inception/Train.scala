@@ -65,17 +65,23 @@ object TrainInceptionV1 {
         Inception_v1_NoAuxClassifier(classNum = param.classNumber)
       }
 
+      val iterationPerEpoch = math.ceil(1281167.toDouble / param.batchSize).toInt
+      val maxIteration = if (param.maxEpoch.isDefined) {
+        iterationPerEpoch * param.maxEpoch.get
+      } else param.maxIteration
+
+      val learningRateSchedulePolicy = if (param.warmupEpoch.isDefined && param.maxLr.isDefined) {
+        val warmupIteration = param.warmupEpoch.get * iterationPerEpoch
+        SGD.Poly(0.5, maxIteration, warmupIteration,
+        (param.maxLr.get - param.learningRate) / warmupIteration)
+      } else SGD.Poly(0.5, maxIteration)
+
       val optimMethod = if (param.stateSnapshot.isDefined) {
         OptimMethod.load[Float](param.stateSnapshot.get)
-      } else if (param.maxEpoch.isDefined) {
-        new SGD[Float](learningRate = param.learningRate, learningRateDecay = 0.0,
-          weightDecay = param.weightDecay, momentum = 0.9, dampening = 0.0, nesterov = false,
-          learningRateSchedule =
-            SGD.Poly(0.5, math.ceil(1281167.toDouble / param.batchSize).toInt * param.maxEpoch.get))
       } else {
         new SGD[Float](learningRate = param.learningRate, learningRateDecay = 0.0,
           weightDecay = param.weightDecay, momentum = 0.9, dampening = 0.0, nesterov = false,
-          learningRateSchedule = SGD.Poly(0.5, param.maxIteration))
+          learningRateSchedule = learningRateSchedulePolicy)
       }
 
       val optimizer = Optimizer(
@@ -100,6 +106,15 @@ object TrainInceptionV1 {
 
       if (param.overWriteCheckpoint) {
         optimizer.overWriteCheckpoint()
+      }
+
+      if (param.gradientMin.isDefined && param.gradientMax.isDefined) {
+        optimizer.setConstantGradientClipping(param.gradientMin.get.toFloat,
+          param.gradientMax.get.toFloat)
+      }
+
+      if (param.gradientL2NormThreshold.isDefined) {
+        optimizer.setGradientClippingByl2Norm(param.gradientL2NormThreshold.get.toFloat)
       }
 
       optimizer
