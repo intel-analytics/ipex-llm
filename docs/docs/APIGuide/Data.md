@@ -396,7 +396,7 @@ Output may be
 ## **ImageFeature**
 `ImageFeature` is a representation of one image.
 It can include various status of an image, by using key-value store.
-The key is string that identify the corresponding value.
+The key is string that identifies the corresponding value.
 Some predefined keys are listed as follows:
 * uri: uri that identifies image
 * mat: image in OpenCVMat
@@ -539,5 +539,5 @@ distributed_image_frame = ImageFrame.read("/tmp/image/", sc, 2)
 # create LocalImageFrame from image rdd
 image = cv2.imread("/tmp/test.jpg")
 image_rdd = sc.parallelize(image, 2)
-local_image_frame3 = DistributedImageFrame(image_rdd)
+distributed_image_frame = DistributedImageFrame(image_rdd)
 ```

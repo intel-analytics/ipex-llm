@@ -2775,6 +2775,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     val feature = new ImageFeature()
     if (null != data) {
       val mat = OpenCVMat.fromFloats(data.storage, data.shape(0), data.shape(1))
+      feature(ImageFeature.bytes) = OpenCVMat.imencode(mat)
       feature(ImageFeature.mat) = mat
       feature(ImageFeature.originalSize) = mat.shape()
     }

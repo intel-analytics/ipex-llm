@@ -294,7 +294,7 @@ Resize the image, keep the aspect ratio. scale according to the short edge
  * `scale` scale size, apply to short edge
  * `scaleMultipleOf` make the scaled size multiple of some value
  * `maxSize` max size after scale
-```
+
 
 **Scala example:**
 ```scala
