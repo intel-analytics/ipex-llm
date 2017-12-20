@@ -637,8 +637,8 @@ abstract class Converter[T: ClassTag](implicit ev: TensorNumeric[T]) {
     caffe2BigDL("POOLING") = fromCaffePooling
     caffe2BigDL("DROPOUT") = fromCaffeDropout
     caffe2BigDL("SOFTMAX") = fromCaffeSoftmax
-    caffe2BigDL("SOFTMAX_LOSS") = fromCaffeSoftmax
-    caffe2BigDL("SOFTMAXWITHLOSS") = fromCaffeSoftmax
+    caffe2BigDL("SOFTMAX_LOSS") = null
+    caffe2BigDL("SOFTMAXWITHLOSS") = null
     caffe2BigDL("TANH") = fromCaffeTanh
     caffe2BigDL("SIGMOID") = fromCaffeSigmoid
     caffe2BigDL("SIGMOIDCROSSENTROPYLOSS") = fromCaffeSigmoid
@@ -664,6 +664,8 @@ abstract class Converter[T: ClassTag](implicit ev: TensorNumeric[T]) {
     caffe2BigDL("DATA") = fromCaffeInput
     caffe2BigDL("DUMMYDATA") = fromCaffeInput
     caffe2BigDL("ANNOTATEDDATA") = fromCaffeInput
+    caffe2BigDL("MEMORYDATA") = fromCaffeInput
+    caffe2BigDL("ACCURACY") = null
     caffe2BigDL("SILENCE") = null
   }
 }
