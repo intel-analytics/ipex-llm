@@ -2,7 +2,7 @@
 
 For __Python__ users, BigDL supports loading pre-defined Keras models. After loading a model, you can train, evaluate or tune this model on BigDL in a distributed manner.
 
-The Keras version we support and test is [__Keras 1.2.2__](https://faroit.github.io/keras-docs/1.2.2/) with TensorFlow backend.
+The Keras version we support and test is [__Keras 1.2.2__](https://faroit.github.io/keras-docs/1.2.2/) with TensorFlow backend. Up to now, we have generally supported __ALL__ its layers.
 
 You may refer to Python User Guide on how to [install](../PythonUserGuide/install-from-pip.md) and [run](../PythonUserGuide/run-from-pip.md) BigDL for Python users.
 
@@ -83,6 +83,6 @@ You can find several more examples [here](../../../pyspark/bigdl/examples/keras/
 ### **Limitations**
 We have tested the model loading functionality with several standard [Keras applications](https://faroit.github.io/keras-docs/1.2.2/applications/) and [examples](https://github.com/fchollet/keras/tree/1.2.2/examples).
 
-However, there still exist some arguments for Keras layers that are not supported in BigDL for now. Also, we haven't supported self-defined Keras layers, but one can still define your customized layer converter and weight converter method for new layers if you wish.
+However, there exist some arguments for Keras layers that are not supported in BigDL for now. Also, we haven't supported self-defined Keras layers, but one can still define your customized layer converter and weight converter method for new layers if you wish. See [here](../APIGuide/keras-issues.md) for the full list of unsupported layer arguments and some known issues we have found so far.
 
 In our future work, we will continue to add functionality and better support running Keras on BigDL.

@@ -5140,7 +5140,7 @@ class Maxout(Layer):
                  input_size,
                  output_size,
                  maxout_number,
-                 with_bias = True,
+                 with_bias=True,
                  w_regularizer=None,
                  b_regularizer=None,
                  init_weight=None,

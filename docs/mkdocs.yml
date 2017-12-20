@@ -81,6 +81,7 @@ pages:
   - ML Pipeline: APIGuide/MLPipeline/DLEstimator_DLClassifier.md
   - Support Caffe Layers: APIGuide/caffe_layer_list.md
   - Support Tensorflow Operations: APIGuide/tensorflow_ops_list.md
+  - Keras Issues: APIGuide/keras-issues.md
   - Full API docs:
     - Scala Docs: APIGuide/scaladoc.md
     - Python API Docs: APIGuide/python-api-doc.md
