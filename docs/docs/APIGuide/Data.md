@@ -456,7 +456,7 @@ or you can directly construct a ImageFrame from RDD[ImageFeature] or Array[Image
 **Scala example:**
 
 Create LocalImageFrame, assume there is an image file "/tmp/test.jpg"
-and an image folder
+and an image folder "/tmp/image/"
 
 ```scala
 import com.intel.analytics.bigdl.transform.vision.image.ImageFrame

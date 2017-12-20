@@ -144,7 +144,7 @@ object MatToTensor {
 }
 
 /**
- * transform imageframe to samples
+ * Transforms tensors that map inputKeys and targetKeys to sample
  * @param inputKeys keys that maps inputs (each input should be a tensor)
  * @param targetKeys keys that maps targets (each target should be a tensor)
  * @param sampleKey key to store sample

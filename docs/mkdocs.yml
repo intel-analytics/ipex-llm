@@ -48,6 +48,7 @@ pages:
   - Keras Support: ProgrammingGuide/keras-support.md
   - Quantization Support: ProgrammingGuide/quantization-support.md
   - Define new Layer/Criterion: ProgrammingGuide/add-layer-criterion.md
+  - Build Image Application: ProgrammingGuide/image-support.md
 - API Guide:
   - Engine: APIGuide/Engine.md
   - Data: APIGuide/Data.md

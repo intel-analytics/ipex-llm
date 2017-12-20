@@ -96,7 +96,7 @@ val transformer = Saturation(deltaLow: Double, deltaHigh: Double)
 ```python
 transformer = Saturation(delta_low, delta_high)
 ```
-Adjust the image hue.
+Adjust the image Saturation.
 * `deltaLow` Saturation parameter: low bound
 * `deltaHigh` Saturation parameter: high bound
 
@@ -156,7 +156,7 @@ val transformer = ChannelOrder()
 ```python
 transformer = ChannelOrder()
 ```
-Random change the channel of an image
+Random change the channel order of an image
 
 **Scala example:**
 ```scala
@@ -723,7 +723,7 @@ val transformer = MatToFloats(validHeight: Int, validWidth: Int, validChannels: 
 transformer = MatToFloats(valid_height=300, valid_width=300, valid_channel=300,
                                           out_key = "floats")
 ```
-Transform OpenCVMat to float array, note that in this transformer, the mat is released
+Transform OpenCVMat to float array, note that in this transformer, the mat is released.
  * `validHeight` valid height in case the mat is invalid
  * `validWidth` valid width in case the mat is invalid
  * `validChannels` valid channel in case the mat is invalid
@@ -757,7 +757,7 @@ val transformer = MatToFloats(toRGB: Boolean = false,
 ```python
 transformer = MatToFloats(to_rgb=False, tensor_key="imageTensor")
 ```
-Transform opencv mat to tensor
+Transform opencv mat to tensor, note that in this transformer, the mat is released.
  * `toRGB` BGR to RGB (default is BGR)
  * `tensorKey` key to store transformed tensor
 
@@ -791,7 +791,8 @@ val transformer = ImageFrameToSample(inputKeys: Array[String] = Array(ImageFeatu
 transformer = ImageFrameToSample(input_keys=["imageTensor"], target_keys=None,
                                            sample_key="sample")
 ```
-Transform imageframe to samples
+Transforms tensors that map inputKeys and targetKeys to sample,
+note that in this transformer, the mat has been released.
   * `inputKeys` keys that maps inputs (each input should be a tensor)
   * `targetKeys` keys that maps targets (each target should be a tensor)
   * `sampleKey` key to store sample
