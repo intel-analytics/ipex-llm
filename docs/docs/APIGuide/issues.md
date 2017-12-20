@@ -6,10 +6,10 @@ Self-defined Keras layers or [`Lambda`](https://faroit.github.io/keras-docs/1.2.
 This pages lists the so-far unsupported arguments for specific layers and some known issues.
 
 ## Unsupported Layer Arguments
-For the following arguments, only the default values are expected and supported.
+For the following arguments, currently only the default values are expected and supported.
 * Constraints (`W_constraint`, `b_constraint`, etc.) are not supported for all layers.
 * `activity_regularizer` is not supported for all layers.
-* For [`Dropout`](https://faroit.github.io/keras-docs/1.2.2/layers/core/#dropout) layer, `noise_shape` is not supported.
+* For [`Dropout`](https://faroit.github.io/keras-docs/1.2.2/layers/core/#dropout), `noise_shape` is not supported.
 * For [`Merge`](https://faroit.github.io/keras-docs/1.2.2/layers/core/#merge) layers, `node_indices`, `tensor_indices`, `output_mask` are not supported. `Lambda/function` as merge mode is not supported.
 * For [`Merge`](https://faroit.github.io/keras-docs/1.2.2/layers/core/#merge) layers with mode `'dot'` or `'cosine'`, only `2D` input with `dot_axes=1` is supported.
 * For [`AtrousConvolution1D`](https://faroit.github.io/keras-docs/1.2.2/layers/convolutional/#atrousconvolution1d), only `bias=True` is supported.
@@ -25,7 +25,7 @@ For the following arguments, only the default values are expected and supported.
 * For [`Embedding`](https://faroit.github.io/keras-docs/1.2.2/layers/embeddings/#embedding), `mask_zero` and `dropout` are not supported.
 * For [`PReLU`](https://faroit.github.io/keras-docs/1.2.2/layers/advanced-activations/#prelu), `init`, `weights` and `shared_axes` are not supported.
 * For [`ParametricSoftplus`](https://faroit.github.io/keras-docs/1.2.2/layers/advanced-activations/#parametricsoftplus), `weights` and `shared_axes` are not supported. Only `alpha_init = 1/beta_init` is supported.
-* For [`BatchNormalization`](https://faroit.github.io/keras-docs/1.2.2/layers/normalization/#batchnormalization), only `mode=0` is supported. Only `channel_first` (i.e. `dim_ordering='th'` with `axis=1`) and `channel_last` (i.e. `dim_ordering='tf'` with `axis=-1`) is supported. `gamma_regularizer` and `beta_regularizer` are not supported.
+* For [`BatchNormalization`](https://faroit.github.io/keras-docs/1.2.2/layers/normalization/#batchnormalization), only `mode=0` is supported. Only `channel_first` (`dim_ordering='th'` with `axis=1`) and `channel_last` (`dim_ordering='tf'` with `axis=-1`) is supported. `gamma_regularizer` and `beta_regularizer` are not supported.
 * For [`Bidirectional`](https://faroit.github.io/keras-docs/1.2.2/layers/wrappers/#bidirectional) wrapper, only `return_sequences=True` is supported for RNNs. The arguments not supported by RNNs are not supported as well.
 
 
