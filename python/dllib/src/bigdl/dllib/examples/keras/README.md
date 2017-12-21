@@ -33,16 +33,16 @@ BigDL_JAR_PATH=${BigDL_HOME}/dist/lib/bigdl-${BIGDL_VERSION}-jar-with-dependenci
 PYTHONPATH=${PYTHON_API_ZIP_PATH}:$PYTHONPATH
 
 ${SPARK_HOME}/bin/spark-submit \
-   --master ${MASTER} \
-   --driver-cores 5  \
-   --driver-memory 10g  \
-   --total-executor-cores 80  \
-   --executor-cores 10  \
-   --executor-memory 20g \
-   --py-files ${PYTHON_API_ZIP_PATH},${BigDL_HOME}/pyspark/bigdl/examples/keras/mnist_cnn.py  \
-   --properties-file ${BigDL_HOME}/dist/conf/spark-bigdl.conf \
-   --jars ${BigDL_JAR_PATH} \
-   --conf spark.driver.extraClassPath=${BigDL_JAR_PATH} \
-   --conf spark.executor.extraClassPath=bigdl-${BIGDL_VERSION}-jar-with-dependencies.jar \
-${BigDL_HOME}/pyspark/bigdl/examples/keras/mnist_cnn.py
+    --master ${MASTER} \
+    --driver-cores 5  \
+    --driver-memory 10g  \
+    --total-executor-cores 80  \
+    --executor-cores 10  \
+    --executor-memory 20g \
+    --py-files ${PYTHON_API_ZIP_PATH},${BigDL_HOME}/pyspark/bigdl/examples/keras/mnist_cnn.py  \
+    --properties-file ${BigDL_HOME}/dist/conf/spark-bigdl.conf \
+    --jars ${BigDL_JAR_PATH} \
+    --conf spark.driver.extraClassPath=${BigDL_JAR_PATH} \
+    --conf spark.executor.extraClassPath=bigdl-${BIGDL_VERSION}-jar-with-dependencies.jar \
+    ${BigDL_HOME}/pyspark/bigdl/examples/keras/mnist_cnn.py
 ```
