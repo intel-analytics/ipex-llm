@@ -18,8 +18,7 @@
 # IMDB sentiment classification using a recurrent convolutional network on BigDL
 # Reference: https://github.com/fchollet/keras/blob/1.2.2/examples/imdb_cnn_lstm.py
 # The Keras version we support and test is Keras 1.2.2 with TensorFlow backend.
-
-from bigdl.examples.keras.keras_utils import *
+# See README.md for how to run this example.
 
 
 def load_imdb():
