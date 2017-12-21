@@ -487,7 +487,10 @@ class ParallelCriterion(Criterion):
 class KLDCriterion(Criterion):
 
     '''
-    Computes the KL-divergence of the Gaussian distribution.
+    Computes the KL-divergence of the input normal distribution to a standard normal distribution.
+    The input has to be a table. The first element of input is the mean of the distribution,
+    the second element of input is the log_variance of the distribution. The input distribution is
+    assumed to be diagonal.
     >>> KLDCriterion = KLDCriterion()
     creating: createKLDCriterion
     '''
