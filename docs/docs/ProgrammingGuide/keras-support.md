@@ -4,17 +4,17 @@ For __Python__ users, BigDL supports loading pre-defined Keras models. After loa
 
 The Keras version we support and test is [__Keras 1.2.2__](https://faroit.github.io/keras-docs/1.2.2/) with TensorFlow backend. Up to now, we have generally supported __ALL__ its layers.
 
-You may refer to Python User Guide on how to [install](../PythonUserGuide/install-from-pip.md) and [run](../PythonUserGuide/run-from-pip.md) BigDL for Python users.
+If you haven't been familiar with BigDL yet, you may refer to Python User Guide on how to [install](../PythonUserGuide/install-from-pip.md) and [run](../PythonUserGuide/run-from-pip.md) BigDL for Python users before you start this page.
 
 ## **Load a Keras model into BigDL**
 
 A Keras model definition in __JSON__ file can be loaded as a BigDL model.
 Saved weights in __HDF5__ file can also be loaded together with the architecture of a Keras model.
-See [here](https://faroit.github.io/keras-docs/1.2.2/getting-started/faq/#how-can-i-save-a-keras-model) on how to save the model architecture and weights in Keras.
+See [here](https://faroit.github.io/keras-docs/1.2.2/getting-started/faq/#how-can-i-save-a-keras-model) on how to save a model in Keras.
 
 You can directly call the API `Model.load_keras` to load a Keras model into BigDL.
 
-__Remark__: `keras==1.2.2` is required. If you need to load a HDF5 file, you also need to install `h5py`. These packages can be installed via `pip` easily.
+__Remark__: `keras==1.2.2` is required beforehand. If you are to load a HDF5 file, you also need to install `h5py`. These packages can be installed via `pip` easily.
 
 ```python
 from bigdl.nn.layer import *
@@ -23,8 +23,8 @@ bigdl_model = Model.load_keras(json_path=None, hdf5_path=None, by_name=False)
 ```
 __Parameters__:
 
-* `json_path` The JSON file path containing the Keras model definition to be loaded. Default to be `None` if you choose to load the Keras model from a HDF5 file.
-* `hdf5_path` The HDF5 file path containing the pre-trained Keras model weights with or without the model architecture. Default to be `None` if you choose to only load the model definition from JSON but not to load weights. In this case, initialized weights will be used for the model.
+* `json_path` The JSON file path containing the Keras model definition to be loaded. Default to be `None` if you choose to load a Keras model from a HDF5 file.
+* `hdf5_path` The HDF5 file path containing the pre-trained weights with or without the model architecture. Default to be `None` if you choose to only load the model definition from JSON but not to load weights. In this case, BigDL will use initialized weights for the model.
 * `by_name`  Whether to load the weights of layers by name. Use this option only when you provide a HDF5 file. Default to be `False`, meaning that  weights are loaded based on the network's execution order topology. Otherwise, if it is set to be `True`, only those layers with the same name will be loaded with weights.
 
 __NOTES__:
@@ -78,7 +78,7 @@ bigdl_model = Model.load_keras(json_path=path)
 ```
 After loading the model into BigDL, you can train it with the MNIST dataset. See [here](https://github.com/intel-analytics/BigDL/blob/branch-0.4/pyspark/bigdl/examples/keras/mnist_cnn.py) for the full example code which includes the training and validation after model loading. After 12 epochs, accuracy >97% can be achieved.
 
-You can find several more examples [here](https://github.com/intel-analytics/BigDL/tree/branch-0.4/pyspark/bigdl/examples/keras) to get familiar with loading a Keras model into BigDL.
+You can find several more examples [here](https://github.com/intel-analytics/BigDL/tree/branch-0.4/pyspark/bigdl/examples/keras) to get familiar with loading a Keras model into BigDL. We will add more examples to this directory in the future.
 
 ## **Limitations**
 We have tested the model loading functionality with several standard Keras [applications](https://faroit.github.io/keras-docs/1.2.2/applications/) and [examples](https://github.com/fchollet/keras/tree/1.2.2/examples).
