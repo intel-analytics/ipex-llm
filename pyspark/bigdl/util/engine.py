@@ -18,7 +18,6 @@ import sys
 import os
 import glob
 import warnings
-from bigdl.util.common import Configuration
 
 
 def exist_pyspark():
@@ -81,6 +80,7 @@ def __prepare_bigdl_env():
 
     if bigdl_classpath and is_spark_below_2_2():
         append_path("SPARK_CLASSPATH", bigdl_classpath)
+        from bigdl.util.common import Configuration
         for jar in Configuration.get_extra_jars():
             append_path("SPARK_CLASSPATH", jar)
 

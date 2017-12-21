@@ -29,7 +29,7 @@ from pyspark import SparkConf
 import numpy as np
 import threading
 import tempfile
-from bigdl.util.engine import prepare_env, get_bigdl_classpath, is_spark_below_2_2
+from bigdl.util.engine import get_bigdl_classpath, is_spark_below_2_2
 
 INTMAX = 2147483647
 INTMIN = -2147483648
