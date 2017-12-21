@@ -19,7 +19,7 @@ from keras.models import Sequential, Model
 np.random.seed(1337)  # for reproducibility
 from keras.layers.core import *
 from keras.layers.convolutional import *
-from keras.layers import Dense, Dropout, Input
+from keras.layers import *
 from keras.optimizers import RMSprop
 from bigdl.util.common import *
 from bigdl.keras.converter import *

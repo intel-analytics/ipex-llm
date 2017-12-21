@@ -331,6 +331,55 @@ class TestLayer(BigDLTestCase):
                        dump_weights=True,
                        is_training=False)
 
+    def test_merge_method_lstm(self):
+        input_data1 = np.random.random_sample([2, 4, 5])
+        input_data2 = np.random.random_sample([2, 4, 5])
+
+        input1 = Input((4, 5))
+        input2 = Input((4, 5))
+        out1 = LSTM(5, input_shape=(4, 5))(input1)
+        out2 = LSTM(6, input_shape=(4, 5))(input2)
+        m = merge([out1, out2], mode='concat', concat_axis=1)
+        kmodel = Model(input=[input1, input2], output=m)
+        self.modelTest([input_data1, input_data2],
+                       kmodel,
+                       random_weights=False,
+                       dump_weights=True,
+                       is_training=False)
+
+    def test_merge_method_sequential(self):
+        input_data1 = np.random.random_sample([2, 4, 5])
+        input_data2 = np.random.random_sample([2, 4, 5])
+
+        input1 = Input((4, 5))
+        input2 = Input((4, 5))
+
+        input_data1 = np.random.random_sample([2, 20])
+        input_data2 = np.random.random_sample([2, 20])
+        input1 = Input((20, ))
+        input2 = Input((20, ))
+        branch1 = Sequential()
+        branch1.add(Dense(4, input_shape=(20, )))
+        branch1.add(Dense(4, input_shape=(4, )))
+        branch1.add(Dense(4, input_shape=(4, )))
+
+        branch2 = Sequential()
+        branch2.add(Dense(4, input_shape=(20, )))
+        branch2.add(Dense(4, input_shape=(4, )))
+        branch2.add(Dense(4, input_shape=(4, )))
+
+        out1 = branch1(input1)
+        out2 = branch2(input2)
+
+        from keras.engine import merge
+        m = merge([out1, out2], mode="concat")
+        kmodel = Model(input=[input1, input2], output=m)
+        self.modelTest([input_data1, input_data2],
+                       kmodel,
+                       random_weights=False,
+                       dump_weights=True,
+                       is_training=False)
+
     def test_merge_method_cos(self):
         input_data1 = np.random.random_sample([2, 4])
         input_data2 = np.random.random_sample([2, 4])
