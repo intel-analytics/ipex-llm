@@ -14,10 +14,9 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.torch
+package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.nn.{Add, KLDCriterion}
-import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
+import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import com.intel.analytics.bigdl.utils.T
 import org.scalatest.{FlatSpec, Matchers}
@@ -46,6 +45,31 @@ class KLDCriterionSpec extends FlatSpec with Matchers{
 
     val gardTarget2 = Tensor(Array(0.66372836f, 0.08010721f, 0.002364993f,
     0.084828794f, 0.06463373f, 0.10249251f), Array(2, 3))
+
+    gradInput[Tensor[Float]](1) should be(gardTarget1)
+    gradInput[Tensor[Float]](2) should be(gardTarget2)
+  }
+
+  "A KLDCriterion Module with standard normal input" should "generate correct output and grad" in {
+    val seed = 100
+    RNG.setSeed(seed)
+    val model = KLDCriterion[Float]()
+
+    RNG.setSeed(seed)
+    val input1 = Tensor[Float](2, 3).fill(0.0f)
+    val input2 = Tensor[Float](2, 3).fill(0.0f)
+    val input = T(input1, input2)
+
+    val target = Tensor[Float](2, 3).apply1(x => RNG.uniform(0, 1).toFloat)
+
+    val loss = model.forward(input, target)
+    val gradInput = model.backward(input, target)
+
+    loss should be(0.0f)
+
+    val gardTarget1 = Tensor[Float](2, 3).fill(0.0f)
+
+    val gardTarget2 = Tensor[Float](2, 3).fill(0.0f)
 
     gradInput[Tensor[Float]](1) should be(gardTarget1)
     gradInput[Tensor[Float]](2) should be(gardTarget2)
