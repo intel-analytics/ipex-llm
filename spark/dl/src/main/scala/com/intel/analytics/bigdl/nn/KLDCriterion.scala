@@ -15,8 +15,7 @@
  */
 package com.intel.analytics.bigdl.nn
 
-import breeze.numerics.exp
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractCriterion, AbstractModule}
+import com.intel.analytics.bigdl.nn.abstractnn.AbstractCriterion
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{T, Table}
@@ -24,7 +23,10 @@ import com.intel.analytics.bigdl.utils.{T, Table}
 import scala.reflect.ClassTag
 
 /**
- * Computes the KL-divergence of the Gaussian distribution.
+ * Computes the KL-divergence of the input normal distribution to a standard normal distribution.
+ * The input has to be a table. The first element of input is the mean of the distribution,
+ * the second element of input is the log_variance of the distribution. The input distribution is
+ * assumed to be diagonal.
  */
 class KLDCriterion[@specialized(Float, Double) T: ClassTag](
   implicit ev: TensorNumeric[T]) extends AbstractCriterion[Table, Tensor[T], T] {
@@ -32,24 +34,24 @@ class KLDCriterion[@specialized(Float, Double) T: ClassTag](
   @transient
   private var mean: Tensor[T] = null
   @transient
-  private var vari: Tensor[T] = null
+  private var logVar: Tensor[T] = null
   @transient
-  private var expVar: Tensor[T] = null
+  private var vars: Tensor[T] = null
 
   override def updateOutput(input: Table, target: Tensor[T]): T = {
     if (mean == null) mean = Tensor[T]()
-    if (vari == null) vari = Tensor[T]()
-    if (expVar == null) expVar = Tensor[T]()
+    if (logVar == null) logVar = Tensor[T]()
+    if (vars == null) vars = Tensor[T]()
 
     mean.resizeAs(input[Tensor[T]](1)).copy(input(1))
-    vari.resizeAs(input[Tensor[T]](2)).copy(input(2))
+    logVar.resizeAs(input[Tensor[T]](2)).copy(input(2))
 
-    //  Appendix B from VAE paper: 0.5 * sum(1 + log(sigma^2) - mu^2 - sigma^2)
+    //  Appendix B from VAE paper: -0.5 * sum(1 + log(sigma^2) - mu^2 - sigma^2)
     mean.pow(ev.fromType(2))
-    expVar.resizeAs(vari).copy(vari)
-    expVar.exp().add(ev.one).add(ev.fromType(-1), mean).add(ev.fromType(-1), vari)
+    vars.resizeAs(logVar).copy(logVar).exp()
+    logVar.add(ev.one).add(ev.fromType(-1), mean).add(ev.fromType(-1), vars)
 
-    output = ev.times(ev.fromType(0.5), expVar.sum())
+    output = ev.times(ev.fromType(-0.5), logVar.sum())
     output
   }
 

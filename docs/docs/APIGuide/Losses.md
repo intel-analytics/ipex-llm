@@ -1890,7 +1890,10 @@ val criterion = KLDCriterion()
 criterion = KLDCriterion()
 ```
 
-Computes the KL-divergence of the Gaussian distribution.
+Computes the KL-divergence of the input normal distribution to a standard normal distribution.
+The input has to be a table. The first element of input is the mean of the distribution,
+the second element of input is the log_variance of the distribution. The input distribution is
+assumed to be diagonal.
 
 **Scala example:**
 ```scala
@@ -1911,7 +1914,7 @@ val target = Tensor[Float](2, 3).range(2, 13, 2)
 val loss = criterion.forward(input, target)
 
 > loss
-loss: Float = 34562.04
+loss: Float = 34647.04
 ```
 
 **Python example:**
@@ -1935,7 +1938,7 @@ target = target.reshape(2, 3)
 loss = criterion.forward(input, target)
 
 > loss
-34562.04
+34647.04
 ```
 
 ## CosineProximityCriterion ##
