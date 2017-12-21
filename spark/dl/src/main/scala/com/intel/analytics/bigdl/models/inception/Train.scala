@@ -76,6 +76,7 @@ object TrainInceptionV1 {
         s"maxLr: ${param.maxLr.get}, delta: $delta")
 
       val learningRateSchedulePolicy = if (param.warmupEpoch.isDefined && param.maxLr.isDefined) {
+//        SGD.PolyWithWarmUp(warmupIteration, delta, 0.5, maxIteration)
         SGD.Poly(0.5, maxIteration, warmupIteration, delta)
       } else SGD.Poly(0.5, maxIteration)
 

@@ -300,14 +300,36 @@ object SGD {
     override def updateHyperParameter[T](optimMethod: SGD[T]): Unit = {
       val lr = optimMethod.learningRate
       val nevals = optimMethod.state.get[Int]("evalCounter").getOrElse(0)
-      val clr = if (nevals > maxIteration) {
-        0.0
-      } else if (nevals < warmupIteration) {
-          -lr - warmupDelta * nevals
+      val clr = if (nevals < warmupIteration) {
+        -lr - warmupDelta * nevals
+      } else if (nevals < maxIteration) {
+        - (lr + warmupDelta * warmupIteration) * math.pow(1.0 - (nevals - warmupIteration).toDouble
+          / (maxIteration - warmupIteration), power)
         } else {
-          - (lr + warmupDelta * warmupIteration) * math.pow(1.0 - (nevals - warmupIteration).toDouble
-            / (maxIteration - warmupIteration), power)
+          0.0
         }
+      println(s"iteration is : ${nevals}. current learning rate is $clr")
+      optimMethod.state("evalCounter") = nevals + 1
+      currentRate = clr
+    }
+  }
+  case class PolyWithWarmUp(
+                             warmUpIteration: Int,
+                             warmUpDelta: Double,
+                             power: Double,
+                             maxIteration: Int) extends LearningRateSchedule {
+
+    override def updateHyperParameter[T](optimMethod: SGD[T]): Unit = {
+      val lr = optimMethod.learningRate
+      val nevals = optimMethod.state.get[Int]("evalCounter").getOrElse(0)
+      val clr = if (nevals < warmUpIteration) {
+        - lr - warmUpDelta * nevals
+      } else if (nevals > maxIteration) {
+        0.0
+      } else {
+        - (lr + warmUpDelta * warmUpIteration) * math.pow(1.0 - (nevals - warmUpIteration).toDouble
+          / (maxIteration - warmUpIteration), power)
+      }
       println(s"iteration is : ${nevals}. current learning rate is $clr")
       optimMethod.state("evalCounter") = nevals + 1
       currentRate = clr
@@ -599,5 +621,4 @@ object SGD {
       }
     }
   }
-
 }
