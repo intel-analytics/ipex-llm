@@ -175,7 +175,7 @@ class Top1Accuracy[T](
     var correct = 0
     var count = 0
 
-    val _output = output.asInstanceOf[Tensor[T]]
+    val _output = output.asInstanceOf[Tensor[T]].squeeze
     val _target = target.asInstanceOf[Tensor[T]]
     if (_output.dim() == 2) {
       (if (_output.size(2) == 1) {
@@ -218,7 +218,7 @@ class Top1Accuracy[T](
 class Top5Accuracy[T] extends ValidationMethod[T] {
   override def apply(output: Activity, target: Activity):
   AccuracyResult = {
-    val _output = output.asInstanceOf[Tensor[T]]
+    val _output = output.asInstanceOf[Tensor[T]].squeeze
     val _target = target.asInstanceOf[Tensor[T]].squeezeNewTensor()
     var correct = 0
     var count = 0
