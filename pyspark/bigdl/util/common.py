@@ -485,8 +485,7 @@ def create_spark_conf():
     sparkConf = SparkConf()
     sparkConf.setAll(bigdl_conf.items())
     if not is_spark_below_2_2():
-        for path in get_bigdl_classpath():
-            extend_spark_driver_cp(sparkConf, path)
+        extend_spark_driver_cp(sparkConf, get_bigdl_classpath())
         for jar in Configuration.get_extra_jars():
             extend_spark_driver_cp(sparkConf, jar)
 
