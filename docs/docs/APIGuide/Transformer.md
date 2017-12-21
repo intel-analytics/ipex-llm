@@ -686,13 +686,14 @@ transformed = transformer(data)
 ## **BytesToMat**
 **Scala:**
 ```scala
-val transformer = BytesToMat()
+val transformer = BytesToMat(byteKey: String = ImageFeature.bytes)
 ```
 **Python:**
 ```python
-transformer = BytesToMat()
+transformer = BytesToMat(byte_key="bytes")
 ```
 Transform byte array(original image file in byte) to OpenCVMat
+* `byteKey`: key that maps byte array
 
 **Scala example:**
 ```scala

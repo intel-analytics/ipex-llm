@@ -174,6 +174,16 @@ class TestLayer():
         image_frame.transform(transformer)
         image_frame.get_image()
 
+    def test_empty_get_predict_local(self):
+        image_frame = ImageFrame.read(self.image_path)
+        predicts = image_frame.get_predict()
+        assert predicts[0][1] is None
+
+    def test_empty_get_predict_distributed(self):
+        image_frame = ImageFrame.read(self.image_path, self.sc)
+        predicts = image_frame.get_predict()
+        assert predicts.first()[1] is None
+
 
 if __name__ == "__main__":
     pytest.main([__file__])

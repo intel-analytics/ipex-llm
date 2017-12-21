@@ -2859,8 +2859,8 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     ImageFrame.readParquet(path, sqlContext)
   }
 
-  def createBytesToMat(): BytesToMat = {
-    BytesToMat()
+  def createBytesToMat(byteKey: String): BytesToMat = {
+    BytesToMat(byteKey)
   }
 
   def createMatToFloats(validHeight: Int = 300, validWidth: Int = 300, validChannels: Int = 3,

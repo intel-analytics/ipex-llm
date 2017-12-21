@@ -209,7 +209,7 @@ class LocalImageFrame(ImageFrame):
         get prediction list from ImageFrame
         """
         predicts = callBigDlFunc(self.bigdl_type, "localImageFrameToPredict", self.value, key)
-        return map(lambda predict: (predict[0], predict[1].to_ndarray()), predicts)
+        return map(lambda predict: (predict[0], predict[1].to_ndarray()) if predict[1] else (predict[0], None), predicts)
 
 
 
@@ -579,9 +579,10 @@ class RandomAspectScale(FeatureTransformer):
 class BytesToMat(FeatureTransformer):
     """
     Transform byte array(original image file in byte) to OpenCVMat
+    :param byte_key key that maps byte array
     """
-    def __init__(self, bigdl_type="float"):
-        super(BytesToMat, self).__init__(bigdl_type)
+    def __init__(self, byte_key = "bytes", bigdl_type="float"):
+        super(BytesToMat, self).__init__(bigdl_type, byte_key)
 
 class ImageFrameToSample(FeatureTransformer):
     """

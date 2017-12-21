@@ -26,22 +26,23 @@ import scala.reflect._
 
 /**
  * Transform byte array(original image file in byte) to OpenCVMat
+ * @param byteKey key that maps byte array
  */
-class BytesToMat()
+class BytesToMat(byteKey: String = ImageFeature.bytes)
   extends FeatureTransformer {
 
   override def transform(feature: ImageFeature): ImageFeature = {
-    BytesToMat.transform(feature)
+    BytesToMat.transform(feature, byteKey)
   }
 }
 
 object BytesToMat {
   val logger = Logger.getLogger(getClass)
-  def apply(): BytesToMat = new BytesToMat()
+  def apply(byteKey: String = ImageFeature.bytes): BytesToMat = new BytesToMat(byteKey)
 
-  def transform(feature: ImageFeature): ImageFeature = {
+  def transform(feature: ImageFeature, byteKey: String): ImageFeature = {
     if (!feature.isValid) return feature
-    val bytes = feature[Array[Byte]](ImageFeature.bytes)
+    val bytes = feature[Array[Byte]](byteKey)
     var mat: OpenCVMat = null
     try {
       require(null != bytes && bytes.length > 0, "image file bytes should not be empty")

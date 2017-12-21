@@ -37,26 +37,17 @@ class OpenCVMat() extends Mat with Serializable {
 
   @throws(classOf[IOException])
   private def writeObject(out: ObjectOutputStream): Unit = {
-    out.writeInt(rows())
-    out.writeInt(cols())
+    val bytes = OpenCVMat.imencode(this)
     out.writeInt(`type`())
-    val size = (elemSize() * rows() * cols()).toInt
-    out.writeInt(size)
-    val bytes = new Array[Byte](size)
-    get(rows(), cols(), bytes)
-    out.write(bytes)
+    out.writeObject(bytes)
   }
 
   @throws(classOf[IOException])
   private def readObject(input: ObjectInputStream): Unit = {
-    val rows = input.readInt()
-    val cols = input.readInt()
     val t = input.readInt()
-    val size = input.readInt()
-    val data = new Array[Byte](size)
-    input.read(data)
-    create(rows, cols, t)
-    put(rows, cols, data)
+    val data = input.readObject.asInstanceOf[Array[Byte]]
+    val mat = OpenCVMat.fromImageBytes(data)
+    mat.convertTo(this, t)
   }
 
   var isReleased: Boolean = false
@@ -178,6 +169,10 @@ object OpenCVMat {
    * @return
    */
   def toBytePixels(input: Mat, buffer: Array[Byte] = null): (Array[Byte], Int, Int) = {
+    // the mat need to be type CV_8UC3 in order to get pixels byte array
+    if (input.`type`() != CvType.CV_8UC3) {
+      input.convertTo(input, CvType.CV_8UC3)
+    }
     var bytes = buffer
     val length = input.channels() * input.height() * input.width()
     if (null == buffer || buffer.length < length) {
