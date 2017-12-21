@@ -12,9 +12,9 @@ In the future, we are going to provide more examples for users to try out.
 
 # **How to run these examples**
 
-Here we take `minst_cnn.py` to illustrate.
+Here we take `minst_cnn.py` to show how to run the examples under this directory. You can run other examples in a similar way as the following:
 
-* Run in command line directly using `python`:
+* Run in the command line directly using `python`:
 
 ```
 source BigDL/pyspark/test/dev/prepare_env.sh
@@ -45,5 +45,4 @@ ${SPARK_HOME}/bin/spark-submit \
    --conf spark.driver.extraClassPath=${BigDL_JAR_PATH} \
    --conf spark.executor.extraClassPath=bigdl-${BIGDL_VERSION}-jar-with-dependencies.jar \
 ${BigDL_HOME}/pyspark/bigdl/examples/keras/mnist_cnn.py
-
 ```
