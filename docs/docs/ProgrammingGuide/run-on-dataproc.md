@@ -1,23 +1,25 @@
 
 ## **Before You Start**
 
-Before using BigDL on Dataproc, you need setup a project and create a cluster on Dataproc(you may refer to [https://cloud.google.com/sdk/docs/how-to](https://cloud.google.com/dataproc/docs/how-to) for more instructions).  
+Before using BigDL on Google Dataproc, you need setup a project and create a cluster on Dataproc(you may refer to [https://cloud.google.com/sdk/docs/how-to](https://cloud.google.com/dataproc/docs/how-to) for more instructions).  
 
-Please disable spark.dynamicAllocation when create cluster.  
-eg. gcloud dataproc clusters create bigdl --project $PROJECT_NAME --worker-machine-type $MACHINETYPE --master-machine-type $MACHINETYPE --num-workers $WORKERNUMBER --properties spark:spark.dynamicAllocation.enabled=false   
+Please disable `spark.dynamicAllocation` when creating cluster. E.g.,  
+```bash
+gcloud dataproc clusters create bigdl --project $PROJECT_NAME --worker-machine-type $MACHINETYPE --master-machine-type $MACHINETYPE --num-workers $WORKERNUMBER --properties spark:spark.dynamicAllocation.enabled=false
+```
 
- Or please set --conf "spark.dynamicAllocation.enabled=false" when submit spark jobs
+ Or please set `--conf "spark.dynamicAllocation.enabled=false"` when submitting spark jobs
 
 
 ---
 ## **Download BigDL**
 
-BigDL can be downloads from https://bigdl-project.github.io/master/#release-download. It provides prebuild binary for different Spark version. Please ssh on the master VM Instances and download BigDL according to Spark version. 
+BigDL can be downloaded from https://bigdl-project.github.io/master/#release-download. It provides prebuild binary for different Spark versions. Please ssh on the master VM Instance and download BigDL according to Spark version. 
 ```bash
 wget BIGDL_LINK
 ```
 
-After downloaded, you will be able to find a zip file, unzip the file
+After downloading BigDL, you will be able to find a zip file,eg.dist-spark-2.2.0-scala-2.11.8-0.3.0-dist.zip. Unzip the file
 ```bash
 unzip xxx.zip
 ```
@@ -26,7 +28,7 @@ unzip xxx.zip
 ## **Run BigDL Scala Examples**
 
 
-You can run BigDL examples using the `run.example.sh` script with following parameters:
+Now you can run BigDL examples on Google Dataproc. For instance, you may use the `run.example.sh` script which is located under ./bin directory with following parameters:
 
 * Mandatory parameters:
   
@@ -64,9 +66,11 @@ After the training, you can check the log files and generated models
 
 Replace $BIGDLJAR with bigdl binary name in ./lib in below command, eg: bigdl-SPARK_2.2-0.3.0-jar-with-dependencies.jar  
 
-eg: ./bin/run.example.sh --model lenet --nodes 2 --cores 2 --memory 1g --batch-size 16 -j lib/$BIGDLJAR -p spark_buildIn
+```bash
+./bin/run.example.sh --model lenet --nodes 2 --cores 2 --memory 1g --batch-size 16 -j lib/$BIGDLJAR -p spark_buildIn
+```
 
-You can also run lenet examples in below command:   
+You can also run lenet examples in below command. Before submit below command, please make sure you have already downloaded mnist and put it under mnist directory, more detail see https://github.com/intel-analytics/BigDL/tree/master/spark/dl/src/main/scala/com/intel/analytics/bigdl/models/lenet:   
 ```bash
 spark-submit \
  --executor-cores 2 \
