@@ -76,9 +76,9 @@ with open(def_path, "w") as json_file:
 from bigdl.nn.layer import *
 bigdl_model = Model.load_keras(json_path=path)
 ```
-After loading the model into BigDL, you can train it with the MNIST dataset. See [here](https://github.com/intel-analytics/BigDL/blob/master/pyspark/bigdl/examples/keras/mnist_cnn.py) for the full example code which includes the training and validation after model loading. After 12 epochs, accuracy >97% can be achieved.
+After loading the model into BigDL, you can train it with the MNIST dataset. See [here](https://github.com/intel-analytics/BigDL/blob/branch-0.4/pyspark/bigdl/examples/keras/mnist_cnn.py) for the full example code which includes the training and validation after model loading. After 12 epochs, accuracy >97% can be achieved.
 
-You can find several more examples [here](https://github.com/intel-analytics/BigDL/tree/master/pyspark/bigdl/examples/keras) to get familiar with loading a Keras model into BigDL.
+You can find several more examples [here](https://github.com/intel-analytics/BigDL/tree/branch-0.4/pyspark/bigdl/examples/keras) to get familiar with loading a Keras model into BigDL.
 
 ## **Limitations**
 We have tested the model loading functionality with several standard Keras [applications](https://faroit.github.io/keras-docs/1.2.2/applications/) and [examples](https://github.com/fchollet/keras/tree/1.2.2/examples).
