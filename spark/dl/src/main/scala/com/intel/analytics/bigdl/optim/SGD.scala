@@ -305,8 +305,7 @@ object SGD {
       } else if (nevals < warmupIteration) {
           -lr - warmupDelta * nevals
         } else {
-          - (lr + warmupDelta * warmupIteration) *
-            math.pow(1.0 - (nevals - warmupIteration).toDouble
+          - (lr + warmupDelta * warmupIteration) * math.pow(1.0 - (nevals - warmupIteration).toDouble
             / (maxIteration - warmupIteration), power)
         }
       println(s"iteration is : ${nevals}. current learning rate is $clr")

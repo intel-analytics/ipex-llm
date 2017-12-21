@@ -70,10 +70,13 @@ object TrainInceptionV1 {
         iterationPerEpoch * param.maxEpoch.get
       } else param.maxIteration
 
+      val warmupIteration = param.warmupEpoch.get * iterationPerEpoch
+      val delta = (param.maxLr.get - param.learningRate) / warmupIteration
+      println(s"warmUpIteraion: $warmupIteration, startLr: ${param.learningRate}, " +
+        s"maxLr: ${param.maxLr.get}, delta: $delta")
+
       val learningRateSchedulePolicy = if (param.warmupEpoch.isDefined && param.maxLr.isDefined) {
-        val warmupIteration = param.warmupEpoch.get * iterationPerEpoch
-        SGD.Poly(0.5, maxIteration, warmupIteration,
-        (param.maxLr.get - param.learningRate) / warmupIteration)
+        SGD.Poly(0.5, maxIteration, warmupIteration, delta)
       } else SGD.Poly(0.5, maxIteration)
 
       val optimMethod = if (param.stateSnapshot.isDefined) {
