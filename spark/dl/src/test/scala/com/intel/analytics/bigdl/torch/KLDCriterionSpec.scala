@@ -39,7 +39,7 @@ class KLDCriterionSpec extends FlatSpec with Matchers{
     val loss = model.forward(input, target)
     val gradInput = model.backward(input, target)
 
-    loss should be(5.54158f +- 1e-3f)
+    loss should be(0.991884f +- 1e-3f)
 
     val gardTarget1 = Tensor(Array(0.54340494f, 0.67115563f, 0.2783694f,
     0.4120464f, 0.4245176f, 0.52638245f), Array(2, 3))
