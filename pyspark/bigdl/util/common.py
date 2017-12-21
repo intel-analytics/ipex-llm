@@ -39,6 +39,7 @@ if sys.version >= '3':
     long = int
     unicode = str
 
+
 class SingletonMixin(object):
     _lock = threading.RLock()
     _instance = None
@@ -51,6 +52,7 @@ class SingletonMixin(object):
                 if not cls._instance:
                     cls._instance = cls(bigdl_type)
         return cls._instance
+
 
 class JavaCreator(SingletonMixin):
     __creator_class="com.intel.analytics.bigdl.python.api.PythonBigDL"
@@ -114,9 +116,29 @@ class EvaluatedResult():
         return "Evaluated result: %s, total_num: %s, method: %s" % (
             self.result, self.total_num, self.method)
 
+
 def get_dtype(bigdl_type):
     # Always return float32 for now
     return "float32"
+
+
+class Configuration(object):
+    __extra_jars = []
+
+    @staticmethod
+    def add_extra_jars(jars):
+        """
+        Add extra jars to classpath
+        :param jars: a string or a list of strings of jar paths
+        """
+        import six
+        if isinstance(jars, six.string_types):
+            jars = [jars]
+        Configuration.__extra_jars += jars
+
+    @staticmethod
+    def get_extra_jars():
+        return Configuration.__extra_jars
 
 
 class JActivity(object):
@@ -358,6 +380,7 @@ class Sample(object):
     def __repr__(self):
         return "Sample: features: %s, labels: %s" % (self.features, self.labels)
 
+
 class RNG():
     """
     generate tensor data with seed
@@ -397,6 +420,7 @@ def redire_spark_logs(bigdl_type="float", log_path=os.getcwd()+"/bigdl.log"):
     :param log_path: the file path to be redirected to; the default file is under the current workspace named `bigdl.log`.
     """
     callBigDlFunc(bigdl_type, "redirectSparkLogs", log_path)
+
 
 def show_bigdl_info_logs(bigdl_type="float"):
     """
@@ -461,7 +485,10 @@ def create_spark_conf():
     sparkConf = SparkConf()
     sparkConf.setAll(bigdl_conf.items())
     if not is_spark_below_2_2():
-        extend_spark_driver_cp(sparkConf, get_bigdl_classpath())
+        for path in get_bigdl_classpath():
+            extend_spark_driver_cp(sparkConf, path)
+        for jar in Configuration.get_extra_jars():
+            extend_spark_driver_cp(sparkConf, jar)
 
     # add content in PYSPARK_FILES in spark.submit.pyFiles
     # This is a workaround for current Spark on k8s
@@ -506,12 +533,14 @@ def get_spark_sql_context(sc):
     else:
         return SQLContext(sc)  # Compatible with Spark1.5.1
 
+
 def callBigDlFunc(bigdl_type, name, *args):
     """ Call API in PythonBigDL """
     jinstance = JavaCreator.instance(bigdl_type=bigdl_type).value
     sc = get_spark_context()
     api = getattr(jinstance, name)
     return callJavaFunc(sc, api, *args)
+
 
 def _java2py(sc, r, encoding="bytes"):
     if isinstance(r, JavaObject):
@@ -646,6 +675,7 @@ def get_activation_by_name(activation_name, activation_id=None):
     if not activation_id:
         activation.set_name(activation_id)
     return activation
+
 
 def _test():
     import doctest
