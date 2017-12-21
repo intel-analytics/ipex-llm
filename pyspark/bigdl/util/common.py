@@ -129,12 +129,24 @@ class Configuration(object):
     def add_extra_jars(jars):
         """
         Add extra jars to classpath
-        :param jars: a string or a list of strings of jar paths
+        :param jars: a string or a list of strings as jar paths
         """
         import six
         if isinstance(jars, six.string_types):
             jars = [jars]
         Configuration.__extra_jars += jars
+
+    @staticmethod
+    def add_extra_python_modules(modules):
+        """
+        Add extra python modules to sys.path
+        :param modules: a string or a list of strings as python package paths
+        """
+        import six
+        if isinstance(modules, six.string_types):
+            modules = [modules]
+        for module in modules:
+            sys.path.append(module)
 
     @staticmethod
     def get_extra_jars():
