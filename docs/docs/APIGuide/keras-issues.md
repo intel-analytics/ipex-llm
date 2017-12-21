@@ -1,12 +1,13 @@
-## Summary
+# **Summary**
 Up to now, we have generally supported __ALL__ the layers of [__Keras 1.2.2__](https://faroit.github.io/keras-docs/1.2.2/) to be loaded into BigDL.
 
 Self-defined Keras layers or [`Lambda`](https://faroit.github.io/keras-docs/1.2.2/layers/core/#lambda) layers are not supported for now. Weight sharing is not supported for now.
 
-This pages lists the so-far unsupported arguments for specific layers and some known issues.
+This page lists the so-far unsupported arguments for specific layers and some known issues.
 
-## Unsupported Layer Arguments
+## **Unsupported Layer Arguments**
 For the following arguments, currently only the default values are expected and supported.
+
 * Constraints (`W_constraint`, `b_constraint`, etc.) are not supported for all layers.
 * `activity_regularizer` is not supported for all layers.
 * For [`Dropout`](https://faroit.github.io/keras-docs/1.2.2/layers/core/#dropout), `noise_shape` is not supported.
@@ -29,5 +30,5 @@ If RNNs are wrapped with [`Bidirectional`](https://faroit.github.io/keras-docs/1
 * For [`BatchNormalization`](https://faroit.github.io/keras-docs/1.2.2/layers/normalization/#batchnormalization), only `mode=0` is supported. Only `channel_first` (`dim_ordering='th'` with `axis=1`) and `channel_last` (`dim_ordering='tf'` with `axis=-1`) is supported. `gamma_regularizer` and `beta_regularizer` are not supported.
 
 
-## Known Issues
+## **Known Issues**
 * For some layers such as `ZeroPadding2D`, `ZeroPadding3D`, `Cropping2D`, `Cropping3D`, etc., Keras doesn't save `dim_ordering` into JSON. In this case, the default `dim_ordering` found in `~/.keras/keras.json` will be used instead.
