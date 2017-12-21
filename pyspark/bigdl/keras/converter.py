@@ -257,6 +257,8 @@ class WeightsConverter:
         b_weights = k_weights[0].T
         for i in range(1, k_weights.shape[0]):
             b_weights = np.concatenate((b_weights, k_weights[i].T))
+        if len(weights) == 1:  # if without bias
+            return [b_weights]
         return [b_weights, weights[1].reshape(k_weights.shape[0]*k_weights.shape[2], )]
 
     @staticmethod
@@ -1298,7 +1300,7 @@ class LayerConverter:
             adj_w=0,
             adj_h=0,
             n_group=1,
-            no_bias=False,
+            no_bias=not self.klayer.bias,
             wRegularizer=self.to_bigdl_reg(self.config["W_regularizer"]),
             bRegularizer=self.to_bigdl_reg(self.config["b_regularizer"]),
             bigdl_type="float")
@@ -1629,15 +1631,12 @@ class LayerConverter:
         return blayer
 
     def create_maxoutdense(self):
-        if self.config["W_regularizer"]:
-            raise Exception("W_regularizer is not supported for MaxoutDense")
-        if self.config["b_regularizer"]:
-            raise Exception("b_regularizer is not supported for MaxoutDense")
-        if not self.config["bias"]:
-            raise Exception("Only bias=True is supported for MaxoutDense")
         blayer = BLayer.Maxout(input_size=int(self.input_shape[1]),
                                output_size=self.klayer.output_dim,
-                               maxout_number=self.klayer.nb_feature)
+                               maxout_number=self.klayer.nb_feature,
+                               with_bias=self.klayer.bias,
+                               w_regularizer=self.to_bigdl_reg(self.config["W_regularizer"]),
+                               b_regularizer=self.to_bigdl_reg(self.config["b_regularizer"]))
         return blayer
 
     def create_masking(self):
