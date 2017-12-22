@@ -225,15 +225,17 @@ class Poly(JavaValue):
     Calculation: base_lr (1 - iter/max_iteration) ^ (power)
 
 
-    :param power:
-    :param max_iteration:
+    :param power: coeffient of decay, refer to calculation formula
+    :param max_iteration: max iteration when lr becomes zero
+    :param warmupIteration: iteration numbers to take for learning rate reach to max learning rate
+    :param warmupDelta: learning rate increased amount at each iteration
 
 
     >>> poly = Poly(0.5, 2)
     creating: createPoly
     """
-    def __init__(self, power, max_iteration, bigdl_type="float"):
-            JavaValue.__init__(self, None, bigdl_type, power, max_iteration)
+    def __init__(self, power, max_iteration, warmup_iteration = 0, warmup_delta = 0, bigdl_type="float"):
+            JavaValue.__init__(self, None, bigdl_type, power, max_iteration, warmup_iteration, warmup_delta)
 
 
 class Exponential(JavaValue):

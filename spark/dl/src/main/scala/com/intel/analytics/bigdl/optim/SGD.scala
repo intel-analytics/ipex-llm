@@ -277,6 +277,8 @@ object SGD {
    *
    * @param power coeffient of decay, refer to calculation formula
    * @param maxIteration max iteration when lr becomes zero
+   * @param warmupIteration iteration numbers to take for learning rate reach to max learning rate
+   * @param warmupDelta learning rate increased amount at each iteration
    */
   case class Poly(power : Double, maxIteration : Int, warmupIteration: Int = 0,
                   warmupDelta: Double = 0.0) extends LearningRateSchedule {
@@ -302,7 +304,7 @@ object SGD {
       val lr = optimMethod.learningRate
       val nevals = optimMethod.state.get[Int]("evalCounter").getOrElse(0)
       val clr = if (nevals < warmupIteration) {
-        -lr - warmupDelta * nevals
+        - lr - warmupDelta * nevals
       } else if (nevals < maxIteration) {
         - (lr + warmupDelta * warmupIteration) * math.pow(1.0 - (nevals - warmupIteration).toDouble
           / iteration, power)
@@ -314,28 +316,7 @@ object SGD {
       currentRate = clr
     }
   }
-  case class PolyWithWarmUp(
-                             warmUpIteration: Int,
-                             warmUpDelta: Double,
-                             power: Double,
-                             maxIteration: Int) extends LearningRateSchedule {
 
-    override def updateHyperParameter[T](optimMethod: SGD[T]): Unit = {
-      val lr = optimMethod.learningRate
-      val nevals = optimMethod.state.get[Int]("evalCounter").getOrElse(0)
-      val clr = if (nevals < warmUpIteration) {
-        - lr - warmUpDelta * nevals
-      } else if (nevals > maxIteration) {
-        0.0
-      } else {
-        - (lr + warmUpDelta * warmUpIteration) * math.pow(1.0 - (nevals - warmUpIteration).toDouble
-          / (maxIteration - warmUpIteration), power)
-      }
-      println(s"iteration is : ${nevals}. current learning rate is $clr")
-      optimMethod.state("evalCounter") = nevals + 1
-      currentRate = clr
-    }
-  }
   /**
    * A learning rate decay policy, where the effective learning rate
    * is calculated as base_lr * gamma `^` (floor(iter / stepSize))
@@ -412,6 +393,8 @@ object SGD {
    * l_{n + 1} = l_{n} * 0.1 `^` decayType(epoch)
    *
    * @param decayType is a function with number of run epochs as the argument
+   * @param warmupIteration iteration numbers to take for learning rate reach to max learning rate
+   * @param warmupDelta learning rate increased amount at each iteration
    */
   case class EpochDecay(decayType: (Int) => Double, warmupIteration: Int = 0,
     warmupDelta: Double = 0.0) extends LearningRateSchedule {
