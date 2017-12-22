@@ -617,7 +617,6 @@ def _py2java(sc, obj):
                                       sc._gateway._gateway_client)
     elif isinstance(obj, dict):
         result = {}
-        print(obj.keys())
         for (key, value) in obj.items():
             result[key] = _py2java(sc, value)
         obj = MapConverter().convert(result, sc._gateway._gateway_client)
