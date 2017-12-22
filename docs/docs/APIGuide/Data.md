@@ -559,6 +559,6 @@ distributed_image_frame = ImageFrame.read("/tmp/image/", sc, 2)
 
 # create LocalImageFrame from image rdd
 image = cv2.imread("/tmp/test.jpg")
-image_rdd = sc.parallelize(image, 2)
+image_rdd = sc.parallelize([image], 2)
 distributed_image_frame = DistributedImageFrame(image_rdd)
 ```
