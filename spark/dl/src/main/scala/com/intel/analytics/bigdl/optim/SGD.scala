@@ -280,6 +280,7 @@ object SGD {
    */
   case class Poly(power : Double, maxIteration : Int, warmupIteration: Int = 0,
                   warmupDelta: Double = 0.0) extends LearningRateSchedule {
+    val iteration = maxIteration - warmupIteration
     override def updateHyperParameter(config: Table, state: Table): Unit = {
       val lr = config.get[Double]("learningRate").getOrElse(1e-3)
       val nevals = state.get[Int]("evalCounter").getOrElse(0)
@@ -290,7 +291,7 @@ object SGD {
       } else {
         -(lr + warmupDelta * warmupIteration) *
           math.pow(1.0 - (nevals - warmupIteration).toDouble
-            / (maxIteration - warmupIteration), power)
+            / iteration, power)
       }
       println(s"iteration is : ${nevals}. current learning rate is $clr")
       state("evalCounter") = nevals + 1
@@ -304,7 +305,7 @@ object SGD {
         -lr - warmupDelta * nevals
       } else if (nevals < maxIteration) {
         - (lr + warmupDelta * warmupIteration) * math.pow(1.0 - (nevals - warmupIteration).toDouble
-          / (maxIteration - warmupIteration), power)
+          / iteration, power)
         } else {
           0.0
         }
