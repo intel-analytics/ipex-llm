@@ -22,6 +22,7 @@ import com.intel.analytics.bigdl.opencv.OpenCV
 import com.intel.analytics.bigdl.transform.vision.image.util.BoundingBox
 import com.intel.analytics.bigdl.utils.Engine
 import org.apache.commons.io.FileUtils
+import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
 import org.opencv.core.CvType
 import org.opencv.imgcodecs.Imgcodecs
@@ -30,6 +31,9 @@ import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 class OpenCVMatSpec extends FlatSpec with Matchers with BeforeAndAfter {
   val resource = getClass().getClassLoader().getResource("pascal/000025.jpg")
 
+  Logger.getLogger("org").setLevel(Level.ERROR)
+  Logger.getLogger("akka").setLevel(Level.ERROR)
+  Logger.getLogger("breeze").setLevel(Level.ERROR)
   "toFloatsPixels" should "work properly" in {
     val img = OpenCVMat.read(resource.getFile)
     val floats = new Array[Float](img.height() * img.width() * img.channels())
@@ -133,6 +137,14 @@ class OpenCVMatSpec extends FlatSpec with Matchers with BeforeAndAfter {
     img.release()
     img.isReleased should be (true)
     img.shape() should be (0, 0, 3)
+  }
+
+  "empty serialize" should "work properly" in {
+    OpenCV.isOpenCVLoaded
+    val img = new OpenCVMat()
+    val rdd = sc.parallelize(Array(img))
+    val out = rdd.collect()
+    OpenCVMat.toBytePixels(out(0))._1.length should be (0)
   }
 
   "drawBoundingBox" should "work properly" in {

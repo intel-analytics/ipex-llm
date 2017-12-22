@@ -52,8 +52,12 @@ class OpenCVMat() extends Mat with Serializable {
   private def readObject(input: ObjectInputStream): Unit = {
     val t = input.readInt()
     val data = input.readObject.asInstanceOf[Array[Byte]]
-    val mat = OpenCVMat.fromImageBytes(data)
-    mat.convertTo(this, t)
+    if (data.length == 0) {
+      create(0, 0, t)
+    } else {
+      val mat = OpenCVMat.fromImageBytes(data)
+      mat.convertTo(this, t)
+    }
   }
 
   var isReleased: Boolean = false
