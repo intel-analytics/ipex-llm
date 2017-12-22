@@ -26,22 +26,23 @@ import scala.reflect._
 
 /**
  * Transform byte array(original image file in byte) to OpenCVMat
+ * @param byteKey key that maps byte array
  */
-class BytesToMat()
+class BytesToMat(byteKey: String = ImageFeature.bytes)
   extends FeatureTransformer {
 
   override def transform(feature: ImageFeature): ImageFeature = {
-    BytesToMat.transform(feature)
+    BytesToMat.transform(feature, byteKey)
   }
 }
 
 object BytesToMat {
   val logger = Logger.getLogger(getClass)
-  def apply(): BytesToMat = new BytesToMat()
+  def apply(byteKey: String = ImageFeature.bytes): BytesToMat = new BytesToMat(byteKey)
 
-  def transform(feature: ImageFeature): ImageFeature = {
+  def transform(feature: ImageFeature, byteKey: String): ImageFeature = {
     if (!feature.isValid) return feature
-    val bytes = feature[Array[Byte]](ImageFeature.bytes)
+    val bytes = feature[Array[Byte]](byteKey)
     var mat: OpenCVMat = null
     try {
       require(null != bytes && bytes.length > 0, "image file bytes should not be empty")
@@ -67,9 +68,10 @@ object BytesToMat {
  * @param validWidth valid width in case the mat is invalid
  * @param validChannels valid channel in case the mat is invalid
  * @param outKey key to store float array
+ * @param shareBuffer share buffer of output
  */
 class MatToFloats(validHeight: Int, validWidth: Int, validChannels: Int,
-  outKey: String = ImageFeature.floats)
+  outKey: String = ImageFeature.floats, shareBuffer: Boolean = true)
   extends FeatureTransformer {
   @transient private var data: Array[Float] = _
 
@@ -81,7 +83,7 @@ class MatToFloats(validHeight: Int, validWidth: Int, validChannels: Int,
     } else {
       (validHeight, validWidth, validChannels)
     }
-    if (null == data || data.length < height * width * channel) {
+    if (!shareBuffer || null == data || data.length < height * width * channel) {
       data = new Array[Float](height * width * channel)
     }
     if (feature.isValid) {
@@ -102,8 +104,8 @@ object MatToFloats {
   val logger = Logger.getLogger(getClass)
 
   def apply(validHeight: Int = 300, validWidth: Int = 300, validChannels: Int = 3,
-    outKey: String = ImageFeature.floats): MatToFloats =
-    new MatToFloats(validHeight, validWidth, validChannels, outKey)
+    outKey: String = ImageFeature.floats, shareBuffer: Boolean = true): MatToFloats =
+    new MatToFloats(validHeight, validWidth, validChannels, outKey, shareBuffer)
 }
 
 /**
@@ -144,7 +146,7 @@ object MatToTensor {
 }
 
 /**
- * transform imageframe to samples
+ * Transforms tensors that map inputKeys and targetKeys to sample
  * @param inputKeys keys that maps inputs (each input should be a tensor)
  * @param targetKeys keys that maps targets (each target should be a tensor)
  * @param sampleKey key to store sample

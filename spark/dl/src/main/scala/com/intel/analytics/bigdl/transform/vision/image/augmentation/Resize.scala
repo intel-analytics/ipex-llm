@@ -31,9 +31,14 @@ import scala.util.Random
  * @param resizeMode if resizeMode = -1, random select a mode from
  * (Imgproc.INTER_LINEAR, Imgproc.INTER_CUBIC, Imgproc.INTER_AREA,
  *                   Imgproc.INTER_NEAREST, Imgproc.INTER_LANCZOS4)
+ * @param useScaleFactor if true, scale factor fx and fy is used, fx = fy = 0
+ * note that the result of the following are different
+ * Imgproc.resize(mat, mat, new Size(resizeWH, resizeWH), 0, 0, Imgproc.INTER_LINEAR)
+ * Imgproc.resize(mat, mat, new Size(resizeWH, resizeWH))
  */
 class Resize(resizeH: Int, resizeW: Int,
-  resizeMode: Int = Imgproc.INTER_LINEAR)
+  resizeMode: Int = Imgproc.INTER_LINEAR,
+  useScaleFactor: Boolean = true)
   extends FeatureTransformer {
 
   private val interpMethods = Array(Imgproc.INTER_LINEAR, Imgproc.INTER_CUBIC, Imgproc.INTER_AREA,
@@ -45,7 +50,8 @@ class Resize(resizeH: Int, resizeW: Int,
     } else {
       resizeMode
     }
-    Resize.transform(feature.opencvMat(), feature.opencvMat(), resizeW, resizeH, interpMethod)
+    Resize.transform(feature.opencvMat(), feature.opencvMat(), resizeW, resizeH, interpMethod,
+      useScaleFactor)
   }
 }
 
@@ -53,13 +59,17 @@ object Resize {
   val logger = Logger.getLogger(getClass)
 
   def apply(resizeH: Int, resizeW: Int,
-    resizeMode: Int = Imgproc.INTER_LINEAR): Resize =
-    new Resize(resizeH, resizeW, resizeMode)
+    resizeMode: Int = Imgproc.INTER_LINEAR, useScaleFactor: Boolean = true): Resize =
+    new Resize(resizeH, resizeW, resizeMode, useScaleFactor)
 
   def transform(input: OpenCVMat, output: OpenCVMat, resizeW: Int, resizeH: Int,
-                mode: Int = Imgproc.INTER_LINEAR)
+                mode: Int = Imgproc.INTER_LINEAR, useScaleFactor: Boolean = true)
   : OpenCVMat = {
-    Imgproc.resize(input, output, new Size(resizeW, resizeH), 0, 0, mode)
+    if (useScaleFactor) {
+      Imgproc.resize(input, output, new Size(resizeW, resizeH), 0, 0, mode)
+    } else {
+      Imgproc.resize(input, output, new Size(resizeW, resizeH))
+    }
     output
   }
 }

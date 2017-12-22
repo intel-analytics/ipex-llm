@@ -312,12 +312,12 @@ object ImageFeature {
   val boundingBox = "boundingBox"
 
   /**
-   * key: sample
+   * key: image (and label if available) stored as Sample
    */
   val sample = "sample"
 
   /**
-   * key: Image Tensor
+   * key: image pixels in Tensor
    */
   val imageTensor = "imageTensor"
 
