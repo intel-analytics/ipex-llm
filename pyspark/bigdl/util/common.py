@@ -123,7 +123,7 @@ def get_dtype(bigdl_type):
 
 
 class Configuration(object):
-    __extra_jars = []
+    __bigdl_jars = [get_bigdl_classpath()]
 
     @staticmethod
     def add_extra_jars(jars):
@@ -134,7 +134,7 @@ class Configuration(object):
         import six
         if isinstance(jars, six.string_types):
             jars = [jars]
-        Configuration.__extra_jars += jars
+        Configuration.__bigdl_jars += jars
 
     @staticmethod
     def add_extra_python_modules(packages):
@@ -146,11 +146,11 @@ class Configuration(object):
         if isinstance(packages, six.string_types):
             packages = [packages]
         for package in packages:
-            sys.path.append(package)
+            sys.path.insert(0, package)
 
     @staticmethod
-    def get_extra_jars():
-        return Configuration.__extra_jars
+    def get_bigdl_jars():
+        return Configuration.__bigdl_jars
 
 
 class JActivity(object):
@@ -497,8 +497,7 @@ def create_spark_conf():
     sparkConf = SparkConf()
     sparkConf.setAll(bigdl_conf.items())
     if not is_spark_below_2_2():
-        extend_spark_driver_cp(sparkConf, get_bigdl_classpath())
-        for jar in Configuration.get_extra_jars():
+        for jar in Configuration.get_bigdl_jars():
             extend_spark_driver_cp(sparkConf, jar)
 
     # add content in PYSPARK_FILES in spark.submit.pyFiles
