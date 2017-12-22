@@ -137,16 +137,16 @@ class Configuration(object):
         Configuration.__extra_jars += jars
 
     @staticmethod
-    def add_extra_python_modules(modules):
+    def add_extra_python_modules(packages):
         """
         Add extra python modules to sys.path
-        :param modules: a string or a list of strings as python package paths
+        :param packages: a string or a list of strings as python package paths
         """
         import six
-        if isinstance(modules, six.string_types):
-            modules = [modules]
-        for module in modules:
-            sys.path.append(module)
+        if isinstance(packages, six.string_types):
+            packages = [packages]
+        for package in packages:
+            sys.path.append(package)
 
     @staticmethod
     def get_extra_jars():
@@ -514,7 +514,7 @@ def create_spark_conf():
     return sparkConf
 
 
-def get_spark_context(conf = None):
+def get_spark_context(conf=None):
     """
     Get the current active spark context and create one if no active instance
     :param conf: combining bigdl configs into spark conf
