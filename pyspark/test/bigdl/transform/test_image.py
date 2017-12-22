@@ -180,13 +180,11 @@ class TestLayer():
 
     def test_empty_get_predict_local(self):
         image_frame = ImageFrame.read(self.image_path)
-        predicts = image_frame.get_predict()
-        assert predicts[0][1] is None
+        image_frame.get_predict()
 
     def test_empty_get_predict_distributed(self):
         image_frame = ImageFrame.read(self.image_path, self.sc)
-        predicts = image_frame.get_predict()
-        assert predicts.first()[1] is None
+        image_frame.get_predict()
 
 
 if __name__ == "__main__":
