@@ -2615,8 +2615,9 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     HFlip()
   }
 
-  def createResize(resizeH: Int, resizeW: Int, resizeMode: Int = Imgproc.INTER_LINEAR): Resize = {
-    Resize(resizeH, resizeW, resizeMode)
+  def createResize(resizeH: Int, resizeW: Int, resizeMode: Int = Imgproc.INTER_LINEAR,
+    useScaleFactor: Boolean): Resize = {
+    Resize(resizeH, resizeW, resizeMode, useScaleFactor)
   }
 
   def createColorJitter(brightnessProb: Double = 0.5, brightnessDelta: Double = 32,
@@ -2774,8 +2775,9 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     val feature = new ImageFeature()
     if (null != data) {
       val mat = OpenCVMat.fromFloats(data.storage, data.shape(0), data.shape(1))
+      feature(ImageFeature.bytes) = OpenCVMat.imencode(mat)
       feature(ImageFeature.mat) = mat
-      feature(ImageFeature.size) = mat.shape()
+      feature(ImageFeature.originalSize) = mat.shape()
     }
     if (null != label) {
       // todo: may need a method to change label format if needed
@@ -2803,13 +2805,23 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
 
   def distributedImageFrameToPredict(imageFrame: DistributedImageFrame, key: String)
   : JavaRDD[JList[Any]] = {
-    imageFrame.rdd.map(x => List[Any](x.uri(), toJTensor(x[Tensor[T]](key))).asJava)
+    imageFrame.rdd.map(x => {
+      if (x.isValid && x.contains(key)) {
+        List[Any](x.uri(), toJTensor(x[Tensor[T]](key))).asJava
+      } else {
+        List[Any](x.uri(), null).asJava
+      }
+    })
   }
 
   def localImageFrameToPredict(imageFrame: LocalImageFrame, key: String)
   : JList[JList[Any]] = {
     imageFrame.array.map(x =>
-      List[Any](x.uri(), toJTensor(x[Tensor[T]](key))).asJava).toList.asJava
+      if (x.isValid && x.contains(key)) {
+        List[Any](x.uri(), toJTensor(x[Tensor[T]](key))).asJava
+      } else {
+        List[Any](x.uri(), null).asJava
+      }).toList.asJava
   }
 
   def localImageFrameToImageTensor(imageFrame: LocalImageFrame,
@@ -2847,13 +2859,13 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     ImageFrame.readParquet(path, sqlContext)
   }
 
-  def createBytesToMat(): BytesToMat = {
-    BytesToMat()
+  def createBytesToMat(byteKey: String): BytesToMat = {
+    BytesToMat(byteKey)
   }
 
   def createMatToFloats(validHeight: Int = 300, validWidth: Int = 300, validChannels: Int = 3,
-    outKey: String = ImageFeature.floats): MatToFloats =
-    new MatToFloats(validHeight, validWidth, validChannels, outKey)
+    outKey: String = ImageFeature.floats, shareBuffer: Boolean = true): MatToFloats =
+    new MatToFloats(validHeight, validWidth, validChannels, outKey, shareBuffer)
 
   def createMatToTensor(toRGB: Boolean = false, tensorKey: String = ImageFeature.imageTensor)
   : MatToTensor[T] = new MatToTensor[T](toRGB, tensorKey)
