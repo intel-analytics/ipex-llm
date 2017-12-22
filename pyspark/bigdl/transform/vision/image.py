@@ -538,12 +538,13 @@ class MatToFloats(FeatureTransformer):
     :param valid_width valid width in case the mat is invalid
     :param valid_channel valid channel in case the mat is invalid
     :param out_key key to store float array
+    :param share_buffer share buffer of output
     """
 
     def __init__(self, valid_height=300, valid_width=300, valid_channel=300,
-                 out_key = "floats", bigdl_type="float"):
+                 out_key = "floats", share_buffer=True, bigdl_type="float"):
         super(MatToFloats, self).__init__(bigdl_type, valid_height, valid_width, valid_channel,
-                                          out_key)
+                                          out_key, share_buffer)
 
 class MatToTensor(FeatureTransformer):
     """

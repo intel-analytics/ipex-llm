@@ -160,6 +160,10 @@ class TestLayer():
         transformer = MatToFloats()
         self.transformer_test(transformer)
 
+    def test_mat_to_floats_no_share(self):
+        transformer = MatToFloats(share_buffer=False)
+        self.transformer_test(transformer)
+
     def test_mat_to_tensor(self):
         transformer = MatToTensor()
         self.transformer_test(transformer)

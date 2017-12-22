@@ -68,9 +68,10 @@ object BytesToMat {
  * @param validWidth valid width in case the mat is invalid
  * @param validChannels valid channel in case the mat is invalid
  * @param outKey key to store float array
+ * @param shareBuffer share buffer of output
  */
 class MatToFloats(validHeight: Int, validWidth: Int, validChannels: Int,
-  outKey: String = ImageFeature.floats)
+  outKey: String = ImageFeature.floats, shareBuffer: Boolean = true)
   extends FeatureTransformer {
   @transient private var data: Array[Float] = _
 
@@ -82,7 +83,7 @@ class MatToFloats(validHeight: Int, validWidth: Int, validChannels: Int,
     } else {
       (validHeight, validWidth, validChannels)
     }
-    if (null == data || data.length < height * width * channel) {
+    if (!shareBuffer || null == data || data.length < height * width * channel) {
       data = new Array[Float](height * width * channel)
     }
     if (feature.isValid) {
@@ -103,8 +104,8 @@ object MatToFloats {
   val logger = Logger.getLogger(getClass)
 
   def apply(validHeight: Int = 300, validWidth: Int = 300, validChannels: Int = 3,
-    outKey: String = ImageFeature.floats): MatToFloats =
-    new MatToFloats(validHeight, validWidth, validChannels, outKey)
+    outKey: String = ImageFeature.floats, shareBuffer: Boolean = true): MatToFloats =
+    new MatToFloats(validHeight, validWidth, validChannels, outKey, shareBuffer)
 }
 
 /**

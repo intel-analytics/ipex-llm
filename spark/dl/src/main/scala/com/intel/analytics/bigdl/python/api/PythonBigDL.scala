@@ -2864,8 +2864,8 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def createMatToFloats(validHeight: Int = 300, validWidth: Int = 300, validChannels: Int = 3,
-    outKey: String = ImageFeature.floats): MatToFloats =
-    new MatToFloats(validHeight, validWidth, validChannels, outKey)
+    outKey: String = ImageFeature.floats, shareBuffer: Boolean = true): MatToFloats =
+    new MatToFloats(validHeight, validWidth, validChannels, outKey, shareBuffer)
 
   def createMatToTensor(toRGB: Boolean = false, tensorKey: String = ImageFeature.imageTensor)
   : MatToTensor[T] = new MatToTensor[T](toRGB, tensorKey)
