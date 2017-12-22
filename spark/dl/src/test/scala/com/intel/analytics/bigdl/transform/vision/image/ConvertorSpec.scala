@@ -33,18 +33,6 @@ class ConvertorSpec extends FlatSpec with Matchers {
     data2.toLocal().array(0).floats() should equal(float._1)
   }
 
-  "MatToFloat share" should "work properly" in {
-    val resource = getClass.getClassLoader.getResource("imagenet/n02110063")
-    val data = ImageFrame.read(resource.getFile)
-    val transformer = MatToFloats()
-    transformer(data)
-    val array = data.toLocal().array
-    val eq1 = array(0).floats().equals(array(1).floats())
-    val eq2 = array(0).floats().equals(array(2).floats())
-    val eq3 = array(1).floats().equals(array(2).floats())
-    (eq1 || eq2 || eq3) should be (true)
-  }
-
   "MatToFloat no share" should "work properly" in {
     val resource = getClass.getClassLoader.getResource("imagenet/n02110063")
     val data = ImageFrame.read(resource.getFile)
