@@ -105,7 +105,8 @@ object DistriOptimizer {
     trainSummary: Option[TrainSummary],
     validationSummary: Option[ValidationSummary],
     isOverWrite: Boolean,
-    clippingParams: GradientClippingParams
+    clippingParams: GradientClippingParams,
+    lookupDic: Array[mutable.HashMap[Int, (Int, Int)]]
   )(implicit ev: TensorNumeric[T]): Unit = {
     val sc = dataset.originRDD().sparkContext
     val partitionNum = dataset.originRDD().partitions.length
@@ -154,7 +155,7 @@ object DistriOptimizer {
 
     // gradient clip settings
     val constantClippingEnable = clippingParams.enableConstantClipping
-    val normClippingEnable = clippingParams.enableL2NormClipping
+    val l2normClippingEnable = clippingParams.enableL2NormClipping
     val maxValueClip = clippingParams.maxValueClip
     val minValueClip = clippingParams.minValueClip
     val normValueClip = clippingParams.normValueClip
@@ -303,7 +304,7 @@ object DistriOptimizer {
 
         var l2Norm = 0.0f
         var scale = ev.fromType(numFinishedModelUpdates)
-        if (normClippingEnable) {
+        if (l2normClippingEnable) {
           val sumSquare = models.mapPartitions(modelIter => {
             val getG = System.nanoTime()
             parameters.aggregateGradientPartition()
@@ -337,7 +338,7 @@ object DistriOptimizer {
 
         models.mapPartitions { modelIter =>
           val modelCache = modelIter.next()
-          if (!normClippingEnable) {
+          if (!l2normClippingEnable) {
             val getG = System.nanoTime()
             parameters.aggregateGradientPartition()
             driverMetrics.add("aggregrateGradientParition average executor",
@@ -599,6 +600,44 @@ object DistriOptimizer {
     val computeThresholdbatchSize = state.get[Int]("computeThresholdbatchSize").get
     val nExecutor = Engine.nodeNumber()
     val executorCores = Engine.coreNumber()
+
+    val parameterPerLayerSizes = model.parameters()._1.map(_.nElement())
+    
+    val sizesBroadcast = sc.broadcast(parameterPerLayerSizes)
+    val parameterPerNodeSizes = dataset.originRDD().mapPartitions { _ =>
+      val sizeValues = sizesBroadcast.value
+      val weights = modelBroadcast.value(false).getParameters()._1
+      Iterator.single(parameters.init(weights, sizeValues))
+    }.collect()
+    // stores each layers start, end on each partition
+    val lookupDic = new Array[mutable.HashMap[Int, (Int, Int)]](parameterPerNodeSizes.length)
+    var i = 0
+    require(parameterPerNodeSizes.length == partitionNum,
+      "each partition shoule return its parameter meta data")
+
+    var layerIndex = 0
+    var parameterPerLayerLeftLen = parameterPerLayerSizes(layerIndex)
+    while (i < parameterPerNodeSizes.length) {
+      var start = 0
+      var parameterPerNodeLeftLen = parameterPerNodeSizes(i)._3
+      val map = new mutable.HashMap[Int, (Int, Int)]()
+      while (parameterPerNodeLeftLen > 0) {
+        if (parameterPerNodeLeftLen <= parameterPerLayerLeftLen) {
+          parameterPerLayerLeftLen -= parameterPerNodeLeftLen
+          map(layerIndex) = (start, parameterPerNodeLeftLen)
+          parameterPerNodeLeftLen = 0
+        } else {
+          map(layerIndex) = (start, parameterPerLayerLeftLen)
+          parameterPerNodeLeftLen -= parameterPerLayerLeftLen
+          start += parameterPerLayerLeftLen
+          layerIndex += 1
+          parameterPerLayerLeftLen = parameterPerLayerSizes(layerIndex)
+        }
+      }
+      lookupDic(i) = map
+      i += 1
+    }
+
     val models = dataset.originRDD().mapPartitions(_ => {
       val (broadcastCriterion, broadcastState, broadcastMethod,
       broadcastOptim) = broadcast.value
@@ -626,8 +665,6 @@ object DistriOptimizer {
       }.toArray
 
       logger.info("model thread pool size is " + Engine.model.getPoolSize)
-      val weights = cached.head._2
-      parameters.init(weights)
 
       Iterator.single(Cache(
         cached.map(_._1), // models
@@ -644,7 +681,7 @@ object DistriOptimizer {
     logger.info("Cache thread models...")
     models.count()
     logger.info("Cache thread models... done")
-    models
+    (models, lookupDic)
   }
 
 
@@ -861,9 +898,10 @@ class DistriOptimizer[T: ClassTag] (
 
     prepareInput()
 
-    models = DistriOptimizer.initThreadModels(model, distDataset, criterion, state,
+    var initedVariables = DistriOptimizer.initThreadModels(model, distDataset, criterion, state,
       nodeNumber, coresPerNode, checkSingleton, parameters, validationMethods, optimMethod)
 
+    models = initedVariables._1
     if (checkpointPath.isDefined) {
       val file = checkpointPath.get + "/" +
         new SimpleDateFormat("yyyyMMdd_HHmmss").format(Calendar.getInstance().getTime())
@@ -896,7 +934,8 @@ class DistriOptimizer[T: ClassTag] (
           trainSummary,
           validationSummary,
           isOverWrite,
-          gradientClippingParams
+          gradientClippingParams,
+          initedVariables._2
         )
         retryNum = Int.MaxValue
       } catch {
@@ -934,8 +973,10 @@ class DistriOptimizer[T: ClassTag] (
               DistriOptimizer.logger.info("Recover from origin model")
             }
             optimMethod.clearHistory()
-            models = DistriOptimizer.initThreadModels(newModel, distDataset, criterion, state,
-              nodeNumber, coresPerNode, checkSingleton, parameters, validationMethods, optimMethod)
+            initedVariables = DistriOptimizer.initThreadModels(newModel, distDataset, criterion,
+              state, nodeNumber, coresPerNode, checkSingleton, parameters, validationMethods,
+              optimMethod)
+            models = initedVariables._1
           } else {
             throw t
           }

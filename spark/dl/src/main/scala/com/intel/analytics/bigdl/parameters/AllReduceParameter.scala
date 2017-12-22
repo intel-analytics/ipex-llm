@@ -16,7 +16,7 @@
 package com.intel.analytics.bigdl.parameters
 
 import java.util.concurrent.atomic.AtomicLong
-import java.util.concurrent.{Callable, Executors, ExecutorService, Future, ThreadFactory}
+import java.util.concurrent.{Callable, ExecutorService, Executors, Future, ThreadFactory}
 
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -28,6 +28,7 @@ import org.apache.spark.storage.{BlockId, BlockManagerWrapper, StorageLevel}
 import org.apache.spark.TaskContext
 
 import scala.collection.JavaConverters._
+import scala.collection.mutable.ArrayBuffer
 import scala.reflect._
 
 object AllReduceParameter {
@@ -134,7 +135,8 @@ class AllReduceParameter[T: ClassTag](id: Long, partitionNum: Int, size: Int) ex
    * @param parameter A tensor representing the initial underlying weights of this
    *                  `AllReduceParameter`
    */
-  def init(parameter: Tensor[T])(implicit ev: TensorNumeric[T]): Unit = {
+  def init(parameter: Tensor[T], sizes: Array[Int])(implicit ev: TensorNumeric[T]):
+    (Int, Int, Int) = {
     val _classTag = classTag[T]
     val start = partitionId * taskSize + math.min(partitionId, extraSize)
     val length = taskSize + (if (partitionId < extraSize) 1 else 0)
@@ -152,6 +154,7 @@ class AllReduceParameter[T: ClassTag](id: Long, partitionNum: Int, size: Int) ex
     val fp16param = new FP16CompressedTensor[T](length)(_classTag)
     fp16param.compress(0, parameter, start, length)
     BlockManagerWrapper.putBytes(blockId, fp16param.bytes(), StorageLevel.MEMORY_ONLY_SER)
+    (partitionId, start, length)
   }
 
   private def getWeightBlockId(pid: Int): BlockId = {
