@@ -23,7 +23,8 @@ import com.intel.analytics.bigdl.dataset.image.{BGRImgToBatch, LabeledBGRImage}
 import com.intel.analytics.bigdl.dataset.{DataSet, DistributedDataSet, MiniBatch, Sample}
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
-import com.intel.analytics.bigdl.tensor.{Storage, Tensor, DenseTensor}
+import com.intel.analytics.bigdl.parameters.AllReduceParameter
+import com.intel.analytics.bigdl.tensor.{DenseTensor, Storage, Tensor}
 import com.intel.analytics.bigdl.utils._
 import com.intel.analytics.bigdl.visualization.TrainSummary
 import org.apache.log4j.{Level, Logger}

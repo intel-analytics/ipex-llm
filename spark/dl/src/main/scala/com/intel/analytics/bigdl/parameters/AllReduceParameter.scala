@@ -28,6 +28,7 @@ import org.apache.spark.storage.{BlockId, BlockManagerWrapper, StorageLevel}
 import org.apache.spark.TaskContext
 
 import scala.collection.JavaConverters._
+import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect._
 
@@ -306,6 +307,19 @@ class AllReduceParameter[T: ClassTag](id: Long, partitionNum: Int, size: Int) ex
       .map(_.data.next().asInstanceOf[Tensor[T]])
       .getOrElse(throw new IllegalStateException("Please initialize AllReduceParameter first!"))
     weights.copy(weightPartition)
+  }
+
+  def squareSumPerLayer(lookupDic: Array[mutable.HashMap[Int, (Int, Int)]]):
+    Array[(Int, (T, T))] = {
+    val lookupMap = lookupDic(partitionId)
+    val list = new Array[(Int, (T, T))](lookupMap.size)
+    var i = 0
+    for ((k, v) <- lookupMap) {
+      list(i) = (k, (weightPartition.narrow(1, v._1, v._2).sumSquare(),
+        gradientPartition.narrow(1, v._1, v._2).sumSquare()))
+      i += 1
+    }
+    list
   }
 }
 

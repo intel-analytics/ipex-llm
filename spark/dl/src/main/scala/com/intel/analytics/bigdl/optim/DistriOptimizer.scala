@@ -163,6 +163,10 @@ object DistriOptimizer {
     var epochStart = System.nanoTime()
     var dataRDD = dataset.data(train = true)
     var recordsProcessedThisEpoch = 0
+    // test code
+    val larsenable = true
+    val lookupDicBroadcast = sc.broadcast(lookupDic)
+
     while (!endWhen(driverState)) {
       val lossSum = sc.accumulator(0.0, "loss sum")
       val recordsNum = sc.accumulator(0, "record number")
@@ -330,6 +334,7 @@ object DistriOptimizer {
             }
             Iterator.single(sum)
           }).reduce(_ + _)
+
           l2Norm = (math.sqrt(sumSquare) / numFinishedModelUpdates).toFloat
           if (l2Norm > normValueClip) {
             scale = ev.fromType[Double]((l2Norm * numFinishedModelUpdates) / normValueClip)
@@ -605,6 +610,19 @@ object DistriOptimizer {
     
     val sizesBroadcast = sc.broadcast(parameterPerLayerSizes)
     val parameterPerNodeSizes = dataset.originRDD().mapPartitions { _ =>
+      if (!Engine.checkSingleton()) {
+        if (checkSingleton) {
+          require(Engine.checkSingleton(), "Partitions of the training data are not evenly" +
+            "distributed across the executors in the Spark cluster; are there sufficient training" +
+            "data to be distributed? Set property \"bigdl.check.singleton\" to false to skip " +
+            "this check")
+        } else {
+          logger.warn("Partitions of the training data are not evenly" +
+            "distributed across the executors in the Spark cluster; are there sufficient training" +
+            "data to be distributed?")
+        }
+      }
+      Engine.setNodeAndCore(nExecutor, executorCores)
       val sizeValues = sizesBroadcast.value
       val weights = modelBroadcast.value(false).getParameters()._1
       Iterator.single(parameters.init(weights, sizeValues))
@@ -615,11 +633,16 @@ object DistriOptimizer {
     require(parameterPerNodeSizes.length == partitionNum,
       "each partition shoule return its parameter meta data")
 
-    var layerIndex = 0
-    var parameterPerLayerLeftLen = parameterPerLayerSizes(layerIndex)
+    var layerIndex = -1
+    var parameterPerLayerLeftLen = 0
     while (i < parameterPerNodeSizes.length) {
-      var start = 0
+      var start = 1
       var parameterPerNodeLeftLen = parameterPerNodeSizes(i)._3
+      if (parameterPerLayerLeftLen == 0) {
+        layerIndex += 1
+        parameterPerLayerLeftLen
+          = parameterPerLayerSizes(layerIndex)
+      }
       val map = new mutable.HashMap[Int, (Int, Int)]()
       while (parameterPerNodeLeftLen > 0) {
         if (parameterPerNodeLeftLen <= parameterPerLayerLeftLen) {
@@ -638,22 +661,24 @@ object DistriOptimizer {
       i += 1
     }
 
+    // Check if lookupDic is correct
+    val squareSumPerLayer = dataset.originRDD().mapPartitions( _ => {
+      parameters.squareSumPerLayer(lookupDic).iterator
+    }).reduceByKey((a, b) => (ev.plus(a._1, b._1), ev.plus(a._2, b._2))).sortByKey(true).collect()
+    
+    require(parameterPerLayerSizes.length == squareSumPerLayer.length,
+      "lookupDic length is not correct!")
+    for((parameter, i) <- model.parameters()._1.view.zipWithIndex) {
+        require(ev.isGreater(ev.fromType(1e-3),
+          (ev.minus(parameter.sumSquare(), squareSumPerLayer(i)._2._1))),
+          s"lookupDic value is not correct! ori is ${parameter.sumSquare()}" +
+            s" now is ${squareSumPerLayer(i)._2._1}")
+    }
+    logger.info("lookupDic check pass!!")
+
     val models = dataset.originRDD().mapPartitions(_ => {
       val (broadcastCriterion, broadcastState, broadcastMethod,
       broadcastOptim) = broadcast.value
-      if (!Engine.checkSingleton()) {
-        if (checkSingleton) {
-          require(Engine.checkSingleton(), "Partitions of the training data are not evenly" +
-            "distributed across the executors in the Spark cluster; are there sufficient training" +
-            "data to be distributed? Set property \"bigdl.check.singleton\" to false to skip " +
-            "this check")
-        } else {
-          logger.warn("Partitions of the training data are not evenly" +
-            "distributed across the executors in the Spark cluster; are there sufficient training" +
-            "data to be distributed?")
-        }
-      }
-      Engine.setNodeAndCore(nExecutor, executorCores)
       val cached = (0 until _subModelNumber).map { _ =>
         val localModel = modelBroadcast.value(true)
         val localCriterion = broadcastCriterion.cloneCriterion()
