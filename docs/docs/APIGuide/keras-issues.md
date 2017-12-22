@@ -22,8 +22,9 @@ For the following arguments, currently only the default values are expected and 
 * For [`AveragePooling3D`](https://faroit.github.io/keras-docs/1.2.2/layers/pooling/#averagepooling3d), only `dim_ordering='th'` and `border_mode='valid'` are supported.
 * For `GlobalMaxPooling3D`, only `dim_ordering='th'` is supported.
 * For `GlobalAveragePooling3D`, only `dim_ordering='th'` is supported.
-* For all [`Recurrent`](https://faroit.github.io/keras-docs/1.2.2/layers/recurrent/#recurrent) layers ([`SimpleRNN`](https://faroit.github.io/keras-docs/1.2.2/layers/recurrent/#simplernn), [`GRU`](https://faroit.github.io/keras-docs/1.2.2/layers/recurrent/#gru) and [`LSTM`](https://faroit.github.io/keras-docs/1.2.2/layers/recurrent/#lstm)), `stateful`, `consume_less`, `dropout_W` and `dropout_U` are not supported.
+* For all [`Recurrent`](https://faroit.github.io/keras-docs/1.2.2/layers/recurrent/#recurrent) layers ([`SimpleRNN`](https://faroit.github.io/keras-docs/1.2.2/layers/recurrent/#simplernn), [`GRU`](https://faroit.github.io/keras-docs/1.2.2/layers/recurrent/#gru), [`LSTM`](https://faroit.github.io/keras-docs/1.2.2/layers/recurrent/#lstm) and `ConvLSTM2D`), `stateful`, `consume_less`, `dropout_W` and `dropout_U` are not supported.
 If RNNs are wrapped with [`Bidirectional`](https://faroit.github.io/keras-docs/1.2.2/layers/wrappers/#bidirectional), only `return_sequences=True` is supported.
+* For `ConvLSTM2D`, only `border_mode='valid'`, `nb_row==nb_col`(square kernel) and `subsample[0]==subsample[1]`(equal strides) are supported.
 * For [`Embedding`](https://faroit.github.io/keras-docs/1.2.2/layers/embeddings/#embedding), `mask_zero` and `dropout` are not supported.
 * For [`PReLU`](https://faroit.github.io/keras-docs/1.2.2/layers/advanced-activations/#prelu), `init`, `weights` and `shared_axes` are not supported.
 * For [`ParametricSoftplus`](https://faroit.github.io/keras-docs/1.2.2/layers/advanced-activations/#parametricsoftplus), `weights` and `shared_axes` are not supported. Only `alpha_init = 1/beta_init` is supported.
@@ -31,4 +32,5 @@ If RNNs are wrapped with [`Bidirectional`](https://faroit.github.io/keras-docs/1
 
 
 ## **Known Issues**
-* For some layers such as `ZeroPadding2D`, `ZeroPadding3D`, `Cropping2D`, `Cropping3D`, etc., Keras doesn't save `dim_ordering` into JSON. In this case, the default `dim_ordering` found in `~/.keras/keras.json` will be used instead.
+* For some layers such as [`ZeroPadding2D`](https://faroit.github.io/keras-docs/1.2.2/layers/convolutional/#zeropadding2d), [`ZeroPadding3D`](https://faroit.github.io/keras-docs/1.2.2/layers/convolutional/#zeropadding3d), [`Cropping2D`](https://faroit.github.io/keras-docs/1.2.2/layers/convolutional/#cropping2d), [`Cropping3D`](https://faroit.github.io/keras-docs/1.2.2/layers/convolutional/#cropping3d), etc., Keras doesn't save `dim_ordering` into config. In this case, the default `dim_ordering` found in `~/.keras/keras.json` will be used instead.
+* For `ConvLSTM2D`, Keras doesn't save `W_regularizer`, `U_regularizer` and `b_regularizer` into config. In this case, the default `None` will be used instead.
