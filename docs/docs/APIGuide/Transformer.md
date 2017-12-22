@@ -717,18 +717,19 @@ transformed = transformer(data)
 **Scala:**
 ```scala
 val transformer = MatToFloats(validHeight: Int, validWidth: Int, validChannels: Int,
-                    outKey: String = ImageFeature.floats)
+                    outKey: String = ImageFeature.floats, shareBuffer: Boolean = true)
 ```
 **Python:**
 ```python
 transformer = MatToFloats(valid_height=300, valid_width=300, valid_channel=300,
-                                          out_key = "floats")
+                                          out_key = "floats", share_buffer=True)
 ```
 Transform OpenCVMat to float array, note that in this transformer, the mat is released.
  * `validHeight` valid height in case the mat is invalid
  * `validWidth` valid width in case the mat is invalid
  * `validChannels` valid channel in case the mat is invalid
  * `outKey` key to store float array
+ * `shareBuffer` share buffer of output
 
 **Scala example:**
 ```scala
