@@ -160,6 +160,10 @@ class TestLayer():
         transformer = MatToFloats()
         self.transformer_test(transformer)
 
+    def test_mat_to_floats_no_share(self):
+        transformer = MatToFloats(share_buffer=False)
+        self.transformer_test(transformer)
+
     def test_mat_to_tensor(self):
         transformer = MatToTensor()
         self.transformer_test(transformer)
@@ -173,6 +177,14 @@ class TestLayer():
         image_frame = ImageFrame.read(self.image_path)
         image_frame.transform(transformer)
         image_frame.get_image()
+
+    def test_empty_get_predict_local(self):
+        image_frame = ImageFrame.read(self.image_path)
+        image_frame.get_predict()
+
+    def test_empty_get_predict_distributed(self):
+        image_frame = ImageFrame.read(self.image_path, self.sc)
+        image_frame.get_predict()
 
 
 if __name__ == "__main__":
