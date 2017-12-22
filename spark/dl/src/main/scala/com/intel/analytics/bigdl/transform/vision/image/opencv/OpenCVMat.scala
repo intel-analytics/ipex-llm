@@ -37,9 +37,15 @@ class OpenCVMat() extends Mat with Serializable {
 
   @throws(classOf[IOException])
   private def writeObject(out: ObjectOutputStream): Unit = {
-    val bytes = OpenCVMat.imencode(this)
-    out.writeInt(`type`())
-    out.writeObject(bytes)
+    try {
+      val bytes = OpenCVMat.imencode(this)
+      out.writeInt(`type`())
+      out.writeObject(bytes)
+    } catch {
+      case e: Exception =>
+        out.writeInt(`type`())
+        out.writeObject(Array[Byte]())
+    }
   }
 
   @throws(classOf[IOException])
