@@ -29,7 +29,7 @@ from pyspark import SparkConf
 import numpy as np
 import threading
 import tempfile
-from bigdl.util.engine import prepare_env, get_bigdl_classpath, is_spark_below_2_2
+from bigdl.util.engine import get_bigdl_classpath, is_spark_below_2_2
 
 INTMAX = 2147483647
 INTMIN = -2147483648
@@ -38,6 +38,7 @@ DOUBLEMAX = 1.7976931348623157E308
 if sys.version >= '3':
     long = int
     unicode = str
+
 
 class SingletonMixin(object):
     _lock = threading.RLock()
@@ -51,6 +52,7 @@ class SingletonMixin(object):
                 if not cls._instance:
                     cls._instance = cls(bigdl_type)
         return cls._instance
+
 
 class JavaCreator(SingletonMixin):
     __creator_class="com.intel.analytics.bigdl.python.api.PythonBigDL"
@@ -114,9 +116,41 @@ class EvaluatedResult():
         return "Evaluated result: %s, total_num: %s, method: %s" % (
             self.result, self.total_num, self.method)
 
+
 def get_dtype(bigdl_type):
     # Always return float32 for now
     return "float32"
+
+
+class Configuration(object):
+    __bigdl_jars = [get_bigdl_classpath()]
+
+    @staticmethod
+    def add_extra_jars(jars):
+        """
+        Add extra jars to classpath
+        :param jars: a string or a list of strings as jar paths
+        """
+        import six
+        if isinstance(jars, six.string_types):
+            jars = [jars]
+        Configuration.__bigdl_jars += jars
+
+    @staticmethod
+    def add_extra_python_modules(packages):
+        """
+        Add extra python modules to sys.path
+        :param packages: a string or a list of strings as python package paths
+        """
+        import six
+        if isinstance(packages, six.string_types):
+            packages = [packages]
+        for package in packages:
+            sys.path.insert(0, package)
+
+    @staticmethod
+    def get_bigdl_jars():
+        return Configuration.__bigdl_jars
 
 
 class JActivity(object):
@@ -358,6 +392,7 @@ class Sample(object):
     def __repr__(self):
         return "Sample: features: %s, labels: %s" % (self.features, self.labels)
 
+
 class RNG():
     """
     generate tensor data with seed
@@ -397,6 +432,7 @@ def redire_spark_logs(bigdl_type="float", log_path=os.getcwd()+"/bigdl.log"):
     :param log_path: the file path to be redirected to; the default file is under the current workspace named `bigdl.log`.
     """
     callBigDlFunc(bigdl_type, "redirectSparkLogs", log_path)
+
 
 def show_bigdl_info_logs(bigdl_type="float"):
     """
@@ -461,7 +497,8 @@ def create_spark_conf():
     sparkConf = SparkConf()
     sparkConf.setAll(bigdl_conf.items())
     if not is_spark_below_2_2():
-        extend_spark_driver_cp(sparkConf, get_bigdl_classpath())
+        for jar in Configuration.get_bigdl_jars():
+            extend_spark_driver_cp(sparkConf, jar)
 
     # add content in PYSPARK_FILES in spark.submit.pyFiles
     # This is a workaround for current Spark on k8s
@@ -476,7 +513,7 @@ def create_spark_conf():
     return sparkConf
 
 
-def get_spark_context(conf = None):
+def get_spark_context(conf=None):
     """
     Get the current active spark context and create one if no active instance
     :param conf: combining bigdl configs into spark conf
@@ -506,12 +543,14 @@ def get_spark_sql_context(sc):
     else:
         return SQLContext(sc)  # Compatible with Spark1.5.1
 
+
 def callBigDlFunc(bigdl_type, name, *args):
     """ Call API in PythonBigDL """
     jinstance = JavaCreator.instance(bigdl_type=bigdl_type).value
     sc = get_spark_context()
     api = getattr(jinstance, name)
     return callJavaFunc(sc, api, *args)
+
 
 def _java2py(sc, r, encoding="bytes"):
     if isinstance(r, JavaObject):
@@ -578,7 +617,6 @@ def _py2java(sc, obj):
                                       sc._gateway._gateway_client)
     elif isinstance(obj, dict):
         result = {}
-        print(obj.keys())
         for (key, value) in obj.items():
             result[key] = _py2java(sc, value)
         obj = MapConverter().convert(result, sc._gateway._gateway_client)
@@ -646,6 +684,7 @@ def get_activation_by_name(activation_name, activation_id=None):
     if not activation_id:
         activation.set_name(activation_id)
     return activation
+
 
 def _test():
     import doctest

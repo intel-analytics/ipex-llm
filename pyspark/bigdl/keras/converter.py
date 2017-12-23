@@ -257,6 +257,8 @@ class WeightsConverter:
         b_weights = k_weights[0].T
         for i in range(1, k_weights.shape[0]):
             b_weights = np.concatenate((b_weights, k_weights[i].T))
+        if len(weights) == 1:  # if without bias
+            return [b_weights]
         return [b_weights, weights[1].reshape(k_weights.shape[0]*k_weights.shape[2], )]
 
     @staticmethod
@@ -272,6 +274,13 @@ class WeightsConverter:
                 bias = weights[1].shape[3]
             return [weights[0], weights[1], np.zeros(bias, )]
         return weights
+
+    @staticmethod
+    def convert_locallyconnected1d(klayer, weights):
+        bweights1 = np.transpose(weights[0], (0, 2, 1))
+        if len(weights) == 1:  # if without bias
+            return [bweights1]
+        return[bweights1, weights[1]]
 
     @staticmethod
     def convert_locallyconnected2d(klayer, weights):
@@ -466,7 +475,7 @@ class LayerConverter:
            (hasattr(self.klayer, "W_constraint") and self.klayer.W_constraint):
             raise Exception("We don't support constraint for now")
 
-        if (hasattr(self.klayer, "activity_regularizer") and self.klayer.activity_regularizer):
+        if hasattr(self.klayer, "activity_regularizer") and self.klayer.activity_regularizer:
             raise Exception("We don't support activity_regularizer for now")
 
         function_name = "create_" + class_name.lower()
@@ -553,10 +562,10 @@ class LayerConverter:
             raise Exception(
                 "The input_length doesn't match: %s vs %s" % (seq_len, self.klayer.input_length))
 
-        if (hasattr(self.klayer, "dropout") and self.klayer.dropout != 0):
+        if hasattr(self.klayer, "dropout") and self.klayer.dropout != 0:
             raise Exception("We don't support dropout for now")
 
-        if (hasattr(self.klayer, "mask_zero") and self.klayer.mask_zero != False):
+        if hasattr(self.klayer, "mask_zero") and self.klayer.mask_zero != False:
             raise Exception("We don't support mask_zero for now")
 
         bseq = BLayer.Sequential()
@@ -1190,7 +1199,7 @@ class LayerConverter:
         if not self.config["bias"]:
             raise Exception("Only bias=True is supported for AtrousConvolution1D")
 
-        h = self.input_shape[2]
+        h = int(self.input_shape[1])
         kh = self.config["filter_length"]
         dh = self.config["subsample_length"]
         dilation_h = self.config["atrous_rate"]
@@ -1224,8 +1233,8 @@ class LayerConverter:
         if not self.config["bias"]:
             raise Exception("Only bias=True is supported for AtrousConvolution2D")
 
-        h = self.input_shape[2]
-        w = self.input_shape[3]
+        h = int(self.input_shape[2])
+        w = int(self.input_shape[3])
         kh = self.config["nb_row"]
         kw = self.config["nb_col"]
         dh = self.config["subsample"][0]
@@ -1256,8 +1265,8 @@ class LayerConverter:
             raise Exception("Please use `th` for `dim_ordering`. `%s` is not supported for now." % self.klayer.dim_ordering)
         output_shape = self.config["output_shape"]
 
-        h = self.input_shape[2]
-        w = self.input_shape[3]
+        h = int(self.input_shape[2])
+        w = int(self.input_shape[3])
         kh = self.config["nb_row"]
         kw = self.config["nb_col"]
         dh = self.config["subsample"][0]
@@ -1291,7 +1300,7 @@ class LayerConverter:
             adj_w=0,
             adj_h=0,
             n_group=1,
-            no_bias=False,
+            no_bias=not self.klayer.bias,
             wRegularizer=self.to_bigdl_reg(self.config["W_regularizer"]),
             bRegularizer=self.to_bigdl_reg(self.config["b_regularizer"]),
             bigdl_type="float")
@@ -1614,7 +1623,7 @@ class LayerConverter:
         else:
             activation = get_activation_by_name(self.config["activation"],
                                                 "%s_%s" % (self.config["name"], self.config["activation"]))
-        blayer = BLayer.Highway(size=self.input_shape[1],
+        blayer = BLayer.Highway(size=int(self.input_shape[1]),
                                 with_bias=self.klayer.bias,
                                 activation=activation,
                                 wRegularizer=self.to_bigdl_reg(self.config["W_regularizer"]),
@@ -1622,15 +1631,12 @@ class LayerConverter:
         return blayer
 
     def create_maxoutdense(self):
-        if self.config["W_regularizer"]:
-            raise Exception("W_regularizer is not supported for MaxoutDense")
-        if self.config["b_regularizer"]:
-            raise Exception("b_regularizer is not supported for MaxoutDense")
-        if not self.config["bias"]:
-            raise Exception("Only bias=True is supported for MaxoutDense")
-        blayer = BLayer.Maxout(input_size=self.input_shape[1],
+        blayer = BLayer.Maxout(input_size=int(self.input_shape[1]),
                                output_size=self.klayer.output_dim,
-                               maxout_number=self.klayer.nb_feature)
+                               maxout_number=self.klayer.nb_feature,
+                               with_bias=self.klayer.bias,
+                               w_regularizer=self.to_bigdl_reg(self.config["W_regularizer"]),
+                               b_regularizer=self.to_bigdl_reg(self.config["b_regularizer"]))
         return blayer
 
     def create_masking(self):
@@ -1692,6 +1698,32 @@ class LayerConverter:
         blayer = BLayer.SpatialDropout3D(init_p=float(self.klayer.p),
                                          data_format=bigdl_order)
         return blayer
+
+    def create_locallyconnected1d(self):
+        seq = BLayer.Sequential()
+        seq.add(BLayer.Reshape([int(self.input_shape[1]), 1, int(self.input_shape[2])], True))
+        blayer = BLayer.LocallyConnected2D(n_input_plane=int(self.input_shape[2]),
+                                           input_width=1,
+                                           input_height=int(self.input_shape[1]),
+                                           n_output_plane=self.klayer.nb_filter,
+                                           kernel_w=1,
+                                           kernel_h=self.klayer.filter_length,
+                                           stride_w=1,
+                                           stride_h=self.klayer.subsample_length,
+                                           pad_w=0,
+                                           pad_h=0,
+                                           wRegularizer=self.to_bigdl_reg(self.config["W_regularizer"]),
+                                           bRegularizer=self.to_bigdl_reg(self.config["b_regularizer"]),
+                                           with_bias=self.klayer.bias,
+                                           data_format="NHWC")
+        seq.add(blayer)
+        seq.add(BLayer.Squeeze(3))
+        if self.config["activation"] != "linear":
+            activation = get_activation_by_name(self.config["activation"],
+                                                "%s_%s" % (self.config["name"], self.config["activation"]))
+            return self.fuse(seq, activation)
+        else:
+            return seq
 
     def create_locallyconnected2d(self):
         bigdl_order = self.get_bdim_order()

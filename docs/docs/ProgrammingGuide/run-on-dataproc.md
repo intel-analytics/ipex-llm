@@ -1,52 +1,110 @@
----
 
-## **The Google Cloud Dataproc Initialization Script**
-
-To make it easier to try out BigDL examples on Spark using Google Cloud Dataproc, a public initialization script is provided (the source script is also available in this repo path `scripts/launch-dataproc.sh`). The script will automatically retrieve BigDL package (version 0.2.0), run it on Dataproc's Spark Yarn cluster, then configure and setup the Jupyter Notebook and Tensorboard for the interactive usage. Two examples, including LeNet and Text Classifier, will be provided in the Notebook.
-
----
 ## **Before You Start**
 
-Before using BigDL on Dataproc, you need a valid Google Cloud account and setup your Google Cloud SDK (you may refer to [https://cloud.google.com/sdk/docs/how-to](https://cloud.google.com/sdk/docs/how-to) for more instructions).
+Before using BigDL on Google Dataproc, you need setup a project and create a cluster on Dataproc(you may refer to [https://cloud.google.com/sdk/docs/how-to](https://cloud.google.com/dataproc/docs/how-to) for more instructions).  
 
----
-## **Create Spark Cluster with BigDL**
-
-Run the following command to create your cluster
+Please disable `spark.dynamicAllocation` when creating cluster. E.g.,  
 ```bash
-gcloud dataproc clusters create bigdl \
-    --initialization-actions gs://dataproc-initial/bigdl.sh \
-    --worker-machine-type n1-highmem-4 \
-    --master-machine-type n1-highmem-2 \
-    --num-workers 2 \
-    --zone us-central1-b \
-    --image-version 1.1
-```
-You can change `bigdl` into any other name as the cluster name, and you are also free to upload `scripts/launch-dataproc.sh` into your own Google Cloud Storage bucket and use it instead of `gs://dataproc-initial/bigdl.sh` in the initialization-actions field.
-
-When creating a larger cluster with more workers, it is suggested to pass the number of executor into the script via the metadata field as, 
-```bash
-gcloud dataproc clusters create bigdl \
-    --initialization-actions gs://dataproc-initial/bigdl.sh \
-    --metadata "NUM_EXECUTORS=8" \
-    --worker-machine-type n1-highmem-4 \
-    --master-machine-type n1-highmem-2 \
-    --num-workers 4 \
-    --num-preemptible-workers 4 \
-    --zone us-central1-b \
-    --image-version 1.1
+gcloud dataproc clusters create bigdl --project $PROJECT_NAME --worker-machine-type $MACHINETYPE --master-machine-type $MACHINETYPE --num-workers $WORKERNUMBER --properties spark:spark.dynamicAllocation.enabled=false
 ```
 
-Please note that it is highly recommended to run BigDL in the region where the compute instances come with Xeon E5 v3 or v4 processors (you may find the [Google Cloud Regions and Zones](https://cloud.google.com/compute/docs/regions-zones/regions-zones) for more details).
+ Or please set `--conf "spark.dynamicAllocation.enabled=false"` when submitting spark jobs
+
 
 ---
-## **Play Around with BigDL**
-Once your dataproc cluster is ready, directly go to the following URL (change `bigdl` into your own cluster name if you are using a different one) to play around BigDL in Jupyter Notebook. Note that you need to [create an SSH tunel and SOCKS proxy](https://cloud.google.com/dataproc/docs/concepts/cluster-web-interfaces) to visit them. 
+## **Download BigDL**
 
-* Jupyter Notebook: [http://bigdl-m:8888/](http://bigdl-m:8888/)
+BigDL can be downloaded from https://bigdl-project.github.io/master/#release-download. It provides prebuild binary for different Spark versions. Please ssh on the master VM Instance and download BigDL according to Spark version. 
+```bash
+wget BIGDL_LINK
+```
 
-* Tensorboard: [http://bigdl-m:6006/](http://bigdl-m:6006/)
+After downloading BigDL, you will be able to find a zip file,eg.dist-spark-2.2.0-scala-2.11.8-0.3.0-dist.zip. Unzip the file
+```bash
+unzip xxx.zip
+```
 
-* YARN ResourceManager: [http://bigdl-m:8088/](http://bigdl-m:8088/)
+---
+## **Run BigDL Scala Examples**
 
-Inside your Jupyter Notebook, you may find two examples are already there. Start your BigDL journey with them.
+
+Now you can run BigDL examples on Google Dataproc. For instance, you may use the `run.example.sh` script which is located under ./bin directory with following parameters:
+
+* Mandatory parameters:
+  
+    * `-m|--model` which model to train, including
+    
+        * lenet: train the [LeNet](https://github.com/intel-analytics/BigDL/tree/master/spark/dl/src/main/scala/com/intel/analytics/bigdl/models/lenet) example
+    
+        * vgg: train the [VGG](https://github.com/intel-analytics/BigDL/tree/master/spark/dl/src/main/scala/com/intel/analytics/bigdl/models/vgg) example
+
+        * inception-v1: train the [Inception v1](https://github.com/intel-analytics/BigDL/tree/master/spark/dl/src/main/scala/com/intel/analytics/bigdl/models/inception) example
+
+        * perf: test the training speed using the [Inception v1](https://github.com/intel-analytics/BigDL/blob/master/spark/dl/src/main/scala/com/intel/analytics/bigdl/models/inception/Inception_v1.scala) model with dummy data
+
+    * `-s|--spark-url` the master URL for the Spark cluster
+
+    * `-n|--nodes` number of Spark slave nodes
+
+    * `-o|--cores` number of cores used on each node
+
+    * `-r|--memory` memory used on each node, e.g. 200g
+
+    * `-b|--batch-size` batch size when training the model; it is expected to be a multiple of "nodes * cores"
+
+    * `-f|--hdfs-data-dir` HDFS directory for the input images (for the "inception-v1" model training only)
+
+* Optional parameters:
+
+    * `-e|--max-epoch` the maximum number of epochs (i.e., going through all the input data once) used in the training; default to 90 if not specified
+
+    * `-p|--spark` by default the example will run with Spark 1.5 or 1.6; to use Spark 2.0, please specify "spark_2.0" here (it is highly recommended to use _**Java 8**_ when running BigDL for Spark 2.0, otherwise you may observe very poor performance)
+
+    * `-l|--learning-rate` by default the the example will use an initial learning rate of "0.01"; you can specify a different value here
+
+After the training, you can check the log files and generated models  
+
+Replace $BIGDLJAR with bigdl binary name in ./lib in below command, eg: bigdl-SPARK_2.2-0.3.0-jar-with-dependencies.jar  
+
+```bash
+./bin/run.example.sh --model lenet --nodes 2 --cores 2 --memory 1g --batch-size 16 -j lib/$BIGDLJAR -p spark_buildIn
+```
+
+You can also run lenet examples in below command. Before submit below command, please make sure you have already downloaded mnist and put it under mnist directory, more detail see https://github.com/intel-analytics/BigDL/tree/master/spark/dl/src/main/scala/com/intel/analytics/bigdl/models/lenet:   
+```bash
+spark-submit \
+ --executor-cores 2 \
+ --num-executors 2 \
+ --driver-class-path ./lib/$BIGDLJAR \
+ --class com.intel.analytics.bigdl.models.lenet.Train \
+ ./lib/$BIGDLJAR \
+ -f ./mnist \
+ -b 16
+```
+---
+## **Run BigDL Python example**
+Download lenet5.py from https://github.com/intel-analytics/BigDL/blob/master/pyspark/bigdl/models/lenet/lenet5.py
+```bash 
+wget https://raw.githubusercontent.com/intel-analytics/BigDL/master/pyspark/bigdl/models/lenet/lenet5.py
+```
+
+Replace $BIGDLJAR with bigdl binary name in ./lib, eg: bigdl-SPARK_2.2-0.3.0-jar-with-dependencies.jar  
+Replace $BIGDL_PYTHON_ZIP with bigdl python binary name in ./lib, eg: bigdl-0.3.0-python-api.zip
+```bash
+PYTHON_API_ZIP_PATH=./lib/$BIGDL_PYTHON_ZIP
+BigDL_JAR_PATH=./lib/$BIGDLJAR
+PYTHONPATH=${PYTHON_API_ZIP_PATH}:$PYTHONPATH
+spark-submit \
+        --driver-cores 2  \
+        --driver-memory 2g  \
+        --num-executors 2  \
+        --executor-cores 2  \
+        --executor-memory 4g \
+        --py-files ${PYTHON_API_ZIP_PATH},./lenet5.py  \
+        --properties-file ./conf/spark-bigdl.conf \
+        --jars ${BigDL_JAR_PATH} \
+        --conf spark.driver.extraClassPath=${BigDL_JAR_PATH} \
+        --conf spark.executor.extraClassPath=${BigDL_JAR_PATH} \
+        ./lenet5.py \
+        --action train
+```

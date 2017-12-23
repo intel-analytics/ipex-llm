@@ -42,14 +42,17 @@ pages:
   - Visualization: ProgrammingGuide/visualization.md
   - Run on Amazon EC2: ProgrammingGuide/run-on-ec2.md
   - Run on Google Cloud Dataproc: ProgrammingGuide/run-on-dataproc.md
+  - Run on Kubernetes: ProgrammingGuide/run-on-k8s.md
   - Tensorflow Support: ProgrammingGuide/tensorflow-support.md
   - Caffe Support: ProgrammingGuide/caffe-support.md
   - Keras Support: ProgrammingGuide/keras-support.md
   - Quantization Support: ProgrammingGuide/quantization-support.md
   - Define new Layer/Criterion: ProgrammingGuide/add-layer-criterion.md
+  - Build Image Application: ProgrammingGuide/image-support.md
 - API Guide:
   - Engine: APIGuide/Engine.md
   - Data: APIGuide/Data.md
+  - Transformer: APIGuide/Transformer.md
   - Model: APIGuide/Module.md
   - Layers:
     - Containers:  APIGuide/Layers/Containers.md
@@ -78,6 +81,9 @@ pages:
   - Triggers: APIGuide/Triggers.md
   - Metrics:  APIGuide/Metrics.md
   - ML Pipeline: APIGuide/MLPipeline/DLEstimator_DLClassifier.md
+  - Supported Caffe Layers: APIGuide/caffe_layer_list.md
+  - Supported Tensorflow Operations: APIGuide/tensorflow_ops_list.md
+  - Keras Issues: APIGuide/keras-issues.md
   - Full API docs:
     - Scala Docs: APIGuide/scaladoc.md
     - Python API Docs: APIGuide/python-api-doc.md

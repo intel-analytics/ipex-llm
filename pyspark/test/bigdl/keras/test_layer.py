@@ -160,6 +160,14 @@ class TestLayer(BigDLTestCase):
                                       input_shape=(3, 32, 32, 32))
         self.modelTestSingleLayerWithOrdersModes(input_data, layer, dim_orderings=["th"],
                                                  dump_weights=True, rtol=1e-5, atol=1e-5)
+        layer2 = lambda: Convolution3D(8, 6, 4, 2, dim_ordering="th", activation='sigmoid',
+                                       input_shape=(3, 32, 32, 32))
+        self.modelTestSingleLayerWithOrdersModes(input_data, layer2, dim_orderings=["th"],
+                                                 dump_weights=True, rtol=1e-5, atol=1e-5)
+        layer3 = lambda: Convolution3D(16, 2, 2, 2, dim_ordering="th", bias=False,
+                                       input_shape=(3, 32, 32, 32))
+        self.modelTestSingleLayerWithOrdersModes(input_data, layer3, dim_orderings=["th"],
+                                                 dump_weights=True, rtol=1e-5, atol=1e-5)
 
     def test_atrousconvolution1d(self):
         input_data = np.random.random_sample([2, 10, 32])
@@ -187,6 +195,10 @@ class TestLayer(BigDLTestCase):
                                  border_mode="same", subsample=(2, 2),
                                  dim_ordering="th", input_shape=(3, 12, 12))
         self.modelTestSingleLayer(input_data, layer3, dump_weights=True)
+        layer4 = Deconvolution2D(3, 3, 3, output_shape=(None, 3, 14, 14),
+                                 border_mode="valid", dim_ordering="th",
+                                 bias=False, activation='relu', input_shape=(3, 12, 12))
+        self.modelTestSingleLayer(input_data, layer4, dump_weights=True)
 
     def test_maxpooling3d(self):
         input_data = np.random.random_sample([1, 3, 20, 15, 35])
@@ -705,6 +717,8 @@ class TestLayer(BigDLTestCase):
         input_data = np.random.random([4, 6])
         layer = MaxoutDense(3, 5)
         self.modelTestSingleLayer(input_data, layer, dump_weights=True)
+        layer2 = MaxoutDense(4, 2, bias=False)
+        self.modelTestSingleLayer(input_data, layer2, dump_weights=True)
 
     def test_masking(self):
         input_data = np.array([[[0, 1, 2], [-1, 1, 0], [3, 4, 1], [0, 0, 0]]])
@@ -715,6 +729,17 @@ class TestLayer(BigDLTestCase):
         input_data = np.random.random_sample([2, 4, 6])
         layer = SReLU(input_shape=(4, 6))
         self.modelTestSingleLayer(input_data, layer, dump_weights=True)
+
+    def test_locallyconnected1d(self):
+        input_data = np.random.random_sample([3, 10, 32])
+        layer1 = LocallyConnected1D(64, 3, input_shape=(10, 32))
+        self.modelTestSingleLayer(input_data, layer1, dump_weights=True)
+        layer2 = LocallyConnected1D(64, 5, activation='sigmoid', input_shape=(10, 32))
+        self.modelTestSingleLayer(input_data, layer2, dump_weights=True)
+        layer3 = LocallyConnected1D(32, 4, subsample_length=2, input_shape=(10, 32))
+        self.modelTestSingleLayer(input_data, layer3, dump_weights=True)
+        layer4 = LocallyConnected1D(32, 4, bias=False, input_shape=(10, 32))
+        self.modelTestSingleLayer(input_data, layer4, dump_weights=True)
 
     def test_locallyconnected2d(self):
         input_data = np.random.random_sample([2, 3, 6, 8])
