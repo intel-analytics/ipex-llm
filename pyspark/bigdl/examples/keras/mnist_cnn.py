@@ -33,7 +33,7 @@ else:
 
 def get_mnist(sc, data_type="train", location="/tmp/mnist"):
     """
-    Download or load MNIST dataset to/from specified path.
+    Download or load MNIST dataset to/from the specified path.
     Normalize and transform input data into an RDD of Sample
     """
     from bigdl.dataset import mnist

@@ -2,9 +2,11 @@
 
 We provide several simple examples here to show how to load a Keras model into BigDL and running the model in a distributed fashion.
 
-Note that the Keras version we support and test is [__Keras 1.2.2__](https://faroit.github.io/keras-docs/1.2.2/) with TensorFlow backend. You may need to see the page [Keras Support](../../../../docs/docs/ProgrammingGuide/keras-support.md) first before going into these examples.
+You may need to see the page [Keras Support](../../../../docs/docs/ProgrammingGuide/keras-support.md) first before going into these examples.
 
-For the sake of illustration, in these examples, we first define a model in Keras, then save it as a JSON/HDF5 file and load it into BigDL.
+Note that the Keras version we support and test is [__Keras 1.2.2__](https://faroit.github.io/keras-docs/1.2.2/) with TensorFlow backend.
+
+For the sake of illustration, in these examples, we first define a model in Keras 1.2.2, then save it as a JSON/HDF5 file and load it into BigDL.
 
 You can directly run these examples if you [install BigDL from pip](../../../../docs/docs/PythonUserGuide/install-from-pip.md). After the training, good accuracy can be achieved.
 
