@@ -1,6 +1,6 @@
 ## **Overview**
 
-```BigDL``` provides supports for end-to-end image processing pipeline,
+BigDL provides supports for end-to-end image processing pipeline,
 including image loading, pre-processing, inference/training and some utilities.
 
 The basic unit of an image is `ImageFeature`, which describes various status of the image
@@ -42,6 +42,7 @@ More examples can be found [here](../APIGuide/Data.md#imageframe)
 
 ## **Image Transformer**
 BigDL has many pre-defined image transformers built on top of OpenCV:
+
 * `Brightness`: Adjust the image brightness.
 * `Hue`: Adjust the image hue.
 * `Saturation`: Adjust the image Saturation.
@@ -134,6 +135,7 @@ model.predict_image(image_frame, output_layer=None, share_buffer=False,
                     batch_per_partition=4, predict_key="predict")
 ```
 Model predict images, return imageFrame with predicted tensor
+
    * `imageFrame` imageFrame that contains images
    * `outputLayer` if outputLayer is not null, the output of layer that matches outputLayer will be used as predicted output
    * `shareBuffer` whether to share same memory for each batch predict results
