@@ -1763,6 +1763,14 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     SoftmaxWithCriterion[T](labelToIgnore, normM)
   }
 
+  def createTransformerCriterion(
+           criterion: AbstractCriterion[Activity, Activity, T],
+           inputTransformer: AbstractModule[Activity, Activity, T] = null,
+           targetTransformer: AbstractModule[Activity, Activity, T] = null
+           ): TransformerCriterion[T] = {
+    TransformerCriterion(criterion, Option(inputTransformer), Option(targetTransformer))
+  }
+
   def createPack(dimension: Int): Pack[T] = {
     Pack(dimension)
   }

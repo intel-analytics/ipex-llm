@@ -878,7 +878,7 @@ class TransformerCriterion(Criterion):
     '''
     The criterion that takes two modules to transform input and target, and take
     one criterion to compute the loss with the transformed input and target.
-    >>> TransformerCriterion(MSECriterion())
+    >>> trans = TransformerCriterion(MSECriterion())
     creating: createMSECriterion
     creating: createTransformerCriterion
     '''
