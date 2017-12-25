@@ -16,9 +16,8 @@
 package org.apache.spark.ml
 
 import org.apache.spark.ml.param.ParamMap
-import org.apache.spark.ml.param.shared.{HasFeaturesCol, HasLabelCol, HasPredictionCol}
+import org.apache.spark.ml.param.shared.HasLabelCol
 import org.apache.spark.ml.linalg.{Vector, VectorUDT}
-import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{DataFrame, Dataset, Row}
 
