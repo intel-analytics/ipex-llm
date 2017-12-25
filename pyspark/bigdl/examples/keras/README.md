@@ -2,7 +2,7 @@
 
 We provide several simple examples here to show how to load a Keras model into BigDL and running the model in a distributed fashion.
 
-Note that the Keras version we support and test is [__Keras 1.2.2__](https://faroit.github.io/keras-docs/1.2.2/) with TensorFlow backend.
+Note that the Keras version we support and test is [__Keras 1.2.2__](https://faroit.github.io/keras-docs/1.2.2/) with TensorFlow backend. You may need to see the page [Keras Support](../../../../docs/docs/ProgrammingGuide/keras-support.md) for more guidance.
 
 For the sake of illustration, in these examples, we first define a model in Keras, then save it as a JSON/HDF5 file and load it into BigDL.
 
@@ -46,3 +46,4 @@ ${SPARK_HOME}/bin/spark-submit \
     --conf spark.executor.extraClassPath=bigdl-${BIGDL_VERSION}-jar-with-dependencies.jar \
     ${BigDL_HOME}/pyspark/bigdl/examples/keras/mnist_cnn.py
 ```
+* ```--batchSize``` an option that can be used to set batch size.
