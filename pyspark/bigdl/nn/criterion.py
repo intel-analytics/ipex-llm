@@ -874,6 +874,27 @@ class PoissonCriterion(Criterion):
                  bigdl_type="float"):
         super(PoissonCriterion, self).__init__(None, bigdl_type)
 
+class TransformerCriterion(Criterion):
+    '''
+    The criterion that takes two modules to transform input and target, and take
+    one criterion to compute the loss with the transformed input and target.
+    >>> TransformerCriterion(MSECriterion())
+    creating: createMSECriterion
+    creating: createTransformerCriterion
+    '''
+
+    def __init__(self,
+                 criterion,
+                 input_transformer = None,
+                 target_transformer = None,
+                 bigdl_type="float"):
+        super(TransformerCriterion, self).__init__(None,
+                                                   bigdl_type,
+                                                   criterion,
+                                                   input_transformer,
+                                                   target_transformer)
+
+
 def _test():
     import doctest
     from pyspark import SparkContext
