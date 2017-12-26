@@ -27,9 +27,9 @@ __FAQ__
 In case you encounter the following errors when you create the environment package using the above command:
 
 1. virtualenv ImportError: No module named urllib3
-    - Using python in anaconda to create virtualenv may cause this problem. Try to use python default in your system instead of installing virtualenv in anaconda.
+    - Using python in anaconda to create virtualenv may cause this problem. Try using python default in your system instead of installing virtualenv in anaconda.
 2. AttributeError: 'module' object has no attribute 'sslwrap'
-    - Try upgrading gevent by using `pip install --upgrade gevent`
+    - Try upgrading `gevent` with `pip install --upgrade gevent`.
 
 
 ### Run Lenet example on YARN Cluster mode
