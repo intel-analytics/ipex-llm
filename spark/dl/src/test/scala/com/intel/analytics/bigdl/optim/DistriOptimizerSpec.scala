@@ -23,9 +23,9 @@ import com.intel.analytics.bigdl.dataset.image.{BGRImgToBatch, LabeledBGRImage}
 import com.intel.analytics.bigdl.dataset.{DataSet, DistributedDataSet, MiniBatch, Sample}
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
-import com.intel.analytics.bigdl.tensor.{Storage, Tensor, DenseTensor}
+import com.intel.analytics.bigdl.tensor.{DenseTensor, Storage, Tensor}
 import com.intel.analytics.bigdl.utils._
-import com.intel.analytics.bigdl.visualization.TrainSummary
+import com.intel.analytics.bigdl.visualization.{TrainSummary, ValidationSummary}
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
@@ -232,14 +232,14 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
   }
 
   it should "be same compare to ref optimizer" in {
-    RandomGenerator.RNG.setSeed(10)
+    RandomGenerator.RNG.setSeed(11)
     val optimizer = new DistriOptimizer(
       mse,
       dataSet,
       new MSECriterion[Double]())
     val model = optimizer.optimize()
 
-    RandomGenerator.RNG.setSeed(10)
+    RandomGenerator.RNG.setSeed(11)
     val optimizerRef = new RefDistriOptimizer(
       mse,
       dataSet,
@@ -438,6 +438,28 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
     result2(Array(1)) should be(1.0 +- 5e-2)
     trainSummary.readScalar("Loss").last._2 should be (0.0f +- 1e-3f)
     trainSummary.close()
+  }
+
+  "ValSummary with MSE and SGD" should "work correctly" in {
+    TestUtils.cancelOnWindows()
+    RandomGenerator.RNG.setSeed(10)
+    val logdir = com.google.common.io.Files.createTempDir()
+    val valSummary = ValidationSummary(logdir.getPath, "sgd" + System.nanoTime())
+    val mm = mse
+    mm.getParameters()._1.fill(0.125)
+    val optimizer = new DistriOptimizer[Double](mm, dataSet, new MSECriterion[Double]())
+      .setState(T("learningRate" -> 20.0))
+        .setValidation(Trigger.everyEpoch, dataSet,
+          Array(new Loss(MSECriterion[Double]())))
+      .setEndWhen(Trigger.maxEpoch(1))
+      .setValidationSummary(valSummary)
+    val model = optimizer.optimize()
+
+    val res = Validator(model, dataSet)
+      .test(Array(new Loss(MSECriterion[Double]())))
+
+    valSummary.readScalar("Loss").last._2 should be (res(0)._1.result()._1)
+    valSummary.close()
   }
 
   "Train with MSE and SGD" should "be trained with good result with failures in small interval" in {

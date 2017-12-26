@@ -101,7 +101,8 @@ object RefDistriOptimizer {
         count = 0
       }
     }
-
+    val fp16W = new FP16CompressedTensor[T](w)
+    fp16W.deCompress(w)
     model
   }
 }
