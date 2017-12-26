@@ -18,18 +18,17 @@ package com.intel.analytics.bigdl.utils.tf.loaders
 import java.nio.ByteOrder
 
 import com.intel.analytics.bigdl.Module
-import com.intel.analytics.bigdl.nn.ops.{ResizeBilinearGrad, ResizeBilinearOps}
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.nn.ops.ResizeBilinearGrad
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.tf.Context
 import org.tensorflow.framework.NodeDef
 
 import scala.reflect.ClassTag
 
-class ResizeBilinear extends TensorflowOpsLoader {
+class ResizeBilinearGrad extends TensorflowOpsLoader {
   override def build[T: ClassTag](nodeDef: NodeDef, byteOrder: ByteOrder,
     context: Context[T])(implicit ev: TensorNumeric[T]): Module[T] = {
     val alignCorner = nodeDef.getAttrMap.get("align_corners").getB
-    ResizeBilinearOps[T](alignCorner)
+    ResizeBilinearGrad[T](alignCorner)
   }
 }

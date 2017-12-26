@@ -52,3 +52,34 @@ object ResizeBilinearOps {
     new ResizeBilinearOps(alignCorner)
   }
 }
+
+class ResizeBilinearGrad[T: ClassTag](alignCorner: Boolean)(implicit ev: TensorNumeric[T])
+  extends Operation[Activity, Tensor[Float], T] {
+
+  private var module : ResizeBilinear[T] = _
+
+  override def updateOutput(input: Activity): Tensor[Float] = {
+    require(input.isTable, "Only accept two input tensors")
+    val grads = input.toTable.apply[Tensor[Float]](1)
+    val originImage = input.toTable.apply[Tensor[Float]](2)
+    if (module == null) {
+      module = ResizeBilinear[T](
+        grads.size(2),
+        grads.size(3),
+        alignCorner
+      )
+    } else {
+      require(module.outputHeight == grads.size(2), "height not match")
+      require(module.outputWidth == grads.size(3), "width not match")
+    }
+    output = module.backward(originImage, grads)
+    output
+  }
+}
+
+object ResizeBilinearGrad {
+  def apply[T: ClassTag](alignCorner: Boolean)
+                        (implicit ev: TensorNumeric[T]): ResizeBilinearGrad[T] = {
+    new ResizeBilinearGrad[T](alignCorner)
+  }
+}
