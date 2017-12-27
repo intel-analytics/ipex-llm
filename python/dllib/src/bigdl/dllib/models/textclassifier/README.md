@@ -47,7 +47,7 @@ python ${BigDL_HOME}/pyspark/bigdl/models/textclassifier/textclassifier.py --max
         ${SPARK_HOME}/bin/spark-submit \
             --master ${MASTER} \
             --driver-cores 4  \
-            --driver-memory 10g  \
+            --driver-memory 25g  \
             --total-executor-cores 4  \
             --executor-cores 4  \
             --executor-memory 20g \
