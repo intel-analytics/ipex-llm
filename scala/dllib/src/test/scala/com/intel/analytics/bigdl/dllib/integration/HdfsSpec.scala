@@ -182,7 +182,7 @@ class HdfsSpec extends FlatSpec with Matchers with BeforeAndAfter{
 
     input2.resizeAs(input1).copy(input1)
 
-    val linear = Linear(10, 10)
+    val linear = Linear(10, 10).setName("linear")
 
     // caffe only supports float, In order to compare the results, here we manually
     // set weight and bias to ensure there is no accurancy loss
@@ -203,7 +203,7 @@ class HdfsSpec extends FlatSpec with Matchers with BeforeAndAfter{
       graph, overwrite = true)
 
     val modelFromHdfs = CaffeLoader.loadCaffe[Double](hdfsDir + "/test.prototxt",
-      hdfsDir + "/test.caffemodel")._1
+      hdfsDir + "/test.caffemodel", outputNames = Array[String]("linear"))._1
 
     val res2 = modelFromHdfs.forward(input2)
 
