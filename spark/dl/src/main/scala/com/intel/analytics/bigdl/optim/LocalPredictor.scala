@@ -127,34 +127,21 @@ class LocalPredictor[T: ClassTag] private[optim](model: Module[T],
   }
 
   def predict(dataSet: Array[Sample[T]]): Array[Activity] = {
-    val iter = dataSet.iterator
-    val transformer = SampleToMiniBatch[T](
-      batchSize = batchPerCore * subModelNumber,
-      featurePaddingParam = featurePaddingParam, None,
-      partitionNum = Some(1))
-    val dataIter = transformer(iter)
+    val dataIter = dataSet.grouped(batchPerCore * subModelNumber)
 
     dataIter.map(batch => {
-      val stackSize = batch.size() / subModelNumber
-      val extraSize = batch.size() % subModelNumber
-      val parallelism = if (stackSize == 0) extraSize else subModelNumber
-      val result = Engine.default.invokeAndWait(
-        (0 until parallelism).map(b =>
+      val groupedSamples = batch.grouped(batchPerCore).toArray
+      Engine.default.invokeAndWait(
+        groupedSamples.indices.map(b =>
           () => {
-            val offset = b * stackSize + math.min(b, extraSize) + 1
-            val length = stackSize + (if (b < extraSize) 1 else 0)
-            val currentMiniBatch = batch.slice(offset, length)
-            val input = currentMiniBatch.getInput()
-            val output = workingModels(b).forward(input).toTensor[T]
-            output.clone()
-
+            val samples = groupedSamples(b)
+            val model = workingModels(b)
+            val toBatch = workingToBatch(b)
+            Predictor.predictSamples(model, samples, toBatch, false)
           }
         )
-      )
-      val batchResult = result.flatMap(_.split(1)).map(_.asInstanceOf[Activity])
-      batchResult
-    }).toArray.flatten
-
+      ).flatten
+    }).flatten.toArray
   }
 
   /**

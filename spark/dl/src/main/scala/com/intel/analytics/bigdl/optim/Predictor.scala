@@ -20,6 +20,7 @@ import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dataset.{MiniBatch, PaddingParam, Sample, SampleToMiniBatch, Transformer, Utils, DataSet => _}
 import com.intel.analytics.bigdl.models.utils.ModelBroadcast
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
+import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.transform.vision.image.{DistributedImageFrame, ImageFeature, ImageFrame}
 import org.apache.spark.rdd.RDD
@@ -41,7 +42,19 @@ object Predictor {
     shareBuffer: Boolean)(implicit ev: TensorNumeric[T]): Seq[ImageFeature] = {
     val validImageFeatures = imageFeatures.filter(_.isValid)
     val samples = validImageFeatures.map(x => x[Sample[T]](ImageFeature.sample))
-    val batchOut = localToBatch(samples.toIterator).flatMap(batch => {
+    val batchOut = predictSamples(localModel, samples, localToBatch, shareBuffer, outputLayer)
+    validImageFeatures.toIterator.zip(batchOut).foreach(tuple => {
+      tuple._1(predictKey) = tuple._2
+    })
+    imageFeatures
+  }
+
+  private[optim] def predictSamples[T: ClassTag]
+  (localModel: Module[T], samples: Seq[Sample[T]],
+    localToBatch: Transformer[Sample[T], MiniBatch[T]],
+    shareBuffer: Boolean,
+    outputLayer: String = null)(implicit ev: TensorNumeric[T]): Iterator[Tensor[T]] = {
+    localToBatch(samples.toIterator).flatMap(batch => {
       localModel.forward(batch.getInput())
       val output = if (outputLayer == null) {
         localModel.output.toTensor[T]
@@ -55,10 +68,6 @@ object Predictor {
         result.split(1)
       }
     })
-    validImageFeatures.toIterator.zip(batchOut).foreach(tuple => {
-      tuple._1(predictKey) = tuple._2
-    })
-    imageFeatures
   }
 }
 

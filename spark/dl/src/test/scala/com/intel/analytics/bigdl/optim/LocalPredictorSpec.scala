@@ -18,13 +18,15 @@ package com.intel.analytics.bigdl.optim
 
 import java.io.File
 
-import com.intel.analytics.bigdl.dataset.{PaddingParam, Sample}
+import com.intel.analytics.bigdl.Module
+import com.intel.analytics.bigdl.dataset.{PaddingParam, Sample, SampleToMiniBatch}
 import com.intel.analytics.bigdl.models.inception.Inception_v1_NoAuxClassifier
+import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.nn.{Sequential, SpatialConvolution, Tanh}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.transform.vision.image._
 import com.intel.analytics.bigdl.transform.vision.image.augmentation.{CenterCrop, ChannelNormalize, Resize}
-import com.intel.analytics.bigdl.utils.{Engine, MklBlas}
+import com.intel.analytics.bigdl.utils.{Engine, MklBlas, Util}
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import org.apache.commons.io.FileUtils
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
@@ -215,5 +217,62 @@ class LocalPredictorSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val detection = localPredictor.predictImage(imageFrame.toLocal()).toLocal()
 
     println(s"${(System.nanoTime() - start) / 1e9}s")
+  }
+
+  "predict sample after refactor" should "work properly" in {
+    val samples = (1 to 20).map(i => {
+      Sample(Tensor[Float](3, 224, 224).randn())
+    }).toArray
+    val imageFrame = ImageFrame.array((0 until 20).map(x => {
+      val im = ImageFeature()
+      im(ImageFeature.sample) = samples(x)
+      im
+    }).toArray)
+
+    val model = Inception_v1_NoAuxClassifier(classNum = 20)
+    val out1 = model.predictImage(imageFrame).toLocal().array
+      .map(_.predict().asInstanceOf[Tensor[Float]])
+    val out2 = predict(samples, model)
+
+    out1.zip(out2).foreach(x => {
+      x._1 should be (x._2.toTensor[Float])
+    })
+
+  }
+
+  def predict(dataSet: Array[Sample[Float]], model: Module[Float]): Array[Activity] = {
+    val weightsBias = Util.getAndClearWeightBias[Float](model.cloneModule().parameters())
+    val iter = dataSet.iterator
+    val transformer = SampleToMiniBatch[Float](
+      batchSize = batchPerCore * subModelNumber, None, None,
+      partitionNum = Some(1))
+    val dataIter = transformer(iter)
+
+    dataIter.map(batch => {
+      val stackSize = batch.size() / subModelNumber
+      val extraSize = batch.size() % subModelNumber
+      val parallelism = if (stackSize == 0) extraSize else subModelNumber
+      val workingModels = (1 to subModelNumber).map(_ => {
+        val submodel = model.cloneModule().evaluate()
+        Util.putWeightBias(weightsBias, submodel)
+        submodel
+      }).toArray
+      val start = System.nanoTime()
+      val result = Engine.default.invokeAndWait(
+        (0 until parallelism).map(b =>
+          () => {
+            val offset = b * stackSize + math.min(b, extraSize) + 1
+            val length = stackSize + (if (b < extraSize) 1 else 0)
+            val currentMiniBatch = batch.slice(offset, length)
+            val input = currentMiniBatch.getInput()
+            val output = workingModels(b).forward(input).toTensor[Float]
+            output.clone()
+          }
+        )
+      )
+      val batchResult = result.flatMap(_.split(1)).map(_.asInstanceOf[Activity])
+      batchResult
+    }).toArray.flatten
+
   }
 }
