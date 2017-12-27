@@ -66,7 +66,7 @@ object ClassTagMapper {
       case "String" => scala.reflect.classTag[String]
       case "Int" => scala.reflect.classTag[Int]
       case "Long" => scala.reflect.classTag[Long]
-      case "ByteString" => scala.reflect.classTag[ByteString]
+      case "com.google.protobuf.ByteString" => scala.reflect.classTag[ByteString]
     }
   }
 
