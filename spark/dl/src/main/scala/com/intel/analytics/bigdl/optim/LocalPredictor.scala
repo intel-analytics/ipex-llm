@@ -40,7 +40,7 @@ object LocalPredictor {
 }
 
 /**
- * Predictor for distributed data
+ * Predictor for local data
  * @param model BigDL model
  * @param featurePaddingParam featurePaddingParam if the inputs have variant size
  * @param batchPerCore batch size per core, default is 4
