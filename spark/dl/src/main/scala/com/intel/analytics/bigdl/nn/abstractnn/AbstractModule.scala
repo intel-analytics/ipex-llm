@@ -596,7 +596,7 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
         Predictor(this).predictImage(distributedImageFrame, outputLayer,
           shareBuffer, batchPerPartition, predictKey)
       case localImageFrame: LocalImageFrame =>
-        LocalModule[T](this).predictImage(localImageFrame, outputLayer,
+        LocalPredictor(this).predictImage(localImageFrame, outputLayer,
           shareBuffer, batchPerPartition, predictKey)
     }
   }

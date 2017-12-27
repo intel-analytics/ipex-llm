@@ -16,24 +16,33 @@
 
 package com.intel.analytics.bigdl.optim
 
-import com.intel.analytics.bigdl.dataset.Sample
+import java.io.File
+
+import com.intel.analytics.bigdl.dataset.{Sample}
 import com.intel.analytics.bigdl.models.inception.Inception_v1_NoAuxClassifier
 import com.intel.analytics.bigdl.nn.{Sequential, SpatialConvolution, Tanh}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.transform.vision.image._
 import com.intel.analytics.bigdl.transform.vision.image.augmentation.{CenterCrop, ChannelNormalize, Resize}
-import com.intel.analytics.bigdl.utils.Engine
+import com.intel.analytics.bigdl.utils.{Engine, MklBlas}
 import com.intel.analytics.bigdl.utils.RandomGenerator._
+import org.apache.commons.io.FileUtils
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 class LocalPredictorSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
   private val nodeNumber = 1
   private val coreNumber = 4
+  val batchPerCore = 4
+  var subModelNumber = coreNumber
 
   before {
     System.setProperty("bigdl.localMode", "true")
     Engine.init(nodeNumber, coreNumber, false)
+    subModelNumber = Engine.getEngineType match {
+      case MklBlas => coreNumber
+      case _ => throw new IllegalArgumentException
+    }
   }
 
   after {
@@ -150,5 +159,60 @@ class LocalPredictorSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
     val imageFeatures = detection.array
     imageFeatures.length should be (0)
+  }
+
+  "predictImage performance one by one" should "work properly" in {
+    import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+    RNG.setSeed(100)
+    val resource = getClass.getClassLoader.getResource("pascal/")
+    val imageFrame = ImageFrame.read(resource.getFile) ->
+      Resize(256, 256) -> CenterCrop(224, 224) ->
+      ChannelNormalize(0.485f, 0.456f, 0.406f, 0.229f, 0.224f, 0.225f) ->
+      MatToTensor() -> ImageFrameToSample()
+    val model = Inception_v1_NoAuxClassifier(classNum = 20)
+    val localPredictor = LocalPredictor(model)
+
+    model.forward(Tensor[Float](1, 3, 224, 224))
+
+    var start = System.nanoTime()
+    (1 to 20).foreach(x => {
+      val detection = model.forward(Tensor[Float](1, 3, 224, 224))
+    })
+    println(s"${(System.nanoTime() - start) / 1e9}s")
+
+    start = System.nanoTime()
+    (1 to 20).foreach(x => {
+      val detection = localPredictor.predictImage(imageFrame.toLocal()).toLocal()
+    })
+
+    println(s"${(System.nanoTime() - start) / 1e9}s")
+  }
+
+  "predictImage performance group" should "work properly" in {
+    import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+    RNG.setSeed(100)
+    val resource = getClass.getClassLoader.getResource("pascal/000025.jpg")
+    val imageFeatures = (1 to 20).map(i => {
+      val f = new File(resource.getFile)
+      ImageFeature(FileUtils.readFileToByteArray(f), f.getAbsolutePath)
+    }).toArray
+    val imageFrame = ImageFrame.array(imageFeatures) -> BytesToMat() ->
+      Resize(256, 256) -> CenterCrop(224, 224) ->
+      ChannelNormalize(0.485f, 0.456f, 0.406f, 0.229f, 0.224f, 0.225f) ->
+      MatToTensor() -> ImageFrameToSample()
+    val model = Inception_v1_NoAuxClassifier(classNum = 20)
+    val localPredictor = LocalPredictor(model)
+
+    model.forward(Tensor[Float](1, 3, 224, 224))
+    var start = System.nanoTime()
+    (1 to 20).foreach(x => {
+      val detection = model.forward(Tensor[Float](1, 3, 224, 224))
+    })
+    println(s"${(System.nanoTime() - start) / 1e9}s")
+
+    start = System.nanoTime()
+    val detection = localPredictor.predictImage(imageFrame.toLocal()).toLocal()
+
+    println(s"${(System.nanoTime() - start) / 1e9}s")
   }
 }

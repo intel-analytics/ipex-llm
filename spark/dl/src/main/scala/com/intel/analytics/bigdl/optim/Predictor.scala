@@ -20,6 +20,7 @@ import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dataset.{MiniBatch, PaddingParam, Sample, SampleToMiniBatch, Transformer, Utils, DataSet => _}
 import com.intel.analytics.bigdl.models.utils.ModelBroadcast
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
+import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.transform.vision.image.{DistributedImageFrame, ImageFeature, ImageFrame}
 import org.apache.spark.rdd.RDD
