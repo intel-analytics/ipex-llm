@@ -20,7 +20,6 @@ import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dataset.{MiniBatch, PaddingParam, Sample, SampleToMiniBatch, Transformer, Utils, DataSet => _}
 import com.intel.analytics.bigdl.models.utils.ModelBroadcast
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
-import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.transform.vision.image.{DistributedImageFrame, ImageFeature, ImageFrame}
 import org.apache.spark.rdd.RDD
@@ -28,8 +27,11 @@ import org.apache.spark.rdd.RDD
 import scala.reflect.ClassTag
 
 object Predictor {
-  def apply[T: ClassTag](model: Module[T])(implicit ev: TensorNumeric[T]): Predictor[T] = {
-    new Predictor[T](model)
+  def apply[T: ClassTag](model: Module[T],
+    featurePaddingParam: Option[PaddingParam[T]] = None,
+    batchPerPartition: Int = 4)
+    (implicit ev: TensorNumeric[T]): Predictor[T] = {
+    new Predictor[T](model, featurePaddingParam, batchPerPartition)
   }
 
   private[optim] def predictImageBatch[T: ClassTag](
@@ -60,10 +62,17 @@ object Predictor {
   }
 }
 
+/**
+ * Predictor for distributed data
+ * @param model BigDL model
+ * @param featurePaddingParam featurePaddingParam if the inputs have variant size
+ * @param batchPerPartition batch size per partition, default is 4
+ */
 class Predictor[T: ClassTag] private[optim](
-   model: Module[T])(implicit ev: TensorNumeric[T]) extends Serializable {
-
-  private val batchPerPartition = 4
+   model: Module[T],
+   featurePaddingParam: Option[PaddingParam[T]] = None,
+   batchPerPartition: Int = 4)
+  (implicit ev: TensorNumeric[T]) extends Serializable {
 
   def predictClass(dataSet: RDD[Sample[T]], batchSize: Int = -1): RDD[Int] = {
     val result = predict(dataSet, batchSize, true)
@@ -90,11 +99,11 @@ class Predictor[T: ClassTag] private[optim](
     }
     val otherBroad = dataSet.sparkContext.broadcast(SampleToMiniBatch(
       batchSize = totalBatch,
-      partitionNum = Some(partitionNum)), shareBuffer)
+      partitionNum = Some(partitionNum),
+      featurePaddingParam = featurePaddingParam))
     dataSet.mapPartitions { partition =>
       val localModel = modelBroad.value()
-      val localTransformer = otherBroad.value._1.cloneTransformer()
-      val repeatMemory = otherBroad.value._2
+      val localTransformer = otherBroad.value.cloneTransformer()
       val miniBatch = localTransformer(partition)
       miniBatch.flatMap( batch => {
         val output = localModel.forward(batch.getInput).toTensor[T]
@@ -114,19 +123,15 @@ class Predictor[T: ClassTag] private[optim](
    * @param outputLayer if outputLayer is not null, the output of layer that matches
    *                      outputLayer will be used as predicted output
    * @param shareBuffer whether to share same memory for each batch predict results
-   * @param batchPerPartition batch size per partition, default is 4
    * @param predictKey key to store predicted result
    */
   def predictImage(imageFrame: DistributedImageFrame,
     outputLayer: String = null,
     shareBuffer: Boolean = false,
-    batchPerPartition: Int = 4,
     predictKey: String = ImageFeature.predict): DistributedImageFrame = {
     val rdd = imageFrame.asInstanceOf[DistributedImageFrame].rdd
     val modelBroad = ModelBroadcast[T]().broadcast(rdd.sparkContext, model.evaluate())
     val partitionNum = rdd.partitions.length
-    // If batchPerPartition == 1, will resize the feature every time in SampleToBatch
-    def featurePaddingParam = if (batchPerPartition == 1) Some(PaddingParam[T]()) else None
     val toBatchBroad = rdd.sparkContext.broadcast(SampleToMiniBatch(
       batchSize = partitionNum * batchPerPartition,
       partitionNum = Some(partitionNum),

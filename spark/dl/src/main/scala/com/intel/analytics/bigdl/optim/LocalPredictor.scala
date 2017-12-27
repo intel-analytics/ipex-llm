@@ -17,12 +17,11 @@
 package com.intel.analytics.bigdl.optim
 
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.dataset._
+import com.intel.analytics.bigdl.dataset.{SampleToMiniBatch, _}
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{Engine, MklBlas, Util}
 import com.intel.analytics.bigdl.utils.Util._
-import com.intel.analytics.bigdl.dataset.SampleToMiniBatch
 import com.intel.analytics.bigdl.transform.vision.image.{ImageFeature, ImageFrame, LocalImageFrame}
 import org.apache.log4j.Logger
 
@@ -31,13 +30,24 @@ import scala.reflect.ClassTag
 object LocalPredictor {
 
   val logger = Logger.getLogger(getClass)
-  def apply[T: ClassTag](model: Module[T])
-                        (implicit ev: TensorNumeric[T]): LocalPredictor[T] = {
-    new LocalPredictor[T](model)
+
+  def apply[T: ClassTag](model: Module[T],
+    featurePaddingParam: Option[PaddingParam[T]] = None,
+    batchPerCore: Int = 4)
+    (implicit ev: TensorNumeric[T]): LocalPredictor[T] = {
+    new LocalPredictor[T](model, featurePaddingParam, batchPerCore)
   }
 }
 
-class LocalPredictor[T: ClassTag] private[optim](model: Module[T])
+/**
+ * Predictor for distributed data
+ * @param model BigDL model
+ * @param featurePaddingParam featurePaddingParam if the inputs have variant size
+ * @param batchPerCore batch size per core, default is 4
+ */
+class LocalPredictor[T: ClassTag] private[optim](model: Module[T],
+  featurePaddingParam: Option[PaddingParam[T]] = None,
+  batchPerCore: Int = 4)
   (implicit ev: TensorNumeric[T]) extends Serializable {
 
   val logger = LocalPredictor.logger
@@ -48,15 +58,27 @@ class LocalPredictor[T: ClassTag] private[optim](model: Module[T])
     case _ => throw new IllegalArgumentException
   }
 
-  private val batchPerCore = 4
+  private val workingModels = {
+    val weightsBias = Util.getAndClearWeightBias(model.parameters())
+    val models = (1 to subModelNumber).map(_ => {
+      val submodel = model.cloneModule().evaluate()
+      putWeightBias(weightsBias, submodel)
+      submodel
+    }).toArray
+    Util.putWeightBias(weightsBias, model)
+    Util.initGradWeightBias(weightsBias, model)
+    models
+  }
 
-  private val weightsBias = Util.getAndClearWeightBias(model.cloneModule().parameters())
-  private val workingModels = (1 to subModelNumber).map(_ => {
-    val submodel = model.cloneModule().evaluate()
-    putWeightBias(weightsBias, submodel)
-    submodel
-  }).toArray
-
+  val workingToBatch = {
+    val toBatch = SampleToMiniBatch[T](
+      batchSize = batchPerCore * subModelNumber,
+      partitionNum = Some(subModelNumber),
+      featurePaddingParam = featurePaddingParam)
+    (1 to subModelNumber).map(_ => {
+      toBatch.cloneTransformer()
+    }).toArray
+  }
 
   def predictClass(dataSet: Array[Sample[T]]): Array[Int] = {
     val result = predict(dataSet)
@@ -107,7 +129,8 @@ class LocalPredictor[T: ClassTag] private[optim](model: Module[T])
   def predict(dataSet: Array[Sample[T]]): Array[Activity] = {
     val iter = dataSet.iterator
     val transformer = SampleToMiniBatch[T](
-      batchSize = batchPerCore * subModelNumber, None, None,
+      batchSize = batchPerCore * subModelNumber,
+      featurePaddingParam = featurePaddingParam, None,
       partitionNum = Some(1))
     val dataIter = transformer(iter)
 
@@ -115,7 +138,6 @@ class LocalPredictor[T: ClassTag] private[optim](model: Module[T])
       val stackSize = batch.size() / subModelNumber
       val extraSize = batch.size() % subModelNumber
       val parallelism = if (stackSize == 0) extraSize else subModelNumber
-      val start = System.nanoTime()
       val result = Engine.default.invokeAndWait(
         (0 until parallelism).map(b =>
           () => {
@@ -141,26 +163,14 @@ class LocalPredictor[T: ClassTag] private[optim](model: Module[T])
    * @param outputLayer if outputLayer is not null, the output of layer that matches
    * outputLayer will be used as predicted output
    * @param shareBuffer whether to share same memory for each batch predict results
-   * @param batchPerCore batch size per core, default is 4
    * @param predictKey key to store predicted result
    */
   def predictImage(imageFrame: LocalImageFrame,
     outputLayer: String = null,
     shareBuffer: Boolean = false,
-    batchPerCore: Int = 4,
     predictKey: String = ImageFeature.predict): LocalImageFrame = {
 
     val dataIter = imageFrame.array.grouped(batchPerCore * subModelNumber)
-
-    // If batchPerCore == 1, will resize the feature every time in SampleToBatch
-    def featurePaddingParam = if (batchPerCore == 1) Some(PaddingParam[T]()) else None
-
-    val workingToBatch = (1 to Math.min(subModelNumber, imageFrame.array.length)).map(_ => {
-      SampleToMiniBatch[T](
-        batchSize = batchPerCore * subModelNumber,
-        partitionNum = Some(subModelNumber),
-        featurePaddingParam = featurePaddingParam)
-    }).toArray
 
     val result = dataIter.map(batch => {
       val groupedImages = batch.grouped(batchPerCore).toArray

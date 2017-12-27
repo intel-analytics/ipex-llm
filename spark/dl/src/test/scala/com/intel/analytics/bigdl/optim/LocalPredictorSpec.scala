@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.optim
 
 import java.io.File
 
-import com.intel.analytics.bigdl.dataset.{Sample}
+import com.intel.analytics.bigdl.dataset.{PaddingParam, Sample}
 import com.intel.analytics.bigdl.models.inception.Inception_v1_NoAuxClassifier
 import com.intel.analytics.bigdl.nn.{Sequential, SpatialConvolution, Tanh}
 import com.intel.analytics.bigdl.tensor.Tensor
@@ -114,7 +114,8 @@ class LocalPredictorSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val model = Sequential()
     model.add(SpatialConvolution(3, 6, 5, 5))
     model.add(Tanh())
-    val detection = model.predictImage(imageFrame, batchPerPartition = 1).toLocal()
+    val detection = model.predictImage(imageFrame, batchPerPartition = 1, featurePaddingParam =
+      Some(PaddingParam())).toLocal()
     val imageFeatures = detection.array
     (1 to 20).foreach(x => {
       imageFeatures(x - 1).uri() should be (x.toString)
