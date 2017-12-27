@@ -75,6 +75,7 @@ class LocalPredictor[T: ClassTag] private[optim](model: Module[T],
       batchSize = batchPerCore * subModelNumber,
       partitionNum = Some(subModelNumber),
       featurePaddingParam = featurePaddingParam)
+    println(s"toBatch: ${batchPerCore}, $subModelNumber, $featurePaddingParam")
     (1 to subModelNumber).map(_ => {
       toBatch.cloneTransformer()
     }).toArray
