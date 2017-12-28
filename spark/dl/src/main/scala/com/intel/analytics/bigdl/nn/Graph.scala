@@ -17,10 +17,12 @@ package com.intel.analytics.bigdl.nn
 
 import java.util
 
+import com.intel.analytics.bigdl.Module
+
 import scala.collection.JavaConverters._
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
-import com.intel.analytics.bigdl.nn.ops.ControlOps
+import com.intel.analytics.bigdl.nn.ops.{MergeControlNode, MergeOps, SwitchControlNode, SwitchOps}
 import com.intel.analytics.bigdl.nn.tf.{ControlDependency, WithoutInput}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -546,7 +548,11 @@ object Graph extends ContainerSerializable {
     subModules.foreach(subModule => {
       val bigDLModule = ModuleSerializer.load(DeserializeContext(subModule,
         context.storages, context.storageType))
-      val moduleNode = bigDLModule.module.inputs()
+      val moduleNode = bigDLModule.module match {
+        case switchOps : SwitchOps[T] => new SwitchControlNode[Module[T]](switchOps)
+        case mergeOps : MergeOps[T] => new MergeControlNode[Module[T]](mergeOps)
+        case _ => bigDLModule.module.inputs()
+      }
       val preNodes = bigDLModule.pre
       layerMap(bigDLModule.module.getName) = (moduleNode, preNodes)
     })
