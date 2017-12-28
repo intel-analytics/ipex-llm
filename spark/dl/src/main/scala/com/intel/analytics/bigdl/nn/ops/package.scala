@@ -90,4 +90,71 @@ package object ops {
     = ModuleToOperation[T](
       com.intel.analytics.bigdl.nn.Unsqueeze(axis))
   }
+
+  object Mean {
+    def apply[T: ClassTag, D: ClassTag](dimension: Int = 1,
+                                        nInputDims: Int = -1,
+                                        squeeze: Boolean = true)
+        (implicit ev: TensorNumeric[T], evd: TensorNumeric[D]): Operation[Activity, Activity, T]
+    = TensorModuleToOperation[T, D](
+      com.intel.analytics.bigdl.nn.Mean(dimension, nInputDims, squeeze))
+  }
+
+  object Abs {
+    def apply[T: ClassTag, D: ClassTag]()
+       (implicit ev: TensorNumeric[T], evd: TensorNumeric[D]): Operation[Activity, Activity, T]
+    = TensorModuleToOperation[T, D](
+      com.intel.analytics.bigdl.nn.Abs[D]())
+  }
+
+  object Clamp {
+    def apply[T: ClassTag, D: ClassTag](min: Int, max: Int)
+       (implicit ev: TensorNumeric[T], evd: TensorNumeric[D]): Operation[Activity, Activity, T]
+    = TensorModuleToOperation[T, D](
+      com.intel.analytics.bigdl.nn.Clamp[D](min, max))
+  }
+
+  object ReLU6 {
+    def apply[T: ClassTag, D: ClassTag]()
+      (implicit ev: TensorNumeric[T], evd: TensorNumeric[D]): Operation[Activity, Activity, T]
+    = TensorModuleToOperation[T, D](
+      com.intel.analytics.bigdl.nn.ReLU6[D]())
+  }
+
+  object ELU {
+    def apply[T: ClassTag, D: ClassTag]()
+      (implicit ev: TensorNumeric[T], evd: TensorNumeric[D]): Operation[Activity, Activity, T]
+    = TensorModuleToOperation[T, D](
+      com.intel.analytics.bigdl.nn.ELU[D]())
+  }
+
+  object Log {
+    def apply[T: ClassTag, D: ClassTag]()
+      (implicit ev: TensorNumeric[T], evd: TensorNumeric[D]): Operation[Activity, Activity, T]
+    = TensorModuleToOperation[T, D](
+      com.intel.analytics.bigdl.nn.Log[D]())
+  }
+
+  object Power {
+    def apply[T: ClassTag, D: ClassTag](power: Double,
+                                        scale : Double = 1,
+                                        shift : Double = 0)
+       (implicit ev: TensorNumeric[T], evd: TensorNumeric[D]): Operation[Activity, Activity, T]
+    = TensorModuleToOperation[T, D](
+      com.intel.analytics.bigdl.nn.Power[D](power, scale, shift))
+  }
+
+  object SoftPlus {
+    def apply[T: ClassTag, D: ClassTag]()
+     (implicit ev: TensorNumeric[T], evd: TensorNumeric[D]): Operation[Activity, Activity, T]
+    = TensorModuleToOperation[T, D](
+      com.intel.analytics.bigdl.nn.SoftPlus[D]())
+  }
+
+  object SoftSign {
+    def apply[T: ClassTag, D: ClassTag]()
+      (implicit ev: TensorNumeric[T], evd: TensorNumeric[D]): Operation[Activity, Activity, T]
+    = TensorModuleToOperation[T, D](
+      com.intel.analytics.bigdl.nn.SoftSign[D]())
+  }
 }

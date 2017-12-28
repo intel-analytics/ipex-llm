@@ -28,7 +28,7 @@ abstract class UnaryGrad[T: ClassTag, D: ClassTag](
                (implicit ev: TensorNumeric[T], ev2: TensorNumeric[D])
   extends Operation[Table, Tensor[D], T]{
 
-  type Module = AbstractModule[Tensor[D], Tensor[D], T]
+  type Module = AbstractModule[Tensor[D], Tensor[D], _]
 
   val module: Module
 

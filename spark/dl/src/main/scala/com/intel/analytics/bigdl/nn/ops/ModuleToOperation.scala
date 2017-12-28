@@ -15,7 +15,7 @@
  */
 package com.intel.analytics.bigdl.nn.ops
 
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
@@ -42,4 +42,28 @@ object ModuleToOperation {
   def apply[T: ClassTag](model: AbstractModule[_, _, T])
     (implicit ev: TensorNumeric[T]): ModuleToOperation[T] =
     new ModuleToOperation(model.asInstanceOf[AbstractModule[Activity, Activity, T]])
+}
+
+class TensorModuleToOperation[T: ClassTag, D: ClassTag] private
+(val module: AbstractModule[Activity, Activity, D])
+(implicit ev: TensorNumeric[T], evd: TensorNumeric[D])
+extends Operation[Activity, Activity, T] {
+
+  output = Tensor[D]()
+
+  override def updateOutput(input: Activity): Activity = {
+    output = module.forward(input)
+    output
+  }
+
+  override def getClassTagNumerics() : (Array[ClassTag[_]], Array[TensorNumeric[_]]) = {
+    (Array[ClassTag[_]](scala.reflect.classTag[T], scala.reflect.classTag[D]),
+      Array[TensorNumeric[_]](ev, evd))
+  }
+}
+
+object TensorModuleToOperation {
+  def apply[T: ClassTag, D: ClassTag](model: TensorModule[D])
+     (implicit ev: TensorNumeric[T], evd: TensorNumeric[D]): TensorModuleToOperation[T, D] =
+    new TensorModuleToOperation[T, D](model)
 }

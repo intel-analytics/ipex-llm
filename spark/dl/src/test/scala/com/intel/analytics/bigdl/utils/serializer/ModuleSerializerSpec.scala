@@ -25,7 +25,7 @@ import com.intel.analytics.bigdl.nn.abstractnn.DataFormat.NHWC
 
 import scala.collection.JavaConverters._
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, DataFormat}
-import com.intel.analytics.bigdl.nn.ops.{All, Any, ApproximateEqual, ArgMax, Assert, Assign, AssignGrad, AvgPoolGrad, BatchMatMul, BiasAddGrad, BroadcastGradientArgs, Cast, Ceil, ControlNodes, Conv2D, Conv2DBackFilter, Conv2DTranspose, Conv3D, Conv3DBackpropFilter, Conv3DBackpropFilterV2, Conv3DBackpropInput, Conv3DBackpropInputV2, CrossEntropy, DecodeImage, DepthwiseConv2D, DepthwiseConv2DBackpropFilter, DepthwiseConv2DBackpropInput, Digamma, Dilation2D, Dilation2DBackpropFilter, Dilation2DBackpropInput, EluGrad, Equal, Erf, Erfc, Expm1, Floor, FloorDiv, FloorMod, FusedBatchNorm, FusedBatchNormGrad, Greater, GreaterEqual, InTopK, Inv, InvGrad, IsFinite, IsInf, IsNan, L2Loss, LRNGrad, Less, LessEqual, Lgamma, LogicalAnd, LogicalNot, LogicalOr, MaxPool, MaxPoolGrad, Maximum, MergeOps, Minimum, Mod, ModuleToOperation, NoOp, NotEqual, OneHot, Pad, ParseExample, Prod, RandomUniform, RangeOps, Rank, Relu6Grad, ReluGrad, ResizeBilinearGrad, ResizeBilinearOps, Rint, Round, RsqrtGrad, SegmentSum, SigmoidGrad, Sign, Slice, SoftplusGrad, SoftsignGrad, SqrtGrad, SquaredDifference, Substr, SwitchOps, TanhGrad, TopK, TruncateDiv, TruncatedNormal, Add => AddOps, DecodeGif => DecodeGifOps, DecodeJpeg => DecodeJpegOps, DecodePng => DecodePngOps, DecodeRaw => DecodeRawOps, Exp => ExpOps, Pow => PowOps, Select => SelectOps, Sum => SumOps, Tile => TileOps}
+import com.intel.analytics.bigdl.nn.ops.{All, Any, ApproximateEqual, ArgMax, Assert, Assign, AssignGrad, AvgPoolGrad, BatchMatMul, BiasAddGrad, BroadcastGradientArgs, Cast, Ceil, ControlNodes, Conv2D, Conv2DBackFilter, Conv2DTranspose, Conv3D, Conv3DBackpropFilter, Conv3DBackpropFilterV2, Conv3DBackpropInput, Conv3DBackpropInputV2, CrossEntropy, DecodeImage, DepthwiseConv2D, DepthwiseConv2DBackpropFilter, DepthwiseConv2DBackpropInput, Digamma, Dilation2D, Dilation2DBackpropFilter, Dilation2DBackpropInput, EluGrad, Equal, Erf, Erfc, Expm1, Floor, FloorDiv, FloorMod, FusedBatchNorm, FusedBatchNormGrad, Greater, GreaterEqual, InTopK, Inv, InvGrad, IsFinite, IsInf, IsNan, L2Loss, LRNGrad, Less, LessEqual, Lgamma, LogicalAnd, LogicalNot, LogicalOr, MaxPool, MaxPoolGrad, Maximum, MergeOps, Minimum, Mod, ModuleToOperation, NoOp, NotEqual, OneHot, Pad, ParseExample, Prod, RandomUniform, RangeOps, Rank, Relu6Grad, ReluGrad, ResizeBilinearGrad, ResizeBilinearOps, Rint, Round, RsqrtGrad, SegmentSum, SigmoidGrad, Sign, Slice, SoftplusGrad, SoftsignGrad, SqrtGrad, SquaredDifference, Substr, SwitchOps, TanhGrad, TensorModuleToOperation, TopK, TruncateDiv, TruncatedNormal, Add => AddOps, DecodeGif => DecodeGifOps, DecodeJpeg => DecodeJpegOps, DecodePng => DecodePngOps, DecodeRaw => DecodeRawOps, Exp => ExpOps, Pow => PowOps, Select => SelectOps, Sum => SumOps, Tile => TileOps}
 import com.intel.analytics.bigdl.nn.tf._
 import com.intel.analytics.bigdl.nn.{DenseToSparse, SpatialDropout1D, _}
 import com.intel.analytics.bigdl.optim.L2Regularizer
@@ -100,7 +100,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers with BeforeAndAfterAll
   }
 
   "Abs serializer" should "work properly" in {
-    val abs = Abs[Float, Float]().setName("abs")
+    val abs = Abs[Float]().setName("abs")
     val input = Tensor[Float](5, 5).apply1(_ => Random.nextFloat())
     runSerializationTest(abs, input)
   }
@@ -284,7 +284,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers with BeforeAndAfterAll
   "Clamp serializer" should "work properly" in {
 
     val input = Tensor[Float](10).apply1(e => Random.nextFloat())
-    val clamp = Clamp[Float, Float](1, 10).setName("clamp")
+    val clamp = Clamp[Float](1, 10).setName("clamp")
     runSerializationTest(clamp, input)
   }
 
@@ -328,8 +328,8 @@ class ModuleSerializerSpec extends FlatSpec with Matchers with BeforeAndAfterAll
   "Concatserializer" should "work properly" in {
     val input = Tensor[Float](2, 2, 2).apply1(e => Random.nextFloat())
     val concat = Concat[Float](2).setName("concat")
-    concat.add(Abs[Float, Float]())
-    concat.add(Abs[Float, Float]())
+    concat.add(Abs[Float]())
+    concat.add(Abs[Float]())
     runSerializationTest(concat, input)
   }
 
@@ -463,7 +463,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers with BeforeAndAfterAll
   }
 
   "ELU serializer" should "work properly" in {
-    val elu = ELU[Float, Float]().setName("elu")
+    val elu = ELU[Float]().setName("elu")
     val input = Tensor[Float](10).apply1(_ => Random.nextFloat())
     runSerializationTest(elu, input)
   }
@@ -579,7 +579,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers with BeforeAndAfterAll
   }
 
   "HardTanh serializer" should "work properly" in {
-    val hardTanh = HardTanh[Float, Float]().setName("hardTanh")
+    val hardTanh = HardTanh[Float]().setName("hardTanh")
     val input = Tensor[Float](10).apply1(_ => Random.nextFloat())
     runSerializationTest(hardTanh, input)
   }
@@ -652,7 +652,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers with BeforeAndAfterAll
   }
 
   "Log Serializer" should "work properly" in {
-    val log = Log[Float, Float]().setName("log")
+    val log = Log[Float]().setName("log")
     val input = Tensor[Float](10).apply1(_ => Random.nextFloat())
     runSerializationTest(log, input)
   }
@@ -895,7 +895,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers with BeforeAndAfterAll
   }
 
   "Power serializer" should "work properly" in {
-    val power = Power[Float, Float](2.0).setName("power")
+    val power = Power[Float](2.0).setName("power")
     val input = Tensor[Float](2, 2).apply1(e => Random.nextFloat())
     runSerializationTest(power, input)
   }
@@ -934,7 +934,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers with BeforeAndAfterAll
   }
 
   "ReLU6 serializer" should "work properly" in {
-    val relu6 = ReLU6[Float, Float](false).setName("relu6")
+    val relu6 = ReLU6[Float](false).setName("relu6")
     val input = Tensor[Float](10).apply1(_ => Random.nextFloat())
     runSerializationTest(relu6, input)
   }
@@ -1038,7 +1038,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers with BeforeAndAfterAll
   }
 
   "SoftPlus serializer" should "work properly" in {
-    val softPlus = SoftPlus[Float, Float]().setName("softPlus")
+    val softPlus = SoftPlus[Float]().setName("softPlus")
     val input = Tensor[Float](10).apply1(_ => Random.nextFloat())
     runSerializationTest(softPlus, input)
   }
@@ -1050,7 +1050,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers with BeforeAndAfterAll
   }
 
   "SoftSign serializer" should "work properly" in {
-    val softSign = SoftSign[Float, Float]().setName("softSign")
+    val softSign = SoftSign[Float]().setName("softSign")
     val input = Tensor[Float](10, 10).apply1(_ => Random.nextFloat())
     runSerializationTest(softSign, input)
   }
@@ -1196,13 +1196,13 @@ class ModuleSerializerSpec extends FlatSpec with Matchers with BeforeAndAfterAll
   }
 
   "Sqrt serializer" should "work properly" in {
-    val sqrt = Sqrt[Float, Float]().setName("sqrt")
+    val sqrt = Sqrt[Float]().setName("sqrt")
     val input = Tensor[Float](10).apply1( e => Random.nextFloat())
     runSerializationTest(sqrt, input)
   }
 
   "Square serializer" should "work properly" in {
-    val square = Square[Float, Float]().setName("square")
+    val square = Square[Float]().setName("square")
     val input = Tensor[Float](10).apply1( e => Random.nextFloat())
     runSerializationTest(square, input)
   }
@@ -1220,7 +1220,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers with BeforeAndAfterAll
   }
 
   "Sum serializer" should "work properly" in {
-    val sum = Sum[Float, Float](2).setName("sum")
+    val sum = Sum[Float](2).setName("sum")
     val input = Tensor[Float](5, 5).apply1(_ => Random.nextFloat())
     runSerializationTest(sum, input)
   }
@@ -1877,6 +1877,13 @@ class ModuleSerializerSpec extends FlatSpec with Matchers with BeforeAndAfterAll
       setName("moduleToOperation")
     val input = T(Tensor[Boolean](T(true, false)), Tensor[Boolean](T(true, false)))
     runSerializationTest(moduleToOperation, input)
+  }
+
+  "TensorModuleToOperation serializer" should "work properly" in {
+    val tensorModuleToOperation = TensorModuleToOperation[Float, Float](SoftPlus[Float]()).
+      setName("moduleToOperation")
+    val input = Tensor[Float](T(1.0f, 1.0))
+    runSerializationTest(tensorModuleToOperation, input)
   }
 
   "NoOp serializer" should "work properly" in {
