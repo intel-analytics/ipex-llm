@@ -491,12 +491,12 @@ class KLDCriterion(Criterion):
     The input has to be a table. The first element of input is the mean of the distribution,
     the second element of input is the log_variance of the distribution. The input distribution is
     assumed to be diagonal.
-    >>> KLDCriterion = KLDCriterion()
+    >>> KLDCriterion = KLDCriterion(True)
     creating: createKLDCriterion
     '''
 
-    def __init__(self, bigdl_type="float"):
-        super(KLDCriterion, self).__init__(None, bigdl_type)
+    def __init__(self, size_average=True, bigdl_type="float"):
+        super(KLDCriterion, self).__init__(None, bigdl_type, size_average)
 
 
 class GaussianCriterion(Criterion):
