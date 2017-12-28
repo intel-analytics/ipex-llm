@@ -10,7 +10,7 @@
 
 ## **Run as a local program**
  * If the type of input data is ndarray instead of RDD or DataFrame, the model would be trained or validated in local mode.
- * Check [LeNet](../../../pyspark/bigdl/models/local_lenet/README.md) for more details
+ * Check [LeNet](https://github.com/intel-analytics/BigDL/blob/master/pyspark/bigdl/models/local_lenet/README.md) for more details
 
 ```python
 # X_train, Y_train, X_test are all ndarray and the first dimension is the sample number.
