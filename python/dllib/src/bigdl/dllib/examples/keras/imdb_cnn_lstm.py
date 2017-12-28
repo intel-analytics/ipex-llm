@@ -64,6 +64,7 @@ def build_keras_model():
 if __name__ == "__main__":
     parser = OptionParser()
     parser.add_option("-b", "--batchSize", type=int, dest="batchSize", default="32")
+    parser.add_option("-m", "--max_epoch", type=int, dest="max_epoch", default="2")
     (options, args) = parser.parse_args(sys.argv)
 
     keras_model = build_keras_model()
@@ -92,7 +93,7 @@ if __name__ == "__main__":
         training_rdd=train_data,
         criterion=BCECriterion(),
         optim_method=Adam(),
-        end_trigger=MaxEpoch(2),
+        end_trigger=MaxEpoch(options.max_epoch),
         batch_size=options.batchSize)
     optimizer.set_validation(
         batch_size=options.batchSize,
