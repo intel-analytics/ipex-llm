@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.optim
 
-import com.intel.analytics.bigdl.dataset.Sample
+import com.intel.analytics.bigdl.dataset.{PaddingParam, Sample}
 import com.intel.analytics.bigdl.models.inception.Inception_v1_NoAuxClassifier
 import com.intel.analytics.bigdl.models.lenet.LeNet5
 import com.intel.analytics.bigdl.nn.{Sequential, SpatialConvolution, Tanh}
@@ -171,7 +171,8 @@ class PredictorSpec extends FlatSpec with Matchers with BeforeAndAfter{
     val model = Sequential()
     model.add(SpatialConvolution(3, 6, 5, 5))
     model.add(Tanh())
-    val detection = model.predictImage(imageFrame, batchPerPartition = 1, shareBuffer = false)
+    val detection = model.predictImage(imageFrame, batchPerPartition = 1, shareBuffer = false,
+      featurePaddingParam = Some(PaddingParam[Float]()))
       .toDistributed()
     val imageFeatures = detection.rdd.collect()
     (1 to 20).foreach(x => {
