@@ -29,9 +29,10 @@ import scala.reflect.ClassTag
  * assumed to be diagonal.
  *
  * The mean and log_variance are both assumed to be two dimensional tensors. The first dimension are
- * interpreted as batch. The output is the average of each batch.
+ * interpreted as batch. The output is the average/sum of each observation.
  */
 class KLDCriterion[@specialized(Float, Double) T: ClassTag](
+            sizeAverage: Boolean = true)(
   implicit ev: TensorNumeric[T]) extends AbstractCriterion[Table, Tensor[T], T] {
 
   @transient
@@ -50,7 +51,7 @@ class KLDCriterion[@specialized(Float, Double) T: ClassTag](
     mean.resizeAs(input[Tensor[T]](1)).copy(input(1))
     logVar.resizeAs(input[Tensor[T]](2)).copy(input(2))
 
-    val batchSize = mean.size(1)
+    val batchSize = if (sizeAverage) mean.size(1) else 1
 
     //  Appendix B from VAE paper: -0.5 * sum(1 + log(sigma^2) - mu^2 - sigma^2)
     mean.pow(ev.fromType(2))
@@ -65,7 +66,7 @@ class KLDCriterion[@specialized(Float, Double) T: ClassTag](
     if (!gradInput.contains(1)) gradInput(1) = Tensor()
     if (!gradInput.contains(2)) gradInput(2) = Tensor()
 
-    val batchSize = input[Tensor[T]](1).size(1)
+    val batchSize = if (sizeAverage) input[Tensor[T]](1).size(1) else 1
 
     // d_L/d_mu = mu
     gradInput[Tensor[T]](1).resizeAs(input(1)).copy(input(1)).mul(ev.fromType(1.0 / batchSize))
@@ -78,9 +79,9 @@ class KLDCriterion[@specialized(Float, Double) T: ClassTag](
 }
 
 object KLDCriterion {
-  def apply[@specialized(Float, Double) T: ClassTag]()(
+  def apply[@specialized(Float, Double) T: ClassTag](sizeAverage: Boolean = true)(
     implicit ev: TensorNumeric[T]): KLDCriterion[T] = {
-    new KLDCriterion[T]()
+    new KLDCriterion[T](sizeAverage = sizeAverage)
   }
 }
 
