@@ -22,7 +22,7 @@ import com.intel.analytics.bigdl.Module
 import scala.collection.JavaConverters._
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
-import com.intel.analytics.bigdl.nn.ops.{MergeControlNode, MergeOps, SwitchControlNode, SwitchOps}
+import com.intel.analytics.bigdl.nn.ops.{MergeControlNode, SwitchControlNode, MergeOps, SwitchOps, ControlOps}
 import com.intel.analytics.bigdl.nn.tf.{ControlDependency, WithoutInput}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -549,8 +549,7 @@ object Graph extends ContainerSerializable {
       val bigDLModule = ModuleSerializer.load(DeserializeContext(subModule,
         context.storages, context.storageType))
       val moduleNode = bigDLModule.module match {
-        case switchOps : SwitchOps[T] => new SwitchControlNode[Module[T]](switchOps)
-        case mergeOps : MergeOps[T] => new MergeControlNode[Module[T]](mergeOps)
+        case controlOps : ControlOps[T] => createControlNode(controlOps)
         case _ => bigDLModule.module.inputs()
       }
       val preNodes = bigDLModule.pre
@@ -594,6 +593,15 @@ object Graph extends ContainerSerializable {
       Graph.dynamic[T](inputs.toArray, outputs.toArray, sharedVariables, generateBackward)
     } else {
       Graph[T](inputs.toArray, outputs.toArray, sharedVariables)
+    }
+  }
+
+  private def createControlNode[T: ClassTag](controlOps : ControlOps[T]) : ModuleNode[T] = {
+    controlOps match {
+      case switchOps : SwitchOps[T] => new SwitchControlNode[Module[T]](switchOps)
+      case mergeOps : MergeOps[T] => new MergeControlNode[Module[T]](mergeOps)
+      case _ => throw new RuntimeException(s"Ops ${controlOps.getClass.getName}" +
+        s" control node not supported!")
     }
   }
 
