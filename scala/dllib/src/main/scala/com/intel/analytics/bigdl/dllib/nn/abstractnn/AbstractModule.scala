@@ -27,7 +27,7 @@ import com.intel.analytics.bigdl.utils.TorchObject.TYPE_MODULE
 import org.apache.commons.lang3.SerializationUtils
 import org.apache.spark.rdd.RDD
 import com.intel.analytics.bigdl.optim._
-import com.intel.analytics.bigdl.dataset.{LocalDataSet, MiniBatch, Sample}
+import com.intel.analytics.bigdl.dataset.{LocalDataSet, MiniBatch, PaddingParam, Sample}
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.nn.quantized.Quantization
 import com.intel.analytics.bigdl.transform.vision.image.{DistributedImageFrame, ImageFeature, ImageFrame, LocalImageFrame}
@@ -577,27 +577,32 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
   }
 
   /**
-   * model predict images, return imageFrame with predicted tensor
+   * model predict images, return imageFrame with predicted tensor,
+   * if you want to call predictImage multiple times,
+   * it is recommended to use Predictor for DistributedImageFrame
+   * or LocalPredictor for LocalImageFrame
    * @param imageFrame imageFrame that contains images
    * @param outputLayer if outputLayer is not null, the output of layer that matches
    *                      outputLayer will be used as predicted output
    * @param shareBuffer whether to share same memory for each batch predict results
    * @param batchPerPartition batch size per partition, default is 4
    * @param predictKey key to store predicted result
+   * @param featurePaddingParam featurePaddingParam if the inputs have variant size
    * @return
    */
   def predictImage(imageFrame: ImageFrame,
     outputLayer: String = null,
     shareBuffer: Boolean = false,
     batchPerPartition: Int = 4,
-    predictKey: String = ImageFeature.predict): ImageFrame = {
+    predictKey: String = ImageFeature.predict,
+    featurePaddingParam: Option[PaddingParam[T]] = None): ImageFrame = {
     imageFrame match {
       case distributedImageFrame: DistributedImageFrame =>
-        Predictor(this).predictImage(distributedImageFrame, outputLayer,
-          shareBuffer, batchPerPartition, predictKey)
+        Predictor(this, featurePaddingParam, batchPerPartition)
+          .predictImage(distributedImageFrame, outputLayer, shareBuffer, predictKey)
       case localImageFrame: LocalImageFrame =>
-        LocalModule[T](this).predictImage(localImageFrame, outputLayer,
-          shareBuffer, batchPerPartition, predictKey)
+        LocalPredictor(this, featurePaddingParam, batchPerPartition)
+          .predictImage(localImageFrame, outputLayer, shareBuffer, predictKey)
     }
   }
 
