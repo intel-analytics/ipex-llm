@@ -156,7 +156,7 @@ sealed class  SwitchControlNode[T] (element: T) extends Node[T](element) {
  * @param element element
  * @tparam T element type
  */
-sealed class MergeControlNode[T] private[ops] (element: T) extends Node[T](element) {
+sealed class MergeControlNode[T] private[bigdl] (element: T) extends Node[T](element) {
 
   /**
    * Add another dependency node
