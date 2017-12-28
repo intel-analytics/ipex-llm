@@ -54,20 +54,28 @@ def get_mnist(data_type="train", location="/tmp/mnist"):
 
 
 if __name__ == "__main__":
+    parser = OptionParser()
+    parser.add_option("-b", "--batchSize", type=int, dest="batchSize", default="128")
+    parser.add_option("-m", "--max_epoch", type=int, dest="max_epoch", default="20")
+    parser.add_option("-d", "--dataPath", dest="dataPath", default="/tmp/mnist")
+    (options, args) = parser.parse_args(sys.argv)
+
     redire_spark_logs()
     show_bigdl_info_logs()
     init_engine()
-    (X_train, Y_train) = get_mnist("train")
-    (X_test, Y_test) = get_mnist("test")
+
+    (X_train, Y_train) = get_mnist("train", options.dataPath)
+    (X_test, Y_test) = get_mnist("test", options.dataPath)
+
     optimizer = Optimizer.create(
         model=build_model(10),
         training_set=(X_train, Y_train),
         criterion=ClassNLLCriterion(),
         optim_method=SGD(learningrate=0.01, learningrate_decay=0.0002),
-        end_trigger=MaxEpoch(20),
-        batch_size=128)
+        end_trigger=MaxEpoch(options.max_epoch),
+        batch_size=options.batchSize)
     optimizer.set_validation(
-        batch_size=128,
+        batch_size=options.batchSize,
         X_val = X_test,
         Y_val = Y_test,
         trigger=EveryEpoch(),
