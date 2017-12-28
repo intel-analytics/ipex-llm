@@ -76,6 +76,7 @@ def build_keras_model():
 if __name__ == "__main__":
     parser = OptionParser()
     parser.add_option("-b", "--batchSize", type=int, dest="batchSize", default="128")
+    parser.add_option("-m", "--max_epoch", type=int, dest="max_epoch", default="12")
     parser.add_option("-d", "--dataPath", dest="dataPath", default="/tmp/mnist")
     (options, args) = parser.parse_args(sys.argv)
 
@@ -104,7 +105,7 @@ if __name__ == "__main__":
         training_rdd=train_data,
         criterion=ClassNLLCriterion(logProbAsInput=False),
         optim_method=Adadelta(),
-        end_trigger=MaxEpoch(12),
+        end_trigger=MaxEpoch(options.max_epoch),
         batch_size=options.batchSize)
     optimizer.set_validation(
         batch_size=options.batchSize,
