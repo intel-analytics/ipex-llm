@@ -1895,6 +1895,9 @@ The input has to be a table. The first element of input is the mean of the distr
 the second element of input is the log_variance of the distribution. The input distribution is
 assumed to be diagonal.
 
+The mean and log_variance are both assumed to be two dimensional tensors. The first dimension are
+interpreted as batch. The output is the average/sum of each observation
+
 **Scala example:**
 ```scala
 import com.intel.analytics.bigdl.tensor.Tensor
