@@ -53,6 +53,13 @@ class Node(JavaValue):
     def element(self):
         return Layer.of(self.value.element())
 
+    def remove_pre_edges(self):
+        callJavaFunc(get_spark_context(), self.value.removePreEdges)
+
+    def remove_next_edges(self):
+        callJavaFunc(get_spark_context(), self.value.removeNextEdges)
+
+
 
 class Layer(JavaValue):
     """
