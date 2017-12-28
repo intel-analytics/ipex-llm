@@ -515,7 +515,7 @@ class LayerConverter:
             return self.combo_parameter_layer(blayer, self.config)
         else:
             seq = BLayer.Sequential()
-            seq.add(BLayer.InferReshape([-1, out_dim], False))
+            seq.add(BLayer.InferReshape([-1, in_dim], False))
             seq.add(blayer)
             seq.add(BLayer.InferReshape([-1] + list(self.input_shape[1:-1]) + [out_dim], False))
             return self.combo_parameter_layer(seq, self.config)
