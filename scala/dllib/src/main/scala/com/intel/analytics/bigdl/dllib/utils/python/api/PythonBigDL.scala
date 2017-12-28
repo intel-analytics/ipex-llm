@@ -1855,16 +1855,16 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   def predictLocal(model: AbstractModule[Activity, Activity, T],
                    features: JList[JTensor]): JList[JTensor] = {
     val sampleArray = toSampleArray(features.asScala.toList.map{f => toTensor(f)})
-    val localModel = LocalModule(model)
-    val result = localModel.predict(sampleArray)
+    val localPredictor = LocalPredictor(model)
+    val result = localPredictor.predict(sampleArray)
     result.map{a => toJTensor(a.asInstanceOf[Tensor[T]])}.toList.asJava
   }
 
   def predictLocalClass(model: AbstractModule[Activity, Activity, T],
                         features: JList[JTensor]): JList[Int] = {
     val sampleArray = toSampleArray(features.asScala.toList.map{f => toTensor(f)})
-    val localModel = LocalModule(model)
-    val result = localModel.predictClass(sampleArray)
+    val localPredictor = LocalPredictor(model)
+    val result = localPredictor.predictClass(sampleArray)
     result.toList.asJava
   }
 
