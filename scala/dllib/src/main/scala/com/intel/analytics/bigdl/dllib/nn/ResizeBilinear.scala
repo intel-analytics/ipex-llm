@@ -84,9 +84,9 @@ class ResizeBilinear[T: ClassTag](val outputHeight: Int, val outputWidth: Int,
     val inWidth = input.size(3)
     val channels = input.size(4)
     val inRowSize = inWidth * channels
-    val inBatchNum = batchSize * inHeight * inRowSize
+    val inBatchNum = inHeight * inRowSize
     val outRowSize = outputWidth * channels
-    val outBatchNum = batchSize * outputHeight * outRowSize
+    val outBatchNum = outputHeight * outRowSize
 
     require(gradOutput.size(2) == outputHeight, "output height is not match")
     require(gradOutput.size(3) == outputWidth, "output width is not match")
@@ -121,16 +121,16 @@ class ResizeBilinear[T: ClassTag](val outputHeight: Int, val outputWidth: Int,
           var c = 0
           while(c < channels) {
             gradInputData(gradInputOffset + b * inBatchNum + topY * inRowSize +
-              leftX * channels + c) = gradOutputData(gradOutputOffset + b * outBatchNum +
+              leftX * channels + c) += gradOutputData(gradOutputOffset + b * outBatchNum +
               y * outRowSize + x * channels + c) * inverseYLERP * inverseXLERP
             gradInputData(gradInputOffset + b * inBatchNum + topY * inRowSize +
-              rightX * channels + c) = gradOutputData(gradOutputOffset + b * outBatchNum +
+              rightX * channels + c) += gradOutputData(gradOutputOffset + b * outBatchNum +
               y * outRowSize + x * channels + c) * inverseYLERP * xLERP
             gradInputData(gradInputOffset + b * inBatchNum + bottomY * inRowSize +
-              leftX * channels + c) = gradOutputData(gradOutputOffset + b * outBatchNum +
+              leftX * channels + c) += gradOutputData(gradOutputOffset + b * outBatchNum +
               y * outRowSize + x * channels + c) * yLERP * inverseXLERP
             gradInputData(gradInputOffset + b * inBatchNum + bottomY * inRowSize +
-              rightX * channels + c) = gradOutputData(gradOutputOffset + b * outBatchNum +
+              rightX * channels + c) += gradOutputData(gradOutputOffset + b * outBatchNum +
               y * outRowSize + x * channels + c) * yLERP * xLERP
             c += 1
           }
