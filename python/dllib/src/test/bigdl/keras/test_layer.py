@@ -79,6 +79,9 @@ class TestLayer(BigDLTestCase):
         self.modelTestSingleLayer(input_data2, layer3, dump_weights=True)
         layer4 = Dense(2, init='glorot_uniform', activation="hard_sigmoid", input_shape=(10, ))
         self.modelTestSingleLayer(input_data2, layer4, dump_weights=True)
+        # Test for unsupported init_method. Should get a warning not an exception.
+        layer5 = Dense(4, init='he_uniform', input_shape=(10, ))
+        self.modelTestSingleLayer(input_data2, layer5, dump_weights=True)
 
     def test_timedistributeddense(self):
         input_data = np.random.random_sample([2, 4, 5])
