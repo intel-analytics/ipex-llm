@@ -1763,8 +1763,13 @@ class LayerConverter:
     def combo_parameter_layer(self, blayer, config):
         blayer.set_name(config["name"])
         if hasattr(blayer, "set_init_method"):
-            blayer.set_init_method(self.to_bigdl_init(config["init"]),
-                                   BInit.Zeros())  # Keras always set this to be zeros
+            try:
+                blayer.set_init_method(self.to_bigdl_init(config["init"]),
+                                       BInit.Zeros())  # Keras always set this to be zeros
+            except Exception:
+                warning_msg = "We don't support initialization " + config["init"] + " for now. " \
+                    + "Using the default instead."
+                warnings.warn(warning_msg)
         # "linear" means doing nothing
         if config["activation"] != "linear":
             activation = get_activation_by_name(config["activation"],
@@ -1789,6 +1794,10 @@ class LayerConverter:
             init = BInit.Ones()
         elif kinit_method == "zero":
             init = BInit.Zeros()
+        elif kinit_method == "uniform":
+            init = BInit.RandomUniform(lower=-0.05, upper=0.05)
+        elif kinit_method == "normal":
+            init = BInit.RandomNormal(mean=0.0, stdv=0.05)
         else:
             raise Exception("Unsupported init type: %s" % kinit_method)
         return init
