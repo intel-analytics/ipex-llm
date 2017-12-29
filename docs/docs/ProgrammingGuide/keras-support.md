@@ -1,8 +1,10 @@
 # **Keras Support**
 
-For __Python__ users, BigDL supports loading pre-defined Keras models. After loading a model, you can train, evaluate or tune this model on BigDL in a distributed manner.
+For __Python__ users, BigDL supports loading pre-defined Keras models.
 
 The Keras version we support and test is [__Keras 1.2.2__](https://faroit.github.io/keras-docs/1.2.2/) with TensorFlow backend. Up to now, we have generally supported __ALL__ its layers.
+
+After loading a model into BigDL, you can train, evaluate or tune this model in a distributed manner. We have generally supported __ALL__ the [losses](https://faroit.github.io/keras-docs/1.2.2/objectives/) in Keras 1.2.2. See [here](../APIGuide/Losses.md) to find the corresponding criterions in BigDL.
 
 If you haven't been familiar with BigDL yet, you may refer to Python User Guide on how to [install](../PythonUserGuide/install-from-pip.md) and [run](../PythonUserGuide/run-from-pip.md) BigDL for Python users before you start this page.
 
