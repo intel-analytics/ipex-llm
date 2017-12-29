@@ -176,6 +176,7 @@ object DataConverter extends DataConverter{
       || valueType.toString == ModuleSerializer.tensorModuleType.toString
       || valueType.toString == ModuleSerializer.moduleType.toString
       || valueType.toString == ModuleSerializer.boundedModuleType.toString
+      || valueType <:< universe.typeOf[AbstractModule[_, _, _]]
       ) {
       ModuleConverter.setAttributeValue(context, attributeBuilder, value)
     } else if (value.isInstanceOf[mutable.Map[String, _ <: Any]]) {
