@@ -8,6 +8,7 @@ This page lists the so-far unsupported arguments for specific layers and some kn
 ## **Unsupported Layer Arguments**
 For the following arguments, currently only the default values are expected and supported.
 
+* For [`initializations`](https://faroit.github.io/keras-docs/1.2.2/initializations/), `lecun_uniform`, `orthogonal`, `glorot_normal`, `he_normal` and `he_uniform` are not supported for all layers. For those unsupported initialization methods, we will default values from BigDL instead. Thus in this case, you are __strongly recommended__ to load the weights from Keras together with its model definition.
 * Constraints (`W_constraint`, `b_constraint`, etc.) are not supported for all layers.
 * `activity_regularizer` is not supported for all layers.
 * For [`Dropout`](https://faroit.github.io/keras-docs/1.2.2/layers/core/#dropout), `noise_shape` is not supported.
