@@ -341,9 +341,24 @@ object DistriOptimizer {
           }
         }
 
+        // array index is layer id, value is (wNorm2, gNorm2)
+        var gwNorm2ListBroadcast: Broadcast[Array[(Double, Double)]] = null
+        if (larsenable) {
+          val gwNorm2List = dataset.originRDD().mapPartitions( _ => {
+            if (!l2normClippingEnable) {
+              val getG = System.nanoTime()
+              parameters.aggregateGradientPartition()
+              driverMetrics.add("aggregrateGradientParition average executor",
+                System.nanoTime() - getG)
+            }
+            parameters.squareSumPerLayer(lookupDicBroadcast.value, numFinishedModelUpdates).iterator
+          }).reduceByKey((a, b) => (ev.plus(a._1, b._1), ev.plus(a._2, b._2))).sortByKey(true).collect()
+          gwNorm2ListBroadcast = sc.broadcast(gwNorm2List)
+        }
+
         models.mapPartitions { modelIter =>
           val modelCache = modelIter.next()
-          if (!l2normClippingEnable) {
+          if (!l2normClippingEnable && !larsenable) {
             val getG = System.nanoTime()
             parameters.aggregateGradientPartition()
             driverMetrics.add("aggregrateGradientParition average executor",
@@ -353,6 +368,15 @@ object DistriOptimizer {
           modelCache.optimMethod.state.update("epoch", driverState[Int]("epoch"))
           modelCache.optimMethod.state.update("neval", driverState[Int]("neval"))
           modelCache.optimMethod.state.update("Loss", driverState[Float]("Loss"))
+          if (larsenable) {
+            // Array index is partition id, hashmap key is layer Id, hash value is (start, length)
+            // TODO: Need ensure lookupDicBroadcast is sorted by hashmap key
+            val lookupList = lookupDicBroadcast.value(TaskContext.getPartitionId())
+            // gwNorm2List array index is layer id, value is (wNorm2, gNorm2)
+            modelCache.optimMethod.state.update("lookupList", lookupList.values)
+            val gwNorm2List = lookupList.map {key => gwNorm2ListBroadcast.value(key)}
+            modelCache.optimMethod.state.update("gwNorm2List", gwNorm2List)
+          }
           if (validationMethods.isDefined) {
             modelCache.optimMethod.state.update("score", driverState[Float]("score"))
           }
@@ -628,6 +652,7 @@ object DistriOptimizer {
       Iterator.single(parameters.init(weights, sizeValues))
     }.collect()
     // stores each layers start, end on each partition
+    // Array index is partition id, hashmap key is layer Id, hash value is (start, length)
     val lookupDic = new Array[mutable.HashMap[Int, (Int, Int)]](parameterPerNodeSizes.length)
     var i = 0
     require(parameterPerNodeSizes.length == partitionNum,
@@ -662,8 +687,9 @@ object DistriOptimizer {
     }
 
     // Check if lookupDic is correct
+    // array index is layer id, value is (wNorm2, gNorm2)
     val squareSumPerLayer = dataset.originRDD().mapPartitions( _ => {
-      parameters.squareSumPerLayer(lookupDic).iterator
+      parameters.squareSumPerLayer(lookupDic, 1.0).iterator
     }).reduceByKey((a, b) => (ev.plus(a._1, b._1), ev.plus(a._2, b._2))).sortByKey(true).collect()
     
     require(parameterPerLayerSizes.length == squareSumPerLayer.length,

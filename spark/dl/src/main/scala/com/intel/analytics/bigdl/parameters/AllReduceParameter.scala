@@ -309,14 +309,14 @@ class AllReduceParameter[T: ClassTag](id: Long, partitionNum: Int, size: Int) ex
     weights.copy(weightPartition)
   }
 
-  def squareSumPerLayer(lookupDic: Array[mutable.HashMap[Int, (Int, Int)]]):
+  def squareSumPerLayer(lookupDic: Array[mutable.HashMap[Int, (Int, Int)]], scale: Double):
     Array[(Int, (T, T))] = {
     val lookupMap = lookupDic(partitionId)
     val list = new Array[(Int, (T, T))](lookupMap.size)
     var i = 0
     for ((k, v) <- lookupMap) {
-      list(i) = (k, (weightPartition.narrow(1, v._1, v._2).sumSquare(),
-        gradientPartition.narrow(1, v._1, v._2).sumSquare()))
+      list(i) = (k, ev.div((weightPartition.narrow(1, v._1, v._2).sumSquare(), scale),
+        ev.div(gradientPartition.narrow(1, v._1, v._2).sumSquare()), scale))
       i += 1
     }
     list
