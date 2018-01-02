@@ -2201,6 +2201,13 @@ criterion = TransformerCriterion(criterion, input_transformer, targetTransformer
 The criterion that takes two modules (optional) to transform input and target, and take
 one criterion to compute the loss with the transformed input and target.
 
+This criterion can be used to construct complex criterion. For example, the
+`inputTransformer` and `targetTransformer` can be pre-trained CNN networks,
+and we can use the networks' output to compute the high-level feature
+reconstruction loss, which is commonly used in areas like neural style transfer
+(https://arxiv.org/abs/1508.06576), texture synthesis (https://arxiv.org/abs/1505.07376),
+.etc.
+
 **Scala example:**
 ```scala
 import com.intel.analytics.bigdl.tensor.Tensor
