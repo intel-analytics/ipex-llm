@@ -291,7 +291,8 @@ abstract class Converter[T: ClassTag](implicit ev: TensorNumeric[T]) {
   protected def getEltWiseParam(layer : GeneratedMessage): Option[EltwiseParameter]
 
   def toCaffe(moduleNode : AbstractModule[Activity, Activity, T],
-              bottoms : ArrayBuffer[String], nextSize : Int) : Seq[GeneratedMessage] = {
+              bottoms : ArrayBuffer[String], nextSize : Int,
+              netparam: NetParameter.Builder = null) : Seq[GeneratedMessage] = {
     val module = moduleNode.asInstanceOf[AbstractModule[_, _, _]]
     val model : Seq[GeneratedMessage] = module match {
       case convolution : SpatialConvolution[_] => toCaffeConvolution(moduleNode, bottoms, nextSize)
@@ -304,6 +305,7 @@ abstract class Converter[T: ClassTag](implicit ev: TensorNumeric[T]) {
       case linear : Linear[_] => toCaffeInnerProduct(moduleNode, bottoms, nextSize)
       case dropout : Dropout[_] => toCaffeDropOut(moduleNode, bottoms, nextSize)
       case logSoftMax : LogSoftMax[_] => toCaffeLogSoftMax(moduleNode, bottoms, nextSize)
+      case softMax : SoftMax[_] => toCaffeSoftMax(moduleNode, bottoms, nextSize)
       case tanh : Tanh[_] => toCaffeTanh(moduleNode, bottoms, nextSize)
       case sigmoid : Sigmoid[_] => toCaffeSigmoid(moduleNode, bottoms, nextSize)
       case abs : Abs[_, _] => toCaffeAbs(moduleNode, bottoms, nextSize)
@@ -327,6 +329,7 @@ abstract class Converter[T: ClassTag](implicit ev: TensorNumeric[T]) {
       case cadd : CAdd[_] => toCaffeEltWiseAdd(moduleNode, bottoms, nextSize)
       case csub : CSubTable[_] => toCaffeEltWiseSub(moduleNode, bottoms, nextSize)
       case sequantial : Sequential[_] => toCaffeSequential(moduleNode, bottoms, nextSize)
+      case input : Input[_] => toCaffeInput(moduleNode, bottoms, nextSize, netparam)
       case _ => throw  new CaffeConversionException(s"${moduleNode} is not supported")
     }
     model
@@ -357,6 +360,9 @@ abstract class Converter[T: ClassTag](implicit ev: TensorNumeric[T]) {
     bottoms : ArrayBuffer[String], nextSize : Int): Seq[GeneratedMessage]
 
   protected def toCaffeLogSoftMax(module : AbstractModule[Activity, Activity, T],
+    bottoms : ArrayBuffer[String], nextSize : Int): Seq[GeneratedMessage]
+
+  protected def toCaffeSoftMax(module : AbstractModule[Activity, Activity, T],
     bottoms : ArrayBuffer[String], nextSize : Int): Seq[GeneratedMessage]
 
   protected def toCaffeTanh(module : AbstractModule[Activity, Activity, T],
@@ -424,6 +430,10 @@ abstract class Converter[T: ClassTag](implicit ev: TensorNumeric[T]) {
 
   protected def toCaffeSequential(module : AbstractModule[Activity, Activity, T],
     bottoms : ArrayBuffer[String], nextSize : Int): Seq[GeneratedMessage]
+
+  protected def toCaffeInput(module : AbstractModule[Activity, Activity, T],
+                             bottoms : ArrayBuffer[String], nextSize : Int,
+                             netparam: NetParameter.Builder = null): Seq[GeneratedMessage]
 
   protected def toCaffeConvolutionParam(module : AbstractModule[Activity, Activity, T])
   : mutable.HashMap[String, Int] = {
@@ -614,6 +624,20 @@ abstract class Converter[T: ClassTag](implicit ev: TensorNumeric[T]) {
     tileParameter.setTiles(tile)
     tileParameter.setAxis(axis)
     tileParameter.build
+  }
+
+  protected def toCaffeInputParam(module : AbstractModule[Activity, Activity, T])
+  : InputParameter = {
+    val layer = module.asInstanceOf[Input[T]]
+    val sizes = layer.sizes
+    if (sizes == null) {
+      throw new CaffeConversionException("Input size should not be null when persisted as Caffe")
+    }
+    val inputParam = InputParameter.newBuilder
+    val blobShape = BlobShape.newBuilder
+    sizes.foreach(size => blobShape.addDim(size))
+    inputParam.addShape(blobShape.build)
+    inputParam.build()
   }
 
   protected def getBlob(layer : GeneratedMessage, ind: Int): Option[Caffe.BlobProto]
