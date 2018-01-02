@@ -120,13 +120,6 @@ abstract class Graph[T: ClassTag](
     this.backwardTime = 0L
   }
 
-  override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
-    variables match {
-      case None => super.parameters()
-      case Some((weights, gradients)) => (weights, gradients)
-    }
-  }
-
   override def add(module: AbstractModule[_ <: Activity, _ <: Activity, T]): Graph.this.type = {
     throw new IllegalArgumentException("Graph: Please don't use add method in Graph container. " +
       "A graph container should not be changed after it is constructed")
@@ -157,6 +150,49 @@ abstract class Graph[T: ClassTag](
   protected val forwardGraph = dummyOutput.graph(reverse = true)
   protected val forwardNodes = forwardGraph.DFS.toArray
 
+  // check if two or more nodes share the same module
+  // clone the module and share the weight
+  val distinctModules = checkSharedLayers
+
+  override def updateParameters(learningRate: T): Unit = {
+    distinctModules.foreach(_.updateParameters(learningRate))
+  }
+
+  override def getExtraParameter(): Array[Tensor[T]] = {
+    if (variables.isEmpty) {
+      throw new IllegalArgumentException("Cannot use this method when variables is defined")
+    }
+    val extraParam = new ArrayBuffer[Tensor[T]]()
+    distinctModules.foreach(m => {
+      val state = m.getExtraParameter()
+      if (state != null) {
+        extraParam ++= state
+      }
+    })
+    extraParam.toArray
+  }
+
+  override def getParametersTable(): Table = {
+    if (variables.isEmpty) {
+      throw new IllegalArgumentException("Cannot use this method when variables is defined")
+    }
+    val pt = T()
+    distinctModules.foreach(m => {
+      val params = m.getParametersTable()
+      if (params != null) {
+        params.keySet.foreach(key => pt(key) = params(key))
+      }
+    })
+    pt
+  }
+
+  override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
+    variables match {
+      case None => super.parameters()
+      case Some((weights, gradients)) => (weights, gradients)
+    }
+  }
+
   modules.appendAll(
     forwardGraph.topologySort
       // todo: convert control dep node to edge
@@ -166,6 +202,36 @@ abstract class Graph[T: ClassTag](
 
   // Check all inputs of the graph should be passed in
   checkRoots
+
+  private def checkSharedLayers: Array[Module[T]] = {
+    val layerToNodes = forwardNodes.filter(n => !n.eq(dummyOutput)).groupBy(_.element)
+    layerToNodes.foreach { case (layer, nodes) =>
+      if (nodes.length > 1) {
+        var i = 1
+        while (i < nodes.length) {
+          nodes(i).element = cloneAndShare(layer, s"${layer.getName()}_$i")
+          i = i + 1
+        }
+      }
+    }
+    layerToNodes.keys.toArray
+  }
+
+  private def cloneAndShare(sourceLayers: Module[T], name: String): Module[T] = {
+    val params = sourceLayers.parameters()
+    val result = sourceLayers.cloneModule()
+    var i = 0
+    while (i < result.parameters()._1.length) {
+      result.parameters()._1(i).set(params._1(i))
+      i += 1
+    }
+    i = 0
+    while (i < result.parameters()._2.length) {
+      result.parameters()._2(i).set(params._2(i))
+      i += 1
+    }
+    result.setName(name)
+  }
 
   // Check if the graph is correct
   private def checkRoots: Unit = {
