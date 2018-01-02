@@ -49,7 +49,7 @@ linear = Linear(2, 3) # Try to create a Linear layer
 
 - Add extra jars or python packages
     
-- Call the following API __BEFORE__ creating `SparkContext`:
+  Call the following API __BEFORE__ creating `SparkContext`:
 ```python
 from bigdl.util.common import Configuration
 
