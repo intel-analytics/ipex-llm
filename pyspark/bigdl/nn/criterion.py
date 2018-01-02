@@ -874,6 +874,35 @@ class PoissonCriterion(Criterion):
                  bigdl_type="float"):
         super(PoissonCriterion, self).__init__(None, bigdl_type)
 
+class TransformerCriterion(Criterion):
+    '''
+    The criterion that takes two modules to transform input and target, and take
+    one criterion to compute the loss with the transformed input and target.
+    
+    This criterion can be used to construct complex criterion. For example, the
+    `inputTransformer` and `targetTransformer` can be pre-trained CNN networks,
+    and we can use the networks' output to compute the high-level feature
+    reconstruction loss, which is commonly used in areas like neural style transfer
+    (https://arxiv.org/abs/1508.06576), texture synthesis (https://arxiv.org/abs/1505.07376),
+    .etc.
+    
+    >>> trans = TransformerCriterion(MSECriterion())
+    creating: createMSECriterion
+    creating: createTransformerCriterion
+    '''
+
+    def __init__(self,
+                 criterion,
+                 input_transformer = None,
+                 target_transformer = None,
+                 bigdl_type="float"):
+        super(TransformerCriterion, self).__init__(None,
+                                                   bigdl_type,
+                                                   criterion,
+                                                   input_transformer,
+                                                   target_transformer)
+
+
 def _test():
     import doctest
     from pyspark import SparkContext
