@@ -142,5 +142,5 @@ output = tf.nn.tanh(middle)
 bigdl_model = Model(input, output, model_type="tensorflow")
 ```
 
-### **Supported Operations**
-Please check this [page](../APIGuide/tensorflow_ops_list)
+## **Supported Operations**
+Please check this [page](../APIGuide/tensorflow_ops_list.md)
