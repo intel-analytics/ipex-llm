@@ -11,10 +11,11 @@ BigDL provide command line tools for converting the pretrained (BigDL, Caffe, To
 
 set -x
 
-BIGDL_HOME=${WORKSPACE}/dist
-JAR_HOME=${BIGDL_HOME}/spark/dl/target
+BIGDL_HOME=${bigdl_folder}/dist
+BIGDL_JAR_NAME=`ls ${BIGDL_HOME}/lib/ | grep jar-with-dependencies.jar`
+BIGDL_JAR="${BIGDL_HOME}/lib/$BIGDL_JAR_NAME"
 SPARK_JAR=/opt/spark/jars/*
-JAR=${JAR_HOME}/bigdl-0.4.0-SNAPSHOT-jar-with-dependencies.jar:${SPARK_JAR}
+JAR=${BIGDL_JAR}:${SPARK_JAR}
 CLASS=com.intel.analytics.bigdl.utils.ConvertModel
 
 FROM=caffe
