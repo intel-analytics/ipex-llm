@@ -204,8 +204,9 @@ abstract class Graph[T: ClassTag](
   checkRoots
 
   private def checkSharedLayers: Array[Module[T]] = {
-    val layerToNodes = forwardNodes.filter(n => !n.eq(dummyOutput)).groupBy(_.element)
-    layerToNodes.foreach { case (layer, nodes) =>
+    val layerToNodes = forwardNodes.filter(n => !n.eq(dummyOutput))
+      .groupBy(n => (System.identityHashCode(n.element), n.element))
+    layerToNodes.foreach { case ((_, layer), nodes) =>
       if (nodes.length > 1) {
         var i = 1
         while (i < nodes.length) {
@@ -214,7 +215,7 @@ abstract class Graph[T: ClassTag](
         }
       }
     }
-    layerToNodes.keys.toArray
+    layerToNodes.keys.toArray.map(_._2)
   }
 
   private def cloneAndShare(sourceLayers: Module[T], name: String): Module[T] = {
