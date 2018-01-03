@@ -1,9 +1,11 @@
 ---
 ## **AWS Marketplace AMI**
 
-The easiest way to get started with BigDL is the BigDL AMI in the AWS Marketplace. It includes Apache Spark, BigDL, Jupyter Notebooks, Python and more. Within minutes you can create a Jupyter Notebook, upload some data and begin experimenting with Deep Learning using BigDL.
+The easiest way to get started with BigDL is to launch the pre-configured BigDL Amazon Machine Image (AMI) from the AWS Marketplace. The AMI includes Apache Spark, BigDL, Python and Anaconda with ready-to-run Jupyter Notebooks. Within a few minutes you can run python code and investigate the architecture it uses to create an image recognition model. Upload your own data into one of the sample notebooks and you can try BigDL with your own data. 
  
-Please note that it is highly recommended to use EC2 instances with Xeon E5 v3 or v4 processors and at least 8 GB of RAM.
+To use the BigDL AMI in the AWS Marketplace, visit [https://aws.amazon.com/marketplace/] and search for 'BigDL'. Launch the AMI by clicking the "Continue to Subscribe" button from the BigDL Product Page. The software stack is free and open source. You only pay standard AWS charges. Because it includes Apache Spark, a t2.large instance is the minimum size recommended to run this BigDL AMI. Once you launch the AMI, type the domain name (URL) and port 8888 (ex: ec2-xxx-xxx-xxx-xxx.compute-1.amazonaws.com:8888) into your favorite web browser. The password for the Jupyter Notebook, which runs automatically, is the Instance ID (ex: i-08ba9c6fcdea6388f) of your EC2 Instance which you can find in your EC2 Dashboard [https://console.aws.amazon.com/ec2/v2/home]. 
+
+If you ssh into your EC2 instance, you can use "docker ps" (ex: docker ps -a) to find the container id, and "docker exec -it <container-id> bash" to see what is installed. Use git to download additional notebooks to the /work directory (ex: "$ git clone github.com/intel-analytics/BigDL-Tutorial". Additional Jupyter Notebooks can be found at [https://github.com/intel-analytics/BigDL-Tutorials]
 
 ---
 ## **The Public AMI**
