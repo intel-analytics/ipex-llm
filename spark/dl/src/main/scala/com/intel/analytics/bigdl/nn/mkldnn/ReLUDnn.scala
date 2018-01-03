@@ -27,9 +27,9 @@ class ReLUDnn[T: ClassTag](ip: Boolean = false)(
   implicit ev: TensorNumeric[T]) extends TensorModule[Float] {
 
     @transient
-    private val engine = this.getDnnEngine(0)
+    private var engine: Long = 0L
     @transient
-    private val stream = this.getStream()
+    private var stream: Long = 0L
     @transient
     private var src_md: Long = 0L
     @transient
@@ -47,14 +47,16 @@ class ReLUDnn[T: ClassTag](ip: Boolean = false)(
     @transient
     private var relu_bwd: Long = 0L
     @transient
-    private var input_size: Array[Int] = null
+    private var inputElement : Int = 0
 
     // for relu, just keep internal format same with input format
     private val input_format = MklDnn.MemoryFormat.nchw
 
     override def updateOutput(input: Tensor[Float]): Tensor[Float] = {
-      if (input_size == null || input_size.length != input.nElement()) {
-        input_size = input.size()
+      if (engine == 0L) engine = this.getDnnEngine(0)
+      if (stream == 0L) stream = this.getStream()
+
+      if (inputElement != input.nElement()) {
         output.resizeAs(input)
 
         if (input.getPrimitiveDesc() != 0L) {
@@ -62,8 +64,8 @@ class ReLUDnn[T: ClassTag](ip: Boolean = false)(
           src_md = MklDnnOps.primitiveDescQueryMemory(input_pd)
           src_memory = MklDnn.PrimitiveCreate0(input_pd)
         } else {
-          src_md = MklDnnOps.memoryDescInit(4, input_size, MklDnn.DataType.f32, this.input_format)
-          src_memory = MklDnnOps.createMemoryPrimitive(src_md, engine, input)
+          src_md = MklDnnOps.memoryDescInit(input.dim(), input.size(), MklDnn.DataType.f32, this.input_format)
+          src_memory = MklDnnOps.createMemoryPrimitive(src_md, engine)
         }
 
         val relu_desc = MklDnnOps.eltwiseForwardDescInit(MklDnn.PropKind.forward,
@@ -92,8 +94,7 @@ class ReLUDnn[T: ClassTag](ip: Boolean = false)(
     }
 
     override def updateGradInput(input: Tensor[Float], gradOutput: Tensor[Float]): Tensor[Float] = {
-      if (input_size == null || input_size.length != input.nElement()) {
-        input_size = input.size()
+      if (inputElement != input.nElement()) {
         gradInput.resizeAs(input)
 
         var gradOutput_md : Long = 0L
@@ -102,8 +103,8 @@ class ReLUDnn[T: ClassTag](ip: Boolean = false)(
           gradOutput_md = MklDnnOps.primitiveDescQueryMemory(gradOutput_pd)
           gradOutput_memory = MklDnn.PrimitiveCreate0(gradOutput_pd)
         } else {
-          gradOutput_md = MklDnn.MemoryDescInit(4, input_size, MklDnn.DataType.f32, this.input_format)
-          gradOutput_memory = MklDnnOps.createMemoryPrimitive(gradOutput_md, engine, gradOutput)
+          gradOutput_md = MklDnn.MemoryDescInit(gradInput.dim(), gradOutput.size(), MklDnn.DataType.f32, this.input_format)
+          gradOutput_memory = MklDnnOps.createMemoryPrimitive(gradOutput_md, engine)
         }
 
         /* create backward relu descriptor */

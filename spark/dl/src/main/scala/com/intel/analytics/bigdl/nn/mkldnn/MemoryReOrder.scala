@@ -32,9 +32,9 @@ import scala.reflect.ClassTag
 class MemoryReOrder(format: DataFormat = DataFormat.NHWC) extends TensorModule[Float] {
 
   @transient
-  private val engine = this.getDnnEngine(0)
+  private var engine: Long = 0L
   @transient
-  private val stream = this.getStream()
+  private var stream: Long = 0L
 
   this.output_format = this.format.value match {
     case "NHWC" => MklDnn.MemoryFormat.nhwc
@@ -42,6 +42,9 @@ class MemoryReOrder(format: DataFormat = DataFormat.NHWC) extends TensorModule[F
   }
 
   override def updateOutput(input: Tensor[Float]): Tensor[Float] = {
+    if (engine == 0L) engine = this.getDnnEngine(0)
+    if (stream == 0L) stream = this.getStream()
+
     require(input.getPrimitiveDesc() != 0L,
       "input must be from mkldnn layer, and have a primitive describer")
     val input_sizes = input.size()

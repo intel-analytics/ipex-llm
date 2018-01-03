@@ -211,7 +211,7 @@ object MklDnnOps {
     memory
   }
 
-  def createMemoryPrimitive(prim_md: Long, engine: Long, data: Tensor[Float]): Long = {
+  def createMemoryPrimitive(prim_md: Long, engine: Long): Long = {
     require(MklDnn.isLoaded, "mkldnn isn't loaded")
     val user_pd = MklDnn.MemoryPrimitiveDescCreate(prim_md, engine)
     val memory = MklDnn.PrimitiveCreate0(user_pd)
@@ -227,11 +227,15 @@ object MklDnnOps {
 
     val handle = new Array[Long](memory_primitives.length)
     for (i <- 0 to memory_primitives.length - 1) {
-      handle(i) = MklDnnOps.memorySetDataHandle(memory_primitives(i), buffers(i), 0)
+      if (memory_primitives(i) != 0L) {
+        handle(i) = MklDnnOps.memorySetDataHandle(memory_primitives(i), buffers(i), 0)
+      }
     }
     MklDnn.StreamSubmit(loc, block, primitives)
     for (i <- 0 to memory_primitives.length - 1) {
+      if (memory_primitives(i) != 0L) {
       MklDnnOps.memoryReleaseDataHandle(buffers(i), handle(i))
+      }
     }
   }
 }
