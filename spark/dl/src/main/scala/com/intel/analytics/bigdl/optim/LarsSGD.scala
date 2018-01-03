@@ -21,6 +21,8 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.{T, Table}
 
+import scala.collection.immutable.HashMap.HashMap1
+import scala.collection.mutable
 import scala.reflect.ClassTag
 
 /**
@@ -31,13 +33,14 @@ import scala.reflect.ClassTag
  * @tparam T
  */
 class LarsSGD[@specialized(Float, Double) T: ClassTag](
-  var learningRate: Double = 1e-3,
-  var learningRateDecay: Double = 0.0,
-  var weightDecay: Double = 0.0,
-  var momentum: Double = 0.0,
-  var learningRateSchedule: LearningRateSchedule = Default(),
+  learningRate: Double = 1e-3,
+  learningRateDecay: Double = 0.0,
+  weightDecay: Double = 0.0,
+  momentum: Double = 0.0,
+  larsLearningRateSchedule: LearningRateSchedule = Default(),
   val gwRation: Double = 1.0)(implicit ev: TensorNumeric[T])
-  extends SGD(learningRate, learningRateDecay, weightDecay, momentum, learningRateSchedule) {
+  extends SGD[T](learningRate, learningRateDecay, weightDecay, momentum,
+    learningRateSchedule = larsLearningRateSchedule) {
 
   import SGD._
 
@@ -60,42 +63,42 @@ class LarsSGD[@specialized(Float, Double) T: ClassTag](
 
     require(state.get[Array[(Int, Int)]]("lookupList").isDefined,
       "LarsSGD needs to know start and length for each layer")
-    val lookupList = state.get[Array[(Int, Int)]]("lookupList").get
-    val gwNorm2List = state.get[Array[(Double, Double)]]("gwNorm2List").get
+    val lookupList = state.get[mutable.HashMap[Int, (Int, Int)]]("lookupList").get
+    val gwNorm2List = state.get[Array[(Int, (T, T))]]("gwNorm2List").get
 
-    var i = 0
-    while (i < lookupList.size) {
-    val wPerLayer = fx.narrow(1, lookupList(i)._1, lookupList(i)._2)
-    var dfdxPerLayer = dfdx.narrow(1, lookupList(i)._1, lookupList(i)._2)
-    val (gNorm2, wNorm2) = gwNorm2List(i)
-    val localLr = ev.times(gwRation, ev.times(clr, ev.divide(wNorm2,
-    ev.plus(gNorm2, ev.times(ev.fromType(wd), wNorm2)))))
+    lookupList.foreach(e => {
+      val layerId = e._1
+      val start = e._2._1
+      val length = e._2._2
+      val wPerLayer = x.narrow(1, start, length)
+      var dfdxPerLayer = dfdx.narrow(1, start, length)
+      val (gNorm2, wNorm2) = gwNorm2List(layerId)._2
+      val localLr = ev.times(ev.fromType(gwRation), ev.times(clr, ev.divide(wNorm2,
+      ev.plus(gNorm2, ev.times(ev.fromType(wd), wNorm2)))))
 
-    if (wd != 0) {
-    require(!state.get[Boolean]("isLayerwiseScaled").getOrElse(false),
-    "SGD: Can't set layerwise scale and weight decay at the same time")
-    }
-    if (wd != 0) {
-    dfdxPerLayer.add(ev.fromType[Double](wd), wPerLayer)
-    }
+      if (wd != 0) {
+      require(!state.get[Boolean]("isLayerwiseScaled").getOrElse(false),
+      "SGD: Can't set layerwise scale and weight decay at the same time")
+      }
+      if (wd != 0) {
+      dfdxPerLayer.add(ev.fromType[Double](wd), wPerLayer)
+      }
 
-    if (mom != 0) {
-    val stateDFDX = state.get[Tensor[T]](s"${i}ThDfdx") match {
-    case None =>
-    val DFDX = Tensor[T]().resizeAs(dfdxPerLayer).copy(dfdxPerLayer)
-    DFDX.mul(localLr)
-    state(s"${i}ThDfdx") = DFDX
-    DFDX
-    case s: Some[Tensor[T]] => s.get.mul(ev.fromType[Double](mom)).
-    add(ev.negative(localLr), dfdxPerLayer)
-    }
-    dfdxPerLayer = stateDFDX
-    }
+      if (mom != 0) {
+        val stateDFDX = state.get[Tensor[T]](s"${layerId}ThDfdx") match {
+        case None =>
+          val DFDX = Tensor[T]().resizeAs(dfdxPerLayer).copy(dfdxPerLayer)
+          DFDX.mul(localLr)
+          state(s"${layerId}ThDfdx") = DFDX
+          DFDX
+        case s: Some[Tensor[T]] => s.get.mul(ev.fromType[Double](mom)).
+          add(ev.negative(localLr), dfdxPerLayer)
+        }
+        dfdxPerLayer = stateDFDX
+      }
 
-    wPerLayer.add(ev.negative(ev.one), dfdxPerLayer)
-
-    i += 1
-    }
+      wPerLayer.add(ev.negative(ev.one), dfdxPerLayer)
+    })
 
     (x, Array(fx))
   }

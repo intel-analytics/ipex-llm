@@ -68,14 +68,27 @@ object TrainInceptionV1 {
       val optimMethod = if (param.stateSnapshot.isDefined) {
         OptimMethod.load[Float](param.stateSnapshot.get)
       } else if (param.maxEpoch.isDefined) {
-        new SGD[Float](learningRate = param.learningRate, learningRateDecay = 0.0,
-          weightDecay = param.weightDecay, momentum = 0.9, dampening = 0.0, nesterov = false,
-          learningRateSchedule =
-            SGD.Poly(0.5, math.ceil(1281167.toDouble / param.batchSize).toInt * param.maxEpoch.get))
+        val schedule =
+          SGD.Poly(0.5, math.ceil(1281167.toDouble / param.batchSize).toInt * param.maxEpoch.get)
+        if (param.lars) {
+          new LarsSGD[Float](learningRate = param.learningRate, learningRateDecay = 0.0,
+            weightDecay = param.weightDecay, momentum = 0.9, larsLearningRateSchedule = schedule,
+            gwRation = param.gwRatio)
+        } else {
+          new SGD[Float](learningRate = param.learningRate, learningRateDecay = 0.0,
+            weightDecay = param.weightDecay, momentum = 0.9, dampening = 0.0, nesterov = false,
+            learningRateSchedule = schedule)
+        }
       } else {
-        new SGD[Float](learningRate = param.learningRate, learningRateDecay = 0.0,
-          weightDecay = param.weightDecay, momentum = 0.9, dampening = 0.0, nesterov = false,
-          learningRateSchedule = SGD.Poly(0.5, param.maxIteration))
+        if (param.lars) {
+          new LarsSGD[Float](learningRate = param.learningRate, learningRateDecay = 0.0,
+            weightDecay = param.weightDecay, momentum = 0.9,
+            larsLearningRateSchedule = SGD.Poly(0.5, param.maxIteration), gwRation = param.gwRatio)
+        } else {
+          new SGD[Float](learningRate = param.learningRate, learningRateDecay = 0.0,
+            weightDecay = param.weightDecay, momentum = 0.9, dampening = 0.0, nesterov = false,
+            learningRateSchedule = SGD.Poly(0.5, param.maxIteration))
+        }
       }
 
       val optimizer = Optimizer(

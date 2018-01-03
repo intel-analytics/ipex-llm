@@ -34,7 +34,9 @@ object Options {
     maxIteration: Int = 62000,
     weightDecay: Double = 0.0001,
     checkpointIteration: Int = 620,
-    graphModel: Boolean = false
+    graphModel: Boolean = false,
+    lars: Boolean = false,
+    gwRatio: Double = 1.0
   )
 
   val trainParser = new OptionParser[TrainParams]("BigDL Inception Example") {
@@ -79,6 +81,12 @@ object Options {
     opt[Unit]('g', "graphModel")
       .text("use graph model")
       .action((x, c) => c.copy(graphModel = true))
+    opt[Unit]("lars")
+      .text("use lars")
+      .action((x, c) => c.copy(lars = true))
+    opt[Double]("gwRatio")
+      .text("trust coefficient for lars")
+      .action((x, c) => c.copy(gwRatio = x))
   }
 
   case class TestParams(

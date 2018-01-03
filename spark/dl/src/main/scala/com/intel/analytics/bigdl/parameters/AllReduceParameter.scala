@@ -57,8 +57,9 @@ object AllReduceParameter {
 
   private val nextId = new AtomicLong(0)
 
-  def newParameter[T: ClassTag](partitionNum: Int, size: Int): AllReduceParameter[T] = {
-    new AllReduceParameter(nextId.getAndIncrement(), partitionNum, size)
+  def newParameter[T: ClassTag](partitionNum: Int, size: Int)
+    (implicit ev: TensorNumeric[T]): AllReduceParameter[T] = {
+    new AllReduceParameter[T](nextId.getAndIncrement(), partitionNum, size)
   }
 }
 
@@ -77,7 +78,8 @@ object AllReduceParameter {
  * @param size size of the parameter (1D vector)
  * @tparam T Tensor element type
  */
-class AllReduceParameter[T: ClassTag](id: Long, partitionNum: Int, size: Int) extends Serializable {
+class AllReduceParameter[T: ClassTag](id: Long, partitionNum: Int, size: Int)
+  (implicit ev: TensorNumeric[T]) extends Serializable {
   import AllReduceParameter._
 
   @transient private var taskSize = 0
@@ -315,8 +317,9 @@ class AllReduceParameter[T: ClassTag](id: Long, partitionNum: Int, size: Int) ex
     val list = new Array[(Int, (T, T))](lookupMap.size)
     var i = 0
     for ((k, v) <- lookupMap) {
-      list(i) = (k, ev.div((weightPartition.narrow(1, v._1, v._2).sumSquare(), scale),
-        ev.div(gradientPartition.narrow(1, v._1, v._2).sumSquare()), scale))
+      list(i) = (k,
+        (ev.divide(weightPartition.narrow(1, v._1, v._2).sumSquare(), ev.fromType(scale)),
+        ev.divide(gradientPartition.narrow(1, v._1, v._2).sumSquare(), ev.fromType(scale))))
       i += 1
     }
     list

@@ -32,6 +32,7 @@ import com.intel.analytics.bigdl.models.utils.ModelBroadcast
 import org.apache.commons.lang.exception.ExceptionUtils
 import com.intel.analytics.bigdl.visualization.{TrainSummary, ValidationSummary}
 import org.apache.log4j.Logger
+import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.TaskContext
 import org.apache.spark.rdd.{RDD, ZippedPartitionsWithLocalityRDD}
 
@@ -163,9 +164,13 @@ object DistriOptimizer {
     var epochStart = System.nanoTime()
     var dataRDD = dataset.data(train = true)
     var recordsProcessedThisEpoch = 0
-    // test code
-    val larsenable = true
-    val lookupDicBroadcast = sc.broadcast(lookupDic)
+    var larsSGD = false
+
+    val lookupDicBroadcast = if (optimMethod.isInstanceOf[LarsSGD[T]]) {
+      larsSGD = true
+      require(lookupDic != null, "look up table cannot be null with lars")
+      sc.broadcast(lookupDic)
+    } else null
 
     while (!endWhen(driverState)) {
       val lossSum = sc.accumulator(0.0, "loss sum")
@@ -341,9 +346,9 @@ object DistriOptimizer {
           }
         }
 
-        // array index is layer id, value is (wNorm2, gNorm2)
-        var gwNorm2ListBroadcast: Broadcast[Array[(Double, Double)]] = null
-        if (larsenable) {
+        // array element is a tuple, first element is layer id, value is (wNorm2, gNorm2)
+        var gwNorm2ListBroadcast: Broadcast[Array[(Int, (T, T))]] = null
+        if (larsSGD) {
           val gwNorm2List = dataset.originRDD().mapPartitions( _ => {
             if (!l2normClippingEnable) {
               val getG = System.nanoTime()
@@ -352,13 +357,14 @@ object DistriOptimizer {
                 System.nanoTime() - getG)
             }
             parameters.squareSumPerLayer(lookupDicBroadcast.value, numFinishedModelUpdates).iterator
-          }).reduceByKey((a, b) => (ev.plus(a._1, b._1), ev.plus(a._2, b._2))).sortByKey(true).collect()
+          }).reduceByKey((a, b) => (ev.plus(a._1, b._1), ev.plus(a._2, b._2)))
+            .sortByKey(true).collect()
           gwNorm2ListBroadcast = sc.broadcast(gwNorm2List)
         }
 
         models.mapPartitions { modelIter =>
           val modelCache = modelIter.next()
-          if (!l2normClippingEnable && !larsenable) {
+          if (!l2normClippingEnable && !larsSGD) {
             val getG = System.nanoTime()
             parameters.aggregateGradientPartition()
             driverMetrics.add("aggregrateGradientParition average executor",
@@ -368,13 +374,17 @@ object DistriOptimizer {
           modelCache.optimMethod.state.update("epoch", driverState[Int]("epoch"))
           modelCache.optimMethod.state.update("neval", driverState[Int]("neval"))
           modelCache.optimMethod.state.update("Loss", driverState[Float]("Loss"))
-          if (larsenable) {
+          if (larsSGD) {
+            require(gwNorm2ListBroadcast != null,
+              "per layer gradient norm2 cannot be null for lars")
             // Array index is partition id, hashmap key is layer Id, hash value is (start, length)
-            // TODO: Need ensure lookupDicBroadcast is sorted by hashmap key
             val lookupList = lookupDicBroadcast.value(TaskContext.getPartitionId())
-            // gwNorm2List array index is layer id, value is (wNorm2, gNorm2)
-            modelCache.optimMethod.state.update("lookupList", lookupList.values)
-            val gwNorm2List = lookupList.map {key => gwNorm2ListBroadcast.value(key)}
+            // gwNorm2List array element is a tuple, first element is layer id,
+            // value is (wNorm2, gNorm2)
+            modelCache.optimMethod.state.update("lookupList", lookupList)
+//            val gwNorm2List = lookupList.map {mapIterator =>
+//              gwNorm2ListBroadcast.value.apply(mapIterator._1)._2}
+          val gwNorm2List = gwNorm2ListBroadcast.value
             modelCache.optimMethod.state.update("gwNorm2List", gwNorm2List)
           }
           if (validationMethods.isDefined) {
@@ -651,56 +661,60 @@ object DistriOptimizer {
       val weights = modelBroadcast.value(false).getParameters()._1
       Iterator.single(parameters.init(weights, sizeValues))
     }.collect()
-    // stores each layers start, end on each partition
-    // Array index is partition id, hashmap key is layer Id, hash value is (start, length)
-    val lookupDic = new Array[mutable.HashMap[Int, (Int, Int)]](parameterPerNodeSizes.length)
-    var i = 0
-    require(parameterPerNodeSizes.length == partitionNum,
-      "each partition shoule return its parameter meta data")
 
-    var layerIndex = -1
-    var parameterPerLayerLeftLen = 0
-    while (i < parameterPerNodeSizes.length) {
-      var start = 1
-      var parameterPerNodeLeftLen = parameterPerNodeSizes(i)._3
-      if (parameterPerLayerLeftLen == 0) {
-        layerIndex += 1
-        parameterPerLayerLeftLen
-          = parameterPerLayerSizes(layerIndex)
-      }
-      val map = new mutable.HashMap[Int, (Int, Int)]()
-      while (parameterPerNodeLeftLen > 0) {
-        if (parameterPerNodeLeftLen <= parameterPerLayerLeftLen) {
-          parameterPerLayerLeftLen -= parameterPerNodeLeftLen
-          map(layerIndex) = (start, parameterPerNodeLeftLen)
-          parameterPerNodeLeftLen = 0
-        } else {
-          map(layerIndex) = (start, parameterPerLayerLeftLen)
-          parameterPerNodeLeftLen -= parameterPerLayerLeftLen
-          start += parameterPerLayerLeftLen
+    var lookupDic: Array[mutable.HashMap[Int, (Int, Int)]] = null
+    if (optimMethod.isInstanceOf[LarsSGD[T]]) {
+      // stores each layers start, end on each partition
+      // Array index is partition id, hashmap key is layer Id, hash value is (start, length)
+      lookupDic = new Array[mutable.HashMap[Int, (Int, Int)]](parameterPerNodeSizes.length)
+      var i = 0
+      require(parameterPerNodeSizes.length == partitionNum,
+        "each partition shoule return its parameter meta data")
+
+      var layerIndex = -1
+      var parameterPerLayerLeftLen = 0
+      while (i < parameterPerNodeSizes.length) {
+        var start = 1
+        var parameterPerNodeLeftLen = parameterPerNodeSizes(i)._3
+        if (parameterPerLayerLeftLen == 0) {
           layerIndex += 1
-          parameterPerLayerLeftLen = parameterPerLayerSizes(layerIndex)
+          parameterPerLayerLeftLen
+            = parameterPerLayerSizes(layerIndex)
         }
+        val map = new mutable.HashMap[Int, (Int, Int)]()
+        while (parameterPerNodeLeftLen > 0) {
+          if (parameterPerNodeLeftLen <= parameterPerLayerLeftLen) {
+            parameterPerLayerLeftLen -= parameterPerNodeLeftLen
+            map(layerIndex) = (start, parameterPerNodeLeftLen)
+            parameterPerNodeLeftLen = 0
+          } else {
+            map(layerIndex) = (start, parameterPerLayerLeftLen)
+            parameterPerNodeLeftLen -= parameterPerLayerLeftLen
+            start += parameterPerLayerLeftLen
+            layerIndex += 1
+            parameterPerLayerLeftLen = parameterPerLayerSizes(layerIndex)
+          }
+        }
+        lookupDic(i) = map
+        i += 1
       }
-      lookupDic(i) = map
-      i += 1
-    }
 
-    // Check if lookupDic is correct
-    // array index is layer id, value is (wNorm2, gNorm2)
-    val squareSumPerLayer = dataset.originRDD().mapPartitions( _ => {
-      parameters.squareSumPerLayer(lookupDic, 1.0).iterator
-    }).reduceByKey((a, b) => (ev.plus(a._1, b._1), ev.plus(a._2, b._2))).sortByKey(true).collect()
-    
-    require(parameterPerLayerSizes.length == squareSumPerLayer.length,
-      "lookupDic length is not correct!")
-    for((parameter, i) <- model.parameters()._1.view.zipWithIndex) {
+      // Check if lookupDic is correct
+      // array element is a tuple, first element is layer id, value is (wNorm2, gNorm2)
+      val squareSumPerLayer = dataset.originRDD().mapPartitions( _ => {
+        parameters.squareSumPerLayer(lookupDic, 1.0).iterator
+      }).reduceByKey((a, b) => (ev.plus(a._1, b._1), ev.plus(a._2, b._2))).sortByKey(true).collect()
+
+      require(parameterPerLayerSizes.length == squareSumPerLayer.length,
+        "lookupDic length is not correct!")
+      for((parameter, i) <- model.parameters()._1.view.zipWithIndex) {
         require(ev.isGreater(ev.fromType(1e-3),
           (ev.minus(parameter.sumSquare(), squareSumPerLayer(i)._2._1))),
           s"lookupDic value is not correct! ori is ${parameter.sumSquare()}" +
             s" now is ${squareSumPerLayer(i)._2._1}")
+      }
+      logger.info("lookupDic check pass!!")
     }
-    logger.info("lookupDic check pass!!")
 
     val models = dataset.originRDD().mapPartitions(_ => {
       val (broadcastCriterion, broadcastState, broadcastMethod,
