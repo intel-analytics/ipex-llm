@@ -185,9 +185,10 @@ abstract class Graph[T: ClassTag](
     val layerToNodes = forwardNodes.filter(n => !n.eq(dummyOutput))
       // use System.identityHashCode to make sure two layers are actually the
       // same instance.
-      .groupBy(n => (System.identityHashCode(n.element), n.element))
-    layerToNodes.foreach { case ((_, layer), nodes) =>
+      .groupBy(n => System.identityHashCode(n.element))
+    val distinctLayers = layerToNodes.map { case (_, nodes) =>
       if (nodes.length > 1) {
+        val layer = nodes.head.element
         var i = 1
         while (i < nodes.length) {
           // the naming convention is related to deserialization,
@@ -195,9 +196,12 @@ abstract class Graph[T: ClassTag](
           nodes(i).element = cloneAndShare(layer, s"${layer.getName()}#clone$i")
           i = i + 1
         }
+        layer
+      } else {
+        nodes.head.element
       }
     }
-    layerToNodes.keys.toArray.map(_._2)
+    distinctLayers.toArray
   }
 
   private def cloneAndShare(sourceLayers: Module[T], name: String): Module[T] = {
