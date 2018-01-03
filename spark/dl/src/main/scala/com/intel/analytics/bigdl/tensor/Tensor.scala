@@ -804,6 +804,15 @@ trait Tensor[T] extends Serializable with TensorMath[T] with Activity {
     }
     return false
   }
+
+// for mkl dnn model
+  private var primivite_desc_t: Long = 0L
+  def getPrimitiveDesc(): Long = {
+    primivite_desc_t
+  }
+  def setPrimitiveDesc(data: Long): Unit = {
+    primivite_desc_t = data
+  }
 }
 
 /**
