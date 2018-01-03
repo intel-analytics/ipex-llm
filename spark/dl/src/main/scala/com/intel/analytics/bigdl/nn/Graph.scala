@@ -72,7 +72,7 @@ import org.tensorflow.framework.GraphDef
 abstract class Graph[T: ClassTag](
   val inputs : Seq[ModuleNode[T]],
   private val outputs : Seq[ModuleNode[T]],
-  private var variables: Option[(Array[Tensor[T]], Array[Tensor[T]])] = None
+  private val variables: Option[(Array[Tensor[T]], Array[Tensor[T]])] = None
 )(implicit ev: TensorNumeric[T]) extends Container[Activity, Activity, T]{
 
   // Add a dummy output node, to get an one end forward graph. So the nodes that are not dependent
