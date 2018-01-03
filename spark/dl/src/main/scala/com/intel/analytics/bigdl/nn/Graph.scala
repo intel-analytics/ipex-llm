@@ -190,7 +190,9 @@ abstract class Graph[T: ClassTag](
       if (nodes.length > 1) {
         var i = 1
         while (i < nodes.length) {
-          nodes(i).element = cloneAndShare(layer, s"${layer.getName()}_$i")
+          // the naming convention is related to deserialization,
+          // if you want to change it, change the doLoadModule also
+          nodes(i).element = cloneAndShare(layer, s"${layer.getName()}#clone$i")
           i = i + 1
         }
       }
@@ -612,6 +614,16 @@ object Graph extends ContainerSerializable {
         }
       })
     })
+
+    // preserve the weight sharing semantic
+    for ((name, (module, _)) <- layerMap) {
+      val splits = name.split("#")
+      if (splits(splits.length - 1).startsWith("clone")) {
+        val originName = splits.slice(0, splits.length-1).mkString("#")
+        val (originModule, _) = layerMap(originName)
+        module.element = originModule.element
+      }
+    }
 
     inputNames.foreach(inputName => inputs.append(layerMap(inputName)._1))
     outputNames.foreach(outputName => outputs.append(layerMap(outputName)._1))
