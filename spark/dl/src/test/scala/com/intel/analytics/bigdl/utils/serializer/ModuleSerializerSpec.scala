@@ -592,6 +592,11 @@ class ModuleSerializerSpec extends FlatSpec with Matchers with BeforeAndAfterAll
 
     val model = Graph[Float](data, output)
 
+    val (originWeight, originGradient) = model.getParameters()
+
+    originWeight.size() should be (Array(20))
+    originGradient.size() should be (Array(20))
+
     val name = model.getName
     val serFile = File.createTempFile(name, postFix)
 
