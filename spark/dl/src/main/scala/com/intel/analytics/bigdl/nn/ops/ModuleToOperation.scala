@@ -43,32 +43,3 @@ object ModuleToOperation {
     (implicit ev: TensorNumeric[T]): ModuleToOperation[T] =
     new ModuleToOperation(model.asInstanceOf[AbstractModule[Activity, Activity, T]])
 }
-
-class TensorModuleToTFModule[T: ClassTag, D: ClassTag] private
-(val module: AbstractModule[Activity, Activity, D])
-(implicit ev: TensorNumeric[T], evd: TensorNumeric[D])
-extends AbstractModule[Activity, Activity, T] {
-
-  output = Tensor[D]()
-  gradInput = Tensor[D]()
-
-  override def updateOutput(input: Activity): Activity = {
-    output = module.forward(input)
-    output
-  }
-
-  override def updateGradInput(input: Activity, gradOutput: Activity): Activity = {
-    module.backward(input, gradOutput)
-  }
-
-  override def getClassTagNumerics() : (Array[ClassTag[_]], Array[TensorNumeric[_]]) = {
-    (Array[ClassTag[_]](scala.reflect.classTag[T], scala.reflect.classTag[D]),
-      Array[TensorNumeric[_]](ev, evd))
-  }
-}
-
-object TensorModuleToTFModule {
-  def apply[T: ClassTag, D: ClassTag](model: TensorModule[D])
-     (implicit ev: TensorNumeric[T], evd: TensorNumeric[D]): TensorModuleToTFModule[T, D] =
-    new TensorModuleToTFModule[T, D](model)
-}

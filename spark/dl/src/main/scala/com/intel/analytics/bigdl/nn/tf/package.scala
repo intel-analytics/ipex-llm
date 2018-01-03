@@ -16,7 +16,7 @@
 package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
-import com.intel.analytics.bigdl.nn.ops.TensorModuleToTFModule
+import com.intel.analytics.bigdl.nn.tf.TensorModuleWrapper
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
@@ -30,7 +30,7 @@ package object tf {
                                         squeeze: Boolean = true)
                                        (implicit ev: TensorNumeric[T], evd: TensorNumeric[D]):
     AbstractModule[Activity, Activity, T]
-    = TensorModuleToTFModule[T, D](
+    = TensorModuleWrapper[T, D](
       com.intel.analytics.bigdl.nn.Mean(dimension, nInputDims, squeeze))
   }
 
@@ -38,7 +38,7 @@ package object tf {
     def apply[T: ClassTag, D: ClassTag]()
                                        (implicit ev: TensorNumeric[T], evd: TensorNumeric[D]):
     AbstractModule[Activity, Activity, T]
-    = TensorModuleToTFModule[T, D](
+    = TensorModuleWrapper[T, D](
       com.intel.analytics.bigdl.nn.Abs[D]())
   }
 
@@ -46,7 +46,7 @@ package object tf {
     def apply[T: ClassTag, D: ClassTag](min: Int, max: Int)
                                        (implicit ev: TensorNumeric[T], evd: TensorNumeric[D]):
     AbstractModule[Activity, Activity, T]
-    = TensorModuleToTFModule[T, D](
+    = TensorModuleWrapper[T, D](
       com.intel.analytics.bigdl.nn.Clamp[D](min, max))
   }
 
@@ -54,7 +54,7 @@ package object tf {
     def apply[T: ClassTag, D: ClassTag]()
                                        (implicit ev: TensorNumeric[T], evd: TensorNumeric[D]):
     AbstractModule[Activity, Activity, T]
-    = TensorModuleToTFModule[T, D](
+    = TensorModuleWrapper[T, D](
       com.intel.analytics.bigdl.nn.ReLU6[D]())
   }
 
@@ -62,7 +62,7 @@ package object tf {
     def apply[T: ClassTag, D: ClassTag]()
                                        (implicit ev: TensorNumeric[T], evd: TensorNumeric[D]):
     AbstractModule[Activity, Activity, T]
-    = TensorModuleToTFModule[T, D](
+    = TensorModuleWrapper[T, D](
       com.intel.analytics.bigdl.nn.ELU[D]())
   }
 
@@ -70,7 +70,7 @@ package object tf {
     def apply[T: ClassTag, D: ClassTag]()
                                        (implicit ev: TensorNumeric[T], evd: TensorNumeric[D]):
     AbstractModule[Activity, Activity, T]
-    = TensorModuleToTFModule[T, D](
+    = TensorModuleWrapper[T, D](
       com.intel.analytics.bigdl.nn.Log[D]())
   }
 
@@ -80,7 +80,7 @@ package object tf {
                                         shift : Double = 0)
                                        (implicit ev: TensorNumeric[T], evd: TensorNumeric[D]):
     AbstractModule[Activity, Activity, T]
-    = TensorModuleToTFModule[T, D](
+    = TensorModuleWrapper[T, D](
       com.intel.analytics.bigdl.nn.Power[D](power, scale, shift))
   }
 
@@ -88,7 +88,7 @@ package object tf {
     def apply[T: ClassTag, D: ClassTag]()
                                        (implicit ev: TensorNumeric[T], evd: TensorNumeric[D]):
     AbstractModule[Activity, Activity, T]
-    = TensorModuleToTFModule[T, D](
+    = TensorModuleWrapper[T, D](
       com.intel.analytics.bigdl.nn.SoftPlus[D]())
   }
 
@@ -96,7 +96,7 @@ package object tf {
     def apply[T: ClassTag, D: ClassTag]()
                                        (implicit ev: TensorNumeric[T], evd: TensorNumeric[D]):
     AbstractModule[Activity, Activity, T]
-    = TensorModuleToTFModule[T, D](
+    = TensorModuleWrapper[T, D](
       com.intel.analytics.bigdl.nn.SoftSign[D]())
   }
 }
