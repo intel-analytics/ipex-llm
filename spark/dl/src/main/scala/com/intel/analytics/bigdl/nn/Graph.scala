@@ -72,7 +72,7 @@ import org.tensorflow.framework.GraphDef
 abstract class Graph[T: ClassTag](
   val inputs : Seq[ModuleNode[T]],
   private val outputs : Seq[ModuleNode[T]],
-  private val variables: Option[(Array[Tensor[T]], Array[Tensor[T]])] = None
+  private var variables: Option[(Array[Tensor[T]], Array[Tensor[T]])] = None
 )(implicit ev: TensorNumeric[T]) extends Container[Activity, Activity, T]{
 
   // Add a dummy output node, to get an one end forward graph. So the nodes that are not dependent
@@ -85,10 +85,6 @@ abstract class Graph[T: ClassTag](
   // check if two or more nodes share the same module
   // clone the module and share the weight
   private val distinctModules = checkSharedLayers
-
-  override def updateParameters(learningRate: T): Unit = {
-    distinctModules.foreach(_.updateParameters(learningRate))
-  }
 
   modules.appendAll(
     forwardGraph.topologySort
@@ -174,39 +170,15 @@ abstract class Graph[T: ClassTag](
     }
   }
 
-  override def getExtraParameter(): Array[Tensor[T]] = {
-    if (variables.isEmpty) {
-      throw new IllegalArgumentException("Cannot use this method when variables is defined")
-    }
-    val extraParam = new ArrayBuffer[Tensor[T]]()
-    distinctModules.foreach(m => {
-      val state = m.getExtraParameter()
-      if (state != null) {
-        extraParam ++= state
-      }
-    })
-    extraParam.toArray
-  }
-
-  override def getParametersTable(): Table = {
-    if (variables.isEmpty) {
-      throw new IllegalArgumentException("Cannot use this method when variables is defined")
-    }
-    val pt = T()
-    distinctModules.foreach(m => {
-      val params = m.getParametersTable()
-      if (params != null) {
-        params.keySet.foreach(key => pt(key) = params(key))
-      }
-    })
-    pt
-  }
-
   override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
     variables match {
       case None => super.parameters()
       case Some((weights, gradients)) => (weights, gradients)
     }
+  }
+
+  override def updateParameters(learningRate: T): Unit = {
+    distinctModules.foreach(_.updateParameters(learningRate))
   }
 
   private def checkSharedLayers: Array[Module[T]] = {
