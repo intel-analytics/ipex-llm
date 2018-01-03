@@ -583,8 +583,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers with BeforeAndAfterAll
   "Graph with shared weights" should "preserve sharing semantic" in {
     val data = Input[Float]()
 
-    val h2h = Linear[Float](4, 4,
-      initWeight = Tensor[Float](4, 4).rand(), initBias = Tensor[Float](4).rand())
+    val h2h = Linear[Float](4, 4)
 
     val t1 = h2h.inputs(data)
     val t2 = h2h.inputs(t1)
