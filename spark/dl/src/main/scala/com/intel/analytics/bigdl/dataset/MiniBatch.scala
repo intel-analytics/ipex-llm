@@ -21,6 +21,7 @@ import com.intel.analytics.bigdl.tensor._
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{T, Table}
 
+import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
 
@@ -713,20 +714,20 @@ object SparseMiniBatch{
         dim: Int,
         tensors: Seq[Tensor[T]],
         result: Tensor[T])(implicit ev: TensorNumeric[T]): Tensor[T] = {
-    val size = tensors.head.size()
-    var i = 1
-    while (i < tensors.length) {
-      size(dim - 1) += tensors(i).size(dim)
-      i += 1
-    }
+    val tensorSize = tensors.head.size()
 
-    result.resize(size)
+    val (pre, next) = tensorSize.splitAt(dim - 1)
+    val size = ArrayBuffer[Int]()
+    size ++= pre
+    size += tensors.length
+    size ++= next
 
-    i = 0
-    var offset = 1
+    result.resize(size.toArray)
+
+    var i = 0
     while (i < tensors.length) {
       val current = tensors(i)
-      val target = result.narrow(dim, offset, current.size(dim))
+      val target = result.select(dim, i + 1)
 
       if (target.isContiguous() || dim > 2) {
         // Copy directly when target is Contiguous or dimension is larger than 2
@@ -745,7 +746,6 @@ object SparseMiniBatch{
         }
       }
 
-      offset += current.size(dim)
       i += 1
     }
     result
