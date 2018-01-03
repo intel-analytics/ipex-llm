@@ -86,14 +86,21 @@ class Squeeze[T: ClassTag](
     case that: Squeeze[T] =>
       super.equals(that) &&
         (that canEqual this) &&
-        (dims.zip(that.dims).map(a => a._1 == a._2).reduce(_ && _)) &&
+        (if (dims != null || that.dims != null) {
+          dims.zip(that.dims).map(a => a._1 == a._2).reduce(_ && _)
+        } else {
+          dims == null && that.dims == null
+        }) &&
         batchMode == that.batchMode
     case _ => false
   }
 
   override def hashCode(): Int = {
-    val state = Seq(super.hashCode(), dims, batchMode)
-    state.map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
+    val seed = 31
+    var hash = super.hashCode()
+    hash = hash * seed + batchMode.hashCode()
+    if (dims != null) hash = hash * seed + dims.hashCode()
+    hash
   }
 }
 
