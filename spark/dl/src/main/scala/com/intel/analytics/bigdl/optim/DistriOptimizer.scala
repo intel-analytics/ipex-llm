@@ -648,6 +648,8 @@ object DistriOptimizer {
         val localMethod =
           if (broadcastMethod.isDefined) Some(broadcastMethod.get.map(_.clone())) else None
         val (weights, grads) = localModel.getParameters()
+        localModel.createDnnEngine(0)
+        localModel.createStream()
         (localModel, weights, grads, localCriterion, localState, localMethod)
       }.toArray
 

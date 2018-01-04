@@ -52,7 +52,7 @@ class MemoryReOrder(format: DataFormat = DataFormat.NHWC) extends TensorModule[F
     output.resize(input_sizes)
 
     val dst_memory = MklDnnOps.initDataMemory(
-                      dim, input_sizes, this.output_format, MklDnn.DataType.f32, engine, output)
+                      dim, input_sizes, this.output_format, MklDnn.DataType.f32, engine)
     val src_pd = input.getPrimitiveDesc()
     val (reorder_primitive, src_memory) = MklDnnOps.prepareReorder(dst_memory, src_pd, false)
 
@@ -66,7 +66,8 @@ class MemoryReOrder(format: DataFormat = DataFormat.NHWC) extends TensorModule[F
   }
 
   override def updateGradInput(input: Tensor[Float], gradOutput: Tensor[Float]): Tensor[Float] = {
-    gradOutput
+    gradInput.resizeAs(gradOutput).copy(gradOutput)
+    gradInput
   }
 }
 

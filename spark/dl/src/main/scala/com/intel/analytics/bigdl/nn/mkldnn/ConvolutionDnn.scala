@@ -215,16 +215,16 @@ class ConvolutionDnn[T: ClassTag](
       // create memory desc, for input
       if (input.getPrimitiveDesc() != 0L) {
         val input_pd = input.getPrimitiveDesc()
-        src_md = MklDnnOps.primitiveDescQueryMemory(input_pd)
         src_memory = MklDnn.PrimitiveCreate0(input_pd)
+        src_md = MklDnnOps.primitiveDescQueryMemory(input_pd)
       } else {
-        src_md = MklDnnOps.memoryDescInit(input.dim(), input_size, dataType, this.input_format)
-        src_memory = MklDnnOps.createMemoryPrimitive(src_md, engine)
+        src_memory = MklDnnOps.initDataMemory(input.dim(), input_size, this.input_format, dataType, engine)
+        src_md = MklDnnOps.memoryDescInit(input.dim(), input_size, dataType, this.internal_format)
       }
 
       // for weight
-      weights_md = MklDnnOps.memoryDescInit(dimWeight, weightSize, dataType, weightDnnFormat)
-      weights_memory = MklDnnOps.createMemoryPrimitive(weights_md, engine)
+      weights_memory = MklDnnOps.initDataMemory(dimWeight, weightSize, weightDnnFormat, dataType, engine)
+      weights_md = MklDnnOps.memoryDescInit(dimWeight, weightSize, dataType, this.internal_format)
 
       // for bias
       bias_md = MklDnnOps.memoryDescInit(1, biasSize, dataType, MklDnn.MemoryFormat.x)
@@ -261,9 +261,18 @@ class ConvolutionDnn[T: ClassTag](
       dst_memory = MklDnn.PrimitiveCreate0(dst_pd)
       output.setPrimitiveDesc(dst_pd)
 
-      internal_src_memory = if (reorder_src_memory == 0L) src_memory else reorder_src_memory
-      internal_weights_memory =
-        if (reorder_weights_memory == 0L) weights_memory else reorder_weights_memory
+      internal_src_memory = if (reorder_src_memory == 0L) {
+        src_memory
+      } else {
+        println("updateOutput input reorder")
+        reorder_src_memory
+      }
+      internal_weights_memory = if (reorder_weights_memory == 0L) {
+        weights_memory
+      } else {
+        println("updateOutput weight reorder")
+        reorder_weights_memory
+      }
 
       val conv_inputs = Array(internal_src_memory, internal_weights_memory, bias_memory)
       val conv_outputs = Array(dst_memory)
@@ -288,11 +297,11 @@ class ConvolutionDnn[T: ClassTag](
     if (inputElement != input.nElement()) {
       if (gradOutput.getPrimitiveDesc() != 0L) {
         val gradOutput_pd = gradOutput.getPrimitiveDesc()
-        gradOutput_md = MklDnnOps.primitiveDescQueryMemory(gradOutput_pd)
         gradOutput_memory = MklDnn.PrimitiveCreate0(gradOutput_pd)
+        gradOutput_md = MklDnnOps.primitiveDescQueryMemory(gradOutput_pd)
       } else {
-        gradOutput_md = MklDnnOps.memoryDescInit(gradOutput.dim(), gradOutput.size(), dataType, this.input_format)
-        gradOutput_memory = MklDnnOps.createMemoryPrimitive(gradOutput_md, engine)
+        gradOutput_memory = MklDnnOps.initDataMemory(gradOutput.dim(), gradOutput.size(), this.input_format, dataType, engine)
+        gradOutput_md = MklDnnOps.memoryDescInit(gradOutput.dim(), gradOutput.size(), dataType, this.internal_format)
       }
 
       // for gradInput
@@ -319,8 +328,12 @@ class ConvolutionDnn[T: ClassTag](
         reorder_gradOutput_memory = res._2
       }
 
-      internal_gradOutput_memory =
-        if (reorder_gradOutput_memory == 0L) gradOutput_memory else reorder_gradOutput_memory
+      internal_gradOutput_memory = if (reorder_gradOutput_memory == 0L) {
+        gradOutput_memory
+      } else {
+        println("updateGradInput reorder")
+        reorder_gradOutput_memory
+      }
 
       val conv_inputs = Array(internal_gradOutput_memory, internal_weights_memory, internal_src_memory)
       val conv_outputs = Array(gradInput_memory)
@@ -344,8 +357,8 @@ class ConvolutionDnn[T: ClassTag](
  override def accGradParameters(input: Tensor[Float], gradOutput: Tensor[Float]): Unit = {
    if (inputElement != input.nElement()) {
      // for gradWeights
-     val gradWeights_md = MklDnnOps.memoryDescInit(dimWeight, weightSize, dataType, weightDnnFormat)
-     gradWeights_memory = MklDnnOps.createMemoryPrimitive(gradWeights_md, engine)
+     val gradWeights_md = MklDnnOps.memoryDescInit(dimWeight, weightSize, dataType, this.internal_format)
+     gradWeights_memory = MklDnnOps.initDataMemory(dimWeight, weightSize, weightDnnFormat, dataType, engine)
 
      // for gradBias
      val gradBias_md = MklDnnOps.memoryDescInit(1, biasSize, dataType, MklDnn.MemoryFormat.x)
@@ -368,7 +381,18 @@ class ConvolutionDnn[T: ClassTag](
        reorder_gradWeights_memory = res._2
      }
 
-     val internal_gradWeights_memory = if (reorder_gradWeights_memory == 0L) gradWeights_memory else reorder_gradWeights_memory
+     if (reorder_gradWeights_memory != 0L) {
+       internal_gradWeight.resizeAs(gradWeight)
+       MklDnnOps.memorySetDataHandle(reorder_gradWeights_memory, internal_gradWeight, 0)
+
+     }
+
+     val internal_gradWeights_memory = if (reorder_gradWeights_memory == 0L) {
+       gradWeights_memory
+     } else {
+       println("accGradParameters reorder")
+       reorder_gradWeights_memory
+     }
 
      val conv_inputs = Array(internal_src_memory, internal_gradOutput_memory)
      val conv_outputs = Array(internal_gradWeights_memory, gradBias_memory)

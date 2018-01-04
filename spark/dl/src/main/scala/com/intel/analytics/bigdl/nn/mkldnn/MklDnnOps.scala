@@ -180,7 +180,6 @@ object MklDnnOps {
     var reorder: Long = 0L
     var prim_memory: Long = 0L
     if (MklDnn.MemoryPrimitiveDescEqual(user_memory_pd, prim_memory_pd) == 0) {
-      println("do reorder")
       prim_memory = MklDnn.PrimitiveCreate0(prim_memory_pd)
       var reorder_pd: Long = 0L
       if (user_to_prim) {
@@ -202,7 +201,7 @@ object MklDnnOps {
   }
 
   def initDataMemory(dim: Int, dims: Array[Int], memoryFormat: Int,
-                     dataType: Int, engine: Long, data: Tensor[Float]): Long = {
+                     dataType: Int, engine: Long): Long = {
     require(MklDnn.isLoaded, "mkldnn isn't loaded")
     val prim_md = MklDnn.MemoryDescInit(dim, dims, dataType, memoryFormat)
     val user_pd = MklDnn.MemoryPrimitiveDescCreate(prim_md, engine)
@@ -228,13 +227,13 @@ object MklDnnOps {
     val handle = new Array[Long](memory_primitives.length)
     for (i <- 0 to memory_primitives.length - 1) {
       if (memory_primitives(i) != 0L) {
-        handle(i) = MklDnnOps.memorySetDataHandle(memory_primitives(i), buffers(i), 0)
+        handle(i) = MklDnnOps.memorySetDataHandle(memory_primitives(i), buffers(i), buffers(i).storageOffset() - 1)
       }
     }
     MklDnn.StreamSubmit(loc, block, primitives)
     for (i <- 0 to memory_primitives.length - 1) {
       if (memory_primitives(i) != 0L) {
-      MklDnnOps.memoryReleaseDataHandle(buffers(i), handle(i))
+         MklDnnOps.memoryReleaseDataHandle(buffers(i), handle(i))
       }
     }
   }

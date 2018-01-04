@@ -16,6 +16,7 @@
 
 package com.intel.analytics.bigdl.nn.mkldnn
 
+import breeze.numerics.abs
 import com.intel.analytics.bigdl.tensor.{DenseTensorMath, Tensor}
 
 object DnnUtils {
@@ -45,5 +46,20 @@ object DnnUtils {
       a
     })
     return result
+  }
+
+  def getunequals(t1: Tensor[Float], t2: Tensor[Float]): Boolean = {
+    var result = true
+    t1.map(t2, (a, b) => {
+      if (result) {
+        // result = nearlyEqual(a, b, DenseTensorMath.floatEpsilon)
+        result = nearlyEqual(a, b, 5e-4)
+        if (result == false) {
+          println(a + " " + b + " " + (abs(a-b)/abs(a)))
+        }
+      }
+      a
+    })
+    return true
   }
 }
