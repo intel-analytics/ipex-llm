@@ -33,6 +33,16 @@ Here are the folders for nightly build packages. The packages are built from lat
 
 --- 
 
+## **Release 0.4.0**
+|               | Download Link (for Linux x64, Mac and Win64) |
+| ------------- | --------- |
+| Spark 1.5.2   | [download](https://s3-ap-southeast-1.amazonaws.com/bigdl-download/dist-spark-1.5.2-scala-2.10.5-all-0.4.0-dist.zip) |
+| Spark 1.6.2   | [download](https://s3-ap-southeast-1.amazonaws.com/bigdl-download/dist-spark-1.6.2-scala-2.10.5-all-0.4.0-dist.zip) |
+| Spark 2.1.1   | [download](https://s3-ap-southeast-1.amazonaws.com/bigdl-download/dist-spark-2.1.1-scala-2.11.8-all-0.4.0-dist.zip) |
+| Spark 2.2.0   | [download](https://s3-ap-southeast-1.amazonaws.com/bigdl-download/dist-spark-2.2.0-scala-2.11.8-all-0.4.0-dist.zip) |
+
+--- 
+
 ## **Release 0.3.0**
 |               | Download Link (for Linux x64, Mac and Win64) |
 | ------------- | --------- |
