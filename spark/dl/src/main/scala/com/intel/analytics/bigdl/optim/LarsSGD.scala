@@ -21,7 +21,6 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.{T, Table}
 
-import scala.collection.immutable.HashMap.HashMap1
 import scala.collection.mutable
 import scala.reflect.ClassTag
 
@@ -42,8 +41,6 @@ class LarsSGD[@specialized(Float, Double) T: ClassTag](
   extends SGD[T](learningRate, learningRateDecay, weightDecay, momentum,
     learningRateSchedule = larsLearningRateSchedule) {
 
-  import SGD._
-
   /**
    *
    * @param feval a function that takes a single input (X), the point of a evaluation,
@@ -57,47 +54,44 @@ class LarsSGD[@specialized(Float, Double) T: ClassTag](
     this.updateHyperParameter()
     val wd = this.weightDecay
     val mom = this.momentum
-    val clr = ev.fromType(this.learningRateSchedule.currentRate)
+    val clr = this.learningRateSchedule.currentRate
 
-    val (fx, dfdx) = feval(x)
+    val (fx, dfdxOri) = feval(x)
+
+    // for unit test only
+    val dfdx = dfdxOri.clone()
 
     require(state.get[Array[(Int, Int)]]("lookupList").isDefined,
       "LarsSGD needs to know start and length for each layer")
     val lookupList = state.get[mutable.HashMap[Int, (Int, Int)]]("lookupList").get
-    val gwNorm2List = state.get[Array[(Int, (T, T))]]("gwNorm2List").get
+    val gwNorm2List = state.get[Array[(Int, (Double, Double))]]("gwNorm2List").get
 
     lookupList.foreach(e => {
       val layerId = e._1
       val start = e._2._1
       val length = e._2._2
       val wPerLayer = x.narrow(1, start, length)
-      var dfdxPerLayer = dfdx.narrow(1, start, length)
-      val (gNorm2, wNorm2) = gwNorm2List(layerId)._2
-      val localLr = ev.times(ev.fromType(gwRation), ev.times(clr, ev.divide(wNorm2,
-      ev.plus(gNorm2, ev.times(ev.fromType(wd), wNorm2)))))
+      val dfdxPerLayer = dfdx.narrow(1, start, length)
+      val (wNorm2, gNorm2) = gwNorm2List(layerId)._2
+      val localLr = ev.fromType(gwRation * (-clr * (wNorm2 / (gNorm2 + wd * wNorm2))))
 
       if (wd != 0) {
-      require(!state.get[Boolean]("isLayerwiseScaled").getOrElse(false),
-      "SGD: Can't set layerwise scale and weight decay at the same time")
+        require(!state.get[Boolean]("isLayerwiseScaled").getOrElse(false),
+          "SGD: Can't set layerwise scale and weight decay at the same time")
       }
       if (wd != 0) {
-      dfdxPerLayer.add(ev.fromType[Double](wd), wPerLayer)
+        dfdxPerLayer.add(ev.fromType[Double](wd), wPerLayer)
       }
 
-      if (mom != 0) {
-        val stateDFDX = state.get[Tensor[T]](s"${layerId}ThDfdx") match {
-        case None =>
-          val DFDX = Tensor[T]().resizeAs(dfdxPerLayer).copy(dfdxPerLayer)
-          DFDX.mul(localLr)
-          state(s"${layerId}ThDfdx") = DFDX
-          DFDX
+      dfdxPerLayer.mul(localLr)
+      val stateDFDX = state.get[Tensor[T]](s"${layerId}ThDfdx") match {
+        case None => dfdxPerLayer
         case s: Some[Tensor[T]] => s.get.mul(ev.fromType[Double](mom)).
-          add(ev.negative(localLr), dfdxPerLayer)
-        }
-        dfdxPerLayer = stateDFDX
+                  add(dfdxPerLayer)
       }
+     state(s"${layerId}ThDfdx") = stateDFDX
 
-      wPerLayer.add(ev.negative(ev.one), dfdxPerLayer)
+      wPerLayer.add(ev.negative(ev.one), stateDFDX)
     })
 
     (x, Array(fx))

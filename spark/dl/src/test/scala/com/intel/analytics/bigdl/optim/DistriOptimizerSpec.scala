@@ -636,4 +636,81 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
     myOpt.setTrainData(rdd, 2*nodeNumber)
     myOpt.optimize()
   }
+
+  "Train with MSE and LarsSGD" should "be trained with good result in 1 iteration" in {
+    val mm = mse
+    mm.getParameters()._1.fill(0.125)
+    val oriW = mm.parameters()._1
+    // update below parameters if mse model has been changed
+    val layerNum = 4
+    val layer_0Num = 8
+    val layer_1Num = 2
+    val layer_2Num = 2
+    val layer_3Num = 1
+    require(mm.parameters()._1.length == layerNum && mm.parameters()._1(0).nElement() == layer_0Num
+      && mm.parameters()._1(1).nElement() == layer_1Num &&
+      mm.parameters()._1(2).nElement() == layer_2Num &&
+      mm.parameters()._1(3).nElement() == layer_3Num,
+      "if mse model has been chaged, this test case must needed updated accordingly!")
+
+    val wNorm2 = oriW.map(x => math.sqrt(x.sumSquare()))
+
+    val _learningRate = 20.0
+    val _weightDecay = 0.1
+    val _momentum = 0.05
+    val _gwRation = 0.8
+    val optimizer = new DistriOptimizer[Double](mm, dataSet, new MSECriterion[Double]())
+      .setEndWhen(Trigger.maxIteration(1))
+      .setOptimMethod(new LarsSGD[Double](
+        learningRate = _learningRate,
+        learningRateDecay = 0.0,
+        weightDecay = _weightDecay,
+        momentum = _momentum,
+        gwRation = _gwRation))
+
+    val model = optimizer.optimize()
+    val newW = model.parameters()._1.clone()
+    val newG = model.parameters()._2.clone()
+
+    val gNorm2 = newG.map(x => math.sqrt(x.sumSquare()))
+    var i = 0
+    while (i < wNorm2.length) {
+      val clr = _learningRate * (wNorm2(i) / (gNorm2(i) + _weightDecay * wNorm2(i))) * _gwRation
+      newG(i).add(_weightDecay, oriW(i))
+      val expectW = oriW(i).add(-1.0, newG(i).mul(clr))
+      assert(expectW.almostEqual(newW(i), 1e-6) == true, "should generate correct weight")
+      i += 1
+    }
+  }
+
+  "Train with MSE and LarsSGD" should "be be able to train with more than 1 iteration" in {
+    val mm = mse
+    mm.getParameters()._1.fill(0.125)
+    // update below parameters if mse model has been changed
+    val layerNum = 4
+    val layer_0Num = 8
+    val layer_1Num = 2
+    val layer_2Num = 2
+    val layer_3Num = 1
+    require(mm.parameters()._1.length == layerNum && mm.parameters()._1(0).nElement() == layer_0Num
+      && mm.parameters()._1(1).nElement() == layer_1Num &&
+      mm.parameters()._1(2).nElement() == layer_2Num &&
+      mm.parameters()._1(3).nElement() == layer_3Num,
+      "if mse model has been chaged, this test case must needed updated accordingly!")
+
+    val _learningRate = 20.0
+    val _weightDecay = 0.1
+    val _momentum = 0.05
+    val _gwRation = 0.8
+    val optimizer = new DistriOptimizer[Double](mm, dataSet, new MSECriterion[Double]())
+      .setEndWhen(Trigger.maxEpoch(1))
+      .setOptimMethod(new LarsSGD[Double](
+        learningRate = _learningRate,
+        learningRateDecay = 0.0,
+        weightDecay = _weightDecay,
+        momentum = _momentum,
+        gwRation = _gwRation))
+
+    val model = optimizer.optimize()
+  }
 }

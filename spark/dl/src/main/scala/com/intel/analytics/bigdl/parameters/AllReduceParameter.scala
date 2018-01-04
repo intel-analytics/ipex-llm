@@ -218,7 +218,7 @@ class AllReduceParameter[T: ClassTag](id: Long, partitionNum: Int, size: Int)
    * other nodes. A new thread is created for each separate node. The gradients are then summed
    * and then stored in decompressed form in `gradientPartition`.
    */
-  def aggregateGradientPartition(): Unit = {
+  def aggregateGradientPartition(numbers: T): Unit = {
     require(partitionId < partitionNum, s"This parameter was created with $partitionNum " +
       s"partitions. It cannot be used on RDDs with > $partitionNum partitions.")
     val params = new Array[CompressedTensor[T]](partitionNum)
@@ -259,6 +259,7 @@ class AllReduceParameter[T: ClassTag](id: Long, partitionNum: Int, size: Int)
       }
     ).asJava)
     params.head.deCompress(gradientPartition)
+    gradientPartition.div(numbers)
   }
 
   /**
@@ -311,15 +312,15 @@ class AllReduceParameter[T: ClassTag](id: Long, partitionNum: Int, size: Int)
     weights.copy(weightPartition)
   }
 
-  def squareSumPerLayer(lookupDic: Array[mutable.HashMap[Int, (Int, Int)]], scale: Double):
-    Array[(Int, (T, T))] = {
+  def squarePerLayer(lookupDic: Array[mutable.HashMap[Int, (Int, Int)]]):
+    Array[(Int, (Double, Double))] = {
     val lookupMap = lookupDic(partitionId)
-    val list = new Array[(Int, (T, T))](lookupMap.size)
+    val list = new Array[(Int, (Double, Double))](lookupMap.size)
     var i = 0
     for ((k, v) <- lookupMap) {
       list(i) = (k,
-        (ev.divide(weightPartition.narrow(1, v._1, v._2).sumSquare(), ev.fromType(scale)),
-        ev.divide(gradientPartition.narrow(1, v._1, v._2).sumSquare(), ev.fromType(scale))))
+        (ev.toType[Double](weightPartition.narrow(1, v._1, v._2).sumSquare()),
+         ev.toType[Double](gradientPartition.narrow(1, v._1, v._2).sumSquare())))
       i += 1
     }
     list

@@ -312,11 +312,11 @@ object DistriOptimizer {
         val value = lossSum.value / numFinishedModelUpdates
 
         var l2Norm = 0.0f
-        var scale = ev.fromType(numFinishedModelUpdates)
+        val numFinishedModelUpdatesT = ev.fromType(numFinishedModelUpdates)
         if (l2normClippingEnable) {
           val sumSquare = models.mapPartitions(modelIter => {
             val getG = System.nanoTime()
-            parameters.aggregateGradientPartition()
+            parameters.aggregateGradientPartition(numFinishedModelUpdatesT)
             driverMetrics.add("aggregrateGradientParition average executor",
               System.nanoTime() - getG)
 
@@ -340,25 +340,26 @@ object DistriOptimizer {
             Iterator.single(sum)
           }).reduce(_ + _)
 
-          l2Norm = (math.sqrt(sumSquare) / numFinishedModelUpdates).toFloat
+          l2Norm = math.sqrt(sumSquare).toFloat
           if (l2Norm > normValueClip) {
-            scale = ev.fromType[Double]((l2Norm * numFinishedModelUpdates) / normValueClip)
+            val scale = ev.fromType[Double](l2Norm / normValueClip)
+            parameters.gradientPartition.div(scale)
           }
         }
 
         // array element is a tuple, first element is layer id, value is (wNorm2, gNorm2)
-        var gwNorm2ListBroadcast: Broadcast[Array[(Int, (T, T))]] = null
+        var gwNorm2ListBroadcast: Broadcast[Array[(Int, (Double, Double))]] = null
         if (larsSGD) {
           val gwNorm2List = dataset.originRDD().mapPartitions( _ => {
             if (!l2normClippingEnable) {
               val getG = System.nanoTime()
-              parameters.aggregateGradientPartition()
+              parameters.aggregateGradientPartition(numFinishedModelUpdatesT)
               driverMetrics.add("aggregrateGradientParition average executor",
                 System.nanoTime() - getG)
             }
-            parameters.squareSumPerLayer(lookupDicBroadcast.value, numFinishedModelUpdates).iterator
-          }).reduceByKey((a, b) => (ev.plus(a._1, b._1), ev.plus(a._2, b._2)))
-            .sortByKey(true).collect()
+            parameters.squarePerLayer(lookupDicBroadcast.value).iterator
+          }).reduceByKey((a, b) => (a._1 + b._1, a._2 + b._2))
+            .sortByKey(true).collect().map(x => (x._1, (math.sqrt(x._2._1), math.sqrt(x._2._2))))
           gwNorm2ListBroadcast = sc.broadcast(gwNorm2List)
         }
 
@@ -366,11 +367,10 @@ object DistriOptimizer {
           val modelCache = modelIter.next()
           if (!l2normClippingEnable && !larsSGD) {
             val getG = System.nanoTime()
-            parameters.aggregateGradientPartition()
+            parameters.aggregateGradientPartition(numFinishedModelUpdatesT)
             driverMetrics.add("aggregrateGradientParition average executor",
               System.nanoTime() - getG)
           }
-          parameters.gradientPartition.div(scale)
           modelCache.optimMethod.state.update("epoch", driverState[Int]("epoch"))
           modelCache.optimMethod.state.update("neval", driverState[Int]("neval"))
           modelCache.optimMethod.state.update("Loss", driverState[Float]("Loss"))
@@ -382,8 +382,6 @@ object DistriOptimizer {
             // gwNorm2List array element is a tuple, first element is layer id,
             // value is (wNorm2, gNorm2)
             modelCache.optimMethod.state.update("lookupList", lookupList)
-//            val gwNorm2List = lookupList.map {mapIterator =>
-//              gwNorm2ListBroadcast.value.apply(mapIterator._1)._2}
           val gwNorm2List = gwNorm2ListBroadcast.value
             modelCache.optimMethod.state.update("gwNorm2List", gwNorm2List)
           }
@@ -701,17 +699,17 @@ object DistriOptimizer {
 
       // Check if lookupDic is correct
       // array element is a tuple, first element is layer id, value is (wNorm2, gNorm2)
-      val squareSumPerLayer = dataset.originRDD().mapPartitions( _ => {
-        parameters.squareSumPerLayer(lookupDic, 1.0).iterator
-      }).reduceByKey((a, b) => (ev.plus(a._1, b._1), ev.plus(a._2, b._2))).sortByKey(true).collect()
+      val norm2PerLayer = dataset.originRDD().mapPartitions( _ => {
+        parameters.squarePerLayer(lookupDic).iterator
+      }).reduceByKey((a, b) => (a._1 + b._1, a._2 + b._2)).sortByKey(true).collect()
 
-      require(parameterPerLayerSizes.length == squareSumPerLayer.length,
+      require(parameterPerLayerSizes.length == norm2PerLayer.length,
         "lookupDic length is not correct!")
       for((parameter, i) <- model.parameters()._1.view.zipWithIndex) {
         require(ev.isGreater(ev.fromType(1e-3),
-          (ev.minus(parameter.sumSquare(), squareSumPerLayer(i)._2._1))),
+          (ev.minus(parameter.sumSquare(), ev.fromType(norm2PerLayer(i)._2._1)))),
           s"lookupDic value is not correct! ori is ${parameter.sumSquare()}" +
-            s" now is ${squareSumPerLayer(i)._2._1}")
+            s" now is ${norm2PerLayer(i)._2._1}")
       }
       logger.info("lookupDic check pass!!")
     }
