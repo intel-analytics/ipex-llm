@@ -67,7 +67,7 @@ linear2 = Linear(...)(relu1)
 relu2 = ReLU()(linear2)
 linear3 = Linear(...)(relu1)
 relu3 = ReLU()(linear3)
-model = Model(Seq[linear1], Seq[relu2, relu3])
+model = Model([linear1], [relu2, relu3])
 ```
 In the above node, linear2 and linear3 are both from relu1 with separated
 Linear layers, which construct the branch structure. When we create the model,
@@ -104,7 +104,7 @@ relu2 = ReLU()(linear2)
 linear3 = Linear(...)(relu1)
 relu3 = ReLU()(linear3)
 add = CAddTable()(relu2, relu3)
-model = Model(Seq[linear1], Seq[add])
+model = Model([linear1], [add])
 ```
 In the above code, to merge the branch, we use the CAddTable, which takes two
 input nodes, to generate one output node.
@@ -139,7 +139,7 @@ relu1 = ReLU()(linear1)
 linear2 = Linear(...)()
 relu2 = ReLU()(linear2)
 add = CAddTable()(relu1, relu2)
-model = Model(Seq[linear1, linear2], Seq[add])
+model = Model([linear1, linear2], [add])
 ```
 In the above code, we define two input nodes linear1 and linear2 and put them
 into the first parameter when create the graph model.
