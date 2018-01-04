@@ -35,8 +35,10 @@ parser.add_argument('-m', '--startserver',
     help='Start server at PORT after building')
 parser.add_argument('-d', '--startmkdocserve',
     dest='debugport', type=int,
-    #dest='mkdocserveflag', action='store_true',
     help=argparse.SUPPRESS)
+parser.add_argument('-l', '--localdoc',
+    dest='local_doc', action='store_true',
+    help='Use local bigdl doc repo(if it exists) instead of downloading from remote')
 
 args = parser.parse_args()
 
@@ -44,32 +46,31 @@ scaladocs = args.scaladocsflag
 
 pythondocs = args.pythondocsflag
 
+local_doc = args.local_doc
 
 script_path = os.path.realpath(__file__)
 dir_name = os.path.dirname(script_path)
 os.chdir(dir_name)
 
-run_cmd(['rm', '-rf', '{}/mkdocs_windmill'.format(dir_name)],
-    'rm theme folder error')
-
 # check if mkdoc is installed
 run_cmd(['mkdocs', '--version'],
     'Please install mkdocs and run this script again\n\te.g., pip install mkdocs')
 
-# git clone docs
-run_cmd(['rm', '-rf', '/tmp/bigdl-doc'],
-    'rm theme repo error')
+# refresh local docs repo
+if not (local_doc and os.path.isdir("/tmp/bigdl-doc")):
+    run_cmd(['rm', '-rf', '/tmp/bigdl-doc'],
+        'rm doc repo error')
+    run_cmd(['git', 'clone', 'https://github.com/bigdl-project/bigdl-project.github.io.git', '/tmp/bigdl-doc'],
+        'git clone doc repo error')
 
-# run_cmd(['git', 'clone', 'https://github.com/helenlly/bigdl-project.github.io.git', '/tmp/bigdl-doc'],
-#     'git clone readthedocs error')
-#
-run_cmd(['git', 'clone', 'https://github.com/bigdl-project/bigdl-project.github.io.git', '/tmp/bigdl-doc'],
-    'git clone theme repo error')
-
-run_cmd(['mv', '/tmp/bigdl-doc/mkdocs_windmill', dir_name],
+# refresh theme folder
+run_cmd(['rm', '-rf', '{}/mkdocs_windmill'.format(dir_name)],
+    'rm theme folder error')
+run_cmd(['cp', '-r', '/tmp/bigdl-doc/mkdocs_windmill', dir_name],
     'mv theme foler error')
 
-run_cmd(['mv', '/tmp/bigdl-doc/extra.css', '{}/docs'.format(dir_name)],
+# refresh css file
+run_cmd(['cp', '/tmp/bigdl-doc/extra.css', '{}/docs'.format(dir_name)],
     'mv theme foler error')
 
 # mkdocs build
@@ -87,9 +88,6 @@ run_cmd(['cp', '/tmp/bigdl-doc/img/*', '{}/site/img'.format(dir_name)],
     'mv theme foler error', s=True)
 run_cmd(['cp', '/tmp/bigdl-doc/version-list', '{}/site'.format(dir_name)],
     'mv theme foler error', s=True)
-
-run_cmd(['rm', '-rf', '/tmp/bigdl-doc'],
-    'rm theme folder error')
 
 if scaladocs:
     print 'build scala doc'
