@@ -44,7 +44,7 @@ object Utils {
 
   private var textClassification: TextClassifier = null
 
-  def getTextClassifier(param: TFP): TextClassifier = {
+  def getTextClassifier(param: TextClassificationUDFParams): TextClassifier = {
     if (textClassification == null) {
       textClassification = new TextClassifier(param)
     }
@@ -91,7 +91,7 @@ object Utils {
              word2Vec: Word2Vec)
             (implicit ev: TensorNumeric[Float]): (String) => Int = {
 
-    val broadcastModel = ModelBroadcast[Float].broadcast(sc, model)
+    val broadcastModel = ModelBroadcast[Float]().broadcast(sc, model)
     val word2IndexBC = sc.broadcast(word2Index)
     val word2VecBC = sc.broadcast(word2Vec)
 
@@ -129,7 +129,7 @@ object Utils {
       val featureTensor: Tensor[Float] = Tensor[Float]()
       var featureData: Array[Float] = null
       val sampleSize = sampleShape.product
-      val localModel = broadcastModel.value
+      val localModel = broadcastModel.value()
 
       // create tensor from input column
       if (featureData == null) {

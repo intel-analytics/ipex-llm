@@ -31,6 +31,22 @@ class TensorNumericMath
  */
 object TensorNumericMath {
 
+  type NumericWildCard = Any
+  /**
+   * This type is used to denote that the numeric type of tensor is not restricted.
+   * The use-case usually is used to do some tensor operations when we do not make sure
+   * their concrete types, but they must have the same type.
+   *
+   * For example if we want to copy tensor1 from tensor2, and we only know they are
+   * the same type tensor without the information about their concrete type.
+   *
+   * We can use the following code:
+   *
+   * `tensor1.asInstanceOf[Tensor[NumericWildcard]]
+   * .copy(tensor2.asInstanceOf[Tensor[NumericWildcard]])`
+   */
+  type NumericWildcard = Any
+
   /**
    * define tensor math operation
    */
@@ -52,6 +68,8 @@ object TensorNumericMath {
     def log(x: T): T
 
     def max(x: T, y: T): T
+
+    def min(x: T, y: T): T
 
     def sqrt(x: T): T
 
@@ -120,6 +138,14 @@ object TensorNumericMath {
 
     def inv(v: T): T
 
+    def erf(v: T): T
+
+    def erfc(v: T): T
+
+    def logGamma(v: T): T
+
+    def digamma(v: T): T
+
     def add(n: Int, a: Array[T], offset: Int, v: T, stride: Int): Unit
 
     def sub(n: Int, a: Array[T], offset: Int, v: T, stride: Int): Unit
@@ -156,6 +182,24 @@ object TensorNumericMath {
       b: Array[T], bOffset: Int): Unit
 
     def nearlyEqual(a: T, b: T, epsilon: Double): Boolean
+
+    def floor(a: T): T
+
+    def ceil(a: T): T
+
+    def isFinite(a: T): Boolean
+
+    def isNan(a: T): Boolean
+
+    def isInf(a: T): Boolean
+
+    def round(a: T): T
+
+    def truncate(a: T): T
+
+    def floorDiv(a: T, b: T): T
+
+    def clip(a: T, lower: T, upper: T): T
   }
 
   /**
@@ -185,7 +229,7 @@ object TensorNumericMath {
 
     def prod(n: Int, a: Array[T], aOffset: Int, stride: Int): T =
       throw new UnsupportedOperationException(typeName +
-        " in tensor does not support exp operation")
+        " in tensor does not support prod operation")
 
     def log(x: T): T =
       throw new UnsupportedOperationException(typeName +
@@ -194,6 +238,10 @@ object TensorNumericMath {
     def max(x: T, y: T): T =
       throw new UnsupportedOperationException(typeName +
         " in tensor does not support max operation")
+
+    def min(x: T, y: T): T =
+      throw new UnsupportedOperationException(typeName +
+        " in tensor does not support min operation")
 
     def sqrt(x: T): T =
       throw new UnsupportedOperationException(typeName +
@@ -282,7 +330,7 @@ object TensorNumericMath {
       throw new UnsupportedOperationException(typeName +
         " in tensor does not support fromType operation")
 
-    def toType[@specialized(Float, Double, Int) K](t: T)(implicit c: ConvertableTo[K]): K =
+    def toType[K](t: T)(implicit c: ConvertableTo[K]): K =
       throw new UnsupportedOperationException(typeName +
         " in tensor does not support toType operation")
 
@@ -380,6 +428,58 @@ object TensorNumericMath {
     def nearlyEqual(a: T, b: T, epsilon: Double): Boolean =
       throw new UnsupportedOperationException(typeName +
         " in tensor does not support nearlyEqual operation")
+
+    override def floor(a: T): T =
+      throw new UnsupportedOperationException(typeName +
+        " in tensor does not support floor operation")
+
+    override def ceil(a: T): T =
+      throw new UnsupportedOperationException(typeName +
+        " in tensor does not support ceil operation")
+
+    override def isInf(a: T): Boolean =
+      throw new UnsupportedOperationException(typeName +
+        " in tensor does not support isInf operation")
+
+    override def isFinite(a: T): Boolean =
+      throw new UnsupportedOperationException(typeName +
+        " in tensor does not support isFinite operation")
+
+    override def isNan(a: T): Boolean =
+      throw new UnsupportedOperationException(typeName +
+        " in tensor does not support isNan operation")
+
+    override def round(a: T): T =
+      throw new UnsupportedOperationException(typeName +
+        " in tensor does not support round operation")
+
+    override def truncate(a: T): T =
+      throw new UnsupportedOperationException(typeName +
+        " in tensor does not support truncate operation")
+
+    override def floorDiv(a: T, b: T): T =
+      throw new UnsupportedOperationException(typeName +
+        " in tensor does not support floorDiv operation")
+
+    def clip(a: T, lower: T, upper: T): T =
+      throw new UnsupportedOperationException(typeName +
+        " in tensor does not support clip operation")
+
+    def erf(x: T): T =
+      throw new UnsupportedOperationException(typeName +
+        " in tensor does not support erf operation")
+
+    def erfc(x: T): T =
+      throw new UnsupportedOperationException(typeName +
+        " in tensor does not support erf operation")
+
+    def logGamma(v: T): T =
+      throw new UnsupportedOperationException(typeName +
+        " in tensor does not support erf operation")
+
+    def digamma(v: T): T =
+      throw new UnsupportedOperationException(typeName +
+        " in tensor does not support erf operation")
   }
 
   /**
@@ -414,6 +514,8 @@ object TensorNumericMath {
       override def log(x: Float): Float = java.lang.Math.log(x).toFloat
 
       override def max(x: Float, y: Float): Float = java.lang.Math.max(x, y)
+
+      override def min(x: Float, y: Float): Float = java.lang.Math.min(x, y)
 
       override def sqrt(x: Float): Float = Math.sqrt(x.toDouble).toFloat
 
@@ -661,6 +763,47 @@ object TensorNumericMath {
           i += 1
         }
       }
+
+      override def floor(a: Float): Float = math.floor(a).toFloat
+
+      override def ceil(a: Float): Float = math.ceil(a).toFloat
+
+      override def isFinite(a: Float): Boolean = !java.lang.Float.isInfinite(a)
+
+      override def isNan(a: Float): Boolean = java.lang.Float.isNaN(a)
+
+      override def isInf(a: Float): Boolean = java.lang.Float.isInfinite(a)
+
+      override def round(a: Float): Float = Math.round(a).toFloat
+
+      override def truncate(a: Float): Float = {
+        if (a >= 0) {
+          Math.floor(a).toFloat
+        } else if (a == Math.floor(a)) {
+          a
+        } else {
+          Math.floor(a).toFloat + 1
+        }
+      }
+
+      override def floorDiv(a: Float, b: Float): Float = {
+        Math.floor(a / b).toFloat
+      }
+
+      override def clip(a: Float, lower: Float, upper: Float): Float = {
+        require(lower <= upper, "lower bound must be less or equal than upper bound")
+        math.min(math.max(a, lower), upper)
+      }
+
+      override def erf(a: Float): Float = org.apache.commons.math3.special.Erf.erf(a).toFloat
+
+      override def erfc(a: Float): Float = org.apache.commons.math3.special.Erf.erfc(a).toFloat
+
+      override def logGamma(a: Float): Float =
+        org.apache.commons.math3.special.Gamma.logGamma(a).toFloat
+
+      override def digamma(a: Float): Float =
+        org.apache.commons.math3.special.Gamma.digamma(a).toFloat
     }
 
     implicit object NumericDouble extends UndefinedTensorNumeric[Double]("Double") {
@@ -677,6 +820,8 @@ object TensorNumericMath {
       override def log(x: Double): Double = java.lang.Math.log(x)
 
       override def max(x: Double, y: Double): Double = java.lang.Math.max(x, y)
+
+      override def min(x: Double, y: Double): Double = java.lang.Math.min(x, y)
 
       override def sqrt(x: Double): Double = Math.sqrt(x)
 
@@ -932,6 +1077,47 @@ object TensorNumericMath {
           i += 1
         }
       }
+
+      override def floor(a: Double): Double = math.floor(a)
+
+      override def ceil(a: Double): Double = math.ceil(a)
+
+      override def isFinite(a: Double): Boolean = !java.lang.Double.isInfinite(a)
+
+      override def isNan(a: Double): Boolean = java.lang.Double.isNaN(a)
+
+      override def isInf(a: Double): Boolean = java.lang.Double.isInfinite(a)
+
+      override def round(a: Double): Double = Math.round(a).toDouble
+
+      override def truncate(a: Double): Double = {
+        if (a >= 0) {
+          Math.floor(a)
+        } else if (a == Math.floor(a)) {
+          a
+        } else {
+          Math.floor(a) + 1
+        }
+      }
+
+      override def floorDiv(a: Double, b: Double): Double = {
+        Math.floor(a / b)
+      }
+
+      override def clip(a: Double, lower: Double, upper: Double): Double = {
+        require(lower <= upper, "lower bound must be less or equal than upper bound")
+        math.min(math.max(a, lower), upper)
+      }
+
+      override def erf(a: Double): Double = org.apache.commons.math3.special.Erf.erf(a)
+
+      override def erfc(a: Double): Double = org.apache.commons.math3.special.Erf.erfc(a)
+
+      override def logGamma(a: Double): Double =
+        org.apache.commons.math3.special.Gamma.logGamma(a)
+
+      override def digamma(a: Double): Double =
+        org.apache.commons.math3.special.Gamma.digamma(a)
     }
 
     implicit object NumericString extends UndefinedTensorNumeric[String]("String") {
@@ -969,6 +1155,9 @@ object TensorNumericMath {
         implicit c: ConvertableFrom[K]): Boolean =
         c.toBoolean(k)
 
+      override def toType[K](t: Boolean)(
+        implicit c: ConvertableTo[K]): K = c.fromBoolean(t)
+
       override def nearlyEqual(a: Boolean, b: Boolean, epsilon: Double): Boolean = {
         a == b
       }
@@ -991,6 +1180,8 @@ object TensorNumericMath {
 
       override def max(x: Int, y: Int): Int = java.lang.Math.max(x, y)
 
+      override def min(x: Int, y: Int): Int = java.lang.Math.min(x, y)
+
       override def sqrt(x: Int): Int = Math.sqrt(x.toDouble).toInt
 
       override def tanh(x: Int): Int = Math.tanh(x.toDouble).toInt
@@ -998,6 +1189,9 @@ object TensorNumericMath {
       override def fromType[K](k: K)(
         implicit c: ConvertableFrom[K]): Int =
         c.toInt(k)
+
+      override def toType[K](t: Int)
+        (implicit c: ConvertableTo[K]): K = c.fromInt(t)
 
       override def axpy(n: Int, da: Int, dx: Array[Int], _dx_offset: Int,
         incx: Int, dy: Array[Int],
@@ -1024,6 +1218,66 @@ object TensorNumericMath {
       override def isGreaterEq(x: Int, y: Int): Boolean = x >= y
 
       override def nearlyEqual(a: Int, b: Int, epsilon: Double): Boolean = a == b
+
+      override def prod(n: Int, a: Array[Int], aOffset: Int, stride: Int): Int = {
+        var i = 0
+        var r = 1
+        while (i < n) {
+          r *= a(aOffset + i * stride)
+          i += 1
+        }
+        r
+      }
+
+      override def sum(n: Int, a: Array[Int], aOffset: Int, stride: Int): Int = {
+        var i = 0
+        var r = 0
+        while (i < n) {
+          r += a(aOffset + i * stride)
+          i += 1
+        }
+        r
+      }
+
+      override def floor(a: Int): Int = a
+
+      override def sub(n: Int, a: Array[Int], offset: Int, v: Int, stride: Int): Unit = {
+        var i = 0
+        while(i < n) {
+          a(i * stride + offset) -= v
+          i += 1
+        }
+      }
+
+      override def round(a: Int): Int = a
+
+      override def vDiv(n: Int, a: Array[Int], aOffset: Int, b: Array[Int], bOffset: Int,
+        y: Array[Int], yOffset: Int): Unit = {
+        var i = 0
+        while(i < n) {
+          y(i + yOffset) = a(i + aOffset) / b(i + bOffset)
+          i += 1
+        }
+      }
+
+      override def vMul(n: Int, a: Array[Int], aOffset: Int, b: Array[Int], bOffset: Int,
+        y: Array[Int], yOffset: Int): Unit = {
+        var i = 0
+        while(i < n) {
+          y(i + yOffset) = a(i + aOffset) * b(i + bOffset)
+          i += 1
+        }
+      }
+
+      override def truncate(a: Int): Int = a
+
+      override def floorDiv(a: Int, b: Int): Int = {
+        var var2 = a / b
+        if ((a ^ b) < 0 && var2 * b != a) {
+          var2 -= 1
+        }
+        var2
+      }
     }
 
     implicit object NumericLong extends UndefinedTensorNumeric[Long]("Long") {
@@ -1042,6 +1296,8 @@ object TensorNumericMath {
       override def log(x: Long): Long = java.lang.Math.log(x).toLong
 
       override def max(x: Long, y: Long): Long = java.lang.Math.max(x, y)
+
+      override def min(x: Long, y: Long): Long = java.lang.Math.min(x, y)
 
       override def sqrt(x: Long): Long = Math.sqrt(x.toDouble).toLong
 
@@ -1064,6 +1320,9 @@ object TensorNumericMath {
       override def fromType[K](k: K)(
         implicit c: ConvertableFrom[K]): Long =
         c.toLong(k)
+
+      override def toType[@specialized(Float, Double, Int) K](t: Long)
+        (implicit c: ConvertableTo[K]): K = c.fromLong(t)
 
       override def axpy(n: Int, da: Long, dx: Array[Long], _dx_offset: Int,
         incx: Int, dy: Array[Long],
@@ -1090,6 +1349,8 @@ object TensorNumericMath {
 
         result
       }
+
+      override def floor(a: Long): Long = a
     }
 
     implicit object NumericShort extends UndefinedTensorNumeric[Short]("Short") {
@@ -1108,6 +1369,8 @@ object TensorNumericMath {
       override def log(x: Short): Short = java.lang.Math.log(x).toShort
 
       override def max(x: Short, y: Short): Short = java.lang.Math.max(x, y).toShort
+
+      override def min(x: Short, y: Short): Short = java.lang.Math.min(x, y).toShort
 
       override def sqrt(x: Short): Short = Math.sqrt(x.toDouble).toShort
 
@@ -1130,6 +1393,9 @@ object TensorNumericMath {
       override def fromType[K](k: K)(
         implicit c: ConvertableFrom[K]): Short =
         c.toShort(k)
+
+      override def toType[@specialized(Float, Double, Int) K](t: Short)
+        (implicit c: ConvertableTo[K]): K = c.fromShort(t)
 
       override def axpy(n: Int, da: Short, dx: Array[Short], _dx_offset: Int,
         incx: Int, dy: Array[Short],
@@ -1156,6 +1422,8 @@ object TensorNumericMath {
 
         result
       }
+
+      override def floor(a: Short): Short = a
     }
 
     implicit object NumericChar extends UndefinedTensorNumeric[Char]("Char") {

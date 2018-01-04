@@ -224,19 +224,8 @@ class TimeDistributed[T : ClassTag] (val layer: TensorModule[T])
    */
   override def getParametersTable(): Table = layer.getParametersTable()
 
-  /**
-   * Copy the useful running status from src to this.
-   *
-   * The subclass should override this method if it has some parameters besides weight and bias.
-   * Such as runningMean and runningVar of BatchNormalization.
-   *
-   * @param src source Module
-   * @return this
-   */
-  override def copyStatus(src: Module[T]): TimeDistributed.this.type = {
-    val other = src.asInstanceOf[TimeDistributed[T]]
-    layer.copyStatus(other.layer.asInstanceOf[Module[T]])
-    this
+  override def getExtraParameter(): Array[Tensor[T]] = {
+    layer.getExtraParameter()
   }
 
   override def clearState(): TimeDistributed.this.type = {

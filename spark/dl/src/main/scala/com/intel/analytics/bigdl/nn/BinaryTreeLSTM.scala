@@ -21,12 +21,13 @@ import com.intel.analytics.bigdl.nn.Input
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.serializer.{DataConverter, ModuleData, ModuleSerializable, ModuleSerializer}
+import com.intel.analytics.bigdl.utils.serializer._
 import com.intel.analytics.bigdl.utils.{T, Table}
 import serialization.Bigdl.{AttrValue, BigDLModule}
 
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
+import scala.reflect.runtime.universe
 import scala.util.control.Breaks._
 
 /**
@@ -417,61 +418,67 @@ object BinaryTreeLSTM extends ModuleSerializable {
   )(implicit ev: TensorNumeric[T]): BinaryTreeLSTM[T] =
     new BinaryTreeLSTM[T](inputSize, hiddenSize, gateOutput, withGraph)
 
-  override def doLoadModule[T: ClassTag](model : BigDLModule)
+  override def doLoadModule[T: ClassTag](context: DeserializeContext)
     (implicit ev: TensorNumeric[T]) : AbstractModule[Activity, Activity, T] = {
 
-    val binaryTreeLSTMModule = super.doLoadModule(model).asInstanceOf[BinaryTreeLSTM[T]]
+    val binaryTreeLSTMModule = super.doLoadModule(context).asInstanceOf[BinaryTreeLSTM[T]]
     binaryTreeLSTMModule.composers.clear
     binaryTreeLSTMModule.leafModules.clear
 
-    val attrMap = model.getAttrMap
+    val attrMap = context.bigdlModule.getAttrMap
 
-    DataConverter.getAttributeValue(attrMap.get("composers")).
+    DataConverter.getAttributeValue(context, attrMap.get("composers")).
       asInstanceOf[Array[Module[T]]].foreach(module => {
       binaryTreeLSTMModule.composers.append(module)
     })
 
-    DataConverter.getAttributeValue(attrMap.get("leafModules")).
+    DataConverter.getAttributeValue(context, attrMap.get("leafModules")).
       asInstanceOf[Array[Module[T]]].foreach(module => {
       binaryTreeLSTMModule.leafModules.append(module)
     })
 
-    binaryTreeLSTMModule.leafModule = DataConverter.getAttributeValue(attrMap.get("leafModule")).
+    binaryTreeLSTMModule.leafModule = DataConverter.
+      getAttributeValue(context, attrMap.get("leafModule")).
       asInstanceOf[Module[T]]
 
-    binaryTreeLSTMModule.composer = DataConverter.getAttributeValue(attrMap.get("composer")).
+    binaryTreeLSTMModule.composer = DataConverter.getAttributeValue(context,
+      attrMap.get("composer")).
       asInstanceOf[Module[T]]
 
     binaryTreeLSTMModule
   }
 
-  override def doSerializeModule[T: ClassTag](module : ModuleData[T],
+  override def doSerializeModule[T: ClassTag](context: SerializeContext[T],
                                               binaryTreeLSTMBuilder : BigDLModule.Builder)
                                            (implicit ev: TensorNumeric[T]) : Unit = {
-    super.doSerializeModule(module, binaryTreeLSTMBuilder)
+    super.doSerializeModule(context, binaryTreeLSTMBuilder)
 
-    val binaryTreeLSTM = module.module.asInstanceOf[BinaryTreeLSTM[T]]
+    val binaryTreeLSTM = context.moduleData.module.asInstanceOf[BinaryTreeLSTM[T]]
 
     val composer = binaryTreeLSTM.composer
     val composerBuilder = AttrValue.newBuilder
-    DataConverter.setAttributeValue(composerBuilder, composer, ModuleSerializer.abstractModuleType)
+    DataConverter.setAttributeValue(context, composerBuilder, composer,
+      ModuleSerializer.abstractModuleType)
     binaryTreeLSTMBuilder.putAttr("composer", composerBuilder.build)
 
 
     val leafModule = binaryTreeLSTM.leafModule
     val leafModuleBuilder = AttrValue.newBuilder
-    DataConverter.setAttributeValue(leafModuleBuilder, leafModule,
+    DataConverter.setAttributeValue(context, leafModuleBuilder, leafModule,
       ModuleSerializer.abstractModuleType)
     binaryTreeLSTMBuilder.putAttr("leafModule", leafModuleBuilder.build)
 
     val composers = binaryTreeLSTM.composers.toArray
     val composersBuilder = AttrValue.newBuilder
-    DataConverter.setAttributeValue(composersBuilder, composers)
+    DataConverter.setAttributeValue(context, composersBuilder, composers,
+      universe.
+        typeOf[Array[_ <: AbstractModule[Activity, Activity, _ <: Any]]])
     binaryTreeLSTMBuilder.putAttr("composers", composersBuilder.build)
 
     val leafModules = binaryTreeLSTM.leafModules.toArray
     val leafModulesBuilder = AttrValue.newBuilder
-    DataConverter.setAttributeValue(leafModulesBuilder, leafModules)
+    DataConverter.setAttributeValue(context, leafModulesBuilder, leafModules, universe.
+      typeOf[Array[_ <: AbstractModule[Activity, Activity, _ <: Any]]])
     binaryTreeLSTMBuilder.putAttr("leafModules", leafModulesBuilder.build)
 
   }

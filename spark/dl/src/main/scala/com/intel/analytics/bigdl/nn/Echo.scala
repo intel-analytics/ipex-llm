@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.serializer.{ModuleData, ModuleSerializable}
+import com.intel.analytics.bigdl.utils.serializer.{DeserializeContext, ModuleData, ModuleSerializable, SerializeContext}
 import serialization.Bigdl.BigDLModule
 
 import scala.reflect.ClassTag
@@ -96,12 +96,13 @@ object Echo extends ModuleSerializable {
     println(s"${module.getPrintName} : Gradient size is ${gradOutput.size().mkString("x")}")
   }
 
-  override def doSerializeModule[T: ClassManifest](m: ModuleData[T], b: BigDLModule.Builder)
+  override def doSerializeModule[T: ClassTag](context: SerializeContext[T],
+                                              b: BigDLModule.Builder)
                                                   (implicit ev: TensorNumeric[T]): Unit = {
     // We won't serialize the function, so do nothing here
   }
 
-  override def doLoadModule[T: ClassManifest](model: BigDLModule)
+  override def doLoadModule[T: ClassTag](context: DeserializeContext)
       (implicit ev: TensorNumeric[T]): AbstractModule[Activity, Activity, T] = {
     new Echo[T](defaultFeval, defaultBeval)
   }

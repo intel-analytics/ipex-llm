@@ -137,7 +137,7 @@ val branches = ParallelTable()
 val branch1 = Sequential().add(Linear(...)).add(ReLU())
 val branch2 = Sequential().add(Linear(...)).add(ReLU())
 branches.add(branch1).add(branch2)
-model.add(branches).add(CAddTable)
+model.add(branches).add(CAddTable())
 ```
 
 **Python**
@@ -147,7 +147,7 @@ branches = ParallelTable()
 branch1 = Sequential().add(Linear(...)).add(ReLU())
 branch2 = Sequential().add(Linear(...)).add(ReLU())
 branches.add(branch1).add(branch2)
-model.add(branches).add(CAddTable)
+model.add(branches).add(CAddTable())
 ```
 
 In the above code, we use ParallelTable to handle the multiple inputs. ParallelTable also

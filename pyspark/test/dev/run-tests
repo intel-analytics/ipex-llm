@@ -30,12 +30,20 @@ do
     export PYSPARK_DRIVER_PYTHON=$p
     $p -m pytest -v --doctest-modules ../../../pyspark/bigdl \
     --ignore=../../../pyspark/bigdl/dataset/ \
-    --ignore=../../../pyspark/bigdl/util/ \
+    --ignore=../../../pyspark/bigdl/util/tf_utils.py \
+    --ignore=../../../pyspark/bigdl/keras \
+    --ignore=../../../pyspark/test/bigdl/keras/test_application.py \
+    --ignore=../../../pyspark/bigdl/examples/ \
     --ignore=../../../pyspark/bigdl/models/ && \
-    $p -m pytest -v -n 4 ../../../pyspark/test/
-    if [ $? -ne 0 ];
+    $p -m pytest -v ../../../pyspark/test/ \
+    --ignore=../../../pyspark/test/bigdl/caffe/ \
+    --ignore=../../../pyspark/test/bigdl/keras/ \
+    --ignore=../../../pyspark/test/bigdl/test_utils.py
+
+    exit_status=$?
+    if [ $exit_status -ne 0 ];
     then
-        exit $?
+        exit $exit_status
     fi
 done
 

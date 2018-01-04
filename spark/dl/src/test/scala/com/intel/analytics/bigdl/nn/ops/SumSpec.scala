@@ -21,17 +21,18 @@ import org.scalatest.{FlatSpec, Matchers}
 
 class SumSpec extends FlatSpec with Matchers {
   "Sum operation" should "works correctly" in {
-    import com.intel.analytics.bigdl.numeric.NumericFloat
     val input =
-      Tensor(T(
-        T(1f, 2f, 3f),
-        T(2f, 2f, 4f),
-        T(2f, 2f, 4f)
+      Tensor[Int](T(
+        T(1, 1, 1),
+        T(1, 1, 1)
       ))
-
-    val expectOutput = Tensor(T(5f, 6f, 11f))
-
-    val output = Sum(axis = 1).forward(input)
-    output should be(expectOutput)
+    val op = Sum[Float, Int]()
+    op.forward(T(input, Tensor[Int]())) should be(input)
+    op.forward(T(input, Tensor.scalar[Int](1))) should be(Tensor[Int](T(2, 2, 2)))
+    op.forward(T(input, Tensor[Int](T(1)))) should be(Tensor[Int](T(2, 2, 2)))
+    op.forward(T(input, Tensor.scalar[Int](2))) should be(Tensor[Int](T(3, 3)))
+    val op1 = Sum[Float, Int](keepDims = true)
+    op1.forward(T(input, Tensor.scalar[Int](2))) should be(Tensor[Int](T(T(3), T(3))))
+    op.forward(T(input, Tensor[Int](T(1, 2)))) should be(Tensor.scalar[Int](6))
   }
 }

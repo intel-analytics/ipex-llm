@@ -41,7 +41,43 @@ trait ConvertableTo[@spec A] {
   implicit def fromDouble(a: Double): A
 
   implicit def fromInt(a: Int): A
+
+  implicit def fromShort(a: Short): A
+
+  implicit def fromLong(a: Long): A
+
+  implicit def fromBoolean(a: Boolean): A
 }
+
+trait ConvertableToLong extends ConvertableTo[Long] {
+  implicit def fromFloat(a: Float): Long = a.toLong
+
+  implicit def fromDouble(a: Double): Long = a.toLong
+
+  implicit def fromInt(a: Int): Long = a.toLong
+
+  implicit def fromShort(a: Short): Long = a.toLong
+
+  implicit def fromLong(a: Long): Long = a.toLong
+
+  implicit def fromBoolean(a: Boolean): Long = if (a) 1L else 0L
+}
+
+
+trait ConvertableToShort extends ConvertableTo[Short] {
+  implicit def fromFloat(a: Float): Short = a.toShort
+
+  implicit def fromDouble(a: Double): Short = a.toShort
+
+  implicit def fromInt(a: Int): Short = a.toShort
+
+  implicit def fromShort(a: Short): Short = a.toShort
+
+  implicit def fromLong(a: Long): Short = a.toShort
+
+  implicit def fromBoolean(a: Boolean): Short = if (a) 1 else 0
+}
+
 
 trait ConvertableToFloat extends ConvertableTo[Float] {
   implicit def fromFloat(a: Float): Float = a
@@ -49,6 +85,12 @@ trait ConvertableToFloat extends ConvertableTo[Float] {
   implicit def fromDouble(a: Double): Float = a.toFloat
 
   implicit def fromInt(a: Int): Float = a.toFloat
+
+  implicit def fromShort(a: Short): Float = a.toFloat
+
+  implicit def fromLong(a: Long): Float = a.toFloat
+
+  implicit def fromBoolean(a: Boolean): Float = if (a) 1.0f else 0.0f
 }
 
 trait ConvertableToDouble extends ConvertableTo[Double] {
@@ -57,6 +99,12 @@ trait ConvertableToDouble extends ConvertableTo[Double] {
   implicit def fromDouble(a: Double): Double = a
 
   implicit def fromInt(a: Int): Double = a.toDouble
+
+  implicit def fromShort(a: Short): Double = a.toDouble
+
+  implicit def fromLong(a: Long): Double = a.toDouble
+
+  implicit def fromBoolean(a: Boolean): Double = if (a) 1.0 else 0.0
 }
 
 trait ConvertableToInt extends ConvertableTo[Int] {
@@ -65,6 +113,12 @@ trait ConvertableToInt extends ConvertableTo[Int] {
   implicit def fromDouble(a: Double): Int = a.toInt
 
   implicit def fromInt(a: Int): Int = a
+
+  implicit def fromShort(a: Short): Int = a.toShort
+
+  implicit def fromLong(a: Long): Int = a.toInt
+
+  implicit def fromBoolean(a: Boolean): Int = if (a) 1 else 0
 }
 
 object ConvertableTo {
@@ -75,6 +129,9 @@ object ConvertableTo {
 
   implicit object ConvertableToInt extends ConvertableToInt
 
+  implicit object ConvertableToShort extends ConvertableToShort
+
+  implicit object ConvertableToLong extends ConvertableToLong
 }
 
 

@@ -19,6 +19,7 @@ import java.io.{File => JFile}
 import java.nio.ByteOrder
 import java.util.UUID
 
+import com.google.protobuf.ByteString
 import com.intel.analytics.bigdl.dataset.{DistributedDataSet, MiniBatch}
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.optim.{DistriOptimizer, Trigger}
@@ -28,7 +29,7 @@ import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import com.intel.analytics.bigdl.numeric.NumericFloat
-import org.tensorflow.framework.NodeDef
+import org.tensorflow.framework.{DataType, NodeDef, TensorProto, TensorShapeProto}
 
 import scala.collection.mutable
 import scala.sys.process._
@@ -76,7 +77,7 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
 
   var dataSet: DistributedDataSet[MiniBatch[Float]] = null
 
-  before {
+  override def doBefore(): Unit = {
     sc = new SparkContext("local[1]", "RDDOptimizerSpec")
 
     val rdd = sc.parallelize(1 to (256 * 4), 4).map(prepareData)
@@ -96,7 +97,7 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
     System.setProperty("bigdl.enableNHWC", "true")
   }
 
-  after {
+  override def doAfter(): Unit = {
     if (sc != null) {
       sc.stop()
     }
@@ -114,7 +115,7 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
     val resource = getClass().getClassLoader().getResource("tf")
     val path = processPath(resource.getPath()) + JFile.separator + "test.pb"
     val results = TensorflowLoader.parse(path)
-    val (tfGraph, _) = TensorflowLoader.buildTFGraph(results, Seq("output"))
+    val (tfGraph, _, _) = TensorflowLoader.buildTFGraph(results, Seq("output"))
     tfGraph.size should be(15)  // there's a dummy output
     val topSort = tfGraph.topologySort// It can do topology sort
     topSort.length should be(15)
@@ -139,7 +140,7 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
     val resource = getClass().getClassLoader().getResource("tf")
     val path = processPath(resource.getPath()) + JFile.separator + "test.pb"
     val results = TensorflowLoader.parse(path)
-    val (tfGraph, _) = TensorflowLoader.buildTFGraph(results, Seq("output"),
+    val (tfGraph, _, _) = TensorflowLoader.buildTFGraph(results, Seq("output"),
       (node: NodeDef) => node.getName == "Tanh")
     tfGraph.size should be(9)  // there's a dummy output
     val topSort = tfGraph.topologySort// It can do topology sort
@@ -253,7 +254,7 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
 
     val optimizer = new DistriOptimizer[Float](container, dataSet, new MSECriterion[Float]())
       .setState(T("learningRate" -> 20.0))
-      .setEndWhen(Trigger.maxEpoch(5))
+      .setEndWhen(Trigger.maxEpoch(1))
     optimizer.optimize()
 
     val l1 = container.modules(1).asInstanceOf[Linear[Float]]
@@ -390,16 +391,6 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
     }
   }
 
-//  Need GPU to run this code
-//  "Tensorflow Alexnet NCHW" should "be load correctly" in {
-//    val output = Seq("alexnet_v2/pool5/MaxPool:0")
-//    val comparePairs = testModel("alexnet_nchw", output, backward = false)
-//    for (i <- output.indices) {
-//      val (tf, bigdl) = comparePairs(i)
-//      tf.almostEqual(bigdl, 1e-5) should be(true)
-//    }
-//  }
-
   "TensorFlow vgg_a" should "be load correctly" in {
     val output = Seq("vgg_a/fc8/squeezed:0")
     val comparePairs = testModel("vgga", output, backward = true)
@@ -522,12 +513,11 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
     val tfNodes = TensorflowLoader.parse(modelFile)
 
     // filter node for gradient computing
-    val (tfGraph, inputs) =
+    val (tfGraph, inputs, _) =
       TensorflowLoader.buildTFGraph(tfNodes, endPoints.map(_.split(":")(0)),
         (node: NodeDef) => node.getName == "input_node")
-    val context =
-      new mutable.HashMap[String, (Tensor[Float], Tensor[Float], Option[Seq[(Int, Int)]])]
-    val model = TensorflowLoader.buildBigDLModel(tfGraph, inputs,
+    val context = new Context[Float]()
+    val model = TensorflowLoader.buildBigDLModel(tfGraph, inputs.toSeq.map(_._2).flatten,
       endPoints.map(_.split(":")(0)), ByteOrder.LITTLE_ENDIAN, "", Some(context))
 
     // Compare the tensor contents
@@ -581,7 +571,7 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
       }
 
       // find all gradients tensor of variables in tensorflow graph
-      val tfGradTensorsMap = context.keySet.map{
+      val tfGradTensorsMap = context.tensorNames().map{
         node =>
           val t = tfNodes.asScala.filter(_.getName.contains(node + "_grad"))(0)
           t.getName ->
@@ -591,7 +581,7 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
       // do backward
       model.backward(input, gradInputs)
 
-      val pairs = context.keySet.map { x =>
+      val pairs = context.tensorNames().map { x =>
           val name = s"${x}_grad"
           var tensor = tfGradTensorsMap.get(name).orNull
           var (_, grad, trans) = context(x)

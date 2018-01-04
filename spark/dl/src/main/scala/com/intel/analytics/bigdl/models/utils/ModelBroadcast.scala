@@ -17,20 +17,23 @@
 package com.intel.analytics.bigdl.models.utils
 
 import com.intel.analytics.bigdl.Module
-import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
+import com.intel.analytics.bigdl.tensor.{Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import org.apache.spark.SparkContext
 import org.apache.spark.broadcast.Broadcast
+import com.intel.analytics.bigdl.utils.Util._
 
 import scala.reflect.ClassTag
 
 /**
- * ModelBroadcast is used to broadcast model when doing model inference.
- * Note: do not use it in model training since the broadcast models share weights and biases
- * It shortens the broadcast time, which is especially useful when the model size is large
+ * ModelBroadcast is used to broadcast model.
+ *
+ * Note: If you want to use this to broadcast training model, please use value(true) to get
+ * the model. And before broadcasting please make sure the model's parameter is compacted.
+ *
  * @tparam T data type
  */
-class ModelBroadcast[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializable {
+class ModelBroadcast[T: ClassTag]()(implicit ev: TensorNumeric[T]) extends Serializable {
 
   private var broadcastModel: Broadcast[Module[T]] = _
   private var broadcastParameters: Broadcast[Array[Tensor[T]]] = _
@@ -44,65 +47,35 @@ class ModelBroadcast[T: ClassTag](implicit ev: TensorNumeric[T]) extends Seriali
    * @return this
    */
   def broadcast(sc: SparkContext, model: Module[T]): this.type = {
-    val bcModel = model.cloneModule()
-    val weightsBias = getAndClearWeightBias(bcModel.parameters())
-    broadcastModel = sc.broadcast(bcModel)
+    val weightsBias = getAndClearWeightBias(model.parameters())
+    broadcastModel = sc.broadcast(model.cloneModule())
     broadcastParameters = sc.broadcast(weightsBias)
+    putWeightBias(weightsBias, model)
+    initGradWeightBias(weightsBias, model)
     this
   }
 
   /**
    * get the broadcast model
    * put the weight and bias back to the model
+   *
+   * @param initGradient if init gradParameter.
    * @return model
    */
-  def value(): Module[T] = {
+  def value(initGradient: Boolean = false): Module[T] = {
     val localModel = broadcastModel.value.cloneModule()
     putWeightBias(broadcastParameters.value, localModel)
+    if (initGradient) {
+      initGradWeightBias(broadcastParameters.value, localModel)
+    }
     localModel
-  }
-
-
-  private def getAndClearWeightBias(parameters: (Array[Tensor[T]], Array[Tensor[T]]))
-  : Array[Tensor[T]] = {
-    var i = 0
-    val weightsBias = new Array[Tensor[T]](parameters._1.length)
-    while (i < parameters._1.length) {
-      if (parameters._1(i) != null) {
-        val wb = parameters._1(i)
-        weightsBias(i) = Tensor[T](Storage(wb.storage().array()),
-          wb.storageOffset(), wb.size(), wb.stride())
-      }
-      i += 1
-    }
-    i = 0
-    while (i < parameters._1.length) {
-      if (parameters._1(i) != null) {
-        parameters._1(i).set()
-      }
-      if (parameters._2(i) != null) {
-        parameters._2(i).set()
-      }
-      i += 1
-    }
-    weightsBias
-  }
-
-  private def putWeightBias(broadcastWeightBias: Array[Tensor[T]],
-    localModel: Module[T]): Unit = {
-    val localWeightBias = localModel.parameters()._1
-    var i = 0
-    while (i < localWeightBias.length) {
-      if (localWeightBias(i) != null) {
-        localWeightBias(i).set(broadcastWeightBias(i))
-      }
-      i += 1
-    }
   }
 }
 
 
 object ModelBroadcast {
-  def apply[@specialized(Float, Double) T: ClassTag]()(implicit ev: TensorNumeric[T])
-  : ModelBroadcast[T] = new ModelBroadcast
+  def apply[@specialized(Float, Double) T: ClassTag]()
+        (implicit ev: TensorNumeric[T]) : ModelBroadcast[T] = {
+    new ModelBroadcast()
+  }
 }

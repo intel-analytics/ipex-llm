@@ -22,14 +22,15 @@ import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.tensor.{Tensor, TensorDataType}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils._
-import com.intel.analytics.bigdl.nn.{Graph, InitializationMethod, Module, Zeros}
-import com.intel.analytics.bigdl.nn.{Module, Utils}
+import com.intel.analytics.bigdl.nn.{Module, _}
 import com.intel.analytics.bigdl.utils.TorchObject.TYPE_MODULE
 import org.apache.commons.lang3.SerializationUtils
 import org.apache.spark.rdd.RDD
 import com.intel.analytics.bigdl.optim._
-import com.intel.analytics.bigdl.dataset.{LocalDataSet, MiniBatch, Sample}
+import com.intel.analytics.bigdl.dataset.{LocalDataSet, MiniBatch, PaddingParam, Sample}
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
+import com.intel.analytics.bigdl.nn.quantized.Quantization
+import com.intel.analytics.bigdl.transform.vision.image.{DistributedImageFrame, ImageFeature, ImageFrame, LocalImageFrame}
 import com.intel.analytics.bigdl.utils.caffe.CaffePersister
 import com.intel.analytics.bigdl.utils.serializer.ModulePersister
 import com.intel.analytics.bigdl.utils.tf.{TensorflowDataFormat, TensorflowSaver}
@@ -40,7 +41,7 @@ import scala.reflect.ClassTag
  * [[TensorModule]] is an abstract sub-class of [[AbstractModule]], whose
  * input and output type both are [[Tensor]].
  *
- * @tparam T The numeric type in the criterion, usually which are [[Float]] or [[Double]]
+ * @tparam T The numeric type in this module, usually which are [[Float]] or [[Double]]
  */
 abstract class TensorModule[T: ClassTag]
   (implicit ev: TensorNumeric[T]) extends AbstractModule[Tensor[T], Tensor[T], T]
@@ -56,7 +57,12 @@ abstract class TensorModule[T: ClassTag]
 abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, T: ClassTag](
   implicit ev: TensorNumeric[T]) extends Serializable {
 
-  private val namePostfix = Integer.toHexString(java.util.UUID.randomUUID().hashCode())
+  private var namePostfix = Integer.toHexString(java.util.UUID.randomUUID().hashCode())
+
+  def getNamePostfix : String = namePostfix
+
+  def setNamePostfix(namePostfix : String) : Unit = this.namePostfix = namePostfix
+
   /**
    * The cached output. So we don't compute it again when need it
    */
@@ -111,19 +117,6 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
   }
 
   /**
-   * Copy the useful running status from src to this.
-   *
-   * The subclass should override this method if it has some parameters besides weight and bias.
-   * Such as runningMean and runningVar of BatchNormalization.
-   *
-   * @param src source Module
-   * @return this
-   */
-  def copyStatus(src: Module[T]) : this.type = {
-    this
-  }
-
-  /**
    * Clear cached activities to save storage space or network bandwidth. Note that we use
    * Tensor.set to keep some information like tensor share
    *
@@ -155,6 +148,8 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
    */
   private var name : String = null
 
+  def hasName: Boolean = name != null
+
   /**
    * Set the module name
    *
@@ -173,7 +168,7 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
    */
   def getName() : String = {
     if (this.name == null) {
-      s"${this.getClass.getSimpleName}@${namePostfix}"
+      s"${this.getClass.getSimpleName}${namePostfix}"
     } else {
       this.name
     }
@@ -204,23 +199,59 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
     backwardTime = 0
   }
 
+  private var scaleWCache: Double = scaleW
+  private var scaleBCache: Double = scaleB
+
   /**
-   * freeze the layer, its parameters(weight/bias, if exists)
-   * are not changed in training process
+   * freeze the module,
+   * i.e. their parameters(weight/bias, if exists) are not changed in training process
+   * if names is not empty,
+   * set an array of layers that match the given ```names``` to be "freezed",
+   *
+   * @param names an array of layer names
+   * @return current graph model
    */
-  def freeze(): this.type = {
-    setScaleW(0)
-    setScaleB(0)
+  def freeze(names: String*): this.type = {
+    if (names.isEmpty) {
+      // in case when freeze is called many times
+      if (scaleW != 0) {
+        scaleWCache = scaleW
+        scaleW = 0
+      }
+      if (scaleB != 0) {
+        scaleBCache = scaleB
+        scaleB = 0
+      }
+    } else {
+      names.foreach(name => {
+        this (name) match {
+          case Some(x) => x.freeze()
+          case _ => throw new Exception(s"cannot match module named $name")
+        }
+      })
+    }
     this
   }
 
   /**
-   * "unfreeze" layer, i.e. make the layer parameters(weight/bias, if exists)
+   * "unfreeze" module, i.e. make the module parameters(weight/bias, if exists)
    * to be trained(updated) in training process
+   * if names is not empty, unfreeze layers that match given names
+   *
+   * @param names array of module names to unFreeze
    */
-  def unFreeze(): this.type = {
-    setScaleW(1)
-    setScaleB(1)
+  def unFreeze(names: String*): this.type = {
+    if (names.isEmpty) {
+      scaleW = scaleWCache
+      scaleB = scaleBCache
+    } else {
+      names.foreach(name => {
+        this (name) match {
+          case Some(x) => x.unFreeze()
+          case _ => throw new Exception(s"cannot match module named $name")
+        }
+      })
+    }
     this
   }
 
@@ -233,7 +264,15 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
    */
   final def forward(input: A): B = {
     val before = System.nanoTime()
-    updateOutput(input)
+    try {
+      updateOutput(input)
+    } catch {
+      case l: LayerException =>
+        l.layerMsg = this.toString() + "/" + l.layerMsg
+        throw l
+      case e: Throwable =>
+        throw new LayerException(this.toString(), e)
+    }
     forwardTime += System.nanoTime() - before
 
     output
@@ -314,6 +353,44 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
    * @return (Array of weights, Array of grad)
    */
   def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = null
+
+  /**
+   * Get extra parameter in this module.
+   * Extra parameter means the trainable parameters beside weight and bias. Such as runningMean
+   * and runningVar in BatchNormalization.
+   *
+   * The subclass should override this method if it has some parameters besides weight and bias.
+   *
+   * @return an array of tensor
+   */
+  def getExtraParameter(): Array[Tensor[T]] = null
+
+  /**
+   * Set extra parameter to this module.
+   * Extra parameter means the trainable parameters beside weight and bias. Such as runningMean
+   * and runningVar in BatchNormalization.
+   *
+   * @return this
+   */
+  def setExtraParameter(extraParam: Array[Tensor[T]]): this.type = {
+    val currentExtraParam = this.getExtraParameter()
+    if (extraParam != null && currentExtraParam != null) {
+      require(extraParam.length == currentExtraParam.length,
+        "state's length doesn't match, excepted:" +
+        s"${currentExtraParam.length}, but got  ${extraParam.length}")
+      var i = 0
+      while (i < extraParam.length) {
+        currentExtraParam(i).copy(extraParam(i))
+        i += 1
+      }
+      this
+    } else if (extraParam == null && currentExtraParam == null) {
+      this
+    } else {
+      throw new IllegalArgumentException(s"module's extraParameter is $currentExtraParam" +
+        s", while setting param is ${extraParam}")
+    }
+  }
 
   /**
    * This function returns a table contains ModuleName, the parameter names and parameter value
@@ -413,12 +490,14 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
    * @param path path to save module, local file system, HDFS and Amazon S3 is supported.
    *             HDFS path should be like "hdfs://[host]:[port]/xxx"
    *             Amazon S3 path should be like "s3a://bucket/xxx"
+   * @param weightPath where to store weight
    * @param overWrite if overwrite
    * @return self
    */
-  def saveModule(path : String, overWrite: Boolean = false) : this.type = {
+  def saveModule(path : String, weightPath : String = null,
+                 overWrite: Boolean = false) : this.type = {
     this.clearState()
-    ModulePersister.saveToFile(path, this, overWrite)
+    ModulePersister.saveToFile(path, weightPath, this, overWrite)
     this
   }
 
@@ -456,7 +535,14 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
               dataFormat: TensorflowDataFormat = TensorflowDataFormat.NHWC): this.type = {
     require(this.isInstanceOf[Graph[T]], "only Graph container can be saved as Tensorflow model")
     this.clearState()
+    val inTrainMode = train
+    if (inTrainMode) {
+      this.evaluate()
+    }
     TensorflowSaver.saveGraph(this.asInstanceOf[Graph[T]], inputs, path, byteOrder, dataFormat)
+    if (inTrainMode) {
+      this.training()
+    }
     this
   }
 
@@ -470,17 +556,54 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
   /**
    * module predict, return the probability distribution
    * @param dataset dataset for prediction
+   * @param batchSize total batchSize for all partitions.
+   *                  if -1, default is 4 * partitionNumber of datatset
+   * @param shareBuffer whether to share same memory for each batch predict results
    */
-  def predict(dataset: RDD[Sample[T]]): RDD[Activity] = {
-    Predictor(this).predict(dataset)
+  def predict(dataset: RDD[Sample[T]],
+              batchSize: Int = -1,
+              shareBuffer: Boolean = false): RDD[Activity] = {
+    Predictor(this).predict(dataset, batchSize, shareBuffer)
   }
 
   /**
    * module predict, return the predict label
    * @param dataset dataset for prediction
+   * @param batchSize total batchSize for all partitions.
+   *                  if -1, default is 4 * partitionNumber of dataset
    */
-  def predictClass(dataset: RDD[Sample[T]]): RDD[Int] = {
-    Predictor(this).predictClass(dataset)
+  def predictClass(dataset: RDD[Sample[T]], batchSize: Int = -1): RDD[Int] = {
+    Predictor(this).predictClass(dataset, batchSize)
+  }
+
+  /**
+   * model predict images, return imageFrame with predicted tensor,
+   * if you want to call predictImage multiple times,
+   * it is recommended to use Predictor for DistributedImageFrame
+   * or LocalPredictor for LocalImageFrame
+   * @param imageFrame imageFrame that contains images
+   * @param outputLayer if outputLayer is not null, the output of layer that matches
+   *                      outputLayer will be used as predicted output
+   * @param shareBuffer whether to share same memory for each batch predict results
+   * @param batchPerPartition batch size per partition, default is 4
+   * @param predictKey key to store predicted result
+   * @param featurePaddingParam featurePaddingParam if the inputs have variant size
+   * @return
+   */
+  def predictImage(imageFrame: ImageFrame,
+    outputLayer: String = null,
+    shareBuffer: Boolean = false,
+    batchPerPartition: Int = 4,
+    predictKey: String = ImageFeature.predict,
+    featurePaddingParam: Option[PaddingParam[T]] = None): ImageFrame = {
+    imageFrame match {
+      case distributedImageFrame: DistributedImageFrame =>
+        Predictor(this, featurePaddingParam, batchPerPartition)
+          .predictImage(distributedImageFrame, outputLayer, shareBuffer, predictKey)
+      case localImageFrame: LocalImageFrame =>
+        LocalPredictor(this, featurePaddingParam, batchPerPartition)
+          .predictImage(localImageFrame, outputLayer, shareBuffer, predictKey)
+    }
   }
 
   /**
@@ -497,6 +620,10 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
         s" number of output ${newWeights.length}")
     val weights = parameters()._1
     for(i <- newWeights.indices) {
+      // TODO: enable this checking as we don't respect shape right now.
+//      require(weights(i).size().deep == newWeights(i).size().deep,
+//        s"Mismatch shape, ${weights(i).size().mkString(",")}" +
+//          s" vs ${newWeights(i).size().mkString(",")} ")
       weights(i).copy(newWeights(i))
     }
     this
@@ -599,6 +726,19 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
 
   /**
    * Build graph: some other modules point to current module
+   * @param nodes upstream module nodes in an array
+   * @return node containing current module
+   */
+  def inputs(nodes : Array[ModuleNode[T]]): ModuleNode[T] = {
+    val curNode = new ModuleNode[T](this)
+    nodes.foreach(node => {
+      node.add(curNode, Edge())
+    })
+    curNode
+  }
+
+  /**
+   * Build graph: some other modules point to current module
    * @param first distinguish from another inputs when input parameter list is empty
    * @param nodesWithIndex upstream module nodes and the output tensor index. The start index is 1.
    * @return node containing current module
@@ -645,6 +785,36 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
                vMethods: Array[ValidationMethod[T]]
               ): Array[(ValidationResult, ValidationMethod[T])] = {
     Validator(this, dataSet).test(vMethods)
+  }
+
+  def quantize(): Module[T] = {
+    Quantization.quantize(this)
+  }
+
+
+  /**
+   * Generate end nodes of current module with start nodes
+   * @param startNodes: current start nodes
+   * @return current end nodes
+   */
+  private[bigdl] def getEndNodes(startNodes: Array[ModuleNode[T]]): Array[ModuleNode[T]] = {
+    val endNodes = Array(this.inputs(startNodes: _*))
+    endNodes
+  }
+
+  /**
+   * Generate graph module with start nodes
+   * @param startNodes
+   * @return
+   */
+  def toGraph(startNodes: ModuleNode[T]*): Graph[T] = {
+    val starts = if (startNodes.isEmpty) Array(Input[T]()) else startNodes.toArray
+    val endNodes = this.getEndNodes(starts)
+    Graph(starts, endNodes)
+  }
+
+  def getClassTagNumerics() : (Array[ClassTag[_]], Array[TensorNumeric[_]]) = {
+    (Array(scala.reflect.classTag[T]), Array(ev))
   }
 }
 

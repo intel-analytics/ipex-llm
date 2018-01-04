@@ -22,7 +22,7 @@ import com.intel.analytics.bigdl.utils.T
 @com.intel.analytics.bigdl.tags.Parallel
 class ParallelTableSpec extends FlatSpec with Matchers {
   "hashcode()" should "behave correctly" in {
-    val log = new Log[Double]()
+    val log = new Log[Double, Double]()
     val exp = new Exp[Double]()
     val m1 = new ParallelTable[Double]()
     m1.add(log)
@@ -49,7 +49,7 @@ class ParallelTableSpec extends FlatSpec with Matchers {
   }
 
   "equals()" should "behave correctly" in {
-    val log = new Log[Double]()
+    val log = new Log[Double, Double]()
     val exp = new Exp[Double]()
     val m1 = new ParallelTable[Double]()
     m1.add(log)
@@ -103,4 +103,29 @@ class ParallelTableSpec extends FlatSpec with Matchers {
 
     mapGradInput should equal (expectedGradInput)
   }
+
+  "A ParallelTable time counting" should "work fine" in {
+    val input = T(
+      Tensor[Float](10).randn(),
+      Tensor[Float](10).randn())
+
+    val gradOutput = T(
+      Tensor[Float](3).randn(),
+      Tensor[Float](3).randn())
+
+    val linear1 = new Linear[Float](10, 3)
+    val linear2 = new Linear[Float](10, 3)
+
+    val module = new ParallelTable[Float]()
+    module.add(linear1)
+    module.add(linear2)
+    val mapOutput = module.forward(input)
+
+    val mapGradInput = module.backward(input, gradOutput)
+    module.getTimes.foreach{m =>
+      m._2 should be > 0L
+      m._3 should be > 0L
+    }
+  }
+
 }

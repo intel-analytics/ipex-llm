@@ -134,11 +134,14 @@ class L1L2Regularizer[T: ClassTag](
     gradParameter: Tensor[T],
     scale: Double
   ): Unit = {
-    if (alpha != 0 && scale != 0) gradParameter.add(ev.fromType(alpha*scale),
-      l1SignBuffer.resizeAs(parameter).copy(parameter).sign())
+    if (alpha != 0 && scale != 0) {
+      if (null == l1SignBuffer) l1SignBuffer = Tensor()
+      gradParameter.add(ev.fromType(alpha*scale),
+        l1SignBuffer.resizeAs(parameter).copy(parameter).sign())
+    }
   }
 
-  @transient private val l1SignBuffer = Tensor()
+  @transient private var l1SignBuffer: Tensor[T] = null
 
   /**
    * Accumulates the gradient of the l2 regularization of `parameter`
@@ -187,3 +190,4 @@ case class L2Regularizer[T: ClassTag](
   override val l2: Double
 ) (implicit ev: TensorNumeric[T])
   extends L1L2Regularizer[T](0, l2)
+

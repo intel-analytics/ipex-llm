@@ -17,7 +17,7 @@ package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.{NumericWildcard, TensorNumeric}
 import com.intel.analytics.bigdl.utils.Table
 
 import scala.reflect.ClassTag
@@ -28,25 +28,31 @@ import scala.reflect.ClassTag
 
 @SerialVersionUID(- 3746356029327536265L)
 class CDivTable[T: ClassTag](implicit ev: TensorNumeric[T])
-  extends AbstractModule[Table, Tensor[T], T]{
+  extends AbstractModule[Table, Tensor[_], T]{
 
-  override def updateOutput(input: Table): Tensor[T] = {
-    val res1 = input[Tensor[T]](1)
-    val res2 = input[Tensor[T]](2)
+  override def updateOutput(input: Table): Tensor[_] = {
+    val res1 = input[Tensor[NumericWildcard]](1)
+    val res2 = input[Tensor[NumericWildcard]](2)
 
-    output.resizeAs(res1).copy(res1)
-    output.cdiv(res2)
+    if (output.getType() != res1.getType()) {
+      output = res1.emptyInstance()
+    }
+
+    output.asInstanceOf[Tensor[NumericWildcard]].resizeAs(res1).copy(res1)
+
+    output.asInstanceOf[Tensor[NumericWildcard]].div(res2)
     output
   }
 
-  override def updateGradInput(input: Table, gradOutput: Tensor[T]): Table = {
-    val res1 = input[Tensor[T]](1)
-    val res2 = input[Tensor[T]](2)
+  override def updateGradInput(input: Table, gradOutput: Tensor[_]): Table = {
+    val res1 = input[Tensor[NumericWildcard]](1)
+    val res2 = input[Tensor[NumericWildcard]](2)
 
-    if (!gradInput.contains(1)) gradInput.insert(1, Tensor[T]())
-    if (!gradInput.contains(2)) gradInput.insert(2, Tensor[T]())
-    gradInput[Tensor[T]](1).resizeAs(res1).copy(gradOutput).cdiv(res2)
-    gradInput[Tensor[T]](2).resizeAs(res2).zero().
+    if (!gradInput.contains(1)) gradInput.insert(1, res1.emptyInstance())
+    if (!gradInput.contains(2)) gradInput.insert(2, res2.emptyInstance())
+    gradInput[Tensor[NumericWildcard]](1).resizeAs(res1)
+      .copy(gradOutput.asInstanceOf[Tensor[NumericWildcard]]).div(res2)
+    gradInput[Tensor[NumericWildcard]](2).resizeAs(res2).zero().
       addcdiv(ev.fromType(-1), gradInput(1), res2).cmul(res1)
 
     gradInput

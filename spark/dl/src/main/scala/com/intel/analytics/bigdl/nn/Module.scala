@@ -25,7 +25,7 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.File
 import com.intel.analytics.bigdl.utils.caffe.CaffeLoader
 import com.intel.analytics.bigdl.utils.serializer.ModuleLoader
-import com.intel.analytics.bigdl.utils.tf.{TensorflowDataFormat, TensorflowLoader}
+import com.intel.analytics.bigdl.utils.tf.{Session, TensorflowDataFormat, TensorflowLoader}
 
 import scala.reflect.ClassTag
 
@@ -50,12 +50,14 @@ object Module {
    * @param path path to save module, local file system, HDFS and Amazon S3 is supported.
    *             HDFS path should be like "hdfs://[host]:[port]/xxx"
    *             Amazon S3 path should be like "s3a://bucket/xxx"
+   * @param weightPath : where weight is stored
    * @tparam T numeric type
    * @return model loaded from path
    */
-  def loadModule[T: ClassTag](path : String)(implicit ev: TensorNumeric[T])
+  def loadModule[T: ClassTag](path : String,
+    weightPath : String = null)(implicit ev: TensorNumeric[T])
   : AbstractModule[Activity, Activity, T] = {
-    ModuleLoader.loadFromFile(path)
+    ModuleLoader.loadFromFile(path, weightPath)
   }
 
   def loadTorch[T: ClassTag](path : String) : AbstractModule[Activity, Activity, T] = {
@@ -80,17 +82,31 @@ object Module {
   }
   /**
    * Load tensorflow model from its saved protobuf file.
-   * @param file where is the protobuf model file
+   * @param graphFile where is the protobuf model file
    * @param inputs input node names
    * @param outputs output node names, the output tensor order is same with the node order
    * @param byteOrder byte order in the tensorflow file. The default value is little endian
+   * @param binFile where is the model variable file
    * @return BigDL model
    */
-  def loadTF[T: ClassTag](file: String, inputs: Seq[String], outputs: Seq[String],
-            byteOrder: ByteOrder = ByteOrder.LITTLE_ENDIAN)(
+  def loadTF[T: ClassTag](graphFile: String, inputs: Seq[String], outputs: Seq[String],
+            byteOrder: ByteOrder = ByteOrder.LITTLE_ENDIAN,
+            binFile: Option[String] = None)(
     implicit ev: TensorNumeric[T]): Module[T] = {
 
-    TensorflowLoader.load(file, inputs, outputs, byteOrder)
+    TensorflowLoader.load(graphFile, inputs, outputs, byteOrder, binFile)
+  }
+
+  /**
+   * Load tensorflow checkpoints
+   * @param graphFile
+   * @param binFile
+   * @tparam T
+   * @return
+   */
+  def tensorflowCheckpoints[T: ClassTag](graphFile: String, binFile: String,
+    byteOrder: ByteOrder = ByteOrder.LITTLE_ENDIAN)(implicit ev: TensorNumeric[T]): Session[T] = {
+    TensorflowLoader.checkpoints(graphFile, binFile, byteOrder)
   }
 
   def flatten[@specialized(Float, Double) T: ClassTag](parameters: Array[Tensor[T]])(

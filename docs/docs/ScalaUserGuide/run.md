@@ -26,7 +26,7 @@ scala>import com.intel.analytics.bigdl.utils.Engine
 scala>Engine.init
 ```
 
-Once the engine is successfully initialted, you'll be able to play with BigDL API's. 
+Once the engine is successfully initiated, you'll be able to play with BigDL API's. 
 For instance, to experiment with the ````Tensor```` APIs in BigDL, you may try below code:
 ```scala
 scala> import com.intel.analytics.bigdl.tensor.Tensor
@@ -61,7 +61,7 @@ You can run a BigDL program, e.g., the [VGG](https://github.com/intel-analytics/
   -f path_to_your_cifar_folder \
   -b batch_size
 
-  # Spark yarn mode
+  # Spark yarn client mode
   spark-submit --master yarn --deploy-mode client \
   --executor-cores cores_per_executor \
   --num-executors executors_number \
@@ -69,6 +69,15 @@ You can run a BigDL program, e.g., the [VGG](https://github.com/intel-analytics/
   dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
   -f path_to_your_cifar_folder \
   -b batch_size
+  
+  # Spark yarn cluster mode
+    spark-submit --master yarn --deploy-mode cluster \
+    --executor-cores cores_per_executor \
+    --num-executors executors_number \
+    --class com.intel.analytics.bigdl.models.vgg.Train \
+    dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
+    -f path_to_your_cifar_folder \
+    -b batch_size
 ```
 
   The parameters used in the above command are:
@@ -90,7 +99,10 @@ If you are to run your own program, do remember to create SparkContext and initi
 ## **Run as a Local Java/Scala program**
 You can try BigDL program as a local Java/Scala program. 
 
-To run the BigDL model as a local Java/Scala program, you need to set Java property `bigdl.localMode` to `true`. If you want to specify how many cores to be used for training/testing/prediction, you need to set Java property `bigdl.coreNumber` to the core number. You can either call `System.setProperty("bigdl.localMode", "true")` and `System.setProperty("bigdl.coreNumber", core_number)` in the Java/Scala code, or pass -Dbigdl.localMode=true and -Dbigdl.coreNumber=core_number when runing the program.
+To run the BigDL model as a local Java/Scala program, you need to set Java property `bigdl.localMode` to `true`. If you want to specify how many cores to be used for training/testing/prediction, you need to set Java property `bigdl.coreNumber` to the core number. You can either call `System.setProperty("bigdl.localMode", "true")` and `System.setProperty("bigdl.coreNumber", core_number)` in the Java/Scala code, or pass -Dbigdl.localMode=true and -Dbigdl.coreNumber=core_number when running the program.
+
+You need a full jar package to run local program. In our distributed jar, we exclude the spark dependency classes. To get the full jar package, you need to build from the source code.
+Please refer the [Build Page](/ScalaUserGuide/install-build-src/). You can find a bigdl-VERSION-jar-with-dependencies-and-spark.jar under the spark/dl/target/ of the source folder.
 
 For example, you may run the [Lenet](https://github.com/intel-analytics/BigDL/tree/master/spark/dl/src/main/scala/com/intel/analytics/bigdl/example/lenetLocal) model as a local Scala/Java program as follows:
 
@@ -98,7 +110,7 @@ For example, you may run the [Lenet](https://github.com/intel-analytics/BigDL/tr
 
 2.Run below command to train lenet as local Java/Scala program:
 ```bash
-java -cp spark/dl/target/bigdl-VERSION-jar-with-dependencies-and-spark.jar \
+scala -cp spark/dl/target/bigdl-VERSION-jar-with-dependencies-and-spark.jar \
 com.intel.analytics.bigdl.example.lenetLocal.Train \
 -f path_to_mnist_folder \
 -c core_number \
@@ -119,7 +131,7 @@ safety of your model files.
 3.The above commands will cache the model in specified path(--checkpoint). Run this command will
    use the trained model to do a validation.
 ```bash
-java -cp spark/dl/target/bigdl-VERSION-jar-with-dependencies-and-spark.jar \
+scala -cp spark/dl/target/bigdl-VERSION-jar-with-dependencies-and-spark.jar \
 com.intel.analytics.bigdl.example.lenetLocal.Test \
 -f path_to_mnist_folder \
 --model ./model/model.iteration \
@@ -135,7 +147,7 @@ In the above command
    
 4.Run below command to predict with trained model:
 ```bash
-java -cp spark/dl/target/bigdl-VERSION-jar-with-dependencies-and-spark.jar \
+scala -cp spark/dl/target/bigdl-VERSION-jar-with-dependencies-and-spark.jar \
 com.intel.analytics.bigdl.example.lenetLocal.Predict \
 -f path_to_mnist_folder \
 -c core_number \

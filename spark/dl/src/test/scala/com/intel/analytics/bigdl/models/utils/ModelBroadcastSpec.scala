@@ -16,6 +16,8 @@
 package com.intel.analytics.bigdl.models.utils
 
 import com.intel.analytics.bigdl.models.lenet.LeNet5
+import com.intel.analytics.bigdl.nn.Sequential
+import com.intel.analytics.bigdl.nn.SpatialConvolution
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.{SparkConf, SparkContext}
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
@@ -33,7 +35,7 @@ class ModelBroadcastSpec extends FlatSpec with Matchers with BeforeAndAfter {
   "model broadcast" should "work properly" in {
     val model = LeNet5(10)
 
-    val modelBroadCast = ModelBroadcast[Float].broadcast(sc, model)
+    val modelBroadCast = ModelBroadcast[Float]().broadcast(sc, model)
     modelBroadCast.value().toString should be(model.toString)
     modelBroadCast.value().parameters()._1 should be(model.parameters()._1)
   }
@@ -41,6 +43,24 @@ class ModelBroadcastSpec extends FlatSpec with Matchers with BeforeAndAfter {
   "model broadcast with getParameters" should "work properly" in {
     val model = LeNet5(10)
     model.getParameters()
+
+    val modelBroadCast = ModelBroadcast[Float]().broadcast(sc, model)
+    modelBroadCast.value().toString should be(model.toString)
+    modelBroadCast.value().parameters()._1 should be(model.parameters()._1)
+  }
+
+  "quantized model broadcast" should "work properly" in {
+    val model = LeNet5(10).quantize()
+
+    val modelBroadCast = ModelBroadcast[Float].broadcast(sc, model)
+    modelBroadCast.value().toString should be(model.toString)
+    modelBroadCast.value().parameters()._1 should be(model.parameters()._1)
+  }
+
+  "quantized multi groups model" should "work properly" in {
+    val model = Sequential[Float]()
+      .add(SpatialConvolution[Float](2, 4, 4, 4, 1, 1, 0, 0, 2))
+      .quantize()
 
     val modelBroadCast = ModelBroadcast[Float].broadcast(sc, model)
     modelBroadCast.value().toString should be(model.toString)

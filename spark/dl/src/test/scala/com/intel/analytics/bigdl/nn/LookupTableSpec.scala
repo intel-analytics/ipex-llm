@@ -37,7 +37,7 @@ class LookupTableSpec extends FlatSpec with Matchers {
     input(Array(4)) = 9
     input(Array(5)) = 4
 
-    val gradOutput = Tensor[Double](2, 2, 2)
+    val gradOutput = Tensor[Double](5, 4).randn()
     val layer1 = new LookupTable[Double](9, 4, 2, 0.1, 2.0, true)
     val layer2 = new LookupTable[Double](9, 4, 2, 0.1, 2.0, true)
     val (weights, grad) = layer1.getParameters()

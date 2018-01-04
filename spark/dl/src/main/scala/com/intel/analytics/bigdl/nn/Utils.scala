@@ -16,9 +16,10 @@
 
 package com.intel.analytics.bigdl.nn
 
+import com.google.protobuf.ByteString
 import com.intel.analytics.bigdl.Module
-import com.intel.analytics.bigdl.nn.abstractnn.Activity
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.nn.abstractnn.{Activity, DataFormat}
+import com.intel.analytics.bigdl.tensor._
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{T, Table}
 
@@ -61,7 +62,7 @@ object Utils {
 
   /**
    * Resize table target as table src.
- *
+   *
    * @param target
    * @param src
    */
@@ -105,7 +106,7 @@ object Utils {
 
   /**
    * Apply function 'func' on all tensor in the table.
- *
+   *
    * @param x
    * @param func
    */
@@ -191,7 +192,7 @@ object Utils {
 
   /**
    * Fill the value to each Tensor in the table recursively
- *
+   *
    * @param x
    * @param value
    */
@@ -234,7 +235,7 @@ object Utils {
       s"$src and $dst is not the same type.")
     dstParameters.copy(srcParameters)
     // copy running status
-    dst.copyStatus(src)
+    dst.setExtraParameter(src.getExtraParameter())
     dst
   }
 
@@ -298,54 +299,176 @@ object Utils {
 
   /**
    *
-   * @return (padTop, padBottom, padLeft, padRight, outputHeight, outputWidth)
+   * @return Array(padTop, padBottom, padLeft, padRight, outputHeight, outputWidth)
+   *         or Array(padFront, padBackward, padTop, padBottom, padLeft, padRight,
+   *         outputDepth, outputHeight, outputWidth)
    */
   private[nn] def getSAMEOutSizeAndPadding(
-                                  inputHeight: Int,
-                                  inputWidth: Int,
-                                  dH: Int,
-                                  dW: Int,
-                                  kH: Int,
-                                  kW: Int
-                                ): (Int, Int, Int, Int, Int, Int) = {
+    inputHeight: Int,
+    inputWidth: Int,
+    dH: Int,
+    dW: Int,
+    kH: Int,
+    kW: Int,
+    inputDepth: Int = -1,
+    dT: Int = -1,
+    kT: Int = -1): Array[Int] = {
     val oW = Math.ceil(inputWidth.toFloat / dW.toFloat).toInt
     val oH = Math.ceil(inputHeight.toFloat / dH.toFloat).toInt
     val padAlongWidth = Math.max(0, (oW -1) * dW + kW - inputWidth)
     val padAlongHeight = Math.max(0, (oH - 1) * dH + kH - inputHeight)
-    (padAlongHeight/2, padAlongHeight - padAlongHeight/2,
+    if (inputDepth != -1) {
+      require(dT > 0 && kT > 0, "kernel size and strideSize cannot be smaller than 0")
+      val oT = Math.ceil(inputDepth.toFloat / dT.toFloat).toInt
+      val padAlongDepth = Math.max(0, (oT -1) * dT + kT - inputDepth)
+      return Array(padAlongDepth/2, padAlongDepth - padAlongDepth/2, padAlongHeight/2,
+        padAlongHeight - padAlongHeight/2, padAlongWidth/2, padAlongWidth - padAlongWidth/2,
+        oT, oH, oW)
+    }
+    Array(padAlongHeight/2, padAlongHeight - padAlongHeight/2,
       padAlongWidth/2, padAlongWidth - padAlongWidth/2,
         oH, oW)
   }
 
   /**
    *
-   * @return (padLeft, padRight, padTop, padBottom, outputHeight, outputWidth)
+   * @return Array(padLeft, padRight, padTop, padBottom, outputHeight, outputWidth)
+   *         or Array(padFront, padBack, padLeft, padRight, padTop, padBottom,
+   *         outputDepth, outputHeight, outputWidth)
    */
   private[nn] def getOutSizeAndPadding(
-                                        inputHeight: Int,
-                                        inputWidth: Int,
-                                        dH: Int,
-                                        dW: Int,
-                                        kH: Int,
-                                        kW: Int,
-                                        padH: Int,
-                                        padW: Int,
-                                        ceilMode: Boolean
-                               ): (Int, Int, Int, Int, Int, Int) = {
+    inputHeight: Int,
+    inputWidth: Int,
+    dH: Int,
+    dW: Int,
+    kH: Int,
+    kW: Int,
+    padH: Int,
+    padW: Int,
+    ceilMode: Boolean,
+    dilationHeight: Int = 1,
+    dilationWidth: Int = 1,
+    inputdepth: Int = -1,
+    dt: Int = -1,
+    kt: Int = -1,
+    padt: Int = 0,
+    dilationDepth: Int = 1): Array[Int] = {
     var oheight = 0
     var owidth = 0
+    var odepth = 0
+
+    val dilationKernelHeight = dilationHeight * (kH - 1) + 1
+    val dilationKernelWidth = dilationWidth * (kW - 1) + 1
+    val dilationKernelDepth = if (inputdepth > 0) dilationDepth * (kt - 1) + 1 else kt
+
     if (ceilMode) {
-      oheight = math.ceil(1.0 * (inputHeight - kH + 2*padH) / dH).toInt + 1
-      owidth = math.ceil(1.0 * (inputWidth - kW + 2*padW) / dW).toInt + 1
+      oheight = math.ceil(1.0 * (inputHeight - dilationKernelHeight + 2*padH) / dH).toInt + 1
+      owidth = math.ceil(1.0 * (inputWidth - dilationKernelWidth + 2*padW) / dW).toInt + 1
+      if (inputdepth > 0) {
+        require(dt > 0 && kt > 0 && padt >= 0,
+          "kernel size, stride size, padding size cannot be smaller than 0")
+        odepth = math.ceil(1.0 * (inputdepth - dilationKernelDepth + 2*padt) / dt).toInt + 1
+      }
     } else {
-      oheight = math.floor(1.0 * (inputHeight - kH + 2*padH) / dH).toInt + 1
-      owidth = math.floor(1.0 * (inputWidth - kW + 2*padW) / dW).toInt + 1
+      oheight = math.floor(1.0 * (inputHeight - dilationKernelHeight + 2*padH) / dH).toInt + 1
+      owidth = math.floor(1.0 * (inputWidth - dilationKernelWidth + 2*padW) / dW).toInt + 1
+      if (inputdepth > 0) {
+        require(dt > 0 && kt > 0 && padt >= 0,
+          "kernel size, stride size, padding size cannot be smaller than 0")
+        odepth = math.floor(1.0 * (inputdepth - dilationKernelDepth + 2*padt) / dt).toInt + 1
+      }
     }
 
-    if (padH != 0 || padW != 0) {
+    if (padH != 0 || padW != 0 || padt != 0) {
       if ((oheight - 1) * dH >= inputHeight + padH) oheight -= 1
       if ((owidth - 1) * dW >= inputWidth + padW) owidth -= 1
+      if (inputdepth > 0) {
+        if ((odepth - 1) * dt >= inputdepth + padt) odepth -= 1
+        return Array(padt, padt, padH, padH, padW, padW, odepth, oheight, owidth)
+      }
+    } else if (inputdepth > 0) {
+        return Array(padt, padt, padH, padH, padW, padW, odepth, oheight, owidth)
     }
-    (padH, padH, padW, padW, oheight, owidth)
+    Array(padH, padH, padW, padW, oheight, owidth)
+  }
+
+  private[nn] def getOutputShape(outputHeight: Int, outputWidth: Int, nOutputPlane: Int,
+    batchSize: Int = -1, format: DataFormat): Array[Int] = {
+    format match {
+      case DataFormat.NCHW =>
+        if (batchSize == -1) {
+          Array(nOutputPlane, outputHeight, outputWidth)
+        } else {
+          Array(batchSize, nOutputPlane, outputHeight, outputWidth)
+        }
+      case DataFormat.NHWC =>
+        if (batchSize == -1) {
+          Array(outputHeight, outputWidth, nOutputPlane)
+        } else {
+          Array(batchSize, outputHeight, outputWidth, nOutputPlane)
+        }
+
+    }
+  }
+
+  private[nn] def getOutputSize(inputSize: Int, filterSize: Int,
+                    stride: Int, padding: String) = {
+    padding.toLowerCase() match {
+      case "valid" =>
+        val outputSize = (inputSize - filterSize + stride) / stride
+        (outputSize, 0, 0)
+      case "same" =>
+        val outputSize = (inputSize + stride - 1) / stride
+        val paddingNeeded = math.max(0, (outputSize - 1) * stride + filterSize - inputSize)
+        val padBefore = paddingNeeded / 2
+        val padAfter = paddingNeeded - padBefore
+        (outputSize, padBefore, padAfter)
+    }
+  }
+
+  def shuffle[T: ClassTag](src: Tensor[T], permutation: Array[Int], buffer: Tensor[T] = null)(
+    implicit ev: TensorNumeric[T]): Tensor[T] = {
+    require(permutation.length == src.nDimension,
+      s"permutation length should be same as tensor dimension")
+    require(permutation.min >= 0 && permutation.max <= src.size().max,
+      s"permutation min value should be between 0 and ${src.size().max}")
+    require(permutation.distinct.size == src.nDimension, s"permutation has duplicated input")
+
+    var i = 0
+    val outSize = new Array[Int](src.nDimension)
+    while (i < permutation.length) {
+      outSize(i) = src.size(permutation(i))
+      i += 1
+    }
+
+    val out = if (buffer == null) {
+      Tensor[T]()
+    } else {
+      buffer
+    }
+
+    out.resize(outSize)
+
+    i = 0
+    val numOfElements = src.nElement()
+    while (i < numOfElements) {
+      var srcIndex = 0
+      var tmp = i
+
+      var j = 1
+      while (j <= src.nDimension) {
+        val curDim = tmp / out.stride(j)
+        tmp %= out.stride(j)
+
+        srcIndex += curDim * src.stride(permutation(j - 1))
+
+        j += 1
+      }
+
+      out.storage().array()(i) = src.storage().array()(srcIndex)
+      i += 1
+    }
+
+    out
   }
 }

@@ -281,4 +281,11 @@ class TableSpec extends FlatSpec with Matchers {
 
     output.toTable should be(output)
   }
+
+  "toSeq" should "work correclty" in {
+
+    val t = T(Tensor[Double](T(1.0)), Tensor[Double](T(2.0)))
+
+    t.toSeq[Tensor[Double]] should be (Seq(Tensor[Double](T(1.0)), Tensor[Double](T(2.0))))
+  }
 }

@@ -29,7 +29,6 @@ object Test {
   Logger.getLogger("org").setLevel(Level.ERROR)
   Logger.getLogger("akka").setLevel(Level.ERROR)
   Logger.getLogger("breeze").setLevel(Level.ERROR)
-  Logger.getLogger("com.intel.analytics.bigdl.optim").setLevel(Level.INFO)
 
   def main(args: Array[String]): Unit = {
     testParser.parse(args, TestParams()).foreach { param =>

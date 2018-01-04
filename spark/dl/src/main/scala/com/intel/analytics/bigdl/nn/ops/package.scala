@@ -43,11 +43,9 @@ package object ops {
     = ModuleToOperation[T](CDivTable())
   }
 
-  object Sum {
-    def apply[T: ClassTag](axis: Int, keepDim: Boolean = false)
-      (implicit ev: TensorNumeric[T]): Operation[Activity, Activity, T]
-    = ModuleToOperation[T](
-      com.intel.analytics.bigdl.nn.Sum(dimension = axis, squeeze = !keepDim))
+  object RealDiv {
+    def apply[T: ClassTag]()(implicit ev: TensorNumeric[T]): Operation[Activity, Activity, T]
+    = ModuleToOperation[T](CDivTable())
   }
 
   object Reshape {
@@ -77,5 +75,19 @@ package object ops {
       (implicit ev: TensorNumeric[T]): Operation[Activity, Activity, T]
     = ModuleToOperation[T](
       com.intel.analytics.bigdl.nn.ReLU())
+  }
+
+  object SoftMax {
+    def apply[T: ClassTag]()
+      (implicit ev: TensorNumeric[T]): Operation[Activity, Activity, T]
+    = ModuleToOperation[T](
+      com.intel.analytics.bigdl.nn.SoftMax())
+  }
+
+  object ExpandDims {
+    def apply[T: ClassTag](axis: Int)
+      (implicit ev: TensorNumeric[T]): Operation[Activity, Activity, T]
+    = ModuleToOperation[T](
+      com.intel.analytics.bigdl.nn.Unsqueeze(axis))
   }
 }

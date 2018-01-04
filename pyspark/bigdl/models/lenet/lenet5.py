@@ -65,10 +65,13 @@ if __name__ == "__main__":
     parser.add_option("-c", "--checkpointPath", dest="checkpointPath", default="/tmp/lenet5")
     parser.add_option("-t", "--endTriggerType", dest="endTriggerType", default="epoch")
     parser.add_option("-n", "--endTriggerNum", type=int, dest="endTriggerNum", default="20")
+    parser.add_option("-d", "--dataPath", dest="dataPath", default="/tmp/mnist")
 
     (options, args) = parser.parse_args(sys.argv)
 
     sc = SparkContext(appName="lenet5", conf=create_spark_conf())
+    redire_spark_logs()
+    show_bigdl_info_logs()
     init_engine()
 
     if options.action == "train":
@@ -78,15 +81,14 @@ if __name__ == "__main__":
             else:
                 return MaxIteration(options.endTriggerNum)
 
-        train_data = get_mnist(sc, "train")\
+        train_data = get_mnist(sc, "train", options.dataPath)\
             .map(lambda rec_tuple: (normalizer(rec_tuple[0], mnist.TRAIN_MEAN, mnist.TRAIN_STD),
                                rec_tuple[1]))\
             .map(lambda t: Sample.from_ndarray(t[0], t[1]))
-        test_data = get_mnist(sc, "test")\
+        test_data = get_mnist(sc, "test", options.dataPath)\
             .map(lambda rec_tuple: (normalizer(rec_tuple[0], mnist.TEST_MEAN, mnist.TEST_STD),
                                rec_tuple[1]))\
             .map(lambda t: Sample.from_ndarray(t[0], t[1]))
-
         optimizer = Optimizer(
             model=build_model(10),
             training_rdd=train_data,
@@ -108,7 +110,7 @@ if __name__ == "__main__":
         test_data = get_mnist(sc, "test").map(
             normalizer(mnist.TEST_MEAN, mnist.TEST_STD))
         model = Model.load(options.modelPath)
-        results = model.test(test_data, options.batchSize, [Top1Accuracy()])
+        results = model.evaluate(test_data, options.batchSize, [Top1Accuracy()])
         for result in results:
             print(result)
     sc.stop()

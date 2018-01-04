@@ -24,7 +24,7 @@ import org.apache.spark.SparkContext
 
 object TrainInceptionV1 {
   LoggerFilter.redirectSparkInfoLogs()
-  Logger.getLogger("com.intel.analytics.bigdl.optim").setLevel(Level.INFO)
+
 
   import Options._
 

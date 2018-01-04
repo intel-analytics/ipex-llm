@@ -316,13 +316,12 @@ class SampleToMiniBatch[T: ClassTag] private[bigdl](
 
   private val batchPerPartition = Utils.getBatchSize(totalBatch, partitionNum)
   var miniBatchBuffer = miniBatch.orNull
+  private val batchSize = batchPerPartition
+  private val sampleData = new Array[Sample[T]](batchSize)
 
   override def apply(prev: Iterator[Sample[T]]): Iterator[MiniBatch[T]] = {
-    val batchSizePerPartition = batchPerPartition
     new Iterator[MiniBatch[T]] {
-      private val batchSize = batchSizePerPartition
 
-      private val sampleData = new Array[Sample[T]](batchSize)
       override def hasNext: Boolean = prev.hasNext
 
       override def next(): MiniBatch[T] = {
@@ -334,8 +333,13 @@ class SampleToMiniBatch[T: ClassTag] private[bigdl](
             i += 1
           }
           if (null == miniBatchBuffer) {
-            miniBatchBuffer = MiniBatch(sampleData(0).numFeature(), sampleData(0).numLabel(),
-              featurePaddingParam, labelPaddingParam)
+            val firstSample = sampleData(0)
+            miniBatchBuffer = if (firstSample.isInstanceOf[TensorSample[T]]) {
+              SparseMiniBatch(firstSample.numFeature(), firstSample.numLabel())
+            } else {
+              MiniBatch(firstSample.numFeature(), firstSample.numLabel(),
+                featurePaddingParam, labelPaddingParam)
+            }
           }
 
           if (i < batchSize) {

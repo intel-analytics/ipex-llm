@@ -23,7 +23,9 @@ import java.nio.charset.StandardCharsets
 import java.nio.{ByteBuffer, ByteOrder}
 import java.util.{ArrayList => JArrayList, HashMap => JHashMap, List => JList, Map => JMap}
 
-import com.intel.analytics.bigdl.python.api.{EvaluatedResult, JTensor, Sample}
+import com.intel.analytics.bigdl.nn.abstractnn.Activity
+import com.intel.analytics.bigdl.python.api._
+import com.intel.analytics.bigdl.utils.Table
 import net.razorvine.pickle._
 import org.apache.spark.api.java.JavaRDD
 import org.apache.spark.api.python.SerDeUtil
@@ -209,7 +211,7 @@ object BigDLSerDe extends BigDLSerDeBase with Serializable {
       saveObjects(out,
         pickler,
         record.features,
-        record.label,
+        record.labels,
         record.bigdlType)
     }
 
@@ -217,11 +219,43 @@ object BigDLSerDe extends BigDLSerDeBase with Serializable {
       if (args.length != 3) {
         throw new PickleException("should be 3, not : " + args.length)
       }
-      new Sample(args(0).asInstanceOf[JTensor],
-        args(1).asInstanceOf[JTensor],
+      Sample(args(0).asInstanceOf[JList[JTensor]],
+        args(1).asInstanceOf[JList[JTensor]],
         args(2).asInstanceOf[String])
     }
   }
+
+  private[python] class JActivityPickler extends BigDLBasePickler[JActivity] {
+    private def doConvertTable(table: Table): Any = {
+      val valuesOrderByKey = table.toSeq[Activity]
+      if (valuesOrderByKey.isEmpty) {
+        throw new RuntimeException("Found empty table")
+      }
+      return valuesOrderByKey.map { item => doConvertActivity(item) }.asJava
+    }
+    private def doConvertActivity(activity: Activity): Any = {
+      if (activity.isTable) {
+        return doConvertTable(activity.toTable)
+      } else if (activity.isTensor) {
+        return PythonBigDL.ofFloat().toJTensor(activity.toTensor)
+      } else {
+        throw new RuntimeException(s"""not supported type:
+          ${activity.getClass.getSimpleName}""")
+      }
+    }
+
+    def saveState(obj: Object, out: OutputStream, pickler: Pickler): Unit = {
+      val record = obj.asInstanceOf[JActivity]
+      saveObjects(out,
+        pickler,
+        doConvertActivity(record.value))
+    }
+
+    def construct(args: Array[Object]): Object = {
+      throw new RuntimeException("haven't be implemented")
+    }
+  }
+
 
   private[python] class TestResultPickler extends BigDLBasePickler[EvaluatedResult] {
 
@@ -250,18 +284,29 @@ object BigDLSerDe extends BigDLSerDeBase with Serializable {
       saveBytes(out, pickler, floatArrayToBytes(jTensor.storage))
       saveBytes(out, pickler, int32ArrayToBytes(jTensor.shape))
       pickler.save(jTensor.bigdlType)
+      // TODO: Find a way to pass sparseTensor's indices back to python
+      //      out.write(Opcodes.NONE)
       out.write(Opcodes.TUPLE3)
     }
 
 
     def construct(args: Array[Object]): Object = {
-      if (args.length != 3) {
-        throw new PickleException("should be 3, not : " + args.length)
+      if (args.length != 3 && args.length != 4) {
+        throw new PickleException("should be 3 or 4, not : " + args.length)
       }
-      val bigdl_type = args(2).asInstanceOf[String]
       val storage = objToFloatArray(args(0))
       val shape = objToInt32Array(args(1))
-      val result = new JTensor(storage, shape, bigdl_type)
+      val bigdl_type = args(2).asInstanceOf[String]
+      val result = if (args.length == 3) {
+        JTensor(storage, shape, bigdl_type)
+      } else {
+        val nElement = storage.length
+        val indicesArray = objToInt32Array(args(3))
+        val indices = Array.range(0, shape.length).map(i =>
+          indicesArray.slice(i * nElement, (i + 1) * nElement)
+        )
+        JTensor(storage, shape, bigdl_type, indices)
+      }
       result
     }
   }
@@ -275,6 +320,7 @@ object BigDLSerDe extends BigDLSerDeBase with Serializable {
         new SamplePickler().register()
         new TestResultPickler().register()
         new JTensorPickler().register()
+        new JActivityPickler().register()
         initialized = true
       }
     }

@@ -39,14 +39,14 @@ class V1LayerConverter[T: ClassTag](implicit ev: TensorNumeric[T]) extends Conve
 
   override protected def fromCaffeConvolution(layer : GeneratedMessage) : Seq[ModuleNode[T]] = {
     val param = getConvolutionParam(layer).get
-    val weightBlob = getBlob(layer, 0).get
+    val weightBlob = getBlob(layer, 0)
+    sanityBlobCheck(layer, "weight", weightBlob)
+    val weight = weightBlob.get
     val biasBlob = getBlob(layer, 1)
-    if (!biasBlob.isDefined) {
-      throw new RuntimeException(s"${getLayerName(layer)} without bias is not supported now")
-    }
+    val withBias = biasBlob.isDefined
     val group = if (param.getGroup == 0)  1 else param.getGroup
-    val channel = if (weightBlob.getShape.getDimCount > 1) weightBlob.getShape.getDim(1).toInt
-    else weightBlob.getChannels
+    val channel = if (weight.getShape.getDimCount > 1) weight.getShape.getDim(1).toInt
+    else weight.getChannels
     val nInputPlane = channel * group
     val nOutPlane = param.getNumOutput
     var kw = param.getKernelW
@@ -75,17 +75,27 @@ class V1LayerConverter[T: ClassTag](implicit ev: TensorNumeric[T]) extends Conve
         ph = pw
       }
     }
-    Seq(SpatialConvolution[T](nInputPlane, nOutPlane, kw, kh, dw, dh, pw, ph, group)
-      .setName(getLayerName(layer)).inputs())
+    val layerType = getLayerType(layer).toUpperCase
+    if ("DECONVOLUTION" == layerType) {
+      Seq(SpatialFullConvolution[T](nOutPlane, nInputPlane, kw, kh, dw, dh, pw, ph, 0, 0, group,
+      noBias = !withBias)
+        .setName(getLayerName(layer)).inputs())
+    } else {
+      Seq(SpatialConvolution[T](nInputPlane, nOutPlane, kw, kh, dw, dh, pw, ph, group,
+      withBias = withBias)
+        .setName(getLayerName(layer)).inputs())
+    }
   }
 
   override protected def fromCaffeInnerProduct(layer : GeneratedMessage) : Seq[ModuleNode[T]] = {
     val param = getInnerProductParam(layer).get
     val withBias = param.getBiasTerm
     val layerName = getLayerName(layer)
-    val weightBlob = getBlob(layer.asInstanceOf[V1LayerParameter], 0).get
-    val nInputPlane = if (weightBlob.getShape.getDimCount > 1) weightBlob.getShape.getDim(1).toInt
-    else weightBlob.getWidth
+    val weightBlob = getBlob(layer.asInstanceOf[V1LayerParameter], 0)
+    sanityBlobCheck(layer, "weight", weightBlob)
+    val weight = weightBlob.get
+    val nInputPlane = if (weight.getShape.getDimCount > 1) weight.getShape.getDim(1).toInt
+    else weight.getWidth
     val nOutputPlane = param.getNumOutput
     val linear = Linear[T](nInputPlane, nOutputPlane, withBias = withBias).setName(layerName)
     val node = linear.inputs()
@@ -102,32 +112,41 @@ class V1LayerConverter[T: ClassTag](implicit ev: TensorNumeric[T]) extends Conve
   // No implementation in V1
   override protected def fromCaffeBatchNormalization(layer : GeneratedMessage) :
     Seq[ModuleNode[T]] = {
-    throw new UnsupportedOperationException("Batch normalizaton is not supported in V1 Layer")
+    throw new CaffeConversionException("Batch normalizaton is not supported in V1 Layer")
   }
 
   // No implementation in V1
   override protected def fromCaffeELU(layer : GeneratedMessage) : Seq[ModuleNode[T]] = {
-    throw new UnsupportedOperationException("ELU is not supported in V1 Layer")
+    throw new CaffeConversionException("ELU is not supported in V1 Layer")
   }
 
   // No implementation in V1
   override protected def fromCaffeReshape(layer : GeneratedMessage) : Seq[ModuleNode[T]] = {
-    throw new UnsupportedOperationException("Reshape is not supported in V1 Layer")
+    throw new CaffeConversionException("Reshape is not supported in V1 Layer")
   }
 
   // No implementation in V1
   override protected def fromCaffeScale(layer : GeneratedMessage) : Seq[ModuleNode[T]] = {
-    throw new UnsupportedOperationException("Scale is not supported in V1 Layer")
+    throw new CaffeConversionException("Scale is not supported in V1 Layer")
   }
 
   // No implementation in V1
   override protected def fromCaffeBias(layer : GeneratedMessage) : Seq[ModuleNode[T]] = {
-    throw new UnsupportedOperationException("Bias is not supported in V1 Layer")
+    throw new CaffeConversionException("Bias is not supported in V1 Layer")
   }
 
   // No implementation in V1
   override protected def fromCaffeTile(layer : GeneratedMessage) : Seq[ModuleNode[T]] = {
-    throw new UnsupportedOperationException("Tile is not supported in V1 Layer")
+    throw new CaffeConversionException("Tile is not supported in V1 Layer")
+  }
+
+  override protected def fromCaffeInput(layer: GeneratedMessage): Seq[ModuleNode[T]] = {
+    val tops = layer.asInstanceOf[V1LayerParameter].getTopList
+    (0 until tops.size()).map(i => {
+      val input = Input()
+      input.element.setName(tops.get(i))
+      input
+    })
   }
 
   override protected def toCaffeConvolution(module : AbstractModule[Activity, Activity, T],
@@ -175,6 +194,53 @@ class V1LayerConverter[T: ClassTag](implicit ev: TensorNumeric[T]) extends Conve
     // build concolution layer
     Seq(layerParameter.build())
 
+  }
+
+  override protected def toCaffeDeConvolution(module : AbstractModule[Activity, Activity, T],
+    bottoms : ArrayBuffer[String], nextSize : Int): Seq[GeneratedMessage] = {
+
+    val layerParameter = V1LayerParameter.newBuilder()
+
+    val layerName = module.getName
+
+    layerParameter.setName(layerName)
+
+    layerParameter.setType(LayerType.DECONVOLUTION)
+
+    // set bottom list and top list
+    setConnections(layerParameter, bottoms, nextSize)
+
+    // copy weight and bias
+    val (weightBuilder, biasBuilder) = copyParam(module)
+
+    // get deconvolution param map
+    val layerParams = toCaffeDeConvolutionParam(module)
+
+    val convolutionParam = ConvolutionParameter.newBuilder()
+
+    val ngroup = layerParams("ngroup")
+    val nInputPlane = layerParams("nInputPlane")
+    val nOutputPlane = layerParams("nOutputPlane")
+    convolutionParam.setGroup(ngroup)
+    convolutionParam.setNumOutput(nOutputPlane)
+    convolutionParam.setKernelW(layerParams("kernelW"))
+    convolutionParam.setKernelH(layerParams("kernelH"))
+    convolutionParam.setStrideW(layerParams("strideW"))
+    convolutionParam.setStrideH(layerParams("strideH"))
+    convolutionParam.setPadW(layerParams("padW"))
+    convolutionParam.setPadH(layerParams("padH"))
+    val withBias = if (layerParams("withBias") == 1) true else false
+    convolutionParam.setBiasTerm(withBias)
+
+    weightBuilder.setChannels(nInputPlane / ngroup)
+    weightBuilder.setNum(nOutputPlane)
+
+    setBlobs(layerParameter, weightBuilder, biasBuilder)
+
+    layerParameter.setConvolutionParam(convolutionParam.build)
+
+    // build deConcolution layer
+    Seq(layerParameter.build())
   }
 
   override protected def toCaffeRelu(module : AbstractModule[Activity, Activity, T],
@@ -344,7 +410,7 @@ class V1LayerConverter[T: ClassTag](implicit ev: TensorNumeric[T]) extends Conve
 
   override protected def toCaffeBatchNormalization(module : AbstractModule[Activity, Activity, T],
     bottoms : ArrayBuffer[String], nextSize : Int): Seq[GeneratedMessage] = {
-    throw new UnsupportedOperationException("Batch normalization is not supported in V1Layer")
+    throw new CaffeConversionException("Batch normalization is not supported in V1Layer")
   }
 
   override protected def toCaffeConcat(module : AbstractModule[Activity, Activity, T],
@@ -360,7 +426,7 @@ class V1LayerConverter[T: ClassTag](implicit ev: TensorNumeric[T]) extends Conve
 
   override protected def toCaffeElu(module : AbstractModule[Activity, Activity, T],
     bottoms : ArrayBuffer[String], nextSize : Int): Seq[GeneratedMessage] = {
-    throw new UnsupportedOperationException("ELU is not supported in V1Layer")
+    throw new CaffeConversionException("ELU is not supported in V1Layer")
   }
 
   override protected def toCaffeFlattern(module : AbstractModule[Activity, Activity, T],
@@ -370,7 +436,7 @@ class V1LayerConverter[T: ClassTag](implicit ev: TensorNumeric[T]) extends Conve
 
   override protected def toCaffeLog(module : AbstractModule[Activity, Activity, T],
     bottoms : ArrayBuffer[String], nextSize : Int): Seq[GeneratedMessage] = {
-    throw new UnsupportedOperationException("LOG is not supported in V1Layer")
+    throw new CaffeConversionException("LOG is not supported in V1Layer")
   }
 
   override protected def toCaffePower(module : AbstractModule[Activity, Activity, T],
@@ -383,27 +449,27 @@ class V1LayerConverter[T: ClassTag](implicit ev: TensorNumeric[T]) extends Conve
 
   override protected def toCaffePReLu(module : AbstractModule[Activity, Activity, T],
     bottoms : ArrayBuffer[String], nextSize : Int): Seq[GeneratedMessage] = {
-    throw new UnsupportedOperationException("PReLU is not supported in V1Layer")
+    throw new CaffeConversionException("PReLU is not supported in V1Layer")
   }
 
   override  protected def toCaffeRecurrent(module : AbstractModule[Activity, Activity, T],
     bottoms : ArrayBuffer[String], nextSize : Int): Seq[GeneratedMessage] = {
-    throw new UnsupportedOperationException("Recurrent is not supported in V1Layer")
+    throw new CaffeConversionException("Recurrent is not supported in V1Layer")
   }
 
   override protected def toCaffeReshape(module : AbstractModule[Activity, Activity, T],
     bottoms : ArrayBuffer[String], nextSize : Int): Seq[GeneratedMessage] = {
-    throw new UnsupportedOperationException("Reshape is not supported in V1Layer")
+    throw new CaffeConversionException("Reshape is not supported in V1Layer")
   }
 
   override protected def toCaffeScale(module : AbstractModule[Activity, Activity, T],
     bottoms : ArrayBuffer[String], nextSize : Int): Seq[GeneratedMessage] = {
-    throw new UnsupportedOperationException("Scale is not supported in V1Layer")
+    throw new CaffeConversionException("Scale is not supported in V1Layer")
   }
 
   override protected def toCaffeBias(module : AbstractModule[Activity, Activity, T],
     bottoms : ArrayBuffer[String], nextSize : Int): Seq[GeneratedMessage] = {
-    throw new UnsupportedOperationException("Bias is not supported in V1Layer")
+    throw new CaffeConversionException("Bias is not supported in V1Layer")
   }
 
   override  protected def toCaffeThreshold(module : AbstractModule[Activity, Activity, T],
@@ -431,7 +497,7 @@ class V1LayerConverter[T: ClassTag](implicit ev: TensorNumeric[T]) extends Conve
 
   override protected def toCaffeTile(module : AbstractModule[Activity, Activity, T],
     bottoms : ArrayBuffer[String], nextSize : Int): Seq[GeneratedMessage] = {
-    throw new UnsupportedOperationException("Tile is not supported in V1Layer")
+    throw new CaffeConversionException("Tile is not supported in V1Layer")
   }
 
   override protected def toCaffeEltWiseMax(module : AbstractModule[Activity, Activity, T],
@@ -613,7 +679,7 @@ class V1LayerConverter[T: ClassTag](implicit ev: TensorNumeric[T]) extends Conve
     Some(layer.asInstanceOf[V1LayerParameter].getEltwiseParam)
   }
 
-  private def getBlob(layer : GeneratedMessage, ind: Int): Option[Caffe.BlobProto] = {
+  protected def getBlob(layer : GeneratedMessage, ind: Int): Option[Caffe.BlobProto] = {
     if (layer.asInstanceOf[V1LayerParameter].getBlobsCount > ind) {
       Some(layer.asInstanceOf[V1LayerParameter].getBlobs(ind))
     } else {

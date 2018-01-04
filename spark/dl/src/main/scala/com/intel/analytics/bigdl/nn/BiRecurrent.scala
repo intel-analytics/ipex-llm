@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.serializer.{ContainerSerializable, DataConverter, ModuleData, ModuleSerializer}
+import com.intel.analytics.bigdl.utils.serializer._
 import com.intel.analytics.bigdl.utils.{T, Table}
 import serialization.Bigdl.{AttrValue, BigDLModule}
 
@@ -159,21 +159,21 @@ object BiRecurrent extends ContainerSerializable {
     new BiRecurrent[T](merge, batchNormParams, isSplitInput)
   }
 
-  override def doLoadModule[T: ClassTag](model : BigDLModule)
+  override def doLoadModule[T: ClassTag](context: DeserializeContext)
     (implicit ev: TensorNumeric[T]) : AbstractModule[Activity, Activity, T] = {
 
-    val attrMap = model.getAttrMap
+    val attrMap = context.bigdlModule.getAttrMap
 
     val merge = DataConverter.
-      getAttributeValue(attrMap.get("merge")).
+      getAttributeValue(context, attrMap.get("merge")).
       asInstanceOf[AbstractModule[Table, Tensor[T], T]]
 
     val isSplitInput = DataConverter
-      .getAttributeValue(attrMap.get("isSplitInput"))
+      .getAttributeValue(context, attrMap.get("isSplitInput"))
       .asInstanceOf[Boolean]
 
     val flag = DataConverter
-      .getAttributeValue(attrMap.get("bnorm"))
+      .getAttributeValue(context, attrMap.get("bnorm"))
       .asInstanceOf[Boolean]
 
     val biRecurrent = if (flag) {
@@ -183,73 +183,71 @@ object BiRecurrent extends ContainerSerializable {
     }
 
     biRecurrent.birnn = DataConverter.
-      getAttributeValue(attrMap.get("birnn")).
+      getAttributeValue(context, attrMap.get("birnn")).
       asInstanceOf[Sequential[T]]
 
     if (flag) {
       val bnormEpsAttr = attrMap.get("bnormEps")
       biRecurrent.batchNormParams.eps =
-        DataConverter.getAttributeValue(bnormEpsAttr)
+        DataConverter.getAttributeValue(context, bnormEpsAttr)
           .asInstanceOf[Double]
 
       val bnormMomentumAttr = attrMap.get("bnormMomentum")
       biRecurrent.batchNormParams.momentum =
-        DataConverter.getAttributeValue(bnormMomentumAttr)
+        DataConverter.getAttributeValue(context, bnormMomentumAttr)
           .asInstanceOf[Double]
 
       val bnormInitWeightAttr = attrMap.get("bnormInitWeight")
       biRecurrent.batchNormParams.initWeight =
-        DataConverter.getAttributeValue(bnormInitWeightAttr)
+        DataConverter.getAttributeValue(context, bnormInitWeightAttr)
           .asInstanceOf[Tensor[T]]
 
       val bnormInitBiasAttr = attrMap.get("bnormInitBias")
       biRecurrent.batchNormParams.initBias =
-        DataConverter.getAttributeValue(bnormInitBiasAttr)
+        DataConverter.getAttributeValue(context, bnormInitBiasAttr)
           .asInstanceOf[Tensor[T]]
 
       val bnormInitGradWeightAttr = attrMap.get("bnormInitGradWeight")
       biRecurrent.batchNormParams.initGradWeight =
-        DataConverter.getAttributeValue(bnormInitGradWeightAttr)
+        DataConverter.getAttributeValue(context, bnormInitGradWeightAttr)
           .asInstanceOf[Tensor[T]]
 
       val bnormInitGradBiasAttr = attrMap.get("bnormInitGradBias")
       biRecurrent.batchNormParams.initGradBias =
-        DataConverter.getAttributeValue(bnormInitGradBiasAttr)
+        DataConverter.getAttributeValue(context, bnormInitGradBiasAttr)
           .asInstanceOf[Tensor[T]]
 
       val bnormAffineAttr = attrMap.get("bnormAffine")
       biRecurrent.batchNormParams.affine =
-        DataConverter.getAttributeValue(bnormAffineAttr)
+        DataConverter.getAttributeValue(context, bnormAffineAttr)
           .asInstanceOf[Boolean]
     }
-
-    createBigDLModule(model, biRecurrent)
 
     biRecurrent
 
   }
 
-  override def doSerializeModule[T: ClassTag](module : ModuleData[T],
+  override def doSerializeModule[T: ClassTag](context: SerializeContext[T],
                                             birecurrentBuilder : BigDLModule.Builder)
                                            (implicit ev: TensorNumeric[T]) : Unit = {
 
-    val birecurrentModule = module.module.
+    val birecurrentModule = context.moduleData.module.
       asInstanceOf[BiRecurrent[T]]
 
     val mergeBuilder = AttrValue.newBuilder
-    DataConverter.setAttributeValue(mergeBuilder,
+    DataConverter.setAttributeValue(context, mergeBuilder,
       birecurrentModule.merge,
       ModuleSerializer.tensorModuleType)
     birecurrentBuilder.putAttr("merge", mergeBuilder.build)
 
     val isSplitInputBuilder = AttrValue.newBuilder
-    DataConverter.setAttributeValue(isSplitInputBuilder,
+    DataConverter.setAttributeValue(context, isSplitInputBuilder,
       birecurrentModule.isSplitInput,
       universe.typeOf[Boolean])
     birecurrentBuilder.putAttr("isSplitInput", isSplitInputBuilder.build)
 
     val birnnBuilder = AttrValue.newBuilder
-    DataConverter.setAttributeValue(birnnBuilder,
+    DataConverter.setAttributeValue(context, birnnBuilder,
       birecurrentModule.birnn,
       ModuleSerializer.tensorModuleType)
     birecurrentBuilder.putAttr("birnn", birnnBuilder.build)
@@ -257,37 +255,37 @@ object BiRecurrent extends ContainerSerializable {
     val flag = if (birecurrentModule.batchNormParams != null) {
 
       val bnormEpsBuilder = AttrValue.newBuilder
-      DataConverter.setAttributeValue(bnormEpsBuilder,
+      DataConverter.setAttributeValue(context, bnormEpsBuilder,
         birecurrentModule.batchNormParams.eps, universe.typeOf[Double])
       birecurrentBuilder.putAttr("bnormEps", bnormEpsBuilder.build)
 
       val bnormMomentumBuilder = AttrValue.newBuilder
-      DataConverter.setAttributeValue(bnormMomentumBuilder,
+      DataConverter.setAttributeValue(context, bnormMomentumBuilder,
         birecurrentModule.batchNormParams.momentum, universe.typeOf[Double])
       birecurrentBuilder.putAttr("bnormMomentum", bnormMomentumBuilder.build)
 
       val bnormInitWeightBuilder = AttrValue.newBuilder
-      DataConverter.setAttributeValue(bnormInitWeightBuilder,
+      DataConverter.setAttributeValue(context, bnormInitWeightBuilder,
         birecurrentModule.batchNormParams.initWeight, ModuleSerializer.tensorType)
       birecurrentBuilder.putAttr("bnormInitWeight", bnormInitWeightBuilder.build)
 
       val bnormInitBiasBuilder = AttrValue.newBuilder
-      DataConverter.setAttributeValue(bnormInitBiasBuilder,
+      DataConverter.setAttributeValue(context, bnormInitBiasBuilder,
         birecurrentModule.batchNormParams.initBias, ModuleSerializer.tensorType)
       birecurrentBuilder.putAttr("bnormInitBias", bnormInitBiasBuilder.build)
 
       val bnormInitGradWeightBuilder = AttrValue.newBuilder
-      DataConverter.setAttributeValue(bnormInitGradWeightBuilder,
+      DataConverter.setAttributeValue(context, bnormInitGradWeightBuilder,
         birecurrentModule.batchNormParams.initGradWeight, ModuleSerializer.tensorType)
       birecurrentBuilder.putAttr("bnormInitGradWeight", bnormInitGradWeightBuilder.build)
 
       val bnormInitGradBiasBuilder = AttrValue.newBuilder
-      DataConverter.setAttributeValue(bnormInitGradBiasBuilder,
+      DataConverter.setAttributeValue(context, bnormInitGradBiasBuilder,
         birecurrentModule.batchNormParams.initGradBias, ModuleSerializer.tensorType)
       birecurrentBuilder.putAttr("bnormInitGradBias", bnormInitGradBiasBuilder.build)
 
       val bnormAffineBuilder = AttrValue.newBuilder
-      DataConverter.setAttributeValue(bnormAffineBuilder,
+      DataConverter.setAttributeValue(context, bnormAffineBuilder,
         birecurrentModule.batchNormParams.affine, universe.typeOf[Boolean])
       birecurrentBuilder.putAttr("bnormAffine", bnormAffineBuilder.build)
 
@@ -297,10 +295,9 @@ object BiRecurrent extends ContainerSerializable {
     }
 
     val bNormBuilder = AttrValue.newBuilder
-    DataConverter.setAttributeValue(bNormBuilder,
+    DataConverter.setAttributeValue(context, bNormBuilder,
       flag, universe.typeOf[Boolean])
     birecurrentBuilder.putAttr("bnorm", bNormBuilder.build)
 
-    createSerializeBigDLModule(birecurrentBuilder, module)
   }
 }

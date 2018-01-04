@@ -37,6 +37,8 @@ import scala.reflect.ClassTag
  * @param inputSize input size
  * @param hiddenSize hidden layer size
  * @param activation activation function f for non-linearity
+ * @param isInputWithBias boolean
+ * @param isHiddenWithBias boolean
  * @param wRegularizer: instance of [[Regularizer]]
  *                    (eg. L1 or L2 regularization), applied to the input weights matrices.
  * @param uRegularizer: instance [[Regularizer]]
@@ -45,29 +47,28 @@ import scala.reflect.ClassTag
             applied to the bias.
  */
 class RnnCell[T : ClassTag] (
-  inputSize: Int = 4,
-  hiddenSize: Int = 3,
+  val inputSize: Int = 4,
+  val hiddenSize: Int = 3,
   activation: TensorModule[T],
-  isInputWithBias: Boolean = true,
-  isHiddenWithBias: Boolean = true,
+  val isInputWithBias: Boolean = true,
+  val isHiddenWithBias: Boolean = true,
   var wRegularizer: Regularizer[T] = null,
   var uRegularizer: Regularizer[T] = null,
   var bRegularizer: Regularizer[T] = null)
   (implicit ev: TensorNumeric[T])
-  extends Cell[T](Array(hiddenSize)) {
+  extends Cell[T](Array(hiddenSize),
+    regularizers = Array(wRegularizer, uRegularizer, bRegularizer)) {
 
-  override def preTopology: AbstractModule[Activity, Activity, T] =
-    TimeDistributed[T](
-      Linear[T](inputSize,
-        hiddenSize,
-        wRegularizer = wRegularizer,
-        bRegularizer = bRegularizer,
-        withBias = isInputWithBias))
-    .asInstanceOf[AbstractModule[Activity, Activity, T]]
+  override var preTopology: TensorModule[T] =
+    Linear[T](inputSize,
+      hiddenSize,
+      wRegularizer = wRegularizer,
+      bRegularizer = bRegularizer,
+      withBias = isInputWithBias)
 
-  override var cell: AbstractModule[Activity, Activity, T] = buildGraph
+  override var cell: AbstractModule[Activity, Activity, T] = buildModel()
 
-  private def buildGraph: Graph[T] = {
+  def buildModel(): Graph[T] = {
     val i2h = Input()
     val h2h = Linear[T](hiddenSize, hiddenSize,
       wRegularizer = uRegularizer, withBias = isHiddenWithBias).inputs()

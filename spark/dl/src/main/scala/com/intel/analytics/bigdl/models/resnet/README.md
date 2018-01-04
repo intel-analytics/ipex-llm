@@ -18,12 +18,13 @@ Model is implemented in <code>ResNet</code>
 
 ## Get the JAR
 You can build one by refer to the
-[Build Page](https://github.com/intel-analytics/BigDL/wiki/Build-Page) from the source code.
+[Build Page](https://bigdl-project.github.io/master/#ScalaUserGuide/install-build-src/) from the source code.
 
 ## Training
 * Spark local, example command
 ```shell
 spark-submit --master local[physical_core_number] \
+--driver-memory 3G \
 --class com.intel.analytics.bigdl.models.resnet.Train \
 dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
 -f Cifar-10/ \
