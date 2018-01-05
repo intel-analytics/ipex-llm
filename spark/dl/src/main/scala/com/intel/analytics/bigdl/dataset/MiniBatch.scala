@@ -729,22 +729,7 @@ object SparseMiniBatch{
       val current = tensors(i)
       val target = result.select(dim, i + 1)
 
-      if (target.isContiguous() || dim > 2) {
-        // Copy directly when target is Contiguous or dimension is larger than 2
-        // in which case the contiguous region in target tensor is fairly small in practice
-        target.copy(current)
-      } else {
-        // Divide target into contiguous frames when target isn't contiguous
-        var f = 1
-        while (f <= target.size(1)) {
-          val curFrame = target.select(1, f)
-          val outputFrame = current.select(1, f)
-          require(curFrame.isContiguous())
-          require(outputFrame.isContiguous())
-          curFrame.copy(outputFrame)
-          f += 1
-        }
-      }
+      target.copy(current)
 
       i += 1
     }
