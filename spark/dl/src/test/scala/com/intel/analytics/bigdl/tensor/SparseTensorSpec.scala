@@ -19,6 +19,8 @@ package com.intel.analytics.bigdl.tensor
 import org.scalatest.{FlatSpec, Matchers}
 import com.intel.analytics.bigdl.numeric.NumericFloat
 
+import scala.util.Random
+
 @com.intel.analytics.bigdl.tags.Parallel
 class SparseTensorSpec  extends FlatSpec with Matchers {
   "dim, shape, nElement" should "return right result" in {
@@ -106,6 +108,14 @@ class SparseTensorSpec  extends FlatSpec with Matchers {
     sTensor.nElement() should be (18)
     sTensor.storage().array.length should be (30)
     sTensor.storageOffset() should be (6)
+  }
+  
+  "Tensor.dense narrowed tensor" should "return right result" in {
+    val values = Array.fill(30)(Random.nextFloat())
+    val sTensor = Tensor.sparse(Tensor(values, Array(6, 5)))
+    val narrowed = sTensor.narrow(1, 2, 4)
+    val narrowedSum = values.slice(5, 25).sum
+    Tensor.dense(narrowed).resize(20).toArray().sum shouldEqual narrowedSum
   }
 
 }
