@@ -20,6 +20,7 @@ import bigdl.nn.criterion as bcriterion
 import bigdl.optim.optimizer as boptimizer
 import bigdl.util.common as bcommon
 from bigdl.keras.converter import *
+from keras.objectives import *
 
 
 class OptimConverter:
@@ -38,15 +39,16 @@ class OptimConverter:
 
     @staticmethod
     def to_bigdl_criterion(kloss):
-        # TODO: it may pass in an object and with parameters
-        if kloss == "categorical_crossentropy":
+        if kloss == "categorical_crossentropy" or kloss == categorical_crossentropy:
             return bcriterion.ClassNLLCriterion()
-        elif kloss == "mse" or kloss == "mean_squared_error":
+        elif kloss == "mse" or kloss == "mean_squared_error" or kloss == mse:
             return bcriterion.MSECriterion()
-        elif kloss == "binary_crossentropy":
+        elif kloss == "binary_crossentropy" or kloss == binary_crossentropy:
             return bcriterion.BCECriterion()
-        elif kloss == "mae" or kloss == "mean_absolute_error":
+        elif kloss == "mae" or kloss == "mean_absolute_error" or kloss == mae:
             return bcriterion.AbsCriterion()
+        elif kloss == "hinge" or kloss == hinge:
+            return bcriterion.MarginCriterion(margin=1.0)
         else:
             raise Exception("Not supported type: %s" % kloss)
 
