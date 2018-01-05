@@ -24,7 +24,7 @@ class Relu6Grad[T: ClassTag, D: ClassTag]
 (implicit ev: TensorNumeric[T], ev2: TensorNumeric[D])
   extends UnaryGrad[T, D](true) {
 
-  val module: Module = ReLU6Layer[T, D]()
+  val module: Module = ReLU6Layer[D]()
 }
 
 object Relu6Grad {
