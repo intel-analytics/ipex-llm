@@ -330,10 +330,9 @@ object SGD {
     }
 
     override def updateHyperParameter[T](optimMethod: SGD[T]): Unit = {
-      val lr = optimMethod.learningRate
       val nevals = optimMethod.state.get[Int]("evalCounter").getOrElse(0)
       val clr = if (nevals < warmupIteration) {
-        warmupScheme(lr, nevals)
+        warmupScheme(optimMethod.learningRate, nevals)
       } else if (nevals < maxIteration) {
         - maxLr * math.pow(1.0 - (nevals - warmupIteration).toDouble
           / iteration, power)
@@ -430,8 +429,6 @@ object SGD {
    * l_{n + 1} = l_{n} * 0.1 `^` decayType(epoch)
    *
    * @param decayType is a function with number of run epochs as the argument
-   * @param warmupIteration iteration numbers to take for learning rate reach to max learning rate
-   * @param warmupDelta learning rate increased amount at each iteration
    */
   case class EpochDecay(decayType: (Int) => Double) extends LearningRateSchedule {
     override def updateHyperParameter(config: Table, state: Table): Unit = {
