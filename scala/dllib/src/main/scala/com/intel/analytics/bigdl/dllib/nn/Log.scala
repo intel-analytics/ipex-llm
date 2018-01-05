@@ -26,35 +26,29 @@ import scala.reflect.ClassTag
  * The [[Log]] module applies a log transformation to the input data
  */
 @SerialVersionUID(- 5175095570714684226L)
-class Log[T: ClassTag, D: ClassTag] (implicit ev: TensorNumeric[T], ev2: TensorNumeric[D])
-  extends AbstractModule[Tensor[D], Tensor[D], T] {
-  output = Tensor[D]()
-  gradInput = Tensor[D]()
+class Log[T: ClassTag] (implicit ev: TensorNumeric[T])
+  extends TensorModule[T] {
 
-  override def updateOutput(input: Tensor[D]): Tensor[D] = {
+  override def updateOutput(input: Tensor[T]): Tensor[T] = {
     output.resizeAs(input)
       .copy(input)
       .log()
     output
   }
-  override def updateGradInput(input: Tensor[D], gradOutput: Tensor[D]): Tensor[D] = {
+  override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
     gradInput.resizeAs(input)
-      .fill(ev2.fromType[Double](1.0))
+      .fill(ev.fromType[Double](1.0))
       .cdiv(input)
       .cmul(gradOutput)
 
     gradInput
   }
 
-  override def getClassTagNumerics() : (Array[ClassTag[_]], Array[TensorNumeric[_]]) = {
-    (Array[ClassTag[_]](scala.reflect.classTag[T], scala.reflect.classTag[D]),
-      Array[TensorNumeric[_]](ev, ev2))
-  }
 }
 
 object Log {
-  def apply[@specialized(Float, Double) T: ClassTag, D: ClassTag]()
-      (implicit ev: TensorNumeric[T], ev2: TensorNumeric[D]) : Log[T, D] = {
-    new Log[T, D]()
+  def apply[@specialized(Float, Double) T: ClassTag]()
+      (implicit ev: TensorNumeric[T]): Log[T] = {
+    new Log[T]()
   }
 }
