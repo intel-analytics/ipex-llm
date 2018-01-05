@@ -15,7 +15,7 @@
  */
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, TensorModule}
+import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
@@ -25,21 +25,17 @@ import scala.reflect.ClassTag
  *  an element-wise abs operation
  */
 @SerialVersionUID(3070101246787506364L)
-class Abs[T: ClassTag, D: ClassTag]
- (implicit ev: TensorNumeric[T], ev2: TensorNumeric[D])
-  extends AbstractModule[Tensor[D], Tensor[D], T] {
+class Abs[T: ClassTag]
+ (implicit ev: TensorNumeric[T])
+  extends TensorModule[T] {
 
-  output = Tensor[D]()
-
-  gradInput = Tensor[D]()
-
-  override def updateOutput(input: Tensor[D]): Tensor[D] = {
+  override def updateOutput(input: Tensor[T]): Tensor[T] = {
     output.resizeAs(input)
     output.abs(input)
     output
   }
 
-  override def updateGradInput(input: Tensor[D], gradOutput: Tensor[D]): Tensor[D] = {
+  override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
     require(input.isContiguous() && gradOutput.isContiguous(),
       "Abs: input and gradOutput should be contiguous")
     gradInput.resizeAs(input).copy(gradOutput)
@@ -52,17 +48,17 @@ class Abs[T: ClassTag, D: ClassTag]
     while(i < gradInput.nElement()) {
       val g = gradArray(i)
       val z = inputArray(i)
-      gradArray(i + gradOffset) = ev2.times(g,
-        if (ev2.isGreater(z, ev2.fromType(0))) ev2.fromType(1) else ev2.fromType(-1))
+      gradArray(i + gradOffset) = ev.times(g,
+        if (ev.isGreater(z, ev.fromType(0))) ev.fromType(1) else ev.fromType(-1))
       i += 1
     }
     gradInput
   }
 
-  override def canEqual(other: Any): Boolean = other.isInstanceOf[Abs[T, D]]
+  override def canEqual(other: Any): Boolean = other.isInstanceOf[Abs[T]]
 
   override def equals(other: Any): Boolean = other match {
-    case that: Abs[T, D] =>
+    case that: Abs[T] =>
       super.equals(that) &&
         (that canEqual this)
     case _ => false
@@ -74,15 +70,11 @@ class Abs[T: ClassTag, D: ClassTag]
     state.map(getHashCode).foldLeft(0)((a, b) => 31 * a + b)
   }
 
-  override def getClassTagNumerics() : (Array[ClassTag[_]], Array[TensorNumeric[_]]) = {
-    (Array[ClassTag[_]](scala.reflect.classTag[T], scala.reflect.classTag[D]),
-      Array[TensorNumeric[_]](ev, ev2))
-  }
 }
 
 object Abs {
-  def apply[@specialized(Float, Double) T: ClassTag, D: ClassTag]()
-      (implicit ev: TensorNumeric[T], ev2: TensorNumeric[D]) : Abs[T, D] = {
-    new Abs[T, D]()
+  def apply[@specialized(Float, Double) T: ClassTag]()
+      (implicit ev: TensorNumeric[T]) : Abs[T] = {
+    new Abs[T]()
   }
 }

@@ -33,36 +33,33 @@ import scala.reflect.ClassTag
  */
 
 @SerialVersionUID(- 6637789603381436472L)
-class Power[T: ClassTag, D: ClassTag](
+class Power[T: ClassTag](
   val power: Double,
   val scale : Double = 1,
   val shift : Double = 0)
-(implicit ev: TensorNumeric[T], ev2: TensorNumeric[D])
-  extends AbstractModule[Tensor[D], Tensor[D], T] {
-
-  output = Tensor[D]()
-  gradInput = Tensor[D]()
+(implicit ev: TensorNumeric[T])
+  extends TensorModule[T] {
 
   val diffScale = power * scale
 
-  override def updateOutput(input: Tensor[D]): Tensor[D] = {
+  override def updateOutput(input: Tensor[T]): Tensor[T] = {
     output.resizeAs(input)
     output.copy(input)
     if(scale != 1) {
-      output.mul(ev2.fromType[Double](scale))
+      output.mul(ev.fromType[Double](scale))
     }
     if(shift != 0) {
-      output.add(ev2.fromType[Double](shift))
+      output.add(ev.fromType[Double](shift))
     }
     if(power != 1) {
-      output.pow(output, ev2.fromType[Double](power))
+      output.pow(output, ev.fromType[Double](power))
     }
 
     output
   }
 
 
-  override def updateGradInput(input: Tensor[D], gradOutput: Tensor[D]): Tensor[D] = {
+  override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
     gradInput.resizeAs(input)
     // Compute dy/dx = scale * power * (shift + scale * x)^(power - 1)
     //               = diff_scale * y / (shift + scale * x)
@@ -71,28 +68,28 @@ class Power[T: ClassTag, D: ClassTag](
       //     -> dy/dx = 2 * scale * (shift + scale * x)
       //              = diff_scale * shift + diff_scale * scale * x
       gradInput.copy(input)
-      gradInput.mul(ev2.fromType[Double](diffScale * scale))
+      gradInput.mul(ev.fromType[Double](diffScale * scale))
       if(shift != 0) {
-        gradInput.add(ev2.fromType(diffScale * shift))
+        gradInput.add(ev.fromType(diffScale * shift))
       }
     } else if (shift == 0) {
       // Special case for y = (scale * x)^power
       //     -> dy/dx = scale * power * (scale * x)^(power - 1)
       //              = scale * power * (scale * x)^power * (scale * x)^(-1)
       //              = power * y / x
-      gradInput.fill(ev2.fromType[Int](0))
-      gradInput.addcdiv(ev2.fromType[Double](power), output, input)
+      gradInput.fill(ev.fromType[Int](0))
+      gradInput.addcdiv(ev.fromType[Double](power), output, input)
     } else {
       gradInput.copy(input)
       if(scale != 1) {
-        gradInput.mul(ev2.fromType[Double](scale))
+        gradInput.mul(ev.fromType[Double](scale))
       }
       if(shift != 0) {
-        gradInput.add(ev2.fromType[Double](shift))
+        gradInput.add(ev.fromType[Double](shift))
       }
       gradInput.cdiv(output, gradInput)
       if (diffScale != 1) {
-        gradInput.mul(ev2.fromType[Double](diffScale))
+        gradInput.mul(ev.fromType[Double](diffScale))
       }
     }
     if(diffScale != 0) {
@@ -106,18 +103,13 @@ class Power[T: ClassTag, D: ClassTag](
     s"${getPrintName}($power, $scale, $shift)"
   }
 
-  override def getClassTagNumerics() : (Array[ClassTag[_]], Array[TensorNumeric[_]]) = {
-    (Array[ClassTag[_]](scala.reflect.classTag[T], scala.reflect.classTag[D]),
-      Array[TensorNumeric[_]](ev, ev2))
-  }
-
 }
 
 object Power {
-  def apply[@specialized(Float, Double) T: ClassTag, D: ClassTag](
+  def apply[@specialized(Float, Double) T: ClassTag](
       power: Double,
       scale : Double = 1,
-      shift : Double = 0)(implicit ev: TensorNumeric[T], ev2: TensorNumeric[D]): Power[T, D] = {
-    new Power[T, D](power, scale, shift)
+      shift : Double = 0)(implicit ev: TensorNumeric[T]): Power[T] = {
+    new Power[T](power, scale, shift)
   }
 }
