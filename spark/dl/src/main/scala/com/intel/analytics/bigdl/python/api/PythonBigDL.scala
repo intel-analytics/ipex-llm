@@ -2026,11 +2026,14 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     nesterov: Boolean = false,
     leaningRateSchedule: SGD.LearningRateSchedule = SGD.Default(),
     learningRates: JTensor = null,
-    weightDecays: JTensor = null): SGD[T] = {
+    weightDecays: JTensor = null,
+    warmupIteration: Int = 0,
+    warmupEpoch: Int = 0,
+    maxLearningRate: Double = 1e-3): SGD[T] = {
     val p1 = if (learningRates == null) null else toTensor(learningRates)
     val p2 = if (weightDecays == null) null else toTensor(weightDecays)
     new SGD[T](learningRate, learningRateDecay, weightDecay, momentum, dampening,
-      nesterov, leaningRateSchedule, p1, p2)
+      nesterov, leaningRateSchedule, p1, p2, warmupIteration, warmupEpoch, maxLearningRate)
   }
 
   def createAdagrad(learningRate: Double = 1e-3,

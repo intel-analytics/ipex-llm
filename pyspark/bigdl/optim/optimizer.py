@@ -227,15 +227,12 @@ class Poly(JavaValue):
 
     :param power: coeffient of decay, refer to calculation formula
     :param max_iteration: max iteration when lr becomes zero
-    :param warmupIteration: iteration numbers to take for learning rate reach to max learning rate
-    :param warmupDelta: learning rate increased amount at each iteration
-
 
     >>> poly = Poly(0.5, 2)
     creating: createPoly
     """
-    def __init__(self, power, max_iteration, warmup_iteration = 0, warmup_delta = 0, bigdl_type="float"):
-            JavaValue.__init__(self, None, bigdl_type, power, max_iteration, warmup_iteration, warmup_delta)
+    def __init__(self, power, max_iteration, bigdl_type="float"):
+            JavaValue.__init__(self, None, bigdl_type, power, max_iteration)
 
 
 class Exponential(JavaValue):
@@ -358,6 +355,9 @@ class SGD(OptimMethod):
     :param nesterov enables Nesterov momentum
     :param learningrates 1D tensor of individual learning rates
     :param weightdecays 1D tensor of individual weight decays
+    :param warmup_iteration iteration numbers to take for learning rate reach to max learning rate
+    :param warmup_epoch epoch numbers to take for learning rate reach to max learning rate
+    :param max_learningRate max learning rate
     >>> sgd = SGD()
     creating: createDefault
     creating: createSGD
@@ -372,11 +372,15 @@ class SGD(OptimMethod):
                  leaningrate_schedule=None,
                  learningrates=None,
                  weightdecays=None,
+                 warmup_iteraton=0,
+                 warmup_epoch=0,
+                 max_learningRate=1e-3,
                  bigdl_type="float"):
         super(SGD, self).__init__(None, bigdl_type, learningrate, learningrate_decay, weightdecay,
                            momentum, dampening, nesterov,
                            leaningrate_schedule if (leaningrate_schedule) else Default(),
-                           JTensor.from_ndarray(learningrates), JTensor.from_ndarray(weightdecays))
+                           JTensor.from_ndarray(learningrates), JTensor.from_ndarray(weightdecays),
+                           warmup_iteraton, warmup_epoch, max_learningRate)
 
 class Adagrad(OptimMethod):
     """
