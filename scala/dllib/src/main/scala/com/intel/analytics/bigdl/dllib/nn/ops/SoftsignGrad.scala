@@ -15,7 +15,7 @@
  */
 package com.intel.analytics.bigdl.nn.ops
 
-import com.intel.analytics.bigdl.nn.SoftSign
+import com.intel.analytics.bigdl.nn.{SoftSign => SoftSignLayer}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
 import scala.reflect.ClassTag
@@ -24,7 +24,7 @@ class SoftsignGrad[T: ClassTag, D: ClassTag]
 (implicit ev: TensorNumeric[T], ev2: TensorNumeric[D])
   extends UnaryGrad[T, D](true) {
 
-  override val module: Module = SoftSign[T, D]()
+  override val module: Module = SoftSignLayer[D]()
 }
 
 object SoftsignGrad {
