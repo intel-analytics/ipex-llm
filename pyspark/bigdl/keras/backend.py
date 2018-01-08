@@ -20,11 +20,14 @@ from pyspark.rdd import RDD
 from bigdl.keras.optimization import *
 from bigdl.util.common import get_spark_context
 from bigdl.util.common import to_sample_rdd
+from bigdl.util.common import redire_spark_logs, show_bigdl_info_logs
 
 
 class KerasModelWrapper():
 
     def __init__(self, kmodel):
+        redire_spark_logs()
+        show_bigdl_info_logs()
         self.bmodel = DefinitionLoader.from_kmodel(kmodel)
         WeightLoader.load_weights_from_kmodel(self.bmodel, kmodel)  # share the same weight.
         self.criterion = OptimConverter.to_bigdl_criterion(kmodel.loss)

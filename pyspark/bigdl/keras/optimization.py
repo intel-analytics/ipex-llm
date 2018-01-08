@@ -21,6 +21,7 @@ import bigdl.optim.optimizer as boptimizer
 import bigdl.util.common as bcommon
 from bigdl.keras.converter import *
 from keras.objectives import *
+import six
 
 
 class OptimConverter:
@@ -39,8 +40,11 @@ class OptimConverter:
 
     @staticmethod
     def to_bigdl_criterion(kloss):
+        if isinstance(kloss, six.string_types):
+            kloss = kloss.lower()
+
         if kloss == "categorical_crossentropy" or kloss == categorical_crossentropy:
-            return bcriterion.ClassNLLCriterion()
+            return bcriterion.CategoricalCrossEntropy()
         elif kloss == "mse" or kloss == "mean_squared_error" or kloss == mse:
             return bcriterion.MSECriterion()
         elif kloss == "binary_crossentropy" or kloss == binary_crossentropy:
@@ -48,9 +52,27 @@ class OptimConverter:
         elif kloss == "mae" or kloss == "mean_absolute_error" or kloss == mae:
             return bcriterion.AbsCriterion()
         elif kloss == "hinge" or kloss == hinge:
-            return bcriterion.MarginCriterion(margin=1.0)
+            return bcriterion.MarginCriterion()
+        elif kloss == "mean_absolute_percentage_error" or \
+                kloss == "mape" or kloss == mean_absolute_percentage_error:
+            return bcriterion.MeanAbsolutePercentageCriterion()
+        elif kloss == "mean_squared_logarithmic_error" or \
+                kloss == "msle" or kloss == mean_squared_logarithmic_error:
+            return bcriterion.MeanSquaredLogarithmicCriterion()
+        elif kloss == "squared_hinge" or kloss == squared_hinge:
+            return bcriterion.MarginCriterion(squared=True)
+        elif kloss == "sparse_categorical_crossentropy" or \
+                kloss == sparse_categorical_crossentropy:
+            return bcriterion.ClassNLLCriterion(logProbAsInput=False)
+        elif kloss == "kullback_leibler_divergence" or \
+                kloss == "kld" or kloss == kullback_leibler_divergence:
+            return bcriterion.KullbackLeiblerDivergenceCriterion()
+        elif kloss == "poisson" or kloss == poisson:
+            return bcriterion.PoissonCriterion()
+        elif kloss == "cosine_proximity" or kloss == "cosine" or kloss == cosine_proximity:
+            return bcriterion.CosineProximityCriterion()
         else:
-            raise Exception("Not supported type: %s" % kloss)
+            raise Exception("Not supported loss: %s" % kloss)
 
     @staticmethod
     def to_bigdl_optim_method(koptim_method):
