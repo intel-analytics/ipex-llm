@@ -65,8 +65,7 @@ class BiRecurrent[T : ClassTag] (
   if (merge == null) birnn.add(CAddTable[T](true))
   else birnn.add(merge)
 
-  override def add(module: AbstractModule[_ <: Activity, _ <: Activity, T]):
-    BiRecurrent.this.type = {
+  def add(module: AbstractModule[_ <: Activity, _ <: Activity, T]): this.type = {
     layer.add(module)
     revLayer.add(module.cloneModule())
     modules.append(birnn)

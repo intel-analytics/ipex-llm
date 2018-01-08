@@ -16,6 +16,7 @@
 package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Table
 
@@ -30,6 +31,17 @@ import scala.reflect.ClassTag
 @SerialVersionUID(- 1197848941394786045L)
 class ParallelTable[T: ClassTag]
   (implicit ev: TensorNumeric[T]) extends Container[Table, Table, T] {
+
+  /**
+   * Add a sub-module to the contained `modules`
+   *
+   * @param module module to be add
+   * @return this container
+   */
+  def add(module: AbstractModule[_ <: Activity, _ <: Activity, T]): this.type = {
+    modules += module.asInstanceOf[AbstractModule[Activity, Activity, T]]
+    this
+  }
 
   override def updateOutput(input: Table): Table = {
     var i = 0

@@ -54,7 +54,7 @@ class MapTable[T: ClassTag](
     }
   }
 
-  override def add(module: AbstractModule[_ <: Activity, _ <: Activity, T]): this.type = {
+  def add(module: AbstractModule[_ <: Activity, _ <: Activity, T]): this.type = {
     require(module != null, "Single module required")
     this.module = module
     if (modules.nonEmpty) {

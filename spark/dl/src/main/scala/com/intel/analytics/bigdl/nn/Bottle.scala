@@ -16,6 +16,7 @@
 package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl._
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 
@@ -36,6 +37,17 @@ class Bottle[T: ClassTag](
   val nInputDim: Int = 2,
   val nOutputDim1: Int = Int.MaxValue)
  (implicit ev: TensorNumeric[T]) extends Container[Tensor[T], Tensor[T], T] {
+
+  /**
+   * Add a sub-module to the contained `modules`
+   *
+   * @param module module to be add
+   * @return this container
+   */
+  def add(module: AbstractModule[_ <: Activity, _ <: Activity, T]): this.type = {
+    modules += module.asInstanceOf[AbstractModule[Activity, Activity, T]]
+    this
+  }
 
   private val nOutputDim = if (nOutputDim1 == Int.MaxValue) nInputDim else nOutputDim1
 
