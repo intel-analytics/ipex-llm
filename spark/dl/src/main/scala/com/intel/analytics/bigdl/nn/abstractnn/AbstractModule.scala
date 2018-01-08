@@ -816,5 +816,47 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
   def getClassTagNumerics() : (Array[ClassTag[_]], Array[TensorNumeric[_]]) = {
     (Array(scala.reflect.classTag[T]), Array(ev))
   }
+
+  protected var optimMethod: OptimMethod[T] = null
+  protected var criterion: Criterion[T] = null
+  protected var vMethods: Array[ValidationMethod[T]] = null
+
+  /**
+   * Configures the learning process.
+   * Must call this before fit.
+   */
+  def compile(optimizer: OptimMethod[T], loss: Criterion[T],
+              metrics: Array[ValidationMethod[T]] = null): Unit = {
+    // TODO: shape inference
+    this.optimMethod = optimizer
+    this.criterion = loss
+    this.vMethods = metrics
+  }
+
+  /**
+   * Trains the model for a fixed number of epochs.
+   */
+  def fit(x: RDD[Sample[T]], batchSize: Int = 32, epochs: Int = 10,
+          verbose: Boolean = false, validationData: RDD[Sample[T]] = null): Module[T] = {
+    // TODO: local optimizer
+    if (!verbose) {
+      LoggerFilter.redirectSparkInfoLogs()
+    }
+    val optimizer = Optimizer(
+      model = this,
+      sampleRDD = x,
+      criterion = this.criterion,
+      batchSize = batchSize)
+    optimizer.setOptimMethod(this.optimMethod)
+        .setEndWhen(Trigger.maxEpoch(epochs))
+    if (validationData != null) {
+      optimizer.setValidation(trigger = Trigger.everyEpoch,
+        sampleRDD = validationData,
+        vMethods = this.vMethods,
+        batchSize = batchSize)
+    }
+    optimizer.optimize()
+  }
+
 }
 
