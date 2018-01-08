@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.intel.analytics.bigdl.tensor
 
 import org.scalatest.{FlatSpec, Matchers}
@@ -108,7 +107,7 @@ class SparseTensorSpec  extends FlatSpec with Matchers {
     sTensor.resize(Array(1, 10), 5)
     Tensor.dense(sTensor).squeeze().toArray().sum should be (values.sum)
   }
-  
+
   "resize narrowed tensor" should "return right result" in {
     val sTensor = Tensor.sparse(Tensor(30).range(1, 30, 1)).narrow(1, 6, 18)
     sTensor.resize(Array(6, 3), 18)
