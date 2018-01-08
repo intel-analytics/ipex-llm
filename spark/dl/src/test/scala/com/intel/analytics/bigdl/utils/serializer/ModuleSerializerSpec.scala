@@ -2188,7 +2188,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers with BeforeAndAfterAll
   }
 
   "StrideSlice serialier" should "work properly" in {
-    val strideSlice = new StrideSlice[Float](Array((1, 1, 2, 1))).setName("strideSlice")
+    val strideSlice = new StrideSlice[Float, Float](Array((1, 1, 2, 1))).setName("strideSlice")
     val input = Tensor[Float](2, 2, 2).apply1(_ => Random.nextFloat())
     runSerializationTest(strideSlice, input)
   }
@@ -2255,7 +2255,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers with BeforeAndAfterAll
   }
 
   "StridedSliceLoadTF serializer" should "work properly" in {
-    val strideSliceLoadTF = new StridedSliceLoadTF[Float]().
+    val strideSliceLoadTF = new StridedSliceLoadTF[Float, Float]().
       setName("strideSliceLoadTF")
     val input = T(Tensor[Float](2, 2, 2).apply1(_ => Random.nextFloat()),
       Tensor[Int](T(0)),

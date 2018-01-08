@@ -154,7 +154,7 @@ private[nn] object TensorArray {
  * @tparam T Model parameter numeric type.
  * @tparam D Element numeric type in the tensor array.
  */
-private[nn] class TensorArrayCreator[T: ClassTag, D: ClassTag](
+private[bigdl] class TensorArrayCreator[T: ClassTag, D: ClassTag](
   shape: Array[Int] = null,
   dynamicSize: Boolean = false,
   clearAfterRead: Boolean = true,
@@ -196,7 +196,7 @@ private[nn] class TensorArrayCreator[T: ClassTag, D: ClassTag](
  * @tparam T Model parameter numeric type.
  * @tparam D Element numeric type in the tensor array.
  */
-private[nn] class TensorArrayGrad[T: ClassTag, D: ClassTag](source: String)(
+private[bigdl] class TensorArrayGrad[T: ClassTag, D: ClassTag](source: String)(
   implicit ev: TensorNumeric[T], ev2: TensorNumeric[D]) extends Operation[Table, Table, T]{
 
   override def updateOutput(input: Table): Table = {
@@ -223,7 +223,7 @@ private[nn] class TensorArrayGrad[T: ClassTag, D: ClassTag](source: String)(
  * @tparam T Model parameter numeric type.
  * @tparam D Element numeric type in the tensor array.
  */
-private[nn] class TensorArrayWrite[T: ClassTag, D: ClassTag]()(
+private[bigdl] class TensorArrayWrite[T: ClassTag, D: ClassTag]()(
   implicit ev: TensorNumeric[T], ev2: TensorNumeric[D])
   extends Operation[Table, Tensor[Float], T]{
 
@@ -249,7 +249,7 @@ private[nn] class TensorArrayWrite[T: ClassTag, D: ClassTag]()(
  * @tparam T Model parameter numeric type.
  * @tparam D Element numeric type in the tensor array.
  */
-private[nn] class TensorArrayRead[T: ClassTag, D: ClassTag]()(
+private[bigdl] class TensorArrayRead[T: ClassTag, D: ClassTag]()(
   implicit ev: TensorNumeric[T], ev2: TensorNumeric[D])
   extends Operation[Table, Tensor[D], T]{
 
@@ -277,7 +277,7 @@ private[nn] class TensorArrayRead[T: ClassTag, D: ClassTag]()(
  * @tparam T Model parameter numeric type.
  * @tparam D Element numeric type in the tensor array.
  */
-private[nn] class TensorArrayGather[T: ClassTag, D: ClassTag]()(
+private[bigdl] class TensorArrayGather[T: ClassTag, D: ClassTag]()(
   implicit ev: TensorNumeric[T], ev2: TensorNumeric[D])
   extends Operation[Table, Tensor[D], T]{
 
@@ -333,7 +333,7 @@ private[nn] class TensorArrayGather[T: ClassTag, D: ClassTag]()(
  * @tparam T Model parameter numeric type.
  * @tparam D Element numeric type in the tensor array.
  */
-private[nn] class TensorArrayScatter[T: ClassTag, D: ClassTag]()(
+private[bigdl] class TensorArrayScatter[T: ClassTag, D: ClassTag]()(
   implicit ev: TensorNumeric[T], ev2: TensorNumeric[D])
   extends Operation[Table, Tensor[Float], T]{
 
@@ -351,7 +351,7 @@ private[nn] class TensorArrayScatter[T: ClassTag, D: ClassTag]()(
 
     var i = 1
     while(i <= indices.size(1)) {
-      tensorArray(indices.valueAt(i)).copy(value.select(1, i))
+      tensorArray(indices.valueAt(i)) = value.select(1, i)
       i += 1
     }
 
@@ -375,7 +375,7 @@ private[nn] class TensorArrayScatter[T: ClassTag, D: ClassTag]()(
  * @tparam T Model parameter numeric type.
  * @tparam D Element numeric type in the tensor array.
  */
-private[nn] class TensorArrayConcat[T: ClassTag, D: ClassTag]()(
+private[bigdl] class TensorArrayConcat[T: ClassTag, D: ClassTag]()(
   implicit ev: TensorNumeric[T], ev2: TensorNumeric[D])
   extends Operation[Table, Table, T] {
 
@@ -386,11 +386,12 @@ private[nn] class TensorArrayConcat[T: ClassTag, D: ClassTag]()(
     val tensorArray = TensorArray[D](handle.value())
 
     val size = tensorArray.shapeOf(0)
+    size(0) = 0
     val lengths = Tensor[Int](tensorArray.size)
     var i = 0
     while(i < tensorArray.size) {
-      size(0) += tensorArray.shapeOf(i)(1)
-      lengths.setValue(i + 1, tensorArray.shapeOf(i)(1))
+      size(0) += tensorArray.shapeOf(i)(0)
+      lengths.setValue(i + 1, tensorArray.shapeOf(i)(0))
       i += 1
     }
 
@@ -398,7 +399,7 @@ private[nn] class TensorArrayConcat[T: ClassTag, D: ClassTag]()(
     i = 0
     var index = 1
     while(i < tensorArray.size) {
-      val curSize = tensorArray.shapeOf(i)(1)
+      val curSize = tensorArray.shapeOf(i)(0)
       value.narrow(1, index, curSize).copy(tensorArray(i))
       index += curSize
       i += 1
@@ -431,7 +432,7 @@ private[nn] class TensorArrayConcat[T: ClassTag, D: ClassTag]()(
  * @tparam T Model parameter numeric type.
  * @tparam D Element numeric type in the tensor array.
  */
-private[nn] class TensorArraySplit[T: ClassTag, D: ClassTag]()(
+private[bigdl] class TensorArraySplit[T: ClassTag, D: ClassTag]()(
   implicit ev: TensorNumeric[T], ev2: TensorNumeric[D])
   extends Operation[Table, Tensor[Float], T] {
 
@@ -463,7 +464,7 @@ private[nn] class TensorArraySplit[T: ClassTag, D: ClassTag]()(
  *
  * @tparam T Model parameter numeric type.
  */
-private[nn] class TensorArraySize[T: ClassTag]()(implicit ev: TensorNumeric[T])
+private[bigdl] class TensorArraySize[T: ClassTag]()(implicit ev: TensorNumeric[T])
   extends Operation[Table, Tensor[Int], T] {
 
   override def updateOutput(input: Table): Tensor[Int] = {
@@ -482,7 +483,7 @@ private[nn] class TensorArraySize[T: ClassTag]()(implicit ev: TensorNumeric[T])
  *
  * @tparam T Model parameter numeric type.
  */
-private[nn] class TensorArrayClose[T: ClassTag]()(implicit ev: TensorNumeric[T])
+private[bigdl] class TensorArrayClose[T: ClassTag]()(implicit ev: TensorNumeric[T])
   extends Operation[Tensor[String], Tensor[Float], T] {
 
   output = TensorArray.FlowOut

@@ -483,6 +483,20 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
     }
   }
 
+  "TensorArray operations" should "be load correctly" in {
+    val output = Seq("scatter_and_gather:0", "split_and_concat:0", "write_and_read:0", "size1:0",
+      "size2:0", "unstack_and_stack:0")
+    val comparePairs = testModel("tensor_array", output, backward = false)
+    for (i <- output.indices) {
+      val (tf, bigdl) = comparePairs(i)
+      tf.almostEqual(bigdl, 1e-6) should be(true)
+    }
+    for (i <- output.length until comparePairs.length) {
+      val (tf, bigdl) = comparePairs(i)
+      tf.almostEqual(bigdl, 1e-1) should be(true)
+    }
+  }
+
   private def testModel(
     modelName: String,
     endPoints: Seq[String],
@@ -539,6 +553,7 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
     val comparePair = new mutable.ArrayBuffer[(Tensor[Float], Tensor[Float])]()
     val forwardPairs = tfOutputTensors.zip(bigdlOutputs).map { x =>
         val tensor = TensorflowToBigDL.toTensor(x._1, ByteOrder.LITTLE_ENDIAN)
+          .asInstanceOf[Tensor[Float]]
         (tensor, x._2)
     }
     comparePair ++= forwardPairs
@@ -560,7 +575,7 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
         val gradInputsTable = T()
         tfGradInputs.foreach {
           case output =>
-            gradInputsTable.insert[Tensor[Float]](output)
+            gradInputsTable.insert[Tensor[_]](output)
         }
         gradInputsTable
       }
@@ -575,7 +590,9 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
         node =>
           val t = tfNodes.asScala.filter(_.getName.contains(node + "_grad"))(0)
           t.getName ->
-            TensorflowToBigDL.toTensor(t.getAttrMap.get("value").getTensor, ByteOrder.LITTLE_ENDIAN)
+            TensorflowToBigDL
+              .toTensor(t.getAttrMap.get("value").getTensor, ByteOrder.LITTLE_ENDIAN)
+              .asInstanceOf[Tensor[Float]]
       }.toMap
 
       // do backward
