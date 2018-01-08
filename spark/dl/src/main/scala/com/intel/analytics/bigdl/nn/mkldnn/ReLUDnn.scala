@@ -26,6 +26,8 @@ import scala.reflect.ClassTag
 class ReLUDnn[T: ClassTag](ip: Boolean = false)(
   implicit ev: TensorNumeric[T]) extends TensorModule[Float] {
 
+    override val isMklDnnModel: Boolean = true
+
     @transient
     private var engine: Long = 0L
     @transient
@@ -48,6 +50,8 @@ class ReLUDnn[T: ClassTag](ip: Boolean = false)(
     private var relu_bwd: Long = 0L
     @transient
     private var inputElement : Int = 0
+    @transient
+    private var update_primitive: Boolean = true
 
     // for relu, just keep internal format same with input format
     private val input_format = MklDnn.MemoryFormat.nchw
@@ -57,6 +61,13 @@ class ReLUDnn[T: ClassTag](ip: Boolean = false)(
       if (stream == 0L) stream = this.getStream()
 
       if (inputElement != input.nElement()) {
+        update_primitive = true
+        inputElement = input.nElement()
+      } else {
+        update_primitive = false
+      }
+
+      if (update_primitive) {
         output.resizeAs(input)
 
         if (input.getPrimitiveDesc() != 0L) {
@@ -94,16 +105,14 @@ class ReLUDnn[T: ClassTag](ip: Boolean = false)(
     }
 
     override def updateGradInput(input: Tensor[Float], gradOutput: Tensor[Float]): Tensor[Float] = {
-      if (inputElement != input.nElement()) {
-        gradInput.resizeAs(input)
-
+      if (update_primitive) {
         var gradOutput_md : Long = 0L
         if (gradOutput.getPrimitiveDesc() != 0L) {
           val gradOutput_pd = gradOutput.getPrimitiveDesc()
           gradOutput_md = MklDnnOps.primitiveDescQueryMemory(gradOutput_pd)
           gradOutput_memory = MklDnn.PrimitiveCreate0(gradOutput_pd)
         } else {
-          gradOutput_md = MklDnn.MemoryDescInit(gradInput.dim(), gradOutput.size(), MklDnn.DataType.f32, this.input_format)
+          gradOutput_md = MklDnn.MemoryDescInit(gradOutput.dim(), gradOutput.size(), MklDnn.DataType.f32, this.input_format)
           gradOutput_memory = MklDnnOps.createMemoryPrimitive(gradOutput_md, engine)
         }
 
@@ -112,6 +121,7 @@ class ReLUDnn[T: ClassTag](ip: Boolean = false)(
         val bwd_pd = MklDnnOps.primitiveDescCreate(bwd_desc, engine, relu_fwd_pd)
 
         /* create memory primities for relu diff src */
+        gradInput.resizeAs(input)
         val gradInput_pd = MklDnnOps.primitiveDescQueryPd(bwd_pd, MklDnn.Query.diff_src_pd, 0)
         gradInput_memory = MklDnn.PrimitiveCreate0(gradInput_pd)
         gradInput.setPrimitiveDesc(gradInput_pd)
