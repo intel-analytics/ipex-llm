@@ -109,7 +109,7 @@ class SparseTensorSpec  extends FlatSpec with Matchers {
     sTensor.storage().array.length should be (30)
     sTensor.storageOffset() should be (6)
   }
-  
+
   "Tensor.dense narrowed tensor" should "return right result" in {
     val values = Array.fill(30)(Random.nextFloat())
     val sTensor = Tensor.sparse(Tensor(values, Array(6, 5)))
