@@ -312,3 +312,8 @@ class BigDLTestCase(TestCase):
         # Make theano backend compatible with Python3
         if backend == "theano":
             from theano import ifelse
+
+    def compare_loss(self, y_a, y_b, kloss, bloss, rtol=1e-7, atol=1e-7, func=np.mean):
+        keras_output = func(K.eval(kloss(K.variable(y_b), K.variable(y_a))))
+        bigdl_output = bloss.forward(y_a, y_b)
+        np.testing.assert_allclose(bigdl_output, keras_output, rtol=rtol, atol=atol)

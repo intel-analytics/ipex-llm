@@ -83,5 +83,11 @@ class OptimConverter:
             return boptimizer.SGD(learningrate=0.01)  # TODO: enrich parameters. ie: lr
         elif isinstance(koptim_method, koptimizers.Adam):
             return boptimizer.Adam()
+        elif isinstance(koptim_method, koptimizers.RMSprop):
+            return boptimizer.RMSprop()
+        elif isinstance(koptim_method, koptimizers.Adadelta):
+            return boptimizer.Adadelta()
+        elif isinstance(koptim_method, koptimizers.Adamax):
+            return boptimizer.Adamax()
         else:
             unsupport_exp(koptim_method)
