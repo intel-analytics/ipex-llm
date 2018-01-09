@@ -27,7 +27,7 @@ class TransformerCriterionSpec extends FlatSpec with Matchers {
     import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
 
     val criterion = TransformerCriterion[Float](MSECriterion[Float](),
-      Some(Square[Float, Float]()), Some(Square[Float, Float]()))
+      Some(Square[Float]()), Some(Square[Float]()))
 
     val input = Tensor(1, 3, 224, 224).rand()
     val target = Tensor(1, 3, 224, 224).rand()
