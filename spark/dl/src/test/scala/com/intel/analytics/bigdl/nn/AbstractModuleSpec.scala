@@ -16,7 +16,7 @@
 package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl._
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.{Engine, LoggerFilter, T, Table}
@@ -329,21 +329,5 @@ class AbstractModuleSpec extends FlatSpec with Matchers {
     val extp = model.getExtraParameter()
     model2.setExtraParameter(extp)
     model2 should be (model)
-  }
-
-  "model compile and fit" should "work properly" in {
-    val conf = Engine.createSparkConf().setMaster("local[1]").setAppName("test")
-    val sc = new SparkContext(conf)
-    Engine.init
-    val data = sc.range(0, 10, 1).map { _ =>
-      val featureTensor = Tensor[Float](2)
-      featureTensor.apply1(_ => scala.util.Random.nextFloat())
-      val labelTensor = Tensor[Float](1)
-      labelTensor(Array(1)) = Math.round(scala.util.Random.nextFloat())
-      Sample[Float](featureTensor, labelTensor)
-    }
-    val model = Linear(2, 3)
-    model.compile(optimizer = new SGD[Float](), loss = MSECriterion[Float]())
-    model.fit(data, batchSize = 10)
   }
 }
