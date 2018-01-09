@@ -52,7 +52,7 @@ class DictionarySpec extends FlatSpec with Matchers with BeforeAndAfter {
 
     val sentences = Array(sentence1, sentence2, sentence3)
 
-    new PrintWriter(tmpFile) {
+    new PrintWriter(tmpFile, "UTF-8") {
       write(sentences.mkString("\n")); close
     }
 
@@ -82,7 +82,7 @@ class DictionarySpec extends FlatSpec with Matchers with BeforeAndAfter {
 
     val sentences = Array(sentence1, sentence2, sentence3)
 
-    new PrintWriter(tmpFile) {
+    new PrintWriter(tmpFile, "UTF-8") {
       write(sentences.mkString("\n")); close
     }
 
