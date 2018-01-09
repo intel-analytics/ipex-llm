@@ -86,7 +86,7 @@ class DictionarySpec extends FlatSpec with Matchers with BeforeAndAfter {
       write(sentences.mkString("\n")); close
     }
 
-    val logData = Source.fromFile(tmpFile).getLines().toArray
+    val logData = Source.fromFile(tmpFile, "UTF-8").getLines().toArray
     val tokens = DataSet.array(logData
       .filter(!_.isEmpty)).transform(SentenceTokenizer())
     val output = tokens.toLocal().data(train = false)
