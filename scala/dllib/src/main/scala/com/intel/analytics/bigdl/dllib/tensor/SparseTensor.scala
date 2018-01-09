@@ -479,7 +479,7 @@ private[tensor] class SparseTensor[@specialized(Float, Double) T: ClassTag](
       val _addIndices = new Array[Storage[Int]](size.length - _indices.length)
       for (i <- _addIndices.indices) _addIndices(i) = Storage[Int](nElement + _storageOffset)
       _indicesOffset = new Array[Int](size.length - _indicesOffset.length) ++ _indicesOffset
-      _indices ++= _addIndices
+      _indices = _addIndices ++ _indices
     }
 
     // resize _indices's length
