@@ -17,6 +17,7 @@ package com.intel.analytics.bigdl.models.inception
 
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, Module}
+import com.intel.analytics.bigdl.optim.SGD.{Poly, SequentialSchedule, Warmup}
 import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.utils.{Engine, LoggerFilter, T, Table}
 import org.apache.log4j.{Level, Logger}
@@ -75,11 +76,14 @@ object TrainInceptionV1 {
       val optimMethod = if (param.stateSnapshot.isDefined) {
         OptimMethod.load[Float](param.stateSnapshot.get)
       } else {
+        val warmupDelta = if (warmupIteration == 0) 0.0
+          else (param.maxLr.getOrElse(param.learningRate) - param.learningRate) / warmupIteration
+        val polyIteration = maxIteration - warmupIteration
+        val lrSchedule = SequentialSchedule(iterationPerEpoch)
+          .add(Warmup(warmupDelta), warmupIteration).add(Poly(0.5, polyIteration), polyIteration)
         new SGD[Float](learningRate = param.learningRate, learningRateDecay = 0.0,
           weightDecay = param.weightDecay, momentum = 0.9, dampening = 0.0, nesterov = false,
-          learningRateSchedule = SGD.Poly(0.5, maxIteration),
-          warmupEpoch = param.warmupEpoch.getOrElse(0),
-          warmupIteration = warmupIteration, maxLearningRate = param.maxLr.getOrElse(0))
+          learningRateSchedule = lrSchedule)
       }
 
       val optimizer = Optimizer(

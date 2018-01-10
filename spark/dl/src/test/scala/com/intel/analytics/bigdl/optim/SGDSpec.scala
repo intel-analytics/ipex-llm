@@ -371,8 +371,10 @@ class SGDSpec extends FlatSpec with Matchers {
   }
 
   "ploy learning rate decay with warmup" should "generate correct learning rates" in {
-    val optimMethod = new SGD[Double](learningRate = 0.1, warmupIteration = 3,
-      maxLearningRate = 1.0, learningRateSchedule = Poly(3, 103))
+    val lrSchedules = new SequentialSchedule(100)
+    lrSchedules.add(Warmup(0.3), 3).add(Poly(3, 100), 100)
+    val optimMethod = new SGD[Double](learningRate = 0.1, learningRateSchedule = lrSchedules)
+
     def feval(x: Tensor[Double]): (Double, Tensor[Double]) = {
       return (0.1, Tensor[Double](Storage(Array(1.0, 1.0))))
     }
@@ -394,9 +396,11 @@ class SGDSpec extends FlatSpec with Matchers {
   }
 
   "ploy with warm up" should "generate correct learning rates" in {
-    val optimMethod = new SGD[Double](learningRate = 0.01, warmupIteration = 99,
-      maxLearningRate = 0.1)
-    optimMethod.learningRateSchedule = Poly(0.5, 1000)
+    val optimMethod = new SGD[Double](learningRate = 0.01)
+    val lrSchedule = new SequentialSchedule(10)
+    lrSchedule.add(Warmup(0.01), 99).add(Poly(0.5, 1000), 1000)
+    optimMethod.learningRateSchedule = lrSchedule
+
     def feval(x: Tensor[Double]): (Double, Tensor[Double]) = {
       return (0.1, Tensor[Double](Storage(Array(1.0, 1.0))))
     }

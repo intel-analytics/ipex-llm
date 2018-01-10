@@ -1645,6 +1645,14 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     SGD.Plateau(monitor, factor, patience, mode, epsilon, cooldown, minLr)
   }
 
+  def createWarmup(delta: Double): SGD.Warmup = {
+    SGD.Warmup(delta)
+  }
+
+  def createSequentialSchedule(iterationPerEpoch: Int): SGD.SequentialSchedule = {
+    SGD.SequentialSchedule(iterationPerEpoch)
+  }
+
   def createClassNLLCriterion(weights: JTensor = null,
     sizeAverage: Boolean = true, logProbAsInput: Boolean = true)
   : ClassNLLCriterion[T] = {
@@ -2026,14 +2034,11 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     nesterov: Boolean = false,
     leaningRateSchedule: SGD.LearningRateSchedule = SGD.Default(),
     learningRates: JTensor = null,
-    weightDecays: JTensor = null,
-    warmupIteration: Int = 0,
-    warmupEpoch: Int = 0,
-    maxLearningRate: Double = 1e-3): SGD[T] = {
+    weightDecays: JTensor = null): SGD[T] = {
     val p1 = if (learningRates == null) null else toTensor(learningRates)
     val p2 = if (weightDecays == null) null else toTensor(weightDecays)
     new SGD[T](learningRate, learningRateDecay, weightDecay, momentum, dampening,
-      nesterov, leaningRateSchedule, p1, p2, warmupIteration, warmupEpoch, maxLearningRate)
+      nesterov, leaningRateSchedule, p1, p2)
   }
 
   def createAdagrad(learningRate: Double = 1e-3,
