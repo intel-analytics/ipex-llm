@@ -44,7 +44,7 @@ class Input[T: ClassTag](inputShape: Array[Int])(implicit ev: TensorNumeric[T])
     setBatchInputShape(Tensor(data = batchInputShape, shape = Array(batchInputShape.length)))
   }
 
-  override def computeOutputShape(inputShape: Activity): Activity = inputShape
+  override def computeBatchOutputShape(inputShape: Activity): Activity = inputShape
 
   override def updateOutput(input: Activity): Activity = {
     output = input

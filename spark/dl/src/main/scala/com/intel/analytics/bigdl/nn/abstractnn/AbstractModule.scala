@@ -103,14 +103,14 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
   }
 
   def build(inputShape: Activity): Unit = {
-    this.outputShapeValue = computeOutputShape(inputShape)
+    this.outputShapeValue = computeBatchOutputShape(inputShape)
     this.inputShapeValue = inputShape
   }
 
   /**
-   * The inputShape should be the same as the input data
+   * The inputShape should be the same as the input data and the first dim is batch
    */
-  def computeOutputShape(inputShape: Activity): Activity = {
+  def computeBatchOutputShape(inputShape: Activity): Activity = {
     throw new RuntimeException("Haven't been implemented yet")
   }
 

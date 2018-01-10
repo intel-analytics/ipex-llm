@@ -35,7 +35,7 @@ T: ClassTag](inputShape: Array[Int] = null)(implicit ev: TensorNumeric[T])
     }
   }
 
-  override def computeOutputShape(inputShape: Activity): Activity = {
-    this.labor.computeOutputShape(inputShape)
+  override def computeBatchOutputShape(inputShape: Activity): Activity = {
+    this.labor.computeBatchOutputShape(inputShape)
   }
 }
