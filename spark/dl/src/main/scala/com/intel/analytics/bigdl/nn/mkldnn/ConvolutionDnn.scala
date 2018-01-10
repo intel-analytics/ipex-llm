@@ -16,12 +16,14 @@
 
 package com.intel.analytics.bigdl.nn.mkldnn
 
+import breeze.linalg.max
 import com.intel.analytics.bigdl.mkl.MklDnn
 import com.intel.analytics.bigdl.nn.abstractnn._
-import com.intel.analytics.bigdl.nn.{InitializationMethod, RandomUniform, SpatialConvolution, VariableFormat}
+import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{T, Table}
+import org.dmg.pmml.False
 
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
@@ -36,6 +38,7 @@ class ConvolutionDnn[T: ClassTag](
      val padW: Int = 0, // The additional zeros added per width to the input planes.
      val padH: Int = 0, // The additional zeros added per height to the input planes.
      val nGroup: Int = 1, // Kernel group number
+                                 val propagateBack: Boolean = true,
      val initWeight: Tensor[Float] = null,
      val initBias: Tensor[Float] = null,
      val initGradWeight: Tensor[Float] = null,
@@ -246,6 +249,24 @@ class ConvolutionDnn[T: ClassTag](
     }
   }
 
+  private def getOutputShape(oh: Int, ow: Int, batchSize: Int = -1): Array[Int] = {
+    format match {
+      case DataFormat.NCHW =>
+        if (batchSize == -1) {
+          Array(nOutputPlane, oh, ow)
+        } else {
+          Array(batchSize, nOutputPlane, oh, ow)
+        }
+      case DataFormat.NHWC =>
+        if (batchSize == -1) {
+          Array(oh, ow, nOutputPlane)
+        } else {
+          Array(batchSize, oh, ow, nOutputPlane)
+        }
+
+    }
+  }
+
   override def updateOutput(input: Tensor[Float]): Tensor[Float] = {
     if (engine == 0L) engine = this.getDnnEngine(0)
     if (stream == 0L) stream = this.getStream()
@@ -263,10 +284,27 @@ class ConvolutionDnn[T: ClassTag](
       require(input.size(channelDim) == nInputPlane, s"input channel size " +
         s"${input.size(channelDim)} is not the same as nInputPlane $nInputPlane")
 
+
+      val inputWidth = input.size(dimWidth)
+      val inputHeight = input.size(dimHeight)
+
+      val sizes =
+        if (padW == -1 && padH == -1) {
+          Utils.getSAMEOutSizeAndPadding(inputHeight, inputWidth, strideH, strideW, kernelH, kernelW)
+        } else {
+          Utils.getOutSizeAndPadding(inputHeight, inputWidth, strideH, strideW,
+            kernelH, kernelW, padH, padW, ceilMode = false)
+        }
+
+      val padTop = sizes(0)
+      val padBottom = sizes(1)
+      val padLeft = sizes(2)
+      val padRight = sizes(3)
+      val outputHeight = sizes(4)
+      val outputWidth = sizes(5)
+
       val input_size = input.size()
-      val dim1 = math.max(0, (input_size(2) - kernelW)/strideW) + 1
-      val dim2 = math.max(0, (input_size(3) - kernelH)/strideH) + 1
-      val dst_sizes = Array(input_size(0), nOutputPlane, dim1, dim2)
+      val dst_sizes = getOutputShape(outputHeight, outputWidth, input_size(0))
       output.resize(dst_sizes)
 
       // create memory desc, for input
@@ -319,13 +357,13 @@ class ConvolutionDnn[T: ClassTag](
       internal_src_memory = if (reorder_src_memory == 0L) {
         src_memory
       } else {
-        println("updateOutput input reorder")
+        // println("updateOutput input reorder")
         reorder_src_memory
       }
       internal_weights_memory = if (reorder_weights_memory == 0L) {
         weights_memory
       } else {
-        println("updateOutput weight reorder")
+        // println("updateOutput weight reorder")
         reorder_weights_memory
       }
 
@@ -385,7 +423,7 @@ class ConvolutionDnn[T: ClassTag](
       internal_gradOutput_memory = if (reorder_gradOutput_memory == 0L) {
         gradOutput_memory
       } else {
-        println("updateGradInput reorder")
+        // println("updateGradInput reorder")
         reorder_gradOutput_memory
       }
 
@@ -398,7 +436,7 @@ class ConvolutionDnn[T: ClassTag](
       /* build a simple net */
       stream_bwd.clear()
       if (reorder_gradOutput != 0L) stream_bwd.append(reorder_gradOutput)
-      stream_bwd.append(conv_bwd)
+      if (propagateBack) stream_bwd.append(conv_bwd)
     }
 
     val n_bwd = stream_bwd.length
@@ -435,7 +473,7 @@ class ConvolutionDnn[T: ClassTag](
      internal_gradWeights_memory = if (reorder_gradWeights_memory == 0L) {
        gradWeights_memory
      } else {
-       println("accGradParameters reorder")
+       // println("accGradParameters reorder")
        reorder_gradWeights_memory
      }
 
@@ -447,15 +485,15 @@ class ConvolutionDnn[T: ClassTag](
      conv_acc = MklDnnOps.primitiveCreate2(weights_pd, conv_inputs, indexes, 2, conv_outputs, 2)
 
      // reorder internal weight to weight
-     val (weights_user, weights_user_m) = reorderToUser(weights_memory, weightsBuffer.getPrimitiveDesc())
-     // reorder internal gradweights to gradweights
-     val (gradWeights_user, gradWeights_user_m) = reorderToUser(gradWeights_memory, gradWeightBuffer.getPrimitiveDesc())
+      val (weights_user, weights_user_m) = reorderToUser(weights_memory, weightsBuffer.getPrimitiveDesc())
+//      reorder internal gradweights to gradweights
+      val (gradWeights_user, gradWeights_user_m) = reorderToUser(gradWeights_memory, gradWeightBuffer.getPrimitiveDesc())
 
      stream_acc.clear()
      if (reorder_gradWeights != 0L) stream_acc.append(reorder_gradWeights)
      stream_acc.append(conv_acc)
-     if (weights_user != 0L) stream_acc.append(weights_user)
-     if (gradWeights_user != 0L) stream_acc.append(gradWeights_user_m)
+//     if (weights_user != 0L) stream_acc.append(weights_user)
+//     if (gradWeights_user != 0L) stream_acc.append(gradWeights_user_m)
    }
    /* build a simple net */
    // keep original data
@@ -526,6 +564,7 @@ object ConvolutionDnn {
    padW: Int = 0,
    padH: Int = 0,
    nGroup: Int = 1,
+   propagateBack: Boolean = true,
    initWeight: Tensor[Float] = null,
    initBias: Tensor[Float] = null,
    initGradWeight: Tensor[Float] = null,
@@ -533,6 +572,7 @@ object ConvolutionDnn {
    withBias: Boolean = true,
    format: DataFormat = DataFormat.NCHW): ConvolutionDnn[Float] = {
     new ConvolutionDnn[Float](nInputPlane, nOutputPlane, kW, kH, dW,
-    dH, padW, padH, nGroup, initWeight, initBias, initGradWeight, initGradBias, withBias, format)
+    dH, padW, padH, nGroup, propagateBack, initWeight, initBias,
+    initGradWeight, initGradBias, withBias, format)
   }
 }

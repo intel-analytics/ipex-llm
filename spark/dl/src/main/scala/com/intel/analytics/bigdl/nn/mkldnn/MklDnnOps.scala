@@ -142,6 +142,20 @@ object MklDnnOps {
       diff_dst_desc, strides, padding_l, padding_r, padding_kind)
   }
 
+  def poolingForwardDescInit(prop_kind: Int, alg_kind: Int, src_desc: Long, dst_desc: Long,
+                             strides: Array[Int], kernel: Array[Int], padding_l: Array[Int],
+                             padding_r: Array[Int], padding_kind: Int): Long = {
+    MklDnn.PoolingForwardDescInit(prop_kind, alg_kind, src_desc, dst_desc, strides, kernel,
+      padding_l, padding_r, padding_kind)
+  }
+
+  def poolingBackwardDescInit(alg_kind: Int, diff_src_desc: Long, diff_dst_desc: Long,
+                              strides: Array[Int], kernel: Array[Int], padding_l: Array[Int],
+                              padding_r: Array[Int], padding_kind: Int): Long = {
+    MklDnn.PoolingBackwardDescInit(alg_kind, diff_src_desc, diff_dst_desc, strides, kernel,
+      padding_l, padding_r, padding_kind)
+  }
+
   def reorderPrimitiveDescCreate(input: Long, output: Long): Long = {
     require(MklDnn.isLoaded, "mkldnn isn't loaded")
     MklDnn.ReorderPrimitiveDescCreate(input, output)
@@ -227,10 +241,16 @@ object MklDnnOps {
     val handle = new Array[Long](memory_primitives.length)
     for (i <- 0 to memory_primitives.length - 1) {
       if (memory_primitives(i) != 0L) {
-        handle(i) = MklDnnOps.memorySetDataHandle(memory_primitives(i), buffers(i), buffers(i).storageOffset() - 1)
+        handle(i) = MklDnnOps.memorySetDataHandle(
+          memory_primitives(i), buffers(i), buffers(i).storageOffset() - 1)
       }
     }
+//    for (i <- 1 to 50) {
+//      MklDnn.StreamSubmit(loc, block, primitives)
+//    }
+
     MklDnn.StreamSubmit(loc, block, primitives)
+
     for (i <- 0 to memory_primitives.length - 1) {
       if (memory_primitives(i) != 0L) {
          MklDnnOps.memoryReleaseDataHandle(buffers(i), handle(i))

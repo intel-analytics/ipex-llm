@@ -17,7 +17,10 @@
 package com.intel.analytics.bigdl.nn.mkldnn
 
 import breeze.numerics.abs
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.{DenseTensorMath, Tensor}
+
+import scala.collection.mutable.ArrayBuffer
 
 object DnnUtils {
 
@@ -61,5 +64,28 @@ object DnnUtils {
       a
     })
     return true
+  }
+
+  def getTopTimes(times: Array[(AbstractModule[_ <: Activity, _ <: Activity, Float],
+    Long, Long)]): Unit = {
+    var forwardSum = 0L
+    var backwardSum = 0L
+    times.foreach(x => {
+      forwardSum += x._2
+      backwardSum += x._3
+    })
+    println(s"forwardSum = ${forwardSum}", s"backwardSum = ${backwardSum}")
+
+    val timeBuffer = new ArrayBuffer[(AbstractModule[_ <: Activity,
+      _ <: Activity, Float], Long, Long, Long, Double)]
+    var i = 0
+    while (i < times.length) {
+      val all = times(i)._2 + times(i)._3
+      val rate = times(i)._3.toDouble/ times(i)._2
+      timeBuffer.append((times(i)._1, times(i)._2, times(i)._3, all, rate))
+      i += 1
+    }
+    val sortData = timeBuffer.sortBy(a => a._4)
+    sortData.foreach(println)
   }
 }

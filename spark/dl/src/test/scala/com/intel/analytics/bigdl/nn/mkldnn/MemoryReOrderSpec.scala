@@ -16,26 +16,31 @@
 
 package com.intel.analytics.bigdl.nn.mkldnn
 
-import com.intel.analytics.bigdl.nn.ReLU
+import com.intel.analytics.bigdl._
+import com.intel.analytics.bigdl.nn.{Graph, _}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import org.scalatest.{FlatSpec, Matchers}
-
-import scala.util.Random
 
 class MemoryReOrderSpec extends FlatSpec with Matchers {
 
   "reorder dnn should be same with bigdl relu" should "work correctly" in {
     val reludnn = ReLUDnn[Float](ip = false)
-    val input = Tensor[Float](4, 20, 5, 5).rand(-1, 1)
+    val input = Tensor[Float](1, 3, 2, 2).rand(-1, 1)
+    val gradOutput = Tensor[Float](1, 3, 2, 2).rand(-1, 1)
     val output1 = reludnn.forward(input)
-    val tmp = output1.clone()
+    val grad1 = reludnn.backward(input, gradOutput)
 
     val reorder = MemoryReOrder[Float]()
     val output = reorder.forward(output1)
+    val grad = reorder.backward(output1, grad1)
 
+    println(output1)
+    println(output)
 
-    DnnUtils.nearequals(output, tmp)
+    println(grad1)
+    println(grad)
+
     println("done")
   }
 }
