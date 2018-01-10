@@ -407,6 +407,6 @@ class LinearSpec extends FlatSpec with Matchers {
 
   "computeOutputShape" should "work" in {
     val linear = Linear[Float](3, 5)
-    TestUtils.compareOutputShape(linear, Array(2, 3))
+    TestUtils.compareOutputShape(linear, Array(3)) should be (true)
   }
 }
