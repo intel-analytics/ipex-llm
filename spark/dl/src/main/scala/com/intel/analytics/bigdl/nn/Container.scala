@@ -43,6 +43,8 @@ abstract class Container[A <: Activity : ClassTag,
     B <: Activity : ClassTag, T: ClassTag](
   implicit ev: TensorNumeric[T]) extends AbstractModule[A, B, T] {
 
+  var parent: Container[A, B, T] = null
+
   // list of sub modules
   val modules: ArrayBuffer[AbstractModule[Activity, Activity, T]]
   = ArrayBuffer[AbstractModule[Activity, Activity, T]]()
@@ -92,6 +94,9 @@ abstract class Container[A <: Activity : ClassTag,
     val executionNodes = this.compilingPath()
     try {
       doCompile(executionNodes)
+      if (this.parent != null) {
+        this.parent.compile()
+      }
     } catch {
       case e: StartingInputException =>
 //         For pure old-style model, it's fine that it cann't be compiled for compatibility.
@@ -109,6 +114,9 @@ abstract class Container[A <: Activity : ClassTag,
    * @return this container
    */
   def add(module: AbstractModule[_ <: Activity, _ <: Activity, T]): this.type = {
+    if (module.isInstanceOf[Container[A, B, T]]) {
+      module.asInstanceOf[Container[A, B, T]].parent = this
+    }
     modules += module.asInstanceOf[AbstractModule[Activity, Activity, T]]
     compile()
     this

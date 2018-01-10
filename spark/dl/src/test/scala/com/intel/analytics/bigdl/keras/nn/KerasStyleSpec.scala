@@ -109,4 +109,46 @@ class KerasStyleSpec extends BigDLSpecHelper {
     require(graph.getBatchOutputShape().toTensor[Int].toArray().sameElements(Array(-1, 7)))
     require(graph.getBatchInputShape().toTensor[Int].toArray().sameElements(Array(-1, 5)))
   }
+
+  "Nested Sequential model" should "works correctly" in {
+    val seq1 = Sequential[Float]()
+    val seq2 = Sequential[Float]()
+    val d1 = new Dense[Float](20, inputShape = Array(10)).setName("dense1")
+    val d2 = new Dense[Float](5, inputShape = Array(20)).setName("dense2")
+    seq1.add(d1)
+    seq1.add(seq2)
+    seq2.add(d2)
+    val inputData = Tensor[Float](Array(20, 10)).rand()
+    val output = seq1.forward(inputData)
+    require(d2.getBatchOutputShape().toTensor[Int].toArray().sameElements(Array(-1, 5)))
+    require(d2.getBatchInputShape().toTensor[Int].toArray().sameElements(Array(-1, 20)))
+  }
+
+  "Nested Sequential model: pure old style" should "works correctly" in {
+    val seq1 = Sequential[Float]()
+    val seq2 = Sequential[Float]()
+    val d1 = new Linear[Float](inputSize = 5, outputSize = 6).setName("dense1")
+    val d2 = new Linear[Float](inputSize = 6, outputSize = 7).setName("dense2")
+    seq1.add(d1)
+    seq1.add(seq2)
+    seq2.add(d2)
+    val inputData = Tensor[Float](Array(20, 5)).rand()
+    val output = seq1.forward(inputData)
+  }
+
+  "Nested Sequential model: pure old style with proper shape" should "works correctly" in {
+    val seq1 = Sequential[Float]()
+    val seq2 = Sequential[Float]()
+    val d1 = new Linear[Float](inputSize = 5, outputSize = 6).setName("dense1")
+    val d2 = new Linear[Float](inputSize = 6, outputSize = 7).setName("dense2")
+    seq1.add(InputLayer(inputShape = Array(5)))
+    seq1.add(d1)
+    seq1.add(seq2)
+    seq2.add(InputLayer(inputShape = Array(6)))
+    seq2.add(d2)
+    val inputData = Tensor[Float](Array(20, 5)).rand()
+    val output = seq1.forward(inputData)
+    require(d2.getBatchOutputShape().toTensor[Int].toArray().sameElements(Array(-1, 7)))
+    require(d2.getBatchInputShape().toTensor[Int].toArray().sameElements(Array(-1, 6)))
+  }
 }

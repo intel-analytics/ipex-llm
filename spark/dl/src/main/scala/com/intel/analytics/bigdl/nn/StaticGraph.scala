@@ -60,6 +60,10 @@ class StaticGraph[T: ClassTag](
     return gatherFinalResult(outputShapes)
   }
 
+  override def computeBatchOutputShape(inputShape: Activity): Activity = {
+    getBatchOutputShape()
+  }
+
   override def updateOutput(input: Activity): Activity = {
     var i = 0
     while(i < forwardExecution.length) {

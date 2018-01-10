@@ -47,16 +47,6 @@ abstract class LaborAdapter[A <: Activity: ClassTag, B <: Activity: ClassTag, T:
 
     gradInput = labor.gradInput
 
-    forwardTime = labor.forwardTime
-
-    backwardTime = labor.backwardTime
-
-    scaleW = labor.scaleW
-
-    scaleB = labor.scaleB
-
-    train = labor.train
-
     labor.build(inputShape)
   }
 

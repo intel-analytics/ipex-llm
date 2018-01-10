@@ -30,6 +30,8 @@ T: ClassTag](inputShape: Array[Int] = null)(implicit ev: TensorNumeric[T])
     if (inputShape != null) {
       val batchInputShape = Array(-1) ++ inputShape
       Tensor(data = batchInputShape, shape = Array(batchInputShape.length))
+    } else if (this.labor == null) {
+      null
     } else {
       this.labor.getBatchInputShape()
     }
