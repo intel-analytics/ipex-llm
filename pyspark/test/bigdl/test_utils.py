@@ -202,16 +202,20 @@ class BigDLTestCase(TestCase):
         # weight_converter is a function keras [ndarray]-> bigdl [ndarray]
         keras_model_json_path, keras_model_hdf5_path = dump_keras(keras_model,
                                                                   dump_weights=dump_weights)
-
+        print("dim before load ", keras.backend.image_dim_ordering())
         # Use Theano backend to load as a bigdl model
         self.__set_keras_backend("theano")
+        print("dim after load", keras.backend.image_dim_ordering())
         bigdl_model = DefinitionLoader.from_json_path(keras_model_json_path)
         bigdl_model.training(is_training)
         bigdl_output = bigdl_model.forward(input_data)
 
         # Use TensorFlow backend to compare results
         self.__set_keras_backend("tensorflow")
+        print("dim before predict", keras.backend.image_dim_ordering())
+        keras.backend.set_image_dim_ordering("th")
         keras_output = keras_model.predict(input_data)
+        print("dim after predict", keras.backend.image_dim_ordering())
         # TODO: we should verify bigdl_output and keras_output here
         #  init result is not the same, so we disable the verification  for now
         # self.assert_allclose(bigdl_output,
