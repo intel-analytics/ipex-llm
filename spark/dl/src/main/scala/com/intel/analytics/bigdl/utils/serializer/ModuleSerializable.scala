@@ -30,7 +30,7 @@ import serialization.Bigdl.DataType
 import serialization.Bigdl.{AttrValue, BigDLModule, BigDLTensor}
 
 import scala.collection.mutable
-import scala.collection.mutable.ArrayBuffer
+import scala.collection.mutable.{ArrayBuffer, ListBuffer}
 import scala.reflect.ClassTag
 import scala.reflect.runtime.universe
 
@@ -263,21 +263,21 @@ trait ModuleSerializable extends Loadable with Savable{
                                        (implicit ev: TensorNumeric[T]): Unit = {
     val paramTable : Table = module.module.getParametersTable
     if (paramTable != null && paramTable.contains(module.module.getName)) {
+      var params = ListBuffer[Tensor[T]]()
       val modulePramTable : Table = paramTable(module.module.getName)
       if (modulePramTable.contains("weight")) {
         val attrValue = AttrValue.newBuilder
         attrValue.setTensorValue(context.bigdlModule.getWeight)
         val weight = TensorConverter.getAttributeValue(context, attrValue.build)
-        modulePramTable("weight").asInstanceOf[Tensor[T]].
-          copy(weight.asInstanceOf[Tensor[T]])
+        params.append(weight.asInstanceOf[Tensor[T]])
       }
       if (modulePramTable.contains("bias")) {
         val attrValue = AttrValue.newBuilder
         attrValue.setTensorValue(context.bigdlModule.getBias)
         val bias = TensorConverter.getAttributeValue(context, attrValue.build)
-        modulePramTable("bias").asInstanceOf[Tensor[T]].
-          copy(bias.asInstanceOf[Tensor[T]])
+        params.append(bias.asInstanceOf[Tensor[T]])
       }
+      module.module.setParameters(params.toArray)
     }
   }
 

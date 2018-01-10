@@ -62,8 +62,8 @@ class VolumetricConvolution[T: ClassTag](
   require(dT > 0 && dW > 0 && dH > 0, "stride should be greater than zero," +
     s" but got dT: $dT dH: $dH dW: $dW")
 
-  val weight: Tensor[T] = Tensor[T](nOutputPlane, nInputPlane, kT, kH, kW)
-  val bias: Tensor[T] = if (withBias) Tensor[T](nOutputPlane) else null
+  var weight: Tensor[T] = Tensor[T](nOutputPlane, nInputPlane, kT, kH, kW)
+  var bias: Tensor[T] = if (withBias) Tensor[T](nOutputPlane) else null
 
   val gradWeight: Tensor[T] = Tensor[T](nOutputPlane, nInputPlane, kT, kH, kW)
   val gradBias: Tensor[T] = if (withBias) Tensor[T](nOutputPlane) else null
@@ -114,6 +114,16 @@ class VolumetricConvolution[T: ClassTag](
       (Array(this.weight, this.bias), Array(this.gradWeight, this.gradBias))
     } else {
       (Array(this.weight), Array(this.gradWeight))
+    }
+  }
+
+  override def setParameters(params : Array[Tensor[T]]): Unit = {
+    require(params != null, "params cannot be null")
+    require(params.length >= 1, "VolumetricConv should at least have weight")
+    this.weight = params(0)
+    if (withBias) {
+      require(params.length == 2, "VolumetricConv with bias should  have bias")
+      this.bias = params(1)
     }
   }
 

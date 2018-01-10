@@ -43,7 +43,7 @@ class CMul[T: ClassTag](
   var wRegularizer: Regularizer[T] = null)(
   implicit ev: TensorNumeric[T]) extends TensorModule[T] with Initializable {
 
-  val weight: Tensor[T] = Tensor[T](size)
+  var weight: Tensor[T] = Tensor[T](size)
   val gradWeight : Tensor[T] = Tensor[T](size)
 
   private val _sum = Tensor[T]()
@@ -173,6 +173,12 @@ class CMul[T: ClassTag](
 
   override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
     (Array(this.weight), Array(this.gradWeight))
+  }
+
+  override def setParameters(params : Array[Tensor[T]]): Unit = {
+    require(params != null, "params cannot be null")
+    require(params.length == 1, "cmul should only have weight")
+    this.weight = params(0)
   }
 
   override def getParametersTable(): Table = {

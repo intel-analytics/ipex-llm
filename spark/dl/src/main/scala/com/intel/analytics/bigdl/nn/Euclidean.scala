@@ -35,7 +35,7 @@ class Euclidean[T: ClassTag](val inputSize: Int, val outputSize: Int,
   val fastBackward: Boolean = true)(implicit ev: TensorNumeric[T])
   extends TensorModule[T] with Initializable {
 
-  val weight = Tensor(inputSize, outputSize)
+  var weight = Tensor(inputSize, outputSize)
   val gradWeight = Tensor(inputSize, outputSize)
 
   // buffer
@@ -166,6 +166,12 @@ class Euclidean[T: ClassTag](val inputSize: Int, val outputSize: Int,
 
   override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
     (Array(this.weight), Array(this.gradWeight))
+  }
+
+  override def setParameters(params : Array[Tensor[T]]): Unit = {
+    require(params != null, "params cannot be null")
+    require(params.length == 1, "Euclidean should only have weight")
+    this.weight = params(0)
   }
 
   override def getParametersTable(): Table = {

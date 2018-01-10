@@ -50,7 +50,7 @@ class LookupTableSparse[T: ClassTag](
   val maxNorm: Double = -1,
   var wRegularizer: Regularizer[T] = null)(
   implicit ev: TensorNumeric[T]) extends AbstractModule[Activity, Tensor[T], T] with Initializable {
-  val weight = Tensor[T](nIndex, nOutput)
+  var weight = Tensor[T](nIndex, nOutput)
   val gradWeight = Tensor[T](nIndex, nOutput).zero()
 
   require(combiner == "mean" || combiner == "sum" || combiner == "sqrtn", "LookupTableSparse's" +
@@ -223,6 +223,12 @@ class LookupTableSparse[T: ClassTag](
 
   override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
     (Array(this.weight), Array(this.gradWeight))
+  }
+
+  override def setParameters(params : Array[Tensor[T]]): Unit = {
+    require(params != null, "params cannot be null")
+    require(params.length == 1, "scale should only have both weight")
+    this.weight = params(0)
   }
 
   override def getParametersTable(): Table = {

@@ -51,7 +51,7 @@ class LookupTable[T: ClassTag]
 )
 (implicit ev: TensorNumeric[T]) extends TensorModule[T] with Initializable {
 
-  val weight = Tensor[T](nIndex, nOutput)
+  var weight = Tensor[T](nIndex, nOutput)
   val gradWeight = Tensor[T](nIndex, nOutput).zero()
 
   private var inputBuffer = Tensor[T]()
@@ -263,6 +263,12 @@ class LookupTable[T: ClassTag]
 
   override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
     (Array(this.weight), Array(this.gradWeight))
+  }
+
+  override def setParameters(params : Array[Tensor[T]]): Unit = {
+    require(params != null, "params cannot be null")
+    require(params.length == 1, "LookupTable should only have weight")
+    this.weight = params(0)
   }
 
   override def getParametersTable(): Table = {

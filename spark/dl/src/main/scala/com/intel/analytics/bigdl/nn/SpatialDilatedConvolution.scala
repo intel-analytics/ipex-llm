@@ -69,11 +69,11 @@ class SpatialDilatedConvolution[T: ClassTag](
   var bRegularizer: Regularizer[T] = null
 )(implicit ev: TensorNumeric[T]) extends TensorModule[T] with Initializable {
 
-  val weight: Tensor[T] = Tensor[T](nOutputPlane, nInputPlane, kH, kW)
+  var weight: Tensor[T] = Tensor[T](nOutputPlane, nInputPlane, kH, kW)
   val gradWeight = Tensor[T](nOutputPlane, nInputPlane, kH, kW)
   val gradBias = Tensor[T](nOutputPlane)
 
-  val bias: Tensor[T] = Tensor[T](nOutputPlane)
+  var bias: Tensor[T] = Tensor[T](nOutputPlane)
   @transient private var fInput: Tensor[T] = null
   @transient private var fGradInput: Tensor[T] = null
 
@@ -479,6 +479,13 @@ class SpatialDilatedConvolution[T: ClassTag](
 
   override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
     (Array(this.weight, this.bias), Array(this.gradWeight, this.gradBias))
+  }
+
+  override def setParameters(params : Array[Tensor[T]]): Unit = {
+    require(params != null, "params cannot be null")
+    require(params.length == 2, "SpatialDilatedConv should  have both weight and bias")
+    this.weight = params(0)
+    this.bias = params(1)
   }
 
   override def getParametersTable(): Table = {

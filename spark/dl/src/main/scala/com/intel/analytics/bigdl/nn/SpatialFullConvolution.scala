@@ -91,9 +91,9 @@ class SpatialFullConvolution[T: ClassTag](
     "SpatialFullConvolution: adjW=$adjW and adjH=$adjH must be smaller than " +
       s"(dW - 1)=${dW - 1} and (dH - 1)=${dH - 1} respectively")
 
-  val weight: Tensor[T] = Tensor[T](nGroup, nInputPlane / nGroup,
+  var weight: Tensor[T] = Tensor[T](nGroup, nInputPlane / nGroup,
     nOutputPlane / nGroup, kH, kW)
-  val bias: Tensor[T] = if (noBias) null else Tensor[T](nOutputPlane)
+  var bias: Tensor[T] = if (noBias) null else Tensor[T](nOutputPlane)
 
   val gradWeight: Tensor[T] = Tensor[T](nGroup, nInputPlane / nGroup, nOutputPlane / nGroup, kH, kW)
   val gradBias: Tensor[T] = if (noBias) null else Tensor[T](nOutputPlane)
@@ -676,6 +676,16 @@ class SpatialFullConvolution[T: ClassTag](
       (Array(this.weight), Array(this.gradWeight))
     } else {
       (Array(this.weight, this.bias), Array(this.gradWeight, this.gradBias))
+    }
+  }
+
+  override def setParameters(params : Array[Tensor[T]]): Unit = {
+    require(params != null, "params cannot be null")
+    require(params.length >= 1, "SpatialFullConv should at least have weight")
+    this.weight = params(0)
+    if (this.bias != null) {
+      require(params.length ==2, "SpatialFullConv with bias has bias")
+      this.bias = params(1)
     }
   }
 

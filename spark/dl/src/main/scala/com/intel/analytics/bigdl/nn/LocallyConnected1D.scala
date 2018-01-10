@@ -67,13 +67,13 @@ class LocallyConnected1D[T: ClassTag](val nInputFrame: Int,
 
   val nOutputFrame = (nInputFrame - kernelW) / strideW + 1
 
-  val weight: Tensor[T] = if (initWeight != null) {
+  var weight: Tensor[T] = if (initWeight != null) {
     initWeight
   } else {
     Tensor[T](nOutputFrame, outputFrameSize, inputFrameSize * kernelW)
   }
 
-  val bias: Tensor[T] = if (initBias != null) {
+  var bias: Tensor[T] = if (initBias != null) {
     initBias
   } else {
     Tensor[T](nOutputFrame, outputFrameSize)
@@ -398,6 +398,13 @@ class LocallyConnected1D[T: ClassTag](val nInputFrame: Int,
 
   = {
     (Array(this.weight, this.bias), Array(this.gradWeight, this.gradBias))
+  }
+
+  override def setParameters(params : Array[Tensor[T]]): Unit = {
+    require(params != null, "params cannot be null")
+    require(params.length == 2, "LocallyConnected1D should have both weight & bias")
+    this.weight = params(0)
+    this.bias = params(1)
   }
 
   override def getParametersTable(): Table
