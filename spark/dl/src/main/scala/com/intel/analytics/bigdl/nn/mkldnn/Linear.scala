@@ -390,10 +390,10 @@ class Linear[T: ClassTag](
     releaseHandles(diffBias, userDiffBiasMemoryPrim)
 
     val start2 = System.nanoTime()
-//    gradWeight.add(ev.fromType(1), diffWeight)
-//    if (withBias) {
-//      gradBias.add(ev.fromType(1), diffBias)
-//    }
+    gradWeight.add(ev.fromType(1), diffWeight)
+    if (withBias) {
+      gradBias.add(ev.fromType(1), diffBias)
+    }
     val end2 = System.nanoTime()
     aggregating += end2 - start2
   }
