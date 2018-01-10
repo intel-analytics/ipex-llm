@@ -595,6 +595,13 @@ object SGD {
     }
   }
 
+  /**
+   * A learning rate gradual increase policy, where the effective learning rate
+   * increase delta after each iteration.
+   * Calculation: base_lr + delta * iteration
+   *
+   * @param delta increase amount after each iteration
+   */
   case class Warmup(delta: Double) extends LearningRateSchedule {
     override def updateHyperParameter(config: Table, state: Table): Unit = {
       val lr = config.get[Double]("learningRate").getOrElse(1e-3)

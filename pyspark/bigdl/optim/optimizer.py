@@ -315,6 +315,31 @@ class Plateau(JavaValue):
         JavaValue.__init__(self, None, bigdl_type, monitor, factor, patience, mode, epsilon,
                            cooldown, min_lr)
 
+class Warmup(JavaValue):
+    """
+    A learning rate gradual increase policy, where the effective learning rate
+    increase delta after each iteration.
+    Calculation: base_lr + delta * iteration
+
+
+    :param delta: increase amount after each iteration
+
+    >>> warmup = Warmup(0.05)
+    creating: createWarmup
+    """
+    def __init__(self, delta, bigdl_type="float"):
+        JavaValue.__init__(self, None, bigdl_type, delta)
+
+class SequentialSchedule(JavaValue):
+    """
+    :param iterationPerEpoch: iteration numbers per epoch
+
+    >>> sequentialSchedule = SequentialSchedule(5)
+    creating: SequentialSchedule
+    """
+    def __init__(self, iteration_per_epoch, bigdl_type="float"):
+        JavaValue.__init__(self, None, bigdl_type, iteration_per_epoch)
+
 class OptimMethod(JavaValue):
 
     def __init__(self, jvalue, bigdl_type, *args):
@@ -372,15 +397,11 @@ class SGD(OptimMethod):
                  leaningrate_schedule=None,
                  learningrates=None,
                  weightdecays=None,
-                 warmup_iteraton=0,
-                 warmup_epoch=0,
-                 max_learningRate=1e-3,
                  bigdl_type="float"):
         super(SGD, self).__init__(None, bigdl_type, learningrate, learningrate_decay, weightdecay,
                            momentum, dampening, nesterov,
                            leaningrate_schedule if (leaningrate_schedule) else Default(),
-                           JTensor.from_ndarray(learningrates), JTensor.from_ndarray(weightdecays),
-                           warmup_iteraton, warmup_epoch, max_learningRate)
+                           JTensor.from_ndarray(learningrates), JTensor.from_ndarray(weightdecays))
 
 class Adagrad(OptimMethod):
     """
