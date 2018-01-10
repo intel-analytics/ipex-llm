@@ -52,7 +52,6 @@ object DistriOptimizer {
    * @param modelGradients gradients of the cached models
    * @param localCriterions cached criterion
    * @param localStates cached state
-   * @param gradient tensor buffer
    * @tparam T Tensor element type
    */
   case class Cache[T](
@@ -61,7 +60,6 @@ object DistriOptimizer {
     modelGradients: Array[Tensor[T]],
     localCriterions: Array[Criterion[T]],
     localStates: Array[Table],
-    gradient: Tensor[T],
     var moduleTimeList: Array[Long] = null,
     localMethods: Array[Option[Array[ValidationMethod[T]]]],
     optimMethod: OptimMethod[T]
@@ -243,9 +241,9 @@ object DistriOptimizer {
           }
 
           if (finishedThreads.nonEmpty) {
-//            val finishedGradients = finishedThreads.map(cached.modelGradients(_))
+            val finishedGradients = finishedThreads.map(cached.modelGradients(_))
             time = System.nanoTime()
-            val gradLength = cached.modelGradients(0).nElement()
+            val gradLength = finishedGradients(0).nElement()
             val taskSize = gradLength / _subModelNumber
             val extraTask = gradLength % _subModelNumber
 
@@ -258,24 +256,18 @@ object DistriOptimizer {
             Engine.default.invokeAndWait((0 until parallelNum).map(tid => () => {
               val offset = tid * taskSize + math.min(tid, extraTask)
               val length = taskSize + (if (tid < extraTask) 1 else 0)
-              var i = 0
-              while (i < cached.modelGradients.length) {
-                if (i == 0) {
-                  cached.gradient.narrow(1, offset + 1, length)
-                    .copy(cached.modelGradients(i).narrow(1, offset + 1, length))
-                } else {
-                  cached.gradient.narrow(1, offset + 1, length)
-                    .add(cached.modelGradients(i).narrow(1, offset + 1, length))
-                }
+              var i = 1
+              while (i < finishedGradients.length) {
+                  finishedGradients(0).narrow(1, offset + 1, length)
+                    .add(finishedGradients(i).narrow(1, offset + 1, length))
                 i += 1
               }
             }))
             driverMetrics.add("aggregate gradient time", System.nanoTime() - time)
-
             val putG = System.nanoTime()
             // Put first finished model's gradient who aggregated
             // all other models' gradient to AllReduceParameter
-            parameters.putGradients(cached.gradient)
+            parameters.putGradients(finishedGradients(0))
             driverMetrics.add("put gradient", System.nanoTime() - putG)
           } else {
             val putG = System.nanoTime()
@@ -591,7 +583,6 @@ object DistriOptimizer {
         cached.map(_._3), // gradients
         cached.map(_._4), // criterions
         cached.map(_._5), // states
-        cached.head._2.clone(), // a tensor buffer
         new Array[Long](_subModelNumber * computeThresholdbatchSize),
         cached.map(_._6),
         broadcastOptim.clone()
