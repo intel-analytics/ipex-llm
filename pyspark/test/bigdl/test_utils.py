@@ -203,6 +203,7 @@ class BigDLTestCase(TestCase):
         # weight_converter is a function keras [ndarray]-> bigdl [ndarray]
         keras_model_json_path, keras_model_hdf5_path = dump_keras(keras_model,
                                                                   dump_weights=dump_weights)
+        
         # Use Theano backend to load as a bigdl model
         self.__set_keras_backend("theano")
         bigdl_model = DefinitionLoader.from_json_path(keras_model_json_path)
