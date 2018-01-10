@@ -17,10 +17,12 @@
 package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.Module
+import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
+import com.intel.analytics.bigdl.nn.keras.NewModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.{T, Table}
+import com.intel.analytics.bigdl.utils.{Node, T, Table}
 
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
@@ -45,6 +47,61 @@ abstract class Container[A <: Activity : ClassTag,
   val modules: ArrayBuffer[AbstractModule[Activity, Activity, T]]
   = ArrayBuffer[AbstractModule[Activity, Activity, T]]()
 
+  // Return empty list as compile do nothing by default.
+  def compilingPath(): List[Node[AbstractModule[Activity, Activity, T]]] = {
+    List()
+  }
+
+  def gatherFinalResult(values: List[Activity]): Activity = {
+    if (values.isEmpty) {
+      return null
+    }
+    if (values.length == 1) {
+      return values(0)
+    } else {
+      val t = new Table()
+      values.foreach {v =>
+        t.insert(v)
+      }
+      return t
+    }
+  }
+
+  protected def doCompile(executionNodes: List[ModuleNode[T]]): Unit = {
+    var i = 0
+    while (i < executionNodes.length) {
+      val node = executionNodes(i)
+      val preNodes = node.prevNodes
+      val inputShapes = if (preNodes.isEmpty) {
+        if (node.element.getBatchInputShape() == null) {
+          throw new StartingInputException("The first layer should explicitly declare inputShape")
+        } else {
+          List(node.element.getBatchInputShape())
+        }
+      } else {
+        preNodes.map{_.element.getBatchOutputShape()}.toList
+      }
+      node.element.build(gatherFinalResult(inputShapes))
+      i += 1
+    }
+  }
+
+  class StartingInputException(msg: String) extends RuntimeException(msg)
+
+  final def compile(): Unit = {
+    val executionNodes = this.compilingPath()
+    try {
+      doCompile(executionNodes)
+    } catch {
+      case e: StartingInputException =>
+//         For pure old-style model, it's fine that it cann't be compiled for compatibility.
+        if (executionNodes.filter(_.element.isInstanceOf[NewModule[A, B, T]]).length > 0) {
+          throw e
+        }
+      case e: Throwable => throw e
+    }
+  }
+
   /**
    * Add a sub-module to the contained `modules`
    *
@@ -53,6 +110,7 @@ abstract class Container[A <: Activity : ClassTag,
    */
   def add(module: AbstractModule[_ <: Activity, _ <: Activity, T]): this.type = {
     modules += module.asInstanceOf[AbstractModule[Activity, Activity, T]]
+    compile()
     this
   }
 

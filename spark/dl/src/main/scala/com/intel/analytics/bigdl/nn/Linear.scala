@@ -23,7 +23,7 @@ import com.intel.analytics.bigdl.utils.{RandomGenerator, T, Table}
 import scala.reflect.ClassTag
 import RandomGenerator._
 import com.intel.analytics.bigdl.Module
-import com.intel.analytics.bigdl.nn.abstractnn.{Initializable, TensorModule}
+import com.intel.analytics.bigdl.nn.abstractnn.{Activity, Initializable, TensorModule}
 import com.intel.analytics.bigdl.optim.Regularizer
 
 /**
@@ -79,6 +79,12 @@ class Linear[T: ClassTag](
       Option(bias).foreach(biasInitMethod.init(_, VariableFormat.ONE_D))
     }
     zeroGradParameters()
+  }
+
+  override def computeOutputShape(inputShape: Activity): Activity = {
+    val input = inputShape.toTensor[Int].toArray()
+    input(input.length - 1) = outputSize
+    Tensor(data = input, shape = Array(input.length))
   }
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {

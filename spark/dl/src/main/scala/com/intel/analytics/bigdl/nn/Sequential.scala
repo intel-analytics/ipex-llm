@@ -19,6 +19,7 @@ package com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.Node
 
 import scala.reflect.ClassTag
 import scala.collection.mutable.ArrayBuffer
@@ -31,6 +32,27 @@ import scala.collection.mutable.ArrayBuffer
 @SerialVersionUID(5375403296928513267L)
 class Sequential[T: ClassTag]
 (implicit ev: TensorNumeric[T]) extends Container[Activity, Activity, T] {
+
+  override def compilingPath(): List[Node[AbstractModule[Activity, Activity, T]]] = {
+    val nodes = modules.map(Node(_))
+    var i = 0
+    var j = 1
+    while (i < nodes.length && j < nodes.length) {
+      nodes(i).add(nodes(i + 1))
+      i += 1
+      j += 1
+    }
+    return nodes.toList
+  }
+
+  override def getBatchInputShape(): Activity = {
+    this.compilingPath()(0).element.getBatchInputShape()
+  }
+
+  override def getBatchOutputShape(): Activity = {
+    val executionNodes = this.compilingPath()
+    executionNodes(executionNodes.length - 1).element.getBatchOutputShape()
+  }
 
   override def updateOutput(input: Activity): Activity = {
     var i = 0

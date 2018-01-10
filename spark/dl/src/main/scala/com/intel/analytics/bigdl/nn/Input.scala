@@ -36,8 +36,16 @@ import scala.reflect.ClassTag
  * @tparam T The numeric type in the criterion, usually which are [[Float]] or [[Double]]
  */
 @SerialVersionUID(- 8525406230282608924L)
-class Input[T: ClassTag]()(implicit ev: TensorNumeric[T])
+class Input[T: ClassTag](inputShape: Array[Int])(implicit ev: TensorNumeric[T])
   extends AbstractModule[Activity, Activity, T] {
+
+  if (inputShape != null) {
+    val batchInputShape = Array(-1) ++ inputShape
+    setBatchInputShape(Tensor(data = batchInputShape, shape = Array(batchInputShape.length)))
+  }
+
+  override def computeOutputShape(inputShape: Activity): Activity = inputShape
+
   override def updateOutput(input: Activity): Activity = {
     output = input
     output
@@ -55,11 +63,24 @@ class Input[T: ClassTag]()(implicit ev: TensorNumeric[T])
 }
 
 object Input {
-  def apply[T: ClassTag](name : String = null)(implicit ev: TensorNumeric[T]): ModuleNode[T] = {
-    val module = new Input()
+  def apply[T: ClassTag](name : String = null,
+                         inputShape: Array[Int] = null)(implicit ev: TensorNumeric[T]): ModuleNode[T] = {
+    val module = new Input(inputShape)
     if (name != null) {
       module.setName(name)
     }
     new Node(module.asInstanceOf[AbstractModule[Activity, Activity, T]])
+  }
+}
+
+object InputLayer {
+  def apply[T: ClassTag](name : String = null,
+                         inputShape: Array[Int] = null)(implicit ev: TensorNumeric[T])
+  : AbstractModule[Activity, Activity, T] = {
+    val module = new Input(inputShape)
+    if (name != null) {
+      module.setName(name)
+    }
+    module
   }
 }

@@ -73,6 +73,47 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
    */
   var gradInput: A = Activity.allocate[A, T]()
 
+
+  private var inputShapeValue: Activity = null
+
+  private var outputShapeValue: Activity = null
+
+  def setBatchInputShape(inputShape: Activity): Unit = {
+    this.inputShapeValue = inputShape
+  }
+
+  def setBatchOutputShape(outputShape: Activity): Unit = {
+    this.outputShapeValue = outputShape
+  }
+
+
+  def getBatchInputShape(): Activity = {
+    inputShapeValue
+  }
+
+  def getBatchOutputShape(): Activity = {
+    if (outputShapeValue == null) {
+      throw new RuntimeException("You should build this model first before getting the outputshape")
+    }
+    outputShapeValue
+  }
+
+  def isBuilt(): Boolean = {
+    getBatchOutputShape() != null
+  }
+
+  def build(inputShape: Activity): Unit = {
+    this.outputShapeValue = computeOutputShape(inputShape)
+    this.inputShapeValue = inputShape
+  }
+
+  /**
+   * The inputShape should be exactly the same as the input data
+   */
+  def computeOutputShape(inputShape: Activity): Activity = {
+    throw new RuntimeException("Haven't been implemented yet")
+  }
+
   /**
    * The scale of gradient weight and gradient bias
    * before gradParameters being accumulated.
@@ -262,7 +303,7 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
    * @param input input data
    * @return output data
    */
-  final def forward(input: A): B = {
+  def forward(input: A): B = {
     val before = System.nanoTime()
     try {
       updateOutput(input)
@@ -422,7 +463,7 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
     this
   }
 
-  final def isTraining(): Boolean = {
+  def isTraining(): Boolean = {
     this.train
   }
 

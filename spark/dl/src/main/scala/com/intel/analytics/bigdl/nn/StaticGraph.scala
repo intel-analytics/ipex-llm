@@ -46,7 +46,19 @@ class StaticGraph[T: ClassTag](
   private var backId2ForwardId: Array[Int] = _
   private var gradOutputCache: Array[Activity] = _
 
+  compile()
+
   buildBackwardGraph()
+
+  override def getBatchInputShape(): Activity = {
+    val inputShapes = this.inputs.map{n => n.element.getBatchInputShape()}.toList
+    return gatherFinalResult(inputShapes)
+  }
+
+  override def getBatchOutputShape(): Activity = {
+    val outputShapes = this.outputs.map{_.element.getBatchOutputShape()}.toList
+    return gatherFinalResult(outputShapes)
+  }
 
   override def updateOutput(input: Activity): Activity = {
     var i = 0
