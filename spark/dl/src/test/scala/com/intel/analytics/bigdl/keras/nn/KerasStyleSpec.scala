@@ -21,12 +21,11 @@ import com.intel.analytics.bigdl.nn.keras.Dense
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.BigDLSpecHelper
-import org.scalatest.{FlatSpec, Matchers}
 
 
 class KerasStyleSpec extends BigDLSpecHelper {
 
-  "save model" should "works correctly" in {
+  "save and reload model" should "works correctly" in {
     val input = Input[Float](inputShape = Array(10))
     val d = new Dense[Float](20).setName("dense1").inputs(input)
     val d2 = new Dense[Float](5).setName("dense2").inputs(d)
@@ -35,10 +34,12 @@ class KerasStyleSpec extends BigDLSpecHelper {
     val d4 = new Dense[Float](6).setName("dense4").inputs(d3)
     val graph = Graph[Float](input, d4)
     val tmpFile = createTmpFile()
-    graph.saveModule(tmpFile.getAbsolutePath)
-//    val reloadedModel = Module.loadModule(tmpFile.getAbsolutePath)
-//    val inputData = Tensor[Float](Array(20, 10)).rand()
-//    val output = reloadedModel.forward(inputData)
+    val absPath = tmpFile.getAbsolutePath
+    tmpFile.delete()
+    graph.saveModule(absPath)
+    val reloadedModel = Module.loadModule(absPath)
+    val inputData = Tensor[Float](Array(20, 10)).rand()
+    val output = reloadedModel.forward(inputData)
   }
 
   "Graph: Dense + Linear" should "works correctly" in {

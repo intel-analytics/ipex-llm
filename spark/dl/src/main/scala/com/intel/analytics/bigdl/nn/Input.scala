@@ -36,7 +36,7 @@ import scala.reflect.ClassTag
  * @tparam T The numeric type in the criterion, usually which are [[Float]] or [[Double]]
  */
 @SerialVersionUID(- 8525406230282608924L)
-class Input[T: ClassTag](inputShape: Array[Int])(implicit ev: TensorNumeric[T])
+class Input[T: ClassTag](val inputShape: Array[Int])(implicit ev: TensorNumeric[T])
   extends AbstractModule[Activity, Activity, T] {
 
   if (inputShape != null) {

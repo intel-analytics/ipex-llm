@@ -23,12 +23,12 @@ import scala.reflect.ClassTag
 
 
 abstract class KerasModule[A <: Activity: ClassTag, B <: Activity: ClassTag,
-T: ClassTag](inputShape: Array[Int] = null)(implicit ev: TensorNumeric[T])
+T: ClassTag](mInputShape: Array[Int] = null)(implicit ev: TensorNumeric[T])
   extends LaborAdapter[A, B, T] {
 
   override def getBatchInputShape(): Activity = {
-    if (inputShape != null) {
-      val batchInputShape = Array(-1) ++ inputShape
+    if (mInputShape != null) {
+      val batchInputShape = Array(-1) ++ mInputShape
       Tensor(data = batchInputShape, shape = Array(batchInputShape.length))
     } else if (this.labor == null) {
       null
