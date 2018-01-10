@@ -22,9 +22,9 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import scala.reflect.ClassTag
 
 
-abstract class NewModule[A <: Activity: ClassTag, B <: Activity: ClassTag,
+abstract class KerasModule[A <: Activity: ClassTag, B <: Activity: ClassTag,
 T: ClassTag](inputShape: Array[Int] = null)(implicit ev: TensorNumeric[T])
-  extends IModuleAdapter[A, B, T] {
+  extends LaborAdapter[A, B, T] {
 
   private val inputShapeValue: Array[Int] = inputShape
 

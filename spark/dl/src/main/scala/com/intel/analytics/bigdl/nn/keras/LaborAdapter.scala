@@ -31,18 +31,10 @@ import org.apache.spark.rdd.RDD
 
 import scala.reflect.ClassTag
 
-abstract class IModuleAdapter[A <: Activity: ClassTag, B <: Activity: ClassTag, T: ClassTag]
+abstract class LaborAdapter[A <: Activity: ClassTag, B <: Activity: ClassTag, T: ClassTag]
 (implicit ev: TensorNumeric[T]) extends AbstractModule[A, B, T]{
 
   protected  var labor: AbstractModule[A, B, T] = null
-
-//  override def getOutput: B = labor.output
-//
-//  override def getGradInput: A = labor.gradInput
-
-//  override def setGradInput(gradInput: A): Unit = labor.setGradInput(gradInput)
-
-//  override def setInputShape(inputShape: Activity): Unit = labor.setGradInput(inputShape)
 
   override def getBatchInputShape(): Activity = labor.getBatchInputShape()
 
@@ -50,22 +42,11 @@ abstract class IModuleAdapter[A <: Activity: ClassTag, B <: Activity: ClassTag, 
 
   override def build(inputShape: Activity): Unit = {
     labor = doBuild(inputShape)
-    /**
-     * The cached output. So we don't compute it again when need it
-     */
-    output = {
-      labor.output
-    }
 
-    /**
-     * The cached gradient of activities. So we don't compute it again when need it
-     */
-    gradInput = {
-      //    if (labor == null) {
-      //      throw new RuntimeException("Please build this model before using output")
-      //    }
-      labor.gradInput
-    }
+    // TODO: redirect other variables as well
+    output = labor.output
+
+    gradInput = labor.gradInput
 
     labor.build(inputShape)
   }

@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
-import com.intel.analytics.bigdl.nn.keras.NewModule
+import com.intel.analytics.bigdl.nn.keras.KerasModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{Node, T, Table}
@@ -95,7 +95,7 @@ abstract class Container[A <: Activity : ClassTag,
     } catch {
       case e: StartingInputException =>
 //         For pure old-style model, it's fine that it cann't be compiled for compatibility.
-        if (executionNodes.filter(_.element.isInstanceOf[NewModule[A, B, T]]).length > 0) {
+        if (executionNodes.filter(_.element.isInstanceOf[KerasModule[A, B, T]]).length > 0) {
           throw e
         }
       case e: Throwable => throw e

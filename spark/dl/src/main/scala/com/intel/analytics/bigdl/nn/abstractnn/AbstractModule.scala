@@ -108,7 +108,7 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
   }
 
   /**
-   * The inputShape should be exactly the same as the input data
+   * The inputShape should be the same as the input data
    */
   def computeOutputShape(inputShape: Activity): Activity = {
     throw new RuntimeException("Haven't been implemented yet")
