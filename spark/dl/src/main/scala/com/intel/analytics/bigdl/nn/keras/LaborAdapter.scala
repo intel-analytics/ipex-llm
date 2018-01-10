@@ -43,10 +43,19 @@ abstract class LaborAdapter[A <: Activity: ClassTag, B <: Activity: ClassTag, T:
   override def build(inputShape: Activity): Unit = {
     labor = doBuild(inputShape)
 
-    // TODO: redirect other variables as well
     output = labor.output
 
     gradInput = labor.gradInput
+
+    forwardTime = labor.forwardTime
+
+    backwardTime = labor.backwardTime
+
+    scaleW = labor.scaleW
+
+    scaleB = labor.scaleB
+
+    train = labor.train
 
     labor.build(inputShape)
   }
@@ -247,7 +256,7 @@ abstract class LaborAdapter[A <: Activity: ClassTag, B <: Activity: ClassTag, T:
    */
   override def checkEngineType(): this.type = labor.checkEngineType().asInstanceOf[this.type]
 
-  // TODO: clone itself??
+  // TODO: add unittest for clone new Model
   override def cloneModule(): this.type = labor.cloneModule().asInstanceOf[this.type]
 
   /**

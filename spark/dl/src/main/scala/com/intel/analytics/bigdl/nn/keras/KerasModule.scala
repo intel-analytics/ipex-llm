@@ -26,10 +26,8 @@ abstract class KerasModule[A <: Activity: ClassTag, B <: Activity: ClassTag,
 T: ClassTag](inputShape: Array[Int] = null)(implicit ev: TensorNumeric[T])
   extends LaborAdapter[A, B, T] {
 
-  private val inputShapeValue: Array[Int] = inputShape
-
   override def getBatchInputShape(): Activity = {
-    if (this.inputShapeValue != null) {
+    if (inputShape != null) {
       val batchInputShape = Array(-1) ++ inputShape
       Tensor(data = batchInputShape, shape = Array(batchInputShape.length))
     } else {
