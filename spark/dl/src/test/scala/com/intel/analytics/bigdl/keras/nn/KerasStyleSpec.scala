@@ -152,4 +152,14 @@ class KerasStyleSpec extends BigDLSpecHelper {
     require(d2.getOutputShape().toTensor[Int].toArray().sameElements(Array(7)))
     require(d2.getInputShape().toTensor[Int].toArray().sameElements(Array(6)))
   }
+
+  "Use Dense within ParallelTable" should "not works correctly" in {
+    val seq = Sequential[Float]()
+    intercept[RuntimeException] {
+      val parallelTable = ParallelTable[Float]()
+      val d1 = new Dense[Float](20, inputShape = Array(10)).setName("dense1")
+      parallelTable.add(d1)
+      seq.add(parallelTable)
+    }
+  }
 }

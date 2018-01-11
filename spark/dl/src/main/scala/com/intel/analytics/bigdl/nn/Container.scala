@@ -55,6 +55,12 @@ abstract class Container[A <: Activity : ClassTag,
    * return empty as do nothing by default.
    */
   private[bigdl] def compilingPath(): List[Node[AbstractModule[Activity, Activity, T]]] = {
+    val kmodels = modules.filter(_.isInstanceOf[KerasModule[A, B, T]])
+    if (kmodels.length > 0) {
+      throw new RuntimeException(
+        s"""Please do not use KerasModule: ${kmodels.mkString(",")}
+           | within Container other than Sequential and Graph""".stripMargin)
+    }
     List()
   }
 
