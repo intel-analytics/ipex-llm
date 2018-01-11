@@ -81,7 +81,7 @@ class Linear[T: ClassTag](
     zeroGradParameters()
   }
 
-  override def computeBatchOutputShape(inputShape: Activity): Activity = {
+  override def computeOutputShape(inputShape: Activity): Activity = {
     val input = inputShape.toTensor[Int].toArray()
     input(input.length - 1) = outputSize
     Tensor(data = input, shape = Array(input.length))

@@ -75,13 +75,13 @@ abstract class Container[A <: Activity : ClassTag,
       val node = executionNodes(i)
       val preNodes = node.prevNodes
       val inputShapes = if (preNodes.isEmpty) {
-        if (node.element.getBatchInputShape() == null) {
+        if (node.element.getInputShape() == null) {
           throw new StartingInputException("The first layer should explicitly declare inputShape")
         } else {
-          List(node.element.getBatchInputShape())
+          List(node.element.getInputShape())
         }
       } else {
-        preNodes.map{_.element.getBatchOutputShape()}.toList
+        preNodes.map{_.element.getOutputShape()}.toList
       }
       node.element.build(gatherFinalResult(inputShapes))
       i += 1

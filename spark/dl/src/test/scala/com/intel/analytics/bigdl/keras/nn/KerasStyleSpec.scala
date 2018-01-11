@@ -68,8 +68,8 @@ class KerasStyleSpec extends BigDLSpecHelper {
     seq.add(d4)
     val inputData = Tensor[Float](Array(20, 10)).rand()
     val output = seq.forward(inputData)
-    require(d3.getBatchOutputShape().toTensor[Int].toArray().sameElements(Array(-1, 30)))
-    require(d3.getBatchInputShape().toTensor[Int].toArray().sameElements(Array(-1, 5)))
+    require(d3.getOutputShape().toTensor[Int].toArray().sameElements(Array(30)))
+    require(d3.getInputShape().toTensor[Int].toArray().sameElements(Array(5)))
   }
 
   "Sequential: Linear + Dense" should "works correctly" in {
@@ -82,10 +82,10 @@ class KerasStyleSpec extends BigDLSpecHelper {
     seq.add(d2)
     val inputData = Tensor[Float](Array(20, 5)).rand()
     val output = seq.forward(inputData)
-    require(d2.getBatchOutputShape().toTensor[Int].toArray().sameElements(Array(-1, 20)))
-    require(d2.getBatchInputShape().toTensor[Int].toArray().sameElements(Array(-1, 30)))
-    require(seq.getBatchOutputShape().toTensor[Int].toArray().sameElements(Array(-1, 20)))
-    require(seq.getBatchInputShape().toTensor[Int].toArray().sameElements(Array(-1, 5)))
+    require(d2.getOutputShape().toTensor[Int].toArray().sameElements(Array(20)))
+    require(d2.getInputShape().toTensor[Int].toArray().sameElements(Array(30)))
+    require(seq.getOutputShape().toTensor[Int].toArray().sameElements(Array(20)))
+    require(seq.getInputShape().toTensor[Int].toArray().sameElements(Array(5)))
   }
 
   "Sequential: pure old style" should "works correctly" in {
@@ -105,10 +105,10 @@ class KerasStyleSpec extends BigDLSpecHelper {
     val graph = Graph[Float](input, d2)
     val inputData = Tensor[Float](Array(20, 5)).rand()
     val output = graph.forward(inputData)
-    require(d2.element.getBatchOutputShape().toTensor[Int].toArray().sameElements(Array(-1, 7)))
-    require(d2.element.getBatchInputShape().toTensor[Int].toArray().sameElements(Array(-1, 6)))
-    require(graph.getBatchOutputShape().toTensor[Int].toArray().sameElements(Array(-1, 7)))
-    require(graph.getBatchInputShape().toTensor[Int].toArray().sameElements(Array(-1, 5)))
+    require(d2.element.getOutputShape().toTensor[Int].toArray().sameElements(Array(7)))
+    require(d2.element.getInputShape().toTensor[Int].toArray().sameElements(Array(6)))
+    require(graph.getOutputShape().toTensor[Int].toArray().sameElements(Array(7)))
+    require(graph.getInputShape().toTensor[Int].toArray().sameElements(Array(5)))
   }
 
   "Nested Sequential model" should "works correctly" in {
@@ -121,8 +121,8 @@ class KerasStyleSpec extends BigDLSpecHelper {
     seq2.add(d2)
     val inputData = Tensor[Float](Array(20, 10)).rand()
     val output = seq1.forward(inputData)
-    require(d2.getBatchOutputShape().toTensor[Int].toArray().sameElements(Array(-1, 5)))
-    require(d2.getBatchInputShape().toTensor[Int].toArray().sameElements(Array(-1, 20)))
+    require(d2.getOutputShape().toTensor[Int].toArray().sameElements(Array(5)))
+    require(d2.getInputShape().toTensor[Int].toArray().sameElements(Array(20)))
   }
 
   "Nested Sequential model: pure old style" should "works correctly" in {
@@ -149,7 +149,7 @@ class KerasStyleSpec extends BigDLSpecHelper {
     seq2.add(d2)
     val inputData = Tensor[Float](Array(20, 5)).rand()
     val output = seq1.forward(inputData)
-    require(d2.getBatchOutputShape().toTensor[Int].toArray().sameElements(Array(-1, 7)))
-    require(d2.getBatchInputShape().toTensor[Int].toArray().sameElements(Array(-1, 6)))
+    require(d2.getOutputShape().toTensor[Int].toArray().sameElements(Array(7)))
+    require(d2.getInputShape().toTensor[Int].toArray().sameElements(Array(6)))
   }
 }

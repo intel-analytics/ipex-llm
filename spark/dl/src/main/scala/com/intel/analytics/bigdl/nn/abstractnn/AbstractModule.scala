@@ -78,20 +78,25 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
 
   private var outputShapeValue: Activity = null
 
-  def setBatchInputShape(inputShape: Activity): Unit = {
+  def setInputShape(inputShape: Activity): Unit = {
     this.inputShapeValue = inputShape
   }
 
-  def setBatchOutputShape(outputShape: Activity): Unit = {
+  def setOutputShape(outputShape: Activity): Unit = {
     this.outputShapeValue = outputShape
   }
 
-
-  def getBatchInputShape(): Activity = {
+  /**
+   * There's no batch dim in the inputShape which just represent a sample record.
+   */
+  def getInputShape(): Activity = {
     inputShapeValue
   }
 
-  def getBatchOutputShape(): Activity = {
+  /**
+   * There's no batch dim in the outputShape which just represent a sample record.
+   */
+  def getOutputShape(): Activity = {
     if (outputShapeValue == null) {
       throw new RuntimeException("You should build this model first before getting the outputshape")
     }
@@ -99,18 +104,18 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
   }
 
   def isBuilt(): Boolean = {
-    getBatchOutputShape() != null
+    getOutputShape() != null
   }
 
   def build(inputShape: Activity): Unit = {
-    this.outputShapeValue = computeBatchOutputShape(inputShape)
+    this.outputShapeValue = computeOutputShape(inputShape)
     this.inputShapeValue = inputShape
   }
 
   /**
-   * The inputShape should be the same as the input data and the first dim is batch
+   * There's no batch dim in the inputShape which just represent a sample record.
    */
-  def computeBatchOutputShape(inputShape: Activity): Activity = {
+  def computeOutputShape(inputShape: Activity): Activity = {
     throw new RuntimeException("Haven't been implemented yet")
   }
 

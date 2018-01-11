@@ -45,23 +45,23 @@ class Sequential[T: ClassTag]
     return nodes.toList
   }
 
-  override def getBatchInputShape(): Activity = {
+  override def getInputShape(): Activity = {
     if (this.compilingPath().isEmpty) {
       return null
     }
-    this.compilingPath()(0).element.getBatchInputShape()
+    this.compilingPath()(0).element.getInputShape()
   }
 
-  override def getBatchOutputShape(): Activity = {
+  override def getOutputShape(): Activity = {
     val executionNodes = this.compilingPath()
     if (executionNodes.isEmpty) {
       return null
     }
-    executionNodes(executionNodes.length - 1).element.getBatchOutputShape()
+    executionNodes(executionNodes.length - 1).element.getOutputShape()
   }
 
-  override def computeBatchOutputShape(inputShape: Activity): Activity = {
-    getBatchOutputShape()
+  override def computeOutputShape(inputShape: Activity): Activity = {
+    getOutputShape()
   }
 
   override def updateOutput(input: Activity): Activity = {

@@ -50,18 +50,18 @@ class StaticGraph[T: ClassTag](
 
   buildBackwardGraph()
 
-  override def getBatchInputShape(): Activity = {
-    val inputShapes = this.inputs.map{n => n.element.getBatchInputShape()}.toList
+  override def getInputShape(): Activity = {
+    val inputShapes = this.inputs.map{n => n.element.getInputShape()}.toList
     return gatherFinalResult(inputShapes)
   }
 
-  override def getBatchOutputShape(): Activity = {
-    val outputShapes = this.outputs.map{_.element.getBatchOutputShape()}.toList
+  override def getOutputShape(): Activity = {
+    val outputShapes = this.outputs.map{_.element.getOutputShape()}.toList
     return gatherFinalResult(outputShapes)
   }
 
-  override def computeBatchOutputShape(inputShape: Activity): Activity = {
-    getBatchOutputShape()
+  override def computeOutputShape(inputShape: Activity): Activity = {
+    getOutputShape()
   }
 
   override def updateOutput(input: Activity): Activity = {

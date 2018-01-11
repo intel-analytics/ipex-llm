@@ -40,11 +40,10 @@ class Input[T: ClassTag](val inputShape: Array[Int])(implicit ev: TensorNumeric[
   extends AbstractModule[Activity, Activity, T] {
 
   if (inputShape != null) {
-    val batchInputShape = Array(-1) ++ inputShape
-    setBatchInputShape(Tensor(data = batchInputShape, shape = Array(batchInputShape.length)))
+    setInputShape(Tensor(data = inputShape, shape = Array(inputShape.length)))
   }
 
-  override def computeBatchOutputShape(inputShape: Activity): Activity = inputShape
+  override def computeOutputShape(inputShape: Activity): Activity = inputShape
 
   override def updateOutput(input: Activity): Activity = {
     output = input

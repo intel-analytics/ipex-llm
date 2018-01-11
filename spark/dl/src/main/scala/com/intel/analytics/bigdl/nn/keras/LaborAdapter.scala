@@ -61,9 +61,9 @@ abstract class LaborAdapter[A <: Activity: ClassTag, B <: Activity: ClassTag, T:
 
   var labor: AbstractModule[A, B, T] = null
 
-  override def getBatchInputShape(): Activity = labor.getBatchInputShape()
+  override def getInputShape(): Activity = labor.getInputShape()
 
-  override def getBatchOutputShape(): Activity = labor.getBatchOutputShape()
+  override def getOutputShape(): Activity = labor.getOutputShape()
 
   override def build(inputShape: Activity): Unit = {
     labor = doBuild(inputShape)

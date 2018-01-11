@@ -37,7 +37,7 @@ object TestUtils {
     val seq = Sequential[Float]()
     seq.add(InputLayer[Float](inputShape = inputShape))
     seq.add(layer)
-    val calcOutputShape = seq.getBatchOutputShape().toTensor[Int].toArray()
+    val calcOutputShape = seq.getOutputShape().toTensor[Int].toArray()
     val forwardOutputShape = seq.forward(inputData).toTensor[Float].size()
     calcOutputShape.slice(1, calcOutputShape.length).sameElements(
       forwardOutputShape.slice(1, forwardOutputShape.length))
