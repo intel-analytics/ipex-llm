@@ -23,7 +23,7 @@ from bigdl.util.common import to_sample_rdd
 from bigdl.util.common import redire_spark_logs, show_bigdl_info_logs
 
 
-class KerasModelWrapper():
+class KerasModelWrapper:
 
     def __init__(self, kmodel):
         redire_spark_logs()
@@ -34,7 +34,7 @@ class KerasModelWrapper():
         self.optim_method = OptimConverter.to_bigdl_optim_method(kmodel.optimizer)
         self.metrics = OptimConverter.to_bigdl_metrics(kmodel.metrics) if kmodel.metrics else None
 
-    def evaluate(self, x, y, batch_size=32, sample_weight=None, is_distributed=False):
+    def evaluate(self, x, y, batch_size=32, sample_weight=None, is_distributed=True):
         """
         Evaluate a model by the given metrics.
         :param x: ndarray or list of ndarray for local mode.
@@ -58,8 +58,8 @@ class KerasModelWrapper():
                         self.bmodel.evaluate(input, batch_size, self.metrics)]
             else:
                 raise Exception("No Metrics found.")
-
-        raise Exception("not supported operation: %s", is_distributed)
+        else:
+            raise Exception("We only support evaluation in distributed mode")
 
     def predict(self, x, batch_size=None, verbose=None, is_distributed=False):
         """Generates output predictions for the input samples,
@@ -88,7 +88,7 @@ class KerasModelWrapper():
 
     def fit(self, x, y=None, batch_size=32, nb_epoch=10, verbose=1, callbacks=None,
             validation_split=0., validation_data=None, shuffle=True,
-            class_weight=None, sample_weight=None, initial_epoch=0, is_distributed=False):
+            class_weight=None, sample_weight=None, initial_epoch=0, is_distributed=True):
         """Optimize the model by the given options
 
         :param x: ndarray or list of ndarray for local mode.
@@ -112,15 +112,15 @@ class KerasModelWrapper():
         if validation_split != 0.:
             unsupport_exp("validation_split")
         bopt = self.__create_optimizer(x=x,
-                                y=y,
-                                batch_size=batch_size,
-                                nb_epoch=nb_epoch,
-                                validation_data=validation_data,
-                                is_distributed=is_distributed)
+                                       y=y,
+                                       batch_size=batch_size,
+                                       nb_epoch=nb_epoch,
+                                       validation_data=validation_data,
+                                       is_distributed=is_distributed)
         bopt.optimize()
 
     def __create_optimizer(self, x=None, y=None, batch_size=32, nb_epoch=10,
-                         validation_data=None, is_distributed=False):
+                           validation_data=None, is_distributed=False):
         if is_distributed:
             if isinstance(x, np.ndarray):
                 input = to_sample_rdd(x, y)
@@ -129,15 +129,15 @@ class KerasModelWrapper():
                 input = x
                 validation_data_rdd = validation_data
             return self.__create_distributed_optimizer(training_rdd=input,
-                                       batch_size=batch_size,
-                                       nb_epoch=nb_epoch,
-                                       validation_data=validation_data_rdd)
+                                                       batch_size=batch_size,
+                                                       nb_epoch=nb_epoch,
+                                                       validation_data=validation_data_rdd)
         else:
             if isinstance(x, np.ndarray):
                 return self.__create_local_optimizer(x, y,
-                                 batch_size=batch_size,
-                                 nb_epoch=nb_epoch,
-                                 validation_data=validation_data)
+                                                     batch_size=batch_size,
+                                                     nb_epoch=nb_epoch,
+                                                     validation_data=validation_data)
         raise Exception("not supported type: %s" % x)
 
     def __create_local_optimizer(self, x, y, batch_size=32, nb_epoch=10, validation_data=None):

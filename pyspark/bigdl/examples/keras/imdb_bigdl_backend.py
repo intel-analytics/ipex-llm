@@ -15,23 +15,25 @@
 #
 
 
-# Alternative of the example imdb_cnn_lstm.py with BigDL backend
+# Alternative of the example imdb_cnn_lstm.py using BigDL backend
 # You can essentially employ the same code written in Keras 1.2.2 and add the following line
-# after building the model and before training the model.
+# after building, compiling the model and before the training.
 #     model = with_bigdl_backend(model)
 
 from bigdl.keras.backend import *
 from bigdl.examples.keras.imdb_cnn_lstm import *
 
 X_train, y_train, X_test, y_test = load_imdb()
-model = build_keras_model()
 
-model.compile(loss='binary_crossentropy',
-              optimizer='adam',
-              metrics=['accuracy'])
+# Define a model in Keras 1.2.2 and compile
+keras_model = build_keras_model()
 
-# add this line of code to use BigDL backend alternatively
-model = with_bigdl_backend(model)
+keras_model.compile(loss='binary_crossentropy',
+                    optimizer='adam',
+                    metrics=['accuracy'])
 
-model.fit(X_train, y_train, batch_size=32, nb_epoch=2, is_distributed=True,
+# Add this line of code to use BigDL backend alternatively
+model = with_bigdl_backend(keras_model)
+
+model.fit(X_train, y_train, batch_size=32, nb_epoch=2,
           validation_data=(X_test, y_test))
