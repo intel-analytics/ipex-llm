@@ -111,12 +111,12 @@ object DistriOptimizer {
     val partitionNum = dataset.originRDD().partitions.length
     var wallClockTime = 0L
     var lastEpochTime = 0L
-    val driverState = T(
-      "epoch" -> optimMethod.state.get[Int]("epoch").getOrElse(1),
-      "neval" -> optimMethod.state.get[Int]("neval").getOrElse(1),
-      "Loss" -> optimMethod.state.get[Float]("Loss").getOrElse(Float.PositiveInfinity),
-      "score" -> optimMethod.state.get[Float]("score").getOrElse(0f)
-    )
+    state("epoch") = state.getOrElse("epoch", 1)
+    state("neval") = state.getOrElse("neval", 1)
+    state("Loss") = state.getOrElse("Loss", Float.PositiveInfinity)
+    state("score") = state.getOrElse("score", 0f)
+    state("recordsProcessedThisEpoch") = state.getOrElse("recordsProcessedThisEpoch", 0)
+    var recordsProcessedThisEpoch = state[Int]("recordsProcessedThisEpoch")
     val _subModelNumber = Engine.getEngineType() match {
       case MklBlas => coresPerNode
     }
@@ -133,12 +133,7 @@ object DistriOptimizer {
         "fly from random samples, which is better for convergence.")
     }
 
-    val shuffleBefore = System.nanoTime()
     logger.info(s"config $state")
-    logger.info("Shuffle data")
-    dataset.shuffle()
-    val shuffleEnd = System.nanoTime()
-    logger.info(s"Shuffle data complete. Takes ${(shuffleEnd - shuffleBefore) / 1e9}s")
 
     var tasks: ArrayBuffer[Future[_]] = new ArrayBuffer()
     var threshold = Long.MaxValue
@@ -161,8 +156,16 @@ object DistriOptimizer {
 
     var epochStart = System.nanoTime()
     var dataRDD = dataset.data(train = true)
-    var recordsProcessedThisEpoch = 0
-    while (!endWhen(driverState)) {
+
+    while (!endWhen(state)) {
+      if (recordsProcessedThisEpoch == 0) {
+        val shuffleBefore = System.nanoTime()
+        logger.info("Shuffle data")
+        dataset.shuffle()
+        val shuffleEnd = System.nanoTime()
+        logger.info(s"Shuffle data complete. Takes ${(shuffleEnd - shuffleBefore) / 1e9}s")
+      }
+
       val lossSum = sc.accumulator(0.0, "loss sum")
       val recordsNum = sc.accumulator(0, "record number")
       metrics.set("computing time for each node", mutable.ArrayBuffer[Double](), sc)
@@ -344,11 +347,11 @@ object DistriOptimizer {
               System.nanoTime() - getG)
           }
           parameters.gradientPartition.div(scale)
-          modelCache.optimMethod.state.update("epoch", driverState[Int]("epoch"))
-          modelCache.optimMethod.state.update("neval", driverState[Int]("neval"))
-          modelCache.optimMethod.state.update("Loss", driverState[Float]("Loss"))
+          modelCache.optimMethod.state.update("epoch", state[Int]("epoch"))
+          modelCache.optimMethod.state.update("neval", state[Int]("neval"))
+          modelCache.optimMethod.state.update("Loss", state[Float]("Loss"))
           if (validationMethods.isDefined) {
-            modelCache.optimMethod.state.update("score", driverState[Float]("score"))
+            modelCache.optimMethod.state.update("score", state[Float]("score"))
           }
           var time = System.nanoTime()
           // gradient clipping
@@ -367,21 +370,21 @@ object DistriOptimizer {
         recordsProcessedThisEpoch += recordsNum.value
         val end = System.nanoTime()
         wallClockTime += end - start
-        optimMethod.state.update("epoch", driverState[Int]("epoch"))
-        optimMethod.state.update("neval", driverState[Int]("neval"))
-        driverState("Loss") = lossSum.value.toFloat / numFinishedModelUpdates
-        optimMethod.state.update("Loss", driverState[Float]("Loss"))
+        optimMethod.state.update("epoch", state[Int]("epoch"))
+        optimMethod.state.update("neval", state[Int]("neval"))
+        state("Loss") = lossSum.value.toFloat / numFinishedModelUpdates
+        optimMethod.state.update("Loss", state[Float]("Loss"))
         if (validationMethods.isDefined) {
-          optimMethod.state.update("score", driverState[Float]("score"))
+          optimMethod.state.update("score", state[Float]("score"))
         }
         optimMethod.updateHyperParameter()
-        driverState("Throughput") = recordsNum.value.toFloat / ((end - start) / 1e9f)
-        driverState("LearningRate") = -optimMethod.getLearningRate().toFloat
-        val _header = header(driverState[Int]("epoch"), recordsProcessedThisEpoch, numSamples,
-          driverState[Int]("neval"), wallClockTime)
+        state("Throughput") = recordsNum.value.toFloat / ((end - start) / 1e9f)
+        state("LearningRate") = -optimMethod.getLearningRate().toFloat
+        val _header = header(state[Int]("epoch"), recordsProcessedThisEpoch, numSamples,
+          state[Int]("neval"), wallClockTime)
         logger.info(s"${_header} Trained ${recordsNum.value} records in ${(end - start) / 1e9} " +
-          s"seconds. Throughput is ${driverState("Throughput")} records/second. Loss is ${
-            driverState("Loss")}. ${optimMethod.getHyperParameter()}")
+          s"seconds. Throughput is ${state("Throughput")} records/second. Loss is ${
+            state("Loss")}. ${optimMethod.getHyperParameter()}")
         logger.debug("\n" + metrics.summary())
         logger.debug("Dropped modules: " + (driverSubModelNum - numFinishedModelUpdates))
         lossArray = new Array[Double](_subModelNumber)
@@ -416,7 +419,7 @@ object DistriOptimizer {
           dropModelNumBatch = 0
         }
 
-        driverState("neval") = driverState[Int]("neval") + 1
+        state("neval") = state[Int]("neval") + 1
         if (recordsProcessedThisEpoch >= numSamples) {
           // Epoch is finished
           val epochEnd = System.nanoTime()
@@ -425,11 +428,12 @@ object DistriOptimizer {
           epochStart = System.nanoTime()
           logger.info(s"${_header} Epoch finished. Wall clock time is ${wallClockTime / 1e6} ms")
 
-          driverState("epoch") = driverState[Int]("epoch") + 1
+          state("epoch") = state[Int]("epoch") + 1
           dataset.shuffle()
           dataRDD = dataset.data(train = true)
           recordsProcessedThisEpoch = 0
         }
+        state("recordsProcessedThisEpoch") = recordsProcessedThisEpoch
 
         validate(
           validationTrigger,
@@ -438,7 +442,7 @@ object DistriOptimizer {
           coresPerNode,
           models,
           wallClockTime,
-          driverState,
+          state,
           validationSummary
         )
 
@@ -446,7 +450,7 @@ object DistriOptimizer {
           saveSummary(
             summary,
             models,
-            driverState,
+            state,
             parameters,
             trainingModel
           )
@@ -458,7 +462,7 @@ object DistriOptimizer {
           isOverWrite,
           wallClockTime,
           models,
-          driverState,
+          state,
           parameters,
           optimMethod,
           trainingModel
@@ -809,6 +813,14 @@ class DistriOptimizer[T: ClassTag] (
     }).count()
   }
 
+  private def endEpoch(): Unit = {
+    val records = this.state.get[Int]("recordsProcessedThisEpoch")
+    if (records.isDefined && records.get != 0) {
+      this.state("epoch") = this.state[Int]("epoch") + 1
+      this.state("recordsProcessedThisEpoch") = 0
+    }
+  }
+
 
   override def setTrainData(sampleRDD: RDD[Sample[T]],
     batchSize: Int,
@@ -816,6 +828,7 @@ class DistriOptimizer[T: ClassTag] (
     this.dataset = (DataSet.rdd(sampleRDD) ->
       SampleToMiniBatch(miniBatch, batchSize, None))
       .asInstanceOf[DistributedDataSet[MiniBatch[T]]]
+    endEpoch()
     this
   }
 
@@ -828,6 +841,7 @@ class DistriOptimizer[T: ClassTag] (
     dataset = (DataSet.rdd(sampleRDD) ->
       SampleToMiniBatch(batchSize, _featurePaddingParam, _labelPaddingParam))
       .asInstanceOf[DistributedDataSet[MiniBatch[T]]]
+    endEpoch()
     this
   }
 
@@ -862,7 +876,7 @@ class DistriOptimizer[T: ClassTag] (
     prepareInput()
 
     models = DistriOptimizer.initThreadModels(model, distDataset, criterion, state,
-      nodeNumber, coresPerNode, checkSingleton, parameters, validationMethods, optimMethod)
+        nodeNumber, coresPerNode, checkSingleton, parameters, validationMethods, optimMethod)
 
     if (checkpointPath.isDefined) {
       val file = checkpointPath.get + "/" +
@@ -946,6 +960,7 @@ class DistriOptimizer[T: ClassTag] (
 
     // Reset some internal states, so this or other optimizers can run optimize again
     clearState()
+    models.unpersist()
 
     model
   }
