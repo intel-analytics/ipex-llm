@@ -181,5 +181,6 @@ class TestApplication(BigDLTestCase):
 
         self.assert_allclose(keras_output, bigdl_output, rtol=1e-3, atol=1e-3)
 
+
 if __name__ == "__main__":
     pytest.main([__file__])

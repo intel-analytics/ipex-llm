@@ -299,11 +299,16 @@ class BigDLTestCase(TestCase):
                        rtol=rtol,
                        atol=atol)
 
+    # Set Keras Backend without affecting the current dim_ordering
     def __set_keras_backend(self, backend):
         if K.backend() != backend:
+            current_dim = K.image_dim_ordering()
             os.environ['KERAS_BACKEND'] = backend
             from six.moves import reload_module
             reload_module(K)
+            K.set_image_dim_ordering(current_dim)
             assert K.backend() == backend
+            assert K.image_dim_ordering() == current_dim
+        # Make theano backend compatible with Python3
         if backend == "theano":
             from theano import ifelse
