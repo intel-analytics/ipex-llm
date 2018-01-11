@@ -300,14 +300,6 @@ abstract class KerasModule[A <: Activity: ClassTag, B <: Activity: ClassTag, T: 
   override def reset(): Unit = labor.reset()
 
   /**
-   * get execution engine type
-   */
-  override def checkEngineType(): this.type = {
-    labor.checkEngineType()
-    this
-  }
-
-  /**
    * Set weight and bias for the module
    * @param newWeights array of weights and bias
    * @return
@@ -325,10 +317,5 @@ abstract class KerasModule[A <: Activity: ClassTag, B <: Activity: ClassTag, T: 
   override def getWeightsBias(): Array[Tensor[T]] = labor.getWeightsBias()
 
   override def quantize(): Module[T] = labor.quantize()
-
-  override def getClassTagNumerics() : (Array[ClassTag[_]], Array[TensorNumeric[_]]) =
-    labor.getClassTagNumerics()
-
-  override def getNumericType(): TensorDataType = labor.getNumericType()
   
 }
