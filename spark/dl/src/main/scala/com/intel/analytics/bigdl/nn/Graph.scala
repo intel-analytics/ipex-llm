@@ -75,7 +75,7 @@ abstract class Graph[T: ClassTag](
   private val variables: Option[(Array[Tensor[T]], Array[Tensor[T]])] = None
 )(implicit ev: TensorNumeric[T]) extends Container[Activity, Activity, T]{
 
-  override def compilingPath(): List[Node[AbstractModule[Activity, Activity, T]]] =
+  private[bigdl] override def compilingPath(): List[Node[AbstractModule[Activity, Activity, T]]] =
     this.getForwardExecutions.reverse.toList
 
   /**

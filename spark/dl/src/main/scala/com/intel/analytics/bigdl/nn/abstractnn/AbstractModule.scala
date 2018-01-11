@@ -74,17 +74,9 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
   var gradInput: A = Activity.allocate[A, T]()
 
 
-  private var inputShapeValue: Activity = null
+  private[bigdl] var inputShapeValue: Activity = null
 
-  private var outputShapeValue: Activity = null
-
-  def setInputShape(inputShape: Activity): Unit = {
-    this.inputShapeValue = inputShape
-  }
-
-  def setOutputShape(outputShape: Activity): Unit = {
-    this.outputShapeValue = outputShape
-  }
+  private[bigdl] var outputShapeValue: Activity = null
 
   /**
    * There's no batch dim in the inputShape which just represent a sample record.
@@ -107,7 +99,7 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
     getOutputShape() != null
   }
 
-  def build(inputShape: Activity): Unit = {
+  private[bigdl] def build(inputShape: Activity): Unit = {
     this.outputShapeValue = computeOutputShape(inputShape)
     this.inputShapeValue = inputShape
   }

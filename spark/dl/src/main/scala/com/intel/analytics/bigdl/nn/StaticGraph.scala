@@ -52,12 +52,12 @@ class StaticGraph[T: ClassTag](
 
   override def getInputShape(): Activity = {
     val inputShapes = this.inputs.map{n => n.element.getInputShape()}.toList
-    return gatherFinalResult(inputShapes)
+    return toActivity(inputShapes)
   }
 
   override def getOutputShape(): Activity = {
     val outputShapes = this.outputs.map{_.element.getOutputShape()}.toList
-    return gatherFinalResult(outputShapes)
+    return toActivity(outputShapes)
   }
 
   override def computeOutputShape(inputShape: Activity): Activity = {

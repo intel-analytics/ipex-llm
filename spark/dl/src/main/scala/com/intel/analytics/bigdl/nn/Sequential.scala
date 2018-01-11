@@ -33,7 +33,7 @@ import scala.collection.mutable.ArrayBuffer
 class Sequential[T: ClassTag]
 (implicit ev: TensorNumeric[T]) extends Container[Activity, Activity, T] {
 
-  override def compilingPath(): List[Node[AbstractModule[Activity, Activity, T]]] = {
+  private[bigdl] override def compilingPath(): List[Node[AbstractModule[Activity, Activity, T]]] = {
     val nodes = modules.map(Node(_))
     var i = 0
     var j = 1

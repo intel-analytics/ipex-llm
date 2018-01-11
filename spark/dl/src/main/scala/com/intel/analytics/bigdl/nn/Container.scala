@@ -43,18 +43,22 @@ abstract class Container[A <: Activity : ClassTag,
     B <: Activity : ClassTag, T: ClassTag](
   implicit ev: TensorNumeric[T]) extends AbstractModule[A, B, T] {
 
-  var parent: Container[A, B, T] = null
+  private var parent: Container[A, B, T] = null
 
   // list of sub modules
   val modules: ArrayBuffer[AbstractModule[Activity, Activity, T]]
   = ArrayBuffer[AbstractModule[Activity, Activity, T]]()
 
-  // Return empty list as compile do nothing by default.
-  def compilingPath(): List[Node[AbstractModule[Activity, Activity, T]]] = {
+  /**
+   * We base on the order of this returning result for compiling.
+   * In general, it's a list of nodes from topology sort.
+   * return empty as do nothing by default.
+   */
+  private[bigdl] def compilingPath(): List[Node[AbstractModule[Activity, Activity, T]]] = {
     List()
   }
 
-  def gatherFinalResult(values: List[Activity]): Activity = {
+  private[bigdl] def toActivity(values: List[Activity]): Activity = {
     if (values.isEmpty) {
       return null
     }
@@ -69,7 +73,7 @@ abstract class Container[A <: Activity : ClassTag,
     }
   }
 
-  protected def doCompile(executionNodes: List[ModuleNode[T]]): Unit = {
+  private[bigdl] def doCompile(executionNodes: List[ModuleNode[T]]): Unit = {
     var i = 0
     while (i < executionNodes.length) {
       val node = executionNodes(i)
@@ -83,14 +87,14 @@ abstract class Container[A <: Activity : ClassTag,
       } else {
         preNodes.map{_.element.getOutputShape()}.toList
       }
-      node.element.build(gatherFinalResult(inputShapes))
+      node.element.build(toActivity(inputShapes))
       i += 1
     }
   }
 
-  class StartingInputException(msg: String) extends RuntimeException(msg)
+  private[bigdl] class StartingInputException(msg: String) extends RuntimeException(msg)
 
-  final def compile(): Unit = {
+  private[bigdl] final def compile(): Unit = {
     val executionNodes = this.compilingPath()
     try {
       doCompile(executionNodes)
@@ -99,7 +103,7 @@ abstract class Container[A <: Activity : ClassTag,
       }
     } catch {
       case e: StartingInputException =>
-//         For pure old-style model, it's fine that it cann't be compiled for compatibility.
+        // For pure old-style model, it's fine that it cann't be compiled for compatibility.
         if (executionNodes.filter(_.element.isInstanceOf[KerasModule[A, B, T]]).length > 0) {
           throw e
         }

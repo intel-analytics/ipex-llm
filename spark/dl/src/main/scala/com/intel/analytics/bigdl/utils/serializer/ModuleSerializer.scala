@@ -23,7 +23,7 @@ import com.intel.analytics.bigdl.nn._
 import scala.collection.JavaConverters._
 import scala.reflect.runtime.universe
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
-import com.intel.analytics.bigdl.nn.keras.{LaborAdapter, LaborAdapterSerializer}
+import com.intel.analytics.bigdl.nn.keras.{KerasModule, KerasModuleSerializer}
 import com.intel.analytics.bigdl.nn.ops.{DecodeRawSerializer, ParseExample, RandomUniform => RandomUniformOps}
 import com.intel.analytics.bigdl.nn.tf.StrideSlice
 import com.intel.analytics.bigdl.optim.Regularizer
@@ -73,8 +73,8 @@ object ModuleSerializer extends ModuleSerializable{
           ContainerSerializer.serializeModule(serializerContext)
         case cell : Cell[_] =>
           CellSerializer.serializeModule(serializerContext)
-        case laborAdapter: LaborAdapter[_, _, _] =>
-          LaborAdapterSerializer.serializeModule(serializerContext)
+        case laborAdapter: KerasModule[_, _, _] =>
+          KerasModuleSerializer.serializeModule(serializerContext)
         case _ => ModuleSerializer.serializeModule(serializerContext)
       }
     }
@@ -100,7 +100,7 @@ object ModuleSerializer extends ModuleSerializable{
           if (attrMap.containsKey("is_cell_module")) {
             CellSerializer.loadModule(context)
           } else if (attrMap.containsKey("is_labor_module")) {
-            LaborAdapterSerializer.loadModule(context)
+            KerasModuleSerializer.loadModule(context)
           } else {
             ModuleSerializer.loadModule(context)
           }

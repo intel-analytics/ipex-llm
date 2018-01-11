@@ -40,7 +40,7 @@ class Input[T: ClassTag](val inputShape: Array[Int])(implicit ev: TensorNumeric[
   extends AbstractModule[Activity, Activity, T] {
 
   if (inputShape != null) {
-    setInputShape(Tensor(data = inputShape, shape = Array(inputShape.length)))
+    inputShapeValue = Tensor(data = inputShape, shape = Array(inputShape.length))
   }
 
   override def computeOutputShape(inputShape: Activity): Activity = inputShape
@@ -63,7 +63,7 @@ class Input[T: ClassTag](val inputShape: Array[Int])(implicit ev: TensorNumeric[
 
 object Input {
   def apply[T: ClassTag](name : String = null,
-                         inputShape: Array[Int] = null)(implicit ev: TensorNumeric[T]): ModuleNode[T] = {
+    inputShape: Array[Int] = null)(implicit ev: TensorNumeric[T]): ModuleNode[T] = {
     val module = new Input(inputShape)
     if (name != null) {
       module.setName(name)
@@ -75,7 +75,7 @@ object Input {
 object InputLayer {
   def apply[T: ClassTag](name : String = null,
                          inputShape: Array[Int] = null)(implicit ev: TensorNumeric[T])
-  : AbstractModule[Activity, Activity, T] = {
+  : Input[T] = {
     val module = new Input(inputShape)
     if (name != null) {
       module.setName(name)
