@@ -16,6 +16,7 @@
 
 package com.intel.analytics.bigdl.nn.keras
 
+import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.nn.abstractnn._
 import com.intel.analytics.bigdl.optim.Regularizer
@@ -46,4 +47,24 @@ class Dense[T: ClassTag](val outputDim: Int,
     model.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
   }
 }
+
+object Dense {
+
+  def apply[@specialized(Float, Double) T: ClassTag](
+    outputDim: Int,
+    init: InitializationMethod = RandomUniform,
+    wRegularizer: Regularizer[T] = null,
+    bRegularizer: Regularizer[T] = null,
+    bias: Boolean = true,
+    inputShape: Array[Int] = null)(implicit ev: TensorNumeric[T]) : Dense[T] = {
+      new Dense[T](
+        outputDim,
+        init,
+        wRegularizer,
+        bRegularizer,
+        bias,
+        inputShape)
+  }
+}
+
 

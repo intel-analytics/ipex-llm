@@ -33,7 +33,7 @@ class DenseSpec extends KerasBaseSpec{
         |model = Model(input=input_tensor, output=output_tensor)
       """.stripMargin
     val seq = Sequential[Float]()
-    val dense = new Dense[Float](2, inputShape = Array(3))
+    val dense = Dense[Float](2, inputShape = Array(3))
     seq.add(dense)
     def weightConverter(in: Array[Tensor[Float]]): Array[Tensor[Float]] = Array(in(0).t(), in(1))
     checkOutputAndGrad(seq.asInstanceOf[AbstractModule[Tensor[Float], Tensor[Float], Float]],
