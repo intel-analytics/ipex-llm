@@ -27,7 +27,6 @@ X_train, y_train, X_test, y_test = load_imdb()
 
 # Define a model in Keras 1.2.2 and compile
 keras_model = build_keras_model()
-
 keras_model.compile(loss='binary_crossentropy',
                     optimizer='adam',
                     metrics=['accuracy'])
