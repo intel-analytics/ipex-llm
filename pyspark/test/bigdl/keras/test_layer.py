@@ -708,10 +708,12 @@ class TestLayer(BigDLTestCase):
 
     def test_upsampling2d(self):
         input_data = np.random.random([2, 5, 6, 8])
-        layer1 = UpSampling2D(input_shape=(5, 6, 8))
-        self.modelTestSingleLayer(input_data, layer1)
-        layer2 = UpSampling2D(size=(1, 3), input_shape=(5, 6, 8))
-        self.modelTestSingleLayer(input_data, layer2)
+        layer1 = lambda: UpSampling2D(input_shape=(5, 6, 8))
+        self.modelTestSingleLayerWithOrdersModes(input_data, layer1,
+                                                 border_modes=[None])
+        layer2 = lambda: UpSampling2D(size=(1, 3), input_shape=(5, 6, 8))
+        self.modelTestSingleLayerWithOrdersModes(input_data, layer2,
+                                                 border_modes=[None])
 
     def test_upsampling3d(self):
         input_data = np.random.random([2, 5, 12, 12, 12])
