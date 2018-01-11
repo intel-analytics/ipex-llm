@@ -227,7 +227,7 @@ class LookupTableSparse[T: ClassTag](
 
   override def setParameters(params : Array[Tensor[T]]): Unit = {
     require(params != null, "params cannot be null")
-    require(params.length == 1, "scale should only have both weight")
+    require(params.length == 1, "LookupTableSparse should only have weight")
     this.weight = params(0)
   }
 

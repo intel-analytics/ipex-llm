@@ -197,7 +197,7 @@ class Linear[T: ClassTag](
 
   override def setParameters(params : Array[Tensor[T]]): Unit = {
     require(params != null, "params for linear cannot be null")
-    require(params.length >= 1, "linear should at least have weight")
+    require(params.length >= 1, "Linear should at least have weight")
     this.weight = params(0)
     if (withBias) {
       require(params.length == 2, "linear with bias should have weight & bias")

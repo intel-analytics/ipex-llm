@@ -520,7 +520,7 @@ class SpatialConvolution[T: ClassTag](
     require(params != null, "params cannot be null")
     require(params.length >= 1, "SpatialConv should at least have weight")
     this.weight = params(0)
-    if (this.withBias) {
+    if (withBias) {
       require(params.length == 2, "SpatialConv with bias hould have bias")
       this.bias = params(1)
     }

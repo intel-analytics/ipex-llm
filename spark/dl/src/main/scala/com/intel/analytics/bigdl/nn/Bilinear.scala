@@ -53,8 +53,8 @@ class Bilinear[T: ClassTag](
     s"Bilinear: inputSize1 and inputSize2 and outputSize should be positive integer numbers," +
       s"but got inputSize1 $inputSize1, inputSize2 $inputSize2, outputSize $outputSize")
 
-  val weight = Tensor[T](outputSize, inputSize1, inputSize2)
-  val bias: Tensor[T] = if (biasRes) Tensor[T](outputSize) else null
+  var weight = Tensor[T](outputSize, inputSize1, inputSize2)
+  var bias: Tensor[T] = if (biasRes) Tensor[T](outputSize) else null
 
   var buff1: Tensor[T] = Tensor[T]()
   var buff2: Tensor[T] = Tensor[T]()
@@ -211,6 +211,16 @@ class Bilinear[T: ClassTag](
       (Array(this.weight), Array(this.gradWeight))
     } else {
       (Array(this.weight, this.bias), Array(this.gradWeight, this.gradBias))
+    }
+  }
+
+  override def setParameters(params : Array[Tensor[T]]): Unit = {
+    require(params != null, "params cannot be null")
+    require(params.length >= 1, "BiLinear should at least have weight")
+    this.weight = params(0)
+    if (biasRes) {
+      require(params.length == 2, "BiLinear with biasRes should have bias")
+      this.bias = params(1)
     }
   }
 

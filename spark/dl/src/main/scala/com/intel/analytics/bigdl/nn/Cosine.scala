@@ -186,7 +186,7 @@ class Cosine[T: ClassTag](val inputSize : Int, val outputSize : Int)(
 
   override def setParameters(params : Array[Tensor[T]]): Unit = {
     require(params != null, "params cannot be null")
-    require(params.length == 1, "consine should only have weight")
+    require(params.length == 1, "Cosine should only have weight")
     this.weight = params(0)
   }
 

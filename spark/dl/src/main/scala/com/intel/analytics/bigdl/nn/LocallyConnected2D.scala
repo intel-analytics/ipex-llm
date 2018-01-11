@@ -463,9 +463,12 @@ class LocallyConnected2D[T: ClassTag](
 
   override def setParameters(params : Array[Tensor[T]]): Unit = {
     require(params != null, "params cannot be null")
-    require(params.length == 2, "LocallyConnected2D should have both weight & bias")
+    require(params.length >= 1, "LocallyConnected2D should at least have weight")
     this.weight = params(0)
-    this.bias = params(1)
+    if (withBias) {
+      require(params.length == 2, "LocallyConnected2D with bias should have both weight and bias")
+      this.bias = params(1)
+    }
   }
 
   override def getParametersTable(): Table = {

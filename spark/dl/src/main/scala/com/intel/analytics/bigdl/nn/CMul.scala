@@ -177,7 +177,7 @@ class CMul[T: ClassTag](
 
   override def setParameters(params : Array[Tensor[T]]): Unit = {
     require(params != null, "params cannot be null")
-    require(params.length == 1, "cmul should only have weight")
+    require(params.length == 1, "CMul should only have weight")
     this.weight = params(0)
   }
 

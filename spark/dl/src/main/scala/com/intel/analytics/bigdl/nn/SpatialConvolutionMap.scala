@@ -295,7 +295,7 @@ class SpatialConvolutionMap[T: ClassTag](
 
   override def setParameters(params : Array[Tensor[T]]): Unit = {
     require(params != null, "params cannot be null")
-    require(params.length == 2, "SpatialConvolutionMap should at least have weight")
+    require(params.length == 2, "SpatialConvolutionMap should have both weight and bias")
     this.weight = params(0)
     this.bias = params(1)
   }

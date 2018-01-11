@@ -155,7 +155,7 @@ class CAdd[T: ClassTag](
 
   override def setParameters(params : Array[Tensor[T]]): Unit = {
     require(params != null, "params cannot be null")
-    require(params.length == 1, "cadd should only have bias")
+    require(params.length == 1, "CAdd should only have bias")
     this.bias = params(0)
   }
 
