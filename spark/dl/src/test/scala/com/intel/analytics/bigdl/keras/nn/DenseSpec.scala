@@ -17,7 +17,7 @@
 package com.intel.analytics.bigdl.keras.nn
 
 import com.intel.analytics.bigdl.keras.KerasBaseSpec
-import com.intel.analytics.bigdl.nn.Sequential
+import com.intel.analytics.bigdl.nn.{ReLU, Sequential}
 import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.nn.keras.Dense
 import com.intel.analytics.bigdl.tensor.Tensor
@@ -29,11 +29,11 @@ class DenseSpec extends KerasBaseSpec{
       """
         |input_tensor = Input(shape=[3])
         |input = np.random.uniform(0, 1, [1, 3])
-        |output_tensor = Dense(2, init='uniform')(input_tensor)
+        |output_tensor = Dense(2, activation="relu", init='uniform')(input_tensor)
         |model = Model(input=input_tensor, output=output_tensor)
       """.stripMargin
     val seq = Sequential[Float]()
-    val dense = Dense[Float](2, inputShape = Array(3))
+    val dense = Dense[Float](2, activation = ReLU(), inputShape = Array(3))
     seq.add(dense)
     def weightConverter(in: Array[Tensor[Float]]): Array[Tensor[Float]] = Array(in(0).t(), in(1))
     checkOutputAndGrad(seq.asInstanceOf[AbstractModule[Tensor[Float], Tensor[Float], Float]],

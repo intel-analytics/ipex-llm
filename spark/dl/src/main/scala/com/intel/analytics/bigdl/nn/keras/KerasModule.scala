@@ -17,7 +17,8 @@
 package com.intel.analytics.bigdl.nn.keras
 
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
+import com.intel.analytics.bigdl.nn.{InputLayer, Sequential}
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.{Tensor, TensorDataType}
 import com.intel.analytics.bigdl.utils.Table
@@ -54,6 +55,23 @@ object KerasModuleSerializer extends ModuleSerializable {
       scala.reflect.runtime.universe.typeOf[Boolean])
     moduleBuilder.putAttr("is_labor_module", serializerFlagBuilder.build)
   }
+}
+
+private[bigdl] object KerasModule {
+    def fuse[T: ClassTag](sLayer: AbstractModule[Activity, Activity, T],
+                          activation: TensorModule[T],
+                          inputShape: Activity)
+                         (implicit ev: TensorNumeric[T]): AbstractModule[Activity, Activity, T] = {
+      if (activation == null) {
+        return sLayer
+      }
+      val seq = Sequential[T]()
+      seq.add(InputLayer(inputShape = inputShape.toTensor[Int].toArray()))
+      seq.add(sLayer)
+      seq.add(activation)
+      seq.setName(sLayer.getName())
+      return seq
+    }
 }
 
 /**
