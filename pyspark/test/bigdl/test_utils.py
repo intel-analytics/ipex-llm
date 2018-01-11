@@ -115,7 +115,6 @@ class BigDLTestCase(TestCase):
         sparkConf = create_spark_conf().setMaster("local[4]").setAppName("test model")
         self.sc = get_spark_context(sparkConf)
         self.sqlContext = SQLContext(self.sc)
-        self.sc.setLogLevel("ERROR")
         init_engine()
 
     def teardown_method(self, method):
@@ -203,7 +202,7 @@ class BigDLTestCase(TestCase):
         # weight_converter is a function keras [ndarray]-> bigdl [ndarray]
         keras_model_json_path, keras_model_hdf5_path = dump_keras(keras_model,
                                                                   dump_weights=dump_weights)
-        
+
         # Use Theano backend to load as a bigdl model
         self.__set_keras_backend("theano")
         bigdl_model = DefinitionLoader.from_json_path(keras_model_json_path)
