@@ -309,5 +309,6 @@ class BigDLTestCase(TestCase):
             K.set_image_dim_ordering(current_dim)
             assert K.backend() == backend
             assert K.image_dim_ordering() == current_dim
+        # Make theano backend compatible with Python3
         if backend == "theano":
             from theano import ifelse
