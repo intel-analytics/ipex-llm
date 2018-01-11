@@ -765,6 +765,7 @@ class Model(Container):
         except ImportError:
             os.environ['KERAS_BACKEND'] = "theano"
             try:
+                # Make theano backend compatible with Python3
                 from theano import ifelse
             except ImportError:
                 raise Exception("No backend is found for Keras. "
