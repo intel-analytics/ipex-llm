@@ -183,14 +183,14 @@ sealed class MergeControlNode[T] private[bigdl] (element: T) extends Node[T](ele
  * Mark start of next iteration. User should use ControlNodes.whileLoop to use such operation.
  * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now
  */
-sealed private[bigdl] class NextIteration[T: ClassTag] private[ops]()
+sealed private[bigdl] class NextIteration[T: ClassTag] private[bigdl]()
   (implicit ev: TensorNumeric[T]) extends IdentityControl[T]
 
 /**
  * Mark start of a loop. User should use ControlNodes.whileLoop to use such operation.
  * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now
  */
-sealed private[bigdl] class Enter[T: ClassTag] private[ops](val frame: String)
+sealed private[bigdl] class Enter[T: ClassTag] private[bigdl](val frame: String)
   (implicit ev: TensorNumeric[T]) extends IdentityControl[T]
 
 /**
@@ -198,14 +198,14 @@ sealed private[bigdl] class Enter[T: ClassTag] private[ops](val frame: String)
  * User should use ControlNodes.whileLoop to use such operation.
  * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now
  */
-sealed private[bigdl] class LoopCondition[T: ClassTag] private[ops](val loopNum: Int)
+sealed private[bigdl] class LoopCondition[T: ClassTag] private[bigdl](val loopNum: Int)
   (implicit ev: TensorNumeric[T]) extends IdentityControl[T]
 
 /**
  * Mark end of a loop. User should use ControlNodes.whileLoop to use such operation.
  * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now
  */
-sealed private[bigdl] class Exit[T: ClassTag] private[ops]()(implicit ev: TensorNumeric[T])
+sealed private[bigdl] class Exit[T: ClassTag] private[bigdl]()(implicit ev: TensorNumeric[T])
   extends IdentityControl[T]
 
 /**
