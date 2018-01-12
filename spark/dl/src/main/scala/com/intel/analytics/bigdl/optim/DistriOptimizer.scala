@@ -630,6 +630,9 @@ object DistriOptimizer {
         val localMethod =
           if (broadcastMethod.isDefined) Some(broadcastMethod.get.map(_.clone())) else None
         val (weights, grads) = localModel.getParameters()
+        grads.apply1(x => {
+          assert(x == 0, s"local model grad $x != 0"); x
+        })
         (localModel, weights, grads, localCriterion, localState, localMethod)
       }.toArray
 
