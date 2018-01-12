@@ -231,11 +231,11 @@ object DistriOptimizer {
               val localCriterion = cached.localCriterions(i)
               val input = miniBatchBuffer(i).getInput()
               val target = miniBatchBuffer(i).getTarget()
-              (0 until _subModelNumber).foreach(i =>
-                cached.modelGradients(i).apply1(x => {
-                  assert(x == 0, s"$x not equal to 0"); x
-                })
-              )
+//              (0 until _subModelNumber).foreach(i =>
+              cached.modelGradients(i).apply1(x => {
+                assert(x == 0, s"$x not equal to 0"); x
+              })
+//              )
               val output = localModel.forward(input)
               lossArray(i) = ev.toType[Double](localCriterion.forward(output, target))
               val errors = localCriterion.backward(output, target)
