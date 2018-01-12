@@ -91,9 +91,6 @@ private[bigdl] class Scheduler[T] (
       node = readyQueue.dequeue()
     }
 
-    // All dependent nodes should be marked as NotReady
-    node.nextNodes.foreach(nodeStatus.unset(_))
-
     node
   }
 
@@ -102,43 +99,24 @@ private[bigdl] class Scheduler[T] (
    * @param node
    */
   def schedule(node: ModuleNode[T]): Unit = {
-    val curFrame = frameManayger.leave(node)
+    val curFrame = frameManayger(node)
+
     val nextNodeFrame = node.element match {
       case e: Enter[_] =>
         Some(frameManayger.createFrame(e.frame, curFrame))
       case c: LoopCondition[_] =>
         require(curFrame.isDefined, "LoopCondition should be in a frame")
         val f = curFrame.get
-        require(f.mutex == 0,
-          "frame mutex should not be set or clear before loop condition")
-        f.mutex = c.loopNum
+        require(f.barrier == 0, "frame mutex should not be set or clear before loop condition")
+        f.barrier = c.loopNum
         curFrame
       case n: NextIteration[_] =>
         require(curFrame.isDefined, "NextIteration should be in a frame")
-        val f = curFrame.get
-        f.mutex -= 1
-        if (f.mutex == 0) {
-          f.pendingNodes.foreach(readyQueue.enqueue(_))
-          f.pendingNodes.clear()
-          curFrame
-        } else {
-          f.pendingNodes.append(node)
-          return
-        }
+        if (leaveFrame(curFrame.get, node)) return else curFrame
       case ex: Exit[_] =>
         require(curFrame.isDefined, "Exit should be in a frame")
-        val f = curFrame.get
-        f.mutex -= 1
-        if (f.mutex == 0) {
-          f.pendingNodes.foreach(readyQueue.enqueue(_))
-          f.pendingNodes.clear()
-          frameManayger.release(f)
-          f.parent
-        } else {
-          f.pendingNodes.append(node)
-          return
-        }
-      case _ => frameManayger(node)
+        if (leaveFrame(curFrame.get, node)) return else curFrame.get.parent
+      case _ => curFrame
     }
 
     if (!nodeStatus.isConst(node)) {
@@ -179,11 +157,11 @@ private[bigdl] class Scheduler[T] (
         require(nodeStatus.notExecuted(nextNode), s"Merge node(${nextNode.element.getName()}) " +
           s"should not be executed twice out of loop or in a same iteration of a loop")
         merge.setSwitch(nextNode.prevNodes.indexOf(curNode) + 1)
-        if (frame.isDefined) frameManayger.enter(nextNode, frame.get)
+        frame.foreach(frameManayger.enter(nextNode, _))
         readyQueue.enqueue(nextNode)
       } else {
         if (isNodeReady(nextNode)) {
-          if (frame.isDefined) frameManayger.enter(nextNode, frame.get)
+          frame.foreach(frameManayger.enter(nextNode, _))
           readyQueue.enqueue(nextNode)
         }
       }
@@ -201,6 +179,38 @@ private[bigdl] class Scheduler[T] (
     })
 
     return true
+  }
+
+  /**
+   * Leave a frame (e.g. NextIteration/Exit)
+   * @param frame current frame
+   * @param node current node
+   * @return if skip current schedule
+   */
+  private def leaveFrame(frame: Frame[T], node: ModuleNode[T]): Boolean = {
+    if (frame.barrier == 0) {
+      // current node leave the frame
+      frameManayger.leave(node)
+      false // don't skip current schedule
+    } else {
+      // node need to wait for frame execution
+      frame.barrier -= 1
+      frame.waitingNodes.append(node)
+      nodeStatus.unset(node) // mark current node is in not ready status
+      if (frame.barrier == 0) {
+        // Wake up the waiting nodes
+        frame.waitingNodes.foreach(readyQueue.enqueue(_))
+        frame.waitingNodes.clear()
+        // As frame is exit/refreshed, mark all nodes in the frame are not ready and remove them
+        // from the frame
+        frame.nodes.filterNot(_.element.isInstanceOf[NextIteration[_]])
+          .filterNot(_.element.isInstanceOf[Exit[_]]).foreach(n => {
+          nodeStatus.unset(n)
+          frameManayger.leave(n)
+        })
+      }
+      true
+    }
   }
 }
 

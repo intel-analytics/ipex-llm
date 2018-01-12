@@ -36,7 +36,7 @@ class FrameManager[T] extends Serializable {
    */
   def createFrame(frame: String, parentFrame: Option[Frame[T]]): Frame[T] = {
     if (!frames.contains(frame)) {
-      frames(frame) = new Frame(frame, 0, new ArrayBuffer[ModuleNode[T]], parentFrame)
+      frames(frame) = new Frame(frame, parentFrame)
     }
     frames(frame)
   }
@@ -49,33 +49,35 @@ class FrameManager[T] extends Serializable {
   def enter(node: ModuleNode[T], frame : Frame[T]): Unit = {
     require(!nodeFrame.contains(node.element.getName()), "Node already in a frame")
     nodeFrame(node.element.getName()) = frame
+    frame.nodes.append(node)
   }
 
   /**
-   * The node leaves its frame. If the node doesn't exist in any frame, nothing happen.
-   *
-   * This method return frame the node leave. If the node belong to no frame, None will be return.
+   * Get the frame of the given node. If the node isn't in any frame, return None.
+   * @param node
+   * @return
+   */
+  def apply(node: ModuleNode[T]): Option[Frame[T]] = {
+    nodeFrame.get(node.element.getName())
+  }
+
+  /**
+   * The node leaves its frame. If the node doesn't exist in any frame, an exception will be thrown
    *
    * @param node
    * @return
    */
-  def leave(node: ModuleNode[T]): Option[Frame[T]] = {
-    nodeFrame.remove(node.element.getName())
+  def leave(node: ModuleNode[T]): Unit = {
+    val f = nodeFrame.remove(node.element.getName()).get
+    f.nodes.remove(f.nodes.indexOf(node))
   }
-
-  /**
-   * Get a frame. The frame must exist.
-   * @param node
-   * @return
-   */
-  def apply(node: ModuleNode[T]): Option[Frame[T]] = nodeFrame.get(node.element.getName())
 
   /**
    * Remove a frame from a frame manager.
    * @param frame
    */
   def release(frame: Frame[T]): Unit = {
-    require(frames.contains(frame.name), "Cannot remove the given frame")
+    require(frames.contains(frame.name), "Cannot find the given frame")
     frames.remove(frame.name)
   }
 
@@ -87,16 +89,21 @@ object FrameManager {
   /**
    * A frame
    * @param name the name of a frame, it must be unique in a grap
-   * @param mutex sync all next iteration / exit nodes execution
-   * @param pendingNodes user can use NextIteration or Exit to leave current frame. This is a list
+   * @param barrier sync all next iteration / exit nodes execution
+   * @param waitingNodes user can use NextIteration or Exit to leave current frame. This is a list
    *                     of those type of nodes, which are ready to leave
    * @param parent parent frame, if a frame is created in another frame, it has parent frame
    * @tparam T
    */
   class Frame[T] private[FrameManager] (
     val name: String,
-    var mutex: Int,
-    val pendingNodes: ArrayBuffer[ModuleNode[T]],
-    val parent: Option[Frame[T]]
-  )
+    var barrier: Int,
+    val waitingNodes: ArrayBuffer[ModuleNode[T]],
+    val parent: Option[Frame[T]],
+    val nodes: ArrayBuffer[ModuleNode[T]]
+  ) {
+    private[FrameManager] def this(name: String, parent: Option[Frame[T]]) = {
+      this(name, 0, new ArrayBuffer[ModuleNode[T]], parent, new ArrayBuffer[ModuleNode[T]])
+    }
+  }
 }

@@ -154,7 +154,7 @@ abstract class Graph[T: ClassTag](
   protected val forwardNodes = forwardGraph.DFS.toArray
 
   modules.appendAll(
-    forwardGraph.topologySort
+    forwardGraph.DFS.toArray
       // todo: convert control dep node to edge
       .filterNot(_.element.isInstanceOf[ControlDependency[T]]).reverse
       .filter(n => !n.eq(dummyOutput)).map(_.element)
@@ -365,10 +365,12 @@ abstract class Graph[T: ClassTag](
   }
 
   /**
-   * get forward executions, the dummy node will be filtered
+   * Get forward executions, the dummy node will be filtered.
+   *
+   * This method will output an unsorted executions.
    * @return
    */
-  def getForwardExecutions: Array[Node[AbstractModule[Activity, Activity, T]]] = {
+  def getForwardExecutions(): Array[Node[AbstractModule[Activity, Activity, T]]] = {
     forwardNodes.filterNot(_.eq(dummyOutput))
   }
 
@@ -379,8 +381,9 @@ abstract class Graph[T: ClassTag](
    * exception
    * @return
    */
-  def getSortedForwardExecutions: Array[Node[AbstractModule[Activity, Activity, T]]] = {
+  def getSortedForwardExecutions(): Array[ModuleNode[T]] = {
     forwardGraph.topologySort
+      // todo: convert control dep node to edge
       .filterNot(_.element.isInstanceOf[ControlDependency[T]]).reverse
       .filter(n => !n.eq(dummyOutput))
   }
@@ -437,9 +440,12 @@ abstract class Graph[T: ClassTag](
     this
   }
 
+  /**
+   * Clear the original module and reset with module in the graph
+   */
   def resetModules(): Unit = {
     modules.clear()
-    modules.appendAll(forwardGraph.topologySort
+    modules.appendAll(forwardGraph.DFS.toArray
       .filterNot(_.element.isInstanceOf[ControlDependency[T]]).reverse
       .filter(n => !n.eq(dummyOutput)).map(_.element))
   }

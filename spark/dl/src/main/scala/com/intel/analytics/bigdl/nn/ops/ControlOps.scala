@@ -183,8 +183,8 @@ sealed class MergeControlNode[T] private[bigdl] (element: T) extends Node[T](ele
  * Mark start of next iteration. User should use ControlNodes.whileLoop to use such operation.
  * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now
  */
-sealed private[bigdl] class NextIteration[T: ClassTag] private[ops]()(implicit ev: TensorNumeric[T])
-  extends IdentityControl[T]
+sealed private[bigdl] class NextIteration[T: ClassTag] private[ops]()
+  (implicit ev: TensorNumeric[T]) extends IdentityControl[T]
 
 /**
  * Mark start of a loop. User should use ControlNodes.whileLoop to use such operation.
@@ -226,22 +226,6 @@ object ControlNodes {
     val curNode = new SwitchControlNode[Module[T]](new SwitchOps())
     condition -> curNode
     data -> curNode
-    curNode
-  }
-
-  /**
-   * Create a switch node
-   * @param data data to pass down, from an edge
-   * @param condition data to pass down, from an edge
-   * @param ev
-   * @tparam T
-   * @return
-   */
-  def switch[T: ClassTag](data: (ModuleNode[T], Int), condition: (ModuleNode[T], Int)
-  )(implicit ev: TensorNumeric[T]): SwitchControlNode[Module[T]] = {
-    val curNode = new SwitchControlNode[Module[T]](new SwitchOps())
-    data._1.add(curNode, Edge(data._2))
-    condition._1.add(curNode, Edge(data._2))
     curNode
   }
 
@@ -305,7 +289,7 @@ object ControlNodes {
       val mergeNode = merge[T](enter)
       if (name != null) mergeNode.element.setName(s"$name/merge$index")
       mergeNode -> cond
-      val switchNode = switch[T](mergeNode, lc)
+      val switchNode = switch[T](lc, mergeNode)
       if (name != null) switchNode.element.setName(s"$name/switch$index")
       val exitNode = new Exit[T]().inputs(switchNode.trueEdge())
       if (name != null) exitNode.element.setName(s"$name/exit$index")
