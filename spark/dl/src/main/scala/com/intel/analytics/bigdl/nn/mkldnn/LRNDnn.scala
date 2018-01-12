@@ -66,8 +66,7 @@ class LRNDnn[T: ClassTag](
   val stream_acc = new ArrayBuffer[Long]
 
   //
-  private val input_format = MklDnn.MemoryFormat.nchw
-  private val internal_format = this.input_format
+  private var input_format = MklDnn.MemoryFormat.nchw
   private val dataType = MklDnn.DataType.f32
 
   private var workSpace = Tensor[Float]()
@@ -88,6 +87,11 @@ class LRNDnn[T: ClassTag](
       update_primitive = false
     }
     if (update_primitive) {
+      input_format = input.dim() match {
+        case 1 => MklDnn.MemoryFormat.x
+        case 2 => MklDnn.MemoryFormat.nc
+        case 4 => MklDnn.MemoryFormat.nchw
+      }
       val nbatch = input.size(1)
       val input_size = input.size()
       val dst_sizes = input_size
@@ -135,7 +139,7 @@ class LRNDnn[T: ClassTag](
     MklDnnOps.streamSubmit(stream, n_fwd, stream_fwd.toArray, n_fwd, memoryPrimitives, buffer)
 
     val end1 = (System.nanoTime() - s1)/1e9
-    println(s"lrn dnn forward ${end1}")
+    // println(s"lrn dnn forward ${end1}")
     output
   }
 
@@ -180,7 +184,7 @@ class LRNDnn[T: ClassTag](
     MklDnnOps.streamSubmit(stream, n_bwd, stream_bwd.toArray, n_bwd, memoryPrimitives, buffer)
 
     val end1 = (System.nanoTime() - s1)/1e9
-    println(s"lrn dnn backward ${end1}")
+    // println(s"lrn dnn backward ${end1}")
     gradInput
   }
 }

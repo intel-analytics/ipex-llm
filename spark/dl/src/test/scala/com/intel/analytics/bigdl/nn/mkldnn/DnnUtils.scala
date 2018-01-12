@@ -17,6 +17,8 @@
 package com.intel.analytics.bigdl.nn.mkldnn
 
 import breeze.numerics.abs
+import com.intel.analytics.bigdl._
+import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.{DenseTensorMath, Tensor}
 
@@ -87,5 +89,34 @@ object DnnUtils {
     }
     val sortData = timeBuffer.sortBy(a => a._4)
     sortData.foreach(println)
+  }
+  def dnnAlexNet(classNum: Int, hasDropout : Boolean = true): Module[Float] = {
+    val model = Sequential[Float]()
+    model.add(ConvolutionDnn(3, 96, 11, 11, 4, 4, 0, 0, 1, false).setName("conv1"))
+    model.add(ReLUDnn[Float](true).setName("relu1")) // ????
+    model.add(LRNDnn[Float](5, 0.0001, 0.75).setName("norm1"))
+    model.add(PoolingDnn[Float](3, 3, 2, 2).setName("pool1"))
+    model.add(ConvolutionDnn(96, 256, 5, 5, 1, 1, 2, 2, 2).setName("conv2"))
+    model.add(ReLUDnn[Float](true).setName("relu2")) // ???
+    model.add(LRNDnn[Float](5, 0.0001, 0.75).setName("norm2"))
+    model.add(PoolingDnn[Float](3, 3, 2, 2).setName("pool2"))
+    model.add(ConvolutionDnn(256, 384, 3, 3, 1, 1, 1, 1).setName("conv3"))
+    model.add(ReLUDnn[Float](true).setName("relu3"))
+    model.add(ConvolutionDnn(384, 384, 3, 3, 1, 1, 1, 1, 2).setName("conv4"))
+    model.add(ReLUDnn[Float](true).setName("relu4"))
+    model.add(ConvolutionDnn(384, 256, 3, 3, 1, 1, 1, 1, 2).setName("conv5"))
+    model.add(ReLUDnn[Float](true).setName("relu5"))
+    model.add(PoolingDnn[Float](3, 3, 2, 2).setName("pool5"))
+    model.add(MemoryReOrder())
+    model.add(View(256 * 6 * 6))
+    model.add(Linear[Float](256 * 6 * 6, 4096).setName("fc6"))
+    model.add(ReLU[Float](true).setName("relu6"))
+    if (hasDropout) model.add(Dropout[Float](0.5).setName("drop6"))
+    model.add(Linear[Float](4096, 4096).setName("fc7"))
+    model.add(ReLU[Float](true).setName("relu7"))
+    if (hasDropout) model.add(Dropout[Float](0.5).setName("drop7"))
+    model.add(Linear[Float](4096, classNum).setName("fc8"))
+    model.add(LogSoftMax[Float]().setName("loss"))
+    model
   }
 }

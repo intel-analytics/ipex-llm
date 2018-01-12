@@ -201,7 +201,7 @@ class PoolingDnn[T: ClassTag](
     MklDnnOps.streamSubmit(stream, n_fwd, stream_fwd.toArray, n_fwd, memoryPrimitives, buffer)
 
     val end1 = (System.nanoTime() - s1)/1e9
-    println(s"pooling dnn forward ${end1}")
+    // println(s"pooling dnn forward ${end1}")
 
     output
   }
@@ -257,7 +257,7 @@ class PoolingDnn[T: ClassTag](
     MklDnnOps.streamSubmit(stream, n_bwd, stream_bwd.toArray, n_bwd, memoryPrimitives, buffer)
 
     val end1 = (System.nanoTime() - s1)/1e9
-    println(s"pooling dnn backward ${end1}")
+    // println(s"pooling dnn backward ${end1}")
     gradInput
   }
 }

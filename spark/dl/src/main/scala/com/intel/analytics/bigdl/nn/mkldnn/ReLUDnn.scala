@@ -54,7 +54,7 @@ class ReLUDnn[T: ClassTag](ip: Boolean = false)(
     private var update_primitive: Boolean = true
 
     // for relu, just keep internal format same with input format
-    private val input_format = MklDnn.MemoryFormat.nchw
+    private var input_format = MklDnn.MemoryFormat.nchw
 
 
   override def updateOutput(input: Tensor[Float]): Tensor[Float] = {
@@ -71,6 +71,12 @@ class ReLUDnn[T: ClassTag](ip: Boolean = false)(
 
       if (update_primitive) {
         output.resizeAs(input)
+        input_format = input.dim() match {
+          case 1 => MklDnn.MemoryFormat.x
+          case 2 => MklDnn.MemoryFormat.nc
+          case 4 => MklDnn.MemoryFormat.nchw
+        }
+
         if (input.getPrimitiveDesc() != 0L) {
           val input_pd = input.getPrimitiveDesc()
           src_md = MklDnnOps.primitiveDescQueryMemory(input_pd)
@@ -104,7 +110,7 @@ class ReLUDnn[T: ClassTag](ip: Boolean = false)(
       MklDnnOps.streamSubmit(stream, n_fwd, stream_fwd, n_fwd, memoryPrimitives, buffer)
 
       val end1 = (System.nanoTime() - s1)/1e9
-      println(s"relu dnn forward ${end1}")
+      // println(s"relu dnn forward ${end1}")
 
       output
     }
@@ -147,7 +153,7 @@ class ReLUDnn[T: ClassTag](ip: Boolean = false)(
       MklDnnOps.streamSubmit(stream, n_bwd, stream_bwd, n_bwd, memoryPrimitives, buffer)
 
       val end1 = (System.nanoTime() - s1)/1e9
-      println(s"relu dnn backward ${end1}")
+      // println(s"relu dnn backward ${end1}")
       gradInput
     }
   }
