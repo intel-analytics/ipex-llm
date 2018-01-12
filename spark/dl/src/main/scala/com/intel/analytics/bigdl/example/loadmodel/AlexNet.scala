@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.example.loadmodel
 
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.nn.mkldnn
 import com.intel.analytics.bigdl.numeric.NumericFloat
 
 object AlexNet_OWT {
@@ -136,5 +137,34 @@ object AlexNet {
     val fc8 = Linear(4096, classNum).setName("fc8").inputs(drop7)
     val loss = LogSoftMax().setName("loss").inputs(fc8)
     Graph(conv1, loss)
+  }
+
+  def dnn(classNum: Int, hasDropout : Boolean = true): Module[Float] = {
+    val model = Sequential()
+    model.add(mkldnn.ConvolutionDnn(3, 96, 11, 11, 4, 4, 0, 0, 1, false).setName("conv1"))
+    model.add(mkldnn.ReLUDnn(true).setName("relu1"))
+    model.add(mkldnn.LRNDnn(5, 0.0001, 0.75).setName("norm1"))
+    model.add(mkldnn.PoolingDnn(3, 3, 2, 2).setName("pool1"))
+    model.add(mkldnn.ConvolutionDnn(96, 256, 5, 5, 1, 1, 2, 2, 2).setName("conv2"))
+    model.add(mkldnn.ReLUDnn(true).setName("relu2"))
+    model.add(mkldnn.LRNDnn(5, 0.0001, 0.75).setName("norm2"))
+    model.add(mkldnn.PoolingDnn(3, 3, 2, 2).setName("pool2"))
+    model.add(mkldnn.ConvolutionDnn(256, 384, 3, 3, 1, 1, 1, 1).setName("conv3"))
+    model.add(mkldnn.ReLUDnn(true).setName("relu3"))
+    model.add(mkldnn.ConvolutionDnn(384, 384, 3, 3, 1, 1, 1, 1, 2).setName("conv4"))
+    model.add(mkldnn.ReLUDnn(true).setName("relu4"))
+    model.add(mkldnn.ConvolutionDnn(384, 256, 3, 3, 1, 1, 1, 1, 2).setName("conv5"))
+    model.add(mkldnn.ReLUDnn(true).setName("relu5"))
+    model.add(mkldnn.PoolingDnn(3, 3, 2, 2).setName("pool5"))
+    model.add(View(256 * 6 * 6))
+    model.add(mkldnn.Linear(256 * 6 * 6, 4096).setName("fc6"))
+    model.add(mkldnn.ReLUDnn(true).setName("relu6"))
+    if (hasDropout) model.add(Dropout(0.5).setName("drop6"))
+    model.add(mkldnn.Linear(4096, 4096).setName("fc7"))
+    model.add(mkldnn.ReLUDnn(true).setName("relu7"))
+    if (hasDropout) model.add(Dropout(0.5).setName("drop7"))
+    model.add(mkldnn.Linear(4096, classNum).setName("fc8"))
+    model.add(LogSoftMax().setName("loss"))
+    model
   }
 }

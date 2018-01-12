@@ -22,8 +22,8 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
 import scala.reflect.ClassTag
 
-class MemoryPrimitive[T: ClassTag]()(implicit ev: TensorNumeric[T]) {
-  class TensorWithPrimitive {
+class MemoryPrimitive[T: ClassTag]()(implicit ev: TensorNumeric[T]) extends Serializable {
+  class TensorWithPrimitive extends Serializable {
     var handle: Long = 0L
     var desc: Long = 0L
     var primitive: Long = 0L

@@ -182,11 +182,11 @@ object MklDnnOps {
   }
 
   /**
-    * @param user_memory
-    * @param prim_memory_pd not a pointer, but direct const_mkldnn_primitive_desc_t
-    * @param user_to_prim
-    * @return
-    */
+   * @param user_memory
+   * @param prim_memory_pd not a pointer, but direct const_mkldnn_primitive_desc_t
+   * @param user_to_prim
+   * @return
+   */
   def prepareReorder(user_memory: Long, prim_memory_pd: Long,
                      user_to_prim: Boolean): (Long, Long) = {
     require(MklDnn.isLoaded, "mkldnn isn't loaded")

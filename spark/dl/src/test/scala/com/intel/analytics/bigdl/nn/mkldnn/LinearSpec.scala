@@ -16,32 +16,45 @@
 
 package com.intel.analytics.bigdl.nn.mkldnn
 
+import com.intel.analytics.bigdl.mkl.MKL
 import com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.nn.mkldnn.Utils.{manyTimes, speedup}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.numeric.NumericFloat
+import com.intel.analytics.bigdl.utils.Engine
 import org.scalatest.{FlatSpec, Matchers}
+
+import scala.collection.mutable.ArrayBuffer
+import scala.concurrent.Future
 
 class LinearSpec extends FlatSpec with Matchers {
   "linear updateOutput" should "work correctly" in {
-    val inputSize = 2
-    val outputSize = 2
-    val batchSize = 2
+    System.setProperty("bigdl.localMode", "true")
+    Engine.init
+    var tasks: ArrayBuffer[Future[_]] = new ArrayBuffer()
+    tasks += Engine.default.invoke ( () => {
+      val inputSize = 2
+      val outputSize = 2
+      val batchSize = 2
 
-    val initWeight = Tensor[Float](outputSize, inputSize).rand()
-    val initBias = Tensor[Float](outputSize).rand()
+      val initWeight = Tensor[Float](outputSize, inputSize).rand()
+      val initBias = Tensor[Float](outputSize).rand()
 
-    val linear = Linear(inputSize, outputSize, initWeight = initWeight, initBias = initBias)
-    val input = Tensor[Float](batchSize, inputSize).rand()
+      val linear = Linear(inputSize, outputSize, initWeight = initWeight, initBias = initBias)
+      val input = Tensor[Float](batchSize, inputSize).rand()
 
-    val output = linear.forward(input)
-    println(output)
+      val output = linear.forward(input)
+      println(output)
 
-    val nnLinear = nn.Linear(inputSize, outputSize, initWeight = initWeight, initBias = initBias)
-    val nnOutput = nnLinear.forward(input)
-    println(nnOutput)
+      val nnLinear = nn.Linear(inputSize, outputSize, initWeight = initWeight, initBias = initBias)
+      val nnOutput = nnLinear.forward(input)
+      println(nnOutput)
 
-    output should be (nnOutput)
+      output should be (nnOutput)
+      1
+    })
+
+    Engine.default.sync(tasks)
   }
 
   "linear updateOutput multi times" should "work correctly" in {
@@ -433,5 +446,10 @@ class LinearSpec extends FlatSpec with Matchers {
 
     model.forward(input)
     model.backward(input, gradOutput)
+  }
+
+  "the num of omp threads" should "be 1" in {
+    val threads = MKL.getNumThreads
+    println(threads)
   }
 }

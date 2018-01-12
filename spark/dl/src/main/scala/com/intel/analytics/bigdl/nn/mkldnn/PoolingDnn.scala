@@ -33,7 +33,8 @@ class PoolingDnn[T: ClassTag](
   dH: Int = 1,
   padW: Int = 0,
   padH: Int = 0,
-  val format: DataFormat = DataFormat.NCHW)(implicit ev: TensorNumeric[T]) extends TensorModule[Float] with Initializable {
+  val format: DataFormat = DataFormat.NCHW)(implicit ev: TensorNumeric[T])
+  extends TensorModule[Float] with Initializable {
 
   var ceilMode = false
   val indices = Tensor[T]()
@@ -43,18 +44,18 @@ class PoolingDnn[T: ClassTag](
   }
 
   /**
-    * set ceil mode
-    * @return this
-    */
+   * set ceil mode
+   * @return this
+   */
   def ceil(): PoolingDnn[T] = {
     ceilMode = true
     this
   }
 
   /**
-    * set floor mode
-    * @return this
-    */
+   * set floor mode
+   * @return this
+   */
   def floor(): PoolingDnn[T] = {
     ceilMode = false
     this
@@ -216,17 +217,19 @@ class PoolingDnn[T: ClassTag](
         gradOutput_memory = MklDnn.PrimitiveCreate0(gradOutput_pd)
       } else {
         gradOutput_md = MklDnn.PrimitiveDescQueryMemory(dst_pd)
-        gradOutput_memory = MklDnnOps.initDataMemory(gradOutput.dim(), gradOutput.size(), this.input_format, dataType, engine)
+        gradOutput_memory = MklDnnOps.initDataMemory(gradOutput.dim(), gradOutput.size(),
+          this.input_format, dataType, engine)
       }
 
       // for gradInput
       gradInput.resizeAs(input)
-      val gradInput_md = MklDnnOps.memoryDescInit(gradInput.dim(), gradInput.size(), dataType, this.internal_format)
+      val gradInput_md = MklDnnOps.memoryDescInit(gradInput.dim(), gradInput.size(), dataType,
+        this.internal_format)
 //      val gradInput_md = if (input.getPrimitiveDesc() != 0L) {
 //        val gradInput_pd = input.getPrimitiveDesc()
 //        MklDnnOps.primitiveDescQueryMemory(gradInput_pd)
 //      } else {
-//        MklDnnOps.memoryDescInit(gradInput.dim(), gradInput.size(), dataType, this.internal_format)
+//       MklDnnOps.memoryDescInit(gradInput.dim(), gradInput.size(), dataType, this.internal_format)
 //      }
 
       /* create backward descriptor */
