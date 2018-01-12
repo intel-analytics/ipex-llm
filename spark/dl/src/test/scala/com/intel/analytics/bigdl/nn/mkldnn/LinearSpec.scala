@@ -19,6 +19,7 @@ package com.intel.analytics.bigdl.nn.mkldnn
 import com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.nn.mkldnn.Utils.{manyTimes, speedup}
 import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.numeric.NumericFloat
 import org.scalatest.{FlatSpec, Matchers}
 
 class LinearSpec extends FlatSpec with Matchers {
@@ -389,5 +390,48 @@ class LinearSpec extends FlatSpec with Matchers {
     println(linear.aggregating / 1e9)
 
     nnCosts should be > costs
+  }
+
+  "linear with maxpooling" should "work correctly" in {
+    val model = nn.Sequential[Float]()
+    model.add(ConvolutionDnn(3, 64, 11, 11, 4, 4, 2, 2, 1)
+      .setName("conv1"))
+    model.add(ReLUDnn(true).setName("relu1"))
+    model.add(PoolingDnn(3, 3, 2, 2).setName("pool1"))
+    model.add(ConvolutionDnn(64, 192, 5, 5, 1, 1, 2, 2).setName("conv2"))
+    model.add(ReLUDnn(true).setName("relu2"))
+    model.add(PoolingDnn(3, 3, 2, 2).setName("pool2"))
+    model.add(ConvolutionDnn(192, 384, 3, 3, 1, 1, 1, 1).setName("conv3"))
+    model.add(ReLUDnn(true).setName("relu3"))
+    model.add(ConvolutionDnn(384, 256, 3, 3, 1, 1, 1, 1).setName("conv4"))
+    model.add(ReLUDnn(true).setName("relu4"))
+    model.add(ConvolutionDnn(256, 256, 3, 3, 1, 1, 1, 1).setName("conv5"))
+    model.add(ReLUDnn(true).setName("relu5"))
+    model.add(PoolingDnn(3, 3, 2, 2).setName("poo5"))
+    model.add(nn.View(256 * 6 * 6).setName("view"))
+    model.add(Linear(256 * 6 * 6, 4096).setName("fc6"))
+    model.add(ReLUDnn(true).setName("relu6"))
+    model.add(nn.Dropout(0.5).setName("drop6"))
+    model.add(Linear(4096, 4096).setName("fc7"))
+    model.add(ReLUDnn(true).setName("relu7"))
+    model.add(nn.Dropout(0.5).setName("drop7"))
+    model.add(Linear(4096, 10).setName("fc8"))
+    model.add(nn.SoftMax().setName("logsoftmax"))
+
+    val input = Tensor[Float](4, 3, 227, 227).rand()
+    model.forward(input)
+
+    val gradOutput = Tensor[Float]().resizeAs(model.output.toTensor).rand()
+    model.backward(input, gradOutput)
+  }
+
+  "linear + relu" should "work correctly" in {
+    val model = nn.Sequential[Float]().add(Linear(10, 20)).add(ReLUDnn())
+
+    val input = Tensor(4, 10).rand()
+    val gradOutput = Tensor(4, 20).rand()
+
+    model.forward(input)
+    model.backward(input, gradOutput)
   }
 }

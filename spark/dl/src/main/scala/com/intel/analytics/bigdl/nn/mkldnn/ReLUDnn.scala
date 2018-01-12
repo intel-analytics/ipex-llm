@@ -76,7 +76,6 @@ class ReLUDnn[T: ClassTag](ip: Boolean = false)(
           case 2 => MklDnn.MemoryFormat.nc
           case 4 => MklDnn.MemoryFormat.nchw
         }
-
         if (input.getPrimitiveDesc() != 0L) {
           val input_pd = input.getPrimitiveDesc()
           src_md = MklDnnOps.primitiveDescQueryMemory(input_pd)
