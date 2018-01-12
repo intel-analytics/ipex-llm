@@ -16,9 +16,8 @@
 
 package com.intel.analytics.bigdl.transform.vision.image
 
-import java.nio.ByteBuffer
 
-import com.intel.analytics.bigdl.dataset.{ArraySample, ByteRecord, Transformer}
+import com.intel.analytics.bigdl.dataset.{ArraySample}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.transform.vision.image.opencv.OpenCVMat
@@ -63,33 +62,21 @@ object BytesToMat {
   }
 }
 
-class ByteRecordToMat() extends Transformer[ByteRecord, ImageFeature] {
+/**
+ * Transform byte array(pixels in byte) to OpenCVMat
+ * @param byteKey key that maps byte array
+ */
+class PixelBytesToMat(byteKey: String = ImageFeature.bytes) extends FeatureTransformer {
 
-  private val labelBuffer = Tensor[Float](1)
-  private val imageFeature = ImageFeature()
-
-  override def apply(prev: Iterator[ByteRecord]): Iterator[ImageFeature] = {
-    prev.map(byteRecord => {
-      val rawData = byteRecord.data
-      val imgBuffer = ByteBuffer.wrap(rawData)
-      val width = imgBuffer.getInt
-      val height = imgBuffer.getInt
-      val bytes = new Array[Byte](3 * width * height)
-      System.arraycopy(imgBuffer.array(), 8, bytes, 0, bytes.length)
-      val mat = OpenCVMat.fromPixelsBytes(bytes, height, width)
-      labelBuffer.setValue(1, byteRecord.label)
-
-      imageFeature.clear()
-      imageFeature(ImageFeature.mat) = mat
-      imageFeature(ImageFeature.originalSize) = mat.shape()
-      imageFeature(ImageFeature.label) = labelBuffer
-      imageFeature
-    })
+  override def transformMat(feature: ImageFeature): Unit = {
+    val pixels = feature[Array[Byte]](byteKey)
+    val mat = OpenCVMat.fromPixelsBytes(pixels, feature.getOriginalHeight, feature.getOriginalWidth)
+    feature(ImageFeature.mat) = mat
   }
 }
 
-object ByteRecordToMat {
-  def apply(): ByteRecordToMat = new ByteRecordToMat()
+object PixelBytesToMat {
+  def apply(byteKey: String = ImageFeature.bytes): PixelBytesToMat = new PixelBytesToMat(byteKey)
 }
 
 

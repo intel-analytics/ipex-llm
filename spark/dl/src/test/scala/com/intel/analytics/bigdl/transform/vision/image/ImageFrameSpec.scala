@@ -134,9 +134,8 @@ class ImageFrameSpec extends FlatSpec with Matchers with BeforeAndAfter {
       s
     }).toArray
 
-    val seq = DataSet.SeqFileFolder.filesToRdd(tmpFile.getAbsolutePath(), sc, 10)
-    val byteRecordToMat = ByteRecordToMat()
-    val imageFrame = ImageFrame.rdd(byteRecordToMat(seq)) ->
+    val imageFrame = DataSet.SeqFileFolder.filesToImageFrame(tmpFile.getAbsolutePath(), sc, 10) ->
+      PixelBytesToMat() ->
       Resize(256, 256) ->
       RandomCrop(224, 224) ->
       RandomTransformer(HFlip(), 0.5) ->

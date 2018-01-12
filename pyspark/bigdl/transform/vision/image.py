@@ -596,3 +596,37 @@ class ImageFrameToSample(FeatureTransformer):
                  sample_key="sample", bigdl_type="float"):
         super(ImageFrameToSample, self).__init__(bigdl_type, input_keys, target_keys, sample_key)
 
+class PixelBytesToMat(FeatureTransformer):
+    """
+    Transform byte array(pixels in byte) to OpenCVMat
+    :param byte_key key that maps byte array
+    """
+    def __init__(self, byte_key = "bytes", bigdl_type="float"):
+        super(PixelBytesToMat, self).__init__(bigdl_type, byte_key)
+
+
+class SeqFileFolder(JavaValue):
+
+    @classmethod
+    def files_to_image_frame(cls,
+                             url,
+                             sc,
+                             class_num,
+                             partition_num=-1,
+                             bigdl_type="float"):
+        """
+        Extract hadoop sequence files from an HDFS path as ImageFrame
+        :param url: sequence files folder path
+        :param sc: spark context
+        :param class_num: class number of data
+        :param partition_num: partition number, default: Engine.nodeNumber() * Engine.coreNumber()
+        """
+        jvalue = callBigDlFunc(bigdl_type,
+                               "filesToImageFrame",
+                               url,
+                               sc,
+                               class_num,
+                               partition_num)
+        return ImageFrame(jvalue=jvalue)
+
+
