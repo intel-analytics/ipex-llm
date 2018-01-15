@@ -114,11 +114,11 @@ object DistriOptimizer {
 
     // driverState is needed to prevent serializing the whole optimizer
     if (!optimMethod.state.contains("epoch")) optimMethod.state.update("epoch", 1)
-    if (!optimMethod.state.contains("neval")) optimMethod.state.update("epoch", 1)
+    if (!optimMethod.state.contains("neval")) optimMethod.state.update("neval", 1)
     if (!optimMethod.state.contains("Loss")) {
-      optimMethod.state.update("epoch", Float.PositiveInfinity)
+      optimMethod.state.update("Loss", Float.PositiveInfinity)
     }
-    if (!optimMethod.state.contains("score")) optimMethod.state.update("epoch", 0f)
+    if (!optimMethod.state.contains("score")) optimMethod.state.update("score", 0f)
     if (!optimMethod.state.contains("recordsProcessedThisEpoch")) {
       optimMethod.state.update("recordsProcessedThisEpoch", 0)
     }
@@ -440,6 +440,8 @@ object DistriOptimizer {
           dataRDD = dataset.data(train = true)
           recordsProcessedThisEpoch = 0
         }
+
+        optimMethod.state.update("recordsProcessedThisEpoch", recordsProcessedThisEpoch)
 
         optimMethod.state.update("epoch", driverState[Int]("epoch"))
         optimMethod.state.update("neval", driverState[Int]("neval"))
@@ -827,10 +829,10 @@ class DistriOptimizer[T: ClassTag] (
   }
 
   private def endEpoch(): Unit = {
-    val records = this.state.get[Int]("recordsProcessedThisEpoch")
+    val records = this.optimMethod.state.get[Int]("recordsProcessedThisEpoch")
     if (records.isDefined && records.get != 0) {
-      this.state("epoch") = this.state[Int]("epoch") + 1
-      this.state("recordsProcessedThisEpoch") = 0
+      this.optimMethod.state("epoch") = this.optimMethod.state[Int]("epoch") + 1
+      this.optimMethod.state("recordsProcessedThisEpoch") = 0
     }
   }
 
