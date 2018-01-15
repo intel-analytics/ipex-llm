@@ -2872,6 +2872,10 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     BytesToMat(byteKey)
   }
 
+  def createPixelBytesToMat(byteKey: String): PixelBytesToMat = {
+    PixelBytesToMat(byteKey)
+  }
+
   def createMatToFloats(validHeight: Int = 300, validWidth: Int = 300, validChannels: Int = 3,
     outKey: String = ImageFeature.floats, shareBuffer: Boolean = true): MatToFloats =
     new MatToFloats(validHeight, validWidth, validChannels, outKey, shareBuffer)
@@ -2887,6 +2891,12 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     targetKeys: JList[String], sampleKey: String): ImageFrameToSample[T] = {
     val targets = if (targetKeys == null) null else targetKeys.asScala.toArray
     ImageFrameToSample[T](inputKeys.asScala.toArray, targets, sampleKey)
+  }
+
+  def seqFilesToImageFrame(url: String, sc: JavaSparkContext,
+    classNum: Int, partitionNum: Int): ImageFrame = {
+    val pn = if (partitionNum <= 0) None else Some(partitionNum)
+    DataSet.SeqFileFolder.filesToImageFrame(url, sc, classNum, pn)
   }
 
   def setConstantClip(optimizer: Optimizer[T, MiniBatch[T]],
