@@ -213,4 +213,17 @@ object OpenCVMat {
     input.get(0, 0, floats)
     (floats, input.height(), input.width())
   }
+
+  /**
+   * convert pixel bytes to OpenCVMat
+   * @param pixels pixels in byte array
+   * @param height image height
+   * @param width image width
+   */
+  def fromPixelsBytes(pixels: Array[Byte], height: Int, width: Int): OpenCVMat = {
+    val mat = new OpenCVMat()
+    mat.create(height, width, CvType.CV_8UC3)
+    mat.put(0, 0, pixels)
+    mat
+  }
 }
