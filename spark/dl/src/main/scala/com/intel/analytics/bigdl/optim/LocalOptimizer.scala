@@ -66,6 +66,9 @@ class LocalOptimizer[T: ClassTag] (
       val m = model.cloneModule()
       Util.putWeightBias(wb, m)
       Util.initGradWeightBias(wb, m)
+      // for dnn create engine and stream
+      m.createDnnEngine(0)
+      m.createStream()
       m
     }).toArray
     Util.putWeightBias(wb, model)

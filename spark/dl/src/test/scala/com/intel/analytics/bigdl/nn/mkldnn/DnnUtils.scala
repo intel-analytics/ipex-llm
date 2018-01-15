@@ -109,14 +109,17 @@ object DnnUtils {
     model.add(PoolingDnn[Float](3, 3, 2, 2).setName("pool5"))
     model.add(MemoryReOrder())
     model.add(View(256 * 6 * 6))
-    model.add(Linear[Float](256 * 6 * 6, 4096).setName("fc6"))
-    model.add(ReLU[Float](true).setName("relu6"))
+    model.add(nn.Linear[Float](256 * 6 * 6, 4096).setName("fc6"))
+    model.add(ReLUDnn[Float](true).setName("relu6"))
     if (hasDropout) model.add(Dropout[Float](0.5).setName("drop6"))
-    model.add(Linear[Float](4096, 4096).setName("fc7"))
-    model.add(ReLU[Float](true).setName("relu7"))
+    model.add(nn.Linear[Float](4096, 4096).setName("fc7"))
+    model.add(ReLUDnn[Float](true).setName("relu7"))
     if (hasDropout) model.add(Dropout[Float](0.5).setName("drop7"))
-    model.add(Linear[Float](4096, classNum).setName("fc8"))
+    model.add(nn.Linear[Float](4096, classNum).setName("fc8"))
     model.add(LogSoftMax[Float]().setName("loss"))
+
+    model.createDnnEngine(0)
+    model.createStream()
     model
   }
 }

@@ -1105,9 +1105,18 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
     engineLocation
   }
 
+  def setDnnEngine(loc : Long): this.type = {
+    engineLocation = loc
+    this
+  }
+
   def createDnnEngine(index : Int): Unit = {
     require(MklDnn.isLoaded, "mkldnn isn't loaded")
     engineLocation = MklDnn.EngineCreate(mkldnn_engine_type, index)
+    if (this.isInstanceOf[Container[Activity, Activity, T]]) {
+      this.asInstanceOf[Container[Activity, Activity, T]].
+        modules.map(_.setDnnEngine(engineLocation))
+    }
   }
 
   // for mkl dnn stream
@@ -1120,9 +1129,18 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
     streamLocation
   }
 
+  def setStream(loc: Long): this.type = {
+    streamLocation = loc
+    this
+  }
+
   def createStream(): Unit = {
     require(MklDnn.isLoaded, "mkldnn isn't loaded")
     streamLocation = MklDnn.StreamCreate(MklDnn.StreamType.eager)
+    if (this.isInstanceOf[Container[Activity, Activity, T]]) {
+      this.asInstanceOf[Container[Activity, Activity, T]].
+        modules.map(_.setStream(streamLocation))
+    }
   }
 
   // for mkl dnn format
