@@ -15,9 +15,9 @@
  */
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, TensorModule}
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.{NumericWildcard, TensorNumeric}
 
 import scala.reflect.ClassTag
 
@@ -32,7 +32,7 @@ import scala.reflect.ClassTag
 @SerialVersionUID(7998127436291978408L)
 class Squeeze[T: ClassTag](
   val dims : Array[Int] = null, val batchMode: Boolean = false
-  )(implicit ev: TensorNumeric[T]) extends TensorModule[T]  {
+  )(implicit ev: TensorNumeric[T]) extends AbstractModule[Tensor[_], Tensor[_], T]  {
 
   if (batchMode && dims != null) {
     var i = 0
@@ -42,8 +42,11 @@ class Squeeze[T: ClassTag](
     }
   }
 
-  override def updateOutput(input: Tensor[T]): Tensor[T] = {
-    output.set(input)
+  override def updateOutput(input: Tensor[_]): Tensor[_] = {
+    if (output.getType() != input.getType()) {
+      output = input.emptyInstance()
+    }
+    output.asInstanceOf[Tensor[NumericWildcard]].set(input.asInstanceOf[Tensor[NumericWildcard]])
     if (dims != null) {
       var i = 0
       while(i < dims.length) {
@@ -60,9 +63,15 @@ class Squeeze[T: ClassTag](
     output
   }
 
-  override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
-    require(input.nElement() == gradOutput.nElement())
-    gradInput.set(gradOutput.view(input.size()))
+  override def updateGradInput(input: Tensor[_], gradOutput: Tensor[_]): Tensor[_] = {
+    if (gradInput.getType() != gradOutput.getType()) {
+      gradInput = gradOutput.emptyInstance()
+    }
+    require(input.nElement() == gradOutput.nElement(),
+      "input and gradoutput shoule be of the same size" +
+        s"input size ${input.nElement()} gradoutput size ${gradOutput.nElement()}")
+    gradInput.asInstanceOf[Tensor[NumericWildcard]]
+      .set(gradOutput.asInstanceOf[Tensor[NumericWildcard]].view(input.size()))
     gradInput
   }
 
@@ -98,6 +107,6 @@ object Squeeze {
   def apply[T: ClassTag](
     dims : Array[Int], batchMode: Boolean)(implicit ev: TensorNumeric[T])
   : Squeeze[T] = {
-    new Squeeze[T](dims.sortWith(_>_), batchMode)
+    new Squeeze[T](if (dims != null) dims.sortWith(_>_) else null, batchMode)
   }
 }

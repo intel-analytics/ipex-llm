@@ -37,7 +37,6 @@ import org.apache.spark.sql.SQLContext
 object DLClassifierLeNet {
 
   LoggerFilter.redirectSparkInfoLogs()
-  Logger.getLogger("com.intel.analytics.bigdl.optim").setLevel(Level.INFO)
 
   def main(args: Array[String]): Unit = {
     val inputs = Array[String]("Feature data", "Label data")
@@ -72,6 +71,7 @@ object DLClassifierLeNet {
         .setFeaturesCol(inputs(0))
         .setLabelCol(inputs(1))
         .setBatchSize(param.batchSize)
+        .setMaxEpoch(param.maxEpoch)
       val transformer = estimator.fit(trainingDF)
 
       val validationSet = DataSet.array(load(validationData, validationLabel), sc) ->

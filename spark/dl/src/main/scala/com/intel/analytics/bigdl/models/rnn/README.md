@@ -9,7 +9,7 @@ The implementation of RNNs in this code is referred to in the [Keras Recurrent](
 
 ## Get the BigDL files
 
-Please build BigDL referring to [Build Page](https://github.com/intel-analytics/BigDL/wiki/Build-Page).
+Please build BigDL referring to [Build Page](https://bigdl-project.github.io/master/#ScalaUserGuide/install-build-src/).
 
 
 ## Prepare the Input Data
@@ -50,7 +50,7 @@ dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
 ```
 
 ## Test the Model
-Please create a <code>test.txt</code> file under the folder in which you save your dictionary during training process.
+Please create a <code>test.txt</code> file under the folder <code> /path/saveDict</code> in which you save your dictionary during training process.
 A sample <code>test.txt</code> can be as follows. Each line starts with several trigger words and ends with a period. The test script will load in the trained model and <code>test.txt</code>, then it will generate the following words per line.
 ```
 Long live the.
@@ -73,9 +73,10 @@ spark-submit \
 --master spark://... \
 --executor-cores cores_per_executor \
 --total-executor-cores total_cores_for_the_job \
+--driver-class-path dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
 --class com.intel.analytics.bigdl.models.rnn.Test \
 dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
--f /dictDirect --model /modeldirectory/model.iterationNumber --words 20
+-f /path/saveDict --model /path/model/model.iterationNumber --words 20
 ```
 
 ## Preprocessing

@@ -24,7 +24,8 @@ import scala.reflect.ClassTag
  */
 
 @SerialVersionUID(223597921741020277L)
-class Sqrt[T: ClassTag](implicit ev: TensorNumeric[T]) extends Power[T](0.5, 1, 0) {
+class Sqrt[T: ClassTag](implicit ev: TensorNumeric[T])
+  extends Power[T](0.5, 1, 0) {
 }
 
 object Sqrt {

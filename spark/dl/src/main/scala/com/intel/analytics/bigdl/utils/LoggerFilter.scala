@@ -80,19 +80,20 @@ object LoggerFilter {
     Logger.getLogger(className).addAppender(appender)
   }
 
+  private val defaultPath = Paths.get(System.getProperty("user.dir"), "bigdl.log").toString
+
   /**
    * 1. redirect all spark log to file, which can be set by `-Dbigdl.utils.LoggerFilter.logFile`
    *    the default file is under current workspace named `bigdl.log`.
    * 2. `-Dbigdl.utils.LoggerFilter.disable=true` will disable redirection.
    * 3. `-Dbigdl.utils.LoggerFilter.enableSparkLog=false` will not output spark log to file
    */
-  def redirectSparkInfoLogs(): Unit = {
+  def redirectSparkInfoLogs(logPath: String = defaultPath): Unit = {
     val disable = System.getProperty("bigdl.utils.LoggerFilter.disable", "false")
     val enableSparkLog = System.getProperty("bigdl.utils.LoggerFilter.enableSparkLog", "true")
 
     def getLogFile: String = {
-      val default = Paths.get(System.getProperty("user.dir"), "bigdl.log").toString
-      val logFile = System.getProperty("bigdl.utils.LoggerFilter.logFile", default)
+      val logFile = System.getProperty("bigdl.utils.LoggerFilter.logFile", logPath)
 
       // If the file doesn't exist, create a new one. If it's a directory, throw an error.
       val logFilePath = Paths.get(logFile)

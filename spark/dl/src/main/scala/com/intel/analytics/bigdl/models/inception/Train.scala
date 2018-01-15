@@ -24,7 +24,7 @@ import org.apache.spark.SparkContext
 
 object TrainInceptionV1 {
   LoggerFilter.redirectSparkInfoLogs()
-  Logger.getLogger("com.intel.analytics.bigdl.optim").setLevel(Level.INFO)
+
 
   import Options._
 
@@ -59,6 +59,8 @@ object TrainInceptionV1 {
 
       val model = if (param.modelSnapshot.isDefined) {
         Module.load[Float](param.modelSnapshot.get)
+      } else if (param.graphModel) {
+        Inception_v1_NoAuxClassifier.graph(classNum = param.classNumber)
       } else {
         Inception_v1_NoAuxClassifier(classNum = param.classNumber)
       }

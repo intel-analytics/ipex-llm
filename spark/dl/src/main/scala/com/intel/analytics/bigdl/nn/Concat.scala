@@ -16,11 +16,13 @@
 
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Engine
 
+import scala.collection.mutable.ArrayBuffer
 import scala.concurrent.Future
 import scala.reflect.ClassTag
 
@@ -61,6 +63,19 @@ class Concat[T: ClassTag](val dimension: Int)(
       if (i == 0) {
         this.size = currentOutput.size()
       } else {
+        require(this.size.length == currentOutput.size.length,
+        s"${this.modules(i).getName} output size mismatch, expected : ${this.size.length}," +
+          s"actual ${currentOutput.size.length}")
+        var index = 0
+        val ssize = this.size.length
+        while (index < ssize) {
+          if (index != dimension - 1) {
+            require(this.size(index) == currentOutput.size(index + 1),
+              s"${this.modules(i).getName} output size at dimension ${index + 1} mismatch," +
+                s"expected ${this.size(index)}, actual : ${currentOutput.size(index + 1)}")
+          }
+          index += 1
+        }
         this.size(this.dimension - 1) += currentOutput.size(this.dimension)
       }
       i += 1
@@ -324,6 +339,16 @@ class Concat[T: ClassTag](val dimension: Int)(
     forwardTimeOverhead = 0
     forwardTime = 0
     backwardTime = 0
+  }
+
+  override def getEndNodes(startNodes: Array[ModuleNode[T]]): Array[ModuleNode[T]] = {
+    val outputs = ArrayBuffer[ModuleNode[T]]()
+    var outputTuple: Array[ModuleNode[T]] = null
+    for (i <- 0 to modules.size - 1) {
+      outputTuple = modules(i).getEndNodes(startNodes)
+      outputs ++= outputTuple
+    }
+    Array(JoinTable(dimension, -1).inputs(outputs: _*))
   }
 }
 

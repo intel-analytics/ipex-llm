@@ -20,9 +20,10 @@ from scipy import misc
 from bigdl.util.common import Sample
 
 
-def normalizer(mean, std):
+def normalizer(data, mean, std):
     """
     Normalize features by standard deviation
+    data is a ndarray
     """
     return lambda sample: Sample.from_ndarray((sample.features - mean) / std,
                                               sample.label, sample.bigdl_type)

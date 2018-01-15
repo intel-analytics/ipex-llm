@@ -42,7 +42,7 @@ class SmoothL1CriterionWithWeights[@specialized(Float, Double) T: ClassTag]
   @transient var buffer: Tensor[T] = _
   // diff holds (input - gt) * w_in
   @transient var diff: Tensor[T] = _
-  @transient val sigma2 = sigma * sigma
+  val sigma2 = sigma * sigma
   @transient var hasWeights = true
 
   override def updateOutput(input: Tensor[T], target: Table): T = {
@@ -53,14 +53,20 @@ class SmoothL1CriterionWithWeights[@specialized(Float, Double) T: ClassTag]
     var outsideW: Tensor[T] = null
     if (target.length() == 1) {
       hasWeights = false
-      require(input.nElement() == bboxTarget.nElement())
+      require(input.nElement() == bboxTarget.nElement(), s" " +
+        s"the length of bbox target, " +
+        s"input must be equal, input length ${input.nElement()}," +
+        s" bbox target length ${bboxTarget.nElement()}")
     } else {
       hasWeights = true
       insideW = target[Tensor[T]](2)
       outsideW = target[Tensor[T]](3)
       require(insideW.nElement() == outsideW.nElement() &&
         insideW.nElement() == bboxTarget.nElement(),
-        "the length of bbox target, insideW, outsideW must be equal")
+        s"the length of bbox target, insideW, outsideW must be equal, " +
+          s"bbox target ${bboxTarget.nElement()}," +
+          s"insideW ${insideW.nElement()}," +
+          s"outsideW ${outsideW.nElement()}")
     }
 
     if (diff == null) {
@@ -80,16 +86,17 @@ class SmoothL1CriterionWithWeights[@specialized(Float, Double) T: ClassTag]
     // |input - gt| * w_in
     buffer.resizeAs(diff).copy(diff).abs()
     val data = buffer.storage().array()
+    val dataOffset = buffer.storageOffset() - 1
     var i = 0
-    while (i < data.length) {
+    while (i < buffer.nElement()) {
       // f(x) = 0.5 * (sigma * x)^2          if |x| < 1 / sigma / sigma
       //        |x| - 0.5 / sigma / sigma    otherwise
-      if (ev.isGreater(ev.fromType(1.0 / sigma2), data(i))) {
-        data(i) = ev.times(ev.fromType[Double](sigma2),
-          ev.times(ev.fromType(0.5), ev.times(data(i), data(i))))
+      if (ev.isGreater(ev.fromType(1.0 / sigma2), data(dataOffset + i))) {
+        data(dataOffset + i) = ev.times(ev.fromType[Double](sigma2),
+          ev.times(ev.fromType(0.5), ev.times(data(dataOffset + i), data(dataOffset + i))))
       }
       else {
-        data(i) = ev.minus(data(i), ev.fromType[Double](0.5 / sigma2))
+        data(dataOffset + i) = ev.minus(data(dataOffset + i), ev.fromType[Double](0.5 / sigma2))
       }
       i += 1
     }
@@ -113,42 +120,49 @@ class SmoothL1CriterionWithWeights[@specialized(Float, Double) T: ClassTag]
     var outsideW: Tensor[T] = null
     if (target.length() == 1) {
       hasWeights = false
-      require(input.nElement() == bboxTarget.nElement())
+      require(input.nElement() == bboxTarget.nElement(),
+        "the length of bbox target, input must be equal, " +
+          s"input length ${input.nElement()}, " +
+          s"bbox target length ${bboxTarget.nElement()}")
     } else {
       hasWeights = true
       insideW = target[Tensor[T]](2)
       outsideW = target[Tensor[T]](3)
       require(insideW.nElement() == outsideW.nElement() &&
         insideW.nElement() == bboxTarget.nElement(),
-        "the length of bbox target, insideW, outsideW must be equal")
+        "the length of bbox target, insideW, outsideW must be equal, " +
+          s"bbox target ${bboxTarget.nElement()}," +
+          s"insideW ${insideW.nElement()}," +
+          s"outsideW ${outsideW.nElement()}")
     }
     val data = diff.storage().array()
+    val dataOffset = diff.storageOffset() - 1
     var i = 0
-    while (i < data.length) {
+    while (i < diff.nElement()) {
       // f'(x) = sigma * sigma * x         if |x| < 1 / sigma / sigma
       //       = sign(x)
-      val x = data(i)
+      val x = data(dataOffset + i)
       if (ev.isGreater(ev.fromType[Double](1.0 / sigma2), ev.abs(x))) {
-        data(i) = ev.times(ev.fromType[Double](sigma2), x)
+        data(dataOffset + i) = ev.times(ev.fromType[Double](sigma2), x)
       } else {
         // sign(x) == (0<x) - (x<0)
-        if (ev.isGreater(data(i), ev.fromType(0))) {
-          data(i) = ev.fromType(1)
-        } else if (ev.isGreater(ev.fromType(0), data(i))) {
-          data(i) = ev.fromType(-1)
+        if (ev.isGreater(data(dataOffset + i), ev.fromType(0))) {
+          data(dataOffset + i) = ev.fromType(1)
+        } else if (ev.isGreater(ev.fromType(0), data(dataOffset + i))) {
+          data(dataOffset + i) = ev.fromType(-1)
         } else {
-          data(i) = ev.fromType(0)
+          data(dataOffset + i) = ev.fromType(0)
         }
       }
       i += 1
     }
-    val alpha = if (num > 0) {
-      ev.fromType(1.0 / num)
-    } else {
-      ev.fromType(input.size(1))
-    }
 
-    gradInput.resizeAs(diff).copy(diff).mul(alpha)
+    gradInput.resizeAs(diff).copy(diff)
+    if (num > 0) {
+      gradInput.div(ev.fromType(num))
+    } else {
+      gradInput.div(ev.fromType(input.size(1)))
+    }
     if (hasWeights) {
       // scale by inside weight
       gradInput.cmul(insideW)

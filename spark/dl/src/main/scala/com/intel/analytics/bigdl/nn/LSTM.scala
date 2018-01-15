@@ -16,7 +16,8 @@
 package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
+import com.intel.analytics.bigdl.nn.Graph.ModuleNode
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
 import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -33,12 +34,15 @@ import scala.reflect.ClassTag
  *
  * @param inputSize the size of each input vector
  * @param hiddenSize Hidden unit size in the LSTM
- * @param  p is used for [[Dropout]] probability. For more details about
+ * @param p is used for [[Dropout]] probability. For more details about
  *           RNN dropouts, please refer to
  *           [RnnDrop: A Novel Dropout for RNNs in ASR]
  *           (http://www.stat.berkeley.edu/~tsmoon/files/Conference/asru2015.pdf)
  *           [A Theoretically Grounded Application of Dropout in Recurrent Neural Networks]
  *           (https://arxiv.org/pdf/1512.05287.pdf)
+ * @param activation: activation function, by default to be Tanh if not specified.
+ * @param innerActivation: activation function for inner cells,
+ *                       by default to be Sigmoid if not specified.
  * @param wRegularizer: instance of [[Regularizer]]
  *                    (eg. L1 or L2 regularization), applied to the input weights matrices.
  * @param uRegularizer: instance [[Regularizer]]
@@ -51,6 +55,8 @@ class LSTM[T : ClassTag] (
   val inputSize: Int,
   val hiddenSize: Int,
   val p: Double = 0,
+  var activation: TensorModule[T] = null,
+  var innerActivation: TensorModule[T] = null,
   var wRegularizer: Regularizer[T] = null,
   var uRegularizer: Regularizer[T] = null,
   var bRegularizer: Regularizer[T] = null
@@ -60,127 +66,125 @@ class LSTM[T : ClassTag] (
     hiddensShape = Array(hiddenSize, hiddenSize),
     regularizers = Array(wRegularizer, uRegularizer, bRegularizer)
   ) {
+
+  if (activation == null) activation = Tanh[T]()
+  if (innerActivation == null) innerActivation = Sigmoid[T]()
   var gates: Sequential[T] = _
   var cellLayer: Sequential[T] = _
-  override var cell: AbstractModule[Activity, Activity, T] = buildLSTM()
 
-  override def preTopology: AbstractModule[Activity, Activity, T] = if (p != 0) {
+  override var cell: AbstractModule[Activity, Activity, T] = buildModel()
+
+  override var preTopology: TensorModule[T] = if (p != 0) {
     null
   } else {
-    TimeDistributed[T](Linear(inputSize, 4 * hiddenSize,
-      wRegularizer = wRegularizer, bRegularizer = bRegularizer))
+    Linear(inputSize, 4 * hiddenSize,
+      wRegularizer = wRegularizer, bRegularizer = bRegularizer)
   }
 
-  def buildGates(): Sequential[T] = {
-    val gates = Sequential()
-      .add(NarrowTable(1, 2))
+  override def hiddenSizeOfPreTopo: Int = 4 * hiddenSize
 
-    var i2g: AbstractModule[_, _, T] = null
-    var h2g: AbstractModule[_, _, T] = null
+  def buildGates()(input1: ModuleNode[T], input2: ModuleNode[T])
+  : (ModuleNode[T], ModuleNode[T], ModuleNode[T], ModuleNode[T]) = {
+
+    var i2g: ModuleNode[T] = null
+    var h2g: ModuleNode[T] = null
 
     if (p != 0) {
-      i2g = Sequential()
-        .add(ConcatTable()
-          .add(Dropout(p))
-          .add(Dropout(p))
-          .add(Dropout(p))
-          .add(Dropout(p)))
-        .add(ParallelTable()
-          .add(Linear(inputSize, hiddenSize,
-            wRegularizer = wRegularizer, bRegularizer = bRegularizer))
-          .add(Linear(inputSize, hiddenSize,
-            wRegularizer = wRegularizer, bRegularizer = bRegularizer))
-          .add(Linear(inputSize, hiddenSize,
-            wRegularizer = wRegularizer, bRegularizer = bRegularizer))
-          .add(Linear(inputSize, hiddenSize,
-            wRegularizer = wRegularizer, bRegularizer = bRegularizer)))
-        .add(JoinTable(1, 1))
+      val dropi2g1 = Dropout(p).inputs(input1)
+      val dropi2g2 = Dropout(p).inputs(input1)
+      val dropi2g3 = Dropout(p).inputs(input1)
+      val dropi2g4 = Dropout(p).inputs(input1)
 
-      h2g = Sequential()
-        .add(ConcatTable()
-          .add(Dropout(p))
-          .add(Dropout(p))
-          .add(Dropout(p))
-          .add(Dropout(p)))
-        .add(ParallelTable()
-          .add(Linear(hiddenSize, hiddenSize,
-            withBias = false, wRegularizer = uRegularizer))
-          .add(Linear(hiddenSize, hiddenSize,
-            withBias = false, wRegularizer = uRegularizer))
-          .add(Linear(hiddenSize, hiddenSize,
-            withBias = false, wRegularizer = uRegularizer))
-          .add(Linear(hiddenSize, hiddenSize,
-            withBias = false, wRegularizer = uRegularizer)))
-        .add(JoinTable(1, 1))
+      val lineari2g1 = Linear(inputSize, hiddenSize,
+        wRegularizer = wRegularizer, bRegularizer = bRegularizer).inputs(dropi2g1)
+      val lineari2g2 = Linear(inputSize, hiddenSize,
+        wRegularizer = wRegularizer, bRegularizer = bRegularizer).inputs(dropi2g2)
+      val lineari2g3 = Linear(inputSize, hiddenSize,
+        wRegularizer = wRegularizer, bRegularizer = bRegularizer).inputs(dropi2g3)
+      val lineari2g4 = Linear(inputSize, hiddenSize,
+        wRegularizer = wRegularizer, bRegularizer = bRegularizer).inputs(dropi2g4)
+
+      i2g = JoinTable(1, 1).inputs(lineari2g1, lineari2g2, lineari2g3, lineari2g4)
+
+      val droph2g1 = Dropout(p).inputs(input2)
+      val droph2g2 = Dropout(p).inputs(input2)
+      val droph2g3 = Dropout(p).inputs(input2)
+      val droph2g4 = Dropout(p).inputs(input2)
+
+      val linearh2g1 = Linear(hiddenSize, hiddenSize,
+        wRegularizer = wRegularizer, bRegularizer = bRegularizer).inputs(droph2g1)
+      val linearh2g2 = Linear(hiddenSize, hiddenSize,
+        wRegularizer = wRegularizer, bRegularizer = bRegularizer).inputs(droph2g2)
+      val linearh2g3 = Linear(hiddenSize, hiddenSize,
+        wRegularizer = wRegularizer, bRegularizer = bRegularizer).inputs(droph2g3)
+      val linearh2g4 = Linear(hiddenSize, hiddenSize,
+        wRegularizer = wRegularizer, bRegularizer = bRegularizer).inputs(droph2g4)
+
+      h2g = JoinTable(1, 1).inputs(linearh2g1, linearh2g2, linearh2g3, linearh2g4)
     } else {
-      i2g = Identity()
+      i2g = input1
       h2g = Linear(hiddenSize, 4 * hiddenSize,
-        withBias = false, wRegularizer = uRegularizer)
+        withBias = false, wRegularizer = uRegularizer).inputs(input2)
     }
 
-    gates
-      .add(ParallelTable()
-        .add(i2g)
-        .add(h2g))
-      .add(CAddTable(false))
-      .add(Reshape(Array(4, hiddenSize)))
-      .add(SplitTable(1, 2))
-      .add(ParallelTable()
-        .add(Sigmoid())
-        .add(Tanh())
-        .add(Sigmoid())
-        .add(Sigmoid()))
+    val caddTable = CAddTable(false).inputs(i2g, h2g)
+    val reshape = Reshape(Array(4, hiddenSize)).inputs(caddTable)
+    val split1 = Select(2, 1).inputs(reshape)
+    val split2 = Select(2, 2).inputs(reshape)
+    val split3 = Select(2, 3).inputs(reshape)
+    val split4 = Select(2, 4).inputs(reshape)
 
-    this.gates = gates
-    gates
+    // make different instances of inner activation
+    val innerActivation2 = innerActivation.cloneModule()
+    innerActivation2.setName(Integer.toHexString(java.util.UUID.randomUUID().hashCode()))
+    val innerActivation3 = innerActivation.cloneModule()
+    innerActivation3.setName(Integer.toHexString(java.util.UUID.randomUUID().hashCode()))
+
+    (innerActivation.inputs(split1),
+      activation.inputs(split2),
+      innerActivation2.inputs(split3),
+      innerActivation3.inputs(split4))
   }
 
-  def buildLSTM(): Sequential[T] = {
-    buildGates()
-
-    val lstm = Sequential()
+  def buildModel(): Sequential[T] = {
+    Sequential()
       .add(FlattenTable())
-      .add(ConcatTable()
-        .add(gates)
-        .add(SelectTable(3)))
-      .add(FlattenTable()) // input, hidden, forget, output, cell
-
-    val cellLayer = Sequential()
-      .add(ConcatTable()
-        .add(Sequential()
-          .add(NarrowTable(1, 2))
-          .add(CMulTable()))
-        .add(Sequential()
-          .add(ConcatTable()
-            .add(SelectTable(3))
-            .add(SelectTable(5)))
-          .add(CMulTable())))
-      .add(CAddTable(true))
-
-    lstm
-      .add(ConcatTable()
-        .add(cellLayer)
-        .add(SelectTable(4)))
-      .add(FlattenTable())
-
-
-    lstm
-      .add(ConcatTable()
-        .add(Sequential()
-          .add(ConcatTable()
-            .add(Sequential()
-              .add(SelectTable(1))
-              .add(Tanh()))
-            .add(SelectTable(2)))
-          .add(CMulTable()))
-        .add(SelectTable(1)))
+      .add(buildLSTM())
       .add(ConcatTable()
         .add(SelectTable(1))
-        .add(Identity()))
+        .add(NarrowTable(2, 2)))
+  }
 
-    output = T(Tensor(), T())
-    this.cell = lstm
-    lstm
+  def buildLSTM(): Graph[T] = {
+    val input1 = Input()
+    val input2 = Input()
+    val input3 = Input()
+    val (in, hid, forg, out) = buildGates()(input1, input2)
+
+    /**
+     * g: activation
+     * cMult1 = in * hid
+     * cMult2 = forg * input3
+     * cMult3 = out * g(cMult1 + cMult2)
+     */
+    val cMult1 = CMulTable().inputs(in, hid)
+    val cMult2 = CMulTable().inputs(forg, input3)
+    val cadd = CAddTable(true).inputs(cMult1, cMult2)
+    val activation2 = activation.cloneModule()
+    activation2.setName(Integer.toHexString(java.util.UUID.randomUUID().hashCode()))
+    val activate = activation2.inputs(cadd)
+    val cMult3 = CMulTable().inputs(activate, out)
+
+    val out1 = Identity().inputs(cMult3)
+    val out2 = Identity().inputs(cMult3)
+    val out3 = cadd
+
+    /**
+     * out1 = cMult3
+     * out2 = out1
+     * out3 = cMult1 + cMult2
+     */
+    Graph(Array(input1, input2, input3), Array(out1, out2, out3))
   }
 
   override def canEqual(other: Any): Boolean = other.isInstanceOf[LSTM[T]]
@@ -214,11 +218,14 @@ object LSTM {
     inputSize: Int,
     hiddenSize: Int,
     p: Double = 0,
+    activation: TensorModule[T] = null,
+    innerActivation: TensorModule[T] = null,
     wRegularizer: Regularizer[T] = null,
     uRegularizer: Regularizer[T] = null,
     bRegularizer: Regularizer[T] = null
   )
     (implicit ev: TensorNumeric[T]): LSTM[T] = {
-    new LSTM[T](inputSize, hiddenSize, p, wRegularizer, uRegularizer, bRegularizer)
+    new LSTM[T](inputSize, hiddenSize, p, activation, innerActivation,
+      wRegularizer, uRegularizer, bRegularizer)
   }
 }

@@ -46,4 +46,10 @@ class SumSpec extends FlatSpec with Matchers {
 
     layer.forward(input) should be(expect)
   }
+
+  "sum" should "be correct when squeeze on vector" in {
+    val vector = Tensor[Int](T(1, 2, 3))
+    val sum = Sum[Int](dimension = 1, squeeze = true)
+    sum.forward(vector) should be(Tensor.scalar(6))
+  }
 }

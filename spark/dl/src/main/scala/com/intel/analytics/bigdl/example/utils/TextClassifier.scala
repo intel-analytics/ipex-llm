@@ -45,7 +45,7 @@ import scala.io.Source
 class TextClassifier(param: AbstractTextClassificationParams) extends Serializable{
   val log: Logger = LoggerFactory.getLogger(this.getClass)
   val gloveDir = s"${param.baseDir}/glove.6B/"
-  val textDataDir = s"${param.baseDir}/20_newsgroup/"
+  val textDataDir = s"${param.baseDir}/20news-18828/"
   var classNum = -1
 
   /**
@@ -55,7 +55,7 @@ class TextClassifier(param: AbstractTextClassificationParams) extends Serializab
   def buildWord2Vec(word2Meta: Map[String, WordMeta]): Map[Float, Array[Float]] = {
     log.info("Indexing word vectors.")
     val preWord2Vec = MMap[Float, Array[Float]]()
-    val filename = s"$gloveDir/glove.6B.100d.txt"
+    val filename = s"$gloveDir/glove.6B.200d.txt"
     for (line <- Source.fromFile(filename, "ISO-8859-1").getLines) {
       val values = line.split(" ")
       val word = values(0)
@@ -75,7 +75,7 @@ class TextClassifier(param: AbstractTextClassificationParams) extends Serializab
   def buildWord2VecWithIndex(word2Meta: Map[String, Int]): Map[Float, Array[Float]] = {
     log.info("Indexing word vectors.")
     val preWord2Vec = MMap[Float, Array[Float]]()
-    val filename = s"$gloveDir/glove.6B.100d.txt"
+    val filename = s"$gloveDir/glove.6B.200d.txt"
     for (line <- Source.fromFile(filename, "ISO-8859-1").getLines) {
       val values = line.split(" ")
       val word = values(0)
@@ -171,27 +171,15 @@ class TextClassifier(param: AbstractTextClassificationParams) extends Serializab
   def buildModel(classNum: Int): Sequential[Float] = {
     val model = Sequential[Float]()
 
-    model.add(Reshape(Array(param.embeddingDim, 1, param.maxSequenceLength)))
-
-    model.add(SpatialConvolution(param.embeddingDim, 128, 5, 1))
-    model.add(ReLU())
-
-    model.add(SpatialMaxPooling(5, 1, 5, 1))
-
-    model.add(SpatialConvolution(128, 128, 5, 1))
-    model.add(ReLU())
-
-    model.add(SpatialMaxPooling(5, 1, 5, 1))
-
-    model.add(SpatialConvolution(128, 128, 5, 1))
-    model.add(ReLU())
-
-    model.add(SpatialMaxPooling(35, 1, 35, 1))
-
-    model.add(Reshape(Array(128)))
-    model.add(Linear(128, 100))
-    model.add(Linear(100, classNum))
-    model.add(LogSoftMax())
+    model.add(TemporalConvolution(param.embeddingDim, 256, 5))
+      .add(ReLU())
+      .add(TemporalMaxPooling(param.maxSequenceLength - 5 + 1))
+      .add(Squeeze(2))
+      .add(Linear(256, 128))
+      .add(Dropout(0.2))
+      .add(ReLU())
+      .add(Linear(128, classNum))
+      .add(LogSoftMax())
     model
   }
 
@@ -221,8 +209,7 @@ class TextClassifier(param: AbstractTextClassificationParams) extends Serializab
         tokens, embeddingDim, word2VecBC.value), label)}
     val sampleRDD = vectorizedRdd.map {case (input: Array[Array[Float]], label: Float) =>
       Sample(
-        featureTensor = Tensor(input.flatten, Array(sequenceLen, embeddingDim))
-          .transpose(1, 2).contiguous(),
+        featureTensor = Tensor(input.flatten, Array(sequenceLen, embeddingDim)),
         label = label)
     }
 
@@ -237,7 +224,8 @@ class TextClassifier(param: AbstractTextClassificationParams) extends Serializab
     )
 
     optimizer
-      .setOptimMethod(new Adagrad(learningRate = 0.01, learningRateDecay = 0.0002))
+      .setOptimMethod(new Adagrad(learningRate = param.learningRate,
+        learningRateDecay = 0.001))
       .setValidation(Trigger.everyEpoch, valRDD, Array(new Top1Accuracy[Float]), param.batchSize)
       .setEndWhen(Trigger.maxEpoch(20))
       .optimize()
@@ -274,7 +262,7 @@ class TextClassifier(param: AbstractTextClassificationParams) extends Serializab
     )
 
     optimizer
-      .setOptimMethod(new Adagrad(learningRate = 0.01, learningRateDecay = 0.0002))
+      .setOptimMethod(new Adagrad(learningRate = param.learningRate, learningRateDecay = 0.0002))
       .setValidation(Trigger.everyEpoch, valRDD, Array(new Top1Accuracy[Float]), param.batchSize)
       .setEndWhen(Trigger.maxEpoch(1))
       .optimize()
@@ -290,6 +278,7 @@ abstract class AbstractTextClassificationParams extends Serializable {
   def batchSize: Int = 128
   def embeddingDim: Int = 100
   def partitionNum: Int = 4
+  def learningRate: Double = 0.01
 }
 
 
@@ -299,13 +288,15 @@ abstract class AbstractTextClassificationParams extends Serializable {
  * @param maxWordsNum maximum word to be included
  * @param trainingSplit percentage of the training data
  * @param batchSize size of the mini-batch
+ * @param learningRate learning rate
  * @param embeddingDim size of the embedding vector
  */
 case class TextClassificationParams(override val baseDir: String = "./",
-                                    override val maxSequenceLength: Int = 1000,
-                                    override val maxWordsNum: Int = 20000,
-                                    override val trainingSplit: Double = 0.8,
-                                    override val batchSize: Int = 128,
-                                    override val embeddingDim: Int = 100,
-                                    override val partitionNum: Int = 4)
+  override val maxSequenceLength: Int = 500,
+  override val maxWordsNum: Int = 5000,
+  override val trainingSplit: Double = 0.8,
+  override val batchSize: Int = 128,
+  override val embeddingDim: Int = 200,
+  override val learningRate: Double = 0.01,
+  override val partitionNum: Int = 4)
   extends AbstractTextClassificationParams

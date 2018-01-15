@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, TensorModule}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
@@ -28,6 +28,7 @@ import scala.reflect.ClassTag
 @SerialVersionUID(- 5175095570714684226L)
 class Log[T: ClassTag] (implicit ev: TensorNumeric[T])
   extends TensorModule[T] {
+
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
     output.resizeAs(input)
       .copy(input)
@@ -42,11 +43,12 @@ class Log[T: ClassTag] (implicit ev: TensorNumeric[T])
 
     gradInput
   }
+
 }
 
 object Log {
   def apply[@specialized(Float, Double) T: ClassTag]()
-      (implicit ev: TensorNumeric[T]) : Log[T] = {
+      (implicit ev: TensorNumeric[T]): Log[T] = {
     new Log[T]()
   }
 }

@@ -49,7 +49,7 @@ object Train {
   Logger.getLogger("org").setLevel(Level.ERROR)
   Logger.getLogger("akka").setLevel(Level.ERROR)
   Logger.getLogger("breeze").setLevel(Level.ERROR)
-  Logger.getLogger("com.intel.analytics.bigdl.optim").setLevel(Level.INFO)
+
 
   import Utils._
 
@@ -70,7 +70,7 @@ object Train {
       val model = if (param.modelSnapshot.isDefined) {
         Module.load[Float](param.modelSnapshot.get)
       } else {
-        Autoencoder(classNum = 32)
+        if (param.graphModel) Autoencoder.graph(classNum = 32) else Autoencoder(classNum = 32)
       }
 
       val optimMethod = if (param.stateSnapshot.isDefined) {

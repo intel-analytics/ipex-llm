@@ -28,12 +28,16 @@ if [ -z ${SPARK_HOME+x} ]; then echo "SPARK_HOME is unset"; exit 1; else echo "S
 
 export PYSPARK_ZIP=`find $SPARK_HOME/python/lib  -type f -iname '*.zip' | tr "\n" ":"`
 
-export PYTHONPATH=$PYSPARK_ZIP:$DL_PYTHON_HOME:$DL_PYTHON_HOME/:$DL_PYTHON_HOME/test/dev:$BIGDL_HOME/spark/dl/src/main/resources/spark-bigdl.conf
+export PYTHONPATH=$PYTHONPATH:$PYSPARK_ZIP:$DL_PYTHON_HOME:$DL_PYTHON_HOME/:$DL_PYTHON_HOME/test/dev:$BIGDL_HOME/spark/dl/src/main/resources/spark-bigdl.conf
 
-export SPARK_CLASSPATH=$(find $BIGDL_HOME/spark/dl/target/ -name "*with-dependencies.jar" | head -n 1)
-echo "SPARK_CLASSPATH": $SPARK_CLASSPATH
+export BIGDL_CLASSPATH=$(find $BIGDL_HOME/spark/dl/target/ -name "*with-dependencies.jar" | head -n 1)
+echo "BIGDL_CLASSPATH": $BIGDL_CLASSPATH
 
-export PYTHON_EXECUTABLES=("python2" "python3")
+if [[ ($SPARK_HOME == *"2.2.0"*) || ($SPARK_HOME == *"2.1.1"*) || ($SPARK_HOME == *"1.6.4"*) ]]; then
+    export PYTHON_EXECUTABLES=("python2.7" "python3.5" "python3.6")
+else
+    export PYTHON_EXECUTABLES=("python2.7" "python3.5")
+fi
 
 function run_notebook() {
     notebook_path=$1

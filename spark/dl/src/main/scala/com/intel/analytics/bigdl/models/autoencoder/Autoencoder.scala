@@ -17,7 +17,8 @@
 package com.intel.analytics.bigdl.models.autoencoder
 
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.nn.{Graph, _}
+import com.intel.analytics.bigdl.numeric.NumericFloat
 
 object Autoencoder {
   val rowN = 28
@@ -32,5 +33,14 @@ object Autoencoder {
     model.add(new Linear(classNum, featureSize))
     model.add(new Sigmoid[Float]())
     model
+  }
+
+  def graph(classNum: Int): Module[Float] = {
+    val input = Reshape(Array(featureSize)).inputs()
+    val linear1 = Linear(featureSize, classNum).inputs(input)
+    val relu = ReLU().inputs(linear1)
+    val linear2 = Linear(classNum, featureSize).inputs(relu)
+    val output = Sigmoid().inputs(linear2)
+    Graph(input, output)
   }
 }

@@ -30,7 +30,7 @@ val model = Module.loadCaffe(bigdlModel, caffe.prototxt, caffe.model, matchAll =
 
 * Python Example
 ```python
-model = Model.load_caffe_model(bigdlModel, caffe.prototxt, caffe.model, match_all=True)
+model = Model.load_caffe(bigdlModel, caffe.prototxt, caffe.model, match_all=True)
 ```
 
 Note that if ```matchAll/match_all = false```, then only layers with same name will be loaded, the rest will use initialized parameters.
@@ -54,3 +54,6 @@ Note: only graph model can be saved to caffe model.
 
 ### **Limitation**
 This functionality has been tested with some common models like AlexNet, Inception, Resnet which were created with standard Caffe layers, for those models with customized layers such as SSD, it is going to be supported in future work, but you can define your customized conversion method for your own layers.
+
+### **Supported Layers**
+Please check this [page](../APIGuide/caffe_layer_list)

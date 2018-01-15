@@ -70,14 +70,15 @@ class CaffePersister[T: ClassTag](val prototxtPath: String,
       return module.asInstanceOf[Graph[T]]
     }
     // other containers/layers to be supported later
-    throw  new UnsupportedOperationException(s"container $module is not supported!")
+    throw new CaffeConversionException(s"container $module is not supported," +
+      s"only graph supported")
   }
   // create caffe layers graph based on BigDL execution plan
   private def convertToCaffe() : Unit = {
     val graph = toGraph()
     val top2Layers = new mutable.HashMap[String, String]()
     val layers = new mutable.HashMap[String, GeneratedMessage]()
-    val executions = graph.getExecutions
+    val executions = graph.getSortedForwardExecutions
     netparam.setName(module.getName)
     executions.foreach(execution => {
       val preModules = execution.prevNodes

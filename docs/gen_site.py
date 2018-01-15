@@ -72,12 +72,24 @@ run_cmd(['mv', '/tmp/bigdl-doc/mkdocs_windmill', dir_name],
 run_cmd(['mv', '/tmp/bigdl-doc/extra.css', '{}/docs'.format(dir_name)],
     'mv theme foler error')
 
-run_cmd(['rm', '-rf', '/tmp/bigdl-doc'],
-    'rm theme folder error')
-
 # mkdocs build
 run_cmd(['mkdocs', 'build'],
     'mkdocs build error')
+
+# replace resources folder in site
+run_cmd(['cp', '/tmp/bigdl-doc/css/*', '{}/site/css'.format(dir_name)],
+    'mv theme foler error', s=True)
+run_cmd(['cp', '/tmp/bigdl-doc/js/*', '{}/site/js'.format(dir_name)],
+    'mv theme foler error', s=True)
+run_cmd(['cp', '/tmp/bigdl-doc/fonts/*', '{}/site/fonts'.format(dir_name)],
+    'mv theme foler error', s=True)
+run_cmd(['cp', '/tmp/bigdl-doc/img/*', '{}/site/img'.format(dir_name)],
+    'mv theme foler error', s=True)
+run_cmd(['cp', '/tmp/bigdl-doc/version-list', '{}/site'.format(dir_name)],
+    'mv theme foler error', s=True)
+
+run_cmd(['rm', '-rf', '/tmp/bigdl-doc'],
+    'rm theme folder error')
 
 if scaladocs:
     print 'build scala doc'
@@ -85,14 +97,14 @@ if scaladocs:
     os.chdir(bigdl_dir)
     run_cmd(['mvn', 'scala:doc'], 'Build scala doc error')
     scaladocs_dir = bigdl_dir + '/spark/dl/target/site/scaladocs/*'
-    target_dir = dir_name + '/site/APIdocs/scaladoc/'
+    target_dir = dir_name + '/site/APIGuide/scaladoc/'
     run_cmd(['cp', '-r', scaladocs_dir, target_dir],
         'mv scaladocs error', s=True)
 
 if pythondocs:
     print 'build python'
     pyspark_dir = os.path.dirname(dir_name) + '/pyspark/docs/'
-    target_dir = dir_name + '/site/APIdocs/python-api-doc/'
+    target_dir = dir_name + '/site/APIGuide/python-api-doc/'
     os.chdir(pyspark_dir)
     run_cmd(['./doc-gen.sh'], 'Build python doc error')
     pythondocs_dir = pyspark_dir + '_build/html/*'

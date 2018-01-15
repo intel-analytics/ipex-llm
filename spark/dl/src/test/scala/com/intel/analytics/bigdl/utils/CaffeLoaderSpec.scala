@@ -56,7 +56,8 @@ class CaffeLoaderSpec extends FlatSpec with Matchers {
       .add(Convolution(4, 3, 2, 2).setName("conv2"))
       .add(Linear(2, 27, withBias = false).setName("ip"))
 
-    val model = CaffeLoader.load[Double](module, prototxt, modelPath)
+    val model = CaffeLoader.load[Double](module, prototxt, modelPath, true,
+      convertMap)
     val parameters = model.getParametersTable()
 
     val conv1weight = Tensor(Storage(Array(
@@ -204,7 +205,7 @@ class CaffeLoaderSpec extends FlatSpec with Matchers {
       .add(Convolution(4, 3, 2, 2).setName("conv2"))
       .add(View(27)).setName("view")
       .add(Linear(27, 2, withBias = false).setName("ip"))
-      .add(LogSoftMax().setName("softmax"))
+      .add(SoftMax().setName("softmax"))
 
     val staticInput = Tensor[Double](1, 3, 5, 5).apply1( e => Random.nextDouble())
 

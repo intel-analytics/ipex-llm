@@ -26,14 +26,14 @@ import scala.reflect.ClassTag
  */
 @SerialVersionUID(-907995771209831179L)
 private[bigdl] class Shape[T: ClassTag](implicit ev: TensorNumeric[T])
-  extends AbstractModule[Tensor[T], Tensor[T], T] {
+  extends AbstractModule[Tensor[T], Tensor[Int], T] {
 
-  override def updateOutput(input: Tensor[T]): Tensor[T] = {
-    this.output = Tensor[T](input.size().map(ev.fromType(_)), Array(input.nDimension()))
+  override def updateOutput(input: Tensor[T]): Tensor[Int] = {
+    this.output = Tensor[Int](input.size(), Array(input.nDimension()))
     this.output
   }
 
-  override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
+  override def updateGradInput(input: Tensor[T], gradOutput: Tensor[Int]): Tensor[T] = {
     gradInput.resizeAs(input)
     gradInput.zero()
     gradInput

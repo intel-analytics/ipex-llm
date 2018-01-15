@@ -27,7 +27,7 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric._
 
 object Train {
   LoggerFilter.redirectSparkInfoLogs()
-  Logger.getLogger("com.intel.analytics.bigdl.optim").setLevel(Level.INFO)
+
 
   import Utils._
 
@@ -59,9 +59,13 @@ object Train {
       val model = if (param.modelSnapshot.isDefined) {
         Module.load[Float](param.modelSnapshot.get)
       } else {
-        val curModel =
-          ResNet(classNum = param.classes, T("shortcutType" -> shortcut, "depth" -> param.depth,
-          "optnet" -> param.optnet))
+        val curModel = if (param.graphModel) {
+          ResNet.graph(param.classes,
+            T("shortcutType" -> shortcut, "depth" -> param.depth, "optnet" -> param.optnet))
+        } else {
+          ResNet(param.classes,
+            T("shortcutType" -> shortcut, "depth" -> param.depth, "optnet" -> param.optnet))
+        }
         if (param.optnet) {
           ResNet.shareGradInput(curModel)
         }

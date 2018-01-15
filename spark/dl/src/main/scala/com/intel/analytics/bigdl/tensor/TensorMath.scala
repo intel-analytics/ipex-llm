@@ -115,6 +115,14 @@ trait TensorMath[T] {
   def sum(): T
 
   /**
+   * returns the product of the elements of this
+   * @return
+   */
+  def prod(): T
+
+  def prod(x: Tensor[T], dim: Int): Tensor[T]
+
+  /**
    * performs the sum operation over the dimension dim
    * @param dim
    * @return
@@ -228,6 +236,12 @@ trait TensorMath[T] {
    * @return
    */
   def sqrt(): Tensor[T]
+
+  /**
+   * replaces all elements in-place with the tanh root of the elements of this.
+   * @return
+   */
+  def tanh(): Tensor[T]
 
   /**
    * replaces all elements in-place with the absolute values of the elements of this.
@@ -397,6 +411,16 @@ trait TensorMath[T] {
   def div(value: T): Tensor[T]
 
   /**
+   * Element-wise divide
+   * x.div(y) all elements of x divide all elements of y.
+   * x = x / y
+   *
+   * @param y tensor
+   * @return current tensor
+   */
+  def div(y: Tensor[T]): Tensor[T]
+
+  /**
    * put the result of x * value in current tensor
    *
    * @param value
@@ -528,6 +552,64 @@ trait TensorMath[T] {
   def pow(n: T): Tensor[T]
 
   /**
+   * Replaces all elements in-place with the elements of x squared
+   *
+   * @return current tensor reference
+   */
+  def square(): Tensor[T]
+
+  /**
+   * Populate the given tensor with the floor result of elements
+   * @param y
+   * @return
+   */
+  def floor(y: Tensor[T]): Tensor[T]
+
+  /**
+   * Replaces all elements in-place with the floor result of elements
+   * @return
+   */
+  def floor(): Tensor[T]
+
+  /**
+   * Replaces all elements in-place with the ceil result of elements
+   * @return
+   */
+  def ceil(): Tensor[T]
+
+  /**
+   * Computes the reciprocal of this tensor element-wise and update the content inplace
+   * @return
+   */
+  def inv(): Tensor[T]
+
+  /**
+   * Computes the reciprocal of this tensor element-wise and update the content inplace
+   * @return
+   */
+  def erf(): Tensor[T]
+
+  /**
+   * Computes the reciprocal of this tensor element-wise and update the content inplace
+   * @return
+   */
+  def erfc(): Tensor[T]
+
+  /**
+   * Computes the log of the absolute value of `Gamma(x)` element-wise,
+   * and update the content inplace
+   * @return
+   */
+  def logGamma(): Tensor[T]
+
+  /**
+   * Computes Psi, the derivative of Lgamma (the log of the absolute value of
+   * `Gamma(x)`), element-wise and update the content inplace
+   * @return
+   */
+  def digamma(): Tensor[T]
+
+  /**
    * Get the top k smallest values and their indices.
    *
    * @param result   result buffer
@@ -538,7 +620,7 @@ trait TensorMath[T] {
    * @return
    */
   def topk(k: Int, dim: Int = -1, increase: Boolean = true, result: Tensor[T] = null,
-    indices: Tensor[T] = null)
+    indices: Tensor[T] = null, sortedResult: Boolean = true)
   : (Tensor[T], Tensor[T])
 
   /**
@@ -552,6 +634,8 @@ trait TensorMath[T] {
   def exp(y: Tensor[T]): Tensor[T]
 
   def sqrt(y: Tensor[T]): Tensor[T]
+
+  def tanh(y: Tensor[T]): Tensor[T]
 
   def log1p(y: Tensor[T]): Tensor[T]
 
@@ -687,6 +771,15 @@ trait TensorMath[T] {
   def cmax(y: Tensor[T]): Tensor[T]
 
   /**
+   * stores the element-wise maximum of x and y in x.
+   * x.cmin(y) = min(x, y)
+   *
+   * @param y tensor
+   * @return current tensor
+   */
+  def cmin(y: Tensor[T]): Tensor[T]
+
+  /**
    * stores the element-wise maximum of x and y in z.
    * z.cmax(x, y) means z = max(x, y)
    *
@@ -694,6 +787,15 @@ trait TensorMath[T] {
    * @param y tensor
    */
   def cmax(x: Tensor[T], y: Tensor[T]): Tensor[T]
+
+  /**
+   * stores the element-wise maximum of x and y in z.
+   * z.cmin(x, y) means z = min(x, y)
+   *
+   * @param x tensor
+   * @param y tensor
+   */
+  def cmin(x: Tensor[T], y: Tensor[T]): Tensor[T]
 
   /**
    * resize this tensor size to floor((xmax - xmin) / step) + 1 and set values from
@@ -704,4 +806,24 @@ trait TensorMath[T] {
    * @return this tensor
    */
   def range(xmin: Double, xmax: Double, step: Int = 1): Tensor[T]
+
+  /**
+   * Computes numerical negative value element-wise. y = -x
+   * @param x
+   * @return this tensor
+   */
+  def negative(x : Tensor[T]): Tensor[T]
+
+  /**
+   * Reduce along the given dimension with the given reducer, and copy the result to the result
+   * tensor
+   * @param dim
+   * @param result
+   * @param reducer
+   */
+  def reduce(dim: Int, result: Tensor[T], reducer: (T, T) => T): Tensor[T]
+
+  def sumSquare(): T
+
+  def clamp(min: Float, max: Float): Tensor[T]
 }

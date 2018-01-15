@@ -15,7 +15,7 @@
  */
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, TensorModule}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
@@ -42,11 +42,12 @@ import scala.reflect.ClassTag
 
 @SerialVersionUID(- 8025422596092583688L)
 class Sum[T: ClassTag](
-  dimension: Int = 1,
+  private var dimension: Int = 1,
   nInputDims: Int = -1,
   sizeAverage: Boolean = false,
   squeeze: Boolean = true)
-  (implicit ev: TensorNumeric[T]) extends TensorModule[T] {
+  (implicit ev: TensorNumeric[T])
+  extends TensorModule[T] {
   @transient
   private var _gradOutput: Tensor[T] = null
 
@@ -60,8 +61,14 @@ class Sum[T: ClassTag](
       dimension += 1
     }
 
-    require(input.dim() >= dimension, "dimension exceeds input dimensions")
+    require(input.dim() >= dimension, "dimension exceeds input dimensions" +
+      s"dimension $dimension, input dimension ${input.dim()}")
     dimension
+  }
+
+  def changeSumDims(d: Int): this.type = {
+    dimension = d
+    this
   }
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
@@ -69,11 +76,15 @@ class Sum[T: ClassTag](
     output.sum(input, dimension)
 
     if (sizeAverage) {
-      output.div(ev.fromType[Int](input.size(dimension)))
+      output.div(ev.fromType(input.size(dimension)))
     }
 
     if (output.nDimension() > 1 && squeeze) {
       output.squeeze(dimension)
+    }
+
+    if (output.nElement() == 1 && squeeze) {
+      output = Tensor.scalar[T](output.storage.apply(output.storageOffset() - 1))
     }
 
     output
@@ -92,7 +103,7 @@ class Sum[T: ClassTag](
     gradInput.resizeAs(input)
     gradInput.copy(_gradOutput.expandAs(input))
     if (sizeAverage) {
-      gradInput.div(ev.fromType[Int](input.size(dimension)))
+      gradInput.div(ev.fromType(input.size(dimension)))
     }
     gradInput
   }
@@ -101,11 +112,11 @@ class Sum[T: ClassTag](
 }
 
 object Sum {
-  def apply[@specialized(Float, Double) T: ClassTag](
-      dimension: Int = 1,
-      nInputDims: Int = -1,
-      sizeAverage: Boolean = false,
-      squeeze: Boolean = true)(implicit ev: TensorNumeric[T]) : Sum[T] = {
+  def apply[T: ClassTag](
+    dimension: Int = 1,
+    nInputDims: Int = -1,
+    sizeAverage: Boolean = false,
+    squeeze: Boolean = true)(implicit ev: TensorNumeric[T]) : Sum[T] = {
     new Sum[T](dimension, nInputDims, sizeAverage, squeeze)
   }
 }

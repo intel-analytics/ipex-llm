@@ -21,12 +21,39 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.torch.TH
 import com.intel.analytics.bigdl.utils.Engine
 
+import scala.util.Random
+
 @com.intel.analytics.bigdl.tags.Parallel
 class LogSoftMaxSpec extends FlatSpec with Matchers with BeforeAndAfter {
   before {
     Engine.setNodeAndCore(1, 4)
   }
 
+
+  "A LogSoftMax Module" should " be fast using MKL" in {
+    val layer = LogSoftMax[Float]()
+    layer.clearState()
+    val batchSize = 20
+    val input = Tensor[Float](batchSize, 10000)
+    val gradOutput = Tensor[Float](batchSize, 10000)
+    var startTime = System.nanoTime()
+    var duration = (System.nanoTime() - startTime) / 1e9
+    var sum = 0.0
+    for (i <- 1 to 5) {
+      layer.forward(input)
+      layer.backward(input, gradOutput)
+    }
+    for (i <- 1 to 5) {
+      startTime = System.nanoTime()
+      layer.forward(input)
+      layer.backward(input, gradOutput)
+      duration = (System.nanoTime() - startTime) / 1e9
+      println(s"speed: = ${duration} seconds")
+      sum += duration
+    }
+    println(s"avg speed: = ${sum / 5}")
+    layer.clearState()
+  }
 
   "A LogSoftMax Module " should "generate correct output" in {
     val module = new LogSoftMax[Double]()
@@ -90,5 +117,13 @@ class LogSoftMaxSpec extends FlatSpec with Matchers with BeforeAndAfter {
     gradInput should be(expectedGrad)
     input should be(inputOrg)
     gradOutput should be(gradOutputOrg)
+  }
+
+  "LogSoftMax float module" should "won't return Infinity when input is bigger than 89" in {
+    val module = new LogSoftMax[Float]()
+    Random.setSeed(100)
+    val input = Tensor[Float](2, 5).apply1(e => Random.nextFloat() + 90)
+    val output = module.forward(input).toTensor[Float]
+    output.apply1(v => {v.isInfinity should be (false); v})
   }
 }

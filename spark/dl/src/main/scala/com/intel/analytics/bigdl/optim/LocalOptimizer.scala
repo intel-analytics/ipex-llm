@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.optim
 
 import com.intel.analytics.bigdl.dataset.{LocalDataSet, MiniBatch}
 import com.intel.analytics.bigdl._
+import com.intel.analytics.bigdl.models.utils.ModelBroadcast
 import com.intel.analytics.bigdl.nn.Utils
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.tensor.Tensor
@@ -38,7 +39,7 @@ object LocalOptimizer {
  * @param dataset data set
  * @param criterion criterion to be used
  */
-class LocalOptimizer[T: ClassTag] private[optim](
+class LocalOptimizer[T: ClassTag] (
   model: Module[T],
   dataset: LocalDataSet[MiniBatch[T]],
   criterion: Criterion[T]
@@ -56,6 +57,21 @@ class LocalOptimizer[T: ClassTag] private[optim](
     case _ => throw new IllegalArgumentException
   }
 
+  private val workingModels = {
+    model.getParameters()
+    val wb = Util.getAndClearWeightBias(model.parameters())
+
+    val models = (1 to subModelNumber).map(i => {
+      logger.info(s"Clone $i model...")
+      val m = model.cloneModule()
+      Util.putWeightBias(wb, m)
+      Util.initGradWeightBias(wb, m)
+      m
+    }).toArray
+    Util.putWeightBias(wb, model)
+    Util.initGradWeightBias(wb, model)
+    models
+  }
   private val (weight, grad) = model.getParameters()
   private val gradLength = grad.nElement()
   private val syncGradTaskSize = gradLength / subModelNumber
@@ -63,14 +79,7 @@ class LocalOptimizer[T: ClassTag] private[optim](
   private val syncGradParallelNum =
     if (syncGradTaskSize == 0) syncGradExtraTask else subModelNumber
 
-  private val workingModels = (1 to subModelNumber).map(i => {
-    logger.info(s"Clone $i model...")
-    model.cloneModule()
-  }).toArray
-
   private val workingModelWAndG = workingModels.map(_.getParameters())
-
-  workingModelWAndG.foreach(_._1.storage().set(weight.storage()))
 
   private val workingCriterion =
     (1 to subModelNumber).map(_ => criterion.cloneCriterion()).toArray
@@ -84,6 +93,7 @@ class LocalOptimizer[T: ClassTag] private[optim](
     state("neval") = state.get[Int]("neval").getOrElse(1)
     state("isLayerwiseScaled") = Utils.isLayerwiseScaled(model)
     dataset.shuffle()
+    val numSamples = dataset.data(train = false).map(_.size()).reduce(_ + _)
     var iter = dataset.data(train = true)
     logger.info("model thread pool size is " + Engine.model.getPoolSize)
     while (!endWhen(state)) {
@@ -141,16 +151,38 @@ class LocalOptimizer[T: ClassTag] private[optim](
           })
       )
       val loss = lossSum / parallelism
-      grad.div(ev.fromType(parallelism))
+      var scale = ev.fromType(parallelism)
+      if (gradientClippingParams.enableL2NormClipping) {
+        val squares = new Array[Double](syncGradParallelNum)
+        Engine.default.invokeAndWait((0 until syncGradParallelNum).map(tid => () => {
+          val offset = tid * syncGradTaskSize + math.min(tid, syncGradExtraTask)
+          val length = syncGradTaskSize + (if (tid < syncGradExtraTask) 1 else 0)
+          squares(tid) = ev.toType[Double](grad.narrow(1, offset + 1, length).sumSquare())
+        }))
+        var sum = 0.0
+        var i = 0
+        while (i < squares.size) {
+          sum += squares(i)
+          i += 1
+        }
+        val l2Norm = (math.sqrt(sum) / parallelism).toFloat
 
+        if (l2Norm > gradientClippingParams.normValueClip) {
+          scale = ev.fromType[Float]((l2Norm * parallelism) / gradientClippingParams.normValueClip)
+        }
+      }
+      grad.div(scale)
+
+      if (gradientClippingParams.enableConstantClipping) {
+        grad.clamp(gradientClippingParams.minValueClip, gradientClippingParams.maxValueClip)
+      }
       optimMethod.state.update("epoch", state.get("epoch"))
       optimMethod.state.update("neval", state.get("neval"))
       optimMethod.optimize(_ => (ev.fromType(loss), grad), weight)
       val end = System.nanoTime()
       wallClockTime += end - start
       count += batch.size()
-      val head =
-        header(state[Int]("epoch"), count, dataset.size(), state[Int]("neval"), wallClockTime)
+      val head = header(state[Int]("epoch"), count, numSamples, state[Int]("neval"), wallClockTime)
       logger.info(s"$head " +
         s"loss is $loss, iteration time is ${(end - start) / 1e9}s " +
         s"data fetch time is ${(dataFetchTime - start) / 1e9}s, " +
@@ -160,7 +192,7 @@ class LocalOptimizer[T: ClassTag] private[optim](
         )
       state("neval") = state[Int]("neval") + 1
 
-      if (count >= dataset.size()) {
+      if (count >= numSamples) {
         state("epoch") = state[Int]("epoch") + 1
         dataset.shuffle()
         iter = dataset.toLocal().data(train = true)
@@ -172,7 +204,7 @@ class LocalOptimizer[T: ClassTag] private[optim](
     }
 
     // copy running status from workingModels to model
-    model.copyStatus(workingModels.head)
+    model.setExtraParameter(workingModels.head.getExtraParameter())
 
     model
   }

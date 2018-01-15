@@ -26,8 +26,10 @@ def main():
     2. export PYTHONPATH=Path_to_your_model_folder
     3. python alexnet.py
     """
+    tf.set_random_seed(1)
     height, width = 224, 224
     inputs = tf.Variable(tf.random_uniform((1, height, width, 3)), name = 'input')
+    inputs = tf.identity(inputs, "input_node")
     net, end_points = alexnet.alexnet_v2(inputs, is_training=False)
     print("nodes in the graph")
     for n in end_points:

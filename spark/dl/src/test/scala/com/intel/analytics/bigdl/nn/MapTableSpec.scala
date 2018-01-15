@@ -48,4 +48,39 @@ class MapTableSpec  extends FlatSpec with Matchers {
 
     mapGradInput should equal (expectedGradInput)
   }
+
+  "A MapTable constucted with module" should "generate correct output" in {
+    val input = T(
+      Tensor[Float](10).randn(),
+      Tensor[Float](10).randn())
+
+    val gradOutput = T(
+      Tensor[Float](3).randn(),
+      Tensor[Float](3).randn())
+
+    val linear1 = new Linear[Float](10, 3)
+    val linear2 = linear1.cloneModule()
+    val expectedOutput = T(
+      linear1.updateOutput(input(1)),
+      linear2.updateOutput(input(2)))
+
+    val map = new MapTable[Float](linear1)
+    val mapOutput = map.forward(input)
+    mapOutput should equal (expectedOutput)
+
+    val expectedGradInput = T(
+      linear1.updateGradInput(input(1), gradOutput(1)),
+      linear2.updateGradInput(input(2), gradOutput(2)))
+    val mapGradInput = map.backward(input, gradOutput)
+
+    mapGradInput should equal (expectedGradInput)
+  }
+
+  "A MapTable clearstate" should "add not change modules" in {
+    val linear1 = new Linear[Float](10, 3)
+    val map = new MapTable[Float](linear1)
+
+    map.clearState()
+    map.modules.length should be (1)
+  }
 }

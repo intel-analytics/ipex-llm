@@ -49,7 +49,7 @@ abstract class TensorCriterion[T: ClassTag]
 abstract class AbstractCriterion[A <: Activity: ClassTag, B <: Activity: ClassTag,
  T: ClassTag](
   implicit ev: TensorNumeric[T]) extends Serializable {
-  var gradInput: A = Activity[A, T]()
+  var gradInput: A = Activity.allocate[A, T]()
   var output: T = ev.fromType[Int](0)
 
   private[nn] def allocateAs[D <: Activity](dest: D): D = dest match {

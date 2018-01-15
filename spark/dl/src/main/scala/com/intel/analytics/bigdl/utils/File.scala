@@ -17,6 +17,7 @@
 package com.intel.analytics.bigdl.utils
 
 import java.io._
+import java.net.URI
 
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FSDataInputStream, FSDataOutputStream, FileSystem, Path}
@@ -71,10 +72,23 @@ object File {
     try {
       fw = FileWriter(fileName)
       out = fw.create(isOverwrite)
-      val byteArrayOut = new ByteArrayOutputStream()
-      objFile = new ObjectOutputStream(byteArrayOut)
+      objFile = new ObjectOutputStream(new BufferedOutputStream(out))
       objFile.writeObject(obj)
-      IOUtils.copyBytes(new ByteArrayInputStream(byteArrayOut.toByteArray), out, 1024, true)
+    } finally {
+      if (null != objFile) objFile.close()
+      if (null != out) out.close()
+      if (null != fw) fw.close()
+    }
+  }
+
+  def saveBytes(bytes: Array[Byte], fileName: String, isOverwrite: Boolean = false) : Unit = {
+    var fw: FileWriter = null
+    var out: OutputStream = null
+    var objFile: ObjectOutputStream = null
+    try {
+      fw = FileWriter(fileName)
+      out = fw.create(isOverwrite)
+      IOUtils.copyBytes(new ByteArrayInputStream(bytes), out, 1024, true)
     } finally {
       if (null != objFile) objFile.close()
       if (null != out) out.close()
@@ -166,11 +180,26 @@ object File {
     try {
       fr = FileReader(fileName)
       in = fr.open()
+      val bis = new BufferedInputStream(in)
+      val objFile = new ObjectInputStream(bis)
+      objFile.readObject().asInstanceOf[T]
+    } finally {
+      if (null != in) in.close()
+      if (null != fr) fr.close()
+      if (null != objFile) objFile.close()
+    }
+  }
+
+  def readBytes[T](fileName : String) : Array[Byte] = {
+    var fr: FileReader = null
+    var in: InputStream = null
+    var objFile: ObjectInputStream = null
+    try {
+      fr = FileReader(fileName)
+      in = fr.open()
       val byteArrayOut = new ByteArrayOutputStream()
       IOUtils.copyBytes(in, byteArrayOut, 1024, true)
-      objFile = new ObjectInputStream(new ByteArrayInputStream(byteArrayOut.toByteArray))
-      val result = objFile.readObject()
-      result.asInstanceOf[T]
+      byteArrayOut.toByteArray
     } finally {
       if (null != in) in.close()
       if (null != fr) fr.close()
@@ -188,7 +217,7 @@ object File {
     var fs: FileSystem = null
     var in: FSDataInputStream = null
     try {
-      fs = src.getFileSystem(new Configuration())
+      fs = FileSystem.newInstance(new URI(fileName), new Configuration())
       in = fs.open(src)
       val byteArrayOut = new ByteArrayOutputStream()
       IOUtils.copyBytes(in, byteArrayOut, 1024, true)

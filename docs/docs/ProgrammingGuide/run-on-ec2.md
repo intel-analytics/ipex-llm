@@ -1,5 +1,13 @@
 ---
+## **AWS Marketplace AMI**
 
+The easiest way to get started with BigDL is to launch the pre-configured BigDL Amazon Machine Image (AMI) from the AWS Marketplace. The AMI includes Apache Spark, BigDL, Python and Anaconda with ready-to-run Jupyter Notebooks. Within a few minutes you can run python code and investigate the architecture it uses to create an image recognition model. Upload your own data into one of the sample notebooks and you can try BigDL with your own data. 
+ 
+To use the BigDL AMI in the AWS Marketplace, visit [https://aws.amazon.com/marketplace/] and search for 'BigDL'. Launch the AMI by clicking the "Continue to Subscribe" button from the BigDL Product Page. The software stack is free and open source. You only pay standard AWS charges. Because it includes Apache Spark, a t2.large instance is the minimum size recommended to run this BigDL AMI. Once you launch the AMI, type the domain name (URL) and port 8888 (ex: ec2-xxx-xxx-xxx-xxx.compute-1.amazonaws.com:8888) into your favorite web browser. The password for the Jupyter Notebook, which runs automatically, is the Instance ID (ex: i-08ba9c6fcdea6388f) of your EC2 Instance which you can find in your EC2 Dashboard [https://console.aws.amazon.com/ec2/v2/home]. 
+
+If you ssh into your EC2 instance, you can use "docker ps" (ex: docker ps -a) to find the container id, and "docker exec -it <container-id> bash" to see what is installed. Use git to download additional notebooks to the /work directory (ex: "$ git clone github.com/intel-analytics/BigDL-Tutorial". Additional Jupyter Notebooks can be found at [https://github.com/intel-analytics/BigDL-Tutorials]
+
+---
 ## **The Public AMI**
 
 To make it easier to try out BigDL examples on Spark using EC2, a public AMI is provided. It will automatically retrieve the latest BigDL package, download the necessary input data, and then run the specified BigDL example (using Java 8 on a Spark cluster). The details of the public AMI are shown in the table below.
@@ -30,31 +38,38 @@ Before running the BigDL examples, you need to launch a Spark cluster on EC2 (yo
 
 
 You can run BigDL examples using the `run.example.sh` script in home directory of your BigDL Client instance (e.g. `/home/ubuntu/`) with the following parameters:
+
 * Mandatory parameters:
-  * `-m|--model` which model to train, including
-    * lenet: train the [LeNet](https://github.com/intel-analytics/BigDL/tree/master/spark/dl/src/main/scala/com/intel/analytics/bigdl/models/lenet) example
-    * vgg: train the [VGG](https://github.com/intel-analytics/BigDL/tree/master/spark/dl/src/main/scala/com/intel/analytics/bigdl/models/vgg) example
-    * inception-v1: train the [Inception v1](https://github.com/intel-analytics/BigDL/tree/master/spark/dl/src/main/scala/com/intel/analytics/bigdl/models/inception) example
-    * perf: test the training speed using the [Inception v1](https://github.com/intel-analytics/BigDL/blob/master/spark/dl/src/main/scala/com/intel/analytics/bigdl/models/inception/Inception_v1.scala) model with dummy data
+  
+    * `-m|--model` which model to train, including
+    
+        * lenet: train the [LeNet](https://github.com/intel-analytics/BigDL/tree/master/spark/dl/src/main/scala/com/intel/analytics/bigdl/models/lenet) example
+    
+        * vgg: train the [VGG](https://github.com/intel-analytics/BigDL/tree/master/spark/dl/src/main/scala/com/intel/analytics/bigdl/models/vgg) example
 
-  * `-s|--spark-url` the master URL for the Spark cluster
+        * inception-v1: train the [Inception v1](https://github.com/intel-analytics/BigDL/tree/master/spark/dl/src/main/scala/com/intel/analytics/bigdl/models/inception) example
 
-  * `-n|--nodes` number of Spark slave nodes
+        * perf: test the training speed using the [Inception v1](https://github.com/intel-analytics/BigDL/blob/master/spark/dl/src/main/scala/com/intel/analytics/bigdl/models/inception/Inception_v1.scala) model with dummy data
 
-  * `-o|--cores` number of cores used on each node
+    * `-s|--spark-url` the master URL for the Spark cluster
 
-  * `-r|--memory` memory used on each node, e.g. 200g
+    * `-n|--nodes` number of Spark slave nodes
 
-  * `-b|--batch-size` batch size when training the model; it is expected to be a multiple of "nodes * cores"
+    * `-o|--cores` number of cores used on each node
 
-  * `-f|--hdfs-data-dir` HDFS directory for the input images (for the "inception-v1" model training only)
+    * `-r|--memory` memory used on each node, e.g. 200g
+
+    * `-b|--batch-size` batch size when training the model; it is expected to be a multiple of "nodes * cores"
+
+    * `-f|--hdfs-data-dir` HDFS directory for the input images (for the "inception-v1" model training only)
 
 * Optional parameters:
-  * `-e|--max-epoch` the maximum number of epochs (i.e., going through all the input data once) used in the training; default to 90 if not specified
 
-  * `-p|--spark` by default the example will run with Spark 1.5 or 1.6; to use Spark 2.0, please specify "spark_2.0" here (it is highly recommended to use _**Java 8**_ when running BigDL for Spark 2.0, otherwise you may observe very poor performance)
+    * `-e|--max-epoch` the maximum number of epochs (i.e., going through all the input data once) used in the training; default to 90 if not specified
 
-  * `-l|--learning-rate` by default the the example will use an initial learning rate of "0.01"; you can specify a different value here
+    * `-p|--spark` by default the example will run with Spark 1.5 or 1.6; to use Spark 2.0, please specify "spark_2.0" here (it is highly recommended to use _**Java 8**_ when running BigDL for Spark 2.0, otherwise you may observe very poor performance)
+
+    * `-l|--learning-rate` by default the the example will use an initial learning rate of "0.01"; you can specify a different value here
 
 After the training, you can check the log files and generated models in the home directory (e.g., `/home/ubuntu/`).  
 

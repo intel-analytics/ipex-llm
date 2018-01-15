@@ -40,7 +40,8 @@ object Utils {
     weightDecay: Double = 1e-4,
     momentum: Double = 0.9,
     dampening: Double = 0.0,
-    nesterov: Boolean = true)
+    nesterov: Boolean = true,
+    graphModel: Boolean = false)
 
   val trainParser = new OptionParser[TrainParams]("BigDL ResNet Example") {
     head("Train ResNet model on single node")
@@ -89,6 +90,30 @@ object Utils {
     opt[Boolean]("nesterov")
       .text("nesterov of ResNet; default is trye")
       .action((x, c) => c.copy(nesterov = x))
+    opt[Unit]('g', "graphModel")
+      .text("use graph model")
+      .action((x, c) => c.copy(graphModel = true))
+  }
+
+  case class TestParams(
+    folder: String = "./",
+    model: String = "",
+    batchSize: Int = 128
+  )
+
+  val testParser = new OptionParser[TestParams]("BigDL ResNet on Cifar10 Test Example") {
+    opt[String]('f', "folder")
+      .text("the location of Cifar10 dataset")
+      .action((x, c) => c.copy(folder = x))
+
+    opt[String]('m', "model")
+      .text("the location of model snapshot")
+      .action((x, c) => c.copy(model = x))
+      .required()
+      .required()
+    opt[Int]('b', "batchSize")
+      .text("batch size")
+      .action((x, c) => c.copy(batchSize = x))
   }
 
   private[bigdl] def loadTrain(dataFile: String): Array[ByteRecord] = {

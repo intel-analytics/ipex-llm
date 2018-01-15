@@ -107,6 +107,17 @@ abstract class Container[A <: Activity : ClassTag,
     (weights.toArray, gradWeights.toArray)
   }
 
+  override def getExtraParameter(): Array[Tensor[T]] = {
+    val extraParam = new ArrayBuffer[Tensor[T]]()
+    modules.foreach(m => {
+      val state = m.getExtraParameter()
+      if (state != null) {
+        extraParam ++= state
+      }
+    })
+    extraParam.toArray
+  }
+
   override def getParametersTable(): Table = {
     val pt = T()
     modules.foreach(m => {
@@ -137,20 +148,6 @@ abstract class Container[A <: Activity : ClassTag,
     nodes
   }
 
-  override def copyStatus(src: Module[T]): this.type = {
-    require(canEqual(src), s"copyStatus: type mismatch, $src is different from $this")
-    val srcContainer = src.asInstanceOf[Container[A, B, T]]
-    require(srcContainer.modules.length == modules.length,
-      s"copyStatus: container's length mismatch" +
-        s"excepted ${modules.length}, but get ${srcContainer.modules.length}")
-    var i = 0
-    while (i < modules.length) {
-      modules(i).copyStatus(srcContainer.modules(i))
-      i += 1
-    }
-    this
-  }
-
   override def clearState() : this.type = {
     super.clearState()
     modules.foreach(_.clearState())
@@ -179,6 +176,34 @@ abstract class Container[A <: Activity : ClassTag,
 
   override def setScaleB(b: Double): this.type = {
     modules.foreach(_.setScaleB(b))
+    this
+  }
+
+  override def freeze(names: String*): this.type = {
+    if (names.isEmpty) {
+      modules.foreach(_.freeze())
+    } else {
+      names.foreach(name => {
+        this (name) match {
+          case Some(x) => x.freeze()
+          case _ => throw new Exception(s"cannot match module named $name")
+        }
+      })
+    }
+    this
+  }
+
+  override def unFreeze(names: String*): this.type = {
+    if (names.isEmpty) {
+      modules.foreach(_.unFreeze())
+    } else {
+      names.foreach(name => {
+        this (name) match {
+          case Some(x) => x.unFreeze()
+          case _ => throw new Exception(s"cannot match module named $name")
+        }
+      })
+    }
     this
   }
 

@@ -26,7 +26,8 @@ import scala.reflect.ClassTag
  */
 @SerialVersionUID(3070101246787506364L)
 class Abs[T: ClassTag]
- (implicit ev: TensorNumeric[T]) extends TensorModule[T] {
+ (implicit ev: TensorNumeric[T])
+  extends TensorModule[T] {
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
     output.resizeAs(input)
@@ -68,6 +69,7 @@ class Abs[T: ClassTag]
     val state = Seq(super.hashCode())
     state.map(getHashCode).foldLeft(0)((a, b) => 31 * a + b)
   }
+
 }
 
 object Abs {

@@ -21,6 +21,7 @@ import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.optim.{L2Regularizer, SGD}
 import com.intel.analytics.bigdl.utils._
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
+import com.intel.analytics.bigdl.utils.RandomGenerator._
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.collection.mutable.ArrayBuffer
@@ -29,13 +30,13 @@ import scala.math._
 @com.intel.analytics.bigdl.tags.Parallel
 class ConvLSTMPeephole3DSpec extends FlatSpec with BeforeAndAfter with Matchers {
 
-  "A ConvLSTMPeepwhole3D" should " work in BatchMode" in {
+  "A ConvLSTMPeepwhole3D " should " work in BatchMode" in {
     val hiddenSize = 5
     val inputSize = 3
     val seqLength = 4
     val batchSize = 2
-    val kernalW = 3
-    val kernalH = 3
+    val kernalW = 2
+    val kernalH = 2
     val rec = Recurrent[Double]()
     val model = Sequential[Double]()
       .add(rec
@@ -43,43 +44,42 @@ class ConvLSTMPeephole3DSpec extends FlatSpec with BeforeAndAfter with Matchers 
           inputSize,
           hiddenSize,
           kernalW, kernalH,
-          1, withPeephole = true)))
+          withPeephole = true)))
 
-    val input = Tensor[Double](batchSize, seqLength, inputSize, 3, 3, 3).rand
+    val input = Tensor[Double](batchSize, seqLength, inputSize, 5, 5, 5).rand
 
     for (i <- 1 to 3) {
-      val output = model.forward(input)
+      val output = model.forward(input).toTensor[Double]
+      for((value, j) <- output.size.view.zipWithIndex) {
+        if (j > 2) {
+          require(value == input.size(j + 1))
+        }
+      }
       model.backward(input, output)
     }
   }
 
-  "A ConvLSTMPeepwhole3D" should " return expected hidden and cell state" in {
+  "A ConvLSTMPeepwhole3D" should " return state" in {
     val hiddenSize = 5
     val inputSize = 3
     val seqLength = 4
     val batchSize = 2
     val kernalW = 3
     val kernalH = 3
-    val rec = Recurrent[Double]()
-    val model = Sequential[Double]()
-      .add(rec
+    val model = Recurrent[Double]()
         .add(ConvLSTMPeephole3D[Double](
           inputSize,
           hiddenSize,
           kernalW, kernalH,
-          1, withPeephole = true)))
+          withPeephole = true))
 
     val input = Tensor[Double](batchSize, seqLength, inputSize, 3, 3, 3).rand
 
-    var output: Activity = null
-    for (i <- 1 to 3) {
-      output = model.forward(input)
-      model.backward(input, output)
-    }
+    val output = model.forward(input)
 
-    val finalState = rec.getFinalStateAndCellStatus()._1
-
-    finalState.map(output.asInstanceOf[Tensor[Double]].select(2, seqLength), (v1, v2) => {
+    val state = model.getHiddenState()
+    val hidden = state.asInstanceOf[Table].apply(1).asInstanceOf[Tensor[Double]]
+    hidden.map(output.select(2, seqLength), (v1, v2) => {
       assert(abs(v1 - v2) == 0)
       v1
     })
@@ -112,7 +112,6 @@ class ConvLSTMPeephole3DSpec extends FlatSpec with BeforeAndAfter with Matchers 
           inputSize,
           hiddenSize,
           kernalW, kernalH,
-          1,
           withPeephole = true)))
 
     val (weights1, grad1) = model1.getParameters()
@@ -123,7 +122,6 @@ class ConvLSTMPeephole3DSpec extends FlatSpec with BeforeAndAfter with Matchers 
           inputSize,
           hiddenSize,
           kernalW, kernalH,
-          1,
           wRegularizer = L2Regularizer(0.1),
           uRegularizer = L2Regularizer(0.1),
           bRegularizer = L2Regularizer(0.1),

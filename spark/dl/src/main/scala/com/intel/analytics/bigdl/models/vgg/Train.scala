@@ -15,6 +15,9 @@
  */
 package com.intel.analytics.bigdl.models.vgg
 
+import java.text.SimpleDateFormat
+import java.util.Date
+
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dataset.DataSet
 import com.intel.analytics.bigdl.dataset.image._
@@ -22,12 +25,13 @@ import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, Module}
 import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric._
 import com.intel.analytics.bigdl.utils.{Engine, LoggerFilter, T, Table}
+import com.intel.analytics.bigdl.visualization.{TrainSummary, ValidationSummary}
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
 
 object Train {
   LoggerFilter.redirectSparkInfoLogs()
-  Logger.getLogger("com.intel.analytics.bigdl.optim").setLevel(Level.INFO)
+
 
   import Utils._
 
@@ -46,7 +50,7 @@ object Train {
       val model = if (param.modelSnapshot.isDefined) {
         Module.load[Float](param.modelSnapshot.get)
       } else {
-        VggForCifar10(classNum = 10)
+        if (param.graphModel) VggForCifar10.graph(classNum = 10) else VggForCifar10(classNum = 10)
       }
 
       val optimMethod = if (param.stateSnapshot.isDefined) {
@@ -70,9 +74,22 @@ object Train {
       if (param.checkpoint.isDefined) {
         optimizer.setCheckpoint(param.checkpoint.get, Trigger.everyEpoch)
       }
-      if(param.overWriteCheckpoint) {
+
+      if (param.overWriteCheckpoint) {
         optimizer.overWriteCheckpoint()
       }
+
+      if (param.summaryPath.isDefined) {
+        val sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+        val timeStamp = sdf.format(new Date())
+        val trainSummry = new TrainSummary(param.summaryPath.get,
+          s"vgg-on-cifar10-train-$timeStamp")
+        optimizer.setTrainSummary(trainSummry)
+        val validationSummary = new ValidationSummary(param.summaryPath.get,
+          s"vgg-on-cifar10-val-$timeStamp")
+        optimizer.setValidationSummary(validationSummary)
+      }
+
       optimizer
         .setValidation(Trigger.everyEpoch, validateSet, Array(new Top1Accuracy[Float]))
         .setOptimMethod(optimMethod)

@@ -28,7 +28,7 @@ import org.apache.spark.SparkContext
 
 object Train {
   LoggerFilter.redirectSparkInfoLogs()
-  Logger.getLogger("com.intel.analytics.bigdl.optim").setLevel(Level.INFO)
+
 
   import Utils._
 
@@ -48,7 +48,7 @@ object Train {
       val model = if (param.modelSnapshot.isDefined) {
         Module.load[Float](param.modelSnapshot.get)
       } else {
-        LeNet5(classNum = 10)
+        if (param.graphModel) LeNet5.graph(classNum = 10) else LeNet5(classNum = 10)
       }
 
       val optimMethod = if (param.stateSnapshot.isDefined) {

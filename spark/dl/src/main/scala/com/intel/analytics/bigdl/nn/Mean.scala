@@ -42,7 +42,8 @@ class Mean[T: ClassTag](
   val dimension: Int = 1,
   val nInputDims: Int = -1,
   val squeeze: Boolean = true)
-  (implicit ev: TensorNumeric[T]) extends Sum[T](dimension, nInputDims, true, squeeze) {
+  (implicit ev: TensorNumeric[T])
+  extends Sum[T](dimension, nInputDims, true, squeeze) {
   override def toString: String = s"nn.Mean"
 }
 

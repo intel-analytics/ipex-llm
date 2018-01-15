@@ -50,10 +50,14 @@ class SpatialShareConvolution[T: ClassTag](
   initWeight, initBias, initGradWeight, initGradBias, withBias) {
 
   require(Engine.model.getPoolSize == 1, "Don't support single model multi thread.")
+  require(padW >= 0 && padH >= 0, "SAME padding is not supported in SpatialShareConvolution," +
+    " padW and padH should not be negative" +
+    s"padW $padW padH $padH")
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
     require(input.dim() == 3 || input.dim() == 4,
-      "SpatialShareConvolution: " + ErrorInfo.constrainInputAs3DOrBatch)
+      "SpatialShareConvolution: " + ErrorInfo.constrainInputAs3DOrBatch +
+    s"input dimension ${input.dim()}}")
     require(input.isContiguous())
     if (_1x1 || input.dim() == 3 || (input.dim() == 4 && input.size(1) == 1)) {
       super.updateOutput(input)
@@ -94,7 +98,7 @@ class SpatialShareConvolution[T: ClassTag](
             biasUse,
             fInput.select(1, g + 1),
             kernelW, kernelH, strideW, strideH,
-            padW, padH,
+            padW, padH, padW, padH,
             nInputPlane / nGroup, inputWidth, inputHeight,
             nOutputPlane / nGroup, outputWidth, outputHeight)
           g += 1
@@ -109,7 +113,8 @@ class SpatialShareConvolution[T: ClassTag](
     if (!propagateBack) {
       return gradInput
     }
-    require(input.nDimension() == 3 || input.nDimension() == 4, "Only support 3D or 4D input")
+    require(input.nDimension() == 3 || input.nDimension() == 4, "Only support 3D or 4D input" +
+      s"input dimension ${input.nDimension()}")
     if (_1x1 || input.dim() == 3 || (input.dim() == 4 && input.size(1) == 1)) {
       super.updateGradInput(input, gradOutput)
     } else {
@@ -128,7 +133,7 @@ class SpatialShareConvolution[T: ClassTag](
               gradOutputT.narrow(1, g * nOutputPlane / nGroup + 1, nOutputPlane / nGroup),
               weightMM.select(1, g + 1).transpose(1, 2),
               fGradInput.select(1, g + 1),
-              kernelW, kernelH, strideW, strideH, padW, padH)
+              kernelW, kernelH, strideW, strideH, padW, padH, padW, padH)
             g += 1
           }
         i += 1
@@ -139,7 +144,8 @@ class SpatialShareConvolution[T: ClassTag](
   }
 
   override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T]): Unit = {
-    require(input.nDimension() == 3 || input.nDimension() == 4, "Only support 3D or 4D input")
+    require(input.nDimension() == 3 || input.nDimension() == 4, "Only support 3D or 4D input" +
+      s"input Dimension ${input.nDimension()}")
     require(gradOutput.isContiguous())
     if (_1x1 || input.dim() == 3 || (input.dim() == 4 && input.size(1) == 1)) {
       super.accGradParameters(input, gradOutput)
@@ -218,7 +224,8 @@ class SpatialShareConvolution[T: ClassTag](
     val outputWidth = (inputWidth + 2 * padW - kernelW) / strideW + 1
     val outputHeight = (inputHeight + 2 * padH - kernelH) / strideH + 1
 
-    require(outputWidth >= 1 && outputHeight >= 1, "output size is too small")
+    require(outputWidth >= 1 && outputHeight >= 1, "output size is too small" +
+      s"outputSize(${outputWidth},${outputHeight})")
 
     (outputWidth, outputHeight, inputWidth, inputHeight)
   }
@@ -235,14 +242,14 @@ class SpatialShareConvolution[T: ClassTag](
       case DoubleType =>
         val before = System.nanoTime()
         NNPrimitive.im2colDouble(fInput.asInstanceOf[Tensor[Double]],
-          input.asInstanceOf[Tensor[Double]], kW, kH, dW, dH, padW, padH, nInputPlane,
-          inputWidth, inputHeight, outputWidth, outputHeight)
+          input.asInstanceOf[Tensor[Double]], kW, kH, dW, dH, padW, padH, padW, padH,
+          outputWidth, outputHeight)
         im2colTime += System.nanoTime() - before
       case FloatType =>
         val before = System.nanoTime()
         NNPrimitive.im2colFloat(fInput.asInstanceOf[Tensor[Float]],
-          input.asInstanceOf[Tensor[Float]], kW, kH, dW, dH, padW, padH, nInputPlane,
-          inputWidth, inputHeight, outputWidth, outputHeight)
+          input.asInstanceOf[Tensor[Float]], kW, kH, dW, dH, padW, padH, padW, padH,
+          outputWidth, outputHeight)
         im2colTime += System.nanoTime() - before
       case _ => throw new UnsupportedOperationException(s"Only Float/Double supported")
     }
