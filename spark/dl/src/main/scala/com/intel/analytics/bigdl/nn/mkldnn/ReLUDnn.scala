@@ -72,7 +72,7 @@ class ReLUDnn[T: ClassTag](ip: Boolean = false)(
       if (update_primitive) {
         output.resizeAs(input)
         input_format = input.dim() match {
-          case 1 => MklDnn.MemoryFormat.x
+          case 1 => MklDnn.MemoryFormat.nc
           case 2 => MklDnn.MemoryFormat.nc
           case 4 => MklDnn.MemoryFormat.nchw
         }
@@ -81,8 +81,13 @@ class ReLUDnn[T: ClassTag](ip: Boolean = false)(
           src_md = MklDnnOps.primitiveDescQueryMemory(input_pd)
           src_memory = MklDnn.PrimitiveCreate0(input_pd)
         } else {
-          src_md = MklDnnOps.memoryDescInit(input.dim(), input.size(), MklDnn.DataType.f32,
-            this.input_format)
+          if (input.dim() == 1) {
+            src_md = MklDnnOps.memoryDescInit(1 + input.dim(), Array(1) ++ input.size(),
+              MklDnn.DataType.f32, this.input_format)
+          } else {
+            src_md = MklDnnOps.memoryDescInit(input.dim(), input.size(), MklDnn.DataType.f32,
+              this.input_format)
+          }
           src_memory = MklDnnOps.createMemoryPrimitive(src_md, engine)
         }
 
@@ -124,8 +129,13 @@ class ReLUDnn[T: ClassTag](ip: Boolean = false)(
           gradOutput_md = MklDnnOps.primitiveDescQueryMemory(gradOutput_pd)
           gradOutput_memory = MklDnn.PrimitiveCreate0(gradOutput_pd)
         } else {
-          gradOutput_md = MklDnn.MemoryDescInit(gradOutput.dim(), gradOutput.size(),
-            MklDnn.DataType.f32, this.input_format)
+          if (gradOutput.dim() == 1) {
+            gradOutput_md = MklDnn.MemoryDescInit(gradOutput.dim() + 1,
+              Array(1) ++ gradOutput.size(), MklDnn.DataType.f32, this.input_format)
+          } else {
+            gradOutput_md = MklDnn.MemoryDescInit(gradOutput.dim(), gradOutput.size(),
+              MklDnn.DataType.f32, this.input_format)
+          }
           gradOutput_memory = MklDnnOps.createMemoryPrimitive(gradOutput_md, engine)
         }
 

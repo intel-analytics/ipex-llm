@@ -17,6 +17,7 @@ package com.intel.analytics.bigdl.models.utils
 
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dataset.{LocalDataSet, MiniBatch}
+import com.intel.analytics.bigdl.example.loadmodel.AlexNet
 import com.intel.analytics.bigdl.models.inception.{Inception_v1, Inception_v2}
 import com.intel.analytics.bigdl.models.vgg.{Vgg_16, Vgg_19}
 import com.intel.analytics.bigdl.nn.ClassNLLCriterion
@@ -71,6 +72,7 @@ object LocalOptimizerPerf {
   def performance(param: LocalOptimizerPerfParam): Unit = {
     Engine.setCoreNumber(param.coreNumber)
     val (_model, input) = param.module match {
+      case "alexnet" => (AlexNet(1000), Tensor(param.batchSize, 3, 227, 227))
       case "inception_v1" => (Inception_v1(1000), Tensor(param.batchSize, 3, 224, 224))
       case "inception_v2" => (Inception_v2(1000), Tensor(param.batchSize, 3, 224, 224))
       case "vgg16" => (Vgg_16(1000), Tensor(param.batchSize, 3, 224, 224))
@@ -115,10 +117,10 @@ object LocalOptimizerPerf {
  * @param inputData input data type (constant / random)
  */
 case class LocalOptimizerPerfParam(
-  batchSize: Int = 128,
+  batchSize: Int = 4,
   coreNumber: Int = (Runtime.getRuntime().availableProcessors() / 2),
   iteration: Int = 50,
   dataType: String = "float",
-  module: String = "inception_v1",
+  module: String = "alexnet",
   inputData: String = "random"
 )

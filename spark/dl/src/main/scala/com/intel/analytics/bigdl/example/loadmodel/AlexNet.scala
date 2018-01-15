@@ -17,6 +17,7 @@
 package com.intel.analytics.bigdl.example.loadmodel
 
 import com.intel.analytics.bigdl._
+import com.intel.analytics.bigdl.mkl.MklDnn
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.nn.mkldnn
 import com.intel.analytics.bigdl.numeric.NumericFloat

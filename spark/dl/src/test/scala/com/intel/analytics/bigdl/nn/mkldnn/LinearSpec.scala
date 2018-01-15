@@ -16,11 +16,17 @@
 
 package com.intel.analytics.bigdl.nn.mkldnn
 
+import java.util.concurrent.atomic.AtomicInteger
+
+import com.intel.analytics.bigdl.dataset.{LocalDataSet, MiniBatch}
+import com.intel.analytics.bigdl.example.loadmodel.AlexNet
 import com.intel.analytics.bigdl.mkl.MKL
 import com.intel.analytics.bigdl.nn
+import com.intel.analytics.bigdl.nn.ClassNLLCriterion
 import com.intel.analytics.bigdl.nn.mkldnn.Utils.{manyTimes, speedup}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.numeric.NumericFloat
+import com.intel.analytics.bigdl.optim.{Optimizer, Trigger}
 import com.intel.analytics.bigdl.utils.Engine
 import org.scalatest.{FlatSpec, Matchers}
 
@@ -440,16 +446,116 @@ class LinearSpec extends FlatSpec with Matchers {
 
   "linear + relu" should "work correctly" in {
     val model = nn.Sequential[Float]().add(Linear(10, 20)).add(ReLUDnn())
+    model.getParameters()._2.zero()
+    val clone = model.cloneModule()
+    System.setProperty("bigdl.localMode", "true")
+    System.setProperty("bigdl.coreNumber", "3")
+    Engine.init
 
     val input = Tensor(4, 10).rand()
     val gradOutput = Tensor(4, 20).rand()
 
+    Engine.default.invokeAndWait((0 until 2).map(i =>
+      () => {
+        val clone = model.cloneModule()
+        clone.forward(input)
+        clone.backward(input, gradOutput)
+    }))
+  }
+
+  "relu + linear" should "work correctly" in {
+    val model = nn.Sequential().add(ReLUDnn(false)).add(Linear(20, 10))
+    val clone = model.cloneModule()
+    val input = Tensor(20).rand()
     model.forward(input)
+    println("=" * 80)
+    clone.forward(input)
+
+    val gradOutput = Tensor().resizeAs(model.output.toTensor)
     model.backward(input, gradOutput)
+    clone.backward(input, gradOutput)
+  }
+
+  "test clone module" should "work correctly" in {
+    val model = Linear(20, 10)
+    val clone = model.cloneModule()
+
+    val input = Tensor(4, 20).rand()
+
+    model.forward(input)
+    clone.forward(input)
+
+    val gradOutput = Tensor().resizeAs(model.output).rand
+
+    model.backward(input, gradOutput)
+    clone.backward(input, gradOutput)
+  }
+
+  "alexnet clone" should "work correclty" in {
+    val model = AlexNet(1000)
+    val clone = model.cloneModule()
+    model.training()
+    clone.training()
+    val input = Tensor(1, 3, 227, 227)
+
+    model.forward(input)
+    clone.forward(input)
+
+    val gradOutput = Tensor().resizeAs(model.output.toTensor)
+    model.backward(input, gradOutput)
+    clone.backward(input, gradOutput)
   }
 
   "the num of omp threads" should "be 1" in {
     val threads = MKL.getNumThreads
     println(threads)
+  }
+
+  "1-D input" should "work correctly" in {
+    val model = Linear(20, 10)
+    val input = Tensor(20).rand()
+
+    model.forward(input)
+
+    val gradOutput = Tensor().resizeAs(model.output).rand()
+    model.updateGradInput(input, gradOutput)
+  }
+
+  "AlexNet test" should "work correctly" in {
+    System.setProperty("bigdl.localMode", "true")
+    System.setProperty("bigdl.coreNumber", "4")
+    Engine.init
+
+    val batchSize = 32
+    val model = AlexNet(1000)
+    println(model)
+    val criterion = ClassNLLCriterion()
+    val miniBatch = MiniBatch[Float](Tensor(batchSize, 3, 227, 227), Tensor(batchSize).fill(1))
+
+    val dummyDataSet = new LocalDataSet[MiniBatch[Float]] {
+      override def data(train : Boolean): Iterator[MiniBatch[Float]] = {
+        new Iterator[MiniBatch[Float]] {
+          private val index = new AtomicInteger()
+          override def hasNext: Boolean = {
+            if (train) {
+              true
+            } else {
+              index.get() < 100000
+            }
+          }
+
+          override def next(): MiniBatch[Float] = {
+            index.getAndIncrement()
+            miniBatch
+          }
+        }
+      }
+      override def size(): Long = 100000
+      override def shuffle(): Unit = {}
+    }
+
+    model.training()
+    val optimizer = Optimizer(model, dummyDataSet, criterion)
+    optimizer.setEndWhen(Trigger.maxIteration(10)).optimize()
   }
 }

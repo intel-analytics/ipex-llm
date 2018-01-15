@@ -24,16 +24,16 @@ import scala.reflect.ClassTag
 
 class MemoryPrimitive[T: ClassTag]()(implicit ev: TensorNumeric[T]) extends Serializable {
   class TensorWithPrimitive extends Serializable {
-    var handle: Long = 0L
-    var desc: Long = 0L
-    var primitive: Long = 0L
+    @transient var handle: Long = 0L
+    @transient var desc: Long = 0L
+    @transient var primitive: Long = 0L
 
     val tensor: Tensor[T] = Tensor[T]()
   }
 
   val user: TensorWithPrimitive = new TensorWithPrimitive
   val internal: TensorWithPrimitive = new TensorWithPrimitive
-  var reorder: Long = 0L // reorder operation
+  @transient var reorder: Long = 0L // reorder operation
 
   // TODO maybe it's a big tensor, which has get handle from other layers.
   private def setHandle(tensorWithPrimitive: TensorWithPrimitive): Unit = {
@@ -60,18 +60,20 @@ class MemoryPrimitive[T: ClassTag]()(implicit ev: TensorNumeric[T]) extends Seri
 
     if (internal.primitive != 0L && !internal.tensor.isEmpty) {
       setHandle(internal)
-    } else {
-      user.tensor.set(tensor)
-      setHandle(user)
     }
+
+    // Anyway, we should set handle of user tensor. If there's no internal tensor,
+    // we set it for layer, otherwise the internal tensor for reorder and
+    // user tensor for layer.
+    user.tensor.set(tensor)
+    setHandle(user)
   }
 
   def releaseHandle(): Unit = {
     if (internal.primitive != 0L && !internal.tensor.isEmpty) {
       releaseHandle(internal)
-    } else {
-      releaseHandle(user)
     }
+    releaseHandle(user)
   }
 
   def workPrim(): Long = {
@@ -83,14 +85,18 @@ class MemoryPrimitive[T: ClassTag]()(implicit ev: TensorNumeric[T]) extends Seri
   }
 
   def initUser(tensor: Tensor[T], dataType: Int, format: Int, engine: Long): Unit = {
-    val dim = tensor.dim()
-    val size = tensor.size()
-
     if (tensor.getPrimitiveDesc() != 0L) { // if the tensor comes from mkldnn layer
       val primDesc = tensor.getPrimitiveDesc()
       user.primitive = MklDnn.PrimitiveCreate0(primDesc)
       user.desc = MklDnnOps.primitiveDescQueryMemory(primDesc)
     } else {
+      val (dim, size) = if (tensor.dim() == 1 && (format == MklDnn.MemoryFormat.nc ||
+        format == MklDnn.MemoryFormat.oi)) {
+        (2, Array(1) ++ tensor.size())
+      } else {
+        (tensor.dim(), tensor.size())
+      }
+
       val desc = MklDnn.MemoryDescInit(dim, size, dataType, format)
       val primDesc = MklDnn.MemoryPrimitiveDescCreate(desc, engine)
 

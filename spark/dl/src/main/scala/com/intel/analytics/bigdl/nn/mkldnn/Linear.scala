@@ -70,19 +70,20 @@ class Linear[T: ClassTag](
     zeroGradParameters()
   }
 
-  val engine = MklDnn.EngineCreate(EngineType.cpu, 0)
+  @transient var engine = 0L
 
-  var forwardStream = 0L
-  var backDataStream = 0L
-  var backWeightStream = 0L
+  @transient var forwardStream = 0L
+  @transient var backDataStream = 0L
+  @transient var backWeightStream = 0L
 
-  var forwardPrim = 0L
-  var backDataPrim = 0L
-  var backWeightPrim = 0L
+  @transient var forwardPrim = 0L
+  @transient var backDataPrim = 0L
+  @transient var backWeightPrim = 0L
 
-  private val forwardPrimBuffer = ArrayBuffer.empty[Long]
+  @transient private var forwardPrimBuffer: ArrayBuffer[Long] = _
 
-  val inputPrim, weightPrim, biasPrim, outputPrim: MemoryPrimitive[T] = new MemoryPrimitive[T]()
+  val inputPrim, weightPrim, biasPrim, outputPrim: MemoryPrimitive[T] =
+    new MemoryPrimitive[T]()
   val gradInputPrim, gradWeightPrim, gradBiasPrim, gradOutputPrim: MemoryPrimitive[T] =
     new MemoryPrimitive[T]()
 
@@ -119,12 +120,20 @@ class Linear[T: ClassTag](
     }
 
     if (forwardPrim == 0L) {
+      engine = MklDnn.EngineCreate(EngineType.cpu, 0)
+      forwardPrimBuffer = ArrayBuffer.empty[Long]
       val weightMemDesc = MklDnn.MemoryDescInit(weight.dim(), weight.size(),
         MklDnn.DataType.f32, MklDnn.MemoryFormat.any)
       val biasMemDesc = MklDnn.MemoryDescInit(bias.dim(), bias.size(),
         MklDnn.DataType.f32, MklDnn.MemoryFormat.x)
-      val dstMemDesc = MklDnn.MemoryDescInit(output.dim(), output.size(),
-        MklDnn.DataType.f32, MklDnn.MemoryFormat.any)
+
+      val dstMemDesc = if (input.dim() == 1) {
+        MklDnn.MemoryDescInit(output.dim() + 1, Array(1) ++ output.size(),
+          MklDnn.DataType.f32, MklDnn.MemoryFormat.any)
+      } else {
+        MklDnn.MemoryDescInit(output.dim(), output.size(),
+          MklDnn.DataType.f32, MklDnn.MemoryFormat.any)
+      }
 
       inputPrim.initUser(input, MklDnn.DataType.f32, MklDnn.MemoryFormat.nc, engine)
 
@@ -185,16 +194,24 @@ class Linear[T: ClassTag](
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
     gradInput.resizeAs(input)
 
+    require(gradOutput.size().deep == output.size().deep,
+      s"output size should be the same as gradOutput")
+
     if (backDataPrim == 0L) {
-      val diffSrcMemDesc = MklDnn.MemoryDescInit(gradInput.dim(), gradInput.size(),
-        MklDnn.DataType.f32, MklDnn.MemoryFormat.any)
+      val diffSrcMemDesc = if (gradInput.dim() == 1) {
+        MklDnn.MemoryDescInit(gradInput.dim() + 1, Array(1) ++ gradInput.size(),
+          MklDnn.DataType.f32, MklDnn.MemoryFormat.any)
+      } else {
+        MklDnn.MemoryDescInit(gradInput.dim(), gradInput.size(),
+          MklDnn.DataType.f32, MklDnn.MemoryFormat.any)
+      }
 
       val weightMemDesc = MklDnn.MemoryDescInit(weight.dim(), weight.size(),
         MklDnn.DataType.f32, MklDnn.MemoryFormat.any)
 
       gradOutputPrim.initUser(gradOutput, MklDnn.DataType.f32, MklDnn.MemoryFormat.nc, engine)
 
-      val opDesc = MklDnn.LinearBackwardDataDescInit(diffSrcMemDesc, weightMemDesc,
+      val opDesc = MklDnn.LinearBackwardDataDescInit(diffSrcMemDesc, weightPrim.user.desc,
         gradOutputPrim.user.desc)
       val opPrimDesc = MklDnn.PrimitiveDescCreate(opDesc, engine, 0)
 
