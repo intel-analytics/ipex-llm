@@ -36,10 +36,6 @@ class Variable[T: ClassTag](val variableValue: Tensor[T], val variableGradient: 
     (Array(this.variableValue), Array(this.variableGradient))
   }
 
-  override def zeroGradParameters(): Unit = {
-    this.variableGradient.zero()
-  }
-
   override def updateOutput(input: Activity): Tensor[T] = {
     this.output.resizeAs(variableValue)
     this.output.copy(variableValue)

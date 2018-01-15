@@ -66,10 +66,6 @@ class NormalizeScale[T: ClassTag](val p: Double, val eps: Double = 1e-10,
     (Array(cmul.weight), Array(cmul.gradWeight))
   }
 
-  override def zeroGradParameters(): Unit = {
-    cmul.zeroGradParameters()
-  }
-
   override def getParametersTable(): Table = {
     T(getName() -> T("weight" -> cmul.weight, "gradWeight" -> cmul.gradWeight))
   }
