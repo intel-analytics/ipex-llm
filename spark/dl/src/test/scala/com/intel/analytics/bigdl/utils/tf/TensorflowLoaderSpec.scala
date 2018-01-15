@@ -497,6 +497,19 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
     }
   }
 
+  "dynamic rnn" should "be load correctly" in {
+    val output = Seq("rnn_loss:0")
+    val comparePairs = testModel("dynamic_rnn", output, backward = false)
+    for (i <- output.indices) {
+      val (tf, bigdl) = comparePairs(i)
+      tf.almostEqual(bigdl, 1e-6) should be(true)
+    }
+    for (i <- output.length until comparePairs.length) {
+      val (tf, bigdl) = comparePairs(i)
+      tf.almostEqual(bigdl, 1e-1) should be(true)
+    }
+  }
+
   private def testModel(
     modelName: String,
     endPoints: Seq[String],
@@ -532,7 +545,7 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
         (node: NodeDef) => node.getName == "input_node")
     val context = new Context[Float]()
     val model = TensorflowLoader.buildBigDLModel(tfGraph, inputs.toSeq.map(_._2).flatten,
-      endPoints.map(_.split(":")(0)), ByteOrder.LITTLE_ENDIAN, "", Some(context))
+      endPoints.map(_.split(":")(0)), ByteOrder.LITTLE_ENDIAN, "", Some(context), backward)
 
     // Compare the tensor contents
     val tfInputTensor = tfNodes.asScala.filter(_.getName == "input")(0)

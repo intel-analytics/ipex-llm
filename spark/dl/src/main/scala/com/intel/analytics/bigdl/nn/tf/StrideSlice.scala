@@ -46,6 +46,7 @@ private[bigdl] class StrideSlice[T: ClassTag, D: ClassTag](
       tmp = tmp.narrow(sliceSpecs(i)._1, sliceSpecs(i)._2, sliceSpecs(i)._3 - sliceSpecs(i)._2)
       i += 1
     }
+    if (tmp.dim() == 1 && tmp.size(1) == 1) tmp = Tensor.scalar[D](tmp.valueAt(1))
     output.resizeAs(tmp)
     output.copy(tmp)
   }
