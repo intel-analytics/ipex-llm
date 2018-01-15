@@ -231,11 +231,6 @@ object DistriOptimizer {
               val localCriterion = cached.localCriterions(i)
               val input = miniBatchBuffer(i).getInput()
               val target = miniBatchBuffer(i).getTarget()
-//              (0 until _subModelNumber).foreach(i =>
-              cached.modelGradients(i).apply1(x => {
-                assert(x == 0, s"$x not equal to 0"); x
-              })
-//              )
               val output = localModel.forward(input)
               lossArray(i) = ev.toType[Double](localCriterion.forward(output, target))
               val errors = localCriterion.backward(output, target)
@@ -262,9 +257,6 @@ object DistriOptimizer {
             val gradLength = finishedGradients(0).nElement()
             val taskSize = gradLength / _subModelNumber
             val extraTask = gradLength % _subModelNumber
-
-            assert(finishedThreads.length == _subModelNumber,
-              s"finishedThreads $finishedThreads not equal to _subModelNumber ${_subModelNumber}")
 
             // Aggregate multi-model's gradient to the first model's gradient
             val parallelNum = if (taskSize == 0) extraTask else _subModelNumber
@@ -630,9 +622,6 @@ object DistriOptimizer {
         val localMethod =
           if (broadcastMethod.isDefined) Some(broadcastMethod.get.map(_.clone())) else None
         val (weights, grads) = localModel.getParameters()
-        grads.apply1(x => {
-          assert(x == 0, s"local model grad $x != 0"); x
-        })
         (localModel, weights, grads, localCriterion, localState, localMethod)
       }.toArray
 
