@@ -2893,7 +2893,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     ImageFrameToSample[T](inputKeys.asScala.toArray, targets, sampleKey)
   }
 
-  def filesToImageFrame(url: String, sc: JavaSparkContext,
+  def seqFilesToImageFrame(url: String, sc: JavaSparkContext,
     classNum: Int, partitionNum: Int): ImageFrame = {
     val pn = if (partitionNum <= 0) None else Some(partitionNum)
     DataSet.SeqFileFolder.filesToImageFrame(url, sc, classNum, pn)

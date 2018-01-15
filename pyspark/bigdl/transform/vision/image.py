@@ -622,7 +622,7 @@ class SeqFileFolder(JavaValue):
         :param partition_num: partition number, default: Engine.nodeNumber() * Engine.coreNumber()
         """
         jvalue = callBigDlFunc(bigdl_type,
-                               "filesToImageFrame",
+                               "seqFilesToImageFrame",
                                url,
                                sc,
                                class_num,
