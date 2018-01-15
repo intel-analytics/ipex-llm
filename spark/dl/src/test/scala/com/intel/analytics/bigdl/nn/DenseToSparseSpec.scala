@@ -46,7 +46,7 @@ class DenseToSparseSpec extends FlatSpec with Matchers  {
     val mockInput = Tensor[Float](5, 10).rand()
     val mockError = Tensor[Float](5, 10).rand()
     var model = Sequential[Float]()
-      .add(DenseToSparse[Float](isBackward = true))
+      .add(DenseToSparse[Float](propagateBack = true))
       .add(SparseLinear[Float](10, 10))
     model.forward(mockInput)
     intercept[Exception] {
@@ -54,7 +54,7 @@ class DenseToSparseSpec extends FlatSpec with Matchers  {
     }
 
     model = Sequential[Float]()
-      .add(DenseToSparse[Float](isBackward = false))
+      .add(DenseToSparse[Float](propagateBack = false))
       .add(SparseLinear[Float](10, 10))
     model.forward(mockInput)
     model.backward(mockInput, mockError)
