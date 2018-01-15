@@ -192,7 +192,7 @@ class Cosine[T: ClassTag](val inputSize : Int, val outputSize : Int)(
     s"${getPrintName}($inputSize, $outputSize)"
   }
 
-  override def canEqual(other: Any): Boolean = other.isInstanceOf[Contiguous[T]]
+  override def canEqual(other: Any): Boolean = other.isInstanceOf[Cosine[T]]
 
   override def equals(other: Any): Boolean = other match {
     case that: Cosine[T] =>
