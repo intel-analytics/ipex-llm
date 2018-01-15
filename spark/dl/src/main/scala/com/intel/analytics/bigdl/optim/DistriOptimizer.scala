@@ -258,10 +258,6 @@ object DistriOptimizer {
             val taskSize = gradLength / _subModelNumber
             val extraTask = gradLength % _subModelNumber
 
-            (0 until _subModelNumber).diff(finishedThreads).foreach(i =>
-              cached.modelGradients(i).zero()
-            )
-
             // Aggregate multi-model's gradient to the first model's gradient
             val parallelNum = if (taskSize == 0) extraTask else _subModelNumber
             Engine.default.invokeAndWait((0 until parallelNum).map(tid => () => {
