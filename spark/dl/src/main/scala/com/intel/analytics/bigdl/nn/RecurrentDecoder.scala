@@ -221,6 +221,10 @@ class RecurrentDecoder[T : ClassTag](val seqLength: Int)
     topology.parameters()
   }
 
+  override def zeroGradParameters(): Unit = {
+    topology.zeroGradParameters()
+  }
+
   override def getParametersTable(): Table = {
     topology.getParametersTable()
   }

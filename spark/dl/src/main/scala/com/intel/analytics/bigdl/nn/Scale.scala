@@ -72,6 +72,11 @@ class Scale[T: ClassTag](val size: Array[Int])
       Array(cmul.parameters()._2(0), cadd.parameters()._2(0)))
   }
 
+  override def zeroGradParameters(): Unit = {
+    cmul.zeroGradParameters()
+    cadd.zeroGradParameters()
+  }
+
   override def getParametersTable(): Table = {
     T(getName() -> T("weight" -> cmul.weight, "bias" -> cadd.bias,
       "gradWeight" -> cmul.gradWeight, "gradBias" -> cadd.gradBias))
