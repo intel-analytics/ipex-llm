@@ -82,6 +82,11 @@ class Scale[T: ClassTag](val size: Array[Int])
       "gradWeight" -> cmul.gradWeight, "gradBias" -> cadd.gradBias))
   }
 
+  override def zeroGradParameters(): Unit = {
+    cmul.zeroGradParameters()
+    cadd.zeroGradParameters()
+  }
+
   override def toString: String = "nn.Scale"
 }
 
