@@ -24,10 +24,10 @@ import scala.reflect.ClassTag
 
 /**
  * Convert DenseTensor to SparseTensor.
- * @param isBackward whether update gradInput during backward
+ * @param propagateBack whether propagate gradient back, default value is true
  * @tparam T The numeric type in the criterion, usually which are [[Float]] or [[Double]]
  */
-class DenseToSparse[T: ClassTag](val isBackward: Boolean = true
+class DenseToSparse[T: ClassTag](val propagateBack: Boolean = true // propagate gradient back
                                 )(implicit ev: TensorNumeric[T]) extends TensorModule[T] {
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
     require(input.getTensorType == DenseType, "DenseToSparse: input should be a DenseTensor," +
@@ -36,7 +36,7 @@ class DenseToSparse[T: ClassTag](val isBackward: Boolean = true
     output
   }
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
-    if (isBackward) {
+    if (propagateBack) {
       this.gradInput.resizeAs(input)
       Tensor.dense(gradOutput, gradInput)
     }
@@ -48,7 +48,7 @@ class DenseToSparse[T: ClassTag](val isBackward: Boolean = true
 
 object DenseToSparse {
   def apply[@specialized(Float, Double) T: ClassTag]
-  (isBackward: Boolean = true)(implicit ev: TensorNumeric[T]) : DenseToSparse[T] = {
-    new DenseToSparse(isBackward)
+  (propagateBack: Boolean = true)(implicit ev: TensorNumeric[T]) : DenseToSparse[T] = {
+    new DenseToSparse(propagateBack)
   }
 }
