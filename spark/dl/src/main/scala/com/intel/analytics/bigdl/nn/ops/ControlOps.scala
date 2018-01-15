@@ -198,7 +198,7 @@ sealed private[bigdl] class Enter[T: ClassTag] private[bigdl](val frame: String)
  * User should use ControlNodes.whileLoop to use such operation.
  * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now
  */
-sealed private[bigdl] class LoopCondition[T: ClassTag] private[bigdl](val loopNum: Int)
+sealed private[bigdl] class LoopCondition[T: ClassTag] private[bigdl]()
   (implicit ev: TensorNumeric[T]) extends IdentityControl[T]
 
 /**
@@ -278,7 +278,7 @@ object ControlNodes {
     loopVars: (Seq[ModuleNode[T]]),
     name: String = null
   )(implicit ev: TensorNumeric[T]): Seq[ModuleNode[T]] = {
-    val lc = new LoopCondition[T](loopVars.size).inputs(condition._2)
+    val lc = new LoopCondition[T]().inputs(condition._2)
     if (name != null) lc.element.setName(s"$name/loopCondition")
 
     loopVars.zip(condition._1).zip(body).zipWithIndex.map(tuple => {

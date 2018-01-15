@@ -108,7 +108,7 @@ private[bigdl] class Scheduler[T] (
         require(curFrame.isDefined, "LoopCondition should be in a frame")
         val f = curFrame.get
         require(f.barrier == 0, "frame mutex should not be set or clear before loop condition")
-        f.barrier = c.loopNum
+        f.barrier = node.nextNodes.size
         curFrame
       case n: NextIteration[_] =>
         require(curFrame.isDefined, "NextIteration should be in a frame")
