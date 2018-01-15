@@ -79,33 +79,6 @@ object LocalOptimizerPerf {
   }
 
   def performance(param: LocalOptimizerPerfParam): Unit = {
-
-
-    def getTopTimes(times: Array[(AbstractModule[_ <: Activity, _ <: Activity, Float],
-      Long, Long)]): Unit = {
-      var forwardSum = 0L
-      var backwardSum = 0L
-      times.foreach(x => {
-        forwardSum += x._2
-        backwardSum += x._3
-      })
-      println(s"forwardSum = ${forwardSum}", s"backwardSum = ${backwardSum}")
-
-      val all = forwardSum + backwardSum
-
-      val timeBuffer = new ArrayBuffer[(AbstractModule[_ <: Activity,
-        _ <: Activity, Float], Long, Long, Long, Double)]
-      var i = 0
-      while (i < times.length) {
-        val all = times(i)._2 + times(i)._3
-        val rate = times(i)._3.toDouble/ times(i)._2
-        timeBuffer.append((times(i)._1, times(i)._2, times(i)._3, all, rate))
-        i += 1
-      }
-      val sortData = timeBuffer.sortBy(a => a._4)
-      sortData.foreach(println)
-    }
-
     def all(model: Module[Float], input: Tensor[Float]): Unit = {
       val subModelNumber = param.coreNumber
       val workingModels = (1 to param.coreNumber).map(i => {
@@ -147,7 +120,7 @@ object LocalOptimizerPerf {
               localModel.backward(inputBuffer(i), output)
               val end2 = System.nanoTime() - t2
               val tmp = localModel.getTimes()
-              getTopTimes(tmp)
+              DnnUtils.getTopTimes(tmp)
               localModel.resetTimes()
               // println("forward: " + end1 + " backward: " + end2 + " rate: " + end2.toDouble/end1)
               println("forward: " + end1 + " backward: " + end2 + " rate: " + end2.toDouble/end1)
