@@ -61,7 +61,7 @@ class KerasModelWrapper:
         else:
             raise Exception("We only support evaluation in distributed mode")
 
-    def predict(self, x, batch_size=None, verbose=None, is_distributed=False):
+    def predict(self, x, batch_size=None, verbose=None, is_distributed=True):
         """Generates output predictions for the input samples,
         processing the samples in a batched way.
 
