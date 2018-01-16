@@ -33,27 +33,31 @@ class TestSpec extends FlatSpec with Matchers {
   def bigdlModel(classNum: Int): Module[Float] = {
     val model = Sequential[Float]()
       .add(SpatialConvolution[Float](3, 96, 11, 11, 4, 4, propagateBack = false))
-      .add(ReLU[Float](false))
-      .add(SpatialCrossMapLRN[Float](5, 0.0001, 0.75, 1.0))
-      .add(SpatialMaxPooling[Float](3, 3, 2, 2, 0, 0))
+//      .add(ReLU[Float](false))
+//      .add(SpatialCrossMapLRN[Float](5, 0.0001, 0.75, 1.0))
+//      .add(SpatialMaxPooling[Float](3, 3, 2, 2, 0, 0))
     model
   }
 
   def dnnModel(classNum: Int): Module[Float] = {
     val model = Sequential[Float]()
       .add(ConvolutionDnn(3, 96, 11, 11, 4, 4, propagateBack = false))
-      .add(ReLUDnn[Float](false))
+      // .add(ReLUDnn[Float](false))
       .add(LRNDnn[Float](5, 0.0001, 0.75, 1.0))
       .add(PoolingDnn[Float](3, 3, 2, 2, 0, 0))
     model
   }
 
   "MklDnn alexnet time test" should "work correctly" in {
-    val batchSize = 4
+    val batchSize = 16
     val input = Tensor[Float](batchSize, 3, 227, 227).apply1(e => Random.nextFloat())
     val gradOutput = Tensor[Float](batchSize, 1000).apply1(e => Random.nextFloat())
 
+    System.getProperty("bigdl.mklNumThreads", "4")
     val layer = DnnUtils.dnnAlexNet(1000)// dnnAlexNet(1000)
+    layer.createDnnEngine(0)
+    layer.createStream()
+
     // warm up
     for (i <- 1 to 30) {
       val output = layer.forward(input)
@@ -64,10 +68,10 @@ class TestSpec extends FlatSpec with Matchers {
     for (i <- 1 to 50) {
       val output = layer.forward(input)
       val grad1 = layer.backward(input, gradOutput)
-      //      val tmp = layer.getTimes()
-      //      DnnUtils.getTopTimes(tmp)
-      //      layer.resetTimes()
-      //      println("111111111111")
+//      val tmp = layer.getTimes()
+//      DnnUtils.getTopTimes(tmp)
+//      layer.resetTimes()
+//      println("111111111111")
     }
     val end1 = System.nanoTime() - s1
     println(s"mkldnn model time ${end1/1e9} s")
@@ -99,10 +103,12 @@ class TestSpec extends FlatSpec with Matchers {
 
   "MklDnn model time test" should "work correctly" in {
     val batchSize = 4
-    val input = Tensor[Float](batchSize, 3, 227, 227).apply1(e => Random.nextFloat())
-    val gradOutput = Tensor[Float](batchSize, 96, 27, 27).apply1(e => Random.nextFloat())
+    val input = Tensor[Float](batchSize, 3, 224, 224).apply1(e => Random.nextFloat())
+    // val gradOutput = Tensor[Float](batchSize, 96, 27, 27).apply1(e => Random.nextFloat())
 
-    val layer = dnnModel(10)
+    val gradOutput = Tensor[Float](batchSize, 96, 26, 26).apply1(e => Random.nextFloat())
+
+    val layer = dnnModel(10) // dnnModel(10)
     // warm up
     for (i <- 1 to 30) {
       val output = layer.forward(input)
@@ -113,6 +119,10 @@ class TestSpec extends FlatSpec with Matchers {
     for (i <- 1 to 50) {
       val output = layer.forward(input)
       val grad1 = layer.backward(input, gradOutput)
+//      val tmp = layer.getTimes()
+//      DnnUtils.getTopTimes(tmp)
+//      layer.resetTimes()
+//      println("111111111111")
     }
     val end1 = System.nanoTime() - s1
     println(s"mkldnn model time ${end1/1e9} s")

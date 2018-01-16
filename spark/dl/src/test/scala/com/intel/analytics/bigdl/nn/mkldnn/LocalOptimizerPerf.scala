@@ -181,8 +181,8 @@ object LocalOptimizerPerf {
 * @param module module name
   */
 case class LocalOptimizerPerfParam(
-    batchSize: Int = 16,
-    coreNumber: Int = Runtime.getRuntime.availableProcessors() / 2,
+    batchSize: Int = 16, // 16,
+    coreNumber: Int = 1, //Runtime.getRuntime.availableProcessors() / 2,
     iteration: Int = 80,
     dataType: String = "float",
     module: String = "alexnetDnn" // "alexnetDnn"
