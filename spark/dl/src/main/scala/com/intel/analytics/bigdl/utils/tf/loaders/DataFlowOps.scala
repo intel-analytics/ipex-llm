@@ -14,7 +14,11 @@
  * limitations under the License.
  */
 package com.intel.analytics.bigdl.utils.tf.loaders
+
 import java.nio.ByteOrder
+
+import com.intel.analytics.bigdl.nn.Identity
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.nn.ops._
@@ -22,6 +26,8 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath
 import com.intel.analytics.bigdl.utils.tf.Context
 import com.intel.analytics.bigdl.utils.tf.loaders.Utils._
 import org.tensorflow.framework.{DataType, NodeDef}
+
+import scala.reflect.ClassTag
 
 class TensorArrayV3 extends TensorflowOpsLoader {
 
@@ -64,6 +70,17 @@ class TensorArrayV3 extends TensorflowOpsLoader {
     } else {
       throw new UnsupportedOperationException(s"Not support load TensorArrayV3 with data type $t")
     }
+  }
+}
+
+class TensorArrayGradV3 extends TensorflowOpsLoader {
+
+  override def build[T: ClassManifest](
+    nodeDef: NodeDef,
+    byteOrder: ByteOrder,
+    context: Context[T]
+  )(implicit ev: TensorNumericMath.TensorNumeric[T]): Module[T] = {
+    Identity()
   }
 }
 
@@ -194,5 +211,36 @@ class TensorArraySizeV3 extends TensorflowOpsLoader {
     context: Context[T]
   )(implicit ev: TensorNumericMath.TensorNumeric[T]): Module[T] = {
     new TensorArraySize[T]()
+  }
+}
+
+
+class StackPopV2 extends TensorflowOpsLoader {
+
+  import Utils._
+
+  override def build[T: ClassTag](nodeDef: NodeDef, byteOrder: ByteOrder, context: Context[T])
+    (implicit ev: TensorNumeric[T]): Module[T] = {
+    Identity()
+  }
+}
+
+class StackPushV2 extends TensorflowOpsLoader {
+
+  import Utils._
+
+  override def build[T: ClassTag](nodeDef: NodeDef, byteOrder: ByteOrder, context: Context[T])
+    (implicit ev: TensorNumeric[T]): Module[T] = {
+    Identity()
+  }
+}
+
+class StackV2 extends TensorflowOpsLoader {
+
+  import Utils._
+
+  override def build[T: ClassTag](nodeDef: NodeDef, byteOrder: ByteOrder, context: Context[T])
+    (implicit ev: TensorNumeric[T]): Module[T] = {
+    Identity()
   }
 }

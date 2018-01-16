@@ -510,6 +510,19 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
     }
   }
 
+  "dynamic rnn grad" should "be load correctly" in {
+    val output = Seq("gradOutput:0")
+    val comparePairs = testModel("dynamic_rnn_grad", output, backward = false)
+    for (i <- output.indices) {
+      val (tf, bigdl) = comparePairs(i)
+      tf.almostEqual(bigdl, 1e-6) should be(true)
+    }
+    for (i <- output.length until comparePairs.length) {
+      val (tf, bigdl) = comparePairs(i)
+      tf.almostEqual(bigdl, 1e-1) should be(true)
+    }
+  }
+
   private def testModel(
     modelName: String,
     endPoints: Seq[String],
