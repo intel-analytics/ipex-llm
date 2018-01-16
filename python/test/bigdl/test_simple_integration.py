@@ -259,6 +259,7 @@ class TestSimple():
                                         app_name="run1")
         optimizer.set_train_summary(train_summary)
         optimizer.set_val_summary(val_summary)
+        optimizer.set_end_when(MaxEpoch(epoch_num * 2))
 
         trained_model = optimizer.optimize()
         lr_result = train_summary.read_scalar("LearningRate")
