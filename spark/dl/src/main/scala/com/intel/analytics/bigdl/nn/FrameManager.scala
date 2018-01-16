@@ -90,7 +90,7 @@ class FrameManager[T] extends Serializable {
 object FrameManager {
   /**
    * A frame
-   * @param name the name of a frame, it must be unique in a grap
+   * @param name the name of a frame, it must be unique in a graph
    * @param mutex sync all next iteration / exit nodes execution
    * @param waitingNodes user can use NextIteration or Exit to leave current frame. This is a list
    *                     of those type of nodes, which are ready to leave

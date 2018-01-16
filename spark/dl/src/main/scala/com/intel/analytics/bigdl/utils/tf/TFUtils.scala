@@ -152,7 +152,7 @@ object TFUtils {
 
   private def parseTensorFromField(
     tfTensor: TensorProto, shape: Array[Int], endian: ByteOrder) = {
-    tfTensor.getDtype match {
+    val tensor = tfTensor.getDtype match {
       case DataType.DT_FLOAT =>
         val tmp = tfTensor.getFloatValList.asScala.map(_.toFloat).toArray
         Tensor[Float](tmp, shape)
@@ -185,6 +185,7 @@ object TFUtils {
         Tensor(tmp, shape)
       case t => throw new IllegalArgumentException(s"DataType: $t not supported yet")
     }
+    tensor
   }
 
   /**

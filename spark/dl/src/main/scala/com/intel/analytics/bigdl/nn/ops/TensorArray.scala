@@ -113,7 +113,7 @@ private[nn] class TensorArray[D: ClassTag](
     }
 
     if (tensors(index) == null) {
-      tensors(index) = tensor
+      tensors(index) = Tensor[D]().resizeAs(tensor).copy(tensor)
     } else {
       tensors(index).add(tensor)
     }
