@@ -21,8 +21,7 @@ import java.util.Locale
 import java.util.concurrent.atomic.AtomicBoolean
 
 import org.apache.log4j.Logger
-import org.apache.spark.{SparkConf, SparkContext}
-
+import org.apache.spark.{SparkConf, SparkContext, SparkException}
 import com.intel.analytics.bigdl.mkl.MKL
 
 /**
@@ -35,14 +34,14 @@ case object MklBlas extends EngineType
 
 object Engine {
   @deprecated(
-    "See https://github.com/intel-analytics/BigDL/wiki/Programming-Guide#engine",
+    "See https://bigdl-project.github.io/master/#APIGuide/Engine/",
     "0.1.0")
   def init(nExecutor: Int,
            executorCores: Int,
            onSpark: Boolean): Option[SparkConf] = {
     logger.warn("Engine.init(nExecutor, executorCores, onSpark) is deprecated. " +
       "Please refer to " +
-      "https://github.com/intel-analytics/BigDL/wiki/Programming-Guide#engine")
+      "https://bigdl-project.github.io/master/#APIGuide/Engine/")
     setNodeAndCore(nExecutor, executorCores)
     val res = if (onSpark) {
       require(localMode == false,
@@ -120,10 +119,10 @@ object Engine {
 
   private val NOT_INIT_ERROR =
     "Do you call Engine.init? See more at " +
-      "https://github.com/intel-analytics/BigDL/wiki/Programming-Guide#engine"
+      "https://bigdl-project.github.io/master/#APIGuide/Engine/"
 
   private val SPARK_CONF_ERROR = "For details please check " +
-    "https://github.com/intel-analytics/BigDL/wiki/Programming-Guide#engine"
+    "https://bigdl-project.github.io/master/#APIGuide/Engine/"
 
   /**
    * Notice: Please use property bigdl.engineType to set engineType.
@@ -154,9 +153,11 @@ object Engine {
   }
 
   private def getNumMachineCores: Int = {
+    val coreNum = Runtime.getRuntime().availableProcessors()
+    require(coreNum > 0, "Get a non-positive core number")
     // We assume the HT is enabled
     // Todo: check the Hyper threading
-    Runtime.getRuntime().availableProcessors() / 2
+    if (coreNum > 1) coreNum / 2 else 1
   }
 
   /**
@@ -342,7 +343,17 @@ object Engine {
    * @return (nExecutor, executorCore)
    */
   private[utils] def sparkExecutorAndCore(): Option[(Int, Int)] = {
-    parseExecutorAndCore(SparkContext.getOrCreate().getConf)
+    try {
+      parseExecutorAndCore(SparkContext.getOrCreate().getConf)
+    } catch {
+      case s: SparkException =>
+        if (s.getMessage.contains("A master URL must be set in your configuration")) {
+          throw new IllegalArgumentException("A master URL must be set in your configuration." +
+            " Or if you want to run BigDL in a local JVM environment, you should set Java " +
+            "property bigdl.localMode=true")
+        }
+        throw s
+    }
   }
 
   /**
@@ -405,6 +416,23 @@ object Engine {
         val maxString = conf.get("spark.cores.max", null)
         require(maxString != null, "Engine.init: Can't find total core number" +
           ". Do you submit with --total-executor-cores")
+        val total = maxString.toInt
+        require(total >= core && total % core == 0, s"Engine.init: total core " +
+          s"number($total) can't be divided " +
+          s"by single core number($core) provided to spark-submit")
+        total / core
+      }
+      Some(nodeNum, core)
+    } else if (master.toLowerCase.startsWith("k8s")) {
+      // Spark-on-kubernetes mode
+      val coreString = conf.get("spark.executor.cores", null)
+      val maxString = conf.get("spark.cores.max", null)
+      require(coreString != null, "Engine.init: Can't find executor core number" +
+        ", do you submit with --conf spark.executor.cores option")
+      require(maxString != null, "Engine.init: Can't find total core number" +
+        ". Do you submit with --conf spark.cores.max option")
+      val core = coreString.toInt
+      val nodeNum = dynamicAllocationExecutor(conf).getOrElse {
         val total = maxString.toInt
         require(total >= core && total % core == 0, s"Engine.init: total core " +
           s"number($total) can't be divided " +

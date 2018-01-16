@@ -23,19 +23,18 @@ import com.intel.analytics.bigdl.nn.{Sum => SumLayer}
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
-class Sum[T: ClassTag, D: ClassTag](keepDims: Boolean, startFromZero: Boolean = false)
+class Sum[T: ClassTag, D: ClassTag](val keepDims: Boolean, val startFromZero: Boolean = false)
   (implicit ev: TensorNumeric[T], ev2: TensorNumeric[D])
   extends Operation[Table, Tensor[D], T] {
 
-  private val sum: SumLayer[T, D] = SumLayer[T, D](squeeze = !keepDims)
+  private val sum: SumLayer[D] = SumLayer[D](squeeze = !keepDims)
+
+  output = Tensor[D]()
 
   override def updateOutput(input: Table): Tensor[D] = {
     val data = input[Tensor[D]](1)
     val dims = input[Tensor[Int]](2)
 
-    if (output.getType() != data.getType()) {
-      output = data.emptyInstance()
-    }
     output.resizeAs(data).copy(data)
 
     val sumDims = if (dims.isEmpty) {
@@ -61,6 +60,11 @@ class Sum[T: ClassTag, D: ClassTag](keepDims: Boolean, startFromZero: Boolean = 
     }
 
     output
+  }
+
+  override def getClassTagNumerics() : (Array[ClassTag[_]], Array[TensorNumeric[_]]) = {
+    (Array[ClassTag[_]](scala.reflect.classTag[T], scala.reflect.classTag[D]),
+      Array[TensorNumeric[_]](ev, ev2))
   }
 }
 

@@ -28,7 +28,7 @@ abstract class UnaryGrad[T: ClassTag, D: ClassTag](
                (implicit ev: TensorNumeric[T], ev2: TensorNumeric[D])
   extends Operation[Table, Tensor[D], T]{
 
-  type Module = AbstractModule[Tensor[D], Tensor[D], T]
+  type Module = AbstractModule[Tensor[D], Tensor[D], _]
 
   val module: Module
 
@@ -45,5 +45,10 @@ abstract class UnaryGrad[T: ClassTag, D: ClassTag](
 
     output = module.updateGradInput(inputs, grads).toTensor[D]
     output
+  }
+
+  override def getClassTagNumerics() : (Array[ClassTag[_]], Array[TensorNumeric[_]]) = {
+    (Array[ClassTag[_]](scala.reflect.classTag[T], scala.reflect.classTag[D]),
+      Array[TensorNumeric[_]](ev, ev2))
   }
 }

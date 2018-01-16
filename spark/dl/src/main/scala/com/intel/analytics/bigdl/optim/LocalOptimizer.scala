@@ -58,19 +58,18 @@ class LocalOptimizer[T: ClassTag] (
   }
 
   private val workingModels = {
-    val modelBroadcast = ModelBroadcast()
     model.getParameters()
-    val wb = modelBroadcast.getAndClearWeightBias(model.parameters())
+    val wb = Util.getAndClearWeightBias(model.parameters())
 
     val models = (1 to subModelNumber).map(i => {
       logger.info(s"Clone $i model...")
       val m = model.cloneModule()
-      modelBroadcast.putWeightBias(wb, m)
-      modelBroadcast.initGradWeightBias(wb, m)
+      Util.putWeightBias(wb, m)
+      Util.initGradWeightBias(wb, m)
       m
     }).toArray
-    modelBroadcast.putWeightBias(wb, model)
-    modelBroadcast.initGradWeightBias(wb, model)
+    Util.putWeightBias(wb, model)
+    Util.initGradWeightBias(wb, model)
     models
   }
   private val (weight, grad) = model.getParameters()
@@ -152,8 +151,31 @@ class LocalOptimizer[T: ClassTag] (
           })
       )
       val loss = lossSum / parallelism
-      grad.div(ev.fromType(parallelism))
+      var scale = ev.fromType(parallelism)
+      if (gradientClippingParams.enableL2NormClipping) {
+        val squares = new Array[Double](syncGradParallelNum)
+        Engine.default.invokeAndWait((0 until syncGradParallelNum).map(tid => () => {
+          val offset = tid * syncGradTaskSize + math.min(tid, syncGradExtraTask)
+          val length = syncGradTaskSize + (if (tid < syncGradExtraTask) 1 else 0)
+          squares(tid) = ev.toType[Double](grad.narrow(1, offset + 1, length).sumSquare())
+        }))
+        var sum = 0.0
+        var i = 0
+        while (i < squares.size) {
+          sum += squares(i)
+          i += 1
+        }
+        val l2Norm = (math.sqrt(sum) / parallelism).toFloat
 
+        if (l2Norm > gradientClippingParams.normValueClip) {
+          scale = ev.fromType[Float]((l2Norm * parallelism) / gradientClippingParams.normValueClip)
+        }
+      }
+      grad.div(scale)
+
+      if (gradientClippingParams.enableConstantClipping) {
+        grad.clamp(gradientClippingParams.minValueClip, gradientClippingParams.maxValueClip)
+      }
       optimMethod.state.update("epoch", state.get("epoch"))
       optimMethod.state.update("neval", state.get("neval"))
       optimMethod.optimize(_ => (ev.fromType(loss), grad), weight)
@@ -182,7 +204,7 @@ class LocalOptimizer[T: ClassTag] (
     }
 
     // copy running status from workingModels to model
-    model.copyStatus(workingModels.head)
+    model.setExtraParameter(workingModels.head.getExtraParameter())
 
     model
   }

@@ -24,13 +24,13 @@ import scala.reflect.ClassTag
  */
 
 @SerialVersionUID(223597921741020277L)
-class Sqrt[T: ClassTag, D: ClassTag](implicit ev: TensorNumeric[T], ev2: TensorNumeric[D])
-  extends Power[T, D](0.5, 1, 0) {
+class Sqrt[T: ClassTag](implicit ev: TensorNumeric[T])
+  extends Power[T](0.5, 1, 0) {
 }
 
 object Sqrt {
-  def apply[@specialized(Float, Double) T: ClassTag, D: ClassTag]()
-      (implicit ev: TensorNumeric[T], ev2: TensorNumeric[D]) : Sqrt[T, D] = {
-    new Sqrt[T, D]()
+  def apply[@specialized(Float, Double) T: ClassTag]()
+      (implicit ev: TensorNumeric[T]) : Sqrt[T] = {
+    new Sqrt[T]()
   }
 }

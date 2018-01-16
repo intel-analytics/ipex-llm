@@ -22,26 +22,66 @@ np.random.seed(1337)  # for reproducibility
 from keras.layers.core import *
 from keras.layers.convolutional import *
 from keras.layers import Dense, Input
+from keras.regularizers import l1, l2, l1l2
 from bigdl.keras.converter import *
 from test.bigdl.test_utils import BigDLTestCase
-from keras.regularizers import l1, l2, l1l2
+from bigdl.examples.keras.keras_utils import *
 
 
 class TestLayer(BigDLTestCase):
 
+    def test_relu(self):
+        input_data = np.random.random_sample([2, 3, 5])
+        layer = Activation('relu')
+        self.modelTestSingleLayer(input_data, layer)
+
+    def test_tanh(self):
+        input_data = np.random.random_sample([2, 3, 5])
+        layer = Activation('tanh')
+        self.modelTestSingleLayer(input_data, layer)
+
+    def test_sigmoid(self):
+        input_data = np.random.random_sample([2, 3, 5])
+        layer = Activation('sigmoid')
+        self.modelTestSingleLayer(input_data, layer)
+
+    def test_hard_sigmoid(self):
+        input_data = np.random.random_sample([2, 3, 5])
+        layer = Activation('hard_sigmoid')
+        self.modelTestSingleLayer(input_data, layer)
+
+    def test_softmax(self):
+        input_data = np.random.random_sample([2, 3, 5])
+        layer = Activation('softmax')
+        self.modelTestSingleLayer(input_data, layer)
+
+    def test_softplus(self):
+        input_data = np.random.random_sample([2, 3, 5])
+        layer = Activation('softplus')
+        self.modelTestSingleLayer(input_data, layer)
+
+    def test_softsign(self):
+        input_data = np.random.random_sample([2, 3, 5])
+        layer = Activation('softsign')
+        self.modelTestSingleLayer(input_data, layer)
+
     def test_dense(self):
-        input_data = np.random.random_sample([1, 10])
+        input_data = np.random.random_sample([2, 10, 5, 7])
         layer = Dense(2, init='one', activation="relu",
-                      input_shape=(10, ), W_regularizer=l1l2(l1=0.01, l2=0.02))
+                      input_shape=(10, 5, 7), W_regularizer=l1l2(l1=0.01, l2=0.02))
         self.modelTestSingleLayer(input_data, layer, dump_weights=True)
+        input_data2 = np.random.random_sample([2, 10])
         layer2 = Dense(2, init='one', activation="softplus",
                        input_shape=(10, ), b_regularizer=l2(0.02))
-        self.modelTestSingleLayer(input_data, layer2, dump_weights=True)
+        self.modelTestSingleLayer(input_data2, layer2, dump_weights=True)
         layer3 = Dense(2, init='one', input_shape=(10, ),
                        W_regularizer=keras.regularizers.WeightRegularizer(l1=0.1))
-        self.modelTestSingleLayer(input_data, layer3, dump_weights=True)
+        self.modelTestSingleLayer(input_data2, layer3, dump_weights=True)
         layer4 = Dense(2, init='glorot_uniform', activation="hard_sigmoid", input_shape=(10, ))
-        self.modelTestSingleLayer(input_data, layer4, dump_weights=True)
+        self.modelTestSingleLayer(input_data2, layer4, dump_weights=True)
+        # Test for unsupported init_method. Should get a warning not an exception.
+        layer5 = Dense(4, init='he_uniform', input_shape=(10, ))
+        self.modelTestSingleLayer(input_data2, layer5, dump_weights=True)
 
     def test_timedistributeddense(self):
         input_data = np.random.random_sample([2, 4, 5])
@@ -82,18 +122,16 @@ class TestLayer(BigDLTestCase):
     def test_conv1D(self):
         input_data = np.random.random_sample([1, 10, 32])
         layer = lambda: Convolution1D(64, 3, border_mode='valid', input_shape=(10, 32))
-        self.modelTestSingleLayerWithOrdersModes(input_data, layer,
-                                                 dump_weights=True, dim_orderings=["tf"])
-
+        self.modelTestSingleLayerWithOrdersModes(input_data, layer, dump_weights=True)
         layer2 = lambda: Convolution1D(64, 3, border_mode='same',
                                        input_shape=(10, 32))
-        self.modelTestSingleLayerWithOrdersModes(input_data, layer2,
-                                                 dump_weights=True, dim_orderings=["tf"])
-
+        self.modelTestSingleLayerWithOrdersModes(input_data, layer2, dump_weights=True)
         layer3 = lambda: Convolution1D(64, 3, border_mode='same',
                                        activation="relu", input_shape=(10, 32))
-        self.modelTestSingleLayerWithOrdersModes(input_data, layer3,
-                                                 dump_weights=True, dim_orderings=["tf"])
+        self.modelTestSingleLayerWithOrdersModes(input_data, layer3, dump_weights=True)
+        layer4 = lambda: Convolution1D(32, 4, border_mode='same',
+                                       bias=False, input_shape=(10, 32))
+        self.modelTestSingleLayerWithOrdersModes(input_data, layer4, dump_weights=True)
 
     def _load_keras(self, json_path, hdf5_path):
         with open(json_path, "r") as jp:
@@ -105,37 +143,46 @@ class TestLayer(BigDLTestCase):
 
     def test_conv2D(self):
         input_data = np.random.random_sample([1, 3, 128, 128])
-        layer = lambda: Convolution2D(64, 1, 20, input_shape=(3, 128, 128))
-        self.modelTestSingleLayerWithOrdersModes(input_data,
-                                                 layer,
-                                                 dump_weights=True, rtol=1e-5, atol=1e-5)
-        # Test if alias works or not
-        layer = lambda: Conv2D(64, 3, 1, input_shape=(3, 128, 128))
-        self.modelTestSingleLayerWithOrdersModes(input_data,
-                                                 layer,
+        layer1 = lambda: Convolution2D(64, 1, 20, input_shape=(3, 128, 128))
+        self.modelTestSingleLayerWithOrdersModes(input_data, layer1, dump_weights=True)
+        layer2 = lambda: Convolution2D(64, 1, 20, subsample=(2, 3),
+                                       input_shape=(3, 128, 128))
+        self.modelTestSingleLayerWithOrdersModes(input_data, layer2, dump_weights=True)
+        layer3 = lambda: Convolution2D(32, 3, 3, activation='sigmoid',
+                                       bias=False, input_shape=(3, 128, 128))
+        self.modelTestSingleLayerWithOrdersModes(input_data, layer3,
+                                                 dump_weights=True)
+        # # Test if alias works or not
+        layer4 = lambda: Conv2D(64, 3, 1, input_shape=(3, 128, 128))
+        self.modelTestSingleLayerWithOrdersModes(input_data, layer4,
                                                  dump_weights=True, rtol=1e-5, atol=1e-5)
 
     def test_conv3D(self):
         input_data = np.random.random_sample([1, 3, 32, 32, 32])
-        layer = Convolution3D(12, 5, 3, 4, dim_ordering="th",
-                              border_mode="valid", subsample=(1, 1, 2),
-                              input_shape=(3, 32, 32, 32))
-        self.modelTestSingleLayer(input_data, layer,
-                                  dump_weights=True, rtol=1e-5, atol=1e-5)
+        layer = lambda: Convolution3D(12, 5, 3, 4, dim_ordering="th", subsample=(1, 2, 3),
+                                      input_shape=(3, 32, 32, 32))
+        self.modelTestSingleLayerWithOrdersModes(input_data, layer, dim_orderings=["th"],
+                                                 dump_weights=True, rtol=1e-5, atol=1e-5)
+        layer2 = lambda: Convolution3D(8, 6, 4, 2, dim_ordering="th", activation='sigmoid',
+                                       input_shape=(3, 32, 32, 32))
+        self.modelTestSingleLayerWithOrdersModes(input_data, layer2, dim_orderings=["th"],
+                                                 dump_weights=True, rtol=1e-5, atol=1e-5)
+        layer3 = lambda: Convolution3D(16, 2, 2, 2, dim_ordering="th", bias=False,
+                                       input_shape=(3, 32, 32, 32))
+        self.modelTestSingleLayerWithOrdersModes(input_data, layer3, dim_orderings=["th"],
+                                                 dump_weights=True, rtol=1e-5, atol=1e-5)
 
     def test_atrousconvolution1d(self):
         input_data = np.random.random_sample([2, 10, 32])
-        layer = AtrousConvolution1D(64, 3, atrous_rate=2,
-                                    border_mode="valid", activation='relu',
-                                    input_shape=(10, 32))
-        self.modelTestSingleLayer(input_data, layer, dump_weights=True)
+        layer = lambda: AtrousConvolution1D(64, 3, atrous_rate=2, input_shape=(10, 32))
+        self.modelTestSingleLayerWithOrdersModes(input_data, layer, dump_weights=True)
 
     def test_atrousconvolution2d(self):
-        input_data = np.random.random_sample([1, 3, 128, 128])
-        layer = AtrousConvolution2D(64, 3, 4, atrous_rate=(2, 2), dim_ordering="th",
-                                    border_mode="valid", activation='tanh',
-                                    input_shape=(3, 128, 128))
-        self.modelTestSingleLayer(input_data, layer, dump_weights=True)
+        input_data = np.random.random([1, 3, 128, 128])
+        layer = lambda: AtrousConvolution2D(64, 5, 7, atrous_rate=(2, 2),
+                                            dim_ordering="th", input_shape=(3, 128, 128))
+        self.modelTestSingleLayerWithOrdersModes(input_data, layer, dim_orderings=["th"],
+                                                 dump_weights=True)
 
     def test_deconvolution2d(self):
         input_data = np.random.random_sample([32, 3, 12, 12])
@@ -147,6 +194,14 @@ class TestLayer(BigDLTestCase):
                                  border_mode="valid", subsample=(2, 2),
                                  dim_ordering="th", input_shape=(3, 12, 12))
         self.modelTestSingleLayer(input_data, layer2, dump_weights=True)
+        layer3 = Deconvolution2D(3, 4, 4, output_shape=(None, 3, 24, 24),
+                                 border_mode="same", subsample=(2, 2),
+                                 dim_ordering="th", input_shape=(3, 12, 12))
+        self.modelTestSingleLayer(input_data, layer3, dump_weights=True)
+        layer4 = Deconvolution2D(3, 3, 3, output_shape=(None, 3, 14, 14),
+                                 border_mode="valid", dim_ordering="th",
+                                 bias=False, activation='relu', input_shape=(3, 12, 12))
+        self.modelTestSingleLayer(input_data, layer4, dump_weights=True)
 
     def test_maxpooling3d(self):
         input_data = np.random.random_sample([1, 3, 20, 15, 35])
@@ -229,7 +284,10 @@ class TestLayer(BigDLTestCase):
     def test_batchnormalization(self):
         input_data = np.random.random_sample([2, 6, 128, 128])
         layer = BatchNormalization(input_shape=(6, 128, 128), axis=1)
-        self.modelTestSingleLayer(input_data, layer, dump_weights=True, random_weights=False)
+        self.modelTestSingleLayer(input_data, layer, dump_weights=True)
+        K.set_image_dim_ordering("tf")
+        layer2 = BatchNormalization(input_shape=(6, 128, 128), axis=-1)
+        self.modelTestSingleLayer(input_data, layer2, dump_weights=True)
 
     def test_flatten(self):
         input_data = np.random.random_sample([1, 2, 3])
@@ -279,6 +337,22 @@ class TestLayer(BigDLTestCase):
                        dump_weights=True,
                        is_training=False)
 
+    def test_merge_method_cos(self):
+        input_data1 = np.random.random_sample([2, 4])
+        input_data2 = np.random.random_sample([2, 4])
+        input1 = Input((4,))
+        input2 = Input((4,))
+        out1 = Dense(4)(input1)
+        out2 = Dense(4)(input2)
+        from keras.engine import merge
+        m = merge([out1, out2], mode="cos", dot_axes=1)
+        kmodel = Model(input=[input1, input2], output=m)
+        self.modelTest([input_data1, input_data2],
+                       kmodel,
+                       random_weights=False,
+                       dump_weights=True,
+                       is_training=False)
+
     def test_merge_method_concat(self):
         input_data1 = np.random.random_sample([2, 4])
         input_data2 = np.random.random_sample([2, 3])
@@ -295,6 +369,20 @@ class TestLayer(BigDLTestCase):
                        random_weights=False,
                        dump_weights=True,
                        is_training=False)
+
+    def test_nested_with_combo_bigdl_layer_lstm(self):
+        branch1 = Sequential()
+        branch1.add(LSTM(64, input_dim=10, input_length=10, return_sequences=True,
+                         inner_activation='sigmoid'))
+        branch2 = Sequential()
+        branch2.add(Reshape((10, 2), input_shape=(20, )))
+
+        input_data = [np.random.random([3, 10, 10]), np.random.random([3, 20])]
+
+        kmodel = Sequential()
+        kmodel.add(Merge([branch1, branch2], mode='concat'))
+        kmodel.add(Activation('sigmoid'))
+        self.modelTest(input_data, kmodel, dump_weights=True)
 
     def test_merge_method_mix_concat(self):
         input_data1 = np.random.random_sample([2, 4])
@@ -484,30 +572,52 @@ class TestLayer(BigDLTestCase):
 
     def test_zeropadding2d(self):
         input_data = np.random.uniform(0, 1, [1, 2, 3, 4])
-        layer1 = ZeroPadding2D(padding=(2, 3), input_shape=(2, 3, 4))
-        self.modelTestSingleLayer(input_data, layer1)
-        layer2 = ZeroPadding2D(padding=(2, 3, 4, 1), input_shape=(2, 3, 4))
-        self.modelTestSingleLayer(input_data, layer2)
-        layer3 = ZeroPadding2D(
+        layer1 = lambda: ZeroPadding2D(padding=(2, 3), input_shape=(2, 3, 4))
+        self.modelTestSingleLayerWithOrdersModes(input_data, layer1,
+                                                 border_modes=[None])
+        layer2 = lambda: ZeroPadding2D(padding=(2, 3, 4, 1), input_shape=(2, 3, 4))
+        self.modelTestSingleLayerWithOrdersModes(input_data, layer2,
+                                                 border_modes=[None])
+        layer3 = lambda: ZeroPadding2D(
             padding={'top_pad': 1, 'bottom_pad': 2, 'left_pad': 3, 'right_pad': 4},
             input_shape=(2, 3, 4))
-        self.modelTestSingleLayer(input_data, layer3)
+        self.modelTestSingleLayerWithOrdersModes(input_data, layer3,
+                                                 border_modes=[None])
 
     def test_zeropadding3d(self):
         input_data = np.random.uniform(0, 1, [3, 2, 4, 1, 5])
-        layer = ZeroPadding3D(padding=(1, 2, 3), input_shape=(2, 4, 1, 5))
-        self.modelTestSingleLayer(input_data, layer)
+        layer = lambda: ZeroPadding3D(padding=(1, 2, 3), input_shape=(2, 4, 1, 5))
+        self.modelTestSingleLayerWithOrdersModes(input_data, layer,
+                                                 border_modes=[None])
 
     def test_cropping1d(self):
         input_data = np.random.uniform(0, 1, [3, 10, 10])
         layer = Cropping1D(cropping=(1, 2))
         self.modelTestSingleLayer(input_data, layer)
 
+    def test_cropping2d(self):
+        input_data = np.random.random([2, 5, 28, 28])
+        layer1 = lambda: Cropping2D(cropping=((2, 2), (4, 4)))
+        self.modelTestSingleLayerWithOrdersModes(input_data, layer1,
+                                                 border_modes=[None])
+        layer2 = lambda: Cropping2D(cropping=((0, 2), (3, 1)))
+        self.modelTestSingleLayerWithOrdersModes(input_data, layer2,
+                                                 border_modes=[None])
+
+    def test_cropping3d(self):
+        input_data = np.random.random([2, 10, 28, 28, 32])
+        layer1 = lambda: Cropping3D(cropping=((1, 1), (2, 2), (4, 4)))
+        self.modelTestSingleLayerWithOrdersModes(input_data, layer1,
+                                                 border_modes=[None])
+        layer2 = lambda: Cropping3D(cropping=((0, 2), (3, 1), (2, 3)))
+        self.modelTestSingleLayerWithOrdersModes(input_data, layer2,
+                                                 border_modes=[None])
+
     def test_simplernn(self):
         input_data = np.random.random([3, 4, 5])
         layer = SimpleRNN(5, input_shape=(4, 5), return_sequences=True)
         self.modelTestSingleLayer(input_data, layer, dump_weights=True)
-        layer2 = SimpleRNN(3, input_shape=(4, 5), return_sequences=False)
+        layer2 = SimpleRNN(3, input_shape=(4, 5), go_backwards=True)
         self.modelTestSingleLayer(input_data, layer2, dump_weights=True)
         layer3 = SimpleRNN(3, input_shape=(4, 5), activation='relu')
         self.modelTestSingleLayer(input_data, layer3, dump_weights=True)
@@ -516,27 +626,28 @@ class TestLayer(BigDLTestCase):
         input_data = np.random.random([3, 4, 5])
         layer = LSTM(5, input_shape=(4, 5), return_sequences=True)
         self.modelTestSingleLayer(input_data, layer, dump_weights=True)
-        layer2 = LSTM(3, input_shape=(4, 5), return_sequences=False,
+        layer2 = LSTM(3, input_shape=(4, 5), go_backwards=True,
                       activation='relu', inner_activation='sigmoid')
         self.modelTestSingleLayer(input_data, layer2, dump_weights=True)
 
     def test_convlstm2d(self):
         input_data = np.random.random_sample([4, 8, 40, 40, 32])
         layer = ConvLSTM2D(32, 4, 4, input_shape=(8, 40, 40, 32),
-                           return_sequences=True, border_mode='same')
-        self.modelTestSingleLayer(input_data, layer, dump_weights=True, random_weights=True)
+                           border_mode='same', go_backwards=True)
+        self.modelTestSingleLayer(input_data, layer, dump_weights=True)
         layer2 = ConvLSTM2D(32, 4, 4, input_shape=(8, 40, 40, 32), return_sequences=True,
                             activation='relu', inner_activation='sigmoid', border_mode='same')
-        self.modelTestSingleLayer(input_data, layer2, dump_weights=True,
-                                  random_weights=True, rtol=1e-5, atol=1e-5)
+        self.modelTestSingleLayer(input_data, layer2, dump_weights=True, rtol=1e-5, atol=1e-5)
 
     def test_gru(self):
         input_data = np.random.random([3, 4, 5])
         layer = GRU(4, input_shape=(4, 5), return_sequences=True)
         self.modelTestSingleLayer(input_data, layer, dump_weights=True)
-        layer2 = GRU(8, input_shape=(4, 5), return_sequences=False,
+        layer2 = GRU(8, input_shape=(4, 5), go_backwards=True,
                      activation='relu', inner_activation='sigmoid')
         self.modelTestSingleLayer(input_data, layer2, dump_weights=True)
+        layer3 = GRU(512, input_shape=(4, 5), go_backwards=True, return_sequences=True)
+        self.modelTestSingleLayer(input_data, layer3, dump_weights=True)
 
     # TODO: Support share weights training.
     def test_multiple_inputs_share_weights(self):
@@ -554,9 +665,108 @@ class TestLayer(BigDLTestCase):
             out3 = Dense(7)(tensor1)
             out4 = Dense(8)(tensor2)
             model2 = Model(input=[input_node1, input_node2], output=[out3, out4])
-            def_path, w_path = self._dump_keras(model2)
+            def_path, w_path = dump_keras(model2)
             bigdl_model = DefinitionLoader.from_json_path(def_path)
         assert str(excinfo.value) == """Convolution2D doesn't support multiple inputs with shared weights"""  # noqa
+
+    def test_wrapper_timedistributed(self):
+        input_data = np.random.random_sample([3, 32, 64])
+        layer = TimeDistributed(Dense(6), input_shape=(32, 64))
+        self.modelTestSingleLayer(input_data, layer, dump_weights=True)
+
+        input_data2 = np.random.random_sample([2, 10, 3, 32, 32])
+        layer2 = TimeDistributed(Convolution2D(64, 3, 3), input_shape=(10, 3, 32, 32))
+        self.modelTestSingleLayer(input_data2, layer2, dump_weights=True, rtol=1e-5, atol=1e-5)
+
+    def test_wrapper_bidirectional(self):
+        input_data = np.random.random([5, 32, 64])
+        layer = Bidirectional(SimpleRNN(12, return_sequences=True),
+                              input_shape=(32, 64))
+        self.modelTestSingleLayer(input_data, layer, dump_weights=True)
+        layer2 = Bidirectional(LSTM(8, return_sequences=True),
+                               input_shape=(32, 64), merge_mode='sum')
+        self.modelTestSingleLayer(input_data, layer2, dump_weights=True)
+        layer3 = Bidirectional(GRU(12, return_sequences=True),
+                               input_shape=(32, 64), merge_mode='mul')
+        self.modelTestSingleLayer(input_data, layer3, dump_weights=True)
+        layer4 = Bidirectional(LSTM(64, return_sequences=True),
+                               input_shape=(32, 64))
+        self.modelTestSingleLayer(input_data, layer4, dump_weights=True)
+
+        input_data2 = np.random.random_sample([4, 8, 40, 40, 32])
+        layer5 = Bidirectional(ConvLSTM2D(32, 4, 4, border_mode='same',
+                                          return_sequences=True),
+                               input_shape=(8, 40, 40, 32), merge_mode='ave')
+        self.modelTestSingleLayer(input_data2, layer5, dump_weights=True)
+
+    def test_upsampling1d(self):
+        input_data = np.random.random([2, 5, 8])
+        layer1 = UpSampling1D(input_shape=(5, 8))
+        self.modelTestSingleLayer(input_data, layer1)
+        layer2 = UpSampling1D(length=3, input_shape=(5, 8))
+        self.modelTestSingleLayer(input_data, layer2)
+
+    def test_upsampling2d(self):
+        input_data = np.random.random([2, 5, 6, 8])
+        layer1 = lambda: UpSampling2D(input_shape=(5, 6, 8))
+        self.modelTestSingleLayerWithOrdersModes(input_data, layer1,
+                                                 border_modes=[None])
+        layer2 = lambda: UpSampling2D(size=(1, 3), input_shape=(5, 6, 8))
+        self.modelTestSingleLayerWithOrdersModes(input_data, layer2,
+                                                 border_modes=[None])
+
+    def test_upsampling3d(self):
+        input_data = np.random.random([2, 5, 12, 12, 12])
+        layer1 = UpSampling3D(input_shape=(5, 12, 12, 12))
+        self.modelTestSingleLayer(input_data, layer1)
+        layer2 = UpSampling3D(size=(1, 2, 4), input_shape=(5, 12, 12, 12))
+        self.modelTestSingleLayer(input_data, layer2)
+
+    def test_highway(self):
+        input_data = np.random.random([4, 6])
+        layer = Highway(input_shape=(6, ))
+        self.modelTestSingleLayer(input_data, layer, dump_weights=True)
+        layer2 = Highway(activation='sigmoid', bias=False, input_shape=(6, ))
+        self.modelTestSingleLayer(input_data, layer2, dump_weights=True)
+
+    def test_maxoutdense(self):
+        input_data = np.random.random([4, 6])
+        layer = MaxoutDense(3, 5)
+        self.modelTestSingleLayer(input_data, layer, dump_weights=True)
+        layer2 = MaxoutDense(4, 2, bias=False)
+        self.modelTestSingleLayer(input_data, layer2, dump_weights=True)
+
+    def test_masking(self):
+        input_data = np.array([[[0, 1, 2], [-1, 1, 0], [3, 4, 1], [0, 0, 0]]])
+        layer = Masking(-1, input_shape=(4, 3))
+        self.modelTestSingleLayer(input_data, layer)
+
+    def test_srelu(self):
+        input_data = np.random.random_sample([2, 4, 6])
+        layer = SReLU(input_shape=(4, 6))
+        self.modelTestSingleLayer(input_data, layer, dump_weights=True)
+
+    def test_locallyconnected1d(self):
+        input_data = np.random.random_sample([3, 10, 32])
+        layer1 = LocallyConnected1D(64, 3, input_shape=(10, 32))
+        self.modelTestSingleLayer(input_data, layer1, dump_weights=True)
+        layer2 = LocallyConnected1D(64, 5, activation='sigmoid', input_shape=(10, 32))
+        self.modelTestSingleLayer(input_data, layer2, dump_weights=True)
+        layer3 = LocallyConnected1D(32, 4, subsample_length=2, input_shape=(10, 32))
+        self.modelTestSingleLayer(input_data, layer3, dump_weights=True)
+        layer4 = LocallyConnected1D(32, 4, bias=False, input_shape=(10, 32))
+        self.modelTestSingleLayer(input_data, layer4, dump_weights=True)
+
+    def test_locallyconnected2d(self):
+        input_data = np.random.random_sample([2, 3, 6, 8])
+        layer1 = LocallyConnected2D(3, 1, 2, input_shape=(3, 6, 8))
+        self.modelTestSingleLayer(input_data, layer1, dump_weights=True)
+        layer2 = LocallyConnected2D(4, 2, 1, activation='sigmoid', input_shape=(3, 6, 8))
+        self.modelTestSingleLayer(input_data, layer2, dump_weights=True)
+        layer3 = LocallyConnected2D(2, 2, 1, bias=False, input_shape=(3, 6, 8))
+        self.modelTestSingleLayer(input_data, layer3, dump_weights=True)
+        layer4 = LocallyConnected2D(4, 2, 2, dim_ordering="tf", input_shape=(3, 6, 8))
+        self.modelTestSingleLayer(input_data, layer4, dump_weights=True)
 
 
 if __name__ == "__main__":

@@ -21,6 +21,7 @@ import org.tensorflow.framework.{DataType, NodeDef}
 import com.intel.analytics.bigdl.utils.tf.Tensorflow._
 
 class BatchMatMulSpec extends TensorflowSpecHelper {
+  import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
 
   "BatchMatMul with two dim forward" should "be correct" in {
     compare(

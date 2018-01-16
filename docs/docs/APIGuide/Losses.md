@@ -1890,7 +1890,13 @@ val criterion = KLDCriterion()
 criterion = KLDCriterion()
 ```
 
-Computes the KL-divergence of the Gaussian distribution.
+Computes the KL-divergence of the input normal distribution to a standard normal distribution.
+The input has to be a table. The first element of input is the mean of the distribution,
+the second element of input is the log_variance of the distribution. The input distribution is
+assumed to be diagonal.
+
+The mean and log_variance are both assumed to be two dimensional tensors. The first dimension are
+interpreted as batch. The output is the average/sum of each observation
 
 **Scala example:**
 ```scala
@@ -1911,7 +1917,7 @@ val target = Tensor[Float](2, 3).range(2, 13, 2)
 val loss = criterion.forward(input, target)
 
 > loss
-loss: Float = 34562.04
+loss: Float = 34647.04
 ```
 
 **Python example:**
@@ -1935,7 +1941,7 @@ target = target.reshape(2, 3)
 loss = criterion.forward(input, target)
 
 > loss
-34562.04
+34647.04
 ```
 
 ## CosineProximityCriterion ##
@@ -1986,4 +1992,266 @@ loss = criterion.forward(input, target)
 
 > loss
 -0.3333333
+```
+
+## MeanSquaredLogarithmicCriterion ##
+**Scala:**
+```scala
+val criterion = MeanSquaredLogarithmicCriterion()
+```
+**Python:**
+```python
+criterion = MeanSquaredLogarithmicCriterion()
+```
+
+compute mean squared logarithmic error for input and target
+
+**Scala example:**
+```scala
+import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+import com.intel.analytics.bigdl.nn.MeanSquaredLogarithmicCriterion
+import com.intel.analytics.bigdl.utils.T
+
+val criterion = MeanSquaredLogarithmicCriterion()
+val input = Tensor[Float](2, 3).range(1, 6, 1)
+val target = Tensor[Float](2, 3).range(2, 13, 2)
+val loss = criterion.forward(input, target)
+
+> loss
+loss: Float = 0.30576965
+```
+
+**Python example:**
+```python
+import numpy as np
+from bigdl.nn.criterion import *
+from bigdl.optim.optimizer import *
+from bigdl.util.common import *
+
+criterion = MeanSquaredLogarithmicCriterion()
+
+input = np.arange(1, 7, 1).astype("float32")
+input = input.reshape(2, 3)
+target = np.arange(2, 13, 2).astype("float32")
+target = target.reshape(2, 3)
+
+loss = criterion.forward(input, target)
+
+> loss
+0.30576965
+```
+
+## MeanAbsolutePercentageCriterion ##
+**Scala:**
+```scala
+val criterion = MeanAbsolutePercentageCriterion()
+```
+**Python:**
+```python
+criterion = MeanAbsolutePercentageCriterion()
+```
+
+compute mean absolute percentage error for intput and target
+
+**Scala example:**
+```scala
+import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+import com.intel.analytics.bigdl.nn.MeanAbsolutePercentageCriterion
+import com.intel.analytics.bigdl.utils.T
+
+val criterion = MeanAbsolutePercentageCriterion()
+
+val input = Tensor[Float](2, 3).range(1, 6, 1)
+val target = Tensor[Float](2, 3).range(2, 13, 2)
+val loss = criterion.forward(input, target)
+
+> loss
+loss: Float = 50.0
+```
+
+**Python example:**
+```python
+import numpy as np
+from bigdl.nn.criterion import *
+from bigdl.optim.optimizer import *
+from bigdl.util.common import *
+
+criterion = MeanAbsolutePercentageCriterion()
+
+input = np.arange(1, 7, 1).astype("float32")
+input = input.reshape(2, 3)
+target = np.arange(2, 13, 2).astype("float32")
+target = target.reshape(2, 3)
+
+loss = criterion.forward(input, target)
+
+> loss
+50.0
+```
+
+
+## KullbackLeiblerDivergenceCriterion ##
+**Scala:**
+```scala
+val criterion = KullbackLeiblerDivergenceCriterion()
+```
+**Python:**
+```python
+criterion = KullbackLeiblerDivergenceCriterion()
+```
+
+compute Kullback Leibler Divergence Criterion error for intput and target
+
+**Scala example:**
+```scala
+import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+import com.intel.analytics.bigdl.nn.KullbackLeiblerDivergenceCriterion
+import com.intel.analytics.bigdl.utils.T
+
+val criterion = KullbackLeiblerDivergenceCriterion[Float]()
+val input = Tensor[Float](Array(0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.6f), Array(2, 3))
+val target = Tensor[Float](Array(0.6f, 0.5f, 0.4f, 0.3f, 0.2f, 0.1f), Array(2, 3))
+val loss = criterion.forward(input, target)
+
+> loss
+loss: Float = 0.59976757
+```
+
+**Python example:**
+```python
+import numpy as np
+from bigdl.nn.criterion import *
+from bigdl.optim.optimizer import *
+from bigdl.util.common import *
+
+criterion = KullbackLeiblerDivergenceCriterion()
+
+y_pred = np.matrix('0.1 0.2 0.3; 0.4 0.5 0.6')
+y_true = np.matrix('0.6 0.5 0.4; 0.3 0.2 0.1')
+
+loss = criterion.forward(y_pred, y_true)
+
+> loss
+0.59976757
+```
+
+## PoissonCriterion ##
+**Scala:**
+```scala
+val criterion = PoissonCriterion()
+```
+**Python:**
+```python
+criterion = PoissonCriterion()
+```
+
+compute Poisson error for intput and target
+
+**Scala example:**
+```scala
+import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+import com.intel.analytics.bigdl.nn.PoissonCriterion
+import com.intel.analytics.bigdl.utils.T
+
+val criterion = PoissonCriterion()
+val input = Tensor[Float](2, 3).range(1, 6, 1)
+val target = Tensor[Float](2, 3).range(2, 13, 2)
+val loss = criterion.forward(input, target)
+
+> loss
+loss = -6.1750183
+
+```
+
+**Python example:**
+```python
+import numpy as np
+from bigdl.nn.criterion import *
+from bigdl.optim.optimizer import *
+from bigdl.util.common import *
+
+criterion = PoissonCriterion()
+input = np.arange(1, 7, 1).astype("float32")
+input = input.reshape(2, 3)
+target = np.arange(2, 13, 2).astype("float32")
+target = target.reshape(2, 3)
+
+loss = criterion.forward(input, target)
+
+> loss
+-6.1750183
+```
+
+
+## TransformerCriterion ##
+**Scala:**
+```scala
+val criterion = TransformerCriterion(criterion, Some(inputTransformer), Some(targetTransformer))
+```
+**Python:**
+```python
+criterion = TransformerCriterion(criterion, input_transformer, targetTransformer)
+```
+
+The criterion that takes two modules (optional) to transform input and target, and take
+one criterion to compute the loss with the transformed input and target.
+
+This criterion can be used to construct complex criterion. For example, the
+`inputTransformer` and `targetTransformer` can be pre-trained CNN networks,
+and we can use the networks' output to compute the high-level feature
+reconstruction loss, which is commonly used in areas like neural style transfer
+(https://arxiv.org/abs/1508.06576), texture synthesis (https://arxiv.org/abs/1505.07376),
+.etc.
+
+**Scala example:**
+```scala
+import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+import com.intel.analytics.bigdl.nn.TransformerCriterion
+import com.intel.analytics.bigdl.utils.T
+
+val criterion = MSECriterion()
+val input = Tensor[Float](2, 3).range(1, 6, 1)
+val target = Tensor[Float](2, 3).range(2, 13, 2)
+val inputTransformer = Identity()
+val targetTransformer = Identity()
+val transCriterion = TransformerCriterion(criterion,
+     Some(inputTransformer), Some(targetTransformer))
+val loss = transCriterion.forward(input, target)
+
+> loss
+15.166667
+
+```
+
+**Python example:**
+```python
+import numpy as np
+from bigdl.nn.criterion import *
+from bigdl.optim.optimizer import *
+from bigdl.util.common import *
+
+criterion = MSECriterion()
+input = np.arange(1, 7, 1).astype("float32")
+input = input.reshape(2, 3)
+target = np.arange(2, 13, 2).astype("float32")
+target = target.reshape(2, 3)
+
+inputTransformer = Identity()
+targetTransformer = Identity()
+transCriterion = TransformerCriterion(criterion, inputTransformer, targetTransformer)
+loss = transCriterion.forward(input, target)
+
+
+> loss
+15.166667
 ```

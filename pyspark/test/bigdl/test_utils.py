@@ -16,17 +16,18 @@
 from __future__ import print_function
 import numpy as np
 from keras.models import Sequential, Model
-from bigdl.keras.converter import WeightLoader, WeightsConverter
 np.random.seed(1337)  # for reproducibility
 from keras.layers.core import *
 from keras.layers.convolutional import *
 from keras.layers import Dense, Dropout, Input
 from keras.optimizers import RMSprop
-from bigdl.util.common import create_tmp_path
+from bigdl.util.common import *
 from bigdl.keras.converter import *
+from bigdl.keras.converter import WeightLoader, WeightsConverter
 import numpy as np
 from unittest import TestCase
 import keras
+from bigdl.examples.keras.keras_utils import *
 
 
 class TestModels:
@@ -106,6 +107,23 @@ class TestModels:
 
 class BigDLTestCase(TestCase):
 
+    def setup_method(self, method):
+        """ setup any state tied to the execution of the given method in a
+        class.  setup_method is invoked for every test method of a class.
+        """
+        keras.backend.set_image_dim_ordering("th")
+        sparkConf = create_spark_conf().setMaster("local[4]").setAppName("test model")
+        self.sc = get_spark_context(sparkConf)
+        self.sqlContext = SQLContext(self.sc)
+        init_engine()
+
+    def teardown_method(self, method):
+        """ teardown any state that was previously setup with a setup_method
+        call.
+        """
+        keras.backend.set_image_dim_ordering("th")
+        self.sc.stop()
+
     def __generate_model(self, input_data, output_layer):
         def without_batch(batch_shape):
             return batch_shape[1:]
@@ -131,18 +149,6 @@ class BigDLTestCase(TestCase):
         bmodel = DefinitionLoader.from_json_path(json_path)
         WeightLoader.load_weights_from_hdf5(bmodel, kmodel, hdf5_path)
         return kmodel, bmodel
-
-    def _dump_keras(self, keras_model, dump_weights=False):
-        keras_model_path = create_tmp_path()
-        keras_model_json_path = keras_model_path + ".json"
-        keras_model_hdf5_path = keras_model_path + ".hdf5"
-        with open(keras_model_json_path, "w") as json_file:
-            json_file.write(keras_model.to_json())
-        print("json path: " + keras_model_json_path)
-        if dump_weights:
-            keras_model.save(keras_model_hdf5_path)
-            print("hdf5 path: " + keras_model_hdf5_path)
-        return keras_model_json_path, keras_model_hdf5_path
 
     def assert_allclose(self, a, b, rtol=1e-6, atol=1e-6, msg=None):
         # from tensorflow
@@ -194,10 +200,17 @@ class BigDLTestCase(TestCase):
             new_kweights = self.__generate_random_weights(kweights)
             keras_model.set_weights(new_kweights)
         # weight_converter is a function keras [ndarray]-> bigdl [ndarray]
-        keras_model_json_path, keras_model_hdf5_path = self._dump_keras(keras_model, dump_weights)
+        keras_model_json_path, keras_model_hdf5_path = dump_keras(keras_model,
+                                                                  dump_weights=dump_weights)
+
+        # Use Theano backend to load as a bigdl model
+        self.__set_keras_backend("theano")
         bigdl_model = DefinitionLoader.from_json_path(keras_model_json_path)
         bigdl_model.training(is_training)
         bigdl_output = bigdl_model.forward(input_data)
+
+        # Use TensorFlow backend to compare results
+        self.__set_keras_backend("tensorflow")
         keras_output = keras_model.predict(input_data)
         # TODO: we should verify bigdl_output and keras_output here
         #  init result is not the same, so we disable the verification  for now
@@ -274,6 +287,7 @@ class BigDLTestCase(TestCase):
                                  is_training=False,
                                  rtol=1e-6,
                                  atol=1e-6):
+        self.__set_keras_backend("tensorflow")
         keras_model = self.__generate_keras_model(functional_api=functional_api,
                                                   input_data=input_data,
                                                   output_layer=output_layer)
@@ -284,3 +298,17 @@ class BigDLTestCase(TestCase):
                        is_training=is_training,
                        rtol=rtol,
                        atol=atol)
+
+    # Set Keras Backend without affecting the current dim_ordering
+    def __set_keras_backend(self, backend):
+        if K.backend() != backend:
+            current_dim = K.image_dim_ordering()
+            os.environ['KERAS_BACKEND'] = backend
+            from six.moves import reload_module
+            reload_module(K)
+            K.set_image_dim_ordering(current_dim)
+            assert K.backend() == backend
+            assert K.image_dim_ordering() == current_dim
+        # Make theano backend compatible with Python3
+        if backend == "theano":
+            from theano import ifelse

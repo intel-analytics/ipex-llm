@@ -19,6 +19,7 @@ import os
 import glob
 import warnings
 
+
 def exist_pyspark():
     # check whether pyspark package exists
     try:
@@ -26,6 +27,7 @@ def exist_pyspark():
         return True
     except ImportError:
         return False
+
 
 def check_spark_source_conflict(spark_home, pyspark_path):
     # check if both spark_home env var and pyspark package exist
@@ -37,6 +39,7 @@ def check_spark_source_conflict(spark_home, pyspark_path):
                       "please use one source only to avoid conflict. " + \
                       "For example, you can unset SPARK_HOME and use pyspark only."
         warnings.warn(warning_msg)
+
 
 def __prepare_spark_env():
     spark_home = os.environ.get('SPARK_HOME', None)
@@ -77,13 +80,16 @@ def __prepare_bigdl_env():
 
     if bigdl_classpath and is_spark_below_2_2():
         append_path("SPARK_CLASSPATH", bigdl_classpath)
+        from bigdl.util.common import Configuration
+        for jar in Configuration.get_bigdl_jars():
+            append_path("SPARK_CLASSPATH", jar)
 
 
 def get_bigdl_classpath():
     """
     Get and return the jar path for bigdl if exists.
     """
-    if(os.getenv("BIGDL_CLASSPATH")):
+    if os.getenv("BIGDL_CLASSPATH"):
         return os.environ["BIGDL_CLASSPATH"]
     jar_dir = os.path.abspath(__file__ + "/../../")
     jar_paths = glob.glob(os.path.join(jar_dir, "share/lib/*.jar"))

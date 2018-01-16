@@ -29,7 +29,7 @@ class SignSpec extends TensorflowSpecHelper {
     t.setValue(2, 2, Float.PositiveInfinity)
     t.setValue(2, 3, Float.NegativeInfinity)
     t.setValue(4, 5, Float.NaN)
-    compare(
+    compare[Float](
       NodeDef.newBuilder()
         .setName("sign_test")
         .putAttr("T", typeAttr(DataType.DT_FLOAT))

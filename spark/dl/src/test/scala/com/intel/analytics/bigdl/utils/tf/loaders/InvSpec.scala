@@ -22,7 +22,7 @@ import org.tensorflow.framework.{DataType, NodeDef}
 
 class InvSpec extends TensorflowSpecHelper {
   "Inv" should "be correct for float tensor" in {
-    compare(
+    compare[Float](
       NodeDef.newBuilder()
         .setName("inv_test")
         .putAttr("T", typeAttr(DataType.DT_FLOAT))

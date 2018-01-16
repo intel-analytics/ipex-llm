@@ -29,6 +29,11 @@ class Sign[T: ClassTag, D: ClassTag]()(implicit ev: TensorNumeric[T], ev2: Tenso
     output.resizeAs(input).copy(input).sign()
     output
   }
+
+  override def getClassTagNumerics() : (Array[ClassTag[_]], Array[TensorNumeric[_]]) = {
+    (Array[ClassTag[_]](scala.reflect.classTag[T], scala.reflect.classTag[D]),
+      Array[TensorNumeric[_]](ev, ev2))
+  }
 }
 
 object Sign {

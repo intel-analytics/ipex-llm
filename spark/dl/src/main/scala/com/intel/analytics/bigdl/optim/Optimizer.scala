@@ -41,8 +41,8 @@ import scala.reflect.ClassTag
 // TODO: remove D to be MiniBatch[T]
 abstract class Optimizer[T: ClassTag, D](
   protected var model: Module[T],
-  protected val dataset: DataSet[D],
-  protected val criterion: Criterion[T])(implicit ev : TensorNumeric[T])
+  protected var dataset: DataSet[D],
+  protected var criterion: Criterion[T])(implicit ev : TensorNumeric[T])
 {
   protected var state: Table = T()
   protected var optimMethod: OptimMethod[T] = new SGD[T]()
@@ -65,6 +65,8 @@ abstract class Optimizer[T: ClassTag, D](
   protected var maxDropPercentage: Double = 0.0
   protected var computeThresholdbatchSize: Int = 100
   protected var warmupIterationNum: Int = 200
+
+  protected val gradientClippingParams = GradientClippingParams(false, 0.0f, 0.0f, false, 0.0f)
 
   /**
    * Trigger the optimization process
@@ -222,6 +224,15 @@ abstract class Optimizer[T: ClassTag, D](
     this
   }
 
+  private def resetEpoch(): Unit = {
+    optimMethod.state.update("epoch", 1)
+    optimMethod.state.update("neval", 1)
+    optimMethod.state.update("Loss", Float.PositiveInfinity)
+    optimMethod.state.update("score", 0f)
+    optimMethod.state.update("recordsProcessedThisEpoch", 0)
+  }
+
+
   /**
    * Set a model to the optimizer
    *
@@ -229,8 +240,63 @@ abstract class Optimizer[T: ClassTag, D](
    */
   def setModel(newModel: Module[T]): this.type = {
     model = newModel
+    // if a new Model is set, then reset "epoch", "neval" .etc.
+    resetEpoch()
     this
   }
+
+
+  /**
+   * Set new train dataset.
+   * User can supply a customized implementation of trait MiniBatch to define
+   * how data is organized and retrieved in a mini batch.
+   *
+   * @param sampleRDD training Samples
+   * @param batchSize mini batch size
+   * @param miniBatchImpl An User-Defined MiniBatch implementation.
+   * @return the Optimizer
+   */
+  def setTrainData(sampleRDD: RDD[Sample[T]],
+                 batchSize: Int,
+                 miniBatchImpl: MiniBatch[T]): this.type = {
+    throw new UnsupportedOperationException(
+      s"setTrainData(sampleRDD, batchSize,miniBatch) " +
+        s"is only supported in distributed optimizer")
+    this
+  }
+
+  /**
+   * Set new train dataset.
+   *
+   * @param sampleRDD           training Samples
+   * @param batchSize           mini batch size
+   * @param featurePaddingParam feature padding strategy, see
+   *                            [[com.intel.analytics.bigdl.dataset.PaddingParam]] for details.
+   * @param labelPaddingParam   label padding strategy, see
+   *                            [[com.intel.analytics.bigdl.dataset.PaddingParam]] for details.
+   * @return the optimizer
+   */
+  def setTrainData(sampleRDD: RDD[Sample[T]],
+                 batchSize: Int,
+                 featurePaddingParam: PaddingParam[T] = null,
+                 labelPaddingParam: PaddingParam[T] = null): this.type = {
+    throw new UnsupportedOperationException(
+      s"setTrainData(sampleRDD,batchSize,featurePaddingParam=null,labelPaddingParam=null) " +
+        s"is only supported in distributed optimizer")
+    this
+  }
+
+
+  /**
+   * Set a new criterion to the optimizer
+   *
+   * @param newCriterion new criterion
+   */
+  def setCriterion(newCriterion: Criterion[T]): this.type = {
+    this.criterion = newCriterion
+    this
+  }
+
 
   /**
    * Set a state(learning rate, epochs...) to the optimizer
@@ -284,6 +350,44 @@ abstract class Optimizer[T: ClassTag, D](
   }
 
   def prepareInput(): Unit = {}
+
+  /**
+   * Disable gradient clipping
+   * @return
+   */
+  def disableGradientClipping()
+  : this.type = {
+    gradientClippingParams.enableConstantClipping = false
+    gradientClippingParams.enableL2NormClipping = false
+    this
+  }
+
+  /**
+   * Set constant gradient clipping
+   * @param min the minimum value to clip by
+   * @param max the maximum value to clip by
+   * @return
+   */
+  def setConstantGradientClipping(min: Float, max: Float)
+  : this.type = {
+    require(min < max, "min value must be smaller than max")
+    gradientClippingParams.enableConstantClipping = true
+    gradientClippingParams.minValueClip = min
+    gradientClippingParams.maxValueClip = max
+    this
+  }
+
+  /**
+   * Clip gradient to a maximum L2-norm
+   * @param clipNorm gradient L2-Norm threshold
+   * @return
+   */
+  def setGradientClippingByl2Norm(clipNorm: Float)
+  : this.type = {
+    gradientClippingParams.enableL2NormClipping = true
+    gradientClippingParams.normValueClip = clipNorm
+    this
+  }
 }
 
 object Optimizer {
@@ -342,25 +446,11 @@ object Optimizer {
     }
   }
 
-  def apply[T: ClassTag](
-      model: Module[T],
-      sampleRDD: RDD[Sample[T]],
-      criterion: Criterion[T],
-      batchSize: Int
-      )(implicit ev: TensorNumeric[T]): Optimizer[T, MiniBatch[T]] = {
-    new DistriOptimizer[T](
-      _model = model,
-      dataset = (DataSet.rdd(sampleRDD) -> SampleToMiniBatch(batchSize))
-        .asInstanceOf[DistributedDataSet[MiniBatch[T]]],
-      criterion = criterion
-    ).asInstanceOf[Optimizer[T, MiniBatch[T]]]
-  }
 
   /**
-   * Apply an Optimizer who could apply padding to the Samples
-   * with a padding strategy.
+   * Apply an Optimizer.
    *
-   * @param model               model will be optimizied
+   * @param model               model will be optimized
    * @param sampleRDD           training Samples
    * @param criterion           loss function
    * @param batchSize           mini batch size
@@ -375,60 +465,59 @@ object Optimizer {
       sampleRDD: RDD[Sample[T]],
       criterion: Criterion[T],
       batchSize: Int,
-      featurePaddingParam: PaddingParam[T],
-      labelPaddingParam: PaddingParam[T]
+      featurePaddingParam: PaddingParam[T] = null,
+      labelPaddingParam: PaddingParam[T] = null
          )(implicit ev: TensorNumeric[T]): Optimizer[T, MiniBatch[T]] = {
+
+    val _featurePaddingParam = if (featurePaddingParam != null) Some(featurePaddingParam) else None
+    val _labelPaddingParam = if (labelPaddingParam != null) Some(labelPaddingParam) else None
+
     new DistriOptimizer[T](
-      _model = model,
-      dataset = (DataSet.rdd(sampleRDD) ->
-        SampleToMiniBatch(batchSize, Some(featurePaddingParam), Some(labelPaddingParam)))
-        .asInstanceOf[DistributedDataSet[MiniBatch[T]]],
-      criterion = criterion
-    ).asInstanceOf[Optimizer[T, MiniBatch[T]]]
+       _model = model,
+       _dataset = (DataSet.rdd(sampleRDD) ->
+         SampleToMiniBatch(batchSize, _featurePaddingParam, _labelPaddingParam))
+         .asInstanceOf[DistributedDataSet[MiniBatch[T]]],
+       _criterion = criterion
+     ).asInstanceOf[Optimizer[T, MiniBatch[T]]]
   }
 
-  def apply[T: ClassTag](
-        model: Module[T],
-        sampleRDD: RDD[Sample[T]],
-        criterion: Criterion[T],
-        batchSize: Int,
-        featurePaddingParam: PaddingParam[T]
-      )(implicit ev: TensorNumeric[T]): Optimizer[T, MiniBatch[T]] = {
-    new DistriOptimizer[T](
-      _model = model,
-      dataset = (DataSet.rdd(sampleRDD) ->
-        SampleToMiniBatch(batchSize, Some(featurePaddingParam)))
-        .asInstanceOf[DistributedDataSet[MiniBatch[T]]],
-      criterion = criterion
-    ).asInstanceOf[Optimizer[T, MiniBatch[T]]]
-  }
 
   /**
-   * Apply an optimizer with User-Defined MiniBatch.
+   * Apply an optimizer.
+   * User can supply a customized implementation of trait MiniBatch to define
+   * how data is organize and retrieved in a mini batch.
    *
-   * @param model model will be optimizied
+   * @param model model will be optimized
    * @param sampleRDD training Samples
    * @param criterion loss function
    * @param batchSize mini batch size
-   * @param miniBatch An User-Defined MiniBatch to construct a mini batch.
-   * @return an Optimizer
+   * @param miniBatchImpl An User-Defined MiniBatch implementation
+   * @return an new Optimizer
    */
   def apply[T: ClassTag](
           model: Module[T],
           sampleRDD: RDD[Sample[T]],
           criterion: Criterion[T],
           batchSize: Int,
-          miniBatch: MiniBatch[T]
+          miniBatchImpl: MiniBatch[T]
         )(implicit ev: TensorNumeric[T]): Optimizer[T, MiniBatch[T]] = {
     new DistriOptimizer[T](
       _model = model,
-      dataset = (DataSet.rdd(sampleRDD) ->
-        SampleToMiniBatch(miniBatch, batchSize, None))
+      _dataset = (DataSet.rdd(sampleRDD) ->
+        SampleToMiniBatch(miniBatchImpl, batchSize, None))
         .asInstanceOf[DistributedDataSet[MiniBatch[T]]],
-      criterion = criterion
+      _criterion = criterion
     ).asInstanceOf[Optimizer[T, MiniBatch[T]]]
   }
 
+  /**
+   * Apply an optimizer.
+   *
+   * @param model model will be optimizied
+   * @param dataset the input dataset - determines the type of optimizer
+   * @param criterion loss function
+   * @return an new Optimizer
+   */
   def apply[T: ClassTag, D](
     model: Module[T],
     dataset: DataSet[D],
@@ -438,8 +527,8 @@ object Optimizer {
       case d: DistributedDataSet[_] =>
         new DistriOptimizer[T](
           _model = model,
-          dataset = d.asInstanceOf[DistributedDataSet[MiniBatch[T]]],
-          criterion = criterion
+          _dataset = d.asInstanceOf[DistributedDataSet[MiniBatch[T]]],
+          _criterion = criterion
         ).asInstanceOf[Optimizer[T, D]]
       case d: LocalDataSet[_] =>
         new LocalOptimizer[T](
@@ -452,3 +541,10 @@ object Optimizer {
     }
   }
 }
+
+case class GradientClippingParams(
+   var enableConstantClipping: Boolean,
+   var minValueClip: Float,
+   var maxValueClip: Float,
+   var enableL2NormClipping: Boolean,
+   var normValueClip: Float)

@@ -23,7 +23,8 @@ import com.intel.analytics.bigdl.nn._
 import scala.collection.JavaConverters._
 import scala.reflect.runtime.universe
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
-import com.intel.analytics.bigdl.nn.ops.ParseExample
+import com.intel.analytics.bigdl.nn.ops.{DecodeRawSerializer, ParseExample, RandomUniform => RandomUniformOps}
+import com.intel.analytics.bigdl.nn.tf.StrideSlice
 import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.{Tensor, TensorNumericMath}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -173,10 +174,12 @@ object ModuleSerializer extends ModuleSerializable{
     registerModule("com.intel.analytics.bigdl.nn.SpatialBatchNormalization", BatchNormalization)
     registerModule("com.intel.analytics.bigdl.nn.BinaryTreeLSTM", BinaryTreeLSTM)
     registerModule("com.intel.analytics.bigdl.nn.BiRecurrent", BiRecurrent)
-    registerModule("com.intel.analytics.bigdl.nn.Graph", Graph)
+    registerModule("com.intel.analytics.bigdl.nn.StaticGraph", Graph)
+    registerModule("com.intel.analytics.bigdl.nn.DynamicGraph", Graph)
     registerModule("com.intel.analytics.bigdl.nn.MapTable", MapTable)
     registerModule("com.intel.analytics.bigdl.nn.MaskedSelect", MaskedSelect)
     registerModule("com.intel.analytics.bigdl.nn.Recurrent", Recurrent)
+    registerModule("com.intel.analytics.bigdl.nn.RecurrentDecoder", RecurrentDecoder)
     registerModule("com.intel.analytics.bigdl.nn.Reshape", Reshape)
     registerModule("com.intel.analytics.bigdl.nn.Scale", Scale)
     registerModule("com.intel.analytics.bigdl.nn.SpatialContrastiveNormalization",
@@ -199,6 +202,11 @@ object ModuleSerializer extends ModuleSerializable{
     registerModule("com.intel.analytics.bigdl.nn.quantized.Linear",
       quantized.Linear)
     registerModule("com.intel.analytics.bigdl.nn.ops.ParseExample", ParseExample)
+    registerModule("com.intel.analytics.bigdl.nn.SReLU", SReLU)
+    registerModule("com.intel.analytics.bigdl.nn.ops.DecodeRaw", DecodeRawSerializer)
+    registerModule("com.intel.analytics.bigdl.nn.ops.RandomUniform", RandomUniformOps)
+    registerModule("com.intel.analytics.bigdl.nn.tf.StrideSlice", StrideSlice)
+    registerModule("com.intel.analytics.bigdl.nn.MultiRNNCell", MultiRNNCell)
   }
 }
 

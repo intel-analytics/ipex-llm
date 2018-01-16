@@ -108,11 +108,7 @@ class BatchNormalizationSpec extends TorchSpec {
       v1
     })
 
-    gradparametersTorch.map(gradparameters, (v1, v2) => {
-      assert(abs(v1 - v2) == 0)
-      v1
-    })
-
+    gradparametersTorch.almostEqual(gradparameters, 1e-10)
   }
 
   "A SpatialBatchNormalization evaluating" should "generate correct output" in {

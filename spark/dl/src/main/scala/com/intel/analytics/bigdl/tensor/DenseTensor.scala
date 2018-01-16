@@ -255,6 +255,8 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
   private[tensor] def this()(implicit ev: TensorNumeric[T]) = this(null, 0, null, null, 0)
 
   override def fill(v: T): Tensor[T] = {
+    if (this.storage() == null) return this
+
     if (this.isContiguous()) {
       this.storage().fill(v, this.storageOffset(), this.nElement())
     } else {
@@ -273,7 +275,7 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
   }
 
   override def zero(): Tensor[T] = {
-    this.fill(ev.fromType[Int](0))
+    this.fill(ev.zero)
   }
 
   override def randn(): Tensor[T] = {
@@ -862,6 +864,23 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
     })
 
     (values, indices)
+  }
+
+  override def sumSquare(): T = {
+    this.dot(this)
+  }
+
+  override def clamp(min: Float, max: Float): Tensor[T] = {
+    val maxT = ev.fromType[Float](max)
+    val minT = ev.fromType[Float](min)
+    val func = new TensorFunc2[T] {
+      override def apply(data1: Array[T], offset1: Int): Unit = {
+        if (ev.isGreater(data1(offset1), maxT)) data1(offset1) = maxT
+        else if (ev.isGreater(minT, data1(offset1))) data1(offset1) = minT
+      }
+    }
+    DenseTensorApply.apply1[T](this, func)
+    this
   }
 
   def scatter(dim: Int, index: Tensor[T], src: Tensor[T]): Tensor[T] = {
@@ -2147,6 +2166,36 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
       })
     result
   }
+
+  override def toArray(): Array[T] = {
+    require(this.dim() == 1, "toArray only support 1D tensor")
+    val n = this.nElement()
+    val array = new Array[T](n)
+    var i = 0
+    while(i < n) {
+      array(i) = this.valueAt(i + 1)
+      i += 1
+    }
+
+    array
+  }
+
+  override def erf(): Tensor[T] = {
+    this.apply1(a => ev.erf(a))
+  }
+
+  override def erfc(): Tensor[T] = {
+    this.apply1(a => ev.erfc(a))
+  }
+
+  override def logGamma(): Tensor[T] = {
+    this.apply1(a => ev.logGamma(a))
+  }
+
+  override def digamma(): Tensor[T] = {
+    this.apply1(a => ev.digamma(a))
+  }
+
 }
 
 object DenseTensor {
@@ -2652,16 +2701,16 @@ object DenseTensor {
         sparseTensor: SparseTensor[T],
         res: Tensor[T] = null)(implicit ev: TensorNumeric[T]): Tensor[T] = {
     val dt = if (null == res) Tensor(sparseTensor.size()) else res
-    var i = 0
-    val index = new Array[Int](dt.dim())
-    while (i < sparseTensor._indices(0).length) {
-      var j = 0
-      while (j < index.length) {
-        index(j) = sparseTensor._indices(j)(i) + 1
-        j += 1
+    val srcIndex = new Array[Int](dt.dim())
+    val tgtIndex = new Array[Int](dt.dim())
+    // fill DenseTensor with sparseTensors' active values one by one
+    (0 until sparseTensor._nElement).foreach { i =>
+      // targetIndex = sourceIndex - indicesOffset
+      srcIndex.indices.foreach { j =>
+        srcIndex(j) = sparseTensor._indices(j)(i + sparseTensor._storageOffset) + 1
+        tgtIndex(j) = srcIndex(j) - sparseTensor._indicesOffset(j)
       }
-      dt(index) = sparseTensor(index)
-      i += 1
+      dt(tgtIndex) = sparseTensor(srcIndex)
     }
     dt
   }

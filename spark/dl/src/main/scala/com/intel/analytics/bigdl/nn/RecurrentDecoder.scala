@@ -46,8 +46,8 @@ class RecurrentDecoder[T : ClassTag](val seqLength: Int)
 
   /**
    *
-   *  modules: -- preTopology
-   *           |- topology (cell)
+   * modules: -- preTopology
+   * |- topology (cell)
    *
    * The topology (or cell) will be cloned for N times w.r.t the time dimension.
    * The preTopology will be execute only once before the recurrence.
@@ -56,9 +56,8 @@ class RecurrentDecoder[T : ClassTag](val seqLength: Int)
    * @return this container
    */
   override def add(module: AbstractModule[_ <: Activity, _ <: Activity, T]):
-    RecurrentDecoder.this.type = {
-    require(module.isInstanceOf[Cell[T]],
-      "Recurrent: contained module should be Cell type")
+  RecurrentDecoder.this.type = {
+    require(module.isInstanceOf[Cell[T]], "Recurrent: contained module should be Cell type")
 
     topology = module.asInstanceOf[Cell[T]]
     preTopology = topology.preTopology
@@ -89,6 +88,7 @@ class RecurrentDecoder[T : ClassTag](val seqLength: Int)
     output.resize(Array(batchSize, times) ++ featureSizes)
     // Clone N modules along the sequence dimension.
     initHidden(featureSizes)
+    cloneCells()
 
     /**
      * currentInput forms a T() type. It contains two elements, hidden and input.
@@ -97,8 +97,6 @@ class RecurrentDecoder[T : ClassTag](val seqLength: Int)
      * identical elements T(output, output). One of the elements from the cell output is
      * the updated hidden. Thus the currentInput will update its hidden element with this output.
      */
-    // Clone N modules along the sequence dimension.
-    cloneCells()
 
     var i = 1
     while (i <= times) {
@@ -232,11 +230,14 @@ object RecurrentDecoder extends ContainerSerializable {
     new RecurrentDecoder[T](outputLength)
   }
 
-  override def loadModule[T: ClassTag](context: DeserializeContext)
-    (implicit ev: TensorNumeric[T]) : ModuleData[T] = {
-    val moduleData = super.loadModule(context)
-    val recurrentDecoder = moduleData.module.asInstanceOf[RecurrentDecoder[T]]
+  override def doLoadModule[T: ClassTag](context: DeserializeContext)
+    (implicit ev: TensorNumeric[T]) : AbstractModule[Activity, Activity, T] = {
+
     val attrMap = context.bigdlModule.getAttrMap
+    // val module = super.doLoadModule(context)
+
+    val seqLen = attrMap.get("seqLength")
+    val recurrentDecoder = RecurrentDecoder[T](seqLen.getInt32Value)
 
     val topologyAttr = attrMap.get("topology")
     recurrentDecoder.topology = DataConverter.
@@ -252,27 +253,33 @@ object RecurrentDecoder extends ContainerSerializable {
     }
     recurrentDecoder.modules.append(recurrentDecoder.topology)
 
-    moduleData
+    recurrentDecoder
   }
 
-  override def serializeModule[T: ClassTag](context: SerializeContext[T])
-    (implicit ev: TensorNumeric[T]) : SerializeResult = {
-    val containerBuilder = (super.serializeModule(context).bigDLModule)
+  override def doSerializeModule[T: ClassTag](context: SerializeContext[T],
+                                              recurrentBuilder : BigDLModule.Builder)
+                                             (implicit ev: TensorNumeric[T]) : Unit = {
 
     val recurrentDecoder = context.moduleData.module.asInstanceOf[RecurrentDecoder[T]]
+
+    val outputLengthBuilder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(context,
+      outputLengthBuilder, recurrentDecoder.seqLength,
+      universe.typeOf[Int])
+    recurrentBuilder.putAttr("seqLength", outputLengthBuilder.build)
 
     val topologyBuilder = AttrValue.newBuilder
     DataConverter.setAttributeValue(context,
       topologyBuilder, recurrentDecoder.topology,
       ModuleSerializer.abstractModuleType)
-    containerBuilder.putAttr("topology", topologyBuilder.build)
+    recurrentBuilder.putAttr("topology", topologyBuilder.build)
 
     val preTopologyBuilder = AttrValue.newBuilder
     DataConverter.setAttributeValue(context,
       preTopologyBuilder, recurrentDecoder.preTopology,
       ModuleSerializer.tensorModuleType)
-    containerBuilder.putAttr("preTopology", topologyBuilder.build)
+    recurrentBuilder.putAttr("preTopology", topologyBuilder.build)
 
-    SerializeResult(containerBuilder, context.storages)
   }
+
 }

@@ -283,6 +283,15 @@ class DistKLDivCriterion(Criterion):
         super(DistKLDivCriterion, self).__init__(None, bigdl_type,
                                                  size_average)
 
+class CategoricalCrossEntropy(Criterion):
+    """
+    This criterion is same with cross entropy criterion, except it takes a one-hot format target
+    tensor
+    >>> cce = CategoricalCrossEntropy()
+    creating: createCategoricalCrossEntropy
+    """
+    def __init__(self, bigdl_type="float"):
+        super(CategoricalCrossEntropy, self).__init__(None, bigdl_type)
 
 class HingeEmbeddingCriterion(Criterion):
 
@@ -478,13 +487,16 @@ class ParallelCriterion(Criterion):
 class KLDCriterion(Criterion):
 
     '''
-    Computes the KL-divergence of the Gaussian distribution.
-    >>> KLDCriterion = KLDCriterion()
+    Computes the KL-divergence of the input normal distribution to a standard normal distribution.
+    The input has to be a table. The first element of input is the mean of the distribution,
+    the second element of input is the log_variance of the distribution. The input distribution is
+    assumed to be diagonal.
+    >>> KLDCriterion = KLDCriterion(True)
     creating: createKLDCriterion
     '''
 
-    def __init__(self, bigdl_type="float"):
-        super(KLDCriterion, self).__init__(None, bigdl_type)
+    def __init__(self, size_average=True, bigdl_type="float"):
+        super(KLDCriterion, self).__init__(None, bigdl_type, size_average)
 
 
 class GaussianCriterion(Criterion):
@@ -802,6 +814,94 @@ class CosineProximityCriterion(Criterion):
     def __init__(self,
                  bigdl_type="float"):
         super(CosineProximityCriterion, self).__init__(None, bigdl_type)
+
+class MeanAbsolutePercentageCriterion(Criterion):
+
+    '''
+    This method is same as `mean_absolute_percentage_error` loss in keras.
+    It caculates diff = K.abs((y - x) / K.clip(K.abs(y), K.epsilon(), Double.MaxValue))
+    and return 100 * K.mean(diff) as outpout. Here, the x and y can have or not have a batch.
+    >>> error = MeanAbsolutePercentageCriterion()
+    creating: createMeanAbsolutePercentageCriterion
+    '''
+
+    def __init__(self,
+                 bigdl_type="float"):
+        super(MeanAbsolutePercentageCriterion, self).__init__(None, bigdl_type)
+
+class MeanSquaredLogarithmicCriterion(Criterion):
+
+    '''
+    This method is same as `mean_squared_logarithmic_error` loss in keras.
+    It calculates: first_log = K.log(K.clip(y, K.epsilon(),  Double.MaxValue) + 1.)
+    second_log = K.log(K.clip(x, K.epsilon(),  Double.MaxValue) + 1.)
+    and output K.mean(K.square(first_log - second_log)). Here, the x and y can have or not have a batch.
+    >>> error = MeanSquaredLogarithmicCriterion()
+    creating: createMeanSquaredLogarithmicCriterion
+    '''
+
+    def __init__(self,
+                 bigdl_type="float"):
+        super(MeanSquaredLogarithmicCriterion, self).__init__(None, bigdl_type)
+
+class KullbackLeiblerDivergenceCriterion(Criterion):
+
+    '''
+    compute Kullback Leibler DivergenceCriterion error for intput and target
+    This method is same as `kullback_leibler_divergence` loss in keras. Loss calculated as:
+    y_true = K.clip(input, K.epsilon(), 1)
+    y_pred = K.clip(target, K.epsilon(), 1)
+    and output K.sum(y_true * K.log(y_true / y_pred), axis=-1)
+
+    >>> error = KullbackLeiblerDivergenceCriterion()
+    creating: createKullbackLeiblerDivergenceCriterion
+    '''
+
+    def __init__(self,
+                 bigdl_type="float"):
+        super(KullbackLeiblerDivergenceCriterion, self).__init__(None, bigdl_type)
+
+class PoissonCriterion(Criterion):
+
+    '''
+    compute Poisson error for input and target, loss calculated as:
+    mean(input - target * K.log(input + K.epsilon()), axis=-1)
+    >>> error = PoissonCriterion()
+    creating: createPoissonCriterion
+    '''
+
+    def __init__(self,
+                 bigdl_type="float"):
+        super(PoissonCriterion, self).__init__(None, bigdl_type)
+
+class TransformerCriterion(Criterion):
+    '''
+    The criterion that takes two modules to transform input and target, and take
+    one criterion to compute the loss with the transformed input and target.
+    
+    This criterion can be used to construct complex criterion. For example, the
+    `inputTransformer` and `targetTransformer` can be pre-trained CNN networks,
+    and we can use the networks' output to compute the high-level feature
+    reconstruction loss, which is commonly used in areas like neural style transfer
+    (https://arxiv.org/abs/1508.06576), texture synthesis (https://arxiv.org/abs/1505.07376),
+    .etc.
+    
+    >>> trans = TransformerCriterion(MSECriterion())
+    creating: createMSECriterion
+    creating: createTransformerCriterion
+    '''
+
+    def __init__(self,
+                 criterion,
+                 input_transformer = None,
+                 target_transformer = None,
+                 bigdl_type="float"):
+        super(TransformerCriterion, self).__init__(None,
+                                                   bigdl_type,
+                                                   criterion,
+                                                   input_transformer,
+                                                   target_transformer)
+
 
 def _test():
     import doctest

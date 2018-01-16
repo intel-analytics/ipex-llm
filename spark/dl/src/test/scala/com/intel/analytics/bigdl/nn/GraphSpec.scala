@@ -34,7 +34,7 @@ import scala.util.Random
 import org.scalatest.{FlatSpec, Matchers}
 
 @com.intel.analytics.bigdl.tags.Parallel
-class GraphSpec extends FlatSpec with Matchers {
+class StaticGraphSpec extends FlatSpec with Matchers {
   "Graph init" should "throw exceptions when there's cycle" in {
     val fc1 = Linear(4, 2).inputs()
     val relu1 = ReLU().inputs(fc1)
@@ -481,14 +481,6 @@ class GraphSpec extends FlatSpec with Matchers {
 
     gradientBP1 should be(gradientBP2)
     seqModel.getParameters()._2 should be(funcModel.getParameters()._2)
-  }
-
-  "shift" should "be correct" in {
-    val node = Reshape(Array(1, 28, 28)).inputs()
-    val test = Graph(node, node)
-    test.shift(Array(1, 2, 3, 4), 1, 1) should be(Array(1, 2, 3, 4))
-    test.shift(Array(1, 2, 3, 4), 1, 3) should be(Array(1, 3, 4, 2))
-    test.shift(Array(1, 2, 3, 4), 3, 1) should be(Array(1, 4, 2, 3))
   }
 
   "ResNet-18 basic block shortcut type A" should "be correct" in {
@@ -1022,7 +1014,7 @@ class GraphSpec extends FlatSpec with Matchers {
 
     // reset propagateBack
     graphNoBack.reset()
-    graphNoBack.build()
+    graphNoBack.buildBackwardGraph()
     graphNoBack.zeroGradParameters()
     graphNoBack.forward(input) should be (graph.forward(input))
     graphNoBack.backward(input, gradOutput)
@@ -1032,6 +1024,24 @@ class GraphSpec extends FlatSpec with Matchers {
     graphNoBack.parameters()._2 should be (graph.parameters()._2)
   }
 
+  "graph backpropagation" should "ignore nodes on non output path" in {
+    val node1 = Identity[Float]().setName("node1").inputs()
+    val node2 = Identity[Float]().setName("node2").inputs(node1)
+    val node3 = Identity[Float]().setName("node3").inputs(node2)
+    val node4 = Identity[Float]().setName("node4").inputs(node2)
+
+    val model1 = Graph[Float](node1, node3)
+    model1.forward(Tensor[Float](T(1.0f, 2.0f))) should be(Tensor[Float](T(1.0f, 2.0f)))
+    model1.backward(Tensor[Float](T(1.0f, 2.0f)), Tensor[Float](T(3.0f, 4.0f))) should be(
+      Tensor[Float](T(3.0f, 4.0f)))
+
+    val model2 = Graph[Float](node1, Array(node3, node4))
+    model2.forward(Tensor[Float](T(1.0f, 2.0f))) should be(T(Tensor[Float](T(1.0f, 2.0f)),
+      Tensor[Float](T(1.0f, 2.0f))))
+    model2.backward(Tensor[Float](T(1.0f, 2.0f)), T(Tensor[Float](T(3.0f, 4.0f)),
+      Tensor[Float](T(7.0f, 10.0f)))) should be(
+      Tensor[Float](T(10.0f, 14.0f)))
+  }
 
   "markdown test" should "work" in {
     val reshape = Reshape(Array(4)).inputs()
@@ -1042,8 +1052,6 @@ class GraphSpec extends FlatSpec with Matchers {
     val output2_1 = Threshold(10.0).inputs(cadd_1)
 
     val model = Graph(Array(reshape, fc1), Array(output1_1, output2_1))
-
-
 
     val input = T(Tensor(T(0.1f, 0.2f, -0.3f, -0.4f)),
       Tensor(T(0.5f, 0.4f, -0.2f, -0.1f)))
@@ -1086,6 +1094,7 @@ class GraphSpec extends FlatSpec with Matchers {
     println("fc1 weight \n", fc1.element.parameters()._1(0))
     println("fc2 weight \n", fc2.element.parameters()._1(0))
   }
+
   "graph setFreeze" should "work properly" in {
     RandomGenerator.RNG.setSeed(1000)
     val fc1 = Linear(4, 2).inputs()
@@ -1146,7 +1155,7 @@ class GraphSpec extends FlatSpec with Matchers {
     val echo1 = Echo().inputs(swtich.trueEdge())
     val echo2 = Echo().inputs(swtich.falseEdge())
 
-    val model = Graph(Array(data, condition), Array(echo1), None, false)
+    val model = Graph.dynamic(Array(data, condition), Array(echo1), None, false)
     val result = model.forward(T(Tensor[Float](T(1)), Tensor[Boolean](T(true))))
     result.toTensor should be(Tensor[Float](T(1)))
 
@@ -1166,7 +1175,7 @@ class GraphSpec extends FlatSpec with Matchers {
     val merge = ControlNodes.merge(add1, add5)
     val output = Identity().inputs(merge)
 
-    val model = Graph(Array(data, condition), Array(output), None, false)
+    val model = Graph.dynamic(Array(data, condition), Array(output), None, false)
     var result = model.forward(T(Tensor[Float](T(1)), Tensor[Boolean](T(true))))
     result.toTensor should be(Tensor[Float](T(2)))
     result = model.forward(T(Tensor[Float](T(1)), Tensor[Boolean](T(false))))
@@ -1237,6 +1246,28 @@ class GraphSpec extends FlatSpec with Matchers {
     isExecuted1 should be(false)
     isExecuted2 should be(false)
     isExecuted3 should be(false)
+  }
+
+  "Graph get name" should "be correct" in {
+    val data = Identity().setName("input").inputs()
+    val const = Const(Tensor(T(1, 2))).setName("const").inputs()
+    var isExecuted1 = false
+    val l1 = Echo().setName("l1").setBeval((a, b, c) => isExecuted1 = true).inputs(const)
+    val cadd = CAddTable().setName("cadd").inputs(data, l1)
+    val l2 = Identity().setName("l2").inputs(cadd)
+    var isExecuted2 = false
+    var isExecuted3 = false
+    val echo = Echo().setName("echo")
+      .setFeval((a, b) => isExecuted2 = true)
+      .setBeval((a, b, c) => isExecuted3 = true).inputs(cadd)
+    val l3 = Identity().setName("l3").inputs(echo)
+
+    val model = Graph(data, l2)
+    model.node("l1") should be(l1)
+
+    intercept[NoSuchElementException] {
+      model.node("ll1")
+    }
   }
 }
 

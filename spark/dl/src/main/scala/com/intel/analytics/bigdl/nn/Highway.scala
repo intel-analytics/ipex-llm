@@ -25,26 +25,20 @@ import scala.reflect.ClassTag
 
 
 object Highway {
-  private def getAct[@specialized(Float, Double) T: ClassTag](name: String)
-    (implicit ev: TensorNumeric[T]): TensorModule[T] = name match {
-    case "tanh" => Tanh[T]()
-    case _ => null
-  }
-
   /**
    * Densely connected highway network.
    * Highway layers are a natural extension of LSTMs to feedforward networks.
    *
    * @param size input size
    * @param withBias whether to include a bias
-   * @param activation name of activation function to use
+   * @param activation activation function
    * @param wRegularizer: instance of [[Regularizer]]
    *                    (eg. L1 or L2 regularization), applied to the input weights matrices.
    * @param bRegularizer: instance of [[Regularizer]]
    *                    applied to the bias.
    */
   def apply[@specialized(Float, Double) T: ClassTag](size: Int, withBias: Boolean = true,
-    activation: String = null,
+    activation: TensorModule[T] = null,
     wRegularizer: Regularizer[T] = null,
     bRegularizer: Regularizer[T] = null)
     (implicit ev: TensorNumeric[T]): Graph[T] = {
@@ -55,7 +49,7 @@ object Highway {
     val negatedGate = AddConstant(1).inputs(Negative().inputs(transformWeight))
     val l2 = Linear(size, size, withBias = withBias, wRegularizer = wRegularizer,
       bRegularizer = bRegularizer).inputs(input)
-    val transformed = if (null != activation) getAct(activation).inputs(l2) else l2
+    val transformed = if (null != activation) activation.inputs(l2) else l2
     val transformedGated = CMulTable().inputs(transformWeight, transformed)
     val identityGate = CMulTable().inputs(negatedGate, input)
     val value = CAddTable().inputs(transformedGated, identityGate)

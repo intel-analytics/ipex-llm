@@ -27,9 +27,10 @@ import com.intel.analytics.bigdl.utils.TorchObject.TYPE_MODULE
 import org.apache.commons.lang3.SerializationUtils
 import org.apache.spark.rdd.RDD
 import com.intel.analytics.bigdl.optim._
-import com.intel.analytics.bigdl.dataset.{LocalDataSet, MiniBatch, Sample}
+import com.intel.analytics.bigdl.dataset.{LocalDataSet, MiniBatch, PaddingParam, Sample}
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.nn.quantized.Quantization
+import com.intel.analytics.bigdl.transform.vision.image.{DistributedImageFrame, ImageFeature, ImageFrame, LocalImageFrame}
 import com.intel.analytics.bigdl.utils.caffe.CaffePersister
 import com.intel.analytics.bigdl.utils.serializer.ModulePersister
 import com.intel.analytics.bigdl.utils.tf.{TensorflowDataFormat, TensorflowSaver}
@@ -40,7 +41,7 @@ import scala.reflect.ClassTag
  * [[TensorModule]] is an abstract sub-class of [[AbstractModule]], whose
  * input and output type both are [[Tensor]].
  *
- * @tparam T The numeric type in the criterion, usually which are [[Float]] or [[Double]]
+ * @tparam T The numeric type in this module, usually which are [[Float]] or [[Double]]
  */
 abstract class TensorModule[T: ClassTag]
   (implicit ev: TensorNumeric[T]) extends AbstractModule[Tensor[T], Tensor[T], T]
@@ -112,19 +113,6 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
    */
   def setScaleB(b: Double): this.type = {
     scaleB = b
-    this
-  }
-
-  /**
-   * Copy the useful running status from src to this.
-   *
-   * The subclass should override this method if it has some parameters besides weight and bias.
-   * Such as runningMean and runningVar of BatchNormalization.
-   *
-   * @param src source Module
-   * @return this
-   */
-  def copyStatus(src: Module[T]) : this.type = {
     this
   }
 
@@ -367,6 +355,44 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
   def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = null
 
   /**
+   * Get extra parameter in this module.
+   * Extra parameter means the trainable parameters beside weight and bias. Such as runningMean
+   * and runningVar in BatchNormalization.
+   *
+   * The subclass should override this method if it has some parameters besides weight and bias.
+   *
+   * @return an array of tensor
+   */
+  def getExtraParameter(): Array[Tensor[T]] = null
+
+  /**
+   * Set extra parameter to this module.
+   * Extra parameter means the trainable parameters beside weight and bias. Such as runningMean
+   * and runningVar in BatchNormalization.
+   *
+   * @return this
+   */
+  def setExtraParameter(extraParam: Array[Tensor[T]]): this.type = {
+    val currentExtraParam = this.getExtraParameter()
+    if (extraParam != null && currentExtraParam != null) {
+      require(extraParam.length == currentExtraParam.length,
+        "state's length doesn't match, excepted:" +
+        s"${currentExtraParam.length}, but got  ${extraParam.length}")
+      var i = 0
+      while (i < extraParam.length) {
+        currentExtraParam(i).copy(extraParam(i))
+        i += 1
+      }
+      this
+    } else if (extraParam == null && currentExtraParam == null) {
+      this
+    } else {
+      throw new IllegalArgumentException(s"module's extraParameter is $currentExtraParam" +
+        s", while setting param is ${extraParam}")
+    }
+  }
+
+  /**
    * This function returns a table contains ModuleName, the parameter names and parameter value
    * in this module.
    * The result table is a structure of Table(ModuleName -> Table(ParameterName -> ParameterValue)),
@@ -464,12 +490,14 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
    * @param path path to save module, local file system, HDFS and Amazon S3 is supported.
    *             HDFS path should be like "hdfs://[host]:[port]/xxx"
    *             Amazon S3 path should be like "s3a://bucket/xxx"
+   * @param weightPath where to store weight
    * @param overWrite if overwrite
    * @return self
    */
-  def saveModule(path : String, overWrite: Boolean = false) : this.type = {
+  def saveModule(path : String, weightPath : String = null,
+                 overWrite: Boolean = false) : this.type = {
     this.clearState()
-    ModulePersister.saveToFile(path, this, overWrite)
+    ModulePersister.saveToFile(path, weightPath, this, overWrite)
     this
   }
 
@@ -507,7 +535,14 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
               dataFormat: TensorflowDataFormat = TensorflowDataFormat.NHWC): this.type = {
     require(this.isInstanceOf[Graph[T]], "only Graph container can be saved as Tensorflow model")
     this.clearState()
+    val inTrainMode = train
+    if (inTrainMode) {
+      this.evaluate()
+    }
     TensorflowSaver.saveGraph(this.asInstanceOf[Graph[T]], inputs, path, byteOrder, dataFormat)
+    if (inTrainMode) {
+      this.training()
+    }
     this
   }
 
@@ -539,6 +574,36 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
    */
   def predictClass(dataset: RDD[Sample[T]], batchSize: Int = -1): RDD[Int] = {
     Predictor(this).predictClass(dataset, batchSize)
+  }
+
+  /**
+   * model predict images, return imageFrame with predicted tensor,
+   * if you want to call predictImage multiple times,
+   * it is recommended to use Predictor for DistributedImageFrame
+   * or LocalPredictor for LocalImageFrame
+   * @param imageFrame imageFrame that contains images
+   * @param outputLayer if outputLayer is not null, the output of layer that matches
+   *                      outputLayer will be used as predicted output
+   * @param shareBuffer whether to share same memory for each batch predict results
+   * @param batchPerPartition batch size per partition, default is 4
+   * @param predictKey key to store predicted result
+   * @param featurePaddingParam featurePaddingParam if the inputs have variant size
+   * @return
+   */
+  def predictImage(imageFrame: ImageFrame,
+    outputLayer: String = null,
+    shareBuffer: Boolean = false,
+    batchPerPartition: Int = 4,
+    predictKey: String = ImageFeature.predict,
+    featurePaddingParam: Option[PaddingParam[T]] = None): ImageFrame = {
+    imageFrame match {
+      case distributedImageFrame: DistributedImageFrame =>
+        Predictor(this, featurePaddingParam, batchPerPartition)
+          .predictImage(distributedImageFrame, outputLayer, shareBuffer, predictKey)
+      case localImageFrame: LocalImageFrame =>
+        LocalPredictor(this, featurePaddingParam, batchPerPartition)
+          .predictImage(localImageFrame, outputLayer, shareBuffer, predictKey)
+    }
   }
 
   /**
@@ -661,6 +726,19 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
 
   /**
    * Build graph: some other modules point to current module
+   * @param nodes upstream module nodes in an array
+   * @return node containing current module
+   */
+  def inputs(nodes : Array[ModuleNode[T]]): ModuleNode[T] = {
+    val curNode = new ModuleNode[T](this)
+    nodes.foreach(node => {
+      node.add(curNode, Edge())
+    })
+    curNode
+  }
+
+  /**
+   * Build graph: some other modules point to current module
    * @param first distinguish from another inputs when input parameter list is empty
    * @param nodesWithIndex upstream module nodes and the output tensor index. The start index is 1.
    * @return node containing current module
@@ -733,6 +811,10 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
     val starts = if (startNodes.isEmpty) Array(Input[T]()) else startNodes.toArray
     val endNodes = this.getEndNodes(starts)
     Graph(starts, endNodes)
+  }
+
+  def getClassTagNumerics() : (Array[ClassTag[_]], Array[TensorNumeric[_]]) = {
+    (Array(scala.reflect.classTag[T]), Array(ev))
   }
 }
 

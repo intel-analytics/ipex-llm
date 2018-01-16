@@ -44,7 +44,7 @@ object Utils {
 
   private var textClassification: TextClassifier = null
 
-  def getTextClassifier(param: TFP): TextClassifier = {
+  def getTextClassifier(param: TextClassificationUDFParams): TextClassifier = {
     if (textClassification == null) {
       textClassification = new TextClassifier(param)
     }

@@ -408,7 +408,7 @@ private[bigdl] class TensorSample[T: ClassTag](
       val features: Array[Tensor[T]],
       val labels: Array[Tensor[T]]) extends Sample[T] {
   val featureSize = features.map(_.size())
-  val labelSize = features.map(_.size())
+  val labelSize = labels.map(_.size())
 
   def featureLength(index: Int): Int = {
     features(0).size(1)

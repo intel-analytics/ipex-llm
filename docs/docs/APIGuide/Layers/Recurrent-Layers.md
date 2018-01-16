@@ -12,12 +12,14 @@ module = Recurrent()
 Recurrent module is a container of rnn cells. Different types of rnn cells can be added using add() function.  
 
 Recurrent supports returning state and cell of its rnn cells at last time step by using getHiddenState. output of getHiddenState
-is an Activity and it can be directly used for setHiddenState function, which will set hidden state and cell at the first time step.  
+is an Activity.
 
 If contained cell is simple rnn, getHiddenState return value is a tensor(hidden state) which is `batch x hiddenSize`.  
 If contained cell is lstm, getHiddenState return value is a table [hidden state, cell], both size is `batch x hiddenSize`.  
 If contained cell is convlstm, getHiddenState return value is a table [hidden state, cell], both size is `batch x outputPlane x height x width`.  
 If contained cell is convlstm3D, getHiddenState return value is a table [hidden state, cell], both size is `batch x outputPlane x height x width x length`.
+
+Recurrent also support init hidden state by using setHiddenState, currently only scala version. After we get hidden state from getHiddenState, we can directly used it in setHiddenState, which will set hidden state and cell at the first time step.
 
 **Scala example:**
 ```scala
@@ -80,7 +82,6 @@ input[0][4][0] = 1
 output = module.forward(input)
 
 res = module.get_hidden_state()
-module.set_hidden_state(res)
 
 > input
 [[[ 0.  0.  0.  0.  1.]
@@ -433,11 +434,9 @@ Parameters:
   For Python, one can also pass the name of an existing activation as a string, eg. 'tanh', 'relu', 'sigmoid', 'hard_sigmoid', 'softmax' etc.
 * `innerActivation` activation function for inner cells, by default to be `Sigmoid` if not specified.
   For Python, one can also pass the name of an existing activation as a string, eg. 'tanh', 'relu', 'sigmoid', 'hard_sigmoid', 'softmax' etc.
-* `wRegularizer` instance of [[Regularizer]]
-                   (eg. L1 or L2 regularization), applied to the input weights matrices.
-* `uRegularizer` instance [[Regularizer]]
-          (eg. L1 or L2 regularization), applied to the recurrent weights matrices.
-* `bRegularizer` instance of [[Regularizer]] applied to the bias.
+* `wRegularizer` instance of [[Regularizer]] (eg. L1 or L2 regularization), applied to the input weights matrices.
+* `uRegularizer` instance of [[Regularizer]] (eg. L1 or L2 regularization), applied to the recurrent weights matrices.
+* `bRegularizer` instance of [[Regularizer]], applied to the bias.
 
 **Scala example:**
 ```scala
@@ -583,11 +582,9 @@ Parameters:
            (http://www.stat.berkeley.edu/~tsmoon/files/Conference/asru2015.pdf)
            [A Theoretically Grounded Application of Dropout in Recurrent Neural Networks]
            (https://arxiv.org/pdf/1512.05287.pdf)
-* `wRegularizer` instance of [[Regularizer]]
-                   (eg. L1 or L2 regularization), applied to the input weights matrices.
-* `uRegularizer` instance [[Regularizer]]
-          (eg. L1 or L2 regularization), applied to the recurrent weights matrices.
-* `bRegularizer` instance of [[Regularizer]] applied to the bias.
+* `wRegularizer` instance of [[Regularizer]] (eg. L1 or L2 regularization), applied to the input weights matrices.
+* `uRegularizer` instance of [[Regularizer]] (eg. L1 or L2 regularization), applied to the recurrent weights matrices.
+* `bRegularizer` instance of [[Regularizer]], applied to the bias.
 
 **Scala example:**
 ```scala
@@ -859,14 +856,10 @@ Parameters:
   For Python, one can also pass the name of an existing activation as a string, eg. 'tanh', 'relu', 'sigmoid', 'hard_sigmoid', 'softmax' etc.
 * `innerActivation` activation function for inner cells, by default to be `Sigmoid` if not specified.
   For Python, one can also pass the name of an existing activation as a string, eg. 'tanh', 'relu', 'sigmoid', 'hard_sigmoid', 'softmax' etc.
-* `wRegularizer` instance of [[Regularizer]]
-                   (eg. L1 or L2 regularization), applied to the input weights matrices.
-* `uRegularizer` instance [[Regularizer]]
-          (eg. L1 or L2 regularization), applied to the recurrent weights matrices.
-* `bRegularizer` instance of [[Regularizer]]
-          applied to the bias.
-* `cRegularizer` instance of [[Regularizer]]
-        applied to peephole.
+* `wRegularizer` instance of [[Regularizer]] (eg. L1 or L2 regularization), applied to the input weights matrices.
+* `uRegularizer` instance of [[Regularizer]] (eg. L1 or L2 regularization), applied to the recurrent weights matrices.
+* `bRegularizer` instance of [[Regularizer]], applied to the bias.
+* `cRegularizer` instance of [[Regularizer]], applied to peephole.
 * `withPeephole` whether use last cell status control a gate
 
 **Scala example:**
@@ -1096,14 +1089,10 @@ Parameters:
 * `stride` step of the convolution, default is 1
 * `padding` step of the convolution, default is -1, behaves same with SAME padding in tensorflow
                  Default stride,padding value ensure last 3 dim of output shape is the same with input
-* `wRegularizer` instance of [[Regularizer]]
-                   (eg. L1 or L2 regularization), applied to the input weights matrices.
-* `uRegularizer` instance [[Regularizer]]
-          (eg. L1 or L2 regularization), applied to the recurrent weights matrices.
-* `bRegularizer` instance of [[Regularizer]]
-          applied to the bias.
-* `cRegularizer` instance of [[Regularizer]]
-          applied to peephole.
+* `wRegularizer` instance of [[Regularizer]] (eg. L1 or L2 regularization), applied to the input weights matrices.
+* `uRegularizer` instance of [[Regularizer]] (eg. L1 or L2 regularization), applied to the recurrent weights matrices.
+* `bRegularizer` instance of [[Regularizer]], applied to the bias.
+* `cRegularizer` instance of [[Regularizer]], applied to peephole.
 * `withPeephole` whether use last cell status control a gate
 
 **Scala example:**
@@ -1571,87 +1560,300 @@ import com.intel.analytics.bigdl.utils.T
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
 
-val layer = TimeDistributed(Sum(1, squeeze = false, nInputDims = 2))
-val input = Tensor(T(T(
-  T(
-    T(1.0f, 2.0f),
-    T(3.0f, 4.0f)
-  ),
-  T(
-    T(2.0f, 3.0f),
-    T(4.0f, 5.0f)
-  )
-)))
+val layer = TimeDistributed(Linear(3, 2))
+val input = Tensor(2, 3, 3).rand()
 layer.forward(input)
-layer.backward(input, Tensor(T(T(
-  T(
-    T(0.1f, 0.2f)
-  ),
-  T(
-    T(0.3f, 0.4f)
-  )
-))))
+```
+Input:
+```
+input: com.intel.analytics.bigdl.tensor.Tensor[Float] =
+(1,.,.) =
+0.101178855	0.24703512	0.5021639
+0.44016296	0.5694682	0.9227419
+0.44305947	0.99880695	0.061260134
+
+(2,.,.) =
+0.7969414	0.20669454	0.27941006
+0.22917499	0.21765763	0.22535545
+0.389746	0.3487412	0.09982143
+
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 2x3x3]
 ```
 Gives the output,
 ```
-(1,1,.,.) =
-4.0     6.0
+res0: com.intel.analytics.bigdl.tensor.Tensor[Float] =
+(1,.,.) =
+0.38540328	-0.4002408
+0.64361376	-0.33423418
+0.4066636	-0.36263257
 
-(1,2,.,.) =
-6.0     8.0
+(2,.,.) =
+0.023447769	-0.77664447
+0.18752512	-0.53049827
+0.13314348	-0.5799509
 
-[com.intel.analytics.bigdl.tensor.DenseTensor of size 1x2x1x2]
-
-(1,1,.,.) =
-0.1     0.2
-0.1     0.2
-
-(1,2,.,.) =
-0.3     0.4
-0.3     0.4
-
-[com.intel.analytics.bigdl.tensor.DenseTensor of size 1x2x2x2]
-
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 2x3x2]
 ```
 
 **Python example:**
 ```python
-from bigdl.nn.layer import TimeDistributed,Sum
+from bigdl.nn.layer import TimeDistributed,Linear
 import numpy as np
 
-layer = TimeDistributed(Sum(1, squeeze = False, n_input_dims = 2))
+layer = TimeDistributed(Linear(3, 2))
 
-input = np.array([[
-  [
-    [1.0, 2.0],
-    [3.0, 4.0]
-  ],
-  [
-    [2.0, 3.0],
-    [4.0, 5.0]
-  ]
-]])
+input = np.random.random([2, 3, 3])
 layer.forward(input)
-layer.backward(input, np.array([[
-  [
-    [0.1, 0.2]
-  ],
-  [
-    [0.3, 0.4]
-  ]
-]]))
+```
+Input:
+```
+array([[[ 0.3033118 ,  0.14485594,  0.58064829],
+        [ 0.72854527,  0.5051743 ,  0.42110462],
+        [ 0.78737995,  0.62032715,  0.20156085]],
+
+       [[ 0.17852246,  0.72772084,  0.24014506],
+        [ 0.01344367,  0.47754396,  0.65238232],
+        [ 0.29103965,  0.50614159,  0.2816109 ]]])
 ```
 Gives the output,
 ```
-array([[[[ 4.,  6.]],
+array([[[-0.10115834, -0.19001636],
+        [-0.1446743 , -0.47479331],
+        [-0.14148773, -0.61194205]],
 
-        [[ 6.,  8.]]]], dtype=float32)
-        
-array([[[[ 0.1       ,  0.2       ],
-         [ 0.1       ,  0.2       ]],
+       [[-0.28484675, -0.58061397],
+        [-0.28640711, -0.29945394],
+        [-0.18956462, -0.46879411]]], dtype=float32)
+```
+---
 
-        [[ 0.30000001,  0.40000001],
-         [ 0.30000001,  0.40000001]]]], dtype=float32)
+## MultiRNNCell ##
+
+**Scala:**
+```scala
+// cells should be an array of Cell
+val model = MultiRNNCell(cells = multiRNNCells)
+
+```
+**Python:**
+```python
+# cells should be a list of Cell
+model = MultiRNNCell(cells = multiRNNCells)
+```
+
+A cell that stack multiple rnn cells(simpleRNN/LSTM/LSTMPeephole/GRU/ConvLSTMPeephole/ConvLSTMPeephole3D).
+Only works with RecurrentDecoder. If you want to stack multiple cells with Recurrent. Use Sequential().add(Recurrent(cell)).add(Recurrent(cell))... instead
+
+Parameters:
+
+* `cells` list of RNNCell that will be composed in this order.
+
+**Scala example:**
+```scala
+import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+
+val hiddenSize = 2
+val inputSize = 2
+val batchSize = 2
+val seqLength = 2
+val input = Tensor(batchSize, inputSize, 3, 3).rand()
+val gradOutput = Tensor(batchSize, seqLength, hiddenSize, 3, 3).rand()
+
+val cells = Array(ConvLSTMPeephole(
+  inputSize, hiddenSize, 3, 3, 1), ConvLSTMPeephole(
+  inputSize, hiddenSize, 3, 3, 1)).asInstanceOf[Array[Cell[Float]]]
+val model = RecurrentDecoder(seqLength).add(MultiRNNCell[Float](cells))
+
+val output = model.forward(input)
+val gradientInput = model.backward(input, gradOutput)
+
+val states = model.getStates()
+model.setStates(states)
+-> print(output)
+(1,1,1,.,.) =
+0.035993136	0.04062611	0.038863156	
+0.038338557	0.035591327	0.030849852	
+0.03203216	0.026839556	0.033618193	
+
+(1,1,2,.,.) =
+-0.011673012	-0.013518209	-0.0079738535	
+-0.013537201	-0.018129712	-0.013903147	
+-0.015891023	-0.016045166	-0.015133085	
+
+(1,2,1,.,.) =
+0.051638972	0.06415851	0.0562743	
+0.052649997	0.0433068	0.03683649	
+0.0408955	0.0315791	0.043429054	
+
+(1,2,2,.,.) =
+-0.019818805	-0.024628056	-0.014551916	
+-0.028422609	-0.036376823	-0.027259855	
+-0.030024627	-0.033032943	-0.030440552	
+
+(2,1,1,.,.) =
+0.037235383	0.03971467	0.039468434	
+0.032075796	0.031177454	0.029096292	
+0.03708834	0.031535562	0.036211465	
+
+(2,1,2,.,.) =
+-0.010179557	-0.011387618	-0.008739926	
+-0.013536877	-0.015962215	-0.017361978	
+-0.014717996	-0.014296502	-0.016867846	
+
+(2,2,1,.,.) =
+0.053095814	0.05863748	0.05486801	
+0.048524074	0.043160528	0.040398546	
+0.04628137	0.04125476	0.043807983	
+
+(2,2,2,.,.) =
+-0.017849356	-0.019537563	-0.018888	
+-0.025026768	-0.034455147	-0.02970969	
+-0.026703741	-0.033036336	-0.027824042	
+
+[com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 2x2x2x3x3]
+-> print(gradientInput)
+(1,1,1,.,.) =
+-0.021843424	-0.015910733	-0.013524098	
+-0.019261343	-0.017457811	-0.013539563	
+-0.016062422	-0.00383057	-0.0021248849	
+
+(1,1,2,.,.) =
+-0.0067594885	-0.012176989	-0.009976602	
+-0.007914364	-0.012559764	-7.768459E-4	
+-0.0026864496	-3.4671678E-4	-0.004467619	
+
+(1,2,1,.,.) =
+-0.011175868	-0.011886302	-0.0074315416	
+-0.009660093	-0.009753445	-0.008733444	
+-0.007047931	-0.0055002044	8.1458344E-4	
+
+(1,2,2,.,.) =
+-0.0016122719	-0.003776702	-0.006306042	
+-0.0032693855	-0.005982614	-0.0010739439	
+-0.0020354516	-9.59815E-4	-0.0010912241	
+
+(2,1,1,.,.) =
+-0.01399023	-0.01809205	-0.015330672	
+-0.025769815	-0.00905557	-0.021059947	
+4.068871E-4	-0.0060698274	-0.0048879837	
+
+(2,1,2,.,.) =
+-0.0013799625	-0.012721367	-0.008014497	
+-0.014288196	-0.0185386	-0.017980032	
+-0.0022621946	-0.015537363	-0.0024578157	
+
+(2,2,1,.,.) =
+-0.009561457	-0.007107652	-0.009356419	
+-0.009839717	-0.0021937331	-0.011457165	
+-0.0044140965	-0.0031195688	-0.0034824142	
+
+(2,2,2,.,.) =
+-3.2559165E-4	-0.0054697054	-0.0073612086	
+-0.0014059425	-0.006272946	-0.0028436938	
+0.0028391986	-0.005325649	-0.0028171889	
+
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 2x2x2x3x3]
+```
+
+**Python example:**
+```python
+from bigdl.nn.layer import *
+from bigdl.nn.criterion import *
+import numpy as np
+input_size = 2
+output_size = 2
+seq_length = 2
+batch_size = 2
+input = np.random.randn(batch_size, input_size, 3, 3)
+grad_output = np.random.randn(batch_size, seq_length, output_size, 3, 3)
+cells = []
+cells.append(ConvLSTMPeephole(input_size, output_size, 3, 3, 1, with_peephole = False))
+cells.append(ConvLSTMPeephole(input_size, output_size, 3, 3, 1, with_peephole = False))
+
+model = RecurrentDecoder(seq_length).add(MultiRNNCell(cells))
+
+output = model.forward(input)
+gradient_input = model.backward(input, grad_output)
+
+states = model.get_states()
+model.set_states(states)
+-> print output
+[[[[[ 0.01858711  0.03114421  0.02070103]
+    [ 0.01312863  0.00865137  0.02380039]
+    [ 0.02127378  0.02221535  0.02805275]]
+
+   [[ 0.05865936  0.06254016  0.07285608]
+    [ 0.07795827  0.06420417  0.06744433]
+    [ 0.07241444  0.06128554  0.0572256 ]]]
+
+
+  [[[ 0.01813958  0.0388087   0.03606314]
+    [ 0.00914392  0.01012017  0.03544089]
+    [ 0.02192647  0.02542255  0.04978891]]
+
+   [[ 0.06317041  0.07505058  0.10311646]
+    [ 0.10012341  0.06632978  0.09895241]
+    [ 0.10852461  0.08559311  0.07942865]]]]
+
+
+
+ [[[[ 0.01352384  0.02394648  0.02436183]
+    [ 0.00793007  0.01043395  0.03022798]
+    [ 0.01539317  0.01955615  0.01543968]]
+
+   [[ 0.05844339  0.05187995  0.05877664]
+    [ 0.06405409  0.08493486  0.07711712]
+    [ 0.0737301   0.05892281  0.05127344]]]
+
+
+  [[[ 0.01918509  0.037876    0.04408969]
+    [ 0.01470916  0.01985376  0.03152689]
+    [ 0.02578159  0.04284319  0.0319238 ]]
+
+   [[ 0.08844157  0.07580076  0.07929584]
+    [ 0.09811849  0.08237181  0.09161879]
+    [ 0.11196285  0.08747569  0.09312635]]]]]
+    
+-> print gradient_input
+[[[[[-0.01967927  0.0118104   0.00034992]
+    [-0.0132792  -0.0127134   0.01193821]
+    [ 0.01297736  0.00550178  0.00874622]]
+
+   [[-0.00718097  0.01717402  0.00893286]
+    [-0.01143209  0.00079105  0.00920936]
+    [ 0.01638926  0.02479215  0.01613754]]]
+
+
+  [[[-0.02959971 -0.00214246 -0.00665301]
+    [-0.02010076  0.00135842  0.01485039]
+    [ 0.01877127  0.00205219 -0.01012903]]
+
+   [[-0.01455194  0.00882864  0.00075077]
+    [-0.0089175  -0.00774059  0.00534623]
+    [ 0.00421638  0.01152828  0.00886414]]]]
+
+
+
+ [[[[ 0.00945553  0.01345219 -0.01787379]
+    [-0.02221245 -0.0047606   0.03430083]
+    [ 0.01496986 -0.01156155  0.00733263]]
+
+   [[ 0.02018309  0.00937438 -0.00253335]
+    [-0.00616324  0.00972739  0.02758386]
+    [ 0.01057806  0.01101648  0.00341856]]]
+
+
+  [[[ 0.00486301 -0.00717946 -0.01368812]
+    [-0.01296435  0.0466785  -0.0126987 ]
+    [ 0.01161697 -0.01207331  0.01638841]]
+
+   [[ 0.02077198 -0.00770913 -0.00807941]
+    [-0.00096983  0.01721167  0.0265876 ]
+    [ 0.00845431  0.01232574  0.0126167 ]]]]]
+
 ```
 
 ---
@@ -1659,17 +1861,30 @@ array([[[[ 0.1       ,  0.2       ],
 
 **Scala:**
 ```scala
-val layer = Highway(size: Int, withBias: Boolean, activation: String,
-                        wRegularizer: Regularizer[T] = null,
-                        bRegularizer: Regularizer[T] = null)
+val layer = Highway(size, withBias = true,
+                    activation = null,
+                    wRegularizer = null,
+                    bRegularizer = null)
 ```
 **Python:**
 ```python
-layer = Highway(size, with_bias, activation, wRegularizer, bRegularizer)
+layer = Highway(size, with_bias=True,
+                activation=None,
+                wRegularizer=None,
+                bRegularizer=None)
 ```
 
 This layer is Densely connected highway network.
 Highway layers are a natural extension of LSTMs to feedforward networks.
+
+Parameters:
+
+* `size` input size
+* `with_bias` whether to include a bias
+* `activation` activation function, by default no activation will be used.
+  For Python, one can also pass the name of an existing activation as a string, eg. 'tanh', 'relu', 'sigmoid', 'hard_sigmoid', 'softmax' etc.
+* `wRegularizer` instance of [[Regularizer]] (eg. L1 or L2 regularization), applied to the input weights matrices.
+* `bRegularizer` instance of [[Regularizer]], applied to the bias.
 
 **Scala example:**
 ```scala
@@ -1677,7 +1892,7 @@ import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
 
-val module = Highway(2, activation = "tanh")
+val module = Highway(2, activation = Tanh())
 
 val input = Tensor(3, 2).randn()
 println(input)
@@ -1704,7 +1919,7 @@ import numpy as np
 input = np.random.rand(3, 2)
 print "input is :",input
 
-m = Highway(2, activation = "tanh")
+m = Highway(2, activation=Tanh())
 out = m.forward(input)
 print "output is :",out
 ```

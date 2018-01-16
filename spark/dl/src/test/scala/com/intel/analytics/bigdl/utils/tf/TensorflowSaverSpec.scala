@@ -57,7 +57,7 @@ class TensorflowSaverSpec extends TensorflowSpecHelper {
       T(1.0f, 2.0f, 5.0f),
       T(-3.0f, -4.0f, -7.0f)
     ))
-    test(layer, input, "/biasAdd") should be(true)
+    test(layer, input, "/add") should be(true)
   }
 
   "AvgPooling NHWC" should "be correctly saved" in {
@@ -153,6 +153,32 @@ class TensorflowSaverSpec extends TensorflowSpecHelper {
     test(layer, input, "/biasAdd") should be(true)
   }
 
+  "SpatialConvolution NHWC without bias" should "be correctly saved" in {
+    val layer = SpatialConvolution(3, 5, 2, 2, format = DataFormat.NHWC, withBias = false)
+    val input = Tensor[Float](4, 5, 5, 3).rand()
+    test(layer, input, "/conv2D") should be(true)
+  }
+
+  "SpatialConvolution NCHW with conv group" should "be correctly saved" in {
+    cancel("tf cpu only support NHWC, this can be test on tf with MKL")
+    val layer = SpatialConvolution(6, 10, 2, 2, nGroup = 2)
+    val input = Tensor[Float](4, 6, 24, 24).rand()
+    test(layer, input, "/concat/output") should be(true)
+  }
+
+  "SpatialConvolution NCHW with conv group without bias" should "be correctly saved" in {
+    cancel("tf cpu only support NHWC, this can be test on tf with MKL")
+    val layer = SpatialConvolution(6, 10, 2, 2, nGroup = 2, withBias = false)
+    val input = Tensor[Float](4, 6, 24, 24).rand()
+    test(layer, input, "/concat/output") should be(true)
+  }
+
+  "Scale" should "be correctly saved" in {
+    val layer = Scale[Float](Array(10))
+    val input = Tensor[Float](4, 10)
+    test(layer, input, "/add/add") should be(true)
+  }
+
   "TemporalConvolution" should "be correctly saved" in {
     val layer = TemporalConvolution(3, 5, 2, 2)
     val input = Tensor[Float](4, 16, 3).rand()
@@ -182,6 +208,15 @@ class TensorflowSaverSpec extends TensorflowSpecHelper {
     test(layer, input, "/output") should be(true)
   }
 
+  "Batch Norm2D NCHW without affine" should "be correctly saved" in {
+    val layer = SpatialBatchNormalization(2, affine = false)
+    layer.evaluate()
+    layer.runningVar.resize(2).rand(0.9, 1.1)
+    layer.runningMean.resize(2).rand()
+    val input = Tensor[Float](3, 2, 4, 5).rand()
+    test(layer, input, "/output") should be(true)
+  }
+
   "Dropout" should "be correctly saved" in {
     val layer = Dropout()
     layer.evaluate()
@@ -189,10 +224,22 @@ class TensorflowSaverSpec extends TensorflowSpecHelper {
     test(layer, input) should be(true)
   }
 
-  "View" should "be correctly saved" in {
+  "View" should "be correctly saved when batch is enabled" in {
     val layer = View(2, 4)
-    val input = Tensor[Float](2, 2, 2).rand()
+    val input = Tensor[Float](4, 2, 2, 2).rand()
     test(layer, input) should be(true)
+  }
+
+  "LRN" should "be correct in NHWC" in {
+    val layer = SpatialCrossMapLRN(format = DataFormat.NHWC)
+    val input = Tensor[Float](4, 24, 24, 3).rand()
+    test(layer, input) should be(true)
+  }
+
+  "LRN" should "be correct in NCHW" in {
+    val layer = SpatialCrossMapLRN(format = DataFormat.NCHW)
+    val input = Tensor[Float](4, 3, 24, 24).rand()
+    test(layer, input, "/transpose2") should be(true)
   }
 
   "Reshape" should "be correctly saved" in {

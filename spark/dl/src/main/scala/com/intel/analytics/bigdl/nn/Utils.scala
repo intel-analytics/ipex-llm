@@ -235,7 +235,7 @@ object Utils {
       s"$src and $dst is not the same type.")
     dstParameters.copy(srcParameters)
     // copy running status
-    dst.copyStatus(src)
+    dst.setExtraParameter(src.getExtraParameter())
     dst
   }
 
@@ -408,6 +408,21 @@ object Utils {
           Array(batchSize, outputHeight, outputWidth, nOutputPlane)
         }
 
+    }
+  }
+
+  private[nn] def getOutputSize(inputSize: Int, filterSize: Int,
+                    stride: Int, padding: String) = {
+    padding.toLowerCase() match {
+      case "valid" =>
+        val outputSize = (inputSize - filterSize + stride) / stride
+        (outputSize, 0, 0)
+      case "same" =>
+        val outputSize = (inputSize + stride - 1) / stride
+        val paddingNeeded = math.max(0, (outputSize - 1) * stride + filterSize - inputSize)
+        val padBefore = paddingNeeded / 2
+        val padAfter = paddingNeeded - padBefore
+        (outputSize, padBefore, padAfter)
     }
   }
 

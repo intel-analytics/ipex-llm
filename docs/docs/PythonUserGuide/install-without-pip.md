@@ -1,8 +1,9 @@
-
 ## **Install without pip**
-__NOTE__: Only __Python 2.7__ and __Python 3.5__ are supported for now.
+**Remark:**
+- Only __Python 2.7__, __Python 3.5__ and __Python 3.6__ are supported for now.
+- Note that __Python 3.6__ is only compatible with Spark 1.6.4, 2.0.3, 2.1.1 and 2.2.0. See [this issue](https://issues.apache.org/jira/browse/SPARK-19019) for more discussion.
 
-1. [Install Spark](https://spark.apache.org/downloads.html)
+1. [Download Spark](https://spark.apache.org/downloads.html)
 
 2. You can download the BigDL release and nightly build from the [Release Page](../release-download.md)
   or build the BigDL package from [source](../ScalaUserGuide/install-build-src.md).

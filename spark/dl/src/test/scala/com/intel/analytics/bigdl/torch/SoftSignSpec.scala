@@ -25,7 +25,7 @@ import scala.util.Random
 class SoftSignSpec extends TorchSpec {
     "A SoftSign 3D input" should "generate correct output and grad" in {
     torchCheck()
-    val layer = new SoftSign[Double, Double]()
+    val layer = new SoftSign[Double]()
     val input = Tensor[Double](2, 3, 4).apply1(_ => Random.nextDouble())
     val gradOutput = Tensor[Double](2, 3, 4).apply1(_ => Random.nextDouble())
 
@@ -52,7 +52,7 @@ class SoftSignSpec extends TorchSpec {
 
   "A SoftSign 4D input" should "generate correct output and grad" in {
     torchCheck()
-    val layer = new SoftSign[Double, Double]()
+    val layer = new SoftSign[Double]()
     val input = Tensor[Double](5, 4, 3, 2).apply1(_ => Random.nextDouble())
     val gradOutput = Tensor[Double](5, 4, 3, 2).apply1(_ => Random.nextDouble())
 
