@@ -224,6 +224,15 @@ abstract class Optimizer[T: ClassTag, D](
     this
   }
 
+  private def resetEpoch(): Unit = {
+    optimMethod.state.update("epoch", 1)
+    optimMethod.state.update("neval", 1)
+    optimMethod.state.update("Loss", Float.PositiveInfinity)
+    optimMethod.state.update("score", 0f)
+    optimMethod.state.update("recordsProcessedThisEpoch", 0)
+  }
+
+
   /**
    * Set a model to the optimizer
    *
@@ -231,6 +240,8 @@ abstract class Optimizer[T: ClassTag, D](
    */
   def setModel(newModel: Module[T]): this.type = {
     model = newModel
+    // if a new Model is set, then reset "epoch", "neval" .etc.
+    resetEpoch()
     this
   }
 
