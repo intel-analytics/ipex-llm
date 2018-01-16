@@ -166,4 +166,27 @@ class ScaleSpec extends FlatSpec with Matchers{
     })
   }
 
+  "scale zeroParameter" should "work" in {
+
+    val scale = new Scale[Double](Array(1, 4, 1, 1))
+    scale.parameters()._1(0).copy(Tensor(Storage(Array(0.4, 0.3, 0.2, 0.1)))) // weight
+    scale.parameters()._1(1).copy(Tensor(Storage(Array(0.1, 0.01, 0.03, 0.04)))) // bias
+    val output = scale.forward(input)
+    val gradOutput = Tensor[Double](1, 4, 5, 6).randn()
+    scale.backward(input, gradOutput)
+
+    println(scale.parameters()._2(0))
+    println(scale.parameters()._2(1))
+
+    scale.zeroGradParameters()
+
+    scale.parameters()._2(0).apply1(x => {
+      assert(x == 0); x
+    })
+
+    scale.parameters()._2(1).apply1(x => {
+      assert(x == 0); x
+    })
+  }
+
 }
