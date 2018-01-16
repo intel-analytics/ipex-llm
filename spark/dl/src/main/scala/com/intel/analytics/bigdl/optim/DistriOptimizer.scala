@@ -836,8 +836,6 @@ class DistriOptimizer[T: ClassTag] (
     }
   }
 
-
-
   override def setTrainData(sampleRDD: RDD[Sample[T]],
     batchSize: Int,
     miniBatch: MiniBatch[T]): this.type = {
