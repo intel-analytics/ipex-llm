@@ -98,12 +98,6 @@ private[bigdl] class Scheduler[T] (
       schedule(node)
       return true
     }
-
-    if (node.element.isInstanceOf[NextIteration[_, _]] || node.element.isInstanceOf[Exit[_]]) {
-      val curFrame = frameManayger(node)
-      require(curFrame.isDefined, "Current node should be in a frame")
-      return leaveFrame(curFrame.get, node)
-    }
     return false
   }
 
@@ -113,15 +107,13 @@ private[bigdl] class Scheduler[T] (
    */
   def schedule(node: ModuleNode[T]): Unit = {
     val curFrame = frameManayger(node)
+    curFrame.map(_.mutex -= 1)
 
     val nextNodeFrame = if (node.element.isInstanceOf[Enter[_]]) {
       val e = node.element.asInstanceOf[Enter[_]]
       Some(frameManayger.createFrame(e.frame, curFrame))
     } else if (node.element.isInstanceOf[LoopCondition[_]]) {
       require(curFrame.isDefined, "LoopCondition should be in a frame")
-      val f = curFrame.get
-      require(f.barrier == 0, "frame mutex should not be set or clear before loop condition")
-      f.barrier = node.nextNodes.size
       curFrame
     } else if (node.element.isInstanceOf[NextIteration[_, _]]) {
       require(curFrame.isDefined, "NextIteration should be in a frame")
@@ -161,24 +153,42 @@ private[bigdl] class Scheduler[T] (
       case _ =>
         selectNexts(node.nextNodes, node, nextNodeFrame)
     }
+
+    // Schedule frame waiting nodes
+    curFrame.map(frame => {
+      if (frame.mutex == 0) {
+        // Wake up the waiting nodes
+        frame.waitingNodes.foreach(n => {
+          readyQueue.enqueue(n)
+          frameManayger.enter(n, frame)
+        })
+        frame.waitingNodes.clear()
+        // As frame is exit/refreshed, mark all nodes in the frame are not ready and remove them
+        // from the frame
+        frame.nodes.filterNot(_.element.isInstanceOf[NextIteration[_, _]])
+          .filterNot(_.element.isInstanceOf[Exit[_]]).foreach(n => {
+          nodeStatus.unset(n)
+          frameManayger.leave(n)
+        })
+      }
+    })
   }
 
   private def selectNexts(candidateNodes: Seq[ModuleNode[T]], curNode: ModuleNode[T],
     frame: Option[Frame[T]]): Unit = {
     val nodeSet = new mutable.LinkedHashSet[ModuleNode[T]]()
     candidateNodes.foreach(nodeSet.add(_))  // remove duplicate nodes and keep the order
+
     nodeSet.filter(n => executableNodes.contains(n.element.getName())).foreach(nextNode => {
       if (nextNode.element.isInstanceOf[MergeOps[_]]) {
         val merge = nextNode.element.asInstanceOf[MergeOps[_]]
         require(nodeStatus.notExecuted(nextNode), s"Merge node(${nextNode.element.getName()}) " +
           s"should not be executed twice out of loop or in a same iteration of a loop")
         merge.setSwitch(nextNode.prevNodes.indexOf(curNode) + 1)
-        frame.foreach(frameManayger.enter(nextNode, _))
-        readyQueue.enqueue(nextNode)
+        enQueue(nextNode, frame)
       } else {
         if (isNodeReady(nextNode)) {
-          frame.foreach(frameManayger.enter(nextNode, _))
-          readyQueue.enqueue(nextNode)
+          enQueue(nextNode, frame)
         }
       }
     })
@@ -197,33 +207,14 @@ private[bigdl] class Scheduler[T] (
     return true
   }
 
-  /**
-   * Leave a frame (e.g. NextIteration/Exit)
-   * @param frame current frame
-   * @param node current node
-   * @return if skip current schedule
-   */
-  private def leaveFrame(frame: Frame[T], node: ModuleNode[T]): Boolean = {
-    if (frame.barrier == 0) {
-      false // don't skip current schedule
-    } else {
-      // node need to wait for frame execution
-      frame.barrier -= 1
-      frame.waitingNodes.append(node)
+  private def enQueue(node: ModuleNode[T], frame: Option[Frame[T]]): Unit = {
+    if (node.element.isInstanceOf[NextIteration[_, _]] || node.element.isInstanceOf[Exit[_]]) {
+      require(frame.isDefined, "current node should be in a frame")
+      frame.get.waitingNodes.append(node)
       nodeStatus.unset(node) // mark current node is in not ready status
-      if (frame.barrier == 0) {
-        // Wake up the waiting nodes
-        frame.waitingNodes.foreach(readyQueue.enqueue(_))
-        frame.waitingNodes.clear()
-        // As frame is exit/refreshed, mark all nodes in the frame are not ready and remove them
-        // from the frame
-        frame.nodes.filterNot(_.element.isInstanceOf[NextIteration[_, _]])
-          .filterNot(_.element.isInstanceOf[Exit[_]]).foreach(n => {
-          nodeStatus.unset(n)
-          frameManayger.leave(n)
-        })
-      }
-      true
+    } else {
+      frame.foreach(frameManayger.enter(node, _))
+      readyQueue.enqueue(node)
     }
   }
 }

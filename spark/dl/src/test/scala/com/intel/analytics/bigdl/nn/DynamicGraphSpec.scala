@@ -1338,7 +1338,6 @@ class DynamicGraphSpec  extends FlatSpec with Matchers {
     val add1 = AddConstant(1).setName("add1").inputs(updateInput1)
     val echo1 = Echo().setName("echo1").inputs(add1)
 
-
     val updateInput2 = Input("updateInput2")
     val add2 = AddConstant(5).setName("add5").inputs(updateInput2)
     val echo2 = Echo().setName("echo2").inputs(add2)

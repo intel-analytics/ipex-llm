@@ -16,6 +16,7 @@
 package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
+import com.intel.analytics.bigdl.nn.ops.{Exit, NextIteration}
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
@@ -48,8 +49,9 @@ class FrameManager[T] extends Serializable {
    */
   def enter(node: ModuleNode[T], frame : Frame[T]): Unit = {
     require(!nodeFrame.contains(node.element.getName()), "Node already in a frame")
-    nodeFrame(node.element.getName()) = frame
+    frame.mutex += 1
     frame.nodes.append(node)
+    nodeFrame(node.element.getName()) = frame
   }
 
   /**
@@ -89,7 +91,7 @@ object FrameManager {
   /**
    * A frame
    * @param name the name of a frame, it must be unique in a grap
-   * @param barrier sync all next iteration / exit nodes execution
+   * @param mutex sync all next iteration / exit nodes execution
    * @param waitingNodes user can use NextIteration or Exit to leave current frame. This is a list
    *                     of those type of nodes, which are ready to leave
    * @param parent parent frame, if a frame is created in another frame, it has parent frame
@@ -97,7 +99,7 @@ object FrameManager {
    */
   class Frame[T] private[FrameManager] (
     val name: String,
-    var barrier: Int,
+    var mutex: Int,
     val waitingNodes: ArrayBuffer[ModuleNode[T]],
     val parent: Option[Frame[T]],
     val nodes: ArrayBuffer[ModuleNode[T]]
