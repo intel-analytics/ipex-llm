@@ -30,7 +30,7 @@ import com.intel.analytics.bigdl.optim.{Optimizer, Trigger}
 import com.intel.analytics.bigdl.utils.Engine
 import org.scalatest.{FlatSpec, Matchers}
 
-import scala.collection.mutable.ArrayBuffer
+import scala.collection.mutable.{ArrayBuffer, ListBuffer}
 import scala.concurrent.Future
 
 class LinearSpec extends FlatSpec with Matchers {
@@ -491,7 +491,7 @@ class LinearSpec extends FlatSpec with Matchers {
     clone.backward(input, gradOutput)
   }
 
-  "alexnet clone" should "work correclty" in {
+  "alexnet clone" should "work correctly" in {
     val model = AlexNet(1000)
     val clone = model.cloneModule()
     model.training()
@@ -504,6 +504,84 @@ class LinearSpec extends FlatSpec with Matchers {
     val gradOutput = Tensor().resizeAs(model.output.toTensor)
     model.backward(input, gradOutput)
     clone.backward(input, gradOutput)
+  }
+
+  "AlexNet perf" should "work correctly" in {
+    val blas = AlexNet(1000, hasDropout = false)
+    val dnn = AlexNet.dnn(1000, hasDropout = false)
+
+    blas.training()
+    dnn.training()
+
+    val input = Tensor(4, 3, 227, 227).rand()
+    blas.forward(input)
+    dnn.forward(input)
+
+    val gradOutput = Tensor().resizeAs(blas.output.toTensor)
+    blas.backward(input, gradOutput)
+    dnn.backward(input, gradOutput)
+
+    blas.resetTimes()
+    dnn.resetTimes()
+
+    val warmup = 20
+    val iters = 50
+
+    var i = 0
+    while (i < warmup) {
+      blas.forward(input)
+      blas.backward(input, gradOutput)
+
+      dnn.forward(input)
+      dnn.backward(input, gradOutput)
+      i += 1
+    }
+
+    blas.resetTimes()
+    dnn.resetTimes()
+
+    i = 0
+    while (i < iters) {
+      blas.forward(input)
+      blas.backward(input, gradOutput)
+
+      dnn.forward(input)
+      dnn.backward(input, gradOutput)
+      i += 1
+    }
+
+    def format(v: Double): Double = {
+      (v / 1e6 / iters).formatted("%2.4f").toDouble
+    }
+    val names = blas.getTimes().map(_._1.getName())
+    val blasForwardTime = blas.getTimes().map(x => format(x._2))
+    val blasBackwardTime = blas.getTimes().map(x => format(x._3))
+
+    val dnnForwardTime = dnn.getTimes().map(x => format(x._2))
+    val dnnBackwardTime = dnn.getTimes().map(x => format(x._3))
+
+    val forwardUpgrade = blasForwardTime.zip(dnnForwardTime).map { t =>
+      ((t._1 - t._2) / t._2.toDouble).formatted("%2.2f")
+    }
+    val backwardUpgrade = blasBackwardTime.zip(dnnBackwardTime).map { t =>
+      ((t._1 - t._2) / t._2.toDouble).formatted("%2.2f")
+    }
+
+    val header = List("MODULE NAME", "MKL-BLAS", "MKL-DNN", "UPGRADE")
+
+    def rows4(input: List[Array[_]]): List[List[_]] = {
+      input(0).toList zip input(1).toList zip input(2) zip input(3) map {
+        case (((a, b), c), d) => List(a, b, c, d)
+      }
+    }
+
+    val forwardTime = rows4(List(names, blasForwardTime, dnnForwardTime, forwardUpgrade))
+
+    val backwardTime = rows4(List(names, blasBackwardTime, dnnBackwardTime, backwardUpgrade))
+
+    println(Tabulator.format(header:: forwardTime))
+    println("=" * 80)
+    println(Tabulator.format(header:: backwardTime))
   }
 
   "the num of omp threads" should "be 1" in {
@@ -526,7 +604,7 @@ class LinearSpec extends FlatSpec with Matchers {
     System.setProperty("bigdl.coreNumber", "4")
     Engine.init
 
-    val batchSize = 32
+    val batchSize = 16
     val model = AlexNet(1000)
     println(model)
     val criterion = ClassNLLCriterion()
@@ -555,7 +633,8 @@ class LinearSpec extends FlatSpec with Matchers {
     }
 
     model.training()
+    model.resetTimes()
     val optimizer = Optimizer(model, dummyDataSet, criterion)
-    optimizer.setEndWhen(Trigger.maxIteration(10)).optimize()
+    val optimizedModel = optimizer.setEndWhen(Trigger.maxIteration(50)).optimize()
   }
 }

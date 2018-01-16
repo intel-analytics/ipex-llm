@@ -71,6 +71,7 @@ class Linear[T: ClassTag](
   }
 
   @transient var engine = 0L
+  @transient var stream = 0L
 
   @transient var forwardStream = 0L
   @transient var backDataStream = 0L
@@ -81,6 +82,8 @@ class Linear[T: ClassTag](
   @transient var backWeightPrim = 0L
 
   @transient private var forwardPrimBuffer: ArrayBuffer[Long] = _
+  @transient private var backwardDataPrimBuffer: ArrayBuffer[Long] = _
+  @transient private var backwardWeightPrimBuffer: ArrayBuffer[Long] = _
 
   val inputPrim, weightPrim, biasPrim, outputPrim: MemoryPrimitive[T] =
     new MemoryPrimitive[T]()
@@ -120,7 +123,8 @@ class Linear[T: ClassTag](
     }
 
     if (forwardPrim == 0L) {
-      engine = MklDnn.EngineCreate(EngineType.cpu, 0)
+      if (engine == 0L) engine = this.getDnnEngine(0)
+      if (stream == 0L) stream = this.getStream()
       forwardPrimBuffer = ArrayBuffer.empty[Long]
       val weightMemDesc = MklDnn.MemoryDescInit(weight.dim(), weight.size(),
         MklDnn.DataType.f32, MklDnn.MemoryFormat.any)
@@ -169,16 +173,16 @@ class Linear[T: ClassTag](
 //      MklDnn.PrimitiveDestroy(opPrimDesc)
     }
 
-    if (forwardStream == 0L) {
-      forwardStream = MklDnn.StreamCreate(StreamType.eager)
-    }
+//    if (forwardStream == 0L) {
+//      forwardStream = MklDnn.StreamCreate(StreamType.eager)
+//    }
 
     inputPrim.setHandle(input)
     weightPrim.setHandle(weight)
     biasPrim.setHandle(bias)
     outputPrim.setHandle(output)
 
-    MklDnn.StreamSubmit(forwardStream, forwardPrimBuffer.length, forwardPrimBuffer.toArray)
+    MklDnn.StreamSubmit(stream, forwardPrimBuffer.length, forwardPrimBuffer.toArray)
 
     inputPrim.releaseHandle()
     weightPrim.releaseHandle()
@@ -198,6 +202,7 @@ class Linear[T: ClassTag](
       s"output size should be the same as gradOutput")
 
     if (backDataPrim == 0L) {
+      backwardDataPrimBuffer = ArrayBuffer.empty[Long]
       val diffSrcMemDesc = if (gradInput.dim() == 1) {
         MklDnn.MemoryDescInit(gradInput.dim() + 1, Array(1) ++ gradInput.size(),
           MklDnn.DataType.f32, MklDnn.MemoryFormat.any)
@@ -225,18 +230,23 @@ class Linear[T: ClassTag](
       backDataPrim = MklDnn.PrimitiveCreate2(opPrimDesc, srcs, indexes, srcs.length,
         dsts, dsts.length)
 
+      if (gradOutputPrim.reorder != 0) {
+        backwardDataPrimBuffer += gradOutputPrim.reorder
+      }
+      backwardDataPrimBuffer += backDataPrim
+
 //      MklDnn.PrimitiveDescDestroy(opPrimDesc)
     }
 
-    if (backDataStream == 0) {
-      backDataStream = MklDnn.StreamCreate(StreamType.eager)
-    }
+//    if (backDataStream == 0) {
+//      backDataStream = MklDnn.StreamCreate(StreamType.eager)
+//    }
 
     gradOutputPrim.setHandle(gradOutput)
     weightPrim.setHandle(weight)
     gradInputPrim.setHandle(gradInput)
 
-    MklDnn.StreamSubmit(backDataStream, 1, Array(backDataPrim))
+    MklDnn.StreamSubmit(stream, 1, backwardDataPrimBuffer.toArray)
 
     gradInputPrim.releaseHandle()
     gradOutputPrim.releaseHandle()
@@ -246,7 +256,7 @@ class Linear[T: ClassTag](
   }
 
   override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T]): Unit = {
-    accGradParameters2(input, gradOutput)
+    accGradParameters1(input, gradOutput)
   }
 
   var computing = 0.0
@@ -264,6 +274,7 @@ class Linear[T: ClassTag](
     }
 
     if (backWeightPrim == 0) {
+      backwardWeightPrimBuffer = ArrayBuffer.empty[Long]
       val diffWeightMemDesc = MklDnn.MemoryDescInit(gradWeight.dim(), gradWeight.size(),
         MklDnn.DataType.f32, MklDnn.MemoryFormat.any)
 
@@ -286,9 +297,9 @@ class Linear[T: ClassTag](
         srcs, indexes, srcs.length, dsts, dsts.length)
     }
 
-    if (backWeightStream == 0) {
-      backWeightStream = MklDnn.StreamCreate(StreamType.eager)
-    }
+//    if (backWeightStream == 0) {
+//      backWeightStream = MklDnn.StreamCreate(StreamType.eager)
+//    }
 
     inputPrim.setHandle(input)
     gradOutputPrim.setHandle(gradOutput)
@@ -296,7 +307,7 @@ class Linear[T: ClassTag](
     gradBiasPrim.setHandle(diffBias)
 
     val start1 = System.nanoTime()
-    MklDnn.StreamSubmit(backWeightStream, 1, Array(backWeightPrim))
+    MklDnn.StreamSubmit(stream, 1, Array(backWeightPrim))
     val end1 = System.nanoTime()
     computing += end1 - start1
 
