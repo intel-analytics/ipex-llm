@@ -84,14 +84,27 @@ private[bigdl] class Scheduler[T] (
    */
   def fetch(): ModuleNode[T] = {
     var node = readyQueue.dequeue()
-    while (nodeStatus.isConst(node) || node.element.isInstanceOf[ControlDependency[_]]) {
-      if (!nodeStatus.isConst(node)) {
-        schedule(node)
-      }
+    while (skipExecution(node)) {
       node = readyQueue.dequeue()
     }
 
     node
+  }
+
+  private def skipExecution(node: ModuleNode[T]): Boolean = {
+    if (nodeStatus.isConst(node)) return true
+
+    if (node.element.isInstanceOf[ControlDependency[_]]) {
+      schedule(node)
+      return true
+    }
+
+    if (node.element.isInstanceOf[NextIteration[_, _]] || node.element.isInstanceOf[Exit[_]]) {
+      val curFrame = frameManayger(node)
+      require(curFrame.isDefined, "Current node should be in a frame")
+      return leaveFrame(curFrame.get, node)
+    }
+    return false
   }
 
   /**
@@ -101,22 +114,25 @@ private[bigdl] class Scheduler[T] (
   def schedule(node: ModuleNode[T]): Unit = {
     val curFrame = frameManayger(node)
 
-    val nextNodeFrame = node.element match {
-      case e: Enter[_] =>
-        Some(frameManayger.createFrame(e.frame, curFrame))
-      case c: LoopCondition[_] =>
-        require(curFrame.isDefined, "LoopCondition should be in a frame")
-        val f = curFrame.get
-        require(f.barrier == 0, "frame mutex should not be set or clear before loop condition")
-        f.barrier = node.nextNodes.size
-        curFrame
-      case n: NextIteration[_] =>
-        require(curFrame.isDefined, "NextIteration should be in a frame")
-        if (leaveFrame(curFrame.get, node)) return else curFrame
-      case ex: Exit[_] =>
-        require(curFrame.isDefined, "Exit should be in a frame")
-        if (leaveFrame(curFrame.get, node)) return else curFrame.get.parent
-      case _ => curFrame
+    val nextNodeFrame = if (node.element.isInstanceOf[Enter[_]]) {
+      val e = node.element.asInstanceOf[Enter[_]]
+      Some(frameManayger.createFrame(e.frame, curFrame))
+    } else if (node.element.isInstanceOf[LoopCondition[_]]) {
+      require(curFrame.isDefined, "LoopCondition should be in a frame")
+      val f = curFrame.get
+      require(f.barrier == 0, "frame mutex should not be set or clear before loop condition")
+      f.barrier = node.nextNodes.size
+      curFrame
+    } else if (node.element.isInstanceOf[NextIteration[_, _]]) {
+      require(curFrame.isDefined, "NextIteration should be in a frame")
+      frameManayger.leave(node)
+      curFrame
+    } else if (node.element.isInstanceOf[Exit[_]]) {
+      require(curFrame.isDefined, "Exit should be in a frame")
+      frameManayger.leave(node)
+      curFrame.get.parent
+    } else {
+      curFrame
     }
 
     if (!nodeStatus.isConst(node)) {
@@ -189,8 +205,6 @@ private[bigdl] class Scheduler[T] (
    */
   private def leaveFrame(frame: Frame[T], node: ModuleNode[T]): Boolean = {
     if (frame.barrier == 0) {
-      // current node leave the frame
-      frameManayger.leave(node)
       false // don't skip current schedule
     } else {
       // node need to wait for frame execution
@@ -203,7 +217,7 @@ private[bigdl] class Scheduler[T] (
         frame.waitingNodes.clear()
         // As frame is exit/refreshed, mark all nodes in the frame are not ready and remove them
         // from the frame
-        frame.nodes.filterNot(_.element.isInstanceOf[NextIteration[_]])
+        frame.nodes.filterNot(_.element.isInstanceOf[NextIteration[_, _]])
           .filterNot(_.element.isInstanceOf[Exit[_]]).foreach(n => {
           nodeStatus.unset(n)
           frameManayger.leave(n)

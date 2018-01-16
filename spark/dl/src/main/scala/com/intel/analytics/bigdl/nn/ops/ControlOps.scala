@@ -183,8 +183,15 @@ sealed class MergeControlNode[T] private[bigdl] (element: T) extends Node[T](ele
  * Mark start of next iteration. User should use ControlNodes.whileLoop to use such operation.
  * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now
  */
-sealed private[bigdl] class NextIteration[T: ClassTag] private[bigdl]()
-  (implicit ev: TensorNumeric[T]) extends IdentityControl[T]
+sealed private[bigdl] class NextIteration[T: ClassTag, D: ClassTag] private[bigdl]()
+  (implicit ev: TensorNumeric[T], ev2: TensorNumeric[D])
+  extends Operation[Tensor[D], Tensor[D], T] {
+  output = Tensor[D]()
+
+  override def updateOutput(input: Tensor[D]): Tensor[D] = {
+    output.resizeAs(input).copy(input)
+  }
+}
 
 /**
  * Mark start of a loop. User should use ControlNodes.whileLoop to use such operation.
@@ -296,7 +303,7 @@ object ControlNodes {
       val identity = Identity[T]().inputs(switchNode.falseEdge())
       if (name != null) identity.element.setName(s"$name/switchFalse$index")
       identity -> update._1
-      val nextIteration = new NextIteration[T].inputs(update._2)
+      val nextIteration = new NextIteration[T, T].inputs(update._2)
       if (name != null) nextIteration.element.setName(s"$name/nextIteration$index")
       mergeNode.append(nextIteration)
       exitNode

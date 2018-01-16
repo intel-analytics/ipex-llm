@@ -620,7 +620,7 @@ object Tensorflow {
   }
 
   private[bigdl] def stringAttr(node: NodeDef, key: String): String = {
-    node.getAttrMap.get(key).getS().toString()
+    node.getAttrMap.get(key).getS().toStringUtf8
   }
 
   private def shapeAttr(shape: Seq[Int]): AttrValue = {

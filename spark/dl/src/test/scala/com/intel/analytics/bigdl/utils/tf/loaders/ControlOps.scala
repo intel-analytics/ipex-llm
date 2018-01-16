@@ -18,12 +18,12 @@ package com.intel.analytics.bigdl.utils.tf.loaders
 import java.nio.ByteOrder
 
 import com.intel.analytics.bigdl.Module
-import com.intel.analytics.bigdl.nn.ops.{Exit => ExitOps, MergeOps, SwitchOps,
-  NextIteration => NextIterationOps, Enter => EnterOps, LoopCondition => LoopConditionOps}
+import com.intel.analytics.bigdl.nn.ops.{MergeOps, SwitchOps, Enter => EnterOps, Exit => ExitOps, LoopCondition => LoopConditionOps, NextIteration => NextIterationOps}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.tf.Context
-import org.tensorflow.framework.NodeDef
+import org.tensorflow.framework.{DataType, NodeDef}
 import com.intel.analytics.bigdl.utils.tf.Tensorflow._
+import com.intel.analytics.bigdl.utils.tf.loaders.Utils.getType
 
 import scala.reflect.ClassTag
 
@@ -44,7 +44,14 @@ private[bigdl] class Exit extends TensorflowOpsLoader {
 private[bigdl] class NextIteration extends TensorflowOpsLoader {
   override def build[T: ClassTag](nodeDef: NodeDef, byteOrder: ByteOrder
     , context: Context[T])(implicit ev: TensorNumeric[T]): Module[T] = {
-    new NextIterationOps[T]()
+    val t = getType(nodeDef.getAttrMap, "T")
+    if (t == DataType.DT_FLOAT) {
+      new NextIterationOps[T, Float]()
+    } else if (t == DataType.DT_INT32) {
+      new NextIterationOps[T, Int]()
+    } else {
+      throw new UnsupportedOperationException(s"Not support numeric type $t")
+    }
   }
 }
 
