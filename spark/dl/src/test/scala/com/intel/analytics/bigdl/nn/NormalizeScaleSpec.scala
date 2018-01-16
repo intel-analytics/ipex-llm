@@ -344,4 +344,22 @@ class NormalizeScaleSpec extends FlatSpec with Matchers {
       a
     })
   }
+
+  "A NormalizeScale zeroGrad" should "work" in {
+    val input = Tensor[Float](Array(2, 5, 3, 3)).randn()
+
+    val gradOut = Tensor[Float](Array(2, 5, 3, 3)).randn()
+
+    val module = NormalizeScale[Float](2, scale = 20, size = Array(1, 5, 1, 1))
+
+    val out = module.forward(input)
+    val gradInput = module.backward(input, gradOut)
+
+    println(module.parameters()._2(0))
+
+    module.zeroGradParameters()
+    module.parameters()._2(0).apply1(x => {
+      assert(x == 0); x
+    })
+  }
 }
