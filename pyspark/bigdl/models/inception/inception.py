@@ -6,6 +6,7 @@ from bigdl.optim.optimizer import *
 from bigdl.util.common import *
 from bigdl.dataset.imagenet import *
 from bigdl.dataset.transformer import *
+from bigdl.transform.vision.image import *
 
 
 def scala_T(input_T):
@@ -215,14 +216,12 @@ def Inception_v1(class_num):
     model.reset()
     return model
 
-
-def get_inception_data(folder, file_type="image", data_type="train", normalize=255.0):
-    path = os.path.join(folder, data_type)
+def get_inception_data(url, sc=None, file_type="image", data_type="train"):
+    path = os.path.join(url, data_type)
     if "seq" == file_type:
-        return read_seq_file(sc, path, normalize)
+        return SeqFileFolder.files_to_image_frame(url=path, sc=sc, class_num=1000)
     elif "image" == file_type:
-        return read_local(sc, path, normalize)
-
+        return ImageFrame.read(path, sc)
 
 def config_option_parser():
     parser = OptionParser()
@@ -256,7 +255,8 @@ if __name__ == "__main__":
         parser.error("-b --batchSize is a mandatory opt")
 
     # init
-    sc = SparkContext(appName="inception v1", conf=create_spark_conf())
+    sparkConf = create_spark_conf().setAppName("inception v1")
+    sc = get_spark_context(sparkConf)
     init_engine()
 
     # build model
@@ -266,41 +266,30 @@ if __name__ == "__main__":
 
     if options.action == "train":
         # create dataset
-        train_transformer = Transformer([Crop(image_size, image_size),
-                                         Flip(0.5),
-                                         ChannelNormalizer(0.485, 0.456, 0.406, 0.229, 0.224, 0.225),
-                                         TransposeToTensor(False)
-                                         ])
-        train_data = get_inception_data(options.folder, "seq", "train").map(
-            lambda features_label: (train_transformer(features_label[0]), features_label[1])).map(
-            lambda features_label: Sample.from_ndarray(features_label[0], features_label[1] + 1))
+        train_transformer = Pipeline([RandomCrop(image_size, image_size),
+                                HFlip(),
+                                ChannelNormalize(0.485, 0.456, 0.406, 0.229, 0.224, 0.225),
+                                MatToTensor(to_rgb=True),
+                                ImageFrameToSample(input_keys=["imageTensor"], target_keys=["label"])
+                                ])
+        train_data = train_transformer(get_inception_data(options.folder, sc, "seq", "train"))
 
-        val_transformer = Transformer([Crop(image_size, image_size, "center"),
-                                       Flip(0.5),
-                                       ChannelNormalizer(0.485, 0.456, 0.406, 0.229, 0.224, 0.225),
-                                       TransposeToTensor(False)
-                                       ])
-        val_data = get_inception_data(options.folder, "seq", "val").map(
-            lambda features_label: (val_transformer(features_label[0]), features_label[1])).map(
-            lambda features_label: Sample.from_ndarray(features_label[0], features_label[1] + 1))
+
+        val_transformer = Pipeline([CenterCrop(image_size, image_size),
+                                    HFlip(),
+                                    ChannelNormalize(0.485, 0.456, 0.406, 0.229, 0.224, 0.225),
+                                    MatToTensor(to_rgb=True),
+                                    ImageFrameToSample(input_keys=["imageTensor"], target_keys=["label"])
+                                    ])
+        val_data = val_transformer(get_inception_data(options.folder, sc, "seq", "val"))
 
         # TODO: Check stateSnapshot opt
 
         if options.maxEpoch:
-            state = scala_T(
-                {"learningRate": options.learningRate,
-                 "weightDecay": options.weightDecay,
-                 "momentum": 0.9,
-                 "dampening": 0.0})
             checkpoint_trigger = EveryEpoch()
             test_trigger = EveryEpoch()
             end_trigger = MaxEpoch(options.maxEpoch)
         else:
-            state = scala_T(
-                {"learningRate": options.learningRate,
-                 "weightDecay": options.weightDecay,
-                 "momentum": 0.9,
-                 "dampening": 0.0})
             checkpoint_trigger = SeveralIteration(options.checkpointIteration)
             test_trigger = SeveralIteration(options.checkpointIteration)
             end_trigger = MaxIteration(options.maxIteration)
@@ -313,7 +302,7 @@ if __name__ == "__main__":
                              momentum=0.9, dampening=0.0),
             criterion=ClassNLLCriterion(),
             end_trigger=end_trigger,
-            batch_size=options.batchSize,
+            batch_size=options.batchSize
         )
 
         if options.checkpoint:
@@ -328,15 +317,16 @@ if __name__ == "__main__":
 
     elif options.action == "test":
         # Load a pre-trained model and then validate it through top1 accuracy.
-        test_transformer = Transformer([Crop(image_size, image_size, "center"),
-                                        Flip(0.5),
-                                        ChannelNormalizer(0.485, 0.456, 0.406, 0.229, 0.224, 0.225),
-                                        TransposeToTensor(False)
-                                        ])
-        test_data=get_inception_data(options.folder, "seq", "val").map(
-            lambda features_label: (test_transformer(features_label[0]), features_label[1])).map(
-            lambda features_label: Sample.from_ndarray(features_label[0], features_label[1] + 1))
+        test_transformer = Pipeline([CenterCrop(image_size, image_size),
+                                    HFlip(),
+                                    ChannelNormalize(0.485, 0.456, 0.406, 0.229, 0.224, 0.225),
+                                    MatToTensor(to_rgb=True),
+                                    ImageFrameToSample(input_keys=["imageTensor"], target_keys=["label"])
+                                    ])
+        test_data = test_transformer(get_inception_data(options.folder, sc, "seq", "val"))
         model = Model.load(options.model)
-        results = model.test(test_data, options.batchSize, [Top1Accuracy(), Top5Accuracy()])
+        results = model.evaluate(test_data, options.batchSize, [Top1Accuracy(), Top5Accuracy()])
         for result in results:
             print result
+
+    sc.stop()
