@@ -15,14 +15,20 @@
  */
 package org.apache.spark.ml
 
-import com.intel.analytics.bigdl.{Criterion, Module}
+import java.net.URI
+
 import com.intel.analytics.bigdl.dataset._
 import com.intel.analytics.bigdl.models.utils.ModelBroadcast
 import com.intel.analytics.bigdl.optim._
+import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
-import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.utils.serializer.ModuleLoader
+import com.intel.analytics.bigdl.utils.{File, T}
 import com.intel.analytics.bigdl.visualization.{TrainSummary, ValidationSummary}
+import com.intel.analytics.bigdl.{Criterion, Module}
+import opennlp.tools.cmdline.ModelLoader
+import org.apache.commons.lang3.SerializationUtils
+import org.apache.hadoop.fs.Path
 import org.apache.spark.ml.param.shared.{HasFeaturesCol, HasPredictionCol}
 import org.apache.spark.ml.param.{IntParam, ParamMap, ParamValidators, _}
 import org.apache.spark.ml.util.SchemaUtils
@@ -364,7 +370,7 @@ class DLModel[@specialized(Float, Double) T: ClassTag](
     var featureSize : Array[Int],
     override val uid: String = "DLModel"
     )(implicit ev: TensorNumeric[T])
-  extends DLTransformerBase[DLModel[T]] with DLParams[T] with HasBatchSize {
+  extends DLModelBase[T, DLModel[T]] with DLParams[T] with HasBatchSize {
 
   def setFeaturesCol(featuresColName: String): this.type = set(featuresCol, featuresColName)
 
@@ -387,7 +393,7 @@ class DLModel[@specialized(Float, Double) T: ClassTag](
     val featureColIndex = dataFrame.schema.fieldIndex($(featuresCol))
     val featureFunc = getConvertFunc(featureType)
     val sc = dataFrame.sqlContext.sparkContext
-    val modelBroadCast = ModelBroadcast[T]().broadcast(sc, model)
+    val modelBroadCast = ModelBroadcast[T]().broadcast(sc, _model)
     val localBatchSize = $(batchSize)
 
     val resultRDD = dataFrame.rdd.mapPartitions { rowIter =>
@@ -425,14 +431,70 @@ class DLModel[@specialized(Float, Double) T: ClassTag](
   }
 
   override def copy(extra: ParamMap): DLModel[T] = {
-    val copied = new DLModel(model, featureSize, uid).setParent(parent)
+    val copied = new DLModel(_model, featureSize, uid).setParent(parent)
     copyValues(copied, extra)
+  }
+
+  private var _model: Module[T] = model
+
+  override protected def getModule: Module[T] = _model
+
+  override protected def setModule(module: Module[T]): Unit = _model = module
+}
+
+object DLModel {
+  def load[@specialized(Float, Double) T: ClassTag]
+  (path: String)(implicit ev: TensorNumeric[T]): DLModel[T] = {
+    DLModelBase.load[T, DLModel[T]](path).asInstanceOf[DLModel[T]]
   }
 }
 
-// TODO, add save/load
-object DLModel {
+/**
+ * Base class of DLModels, such as DLClassifierModel, provide (pipeline) model IO features.
+ * Please make sure working with module which returned by [[getModule]] and set by [[setModule]].
+ */
+abstract class DLModelBase[@specialized(Float, Double) T: ClassTag, M <: DLTransformerBase[M]]
+()(implicit ev: TensorNumeric[T]) extends DLTransformerBase[M] {
+  protected def getModule: Module[T]
 
+  protected def setModule(module: Module[T]): Unit
 
+  /**
+   * Save a [[DLModelBase]] to a dictionary, which contains 3 files(meta, module, weight).
+   * @param path path of model dictionary, it should NOT exists as a File.
+   * @param isOverWrite whether overwrite earlier files
+   */
+  def save(path: String, isOverWrite: Boolean): Unit = {
+    val (metaPath, modulePath, weightPath) = DLModelBase.getPaths(path)
+    val meta = SerializationUtils.serialize(this)
+    File.saveBytes(meta, metaPath, isOverWrite)
+    getModule.saveModule(modulePath, weightPath, isOverWrite)
+  }
+}
+
+object DLModelBase {
+  /**
+   * Load a [[DLModelBase]] from files.
+   * @param path path of model dictionary
+   */
+  def load[@specialized(Float, Double) T: ClassTag, M <: DLTransformerBase[M]]
+  (path: String)(implicit ev: TensorNumeric[T]): DLModelBase[T, M] = {
+    val (metaPath, modulePath, weightPath) = DLModelBase.getPaths(path)
+    val modelBase = SerializationUtils.deserialize[DLModelBase[T, M]](File.readBytes(metaPath))
+    val module = ModuleLoader.loadFromFile[T](modulePath, weightPath)
+    modelBase.setModule(module)
+    modelBase
+  }
+
+  private def getPaths(path: String): (String, String, String) = {
+    val mainPath = new Path(path)
+    val metaPath = new Path(mainPath.toUri.getScheme, mainPath.toUri.getAuthority,
+      mainPath.toUri.getPath + "/meta").toUri.getPath
+    val modulePath = new Path(mainPath.toUri.getScheme, mainPath.toUri.getAuthority,
+      mainPath.toUri.getPath + "/module").toUri.getPath
+    val weightPath = new Path(mainPath.toUri.getScheme, mainPath.toUri.getAuthority,
+      mainPath.toUri.getPath + "/weight").toUri.getPath
+    (metaPath, modulePath, weightPath)
+  }
 }
 

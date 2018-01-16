@@ -16,6 +16,8 @@
 
 package com.intel.analytics.bigdl.optim
 
+import java.io.File
+
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
@@ -291,6 +293,23 @@ class DLEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
       }.count()
       assert(correct > nRecords * 0.8)
     }
+  }
+
+  "An DLModel" should "should return same results after saving and loading" in {
+    val data = sqlContext.createDataFrame(smallData).toDF("features", "label")
+    val module = new Sequential().add(Linear[Float](6, 1)).add(Tanh[Float])
+    val dlModel = new DLModel[Float](module, Array(6))
+    val result = dlModel.transform(data).rdd
+      .map(_.get(2).asInstanceOf[Seq[Double]].head).collect().sorted
+
+    val filePath = File.createTempFile("DLModelBase", "bigdl").getPath + Random.nextLong().toString
+    dlModel.save(filePath, isOverWrite = true)
+    val dlModel2 = DLModel.load[Float](filePath)
+    dlModel2.uid shouldEqual dlModel.uid
+    dlModel2.getFeatureSize shouldEqual dlModel.getFeatureSize
+    val result2 = dlModel2.transform(data).rdd
+      .map(_.get(2).asInstanceOf[Seq[Double]].head).collect().sorted
+    result2 shouldEqual result
   }
 }
 

@@ -20,7 +20,6 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.{Criterion, Module}
 import org.apache.spark.ml.param.ParamMap
 import org.apache.spark.ml.util.{Identifiable, SchemaUtils}
-import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.types._
 
 import scala.reflect.ClassTag
@@ -81,3 +80,9 @@ class DLClassifierModel[@specialized(Float, Double) T: ClassTag](
   }
 }
 
+object DLClassifierModel {
+  def load[@specialized(Float, Double) T: ClassTag]
+  (path: String)(implicit ev: TensorNumeric[T]): DLClassifierModel[T] = {
+    DLModelBase.load[T, DLModel[T]](path).asInstanceOf[DLClassifierModel[T]]
+  }
+}

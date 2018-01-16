@@ -16,6 +16,8 @@
 
 package com.intel.analytics.bigdl.optim
 
+import java.io.File
+
 import com.intel.analytics.bigdl.models.lenet.LeNet5
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.tensor.Tensor
@@ -201,6 +203,22 @@ class DLClassifierSpec extends FlatSpec with Matchers with BeforeAndAfter {
       assert(pipelineModel.transform(df).where("prediction=label").count() > nRecords * 0.8)
     }
   }
+
+  "An DLClassifierModel" should "should return same results after saving and loading" in {
+    val data = sqlContext.createDataFrame(smallData).toDF("features", "label")
+    val module = new Sequential().add(Linear[Float](6, 2)).add(LogSoftMax[Float])
+    val dlModel = new DLClassifierModel[Float](module, Array(6))
+    val result = dlModel.transform(data).rdd.map(_.getAs[Double](2)).collect().sorted
+
+    val filePath = File.createTempFile("DLModelBase", "bigdl").getPath + Random.nextLong().toString
+    dlModel.save(filePath, isOverWrite = true)
+    val dlModel2 = DLClassifierModel.load[Float](filePath)
+    dlModel2.uid shouldEqual dlModel.uid
+    dlModel2.getFeatureSize shouldEqual dlModel.getFeatureSize
+    val result2 = dlModel2.transform(data).rdd.map(_.getAs[Double](2)).collect().sorted
+    result2 shouldEqual result
+  }
+
 }
 
 private case class Data(label: Double, features: Array[Double])
