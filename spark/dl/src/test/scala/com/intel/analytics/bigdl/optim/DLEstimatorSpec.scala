@@ -91,6 +91,27 @@ class DLEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
     assert(correct > nRecords * 0.8)
   }
 
+  "An DLEstimator" should "throws exception when DLModel is predicting with DLModel.train=True" in {
+    val model = new Sequential().add(Linear[Float](6, 2))
+      .add(Dropout[Float](initP = 0.5))
+      .add(LogSoftMax[Float])
+    val criterion = ClassNLLCriterion[Float]()
+    val estimator = new DLEstimator[Float](model, criterion, Array(6), Array(1))
+      .setBatchSize(nRecords)
+      .setOptimMethod(new LBFGS[Float]())
+      .setLearningRate(0.1)
+      .setMaxEpoch(maxEpoch)
+    val data = sc.parallelize(smallData)
+    val df = sqlContext.createDataFrame(data).toDF("features", "label")
+    val dlModel = estimator.fit(df)
+    dlModel.isInstanceOf[DLModel[_]] should be(true)
+    val correct = dlModel.transform(df).select("label", "prediction").rdd.filter {
+      case Row(label: Double, prediction: Seq[Double]) =>
+        label == prediction.indexOf(prediction.max) + 1
+    }.count()
+    assert(correct > nRecords * 0.8)
+  }
+
   "An DLEstimator" should "support different FEATURE types" in {
     val model = new Sequential().add(Linear[Float](6, 2)).add(LogSoftMax[Float])
     val criterion = ClassNLLCriterion[Float]()

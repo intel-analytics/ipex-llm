@@ -391,7 +391,8 @@ class DLModel[@specialized(Float, Double) T: ClassTag](
     val localBatchSize = $(batchSize)
 
     val resultRDD = dataFrame.rdd.mapPartitions { rowIter =>
-      val localModel = modelBroadCast.value()
+      // call the evaluate method to enable DLModel.train=False during the predict process
+      val localModel = modelBroadCast.value().evaluate()
       rowIter.grouped(localBatchSize).flatMap { rowBatch =>
         val samples = rowBatch.map { row =>
           val features = featureFunc(row, featureColIndex)
