@@ -17,6 +17,7 @@ package com.intel.analytics.bigdl.nn.mkldnn
 
 import java.util.concurrent.atomic.AtomicInteger
 
+import breeze.linalg.all
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dataset.{LocalDataSet, MiniBatch}
 import com.intel.analytics.bigdl.example.loadmodel.AlexNet
@@ -26,12 +27,15 @@ import com.intel.analytics.bigdl.models.resnet.ResNet
 import com.intel.analytics.bigdl.models.resnet.ResNet.DatasetType
 import com.intel.analytics.bigdl.models.vgg.{Vgg_16, Vgg_19}
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
-import com.intel.analytics.bigdl.nn.{Module => _, _}
+import com.intel.analytics.bigdl.nn.{Utils, Module => _, _}
 import com.intel.analytics.bigdl.numeric.NumericFloat
+import com.intel.analytics.bigdl.optim.Optimizer._
 import com.intel.analytics.bigdl.optim.{Optimizer, Trigger}
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.{Engine, T, Table, ThreadPool}
+import com.intel.analytics.bigdl.utils._
 import org.apache.log4j.Logger
+import org.apache.spark.sql.execution.streaming
+import org.apache.spark.sql.execution.streaming.state
 import scopt.OptionParser
 
 import scala.collection.mutable.ArrayBuffer
@@ -79,60 +83,79 @@ object LocalOptimizerPerf {
   }
 
   def performance(param: LocalOptimizerPerfParam): Unit = {
-    def all(model: Module[Float], input: Tensor[Float]): Unit = {
-      val subModelNumber = param.coreNumber
-      val workingModels = (1 to param.coreNumber).map(i => {
-        logger.info(s"Clone $i model...")
-        model.cloneModule()
-      }).toArray
 
-      val default: ThreadPool = new ThreadPool(param.coreNumber * 50)
+    def all(model: Module[Float], dataset: LocalDataSet[MiniBatch[Float]], iteration: Int): Unit = {
 
-      val timeBuffer =
-        new ArrayBuffer[(AbstractModule[_ <: Activity, _ <: Activity, Float], Long, Long, Double)]
+      val coreNumber = Engine.coreNumber()
+      val subModelNumber = Engine.getEngineType match {
+        case MklBlas => coreNumber
+        case _ => throw new IllegalArgumentException
+      }
 
-      for (i <- 0 to param.iteration) {
+      val workingModels = {
+        model.getParameters()
+        val wb = Util.getAndClearWeightBias(model.parameters())
+
+        val models = (1 to subModelNumber).map(i => {
+          logger.info(s"Clone $i model...")
+          val m = model.cloneModule()
+          Util.putWeightBias(wb, m)
+          Util.initGradWeightBias(wb, m)
+          // for dnn create engine and stream
+          m.createDnnEngine(0)
+          m.createStream()
+          m
+        }).toArray
+        Util.putWeightBias(wb, model)
+        Util.initGradWeightBias(wb, model)
+        models
+      }
+
+      var wallClockTime = 0L
+      var count = 0
+      var iter = dataset.data(train = false)
+      logger.info("model thread pool size is " + Engine.model.getPoolSize)
+      var i = 0
+      while (i < iteration) {
         val start = System.nanoTime()
-
+        // Fetch data and prepare tensors
+        val batch = iter.next()
         var b = 0
-        val stackSize = input.size(1) / subModelNumber
-        val extraSize = input.size(1) % subModelNumber
+        val stackSize = batch.size() / subModelNumber
+        val extraSize = batch.size() % subModelNumber
         val parallelism = if (stackSize == 0) extraSize else subModelNumber
-        val inputBuffer = new Array[Tensor[Float]](parallelism)
+        val miniBatchBuffer = new Array[MiniBatch[Float]](parallelism)
         while (b < parallelism) {
           val offset = b * stackSize + math.min(b, extraSize) + 1
           val length = stackSize + (if (b < extraSize) 1 else 0)
-          inputBuffer(b) = input.narrow(1, offset, length)
+          miniBatchBuffer(b) = batch.slice(offset, length)
           b += 1
         }
+        val dataFetchTime = System.nanoTime()
 
-        val lossSum = default.invokeAndWait(
-          (0 until param.coreNumber).map(i =>
+        val lossSum = Engine.default.invokeAndWait(
+          (0 until parallelism).map(i =>
             () => {
-              // println(s"running model ${i}")
               val localModel = workingModels(i)
-              localModel.zeroGradParameters()
-              localModel.training()
-              val t1 = System.nanoTime()
-              val output = localModel.forward(inputBuffer(i))
-              val end1 = System.nanoTime() - t1
-              val t2 = System.nanoTime()
-              localModel.backward(inputBuffer(i), output)
-              val end2 = System.nanoTime() - t2
-              val tmp = localModel.getTimes()
-              DnnUtils.getTopTimes(tmp)
-              localModel.resetTimes()
-              // println("forward: " + end1 + " backward: " + end2 + " rate: " + end2.toDouble/end1)
-              println("forward: " + end1 + " backward: " + end2 + " rate: " + end2.toDouble/end1)
+              val input = miniBatchBuffer(i).getInput()
+              val output = localModel.forward(input)
+              localModel.backward(input, output)
+              1
             })
-        )
+        ).sum
+
         val end = System.nanoTime()
-        logger.info(s"Iteration ${i}-iteration time is ${(end - start) / 1e9}s " +
-          s"Throughput is ${param.batchSize.toDouble / (end - start) * 1e9} record / second. "
+        logger.info(
+          s"data fetch time is ${(dataFetchTime - start) / 1e9}s, " +
+            s"train time ${(end - dataFetchTime) / 1e9}s. " +
+            s"Throughput is ${batch.size().toDouble / (end - start) * 1e9} record / second. "
         )
+
+        i += 1
       }
     }
 
+    System.setProperty("bigdl.mklNumThreads", "4")
     Engine.setCoreNumber(param.coreNumber)
 
     val (_model, miniBatch, criterion) = getModel(param.module, param.batchSize)
@@ -161,8 +184,12 @@ object LocalOptimizerPerf {
       override def shuffle(): Unit = {}
     }
 
-    val optimizer = Optimizer(model, dummyDataSet, criterion)
-    optimizer.setEndWhen(Trigger.maxIteration(param.iteration)).optimize()
+    if (false) {
+      val optimizer = Optimizer(model, dummyDataSet, criterion)
+      optimizer.setEndWhen(Trigger.maxIteration(param.iteration)).optimize()
+    } else {
+      all(model, dummyDataSet, param.iteration)
+    }
   }
 
   def main(args: Array[String]): Unit = {
@@ -182,7 +209,7 @@ object LocalOptimizerPerf {
   */
 case class LocalOptimizerPerfParam(
     batchSize: Int = 16, // 16,
-    coreNumber: Int = 1, //Runtime.getRuntime.availableProcessors() / 2,
+    coreNumber: Int = 1, // Runtime.getRuntime.availableProcessors() / 2,
     iteration: Int = 80,
     dataType: String = "float",
     module: String = "alexnetDnn" // "alexnetDnn"
