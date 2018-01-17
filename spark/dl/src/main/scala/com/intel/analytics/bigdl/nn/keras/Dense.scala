@@ -22,6 +22,7 @@ import com.intel.analytics.bigdl.nn.abstractnn._
 import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.nn.keras.Shape._
 
 import scala.reflect.ClassTag
 
@@ -34,18 +35,18 @@ class Dense[T: ClassTag](val outputDim: Int,
                          var bRegularizer: Regularizer[T] = null,
                          val bias: Boolean = true,
                          var inputShape: Array[Int] = null
-  )(implicit ev: TensorNumeric[T]) extends KerasModule[Tensor[T], Tensor[T], T](inputShape) {
+  )(implicit ev: TensorNumeric[T]) extends KerasLayer[Tensor[T], Tensor[T], T](Shape(inputShape)) {
 
-  override def doBuild(inputShape: Activity): AbstractModule[Tensor[T], Tensor[T], T] = {
+  override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
     val layer = Linear(
-      inputSize = inputShape.toTensor[Int].toArray()(0),
+      inputSize = inputShape.toSingle()(0),
       outputSize = outputDim,
       withBias = bias,
       wRegularizer = wRegularizer,
       bRegularizer = bRegularizer
     )
     layer.setInitMethod(weightInitMethod = init, biasInitMethod = Zeros)
-    KerasModule.fuse(layer,
+    KerasLayer.fuse(layer,
       activation,
       inputShape).asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
   }

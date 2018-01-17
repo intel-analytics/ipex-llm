@@ -17,21 +17,27 @@
 package com.intel.analytics.bigdl.nn.keras
 
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.nn.{InputLayer, Sequential}
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
+import com.intel.analytics.bigdl.nn.Graph._
+import com.intel.analytics.bigdl.nn.{InputLayer, Sequential => TSequential, Input}
+import com.intel.analytics.bigdl.nn.keras.{Sequential => KSequential}
+import com.intel.analytics.bigdl.nn.keras.Model._
+
+
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, InferShape, TensorModule}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.{Tensor, TensorDataType}
-import com.intel.analytics.bigdl.utils.Table
+import com.intel.analytics.bigdl.utils.{Edge, Node, Table}
 import com.intel.analytics.bigdl.utils.serializer._
 import serialization.Bigdl.{AttrValue, BigDLModule}
 
+import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
-object KerasModuleSerializer extends ModuleSerializable {
+object KerasLayerSerializer extends ModuleSerializable {
 
   override def doLoadModule[T: ClassTag](context : DeserializeContext)
            (implicit ev: TensorNumeric[T]) : AbstractModule[Activity, Activity, T] = {
-    val laborAdapter = super.doLoadModule(context).asInstanceOf[KerasModule[Activity, Activity, T]]
+    val laborAdapter = super.doLoadModule(context).asInstanceOf[KerasLayer[Activity, Activity, T]]
     val attrMap = context.bigdlModule.getAttrMap
     laborAdapter.labor = DataConverter.getAttributeValue(context, attrMap.get("labor")).
       asInstanceOf[AbstractModule[Activity, Activity, T]]
@@ -44,7 +50,7 @@ object KerasModuleSerializer extends ModuleSerializable {
 
     super.doSerializeModule(context, moduleBuilder)
     val laborAdapterModule =
-      context.moduleData.module.asInstanceOf[KerasModule[Activity, Activity, T]]
+      context.moduleData.module.asInstanceOf[KerasLayer[Activity, Activity, T]]
     val laborBuilder = AttrValue.newBuilder
     DataConverter.setAttributeValue(context, laborBuilder, laborAdapterModule.labor,
       ModuleSerializer.abstractModuleType)
@@ -57,20 +63,24 @@ object KerasModuleSerializer extends ModuleSerializable {
   }
 }
 
-private[bigdl] object KerasModule {
+private[bigdl] object KerasLayer {
     def fuse[T: ClassTag](sLayer: AbstractModule[Activity, Activity, T],
                           activation: TensorModule[T],
-                          inputShape: Activity)
+                          inputShape: Shape)
                          (implicit ev: TensorNumeric[T]): AbstractModule[Activity, Activity, T] = {
       if (activation == null) {
         return sLayer
       }
-      val seq = Sequential[T]()
-      seq.add(InputLayer(inputShape = inputShape.toTensor[Int].toArray()))
+      val seq = KSequential[T]()
+      seq.add(InputLayer(inputShape = inputShape))
       seq.add(sLayer)
       seq.add(activation)
       seq.setName(sLayer.getName())
       return seq
+
+//      val i = Input(inputShape = inputShape.toSingle().toArray)
+//      Model(input = i, output = activation.inputs(sLayer.inputs(i)))
+//      .setName(sLayer.getName())
     }
 }
 
@@ -83,14 +93,16 @@ private[bigdl] object KerasModule {
  * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now
  * @param mInputShape inputshape for a layer which is just a shape of a record without batch.
  */
-abstract class KerasModule[A <: Activity: ClassTag, B <: Activity: ClassTag, T: ClassTag]
-(mInputShape: Array[Int] = null)(implicit ev: TensorNumeric[T]) extends AbstractModule[A, B, T]{
+abstract class KerasLayer[A <: Activity: ClassTag, B <: Activity: ClassTag, T: ClassTag]
+(mInputShape: Shape = null)(implicit ev: TensorNumeric[T]) extends AbstractModule[A, B, T]{
 
   var labor: AbstractModule[A, B, T] = null
 
-  override def getInputShape(): Activity = {
+  override private[bigdl] def compatibleWithKeras(): Boolean = true
+
+  override def getInputShape(): Shape = {
     if (mInputShape != null) {
-      Tensor(data = mInputShape, shape = Array(mInputShape.length))
+      mInputShape
     } else if (this.labor == null) {
       null
     } else {
@@ -98,13 +110,13 @@ abstract class KerasModule[A <: Activity: ClassTag, B <: Activity: ClassTag, T: 
     }
   }
 
-  override def computeOutputShape(inputShape: Activity): Activity = {
+  override def computeOutputShape(inputShape: Shape): Shape = {
     this.labor.computeOutputShape(inputShape)
   }
 
-  override def getOutputShape(): Activity = labor.getOutputShape()
+  override def getOutputShape(): Shape = labor.getOutputShape()
 
-  override def build(inputShape: Activity): Unit = {
+  override def build(inputShape: Shape): Unit = {
     labor = doBuild(inputShape)
 
     output = labor.output
@@ -114,9 +126,10 @@ abstract class KerasModule[A <: Activity: ClassTag, B <: Activity: ClassTag, T: 
     labor.build(inputShape)
   }
 
-  def doBuild(inputShape: Activity): AbstractModule[A, B, T]
+  def doBuild(inputShape: Shape): AbstractModule[A, B, T]
 
-
+  // this is must as forward in base class use field:"output"
+  // instead of the value return by method "updateoutput"
   override def forward(input: A): B = labor.forward(input)
 
   override def backward(input: A, gradOutput: B): A = labor.backward(input, gradOutput)
@@ -335,5 +348,56 @@ abstract class KerasModule[A <: Activity: ClassTag, B <: Activity: ClassTag, T: 
   override def getWeightsBias(): Array[Tensor[T]] = labor.getWeightsBias()
 
   override def quantize(): Module[T] = labor.quantize()
-  
+
+  /**
+   * Build graph: some other modules point to current module
+   * @param nodes upstream module nodes
+   * @return node containing current module
+   */
+  override def inputs(nodes : ModuleNode[T]*): ModuleNode[T] = {
+    excludeTorch(nodes)
+    if (!nodes.isEmpty) { // as there's  Identity().inputs() within Graph
+    val inputShape = Shape(nodes.map{_.element.getOutputShape()}.toList)
+      this.build(inputShape)
+    }
+    val curNode = new ModuleNode[T](this)
+    nodes.foreach(node => {
+      node.add(curNode, Edge())
+    })
+    curNode
+    //super.inputs(nodes : _*)
+  }
+
+  /**
+   * Build graph: some other modules point to current module
+   * @param nodes upstream module nodes in an array
+   * @return node containing current module
+   */
+  override def inputs(nodes : Array[ModuleNode[T]]): ModuleNode[T] = {
+    excludeTorch(nodes)
+    if (!nodes.isEmpty) { // as there's  Identity().inputs() within Graph
+    val inputShape = Shape(nodes.map{_.element.getOutputShape()}.toList)
+      this.build(inputShape)
+    }
+    super.inputs(nodes)
+  }
+
+  /**
+   * Build graph: some other modules point to current module
+   * @param first distinguish from another inputs when input parameter list is empty
+   * @param nodesWithIndex upstream module nodes and the output tensor index. The start index is 1.
+   * @return node containing current module
+   */
+  override def inputs(first: (ModuleNode[T], Int),
+     nodesWithIndex : (ModuleNode[T], Int)*): ModuleNode[T] = {
+    excludeTorch(List(first._1))
+    excludeTorch(nodesWithIndex.map(_._1))
+    val shapes = ArrayBuffer[Shape]()
+    shapes.append(first._1.element.getOutputShapeFor(first._2))
+    if (!nodesWithIndex.isEmpty) {
+      shapes ++ nodesWithIndex.map{t => t._1.element.getOutputShapeFor(t._2)}
+    }
+    this.build(Shape(shapes.toList))
+    super.inputs(first, nodesWithIndex : _*)
+  }
 }

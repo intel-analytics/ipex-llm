@@ -19,6 +19,7 @@ import java.util
 
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
+import com.intel.analytics.bigdl.nn.keras.Shape
 import com.intel.analytics.bigdl.nn.tf.{ControlDependency, WithoutInput}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -46,21 +47,22 @@ class StaticGraph[T: ClassTag](
   private var backId2ForwardId: Array[Int] = _
   private var gradOutputCache: Array[Activity] = _
 
-  compile()
+//  compile()
 
   buildBackwardGraph()
 
-  override def getInputShape(): Activity = {
+  override def getInputShape(): Shape = {
     val inputShapes = this.inputs.map{n => n.element.getInputShape()}.toList
-    return toActivity(inputShapes)
+    Shape(inputShapes)
   }
 
-  override def getOutputShape(): Activity = {
+  override def getOutputShape(): Shape = {
     val outputShapes = this.outputs.map{_.element.getOutputShape()}.toList
-    return toActivity(outputShapes)
+    Shape(outputShapes)
+
   }
 
-  override def computeOutputShape(inputShape: Activity): Activity = {
+  override def computeOutputShape(inputShape: Shape): Shape = {
     getOutputShape()
   }
 

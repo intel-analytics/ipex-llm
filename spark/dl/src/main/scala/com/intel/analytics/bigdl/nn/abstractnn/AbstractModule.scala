@@ -29,12 +29,14 @@ import org.apache.spark.rdd.RDD
 import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.dataset.{LocalDataSet, MiniBatch, PaddingParam, Sample}
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
+import com.intel.analytics.bigdl.nn.keras.Shape
 import com.intel.analytics.bigdl.nn.quantized.Quantization
 import com.intel.analytics.bigdl.transform.vision.image.{DistributedImageFrame, ImageFeature, ImageFrame, LocalImageFrame}
 import com.intel.analytics.bigdl.utils.caffe.CaffePersister
 import com.intel.analytics.bigdl.utils.serializer.ModulePersister
 import com.intel.analytics.bigdl.utils.tf.{TensorflowDataFormat, TensorflowSaver}
 
+import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
 /**
@@ -55,7 +57,7 @@ abstract class TensorModule[T: ClassTag]
  * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now
  */
 abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, T: ClassTag](
-  implicit ev: TensorNumeric[T]) extends Serializable {
+  implicit ev: TensorNumeric[T]) extends Serializable with InferShape{
 
   private var namePostfix = Integer.toHexString(java.util.UUID.randomUUID().hashCode())
 
@@ -73,43 +75,6 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
    */
   var gradInput: A = Activity.allocate[A, T]()
 
-
-  private[bigdl] var inputShapeValue: Activity = null
-
-  private[bigdl] var outputShapeValue: Activity = null
-
-  /**
-   * There's no batch dim in the inputShape which just represent a sample record.
-   */
-  def getInputShape(): Activity = {
-    inputShapeValue
-  }
-
-  /**
-   * There's no batch dim in the outputShape which just represent a sample record.
-   */
-  def getOutputShape(): Activity = {
-    if (outputShapeValue == null) {
-      throw new RuntimeException("You should build this model first before getting the outputshape")
-    }
-    outputShapeValue
-  }
-
-  def isBuilt(): Boolean = {
-    getOutputShape() != null
-  }
-
-  private[bigdl] def build(inputShape: Activity): Unit = {
-    this.outputShapeValue = computeOutputShape(inputShape)
-    this.inputShapeValue = inputShape
-  }
-
-  /**
-   * There's no batch dim in the inputShape which just represent a sample record.
-   */
-  def computeOutputShape(inputShape: Activity): Activity = {
-    throw new RuntimeException("Haven't been implemented yet")
-  }
 
   /**
    * The scale of gradient weight and gradient bias
@@ -303,7 +268,7 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
   def forward(input: A): B = {
     val before = System.nanoTime()
     try {
-      updateOutput(input)
+      return updateOutput(input)
     } catch {
       case l: LayerException =>
         l.layerMsg = this.toString() + "/" + l.layerMsg
@@ -755,6 +720,14 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
    * @return node containing current module
    */
   def inputs(nodes : ModuleNode[T]*): ModuleNode[T] = {
+    excludeKeras(nodes)
+// TODO: remove me.  we can only control mix with seq
+    if (!nodes.isEmpty) { // as there's  Identity().inputs() within Graph
+    val inputShape = Shape(nodes.map{_.element.getOutputShape()}.toList)
+      this.build(inputShape)
+    }
+
+
     val curNode = new ModuleNode[T](this)
     nodes.foreach(node => {
       node.add(curNode, Edge())
@@ -768,6 +741,7 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
    * @return node containing current module
    */
   def inputs(nodes : Array[ModuleNode[T]]): ModuleNode[T] = {
+    excludeKeras(nodes)
     val curNode = new ModuleNode[T](this)
     nodes.foreach(node => {
       node.add(curNode, Edge())
@@ -782,6 +756,8 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
    * @return node containing current module
    */
   def inputs(first: (ModuleNode[T], Int), nodesWithIndex : (ModuleNode[T], Int)*): ModuleNode[T] = {
+    excludeKeras(List(first._1))
+    excludeKeras(nodesWithIndex.map(_._1))
     val curNode = new ModuleNode[T](this)
     first._1.add(curNode, Edge(first._2))
     nodesWithIndex.foreach(nodeWithIndex => {

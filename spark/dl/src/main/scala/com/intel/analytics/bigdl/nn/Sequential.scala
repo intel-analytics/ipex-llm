@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
+import com.intel.analytics.bigdl.nn.keras.Shape
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Node
 
@@ -33,34 +34,21 @@ import scala.collection.mutable.ArrayBuffer
 class Sequential[T: ClassTag]
 (implicit ev: TensorNumeric[T]) extends Container[Activity, Activity, T] {
 
-  private[bigdl] override def compilingPath(): List[Node[AbstractModule[Activity, Activity, T]]] = {
-    val nodes = modules.map(Node(_))
-    var i = 0
-    var j = 1
-    while (i < nodes.length && j < nodes.length) {
-      nodes(i).add(nodes(i + 1))
-      i += 1
-      j += 1
-    }
-    return nodes.toList
-  }
-
-  override def getInputShape(): Activity = {
-    if (this.compilingPath().isEmpty) {
+  override def getInputShape(): Shape = {
+    if (this.modules.isEmpty) {
       return null
     }
-    this.compilingPath()(0).element.getInputShape()
+    this.modules(0).getInputShape()
   }
 
-  override def getOutputShape(): Activity = {
-    val executionNodes = this.compilingPath()
-    if (executionNodes.isEmpty) {
+  override def getOutputShape(): Shape = {
+    if (this.modules.isEmpty) {
       return null
     }
-    executionNodes(executionNodes.length - 1).element.getOutputShape()
+    this.modules(this.modules.length - 1).getOutputShape()
   }
 
-  override def computeOutputShape(inputShape: Activity): Activity = {
+  override def computeOutputShape(inputShape: Shape): Shape = {
     getOutputShape()
   }
 

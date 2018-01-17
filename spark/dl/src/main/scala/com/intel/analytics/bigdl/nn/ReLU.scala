@@ -17,6 +17,7 @@
 package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
+import com.intel.analytics.bigdl.nn.keras.Shape
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
 import scala.reflect.ClassTag
@@ -33,7 +34,7 @@ import scala.reflect.ClassTag
 class ReLU[T: ClassTag](ip: Boolean = false)(
   implicit ev: TensorNumeric[T]) extends Threshold[T](0, 0, ip) {
 
-  override def computeOutputShape(inputShape: Activity): Activity = inputShape
+  override def computeOutputShape(inputShape: Shape): Shape = inputShape
 
 }
 

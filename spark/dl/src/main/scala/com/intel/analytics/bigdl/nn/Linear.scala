@@ -24,6 +24,7 @@ import scala.reflect.ClassTag
 import RandomGenerator._
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.nn.abstractnn.{Activity, Initializable, TensorModule}
+import com.intel.analytics.bigdl.nn.keras.Shape
 import com.intel.analytics.bigdl.optim.Regularizer
 
 /**
@@ -81,10 +82,10 @@ class Linear[T: ClassTag](
     zeroGradParameters()
   }
 
-  override def computeOutputShape(inputShape: Activity): Activity = {
-    val input = inputShape.toTensor[Int].toArray()
+  override def computeOutputShape(inputShape: Shape): Shape = {
+    val input = inputShape.toSingle().toArray
     input(input.length - 1) = outputSize
-    Tensor(data = input, shape = Array(input.length))
+    Shape(input)
   }
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {

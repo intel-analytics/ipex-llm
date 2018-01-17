@@ -17,6 +17,7 @@ package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
+import com.intel.analytics.bigdl.nn.keras.Shape
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Node
@@ -36,14 +37,21 @@ import scala.reflect.ClassTag
  * @tparam T The numeric type in the criterion, usually which are [[Float]] or [[Double]]
  */
 @SerialVersionUID(- 8525406230282608924L)
-class Input[T: ClassTag](val inputShape: Array[Int])(implicit ev: TensorNumeric[T])
+class Input[T: ClassTag](val inputShape: Shape)(implicit ev: TensorNumeric[T])
   extends AbstractModule[Activity, Activity, T] {
 
-  if (inputShape != null) {
-    inputShapeValue = Tensor(data = inputShape, shape = Array(inputShape.length))
+  /**
+   * There's no batch dim in the inputShape which just represent a sample record.
+   */
+  override def getInputShape(): Shape = {
+    inputShape
   }
 
-  override def computeOutputShape(inputShape: Activity): Activity = inputShape
+  override def getOutputShape(): Shape = {
+    inputShape
+  }
+
+  override def computeOutputShape(inputShape: Shape): Shape = inputShape
 
   override def updateOutput(input: Activity): Activity = {
     output = input
@@ -64,7 +72,7 @@ class Input[T: ClassTag](val inputShape: Array[Int])(implicit ev: TensorNumeric[
 object Input {
   def apply[T: ClassTag](name : String = null,
     inputShape: Array[Int] = null)(implicit ev: TensorNumeric[T]): ModuleNode[T] = {
-    val module = new Input(inputShape)
+    val module = new Input(Shape(inputShape))
     if (name != null) {
       module.setName(name)
     }
@@ -74,7 +82,7 @@ object Input {
 
 object InputLayer {
   def apply[T: ClassTag](name : String = null,
-                         inputShape: Array[Int] = null)(implicit ev: TensorNumeric[T])
+                         inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   : Input[T] = {
     val module = new Input(inputShape)
     if (name != null) {

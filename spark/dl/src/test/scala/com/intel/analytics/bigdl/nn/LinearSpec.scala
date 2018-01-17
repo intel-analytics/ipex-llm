@@ -23,6 +23,7 @@ import com.intel.analytics.bigdl._
 import scala.math._
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
+import com.intel.analytics.bigdl.nn.keras.Shape
 import com.intel.analytics.bigdl.optim.{L1Regularizer, L2Regularizer, SGD}
 import com.intel.analytics.bigdl.utils.{RandomGenerator, T, TestUtils}
 
@@ -407,6 +408,6 @@ class LinearSpec extends FlatSpec with Matchers {
 
   "computeOutputShape" should "work" in {
     val linear = Linear[Float](3, 5)
-    TestUtils.compareOutputShape(linear, Array(3)) should be (true)
+    TestUtils.compareOutputShape(linear, Shape(3)) should be (true)
   }
 }

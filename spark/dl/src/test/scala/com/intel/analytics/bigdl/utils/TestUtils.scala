@@ -20,6 +20,7 @@ import java.util.concurrent.atomic.AtomicInteger
 
 import com.intel.analytics.bigdl.nn.{InputLayer, Sequential}
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
+import com.intel.analytics.bigdl.nn.keras.Shape
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import org.scalatest.exceptions.TestCanceledException
@@ -32,12 +33,12 @@ object TestUtils {
    * Compare the output of `computeOutputShape` with the `forward` result
    */
   def compareOutputShape(layer: AbstractModule[Activity, Activity, Float],
-                            inputShape: Array[Int]): Boolean = {
-    val inputData = Tensor[Float](Array(2) ++ inputShape).randn()
+                            inputShape: Shape): Boolean = {
+    val inputData = Tensor[Float](Array(2) ++ inputShape.toSingle()).randn()
     val seq = Sequential[Float]()
     seq.add(InputLayer[Float](inputShape = inputShape))
     seq.add(layer)
-    val calcOutputShape = seq.getOutputShape().toTensor[Int].toArray()
+    val calcOutputShape = seq.getOutputShape().toSingle()
     val forwardOutputShape = seq.forward(inputData).toTensor[Float].size()
     calcOutputShape.sameElements(
       forwardOutputShape.slice(1, forwardOutputShape.length))

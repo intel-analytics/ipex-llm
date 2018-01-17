@@ -18,7 +18,6 @@ package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
-import com.intel.analytics.bigdl.nn.keras.KerasModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{Node, T, Table}
@@ -42,79 +41,13 @@ abstract class Container[A <: Activity : ClassTag,
     B <: Activity : ClassTag, T: ClassTag](
   implicit ev: TensorNumeric[T]) extends AbstractModule[A, B, T] {
 
-  private var parent: Container[A, B, T] = null
+//  private var parent: Container[A, B, T] = null
 
   // list of sub modules
   val modules: ArrayBuffer[AbstractModule[Activity, Activity, T]]
   = ArrayBuffer[AbstractModule[Activity, Activity, T]]()
 
-  /**
-   * We base on the order of this returning result for compiling.
-   * In general, it's a list of nodes from topology sort.
-   * return empty as do nothing by default.
-   */
-  private[bigdl] def compilingPath(): List[Node[AbstractModule[Activity, Activity, T]]] = {
-    val kmodels = modules.filter(_.isInstanceOf[KerasModule[A, B, T]])
-    if (kmodels.length > 0) {
-      throw new RuntimeException(
-        s"""Please do not use KerasModule: ${kmodels.mkString(",")}
-           | within Container other than Sequential and Graph""".stripMargin)
-    }
-    List()
-  }
-
-  private[bigdl] def toActivity(values: List[Activity]): Activity = {
-    if (values.isEmpty) {
-      return null
-    }
-    if (values.length == 1) {
-      return values(0)
-    } else {
-      val t = new Table()
-      values.foreach {v =>
-        t.insert(v)
-      }
-      return t
-    }
-  }
-
-  private[bigdl] def doCompile(executionNodes: List[ModuleNode[T]]): Unit = {
-    var i = 0
-    while (i < executionNodes.length) {
-      val node = executionNodes(i)
-      val preNodes = node.prevNodes
-      val inputShapes = if (preNodes.isEmpty) {
-        if (node.element.getInputShape() == null) {
-          throw new StartingInputException("The first layer should explicitly declare inputShape")
-        } else {
-          List(node.element.getInputShape())
-        }
-      } else {
-        preNodes.map{_.element.getOutputShape()}.toList
-      }
-      node.element.build(toActivity(inputShapes))
-      i += 1
-    }
-  }
-
-  private[bigdl] class StartingInputException(msg: String) extends RuntimeException(msg)
-
-  private[bigdl] final def compile(): Unit = {
-    val executionNodes = this.compilingPath()
-    try {
-      doCompile(executionNodes)
-      if (this.parent != null) {
-        this.parent.compile()
-      }
-    } catch {
-      case e: StartingInputException =>
-        // For pure old-style model, it's fine that it cann't be compiled for compatibility.
-        if (executionNodes.filter(_.element.isInstanceOf[KerasModule[A, B, T]]).length > 0) {
-          throw e
-        }
-      case e: Throwable => throw e
-    }
-  }
+  override private[bigdl] def compatibleWithKeras(): Boolean = false
 
   /**
    * Add a sub-module to the contained `modules`
@@ -123,11 +56,10 @@ abstract class Container[A <: Activity : ClassTag,
    * @return this container
    */
   def add(module: AbstractModule[_ <: Activity, _ <: Activity, T]): this.type = {
-    if (module.isInstanceOf[Container[A, B, T]]) {
-      module.asInstanceOf[Container[A, B, T]].parent = this
+    if (module.compatibleWithKeras()) {
+      throw new RuntimeException("Do not mix with keras Layer")
     }
     modules += module.asInstanceOf[AbstractModule[Activity, Activity, T]]
-    compile()
     this
   }
 
