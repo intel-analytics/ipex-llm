@@ -908,7 +908,7 @@ class DotProductCriterion(Criterion):
     Input and target are required to have the same size.
     :param size_average: whether to average over each observations in the same batch
     
-    >>> DotProductCriterion(False)
+    >>> dp =DotProductCriterion(False)
     creating: createDotProductCriterion
     '''
 
@@ -937,7 +937,7 @@ class PGCriterion(Criterion):
                            a NegativeEntropyPenalty to penalize the distribution
                            of with small entropy to improve exploration.
                            
-    >>> PGCriterion()
+    >>> pg =PGCriterion()
     creating: createPGCriterion
     '''
 

@@ -2980,7 +2980,7 @@ class NegativeEntropyPenalty(Layer):
     collapsing to a single action for a given state, which improves exploration.
     See the A3C paper for more detail (https://arxiv.org/pdf/1602.01783.pdf).
     
-    >>> NegativeEntropyPenalty(0.01)
+    >>> ne = NegativeEntropyPenalty(0.01)
     creating: createNegativeEntropyPenalty
     
     :param beta penalty coefficient
