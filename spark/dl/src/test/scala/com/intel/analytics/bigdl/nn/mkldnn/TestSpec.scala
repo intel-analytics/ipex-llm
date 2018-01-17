@@ -53,7 +53,7 @@ class TestSpec extends FlatSpec with Matchers {
     val input = Tensor[Float](batchSize, 3, 227, 227).apply1(e => Random.nextFloat())
     val gradOutput = Tensor[Float](batchSize, 1000).apply1(e => Random.nextFloat())
 
-    System.getProperty("bigdl.mklNumThreads", "4")
+    System.setProperty("bigdl.mklNumThreads", "4")
     val layer = DnnUtils.dnnAlexNet(1000)// dnnAlexNet(1000)
     layer.createDnnEngine(0)
     layer.createStream()
