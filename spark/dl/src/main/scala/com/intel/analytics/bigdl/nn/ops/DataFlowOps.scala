@@ -36,7 +36,7 @@ import scala.reflect.ClassTag
  * @param identicalElementShapes If all elements in the array should have the same shape. Default is
  *                               false.
  * @tparam D Element numeric type in the tensor array.
-*/
+ */
 private[nn] class TensorArray[D: ClassTag](
   private val initSize: Int,
   private val shape: Array[Int] = null,
@@ -58,6 +58,11 @@ private[nn] class TensorArray[D: ClassTag](
     val t = tensors(index)
     if (clearAfterRead) tensors(index) = null
     t
+  }
+
+  def grad(): TensorArray[_] = {
+    this.lockSize()
+    new TensorArray[D](this.size, multipleWritesAggregate = true)
   }
 
   def size(): Int = tensors.length
@@ -128,6 +133,11 @@ private[nn] object TensorArray {
     arrays.get(key).asInstanceOf[TensorArray[D]]
   }
 
+  def get(key: String): TensorArray[_] = {
+    require(arrays.containsKey(key), s"Cannot find TensorArray for name $key")
+    arrays.get(key)
+  }
+
   def update(key: String, value: TensorArray[_]): Unit = {
     arrays.put(key, value)
   }
@@ -173,7 +183,7 @@ private[bigdl] class TensorArrayCreator[T: ClassTag, D: ClassTag](
     }
 
     TensorArray(handle) = new TensorArray[D](input.value(), shape, dynamicSize, clearAfterRead,
-        identicalElementShapes)
+      identicalElementShapes)
 
     output = T(
       Tensor.scalar(handle),
@@ -194,20 +204,16 @@ private[bigdl] class TensorArrayCreator[T: ClassTag, D: ClassTag](
  * @param source a suffix to append to the name of the passed in TensorArray, used as key to locate
  *               the gradient TensorArray
  * @tparam T Model parameter numeric type.
- * @tparam D Element numeric type in the tensor array.
  */
-private[bigdl] class TensorArrayGrad[T: ClassTag, D: ClassTag](source: String)(
-  implicit ev: TensorNumeric[T], ev2: TensorNumeric[D]) extends Operation[Table, Table, T]{
+private[bigdl] class TensorArrayGrad[T: ClassTag](source: String)(
+  implicit ev: TensorNumeric[T]) extends Operation[Table, Table, T]{
 
   override def updateOutput(input: Table): Table = {
     val handle = input[Tensor[String]](1)
     require(handle.isScalar, "Handle of a TensorArray must be a scalar")
 
-    val tensorArray = TensorArray[D](handle.value())
-    tensorArray.lockSize()
-
-    TensorArray(handle.value() + source) = new TensorArray[D](tensorArray.size,
-      multipleWritesAggregate = true)
+    val tensorArray = TensorArray.get(handle.value())
+    TensorArray(handle.value() + source) = tensorArray.grad()
     output = T(
       Tensor.scalar[String](handle.value() + source),
       TensorArray.FlowOut

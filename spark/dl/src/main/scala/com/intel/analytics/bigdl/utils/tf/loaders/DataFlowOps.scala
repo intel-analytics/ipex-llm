@@ -80,7 +80,8 @@ class TensorArrayGradV3 extends TensorflowOpsLoader {
     byteOrder: ByteOrder,
     context: Context[T]
   )(implicit ev: TensorNumericMath.TensorNumeric[T]): Module[T] = {
-    Identity()
+    val source = getString(nodeDef, "source")
+    new TensorArrayGrad[T](source)
   }
 }
 

@@ -34,10 +34,3 @@ private[bigdl] class ControlDependency[T: ClassTag]()(implicit ev: TensorNumeric
     throw new UnsupportedOperationException(msg)
   }
 }
-
-private[bigdl] object ControlDependency {
-  def apply[T: ClassTag]()
-                        (implicit ev: TensorNumeric[T]): ControlDependency[T] = {
-    new ControlDependency[T]()
-  }
-}

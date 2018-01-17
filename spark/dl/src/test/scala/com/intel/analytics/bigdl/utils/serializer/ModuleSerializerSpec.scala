@@ -1890,7 +1890,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers with BeforeAndAfterAll
   }
 
   "NoOp serializer" should "work properly" in {
-    val noOp = NoOp[Float]().setName("noOp")
+    val noOp = new com.intel.analytics.bigdl.nn.ops.NoOp[Float]().setName("noOp")
     val input = Tensor[Float](5).apply1(_ => Random.nextFloat())
     runSerializationTest(noOp, input)
   }
