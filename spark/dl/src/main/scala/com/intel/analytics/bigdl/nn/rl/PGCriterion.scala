@@ -40,6 +40,7 @@ import scala.reflect.ClassTag
  *                         a NegativeEntropyPenalty to penalize the distribution
  *                         of with small entropy to improve exploration.
  */
+@SerialVersionUID(- 76404060368920472L)
 class PGCriterion[T: ClassTag](
   inputTransformer: Option[AbstractModule[Tensor[T], Tensor[T], T]] = None)
   (implicit ev: TensorNumeric[T])
