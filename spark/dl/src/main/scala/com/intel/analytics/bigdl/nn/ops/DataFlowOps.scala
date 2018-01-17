@@ -500,3 +500,80 @@ private[bigdl] class TensorArrayClose[T: ClassTag]()(implicit ev: TensorNumeric[
     output
   }
 }
+
+private[bigdl] class Stack[D](maxSize: Int) {
+  private var count = 0
+  private val tensors = new ArrayBuffer[Tensor[D]]()
+
+  def pop(): Tensor[D] = {
+    require(count > 0, "There's no tensors in the stack")
+    count -= 1
+    tensors.remove(count)
+  }
+
+  def push(t: Tensor[D]): Unit = {
+    require(count < maxSize, "Stack is full")
+    tensors.append(t.clone())
+    count += 1
+  }
+}
+
+private[bigdl] object Stack {
+  private val stacks = new ConcurrentHashMap[String, Stack[_]]()
+
+  def apply[D](key: String): Stack[D] = {
+    require(stacks.containsKey(key), s"Cannot find Stack for name $key")
+    stacks.get(key).asInstanceOf[Stack[D]]
+  }
+
+  def update(key: String, value: Stack[_]): Unit = {
+    stacks.put(key, value)
+  }
+
+  def release(key : String): Unit = {
+    stacks.remove(key)
+  }
+}
+
+private[bigdl] class StackCreator[T: ClassTag, D: ClassTag](
+  name: String = null)(implicit ev: TensorNumeric[T], ev2: TensorNumeric[D])
+  extends Operation[Tensor[Int], Tensor[String], T]{
+  override def updateOutput(input: Tensor[Int]): Tensor[String] = {
+    require(input.isScalar, "StackCreator: Input tensor should be a scalar")
+
+    val handle = if (name == null) {
+      this.getName() + RandomGenerator.RNG.random()
+    } else {
+      name + RandomGenerator.RNG.random()
+    }
+
+    Stack(handle) = new Stack[D](if (input.value() < 0) Int.MaxValue else input.value())
+    output = Tensor.scalar(handle)
+    output
+  }
+}
+
+private[bigdl] class StackPop[T: ClassTag, D: ClassTag]()
+  (implicit ev: TensorNumeric[T], ev2: TensorNumeric[D])
+  extends Operation[Tensor[String], Tensor[D], T]{
+  override def updateOutput(input: Tensor[String]): Tensor[D] = {
+    require(input.isScalar, "StackPop: Input tensor should be a scalar")
+    val handle = input.value()
+    output = Stack[D](handle).pop()
+    output
+  }
+}
+
+private[bigdl] class StackPush[T: ClassTag, D: ClassTag]()
+  (implicit ev: TensorNumeric[T], ev2: TensorNumeric[D])
+  extends Operation[Table, Tensor[D], T]{
+  override def updateOutput(input: Table): Tensor[D] = {
+    val handleTensor = input[Tensor[String]](1)
+    require(handleTensor.isScalar, "StackPush: Input tensor should be a scalar")
+    val handle = handleTensor.value()
+    val data = input[Tensor[D]](2)
+    Stack[D](handle).push(data)
+    output = data
+    output
+  }
+}

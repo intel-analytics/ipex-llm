@@ -29,7 +29,7 @@ import org.tensorflow.framework.{DataType, NodeDef}
 
 import scala.reflect.ClassTag
 
-class TensorArrayV3 extends TensorflowOpsLoader {
+private[bigdl] class TensorArrayV3 extends TensorflowOpsLoader {
 
   override def build[T: ClassManifest](
     nodeDef: NodeDef,
@@ -73,7 +73,7 @@ class TensorArrayV3 extends TensorflowOpsLoader {
   }
 }
 
-class TensorArrayGradV3 extends TensorflowOpsLoader {
+private[bigdl] class TensorArrayGradV3 extends TensorflowOpsLoader {
 
   override def build[T: ClassManifest](
     nodeDef: NodeDef,
@@ -105,7 +105,7 @@ class TensorArrayGatherV3 extends TensorflowOpsLoader {
   }
 }
 
-class TensorArrayScatterV3 extends TensorflowOpsLoader {
+private[bigdl] class TensorArrayScatterV3 extends TensorflowOpsLoader {
   override def build[T: ClassManifest](
     nodeDef: NodeDef,
     byteOrder: ByteOrder,
@@ -125,7 +125,7 @@ class TensorArrayScatterV3 extends TensorflowOpsLoader {
   }
 }
 
-class TensorArrayConcatV3 extends TensorflowOpsLoader {
+private[bigdl] class TensorArrayConcatV3 extends TensorflowOpsLoader {
   override def build[T: ClassManifest](
     nodeDef: NodeDef,
     byteOrder: ByteOrder,
@@ -145,7 +145,7 @@ class TensorArrayConcatV3 extends TensorflowOpsLoader {
   }
 }
 
-class TensorArraySplitV3 extends TensorflowOpsLoader {
+private[bigdl] class TensorArraySplitV3 extends TensorflowOpsLoader {
   override def build[T: ClassManifest](
     nodeDef: NodeDef,
     byteOrder: ByteOrder,
@@ -165,7 +165,7 @@ class TensorArraySplitV3 extends TensorflowOpsLoader {
   }
 }
 
-class TensorArrayReadV3 extends TensorflowOpsLoader {
+private[bigdl] class TensorArrayReadV3 extends TensorflowOpsLoader {
   override def build[T: ClassManifest](
     nodeDef: NodeDef,
     byteOrder: ByteOrder,
@@ -185,7 +185,7 @@ class TensorArrayReadV3 extends TensorflowOpsLoader {
   }
 }
 
-class TensorArrayWriteV3 extends TensorflowOpsLoader {
+private[bigdl] class TensorArrayWriteV3 extends TensorflowOpsLoader {
   override def build[T: ClassManifest](
     nodeDef: NodeDef,
     byteOrder: ByteOrder,
@@ -205,7 +205,7 @@ class TensorArrayWriteV3 extends TensorflowOpsLoader {
   }
 }
 
-class TensorArraySizeV3 extends TensorflowOpsLoader {
+private[bigdl] class TensorArraySizeV3 extends TensorflowOpsLoader {
   override def build[T: ClassManifest](
     nodeDef: NodeDef,
     byteOrder: ByteOrder,
@@ -216,32 +216,54 @@ class TensorArraySizeV3 extends TensorflowOpsLoader {
 }
 
 
-class StackPopV2 extends TensorflowOpsLoader {
+private[bigdl] class StackPopV2 extends TensorflowOpsLoader {
 
   import Utils._
 
   override def build[T: ClassTag](nodeDef: NodeDef, byteOrder: ByteOrder, context: Context[T])
     (implicit ev: TensorNumeric[T]): Module[T] = {
-    Identity()
+    val t = getType(nodeDef, "elem_type")
+    if (t == DataType.DT_FLOAT) {
+      new StackPop[T, Float]()
+    } else if (t == DataType.DT_INT32) {
+      new StackPop[T, Int]()
+    } else {
+      throw new UnsupportedOperationException(s"Not support load StackPop with type $t")
+    }
   }
 }
 
-class StackPushV2 extends TensorflowOpsLoader {
+private[bigdl] class StackPushV2 extends TensorflowOpsLoader {
 
   import Utils._
 
   override def build[T: ClassTag](nodeDef: NodeDef, byteOrder: ByteOrder, context: Context[T])
     (implicit ev: TensorNumeric[T]): Module[T] = {
-    Identity()
+    val t = getType(nodeDef, "T")
+    if (t == DataType.DT_FLOAT) {
+      new StackPush[T, Float]()
+    } else if (t == DataType.DT_INT32) {
+      new StackPush[T, Int]()
+    } else {
+      throw new UnsupportedOperationException(s"Not support load StackPush with type $t")
+    }
   }
 }
 
-class StackV2 extends TensorflowOpsLoader {
+private[bigdl] class StackV2 extends TensorflowOpsLoader {
 
   import Utils._
 
   override def build[T: ClassTag](nodeDef: NodeDef, byteOrder: ByteOrder, context: Context[T])
     (implicit ev: TensorNumeric[T]): Module[T] = {
-    Identity()
+    val stackName = getString(nodeDef, "stack_name")
+    val t = getType(nodeDef, "elem_type")
+    if (t == DataType.DT_FLOAT) {
+      new StackCreator[T, Float](stackName)
+    } else if (t == DataType.DT_INT32) {
+      new StackCreator[T, Int](stackName)
+    } else {
+      throw new UnsupportedOperationException(s"Not support load Stack with type $t")
+    }
   }
 }
