@@ -37,21 +37,19 @@ class KerasStyleSpec extends BigDLSpecHelper {
     val output = model.forward(inputData)
   }
 
-//  "Sequential: Dense" should "works correctly" in {
-//    //    intercept[RuntimeException] {
-//
-//    val seq = TSequential[Float]()
-//    val d1 = new Dense[Float](20, inputShape = Array(10)).setName("dense1")
-//    val d2 = new Dense[Float](5).setName("dense2")
-//    val d3 = new Dense[Float](6).setName("dense4")
-//    seq.add(d1)
-//    seq.add(d2)
-//    seq.add(d3)
-//    val inputData = Tensor[Float](Array(20, 10)).rand()
-//    val output = seq.forward(inputData)
-//    require(d3.getOutputShape().toSingle().sameElements(Array(6)))
-//    require(d3.getInputShape().toSingle().sameElements(Array(5)))
-//  }
+  "Sequential: Dense" should "works correctly" in {
+    val seq = KSequential[Float]()
+    val d1 = new Dense[Float](20, inputShape = Array(10)).setName("dense1")
+    val d2 = new Dense[Float](5).setName("dense2")
+    val d3 = new Dense[Float](6).setName("dense4")
+    seq.add(d1)
+    seq.add(d2)
+    seq.add(d3)
+    val inputData = Tensor[Float](Array(20, 10)).rand()
+    val output = seq.forward(inputData)
+    require(d3.getOutputShape().toSingle().sameElements(Array(6)))
+    require(d3.getInputShape().toSingle().sameElements(Array(5)))
+  }
 
   "TSequential" should "not works with dense" in {
     intercept[RuntimeException] {
@@ -68,6 +66,16 @@ class KerasStyleSpec extends BigDLSpecHelper {
     }
   }
 
+    "Use Dense within torch container" should "not works correctly" in {
+      val seq = TSequential[Float]()
+      intercept[RuntimeException] {
+        val parallelTable = ParallelTable[Float]()
+        val d1 = new Dense[Float](20, inputShape = Array(10)).setName("dense1")
+        parallelTable.add(d1)
+        seq.add(parallelTable)
+      }
+    }
+
   "TSequential" should "not works with container with dense" in {
     intercept[RuntimeException] {
       val seq = TSequential[Float]()
@@ -79,15 +87,14 @@ class KerasStyleSpec extends BigDLSpecHelper {
   }
 
 
-//
+
+
+// TODO: save Shape
 //  "save and reload model" should "works correctly" in {
 //    val input = Input[Float](inputShape = Array(10))
 //    val d = new Dense[Float](20).setName("dense1").inputs(input)
 //    val d2 = new Dense[Float](5).setName("dense2").inputs(d)
-//    // mix with the old layer
-//    val d3 = new Linear[Float](inputSize = 5, outputSize = 30).setName("dense3").inputs(d2)
-//    val d4 = new Dense[Float](6).setName("dense4").inputs(d3)
-//    val graph = Graph[Float](input, d4)
+//    val graph = Model[Float](input, d2)
 //    val tmpFile = createTmpFile()
 //    val absPath = tmpFile.getAbsolutePath
 //    tmpFile.delete()
@@ -208,13 +215,5 @@ class KerasStyleSpec extends BigDLSpecHelper {
 //    require(d2.getInputShape().toTensor[Int].toArray().sameElements(Array(6)))
 //  }
 //
-//  "Use Dense within ParallelTable" should "not works correctly" in {
-//    val seq = Sequential[Float]()
-//    intercept[RuntimeException] {
-//      val parallelTable = ParallelTable[Float]()
-//      val d1 = new Dense[Float](20, inputShape = Array(10)).setName("dense1")
-//      parallelTable.add(d1)
-//      seq.add(parallelTable)
-//    }
-//  }
+
 }

@@ -98,7 +98,13 @@ abstract class KerasLayer[A <: Activity: ClassTag, B <: Activity: ClassTag, T: C
 
   var labor: AbstractModule[A, B, T] = null
 
+  override def output: B = labor._output
+
+  override def output_= (value: B): Unit = labor._output = value
+
   override private[bigdl] def compatibleWithKeras(): Boolean = true
+
+  override private[bigdl] def compatibleWithTorch(): Boolean = false
 
   override def getInputShape(): Shape = {
     if (mInputShape != null) {
@@ -118,11 +124,6 @@ abstract class KerasLayer[A <: Activity: ClassTag, B <: Activity: ClassTag, T: C
 
   override def build(inputShape: Shape): Unit = {
     labor = doBuild(inputShape)
-
-    output = labor.output
-
-    gradInput = labor.gradInput
-
     labor.build(inputShape)
   }
 
@@ -355,7 +356,7 @@ abstract class KerasLayer[A <: Activity: ClassTag, B <: Activity: ClassTag, T: C
    * @return node containing current module
    */
   override def inputs(nodes : ModuleNode[T]*): ModuleNode[T] = {
-    excludeTorch(nodes)
+    excludeNotKeras(nodes)
     if (!nodes.isEmpty) { // as there's  Identity().inputs() within Graph
     val inputShape = Shape(nodes.map{_.element.getOutputShape()}.toList)
       this.build(inputShape)
@@ -374,7 +375,7 @@ abstract class KerasLayer[A <: Activity: ClassTag, B <: Activity: ClassTag, T: C
    * @return node containing current module
    */
   override def inputs(nodes : Array[ModuleNode[T]]): ModuleNode[T] = {
-    excludeTorch(nodes)
+    excludeNotKeras(nodes)
     if (!nodes.isEmpty) { // as there's  Identity().inputs() within Graph
     val inputShape = Shape(nodes.map{_.element.getOutputShape()}.toList)
       this.build(inputShape)
@@ -390,8 +391,8 @@ abstract class KerasLayer[A <: Activity: ClassTag, B <: Activity: ClassTag, T: C
    */
   override def inputs(first: (ModuleNode[T], Int),
      nodesWithIndex : (ModuleNode[T], Int)*): ModuleNode[T] = {
-    excludeTorch(List(first._1))
-    excludeTorch(nodesWithIndex.map(_._1))
+    excludeNotKeras(List(first._1))
+    excludeNotKeras(nodesWithIndex.map(_._1))
     val shapes = ArrayBuffer[Shape]()
     shapes.append(first._1.element.getOutputShapeFor(first._2))
     if (!nodesWithIndex.isEmpty) {

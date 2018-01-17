@@ -91,7 +91,7 @@ class Sequential[T: ClassTag]
    * @return this container
    */
   override def add(module: AbstractModule[_ <: Activity, _ <: Activity, T]): this.type = {
-    this.excludeTorch[T](Seq(Node(module)))
+    this.excludeNotKeras[T](Seq(Node(module)))
     if (this.modules.isEmpty) {
       if (module.getInputShape() == null) {
         throw new RuntimeException("The first layer should explicitly declare inputshape")

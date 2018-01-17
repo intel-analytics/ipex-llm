@@ -49,6 +49,11 @@ abstract class Container[A <: Activity : ClassTag,
 
   override private[bigdl] def compatibleWithKeras(): Boolean = false
 
+  override private[bigdl] def compatibleWithTorch(): Boolean = {
+    modules.filter(!_.compatibleWithTorch()).length > 0
+  }
+
+
   /**
    * Add a sub-module to the contained `modules`
    *
@@ -56,9 +61,7 @@ abstract class Container[A <: Activity : ClassTag,
    * @return this container
    */
   def add(module: AbstractModule[_ <: Activity, _ <: Activity, T]): this.type = {
-    if (module.compatibleWithKeras()) {
-      throw new RuntimeException("Do not mix with keras Layer")
-    }
+    this.excludeNotTorch[T](Seq(Node(module).asInstanceOf[ModuleNode[T]]))
     modules += module.asInstanceOf[AbstractModule[Activity, Activity, T]]
     this
   }

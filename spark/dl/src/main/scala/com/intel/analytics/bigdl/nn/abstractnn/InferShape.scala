@@ -31,14 +31,17 @@ trait InferShape {
 
   private[bigdl] def compatibleWithKeras(): Boolean = true
 
-  private[bigdl] def excludeKeras[T: ClassTag](nodes : Seq[ModuleNode[T]]): Unit = {
-    val invalidNodes = nodes.filter{_.element.isInstanceOf[KerasLayer[_, _, _]]}
+  private[bigdl] def compatibleWithTorch(): Boolean = true
+
+
+  private[bigdl] def excludeNotTorch[T: ClassTag](nodes : Seq[ModuleNode[T]]): Unit = {
+    val invalidNodes = nodes.filter{!_.element.compatibleWithTorch()}
     if (invalidNodes.length > 0) {
       throw new RuntimeException(s"Do not mix with Layer: ${invalidNodes.mkString(",")}")
     }
   }
 
-  private[bigdl] def excludeTorch[T: ClassTag]
+  private[bigdl] def excludeNotKeras[T: ClassTag]
   (nodes : Seq[ModuleNode[T]]): Unit = {
       val invalidNodes = nodes.filter{!_.element.compatibleWithKeras()}
       if (invalidNodes.length > 0) {
@@ -83,7 +86,7 @@ trait InferShape {
    * There's no batch dim in the inputShape which just represent a sample record.
    */
   private[bigdl] def computeOutputShape(inputShape: Shape): Shape = {
-    throw new RuntimeException("Haven't been implemented yet")
+    throw new RuntimeException("Haven't been implemented yet. Do not use it with Keras Layer")
   }
 }
 

@@ -68,12 +68,24 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
   /**
    * The cached output. So we don't compute it again when need it
    */
-  var output: B = Activity.allocate[B, T]()
+  var _output: B = Activity.allocate[B, T]()
+
+  def output: B = _output
+
+  def output_=(value: B): Unit = {
+    _output = value
+  }
 
   /**
    * The cached gradient of activities. So we don't compute it again when need it
    */
-  var gradInput: A = Activity.allocate[A, T]()
+  var _gradInput: A = Activity.allocate[A, T]()
+
+  def gradInput: A = _gradInput
+
+  def gradInput_=(value: A): Unit = {
+    _output = value
+  }
 
 
   /**
@@ -720,7 +732,7 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
    * @return node containing current module
    */
   def inputs(nodes : ModuleNode[T]*): ModuleNode[T] = {
-    excludeKeras(nodes)
+    excludeNotTorch(nodes)
 // TODO: remove me.  we can only control mix with seq
     if (!nodes.isEmpty) { // as there's  Identity().inputs() within Graph
     val inputShape = Shape(nodes.map{_.element.getOutputShape()}.toList)
@@ -741,7 +753,7 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
    * @return node containing current module
    */
   def inputs(nodes : Array[ModuleNode[T]]): ModuleNode[T] = {
-    excludeKeras(nodes)
+    excludeNotTorch(nodes)
     val curNode = new ModuleNode[T](this)
     nodes.foreach(node => {
       node.add(curNode, Edge())
@@ -756,8 +768,8 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
    * @return node containing current module
    */
   def inputs(first: (ModuleNode[T], Int), nodesWithIndex : (ModuleNode[T], Int)*): ModuleNode[T] = {
-    excludeKeras(List(first._1))
-    excludeKeras(nodesWithIndex.map(_._1))
+    excludeNotTorch(List(first._1))
+    excludeNotTorch(nodesWithIndex.map(_._1))
     val curNode = new ModuleNode[T](this)
     first._1.add(curNode, Edge(first._2))
     nodesWithIndex.foreach(nodeWithIndex => {
