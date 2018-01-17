@@ -2255,3 +2255,55 @@ loss = transCriterion.forward(input, target)
 > loss
 15.166667
 ```
+
+## DotProductCriterion ##
+**Scala:**
+```scala
+val criterion = DotProductCriterion(sizeAverage=false)
+```
+**Python:**
+```python
+criterion = DotProductCriterion(sizeAverage=False)
+```
+
+Compute the dot product of input and target tensor.
+Input and target are required to have the same size.
+
+* sizeAverage:  whether to average over each observations in the same batch
+
+**Scala example:**
+```scala
+import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+
+val criterion = DotProductCriterion()
+val input = Tensor[Float](2, 3).range(1, 6, 1)
+val target = Tensor[Float](2, 3).range(2, 13, 2)
+
+val loss = criterion.forward(input, target)
+
+> loss
+182.0
+
+```
+
+**Python example:**
+```python
+import numpy as np
+from bigdl.nn.criterion import *
+from bigdl.optim.optimizer import *
+from bigdl.util.common import *
+
+criterion = DotProductCriterion()
+input = np.arange(1, 7, 1).astype("float32")
+input = input.reshape(2, 3)
+target = np.arange(2, 13, 2).astype("float32")
+target = target.reshape(2, 3)
+
+loss = transCriterion.forward(input, target)
+
+
+> loss
+182.0
+```

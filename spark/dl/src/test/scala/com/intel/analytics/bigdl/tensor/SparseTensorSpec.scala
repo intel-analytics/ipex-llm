@@ -125,4 +125,16 @@ class SparseTensorSpec  extends FlatSpec with Matchers {
     Tensor.dense(narrowed).resize(20).toArray().sum shouldEqual narrowedSum
   }
 
+  "SparseTensor dot DenseTense" should "return right result" in {
+    val values = Array.fill(30)(Random.nextFloat())
+    val sTensor = Tensor.sparse(Tensor(values, Array(6, 5)))
+
+    val dTensor = Tensor(Array(6, 5))
+
+    val sparseResult = sTensor.dot(dTensor)
+    val denseResult = dTensor.dot(Tensor.dense(sTensor))
+
+    sparseResult should be (denseResult)
+  }
+
 }

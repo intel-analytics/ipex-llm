@@ -16,7 +16,9 @@
 
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.rl.nn.RFPGCriterion
 import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.utils.T
 import org.scalatest.{FlatSpec, Matchers}
 
 @com.intel.analytics.bigdl.tags.Parallel

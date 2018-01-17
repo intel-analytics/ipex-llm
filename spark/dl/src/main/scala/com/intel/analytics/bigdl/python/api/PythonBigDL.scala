@@ -36,6 +36,7 @@ import java.nio.ByteOrder
 import java.util
 
 import com.intel.analytics.bigdl.nn.Graph._
+import com.intel.analytics.bigdl.nn.rl.PGCriterion
 import com.intel.analytics.bigdl.nn.tf.{Const, Fill, Shape, SplitAndSelect}
 import com.intel.analytics.bigdl.transform.vision.image._
 import com.intel.analytics.bigdl.transform.vision.image.augmentation._
@@ -884,6 +885,10 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     L1Penalty[T](l1weight,
       sizeAverage,
       provideOutput)
+  }
+
+  def createNegativeEntropyPenalty(beta: Double): NegativeEntropyPenalty[T] = {
+    NegativeEntropyPenalty(beta)
   }
 
   def createLeakyReLU(negval: Double = 0.01,
@@ -1769,6 +1774,16 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
            targetTransformer: AbstractModule[Activity, Activity, T] = null
            ): TransformerCriterion[T] = {
     TransformerCriterion(criterion, Option(inputTransformer), Option(targetTransformer))
+  }
+
+  def createDotProductCriterion(
+          sizeAverage: Boolean = false): DotProductCriterion[T] = {
+    DotProductCriterion[T](sizeAverage)
+  }
+
+  def createPGCriterion(
+    inputTransformer: AbstractModule[Tensor[T], Tensor[T], T] = null): PGCriterion[T] = {
+    PGCriterion(Option(inputTransformer))
   }
 
   def createPack(dimension: Int): Pack[T] = {
