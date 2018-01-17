@@ -19,6 +19,7 @@ package com.intel.analytics.bigdl.transform.vision.image.opencv
 import java.io.{File, IOException, ObjectInputStream, ObjectOutputStream}
 
 import com.intel.analytics.bigdl.opencv.OpenCV
+import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.transform.vision.image.util.BoundingBox
 import org.apache.commons.io.FileUtils
 import org.opencv.core._
@@ -166,9 +167,14 @@ object OpenCVMat {
    * @return image in mat
    */
   def fromFloats(floats: Array[Float], height: Int, width: Int): OpenCVMat = {
-    val mat = new Mat(height, width, CvType.CV_32FC3)
-    mat.put(0, 0, floats)
-    new OpenCVMat(mat)
+    var mat: Mat = null
+    try {
+      mat = new Mat(height, width, CvType.CV_32FC3)
+      mat.put(0, 0, floats)
+      new OpenCVMat(mat)
+    } finally {
+      if (null != mat) mat.release()
+    }
   }
 
   /**
@@ -225,5 +231,29 @@ object OpenCVMat {
     mat.create(height, width, CvType.CV_8UC3)
     mat.put(0, 0, pixels)
     mat
+  }
+
+  /**
+   * convert float tensor to OpenCVMat
+   * @param tensor tensor that represent an image
+   * @param format "HWC" or "CHW",
+   *               "HWC" means (height, width, channel) order,
+   *               "CHW" means (channel, height, width) order
+   * @return OpenCVMat
+   */
+  def fromTensor(tensor: Tensor[Float], format: String = "HWC"): OpenCVMat = {
+    require(format == "HWC" || format == "CHW", "the format should be HWC or CHW")
+    var image = if (format == "CHW") {
+      tensor.transpose(1, 2).transpose(2, 3)
+    } else {
+      tensor
+    }
+    image = image.contiguous()
+    val offset = tensor.storageOffset() - 1
+    var floatArr = image.storage().array()
+    if (offset > 0) {
+      floatArr = floatArr.slice(offset, tensor.nElement() + offset)
+    }
+    fromFloats(floatArr, image.size(1), image.size(2))
   }
 }
