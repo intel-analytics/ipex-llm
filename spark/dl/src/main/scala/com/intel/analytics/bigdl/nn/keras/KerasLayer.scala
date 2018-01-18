@@ -65,9 +65,9 @@ object KerasLayerSerializer extends ModuleSerializable {
 
 private[bigdl] object KerasLayer {
     def fuse[T: ClassTag](sLayer: AbstractModule[Activity, Activity, T],
-                          activation: TensorModule[T],
-                          inputShape: Shape)
-                         (implicit ev: TensorNumeric[T]): AbstractModule[Activity, Activity, T] = {
+        activation: TensorModule[T],
+        inputShape: Shape)
+        (implicit ev: TensorNumeric[T]): AbstractModule[Activity, Activity, T] = {
       if (activation == null) {
         return sLayer
       }
@@ -122,7 +122,7 @@ abstract class KerasLayer[A <: Activity: ClassTag, B <: Activity: ClassTag, T: C
 
   override def getOutputShape(): Shape = labor.getOutputShape()
 
-  override def build(inputShape: Shape): Unit = {
+  override def build(inputShape: Shape): Shape = {
     labor = doBuild(inputShape)
     labor.build(inputShape)
   }
@@ -361,12 +361,7 @@ abstract class KerasLayer[A <: Activity: ClassTag, B <: Activity: ClassTag, T: C
     val inputShape = Shape(nodes.map{_.element.getOutputShape()}.toList)
       this.build(inputShape)
     }
-    val curNode = new ModuleNode[T](this)
-    nodes.foreach(node => {
-      node.add(curNode, Edge())
-    })
-    curNode
-    //super.inputs(nodes : _*)
+    processInputs(nodes)
   }
 
   /**
@@ -380,7 +375,7 @@ abstract class KerasLayer[A <: Activity: ClassTag, B <: Activity: ClassTag, T: C
     val inputShape = Shape(nodes.map{_.element.getOutputShape()}.toList)
       this.build(inputShape)
     }
-    super.inputs(nodes)
+    processInputs(nodes)
   }
 
   /**
@@ -399,6 +394,6 @@ abstract class KerasLayer[A <: Activity: ClassTag, B <: Activity: ClassTag, T: C
       shapes ++ nodesWithIndex.map{t => t._1.element.getOutputShapeFor(t._2)}
     }
     this.build(Shape(shapes.toList))
-    super.inputs(first, nodesWithIndex : _*)
+    processInputs(first, nodesWithIndex : _*)
   }
 }

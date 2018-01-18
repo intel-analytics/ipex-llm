@@ -25,14 +25,13 @@ import scala.reflect.ClassTag
 
 trait InferShape {
 
-  private[bigdl] var inputShapeValue: Shape = null
+  protected var inputShapeValue: Shape = null
 
-  private[bigdl] var outputShapeValue: ArrayBuffer[Shape] = ArrayBuffer[Shape]()
+  protected var outputShapeValue: ArrayBuffer[Shape] = ArrayBuffer[Shape]()
 
   private[bigdl] def compatibleWithKeras(): Boolean = true
 
   private[bigdl] def compatibleWithTorch(): Boolean = true
-
 
   private[bigdl] def excludeNotTorch[T: ClassTag](nodes : Seq[ModuleNode[T]]): Unit = {
     val invalidNodes = nodes.filter{!_.element.compatibleWithTorch()}
@@ -76,10 +75,18 @@ trait InferShape {
     outputShapeValue(0)
   }
 
+//  private[bigdl] def getRawOutputShape(): ArrayBuffer[Shape] = {
+//    outputShapeValue.clone()
+//  }
 
-  private[bigdl] def build(inputShape: Shape): Unit = {
-    this.outputShapeValue.append(computeOutputShape(inputShape))
+  /**
+   * Execute builing logic and return the outputShape for the given inputShape
+   */
+  private[bigdl] def build(inputShape: Shape): Shape = {
+    val outputShape = computeOutputShape(inputShape)
+    this.outputShapeValue.append(outputShape)
     this.inputShapeValue = inputShape
+    outputShape
   }
 
   /**

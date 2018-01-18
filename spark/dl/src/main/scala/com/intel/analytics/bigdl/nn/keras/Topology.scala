@@ -18,20 +18,29 @@ package com.intel.analytics.bigdl.nn.keras
 
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
-import com.intel.analytics.bigdl.nn.{Sequential => TSequential}
-import com.intel.analytics.bigdl.nn.{DynamicGraph, Graph, StaticGraph}
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
-import com.intel.analytics.bigdl.nn.ops._
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.nn.{Graph, StaticGraph, Sequential => TSequential}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.{Edge, Node}
-import com.intel.analytics.bigdl.utils.serializer._
-import serialization.Bigdl.{AttrValue, BigDLModule}
+import com.intel.analytics.bigdl.utils.Node
 
-import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
-import scala.reflect.runtime._
+
+class Model[T: ClassTag](private val _inputs : Seq[ModuleNode[T]],
+      private val _outputs : Seq[ModuleNode[T]])(implicit ev: TensorNumeric[T])
+  extends StaticGraph[T](_inputs, _outputs, None) {
+
+  this.inputShapeValue = Shape(inputs.map{n => n.element.getInputShape()}.toList)
+  this.outputShapeValue = ArrayBuffer(outputs.map{_.element.getOutputShape()}: _*)
+
+  override private[bigdl] def compatibleWithKeras(): Boolean = true
+
+  override private[bigdl] def compatibleWithTorch(): Boolean = false
+
+  override def computeOutputShape(inputShape: Shape): Shape = {
+    getOutputShape()
+  }
+}
 
 object Model {
   /**
@@ -41,11 +50,9 @@ object Model {
    * @return a graph container
    */
   def apply[T: ClassTag](
-                          input : Array[ModuleNode[T]],
-                          output : Array[ModuleNode[T]],
-                          variables: Option[(Array[Tensor[T]], Array[Tensor[T]])] = None
-                        )(implicit ev: TensorNumeric[T]) : Graph[T] = {
-    new StaticGraph[T](input, output, variables)
+      input : Array[ModuleNode[T]],
+      output : Array[ModuleNode[T]])(implicit ev: TensorNumeric[T]) : Graph[T] = {
+    new Model[T](input, output)
   }
 
   /**
@@ -56,7 +63,7 @@ object Model {
    */
   def apply[T: ClassTag](input : ModuleNode[T], output : Array[ModuleNode[T]])
                         (implicit ev: TensorNumeric[T]) : Graph[T] = {
-    new StaticGraph[T](Seq(input), output)
+    new Model[T](Seq(input), output)
   }
 
   /**
@@ -67,7 +74,7 @@ object Model {
    */
   def apply[T: ClassTag](input : Array[ModuleNode[T]], output : ModuleNode[T])
                         (implicit ev: TensorNumeric[T]) : Graph[T] = {
-    new StaticGraph[T](input, Seq(output))
+    new Model[T](input, Seq(output))
   }
   /**
    * Build a single input, single output graph container
@@ -77,12 +84,22 @@ object Model {
    */
   def apply[T: ClassTag](input : ModuleNode[T], output : ModuleNode[T])
                         (implicit ev: TensorNumeric[T]) : Graph[T] = {
-    new StaticGraph[T](Seq(input), Seq(output))
+    new Model[T](Seq(input), Seq(output))
   }
 }
 
 class Sequential[T: ClassTag]
 (implicit ev: TensorNumeric[T]) extends TSequential[T] {
+
+  override private[bigdl] def compatibleWithKeras(): Boolean = true
+
+  override private[bigdl] def compatibleWithTorch(): Boolean = false
+
+  private[bigdl] var frozen: Boolean = false
+
+  override def computeOutputShape(inputShape: Shape): Shape = {
+    getOutputShape()
+  }
 
   /**
    * Add a sub-module to the contained `modules`
@@ -91,15 +108,26 @@ class Sequential[T: ClassTag]
    * @return this container
    */
   override def add(module: AbstractModule[_ <: Activity, _ <: Activity, T]): this.type = {
+    if (frozen) {
+      throw new RuntimeException(
+        "This Sequential has been frozen, as it has been added into other container")
+    }
+    if (module.isInstanceOf[Sequential[T]]) {
+      module.asInstanceOf[Sequential[T]].frozen = true
+    }
     this.excludeNotKeras[T](Seq(Node(module)))
+
     if (this.modules.isEmpty) {
       if (module.getInputShape() == null) {
         throw new RuntimeException("The first layer should explicitly declare inputshape")
       } else {
-        module.build(module.getInputShape())
+        val outputShape = module.build(module.getInputShape())
+        this.inputShapeValue = module.getInputShape()
+        this.outputShapeValue = ArrayBuffer(outputShape)
       }
     } else {
-      module.build(this.getOutputShape())
+      val outputShape = module.build(this.getOutputShape())
+      this.outputShapeValue = ArrayBuffer(outputShape)
     }
     modules += module.asInstanceOf[AbstractModule[Activity, Activity, T]]
     this

@@ -34,24 +34,6 @@ import scala.collection.mutable.ArrayBuffer
 class Sequential[T: ClassTag]
 (implicit ev: TensorNumeric[T]) extends Container[Activity, Activity, T] {
 
-  override def getInputShape(): Shape = {
-    if (this.modules.isEmpty) {
-      return null
-    }
-    this.modules(0).getInputShape()
-  }
-
-  override def getOutputShape(): Shape = {
-    if (this.modules.isEmpty) {
-      return null
-    }
-    this.modules(this.modules.length - 1).getOutputShape()
-  }
-
-  override def computeOutputShape(inputShape: Shape): Shape = {
-    getOutputShape()
-  }
-
   override def updateOutput(input: Activity): Activity = {
     var i = 0
     var result = input.asInstanceOf[Activity]

@@ -37,6 +37,10 @@ class Dense[T: ClassTag](val outputDim: Int,
                          var inputShape: Array[Int] = null
   )(implicit ev: TensorNumeric[T]) extends KerasLayer[Tensor[T], Tensor[T], T](Shape(inputShape)) {
 
+  override def computeOutputShape(inputShape: Shape): Shape = {
+    this.labor.computeOutputShape(inputShape)
+  }
+
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
     val layer = Linear(
       inputSize = inputShape.toSingle()(0),
