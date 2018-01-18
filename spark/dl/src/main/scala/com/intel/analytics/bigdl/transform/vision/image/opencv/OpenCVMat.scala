@@ -234,7 +234,9 @@ object OpenCVMat {
   }
 
   /**
-   * convert float tensor to OpenCVMat
+   * convert float tensor to OpenCVMat,
+   * Note that if you want to convert the tensor to BGR image,
+   * the element should be in range [0, 255]
    * @param tensor tensor that represent an image
    * @param format "HWC" or "CHW",
    *               "HWC" means (height, width, channel) order,
