@@ -172,6 +172,9 @@ object OpenCVMat {
       mat = new Mat(height, width, CvType.CV_32FC3)
       mat.put(0, 0, floats)
       new OpenCVMat(mat)
+    } catch {
+        case e: Exception => throw new Exception(s"convert float array to OpenCVMat fails!\n" +
+          s"${e.getMessage}")
     } finally {
       if (null != mat) mat.release()
     }
