@@ -39,7 +39,7 @@ object TestUtils {
     seq.add(layer)
     val calcOutputShape = seq.getOutputShape().toSingle()
     val forwardOutputShape = seq.forward(inputData).toTensor[Float].size()
-    calcOutputShape.sameElements(
+    calcOutputShape.slice(1, calcOutputShape.length).sameElements(
       forwardOutputShape.slice(1, forwardOutputShape.length))
   }
 

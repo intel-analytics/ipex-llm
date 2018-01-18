@@ -69,16 +69,30 @@ private[bigdl] object KerasLayer {
         return sLayer
       }
       val seq = KSequential[T]()
-      seq.add(InputLayer(inputShape = inputShape))
+      seq.add(InputLayer(inputShape = KerasLayer.removeBatch(inputShape)))
       seq.add(sLayer)
       seq.add(activation)
       seq.setName(sLayer.getName())
       return seq
     }
 
-  private def addBatch(shape: Shape): Shape = {
+   def addBatch(shape: Shape): Shape = {
+    if (shape == null) {
+      return null
+    }
     if (shape.isInstanceOf[SingleShape]) {
       Shape((List(-1) ++ shape.toSingle()).toArray)
+    } else {
+      Shape(shape.toMulti().map {addBatch(_)})
+    }
+  }
+
+  def removeBatch(shape: Shape): Shape = {
+    if (shape == null) {
+      return null
+    }
+    if (shape.isInstanceOf[SingleShape]) {
+      Shape((shape.toSingle().slice(1, shape.toSingle().length)).toArray)
     } else {
       Shape(shape.toMulti().map {addBatch(_)})
     }
@@ -96,6 +110,8 @@ private[bigdl] object KerasLayer {
  */
 abstract class KerasLayer[A <: Activity: ClassTag, B <: Activity: ClassTag, T: ClassTag]
 (mInputShape: Shape = null)(implicit ev: TensorNumeric[T]) extends AbstractModule[A, B, T]{
+
+  private val batchInputShape = KerasLayer.addBatch(mInputShape)
 
   var labor: AbstractModule[A, B, T] = null
 
@@ -126,8 +142,8 @@ abstract class KerasLayer[A <: Activity: ClassTag, B <: Activity: ClassTag, T: C
   override def compatibleWithTorch(): Boolean = false
 
   override def getInputShape(): Shape = {
-    if (mInputShape != null) {
-      KerasLayer.addBatch(mInputShape)
+    if (batchInputShape != null) {
+      batchInputShape
     } else if (this.labor == null) {
       null
     } else {

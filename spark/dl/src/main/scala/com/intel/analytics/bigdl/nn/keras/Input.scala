@@ -28,12 +28,14 @@ import scala.reflect.ClassTag
 class Input[T: ClassTag](val inputShape: Shape)(implicit ev: TensorNumeric[T])
   extends TInput[T]() {
 
+  private val batchInputShape = KerasLayer.addBatch(inputShape)
+
   override def getInputShape(): Shape = {
-    Shape((List(-1) ++ inputShape.toSingle()).toArray)
+    batchInputShape
   }
 
   override def getOutputShape(): Shape = {
-    Shape((List(-1) ++ inputShape.toSingle()).toArray)
+    batchInputShape
   }
 
   override def computeOutputShape(inputShape: Shape): Shape = inputShape

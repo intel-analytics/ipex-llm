@@ -89,7 +89,8 @@ trait InferShape {
   }
 
   /**
-   * Execute builing logic and return the outputShape for the given inputShape
+   * Execute builing logic and return the outputShape for the given inputShape.
+   * NB: the first dim of inputShape is batch
    */
   private[bigdl] def build(inputShape: Shape): Shape = {
     val outputShape = computeOutputShape(inputShape)

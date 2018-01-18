@@ -27,12 +27,13 @@ class KerasStyleSpec extends BigDLSpecHelper {
 
   "Graph: Dense" should "works correctly" in {
     val input = Input[Float](inputShape = Array(10))
-    val d0 = new Dense[Float](20, activation = ReLU()).setName("dense1")
-    val d = d0.inputs(input)
+    val d = new Dense[Float](20, activation = ReLU()).setName("dense1").inputs(input)
     val d2 = new Dense[Float](5).setName("dense2").inputs(d)
     val model = Model[Float](input, d2)
     val inputData = Tensor[Float](Array(20, 10)).rand()
     val output = model.forward(inputData)
+    require(model.getOutputShape().toSingle().sameElements(Array(-1, 5)))
+    require(model.getInputShape().toSingle().sameElements(Array(-1, 10)))
   }
 
   "Sequential: Dense" should "works correctly" in {
@@ -45,8 +46,8 @@ class KerasStyleSpec extends BigDLSpecHelper {
     seq.add(d3)
     val inputData = Tensor[Float](Array(20, 10)).rand()
     val output = seq.forward(inputData)
-    require(d3.getOutputShape().toSingle().sameElements(Array(6)))
-    require(d3.getInputShape().toSingle().sameElements(Array(5)))
+    require(d3.getOutputShape().toSingle().sameElements(Array(-1, 6)))
+    require(d3.getInputShape().toSingle().sameElements(Array(-1, 5)))
   }
 
   "Frozen sequential" should "be tested" in {
@@ -63,12 +64,12 @@ class KerasStyleSpec extends BigDLSpecHelper {
     val seq1 = KSequential[Float]()
     seq1.add(Dense[Float](20, inputShape = Array(10)))
     seq1.add(sharedRelu)
-    require(seq1.getOutputShape().toSingle().sameElements(Array(20)))
+    require(seq1.getOutputShape().toSingle().sameElements(Array(-1, 20)))
 
     val seq2 = KSequential[Float]()
     seq2.add(Dense[Float](5, inputShape = Array(20)))
     seq2.add(sharedRelu)
-    require(seq2.getOutputShape().toSingle().sameElements(Array(5)))
+    require(seq2.getOutputShape().toSingle().sameElements(Array(-1, 5)))
 
     val seq = KSequential[Float]()
     seq.add(seq1)
@@ -76,8 +77,8 @@ class KerasStyleSpec extends BigDLSpecHelper {
 
     val inputData = Tensor[Float](Array(20, 10)).rand()
     val output = seq.forward(inputData)
-    require(seq.getInputShape().toSingle().sameElements(Array(10)))
-    require(seq.getOutputShape().toSingle().sameElements(Array(5)))
+    require(seq.getInputShape().toSingle().sameElements(Array(-1, 10)))
+    require(seq.getOutputShape().toSingle().sameElements(Array(-1, 5)))
   }
 
 
