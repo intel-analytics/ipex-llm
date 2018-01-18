@@ -16,7 +16,6 @@
 
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -58,7 +57,7 @@ abstract class Container[A <: Activity : ClassTag,
    * @return this container
    */
   def add(module: AbstractModule[_ <: Activity, _ <: Activity, T]): this.type = {
-    this.excludeNotTorch[T](Seq(Node(module).asInstanceOf[ModuleNode[T]]))
+    this.excludeNotTorch[T](Seq(Node(module).asInstanceOf[Node[AbstractModule[_, _, T]]]))
     modules += module.asInstanceOf[AbstractModule[Activity, Activity, T]]
     this
   }

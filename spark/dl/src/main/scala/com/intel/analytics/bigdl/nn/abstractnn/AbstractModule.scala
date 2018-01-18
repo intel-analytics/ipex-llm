@@ -748,7 +748,7 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
    * @return node containing current module
    */
   def inputs(nodes : ModuleNode[T]*): ModuleNode[T] = {
-    excludeNotTorch(nodes)
+    excludeNotTorch(nodes.asInstanceOf[Seq[Node[AbstractModule[_, _, T]]]])
     processInputs(nodes)
   }
 
@@ -758,7 +758,7 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
    * @return node containing current module
    */
   def inputs(nodes : Array[ModuleNode[T]]): ModuleNode[T] = {
-    excludeNotTorch(nodes)
+    excludeNotTorch(nodes.asInstanceOf[Seq[Node[AbstractModule[_, _, T]]]])
     processInputs(nodes)
   }
 
@@ -769,8 +769,8 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
    * @return node containing current module
    */
   def inputs(first: (ModuleNode[T], Int), nodesWithIndex : (ModuleNode[T], Int)*): ModuleNode[T] = {
-    excludeNotTorch(List(first._1))
-    excludeNotTorch(nodesWithIndex.map(_._1))
+    excludeNotTorch(List(first._1).asInstanceOf[Seq[Node[AbstractModule[_, _, T]]]])
+    excludeNotTorch(nodesWithIndex.map(_._1).asInstanceOf[Seq[Node[AbstractModule[_, _, T]]]])
     processInputs(first, nodesWithIndex: _*)
   }
 

@@ -45,7 +45,8 @@ trait InferShape {
 
   private[bigdl] def compatibleWithTorch(): Boolean = true
 
-  private[bigdl] def excludeNotTorch[T: ClassTag](nodes : Seq[ModuleNode[T]]): Unit = {
+  private[bigdl] def excludeNotTorch[T: ClassTag]
+  (nodes : Seq[Node[AbstractModule[_, _, T]]]): Unit = {
     val invalidNodes = nodes.filter{!_.element.compatibleWithTorch()}
     if (invalidNodes.length > 0) {
       throw new RuntimeException(s"Do not mix with Layer: ${invalidNodes.mkString(",")}")
