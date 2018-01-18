@@ -116,7 +116,7 @@ class KerasStyleSpec extends BigDLSpecHelper {
     }
   }
 
-  // TODO: save Shape
+  // TODO: enable test for serialization
   //  "save and reload model" should "works correctly" in {
   //    val input = Input[Float](inputShape = Array(10))
   //    val d = new Dense[Float](20).setName("dense1").inputs(input)

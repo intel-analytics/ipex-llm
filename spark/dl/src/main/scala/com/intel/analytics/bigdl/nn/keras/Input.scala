@@ -29,11 +29,11 @@ class Input[T: ClassTag](val inputShape: Shape)(implicit ev: TensorNumeric[T])
   extends TInput[T]() {
 
   override def getInputShape(): Shape = {
-    Shape((List(-1) ++ inputShape.toSingle()))
+    Shape((List(-1) ++ inputShape.toSingle()).toArray)
   }
 
   override def getOutputShape(): Shape = {
-    Shape((List(-1) ++ inputShape.toSingle()))
+    Shape((List(-1) ++ inputShape.toSingle()).toArray)
   }
 
   override def computeOutputShape(inputShape: Shape): Shape = inputShape

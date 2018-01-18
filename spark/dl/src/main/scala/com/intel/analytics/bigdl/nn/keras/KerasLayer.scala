@@ -78,7 +78,7 @@ private[bigdl] object KerasLayer {
 
   private def addBatch(shape: Shape): Shape = {
     if (shape.isInstanceOf[SingleShape]) {
-      Shape((List(-1) ++ shape.toSingle()))
+      Shape((List(-1) ++ shape.toSingle()).toArray)
     } else {
       Shape(shape.toMulti().map {addBatch(_)})
     }

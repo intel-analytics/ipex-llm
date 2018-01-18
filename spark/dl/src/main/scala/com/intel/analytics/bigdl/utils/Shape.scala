@@ -16,6 +16,8 @@
 
 package com.intel.analytics.bigdl.utils
 
+import scala.reflect.ClassTag
+
 trait Shape {
   def toSingle(): List[Int] = throw new RuntimeException("Invalid operation")
   def toMulti(): List[Shape] = throw new RuntimeException("Invalid operation")
@@ -33,14 +35,19 @@ case class MultiShape(val value: List[Shape]) extends Shape {
 
 object Shape {
 
-  def apply(item : Seq[Int]): Shape = {
+  def apply(item : Array[Int]): Shape = {
     if (item == null) {
       return null
     }
     new SingleShape(item.toList)
   }
 
-  def apply(shapes : List[Shape]): Shape = {
+  def apply(item : Int*): Shape = {
+    val v = Array(item : _*)
+    new SingleShape(item.toList)
+  }
+
+  def apply[T <: Shape : ClassTag](shapes : List[Shape]): Shape = {
     if (shapes.length > 1) {
       MultiShape(shapes.toList)
     } else if (shapes.length == 1) {
