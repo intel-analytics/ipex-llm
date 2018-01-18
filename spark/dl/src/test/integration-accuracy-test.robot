@@ -76,19 +76,32 @@ Run Spark Test
    [Arguments]                      ${submit}                   ${spark_master}
    DownLoad Input
    Log To Console                   begin lenet Train
-   Run Shell                        ${submit} --master ${spark_master} --conf "spark.serializer=org.apache.spark.serializer.JavaSerializer" --driver-memory 150g --executor-cores 28 --total-executor-cores 84 --class com.intel.analytics.bigdl.models.lenet.Train ${jar_path} -f ${mnist_data_source}  -b 12 -e 50 > 1.txt; result= `cat 1.txt|grep "Top1Accuracy"|tail -1|cut -c114-118` falg=0.985; if [ $result -lt $falg ];then  exit -1; fi
+   Run Shell                        ${submit} --master ${spark_master} --conf "spark.serializer=org.apache.spark.serializer.JavaSerializer" --driver-memory 150g --executor-cores 28 --total-executor-cores 84 --class com.intel.analytics.bigdl.models.lenet.Train ${jar_path} -f ${mnist_data_source}  -b 12 -e 50 > 1.txt; 
+   Run Shell result= `cat 1.txt|grep "Top1Accuracy"|tail -1|cut -c114-118` falg=0.985; 
+   Run Shell if [ $result -lt $falg ];then  exit -1; fi
    Log To Console                   begin lenet Train local[4]
    Run Shell                        ${submit} --master local[4] --class com.intel.analytics.bigdl.models.lenet.Train ${jar_path} -f ./mnist -b 120 -e 1    
    Log To Console                   begin autoencoder Train 
-   Run Shell                        ${submit} --master ${spark_master} --executor-cores 4 --total-executor-cores 12 --class com.intel.analytics.bigdl.models.autoencoder.Train ${jar_path} --b 12 -e 50  -f ${mnist_data_source} > 2.txt; result = `cat 2.txt|grep 'Loss'|tail -1|cut -c211-215`; falg=0.55;if [ $result -gt $falg ];then  exit -1; fi
+   Run Shell                        ${submit} --master ${spark_master} --executor-cores 4 --total-executor-cores 12 --class com.intel.analytics.bigdl.models.autoencoder.Train ${jar_path} --b 12 -e 50  -f ${mnist_data_source} > 2.txt;
+   Run Shell                        result = `cat 2.txt|grep 'Loss'|tail -1|cut -c211-215`; falg=0.55;
+   Run Shell                        if [ $result -gt $falg ];then  exit -1; fi
    Log To Console                   begin PTBWordLM
-   Run Shell                        ${submit} --master ${spark_master} --conf "spark.serializer=org.apache.spark.serializer.JavaSerializer" --driver-memory 40g --executor-memory 100g --executor-cores 8 --total-executor-cores 8 --class com.intel.analytics.bigdl.example.languagemodel.PTBWordLM ${jar_path} -f ./simple-examples/data -b 120 --numLayers 2 --vocab 10001 --hidden 650 --numSteps 35 --learningRate 0.005 -e 20 --learningRateDecay 0.001 --keepProb 0.5 --overWrite > 3.txt; result= `cat 3.txt|grep 'Loss'|tail -1|cut -c102-107`; falg=24.5;if [ $result -gt $falg ];then  exit -1; fi
+   Run Shell                        ${submit} --master ${spark_master} --conf "spark.serializer=org.apache.spark.serializer.JavaSerializer" --driver-memory 40g --executor-memory 100g --executor-cores 8 --total-executor-cores 8 --class com.intel.analytics.bigdl.example.languagemodel.PTBWordLM ${jar_path} -f ./simple-examples/data -b 120 --numLayers 2 --vocab 10001 --hidden 650 --numSteps 35 --learningRate 0.005 -e 20 --learningRateDecay 0.001 --keepProb 0.5 --overWrite > 3.txt; 
+   Run Shell                        result= `cat 3.txt|grep 'Loss'|tail -1|cut -c102-107`; falg=24.5;
+   Run Shell                        if [ $result -gt $falg ];then  exit -1; fi
    Log To Console                   begin resnet Train
-   Run Shell                        ${submit} --master ${spark_master} --conf "spark.serializer=org.apache.spark.serializer.JavaSerializer" --driver-memory 5g --executor-memory 5g --executor-cores 8 --total-executor-cores 32 --class com.intel.analytics.bigdl.models.resnet.Train ${jar_path} -f ./cifar --batchSize 448 --optnet true --depth 20 --classes 10 --shortcutType A --nEpochs 156 --learningRate 0.1 >4.txt; result = `cat 4.txt|grep "Top1Accuracy"|tail -1|cut -c520-524`; falg=0.89;  if [ $result -lt $falg ];then  exit -1; fi
+   Run Shell                        ${submit} --master ${spark_master} --conf "spark.serializer=org.apache.spark.serializer.JavaSerializer" --driver-memory 5g --executor-memory 5g --executor-cores 8 --total-executor-cores 32 --class com.intel.analytics.bigdl.models.resnet.Train ${jar_path} -f ./cifar --batchSize 448 --optnet true --depth 20 --classes 10 --shortcutType A --nEpochs 156 --learningRate 0.1 >4.txt; 
+   Run Shell                        result = `cat 4.txt|grep "Top1Accuracy"|tail -1|cut -c520-524`; 
+   Run Shell                        falg=0.89;  
+   Run Shell                        if [ $result -lt $falg ];then  exit -1; fi
    Log To Console                   begin DLClassifierLeNet
-   Run Shell                        ${submit} --master ${spark_master} --executor-cores 24 --total-executor-cores 24 --driver-memory 60g --executor-memory 200g --class com.intel.analytics.bigdl.example.MLPipeline.DLClassifierLeNet ${jar_path} -b 12 -f ./mnist --maxEpoch 10 > 5.txt; result=`cat 5.txt|grep 'Loss'|tail -1|cut -c209-213`;  falg=0.45; if [ $result -gt $falg ];then  exit -1; fi
+   Run Shell                        ${submit} --master ${spark_master} --executor-cores 24 --total-executor-cores 24 --driver-memory 60g --executor-memory 200g --class com.intel.analytics.bigdl.example.MLPipeline.DLClassifierLeNet ${jar_path} -b 12 -f ./mnist --maxEpoch 10 > 5.txt; 
+   Run Shell                        result=`cat 5.txt|grep 'Loss'|tail -1|cut -c209-213`;  falg=0.45; 
+   Run Shell                        if [ $result -gt $falg ];then  exit -1; fi
    Log To Console                   begin rnn Train
-   Run Shell                        ${submit} --master ${spark_master} --driver-memory 5g --executor-memory 5g --executor-cores 12 --total-executor-cores 12 --class com.intel.analytics.bigdl.models.rnn.Train ${jar_path} -f ./ -s ./models --nEpochs 10 --checkpoint ./model/ -b 12 >6.txt; result=`cat 6.txt|grep 'Loss'|tail -1|cut -c103-107 `;falg=1.4; if [ $result -gt $falg ];then  exit -1; fi
+   Run Shell                        ${submit} --master ${spark_master} --driver-memory 5g --executor-memory 5g --executor-cores 12 --total-executor-cores 12 --class com.intel.analytics.bigdl.models.rnn.Train ${jar_path} -f ./ -s ./models --nEpochs 10 --checkpoint ./model/ -b 12 >6.txt;
+   Run Shell                        result=`cat 6.txt|grep 'Loss'|tail -1|cut -c103-107 `;falg=1.4; 
+   Run Shell                        if [ $result -gt $falg ];then  exit -1; fi
    Log To Console                   begin inceptionV1 train
    Run Shell                        ${submit} --master ${spark_master} --conf "spark.serializer=org.apache.spark.serializer.JavaSerializer" --driver-memory 60g --executor-memory 200g --executor-cores 24 --total-executor-cores 24 --class com.intel.analytics.bigdl.models.inception.TrainInceptionV1 ${jar_path} -b 24 -f ${imagenet_test_data_source} --learningRate 0.1 -e 1
    Log To Console                   begin googlenet
