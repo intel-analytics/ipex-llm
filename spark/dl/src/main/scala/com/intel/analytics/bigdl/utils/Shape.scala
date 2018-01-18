@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.nn.keras
+package com.intel.analytics.bigdl.utils
 
 trait Shape {
   def toSingle(): List[Int] = throw new RuntimeException("Invalid operation")

@@ -23,7 +23,7 @@ import com.intel.analytics.bigdl.nn.keras.{Sequential => KSequential}
 import com.intel.analytics.bigdl.nn.{Sequential => TSequential}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.Table
+import com.intel.analytics.bigdl.utils.{Shape, Table}
 import com.intel.analytics.bigdl.utils.serializer._
 import serialization.Bigdl.{AttrValue, BigDLModule}
 
@@ -94,6 +94,12 @@ abstract class KerasLayer[A <: Activity: ClassTag, B <: Activity: ClassTag, T: C
   override def output: B = labor._output
 
   override def output_= (value: B): Unit = labor._output = value
+
+  override def gradInput: A = labor._gradInput
+
+  override def gradInput_=(value: A): Unit = {
+    labor._gradInput = value
+  }
 
   override def inputShapeValue: Shape = labor._inputShapeValue
 

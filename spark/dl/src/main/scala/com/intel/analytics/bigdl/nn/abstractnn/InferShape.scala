@@ -17,8 +17,8 @@
 package com.intel.analytics.bigdl.nn.abstractnn
 
 import com.intel.analytics.bigdl.nn.Graph._
-import com.intel.analytics.bigdl.nn.keras.{KerasLayer, Shape}
-import com.intel.analytics.bigdl.utils.Node
+import com.intel.analytics.bigdl.nn.keras.KerasLayer
+import com.intel.analytics.bigdl.utils.{Node, Shape}
 
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag

@@ -82,7 +82,7 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
   def gradInput: A = _gradInput
 
   def gradInput_=(value: A): Unit = {
-    _output = value
+    _gradInput = value
   }
 
 

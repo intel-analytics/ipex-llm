@@ -20,13 +20,24 @@ import com.intel.analytics.bigdl.nn.{Input => TInput}
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.Node
+import com.intel.analytics.bigdl.utils.{Node, Shape}
 
 import scala.reflect.ClassTag
 
 @SerialVersionUID(- 8525406230282608904L)
-class Input[T: ClassTag](override val inputShape: Shape)(implicit ev: TensorNumeric[T])
-  extends TInput[T](inputShape) {
+class Input[T: ClassTag](val inputShape: Shape)(implicit ev: TensorNumeric[T])
+  extends TInput[T]() {
+
+  override def getInputShape(): Shape = {
+    inputShape
+  }
+
+  override def getOutputShape(): Shape = {
+    inputShape
+  }
+
+  override def computeOutputShape(inputShape: Shape): Shape = inputShape
+
 }
 
 object Input {

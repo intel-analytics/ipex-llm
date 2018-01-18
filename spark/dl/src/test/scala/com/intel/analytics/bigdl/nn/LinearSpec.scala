@@ -23,7 +23,7 @@ import com.intel.analytics.bigdl._
 import scala.math._
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.optim.{L1Regularizer, L2Regularizer, SGD}
-import com.intel.analytics.bigdl.utils.{RandomGenerator, T}
+import com.intel.analytics.bigdl.utils.{RandomGenerator, Shape, T, TestUtils}
 
 @com.intel.analytics.bigdl.tags.Parallel
 class LinearSpec extends FlatSpec with Matchers {
