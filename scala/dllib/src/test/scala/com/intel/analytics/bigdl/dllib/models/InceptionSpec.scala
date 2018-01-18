@@ -186,7 +186,7 @@ class InceptionSpec extends TorchSpec {
     val errTorch = TH.map("err").asInstanceOf[Table][Double](1)
     val errTest = criterion.forward(outputTest, labels)
     println(s"err:${abs(errTest - errTorch)}")
-    assert(abs(errTest - errTorch) < 2e-15)
+    assert(abs(errTest - errTorch) < 4e-15)
 
     val gradOutputTorch = TH.map("gradOutput").asInstanceOf[Tensor[Double]]
     val gradOutputTest = criterion.backward(outputTest, labels)
