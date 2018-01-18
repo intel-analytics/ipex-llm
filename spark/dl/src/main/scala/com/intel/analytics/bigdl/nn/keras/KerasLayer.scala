@@ -18,15 +18,12 @@ package com.intel.analytics.bigdl.nn.keras
 
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.nn.Graph._
-import com.intel.analytics.bigdl.nn.{InputLayer, Sequential => TSequential, Input}
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
 import com.intel.analytics.bigdl.nn.keras.{Sequential => KSequential}
-import com.intel.analytics.bigdl.nn.keras.Model._
-
-
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, InferShape, TensorModule}
+import com.intel.analytics.bigdl.nn.{Sequential => TSequential}
+import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.tensor.{Tensor, TensorDataType}
-import com.intel.analytics.bigdl.utils.{Edge, Node, Table}
+import com.intel.analytics.bigdl.utils.Table
 import com.intel.analytics.bigdl.utils.serializer._
 import serialization.Bigdl.{AttrValue, BigDLModule}
 
@@ -77,10 +74,6 @@ private[bigdl] object KerasLayer {
       seq.add(activation)
       seq.setName(sLayer.getName())
       return seq
-
-//      val i = Input(inputShape = inputShape.toSingle().toArray)
-//      Model(input = i, output = activation.inputs(sLayer.inputs(i)))
-//      .setName(sLayer.getName())
     }
 }
 
@@ -102,9 +95,21 @@ abstract class KerasLayer[A <: Activity: ClassTag, B <: Activity: ClassTag, T: C
 
   override def output_= (value: B): Unit = labor._output = value
 
-  override private[bigdl] def compatibleWithKeras(): Boolean = true
+  override def inputShapeValue: Shape = labor._inputShapeValue
 
-  override private[bigdl] def compatibleWithTorch(): Boolean = false
+  override def inputShapeValue_=(value: Shape): Unit = {
+    labor._inputShapeValue = value
+  }
+
+  override def outputShapeValue: ArrayBuffer[Shape] = labor._outputShapeValue
+
+  override def outputShapeValue_=(value: ArrayBuffer[Shape]): Unit = {
+   labor._outputShapeValue = value
+  }
+
+  override def compatibleWithKeras(): Boolean = true
+
+  override def compatibleWithTorch(): Boolean = false
 
   override def getInputShape(): Shape = {
     if (mInputShape != null) {
@@ -124,16 +129,15 @@ abstract class KerasLayer[A <: Activity: ClassTag, B <: Activity: ClassTag, T: C
 
   override def build(inputShape: Shape): Shape = {
     labor = doBuild(inputShape)
-    labor.build(inputShape)
+    if (!labor.isBuilt) {
+      labor.build(inputShape)
+    }
+    labor.isBuilt = true
+    isBuilt = true
+    labor.getOutputShape()
   }
 
   def doBuild(inputShape: Shape): AbstractModule[A, B, T]
-
-  // this is must as forward in base class use field:"output"
-  // instead of the value return by method "updateoutput"
-  override def forward(input: A): B = labor.forward(input)
-
-  override def backward(input: A, gradOutput: B): A = labor.backward(input, gradOutput)
 
   /**
    * Get the scale of gradientWeight

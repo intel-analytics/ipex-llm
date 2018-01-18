@@ -16,7 +16,6 @@
 
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.nn.keras.Shape
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 

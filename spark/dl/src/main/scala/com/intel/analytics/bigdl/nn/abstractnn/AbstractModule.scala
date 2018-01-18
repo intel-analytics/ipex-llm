@@ -19,24 +19,22 @@ package com.intel.analytics.bigdl.nn.abstractnn
 import java.nio.ByteOrder
 
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.tensor.{Tensor, TensorDataType}
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils._
-import com.intel.analytics.bigdl.nn.{Module, _}
-import com.intel.analytics.bigdl.utils.TorchObject.TYPE_MODULE
-import org.apache.commons.lang3.SerializationUtils
-import org.apache.spark.rdd.RDD
-import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.dataset.{LocalDataSet, MiniBatch, PaddingParam, Sample}
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
-import com.intel.analytics.bigdl.nn.keras.Shape
 import com.intel.analytics.bigdl.nn.quantized.Quantization
+import com.intel.analytics.bigdl.nn.{Module, _}
+import com.intel.analytics.bigdl.optim._
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.tensor.{Tensor, TensorDataType}
 import com.intel.analytics.bigdl.transform.vision.image.{DistributedImageFrame, ImageFeature, ImageFrame, LocalImageFrame}
+import com.intel.analytics.bigdl.utils.TorchObject.TYPE_MODULE
+import com.intel.analytics.bigdl.utils._
 import com.intel.analytics.bigdl.utils.caffe.CaffePersister
 import com.intel.analytics.bigdl.utils.serializer.ModulePersister
 import com.intel.analytics.bigdl.utils.tf.{TensorflowDataFormat, TensorflowSaver}
+import org.apache.commons.lang3.SerializationUtils
+import org.apache.spark.rdd.RDD
 
-import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
 /**
@@ -277,10 +275,10 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
    * @param input input data
    * @return output data
    */
-  def forward(input: A): B = {
+  final def forward(input: A): B = {
     val before = System.nanoTime()
     try {
-      return updateOutput(input)
+      updateOutput(input)
     } catch {
       case l: LayerException =>
         l.layerMsg = this.toString() + "/" + l.layerMsg

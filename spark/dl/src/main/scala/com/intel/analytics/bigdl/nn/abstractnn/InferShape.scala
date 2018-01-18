@@ -25,9 +25,21 @@ import scala.reflect.ClassTag
 
 trait InferShape {
 
-  protected var inputShapeValue: Shape = null
+  private[bigdl] var _inputShapeValue: Shape = null
 
-  protected var outputShapeValue: ArrayBuffer[Shape] = ArrayBuffer[Shape]()
+  private[bigdl] var _outputShapeValue: ArrayBuffer[Shape] = ArrayBuffer[Shape]()
+
+  private[bigdl] def inputShapeValue: Shape = _inputShapeValue
+
+  private[bigdl] def inputShapeValue_=(value: Shape): Unit = {
+    _inputShapeValue = value
+  }
+
+  private[bigdl] def outputShapeValue: ArrayBuffer[Shape] = _outputShapeValue
+
+  private[bigdl] def outputShapeValue_=(value: ArrayBuffer[Shape]): Unit = {
+    _outputShapeValue = value
+  }
 
   private[bigdl] def compatibleWithKeras(): Boolean = true
 
@@ -52,7 +64,7 @@ trait InferShape {
    * There's no batch dim in the inputShape which just represent a sample record.
    */
   private[bigdl] def getInputShape(): Shape = {
-    inputShapeValue
+    _inputShapeValue
   }
 
   /**
@@ -61,33 +73,32 @@ trait InferShape {
    * @return
    */
   private[bigdl] def getOutputShapeFor(index: Int): Shape = {
-    outputShapeValue(index)
+    _outputShapeValue(index)
   }
 
   /**
    * There's no batch dim in the outputShape which just represent a sample record.
    */
   private[bigdl] def getOutputShape(): Shape = {
-    if (outputShapeValue.length > 1) {
+    if (_outputShapeValue.length > 1) {
       throw new RuntimeException(
         "There's multipule output for this layer. Please use getInputShapeFor instead")
     }
     outputShapeValue(0)
   }
 
-//  private[bigdl] def getRawOutputShape(): ArrayBuffer[Shape] = {
-//    outputShapeValue.clone()
-//  }
-
   /**
    * Execute builing logic and return the outputShape for the given inputShape
    */
   private[bigdl] def build(inputShape: Shape): Shape = {
     val outputShape = computeOutputShape(inputShape)
-    this.outputShapeValue.append(outputShape)
-    this.inputShapeValue = inputShape
+    this._outputShapeValue.append(outputShape)
+    this._inputShapeValue = inputShape
+    isBuilt = true
     outputShape
   }
+
+  private[bigdl] var isBuilt: Boolean = false
 
   /**
    * There's no batch dim in the inputShape which just represent a sample record.

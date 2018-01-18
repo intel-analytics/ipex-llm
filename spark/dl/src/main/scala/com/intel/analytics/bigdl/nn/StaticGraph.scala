@@ -15,17 +15,12 @@
  */
 package com.intel.analytics.bigdl.nn
 
-import java.util
-
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
-import com.intel.analytics.bigdl.nn.keras.Shape
-import com.intel.analytics.bigdl.nn.tf.{ControlDependency, WithoutInput}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.{Node, T}
+import com.intel.analytics.bigdl.utils.Node
 
-import scala.collection.mutable
 import scala.reflect.ClassTag
 
 /**
@@ -46,8 +41,6 @@ class StaticGraph[T: ClassTag](
   private val inputCache = new Array[Activity](forwardExecution.length)
   private var backId2ForwardId: Array[Int] = _
   private var gradOutputCache: Array[Activity] = _
-
-//  compile()
 
   buildBackwardGraph()
 

@@ -31,7 +31,10 @@ class Model[T: ClassTag](private val _inputs : Seq[ModuleNode[T]],
   extends StaticGraph[T](_inputs, _outputs, None) {
 
   this.inputShapeValue = Shape(inputs.map{n => n.element.getInputShape()}.toList)
+
   this.outputShapeValue = ArrayBuffer(outputs.map{_.element.getOutputShape()}: _*)
+
+  isBuilt = true
 
   override private[bigdl] def compatibleWithKeras(): Boolean = true
 
@@ -130,6 +133,7 @@ class Sequential[T: ClassTag]
       this.outputShapeValue = ArrayBuffer(outputShape)
     }
     modules += module.asInstanceOf[AbstractModule[Activity, Activity, T]]
+    isBuilt = true
     this
   }
 }

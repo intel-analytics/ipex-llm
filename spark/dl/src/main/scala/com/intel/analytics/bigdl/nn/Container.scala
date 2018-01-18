@@ -41,8 +41,6 @@ abstract class Container[A <: Activity : ClassTag,
     B <: Activity : ClassTag, T: ClassTag](
   implicit ev: TensorNumeric[T]) extends AbstractModule[A, B, T] {
 
-//  private var parent: Container[A, B, T] = null
-
   // list of sub modules
   val modules: ArrayBuffer[AbstractModule[Activity, Activity, T]]
   = ArrayBuffer[AbstractModule[Activity, Activity, T]]()
@@ -52,7 +50,6 @@ abstract class Container[A <: Activity : ClassTag,
   override private[bigdl] def compatibleWithTorch(): Boolean = {
     modules.filter(!_.compatibleWithTorch()).length > 0
   }
-
 
   /**
    * Add a sub-module to the contained `modules`

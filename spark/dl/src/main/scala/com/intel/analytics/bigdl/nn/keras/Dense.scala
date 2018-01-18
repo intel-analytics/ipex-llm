@@ -22,7 +22,6 @@ import com.intel.analytics.bigdl.nn.abstractnn._
 import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.nn.keras.Shape._
 
 import scala.reflect.ClassTag
 
@@ -36,10 +35,6 @@ class Dense[T: ClassTag](val outputDim: Int,
                          val bias: Boolean = true,
                          var inputShape: Array[Int] = null
   )(implicit ev: TensorNumeric[T]) extends KerasLayer[Tensor[T], Tensor[T], T](Shape(inputShape)) {
-
-  override def computeOutputShape(inputShape: Shape): Shape = {
-    this.labor.computeOutputShape(inputShape)
-  }
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
     val layer = Linear(
