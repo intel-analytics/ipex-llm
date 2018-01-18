@@ -39,7 +39,7 @@ class Dense[T: ClassTag](val outputDim: Int,
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
     val layer = Linear(
-      inputSize = inputShape.toSingle()(0),
+      inputSize = inputShape.toSingle()(1), // the first dim is batch
       outputSize = outputDim,
       withBias = bias,
       wRegularizer = wRegularizer,

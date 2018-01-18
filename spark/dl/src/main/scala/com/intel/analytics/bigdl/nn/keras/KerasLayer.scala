@@ -23,7 +23,7 @@ import com.intel.analytics.bigdl.nn.keras.{Sequential => KSequential}
 import com.intel.analytics.bigdl.nn.{Sequential => TSequential}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.{Shape, Table}
+import com.intel.analytics.bigdl.utils.{Shape, SingleShape, Table}
 import com.intel.analytics.bigdl.utils.serializer._
 import serialization.Bigdl.{AttrValue, BigDLModule}
 
@@ -75,6 +75,14 @@ private[bigdl] object KerasLayer {
       seq.setName(sLayer.getName())
       return seq
     }
+
+  private def addBatch(shape: Shape): Shape = {
+    if (shape.isInstanceOf[SingleShape]) {
+      Shape((List(-1) ++ shape.toSingle()))
+    } else {
+      Shape(shape.toMulti().map {addBatch(_)})
+    }
+  }
 }
 
 /**
@@ -119,7 +127,7 @@ abstract class KerasLayer[A <: Activity: ClassTag, B <: Activity: ClassTag, T: C
 
   override def getInputShape(): Shape = {
     if (mInputShape != null) {
-      mInputShape
+      KerasLayer.addBatch(mInputShape)
     } else if (this.labor == null) {
       null
     } else {

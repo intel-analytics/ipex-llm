@@ -33,15 +33,10 @@ case class MultiShape(val value: List[Shape]) extends Shape {
 
 object Shape {
 
-  def apply(item : Array[Int]): Shape = {
+  def apply(item : Seq[Int]): Shape = {
     if (item == null) {
       return null
     }
-    new SingleShape(item.toList)
-  }
-
-  def apply(item : Int*): Shape = {
-    val v = Array(item : _*)
     new SingleShape(item.toList)
   }
 
