@@ -341,7 +341,7 @@ class SequentialSchedule(JavaValue):
     >>> poly = Poly(0.5, 2)
     creating: createPoly
     >>> test = sequentialSchedule.add(poly, 5)
-    
+
 
 
     """
