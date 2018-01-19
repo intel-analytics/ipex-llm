@@ -601,6 +601,55 @@ class TestSimple():
                                        JTensor.from_ndarray(np.ones([4, 3]))])
         assert result4.shape == (4,)
 
+    def test_train_image_frame(self):
+        batch_size = 32
+        epoch_num = 5
+        images = []
+        labels = []
+        for i in range(0, 64):
+            features = np.random.uniform(0, 1, (300, 300, 3))
+            label = np.array([2])
+            images.append(features)
+            labels.append(label)
+
+        image_frame = DistributedImageFrame(sc.parallelize(images), sc.parallelize(labels))
+
+        transformer = Pipeline([Resize(256, 256), CenterCrop(224, 224),
+                                ChannelNormalize(0.485, 0.456, 0.406, 0.229, 0.224, 0.225),
+                                MatToTensor(), ImageFrameToSample(target_keys=['label'])])
+        image_frame.transform(transformer)
+
+        model = Sequential()
+        model.add(SpatialConvolution(3, 6, 5, 5))
+        model.add(View([6 * 220 * 220]))
+        model.add(Linear(6 * 220 * 220, 20))
+        model.add(LogSoftMax())
+
+
+        image_frame = model.predict_image(image_frame)
+        predicts = image_frame.get_predict()
+        out = predicts.collect()
+
+        print out[0][1].shape
+        optim_method = SGD(learningrate=0.01)
+        optimizer = Optimizer.create(
+            model=model,
+            training_set=image_frame,
+            criterion=ClassNLLCriterion(),
+            optim_method=optim_method,
+            end_trigger=MaxEpoch(epoch_num),
+            batch_size=batch_size)
+        optimizer.set_validation(
+            batch_size=batch_size,
+            val_rdd=image_frame,
+            trigger=EveryEpoch(),
+            val_method=[Top1Accuracy()]
+        )
+
+        trained_model = optimizer.optimize()
+
+        predict_result = trained_model.predict_image(image_frame)
+
 
 if __name__ == "__main__":
     pytest.main([__file__])
