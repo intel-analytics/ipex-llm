@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.{Node, T, Table}
+import com.intel.analytics.bigdl.utils.{T, Table}
 
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
