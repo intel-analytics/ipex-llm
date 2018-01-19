@@ -176,18 +176,6 @@ class TestLayer():
         transformer = Pipeline([MatToTensor(), ImageFrameToSample()])
         self.transformer_test(transformer)
 
-    def test_to_pysample_local(self):
-        transformer = Pipeline([MatToTensor(), ImageFrameToSample()])
-        image_frame = ImageFrame.read(self.image_path)
-        transformed = transformer(image_frame)
-        transformed.get_sample()
-
-    def test_to_pysample_rdd(self):
-        transformer = Pipeline([MatToTensor(), ImageFrameToSample()])
-        image_frame = ImageFrame.read(self.image_path, self.sc)
-        transformed = transformer(image_frame)
-        transformed.get_sample().count()
-
     def test_image_frame_transform(self):
         transformer = MatToTensor()
         image_frame = ImageFrame.read(self.image_path)
