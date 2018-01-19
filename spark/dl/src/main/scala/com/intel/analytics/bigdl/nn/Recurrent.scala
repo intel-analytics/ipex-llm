@@ -469,6 +469,7 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
 
     modules.foreach(_.reset())
     cells.clear()
+    hidden = null
   }
 
   override def canEqual(other: Any): Boolean = other.isInstanceOf[Recurrent[T]]
