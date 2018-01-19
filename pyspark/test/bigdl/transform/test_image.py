@@ -40,12 +40,12 @@ class TestLayer():
 
     def transformer_test(self, transformer):
         image_frame = ImageFrame.read(self.image_path)
-        transformer(image_frame)
-        image_frame.get_image()
+        transformed = transformer(image_frame)
+        transformed.get_image()
 
         image_frame = ImageFrame.read(self.image_path, self.sc)
-        transformer(image_frame)
-        images = image_frame.get_image()
+        transformed = transformer(image_frame)
+        images = transformed.get_image()
         images.count()
 
     def test_get_image(self):
@@ -172,11 +172,23 @@ class TestLayer():
         transformer = Pipeline([MatToTensor(), ImageFrameToSample()])
         self.transformer_test(transformer)
 
+    def test_to_pysample_local(self):
+        transformer = Pipeline([MatToTensor(), ImageFrameToSample()])
+        image_frame = ImageFrame.read(self.image_path)
+        transformed = transformer(image_frame)
+        transformed.get_sample()
+
+    def test_to_pysample_rdd(self):
+        transformer = Pipeline([MatToTensor(), ImageFrameToSample()])
+        image_frame = ImageFrame.read(self.image_path, self.sc)
+        transformed = transformer(image_frame)
+        transformed.get_sample().count()
+
     def test_image_frame_transform(self):
         transformer = MatToTensor()
         image_frame = ImageFrame.read(self.image_path)
-        image_frame.transform(transformer)
-        image_frame.get_image()
+        transformed = image_frame.transform(transformer)
+        transformed.get_image()
 
     def test_empty_get_predict_local(self):
         image_frame = ImageFrame.read(self.image_path)

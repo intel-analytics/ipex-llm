@@ -2856,6 +2856,21 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     toJTensor(label)
   }
 
+  def localImageFrameToSample(imageFrame: LocalImageFrame, key: String): JList[Sample] = {
+    imageFrame.array.map(x => {
+      val sample = x[JSample[T]](key)
+      toPySample(sample)
+    }).toList.asJava
+  }
+
+  def distributedImageFrameToSample(imageFrame: DistributedImageFrame, key: String)
+  : JavaRDD[Sample] = {
+    imageFrame.rdd.map(x => {
+      val sample = x[JSample[T]](key)
+      toPySample(sample)
+    })
+  }
+
   def read(path: String, sc: JavaSparkContext, minPartitions: Int): ImageFrame = {
     if (sc == null) {
       ImageFrame.read(path, null, minPartitions)
