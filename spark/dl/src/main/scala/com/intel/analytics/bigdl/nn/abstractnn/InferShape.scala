@@ -41,26 +41,6 @@ trait InferShape {
   }
   // scalastyle:on
 
-  private[bigdl] def compatibleWithKeras(): Boolean = true
-
-  private[bigdl] def compatibleWithTorch(): Boolean = true
-
-  private[bigdl] def excludeNotTorch[T: ClassTag]
-  (modules : Seq[AbstractModule[_, _, T]]): Unit = {
-    val invalidNodes = modules.filter{!_.compatibleWithTorch()}
-    if (invalidNodes.length > 0) {
-      throw new RuntimeException(s"Do not mix with Layer: ${invalidNodes.mkString(",")}")
-    }
-  }
-
-  private[bigdl] def excludeNotKeras[T: ClassTag]
-  (modules : Seq[AbstractModule[_, _, T]]): Unit = {
-      val invalidNodes = modules.filter{!_.compatibleWithKeras()}
-      if (invalidNodes.length > 0) {
-        throw new RuntimeException(s"Do not mix with Layer: ${invalidNodes.mkString(",")}")
-      }
-  }
-
   /**
    * We suppose the first dim is batch
    */
@@ -101,6 +81,11 @@ trait InferShape {
   }
 
   private[bigdl] var isBuilt: Boolean = false
+
+
+  private[bigdl] def isCompatibleWithKeras(): Boolean = true
+
+  private[bigdl] def isCompatibleWithTorch(): Boolean = true
 
   /**
    * We suppose the first dim is batch

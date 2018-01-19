@@ -19,7 +19,7 @@ import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.Node
+import com.intel.analytics.bigdl.utils.{Node, Util}
 
 import scala.reflect.ClassTag
 
@@ -44,8 +44,8 @@ class StaticGraph[T: ClassTag](
   private var gradOutputCache: Array[Activity] = _
 
   if (excludeKeras) {
-    excludeNotTorch(inputs.map(_.element))
-    excludeNotTorch(outputs.map(_.element))
+    Util.excludeNotTorch(inputs.map(_.element))
+    Util.excludeNotTorch(outputs.map(_.element))
   }
 
   buildBackwardGraph()

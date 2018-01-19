@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.nn.{Graph, StaticGraph, Sequential => TSequential}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.bigdl.utils.{Shape, Util}
 
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
@@ -29,8 +29,8 @@ class Model[T: ClassTag](private val _inputs : Seq[ModuleNode[T]],
       private val _outputs : Seq[ModuleNode[T]])(implicit ev: TensorNumeric[T])
   extends StaticGraph[T](_inputs, _outputs, None, false) {
 
-  excludeNotKeras(inputs.map(_.element))
-  excludeNotKeras(outputs.map(_.element))
+  Util.excludeNotKeras(inputs.map(_.element))
+  Util.excludeNotKeras(outputs.map(_.element))
 
   this.inputShapeValue = Shape(inputs.map{n => n.element.getInputShape()}.toList)
 
@@ -38,9 +38,9 @@ class Model[T: ClassTag](private val _inputs : Seq[ModuleNode[T]],
 
   isBuilt = true
 
-  override private[bigdl] def compatibleWithKeras(): Boolean = true
+  override private[bigdl] def isCompatibleWithKeras(): Boolean = true
 
-  override private[bigdl] def compatibleWithTorch(): Boolean = false
+  override private[bigdl] def isCompatibleWithTorch(): Boolean = false
 
   override def computeOutputShape(inputShape: Shape): Shape = {
     getOutputShape()
@@ -96,9 +96,9 @@ object Model {
 class Sequential[T: ClassTag]
 (implicit ev: TensorNumeric[T]) extends TSequential[T] {
 
-  override private[bigdl] def compatibleWithKeras(): Boolean = true
+  override private[bigdl] def isCompatibleWithKeras(): Boolean = true
 
-  override private[bigdl] def compatibleWithTorch(): Boolean = false
+  override private[bigdl] def isCompatibleWithTorch(): Boolean = false
 
   private[bigdl] var frozen: Boolean = false
 
@@ -120,7 +120,7 @@ class Sequential[T: ClassTag]
     if (module.isInstanceOf[Sequential[T]]) {
       module.asInstanceOf[Sequential[T]].frozen = true
     }
-    this.excludeNotKeras[T](Seq(module))
+    Util.excludeNotKeras[T](Seq(module))
 
     if (this.modules.isEmpty) {
       if (module.getInputShape() == null) {
