@@ -631,4 +631,24 @@ class RecurrentSpec extends FlatSpec with Matchers {
     Recurrent.copy(arrInput, output2)
     output2 should be (input)
   }
+
+  "A Recurrent Module " should " work after reset " in {
+    val hiddenSize = 4
+    val inputSize = 5
+    val outputSize = 5
+    val seed = 100
+    RNG.setSeed(seed)
+
+    val model = Sequential[Double]()
+      .add(Recurrent[Double]()
+        .add(RnnCell[Double](inputSize, hiddenSize, Tanh())))
+      .add(Select(1, 1))
+      .add(Linear[Double](hiddenSize, outputSize))
+
+    val input = Tensor[Double](Array(1, 5, inputSize))
+    val output1 = model.forward(input).toTensor[Double].clone()
+    model.reset()
+    model.forward(input)
+  }
+
 }
