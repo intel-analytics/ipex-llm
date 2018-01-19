@@ -16,12 +16,11 @@
 
 package com.intel.analytics.bigdl.nn.keras
 
-import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.nn.{Graph, StaticGraph, Sequential => TSequential}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.{Node, Shape}
+import com.intel.analytics.bigdl.utils.Shape
 
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag

@@ -44,8 +44,8 @@ class Input[T: ClassTag](val inputShape: Shape)(implicit ev: TensorNumeric[T])
 
 object Input {
   def apply[T: ClassTag](name : String = null,
-    inputShape: Array[Int] = null)(implicit ev: TensorNumeric[T]): ModuleNode[T] = {
-    val module = new Input(Shape(inputShape))
+    inputShape: Shape = null)(implicit ev: TensorNumeric[T]): ModuleNode[T] = {
+    val module = new Input(inputShape)
     if (name != null) {
       module.setName(name)
     }

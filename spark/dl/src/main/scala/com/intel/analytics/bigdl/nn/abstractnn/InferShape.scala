@@ -16,18 +16,16 @@
 
 package com.intel.analytics.bigdl.nn.abstractnn
 
-import com.intel.analytics.bigdl.nn.Graph._
-import com.intel.analytics.bigdl.nn.keras.KerasLayer
-import com.intel.analytics.bigdl.utils.{Node, Shape}
+import com.intel.analytics.bigdl.utils.Shape
 
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
 trait InferShape {
 
-  private[bigdl] var _inputShapeValue: Shape = null
+  private var _inputShapeValue: Shape = null
 
-  private[bigdl] var _outputShapeValue: ArrayBuffer[Shape] = ArrayBuffer[Shape]()
+  private var _outputShapeValue: ArrayBuffer[Shape] = ArrayBuffer[Shape]()
 
   private[bigdl] def inputShapeValue: Shape = _inputShapeValue
 

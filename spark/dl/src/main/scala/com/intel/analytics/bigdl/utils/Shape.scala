@@ -37,13 +37,12 @@ object Shape {
 
   def apply(item : Array[Int]): Shape = {
     if (item == null) {
-      return null
+      throw new IllegalArgumentException("Empty value")
     }
     new SingleShape(item.toList)
   }
 
   def apply(item : Int*): Shape = {
-    val v = Array(item : _*)
     new SingleShape(item.toList)
   }
 
@@ -53,7 +52,7 @@ object Shape {
     } else if (shapes.length == 1) {
       shapes(0)
     } else {
-      null
+      throw new IllegalArgumentException("Empty value")
     }
   }
 }

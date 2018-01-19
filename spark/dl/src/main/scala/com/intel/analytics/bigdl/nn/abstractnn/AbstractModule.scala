@@ -66,14 +66,14 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
   /**
    * The cached output. So we don't compute it again when need it
    */
-  var _output: B = Activity.allocate[B, T]()
+  private var _output: B = Activity.allocate[B, T]()
 
   def output: B = _output
 
   /**
    * The cached gradient of activities. So we don't compute it again when need it
    */
-  var _gradInput: A = Activity.allocate[A, T]()
+  private var _gradInput: A = Activity.allocate[A, T]()
 
   def gradInput: A = _gradInput
 

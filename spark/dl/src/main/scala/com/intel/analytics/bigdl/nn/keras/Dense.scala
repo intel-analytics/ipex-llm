@@ -34,8 +34,9 @@ class Dense[T: ClassTag](val outputDim: Int,
                          var wRegularizer: Regularizer[T] = null,
                          var bRegularizer: Regularizer[T] = null,
                          val bias: Boolean = true,
-                         var inputShape: Array[Int] = null
-  )(implicit ev: TensorNumeric[T]) extends KerasLayer[Tensor[T], Tensor[T], T](Shape(inputShape)) {
+                         var inputShape: Shape = null
+  )(implicit ev: TensorNumeric[T])
+  extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
     val layer = Linear(
@@ -61,7 +62,7 @@ object Dense {
     wRegularizer: Regularizer[T] = null,
     bRegularizer: Regularizer[T] = null,
     bias: Boolean = true,
-    inputShape: Array[Int] = null)(implicit ev: TensorNumeric[T]) : Dense[T] = {
+    inputShape: Shape = null)(implicit ev: TensorNumeric[T]) : Dense[T] = {
       new Dense[T](
         outputDim,
         init,

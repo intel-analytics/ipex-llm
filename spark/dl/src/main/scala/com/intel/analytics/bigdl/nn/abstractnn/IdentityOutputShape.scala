@@ -19,6 +19,6 @@ package com.intel.analytics.bigdl.nn.abstractnn
 
 import com.intel.analytics.bigdl.utils.Shape
 
-trait DefaultOutputShape extends InferShape{
+trait IdentityOutputShape extends InferShape{
   override def computeOutputShape(inputShape: Shape): Shape = inputShape
 }

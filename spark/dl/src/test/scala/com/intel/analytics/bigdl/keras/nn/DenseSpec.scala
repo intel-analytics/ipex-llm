@@ -17,11 +17,12 @@
 package com.intel.analytics.bigdl.keras.nn
 
 import com.intel.analytics.bigdl.keras.KerasBaseSpec
-import com.intel.analytics.bigdl.nn.{ReLU}
+import com.intel.analytics.bigdl.nn.ReLU
 import com.intel.analytics.bigdl.nn.keras.{Sequential => KSequential}
 import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.nn.keras.Dense
 import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.utils.Shape
 
 class DenseSpec extends KerasBaseSpec{
 
@@ -34,7 +35,7 @@ class DenseSpec extends KerasBaseSpec{
         |model = Model(input=input_tensor, output=output_tensor)
       """.stripMargin
     val seq = KSequential[Float]()
-    val dense = Dense[Float](2, activation = ReLU(), inputShape = Array(3))
+    val dense = Dense[Float](2, activation = ReLU(), inputShape = Shape(3))
     seq.add(dense)
     def weightConverter(in: Array[Tensor[Float]]): Array[Tensor[Float]] = Array(in(0).t(), in(1))
     checkOutputAndGrad(seq.asInstanceOf[AbstractModule[Tensor[Float], Tensor[Float], Float]],

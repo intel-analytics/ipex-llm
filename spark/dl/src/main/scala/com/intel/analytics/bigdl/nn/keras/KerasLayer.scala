@@ -76,6 +76,7 @@ private[bigdl] object KerasLayer {
       return seq
     }
 
+
    def addBatch(shape: Shape): Shape = {
     if (shape == null) {
       return null
@@ -106,36 +107,34 @@ private[bigdl] object KerasLayer {
  * @tparam A Input data type
  * @tparam B Output data type
  * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now
- * @param mInputShape inputshape for a layer which is just a shape of a record without batch.
+ * @param batchInputShape the first dim is batch
  */
 abstract class KerasLayer[A <: Activity: ClassTag, B <: Activity: ClassTag, T: ClassTag]
-(mInputShape: Shape = null)(implicit ev: TensorNumeric[T]) extends AbstractModule[A, B, T]{
-
-  private val batchInputShape = KerasLayer.addBatch(mInputShape)
+(batchInputShape: Shape = null)(implicit ev: TensorNumeric[T]) extends AbstractModule[A, B, T]{
 
   var labor: AbstractModule[A, B, T] = null
 
-  override def output: B = labor._output
+  override def output: B = labor.output
 
-  override def gradInput: A = labor._gradInput
+  override def gradInput: A = labor.gradInput
 
-  override def inputShapeValue: Shape = labor._inputShapeValue
+  override def inputShapeValue: Shape = labor.inputShapeValue
 
-  override def outputShapeValue: ArrayBuffer[Shape] = labor._outputShapeValue
+  override def outputShapeValue: ArrayBuffer[Shape] = labor.outputShapeValue
 
   // scalastyle:off
-  override def output_= (value: B): Unit = labor._output = value
+  override def output_= (value: B): Unit = labor.output = value
 
   override def gradInput_=(value: A): Unit = {
-    labor._gradInput = value
+    labor.gradInput = value
   }
 
   override def inputShapeValue_=(value: Shape): Unit = {
-    labor._inputShapeValue = value
+    labor.inputShapeValue = value
   }
 
   override def outputShapeValue_=(value: ArrayBuffer[Shape]): Unit = {
-   labor._outputShapeValue = value
+   labor.outputShapeValue = value
   }
   // scalastyle:on
 

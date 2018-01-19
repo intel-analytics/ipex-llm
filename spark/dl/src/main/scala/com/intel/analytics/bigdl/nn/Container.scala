@@ -47,7 +47,7 @@ abstract class Container[A <: Activity : ClassTag,
   override private[bigdl] def compatibleWithKeras(): Boolean = false
 
   override private[bigdl] def compatibleWithTorch(): Boolean = {
-    modules.filter(!_.compatibleWithTorch()).length > 0
+    modules.filter(!_.compatibleWithTorch()).length <= 0
   }
 
   /**
