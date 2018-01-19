@@ -28,7 +28,7 @@ def main():
         # defining initial state
         initial_state = rnn_cell.zero_state(4, dtype=tf.float32)
 
-        inputs = tf.Variable(tf.random_uniform(shape = (4, 30, 100)), name='input')
+        inputs = tf.Variable(tf.random_uniform(shape = (4, 2, 100)), name='input')
         inputs = tf.identity(inputs, "input_node")
 
         # 'state' is a tensor of shape [batch_size, cell_state_size]
@@ -37,7 +37,7 @@ def main():
         y1 = tf.identity(outputs, 'outputs')
         y2 = tf.identity(state, 'state')
 
-        t1 = tf.ones([4, 30, 10])
+        t1 = tf.ones([4, 2, 10])
         t2 = tf.ones([4, 10])
 
         loss = tf.reduce_sum((y1 - t1) * (y1 - t1)) + tf.reduce_sum((y2 - t2) * (y2 - t2))

@@ -142,6 +142,10 @@ private[nn] object TensorArray {
     arrays.put(key, value)
   }
 
+  def exist(key: String): Boolean = {
+    arrays.containsKey(key)
+  }
+
   def release(key : String): Unit = {
     arrays.remove(key)
   }
@@ -213,9 +217,12 @@ private[bigdl] class TensorArrayGrad[T: ClassTag](source: String)(
     require(handle.isScalar, "Handle of a TensorArray must be a scalar")
 
     val tensorArray = TensorArray.get(handle.value())
-    TensorArray(handle.value() + source) = tensorArray.grad()
+    val name = handle.value() + source
+    if (!TensorArray.exist(name)) {
+      TensorArray(name) = tensorArray.grad()
+    }
     output = T(
-      Tensor.scalar[String](handle.value() + source),
+      Tensor.scalar[String](name),
       TensorArray.FlowOut
     )
     output
