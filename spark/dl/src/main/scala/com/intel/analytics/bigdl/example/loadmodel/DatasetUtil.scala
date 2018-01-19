@@ -56,7 +56,7 @@ object AlexNetPreprocessor {
       PixelNormalizer(means.storage.array) -> CenterCrop(imageSize, imageSize) ->
       MatToTensor[Float]() -> ImageFrameToSample[Float](targetKeys = Array(ImageFeature.label))
     val imgFrame = data -> transfomer
-    val validImageFeatures = imgFrame.asInstanceOf[DistributedImageFrame].rdd.filter(_.isValid)
+    val validImageFeatures = imgFrame.toDistributed().rdd
     validImageFeatures.map(x => x[Sample[Float]](ImageFeature.sample))
   }
 
@@ -85,7 +85,7 @@ object InceptionPreprocessor {
       CenterCrop(imageSize, imageSize) -> ChannelNormalize(123, 117, 104) ->
       MatToTensor[Float]() -> ImageFrameToSample[Float](targetKeys = Array(ImageFeature.label))
     val imgFrame = transfomer(data)
-    val validImageFeatures = imgFrame.asInstanceOf[DistributedImageFrame].rdd.filter(_.isValid)
+    val validImageFeatures = imgFrame.toDistributed().rdd
     validImageFeatures.map(x => x[Sample[Float]](ImageFeature.sample))
   }
 }
