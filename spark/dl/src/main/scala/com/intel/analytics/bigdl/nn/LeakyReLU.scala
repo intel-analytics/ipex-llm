@@ -49,7 +49,7 @@ class LeakyReLU[T: ClassTag](
     if (inplace) {
       input.apply1(x => {
         if (ev.isGreaterEq(ev.fromType[Int](0), x)) {
-          negVal
+          ev.times(x, negVal)
         } else {
           x
         }
@@ -76,7 +76,7 @@ class LeakyReLU[T: ClassTag](
       gradInput.set(gradOutput)
       gradOutput.map(input, (grad, in) => {
         if (ev.isGreaterEq(ev.fromType[Int](0), in)) {
-          negVal
+          ev.times(negVal, grad)
         } else {
           grad
         }

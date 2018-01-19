@@ -35,12 +35,6 @@ class LeakyReLUSpec  extends TorchSpec {
     val gradOutput = Tensor[Double](2, 2, 2)
     input.apply1(x => random())
 
-    val start = System.nanoTime()
-    val output = module.forward(input)
-    val gradInput = module.backward(input, gradOutput)
-    val end = System.nanoTime()
-    val scalaTime = end - start
-
     val code = "torch.manualSeed(" + seed + ")\n" +
       "module = nn.LeakyReLU()\n" +
       "output = module:forward(input)\n" +
@@ -50,6 +44,12 @@ class LeakyReLUSpec  extends TorchSpec {
       Array("output", "gradInput"))
     val luaOutput1 = torchResult("output").asInstanceOf[Tensor[Double]]
     val luaOutput2 = torchResult("gradInput").asInstanceOf[Tensor[Double]]
+
+    val start = System.nanoTime()
+    val output = module.forward(input)
+    val gradInput = module.backward(input, gradOutput)
+    val end = System.nanoTime()
+    val scalaTime = end - start
 
     luaOutput1 should be (output)
     luaOutput2 should be (gradInput)
@@ -62,17 +62,11 @@ class LeakyReLUSpec  extends TorchSpec {
     val seed = 100
     RNG.setSeed(seed)
 
-    val module = new LeakyReLU[Double](inplace = true)
+    val module = LeakyReLU[Double](inplace = true)
     val input = Tensor[Double](2, 2, 2)
     input.apply1(x => random())
     val gradOutput = Tensor[Double](2, 2, 2)
     input.apply1(x => random())
-
-    val start = System.nanoTime()
-    val output = module.forward(input)
-    val gradInput = module.backward(input.clone(), gradOutput.clone())
-    val end = System.nanoTime()
-    val scalaTime = end - start
 
     val code = "torch.manualSeed(" + seed + ")\n" +
       "module = nn.LeakyReLU(1/100,true)\n" +
@@ -83,6 +77,12 @@ class LeakyReLUSpec  extends TorchSpec {
       Array("output", "gradInput"))
     val luaOutput1 = torchResult("output").asInstanceOf[Tensor[Double]]
     val luaOutput2 = torchResult("gradInput").asInstanceOf[Tensor[Double]]
+
+    val start = System.nanoTime()
+    val output = module.forward(input)
+    val gradInput = module.backward(input.clone(), gradOutput.clone())
+    val end = System.nanoTime()
+    val scalaTime = end - start
 
     luaOutput1 should be (output)
     luaOutput2 should be (gradInput)
