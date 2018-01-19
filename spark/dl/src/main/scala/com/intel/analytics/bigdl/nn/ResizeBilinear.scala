@@ -403,19 +403,18 @@ object ResizeBilinear {
 
   @inline
   private def resizeImageBackprop(
-                                 batchSize: Int,
-                                 channels: Int,
-                                 inHeight: Int,
-                                 inWidth: Int,
-                                 outputHeight: Int,
-                                 outputWidth: Int,
-                                 heightScale: Float,
-                                 widthScale: Float,
-                                 gradInputData: Array[Float],
-                                 gradInputOffset: Int,
-                                 gradOutputData: Array[Float],
-                                 gradOutputOffset: Int
-                                 ): Unit = {
+    batchSize: Int,
+    channels: Int,
+    inHeight: Int,
+    inWidth: Int,
+    outputHeight: Int,
+    outputWidth: Int,
+    heightScale: Float,
+    widthScale: Float,
+    gradInputData: Array[Float],
+    gradInputOffset: Int,
+    gradOutputData: Array[Float],
+    gradOutputOffset: Int): Unit = {
     val inRowSize = inWidth * channels
     val inBatchNum = inHeight * inRowSize
     val outRowSize = outputWidth * channels
@@ -462,19 +461,18 @@ object ResizeBilinear {
 
   @inline
   private def resizeImageBackprop(
-                                   batchSize: Int,
-                                   channels: Int,
-                                   inHeight: Int,
-                                   inWidth: Int,
-                                   outputHeight: Int,
-                                   outputWidth: Int,
-                                   heightScale: Float,
-                                   widthScale: Float,
-                                   gradInputData: Array[Double],
-                                   gradInputOffset: Int,
-                                   gradOutputData: Array[Double],
-                                   gradOutputOffset: Int
-                                 ): Unit = {
+    batchSize: Int,
+    channels: Int,
+    inHeight: Int,
+    inWidth: Int,
+    outputHeight: Int,
+    outputWidth: Int,
+    heightScale: Float,
+    widthScale: Float,
+    gradInputData: Array[Double],
+    gradInputOffset: Int,
+    gradOutputData: Array[Double],
+    gradOutputOffset: Int): Unit = {
     val inRowSize = inWidth * channels
     val inBatchNum = inHeight * inRowSize
     val outRowSize = outputWidth * channels
