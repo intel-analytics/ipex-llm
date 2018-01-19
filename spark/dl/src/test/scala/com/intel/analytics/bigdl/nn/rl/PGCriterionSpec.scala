@@ -36,7 +36,7 @@ class PGCriterionSpec extends FlatSpec with Matchers {
     gradInput.almostEqual(expected, 1e-5f) should be (true)
   }
 
-  "DotProductCriterion " should "give correct result with sparse target" in {
+  "PGCriterion " should "give correct result with sparse target" in {
     val criterion = PGCriterion[Float]()
 
     val input = Tensor[Float](T(0.5, 0.2, 0.3))

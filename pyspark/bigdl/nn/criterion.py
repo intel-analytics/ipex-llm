@@ -931,22 +931,25 @@ class PGCriterion(Criterion):
     represents the sampled action and the non-zero element itself represents
     the reward. If the action is space is large, you should consider using
     SparseTensor for target.
+    
+    The loss computed is simple the standard policy gradient,
 
-    :param inputTransformer an optional transformer that can operate on the
-                           input distribution, for example you can pass in
-                           a NegativeEntropyPenalty to penalize the distribution
-                           of with small entropy to improve exploration.
+      loss = - 1/n * sum(R_{n} dot_product log(P_{n}))
+
+    where R_{n} is the reward vector, and P_{n} is the input distribution.
+
+    :param sizeAverage whether to average over each observations in the same batch
                            
-    >>> pg =PGCriterion()
+    >>> pg = PGCriterion()
     creating: createPGCriterion
     '''
 
     def __init__(self,
-                 input_transformer = None,
+                 sizeAverage = False,
                  bigdl_type="float"):
         super(PGCriterion, self).__init__(None,
                                           bigdl_type,
-                                          input_transformer)
+                                          sizeAverage)
 
 
 def _test():

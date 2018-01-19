@@ -35,24 +35,27 @@ import scala.reflect.ClassTag
  * the reward. If the action is space is large, you should consider using
  * SparseTensor for target.
  *
- * @param inputTransformer an optional transformer that can operate on the
- *                         input distribution, for example you can pass in
- *                         a NegativeEntropyPenalty to penalize the distribution
- *                         of with small entropy to improve exploration.
+ * The loss computed is simple the standard policy gradient,
+ *
+ *   loss = - 1/n * sum(R_{n} dot_product log(P_{n}))
+ *
+ * where R_{n} is the reward vector, and P_{n} is the input distribution.
+ *
+ * @param sizeAverage whether to average the loss over each observations.
+ *
  */
 @SerialVersionUID(- 76404060368920472L)
 class PGCriterion[T: ClassTag](
-  inputTransformer: Option[AbstractModule[Tensor[T], Tensor[T], T]] = None)
+  sizeAverage: Boolean = false)
   (implicit ev: TensorNumeric[T])
   extends TensorCriterion[T] {
   private val criterion = {
     val inputTrans = Sequential[T]()
-    if (inputTransformer.isDefined) inputTrans.add(inputTransformer.get)
     inputTrans.add(Log[T]())
     // to calculate the negative policy gradient, because we want maximize reward
     inputTrans.add(MulConstant(-1))
 
-    TransformerCriterion[T](DotProductCriterion[T](), Some(inputTrans), None)
+    TransformerCriterion[T](DotProductCriterion[T](sizeAverage), Some(inputTrans), None)
   }
 
   override def updateOutput(input: Tensor[T], target: Tensor[T]): T = {
@@ -68,8 +71,8 @@ class PGCriterion[T: ClassTag](
 
 object PGCriterion {
   def apply[@specialized(Float, Double) T: ClassTag](
-    inputTransformer: Option[AbstractModule[Tensor[T], Tensor[T], T]] = None)
+    sizeAverage: Boolean = false)
     (implicit ev: TensorNumeric[T]): PGCriterion[T] = {
-    new PGCriterion(inputTransformer)
+    new PGCriterion()
   }
 }

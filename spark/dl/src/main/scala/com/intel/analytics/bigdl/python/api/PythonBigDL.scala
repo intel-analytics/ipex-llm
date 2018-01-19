@@ -1782,8 +1782,8 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def createPGCriterion(
-    inputTransformer: AbstractModule[Tensor[T], Tensor[T], T] = null): PGCriterion[T] = {
-    PGCriterion(Option(inputTransformer))
+    sizeAverage: Boolean = false): PGCriterion[T] = {
+    PGCriterion(sizeAverage)
   }
 
   def createPack(dimension: Int): Pack[T] = {
