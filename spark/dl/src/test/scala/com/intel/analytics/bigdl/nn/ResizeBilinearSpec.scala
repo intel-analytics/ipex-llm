@@ -15,6 +15,7 @@
  */
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.nn.abstractnn.DataFormat
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
 import org.scalatest.{FlatSpec, Matchers}
@@ -37,7 +38,7 @@ class ResizeBilinearSpec extends FlatSpec with Matchers {
 
   "ResizeBilinear forward" should "not change content while input/output width/height match" in {
     println(input)
-    val layer = ResizeBilinear[Float](3, 2)
+    val layer = ResizeBilinear[Float](3, 2, dataFormat = DataFormat.NHWC)
     val output = layer.forward(input)
     println(output)
     input should be(output)
@@ -45,7 +46,7 @@ class ResizeBilinearSpec extends FlatSpec with Matchers {
 
   "ResizeBilinear forward" should "be correct while double height" in {
     println(input)
-    val layer = ResizeBilinear[Float](6, 2)
+    val layer = ResizeBilinear[Float](6, 2, dataFormat = DataFormat.NHWC)
     val output = layer.forward(input)
     println(output)
     val expectOutput = Tensor[Float](T(T(
@@ -79,7 +80,7 @@ class ResizeBilinearSpec extends FlatSpec with Matchers {
 
   "ResizeBilinear forward" should "be correct while double width" in {
     println(input)
-    val layer = ResizeBilinear[Float](3, 4)
+    val layer = ResizeBilinear[Float](3, 4, dataFormat = DataFormat.NHWC)
     val output = layer.forward(input)
     println(output)
     val expectOutput = Tensor[Float](T(T(
@@ -103,5 +104,30 @@ class ResizeBilinearSpec extends FlatSpec with Matchers {
       )
     )))
     output should be(expectOutput)
+  }
+
+  "ResizeBilinear forward and backward" should "be correct with NCHW" in {
+
+    val inputCFirst = Tensor[Float](Array(1, 3, 4, 4)).rand()
+    val inputCLast = inputCFirst.clone().transpose(2, 4).transpose(2, 3).contiguous()
+
+    val gradOutputCFirst = Tensor[Float](Array(1, 3, 8, 8)).rand()
+    val gradOutputCLast = gradOutputCFirst.clone().transpose(2, 4).transpose(2, 3).contiguous()
+    val layerCLast = ResizeBilinear[Float](8, 8, dataFormat = DataFormat.NHWC)
+    val layerCFirst = ResizeBilinear[Float](8, 8, dataFormat = DataFormat.NCHW)
+    // NCHW
+    val outputCFirst = layerCFirst.forward(inputCFirst)
+    val gradInputCFirst = layerCFirst.backward(inputCFirst, gradOutputCFirst)
+
+    val outputCLast = layerCLast.forward(inputCLast)
+    val gradInputCLast = layerCLast.backward(inputCLast, gradOutputCLast)
+
+    outputCFirst
+      .transpose(2, 4)
+      .transpose(2, 3).contiguous() should be(outputCLast)
+
+    gradInputCFirst
+      .transpose(2, 4)
+      .transpose(2, 3).contiguous() should be(gradInputCLast)
   }
 }
