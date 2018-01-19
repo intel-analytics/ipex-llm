@@ -221,7 +221,7 @@ class LocalImageFrame(ImageFrame):
         """
         get sample from ImageFrame
         """
-        return callBigDlFunc(self.bigdl_type, "localImageFrameToSample", self.value)
+        return callBigDlFunc(self.bigdl_type, "localImageFrameToSample", self.value, key)
 
 
 
@@ -269,7 +269,7 @@ class DistributedImageFrame(ImageFrame):
         """
         get sample from ImageFrame
         """
-        return callBigDlFunc(self.bigdl_type, "distributedImageFrameToSample", self.value)
+        return callBigDlFunc(self.bigdl_type, "distributedImageFrameToSample", self.value, key)
 
 
 class HFlip(FeatureTransformer):
