@@ -725,32 +725,17 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
     }
   }
 
-  protected def processInputs(nodes: Seq[ModuleNode[T]]): ModuleNode[T] = {
-    val curNode = new ModuleNode[T](this)
-    nodes.foreach(node => {
-      node.add(curNode, Edge())
-    })
-    curNode
-  }
-
-  protected def processInputs(first: (ModuleNode[T], Int),
-    nodesWithIndex : (ModuleNode[T], Int)*): ModuleNode[T] = {
-    val curNode = new ModuleNode[T](this)
-    first._1.add(curNode, Edge(first._2))
-    nodesWithIndex.foreach(nodeWithIndex => {
-      nodeWithIndex._1.add(curNode, Edge(nodeWithIndex._2))
-    })
-    curNode
-  }
-
   /**
    * Build graph: some other modules point to current module
    * @param nodes upstream module nodes
    * @return node containing current module
    */
   def inputs(nodes : ModuleNode[T]*): ModuleNode[T] = {
-    excludeNotTorch(nodes.asInstanceOf[Seq[Node[AbstractModule[_, _, T]]]])
-    processInputs(nodes)
+    val curNode = new ModuleNode[T](this)
+    nodes.foreach(node => {
+      node.add(curNode, Edge())
+    })
+    curNode
   }
 
   /**
@@ -759,8 +744,11 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
    * @return node containing current module
    */
   def inputs(nodes : Array[ModuleNode[T]]): ModuleNode[T] = {
-    excludeNotTorch(nodes.asInstanceOf[Seq[Node[AbstractModule[_, _, T]]]])
-    processInputs(nodes)
+    val curNode = new ModuleNode[T](this)
+    nodes.foreach(node => {
+      node.add(curNode, Edge())
+    })
+    curNode
   }
 
   /**
@@ -770,9 +758,12 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
    * @return node containing current module
    */
   def inputs(first: (ModuleNode[T], Int), nodesWithIndex : (ModuleNode[T], Int)*): ModuleNode[T] = {
-    excludeNotTorch(List(first._1).asInstanceOf[Seq[Node[AbstractModule[_, _, T]]]])
-    excludeNotTorch(nodesWithIndex.map(_._1).asInstanceOf[Seq[Node[AbstractModule[_, _, T]]]])
-    processInputs(first, nodesWithIndex: _*)
+    val curNode = new ModuleNode[T](this)
+    first._1.add(curNode, Edge(first._2))
+    nodesWithIndex.foreach(nodeWithIndex => {
+      nodeWithIndex._1.add(curNode, Edge(nodeWithIndex._2))
+    })
+    curNode
   }
 
   /**

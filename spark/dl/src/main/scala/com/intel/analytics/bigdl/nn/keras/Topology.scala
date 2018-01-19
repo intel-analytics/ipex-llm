@@ -28,7 +28,10 @@ import scala.reflect.ClassTag
 
 class Model[T: ClassTag](private val _inputs : Seq[ModuleNode[T]],
       private val _outputs : Seq[ModuleNode[T]])(implicit ev: TensorNumeric[T])
-  extends StaticGraph[T](_inputs, _outputs, None) {
+  extends StaticGraph[T](_inputs, _outputs, None, false) {
+
+  excludeNotKeras(inputs.map(_.element))
+  excludeNotKeras(outputs.map(_.element))
 
   this.inputShapeValue = Shape(inputs.map{n => n.element.getInputShape()}.toList)
 
@@ -118,7 +121,7 @@ class Sequential[T: ClassTag]
     if (module.isInstanceOf[Sequential[T]]) {
       module.asInstanceOf[Sequential[T]].frozen = true
     }
-    this.excludeNotKeras[T](Seq(Node(module)))
+    this.excludeNotKeras[T](Seq(module))
 
     if (this.modules.isEmpty) {
       if (module.getInputShape() == null) {

@@ -392,12 +392,12 @@ abstract class KerasLayer[A <: Activity: ClassTag, B <: Activity: ClassTag, T: C
    * @return node containing current module
    */
   override def inputs(nodes : ModuleNode[T]*): ModuleNode[T] = {
-    excludeNotKeras(nodes)
+    excludeNotKeras(nodes.map(_.element))
     if (!nodes.isEmpty) { // as there's  Identity().inputs() within Graph
     val inputShape = Shape(nodes.map{_.element.getOutputShape()}.toList)
       this.build(inputShape)
     }
-    processInputs(nodes)
+    super.inputs(nodes: _*)
   }
 
   /**
@@ -406,12 +406,12 @@ abstract class KerasLayer[A <: Activity: ClassTag, B <: Activity: ClassTag, T: C
    * @return node containing current module
    */
   override def inputs(nodes : Array[ModuleNode[T]]): ModuleNode[T] = {
-    excludeNotKeras(nodes)
+    excludeNotKeras(nodes.map(_.element))
     if (!nodes.isEmpty) { // as there's  Identity().inputs() within Graph
     val inputShape = Shape(nodes.map{_.element.getOutputShape()}.toList)
       this.build(inputShape)
     }
-    processInputs(nodes)
+    super.inputs(nodes)
   }
 
   /**
@@ -422,14 +422,14 @@ abstract class KerasLayer[A <: Activity: ClassTag, B <: Activity: ClassTag, T: C
    */
   override def inputs(first: (ModuleNode[T], Int),
      nodesWithIndex : (ModuleNode[T], Int)*): ModuleNode[T] = {
-    excludeNotKeras(List(first._1))
-    excludeNotKeras(nodesWithIndex.map(_._1))
+    excludeNotKeras(List(first._1.element))
+    excludeNotKeras(nodesWithIndex.map(_._1.element))
     val shapes = ArrayBuffer[Shape]()
     shapes.append(first._1.element.getOutputShapeFor(first._2))
     if (!nodesWithIndex.isEmpty) {
       shapes ++ nodesWithIndex.map{t => t._1.element.getOutputShapeFor(t._2)}
     }
     this.build(Shape(shapes.toList))
-    processInputs(first, nodesWithIndex : _*)
+    super.inputs(first, nodesWithIndex : _*)
   }
 }

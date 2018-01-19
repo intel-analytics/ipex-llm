@@ -34,13 +34,19 @@ import scala.reflect.ClassTag
 class StaticGraph[T: ClassTag](
   private val _inputs : Seq[ModuleNode[T]],
   private val _outputs : Seq[ModuleNode[T]],
-  private val _variables: Option[(Array[Tensor[T]], Array[Tensor[T]])] = None
+  private val _variables: Option[(Array[Tensor[T]], Array[Tensor[T]])] = None,
+  private val excludeKeras: Boolean = true
 )(implicit ev: TensorNumeric[T]) extends Graph[T](_inputs, _outputs, _variables) {
   private val forwardExecution = forwardGraph.topologySort.reverse
   private var backwardExecution: Array[Node[AbstractModule[Activity, Activity, T]]] = _
   private val inputCache = new Array[Activity](forwardExecution.length)
   private var backId2ForwardId: Array[Int] = _
   private var gradOutputCache: Array[Activity] = _
+
+  if (excludeKeras) {
+    excludeNotTorch(inputs.map(_.element))
+    excludeNotTorch(outputs.map(_.element))
+  }
 
   buildBackwardGraph()
 

@@ -48,16 +48,16 @@ trait InferShape {
   private[bigdl] def compatibleWithTorch(): Boolean = true
 
   private[bigdl] def excludeNotTorch[T: ClassTag]
-  (nodes : Seq[Node[AbstractModule[_, _, T]]]): Unit = {
-    val invalidNodes = nodes.filter{!_.element.compatibleWithTorch()}
+  (modules : Seq[AbstractModule[_, _, T]]): Unit = {
+    val invalidNodes = modules.filter{!_.compatibleWithTorch()}
     if (invalidNodes.length > 0) {
       throw new RuntimeException(s"Do not mix with Layer: ${invalidNodes.mkString(",")}")
     }
   }
 
   private[bigdl] def excludeNotKeras[T: ClassTag]
-  (nodes : Seq[ModuleNode[T]]): Unit = {
-      val invalidNodes = nodes.filter{!_.element.compatibleWithKeras()}
+  (modules : Seq[AbstractModule[_, _, T]]): Unit = {
+      val invalidNodes = modules.filter{!_.compatibleWithKeras()}
       if (invalidNodes.length > 0) {
         throw new RuntimeException(s"Do not mix with Layer: ${invalidNodes.mkString(",")}")
       }

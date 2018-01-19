@@ -57,7 +57,7 @@ abstract class Container[A <: Activity : ClassTag,
    * @return this container
    */
   def add(module: AbstractModule[_ <: Activity, _ <: Activity, T]): this.type = {
-    this.excludeNotTorch[T](Seq(Node(module).asInstanceOf[Node[AbstractModule[_, _, T]]]))
+    this.excludeNotTorch[T](Seq(module))
     modules += module.asInstanceOf[AbstractModule[Activity, Activity, T]]
     this
   }
