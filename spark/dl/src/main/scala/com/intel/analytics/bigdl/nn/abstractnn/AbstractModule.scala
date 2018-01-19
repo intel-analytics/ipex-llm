@@ -70,10 +70,6 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
 
   def output: B = _output
 
-  def output_=(value: B): Unit = {
-    _output = value
-  }
-
   /**
    * The cached gradient of activities. So we don't compute it again when need it
    */
@@ -81,10 +77,15 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
 
   def gradInput: A = _gradInput
 
+  // scalastyle:off
+  def output_=(value: B): Unit = {
+    _output = value
+  }
+
   def gradInput_=(value: A): Unit = {
     _gradInput = value
   }
-
+  // scalastyle:on
 
   /**
    * The scale of gradient weight and gradient bias
@@ -435,7 +436,7 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
     this
   }
 
-  def isTraining(): Boolean = {
+  final def isTraining(): Boolean = {
     this.train
   }
 

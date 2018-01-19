@@ -23,7 +23,7 @@ trait Shape {
   def toMulti(): List[Shape] = throw new RuntimeException("Invalid operation")
 }
 
-class SingleShape(val value: List[Int]) extends Shape {
+case class SingleShape(val value: List[Int]) extends Shape {
   override def toSingle(): List[Int] = value
 }
 

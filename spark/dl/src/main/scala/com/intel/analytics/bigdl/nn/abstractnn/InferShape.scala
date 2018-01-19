@@ -31,15 +31,17 @@ trait InferShape {
 
   private[bigdl] def inputShapeValue: Shape = _inputShapeValue
 
+  private[bigdl] def outputShapeValue: ArrayBuffer[Shape] = _outputShapeValue
+
+  // scalastyle:off
   private[bigdl] def inputShapeValue_=(value: Shape): Unit = {
     _inputShapeValue = value
   }
 
-  private[bigdl] def outputShapeValue: ArrayBuffer[Shape] = _outputShapeValue
-
   private[bigdl] def outputShapeValue_=(value: ArrayBuffer[Shape]): Unit = {
     _outputShapeValue = value
   }
+  // scalastyle:on
 
   private[bigdl] def compatibleWithKeras(): Boolean = true
 
@@ -62,7 +64,7 @@ trait InferShape {
   }
 
   /**
-   * There's no batch dim in the inputShape which just represent a sample record.
+   * We suppose the first dim is batch
    */
   private[bigdl] def getInputShape(): Shape = {
     _inputShapeValue
@@ -78,7 +80,7 @@ trait InferShape {
   }
 
   /**
-   * There's no batch dim in the outputShape which just represent a sample record.
+   * We suppose the first dim is batch
    */
   private[bigdl] def getOutputShape(): Shape = {
     if (_outputShapeValue.length > 1) {
@@ -103,7 +105,7 @@ trait InferShape {
   private[bigdl] var isBuilt: Boolean = false
 
   /**
-   * There's no batch dim in the inputShape which just represent a sample record.
+   * We suppose the first dim is batch
    */
   private[bigdl] def computeOutputShape(inputShape: Shape): Shape = {
     throw new RuntimeException("Haven't been implemented yet. Do not use it with Keras Layer")

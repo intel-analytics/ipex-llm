@@ -117,25 +117,27 @@ abstract class KerasLayer[A <: Activity: ClassTag, B <: Activity: ClassTag, T: C
 
   override def output: B = labor._output
 
-  override def output_= (value: B): Unit = labor._output = value
-
   override def gradInput: A = labor._gradInput
+
+  override def inputShapeValue: Shape = labor._inputShapeValue
+
+  override def outputShapeValue: ArrayBuffer[Shape] = labor._outputShapeValue
+
+  // scalastyle:off
+  override def output_= (value: B): Unit = labor._output = value
 
   override def gradInput_=(value: A): Unit = {
     labor._gradInput = value
   }
 
-  override def inputShapeValue: Shape = labor._inputShapeValue
-
   override def inputShapeValue_=(value: Shape): Unit = {
     labor._inputShapeValue = value
   }
 
-  override def outputShapeValue: ArrayBuffer[Shape] = labor._outputShapeValue
-
   override def outputShapeValue_=(value: ArrayBuffer[Shape]): Unit = {
    labor._outputShapeValue = value
   }
+  // scalastyle:on
 
   override def compatibleWithKeras(): Boolean = true
 
@@ -352,16 +354,16 @@ abstract class KerasLayer[A <: Activity: ClassTag, B <: Activity: ClassTag, T: C
   override def getParametersTable(): Table = labor.getParametersTable()
 
   override def training(): this.type = {
+    this.train = true
     labor.training()
     this
   }
 
   override def evaluate(): this.type = {
+    this.train = false
     labor.evaluate()
     this
   }
-
-  override def isTraining(): Boolean = labor.isTraining()
 
   override def reset(): Unit = labor.reset()
 
