@@ -24,12 +24,10 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericF
 import com.intel.analytics.bigdl.utils.Engine
 import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
 import com.intel.analytics.bigdl.visualization.{TrainSummary, ValidationSummary}
-import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
+import org.apache.spark.ml._
 import org.apache.spark.ml.feature.MinMaxScaler
-import org.apache.spark.ml.{DLEstimator, DLModel, Pipeline, PipelineModel}
 import org.apache.spark.mllib.linalg.Vectors
-import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{DataFrame, Row, SQLContext}
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
@@ -303,9 +301,13 @@ class DLEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
       .map(_.get(2).asInstanceOf[Seq[Double]].head).collect().sorted
 
     val filePath = File.createTempFile("DLModelBase", "bigdl").getPath + Random.nextLong().toString
-    dlModel.save(filePath, isOverWrite = true)
+    dlModel.setIsOverwrite(true)
+    dlModel.save(filePath)
     val dlModel2 = DLModel.load[Float](filePath)
     dlModel2.uid shouldEqual dlModel.uid
+    dlModel2.getBatchSize shouldEqual dlModel.getBatchSize
+    dlModel2.getFeaturesCol shouldEqual dlModel.getFeaturesCol
+    dlModel2.getPredictionCol shouldEqual dlModel.getPredictionCol
     dlModel2.getFeatureSize shouldEqual dlModel.getFeatureSize
     val result2 = dlModel2.transform(data).rdd
       .map(_.get(2).asInstanceOf[Seq[Double]].head).collect().sorted

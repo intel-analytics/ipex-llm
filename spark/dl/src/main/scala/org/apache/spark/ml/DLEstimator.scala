@@ -15,82 +15,96 @@
  */
 package org.apache.spark.ml
 
-import java.net.URI
-
 import com.intel.analytics.bigdl.dataset._
 import com.intel.analytics.bigdl.models.utils.ModelBroadcast
 import com.intel.analytics.bigdl.optim._
-import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.tensor.{Tensor, DoubleType => TensorDouble, FloatType => TensorFloat}
+import com.intel.analytics.bigdl.utils.T
 import com.intel.analytics.bigdl.utils.serializer.ModuleLoader
-import com.intel.analytics.bigdl.utils.{File, T}
 import com.intel.analytics.bigdl.visualization.{TrainSummary, ValidationSummary}
 import com.intel.analytics.bigdl.{Criterion, Module}
-import opennlp.tools.cmdline.ModelLoader
-import org.apache.commons.lang3.SerializationUtils
 import org.apache.hadoop.fs.Path
+import org.apache.spark.SparkContext
 import org.apache.spark.ml.param.shared.{HasFeaturesCol, HasPredictionCol}
 import org.apache.spark.ml.param.{IntParam, ParamMap, ParamValidators, _}
-import org.apache.spark.ml.util.SchemaUtils
+import org.apache.spark.ml.util._
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{DataFrame, Row}
+import org.json4s.{DefaultFormats, JObject}
 
 import scala.reflect.ClassTag
 
 private[ml] trait HasBatchSize extends Params {
 
-  final val batchSize: Param[Int] = new Param[Int](this, "batchSize", "batchSize")
+  final val batchSize: IntParam = new IntParam(this, "batchSize", "batchSize")
 
   def getBatchSize: Int = $(batchSize)
 }
 
-/**
- * Common trait for DLEstimator and DLModel
- */
-private[ml] trait DLParams[@specialized(Float, Double) T] extends HasFeaturesCol
-  with HasPredictionCol with VectorCompatibility with HasBatchSize {
+private[ml] trait IsOverWrite extends Params {
 
+  final val isOverWrite: BooleanParam = new BooleanParam(this, "isOverWrite", "isOverWrite")
+
+  setDefault(isOverWrite, false)
+
+  def getIsOverWrite: Boolean = $(isOverWrite)
+
+}
+
+/**
+ *  Optimization related params for fitting a DLEstimator
+ */
+private[ml] trait OptParams[@specialized(Float, Double) T] extends Params {
   /**
-   * When to stop the training, passed in a [[Trigger]]. E.g. Trigger.maxIterations
-   */
+    * When to stop the training, passed in a [[Trigger]]. E.g. Trigger.maxIterations
+    */
   final val endWhen = new Param[Trigger](this, "endWhen", "Trigger to stop the training")
 
   def getEndWhen: Trigger = $(endWhen)
 
   /**
-   * learning rate for the optimizer in the DLEstimator.
-   * Default: 0.001
-   */
+    * learning rate for the optimizer in the DLEstimator.
+    * Default: 0.001
+    */
   final val learningRate = new DoubleParam(
     this, "learningRate", "learningRate", ParamValidators.gt(0))
 
   def getLearningRate: Double = $(learningRate)
 
   /**
-   * learning rate decay for each iteration.
-   * Default: 0
-   */
+    * learning rate decay for each iteration.
+    * Default: 0
+    */
   final val learningRateDecay = new DoubleParam(this, "learningRateDecay", "learningRateDecay")
 
   def getLearningRateDecay: Double = $(learningRateDecay)
 
   /**
-   * Number of max Epoch for the training, an epoch refers to a traverse over the training data
-   * Default: 50
-   */
+    * Number of max Epoch for the training, an epoch refers to a traverse over the training data
+    * Default: 50
+    */
   final val maxEpoch = new IntParam(this, "maxEpoch", "number of max Epoch", ParamValidators.gt(0))
 
   def getMaxEpoch: Int = $(maxEpoch)
 
   /**
-   * optimization method to be used. BigDL supports many optimization methods like Adam,
-   * SGD and LBFGS. Refer to package com.intel.analytics.bigdl.optim for all the options.
-   * Default: SGD
-   */
+    * optimization method to be used. BigDL supports many optimization methods like Adam,
+    * SGD and LBFGS. Refer to package com.intel.analytics.bigdl.optim for all the options.
+    * Default: SGD
+    */
   final val optimMethod = new Param[OptimMethod[T]](this, "optimMethod", "optimMethod")
 
   def getOptimMethod: OptimMethod[T] = $(optimMethod)
+}
+
+
+/**
+ * Common trait for DLEstimator and DLModel
+ */
+private[ml] trait DLParams[@specialized(Float, Double) T] extends HasFeaturesCol
+  with HasPredictionCol with VectorCompatibility with HasBatchSize {
 
   setDefault(batchSize -> 1)
 
@@ -172,7 +186,7 @@ class DLEstimator[@specialized(Float, Double) T: ClassTag](
     val featureSize : Array[Int],
     val labelSize : Array[Int],
     override val uid: String = "DLEstimator")(implicit ev: TensorNumeric[T])
-  extends DLEstimatorBase[DLEstimator[T], DLModel[T]] with DLParams[T] {
+  extends DLEstimatorBase[DLEstimator[T], DLModel[T]] with DLParams[T] with OptParams[T] {
 
   def setFeaturesCol(featuresColName: String): this.type = set(featuresCol, featuresColName)
 
@@ -370,7 +384,10 @@ class DLModel[@specialized(Float, Double) T: ClassTag](
     var featureSize : Array[Int],
     override val uid: String = "DLModel"
     )(implicit ev: TensorNumeric[T])
-  extends DLModelBase[T, DLModel[T]] with DLParams[T] with HasBatchSize {
+  extends DLTransformerBase[DLModel[T]] with DLParams[T]
+    with HasBatchSize with IsOverWrite with MLWritable {
+
+  def setIsOverwrite(overWrite: Boolean): this.type = set(isOverWrite, overWrite)
 
   def setFeaturesCol(featuresColName: String): this.type = set(featuresCol, featuresColName)
 
@@ -393,7 +410,7 @@ class DLModel[@specialized(Float, Double) T: ClassTag](
     val featureColIndex = dataFrame.schema.fieldIndex($(featuresCol))
     val featureFunc = getConvertFunc(featureType)
     val sc = dataFrame.sqlContext.sparkContext
-    val modelBroadCast = ModelBroadcast[T]().broadcast(sc, _model)
+    val modelBroadCast = ModelBroadcast[T]().broadcast(sc, model)
     val localBatchSize = $(batchSize)
 
     val resultRDD = dataFrame.rdd.mapPartitions { rowIter =>
@@ -431,70 +448,94 @@ class DLModel[@specialized(Float, Double) T: ClassTag](
   }
 
   override def copy(extra: ParamMap): DLModel[T] = {
-    val copied = new DLModel(_model, featureSize, uid).setParent(parent)
+    val copied = new DLModel(model, featureSize, uid).setParent(parent)
     copyValues(copied, extra)
   }
 
-  private var _model: Module[T] = model
-
-  override protected def getModule: Module[T] = _model
-
-  override protected def setModule(module: Module[T]): Unit = _model = module
+  override def write: MLWriter = $(isOverWrite) match {
+    case true => new DLModel.DLModelWriter[T](this).overwrite()
+    case false => new DLModel.DLModelWriter[T](this)
+  }
 }
 
 object DLModel {
   def load[@specialized(Float, Double) T: ClassTag]
   (path: String)(implicit ev: TensorNumeric[T]): DLModel[T] = {
-    DLModelBase.load[T, DLModel[T]](path).asInstanceOf[DLModel[T]]
+    val dlModel = ev.getType() match {
+      case TensorFloat => DLModelFloat.load(path)
+      case TensorDouble => DLModelDouble.load(path)
+    }
+    dlModel.asInstanceOf[DLModel[T]]
   }
-}
 
-/**
- * Base class of DLModels, such as DLClassifierModel, provide (pipeline) model IO features.
- * Please make sure working with module which returned by [[getModule]] and set by [[setModule]].
- */
-abstract class DLModelBase[@specialized(Float, Double) T: ClassTag, M <: DLTransformerBase[M]]
-()(implicit ev: TensorNumeric[T]) extends DLTransformerBase[M] {
-  protected def getModule: Module[T]
+  private[ml] class DLModelReader[@specialized(Float, Double) T: ClassTag]
+  ()(implicit ev: TensorNumeric[T]) extends MLReader[DLModel[T]] {
+    override def load(path: String): DLModel[T] = {
+      implicit val format = DefaultFormats
+      val (meta, module) = DLModel.loadImpl[T, DLModel[T]](path, sc)
+      val featureSize = (meta.metadata \ "featureSize").extract[Seq[Int]].toArray
+      val dlModel = new DLModel[T](module, featureSize)
+      DefaultParamsReader.getAndSetParams(dlModel, meta)
+      dlModel
+    }
+  }
 
-  protected def setModule(module: Module[T]): Unit
+  private[ml] class DLModelWriter[@specialized(Float, Double) T: ClassTag]
+  (instance: DLModel[T])(implicit ev: TensorNumeric[T]) extends MLWriter {
+    override protected def saveImpl(path: String): Unit = {
+      import org.json4s.JsonDSL._
+      val extraMetaData: JObject = "featureSize" -> instance.featureSize.toSeq
+      DLModel.saveImpl(instance, instance.model,
+        path, sc, shouldOverwrite, Some(extraMetaData))
+    }
+  }
 
   /**
-   * Save a [[DLModelBase]] to a dictionary, which contains 3 files(meta, module, weight).
-   * @param path path of model dictionary, it should NOT exists as a File.
-   * @param isOverWrite whether overwrite earlier files
-   */
-  def save(path: String, isOverWrite: Boolean): Unit = {
-    val (metaPath, modulePath, weightPath) = DLModelBase.getPaths(path)
-    val meta = SerializationUtils.serialize(this)
-    File.saveBytes(meta, metaPath, isOverWrite)
-    getModule.saveModule(modulePath, weightPath, isOverWrite)
+    * Helper method for saving a DLModel to disk.
+    *
+    * @param instance  DLModel
+    * @param path  Path to which to save the DLModel.
+    * @param extraMetadata  Metadata such as featureSize.
+    */
+  private[ml] def saveImpl[@specialized(Float, Double) T: ClassTag, M <: DLTransformerBase[M]]
+  (instance: M,
+   module: Module[T],
+   path: String,
+   sc: SparkContext,
+   isOverWrite: Boolean = false,
+   extraMetadata: Option[JObject] = None
+  )(implicit ev: TensorNumeric[T]): Unit = {
+    DefaultParamsWriter.saveMetadata(instance, path, sc, extraMetadata)
+    val (modulePath, weightPath) =
+      new Path(path, "module").toString -> new Path(path, "weight").toString
+    module.saveModule(modulePath, weightPath, isOverWrite)
   }
-}
 
-object DLModelBase {
   /**
-   * Load a [[DLModelBase]] from files.
-   * @param path path of model dictionary
-   */
-  def load[@specialized(Float, Double) T: ClassTag, M <: DLTransformerBase[M]]
-  (path: String)(implicit ev: TensorNumeric[T]): DLModelBase[T, M] = {
-    val (metaPath, modulePath, weightPath) = DLModelBase.getPaths(path)
-    val modelBase = SerializationUtils.deserialize[DLModelBase[T, M]](File.readBytes(metaPath))
+    * Helper method for loading a DLModel from disk.
+    *
+    * @param path  Path given to `saveImpl`
+    * @return  (metadata, BigDL.Module),
+    * @see `saveImpl` for how the model was saved
+    */
+  private[ml] def loadImpl[@specialized(Float, Double) T: ClassTag, M <: DLTransformerBase[M]]
+  (path: String,
+   sc: SparkContext
+  )(implicit ev: TensorNumeric[T]): (DefaultParamsReader.Metadata, Module[T]) = {
+    implicit val format = DefaultFormats
+    val metadata = DefaultParamsReader.loadMetadata(path, sc)
+    val (modulePath, weightPath) =
+      new Path(path, "module").toString -> new Path(path, "weight").toString
     val module = ModuleLoader.loadFromFile[T](modulePath, weightPath)
-    modelBase.setModule(module)
-    modelBase
+    (metadata, module)
   }
+}
 
-  private def getPaths(path: String): (String, String, String) = {
-    val mainPath = new Path(path)
-    val metaPath = new Path(mainPath.toUri.getScheme, mainPath.toUri.getAuthority,
-      mainPath.toUri.getPath + "/meta").toUri.getPath
-    val modulePath = new Path(mainPath.toUri.getScheme, mainPath.toUri.getAuthority,
-      mainPath.toUri.getPath + "/module").toUri.getPath
-    val weightPath = new Path(mainPath.toUri.getScheme, mainPath.toUri.getAuthority,
-      mainPath.toUri.getPath + "/weight").toUri.getPath
-    (metaPath, modulePath, weightPath)
-  }
+object DLModelFloat extends MLReadable[DLModel[Float]] {
+  override def read: MLReader[DLModel[Float]] = new DLModel.DLModelReader[Float]
+}
+
+object DLModelDouble extends MLReadable[DLModel[Double]] {
+  override def read: MLReader[DLModel[Double]] = new DLModel.DLModelReader[Double]
 }
 
