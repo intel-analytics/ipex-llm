@@ -1,5 +1,3 @@
-# Supported Tensorflow Operations
-
 * Abs
 * Adapter
 * Add

@@ -1,5 +1,3 @@
-
----
 ## SoftSign ##
 
 **Scala:**

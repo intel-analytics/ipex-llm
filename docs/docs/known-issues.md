@@ -1,6 +1,3 @@
-
-
----
 * Currently, BigDL uses synchronous mini-batch SGD in model training. The mini-batch size is
 expected to be a multiple of **total cores** used in the job.
 
