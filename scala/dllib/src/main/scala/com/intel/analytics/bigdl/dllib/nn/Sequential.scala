@@ -21,7 +21,6 @@ import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
 import scala.reflect.ClassTag
-import scala.collection.mutable.ArrayBuffer
 
 /**
  * Sequential provides a means to plug layers together
