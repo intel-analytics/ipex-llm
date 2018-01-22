@@ -615,12 +615,12 @@ class TestSimple():
         assert_allclose(output, expected)
 
     def test_train_image_frame(self):
-        batch_size = 32
+        batch_size = 8
         epoch_num = 5
         images = []
         labels = []
-        for i in range(0, 64):
-            features = np.random.uniform(0, 1, (300, 300, 3))
+        for i in range(0, 8):
+            features = np.random.uniform(0, 1, (200, 200, 3))
             label = np.array([2])
             images.append(features)
             labels.append(label)
@@ -638,12 +638,6 @@ class TestSimple():
         model.add(View([6 * 220 * 220]))
         model.add(Linear(6 * 220 * 220, 20))
         model.add(LogSoftMax())
-
-        image_frame = model.predict_image(image_frame)
-        predicts = image_frame.get_predict()
-        out = predicts.collect()
-
-        print(out[0][1].shape)
         optim_method = SGD(learningrate=0.01)
         optimizer = Optimizer.create(
             model=model,
@@ -662,6 +656,7 @@ class TestSimple():
         trained_model = optimizer.optimize()
 
         predict_result = trained_model.predict_image(image_frame)
+        assert_allclose(predict_result.get_predict().count(), 8)
 
 
 if __name__ == "__main__":
