@@ -1,4 +1,3 @@
-# **Summary**
 Up to now, we have generally supported __ALL__ the layers of [__Keras 1.2.2__](https://faroit.github.io/keras-docs/1.2.2/) to be loaded into BigDL.
 
 Self-defined Keras layers or [`Lambda`](https://faroit.github.io/keras-docs/1.2.2/layers/core/#lambda) layers are not supported for now. Weight sharing is not supported for now.

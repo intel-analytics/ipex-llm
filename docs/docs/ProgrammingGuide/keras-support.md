@@ -1,5 +1,3 @@
-# **Keras Support**
-
 For __Python__ users, BigDL supports loading pre-defined Keras models.
 
 The Keras version we support and test is [__Keras 1.2.2__](https://faroit.github.io/keras-docs/1.2.2/) with TensorFlow backend. Up to now, we have generally supported __ALL__ its layers.

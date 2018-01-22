@@ -1,5 +1,3 @@
-
-
 These are built BigDL packages including dependency and Python files. You can download these packages instead of building them by yourself. This is useful when you want to do something like run some examples or develop Python code.
 
 ---
