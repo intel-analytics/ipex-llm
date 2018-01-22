@@ -266,8 +266,7 @@ object ResizeBilinear {
     bottomLeft: Double,
     bottomRight: Double,
     xLERP: Double,
-    yLERP: Double
-                         ): Double = {
+    yLERP: Double): Double = {
     val top = topLeft + (topRight - topLeft) * xLERP
     val bottom = bottomLeft + (bottomRight - bottomLeft) * xLERP
     top + (bottom - top) * yLERP
