@@ -625,7 +625,6 @@ class TestSimple():
         model.add(Linear(6 * 220 * 220, 20))
         model.add(LogSoftMax())
 
-
         image_frame = model.predict_image(image_frame)
         predicts = image_frame.get_predict()
         out = predicts.collect()
