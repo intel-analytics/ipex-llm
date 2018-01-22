@@ -81,9 +81,7 @@ class Linear[T: ClassTag](
   }
 
   override def computeOutputShape(inputShape: Shape): Shape = {
-    val input = inputShape.toSingle().toArray
-    input(input.length - 1) = outputSize
-    Shape(input)
+    inputShape.copyAndUpdate(-1, outputSize)
   }
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {

@@ -77,7 +77,8 @@ private[bigdl] object KerasLayer {
 
 
    def addBatch(shape: Shape): Shape = {
-    if (shape == null) {
+     // simply return null here as null is the default value
+     if (shape == null) {
       return null
     }
     if (shape.isInstanceOf[SingleShape]) {
@@ -88,6 +89,7 @@ private[bigdl] object KerasLayer {
   }
 
   def removeBatch(shape: Shape): Shape = {
+    // simply return null here as null is the default value
     if (shape == null) {
       return null
     }
@@ -126,37 +128,28 @@ abstract class KerasLayer[A <: Activity: ClassTag, B <: Activity: ClassTag, T: C
     modules.append(value)
   }
   // scalastyle:on
-
-  override def output: B = labor.output
-
-  override def gradInput: A = labor.gradInput
-
   override def inputShapeValue: Shape = labor.inputShapeValue
 
-  override def outputShapeValue: ArrayBuffer[Shape] = labor.outputShapeValue
+  override def outputShapeValue: Array[Shape] = labor.outputShapeValue
 
   // scalastyle:off
-  override def output_= (value: B): Unit = labor.output = value
-
-  override def gradInput_=(value: A): Unit = {
-    labor.gradInput = value
-  }
-
   override def inputShapeValue_=(value: Shape): Unit = {
     labor.inputShapeValue = value
   }
 
-  override def outputShapeValue_=(value: ArrayBuffer[Shape]): Unit = {
+  override def outputShapeValue_=(value: Array[Shape]): Unit = {
    labor.outputShapeValue = value
   }
   // scalastyle:on
 
   override def updateOutput(input: A): B = {
-    labor.updateOutput(input)
+    output = labor.updateOutput(input)
+    output
   }
 
   override def updateGradInput(input: A, gradOutput: B): A = {
-    labor.updateGradInput(input, gradOutput)
+    gradInput = labor.updateGradInput(input, gradOutput)
+    gradInput
   }
 
   override def accGradParameters(input: A, gradOutput: B): Unit = {
@@ -184,15 +177,12 @@ abstract class KerasLayer[A <: Activity: ClassTag, B <: Activity: ClassTag, T: C
   override def getOutputShape(): Shape = labor.getOutputShape()
 
   override def build(inputShape: Shape): Shape = {
-    labor = doBuild(inputShape)
-    if (!labor.isBuilt) {
-      labor.build(inputShape)
-    }
-    if (!isBuilt) {
-      super.build(inputShape)
-    }
-    // we cannot use getOutputShape here as it would containing multiple value
-    computeOutputShape(inputShape)
+    this.labor = doBuild(inputShape)
+    val outputShape = computeOutputShape(inputShape)
+    this.outputShapeValue ++= Array(outputShape)
+    this.inputShapeValue = inputShape
+    isBuilt = true
+    outputShape // we cannot use getOutputShape here as it may containing multiple value
   }
 
   def doBuild(inputShape: Shape): AbstractModule[A, B, T]
@@ -238,7 +228,7 @@ abstract class KerasLayer[A <: Activity: ClassTag, B <: Activity: ClassTag, T: C
     val shapes = ArrayBuffer[Shape]()
     shapes.append(first._1.element.getOutputShapeFor(first._2))
     if (!nodesWithIndex.isEmpty) {
-      shapes ++ nodesWithIndex.map{t => t._1.element.getOutputShapeFor(t._2)}
+      shapes ++= nodesWithIndex.map{t => t._1.element.getOutputShapeFor(t._2)}
     }
     this.build(Shape(shapes.toList))
     super.inputs(first, nodesWithIndex : _*)

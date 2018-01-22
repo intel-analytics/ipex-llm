@@ -34,7 +34,7 @@ class Model[T: ClassTag](private val _inputs : Seq[ModuleNode[T]],
 
   this.inputShapeValue = Shape(inputs.map{n => n.element.getInputShape()}.toList)
 
-  this.outputShapeValue = ArrayBuffer(outputs.map{_.element.getOutputShape()}: _*)
+  this.outputShapeValue = Array(outputs.map{_.element.getOutputShape()}: _*)
 
   isBuilt = true
 
@@ -103,7 +103,12 @@ class Sequential[T: ClassTag]
   private[bigdl] var frozen: Boolean = false
 
   override def computeOutputShape(inputShape: Shape): Shape = {
-    getOutputShape()
+     getOutputShape()
+  }
+
+  override def getOutputShape(): Shape = {
+    require(outputShapeValue.length > 0, "Sequence should not be empty")
+    outputShapeValue(outputShapeValue.length -1) // For Seq, we only respect the last item as output
   }
 
   /**
@@ -128,11 +133,11 @@ class Sequential[T: ClassTag]
       } else {
         val outputShape = module.build(module.getInputShape())
         this.inputShapeValue = module.getInputShape()
-        this.outputShapeValue = ArrayBuffer(outputShape)
+        this.outputShapeValue = Array(outputShape)
       }
     } else {
       val outputShape = module.build(this.getOutputShape())
-      this.outputShapeValue = ArrayBuffer(outputShape)
+      this.outputShapeValue = Array(outputShape)
     }
     modules += module.asInstanceOf[AbstractModule[Activity, Activity, T]]
     isBuilt = true

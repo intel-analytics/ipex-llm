@@ -19,24 +19,23 @@ package com.intel.analytics.bigdl.nn.abstractnn
 import com.intel.analytics.bigdl.utils.Shape
 
 import scala.collection.mutable.ArrayBuffer
-import scala.reflect.ClassTag
 
 trait InferShape {
 
   private var _inputShapeValue: Shape = null
 
-  private var _outputShapeValue: ArrayBuffer[Shape] = ArrayBuffer[Shape]()
+  private var _outputShapeValue: Array[Shape] = Array[Shape]()
 
   private[bigdl] def inputShapeValue: Shape = _inputShapeValue
 
-  private[bigdl] def outputShapeValue: ArrayBuffer[Shape] = _outputShapeValue
+  private[bigdl] def outputShapeValue: Array[Shape] = _outputShapeValue
 
   // scalastyle:off
   private[bigdl] def inputShapeValue_=(value: Shape): Unit = {
     _inputShapeValue = value
   }
 
-  private[bigdl] def outputShapeValue_=(value: ArrayBuffer[Shape]): Unit = {
+  private[bigdl] def outputShapeValue_=(value: Array[Shape]): Unit = {
     _outputShapeValue = value
   }
   // scalastyle:on
@@ -74,7 +73,7 @@ trait InferShape {
    */
   private[bigdl] def build(inputShape: Shape): Shape = {
     val outputShape = computeOutputShape(inputShape)
-    this._outputShapeValue.append(outputShape)
+    this._outputShapeValue ++ Array(outputShape)
     this._inputShapeValue = inputShape
     isBuilt = true
     outputShape

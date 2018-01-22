@@ -19,18 +19,89 @@ package com.intel.analytics.bigdl.utils
 import scala.reflect.ClassTag
 
 trait Shape {
+  /**
+   * Use this method if its only a single Shape
+   */
   def toSingle(): List[Int] = throw new RuntimeException("Invalid operation")
+
+  /**
+   * Use this method if the current Shape consist of multiple value
+   */
   def toMulti(): List[Shape] = throw new RuntimeException("Invalid operation")
+
+  /**
+   * Update the given dim and return a new copy
+   */
+  def copyAndUpdate(dim: Int, v: Int): Shape = throw new RuntimeException("Invalid operation")
+
+  /**
+   * Update the given dim and return a new copy
+   */
+  def copyAndUpdate(dim: Int, v: Shape): Shape
+    = throw new RuntimeException("Invalid operation")
+
+
+  protected def getDim(dim: Int, length: Int): Int = {
+    val rdim = if (dim < 0) {
+      length + dim
+    } else {
+      dim
+    }
+    require(rdim < length && rdim >=0, "out of range")
+    rdim
+  }
 }
 
 case class SingleShape(val value: List[Int]) extends Shape {
   override def toSingle(): List[Int] = value
+
+  override def copyAndUpdate(dim: Int, v: Int): Shape = {
+    val cValue = value.toArray
+    cValue(getDim(dim, value.length)) = v
+    Shape(cValue)
+  }
+
+  override def canEqual(a: Any): Boolean = a.isInstanceOf[SingleShape]
+
+  override def equals(that: Any): Boolean =
+    that match {
+      case that: SingleShape => that.canEqual(this) && this.hashCode == that.hashCode
+      case _ => false
+    }
+
+  override def hashCode: Int = {
+    val prime = 31
+    var result = 1
+    result = prime * value.hashCode()
+    return result
+  }
 }
 
 
 case class MultiShape(val value: List[Shape]) extends Shape {
 
   override def toMulti(): List[Shape] = value
+
+  override def copyAndUpdate(dim: Int, v: Shape): Shape = {
+    val cValue = value.toArray
+    cValue(getDim(dim, value.length)) = v
+    MultiShape(cValue.toList)
+  }
+
+  override def canEqual(a: Any): Boolean = a.isInstanceOf[MultiShape]
+
+  override def equals(that: Any): Boolean =
+    that match {
+      case that: MultiShape => that.canEqual(this) && this.hashCode == that.hashCode
+      case _ => false
+    }
+
+  override def hashCode: Int = {
+    val prime = 31
+    var result = 1
+    result = prime * value.hashCode()
+    return result
+  }
 }
 
 object Shape {
