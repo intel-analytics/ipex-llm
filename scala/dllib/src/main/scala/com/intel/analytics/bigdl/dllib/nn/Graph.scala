@@ -71,7 +71,7 @@ import org.tensorflow.framework.GraphDef
 @SerialVersionUID(- 2896121321564992779L)
 abstract class Graph[T: ClassTag](
   val inputs : Seq[ModuleNode[T]],
-  private val outputs : Seq[ModuleNode[T]],
+  protected val outputs : Seq[ModuleNode[T]],
   private val variables: Option[(Array[Tensor[T]], Array[Tensor[T]])] = None
 )(implicit ev: TensorNumeric[T]) extends Container[Activity, Activity, T]{
 

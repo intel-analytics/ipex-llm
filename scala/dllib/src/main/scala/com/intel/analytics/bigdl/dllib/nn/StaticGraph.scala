@@ -15,16 +15,12 @@
  */
 package com.intel.analytics.bigdl.nn
 
-import java.util
-
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
-import com.intel.analytics.bigdl.nn.tf.{ControlDependency, WithoutInput}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.{Node, T}
+import com.intel.analytics.bigdl.utils.{Node, Util}
 
-import scala.collection.mutable
 import scala.reflect.ClassTag
 
 /**
@@ -38,13 +34,19 @@ import scala.reflect.ClassTag
 class StaticGraph[T: ClassTag](
   private val _inputs : Seq[ModuleNode[T]],
   private val _outputs : Seq[ModuleNode[T]],
-  private val _variables: Option[(Array[Tensor[T]], Array[Tensor[T]])] = None
+  private val _variables: Option[(Array[Tensor[T]], Array[Tensor[T]])] = None,
+  private val excludeKeras: Boolean = true
 )(implicit ev: TensorNumeric[T]) extends Graph[T](_inputs, _outputs, _variables) {
   private val forwardExecution = forwardGraph.topologySort.reverse
   private var backwardExecution: Array[Node[AbstractModule[Activity, Activity, T]]] = _
   private val inputCache = new Array[Activity](forwardExecution.length)
   private var backId2ForwardId: Array[Int] = _
   private var gradOutputCache: Array[Activity] = _
+
+  if (excludeKeras) {
+    Util.excludeNotTorch(inputs.map(_.element))
+    Util.excludeNotTorch(outputs.map(_.element))
+  }
 
   buildBackwardGraph()
 
