@@ -24,7 +24,7 @@ import scala.reflect.ClassTag
 
 /**
  * Resize the input image with bilinear interpolation. The input image must be a float tensor with
- * NHWC layout
+ * NHWC or NCHW layout.
  *
  * @param outputHeight output height
  * @param outputWidth output width
@@ -34,14 +34,14 @@ import scala.reflect.ClassTag
 class ResizeBilinear[T: ClassTag](val outputHeight: Int, val outputWidth: Int,
   val alignCorners: Boolean,
   val dataFormat: DataFormat = DataFormat.NCHW)(implicit ev: TensorNumeric[T])
-  extends AbstractModule[Tensor[T], Tensor[T], T]{
+  extends AbstractModule[Tensor[Float], Tensor[Float], T]{
 
   private val ys = (1 to (outputHeight + 1)).map(i => InterpolationWeight(0, 0, 0)).toArray
   private val xs = (1 to (outputWidth + 1)).map(i => InterpolationWeight(0, 0, 0)).toArray
 
   import ResizeBilinear._
 
-  override def updateOutput(input: Tensor[T]): Tensor[T] = {
+  override def updateOutput(input: Tensor[Float]): Tensor[Float] = {
     require(input.nDimension() == 4, "only accept 4D input")
     require(input.isContiguous(), "only accept contiguous input")
 
@@ -53,7 +53,7 @@ class ResizeBilinear[T: ClassTag](val outputHeight: Int, val outputWidth: Int,
     output
   }
 
-  private def updateOutputNCHW(input: Tensor[T]): Tensor[T] = {
+  private def updateOutputNCHW(input: Tensor[Float]): Tensor[Float] = {
     val batchSize = input.size(1)
     val channels = input.size(2)
     val inHeight = input.size(3)
@@ -76,16 +76,16 @@ class ResizeBilinear[T: ClassTag](val outputHeight: Int, val outputWidth: Int,
         val outputOffset = (output.storageOffset() - 1) + i * outputHeight * outputWidth
 
         if (input.getType() == FloatType) {
-          resizeImage(input.asInstanceOf[Tensor[Float]].storage().array(),
+          resizeImage(input.storage().array(),
             inputOffset, 1, inHeight, inWidth,
             outputHeight, outputWidth, 1, xs, ys,
-            output.asInstanceOf[Tensor[Float]].storage().array(),
+            output.storage().array(),
             outputOffset)
         } else if (input.getType() == DoubleType) {
-          resizeImage(input.asInstanceOf[Tensor[Double]].storage().array(),
+          resizeImage(input.storage().array(),
             inputOffset, 1, inHeight, inWidth,
             outputHeight, outputWidth, 1, xs, ys,
-            output.asInstanceOf[Tensor[Double]].storage().array(),
+            output.storage().array(),
             outputOffset)
         } else {
           throw new IllegalArgumentException(
@@ -99,7 +99,7 @@ class ResizeBilinear[T: ClassTag](val outputHeight: Int, val outputWidth: Int,
     }
   }
 
-  private def updateOutputNHWC(input: Tensor[T]): Tensor[T] = {
+  private def updateOutputNHWC(input: Tensor[Float]): Tensor[Float] = {
     val batchSize = input.size(1)
     val inHeight = input.size(2)
     val inWidth = input.size(3)
@@ -123,16 +123,16 @@ class ResizeBilinear[T: ClassTag](val outputHeight: Int, val outputWidth: Int,
 
       output.resize(batchSize, outputHeight, outputWidth, channels)
       if (input.getType() == FloatType) {
-        resizeImage(input.asInstanceOf[Tensor[Float]].storage().array(),
+        resizeImage(input.storage().array(),
           input.storageOffset() - 1, batchSize, inHeight, inWidth,
           outputHeight, outputWidth, channels, xs, ys,
-          output.asInstanceOf[Tensor[Float]].storage().array(),
+          output.storage().array(),
           output.storageOffset() - 1)
       } else if (input.getType() == DoubleType) {
-        resizeImage(input.asInstanceOf[Tensor[Double]].storage().array(),
+        resizeImage(input.storage().array(),
           input.storageOffset() - 1, batchSize, inHeight, inWidth,
           outputHeight, outputWidth, channels, xs, ys,
-          output.asInstanceOf[Tensor[Double]].storage().array(),
+          output.storage().array(),
           output.storageOffset() - 1)
       } else {
         throw new IllegalArgumentException(
@@ -143,7 +143,7 @@ class ResizeBilinear[T: ClassTag](val outputHeight: Int, val outputWidth: Int,
     }
   }
 
-  override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
+  override def updateGradInput(input: Tensor[Float], gradOutput: Tensor[Float]): Tensor[Float] = {
     require(input.nDimension() == 4, "only accept 4D input")
     require(gradOutput.nDimension() == 4, "only accept 4D gradOutput")
     require(input.isContiguous(), "only accept contiguous input")
@@ -156,7 +156,8 @@ class ResizeBilinear[T: ClassTag](val outputHeight: Int, val outputWidth: Int,
     gradInput
   }
 
-  private def updateGradInputNHWC(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
+  private def updateGradInputNHWC(input: Tensor[Float],
+                                  gradOutput: Tensor[Float]): Tensor[Float] = {
     val batchSize = input.size(1)
     val inHeight = input.size(2)
     val inWidth = input.size(3)
@@ -179,13 +180,13 @@ class ResizeBilinear[T: ClassTag](val outputHeight: Int, val outputWidth: Int,
     if (input.getType() == FloatType) {
       resizeImageBackprop(batchSize, channels, inHeight, inWidth,
         outputHeight, outputWidth, heightScale, widthScale,
-        gradInputData.asInstanceOf[Array[Float]], gradInputOffset,
-        gradOutputData.asInstanceOf[Array[Float]], gradOutputOffset)
+        gradInputData, gradInputOffset,
+        gradOutputData, gradOutputOffset)
     } else if (input.getType() == DoubleType) {
       resizeImageBackprop(batchSize, channels, inHeight, inWidth,
         outputHeight, outputWidth, heightScale, widthScale,
-        gradInputData.asInstanceOf[Array[Double]], gradInputOffset,
-        gradOutputData.asInstanceOf[Array[Double]], gradOutputOffset)
+        gradInputData, gradInputOffset,
+        gradOutputData, gradOutputOffset)
     } else {
       throw new IllegalArgumentException(
         s"ResizeBilinear does not support type ${input.getType()}")
@@ -194,7 +195,8 @@ class ResizeBilinear[T: ClassTag](val outputHeight: Int, val outputWidth: Int,
     gradInput
   }
 
-  private def updateGradInputNCHW(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
+  private def updateGradInputNCHW(input: Tensor[Float],
+                                  gradOutput: Tensor[Float]): Tensor[Float] = {
     val batchSize = input.size(1)
     val channels = input.size(2)
     val inHeight = input.size(3)
@@ -221,13 +223,13 @@ class ResizeBilinear[T: ClassTag](val outputHeight: Int, val outputWidth: Int,
       if (input.getType() == FloatType) {
         resizeImageBackprop(1, 1, inHeight, inWidth,
           outputHeight, outputWidth, heightScale, widthScale,
-          gradInputData.asInstanceOf[Array[Float]], inOffset,
-          gradOutputData.asInstanceOf[Array[Float]], outOffset)
+          gradInputData, inOffset,
+          gradOutputData, outOffset)
       } else if (input.getType() == DoubleType) {
         resizeImageBackprop(1, 1, inHeight, inWidth,
           outputHeight, outputWidth, heightScale, widthScale,
-          gradInputData.asInstanceOf[Array[Double]], inOffset,
-          gradOutputData.asInstanceOf[Array[Double]], outOffset)
+          gradInputData, inOffset,
+          gradOutputData, outOffset)
       } else {
         throw new IllegalArgumentException(
           s"ResizeBilinear does not support type ${input.getType()}")
@@ -255,18 +257,6 @@ object ResizeBilinear {
     xLERP: Float,
     yLERP: Float
   ): Float = {
-    val top = topLeft + (topRight - topLeft) * xLERP
-    val bottom = bottomLeft + (bottomRight - bottomLeft) * xLERP
-    top + (bottom - top) * yLERP
-  }
-
-  private def computeLERP(
-    topLeft: Double,
-    topRight: Double,
-    bottomLeft: Double,
-    bottomRight: Double,
-    xLERP: Double,
-    yLERP: Double): Double = {
     val top = topLeft + (topRight - topLeft) * xLERP
     val bottom = bottomLeft + (bottomRight - bottomLeft) * xLERP
     top + (bottom - top) * yLERP
@@ -353,54 +343,6 @@ object ResizeBilinear {
   }
 
   @inline
-  private def resizeImage(
-    image: Array[Double], imageOffset: Int,
-    batchSize: Int,
-    inHeight: Int, inWidth: Int,
-    outHeight: Int, outWidth: Int,
-    channels: Int,
-    xs: Array[InterpolationWeight],
-    ys: Array[InterpolationWeight],
-    output: Array[Double], outputOffset: Int): Unit = {
-    val inRowSize = inWidth * channels
-    val inBatchNumber = inHeight * inRowSize
-    val outRowSize = outWidth * channels
-    var _imageOffset = imageOffset
-    var _outputOffset = outputOffset
-
-    // Todo: use multiple thread to speed up this
-    var b = 0
-    while(b < batchSize) {
-      var y = 0
-      while(y < outHeight) {
-        val ysLERP = ys(y).lerp
-        var x = 0
-        while(x < outWidth) {
-          val xsLower = xs(x).lower
-          val xsUpper = xs(x).upper
-          val xsLERP = xs(x).lerp
-
-          var c = 0
-          while(c < channels) {
-            val topLeft = image(_imageOffset + ys(y).lower * inRowSize + xsLower + c)
-            val topRight = image(_imageOffset + ys(y).lower * inRowSize + xsUpper + c)
-            val bottomLeft = image(_imageOffset + ys(y).upper * inRowSize + xsLower + c)
-            val bottomRight = image(_imageOffset + ys(y).upper * inRowSize + xsUpper + c)
-            output(_outputOffset + x * channels + c) = computeLERP(topLeft, topRight, bottomLeft,
-              bottomRight, xsLERP, ysLERP)
-            c += 1
-          }
-          x += 1
-        }
-        _outputOffset += outRowSize
-        y += 1
-      }
-      _imageOffset += inBatchNumber
-      b += 1
-    }
-  }
-
-  @inline
   private def resizeImageBackprop(
     batchSize: Int,
     channels: Int,
@@ -413,64 +355,6 @@ object ResizeBilinear {
     gradInputData: Array[Float],
     gradInputOffset: Int,
     gradOutputData: Array[Float],
-    gradOutputOffset: Int): Unit = {
-    val inRowSize = inWidth * channels
-    val inBatchNum = inHeight * inRowSize
-    val outRowSize = outputWidth * channels
-    val outBatchNum = outputHeight * outRowSize
-    var b = 0
-    while(b < batchSize) {
-      var y = 0
-      while(y < outputHeight) {
-        val inY = y * heightScale
-        val topY = inY.toInt
-        val bottomY = math.min(math.ceil(inY).toInt, inHeight - 1)
-        val yLERP = inY - topY
-        val inverseYLERP = (1.0f - yLERP)
-        var x = 0
-        while(x < outputWidth) {
-          val inX = x * widthScale
-          val leftX = inX.toInt
-          val rightX = math.min(math.ceil(inX).toInt, inWidth - 1)
-          val xLERP = inX - leftX
-          val inverseXLERP = (1.0f - xLERP)
-          var c = 0
-          while(c < channels) {
-            gradInputData(gradInputOffset + b * inBatchNum + topY * inRowSize +
-              leftX * channels + c) += gradOutputData(gradOutputOffset + b * outBatchNum +
-              y * outRowSize + x * channels + c) * inverseYLERP * inverseXLERP
-            gradInputData(gradInputOffset + b * inBatchNum + topY * inRowSize +
-              rightX * channels + c) += gradOutputData(gradOutputOffset + b * outBatchNum +
-              y * outRowSize + x * channels + c) * inverseYLERP * xLERP
-            gradInputData(gradInputOffset + b * inBatchNum + bottomY * inRowSize +
-              leftX * channels + c) += gradOutputData(gradOutputOffset + b * outBatchNum +
-              y * outRowSize + x * channels + c) * yLERP * inverseXLERP
-            gradInputData(gradInputOffset + b * inBatchNum + bottomY * inRowSize +
-              rightX * channels + c) += gradOutputData(gradOutputOffset + b * outBatchNum +
-              y * outRowSize + x * channels + c) * yLERP * xLERP
-            c += 1
-          }
-          x += 1
-        }
-        y += 1
-      }
-      b += 1
-    }
-  }
-
-  @inline
-  private def resizeImageBackprop(
-    batchSize: Int,
-    channels: Int,
-    inHeight: Int,
-    inWidth: Int,
-    outputHeight: Int,
-    outputWidth: Int,
-    heightScale: Float,
-    widthScale: Float,
-    gradInputData: Array[Double],
-    gradInputOffset: Int,
-    gradOutputData: Array[Double],
     gradOutputOffset: Int): Unit = {
     val inRowSize = inWidth * channels
     val inBatchNum = inHeight * inRowSize
