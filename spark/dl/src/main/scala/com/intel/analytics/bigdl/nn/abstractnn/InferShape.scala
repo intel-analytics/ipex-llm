@@ -18,8 +18,6 @@ package com.intel.analytics.bigdl.nn.abstractnn
 
 import com.intel.analytics.bigdl.utils.Shape
 
-import scala.collection.mutable.ArrayBuffer
-
 trait InferShape {
 
   private var _inputShapeValue: Shape = null
