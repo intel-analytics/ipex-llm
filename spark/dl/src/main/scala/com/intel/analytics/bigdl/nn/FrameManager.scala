@@ -16,7 +16,7 @@
 package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
-import com.intel.analytics.bigdl.nn.ops.{Exit, NextIteration}
+import com.intel.analytics.bigdl.nn.ops.{Exit, MergeOps, NextIteration}
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
@@ -42,16 +42,46 @@ class FrameManager[T] extends Serializable {
     frames(frame)
   }
   /**
-   * Mark a node enter into frame. The node should not be in any frame before and frame should
-   * exist.
+   * Mark a node enter into frame. The node cannot be in two frames at the same time
    * @param node node
    * @param frame the name of the frame
    */
   def enter(node: ModuleNode[T], frame : Frame[T]): Unit = {
-    require(!nodeFrame.contains(node.element.getName()), "Node already in a frame")
-    frame.mutex += 1
-    frame.nodes.append(node)
-    nodeFrame(node.element.getName()) = frame
+    val name = node.element.getName()
+    if (nodeFrame.contains(name)) {
+      require(nodeFrame(name).eq(frame), "node cannot be in two different fames at the same time")
+    } else {
+      nodeFrame(name) = frame
+    }
+
+    if (!frame.nodes.contains(node)) {
+      if (addToFrameNode(node, frame)) frame.nodes.append(node)
+    }
+  }
+
+  def pend(node: ModuleNode[T], frame : Frame[T]): Unit = {
+    val name = node.element.getName()
+    require(node.element.isInstanceOf[NextIteration[_, _]], "you can only pend next iteration node")
+    if (nodeFrame.contains(name)) {
+      require(nodeFrame(name).eq(frame), "node cannot be in two different fames at the same time")
+    } else {
+      nodeFrame(name) = frame
+    }
+
+    frame.barrier -= 1
+    frame.waitingNodes.append(node)
+  }
+
+  private def addToFrameNode(node: ModuleNode[T], frame : Frame[T]): Boolean = {
+    if (node.element.isInstanceOf[MergeOps[_]] && node.prevNodes.size == 2 &&
+      (node.prevNodes(0).element.isInstanceOf[NextIteration[_, _]] ||
+        node.prevNodes(1).element.isInstanceOf[NextIteration[_, _]])) {
+      return true
+    }
+
+    node.prevNodes.foreach(n => if (frame.nodes.contains(n)) return true)
+
+    return false
   }
 
   /**
@@ -63,26 +93,6 @@ class FrameManager[T] extends Serializable {
     nodeFrame.get(node.element.getName())
   }
 
-  /**
-   * The node leaves its frame. If the node doesn't exist in any frame, an exception will be thrown
-   *
-   * @param node
-   * @return
-   */
-  def leave(node: ModuleNode[T]): Unit = {
-    val f = nodeFrame.remove(node.element.getName()).get
-    f.nodes.remove(f.nodes.indexOf(node))
-  }
-
-  /**
-   * Remove a frame from a frame manager.
-   * @param frame
-   */
-  def release(frame: Frame[T]): Unit = {
-    require(frames.contains(frame.name), "Cannot find the given frame")
-    frames.remove(frame.name)
-  }
-
   private val frames = new mutable.HashMap[String, Frame[T]]()
   private val nodeFrame = new mutable.HashMap[String, Frame[T]]()
 }
@@ -91,21 +101,19 @@ object FrameManager {
   /**
    * A frame
    * @param name the name of a frame, it must be unique in a graph
-   * @param mutex sync all next iteration / exit nodes execution
-   * @param waitingNodes user can use NextIteration or Exit to leave current frame. This is a list
-   *                     of those type of nodes, which are ready to leave
    * @param parent parent frame, if a frame is created in another frame, it has parent frame
    * @tparam T
    */
   class Frame[T] private[FrameManager] (
     val name: String,
-    var mutex: Int,
-    val waitingNodes: ArrayBuffer[ModuleNode[T]],
-    val parent: Option[Frame[T]],
-    val nodes: ArrayBuffer[ModuleNode[T]]
+    val parent: Option[Frame[T]]
   ) {
-    private[FrameManager] def this(name: String, parent: Option[Frame[T]]) = {
-      this(name, 0, new ArrayBuffer[ModuleNode[T]], parent, new ArrayBuffer[ModuleNode[T]])
-    }
+    // Sync all next iteration nodes execution
+    private[bigdl] var barrier: Int = 0
+    // User can use NextIteration to sync execution. This is a list of those type of nodes
+    private[bigdl] val waitingNodes: ArrayBuffer[ModuleNode[T]] = new ArrayBuffer[ModuleNode[T]]()
+
+    // Nodes should be refreshed in a iteration of the frame
+    private[bigdl] val nodes: ArrayBuffer[ModuleNode[T]] = new ArrayBuffer[ModuleNode[T]]()
   }
 }

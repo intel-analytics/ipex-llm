@@ -23,7 +23,7 @@ import com.intel.analytics.bigdl.models.inception.Inception_v1_NoAuxClassifier
 import com.intel.analytics.bigdl.models.lenet.LeNet5
 import com.intel.analytics.bigdl.models.vgg.{VggForCifar10, Vgg_16, Vgg_19}
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
-import com.intel.analytics.bigdl.nn.ops.{ControlNodes, Less}
+import com.intel.analytics.bigdl.nn.ops.{ControlNodes, Enter, Less}
 import com.intel.analytics.bigdl.nn.tf.Const
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.utils.RandomGenerator._
@@ -1281,11 +1281,13 @@ class DynamicGraphSpec  extends FlatSpec with Matchers {
 
     val conditionInput = Input("conditionInput")
     val const = new com.intel.analytics.bigdl.nn.tf.Const(Tensor(T(9))).inputs()
-    val less = Less().inputs(const, conditionInput)
+    val constEnter = new Enter("test_frame").inputs(const)
+    val less = Less().inputs(constEnter, conditionInput)
 
     val updateInput = Input()
     val add = AddConstant(1).inputs(updateInput)
-    val echo = Echo().inputs(add)
+    val addEnter = new Enter("test_frame").inputs(add)
+    val echo = Echo().inputs(addEnter)
 
     val exit = ControlNodes.whileLoop(
       (Seq(conditionInput), less),

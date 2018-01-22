@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.nn.ops
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.nn.Graph._
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.tensor.{BooleanType, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{Edge, Node, T}
 
@@ -206,7 +206,20 @@ sealed private[bigdl] class Enter[T: ClassTag] private[bigdl](val frame: String)
  * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now
  */
 sealed private[bigdl] class LoopCondition[T: ClassTag] private[bigdl]()
-  (implicit ev: TensorNumeric[T]) extends IdentityControl[T]
+  (implicit ev: TensorNumeric[T]) extends IdentityControl[T] {
+
+  /**
+   * If current loop continue running
+   * @return
+   */
+  private[bigdl] def continue() : Boolean = {
+    require(this.output.isTensor, "loop condition result should be a tensor")
+    val t = this.output.asInstanceOf[Tensor[Boolean]]
+    require((t.isScalar || t.nElement() == 1) && t.getType() == BooleanType,
+      "loop condition result should be a boolean scalar or one element tensor")
+    t.storage().apply(t.storageOffset() - 1)
+  }
+}
 
 /**
  * Mark end of a loop. User should use ControlNodes.whileLoop to use such operation.
@@ -218,7 +231,7 @@ sealed private[bigdl] class Exit[T: ClassTag] private[bigdl]()(implicit ev: Tens
 /**
  * Factory method of control flow related nodes
  */
-object ControlNodes {
+private[bigdl] object ControlNodes {
 
   /**
    * Create a switch node
