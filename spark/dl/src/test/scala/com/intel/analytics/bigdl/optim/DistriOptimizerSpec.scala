@@ -713,4 +713,27 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
     val model = optimizer.optimize()
   }
+
+  "Train with MSE " should "generate correct gradients with constant clipping" in {
+    val mm = mse
+//    mm.getParameters()._1.fill(0.125)
+    val oriW = mm.parameters()._1
+
+    val _learningRate = 20.0
+    val optimizationMethod = new SGD[Double](learningRate = _learningRate)
+    val optimizer = new DistriOptimizer[Double](mm, dataSet, new MSECriterion[Double]())
+      .setEndWhen(Trigger.maxIteration(1))
+      .setOptimMethod(optimizationMethod)
+
+    val model = optimizer.optimize()
+    val newW = model.parameters()._1.clone()
+    val newG = model.parameters()._2.clone()
+
+    val t = 0
+//    var i = 0
+//    while (i < wNorm2.length) {
+//      assert(expectW.almostEqual(newW(i), 1e-6) == true, "should generate correct weight")
+//      i += 1
+//    }
+  }
 }

@@ -313,14 +313,14 @@ class AllReduceParameter[T: ClassTag](id: Long, partitionNum: Int, size: Int)
   }
 
   def squarePerLayer(lookupDic: Array[mutable.HashMap[Int, (Int, Int)]]):
-    Array[(Int, (Double, Double))] = {
+    Array[(Int, (Float, Float))] = {
     val lookupMap = lookupDic(partitionId)
-    val list = new Array[(Int, (Double, Double))](lookupMap.size)
+    val list = new Array[(Int, (Float, Float))](lookupMap.size)
     var i = 0
     for ((k, v) <- lookupMap) {
       list(i) = (k,
-        (ev.toType[Double](weightPartition.narrow(1, v._1, v._2).sumSquare()),
-         ev.toType[Double](gradientPartition.narrow(1, v._1, v._2).sumSquare())))
+        (ev.toType[Float](weightPartition.narrow(1, v._1, v._2).sumSquare()),
+         ev.toType[Float](gradientPartition.narrow(1, v._1, v._2).sumSquare())))
       i += 1
     }
     list
