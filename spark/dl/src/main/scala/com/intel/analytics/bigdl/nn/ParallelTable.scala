@@ -30,18 +30,7 @@ import scala.reflect.ClassTag
 
 @SerialVersionUID(- 1197848941394786045L)
 class ParallelTable[T: ClassTag]
-  (implicit ev: TensorNumeric[T]) extends Container[Table, Table, T] {
-
-  /**
-   * Add a sub-module to the contained `modules`
-   *
-   * @param module module to be add
-   * @return this container
-   */
-  def add(module: AbstractModule[_ <: Activity, _ <: Activity, T]): this.type = {
-    modules += module.asInstanceOf[AbstractModule[Activity, Activity, T]]
-    this
-  }
+  (implicit ev: TensorNumeric[T]) extends DynamicContainer[Table, Table, T] {
 
   override def updateOutput(input: Table): Table = {
     var i = 0

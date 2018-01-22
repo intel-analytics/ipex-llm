@@ -36,7 +36,7 @@ import scala.reflect.ClassTag
  * Different types of rnn cells can be added using add() function
  */
 class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
-  (implicit ev: TensorNumeric[T]) extends Container[Tensor[T], Tensor[T], T] {
+  (implicit ev: TensorNumeric[T]) extends DynamicContainer[Tensor[T], Tensor[T], T] {
 
   protected var hidden: Activity = null
   protected var gradHidden: Activity = null
@@ -73,7 +73,7 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
    * @param module module to be add
    * @return this container
    */
-  def add(module: AbstractModule[_ <: Activity, _ <: Activity, T]): this.type = {
+  override def add(module: AbstractModule[_ <: Activity, _ <: Activity, T]): this.type = {
     require(module.isInstanceOf[Cell[T]],
       "Recurrent: added module should be Cell type!")
     require(!module.isInstanceOf[MultiRNNCell[T]],

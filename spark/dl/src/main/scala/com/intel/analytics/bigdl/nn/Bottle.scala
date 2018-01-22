@@ -36,18 +36,7 @@ class Bottle[T: ClassTag](
   val module: Module[T],
   val nInputDim: Int = 2,
   val nOutputDim1: Int = Int.MaxValue)
- (implicit ev: TensorNumeric[T]) extends Container[Tensor[T], Tensor[T], T] {
-
-  /**
-   * Add a sub-module to the contained `modules`
-   *
-   * @param module module to be add
-   * @return this container
-   */
-  def add(module: AbstractModule[_ <: Activity, _ <: Activity, T]): this.type = {
-    modules += module.asInstanceOf[AbstractModule[Activity, Activity, T]]
-    this
-  }
+ (implicit ev: TensorNumeric[T]) extends DynamicContainer[Tensor[T], Tensor[T], T] {
 
   private val nOutputDim = if (nOutputDim1 == Int.MaxValue) nInputDim else nOutputDim1
 

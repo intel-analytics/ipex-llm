@@ -29,18 +29,7 @@ import scala.reflect.ClassTag
 
 @SerialVersionUID(5375403296928513267L)
 class Sequential[T: ClassTag]
-(implicit ev: TensorNumeric[T]) extends Container[Activity, Activity, T] {
-
-  /**
-   * Add a sub-module to the contained `modules`
-   *
-   * @param module module to be add
-   * @return this container
-   */
-  def add(module: AbstractModule[_ <: Activity, _ <: Activity, T]): this.type = {
-    modules += module.asInstanceOf[AbstractModule[Activity, Activity, T]]
-    this
-  }
+(implicit ev: TensorNumeric[T]) extends DynamicContainer[Activity, Activity, T] {
 
   override def updateOutput(input: Activity): Activity = {
     var i = 0

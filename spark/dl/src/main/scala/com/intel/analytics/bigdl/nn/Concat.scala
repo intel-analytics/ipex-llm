@@ -42,18 +42,7 @@ import scala.reflect.ClassTag
  */
 @SerialVersionUID(- 5218461876031660707L)
 class Concat[T: ClassTag](val dimension: Int)(
-  implicit ev: TensorNumeric[T]) extends Container[Tensor[T], Tensor[T], T] {
-
-  /**
-   * Add a sub-module to the contained `modules`
-   *
-   * @param module module to be add
-   * @return this container
-   */
-  def add(module: AbstractModule[_ <: Activity, _ <: Activity, T]): this.type = {
-    modules += module.asInstanceOf[AbstractModule[Activity, Activity, T]]
-    this
-  }
+  implicit ev: TensorNumeric[T]) extends DynamicContainer[Tensor[T], Tensor[T], T] {
 
   private var size: Array[Int] = null
   @transient

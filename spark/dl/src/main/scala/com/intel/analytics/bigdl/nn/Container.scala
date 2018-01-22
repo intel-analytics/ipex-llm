@@ -29,7 +29,7 @@ import scala.reflect.ClassTag
  * [[Container]] is an abstract [[AbstractModule]] class which
  * declares methods defined in all containers. A container usually
  * contain some other modules in the `modules` variable. It overrides
- * many module methods such that calls are propogated to the contained
+ * many module methods such that calls are propagated to the contained
  * modules.
  *
  * @tparam A Input data type

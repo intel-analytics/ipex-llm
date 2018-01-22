@@ -34,18 +34,7 @@ import scala.reflect.ClassTag
  */
 @SerialVersionUID(- 704681653938468956L)
 class ConcatTable[T : ClassTag]
-  (implicit ev: TensorNumeric[T]) extends Container[Activity, Table, T] {
-
-  /**
-   * Add a sub-module to the contained `modules`
-   *
-   * @param module module to be add
-   * @return this container
-   */
-  def add(module: AbstractModule[_ <: Activity, _ <: Activity, T]): this.type = {
-    modules += module.asInstanceOf[AbstractModule[Activity, Activity, T]]
-    this
-  }
+  (implicit ev: TensorNumeric[T]) extends DynamicContainer[Activity, Table, T] {
 
   override def updateOutput(input: Activity): Table = {
     require(modules.length > 0, "empty modules of concat table")

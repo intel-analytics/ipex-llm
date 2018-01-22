@@ -36,7 +36,7 @@ import scala.reflect.ClassTag
 @SerialVersionUID( 4403280698280280268L)
 class MapTable[T: ClassTag](
   var module: AbstractModule[_ <: Activity, _ <: Activity, T] = null)
-  (implicit ev: TensorNumeric[T]) extends Container[Table, Table, T]  {
+  (implicit ev: TensorNumeric[T]) extends DynamicContainer[Table, Table, T]  {
 
   if ( module != null) {
     this.add(module)
@@ -54,7 +54,7 @@ class MapTable[T: ClassTag](
     }
   }
 
-  def add(module: AbstractModule[_ <: Activity, _ <: Activity, T]): this.type = {
+  override def add(module: AbstractModule[_ <: Activity, _ <: Activity, T]): this.type = {
     require(module != null, "Single module required")
     this.module = module
     if (modules.nonEmpty) {
