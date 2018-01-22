@@ -16,31 +16,32 @@
 package com.intel.analytics.bigdl.nn.ops
 
 import com.intel.analytics.bigdl.nn.ResizeBilinear
-import com.intel.analytics.bigdl.nn.abstractnn.Activity
+import com.intel.analytics.bigdl.nn.abstractnn.{Activity, DataFormat}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
 import scala.reflect.ClassTag
 
 class ResizeBilinearOps[T: ClassTag](alignCorner: Boolean)(implicit ev: TensorNumeric[T])
-  extends Operation[Activity, Tensor[Float], T] {
+  extends Operation[Activity, Tensor[T], T] {
 
   private var module : ResizeBilinear[T] = _
 
-  override def updateOutput(input: Activity): Tensor[Float] = {
+  override def updateOutput(input: Activity): Tensor[T] = {
     require(input.isTable, "Only accept two input tensors")
     val size = input.toTable.apply[Tensor[Int]](2)
     if (module == null) {
       module = ResizeBilinear[T](
         size.valueAt(1),
         size.valueAt(2),
-        alignCorner
+        alignCorner,
+        dataFormat = DataFormat.NHWC
       )
     } else {
       require(module.outputHeight == size.valueAt(1), "height not match")
       require(module.outputWidth == size.valueAt(2), "width not match")
     }
-    val data = input.toTable.apply[Tensor[Float]](1)
+    val data = input.toTable.apply[Tensor[T]](1)
     output = module.forward(data)
     output
   }
@@ -54,19 +55,20 @@ object ResizeBilinearOps {
 }
 
 class ResizeBilinearGrad[T: ClassTag](alignCorner: Boolean)(implicit ev: TensorNumeric[T])
-  extends Operation[Activity, Tensor[Float], T] {
+  extends Operation[Activity, Tensor[T], T] {
 
   private var module : ResizeBilinear[T] = _
 
-  override def updateOutput(input: Activity): Tensor[Float] = {
+  override def updateOutput(input: Activity): Tensor[T] = {
     require(input.isTable, "Only accept two input tensors")
-    val grads = input.toTable.apply[Tensor[Float]](1)
-    val originImage = input.toTable.apply[Tensor[Float]](2)
+    val grads = input.toTable.apply[Tensor[T]](1)
+    val originImage = input.toTable.apply[Tensor[T]](2)
     if (module == null) {
       module = ResizeBilinear[T](
         grads.size(2),
         grads.size(3),
-        alignCorner
+        alignCorner,
+        dataFormat = DataFormat.NHWC
       )
     } else {
       require(module.outputHeight == grads.size(2), "height not match")
