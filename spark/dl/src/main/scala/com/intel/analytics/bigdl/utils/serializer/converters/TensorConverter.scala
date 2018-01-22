@@ -222,6 +222,7 @@ object TensorConverter extends DataConverter {
         } else created.asInstanceOf[Storage[Long]]
         Tensor[Long](storage, offSet, sizes, strides)
       case DataType.BYTES =>
+        import com.intel.analytics.bigdl.utils.tf.TFTensorNumeric.NumericByteString
         val storage: Storage[ByteString] = if (created == null ) {
           if (storageId == -1) {
             null
