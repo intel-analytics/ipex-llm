@@ -155,13 +155,13 @@ object TensorflowToBigDL {
      */
     if (shape.product == 1) {
       if (tfTensor.getDtype == DataType.DT_FLOAT) {
-        return Tensor[Float](T(tfTensor.getFloatVal(0)))
+        return Tensor.scalar[Float](tfTensor.getFloatVal(0))
       }
       if (tfTensor.getDtype == DataType.DT_INT32) {
-        return Tensor[Int](T(tfTensor.getIntVal(0).toFloat))
+        return Tensor.scalar[Int](tfTensor.getIntVal(0))
       }
       if (tfTensor.getDtype == DataType.DT_DOUBLE) {
-        return Tensor[Double](T(tfTensor.getDoubleVal(0)))
+        return Tensor.scalar[Double](tfTensor.getDoubleVal(0))
       }
     }
 
