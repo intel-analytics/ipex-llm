@@ -19,6 +19,7 @@ import java.io.{DataInputStream, DataOutputStream}
 
 import com.google.protobuf.ByteString
 import com.intel.analytics.bigdl.tensor.Storage
+import com.intel.analytics.bigdl.utils.serializer.BigDLDataType
 import com.intel.analytics.bigdl.utils.serializer.BigDLDataType.BigDLDataType
 
 /**

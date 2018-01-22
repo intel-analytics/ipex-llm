@@ -22,12 +22,13 @@ import com.intel.analytics.bigdl.Module
 import scala.collection.JavaConverters._
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
-import com.intel.analytics.bigdl.nn.ops.{MergeControlNode, SwitchControlNode, MergeOps, SwitchOps, ControlOps}
+import com.intel.analytics.bigdl.nn.ops.{ControlOps, MergeControlNode, MergeOps, SwitchControlNode, SwitchOps}
 import com.intel.analytics.bigdl.nn.tf.{ControlDependency, WithoutInput}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.serializer._
 import com.intel.analytics.bigdl.utils._
+import com.intel.analytics.bigdl.utils.serializer.converters.DataConverter
 import com.intel.analytics.bigdl.utils.tf.Tensorflow
 import serialization.Bigdl.{AttrValue, BigDLModule}
 
