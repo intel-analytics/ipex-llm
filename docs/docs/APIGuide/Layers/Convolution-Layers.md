@@ -2210,3 +2210,61 @@ val output = module.forward(input)
 [com.intel.analytics.bigdl.tensor.DenseTensor of size 1x2x4x4x4]
 
 ```
+
+---
+## ResizeBilinear ##
+
+**Scala:**
+```scala
+val module = ResizeBilinear(outputHeight, outputWidth,
+                      alignCorners=false, dataFormat = DataFormat.NCHW)
+```
+**Python:**
+```python
+m = ResizeBilinear(outputHeight, outputWidth,
+               alignCorners=False, dataFormat="NCHW")
+```
+
+Resize the input image with bilinear interpolation. The input image must be a float tensor with
+NHWC or NCHW layout.
+ 
+**Scala example:**
+```scala
+
+scala>
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.tensor._
+
+val module = ResizeBilinear(4, 4)
+val input = Tensor(1, 1, 2, 2).range(1, 4)
+val output = module.forward(input)
+
+> output
+(1,1,.,.) =
+1.0	1.5	2.0	2.0	
+2.0	2.5	3.0	3.0	
+3.0	3.5	4.0	4.0	
+3.0	3.5	4.0	4.0	
+
+[com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 1x1x4x4]
+
+```
+
+**Python example:**
+```python
+from bigdl.nn.layer import *
+import numpy as np
+
+module = ResizeBilinear(4, 4)
+input = np.arange(1, 5).reshape(1, 1, 2, 2)
+output = module.forward(input)
+print output
+```
+The output is 
+```python
+[[[[ 1.   1.5  2.   2. ]
+   [ 2.   2.5  3.   3. ]
+   [ 3.   3.5  4.   4. ]
+   [ 3.   3.5  4.   4. ]]]]
+```
