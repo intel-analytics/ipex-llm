@@ -16,11 +16,10 @@
 
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.{T, Table}
+import com.intel.analytics.bigdl.utils.{T, Table, Util}
 
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
@@ -45,6 +44,12 @@ abstract class Container[A <: Activity : ClassTag,
   val modules: ArrayBuffer[AbstractModule[Activity, Activity, T]]
   = ArrayBuffer[AbstractModule[Activity, Activity, T]]()
 
+  override private[bigdl] def isCompatibleWithKeras(): Boolean = false
+
+  override private[bigdl] def isCompatibleWithTorch(): Boolean = {
+    modules.filter(!_.isCompatibleWithTorch()).length <= 0
+  }
+
   /**
    * Add a sub-module to the contained `modules`
    *
@@ -52,6 +57,7 @@ abstract class Container[A <: Activity : ClassTag,
    * @return this container
    */
   def add(module: AbstractModule[_ <: Activity, _ <: Activity, T]): this.type = {
+    Util.excludeNotTorch[T](Seq(module))
     modules += module.asInstanceOf[AbstractModule[Activity, Activity, T]]
     this
   }
