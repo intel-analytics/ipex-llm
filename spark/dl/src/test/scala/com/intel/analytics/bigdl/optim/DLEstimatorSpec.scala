@@ -264,7 +264,39 @@ class DLEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
     }
   }
 
-  "An DLEstimator" should "works in ML pipeline" in {
+  "An DLModel" should "should return same results after saving and loading" in {
+    val data = sqlContext.createDataFrame(smallData).toDF("features", "label")
+    val module = Sequential[Double]().add(Linear[Double](6, 1)).add(Tanh[Double])
+    val dlModel = new DLModel[Double](module, Array(6))
+    val result = dlModel.transform(data).rdd
+      .map(_.get(2).asInstanceOf[Seq[Double]].head).collect().sorted
+
+    val filePath = File.createTempFile("DLModel", "bigdl").getPath + Random.nextLong().toString
+    dlModel.setIsOverwrite(true)
+    dlModel.save(filePath)
+    val dlModel2 = DLModel.load(filePath).asInstanceOf[DLModel[Double]]
+    dlModel2.uid shouldEqual dlModel.uid
+    dlModel2.getBatchSize shouldEqual dlModel.getBatchSize
+    dlModel2.getFeaturesCol shouldEqual dlModel.getFeaturesCol
+    dlModel2.getPredictionCol shouldEqual dlModel.getPredictionCol
+    dlModel2.getFeatureSize shouldEqual dlModel.getFeatureSize
+    val result2 = dlModel2.transform(data).rdd
+      .map(_.get(2).asInstanceOf[Seq[Double]].head).collect().sorted
+    result2 shouldEqual result
+  }
+
+  "An DLModel" should "throw Exception when overwriting with isOverWrite = false" in {
+    val module = new Sequential().add(Linear[Float](6, 2)).add(LogSoftMax[Float])
+    val dlModel = new DLModel[Float](module, Array(6))
+    val filePath = File.createTempFile("DLModel", "bigdl").getPath + Random.nextLong().toString
+    dlModel.setIsOverwrite(false)
+    dlModel.save(filePath)
+    intercept[Exception] { dlModel.save(filePath) }
+    dlModel.setIsOverwrite(true)
+    dlModel.save(filePath)
+  }
+
+  "An DLEstimator" should "works in ML pipeline(spark_1.6)" in {
     var appSparkVersion = org.apache.spark.SPARK_VERSION
     if (appSparkVersion.trim.startsWith("1")) {
       val data = sc.parallelize(
@@ -293,26 +325,52 @@ class DLEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
     }
   }
 
-  "An DLModel" should "should return same results after saving and loading" in {
-    val data = sqlContext.createDataFrame(smallData).toDF("features", "label")
-    val module = new Sequential().add(Linear[Float](6, 1)).add(Tanh[Float])
-    val dlModel = new DLModel[Float](module, Array(6))
-    val result = dlModel.transform(data).rdd
-      .map(_.get(2).asInstanceOf[Seq[Double]].head).collect().sorted
+  "An DLClassifier" should "works in ML pipeline(spark_2.x)" in {
+    var appSparkVersion = org.apache.spark.SPARK_VERSION
+    if (appSparkVersion.trim.startsWith("2")) {
+      val data = sc.parallelize(
+        smallData.map(p => (org.apache.spark.ml.linalg.Vectors.dense(p._1), p._2)))
+      val df: DataFrame = sqlContext.createDataFrame(data).toDF("features", "label")
 
-    val filePath = File.createTempFile("DLModelBase", "bigdl").getPath + Random.nextLong().toString
-    dlModel.setIsOverwrite(true)
-    dlModel.save(filePath)
-    val dlModel2 = DLModel.load[Float](filePath)
-    dlModel2.uid shouldEqual dlModel.uid
-    dlModel2.getBatchSize shouldEqual dlModel.getBatchSize
-    dlModel2.getFeaturesCol shouldEqual dlModel.getFeaturesCol
-    dlModel2.getPredictionCol shouldEqual dlModel.getPredictionCol
-    dlModel2.getFeatureSize shouldEqual dlModel.getFeatureSize
-    val result2 = dlModel2.transform(data).rdd
-      .map(_.get(2).asInstanceOf[Seq[Double]].head).collect().sorted
-    result2 shouldEqual result
+      val scaler = new MinMaxScaler().setInputCol("features").setOutputCol("scaled")
+        .setMax(1).setMin(-1)
+      val model = new Sequential().add(Linear[Float](6, 2)).add(LogSoftMax[Float])
+      val criterion = ClassNLLCriterion[Float]()
+      val estimator = new DLEstimator[Float](model, criterion, Array(6), Array(1))
+        .setOptimMethod(new LBFGS[Float]())
+        .setLearningRate(0.1)
+        .setBatchSize(nRecords)
+        .setMaxEpoch(maxEpoch)
+        .setFeaturesCol("scaled")
+      val pipeline = new Pipeline().setStages(Array(scaler, estimator))
+      val pipelineModel = pipeline.fit(df)
+      pipelineModel.isInstanceOf[PipelineModel] should be(true)
+      val ppResult = pipelineModel.transform(df).select("label", "prediction")
+      var correct = ppResult.rdd.filter {
+        case Row(label: Double, prediction: Seq[Double]) =>
+          label == prediction.indexOf(prediction.max) + 1
+      }.count()
+      assert(correct > nRecords * 0.8)
+
+      val filePath = File.createTempFile("DLModel", "bigdl").getPath + Random.nextLong().toString
+      pipelineModel.save(filePath)
+      val ppLoaded = PipelineModel.load(filePath)
+      ppLoaded.isInstanceOf[PipelineModel] should be(true)
+      val ppLoadedResult = ppLoaded.transform(df).select("label", "prediction")
+      correct = ppResult.rdd.filter {
+        case Row(label: Double, prediction: Seq[Double]) =>
+          label == prediction.indexOf(prediction.max) + 1
+      }.count()
+      assert(correct > nRecords * 0.8)
+
+      val ppFeaLabel = ppResult.collect().map { row =>
+        row.getAs[Seq[Double]](1).sum -> row.getAs[Double](0) }.sortBy(_._1)
+      val ppLoadedFeaLabel = ppLoadedResult.collect().map { row =>
+        row.getAs[Seq[Double]](1).sum -> row.getAs[Double](0) }.sortBy(_._1)
+      ppFeaLabel shouldEqual ppLoadedFeaLabel
+    }
   }
+
 }
 
 private case class MinibatchData[T](featureData : Array[T], labelData : Array[T])

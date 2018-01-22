@@ -82,40 +82,28 @@ class DLClassifierModel[@specialized(Float, Double) T: ClassTag](
   }
 }
 
-object DLClassifierModel {
-  def load[@specialized(Float, Double) T: ClassTag]
-  (path: String)(implicit ev: TensorNumeric[T]): DLClassifierModel[T] = {
-    val model = ev.getType() match {
-      case TensorFloat => DLClassifierModelFloat.load(path)
-      case TensorDouble => DLClassifierModelDouble.load(path)
-    }
-    model.asInstanceOf[DLClassifierModel[T]]
-  }
-
-  private[ml] class DLClassifierModelReader[@specialized(Float, Double) T: ClassTag]
-  ()(implicit ev: TensorNumeric[T]) extends MLReader[DLClassifierModel[T]] {
-    override def load(path: String): DLClassifierModel[T] = {
-      implicit val format = DefaultFormats
-      val (meta, module) = DLModel.loadImpl[T, DLModel[T]](path, sc)
+object DLClassifierModel extends MLReadable[DLClassifierModel[_]] {
+  private[ml] class DLClassifierModelReader() extends MLReader[DLClassifierModel[_]] {
+    override def load(path: String): DLClassifierModel[_] = {
+      implicit val format: DefaultFormats.type = DefaultFormats
+      val (meta, module, typeTag) = DLModel.loadImpl(path, sc)
       val featureSize = (meta.metadata \ "featureSize").extract[Seq[Int]].toArray
-      val model = new DLClassifierModel[T](module, featureSize)
-      DefaultParamsReader.getAndSetParams(model, meta)
-      model
+      val dlModel = typeTag match {
+        case "TensorDouble" =>
+          new DLClassifierModel[Double](module.asInstanceOf[Module[Double]], featureSize)
+        case "TensorFloat" =>
+          new DLClassifierModel[Float](module.asInstanceOf[Module[Float]], featureSize)
+      }
+      DefaultParamsReader.getAndSetParams(dlModel, meta)
+      dlModel
     }
   }
 
   private[ml] class DLClassifierModelWriter[@specialized(Float, Double) T: ClassTag]
   (instance: DLClassifierModel[T])(implicit ev: TensorNumeric[T]) extends DLModelWriter[T](instance)
-}
 
-object DLClassifierModelFloat extends MLReadable[DLClassifierModel[Float]] {
-  override def read: MLReader[DLClassifierModel[Float]] = {
-    new DLClassifierModel.DLClassifierModelReader[Float]
+  override def read: MLReader[DLClassifierModel[_]] = {
+    new DLClassifierModel.DLClassifierModelReader
   }
 }
 
-object DLClassifierModelDouble extends MLReadable[DLClassifierModel[Double]] {
-  override def read: MLReader[DLClassifierModel[Double]] = {
-    new DLClassifierModel.DLClassifierModelReader[Double]
-  }
-}
