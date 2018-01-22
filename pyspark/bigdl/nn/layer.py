@@ -5095,7 +5095,7 @@ class ResizeBilinear(Layer):
     >>> resizeBilinear = ResizeBilinear(10, 20, False, "NCHW")
     creating: createResizeBilinear
     """
-    def __init__(self, output_height, output_width, align_corner, data_format="NCHW", bigdl_type="float"):
+    def __init__(self, output_height, output_width, align_corner=False, data_format="NCHW", bigdl_type="float"):
         super(ResizeBilinear, self).__init__(None, bigdl_type, output_height,
                                              output_width, align_corner, data_format)
 

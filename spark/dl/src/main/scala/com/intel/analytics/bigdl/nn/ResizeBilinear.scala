@@ -29,6 +29,7 @@ import scala.reflect.ClassTag
  * @param outputHeight output height
  * @param outputWidth output width
  * @param alignCorners align corner or not
+ * @param dataFormat the data format of the input image, NHWC or NCHW
  * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now
  */
 class ResizeBilinear[T: ClassTag](val outputHeight: Int, val outputWidth: Int,
