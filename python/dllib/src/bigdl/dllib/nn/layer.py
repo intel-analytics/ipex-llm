@@ -5085,17 +5085,19 @@ class MultiRNNCell(Layer):
 class ResizeBilinear(Layer):
     """
     Resize the input image with bilinear interpolation. The input image must be a float tensor with
-    NHWC layout
+    NHWC or NCHW layout
 
     :param output_height: output height
     :param output_width: output width
     :param align_corner: align corner or not
+    :param data_format: the data format of the input image, NHWC or NCHW
 
-    >>> resizeBilinear = ResizeBilinear(10, 20, False)
+    >>> resizeBilinear = ResizeBilinear(10, 20, False, "NCHW")
     creating: createResizeBilinear
     """
-    def __init__(self, output_height, output_width, align_corner, bigdl_type="float"):
-        super(ResizeBilinear, self).__init__(None, bigdl_type, output_height, output_width, align_corner)
+    def __init__(self, output_height, output_width, align_corner=False, data_format="NCHW", bigdl_type="float"):
+        super(ResizeBilinear, self).__init__(None, bigdl_type, output_height,
+                                             output_width, align_corner, data_format)
 
 class GaussianSampler(Layer):
     """
