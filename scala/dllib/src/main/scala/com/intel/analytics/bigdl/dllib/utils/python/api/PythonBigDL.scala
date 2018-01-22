@@ -2386,11 +2386,12 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   def createResizeBilinear(
     outputHeight: Int,
     outputWidth: Int,
-    alignCorner: Boolean
+    alignCorner: Boolean,
+    dataFormat: String
   ): ResizeBilinear[T] = {
     ResizeBilinear[T](outputHeight,
       outputWidth,
-      alignCorner)
+      alignCorner, DataFormat.apply(dataFormat))
   }
 
   def createMultiRNNCell(cells: JList[Cell[T]]): MultiRNNCell[T] = {
