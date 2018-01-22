@@ -108,26 +108,42 @@ class ResizeBilinearSpec extends FlatSpec with Matchers {
 
   "ResizeBilinear forward and backward" should "be correct with NCHW" in {
 
-    val inputCFirst = Tensor[Float](Array(1, 3, 4, 4)).rand()
-    val inputCLast = inputCFirst.clone().transpose(2, 4).transpose(2, 3).contiguous()
+    case class Param(inHeight: Int, inWidth: Int,
+                     outHeight: Int, outWidth: Int, alignCorners: Boolean)
+    val params = Seq(
+      Param(3, 2, 3, 2, true),
+      Param(3, 2, 6, 2, true),
+      Param(3, 2, 3, 4, true),
+      Param(3, 2, 3, 2, false),
+      Param(3, 2, 6, 2, false),
+      Param(3, 2, 3, 4, false)
+    )
 
-    val gradOutputCFirst = Tensor[Float](Array(1, 3, 8, 8)).rand()
-    val gradOutputCLast = gradOutputCFirst.clone().transpose(2, 4).transpose(2, 3).contiguous()
-    val layerCLast = ResizeBilinear[Float](8, 8, dataFormat = DataFormat.NHWC)
-    val layerCFirst = ResizeBilinear[Float](8, 8, dataFormat = DataFormat.NCHW)
-    // NCHW
-    val outputCFirst = layerCFirst.forward(inputCFirst)
-    val gradInputCFirst = layerCFirst.backward(inputCFirst, gradOutputCFirst)
+    for (param <- params) {
+      val inputCFirst = Tensor[Float](Array(1, 3, param.inHeight, param.inWidth)).rand()
+      val inputCLast = inputCFirst.clone().transpose(2, 4).transpose(2, 3).contiguous()
 
-    val outputCLast = layerCLast.forward(inputCLast)
-    val gradInputCLast = layerCLast.backward(inputCLast, gradOutputCLast)
+      val gradOutputCFirst = Tensor[Float](Array(1, 3, param.outHeight, param.outWidth)).rand()
+      val gradOutputCLast = gradOutputCFirst.clone().transpose(2, 4).transpose(2, 3).contiguous()
+      val layerCLast = ResizeBilinear[Float](param.outHeight, param.outWidth,
+        param.alignCorners, dataFormat = DataFormat.NHWC)
+      val layerCFirst = ResizeBilinear[Float](param.outHeight, param.outWidth,
+        param.alignCorners, dataFormat = DataFormat.NCHW)
 
-    outputCFirst
-      .transpose(2, 4)
-      .transpose(2, 3).contiguous() should be(outputCLast)
+      // NCHW
+      val outputCFirst = layerCFirst.forward(inputCFirst)
+      val gradInputCFirst = layerCFirst.backward(inputCFirst, gradOutputCFirst)
 
-    gradInputCFirst
-      .transpose(2, 4)
-      .transpose(2, 3).contiguous() should be(gradInputCLast)
+      val outputCLast = layerCLast.forward(inputCLast)
+      val gradInputCLast = layerCLast.backward(inputCLast, gradOutputCLast)
+
+      outputCFirst
+        .transpose(2, 4)
+        .transpose(2, 3).contiguous() should be(outputCLast)
+
+      gradInputCFirst
+        .transpose(2, 4)
+        .transpose(2, 3).contiguous() should be(gradInputCLast)
+    }
   }
 }
