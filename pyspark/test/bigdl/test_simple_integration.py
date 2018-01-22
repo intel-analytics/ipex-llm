@@ -630,7 +630,7 @@ class TestSimple():
         predicts = image_frame.get_predict()
         out = predicts.collect()
 
-        print out[0][1].shape
+        print(out[0][1].shape)
         optim_method = SGD(learningrate=0.01)
         optimizer = Optimizer.create(
             model=model,
