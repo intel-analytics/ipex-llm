@@ -612,7 +612,8 @@ class TestSimple():
             images.append(features)
             labels.append(label)
 
-        image_frame = DistributedImageFrame(self.sc.parallelize(images), self.sc.parallelize(labels))
+        image_frame = DistributedImageFrame(self.sc.parallelize(images),
+                                            self.sc.parallelize(labels))
 
         transformer = Pipeline([Resize(256, 256), CenterCrop(224, 224),
                                 ChannelNormalize(0.485, 0.456, 0.406, 0.229, 0.224, 0.225),
