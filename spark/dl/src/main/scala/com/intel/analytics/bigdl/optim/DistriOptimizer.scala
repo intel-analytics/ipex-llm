@@ -75,11 +75,12 @@ object DistriOptimizer {
     subModelNumber: Int,
     metrics: Metrics,
     lookupDicBroadcast: Broadcast[Array[mutable.HashMap[Int, (Int, Int)]]])
-    (implicit ev: TensorNumeric[T]): (Float, Broadcast[Array[(Int, (Double, Double))]]) = {
+    (implicit ev: TensorNumeric[T]):
+    (Boolean, Double, Broadcast[Array[(Int, (Double, Double))]]) = {
     var aggregatedG: Boolean = false
     // array element is a tuple, first element is layer id, value is (wNorm2, gNorm2)
     var gwNorm2ListBroadcast: Broadcast[Array[(Int, (Double, Double))]] = null
-    var l2Norm = 0.0f
+    var l2Norm = 0.0
     operations.foreach { oper =>
       if (oper.equals("norm2Clip")) {
         val sumSquare = models.mapPartitions(modelIter => {
@@ -107,7 +108,7 @@ object DistriOptimizer {
           }
           Iterator.single(sum)
         }).reduce(_ + _)
-        l2Norm = math.sqrt(sumSquare).toFloat
+        l2Norm = math.sqrt(sumSquare)
         aggregatedG = true
       } else if (oper.equals("lars")) {
         val gwNorm2List = models.mapPartitions( _ => {
@@ -124,13 +125,13 @@ object DistriOptimizer {
         aggregatedG = true
       }
     }
-    (l2Norm, gwNorm2ListBroadcast)
+    (aggregatedG, l2Norm, gwNorm2ListBroadcast)
   }
 
   private def advanceOperations[T: ClassTag](modelCache: Cache[T],
     parameters: AllReduceParameter[T],
     clippingParams: GradientClippingParams,
-    l2Norm: Float,
+    l2Norm: Double,
     gwNorm2ListBroadcast: Broadcast[Array[(Int, (Double, Double))]],
     lookupDicBroadcast: Broadcast[Array[mutable.HashMap[Int, (Int, Int)]]])
     (implicit ev: TensorNumeric[T]) = {
@@ -386,7 +387,7 @@ object DistriOptimizer {
           }
           Iterator.single(finishedThreads.size)
         }
-        }.reduce(_ + _)
+      }.reduce(_ + _)
 
       dropModelNumBatch += (driverSubModelNum - numFinishedModelUpdates)
       if (dropPercentage == 0.0 ||
@@ -394,22 +395,22 @@ object DistriOptimizer {
         // enough records were processed for this batch, so update the model
         val value = lossSum.value / numFinishedModelUpdates
         val numFinishedModelUpdatesT = ev.fromType(numFinishedModelUpdates)
-        val (l2Norm, gwNorm2ListBroadcast) = if (advanceOperationList != null) {
+        val (aggregateG, l2Norm, gwNorm2ListBroadcast) = if (!advanceOperationList.isEmpty) {
           collectGlobalData(models, parameters, advanceOperationList.toArray,
             numFinishedModelUpdatesT, _subModelNumber, driverMetrics, lookupDicBroadcast)
-        } else null
+        } else (false, 0.0, null)
 
         models.mapPartitions { modelIter =>
           val modelCache = modelIter.next()
-          if (advanceOperationList == null) {
+          if (!aggregateG) {
             val getG = System.nanoTime()
             parameters.aggregateGradientPartition(numFinishedModelUpdatesT)
             driverMetrics.add("aggregrateGradientParition average executor",
               System.nanoTime() - getG)
-          } else {
+          }
             advanceOperations(modelCache, parameters, clippingParams, l2Norm,
               gwNorm2ListBroadcast, lookupDicBroadcast)
-          }
+
           modelCache.optimMethod.state.update("epoch", driverState[Int]("epoch"))
           modelCache.optimMethod.state.update("neval", driverState[Int]("neval"))
           modelCache.optimMethod.state.update("Loss", driverState[Float]("Loss"))

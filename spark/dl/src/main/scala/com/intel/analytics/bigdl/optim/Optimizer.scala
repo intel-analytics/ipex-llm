@@ -359,7 +359,7 @@ abstract class Optimizer[T: ClassTag, D](
    */
   def setConstantGradientClipping(min: Float, max: Float)
   : this.type = {
-    require(min < max, "min value must be smaller than max")
+    require(min <= max, "min value must be smaller than max")
     gradientClippingParams.enableConstantClipping = true
     gradientClippingParams.minValueClip = min
     gradientClippingParams.maxValueClip = max
@@ -371,7 +371,7 @@ abstract class Optimizer[T: ClassTag, D](
    * @param clipNorm gradient L2-Norm threshold
    * @return
    */
-  def setGradientClippingByl2Norm(clipNorm: Float)
+  def setGradientClippingByl2Norm(clipNorm: Double)
   : this.type = {
     gradientClippingParams.enableL2NormClipping = true
     gradientClippingParams.normValueClip = clipNorm
@@ -533,7 +533,7 @@ object Optimizer {
 
 case class GradientClippingParams(
    var enableConstantClipping: Boolean,
-   var minValueClip: Float,
-   var maxValueClip: Float,
+   var minValueClip: Double,
+   var maxValueClip: Double,
    var enableL2NormClipping: Boolean,
-   var normValueClip: Float)
+   var normValueClip: Double)

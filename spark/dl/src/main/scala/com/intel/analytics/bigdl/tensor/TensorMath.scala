@@ -825,5 +825,5 @@ trait TensorMath[T] {
 
   def sumSquare(): T
 
-  def clamp(min: Float, max: Float): Tensor[T]
+  def clamp(min: Double, max: Double): Tensor[T]
 }

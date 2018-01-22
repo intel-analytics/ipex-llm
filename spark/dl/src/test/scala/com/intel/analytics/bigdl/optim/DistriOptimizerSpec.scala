@@ -716,8 +716,27 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
   "Train with MSE " should "generate correct gradients with constant clipping" in {
     val mm = mse
-//    mm.getParameters()._1.fill(0.125)
-    val oriW = mm.parameters()._1
+    mm.getParameters()._1.fill(0.125)
+    val oriW = mm.getParameters()._1.clone()
+
+    val _learningRate = 20.0
+    val optimizationMethod = new SGD[Double](learningRate = _learningRate)
+    val optimizer = new DistriOptimizer[Double](mm, dataSet, new MSECriterion[Double]())
+      .setEndWhen(Trigger.maxEpoch(1))
+      .setOptimMethod(optimizationMethod)
+      .setConstantGradientClipping(-0.0f, 0.0f)
+
+    val model = optimizer.optimize()
+    val newW = model.getParameters()._1
+    val newG = model.getParameters()._2
+
+    assert(newW.almostEqual(oriW, 0.0) == true, "weight should keep the same")
+    assert(newG.almostEqual(oriW.fill(0.0), 0.0) == true, "gradient should be 0")
+  }
+
+  "Train with MSE " should "generate correct gradients with l2norm clipping" in {
+    val mm = mse
+    mm.getParameters()._1.fill(0.125)
 
     val _learningRate = 20.0
     val optimizationMethod = new SGD[Double](learningRate = _learningRate)
@@ -726,14 +745,18 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
       .setOptimMethod(optimizationMethod)
 
     val model = optimizer.optimize()
-    val newW = model.parameters()._1.clone()
-    val newG = model.parameters()._2.clone()
+    val gradient = model.getParameters()._2.clone()
+    val scale = math.sqrt(gradient.sumSquare()) / 0.03
+    val expectedG = gradient.clone().div(scale)
 
-    val t = 0
-//    var i = 0
-//    while (i < wNorm2.length) {
-//      assert(expectW.almostEqual(newW(i), 1e-6) == true, "should generate correct weight")
-//      i += 1
-//    }
+    mm.getParameters()._1.fill(0.125)
+    val optimizer2 = new DistriOptimizer[Double](mm, dataSet, new MSECriterion[Double]())
+      .setEndWhen(Trigger.maxIteration(1))
+      .setOptimMethod(optimizationMethod)
+      .setGradientClippingByl2Norm(0.03)
+
+    val model2 = optimizer2.optimize()
+    val newG = model2.getParameters()._2
+    assert(expectedG.almostEqual(newG, 0.0), "clipbynorm2 should generate correct gradient")
   }
 }

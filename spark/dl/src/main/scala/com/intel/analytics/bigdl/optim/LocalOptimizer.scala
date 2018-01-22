@@ -168,7 +168,7 @@ class LocalOptimizer[T: ClassTag] (
         val l2Norm = (math.sqrt(sum) / parallelism).toFloat
 
         if (l2Norm > gradientClippingParams.normValueClip) {
-          scale = ev.fromType[Float]((l2Norm * parallelism) / gradientClippingParams.normValueClip)
+          scale = ev.fromType[Double]((l2Norm * parallelism) / gradientClippingParams.normValueClip)
         }
       }
       grad.div(scale)
