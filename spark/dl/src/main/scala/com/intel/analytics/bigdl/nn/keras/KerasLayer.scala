@@ -21,10 +21,9 @@ import com.intel.analytics.bigdl.nn.Graph._
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
 import com.intel.analytics.bigdl.nn.keras.{Sequential => KSequential}
 import com.intel.analytics.bigdl.nn.{Container, Sequential => TSequential}
-import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.{Shape, SingleShape, Table, Util}
 import com.intel.analytics.bigdl.utils.serializer._
+import com.intel.analytics.bigdl.utils.{Shape, SingleShape, Util}
 import serialization.Bigdl.{AttrValue, BigDLModule}
 
 import scala.collection.mutable.ArrayBuffer
@@ -156,8 +155,12 @@ abstract class KerasLayer[A <: Activity: ClassTag, B <: Activity: ClassTag, T: C
     labor.updateOutput(input)
   }
 
-  def updateGradInput(input: A, gradOutput: B): A = {
+  override def updateGradInput(input: A, gradOutput: B): A = {
     labor.updateGradInput(input, gradOutput)
+  }
+
+  override def accGradParameters(input: A, gradOutput: B): Unit = {
+    labor.accGradParameters(input, gradOutput)
   }
 
   override def isCompatibleWithKeras(): Boolean = true
