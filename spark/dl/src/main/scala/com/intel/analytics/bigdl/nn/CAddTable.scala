@@ -114,6 +114,11 @@ class CAddTable[T: ClassTag, D: ClassTag](val inplace: Boolean = false)(
     }
     this
   }
+
+  override def getClassTagNumerics() : (Array[ClassTag[_]], Array[TensorNumeric[_]]) = {
+    (Array[ClassTag[_]](scala.reflect.classTag[T], scala.reflect.classTag[D]),
+      Array[TensorNumeric[_]](ev, ev2))
+  }
 }
 
 
