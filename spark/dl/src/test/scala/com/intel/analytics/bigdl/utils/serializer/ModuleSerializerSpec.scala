@@ -567,6 +567,51 @@ class ModuleSerializerSpec extends FlatSpec with Matchers with BeforeAndAfterAll
     runSerializationTest(model, input)
   }
 
+  "Graph with shared weights" should "work properly" in {
+    val data = Input[Float]()
+
+    val h2h = Linear[Float](4, 4,
+      initWeight = Tensor[Float](4, 4).rand(), initBias = Tensor[Float](4).rand())
+
+    val t1 = h2h.inputs(data)
+    val t2 = h2h.inputs(t1)
+    val output = h2h.inputs(t2)
+
+    val model = Graph[Float](data, output)
+    val input = Tensor[Float](4, 4).rand()
+
+    runSerializationTest(model, input)
+  }
+
+  "Graph with shared weights" should "preserve sharing semantic" in {
+    val data = Input[Float]()
+
+    val h2h = Linear[Float](4, 4)
+
+    val t1 = h2h.inputs(data)
+    val t2 = h2h.inputs(t1)
+    val output = h2h.inputs(t2)
+
+    val model = Graph[Float](data, output)
+
+    val (originWeight, originGradient) = model.getParameters()
+
+    originWeight.size() should be (Array(20))
+    originGradient.size() should be (Array(20))
+
+    val name = model.getName
+    val serFile = File.createTempFile(name, postFix)
+
+    ModulePersister.saveToFile[Float](serFile.getAbsolutePath, null, model.evaluate(), true)
+    RNG.setSeed(1000)
+    val loadedModule = ModuleLoader.loadFromFile[Float](serFile.getAbsolutePath)
+
+    val (weight, gradient) = loadedModule.getParameters()
+
+    weight.size() should be (Array(20))
+    gradient.size() should be (Array(20))
+  }
+
   "GRU serializer" should "work properly" in {
     RNG.setSeed(100)
     val gru = GRU[Float](100, 100)

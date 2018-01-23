@@ -1269,6 +1269,51 @@ class StaticGraphSpec extends FlatSpec with Matchers {
       model.node("ll1")
     }
   }
+
+  "Graph " should "be able to share weights"  in {
+
+    val input = Input()
+
+    val h2h = Linear(4, 4, initWeight = Tensor(4, 4).rand(), initBias = Tensor(4).rand())
+
+    val h2hRef = h2h.cloneModule()
+
+    val t1 = h2h.inputs(input)
+    val t2 = h2h.inputs(t1)
+    val output = h2h.inputs(t2)
+
+    val model = Graph(input, output)
+
+    val (weight, gradient) = model.getParameters()
+
+    weight.size() should be (Array(20))
+    gradient.size() should be (Array(20))
+
+    val data = Tensor(4, 4).rand()
+    val gradOutput = Tensor(4, 4).rand()
+
+    val modelOutput = model.forward(data)
+
+    val refOutputT1 = h2hRef.forward(data).clone()
+    val refOutputT2 = h2hRef.forward(refOutputT1).clone()
+    val refOutputT3 = h2hRef.forward(refOutputT2).clone()
+
+    modelOutput should be (refOutputT3)
+
+    val modelGradInput = model.backward(data, gradOutput)
+
+    val refGradInputT3 = h2hRef.backward(refOutputT2, gradOutput).clone()
+    val refGradInputT2 = h2hRef.backward(refOutputT1, refGradInputT3).clone()
+    val refGradInputT1 = h2hRef.backward(data, refGradInputT2).clone()
+
+    modelGradInput should be (refGradInputT1)
+
+    model.updateParameters(0.1f)
+
+    h2hRef.updateParameters(0.1f)
+
+    model.getParameters() should be (h2hRef.getParameters())
+  }
 }
 
 object ModelUntils {

@@ -747,9 +747,9 @@ class SpatialFullConvolution[T: ClassTag](
     hash = hash * seed + adjW.hashCode()
     hash = hash * seed + adjH.hashCode()
     hash = hash * seed + weight.hashCode()
-    hash = hash * seed + bias.hashCode()
+    if (noBias) hash = hash * seed + bias.hashCode()
     hash = hash * seed + gradWeight.hashCode()
-    hash = hash * seed + gradBias.hashCode()
+    if (noBias) hash = hash * seed + gradBias.hashCode()
 
     hash
   }

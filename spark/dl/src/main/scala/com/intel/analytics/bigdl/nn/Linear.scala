@@ -231,9 +231,9 @@ class Linear[T: ClassTag](
     val seed = 37
     var hash = super.hashCode()
     hash = hash * seed + gradWeight.hashCode()
-    hash = hash * seed + gradBias.hashCode()
+    if (withBias) hash = hash * seed + gradBias.hashCode()
     hash = hash * seed + weight.hashCode()
-    hash = hash * seed + bias.hashCode()
+    if (withBias) hash = hash * seed + bias.hashCode()
 
     hash
   }

@@ -115,24 +115,30 @@ object Module {
     if (compactedTensor != null) {
       return compactedTensor
     }
-    var i = 0
-    var length = 0
-    while (i < parameters.length) {
-      require(parameters(i).isContiguous(), "parameters should be contiguous")
-      length += parameters(i).nElement()
-      i += 1
+
+    val contentToTensors = parameters.indices.groupBy{ i =>
+      val t = parameters(i)
+      require(t.isContiguous(), "parameters should be contiguous")
+      (t.storage(), t.storageOffset(), t.nElement())
     }
+
+    // need to preserve the order, otherwise weight and grad may not align
+    val contents = contentToTensors.keys.toArray.sortBy(contentToTensors(_).min)
+    val length = contents.map(_._3).sum
 
     val result = Tensor[T](length)
     val resultStorage = result.storage()
 
-    i = 0
+    var i = 0
     var offset = 0
-    while (i < parameters.length) {
-      System.arraycopy(parameters(i).storage().array(), parameters(i).storageOffset() - 1,
-        resultStorage.array(), offset, parameters(i).nElement())
-      parameters(i).set(resultStorage, offset + 1, parameters(i).size(), parameters(i).stride())
-      offset += parameters(i).nElement()
+    while (i < contents.length) {
+      System.arraycopy(contents(i)._1.array(), contents(i)._2 - 1,
+        resultStorage.array(), offset, contents(i)._3)
+      contentToTensors(contents(i)).foreach { j =>
+        val t = parameters(j)
+        t.set(resultStorage, offset + 1, t.size(), t.stride())
+      }
+      offset += contents(i)._3
       i += 1
     }
 

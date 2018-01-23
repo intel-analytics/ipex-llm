@@ -76,6 +76,33 @@ abstract class Graph[T: ClassTag](
   private val variables: Option[(Array[Tensor[T]], Array[Tensor[T]])] = None
 )(implicit ev: TensorNumeric[T]) extends Container[Activity, Activity, T]{
 
+  // Add a dummy output node, to get an one end forward graph. So the nodes that are not dependent
+  // by the outputs will be excluded
+  protected val dummyOutput = new ModuleNode[T](new Identity[T]())
+  outputs.foreach(_ -> dummyOutput)
+  protected val forwardGraph = dummyOutput.graph(reverse = true)
+  protected val forwardNodes = forwardGraph.DFS.toArray
+
+  // check if two or more nodes share the same module
+  // clone the module and share the weight
+  private val distinctModules = checkSharedLayers
+
+  modules.appendAll(
+    forwardGraph.topologySort
+      // todo: convert control dep node to edge
+      .filterNot(_.element.isInstanceOf[ControlDependency[T]]).reverse
+      .filter(n => !n.eq(dummyOutput)).map(_.element)
+  )
+
+  // Check all inputs of the graph should be passed in
+  checkRoots
+
+  protected var dummyOutputGrad: ModuleNode[T] = _
+  protected var backwardGraph: DirectedGraph[AbstractModule[Activity, Activity, T]] = _
+  protected var backwardNodes: Array[Node[AbstractModule[Activity, Activity, T]]] = _
+
+  private var stopGradientLayers: util.HashSet[String] = _
+
   /**
    * For a multi-tensor output module, some output tensors may not contributed to the final forward
    * result. So in the back propagation, the gradient on these positions are missing. And we use
@@ -121,13 +148,6 @@ abstract class Graph[T: ClassTag](
     this.backwardTime = 0L
   }
 
-  override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
-    variables match {
-      case None => super.parameters()
-      case Some((weights, gradients)) => (weights, gradients)
-    }
-  }
-
   override def add(module: AbstractModule[_ <: Activity, _ <: Activity, T]): Graph.this.type = {
     throw new IllegalArgumentException("Graph: Please don't use add method in Graph container. " +
       "A graph container should not be changed after it is constructed")
@@ -151,22 +171,55 @@ abstract class Graph[T: ClassTag](
     }
   }
 
-  // Add a dummy output node, to get an one end forward graph. So the nodes that are not dependent
-  // by the outputs will be excluded
-  protected val dummyOutput = new ModuleNode[T](new Identity[T]())
-  outputs.foreach(_ -> dummyOutput)
-  protected val forwardGraph = dummyOutput.graph(reverse = true)
-  protected val forwardNodes = forwardGraph.DFS.toArray
+  override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
+    variables match {
+      case None => super.parameters()
+      case Some((weights, gradients)) => (weights, gradients)
+    }
+  }
 
-  modules.appendAll(
-    forwardGraph.topologySort
-      // todo: convert control dep node to edge
-      .filterNot(_.element.isInstanceOf[ControlDependency[T]]).reverse
-      .filter(n => !n.eq(dummyOutput)).map(_.element)
-  )
+  override def updateParameters(learningRate: T): Unit = {
+    distinctModules.foreach(_.updateParameters(learningRate))
+  }
 
-  // Check all inputs of the graph should be passed in
-  checkRoots
+  private def checkSharedLayers: Array[Module[T]] = {
+    val layerToNodes = forwardNodes.filter(n => !n.eq(dummyOutput))
+      // use System.identityHashCode to make sure two layers are actually the
+      // same instance.
+      .groupBy(n => System.identityHashCode(n.element))
+    val distinctLayers = layerToNodes.map { case (_, nodes) =>
+      if (nodes.length > 1) {
+        val layer = nodes.head.element
+        var i = 1
+        while (i < nodes.length) {
+          // the naming convention is related to deserialization,
+          // if you want to change it, change the doLoadModule also
+          nodes(i).element = cloneAndShare(layer, s"${layer.getName()}#clone$i")
+          i = i + 1
+        }
+        layer
+      } else {
+        nodes.head.element
+      }
+    }
+    distinctLayers.toArray
+  }
+
+  private def cloneAndShare(sourceLayers: Module[T], name: String): Module[T] = {
+    val params = sourceLayers.parameters()
+    val result = sourceLayers.cloneModule()
+    var i = 0
+    while (i < result.parameters()._1.length) {
+      result.parameters()._1(i).set(params._1(i))
+      i += 1
+    }
+    i = 0
+    while (i < result.parameters()._2.length) {
+      result.parameters()._2(i).set(params._2(i))
+      i += 1
+    }
+    result.setName(name)
+  }
 
   // Check if the graph is correct
   private def checkRoots: Unit = {
@@ -198,10 +251,6 @@ abstract class Graph[T: ClassTag](
     )
   }
 
-  protected var dummyOutputGrad: ModuleNode[T] = _
-  protected var backwardGraph: DirectedGraph[AbstractModule[Activity, Activity, T]] = _
-  protected var backwardNodes: Array[Node[AbstractModule[Activity, Activity, T]]] = _
-
   /**
    * Generate backward graph and apply the stopGrad
    */
@@ -224,8 +273,6 @@ abstract class Graph[T: ClassTag](
     clearState()
     this
   }
-
-  private var stopGradientLayers: util.HashSet[String] = _
 
   /**
    * whether stop propagating gradInput back
@@ -572,6 +619,16 @@ object Graph extends ContainerSerializable {
         }
       })
     })
+
+    // preserve the weight sharing semantic
+    for ((name, (module, _)) <- layerMap) {
+      val splits = name.split("#")
+      if (splits(splits.length - 1).startsWith("clone")) {
+        val originName = splits.slice(0, splits.length-1).mkString("#")
+        val (originModule, _) = layerMap(originName)
+        module.element = originModule.element
+      }
+    }
 
     inputNames.foreach(inputName => inputs.append(layerMap(inputName)._1))
     outputNames.foreach(outputName => outputs.append(layerMap(outputName)._1))
