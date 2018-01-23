@@ -25,6 +25,7 @@ import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.serializer._
+import com.intel.analytics.bigdl.utils.{MultiShape, SingleShape, Shape => BigDLShape}
 import serialization.Bigdl._
 import serialization.Bigdl.AttrValue.ArrayValue
 
@@ -92,6 +93,8 @@ object DataConverter extends DataConverter{
       universe.typeOf[VariableFormat]
     } else if (value.isInstanceOf[DataFormat]) {
       universe.typeOf[DataFormat]
+    } else if (value.isInstanceOf[BigDLShape]) {
+      universe.typeOf[BigDLShape]
     } else {
       val cls = value.getClass
       val runtimeMirror = universe.runtimeMirror(getClass.getClassLoader)
@@ -119,6 +122,7 @@ object DataConverter extends DataConverter{
       case DataType.ARRAY_VALUE => ArrayConverter.getAttributeValue(context, attribute)
       case DataType.DATA_FORMAT => DataFormatConverter.getAttributeValue(context, attribute)
       case DataType.CUSTOM => CustomConverterDelegator.getAttributeValue(context, attribute)
+      case DataType.SHAPE => ShapeConverter.getAttributeValue(context, attribute)
       case _ => throw new IllegalArgumentException
         (s"${attribute.getDataType} can not be recognized")
     }
@@ -183,6 +187,8 @@ object DataConverter extends DataConverter{
       ArrayConverter.setAttributeValue(context, attributeBuilder, value, valueType)
     } else if (valueType =:= universe.typeOf[DataFormat]) {
       DataFormatConverter.setAttributeValue(context, attributeBuilder, value)
+    } else if (valueType =:= universe.typeOf[BigDLShape]) {
+      ShapeConverter.setAttributeValue(context, attributeBuilder, value)
     } else {
       CustomConverterDelegator.setAttributeValue(context, attributeBuilder, value, valueType)
     }
@@ -378,6 +384,13 @@ object DataConverter extends DataConverter{
             i += 1
           })
           customValues
+        case DataType.SHAPE =>
+          valueArray.getShapeList.asScala.map(shape => {
+            val attrValue = AttrValue.newBuilder
+            attrValue.setDataType(DataType.SHAPE)
+            attrValue.setShape(shape)
+            ShapeConverter.getAttributeValue(context, attrValue.build).asInstanceOf[BigDLShape]
+          }).toArray
       }
       arr
     }
@@ -504,6 +517,17 @@ object DataConverter extends DataConverter{
             arrayBuilder.addDataFormat(attrValueBuilder.getDataFormatValue)
           })
           arrayBuilder.setSize(formats.size)
+        }
+      } else if (valueType =:= universe.typeOf[Array[BigDLShape]]) {
+        arrayBuilder.setDatatype(DataType.SHAPE)
+        if (value != null) {
+          val shapes = value.asInstanceOf[Array[BigDLShape]]
+          shapes.foreach(shape => {
+            val attrValueBuilder = AttrValue.newBuilder
+            ShapeConverter.setAttributeValue(context, attrValueBuilder, shape)
+            arrayBuilder.addShape(attrValueBuilder.getShape)
+          })
+          arrayBuilder.setSize(shapes.size)
         }
       } else {
         arrayBuilder.setDatatype(DataType.CUSTOM)
