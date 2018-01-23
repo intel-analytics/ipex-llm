@@ -502,7 +502,7 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
     val comparePairs = testModel("dynamic_rnn", output, backward = false)
     for (i <- output.indices) {
       val (tf, bigdl) = comparePairs(i)
-      tf.almostEqual(bigdl, 1e-6) should be(true)
+      tf.almostEqual(bigdl, 1e-3) should be(true)
     }
     for (i <- output.length until comparePairs.length) {
       val (tf, bigdl) = comparePairs(i)
@@ -515,7 +515,7 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
     val comparePairs = testModel("dynamic_rnn_grad", output, backward = false)
     for (i <- output.indices) {
       val (tf, bigdl) = comparePairs(i)
-      tf.almostEqual(bigdl, 1e-6) should be(true)
+      tf.almostEqual(bigdl, 1e-3) should be(true)
     }
     for (i <- output.length until comparePairs.length) {
       val (tf, bigdl) = comparePairs(i)

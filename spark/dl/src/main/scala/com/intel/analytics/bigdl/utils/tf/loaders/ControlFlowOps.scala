@@ -18,7 +18,8 @@ package com.intel.analytics.bigdl.utils.tf.loaders
 import java.nio.ByteOrder
 
 import com.intel.analytics.bigdl.Module
-import com.intel.analytics.bigdl.nn.ops.{MergeOps, NoOp, SwitchOps, Enter => EnterOps, Exit => ExitOps, LoopCondition => LoopConditionOps, NextIteration => NextIterationOps}
+import com.intel.analytics.bigdl.nn.ops.{MergeOps, SwitchOps, Enter => EnterOps, Exit => ExitOps,
+  LoopCondition => LoopConditionOps, NextIteration => NextIterationOps, RefEnter => RefEnterOps}
 import com.intel.analytics.bigdl.nn.tf.ControlDependency
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.tf.Context
@@ -57,6 +58,14 @@ private[bigdl] class NextIteration extends TensorflowOpsLoader {
 }
 
 private[bigdl] class Enter extends TensorflowOpsLoader {
+  override def build[T: ClassTag](nodeDef: NodeDef, byteOrder: ByteOrder
+    , context: Context[T])(implicit ev: TensorNumeric[T]): Module[T] = {
+    val frameName = stringAttr(nodeDef, "frame_name")
+    new EnterOps[T](frameName)
+  }
+}
+
+private[bigdl] class RefEnter extends TensorflowOpsLoader {
   override def build[T: ClassTag](nodeDef: NodeDef, byteOrder: ByteOrder
     , context: Context[T])(implicit ev: TensorNumeric[T]): Module[T] = {
     val frameName = stringAttr(nodeDef, "frame_name")

@@ -22,7 +22,7 @@ import com.intel.analytics.bigdl.Module
 import scala.collection.JavaConverters._
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
-import com.intel.analytics.bigdl.nn.ops.{ControlOps, MergeControlNode, MergeOps, SwitchControlNode, SwitchOps}
+import com.intel.analytics.bigdl.nn.ops._
 import com.intel.analytics.bigdl.nn.tf.{ControlDependency, WithoutInput}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -651,12 +651,12 @@ object Graph extends ContainerSerializable {
       val (weights, bias) = graph.variables.get
       val weightAttrBuilder = AttrValue.newBuilder
       DataConverter.setAttributeValue(context, weightAttrBuilder, weights,
-        universe.typeOf[Array[Tensor[_ <: Any]]])
+        universe.typeOf[Array[Tensor[_ <: scala.Any]]])
       graphBuilder.putAttr("sharedWeight", weightAttrBuilder.build)
 
       val biasAttrBuilder = AttrValue.newBuilder
       DataConverter.setAttributeValue(context, biasAttrBuilder, bias,
-        universe.typeOf[Array[Tensor[_ <: Any]]])
+        universe.typeOf[Array[Tensor[_ <: scala.Any]]])
       graphBuilder.putAttr("sharedBias", biasAttrBuilder.build)
     }
 

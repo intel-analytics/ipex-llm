@@ -17,6 +17,7 @@ package com.intel.analytics.bigdl.nn.ops
 
 import java.util.concurrent.ConcurrentHashMap
 
+import com.intel.analytics.bigdl.nn.tf.WithoutInput
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{RandomGenerator, T, Table}
@@ -544,9 +545,10 @@ private[bigdl] object Stack {
 
 private[bigdl] class StackCreator[T: ClassTag, D: ClassTag](
   name: String = null)(implicit ev: TensorNumeric[T], ev2: TensorNumeric[D])
-  extends Operation[Tensor[Int], Tensor[String], T]{
+  extends Operation[Tensor[Int], Tensor[String], T] with WithoutInput {
   override def updateOutput(input: Tensor[Int]): Tensor[String] = {
-    require(input.isScalar, "StackCreator: Input tensor should be a scalar")
+    require(input == null || input.isScalar,
+      "StackCreator: Input tensor should be a scalar or no input")
 
     val handle = if (name == null) {
       this.getName() + RandomGenerator.RNG.random()
@@ -554,7 +556,8 @@ private[bigdl] class StackCreator[T: ClassTag, D: ClassTag](
       name + RandomGenerator.RNG.random()
     }
 
-    Stack(handle) = new Stack[D](if (input.value() < 0) Int.MaxValue else input.value())
+    Stack(handle) = new Stack[D](
+      if (input == null || input.value() < 0) Int.MaxValue else input.value())
     output = Tensor.scalar(handle)
     output
   }

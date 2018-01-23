@@ -22,6 +22,7 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.nn.ops._
+import com.intel.analytics.bigdl.nn.ops.{StackPop => StackPopOps, StackPush => StackPushOps}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath
 import com.intel.analytics.bigdl.utils.tf.Context
 import com.intel.analytics.bigdl.utils.tf.loaders.Utils._
@@ -224,9 +225,26 @@ private[bigdl] class StackPopV2 extends TensorflowOpsLoader {
     (implicit ev: TensorNumeric[T]): Module[T] = {
     val t = getType(nodeDef, "elem_type")
     if (t == DataType.DT_FLOAT) {
-      new StackPop[T, Float]()
+      new StackPopOps[T, Float]()
     } else if (t == DataType.DT_INT32) {
-      new StackPop[T, Int]()
+      new StackPopOps[T, Int]()
+    } else {
+      throw new UnsupportedOperationException(s"Not support load StackPop with type $t")
+    }
+  }
+}
+
+private[bigdl] class StackPop extends TensorflowOpsLoader {
+
+  import Utils._
+
+  override def build[T: ClassTag](nodeDef: NodeDef, byteOrder: ByteOrder, context: Context[T])
+    (implicit ev: TensorNumeric[T]): Module[T] = {
+    val t = getType(nodeDef, "elem_type")
+    if (t == DataType.DT_FLOAT) {
+      new StackPopOps[T, Float]()
+    } else if (t == DataType.DT_INT32) {
+      new StackPopOps[T, Int]()
     } else {
       throw new UnsupportedOperationException(s"Not support load StackPop with type $t")
     }
@@ -241,9 +259,26 @@ private[bigdl] class StackPushV2 extends TensorflowOpsLoader {
     (implicit ev: TensorNumeric[T]): Module[T] = {
     val t = getType(nodeDef, "T")
     if (t == DataType.DT_FLOAT) {
-      new StackPush[T, Float]()
+      new StackPushOps[T, Float]()
     } else if (t == DataType.DT_INT32) {
-      new StackPush[T, Int]()
+      new StackPushOps[T, Int]()
+    } else {
+      throw new UnsupportedOperationException(s"Not support load StackPush with type $t")
+    }
+  }
+}
+
+private[bigdl] class StackPush extends TensorflowOpsLoader {
+
+  import Utils._
+
+  override def build[T: ClassTag](nodeDef: NodeDef, byteOrder: ByteOrder, context: Context[T])
+    (implicit ev: TensorNumeric[T]): Module[T] = {
+    val t = getType(nodeDef, "T")
+    if (t == DataType.DT_FLOAT) {
+      new StackPushOps[T, Float]()
+    } else if (t == DataType.DT_INT32) {
+      new StackPushOps[T, Int]()
     } else {
       throw new UnsupportedOperationException(s"Not support load StackPush with type $t")
     }
@@ -251,6 +286,24 @@ private[bigdl] class StackPushV2 extends TensorflowOpsLoader {
 }
 
 private[bigdl] class StackV2 extends TensorflowOpsLoader {
+
+  import Utils._
+
+  override def build[T: ClassTag](nodeDef: NodeDef, byteOrder: ByteOrder, context: Context[T])
+    (implicit ev: TensorNumeric[T]): Module[T] = {
+    val stackName = getString(nodeDef, "stack_name")
+    val t = getType(nodeDef, "elem_type")
+    if (t == DataType.DT_FLOAT) {
+      new StackCreator[T, Float](stackName)
+    } else if (t == DataType.DT_INT32) {
+      new StackCreator[T, Int](stackName)
+    } else {
+      throw new UnsupportedOperationException(s"Not support load Stack with type $t")
+    }
+  }
+}
+
+private[bigdl] class Stack extends TensorflowOpsLoader {
 
   import Utils._
 
