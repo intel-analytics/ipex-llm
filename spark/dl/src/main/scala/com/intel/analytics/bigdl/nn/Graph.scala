@@ -158,6 +158,9 @@ abstract class Graph[T: ClassTag](
       // todo: convert control dep node to edge
       .filterNot(_.element.isInstanceOf[ControlDependency[T]])
       .filter(n => !n.eq(dummyOutput)).map(_.element)
+      // Some tests compare the paramerters between sequential and graph,add a reverse makes
+      // it's eaiser to compare
+      .reverse
   )
 
   // Check all inputs of the graph should be passed in
@@ -447,7 +450,11 @@ abstract class Graph[T: ClassTag](
     modules.clear()
     modules.appendAll(forwardGraph.DFS.toArray
       .filterNot(_.element.isInstanceOf[ControlDependency[T]])
-      .filter(n => !n.eq(dummyOutput)).map(_.element))
+      .filter(n => !n.eq(dummyOutput)).map(_.element)
+      // Some tests compare the paramerters between sequential and graph,add a reverse makes
+      // it's eaiser to compare
+      .reverse
+    )
   }
 }
 
