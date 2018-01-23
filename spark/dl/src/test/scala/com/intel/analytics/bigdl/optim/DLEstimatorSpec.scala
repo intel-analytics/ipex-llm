@@ -45,7 +45,8 @@ class DLEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
     Random.setSeed(42)
     RNG.setSeed(42)
     val conf = Engine.createSparkConf().setAppName("Test DLEstimator").setMaster("local[1]")
-    conf.set("spark.sql.warehouse.dir", "file:///")
+    //  Please uncomment below line if your system environment is Windows.
+    //    conf.set("spark.sql.warehouse.dir", "file:///")
     sc = SparkContext.getOrCreate(conf)
     sqlContext = new SQLContext(sc)
     smallData = DLEstimatorSpec.generateTestInput(
@@ -311,9 +312,9 @@ class DLEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
       case v if v.startsWith("1") =>
         val data = sc.parallelize(smallData.map(p => (Vectors.dense(p._1), p._2)))
         sqlContext.createDataFrame(data).toDF("features", "label")
-//      case v if v.startsWith("2") =>
-//        val data = sc.parallelize(smallData.map(p => (linalg.Vectors.dense(p._1), p._2)))
-//        sqlContext.createDataFrame(data).toDF("features", "label")
+      //      case v if v.startsWith("2") =>
+      //        val data = sc.parallelize(smallData.map(p => (linalg.Vectors.dense(p._1), p._2)))
+      //        sqlContext.createDataFrame(data).toDF("features", "label")
     }
     val scaler = new MinMaxScaler().setInputCol("features").setOutputCol("scaled")
       .setMax(1).setMin(-1)
