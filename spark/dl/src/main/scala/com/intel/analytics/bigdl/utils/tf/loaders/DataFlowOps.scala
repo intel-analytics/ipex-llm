@@ -96,7 +96,7 @@ class TensorArrayGatherV3 extends TensorflowOpsLoader {
     if (t == DataType.DT_FLOAT) {
       new TensorArrayGather[T, Float]()
     } else if (t == DataType.DT_DOUBLE) {
-      new TensorArrayGather[T, Float]()
+      new TensorArrayGather[T, Double]()
     } else if (t == DataType.DT_INT32) {
       new TensorArrayGather[T, Int]()
     } else {
@@ -116,7 +116,7 @@ private[bigdl] class TensorArrayScatterV3 extends TensorflowOpsLoader {
     if (t == DataType.DT_FLOAT) {
       new TensorArrayScatter[T, Float]()
     } else if (t == DataType.DT_DOUBLE) {
-      new TensorArrayScatter[T, Float]()
+      new TensorArrayScatter[T, Double]()
     } else if (t == DataType.DT_INT32) {
       new TensorArrayScatter[T, Int]()
     } else {
@@ -136,7 +136,7 @@ private[bigdl] class TensorArrayConcatV3 extends TensorflowOpsLoader {
     if (t == DataType.DT_FLOAT) {
       new TensorArrayConcat[T, Float]()
     } else if (t == DataType.DT_DOUBLE) {
-      new TensorArrayConcat[T, Float]()
+      new TensorArrayConcat[T, Double]()
     } else if (t == DataType.DT_INT32) {
       new TensorArrayConcat[T, Int]()
     } else {
@@ -156,7 +156,7 @@ private[bigdl] class TensorArraySplitV3 extends TensorflowOpsLoader {
     if (t == DataType.DT_FLOAT) {
       new TensorArraySplit[T, Float]()
     } else if (t == DataType.DT_DOUBLE) {
-      new TensorArraySplit[T, Float]()
+      new TensorArraySplit[T, Double]()
     } else if (t == DataType.DT_INT32) {
       new TensorArraySplit[T, Int]()
     } else {
@@ -176,7 +176,7 @@ private[bigdl] class TensorArrayReadV3 extends TensorflowOpsLoader {
     if (t == DataType.DT_FLOAT) {
       new TensorArrayRead[T, Float]()
     } else if (t == DataType.DT_DOUBLE) {
-      new TensorArrayRead[T, Float]()
+      new TensorArrayRead[T, Double]()
     } else if (t == DataType.DT_INT32) {
       new TensorArrayRead[T, Int]()
     } else {
@@ -196,7 +196,7 @@ private[bigdl] class TensorArrayWriteV3 extends TensorflowOpsLoader {
     if (t == DataType.DT_FLOAT) {
       new TensorArrayWrite[T, Float]()
     } else if (t == DataType.DT_DOUBLE) {
-      new TensorArrayWrite[T, Float]()
+      new TensorArrayWrite[T, Double]()
     } else if (t == DataType.DT_INT32) {
       new TensorArrayWrite[T, Int]()
     } else {

@@ -115,8 +115,8 @@ private[bigdl] class Scheduler[T] (
     } else if (node.element.isInstanceOf[LoopCondition[_]]) {
       require(curFrame.isDefined, "LoopCondition should be in a frame")
       val f = curFrame.get
-      require(f.barrier == 0, "frame barrier should be 0 when execute loop condition")
-      f.barrier = node.nextNodes.size
+      require(f.barrier.get() == 0, "frame barrier should be 0 when execute loop condition")
+      f.barrier.set(node.nextNodes.size)
       curFrame
     } else if (node.element.isInstanceOf[NextIteration[_, _]]) {
       require(curFrame.isDefined, "NextIteration should be in a frame")
@@ -124,7 +124,7 @@ private[bigdl] class Scheduler[T] (
     } else if (node.element.isInstanceOf[Exit[_]]) {
       require(curFrame.isDefined, "Exit should be in a frame")
       val f = curFrame.get
-      f.barrier = 0
+      f.barrier.set(0)
       f.parent
     } else {
       curFrame
@@ -163,8 +163,7 @@ private[bigdl] class Scheduler[T] (
     frame.waitingNodes.foreach(readyQueue.enqueue(_))
     frame.waitingNodes.clear()
 
-    // As frame is refreshed, mark all nodes in the frame are not ready and remove them
-    // from the frame
+    // As frame is refreshed, mark all nodes in the frame are not ready
     frame.nodes.filterNot(_.element.isInstanceOf[NextIteration[_, _]]).foreach(n => {
       nodeStatus.unset(n)
     })
@@ -208,7 +207,7 @@ private[bigdl] class Scheduler[T] (
       require(frame.isDefined, "current node should be in a frame")
       frameManayger.pend(node, frame.get)
       nodeStatus.unset(node) // mark current node is in not ready status
-      if (frame.get.barrier == 0) {
+      if (frame.get.barrier.get() == 0) {
         startNextIteration(frame.get)
       }
     } else {

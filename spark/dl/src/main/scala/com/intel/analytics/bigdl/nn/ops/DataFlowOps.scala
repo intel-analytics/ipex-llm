@@ -25,6 +25,10 @@ import com.intel.analytics.bigdl.utils.{RandomGenerator, T, Table}
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
+private[nn] trait ResourceAllocator {
+  def release(): Unit
+}
+
 /**
  * This class implement the functionality of TensorArray in tensorflow. See details at
  *   https://www.tensorflow.org/api_docs/python/tf/TensorArray.
@@ -148,7 +152,7 @@ private[nn] object TensorArray {
   }
 
   def release(key : String): Unit = {
-    arrays.remove(key)
+    if (arrays.containsKey(key)) arrays.remove(key)
   }
 
   // A scalar used to control gradient flow
@@ -176,16 +180,12 @@ private[bigdl] class TensorArrayCreator[T: ClassTag, D: ClassTag](
   identicalElementShapes: Boolean = false,
   tensorArrayName: String = null
 )(implicit ev: TensorNumeric[T], ev2: TensorNumeric[D])
-  extends Operation[Tensor[Int], Table, T]{
+  extends Operation[Tensor[Int], Table, T] with ResourceAllocator {
 
   override def updateOutput(input: Tensor[Int]): Table = {
     require(input.isScalar, "input size must be a int scalar")
 
-    val handle = if (tensorArrayName == null) {
-      this.getName() + RandomGenerator.RNG.random()
-    } else {
-      tensorArrayName + RandomGenerator.RNG.random()
-    }
+    val handle = getHandleName()
 
     TensorArray(handle) = new TensorArray[D](input.value(), shape, dynamicSize, clearAfterRead,
       identicalElementShapes)
@@ -195,6 +195,18 @@ private[bigdl] class TensorArrayCreator[T: ClassTag, D: ClassTag](
       TensorArray.FlowOut
     )
     output
+  }
+
+  override def release(): Unit = {
+    TensorArray.release(getHandleName())
+  }
+
+  private def getHandleName(): String = {
+    if (tensorArrayName == null) {
+      this.getName() + System.identityHashCode(this)
+    } else {
+      tensorArrayName + System.identityHashCode(this)
+    }
   }
 }
 
@@ -539,27 +551,35 @@ private[bigdl] object Stack {
   }
 
   def release(key : String): Unit = {
-    stacks.remove(key)
+    if (stacks.containsKey(key)) stacks.remove(key)
   }
 }
 
 private[bigdl] class StackCreator[T: ClassTag, D: ClassTag](
   name: String = null)(implicit ev: TensorNumeric[T], ev2: TensorNumeric[D])
-  extends Operation[Tensor[Int], Tensor[String], T] with WithoutInput {
+  extends Operation[Tensor[Int], Tensor[String], T] with WithoutInput with ResourceAllocator {
   override def updateOutput(input: Tensor[Int]): Tensor[String] = {
     require(input == null || input.isScalar,
       "StackCreator: Input tensor should be a scalar or no input")
 
-    val handle = if (name == null) {
-      this.getName() + RandomGenerator.RNG.random()
-    } else {
-      name + RandomGenerator.RNG.random()
-    }
+    val handle = getHandleName()
 
     Stack(handle) = new Stack[D](
       if (input == null || input.value() < 0) Int.MaxValue else input.value())
     output = Tensor.scalar(handle)
     output
+  }
+
+  override def release(): Unit = {
+    Stack.release(getHandleName())
+  }
+
+  private def getHandleName(): String = {
+    if (name == null) {
+      this.getName() + System.identityHashCode(this)
+    } else {
+      name + System.identityHashCode(this)
+    }
   }
 }
 

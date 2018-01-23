@@ -17,7 +17,7 @@ package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
-import com.intel.analytics.bigdl.nn.ops.ControlOps
+import com.intel.analytics.bigdl.nn.ops.{ControlOps, ResourceAllocator, TensorArray}
 import com.intel.analytics.bigdl.nn.tf.{ControlDependency, WithoutInput}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -52,6 +52,9 @@ class DynamicGraph[T: ClassTag](
       node.element.forward(nodeInput)
       forwardScheduler.schedule(node)
     }
+
+    modules.filter(_.isInstanceOf[ResourceAllocator])
+      .foreach(_.asInstanceOf[ResourceAllocator].release())
 
     output = dummyOutput.element.output
     output

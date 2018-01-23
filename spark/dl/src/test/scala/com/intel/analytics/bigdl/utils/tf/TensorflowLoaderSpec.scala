@@ -491,10 +491,6 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
       val (tf, bigdl) = comparePairs(i)
       tf.almostEqual(bigdl, 1e-6) should be(true)
     }
-    for (i <- output.length until comparePairs.length) {
-      val (tf, bigdl) = comparePairs(i)
-      tf.almostEqual(bigdl, 1e-1) should be(true)
-    }
   }
 
   "dynamic rnn" should "be load correctly" in {
@@ -503,10 +499,6 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
     for (i <- output.indices) {
       val (tf, bigdl) = comparePairs(i)
       tf.almostEqual(bigdl, 1e-3) should be(true)
-    }
-    for (i <- output.length until comparePairs.length) {
-      val (tf, bigdl) = comparePairs(i)
-      tf.almostEqual(bigdl, 1e-1) should be(true)
     }
   }
 
@@ -517,10 +509,6 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
       val (tf, bigdl) = comparePairs(i)
       tf.almostEqual(bigdl, 1e-3) should be(true)
     }
-    for (i <- output.length until comparePairs.length) {
-      val (tf, bigdl) = comparePairs(i)
-      tf.almostEqual(bigdl, 1e-1) should be(true)
-    }
   }
 
   "dynamic lstm" should "be load correctly" in {
@@ -529,10 +517,6 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
     for (i <- output.indices) {
       val (tf, bigdl) = comparePairs(i)
       tf.almostEqual(bigdl, 1e-2) should be(true)
-    }
-    for (i <- output.length until comparePairs.length) {
-      val (tf, bigdl) = comparePairs(i)
-      tf.almostEqual(bigdl, 1e-1) should be(true)
     }
   }
 
@@ -543,10 +527,6 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
       val (tf, bigdl) = comparePairs(i)
       tf.almostEqual(bigdl, 1e-2) should be(true)
     }
-    for (i <- output.length until comparePairs.length) {
-      val (tf, bigdl) = comparePairs(i)
-      tf.almostEqual(bigdl, 1e-1) should be(true)
-    }
   }
 
   "dynamic gru" should "be load correctly" in {
@@ -556,10 +536,6 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
       val (tf, bigdl) = comparePairs(i)
       tf.almostEqual(bigdl, 1e-2) should be(true)
     }
-    for (i <- output.length until comparePairs.length) {
-      val (tf, bigdl) = comparePairs(i)
-      tf.almostEqual(bigdl, 1e-1) should be(true)
-    }
   }
 
   "dynamic gru grad" should "be load correctly" in {
@@ -568,10 +544,6 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
     for (i <- output.indices) {
       val (tf, bigdl) = comparePairs(i)
       tf.almostEqual(bigdl, 1e-2) should be(true)
-    }
-    for (i <- output.length until comparePairs.length) {
-      val (tf, bigdl) = comparePairs(i)
-      tf.almostEqual(bigdl, 1e-1) should be(true)
     }
   }
 

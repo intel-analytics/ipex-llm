@@ -156,7 +156,7 @@ abstract class Graph[T: ClassTag](
   modules.appendAll(
     forwardGraph.DFS.toArray
       // todo: convert control dep node to edge
-      .filterNot(_.element.isInstanceOf[ControlDependency[T]]).reverse
+      .filterNot(_.element.isInstanceOf[ControlDependency[T]])
       .filter(n => !n.eq(dummyOutput)).map(_.element)
   )
 
@@ -446,7 +446,7 @@ abstract class Graph[T: ClassTag](
   def resetModules(): Unit = {
     modules.clear()
     modules.appendAll(forwardGraph.DFS.toArray
-      .filterNot(_.element.isInstanceOf[ControlDependency[T]]).reverse
+      .filterNot(_.element.isInstanceOf[ControlDependency[T]])
       .filter(n => !n.eq(dummyOutput)).map(_.element))
   }
 }

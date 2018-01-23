@@ -15,6 +15,8 @@
  */
 package com.intel.analytics.bigdl.nn
 
+import java.util.concurrent.atomic.AtomicInteger
+
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.nn.ops.{Exit, MergeOps, NextIteration}
 
@@ -55,7 +57,7 @@ class FrameManager[T] extends Serializable {
     }
 
     if (!frame.nodes.contains(node)) {
-      if (addToFrameNode(node, frame)) frame.nodes.append(node)
+      if (isExecuteManyTimes(node, frame)) frame.nodes.append(node)
     }
   }
 
@@ -68,17 +70,17 @@ class FrameManager[T] extends Serializable {
       nodeFrame(name) = frame
     }
 
-    frame.barrier -= 1
+    frame.barrier.decrementAndGet()
     frame.waitingNodes.append(node)
   }
 
   /**
-   * Add nodes which will be executed many times in the loop belong to the given frame
+   * Check if the node should be executed many times in the loop
    * @param node
    * @param frame
    * @return
    */
-  private def addToFrameNode(node: ModuleNode[T], frame : Frame[T]): Boolean = {
+  private def isExecuteManyTimes(node: ModuleNode[T], frame : Frame[T]): Boolean = {
     // Here's a little tricky. We find the begin of these execute many times nodes by looking for
     // pattern of "NextIteration -> Merge"
     if (node.element.isInstanceOf[MergeOps[_]] && node.prevNodes.size == 2 &&
@@ -118,7 +120,7 @@ object FrameManager {
     val parent: Option[Frame[T]]
   ) {
     // Sync all next iteration nodes execution
-    private[bigdl] var barrier: Int = 0
+    private[bigdl] var barrier: AtomicInteger = new AtomicInteger(0)
     // User can use NextIteration to sync execution. This is a list of those type of nodes
     private[bigdl] val waitingNodes: ArrayBuffer[ModuleNode[T]] = new ArrayBuffer[ModuleNode[T]]()
 

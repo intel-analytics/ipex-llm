@@ -49,6 +49,26 @@ private[bigdl] class InvertPermutation[T: ClassTag]()(implicit ev: TensorNumeric
   }
 }
 
+/**
+ * Calculate the positions of the input shapes in a concatenation operation. It takes several
+ * tensors as input. The first tensor must be a scalar, which indicts on which dimension do the
+ * concatenation. The offset of the dimension is start from zero.
+ *
+ * The left tensors must be 1D, as they represent the shapes of tensors. And they must be same
+ * except the concat dimension.
+ *
+ * Her's an example, say, we want to concatenate 3 tensors in the 2nd dimension, the input shape
+ * tensors should be
+ *   [2, 2, 5, 7]
+ *   [2, 3, 5, 7]
+ *   [2, 4, 5, 7]
+ *
+ * The output should be
+ *   [0, 0, 0, 0]
+ *   [0, 2, 0, 0]
+ *   [0, 5, 0, 0]
+ * @tparam T Parameter numeric type. Only support float/double now
+ */
 private[bigdl] class ConcatOffset[T: ClassTag]()(implicit ev: TensorNumeric[T])
   extends Operation[Table, Table, T] {
 
