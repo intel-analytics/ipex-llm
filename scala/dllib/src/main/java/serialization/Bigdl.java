@@ -725,6 +725,10 @@ public final class Bigdl {
      * <code>CUSTOM = 17;</code>
      */
     CUSTOM(17),
+    /**
+     * <code>SHAPE = 18;</code>
+     */
+    SHAPE(18),
     UNRECOGNIZED(-1),
     ;
 
@@ -800,6 +804,10 @@ public final class Bigdl {
      * <code>CUSTOM = 17;</code>
      */
     public static final int CUSTOM_VALUE = 17;
+    /**
+     * <code>SHAPE = 18;</code>
+     */
+    public static final int SHAPE_VALUE = 18;
 
 
     public final int getNumber() {
@@ -838,6 +846,7 @@ public final class Bigdl {
         case 15: return ARRAY_VALUE;
         case 16: return DATA_FORMAT;
         case 17: return CUSTOM;
+        case 18: return SHAPE;
         default: return null;
       }
     }
@@ -9441,6 +9450,31 @@ public final class Bigdl {
      */
     com.google.protobuf.AnyOrBuilder getCustomValueOrBuilder();
 
+    /**
+     * <pre>
+     * Shape value
+     * </pre>
+     *
+     * <code>.serialization.Shape shape = 18;</code>
+     */
+    boolean hasShape();
+    /**
+     * <pre>
+     * Shape value
+     * </pre>
+     *
+     * <code>.serialization.Shape shape = 18;</code>
+     */
+    serialization.Bigdl.Shape getShape();
+    /**
+     * <pre>
+     * Shape value
+     * </pre>
+     *
+     * <code>.serialization.Shape shape = 18;</code>
+     */
+    serialization.Bigdl.ShapeOrBuilder getShapeOrBuilder();
+
     public serialization.Bigdl.AttrValue.ValueCase getValueCase();
   }
   /**
@@ -9639,6 +9673,20 @@ public final class Bigdl {
                 value_ = subBuilder.buildPartial();
               }
               valueCase_ = 17;
+              break;
+            }
+            case 146: {
+              serialization.Bigdl.Shape.Builder subBuilder = null;
+              if (valueCase_ == 18) {
+                subBuilder = ((serialization.Bigdl.Shape) value_).toBuilder();
+              }
+              value_ =
+                  input.readMessage(serialization.Bigdl.Shape.parser(), extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom((serialization.Bigdl.Shape) value_);
+                value_ = subBuilder.buildPartial();
+              }
+              valueCase_ = 18;
               break;
             }
           }
@@ -10185,6 +10233,50 @@ public final class Bigdl {
        */
       com.google.protobuf.AnyOrBuilder getCustomOrBuilder(
           int index);
+
+      /**
+       * <pre>
+       * "Array(Shape)"
+       * </pre>
+       *
+       * <code>repeated .serialization.Shape shape = 17;</code>
+       */
+      java.util.List<serialization.Bigdl.Shape> 
+          getShapeList();
+      /**
+       * <pre>
+       * "Array(Shape)"
+       * </pre>
+       *
+       * <code>repeated .serialization.Shape shape = 17;</code>
+       */
+      serialization.Bigdl.Shape getShape(int index);
+      /**
+       * <pre>
+       * "Array(Shape)"
+       * </pre>
+       *
+       * <code>repeated .serialization.Shape shape = 17;</code>
+       */
+      int getShapeCount();
+      /**
+       * <pre>
+       * "Array(Shape)"
+       * </pre>
+       *
+       * <code>repeated .serialization.Shape shape = 17;</code>
+       */
+      java.util.List<? extends serialization.Bigdl.ShapeOrBuilder> 
+          getShapeOrBuilderList();
+      /**
+       * <pre>
+       * "Array(Shape)"
+       * </pre>
+       *
+       * <code>repeated .serialization.Shape shape = 17;</code>
+       */
+      serialization.Bigdl.ShapeOrBuilder getShapeOrBuilder(
+          int index);
     }
     /**
      * Protobuf type {@code serialization.AttrValue.ArrayValue}
@@ -10215,6 +10307,7 @@ public final class Bigdl {
         nameAttrList_ = java.util.Collections.emptyList();
         dataFormat_ = java.util.Collections.emptyList();
         custom_ = java.util.Collections.emptyList();
+        shape_ = java.util.Collections.emptyList();
       }
 
       @java.lang.Override
@@ -10470,6 +10563,15 @@ public final class Bigdl {
                     input.readMessage(com.google.protobuf.Any.parser(), extensionRegistry));
                 break;
               }
+              case 138: {
+                if (!((mutable_bitField0_ & 0x00010000) == 0x00010000)) {
+                  shape_ = new java.util.ArrayList<serialization.Bigdl.Shape>();
+                  mutable_bitField0_ |= 0x00010000;
+                }
+                shape_.add(
+                    input.readMessage(serialization.Bigdl.Shape.parser(), extensionRegistry));
+                break;
+              }
             }
           }
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
@@ -10519,6 +10621,9 @@ public final class Bigdl {
           }
           if (((mutable_bitField0_ & 0x00008000) == 0x00008000)) {
             custom_ = java.util.Collections.unmodifiableList(custom_);
+          }
+          if (((mutable_bitField0_ & 0x00010000) == 0x00010000)) {
+            shape_ = java.util.Collections.unmodifiableList(shape_);
           }
           this.unknownFields = unknownFields.build();
           makeExtensionsImmutable();
@@ -11237,6 +11342,61 @@ public final class Bigdl {
         return custom_.get(index);
       }
 
+      public static final int SHAPE_FIELD_NUMBER = 17;
+      private java.util.List<serialization.Bigdl.Shape> shape_;
+      /**
+       * <pre>
+       * "Array(Shape)"
+       * </pre>
+       *
+       * <code>repeated .serialization.Shape shape = 17;</code>
+       */
+      public java.util.List<serialization.Bigdl.Shape> getShapeList() {
+        return shape_;
+      }
+      /**
+       * <pre>
+       * "Array(Shape)"
+       * </pre>
+       *
+       * <code>repeated .serialization.Shape shape = 17;</code>
+       */
+      public java.util.List<? extends serialization.Bigdl.ShapeOrBuilder> 
+          getShapeOrBuilderList() {
+        return shape_;
+      }
+      /**
+       * <pre>
+       * "Array(Shape)"
+       * </pre>
+       *
+       * <code>repeated .serialization.Shape shape = 17;</code>
+       */
+      public int getShapeCount() {
+        return shape_.size();
+      }
+      /**
+       * <pre>
+       * "Array(Shape)"
+       * </pre>
+       *
+       * <code>repeated .serialization.Shape shape = 17;</code>
+       */
+      public serialization.Bigdl.Shape getShape(int index) {
+        return shape_.get(index);
+      }
+      /**
+       * <pre>
+       * "Array(Shape)"
+       * </pre>
+       *
+       * <code>repeated .serialization.Shape shape = 17;</code>
+       */
+      public serialization.Bigdl.ShapeOrBuilder getShapeOrBuilder(
+          int index) {
+        return shape_.get(index);
+      }
+
       private byte memoizedIsInitialized = -1;
       public final boolean isInitialized() {
         byte isInitialized = memoizedIsInitialized;
@@ -11325,6 +11485,9 @@ public final class Bigdl {
         }
         for (int i = 0; i < custom_.size(); i++) {
           output.writeMessage(16, custom_.get(i));
+        }
+        for (int i = 0; i < shape_.size(); i++) {
+          output.writeMessage(17, shape_.get(i));
         }
         unknownFields.writeTo(output);
       }
@@ -11459,6 +11622,10 @@ public final class Bigdl {
           size += com.google.protobuf.CodedOutputStream
             .computeMessageSize(16, custom_.get(i));
         }
+        for (int i = 0; i < shape_.size(); i++) {
+          size += com.google.protobuf.CodedOutputStream
+            .computeMessageSize(17, shape_.get(i));
+        }
         size += unknownFields.getSerializedSize();
         memoizedSize = size;
         return size;
@@ -11504,6 +11671,8 @@ public final class Bigdl {
         result = result && dataFormat_.equals(other.dataFormat_);
         result = result && getCustomList()
             .equals(other.getCustomList());
+        result = result && getShapeList()
+            .equals(other.getShapeList());
         result = result && unknownFields.equals(other.unknownFields);
         return result;
       }
@@ -11574,6 +11743,10 @@ public final class Bigdl {
         if (getCustomCount() > 0) {
           hash = (37 * hash) + CUSTOM_FIELD_NUMBER;
           hash = (53 * hash) + getCustomList().hashCode();
+        }
+        if (getShapeCount() > 0) {
+          hash = (37 * hash) + SHAPE_FIELD_NUMBER;
+          hash = (53 * hash) + getShapeList().hashCode();
         }
         hash = (29 * hash) + unknownFields.hashCode();
         memoizedHashCode = hash;
@@ -11706,6 +11879,7 @@ public final class Bigdl {
             getBigDLModuleFieldBuilder();
             getNameAttrListFieldBuilder();
             getCustomFieldBuilder();
+            getShapeFieldBuilder();
           }
         }
         public Builder clear() {
@@ -11765,6 +11939,12 @@ public final class Bigdl {
             bitField0_ = (bitField0_ & ~0x00008000);
           } else {
             customBuilder_.clear();
+          }
+          if (shapeBuilder_ == null) {
+            shape_ = java.util.Collections.emptyList();
+            bitField0_ = (bitField0_ & ~0x00010000);
+          } else {
+            shapeBuilder_.clear();
           }
           return this;
         }
@@ -11885,6 +12065,15 @@ public final class Bigdl {
             result.custom_ = custom_;
           } else {
             result.custom_ = customBuilder_.build();
+          }
+          if (shapeBuilder_ == null) {
+            if (((bitField0_ & 0x00010000) == 0x00010000)) {
+              shape_ = java.util.Collections.unmodifiableList(shape_);
+              bitField0_ = (bitField0_ & ~0x00010000);
+            }
+            result.shape_ = shape_;
+          } else {
+            result.shape_ = shapeBuilder_.build();
           }
           result.bitField0_ = to_bitField0_;
           onBuilt();
@@ -12167,6 +12356,32 @@ public final class Bigdl {
                      getCustomFieldBuilder() : null;
               } else {
                 customBuilder_.addAllMessages(other.custom_);
+              }
+            }
+          }
+          if (shapeBuilder_ == null) {
+            if (!other.shape_.isEmpty()) {
+              if (shape_.isEmpty()) {
+                shape_ = other.shape_;
+                bitField0_ = (bitField0_ & ~0x00010000);
+              } else {
+                ensureShapeIsMutable();
+                shape_.addAll(other.shape_);
+              }
+              onChanged();
+            }
+          } else {
+            if (!other.shape_.isEmpty()) {
+              if (shapeBuilder_.isEmpty()) {
+                shapeBuilder_.dispose();
+                shapeBuilder_ = null;
+                shape_ = other.shape_;
+                bitField0_ = (bitField0_ & ~0x00010000);
+                shapeBuilder_ = 
+                  com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
+                     getShapeFieldBuilder() : null;
+              } else {
+                shapeBuilder_.addAllMessages(other.shape_);
               }
             }
           }
@@ -15053,6 +15268,318 @@ public final class Bigdl {
           }
           return customBuilder_;
         }
+
+        private java.util.List<serialization.Bigdl.Shape> shape_ =
+          java.util.Collections.emptyList();
+        private void ensureShapeIsMutable() {
+          if (!((bitField0_ & 0x00010000) == 0x00010000)) {
+            shape_ = new java.util.ArrayList<serialization.Bigdl.Shape>(shape_);
+            bitField0_ |= 0x00010000;
+           }
+        }
+
+        private com.google.protobuf.RepeatedFieldBuilderV3<
+            serialization.Bigdl.Shape, serialization.Bigdl.Shape.Builder, serialization.Bigdl.ShapeOrBuilder> shapeBuilder_;
+
+        /**
+         * <pre>
+         * "Array(Shape)"
+         * </pre>
+         *
+         * <code>repeated .serialization.Shape shape = 17;</code>
+         */
+        public java.util.List<serialization.Bigdl.Shape> getShapeList() {
+          if (shapeBuilder_ == null) {
+            return java.util.Collections.unmodifiableList(shape_);
+          } else {
+            return shapeBuilder_.getMessageList();
+          }
+        }
+        /**
+         * <pre>
+         * "Array(Shape)"
+         * </pre>
+         *
+         * <code>repeated .serialization.Shape shape = 17;</code>
+         */
+        public int getShapeCount() {
+          if (shapeBuilder_ == null) {
+            return shape_.size();
+          } else {
+            return shapeBuilder_.getCount();
+          }
+        }
+        /**
+         * <pre>
+         * "Array(Shape)"
+         * </pre>
+         *
+         * <code>repeated .serialization.Shape shape = 17;</code>
+         */
+        public serialization.Bigdl.Shape getShape(int index) {
+          if (shapeBuilder_ == null) {
+            return shape_.get(index);
+          } else {
+            return shapeBuilder_.getMessage(index);
+          }
+        }
+        /**
+         * <pre>
+         * "Array(Shape)"
+         * </pre>
+         *
+         * <code>repeated .serialization.Shape shape = 17;</code>
+         */
+        public Builder setShape(
+            int index, serialization.Bigdl.Shape value) {
+          if (shapeBuilder_ == null) {
+            if (value == null) {
+              throw new NullPointerException();
+            }
+            ensureShapeIsMutable();
+            shape_.set(index, value);
+            onChanged();
+          } else {
+            shapeBuilder_.setMessage(index, value);
+          }
+          return this;
+        }
+        /**
+         * <pre>
+         * "Array(Shape)"
+         * </pre>
+         *
+         * <code>repeated .serialization.Shape shape = 17;</code>
+         */
+        public Builder setShape(
+            int index, serialization.Bigdl.Shape.Builder builderForValue) {
+          if (shapeBuilder_ == null) {
+            ensureShapeIsMutable();
+            shape_.set(index, builderForValue.build());
+            onChanged();
+          } else {
+            shapeBuilder_.setMessage(index, builderForValue.build());
+          }
+          return this;
+        }
+        /**
+         * <pre>
+         * "Array(Shape)"
+         * </pre>
+         *
+         * <code>repeated .serialization.Shape shape = 17;</code>
+         */
+        public Builder addShape(serialization.Bigdl.Shape value) {
+          if (shapeBuilder_ == null) {
+            if (value == null) {
+              throw new NullPointerException();
+            }
+            ensureShapeIsMutable();
+            shape_.add(value);
+            onChanged();
+          } else {
+            shapeBuilder_.addMessage(value);
+          }
+          return this;
+        }
+        /**
+         * <pre>
+         * "Array(Shape)"
+         * </pre>
+         *
+         * <code>repeated .serialization.Shape shape = 17;</code>
+         */
+        public Builder addShape(
+            int index, serialization.Bigdl.Shape value) {
+          if (shapeBuilder_ == null) {
+            if (value == null) {
+              throw new NullPointerException();
+            }
+            ensureShapeIsMutable();
+            shape_.add(index, value);
+            onChanged();
+          } else {
+            shapeBuilder_.addMessage(index, value);
+          }
+          return this;
+        }
+        /**
+         * <pre>
+         * "Array(Shape)"
+         * </pre>
+         *
+         * <code>repeated .serialization.Shape shape = 17;</code>
+         */
+        public Builder addShape(
+            serialization.Bigdl.Shape.Builder builderForValue) {
+          if (shapeBuilder_ == null) {
+            ensureShapeIsMutable();
+            shape_.add(builderForValue.build());
+            onChanged();
+          } else {
+            shapeBuilder_.addMessage(builderForValue.build());
+          }
+          return this;
+        }
+        /**
+         * <pre>
+         * "Array(Shape)"
+         * </pre>
+         *
+         * <code>repeated .serialization.Shape shape = 17;</code>
+         */
+        public Builder addShape(
+            int index, serialization.Bigdl.Shape.Builder builderForValue) {
+          if (shapeBuilder_ == null) {
+            ensureShapeIsMutable();
+            shape_.add(index, builderForValue.build());
+            onChanged();
+          } else {
+            shapeBuilder_.addMessage(index, builderForValue.build());
+          }
+          return this;
+        }
+        /**
+         * <pre>
+         * "Array(Shape)"
+         * </pre>
+         *
+         * <code>repeated .serialization.Shape shape = 17;</code>
+         */
+        public Builder addAllShape(
+            java.lang.Iterable<? extends serialization.Bigdl.Shape> values) {
+          if (shapeBuilder_ == null) {
+            ensureShapeIsMutable();
+            com.google.protobuf.AbstractMessageLite.Builder.addAll(
+                values, shape_);
+            onChanged();
+          } else {
+            shapeBuilder_.addAllMessages(values);
+          }
+          return this;
+        }
+        /**
+         * <pre>
+         * "Array(Shape)"
+         * </pre>
+         *
+         * <code>repeated .serialization.Shape shape = 17;</code>
+         */
+        public Builder clearShape() {
+          if (shapeBuilder_ == null) {
+            shape_ = java.util.Collections.emptyList();
+            bitField0_ = (bitField0_ & ~0x00010000);
+            onChanged();
+          } else {
+            shapeBuilder_.clear();
+          }
+          return this;
+        }
+        /**
+         * <pre>
+         * "Array(Shape)"
+         * </pre>
+         *
+         * <code>repeated .serialization.Shape shape = 17;</code>
+         */
+        public Builder removeShape(int index) {
+          if (shapeBuilder_ == null) {
+            ensureShapeIsMutable();
+            shape_.remove(index);
+            onChanged();
+          } else {
+            shapeBuilder_.remove(index);
+          }
+          return this;
+        }
+        /**
+         * <pre>
+         * "Array(Shape)"
+         * </pre>
+         *
+         * <code>repeated .serialization.Shape shape = 17;</code>
+         */
+        public serialization.Bigdl.Shape.Builder getShapeBuilder(
+            int index) {
+          return getShapeFieldBuilder().getBuilder(index);
+        }
+        /**
+         * <pre>
+         * "Array(Shape)"
+         * </pre>
+         *
+         * <code>repeated .serialization.Shape shape = 17;</code>
+         */
+        public serialization.Bigdl.ShapeOrBuilder getShapeOrBuilder(
+            int index) {
+          if (shapeBuilder_ == null) {
+            return shape_.get(index);  } else {
+            return shapeBuilder_.getMessageOrBuilder(index);
+          }
+        }
+        /**
+         * <pre>
+         * "Array(Shape)"
+         * </pre>
+         *
+         * <code>repeated .serialization.Shape shape = 17;</code>
+         */
+        public java.util.List<? extends serialization.Bigdl.ShapeOrBuilder> 
+             getShapeOrBuilderList() {
+          if (shapeBuilder_ != null) {
+            return shapeBuilder_.getMessageOrBuilderList();
+          } else {
+            return java.util.Collections.unmodifiableList(shape_);
+          }
+        }
+        /**
+         * <pre>
+         * "Array(Shape)"
+         * </pre>
+         *
+         * <code>repeated .serialization.Shape shape = 17;</code>
+         */
+        public serialization.Bigdl.Shape.Builder addShapeBuilder() {
+          return getShapeFieldBuilder().addBuilder(
+              serialization.Bigdl.Shape.getDefaultInstance());
+        }
+        /**
+         * <pre>
+         * "Array(Shape)"
+         * </pre>
+         *
+         * <code>repeated .serialization.Shape shape = 17;</code>
+         */
+        public serialization.Bigdl.Shape.Builder addShapeBuilder(
+            int index) {
+          return getShapeFieldBuilder().addBuilder(
+              index, serialization.Bigdl.Shape.getDefaultInstance());
+        }
+        /**
+         * <pre>
+         * "Array(Shape)"
+         * </pre>
+         *
+         * <code>repeated .serialization.Shape shape = 17;</code>
+         */
+        public java.util.List<serialization.Bigdl.Shape.Builder> 
+             getShapeBuilderList() {
+          return getShapeFieldBuilder().getBuilderList();
+        }
+        private com.google.protobuf.RepeatedFieldBuilderV3<
+            serialization.Bigdl.Shape, serialization.Bigdl.Shape.Builder, serialization.Bigdl.ShapeOrBuilder> 
+            getShapeFieldBuilder() {
+          if (shapeBuilder_ == null) {
+            shapeBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
+                serialization.Bigdl.Shape, serialization.Bigdl.Shape.Builder, serialization.Bigdl.ShapeOrBuilder>(
+                    shape_,
+                    ((bitField0_ & 0x00010000) == 0x00010000),
+                    getParentForChildren(),
+                    isClean());
+            shape_ = null;
+          }
+          return shapeBuilder_;
+        }
         public final Builder setUnknownFields(
             final com.google.protobuf.UnknownFieldSet unknownFields) {
           return super.setUnknownFieldsProto3(unknownFields);
@@ -15121,6 +15648,7 @@ public final class Bigdl {
       ARRAYVALUE(15),
       DATAFORMATVALUE(16),
       CUSTOMVALUE(17),
+      SHAPE(18),
       VALUE_NOT_SET(0);
       private final int value;
       private ValueCase(int value) {
@@ -15151,6 +15679,7 @@ public final class Bigdl {
           case 15: return ARRAYVALUE;
           case 16: return DATAFORMATVALUE;
           case 17: return CUSTOMVALUE;
+          case 18: return SHAPE;
           case 0: return VALUE_NOT_SET;
           default: return null;
         }
@@ -15676,6 +16205,44 @@ public final class Bigdl {
       return com.google.protobuf.Any.getDefaultInstance();
     }
 
+    public static final int SHAPE_FIELD_NUMBER = 18;
+    /**
+     * <pre>
+     * Shape value
+     * </pre>
+     *
+     * <code>.serialization.Shape shape = 18;</code>
+     */
+    public boolean hasShape() {
+      return valueCase_ == 18;
+    }
+    /**
+     * <pre>
+     * Shape value
+     * </pre>
+     *
+     * <code>.serialization.Shape shape = 18;</code>
+     */
+    public serialization.Bigdl.Shape getShape() {
+      if (valueCase_ == 18) {
+         return (serialization.Bigdl.Shape) value_;
+      }
+      return serialization.Bigdl.Shape.getDefaultInstance();
+    }
+    /**
+     * <pre>
+     * Shape value
+     * </pre>
+     *
+     * <code>.serialization.Shape shape = 18;</code>
+     */
+    public serialization.Bigdl.ShapeOrBuilder getShapeOrBuilder() {
+      if (valueCase_ == 18) {
+         return (serialization.Bigdl.Shape) value_;
+      }
+      return serialization.Bigdl.Shape.getDefaultInstance();
+    }
+
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
@@ -15743,6 +16310,9 @@ public final class Bigdl {
       }
       if (valueCase_ == 17) {
         output.writeMessage(17, (com.google.protobuf.Any) value_);
+      }
+      if (valueCase_ == 18) {
+        output.writeMessage(18, (serialization.Bigdl.Shape) value_);
       }
       unknownFields.writeTo(output);
     }
@@ -15822,6 +16392,10 @@ public final class Bigdl {
       if (valueCase_ == 17) {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(17, (com.google.protobuf.Any) value_);
+      }
+      if (valueCase_ == 18) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(18, (serialization.Bigdl.Shape) value_);
       }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
@@ -15910,6 +16484,10 @@ public final class Bigdl {
           result = result && getCustomValue()
               .equals(other.getCustomValue());
           break;
+        case 18:
+          result = result && getShape()
+              .equals(other.getShape());
+          break;
         case 0:
         default:
       }
@@ -15992,6 +16570,10 @@ public final class Bigdl {
         case 17:
           hash = (37 * hash) + CUSTOMVALUE_FIELD_NUMBER;
           hash = (53 * hash) + getCustomValue().hashCode();
+          break;
+        case 18:
+          hash = (37 * hash) + SHAPE_FIELD_NUMBER;
+          hash = (53 * hash) + getShape().hashCode();
           break;
         case 0:
         default:
@@ -16228,6 +16810,13 @@ public final class Bigdl {
             result.value_ = customValueBuilder_.build();
           }
         }
+        if (valueCase_ == 18) {
+          if (shapeBuilder_ == null) {
+            result.value_ = value_;
+          } else {
+            result.value_ = shapeBuilder_.build();
+          }
+        }
         result.valueCase_ = valueCase_;
         onBuilt();
         return result;
@@ -16338,6 +16927,10 @@ public final class Bigdl {
           }
           case CUSTOMVALUE: {
             mergeCustomValue(other.getCustomValue());
+            break;
+          }
+          case SHAPE: {
+            mergeShape(other.getShape());
             break;
           }
           case VALUE_NOT_SET: {
@@ -18178,6 +18771,178 @@ public final class Bigdl {
         onChanged();;
         return customValueBuilder_;
       }
+
+      private com.google.protobuf.SingleFieldBuilderV3<
+          serialization.Bigdl.Shape, serialization.Bigdl.Shape.Builder, serialization.Bigdl.ShapeOrBuilder> shapeBuilder_;
+      /**
+       * <pre>
+       * Shape value
+       * </pre>
+       *
+       * <code>.serialization.Shape shape = 18;</code>
+       */
+      public boolean hasShape() {
+        return valueCase_ == 18;
+      }
+      /**
+       * <pre>
+       * Shape value
+       * </pre>
+       *
+       * <code>.serialization.Shape shape = 18;</code>
+       */
+      public serialization.Bigdl.Shape getShape() {
+        if (shapeBuilder_ == null) {
+          if (valueCase_ == 18) {
+            return (serialization.Bigdl.Shape) value_;
+          }
+          return serialization.Bigdl.Shape.getDefaultInstance();
+        } else {
+          if (valueCase_ == 18) {
+            return shapeBuilder_.getMessage();
+          }
+          return serialization.Bigdl.Shape.getDefaultInstance();
+        }
+      }
+      /**
+       * <pre>
+       * Shape value
+       * </pre>
+       *
+       * <code>.serialization.Shape shape = 18;</code>
+       */
+      public Builder setShape(serialization.Bigdl.Shape value) {
+        if (shapeBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          value_ = value;
+          onChanged();
+        } else {
+          shapeBuilder_.setMessage(value);
+        }
+        valueCase_ = 18;
+        return this;
+      }
+      /**
+       * <pre>
+       * Shape value
+       * </pre>
+       *
+       * <code>.serialization.Shape shape = 18;</code>
+       */
+      public Builder setShape(
+          serialization.Bigdl.Shape.Builder builderForValue) {
+        if (shapeBuilder_ == null) {
+          value_ = builderForValue.build();
+          onChanged();
+        } else {
+          shapeBuilder_.setMessage(builderForValue.build());
+        }
+        valueCase_ = 18;
+        return this;
+      }
+      /**
+       * <pre>
+       * Shape value
+       * </pre>
+       *
+       * <code>.serialization.Shape shape = 18;</code>
+       */
+      public Builder mergeShape(serialization.Bigdl.Shape value) {
+        if (shapeBuilder_ == null) {
+          if (valueCase_ == 18 &&
+              value_ != serialization.Bigdl.Shape.getDefaultInstance()) {
+            value_ = serialization.Bigdl.Shape.newBuilder((serialization.Bigdl.Shape) value_)
+                .mergeFrom(value).buildPartial();
+          } else {
+            value_ = value;
+          }
+          onChanged();
+        } else {
+          if (valueCase_ == 18) {
+            shapeBuilder_.mergeFrom(value);
+          }
+          shapeBuilder_.setMessage(value);
+        }
+        valueCase_ = 18;
+        return this;
+      }
+      /**
+       * <pre>
+       * Shape value
+       * </pre>
+       *
+       * <code>.serialization.Shape shape = 18;</code>
+       */
+      public Builder clearShape() {
+        if (shapeBuilder_ == null) {
+          if (valueCase_ == 18) {
+            valueCase_ = 0;
+            value_ = null;
+            onChanged();
+          }
+        } else {
+          if (valueCase_ == 18) {
+            valueCase_ = 0;
+            value_ = null;
+          }
+          shapeBuilder_.clear();
+        }
+        return this;
+      }
+      /**
+       * <pre>
+       * Shape value
+       * </pre>
+       *
+       * <code>.serialization.Shape shape = 18;</code>
+       */
+      public serialization.Bigdl.Shape.Builder getShapeBuilder() {
+        return getShapeFieldBuilder().getBuilder();
+      }
+      /**
+       * <pre>
+       * Shape value
+       * </pre>
+       *
+       * <code>.serialization.Shape shape = 18;</code>
+       */
+      public serialization.Bigdl.ShapeOrBuilder getShapeOrBuilder() {
+        if ((valueCase_ == 18) && (shapeBuilder_ != null)) {
+          return shapeBuilder_.getMessageOrBuilder();
+        } else {
+          if (valueCase_ == 18) {
+            return (serialization.Bigdl.Shape) value_;
+          }
+          return serialization.Bigdl.Shape.getDefaultInstance();
+        }
+      }
+      /**
+       * <pre>
+       * Shape value
+       * </pre>
+       *
+       * <code>.serialization.Shape shape = 18;</code>
+       */
+      private com.google.protobuf.SingleFieldBuilderV3<
+          serialization.Bigdl.Shape, serialization.Bigdl.Shape.Builder, serialization.Bigdl.ShapeOrBuilder> 
+          getShapeFieldBuilder() {
+        if (shapeBuilder_ == null) {
+          if (!(valueCase_ == 18)) {
+            value_ = serialization.Bigdl.Shape.getDefaultInstance();
+          }
+          shapeBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+              serialization.Bigdl.Shape, serialization.Bigdl.Shape.Builder, serialization.Bigdl.ShapeOrBuilder>(
+                  (serialization.Bigdl.Shape) value_,
+                  getParentForChildren(),
+                  isClean());
+          value_ = null;
+        }
+        valueCase_ = 18;
+        onChanged();;
+        return shapeBuilder_;
+      }
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
         return super.setUnknownFieldsProto3(unknownFields);
@@ -19060,6 +19825,1188 @@ public final class Bigdl {
 
   }
 
+  public interface ShapeOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:serialization.Shape)
+      com.google.protobuf.MessageOrBuilder {
+
+    /**
+     * <code>.serialization.Shape.ShapeType shapeType = 1;</code>
+     */
+    int getShapeTypeValue();
+    /**
+     * <code>.serialization.Shape.ShapeType shapeType = 1;</code>
+     */
+    serialization.Bigdl.Shape.ShapeType getShapeType();
+
+    /**
+     * <code>int32 ssize = 2;</code>
+     */
+    int getSsize();
+
+    /**
+     * <code>repeated int32 shapeValue = 3;</code>
+     */
+    java.util.List<java.lang.Integer> getShapeValueList();
+    /**
+     * <code>repeated int32 shapeValue = 3;</code>
+     */
+    int getShapeValueCount();
+    /**
+     * <code>repeated int32 shapeValue = 3;</code>
+     */
+    int getShapeValue(int index);
+
+    /**
+     * <code>repeated .serialization.Shape shape = 4;</code>
+     */
+    java.util.List<serialization.Bigdl.Shape> 
+        getShapeList();
+    /**
+     * <code>repeated .serialization.Shape shape = 4;</code>
+     */
+    serialization.Bigdl.Shape getShape(int index);
+    /**
+     * <code>repeated .serialization.Shape shape = 4;</code>
+     */
+    int getShapeCount();
+    /**
+     * <code>repeated .serialization.Shape shape = 4;</code>
+     */
+    java.util.List<? extends serialization.Bigdl.ShapeOrBuilder> 
+        getShapeOrBuilderList();
+    /**
+     * <code>repeated .serialization.Shape shape = 4;</code>
+     */
+    serialization.Bigdl.ShapeOrBuilder getShapeOrBuilder(
+        int index);
+  }
+  /**
+   * Protobuf type {@code serialization.Shape}
+   */
+  public  static final class Shape extends
+      com.google.protobuf.GeneratedMessageV3 implements
+      // @@protoc_insertion_point(message_implements:serialization.Shape)
+      ShapeOrBuilder {
+  private static final long serialVersionUID = 0L;
+    // Use Shape.newBuilder() to construct.
+    private Shape(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+      super(builder);
+    }
+    private Shape() {
+      shapeType_ = 0;
+      ssize_ = 0;
+      shapeValue_ = java.util.Collections.emptyList();
+      shape_ = java.util.Collections.emptyList();
+    }
+
+    @java.lang.Override
+    public final com.google.protobuf.UnknownFieldSet
+    getUnknownFields() {
+      return this.unknownFields;
+    }
+    private Shape(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      this();
+      int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
+      try {
+        boolean done = false;
+        while (!done) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              done = true;
+              break;
+            default: {
+              if (!parseUnknownFieldProto3(
+                  input, unknownFields, extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
+            case 8: {
+              int rawValue = input.readEnum();
+
+              shapeType_ = rawValue;
+              break;
+            }
+            case 16: {
+
+              ssize_ = input.readInt32();
+              break;
+            }
+            case 24: {
+              if (!((mutable_bitField0_ & 0x00000004) == 0x00000004)) {
+                shapeValue_ = new java.util.ArrayList<java.lang.Integer>();
+                mutable_bitField0_ |= 0x00000004;
+              }
+              shapeValue_.add(input.readInt32());
+              break;
+            }
+            case 26: {
+              int length = input.readRawVarint32();
+              int limit = input.pushLimit(length);
+              if (!((mutable_bitField0_ & 0x00000004) == 0x00000004) && input.getBytesUntilLimit() > 0) {
+                shapeValue_ = new java.util.ArrayList<java.lang.Integer>();
+                mutable_bitField0_ |= 0x00000004;
+              }
+              while (input.getBytesUntilLimit() > 0) {
+                shapeValue_.add(input.readInt32());
+              }
+              input.popLimit(limit);
+              break;
+            }
+            case 34: {
+              if (!((mutable_bitField0_ & 0x00000008) == 0x00000008)) {
+                shape_ = new java.util.ArrayList<serialization.Bigdl.Shape>();
+                mutable_bitField0_ |= 0x00000008;
+              }
+              shape_.add(
+                  input.readMessage(serialization.Bigdl.Shape.parser(), extensionRegistry));
+              break;
+            }
+          }
+        }
+      } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+        throw e.setUnfinishedMessage(this);
+      } catch (java.io.IOException e) {
+        throw new com.google.protobuf.InvalidProtocolBufferException(
+            e).setUnfinishedMessage(this);
+      } finally {
+        if (((mutable_bitField0_ & 0x00000004) == 0x00000004)) {
+          shapeValue_ = java.util.Collections.unmodifiableList(shapeValue_);
+        }
+        if (((mutable_bitField0_ & 0x00000008) == 0x00000008)) {
+          shape_ = java.util.Collections.unmodifiableList(shape_);
+        }
+        this.unknownFields = unknownFields.build();
+        makeExtensionsImmutable();
+      }
+    }
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return serialization.Bigdl.internal_static_serialization_Shape_descriptor;
+    }
+
+    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return serialization.Bigdl.internal_static_serialization_Shape_fieldAccessorTable
+          .ensureFieldAccessorsInitialized(
+              serialization.Bigdl.Shape.class, serialization.Bigdl.Shape.Builder.class);
+    }
+
+    /**
+     * Protobuf enum {@code serialization.Shape.ShapeType}
+     */
+    public enum ShapeType
+        implements com.google.protobuf.ProtocolMessageEnum {
+      /**
+       * <code>SINGLE = 0;</code>
+       */
+      SINGLE(0),
+      /**
+       * <code>MULTI = 1;</code>
+       */
+      MULTI(1),
+      UNRECOGNIZED(-1),
+      ;
+
+      /**
+       * <code>SINGLE = 0;</code>
+       */
+      public static final int SINGLE_VALUE = 0;
+      /**
+       * <code>MULTI = 1;</code>
+       */
+      public static final int MULTI_VALUE = 1;
+
+
+      public final int getNumber() {
+        if (this == UNRECOGNIZED) {
+          throw new java.lang.IllegalArgumentException(
+              "Can't get the number of an unknown enum value.");
+        }
+        return value;
+      }
+
+      /**
+       * @deprecated Use {@link #forNumber(int)} instead.
+       */
+      @java.lang.Deprecated
+      public static ShapeType valueOf(int value) {
+        return forNumber(value);
+      }
+
+      public static ShapeType forNumber(int value) {
+        switch (value) {
+          case 0: return SINGLE;
+          case 1: return MULTI;
+          default: return null;
+        }
+      }
+
+      public static com.google.protobuf.Internal.EnumLiteMap<ShapeType>
+          internalGetValueMap() {
+        return internalValueMap;
+      }
+      private static final com.google.protobuf.Internal.EnumLiteMap<
+          ShapeType> internalValueMap =
+            new com.google.protobuf.Internal.EnumLiteMap<ShapeType>() {
+              public ShapeType findValueByNumber(int number) {
+                return ShapeType.forNumber(number);
+              }
+            };
+
+      public final com.google.protobuf.Descriptors.EnumValueDescriptor
+          getValueDescriptor() {
+        return getDescriptor().getValues().get(ordinal());
+      }
+      public final com.google.protobuf.Descriptors.EnumDescriptor
+          getDescriptorForType() {
+        return getDescriptor();
+      }
+      public static final com.google.protobuf.Descriptors.EnumDescriptor
+          getDescriptor() {
+        return serialization.Bigdl.Shape.getDescriptor().getEnumTypes().get(0);
+      }
+
+      private static final ShapeType[] VALUES = values();
+
+      public static ShapeType valueOf(
+          com.google.protobuf.Descriptors.EnumValueDescriptor desc) {
+        if (desc.getType() != getDescriptor()) {
+          throw new java.lang.IllegalArgumentException(
+            "EnumValueDescriptor is not for this type.");
+        }
+        if (desc.getIndex() == -1) {
+          return UNRECOGNIZED;
+        }
+        return VALUES[desc.getIndex()];
+      }
+
+      private final int value;
+
+      private ShapeType(int value) {
+        this.value = value;
+      }
+
+      // @@protoc_insertion_point(enum_scope:serialization.Shape.ShapeType)
+    }
+
+    private int bitField0_;
+    public static final int SHAPETYPE_FIELD_NUMBER = 1;
+    private int shapeType_;
+    /**
+     * <code>.serialization.Shape.ShapeType shapeType = 1;</code>
+     */
+    public int getShapeTypeValue() {
+      return shapeType_;
+    }
+    /**
+     * <code>.serialization.Shape.ShapeType shapeType = 1;</code>
+     */
+    public serialization.Bigdl.Shape.ShapeType getShapeType() {
+      serialization.Bigdl.Shape.ShapeType result = serialization.Bigdl.Shape.ShapeType.valueOf(shapeType_);
+      return result == null ? serialization.Bigdl.Shape.ShapeType.UNRECOGNIZED : result;
+    }
+
+    public static final int SSIZE_FIELD_NUMBER = 2;
+    private int ssize_;
+    /**
+     * <code>int32 ssize = 2;</code>
+     */
+    public int getSsize() {
+      return ssize_;
+    }
+
+    public static final int SHAPEVALUE_FIELD_NUMBER = 3;
+    private java.util.List<java.lang.Integer> shapeValue_;
+    /**
+     * <code>repeated int32 shapeValue = 3;</code>
+     */
+    public java.util.List<java.lang.Integer>
+        getShapeValueList() {
+      return shapeValue_;
+    }
+    /**
+     * <code>repeated int32 shapeValue = 3;</code>
+     */
+    public int getShapeValueCount() {
+      return shapeValue_.size();
+    }
+    /**
+     * <code>repeated int32 shapeValue = 3;</code>
+     */
+    public int getShapeValue(int index) {
+      return shapeValue_.get(index);
+    }
+    private int shapeValueMemoizedSerializedSize = -1;
+
+    public static final int SHAPE_FIELD_NUMBER = 4;
+    private java.util.List<serialization.Bigdl.Shape> shape_;
+    /**
+     * <code>repeated .serialization.Shape shape = 4;</code>
+     */
+    public java.util.List<serialization.Bigdl.Shape> getShapeList() {
+      return shape_;
+    }
+    /**
+     * <code>repeated .serialization.Shape shape = 4;</code>
+     */
+    public java.util.List<? extends serialization.Bigdl.ShapeOrBuilder> 
+        getShapeOrBuilderList() {
+      return shape_;
+    }
+    /**
+     * <code>repeated .serialization.Shape shape = 4;</code>
+     */
+    public int getShapeCount() {
+      return shape_.size();
+    }
+    /**
+     * <code>repeated .serialization.Shape shape = 4;</code>
+     */
+    public serialization.Bigdl.Shape getShape(int index) {
+      return shape_.get(index);
+    }
+    /**
+     * <code>repeated .serialization.Shape shape = 4;</code>
+     */
+    public serialization.Bigdl.ShapeOrBuilder getShapeOrBuilder(
+        int index) {
+      return shape_.get(index);
+    }
+
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized == 1) return true;
+      if (isInitialized == 0) return false;
+
+      memoizedIsInitialized = 1;
+      return true;
+    }
+
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      getSerializedSize();
+      if (shapeType_ != serialization.Bigdl.Shape.ShapeType.SINGLE.getNumber()) {
+        output.writeEnum(1, shapeType_);
+      }
+      if (ssize_ != 0) {
+        output.writeInt32(2, ssize_);
+      }
+      if (getShapeValueList().size() > 0) {
+        output.writeUInt32NoTag(26);
+        output.writeUInt32NoTag(shapeValueMemoizedSerializedSize);
+      }
+      for (int i = 0; i < shapeValue_.size(); i++) {
+        output.writeInt32NoTag(shapeValue_.get(i));
+      }
+      for (int i = 0; i < shape_.size(); i++) {
+        output.writeMessage(4, shape_.get(i));
+      }
+      unknownFields.writeTo(output);
+    }
+
+    public int getSerializedSize() {
+      int size = memoizedSize;
+      if (size != -1) return size;
+
+      size = 0;
+      if (shapeType_ != serialization.Bigdl.Shape.ShapeType.SINGLE.getNumber()) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeEnumSize(1, shapeType_);
+      }
+      if (ssize_ != 0) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(2, ssize_);
+      }
+      {
+        int dataSize = 0;
+        for (int i = 0; i < shapeValue_.size(); i++) {
+          dataSize += com.google.protobuf.CodedOutputStream
+            .computeInt32SizeNoTag(shapeValue_.get(i));
+        }
+        size += dataSize;
+        if (!getShapeValueList().isEmpty()) {
+          size += 1;
+          size += com.google.protobuf.CodedOutputStream
+              .computeInt32SizeNoTag(dataSize);
+        }
+        shapeValueMemoizedSerializedSize = dataSize;
+      }
+      for (int i = 0; i < shape_.size(); i++) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(4, shape_.get(i));
+      }
+      size += unknownFields.getSerializedSize();
+      memoizedSize = size;
+      return size;
+    }
+
+    @java.lang.Override
+    public boolean equals(final java.lang.Object obj) {
+      if (obj == this) {
+       return true;
+      }
+      if (!(obj instanceof serialization.Bigdl.Shape)) {
+        return super.equals(obj);
+      }
+      serialization.Bigdl.Shape other = (serialization.Bigdl.Shape) obj;
+
+      boolean result = true;
+      result = result && shapeType_ == other.shapeType_;
+      result = result && (getSsize()
+          == other.getSsize());
+      result = result && getShapeValueList()
+          .equals(other.getShapeValueList());
+      result = result && getShapeList()
+          .equals(other.getShapeList());
+      result = result && unknownFields.equals(other.unknownFields);
+      return result;
+    }
+
+    @java.lang.Override
+    public int hashCode() {
+      if (memoizedHashCode != 0) {
+        return memoizedHashCode;
+      }
+      int hash = 41;
+      hash = (19 * hash) + getDescriptor().hashCode();
+      hash = (37 * hash) + SHAPETYPE_FIELD_NUMBER;
+      hash = (53 * hash) + shapeType_;
+      hash = (37 * hash) + SSIZE_FIELD_NUMBER;
+      hash = (53 * hash) + getSsize();
+      if (getShapeValueCount() > 0) {
+        hash = (37 * hash) + SHAPEVALUE_FIELD_NUMBER;
+        hash = (53 * hash) + getShapeValueList().hashCode();
+      }
+      if (getShapeCount() > 0) {
+        hash = (37 * hash) + SHAPE_FIELD_NUMBER;
+        hash = (53 * hash) + getShapeList().hashCode();
+      }
+      hash = (29 * hash) + unknownFields.hashCode();
+      memoizedHashCode = hash;
+      return hash;
+    }
+
+    public static serialization.Bigdl.Shape parseFrom(
+        java.nio.ByteBuffer data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static serialization.Bigdl.Shape parseFrom(
+        java.nio.ByteBuffer data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static serialization.Bigdl.Shape parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static serialization.Bigdl.Shape parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static serialization.Bigdl.Shape parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static serialization.Bigdl.Shape parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static serialization.Bigdl.Shape parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static serialization.Bigdl.Shape parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static serialization.Bigdl.Shape parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input);
+    }
+    public static serialization.Bigdl.Shape parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
+    }
+    public static serialization.Bigdl.Shape parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input);
+    }
+    public static serialization.Bigdl.Shape parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return com.google.protobuf.GeneratedMessageV3
+          .parseWithIOException(PARSER, input, extensionRegistry);
+    }
+
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder() {
+      return DEFAULT_INSTANCE.toBuilder();
+    }
+    public static Builder newBuilder(serialization.Bigdl.Shape prototype) {
+      return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() {
+      return this == DEFAULT_INSTANCE
+          ? new Builder() : new Builder().mergeFrom(this);
+    }
+
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    /**
+     * Protobuf type {@code serialization.Shape}
+     */
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
+        // @@protoc_insertion_point(builder_implements:serialization.Shape)
+        serialization.Bigdl.ShapeOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return serialization.Bigdl.internal_static_serialization_Shape_descriptor;
+      }
+
+      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return serialization.Bigdl.internal_static_serialization_Shape_fieldAccessorTable
+            .ensureFieldAccessorsInitialized(
+                serialization.Bigdl.Shape.class, serialization.Bigdl.Shape.Builder.class);
+      }
+
+      // Construct using serialization.Bigdl.Shape.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+
+      private Builder(
+          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessageV3
+                .alwaysUseFieldBuilders) {
+          getShapeFieldBuilder();
+        }
+      }
+      public Builder clear() {
+        super.clear();
+        shapeType_ = 0;
+
+        ssize_ = 0;
+
+        shapeValue_ = java.util.Collections.emptyList();
+        bitField0_ = (bitField0_ & ~0x00000004);
+        if (shapeBuilder_ == null) {
+          shape_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000008);
+        } else {
+          shapeBuilder_.clear();
+        }
+        return this;
+      }
+
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return serialization.Bigdl.internal_static_serialization_Shape_descriptor;
+      }
+
+      public serialization.Bigdl.Shape getDefaultInstanceForType() {
+        return serialization.Bigdl.Shape.getDefaultInstance();
+      }
+
+      public serialization.Bigdl.Shape build() {
+        serialization.Bigdl.Shape result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+
+      public serialization.Bigdl.Shape buildPartial() {
+        serialization.Bigdl.Shape result = new serialization.Bigdl.Shape(this);
+        int from_bitField0_ = bitField0_;
+        int to_bitField0_ = 0;
+        result.shapeType_ = shapeType_;
+        result.ssize_ = ssize_;
+        if (((bitField0_ & 0x00000004) == 0x00000004)) {
+          shapeValue_ = java.util.Collections.unmodifiableList(shapeValue_);
+          bitField0_ = (bitField0_ & ~0x00000004);
+        }
+        result.shapeValue_ = shapeValue_;
+        if (shapeBuilder_ == null) {
+          if (((bitField0_ & 0x00000008) == 0x00000008)) {
+            shape_ = java.util.Collections.unmodifiableList(shape_);
+            bitField0_ = (bitField0_ & ~0x00000008);
+          }
+          result.shape_ = shape_;
+        } else {
+          result.shape_ = shapeBuilder_.build();
+        }
+        result.bitField0_ = to_bitField0_;
+        onBuilt();
+        return result;
+      }
+
+      public Builder clone() {
+        return (Builder) super.clone();
+      }
+      public Builder setField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          java.lang.Object value) {
+        return (Builder) super.setField(field, value);
+      }
+      public Builder clearField(
+          com.google.protobuf.Descriptors.FieldDescriptor field) {
+        return (Builder) super.clearField(field);
+      }
+      public Builder clearOneof(
+          com.google.protobuf.Descriptors.OneofDescriptor oneof) {
+        return (Builder) super.clearOneof(oneof);
+      }
+      public Builder setRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          int index, java.lang.Object value) {
+        return (Builder) super.setRepeatedField(field, index, value);
+      }
+      public Builder addRepeatedField(
+          com.google.protobuf.Descriptors.FieldDescriptor field,
+          java.lang.Object value) {
+        return (Builder) super.addRepeatedField(field, value);
+      }
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof serialization.Bigdl.Shape) {
+          return mergeFrom((serialization.Bigdl.Shape)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+
+      public Builder mergeFrom(serialization.Bigdl.Shape other) {
+        if (other == serialization.Bigdl.Shape.getDefaultInstance()) return this;
+        if (other.shapeType_ != 0) {
+          setShapeTypeValue(other.getShapeTypeValue());
+        }
+        if (other.getSsize() != 0) {
+          setSsize(other.getSsize());
+        }
+        if (!other.shapeValue_.isEmpty()) {
+          if (shapeValue_.isEmpty()) {
+            shapeValue_ = other.shapeValue_;
+            bitField0_ = (bitField0_ & ~0x00000004);
+          } else {
+            ensureShapeValueIsMutable();
+            shapeValue_.addAll(other.shapeValue_);
+          }
+          onChanged();
+        }
+        if (shapeBuilder_ == null) {
+          if (!other.shape_.isEmpty()) {
+            if (shape_.isEmpty()) {
+              shape_ = other.shape_;
+              bitField0_ = (bitField0_ & ~0x00000008);
+            } else {
+              ensureShapeIsMutable();
+              shape_.addAll(other.shape_);
+            }
+            onChanged();
+          }
+        } else {
+          if (!other.shape_.isEmpty()) {
+            if (shapeBuilder_.isEmpty()) {
+              shapeBuilder_.dispose();
+              shapeBuilder_ = null;
+              shape_ = other.shape_;
+              bitField0_ = (bitField0_ & ~0x00000008);
+              shapeBuilder_ = 
+                com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
+                   getShapeFieldBuilder() : null;
+            } else {
+              shapeBuilder_.addAllMessages(other.shape_);
+            }
+          }
+        }
+        this.mergeUnknownFields(other.unknownFields);
+        onChanged();
+        return this;
+      }
+
+      public final boolean isInitialized() {
+        return true;
+      }
+
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        serialization.Bigdl.Shape parsedMessage = null;
+        try {
+          parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
+        } catch (com.google.protobuf.InvalidProtocolBufferException e) {
+          parsedMessage = (serialization.Bigdl.Shape) e.getUnfinishedMessage();
+          throw e.unwrapIOException();
+        } finally {
+          if (parsedMessage != null) {
+            mergeFrom(parsedMessage);
+          }
+        }
+        return this;
+      }
+      private int bitField0_;
+
+      private int shapeType_ = 0;
+      /**
+       * <code>.serialization.Shape.ShapeType shapeType = 1;</code>
+       */
+      public int getShapeTypeValue() {
+        return shapeType_;
+      }
+      /**
+       * <code>.serialization.Shape.ShapeType shapeType = 1;</code>
+       */
+      public Builder setShapeTypeValue(int value) {
+        shapeType_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>.serialization.Shape.ShapeType shapeType = 1;</code>
+       */
+      public serialization.Bigdl.Shape.ShapeType getShapeType() {
+        serialization.Bigdl.Shape.ShapeType result = serialization.Bigdl.Shape.ShapeType.valueOf(shapeType_);
+        return result == null ? serialization.Bigdl.Shape.ShapeType.UNRECOGNIZED : result;
+      }
+      /**
+       * <code>.serialization.Shape.ShapeType shapeType = 1;</code>
+       */
+      public Builder setShapeType(serialization.Bigdl.Shape.ShapeType value) {
+        if (value == null) {
+          throw new NullPointerException();
+        }
+        
+        shapeType_ = value.getNumber();
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>.serialization.Shape.ShapeType shapeType = 1;</code>
+       */
+      public Builder clearShapeType() {
+        
+        shapeType_ = 0;
+        onChanged();
+        return this;
+      }
+
+      private int ssize_ ;
+      /**
+       * <code>int32 ssize = 2;</code>
+       */
+      public int getSsize() {
+        return ssize_;
+      }
+      /**
+       * <code>int32 ssize = 2;</code>
+       */
+      public Builder setSsize(int value) {
+        
+        ssize_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>int32 ssize = 2;</code>
+       */
+      public Builder clearSsize() {
+        
+        ssize_ = 0;
+        onChanged();
+        return this;
+      }
+
+      private java.util.List<java.lang.Integer> shapeValue_ = java.util.Collections.emptyList();
+      private void ensureShapeValueIsMutable() {
+        if (!((bitField0_ & 0x00000004) == 0x00000004)) {
+          shapeValue_ = new java.util.ArrayList<java.lang.Integer>(shapeValue_);
+          bitField0_ |= 0x00000004;
+         }
+      }
+      /**
+       * <code>repeated int32 shapeValue = 3;</code>
+       */
+      public java.util.List<java.lang.Integer>
+          getShapeValueList() {
+        return java.util.Collections.unmodifiableList(shapeValue_);
+      }
+      /**
+       * <code>repeated int32 shapeValue = 3;</code>
+       */
+      public int getShapeValueCount() {
+        return shapeValue_.size();
+      }
+      /**
+       * <code>repeated int32 shapeValue = 3;</code>
+       */
+      public int getShapeValue(int index) {
+        return shapeValue_.get(index);
+      }
+      /**
+       * <code>repeated int32 shapeValue = 3;</code>
+       */
+      public Builder setShapeValue(
+          int index, int value) {
+        ensureShapeValueIsMutable();
+        shapeValue_.set(index, value);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated int32 shapeValue = 3;</code>
+       */
+      public Builder addShapeValue(int value) {
+        ensureShapeValueIsMutable();
+        shapeValue_.add(value);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated int32 shapeValue = 3;</code>
+       */
+      public Builder addAllShapeValue(
+          java.lang.Iterable<? extends java.lang.Integer> values) {
+        ensureShapeValueIsMutable();
+        com.google.protobuf.AbstractMessageLite.Builder.addAll(
+            values, shapeValue_);
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>repeated int32 shapeValue = 3;</code>
+       */
+      public Builder clearShapeValue() {
+        shapeValue_ = java.util.Collections.emptyList();
+        bitField0_ = (bitField0_ & ~0x00000004);
+        onChanged();
+        return this;
+      }
+
+      private java.util.List<serialization.Bigdl.Shape> shape_ =
+        java.util.Collections.emptyList();
+      private void ensureShapeIsMutable() {
+        if (!((bitField0_ & 0x00000008) == 0x00000008)) {
+          shape_ = new java.util.ArrayList<serialization.Bigdl.Shape>(shape_);
+          bitField0_ |= 0x00000008;
+         }
+      }
+
+      private com.google.protobuf.RepeatedFieldBuilderV3<
+          serialization.Bigdl.Shape, serialization.Bigdl.Shape.Builder, serialization.Bigdl.ShapeOrBuilder> shapeBuilder_;
+
+      /**
+       * <code>repeated .serialization.Shape shape = 4;</code>
+       */
+      public java.util.List<serialization.Bigdl.Shape> getShapeList() {
+        if (shapeBuilder_ == null) {
+          return java.util.Collections.unmodifiableList(shape_);
+        } else {
+          return shapeBuilder_.getMessageList();
+        }
+      }
+      /**
+       * <code>repeated .serialization.Shape shape = 4;</code>
+       */
+      public int getShapeCount() {
+        if (shapeBuilder_ == null) {
+          return shape_.size();
+        } else {
+          return shapeBuilder_.getCount();
+        }
+      }
+      /**
+       * <code>repeated .serialization.Shape shape = 4;</code>
+       */
+      public serialization.Bigdl.Shape getShape(int index) {
+        if (shapeBuilder_ == null) {
+          return shape_.get(index);
+        } else {
+          return shapeBuilder_.getMessage(index);
+        }
+      }
+      /**
+       * <code>repeated .serialization.Shape shape = 4;</code>
+       */
+      public Builder setShape(
+          int index, serialization.Bigdl.Shape value) {
+        if (shapeBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureShapeIsMutable();
+          shape_.set(index, value);
+          onChanged();
+        } else {
+          shapeBuilder_.setMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .serialization.Shape shape = 4;</code>
+       */
+      public Builder setShape(
+          int index, serialization.Bigdl.Shape.Builder builderForValue) {
+        if (shapeBuilder_ == null) {
+          ensureShapeIsMutable();
+          shape_.set(index, builderForValue.build());
+          onChanged();
+        } else {
+          shapeBuilder_.setMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .serialization.Shape shape = 4;</code>
+       */
+      public Builder addShape(serialization.Bigdl.Shape value) {
+        if (shapeBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureShapeIsMutable();
+          shape_.add(value);
+          onChanged();
+        } else {
+          shapeBuilder_.addMessage(value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .serialization.Shape shape = 4;</code>
+       */
+      public Builder addShape(
+          int index, serialization.Bigdl.Shape value) {
+        if (shapeBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureShapeIsMutable();
+          shape_.add(index, value);
+          onChanged();
+        } else {
+          shapeBuilder_.addMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .serialization.Shape shape = 4;</code>
+       */
+      public Builder addShape(
+          serialization.Bigdl.Shape.Builder builderForValue) {
+        if (shapeBuilder_ == null) {
+          ensureShapeIsMutable();
+          shape_.add(builderForValue.build());
+          onChanged();
+        } else {
+          shapeBuilder_.addMessage(builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .serialization.Shape shape = 4;</code>
+       */
+      public Builder addShape(
+          int index, serialization.Bigdl.Shape.Builder builderForValue) {
+        if (shapeBuilder_ == null) {
+          ensureShapeIsMutable();
+          shape_.add(index, builderForValue.build());
+          onChanged();
+        } else {
+          shapeBuilder_.addMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .serialization.Shape shape = 4;</code>
+       */
+      public Builder addAllShape(
+          java.lang.Iterable<? extends serialization.Bigdl.Shape> values) {
+        if (shapeBuilder_ == null) {
+          ensureShapeIsMutable();
+          com.google.protobuf.AbstractMessageLite.Builder.addAll(
+              values, shape_);
+          onChanged();
+        } else {
+          shapeBuilder_.addAllMessages(values);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .serialization.Shape shape = 4;</code>
+       */
+      public Builder clearShape() {
+        if (shapeBuilder_ == null) {
+          shape_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00000008);
+          onChanged();
+        } else {
+          shapeBuilder_.clear();
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .serialization.Shape shape = 4;</code>
+       */
+      public Builder removeShape(int index) {
+        if (shapeBuilder_ == null) {
+          ensureShapeIsMutable();
+          shape_.remove(index);
+          onChanged();
+        } else {
+          shapeBuilder_.remove(index);
+        }
+        return this;
+      }
+      /**
+       * <code>repeated .serialization.Shape shape = 4;</code>
+       */
+      public serialization.Bigdl.Shape.Builder getShapeBuilder(
+          int index) {
+        return getShapeFieldBuilder().getBuilder(index);
+      }
+      /**
+       * <code>repeated .serialization.Shape shape = 4;</code>
+       */
+      public serialization.Bigdl.ShapeOrBuilder getShapeOrBuilder(
+          int index) {
+        if (shapeBuilder_ == null) {
+          return shape_.get(index);  } else {
+          return shapeBuilder_.getMessageOrBuilder(index);
+        }
+      }
+      /**
+       * <code>repeated .serialization.Shape shape = 4;</code>
+       */
+      public java.util.List<? extends serialization.Bigdl.ShapeOrBuilder> 
+           getShapeOrBuilderList() {
+        if (shapeBuilder_ != null) {
+          return shapeBuilder_.getMessageOrBuilderList();
+        } else {
+          return java.util.Collections.unmodifiableList(shape_);
+        }
+      }
+      /**
+       * <code>repeated .serialization.Shape shape = 4;</code>
+       */
+      public serialization.Bigdl.Shape.Builder addShapeBuilder() {
+        return getShapeFieldBuilder().addBuilder(
+            serialization.Bigdl.Shape.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .serialization.Shape shape = 4;</code>
+       */
+      public serialization.Bigdl.Shape.Builder addShapeBuilder(
+          int index) {
+        return getShapeFieldBuilder().addBuilder(
+            index, serialization.Bigdl.Shape.getDefaultInstance());
+      }
+      /**
+       * <code>repeated .serialization.Shape shape = 4;</code>
+       */
+      public java.util.List<serialization.Bigdl.Shape.Builder> 
+           getShapeBuilderList() {
+        return getShapeFieldBuilder().getBuilderList();
+      }
+      private com.google.protobuf.RepeatedFieldBuilderV3<
+          serialization.Bigdl.Shape, serialization.Bigdl.Shape.Builder, serialization.Bigdl.ShapeOrBuilder> 
+          getShapeFieldBuilder() {
+        if (shapeBuilder_ == null) {
+          shapeBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
+              serialization.Bigdl.Shape, serialization.Bigdl.Shape.Builder, serialization.Bigdl.ShapeOrBuilder>(
+                  shape_,
+                  ((bitField0_ & 0x00000008) == 0x00000008),
+                  getParentForChildren(),
+                  isClean());
+          shape_ = null;
+        }
+        return shapeBuilder_;
+      }
+      public final Builder setUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.setUnknownFieldsProto3(unknownFields);
+      }
+
+      public final Builder mergeUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.mergeUnknownFields(unknownFields);
+      }
+
+
+      // @@protoc_insertion_point(builder_scope:serialization.Shape)
+    }
+
+    // @@protoc_insertion_point(class_scope:serialization.Shape)
+    private static final serialization.Bigdl.Shape DEFAULT_INSTANCE;
+    static {
+      DEFAULT_INSTANCE = new serialization.Bigdl.Shape();
+    }
+
+    public static serialization.Bigdl.Shape getDefaultInstance() {
+      return DEFAULT_INSTANCE;
+    }
+
+    private static final com.google.protobuf.Parser<Shape>
+        PARSER = new com.google.protobuf.AbstractParser<Shape>() {
+      public Shape parsePartialFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws com.google.protobuf.InvalidProtocolBufferException {
+          return new Shape(input, extensionRegistry);
+      }
+    };
+
+    public static com.google.protobuf.Parser<Shape> parser() {
+      return PARSER;
+    }
+
+    @java.lang.Override
+    public com.google.protobuf.Parser<Shape> getParserForType() {
+      return PARSER;
+    }
+
+    public serialization.Bigdl.Shape getDefaultInstanceForType() {
+      return DEFAULT_INSTANCE;
+    }
+
+  }
+
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_serialization_BigDLModule_descriptor;
   private static final 
@@ -19110,6 +21057,11 @@ public final class Bigdl {
   private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_serialization_NameAttrList_AttrEntry_fieldAccessorTable;
+  private static final com.google.protobuf.Descriptors.Descriptor
+    internal_static_serialization_Shape_descriptor;
+  private static final 
+    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      internal_static_serialization_Shape_fieldAccessorTable;
 
   public static com.google.protobuf.Descriptors.FileDescriptor
       getDescriptor() {
@@ -19146,8 +21098,8 @@ public final class Bigdl {
       "int_data\030\006 \003(\005\022\021\n\tlong_data\030\007 \003(\003\022\022\n\nbyt" +
       "es_data\030\010 \003(\014\022\n\n\002id\030\t \001(\005\"[\n\013Regularizer" +
       "\0227\n\017regularizerType\030\001 \001(\0162\036.serializatio" +
-      "n.RegularizerType\022\023\n\013regularData\030\002 \003(\001\"\332" +
-      "\t\n\tAttrValue\022)\n\010dataType\030\001 \001(\0162\027.seriali" +
+      "n.RegularizerType\022\023\n\013regularData\030\002 \003(\001\"\246" +
+      "\n\n\tAttrValue\022)\n\010dataType\030\001 \001(\0162\027.seriali" +
       "zation.DataType\022\017\n\007subType\030\002 \001(\t\022\024\n\nint3",
       "2Value\030\003 \001(\005H\000\022\024\n\nint64Value\030\004 \001(\003H\000\022\024\n\n" +
       "floatValue\030\005 \001(\002H\000\022\025\n\013doubleValue\030\006 \001(\001H" +
@@ -19164,44 +21116,50 @@ public final class Bigdl {
       "serialization.AttrValue.ArrayValueH\000\0229\n\017" +
       "dataFormatValue\030\020 \001(\0162\036.serialization.In" +
       "putDataFormatH\000\022+\n\013customValue\030\021 \001(\0132\024.g" +
-      "oogle.protobuf.AnyH\000\032\223\004\n\nArrayValue\022\014\n\004s" +
-      "ize\030\001 \001(\005\022)\n\010datatype\030\002 \001(\0162\027.serializat" +
-      "ion.DataType\022\013\n\003i32\030\003 \003(\005\022\013\n\003i64\030\004 \003(\003\022\013" +
-      "\n\003flt\030\005 \003(\002\022\013\n\003dbl\030\006 \003(\001\022\013\n\003str\030\007 \003(\t\022\017\n" +
-      "\007boolean\030\010 \003(\010\022/\n\013Regularizer\030\t \003(\0132\032.se",
-      "rialization.Regularizer\022*\n\006tensor\030\n \003(\0132" +
-      "\032.serialization.BigDLTensor\0220\n\016variableF" +
-      "ormat\030\013 \003(\0162\030.serialization.VarFormat\022-\n" +
-      "\ninitMethod\030\014 \003(\0132\031.serialization.InitMe" +
-      "thod\022/\n\013bigDLModule\030\r \003(\0132\032.serializatio" +
-      "n.BigDLModule\0221\n\014nameAttrList\030\016 \003(\0132\033.se" +
-      "rialization.NameAttrList\0222\n\ndataFormat\030\017" +
-      " \003(\0162\036.serialization.InputDataFormat\022$\n\006" +
-      "custom\030\020 \003(\0132\024.google.protobuf.AnyB\007\n\005va" +
-      "lue\"\230\001\n\014NameAttrList\022\014\n\004name\030\001 \001(\t\0223\n\004at",
-      "tr\030\002 \003(\0132%.serialization.NameAttrList.At" +
-      "trEntry\032E\n\tAttrEntry\022\013\n\003key\030\001 \001(\t\022\'\n\005val" +
-      "ue\030\002 \001(\0132\030.serialization.AttrValue:\0028\001*\260" +
-      "\001\n\tVarFormat\022\020\n\014EMPTY_FORMAT\020\000\022\013\n\007DEFAUL" +
-      "T\020\001\022\t\n\005ONE_D\020\002\022\n\n\006IN_OUT\020\003\022\n\n\006OUT_IN\020\004\022\020" +
-      "\n\014IN_OUT_KW_KH\020\005\022\020\n\014OUT_IN_KW_KH\020\006\022\023\n\017GP" +
-      "_OUT_IN_KW_KH\020\007\022\023\n\017GP_IN_OUT_KW_KH\020\010\022\023\n\017" +
-      "OUT_IN_KT_KH_KW\020\t*\253\001\n\016InitMethodType\022\030\n\024" +
-      "EMPTY_INITIALIZATION\020\000\022\022\n\016RANDOM_UNIFORM" +
-      "\020\001\022\030\n\024RANDOM_UNIFORM_PARAM\020\002\022\021\n\rRANDOM_N",
-      "ORMAL\020\003\022\t\n\005ZEROS\020\004\022\010\n\004ONES\020\005\022\t\n\005CONST\020\006\022" +
-      "\n\n\006XAVIER\020\007\022\022\n\016BILINEARFILLER\020\010*L\n\017Regul" +
-      "arizerType\022\023\n\017L1L2Regularizer\020\000\022\021\n\rL1Reg" +
-      "ularizer\020\001\022\021\n\rL2Regularizer\020\002*%\n\017InputDa" +
-      "taFormat\022\010\n\004NCHW\020\000\022\010\n\004NHWC\020\001*\"\n\nTensorTy" +
-      "pe\022\t\n\005DENSE\020\000\022\t\n\005QUANT\020\001*\375\001\n\010DataType\022\t\n" +
-      "\005INT32\020\000\022\t\n\005INT64\020\001\022\t\n\005FLOAT\020\002\022\n\n\006DOUBLE" +
-      "\020\003\022\n\n\006STRING\020\004\022\010\n\004BOOL\020\005\022\010\n\004CHAR\020\006\022\t\n\005SH" +
-      "ORT\020\007\022\t\n\005BYTES\020\010\022\017\n\013REGULARIZER\020\t\022\n\n\006TEN" +
-      "SOR\020\n\022\023\n\017VARIABLE_FORMAT\020\013\022\016\n\nINITMETHOD",
-      "\020\014\022\n\n\006MODULE\020\r\022\022\n\016NAME_ATTR_LIST\020\016\022\017\n\013AR" +
-      "RAY_VALUE\020\017\022\017\n\013DATA_FORMAT\020\020\022\n\n\006CUSTOM\020\021" +
-      "b\006proto3"
+      "oogle.protobuf.AnyH\000\022%\n\005shape\030\022 \001(\0132\024.se" +
+      "rialization.ShapeH\000\032\270\004\n\nArrayValue\022\014\n\004si" +
+      "ze\030\001 \001(\005\022)\n\010datatype\030\002 \001(\0162\027.serializati" +
+      "on.DataType\022\013\n\003i32\030\003 \003(\005\022\013\n\003i64\030\004 \003(\003\022\013\n" +
+      "\003flt\030\005 \003(\002\022\013\n\003dbl\030\006 \003(\001\022\013\n\003str\030\007 \003(\t\022\017\n\007",
+      "boolean\030\010 \003(\010\022/\n\013Regularizer\030\t \003(\0132\032.ser" +
+      "ialization.Regularizer\022*\n\006tensor\030\n \003(\0132\032" +
+      ".serialization.BigDLTensor\0220\n\016variableFo" +
+      "rmat\030\013 \003(\0162\030.serialization.VarFormat\022-\n\n" +
+      "initMethod\030\014 \003(\0132\031.serialization.InitMet" +
+      "hod\022/\n\013bigDLModule\030\r \003(\0132\032.serialization" +
+      ".BigDLModule\0221\n\014nameAttrList\030\016 \003(\0132\033.ser" +
+      "ialization.NameAttrList\0222\n\ndataFormat\030\017 " +
+      "\003(\0162\036.serialization.InputDataFormat\022$\n\006c" +
+      "ustom\030\020 \003(\0132\024.google.protobuf.Any\022#\n\005sha",
+      "pe\030\021 \003(\0132\024.serialization.ShapeB\007\n\005value\"" +
+      "\230\001\n\014NameAttrList\022\014\n\004name\030\001 \001(\t\0223\n\004attr\030\002" +
+      " \003(\0132%.serialization.NameAttrList.AttrEn" +
+      "try\032E\n\tAttrEntry\022\013\n\003key\030\001 \001(\t\022\'\n\005value\030\002" +
+      " \001(\0132\030.serialization.AttrValue:\0028\001\"\246\001\n\005S" +
+      "hape\0221\n\tshapeType\030\001 \001(\0162\036.serialization." +
+      "Shape.ShapeType\022\r\n\005ssize\030\002 \001(\005\022\022\n\nshapeV" +
+      "alue\030\003 \003(\005\022#\n\005shape\030\004 \003(\0132\024.serializatio" +
+      "n.Shape\"\"\n\tShapeType\022\n\n\006SINGLE\020\000\022\t\n\005MULT" +
+      "I\020\001*\260\001\n\tVarFormat\022\020\n\014EMPTY_FORMAT\020\000\022\013\n\007D",
+      "EFAULT\020\001\022\t\n\005ONE_D\020\002\022\n\n\006IN_OUT\020\003\022\n\n\006OUT_I" +
+      "N\020\004\022\020\n\014IN_OUT_KW_KH\020\005\022\020\n\014OUT_IN_KW_KH\020\006\022" +
+      "\023\n\017GP_OUT_IN_KW_KH\020\007\022\023\n\017GP_IN_OUT_KW_KH\020" +
+      "\010\022\023\n\017OUT_IN_KT_KH_KW\020\t*\253\001\n\016InitMethodTyp" +
+      "e\022\030\n\024EMPTY_INITIALIZATION\020\000\022\022\n\016RANDOM_UN" +
+      "IFORM\020\001\022\030\n\024RANDOM_UNIFORM_PARAM\020\002\022\021\n\rRAN" +
+      "DOM_NORMAL\020\003\022\t\n\005ZEROS\020\004\022\010\n\004ONES\020\005\022\t\n\005CON" +
+      "ST\020\006\022\n\n\006XAVIER\020\007\022\022\n\016BILINEARFILLER\020\010*L\n\017" +
+      "RegularizerType\022\023\n\017L1L2Regularizer\020\000\022\021\n\r" +
+      "L1Regularizer\020\001\022\021\n\rL2Regularizer\020\002*%\n\017In",
+      "putDataFormat\022\010\n\004NCHW\020\000\022\010\n\004NHWC\020\001*\"\n\nTen" +
+      "sorType\022\t\n\005DENSE\020\000\022\t\n\005QUANT\020\001*\210\002\n\010DataTy" +
+      "pe\022\t\n\005INT32\020\000\022\t\n\005INT64\020\001\022\t\n\005FLOAT\020\002\022\n\n\006D" +
+      "OUBLE\020\003\022\n\n\006STRING\020\004\022\010\n\004BOOL\020\005\022\010\n\004CHAR\020\006\022" +
+      "\t\n\005SHORT\020\007\022\t\n\005BYTES\020\010\022\017\n\013REGULARIZER\020\t\022\n" +
+      "\n\006TENSOR\020\n\022\023\n\017VARIABLE_FORMAT\020\013\022\016\n\nINITM" +
+      "ETHOD\020\014\022\n\n\006MODULE\020\r\022\022\n\016NAME_ATTR_LIST\020\016\022" +
+      "\017\n\013ARRAY_VALUE\020\017\022\017\n\013DATA_FORMAT\020\020\022\n\n\006CUS" +
+      "TOM\020\021\022\t\n\005SHAPE\020\022b\006proto3"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -19257,13 +21215,13 @@ public final class Bigdl {
     internal_static_serialization_AttrValue_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_serialization_AttrValue_descriptor,
-        new java.lang.String[] { "DataType", "SubType", "Int32Value", "Int64Value", "FloatValue", "DoubleValue", "StringValue", "BoolValue", "RegularizerValue", "TensorValue", "VariableFormatValue", "InitMethodValue", "BigDLModuleValue", "NameAttrListValue", "ArrayValue", "DataFormatValue", "CustomValue", "Value", });
+        new java.lang.String[] { "DataType", "SubType", "Int32Value", "Int64Value", "FloatValue", "DoubleValue", "StringValue", "BoolValue", "RegularizerValue", "TensorValue", "VariableFormatValue", "InitMethodValue", "BigDLModuleValue", "NameAttrListValue", "ArrayValue", "DataFormatValue", "CustomValue", "Shape", "Value", });
     internal_static_serialization_AttrValue_ArrayValue_descriptor =
       internal_static_serialization_AttrValue_descriptor.getNestedTypes().get(0);
     internal_static_serialization_AttrValue_ArrayValue_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_serialization_AttrValue_ArrayValue_descriptor,
-        new java.lang.String[] { "Size", "Datatype", "I32", "I64", "Flt", "Dbl", "Str", "Boolean", "Regularizer", "Tensor", "VariableFormat", "InitMethod", "BigDLModule", "NameAttrList", "DataFormat", "Custom", });
+        new java.lang.String[] { "Size", "Datatype", "I32", "I64", "Flt", "Dbl", "Str", "Boolean", "Regularizer", "Tensor", "VariableFormat", "InitMethod", "BigDLModule", "NameAttrList", "DataFormat", "Custom", "Shape", });
     internal_static_serialization_NameAttrList_descriptor =
       getDescriptor().getMessageTypes().get(6);
     internal_static_serialization_NameAttrList_fieldAccessorTable = new
@@ -19276,6 +21234,12 @@ public final class Bigdl {
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_serialization_NameAttrList_AttrEntry_descriptor,
         new java.lang.String[] { "Key", "Value", });
+    internal_static_serialization_Shape_descriptor =
+      getDescriptor().getMessageTypes().get(7);
+    internal_static_serialization_Shape_fieldAccessorTable = new
+      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
+        internal_static_serialization_Shape_descriptor,
+        new java.lang.String[] { "ShapeType", "Ssize", "ShapeValue", "Shape", });
     com.google.protobuf.AnyProto.getDescriptor();
   }
 
