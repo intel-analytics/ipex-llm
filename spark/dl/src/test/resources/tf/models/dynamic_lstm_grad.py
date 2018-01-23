@@ -42,6 +42,7 @@ def main():
 
         loss = tf.reduce_sum((y1 - t1) * (y1 - t1)) + tf.reduce_sum((y2 - t2) * (y2 - t2))
         tf.identity(loss, name = "lstm_loss")
+        grad = tf.identity(tf.gradients(loss, inputs), name='gradOutput')
         # tf.summary.FileWriter('/tmp/log', tf.get_default_graph())
 
         net_outputs = map(lambda x: tf.get_default_graph().get_tensor_by_name(x), argv[2].split(','))

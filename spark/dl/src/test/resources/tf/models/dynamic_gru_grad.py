@@ -23,7 +23,7 @@ from util import run_model
 def main():
     tf.set_random_seed(10)
     with tf.Session() as sess:
-        rnn_cell = tf.nn.rnn_cell.LSTMCell(10)
+        rnn_cell = tf.nn.rnn_cell.GRUCell(10)
 
         # defining initial state
         initial_state = rnn_cell.zero_state(4, dtype=tf.float32)
@@ -41,7 +41,8 @@ def main():
         t2 = tf.ones([4, 10])
 
         loss = tf.reduce_sum((y1 - t1) * (y1 - t1)) + tf.reduce_sum((y2 - t2) * (y2 - t2))
-        tf.identity(loss, name = "lstm_loss")
+        tf.identity(loss, name = "gru_loss")
+        grad = tf.identity(tf.gradients(loss, inputs), name='gradOutput')
         # tf.summary.FileWriter('/tmp/log', tf.get_default_graph())
 
         net_outputs = map(lambda x: tf.get_default_graph().get_tensor_by_name(x), argv[2].split(','))

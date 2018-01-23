@@ -536,6 +536,45 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
     }
   }
 
+  "dynamic lstm grad" should "be load correctly" in {
+    val output = Seq("gradOutput:0")
+    val comparePairs = testModel("dynamic_lstm_grad", output, backward = false)
+    for (i <- output.indices) {
+      val (tf, bigdl) = comparePairs(i)
+      tf.almostEqual(bigdl, 1e-2) should be(true)
+    }
+    for (i <- output.length until comparePairs.length) {
+      val (tf, bigdl) = comparePairs(i)
+      tf.almostEqual(bigdl, 1e-1) should be(true)
+    }
+  }
+
+  "dynamic gru" should "be load correctly" in {
+    val output = Seq("gru_loss:0")
+    val comparePairs = testModel("dynamic_gru", output, backward = false)
+    for (i <- output.indices) {
+      val (tf, bigdl) = comparePairs(i)
+      tf.almostEqual(bigdl, 1e-2) should be(true)
+    }
+    for (i <- output.length until comparePairs.length) {
+      val (tf, bigdl) = comparePairs(i)
+      tf.almostEqual(bigdl, 1e-1) should be(true)
+    }
+  }
+
+  "dynamic gru grad" should "be load correctly" in {
+    val output = Seq("gradOutput:0")
+    val comparePairs = testModel("dynamic_gru_grad", output, backward = false)
+    for (i <- output.indices) {
+      val (tf, bigdl) = comparePairs(i)
+      tf.almostEqual(bigdl, 1e-2) should be(true)
+    }
+    for (i <- output.length until comparePairs.length) {
+      val (tf, bigdl) = comparePairs(i)
+      tf.almostEqual(bigdl, 1e-1) should be(true)
+    }
+  }
+
   private def testModel(
     modelName: String,
     endPoints: Seq[String],

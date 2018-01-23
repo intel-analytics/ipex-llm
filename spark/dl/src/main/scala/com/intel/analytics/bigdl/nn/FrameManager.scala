@@ -72,13 +72,22 @@ class FrameManager[T] extends Serializable {
     frame.waitingNodes.append(node)
   }
 
+  /**
+   * Add nodes which will be executed many times in the loop belong to the given frame
+   * @param node
+   * @param frame
+   * @return
+   */
   private def addToFrameNode(node: ModuleNode[T], frame : Frame[T]): Boolean = {
+    // Here's a little tricky. We find the begin of these execute many times nodes by looking for
+    // pattern of "NextIteration -> Merge"
     if (node.element.isInstanceOf[MergeOps[_]] && node.prevNodes.size == 2 &&
       (node.prevNodes(0).element.isInstanceOf[NextIteration[_, _]] ||
         node.prevNodes(1).element.isInstanceOf[NextIteration[_, _]])) {
       return true
     }
 
+    // If its parents will be re-executed, it will be re-executed
     node.prevNodes.foreach(n => if (frame.nodes.contains(n)) return true)
 
     return false
