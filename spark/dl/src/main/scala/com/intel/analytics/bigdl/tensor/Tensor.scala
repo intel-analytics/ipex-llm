@@ -963,12 +963,13 @@ object Tensor {
    */
   def apply[@specialized(Float, Double) T: ClassTag](data: Array[T],
     shape: Array[Int])(implicit ev: TensorNumeric[T]): Tensor[T] = {
-    if (data.length == 1) {
+    if (shape.product != data.length) {
+      require(data.length == 1, "shape total size doesn't match data length")
+      // Here we create a repeat tensor
       val strides = new Array[Int](shape.length)
       new DenseTensor[T]().set(Storage[T](data), storageOffset = 1, sizes = shape,
         strides = strides)
     } else {
-      require(shape.product == data.length, "shape total size doesn't match data length")
       new DenseTensor[T]().set(Storage[T](data), storageOffset = 1, sizes = shape)
     }
   }
