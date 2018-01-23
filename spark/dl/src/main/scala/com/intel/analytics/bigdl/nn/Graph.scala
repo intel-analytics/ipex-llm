@@ -460,14 +460,16 @@ object Graph extends ContainerSerializable {
    * Build multiple inputs, multiple outputs graph container.
    * @param input input node
    * @param output output node
+   * @param backGraphPruning whether enable backward graph pruning
    * @return a graph container
    */
   def apply[T: ClassTag](
     input : Array[ModuleNode[T]],
     output : Array[ModuleNode[T]],
-    variables: Option[(Array[Tensor[T]], Array[Tensor[T]])] = None
+    variables: Option[(Array[Tensor[T]], Array[Tensor[T]])] = None,
+    backGraphPruning: Boolean = false
   )(implicit ev: TensorNumeric[T]) : Graph[T] = {
-    new StaticGraph[T](input, output, variables)
+    new StaticGraph[T](input, output, variables, backGraphPruning = backGraphPruning)
   }
 
   def dynamic[T: ClassTag](

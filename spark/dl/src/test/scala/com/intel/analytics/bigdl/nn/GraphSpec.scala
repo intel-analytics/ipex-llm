@@ -22,7 +22,7 @@ import com.intel.analytics.bigdl.models.inception.Inception_v1_NoAuxClassifier
 import com.intel.analytics.bigdl.models.lenet.LeNet5
 import com.intel.analytics.bigdl.models.vgg.{VggForCifar10, Vgg_16, Vgg_19}
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
-import com.intel.analytics.bigdl.nn.ops.{ControlNodes, Less}
+import com.intel.analytics.bigdl.nn.ops._
 import com.intel.analytics.bigdl.nn.tf.Const
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.utils.RandomGenerator._
@@ -1268,6 +1268,56 @@ class StaticGraphSpec extends FlatSpec with Matchers {
     intercept[NoSuchElementException] {
       model.node("ll1")
     }
+  }
+
+  "Graph" should "do backwardPruning correctly" in {
+    val (initW, initB) = Tensor(10, 10).rand() -> Tensor(10).rand()
+    val builder = () => {
+      val in1 = Pow().inputs()  // Operation
+      val pp1 = Abs().inputs(in1)
+      val in2 = Exp().inputs()
+      val pp2 = Ceil().inputs(in2)  // Operation
+      val cc = JoinTable(1, 1).inputs(pp1, pp2)
+      val ll = Linear(20, 10, initWeight = Tensor.ones(10, 20), initBias = Tensor.ones(10)
+      ).setName("linear").inputs(cc)
+      val round = Round().setName("round").inputs(ll)  // Operation
+      val ll2 = Linear(10, 10, initWeight = initW.clone(), initBias = initB.clone())
+      val fc = ReLU().inputs(ll2.inputs(round))
+      Array(in1, in2) -> Array(fc)
+    }
+    var graph = {
+      val (inputs, outputs) = builder()
+      Graph[Float](inputs, outputs)
+    }
+    val graphPruning = {
+      val (inputs, outputs) = builder()
+      Graph[Float](inputs, outputs, backGraphPruning = true)
+    }
+    // BackwardPruning should not affect forward results.
+    val input = T(T(Tensor(10).rand(), Tensor.scalar(2.0f)), Tensor(10).rand())
+    var (forward1, forward2) = graph.forward(input) -> graphPruning.forward(input)
+    forward1.toTensor.toArray() shouldEqual forward2.toTensor.toArray()
+
+    val gradOut = Tensor(10).rand()
+    // Exception thrown because graph contains [[Operation]] which don't support backward.
+    intercept[Exception] {
+      graph.backward(input, gradOut)
+    }
+    // Pruned graph should return same result as manually gradient-stopped graph.
+    graphPruning.backward(input, gradOut)
+    forward1 = graphPruning.forward(input)
+    graph = {
+      val (inputs, outputs) = builder()
+      Graph[Float](inputs, outputs).stopGradient(Array("round"))
+    }
+    graph.forward(input)
+    graph.backward(input, gradOut)
+    forward2 = graph.forward(input)
+    forward1.toTensor.toArray() shouldEqual forward2.toTensor.toArray()
+    // Node of module `linear` is pruned in backward graph, so its weight won't change.
+    val linear = graphPruning.modules
+      .filter(_.getName() == "linear").head.asInstanceOf[Linear[Float]]
+    linear.weight.storage().array().forall(_ == 1.0f) shouldEqual true
   }
 }
 
