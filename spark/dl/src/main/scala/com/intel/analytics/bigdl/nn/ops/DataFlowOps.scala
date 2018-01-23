@@ -15,6 +15,7 @@
  */
 package com.intel.analytics.bigdl.nn.ops
 
+import java.util
 import java.util.concurrent.ConcurrentHashMap
 
 import com.intel.analytics.bigdl.nn.tf.WithoutInput
@@ -131,27 +132,27 @@ private[nn] class TensorArray[D: ClassTag](
 }
 
 private[nn] object TensorArray {
-  private val arrays = new ConcurrentHashMap[String, TensorArray[_]]()
+  private val arrays = new util.WeakHashMap[String, TensorArray[_]]()
 
-  def apply[D](key: String): TensorArray[D] = {
+  def apply[D](key: String): TensorArray[D] = this.synchronized {
     require(arrays.containsKey(key), s"Cannot find TensorArray for name $key")
     arrays.get(key).asInstanceOf[TensorArray[D]]
   }
 
-  def get(key: String): TensorArray[_] = {
+  def get(key: String): TensorArray[_] = this.synchronized {
     require(arrays.containsKey(key), s"Cannot find TensorArray for name $key")
     arrays.get(key)
   }
 
-  def update(key: String, value: TensorArray[_]): Unit = {
+  def update(key: String, value: TensorArray[_]): Unit = this.synchronized {
     arrays.put(key, value)
   }
 
-  def exist(key: String): Boolean = {
+  def exist(key: String): Boolean = this.synchronized {
     arrays.containsKey(key)
   }
 
-  def release(key : String): Unit = {
+  def release(key : String): Unit = this.synchronized {
     if (arrays.containsKey(key)) arrays.remove(key)
   }
 
@@ -539,18 +540,18 @@ private[bigdl] class Stack[D](maxSize: Int) {
 }
 
 private[bigdl] object Stack {
-  private val stacks = new ConcurrentHashMap[String, Stack[_]]()
+  private val stacks = new util.WeakHashMap[String, Stack[_]]()
 
-  def apply[D](key: String): Stack[D] = {
+  def apply[D](key: String): Stack[D] = this.synchronized {
     require(stacks.containsKey(key), s"Cannot find Stack for name $key")
     stacks.get(key).asInstanceOf[Stack[D]]
   }
 
-  def update(key: String, value: Stack[_]): Unit = {
+  def update(key: String, value: Stack[_]): Unit = this.synchronized {
     stacks.put(key, value)
   }
 
-  def release(key : String): Unit = {
+  def release(key : String): Unit = this.synchronized {
     if (stacks.containsKey(key)) stacks.remove(key)
   }
 }
