@@ -17,6 +17,7 @@ package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.Util
 
 import scala.reflect.ClassTag
 
@@ -36,6 +37,7 @@ abstract class DynamicContainer[A <: Activity : ClassTag, B <: Activity : ClassT
    * @return this container
    */
   def add(module: AbstractModule[_ <: Activity, _ <: Activity, T]): this.type = {
+    Util.excludeNotTorch[T](Seq(module))
     modules += module.asInstanceOf[AbstractModule[Activity, Activity, T]]
     this
   }
