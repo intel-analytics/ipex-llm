@@ -150,8 +150,7 @@ object TH {
   }
 
   // Single map
-  def map(result: String): (Any) = {
-    val suffix = ".t7"
+  def map(result: String, suffix: String): (Any) = {
     val tmpFile = java.io.File.createTempFile("UnitTest", "lua")
     val absolutePath = tmpFile.getAbsolutePath
     val subPath = absolutePath.substring(0, absolutePath.lastIndexOf(java.io.File.separator) + 1)
