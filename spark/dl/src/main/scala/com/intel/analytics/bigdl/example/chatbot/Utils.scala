@@ -34,16 +34,16 @@ object Utils {
                           saveFolder: String = "./",
                           modelSnapshot: Option[String] = None,
                           stateSnapshot: Option[String] = None,
-                          checkpoint: Option[String] = Some("/tmp/chatbot"),
-                          batchSize: Int = 32,
+                          checkpoint: Option[String] = Some("/tmp/"),
+                          batchSize: Int = 4,
                           learningRate: Double = 0.0001,
                           momentum: Double = 0.0,
                           weightDecay: Double = 0.0,
                           dampening: Double = 0.0,
                           hiddenSize: Int = 40,
-                          vocabSize: Int = 8000,
+                          vocabSize: Int = 8004,
                           bptt: Int = 4,
-                          nEpochs: Int = 50,
+                          nEpochs: Int = 10,
                           trainingSplit: Double = 0.8,
                           embedDim: Int = 1024,
                           sentFile: Option[String] = None,
@@ -74,7 +74,6 @@ object Utils {
     opt[Int]('b', "batchSize")
       .text("batchSize of rnn")
       .action((x, c) => c.copy(batchSize = x))
-      .required()
 
     opt[Double]('r', "learningRate")
       .text("learning rate")

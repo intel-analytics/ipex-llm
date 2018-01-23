@@ -155,6 +155,8 @@ class Seq2seq[T: ClassTag](encoderRecs: Array[Recurrent[T]], decoderRecs: Array[
     gradInput.toTensor
   }
 
+  override def reset(): Unit = module.reset()
+
   override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
     module.parameters()
   }

@@ -52,8 +52,8 @@ class LookupTable[T: ClassTag]
 )
 (implicit ev: TensorNumeric[T]) extends TensorModule[T] with Initializable {
 
-  val weight = Tensor[T](nIndex, nOutput)
-  val gradWeight = Tensor[T](nIndex, nOutput).zero()
+  var weight = Tensor[T](nIndex, nOutput)
+  var gradWeight = Tensor[T](nIndex, nOutput).zero()
 
   private var inputBuffer = Tensor[T]()
   private var normBuffer = Tensor[T]()

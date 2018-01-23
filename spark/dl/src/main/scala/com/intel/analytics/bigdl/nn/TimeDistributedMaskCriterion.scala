@@ -36,10 +36,12 @@ import scala.reflect.ClassTag
  *                  if sizeAverage=true, and dimension=2, it means to divide the sequence length
  */
 
-class TimeDistributedCriterion[T : ClassTag](
+class TimeDistributedMaskCriterion[T : ClassTag](
   val critrn : TensorCriterion[T],
   val sizeAverage: Boolean = false,
-  val dimension: Int = 2)
+  val dimension: Int = 2,
+  val padValue: Int = 0
+)
   (implicit ev: TensorNumeric[T]) extends TensorCriterion[T] {
 
   private var fInput: Tensor[T] = Tensor[T]()
@@ -50,6 +52,7 @@ class TimeDistributedCriterion[T : ClassTag](
 
   @transient
   protected var results: Array[Future[Unit]] = _
+  private val mask = Tensor[T]()
 
   /**
    * Clone N criterions; N depends on the time dimension of the input
@@ -97,13 +100,20 @@ class TimeDistributedCriterion[T : ClassTag](
     }
     Engine.model.sync(results)
 
+    mask.resizeAs(target)
+    mask.applyFun[T](target, x =>
+      if (x != ev.fromType[Int](padValue)) ev.one else ev.zero)
+    val outputBuff = Tensor()
+    outputBuff.resizeAs(mask)
     (0 until nstep).foreach(b => {
-      output = ev.plus(output, cells(b).output)
+      //      output = ev.plus(output, cells(b).output)
+      outputBuff
+        .select(2, b + 1)
+        .cmul(mask.select(2, b + 1), cells(b).asInstanceOf[ClassNLLCriterion[T]].sparseOutput)
     })
 
-    if (sizeAverage) {
-      output = ev.divide(output, ev.fromType[Int](nstep))
-    }
+    output = ev.divide(outputBuff.sum(), mask.sum())
+
     output
   }
 
@@ -127,24 +137,28 @@ class TimeDistributedCriterion[T : ClassTag](
         fTarget = target.select(dimension, _i)
         _gradInput = gradInput.select(dimension, _i)
         _gradInput.copy(cells(_i - 1).updateGradInput(fInput, fTarget).toTensor[T])
-        if (sizeAverage) {
-          _gradInput = _gradInput.div(ev.fromType[Int](nstep))
-        }
+        //        if (sizeAverage) {
+        //          _gradInput = _gradInput.div(ev.fromType[Int](nstep))
+        //        }
       })
       i += 1
     }
     Engine.model.sync(results)
-    gradInput.mul(ev.fromType[Int](1000))
+    gradInput.div(mask.sum())
     gradInput
   }
 
   override def canEqual(other: Any): Boolean = other.isInstanceOf[TimeDistributedCriterion[T]]
 }
 
-object TimeDistributedCriterion {
+object TimeDistributedMaskCriterion {
   def apply[@specialized(Float, Double) T: ClassTag](
-    critrn: TensorCriterion[T] = null, sizeAverage: Boolean = false, dimension: Int = 2)
-    (implicit ev: TensorNumeric[T]) : TimeDistributedCriterion[T] = {
-    new TimeDistributedCriterion[T](critrn, sizeAverage, dimension)
+    critrn: TensorCriterion[T] = null,
+    sizeAverage: Boolean = false,
+    dimension: Int = 2,
+    padValue: Int = 0
+  )
+    (implicit ev: TensorNumeric[T]) : TimeDistributedMaskCriterion[T] = {
+    new TimeDistributedMaskCriterion[T](critrn, sizeAverage, dimension, padValue)
   }
 }
