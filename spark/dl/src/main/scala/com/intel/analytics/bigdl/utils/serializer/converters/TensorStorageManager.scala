@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.utils.serializer
+package com.intel.analytics.bigdl.utils.serializer.converters
 
 import com.google.protobuf.ByteString
 import com.intel.analytics.bigdl.nn.quantized.{ConvData, ConvWeight, LinearData, LinearWeight}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.{NumericBoolean, NumericChar, NumericDouble, NumericFloat, NumericInt, NumericLong, NumericShort, NumericString}
 import com.intel.analytics.bigdl.tensor.{DenseType, QuantizedTensor, QuantizedType, Tensor}
-import com.intel.analytics.bigdl.utils.serializer.ProtoTensorStorageManager.isEmptyTensor
+import com.intel.analytics.bigdl.utils.serializer.SerializeContext
 import com.intel.analytics.bigdl.utils.tf.TFTensorNumeric.NumericByteString
 import serialization.Bigdl.{BigDLTensor, DataType, TensorStorage}
 

@@ -25,7 +25,8 @@ import com.intel.analytics.bigdl.nn.Container
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.{DenseType, QuantizedTensor, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.serializer.DataConverter.TensorConverter
+import com.intel.analytics.bigdl.utils.serializer.converters.TensorConverter
+import com.intel.analytics.bigdl.utils.serializer.converters.DataReaderWriter
 import com.intel.analytics.bigdl.utils.{File, FileReader, FileWriter, Table}
 import serialization.Bigdl._
 
