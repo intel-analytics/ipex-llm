@@ -191,6 +191,11 @@ sealed private[bigdl] class NextIteration[T: ClassTag, D: ClassTag] private[bigd
   override def updateOutput(input: Tensor[D]): Tensor[D] = {
     output.resizeAs(input).copy(input)
   }
+
+  override def getClassTagNumerics(): (Array[ClassManifest[_]], Array[TensorNumeric[_]]) = {
+    (Array[ClassTag[_]](scala.reflect.classTag[T], scala.reflect.classTag[D]),
+      Array[TensorNumeric[_]](ev, ev2))
+  }
 }
 
 /**

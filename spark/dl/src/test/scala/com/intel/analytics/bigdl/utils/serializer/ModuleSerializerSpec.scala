@@ -78,8 +78,15 @@ class ModuleSerializerSpec extends FlatSpec with Matchers with BeforeAndAfterAll
     subTypes.foreach(sub => expected.add(sub.getName))
   }
 
+
   private def runSerializationTest(module : AbstractModule[_, _, Float],
-                                  input : Activity, cls: Class[_] = null) : Unit = {
+    input : Activity, cls: Class[_] = null) : Unit = {
+    runSerializationTestWithMultiClass(module, input,
+      if (cls == null) Array(module.getClass) else Array(cls))
+  }
+
+  private def runSerializationTestWithMultiClass(module : AbstractModule[_, _, Float],
+                                  input : Activity, classes: Array[Class[_]]) : Unit = {
     val name = module.getName
     val serFile = File.createTempFile(name, postFix)
     val originForward = module.evaluate().forward(input)
@@ -95,11 +102,7 @@ class ModuleSerializerSpec extends FlatSpec with Matchers with BeforeAndAfterAll
     }
 
     afterLoadForward should be (originForward)
-    if (cls != null) {
-      tested.add(cls.getName)
-    } else {
-      tested.add(module.getClass.getName)
-    }
+    classes.foreach(cls => tested.add(cls.getName))
   }
 
   "Abs serializer" should "work properly" in {
@@ -2472,6 +2475,126 @@ class ModuleSerializerSpec extends FlatSpec with Matchers with BeforeAndAfterAll
     runSerializationTest(module, input)
   }
 
+  "Control Ops serializer" should "work properly" in {
+    val input = Input[Float]("input")
+
+    val conditionInput = Input[Float]("conditionInput")
+    val const = new com.intel.analytics.bigdl.nn.tf.Const[Float, Float](Tensor(T(9))).inputs()
+    val constEnter = new com.intel.analytics.bigdl.nn.ops.Enter[Float]("test_frame").inputs(const)
+    val less = Less[Float]().inputs(constEnter, conditionInput)
+
+    val updateInput = Input[Float]()
+    val add = AddConstant[Float](1).inputs(updateInput)
+    val addEnter = new com.intel.analytics.bigdl.nn.ops.Enter[Float]("test_frame").inputs(add)
+    val echo = Echo[Float]().inputs(addEnter)
+
+    val exit = ControlNodes.whileLoop[Float](
+      (Seq(conditionInput), less),
+      (Seq((updateInput, echo))),
+      Seq(input),
+      "while"
+    )
+    val model = Graph.dynamic[Float](Array(input), Array(exit(0)), None, false)
+    runSerializationTestWithMultiClass(model, Tensor.scalar[Float](1), Array(
+      addEnter.element.getClass.asInstanceOf[Class[_]],
+      new com.intel.analytics.bigdl.nn.ops.NextIteration[Float, Float]().getClass,
+      new com.intel.analytics.bigdl.nn.ops.Exit[Float]().getClass,
+      new com.intel.analytics.bigdl.nn.ops.LoopCondition[Float]().getClass
+    ))
+  }
+
+  "Stack operations serializer" should "work properly" in {
+    import com.intel.analytics.bigdl.nn.ops._
+    val data = Const[Float, Float](Tensor.scalar[Float](1)).inputs()
+    val stack = new StackCreator[Float, Float]().inputs()
+    val push = new StackPush[Float, Float]().inputs(stack, data)
+    val ctr = new com.intel.analytics.bigdl.nn.tf.ControlDependency[Float]().inputs(push)
+    val pop = new StackPop[Float, Float]().inputs(stack, ctr)
+    val model = Graph.dynamic[Float](Array(stack), Array(pop))
+
+    runSerializationTestWithMultiClass(model, Tensor.scalar(1), Array(
+      stack.element.getClass.asInstanceOf[Class[_]],
+      push.element.getClass.asInstanceOf[Class[_]],
+      pop.element.getClass.asInstanceOf[Class[_]]
+    ))
+  }
+
+  "TensorArray serializer R/W" should "work properly" in {
+    import com.intel.analytics.bigdl.nn.ops._
+    val tensorArray = new TensorArrayCreator[Float, Float]().inputs()
+    val data = Const[Float, Float](Tensor.scalar[Float](1)).inputs()
+    val index = Const[Float, Int](Tensor.scalar[Int](0)).inputs()
+    val write = new TensorArrayWrite[Float, Float]().inputs((tensorArray, 1), (index, 1), (data, 1))
+    val ctr = new com.intel.analytics.bigdl.nn.tf.ControlDependency[Float]().inputs(write)
+    val read = new TensorArrayRead[Float, Float]().inputs((tensorArray, 1), (index, 1), (ctr, 1))
+    val grad = new TensorArrayGrad[Float]("grad").inputs(tensorArray)
+    val output = Identity[Float]().inputs((grad, 2))
+    val model = Graph.dynamic[Float](Array(tensorArray), Array(read, output))
+
+    runSerializationTestWithMultiClass(model, Tensor.scalar[Int](1), Array(
+      tensorArray.element.getClass.asInstanceOf[Class[_]],
+      write.element.getClass.asInstanceOf[Class[_]],
+      read.element.getClass.asInstanceOf[Class[_]],
+      grad.element.getClass.asInstanceOf[Class[_]]
+    ))
+  }
+
+  "TensorArray serializer Gather/Scatter" should "work properly" in {
+    import com.intel.analytics.bigdl.nn.ops._
+    val tensorArray = new TensorArrayCreator[Float, Float]().inputs()
+    val data = Const[Float, Float](Tensor[Float](3, 4).rand()).inputs()
+    val indices = Const[Float, Int](Tensor[Int](T(0, 1, 2))).inputs()
+    val scatter = new TensorArrayScatter[Float, Float]().inputs((tensorArray, 1), (indices, 1),
+      (data, 1))
+    val ctr = new com.intel.analytics.bigdl.nn.tf.ControlDependency[Float]().inputs(scatter)
+    val gather = new TensorArrayGather[Float, Float]().inputs((tensorArray, 1), (indices, 1),
+      (ctr, 1))
+    val ctr2 = new com.intel.analytics.bigdl.nn.tf.ControlDependency[Float]().inputs(gather)
+    val close = new TensorArrayClose[Float]().inputs((tensorArray, 1), (ctr2, 1))
+    val model = Graph.dynamic[Float](Array(tensorArray), Array(gather, close))
+
+    runSerializationTestWithMultiClass(model, Tensor.scalar[Int](10), Array(
+      tensorArray.element.getClass.asInstanceOf[Class[_]],
+      scatter.element.getClass.asInstanceOf[Class[_]],
+      gather.element.getClass.asInstanceOf[Class[_]],
+      close.element.getClass.asInstanceOf[Class[_]]
+    ))
+  }
+
+  "TensorArray serializer Split/Concat" should "work properly" in {
+    import com.intel.analytics.bigdl.nn.ops._
+    val tensorArray = new TensorArrayCreator[Float, Float]().inputs()
+    val data = Const[Float, Float](Tensor[Float](3, 4).rand()).inputs()
+    val lengths = Const[Float, Int](Tensor[Int](T(1, 2))).inputs()
+    val splitter = new TensorArraySplit[Float, Float]().inputs((tensorArray, 1), (data, 1),
+      (lengths, 1))
+    val ctr = new com.intel.analytics.bigdl.nn.tf.ControlDependency[Float]().inputs(splitter)
+    val concat = new TensorArrayConcat[Float, Float]().inputs(tensorArray, ctr)
+    val size = new TensorArraySize[Float]().inputs(tensorArray, ctr)
+    val ctr2 = new com.intel.analytics.bigdl.nn.tf.ControlDependency[Float]().inputs(concat, size)
+    val close = new TensorArrayClose[Float]().inputs((tensorArray, 1), (ctr2, 1))
+    val model = Graph.dynamic[Float](Array(tensorArray), Array(concat, close, size))
+
+    runSerializationTestWithMultiClass(model, Tensor.scalar[Int](2), Array(
+      tensorArray.element.getClass.asInstanceOf[Class[_]],
+      splitter.element.getClass.asInstanceOf[Class[_]],
+      concat.element.getClass.asInstanceOf[Class[_]],
+      close.element.getClass.asInstanceOf[Class[_]],
+      size.element.getClass.asInstanceOf[Class[_]]
+    ))
+  }
+
+  "ConcatOffset serializer" should "work properly" in {
+    val module = new com.intel.analytics.bigdl.nn.ops.ConcatOffset[Float]()
+    runSerializationTest(module, T(Tensor.scalar[Int](1), Tensor[Int](T(2, 2, 5, 7)),
+      Tensor[Int](T(2, 3, 5, 7)), Tensor[Int](T(2, 4, 5, 7))))
+  }
+
+  "InvertPermutation serializer" should "work properly" in {
+    val module = new com.intel.analytics.bigdl.nn.ops.InvertPermutation[Float]()
+    runSerializationTest(module, Tensor[Int](T(0, 1, 2, 3, 4)))
+  }
+
   override protected def afterAll() = {
     var total = 0
     expected.foreach(exp => {
@@ -2482,4 +2605,3 @@ class ModuleSerializerSpec extends FlatSpec with Matchers with BeforeAndAfterAll
   }
 
 }
-

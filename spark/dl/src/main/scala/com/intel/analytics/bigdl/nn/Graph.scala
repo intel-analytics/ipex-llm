@@ -276,7 +276,7 @@ abstract class Graph[T: ClassTag](
   ): Activity = {
     if (inputs.length == 1) {
       require(inputs(0).eq(node), "input node is not in the input list")
-      input.toTensor
+      input
     } else {
       val i = inputs.indexOf(node)
       require(i != -1, "input node is not in the input list")
@@ -603,8 +603,7 @@ object Graph extends ContainerSerializable {
     controlOps match {
       case switchOps : SwitchOps[T] => new SwitchControlNode[Module[T]](switchOps)
       case mergeOps : MergeOps[T] => new MergeControlNode[Module[T]](mergeOps)
-      case _ => throw new RuntimeException(s"Ops ${controlOps.getClass.getName}" +
-        s" control node not supported!")
+      case _ => new Node[Module[T]](controlOps)
     }
   }
 

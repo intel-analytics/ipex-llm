@@ -179,7 +179,7 @@ private[bigdl] class TensorArrayCreator[T: ClassTag, D: ClassTag](
   dynamicSize: Boolean = false,
   clearAfterRead: Boolean = true,
   identicalElementShapes: Boolean = false,
-  tensorArrayName: String = null
+  tensorArrayName: String = ""
 )(implicit ev: TensorNumeric[T], ev2: TensorNumeric[D])
   extends Operation[Tensor[Int], Table, T] with ResourceAllocator {
 
@@ -203,11 +203,16 @@ private[bigdl] class TensorArrayCreator[T: ClassTag, D: ClassTag](
   }
 
   private def getHandleName(): String = {
-    if (tensorArrayName == null) {
+    if (tensorArrayName == "") {
       this.getName() + System.identityHashCode(this)
     } else {
       tensorArrayName + System.identityHashCode(this)
     }
+  }
+
+  override def getClassTagNumerics(): (Array[ClassManifest[_]], Array[TensorNumeric[_]]) = {
+    (Array[ClassTag[_]](scala.reflect.classTag[T], scala.reflect.classTag[D]),
+      Array[TensorNumeric[_]](ev, ev2))
   }
 }
 
@@ -267,6 +272,11 @@ private[bigdl] class TensorArrayWrite[T: ClassTag, D: ClassTag]()(
     tensorArray(index.value()) = value
     output
   }
+
+  override def getClassTagNumerics(): (Array[ClassManifest[_]], Array[TensorNumeric[_]]) = {
+    (Array[ClassTag[_]](scala.reflect.classTag[T], scala.reflect.classTag[D]),
+      Array[TensorNumeric[_]](ev, ev2))
+  }
 }
 
 /**
@@ -289,6 +299,11 @@ private[bigdl] class TensorArrayRead[T: ClassTag, D: ClassTag]()(
     val tensorArray = TensorArray[D](handle.value())
     output = tensorArray(index.value())
     output
+  }
+
+  override def getClassTagNumerics(): (Array[ClassManifest[_]], Array[TensorNumeric[_]]) = {
+    (Array[ClassTag[_]](scala.reflect.classTag[T], scala.reflect.classTag[D]),
+      Array[TensorNumeric[_]](ev, ev2))
   }
 }
 
@@ -344,6 +359,11 @@ private[bigdl] class TensorArrayGather[T: ClassTag, D: ClassTag]()(
 
     output
   }
+
+  override def getClassTagNumerics(): (Array[ClassManifest[_]], Array[TensorNumeric[_]]) = {
+    (Array[ClassTag[_]](scala.reflect.classTag[T], scala.reflect.classTag[D]),
+      Array[TensorNumeric[_]](ev, ev2))
+  }
 }
 
 /**
@@ -383,6 +403,11 @@ private[bigdl] class TensorArrayScatter[T: ClassTag, D: ClassTag]()(
     }
 
     output
+  }
+
+  override def getClassTagNumerics(): (Array[ClassManifest[_]], Array[TensorNumeric[_]]) = {
+    (Array[ClassTag[_]](scala.reflect.classTag[T], scala.reflect.classTag[D]),
+      Array[TensorNumeric[_]](ev, ev2))
   }
 }
 
@@ -435,6 +460,11 @@ private[bigdl] class TensorArrayConcat[T: ClassTag, D: ClassTag]()(
     output = T(value, lengths)
     output
   }
+
+  override def getClassTagNumerics(): (Array[ClassManifest[_]], Array[TensorNumeric[_]]) = {
+    (Array[ClassTag[_]](scala.reflect.classTag[T], scala.reflect.classTag[D]),
+      Array[TensorNumeric[_]](ev, ev2))
+  }
 }
 
 /**
@@ -483,6 +513,11 @@ private[bigdl] class TensorArraySplit[T: ClassTag, D: ClassTag]()(
     }
 
     output
+  }
+
+  override def getClassTagNumerics(): (Array[ClassManifest[_]], Array[TensorNumeric[_]]) = {
+    (Array[ClassTag[_]](scala.reflect.classTag[T], scala.reflect.classTag[D]),
+      Array[TensorNumeric[_]](ev, ev2))
   }
 }
 
@@ -557,7 +592,7 @@ private[bigdl] object Stack {
 }
 
 private[bigdl] class StackCreator[T: ClassTag, D: ClassTag](
-  name: String = null)(implicit ev: TensorNumeric[T], ev2: TensorNumeric[D])
+  private val name: String = "")(implicit ev: TensorNumeric[T], ev2: TensorNumeric[D])
   extends Operation[Tensor[Int], Tensor[String], T] with WithoutInput with ResourceAllocator {
   override def updateOutput(input: Tensor[Int]): Tensor[String] = {
     require(input == null || input.isScalar,
@@ -576,11 +611,16 @@ private[bigdl] class StackCreator[T: ClassTag, D: ClassTag](
   }
 
   private def getHandleName(): String = {
-    if (name == null) {
+    if (name == "") {
       this.getName() + System.identityHashCode(this)
     } else {
       name + System.identityHashCode(this)
     }
+  }
+
+  override def getClassTagNumerics(): (Array[ClassManifest[_]], Array[TensorNumeric[_]]) = {
+    (Array[ClassTag[_]](scala.reflect.classTag[T], scala.reflect.classTag[D]),
+      Array[TensorNumeric[_]](ev, ev2))
   }
 }
 
@@ -592,6 +632,11 @@ private[bigdl] class StackPop[T: ClassTag, D: ClassTag]()
     val handle = input.value()
     output = Stack[D](handle).pop()
     output
+  }
+
+  override def getClassTagNumerics(): (Array[ClassManifest[_]], Array[TensorNumeric[_]]) = {
+    (Array[ClassTag[_]](scala.reflect.classTag[T], scala.reflect.classTag[D]),
+      Array[TensorNumeric[_]](ev, ev2))
   }
 }
 
@@ -606,5 +651,10 @@ private[bigdl] class StackPush[T: ClassTag, D: ClassTag]()
     Stack[D](handle).push(data)
     output = data
     output
+  }
+
+  override def getClassTagNumerics(): (Array[ClassManifest[_]], Array[TensorNumeric[_]]) = {
+    (Array[ClassTag[_]](scala.reflect.classTag[T], scala.reflect.classTag[D]),
+      Array[TensorNumeric[_]](ev, ev2))
   }
 }

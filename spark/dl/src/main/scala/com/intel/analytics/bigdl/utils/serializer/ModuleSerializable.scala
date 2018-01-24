@@ -117,6 +117,8 @@ trait ModuleSerializable extends Loadable with Savable{
           val ptype = param.typeSignature
           if (ptype <:< universe.typeOf[ClassTag[_]]||
             ptype.typeSymbol == universe.typeOf[ClassTag[_]].typeSymbol) {
+            require(tagIter.hasNext, "If your module contains multiple class tags, " +
+              "do you forget to override getClassTagNumerics method")
             args(i) = tagIter.next
           } else if (ptype <:< universe.typeOf[TensorNumeric[_]]
             || ptype.typeSymbol == universe.typeOf[TensorNumeric[_]].typeSymbol) {
