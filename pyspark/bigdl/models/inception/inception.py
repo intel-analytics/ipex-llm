@@ -272,8 +272,7 @@ if __name__ == "__main__":
                                 MatToTensor(to_rgb=True),
                                 ImageFrameToSample(input_keys=["imageTensor"], target_keys=["label"])
                                 ])
-        train_data = train_transformer(get_inception_data(options.folder, sc, "seq", "train"))
-
+        train_frame = train_transformer(get_inception_data(options.folder, sc, "seq", "train"))
 
         val_transformer = Pipeline([CenterCrop(image_size, image_size),
                                     HFlip(),
