@@ -24,6 +24,7 @@ import org.tensorflow.framework.{DataType, NodeDef}
 class FusedBatchNormGradSpec extends TensorflowSpecHelper {
 
   "FusedBatchNormGrad gradInput" should "be correct when is training is true" in {
+    RandomGenerator.RNG.setSeed(2000)
     val x = Tensor[Float](4, 8, 8, 256).rand()
     val g = Tensor[Float](4, 8, 8, 256).rand()
     val scale = Tensor[Float](256).rand()
@@ -84,7 +85,7 @@ class FusedBatchNormGradSpec extends TensorflowSpecHelper {
   }
 
   "FusedBatchNormGrad gradInput" should "be correct when is training is false" in {
-    RandomGenerator.RNG.setSeed(1000)
+    RandomGenerator.RNG.setSeed(2000)
     val x = Tensor[Float](4, 8, 8, 256).rand()
     val g = Tensor[Float](4, 8, 8, 256).rand()
     val scale = Tensor[Float](256).rand()
