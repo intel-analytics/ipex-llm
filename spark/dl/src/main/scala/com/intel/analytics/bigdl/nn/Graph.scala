@@ -153,18 +153,12 @@ abstract class Graph[T: ClassTag](
   protected val forwardGraph = dummyOutput.graph(reverse = true)
   protected val forwardNodes = forwardGraph.DFS.toArray
 
-  modules.appendAll(
-    forwardGraph.DFS.toArray
-      // todo: convert control dep node to edge
-      .filterNot(_.element.isInstanceOf[ControlDependency[T]])
-      .filter(n => !n.eq(dummyOutput)).map(_.element)
-      // Some tests compare the paramerters between sequential and graph,add a reverse makes
-      // it's eaiser to compare
-      .reverse
-  )
+  populateModules()
 
   // Check all inputs of the graph should be passed in
   checkRoots
+
+  protected def populateModules(): Unit
 
   // Check if the graph is correct
   private def checkRoots: Unit = {

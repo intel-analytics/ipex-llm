@@ -109,6 +109,15 @@ class DynamicGraph[T: ClassTag](
     }
   }
 
+  override def populateModules(): Unit = {
+    modules.appendAll(
+      forwardGraph.DFS.toArray
+        // todo: convert control dep node to edge
+        .filterNot(_.element.isInstanceOf[ControlDependency[T]])
+        .filter(n => !n.eq(dummyOutput)).map(_.element)
+    )
+  }
+
   private def backwardExecution(input: Activity, gradOutput: Activity, isBackward: Boolean)
   : Activity = {
     if (!generateBackward) return null
