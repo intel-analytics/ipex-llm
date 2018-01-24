@@ -12,7 +12,7 @@ JAR_PATH=${MODELS_HOME}/target/models-0.1-SNAPSHOT-jar-with-dependencies.jar
 
 # build model zoo
 
-if [! -f $PYTHON_API_ZIP_PATH]
+if [ ! -f $PYTHON_API_ZIP_PATH ]
 then
   cd $MODELS_HOME
   echo $MODELS_HOME
@@ -47,4 +47,5 @@ ${SPARK_HOME}/bin/pyspark \
     --properties-file ${BigDL_HOME}/conf/spark-bigdl.conf \
     --jars ${JAR_PATH} \
     --conf spark.driver.extraClassPath=${JAR_PATH} \
+    --conf spark.driver.maxResultSize=4g \
     --conf spark.executor.extraClassPath=models-0.1-SNAPSHOT-jar-with-dependencies.jar
