@@ -2161,6 +2161,23 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     enrichOptimizer(optimizer, endTrigger, optimMethod)
   }
 
+  def createDistriOptimizerFromImageFrame(model: AbstractModule[Activity, Activity, T],
+    trainingImageFrame: DistributedImageFrame,
+    criterion: Criterion[T],
+    optimMethod: OptimMethod[T],
+    endTrigger: Trigger,
+    batchSize: Int): Optimizer[T, MiniBatch[T]] = {
+    val sampleRDD = trainingImageFrame.rdd.map(x => x[JSample[T]](ImageFeature.sample))
+
+    val optimizer = new DistriOptimizer(
+      _model = model,
+      _dataset = batching(DataSet.rdd(sampleRDD), batchSize)
+        .asInstanceOf[DistributedDataSet[MiniBatch[T]]],
+      _criterion = criterion
+    ).asInstanceOf[Optimizer[T, MiniBatch[T]]]
+    enrichOptimizer(optimizer, endTrigger, optimMethod)
+  }
+
   def createL1L2Regularizer(l1: Double, l2: Double): L1L2Regularizer[T] = {
     L1L2Regularizer[T](l1, l2)
   }
@@ -2179,6 +2196,16 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
                     valRdd: JavaRDD[Sample],
                     vMethods: JList[ValidationMethod[T]]): Unit = {
     val sampleRDD = toJSample(valRdd)
+    optimizer.setValidation(trigger, batching(DataSet.rdd(sampleRDD), batchSize.toInt),
+      vMethods.asScala.toArray)
+  }
+
+  def setValidationFromImageFrame(optimizer: Optimizer[T, MiniBatch[T]],
+    batchSize: Int,
+    trigger: Trigger,
+    valRdd: ImageFrame,
+    vMethods: JList[ValidationMethod[T]]): Unit = {
+    val sampleRDD = valRdd.toDistributed().rdd.map(x => x[JSample[T]](ImageFeature.sample))
     optimizer.setValidation(trigger, batching(DataSet.rdd(sampleRDD), batchSize.toInt),
       vMethods.asScala.toArray)
   }

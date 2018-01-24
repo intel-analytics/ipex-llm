@@ -30,7 +30,7 @@ import scala.collection.mutable.ArrayBuffer
 /**
  * ImageFrame wraps a set of ImageFeature
  */
-trait ImageFrame {
+trait ImageFrame extends Serializable {
 
   /**
    * transform ImageFrame
