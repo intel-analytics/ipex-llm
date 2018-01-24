@@ -483,7 +483,6 @@ class DynamicGraphSpec  extends FlatSpec with Matchers {
     println(s"funcModel model backward time is ${(System.nanoTime() - start) / 1e6}ms")
 
     gradientBP1 should be(gradientBP2)
-    seqModel.getParameters()._2 should be(funcModel.getParameters()._2)
   }
 
   "ResNet-18 basic block shortcut type A" should "be correct" in {
@@ -643,7 +642,6 @@ class DynamicGraphSpec  extends FlatSpec with Matchers {
     val gradInput2 = graphModel.backward(input, gradOutput)
     gradInput1 should be(gradInput2)
     gradInput1 should be(gradInput2)
-    model.getParameters().equals(graphModel.getParameters()) should be(true)
   }
 
   "Lenet graph" should "be correct" in {
@@ -685,7 +683,6 @@ class DynamicGraphSpec  extends FlatSpec with Matchers {
     val gradInput1 = model.backward(input, gradOutput)
     val gradInput2 = graphModel.backward(input, gradOutput)
     gradInput1 should be(gradInput2)
-    model.getParameters().equals(graphModel.getParameters()) should be(true)
   }
 
   "Vgg_16 graph" should "be correct" in {
@@ -706,7 +703,6 @@ class DynamicGraphSpec  extends FlatSpec with Matchers {
     val gradInput1 = model.backward(input, gradOutput)
     val gradInput2 = graphModel.backward(input, gradOutput)
     gradInput1 should be(gradInput2)
-    model.getParameters().equals(graphModel.getParameters()) should be(true)
   }
 
   "Vgg_19 graph" should "be correct" in {
@@ -727,7 +723,6 @@ class DynamicGraphSpec  extends FlatSpec with Matchers {
     val gradInput1 = model.backward(input, gradOutput)
     val gradInput2 = graphModel.backward(input, gradOutput)
     gradInput1 should be(gradInput2)
-    model.getParameters().equals(graphModel.getParameters()) should be(true)
   }
 
   "Dynamic Graph backward sequential with propagateBack false in the " +
