@@ -69,8 +69,12 @@ object BytesToMat {
 class PixelBytesToMat(byteKey: String = ImageFeature.bytes) extends FeatureTransformer {
 
   override def transformMat(feature: ImageFeature): Unit = {
+    require(feature.getOriginalSize != null,
+      "please set the original size of image in ImageFeature")
     val pixels = feature[Array[Byte]](byteKey)
-    val mat = OpenCVMat.fromPixelsBytes(pixels, feature.getOriginalHeight, feature.getOriginalWidth)
+    val mat = OpenCVMat.fromPixelsBytes(pixels, feature.getOriginalHeight,
+      feature.getOriginalWidth,
+      feature.getOriginalSize._3)
     feature(ImageFeature.mat) = mat
   }
 }
@@ -132,7 +136,8 @@ object MatToFloats {
  * @param tensorKey key to store transformed tensor
  */
 class MatToTensor[T: ClassTag](toRGB: Boolean = false,
-  tensorKey: String = ImageFeature.imageTensor)(implicit ev: TensorNumeric[T])
+  tensorKey: String = ImageFeature.imageTensor,
+  shareBuffer: Boolean = true)(implicit ev: TensorNumeric[T])
   extends FeatureTransformer {
   private val imageTensor: Tensor[T] = Tensor[T]()
   private val matToFloats = MatToFloats()
@@ -140,10 +145,19 @@ class MatToTensor[T: ClassTag](toRGB: Boolean = false,
   override def transform(feature: ImageFeature): ImageFeature = {
     if (!feature.isValid) return feature
     try {
+      val (height, width, channel) = feature.getSize
       matToFloats.transform(feature)
-      imageTensor.resize(3, feature.getHeight(), feature.getWidth())
+      if (channel == 1) {
+        imageTensor.resize(height, width)
+      } else {
+        imageTensor.resize(channel, height, width)
+      }
       feature.copyTo[T](imageTensor.storage().array(), 0, ImageFeature.floats, toRGB)
-      feature(tensorKey) = imageTensor
+      if (!shareBuffer) {
+        feature(tensorKey) = imageTensor.clone()
+      } else {
+        feature(tensorKey) = imageTensor
+      }
     } catch {
       case e: Exception =>
         val uri = feature.uri()
@@ -158,9 +172,10 @@ class MatToTensor[T: ClassTag](toRGB: Boolean = false,
 object MatToTensor {
   val logger = Logger.getLogger(getClass)
 
-  def apply[T: ClassTag](toRGB: Boolean = false, tensorKey: String = ImageFeature.imageTensor)
+  def apply[T: ClassTag](toRGB: Boolean = false, tensorKey: String = ImageFeature.imageTensor,
+    shareBuffer: Boolean = true)
     (implicit ev: TensorNumeric[T])
-  : MatToTensor[T] = new MatToTensor[T](toRGB, tensorKey)
+  : MatToTensor[T] = new MatToTensor[T](toRGB, tensorKey, shareBuffer)
 }
 
 /**
