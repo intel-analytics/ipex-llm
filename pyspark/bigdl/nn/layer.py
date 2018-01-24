@@ -412,10 +412,8 @@ class Layer(JavaValue):
         >>> weights = linear.get_weights()
         >>> weights[0].shape == (2,3)
         True
-        >>> weights[0][0]
-        array([ 1.,  2.,  3.], dtype=float32)
-        >>> weights[1]
-        array([ 7.,  8.], dtype=float32)
+        >>> np.testing.assert_allclose(weights[0][0], np.array([1., 2., 3.]))
+        >>> np.testing.assert_allclose(weights[1], np.array([7., 8.]))
         >>> relu = ReLU()
         creating: createReLU
         >>> from py4j.protocol import Py4JJavaError
@@ -559,13 +557,13 @@ class Layer(JavaValue):
         creating: createLinear
         >>> fc.set_weights([np.ones((2, 4)), np.ones((2,))])
         >>> input = np.ones((2, 4))
-        >>> fc.forward(input)
-        array([[ 5.,  5.],
-               [ 5.,  5.]], dtype=float32)
+        >>> output = fc.forward(input)
+        >>> expected_output = np.array([[5., 5.], [5., 5.]])
+        >>> np.testing.assert_allclose(output, expected_output)
         >>> quantized_fc = fc.quantize()
-        >>> quantized_fc.forward(input)
-        array([[ 5.,  5.],
-               [ 5.,  5.]], dtype=float32)
+        >>> quantized_output = quantized_fc.forward(input)
+        >>> expected_quantized_output = np.array([[5., 5.], [5., 5.]])
+        >>> np.testing.assert_allclose(quantized_output, expected_quantized_output)
 
         >>> assert("quantized.Linear" in quantized_fc.__str__())
         >>> conv = SpatialConvolution(1, 2, 3, 3)
@@ -963,9 +961,9 @@ class SparseLinear(Layer):
     >>> sparselinear = SparseLinear(1000, 5, init_weight=init_weight, init_bias=init_bias)
     creating: createSparseLinear
     >>> input = JTensor.sparse(np.array([1, 3, 5, 2, 4, 6]), np.array([0, 0, 0, 1, 1, 1, 1, 5, 300, 2, 100, 500]), np.array([2, 1000]))
-    >>> print(sparselinear.forward(input))
-    [[ 10.09569263 -10.94844246  -4.1086688    1.02527523  11.80737209]
-     [  7.9651413    9.7131443  -10.22719955   0.02345783  -3.74368906]]
+    >>> output = sparselinear.forward(input)
+    >>> expected_output = np.array([[10.09569263, -10.94844246, -4.1086688, 1.02527523, 11.80737209], [7.9651413, 9.7131443, -10.22719955, 0.02345783, -3.74368906]])
+    >>> np.testing.assert_allclose(output, expected_output, rtol=1e-6, atol=1e-6)
     '''
 
     def __init__(self, input_size, output_size, with_bias=True, backwardStart=-1, backwardLength=-1,
@@ -3085,10 +3083,9 @@ class LookupTableSparse(Layer):
     >>> layer1 = LookupTableSparse(10, 4, "mean")
     creating: createLookupTableSparse
     >>> layer1.set_weights(np.arange(1, 41, 1).reshape(10, 4)) # set weight to 1 to 40
-    >>> layer1.forward([input, weight])
-    array([[ 6.5999999 ,  7.60000038,  8.60000038,  9.60000038],
-           [ 1.        ,  2.        ,  3.        ,  4.        ],
-           [ 5.        ,  6.        ,  7.        ,  8.        ]], dtype=float32)
+    >>> output = layer1.forward([input, weight])
+    >>> expected_output = np.array([[6.5999999 , 7.60000038, 8.60000038, 9.60000038],[ 1., 2., 3., 4.], [5., 6., 7., 8.]])
+    >>> np.testing.assert_allclose(output, expected_output, rtol=1e-6, atol=1e-6)
     '''
 
     def __init__(self,
