@@ -22,9 +22,11 @@ import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, Tensor
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.serializer._
-import com.intel.analytics.bigdl.utils.serializer.{ContainerSerializable, DataConverter, ModuleSerializer}
+import com.intel.analytics.bigdl.utils.serializer.{ContainerSerializable, ModuleSerializer}
 import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.utils.serializer.converters.DataConverter
 import serialization.Bigdl.{AttrValue, BigDLModule}
+
 import scala.reflect.runtime.universe
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
@@ -34,7 +36,7 @@ import scala.reflect.ClassTag
  * Different types of rnn cells can be added using add() function
  */
 class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
-  (implicit ev: TensorNumeric[T]) extends Container[Tensor[T], Tensor[T], T] {
+  (implicit ev: TensorNumeric[T]) extends DynamicContainer[Tensor[T], Tensor[T], T] {
 
   protected var hidden: Activity = null
   protected var gradHidden: Activity = null
@@ -71,7 +73,7 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
    * @param module module to be add
    * @return this container
    */
-  override def add(module: AbstractModule[_ <: Activity, _ <: Activity, T]): Recurrent.this.type = {
+  override def add(module: AbstractModule[_ <: Activity, _ <: Activity, T]): this.type = {
     require(module.isInstanceOf[Cell[T]],
       "Recurrent: added module should be Cell type!")
     require(!module.isInstanceOf[MultiRNNCell[T]],

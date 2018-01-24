@@ -104,12 +104,28 @@ class DLEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
         .toDF("features", "label"), // Array[Double]
       sqlContext.createDataFrame(sc.parallelize(smallData.map(p => (p._1.map(_.toFloat), p._2))))
         .toDF("features", "label"), // Array[Float]
+      sqlContext.createDataFrame(sc.parallelize(smallData.map(p => (Vectors.dense(p._1), p._2))))
+        .toDF("features", "label") // MLlib Vector
+      // TODO: add ML Vector when ut for Spark 2.0+ is ready
+    ).foreach { df =>
+      val dlModel = estimator.fit(df)
+      dlModel.transform(df).collect()
+    }
+  }
+
+  "An DLEstimator" should "support scalar FEATURE types" in {
+    val model = new Sequential().add(Linear[Float](1, 2)).add(LogSoftMax[Float])
+    val criterion = ClassNLLCriterion[Float]()
+    val estimator = new DLEstimator[Float](model, criterion, Array(1), Array(1))
+      .setBatchSize(2)
+      // intentionally set low since this only validates data format compatibility
+      .setEndWhen(Trigger.maxIteration(1))
+
+    Array(
       sqlContext.createDataFrame(sc.parallelize(smallData.map(p => (p._1.head.toFloat, p._2))))
         .toDF("features", "label"), // Float
       sqlContext.createDataFrame(sc.parallelize(smallData.map(p => (p._1.head, p._2))))
-        .toDF("features", "label"), // Double
-      sqlContext.createDataFrame(sc.parallelize(smallData.map(p => (Vectors.dense(p._1), p._2))))
-        .toDF("features", "label") // MLlib Vector
+        .toDF("features", "label") // Double
       // TODO: add ML Vector when ut for Spark 2.0+ is ready
     ).foreach { df =>
       val dlModel = estimator.fit(df)
@@ -126,16 +142,32 @@ class DLEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
       .setBatchSize(2)
 
     Array(
-      sqlContext.createDataFrame(sc.parallelize(smallData.map(p => (p._1, Array(p._2)))))
+      sqlContext.createDataFrame(sc.parallelize(smallData.map(p => (p._1, Array(p._2, p._2)))))
         .toDF("features", "label"), // Array[Double]
-      sqlContext.createDataFrame(sc.parallelize(smallData.map(p => (p._1, Array(p._2.toFloat)))))
-        .toDF("features", "label"), // Array[Float]
+      sqlContext.createDataFrame(sc.parallelize(smallData.map(p => (p._1,
+        Array(p._2.toFloat, p._2.toFloat))))).toDF("features", "label"), // Array[Float]
+      sqlContext.createDataFrame(sc.parallelize(smallData.map(p => (p._1,
+        Vectors.dense(p._2, p._2))))).toDF("features", "label") // MLlib Vector
+      // TODO: add ML Vector when ut for Spark 2.0+ is ready
+    ).foreach { df =>
+      val dlModel = estimator.fit(df)
+      dlModel.transform(df).collect()
+    }
+  }
+
+  "An DLEstimator" should "support scalar LABEL types" in {
+    val model = new Sequential().add(Linear[Float](6, 2)).add(LogSoftMax[Float])
+    val criterion = ClassNLLCriterion[Float]()
+    val estimator = new DLEstimator[Float](model, criterion, Array(6), Array(1))
+      // intentionally set low since this only validates data format compatibitliy
+      .setEndWhen(Trigger.maxIteration(1))
+      .setBatchSize(2)
+
+    Array(
       sqlContext.createDataFrame(sc.parallelize(smallData.map(p => (p._1, p._2.toFloat))))
         .toDF("features", "label"), // Float
       sqlContext.createDataFrame(sc.parallelize(smallData.map(p => (p._1, p._2))))
-        .toDF("features", "label"), // Double
-      sqlContext.createDataFrame(sc.parallelize(smallData.map(p => (p._1, Vectors.dense(p._2)))))
-        .toDF("features", "label") // MLlib Vector
+        .toDF("features", "label") // Double
       // TODO: add ML Vector when ut for Spark 2.0+ is ready
     ).foreach { df =>
       val dlModel = estimator.fit(df)

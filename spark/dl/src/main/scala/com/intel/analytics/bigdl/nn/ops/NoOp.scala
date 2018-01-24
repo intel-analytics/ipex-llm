@@ -23,14 +23,10 @@ import com.intel.analytics.bigdl.utils.T
 
 import scala.reflect.ClassTag
 
-class NoOp[T: ClassTag]()
+private[bigdl] class NoOp[T: ClassTag]()
   (implicit ev: TensorNumeric[T]) extends Operation[Activity, Activity, T] with WithoutInput{
 
   private val data = T()
 
   override def updateOutput(input: Activity): Activity = data
-}
-
-object NoOp {
-  def apply[T: ClassTag]()(implicit ev: TensorNumeric[T]): NoOp[T] = new NoOp[T]()
 }

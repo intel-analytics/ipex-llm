@@ -42,7 +42,8 @@ import scala.reflect.ClassTag
  */
 @SerialVersionUID(- 5218461876031660707L)
 class Concat[T: ClassTag](val dimension: Int)(
-  implicit ev: TensorNumeric[T]) extends Container[Tensor[T], Tensor[T], T] {
+  implicit ev: TensorNumeric[T]) extends DynamicContainer[Tensor[T], Tensor[T], T] {
+
   private var size: Array[Int] = null
   @transient
   private var results: Array[Future[Unit]] = null
