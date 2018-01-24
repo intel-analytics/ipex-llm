@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.nn.ops
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.nn.Graph._
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.tensor.{BooleanType, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{Edge, Node, T}
 
@@ -180,9 +180,63 @@ sealed class MergeControlNode[T] private[bigdl] (element: T) extends Node[T](ele
 }
 
 /**
+ * Mark start of next iteration. User should use ControlNodes.whileLoop to use such operation.
+ * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now
+ */
+sealed private[bigdl] class NextIteration[T: ClassTag, D: ClassTag] private[bigdl]()
+  (implicit ev: TensorNumeric[T], ev2: TensorNumeric[D])
+  extends Operation[Tensor[D], Tensor[D], T] {
+  output = Tensor[D]()
+
+  override def updateOutput(input: Tensor[D]): Tensor[D] = {
+    output.resizeAs(input).copy(input)
+  }
+
+  override def getClassTagNumerics(): (Array[ClassManifest[_]], Array[TensorNumeric[_]]) = {
+    (Array[ClassTag[_]](scala.reflect.classTag[T], scala.reflect.classTag[D]),
+      Array[TensorNumeric[_]](ev, ev2))
+  }
+}
+
+/**
+ * Mark start of a loop. User should use ControlNodes.whileLoop to use such operation.
+ * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now
+ */
+sealed private[bigdl] class Enter[T: ClassTag] private[bigdl](val frame: String)
+  (implicit ev: TensorNumeric[T]) extends IdentityControl[T]
+
+/**
+ * Mark this dataflow is condition flow. It will erase the iteration status.
+ * User should use ControlNodes.whileLoop to use such operation.
+ * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now
+ */
+sealed private[bigdl] class LoopCondition[T: ClassTag] private[bigdl]()
+  (implicit ev: TensorNumeric[T]) extends IdentityControl[T] {
+
+  /**
+   * If current loop continue running
+   * @return
+   */
+  private[bigdl] def continue() : Boolean = {
+    require(this.output.isTensor, "loop condition result should be a tensor")
+    val t = this.output.asInstanceOf[Tensor[Boolean]]
+    require((t.isScalar || t.nElement() == 1) && t.getType() == BooleanType,
+      "loop condition result should be a boolean scalar or one element tensor")
+    t.storage().apply(t.storageOffset() - 1)
+  }
+}
+
+/**
+ * Mark end of a loop. User should use ControlNodes.whileLoop to use such operation.
+ * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now
+ */
+sealed private[bigdl] class Exit[T: ClassTag] private[bigdl]()(implicit ev: TensorNumeric[T])
+  extends IdentityControl[T]
+
+/**
  * Factory method of control flow related nodes
  */
-object ControlNodes {
+private[bigdl] object ControlNodes {
 
   /**
    * Create a switch node
@@ -197,22 +251,6 @@ object ControlNodes {
     val curNode = new SwitchControlNode[Module[T]](new SwitchOps())
     condition -> curNode
     data -> curNode
-    curNode
-  }
-
-  /**
-   * Create a switch node
-   * @param data data to pass down, from an edge
-   * @param condition data to pass down, from an edge
-   * @param ev
-   * @tparam T
-   * @return
-   */
-  def switch[T: ClassTag](data: (ModuleNode[T], Int), condition: (ModuleNode[T], Int)
-  )(implicit ev: TensorNumeric[T]): SwitchControlNode[Module[T]] = {
-    val curNode = new SwitchControlNode[Module[T]](new SwitchOps())
-    data._1.add(curNode, Edge(data._2))
-    condition._1.add(curNode, Edge(data._2))
     curNode
   }
 
@@ -248,5 +286,45 @@ object ControlNodes {
       node.add(curNode, Edge())
     })
     curNode
+  }
+
+  /**
+   * Constructor a while loop in the graph
+   * @param condition a sub graph produce a boolean scalar
+   * @param body while body, input/output tuple. body length is seq of nodes with same length of
+   *             loopVars
+   * @param loopVars loop vars
+   * @tparam T
+   * @return a seq of nodes with same length of loopVars
+   */
+  def whileLoop[T: ClassTag](
+    condition: (Seq[ModuleNode[T]], ModuleNode[T]),
+    body: Seq[(ModuleNode[T], ModuleNode[T])],
+    loopVars: (Seq[ModuleNode[T]]),
+    name: String = null
+  )(implicit ev: TensorNumeric[T]): Seq[ModuleNode[T]] = {
+    val lc = new LoopCondition[T]().inputs(condition._2)
+    if (name != null) lc.element.setName(s"$name/loopCondition")
+
+    loopVars.zip(condition._1).zip(body).zipWithIndex.map(tuple => {
+      val (((input, cond), update), indexBase0) = tuple
+      val index = indexBase0 + 1
+      val enter = new Enter[T]("test_frame").inputs(input)
+      if (name != null) enter.element.setName(s"$name/enter$index")
+      val mergeNode = merge[T](enter)
+      if (name != null) mergeNode.element.setName(s"$name/merge$index")
+      mergeNode -> cond
+      val switchNode = switch[T](lc, mergeNode)
+      if (name != null) switchNode.element.setName(s"$name/switch$index")
+      val exitNode = new Exit[T]().inputs(switchNode.trueEdge())
+      if (name != null) exitNode.element.setName(s"$name/exit$index")
+      val identity = Identity[T]().inputs(switchNode.falseEdge())
+      if (name != null) identity.element.setName(s"$name/switchFalse$index")
+      identity -> update._1
+      val nextIteration = new NextIteration[T, T].inputs(update._2)
+      if (name != null) nextIteration.element.setName(s"$name/nextIteration$index")
+      mergeNode.append(nextIteration)
+      exitNode
+    })
   }
 }

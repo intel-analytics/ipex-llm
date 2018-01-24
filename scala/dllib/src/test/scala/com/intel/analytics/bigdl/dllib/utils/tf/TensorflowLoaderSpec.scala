@@ -483,6 +483,70 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
     }
   }
 
+  "TensorArray operations" should "be load correctly" in {
+    val output = Seq("scatter_and_gather:0", "split_and_concat:0", "write_and_read:0", "size1:0",
+      "size2:0", "unstack_and_stack:0")
+    val comparePairs = testModel("tensor_array", output, backward = false)
+    for (i <- output.indices) {
+      val (tf, bigdl) = comparePairs(i)
+      tf.almostEqual(bigdl, 1e-6) should be(true)
+    }
+  }
+
+  "dynamic rnn" should "be load correctly" in {
+    val output = Seq("rnn_loss:0")
+    val comparePairs = testModel("dynamic_rnn", output, backward = false)
+    for (i <- output.indices) {
+      val (tf, bigdl) = comparePairs(i)
+      tf.almostEqual(bigdl, 1e-3) should be(true)
+    }
+  }
+
+  "dynamic rnn grad" should "be load correctly" in {
+    val output = Seq("gradOutput:0")
+    val comparePairs = testModel("dynamic_rnn_grad", output, backward = false)
+    for (i <- output.indices) {
+      val (tf, bigdl) = comparePairs(i)
+      tf.almostEqual(bigdl, 1e-3) should be(true)
+    }
+  }
+
+  "dynamic lstm" should "be load correctly" in {
+    val output = Seq("lstm_loss:0")
+    val comparePairs = testModel("dynamic_lstm", output, backward = false)
+    for (i <- output.indices) {
+      val (tf, bigdl) = comparePairs(i)
+      tf.almostEqual(bigdl, 1e-2) should be(true)
+    }
+  }
+
+  "dynamic lstm grad" should "be load correctly" in {
+    val output = Seq("gradOutput:0")
+    val comparePairs = testModel("dynamic_lstm_grad", output, backward = false)
+    for (i <- output.indices) {
+      val (tf, bigdl) = comparePairs(i)
+      tf.almostEqual(bigdl, 1e-2) should be(true)
+    }
+  }
+
+  "dynamic gru" should "be load correctly" in {
+    val output = Seq("gru_loss:0")
+    val comparePairs = testModel("dynamic_gru", output, backward = false)
+    for (i <- output.indices) {
+      val (tf, bigdl) = comparePairs(i)
+      tf.almostEqual(bigdl, 1e-2) should be(true)
+    }
+  }
+
+  "dynamic gru grad" should "be load correctly" in {
+    val output = Seq("gradOutput:0")
+    val comparePairs = testModel("dynamic_gru_grad", output, backward = false)
+    for (i <- output.indices) {
+      val (tf, bigdl) = comparePairs(i)
+      tf.almostEqual(bigdl, 1e-2) should be(true)
+    }
+  }
+
   private def testModel(
     modelName: String,
     endPoints: Seq[String],
@@ -518,7 +582,7 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
         (node: NodeDef) => node.getName == "input_node")
     val context = new Context[Float]()
     val model = TensorflowLoader.buildBigDLModel(tfGraph, inputs.toSeq.map(_._2).flatten,
-      endPoints.map(_.split(":")(0)), ByteOrder.LITTLE_ENDIAN, "", Some(context))
+      endPoints.map(_.split(":")(0)), ByteOrder.LITTLE_ENDIAN, "", Some(context), backward)
 
     // Compare the tensor contents
     val tfInputTensor = tfNodes.asScala.filter(_.getName == "input")(0)
@@ -539,6 +603,7 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
     val comparePair = new mutable.ArrayBuffer[(Tensor[Float], Tensor[Float])]()
     val forwardPairs = tfOutputTensors.zip(bigdlOutputs).map { x =>
         val tensor = TensorflowToBigDL.toTensor(x._1, ByteOrder.LITTLE_ENDIAN)
+          .asInstanceOf[Tensor[Float]]
         (tensor, x._2)
     }
     comparePair ++= forwardPairs
@@ -560,7 +625,7 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
         val gradInputsTable = T()
         tfGradInputs.foreach {
           case output =>
-            gradInputsTable.insert[Tensor[Float]](output)
+            gradInputsTable.insert[Tensor[_]](output)
         }
         gradInputsTable
       }
@@ -575,7 +640,9 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
         node =>
           val t = tfNodes.asScala.filter(_.getName.contains(node + "_grad"))(0)
           t.getName ->
-            TensorflowToBigDL.toTensor(t.getAttrMap.get("value").getTensor, ByteOrder.LITTLE_ENDIAN)
+            TensorflowToBigDL
+              .toTensor(t.getAttrMap.get("value").getTensor, ByteOrder.LITTLE_ENDIAN)
+              .asInstanceOf[Tensor[Float]]
       }.toMap
 
       // do backward
