@@ -36,6 +36,7 @@ import org.json4s.JsonDSL._
 import org.json4s.{DefaultFormats, JObject}
 
 import scala.reflect.ClassTag
+import scala.util.Try
 
 private[ml] trait HasBatchSize extends Params {
 
@@ -65,7 +66,7 @@ private[ml] trait OptParams[@specialized(Float, Double) T] extends Params {
   /**
    * When to stop the training, passed in a [[Trigger]]. E.g. Trigger.maxIterations
    */
-  final val endWhen = new Param[Trigger](this, "endWhen", "Trigger to stop the training")
+  final val endWhen = new TriggerParam(this, "endWhen", "Trigger to stop the training")
 
   def getEndWhen: Trigger = $(endWhen)
 
@@ -99,9 +100,9 @@ private[ml] trait OptParams[@specialized(Float, Double) T] extends Params {
    * SGD and LBFGS. Refer to package com.intel.analytics.bigdl.optim for all the options.
    * Default: SGD
    */
-  final val optimMethod = new Param[OptimMethod[T]](this, "optimMethod", "optimMethod")
+  final val optimMethod = new OptimMethodParam(this, "optimMethod", "optimMethod")
 
-  def getOptimMethod: OptimMethod[T] = $(optimMethod)
+  def getOptimMethod: OptimMethod[T] = $(optimMethod).asInstanceOf[OptimMethod[T]]
 }
 
 
@@ -334,7 +335,7 @@ class DLEstimator[@specialized(Float, Double) T: ClassTag](
     val endTrigger = if (isSet(endWhen)) $(endWhen) else Trigger.maxEpoch($(maxEpoch))
     val optimizer = Optimizer(model, trainingSamples, criterion, $(batchSize))
       .setState(state)
-      .setOptimMethod($(optimMethod))
+      .setOptimMethod($(optimMethod).asInstanceOf[OptimMethod[T]])
       .setEndWhen(endTrigger)
 
     if (validationTrigger.isDefined) {
@@ -369,6 +370,7 @@ class DLEstimator[@specialized(Float, Double) T: ClassTag](
     copyValues(new DLEstimator(model, criterion, featureSize, labelSize), extra)
   }
 }
+
 
 /**
  * [[DLModel]] helps embed a BigDL model into a Spark Transformer, thus Spark users can
