@@ -90,6 +90,13 @@ abstract class TensorflowSpecHelper extends BigDLSpecHelper {
       .almostEqual(tfOutput.asInstanceOf[Tensor[NumericWildCard]], delta) should be(true)
   }
 
+  protected def compare[T: ClassTag](nodeDefBuilder: NodeDef.Builder,
+    inputs: Seq[Tensor[_]], outputIndexes: Seq[Int],
+    delta: Double)(implicit ev: TensorNumeric[T])
+  : Unit = {
+    outputIndexes.foreach(compare(nodeDefBuilder.clone(), inputs, _, delta))
+  }
+
   protected def getResult[T: ClassTag, D](nodeDefBuilder: NodeDef.Builder, inputs: Seq[Tensor[_]],
     outputIndex: Int)(implicit ev: TensorNumeric[T]): (Tensor[D], Tensor[D]) = {
     val graphFile = saveGraph(nodeDefBuilder, inputs)

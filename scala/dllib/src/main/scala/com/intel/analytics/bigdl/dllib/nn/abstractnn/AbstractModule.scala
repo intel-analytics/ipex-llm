@@ -819,6 +819,11 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
     Graph(starts, endNodes)
   }
 
+  /**
+   * Return classTag numerics for module serialization. If your module contains multiple classtag
+   * in the constructor, you should override this method
+   * @return
+   */
   def getClassTagNumerics() : (Array[ClassTag[_]], Array[TensorNumeric[_]]) = {
     (Array(scala.reflect.classTag[T]), Array(ev))
   }
