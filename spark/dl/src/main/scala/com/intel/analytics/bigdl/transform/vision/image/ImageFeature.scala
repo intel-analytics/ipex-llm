@@ -168,6 +168,11 @@ class ImageFeature extends Serializable {
   def getOriginalHeight: Int = getOriginalSize._1
 
   /**
+   * get original channel
+   */
+  def getOriginalChannel: Int = getOriginalSize._3
+
+  /**
    * get label from ImageFeature
    */
   def getLabel[T: ClassTag]: T = apply[T](ImageFeature.label)
@@ -204,7 +209,7 @@ class ImageFeature extends Serializable {
     require(contains(floatKey), s"there should be ${floatKey} in ImageFeature")
     val data = floats(floatKey)
     require(data.length >= getWidth() * getHeight() * channel,
-      s"float array length should be larger than 3 * ${getWidth()} * ${getHeight()}")
+      s"float array length should be larger than $channel * ${getWidth()} * ${getHeight()}")
     val frameLength = getWidth() * getHeight()
     require(frameLength * channel + offset <= storage.length)
     if (channel == 3) {

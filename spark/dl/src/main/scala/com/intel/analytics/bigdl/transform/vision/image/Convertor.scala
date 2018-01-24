@@ -74,7 +74,7 @@ class PixelBytesToMat(byteKey: String = ImageFeature.bytes) extends FeatureTrans
     val pixels = feature[Array[Byte]](byteKey)
     val mat = OpenCVMat.fromPixelsBytes(pixels, feature.getOriginalHeight,
       feature.getOriginalWidth,
-      feature.getOriginalSize._3)
+      feature.getOriginalChannel)
     feature(ImageFeature.mat) = mat
   }
 }
