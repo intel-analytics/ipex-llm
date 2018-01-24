@@ -570,33 +570,13 @@ class Layer(JavaValue):
         creating: createSpatialConvolution
         >>> conv.set_weights([np.ones((2, 1, 3, 3)), np.zeros((2,))])
         >>> input = np.ones((2, 1, 4, 4))
-        >>> conv.forward(input)
-        array([[[[ 9.,  9.],
-                 [ 9.,  9.]],
-        <BLANKLINE>
-                [[ 9.,  9.],
-                 [ 9.,  9.]]],
-        <BLANKLINE>
-        <BLANKLINE>
-               [[[ 9.,  9.],
-                 [ 9.,  9.]],
-        <BLANKLINE>
-                [[ 9.,  9.],
-                 [ 9.,  9.]]]], dtype=float32)
+        >>> output = conv.forward(input)
+        >>> expected_output = np.array([[[[9., 9.], [9., 9.]], [[9., 9.], [9., 9.]]], [[[9., 9.], [9., 9.]], [[9., 9.], [9., 9.]]]])
+        >>> np.testing.assert_allclose(output, expected_output)
         >>> quantized_conv = conv.quantize()
-        >>> quantized_conv.forward(input)
-        array([[[[ 9.,  9.],
-                 [ 9.,  9.]],
-        <BLANKLINE>
-                [[ 9.,  9.],
-                 [ 9.,  9.]]],
-        <BLANKLINE>
-        <BLANKLINE>
-               [[[ 9.,  9.],
-                 [ 9.,  9.]],
-        <BLANKLINE>
-                [[ 9.,  9.],
-                 [ 9.,  9.]]]], dtype=float32)
+        >>> quantized_output = quantized_conv.forward(input)
+        >>> expected_quantized_output = np.array([[[[9., 9.], [9., 9.]], [[9., 9.], [9., 9.]]], [[[9., 9.], [9., 9.]], [[9., 9.], [9., 9.]]]])
+        >>> np.testing.assert_allclose(quantized_output, expected_quantized_output)
         >>> assert("quantized.SpatialConvolution" in quantized_conv.__str__())
         >>> seq = Sequential()
         creating: createSequential
@@ -605,25 +585,13 @@ class Layer(JavaValue):
         creating: createReshape
         >>> seq = seq.add(fc)
         >>> input = np.ones([1, 1, 6, 6])
-        >>> seq.forward(input)
-        array([[ 37.,  37.],
-               [ 37.,  37.],
-               [ 37.,  37.],
-               [ 37.,  37.],
-               [ 37.,  37.],
-               [ 37.,  37.],
-               [ 37.,  37.],
-               [ 37.,  37.]], dtype=float32)
+        >>> output = seq.forward(input)
+        >>> expected_output = np.array([[37., 37.], [37., 37.], [37., 37.], [37., 37.], [37., 37.], [37., 37.], [37., 37.], [37., 37.]])
+        >>> np.testing.assert_allclose(output, expected_output)
         >>> quantized_seq = seq.quantize()
-        >>> quantized_seq.forward(input)
-        array([[ 37.,  37.],
-               [ 37.,  37.],
-               [ 37.,  37.],
-               [ 37.,  37.],
-               [ 37.,  37.],
-               [ 37.,  37.],
-               [ 37.,  37.],
-               [ 37.,  37.]], dtype=float32)
+        >>> quantized_output = quantized_seq.forward(input)
+        >>> expected_quantized_output = np.array([[37., 37.], [37., 37.], [37., 37.], [37., 37.], [37., 37.], [37., 37.], [37., 37.], [37., 37.]])
+        >>> np.testing.assert_allclose(quantized_output, expected_quantized_output)
         >>> assert("quantized.Linear" in quantized_seq.__str__())
         >>> assert("quantized.SpatialConvolution" in quantized_seq.__str__())
         '''
