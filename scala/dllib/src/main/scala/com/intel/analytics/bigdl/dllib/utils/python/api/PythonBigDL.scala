@@ -717,7 +717,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def createCAddTable(inplace: Boolean = false)
-  : CAddTable[T] = {
+  : CAddTable[T, T] = {
     CAddTable[T](inplace)
   }
 
