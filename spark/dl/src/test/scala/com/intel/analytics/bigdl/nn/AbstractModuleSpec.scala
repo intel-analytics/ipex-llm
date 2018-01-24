@@ -380,8 +380,8 @@ class AbstractModuleSpec extends FlatSpec with Matchers {
     val biasData = Array(0.0f, 0.1f)
 
     val input = Tensor[Float](2, 2).apply1(_ => Random.nextFloat())
-    val weight = Tensor[Float](Storage(kernelData), 1, Array(outputSize, inputSize))
-    val bias = Tensor[Float](Storage(biasData), 1, Array(outputSize))
+    val weight = Tensor[Float](Storage(kernelData), 1, Array(outputSize, inputSize)).rand()
+    val bias = Tensor[Float](Storage(biasData), 1, Array(outputSize)).rand()
     val linear = quantized.Linear[Float](outputSize, inputSize, initWeight = weight,
       initBias = bias).setName("quantLinear")
 
@@ -409,8 +409,8 @@ class AbstractModuleSpec extends FlatSpec with Matchers {
 
     val input2 = input.clone()
 
-    val weight = Tensor[Float](Storage(kernelData), 1, Array(outputSize, inputSize))
-    val bias = Tensor[Float](Storage(biasData), 1, Array(outputSize))
+    val weight = Tensor[Float](Storage(kernelData), 1, Array(outputSize, inputSize)).rand()
+    val bias = Tensor[Float](Storage(biasData), 1, Array(outputSize)).rand()
     val linear = quantized.Linear[Float](outputSize, inputSize, initWeight = weight,
       initBias = bias).setName("quantLinear")
 
