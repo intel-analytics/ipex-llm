@@ -16,13 +16,14 @@
 
 package com.intel.analytics.bigdl.nn.keras
 
-import com.intel.analytics.bigdl.nn.Graph.ModuleNode
+import com.intel.analytics.bigdl.nn.Graph._
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
-import com.intel.analytics.bigdl.nn.{Graph, StaticGraph, Sequential => TSequential}
+import com.intel.analytics.bigdl.nn.{Graph, GraphSerializable, StaticGraph, Sequential => TSequential}
+import com.intel.analytics.bigdl.serialization.Bigdl.BigDLModule
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.serializer._
 import com.intel.analytics.bigdl.utils.{Shape, Util}
 
-import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
 class Model[T: ClassTag](private val _inputs : Seq[ModuleNode[T]],
@@ -47,7 +48,7 @@ class Model[T: ClassTag](private val _inputs : Seq[ModuleNode[T]],
   }
 }
 
-object Model {
+object Model extends ModelSerializer{
   /**
    * Build multiple inputs, multiple outputs graph container.
    * @param input input node
@@ -90,6 +91,26 @@ object Model {
   def apply[T: ClassTag](input : ModuleNode[T], output : ModuleNode[T])
                         (implicit ev: TensorNumeric[T]) : Graph[T] = {
     new Model[T](Seq(input), Seq(output))
+  }
+}
+
+trait ModelSerializer extends GraphSerializable with TKerasSerializerHelper{
+
+  override def doSerializeModule[T: ClassTag](context: SerializeContext[T],
+                                              moduleBuilder : BigDLModule.Builder)
+                                             (implicit ev: TensorNumeric[T]) : Unit = {
+    super.doSerializeModule(context, moduleBuilder)
+    appendKerasLabel(context, moduleBuilder)
+  }
+
+  override def doLoadModule[T: ClassTag](context: DeserializeContext)
+    (implicit ev: TensorNumeric[T]) : AbstractModule[Activity, Activity, T] = {
+    val (module, inputs, outputs, generateBackwardValue, sharedVariables) =
+      prepareLoadModule(context)
+    require(generateBackwardValue == null, "there's no generateBackward for keras module")
+    require(module.containsAttr("is_keras_module")
+      && module.getAttrOrThrow("is_keras_module").getBoolValue(), "It should be a keras module")
+    Model(inputs.toArray, outputs.toArray)
   }
 }
 
@@ -150,9 +171,16 @@ class Sequential[T: ClassTag](val stopInferShape: Boolean = false)
   }
 }
 
-object Sequential {
+object Sequential extends ContainerSerializable with TKerasSerializerHelper{
   def apply[@specialized(Float, Double) T: ClassTag]()
      (implicit ev: TensorNumeric[T]) : Sequential[T] = {
     new Sequential[T]()
+  }
+
+  override def doSerializeModule[T: ClassTag](context: SerializeContext[T],
+                                              moduleBuilder : BigDLModule.Builder)
+                                             (implicit ev: TensorNumeric[T]) : Unit = {
+    super.doSerializeModule(context, moduleBuilder)
+    appendKerasLabel(context, moduleBuilder)
   }
 }
