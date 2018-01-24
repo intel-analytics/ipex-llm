@@ -36,9 +36,9 @@ class ELUSpec extends KerasBaseSpec{
     val seq = KSequential[Float]()
     val elu = ELU[Float](1.0, inputShape = Shape(3))
     seq.add(elu)
-    def weightConverter(in: Array[Tensor[Float]]): Array[Tensor[Float]] = Array(in(0).t(), in(1))
     checkOutputAndGrad(seq.asInstanceOf[AbstractModule[Tensor[Float], Tensor[Float], Float]],
-      kerasCode, weightConverter)
+      kerasCode)
 
   }
 }
+
