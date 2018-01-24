@@ -238,7 +238,7 @@ trait ModuleSerializable extends Loadable with Savable{
       val attrbute = AttrValue.newBuilder
       attrbute.setShape(model.getInputShape)
       val shape = ShapeConverter.getAttributeValue(context, attrbute.build).asInstanceOf[BigDLShape]
-      module.inputShapeValue_=(shape)
+      module.inputShapeValue = shape
     }
 
     val outputShapes = model.getOutputShapeList.asScala
@@ -248,7 +248,7 @@ trait ModuleSerializable extends Loadable with Savable{
         attrbute.setShape(outputShape)
         ShapeConverter.getAttributeValue(context, attrbute.build).asInstanceOf[BigDLShape]
       }).toArray
-      module.outputShapeValue_=(shapes)
+      module.outputShapeValue = shapes
     }
     copy2BigDL(context, bigDLModule)
     bigDLModule
