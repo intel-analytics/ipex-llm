@@ -59,20 +59,20 @@ object ModuleSerializer extends ModuleSerializable{
     val module = serializerContext.moduleData.module
     // For those layers which have their own serialization/deserialization methods
     val clsName = module.getClass.getName
-    if (serializerMaps.contains(clsName)) {
-      serializerMaps(clsName).serializeModule(serializerContext)
+    val serializer = if (serializerMaps.contains(clsName)) {
+      serializerMaps(clsName)
     } else {
       val m = module.asInstanceOf[AbstractModule[_, _, _]]
       m match {
-        case container : Container[_, _, _] =>
-          ContainerSerializer.serializeModule(serializerContext)
-        case cell : Cell[_] =>
-          CellSerializer.serializeModule(serializerContext)
+        case container : Container[_, _, _] => ContainerSerializer
+        case cell : Cell[_] => CellSerializer
         case laborAdapter: KerasLayer[_, _, _] =>
-          KerasLayerSerializer.serializeModule(serializerContext)
-        case _ => ModuleSerializer.serializeModule(serializerContext)
+          KerasLayerSerializer
+        case _ => ModuleSerializer
       }
     }
+    serializer.setCopyWeightAndBias(serializerContext.copyWeightAndBias).
+      serializeModule(serializerContext)
   }
 
   /**
@@ -84,23 +84,25 @@ object ModuleSerializer extends ModuleSerializable{
                        (implicit ev: TensorNumeric[T]) : ModuleData[T] = {
     try {
       val model = context.bigdlModule
-      if (serializerMaps.contains(model.getModuleType)) {
-        serializerMaps(model.getModuleType).loadModule(context)
+      val deSerializer = if (serializerMaps.contains(model.getModuleType)) {
+        serializerMaps(model.getModuleType)
       } else {
         val attrMap = model.getAttrMap
         val subModuleCount = model.getSubModulesCount
         if (subModuleCount > 0) {
-          ContainerSerializer.loadModule(context)
+          ContainerSerializer
         } else {
           if (attrMap.containsKey("is_cell_module")) {
-            CellSerializer.loadModule(context)
+            CellSerializer
           } else if (attrMap.containsKey("is_labor_module")) {
-            KerasLayerSerializer.loadModule(context)
+            KerasLayerSerializer
           } else {
-            ModuleSerializer.loadModule(context)
+            ModuleSerializer
           }
         }
       }
+      deSerializer.setCopyWeightAndBias(context.copyWeightAndBias).
+        loadModule(context)
     } catch {
       case e: Exception =>
         throw new RuntimeException(
