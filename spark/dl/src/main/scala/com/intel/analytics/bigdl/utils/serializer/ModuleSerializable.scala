@@ -245,7 +245,7 @@ trait ModuleSerializable extends Loadable with Savable{
     if (outputShapes.length > 0) {
       val shapes = outputShapes.map(outputShape => {
         val attrbute = AttrValue.newBuilder
-        attrbute.setShape(model.getInputShape)
+        attrbute.setShape(outputShape)
         ShapeConverter.getAttributeValue(context, attrbute.build).asInstanceOf[BigDLShape]
       }).toArray
       module.outputShapeValue_=(shapes)
@@ -269,14 +269,16 @@ trait ModuleSerializable extends Loadable with Savable{
     val inputShape = module.module.inputShapeValue
     if (inputShape != null) {
       val attribute = AttrValue.newBuilder
-      ShapeConverter.setAttributeValue(context, attribute, universe.typeOf[BigDLShape])
+      ShapeConverter.setAttributeValue(context, attribute, inputShape,
+        universe.typeOf[BigDLShape])
       modelBuilder.setInputShape(attribute.getShape)
     }
     val outputShapes = module.module.outputShapeValue
     if (outputShapes != null && outputShapes.length > 0) {
       outputShapes.foreach(outputShape => {
         val attribute = AttrValue.newBuilder
-        ShapeConverter.setAttributeValue(context, attribute, universe.typeOf[BigDLShape])
+        ShapeConverter.setAttributeValue(context, attribute, outputShape,
+          universe.typeOf[BigDLShape])
         modelBuilder.addOutputShape(attribute.getShape)
       })
     }
