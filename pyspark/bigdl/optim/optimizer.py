@@ -733,12 +733,11 @@ class Optimizer(BaseOptimizer):
         """
         if val_method is None:
             val_method = [Top1Accuracy()]
-        if isinstance(val_rdd, RDD):
-            callBigDlFunc(self.bigdl_type, "setValidation", self.value, batch_size,
+        func_name = "setValidation"
+        if isinstance(val_rdd, ImageFrame):
+            func_name = "setValidationFromImageFrame"
+        callBigDlFunc(self.bigdl_type, func_name, self.value, batch_size,
                       trigger, val_rdd, to_list(val_method))
-        elif isinstance(val_rdd, ImageFrame):
-            callBigDlFunc(self.bigdl_type, "setValidationFromImageFrame", self.value, batch_size,
-                          trigger, val_rdd, to_list(val_method))
 
     def set_traindata(self, training_rdd, batch_size):
         """
