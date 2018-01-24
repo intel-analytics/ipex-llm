@@ -49,7 +49,7 @@ object ChannelNormalize {
    */
   def apply(meanR: Float, meanG: Float, meanB: Float,
     stdR: Float = 1, stdG: Float = 1, stdB: Float = 1): ChannelNormalize = {
-    new ChannelNormalize(Array(meanR, meanG, meanB), Array(stdR, stdG, stdB))
+    new ChannelNormalize(Array(meanB, meanG, meanR), Array(stdR, stdG, stdB))
   }
 
   def apply(mean: Float, std: Float): ChannelNormalize = {
@@ -76,7 +76,9 @@ object ChannelNormalize {
         Core.subtract(inputChannels.get(i), new Scalar(means(i)), outputChannels.get(i))
       }
       if (stds != null) {
-        Core.divide(outputChannels.get(0), new Scalar(stds(i)), outputChannels.get(0))
+        if (stds(i) != 1) {
+          Core.divide(outputChannels.get(i), new Scalar(stds(i)), outputChannels.get(i))
+        }
       }
     })
     Core.merge(outputChannels, output)
