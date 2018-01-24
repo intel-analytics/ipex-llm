@@ -16,6 +16,7 @@
 package com.intel.analytics.bigdl.utils.tf.loaders
 
 import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.utils.RandomGenerator
 import com.intel.analytics.bigdl.utils.tf.Tensorflow.{booleanAttr, floatAttr, typeAttr}
 import com.intel.analytics.bigdl.utils.tf.{TensorflowDataFormat, TensorflowSpecHelper}
 import org.tensorflow.framework.{DataType, NodeDef}
@@ -23,6 +24,7 @@ import org.tensorflow.framework.{DataType, NodeDef}
 class FusedBatchNormGradSpec extends TensorflowSpecHelper {
 
   "FusedBatchNormGrad gradInput" should "be correct when is training is true" in {
+    RandomGenerator.RNG.setSeed(2000)
     val x = Tensor[Float](4, 8, 8, 256).rand()
     val g = Tensor[Float](4, 8, 8, 256).rand()
     val scale = Tensor[Float](256).rand()
@@ -83,6 +85,7 @@ class FusedBatchNormGradSpec extends TensorflowSpecHelper {
   }
 
   "FusedBatchNormGrad gradInput" should "be correct when is training is false" in {
+    RandomGenerator.RNG.setSeed(2000)
     val x = Tensor[Float](4, 8, 8, 256).rand()
     val g = Tensor[Float](4, 8, 8, 256).rand()
     val scale = Tensor[Float](256).rand()
