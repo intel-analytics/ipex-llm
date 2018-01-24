@@ -35,7 +35,6 @@ class ELUSpec extends KerasBaseSpec{
       """.stripMargin
     val seq = KSequential[Float]()
     val elu = ELU[Float](1.0, inputShape = Shape(3))
-
     seq.add(elu)
     checkOutputAndGrad(seq.asInstanceOf[AbstractModule[Tensor[Float], Tensor[Float], Float]],
       kerasCode)
@@ -52,7 +51,6 @@ class ELUSpec extends KerasBaseSpec{
       """.stripMargin
     val seq = KSequential[Float]()
     val elu = ELU[Float](2.7, inputShape = Shape(3, 24, 24))
-
     seq.add(elu)
     checkOutputAndGrad(seq.asInstanceOf[AbstractModule[Tensor[Float], Tensor[Float], Float]],
       kerasCode)
