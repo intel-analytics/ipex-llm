@@ -24,7 +24,7 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Node
 import com.intel.analytics.bigdl.utils.tf.Context
-import org.tensorflow.framework.NodeDef
+import org.tensorflow.framework.{DataType, NodeDef}
 
 import scala.reflect.ClassTag
 
@@ -35,12 +35,22 @@ class StridedSlice extends TensorflowOpsLoader {
   override def build[T: ClassTag](nodeDef: NodeDef, byteOrder: ByteOrder,
     context: Context[T])(implicit ev: TensorNumeric[T]): Module[T] = {
 
-    new StridedSliceLoadTF[T]()
+    val t = getType(nodeDef, "T")
+    if (t == DataType.DT_INT32) {
+      return new StridedSliceLoadTF[T, Int]()
+    }
+    if (t == DataType.DT_FLOAT) {
+      return new StridedSliceLoadTF[T, Float]()
+    }
+    if (t == DataType.DT_DOUBLE) {
+      return new StridedSliceLoadTF[T, Double]()
+    }
+    throw new UnsupportedOperationException(s"Not support load StridedSlice with type ${t}")
   }
 }
 
-class StridedSliceLoadTF[T: ClassTag]()(implicit ev: TensorNumeric[T])
-  extends Adapter[T](Array(2, 3, 4)) {
+class StridedSliceLoadTF[T: ClassTag, D: ClassTag]()(implicit ev: TensorNumeric[T],
+  ev2: TensorNumeric[D]) extends Adapter[T](Array(2, 3, 4)) {
   import StridedSlice._
 
   override def build(tensorArrays: Array[Tensor[_]]): AbstractModule[Activity, Activity, T] = {
@@ -52,7 +62,12 @@ class StridedSliceLoadTF[T: ClassTag]()(implicit ev: TensorNumeric[T])
       .map(elem => (elem._2 + 1, elem._1._1._1 + 1, elem._1._1._2 + 1, elem._1._2))
 
 
-    StrideSlice[T](specs)
+    StrideSlice[T, D](specs)
+  }
+
+  override def getClassTagNumerics() : (Array[ClassTag[_]], Array[TensorNumeric[_]]) = {
+    (Array[ClassTag[_]](scala.reflect.classTag[T], scala.reflect.classTag[D]),
+      Array[TensorNumeric[_]](ev, ev2))
   }
 }
 

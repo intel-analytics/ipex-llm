@@ -17,6 +17,7 @@ package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
+import com.intel.analytics.bigdl.nn.tf.ControlDependency
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{Node, Util}
@@ -108,6 +109,16 @@ class StaticGraph[T: ClassTag](
       curNode.element.accGradParameters(curInput, gradOutputCache(i))
       i += 1
     }
+  }
+
+  override def populateModules(): Unit = {
+    modules.appendAll(
+      forwardGraph.topologySort
+        // todo: convert control dep node to edge
+        .filterNot(_.element.isInstanceOf[ControlDependency[T]])
+        .filter(n => !n.eq(dummyOutput)).map(_.element)
+        .reverse
+    )
   }
 
 
