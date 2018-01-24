@@ -128,11 +128,6 @@ abstract class Graph[T: ClassTag](
     }
   }
 
-  override def add(module: AbstractModule[_ <: Activity, _ <: Activity, T]): Graph.this.type = {
-    throw new IllegalArgumentException("Graph: Please don't use add method in Graph container. " +
-      "A graph container should not be changed after it is constructed")
-  }
-
   // todo: expand the graph
   override def toGraph(startNodes: ModuleNode[T]*): Graph[T] = this
 
