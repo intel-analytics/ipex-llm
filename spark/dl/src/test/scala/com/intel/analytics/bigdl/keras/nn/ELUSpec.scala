@@ -38,7 +38,6 @@ class ELUSpec extends KerasBaseSpec{
     seq.add(elu)
     checkOutputAndGrad(seq.asInstanceOf[AbstractModule[Tensor[Float], Tensor[Float], Float]],
       kerasCode)
-
   }
 
   "ELU 3D" should "be the same as Keras" in {
@@ -54,7 +53,5 @@ class ELUSpec extends KerasBaseSpec{
     seq.add(elu)
     checkOutputAndGrad(seq.asInstanceOf[AbstractModule[Tensor[Float], Tensor[Float], Float]],
       kerasCode)
-
   }
 }
-

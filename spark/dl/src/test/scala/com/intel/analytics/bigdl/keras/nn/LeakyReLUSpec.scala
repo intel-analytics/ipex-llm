@@ -38,7 +38,6 @@ class LeakyReLUSpec extends KerasBaseSpec{
     seq.add(leakyrelu)
     checkOutputAndGrad(seq.asInstanceOf[AbstractModule[Tensor[Float], Tensor[Float], Float]],
       kerasCode)
-
   }
 
   "LeakyReLU 3D" should "be the same as Keras" in {

@@ -16,8 +16,6 @@
 
 package com.intel.analytics.bigdl.nn.keras
 
-import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.nn.abstractnn._
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -26,14 +24,13 @@ import com.intel.analytics.bigdl.utils.Shape
 import scala.reflect.ClassTag
 
 
-@SerialVersionUID( - 6274543584907751212L)
 class ELU[T: ClassTag](val alpha: Double = 1.0,
                        var inputShape: Shape = null
   )(implicit ev: TensorNumeric[T])
   extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
-    val layer = nn.ELU(
+    val layer = com.intel.analytics.bigdl.nn.ELU(
       alpha = alpha,
       inplace = false
     )
@@ -52,4 +49,3 @@ object ELU {
       inputShape)
   }
 }
-
