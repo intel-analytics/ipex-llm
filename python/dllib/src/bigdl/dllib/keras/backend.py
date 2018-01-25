@@ -20,11 +20,14 @@ from pyspark.rdd import RDD
 from bigdl.keras.optimization import *
 from bigdl.util.common import get_spark_context
 from bigdl.util.common import to_sample_rdd
+from bigdl.util.common import redire_spark_logs, show_bigdl_info_logs
 
 
-class KerasModelWrapper():
+class KerasModelWrapper:
 
     def __init__(self, kmodel):
+        redire_spark_logs()
+        show_bigdl_info_logs()
         self.bmodel = DefinitionLoader.from_kmodel(kmodel)
         WeightLoader.load_weights_from_kmodel(self.bmodel, kmodel)  # share the same weight.
         self.criterion = OptimConverter.to_bigdl_criterion(kmodel.loss)
@@ -55,8 +58,8 @@ class KerasModelWrapper():
                         self.bmodel.evaluate(input, batch_size, self.metrics)]
             else:
                 raise Exception("No Metrics found.")
-
-        raise Exception("not supported operation: %s", is_distributed)
+        else:
+            raise Exception("We only support evaluation in distributed mode")
 
     def predict(self, x, batch_size=None, verbose=None, is_distributed=False):
         """Generates output predictions for the input samples,
@@ -93,6 +96,7 @@ class KerasModelWrapper():
         :param y: ndarray or list of ndarray for local mode and would be None for cluster mode.
             is_distributed: used to control run in local or cluster. the default value is False.
             NB: if is_distributed=true, x should be RDD[Sample] and y should be None
+        :param is_distributed: Whether to train in local mode or distributed mode
         :return:
             A Numpy array or RDD[Sample] of predictions.
         """
@@ -109,15 +113,15 @@ class KerasModelWrapper():
         if validation_split != 0.:
             unsupport_exp("validation_split")
         bopt = self.__create_optimizer(x=x,
-                                y=y,
-                                batch_size=batch_size,
-                                nb_epoch=nb_epoch,
-                                validation_data=validation_data,
-                                is_distributed=is_distributed)
+                                       y=y,
+                                       batch_size=batch_size,
+                                       nb_epoch=nb_epoch,
+                                       validation_data=validation_data,
+                                       is_distributed=is_distributed)
         bopt.optimize()
 
     def __create_optimizer(self, x=None, y=None, batch_size=32, nb_epoch=10,
-                         validation_data=None, is_distributed=False):
+                           validation_data=None, is_distributed=False):
         if is_distributed:
             if isinstance(x, np.ndarray):
                 input = to_sample_rdd(x, y)
@@ -126,15 +130,15 @@ class KerasModelWrapper():
                 input = x
                 validation_data_rdd = validation_data
             return self.__create_distributed_optimizer(training_rdd=input,
-                                       batch_size=batch_size,
-                                       nb_epoch=nb_epoch,
-                                       validation_data=validation_data_rdd)
+                                                       batch_size=batch_size,
+                                                       nb_epoch=nb_epoch,
+                                                       validation_data=validation_data_rdd)
         else:
             if isinstance(x, np.ndarray):
                 return self.__create_local_optimizer(x, y,
-                                 batch_size=batch_size,
-                                 nb_epoch=nb_epoch,
-                                 validation_data=validation_data)
+                                                     batch_size=batch_size,
+                                                     nb_epoch=nb_epoch,
+                                                     validation_data=validation_data)
         raise Exception("not supported type: %s" % x)
 
     def __create_local_optimizer(self, x, y, batch_size=32, nb_epoch=10, validation_data=None):
