@@ -238,10 +238,6 @@ class TestLayer(BigDLTestCase):
         layer = lambda: GlobalMaxPooling2D(input_shape=(3, 20, 20))
         self.modelTestSingleLayerWithOrdersModes(input_data, layer,
                                                  border_modes=[None])
-        input_data2 = np.random.random_sample([1, 20, 20, 3])
-        layer2 = lambda: GlobalMaxPooling2D(input_shape=(20, 20, 3))
-        self.modelTestSingleLayerWithOrdersModes(input_data2, layer2,
-                                                 border_modes=[None])
 
     def test_globalmaxpooling1d(self):
         input_data = np.random.random_sample([1, 3, 20])
