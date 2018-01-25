@@ -52,7 +52,7 @@ class BGRImgToLocalSeqFile(blockSize: Int, baseFileName: Path, hasName: Boolean 
         val path = new hadoopPath(fileName)
         val writer = SequenceFile.createWriter(conf, SequenceFile.Writer.file(path),
           SequenceFile.Writer.keyClass(classOf[Text]),
-          SequenceFile.Writer.valueClass(classOf[BytesWritable]))
+          SequenceFile.Writer.valueClass(classOf[Text]))
         var i = 0
         while (i < blockSize && prev.hasNext) {
           val (image, imageName) = prev.next()
@@ -66,7 +66,7 @@ class BGRImgToLocalSeqFile(blockSize: Int, baseFileName: Path, hasName: Boolean 
           preBuffer.clear
           val imageKey = if (hasName) s"${imageName}\n${image.label().toInt}"
             else s"${image.label().toInt}"
-          writer.append(new Text(imageKey), new BytesWritable(data))
+          writer.append(new Text(imageKey), new Text(data))
           i += 1
         }
         writer.close()

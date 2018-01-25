@@ -216,12 +216,14 @@ def Inception_v1(class_num):
     model.reset()
     return model
 
+
 def get_inception_data(url, sc=None, file_type="image", data_type="train"):
     path = os.path.join(url, data_type)
     if "seq" == file_type:
         return SeqFileFolder.files_to_image_frame(url=path, sc=sc, class_num=1000)
     elif "image" == file_type:
         return ImageFrame.read(path, sc)
+
 
 def config_option_parser():
     parser = OptionParser()
@@ -272,7 +274,7 @@ if __name__ == "__main__":
                                 MatToTensor(to_rgb=True),
                                 ImageFrameToSample(input_keys=["imageTensor"], target_keys=["label"])
                                 ])
-        train_frame = train_transformer(get_inception_data(options.folder, sc, "seq", "train"))
+        train_data = train_transformer(get_inception_data(options.folder, sc, "seq", "train"))
 
         val_transformer = Pipeline([CenterCrop(image_size, image_size),
                                     HFlip(),
