@@ -26,6 +26,7 @@ import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.SingleShape
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
@@ -629,12 +630,14 @@ abstract class Converter[T: ClassTag](implicit ev: TensorNumeric[T]) {
   protected def toCaffeInputParam(module : AbstractModule[Activity, Activity, T])
   : InputParameter = {
     val layer = module.asInstanceOf[Input[T]]
-    val sizes = layer.sizes
-    if (sizes == null) {
+    val shape = layer.shape
+    if (shape == null) {
       throw new CaffeConversionException("Input size should not be null when persisted as Caffe")
     }
+    require(shape.isInstanceOf[SingleShape], "shape for input should be single shape")
     val inputParam = InputParameter.newBuilder
     val blobShape = BlobShape.newBuilder
+    val sizes = shape.toSingle
     sizes.foreach(size => blobShape.addDim(size))
     inputParam.addShape(blobShape.build)
     inputParam.build()

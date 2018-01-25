@@ -584,7 +584,7 @@ class V1LayerConverter[T: ClassTag](implicit ev: TensorNumeric[T]) extends Conve
         "Netparam should not be null in Input layer conversion to V1")
     }
     val input = module.asInstanceOf[Input[T]]
-    val sizes = input.sizes
+    val sizes = input.shape.toSingle
     if (sizes == null) {
       throw new CaffeConversionException(
         "Input size shoud not be null when converted to Caffe")
