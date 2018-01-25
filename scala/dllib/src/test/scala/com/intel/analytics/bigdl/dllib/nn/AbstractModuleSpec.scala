@@ -18,8 +18,10 @@ package com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl._
 import org.scalatest.{FlatSpec, Matchers}
 import com.intel.analytics.bigdl.numeric.NumericFloat
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils.{T, Table}
+
+import scala.util.Random
 
 class AbstractModuleSpec extends FlatSpec with Matchers {
   "Get name" should "find the module if it exists" in {
@@ -326,5 +328,98 @@ class AbstractModuleSpec extends FlatSpec with Matchers {
     val extp = model.getExtraParameter()
     model2.setExtraParameter(extp)
     model2 should be (model)
+  }
+
+  "Shallow copy" should "work properly" in {
+
+    val linear = Linear[Float](2, 2)
+
+    val shallowCopy = linear.clone(false).asInstanceOf[Linear[Float]]
+
+    val originWeight = linear.weight
+
+    val originBias = linear.bias
+
+    originWeight.fill(1.0f)
+    originBias.fill(2.0f)
+
+    val input = Tensor[Float](2, 2).rand()
+
+    val res1 = linear.forward(input)
+
+    val res2 = shallowCopy.forward(input)
+
+    res1 should be (res2)
+
+  }
+
+  "Deep copy" should  "work properly" in {
+
+    val linear = Linear[Float](2, 2)
+
+    val deepCopy = linear.clone(true).asInstanceOf[Linear[Float]]
+
+    val input = Tensor[Float](2, 2).rand()
+
+    val res1 = linear.forward(input)
+
+    val res2 = deepCopy.forward(input)
+
+    res1 should be(res2)
+  }
+
+  "Shallow copy for quantized model" should "work properly" in {
+    val outputSize = 2
+    val inputSize = 2
+
+    val kernelData = Array(
+      2.0f, 3f,
+      4f, 5f
+    )
+
+    val biasData = Array(0.0f, 0.1f)
+
+    val input = Tensor[Float](2, 2).apply1(_ => Random.nextFloat())
+    val weight = Tensor[Float](Storage(kernelData), 1, Array(outputSize, inputSize)).rand()
+    val bias = Tensor[Float](Storage(biasData), 1, Array(outputSize)).rand()
+    val linear = quantized.Linear[Float](outputSize, inputSize, initWeight = weight,
+      initBias = bias).setName("quantLinear")
+
+    val shallow = linear.clone(false).asInstanceOf[quantized.Linear[Float]]
+
+    val res1 = linear.forward(input)
+
+    val res2 = shallow.forward(input)
+
+    res1 should be(res2)
+  }
+
+  "Deep copy for quantized model" should "work properly" in {
+    val outputSize = 2
+    val inputSize = 2
+
+    val kernelData = Array(
+      2.0f, 3f,
+      4f, 5f
+    )
+
+    val biasData = Array(0.0f, 0.1f)
+
+    val input = Tensor[Float](2, 2).apply1(_ => Random.nextFloat())
+
+    val input2 = input.clone()
+
+    val weight = Tensor[Float](Storage(kernelData), 1, Array(outputSize, inputSize)).rand()
+    val bias = Tensor[Float](Storage(biasData), 1, Array(outputSize)).rand()
+    val linear = quantized.Linear[Float](outputSize, inputSize, initWeight = weight,
+      initBias = bias).setName("quantLinear")
+
+    val deep = linear.clone(true).asInstanceOf[quantized.Linear[Float]]
+
+    val res1 = linear.forward(input)
+
+    val res2 = deep.forward(input2)
+
+    res1 should be(res2)
   }
 }
