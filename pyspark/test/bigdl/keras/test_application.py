@@ -113,7 +113,8 @@ class TestApplication(BigDLTestCase):
         model.fit(X_train, y_train,
                   batch_size=batch_size,
                   nb_epoch=nb_epoch,
-                  validation_data=(X_test, y_test))
+                  validation_data=(X_test, y_test),
+                  is_distributed=True)
         # 2017-09-22 15:53:45 INFO  DistriOptimizer$:657
         # - Top1Accuracy is Accuracy(correct: 21557, count: 25000, accuracy: 0.86228)
         # this result is from GlobalAveragePooling not GlobalMaxPooling.
