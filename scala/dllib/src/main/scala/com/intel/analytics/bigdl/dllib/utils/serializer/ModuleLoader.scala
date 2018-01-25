@@ -115,7 +115,7 @@ object ModuleLoader {
     }
   }
 
-  private def initTensorStorage[T: ClassTag](context: DeserializeContext)
+  private[bigdl] def initTensorStorage[T: ClassTag](context: DeserializeContext)
                                             (implicit ev: TensorNumeric[T]): Unit = {
     val attrMap = context.bigdlModule.getAttrMap
 
@@ -299,7 +299,7 @@ object ModulePersister {
   }
 
 
-  private def setTensorStorage(bigDLModule: BigDLModule.Builder,
+  private[bigdl] def setTensorStorage(bigDLModule: BigDLModule.Builder,
     storages: mutable.HashMap[Int, Any]) : Unit = {
     val storageIds = new mutable.HashSet[Int]
     val tensorStorages = storages.filter(_._2.isInstanceOf[TensorStorage])
