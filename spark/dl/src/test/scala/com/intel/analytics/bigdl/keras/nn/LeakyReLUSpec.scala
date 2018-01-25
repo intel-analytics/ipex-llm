@@ -54,8 +54,5 @@ class LeakyReLUSpec extends KerasBaseSpec{
     seq.add(leakyrelu)
     checkOutputAndGrad(seq.asInstanceOf[AbstractModule[Tensor[Float], Tensor[Float], Float]],
       kerasCode)
-
   }
 }
-
-

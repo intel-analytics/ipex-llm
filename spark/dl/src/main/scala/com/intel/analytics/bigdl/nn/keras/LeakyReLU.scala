@@ -52,5 +52,3 @@ object LeakyReLU {
       inputShape)
   }
 }
-
-
