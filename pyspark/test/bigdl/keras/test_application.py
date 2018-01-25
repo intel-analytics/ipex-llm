@@ -47,6 +47,7 @@ class TestApplication(BigDLTestCase):
     def test_text_classification(self):
         # This example demonstrates the use of Convolution1D for text classification.
         # This example is from Keras
+        K.set_image_dim_ordering("th")
         import numpy as np
         np.random.seed(1337)  # for reproducibility
 
@@ -118,8 +119,8 @@ class TestApplication(BigDLTestCase):
         # 2017-09-22 15:53:45 INFO  DistriOptimizer$:657
         # - Top1Accuracy is Accuracy(correct: 21557, count: 25000, accuracy: 0.86228)
         # this result is from GlobalAveragePooling not GlobalMaxPooling.
-        model.predict(X_test)
-        model.evaluate(X_test, y_test)
+        model.predict(X_test, is_distributed=True)
+        model.evaluate(X_test, y_test, is_distributed=True)
         print(model)
 
     def test_resnet50(self):
