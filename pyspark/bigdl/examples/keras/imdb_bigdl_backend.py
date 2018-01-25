@@ -34,8 +34,10 @@ keras_model.compile(loss='binary_crossentropy',
 # Add this line of code to use BigDL backend alternatively
 model = with_bigdl_backend(keras_model)
 
-model.fit(X_train, y_train, batch_size=32, nb_epoch=2,
+model.fit(X_train, y_train, batch_size=32, nb_epoch=1,
           validation_data=(X_test, y_test), is_distributed=True)
 # You may need to use data different from validation to evaluate or predict the model.
-model.evaluate(X_test, y_test, batch_size=32, is_distributed=True)
-model.predict(X_test, is_distributed=True)
+accuracy = model.evaluate(X_test, y_test, batch_size=32, is_distributed=True)
+print("Top1Accuracy: ", accuracy[0])
+results = model.predict(X_test, is_distributed=True)
+print("First predict result: ", results.take(1))
