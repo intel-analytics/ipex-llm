@@ -204,12 +204,10 @@ class JTensor(object):
         >>> np.random.seed(123)
         >>> data = np.random.uniform(0, 1, (2, 3)).astype("float32")
         >>> result = JTensor.from_ndarray(data)
-        >>> print(result)
-        JTensor: storage: [[ 0.69646919  0.28613934  0.22685145]
-         [ 0.55131477  0.71946895  0.42310646]], shape: [2 3], float
-        >>> result
-        JTensor: storage: [[ 0.69646919  0.28613934  0.22685145]
-         [ 0.55131477  0.71946895  0.42310646]], shape: [2 3], float
+        >>> expected_storage = np.array([[0.69646919, 0.28613934, 0.22685145], [0.55131477, 0.71946895, 0.42310646]])
+        >>> expected_shape = np.array([2, 3])
+        >>> np.testing.assert_allclose(result.storage, expected_storage, rtol=1e-6, atol=1e-6)
+        >>> np.testing.assert_allclose(result.shape, expected_shape)
         >>> data_back = result.to_ndarray()
         >>> (data == data_back).all()
         True
@@ -254,8 +252,12 @@ class JTensor(object):
         >>> indices = np.arange(1, 7)
         >>> shape = np.array([10])
         >>> result = JTensor.sparse(data, indices, shape)
-        >>> result
-        JTensor: storage: [ 1.  2.  3.  4.  5.  6.], shape: [10] ,indices [1 2 3 4 5 6], float
+        >>> expected_storage = np.array([1., 2., 3., 4., 5., 6.])
+        >>> expected_shape = np.array([10])
+        >>> expected_indices = np.array([1, 2, 3, 4, 5, 6])
+        >>> np.testing.assert_allclose(result.storage, expected_storage)
+        >>> np.testing.assert_allclose(result.shape, expected_shape)
+        >>> np.testing.assert_allclose(result.indices, expected_indices)
         >>> tensor1 = callBigDlFunc("float", "testTensor", result)  # noqa
         >>> array_from_tensor = tensor1.to_ndarray()
         >>> expected_ndarray = np.array([0, 1, 2, 3, 4, 5, 6, 0, 0, 0])
@@ -328,10 +330,14 @@ class Sample(object):
         >>> sample_back = callBigDlFunc("float", "testSample", sample)
         >>> assert_allclose(sample.features[0].to_ndarray(), sample_back.features[0].to_ndarray())
         >>> assert_allclose(sample.label.to_ndarray(), sample_back.label.to_ndarray())
-        >>> print(sample)
-        Sample: features: [JTensor: storage: [[ 0.69646919  0.28613934  0.22685145]
-         [ 0.55131477  0.71946895  0.42310646]], shape: [2 3], float], labels: [JTensor: storage: [[ 0.98076421  0.68482971  0.48093191]
-         [ 0.39211753  0.343178    0.72904968]], shape: [2 3], float],
+        >>> expected_feature_storage = np.array(([[0.69646919, 0.28613934, 0.22685145], [0.55131477, 0.71946895, 0.42310646]]))
+        >>> expected_feature_shape = np.array([2, 3])
+        >>> expected_label_storage = np.array(([[0.98076421, 0.68482971, 0.48093191], [0.39211753, 0.343178, 0.72904968]]))
+        >>> expected_label_shape = np.array([2, 3])
+        >>> assert_allclose(sample.features[0].storage, expected_feature_storage, rtol=1e-6, atol=1e-6)
+        >>> assert_allclose(sample.features[0].shape, expected_feature_shape)
+        >>> assert_allclose(sample.labels[0].storage, expected_label_storage, rtol=1e-6, atol=1e-6)
+        >>> assert_allclose(sample.labels[0].shape, expected_label_shape)
         """
         if isinstance(features, np.ndarray):
             features = [features]
