@@ -66,7 +66,7 @@ class RMSprop[@specialized(Float, Double) T: ClassTag](
       }
 
     _sumofsquare.mul(ev.fromType[Double](dr)).addcmul(ev.fromType[Double](1-dr), dfdx, dfdx)
-    _rms.resizeAs(_sumofsquare).copy(_sumofsquare).sqrt().add(ev.fromType[Double](eps))
+    _rms.sqrt(_sumofsquare).add(ev.fromType[Double](eps))
     parameter.addcdiv(ev.fromType[Double](-clr), dfdx, _rms)
     state("evalCounter") = nevals + 1
     state("sumSquare") = _sumofsquare
