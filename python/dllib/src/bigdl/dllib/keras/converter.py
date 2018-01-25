@@ -1476,12 +1476,12 @@ class LayerConverter:
         b_kh = int(self.input_shape[1])
 
         seq = BLayer.Sequential()
-        seq.add(BLayer.View([int(self.input_shape[1]), 1, int(self.input_shape[2])], num_input_dims=2))
+        seq.add(BLayer.Reshape([int(self.input_shape[1]), 1, int(self.input_shape[2])], True))
         blayer = BLayer.SpatialMaxPooling(
             kw=b_kw,
             kh=b_kh,
-            dw=0,
-            dh=0,
+            dw=1,
+            dh=1,
             pad_w=0,
             pad_h=0,
             to_ceil=False,
@@ -1489,8 +1489,8 @@ class LayerConverter:
             bigdl_type="float"
         )
         seq.add(blayer)
-        seq.add(BLayer.Squeeze(2, num_input_dims=2))
-        seq.add(BLayer.Squeeze(1, num_input_dims=1))
+        seq.add(BLayer.Squeeze(3))
+        seq.add(BLayer.Squeeze(2))
         return seq
 
     def create_globalaveragepooling1d(self):
@@ -1498,12 +1498,12 @@ class LayerConverter:
         b_kh = int(self.input_shape[1])
 
         seq = BLayer.Sequential()
-        seq.add(BLayer.View([int(self.input_shape[1]), 1, int(self.input_shape[2])], num_input_dims=2))
+        seq.add(BLayer.Reshape([int(self.input_shape[1]), 1, int(self.input_shape[2])], True))
         blayer = BLayer.SpatialAveragePooling(
             kw=b_kw,
             kh=b_kh,
-            dw=0,
-            dh=0,
+            dw=1,
+            dh=1,
             pad_w=0,
             pad_h=0,
             global_pooling=False,
@@ -1514,9 +1514,8 @@ class LayerConverter:
             bigdl_type="float"
         )
         seq.add(blayer)
-        seq.add(BLayer.Squeeze(2, num_input_dims=2))  # the index start from one but without batch
-        seq.add(BLayer.Squeeze(1, num_input_dims=1))
-
+        seq.add(BLayer.Squeeze(3))
+        seq.add(BLayer.Squeeze(2))
         return seq
 
     def create_maxpooling1d(self):
