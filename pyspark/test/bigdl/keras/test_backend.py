@@ -45,8 +45,7 @@ class TestBackend(BigDLTestCase):
                        metrics=['accuracy'])
         model = with_bigdl_backend(kmodel)
 
-        model.fit(X_train, y_train,
-                  batch_size=4, nb_epoch=2, is_distributed=False)
+        model.fit(X_train, y_train, batch_size=4, nb_epoch=2)
         model.predict(X_train)
         # TODO: support evaluate for local mode.
         # model.evaluate(X_train, y_train)
@@ -61,9 +60,9 @@ class TestBackend(BigDLTestCase):
         model = with_bigdl_backend(kmodel)
 
         model.fit(X_train, y_train, batch_size=4, nb_epoch=2,
-                  validation_data=(X_train, y_train))
-        model.predict(X_train).collect()
-        model.evaluate(X_train, y_train)
+                  validation_data=(X_train, y_train), is_distributed=True)
+        model.predict(X_train, is_distributed=True).collect()
+        model.evaluate(X_train, y_train, is_distributed=True)
         print(model)
 
     def test_lenet_distributed_rdd(self):
@@ -80,9 +79,9 @@ class TestBackend(BigDLTestCase):
         model = with_bigdl_backend(kmodel)
 
         model.fit(training_rdd, batch_size=4, nb_epoch=2,
-                  validation_data=training_rdd)
-        model.predict(X_train).collect()
-        model.evaluate(X_train, y_train)
+                  validation_data=training_rdd, is_distributed=True)
+        model.predict(X_train, is_distributed=True).collect()
+        model.evaluate(X_train, y_train, is_distributed=True)
         print(model)
 
     @pytest.mark.skip(reason="need to support evaluate locally before running the test")

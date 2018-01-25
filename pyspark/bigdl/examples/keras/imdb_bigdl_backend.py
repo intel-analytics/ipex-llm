@@ -35,4 +35,4 @@ keras_model.compile(loss='binary_crossentropy',
 model = with_bigdl_backend(keras_model)
 
 model.fit(X_train, y_train, batch_size=32, nb_epoch=2,
-          validation_data=(X_test, y_test))
+          validation_data=(X_test, y_test), is_distributed=True)

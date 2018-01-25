@@ -34,7 +34,7 @@ class KerasModelWrapper:
         self.optim_method = OptimConverter.to_bigdl_optim_method(kmodel.optimizer)
         self.metrics = OptimConverter.to_bigdl_metrics(kmodel.metrics) if kmodel.metrics else None
 
-    def evaluate(self, x, y, batch_size=32, sample_weight=None, is_distributed=True):
+    def evaluate(self, x, y, batch_size=32, sample_weight=None, is_distributed=False):
         """
         Evaluate a model by the given metrics.
         :param x: ndarray or list of ndarray for local mode.
@@ -61,7 +61,7 @@ class KerasModelWrapper:
         else:
             raise Exception("We only support evaluation in distributed mode")
 
-    def predict(self, x, batch_size=None, verbose=None, is_distributed=True):
+    def predict(self, x, batch_size=None, verbose=None, is_distributed=False):
         """Generates output predictions for the input samples,
         processing the samples in a batched way.
 
@@ -88,7 +88,7 @@ class KerasModelWrapper:
 
     def fit(self, x, y=None, batch_size=32, nb_epoch=10, verbose=1, callbacks=None,
             validation_split=0., validation_data=None, shuffle=True,
-            class_weight=None, sample_weight=None, initial_epoch=0, is_distributed=True):
+            class_weight=None, sample_weight=None, initial_epoch=0, is_distributed=False):
         """Optimize the model by the given options
 
         :param x: ndarray or list of ndarray for local mode.
@@ -96,6 +96,7 @@ class KerasModelWrapper:
         :param y: ndarray or list of ndarray for local mode and would be None for cluster mode.
             is_distributed: used to control run in local or cluster. the default value is False.
             NB: if is_distributed=true, x should be RDD[Sample] and y should be None
+        :param is_distributed: Whether to train in local mode or distributed mode
         :return:
             A Numpy array or RDD[Sample] of predictions.
         """
