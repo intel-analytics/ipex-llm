@@ -33,10 +33,12 @@ object BigDLStorage extends StorageType
 
 case class SerializeContext[T: ClassTag](moduleData: ModuleData[T],
                                          storages: mutable.HashMap[Int, Any],
-                                         storageType: StorageType)
+                                         storageType: StorageType,
+                                         copyWeightAndBias : Boolean = true)
 case class DeserializeContext(bigdlModule : BigDLModule,
                               storages: mutable.HashMap[Int, Any],
-                              storageType: StorageType)
+                              storageType: StorageType,
+                              copyWeightAndBias : Boolean = true)
 
 case class SerializeResult(bigDLModule: BigDLModule.Builder, storages: mutable.HashMap[Int, Any])
 
