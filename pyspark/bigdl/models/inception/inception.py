@@ -3,9 +3,6 @@ from optparse import OptionParser
 from bigdl.nn.criterion import *
 from bigdl.nn.initialization_method import *
 from bigdl.optim.optimizer import *
-from bigdl.util.common import *
-from bigdl.dataset.imagenet import *
-from bigdl.dataset.transformer import *
 from bigdl.transform.vision.image import *
 
 
@@ -217,12 +214,10 @@ def Inception_v1(class_num):
     return model
 
 
-def get_inception_data(url, sc=None, file_type="image", data_type="train"):
+def get_inception_data(url, sc=None, data_type="train"):
     path = os.path.join(url, data_type)
-    if "seq" == file_type:
-        return SeqFileFolder.files_to_image_frame(url=path, sc=sc, class_num=1000)
-    elif "image" == file_type:
-        return ImageFrame.read(path, sc)
+    return SeqFileFolder.files_to_image_frame(url=path, sc=sc, class_num=1000)
+
 
 
 def config_option_parser():
@@ -274,7 +269,7 @@ if __name__ == "__main__":
                                 MatToTensor(to_rgb=True),
                                 ImageFrameToSample(input_keys=["imageTensor"], target_keys=["label"])
                                 ])
-        train_data = train_transformer(get_inception_data(options.folder, sc, "seq", "train"))
+        train_data = train_transformer(get_inception_data(options.folder, sc, "train"))
 
         val_transformer = Pipeline([CenterCrop(image_size, image_size),
                                     HFlip(),
@@ -282,7 +277,7 @@ if __name__ == "__main__":
                                     MatToTensor(to_rgb=True),
                                     ImageFrameToSample(input_keys=["imageTensor"], target_keys=["label"])
                                     ])
-        val_data = val_transformer(get_inception_data(options.folder, sc, "seq", "val"))
+        val_data = val_transformer(get_inception_data(options.folder, sc, "val"))
 
         # TODO: Check stateSnapshot opt
 
@@ -296,9 +291,9 @@ if __name__ == "__main__":
             end_trigger = MaxIteration(options.maxIteration)
 
         # Optimizer
-        optimizer = Optimizer(
+        optimizer = Optimizer.create(
             model=inception_model,
-            training_rdd=train_data,
+            training_set=train_data,
             optim_method=SGD(learningrate=options.learningRate, learningrate_decay=options.weightDecay,
                              momentum=0.9, dampening=0.0),
             criterion=ClassNLLCriterion(),
@@ -315,6 +310,7 @@ if __name__ == "__main__":
                                  val_method=[Top1Accuracy(), Top5Accuracy()])
 
         trained_model = optimizer.optimize()
+        trained_model.saveModel(modelPath=options.model,over_write=True)
 
     elif options.action == "test":
         # Load a pre-trained model and then validate it through top1 accuracy.
@@ -324,8 +320,8 @@ if __name__ == "__main__":
                                     MatToTensor(to_rgb=True),
                                     ImageFrameToSample(input_keys=["imageTensor"], target_keys=["label"])
                                     ])
-        test_data = test_transformer(get_inception_data(options.folder, sc, "seq", "val"))
-        model = Model.load(options.model)
+        test_data = test_transformer(get_inception_data(options.folder, sc, "val"))
+        model = Model.loadModel(options.model)
         results = model.evaluate(test_data, options.batchSize, [Top1Accuracy(), Top5Accuracy()])
         for result in results:
             print result
