@@ -24,19 +24,13 @@ import com.intel.analytics.bigdl.utils.Shape
 
 class GaussianDropoutSpec extends KerasBaseSpec {
 
-  "GaussianDropout" should "generate the correct outputShape" in {
-    val seq = KSequential[Float]()
-    val gaussiandropout = GaussianDropout[Float](0.5, inputShape = Shape(3))
-    seq.add(gaussiandropout)
-    gaussiandropout.getOutputShape().toSingle().toArray should be(Array(-1, 3))
-  }
-
   "GaussianDropout forward and backward" should "work properly" in {
     val seq = KSequential[Float]()
-    val input = Tensor[Float](Array(2, 28, 28, 1)).rand()
-    val gaussiandropout = GaussianDropout[Float](0.6, inputShape = Shape(3))
-    seq.add(gaussiandropout)
-    val output = gaussiandropout.forward(input)
-    val gradInput = gaussiandropout.backward(input, output)
+    val layer = GaussianDropout[Float](0.6, inputShape = Shape(3, 4))
+    seq.add(layer)
+    seq.getOutputShape().toSingle().toArray should be (Array(-1, 3 ,4))
+    val input = Tensor[Float](2, 3, 4).rand()
+    val output = seq.forward(input)
+    val gradInput = seq.backward(input, output)
   }
 }

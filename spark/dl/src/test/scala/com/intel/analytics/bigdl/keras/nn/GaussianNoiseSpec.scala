@@ -24,20 +24,13 @@ import com.intel.analytics.bigdl.utils.Shape
 
 class GaussianNoiseSpec extends KerasBaseSpec {
 
-  "GaussianNoise" should "generate the correct outputShape" in {
-    val seq = KSequential[Float]()
-    val gaussiannoise = GaussianNoise[Float](0.5, inputShape = Shape(3))
-    seq.add(gaussiannoise)
-    gaussiannoise.getOutputShape().toSingle().toArray should be(Array(-1, 3))
-  }
-
-  
   "GaussianNoise forward and backward" should "work properly" in {
     val seq = KSequential[Float]()
-    val input = Tensor[Float](Array(2, 28, 28, 1)).rand()
-    val gaussiannoise = GaussianNoise[Float](0.6, inputShape = Shape(3))
-    seq.add(gaussiannoise)
-    val output = gaussiannoise.forward(input)
-    val gradInput = gaussiannoise.backward(input, output)
+    val layer = GaussianNoise[Float](0.6, inputShape = Shape(3, 4))
+    seq.add(layer)
+    seq.getOutputShape().toSingle().toArray should be (Array(-1, 3 ,4))
+    val input = Tensor[Float](2, 3, 4).rand()
+    val output = seq.forward(input)
+    val gradInput = seq.backward(input, output)
   }
 }
