@@ -1,0 +1,107 @@
+/*
+ * Copyright 2016 The BigDL Authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.intel.analytics.bigdl.nn.ops
+
+import com.intel.analytics.bigdl.nn.abstractnn.Activity
+import com.intel.analytics.bigdl.tensor._
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.Table
+
+import scala.collection.mutable.ArrayBuffer
+import scala.reflect.ClassTag
+
+/**
+ * Kv2Tensor operation convert a kv feature column to a SparseTensor or DenseTensor
+ *
+ * DenseTensor if transType = DenseType
+ * SparseTensor if  transType = SparseType
+ *
+ * The input contains 2 elements which are `kvTensor`, `feaLen`:
+ * kvTensor shape will be batch*1 and element is a kv string, only support one feature now
+ * depth: the length of the value set of the feature
+ *
+ * the output shape will be batch*feaLen if transType = DenseType
+ * the output shape will be a SparseTensor with dense shape batch*feaLen if transType = SparseType
+ *
+ * @param kvDelimiter The delimiter between kv pairs, default: ","
+ * @param itemDelimiter The delimiter between key and value, default: ":"
+ * @param transType The type of output tensor. default: DenseType
+ * @tparam T Numeric type. Parameter tensor numeric type. Only support float/double now
+ * @tparam D Numeric type. Output tensor numeric type. Only support float/double now
+ */
+
+class Kv2Tensor[T: ClassTag, D: ClassTag](
+  kvDelimiter: String,
+  itemDelimiter: String,
+  transType: TensorType
+  )(implicit ev: TensorNumeric[T], ev2: TensorNumeric[D])
+  extends Operation[Table, Tensor[D], T]{
+
+  output = Activity.allocate[Tensor[D], D]()
+
+  override def updateOutput(input: Table): Tensor[D] = {
+    val kvTensor = input[Tensor[String]](1)
+    val feaLen = input[Tensor[Int]](2).value()
+    val indices0 = new ArrayBuffer[Int]()
+    val indices1 = new ArrayBuffer[Int]()
+    val values = new ArrayBuffer[D]()
+    val rows = kvTensor.size(dim = 1)
+    val shape = Array(rows, feaLen)
+
+    for(i <- 1 to rows) {
+      val kvFeaString = kvTensor.select(1, i).valueAt(1)
+      kvFeaString.split(kvDelimiter).foreach { kv =>
+        indices0 += i-1
+        indices1 += kv.split(itemDelimiter)(0).toInt
+        ev2.getType() match {
+          case DoubleType =>
+            values += kv.split(itemDelimiter)(1).toDouble.asInstanceOf[D]
+          case FloatType =>
+            values += kv.split(itemDelimiter)(1).toFloat.asInstanceOf[D]
+        }
+      }
+    }
+
+    val indices = Array(indices0.toArray, indices1.toArray)
+    val resTensor = transType match {
+      case DenseType =>
+        Tensor.dense(Tensor.sparse(indices, values.toArray, shape))
+      case SparseType =>
+        Tensor.sparse(indices, values.toArray, shape)
+    }
+    output = resTensor
+    output
+  }
+
+  override def getClassTagNumerics() : (Array[ClassTag[_]], Array[TensorNumeric[_]]) = {
+    (Array[ClassTag[_]](scala.reflect.classTag[T], scala.reflect.classTag[D]),
+      Array[TensorNumeric[_]](ev, ev2))
+  }
+}
+
+object Kv2Tensor{
+  def apply[T: ClassTag, D: ClassTag](
+     kvDelimiter: String = ",",
+     itemDelimiter: String = ":",
+     transType: TensorType = DenseType)
+     (implicit ev: TensorNumeric[T], ev2: TensorNumeric[D]): Operation[Activity, Activity, T]
+  = ModuleToOperation[T](new Kv2Tensor[T, D](
+    kvDelimiter = kvDelimiter,
+    itemDelimiter = itemDelimiter,
+    transType = transType
+  ))
+}
+
