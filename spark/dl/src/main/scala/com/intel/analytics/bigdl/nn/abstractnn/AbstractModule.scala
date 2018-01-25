@@ -19,22 +19,23 @@ package com.intel.analytics.bigdl.nn.abstractnn
 import java.nio.ByteOrder
 
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.tensor.{Tensor, TensorDataType}
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils._
-import com.intel.analytics.bigdl.nn.{Module, _}
-import com.intel.analytics.bigdl.utils.TorchObject.TYPE_MODULE
-import org.apache.commons.lang3.SerializationUtils
-import org.apache.spark.rdd.RDD
-import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.dataset.{LocalDataSet, MiniBatch, PaddingParam, Sample}
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.nn.quantized.Quantization
+import com.intel.analytics.bigdl.nn.{Module, _}
+import com.intel.analytics.bigdl.optim._
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.tensor.{QuantizedTensor, Tensor, TensorDataType}
 import com.intel.analytics.bigdl.transform.vision.image.{DistributedImageFrame, ImageFeature, ImageFrame, LocalImageFrame}
+import com.intel.analytics.bigdl.utils.TorchObject.TYPE_MODULE
+import com.intel.analytics.bigdl.utils._
 import com.intel.analytics.bigdl.utils.caffe.CaffePersister
-import com.intel.analytics.bigdl.utils.serializer.ModulePersister
+import com.intel.analytics.bigdl.utils.serializer._
 import com.intel.analytics.bigdl.utils.tf.{TensorflowDataFormat, TensorflowSaver}
+import org.apache.commons.lang3.SerializationUtils
+import org.apache.spark.rdd.RDD
 
+import scala.collection.mutable
 import scala.reflect.ClassTag
 
 /**
@@ -55,7 +56,7 @@ abstract class TensorModule[T: ClassTag]
  * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now
  */
 abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, T: ClassTag](
-  implicit ev: TensorNumeric[T]) extends Serializable {
+  implicit ev: TensorNumeric[T]) extends Serializable with InferShape{
 
   private var namePostfix = Integer.toHexString(java.util.UUID.randomUUID().hashCode())
 
@@ -331,7 +332,13 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
    * If the module has parameters, this will zero the accumulation of the gradients with respect
    * to these parameters. Otherwise, it does nothing.
    */
-  def zeroGradParameters(): Unit = {}
+  def zeroGradParameters(): Unit = {
+    if (parameters() != null) {
+      parameters()._2.foreach(grad => {
+        grad.zero()
+      })
+    }
+  }
 
   def updateParameters(learningRate: T): Unit = {}
 
@@ -450,6 +457,81 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
 
   def cloneModule(): AbstractModule[A, B, T] = {
     SerializationUtils.clone(this)
+  }
+
+  def clone(deepCopy : Boolean): AbstractModule[A, B, T] = {
+    val moduleData = ModuleData[T](this.
+      asInstanceOf[AbstractModule[Activity, Activity, T]], Seq[String](), Seq[String]())
+    val storages = new mutable.HashMap[Int, Any]()
+    val context = SerializeContext(moduleData, storages, ProtoStorageType, false)
+    val serializedModule = ModuleSerializer.serialize[T](context).bigDLModule
+    ModulePersister.setTensorStorage(serializedModule, storages)
+
+    storages.clear()
+
+    val deserializeContext = DeserializeContext(serializedModule.build,
+      storages, ProtoStorageType, false)
+    ModuleLoader.initTensorStorage[T](deserializeContext)
+    val copy = ModuleSerializer.load[T](deserializeContext).module
+      .asInstanceOf[AbstractModule[A, B, T]]
+    setWeightAndBias(copy, deepCopy)
+    copy
+  }
+
+
+  private def setWeightAndBias(copy : AbstractModule[A, B, T], deepCopy : Boolean): Unit = {
+    val parameterTable = this.getParametersTable
+    val copiedModuleParamTable = copy.getParametersTable
+    if (parameterTable != null) {
+      require(copiedModuleParamTable != null, "cloned module should have params")
+      parameterTable.foreach {
+        case (name: String, params: Table) =>
+          require(copiedModuleParamTable.get(name) != None, s"cloned module should have for $name")
+          setLayerWeightAndBias(params,
+            copiedModuleParamTable.get(name).get.asInstanceOf[Table], deepCopy)
+      }
+    }
+  }
+
+  private def setLayerWeightAndBias(params : Table,
+                                    copyParams : Table, deepCopy : Boolean): Unit = {
+    params.foreach(param => {
+      copyParam(params, copyParams, deepCopy, param._1.toString)
+    })
+  }
+
+  private def copyParam(params : Table, copyParams : Table,
+                        deepCopy : Boolean, paraName : String) : Unit = {
+    if (params.contains(paraName)) {
+      // this is for quantization tensors where the weight might be an array
+      if (params.get(paraName).get
+        .isInstanceOf[Array[Tensor[T]]]) {
+        val copies = copyParams.get(paraName).get
+          .asInstanceOf[Array[Tensor[T]]]
+        val origins = params.get(paraName).get
+          .asInstanceOf[Array[Tensor[T]]]
+        var i = 0
+        while (i < copies.length) {
+          copyTensor(origins(i), copies(i), deepCopy)
+          i += 1
+        }
+      } else {
+        // For normal layers, their params are just tensors
+        copyTensor(params.get(paraName).get.asInstanceOf[Tensor[T]],
+          copyParams.get(paraName).get.asInstanceOf[Tensor[T]], deepCopy)
+      }
+    }
+  }
+
+  private def copyTensor(t1 : Tensor[T], t2 : Tensor[T], deepCopy : Boolean) = {
+    if (t2.isInstanceOf[QuantizedTensor[_]]) {
+      t2.asInstanceOf[QuantizedTensor[_]].release()
+    }
+    if (deepCopy) {
+      t2.copy(t1)
+    } else {
+      t2.set(t1)
+    }
   }
 
   def canEqual(other: Any): Boolean = other.isInstanceOf[AbstractModule[A, B, T]]
@@ -813,6 +895,11 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
     Graph(starts, endNodes)
   }
 
+  /**
+   * Return classTag numerics for module serialization. If your module contains multiple classtag
+   * in the constructor, you should override this method
+   * @return
+   */
   def getClassTagNumerics() : (Array[ClassTag[_]], Array[TensorNumeric[_]]) = {
     (Array(scala.reflect.classTag[T]), Array(ev))
   }

@@ -16,7 +16,8 @@
 
 package com.intel.analytics.bigdl.transform.vision.image
 
-import com.intel.analytics.bigdl.dataset.ArraySample
+
+import com.intel.analytics.bigdl.dataset.{ArraySample}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.transform.vision.image.opencv.OpenCVMat
@@ -59,6 +60,23 @@ object BytesToMat {
     }
     feature
   }
+}
+
+/**
+ * Transform byte array(pixels in byte) to OpenCVMat
+ * @param byteKey key that maps byte array
+ */
+class PixelBytesToMat(byteKey: String = ImageFeature.bytes) extends FeatureTransformer {
+
+  override def transformMat(feature: ImageFeature): Unit = {
+    val pixels = feature[Array[Byte]](byteKey)
+    val mat = OpenCVMat.fromPixelsBytes(pixels, feature.getOriginalHeight, feature.getOriginalWidth)
+    feature(ImageFeature.mat) = mat
+  }
+}
+
+object PixelBytesToMat {
+  def apply(byteKey: String = ImageFeature.bytes): PixelBytesToMat = new PixelBytesToMat(byteKey)
 }
 
 

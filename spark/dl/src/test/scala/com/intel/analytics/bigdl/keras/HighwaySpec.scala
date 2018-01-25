@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.nn
+package com.intel.analytics.bigdl.keras
 
-import com.intel.analytics.bigdl.keras.{KerasBaseSpec, KerasRunner}
+import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.tensor.Tensor
 
 class HighwaySpec extends KerasBaseSpec {

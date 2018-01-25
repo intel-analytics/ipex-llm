@@ -40,4 +40,23 @@ class DenseToSparseSpec extends FlatSpec with Matchers  {
     output should be (exceptedOutput)
   }
 
+  // It is useful when DenseToSparse layer is placed on the top of model,
+  // received gradient from sparselinear layer.
+  "A DenseToSparse backward" should "be able to work without gradOutput" in {
+    val mockInput = Tensor[Float](5, 10).rand()
+    val mockError = Tensor[Float](5, 10).rand()
+    var model = Sequential[Float]()
+      .add(DenseToSparse[Float](propagateBack = true))
+      .add(SparseLinear[Float](10, 10))
+    model.forward(mockInput)
+    intercept[Exception] {
+      model.backward(mockInput, mockError)
+    }
+
+    model = Sequential[Float]()
+      .add(DenseToSparse[Float](propagateBack = false))
+      .add(SparseLinear[Float](10, 10))
+    model.forward(mockInput)
+    model.backward(mockInput, mockError)
+  }
 }

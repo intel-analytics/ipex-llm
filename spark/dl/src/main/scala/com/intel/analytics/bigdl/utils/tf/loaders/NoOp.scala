@@ -25,7 +25,7 @@ import org.tensorflow.framework.NodeDef
 
 import scala.reflect.ClassTag
 
-class NoOp extends TensorflowOpsLoader {
+private[bigdl] class NoOp extends TensorflowOpsLoader {
   override def build[T: ClassTag](nodeDef: NodeDef, byteOrder: ByteOrder
     , context: Context[T])(implicit ev: TensorNumeric[T]): Module[T] = {
     new ControlDependency[T]()

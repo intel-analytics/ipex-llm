@@ -650,8 +650,8 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def createAbs()
-  : Abs[T, T] = {
-    Abs[T, T]()
+  : Abs[T] = {
+    Abs[T]()
   }
 
   def createAdd(inputSize: Int)
@@ -717,7 +717,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def createCAddTable(inplace: Boolean = false)
-  : CAddTable[T] = {
+  : CAddTable[T, T] = {
     CAddTable[T](inplace)
   }
 
@@ -759,8 +759,8 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
 
   def createClamp(min: Int,
     max: Int)
-  : Clamp[T, T] = {
-    Clamp[T, T](min,
+  : Clamp[T] = {
+    Clamp[T](min,
       max)
   }
 
@@ -799,8 +799,8 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
 
   def createELU(alpha: Double = 1.0,
     inplace: Boolean = false)
-  : ELU[T, T] = {
-    ELU[T, T](alpha,
+  : ELU[T] = {
+    ELU[T](alpha,
       inplace)
   }
 
@@ -836,8 +836,8 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   def createHardTanh(minValue: Double = -1,
     maxValue: Double = 1,
     inplace: Boolean = false)
-  : HardTanh[T, T] = {
-    HardTanh[T, T](minValue,
+  : HardTanh[T] = {
+    HardTanh[T](minValue,
       maxValue,
       inplace)
   }
@@ -894,8 +894,8 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def createLog()
-  : Log[T, T] = {
-    Log[T, T]()
+  : Log[T] = {
+    Log[T]()
   }
 
   def createLogSigmoid()
@@ -960,7 +960,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   def createMean(dimension: Int = 1,
     nInputDims: Int = -1,
     squeeze: Boolean = true)
-  : Mean[T, T] = {
+  : Mean[T] = {
     Mean[T](dimension,
       nInputDims,
       squeeze)
@@ -1057,8 +1057,8 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   def createPower(power: Double,
     scale: Double = 1,
     shift: Double = 0)
-  : Power[T, T] = {
-    Power[T, T](power,
+  : Power[T] = {
+    Power[T](power,
       scale,
       shift)
   }
@@ -1073,8 +1073,8 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def createReLU6(inplace: Boolean = false)
-  : ReLU6[T, T] = {
-    ReLU6[T, T](inplace)
+  : ReLU6[T] = {
+    ReLU6[T](inplace)
   }
 
   def createReplicate(nFeatures: Int,
@@ -1126,8 +1126,8 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def createSoftPlus(beta: Double = 1.0)
-  : SoftPlus[T, T] = {
-    SoftPlus[T, T](beta)
+  : SoftPlus[T] = {
+    SoftPlus[T](beta)
   }
 
   def createSoftShrink(lambda: Double = 0.5)
@@ -1136,8 +1136,8 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def createSoftSign()
-  : SoftSign[T, T] = {
-    SoftSign[T, T]()
+  : SoftSign[T] = {
+    SoftSign[T]()
   }
 
 
@@ -1393,13 +1393,13 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def createSqrt()
-  : Sqrt[T, T] = {
-    Sqrt[T, T]()
+  : Sqrt[T] = {
+    Sqrt[T]()
   }
 
   def createSquare()
-  : Square[T, T] = {
-    Square[T, T]()
+  : Square[T] = {
+    Square[T]()
   }
 
   def createSqueeze(dim: Int = Int.MinValue,
@@ -1414,8 +1414,8 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     sizeAverage: Boolean = false,
     squeeze: Boolean = true
   )
-  : Sum[T, T] = {
-    Sum[T, T](dimension,
+  : Sum[T] = {
+    Sum[T](dimension,
       nInputDims,
       sizeAverage,
       squeeze
@@ -1761,6 +1761,14 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
       case null => None
     }
     SoftmaxWithCriterion[T](labelToIgnore, normM)
+  }
+
+  def createTransformerCriterion(
+           criterion: AbstractCriterion[Activity, Activity, T],
+           inputTransformer: AbstractModule[Activity, Activity, T] = null,
+           targetTransformer: AbstractModule[Activity, Activity, T] = null
+           ): TransformerCriterion[T] = {
+    TransformerCriterion(criterion, Option(inputTransformer), Option(targetTransformer))
   }
 
   def createPack(dimension: Int): Pack[T] = {
@@ -2378,11 +2386,12 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   def createResizeBilinear(
     outputHeight: Int,
     outputWidth: Int,
-    alignCorner: Boolean
+    alignCorner: Boolean,
+    dataFormat: String
   ): ResizeBilinear[T] = {
     ResizeBilinear[T](outputHeight,
       outputWidth,
-      alignCorner)
+      alignCorner, DataFormat.apply(dataFormat))
   }
 
   def createMultiRNNCell(cells: JList[Cell[T]]): MultiRNNCell[T] = {
@@ -2864,6 +2873,10 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     BytesToMat(byteKey)
   }
 
+  def createPixelBytesToMat(byteKey: String): PixelBytesToMat = {
+    PixelBytesToMat(byteKey)
+  }
+
   def createMatToFloats(validHeight: Int = 300, validWidth: Int = 300, validChannels: Int = 3,
     outKey: String = ImageFeature.floats, shareBuffer: Boolean = true): MatToFloats =
     new MatToFloats(validHeight, validWidth, validChannels, outKey, shareBuffer)
@@ -2879,6 +2892,12 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     targetKeys: JList[String], sampleKey: String): ImageFrameToSample[T] = {
     val targets = if (targetKeys == null) null else targetKeys.asScala.toArray
     ImageFrameToSample[T](inputKeys.asScala.toArray, targets, sampleKey)
+  }
+
+  def seqFilesToImageFrame(url: String, sc: JavaSparkContext,
+    classNum: Int, partitionNum: Int): ImageFrame = {
+    val pn = if (partitionNum <= 0) None else Some(partitionNum)
+    DataSet.SeqFileFolder.filesToImageFrame(url, sc, classNum, pn)
   }
 
   def setConstantClip(optimizer: Optimizer[T, MiniBatch[T]],

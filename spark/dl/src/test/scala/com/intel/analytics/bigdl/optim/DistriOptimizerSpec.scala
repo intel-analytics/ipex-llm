@@ -635,4 +635,54 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
     myOpt.setTrainData(rdd, 2*nodeNumber)
     myOpt.optimize()
   }
+
+  "optimMethod state " should "be updated correctly after optimize" in {
+    LoggerFilter.redirectSparkInfoLogs()
+    Logger.getLogger("com.intel.analytics.bigdl.optim").setLevel(Level.INFO)
+    Logger.getLogger("com.intel.analytics.bigdl").setLevel(Level.INFO)
+
+    val mm = Sequential[Double]().add(Linear(4, 1))
+      .add(Sigmoid())
+
+    val optimizer = new DistriOptimizer[Double](
+      _model = mm,
+      _dataset = dataSet,
+      _criterion = new MSECriterion[Double]()
+    )
+
+    val optimMethod = new SGD[Double](learningRate = 20.0)
+
+    optimizer.setOptimMethod(optimMethod)
+      .setEndWhen(Trigger.maxIteration(10))
+    val model = optimizer.optimize()
+
+    optimMethod.state[Int]("epoch") should be (1)
+    optimMethod.state[Int]("neval") should be (11)
+    optimMethod.state[Int]("recordsProcessedThisEpoch") should be (320)
+
+    optimizer.setEndWhen(Trigger.maxIteration(20))
+    optimizer.optimize()
+
+    optimMethod.state[Int]("epoch") should be (1)
+    optimMethod.state[Int]("neval") should be (21)
+    optimMethod.state[Int]("recordsProcessedThisEpoch") should be (640)
+
+    val rdd = sc.parallelize(1 to (160 * nodeNumber), nodeNumber)
+      .map(_ => Sample[Double](Tensor[Double](4).fill(2.0), Tensor[Double](1).fill(1.0)))
+
+    optimizer.setTrainData(rdd, 16 * nodeNumber)
+
+    optimMethod.state[Int]("epoch") should be (2)
+    optimMethod.state[Int]("neval") should be (21)
+    optimMethod.state[Int]("recordsProcessedThisEpoch") should be (0)
+
+    optimizer.setEndWhen(Trigger.maxEpoch(2))
+    optimizer.optimize()
+
+    optimMethod.state[Int]("epoch") should be (3)
+    optimMethod.state[Int]("neval") should be (31)
+    optimMethod.state[Int]("recordsProcessedThisEpoch") should be (0)
+
+
+  }
 }

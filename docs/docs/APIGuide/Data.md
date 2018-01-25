@@ -399,6 +399,7 @@ It can be created by
 * `read`: read local image path as opencv mat
 * `fromImageBytes`: convert image file in bytes to opencv mat
 * `fromFloats`: convert float array(pixels) to OpenCV mat
+* `fromTensor`: convert float tensor to OpenCV mat
 
 **Scala example:**
 ```scala
@@ -411,6 +412,9 @@ val mat2 = OpenCVMat.fromImageBytes(bytes)
 
 // Convert float array(pixels) to OpenCVMat
 val mat3 = OpenCVMat.fromFloats(floatPixels, height=300, width=300)
+
+// Convert tensor to OpenCVMat
+val mat4 = OpenCVMat.fromTensor(tensor, format = "HWC")
 ```
 
 ---

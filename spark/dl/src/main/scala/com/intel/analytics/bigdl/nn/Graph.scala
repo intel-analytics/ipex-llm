@@ -22,12 +22,13 @@ import com.intel.analytics.bigdl.Module
 import scala.collection.JavaConverters._
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
-import com.intel.analytics.bigdl.nn.ops.{MergeControlNode, SwitchControlNode, MergeOps, SwitchOps, ControlOps}
+import com.intel.analytics.bigdl.nn.ops._
 import com.intel.analytics.bigdl.nn.tf.{ControlDependency, WithoutInput}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.serializer._
 import com.intel.analytics.bigdl.utils._
+import com.intel.analytics.bigdl.utils.serializer.converters.DataConverter
 import com.intel.analytics.bigdl.utils.tf.Tensorflow
 import serialization.Bigdl.{AttrValue, BigDLModule}
 
@@ -71,7 +72,7 @@ import org.tensorflow.framework.GraphDef
 @SerialVersionUID(- 2896121321564992779L)
 abstract class Graph[T: ClassTag](
   val inputs : Seq[ModuleNode[T]],
-  private val outputs : Seq[ModuleNode[T]],
+  protected val outputs : Seq[ModuleNode[T]],
   private val variables: Option[(Array[Tensor[T]], Array[Tensor[T]])] = None
 )(implicit ev: TensorNumeric[T]) extends Container[Activity, Activity, T]{
 
@@ -127,11 +128,6 @@ abstract class Graph[T: ClassTag](
     }
   }
 
-  override def add(module: AbstractModule[_ <: Activity, _ <: Activity, T]): Graph.this.type = {
-    throw new IllegalArgumentException("Graph: Please don't use add method in Graph container. " +
-      "A graph container should not be changed after it is constructed")
-  }
-
   // todo: expand the graph
   override def toGraph(startNodes: ModuleNode[T]*): Graph[T] = this
 
@@ -157,15 +153,12 @@ abstract class Graph[T: ClassTag](
   protected val forwardGraph = dummyOutput.graph(reverse = true)
   protected val forwardNodes = forwardGraph.DFS.toArray
 
-  modules.appendAll(
-    forwardGraph.topologySort
-      // todo: convert control dep node to edge
-      .filterNot(_.element.isInstanceOf[ControlDependency[T]]).reverse
-      .filter(n => !n.eq(dummyOutput)).map(_.element)
-  )
+  populateModules()
 
   // Check all inputs of the graph should be passed in
   checkRoots
+
+  protected def populateModules(): Unit
 
   // Check if the graph is correct
   private def checkRoots: Unit = {
@@ -283,7 +276,7 @@ abstract class Graph[T: ClassTag](
   ): Activity = {
     if (inputs.length == 1) {
       require(inputs(0).eq(node), "input node is not in the input list")
-      input.toTensor
+      input
     } else {
       val i = inputs.indexOf(node)
       require(i != -1, "input node is not in the input list")
@@ -369,10 +362,12 @@ abstract class Graph[T: ClassTag](
   }
 
   /**
-   * get forward executions, the dummy node will be filtered
+   * Get forward executions, the dummy node will be filtered.
+   *
+   * This method will output an unsorted executions.
    * @return
    */
-  def getForwardExecutions: Array[Node[AbstractModule[Activity, Activity, T]]] = {
+  def getForwardExecutions(): Array[Node[AbstractModule[Activity, Activity, T]]] = {
     forwardNodes.filterNot(_.eq(dummyOutput))
   }
 
@@ -383,8 +378,9 @@ abstract class Graph[T: ClassTag](
    * exception
    * @return
    */
-  def getSortedForwardExecutions: Array[Node[AbstractModule[Activity, Activity, T]]] = {
+  def getSortedForwardExecutions(): Array[ModuleNode[T]] = {
     forwardGraph.topologySort
+      // todo: convert control dep node to edge
       .filterNot(_.element.isInstanceOf[ControlDependency[T]]).reverse
       .filter(n => !n.eq(dummyOutput))
   }
@@ -441,11 +437,18 @@ abstract class Graph[T: ClassTag](
     this
   }
 
+  /**
+   * Clear the original module and reset with module in the graph
+   */
   def resetModules(): Unit = {
     modules.clear()
-    modules.appendAll(forwardGraph.topologySort
-      .filterNot(_.element.isInstanceOf[ControlDependency[T]]).reverse
-      .filter(n => !n.eq(dummyOutput)).map(_.element))
+    modules.appendAll(forwardGraph.DFS.toArray
+      .filterNot(_.element.isInstanceOf[ControlDependency[T]])
+      .filter(n => !n.eq(dummyOutput)).map(_.element)
+      // Some tests compare the paramerters between sequential and graph,add a reverse makes
+      // it's eaiser to compare
+      .reverse
+    )
   }
 }
 
@@ -600,8 +603,7 @@ object Graph extends ContainerSerializable {
     controlOps match {
       case switchOps : SwitchOps[T] => new SwitchControlNode[Module[T]](switchOps)
       case mergeOps : MergeOps[T] => new MergeControlNode[Module[T]](mergeOps)
-      case _ => throw new RuntimeException(s"Ops ${controlOps.getClass.getName}" +
-        s" control node not supported!")
+      case _ => new Node[Module[T]](controlOps)
     }
   }
 
@@ -649,12 +651,12 @@ object Graph extends ContainerSerializable {
       val (weights, bias) = graph.variables.get
       val weightAttrBuilder = AttrValue.newBuilder
       DataConverter.setAttributeValue(context, weightAttrBuilder, weights,
-        universe.typeOf[Array[Tensor[_ <: Any]]])
+        universe.typeOf[Array[Tensor[_ <: scala.Any]]])
       graphBuilder.putAttr("sharedWeight", weightAttrBuilder.build)
 
       val biasAttrBuilder = AttrValue.newBuilder
       DataConverter.setAttributeValue(context, biasAttrBuilder, bias,
-        universe.typeOf[Array[Tensor[_ <: Any]]])
+        universe.typeOf[Array[Tensor[_ <: scala.Any]]])
       graphBuilder.putAttr("sharedBias", biasAttrBuilder.build)
     }
 

@@ -24,7 +24,7 @@ class EluGrad[T: ClassTag, D: ClassTag]
 (implicit ev: TensorNumeric[T], ev2: TensorNumeric[D])
   extends UnaryGrad[T, D](true, true) {
 
-  override val module: Module = ELULayer[T, D]()
+  override val module: Module = ELULayer[D]()
 }
 
 object EluGrad {
