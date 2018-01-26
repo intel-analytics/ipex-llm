@@ -22,7 +22,7 @@ import org.scalatest.{FlatSpec, Matchers}
 class StrideSliceSpec extends FlatSpec with Matchers {
 
   "StrideSlice " should "compute correct output and gradient" in {
-    val module1 = new StrideSlice[Double](Array((1, 1, 2, 1)))
+    val module1 = new StrideSlice[Double, Double](Array((1, 1, 2, 1)))
     val input = Tensor[Double](2, 2, 2)
     input(Array(1, 1, 1)) = -0.17020166106522
     input(Array(1, 1, 2)) = 0.57785657607019

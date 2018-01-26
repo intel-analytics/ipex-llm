@@ -13,12 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.bigdl.utils.serializer
+package com.intel.analytics.bigdl.utils.serializer.converters
 
 import java.io.{DataInputStream, DataOutputStream}
 
 import com.google.protobuf.ByteString
 import com.intel.analytics.bigdl.tensor.Storage
+import com.intel.analytics.bigdl.utils.serializer.BigDLDataType
 import com.intel.analytics.bigdl.utils.serializer.BigDLDataType.BigDLDataType
 
 /**

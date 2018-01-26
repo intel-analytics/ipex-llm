@@ -1,6 +1,3 @@
-
----
-
 ## **Generating summary info in BigDL**
 To enable visualization support, you need first properly configure the `Optimizer` to collect statistics summary in different stages of training (i.e. training (`TrainSummary`) and validation (`ValidationSummary`),respectively). It should be done before the training starts (calling `Optimizer.optimize()`). See examples below: 
 

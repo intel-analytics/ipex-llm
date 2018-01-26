@@ -22,7 +22,8 @@ import com.intel.analytics.bigdl.nn.ErrorInfo
 import com.intel.analytics.bigdl.nn.abstractnn.{DataFormat, Initializable}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor._
-import com.intel.analytics.bigdl.utils.serializer.{DataConverter, DeserializeContext, ModuleData, SerializeContext}
+import com.intel.analytics.bigdl.utils.serializer.converters.DataConverter
+import com.intel.analytics.bigdl.utils.serializer.{DeserializeContext, ModuleData, SerializeContext}
 import com.intel.analytics.bigdl.utils.{T, Table}
 
 import scala.reflect.runtime.universe

@@ -16,10 +16,11 @@
 
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.{T, Table, Util}
+import com.intel.analytics.bigdl.utils.{T, Table}
 
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
@@ -28,7 +29,7 @@ import scala.reflect.ClassTag
  * [[Container]] is an abstract [[AbstractModule]] class which
  * declares methods defined in all containers. A container usually
  * contain some other modules in the `modules` variable. It overrides
- * many module methods such that calls are propogated to the contained
+ * many module methods such that calls are propagated to the contained
  * modules.
  *
  * @tparam A Input data type
@@ -48,18 +49,6 @@ abstract class Container[A <: Activity : ClassTag,
 
   override private[bigdl] def isCompatibleWithTorch(): Boolean = {
     modules.filter(!_.isCompatibleWithTorch()).length <= 0
-  }
-
-  /**
-   * Add a sub-module to the contained `modules`
-   *
-   * @param module module to be add
-   * @return this container
-   */
-  def add(module: AbstractModule[_ <: Activity, _ <: Activity, T]): this.type = {
-    Util.excludeNotTorch[T](Seq(module))
-    modules += module.asInstanceOf[AbstractModule[Activity, Activity, T]]
-    this
   }
 
   override def zeroGradParameters(): Unit = {

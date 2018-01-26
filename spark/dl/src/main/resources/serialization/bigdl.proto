@@ -15,6 +15,8 @@ message BigDLModule
     bool train = 10; // is module status in train
     string namePostfix = 11; // name post fix
     int32 id = 12; // unique ID of this module , used for shared modules
+    Shape inputShape = 13; // input shape
+    repeated Shape outputShape = 14; //output shape
 }
 enum VarFormat {
     EMPTY_FORMAT = 0;
@@ -108,6 +110,7 @@ enum DataType {
     ARRAY_VALUE = 15;
     DATA_FORMAT = 16;
     CUSTOM = 17;
+    SHAPE = 18;
 }
 
 message AttrValue {
@@ -128,6 +131,7 @@ message AttrValue {
         repeated NameAttrList nameAttrList = 14; //
         repeated InputDataFormat dataFormat = 15; // "Array(DataFormat)"
         repeated google.protobuf.Any custom = 16; // "Array(Any)"
+        repeated Shape shape = 17; // "Array(Shape)"
     }
     DataType dataType = 1;
     string subType = 2; // specific for custom data
@@ -147,9 +151,21 @@ message AttrValue {
         ArrayValue arrayValue = 15; //array value of any type
         InputDataFormat dataFormatValue = 16; // data format
         google.protobuf.Any customValue = 17; // custom value
+        Shape shape = 18; // Shape value
     }
 }
 message NameAttrList {
     string name = 1;
     map<string, AttrValue> attr = 2;
+}
+
+message Shape {
+    enum ShapeType {
+        SINGLE = 0;
+        MULTI = 1;
+    }
+    ShapeType shapeType = 1;
+    int32 ssize = 2;
+    repeated int32 shapeValue = 3;
+    repeated Shape shape = 4;
 }

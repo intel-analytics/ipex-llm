@@ -67,7 +67,8 @@ trait TensorflowToBigDL {
       val result = context(node.getName)
       (result._1, result._2)
     } else {
-      var weight = toTensor[T](node.getAttrMap.get("value").getTensor, byteOrder)
+      var weight = toTensor(node.getAttrMap.get("value").getTensor, byteOrder)
+        .asInstanceOf[Tensor[T]]
       trans match {
         case Some(transposes) =>
           for ((first, second) <- transposes) {
@@ -146,105 +147,62 @@ object TensorflowToBigDL {
    * @param tfTensor
    * @return
    */
-  private[utils] def toTensor[T: ClassTag](tfTensor: TensorProto, endian: ByteOrder)(
-    implicit ev: TensorNumeric[T]): Tensor[T] = {
-
-    require(
-      tfTensor.getDtype == DataType.DT_FLOAT ||
-        tfTensor.getDtype == DataType.DT_DOUBLE ||
-        tfTensor.getDtype == DataType.DT_INT32,
-      s"Data type ${tfTensor.getDtype} is not supported now")
-
+  private[utils] def toTensor(tfTensor: TensorProto, endian: ByteOrder): Tensor[_] = {
     val shape = tfTensor.getTensorShape.getDimList.asScala.map(_.getSize.toInt).toArray
 
     /**
      * When there's one element in the tensor. You cannot get the value from byte string
      */
     if (shape.product == 1) {
-      if (classTag[T] == classTag[Float]) {
-        if (tfTensor.getDtype == DataType.DT_FLOAT) {
-          return Tensor[Float](T(tfTensor.getFloatVal(0))).asInstanceOf[Tensor[T]]
-        }
-
-        if (tfTensor.getDtype == DataType.DT_INT32) {
-          return Tensor[Float](T(tfTensor.getIntVal(0).toFloat)).asInstanceOf[Tensor[T]]
-        }
-
-        throw new IllegalArgumentException("Can not convert double to float")
-      } else if (classTag[T] == classTag[Double]) {
-        if (tfTensor.getDtype == DataType.DT_DOUBLE) {
-          return Tensor[Float](T(tfTensor.getDoubleVal(0))).asInstanceOf[Tensor[T]]
-        }
-
-        if (tfTensor.getDtype == DataType.DT_FLOAT) {
-          return Tensor[Float](T(tfTensor.getFloatVal(0).toDouble)).asInstanceOf[Tensor[T]]
-        }
-
-        if (tfTensor.getDtype == DataType.DT_INT32) {
-          return Tensor[Float](T(tfTensor.getIntVal(0).toDouble)).asInstanceOf[Tensor[T]]
-        }
+      if (tfTensor.getDtype == DataType.DT_FLOAT) {
+        return Tensor[Float](Storage(Array(tfTensor.getFloatVal(0))), 1, shape)
+      }
+      if (tfTensor.getDtype == DataType.DT_INT32) {
+        return Tensor[Int](Storage(Array(tfTensor.getIntVal(0))), 1, shape)
+      }
+      if (tfTensor.getDtype == DataType.DT_DOUBLE) {
+        return Tensor[Double](Storage(Array(tfTensor.getDoubleVal(0))), 1, shape)
       }
     }
 
     val buffer = ByteBuffer.wrap(tfTensor.getTensorContent.toByteArray)
     buffer.order(endian)
 
-    if (classTag[T] == classTag[Float]) {
-      if (tfTensor.getDtype == DataType.DT_FLOAT) {
-        val params = buffer.asFloatBuffer
-        val tmp = new Array[Float](params.capacity())
-        var j = 0
-        while (j < params.capacity()) {
-          tmp(j) = params.get(j)
-          j += 1
-        }
-        Tensor(Storage(tmp), 1, shape).asInstanceOf[Tensor[T]]
-      } else if (tfTensor.getDtype == DataType.DT_INT32) {
-        val params = buffer.asIntBuffer
-        val tmp = new Array[Float](params.capacity())
-        var j = 0
-        while (j < params.capacity()) {
-          tmp(j) = params.get(j)
-          j += 1
-        }
-        Tensor(Storage(tmp), 1, shape).asInstanceOf[Tensor[T]]
-      } else {
-        throw new IllegalArgumentException("Can not convert double to float")
+    if (tfTensor.getDtype == DataType.DT_FLOAT) {
+      val params = buffer.asFloatBuffer
+      val tmp = new Array[Float](params.capacity())
+      var j = 0
+      while (j < params.capacity()) {
+        tmp(j) = params.get(j)
+        j += 1
       }
-    } else if (classTag[T] == classTag[Double]) {
-      if (tfTensor.getDtype == DataType.DT_FLOAT) {
-        val params = buffer.asFloatBuffer
-        val tmp = new Array[Double](params.capacity())
-        var j = 0
-        while (j < params.capacity()) {
-          tmp(j) = params.get(j)
-          j += 1
-        }
-        Tensor(Storage(tmp), 1, shape).asInstanceOf[Tensor[T]]
-      } else if (tfTensor.getDtype == DataType.DT_INT32) {
-        val params = buffer.asIntBuffer
-        val tmp = new Array[Double](params.capacity())
-        var j = 0
-        while (j < params.capacity()) {
-          tmp(j) = params.get(j)
-          j += 1
-        }
-        Tensor(Storage(tmp), 1, shape).asInstanceOf[Tensor[T]]
-      } else if (tfTensor.getDtype == DataType.DT_DOUBLE) {
-        val params = buffer.asDoubleBuffer()
-        val tmp = new Array[Double](params.capacity())
-        var j = 0
-        while (j < params.capacity()) {
-          tmp(j) = params.get(j)
-          j += 1
-        }
-        Tensor(Storage(tmp), 1, shape).asInstanceOf[Tensor[T]]
-      } else {
-        throw new IllegalArgumentException(s"Data type ${tfTensor.getDtype} is not supported now")
-      }
-    } else {
-      throw new IllegalArgumentException("Only support Float/Double")
+      return Tensor(Storage(tmp), 1, shape)
     }
+
+    if (tfTensor.getDtype == DataType.DT_INT32) {
+      val params = buffer.asIntBuffer
+      val tmp = new Array[Int](params.capacity())
+      var j = 0
+      while (j < params.capacity()) {
+        tmp(j) = params.get(j)
+        j += 1
+      }
+      return Tensor(Storage(tmp), 1, shape)
+    }
+
+    if (tfTensor.getDtype == DataType.DT_DOUBLE) {
+      val params = buffer.asDoubleBuffer()
+      val tmp = new Array[Double](params.capacity())
+      var j = 0
+      while (j < params.capacity()) {
+        tmp(j) = params.get(j)
+        j += 1
+      }
+      return Tensor(Storage(tmp), 1, shape)
+    }
+
+    throw new UnsupportedOperationException(
+      s"Not support load tensorflow tensor when type is ${tfTensor.getDtype}")
   }
 
   private var patternList : ArrayBuffer[TensorflowToBigDL] = {

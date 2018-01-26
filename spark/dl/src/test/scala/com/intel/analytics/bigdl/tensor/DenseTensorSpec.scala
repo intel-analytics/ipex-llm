@@ -1074,4 +1074,12 @@ class DenseTensorSpec extends FlatSpec with Matchers {
     t.nElement() should be (0)
     t.dim() should be (0)
   }
+
+  "cast" should "work on scalar" in {
+    val scalar1 = Tensor.scalar[Float](1.0f)
+    val scalar2 = Tensor.scalar[Int](0)
+    scalar1.cast[Int](scalar2)
+
+    scalar2.value() should be(1)
+  }
 }
