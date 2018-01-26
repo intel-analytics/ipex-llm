@@ -40,7 +40,7 @@ class MaskingSpec extends KerasBaseSpec{
       kerasCode)
   }
 
-  "Masking 4D" should "be the same as Keras" in {
+  "Masking 3D" should "be the same as Keras" in {
     val kerasCode =
       """
         |input_tensor = Input(shape=[3, 24, 24])
