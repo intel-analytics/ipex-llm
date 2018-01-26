@@ -37,6 +37,7 @@ import java.util
 
 import com.intel.analytics.bigdl.nn.Graph._
 import com.intel.analytics.bigdl.nn.tf.{Const, Fill, Shape, SplitAndSelect}
+import com.intel.analytics.bigdl.optim.SGD.{LearningRateSchedule, SequentialSchedule}
 import com.intel.analytics.bigdl.transform.vision.image._
 import com.intel.analytics.bigdl.transform.vision.image.augmentation._
 import com.intel.analytics.bigdl.transform.vision.image.label.roi._
@@ -2889,6 +2890,11 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
 
   def disableClip(optimizer: Optimizer[T, MiniBatch[T]]): Unit = {
     optimizer.disableGradientClipping()
+  }
+
+  def addScheduler(seq: SequentialSchedule, scheduler: LearningRateSchedule,
+    maxIteration: Int = Int.MaxValue): SequentialSchedule = {
+    seq.add(scheduler, maxIteration)
   }
 }
 

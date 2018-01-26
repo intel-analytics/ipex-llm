@@ -321,7 +321,6 @@ class Warmup(JavaValue):
     increase delta after each iteration.
     Calculation: base_lr + delta * iteration
 
-
     :param delta: increase amount after each iteration
 
     >>> warmup = Warmup(0.05)
@@ -332,6 +331,8 @@ class Warmup(JavaValue):
 
 class SequentialSchedule(JavaValue):
     """
+    Stack several learning rate schedulers.
+
     :param iterationPerEpoch: iteration numbers per epoch
 
     >>> sequentialSchedule = SequentialSchedule(5)
@@ -339,6 +340,15 @@ class SequentialSchedule(JavaValue):
     """
     def __init__(self, iteration_per_epoch, bigdl_type="float"):
         JavaValue.__init__(self, None, bigdl_type, iteration_per_epoch)
+
+    def add(self, scheduler, max_iteration=sys.maxsize, bigdl_type="float"):
+        """
+        Add a learning rate scheduler to the contained `schedules`
+
+        :param scheduler: learning rate scheduler to be add
+        :param max_iteration: iteration numbers this scheduler will run
+        """
+        return callBigDlFunc(bigdl_type, "addScheduler", self.value, scheduler, max_iteration)
 
 class OptimMethod(JavaValue):
 
