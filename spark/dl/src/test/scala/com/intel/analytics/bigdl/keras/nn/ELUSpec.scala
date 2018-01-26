@@ -43,13 +43,13 @@ class ELUSpec extends KerasBaseSpec{
   "ELU 3D" should "be the same as Keras" in {
     val kerasCode =
       """
-        |input_tensor = Input(shape=[3, 24, 24])
-        |input = np.random.random([2, 3, 24, 24])
+        |input_tensor = Input(shape=[3, 24])
+        |input = np.random.random([2, 3, 24])
         |output_tensor = ELU(2.7)(input_tensor)
         |model = Model(input=input_tensor, output=output_tensor)
       """.stripMargin
     val seq = KSequential[Float]()
-    val elu = ELU[Float](2.7, inputShape = Shape(3, 24, 24))
+    val elu = ELU[Float](2.7, inputShape = Shape(3, 24))
     seq.add(elu)
     checkOutputAndGrad(seq.asInstanceOf[AbstractModule[Tensor[Float], Tensor[Float], Float]],
       kerasCode)

@@ -43,13 +43,13 @@ class MaskingSpec extends KerasBaseSpec{
   "Masking 3D" should "be the same as Keras" in {
     val kerasCode =
       """
-        |input_tensor = Input(shape=[3, 24, 24])
-        |input = np.random.random([2, 3, 24, 24])
+        |input_tensor = Input(shape=[3, 24])
+        |input = np.random.random([2, 3, 24])
         |output_tensor = Masking(0.0)(input_tensor)
         |model = Model(input=input_tensor, output=output_tensor)
       """.stripMargin
     val seq = KSequential[Float]()
-    val masking = Masking[Float](0.0, inputShape = Shape(3, 24, 24))
+    val masking = Masking[Float](0.0, inputShape = Shape(3, 24))
     seq.add(masking)
     checkOutputAndGrad(seq.asInstanceOf[AbstractModule[Tensor[Float], Tensor[Float], Float]],
       kerasCode)

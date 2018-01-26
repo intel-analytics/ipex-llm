@@ -43,13 +43,13 @@ class LeakyReLUSpec extends KerasBaseSpec{
   "LeakyReLU 3D" should "be the same as Keras" in {
     val kerasCode =
       """
-        |input_tensor = Input(shape=[3, 24, 24])
-        |input = np.random.random([2, 3, 24, 24])
+        |input_tensor = Input(shape=[3, 24])
+        |input = np.random.random([2, 3, 24])
         |output_tensor = LeakyReLU(1.27)(input_tensor)
         |model = Model(input=input_tensor, output=output_tensor)
       """.stripMargin
     val seq = KSequential[Float]()
-    val leakyrelu = LeakyReLU[Float](1.27, inputShape = Shape(3, 24, 24))
+    val leakyrelu = LeakyReLU[Float](1.27, inputShape = Shape(3, 24))
     seq.add(leakyrelu)
     checkOutputAndGrad(seq.asInstanceOf[AbstractModule[Tensor[Float], Tensor[Float], Float]],
       kerasCode)
