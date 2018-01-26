@@ -18,8 +18,7 @@ package com.intel.analytics.bigdl.nn.mkldnn
 
 import breeze.linalg.{*, dim}
 import com.intel.analytics.bigdl.mkl.MklDnn
-import com.intel.analytics.bigdl.mkl.MklDnn.MemoryFormat
-import com.intel.analytics.bigdl.nn.{SpatialMaxPooling, Utils}
+import com.intel.analytics.bigdl.nn.{SpatialAveragePooling, SpatialMaxPooling, Utils}
 import com.intel.analytics.bigdl.nn.abstractnn.{DataFormat, Initializable, TensorModule}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -27,7 +26,7 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
-class PoolingDnn[T: ClassTag](
+class PoolingDnnAverage[T: ClassTag](
   kW: Int,
   kH: Int,
   dW: Int = 1,
@@ -35,7 +34,7 @@ class PoolingDnn[T: ClassTag](
   padW: Int = 0,
   padH: Int = 0,
   format: DataFormat = DataFormat.NCHW,
-  algKind : Int = MklDnn.AlgKind.poolingMax)(implicit ev: TensorNumeric[T])
+  algKind : Int = MklDnn.AlgKind.poolingAvgExcludePadding)(implicit ev: TensorNumeric[T])
   extends TensorModule[Float] with Initializable {
 
   var ceilMode = false
@@ -49,7 +48,7 @@ class PoolingDnn[T: ClassTag](
    * set ceil mode
    * @return this
    */
-  def ceil(): PoolingDnn[T] = {
+  def ceil(): PoolingDnnAverage[T] = {
     ceilMode = true
     this
   }
@@ -58,7 +57,7 @@ class PoolingDnn[T: ClassTag](
    * set floor mode
    * @return this
    */
-  def floor(): PoolingDnn[T] = {
+  def floor(): PoolingDnnAverage[T] = {
     ceilMode = false
     this
   }
@@ -115,6 +114,10 @@ class PoolingDnn[T: ClassTag](
   def reorderToInternal(user_md: Long, pd: Long, queryType: Int, data: Tensor[Float],
                         data_size: Array[Int], index: Int = 0): (Long, Long) = {
     val internal_pd = MklDnnOps.primitiveDescQueryPd(pd, queryType, index)
+    val t1 = MklDnnOps.primitiveDescQueryMemory(internal_pd)
+    val gradOutput_format = MklDnnOps.getFormat(t1)
+    // println("gradoutput format " + gradOutput_format)
+
     val res = MklDnnOps.prepareReorder(user_md, internal_pd, true)
     if (res._1 != 0L) {
       data.setPrimitiveDesc(internal_pd)
@@ -126,6 +129,7 @@ class PoolingDnn[T: ClassTag](
   override def updateOutput(input: Tensor[Float]): Tensor[Float] = {
     // println("pooling updateoutput start")
     val s1 = System.nanoTime()
+
     if (engine == 0L) engine = this.getDnnEngine(0)
     if (stream == 0L) stream = this.getStream()
 
@@ -156,7 +160,6 @@ class PoolingDnn[T: ClassTag](
             "size pad size($padW,$padH) kernel size($kW, $kH)")
           Utils.getOutSizeAndPaddingForDNN(inputHeight, inputWidth, dH, dW, kH, kW, padH, padW, ceilMode)
           // change padding
-
         }
 
       val padTop = sizes(0)
@@ -184,13 +187,9 @@ class PoolingDnn[T: ClassTag](
         val input_pd = input.getPrimitiveDesc()
         src_memory = MklDnn.PrimitiveCreate0(input_pd)
         src_md = MklDnnOps.primitiveDescQueryMemory(input_pd)
-        val src_format = MklDnnOps.getFormat(src_md)
-        println("src from last format " + src_format + this.getName())
       } else {
         src_md = MklDnnOps.memoryDescInit(input.dim(), input.size(), dataType, this.input_format)
         src_memory = MklDnnOps.createMemoryPrimitive(src_md, engine)
-        val src_format = MklDnnOps.getFormat(src_md)
-        println("src from here format " + src_format + this.getName())
       }
 
       // for output
@@ -198,7 +197,7 @@ class PoolingDnn[T: ClassTag](
 
       /* create a convolution */
       val pool_desc = MklDnnOps.poolingForwardDescInit(
-                        MklDnn.PropKind.forward, algKind,
+                        MklDnn.PropKind.forwardTraining, algKind,
                         src_md, dst_md, strides, kernel, paddingLR, paddingLR,
                         MklDnn.PaddingKind.mkldnnPaddingZero)
 
@@ -206,28 +205,25 @@ class PoolingDnn[T: ClassTag](
 
       /* create memory for dst data, we don't need to reorder it to user data */
       dst_pd = MklDnnOps.primitiveDescQueryPd(fwd_pd, MklDnn.Query.dst_pd, 0)
+      val t1 = MklDnnOps.primitiveDescQueryMemory(dst_pd)
+      val gradOutput_format = MklDnnOps.getFormat(t1)
+      // println("dst format " + gradOutput_format + this.getName())
       dst_memory = MklDnn.PrimitiveCreate0(dst_pd)
       output.setPrimitiveDesc(dst_pd)
 
-      val workdspace_pd = MklDnnOps.primitiveDescQueryPd(fwd_pd, MklDnn.Query.workspace_pd, 0)
-      work_memory = MklDnn.PrimitiveCreate0(workdspace_pd)
-      val workdspace_size = MklDnn.PrimitiveDescGetSize(workdspace_pd)
-      workSpace.resize(workdspace_size.toInt)
-
-
       val inputs = Array(src_memory)
-      val outputs = Array(dst_memory, work_memory)
+      val outputs = Array(dst_memory)
       val indexes = Array(0)
 
-      val fwd = MklDnnOps.primitiveCreate2(fwd_pd, inputs, indexes, 1, outputs, 2)
+      val fwd = MklDnnOps.primitiveCreate2(fwd_pd, inputs, indexes, 1, outputs, 1)
 
       /* build a simple net */
       stream_fwd.clear()
       stream_fwd.append(fwd)
     }
     val n_fwd = stream_fwd.length
-    val memoryPrimitives = Array(src_memory, dst_memory, work_memory)
-    val buffer = Array(input, output, workSpace)
+    val memoryPrimitives = Array(src_memory, dst_memory)
+    val buffer = Array(input, output)
     MklDnnOps.streamSubmit(stream, n_fwd, stream_fwd.toArray, n_fwd, memoryPrimitives, buffer)
 
     val end1 = (System.nanoTime() - s1)/1e6
@@ -277,11 +273,11 @@ class PoolingDnn[T: ClassTag](
       val internal_gradOutput_memory = if (reorder_gradOutput_memory == 0L) {
         gradOutput_memory
       } else {
-        println("pool updateGradInput reorder")
+        // println("pool updateGradInput reorder")
         reorder_gradOutput_memory
       }
 
-      val inputs = Array(internal_gradOutput_memory, work_memory)
+      val inputs = Array(internal_gradOutput_memory)
       val outputs = Array(gradInput_memory)
       val indexes = Array(0, 0)
       val bwd = MklDnnOps.primitiveCreate2(bwd_pd, inputs, indexes, 2, outputs, 1)
@@ -293,11 +289,12 @@ class PoolingDnn[T: ClassTag](
     }
     // println("pool backward start")
     val n_bwd = stream_bwd.length
-    val memoryPrimitives = Array(gradOutput_memory, reorder_gradOutput_memory, work_memory,
+    val memoryPrimitives = Array(gradOutput_memory, reorder_gradOutput_memory,
       gradInput_memory)
-    val buffer = Array(gradOutput, gradOutputBuffer, workSpace, gradInput)
+    val buffer = Array(gradOutput, gradOutputBuffer, gradInput)
     MklDnnOps.streamSubmit(stream, n_bwd, stream_bwd.toArray, n_bwd, memoryPrimitives, buffer)
 
+    // println("pool backward end")
     val end1 = (System.nanoTime() - s1)/1e6
     // println(s"pooling dnn ${this.getName()} backward ${end1}")
     gradInput
@@ -311,7 +308,7 @@ class PoolingDnn[T: ClassTag](
   }
 }
 
-object PoolingDnn {
+object PoolingDnnAverage {
   def apply[@specialized(Float, Double) T: ClassTag](
     kW: Int,
     kH: Int,
@@ -320,7 +317,7 @@ object PoolingDnn {
     padW: Int = 0,
     padH: Int = 0,
     format: DataFormat = DataFormat.NCHW)
-  (implicit ev: TensorNumeric[T]): PoolingDnn[T] = {
-    new PoolingDnn[T](kW, kH, dW, dH, padW, padH, format, MklDnn.AlgKind.poolingMax)
+  (implicit ev: TensorNumeric[T]): PoolingDnnAverage[T] = {
+    new PoolingDnnAverage[T](kW, kH, dW, dH, padW, padH, format)
   }
 }

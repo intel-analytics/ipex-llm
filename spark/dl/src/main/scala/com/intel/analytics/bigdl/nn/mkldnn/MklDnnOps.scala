@@ -245,9 +245,6 @@ object MklDnnOps {
           memory_primitives(i), buffers(i), buffers(i).storageOffset() - 1)
       }
     }
-//    for (i <- 1 to 50) {
-//      MklDnn.StreamSubmit(loc, block, primitives)
-//    }
 
     MklDnn.StreamSubmit(loc, block, primitives)
 
@@ -257,4 +254,10 @@ object MklDnnOps {
       }
     }
   }
+
+  def getFormat(memoryDesc: Long): Int = {
+    require(MklDnn.isLoaded, "mkldnn isn't loaded")
+    MklDnn.getFormat(memoryDesc)
+  }
+
 }
