@@ -623,11 +623,23 @@ object SGD {
     }
   }
 
+  /**
+   * Stack several learning rate schedulers.
+   *
+   * @param iterationPerEpoch iteration numbers per epoch
+   */
   case class SequentialSchedule(iterationPerEpoch: Int) extends LearningRateSchedule {
     val schedules: ArrayBuffer[LearningRateSchedule] = ArrayBuffer[LearningRateSchedule]()
     val iterations: ArrayBuffer[Int] = ArrayBuffer[Int]()
     var cur: Int = 0
 
+    /**
+     * Add a learning rate scheduler to the contained `schedules`
+     *
+     * @param schedule learning rate scheduler to be add
+     * @param maxIteration iteration numbers this scheduler will run
+     * @return this container
+     */
     def add(schedule: LearningRateSchedule, maxIteration: Int = Int.MaxValue):
       this.type = {
       schedules += schedule
