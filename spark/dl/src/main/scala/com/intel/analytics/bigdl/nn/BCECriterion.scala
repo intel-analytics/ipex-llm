@@ -41,7 +41,9 @@ class BCECriterion[@specialized(Float, Double) T: ClassTag]
   (implicit ev: TensorNumeric[T]) extends TensorCriterion[T] {
   private val eps = 1e-12
 
-  val buffer: Tensor[T] = Tensor[T]
+  val buffer: Tensor[T] = Tensor[T]()
+
+  val onesBuffer: Tensor[T] = Tensor[T]()
 
   private var expendedWeights: Tensor[T] = null
 
@@ -56,7 +58,7 @@ class BCECriterion[@specialized(Float, Double) T: ClassTag]
           s"weights size should be equal to input size or input size's tail, but got" +
             s" input size: ${input.size().toList}, weights size: ${weights.size().toList}")
       } else if (weights.nDimension() == input.nDimension()) {
-        require(weights.size().sameElements(input.size().tail),
+        require(weights.size().sameElements(input.size()),
           s"weights size should be equal to input size or input size's tail, but got" +
             s" input size: ${input.size().toList}, weights size: ${weights.size().toList}")
       } else {
@@ -95,9 +97,10 @@ class BCECriterion[@specialized(Float, Double) T: ClassTag]
         // cmul support broadcasting
         buffer.cmul(weights)
         sum += ev.toType[Double](buffer.dot(target))
-        buffer.fill(ev.fromType(1.0)).sub(input).add(ev.fromType(eps)).log().cmul(weights)
+        buffer.fill(ev.fromType(1.0 + eps)).sub(input).log().cmul(weights)
         sum -= ev.toType[Double](buffer.dot(target))
-        sum += ev.toType[Double](buffer.sum())
+        onesBuffer.resizeAs(buffer).fill(ev.fromType(1.0))
+        sum += ev.toType[Double](buffer.dot(onesBuffer))
       }
 
     } else {
@@ -114,8 +117,9 @@ class BCECriterion[@specialized(Float, Double) T: ClassTag]
       } else {
         buffer.resizeAs(input).copy(input).add(ev.fromType(eps)).log()
         sum += ev.toType[Double](buffer.dot(target))
-        buffer.fill(ev.fromType(1.0)).sub(input).add(ev.fromType(eps)).log()
+        buffer.fill(ev.fromType(1.0 + eps)).sub(input).log()
         sum -= ev.toType[Double](buffer.dot(target))
+        onesBuffer.resizeAs(buffer).fill(ev.fromType(1.0))
         sum += ev.toType[Double](buffer.sum())
       }
     }
@@ -151,7 +155,7 @@ class BCECriterion[@specialized(Float, Double) T: ClassTag]
     } else {
       // - (1 - x + eps)*(x + eps) = x^2 - x - eps - eps^2
       // eps^12 is negligible
-      buffer.copy(input).square().sub(input).sub(ev.fromType(eps))
+      buffer.pow(input, ev.fromType(2)).sub(input).sub(ev.fromType(eps))
       gradInput.copy(target).sub(input).cdiv(buffer).mul(ev.fromType(norm))
     }
 
