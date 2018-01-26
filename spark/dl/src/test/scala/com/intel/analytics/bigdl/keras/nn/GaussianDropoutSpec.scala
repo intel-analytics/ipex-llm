@@ -28,7 +28,7 @@ class GaussianDropoutSpec extends KerasBaseSpec {
     val seq = KSequential[Float]()
     val layer = GaussianDropout[Float](0.6, inputShape = Shape(3, 4))
     seq.add(layer)
-    seq.getOutputShape().toSingle().toArray should be (Array(-1, 3 ,4))
+    seq.getOutputShape().toSingle().toArray should be (Array(-1, 3, 4))
     val input = Tensor[Float](2, 3, 4).rand()
     val output = seq.forward(input)
     val gradInput = seq.backward(input, output)
