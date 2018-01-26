@@ -61,7 +61,8 @@ class Kv2Tensor[T: ClassTag, D: ClassTag](
     val rows = kvTensor.size(dim = 1)
     val shape = Array(rows, feaLen)
 
-    for(i <- 1 to rows) {
+    var i = 1
+    while(i<=rows) {
       val kvFeaString = kvTensor.select(1, i).valueAt(1)
       kvFeaString.split(kvDelimiter).foreach { kv =>
         indices0 += i-1
@@ -73,6 +74,7 @@ class Kv2Tensor[T: ClassTag, D: ClassTag](
             values += kv.split(itemDelimiter)(1).toFloat.asInstanceOf[D]
         }
       }
+      i += 1
     }
 
     val indices = Array(indices0.toArray, indices1.toArray)
