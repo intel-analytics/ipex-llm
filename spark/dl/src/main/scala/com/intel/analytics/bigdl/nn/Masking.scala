@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
+import com.intel.analytics.bigdl.nn.abstractnn.{IdentityOutputShape, TensorModule}
 import com.intel.analytics.bigdl.tensor.{DenseTensorApply, Tensor, TensorFunc6}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
@@ -28,7 +28,7 @@ import scala.reflect.ClassTag
  * @param maskValue mask value
  */
 class Masking[T: ClassTag](maskValue: Double = 0.0)
-(implicit ev: TensorNumeric[T]) extends TensorModule[T] {
+(implicit ev: TensorNumeric[T]) extends TensorModule[T] with IdentityOutputShape{
   val batchDim = 1
   val timeDim = 2
 
