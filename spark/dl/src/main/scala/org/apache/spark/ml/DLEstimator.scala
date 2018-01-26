@@ -227,10 +227,10 @@ class DLEstimator[@specialized(Float, Double) T: ClassTag](
     this
   }
 
-  @transient private var validationTrigger: Option[Trigger] = None
-  @transient private var validationDF: DataFrame = _
-  @transient private var validationMethods: Array[ValidationMethod[T]] = _
-  @transient private var validationBatchSize: Int = 0
+  @transient protected var validationTrigger: Option[Trigger] = None
+  @transient protected var validationDF: DataFrame = _
+  @transient protected var validationMethods: Array[ValidationMethod[T]] = _
+  @transient protected var validationBatchSize: Int = 0
   /**
    * Set a validate evaluation during training
    *
@@ -248,6 +248,15 @@ class DLEstimator[@specialized(Float, Double) T: ClassTag](
     this.validationMethods = vMethods
     this.validationBatchSize = batchSize
     this
+  }
+
+  def getValidation: Option[(Trigger, DataFrame, Array[ValidationMethod[T]], Int)] = {
+    if (validationTrigger.isDefined) {
+      Some(validationTrigger.get, validationDF, validationMethods, validationBatchSize)
+    }
+    else {
+      None
+    }
   }
 
   protected def validateParams(schema : StructType): Unit = {
@@ -340,8 +349,26 @@ class DLEstimator[@specialized(Float, Double) T: ClassTag](
     copyValues(dlModel.setParent(this))
   }
 
+  /**
+   * Return a deep copy for DLEstimator.
+   * Note that trainSummary and validationSummary will not be copied to the new instance since
+   * currently they are not thread-safe.
+   */
   override def copy(extra: ParamMap): DLEstimator[T] = {
-    copyValues(new DLEstimator(model, criterion, featureSize, labelSize), extra)
+    val copied = copyValues(
+      new DLEstimator(
+        model.cloneModule(),
+        criterion.cloneCriterion(),
+        featureSize.clone(),
+        labelSize.clone()
+      ),
+      extra)
+
+    if (this.validationTrigger.isDefined) {
+      copied.setValidation(
+        validationTrigger.get, validationDF, validationMethods.clone(), validationBatchSize)
+    }
+    copied
   }
 }
 
@@ -425,7 +452,7 @@ class DLModel[@specialized(Float, Double) T: ClassTag](
   }
 
   override def copy(extra: ParamMap): DLModel[T] = {
-    val copied = new DLModel(model, featureSize, uid).setParent(parent)
+    val copied = new DLModel(model.cloneModule(), featureSize.clone(), uid).setParent(parent)
     copyValues(copied, extra)
   }
 }
