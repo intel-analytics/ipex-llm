@@ -223,6 +223,8 @@ object BiRecurrent extends ContainerSerializable {
           .asInstanceOf[Boolean]
     }
 
+    loadSubModules(context, biRecurrent)
+
     biRecurrent
 
   }
@@ -299,5 +301,6 @@ object BiRecurrent extends ContainerSerializable {
       flag, universe.typeOf[Boolean])
     birecurrentBuilder.putAttr("bnorm", bNormBuilder.build)
 
+    serializeSubModules(context, birecurrentBuilder)
   }
 }

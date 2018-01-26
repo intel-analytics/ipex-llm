@@ -364,17 +364,36 @@ trait ModuleSerializable extends Loadable with Savable{
 
 trait ContainerSerializable extends ModuleSerializable {
 
-  override def doLoadModule[T: ClassTag](context : DeserializeContext)
-    (implicit ev: TensorNumeric[T]) : AbstractModule[Activity, Activity, T] = {
-    val module = super.doLoadModule(context)
+  protected def loadSubModules[T: ClassTag](context : DeserializeContext,
+                                            module : AbstractModule[Activity, Activity, T])
+    (implicit ev: TensorNumeric[T]) : Unit = {
     val container = module.asInstanceOf[Container[Activity, Activity, T]]
     val subModules = context.bigdlModule.getSubModulesList.asScala
     subModules.foreach(module => {
       val subModuleData = ModuleSerializer.load(DeserializeContext(module,
-      context.storages, context.storageType, _copyWeightAndBias))
+        context.storages, context.storageType, _copyWeightAndBias))
       container.modules.append(subModuleData.module)
     })
+  }
+
+  override def doLoadModule[T: ClassTag](context : DeserializeContext)
+    (implicit ev: TensorNumeric[T]) : AbstractModule[Activity, Activity, T] = {
+    val module = super.doLoadModule(context)
+    loadSubModules(context, module)
     module
+  }
+
+  protected def serializeSubModules[T: ClassTag](context: SerializeContext[T],
+                                                 containerBuilder : BigDLModule.Builder)
+                                                (implicit ev: TensorNumeric[T]) : Unit = {
+    val subModulesData = context.moduleData.module.
+      asInstanceOf[Container[Activity, Activity, T]].modules
+    subModulesData.foreach(module => {
+      val subModule = ModuleSerializer.serialize(SerializeContext(ModuleData(module,
+        new ArrayBuffer[String](), new ArrayBuffer[String]()), context.storages,
+        context.storageType, _copyWeightAndBias))
+      containerBuilder.addSubModules(subModule.bigDLModule)
+    })
   }
 
   override def doSerializeModule[T: ClassTag](context: SerializeContext[T],
@@ -382,14 +401,7 @@ trait ContainerSerializable extends ModuleSerializable {
                                            (implicit ev: TensorNumeric[T]) : Unit = {
 
     super.doSerializeModule(context, containerBuilder)
-    val subModulesData = context.moduleData.module.
-      asInstanceOf[Container[Activity, Activity, T]].modules
-    subModulesData.foreach(module => {
-      val subModule = ModuleSerializer.serialize(SerializeContext(ModuleData(module,
-        new ArrayBuffer[String](), new ArrayBuffer[String]()), context.storages,
-      context.storageType, _copyWeightAndBias))
-      containerBuilder.addSubModules(subModule.bigDLModule)
-    })
+    serializeSubModules(context, containerBuilder)
   }
 }
 
