@@ -39,4 +39,19 @@ class PReLUSpec extends KerasBaseSpec{
     checkOutputAndGrad(seq.asInstanceOf[AbstractModule[Tensor[Float], Tensor[Float], Float]],
       kerasCode)
   }
+
+  "PReLU 3D" should "be the same as Keras" in {
+    val kerasCode =
+      """
+        |input_tensor = Input(shape=[3, 24])
+        |input = np.random.random([2, 3, 24])
+        |output_tensor = PReLU('zero')(input_tensor)
+        |model = Model(input=input_tensor, output=output_tensor)
+      """.stripMargin
+    val seq = KSequential[Float]()
+    val prelu = PReLU[Float](inputShape = Shape(3, 24))
+    seq.add(prelu)
+    checkOutputAndGrad(seq.asInstanceOf[AbstractModule[Tensor[Float], Tensor[Float], Float]],
+      kerasCode)
+  }
 }
