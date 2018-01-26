@@ -40,7 +40,7 @@ class LeakyReLUSpec extends KerasBaseSpec{
       kerasCode)
   }
 
-  "LeakyReLU 3D" should "be the same as Keras" in {
+  "LeakyReLU 4D" should "be the same as Keras" in {
     val kerasCode =
       """
         |input_tensor = Input(shape=[3, 24, 24])
