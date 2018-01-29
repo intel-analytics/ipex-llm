@@ -47,8 +47,8 @@ class MultiLabelMarginCriterionSpec extends TorchSpec {
     val luaOutput = torchResult("output").asInstanceOf[Double]
     val luaGradInput = torchResult("gradInput").asInstanceOf[Tensor[Double]]
 
-    output should be(luaOutput +- 1e-7)
-    gradInput.almostEqual(luaGradInput, 1e-7) should be(true)
+    output should be(luaOutput)
+    gradInput should be(luaGradInput)
 
     println("Test case : MultiLabelMarginCriterion, Torch : " + luaTime +
       " s, Scala : " + scalaTime / 1e9 + " s")
@@ -85,8 +85,8 @@ class MultiLabelMarginCriterionSpec extends TorchSpec {
     val luaOutput = torchResult("output").asInstanceOf[Double]
     val luaGradInput = torchResult("gradInput").asInstanceOf[Tensor[Double]]
 
-    output should be (luaOutput +- 1e-7)
-    gradInput.almostEqual(luaGradInput, 1e-7) should be (true)
+    output should be (luaOutput)
+    gradInput should be (luaGradInput)
 
     println("Test case : MultiLabelMarginCriterion, Torch : " + luaTime +
       " s, Scala : " + scalaTime / 1e9 + " s")
