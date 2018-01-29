@@ -432,7 +432,7 @@ private[tensor] class SparseTensor[@specialized(Float, Double) T: ClassTag](
   }
 
   override def getType(): TensorDataType = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    ev.getType()
   }
 
   override def diff(other: Tensor[T], count: Int, reverse: Boolean): Boolean = {
@@ -634,7 +634,8 @@ private[tensor] class SparseTensor[@specialized(Float, Double) T: ClassTag](
   }
 
   override def dot(y: Tensor[T]): T = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    require(y.getTensorType == DenseType)
+    SparseTensorMath.vdot(y.asInstanceOf[DenseTensor[T]], this)
   }
 
   override def cmax(value: T): Tensor[T] = {
