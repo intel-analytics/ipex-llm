@@ -16,7 +16,6 @@
 package com.intel.analytics.bigdl.nn.ops
 
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
-import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
 import scala.reflect.ClassTag
@@ -36,12 +35,7 @@ abstract class Operation[A <: Activity: ClassTag, B <: Activity: ClassTag, T: Cl
     throw new UnsupportedOperationException("Operation does not support updateGradInput() method")
   }
 
-  override def accGradParameters(input: A, gradOutput: B): Unit = {
-    throw new UnsupportedOperationException("Operation does not support updateGradInput() method")
-  }
-
   override def backward(input: A, gradOutput: B): A = {
     throw new UnsupportedOperationException("Operation does not support backward() method")
   }
 }
-

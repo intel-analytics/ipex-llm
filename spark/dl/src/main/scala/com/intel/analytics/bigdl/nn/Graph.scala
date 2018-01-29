@@ -201,7 +201,11 @@ abstract class Graph[T: ClassTag](
     // Clone the forward graph and reverse the edge
     val gradGraph = forwardGraph.cloneGraph(reverseEdge = true)
     dummyOutputGrad = gradGraph.source
-    gradGraph.DFS.filter(x => isStopGradient(x.element)).foreach(removeStopNodes(_))
+    gradGraph.DFS.filter(x => isStopGradient(x.element)).foreach(n => {
+      // Mark the gradInput of this node is EmptyGradInput
+      n.element.gradInput = Activity.emptyGradInput()
+      removeStopNodes(n)
+    })
     backwardNodes = gradGraph.DFS
       .filterNot(_.eq(dummyOutputGrad))
       .filterNot(_.element.isInstanceOf[ControlDependency[_]]).toArray
@@ -211,6 +215,14 @@ abstract class Graph[T: ClassTag](
     val backwardTargets = backwardNodes
       .filter(n => (n.element.parameters() != null && n.element.parameters()._1.length != 0)
         || inputNames.contains(n.element.getName()))
+
+    // For input nodes which are not in the backwardTargets, set their gradInput to EmptyGradInput
+    // If the graph is in another container and any layer in the super container want to use the
+    // uncompleted gradInput, an exception will be thrown.
+    val backwardTargetsNames = backwardTargets.map(_.element.getName())
+    inputs.filterNot(i => backwardTargetsNames.contains(i.element.getName()))
+      .foreach(_.element.gradInput = Activity.emptyGradInput())
+
     backwardTargets.foreach(_ -> dummyBackwardEnd)
     backwardGraph = dummyBackwardEnd.graph(true)
     clearState()

@@ -40,6 +40,21 @@ trait Activity {
   def isTable: Boolean
 }
 
+class EmptyGradInput private[abstractnn] extends Activity with Serializable {
+
+  override def toTensor[D](implicit ev: TensorNumeric[D]): Tensor[D] =
+    throw new UnsupportedOperationException()
+
+  override def toTable: Table =
+    throw new UnsupportedOperationException()
+
+  override def isTensor: Boolean =
+    throw new UnsupportedOperationException()
+
+  override def isTable: Boolean =
+    throw new UnsupportedOperationException()
+}
+
 object Activity {
   /**
    * Allocate a data instance by given type D and numeric type T
@@ -86,4 +101,8 @@ object Activity {
     }
     buffer.asInstanceOf[D]
   }
+
+  private val emptyGradSinglton = new EmptyGradInput()
+
+  def emptyGradInput(): EmptyGradInput = emptyGradSinglton
 }
