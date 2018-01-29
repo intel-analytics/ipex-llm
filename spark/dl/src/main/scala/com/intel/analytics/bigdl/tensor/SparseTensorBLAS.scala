@@ -21,6 +21,86 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath._
 object SparseTensorBLAS {
 
   /**
+   * Perform vector dot product of vec1, and vec2
+   */
+  def vdot[@specialized(Float, Double) T](
+       vec1: DenseTensor[T],
+       vec2: SparseTensor[T]): T = {
+    vec1.getType() match {
+      case FloatType =>
+        vdotFloat(vec1.asInstanceOf[DenseTensor[Float]],
+          vec2.asInstanceOf[SparseTensor[Float]])
+          .asInstanceOf[T]
+      case DoubleType =>
+        vdotDouble(vec1.asInstanceOf[DenseTensor[Double]],
+          vec2.asInstanceOf[SparseTensor[Double]])
+          .asInstanceOf[T]
+      case t => throw new IllegalArgumentException(s"Sparse vdot doesn't support $t")
+    }
+  }
+
+  private def vdotFloat(vec1: DenseTensor[Float],
+                   vec2: SparseTensor[Float]): Float = {
+    require(vec1.isContiguous(), "The DenseTensor must be contiguous")
+
+    val vec1Values = vec1.storage().array()
+    val vec1StorageOffset = vec1.storageOffset() - 1
+    val vect1Strides = vec1.stride()
+
+    val vec2Values = vec2._values.array()
+    val vec2storageOffset = vec2.storageOffset() - 1
+
+
+    var valueCounter = 0
+    var sum: Float = 0.0f
+    while (valueCounter < vec2.nElement()) {
+      var dim = 0
+      var vec2Index = 0
+      while (dim < vec2.nDimension) {
+        vec2Index += (vec2._indices(dim)(valueCounter + vec2storageOffset) -
+          vec2._indicesOffset(dim)) * vect1Strides(dim)
+        dim += 1
+      }
+      sum += vec2Values(vec1StorageOffset + vec2Index) *
+        vec1Values(valueCounter + vec1StorageOffset)
+      valueCounter += 1
+    }
+    sum
+  }
+
+  private def vdotDouble(vec1: DenseTensor[Double],
+                   vec2: SparseTensor[Double]): Double = {
+    require(vec1.isContiguous(), "The DenseTensor must be contiguous")
+
+    val vec1Values = vec1.storage().array()
+    val vec1StorageOffset = vec1.storageOffset() - 1
+    val vect1Strides = vec1.stride()
+
+    val vec2Values = vec2._values.array()
+    val vec2storageOffset = vec2.storageOffset() - 1
+
+
+    var valueCounter = 0
+    var sum: Double = 0.0f
+    while (valueCounter < vec2.nElement()) {
+      var dim = 0
+      var vec2Index = 0
+      while (dim < vec2.nDimension) {
+        vec2Index +=
+          (vec2._indices(dim)(valueCounter + vec2storageOffset) -
+            vec2._indicesOffset(dim)) * vect1Strides(dim)
+        dim += 1
+      }
+      sum += vec2Values(vec1StorageOffset + vec2Index) *
+        vec1Values(valueCounter + vec1StorageOffset)
+      valueCounter += 1
+    }
+    sum
+  }
+
+
+
+  /**
    * Perform r := beta * r + alpha * mat * vec
    * mat should be a 2D SparseTensor, vec should be a 1D DenseTensor,
    * r should be a 2D DenseTensor.
