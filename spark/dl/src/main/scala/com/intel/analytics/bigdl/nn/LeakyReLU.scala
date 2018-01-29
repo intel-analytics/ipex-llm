@@ -15,10 +15,8 @@
  */
 package com.intel.analytics.bigdl.nn
 
-
 import com.intel.analytics.bigdl.nn.abstractnn.{IdentityOutputShape, TensorModule}
 import com.intel.analytics.bigdl.tensor._
-
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
 import scala.reflect.ClassTag
@@ -34,15 +32,12 @@ import scala.reflect.ClassTag
  *                using extra state memory
  */
 
-
 @SerialVersionUID(- 6870619109313859155L)
 class LeakyReLU[T: ClassTag](
   private val negval: Double = 0.01,
   var inplace: Boolean = false)(
-
   implicit ev: TensorNumeric[T]) extends TensorModule[T] with IdentityOutputShape {
   import LeakyReLU._
-  private val negVal = ev.fromType[Double](negval)
 
   if (negval < 0) {
     inplace = false

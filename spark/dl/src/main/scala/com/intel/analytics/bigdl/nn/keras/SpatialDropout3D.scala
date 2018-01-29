@@ -24,16 +24,24 @@ import com.intel.analytics.bigdl.utils.Shape
 import scala.reflect.ClassTag
 
 class SpatialDropout3D[T: ClassTag](val p: Double = 0.5,
-                                    val dim_ordering: DataFormat = DataFormat.NCHW,
+                                    val format: String = "CHANNEL_FIRST",
                                     var inputShape: Shape = null
                                    )(implicit ev: TensorNumeric[T])
   extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
-    val layer = com.intel.analytics.bigdl.nn.SpatialDropout3D(
+
+    var layer = com.intel.analytics.bigdl.nn.SpatialDropout3D(
       initP = p,
-      format = dim_ordering
+      format = DataFormat.NCHW
     )
+
+    if (format == "CHANNEL_LAST") {
+      layer = com.intel.analytics.bigdl.nn.SpatialDropout3D(
+        initP = p,
+        format = DataFormat.NHWC
+      )
+    }
     layer.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
   }
 }
@@ -42,12 +50,12 @@ class SpatialDropout3D[T: ClassTag](val p: Double = 0.5,
 object SpatialDropout3D {
   def apply[@specialized(Float, Double) T: ClassTag](
     p: Double = 0.5,
-    dim_ordering: DataFormat = DataFormat.NCHW,
+    format: String = "CHANNEL_FIRST",
     inputShape: Shape = null
     )(implicit ev: TensorNumeric[T]) : SpatialDropout3D[T] = {
     new SpatialDropout3D[T](
       p,
-      dim_ordering,
+      format,
       inputShape)
   }
 }
