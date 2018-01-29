@@ -20,8 +20,9 @@ import java.io.File
 import java.nio.file.Paths
 
 import com.google.common.io.Files
-import com.intel.analytics.bigdl.dataset.image.{BGRImage, BGRImgToLocalSeqFile, LocalImgReaderWithName}
+import com.intel.analytics.bigdl.dataset.image.{BGRImage, BGRImgToLocalSeqFile, BytesToGreyImg, GreyImgNormalizer, GreyImgToSample, LocalImgReaderWithName, HFlip => BHFlip}
 import com.intel.analytics.bigdl.dataset.{DataSet, Sample}
+import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.transform.vision.image.augmentation._
 import com.intel.analytics.bigdl.utils.{Engine, TestUtils}
 import org.apache.commons.io.FileUtils
@@ -160,5 +161,50 @@ class ImageFrameSpec extends FlatSpec with Matchers with BeforeAndAfter {
     } else {
       path
     }
+  }
+
+  "mnist data source" should "load image with ImageFrame correct" in {
+    val resource = getClass().getClassLoader().getResource("mnist")
+
+    val dataSet = com.intel.analytics.bigdl.models.lenet.Utils.load(
+      processPath(resource.getPath()) + File.separator + "t10k-images.idx3-ubyte",
+      processPath(resource.getPath()) + File.separator + "t10k-labels.idx1-ubyte")
+    val array = dataSet.map(x => {
+      val im = ImageFeature(x.data, x.label)
+      im(ImageFeature.originalSize) = (28, 28, 1)
+      im
+    })
+    val testMean = 0
+    val testStd = 1
+    val imf = ImageFrame.array(array)
+    val transformer = PixelBytesToMat() ->
+      ChannelNormalize(testMean * 255, testStd * 255) ->
+      ChannelNormalize(testMean, testStd) ->
+      MatToTensor[Float](shareBuffer = false) ->
+      ImageFrameToSample[Float]()
+    val transformed = transformer(imf)
+    transformed.toLocal().array.foreach(x => {
+      println(x(ImageFeature.sample))
+    })
+
+    val transformer2 =
+      BytesToGreyImg(28, 28) -> GreyImgNormalizer(testMean, testStd) -> GreyImgToSample()
+    val evaluationSet = DataSet.array(dataSet).transform(transformer2)
+    evaluationSet.toLocal().data(false).toArray.zip(transformed.toLocal().array).foreach(x => {
+      x._1.feature() should be (x._2[Sample[Float]](ImageFeature.sample).feature())
+    })
+  }
+
+  "read gray scale image" should "work" in {
+    val resource = getClass().getClassLoader().getResource("gray/gray.bmp")
+    val imf = ImageFrame.read(resource.getFile)
+    imf.toLocal().array(0).getOriginalSize should be (50, 50, 1)
+  }
+
+  "transform gray scale image" should "work" in {
+    val resource = getClass().getClassLoader().getResource("gray/gray.bmp")
+    val imf = ImageFrame.read(resource.getFile) -> Resize(28, 28) -> MatToTensor[Float]()
+    imf.toLocal().array(0).getOriginalSize should be (50, 50, 1)
+    imf.toLocal().array(0).getSize should be (28, 28, 1)
   }
 }
