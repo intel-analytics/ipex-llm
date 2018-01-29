@@ -45,8 +45,6 @@ class BCECriterion[@specialized(Float, Double) T: ClassTag]
 
   val onesBuffer: Tensor[T] = Tensor[T]()
 
-  private var expendedWeights: Tensor[T] = null
-
   override def updateOutput(input: Tensor[T], target: Tensor[T]): T = {
     require(input.size().sameElements(target.size()),
       s"input size should be equal to target size, but got input size: ${input.size().toList}," +
@@ -68,60 +66,23 @@ class BCECriterion[@specialized(Float, Double) T: ClassTag]
       }
     }
 
-    val nElement = input.nElement()
-
     var sum = 0.0
     if (null != weights) {
-      if (weights.nElement() < 200) {
-        // simple heuristic, if the input tensor is small enough, the
-        // vectorized implementation is actually slower
-
-        if (target.dim() > weights.dim()) {
-          val size = target.size()
-          size(0) = 1
-          expendedWeights = weights.view(size).expandAs(target)
-        }
-
-        val func = new TensorFunc6[T] {
-          override def apply(data1: Array[T], offset1: Int, data2: Array[T], offset2: Int,
-                             data3: Array[T], offset3: Int): Unit = {
-            val x = ev.toType[Double](data1(offset1))
-            val y = ev.toType[Double](data2(offset2))
-            val w = ev.toType[Double](data3(offset3))
-            sum += (Math.log(x + eps) * y + Math.log(1.0 - x + eps) * (1.0 - y)) * w
-          }
-        }
-        DenseTensorApply.apply3(input, target, expendedWeights, func)
-      } else {
-        buffer.resizeAs(input).copy(input).add(ev.fromType(eps)).log()
-        // cmul support broadcasting
-        buffer.cmul(weights)
-        sum += ev.toType[Double](buffer.dot(target))
-        buffer.fill(ev.fromType(1.0 + eps)).sub(input).log().cmul(weights)
-        sum -= ev.toType[Double](buffer.dot(target))
-        onesBuffer.resizeAs(buffer).fill(ev.fromType(1.0))
-        sum += ev.toType[Double](buffer.dot(onesBuffer))
-      }
-
+      buffer.resizeAs(input).copy(input).add(ev.fromType(eps)).log()
+      // cmul support broadcasting
+      buffer.cmul(weights)
+      sum += ev.toType[Double](buffer.dot(target))
+      buffer.fill(ev.fromType(1.0 + eps)).sub(input).log().cmul(weights)
+      sum -= ev.toType[Double](buffer.dot(target))
+      onesBuffer.resizeAs(buffer).fill(ev.fromType(1.0))
+      sum += ev.toType[Double](buffer.dot(onesBuffer))
     } else {
-      if (nElement < 200) {
-        val func = new TensorFunc4[T] {
-          override def apply(data1: Array[T], offset1: Int,
-                             data2: Array[T], offset2: Int): Unit = {
-            val x = ev.toType[Double](data1(offset1))
-            val y = ev.toType[Double](data2(offset2))
-            sum += Math.log(x + eps) * y + Math.log(1.0 - x + eps) * (1.0 - y)
-          }
-        }
-        DenseTensorApply.apply2(input, target, func)
-      } else {
-        buffer.resizeAs(input).copy(input).add(ev.fromType(eps)).log()
-        sum += ev.toType[Double](buffer.dot(target))
-        buffer.fill(ev.fromType(1.0 + eps)).sub(input).log()
-        sum -= ev.toType[Double](buffer.dot(target))
-        onesBuffer.resizeAs(buffer).fill(ev.fromType(1.0))
-        sum += ev.toType[Double](buffer.sum())
-      }
+      buffer.resizeAs(input).copy(input).add(ev.fromType(eps)).log()
+      sum += ev.toType[Double](buffer.dot(target))
+      buffer.fill(ev.fromType(1.0 + eps)).sub(input).log()
+      sum -= ev.toType[Double](buffer.dot(target))
+      onesBuffer.resizeAs(buffer).fill(ev.fromType(1.0))
+      sum += ev.toType[Double](buffer.sum())
     }
 
     if (sizeAverage) sum /= input.nElement()
@@ -142,22 +103,11 @@ class BCECriterion[@specialized(Float, Double) T: ClassTag]
 
     gradInput.resizeAs(input)
 
-    if (nElement < 200 || (null != weights && weights.nElement() < 200)) {
-      val func = new TensorFunc6[T] {
-        override def apply(data1: Array[T], offset1: Int, data2: Array[T], offset2: Int,
-                           data3: Array[T], offset3: Int): Unit = {
-          val x = ev.toType[Double](data2(offset2))
-          val y = ev.toType[Double](data3(offset3))
-          data1(offset1) = ev.fromType(-norm * (y - x) / ((1.0 - x + eps) * (x + eps)))
-        }
-      }
-      DenseTensorApply.apply3(gradInput, input, target, func)
-    } else {
-      // - (1 - x + eps)*(x + eps) = x^2 - x - eps - eps^2
-      // eps^12 is negligible
-      buffer.pow(input, ev.fromType(2)).sub(input).sub(ev.fromType(eps))
-      gradInput.copy(target).sub(input).cdiv(buffer).mul(ev.fromType(norm))
-    }
+    // gradInput = -norm * (y - x) / ((1.0 - x + eps) * (x + eps))
+    // - (1 - x + eps)*(x + eps) = x^2 - x - eps - eps^2
+    // eps^12 is negligible
+    buffer.pow(input, ev.fromType(2)).sub(input).sub(ev.fromType(eps))
+    gradInput.copy(target).sub(input).cdiv(buffer).mul(ev.fromType(norm))
 
     if (null != weights) {
       // cmul support broadcasting
