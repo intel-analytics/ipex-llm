@@ -17,7 +17,6 @@
 package com.intel.analytics.bigdl.nn.keras
 
 import breeze.numerics.round
-import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.nn.abstractnn._
 import com.intel.analytics.bigdl.tensor.Tensor
@@ -28,38 +27,27 @@ import scala.reflect.ClassTag
 
 
 @SerialVersionUID( - 7979267879723622855L)
-class ParametricSoftPlus[T: ClassTag](val alpha_init: Double = 0.2,
-                                      val beta_init: Double = 5.0,
+class ParametricSoftPlus[T: ClassTag](val beta: Double = 1.0,
                                       var inputShape: Shape = null
   )(implicit ev: TensorNumeric[T])
   extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
-    if (round(alpha_init * beta_init) == 1.0) {
       val layer = SoftPlus(
-        beta = beta_init
+        beta = beta
       )
       layer.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
-    }
-    else {
-      throw new Exception("Only alpha_init = 1/beta_init is supported for now")
-    }
   }
 }
 
 object ParametricSoftPlus {
 
   def apply[@specialized(Float, Double) T: ClassTag](
-    alpha_init: Double = 0.2,
-    beta_init: Double = 5.0,
+    beta: Double = 1.0,
     inputShape: Shape = null
     )(implicit ev: TensorNumeric[T]) : ParametricSoftPlus[T] = {
     new ParametricSoftPlus[T](
-      alpha_init,
-      beta_init,
+      beta,
       inputShape)
   }
 }
-
-
-

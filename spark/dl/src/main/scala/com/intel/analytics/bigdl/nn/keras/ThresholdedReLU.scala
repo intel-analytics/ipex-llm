@@ -17,6 +17,7 @@
 package com.intel.analytics.bigdl.nn.keras
 
 import com.intel.analytics.bigdl.nn.abstractnn._
+import com.intel.analytics.bigdl.nn.Threshold
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Shape
@@ -29,7 +30,7 @@ class ThresholdedReLU[T: ClassTag](val theta: Double = 1.0,
   extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
-    val layer = com.intel.analytics.bigdl.nn.Threshold(
+    val layer = Threshold(
       th = theta,
       v = 0.0,
       ip = false

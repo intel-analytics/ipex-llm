@@ -23,7 +23,6 @@ import com.intel.analytics.bigdl.utils.Shape
 
 import scala.reflect.ClassTag
 
-
 class LeakyReLU[T: ClassTag](private val alpha: Double = 0.01,
                              var inputShape: Shape = null
   )(implicit ev: TensorNumeric[T])

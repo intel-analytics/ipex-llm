@@ -24,7 +24,7 @@ import com.intel.analytics.bigdl.utils.Shape
 import scala.reflect.ClassTag
 
 class SpatialDropout1D[T: ClassTag](val p: Double = 0.5,
-                                   var inputShape: Shape = null
+                                    var inputShape: Shape = null
   )(implicit ev: TensorNumeric[T])
   extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {
 

@@ -24,7 +24,7 @@ import com.intel.analytics.bigdl.utils.Shape
 import scala.reflect.ClassTag
 
 class SpatialDropout2D[T: ClassTag](val p: Double = 0.5,
-                                    val dim_ordering: DataFormat = DataFormat.NCHW,
+                                    val format: DataFormat = DataFormat.NCHW,
                                     var inputShape: Shape = null
                                    )(implicit ev: TensorNumeric[T])
   extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {
@@ -32,7 +32,7 @@ class SpatialDropout2D[T: ClassTag](val p: Double = 0.5,
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
     val layer = com.intel.analytics.bigdl.nn.SpatialDropout2D(
       initP = p,
-      format = dim_ordering
+      format = format
     )
     layer.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
   }
@@ -42,12 +42,12 @@ class SpatialDropout2D[T: ClassTag](val p: Double = 0.5,
 object SpatialDropout2D {
   def apply[@specialized(Float, Double) T: ClassTag](
     p: Double = 0.5,
-    dim_ordering: DataFormat = DataFormat.NCHW,
+    format: DataFormat = DataFormat.NCHW,
     inputShape: Shape = null
     )(implicit ev: TensorNumeric[T]) : SpatialDropout2D[T] = {
     new SpatialDropout2D[T](
       p,
-      dim_ordering,
+      format,
       inputShape)
   }
 }

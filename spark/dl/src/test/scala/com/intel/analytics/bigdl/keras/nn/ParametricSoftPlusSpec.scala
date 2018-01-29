@@ -30,11 +30,11 @@ class ParametricSoftPlusSpec extends KerasBaseSpec{
       """
         |input_tensor = Input(shape=[3])
         |input = np.random.uniform(0, 1, [1, 3])
-        |output_tensor = ParametricSoftplus(alpha_init=0.2, beta_init=5.0)(input_tensor)
+        |output_tensor = ParametricSoftplus(alpha_init=1.0, beta_init=1.0)(input_tensor)
         |model = Model(input=input_tensor, output=output_tensor)
       """.stripMargin
     val seq = KSequential[Float]()
-    val parametricsoftplus = ParametricSoftPlus[Float](0.2, 5.0, inputShape = Shape(3))
+    val parametricsoftplus = ParametricSoftPlus[Float](1.0, inputShape = Shape(3))
     seq.add(parametricsoftplus)
     checkOutputAndGrad(seq.asInstanceOf[AbstractModule[Tensor[Float], Tensor[Float], Float]],
       kerasCode)
@@ -45,11 +45,11 @@ class ParametricSoftPlusSpec extends KerasBaseSpec{
       """
         |input_tensor = Input(shape=[3, 24])
         |input = np.random.random([2, 3, 24])
-        |output_tensor = ParametricSoftplus(alpha_init=0.2, beta_init=5.0)(input_tensor)
+        |output_tensor = ParametricSoftplus(alpha_init=1.0, beta_init=1.0)(input_tensor)
         |model = Model(input=input_tensor, output=output_tensor)
       """.stripMargin
     val seq = KSequential[Float]()
-    val parametricsoftplus = ParametricSoftPlus[Float](0.2, 5.0, inputShape = Shape(3, 24))
+    val parametricsoftplus = ParametricSoftPlus[Float](1.0, inputShape = Shape(3, 24))
     seq.add(parametricsoftplus)
     checkOutputAndGrad(seq.asInstanceOf[AbstractModule[Tensor[Float], Tensor[Float], Float]],
       kerasCode)
