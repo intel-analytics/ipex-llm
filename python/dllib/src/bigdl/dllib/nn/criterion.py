@@ -902,6 +902,55 @@ class TransformerCriterion(Criterion):
                                                    input_transformer,
                                                    target_transformer)
 
+class DotProductCriterion(Criterion):
+    '''
+    Compute the dot product of input and target tensor.
+    Input and target are required to have the same size.
+    :param size_average: whether to average over each observations in the same batch
+    
+    >>> dp =DotProductCriterion(False)
+    creating: createDotProductCriterion
+    '''
+
+    def __init__(self,
+                 size_average = False,
+                 bigdl_type="float"):
+        super(DotProductCriterion, self).__init__(None,
+                                                  bigdl_type,
+                                                  size_average)
+
+class PGCriterion(Criterion):
+    '''
+    The Criterion to compute the negative policy gradient given a
+    multinomial distribution and the sampled action and reward.
+
+    The input to this criterion should be a 2-D tensor representing
+    a batch of multinomial distribution, the target should also be
+    a 2-D tensor with the same size of input, representing the sampled
+    action and reward/advantage with the index of non-zero element in the vector
+    represents the sampled action and the non-zero element itself represents
+    the reward. If the action is space is large, you should consider using
+    SparseTensor for target.
+    
+    The loss computed is simple the standard policy gradient,
+
+      loss = - 1/n * sum(R_{n} dot_product log(P_{n}))
+
+    where R_{n} is the reward vector, and P_{n} is the input distribution.
+
+    :param sizeAverage whether to average over each observations in the same batch
+                           
+    >>> pg = PGCriterion()
+    creating: createPGCriterion
+    '''
+
+    def __init__(self,
+                 sizeAverage = False,
+                 bigdl_type="float"):
+        super(PGCriterion, self).__init__(None,
+                                          bigdl_type,
+                                          sizeAverage)
+
 
 def _test():
     import doctest
