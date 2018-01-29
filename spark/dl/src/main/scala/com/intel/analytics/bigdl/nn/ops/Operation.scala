@@ -16,9 +16,7 @@
 package com.intel.analytics.bigdl.nn.ops
 
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
-import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.Table
 
 import scala.reflect.ClassTag
 
@@ -33,8 +31,6 @@ import scala.reflect.ClassTag
 abstract class Operation[A <: Activity: ClassTag, B <: Activity: ClassTag, T: ClassTag]
 (implicit ev: TensorNumeric[T]) extends AbstractModule[A, B, T]{
 
-  gradInput = EmptyGradInput().asInstanceOf[A]
-
   override def updateGradInput(input: A, gradOutput: B): A = {
     throw new UnsupportedOperationException("Operation does not support updateGradInput() method")
   }
@@ -43,25 +39,3 @@ abstract class Operation[A <: Activity: ClassTag, B <: Activity: ClassTag, T: Cl
     throw new UnsupportedOperationException("Operation does not support backward() method")
   }
 }
-
-class EmptyGradInput private extends Activity {
-
-  override def toTensor[D](implicit ev: TensorNumeric[D]): Tensor[D] =
-    throw new UnsupportedOperationException()
-
-  override def toTable: Table =
-    throw new UnsupportedOperationException()
-
-  override def isTensor: Boolean =
-    throw new UnsupportedOperationException()
-
-  override def isTable: Boolean =
-    throw new UnsupportedOperationException()
-}
-
-object EmptyGradInput {
-  private val emptyGrad = new EmptyGradInput()
-
-  def apply(): EmptyGradInput = emptyGrad
-}
-

@@ -22,6 +22,7 @@ import com.intel.analytics.bigdl.models.inception.Inception_v1_NoAuxClassifier
 import com.intel.analytics.bigdl.models.lenet.LeNet5
 import com.intel.analytics.bigdl.models.vgg.{VggForCifar10, Vgg_16, Vgg_19}
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
+import com.intel.analytics.bigdl.nn.abstractnn.EmptyGradInput
 import com.intel.analytics.bigdl.nn.ops.{ControlNodes, Less}
 import com.intel.analytics.bigdl.nn.tf.Const
 import com.intel.analytics.bigdl.numeric.NumericFloat
@@ -1041,6 +1042,37 @@ class StaticGraphSpec extends FlatSpec with Matchers {
     model2.backward(Tensor[Float](T(1.0f, 2.0f)), T(Tensor[Float](T(3.0f, 4.0f)),
       Tensor[Float](T(7.0f, 10.0f)))) should be(
       Tensor[Float](T(10.0f, 14.0f)))
+  }
+
+  "graph backpropagation" should "throw exception if some empty gradInput is used" in {
+    val backwardBranch = Identity[Float]().setName("backward_branch").inputs()
+    val stopBranchShort = Identity[Float]().setName("stop_branch_short").inputs()
+    val stopBranchLong_1 = Identity[Float]().inputs()
+    val stopBranchLong_2 = Identity[Float]().setName("stop_branch_long").inputs(stopBranchLong_1)
+    val addNode = CAddTable[Float]().inputs(backwardBranch, stopBranchShort, stopBranchLong_2)
+    val innerGraph = Graph[Float](Array(backwardBranch, stopBranchShort, stopBranchLong_1),
+      Array(addNode))
+    innerGraph.stopGradient(Array("stop_branch_short", "stop_branch_long"))
+
+    val relu1 = ReLU[Float]().setName("relu1").inputs()
+    val relu2 = ReLU[Float]().setName("relu2").inputs()
+    val relu3 = ReLU[Float]().setName("relu3").inputs()
+    val graphNode = innerGraph.inputs(relu1, relu2, relu3)
+    val outerGraph = Graph[Float](Array(relu1, relu2, relu3), Array(graphNode))
+    outerGraph.stopGradient(Array("relu2", "relu3"))
+    outerGraph.forward(T(Tensor[Float](T(1, 2)), Tensor[Float](T(3, 4)), Tensor[Float](T(3, 4))))
+    outerGraph.backward(T(Tensor[Float](T(1, 2)), Tensor[Float](T(3, 4)), Tensor[Float](T(3, 4))),
+      Tensor[Float](T(7, 4)))
+    innerGraph.gradInput.asInstanceOf[Table].apply(2).isInstanceOf[EmptyGradInput] should be(true)
+    innerGraph.gradInput.asInstanceOf[Table].apply(3).isInstanceOf[EmptyGradInput] should be(true)
+
+    // A class cast exception will be thrown
+    intercept[ClassCastException] {
+      val outerGraph2 = Graph[Float](Array(relu1, relu2, relu3), Array(graphNode))
+      outerGraph2.forward(T(Tensor[Float](T(1, 2)), Tensor[Float](T(3, 4)), Tensor[Float](T(3, 4))))
+      outerGraph2.backward(T(Tensor[Float](T(1, 2)), Tensor[Float](T(3, 4)),
+        Tensor[Float](T(3, 4))), Tensor[Float](T(7, 4)))
+    }
   }
 
   "markdown test" should "work" in {
