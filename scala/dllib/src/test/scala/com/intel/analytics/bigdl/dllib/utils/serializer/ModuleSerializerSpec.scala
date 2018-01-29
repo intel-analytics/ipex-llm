@@ -645,6 +645,12 @@ class ModuleSerializerSpec extends FlatSpec with Matchers with BeforeAndAfterAll
     runSerializationTest(l1Penalty, input)
   }
 
+  "NegativeEntropyPenalty serializer" should "work properly" in {
+    val penalty = NegativeEntropyPenalty[Float](0.01).setName("NegativeEntropyPenalty")
+    val input = Tensor[Float](3, 3).apply1(_ => Random.nextFloat())
+    runSerializationTest(penalty, input)
+  }
+
   "LeakReLu serializer" should  "work properly" in {
     val leakyReLU = LeakyReLU[Float](0.01, true).setName("leakyReLU")
     val input = Tensor[Float](3, 3).apply1(_ => Random.nextFloat())

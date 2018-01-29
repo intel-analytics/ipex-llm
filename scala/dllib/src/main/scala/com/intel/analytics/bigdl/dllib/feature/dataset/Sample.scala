@@ -371,7 +371,8 @@ object Sample {
   def apply[T: ClassTag](
         featureTensors: Array[Tensor[T]],
         labelTensors: Array[Tensor[T]])(implicit ev: TensorNumeric[T]) : Sample[T] = {
-    if (featureTensors.exists(_.getTensorType == SparseType)) {
+    if (featureTensors.exists(_.getTensorType == SparseType) ||
+        labelTensors.exists(_.getTensorType == SparseType)) {
       TensorSample(featureTensors, labelTensors)
     } else {
       ArraySample(featureTensors, labelTensors)

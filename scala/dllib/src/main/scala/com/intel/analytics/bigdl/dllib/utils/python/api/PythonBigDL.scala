@@ -20,7 +20,7 @@ import java.util.{ArrayList => JArrayList, HashMap => JHashMap, List => JList, M
 
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dataset.{Identity => DIdentity, Sample => JSample, _}
-import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.nn.{PGCriterion, Zeros, _}
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, _}
 import com.intel.analytics.bigdl.numeric._
 import com.intel.analytics.bigdl.optim.{Optimizer, _}
@@ -28,7 +28,6 @@ import com.intel.analytics.bigdl.tensor.{DenseType, SparseType, Storage, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{Table, _}
 import com.intel.analytics.bigdl.visualization.{Summary, TrainSummary, ValidationSummary}
-import com.intel.analytics.bigdl.nn.Zeros
 import org.apache.spark.api.java.{JavaRDD, JavaSparkContext}
 import org.apache.spark.rdd.RDD
 import java.lang.{Integer, Boolean => JBoolean}
@@ -884,6 +883,10 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     L1Penalty[T](l1weight,
       sizeAverage,
       provideOutput)
+  }
+
+  def createNegativeEntropyPenalty(beta: Double): NegativeEntropyPenalty[T] = {
+    NegativeEntropyPenalty(beta)
   }
 
   def createLeakyReLU(negval: Double = 0.01,
@@ -1769,6 +1772,16 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
            targetTransformer: AbstractModule[Activity, Activity, T] = null
            ): TransformerCriterion[T] = {
     TransformerCriterion(criterion, Option(inputTransformer), Option(targetTransformer))
+  }
+
+  def createDotProductCriterion(
+          sizeAverage: Boolean = false): DotProductCriterion[T] = {
+    DotProductCriterion[T](sizeAverage)
+  }
+
+  def createPGCriterion(
+    sizeAverage: Boolean = false): PGCriterion[T] = {
+    PGCriterion(sizeAverage)
   }
 
   def createPack(dimension: Int): Pack[T] = {
