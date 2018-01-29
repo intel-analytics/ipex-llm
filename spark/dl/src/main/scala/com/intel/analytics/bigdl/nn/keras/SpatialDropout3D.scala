@@ -29,19 +29,16 @@ class SpatialDropout3D[T: ClassTag](val p: Double = 0.5,
                                    )(implicit ev: TensorNumeric[T])
   extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {
 
+  require(format == "CHANNEL_FIRST" || format == "CHANNEL_LAST", s"$format is not supported")
+
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
 
-    var layer = com.intel.analytics.bigdl.nn.SpatialDropout3D(
-      initP = p,
-      format = DataFormat.NCHW
-    )
+    val dimOrdering = if (format == "CHANNEL_LAST") DataFormat.NCHW else DataFormat.NHWC
 
-    if (format == "CHANNEL_LAST") {
-      layer = com.intel.analytics.bigdl.nn.SpatialDropout3D(
-        initP = p,
-        format = DataFormat.NHWC
-      )
-    }
+    val layer = com.intel.analytics.bigdl.nn.SpatialDropout3D(
+      initP = p,
+      format = dimOrdering
+    )
     layer.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
   }
 }

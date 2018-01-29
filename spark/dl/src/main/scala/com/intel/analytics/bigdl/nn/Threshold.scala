@@ -34,6 +34,7 @@ import scala.reflect.ClassTag
  * @param ip inplace mode
  */
 
+@SerialVersionUID(3953292249027271493L)
 class Threshold[T: ClassTag](
   private val th: Double = 1e-6, private val v: Double = 0.0, private val ip: Boolean = false)(
   implicit ev: TensorNumeric[T]) extends TensorModule[T] with IdentityOutputShape{
