@@ -80,7 +80,7 @@ Run Spark Test
    Log To Console                   begin lenet Train local[4]
    Run Shell                        ${submit} --master local[4] --class com.intel.analytics.bigdl.models.lenet.Train ${jar_path} -f ./mnist -b 120 -e 1     
    Log To Console                   begin autoencoder Train 
-   Run Shell                        ${submit} --master ${spark_master} --executor-cores 4 --total-executor-cores 12 --class com.intel.analytics.bigdl.models.autoencoder.Train ${jar_path} -b 120 -e 1 -f ./mnist > 2.txt
+   Run Shell                        ${submit} --master ${spark_master} --executor-cores 4 --total-executor-cores 12 --class com.intel.analytics.bigdl.models.autoencoder.Train ${jar_path} -b 120 -e 50 -f ./mnist > 2.txt
    Log To Console                   begin PTBWordLM
    Run Shell                        ${submit} --master ${spark_master} --conf "spark.serializer=org.apache.spark.serializer.JavaSerializer" --driver-memory 40g --executor-memory 100g --executor-cores 8 --total-executor-cores 8 --class com.intel.analytics.bigdl.example.languagemodel.PTBWordLM ${jar_path} -f ./simple-examples/data -b 120 --numLayers 2 --vocab 10001 --hidden 650 --numSteps 35 --learningRate 0.005 -e 1 --learningRateDecay 0.001 --keepProb 0.5 --overWrite > 3.txt
    Log To Console                   begin resnet Train
