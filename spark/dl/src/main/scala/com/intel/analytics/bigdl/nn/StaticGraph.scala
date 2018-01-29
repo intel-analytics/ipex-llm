@@ -15,13 +15,17 @@
  */
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
+import com.intel.analytics.bigdl.nn.ops.Operation
 import com.intel.analytics.bigdl.nn.tf.ControlDependency
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.{Node, Util}
+import com.intel.analytics.bigdl.utils.{DirectedGraph, Node, Util}
 
+import scala.collection.mutable
+import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
 /**
@@ -30,13 +34,18 @@ import scala.reflect.ClassTag
  * @param _inputs inputs modules, user can feed data into these modules in the forward method
  * @param _outputs output modules
  * @param _variables
+ * @param backGraphPruning whether enable backward graph pruning,
+ *                         which means remove all pre-processing nodes
+ *                         whose element is extended from [[Operation]] or
+ *                         who is simply depended on [[Operation]] based nodes during backward.
  * @tparam T Numeric type. Only support float/double now
  */
 class StaticGraph[T: ClassTag](
   private val _inputs : Seq[ModuleNode[T]],
   private val _outputs : Seq[ModuleNode[T]],
   private val _variables: Option[(Array[Tensor[T]], Array[Tensor[T]])] = None,
-  private val excludeKeras: Boolean = true
+  private val excludeKeras: Boolean = true,
+  private val backGraphPruning: Boolean = false
 )(implicit ev: TensorNumeric[T]) extends Graph[T](_inputs, _outputs, _variables) {
   private val forwardExecution = forwardGraph.topologySort.reverse
   private var backwardExecution: Array[Node[AbstractModule[Activity, Activity, T]]] = _
@@ -79,7 +88,15 @@ class StaticGraph[T: ClassTag](
 
   override def buildBackwardGraph(): this.type = {
     super.buildBackwardGraph()
-    backwardExecution = backwardGraph.topologySort.reverse
+    backwardExecution =
+      if (!backGraphPruning) {
+        backwardGraph.topologySort.reverse
+      } else {
+        val wholeResult = backwardGraph.topologySort.reverse
+        val pruningModules = invTopology(forwardGraph).map(_.element).toSet
+        wholeResult.filterNot(node => pruningModules.contains(node.element))
+      }
+
     backId2ForwardId = new Array[Int](backwardExecution.length)
     gradOutputCache = new Array[Activity](backwardExecution.length)
 
@@ -146,5 +163,53 @@ class StaticGraph[T: ClassTag](
 
     gradInput = fetchModelGradInput()
     gradInput
+  }
+
+  /**
+   * Inverse Topology specialize for pruning [[backwardGraph]],
+   * which find out Node[Operation] or nodes only depended on Node[Operation] in backward.
+   *
+   * @return A sequence of graph nodes which can be pruned.
+   */
+  private def invTopology(graph: DirectedGraph[Module[T]]): Array[ModuleNode[T]] = {
+    val (source, reverse) = graph.source -> graph.reverse
+    // Build indegree list, LinkedHashMap can preserve the order of the keys, so it's good to
+    // write unittest.
+    val inDegrees = new mutable.LinkedHashMap[ModuleNode[T], Int]()
+    inDegrees(source) = 0
+    graph.DFS.foreach(n => {
+      val nextNodes = if (!reverse) n.nextNodes else n.prevNodes
+      nextNodes.foreach(m => {
+        inDegrees(m) = inDegrees.getOrElse(m, 0) + 1
+      })
+    })
+
+    val isOperation = (n: ModuleNode[T]) => n.element.isInstanceOf[Operation[_, _, T]]
+    val canStop = new mutable.HashMap[ModuleNode[T], Boolean]()
+    val noBackwardNodes = new ArrayBuffer[ModuleNode[T]]()
+    while(inDegrees.nonEmpty) {
+      // toArray is not lazy eval, which is not affected by inDegrees - 1 operations below
+      val startNodes = inDegrees.filterKeys(inDegrees(_) == 0).keySet.toArray
+      require(startNodes.length != 0, "There's a cycle in the graph")
+      noBackwardNodes.appendAll(
+        startNodes.filter(n => isOperation(n) || canStop.getOrElse(n, false))
+      )
+      startNodes.foreach(n => {
+        val canCurrentStop = isOperation(n) || canStop.getOrElse(n, false)
+        val nextNodes = if (!reverse) n.nextNodes else n.prevNodes
+        nextNodes.foreach { nextNode =>
+          // If only one parent of [[nextNode]] isn't `canStop`, it should NOT be `canStop`.
+          if (!isOperation(nextNode)) {
+            val status = canStop.getOrElseUpdate(nextNode, true)
+            if (status && !canCurrentStop) {
+              canStop(nextNode) = false
+            }
+          }
+          inDegrees(nextNode) = inDegrees(nextNode) - 1
+        }
+        inDegrees.remove(n)
+      })
+    }
+    noBackwardNodes.toArray
   }
 }
