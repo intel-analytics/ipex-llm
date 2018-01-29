@@ -128,7 +128,7 @@ object OpenCVMat {
     var result: OpenCVMat = null
     try {
       matOfByte = new MatOfByte(fileContent: _*)
-      mat = Imgcodecs.imdecode(matOfByte, Imgcodecs.CV_LOAD_IMAGE_COLOR)
+      mat = Imgcodecs.imdecode(matOfByte, Imgcodecs.CV_LOAD_IMAGE_UNCHANGED)
       result = new OpenCVMat(mat)
     } catch {
       case e: Exception =>
@@ -166,18 +166,15 @@ object OpenCVMat {
    * @param width image width
    * @return image in mat
    */
-  def fromFloats(floats: Array[Float], height: Int, width: Int): OpenCVMat = {
-    var mat: Mat = null
-    try {
-      mat = new Mat(height, width, CvType.CV_32FC3)
-      mat.put(0, 0, floats)
-      new OpenCVMat(mat)
-    } catch {
-        case e: Exception => throw new Exception(s"convert float array to OpenCVMat fails!\n" +
-          s"${e.getMessage}")
-    } finally {
-      if (null != mat) mat.release()
-    }
+  def fromFloats(floats: Array[Float], height: Int, width: Int, channel: Int = 3): OpenCVMat = {
+    require(channel >= 1 && channel <= 4, s"channel $channel is out of range [1,4]")
+    require(floats.length >= height * width * channel,
+      s"pixels array length ${floats.length} is less than " +
+        s"height*width*channel ${height * width * channel}")
+    val mat = new OpenCVMat()
+    mat.create(height, width, CvType.CV_32FC(channel))
+    mat.put(0, 0, floats)
+    mat
   }
 
   /**
@@ -187,10 +184,11 @@ object OpenCVMat {
    * @param buffer
    * @return
    */
-  def toBytePixels(input: Mat, buffer: Array[Byte] = null): (Array[Byte], Int, Int) = {
-    // the mat need to be type CV_8UC3 in order to get pixels byte array
-    if (input.`type`() != CvType.CV_8UC3) {
-      input.convertTo(input, CvType.CV_8UC3)
+  def toBytePixels(input: Mat, buffer: Array[Byte] = null): (Array[Byte], Int, Int, Int) = {
+    val channel = input.channels()
+    // the mat need to be type CV_8UCX in order to get pixels byte array
+    if (input.`type`() != CvType.CV_8UC(channel)) {
+      input.convertTo(input, CvType.CV_8UC(channel))
     }
     var bytes = buffer
     val length = input.channels() * input.height() * input.width()
@@ -198,7 +196,7 @@ object OpenCVMat {
       bytes = new Array[Byte](length)
     }
     input.get(0, 0, bytes)
-    (bytes, input.height(), input.width())
+    (bytes, input.height(), input.width(), channel)
   }
 
 
@@ -210,17 +208,18 @@ object OpenCVMat {
    * @return
    */
   def toFloatPixels(input: Mat,
-    buffer: Array[Float] = null): (Array[Float], Int, Int) = {
+    buffer: Array[Float] = null): (Array[Float], Int, Int, Int) = {
     var floats = buffer
     val length = input.channels() * input.height() * input.width()
     if (null == buffer || buffer.length < length) {
       floats = new Array[Float](length)
     }
-    if (input.`type`() != CvType.CV_32FC3) {
-      input.convertTo(input, CvType.CV_32FC3)
+    val channel = input.channels()
+    if (input.`type`() != CvType.CV_32FC(channel)) {
+      input.convertTo(input, CvType.CV_32FC(channel))
     }
     input.get(0, 0, floats)
-    (floats, input.height(), input.width())
+    (floats, input.height(), input.width(), channel)
   }
 
   /**
@@ -229,9 +228,13 @@ object OpenCVMat {
    * @param height image height
    * @param width image width
    */
-  def fromPixelsBytes(pixels: Array[Byte], height: Int, width: Int): OpenCVMat = {
+  def fromPixelsBytes(pixels: Array[Byte], height: Int, width: Int, channel: Int = 3): OpenCVMat = {
+    require(channel >= 1 && channel <= 4, s"channel $channel is out of range [1,4]")
+    require(pixels.length >= height * width * channel,
+      s"pixels array length ${pixels.length} is less than " +
+        s"height*width*channel ${height * width * channel}")
     val mat = new OpenCVMat()
-    mat.create(height, width, CvType.CV_8UC3)
+    mat.create(height, width, CvType.CV_8UC(channel))
     mat.put(0, 0, pixels)
     mat
   }
@@ -259,6 +262,6 @@ object OpenCVMat {
     if (offset > 0) {
       floatArr = floatArr.slice(offset, tensor.nElement() + offset)
     }
-    fromFloats(floatArr, image.size(1), image.size(2))
+    fromFloats(floatArr, image.size(1), image.size(2), image.size(3))
   }
 }
