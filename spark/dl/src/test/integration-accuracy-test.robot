@@ -132,8 +132,8 @@ Quantization Test Suite
    Log To Console                   got cifar data!!
    Set Environment Variable         mnist                    /tmp/mnist
    Set Environment Variable         cifar10                  /tmp/cifar
-   Set Environment Variable         lenetfp32model           ${public_hdfs_master}:9000/lenet4IT4J1.7B4.bigdl
-   Set Environment Variable         resnetfp32model          ${public_hdfs_master}:9000/resnet4IT4J1.7B4.bigdl
+   Set Environment Variable         lenetfp32model           ${public_hdfs_master}:9000/lenet4IT4J1.7.bigdl
+   Set Environment Variable         resnetfp32model          ${public_hdfs_master}:9000/resnet4IT4J1.7.bigdl
    Run Shell                        mvn clean test -Dsuites=com.intel.analytics.bigdl.integration.QuantizationSpec -P integration-test
    Remove Environment Variable      mnist                    cifar10                 lenetfp32model                  resnetfp32model
 
