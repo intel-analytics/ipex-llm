@@ -74,7 +74,7 @@ class Kv2TensorSpec extends FlatSpec with Matchers {
         values = values.toArray,
         shape = shape
       )
-    val output = Kv2Tensor[Double, Double](transType = SparseType)
+    val output = Kv2Tensor[Double, Double](transType = 1)
       .forward(input)
 
     output should be(expectOutput)
@@ -93,7 +93,7 @@ class Kv2TensorSpec extends FlatSpec with Matchers {
         values = values.toArray,
         shape = shape
       ))
-    val output = Kv2Tensor[Double, Double](transType = DenseType)
+    val output = Kv2Tensor[Double, Double](transType = 0)
       .forward(input)
 
     output should be(expectOutput)

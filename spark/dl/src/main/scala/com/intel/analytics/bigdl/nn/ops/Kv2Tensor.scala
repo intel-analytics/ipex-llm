@@ -26,27 +26,27 @@ import scala.reflect.ClassTag
 /**
  * Kv2Tensor operation convert a kv feature column to a SparseTensor or DenseTensor
  *
- * DenseTensor if transType = DenseType
- * SparseTensor if  transType = SparseType
+ * DenseTensor if transType = 0
+ * SparseTensor if  transType = 1
  *
  * The input contains 2 elements which are `kvTensor`, `feaLen`:
  * kvTensor shape will be batch*1 and element is a kv string, only support one feature now
  * depth: the length of the value set of the feature
  *
- * the output shape will be batch*feaLen if transType = DenseType
- * the output shape will be a SparseTensor with dense shape batch*feaLen if transType = SparseType
+ * the output shape will be batch*feaLen if transType = 0
+ * the output shape will be a SparseTensor with dense shape batch*feaLen if transType = 1
  *
  * @param kvDelimiter The delimiter between kv pairs, default: ","
  * @param itemDelimiter The delimiter between key and value, default: ":"
- * @param transType The type of output tensor. default: DenseType
+ * @param transType The type of output tensor. default: 0
  * @tparam T Numeric type. Parameter tensor numeric type. Only support float/double now
  * @tparam D Numeric type. Output tensor numeric type. Only support float/double now
  */
 
 class Kv2Tensor[T: ClassTag, D: ClassTag](
-  kvDelimiter: String,
-  itemDelimiter: String,
-  transType: TensorType
+  val kvDelimiter: String,
+  val itemDelimiter: String,
+  val transType: Int
   )(implicit ev: TensorNumeric[T], ev2: TensorNumeric[D])
   extends Operation[Table, Tensor[D], T]{
 
@@ -79,9 +79,9 @@ class Kv2Tensor[T: ClassTag, D: ClassTag](
 
     val indices = Array(indices0.toArray, indices1.toArray)
     val resTensor = transType match {
-      case DenseType =>
+      case 0 =>
         Tensor.dense(Tensor.sparse(indices, values.toArray, shape))
-      case SparseType =>
+      case 1 =>
         Tensor.sparse(indices, values.toArray, shape)
     }
     output = resTensor
@@ -98,12 +98,12 @@ object Kv2Tensor{
   def apply[T: ClassTag, D: ClassTag](
      kvDelimiter: String = ",",
      itemDelimiter: String = ":",
-     transType: TensorType = DenseType)
-     (implicit ev: TensorNumeric[T], ev2: TensorNumeric[D]): Operation[Activity, Activity, T]
-  = ModuleToOperation[T](new Kv2Tensor[T, D](
+     transType: Int = 0)
+     (implicit ev: TensorNumeric[T], ev2: TensorNumeric[D]): Kv2Tensor[T, D]
+  = new Kv2Tensor[T, D](
     kvDelimiter = kvDelimiter,
     itemDelimiter = itemDelimiter,
     transType = transType
-  ))
+  )
 }
 

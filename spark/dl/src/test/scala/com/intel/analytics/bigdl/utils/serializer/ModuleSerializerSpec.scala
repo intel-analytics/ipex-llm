@@ -1780,15 +1780,14 @@ class ModuleSerializerSpec extends FlatSpec with Matchers with BeforeAndAfterAll
 
   "Kv2Tensor" should "work properly" in {
     val kv2tensor = Kv2Tensor[Float, Float](
-      kvDelimiter = ",", itemDelimiter = ":", transType = DenseType
+      kvDelimiter = ",", itemDelimiter = ":", transType = 0
     ).setName("kv2tensor")
     val input = T(
       Tensor[String](
         T(T("0:0.1,1:0.2"), T("1:0.3,3:0.5"), T("2:0.15,4:0.25"))),
       Tensor[Int](Array(5), shape = Array[Int]())
     )
-    runSerializationTest(kv2tensor, input,
-      kv2tensor.asInstanceOf[ModuleToOperation[Float]].module.getClass)
+    runSerializationTest(kv2tensor, input)
   }
 
   "L2Loss serializer" should "work properly" in {
