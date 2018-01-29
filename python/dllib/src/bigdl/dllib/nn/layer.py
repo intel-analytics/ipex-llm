@@ -2933,6 +2933,31 @@ class L1Penalty(Layer):
                                         size_average,
                                         provide_output)
 
+class NegativeEntropyPenalty(Layer):
+    '''
+    Penalize the input multinomial distribution if it has low entropy.
+    The input to this layer should be a batch of vector each representing a
+    multinomial distribution. The input is typically the output of a softmax layer.
+    
+    For forward, the output is the same as input and a NegativeEntropy loss of
+    the latent state will be calculated each time. For backward,
+    gradInput = gradOutput + gradLoss
+
+    This can be used in reinforcement learning to discourage the policy from
+    collapsing to a single action for a given state, which improves exploration.
+    See the A3C paper for more detail (https://arxiv.org/pdf/1602.01783.pdf).
+    
+    >>> ne = NegativeEntropyPenalty(0.01)
+    creating: createNegativeEntropyPenalty
+    
+    :param beta penalty coefficient
+    '''
+
+    def __init__(self, beta=0.01, bigdl_type="float"):
+        super(NegativeEntropyPenalty, self).__init__(None,
+                                                     bigdl_type,
+                                                     beta)
+
 
 class LeakyReLU(Layer):
 
