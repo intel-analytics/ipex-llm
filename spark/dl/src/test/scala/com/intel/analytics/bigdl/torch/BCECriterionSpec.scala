@@ -46,8 +46,8 @@ class BCECriterionSpec extends TorchSpec{
     val luaOutput1 = torchResult("output1").asInstanceOf[Double]
     val luaOutput2 = torchResult("output2").asInstanceOf[Tensor[Double]]
 
-    luaOutput1 should be(output1)
-    luaOutput2 should be(output2)
+    luaOutput1 should be(output1 +- 1e-7)
+    luaOutput2.almostEqual(output2, 1e-7) should be(true)
 
     println("Test case : BCECriterion, Torch : " + luaTime + " s, Scala : " +
       scalaTime / 1e9 + " s")
@@ -83,8 +83,8 @@ class BCECriterionSpec extends TorchSpec{
     val luaOutput1 = torchResult("output1").asInstanceOf[Double]
     val luaOutput2 = torchResult("output2").asInstanceOf[Tensor[Double]]
 
-    luaOutput1 should be(output1)
-    luaOutput2 should be(output2)
+    luaOutput1 should be(output1 +- 1e-7)
+    luaOutput2.almostEqual(output2, 1e-7) should be(true)
 
     println("Test case : BCECriterion, Torch : " + luaTime + " s, Scala : " +
       scalaTime / 1e9 + " s")
@@ -120,8 +120,8 @@ class BCECriterionSpec extends TorchSpec{
     val luaOutput1 = torchResult("output1").asInstanceOf[Double]
     val luaOutput2 = torchResult("output2").asInstanceOf[Tensor[Double]]
 
-    luaOutput1 should be(output1)
-    luaOutput2 should be(output2)
+    luaOutput1 should be(output1 +- 1e-7)
+    luaOutput2.almostEqual(output2, 1e-7) should be(true)
 
     println("Test case : BCECriterion, Torch : " + luaTime + " s, Scala : " +
       scalaTime / 1e9 + " s")

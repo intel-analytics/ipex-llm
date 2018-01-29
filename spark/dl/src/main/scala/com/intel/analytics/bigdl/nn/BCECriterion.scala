@@ -74,14 +74,18 @@ class BCECriterion[@specialized(Float, Double) T: ClassTag]
       sum += ev.toType[Double](buffer.dot(target))
       buffer.fill(ev.fromType(1.0 + eps)).sub(input).log().cmul(weights)
       sum -= ev.toType[Double](buffer.dot(target))
-      onesBuffer.resizeAs(buffer).fill(ev.fromType(1.0))
+      if (onesBuffer.nElement() != buffer.nElement()) {
+        onesBuffer.resizeAs(buffer).fill(ev.fromType(1.0))
+      }
       sum += ev.toType[Double](buffer.dot(onesBuffer))
     } else {
       buffer.resizeAs(input).copy(input).add(ev.fromType(eps)).log()
       sum += ev.toType[Double](buffer.dot(target))
       buffer.fill(ev.fromType(1.0 + eps)).sub(input).log()
       sum -= ev.toType[Double](buffer.dot(target))
-      onesBuffer.resizeAs(buffer).fill(ev.fromType(1.0))
+      if (onesBuffer.nElement() != buffer.nElement()) {
+        onesBuffer.resizeAs(buffer).fill(ev.fromType(1.0))
+      }
       sum += ev.toType[Double](buffer.sum())
     }
 
