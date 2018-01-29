@@ -53,9 +53,14 @@ class SingletonMixin(object):
                     cls._instance = cls(bigdl_type)
         return cls._instance
 
-# This class is for backward compatibility only
+
 class JavaCreator(SingletonMixin):
-    __creator_class="com.intel.analytics.bigdl.python.api.PythonBigDL"
+    __creator_class=["com.intel.analytics.bigdl.python.api.PythonBigDL",
+                    "com.intel.analytics.bigdl.python.api.PythonBigDLKeras"]
+
+    @classmethod
+    def add_creator_class(cls, jinvoker):
+        JavaCreator.__extra_jinvokers.append(jinvoker)
 
     @classmethod
     def get_creator_class(cls):
@@ -69,7 +74,16 @@ class JavaCreator(SingletonMixin):
             JavaCreator._instance = None
 
     def __init__(self, bigdl_type):
-       JavaInvoker(bigdl_type=bigdl_type, creator_class=JavaCreator.get_creator_class())
+        sc = get_spark_context()
+        self.value = []
+        for creator_class in JavaCreator.get_creator_class():
+            jclass = getattr(sc._jvm, creator_class)
+            if bigdl_type == "float":
+                self.value.append(getattr(jclass, "ofFloat")())
+            elif bigdl_type == "double":
+                self.value.append(getattr(jclass, "ofDouble")())
+            else:
+                raise Exception("Not supported bigdl_type: %s" % bigdl_type)
 
 
 class JavaValue(object):
@@ -85,6 +99,17 @@ class JavaValue(object):
 
     def __str__(self):
         return self.value.toString()
+
+class Shape(JavaValue):
+
+    def __init__(self, jvalue, bigdl_type, *args):
+        if (jvalue):
+            assert(type(jvalue) == JavaObject)
+            self.value = jvalue
+        else:
+            self.value = callBigDlFunc(
+                bigdl_type, JavaValue.jvm_class_constructor(self), *args)
+        self.bigdl_type = bigdl_type
 
 
 class EvaluatedResult():
@@ -391,7 +416,6 @@ class Sample(object):
     def __repr__(self):
         return "Sample: features: %s, labels: %s" % (self.features, self.labels)
 
-
 class RNG():
     """
     generate tensor data with seed
@@ -542,113 +566,104 @@ def get_spark_sql_context(sc):
     else:
         return SQLContext(sc)  # Compatible with Spark1.5.1
 
-class JavaInvoker():
-    def __int__(self, bigdl_type, creator_class):
-        sc = get_spark_context()
-        jclass = getattr(sc._jvm, creator_class)
-        if bigdl_type == "float":
-            self.value = getattr(jclass, "ofFloat")()
-        elif bigdl_type == "double":
-            self.value = getattr(jclass, "ofDouble")()
-        else:
-            raise Exception("Not supported bigdl_type: %s" % bigdl_type)
-
-    def callBigDlFunc(bigdl_type, name, *args):
-        """ Call API in PythonBigDL """
-        jinstance = JavaCreator.instance(bigdl_type=bigdl_type).value
-        sc = get_spark_context()
-        api = getattr(jinstance, name)
-        return callJavaFunc(sc, api, *args)
-
-
-    def _java2py(sc, r, encoding="bytes"):
-        if isinstance(r, JavaObject):
-            clsName = r.getClass().getSimpleName()
-            # convert RDD into JavaRDD
-            if clsName != 'JavaRDD' and clsName.endswith("RDD"):
-                r = r.toJavaRDD()
-                clsName = 'JavaRDD'
-
-            if clsName == 'JavaRDD':
-                jrdd = sc._jvm.SerDe.javaToPython(r)
-                return RDD(jrdd, sc)
-
-            if clsName == 'DataFrame':
-                return DataFrame(r, get_spark_sql_context(sc))
-
-            if clsName == 'Dataset':
-                return DataFrame(r, get_spark_sql_context(sc))
-
-            if clsName in _picklable_classes:
-                r = sc._jvm.org.apache.spark.bigdl.api.python.BigDLSerDe.dumps(r)
-            elif isinstance(r, (JavaArray, JavaList, JavaMap)):
-                try:
-                    r = sc._jvm.org.apache.spark.bigdl.api.python.BigDLSerDe.dumps(
-                        r)
-                except Py4JJavaError:
-                    pass  # not pickable
-
-        if isinstance(r, (bytearray, bytes)):
-            r = PickleSerializer().loads(bytes(r), encoding=encoding)
-        return r
-
-
-    def callJavaFunc(sc, func, *args):
-        """ Call Java Function """
-        args = [_py2java(sc, a) for a in args]
-        result = func(*args)
-        return _java2py(sc, result)
-
-
-    def _to_java_object_rdd(rdd):
-        """ Return a JavaRDD of Object by unpickling
-
-
-        It will convert each Python object into Java object by Pyrolite, whenever
-        the RDD is serialized in batch or not.
-        """
-        rdd = rdd._reserialize(AutoBatchedSerializer(PickleSerializer()))
-        return \
-            rdd.ctx._jvm.org.apache.spark.bigdl.api.python.BigDLSerDe.pythonToJava(
-                rdd._jrdd, True)
-
-
-    def _py2java(sc, obj):
-        """ Convert Python object into Java """
-        if isinstance(obj, RDD):
-            obj = _to_java_object_rdd(obj)
-        elif isinstance(obj, DataFrame):
-            obj = obj._jdf
-        elif isinstance(obj, SparkContext):
-            obj = obj._jsc
-        elif isinstance(obj, (list, tuple)):
-            obj = ListConverter().convert([_py2java(sc, x) for x in obj],
-                                          sc._gateway._gateway_client)
-        elif isinstance(obj, dict):
-            result = {}
-            for (key, value) in obj.items():
-                result[key] = _py2java(sc, value)
-            obj = MapConverter().convert(result, sc._gateway._gateway_client)
-        elif isinstance(obj, JavaValue):
-            obj = obj.value
-        elif isinstance(obj, JavaObject):
-            pass
-        elif isinstance(obj, (int, long, float, bool, bytes, unicode)):
-            pass
-        else:
-            data = bytearray(PickleSerializer().dumps(obj))
-            obj = sc._jvm.org.apache.spark.bigdl.api.python.BigDLSerDe.loads(data)
-        return obj
-
-# lazy operation?
-default_jinvoker = {"float": JavaInvoker("float", JavaCreator.get_creator_class()),
-                    "double": JavaInvoker("double", JavaCreator.get_creator_class())}
-
-keras_jinvoker = {"float": JavaInvoker("float", "com.intel.analytics.bigdl.python.api.PythonBigDL"),
-                    "double": JavaInvoker("double", JavaCreator.get_creator_class())}
-
 def callBigDlFunc(bigdl_type, name, *args):
-    default_jinvoker["bigdl_type"].callBigDlFunc(bigdl_type, name, *args)
+    """ Call API in PythonBigDL """
+    sc = get_spark_context()
+    error = Exception("Cannot find function: %s" % name)
+    for jinvoker in JavaCreator.instance(bigdl_type=bigdl_type).value:
+        # hasattr(jinvoker, name) always return true here,
+        # so you need to invoke the method to check if it exist or not
+        try:
+            api = getattr(jinvoker, name)
+            result = callJavaFunc(sc, api, *args)
+        except Exception, e:
+            error = e
+            if "does not exist" not in e.message:
+                raise e
+        else:
+            return result
+    raise error
+
+
+def _java2py(sc, r, encoding="bytes"):
+    if isinstance(r, JavaObject):
+        clsName = r.getClass().getSimpleName()
+        # convert RDD into JavaRDD
+        if clsName != 'JavaRDD' and clsName.endswith("RDD"):
+            r = r.toJavaRDD()
+            clsName = 'JavaRDD'
+
+        if clsName == 'JavaRDD':
+            jrdd = sc._jvm.SerDe.javaToPython(r)
+            return RDD(jrdd, sc)
+
+        if clsName == 'DataFrame':
+            return DataFrame(r, get_spark_sql_context(sc))
+
+        if clsName == 'Dataset':
+            return DataFrame(r, get_spark_sql_context(sc))
+
+        if clsName in _picklable_classes:
+            r = sc._jvm.org.apache.spark.bigdl.api.python.BigDLSerDe.dumps(r)
+        elif isinstance(r, (JavaArray, JavaList, JavaMap)):
+            try:
+                r = sc._jvm.org.apache.spark.bigdl.api.python.BigDLSerDe.dumps(
+                    r)
+            except Py4JJavaError:
+                pass  # not pickable
+
+    if isinstance(r, (bytearray, bytes)):
+        r = PickleSerializer().loads(bytes(r), encoding=encoding)
+    return r
+
+
+def callJavaFunc(sc, func, *args):
+    """ Call Java Function """
+    args = [_py2java(sc, a) for a in args]
+    result = func(*args)
+    return _java2py(sc, result)
+
+
+def _to_java_object_rdd(rdd):
+    """ Return a JavaRDD of Object by unpickling
+
+
+    It will convert each Python object into Java object by Pyrolite, whenever
+    the RDD is serialized in batch or not.
+    """
+    rdd = rdd._reserialize(AutoBatchedSerializer(PickleSerializer()))
+    return \
+        rdd.ctx._jvm.org.apache.spark.bigdl.api.python.BigDLSerDe.pythonToJava(
+            rdd._jrdd, True)
+
+
+def _py2java(sc, obj):
+    """ Convert Python object into Java """
+    if isinstance(obj, RDD):
+        obj = _to_java_object_rdd(obj)
+    elif isinstance(obj, DataFrame):
+        obj = obj._jdf
+    elif isinstance(obj, SparkContext):
+        obj = obj._jsc
+    elif isinstance(obj, (list, tuple)):
+        obj = ListConverter().convert([_py2java(sc, x) for x in obj],
+                                      sc._gateway._gateway_client)
+    elif isinstance(obj, dict):
+        result = {}
+        for (key, value) in obj.items():
+            result[key] = _py2java(sc, value)
+        obj = MapConverter().convert(result, sc._gateway._gateway_client)
+    elif isinstance(obj, JavaValue):
+        obj = obj.value
+    elif isinstance(obj, JavaObject):
+        pass
+    elif isinstance(obj, (int, long, float, bool, bytes, unicode)):
+        pass
+    else:
+        data = bytearray(PickleSerializer().dumps(obj))
+        obj = sc._jvm.org.apache.spark.bigdl.api.python.BigDLSerDe.loads(data)
+    return obj
+
 
 def create_tmp_path():
     tmp_file = tempfile.NamedTemporaryFile(prefix="bigdl")

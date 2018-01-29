@@ -21,33 +21,80 @@ import java.util.{ArrayList => JArrayList, HashMap => JHashMap, List => JList, M
 
 import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.nn.keras.Dense
-import com.intel.analytics.bigdl.nn.{InitializationMethod, Linear, RandomUniform}
+import com.intel.analytics.bigdl.nn.{InitializationMethod, RandomUniform}
 import com.intel.analytics.bigdl.optim.Regularizer
-import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.{Shape, Table}
+import com.intel.analytics.bigdl.utils.Shape
+
+import scala.language.existentials
+import scala.reflect.ClassTag
+
+import java.util.{ArrayList => JArrayList, HashMap => JHashMap, List => JList, Map => JMap}
+
+import com.intel.analytics.bigdl._
+import com.intel.analytics.bigdl.dataset.{Identity => DIdentity, Sample => JSample, _}
+import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, _}
+import com.intel.analytics.bigdl.numeric._
+import com.intel.analytics.bigdl.optim.{Optimizer, _}
+import com.intel.analytics.bigdl.tensor.{DenseType, SparseType, Storage, Tensor}
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.{Table, _}
+import com.intel.analytics.bigdl.visualization.{Summary, TrainSummary, ValidationSummary}
+import com.intel.analytics.bigdl.nn.Zeros
+import org.apache.spark.api.java.{JavaRDD, JavaSparkContext}
+import org.apache.spark.rdd.RDD
+import java.lang.{Integer, Boolean => JBoolean}
+import java.nio.ByteOrder
+import java.util
+
+import com.intel.analytics.bigdl.nn.Graph._
+import com.intel.analytics.bigdl.nn.tf.{Const, Fill, Shape => TfShape, SplitAndSelect}
+import com.intel.analytics.bigdl.transform.vision.image._
+import com.intel.analytics.bigdl.transform.vision.image.augmentation._
+import com.intel.analytics.bigdl.transform.vision.image.label.roi._
+import com.intel.analytics.bigdl.transform.vision.image.opencv.OpenCVMat
+import com.intel.analytics.bigdl.utils.tf.{TensorflowDataFormat, TensorflowSaver}
+import com.intel.analytics.bigdl.utils.tf.TensorflowLoader.{buildBigDLModel, buildTFGraph, parse}
+import com.intel.analytics.bigdl.utils.tf._
+import org.apache.spark.ml.{DLClassifier, DLClassifierModel, DLEstimator, DLModel}
+import org.apache.spark.sql.{DataFrame, SQLContext}
+import org.apache.log4j._
+import org.opencv.imgproc.Imgproc
 
 import scala.collection.JavaConverters._
-import scala.collection.mutable.Map
+import scala.collection.mutable.ArrayBuffer
+import scala.collection.mutable
+import scala.collection.mutable.{ArrayBuffer, Map}
 import scala.language.existentials
 import scala.reflect.ClassTag
 
 
-trait PythonBigDLKeras {
-  self: PythonBigDL[T: ClassTag] =>
+object PythonBigDLKeras {
+
+  def ofFloat(): PythonBigDLKeras[Float] = new PythonBigDLKeras[Float]()
+
+  def ofDouble(): PythonBigDLKeras[Double] = new PythonBigDLKeras[Double]()
+}
+
+class PythonBigDLKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializable  {
   def createDense(outputDim: Int,
                    init: InitializationMethod = RandomUniform,
                    activation: TensorModule[T] = null,
                    wRegularizer: Regularizer[T] = null,
                    bRegularizer: Regularizer[T] = null,
                    bias: Boolean = true,
-                   inputShape: Shape = null): Dense[T] = {
+                   inputShape: JList[Int] = null): Dense[T] = {
     Dense(outputDim,
       init,
       activation,
       wRegularizer,
       bRegularizer,
       bias,
-      inputShape)
+      if (inputShape == null) {
+        null
+      } else {
+        Shape(inputShape.asScala.toArray)
+      })
   }
 }
