@@ -45,6 +45,54 @@ class BCECriterionSpec extends FlatSpec with Matchers {
 
   }
 
+  "BCECriterion with more than two dimensions small input" should "" +
+    "return return right output and gradInput" in {
+
+    val weights = Tensor[Double](3, 2, 2).rand()
+    val criterion = new BCECriterion[Double](weights)
+    val input = Tensor[Double](4, 3, 2, 2).rand()
+    val target = Tensor[Double](4, 3, 2, 2).rand()
+
+    val weightsRef = Tensor[Double]().resizeAs(weights).copy(weights).reshape(Array(3 * 2 * 2))
+    val criterionRef = new BCECriterion[Double](weightsRef)
+    val inputRef = Tensor[Double]().resizeAs(input).copy(input).reshape(Array(4, 3 * 2 * 2))
+    val targetRef = Tensor[Double]().resizeAs(target).copy(target).reshape(Array(4, 3 * 2 * 2))
+
+    val output = criterion.forward(input, target)
+    val gradInput = criterion.backward(input, target).clone()
+
+    val outputRef = criterionRef.forward(inputRef, targetRef)
+    val gradInputRef = criterionRef.backward(inputRef, targetRef).clone()
+
+    output should be (outputRef +- 1e-7)
+    gradInput.almostEqual(gradInputRef, 1e-7) should be (true)
+
+  }
+
+  "BCECriterion with more than two dimensions large input" should "" +
+    "return return right output and gradInput" in {
+
+    val weights = Tensor[Double](3, 32, 32).rand()
+    val criterion = new BCECriterion[Double](weights)
+    val input = Tensor[Double](4, 3, 32, 32).rand()
+    val target = Tensor[Double](4, 3, 32, 32).rand()
+
+    val weightsRef = Tensor[Double]().resizeAs(weights).copy(weights).reshape(Array(3 * 32 * 32))
+    val criterionRef = new BCECriterion[Double](weightsRef)
+    val inputRef = Tensor[Double]().resizeAs(input).copy(input).reshape(Array(4, 3 * 32 * 32))
+    val targetRef = Tensor[Double]().resizeAs(target).copy(target).reshape(Array(4, 3 * 32 * 32))
+
+    val output = criterion.forward(input, target)
+    val gradInput = criterion.backward(input, target).clone()
+
+    val outputRef = criterionRef.forward(inputRef, targetRef)
+    val gradInputRef = criterionRef.backward(inputRef, targetRef).clone()
+
+    output should be (outputRef +- 1e-7)
+    gradInput.almostEqual(gradInputRef, 1e-7) should be (true)
+
+  }
+
   "Binary LR " should "converge correctly" in {
     def specifiedModel(): Module[Double] = {
       val model = new Sequential[Double]()
@@ -109,7 +157,7 @@ class BCECriterionSpec extends FlatSpec with Matchers {
           inputs.narrow(1, i, batchSize),
           targets
             .toTensor[Double]
-            .narrow(1, i, batchSize)),
+            .narrow(1, i, batchSize).addSingletonDimension(dim = 2)),
           masterWeights, config, config)
         l += loss(0)
         i += batchSize
