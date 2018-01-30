@@ -631,7 +631,7 @@ object SGD {
      * @param maxIteration iteration numbers this scheduler will run
      * @return this container
      */
-    def add(schedule: LearningRateSchedule, maxIteration: Int = Int.MaxValue):
+    def add(schedule: LearningRateSchedule, maxIteration: Int):
       this.type = {
       schedule.excludeIterations = if (schedules.isEmpty) 0 else schedules.last.maxIterations
       schedule.maxIterations = schedule.excludeIterations + maxIteration

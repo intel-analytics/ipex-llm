@@ -2893,7 +2893,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def addScheduler(seq: SequentialSchedule, scheduler: LearningRateSchedule,
-    maxIteration: Int = Int.MaxValue): SequentialSchedule = {
+    maxIteration: Int): SequentialSchedule = {
     seq.add(scheduler, maxIteration)
   }
 }
