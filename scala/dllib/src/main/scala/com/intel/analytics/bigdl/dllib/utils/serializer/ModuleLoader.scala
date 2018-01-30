@@ -28,7 +28,7 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.serializer.converters.TensorConverter
 import com.intel.analytics.bigdl.utils.serializer.converters.DataReaderWriter
 import com.intel.analytics.bigdl.utils.{File, FileReader, FileWriter, Table}
-import serialization.Bigdl._
+import com.intel.analytics.bigdl.serialization.Bigdl._
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer

@@ -23,7 +23,7 @@ import com.intel.analytics.bigdl.utils.serializer.converters.DataConverter
 import com.intel.analytics.bigdl.utils.serializer.{DeserializeContext, ModuleSerializable, SerializeContext}
 import org.tensorflow.example.{Example, Feature}
 import com.intel.analytics.bigdl.utils.tf.TFTensorNumeric.NumericByteString
-import serialization.Bigdl.{AttrValue, BigDLModule}
+import com.intel.analytics.bigdl.serialization.Bigdl.{AttrValue, BigDLModule}
 
 import scala.collection.JavaConverters._
 import scala.reflect.ClassTag
