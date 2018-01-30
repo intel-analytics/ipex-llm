@@ -37,7 +37,7 @@ class SpatialDropout3DSpec extends KerasBaseSpec {
 
   "SpatialDropout3D NHWC forward and backward" should "work properly" in {
     val seq = KSequential[Float]()
-    val layer = SpatialDropout3D[Float](0.5, "CHANNEL_LAST", inputShape = Shape(3, 4, 5, 6))
+    val layer = SpatialDropout3D[Float](0.5, "channel_last", inputShape = Shape(3, 4, 5, 6))
     seq.add(layer)
     seq.getOutputShape().toSingle().toArray should be (Array(-1, 3, 4, 5, 6))
     val input = Tensor[Float](2, 3, 4, 5, 6).rand()
