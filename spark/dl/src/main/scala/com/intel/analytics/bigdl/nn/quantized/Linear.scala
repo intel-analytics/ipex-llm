@@ -21,10 +21,11 @@ import com.intel.analytics.bigdl.nn.ErrorInfo
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor._
 import com.intel.analytics.bigdl.utils.serializer._
+import com.intel.analytics.bigdl.utils.serializer.converters.DataConverter
 import com.intel.analytics.bigdl.utils.{T, Table}
 
 import scala.reflect.ClassTag
-import serialization.Bigdl.{AttrValue, BigDLModule}
+import com.intel.analytics.bigdl.serialization.Bigdl.{AttrValue, BigDLModule}
 
 private[bigdl] class Linear[T: ClassTag](
   val inputSize: Int,

@@ -667,6 +667,13 @@ class BaseOptimizer(JavaValue):
         print("Loading input ...")
         self.value.prepareInput()
 
+    def set_end_when(self, end_when):
+        """
+        When to stop, passed in a [[Trigger]]
+        """
+        self.value.setEndWhen(end_when.value)
+        return self
+
 
 class Optimizer(BaseOptimizer):
 

@@ -53,6 +53,13 @@ class Node(JavaValue):
     def element(self):
         return Layer.of(self.value.element())
 
+    def remove_pre_edges(self):
+        callJavaFunc(get_spark_context(), self.value.removePreEdges)
+
+    def remove_next_edges(self):
+        callJavaFunc(get_spark_context(), self.value.removeNextEdges)
+
+
 
 class Layer(JavaValue):
     """
@@ -405,10 +412,8 @@ class Layer(JavaValue):
         >>> weights = linear.get_weights()
         >>> weights[0].shape == (2,3)
         True
-        >>> weights[0][0]
-        array([ 1.,  2.,  3.], dtype=float32)
-        >>> weights[1]
-        array([ 7.,  8.], dtype=float32)
+        >>> np.testing.assert_allclose(weights[0][0], np.array([1., 2., 3.]))
+        >>> np.testing.assert_allclose(weights[1], np.array([7., 8.]))
         >>> relu = ReLU()
         creating: createReLU
         >>> from py4j.protocol import Py4JJavaError
@@ -552,46 +557,26 @@ class Layer(JavaValue):
         creating: createLinear
         >>> fc.set_weights([np.ones((2, 4)), np.ones((2,))])
         >>> input = np.ones((2, 4))
-        >>> fc.forward(input)
-        array([[ 5.,  5.],
-               [ 5.,  5.]], dtype=float32)
+        >>> output = fc.forward(input)
+        >>> expected_output = np.array([[5., 5.], [5., 5.]])
+        >>> np.testing.assert_allclose(output, expected_output)
         >>> quantized_fc = fc.quantize()
-        >>> quantized_fc.forward(input)
-        array([[ 5.,  5.],
-               [ 5.,  5.]], dtype=float32)
+        >>> quantized_output = quantized_fc.forward(input)
+        >>> expected_quantized_output = np.array([[5., 5.], [5., 5.]])
+        >>> np.testing.assert_allclose(quantized_output, expected_quantized_output)
 
         >>> assert("quantized.Linear" in quantized_fc.__str__())
         >>> conv = SpatialConvolution(1, 2, 3, 3)
         creating: createSpatialConvolution
         >>> conv.set_weights([np.ones((2, 1, 3, 3)), np.zeros((2,))])
         >>> input = np.ones((2, 1, 4, 4))
-        >>> conv.forward(input)
-        array([[[[ 9.,  9.],
-                 [ 9.,  9.]],
-        <BLANKLINE>
-                [[ 9.,  9.],
-                 [ 9.,  9.]]],
-        <BLANKLINE>
-        <BLANKLINE>
-               [[[ 9.,  9.],
-                 [ 9.,  9.]],
-        <BLANKLINE>
-                [[ 9.,  9.],
-                 [ 9.,  9.]]]], dtype=float32)
+        >>> output = conv.forward(input)
+        >>> expected_output = np.array([[[[9., 9.], [9., 9.]], [[9., 9.], [9., 9.]]], [[[9., 9.], [9., 9.]], [[9., 9.], [9., 9.]]]])
+        >>> np.testing.assert_allclose(output, expected_output)
         >>> quantized_conv = conv.quantize()
-        >>> quantized_conv.forward(input)
-        array([[[[ 9.,  9.],
-                 [ 9.,  9.]],
-        <BLANKLINE>
-                [[ 9.,  9.],
-                 [ 9.,  9.]]],
-        <BLANKLINE>
-        <BLANKLINE>
-               [[[ 9.,  9.],
-                 [ 9.,  9.]],
-        <BLANKLINE>
-                [[ 9.,  9.],
-                 [ 9.,  9.]]]], dtype=float32)
+        >>> quantized_output = quantized_conv.forward(input)
+        >>> expected_quantized_output = np.array([[[[9., 9.], [9., 9.]], [[9., 9.], [9., 9.]]], [[[9., 9.], [9., 9.]], [[9., 9.], [9., 9.]]]])
+        >>> np.testing.assert_allclose(quantized_output, expected_quantized_output)
         >>> assert("quantized.SpatialConvolution" in quantized_conv.__str__())
         >>> seq = Sequential()
         creating: createSequential
@@ -600,25 +585,13 @@ class Layer(JavaValue):
         creating: createReshape
         >>> seq = seq.add(fc)
         >>> input = np.ones([1, 1, 6, 6])
-        >>> seq.forward(input)
-        array([[ 37.,  37.],
-               [ 37.,  37.],
-               [ 37.,  37.],
-               [ 37.,  37.],
-               [ 37.,  37.],
-               [ 37.,  37.],
-               [ 37.,  37.],
-               [ 37.,  37.]], dtype=float32)
+        >>> output = seq.forward(input)
+        >>> expected_output = np.array([[37., 37.], [37., 37.], [37., 37.], [37., 37.], [37., 37.], [37., 37.], [37., 37.], [37., 37.]])
+        >>> np.testing.assert_allclose(output, expected_output)
         >>> quantized_seq = seq.quantize()
-        >>> quantized_seq.forward(input)
-        array([[ 37.,  37.],
-               [ 37.,  37.],
-               [ 37.,  37.],
-               [ 37.,  37.],
-               [ 37.,  37.],
-               [ 37.,  37.],
-               [ 37.,  37.],
-               [ 37.,  37.]], dtype=float32)
+        >>> quantized_output = quantized_seq.forward(input)
+        >>> expected_quantized_output = np.array([[37., 37.], [37., 37.], [37., 37.], [37., 37.], [37., 37.], [37., 37.], [37., 37.], [37., 37.]])
+        >>> np.testing.assert_allclose(quantized_output, expected_quantized_output)
         >>> assert("quantized.Linear" in quantized_seq.__str__())
         >>> assert("quantized.SpatialConvolution" in quantized_seq.__str__())
         '''
@@ -758,6 +731,7 @@ class Model(Container):
         except ImportError:
             os.environ['KERAS_BACKEND'] = "theano"
             try:
+                # Make theano backend compatible with Python3
                 from theano import ifelse
             except ImportError:
                 raise Exception("No backend is found for Keras. "
@@ -955,9 +929,9 @@ class SparseLinear(Layer):
     >>> sparselinear = SparseLinear(1000, 5, init_weight=init_weight, init_bias=init_bias)
     creating: createSparseLinear
     >>> input = JTensor.sparse(np.array([1, 3, 5, 2, 4, 6]), np.array([0, 0, 0, 1, 1, 1, 1, 5, 300, 2, 100, 500]), np.array([2, 1000]))
-    >>> print(sparselinear.forward(input))
-    [[ 10.09569263 -10.94844246  -4.1086688    1.02527523  11.80737209]
-     [  7.9651413    9.7131443  -10.22719955   0.02345783  -3.74368906]]
+    >>> output = sparselinear.forward(input)
+    >>> expected_output = np.array([[10.09569263, -10.94844246, -4.1086688, 1.02527523, 11.80737209], [7.9651413, 9.7131443, -10.22719955, 0.02345783, -3.74368906]])
+    >>> np.testing.assert_allclose(output, expected_output, rtol=1e-6, atol=1e-6)
     '''
 
     def __init__(self, input_size, output_size, with_bias=True, backwardStart=-1, backwardLength=-1,
@@ -2959,6 +2933,31 @@ class L1Penalty(Layer):
                                         size_average,
                                         provide_output)
 
+class NegativeEntropyPenalty(Layer):
+    '''
+    Penalize the input multinomial distribution if it has low entropy.
+    The input to this layer should be a batch of vector each representing a
+    multinomial distribution. The input is typically the output of a softmax layer.
+    
+    For forward, the output is the same as input and a NegativeEntropy loss of
+    the latent state will be calculated each time. For backward,
+    gradInput = gradOutput + gradLoss
+
+    This can be used in reinforcement learning to discourage the policy from
+    collapsing to a single action for a given state, which improves exploration.
+    See the A3C paper for more detail (https://arxiv.org/pdf/1602.01783.pdf).
+    
+    >>> ne = NegativeEntropyPenalty(0.01)
+    creating: createNegativeEntropyPenalty
+    
+    :param beta penalty coefficient
+    '''
+
+    def __init__(self, beta=0.01, bigdl_type="float"):
+        super(NegativeEntropyPenalty, self).__init__(None,
+                                                     bigdl_type,
+                                                     beta)
+
 
 class LeakyReLU(Layer):
 
@@ -3077,10 +3076,9 @@ class LookupTableSparse(Layer):
     >>> layer1 = LookupTableSparse(10, 4, "mean")
     creating: createLookupTableSparse
     >>> layer1.set_weights(np.arange(1, 41, 1).reshape(10, 4)) # set weight to 1 to 40
-    >>> layer1.forward([input, weight])
-    array([[ 6.5999999 ,  7.60000038,  8.60000038,  9.60000038],
-           [ 1.        ,  2.        ,  3.        ,  4.        ],
-           [ 5.        ,  6.        ,  7.        ,  8.        ]], dtype=float32)
+    >>> output = layer1.forward([input, weight])
+    >>> expected_output = np.array([[6.5999999 , 7.60000038, 8.60000038, 9.60000038],[ 1., 2., 3., 4.], [5., 6., 7., 8.]])
+    >>> np.testing.assert_allclose(output, expected_output, rtol=1e-6, atol=1e-6)
     '''
 
     def __init__(self,
@@ -5077,17 +5075,19 @@ class MultiRNNCell(Layer):
 class ResizeBilinear(Layer):
     """
     Resize the input image with bilinear interpolation. The input image must be a float tensor with
-    NHWC layout
+    NHWC or NCHW layout
 
     :param output_height: output height
     :param output_width: output width
     :param align_corner: align corner or not
+    :param data_format: the data format of the input image, NHWC or NCHW
 
-    >>> resizeBilinear = ResizeBilinear(10, 20, False)
+    >>> resizeBilinear = ResizeBilinear(10, 20, False, "NCHW")
     creating: createResizeBilinear
     """
-    def __init__(self, output_height, output_width, align_corner, bigdl_type="float"):
-        super(ResizeBilinear, self).__init__(None, bigdl_type, output_height, output_width, align_corner)
+    def __init__(self, output_height, output_width, align_corner=False, data_format="NCHW", bigdl_type="float"):
+        super(ResizeBilinear, self).__init__(None, bigdl_type, output_height,
+                                             output_width, align_corner, data_format)
 
 class GaussianSampler(Layer):
     """

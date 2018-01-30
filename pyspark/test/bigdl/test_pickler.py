@@ -35,7 +35,7 @@ class TestPickler():
         """ setup any state tied to the execution of the given method in a
         class.  setup_method is invoked for every test method of a class.
         """
-        JavaCreator.set_creator_class("com.intel.analytics.bigdl.python.api.PythonBigDLValidator")
+        JavaCreator.add_creator_class("com.intel.analytics.bigdl.python.api.PythonBigDLValidator")
         sparkConf = create_spark_conf().setMaster("local[4]").setAppName("test model")
         self.sc = get_spark_context(sparkConf)
         init_engine()

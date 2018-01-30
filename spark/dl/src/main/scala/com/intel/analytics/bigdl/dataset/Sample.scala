@@ -371,7 +371,8 @@ object Sample {
   def apply[T: ClassTag](
         featureTensors: Array[Tensor[T]],
         labelTensors: Array[Tensor[T]])(implicit ev: TensorNumeric[T]) : Sample[T] = {
-    if (featureTensors.exists(_.getTensorType == SparseType)) {
+    if (featureTensors.exists(_.getTensorType == SparseType) ||
+        labelTensors.exists(_.getTensorType == SparseType)) {
       TensorSample(featureTensors, labelTensors)
     } else {
       ArraySample(featureTensors, labelTensors)
@@ -408,7 +409,7 @@ private[bigdl] class TensorSample[T: ClassTag](
       val features: Array[Tensor[T]],
       val labels: Array[Tensor[T]]) extends Sample[T] {
   val featureSize = features.map(_.size())
-  val labelSize = features.map(_.size())
+  val labelSize = labels.map(_.size())
 
   def featureLength(index: Int): Int = {
     features(0).size(1)

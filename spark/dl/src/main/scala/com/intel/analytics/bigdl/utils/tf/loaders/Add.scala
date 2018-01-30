@@ -21,14 +21,23 @@ import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.nn.CAddTable
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.tf.Context
-import org.tensorflow.framework.NodeDef
+import com.intel.analytics.bigdl.utils.tf.loaders.Utils.getType
+import org.tensorflow.framework.{DataType, NodeDef}
 
 import scala.reflect.ClassTag
 
 class Add extends TensorflowOpsLoader {
   override def build[T: ClassTag](nodeDef: NodeDef, byteOrder: ByteOrder
     , context: Context[T])(implicit ev: TensorNumeric[T]): Module[T] = {
-    CAddTable[T]()
+
+    val t = getType(nodeDef.getAttrMap, "T")
+    if (t == DataType.DT_FLOAT) {
+      new CAddTable[T, Float]()
+    } else if (t == DataType.DT_INT32) {
+      new CAddTable[T, Int]()
+    } else {
+      throw new UnsupportedOperationException(s"Not support numeric type $t")
+    }
   }
 }
 

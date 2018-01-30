@@ -259,6 +259,7 @@ class TestSimple():
                                         app_name="run1")
         optimizer.set_train_summary(train_summary)
         optimizer.set_val_summary(val_summary)
+        optimizer.set_end_when(MaxEpoch(epoch_num * 2))
 
         trained_model = optimizer.optimize()
         lr_result = train_summary.read_scalar("LearningRate")
@@ -599,7 +600,6 @@ class TestSimple():
         result4 = model.predict_class([JTensor.from_ndarray(np.ones([4, 3])),
                                        JTensor.from_ndarray(np.ones([4, 3]))])
         assert result4.shape == (4,)
-
 
 if __name__ == "__main__":
     pytest.main([__file__])

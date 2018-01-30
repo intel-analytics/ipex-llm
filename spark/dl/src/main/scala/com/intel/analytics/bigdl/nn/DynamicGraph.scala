@@ -17,7 +17,7 @@ package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
-import com.intel.analytics.bigdl.nn.ops.ControlOps
+import com.intel.analytics.bigdl.nn.ops.{ControlOps, ResourceAllocator, TensorArray}
 import com.intel.analytics.bigdl.nn.tf.{ControlDependency, WithoutInput}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -52,6 +52,9 @@ class DynamicGraph[T: ClassTag](
       node.element.forward(nodeInput)
       forwardScheduler.schedule(node)
     }
+
+    modules.filter(_.isInstanceOf[ResourceAllocator])
+      .foreach(_.asInstanceOf[ResourceAllocator].release())
 
     output = dummyOutput.element.output
     output
@@ -104,6 +107,15 @@ class DynamicGraph[T: ClassTag](
         gradOutputCache(curNode.element.getName()))
       i += 1
     }
+  }
+
+  override def populateModules(): Unit = {
+    modules.appendAll(
+      forwardGraph.DFS.toArray
+        // todo: convert control dep node to edge
+        .filterNot(_.element.isInstanceOf[ControlDependency[T]])
+        .filter(n => !n.eq(dummyOutput)).map(_.element)
+    )
   }
 
   private def backwardExecution(input: Activity, gradOutput: Activity, isBackward: Boolean)

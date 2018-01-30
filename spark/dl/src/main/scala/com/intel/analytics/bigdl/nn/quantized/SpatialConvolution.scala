@@ -22,12 +22,13 @@ import com.intel.analytics.bigdl.nn.ErrorInfo
 import com.intel.analytics.bigdl.nn.abstractnn.{DataFormat, Initializable}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor._
-import com.intel.analytics.bigdl.utils.serializer.{DataConverter, DeserializeContext, ModuleData, SerializeContext}
+import com.intel.analytics.bigdl.utils.serializer.converters.DataConverter
+import com.intel.analytics.bigdl.utils.serializer.{DeserializeContext, ModuleData, SerializeContext}
 import com.intel.analytics.bigdl.utils.{T, Table}
 
 import scala.reflect.runtime.universe
 import scala.reflect.ClassTag
-import serialization.Bigdl.{AttrValue, BigDLModule}
+import com.intel.analytics.bigdl.serialization.Bigdl.{AttrValue, BigDLModule}
 
 @SerialVersionUID(- 8008252944905538960L)
 private[bigdl] class SpatialConvolution[T: ClassTag](

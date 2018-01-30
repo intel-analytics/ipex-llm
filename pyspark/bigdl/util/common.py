@@ -29,7 +29,7 @@ from pyspark import SparkConf
 import numpy as np
 import threading
 import tempfile
-from bigdl.util.engine import prepare_env, get_bigdl_classpath, is_spark_below_2_2
+from bigdl.util.engine import get_bigdl_classpath, is_spark_below_2_2
 
 INTMAX = 2147483647
 INTMIN = -2147483648
@@ -38,6 +38,7 @@ DOUBLEMAX = 1.7976931348623157E308
 if sys.version >= '3':
     long = int
     unicode = str
+
 
 class SingletonMixin(object):
     _lock = threading.RLock()
@@ -52,8 +53,16 @@ class SingletonMixin(object):
                     cls._instance = cls(bigdl_type)
         return cls._instance
 
+
 class JavaCreator(SingletonMixin):
-    __creator_class="com.intel.analytics.bigdl.python.api.PythonBigDL"
+    __creator_class=["com.intel.analytics.bigdl.python.api.PythonBigDL",
+                    "com.intel.analytics.bigdl.python.api.PythonBigDLKeras"]
+
+    @classmethod
+    def add_creator_class(cls, jinvoker):
+        with JavaCreator._lock:
+            JavaCreator.__creator_class.append(jinvoker)
+            JavaCreator._instance = None
 
     @classmethod
     def get_creator_class(cls):
@@ -68,13 +77,15 @@ class JavaCreator(SingletonMixin):
 
     def __init__(self, bigdl_type):
         sc = get_spark_context()
-        jclass = getattr(sc._jvm, JavaCreator.get_creator_class())
-        if bigdl_type == "float":
-            self.value = getattr(jclass, "ofFloat")()
-        elif bigdl_type == "double":
-            self.value = getattr(jclass, "ofDouble")()
-        else:
-            raise Exception("Not supported bigdl_type: %s" % bigdl_type)
+        self.value = []
+        for creator_class in JavaCreator.get_creator_class():
+            jclass = getattr(sc._jvm, creator_class)
+            if bigdl_type == "float":
+                self.value.append(getattr(jclass, "ofFloat")())
+            elif bigdl_type == "double":
+                self.value.append(getattr(jclass, "ofDouble")())
+            else:
+                raise Exception("Not supported bigdl_type: %s" % bigdl_type)
 
 
 class JavaValue(object):
@@ -114,9 +125,41 @@ class EvaluatedResult():
         return "Evaluated result: %s, total_num: %s, method: %s" % (
             self.result, self.total_num, self.method)
 
+
 def get_dtype(bigdl_type):
     # Always return float32 for now
     return "float32"
+
+
+class Configuration(object):
+    __bigdl_jars = [get_bigdl_classpath()]
+
+    @staticmethod
+    def add_extra_jars(jars):
+        """
+        Add extra jars to classpath
+        :param jars: a string or a list of strings as jar paths
+        """
+        import six
+        if isinstance(jars, six.string_types):
+            jars = [jars]
+        Configuration.__bigdl_jars += jars
+
+    @staticmethod
+    def add_extra_python_modules(packages):
+        """
+        Add extra python modules to sys.path
+        :param packages: a string or a list of strings as python package paths
+        """
+        import six
+        if isinstance(packages, six.string_types):
+            packages = [packages]
+        for package in packages:
+            sys.path.insert(0, package)
+
+    @staticmethod
+    def get_bigdl_jars():
+        return Configuration.__bigdl_jars
 
 
 class JActivity(object):
@@ -170,12 +213,10 @@ class JTensor(object):
         >>> np.random.seed(123)
         >>> data = np.random.uniform(0, 1, (2, 3)).astype("float32")
         >>> result = JTensor.from_ndarray(data)
-        >>> print(result)
-        JTensor: storage: [[ 0.69646919  0.28613934  0.22685145]
-         [ 0.55131477  0.71946895  0.42310646]], shape: [2 3], float
-        >>> result
-        JTensor: storage: [[ 0.69646919  0.28613934  0.22685145]
-         [ 0.55131477  0.71946895  0.42310646]], shape: [2 3], float
+        >>> expected_storage = np.array([[0.69646919, 0.28613934, 0.22685145], [0.55131477, 0.71946895, 0.42310646]])
+        >>> expected_shape = np.array([2, 3])
+        >>> np.testing.assert_allclose(result.storage, expected_storage, rtol=1e-6, atol=1e-6)
+        >>> np.testing.assert_allclose(result.shape, expected_shape)
         >>> data_back = result.to_ndarray()
         >>> (data == data_back).all()
         True
@@ -220,8 +261,12 @@ class JTensor(object):
         >>> indices = np.arange(1, 7)
         >>> shape = np.array([10])
         >>> result = JTensor.sparse(data, indices, shape)
-        >>> result
-        JTensor: storage: [ 1.  2.  3.  4.  5.  6.], shape: [10] ,indices [1 2 3 4 5 6], float
+        >>> expected_storage = np.array([1., 2., 3., 4., 5., 6.])
+        >>> expected_shape = np.array([10])
+        >>> expected_indices = np.array([1, 2, 3, 4, 5, 6])
+        >>> np.testing.assert_allclose(result.storage, expected_storage)
+        >>> np.testing.assert_allclose(result.shape, expected_shape)
+        >>> np.testing.assert_allclose(result.indices, expected_indices)
         >>> tensor1 = callBigDlFunc("float", "testTensor", result)  # noqa
         >>> array_from_tensor = tensor1.to_ndarray()
         >>> expected_ndarray = np.array([0, 1, 2, 3, 4, 5, 6, 0, 0, 0])
@@ -294,10 +339,14 @@ class Sample(object):
         >>> sample_back = callBigDlFunc("float", "testSample", sample)
         >>> assert_allclose(sample.features[0].to_ndarray(), sample_back.features[0].to_ndarray())
         >>> assert_allclose(sample.label.to_ndarray(), sample_back.label.to_ndarray())
-        >>> print(sample)
-        Sample: features: [JTensor: storage: [[ 0.69646919  0.28613934  0.22685145]
-         [ 0.55131477  0.71946895  0.42310646]], shape: [2 3], float], labels: [JTensor: storage: [[ 0.98076421  0.68482971  0.48093191]
-         [ 0.39211753  0.343178    0.72904968]], shape: [2 3], float],
+        >>> expected_feature_storage = np.array(([[0.69646919, 0.28613934, 0.22685145], [0.55131477, 0.71946895, 0.42310646]]))
+        >>> expected_feature_shape = np.array([2, 3])
+        >>> expected_label_storage = np.array(([[0.98076421, 0.68482971, 0.48093191], [0.39211753, 0.343178, 0.72904968]]))
+        >>> expected_label_shape = np.array([2, 3])
+        >>> assert_allclose(sample.features[0].storage, expected_feature_storage, rtol=1e-6, atol=1e-6)
+        >>> assert_allclose(sample.features[0].shape, expected_feature_shape)
+        >>> assert_allclose(sample.labels[0].storage, expected_label_storage, rtol=1e-6, atol=1e-6)
+        >>> assert_allclose(sample.labels[0].shape, expected_label_shape)
         """
         if isinstance(features, np.ndarray):
             features = [features]
@@ -398,6 +447,7 @@ def redire_spark_logs(bigdl_type="float", log_path=os.getcwd()+"/bigdl.log"):
     """
     callBigDlFunc(bigdl_type, "redirectSparkLogs", log_path)
 
+
 def show_bigdl_info_logs(bigdl_type="float"):
     """
     Set BigDL log level to INFO.
@@ -461,7 +511,8 @@ def create_spark_conf():
     sparkConf = SparkConf()
     sparkConf.setAll(bigdl_conf.items())
     if not is_spark_below_2_2():
-        extend_spark_driver_cp(sparkConf, get_bigdl_classpath())
+        for jar in Configuration.get_bigdl_jars():
+            extend_spark_driver_cp(sparkConf, jar)
 
     # add content in PYSPARK_FILES in spark.submit.pyFiles
     # This is a workaround for current Spark on k8s
@@ -476,7 +527,7 @@ def create_spark_conf():
     return sparkConf
 
 
-def get_spark_context(conf = None):
+def get_spark_context(conf=None):
     """
     Get the current active spark context and create one if no active instance
     :param conf: combining bigdl configs into spark conf
@@ -508,10 +559,22 @@ def get_spark_sql_context(sc):
 
 def callBigDlFunc(bigdl_type, name, *args):
     """ Call API in PythonBigDL """
-    jinstance = JavaCreator.instance(bigdl_type=bigdl_type).value
     sc = get_spark_context()
-    api = getattr(jinstance, name)
-    return callJavaFunc(sc, api, *args)
+    error = Exception("Cannot find function: %s" % name)
+    for jinvoker in JavaCreator.instance(bigdl_type=bigdl_type).value:
+        # hasattr(jinvoker, name) always return true here,
+        # so you need to invoke the method to check if it exist or not
+        try:
+            api = getattr(jinvoker, name)
+            result = callJavaFunc(sc, api, *args)
+        except Exception as e:
+            error = e
+            if "does not exist" not in e.message:
+                raise e
+        else:
+            return result
+    raise error
+
 
 def _java2py(sc, r, encoding="bytes"):
     if isinstance(r, JavaObject):
@@ -578,7 +641,6 @@ def _py2java(sc, obj):
                                       sc._gateway._gateway_client)
     elif isinstance(obj, dict):
         result = {}
-        print(obj.keys())
         for (key, value) in obj.items():
             result[key] = _py2java(sc, value)
         obj = MapConverter().convert(result, sc._gateway._gateway_client)
@@ -646,6 +708,7 @@ def get_activation_by_name(activation_name, activation_id=None):
     if not activation_id:
         activation.set_name(activation_id)
     return activation
+
 
 def _test():
     import doctest

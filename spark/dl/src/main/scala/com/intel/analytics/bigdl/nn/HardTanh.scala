@@ -34,23 +34,20 @@ import scala.reflect.ClassTag
  * @param inplace inplace model.
  */
 @SerialVersionUID(- 8953866090802444183L)
-class HardTanh[T: ClassTag, D: ClassTag](
+class HardTanh[T: ClassTag](
   val minValue: Double = -1,
   val maxValue: Double = 1,
   val inplace: Boolean = false
-)(implicit ev: TensorNumeric[T], ev2: TensorNumeric[D])
-  extends AbstractModule[Tensor[D], Tensor[D], T] {
+)(implicit ev: TensorNumeric[T])
+  extends TensorModule[T] {
   require(maxValue > minValue, "maxValue must be larger than minValue, " +
     s"maxValue ${maxValue}, " +
     s"minValue ${minValue}")
 
-  output = Tensor[D]()
-  gradInput = Tensor[D]()
+  val min = ev.fromType[Double](minValue)
+  val max = ev.fromType[Double](maxValue)
 
-  val min = ev2.fromType[Double](minValue)
-  val max = ev2.fromType[Double](maxValue)
-
-  override def updateOutput(input: Tensor[D]): Tensor[D] = {
+  override def updateOutput(input: Tensor[T]): Tensor[T] = {
     if (inplace) {
       output.set(input)
     }
@@ -60,29 +57,29 @@ class HardTanh[T: ClassTag, D: ClassTag](
 
     if (input.dim() == 1 || !input.isContiguous() || !output.isContiguous()) {
       if (inplace) {
-        val func = new TensorFunc2[D] {
-          override def apply(data: Array[D], index: Int): Unit = {
-            if (ev2.isGreater(min, data(index))) {
-              data(index) = ev2.fromType[Double](minValue)
-            } else if (ev2.isGreater(data(index), max)) {
-              data(index) = ev2.fromType[Double](maxValue)
+        val func = new TensorFunc2[T] {
+          override def apply(data: Array[T], index: Int): Unit = {
+            if (ev.isGreater(min, data(index))) {
+              data(index) = ev.fromType[Double](minValue)
+            } else if (ev.isGreater(data(index), max)) {
+              data(index) = ev.fromType[Double](maxValue)
             }
           }
         }
-        DenseTensorApply.apply1[D](input, func)
+        DenseTensorApply.apply1[T](input, func)
       } else {
-        val func2 = new TensorFunc4[D] {
-          override def apply(data1: Array[D], index1: Int, data2: Array[D], index2: Int): Unit = {
-            if (ev2.isGreater(min, data2(index2))) {
+        val func2 = new TensorFunc4[T] {
+          override def apply(data1: Array[T], index1: Int, data2: Array[T], index2: Int): Unit = {
+            if (ev.isGreater(min, data2(index2))) {
               data1(index1) = min
-            } else if (ev2.isGreaterEq(max, data2(index2))) {
+            } else if (ev.isGreaterEq(max, data2(index2))) {
               data1(index1) = data2(index2)
             } else {
               data1(index1) = max
             }
           }
         }
-        DenseTensorApply.apply2[D](output, input, func2)
+        DenseTensorApply.apply2[T](output, input, func2)
       }
     } else {
       val inputData = input.storage().array()
@@ -93,18 +90,18 @@ class HardTanh[T: ClassTag, D: ClassTag](
       var i = 0
       if (inplace) {
         while (i < input.nElement()) {
-          if (ev2.isGreater(min, inputData(i + inputOffset))) {
+          if (ev.isGreater(min, inputData(i + inputOffset))) {
             inputData.update(i + inputOffset, min)
-          } else if (ev2.isGreater(inputData(i + inputOffset), max)) {
+          } else if (ev.isGreater(inputData(i + inputOffset), max)) {
             inputData.update(i + inputOffset, max)
           }
           i += 1
         }
       } else {
         while (i < input.nElement()) {
-          if (ev2.isGreater(min, inputData(i + inputOffset))) {
+          if (ev.isGreater(min, inputData(i + inputOffset))) {
             outputData.update(i + outputOffset, min)
-          } else if (ev2.isGreaterEq(max, inputData(i + inputOffset))) {
+          } else if (ev.isGreaterEq(max, inputData(i + inputOffset))) {
             outputData.update(i + outputOffset, inputData(i + inputOffset))
           } else {
             outputData.update(i + outputOffset, max)
@@ -119,7 +116,7 @@ class HardTanh[T: ClassTag, D: ClassTag](
 
 
 
-  override def updateGradInput(input: Tensor[D], gradOutput: Tensor[D]): Tensor[D] = {
+  override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
     require(input.nElement() == gradOutput.nElement(),
       s"the number of input element (${input.nElement()}) " +
         s"should equal the number of " +
@@ -133,26 +130,26 @@ class HardTanh[T: ClassTag, D: ClassTag](
     if (input.dim() == 1 || !input.isContiguous() || !gradOutput.isContiguous()
       || !gradInput.isContiguous()) {
       if (inplace) {
-        val func = new TensorFunc4[D] {
-          override def apply(data1: Array[D], index1: Int, data2: Array[D], index2: Int): Unit = {
-            if (ev2.isGreaterEq(min, data2(index2)) || ev2.isGreaterEq(data2(index2), max)) {
-              data1(index1) = ev2.fromType[Double](0)
+        val func = new TensorFunc4[T] {
+          override def apply(data1: Array[T], index1: Int, data2: Array[T], index2: Int): Unit = {
+            if (ev.isGreaterEq(min, data2(index2)) || ev.isGreaterEq(data2(index2), max)) {
+              data1(index1) = ev.fromType[Double](0)
             }
           }
         }
-        DenseTensorApply.apply2[D](gradOutput, input, func)
+        DenseTensorApply.apply2[T](gradOutput, input, func)
       } else {
-        val func = new TensorFunc6[D] {
-          override def apply(data1: Array[D], offset1: Int, data2: Array[D],
-            offset2: Int, data3: Array[D], offset3: Int): Unit = {
-            if (ev2.isGreaterEq(min, data3(offset3)) || ev2.isGreaterEq(data3(offset3), max)) {
-              data1(offset1) = ev2.fromType[Double](0)
+        val func = new TensorFunc6[T] {
+          override def apply(data1: Array[T], offset1: Int, data2: Array[T],
+            offset2: Int, data3: Array[T], offset3: Int): Unit = {
+            if (ev.isGreaterEq(min, data3(offset3)) || ev.isGreaterEq(data3(offset3), max)) {
+              data1(offset1) = ev.fromType[Double](0)
             } else {
               data1(offset1) = data2(offset2)
             }
           }
         }
-        DenseTensorApply.apply3[D](gradInput, gradOutput, input, func)
+        DenseTensorApply.apply3[T](gradInput, gradOutput, input, func)
       }
     } else {
       val inputData = input.storage().array()
@@ -165,17 +162,17 @@ class HardTanh[T: ClassTag, D: ClassTag](
       var i = 0
       if (inplace) {
         while (i < input.nElement()) {
-          if (ev2.isGreaterEq(min, inputData(i + inputOffset))
-            || ev2.isGreaterEq(inputData(i + inputOffset), max)) {
-            gradInputData.update(i + gradInputOffset, ev2.fromType[Double](0))
+          if (ev.isGreaterEq(min, inputData(i + inputOffset))
+            || ev.isGreaterEq(inputData(i + inputOffset), max)) {
+            gradInputData.update(i + gradInputOffset, ev.fromType[Double](0))
           }
           i += 1
         }
       } else {
         while (i < input.nElement()) {
-          if (ev2.isGreaterEq(min, inputData(i + inputOffset))
-            || ev2.isGreaterEq(inputData(i + inputOffset), max)) {
-            gradInputData.update(i + gradInputOffset, ev2.fromType[Double](0))
+          if (ev.isGreaterEq(min, inputData(i + inputOffset))
+            || ev.isGreaterEq(inputData(i + inputOffset), max)) {
+            gradInputData.update(i + gradInputOffset, ev.fromType[Double](0))
           } else {
             gradInputData.update(i + gradInputOffset, gradOutputData(i + gradOutputOffset))
           }
@@ -197,19 +194,14 @@ class HardTanh[T: ClassTag, D: ClassTag](
     }
     this
   }
-
-  override def getClassTagNumerics() : (Array[ClassTag[_]], Array[TensorNumeric[_]]) = {
-    (Array[ClassTag[_]](scala.reflect.classTag[T], scala.reflect.classTag[D]),
-      Array[TensorNumeric[_]](ev, ev2))
-  }
 }
 
 object HardTanh {
-  def apply[@specialized(Float, Double) T: ClassTag, D: ClassTag](
+  def apply[@specialized(Float, Double) T: ClassTag](
       minValue: Double = -1,
       maxValue: Double = 1,
       inplace: Boolean = false)
-      (implicit ev: TensorNumeric[T], ev2: TensorNumeric[D]): HardTanh[T, D] = {
-    new HardTanh[T, D](minValue, maxValue, inplace)
+      (implicit ev: TensorNumeric[T]): HardTanh[T] = {
+    new HardTanh[T](minValue, maxValue, inplace)
   }
 }
