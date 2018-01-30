@@ -34,7 +34,7 @@ class SpatialDropout3D[T: ClassTag](val p: Double = 0.5,
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
 
-    val dimOrdering = if (format.toLowerCase() == "channel_last") DataFormat.NCHW else DataFormat.NHWC
+    val dimOrdering = if (format.toLowerCase() == "channel_first") DataFormat.NCHW else DataFormat.NHWC
 
     val layer = com.intel.analytics.bigdl.nn.SpatialDropout3D(
       initP = p,
