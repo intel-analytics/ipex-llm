@@ -215,9 +215,9 @@ object SGD {
     var currentRate : Double = 0.0
 
     // iteration numbers needed to be excluded for a new learningRateSchedule
-    var excludeIterations : Int = 0
+    private[SGD] var excludeIterations : Int = 0
     // epoch numbers needed to be excluded for a new learningRateSchedule
-    var excludeEpochs: Int = 0
+    private[SGD] var excludeEpochs: Int = 0
     // accumulated iteration numbers of a new learningRateSchedule
     var maxIterations: Int = 0
   }

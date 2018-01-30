@@ -336,7 +336,10 @@ class SequentialSchedule(JavaValue):
     :param iterationPerEpoch: iteration numbers per epoch
 
     >>> sequentialSchedule = SequentialSchedule(5)
-    creating: SequentialSchedule
+    creating: createSequentialSchedule
+    >>> poly = Poly(0.5, 2)
+    creating: createPoly
+    >>> sequentialSchedule.add(poly)
     """
     def __init__(self, iteration_per_epoch, bigdl_type="float"):
         JavaValue.__init__(self, None, bigdl_type, iteration_per_epoch)
@@ -390,9 +393,6 @@ class SGD(OptimMethod):
     :param nesterov enables Nesterov momentum
     :param learningrates 1D tensor of individual learning rates
     :param weightdecays 1D tensor of individual weight decays
-    :param warmup_iteration iteration numbers to take for learning rate reach to max learning rate
-    :param warmup_epoch epoch numbers to take for learning rate reach to max learning rate
-    :param max_learningRate max learning rate
     >>> sgd = SGD()
     creating: createDefault
     creating: createSGD
