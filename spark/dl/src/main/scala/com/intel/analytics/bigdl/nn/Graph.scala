@@ -590,13 +590,24 @@ object Graph extends ContainerSerializable {
     }
 
     val generateBackwardValue = attributes.get("generateBackward")
-    if (generateBackwardValue != null) {
+    val graph = if (generateBackwardValue != null) {
       val generateBackward = DataConverter.getAttributeValue(context, generateBackwardValue)
         .asInstanceOf[Boolean]
       Graph.dynamic[T](inputs.toArray, outputs.toArray, sharedVariables, generateBackward)
     } else {
       Graph[T](inputs.toArray, outputs.toArray, sharedVariables)
     }
+    // this is to keep backward compatible
+    val stopGradientLayers = attributes.getOrDefault("stopGradientLayers", null)
+    var serializedStopGradientLayers : Array[String] = null
+    if (stopGradientLayers != null) {
+      serializedStopGradientLayers = DataConverter.
+        getAttributeValue(context, stopGradientLayers).asInstanceOf[Array[String]]
+    }
+    if (serializedStopGradientLayers != null) {
+      graph.stopGradient(serializedStopGradientLayers)
+    }
+    graph
   }
 
   private def createControlNode[T: ClassTag](controlOps : ControlOps[T]) : ModuleNode[T] = {
@@ -675,6 +686,16 @@ object Graph extends ContainerSerializable {
       DataConverter.setAttributeValue(context, generateBackwardBuilder,
         graph.asInstanceOf[DynamicGraph[_]].generateBackward, universe.typeOf[Boolean])
       graphBuilder.putAttr("generateBackward", generateBackwardBuilder.build)
+    }
+
+    val stopGradientLayers = graph.stopGradientLayers
+
+    if (stopGradientLayers != null && stopGradientLayers.size > 0) {
+      val stopGradientLayersBuilder = AttrValue.newBuilder
+      DataConverter.setAttributeValue(context, stopGradientLayersBuilder,
+        stopGradientLayers.toArray(new Array[String](stopGradientLayers.size)),
+        universe.typeOf[Array[String]])
+      graphBuilder.putAttr("stopGradientLayers", stopGradientLayersBuilder.build)
     }
   }
 }
