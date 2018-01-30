@@ -597,10 +597,10 @@ object Graph extends ContainerSerializable {
     } else {
       Graph[T](inputs.toArray, outputs.toArray, sharedVariables)
     }
-    // this is to keep backward compatible
-    val stopGradientLayers = attributes.getOrDefault("stopGradientLayers", null)
     var serializedStopGradientLayers : Array[String] = null
-    if (stopGradientLayers != null) {
+    // this is to keep backward compatible
+    if (attributes.containsKey("stopGradientLayers")) {
+      val stopGradientLayers = attributes.get("stopGradientLayers")
       serializedStopGradientLayers = DataConverter.
         getAttributeValue(context, stopGradientLayers).asInstanceOf[Array[String]]
     }
