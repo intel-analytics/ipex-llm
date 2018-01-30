@@ -42,7 +42,7 @@ class DenseSpec extends KerasBaseSpec{
       kerasCode, weightConverter)
   }
 
-  "Dense for multiple dims" should "be test" in {
+  "Dense for multiple   dims" should "be test" in {
     val kerasCode =
       """
         |input_tensor = Input(shape=[10, 5, 7])
