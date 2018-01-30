@@ -60,7 +60,9 @@ class JavaCreator(SingletonMixin):
 
     @classmethod
     def add_creator_class(cls, jinvoker):
-        JavaCreator.__creator_class.append(jinvoker)
+        with JavaCreator._lock:
+            JavaCreator.__creator_class.append(jinvoker)
+            JavaCreator._instance = None
 
     @classmethod
     def get_creator_class(cls):

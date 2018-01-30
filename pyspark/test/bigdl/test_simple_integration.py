@@ -141,10 +141,6 @@ class TestSimple():
         assert_allclose(output,
                         np.array([2.2, 2.2]))
 
-    def test_dense(self):
-        from bigdl.nn.keras.layer import Dense
-        d = Dense(10)
-
     def test_graph_backward(self):
         fc1 = Linear(4, 2)()
         fc2 = Linear(4, 2)()
