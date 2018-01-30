@@ -339,7 +339,10 @@ class SequentialSchedule(JavaValue):
     creating: createSequentialSchedule
     >>> poly = Poly(0.5, 2)
     creating: createPoly
-    >>> sequentialSchedule.add(poly, 5)
+    >>> test = sequentialSchedule.add(poly, 5)
+    
+
+
     """
     def __init__(self, iteration_per_epoch, bigdl_type="float"):
         JavaValue.__init__(self, None, bigdl_type, iteration_per_epoch)
