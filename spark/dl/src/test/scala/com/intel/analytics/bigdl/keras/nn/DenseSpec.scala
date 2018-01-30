@@ -41,4 +41,20 @@ class DenseSpec extends KerasBaseSpec{
     checkOutputAndGrad(seq.asInstanceOf[AbstractModule[Tensor[Float], Tensor[Float], Float]],
       kerasCode, weightConverter)
   }
+
+  "Dense for multiple dims" should "be test" in {
+    val kerasCode =
+      """
+        |input_tensor = Input(shape=[10, 5, 7])
+        |input = np.random.uniform(0, 1, [2, 10, 5, 7])
+        |output_tensor = Dense(2, init='one', activation="relu", input_shape=(10, 5, 7))(input_tensor)
+        |model = Model(input=input_tensor, output=output_tensor)
+      """.stripMargin
+    val seq = KSequential[Float]()
+    val dense = Dense[Float](2, activation = ReLU(), inputShape = Shape(10, 5, 7))
+    seq.add(dense)
+    def weightConverter(in: Array[Tensor[Float]]): Array[Tensor[Float]] = Array(in(0).t(), in(1))
+    checkOutputAndGrad(seq.asInstanceOf[AbstractModule[Tensor[Float], Tensor[Float], Float]],
+      kerasCode, weightConverter, precision = 1e-4)
+  }
 }

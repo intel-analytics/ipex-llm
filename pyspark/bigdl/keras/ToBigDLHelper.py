@@ -14,20 +14,10 @@
 # limitations under the License.
 #
 
-import bigdl.nn.initialization_method as BInit
-import numpy as np
-import bigdl.nn.layer as BLayer
-from bigdl.optim.optimizer import L1L2Regularizer as BRegularizer
-import bigdl.optim.optimizer as boptimizer
-import bigdl.nn.criterion as bcriterion
-import bigdl.util.common as BCommon
-from bigdl.util.common import get_activation_by_name
-import keras.optimizers as koptimizers
-from keras.models import model_from_json
-from keras.models import Sequential, Model, Layer
-import keras
-import warnings
 from math import ceil
+
+import bigdl.nn.initialization_method as BInit
+from bigdl.optim.optimizer import L1L2Regularizer as BRegularizer
 
 
 def to_bigdl_2d_ordering(order):
@@ -55,6 +45,10 @@ def to_bigdl_3d_padding(border_mode):
         raise Exception("Unsupported border mode: %s" % border_mode)
 
 
+def __calculate_2d_same_padding(x, kx, dx, dilation_x):
+    return int(ceil((x * (dx - 1) + dilation_x * (kx - 1) - dx + 1) / 2))
+
+
 def to_bigdl_2d_padding(border_mode, *args):
     if border_mode == "same":
         if len(args) == 0:  # if -1 for same padding is supported
@@ -62,12 +56,12 @@ def to_bigdl_2d_padding(border_mode, *args):
         # calculate padding by given parameters
         elif len(args) == 4:  # used by 1d layers constructed from 2d, just need one pad
             h, kh, dh, dilation_h = args
-            pad_h = self.__calculate_2d_same_padding(h, kh, dh, dilation_h)
+            pad_h = __calculate_2d_same_padding(h, kh, dh, dilation_h)
             return pad_h, 0
         elif len(args) == 8:
             h, kh, dh, dilation_h, w, kw, dw, dilation_w = args
-            pad_h = self.__calculate_2d_same_padding(h, kh, dh, dilation_h)
-            pad_w = self.__calculate_2d_same_padding(w, kw, dw, dilation_w)
+            pad_h = __calculate_2d_same_padding(h, kh, dh, dilation_h)
+            pad_w = __calculate_2d_same_padding(w, kw, dw, dilation_w)
             return pad_h, pad_w
     elif border_mode == "valid":
         return 0, 0

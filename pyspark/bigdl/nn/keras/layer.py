@@ -16,24 +16,9 @@
 
 import sys
 
-import numpy as np
-import six
-
-from bigdl.util.common import JTensor
-from bigdl.util.common import JavaValue
-from bigdl.util.common import callBigDlFunc
-from bigdl.util.common import callJavaFunc
-from bigdl.util.common import get_spark_context
-from bigdl.util.common import to_list
-from bigdl.util.common import INTMAX, INTMIN, DOUBLEMAX
-from bigdl.util.common import get_activation_by_name
-from bigdl.optim.optimizer import L1Regularizer, L2Regularizer, L1L2Regularizer
-from py4j.java_gateway import JavaObject
-from pyspark.rdd import RDD
-from bigdl.transform.vision.image import ImageFrame
-from bigdl.nn.layer import Layer
-
 from bigdl.keras.ToBigDLHelper import to_bigdl_reg, to_bigdl_init
+from bigdl.nn.layer import Layer
+from bigdl.util.common import get_activation_by_name
 
 
 if sys.version >= '3':
@@ -66,6 +51,9 @@ class Dense(Layer):
             nD tensor with shape: `(nb_samples, ..., output_dim)`.
             For instance, for a 2D input with shape `(nb_samples, input_dim)`,
             the output would have shape `(nb_samples, output_dim)`.
+        >>> dense = Dense(10, input_shape=(3, 4))
+        creating: createXavier
+        creating: createDense
         """
     def __init__(self, output_dim, init='glorot_uniform',
                  activation=None,
@@ -77,5 +65,5 @@ class Dense(Layer):
                                     get_activation_by_name(activation) if activation else None,  # noqa
                                     to_bigdl_reg(W_regularizer),
                                     to_bigdl_reg(b_regularizer),
-                                    bias, None)
-                                   # list(input_shape) if input_shape else None)  # noqa
+                                    bias,
+                                    list(input_shape) if input_shape else None)

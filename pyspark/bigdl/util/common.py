@@ -60,7 +60,7 @@ class JavaCreator(SingletonMixin):
 
     @classmethod
     def add_creator_class(cls, jinvoker):
-        JavaCreator.__extra_jinvokers.append(jinvoker)
+        JavaCreator.__creator_class.append(jinvoker)
 
     @classmethod
     def get_creator_class(cls):
@@ -99,17 +99,6 @@ class JavaValue(object):
 
     def __str__(self):
         return self.value.toString()
-
-class Shape(JavaValue):
-
-    def __init__(self, jvalue, bigdl_type, *args):
-        if (jvalue):
-            assert(type(jvalue) == JavaObject)
-            self.value = jvalue
-        else:
-            self.value = callBigDlFunc(
-                bigdl_type, JavaValue.jvm_class_constructor(self), *args)
-        self.bigdl_type = bigdl_type
 
 
 class EvaluatedResult():
@@ -576,7 +565,7 @@ def callBigDlFunc(bigdl_type, name, *args):
         try:
             api = getattr(jinvoker, name)
             result = callJavaFunc(sc, api, *args)
-        except Exception, e:
+        except Exception as e:
             error = e
             if "does not exist" not in e.message:
                 raise e
