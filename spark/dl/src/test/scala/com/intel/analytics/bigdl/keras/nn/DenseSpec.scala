@@ -47,7 +47,8 @@ class DenseSpec extends KerasBaseSpec{
       """
         |input_tensor = Input(shape=[10, 5, 7])
         |input = np.random.uniform(0, 1, [2, 10, 5, 7])
-        |output_tensor = Dense(2, init='one', activation="relu", input_shape=(10, 5, 7))(input_tensor)
+        |output_tensor = \
+        |Dense(2, init='one', activation="relu", input_shape=(10, 5, 7))(input_tensor)
         |model = Model(input=input_tensor, output=output_tensor)
       """.stripMargin
     val seq = KSequential[Float]()
