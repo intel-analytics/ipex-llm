@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.utils.serializer.converters
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.serializer.{DeserializeContext, ModuleData, ModuleSerializer, SerializeContext}
-import serialization.Bigdl.{AttrValue, DataType}
+import com.intel.analytics.bigdl.serialization.Bigdl.{AttrValue, DataType}
 
 import scala.reflect.ClassTag
 import scala.reflect.runtime.universe

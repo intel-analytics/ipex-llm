@@ -26,8 +26,8 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.serializer._
 import com.intel.analytics.bigdl.utils.{MultiShape, SingleShape, Shape => BigDLShape}
-import serialization.Bigdl._
-import serialization.Bigdl.AttrValue.ArrayValue
+import com.intel.analytics.bigdl.serialization.Bigdl._
+import com.intel.analytics.bigdl.serialization.Bigdl.AttrValue.ArrayValue
 
 import scala.collection.mutable
 import scala.reflect.ClassTag
