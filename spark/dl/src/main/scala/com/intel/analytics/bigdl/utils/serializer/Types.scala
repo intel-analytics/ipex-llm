@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.{NumericBoolean, NumericChar, NumericDouble, NumericFloat, NumericInt, NumericLong, NumericString}
 import com.intel.analytics.bigdl.utils.tf.TFTensorNumeric.NumericByteString
-import serialization.Bigdl.BigDLModule
+import com.intel.analytics.bigdl.serialization.Bigdl.BigDLModule
 
 import scala.collection.mutable
 import scala.reflect.ClassTag
