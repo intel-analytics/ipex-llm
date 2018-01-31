@@ -35,6 +35,7 @@ object KerasRunner {
       |from keras.layers.convolutional import *
       |from keras.layers import *
       |from keras.objectives import *
+      |from keras.regularizers import *
       |from keras.models import Model
       |import keras.backend as K
       |import numpy as np
