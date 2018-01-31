@@ -529,6 +529,15 @@ class ModuleSerializerSpec extends SerializerSpecHelper {
     runSerializationTest(model, input)
   }
 
+  "Graph with stop gradient layer" should "work properly" in {
+    val linear1 = Linear[Float](2, 2).setName("first").inputs()
+    val linear2 = Linear[Float](2, 2).setName("second").inputs(linear1)
+    val graph = Graph[Float](Array(linear1), Array(linear2)).setName("graphWithStopGradient")
+    graph.stopGradient(Array("first"))
+    val input = Tensor[Float](2).apply1(_ => Random.nextFloat())
+    runSerializationTest(graph, input)
+  }
+
   "GRU serializer" should "work properly" in {
     RNG.setSeed(100)
     val gru = GRU[Float](100, 100)
