@@ -107,6 +107,9 @@ class ReLUDnn[T: ClassTag](ip: Boolean = false, value: Float = 0.0f)(
         relu_fwd = MklDnnOps.primitiveCreate2(relu_fwd_pd, relu_inputs, indexes, relu_inputs.length,
           relu_outputs, relu_outputs.length)
       }
+      if (System.getProperty("debug") != null) {
+        println("relu updateoutput start " + this.getName())
+      }
 
       val memoryPrimitives = Array(src_memory, dst_memory)
       val buffer = Array(input, output)
@@ -115,7 +118,9 @@ class ReLUDnn[T: ClassTag](ip: Boolean = false, value: Float = 0.0f)(
       MklDnnOps.streamSubmit(stream, n_fwd, stream_fwd, n_fwd, memoryPrimitives, buffer)
 
       val end1 = (System.nanoTime() - s1)/1e9
-      // println(s"relu dnn forward ${end1}")
+      if (System.getProperty("debug") != null) {
+        println(s"relu dnn forward ${end1}")
+      }
 
       output
     }
@@ -158,6 +163,9 @@ class ReLUDnn[T: ClassTag](ip: Boolean = false, value: Float = 0.0f)(
           relu_outputs, relu_outputs.length)
       }
 
+      if (System.getProperty("debug") != null) {
+        println("relu backward " + this.getName())
+      }
       val memoryPrimitives = Array(src_memory, gradInput_memory, gradOutput_memory)
       val buffer = Array(input, gradInput, gradOutput)
       val stream_bwd = Array(relu_bwd)
@@ -165,7 +173,9 @@ class ReLUDnn[T: ClassTag](ip: Boolean = false, value: Float = 0.0f)(
       MklDnnOps.streamSubmit(stream, n_bwd, stream_bwd, n_bwd, memoryPrimitives, buffer)
 
       val end1 = (System.nanoTime() - s1)/1e9
-      // println(s"relu dnn backward ${end1}")
+      if (System.getProperty("debug") != null) {
+        println(s"relu dnn backward ${end1}")
+      }
       gradInput
     }
   }

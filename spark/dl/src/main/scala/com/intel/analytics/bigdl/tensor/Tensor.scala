@@ -21,6 +21,7 @@ import java.io.Serializable
 import breeze.linalg.{DenseMatrix => BrzDenseMatrix, DenseVector => BrzDenseVector}
 import com.intel.analytics.bigdl.mkl.{MKL, MklDnn}
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
+import com.intel.analytics.bigdl.nn.mkldnn.MklDnnOps
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{File, Table}
 import org.apache.spark.mllib.linalg.{DenseMatrix, DenseVector, Matrix, Vector}
@@ -807,11 +808,19 @@ trait Tensor[T] extends Serializable with TensorMath[T] with Activity {
 
 // for mkl dnn model
   private var primivite_desc_t: Long = 0L
+  private var format: Int = 0
   def getPrimitiveDesc(): Long = {
     primivite_desc_t
   }
   def setPrimitiveDesc(data: Long): Unit = {
     primivite_desc_t = data
+  }
+
+  def getFormat(): Int = {
+    require(primivite_desc_t != 0L, "can not get format for non dnn tensor")
+    val mpd = MklDnnOps.primitiveDescQueryMemory(primivite_desc_t)
+    format = MklDnnOps.getFormat(mpd)
+    format
   }
 }
 

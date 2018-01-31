@@ -174,6 +174,13 @@ object LocalOptimizerPerf {
               1
             })
         ).sum
+
+//        val localModel = workingModels(0)
+//        val input = miniBatchBuffer(0).getInput()
+//        val output = localModel.forward(input)
+//        output.toTensor[Float].setPrimitiveDesc(0L)
+//        localModel.backward(input, output)
+
         val end = System.nanoTime()
         logger.info(
           s"data fetch time is ${(dataFetchTime - start) / 1e9}s, " +
@@ -209,7 +216,7 @@ object LocalOptimizerPerf {
       println(s"average time cost ${e1/1e9}")
     }
 
-    // System.setProperty("bigdl.mklNumThreads", "4")
+    System.setProperty("bigdl.mklNumThreads", "4")
     Engine.setCoreNumber(param.coreNumber)
 
     val (_model, miniBatch, criterion) = getModel(param.module, param.batchSize)

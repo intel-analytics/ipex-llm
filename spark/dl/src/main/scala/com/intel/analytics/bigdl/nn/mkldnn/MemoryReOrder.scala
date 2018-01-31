@@ -42,7 +42,11 @@ class MemoryReOrder(inputFormat: Int = MklDnn.MemoryFormat.any,
   @transient
   private var src_memory: Long = 0L
   @transient
+  private var src_memory2: Long = 0L
+  @transient
   private var dst_memory: Long = 0L
+  @transient
+  private var dst_memory2: Long = 0L
   @transient
   private var gradInput_memory: Long = 0L
   @transient
@@ -60,6 +64,7 @@ class MemoryReOrder(inputFormat: Int = MklDnn.MemoryFormat.any,
 
   // convert input from input format to output format
   override def updateOutput(input: Tensor[Float]): Tensor[Float] = {
+    val s1 = System.nanoTime()
     if (engine == 0L) engine = this.getDnnEngine(0)
     if (stream == 0L) stream = this.getStream()
 
@@ -83,27 +88,42 @@ class MemoryReOrder(inputFormat: Int = MklDnn.MemoryFormat.any,
         val prim_md = MklDnn.MemoryDescInit(dim, sizes, dataType, this.inputFormat)
         MklDnn.MemoryPrimitiveDescCreate(prim_md, engine)
       }
-      dst_memory = MklDnnOps.initDataMemory(dim, sizes, this.outputFormat, dataType, engine)
+      // dst_memory = MklDnnOps.initDataMemory(dim, sizes, this.outputFormat, dataType, engine)
+      val prim_md = MklDnn.MemoryDescInit(dim, sizes, dataType, this.outputFormat)
+      val user_pd = MklDnn.MemoryPrimitiveDescCreate(prim_md, engine)
+      dst_memory = MklDnn.PrimitiveCreate0(user_pd)
+
       val res = MklDnnOps.prepareReorder(dst_memory, src_pd, false)
       // val reorder_primitive = res._1
       src_memory = res._2
+      if (src_memory != 0L) {
+        output.setPrimitiveDesc(user_pd)
+      }
 
       stream_fwd.clear()
       stream_fwd.append(res._1)
     }
 
     /* build a simple net */
-    val memoryPrimitives = Array(src_memory, dst_memory)
-    val buffer = Array(input, output)
-    MklDnnOps.streamSubmit(stream, 1, stream_fwd.toArray, 1, memoryPrimitives, buffer)
+    if (src_memory != 0L) {
+      val memoryPrimitives = Array(src_memory, dst_memory)
+      val buffer = Array(input, output)
+      MklDnnOps.streamSubmit(stream, 1, stream_fwd.toArray, 1, memoryPrimitives, buffer)
+    }
+    val end1 = (System.nanoTime() - s1)/1e6
+    // println(s"MemoryReorder dnn ${this.getName()} forward ${end1}")
     output
   }
 
   // convert gradOutput from output format to input format
   override def updateGradInput(input: Tensor[Float], gradOutput: Tensor[Float]): Tensor[Float] = {
+    val s1 = System.nanoTime()
+
     val sizes = gradOutput.size()
     val dim = gradOutput.dim()
     gradInput.resizeAs(gradOutput)
+
+    // gradInput.copy(gradOutput)
 
     if (gradOutput.getPrimitiveDesc() == 0L && inputFormat == MklDnn.MemoryFormat.any) {
       gradInput.resizeAs(gradOutput).copy(gradOutput)
@@ -111,25 +131,38 @@ class MemoryReOrder(inputFormat: Int = MklDnn.MemoryFormat.any,
     }
 
     if (update_primitive) {
-      gradOutput_memory = MklDnnOps.initDataMemory(dim, sizes, this.outputFormat, dataType, engine)
       val src_pd = if (gradOutput.getPrimitiveDesc() != 0L) {
         gradOutput.getPrimitiveDesc()
       } else {
         val prim_md = MklDnn.MemoryDescInit(dim, sizes, dataType, this.inputFormat)
         MklDnn.MemoryPrimitiveDescCreate(prim_md, engine)
       }
-      val res = MklDnnOps.prepareReorder(dst_memory, src_pd, false)
-      gradInput_memory = res._1
+
+      val prim_md = MklDnn.MemoryDescInit(dim, sizes, dataType, this.outputFormat)
+      val user_pd = MklDnn.MemoryPrimitiveDescCreate(prim_md, engine)
+      dst_memory2 = MklDnn.PrimitiveCreate0(user_pd)
+
+      val res = MklDnnOps.prepareReorder(dst_memory2, src_pd, false)
+      // val reorder_primitive = res._1
+      src_memory2 = res._2
+      if (src_memory2 != 0L) {
+        val src_format = MklDnnOps.getFormat(prim_md)
+        println("gradinput format " + src_format + this.getName())
+        gradInput.setPrimitiveDesc(user_pd)
+      }
 
       stream_bwd.clear()
-      stream_bwd.append(res._2)
+      stream_bwd.append(res._1)
     }
 
     /* build a simple net */
-    val memoryPrimitives = Array(gradOutput_memory, gradInput_memory)
-    val buffer = Array(gradOutput, gradInput)
-    MklDnnOps.streamSubmit(stream, 1, stream_bwd.toArray, 1, memoryPrimitives, buffer)
-
+    if (src_memory2 != 0L) {
+      val memoryPrimitives = Array(src_memory2, dst_memory2)
+      val buffer = Array(gradOutput, gradInput)
+      MklDnnOps.streamSubmit(stream, 1, stream_bwd.toArray, 1, memoryPrimitives, buffer)
+    }
+    val end1 = (System.nanoTime() - s1)/1e6
+    // println(s"MemoryReorder dnn ${this.getName()} backward ${end1}")
     gradInput
   }
 }

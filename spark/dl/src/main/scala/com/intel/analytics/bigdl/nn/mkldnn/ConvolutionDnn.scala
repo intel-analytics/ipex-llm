@@ -101,7 +101,11 @@ class ConvolutionDnn[T: ClassTag](
 
   private val weightFormat = format match {
     case DataFormat.NCHW =>
-      VariableFormat.GP_OUT_IN_KW_KH
+      if (nGroup == 1) {
+        VariableFormat.OUT_IN_KW_KH
+      } else {
+        VariableFormat.GP_OUT_IN_KW_KH
+      }
     case DataFormat.NHWC =>
       VariableFormat.GP_KH_KW_IN_OUT
   }
@@ -364,13 +368,13 @@ class ConvolutionDnn[T: ClassTag](
       internal_src_memory = if (reorder_src_memory == 0L) {
         src_memory
       } else {
-        println("conv updateOutput input reorder")
+        // println("conv updateOutput input reorder")
         reorder_src_memory
       }
       internal_weights_memory = if (reorder_weights_memory == 0L) {
         weights_memory
       } else {
-        println("conv updateOutput weight reorder")
+        // println("conv updateOutput weight reorder")
         reorder_weights_memory
       }
 

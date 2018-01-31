@@ -273,7 +273,7 @@ class PoolingDnnAverage[T: ClassTag](
       val internal_gradOutput_memory = if (reorder_gradOutput_memory == 0L) {
         gradOutput_memory
       } else {
-        // println("pool updateGradInput reorder")
+        println("pool updateGradInput reorder")
         reorder_gradOutput_memory
       }
 
@@ -287,14 +287,18 @@ class PoolingDnnAverage[T: ClassTag](
       if (reorder_gradOutput_memory != 0L) stream_bwd.append(reorder_gradOutput)
       stream_bwd.append(bwd)
     }
-    // println("pool backward start")
+    if (System.getProperty("debug") != null) {
+      println("average pool backward start " + this.getName())
+    }
     val n_bwd = stream_bwd.length
     val memoryPrimitives = Array(gradOutput_memory, reorder_gradOutput_memory,
       gradInput_memory)
     val buffer = Array(gradOutput, gradOutputBuffer, gradInput)
     MklDnnOps.streamSubmit(stream, n_bwd, stream_bwd.toArray, n_bwd, memoryPrimitives, buffer)
 
-    // println("pool backward end")
+    if (System.getProperty("debug") != null) {
+      println("pool backward end")
+    }
     val end1 = (System.nanoTime() - s1)/1e6
     // println(s"pooling dnn ${this.getName()} backward ${end1}")
     gradInput

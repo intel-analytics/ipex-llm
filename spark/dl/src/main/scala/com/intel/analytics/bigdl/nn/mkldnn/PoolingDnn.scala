@@ -225,13 +225,18 @@ class PoolingDnn[T: ClassTag](
       stream_fwd.clear()
       stream_fwd.append(fwd)
     }
+    if (System.getProperty("debug") != null) {
+      println("pooling updateoutput start " + this.getName())
+    }
     val n_fwd = stream_fwd.length
     val memoryPrimitives = Array(src_memory, dst_memory, work_memory)
     val buffer = Array(input, output, workSpace)
     MklDnnOps.streamSubmit(stream, n_fwd, stream_fwd.toArray, n_fwd, memoryPrimitives, buffer)
 
     val end1 = (System.nanoTime() - s1)/1e6
-    // println(s"pooling dnn ${this.getName()} forward ${end1}")
+    if (System.getProperty("debug") != null) {
+      println(s"pooling dnn ${this.getName()} forward ${end1}")
+    }
     output
   }
 
