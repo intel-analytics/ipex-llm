@@ -25,6 +25,7 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.transform.vision.image.{DistributedImageFrame, ImageFeature, ImageFrame}
 import com.intel.analytics.bigdl.utils.{T, Table}
 import org.apache.spark.rdd.RDD
+import Predictor._
 
 import scala.reflect.ClassTag
 
@@ -62,34 +63,40 @@ object Predictor {
       } else {
         localModel(outputLayer).get.output
       }
-      if (output.isTensor) {
-        val result = if (shareBuffer) output.toTensor[T] else output.toTensor[T].clone()
-        if (result.dim() == 1) {
-          Array(result)
-        } else {
-          result.split(1)
-        }
-      } else {
-        val result = if (shareBuffer) output.toTable else output.toTable.clone()
-        val first = result[Tensor[T]](1)
-        if (first.dim() == 1) {
-          Array(result)
-        } else {
-          val batch = first.size(1)
-          val tables = new Array[Table](batch)
-          var i = 0
-          while (i < batch) {
-            val table = T()
-            tables(i) = table
-            (1 to result.length()).foreach(key => {
-              table.insert(key, result[Tensor[T]](key)(i + 1))
-            })
-            i += 1
-          }
-          tables
-        }
-      }
+      splitBatch[T](output, shareBuffer)
     })
+  }
+
+  private[optim] def splitBatch[T: ClassTag](output: Activity, shareBuffer: Boolean)
+    (implicit ev: TensorNumeric[T]): Array[Activity] = {
+    val out = if (output.isTensor) {
+      val result = if (shareBuffer) output.toTensor[T] else output.toTensor[T].clone()
+      if (result.dim() == 1) {
+        Array(result)
+      } else {
+        result.split(1)
+      }
+    } else {
+      val result = if (shareBuffer) output.toTable else output.toTable.clone()
+      val first = result[Tensor[T]](1)
+      if (first.dim() == 1) {
+        Array(result)
+      } else {
+        val batch = first.size(1)
+        val tables = new Array[Table](batch)
+        var i = 0
+        while (i < batch) {
+          val table = T()
+          tables(i) = table
+          (1 to result.length()).foreach(key => {
+            table.insert(key, result[Tensor[T]](key)(i + 1))
+          })
+          i += 1
+        }
+        tables
+      }
+    }
+    out.asInstanceOf[Array[Activity]]
   }
 }
 
@@ -137,12 +144,8 @@ class Predictor[T: ClassTag] private[optim](
       val localTransformer = otherBroad.value.cloneTransformer()
       val miniBatch = localTransformer(partition)
       miniBatch.flatMap( batch => {
-        val output = localModel.forward(batch.getInput).toTensor[T]
-        if (shareBuffer) {
-          output.split(1)
-        } else {
-          output.clone().split(1)
-        }
+        val output = localModel.forward(batch.getInput)
+        splitBatch(output, shareBuffer)
       })
     }
   }
