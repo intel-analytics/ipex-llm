@@ -569,7 +569,7 @@ def callBigDlFunc(bigdl_type, name, *args):
             result = callJavaFunc(sc, api, *args)
         except Exception as e:
             error = e
-            if "does not exist" not in e.message:
+            if "does not exist" not in str(e):
                 raise e
         else:
             return result
