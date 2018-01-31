@@ -23,6 +23,7 @@ import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.transform.vision.image.{DistributedImageFrame, ImageFeature, ImageFrame}
+import com.intel.analytics.bigdl.utils.{T, Table}
 import org.apache.spark.rdd.RDD
 
 import scala.reflect.ClassTag
@@ -53,19 +54,40 @@ object Predictor {
   (localModel: Module[T], samples: Seq[Sample[T]],
     localToBatch: Transformer[Sample[T], MiniBatch[T]],
     shareBuffer: Boolean,
-    outputLayer: String = null)(implicit ev: TensorNumeric[T]): Iterator[Tensor[T]] = {
+    outputLayer: String = null)(implicit ev: TensorNumeric[T]): Iterator[Activity] = {
     localToBatch(samples.toIterator).flatMap(batch => {
       localModel.forward(batch.getInput())
       val output = if (outputLayer == null) {
-        localModel.output.toTensor[T]
+        localModel.output
       } else {
-        localModel(outputLayer).get.output.toTensor[T]
+        localModel(outputLayer).get.output
       }
-      val result = if (shareBuffer) output else output.clone()
-      if (result.dim() == 1) {
-        Array(result)
+      if (output.isTensor) {
+        val result = if (shareBuffer) output.toTensor[T] else output.toTensor[T].clone()
+        if (result.dim() == 1) {
+          Array(result)
+        } else {
+          result.split(1)
+        }
       } else {
-        result.split(1)
+        val result = if (shareBuffer) output.toTable else output.toTable.clone()
+        val first = result[Tensor[T]](1)
+        if (first.dim() == 1) {
+          Array(result)
+        } else {
+          val batch = first.size(1)
+          val tables = new Array[Table](batch)
+          var i = 0
+          while (i < batch) {
+            val table = T()
+            tables(i) = table
+            (1 to result.length()).foreach(key => {
+              table.insert(key, result[Tensor[T]](key)(i + 1))
+            })
+            i += 1
+          }
+          tables
+        }
       }
     })
   }
