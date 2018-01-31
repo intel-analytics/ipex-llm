@@ -103,13 +103,13 @@ class LocallyConnected2D[T: ClassTag](
       VariableFormat.GP_KH_KW_IN_OUT
   }
 
-  val weight: Tensor[T] = if (initWeight != null) {
+  var weight: Tensor[T] = if (initWeight != null) {
     initWeight
   } else {
     Tensor[T](weightShape)
   }
 
-  val bias: Tensor[T] = if (!withBias) null
+  var bias: Tensor[T] = if (!withBias) null
   else if (initBias != null) initBias else Tensor[T](outputHeight * outputWidth, nOutputPlane)
 
   val gradWeight: Tensor[T] = if (initGradWeight != null) {
@@ -458,6 +458,16 @@ class LocallyConnected2D[T: ClassTag](
       (Array(this.weight, this.bias), Array(this.gradWeight, this.gradBias))
     } else {
       (Array(this.weight), Array(this.gradWeight))
+    }
+  }
+
+  override def setParameters(params : Array[Tensor[T]]): Unit = {
+    require(params != null, "params cannot be null")
+    require(params.length >= 1, "LocallyConnected2D should at least have weight")
+    this.weight = params(0)
+    if (withBias) {
+      require(params.length == 2, "LocallyConnected2D with bias should have both weight and bias")
+      this.bias = params(1)
     }
   }
 

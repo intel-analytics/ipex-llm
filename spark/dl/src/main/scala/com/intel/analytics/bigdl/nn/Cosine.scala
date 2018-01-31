@@ -40,7 +40,7 @@ class Cosine[T: ClassTag](val inputSize : Int, val outputSize : Int)(
   implicit ev: TensorNumeric[T]) extends TensorModule[T] with Initializable {
 
   val gradWeight = Tensor[T](outputSize, inputSize)
-  val weight = Tensor[T](outputSize, inputSize)
+  var weight = Tensor[T](outputSize, inputSize)
 
   @transient
   var _weightNorm: Tensor[T] = null
@@ -182,6 +182,12 @@ class Cosine[T: ClassTag](val inputSize : Int, val outputSize : Int)(
 
   override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
     (Array(this.weight), Array(this.gradWeight))
+  }
+
+  override def setParameters(params : Array[Tensor[T]]): Unit = {
+    require(params != null, "params cannot be null")
+    require(params.length == 1, "Cosine should only have weight")
+    this.weight = params(0)
   }
 
   override def getParametersTable(): Table = {

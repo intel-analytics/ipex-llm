@@ -361,6 +361,9 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
    */
   def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = null
 
+
+  def setParameters(params : Array[Tensor[T]]): Unit = {}
+
   /**
    * Get extra parameter in this module.
    * Extra parameter means the trainable parameters beside weight and bias. Such as runningMean

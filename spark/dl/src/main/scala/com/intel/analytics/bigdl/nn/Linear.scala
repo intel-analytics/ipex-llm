@@ -52,9 +52,9 @@ class Linear[T: ClassTag](
   private val initGradWeight: Tensor[T] = null,
   private val initGradBias: Tensor[T] = null
 )(implicit ev: TensorNumeric[T]) extends TensorModule[T] with Initializable {
-  val weight: Tensor[T] =
+  var weight: Tensor[T] =
     if (initWeight != null) initWeight else Tensor[T](outputSize, inputSize)
-  val bias: Tensor[T] =
+  var bias: Tensor[T] =
     if (initBias != null) initBias else if (withBias) Tensor[T](outputSize) else null
   val addBuffer: Tensor[T] = Tensor[T]()
 
@@ -195,6 +195,16 @@ class Linear[T: ClassTag](
       (Array(this.weight), Array(this.gradWeight))
     } else {
       (Array(this.weight, this.bias), Array(this.gradWeight, this.gradBias))
+    }
+  }
+
+  override def setParameters(params : Array[Tensor[T]]): Unit = {
+    require(params != null, "params for linear cannot be null")
+    require(params.length >= 1, "Linear should at least have weight")
+    this.weight = params(0)
+    if (withBias) {
+      require(params.length == 2, "linear with bias should have weight & bias")
+      this.bias = params(1)
     }
   }
 

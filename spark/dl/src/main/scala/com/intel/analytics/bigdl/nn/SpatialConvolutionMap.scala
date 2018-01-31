@@ -48,8 +48,8 @@ class SpatialConvolutionMap[T: ClassTag](
 )(implicit ev: TensorNumeric[T]) extends TensorModule[T]  {
   val nInputPlane = ev.toType[Int](connTable.select(2, 1).max())
   val nOutputPlane = ev.toType[Int](connTable.select(2, 2).max())
-  val weight: Tensor[T] = Tensor[T](connTable.size(1), kH, kW)
-  val bias: Tensor[T] = Tensor[T](nOutputPlane)
+  var weight: Tensor[T] = Tensor[T](connTable.size(1), kH, kW)
+  var bias: Tensor[T] = Tensor[T](nOutputPlane)
   val gradWeight: Tensor[T] = Tensor[T](connTable.size(1), kH, kW)
   val gradBias: Tensor[T] = Tensor[T](nOutputPlane)
 
@@ -291,6 +291,13 @@ class SpatialConvolutionMap[T: ClassTag](
 
   override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
     (Array(this.weight, this.bias), Array(this.gradWeight, this.gradBias))
+  }
+
+  override def setParameters(params : Array[Tensor[T]]): Unit = {
+    require(params != null, "params cannot be null")
+    require(params.length == 2, "SpatialConvolutionMap should have both weight and bias")
+    this.weight = params(0)
+    this.bias = params(1)
   }
 
   override def getParametersTable(): Table = {

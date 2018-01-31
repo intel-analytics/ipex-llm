@@ -43,7 +43,7 @@ class CAdd[T: ClassTag](
   var bRegularizer: Regularizer[T] = null)(
   implicit ev: TensorNumeric[T]) extends TensorModule[T] with Initializable {
 
-  val bias: Tensor[T] = Tensor[T](size)
+  var bias: Tensor[T] = Tensor[T](size)
   val gradBias : Tensor[T] = Tensor[T](size)
 
   {
@@ -151,6 +151,12 @@ class CAdd[T: ClassTag](
 
   override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
     (Array(this.bias), Array(this.gradBias))
+  }
+
+  override def setParameters(params : Array[Tensor[T]]): Unit = {
+    require(params != null, "params cannot be null")
+    require(params.length == 1, "CAdd should only have bias")
+    this.bias = params(0)
   }
 
   override def getParametersTable(): Table = {

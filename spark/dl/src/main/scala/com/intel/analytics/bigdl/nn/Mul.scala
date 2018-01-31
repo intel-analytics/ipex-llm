@@ -31,7 +31,7 @@ import scala.reflect.ClassTag
 class Mul[T: ClassTag](implicit ev: TensorNumeric[T])
   extends TensorModule[T] with Initializable {
 
-  val weight = Tensor[T](1)
+  var weight = Tensor[T](1)
   val gradWeight = Tensor[T](1)
 
   {
@@ -69,6 +69,12 @@ class Mul[T: ClassTag](implicit ev: TensorNumeric[T])
 
   override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
     (Array(this.weight), Array(this.gradWeight))
+  }
+
+  override def setParameters(params : Array[Tensor[T]]): Unit = {
+    require(params != null, "params cannot be null")
+    require(params.length == 1, "Mul should only have weight")
+    this.weight = params(0)
   }
 
   override def getParametersTable(): Table = {

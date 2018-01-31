@@ -60,13 +60,13 @@ class TemporalConvolution[T: ClassTag](
   val initGradBias: Tensor[T] = null
 )(implicit ev: TensorNumeric[T]) extends TensorModule[T]  with Initializable {
 
-  val weight: Tensor[T] = if (initWeight != null) {
+  var weight: Tensor[T] = if (initWeight != null) {
     initWeight
   } else {
     Tensor[T](outputFrameSize, inputFrameSize * kernelW)
   }
 
-  val bias: Tensor[T] = if (initBias != null) {
+  var bias: Tensor[T] = if (initBias != null) {
     initBias
   } else {
     Tensor[T](outputFrameSize)
@@ -403,6 +403,13 @@ class TemporalConvolution[T: ClassTag](
 
   override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
     (Array(this.weight, this.bias), Array(this.gradWeight, this.gradBias))
+  }
+
+  override def setParameters(params : Array[Tensor[T]]): Unit = {
+    require(params != null, "params cannot be null")
+    require(params.length == 2, "TemporalConv should have both weight and bias")
+    this.weight = params(0)
+    this.bias = params(1)
   }
 
   override def getParametersTable(): Table = {

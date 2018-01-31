@@ -66,6 +66,12 @@ class NormalizeScale[T: ClassTag](val p: Double, val eps: Double = 1e-10,
     (Array(cmul.weight), Array(cmul.gradWeight))
   }
 
+  override def setParameters(params : Array[Tensor[T]]): Unit = {
+    require(params != null, "params cannot be null")
+    require(params.length == 1, "NormalizeScale should only have weight")
+    cmul.weight = params(0)
+  }
+
   override def getParametersTable(): Table = {
     T(getName() -> T("weight" -> cmul.weight, "gradWeight" -> cmul.gradWeight))
   }

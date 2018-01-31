@@ -110,13 +110,13 @@ class SpatialConvolution[T: ClassTag](
       Array(1, nInputPlane * kernelH * kernelW, nOutputPlane)
   }
 
-  val weight: Tensor[T] = if (initWeight != null) {
+  var weight: Tensor[T] = if (initWeight != null) {
     initWeight
   } else {
     Tensor[T](weightShape)
   }
 
-  val bias: Tensor[T] = if (!withBias) null
+  var bias: Tensor[T] = if (!withBias) null
     else if (initBias != null) initBias else Tensor[T](nOutputPlane)
 
   val gradWeight: Tensor[T] = if (initGradWeight != null) {
@@ -513,6 +513,16 @@ class SpatialConvolution[T: ClassTag](
       (Array(this.weight, this.bias), Array(this.gradWeight, this.gradBias))
     } else {
       (Array(this.weight), Array(this.gradWeight))
+    }
+  }
+
+  override def setParameters(params : Array[Tensor[T]]): Unit = {
+    require(params != null, "params cannot be null")
+    require(params.length >= 1, "SpatialConv should at least have weight")
+    this.weight = params(0)
+    if (withBias) {
+      require(params.length == 2, "SpatialConv with bias hould have bias")
+      this.bias = params(1)
     }
   }
 

@@ -68,9 +68,9 @@ class BatchNormalization[T: ClassTag](
   var saveMean = if (affine) Tensor[T](nOutput) else Tensor[T]()
   var saveStd = if (affine) Tensor[T](nOutput).fill(ev.zero) else Tensor[T]()
 
-  val weight: Tensor[T] =
+  var weight: Tensor[T] =
     if (initWeight != null) initWeight else if (affine) Tensor[T](nOutput) else null
-  val bias: Tensor[T] =
+  var bias: Tensor[T] =
     if (initBias != null) initBias else if (affine) Tensor[T](nOutput) else null
 
   val gradWeight: Tensor[T] =
@@ -159,6 +159,13 @@ class BatchNormalization[T: ClassTag](
 
   override def getExtraParameter(): Array[Tensor[T]] = {
     Array(runningMean, runningVar)
+  }
+
+  override def setParameters(params : Array[Tensor[T]]): Unit = {
+    require(params != null, "params cannot be null")
+    require(params.length == 2, "BatchNorm should have both weight and bias")
+    this.weight = params(0)
+    this.bias = params(1)
   }
 
   override def getParametersTable(): Table = {

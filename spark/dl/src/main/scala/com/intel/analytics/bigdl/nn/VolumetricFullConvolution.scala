@@ -93,9 +93,9 @@ class VolumetricFullConvolution[T: ClassTag](
     s"VolumetricFullConvolution: adjW=$adjW and adjH=$adjH must be smaller than " +
       s"(dW - 1)=${dW - 1} and (dH - 1)=${dH - 1} respectively")
 
-  val weight: Tensor[T] = Tensor[T](nGroup, nInputPlane / nGroup,
+  var weight: Tensor[T] = Tensor[T](nGroup, nInputPlane / nGroup,
     nOutputPlane / nGroup, kT, kH, kW)
-  val bias: Tensor[T] = if (noBias) null else Tensor[T](nOutputPlane)
+  var bias: Tensor[T] = if (noBias) null else Tensor[T](nOutputPlane)
 
   val gradWeight: Tensor[T] = Tensor[T](nGroup, nInputPlane / nGroup,
     nOutputPlane / nGroup, kT, kH, kW)
@@ -742,6 +742,13 @@ class VolumetricFullConvolution[T: ClassTag](
     } else {
       (Array(this.weight, this.bias), Array(this.gradWeight, this.gradBias))
     }
+  }
+
+  override def setParameters(params : Array[Tensor[T]]): Unit = {
+    require(params != null, "params cannot be null")
+    require(params.length == 2, "VolumetricFullConvolution should have both weight and bias")
+    this.weight = params(0)
+    this.bias = params(1)
   }
 
   override def getParametersTable(): Table = {

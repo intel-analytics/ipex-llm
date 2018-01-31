@@ -32,7 +32,7 @@ import scala.reflect.ClassTag
 class Add[T: ClassTag](val inputSize: Int
   )(implicit ev: TensorNumeric[T]) extends TensorModule[T] with Initializable {
 
-  val bias = Tensor[T](inputSize)
+  var bias = Tensor[T](inputSize)
 
   val ones : Tensor[T] = Tensor[T]()
 
@@ -98,6 +98,12 @@ class Add[T: ClassTag](val inputSize: Int
 
   override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
     (Array(this.bias), Array(this.gradBias))
+  }
+
+  override def setParameters(params : Array[Tensor[T]]): Unit = {
+    require(params != null, "params cannot be null")
+    require(params.length == 1, "cadd should only have bias")
+    this.bias = params(0)
   }
 
   override def getParametersTable(): Table = {

@@ -73,6 +73,13 @@ class Scale[T: ClassTag](val size: Array[Int])
       Array(cmul.parameters()._2(0), cadd.parameters()._2(0)))
   }
 
+  override def setParameters(params : Array[Tensor[T]]): Unit = {
+    require(params != null, "params cannot be null")
+    require(params.length == 2, "scale should only have both weight & bias")
+    cmul.weight = params(0)
+    cadd.bias = params(1)
+  }
+
   override def getParametersTable(): Table = {
     T(getName() -> T("weight" -> cmul.weight, "bias" -> cadd.bias,
       "gradWeight" -> cmul.gradWeight, "gradBias" -> cadd.gradBias))
