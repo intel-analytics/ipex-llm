@@ -30,33 +30,23 @@ import serialization.Bigdl.{AttrValue, BigDLModule}
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
-object KerasLayerSerializer extends ModuleSerializable {
-
-  override def doLoadModule[T: ClassTag](context : DeserializeContext)
-           (implicit ev: TensorNumeric[T]) : AbstractModule[Activity, Activity, T] = {
-    val laborAdapter = super.doLoadModule(context).asInstanceOf[KerasLayer[Activity, Activity, T]]
-    val attrMap = context.bigdlModule.getAttrMap
-    laborAdapter.labor = DataConverter.getAttributeValue(context, attrMap.get("labor")).
-      asInstanceOf[AbstractModule[Activity, Activity, T]]
-    laborAdapter
+private[bigdl] trait TKerasSerializerHelper {
+  def appendKerasLabel[T: ClassTag](context: SerializeContext[T],
+                       moduleBuilder : BigDLModule.Builder)(implicit ev: TensorNumeric[T]): Unit = {
+    val serializerFlagBuilder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(context, serializerFlagBuilder, true,
+      scala.reflect.runtime.universe.typeOf[Boolean])
+    moduleBuilder.putAttr("is_keras_module", serializerFlagBuilder.build)
   }
+}
+
+object KerasLayerSerializer extends ContainerSerializable with TKerasSerializerHelper{
 
   override def doSerializeModule[T: ClassTag](context: SerializeContext[T],
                                               moduleBuilder : BigDLModule.Builder)
                                              (implicit ev: TensorNumeric[T]) : Unit = {
-
     super.doSerializeModule(context, moduleBuilder)
-    val laborAdapterModule =
-      context.moduleData.module.asInstanceOf[KerasLayer[Activity, Activity, T]]
-    val laborBuilder = AttrValue.newBuilder
-    DataConverter.setAttributeValue(context, laborBuilder, laborAdapterModule.labor,
-      ModuleSerializer.abstractModuleType)
-    moduleBuilder.putAttr("labor", laborBuilder.build)
-
-    val serializerFlagBuilder = AttrValue.newBuilder
-    DataConverter.setAttributeValue(context, serializerFlagBuilder, true,
-      scala.reflect.runtime.universe.typeOf[Boolean])
-    moduleBuilder.putAttr("is_labor_module", serializerFlagBuilder.build)
+    appendKerasLabel(context, moduleBuilder)
   }
 }
 
@@ -136,10 +126,12 @@ abstract class KerasLayer[A <: Activity: ClassTag, B <: Activity: ClassTag, T: C
   // scalastyle:off
   override def inputShapeValue_=(value: Shape): Unit = {
     labor.inputShapeValue = value
+    this._inputShapeValue = value
   }
 
   override def outputShapeValue_=(value: Array[Shape]): Unit = {
    labor.outputShapeValue = value
+   this._outputShapeValue = value
   }
   // scalastyle:on
 

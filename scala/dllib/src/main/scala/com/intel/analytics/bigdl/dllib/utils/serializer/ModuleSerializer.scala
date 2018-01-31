@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.utils.serializer
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
-import com.intel.analytics.bigdl.nn.keras.{KerasLayer, KerasLayerSerializer}
+import com.intel.analytics.bigdl.nn.keras.{KerasLayer, KerasLayerSerializer, Model, Sequential => KSequential}
 import com.intel.analytics.bigdl.nn.ops.{DecodeRawSerializer, ParseExample, RandomUniform => RandomUniformOps}
 import com.intel.analytics.bigdl.nn.tf.StrideSlice
 import com.intel.analytics.bigdl.optim.Regularizer
@@ -64,10 +64,12 @@ object ModuleSerializer extends ModuleSerializable{
     } else {
       val m = module.asInstanceOf[AbstractModule[_, _, _]]
       m match {
-        case container : Container[_, _, _] => ContainerSerializer
-        case cell : Cell[_] => CellSerializer
-        case laborAdapter: KerasLayer[_, _, _] =>
+        case kerasLayer: KerasLayer[_, _, _] =>
           KerasLayerSerializer
+        case container : Container[_, _, _] =>
+          ContainerSerializer
+        case cell : Cell[_] =>
+          CellSerializer
         case _ => ModuleSerializer
       }
     }
@@ -94,7 +96,7 @@ object ModuleSerializer extends ModuleSerializable{
         } else {
           if (attrMap.containsKey("is_cell_module")) {
             CellSerializer
-          } else if (attrMap.containsKey("is_labor_module")) {
+          } else if (attrMap.containsKey("is_keras_module")) {
             KerasLayerSerializer
           } else {
             ModuleSerializer
@@ -178,6 +180,8 @@ object ModuleSerializer extends ModuleSerializable{
     registerModule("com.intel.analytics.bigdl.nn.BiRecurrent", BiRecurrent)
     registerModule("com.intel.analytics.bigdl.nn.StaticGraph", Graph)
     registerModule("com.intel.analytics.bigdl.nn.DynamicGraph", Graph)
+    registerModule("com.intel.analytics.bigdl.nn.keras.Model", Model)
+    registerModule("com.intel.analytics.bigdl.nn.keras.Sequential", KSequential)
     registerModule("com.intel.analytics.bigdl.nn.MapTable", MapTable)
     registerModule("com.intel.analytics.bigdl.nn.MaskedSelect", MaskedSelect)
     registerModule("com.intel.analytics.bigdl.nn.Recurrent", Recurrent)
