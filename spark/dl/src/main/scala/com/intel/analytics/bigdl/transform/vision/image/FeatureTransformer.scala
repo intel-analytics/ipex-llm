@@ -23,6 +23,8 @@ import org.apache.log4j.Logger
 
 /**
  * FeatureTransformer is a transformer that transform ImageFeature
+ * @param catchException if true, catch the exception of the transformer to avoid crashing.
+ *                       if false, interrupt the transformer when error happens
  */
 abstract class FeatureTransformer(catchException: Boolean = FeatureTransformer.catchException)
   extends Transformer[ImageFeature, ImageFeature] {
