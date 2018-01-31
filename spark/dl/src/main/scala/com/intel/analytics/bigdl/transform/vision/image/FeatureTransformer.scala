@@ -23,15 +23,19 @@ import org.apache.log4j.Logger
 
 /**
  * FeatureTransformer is a transformer that transform ImageFeature
- * @param catchException if true, catch the exception of the transformer to avoid crashing.
- *                       if false, interrupt the transformer when error happens
  */
-abstract class FeatureTransformer(catchException: Boolean = FeatureTransformer.catchException)
+abstract class FeatureTransformer()
   extends Transformer[ImageFeature, ImageFeature] {
 
   import FeatureTransformer.logger
 
   private var outKey: Option[String] = None
+
+  /**
+   * if true, catch the exception of the transformer to avoid crashing.
+   * if false, interrupt the transformer when error happens
+   */
+  var ignoreException: Boolean = false
 
   /**
    * set the output key to store current transformed result
@@ -72,7 +76,7 @@ abstract class FeatureTransformer(catchException: Boolean = FeatureTransformer.c
     } catch {
       case e: Exception =>
         feature.isValid = false
-        if (catchException) {
+        if (ignoreException) {
           val path = if (feature.contains(ImageFeature.uri)) feature(ImageFeature.uri) else ""
           logger.warn(s"failed ${path} in transformer ${getClass}")
           e.printStackTrace()
@@ -102,11 +106,19 @@ abstract class FeatureTransformer(catchException: Boolean = FeatureTransformer.c
   override def -> [C](other: Transformer[ImageFeature, C]): Transformer[ImageFeature, C] = {
     new ChainedTransformer(this, other)
   }
+
+  /**
+   * if true, catch the exception of the transformer to avoid crashing.
+   * if false, interrupt the transformer when error happens
+   */
+  def setIgnoreException(ignore: Boolean = true): this.type = {
+    ignoreException = ignore
+    this
+  }
 }
 
 object FeatureTransformer {
   val logger = Logger.getLogger(getClass)
-  var catchException: Boolean = false
 }
 
 /**
@@ -117,5 +129,21 @@ class ChainedFeatureTransformer(first: FeatureTransformer, last: FeatureTransfor
 
   override def transform(prev: ImageFeature): ImageFeature = {
     last.transform(first.transform(prev))
+  }
+
+  override def setIgnoreException(skip: Boolean = true): this.type = {
+    first match {
+      case ctr: ChainedFeatureTransformer =>
+        ctr.setIgnoreException(skip)
+      case _ =>
+        first.setIgnoreException(skip)
+    }
+    last match {
+      case ctr: ChainedFeatureTransformer =>
+        ctr.setIgnoreException(skip)
+      case _ =>
+        last.setIgnoreException(skip)
+    }
+    this
   }
 }
