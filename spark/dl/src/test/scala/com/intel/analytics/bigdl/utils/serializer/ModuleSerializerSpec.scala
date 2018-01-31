@@ -45,65 +45,24 @@ import scala.collection.mutable
 import scala.util.Random
 
 
-class ModuleSerializerSpec extends FlatSpec with Matchers with BeforeAndAfterAll {
+class ModuleSerializerSpec extends SerializerSpecHelper {
 
-  val pkg = "com.intel.analytics.bigdl.nn"
-  val postFix = "bigdl"
-  val excluded = new mutable.HashSet[String]()
-  val expected = new mutable.HashSet[String]()
-  val tested = new mutable.HashSet[String]()
+  override def getPackage(): String = "com.intel.analytics.bigdl.nn"
 
-  private def addExcluded(): Unit = {
-    excluded.add("com.intel.analytics.bigdl.nn.CellUnit")
-    excluded.add("com.intel.analytics.bigdl.nn.tf.ControlDependency")
-    excluded.add("com.intel.analytics.bigdl.utils.tf.AdapterForTest")
-    excluded.add("com.intel.analytics.bigdl.utils.serializer.TestModule")
-    excluded.add("com.intel.analytics.bigdl.utils.ExceptionTest")
+  override def addExcludedClass(): Unit = {
+    excludedClass.add("com.intel.analytics.bigdl.nn.CellUnit")
+    excludedClass.add("com.intel.analytics.bigdl.nn.tf.ControlDependency")
+    excludedClass.add("com.intel.analytics.bigdl.utils.tf.AdapterForTest")
+    excludedClass.add("com.intel.analytics.bigdl.utils.serializer.TestModule")
+    excludedClass.add("com.intel.analytics.bigdl.utils.ExceptionTest")
   }
 
-  override protected def beforeAll() = {
-    addExcluded
-    val reflections = new Reflections(new ConfigurationBuilder()
-      .filterInputsBy(new FilterBuilder()
-          .excludePackage("com.intel.analytics.bigdl.utils.tf.loaders")
-        // TODO: enable this once Shape serialization ready.
-        .excludePackage("com.intel.analytics.bigdl.nn.keras"))
-
-      .setUrls(ClasspathHelper.forPackage(pkg))
-      .setScanners(new SubTypesScanner()))
-
-    val subTypes = reflections.getSubTypesOf(classOf[AbstractModule[_, _, _]])
-      .asScala.filter(sub => !Modifier.isAbstract(sub.getModifiers)).
-      filter(sub => !excluded.contains(sub.getName))
-    subTypes.foreach(sub => expected.add(sub.getName))
+  override def addExcludedPackage(): Unit = {
+    excludedPackage.add("com.intel.analytics.bigdl.utils.tf.loaders")
+    // It would be tested in a separated spec
+    excludedPackage.add("com.intel.analytics.bigdl.nn.keras")
   }
 
-
-  private def runSerializationTest(module : AbstractModule[_, _, Float],
-    input : Activity, cls: Class[_] = null) : Unit = {
-    runSerializationTestWithMultiClass(module, input,
-      if (cls == null) Array(module.getClass) else Array(cls))
-  }
-
-  private def runSerializationTestWithMultiClass(module : AbstractModule[_, _, Float],
-                                  input : Activity, classes: Array[Class[_]]) : Unit = {
-    val name = module.getName
-    val serFile = File.createTempFile(name, postFix)
-    val originForward = module.evaluate().forward(input)
-
-    ModulePersister.saveToFile[Float](serFile.getAbsolutePath, null, module.evaluate(), true)
-    RNG.setSeed(1000)
-    val loadedModule = ModuleLoader.loadFromFile[Float](serFile.getAbsolutePath)
-
-    val afterLoadForward = loadedModule.forward(input)
-
-    if (serFile.exists) {
-      serFile.delete
-    }
-
-    afterLoadForward should be (originForward)
-    classes.foreach(cls => tested.add(cls.getName))
-  }
 
   "Abs serializer" should "work properly" in {
     val abs = Abs[Float]().setName("abs")
@@ -2621,14 +2580,4 @@ class ModuleSerializerSpec extends FlatSpec with Matchers with BeforeAndAfterAll
     val module = new com.intel.analytics.bigdl.nn.ops.InvertPermutation[Float]()
     runSerializationTest(module, Tensor[Int](T(0, 1, 2, 3, 4)))
   }
-
-  override protected def afterAll() = {
-    var total = 0
-    expected.foreach(exp => {
-      require(tested.contains(exp), s" $exp not included in the test!")
-      total += 1
-    })
-    println(s"total $total, remaining ${expected.size - total}")
-  }
-
 }

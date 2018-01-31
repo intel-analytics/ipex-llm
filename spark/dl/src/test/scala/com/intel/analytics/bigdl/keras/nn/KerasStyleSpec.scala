@@ -122,22 +122,32 @@ class KerasStyleSpec extends BigDLSpecHelper {
     }
   }
 
-  // TODO: enable test for serialization
-  //  "save and reload model" should "works correctly" in {
-  //    val input = Input[Float](inputShape = Array(10))
-  //    val d = Dense[Float](20).setName("dense1").inputs(input)
-  //    val d2 = Dense[Float](5).setName("dense2").inputs(d)
-  //    val graph = Model[Float](input, d2)
-  //    val tmpFile = createTmpFile()
-  //    val absPath = tmpFile.getAbsolutePath
-  //    tmpFile.delete()
-  //    graph.saveModule(absPath)
-  //    val reloadedModel = Module.loadModule(absPath)
-  //    val inputData = Tensor[Float](Array(20, 10)).rand()
-  //    val output = reloadedModel.forward(inputData)
-  //  }
-  //
+    "save and reload model" should "works correctly" in {
+      val input = Input[Float](inputShape = Shape(10))
+      val d = Dense[Float](20).setName("dense1").inputs(input)
+      val d2 = Dense[Float](5).setName("dense2").inputs(d)
+      val model = Model[Float](input, d2)
+      val tmpFile = createTmpFile()
+      val absPath = tmpFile.getAbsolutePath
+      tmpFile.delete()
+      model.saveModule(absPath)
+      val reloadedModel = Module.loadModule(absPath)
+      val inputData = Tensor[Float](Array(20, 10)).rand()
+      val output = reloadedModel.forward(inputData)
+    }
 
-
-
+  "save and reload sequential" should "works correctly" in {
+    val kseq = KSequential[Float]()
+    val d1 = Dense[Float](20, inputShape = Shape(10)).setName("dense1")
+    val d2 = Dense[Float](5).setName("dense2")
+    kseq.add(d1)
+    kseq.add(d2)
+    val tmpFile = createTmpFile()
+    val absPath = tmpFile.getAbsolutePath
+    tmpFile.delete()
+    kseq.saveModule(absPath)
+    val reloadedModel = Module.loadModule(absPath)
+    val inputData = Tensor[Float](Array(20, 10)).rand()
+    val output = reloadedModel.forward(inputData)
+  }
 }

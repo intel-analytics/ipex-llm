@@ -16,13 +16,14 @@
 
 package com.intel.analytics.bigdl.nn.keras
 
-import com.intel.analytics.bigdl.nn.Graph.ModuleNode
+import com.intel.analytics.bigdl.nn.Graph._
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
-import com.intel.analytics.bigdl.nn.{Graph, StaticGraph, Sequential => TSequential}
+import com.intel.analytics.bigdl.nn.{Graph, GraphSerializable, StaticGraph, Sequential => TSequential}
+import com.intel.analytics.bigdl.serialization.Bigdl.BigDLModule
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.serializer._
 import com.intel.analytics.bigdl.utils.{Shape, Util}
 
-import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
 class Model[T: ClassTag](private val _inputs : Seq[ModuleNode[T]],
@@ -47,7 +48,7 @@ class Model[T: ClassTag](private val _inputs : Seq[ModuleNode[T]],
   }
 }
 
-object Model {
+object Model extends ModelSerializer{
   /**
    * Build multiple inputs, multiple outputs graph container.
    * @param input input node
@@ -93,7 +94,27 @@ object Model {
   }
 }
 
-class Sequential[T: ClassTag]
+trait ModelSerializer extends GraphSerializable with TKerasSerializerHelper{
+
+  override def doSerializeModule[T: ClassTag](context: SerializeContext[T],
+                                              moduleBuilder : BigDLModule.Builder)
+                                             (implicit ev: TensorNumeric[T]) : Unit = {
+    super.doSerializeModule(context, moduleBuilder)
+    appendKerasLabel(context, moduleBuilder)
+  }
+
+  override def doLoadModule[T: ClassTag](context: DeserializeContext)
+    (implicit ev: TensorNumeric[T]) : AbstractModule[Activity, Activity, T] = {
+    val (module, inputs, outputs, generateBackwardValue, sharedVariables) =
+      prepareLoadModule(context)
+    require(generateBackwardValue == null, "there's no generateBackward for keras module")
+    require(module.containsAttr("is_keras_module")
+      && module.getAttrOrThrow("is_keras_module").getBoolValue(), "It should be a keras module")
+    Model(inputs.toArray, outputs.toArray)
+  }
+}
+
+class Sequential[T: ClassTag](val stopInferShape: Boolean = false)
 (implicit ev: TensorNumeric[T]) extends TSequential[T] {
 
   override private[bigdl] def isCompatibleWithKeras(): Boolean = true
@@ -111,6 +132,22 @@ class Sequential[T: ClassTag]
     outputShapeValue(outputShapeValue.length -1) // For Seq, we only respect the last item as output
   }
 
+  private def triggerBuilding(module: AbstractModule[_ <: Activity, _ <: Activity, T]): Unit = {
+    if (this.modules.isEmpty) {
+      if (module.getInputShape() == null) {
+        throw new RuntimeException("The first layer should explicitly declare inputshape")
+      } else {
+        val outputShape = module.build(module.getInputShape())
+        this.inputShapeValue = module.getInputShape()
+        this.outputShapeValue = Array(outputShape)
+      }
+    } else {
+      val outputShape = module.build(this.getOutputShape())
+      this.outputShapeValue = Array(outputShape)
+    }
+    isBuilt = true
+  }
+
   /**
    * Add a sub-module to the contained `modules`
    *
@@ -126,28 +163,24 @@ class Sequential[T: ClassTag]
       module.asInstanceOf[Sequential[T]].frozen = true
     }
     Util.excludeNotKeras[T](Seq(module))
-
-    if (this.modules.isEmpty) {
-      if (module.getInputShape() == null) {
-        throw new RuntimeException("The first layer should explicitly declare inputshape")
-      } else {
-        val outputShape = module.build(module.getInputShape())
-        this.inputShapeValue = module.getInputShape()
-        this.outputShapeValue = Array(outputShape)
-      }
-    } else {
-      val outputShape = module.build(this.getOutputShape())
-      this.outputShapeValue = Array(outputShape)
+    if (!stopInferShape) {
+      triggerBuilding(module)
     }
     modules += module.asInstanceOf[AbstractModule[Activity, Activity, T]]
-    isBuilt = true
     this
   }
 }
 
-object Sequential {
+object Sequential extends ContainerSerializable with TKerasSerializerHelper{
   def apply[@specialized(Float, Double) T: ClassTag]()
      (implicit ev: TensorNumeric[T]) : Sequential[T] = {
     new Sequential[T]()
+  }
+
+  override def doSerializeModule[T: ClassTag](context: SerializeContext[T],
+                                              moduleBuilder : BigDLModule.Builder)
+                                             (implicit ev: TensorNumeric[T]) : Unit = {
+    super.doSerializeModule(context, moduleBuilder)
+    appendKerasLabel(context, moduleBuilder)
   }
 }
