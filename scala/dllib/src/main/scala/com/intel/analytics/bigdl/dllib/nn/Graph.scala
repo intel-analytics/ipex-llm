@@ -218,6 +218,8 @@ abstract class Graph[T: ClassTag](
 
   private var stopGradientLayers: util.HashSet[String] = _
 
+  def getStopGradientLayers(): util.HashSet[String] = stopGradientLayers
+
   /**
    * whether stop propagating gradInput back
    * @return
@@ -599,13 +601,25 @@ trait GraphSerializable extends ContainerSerializable {
     (implicit ev: TensorNumeric[T]): AbstractModule[Activity, Activity, T] = {
     val (module, inputs, outputs, generateBackwardValue, sharedVariables) =
       prepareLoadModule(context)
-    if (generateBackwardValue != null) {
+    val attributes = module.getAttrMap
+    val graph = if (generateBackwardValue != null) {
       val generateBackward = DataConverter.getAttributeValue(context, generateBackwardValue)
         .asInstanceOf[Boolean]
       Graph.dynamic[T](inputs.toArray, outputs.toArray, sharedVariables, generateBackward)
     } else {
       Graph[T](inputs.toArray, outputs.toArray, sharedVariables)
     }
+    var serializedStopGradientLayers : Array[String] = null
+    // this is to keep backward compatible
+    if (attributes.containsKey("stopGradientLayers")) {
+      val stopGradientLayers = attributes.get("stopGradientLayers")
+      serializedStopGradientLayers = DataConverter.
+        getAttributeValue(context, stopGradientLayers).asInstanceOf[Array[String]]
+    }
+    if (serializedStopGradientLayers != null) {
+      graph.stopGradient(serializedStopGradientLayers)
+    }
+    graph
   }
 
   private def createControlNode[T: ClassTag](controlOps: ControlOps[T]): ModuleNode[T] = {
@@ -684,6 +698,16 @@ trait GraphSerializable extends ContainerSerializable {
       DataConverter.setAttributeValue(context, generateBackwardBuilder,
         graph.asInstanceOf[DynamicGraph[_]].generateBackward, universe.typeOf[Boolean])
       graphBuilder.putAttr("generateBackward", generateBackwardBuilder.build)
+    }
+
+    val stopGradientLayers = graph.getStopGradientLayers
+
+    if (stopGradientLayers != null && stopGradientLayers.size > 0) {
+      val stopGradientLayersBuilder = AttrValue.newBuilder
+      DataConverter.setAttributeValue(context, stopGradientLayersBuilder,
+        stopGradientLayers.toArray(new Array[String](stopGradientLayers.size)),
+        universe.typeOf[Array[String]])
+      graphBuilder.putAttr("stopGradientLayers", stopGradientLayersBuilder.build)
     }
   }
 }
