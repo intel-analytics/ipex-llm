@@ -93,7 +93,7 @@ object Model {
   }
 }
 
-class Sequential[T: ClassTag]
+class Sequential[T: ClassTag](val stopInferShape: Boolean = false)
 (implicit ev: TensorNumeric[T]) extends TSequential[T] {
 
   override private[bigdl] def isCompatibleWithKeras(): Boolean = true
@@ -111,6 +111,22 @@ class Sequential[T: ClassTag]
     outputShapeValue(outputShapeValue.length -1) // For Seq, we only respect the last item as output
   }
 
+  private def triggerBuilding(module: AbstractModule[_ <: Activity, _ <: Activity, T]): Unit = {
+    if (this.modules.isEmpty) {
+      if (module.getInputShape() == null) {
+        throw new RuntimeException("The first layer should explicitly declare inputshape")
+      } else {
+        val outputShape = module.build(module.getInputShape())
+        this.inputShapeValue = module.getInputShape()
+        this.outputShapeValue = Array(outputShape)
+      }
+    } else {
+      val outputShape = module.build(this.getOutputShape())
+      this.outputShapeValue = Array(outputShape)
+    }
+    isBuilt = true
+  }
+
   /**
    * Add a sub-module to the contained `modules`
    *
@@ -126,21 +142,10 @@ class Sequential[T: ClassTag]
       module.asInstanceOf[Sequential[T]].frozen = true
     }
     Util.excludeNotKeras[T](Seq(module))
-
-    if (this.modules.isEmpty) {
-      if (module.getInputShape() == null) {
-        throw new RuntimeException("The first layer should explicitly declare inputshape")
-      } else {
-        val outputShape = module.build(module.getInputShape())
-        this.inputShapeValue = module.getInputShape()
-        this.outputShapeValue = Array(outputShape)
-      }
-    } else {
-      val outputShape = module.build(this.getOutputShape())
-      this.outputShapeValue = Array(outputShape)
+    if (!stopInferShape) {
+      triggerBuilding(module)
     }
     modules += module.asInstanceOf[AbstractModule[Activity, Activity, T]]
-    isBuilt = true
     this
   }
 }
