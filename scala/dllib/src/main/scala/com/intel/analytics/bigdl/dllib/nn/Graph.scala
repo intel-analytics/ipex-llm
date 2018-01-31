@@ -18,26 +18,25 @@ package com.intel.analytics.bigdl.nn
 import java.util
 
 import com.intel.analytics.bigdl.Module
-
-import scala.collection.JavaConverters._
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.nn.ops._
 import com.intel.analytics.bigdl.nn.tf.{ControlDependency, WithoutInput}
+import com.intel.analytics.bigdl.serialization.Bigdl.{AttrValue, BigDLModule}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.serializer._
 import com.intel.analytics.bigdl.utils._
+import com.intel.analytics.bigdl.utils.serializer._
 import com.intel.analytics.bigdl.utils.serializer.converters.DataConverter
 import com.intel.analytics.bigdl.utils.tf.Tensorflow
-import com.intel.analytics.bigdl.serialization.Bigdl.{AttrValue, BigDLModule}
+import com.intel.analytics.bigdl.visualization.tensorboard.{FileWriter => TFFileWriter}
+import org.tensorflow.framework.GraphDef
 
+import scala.collection.JavaConverters._
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 import scala.reflect.runtime.universe
-import com.intel.analytics.bigdl.visualization.tensorboard.{FileWriter => TFFileWriter}
-import org.tensorflow.framework.GraphDef
 
 /**
  * A graph container. The modules in the container are connected as a directed Graph. Each module
@@ -72,8 +71,8 @@ import org.tensorflow.framework.GraphDef
 @SerialVersionUID(- 2896121321564992779L)
 abstract class Graph[T: ClassTag](
   val inputs : Seq[ModuleNode[T]],
-  protected val outputs : Seq[ModuleNode[T]],
-  private val variables: Option[(Array[Tensor[T]], Array[Tensor[T]])] = None
+  private[bigdl] val outputs : Seq[ModuleNode[T]],
+  private[bigdl] val variables: Option[(Array[Tensor[T]], Array[Tensor[T]])] = None
 )(implicit ev: TensorNumeric[T]) extends Container[Activity, Activity, T]{
 
   /**
@@ -452,7 +451,7 @@ abstract class Graph[T: ClassTag](
   }
 }
 
-object Graph extends ContainerSerializable {
+object Graph extends GraphSerializable {
   /**
    * Node for graph container. The module should have a tensor/table input while a tensor output
    * @tparam T
@@ -466,18 +465,18 @@ object Graph extends ContainerSerializable {
    * @return a graph container
    */
   def apply[T: ClassTag](
-    input : Array[ModuleNode[T]],
-    output : Array[ModuleNode[T]],
+    input: Array[ModuleNode[T]],
+    output: Array[ModuleNode[T]],
     variables: Option[(Array[Tensor[T]], Array[Tensor[T]])] = None
-  )(implicit ev: TensorNumeric[T]) : Graph[T] = {
+  )(implicit ev: TensorNumeric[T]): Graph[T] = {
     new StaticGraph[T](input, output, variables)
   }
 
   def dynamic[T: ClassTag](
-    input : Array[ModuleNode[T]],
-    output : Array[ModuleNode[T]],
+    input: Array[ModuleNode[T]],
+    output: Array[ModuleNode[T]],
     variables: Option[(Array[Tensor[T]], Array[Tensor[T]])] = None,
-    generateBackward: Boolean = true)(implicit ev: TensorNumeric[T]) : Graph[T] = {
+    generateBackward: Boolean = true)(implicit ev: TensorNumeric[T]): Graph[T] = {
     new DynamicGraph[T](input, output, variables, generateBackward)
   }
 
@@ -487,13 +486,13 @@ object Graph extends ContainerSerializable {
    * @param output output nodes
    * @return a graph container
    */
-  def apply[T: ClassTag](input : ModuleNode[T], output : Array[ModuleNode[T]])
-    (implicit ev: TensorNumeric[T]) : Graph[T] = {
+  def apply[T: ClassTag](input: ModuleNode[T], output: Array[ModuleNode[T]])
+    (implicit ev: TensorNumeric[T]): Graph[T] = {
     new StaticGraph[T](Seq(input), output)
   }
 
-  def dynamic[T: ClassTag](input : ModuleNode[T], output : Array[ModuleNode[T]])
-    (implicit ev: TensorNumeric[T]) : Graph[T] = {
+  def dynamic[T: ClassTag](input: ModuleNode[T], output: Array[ModuleNode[T]])
+    (implicit ev: TensorNumeric[T]): Graph[T] = {
     new DynamicGraph[T](Array(input), output, None, true)
   }
 
@@ -503,13 +502,13 @@ object Graph extends ContainerSerializable {
    * @param output output node
    * @return a graph container
    */
-  def apply[T: ClassTag](input : Array[ModuleNode[T]], output : ModuleNode[T])
-    (implicit ev: TensorNumeric[T]) : Graph[T] = {
+  def apply[T: ClassTag](input: Array[ModuleNode[T]], output: ModuleNode[T])
+    (implicit ev: TensorNumeric[T]): Graph[T] = {
     new StaticGraph[T](input, Seq(output))
   }
 
-  def dynamic[T: ClassTag](input : Array[ModuleNode[T]], output : ModuleNode[T])
-    (implicit ev: TensorNumeric[T]) : Graph[T] = {
+  def dynamic[T: ClassTag](input: Array[ModuleNode[T]], output: ModuleNode[T])
+    (implicit ev: TensorNumeric[T]): Graph[T] = {
     new DynamicGraph[T](input, Array(output), None, true)
   }
 
@@ -519,18 +518,21 @@ object Graph extends ContainerSerializable {
    * @param output output nodes
    * @return a graph container
    */
-  def apply[T: ClassTag](input : ModuleNode[T], output : ModuleNode[T])
-    (implicit ev: TensorNumeric[T]) : Graph[T] = {
+  def apply[T: ClassTag](input: ModuleNode[T], output: ModuleNode[T])
+    (implicit ev: TensorNumeric[T]): Graph[T] = {
     new StaticGraph[T](Seq(input), Seq(output))
   }
 
-  def dynamic[T: ClassTag](input : ModuleNode[T], output : ModuleNode[T])
-    (implicit ev: TensorNumeric[T]) : Graph[T] = {
+  def dynamic[T: ClassTag](input: ModuleNode[T], output: ModuleNode[T])
+    (implicit ev: TensorNumeric[T]): Graph[T] = {
     new DynamicGraph[T](Array(input), Array(output), None, true)
   }
+}
 
-  override def doLoadModule[T: ClassTag](context: DeserializeContext)
-    (implicit ev: TensorNumeric[T]) : AbstractModule[Activity, Activity, T] = {
+trait GraphSerializable extends ContainerSerializable {
+
+  private[bigdl] def prepareLoadModule[T: ClassTag](context: DeserializeContext)
+                                                   (implicit ev: TensorNumeric[T]) = {
 
     val module = context.bigdlModule
     val subModules = module.getSubModulesList.asScala
@@ -552,7 +554,7 @@ object Graph extends ContainerSerializable {
       val bigDLModule = ModuleSerializer.load(DeserializeContext(subModule,
         context.storages, context.storageType))
       val moduleNode = bigDLModule.module match {
-        case controlOps : ControlOps[T] => createControlNode(controlOps)
+        case controlOps: ControlOps[T] => createControlNode(controlOps)
         case _ => bigDLModule.module.inputs()
       }
       val preNodes = bigDLModule.pre
@@ -566,7 +568,7 @@ object Graph extends ContainerSerializable {
       val edgeMap = edges.get(moduleNode._1.element.getName).get
       moduleNode._2.foreach(pre => {
         if (layerMap.contains(pre)) {
-          val edge : Edge = edgeMap.get(pre).get match {
+          val edge: Edge = edgeMap.get(pre).get match {
             case -1 => Edge()
             case index: Int => Edge(index)
           }
@@ -578,7 +580,7 @@ object Graph extends ContainerSerializable {
     inputNames.foreach(inputName => inputs.append(layerMap(inputName)._1))
     outputNames.foreach(outputName => outputs.append(layerMap(outputName)._1))
 
-    var sharedVariables : Option[(Array[Tensor[T]], Array[Tensor[T]])] = None
+    var sharedVariables: Option[(Array[Tensor[T]], Array[Tensor[T]])] = None
     if (attributes.containsKey("sharedWeight") && attributes.containsKey("sharedBias")) {
       val weights = attributes.get("sharedWeight")
       val biases = attributes.get("sharedBias")
@@ -590,6 +592,13 @@ object Graph extends ContainerSerializable {
     }
 
     val generateBackwardValue = attributes.get("generateBackward")
+    (module, inputs, outputs, generateBackwardValue, sharedVariables)
+  }
+
+  override def doLoadModule[T: ClassTag](context: DeserializeContext)
+    (implicit ev: TensorNumeric[T]): AbstractModule[Activity, Activity, T] = {
+    val (module, inputs, outputs, generateBackwardValue, sharedVariables) =
+      prepareLoadModule(context)
     if (generateBackwardValue != null) {
       val generateBackward = DataConverter.getAttributeValue(context, generateBackwardValue)
         .asInstanceOf[Boolean]
@@ -599,17 +608,17 @@ object Graph extends ContainerSerializable {
     }
   }
 
-  private def createControlNode[T: ClassTag](controlOps : ControlOps[T]) : ModuleNode[T] = {
+  private def createControlNode[T: ClassTag](controlOps: ControlOps[T]): ModuleNode[T] = {
     controlOps match {
-      case switchOps : SwitchOps[T] => new SwitchControlNode[Module[T]](switchOps)
-      case mergeOps : MergeOps[T] => new MergeControlNode[Module[T]](mergeOps)
+      case switchOps: SwitchOps[T] => new SwitchControlNode[Module[T]](switchOps)
+      case mergeOps: MergeOps[T] => new MergeControlNode[Module[T]](mergeOps)
       case _ => new Node[Module[T]](controlOps)
     }
   }
 
   override def doSerializeModule[T: ClassTag](context: SerializeContext[T],
-                                              graphBuilder : BigDLModule.Builder)
-                                           (implicit ev: TensorNumeric[T]) : Unit = {
+      graphBuilder: BigDLModule.Builder)
+    (implicit ev: TensorNumeric[T]): Unit = {
     val module = context.moduleData
     module.next.foreach(_ => graphBuilder.addAllPreModules(_))
     module.pre.foreach(_ => graphBuilder.addAllNextModules(_))
