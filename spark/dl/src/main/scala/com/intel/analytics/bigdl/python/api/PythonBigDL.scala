@@ -2716,8 +2716,14 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
       stdR.toFloat, stdG.toFloat, stdB.toFloat)
   }
 
-  def createAspectScale(scale: Int, scaleMultipleOf: Int, maxSize: Int): FeatureTransformer = {
-    AspectScale(scale, scaleMultipleOf, maxSize)
+  def createAspectScale(scale: Int,
+    scaleMultipleOf: Int,
+    maxSize: Int,
+    resizeMode: Int = 1,
+    useScaleFactor: Boolean = true,
+    minScale: Double = -1): FeatureTransformer = {
+    val minS = if (minScale == -1) None else Some(minScale.toFloat)
+    AspectScale(scale, scaleMultipleOf, maxSize, resizeMode, useScaleFactor, minS)
   }
 
   def createFiller(startX: Double, startY: Double, endX: Double, endY: Double,
@@ -2745,11 +2751,14 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     RoiNormalize()
   }
 
+  def createFixExpand(eh: Int, ew: Int): FixExpand = {
+    FixExpand(eh, ew)
+  }
+
   def transformImageFeature(transformer: FeatureTransformer, feature: ImageFeature)
   : ImageFeature = {
     transformer.transform(feature)
   }
-
 
   def transformImageFrame(transformer: FeatureTransformer,
     imageFrame: ImageFrame): ImageFrame = {
