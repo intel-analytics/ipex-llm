@@ -194,7 +194,7 @@ abstract class Graph[T: ClassTag](
   protected var backwardGraph: DirectedGraph[AbstractModule[Activity, Activity, T]] = _
   protected var backwardNodes: Array[Node[AbstractModule[Activity, Activity, T]]] = _
   // If the graph will generate gradInput for the input
-  @transient
+
   private var isGradInputAvailable: Array[Boolean] = _
 
   /**
