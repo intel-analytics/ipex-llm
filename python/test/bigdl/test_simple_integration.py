@@ -601,6 +601,5 @@ class TestSimple():
                                        JTensor.from_ndarray(np.ones([4, 3]))])
         assert result4.shape == (4,)
 
-
 if __name__ == "__main__":
     pytest.main([__file__])
