@@ -507,18 +507,14 @@ class ConvolutionDnn[T: ClassTag](
      /* finally create a convolution primitive */
      conv_acc = MklDnnOps.primitiveCreate2(weights_pd, conv_inputs, indexes, 2, conv_outputs, 2)
 
-     // reorder internal weight to weight
-     val (weights_user, weights_user_m) = reorderToUser(weights_memory,
-       weightsBuffer.getPrimitiveDesc())
-     //      reorder internal gradweights to gradweights
+     // reorder internal gradweights to gradweights
      val (gradWeights_user, gradWeights_user_m) = reorderToUser(gradWeights_memory,
        gradWeightBuffer.getPrimitiveDesc())
 
      stream_acc.clear()
      if (reorder_gradWeights != 0L) stream_acc.append(reorder_gradWeights)
      stream_acc.append(conv_acc)
-//     if (weights_user != 0L) stream_acc.append(weights_user)
-//     if (gradWeights_user != 0L) stream_acc.append(gradWeights_user_m)
+     if (gradWeights_user != 0L) stream_acc.append(gradWeights_user_m)
    }
    /* build a simple net */
    // keep original data

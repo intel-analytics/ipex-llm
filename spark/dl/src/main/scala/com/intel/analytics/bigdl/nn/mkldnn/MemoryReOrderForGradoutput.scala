@@ -28,7 +28,7 @@ import scala.reflect.ClassTag
 /**
  * when from mkldnn layer to bigdl layer, there need to do reorder for input or gradOutput
  */
-class MemoryReOrder(inputFormat: Int = MklDnn.MemoryFormat.any,
+class MemoryReOrderForGradoutput(inputFormat: Int = MklDnn.MemoryFormat.any,
                     outputFormat: Int = MklDnn.MemoryFormat.nchw) extends TensorModule[Float] {
 
   @transient
@@ -160,9 +160,9 @@ class MemoryReOrder(inputFormat: Int = MklDnn.MemoryFormat.any,
   }
 }
 
-object MemoryReOrder {
+object MemoryReOrderForGradoutput {
   def apply[T: ClassTag](inputFormat: Int = MklDnn.MemoryFormat.any,
-                         outputFormat: Int = MklDnn.MemoryFormat.nhwc): MemoryReOrder = {
-    new MemoryReOrder(inputFormat, outputFormat)
+                         outputFormat: Int = MklDnn.MemoryFormat.nhwc): MemoryReOrderForGradoutput = {
+    new MemoryReOrderForGradoutput(inputFormat, outputFormat)
   }
 }

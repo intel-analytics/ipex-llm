@@ -23,7 +23,7 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
 import scala.reflect.ClassTag
 
-class ReLUDnn[T: ClassTag](ip: Boolean = false)(
+class ReLUDnn[T: ClassTag](ip: Boolean = false, value: Float = 0.0f)(
   implicit ev: TensorNumeric[T]) extends TensorModule[Float] {
 
     override val isMklDnnModel: Boolean = true
@@ -92,7 +92,7 @@ class ReLUDnn[T: ClassTag](ip: Boolean = false)(
         }
 
         val relu_desc = MklDnnOps.eltwiseForwardDescInit(MklDnn.PropKind.forward,
-          MklDnn.AlgKind.eltwiseRelu, src_md, 0, 0)
+          MklDnn.AlgKind.eltwiseRelu, src_md, value, 0)
         relu_fwd_pd = MklDnnOps.primitiveDescCreate(relu_desc, engine, 0L)
 
         /* create relu dst memory primitive */
@@ -141,7 +141,7 @@ class ReLUDnn[T: ClassTag](ip: Boolean = false)(
 
         /* create backward relu descriptor */
         val bwd_desc = MklDnnOps.eltwiseBackwardDescInit(MklDnn.AlgKind.eltwiseRelu, gradOutput_md,
-          src_md, 0, 0)
+          src_md, value, 0)
         val bwd_pd = MklDnnOps.primitiveDescCreate(bwd_desc, engine, relu_fwd_pd)
 
         /* create memory primities for relu diff src */
@@ -171,7 +171,8 @@ class ReLUDnn[T: ClassTag](ip: Boolean = false)(
   }
 
 object ReLUDnn {
-  def apply[T: ClassTag](ip: Boolean = false)(implicit ev: TensorNumeric[T]): ReLUDnn[T] = {
-    new ReLUDnn[T](ip)
+  def apply[T: ClassTag](ip: Boolean = false, value: Float = 0.0f)
+    (implicit ev: TensorNumeric[T]): ReLUDnn[T] = {
+    new ReLUDnn[T](ip, value)
   }
 }
