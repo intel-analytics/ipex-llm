@@ -20,9 +20,9 @@ import com.intel.analytics.bigdl.utils.Shape
 
 trait InferShape {
 
-  private var _inputShapeValue: Shape = null
+  private[bigdl] var _inputShapeValue: Shape = null
 
-  private var _outputShapeValue: Array[Shape] = Array[Shape]()
+  private[bigdl] var _outputShapeValue: Array[Shape] = Array[Shape]()
 
   private[bigdl] def inputShapeValue: Shape = _inputShapeValue
 
