@@ -29,7 +29,37 @@ import org.scalatest.{FlatSpec, Matchers}
 class FeatureTransformerSpec extends FlatSpec with Matchers {
   val resource = getClass.getClassLoader.getResource("pascal/")
 
-  "Image Transformer with empty byte input" should "work properly" in {
+  "Image Transformer with empty byte input" should "throw exception" in {
+    FeatureTransformer.catchException = false
+    intercept[Exception] {
+      val img = Array[Byte]()
+      val imageFeature = ImageFeature(img)
+      val imageFrame = new LocalImageFrame(Array(imageFeature))
+      val imgAug = Resize(1, 1, -1) ->
+        FixedCrop(-1, -1, -1, -1, normalized = false) ->
+        MatToFloats(validHeight = 1, validWidth = 1)
+      val out = imgAug(imageFrame)
+      imageFeature.floats().length should be(3)
+      imageFeature.isValid should be(false)
+    }
+  }
+
+  "Image Transformer with exception" should "throw exception" in {
+    FeatureTransformer.catchException = false
+    intercept[Exception] {
+      val images = ImageFrame.read(resource.getFile)
+      val imgAug = FixedCrop(-1, -1, -1, -1, normalized = false) ->
+        Resize(300, 300, -1) ->
+        MatToFloats(validHeight = 300, validWidth = 300)
+      val out = imgAug(images)
+      val imageFeature = out.asInstanceOf[LocalImageFrame].array(0)
+      imageFeature.floats().length should be(3 * 300 * 300)
+      imageFeature.isValid should be(false)
+    }
+  }
+
+  "Image Transformer with empty byte input" should "catch exception" in {
+    FeatureTransformer.catchException = true
     val img = Array[Byte]()
     val imageFeature = ImageFeature(img)
     val imageFrame = new LocalImageFrame(Array(imageFeature))
@@ -41,7 +71,8 @@ class FeatureTransformerSpec extends FlatSpec with Matchers {
     imageFeature.isValid should be(false)
   }
 
-  "Image Transformer with exception" should "work properly" in {
+  "Image Transformer with exception" should "catch exception" in {
+    FeatureTransformer.catchException = true
     val images = ImageFrame.read(resource.getFile)
     val imgAug = FixedCrop(-1, -1, -1, -1, normalized = false) ->
       Resize(300, 300, -1) ->

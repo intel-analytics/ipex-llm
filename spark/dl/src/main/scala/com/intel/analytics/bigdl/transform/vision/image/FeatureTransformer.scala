@@ -24,7 +24,8 @@ import org.apache.log4j.Logger
 /**
  * FeatureTransformer is a transformer that transform ImageFeature
  */
-abstract class FeatureTransformer() extends Transformer[ImageFeature, ImageFeature] {
+abstract class FeatureTransformer(catchException: Boolean = FeatureTransformer.catchException)
+  extends Transformer[ImageFeature, ImageFeature] {
 
   import FeatureTransformer.logger
 
@@ -68,10 +69,14 @@ abstract class FeatureTransformer() extends Transformer[ImageFeature, ImageFeatu
       }
     } catch {
       case e: Exception =>
-        val path = if (feature.contains(ImageFeature.uri)) feature(ImageFeature.uri) else ""
-        logger.warn(s"failed ${path} in transformer ${getClass}")
-        e.printStackTrace()
         feature.isValid = false
+        if (catchException) {
+          val path = if (feature.contains(ImageFeature.uri)) feature(ImageFeature.uri) else ""
+          logger.warn(s"failed ${path} in transformer ${getClass}")
+          e.printStackTrace()
+        } else {
+          throw e
+        }
     }
     feature
   }
@@ -99,6 +104,7 @@ abstract class FeatureTransformer() extends Transformer[ImageFeature, ImageFeatu
 
 object FeatureTransformer {
   val logger = Logger.getLogger(getClass)
+  var catchException: Boolean = false
 }
 
 /**
