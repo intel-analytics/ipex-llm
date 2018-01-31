@@ -35,7 +35,7 @@ import java.nio.ByteOrder
 import java.util
 
 import com.intel.analytics.bigdl.nn.Graph._
-import com.intel.analytics.bigdl.nn.tf.{Const, Fill, Shape, SplitAndSelect}
+import com.intel.analytics.bigdl.nn.tf.{Const, Fill, Shape => TfShape, SplitAndSelect}
 import com.intel.analytics.bigdl.transform.vision.image._
 import com.intel.analytics.bigdl.transform.vision.image.augmentation._
 import com.intel.analytics.bigdl.transform.vision.image.label.roi._
