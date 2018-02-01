@@ -262,7 +262,55 @@ object Linear extends quantized.Quantizable {
   }
 
   /**
-   * Init [[com.intel.analytics.bigdl.nn.Linear]] with [[com.intel.analytics.bigdl.utils.Table]].
+   * A Humanized Builder for Linear
+   *
+   * @param inputSize the size the each input sample
+   * @param outputSize the size of the module output of each sample
+   * @param withBias whether including bias(default: true)
+   * @param l1Reg `lambda` of L1 Regularization(default: 0.0)
+   * @param l2Reg `lambda` of L2 Regularization(default: 0.0)
+   * @param initWeightMethod initialization method of weights/bias(default: RandomNormal)
+   */
+  def build[T: ClassTag](
+    inputSize: Int,
+    outputSize: Int,
+    withBias: Boolean = true,
+    l1Reg: Double = 0.0,
+    l2Reg: Double = 0.0,
+    initWeightMethod: Tag.Value = Tag.RandomNormal
+  )(implicit ev: TensorNumeric[T]): Linear[T] = {
+    require(inputSize > 0, s"found InputSize($inputSize) <= 0 in LinearBuilder!")
+    require(outputSize > 0, s"found OutputSize($outputSize) <= 0 in LinearBuilder!")
+    val state = T("inputSize" -> inputSize, "outputSize" -> outputSize, "withBias" -> withBias)
+    val regBuilder = T("l1" -> l1Reg, "l2" -> l2Reg)
+    state.update("wRegularizer", regBuilder)
+    state.update("bRegularizer", regBuilder)
+    state.update("initWeight", T("name" -> initWeightMethod))
+    if (withBias) {
+      state.update("initBias", T("name" -> initWeightMethod))
+    }
+
+    val ele = linearLikeBuilder[T](state)
+    Linear[T](ele._1, ele._2, ele._3, ele._4, ele._5, ele._6, ele._7, ele._8, ele._9)
+  }
+
+  def buildRegularizer[T: ClassTag](
+    l1: Double,
+    l2: Double
+  )(implicit ev: TensorNumeric[T]): Regularizer[T] = {
+    if (l1 + l2 == 0.0) {
+      null
+    } else if (l1 * l2 > 0.0) {
+      new L1L2Regularizer[T](l1, l2)
+    } else if (l2 > 0.0) {
+      new L2Regularizer[T](l2)
+    } else {
+      new L1Regularizer[T](l1)
+    }
+  }
+
+  /**
+   * Build linear-like members with [[com.intel.analytics.bigdl.utils.Table]].
    *
    * ======Schema of the Table======
    * {{{
@@ -280,8 +328,8 @@ object Linear extends quantized.Quantizable {
    *
    * @param param a Table contains parameters
    */
-  def apply[@specialized(Float, Double) T: ClassTag](param: Table
-  )(implicit ev: TensorNumeric[T]): Linear[T] = {
+  private[bigdl] def linearLikeBuilder[T: ClassTag](param: Table
+  )(implicit ev: TensorNumeric[T]) = {
     val inputSize = param.get[Int]("inputSize") match {
       case Some(e) => e
       case _ => throw new IllegalArgumentException(
@@ -327,53 +375,7 @@ object Linear extends quantized.Quantizable {
     val (initGradW, initGradB) = getTensor("initGradWeight") ->
       (if (withBias) getTensor("initGradBias") else null)
 
-    Linear[T](inputSize, outputSize, withBias, wReg, bReg, initW, initB, initGradW, initGradB)
-  }
-
-  /**
-   * A Humanized Builder for Linear
-   *
-   * @param inputSize the size the each input sample
-   * @param outputSize the size of the module output of each sample
-   * @param withBias whether including bias(default: true)
-   * @param l1Reg `lambda` of L1 Regularization(default: 0.0)
-   * @param l2Reg `lambda` of L2 Regularization(default: 0.0)
-   * @param initWeightMethod initialization method of weights/bias(default: RandomNormal)
-   */
-  def build[@specialized(Float, Double) T: ClassTag](
-    inputSize: Int,
-    outputSize: Int,
-    withBias: Boolean = true,
-    l1Reg: Double = 0.0,
-    l2Reg: Double = 0.0,
-    initWeightMethod: Tag.Value = Tag.RandomNormal
-  )(implicit ev: TensorNumeric[T]): Linear[T] = {
-    require(inputSize > 0, s"found InputSize($inputSize) <= 0 in LinearBuilder!")
-    require(outputSize > 0, s"found OutputSize($outputSize) <= 0 in LinearBuilder!")
-    val state = T("inputSize" -> inputSize, "outputSize" -> outputSize, "withBias" -> withBias)
-    val regBuilder = T("l1" -> l1Reg, "l2" -> l2Reg)
-    state.update("wRegularizer", regBuilder)
-    state.update("bRegularizer", regBuilder)
-    state.update("initWeight", T("name" -> initWeightMethod))
-    if (withBias) {
-      state.update("initBias", T("name" -> initWeightMethod))
-    }
-    Linear[T](state)
-  }
-
-  def buildRegularizer[@specialized(Float, Double) T: ClassTag](
-    l1: Double,
-    l2: Double
-  )(implicit ev: TensorNumeric[T]): Regularizer[T] = {
-    if (l1 + l2 == 0.0) {
-      null
-    } else if (l1 * l2 > 0.0) {
-      new L1L2Regularizer[T](l1, l2)
-    } else if (l2 > 0.0) {
-      new L2Regularizer[T](l2)
-    } else {
-      new L1Regularizer[T](l1)
-    }
+    (inputSize, outputSize, withBias, wReg, bReg, initW, initB, initGradW, initGradB)
   }
 
   /**
@@ -401,7 +403,7 @@ object Linear extends quantized.Quantizable {
    *
    * @param param a Table contains parameters
    */
-  def buildInitTensor[@specialized(Float, Double) T: ClassTag](param: Table
+  def buildInitTensor[T: ClassTag](param: Table
   )(implicit ev: TensorNumeric[T]): Tensor[T] = {
     val shape = param.get[Array[Int]]("shape") match {
       case Some(s) => s

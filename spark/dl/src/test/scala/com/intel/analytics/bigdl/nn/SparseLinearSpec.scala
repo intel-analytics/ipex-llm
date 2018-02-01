@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.nn
 
 import org.scalatest.{FlatSpec, Matchers}
 import com.intel.analytics.bigdl.numeric.NumericFloat
+import com.intel.analytics.bigdl.optim.L1L2Regularizer
 import com.intel.analytics.bigdl.tensor.{SparseTensor, Tensor}
 import com.intel.analytics.bigdl.utils.T
 
@@ -170,5 +171,24 @@ class SparseLinearSpec extends FlatSpec with Matchers {
     out1 shouldEqual out2
     sl.gradInput should be (gradInput2)
     sl.getParameters()._2.equals(l.getParameters()._2) shouldEqual true
+  }
+
+  "SparseLinear.build" should "work properly" in {
+    val input = Tensor.sparse(Tensor[Float](10, 20).rand())
+    val gradOut = Tensor[Float](10, 5).rand()
+
+    val regularizer = new L1L2Regularizer[Float](0.1, 0.1)
+    val (wInit, bInit) = Tensor[Float](5, 20) -> Tensor[Float](5)
+    Ones.init(wInit); Ones.init(bInit)
+    var layer = SparseLinear[Float](20, 5, true, 3, 10,
+      regularizer, regularizer, wInit, bInit)
+    val outputCs = layer.updateOutput(input).toTensor[Float]
+    val gradInCs = layer.updateGradInput(input, gradOut)
+
+    layer = SparseLinear.build[Float](20, 5, 3, 10, true, .1, .1, InitMethodTag.Ones)
+    val outputTable = layer.updateOutput(input).toTensor[Float]
+    val gradInTable = layer.updateGradInput(input, gradOut)
+    outputTable.storage().array() shouldEqual outputCs.storage().array()
+    gradInTable.storage().array() shouldEqual gradInCs.storage().array()
   }
 }
