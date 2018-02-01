@@ -51,14 +51,22 @@ class Merge[T: ClassTag](
 
   override def computeOutputShape(inputShape: Shape): Shape = {
     val input = inputShape.toMulti()
+    val input1 = input.head.toSingle().toArray
     if (mergeMode == "concat") {
       import scala.util.control.Breaks._
-      val output = input.head.toSingle().toArray
+      val output = input1.clone()
       require(Math.abs(concatAxis) < output.length, s"Invalid concat axis $concatAxis")
       axis = if (concatAxis < 0) concatAxis + output.length else concatAxis
       var i = 1
       while (i < input.length) {
         val input_i = input(i).toSingle().toArray
+        var j = 0
+        while (j < input_i.length) {
+          if (j != axis) require(input_i(j)==output(j), s"Incompatible input dimension for merge " +
+            s"mode concat: (${output.deep.mkString(", ")}), " +
+            s"(${input_i.deep.mkString(", ")})")
+          j += 1
+        }
         if (output(axis) == -1 || input_i(axis) == -1) {
           output(i) = -1
           break
@@ -68,13 +76,24 @@ class Merge[T: ClassTag](
       }
       Shape(output)
     }
-    else if (mergeMode == "dot" || mergeMode == "cos") {
-      require(input.head.toSingle().length <=2, s"For merge mode $mergeMode, only 1D or 2D " +
-        s"input is supported, but got input dim ${input.head.toSingle().length}")
-      if (mergeMode == "dot") Shape(-1, 1) else Shape(-1, 1, 1)
-    }
     else {
-      input.head
+      var i = 1
+      while (i < input.length) {
+        val input_i = input(i).toSingle().toArray
+        require(input_i.sameElements(input1), s"Incompatible input dimension for " +
+          s"merge mode $mergeMode: (${input1.deep.mkString(", ")}), " +
+          s"(${input_i.deep.mkString(", ")})")
+        i += 1
+      }
+      if (mergeMode == "dot" || mergeMode == "cos") {
+        require(input.head.toSingle().length <=2, s"For merge mode $mergeMode, 3D input " +
+          s"or above is not supported, got input dim ${input.head.toSingle().length}")
+        require(input.length == 2, s"Merge mode $mergeMode takes exactly two layers")
+        if (mergeMode == "dot") Shape(-1, 1) else Shape(-1, 1, 1)
+      }
+      else {
+        input.head
+      }
     }
   }
 
