@@ -107,6 +107,8 @@ object LocalOptimizerPerf {
         (model, MiniBatch(Tensor(batchSize, 3, 224, 224).randn(),
           Tensor(batchSize).fill(1)), CrossEntropyCriterion())
     }
+    _model.createDnnEngine(0)
+    _model.createStream()
     (_model, input, criterion)
   }
 

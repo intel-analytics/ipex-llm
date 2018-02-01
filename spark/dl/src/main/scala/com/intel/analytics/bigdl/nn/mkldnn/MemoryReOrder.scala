@@ -113,7 +113,7 @@ class MemoryReOrder(inputFormat: Int = MklDnn.MemoryFormat.any,
       val buffer = Array(input, output)
       MklDnnOps.streamSubmit(stream, 1, stream_fwd.toArray, 1, memoryPrimitives, buffer)
     } else {
-      output.copy(input)
+      output = input
     }
     val end1 = (System.nanoTime() - s1)/1e6
     if (System.getProperty("debug") == "2") {
@@ -159,7 +159,7 @@ class MemoryReOrder(inputFormat: Int = MklDnn.MemoryFormat.any,
       val buffer = Array(gradOutput, gradInput)
       MklDnnOps.streamSubmit(stream, 1, stream_bwd.toArray, 1, memoryPrimitives, buffer)
     } else {
-      gradInput.copy(gradOutput)
+      gradInput = gradOutput
     }
 
     val end1 = (System.nanoTime() - s1)/1e6
@@ -172,7 +172,7 @@ class MemoryReOrder(inputFormat: Int = MklDnn.MemoryFormat.any,
 
 object MemoryReOrder {
   def apply[T: ClassTag](inputFormat: Int = MklDnn.MemoryFormat.any,
-      outputFormat: Int = MklDnn.MemoryFormat.nhwc): MemoryReOrder = {
+      outputFormat: Int = MklDnn.MemoryFormat.nchw): MemoryReOrder = {
     new MemoryReOrder(inputFormat, outputFormat)
   }
 }

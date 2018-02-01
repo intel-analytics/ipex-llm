@@ -70,7 +70,8 @@ object DnnTools {
 }
 
 object Inception_Layer_v1 {
-  def apply(inputSize: Int, config: Table, namePrefix : String = "") : Module[Float] = {
+  def apply(inputSize: Int, config: Table, namePrefix : String = "", format: Int = 8) :
+  Module[Float] = {
     val feature1 = Sequential()
     val concat = Concat(2)
     val conv1 = Sequential()
@@ -78,7 +79,7 @@ object Inception_Layer_v1 {
       config[Table](1)(1), 1, 1, 1, 1)
       .setInitMethod(weightInitMethod = Xavier, Zeros).setName(namePrefix + "1x1"))
     conv1.add(ReLUDnn(true).setName(namePrefix + "relu_1x1"))
-    conv1.add(MemoryReOrderForGradoutput(8, 5))
+    conv1.add(MemoryReOrder(1, 5))
     concat.add(conv1)
     val conv3 = Sequential()
     conv3.add(ConvolutionDnn(inputSize,
@@ -89,7 +90,7 @@ object Inception_Layer_v1 {
       config[Table](2)(2), 3, 3, 1, 1, 1, 1)
       .setInitMethod(weightInitMethod = Xavier, Zeros).setName(namePrefix + "3x3"))
     conv3.add(ReLUDnn(true).setName(namePrefix + "relu_3x3"))
-    conv3.add(MemoryReOrderForGradoutput(8, 5))
+    conv3.add(MemoryReOrder(1, 5))
     concat.add(conv3)
     val conv5 = Sequential()
     conv5.add(ConvolutionDnn(inputSize,
@@ -100,7 +101,7 @@ object Inception_Layer_v1 {
       config[Table](3)(2), 5, 5, 1, 1, 2, 2)
       .setInitMethod(weightInitMethod = Xavier, Zeros).setName(namePrefix + "5x5"))
     conv5.add(ReLUDnn(true).setName(namePrefix + "relu_5x5"))
-    conv5.add(MemoryReOrderForGradoutput(8, 5))
+    conv5.add(MemoryReOrder(1, 5))
     concat.add(conv5)
     val pool = Sequential()
     pool.add(PoolingDnn(3, 3, 1, 1, 1, 1).ceil().setName(namePrefix + "pool"))
@@ -108,12 +109,16 @@ object Inception_Layer_v1 {
       config[Table](4)(1), 1, 1, 1, 1)
       .setInitMethod(weightInitMethod = Xavier, Zeros).setName(namePrefix + "pool_proj"))
     pool.add(ReLUDnn(true).setName(namePrefix + "relu_pool_proj"))
-    pool.add(MemoryReOrderForGradoutput(8, 5))
+    pool.add(MemoryReOrder(1, 5))
     concat.add(pool).setName(namePrefix + "output")
 
-    feature1.add(concat)
-      .add(MemoryReOrder(5, 8))
-    feature1
+    if (format == 5) {
+      concat
+    } else {
+      feature1.add(concat)
+        .add(MemoryReOrder(5, format).setName("test"))
+      feature1
+    }
   }
 }
 
@@ -150,6 +155,8 @@ object Inception_v1 {
     output1.add(ReLUDnn(true).setName("loss1/relu_fc"))
     if (hasDropout) output1.add(Dropout(0.7).setName("loss1/drop_fc"))
     output1.add(mkldnn.Linear(1024, classNum).setName("loss1/classifier"))
+    // reorder
+    output1.add(MemoryReOrder(1, 4))
     output1.add(LogSoftMax().setName("loss1/loss"))
 
     val feature2 = Sequential()
@@ -166,6 +173,8 @@ object Inception_v1 {
     output2.add(ReLUDnn(true).setName("loss2/relu_fc"))
     if (hasDropout) output2.add(Dropout(0.7).setName("loss2/drop_fc"))
     output2.add(mkldnn.Linear(1024, classNum).setName("loss2/classifier"))
+    // reorder
+    output2.add(MemoryReOrder(1, 4))
     output2.add(LogSoftMax().setName("loss2/loss"))
 
     val output3 = Sequential()
@@ -181,6 +190,8 @@ object Inception_v1 {
     output3.add(View(1024).setNumInputDims(3))
     output3.add(mkldnn.Linear(1024, classNum)
       .setInitMethod(weightInitMethod = Xavier, Zeros).setName("loss3/classifier"))
+    // reorder
+    output3.add(MemoryReOrder(1, 4))
     output3.add(LogSoftMax().setName("loss3/loss3"))
 
     val split2 = Concat(2).setName("split2")
