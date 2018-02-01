@@ -570,7 +570,7 @@ class AspectScale(FeatureTransformer):
     """
 
     def __init__(self, min_size, scale_multiple_of = 1, max_size = 1000,
-                 resize_mode = 1, use_scale_factor=True, min_scale=-1,
+                 resize_mode = 1, use_scale_factor=True, min_scale=-1.0,
                  bigdl_type="float"):
         super(AspectScale, self).__init__(bigdl_type, min_size, scale_multiple_of, max_size,
                                           resize_mode, use_scale_factor, min_scale)
