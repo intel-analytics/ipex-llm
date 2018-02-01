@@ -225,9 +225,8 @@ class Poly(JavaValue):
     Calculation: base_lr (1 - iter/max_iteration) ^ (power)
 
 
-    :param power:
-    :param max_iteration:
-
+    :param power: coeffient of decay, refer to calculation formula
+    :param max_iteration: max iteration when lr becomes zero
 
     >>> poly = Poly(0.5, 2)
     creating: createPoly
@@ -315,6 +314,47 @@ class Plateau(JavaValue):
                  bigdl_type="float"):
         JavaValue.__init__(self, None, bigdl_type, monitor, factor, patience, mode, epsilon,
                            cooldown, min_lr)
+
+class Warmup(JavaValue):
+    """
+    A learning rate gradual increase policy, where the effective learning rate
+    increase delta after each iteration.
+    Calculation: base_lr + delta * iteration
+
+    :param delta: increase amount after each iteration
+
+    >>> warmup = Warmup(0.05)
+    creating: createWarmup
+    """
+    def __init__(self, delta, bigdl_type="float"):
+        JavaValue.__init__(self, None, bigdl_type, delta)
+
+class SequentialSchedule(JavaValue):
+    """
+    Stack several learning rate schedulers.
+
+    :param iterationPerEpoch: iteration numbers per epoch
+
+    >>> sequentialSchedule = SequentialSchedule(5)
+    creating: createSequentialSchedule
+    >>> poly = Poly(0.5, 2)
+    creating: createPoly
+    >>> test = sequentialSchedule.add(poly, 5)
+    
+
+
+    """
+    def __init__(self, iteration_per_epoch, bigdl_type="float"):
+        JavaValue.__init__(self, None, bigdl_type, iteration_per_epoch)
+
+    def add(self, scheduler, max_iteration, bigdl_type="float"):
+        """
+        Add a learning rate scheduler to the contained `schedules`
+
+        :param scheduler: learning rate scheduler to be add
+        :param max_iteration: iteration numbers this scheduler will run
+        """
+        return callBigDlFunc(bigdl_type, "addScheduler", self.value, scheduler, max_iteration)
 
 class OptimMethod(JavaValue):
 
