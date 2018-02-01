@@ -26,7 +26,7 @@ import com.intel.analytics.bigdl.optim.{L2Regularizer, SGD}
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 
 import scala.util.Random
-import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.utils.{Shape, T, TestUtils}
 
 @com.intel.analytics.bigdl.tags.Parallel
 class SpatialConvolutionSpec extends FlatSpec with Matchers {
@@ -3025,5 +3025,16 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
     layer3.equals(layer) should be (false)
     layer3.weight.copy(layer.weight)
     layer3.equals(layer) should be (false)
+  }
+
+  "SpatialConvolution computeOutputShape NCHW" should "work properly" in {
+    val layer = SpatialConvolution[Float](3, 5, 2, 2)
+    TestUtils.compareOutputShape(layer, Shape(3, 12, 12)) should be (true)
+  }
+
+  "SpatialConvolution computeOutputShape NHWC" should "work properly" in {
+    val layer = SpatialConvolution[Float](4, 5, 2, 2, format = DataFormat.NHWC)
+    TestUtils.compareOutputShape(layer, Shape(12, 12, 4)) should be (true)
+
   }
 }

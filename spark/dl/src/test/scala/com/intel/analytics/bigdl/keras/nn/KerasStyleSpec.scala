@@ -28,7 +28,7 @@ class KerasStyleSpec extends BigDLSpecHelper {
 
   "Graph: Dense" should "works correctly" in {
     val input = Input[Float](inputShape = Shape(10))
-    val d = Dense[Float](20, activation = ReLU()).setName("dense1").inputs(input)
+    val d = Dense[Float](20, activation = "relu").setName("dense1").inputs(input)
     val d2 = Dense[Float](5).setName("dense2").inputs(d)
     val model = Model[Float](input, d2)
     val inputData = Tensor[Float](Array(20, 10)).rand()

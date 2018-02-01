@@ -16,8 +16,8 @@
 
 package com.intel.analytics.bigdl.nn.keras
 
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, DataFormat, TensorModule}
 import com.intel.analytics.bigdl.nn._
-import com.intel.analytics.bigdl.nn.abstractnn._
 import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -25,64 +25,65 @@ import com.intel.analytics.bigdl.utils.Shape
 
 import scala.reflect.ClassTag
 
-class Dense[T: ClassTag](
-   val outputDim: Int,
+class Convolution2D[T: ClassTag](
+   val nbFilter: Int,
+   val nbRow: Int,
+   val nbCol: Int,
    val init: InitializationMethod = Xavier,
    val activation: TensorModule[T] = null,
+   val borderMode: String = "valid",
+   val subsample: (Int, Int) = (1, 1),
    var wRegularizer: Regularizer[T] = null,
    var bRegularizer: Regularizer[T] = null,
+   val format: DataFormat = DataFormat.NCHW,
    val bias: Boolean = true,
    var inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {
 
-  override def computeOutputShape(inputShape: Shape): Shape = {
-    val input = inputShape.toSingle().toArray
-    require(inputShape.toSingle().size >=2,
-      s"Dense requires input dim >=2, but got dim: ${inputShape.toSingle().length}")
-    Shape(input.slice(0, input.length -1) ++ Array(outputDim))
-  }
+  require(borderMode == "valid" || borderMode == "same", s"Invalid border mode for " +
+    s"Convolution2D: $borderMode")
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
-    val inputShapeList = inputShape.toSingle()
-    var layer = Linear(
-      inputSize = inputShapeList.last,
-      outputSize = outputDim,
-      withBias = bias,
+    val input = inputShape.toSingle().toArray
+    val pads = KerasUtils.getPadsFromBorderMode(borderMode)
+    val layer = SpatialConvolution(
+      nInputPlane = input(format.getHWCDims(4)._3 - 1),
+      nOutputPlane = nbFilter,
+      kernelW = nbCol,
+      kernelH = nbRow,
+      strideW = subsample._2,
+      strideH = subsample._1,
+      padW = pads._2,
+      padH = pads._1,
       wRegularizer = wRegularizer,
-      bRegularizer = bRegularizer
+      bRegularizer = bRegularizer,
+      withBias = bias,
+      format = format
     )
     layer.setInitMethod(weightInitMethod = init, biasInitMethod = Zeros)
-
-    if (inputShape.toSingle().size <= 2) {
-      KerasLayer.fuse(layer, activation,
-        inputShape).asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
-    } else {
-      val seq = new Sequential[T](stopInferShape = true)
-      val inDim = inputShapeList.last
-      seq.add(InputLayer(inputShape = inputShape))
-      seq.add(InferReshape(Array(-1, inDim), false))
-      seq.add(layer)
-      seq.add(InferReshape(Array(-1) ++
-        inputShapeList.slice(1, inputShapeList.size - 1) ++ Array(outputDim), false))
-      if (activation != null) seq.add(activation)
-      seq.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
-    }
+    KerasLayer.fuse(layer,
+      activation,
+      inputShape).asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
   }
 }
 
-object Dense {
+object Convolution2D {
   def apply[@specialized(Float, Double) T: ClassTag](
-    outputDim: Int,
+    nbFilter: Int,
+    nbRow: Int,
+    nbCol: Int,
     init: String = "glorot_uniform",
     activation: String = null,
+    borderMode: String = "valid",
+    subsample: (Int, Int) = (1, 1),
     wRegularizer: Regularizer[T] = null,
     bRegularizer: Regularizer[T] = null,
+    format: DataFormat = DataFormat.NCHW,
     bias: Boolean = true,
-    inputShape: Shape = null)(implicit ev: TensorNumeric[T]): Dense[T] = {
-    new Dense[T](outputDim, KerasUtils.getInitMethod(init),
-      KerasUtils.getActivation(activation),
-      wRegularizer, bRegularizer, bias, inputShape)
+    inputShape: Shape = null)
+    (implicit ev: TensorNumeric[T]): Convolution2D[T] = {
+    new Convolution2D[T](nbFilter, nbRow, nbCol,
+      KerasUtils.getInitMethod(init), KerasUtils.getActivation(activation),
+      borderMode, subsample, wRegularizer, bRegularizer, format, bias, inputShape)
   }
 }
-
-

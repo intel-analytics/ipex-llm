@@ -63,9 +63,8 @@ private[bigdl] object KerasLayer {
       seq.add(sLayer)
       seq.add(activation)
       seq.setName(sLayer.getName())
-      return seq
+      seq
     }
-
 
    def addBatch(shape: Shape): Shape = {
      // simply return null here as null is the default value

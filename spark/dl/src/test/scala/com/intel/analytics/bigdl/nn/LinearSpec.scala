@@ -403,9 +403,4 @@ class LinearSpec extends FlatSpec with Matchers {
     linear.weight should be (exceptedWeight)
     linear.bias should be (exceptedBias)
   }
-
-  "computeOutputShape" should "work" in {
-    val linear = Linear[Float](3, 5)
-    TestUtils.compareOutputShape(linear, Shape(3)) should be (true)
-  }
 }

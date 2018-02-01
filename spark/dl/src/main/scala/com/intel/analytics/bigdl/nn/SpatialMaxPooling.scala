@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, DataFormat, TensorModule}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.Engine
+import com.intel.analytics.bigdl.utils.{Engine, Shape}
 import com.intel.analytics.bigdl.utils.serializer._
 import com.intel.analytics.bigdl.utils.serializer.converters.DataConverter
 import com.intel.analytics.bigdl.serialization.Bigdl.{AttrValue, BigDLModule}
@@ -86,6 +86,39 @@ class SpatialMaxPooling[T: ClassTag](
   def floor(): SpatialMaxPooling[T] = {
     ceilMode = false
     this
+  }
+
+  override def computeOutputShape(inputShape: Shape): Shape = {
+    val input = inputShape.toSingle().toArray
+    require(input.length == 4,
+      "SpatialMaxPooling: " + ErrorInfo.constrainInputAs3DOrBatch)
+    val (dimh, dimw, dimc) = format.getHWCDims(input.length)
+    val nInputPlane = input(dimc -1)
+    val inputHeight = input(dimh -1)
+    val inputWidth = input(dimw -1)
+    val sizes =
+      if (padW == -1 && padH == -1) {
+        Utils.getSAMEOutSizeAndPadding(inputHeight, inputWidth, dH, dW, kH, kW)
+      } else {
+        require(inputWidth >= kW - padW && inputHeight >= kH - padH,
+          "input smaller than kernel size. " +
+            s"current input size($inputWidth, $inputHeight), " +
+            s"kernel size(${kW-padW}, ${kH-padH})")
+        require(kW / 2 >= padW && kH / 2 >= padH,
+          "pad should be smaller than half of kernel size. " +
+          s"current pad size($padW, $padH), " + s"kernel size($kW, $kH)")
+        Utils.getOutSizeAndPadding(inputHeight, inputWidth, dH, dW, kH, kW, padH, padW, ceilMode)
+      }
+    val oHeight = sizes(4)
+    val oWidth = sizes(5)
+
+    val outputShape = format match {
+      case DataFormat.NCHW =>
+        Array(input(0), nInputPlane, oHeight, oWidth)
+      case DataFormat.NHWC =>
+        Array(input(0), oHeight, oWidth, nInputPlane)
+    }
+    Shape(outputShape)
   }
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
