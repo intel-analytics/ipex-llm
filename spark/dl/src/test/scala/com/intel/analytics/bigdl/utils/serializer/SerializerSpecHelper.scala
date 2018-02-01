@@ -90,13 +90,20 @@ abstract class SerializerSpecHelper extends FlatSpec with Matchers with BeforeAn
     }
 
     afterLoadForward should be (originForward)
-    classes.foreach(cls => tested.add(cls.getName))
+    classes.foreach(cls => {
+      if (getExpected.contains(cls.getName)) {
+        tested.add(cls.getName)
+      }
+    })
   }
 
 
   override protected def afterAll() = {
-    println(s"total ${getExpected().size}, remaining ${getExpected().size - tested.size}")
-    getExpected().foreach(exp => {
+    println(s"total ${getExpected.size}, remaining ${getExpected.size - tested.size}")
+    tested.filter(!getExpected.contains(_)).foreach(t => {
+      println(s"$t do not need to be tested")
+    })
+    getExpected.foreach(exp => {
       require(tested.contains(exp), s" $exp not included in the test!")
     })
   }
