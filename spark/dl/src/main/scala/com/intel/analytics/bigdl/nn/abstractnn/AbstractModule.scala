@@ -341,8 +341,15 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
   }
 
   /**
-   * This method compact all parameters and gradients of the model into two tensors. So it's easier
-   * to use optim method
+   *This function returns two tensors. One for the flattened learnable parameters flatParameters
+   * and another for the gradients of the energy wrt to the learnable parameters flatGradParameters.
+   *
+   * Custom modules should not override this function. They should instead override parameters(...)
+   * which is, in turn, called by the present function.
+   *
+   * This function will go over all the weights and gradWeights and make them view into a single
+   * tensor (one for weights and one for gradWeights). Since the storage of every weight and
+   * gradWeight is changed, this function should be called only once on a given network.
    *
    * @return
    */
