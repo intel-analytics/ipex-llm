@@ -59,4 +59,5 @@ class DenseSpec extends KerasBaseSpec {
     checkOutputAndGrad(seq.asInstanceOf[AbstractModule[Tensor[Float], Tensor[Float], Float]],
       kerasCode, weightConverter, precision = 1e-4)
   }
+  
 }
