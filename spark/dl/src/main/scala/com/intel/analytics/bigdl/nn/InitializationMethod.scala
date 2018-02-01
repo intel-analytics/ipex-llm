@@ -349,3 +349,15 @@ case object BilinearFiller extends InitializationMethod {
     }
   }
 }
+
+object InitMethodTag extends Enumeration {
+  type InitMethodTag = Value
+  val RandomUniform: Value = Value(0, "randomuniform")
+  val RandomNormal: Value = Value(1, "randomnormal")
+  val Xavier: Value = Value(2, "xavier")
+  val Ones: Value = Value(3, "ones")
+  val Zeros: Value = Value(4, "zeros")
+  val Const: Value = Value(5, "const")
+  val BilinearFiller: Value = Value(6, "bilinearfiller")
+  val MsraFiller: Value = Value(7, "msrafiller")
+}
