@@ -111,9 +111,23 @@ abstract class FeatureTransformer()
    * if true, catch the exception of the transformer to avoid crashing.
    * if false, interrupt the transformer when error happens
    */
-  def setIgnoreException(ignore: Boolean = true): this.type = {
+  private[image] def setIgnoreException(ignore: Boolean = true): this.type = {
     ignoreException = ignore
     this
+  }
+
+  /**
+   * catch the exception of the transformer to avoid crashing.
+   */
+  def enableIgnoreException(): this.type = {
+    setIgnoreException(true)
+  }
+
+  /**
+   * interrupt the transformer when error happens
+   */
+  def disableIgnoreException(): this.type = {
+    setIgnoreException(false)
   }
 }
 

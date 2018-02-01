@@ -63,7 +63,7 @@ class FeatureTransformerSpec extends FlatSpec with Matchers {
     val imgAug = Resize(1, 1, -1) ->
       FixedCrop(-1, -1, -1, -1, normalized = false) ->
       MatToFloats(validHeight = 1, validWidth = 1)
-    imgAug.setIgnoreException()
+    imgAug.enableIgnoreException()
     val out = imgAug(imageFrame)
     imageFeature.floats().length should be(3)
     imageFeature.isValid should be(false)
@@ -74,7 +74,7 @@ class FeatureTransformerSpec extends FlatSpec with Matchers {
     val imgAug = FixedCrop(-1, -1, -1, -1, normalized = false) ->
       Resize(300, 300, -1) ->
       MatToFloats(validHeight = 300, validWidth = 300)
-    imgAug.setIgnoreException()
+    imgAug.enableIgnoreException()
     val out = imgAug(images)
     val imageFeature = out.asInstanceOf[LocalImageFrame].array(0)
     imageFeature.floats().length should be(3 * 300 * 300)
