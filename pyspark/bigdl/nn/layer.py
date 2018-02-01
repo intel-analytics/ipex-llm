@@ -3679,8 +3679,6 @@ class SReLU(Layer):
     # References
         - [Deep Learning with S-shaped Rectified Linear Activation Units](http://arxiv.org/abs/1512.07030)
 
-
-
     :param shared_axes: the axes along which to share learnable
             parameters for the activation function.
             For example, if the incoming feature maps
@@ -3690,22 +3688,29 @@ class SReLU(Layer):
             so that each filter only has one set of parameters,
             set `shared_axes=[1, 2]`.
 
-    >>> srelu = SReLU()
+    >>> srelu = SReLU((2, 3))
     creating: createSReLU
-    >>> srelu = SReLU((1, 2))
+    >>> srelu = SReLU((2, 2), (1, 2))
     creating: createSReLU
+    >>> from bigdl.nn.initialization_method import Xavier
+    >>> tt = srelu.set_init_method(tLeftInit=Xavier(), aLeftInit=Xavier(), tRightInit=Xavier(), aRightInit=Xavier())
+    creating: createXavier
+    creating: createXavier
+    creating: createXavier
+    creating: createXavier
     '''
 
     def __init__(self,
+                 input_shape,
                  share_axes=None,
                  bigdl_type="float"):
-        super(SReLU, self).__init__(None, bigdl_type,
+        super(SReLU, self).__init__(None, bigdl_type, input_shape,
                                     share_axes)
 
     def set_init_method(self, tLeftInit=None, aLeftInit=None,
                         tRightInit=None, aRightInit=None):
         callBigDlFunc(self.bigdl_type, "setInitMethod", self.value,
-                      tLeftInit, aLeftInit, tRightInit, aRightInit)
+                      [tLeftInit, aLeftInit, tRightInit, aRightInit])
         return self
 
 class ActivityRegularization(Layer):

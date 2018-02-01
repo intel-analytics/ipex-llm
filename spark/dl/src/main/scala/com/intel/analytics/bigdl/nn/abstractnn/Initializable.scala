@@ -38,6 +38,8 @@ trait Initializable {
     this
   }
 
+  def setInitMethod(initMethod: Array[InitializationMethod]): this.type = { this }
+
   def reset(): Unit
 
 }

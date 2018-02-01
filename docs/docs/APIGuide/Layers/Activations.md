@@ -1511,7 +1511,7 @@ import com.intel.analytics.bigdl.tensor.Tensor
 
 val input = Tensor[Float](2, 3, 4).rand()
 val gradOutput = Tensor[Float](2, 3, 4).rand()
-val srelu = SReLU[Float]()
+val srelu = SReLU[Float]([3, 4])
 val output = srelu.forward(input)
 val gradInput = srelu.backward(input, gradOutput)
 
@@ -1555,7 +1555,7 @@ The python code is,
 from bigdl.nn.layer import *
 import numpy as np
 
-module = SReLU()
+module = SReLU([3, 4])
 input = np.random.randn(2, 3, 4)
 output = module.forward(input)
 gradOutput = np.random.randn(2, 3, 4)
