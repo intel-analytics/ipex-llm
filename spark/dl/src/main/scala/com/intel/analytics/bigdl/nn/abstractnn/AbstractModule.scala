@@ -348,7 +348,7 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
    *
    * @return
    */
-  def getParameters(): (Tensor[T], Tensor[T]) = {
+  final private[bigdl] def getParameters(): (Tensor[T], Tensor[T]) = {
     val (weightParameters, gradParameters) = this.parameters()
     (Module.flatten[T](weightParameters), Module.flatten[T](gradParameters))
   }
