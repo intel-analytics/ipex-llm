@@ -110,6 +110,7 @@ object Inception_Layer_v1 {
     pool.add(ReLUDnn(true).setName(namePrefix + "relu_pool_proj"))
     pool.add(MemoryReOrderForGradoutput(8, 5))
     concat.add(pool).setName(namePrefix + "output")
+
     feature1.add(concat)
       .add(MemoryReOrder(5, 8))
     feature1

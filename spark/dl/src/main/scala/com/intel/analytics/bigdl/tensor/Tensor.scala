@@ -808,18 +808,21 @@ trait Tensor[T] extends Serializable with TensorMath[T] with Activity {
 
 // for mkl dnn model
   private var primivite_desc_t: Long = 0L
-  private var format: Int = 0
+  private var format: Int = -1
   def getPrimitiveDesc(): Long = {
     primivite_desc_t
   }
   def setPrimitiveDesc(data: Long): Unit = {
     primivite_desc_t = data
+    if (primivite_desc_t != 0L) {
+      val mpd = MklDnnOps.primitiveDescQueryMemory(primivite_desc_t)
+      format = MklDnnOps.getFormat(mpd)
+    } else {
+      format = -1
+    }
   }
 
   def getFormat(): Int = {
-    require(primivite_desc_t != 0L, "can not get format for non dnn tensor")
-    val mpd = MklDnnOps.primitiveDescQueryMemory(primivite_desc_t)
-    format = MklDnnOps.getFormat(mpd)
     format
   }
 }

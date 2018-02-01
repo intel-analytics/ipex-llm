@@ -64,6 +64,7 @@ class MemoryReOrderForGradoutput(inputFormat: Int = MklDnn.MemoryFormat.any,
 
   // convert input from input format to output format
   override def updateOutput(input: Tensor[Float]): Tensor[Float] = {
+    val s1 = System.nanoTime()
     if (engine == 0L) engine = this.getDnnEngine(0)
     if (stream == 0L) stream = this.getStream()
 
@@ -109,16 +110,19 @@ class MemoryReOrderForGradoutput(inputFormat: Int = MklDnn.MemoryFormat.any,
       val buffer = Array(input, output)
       MklDnnOps.streamSubmit(stream, 1, stream_fwd.toArray, 1, memoryPrimitives, buffer)
     }
+    val end1 = (System.nanoTime() - s1)/1e6
+    if (System.getProperty("debug") == "2") {
+      println(s"MemoryReorderForGradoutput dnn ${this.getName()} forward ${end1} format " + input.getFormat())
+    }
     output
   }
 
   // convert gradOutput from output format to input format
   override def updateGradInput(input: Tensor[Float], gradOutput: Tensor[Float]): Tensor[Float] = {
+    val s1 = System.nanoTime()
     val sizes = gradOutput.size()
     val dim = gradOutput.dim()
     gradInput.resizeAs(gradOutput)
-
-    // gradInput.copy(gradOutput)
 
     if (gradOutput.getPrimitiveDesc() == 0L && inputFormat == MklDnn.MemoryFormat.any) {
       gradInput.resizeAs(gradOutput).copy(gradOutput)
@@ -129,11 +133,11 @@ class MemoryReOrderForGradoutput(inputFormat: Int = MklDnn.MemoryFormat.any,
       val src_pd = if (gradOutput.getPrimitiveDesc() != 0L) {
         gradOutput.getPrimitiveDesc()
       } else {
-        val prim_md = MklDnn.MemoryDescInit(dim, sizes, dataType, this.inputFormat)
+        val prim_md = MklDnn.MemoryDescInit(dim, sizes, dataType, this.outputFormat)
         MklDnn.MemoryPrimitiveDescCreate(prim_md, engine)
       }
 
-      val prim_md = MklDnn.MemoryDescInit(dim, sizes, dataType, this.outputFormat)
+      val prim_md = MklDnn.MemoryDescInit(dim, sizes, dataType, this.inputFormat)
       val user_pd = MklDnn.MemoryPrimitiveDescCreate(prim_md, engine)
       dst_memory2 = MklDnn.PrimitiveCreate0(user_pd)
 
@@ -156,13 +160,18 @@ class MemoryReOrderForGradoutput(inputFormat: Int = MklDnn.MemoryFormat.any,
       val buffer = Array(gradOutput, gradInput)
       MklDnnOps.streamSubmit(stream, 1, stream_bwd.toArray, 1, memoryPrimitives, buffer)
     }
+
+    val end1 = (System.nanoTime() - s1)/1e6
+    if (System.getProperty("debug") == "2") {
+      println(s"MemoryReorderForGradoutput dnn ${this.getName()} backward ${end1}")
+    }
     gradInput
   }
 }
 
 object MemoryReOrderForGradoutput {
   def apply[T: ClassTag](inputFormat: Int = MklDnn.MemoryFormat.any,
-                         outputFormat: Int = MklDnn.MemoryFormat.nhwc): MemoryReOrderForGradoutput = {
+      outputFormat: Int = MklDnn.MemoryFormat.nhwc): MemoryReOrderForGradoutput = {
     new MemoryReOrderForGradoutput(inputFormat, outputFormat)
   }
 }

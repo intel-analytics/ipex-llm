@@ -112,6 +112,7 @@ class Linear[T: ClassTag](
   }
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
+    val s1 = System.nanoTime()
     if (input.dim() == 1) {
       output.resize(Array(outputSize))
       if (withBias) output.copy(bias) else output.zero()
@@ -189,6 +190,11 @@ class Linear[T: ClassTag](
     biasPrim.releaseHandle()
     outputPrim.releaseHandle()
 
+    val end1 = (System.nanoTime() - s1)/1e6
+    if (System.getProperty("debug") == "2") {
+      println(s"linear dnn ${this.getName()} forward ${end1}")
+    }
+
     output
   }
 
@@ -196,6 +202,7 @@ class Linear[T: ClassTag](
   var backwardStream = 0L
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
+    val s1 = System.nanoTime()
     gradInput.resizeAs(input)
 
     require(gradOutput.size().deep == output.size().deep,
@@ -252,6 +259,10 @@ class Linear[T: ClassTag](
     gradOutputPrim.releaseHandle()
     weightPrim.releaseHandle()
 
+    val end1 = (System.nanoTime() - s1)/1e6
+    if (System.getProperty("debug") == "2") {
+      println(s"linear dnn ${this.getName()} backward ${end1}")
+    }
     gradInput
   }
 

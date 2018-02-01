@@ -111,7 +111,9 @@ class MemoryReOrder(inputFormat: Int = MklDnn.MemoryFormat.any,
       MklDnnOps.streamSubmit(stream, 1, stream_fwd.toArray, 1, memoryPrimitives, buffer)
     }
     val end1 = (System.nanoTime() - s1)/1e6
-    // println(s"MemoryReorder dnn ${this.getName()} forward ${end1}")
+    if (System.getProperty("debug") == "2") {
+      println(s"MemoryReorder dnn ${this.getName()} forward ${end1}")
+    }
     output
   }
 
@@ -162,7 +164,9 @@ class MemoryReOrder(inputFormat: Int = MklDnn.MemoryFormat.any,
       MklDnnOps.streamSubmit(stream, 1, stream_bwd.toArray, 1, memoryPrimitives, buffer)
     }
     val end1 = (System.nanoTime() - s1)/1e6
-    // println(s"MemoryReorder dnn ${this.getName()} backward ${end1}")
+    if (System.getProperty("debug") == "2") {
+      println(s"MemoryReorder dnn ${this.getName()} backward ${end1}")
+    }
     gradInput
   }
 }

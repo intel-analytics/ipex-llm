@@ -216,7 +216,7 @@ object LocalOptimizerPerf {
       println(s"average time cost ${e1/1e9}")
     }
 
-    System.setProperty("bigdl.mklNumThreads", "4")
+    // System.setProperty("bigdl.mklNumThreads", "4")
     Engine.setCoreNumber(param.coreNumber)
 
     val (_model, miniBatch, criterion) = getModel(param.module, param.batchSize)

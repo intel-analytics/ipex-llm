@@ -231,6 +231,7 @@ class ConvolutionDnn[T: ClassTag](
   val stream_acc = new ArrayBuffer[Long]
 
 
+  var dataTime: Long = 0L
 
 
   def reorderToInternal(user_md: Long, pd: Long, queryType: Int, data: Tensor[Float],
@@ -272,6 +273,7 @@ class ConvolutionDnn[T: ClassTag](
   }
 
   override def updateOutput(input: Tensor[Float]): Tensor[Float] = {
+    val s1 = System.nanoTime()
     if (engine == 0L) engine = this.getDnnEngine(0)
     if (stream == 0L) stream = this.getStream()
 
@@ -395,13 +397,15 @@ class ConvolutionDnn[T: ClassTag](
     buffer = Array(input, weight, bias, output, inputBuffer, weightsBuffer)
     MklDnnOps.streamSubmit(stream, n_fwd, stream_fwd.toArray, n_fwd, memoryPrimitives, buffer)
 
+    val end1 = (System.nanoTime() - s1)/1e6
+    if (System.getProperty("debug") == "2") {
+      println(s"conv dnn ${this.getName()} updateOutput ${end1}")
+    }
     output
   }
 
   override def updateGradInput(input: Tensor[Float], gradOutput: Tensor[Float]): Tensor[Float] = {
-//    if (!propagateBack) {
-//      return gradInput
-//    }
+    val s1 = System.nanoTime()
     if (update_primitive) {
       if (gradOutput.getPrimitiveDesc() != 0L) {
         val gradOutput_pd = gradOutput.getPrimitiveDesc()
@@ -467,6 +471,9 @@ class ConvolutionDnn[T: ClassTag](
     buffer = buffer ++ Array(gradOutputBuffer, gradInput, gradOutput)
     MklDnnOps.streamSubmit(stream, n_bwd, stream_bwd.toArray, n_bwd, memoryPrimitives, buffer)
 
+    val end1 = System.nanoTime() - s1
+    dataTime = end1
+
     gradInput
   }
 
@@ -531,8 +538,11 @@ class ConvolutionDnn[T: ClassTag](
    buffer = buffer ++ Array(gradWeight, gradBias, gradWeightBuffer)
    MklDnnOps.streamSubmit(stream, n_bwd, stream_acc.toArray, n_bwd, memoryPrimitives, buffer)
 
-   val end1 = System.nanoTime() - s1
-   // println(s"conv acc time ${end1}")
+   val end1 = System.nanoTime() - s1 + dataTime
+   if (System.getProperty("debug") == "2") {
+     println(s"conv dnn ${this.getName()} acc ${end1/1e6}")
+   }
+
    gradWeight.add(original_gradWeights)
    gradBias.add(original_gradBias)
  }

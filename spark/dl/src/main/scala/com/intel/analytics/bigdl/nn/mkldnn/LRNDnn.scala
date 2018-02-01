@@ -150,7 +150,7 @@ class LRNDnn[T: ClassTag](
       stream_fwd.append(fwd)
     }
 
-    if (System.getProperty("debug") != null) {
+    if (System.getProperty("debug") == "1") {
       println("lrn updateoutput " + this.getName())
     }
     val n_fwd = stream_fwd.length
@@ -158,9 +158,9 @@ class LRNDnn[T: ClassTag](
     val buffer = Array(input, output, workSpace)
     MklDnnOps.streamSubmit(stream, n_fwd, stream_fwd.toArray, n_fwd, memoryPrimitives, buffer)
 
-    val end1 = (System.nanoTime() - s1)/1e9
-    if (System.getProperty("debug") != null) {
-      println(s"lrn dnn forward ${end1}")
+    val end1 = (System.nanoTime() - s1)/1e6
+    if (System.getProperty("debug") == "2") {
+      println(s"lrn dnn ${this.getName()} forward ${end1}")
     }
     output
   }
@@ -171,7 +171,8 @@ class LRNDnn[T: ClassTag](
       var gradOutput_md : Long = 0L
       if (gradOutput.getPrimitiveDesc() != 0L) {
         val gradOutput_pd = gradOutput.getPrimitiveDesc()
-        gradOutput_md = MklDnnOps.primitiveDescQueryMemory(gradOutput_pd)
+        // gradOutput_md = MklDnnOps.primitiveDescQueryMemory(gradOutput_pd)
+        gradOutput_md = MklDnn.PrimitiveDescQueryMemory(dst_pd)
         gradOutput_memory = MklDnn.PrimitiveCreate0(gradOutput_pd)
       } else {
         gradOutput_md = MklDnn.MemoryDescInit(gradOutput.dim(), gradOutput.size(),
@@ -215,7 +216,7 @@ class LRNDnn[T: ClassTag](
       stream_bwd.append(bwd)
     }
 
-    if (System.getProperty("debug") != null) {
+    if (System.getProperty("debug") == "1") {
       println("lrn backward " + this.getName())
     }
     val n_bwd = stream_bwd.length
@@ -223,9 +224,9 @@ class LRNDnn[T: ClassTag](
     val buffer = Array(input, gradOutput, workSpace, gradInput, gradOutputBuffer)
     MklDnnOps.streamSubmit(stream, n_bwd, stream_bwd.toArray, n_bwd, memoryPrimitives, buffer)
 
-    val end1 = (System.nanoTime() - s1)/1e9
-    if (System.getProperty("debug") != null) {
-      println(s"lrn dnn backward ${end1}")
+    val end1 = (System.nanoTime() - s1)/1e6
+    if (System.getProperty("debug") == "2") {
+      println(s"lrn dnn ${this.getName()} backward ${end1} format " + input.getFormat())
     }
     gradInput
   }
