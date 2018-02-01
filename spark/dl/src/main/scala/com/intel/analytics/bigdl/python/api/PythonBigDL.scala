@@ -36,6 +36,7 @@ import java.util
 
 import com.intel.analytics.bigdl.nn.Graph._
 import com.intel.analytics.bigdl.nn.tf.{Const, Fill, Shape => TfShape, SplitAndSelect}
+import com.intel.analytics.bigdl.optim.SGD.{LearningRateSchedule, SequentialSchedule}
 import com.intel.analytics.bigdl.transform.vision.image._
 import com.intel.analytics.bigdl.transform.vision.image.augmentation._
 import com.intel.analytics.bigdl.transform.vision.image.label.roi._
@@ -1648,6 +1649,14 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     SGD.Plateau(monitor, factor, patience, mode, epsilon, cooldown, minLr)
   }
 
+  def createWarmup(delta: Double): SGD.Warmup = {
+    SGD.Warmup(delta)
+  }
+
+  def createSequentialSchedule(iterationPerEpoch: Int): SGD.SequentialSchedule = {
+    SGD.SequentialSchedule(iterationPerEpoch)
+  }
+
   def createClassNLLCriterion(weights: JTensor = null,
     sizeAverage: Boolean = true, logProbAsInput: Boolean = true)
   : ClassNLLCriterion[T] = {
@@ -2925,6 +2934,11 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
 
   def disableClip(optimizer: Optimizer[T, MiniBatch[T]]): Unit = {
     optimizer.disableGradientClipping()
+  }
+
+  def addScheduler(seq: SequentialSchedule, scheduler: LearningRateSchedule,
+    maxIteration: Int): SequentialSchedule = {
+    seq.add(scheduler, maxIteration)
   }
 }
 
