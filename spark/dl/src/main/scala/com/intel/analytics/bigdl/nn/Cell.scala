@@ -190,11 +190,6 @@ abstract class Cell[T : ClassTag](
     gradInput
   }
 
-  override def updateParameters(learningRate: T): Unit = {
-    cell.updateParameters(learningRate)
-    if (includePreTopology) preTopology.updateParameters(learningRate)
-  }
-
   private def initAddTimes(): Unit = {
     val cellTimes = cell.getTimes
     if (subModules == null || subModules.length < cellTimes.length) {

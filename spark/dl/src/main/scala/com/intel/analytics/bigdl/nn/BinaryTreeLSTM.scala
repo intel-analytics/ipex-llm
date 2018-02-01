@@ -368,11 +368,6 @@ class BinaryTreeLSTM[T: ClassTag](
     (cp ++ lp, cg ++ lg)
   }
 
-  override def updateParameters(learningRate: T): Unit = {
-    composer.updateParameters(learningRate)
-    leafModule.updateParameters(learningRate)
-  }
-
   override def getParametersTable(): Table = {
     val pt = T()
     val t1 = composer.getParametersTable()

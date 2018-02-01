@@ -724,11 +724,6 @@ class VolumetricFullConvolution[T: ClassTag](
     }
   }
 
-  override def updateParameters(learningRate: T): Unit = {
-    weight.map(gradWeight, (a, b) => ev.minus(a, ev.times(learningRate, b)))
-    bias.map(gradBias, (a, b) => ev.minus(a, ev.times(learningRate, b)))
-  }
-
   override def zeroGradParameters(): Unit = {
     gradWeight.zero()
     if(!noBias) {

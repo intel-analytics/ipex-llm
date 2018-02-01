@@ -340,8 +340,6 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
     }
   }
 
-  def updateParameters(learningRate: T): Unit = {}
-
   /**
    * This method compact all parameters and gradients of the model into two tensors. So it's easier
    * to use optim method

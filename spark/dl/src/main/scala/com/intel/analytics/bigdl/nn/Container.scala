@@ -55,10 +55,6 @@ abstract class Container[A <: Activity : ClassTag,
     modules.foreach(_.zeroGradParameters())
   }
 
-  override def updateParameters(learningRate: T): Unit = {
-    modules.foreach(_.updateParameters(learningRate))
-  }
-
   override def reset(): Unit = {
     modules.foreach(_.reset())
   }

@@ -519,13 +519,6 @@ class SpatialConvolution[T: ClassTag](
     }
   }
 
-  override def updateParameters(learningRate: T): Unit = {
-    weight.map(gradWeight, (a, b) => ev.minus(a, ev.times(learningRate, b)))
-    if (withBias) {
-      bias.map(gradBias, (a, b) => ev.minus(a, ev.times(learningRate, b)))
-    }
-  }
-
   override def zeroGradParameters(): Unit = {
     gradWeight.zero()
     if (withBias) {

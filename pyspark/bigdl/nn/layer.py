@@ -232,15 +232,6 @@ class Layer(JavaValue):
         """
         callJavaFunc(self.value.zeroGradParameters)
 
-    def update_parameters(self, learning_rate):
-        """
-        NB: It's for debug only, please use optimizer.optimize() in production.
-        """
-        callBigDlFunc(self.bigdl_type,
-                      "updateParameters",
-                      self.value,
-                      learning_rate)
-
     def reset(self):
         """
         Initialize the model weights.

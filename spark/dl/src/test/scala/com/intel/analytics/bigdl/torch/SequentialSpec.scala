@@ -98,7 +98,8 @@ class SequentialSpec extends TorchSpec {
       module.zeroGradParameters()
       gradInput = module.updateGradInput(input, gradOutput).toTensor[Double]
       module.accGradParameters(input, gradOutput)
-      module.updateParameters(0.1)
+      val (weight, grad) = module.getParameters()
+      weight.add(-0.1, grad)
       i += 1
     }
 

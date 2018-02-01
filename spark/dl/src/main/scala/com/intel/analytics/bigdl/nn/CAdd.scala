@@ -141,10 +141,6 @@ class CAdd[T: ClassTag](
     }
   }
 
-  override def updateParameters(learningRate: T): Unit = {
-    bias.map(gradBias, (a, b) => ev.minus(a, ev.times(learningRate, b)))
-  }
-
   override def zeroGradParameters(): Unit = {
     gradBias.zero()
   }

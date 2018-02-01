@@ -159,8 +159,6 @@ class TimeDistributed[T : ClassTag] (val layer: TensorModule[T])
     layer.zeroGradParameters()
   }
 
-  override def updateParameters(learningRate: T): Unit = layer.updateParameters(learningRate)
-
   override def reset(): Unit = layer.reset()
 
   override def training(): TimeDistributed.this.type = {

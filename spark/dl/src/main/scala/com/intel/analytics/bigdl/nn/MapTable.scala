@@ -110,13 +110,6 @@ class MapTable[T: ClassTag](
     }
   }
 
-
-  override def updateParameters(learningRate: T): Unit = {
-    if (module != null) {
-      module.updateParameters(learningRate)
-    }
-  }
-
   override def toString(): String = {
     val tab = "  "
     val extlast = "       "
