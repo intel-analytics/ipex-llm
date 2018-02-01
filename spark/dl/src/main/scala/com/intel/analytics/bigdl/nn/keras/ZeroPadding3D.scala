@@ -25,11 +25,14 @@ import com.intel.analytics.bigdl.utils.Shape
 
 import scala.reflect.ClassTag
 
-class ZeroPadding3D[T: ClassTag](val padding: Tuple3[Int, Int, Int] = (1, 1, 1),
+class ZeroPadding3D[T: ClassTag](val padding: (Int, Int, Int) = (1, 1, 1),
                                  val format: String = "CHANNEL_FIRST",
                                  var inputShape: Shape = null
   )(implicit ev: TensorNumeric[T])
   extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {
+
+  require(format.toLowerCase() == "channel_first" || format.toLowerCase() == "channel_last",
+    s"$format is not supported")
 
   override def computeOutputShape(inputShape: Shape): Shape = {
     val input = inputShape.toSingle().toArray
@@ -49,7 +52,6 @@ class ZeroPadding3D[T: ClassTag](val padding: Tuple3[Int, Int, Int] = (1, 1, 1),
     val dim = if (format.toLowerCase == "channel_first") 2 else 1
 
     val model = TSequential[T]()
-
     val paddinglayer1 = Padding(
       dim = dim,
       pad = -padding._1,
@@ -98,7 +100,6 @@ class ZeroPadding3D[T: ClassTag](val padding: Tuple3[Int, Int, Int] = (1, 1, 1),
     model.add(paddinglayer4)
     model.add(paddinglayer5)
     model.add(paddinglayer6)
-
     model.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
   }
 }
@@ -106,7 +107,7 @@ class ZeroPadding3D[T: ClassTag](val padding: Tuple3[Int, Int, Int] = (1, 1, 1),
 
 object ZeroPadding3D {
   def apply[@specialized(Float, Double) T: ClassTag](
-    padding: Tuple3[Int, Int, Int] = (1, 1, 1),
+    padding: (Int, Int, Int) = (1, 1, 1),
     format: String = "CHANNEL_FIRST",
     inputShape: Shape = null
     )(implicit ev: TensorNumeric[T]) : ZeroPadding3D[T] = {

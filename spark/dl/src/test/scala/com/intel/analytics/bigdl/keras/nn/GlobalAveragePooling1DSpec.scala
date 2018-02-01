@@ -36,6 +36,8 @@ class GlobalAveragePooling1DSpec extends KerasBaseSpec{
     val seq = KSequential[Float]()
     val globalaveragepooling1d = GlobalAveragePooling1D[Float](inputShape = Shape(3, 24))
     seq.add(globalaveragepooling1d)
+    val input = seq.getOutputShape().toSingle().toArray
+    seq.getOutputShape().toSingle().toArray should be (Array(-1, 24))
     checkOutputAndGrad(seq.asInstanceOf[AbstractModule[Tensor[Float], Tensor[Float], Float]],
       kerasCode)
   }

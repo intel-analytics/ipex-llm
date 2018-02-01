@@ -26,45 +26,39 @@ import com.intel.analytics.bigdl.utils.Shape
 
 import scala.reflect.ClassTag
 
-class GlobalAveragePooling3D[T: ClassTag](dataFormat: String = "CHANNEL_FIRST",
-                                          inputShape: Shape = null
+class GlobalAveragePooling3D[T: ClassTag](inputShape: Shape = null
   )(implicit ev: TensorNumeric[T])
-  extends GlobalPooling3D[T](dataFormat, inputShape) {
+  extends GlobalPooling3D[T](inputShape) {
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
     val input = inputShape.toSingle().toArray
-
-    require(dataFormat == "CHANNEL_FIRST", s"$dataFormat is not supported")
-
-      val model = TSequential[T]()
-      val layer = VolumetricAveragePooling(
-        kT = input(2),
-        kW = input(4),
-        kH = input(3),
-        dT = 1,
-        dW = 1,
-        dH = 1,
-        padT = 0,
-        padW = 0,
-        padH = 0,
-        countIncludePad = false
-      )
-      model.add(layer)
-      model.add(Squeeze(5))
-      model.add(Squeeze(4))
-      model.add(Squeeze(3))
-      model.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
+    val model = TSequential[T]()
+    val layer = VolumetricAveragePooling(
+      kT = input(2),
+      kW = input(4),
+      kH = input(3),
+      dT = 1,
+      dW = 1,
+      dH = 1,
+      padT = 0,
+      padW = 0,
+      padH = 0,
+      countIncludePad = false
+    )
+    model.add(layer)
+    model.add(Squeeze(5))
+    model.add(Squeeze(4))
+    model.add(Squeeze(3))
+    model.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
   }
 }
 
 
 object GlobalAveragePooling3D {
   def apply[@specialized(Float, Double) T: ClassTag](
-    dataFormat: String = "CHANNEL_FIRST",
     inputShape: Shape = null
     )(implicit ev: TensorNumeric[T]) : GlobalAveragePooling3D[T] = {
     new GlobalAveragePooling3D[T](
-      dataFormat,
       inputShape)
   }
 }

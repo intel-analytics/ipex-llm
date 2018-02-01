@@ -26,16 +26,12 @@ import com.intel.analytics.bigdl.utils.Shape
 
 import scala.reflect.ClassTag
 
-class GlobalMaxPooling3D[T: ClassTag](dataFormat: String = "CHANNEL_FIRST",
-                                      inputShape: Shape = null
+class GlobalMaxPooling3D[T: ClassTag](inputShape: Shape = null
   )(implicit ev: TensorNumeric[T])
-  extends GlobalPooling3D[T](dataFormat, inputShape) {
+  extends GlobalPooling3D[T](inputShape) {
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
     val input = inputShape.toSingle().toArray
-
-    require(dataFormat == "CHANNEL_FIRST", s"$dataFormat is not supported")
-
     val model = TSequential[T]()
     val layer = VolumetricMaxPooling(
       kT = input(2),
@@ -59,11 +55,9 @@ class GlobalMaxPooling3D[T: ClassTag](dataFormat: String = "CHANNEL_FIRST",
 
 object GlobalMaxPooling3D {
   def apply[@specialized(Float, Double) T: ClassTag](
-    dataFormat: String = "CHANNEL_FIRST",
     inputShape: Shape = null
     )(implicit ev: TensorNumeric[T]) : GlobalMaxPooling3D[T] = {
     new GlobalMaxPooling3D[T](
-      dataFormat,
       inputShape)
   }
 }

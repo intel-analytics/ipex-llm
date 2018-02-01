@@ -32,7 +32,6 @@ class GlobalAveragePooling1D[T: ClassTag](inputShape: Shape = null
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
     val input = inputShape.toSingle().toArray
-
     val model = TSequential[T]()
     model.add(Reshape(Array(input(1), 1, input(2)), Some(true)))
 
@@ -49,7 +48,6 @@ class GlobalAveragePooling1D[T: ClassTag](inputShape: Shape = null
       divide = true,
       format = DataFormat.NHWC
     )
-
     model.add(layer)
     model.add(Squeeze(3))
     model.add(Squeeze(2))

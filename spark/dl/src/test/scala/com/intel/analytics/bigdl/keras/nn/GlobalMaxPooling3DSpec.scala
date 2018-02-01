@@ -30,12 +30,13 @@ class GlobalMaxPooling3DSpec extends KerasBaseSpec{
       """
         |input_tensor = Input(shape=[3, 4, 5, 6])
         |input = np.random.random([2, 3, 4, 5, 6])
-        |output_tensor = GlobalMaxPooling3D("channels_first")(input_tensor)
+        |output_tensor = GlobalMaxPooling3D("th")(input_tensor)
         |model = Model(input=input_tensor, output=output_tensor)
       """.stripMargin
     val seq = KSequential[Float]()
-    val globalmaxpooling3d = GlobalMaxPooling3D[Float]("CHANNEL_FIRST", inputShape = Shape(3, 4, 5, 6))
+    val globalmaxpooling3d = GlobalMaxPooling3D[Float](inputShape = Shape(3, 4, 5, 6))
     seq.add(globalmaxpooling3d)
+    seq.getOutputShape().toSingle().toArray should be (Array(-1, 3))
     checkOutputAndGrad(seq.asInstanceOf[AbstractModule[Tensor[Float], Tensor[Float], Float]],
       kerasCode)
   }
