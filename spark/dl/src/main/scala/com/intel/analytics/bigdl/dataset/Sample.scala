@@ -129,7 +129,7 @@ abstract class Sample[T: ClassTag] extends Serializable {
 /**
  * A kind of sample who use only one array
  */
-private[bigdl] class ArraySample[T: ClassTag](
+class ArraySample[T: ClassTag] private[bigdl](
       private val data: Array[T],
       private val featureSize: Array[Array[Int]],
       private val labelSize: Array[Array[Int]]) extends Sample[T] {
@@ -338,8 +338,6 @@ object Sample {
   def apply[T: ClassTag](
         featureTensor: Tensor[T],
         labelTensor: Tensor[T])(implicit ev: TensorNumeric[T]) : Sample[T] = {
-    require(featureTensor.isContiguous(), "featureTensor is not contiguous")
-    require(labelTensor.isContiguous(), "labelTensor is not contiguous")
     if (featureTensor.getTensorType == DenseType) {
       ArraySample(featureTensor, labelTensor)
     } else {
@@ -350,7 +348,6 @@ object Sample {
   def apply[T: ClassTag](
         featureTensor: Tensor[T],
         label: T)(implicit ev: TensorNumeric[T]) : Sample[T] = {
-    require(featureTensor.isContiguous(), "featureTensor is not contiguous")
     if (featureTensor.getTensorType == DenseType) {
       ArraySample(featureTensor, label)
     } else {
@@ -381,7 +378,6 @@ object Sample {
 
   def apply[T: ClassTag](
         featureTensor: Tensor[T])(implicit ev: TensorNumeric[T]) : Sample[T] = {
-    require(featureTensor.isContiguous(), "featureTensor is not contiguous")
     if (featureTensor.getTensorType == SparseType) {
       TensorSample(featureTensor)
     } else {
@@ -405,7 +401,7 @@ object Sample {
  * @param labels label tensors
  * @tparam T numeric type
  */
-private[bigdl] class TensorSample[T: ClassTag](
+class TensorSample[T: ClassTag] private[bigdl] (
       val features: Array[Tensor[T]],
       val labels: Array[Tensor[T]]) extends Sample[T] {
   val featureSize = features.map(_.size())
