@@ -149,10 +149,6 @@ class Euclidean[T: ClassTag](val inputSize: Int, val outputSize: Int,
     s"${getPrintName}($inputSize, $outputSize)"
   }
 
-  override def zeroGradParameters(): Unit = {
-    gradWeight.zero()
-  }
-
   override def clearState() : this.type = {
     super.clearState()
     inputBuffer.set()

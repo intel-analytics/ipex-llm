@@ -51,7 +51,7 @@ abstract class Container[A <: Activity : ClassTag,
     modules.filter(!_.isCompatibleWithTorch()).length <= 0
   }
 
-  override def zeroGradParameters(): Unit = {
+  final override def zeroGradParameters(): Unit = {
     modules.foreach(_.zeroGradParameters())
   }
 

@@ -151,14 +151,6 @@ class TimeDistributed[T : ClassTag] (val layer: TensorModule[T])
     gradInput
   }
 
-  /**
-   * If the module has parameters, this will zero the accumulation of the gradients with respect
-   * to these parameters. Otherwise, it does nothing.
-   */
-  override def zeroGradParameters(): Unit = {
-    layer.zeroGradParameters()
-  }
-
   override def reset(): Unit = layer.reset()
 
   override def training(): TimeDistributed.this.type = {

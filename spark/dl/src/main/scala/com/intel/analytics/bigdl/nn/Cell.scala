@@ -259,11 +259,6 @@ abstract class Cell[T : ClassTag](
     cell.resetTimes
   }
 
-  override def zeroGradParameters(): Unit = {
-    cell.zeroGradParameters()
-    if (includePreTopology) preTopology.zeroGradParameters()
-  }
-
   override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
     val _cell = if (includePreTopology) {
       Sequential().add(preTopology).add(cell)

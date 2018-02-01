@@ -176,10 +176,6 @@ class Cosine[T: ClassTag](val inputSize : Int, val outputSize : Int)(
     }
   }
 
-  override def zeroGradParameters(): Unit = {
-    gradWeight.zero()
-  }
-
   override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
     (Array(this.weight), Array(this.gradWeight))
   }

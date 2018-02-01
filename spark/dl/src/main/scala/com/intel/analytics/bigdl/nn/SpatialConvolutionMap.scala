@@ -302,11 +302,6 @@ class SpatialConvolutionMap[T: ClassTag](
     weight.apply1(ev.minus(_, decay))
     bias.apply1(ev.minus(_, decay))
   }
-
-  override def zeroGradParameters(): Unit = {
-    gradWeight.zero()
-    gradBias.zero()
-  }
 }
 
 object SpatialConvolutionMap {

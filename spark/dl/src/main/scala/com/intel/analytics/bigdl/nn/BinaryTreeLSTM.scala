@@ -377,11 +377,6 @@ class BinaryTreeLSTM[T: ClassTag](
     pt
   }
 
-  override def zeroGradParameters(): Unit = {
-    composer.zeroGradParameters()
-    leafModule.zeroGradParameters()
-  }
-
   override def reset(): Unit = {
     composer.reset()
     leafModule.reset()

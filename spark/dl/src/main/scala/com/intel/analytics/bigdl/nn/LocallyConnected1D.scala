@@ -380,29 +380,16 @@ class LocallyConnected1D[T: ClassTag](val nInputFrame: Int,
     }
   }
 
-  override def zeroGradParameters(): Unit
-
-  = {
-    gradWeight.zero()
-    gradBias.zero()
-  }
-
-  override def parameters(): (Array[Tensor[T]], Array[Tensor[T]])
-
-  = {
+  override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
     (Array(this.weight, this.bias), Array(this.gradWeight, this.gradBias))
   }
 
-  override def getParametersTable(): Table
-
-  = {
+  override def getParametersTable(): Table = {
     T(getName() -> T("weight" -> weight, "bias" -> bias,
       "gradWeight" -> gradWeight, "gradBias" -> gradBias))
   }
 
-  override def equals(obj: Any): Boolean
-
-  = {
+  override def equals(obj: Any): Boolean = {
     if (!super.equals(obj)) {
       return false
     }
@@ -425,9 +412,7 @@ class LocallyConnected1D[T: ClassTag](val nInputFrame: Int,
       gradBias == other.gradBias
   }
 
-  override def hashCode(): Int
-
-  = {
+  override def hashCode(): Int = {
     val seed = 37
     var hash = super.hashCode()
     hash = hash * seed + inputFrameSize.hashCode()
@@ -442,16 +427,12 @@ class LocallyConnected1D[T: ClassTag](val nInputFrame: Int,
     hash
   }
 
-  override def clearState(): this.type
-
-  = {
+  override def clearState(): this.type = {
     super.clearState()
     this
   }
 
-  override def toString(): String
-
-  = {
+  override def toString(): String = {
     s"nn.TemporalConvolution($inputFrameSize -> $outputFrameSize, $kernelW x $strideW)"
   }
 }

@@ -724,13 +724,6 @@ class VolumetricFullConvolution[T: ClassTag](
     }
   }
 
-  override def zeroGradParameters(): Unit = {
-    gradWeight.zero()
-    if(!noBias) {
-      gradBias.zero()
-    }
-  }
-
   override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
     if (null == bias) {
       (Array(this.weight), Array(this.gradWeight))

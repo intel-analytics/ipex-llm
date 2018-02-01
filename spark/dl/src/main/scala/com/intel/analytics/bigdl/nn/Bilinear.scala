@@ -194,11 +194,6 @@ class Bilinear[T: ClassTag](
     }
   }
 
-  override def zeroGradParameters(): Unit = {
-    gradWeight.zero()
-    gradBias.zero()
-  }
-
   override def clearState(): this.type = {
     super.clearState()
     buff1.set()

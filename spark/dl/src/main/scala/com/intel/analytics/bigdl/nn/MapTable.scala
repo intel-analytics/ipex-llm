@@ -104,12 +104,6 @@ class MapTable[T: ClassTag](
     throw new IllegalArgumentException("Can not transform Container MapTable to graph")
   }
 
-  override def zeroGradParameters(): Unit = {
-    if (module != null) {
-      module.zeroGradParameters()
-    }
-  }
-
   override def toString(): String = {
     val tab = "  "
     val extlast = "       "

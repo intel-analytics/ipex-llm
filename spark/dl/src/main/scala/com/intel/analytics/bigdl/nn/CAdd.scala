@@ -141,10 +141,6 @@ class CAdd[T: ClassTag](
     }
   }
 
-  override def zeroGradParameters(): Unit = {
-    gradBias.zero()
-  }
-
   override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
     (Array(this.bias), Array(this.gradBias))
   }
