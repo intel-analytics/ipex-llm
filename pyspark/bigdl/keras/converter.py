@@ -1600,16 +1600,16 @@ class LayerConverter:
         if "shared_axes" not in self.config:
             warnings.warn("Cannot find shared_axes from json definition. Using shared_axes=None instead.")
         shape = self.input_shape[1:]
-        t_left_init = to_bigdl_init(config["t_left_init"])
-        a_left_init = to_bigdl_init(config["a_left_init"])
-        t_right_init = to_bigdl_init(config["t_right_init"])
-        a_right_init = to_bigdl_init(config["a_right_init"])
+        t_left_init = to_bigdl_init(self.config["t_left_init"])
+        a_left_init = to_bigdl_init(self.config["a_left_init"])
+        t_right_init = to_bigdl_init(self.config["t_right_init"])
+        a_right_init = to_bigdl_init(self.config["a_right_init"])
         if self.klayer.shared_axes == [None]:
             srelu = BLayer.SReLU(shape)
         else:
             srelu = BLayer.SReLU(shape, self.klayer.shared_axes)
 
-        srelu.set_init_method([t_left_init, a_left_init, t_right_init, a_right_init])
+        srelu.set_init_method(t_left_init, a_left_init, t_right_init, a_right_init)
         return srelu
 
     def create_separableconvolution2d(self):
