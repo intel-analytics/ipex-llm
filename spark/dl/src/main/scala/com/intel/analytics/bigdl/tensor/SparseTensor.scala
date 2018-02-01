@@ -224,13 +224,11 @@ private[tensor] class SparseTensor[@specialized(Float, Double) T: ClassTag](
   }
 
   override def isContiguous(): Boolean = {
-    // Sparse Tensor's storage is always contiguous
-    true
+    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
   }
 
   override def contiguous(): Tensor[T] = {
-    // Sparse Tensor's storage is always contiguous
-    this
+    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
   }
 
   override def isSameSizeAs(other: Tensor[_]): Boolean = {

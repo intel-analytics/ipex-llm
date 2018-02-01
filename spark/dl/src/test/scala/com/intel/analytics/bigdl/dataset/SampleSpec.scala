@@ -79,6 +79,7 @@ class SampleSpec extends FlatSpec with Matchers {
     Sample(st1, label1)
     Sample(dt1, label1)
     Sample(dt1, 1f)
+    Sample(st1, 1f)
     Sample(Array(st1, st2), label1)
     Sample(Array(dt1, st2), label1)
     Sample(Array(dt1, dt2), label1)
