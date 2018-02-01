@@ -28,13 +28,14 @@ import scala.collection.mutable
 import scala.reflect.ClassTag
 
 /**
- * RowTransformer transform a `Row` to a `Table` whose values are all `Tensor`.
+ * ======RowTransformer transform a `Row` to a `Table` whose values are all `Tensor`.======
+ *
  * This transformer is a container of `RowTransformSchema`s.
  * When this transformer being executed,
  * it will run `transform` methods of its `RowTransformSchema`s.
  *
  * Output of `RowTransformer` is a `Table`.
- * The keys of `Table` are `schemaKey`s of included `RowTransformSchema`s.
+ * The keys of `Table` are Tensor.scalar(`schemaKey`)s of included `RowTransformSchema`s.
  * Correspondingly, the values of `Table` are results(`Tensor`) of `RowTransformSchema.transform`.
  *
  * @param schemas schemas of transformer, whose keys should `NOT` be duplicated
@@ -82,9 +83,10 @@ class RowTransformer(
             row.get(i) -> row.schema.fields(i)
           ).unzip
 
+          val outputKey = Tensor.scalar[String](key)
           val output = schema.transform(values, fields)
 
-          table.update(key, output)
+          table.update(outputKey, output)
         }
         table
       }
@@ -132,7 +134,7 @@ object RowTransformer {
    *
    * @param schemaKey key of the schema, default value is "all"
    */
-  def numeric[@specialized(Float, Double) T: ClassTag](schemaKey: String = "all"
+  def numeric[T: ClassTag](schemaKey: String = "all"
   )(implicit ev: TensorNumeric[T]): RowTransformer = {
     new RowTransformer(Seq(ColsToNumeric[T](schemaKey)))
   }
@@ -144,7 +146,7 @@ object RowTransformer {
    *
    * @param numericFields Map<`schemaKey`, `fieldNames of selected columns`> of numeric fields
    */
-  def numeric[@specialized(Float, Double) T: ClassTag](numericFields: Map[String, Seq[String]]
+  def numeric[T: ClassTag](numericFields: Map[String, Seq[String]]
   )(implicit ev: TensorNumeric[T]): RowTransformer = {
     val transSchemas = numericFields.map { case(key, fields) => ColsToNumeric[T](key, fields) }
     new RowTransformer(transSchemas.toSeq)
@@ -156,7 +158,7 @@ object RowTransformer {
    * @param atomicFields field names of `selected columns`
    * @param numericFields Map<`schemaKey`, `fieldNames of selected columns`> of numeric fields
    */
-  def atomicWithNumeric[@specialized(Float, Double) T: ClassTag](
+  def atomicWithNumeric[T: ClassTag](
     atomicFields: Seq[String],
     numericFields: Map[String, Seq[String]]
   )(implicit ev: TensorNumeric[T]): RowTransformer = {
@@ -171,37 +173,37 @@ object RowTransformer {
 }
 
 /**
- *  A `schema` describe a transforming job which convert a `Row` to a `Table`(`Tensor`).
+ * A `schema` describe a transforming job which convert a `Row` to a `Table`(`Tensor`).
  */
 trait RowTransformSchema extends Serializable {
 
   /**
-   *  Key of the schema, which will be the key of `Tensor` in result `Table`.
-   *  So, it should be `unique` in single `RowTransformer`.
+   * Key of the schema, which will be the key of `Tensor` in result `Table`.
+   * So, it should be `unique` in single `RowTransformer`.
    */
   val schemaKey: String
 
   /**
-   *  `Indices` of Selected Columns
-   *  It will work on only when `fieldNames` is empty,
-   *  otherwise `RowTransformer` will select columns accord to `fieldNames`.
-   *  If both `indices` and `fieldNames` are empty,
-   *  `RowTransformer` will select all columns by default.
+   * ======`Indices` of Selected Columns======
+   * It will work on only when `fieldNames` is empty,
+   * otherwise `RowTransformer` will select columns accord to `fieldNames`.
+   * If both `indices` and `fieldNames` are empty,
+   * `RowTransformer` will select all columns by default.
    */
   val indices: Seq[Int] = Seq.empty
 
   /**
-   *  `FieldNames` of Selected Columns
-   *  This property will override `indices` when it is not empty.
+   * ======`FieldNames` of Selected Columns======
+   * This property will override `indices` when it is not empty.
    */
   val fieldNames: Seq[String] = Seq.empty
 
   /**
-   *  Transforming Logic of the Schema
+   * Transforming Logic of the Schema
    *
-   *  @param values values of selected columns
-   *  @param fields StructFields of selected columns
-   *  @return a result `Tensor`
+   * @param values values of selected columns
+   * @param fields StructFields of selected columns
+   * @return a result `Tensor`
    */
   def transform(values: Seq[Any], fields: Seq[StructField]): Tensor[NumericWildcard]
 
@@ -218,7 +220,7 @@ trait RowTransformSchema extends Serializable {
  * @param fieldNames field names of `selected columns`
  * @tparam T the type of result `Tensor`
  */
-class ColsToNumeric[@specialized(Float, Double) T: ClassTag](
+class ColsToNumeric[@specialized T: ClassTag](
   override val schemaKey: String,
   override val indices: Seq[Int] = Seq.empty,
   override val fieldNames: Seq[String] = Seq.empty

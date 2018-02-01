@@ -44,6 +44,15 @@ class RowTransformerSpec extends FlatSpec with Matchers {
     )
   }
 
+  private val sInt = Tensor.scalar[String]("int")
+  private val sLong = Tensor.scalar[String]("long")
+  private val sFloat = Tensor.scalar[String]("float")
+  private val sDouble = Tensor.scalar[String]("double")
+  private val sBool = Tensor.scalar[String]("bool")
+  private val sStr = Tensor.scalar[String]("str")
+  private val sShort = Tensor.scalar[String]("short")
+  private val sWrap = (s: String) => Tensor.scalar[String](s)
+
   "ColToTensor" should "deal with different DataTypes correctly" in {
     ColToTensor("str", "str")
       .transform(Seq("test123"), Seq(StructField("str", StringType))
@@ -107,19 +116,19 @@ class RowTransformerSpec extends FlatSpec with Matchers {
     var transformer = RowTransformer.atomic(
       Seq("int", "long", "float", "double", "str", "bool", "short"))
     var table = transformer(Iterator.single(testRow)).next()
-    table.get[Tensor[Int]]("int").get.size() shouldEqual Array(1)
-    table.get[Tensor[Int]]("int").get.valueAt(1) shouldEqual 1
-    table.get[Tensor[Long]]("long").get.valueAt(1) shouldEqual 2L
-    table.get[Tensor[Float]]("float").get.valueAt(1) shouldEqual 4.4f
-    table.get[Tensor[Double]]("double").get.valueAt(1) shouldEqual 3.3
-    table.get[Tensor[String]]("str").get.valueAt(1) shouldEqual "aa"
-    table.get[Tensor[Boolean]]("bool").get.valueAt(1) shouldEqual false
-    table.get[Tensor[Short]]("short").get.valueAt(1) shouldEqual 77.toShort
+    table.get[Tensor[Int]](sInt).get.size() shouldEqual Array(1)
+    table.get[Tensor[Int]](sInt).get.valueAt(1) shouldEqual 1
+    table.get[Tensor[Long]](sLong).get.valueAt(1) shouldEqual 2L
+    table.get[Tensor[Float]](sFloat).get.valueAt(1) shouldEqual 4.4f
+    table.get[Tensor[Double]](sDouble).get.valueAt(1) shouldEqual 3.3
+    table.get[Tensor[String]](sStr).get.valueAt(1) shouldEqual "aa"
+    table.get[Tensor[Boolean]](sBool).get.valueAt(1) shouldEqual false
+    table.get[Tensor[Short]](sShort).get.valueAt(1) shouldEqual 77.toShort
     transformer = RowTransformer.atomic(Seq(1, 3, 5), 7)
     table = transformer(Iterator.single(testRow)).next()
-    table.get[Tensor[Long]]("1").get.valueAt(1) shouldEqual 2L
-    table.get[Tensor[Float]]("3").get.valueAt(1) shouldEqual 4.4f
-    table.get[Tensor[Boolean]]("5").get.valueAt(1) shouldEqual false
+    table.get[Tensor[Long]](sWrap("1")).get.valueAt(1) shouldEqual 2L
+    table.get[Tensor[Float]](sWrap("3")).get.valueAt(1) shouldEqual 4.4f
+    table.get[Tensor[Boolean]](sWrap("5")).get.valueAt(1) shouldEqual false
     intercept[Exception] {
       RowTransformer.atomic(Seq(5, 7), 7)
     }
@@ -137,16 +146,16 @@ class RowTransformerSpec extends FlatSpec with Matchers {
     )
     var transformer = RowTransformer.numeric[Float](numericFields)
     var table = transformer(Iterator.single(testRow)).next()
-    var tensor = table.get[Tensor[Float]]("allNum").get
+    var tensor = table.get[Tensor[Float]](sWrap("allNum")).get
     tensor.size shouldEqual Array(5)
     tensor.storage().array() shouldEqual Array(1, 77, 4.4, 3.3, 2).map(_.toFloat)
-    tensor = table.get[Tensor[Float]]("dupNum").get
+    tensor = table.get[Tensor[Float]](sWrap("dupNum")).get
     tensor.size shouldEqual Array(6)
     tensor.storage().array() shouldEqual Array(4.4, 4.4, 4.4, 1, 1, 1).map(_.toFloat)
 
     transformer = RowTransformer.numeric[Float]()
     table = transformer(Iterator.single(numericRow)).next()
-    tensor = table.get[Tensor[Float]]("all").get
+    tensor = table.get[Tensor[Float]](sWrap("all")).get
     tensor.size() shouldEqual Array(3)
     tensor.toArray() shouldEqual Array(1f, 1.1f, 1.2f)
   }
@@ -156,9 +165,9 @@ class RowTransformerSpec extends FlatSpec with Matchers {
       Seq("str", "bool"),
       Map("num" -> Seq("int", "long", "double", "float", "short")))
     val table = transformer(Iterator.single(testRow)).next()
-    table.get[Tensor[String]]("str").get.toArray() shouldEqual Array("aa")
-    table.get[Tensor[Boolean]]("bool").get.toArray() shouldEqual Array(false)
-    table.get[Tensor[Float]]("num").get.toArray() shouldEqual Array(
+    table.get[Tensor[String]](sStr).get.toArray() shouldEqual Array("aa")
+    table.get[Tensor[Boolean]](sBool).get.toArray() shouldEqual Array(false)
+    table.get[Tensor[Float]](sWrap("num")).get.toArray() shouldEqual Array(
       1, 2, 3.3, 4.4, 77).map(_.toFloat)
   }
 
@@ -167,11 +176,11 @@ class RowTransformerSpec extends FlatSpec with Matchers {
       ColToTensor("str", "str"), ColToTensor("long", "long"))
     )
     val table = transformer(Iterator.single(testRow)).next()
-    val tensor = table.get[Tensor[Int]]("hash").get
+    val tensor = table.get[Tensor[Int]](sWrap("hash")).get
     tensor.size() shouldEqual Array(7)
-    tensor.valueAt(2) shouldEqual table.get[Tensor[Long]]("long"
+    tensor.valueAt(2) shouldEqual table.get[Tensor[Long]](sLong
     ).get.toArray().head.toString.hashCode()
-    tensor.valueAt(5) shouldEqual table.get[Tensor[String]]("str"
+    tensor.valueAt(5) shouldEqual table.get[Tensor[String]](sStr
     ).get.toArray().head.toString.hashCode()
   }
 
