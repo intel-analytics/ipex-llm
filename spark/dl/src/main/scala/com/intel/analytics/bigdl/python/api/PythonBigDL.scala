@@ -1022,13 +1022,13 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     PReLU[T](nOutputPlane)
   }
 
-  def createSReLU(shareAxes: JArrayList[Int] = null): SReLU[T] = {
+  def createSReLU(shape: JArrayList[Int], shareAxes: JArrayList[Int] = null): SReLU[T] = {
     val argv: Array[Int] = if (shareAxes == null) {
       null
     } else {
       shareAxes.asScala.toArray
     }
-    SReLU[T](argv)
+    SReLU[T](shape.asScala.toArray, argv)
   }
 
   def createActivityRegularization(l1: Double, l2: Double): ActivityRegularization[T] = {
@@ -2377,6 +2377,11 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   def setInitMethod(layer: Initializable, weightInitMethod: InitializationMethod,
     biasInitMethod: InitializationMethod): layer.type = {
     layer.setInitMethod(weightInitMethod, biasInitMethod)
+  }
+
+  def setInitMethod(layer: Initializable,
+    initMethods: JArrayList[InitializationMethod]): layer.type = {
+    layer.setInitMethod(initMethods.asScala.toArray)
   }
 
   def getHiddenState(rec: Recurrent[T]): JActivity = {
