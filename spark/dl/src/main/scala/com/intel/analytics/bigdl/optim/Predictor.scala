@@ -56,14 +56,16 @@ object Predictor {
     localToBatch: Transformer[Sample[T], MiniBatch[T]],
     shareBuffer: Boolean,
     outputLayer: String = null)(implicit ev: TensorNumeric[T]): Iterator[Activity] = {
+    val layer = if (outputLayer == null) {
+      localModel
+    } else {
+      val ol = localModel(outputLayer)
+      require(ol.isDefined, s"cannot find layer that map name $outputLayer")
+      ol.get
+    }
     localToBatch(samples.toIterator).flatMap(batch => {
       localModel.forward(batch.getInput())
-      val output = if (outputLayer == null) {
-        localModel.output
-      } else {
-        localModel(outputLayer).get.output
-      }
-      splitBatch[T](output, shareBuffer, batch.size())
+      splitBatch[T](layer.output, shareBuffer, batch.size())
     })
   }
 
