@@ -219,13 +219,13 @@ abstract class Graph[T: ClassTag](
 
     // Check if gradInput is empty for each input
     isGradInputAvailable = inputs.map(_ => false).toArray
-    inputs.zipWithIndex.map{ case (n, i) =>
-      backwardGraph.DFS.foreach(curNode => {
+    backwardGraph.DFS.foreach(curNode => {
+      inputs.zipWithIndex.map { case (n, i) =>
         if (curNode.element.getName() == n.element.getName() && !isStopGradient(n.element)) {
           isGradInputAvailable(i) = true
         }
-      })
-    }
+      }
+    })
 
     clearState()
     this

@@ -40,7 +40,7 @@ abstract class DynamicContainer[A <: Activity : ClassTag, B <: Activity : ClassT
   def add(module: AbstractModule[_ <: Activity, _ <: Activity, T]): this.type = {
     require(!module.isInstanceOf[Operation[_, _, _]],
       "Add operations to dynamic container is not allowed, as operations don't have backward. " +
-        "Operation is only allowed used in Graph")
+        "Operation can only be used in Graph")
     Util.excludeNotTorch[T](Seq(module))
     modules += module.asInstanceOf[AbstractModule[Activity, Activity, T]]
     this
