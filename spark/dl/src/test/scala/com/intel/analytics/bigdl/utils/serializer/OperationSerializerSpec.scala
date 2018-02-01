@@ -26,8 +26,8 @@ import com.intel.analytics.bigdl.nn.abstractnn.DataFormat.NHWC
 
 import scala.collection.JavaConverters._
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, DataFormat}
-import com.intel.analytics.bigdl.nn.ops.{All, Any, ApproximateEqual, ArgMax, Assert, Assign, AssignGrad, AvgPoolGrad, BatchMatMul, BiasAddGrad, BroadcastGradientArgs, Cast, Ceil, ControlNodes, Conv2D, Conv2DBackFilter, Conv2DTranspose, Conv3D, Conv3DBackpropFilter, Conv3DBackpropFilterV2, Conv3DBackpropInput, Conv3DBackpropInputV2, CrossEntropy, DecodeImage, DepthwiseConv2D, DepthwiseConv2DBackpropFilter, DepthwiseConv2DBackpropInput, Digamma, Dilation2D, Dilation2DBackpropFilter, Dilation2DBackpropInput, EluGrad, Equal, Erf, Erfc, Expm1, Floor, FloorDiv, FloorMod, FusedBatchNorm, FusedBatchNormGrad, Greater, GreaterEqual, InTopK, Inv, InvGrad, IsFinite, IsInf, IsNan, Kv2Tensor, L2Loss, LRNGrad, Less, LessEqual, Lgamma, LogicalAnd, LogicalNot, LogicalOr, MaxPool, MaxPoolGrad, Maximum, MergeOps, Minimum, Mod, ModuleToOperation, NoOp, NotEqual, OneHot, Pad, ParseExample, Prod, RandomUniform, RangeOps, Rank, Relu6Grad, ReluGrad, ResizeBilinearGrad, ResizeBilinearOps, Rint, Round, RsqrtGrad, SegmentSum, SigmoidGrad, Sign, Slice, SoftplusGrad, SoftsignGrad, SqrtGrad, SquaredDifference, Substr, SwitchOps, TanhGrad, TopK, TruncateDiv, TruncatedNormal, Add => AddOps, DecodeGif => DecodeGifOps, DecodeJpeg => DecodeJpegOps, DecodePng => DecodePngOps, DecodeRaw => DecodeRawOps, Exp => ExpOps, Pow => PowOps, Select => SelectOps, Sum => SumOps, Tile => TileOps}
-import com.intel.analytics.bigdl.nn.tf.{BiasAdd, Const, Fill, Log1p, Shape, SplitAndSelect, StrideSlice, Variable, TensorModuleWrapper}
+import com.intel.analytics.bigdl.nn.ops.{All, Any, ApproximateEqual, ArgMax, Assert, Assign, AssignGrad, AvgPoolGrad, BatchMatMul, BiasAddGrad, BroadcastGradientArgs, Cast, CategoricalColHashBucket, Ceil, ControlNodes, Conv2D, Conv2DBackFilter, Conv2DTranspose, Conv3D, Conv3DBackpropFilter, Conv3DBackpropFilterV2, Conv3DBackpropInput, Conv3DBackpropInputV2, CrossEntropy, DecodeImage, DepthwiseConv2D, DepthwiseConv2DBackpropFilter, DepthwiseConv2DBackpropInput, Digamma, Dilation2D, Dilation2DBackpropFilter, Dilation2DBackpropInput, EluGrad, Equal, Erf, Erfc, Expm1, Floor, FloorDiv, FloorMod, FusedBatchNorm, FusedBatchNormGrad, Greater, GreaterEqual, InTopK, Inv, InvGrad, IsFinite, IsInf, IsNan, Kv2Tensor, L2Loss, LRNGrad, Less, LessEqual, Lgamma, LogicalAnd, LogicalNot, LogicalOr, MaxPool, MaxPoolGrad, Maximum, MergeOps, Minimum, Mod, ModuleToOperation, NoOp, NotEqual, OneHot, Pad, ParseExample, Prod, RandomUniform, RangeOps, Rank, Relu6Grad, ReluGrad, ResizeBilinearGrad, ResizeBilinearOps, Rint, Round, RsqrtGrad, SegmentSum, SigmoidGrad, Sign, Slice, SoftplusGrad, SoftsignGrad, SqrtGrad, SquaredDifference, Substr, SwitchOps, TanhGrad, TopK, TruncateDiv, TruncatedNormal, Add => AddOps, DecodeGif => DecodeGifOps, DecodeJpeg => DecodeJpegOps, DecodePng => DecodePngOps, DecodeRaw => DecodeRawOps, Exp => ExpOps, Pow => PowOps, Select => SelectOps, Sum => SumOps, Tile => TileOps}
+import com.intel.analytics.bigdl.nn.tf._
 import com.intel.analytics.bigdl.nn.{DenseToSparse, SpatialDropout1D, _}
 import com.intel.analytics.bigdl.optim.L2Regularizer
 import com.intel.analytics.bigdl.tensor._
@@ -45,7 +45,7 @@ import org.tensorflow.framework.DataType
 import scala.collection.mutable
 import scala.util.Random
 
-class TFSerializerSpec extends SerializerSpecHelper {
+class OperationSerializerSpec extends SerializerSpecHelper {
 
   override protected def getPackage(): String = "com.intel.analytics.bigdl.nn.ops"
 
@@ -467,6 +467,14 @@ class TFSerializerSpec extends SerializerSpecHelper {
     val input = T(input1, input2)
     runSerializationTest(less, input, less
       .asInstanceOf[ModuleToOperation[Float]].module.getClass)
+  }
+
+  "CategoricalColHashBucket" should "work properly" in {
+    val categoricalColHashBucket = CategoricalColHashBucket[Float](
+      hashBucketSize = 100
+    ).setName("categoricalColHashBucket")
+    val input = Tensor[String](T(T(1), T(2), T(3)))
+    runSerializationTest(categoricalColHashBucket, input)
   }
 
   "LessEqual serializer" should "work properly" in {
