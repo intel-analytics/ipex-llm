@@ -3679,6 +3679,8 @@ class SReLU(Layer):
     # References
         - [Deep Learning with S-shaped Rectified Linear Activation Units](http://arxiv.org/abs/1512.07030)
 
+    :param input_shape: shape for tleft, aleft, tright, aright.
+            E.g. for a 4-D input, the shape is the last 3-D
     :param shared_axes: the axes along which to share learnable
             parameters for the activation function.
             For example, if the incoming feature maps
@@ -3693,11 +3695,9 @@ class SReLU(Layer):
     >>> srelu = SReLU((2, 2), (1, 2))
     creating: createSReLU
     >>> from bigdl.nn.initialization_method import Xavier
-    >>> tt = srelu.set_init_method(tLeftInit=Xavier(), aLeftInit=Xavier(), tRightInit=Xavier(), aRightInit=Xavier())
+    >>> init = Xavier()
     creating: createXavier
-    creating: createXavier
-    creating: createXavier
-    creating: createXavier
+    >>> srelu = srelu.set_init_method(tLeftInit=init, aLeftInit=init, tRightInit=init, aRightInit=init)
     '''
 
     def __init__(self,

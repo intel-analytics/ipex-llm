@@ -35,7 +35,8 @@ import scala.reflect.ClassTag
  *
  * [Deep Learning with S-shaped Rectified Linear Activation Units](http://arxiv.org/abs/1512.07030)
  *
- * @param shape shape for tleft, aleft, tright, aright, for a 4-D input, the shape is the last 3-D
+ * @param shape shape for tleft, aleft, tright, aright.
+ *              E.g. for a 4-D input, the shape is the last 3-D
  * @param sharedAxes the axes along which to share learnable parameters
  *                    for the activation function.
  *                    For example, if the incoming feature maps are from a 2D convolution
