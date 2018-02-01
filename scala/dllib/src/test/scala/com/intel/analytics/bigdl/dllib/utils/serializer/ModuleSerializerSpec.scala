@@ -1194,7 +1194,7 @@ class ModuleSerializerSpec extends SerializerSpecHelper {
   }
 
   "SReLU serilalizer" should "work properly" in {
-    val srelu = SReLU[Float]().setName("srelu")
+    val srelu = SReLU[Float](shape = Array(4)).setName("srelu")
     val input = Tensor[Float](3, 4).apply1( e => Random.nextFloat())
     runSerializationTest(srelu, input)
   }
