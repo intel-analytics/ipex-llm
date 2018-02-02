@@ -60,13 +60,13 @@ trait InferShape {
   private[bigdl] def getOutputShape(): Shape = {
     if (_outputShapeValue.length > 1) {
       throw new RuntimeException(
-        "There's multipule output for this layer. Please use getInputShapeFor instead")
+        "There are multiple outputs for this layer. Please use getInputShapeFor instead")
     }
     outputShapeValue(0)
   }
 
   /**
-   * Execute builing logic and return the outputShape for the given inputShape.
+   * Execute building logic and return the outputShape for the given inputShape.
    * NB: the first dim of inputShape is batch
    */
   private[bigdl] def build(inputShape: Shape): Shape = {

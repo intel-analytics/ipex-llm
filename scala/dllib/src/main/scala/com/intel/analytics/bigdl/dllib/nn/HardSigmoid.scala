@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
+import com.intel.analytics.bigdl.nn.abstractnn.{IdentityOutputShape, TensorModule}
 import com.intel.analytics.bigdl.tensor.{DenseTensorApply, Tensor, TensorFunc6}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
@@ -30,7 +30,7 @@ import scala.reflect.ClassTag
  *           ⎩  0.2 * x + 0.5, otherwise
  */
 class HardSigmoid[T: ClassTag]
-(implicit ev: TensorNumeric[T]) extends TensorModule[T] {
+(implicit ev: TensorNumeric[T]) extends TensorModule[T] with IdentityOutputShape {
 
   val minValue = ev.fromType[Double](-2.5)
   val maxValue = ev.fromType[Double](2.5)
