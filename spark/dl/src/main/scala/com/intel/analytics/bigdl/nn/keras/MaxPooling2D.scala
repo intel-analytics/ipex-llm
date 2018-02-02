@@ -25,8 +25,8 @@ import com.intel.analytics.bigdl.utils.Shape
 import scala.reflect.ClassTag
 
 class MaxPooling2D[T: ClassTag] (
-   val poolSize: (Int, Int) = (2, 2),
-   var strides: (Int, Int) = null,
+   val poolSize: Array[Int] = Array(2, 2),
+   var strides: Array[Int] = null,
    val borderMode: String = "valid",
    val format: DataFormat = DataFormat.NCHW,
    var inputShape: Shape = null)(implicit ev: TensorNumeric[T])
@@ -41,10 +41,10 @@ class MaxPooling2D[T: ClassTag] (
       strides = poolSize
     }
     val layer = SpatialMaxPooling(
-      kW = poolSize._2,
-      kH = poolSize._1,
-      dW = strides._2,
-      dH = strides._1,
+      kW = poolSize(1),
+      kH = poolSize(0),
+      dW = strides(1),
+      dH = strides(0),
       padW = pads._2,
       padH = pads._1,
       format = format
@@ -61,6 +61,13 @@ object MaxPooling2D {
     format: DataFormat = DataFormat.NCHW,
     inputShape: Shape = null)
     (implicit ev: TensorNumeric[T]): MaxPooling2D[T] = {
-    new MaxPooling2D[T](poolSize, strides, borderMode, format, inputShape)
+    if (strides != null) {
+      new MaxPooling2D[T](Array(poolSize._1, poolSize._2),
+        Array(strides._1, strides._2), borderMode, format, inputShape)
+    }
+    else {
+      new MaxPooling2D[T](Array(poolSize._1, poolSize._2),
+        null, borderMode, format, inputShape)
+    }
   }
 }

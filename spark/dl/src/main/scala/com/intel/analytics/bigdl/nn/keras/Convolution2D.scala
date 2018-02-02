@@ -30,6 +30,7 @@ import scala.reflect.ClassTag
  * When you use this layer as the first layer of a model, you need to provide the argument
  * inputShape (a Single Shape, does not include the batch dimension),
  * e.g. inputShape=Shape(3, 128, 128) for 128x128 RGB pictures.
+ * You can also use Conv2D as an alias of this layer.
  *
  * @param nbFilter Number of convolution filters to use.
  * @param nbRow Number of rows in the convolution kernel.
@@ -41,8 +42,8 @@ import scala.reflect.ClassTag
  *                   You can also pass in corresponding string representations such as 'relu'
  *                   or 'sigmoid', etc. for simple activations in the factory method.
  * @param borderMode Either 'valid' or 'same'. Default is 'valid'.
- * @param subsample Tuple of int with length 2. The step of the convolution in the height and
- *                  width dimension. Also called strides elsewhere. Default is (1, 1).
+ * @param subsample Int array of length 2 corresponding to the step of the convolution in the
+ *                  height and width dimension. Also called strides elsewhere. Default is (1, 1).
  * @param wRegularizer An instance of [[Regularizer]], (eg. L1 or L2 regularization),
  *                     applied to the input weights matrices. Default is null.
  * @param bRegularizer An instance of [[Regularizer]], applied to the bias. Default is null.
@@ -58,7 +59,7 @@ class Convolution2D[T: ClassTag](
    val init: InitializationMethod = Xavier,
    val activation: TensorModule[T] = null,
    val borderMode: String = "valid",
-   val subsample: (Int, Int) = (1, 1),
+   val subsample: Array[Int] = Array(1, 1),
    var wRegularizer: Regularizer[T] = null,
    var bRegularizer: Regularizer[T] = null,
    val format: DataFormat = DataFormat.NCHW,
@@ -68,6 +69,7 @@ class Convolution2D[T: ClassTag](
 
   require(borderMode == "valid" || borderMode == "same", s"Invalid border mode for " +
     s"Convolution2D: $borderMode")
+  require(subsample.length == 2, "Subsample should be of length 2.")
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
     val input = inputShape.toSingle().toArray
@@ -77,8 +79,8 @@ class Convolution2D[T: ClassTag](
       nOutputPlane = nbFilter,
       kernelW = nbCol,
       kernelH = nbRow,
-      strideW = subsample._2,
-      strideH = subsample._1,
+      strideW = subsample(1),
+      strideH = subsample(0),
       padW = pads._2,
       padH = pads._1,
       wRegularizer = wRegularizer,
@@ -109,6 +111,7 @@ object Convolution2D {
     (implicit ev: TensorNumeric[T]): Convolution2D[T] = {
     new Convolution2D[T](nbFilter, nbRow, nbCol,
       KerasUtils.getInitMethod(init), KerasUtils.getActivation(activation),
-      borderMode, subsample, wRegularizer, bRegularizer, format, bias, inputShape)
+      borderMode, Array(subsample._1, subsample._2),
+      wRegularizer, bRegularizer, format, bias, inputShape)
   }
 }
