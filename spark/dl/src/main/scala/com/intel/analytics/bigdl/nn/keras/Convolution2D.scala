@@ -25,6 +25,32 @@ import com.intel.analytics.bigdl.utils.Shape
 
 import scala.reflect.ClassTag
 
+/**
+ * Applies a 2D convolution over an input image composed of several input planes.
+ * When you use this layer as the first layer of a model, you need to provide the argument
+ * inputShape (a Single Shape, does not include the batch dimension),
+ * e.g. inputShape=Shape(3, 128, 128) for 128x128 RGB pictures.
+ *
+ * @param nbFilter Number of convolution filters to use.
+ * @param nbRow Number of rows in the convolution kernel.
+ * @param nbCol Number of rows in the convolution kernel.
+ * @param init Initialization method for the weights of the layer. Default is Xavier.
+ *             You can also pass in corresponding string representations such as 'glorot_uniform'
+ *             or 'normal', etc. for simple init methods in the factory method.
+ * @param activation Activation function to use. Default is null.
+ *                   You can also pass in corresponding string representations such as 'relu'
+ *                   or 'sigmoid', etc. for simple activations in the factory method.
+ * @param borderMode Either 'valid' or 'same'. Default is 'valid'.
+ * @param subsample Tuple of int with length 2. The step of the convolution in the height and
+ *                  width dimension. Also called strides elsewhere. Default is (1, 1).
+ * @param wRegularizer An instance of [[Regularizer]], (eg. L1 or L2 regularization),
+ *                     applied to the input weights matrices. Default is null.
+ * @param bRegularizer An instance of [[Regularizer]], applied to the bias. Default is null.
+ * @param format Format of the input data. Either DataFormat.NCHW or DataFormat.NHWC. Default is NCHW.
+ * @param bias Whether to include a bias (i.e. make the layer affine rather than linear).
+ *             Default is true.
+ * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now
+ */
 class Convolution2D[T: ClassTag](
    val nbFilter: Int,
    val nbRow: Int,
