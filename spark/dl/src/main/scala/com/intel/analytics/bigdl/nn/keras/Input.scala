@@ -24,7 +24,6 @@ import com.intel.analytics.bigdl.utils.{Node, Shape}
 
 import scala.reflect.ClassTag
 
-@SerialVersionUID(- 8525406230282608904L)
 class Input[T: ClassTag](val inputShape: Shape)(implicit ev: TensorNumeric[T])
   extends TInput[T]() {
 

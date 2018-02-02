@@ -15,14 +15,13 @@
  */
 package com.intel.analytics.bigdl.utils.serializer
 
-import com.intel.analytics.bigdl.nn.keras.{Dense, Input, InputLayer, Model, Sequential => KSequential}
+import com.intel.analytics.bigdl.nn.keras.{Sequential => KSequential}
+import com.intel.analytics.bigdl.nn.keras._
 import com.intel.analytics.bigdl.tensor._
 import com.intel.analytics.bigdl.utils.Shape
-import com.intel.analytics.bigdl.utils.tf.loaders.{Pack => _}
 
 import scala.collection.mutable
 import scala.util.Random
-
 
 class KerasModuleSerializerSpec extends SerializerSpecHelper {
 
@@ -42,7 +41,6 @@ class KerasModuleSerializerSpec extends SerializerSpecHelper {
     val dense = Dense[Float](10, inputShape = Shape(20))
     dense.build(Shape(2, 20))
     val input = Tensor[Float](2, 20).apply1(_ => Random.nextFloat())
-
     runSerializationTest(dense, input)
   }
 
@@ -61,6 +59,55 @@ class KerasModuleSerializerSpec extends SerializerSpecHelper {
     val model = Model[Float](input, d2)
     val inputData = Tensor[Float](Array(20, 10)).rand()
     runSerializationTest(model, inputData)
+  }
+
+  "Convolution2D serializer" should "work properly" in {
+    val layer = Convolution2D[Float](64, 2, 5, inputShape = Shape(3, 24, 24))
+    layer.build(Shape(2, 3, 24, 24))
+    val input = Tensor[Float](2, 3, 24, 24).apply1(_ => Random.nextFloat())
+    runSerializationTest(layer, input)
+  }
+
+  "MaxPooling2D serializer" should "work properly" in {
+    val layer = MaxPooling2D[Float](inputShape = Shape(3, 24, 24))
+    layer.build(Shape(2, 3, 24, 24))
+    val input = Tensor[Float](2, 3, 24, 24).apply1(_ => Random.nextFloat())
+    runSerializationTest(layer, input)
+  }
+
+  "Activation serializer" should "work properly" in {
+    val layer = Activation[Float]("tanh", inputShape = Shape(4, 5))
+    layer.build(Shape(2, 4, 5))
+    val input = Tensor[Float](2, 4, 5).apply1(_ => Random.nextFloat())
+    runSerializationTest(layer, input)
+  }
+
+  "Dropout serializer" should "work properly" in {
+    val layer = Dropout[Float](0.3, inputShape = Shape(3, 4))
+    layer.build(Shape(2, 3, 4))
+    val input = Tensor[Float](2, 3, 4).apply1(_ => Random.nextFloat())
+    runSerializationTest(layer, input)
+  }
+
+  "Flatten serializer" should "work properly" in {
+    val layer = Flatten[Float](inputShape = Shape(3, 4, 5))
+    layer.build(Shape(2, 3, 4, 5))
+    val input = Tensor[Float](2, 3, 4, 5).apply1(_ => Random.nextFloat())
+    runSerializationTest(layer, input)
+  }
+
+  "Reshape serializer" should "work properly" in {
+    val layer = Reshape[Float](Array(4, 15), inputShape = Shape(3, 4, 5))
+    layer.build(Shape(2, 3, 4, 5))
+    val input = Tensor[Float](2, 3, 4, 5).apply1(_ => Random.nextFloat())
+    runSerializationTest(layer, input)
+  }
+
+  "SoftMax serializer" should "work properly" in {
+    val layer = SoftMax[Float](inputShape = Shape(4, 5))
+    layer.build(Shape(3, 4, 5))
+    val input = Tensor[Float](3, 4, 5).apply1(_ => Random.nextFloat())
+    runSerializationTest(layer, input)
   }
 
 }

@@ -49,7 +49,7 @@ class PythonBigDLKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends Seria
                    bRegularizer: Regularizer[T] = null,
                    bias: Boolean = true,
                    inputShape: JList[Int] = null): Dense[T] = {
-    Dense(outputDim,
+    new Dense(outputDim,
       init,
       activation,
       wRegularizer,
