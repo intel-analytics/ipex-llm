@@ -16,36 +16,51 @@
 
 package com.intel.analytics.bigdl.nn.mkldnn
 
+import java.util.concurrent.atomic.AtomicInteger
+
+import com.intel.analytics.bigdl.dataset.{LocalDataSet, MiniBatch}
 import com.intel.analytics.bigdl.example.loadmodel.AlexNet
-import com.intel.analytics.bigdl.mkl.MklDnn
+import com.intel.analytics.bigdl.mkl.MKL
 import com.intel.analytics.bigdl.nn
-import com.intel.analytics.bigdl.nn.Sequential
+import com.intel.analytics.bigdl.nn.ClassNLLCriterion
 import com.intel.analytics.bigdl.nn.mkldnn.Utils.{manyTimes, speedup}
-import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.numeric.NumericFloat
+import com.intel.analytics.bigdl.optim.{Optimizer, Trigger}
 import com.intel.analytics.bigdl.utils.Engine
 import org.scalatest.{FlatSpec, Matchers}
 
+import scala.collection.mutable.{ArrayBuffer, ListBuffer}
+import scala.concurrent.Future
+
 class LinearSpec extends FlatSpec with Matchers {
   "linear updateOutput" should "work correctly" in {
-    val inputSize = 4096
-    val outputSize = 4096
-    val batchSize = 4
+    System.setProperty("bigdl.localMode", "true")
+    Engine.init
+    var tasks: ArrayBuffer[Future[_]] = new ArrayBuffer()
+    tasks += Engine.default.invoke ( () => {
+      val inputSize = 2
+      val outputSize = 2
+      val batchSize = 2
 
-    val initWeight = Tensor[Float](outputSize, inputSize).rand()
-    val initBias = Tensor[Float](outputSize).rand()
+      val initWeight = Tensor[Float](outputSize, inputSize).rand()
+      val initBias = Tensor[Float](outputSize).rand()
 
-    val linear = Linear(inputSize, outputSize, initWeight = initWeight, initBias = initBias)
-    val input = Tensor[Float](batchSize, inputSize).rand()
+      val linear = Linear(inputSize, outputSize, initWeight = initWeight, initBias = initBias)
+      val input = Tensor[Float](batchSize, inputSize).rand()
 
-    val output = linear.forward(input)
-    println(output)
+      val output = linear.forward(input)
+      println(output)
 
-    val nnLinear = nn.Linear(inputSize, outputSize, initWeight = initWeight, initBias = initBias)
-    val nnOutput = nnLinear.forward(input)
-    println(nnOutput)
+      val nnLinear = nn.Linear(inputSize, outputSize, initWeight = initWeight, initBias = initBias)
+      val nnOutput = nnLinear.forward(input)
+      println(nnOutput)
 
-    output should be (nnOutput)
+      output should be (nnOutput)
+      1
+    })
+
+    Engine.default.sync(tasks)
   }
 
   "linear updateOutput multi times" should "work correctly" in {
@@ -78,9 +93,8 @@ class LinearSpec extends FlatSpec with Matchers {
   }
 
   "linear updateOutput" should "work much faster than blas" in {
-//    System.setProperty("bigdl.mklNumThreads", "4")
-    val inputSize = 4096
-    val outputSize = 1000
+    val inputSize = 64
+    val outputSize = 64
     val batchSize = 32
 
     val initWeight = Tensor[Float](outputSize, inputSize).rand()
@@ -91,7 +105,7 @@ class LinearSpec extends FlatSpec with Matchers {
     val linear = Linear(inputSize, outputSize, initWeight = initWeight, initBias = initBias)
 
     val warm = 10
-    val iters = 1000
+    val iters = 100
     manyTimes[Tensor[Float]] {
       linear.forward(input)
     }(warm)
@@ -143,7 +157,6 @@ class LinearSpec extends FlatSpec with Matchers {
     println("-" * 80)
     println(nnGradInput)
 
-    linear.output should be (nnLinear.output)
     gradInput should be (nnGradInput)
   }
 
@@ -185,8 +198,8 @@ class LinearSpec extends FlatSpec with Matchers {
   }
 
   "linear updateGradInput" should "work much faster than blas" in {
-    val inputSize = 4096
-    val outputSize = 1000
+    val inputSize = 64
+    val outputSize = 64
     val batchSize = 32
 
     val initWeight = Tensor[Float](outputSize, inputSize).rand()
@@ -248,7 +261,6 @@ class LinearSpec extends FlatSpec with Matchers {
     val nnOutput = nnLinear.forward(input)
     val nnGradInput = nnLinear.updateGradInput(input, gradOutput)
 
-    println("=" * 80)
     linear.accGradParameters(input, gradOutput)
     nnLinear.accGradParameters(input, gradOutput)
 
@@ -258,8 +270,8 @@ class LinearSpec extends FlatSpec with Matchers {
     println(nnLinear.gradWeight)
     println(nnLinear.gradBias)
 
-    linear.gradBias should be (nnLinear.gradBias)
     linear.gradWeight should be (nnLinear.gradWeight)
+    linear.gradBias should be (nnLinear.gradBias)
   }
 
   "linear accGradParameters multi times" should "work correctly" in {
@@ -303,8 +315,8 @@ class LinearSpec extends FlatSpec with Matchers {
   }
 
   "linear accGradParameters multi times" should "work much faster than blas" in {
-    val inputSize = 4096
-    val outputSize = 4096
+    val inputSize = 64
+    val outputSize = 64
     val batchSize = 4
 
     val initWeight = Tensor[Float](outputSize, inputSize).rand()
@@ -342,16 +354,18 @@ class LinearSpec extends FlatSpec with Matchers {
     println(nnCosts)
     println(speedup(nnCosts, costs))
     println("-" * 80)
+    println(linear.computing / 1e9)
+    println(linear.aggregating / 1e9)
 
-//    linear.gradWeight should be (nnLinear.gradWeight)
-//    linear.gradBias should be (nnLinear.gradBias)
+    linear.gradWeight should be (nnLinear.gradWeight)
+    linear.gradBias should be (nnLinear.gradBias)
 
     costs should be < nnCosts
   }
 
   "linear perf with blas" should "work correctly" in {
-    val inputSize = 2048
-    val outputSize = 1024
+    val inputSize = 4096
+    val outputSize = 1000
     val batchSize = 32
 
     val initWeight = Tensor[Float](outputSize, inputSize).rand(-1, 1)
@@ -379,6 +393,8 @@ class LinearSpec extends FlatSpec with Matchers {
     } _
 
     nnTime(warm)
+    linear.computing = 0.0
+    linear.aggregating = 0.0
     val (nnCosts, _) = nnTime(iters)
     time(warm)
     val (costs, _) = time(iters)
@@ -389,8 +405,43 @@ class LinearSpec extends FlatSpec with Matchers {
     println(speedup(nnCosts, costs))
 
     println("-" * 80)
+    println(linear.computing / 1e9)
+    println(linear.aggregating / 1e9)
 
     nnCosts should be > costs
+  }
+
+  "linear with maxpooling" should "work correctly" in {
+    val model = nn.Sequential[Float]()
+    model.add(ConvolutionDnn(3, 64, 11, 11, 4, 4, 2, 2, 1)
+      .setName("conv1"))
+    model.add(ReLUDnn(true).setName("relu1"))
+    model.add(PoolingDnn(3, 3, 2, 2).setName("pool1"))
+    model.add(ConvolutionDnn(64, 192, 5, 5, 1, 1, 2, 2).setName("conv2"))
+    model.add(ReLUDnn(true).setName("relu2"))
+    model.add(PoolingDnn(3, 3, 2, 2).setName("pool2"))
+    model.add(ConvolutionDnn(192, 384, 3, 3, 1, 1, 1, 1).setName("conv3"))
+    model.add(ReLUDnn(true).setName("relu3"))
+    model.add(ConvolutionDnn(384, 256, 3, 3, 1, 1, 1, 1).setName("conv4"))
+    model.add(ReLUDnn(true).setName("relu4"))
+    model.add(ConvolutionDnn(256, 256, 3, 3, 1, 1, 1, 1).setName("conv5"))
+    model.add(ReLUDnn(true).setName("relu5"))
+    model.add(PoolingDnn(3, 3, 2, 2).setName("poo5"))
+    model.add(nn.View(256 * 6 * 6).setName("view"))
+    model.add(Linear(256 * 6 * 6, 4096).setName("fc6"))
+    model.add(ReLUDnn(true).setName("relu6"))
+    model.add(nn.Dropout(0.5).setName("drop6"))
+    model.add(Linear(4096, 4096).setName("fc7"))
+    model.add(ReLUDnn(true).setName("relu7"))
+    model.add(nn.Dropout(0.5).setName("drop7"))
+    model.add(Linear(4096, 10).setName("fc8"))
+    model.add(nn.SoftMax().setName("logsoftmax"))
+
+    val input = Tensor[Float](4, 3, 227, 227).rand()
+    model.forward(input)
+
+    val gradOutput = Tensor[Float]().resizeAs(model.output.toTensor).rand()
+    model.backward(input, gradOutput)
   }
 
   "linear + relu" should "work correctly" in {
@@ -441,26 +492,21 @@ class LinearSpec extends FlatSpec with Matchers {
   }
 
   "alexnet clone" should "work correctly" in {
-    val model = AlexNet.dnn(1000)
+    val model = AlexNet(1000)
     val clone = model.cloneModule()
-    val input = Tensor(4, 3, 227, 227).rand()
-    val gradOutput = Tensor(4, 1000).rand()
-
     model.training()
     clone.training()
+    val input = Tensor(1, 3, 227, 227)
 
     model.forward(input)
     clone.forward(input)
 
+    val gradOutput = Tensor().resizeAs(model.output.toTensor)
     model.backward(input, gradOutput)
     clone.backward(input, gradOutput)
-
-    model.output should be (clone.output)
-    model.gradInput should be (clone.gradInput)
   }
 
   "AlexNet perf" should "work correctly" in {
-    System.setProperty("bigdl.mklNumThreads", "4")
     val blas = AlexNet(1000, hasDropout = false)
     val dnn = AlexNet.dnn(1000, hasDropout = false)
 
@@ -485,7 +531,7 @@ class LinearSpec extends FlatSpec with Matchers {
     while (i < warmup) {
       blas.forward(input)
       blas.backward(input, gradOutput)
-      println(s"warm ${i}")
+
       dnn.forward(input)
       dnn.backward(input, gradOutput)
       i += 1
@@ -498,7 +544,7 @@ class LinearSpec extends FlatSpec with Matchers {
     while (i < iters) {
       blas.forward(input)
       blas.backward(input, gradOutput)
-      println(s"iter ${i}")
+
       dnn.forward(input)
       dnn.backward(input, gradOutput)
       i += 1
@@ -538,6 +584,11 @@ class LinearSpec extends FlatSpec with Matchers {
     println(Tabulator.format(header:: backwardTime))
   }
 
+  "the num of omp threads" should "be 1" in {
+    val threads = MKL.getNumThreads
+    println(threads)
+  }
+
   "1-D input" should "work correctly" in {
     val model = Linear(20, 10)
     val input = Tensor(20).rand()
@@ -548,149 +599,42 @@ class LinearSpec extends FlatSpec with Matchers {
     model.updateGradInput(input, gradOutput)
   }
 
-  "linear + reorder" should "work correctly" in {
-    val input = Tensor(4, 20).rand()
-    val gradOutput = Tensor(4, 5).rand()
-    val initWeight1 = Tensor(10, 20).rand()
-    val initBias1 = Tensor(10).rand()
-    val initWeight2 = Tensor(5, 10).rand()
-    val initBias2 = Tensor(5).rand()
+  "AlexNet test" should "work correctly" in {
+    System.setProperty("bigdl.localMode", "true")
+    System.setProperty("bigdl.coreNumber", "4")
+    Engine.init
 
-    val dnn = Sequential()
-      .add(Linear(20, 10, initWeight = initWeight1, initBias = initBias1))
-      .add(Linear(10, 5, initWeight = initWeight2, initBias = initBias2))
-      .add(MemoryReOrder(MklDnn.MemoryFormat.any, MklDnn.MemoryFormat.nc))
+    val batchSize = 16
+    val model = AlexNet(1000)
+    println(model)
+    val criterion = ClassNLLCriterion()
+    val miniBatch = MiniBatch[Float](Tensor(batchSize, 3, 227, 227), Tensor(batchSize).fill(1))
 
-    val blas = Sequential()
-      .add(nn.Linear(20, 10, initWeight = initWeight1, initBias = initBias1))
-      .add(nn.Linear(10, 5, initWeight = initWeight2, initBias = initBias2))
+    val dummyDataSet = new LocalDataSet[MiniBatch[Float]] {
+      override def data(train : Boolean): Iterator[MiniBatch[Float]] = {
+        new Iterator[MiniBatch[Float]] {
+          private val index = new AtomicInteger()
+          override def hasNext: Boolean = {
+            if (train) {
+              true
+            } else {
+              index.get() < 100000
+            }
+          }
 
-    for (m <- List(dnn, blas)) {
-      m.forward(input)
-      m.backward(input, gradOutput)
+          override def next(): MiniBatch[Float] = {
+            index.getAndIncrement()
+            miniBatch
+          }
+        }
+      }
+      override def size(): Long = 100000
+      override def shuffle(): Unit = {}
     }
 
-    dnn.output should be (blas.output)
-    dnn.getParameters()._2 should be (blas.getParameters()._2)
-    dnn.gradInput should be (blas.gradInput)
-  }
-
-  "linear + reludnn" should "work correctly" in {
-    val input = Tensor(4, 20).rand()
-    val initWeight1 = Tensor(10, 20).rand()
-    val initBias1 = Tensor(10).rand()
-    val initWeight2 = Tensor(5, 10).rand()
-    val initBias2 = Tensor(5).rand()
-
-    val dnn = {
-      val linear1 = Linear(20, 10, initWeight = initWeight1, initBias = initBias1)
-      val linear2 = Linear(10, 5, initWeight = initWeight2, initBias = initBias2)
-      val reorder = MemoryReOrder(MklDnn.MemoryFormat.any, MklDnn.MemoryFormat.nc)
-
-      val model = Sequential().add(linear1).add(linear2).add(reorder)
-
-      model.forward(input)
-    }
-
-    val blas = {
-      val linear1 = nn.Linear(20, 10, initWeight = initWeight1, initBias = initBias1)
-      val linear2 = nn.Linear(10, 5, initWeight = initWeight2, initBias = initBias2)
-
-      val model = Sequential().add(linear1).add(linear2)
-
-      model.forward(input)
-    }
-
-    dnn should be (blas)
-  }
-
-  "AlexNet model compares with BLAS" should "work correctly" in {
-    val dnn = AlexNet.dnn(1000, hasDropout = false)
-    val blas = AlexNet(1000, hasDropout = false)
-
-    // initialize the weight
-    val weights = blas.getParameters()
-    val dnnWeights = dnn.getParameters()
-
-    dnnWeights._1.copy(weights._1)
-    dnn.zeroGradParameters()
-    blas.zeroGradParameters()
-
-    val batchSize = 4
-    val input = Tensor(batchSize, 3, 227, 227).rand()
-
-    dnn.forward(input)
-    blas.forward(input)
-
-    dnn.output should be (blas.output)
-  }
-
-  "model compares with BLAS" should "work correctly" in {
-    val dnn = Sequential()
-    dnn.add(ConvolutionDnn(3, 96, 11, 11, 4, 4, 0, 0, 1, false).setName("conv1"))
-    dnn.add(ReLUDnn(true).setName("relu1"))
-    dnn.add(LRNDnn(5, 0.0001, 0.75).setName("norm1"))
-    dnn.add(PoolingDnn(3, 3, 2, 2).setName("pool1"))
-    dnn.add(ConvolutionDnn(96, 256, 5, 5, 1, 1, 2, 2, 2).setName("conv2"))
-    dnn.add(ReLUDnn(true).setName("relu2"))
-    dnn.add(LRNDnn(5, 0.0001, 0.75).setName("norm2"))
-    dnn.add(PoolingDnn(3, 3, 2, 2).setName("pool2"))
-    dnn.add(ConvolutionDnn(256, 384, 3, 3, 1, 1, 1, 1).setName("conv3"))
-    dnn.add(ReLUDnn(true).setName("relu3"))
-    dnn.add(ConvolutionDnn(384, 384, 3, 3, 1, 1, 1, 1, 2).setName("conv4"))
-    dnn.add(ReLUDnn(true).setName("relu4"))
-    dnn.add(ConvolutionDnn(384, 256, 3, 3, 1, 1, 1, 1, 2).setName("conv5"))
-    dnn.add(ReLUDnn(true).setName("relu5"))
-    dnn.add(PoolingDnn(3, 3, 2, 2).setName("pool5"))
-    dnn.add(MemoryReOrder())
-    dnn.add(nn.View(256 * 6 * 6))
-    dnn.add(Linear(256 * 6 * 6, 4096).setName("fc6"))
-    dnn.add(ReLUDnn(true).setName("relu6"))
-    dnn.add(Linear(4096, 4096).setName("fc7"))
-    dnn.add(ReLUDnn(true).setName("relu7"))
-    dnn.add(Linear(4096, 1000).setName("fc8"))
-    dnn.add(nn.LogSoftMax().setName("loss"))
-
-    val blas = Sequential()
-    blas.add(nn.SpatialConvolution(3, 96, 11, 11, 4, 4, 0, 0, 1, false).setName("conv1"))
-    blas.add(nn.ReLU(true).setName("relu1"))
-    blas.add(nn.SpatialCrossMapLRN(5, 0.0001, 0.75).setName("norm1"))
-    blas.add(nn.SpatialMaxPooling(3, 3, 2, 2).setName("pool1"))
-    blas.add(nn.SpatialConvolution(96, 256, 5, 5, 1, 1, 2, 2, 2).setName("conv2"))
-    blas.add(nn.ReLU(true).setName("relu2"))
-    blas.add(nn.SpatialCrossMapLRN(5, 0.0001, 0.75).setName("norm2"))
-    blas.add(nn.SpatialMaxPooling(3, 3, 2, 2).setName("pool2"))
-    blas.add(nn.SpatialConvolution(256, 384, 3, 3, 1, 1, 1, 1).setName("conv3"))
-    blas.add(nn.ReLU(true).setName("relu3"))
-    blas.add(nn.SpatialConvolution(384, 384, 3, 3, 1, 1, 1, 1, 2).setName("conv4"))
-    blas.add(nn.ReLU(true).setName("relu4"))
-    blas.add(nn.SpatialConvolution(384, 256, 3, 3, 1, 1, 1, 1, 2).setName("conv5"))
-    blas.add(nn.ReLU(true).setName("relu5"))
-    blas.add(nn.SpatialMaxPooling(3, 3, 2, 2).setName("pool5"))
-    blas.add(nn.View(256 * 6 * 6))
-    blas.add(nn.Linear(256 * 6 * 6, 4096).setName("fc6"))
-    blas.add(nn.ReLU(true).setName("relu6"))
-    blas.add(nn.Linear(4096, 4096).setName("fc7"))
-    blas.add(nn.ReLU(true).setName("relu7"))
-    blas.add(nn.Linear(4096, 1000).setName("fc8"))
-    blas.add(nn.LogSoftMax().setName("loss"))
-
-    // copy weights
-    dnn.getParameters()._1.copy(blas.getParameters()._1)
-    val input = Tensor(4, 3, 227, 227).rand()
-
-    dnn.forward(input)
-    blas.forward(input)
-
-    val gradOutput = Tensor().resizeAs(blas.output.toTensor)
-
-    dnn.backward(input, gradOutput)
-    blas.backward(input, gradOutput)
-
-    dnn.getParameters()._1 should be (blas.getParameters()._1)
-
-    DnnUtils.nearequals(dnn.output.toTensor, blas.output.toTensor) should be (true)
-//    DnnUtils.nearequals(dnn.gradInput.toTensor, blas.gradInput.toTensor) should be (true)
-    DnnUtils.nearequals(dnn.getParameters()._2, blas.getParameters()._2) should be (true)
+    model.training()
+    model.resetTimes()
+    val optimizer = Optimizer(model, dummyDataSet, criterion)
+    val optimizedModel = optimizer.setEndWhen(Trigger.maxIteration(50)).optimize()
   }
 }
