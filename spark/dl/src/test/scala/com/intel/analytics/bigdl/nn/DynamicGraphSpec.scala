@@ -23,6 +23,7 @@ import com.intel.analytics.bigdl.models.inception.Inception_v1_NoAuxClassifier
 import com.intel.analytics.bigdl.models.lenet.LeNet5
 import com.intel.analytics.bigdl.models.vgg.{VggForCifar10, Vgg_16, Vgg_19}
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
+import com.intel.analytics.bigdl.nn.abstractnn.EmptyGradInput
 import com.intel.analytics.bigdl.nn.ops.{ControlNodes, Enter, Less}
 import com.intel.analytics.bigdl.nn.tf.Const
 import com.intel.analytics.bigdl.numeric.NumericFloat
@@ -779,7 +780,7 @@ class DynamicGraphSpec  extends FlatSpec with Matchers {
     val gradientBPNoBack = funcModelNoBack.backward(inputData, gradient)
     println(s"funcModel model backward time is ${ (System.nanoTime() - start) / 1e6 }ms")
 
-    gradientBPNoBack.toTensor.nElement() should be(0)
+    gradientBPNoBack.isInstanceOf[EmptyGradInput] should be(true)
     val namedModule1 = funcModelOriginal.getParametersTable()
     val namedModule2 = funcModelNoBack.getParametersTable()
     namedModule1("conv1").asInstanceOf[Table] should
@@ -830,7 +831,7 @@ class DynamicGraphSpec  extends FlatSpec with Matchers {
     val gradientBPOriginal = funcModelOriginal.backward(inputData, gradient)
     val gradientBPNoBack = funcModelNoBack.backward(inputData, gradient)
 
-    gradientBPNoBack.toTensor.nElement() should be(0)
+    gradientBPNoBack.isInstanceOf[EmptyGradInput] should be(true)
     val namedModule1 = Utils.getNamedModules(funcModelOriginal)
     val namedModule2 = Utils.getNamedModules(funcModelNoBack)
     namedModule2("r1").gradInput.toTensor.nElement() should be(0)
