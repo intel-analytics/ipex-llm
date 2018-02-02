@@ -103,5 +103,12 @@ class KerasModuleSerializerSpec extends SerializerSpecHelper {
     runSerializationTest(layer, input)
   }
 
+  "SoftMax serializer" should "work properly" in {
+    val layer = SoftMax[Float](inputShape = Shape(4, 5))
+    layer.build(Shape(3, 4, 5))
+    val input = Tensor[Float](3, 4, 5).apply1(_ => Random.nextFloat())
+    runSerializationTest(layer, input)
+  }
+
 }
 
