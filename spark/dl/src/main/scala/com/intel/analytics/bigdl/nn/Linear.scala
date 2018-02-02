@@ -170,6 +170,15 @@ class Linear[T: ClassTag](
     }
   }
 
+  override def zeroGradParameters(): Unit = {
+    gradWeight.resize(outputSize, inputSize)
+    gradWeight.zero()
+    if (withBias) {
+      gradBias.resize(outputSize)
+      gradBias.zero()
+    }
+  }
+
   override def clearState() : this.type = {
     super.clearState()
     addBuffer.set()
