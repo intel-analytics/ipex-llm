@@ -84,6 +84,21 @@ class ActivationSpec extends KerasBaseSpec{
       kerasCode)
   }
 
+  "softmax 2D input" should "be the same as Keras" in {
+    val kerasCode =
+      """
+        |input_tensor = Input(shape=[8])
+        |input = np.random.random([4, 8])
+        |output_tensor = Activation('softmax')(input_tensor)
+        |model = Model(input=input_tensor, output=output_tensor)
+      """.stripMargin
+    val seq = KSequential[Float]()
+    val layer = Activation[Float]("softmax", inputShape = Shape(8))
+    seq.add(layer)
+    checkOutputAndGrad(seq.asInstanceOf[AbstractModule[Tensor[Float], Tensor[Float], Float]],
+      kerasCode)
+  }
+
   "softmax" should "be the same as Keras" in {
     val kerasCode =
       """
