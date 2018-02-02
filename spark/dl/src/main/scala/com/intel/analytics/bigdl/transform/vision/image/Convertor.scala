@@ -17,7 +17,7 @@
 package com.intel.analytics.bigdl.transform.vision.image
 
 
-import com.intel.analytics.bigdl.dataset.{ArraySample}
+import com.intel.analytics.bigdl.dataset.{ArraySample, Sample, Transformer}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.transform.vision.image.opencv.OpenCVMat
@@ -228,4 +228,20 @@ object ImageFrameToSample {
     targetKeys: Array[String] = null,
     sampleKey: String = ImageFeature.sample)(implicit ev: TensorNumeric[T])
   : ImageFrameToSample[T] = new ImageFrameToSample[T](inputKeys, targetKeys, sampleKey)
+}
+
+class ImageFrameToSampleRdd[T: ClassTag](sampleKey: String = ImageFeature.sample)
+  (implicit ev: TensorNumeric[T]) extends Transformer[ImageFeature, Sample[T]] {
+  override def apply(prev: Iterator[ImageFeature]): Iterator[Sample[T]] = {
+    prev.map(x => {
+      require(x.contains(sampleKey), s"there is no sample that matches $sampleKey")
+      x[Sample[T]](sampleKey)
+    })
+  }
+}
+
+object ImageFrameToSampleRdd {
+  def apply[T: ClassTag](sampleKey: String = ImageFeature.sample)(implicit ev: TensorNumeric[T])
+  : ImageFrameToSampleRdd[T] = new ImageFrameToSampleRdd[T](sampleKey)
+
 }
