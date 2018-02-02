@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.nn.abstractnn.{IdentityOutputShape, TensorModule}
+import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Engine
@@ -31,8 +31,7 @@ import scala.reflect.ClassTag
  * where shift = max_i(x_i).
  */
 @SerialVersionUID(- 7842335603491194236L)
-class SoftMax[T: ClassTag]()(implicit ev: TensorNumeric[T])
-  extends TensorModule[T] with IdentityOutputShape {
+class SoftMax[T: ClassTag]()(implicit ev: TensorNumeric[T]) extends TensorModule[T]{
 
   @transient
   private var results: Array[Future[Unit]] = null
