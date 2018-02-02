@@ -17,11 +17,10 @@ package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
-import com.intel.analytics.bigdl.nn.ops.{ControlOps, ResourceAllocator, TensorArray}
+import com.intel.analytics.bigdl.nn.tf.{ControlOps, ResourceAllocator, TensorArray}
 import com.intel.analytics.bigdl.nn.tf.{ControlDependency, WithoutInput}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.T
 
 import scala.collection.mutable
 import scala.reflect.ClassTag
