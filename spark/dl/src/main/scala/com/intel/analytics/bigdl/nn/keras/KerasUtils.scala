@@ -47,7 +47,7 @@ object KerasUtils {
   }
 
   private[keras] def getActivation[T : ClassTag] (activation: String)
-    (implicit ev: TensorNumeric[T]):AbstractModule[Tensor[T], Tensor[T], T] = {
+    (implicit ev: TensorNumeric[T]): AbstractModule[Tensor[T], Tensor[T], T] = {
     if (activation == null) null
     else {
       activation.toLowerCase() match {
