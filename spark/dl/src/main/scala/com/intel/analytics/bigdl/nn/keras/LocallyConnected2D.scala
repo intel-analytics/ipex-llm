@@ -27,13 +27,13 @@ import scala.reflect.ClassTag
 class LocallyConnected2D[T: ClassTag](val nbFilter: Int,
                                       val nbRow: Int,
                                       val nbCol: Int,
+                                      val activation: TensorModule[T] = null,
                                       val subsample: (Int, Int) = (1, 1),
                                       val borderMode: String = "valid",
                                       var wRegularizer: Regularizer[T] = null,
                                       var bRegularizer: Regularizer[T] = null,
                                       val bias: Boolean = true,
                                       val format: DataFormat = DataFormat.NCHW,
-                                      val activation: TensorModule[T] = null,
                                       var inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {
 
@@ -42,22 +42,20 @@ class LocallyConnected2D[T: ClassTag](val nbFilter: Int,
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
     val input = inputShape.toSingle().toArray
-    val stackSize = if (format == DataFormat.NCHW) input(1) else input(3)
-    val inputWidth = if (format == DataFormat.NCHW) input(3) else input(2)
-    val inputHeight = if (format == DataFormat.NCHW) input(2) else input(1)
+    val stack = if (format == DataFormat.NCHW) (input(1), input(3), input(2))
+      else (input(3), input(2), input(1))
     val pad = KerasUtils.getPadsFromBorderMode(borderMode)
-
     val layer = com.intel.analytics.bigdl.nn.LocallyConnected2D(
-      nInputPlane = stackSize,
-      inputWidth = inputWidth,
-      inputHeight = inputHeight,
+      nInputPlane = stack._1,
+      inputWidth = stack._2,
+      inputHeight = stack._3,
       nOutputPlane = nbFilter,
       kernelW = nbCol,
       kernelH = nbRow,
       strideW = subsample._2,
       strideH = subsample._1,
-      padW = pad._1,
-      padH = pad._2,
+      padW = pad._2,
+      padH = pad._1,
       wRegularizer = wRegularizer,
       bRegularizer = bRegularizer,
       withBias = bias,
@@ -73,26 +71,26 @@ object LocallyConnected2D {
     nbFilter: Int,
     nbRow: Int,
     nbCol: Int,
+    activation: String = null,
     subsample: (Int, Int) = (1, 1),
     borderMode: String = "valid",
     wRegularizer: Regularizer[T] = null,
     bRegularizer: Regularizer[T] = null,
     bias: Boolean = true,
     format: DataFormat = DataFormat.NCHW,
-    activation: String = null,
     inputShape: Shape = null)
     (implicit ev: TensorNumeric[T]): LocallyConnected2D[T] = {
     new LocallyConnected2D[T](
       nbFilter,
       nbRow,
       nbCol,
+      KerasUtils.getActivation(activation),
       subsample,
       borderMode,
       wRegularizer,
       bRegularizer,
       bias,
       format,
-      KerasUtils.getActivation(activation),
       inputShape)
   }
 }

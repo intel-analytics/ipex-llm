@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.nn.keras
 
-import com.intel.analytics.bigdl.nn.SpatialSeperableConvolution
+import com.intel.analytics.bigdl.nn.{InitializationMethod, SpatialSeperableConvolution, Xavier}
 import com.intel.analytics.bigdl.nn.abstractnn._
 import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.Tensor
@@ -29,9 +29,11 @@ import scala.reflect.ClassTag
 class SeparableConvolution2D[T: ClassTag](val nbFilter: Int,
                                           val nbCol: Int,
                                           val nbRow: Int,
-                                          val depthMultiplier: Int = 1,
-                                          val subsample: (Int, Int) = (1, 1),
+                                         // val init: InitializationMethod = Xavier,
+                                        //  val activation: TensorModule[T] = null,
                                           val borderMode: String = "valid",
+                                          val subsample: (Int, Int) = (1, 1),
+                                          val depthMultiplier: Int = 1,
                                           val bias: Boolean = true,
                                           val format: DataFormat = DataFormat.NCHW,
                                           var depthwiseRegularizer: Regularizer[T] = null,
@@ -46,7 +48,6 @@ class SeparableConvolution2D[T: ClassTag](val nbFilter: Int,
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
     val input = inputShape.toSingle().toArray
-
     val stackSize = if (format == DataFormat.NCHW) input(1) else input(3)
     val pad = KerasUtils.getPadsFromBorderMode(borderMode)
 
@@ -58,8 +59,8 @@ class SeparableConvolution2D[T: ClassTag](val nbFilter: Int,
       kH = nbRow,
       sW = subsample._2,
       sH = subsample._1,
-      pW = pad._1,
-      pH = pad._2,
+      pW = pad._2,
+      pH = pad._1,
       hasBias = bias,
       dataFormat = format,
       wRegularizer = depthwiseRegularizer,
@@ -67,6 +68,8 @@ class SeparableConvolution2D[T: ClassTag](val nbFilter: Int,
       pRegularizer = pointwiseRegularizer
     )
     layer.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
+//    KerasLayer.fuse(layer, activation,
+//      inputShape).asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
   }
 }
 
@@ -76,9 +79,11 @@ object SeparableConvolution2D {
     nbFilter: Int,
     nbCol: Int,
     nbRow: Int,
-    depthMultiplier: Int = 1,
-    subsample: (Int, Int) = (1, 1),
+//    init: InitializationMethod = Xavier,
+//    activation: String = null,
     borderMode: String = "valid",
+    subsample: (Int, Int) = (1, 1),
+    depthMultiplier: Int = 1,
     bias: Boolean = true,
     format: DataFormat = DataFormat.NCHW,
     depthwiseRegularizer: Regularizer[T] = null,
@@ -90,9 +95,11 @@ object SeparableConvolution2D {
       nbFilter,
       nbCol,
       nbRow,
-      depthMultiplier,
-      subsample,
+//      init,
+//      KerasUtils.getActivation(activation),
       borderMode,
+      subsample,
+      depthMultiplier,
       bias,
       format,
       depthwiseRegularizer,

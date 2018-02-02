@@ -30,7 +30,7 @@ class GlobalMaxPooling3DSpec extends KerasBaseSpec{
       """
         |input_tensor = Input(shape=[3, 4, 5, 6])
         |input = np.random.random([2, 3, 4, 5, 6])
-        |output_tensor = GlobalMaxPooling3D("th")(input_tensor)
+        |output_tensor = GlobalMaxPooling3D(dim_ordering="th")(input_tensor)
         |model = Model(input=input_tensor, output=output_tensor)
       """.stripMargin
     val seq = KSequential[Float]()

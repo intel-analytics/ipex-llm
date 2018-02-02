@@ -34,7 +34,6 @@ class GlobalAveragePooling1D[T: ClassTag](inputShape: Shape = null
     val input = inputShape.toSingle().toArray
     val model = TSequential[T]()
     model.add(Reshape(Array(input(1), 1, input(2)), Some(true)))
-
     val layer = SpatialAveragePooling(
       kW = 1,
       kH = input(1),

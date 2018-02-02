@@ -40,7 +40,7 @@ class ZeroPadding3DSpec extends KerasBaseSpec {
       kerasCode)
   }
 
-  "ZeroPadding3D padding" should "be the same as Keras" in {
+  "ZeroPadding3D with different padding sizes" should "be the same as Keras" in {
     val kerasCode =
       """
         |input_tensor = Input(shape=[3, 4, 5, 6])

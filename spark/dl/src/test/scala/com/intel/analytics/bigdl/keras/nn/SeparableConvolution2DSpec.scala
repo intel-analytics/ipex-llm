@@ -33,12 +33,7 @@ class SeparableConvolution2DSpec extends KerasBaseSpec {
         |model = Model(input=input_tensor, output=output_tensor)
       """.stripMargin
     val seq = KSequential[Float]()
-    val layer = SeparableConvolution2D[Float](
-      nbFilter = 3,
-      nbCol = 3,
-      nbRow = 3,
-      bias = false,
-      inputShape = Shape(3, 4, 5))
+    val layer = SeparableConvolution2D[Float](3, 3, 3, bias = false, inputShape = Shape(3, 4, 5))
     seq.add(layer)
 
     def weightConverter(in: Array[Tensor[Float]]): Array[Tensor[Float]] = {
@@ -57,18 +52,13 @@ class SeparableConvolution2DSpec extends KerasBaseSpec {
   "SeparableConvolution2D NHWC" should "be the same as Keras" in {
     val kerasCode =
       """
-        |input_tensor = Input(shape=[3, 4, 5])
-        |input = np.random.random([2, 3, 4, 5])
-        |output_tensor = SeparableConvolution2D(3, 3, 3, dim_ordering='tf')(input_tensor)
+        |input_tensor = Input(shape=[3, 128, 128])
+        |input = np.random.random([2, 3, 128, 128])
+        |output_tensor = SeparableConvolution2D(1, 2, 2, dim_ordering='tf')(input_tensor)
         |model = Model(input=input_tensor, output=output_tensor)
       """.stripMargin
     val seq = KSequential[Float]()
-    val layer = SeparableConvolution2D[Float](
-      nbFilter = 3,
-      nbCol = 3,
-      nbRow = 3,
-      format = DataFormat.NHWC,
-      inputShape = Shape(3, 4, 5))
+    val layer = SeparableConvolution2D[Float](1, 2, 2, format = DataFormat.NHWC, inputShape = Shape(3, 128, 128))
     seq.add(layer)
 
     def weightConverter(in: Array[Tensor[Float]]): Array[Tensor[Float]] = {
