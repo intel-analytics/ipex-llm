@@ -17,7 +17,8 @@
 package com.intel.analytics.bigdl.nn.keras
 
 import com.intel.analytics.bigdl.nn._
-import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, TensorModule}
+import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
 import scala.reflect.ClassTag
@@ -46,15 +47,14 @@ object KerasUtils {
   }
 
   private[keras] def getActivation[T : ClassTag] (activation: String)
-    (implicit ev: TensorNumeric[T]): TensorModule[T] = {
+    (implicit ev: TensorNumeric[T]):AbstractModule[Tensor[T], Tensor[T], T] = {
     if (activation == null) null
     else {
       activation.toLowerCase() match {
           case "tanh" => Tanh[T]()
           case "sigmoid" => Sigmoid[T]()
           case "relu" => ReLU[T]()
-          // TODO: softmax 3D input is different from Keras
-          case "softmax" => SoftMax[T]()
+          case "softmax" => SoftMax[T]().asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
           case "softplus" => SoftPlus[T]()
           case "softsign" => SoftSign[T]()
           case "hard_sigmoid" => HardSigmoid[T]()

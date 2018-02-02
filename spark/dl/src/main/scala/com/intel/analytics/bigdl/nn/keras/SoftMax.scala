@@ -17,30 +17,44 @@
 package com.intel.analytics.bigdl.nn.keras
 
 import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
+import com.intel.analytics.bigdl.nn.{Transpose, Sequential => TSequential}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Shape
 
 import scala.reflect.ClassTag
 
-class Activation[T: ClassTag](val activation: String,
-                              var inputShape: Shape = null)(implicit ev: TensorNumeric[T])
+class SoftMax[T: ClassTag](
+   var inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {
 
-  require(activation != null, "The name of an activation function as a string is required.")
+  override def computeOutputShape(inputShape: Shape): Shape = {
+    val input = inputShape.toSingle().toArray
+    require(input.length == 2 || input.length == 3,
+      s"SoftMax requires 2D or 3D input, but got input dim ${input.length}")
+    inputShape
+  }
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
-    val model = Sequential[T]()
-    model.add(InputLayer(inputShape = KerasLayer.removeBatch(inputShape)))
-    val layer = KerasUtils.getActivation(activation)
-    model.add(layer).asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
+    val input = inputShape.toSingle().toArray
+    val layer = com.intel.analytics.bigdl.nn.SoftMax()
+    if (input.length <= 2) {
+      layer.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
+    }
+    else {
+      val model = TSequential[T]()
+      model.add(Transpose(Array((1, 3))))
+      model.add(layer)
+      model.add(Transpose(Array((1, 3))))
+      model.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
+    }
   }
 }
 
-object Activation {
-  def apply[@specialized(Float, Double) T: ClassTag](
-    activation: String,
-    inputShape: Shape = null)(implicit ev: TensorNumeric[T]): Activation[T] = {
-    new Activation[T](activation, inputShape)
+object SoftMax {
+  def apply[@specialized(Float, Double) T: ClassTag]
+  (inputShape: Shape = null)
+  (implicit ev: TensorNumeric[T]): SoftMax[T] = {
+    new SoftMax[T](inputShape)
   }
 }

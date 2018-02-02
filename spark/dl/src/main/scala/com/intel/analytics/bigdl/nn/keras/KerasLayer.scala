@@ -21,6 +21,7 @@ import com.intel.analytics.bigdl.nn.Graph._
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
 import com.intel.analytics.bigdl.nn.keras.{Sequential => KSequential}
 import com.intel.analytics.bigdl.nn.{Container, Sequential => TSequential}
+import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.serializer._
 import com.intel.analytics.bigdl.utils.serializer.converters.DataConverter
@@ -52,7 +53,7 @@ object KerasLayerSerializer extends ContainerSerializable with TKerasSerializerH
 
 private[bigdl] object KerasLayer {
     def fuse[T: ClassTag](sLayer: AbstractModule[Activity, Activity, T],
-        activation: TensorModule[T],
+        activation: AbstractModule[Tensor[T], Tensor[T], T],
         inputShape: Shape)
         (implicit ev: TensorNumeric[T]): AbstractModule[Activity, Activity, T] = {
       if (activation == null) {

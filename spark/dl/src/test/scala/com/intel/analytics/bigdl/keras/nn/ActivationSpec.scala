@@ -87,13 +87,13 @@ class ActivationSpec extends KerasBaseSpec{
   "softmax" should "be the same as Keras" in {
     val kerasCode =
       """
-        |input_tensor = Input(shape=[5])
-        |input = np.random.random([4, 5])
+        |input_tensor = Input(shape=[4, 5])
+        |input = np.random.random([2, 4, 5])
         |output_tensor = Activation('softmax')(input_tensor)
         |model = Model(input=input_tensor, output=output_tensor)
       """.stripMargin
     val seq = KSequential[Float]()
-    val layer = Activation[Float]("softmax", inputShape = Shape(5))
+    val layer = Activation[Float]("softmax", inputShape = Shape(4, 5))
     seq.add(layer)
     checkOutputAndGrad(seq.asInstanceOf[AbstractModule[Tensor[Float], Tensor[Float], Float]],
       kerasCode)
@@ -128,6 +128,5 @@ class ActivationSpec extends KerasBaseSpec{
     checkOutputAndGrad(seq.asInstanceOf[AbstractModule[Tensor[Float], Tensor[Float], Float]],
       kerasCode)
   }
-
-
+  
 }

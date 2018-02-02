@@ -28,7 +28,7 @@ import scala.reflect.ClassTag
 class Dense[T: ClassTag](
    val outputDim: Int,
    val init: InitializationMethod = Xavier,
-   val activation: TensorModule[T] = null,
+   val activation: AbstractModule[Tensor[T], Tensor[T], T] = null,
    var wRegularizer: Regularizer[T] = null,
    var bRegularizer: Regularizer[T] = null,
    val bias: Boolean = true,

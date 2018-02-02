@@ -57,7 +57,7 @@ class Convolution2D[T: ClassTag](
    val nbRow: Int,
    val nbCol: Int,
    val init: InitializationMethod = Xavier,
-   val activation: TensorModule[T] = null,
+   val activation: AbstractModule[Tensor[T], Tensor[T], T] = null,
    val borderMode: String = "valid",
    val subsample: Array[Int] = Array(1, 1),
    var wRegularizer: Regularizer[T] = null,
