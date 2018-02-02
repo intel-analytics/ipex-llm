@@ -42,7 +42,7 @@ class DenseSpec extends KerasBaseSpec {
       kerasCode, weightConverter)
   }
 
-  "Dense with nD input" should "be the same as Keras" in {
+  "Dense nD input" should "be the same as Keras" in {
     val kerasCode =
       """
         |input_tensor = Input(shape=[10, 5, 7])

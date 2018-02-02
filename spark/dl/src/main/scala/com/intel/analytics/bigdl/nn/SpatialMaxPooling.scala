@@ -91,7 +91,7 @@ class SpatialMaxPooling[T: ClassTag](
   override def computeOutputShape(inputShape: Shape): Shape = {
     val input = inputShape.toSingle().toArray
     require(input.length == 4,
-      "SpatialMaxPooling: " + ErrorInfo.constrainInputAs3DOrBatch)
+      s"SpatialMaxPooling requires 4D input, but got input dim ${input.length}")
     val (dimh, dimw, dimc) = format.getHWCDims(input.length)
     val nInputPlane = input(dimc -1)
     val inputHeight = input(dimh -1)

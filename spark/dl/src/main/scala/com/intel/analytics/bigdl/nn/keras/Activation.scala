@@ -27,7 +27,7 @@ class Activation[T: ClassTag](val activation: String,
                               var inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {
 
-  require(activation != null)
+  require(activation != null, "The name of an activation function as a string is required.")
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
     val layer = KerasUtils.getActivation(activation)

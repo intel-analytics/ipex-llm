@@ -87,8 +87,7 @@ class Convolution2D[T: ClassTag](
       format = format
     )
     layer.setInitMethod(weightInitMethod = init, biasInitMethod = Zeros)
-    KerasLayer.fuse(layer,
-      activation,
+    KerasLayer.fuse(layer, activation,
       inputShape).asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
   }
 }

@@ -81,4 +81,5 @@ class Convolution2DSpec extends KerasBaseSpec {
     checkOutputAndGrad(seq.asInstanceOf[AbstractModule[Tensor[Float], Tensor[Float], Float]],
       kerasCode, weightConverter, 1e-4)
   }
+
 }
