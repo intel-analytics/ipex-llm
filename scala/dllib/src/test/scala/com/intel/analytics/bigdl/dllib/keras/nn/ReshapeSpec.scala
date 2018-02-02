@@ -17,47 +17,44 @@
 package com.intel.analytics.bigdl.keras.nn
 
 import com.intel.analytics.bigdl.keras.KerasBaseSpec
-import com.intel.analytics.bigdl.nn.keras.{Sequential => KSequential}
 import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
-import com.intel.analytics.bigdl.nn.keras.Dense
+import com.intel.analytics.bigdl.nn.keras.Reshape
+import com.intel.analytics.bigdl.nn.keras.{Sequential => KSequential}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.Shape
 
-class DenseSpec extends KerasBaseSpec {
+class ReshapeSpec extends KerasBaseSpec {
 
-  def weightConverter(in: Array[Tensor[Float]]): Array[Tensor[Float]] = Array(in(0).t(), in(1))
-
-  "Dense" should "be the same as Keras" in {
+  "Reshape" should "be the same as Keras" in {
     val kerasCode =
       """
-        |input_tensor = Input(shape=[3])
-        |input = np.random.uniform(0, 1, [1, 3])
-        |output_tensor = Dense(2, activation="relu")(input_tensor)
+        |input_tensor = Input(shape=[3, 4, 5])
+        |input = np.random.random([2, 3, 4, 5])
+        |output_tensor = Reshape((4, 15))(input_tensor)
         |model = Model(input=input_tensor, output=output_tensor)
       """.stripMargin
     val seq = KSequential[Float]()
-    val dense = Dense[Float](2, activation = "relu", inputShape = Shape(3))
-    seq.add(dense)
-    seq.getOutputShape().toSingle().toArray should be (Array(-1, 2))
+    val layer = Reshape[Float](Array(4, 15), inputShape = Shape(3, 4, 5))
+    seq.add(layer)
+    seq.getOutputShape().toSingle().toArray should be (Array(-1, 4, 15))
     checkOutputAndGrad(seq.asInstanceOf[AbstractModule[Tensor[Float], Tensor[Float], Float]],
-      kerasCode, weightConverter)
+      kerasCode)
   }
 
-  "Dense nD input" should "be the same as Keras" in {
+  "Reshape inference" should "be the same as Keras" in {
     val kerasCode =
       """
-        |input_tensor = Input(shape=[10, 5, 7])
-        |input = np.random.uniform(0, 1, [2, 10, 5, 7])
-        |output_tensor = \
-        |Dense(2, init='one', input_shape=(10, 5, 7))(input_tensor)
+        |input_tensor = Input(shape=[12, ])
+        |input = np.random.random([3, 12])
+        |output_tensor = Reshape((-1, 2, 2))(input_tensor)
         |model = Model(input=input_tensor, output=output_tensor)
       """.stripMargin
     val seq = KSequential[Float]()
-    val dense = Dense[Float](2, init = "one", inputShape = Shape(10, 5, 7))
-    seq.add(dense)
-    seq.getOutputShape().toSingle().toArray should be (Array(-1, 10, 5, 2))
+    val layer = Reshape[Float](Array(-1, 2, 2), inputShape = Shape(12))
+    seq.add(layer)
+    seq.getOutputShape().toSingle().toArray should be (Array(-1, 3, 2, 2))
     checkOutputAndGrad(seq.asInstanceOf[AbstractModule[Tensor[Float], Tensor[Float], Float]],
-      kerasCode, weightConverter, precision = 1e-4)
+      kerasCode)
   }
 
 }

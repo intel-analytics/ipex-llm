@@ -26,9 +26,9 @@ import com.intel.analytics.bigdl.utils.{BigDLSpecHelper, Shape}
 
 class KerasStyleSpec extends BigDLSpecHelper {
 
-  "Graph: Dense" should "works correctly" in {
+  "Graph: Dense" should "work correctly" in {
     val input = Input[Float](inputShape = Shape(10))
-    val d = Dense[Float](20, activation = ReLU()).setName("dense1").inputs(input)
+    val d = Dense[Float](20, activation = "relu").setName("dense1").inputs(input)
     val d2 = Dense[Float](5).setName("dense2").inputs(d)
     val model = Model[Float](input, d2)
     val inputData = Tensor[Float](Array(20, 10)).rand()
@@ -37,7 +37,7 @@ class KerasStyleSpec extends BigDLSpecHelper {
     require(model.getInputShape().toSingle().sameElements(Array(-1, 10)))
   }
 
-  "Sequential: Dense" should "works correctly" in {
+  "Sequential: Dense" should "work correctly" in {
     val seq = KSequential[Float]()
     val d1 = Dense[Float](20, inputShape = Shape(10)).setName("dense1")
     val d2 = Dense[Float](5).setName("dense2")
@@ -60,7 +60,7 @@ class KerasStyleSpec extends BigDLSpecHelper {
     }
   }
 
-  "Sequential: shared relu" should "works correctly" in {
+  "Sequential: shared relu" should "work correctly" in {
     val sharedRelu = ReLU[Float]()
     val seq1 = KSequential[Float]()
     seq1.add(Dense[Float](20, inputShape = Shape(10)))
@@ -82,12 +82,12 @@ class KerasStyleSpec extends BigDLSpecHelper {
     require(seq.getOutputShape().toSingle().sameElements(Array(-1, 5)))
   }
 
-  "TSequential" should "works with alex" in {
+  "TSequential" should "work with alex" in {
     val model = AlexNet_OWT(1000, false, true)
     TSequential[Float].add(model)
   }
 
-  "TSequential" should "not works with dense" in {
+  "TSequential" should "not work with dense" in {
     intercept[RuntimeException] {
       val seq = TSequential[Float]()
       val d1 = Dense[Float](20, inputShape = Shape(10)).setName("dense1")
@@ -95,14 +95,14 @@ class KerasStyleSpec extends BigDLSpecHelper {
     }
   }
 
-  "TGraph" should "not works with dense" in {
+  "TGraph" should "not work with dense" in {
     intercept[RuntimeException] {
       val d1 = Dense[Float](20, inputShape = Shape(10)).setName("dense1").inputs(Input())
       val l1 = Linear(2, 3).inputs(d1)
     }
   }
 
-  "TSequential" should "not works w ith container containing Dense" in {
+  "TSequential" should "not works with container containing Dense" in {
     val seq = TSequential[Float]()
     intercept[RuntimeException] {
       val parallelTable = ParallelTable[Float]()
@@ -112,7 +112,7 @@ class KerasStyleSpec extends BigDLSpecHelper {
     }
   }
 
-  "TSequential" should "not works with container with dense" in {
+  "TSequential" should "not work with container with dense" in {
     intercept[RuntimeException] {
       val seq = TSequential[Float]()
       val seq2 = TSequential[Float]()
@@ -122,21 +122,21 @@ class KerasStyleSpec extends BigDLSpecHelper {
     }
   }
 
-    "save and reload model" should "works correctly" in {
-      val input = Input[Float](inputShape = Shape(10))
-      val d = Dense[Float](20).setName("dense1").inputs(input)
-      val d2 = Dense[Float](5).setName("dense2").inputs(d)
-      val model = Model[Float](input, d2)
-      val tmpFile = createTmpFile()
-      val absPath = tmpFile.getAbsolutePath
-      tmpFile.delete()
-      model.saveModule(absPath)
-      val reloadedModel = Module.loadModule(absPath)
-      val inputData = Tensor[Float](Array(20, 10)).rand()
-      val output = reloadedModel.forward(inputData)
-    }
+  "save and reload model" should "work correctly" in {
+    val input = Input[Float](inputShape = Shape(10))
+    val d = Dense[Float](20).setName("dense1").inputs(input)
+    val d2 = Dense[Float](5).setName("dense2").inputs(d)
+    val model = Model[Float](input, d2)
+    val tmpFile = createTmpFile()
+    val absPath = tmpFile.getAbsolutePath
+    tmpFile.delete()
+    model.saveModule(absPath)
+    val reloadedModel = Module.loadModule(absPath)
+    val inputData = Tensor[Float](Array(20, 10)).rand()
+    val output = reloadedModel.forward(inputData)
+  }
 
-  "save and reload sequential" should "works correctly" in {
+  "save and reload sequential" should "work correctly" in {
     val kseq = KSequential[Float]()
     val d1 = Dense[Float](20, inputShape = Shape(10)).setName("dense1")
     val d2 = Dense[Float](5).setName("dense2")
