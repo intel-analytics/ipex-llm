@@ -856,6 +856,8 @@ object SparseType extends TensorType
 
 object QuantizedType extends TensorType
 
+object MklDnnType extends TensorType
+
 object Tensor {
 
   // pre-load MKL library. If we do not do it here,
