@@ -1,7 +1,14 @@
 name: "convolution"
 layer {
+  name: "data"
+  type: "Input"
+  top: "data"
+  input_param { shape: { dim: 1 dim: 3 dim: 5 dim: 5 } }
+}
+layer {
   name: "conv"
   type: "Convolution"
+  bottom: "data"
   top: "conv0"
   convolution_param {
     num_output: 4
