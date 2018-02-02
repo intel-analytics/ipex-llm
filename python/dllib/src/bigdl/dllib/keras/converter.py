@@ -640,7 +640,10 @@ class LayerConverter:
         return list(filter(lambda pair: pair[0] != pair[1], pairs))
 
     def create_reshape(self):
-        blayer = BLayer.Reshape(self.klayer.target_shape, None)
+        if -1 in self.klayer.target_shape:
+            blayer = BLayer.InferReshape(self.klayer.target_shape, True)
+        else:
+            blayer = BLayer.Reshape(self.klayer.target_shape, None)
         return blayer
 
     def create_repeatvector(self):
