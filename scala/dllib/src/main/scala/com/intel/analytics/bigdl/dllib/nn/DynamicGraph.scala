@@ -26,7 +26,7 @@ import com.intel.analytics.bigdl.utils.T
 import scala.collection.mutable
 import scala.reflect.ClassTag
 
-class DynamicGraph[T: ClassTag](
+private[bigdl] class DynamicGraph[T: ClassTag](
   private val _inputs : Seq[ModuleNode[T]],
   private val _outputs : Seq[ModuleNode[T]],
   private val _variables: Option[(Array[Tensor[T]], Array[Tensor[T]])] = None,

@@ -16,6 +16,7 @@
 package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
+import com.intel.analytics.bigdl.nn.ops.Operation
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Util
 
@@ -37,6 +38,9 @@ abstract class DynamicContainer[A <: Activity : ClassTag, B <: Activity : ClassT
    * @return this container
    */
   def add(module: AbstractModule[_ <: Activity, _ <: Activity, T]): this.type = {
+    require(!module.isInstanceOf[Operation[_, _, _]],
+      "Add operations to dynamic container is not allowed, as operations don't have backward. " +
+        "Operation can only be used in Graph")
     Util.excludeNotTorch[T](Seq(module))
     modules += module.asInstanceOf[AbstractModule[Activity, Activity, T]]
     this
