@@ -32,15 +32,15 @@ import scala.reflect.ClassTag
  *
  * @param poolSize Int array of length 2 corresponding to the downscale vertically and
  *                 horizontally. Default is (2, 2), which will halve the image in each dimension.
- * @param strides Stride values. Default is None, and in this case it will equal poolSize.
- *                You can also set it to be Some(int array of length 2).
+ * @param strides Stride values. Int array of length 2. Default is null, and in this case it will
+ *                be equal to poolSize.
  * @param borderMode Either 'valid' or 'same'. Default is 'valid'.
  * @param format Format of input data. Either DataFormat.NCHW or DataFormat.NHWC. Default is NCHW.
  * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now
  */
 class MaxPooling2D[T: ClassTag] (
    val poolSize: Array[Int] = Array(2, 2),
-   val strides: Option[Array[Int]] = None,
+   val strides: Array[Int] = null,
    val borderMode: String = "valid",
    val format: DataFormat = DataFormat.NCHW,
    var inputShape: Shape = null)(implicit ev: TensorNumeric[T])
@@ -49,7 +49,7 @@ class MaxPooling2D[T: ClassTag] (
   require(borderMode == "valid" || borderMode == "same", s"Invalid border mode for " +
     s"MaxPooling2D: $borderMode")
 
-  private val stridesValue = if (strides.nonEmpty) strides.get else poolSize
+  private val stridesValue = if (strides != null) strides else poolSize
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
     val pads = KerasUtils.getPadsFromBorderMode(borderMode)
@@ -69,13 +69,12 @@ class MaxPooling2D[T: ClassTag] (
 object MaxPooling2D {
   def apply[@specialized(Float, Double) T: ClassTag](
     poolSize: (Int, Int) = (2, 2),
-    strides: Option[(Int, Int)] = None,
+    strides: (Int, Int) = null,
     borderMode: String = "valid",
     format: DataFormat = DataFormat.NCHW,
     inputShape: Shape = null)
     (implicit ev: TensorNumeric[T]): MaxPooling2D[T] = {
-    val stridesValue = if (strides.nonEmpty) Some(Array(strides.get._1, strides.get._2))
-                       else None
+    val stridesValue = if (strides != null) Array(strides._1, strides._2) else null
     new MaxPooling2D[T](Array(poolSize._1, poolSize._2),
       stridesValue, borderMode, format, inputShape)
   }
