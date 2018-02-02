@@ -139,11 +139,11 @@ object Utils {
   }
 
   /**
-    * load cifar data.
-    * read cifar from hdfs if data folder starts with "hdfs:", otherwise form local file.
-    * @param featureFile
-    * @param result
-    */
+   * load cifar data.
+   * read cifar from hdfs if data folder starts with "hdfs:", otherwise form local file.
+   * @param featureFile
+   * @param result
+   */
   private[bigdl] def load(featureFile: String, result : ArrayBuffer[ByteRecord]): Unit = {
     val rowNum = 32
     val colNum = 32
