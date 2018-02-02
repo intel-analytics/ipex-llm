@@ -61,7 +61,7 @@ class CategoricalColHashBucket[T: ClassTag](
     var i = 1
     var max_fea_len = 0
     while(i <= rows) {
-      val feaStrArr = input.valueAt(i, 1).toString.split(strDelimiter)
+      val feaStrArr = input.valueAt(i, 1).split(strDelimiter)
       max_fea_len = math.max(max_fea_len, feaStrArr.length)
       var j = 0
       while(j < feaStrArr.length) {
