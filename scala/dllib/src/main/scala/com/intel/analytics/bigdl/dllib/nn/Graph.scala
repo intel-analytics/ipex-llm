@@ -30,13 +30,14 @@ import com.intel.analytics.bigdl.utils.serializer._
 import com.intel.analytics.bigdl.utils.serializer.converters.DataConverter
 import com.intel.analytics.bigdl.utils.tf.Tensorflow
 import com.intel.analytics.bigdl.visualization.tensorboard.{FileWriter => TFFileWriter}
-import org.tensorflow.framework.GraphDef
 
-import scala.collection.JavaConverters._
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 import scala.reflect.runtime.universe
+import scala.language.existentials
+import scala.collection.JavaConverters._
+import org.tensorflow.framework.GraphDef
 
 /**
  * A graph container. The modules in the container are connected as a directed Graph. Each module
@@ -192,6 +193,9 @@ abstract class Graph[T: ClassTag](
   protected var dummyOutputGrad: ModuleNode[T] = _
   protected var backwardGraph: DirectedGraph[AbstractModule[Activity, Activity, T]] = _
   protected var backwardNodes: Array[Node[AbstractModule[Activity, Activity, T]]] = _
+  // If the graph will generate gradInput for the input
+
+  private var isGradInputAvailable: Array[Boolean] = _
 
   /**
    * Generate backward graph and apply the stopGrad
@@ -212,6 +216,17 @@ abstract class Graph[T: ClassTag](
         || inputNames.contains(n.element.getName()))
     backwardTargets.foreach(_ -> dummyBackwardEnd)
     backwardGraph = dummyBackwardEnd.graph(true)
+
+    // Check if gradInput is empty for each input
+    isGradInputAvailable = inputs.map(_ => false).toArray
+    backwardGraph.DFS.foreach(curNode => {
+      inputs.zipWithIndex.map { case (n, i) =>
+        if (curNode.element.getName() == n.element.getName() && !isStopGradient(n.element)) {
+          isGradInputAvailable(i) = true
+        }
+      }
+    })
+
     clearState()
     this
   }
@@ -350,9 +365,20 @@ abstract class Graph[T: ClassTag](
 
   protected def fetchModelGradInput(): Activity = {
     if (inputs.length == 1) {
-      inputs.head.element.gradInput
+      if (isGradInputAvailable.head) {
+        inputs.head.element.gradInput
+      } else {
+        Activity.emptyGradInput(this.getName())
+      }
     } else {
-      T.seq(inputs.map(n => n.element.gradInput))
+      var i = 0
+      T.seq(inputs.zipWithIndex.map{ case(n, i) =>
+        if (isGradInputAvailable(i)) {
+          n.element.gradInput
+        } else {
+          Activity.emptyGradInput(this.getName())
+        }
+      })
     }
   }
 
@@ -474,9 +500,19 @@ object Graph extends GraphSerializable {
     new StaticGraph[T](input, output, variables)
   }
 
-  def dynamic[T: ClassTag](
-    input: Array[ModuleNode[T]],
-    output: Array[ModuleNode[T]],
+  def apply[T: ClassTag](preprocessor: Module[T], trainable: Module[T])
+    (implicit ev: TensorNumeric[T]): Graph[T] = {
+    val preprocessorNode = preprocessor.inputs()
+    val stopGradients = Identity[T]().inputs(preprocessorNode)
+    val trainableNode = trainable.inputs(stopGradients)
+    val graph = apply[T](preprocessorNode, trainableNode)
+    graph.stopGradient(Array(stopGradients.element.getName()))
+    graph
+  }
+
+  private[bigdl] def dynamic[T: ClassTag](
+    input : Array[ModuleNode[T]],
+    output : Array[ModuleNode[T]],
     variables: Option[(Array[Tensor[T]], Array[Tensor[T]])] = None,
     generateBackward: Boolean = true)(implicit ev: TensorNumeric[T]): Graph[T] = {
     new DynamicGraph[T](input, output, variables, generateBackward)
@@ -493,8 +529,8 @@ object Graph extends GraphSerializable {
     new StaticGraph[T](Seq(input), output)
   }
 
-  def dynamic[T: ClassTag](input: ModuleNode[T], output: Array[ModuleNode[T]])
-    (implicit ev: TensorNumeric[T]): Graph[T] = {
+  private[bigdl] def dynamic[T: ClassTag](input : ModuleNode[T], output : Array[ModuleNode[T]])
+    (implicit ev: TensorNumeric[T]) : Graph[T] = {
     new DynamicGraph[T](Array(input), output, None, true)
   }
 
@@ -509,8 +545,8 @@ object Graph extends GraphSerializable {
     new StaticGraph[T](input, Seq(output))
   }
 
-  def dynamic[T: ClassTag](input: Array[ModuleNode[T]], output: ModuleNode[T])
-    (implicit ev: TensorNumeric[T]): Graph[T] = {
+  private[bigdl] def dynamic[T: ClassTag](input : Array[ModuleNode[T]], output : ModuleNode[T])
+    (implicit ev: TensorNumeric[T]) : Graph[T] = {
     new DynamicGraph[T](input, Array(output), None, true)
   }
 
@@ -525,8 +561,8 @@ object Graph extends GraphSerializable {
     new StaticGraph[T](Seq(input), Seq(output))
   }
 
-  def dynamic[T: ClassTag](input: ModuleNode[T], output: ModuleNode[T])
-    (implicit ev: TensorNumeric[T]): Graph[T] = {
+  private[bigdl] def dynamic[T: ClassTag](input : ModuleNode[T], output : ModuleNode[T])
+    (implicit ev: TensorNumeric[T]) : Graph[T] = {
     new DynamicGraph[T](Array(input), Array(output), None, true)
   }
 }
