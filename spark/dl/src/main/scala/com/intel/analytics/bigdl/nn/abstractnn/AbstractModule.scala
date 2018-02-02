@@ -355,6 +355,11 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
    */
   final private[bigdl] def getParameters(): (Tensor[T], Tensor[T]) = {
     val (weightParameters, gradParameters) = this.parameters()
+
+    // If some gradParameters are not allocated storage, allocate it
+    require(weightParameters.size == gradParameters.size,
+      "weights and gradient number are not match")
+    weightParameters.zip(gradParameters).foreach{ case(w, g) => g.resizeAs(w)}
     (Module.flatten[T](weightParameters), Module.flatten[T](gradParameters))
   }
 
