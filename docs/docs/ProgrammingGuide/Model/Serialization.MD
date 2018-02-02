@@ -31,8 +31,8 @@ Please is the data types supported in serialization
 
 #### Implement customized data converter
 if you have your own defined data types that are not supported in serialization
-or cannot indirectly supported by above types, you can also define your own data
-converter by extending trait `DataConverter`, which has two abstract method to implement
+or cannot be indirectly supported by above types, you can also define your own data
+converter by extending trait `DataConverter`, which has two abstract methods to implement
 
 The `setAttributeValue` is to define how to set your own object value to attributeBuilder
 
