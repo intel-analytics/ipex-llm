@@ -22,31 +22,27 @@ import org.scalatest.{FlatSpec, Matchers}
 class CategoricalColHashBucketSpec extends FlatSpec with Matchers {
 
   "CategoricalColHashBucket operation single value feature column" should "work correctly" in {
-    val input = T(
-      Tensor[Int](T(T(1), T(2), T(3)))
-    )
+    val input = Tensor[String](T(T(1), T(2), T(3)))
     val indices = Array(Array(0, 1, 2), Array(0, 0, 0))
-    val values = Array(5.0, 53.0, 77.0)
+    val values = Array(5, 53, 77)
     val shape = Array(3, 1)
     val expectOutput = Tensor.sparse(
       indices, values, shape
     )
-    val output = CategoricalColHashBucket[Double](hashBucketSize = 100, transType = 1)
+    val output = CategoricalColHashBucket[Double](hashBucketSize = 100, isSparse = true)
       .forward(input)
     output should be(expectOutput)
   }
 
   "CategoricalColHashBucket operation multi value feature column" should "work correctly" in {
-    val input = T(
-      Tensor[String](T(T("1,2"), T("2"), T("1,3,2")))
-    )
+    val input = Tensor[String](T(T("1,2"), T("2"), T("1,3,2")))
     val indices = Array(Array(0, 0, 1, 2, 2, 2), Array(0, 1, 0, 0, 1, 2))
-    val values = Array(5.0, 53.0, 53.0, 5.0, 77.0, 53.0)
+    val values = Array(5, 53, 53, 5, 77, 53)
     val shape = Array(3, 3)
     val expectOutput = Tensor.dense(Tensor.sparse(
       indices, values, shape
     ))
-    val output = CategoricalColHashBucket[Double](hashBucketSize = 100, transType = 0)
+    val output = CategoricalColHashBucket[Double](hashBucketSize = 100, isSparse = false)
       .forward(input)
     output should be(expectOutput)
   }

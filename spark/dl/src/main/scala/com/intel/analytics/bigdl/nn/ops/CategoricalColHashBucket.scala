@@ -15,10 +15,8 @@
  */
 package com.intel.analytics.bigdl.nn.ops
 
-import com.intel.analytics.bigdl.nn.abstractnn.Activity
-import com.intel.analytics.bigdl.tensor.{DoubleType, FloatType, Tensor}
+import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.{T, Table}
 
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
@@ -27,10 +25,10 @@ import scala.util.hashing.MurmurHash3
 /**
  * CategoricalColHashBucket operation can convert feature string to a Sparse/Dense Tensor
  *
- * DenseTensor if transType = 0
- * SparseTensor if  transType = 1
+ * SparseTensor if isSparse = true
+ * DenseTensor if  isSparse = false
  *
- * Use this when your sparse/categorical features are in string or integer format
+ * the input is a Tensor[String] with shape batch * 1.
  *
  * This operation distributes your inputs into a finite number of buckets by hashing
  *
@@ -42,29 +40,28 @@ import scala.util.hashing.MurmurHash3
  *
  * @param hashBucketSize An Integer > 1. The number of buckets.
  * @param strDelimiter The delimiter of feature string, default: ",".
- * @param transType The type of output tensor, default: 1.
+ * @param isSparse whether the output tensor is a sparseTensor, default: True.
  * @tparam T Numeric type. Parameter tensor numeric type. Only support float/double now
  */
 
 class CategoricalColHashBucket[T: ClassTag](
   val hashBucketSize: Int,
   val strDelimiter: String = ",",
-  val transType: Int = 1
+  val isSparse: Boolean = true
   )(implicit ev: TensorNumeric[T])
-  extends Operation[Table, Tensor[T], T] {
+  extends Operation[Tensor[String], Tensor[Int], T] {
 
-  output = Activity.allocate[Tensor[T], T]()
+  output = Tensor[Int]()
 
-  override def updateOutput(input: Table): Tensor[T] = {
-    val column = input[Tensor[_]](1)
-    val rows = column.size(dim = 1)
+  override def updateOutput(input: Tensor[String]): Tensor[Int] = {
+    val rows = input.size(dim = 1)
     val indices0 = new ArrayBuffer[Int]()
     val indices1 = new ArrayBuffer[Int]()
-    val values = new ArrayBuffer[T]()
+    val values = new ArrayBuffer[Int]()
     var i = 1
     var max_fea_len = 0
     while(i <= rows) {
-      val feaStrArr = column.select(1, i).valueAt(1).toString.split(strDelimiter)
+      val feaStrArr = input.valueAt(i, 1).toString.split(strDelimiter)
       max_fea_len = math.max(max_fea_len, feaStrArr.length)
       var j = 0
       while(j < feaStrArr.length) {
@@ -74,23 +71,18 @@ class CategoricalColHashBucket[T: ClassTag](
         }
         indices0 += i-1
         indices1 += j
-        ev.getType() match {
-          case DoubleType =>
-            values += hashVal.toDouble.asInstanceOf[T]
-          case FloatType =>
-            values += hashVal.toFloat.asInstanceOf[T]
-        }
+        values += hashVal
         j += 1
       }
       i += 1
     }
     val indices = Array(indices0.toArray, indices1.toArray)
     val shape = Array(rows, max_fea_len)
-    output = transType match {
-      case 0 =>
-        Tensor.dense(Tensor.sparse(indices, values.toArray, shape))
-      case 1 =>
+    output = isSparse match {
+      case true =>
         Tensor.sparse(indices, values.toArray, shape)
+      case false =>
+        Tensor.dense(Tensor.sparse(indices, values.toArray, shape))
     }
     output
   }
@@ -100,11 +92,11 @@ object CategoricalColHashBucket{
   def apply[T: ClassTag](
       hashBucketSize: Int,
       strDelimiter: String = ",",
-      transType: Int = 1)
+      isSparse: Boolean = true)
       (implicit ev: TensorNumeric[T])
   : CategoricalColHashBucket[T] = new CategoricalColHashBucket[T](
     hashBucketSize = hashBucketSize,
     strDelimiter = strDelimiter,
-    transType = transType
+    isSparse = isSparse
   )
 }
