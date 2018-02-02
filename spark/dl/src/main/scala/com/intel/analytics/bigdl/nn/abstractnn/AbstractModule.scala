@@ -341,15 +341,15 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
   }
 
   /**
-   *This function returns two tensors. One for the flattened learnable parameters flatParameters
-   * and another for the gradients of the energy wrt to the learnable parameters flatGradParameters.
+   * This function returns two tensors. One for the flattened trainable parameters flatParameters
+   * and another for the gradients of the energy wrt to the trainable parameters flatGradParameters.
    *
    * Custom modules should not override this function. They should instead override parameters(...)
    * which is, in turn, called by the present function.
    *
    * This function will go over all the weights and gradWeights and make them view into a single
    * tensor (one for weights and one for gradWeights). Since the storage of every weight and
-   * gradWeight is changed, this function should be called only once on a given network.
+   * gradWeight is changed.
    *
    * @return
    */
