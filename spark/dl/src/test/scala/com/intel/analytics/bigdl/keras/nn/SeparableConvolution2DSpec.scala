@@ -54,11 +54,12 @@ class SeparableConvolution2DSpec extends KerasBaseSpec {
       """
         |input_tensor = Input(shape=[3, 128, 128])
         |input = np.random.random([2, 3, 128, 128])
-        |output_tensor = SeparableConvolution2D(1, 2, 2, dim_ordering='tf')(input_tensor)
+        |output_tensor = SeparableConvolution2D(1, 2, 2, activation="relu", dim_ordering='tf')(input_tensor)
         |model = Model(input=input_tensor, output=output_tensor)
       """.stripMargin
     val seq = KSequential[Float]()
-    val layer = SeparableConvolution2D[Float](1, 2, 2, format = DataFormat.NHWC, inputShape = Shape(3, 128, 128))
+    val layer = SeparableConvolution2D[Float](1, 2, 2, activation = "relu",
+      format = DataFormat.NHWC, inputShape = Shape(3, 128, 128))
     seq.add(layer)
 
     def weightConverter(in: Array[Tensor[Float]]): Array[Tensor[Float]] = {

@@ -29,8 +29,8 @@ import scala.reflect.ClassTag
 class SeparableConvolution2D[T: ClassTag](val nbFilter: Int,
                                           val nbCol: Int,
                                           val nbRow: Int,
-                                         // val init: InitializationMethod = Xavier,
-                                        //  val activation: TensorModule[T] = null,
+                                          val init: InitializationMethod = Xavier,
+                                          val activation: TensorModule[T] = null,
                                           val borderMode: String = "valid",
                                           val subsample: (Int, Int) = (1, 1),
                                           val depthMultiplier: Int = 1,
@@ -68,8 +68,8 @@ class SeparableConvolution2D[T: ClassTag](val nbFilter: Int,
       pRegularizer = pointwiseRegularizer
     )
     layer.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
-//    KerasLayer.fuse(layer, activation,
-//      inputShape).asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
+    KerasLayer.fuse(layer, activation,
+      inputShape).asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
   }
 }
 
@@ -79,8 +79,8 @@ object SeparableConvolution2D {
     nbFilter: Int,
     nbCol: Int,
     nbRow: Int,
-//    init: InitializationMethod = Xavier,
-//    activation: String = null,
+    init: InitializationMethod = Xavier,
+    activation: String = null,
     borderMode: String = "valid",
     subsample: (Int, Int) = (1, 1),
     depthMultiplier: Int = 1,
@@ -95,8 +95,8 @@ object SeparableConvolution2D {
       nbFilter,
       nbCol,
       nbRow,
-//      init,
-//      KerasUtils.getActivation(activation),
+      init,
+      KerasUtils.getActivation(activation),
       borderMode,
       subsample,
       depthMultiplier,
