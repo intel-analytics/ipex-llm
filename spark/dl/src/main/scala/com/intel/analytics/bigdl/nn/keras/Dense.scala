@@ -25,6 +25,26 @@ import com.intel.analytics.bigdl.utils.Shape
 
 import scala.reflect.ClassTag
 
+/**
+ * A densely-connected NN layer.
+ * When you use this layer as the first layer of a model, you need to provide the argument
+ * inputShape (a Single Shape, does not include the batch dimension).
+ * The most common input is 2D.
+ *
+ * @param outputDim The size of output dimension.
+ * @param init Initialization method for the weights of the layer. Default is Xavier.
+ *             You can also pass in corresponding string representations such as 'glorot_uniform'
+ *             or 'normal', etc. for simple init methods in the factory method.
+ * @param activation Activation function to use. Default is null.
+ *                   You can also pass in corresponding string representations such as 'relu'
+ *                   or 'sigmoid', etc. for simple activations in the factory method.
+ * @param wRegularizer An instance of [[Regularizer]], (eg. L1 or L2 regularization),
+ *                     applied to the input weights matrices. Default is null.
+ * @param bRegularizer An instance of [[Regularizer]], applied to the bias. Default is null.
+ * @param bias Whether to include a bias (i.e. make the layer affine rather than linear).
+ *             Default is true.
+ * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now
+ */
 class Dense[T: ClassTag](
    val outputDim: Int,
    val init: InitializationMethod = Xavier,

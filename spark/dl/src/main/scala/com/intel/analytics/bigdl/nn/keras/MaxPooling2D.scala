@@ -24,6 +24,20 @@ import com.intel.analytics.bigdl.utils.Shape
 
 import scala.reflect.ClassTag
 
+/**
+ * Applies max pooling operation for spatial data.
+ * When you use this layer as the first layer of a model, you need to provide the argument
+ * inputShape (a Single Shape, does not include the batch dimension).
+ * The input of this layer should be 4D.
+ *
+ * @param poolSize Int array of length 2 corresponding to the downscale vertically and
+ *                 horizontally. Default is (2, 2), which will halve the image in each dimension.
+ * @param strides Stride values. Default is None, and in this case it will equal poolSize.
+ *                You can also set it to be Some(int array of length 2).
+ * @param borderMode Either 'valid' or 'same'. Default is 'valid'.
+ * @param format Format of input data. Either DataFormat.NCHW or DataFormat.NHWC. Default is NCHW.
+ * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now
+ */
 class MaxPooling2D[T: ClassTag] (
    val poolSize: Array[Int] = Array(2, 2),
    val strides: Option[Array[Int]] = None,

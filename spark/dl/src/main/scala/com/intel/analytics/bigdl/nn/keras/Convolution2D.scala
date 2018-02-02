@@ -31,6 +31,7 @@ import scala.reflect.ClassTag
  * inputShape (a Single Shape, does not include the batch dimension),
  * e.g. inputShape=Shape(3, 128, 128) for 128x128 RGB pictures.
  * You can also use Conv2D as an alias of this layer.
+ * The input of this layer should be 4D.
  *
  * @param nbFilter Number of convolution filters to use.
  * @param nbRow Number of rows in the convolution kernel.

@@ -23,6 +23,13 @@ import com.intel.analytics.bigdl.utils.Shape
 
 import scala.reflect.ClassTag
 
+/**
+ * Flattens the input without affecting the batch size.
+ * When you use this layer as the first layer of a model, you need to provide the argument
+ * inputShape (a Single Shape, does not include the batch dimension).
+ *
+ * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now
+ */
 class Flatten[T: ClassTag](var inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {
 

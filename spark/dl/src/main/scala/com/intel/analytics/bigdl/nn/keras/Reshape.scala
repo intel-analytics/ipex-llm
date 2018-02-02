@@ -24,6 +24,18 @@ import com.intel.analytics.bigdl.utils.Shape
 
 import scala.reflect.ClassTag
 
+/**
+ * Reshapes an output to a certain shape.
+ * When you use this layer as the first layer of a model, you need to provide the argument
+ * inputShape (a Single Shape, does not include the batch dimension).
+ * Supports shape inference by allowing one -1 in the target shape.
+ * For example, if inputShape = Shape(2, 3, 4), targetShape = Array(3, -1),
+ * then outputShape will be Shape(3, 8).
+ *
+ * @param targetShape Array of int. The target shape that you desire to have.
+ *                    Batch dimension should be excluded.
+ * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now
+ */
 class Reshape[T: ClassTag](
    val targetShape: Array[Int],
    var inputShape: Shape = null)(implicit ev: TensorNumeric[T])

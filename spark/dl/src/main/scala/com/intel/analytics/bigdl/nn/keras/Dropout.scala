@@ -23,6 +23,15 @@ import com.intel.analytics.bigdl.utils.Shape
 
 import scala.reflect.ClassTag
 
+/**
+ * Applies Dropout to the input by randomly setting a fraction 'p' of input units to 0 at each
+ * update during training time in order to prevent overfitting.
+ * When you use this layer as the first layer of a model, you need to provide the argument
+ * inputShape (a Single Shape, does not include the batch dimension).
+ *
+ * @param p Fraction of the input units to drop. Double between 0 and 1.
+ * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now
+ */
 class Dropout[T: ClassTag](
    val p: Double,
    var inputShape: Shape = null)(implicit ev: TensorNumeric[T])
