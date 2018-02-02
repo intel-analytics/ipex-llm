@@ -16,8 +16,8 @@
 
 package com.intel.analytics.bigdl.nn.keras
 
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, DataFormat, TensorModule}
 import com.intel.analytics.bigdl.nn._
-import com.intel.analytics.bigdl.nn.abstractnn._
 import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -26,84 +26,91 @@ import com.intel.analytics.bigdl.utils.Shape
 import scala.reflect.ClassTag
 
 /**
- * A densely-connected NN layer.
+ * Applies a 2D convolution over an input image composed of several input planes.
  * When you use this layer as the first layer of a model, you need to provide the argument
- * inputShape (a Single Shape, does not include the batch dimension).
- * The most common input is 2D.
+ * inputShape (a Single Shape, does not include the batch dimension),
+ * e.g. inputShape=Shape(3, 128, 128) for 128x128 RGB pictures.
+ * You can also use Conv2D as an alias of this layer.
+ * The input of this layer should be 4D.
  *
- * @param outputDim The size of output dimension.
+ * @param nbFilter Number of convolution filters to use.
+ * @param nbRow Number of rows in the convolution kernel.
+ * @param nbCol Number of rows in the convolution kernel.
  * @param init Initialization method for the weights of the layer. Default is Xavier.
  *             You can also pass in corresponding string representations such as 'glorot_uniform'
  *             or 'normal', etc. for simple init methods in the factory method.
  * @param activation Activation function to use. Default is null.
  *                   You can also pass in corresponding string representations such as 'relu'
  *                   or 'sigmoid', etc. for simple activations in the factory method.
+ * @param borderMode Either 'valid' or 'same'. Default is 'valid'.
+ * @param subsample Int array of length 2 corresponding to the step of the convolution in the
+ *                  height and width dimension. Also called strides elsewhere. Default is (1, 1).
  * @param wRegularizer An instance of [[Regularizer]], (eg. L1 or L2 regularization),
  *                     applied to the input weights matrices. Default is null.
  * @param bRegularizer An instance of [[Regularizer]], applied to the bias. Default is null.
+ * @param format Format of input data. Either DataFormat.NCHW or DataFormat.NHWC. Default is NCHW.
  * @param bias Whether to include a bias (i.e. make the layer affine rather than linear).
  *             Default is true.
  * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now
  */
-class Dense[T: ClassTag](
-   val outputDim: Int,
+class Convolution2D[T: ClassTag](
+   val nbFilter: Int,
+   val nbRow: Int,
+   val nbCol: Int,
    val init: InitializationMethod = Xavier,
    val activation: AbstractModule[Tensor[T], Tensor[T], T] = null,
+   val borderMode: String = "valid",
+   val subsample: Array[Int] = Array(1, 1),
    var wRegularizer: Regularizer[T] = null,
    var bRegularizer: Regularizer[T] = null,
+   val format: DataFormat = DataFormat.NCHW,
    val bias: Boolean = true,
    var inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {
 
-  override def computeOutputShape(inputShape: Shape): Shape = {
-    val input = inputShape.toSingle().toArray
-    require(inputShape.toSingle().size >=2,
-      s"Dense requires input dim >=2, but got dim: ${inputShape.toSingle().length}")
-    Shape(input.slice(0, input.length -1) ++ Array(outputDim))
-  }
+  require(borderMode == "valid" || borderMode == "same", s"Invalid border mode for " +
+    s"Convolution2D: $borderMode")
+  require(subsample.length == 2, "Subsample should be of length 2.")
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
-    val inputShapeList = inputShape.toSingle()
-    var layer = Linear(
-      inputSize = inputShapeList.last,
-      outputSize = outputDim,
-      withBias = bias,
+    val input = inputShape.toSingle().toArray
+    val pads = KerasUtils.getPadsFromBorderMode(borderMode)
+    val layer = SpatialConvolution(
+      nInputPlane = input(format.getHWCDims(4)._3 - 1),
+      nOutputPlane = nbFilter,
+      kernelW = nbCol,
+      kernelH = nbRow,
+      strideW = subsample(1),
+      strideH = subsample(0),
+      padW = pads._2,
+      padH = pads._1,
       wRegularizer = wRegularizer,
-      bRegularizer = bRegularizer)
+      bRegularizer = bRegularizer,
+      withBias = bias,
+      format = format)
     layer.setInitMethod(weightInitMethod = init, biasInitMethod = Zeros)
-
-    if (inputShape.toSingle().size <= 2) {
-      KerasLayer.fuse(layer, activation,
-        inputShape).asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
-    } else {
-      val seq = new Sequential[T](stopInferShape = true)
-      val inDim = inputShapeList.last
-      seq.add(InputLayer(inputShape = inputShape))
-      seq.add(InferReshape(Array(-1, inDim), false))
-      seq.add(layer)
-      seq.add(InferReshape(Array(-1) ++
-        inputShapeList.slice(1, inputShapeList.size - 1) ++ Array(outputDim), false))
-      if (activation != null) {
-        seq.add(activation)
-      }
-      seq.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
-    }
+    KerasLayer.fuse(layer, activation,
+      inputShape).asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
   }
 }
 
-object Dense {
+object Convolution2D {
   def apply[@specialized(Float, Double) T: ClassTag](
-    outputDim: Int,
+    nbFilter: Int,
+    nbRow: Int,
+    nbCol: Int,
     init: String = "glorot_uniform",
     activation: String = null,
+    borderMode: String = "valid",
+    subsample: (Int, Int) = (1, 1),
     wRegularizer: Regularizer[T] = null,
     bRegularizer: Regularizer[T] = null,
+    format: DataFormat = DataFormat.NCHW,
     bias: Boolean = true,
-    inputShape: Shape = null)(implicit ev: TensorNumeric[T]): Dense[T] = {
-    new Dense[T](outputDim, KerasUtils.getInitMethod(init),
-      KerasUtils.getActivation(activation),
-      wRegularizer, bRegularizer, bias, inputShape)
+    inputShape: Shape = null)(implicit ev: TensorNumeric[T]): Convolution2D[T] = {
+    new Convolution2D[T](nbFilter, nbRow, nbCol,
+      KerasUtils.getInitMethod(init), KerasUtils.getActivation(activation),
+      borderMode, Array(subsample._1, subsample._2),
+      wRegularizer, bRegularizer, format, bias, inputShape)
   }
 }
-
-

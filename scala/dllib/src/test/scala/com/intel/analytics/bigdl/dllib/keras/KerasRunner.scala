@@ -111,9 +111,10 @@ object KerasRunner {
     if (!pvalues.keySet.filter(key => key.contains(keyName)).isEmpty) {
       val weightNum = pvalues.keySet.filter(key => key.contains(keyName)).size / 2
       Range(0, weightNum).map {i =>
+        val keyPrefix = if (weightNum > 1) keyName + "_" + i else keyName
         Tensor[Float](
-          data = pvalues(s"${keyName}_${i}_value"),
-          shape = pvalues(s"${keyName}_${i}_shape").map(_.toInt))
+          data = pvalues(s"${keyPrefix}_value"),
+          shape = pvalues(s"${keyPrefix}_shape").map(_.toInt))
       }.toArray
     } else {
       null
