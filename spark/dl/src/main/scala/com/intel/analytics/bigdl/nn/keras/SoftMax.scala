@@ -52,9 +52,8 @@ class SoftMax[T: ClassTag](
 }
 
 object SoftMax {
-  def apply[@specialized(Float, Double) T: ClassTag]
-  (inputShape: Shape = null)
-  (implicit ev: TensorNumeric[T]): SoftMax[T] = {
+  def apply[@specialized(Float, Double) T: ClassTag](
+    inputShape: Shape = null)(implicit ev: TensorNumeric[T]): SoftMax[T] = {
     new SoftMax[T](inputShape)
   }
 }

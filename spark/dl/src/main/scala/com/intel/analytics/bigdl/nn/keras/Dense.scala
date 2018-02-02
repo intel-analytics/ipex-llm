@@ -49,8 +49,7 @@ class Dense[T: ClassTag](
       outputSize = outputDim,
       withBias = bias,
       wRegularizer = wRegularizer,
-      bRegularizer = bRegularizer
-    )
+      bRegularizer = bRegularizer)
     layer.setInitMethod(weightInitMethod = init, biasInitMethod = Zeros)
 
     if (inputShape.toSingle().size <= 2) {
@@ -64,7 +63,9 @@ class Dense[T: ClassTag](
       seq.add(layer)
       seq.add(InferReshape(Array(-1) ++
         inputShapeList.slice(1, inputShapeList.size - 1) ++ Array(outputDim), false))
-      if (activation != null) seq.add(activation)
+      if (activation != null) {
+        seq.add(activation)
+      }
       seq.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
     }
   }

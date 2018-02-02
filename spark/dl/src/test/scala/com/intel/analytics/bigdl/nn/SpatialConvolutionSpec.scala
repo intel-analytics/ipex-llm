@@ -3035,6 +3035,5 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
   "SpatialConvolution computeOutputShape NHWC" should "work properly" in {
     val layer = SpatialConvolution[Float](4, 5, 2, 2, format = DataFormat.NHWC)
     TestUtils.compareOutputShape(layer, Shape(12, 12, 4)) should be (true)
-
   }
 }

@@ -86,8 +86,7 @@ class Convolution2D[T: ClassTag](
       wRegularizer = wRegularizer,
       bRegularizer = bRegularizer,
       withBias = bias,
-      format = format
-    )
+      format = format)
     layer.setInitMethod(weightInitMethod = init, biasInitMethod = Zeros)
     KerasLayer.fuse(layer, activation,
       inputShape).asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
@@ -107,8 +106,7 @@ object Convolution2D {
     bRegularizer: Regularizer[T] = null,
     format: DataFormat = DataFormat.NCHW,
     bias: Boolean = true,
-    inputShape: Shape = null)
-    (implicit ev: TensorNumeric[T]): Convolution2D[T] = {
+    inputShape: Shape = null)(implicit ev: TensorNumeric[T]): Convolution2D[T] = {
     new Convolution2D[T](nbFilter, nbRow, nbCol,
       KerasUtils.getInitMethod(init), KerasUtils.getActivation(activation),
       borderMode, Array(subsample._1, subsample._2),

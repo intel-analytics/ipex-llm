@@ -25,19 +25,20 @@ import com.intel.analytics.bigdl.utils.Shape
 
 class DenseSpec extends KerasBaseSpec {
 
+  def weightConverter(in: Array[Tensor[Float]]): Array[Tensor[Float]] = Array(in(0).t(), in(1))
+
   "Dense" should "be the same as Keras" in {
     val kerasCode =
       """
         |input_tensor = Input(shape=[3])
         |input = np.random.uniform(0, 1, [1, 3])
-        |output_tensor = Dense(2, activation="relu", init='uniform')(input_tensor)
+        |output_tensor = Dense(2, activation="relu")(input_tensor)
         |model = Model(input=input_tensor, output=output_tensor)
       """.stripMargin
     val seq = KSequential[Float]()
     val dense = Dense[Float](2, activation = "relu", inputShape = Shape(3))
     seq.add(dense)
     seq.getOutputShape().toSingle().toArray should be (Array(-1, 2))
-    def weightConverter(in: Array[Tensor[Float]]): Array[Tensor[Float]] = Array(in(0).t(), in(1))
     checkOutputAndGrad(seq.asInstanceOf[AbstractModule[Tensor[Float], Tensor[Float], Float]],
       kerasCode, weightConverter)
   }
@@ -55,7 +56,6 @@ class DenseSpec extends KerasBaseSpec {
     val dense = Dense[Float](2, init = "one", inputShape = Shape(10, 5, 7))
     seq.add(dense)
     seq.getOutputShape().toSingle().toArray should be (Array(-1, 10, 5, 2))
-    def weightConverter(in: Array[Tensor[Float]]): Array[Tensor[Float]] = Array(in(0).t(), in(1))
     checkOutputAndGrad(seq.asInstanceOf[AbstractModule[Tensor[Float], Tensor[Float], Float]],
       kerasCode, weightConverter, precision = 1e-4)
   }

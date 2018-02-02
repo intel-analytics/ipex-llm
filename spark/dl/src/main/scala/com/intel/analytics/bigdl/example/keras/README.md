@@ -1,4 +1,4 @@
-# LeNet5 Model on MNIST with the new API
+# LeNet Model on MNIST with new API
 
 This examples defines a classical CNN model used in digital number classification with the new set of API in BigDL. For detailed information with regard to LeNet,
 please refer to <http://yann.lecun.com/exdb/lenet/>.
@@ -63,6 +63,6 @@ In the above commands
 * --checkpoint: Where you cache the model/train_state snapshot. You should input a folder and
 make sure the folder is created when you run this example. The model snapshot will be named as
 model.#iteration_number, and train state will be named as state.#iteration_number. Note that if
-there are some files already exist in the folder, the old file will not be overwrite for the
+there are some files already exist in the folder, the old file will not be overwritten for the
 safety of your model files.
 * -b: The mini-batch size. It is expected that the mini-batch size is a multiple of node_number * core_number.

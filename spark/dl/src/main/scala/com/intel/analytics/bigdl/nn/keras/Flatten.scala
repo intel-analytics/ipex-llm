@@ -40,8 +40,8 @@ class Flatten[T: ClassTag](var inputShape: Shape = null)(implicit ev: TensorNume
 }
 
 object Flatten {
-  def apply[@specialized(Float, Double) T: ClassTag]
-  (inputShape: Shape = null)(implicit ev: TensorNumeric[T]): Flatten[T] = {
+  def apply[@specialized(Float, Double) T: ClassTag](
+    inputShape: Shape = null)(implicit ev: TensorNumeric[T]): Flatten[T] = {
     new Flatten[T](inputShape)
   }
 }

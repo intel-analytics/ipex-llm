@@ -23,11 +23,12 @@ import com.intel.analytics.bigdl.utils.Shape
 
 import scala.reflect.ClassTag
 
-class Activation[T: ClassTag](val activation: String,
-                              var inputShape: Shape = null)(implicit ev: TensorNumeric[T])
+class Activation[T: ClassTag](
+   val activation: String,
+   var inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {
 
-  require(activation != null, "The name of an activation function as a string is required.")
+  require(activation != null, "The name of an activation function as a string is required")
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
     val model = Sequential[T]()

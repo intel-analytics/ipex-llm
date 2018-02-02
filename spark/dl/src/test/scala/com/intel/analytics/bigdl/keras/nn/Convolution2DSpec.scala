@@ -25,12 +25,8 @@ import com.intel.analytics.bigdl.utils.Shape
 class Convolution2DSpec extends KerasBaseSpec {
 
   def weightConverter(in: Array[Tensor[Float]]): Array[Tensor[Float]] =
-    if (in.length == 1) { // without bias
-      in
-    }
-    else { // with bias
-      Array(in(0).resize(Array(1) ++ in(0).size()), in(1))
-    }
+    if (in.length == 1) in // without bias
+    else Array(in(0).resize(Array(1) ++ in(0).size()), in(1)) // with bias
 
   "Convolution2D NCHW" should "be the same as Keras" in {
     val kerasCode =
@@ -42,7 +38,8 @@ class Convolution2DSpec extends KerasBaseSpec {
         |model = Model(input=input_tensor, output=output_tensor)
       """.stripMargin
     val seq = KSequential[Float]()
-    val layer = Convolution2D[Float](64, 2, 5, activation = "relu", inputShape = Shape(3, 24, 24))
+    val layer = Convolution2D[Float](64, 2, 5, activation = "relu",
+      inputShape = Shape(3, 24, 24))
     seq.add(layer)
     checkOutputAndGrad(seq.asInstanceOf[AbstractModule[Tensor[Float], Tensor[Float], Float]],
       kerasCode, weightConverter, 1e-3)

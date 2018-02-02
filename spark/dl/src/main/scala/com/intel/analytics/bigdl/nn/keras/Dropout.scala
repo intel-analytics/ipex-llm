@@ -35,9 +35,9 @@ class Dropout[T: ClassTag](
 }
 
 object Dropout {
-  def apply[@specialized(Float, Double) T: ClassTag]
-  (p: Double, inputShape: Shape = null)
-  (implicit ev: TensorNumeric[T]): Dropout[T] = {
+  def apply[@specialized(Float, Double) T: ClassTag](
+    p: Double,
+    inputShape: Shape = null)(implicit ev: TensorNumeric[T]): Dropout[T] = {
     new Dropout[T](p, inputShape)
   }
 }

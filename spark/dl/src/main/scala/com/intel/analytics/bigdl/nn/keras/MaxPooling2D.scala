@@ -26,7 +26,7 @@ import scala.reflect.ClassTag
 
 class MaxPooling2D[T: ClassTag] (
    val poolSize: Array[Int] = Array(2, 2),
-   var strides: Array[Int] = null,
+   val strides: Option[Array[Int]] = None,
    val borderMode: String = "valid",
    val format: DataFormat = DataFormat.NCHW,
    var inputShape: Shape = null)(implicit ev: TensorNumeric[T])
@@ -35,16 +35,15 @@ class MaxPooling2D[T: ClassTag] (
   require(borderMode == "valid" || borderMode == "same", s"Invalid border mode for " +
     s"MaxPooling2D: $borderMode")
 
+  private val stridesValue = if (strides.nonEmpty) strides.get else poolSize
+
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
     val pads = KerasUtils.getPadsFromBorderMode(borderMode)
-    if (strides == null) {
-      strides = poolSize
-    }
     val layer = SpatialMaxPooling(
       kW = poolSize(1),
       kH = poolSize(0),
-      dW = strides(1),
-      dH = strides(0),
+      dW = stridesValue(1),
+      dH = stridesValue(0),
       padW = pads._2,
       padH = pads._1,
       format = format
@@ -56,18 +55,14 @@ class MaxPooling2D[T: ClassTag] (
 object MaxPooling2D {
   def apply[@specialized(Float, Double) T: ClassTag](
     poolSize: (Int, Int) = (2, 2),
-    strides: (Int, Int) = null,
+    strides: Option[(Int, Int)] = None,
     borderMode: String = "valid",
     format: DataFormat = DataFormat.NCHW,
     inputShape: Shape = null)
     (implicit ev: TensorNumeric[T]): MaxPooling2D[T] = {
-    if (strides != null) {
-      new MaxPooling2D[T](Array(poolSize._1, poolSize._2),
-        Array(strides._1, strides._2), borderMode, format, inputShape)
-    }
-    else {
-      new MaxPooling2D[T](Array(poolSize._1, poolSize._2),
-        null, borderMode, format, inputShape)
-    }
+    val stridesValue = if (strides.nonEmpty) Some(Array(strides.get._1, strides.get._2))
+                       else None
+    new MaxPooling2D[T](Array(poolSize._1, poolSize._2),
+      stridesValue, borderMode, format, inputShape)
   }
 }

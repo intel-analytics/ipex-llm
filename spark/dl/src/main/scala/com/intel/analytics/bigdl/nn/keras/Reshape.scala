@@ -84,9 +84,9 @@ class Reshape[T: ClassTag](
 }
 
 object Reshape {
-  def apply[@specialized(Float, Double) T: ClassTag]
-  (targetShape: Array[Int], inputShape: Shape = null)
-  (implicit ev: TensorNumeric[T]): Reshape[T] = {
+  def apply[@specialized(Float, Double) T: ClassTag](
+    targetShape: Array[Int],
+    inputShape: Shape = null)(implicit ev: TensorNumeric[T]): Reshape[T] = {
     new Reshape[T](targetShape, inputShape)
   }
 }
