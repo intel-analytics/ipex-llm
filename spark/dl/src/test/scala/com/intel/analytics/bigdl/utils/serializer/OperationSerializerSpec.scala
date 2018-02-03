@@ -16,36 +16,25 @@
 
 package com.intel.analytics.bigdl.utils.serializer
 
-import java.io.File
 import java.io.{File => JFile}
-import java.lang.reflect.Modifier
 
 import com.google.protobuf.{ByteString, CodedOutputStream}
-import com.intel.analytics.bigdl.Module
-import com.intel.analytics.bigdl.nn.abstractnn.DataFormat.NHWC
-
-import scala.collection.JavaConverters._
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, DataFormat}
-import com.intel.analytics.bigdl.nn.ops.{All, Any, ApproximateEqual, ArgMax, Assert, Assign, AssignGrad, AvgPoolGrad, BatchMatMul, BiasAddGrad, BroadcastGradientArgs, Cast, Ceil, ControlNodes, Conv2D, Conv2DBackFilter, Conv2DTranspose, Conv3D, Conv3DBackpropFilter, Conv3DBackpropFilterV2, Conv3DBackpropInput, Conv3DBackpropInputV2, CrossEntropy, DecodeImage, DepthwiseConv2D, DepthwiseConv2DBackpropFilter, DepthwiseConv2DBackpropInput, Digamma, Dilation2D, Dilation2DBackpropFilter, Dilation2DBackpropInput, EluGrad, Equal, Erf, Erfc, Expm1, Floor, FloorDiv, FloorMod, FusedBatchNorm, FusedBatchNormGrad, Greater, GreaterEqual, InTopK, Inv, InvGrad, IsFinite, IsInf, IsNan, Kv2Tensor, L2Loss, LRNGrad, Less, LessEqual, Lgamma, LogicalAnd, LogicalNot, LogicalOr, MaxPool, MaxPoolGrad, Maximum, MergeOps, Minimum, Mod, ModuleToOperation, NoOp, NotEqual, OneHot, Pad, ParseExample, Prod, RandomUniform, RangeOps, Rank, Relu6Grad, ReluGrad, ResizeBilinearGrad, ResizeBilinearOps, Rint, Round, RsqrtGrad, SegmentSum, SigmoidGrad, Sign, Slice, SoftplusGrad, SoftsignGrad, SqrtGrad, SquaredDifference, Substr, SwitchOps, TanhGrad, TopK, TruncateDiv, TruncatedNormal, Add => AddOps, DecodeGif => DecodeGifOps, DecodeJpeg => DecodeJpegOps, DecodePng => DecodePngOps, DecodeRaw => DecodeRawOps, Exp => ExpOps, Pow => PowOps, Select => SelectOps, Sum => SumOps, Tile => TileOps}
-import com.intel.analytics.bigdl.nn.tf.{BiasAdd, Const, Fill, Log1p, Shape, SplitAndSelect, StrideSlice, Variable, TensorModuleWrapper}
-import com.intel.analytics.bigdl.nn.{DenseToSparse, SpatialDropout1D, _}
-import com.intel.analytics.bigdl.optim.L2Regularizer
+import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.nn.abstractnn.DataFormat
+import com.intel.analytics.bigdl.nn.ops.{All, Any, ApproximateEqual, ArgMax, Assert, Assign, AssignGrad, AvgPoolGrad, BatchMatMul, BiasAddGrad, BroadcastGradientArgs, Cast, CategoricalColHashBucket, Ceil, ControlNodes, Conv2D, Conv2DBackFilter, Conv2DTranspose, Conv3D, Conv3DBackpropFilter, Conv3DBackpropFilterV2, Conv3DBackpropInput, Conv3DBackpropInputV2, CrossEntropy, DecodeImage, DepthwiseConv2D, DepthwiseConv2DBackpropFilter, DepthwiseConv2DBackpropInput, Digamma, Dilation2D, Dilation2DBackpropFilter, Dilation2DBackpropInput, EluGrad, Equal, Erf, Erfc, Expm1, Floor, FloorDiv, FloorMod, FusedBatchNorm, FusedBatchNormGrad, Greater, GreaterEqual, InTopK, Inv, InvGrad, IsFinite, IsInf, IsNan, Kv2Tensor, L2Loss, LRNGrad, Less, LessEqual, Lgamma, LogicalAnd, LogicalNot, LogicalOr, MaxPool, MaxPoolGrad, Maximum, MergeOps, Minimum, Mod, ModuleToOperation, NotEqual, OneHot, Pad, ParseExample, Prod, RandomUniform, RangeOps, Rank, Relu6Grad, ReluGrad, ResizeBilinearGrad, ResizeBilinearOps, Rint, Round, RsqrtGrad, SegmentSum, SigmoidGrad, Sign, Slice, SoftplusGrad, SoftsignGrad, SqrtGrad, SquaredDifference, Substr, SwitchOps, TanhGrad, TopK, TruncateDiv, TruncatedNormal, Add => AddOps, DecodeGif => DecodeGifOps, DecodeJpeg => DecodeJpegOps, DecodePng => DecodePngOps, DecodeRaw => DecodeRawOps, Exp => ExpOps, Pow => PowOps, Select => SelectOps, Sum => SumOps, Tile => TileOps}
+import com.intel.analytics.bigdl.nn.tf._
+import com.intel.analytics.bigdl.nn.{SoftPlus => BigDLSoftPlus}
 import com.intel.analytics.bigdl.tensor._
-import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
+import com.intel.analytics.bigdl.utils.T
 import com.intel.analytics.bigdl.utils.tf.TFRecordIterator
 import com.intel.analytics.bigdl.utils.tf.loaders.{Pack => _, _}
-import com.intel.analytics.bigdl.utils.{T, Table}
-import org.reflections.Reflections
-import org.reflections.scanners.SubTypesScanner
-import org.reflections.util.{ClasspathHelper, ConfigurationBuilder, FilterBuilder}
-import org.scalatest.{BeforeAndAfterAll, FlatSpec, Matchers}
 import org.tensorflow.example._
 import org.tensorflow.framework.DataType
 
 import scala.collection.mutable
 import scala.util.Random
 
-class TFSerializerSpec extends SerializerSpecHelper {
+class OperationSerializerSpec extends SerializerSpecHelper {
 
   override protected def getPackage(): String = "com.intel.analytics.bigdl.nn.ops"
 
@@ -469,6 +458,14 @@ class TFSerializerSpec extends SerializerSpecHelper {
       .asInstanceOf[ModuleToOperation[Float]].module.getClass)
   }
 
+  "CategoricalColHashBucket" should "work properly" in {
+    val categoricalColHashBucket = CategoricalColHashBucket[Float](
+      hashBucketSize = 100
+    ).setName("categoricalColHashBucket")
+    val input = Tensor[String](T(T(1), T(2), T(3)))
+    runSerializationTest(categoricalColHashBucket, input)
+  }
+
   "LessEqual serializer" should "work properly" in {
     val lessEqual = LessEqual[Float]().setName("lessEqual")
     val input1 = Tensor[Float](5).apply1(_ => Random.nextFloat())
@@ -559,7 +556,7 @@ class TFSerializerSpec extends SerializerSpecHelper {
 
 
   "TensorModuleWrapper serializer" should "work properly" in {
-    val tensorModuleWrapper = TensorModuleWrapper[Float, Float](SoftPlus[Float]()).
+    val tensorModuleWrapper = TensorModuleWrapper[Float, Float](BigDLSoftPlus[Float]()).
       setName("moduleToOperation")
     val input = Tensor[Float](T(1.0f, 1.0))
     runSerializationTest(tensorModuleWrapper, input)
