@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.spark.ml
+package com.intel.analytics.bigdl.dlframe
 
 import com.intel.analytics.bigdl.{Criterion, Module}
 import com.intel.analytics.bigdl.dataset._
@@ -23,16 +23,16 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils.T
 import com.intel.analytics.bigdl.visualization.{TrainSummary, ValidationSummary}
-import org.apache.spark.ml.param.shared.{HasFeaturesCol, HasPredictionCol}
+import org.apache.spark.ml.adapter.{HasFeaturesCol, HasPredictionCol, SchemaUtils}
+import org.apache.spark.ml.{DLEstimatorBase, DLTransformerBase, VectorCompatibility}
 import org.apache.spark.ml.param.{IntParam, ParamMap, ParamValidators, _}
-import org.apache.spark.ml.util.SchemaUtils
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{DataFrame, Row}
 
 import scala.reflect.ClassTag
 
-private[ml] trait HasBatchSize extends Params {
+private[dlframe] trait HasBatchSize extends Params {
 
   final val batchSize: Param[Int] = new Param[Int](this, "batchSize", "batchSize")
 
@@ -42,7 +42,7 @@ private[ml] trait HasBatchSize extends Params {
 /**
  * Common trait for DLEstimator and DLModel
  */
-private[ml] trait DLParams[@specialized(Float, Double) T] extends HasFeaturesCol
+private[dlframe] trait DLParams[@specialized(Float, Double) T] extends HasFeaturesCol
   with HasPredictionCol with VectorCompatibility with HasBatchSize {
 
   /**

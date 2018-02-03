@@ -15,11 +15,11 @@
  */
 package com.intel.analytics.bigdl.example.MLPipeline
 
+import com.intel.analytics.bigdl.dlframe.DLClassifier
 import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, Linear, LogSoftMax, Sequential}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
 import com.intel.analytics.bigdl.utils.Engine
 import org.apache.spark.SparkContext
-import org.apache.spark.ml.DLClassifier
 import org.apache.spark.sql.SQLContext
 
 /**

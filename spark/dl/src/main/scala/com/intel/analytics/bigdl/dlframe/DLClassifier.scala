@@ -13,14 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.spark.ml
+package com.intel.analytics.bigdl.dlframe
 
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.{Criterion, Module}
+import org.apache.spark.ml.adapter.SchemaUtils
 import org.apache.spark.ml.param.ParamMap
-import org.apache.spark.ml.util.{Identifiable, SchemaUtils}
-import org.apache.spark.sql.DataFrame
+import org.apache.spark.ml.util.Identifiable
 import org.apache.spark.sql.types._
 
 import scala.reflect.ClassTag

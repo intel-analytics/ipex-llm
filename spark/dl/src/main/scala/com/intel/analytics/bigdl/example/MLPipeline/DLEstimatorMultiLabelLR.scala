@@ -15,12 +15,12 @@
  */
 package com.intel.analytics.bigdl.example.MLPipeline
 
+import com.intel.analytics.bigdl.dlframe.DLEstimator
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.optim.LBFGS
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericDouble
 import com.intel.analytics.bigdl.utils.Engine
 import org.apache.spark.SparkContext
-import org.apache.spark.ml.DLEstimator
 import org.apache.spark.sql.SQLContext
 
 /**
