@@ -41,8 +41,3 @@ object SchemaUtils {
     org.apache.spark.ml.util.SchemaUtils.appendColumn(schema, colName, dataType)
   }
 }
-
-
-
-
-
