@@ -1294,7 +1294,7 @@ class ModuleSerializerSpec extends SerializerSpecHelper {
 
   "VolumetricAveragePooling serializer" should "work properly" in {
     val volumetricAveragePooling = VolumetricAveragePooling[Float](2, 2, 2, 1, 1, 1, 0, 0, 0).
-        setName("volumetricAveragePooling")
+      setName("volumetricAveragePooling")
     val input = Tensor[Float](1, 2, 3, 3).apply1(_ => Random.nextFloat())
     runSerializationTest(volumetricAveragePooling, input)
   }
@@ -1436,14 +1436,14 @@ class ModuleSerializerSpec extends SerializerSpecHelper {
     import com.intel.analytics.bigdl.utils.tf.TFTensorNumeric.NumericByteString
     val subStr = Substr[Float]().setName("subStr")
     val input = T(Tensor.scalar[ByteString](ByteString.copyFromUtf8("HelloBigDL")),
-    Tensor.scalar[Int](0), Tensor.scalar[Int](5))
+      Tensor.scalar[Int](0), Tensor.scalar[Int](5))
     runSerializationTest(subStr, input)
   }
 
   "SumOps serializer" should "work properly" in {
     val sumOps = SumOps[Float, Float]().setName("sumOps")
     val input = T(Tensor[Float](2, 2).apply1(_ => Random.nextFloat()),
-    Tensor[Float]())
+      Tensor[Float]())
     runSerializationTest(sumOps, input)
   }
 
