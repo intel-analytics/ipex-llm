@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.transform.vision.image
 
 
 import com.intel.analytics.bigdl.dataset.{ArraySample, Sample, Transformer}
+import com.intel.analytics.bigdl.opencv.OpenCV
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.transform.vision.image.opencv.OpenCVMat
@@ -68,18 +69,32 @@ object BytesToMat {
  */
 class PixelBytesToMat(byteKey: String = ImageFeature.bytes) extends FeatureTransformer {
 
-  override def transformMat(feature: ImageFeature): Unit = {
-    require(feature.getOriginalSize != null,
-      "please set the original size of image in ImageFeature")
-    val pixels = feature[Array[Byte]](byteKey)
-    val mat = OpenCVMat.fromPixelsBytes(pixels, feature.getOriginalHeight,
-      feature.getOriginalWidth,
-      feature.getOriginalChannel)
-    feature(ImageFeature.mat) = mat
+  override def transform(feature: ImageFeature): ImageFeature = {
+    require(OpenCV.isOpenCVLoaded, "opencv isn't loaded")
+    if (!feature.isValid) return feature
+    try {
+      require(feature.getOriginalSize != null,
+        "please set the original size of image in ImageFeature")
+      val pixels = feature[Array[Byte]](byteKey)
+      val mat = OpenCVMat.fromPixelsBytes(pixels, feature.getOriginalHeight,
+        feature.getOriginalWidth,
+        feature.getOriginalChannel)
+      val output = feature.clone()
+      output(ImageFeature.mat) = mat
+      output
+    } catch {
+      case e: Exception =>
+        val path = if (feature.contains(ImageFeature.uri)) feature(ImageFeature.uri) else ""
+        PixelBytesToMat.logger.warn(s"failed ${path} in transformer ${getClass}")
+        e.printStackTrace()
+        feature.isValid = false
+        feature
+    }
   }
 }
 
 object PixelBytesToMat {
+  val logger = Logger.getLogger(getClass)
   def apply(byteKey: String = ImageFeature.bytes): PixelBytesToMat = new PixelBytesToMat(byteKey)
 }
 
