@@ -35,7 +35,7 @@ abstract class FeatureTransformer()
    * if true, catch the exception of the transformer to avoid crashing.
    * if false, interrupt the transformer when error happens
    */
-  var ignoreException: Boolean = false
+  private[image] var ignoreException: Boolean = false
 
   /**
    * set the output key to store current transformed result
@@ -114,14 +114,6 @@ abstract class FeatureTransformer()
     ignoreException = true
     this
   }
-
-  /**
-   * interrupt the transformer when error happens
-   */
-  def disableIgnoreException(): this.type = {
-    ignoreException = false
-    this
-  }
 }
 
 object FeatureTransformer {
@@ -141,12 +133,6 @@ class ChainedFeatureTransformer(first: FeatureTransformer, last: FeatureTransfor
   override def enableIgnoreException(): this.type = {
     first.enableIgnoreException()
     last.enableIgnoreException()
-    this
-  }
-
-  override def disableIgnoreException(): this.type = {
-    first.disableIgnoreException()
-    last.disableIgnoreException()
     this
   }
 }
