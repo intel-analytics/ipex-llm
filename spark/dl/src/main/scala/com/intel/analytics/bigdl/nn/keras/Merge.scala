@@ -17,7 +17,7 @@
 package com.intel.analytics.bigdl.nn.keras
 
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
-import com.intel.analytics.bigdl.nn.{CAddTable, CAveTable, CMaxTable, CMulTable, CosineDistance, DotProduct, JoinTable, ParallelTable, Reshape, Sequential => TSequential}
+import com.intel.analytics.bigdl.nn.{CAddTable, CAveTable, CMaxTable, CMulTable, CosineDistance, DotProduct, JoinTable, ParallelTable, Sequential => TSequential}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{MultiShape, Shape}
@@ -122,12 +122,12 @@ class Merge[T: ClassTag](
         require(input.head.toSingle().length <=2, s"For merge mode dot, only 1D or 2D " +
           s"input is supported, but got input dim ${input.head.toSingle().length}")
         seq.add(DotProduct())
-        seq.add(Reshape(Array(1), Some(true)))
+        seq.add(com.intel.analytics.bigdl.nn.Reshape(Array(1), Some(true)))
         seq
       }
       else {
         seq.add(CosineDistance())
-        seq.add(Reshape(Array(1, 1), Some(true)))
+        seq.add(com.intel.analytics.bigdl.nn.Reshape(Array(1, 1), Some(true)))
         seq
       }
     model.add(layer)
