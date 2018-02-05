@@ -26,8 +26,8 @@ import scala.reflect.ClassTag
 
 class GRU[T: ClassTag](
    outputDim: Int,
-   val activation: TensorModule[T] = null,
-   val innerActivation: TensorModule[T] = null,
+   val activation: AbstractModule[Tensor[T], Tensor[T], T] = null,
+   val innerActivation: AbstractModule[Tensor[T], Tensor[T], T] = null,
    returnSequences: Boolean = false,
    goBackwards: Boolean = false,
    var wRegularizer: Regularizer[T] = null,
@@ -41,8 +41,8 @@ class GRU[T: ClassTag](
     val layer = com.intel.analytics.bigdl.nn.GRU[T](
       inputSize = input(2),
       outputSize = outputDim,
-      activation = activation,
-      innerActivation = innerActivation,
+      activation = activation.asInstanceOf[TensorModule[T]],
+      innerActivation = innerActivation.asInstanceOf[TensorModule[T]],
       wRegularizer = wRegularizer,
       uRegularizer = uRegularizer,
       bRegularizer = bRegularizer)

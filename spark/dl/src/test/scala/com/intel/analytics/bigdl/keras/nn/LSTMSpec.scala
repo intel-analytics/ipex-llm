@@ -24,14 +24,6 @@ import com.intel.analytics.bigdl.utils.Shape
 
 class LSTMSpec extends KerasBaseSpec {
 
-  "LSTM computeOutputShape" should "work properly" in {
-    val seq = KSequential[Float]()
-    val rnn = LSTM[Float](12, inputShape = Shape(3, 6))
-    seq.add(rnn)
-    seq.add(Dense(5))
-    seq.getOutputShape().toSingle().toArray should be (Array(-1, 5))
-  }
-
   def weightConverter(in: Array[Tensor[Float]]): Array[Tensor[Float]] = {
     val w1 = Tensor[Float](in(0).size(2)*4, in(0).size(1))
     val w2 = Tensor[Float](in(2).size(1)*4)
@@ -57,6 +49,7 @@ class LSTMSpec extends KerasBaseSpec {
     val seq = KSequential[Float]()
     val layer = LSTM[Float](32, inputShape = Shape(10, 12))
     seq.add(layer)
+    seq.getOutputShape().toSingle().toArray should be (Array(-1, 32))
     checkOutputAndGrad(seq.asInstanceOf[AbstractModule[Tensor[Float], Tensor[Float], Float]],
       kerasCode, weightConverter)
   }
@@ -73,11 +66,12 @@ class LSTMSpec extends KerasBaseSpec {
     val layer = LSTM[Float](8, returnSequences = true,
       innerActivation = "sigmoid", inputShape = Shape(32, 32))
     seq.add(layer)
+    seq.getOutputShape().toSingle().toArray should be (Array(-1, 32, 8))
     checkOutputAndGrad(seq.asInstanceOf[AbstractModule[Tensor[Float], Tensor[Float], Float]],
       kerasCode, weightConverter)
   }
 
-  "LSTM go backwards" should "be the same as Keras" in {
+  "LSTM go backwards and return sequences" should "be the same as Keras" in {
     val kerasCode =
       """
         |input_tensor = Input(shape=[28, 32])
@@ -89,6 +83,7 @@ class LSTMSpec extends KerasBaseSpec {
     val layer = LSTM[Float](10, returnSequences = true,
       goBackwards = true, inputShape = Shape(28, 32))
     seq.add(layer)
+    seq.getOutputShape().toSingle().toArray should be (Array(-1, 28, 10))
     checkOutputAndGrad(seq.asInstanceOf[AbstractModule[Tensor[Float], Tensor[Float], Float]],
       kerasCode, weightConverter)
   }

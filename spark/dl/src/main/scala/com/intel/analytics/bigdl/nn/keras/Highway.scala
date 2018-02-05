@@ -24,20 +24,27 @@ import com.intel.analytics.bigdl.utils.Shape
 
 import scala.reflect.ClassTag
 
-class Highway[T: ClassTag](val activation: TensorModule[T] = null,
-                           var wRegularizer: Regularizer[T] = null,
-                           var bRegularizer: Regularizer[T] = null,
-                           val bias: Boolean = true,
-                           var inputShape: Shape = null)(implicit ev: TensorNumeric[T])
-  extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape))
-    with IdentityOutputShape {
+class Highway[T: ClassTag](
+   val activation: AbstractModule[Tensor[T], Tensor[T], T] = null,
+   var wRegularizer: Regularizer[T] = null,
+   var bRegularizer: Regularizer[T] = null,
+   val bias: Boolean = true,
+   var inputShape: Shape = null)(implicit ev: TensorNumeric[T])
+  extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {
+
+  override def computeOutputShape(inputShape: Shape): Shape = {
+    val input = inputShape.toSingle().toArray
+    require(input.length == 2,
+      s"Highway requires 2D input, but got input dim ${input.length}")
+    inputShape
+  }
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
     val input = inputShape.toSingle().toArray
     val layer = com.intel.analytics.bigdl.nn.Highway[T](
       size = input(1),
       withBias = bias,
-      activation = activation,
+      activation = activation.asInstanceOf[TensorModule[T]],
       wRegularizer = wRegularizer,
       bRegularizer = bRegularizer
     )

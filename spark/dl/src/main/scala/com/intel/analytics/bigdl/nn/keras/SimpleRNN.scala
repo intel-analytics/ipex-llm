@@ -27,7 +27,7 @@ import scala.reflect.ClassTag
 
 class SimpleRNN[T: ClassTag](
    outputDim: Int,
-   val activation: TensorModule[T] = null,
+   val activation: AbstractModule[Tensor[T], Tensor[T], T] = null,
    returnSequences: Boolean = false,
    goBackwards: Boolean = false,
    var wRegularizer: Regularizer[T] = null,
@@ -41,7 +41,7 @@ class SimpleRNN[T: ClassTag](
     val layer = RnnCell(
       inputSize = input(2),
       hiddenSize = outputDim,
-      activation = activation,
+      activation = activation.asInstanceOf[TensorModule[T]],
       isInputWithBias = false,
       wRegularizer = wRegularizer,
       uRegularizer = uRegularizer,

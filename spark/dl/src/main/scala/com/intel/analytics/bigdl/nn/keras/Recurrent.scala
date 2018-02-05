@@ -33,6 +33,8 @@ abstract class Recurrent[T: ClassTag](
 
   override def computeOutputShape(inputShape: Shape): Shape = {
     val input = inputShape.toSingle().toArray
+    require(input.length == 3,
+      s"Recurrent layers require 3D input, but got input dim ${input.length}")
     if (returnSequences) Shape(input(0), input(1), outputDim)
     else Shape(input(0), outputDim)
   }

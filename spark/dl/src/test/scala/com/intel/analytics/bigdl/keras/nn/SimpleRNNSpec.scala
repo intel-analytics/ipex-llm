@@ -24,19 +24,12 @@ import com.intel.analytics.bigdl.utils.Shape
 
 class SimpleRNNSpec extends KerasBaseSpec {
 
-  "SimpleRNN computeOutputShape not return sequences" should "work properly" in {
+  "SimpleRNN computeOutputShape" should "work properly" in {
     val seq = KSequential[Float]()
     val rnn = SimpleRNN[Float](10, inputShape = Shape(3, 6))
     seq.add(rnn)
     seq.add(Dense(5))
     seq.getOutputShape().toSingle().toArray should be (Array(-1, 5))
-  }
-
-  "SimpleRNN computeOutputShape return sequences" should "work properly" in {
-    val seq = KSequential[Float]()
-    val rnn = SimpleRNN[Float](8, returnSequences = true, inputShape = Shape(3, 6))
-    seq.add(rnn)
-    seq.getOutputShape().toSingle().toArray should be (Array(-1, 3, 8))
   }
 
   def weightConverter(in: Array[Tensor[Float]]): Array[Tensor[Float]] =
@@ -53,11 +46,12 @@ class SimpleRNNSpec extends KerasBaseSpec {
     val seq = KSequential[Float]()
     val layer = SimpleRNN[Float](8, activation = "relu", inputShape = Shape(4, 5))
     seq.add(layer)
+    seq.getOutputShape().toSingle().toArray should be (Array(-1, 8))
     checkOutputAndGrad(seq.asInstanceOf[AbstractModule[Tensor[Float], Tensor[Float], Float]],
       kerasCode, weightConverter)
   }
 
-  "SimpleRNN with return sequences" should "be the same as Keras" in {
+  "SimpleRNN return sequences" should "be the same as Keras" in {
     val kerasCode =
       """
         |input_tensor = Input(shape=[5, 8])
@@ -68,11 +62,12 @@ class SimpleRNNSpec extends KerasBaseSpec {
     val seq = KSequential[Float]()
     val layer = SimpleRNN[Float](12, returnSequences = true, inputShape = Shape(5, 8))
     seq.add(layer)
+    seq.getOutputShape().toSingle().toArray should be (Array(-1, 5, 12))
     checkOutputAndGrad(seq.asInstanceOf[AbstractModule[Tensor[Float], Tensor[Float], Float]],
       kerasCode, weightConverter)
   }
 
-  "SimpleRNN with go backwards" should "be the same as Keras" in {
+  "SimpleRNN go backwards" should "be the same as Keras" in {
     val kerasCode =
       """
         |input_tensor = Input(shape=[12, 12])
@@ -84,6 +79,7 @@ class SimpleRNNSpec extends KerasBaseSpec {
     val layer = SimpleRNN[Float](4, goBackwards = true,
       activation = "sigmoid", inputShape = Shape(12, 12))
     seq.add(layer)
+    seq.getOutputShape().toSingle().toArray should be (Array(-1, 4))
     checkOutputAndGrad(seq.asInstanceOf[AbstractModule[Tensor[Float], Tensor[Float], Float]],
       kerasCode, weightConverter)
   }

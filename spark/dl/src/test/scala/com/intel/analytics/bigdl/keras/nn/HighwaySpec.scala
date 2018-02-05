@@ -48,6 +48,7 @@ class HighwaySpec extends KerasBaseSpec {
     val seq = KSequential[Float]()
     val layer = Highway[Float](inputShape = Shape(10))
     seq.add(layer)
+    seq.getOutputShape().toSingle().toArray should be (Array(-1, 10))
     checkOutputAndGrad(seq.asInstanceOf[AbstractModule[Tensor[Float], Tensor[Float], Float]],
       kerasCode, weightConverter)
   }
@@ -63,6 +64,7 @@ class HighwaySpec extends KerasBaseSpec {
     val seq = KSequential[Float]()
     val layer = Highway[Float](activation = "tanh", bias = false, inputShape = Shape(4))
     seq.add(layer)
+    seq.getOutputShape().toSingle().toArray should be (Array(-1, 4))
     checkOutputAndGrad(seq.asInstanceOf[AbstractModule[Tensor[Float], Tensor[Float], Float]],
       kerasCode, weightConverter)
   }

@@ -24,14 +24,6 @@ import com.intel.analytics.bigdl.utils.Shape
 
 class GRUSpec extends KerasBaseSpec {
 
-  "GRU computeOutputShape" should "work properly" in {
-    val seq = KSequential[Float]()
-    val rnn = GRU[Float](32, inputShape = Shape(12, 12))
-    seq.add(rnn)
-    seq.add(Dense(10))
-    seq.getOutputShape().toSingle().toArray should be (Array(-1, 10))
-  }
-
   def weightConverter(in: Array[Tensor[Float]]): Array[Tensor[Float]] = {
     val w1 = Tensor[Float](in(0).size(2)*3, in(0).size(1))
     val w2 = Tensor[Float](in(2).size(1)*3)
@@ -58,6 +50,7 @@ class GRUSpec extends KerasBaseSpec {
     val seq = KSequential[Float]()
     val layer = GRU[Float](128, inputShape = Shape(28, 28))
     seq.add(layer)
+    seq.getOutputShape().toSingle().toArray should be (Array(-1, 128))
     checkOutputAndGrad(seq.asInstanceOf[AbstractModule[Tensor[Float], Tensor[Float], Float]],
       kerasCode, weightConverter)
   }
@@ -67,18 +60,19 @@ class GRUSpec extends KerasBaseSpec {
       """
         |input_tensor = Input(shape=[32, 32])
         |input = np.random.random([2, 32, 32])
-        |output_tensor = GRU(32, return_sequences=True, activation="relu")(input_tensor)
+        |output_tensor = GRU(36, return_sequences=True, activation="relu")(input_tensor)
         |model = Model(input=input_tensor, output=output_tensor)
       """.stripMargin
     val seq = KSequential[Float]()
-    val layer = GRU[Float](32, returnSequences = true,
+    val layer = GRU[Float](36, returnSequences = true,
       activation = "relu", inputShape = Shape(32, 32))
     seq.add(layer)
+    seq.getOutputShape().toSingle().toArray should be (Array(-1, 32, 36))
     checkOutputAndGrad(seq.asInstanceOf[AbstractModule[Tensor[Float], Tensor[Float], Float]],
       kerasCode, weightConverter)
   }
 
-  "GRU go backwards" should "be the same as Keras" in {
+  "GRU go backwards and return sequences" should "be the same as Keras" in {
     val kerasCode =
       """
         |input_tensor = Input(shape=[28, 32])
@@ -90,6 +84,7 @@ class GRUSpec extends KerasBaseSpec {
     val layer = GRU[Float](16, returnSequences = true,
       goBackwards = true, inputShape = Shape(28, 32))
     seq.add(layer)
+    seq.getOutputShape().toSingle().toArray should be (Array(-1, 28, 16))
     checkOutputAndGrad(seq.asInstanceOf[AbstractModule[Tensor[Float], Tensor[Float], Float]],
       kerasCode, weightConverter)
   }
