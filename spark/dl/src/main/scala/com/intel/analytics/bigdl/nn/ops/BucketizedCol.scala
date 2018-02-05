@@ -15,7 +15,7 @@
  */
 package com.intel.analytics.bigdl.nn.ops
 
-import com.intel.analytics.bigdl.tensor.{DoubleType, FloatType, Tensor}
+import com.intel.analytics.bigdl.tensor.{DenseTensorApply, DoubleType, FloatType, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import java.util.Arrays.binarySearch
 
@@ -58,24 +58,18 @@ class BucketizedCol[T: ClassTag](
     val resTensor = Tensor[Int](rows, cols)
     require(boundaries.length >= 1,
     "the length of boundaries must be more than or equal to 1")
-    var row = 1
-    while (row <= rows) {
-      var col = 1
-      while (col <=cols) {
-        val index = ev.getType() match {
-          case FloatType =>
-            binarySearch(boundariesImpl.asInstanceOf[Array[Float]],
-              input.valueAt(row, col).asInstanceOf[Float])
-          case DoubleType =>
-            binarySearch(boundariesImpl.asInstanceOf[Array[Double]],
-              input.valueAt(row, col).asInstanceOf[Double])
-        }
-        val boundary = math.abs(index + 1)
-        resTensor.update(Array(row, col), boundary)
-        col += 1
-      }
-      row += 1
+
+    ev.getType() match {
+      case FloatType =>
+        resTensor.applyFun[Float](
+          input.asInstanceOf[Tensor[Float]],
+          x => math.abs(binarySearch(boundariesImpl.asInstanceOf[Array[Float]], x) + 1))
+      case DoubleType =>
+        resTensor.applyFun[Double](
+          input.asInstanceOf[Tensor[Double]],
+          x => math.abs(binarySearch(boundariesImpl.asInstanceOf[Array[Double]], x) + 1))
     }
+
     output = resTensor
     output
   }
