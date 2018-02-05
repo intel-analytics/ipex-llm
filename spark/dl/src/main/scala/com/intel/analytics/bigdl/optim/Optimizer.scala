@@ -24,6 +24,7 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils._
 import com.intel.analytics.bigdl.visualization.{TrainSummary, ValidationSummary}
+import org.apache.log4j.Logger
 import org.apache.spark.rdd.RDD
 
 import scala.reflect.ClassTag
@@ -45,7 +46,9 @@ abstract class Optimizer[T: ClassTag, D](
   protected var criterion: Criterion[T])(implicit ev : TensorNumeric[T])
 {
   protected var state: Table = T()
-  protected var optimMethod: OptimMethod[T] = new SGD[T]()
+  // TODO: delete this one and change LocalOptimizer later
+  protected var optimMethod: OptimMethod[T] = new SGD()
+  protected var optimMethods: Map[String, OptimMethod[T]] = Map(model.getName -> new SGD())
   protected var endWhen: Trigger = Trigger.maxIteration(100)
 
   protected var checkpointTrigger: Option[Trigger] = None
@@ -227,11 +230,13 @@ abstract class Optimizer[T: ClassTag, D](
   }
 
   private def resetEpoch(): Unit = {
-    optimMethod.state.update("epoch", 1)
-    optimMethod.state.update("neval", 1)
-    optimMethod.state.update("Loss", Float.PositiveInfinity)
-    optimMethod.state.update("score", 0f)
-    optimMethod.state.update("recordsProcessedThisEpoch", 0)
+    optimMethods.foreach{ case (moduleName, optimMethod) =>
+      optimMethod.state.update("epoch", 1)
+      optimMethod.state.update("neval", 1)
+      optimMethod.state.update("Loss", Float.PositiveInfinity)
+      optimMethod.state.update("score", 0f)
+      optimMethod.state.update("recordsProcessedThisEpoch", 0)
+    }
   }
 
 
@@ -241,6 +246,17 @@ abstract class Optimizer[T: ClassTag, D](
    * @param newModel new model
    */
   def setModel(newModel: Module[T]): this.type = {
+    // Print some warning if model changed.
+    if (newModel.getName != model.getName()) {
+      Optimizer.logger.warn(s"New model's name ${newModel.getName()} doesn't" +
+        s" match the old model ${model.getName()}. Please set optimMethods for" +
+        s" this new model if needed.")
+      if (optimMethods.size == 1 && optimMethods.contains(model.getName())) {
+        Optimizer.logger.warn(s"Instead the old optimMethods pair automatically")
+        optimMethods = Map(newModel.getName() -> optimMethods(model.getName()))
+      }
+    }
+
     model = newModel
     model.checkDuplicate()
     // if a new Model is set, then reset "epoch", "neval" .etc.
@@ -317,7 +333,17 @@ abstract class Optimizer[T: ClassTag, D](
    * @param method optimization method
    */
   def setOptimMethod(method : OptimMethod[T]): this.type = {
-    this.optimMethod = method
+    this.optimMethods = Map(model.getName -> method)
+    this
+  }
+
+  /**
+   * Set optimization methods for each submodule.
+   *
+   * @param method A mapping of submodule -> OptimMethod
+   */
+  def setOptimMethods(method: Map[String, OptimMethod[T]]): this.type = {
+    this.optimMethods = method
     this
   }
 
@@ -394,6 +420,7 @@ abstract class Optimizer[T: ClassTag, D](
 }
 
 object Optimizer {
+  val logger: Logger = Logger.getLogger(getClass)
   private[bigdl] def header(epoch: Int, count: Int, total: Long, iter: Int, wallClockTime: Long)
   : String = {
     s"[Epoch $epoch $count/$total][Iteration $iter][Wall Clock ${wallClockTime / 1e9}s]"

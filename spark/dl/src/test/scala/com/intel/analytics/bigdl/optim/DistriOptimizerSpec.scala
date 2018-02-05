@@ -394,8 +394,9 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
     import com.intel.analytics.bigdl._
     plusOne = 1.0
     RandomGenerator.RNG.setSeed(10)
+    val model = cre
     val optimizer = new DistriOptimizer[Double](
-      cre,
+      model,
       dataSet,
       new ClassNLLCriterion[Double]()
     )
@@ -406,7 +407,7 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
     val numIterations = dataSet.data(train = false).count() / nodeNumber + 1
     val optimMethod = OptimMethod.load[Double](optimizer.getCheckpointPath().get +
-      s"/optimMethod.$numIterations")
+      s"/optimMethod-${model.getName()}.$numIterations")
 
     optimMethod.state.get[Int]("epoch").get should be (2)
     optimMethod.state.get[Int]("neval").get should be (numIterations)

@@ -906,6 +906,9 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
   final private[bigdl] def getParameters(): (Tensor[T], Tensor[T]) = {
     val (weightParameters, gradParameters) = this.parameters()
 
+    // maybe null if not weights in this module.
+    require(weightParameters != null, s"model ${this.getName()} doesn't have any parameters.")
+
     // If some gradParameters are not allocated storage, allocate it
     require(weightParameters.size == gradParameters.size,
       "weights and gradient number are not match")

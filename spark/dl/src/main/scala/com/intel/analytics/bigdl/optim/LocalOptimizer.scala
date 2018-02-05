@@ -48,7 +48,7 @@ class LocalOptimizer[T: ClassTag] (
     model, dataset, criterion) {
 
   import LocalOptimizer._
-  import Optimizer._
+  import Optimizer.{header, saveModel, saveState}
 
   private val coreNumber = Engine.coreNumber()
 
