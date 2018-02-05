@@ -44,6 +44,10 @@ abstract class Recurrent[T: ClassTag](
     else Shape(input(0), outputDim)
   }
 
+  def cell(input: Array[Int]): Cell[T] = {
+    throw new RuntimeException("Recurrent cell haven't been implemented yet.")
+  }
+
   def processParameters(rnn: Cell[T]): AbstractModule[Tensor[T], Tensor[T], T] = {
     val model = TSequential[T]()
     if (goBackwards) model.add(Reverse(2))
