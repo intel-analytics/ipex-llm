@@ -1,6 +1,6 @@
 It's recommended to use protobuffer based serialization method `saveModule` when you want to persist your trained
 models or models loaded from third party frameworks, details could be found from [Module API](../../APIGuide/Module.md).
-This article illustrates the implementations how to implement customized serializer for your layers
+This article illustrates the implementations and how to implement customized serializer for your layers
 
 ### BigDL serialziation hierarchy
 Below is the class hierarchy for the serialization framework
