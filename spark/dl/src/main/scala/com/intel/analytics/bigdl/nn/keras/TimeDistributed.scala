@@ -30,6 +30,8 @@ class TimeDistributed[T: ClassTag](
 
   override def computeOutputShape(inputShape: Shape): Shape = {
     val input = inputShape.toSingle().toArray
+    require(input.length >=3,
+      s"TimeDistributed requires at least 3D input, but got input dim ${input.length}")
     val innerInput = Array(input(0)) ++ input.slice(2, input.length)
     val seq = Sequential[T]()
     seq.add(InputLayer(inputShape = KerasLayer.removeBatch(Shape(innerInput))))
