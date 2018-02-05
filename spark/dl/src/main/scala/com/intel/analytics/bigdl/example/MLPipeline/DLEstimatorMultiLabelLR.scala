@@ -15,7 +15,7 @@
  */
 package com.intel.analytics.bigdl.example.MLPipeline
 
-import com.intel.analytics.bigdl.dlframe.DLEstimator
+import com.intel.analytics.bigdl.dlframes.DLEstimator
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.optim.LBFGS
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericDouble

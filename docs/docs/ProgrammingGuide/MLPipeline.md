@@ -10,7 +10,7 @@ pattern, thus users can conveniently fit BigDL into a ML pipeline. The fitted mo
 Alternatively users may also construct a `DLModel` with a pre-trained BigDL model to use it in
 Spark ML Pipeline for prediction. We are going to show you how to define a DLEstimator and
 DLClassifier and how to use it. For advanced users, please check our
-[ML Pipeline API](../APIGuide/DLFrame/DLEstimator_DLClassifier.md) for detailed usage.
+[ML Pipeline API](../APIGuide/DLFrames/DLEstimator_DLClassifier.md) for detailed usage.
 
 
 ---

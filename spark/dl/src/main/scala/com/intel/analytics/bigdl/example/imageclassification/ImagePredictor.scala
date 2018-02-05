@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.example.imageclassification
 import java.nio.file.Paths
 
 import com.intel.analytics.bigdl.dataset.image._
-import com.intel.analytics.bigdl.dlframe.DLClassifierModel
+import com.intel.analytics.bigdl.dlframes.DLClassifierModel
 import com.intel.analytics.bigdl.example.imageclassification.MlUtils._
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.utils.{Engine, LoggerFilter}

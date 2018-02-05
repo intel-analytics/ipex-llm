@@ -34,7 +34,7 @@ import java.lang.{Integer, Boolean => JBoolean}
 import java.nio.ByteOrder
 import java.util
 
-import com.intel.analytics.bigdl.dlframe.{DLClassifier, DLClassifierModel, DLEstimator, DLModel}
+import com.intel.analytics.bigdl.dlframes.{DLClassifier, DLClassifierModel, DLEstimator, DLModel}
 import com.intel.analytics.bigdl.nn.Graph._
 import com.intel.analytics.bigdl.nn.tf.{Const, Fill, SplitAndSelect, Shape => TfShape}
 import com.intel.analytics.bigdl.optim.SGD.{LearningRateSchedule, SequentialSchedule}

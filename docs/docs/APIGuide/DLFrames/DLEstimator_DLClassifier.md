@@ -103,7 +103,7 @@ object DLEstimatorMultiLabelLR {
 from bigdl.nn.layer import *
 from bigdl.nn.criterion import *
 from bigdl.util.common import *
-from bigdl.dlframe.dl_classifier import *
+from bigdl.dlframes.dl_classifier import *
 from pyspark.sql.types import *
 from pyspark.context import SparkContext
 
@@ -188,7 +188,7 @@ and the fitted
 
 **Scala example:**
 ```scala
-import com.intel.analytics.bigdl.dlframe.DLClassifier
+import com.intel.analytics.bigdl.dlframes.DLClassifier
 import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, Linear, LogSoftMax, Sequential}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
 import com.intel.analytics.bigdl.utils.Engine
@@ -231,7 +231,7 @@ object DLClassifierLogisticRegression {
 from bigdl.nn.layer import *
 from bigdl.nn.criterion import *
 from bigdl.util.common import *
-from bigdl.dlframe.dl_classifier import *
+from bigdl.dlframes.dl_classifier import *
 from pyspark.sql.types import *
 from pyspark.context import SparkContext
 

@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.example.MLPipeline
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dataset.image.{BytesToGreyImg, GreyImgNormalizer, GreyImgToBatch}
 import com.intel.analytics.bigdl.dataset.{DataSet, DistributedDataSet, MiniBatch, _}
-import com.intel.analytics.bigdl.dlframe.DLClassifier
+import com.intel.analytics.bigdl.dlframes.DLClassifier
 import com.intel.analytics.bigdl.models.lenet.LeNet5
 import com.intel.analytics.bigdl.models.lenet.Utils._
 import com.intel.analytics.bigdl.nn.ClassNLLCriterion

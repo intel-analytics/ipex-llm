@@ -15,7 +15,7 @@
  */
 package com.intel.analytics.bigdl.example.MLPipeline
 
-import com.intel.analytics.bigdl.dlframe.DLClassifier
+import com.intel.analytics.bigdl.dlframes.DLClassifier
 import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, Linear, LogSoftMax, Sequential}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
 import com.intel.analytics.bigdl.utils.Engine
