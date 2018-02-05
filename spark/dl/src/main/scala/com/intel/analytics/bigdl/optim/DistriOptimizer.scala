@@ -390,9 +390,6 @@ object DistriOptimizer {
               optimMethod.state.update("score", driverState[Float]("score"))
             }
 
-            if (!parameters.contains(name)) {
-              println()
-            }
             val p = parameters(name)._3
             optimMethod.optimize(_ => (ev.fromType(value), p.gradientPartition),
               p.weightPartition)
@@ -961,7 +958,8 @@ class DistriOptimizer[T: ClassTag] (
         AllReduceParameter.newParameter[T](partitionNum, modelParameters._1.nElement()
         )))
     } else {
-      throw new IllegalArgumentException(s"optimMethods")
+      throw new IllegalArgumentException(s"${model.getName()} doesn't " +
+        s"have corresponding OptimMethod")
     }
 
     prepareInput()
