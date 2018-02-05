@@ -566,8 +566,6 @@ object ResNet {
         case spatialBatchNormalization
           if (spatialBatchNormalization.isInstanceOf[SpatialBatchNormalization[Float]]) =>
           val curModel = spatialBatchNormalization.asInstanceOf[SpatialBatchNormalization[Float]]
-          curModel.weight.apply1(_ => 1.0f)
-          curModel.bias.apply1(_ => 0.0f)
         case linear if (linear.isInstanceOf[Linear[Float]]) =>
           linear.asInstanceOf[Linear[Float]].bias.apply1(_ => 0.0f)
         case _ => Unit

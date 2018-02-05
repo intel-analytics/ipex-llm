@@ -354,8 +354,8 @@ class LinearSpec extends FlatSpec with Matchers {
     println(nnCosts)
     println(speedup(nnCosts, costs))
     println("-" * 80)
-    println(linear.computing / 1e9)
-    println(linear.aggregating / 1e9)
+//    println(linear.computing / 1e9)
+//    println(linear.aggregating / 1e9)
 
     linear.gradWeight should be (nnLinear.gradWeight)
     linear.gradBias should be (nnLinear.gradBias)
@@ -393,8 +393,8 @@ class LinearSpec extends FlatSpec with Matchers {
     } _
 
     nnTime(warm)
-    linear.computing = 0.0
-    linear.aggregating = 0.0
+//    linear.computing = 0.0
+//    linear.aggregating = 0.0
     val (nnCosts, _) = nnTime(iters)
     time(warm)
     val (costs, _) = time(iters)
@@ -405,8 +405,8 @@ class LinearSpec extends FlatSpec with Matchers {
     println(speedup(nnCosts, costs))
 
     println("-" * 80)
-    println(linear.computing / 1e9)
-    println(linear.aggregating / 1e9)
+//    println(linear.computing / 1e9)
+//    println(linear.aggregating / 1e9)
 
     nnCosts should be > costs
   }

@@ -55,7 +55,7 @@ class MklDnnTensor[T: ClassTag](
     ptr
   }
 
-  def nativeStorage: Long = _pointer
+  def ptr: Long = _pointer
   def release(): Unit = {
     if (_pointer != NullPtr) {
       Memory.AlignedFree(_pointer)
@@ -132,9 +132,9 @@ object MklDnnTensor {
     new MklDnnTensor[T](null, 0, null, null, 0)
   }
 
-  val DEBUG = false
+  val DEBUG = true
   def syncToHeap[T: ClassTag](dnnTensor: MklDnnTensor[T], heap: Array[T], offset: Int): Unit = {
-    require(dnnTensor.nativeStorage != 0, s"native storage has not been allocated")
+    require(dnnTensor.ptr != 0, s"native storage has not been allocated")
     def toFloat(array: Array[T]): Array[Float] = array.asInstanceOf[Array[Float]]
     println("convert from native storage -> heap array")
     if (DEBUG) {
@@ -144,12 +144,12 @@ object MklDnnTensor {
         }
       }
     }
-    Memory.CopyPtr2Array(dnnTensor.nativeStorage, 0, toFloat(heap), offset,
+    Memory.CopyPtr2Array(dnnTensor.ptr, 0, toFloat(heap), offset,
       dnnTensor.nElement(), dnnTensor.ELEMENT_SIZE)
   }
 
   def syncFromHeap[T: ClassTag](dnnTensor: MklDnnTensor[T], heap: Array[T], offset: Int): Unit = {
-    require(dnnTensor.nativeStorage != 0, s"native storage has not been allocated")
+    require(dnnTensor.ptr != 0, s"native storage has not been allocated")
     def toFloat(array: Array[T]): Array[Float] = array.asInstanceOf[Array[Float]]
     println("sync from heap array -> native storage")
     if (DEBUG) {
@@ -160,6 +160,6 @@ object MklDnnTensor {
       }
     }
     Memory.CopyArray2Ptr(toFloat(heap), offset,
-      dnnTensor.nativeStorage, 0, dnnTensor.nElement(), dnnTensor.ELEMENT_SIZE)
+      dnnTensor.ptr, 0, dnnTensor.nElement(), dnnTensor.ELEMENT_SIZE)
   }
 }
