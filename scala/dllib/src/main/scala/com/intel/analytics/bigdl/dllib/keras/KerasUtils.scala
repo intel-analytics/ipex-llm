@@ -64,4 +64,28 @@ object KerasUtils {
     }
   }
 
+  private[keras] def computeConvOutputLength(
+    inputLength: Int,
+    filterSize: Int,
+    borderMode: String,
+    stride: Int,
+    dilation: Int = 1): Int = {
+    val dilatedFilterSize = filterSize + (filterSize - 1) * (dilation - 1)
+    val outputLength = borderMode match {
+      case "valid" => inputLength - dilatedFilterSize + 1
+      case "same" => inputLength
+    }
+    (outputLength + stride - 1) / stride
+  }
+
+  private[keras] def getPadsFromBorderMode3D
+  (borderMode: String = "valid"): (Int, Int, Int) = {
+    if (borderMode == "same") {
+      // padT, padH, padW
+      (-1, -1, -1)
+    } else {
+      (0, 0, 0)
+    }
+  }
+
 }
