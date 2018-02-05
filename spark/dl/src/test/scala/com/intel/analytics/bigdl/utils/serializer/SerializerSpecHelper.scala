@@ -44,7 +44,7 @@ abstract class SerializerSpecHelper extends FlatSpec with Matchers with BeforeAn
 
   private var executedCount = 0
 
-  protected def getPackage(): String
+  protected def getPackage(): String = ""
 
   protected def addExcludedClass(): Unit = {}
 
