@@ -2993,6 +2993,10 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     sc.parallelize(Seq(""), Engine.coreNumber() * Engine.nodeNumber())
       .foreachPartition(_ => Engine.createJavaGateway(driverPort))
   }
+
+  def createDatasetFromImageFrame(imageFrame: ImageFrame): DataSet[ImageFeature] = {
+    DataSet.imageFrame(imageFrame)
+  }
 }
 
 object PythonBigDLUtils {
