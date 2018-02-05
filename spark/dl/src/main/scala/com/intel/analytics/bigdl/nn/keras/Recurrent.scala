@@ -28,8 +28,6 @@ import scala.reflect.ClassTag
  * This is the abstract base class for recurrent layers.
  * Do not create a new instance of it or use it in a model.
  * Please use its child classes, 'SimpleRNN', 'LSTM' and 'GRU' instead.
- *
- * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now
  */
 abstract class Recurrent[T: ClassTag](
    val outputDim: Int,
