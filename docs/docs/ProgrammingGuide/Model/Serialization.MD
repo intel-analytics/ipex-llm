@@ -1,15 +1,46 @@
 It's recommended to use protobuffer based serialization method `saveModule` when you want to persist your trained
 models or models loaded from third party frameworks, details could be found from [Module API](../../APIGuide/Module.md).
-This article illustrates how to implement customized serializer for your layers
+This article illustrates the implementations how to implement customized serializer for your layers
 
 ### BigDL serialziation hierarchy
 Below is the class hierarchy for the serialization framework
- 
+
+                         Loadable       Savable
+                             .              .
+                             .              .
+                             ................
+                                     .
+                                     .
+                            ModuleSerializable
+                                     .
+                                     .
+            ........................................................................
+            .               .              .                       .               . 
+            .               .              .                       .               .
+     ModuleSerializer CellSerializer  ContainerSerializable   KerasSerializer  [UserDefinedSerializer]
+                                           .
+                                           .
+                               ..........................
+                               .                        .
+                               .                        .
+                         ContainerSerializer  [UserDefinedContainerSerializder] 
+                                        
+                                  
+                             
         
+ 
+ * ModuleSerializabel: abstract class to define serialization methods and provide a default implementation
+ * ModuleSerializer: entry for all layers' serializers
+ * CellSerializer: Default implementation for RNN cell modules
+ * ContainerSerializable: Abstract class for container serializers like Sequential and provide a default implementation
+ * ContainerSerializer: Default serializer for containers
+ * KerasSerializer: Keras adapter serializer implementation for keras compatible layers
+ 
+ Users can extend ModuleSerializable or ContainerSerializable to implement optional serializers for your own layer or containers
  
 ### Supported data types
 
-Please is the data types supported in serialization
+Below is the data types supported in serialization
 
 * Int
 * Long
@@ -68,7 +99,7 @@ As described above, BigDL provides a default serializer which works for most lay
 for these layers. But there are some layers which is not stateless (Note : `stateless` here means except for parameters like weight and bias,
  and fields from layer constructor, there are no other fields that their values could change and the layer will behavior differently with these values)
  
- To implement a customized serializer is straitforward, you just need to define a new serializer by extending trait `ModuleSerializable` For most cases, you
+ To implement a customized serializer is straightforward, you just need to define a new serializer by extending trait `ModuleSerializable` For most cases, you
  just need to override two methods
  
  `doSerializeModule` defines how you serialize the stateful variables (besides weights and bias), if you layer has construct fields types of which are supported 
@@ -94,4 +125,7 @@ The only thing you want to enable your serializer is to register it in `ModuleSe
 def registerModule(moduleType : String, serializer : ModuleSerializable) : Unit 
 ```
 
-`ModuleType` is the full classpath of your layer and the serializer is the serializer object you just defined 
+`ModuleType` is the full classpath of your layer and the serializer is the serializer object you just defined
+
+Similarly,  if you want to define a new serializer for your containers, you just need to define your own serializer by 
+extending `ContainerSerializable` and override the same two methods above
