@@ -108,26 +108,19 @@ abstract class FeatureTransformer()
   }
 
   /**
-   * if true, catch the exception of the transformer to avoid crashing.
-   * if false, interrupt the transformer when error happens
-   */
-  private[image] def setIgnoreException(ignore: Boolean = true): this.type = {
-    ignoreException = ignore
-    this
-  }
-
-  /**
    * catch the exception of the transformer to avoid crashing.
    */
   def enableIgnoreException(): this.type = {
-    setIgnoreException(true)
+    ignoreException = true
+    this
   }
 
   /**
    * interrupt the transformer when error happens
    */
   def disableIgnoreException(): this.type = {
-    setIgnoreException(false)
+    ignoreException = false
+    this
   }
 }
 
@@ -145,19 +138,15 @@ class ChainedFeatureTransformer(first: FeatureTransformer, last: FeatureTransfor
     last.transform(first.transform(prev))
   }
 
-  override def setIgnoreException(skip: Boolean = true): this.type = {
-    first match {
-      case ctr: ChainedFeatureTransformer =>
-        ctr.setIgnoreException(skip)
-      case _ =>
-        first.setIgnoreException(skip)
-    }
-    last match {
-      case ctr: ChainedFeatureTransformer =>
-        ctr.setIgnoreException(skip)
-      case _ =>
-        last.setIgnoreException(skip)
-    }
+  override def enableIgnoreException(): this.type = {
+    first.enableIgnoreException()
+    last.enableIgnoreException()
+    this
+  }
+
+  override def disableIgnoreException(): this.type = {
+    first.disableIgnoreException()
+    last.disableIgnoreException()
     this
   }
 }

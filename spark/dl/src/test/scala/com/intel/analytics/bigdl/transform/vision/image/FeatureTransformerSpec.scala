@@ -90,7 +90,7 @@ class FeatureTransformerSpec extends FlatSpec with Matchers {
     resize.ignoreException should be (false)
     toFloats.ignoreException should be (false)
 
-    imgAug.setIgnoreException(true)
+    imgAug.enableIgnoreException()
     crop.ignoreException should be (true)
     resize.ignoreException should be (true)
     toFloats.ignoreException should be (true)
