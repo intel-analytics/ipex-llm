@@ -389,6 +389,14 @@ class ModuleSerializerSpec extends SerializerSpecHelper {
     runSerializationTest(cropping3d, input)
   }
 
+  "CrossProduct serializer" should "work properly" in {
+    val crossProd = CrossProduct[Float]()
+    val input = T(Tensor[Float](T(1.0f, 2.0f)),
+      Tensor[Float](T(2.0f, 3.0f)), Tensor[Float](T(3.0f, 4.0f)))
+    runSerializationTest(crossProd, input)
+  }
+
+
   "CSubTable serializer" should "work properly" in {
     val csubTable = CSubTable[Float]().setName("csubTable")
 

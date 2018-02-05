@@ -17,7 +17,7 @@
 package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.{T, Table}
+import com.intel.analytics.bigdl.utils.T
 import org.scalatest.{FlatSpec, Matchers}
 
 class CrossProductSpec extends FlatSpec with Matchers {
@@ -78,16 +78,20 @@ class CrossProductSpec extends FlatSpec with Matchers {
 
   "A CrossProduct" should "thrown Exceptions when inputs are invalid" in {
     intercept[java.lang.IllegalArgumentException] {
-      CrossProduct[Float](numTensor = Some(2)).updateOutput(input1D)
+      CrossProduct[Float](numTensor = 2).updateOutput(input1D)
     }
     intercept[java.lang.IllegalArgumentException] {
-      CrossProduct[Float](embeddingSize = Some(9)).updateOutput(input1D)
+      CrossProduct[Float](embeddingSize = 9).updateOutput(input1D)
     }
   }
 
   "A CrossProduct.updateOutput" should "work correctly" in {
     val module = CrossProduct[Float]()
-    var output = module.forward(input1D)
+    var output = module.forward(
+      T(Tensor[Float](T(1.5f, 2.5f)), Tensor[Float](T(1.5f, 3.0f))))
+    output.storage().toArray shouldEqual Array(9.75f)
+
+    output = module.forward(input1D)
     output.size() shouldEqual Array(1, 6)
     output.storage().array() shouldEqual Array(9f, 10f, 25f, 18f, 45f, 50f)
 
@@ -97,7 +101,7 @@ class CrossProductSpec extends FlatSpec with Matchers {
   }
 
   "A CrossProduct.updateGradInput" should "work correctly" in {
-    val module = CrossProduct[Float]()
+    var module = CrossProduct[Float]()
     var gradIn = module.backward(input1D, gradOut1D)
     gradIn[Tensor[Float]](1).toArray() shouldEqual Array(22f, 41f)
     gradIn[Tensor[Float]](2).toArray() shouldEqual Array(27f, 54f)
@@ -114,6 +118,9 @@ class CrossProductSpec extends FlatSpec with Matchers {
     t = gradIn[Tensor[Float]](3)
     t.select(1, 1).toArray() shouldEqual Array(11, 26, 34)
     t.select(1, 2).toArray() shouldEqual Array(22, 22, 44)
+
+    module = CrossProduct[Float](propagateBack = false)
+    module.backward(input1D, gradOut1D).getState().isEmpty shouldEqual true
   }
 
 }

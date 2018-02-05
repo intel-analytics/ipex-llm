@@ -24,23 +24,37 @@ import com.intel.analytics.bigdl.utils.{T, Table}
 import scala.reflect.ClassTag
 
 /**
+ * A layer which takes a table of multiple tensors(n >= 2) as input
+ * and calculate to dot product for `all combinations of pairs` among input tensors.
+ * <br><br>
+ * Dot-product outputs are ordered according to orders of pairs in input Table.
+ * For instance, input (Table) is T(A, B, C), output (Tensor) will be [A.*B, A.*C, B.*C].
+ * <br><br>
+ * Dimensions of input' Tensors could be one or two, if two, first dimension is `batchSize`.
+ * For convenience, output is 2-dim Tensor regardless of input' dims.
+ * <br><br>
+ * Table size checking and Tensor size checking will be execute before each forward,
+ * when [[numTensor]] and [[embeddingSize]] are set values greater than zero.
  *
+ * @param propagateBack whether updateGradInput during backward, default: true
+ * @param numTensor (for checking)number of Tensor input Table contains, default: None
+ * @param embeddingSize (for checking)vector length of dot product, default: None
  */
 class CrossProduct[T: ClassTag](
-  isBackProp: Boolean = true,
-  numTensor: Option[Int] = None,
-  embeddingSize: Option[Int] = None
+  val propagateBack: Boolean = true,
+  val numTensor: Int = 0,
+  val embeddingSize: Int = 0
 )(implicit ev: TensorNumeric[T]) extends AbstractModule[Table, Tensor[T], T] {
 
   override def updateOutput(input: Table): Tensor[T] = {
     val len = input.length()
-    require(numTensor.isEmpty || numTensor.get == len,
-      s"len of input Table($len) not equal to numTensor(${numTensor.get})!")
+    require(numTensor <= 0 || numTensor == len,
+      s"len of input Table($len) not equal to numTensor($numTensor)!")
 
     val (_, batch, _) = getShape(input[Tensor[T]](1))
     output.resize(batch, len * (len - 1) / 2)
 
-    if (embeddingSize.nonEmpty) {
+    if (embeddingSize > 0) {
       (1 to len).foreach(i => checkEmbeddingSize(input(i)))
     }
 
@@ -57,7 +71,7 @@ class CrossProduct[T: ClassTag](
   override def updateGradInput(input: Table, gradOutput: Tensor[T]): Table = {
     gradInput = T()
 
-    if (isBackProp) {
+    if (propagateBack) {
       val (len, gout) = input.length() -> gradOutput
       require(gout.dim() == 2, s"invalid dim of gradOutput(${gout.dim()})!")
 
@@ -76,6 +90,7 @@ class CrossProduct[T: ClassTag](
             input[Tensor[T]](i) -> input[Tensor[T]](j)
         }
 
+        // get cc_th column data from total gradOut
         val go = gout.narrow(2, cc, 1)
 
         val jInc = Tensor[T]().resizeAs(ti).copy(ti).cmul(go)
@@ -101,8 +116,8 @@ class CrossProduct[T: ClassTag](
 
   protected def checkEmbeddingSize(t: Tensor[T]): Unit = {
     val size = if (t.dim() == 1) t.size(1) else t.size(2)
-    require(embeddingSize.isEmpty || embeddingSize.get == size,
-      s"size of input Tensor($size) not equal to embeddingSize(${embeddingSize.get})!")
+    require(embeddingSize <= 0 || embeddingSize == size,
+      s"size of input Tensor($size) not equal to embeddingSize($embeddingSize)!")
   }
 
   protected def dot(t1: Tensor[T], t2: Tensor[T]): Tensor[T] = {
@@ -130,14 +145,15 @@ class CrossProduct[T: ClassTag](
 }
 
 object CrossProduct {
+
   def apply[T: ClassTag]()(implicit ev: TensorNumeric[T]): CrossProduct[T] = new CrossProduct[T]()
 
   def apply[T: ClassTag](
-    backProp: Boolean = true,
-    numTensor: Option[Int] = None,
-    embeddingSize: Option[Int] = None
+    propagateBack: Boolean = true,
+    numTensor: Int = 0,
+    embeddingSize: Int = 0
   )(implicit ev: TensorNumeric[T]): CrossProduct[T] = {
-    new CrossProduct(backProp, numTensor, embeddingSize)
+    new CrossProduct(propagateBack, numTensor, embeddingSize)
   }
-}
 
+}
