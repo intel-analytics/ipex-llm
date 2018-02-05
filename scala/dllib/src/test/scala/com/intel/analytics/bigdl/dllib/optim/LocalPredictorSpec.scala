@@ -22,11 +22,11 @@ import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.dataset.{PaddingParam, Sample, SampleToMiniBatch}
 import com.intel.analytics.bigdl.models.inception.Inception_v1_NoAuxClassifier
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
-import com.intel.analytics.bigdl.nn.{Sequential, SpatialConvolution, Tanh}
+import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.transform.vision.image._
 import com.intel.analytics.bigdl.transform.vision.image.augmentation.{CenterCrop, ChannelNormalize, Resize}
-import com.intel.analytics.bigdl.utils.{Engine, MklBlas, Util}
+import com.intel.analytics.bigdl.utils.{Engine, MklBlas, Table, Util}
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import org.apache.commons.io.FileUtils
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
@@ -274,5 +274,33 @@ class LocalPredictorSpec extends FlatSpec with Matchers with BeforeAndAfter {
       batchResult
     }).toArray.flatten
 
+  }
+
+  "predictImage with table output" should "work properly" in {
+    import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+    RNG.setSeed(100)
+    val resource = getClass.getClassLoader.getResource("pascal/")
+    val ims = (1 to 50).map(x => {
+      val im = ImageFeature()
+      im(ImageFeature.uri) = x.toString
+      im(ImageFeature.imageTensor) = Tensor[Float](3, 24, 24).randn()
+      im
+    })
+
+    val imageFrame = ImageFrame.array(ims.toArray) -> ImageFrameToSample()
+    val input = Input()
+    val conv = SpatialConvolution(3, 6, 5, 5).inputs(input)
+    val out1 = Tanh().inputs(conv)
+    val out2 = ReLU().inputs(conv)
+    val model = Graph(input, Array(out1, out2))
+    val detection = model.predictImage(imageFrame).toLocal()
+    val feature = detection.array.head
+
+    val imageFeatures = detection.array
+    (1 to 20).foreach(x => {
+      imageFeatures(x - 1).uri() should be (x.toString)
+      assert(imageFeatures(x - 1).predict() != null)
+      assert(imageFeatures(x - 1).predict().asInstanceOf[Table].length() == 2)
+    })
   }
 }

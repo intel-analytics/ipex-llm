@@ -23,7 +23,9 @@ import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.transform.vision.image.{DistributedImageFrame, ImageFeature, ImageFrame}
+import com.intel.analytics.bigdl.utils.{T, Table}
 import org.apache.spark.rdd.RDD
+import Predictor._
 
 import scala.reflect.ClassTag
 
@@ -53,21 +55,69 @@ object Predictor {
   (localModel: Module[T], samples: Seq[Sample[T]],
     localToBatch: Transformer[Sample[T], MiniBatch[T]],
     shareBuffer: Boolean,
-    outputLayer: String = null)(implicit ev: TensorNumeric[T]): Iterator[Tensor[T]] = {
+    outputLayer: String = null)(implicit ev: TensorNumeric[T]): Iterator[Activity] = {
+    val layer = if (outputLayer == null) {
+      localModel
+    } else {
+      val ol = localModel(outputLayer)
+      require(ol.isDefined, s"cannot find layer that map name $outputLayer")
+      ol.get
+    }
     localToBatch(samples.toIterator).flatMap(batch => {
       localModel.forward(batch.getInput())
-      val output = if (outputLayer == null) {
-        localModel.output.toTensor[T]
-      } else {
-        localModel(outputLayer).get.output.toTensor[T]
-      }
-      val result = if (shareBuffer) output else output.clone()
+      splitBatch[T](layer.output, shareBuffer, batch.size())
+    })
+  }
+
+  private[optim] def splitBatch[T: ClassTag](output: Activity, shareBuffer: Boolean, batchSize: Int)
+    (implicit ev: TensorNumeric[T]): Array[Activity] = {
+    val out = if (output.isTensor) {
+      val result = if (shareBuffer) output.toTensor[T] else output.toTensor[T].clone()
       if (result.dim() == 1) {
+        require(batchSize == 1,
+          s"If result dim == 1, the batchSize is required to be 1, while actual is $batchSize")
         Array(result)
       } else {
         result.split(1)
       }
-    })
+    } else {
+      val result = output.toTable
+      val first = result[Tensor[T]](1)
+      if (first.dim() == 1) {
+        require(batchSize == 1,
+          s"If result dim == 1, the batchSize is required to be 1, while actual is $batchSize")
+        val table = if (shareBuffer) {
+          result
+        } else {
+          val table = T()
+          (1 to result.length()).foreach(key => {
+            table.insert(result[Tensor[T]](key).clone())
+          })
+          table
+        }
+        Array(table)
+      } else {
+        val batch = first.size(1)
+        require(batch == batchSize, s"output batch $batch is not equal to input batch $batchSize")
+        val tables = new Array[Table](batch)
+        var i = 1
+        while (i <= batch) {
+          val table = T()
+          tables(i - 1) = table
+          (1 to result.length()).foreach(key => {
+            val split = result[Tensor[T]](key)(i)
+            if (shareBuffer) {
+              table.insert(split)
+            } else {
+              table.insert(split.clone())
+            }
+          })
+          i += 1
+        }
+        tables
+      }
+    }
+    out.asInstanceOf[Array[Activity]]
   }
 }
 
@@ -115,12 +165,8 @@ class Predictor[T: ClassTag] private[optim](
       val localTransformer = otherBroad.value.cloneTransformer()
       val miniBatch = localTransformer(partition)
       miniBatch.flatMap( batch => {
-        val output = localModel.forward(batch.getInput).toTensor[T]
-        if (shareBuffer) {
-          output.split(1)
-        } else {
-          output.clone().split(1)
-        }
+        val output = localModel.forward(batch.getInput)
+        splitBatch(output, shareBuffer, batch.size())
       })
     }
   }
