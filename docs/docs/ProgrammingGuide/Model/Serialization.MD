@@ -29,7 +29,7 @@ Below is the class hierarchy for the serialization framework
                              
         
  
- * ModuleSerializabel: abstract class to define serialization methods and provide a default implementation
+ * ModuleSerializable: abstract class to define serialization methods and provide a default implementation
  * ModuleSerializer: entry for all layers' serializers
  * CellSerializer: Default implementation for RNN cell modules
  * ContainerSerializable: Abstract class for container serializers like Sequential and provide a default implementation
