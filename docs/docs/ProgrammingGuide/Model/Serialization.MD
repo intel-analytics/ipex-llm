@@ -23,7 +23,7 @@ Below is the class hierarchy for the serialization framework
                                ..........................
                                .                        .
                                .                        .
-                         ContainerSerializer  [UserDefinedContainerSerializder] 
+                         ContainerSerializer  [UserDefinedContainerSerializer] 
                                         
                                   
                              
@@ -40,7 +40,7 @@ Below is the class hierarchy for the serialization framework
  
 ### Supported data types
 
-Below is the data types supported in serialization
+Below are the data types supported in serialization
 
 * Int
 * Long
@@ -96,11 +96,9 @@ def registerConverter(tpe : String, converter : DataConverter) : Unit
 ### Implement customized serializer
 
 As described above, BigDL provides a default serializer which works for most layers, thus we don't need to write serializer
-for these layers. But there are some layers which is not stateless (Note : `stateless` here means except for parameters like weight and bias,
- and fields from layer constructor, there are no other fields that their values could change and the layer will behavior differently with these values)
+for these layers. But there are some layers which are not stateless (Note : `stateless` here means except for parameters like weight and bias, and fields from layer constructor, there are no other fields that their values could change and the layer will behavior differently with these values)
  
- To implement a customized serializer is straightforward, you just need to define a new serializer by extending trait `ModuleSerializable` For most cases, you
- just need to override two methods
+ To implement a customized serializer is straightforward, you just need to define a new serializer by extending trait `ModuleSerializable` For most cases, you just need to override two methods
  
  `doSerializeModule` defines how you serialize the stateful variables (besides weights and bias), if you layer has construct fields types of which are supported 
  by BigDL, you don't even need to explicitly manage then, you could just call `super.doSerializeModule(context, bigDLModelBuilder)` instead for these values.
