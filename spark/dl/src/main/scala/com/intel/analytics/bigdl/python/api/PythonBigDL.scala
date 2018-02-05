@@ -2981,6 +2981,10 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     maxIteration: Int): SequentialSchedule = {
     seq.add(scheduler, maxIteration)
   }
+
+  def createDatasetFromImageFrame(imageFrame: ImageFrame): DataSet[ImageFeature] = {
+    DataSet.imageFrame(imageFrame)
+  }
 }
 
 object PythonBigDLUtils {
