@@ -110,5 +110,35 @@ class KerasModuleSerializerSpec extends SerializerSpecHelper {
     runSerializationTest(layer, input)
   }
 
+  "SimpleRNN serializer" should "work properly" in {
+    val layer = SimpleRNN[Float](8, activation = "relu", inputShape = Shape(4, 5))
+    layer.build(Shape(3, 4, 5))
+    val input = Tensor[Float](3, 4, 5).apply1(_ => Random.nextFloat())
+    runSerializationTest(layer, input)
+  }
+
+  "LSTM serializer" should "work properly" in {
+    val layer = LSTM[Float](8, returnSequences = true,
+      innerActivation = "sigmoid", inputShape = Shape(32, 32))
+    layer.build(Shape(3, 32, 32))
+    val input = Tensor[Float](3, 32, 32).apply1(_ => Random.nextFloat())
+    runSerializationTest(layer, input)
+  }
+
+  "GRU serializer" should "work properly" in {
+    val layer = GRU[Float](16, returnSequences = true,
+      goBackwards = true, inputShape = Shape(28, 32))
+    layer.build(Shape(2, 28, 32))
+    val input = Tensor[Float](2, 28, 32).apply1(_ => Random.nextFloat())
+    runSerializationTest(layer, input)
+  }
+
+  "Highway serializer" should "work properly" in {
+    val layer = Highway[Float](activation = "tanh", bias = false, inputShape = Shape(4))
+    layer.build(Shape(3, 4))
+    val input = Tensor[Float](3, 4).apply1(_ => Random.nextFloat())
+    runSerializationTest(layer, input)
+  }
+
 }
 
