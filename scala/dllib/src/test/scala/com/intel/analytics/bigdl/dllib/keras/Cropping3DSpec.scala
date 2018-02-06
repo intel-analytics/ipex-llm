@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.keras
 
 import com.intel.analytics.bigdl.nn.{Cropping2D, _}
 import com.intel.analytics.bigdl.nn.abstractnn.DataFormat
+import com.intel.analytics.bigdl.utils.{Shape, TestUtils}
 
 class Cropping3DSpec extends KerasBaseSpec {
   "Cropping3D" should "with CHANNEL_FIRST work properly" in {
@@ -44,6 +45,16 @@ class Cropping3DSpec extends KerasBaseSpec {
       """.stripMargin
     val model = Cropping3D[Float](Array(1, 1), Array(1, 1), Array(1, 1), Cropping3D.CHANNEL_LAST)
     checkOutputAndGrad(model, kerasCode)
+  }
+
+  "Cropping3D computeOutputShape CHANNEL_FIRST" should "work properly" in {
+    val layer = Cropping3D[Float](Array(2, 3), Array(2, 4), Array(1, 2))
+    TestUtils.compareOutputShape(layer, Shape(3, 24, 28, 32)) should be (true)
+  }
+
+  "Cropping3D computeOutputShape CHANNEL_LAST" should "work properly" in {
+    val layer = Cropping3D[Float](Array(1, 3), Array(2, 1), Array(4, 2), Cropping3D.CHANNEL_LAST)
+    TestUtils.compareOutputShape(layer, Shape(32, 32, 32, 4)) should be (true)
   }
 
 }

@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.{DoubleType, FloatType, Tensor}
 import com.intel.analytics.bigdl.utils.RandomGenerator._
-import com.intel.analytics.bigdl.utils.{T, Table}
+import com.intel.analytics.bigdl.utils.{Shape, T, Table}
 import org.apache.spark.sql.catalyst.optimizer.OptimizeIn
 
 import scala.reflect.ClassTag
@@ -125,6 +125,35 @@ class VolumetricConvolution[T: ClassTag](
       T(getName() -> T("weight" -> weight,
         "gradWeight" -> gradWeight))
     }
+  }
+
+  override def computeOutputShape(inputShape: Shape): Shape = {
+    val input = inputShape.toSingle().toArray
+    require(input.length == 5,
+      s"Convolution3D requires 5D input, but got input dim ${input.length}")
+    require(input(1) == nInputPlane, s"input.size(1) should be equal to nInputPlane. " +
+      s"But In ${this.getName()} : input.size(1) is: ${ input(1) } ," +
+      s" nInputPlane is: ${ nInputPlane }")
+    val inputWidth = input(4)
+    val inputHeight = input(3)
+    val inputDepth = input(2)
+    val sizes = if (padW == -1 && padH == -1 && padT == -1) {
+      Utils.getSAMEOutSizeAndPadding(inputHeight, inputWidth, dH,
+        dW, kH, kW, inputDepth, dT, kT)
+    } else {
+      Utils.getOutSizeAndPadding(inputHeight, inputWidth, dH,
+        dW, kH, kW, padH, padW, ceilMode = false, inputdepth = inputDepth,
+        dt = dT, kt = kT, padt = padT)
+    }
+    val outputDepth = sizes(6)
+    val outputHeight = sizes(7)
+    val outputWidth = sizes(8)
+    require(outputWidth >= 1 && outputDepth >= 1 && outputHeight >= 1,
+      s"Given input size: (${ input.mkString("x") })." +
+        s" Calculated output size:" +
+        s" (${ nOutputPlane }x${ outputDepth }x${ outputHeight }x${ outputWidth })." +
+        s" Output size is too small")
+    Shape(input(0), nOutputPlane, outputDepth, outputHeight, outputWidth)
   }
 
   /**

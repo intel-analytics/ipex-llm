@@ -19,6 +19,7 @@ import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, DataFormat}
 import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.Shape
 
 import scala.reflect.ClassTag
 
@@ -128,6 +129,14 @@ class SpatialSeperableConvolution[T: ClassTag](
 
   override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
     (Array(depthWeight, pointWeight, bias), Array(depthGradWeight, pointGradWeight, gradBias))
+  }
+
+  override def computeOutputShape(inputShape: Shape): Shape = {
+    val input = inputShape.toSingle().toArray
+    require(input.length == 4,
+      s"SeparableConvolution2D requires 4D input, but got input dim ${input.length}")
+    SpatialConvolution[T](nInputChannel, nOutputChannel, kW, kH,
+      sW, sH, pW, pH, format = dataFormat).computeOutputShape(inputShape)
   }
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {

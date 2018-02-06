@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.Shape
 
 import scala.reflect.ClassTag
 
@@ -45,6 +46,25 @@ class Cropping3D[T: ClassTag](
     val dim3Crop: Array[Int],
     val dataFormat: String = Cropping3D.CHANNEL_FIRST
   )(implicit ev: TensorNumeric[T]) extends TensorModule[T] {
+
+  require(dim1Crop.length == 2, "dim1Crop should be an array of length 2")
+  require(dim2Crop.length == 2, "dim2Crop should be an array of length 2")
+  require(dim3Crop.length == 2, "dim3Crop should be an array of length 2")
+
+  override def computeOutputShape(inputShape: Shape): Shape = {
+    val input = inputShape.toSingle().toArray
+    require(input.length == 5,
+      s"Cropping3D requires 5D input, but got input dim ${input.length}")
+    val outputShape = dataFormat match {
+      case Cropping3D.CHANNEL_FIRST =>
+        Array(input(0), input(1), input(2)-dim1Crop(0)-dim1Crop(1),
+          input(3)-dim2Crop(0)-dim2Crop(1), input(4)-dim3Crop(0)-dim3Crop(1))
+      case Cropping3D.CHANNEL_LAST =>
+        Array(input(0), input(1)-dim1Crop(0)-dim1Crop(1),
+          input(2)-dim2Crop(0)-dim2Crop(1), input(3)-dim3Crop(0)-dim3Crop(1), input(4))
+    }
+    Shape(outputShape)
+  }
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
     require(input.dim() == 5, "input dimensions should be 5." +
@@ -76,6 +96,7 @@ class Cropping3D[T: ClassTag](
       .narrow(dim2, dim2Start, dim2Cropped)
       .narrow(dim3, dim3Start, dim3Cropped)
       .copy(gradOutput)
+    gradInput
   }
 
   /**
