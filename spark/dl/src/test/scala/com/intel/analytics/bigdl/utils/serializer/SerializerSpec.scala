@@ -97,7 +97,7 @@ class SerializerSpec extends BigDLSpecHelper {
         testClass.asInstanceOf[ModuleSerializationTest].test()
       } catch {
         case e: ClassNotFoundException =>
-          throw new UnsupportedOperationException(s"Serialization test of module $cls has not " +
+          cancel(s"Serialization test of module $cls has not " +
             s"been implemented. Please consider creating a serialization test class with name " +
             s"${clsWholeName} which extend com.intel.analytics.bigdl.utils.serializer." +
             s"ModuleSerializationTest")
