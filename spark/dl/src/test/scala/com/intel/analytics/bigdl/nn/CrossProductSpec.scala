@@ -118,9 +118,6 @@ class CrossProductSpec extends FlatSpec with Matchers {
     t = gradIn[Tensor[Float]](3)
     t.select(1, 1).toArray() shouldEqual Array(11, 26, 34)
     t.select(1, 2).toArray() shouldEqual Array(22, 22, 44)
-
-    module = CrossProduct[Float](propagateBack = false)
-    module.backward(input1D, gradOut1D).getState().isEmpty shouldEqual true
   }
 
 }

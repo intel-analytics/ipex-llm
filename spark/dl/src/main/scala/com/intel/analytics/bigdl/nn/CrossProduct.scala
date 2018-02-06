@@ -36,12 +36,10 @@ import scala.reflect.ClassTag
  * Table size checking and Tensor size checking will be execute before each forward,
  * when [[numTensor]] and [[embeddingSize]] are set values greater than zero.
  *
- * @param propagateBack whether updateGradInput during backward, default: true
- * @param numTensor (for checking)number of Tensor input Table contains, default: None
- * @param embeddingSize (for checking)vector length of dot product, default: None
+ * @param numTensor (for checking)number of Tensor input Table contains, default: 0(won't check)
+ * @param embeddingSize (for checking)vector length of dot product, default: 0(won't check)
  */
 class CrossProduct[T: ClassTag](
-  val propagateBack: Boolean = true,
   val numTensor: Int = 0,
   val embeddingSize: Int = 0
 )(implicit ev: TensorNumeric[T]) extends AbstractModule[Table, Tensor[T], T] {
@@ -49,20 +47,33 @@ class CrossProduct[T: ClassTag](
   override def updateOutput(input: Table): Tensor[T] = {
     val len = input.length()
     require(numTensor <= 0 || numTensor == len,
-      s"len of input Table($len) not equal to numTensor($numTensor)!")
+      s"Input tensor number is $len, unequal to numTensor($numTensor)!")
 
     val (_, batch, _) = getShape(input[Tensor[T]](1))
     output.resize(batch, len * (len - 1) / 2)
 
     if (embeddingSize > 0) {
-      (1 to len).foreach(i => checkEmbeddingSize(input(i)))
+      var i = 1
+      while (i <= len) {
+        checkEmbeddingSize(input(i))
+        i += 1
+      }
     }
 
     var cc = 1
-    for( i <- 1 until len; j <- i + 1 to len ) {
-      val ijDot = dot(input(i), input(j))
+    var i = 1
+    var j = 2
+    while (i < len) {
+      val ijDot = batchDot(input(i), input(j))
       output.select(2, cc).copy(ijDot)
+
       cc += 1
+      if (j == len) {
+        i += 1
+        j = i + 1
+      } else {
+        j += 1
+      }
     }
 
     output
@@ -71,43 +82,51 @@ class CrossProduct[T: ClassTag](
   override def updateGradInput(input: Table, gradOutput: Tensor[T]): Table = {
     gradInput = T()
 
-    if (propagateBack) {
-      val (len, gout) = input.length() -> gradOutput
-      require(gout.dim() == 2, s"invalid dim of gradOutput(${gout.dim()})!")
+    val len = input.length()
+    val gout = gradOutput
 
-      val outLen = len * (len - 1) / 2
-      require(gout.size(2) == outLen,
-        s"invalid colSize of gradOutput(${gout.size(2)}), it should be $outLen!")
+    require(gout.dim() == 2, s"invalid dim of gradOutput(${gout.dim()})!")
 
-      val (dim, _, emLen) = getShape(input[Tensor[T]](1))
+    val outLen = len * (len - 1) / 2
+    require(gout.size(2) == outLen,
+      s"invalid colSize of gradOutput(${gout.size(2)}), it should be $outLen!")
 
-      var cc = 1
-      for( i <- 1 until len; j <- i + 1 to len ) {
-        val (ti, tj) = dim match {
-          case 1 =>
-            input[Tensor[T]](i).view(1, emLen) -> input[Tensor[T]](j).view(1, emLen)
-          case 2 =>
-            input[Tensor[T]](i) -> input[Tensor[T]](j)
-        }
+    val (dim, _, emLen) = getShape(input[Tensor[T]](1))
 
-        // get cc_th column data from total gradOut
-        val go = gout.narrow(2, cc, 1)
+    var cc = 1
+    var i = 1
+    var j = 2
+    while (i < len) {
+      val (ti, tj) = dim match {
+        case 1 =>
+          input[Tensor[T]](i).view(1, emLen) -> input[Tensor[T]](j).view(1, emLen)
+        case 2 =>
+          input[Tensor[T]](i) -> input[Tensor[T]](j)
+      }
 
-        val jInc = Tensor[T]().resizeAs(ti).copy(ti).cmul(go)
-        if (dim == 1) jInc.resize(Array(jInc.size(2)))
-        gradInput.get[Tensor[T]](j) match {
-          case None => gradInput.update(j, jInc)
-          case Some(v) => v.add(jInc)
-        }
+      // get cc_th column data from total gradOut
+      val go = gout.narrow(2, cc, 1)
 
-        val iInc = Tensor[T]().resizeAs(tj).copy(tj).cmul(go)
-        if (dim == 1) iInc.resize(Array(iInc.size(2)))
-        gradInput.get[Tensor[T]](i) match {
-          case None => gradInput.update(i, iInc)
-          case Some(v) => v.add(iInc)
-        }
+      val jInc = Tensor[T]().resizeAs(ti).copy(ti).cmul(go)
+      if (dim == 1) jInc.squeeze()
+      gradInput.get[Tensor[T]](j) match {
+        case None => gradInput.update(j, jInc)
+        case Some(v) => v.add(jInc)
+      }
 
-        cc += 1
+      val iInc = Tensor[T]().resizeAs(tj).copy(tj).cmul(go)
+      if (dim == 1) iInc.squeeze()
+      gradInput.get[Tensor[T]](i) match {
+        case None => gradInput.update(i, iInc)
+        case Some(v) => v.add(iInc)
+      }
+
+      cc += 1
+      if (j == len) {
+        i += 1
+        j = i + 1
+      } else {
+        j += 1
       }
     }
 
@@ -120,7 +139,7 @@ class CrossProduct[T: ClassTag](
       s"size of input Tensor($size) not equal to embeddingSize($embeddingSize)!")
   }
 
-  protected def dot(t1: Tensor[T], t2: Tensor[T]): Tensor[T] = {
+  protected def batchDot(t1: Tensor[T], t2: Tensor[T]): Tensor[T] = {
     var (input1, input2) = (t1, t2)
 
     if (input1.dim() == 1) {
@@ -149,11 +168,10 @@ object CrossProduct {
   def apply[T: ClassTag]()(implicit ev: TensorNumeric[T]): CrossProduct[T] = new CrossProduct[T]()
 
   def apply[T: ClassTag](
-    propagateBack: Boolean = true,
     numTensor: Int = 0,
     embeddingSize: Int = 0
   )(implicit ev: TensorNumeric[T]): CrossProduct[T] = {
-    new CrossProduct(propagateBack, numTensor, embeddingSize)
+    new CrossProduct(numTensor, embeddingSize)
   }
 
 }
