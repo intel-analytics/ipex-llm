@@ -44,8 +44,7 @@ class MaxPooling1D[T: ClassTag](
       dH = strideValue,
       padW = pads._2,
       padH = pads._1,
-      format = DataFormat.NHWC
-    )
+      format = DataFormat.NHWC)
     model.add(layer)
     model.add(Squeeze(3))
     model.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]

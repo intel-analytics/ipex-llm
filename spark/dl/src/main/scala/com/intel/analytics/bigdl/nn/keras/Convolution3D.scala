@@ -78,13 +78,14 @@ object Convolution3D {
     init: String = "glorot_uniform",
     activation: String = null,
     borderMode: String = "valid",
-    subsample: Array[Int] = Array(1, 1, 1),
+    subsample: (Int, Int, Int) = (1, 1, 1),
     wRegularizer: Regularizer[T] = null,
     bRegularizer: Regularizer[T] = null,
     bias: Boolean = true,
     inputShape: Shape = null)(implicit ev: TensorNumeric[T]): Convolution3D[T] = {
     new Convolution3D[T](nbFilter, kernelDim1, kernelDim2, kernelDim3,
-      KerasUtils.getInitMethod(init), KerasUtils.getActivation(activation), borderMode, subsample,
+      KerasUtils.getInitMethod(init), KerasUtils.getActivation(activation),
+      borderMode, Array(subsample._1, subsample._2, subsample._3),
       wRegularizer, bRegularizer, bias, inputShape)
   }
 }

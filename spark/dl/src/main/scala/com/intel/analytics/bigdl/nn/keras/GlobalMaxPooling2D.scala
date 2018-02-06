@@ -48,8 +48,8 @@ class GlobalMaxPooling2D[T: ClassTag](
 
 object GlobalMaxPooling2D {
   def apply[@specialized(Float, Double) T: ClassTag](
-    format: DataFormat = DataFormat.NCHW,
+    dimOrdering: String = "th",
     inputShape: Shape = null)(implicit ev: TensorNumeric[T]): GlobalMaxPooling2D[T] = {
-    new GlobalMaxPooling2D[T](format, inputShape)
+    new GlobalMaxPooling2D[T](KerasUtils.toBigDLFormat(dimOrdering), inputShape)
   }
 }

@@ -65,11 +65,11 @@ object MaxPooling2D {
     poolSize: (Int, Int) = (2, 2),
     strides: (Int, Int) = null,
     borderMode: String = "valid",
-    format: DataFormat = DataFormat.NCHW,
+    dimOrdering: String = "th",
     inputShape: Shape = null)
     (implicit ev: TensorNumeric[T]): MaxPooling2D[T] = {
     val strideValues = if (strides != null) Array(strides._1, strides._2) else null
-    new MaxPooling2D[T](Array(poolSize._1, poolSize._2),
-      strideValues, borderMode, format, inputShape)
+    new MaxPooling2D[T](Array(poolSize._1, poolSize._2), strideValues,
+      borderMode, KerasUtils.toBigDLFormat(dimOrdering), inputShape)
   }
 }

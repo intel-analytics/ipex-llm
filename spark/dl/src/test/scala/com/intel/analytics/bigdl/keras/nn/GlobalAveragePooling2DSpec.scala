@@ -49,7 +49,7 @@ class GlobalAveragePooling2DSpec extends KerasBaseSpec {
         |model = Model(input=input_tensor, output=output_tensor)
       """.stripMargin
     val seq = KSequential[Float]()
-    val layer = GlobalAveragePooling2D[Float](format = DataFormat.NHWC,
+    val layer = GlobalAveragePooling2D[Float](dimOrdering = "tf",
       inputShape = Shape(32, 28, 6))
     seq.add(layer)
     seq.getOutputShape().toSingle().toArray should be (Array(-1, 6))

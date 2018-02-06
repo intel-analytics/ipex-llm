@@ -59,11 +59,12 @@ class Cropping3D[T: ClassTag](
 object Cropping3D {
   def apply[@specialized(Float, Double) T: ClassTag](
     cropping: ((Int, Int), (Int, Int), (Int, Int)) = ((1, 1), (1, 1), (1, 1)),
-    format: String = "CHANNEL_FIRST",
+    dimOrdering: String = "th",
     inputShape: Shape = null)(implicit ev: TensorNumeric[T]): Cropping3D[T] = {
     val dim1Crop = Array(cropping._1._1, cropping._1._2)
     val dim2Crop = Array(cropping._2._1, cropping._2._2)
     val dim3Crop = Array(cropping._3._1, cropping._3._2)
-    new Cropping3D[T](dim1Crop, dim2Crop, dim3Crop, format, inputShape)
+    new Cropping3D[T](dim1Crop, dim2Crop, dim3Crop,
+      KerasUtils.toBigDLFormat5D(dimOrdering), inputShape)
   }
 }

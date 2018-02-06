@@ -49,7 +49,7 @@ class GlobalMaxPooling2DSpec extends KerasBaseSpec {
         |model = Model(input=input_tensor, output=output_tensor)
       """.stripMargin
     val seq = KSequential[Float]()
-    val layer = GlobalMaxPooling2D[Float](format = DataFormat.NHWC, inputShape = Shape(16, 16, 2))
+    val layer = GlobalMaxPooling2D[Float](dimOrdering = "tf", inputShape = Shape(16, 16, 2))
     seq.add(layer)
     seq.getOutputShape().toSingle().toArray should be (Array(-1, 2))
     checkOutputAndGrad(seq.asInstanceOf[AbstractModule[Tensor[Float], Tensor[Float], Float]],

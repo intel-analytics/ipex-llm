@@ -50,7 +50,7 @@ class MaxPooling2DSpec extends KerasBaseSpec{
       """.stripMargin
     val seq = KSequential[Float]()
     val layer = MaxPooling2D[Float](poolSize = (2, 3), strides = (1, 2),
-      format = DataFormat.NHWC, inputShape = Shape(32, 28, 5))
+      dimOrdering = "tf", inputShape = Shape(32, 28, 5))
     seq.add(layer)
     checkOutputAndGrad(seq.asInstanceOf[AbstractModule[Tensor[Float], Tensor[Float], Float]],
       kerasCode)

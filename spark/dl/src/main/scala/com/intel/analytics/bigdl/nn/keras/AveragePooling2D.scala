@@ -49,12 +49,14 @@ class AveragePooling2D[T: ClassTag](
 
 object AveragePooling2D {
   def apply[@specialized(Float, Double) T: ClassTag](
-    poolSize: Array[Int] = Array(2, 2),
-    strides: Array[Int] = null,
+    poolSize: (Int, Int) = (2, 2),
+    strides: (Int, Int) = null,
     borderMode: String = "valid",
-    format: DataFormat = DataFormat.NCHW,
+    dimOrdering: String = "th",
     inputShape: Shape = null)
     (implicit ev: TensorNumeric[T]): AveragePooling2D[T] = {
-    new AveragePooling2D[T](poolSize, strides, borderMode, format, inputShape)
+    val strideValues = if (strides != null) Array(strides._1, strides._2) else null
+    new AveragePooling2D[T](Array(poolSize._1, poolSize._2), strideValues,
+      borderMode, KerasUtils.toBigDLFormat(dimOrdering), inputShape)
   }
 }

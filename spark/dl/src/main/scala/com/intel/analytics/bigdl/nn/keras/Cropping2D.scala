@@ -48,10 +48,11 @@ class Cropping2D[T: ClassTag](
 object Cropping2D {
   def apply[@specialized(Float, Double) T: ClassTag](
     cropping: ((Int, Int), (Int, Int)) = ((0, 0), (0, 0)),
-    format: DataFormat = DataFormat.NCHW,
+    dimOrdering: String = "th",
     inputShape: Shape = null)(implicit ev: TensorNumeric[T]): Cropping2D[T] = {
     val heightCrop = Array(cropping._1._1, cropping._1._2)
     val widthCrop = Array(cropping._2._1, cropping._2._2)
-    new Cropping2D[T](heightCrop, widthCrop, format, inputShape)
+    new Cropping2D[T](heightCrop, widthCrop,
+      KerasUtils.toBigDLFormat(dimOrdering), inputShape)
   }
 }

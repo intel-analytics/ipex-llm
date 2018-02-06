@@ -91,7 +91,7 @@ object KerasUtils {
   private[keras] def toBigDLFormat(dimOrdering: String): DataFormat = {
     require(dimOrdering.toLowerCase() == "tf" || dimOrdering.toLowerCase() == "th",
       s"Dim ordering must be either tf or th, but got ${dimOrdering.toLowerCase()}")
-    dimOrdering match {
+    dimOrdering.toLowerCase() match {
       case "tf" => DataFormat.NHWC
       case "th" => DataFormat.NCHW
     }
@@ -100,7 +100,7 @@ object KerasUtils {
   private[keras] def toBigDLFormat5D(dimOrdering: String): String = {
     require(dimOrdering.toLowerCase() == "tf" || dimOrdering.toLowerCase() == "th",
       s"Dim ordering must be either tf or th, but got ${dimOrdering.toLowerCase()}")
-    dimOrdering match {
+    dimOrdering.toLowerCase() match {
       case "tf" => "CHANNEL_LAST"
       case "th" => "CHANNEL_FIRST"
     }

@@ -48,7 +48,7 @@ class Cropping2DSpec extends KerasBaseSpec {
         |model = Model(input=input_tensor, output=output_tensor)
       """.stripMargin
     val seq = KSequential[Float]()
-    val layer = Cropping2D[Float](((0, 1), (1, 1)), format = DataFormat.NHWC,
+    val layer = Cropping2D[Float](((0, 1), (1, 1)), dimOrdering = "tf",
       inputShape = Shape(4, 5, 3))
     seq.add(layer)
     checkOutputAndGrad(seq.asInstanceOf[AbstractModule[Tensor[Float], Tensor[Float], Float]],

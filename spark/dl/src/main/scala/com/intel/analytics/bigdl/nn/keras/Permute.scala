@@ -30,7 +30,6 @@ class Permute[T: ClassTag](
    val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {
 
-  // from TransposeLoadTF. TODO: put this into utils?
   private def permToPair(perm: Array[Int]): Array[(Int, Int)] = {
     val numToRank = perm.zipWithIndex.toMap
     val arr = perm.indices.toArray

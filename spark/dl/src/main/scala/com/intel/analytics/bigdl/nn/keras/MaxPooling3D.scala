@@ -44,10 +44,12 @@ class MaxPooling3D[T: ClassTag](
 
 object MaxPooling3D {
   def apply[@specialized(Float, Double) T: ClassTag](
-    poolSize: Array[Int] = Array(2, 2, 2),
-    strides: Array[Int] = null,
-    inputShape: Shape = null)
-    (implicit ev: TensorNumeric[T]): MaxPooling3D[T] = {
-    new MaxPooling3D[T](poolSize, strides, inputShape)
+    poolSize: (Int, Int, Int) = (2, 2, 2),
+    strides: (Int, Int, Int) = null,
+    inputShape: Shape = null)(implicit ev: TensorNumeric[T]): MaxPooling3D[T] = {
+    val strideValues = if (strides != null) Array(strides._1, strides._2, strides._3)
+                       else null
+    new MaxPooling3D[T](Array(poolSize._1, poolSize._2, poolSize._3),
+      strideValues, inputShape)
   }
 }

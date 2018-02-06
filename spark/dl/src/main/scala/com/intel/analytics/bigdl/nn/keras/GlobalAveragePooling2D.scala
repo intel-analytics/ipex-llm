@@ -49,8 +49,8 @@ class GlobalAveragePooling2D[T: ClassTag](
 
 object GlobalAveragePooling2D {
   def apply[@specialized(Float, Double) T: ClassTag](
-    format: DataFormat = DataFormat.NCHW,
+    dimOrdering: String = "th",
     inputShape: Shape = null)(implicit ev: TensorNumeric[T]): GlobalAveragePooling2D[T] = {
-    new GlobalAveragePooling2D[T](format, inputShape)
+    new GlobalAveragePooling2D[T](KerasUtils.toBigDLFormat(dimOrdering), inputShape)
   }
 }

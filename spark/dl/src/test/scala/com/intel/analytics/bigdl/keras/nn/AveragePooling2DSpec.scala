@@ -50,8 +50,8 @@ class AveragePooling2DSpec extends KerasBaseSpec {
         |model = Model(input=input_tensor, output=output_tensor)
       """.stripMargin
     val seq = KSequential[Float]()
-    val layer = AveragePooling2D[Float](poolSize = Array(2, 3), strides = Array(1, 2),
-      borderMode = "same", format = DataFormat.NHWC, inputShape = Shape(20, 32, 4))
+    val layer = AveragePooling2D[Float](poolSize = (2, 3), strides = (1, 2),
+      borderMode = "same", dimOrdering = "tf", inputShape = Shape(20, 32, 4))
     seq.add(layer)
     seq.getOutputShape().toSingle().toArray should be (Array(-1, 20, 16, 4))
     checkOutputAndGrad(seq.asInstanceOf[AbstractModule[Tensor[Float], Tensor[Float], Float]],

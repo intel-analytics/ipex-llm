@@ -50,7 +50,7 @@ class Cropping3DSpec extends KerasBaseSpec {
         |model = Model(input=input_tensor, output=output_tensor)
       """.stripMargin
     val seq = KSequential[Float]()
-    val layer = Cropping3D[Float](((1, 1), (2, 2), (0, 3)), format = "CHANNEL_LAST",
+    val layer = Cropping3D[Float](((1, 1), (2, 2), (0, 3)), dimOrdering = "tf",
       inputShape = Shape(32, 32, 32, 2))
     seq.add(layer)
     checkOutputAndGrad(seq.asInstanceOf[AbstractModule[Tensor[Float], Tensor[Float], Float]],

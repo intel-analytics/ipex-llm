@@ -103,14 +103,15 @@ object Convolution2D {
     init: String = "glorot_uniform",
     activation: String = null,
     borderMode: String = "valid",
-    subsample: Array[Int] = Array(1, 1),
+    subsample: (Int, Int) = (1, 1),
     wRegularizer: Regularizer[T] = null,
     bRegularizer: Regularizer[T] = null,
-    format: DataFormat = DataFormat.NCHW,
+    dimOrdering: String = "th",
     bias: Boolean = true,
     inputShape: Shape = null)(implicit ev: TensorNumeric[T]): Convolution2D[T] = {
     new Convolution2D[T](nbFilter, nbRow, nbCol,
       KerasUtils.getInitMethod(init), KerasUtils.getActivation(activation),
-      borderMode, subsample, wRegularizer, bRegularizer, format, bias, inputShape)
+      borderMode, Array(subsample._1, subsample._2), wRegularizer,
+      bRegularizer, KerasUtils.toBigDLFormat(dimOrdering), bias, inputShape)
   }
 }
