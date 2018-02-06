@@ -45,7 +45,7 @@ import scala.reflect.ClassTag
  */
 
 class BucketizedCol[T: ClassTag](
-  boundaries: Array[Double])(implicit ev: TensorNumeric[T])
+  private val boundaries: Array[Double])(implicit ev: TensorNumeric[T])
   extends Operation[Tensor[T], Tensor[Int], T] {
 
   require(boundaries.length >= 1,
