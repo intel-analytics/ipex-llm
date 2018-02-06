@@ -48,16 +48,16 @@ class BucketizedCol[T: ClassTag](
   boundaries: Array[Double])(implicit ev: TensorNumeric[T])
   extends Operation[Tensor[T], Tensor[Int], T] {
 
+  require(boundaries.length >= 1,
+    "the length of boundaries must be more than or equal to 1")
+
   private val boundariesImpl = boundaries.map(ev.fromType[Double])
+
   output = Tensor[Int]()
 
   override def updateOutput(input: Tensor[T]): Tensor[Int] = {
 
-    val rows = input.size(dim = 1)
-    val cols = input.size(dim = 2)
-    val resTensor = Tensor[Int](rows, cols)
-    require(boundaries.length >= 1,
-    "the length of boundaries must be more than or equal to 1")
+    val resTensor = Tensor[Int](input.size())
 
     ev.getType() match {
       case FloatType =>
@@ -68,6 +68,8 @@ class BucketizedCol[T: ClassTag](
         resTensor.applyFun[Double](
           input.asInstanceOf[Tensor[Double]],
           x => math.abs(binarySearch(boundariesImpl.asInstanceOf[Array[Double]], x) + 1))
+      case _ =>
+        throw new RuntimeException("Unsupported tensor type")
     }
 
     output = resTensor
