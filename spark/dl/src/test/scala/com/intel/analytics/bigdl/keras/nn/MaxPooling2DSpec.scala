@@ -49,7 +49,7 @@ class MaxPooling2DSpec extends KerasBaseSpec{
         |model = Model(input=input_tensor, output=output_tensor)
       """.stripMargin
     val seq = KSequential[Float]()
-    val layer = MaxPooling2D[Float](poolSize = (2, 3), strides = (1, 2),
+    val layer = MaxPooling2D[Float](poolSize = Array(2, 3), strides = Array(1, 2),
       format = DataFormat.NHWC, inputShape = Shape(32, 28, 5))
     seq.add(layer)
     checkOutputAndGrad(seq.asInstanceOf[AbstractModule[Tensor[Float], Tensor[Float], Float]],
@@ -66,7 +66,7 @@ class MaxPooling2DSpec extends KerasBaseSpec{
         |model = Model(input=input_tensor, output=output_tensor)
       """.stripMargin
     val seq = KSequential[Float]()
-    val layer = MaxPooling2D[Float](strides = (1, 2), borderMode = "same",
+    val layer = MaxPooling2D[Float](strides = Array(1, 2), borderMode = "same",
       inputShape = Shape(3, 24, 24))
     seq.add(layer)
     checkOutputAndGrad(seq.asInstanceOf[AbstractModule[Tensor[Float], Tensor[Float], Float]],

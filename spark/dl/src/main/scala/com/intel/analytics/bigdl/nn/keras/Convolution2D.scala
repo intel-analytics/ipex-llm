@@ -70,7 +70,8 @@ class Convolution2D[T: ClassTag](
 
   require(borderMode == "valid" || borderMode == "same", s"Invalid border mode for " +
     s"Convolution2D: $borderMode")
-  require(subsample.length == 2, "Subsample should be of length 2.")
+  require(subsample.length == 2,
+    s"For Convolution2D, subsample should be of length 2 but got length ${subsample.length}")
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
     val input = inputShape.toSingle().toArray
@@ -102,7 +103,7 @@ object Convolution2D {
     init: String = "glorot_uniform",
     activation: String = null,
     borderMode: String = "valid",
-    subsample: (Int, Int) = (1, 1),
+    subsample: Array[Int] = Array(1, 1),
     wRegularizer: Regularizer[T] = null,
     bRegularizer: Regularizer[T] = null,
     format: DataFormat = DataFormat.NCHW,
@@ -110,7 +111,6 @@ object Convolution2D {
     inputShape: Shape = null)(implicit ev: TensorNumeric[T]): Convolution2D[T] = {
     new Convolution2D[T](nbFilter, nbRow, nbCol,
       KerasUtils.getInitMethod(init), KerasUtils.getActivation(activation),
-      borderMode, Array(subsample._1, subsample._2),
-      wRegularizer, bRegularizer, format, bias, inputShape)
+      borderMode, subsample, wRegularizer, bRegularizer, format, bias, inputShape)
   }
 }

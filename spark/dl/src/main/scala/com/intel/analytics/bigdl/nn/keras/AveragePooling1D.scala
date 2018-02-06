@@ -27,7 +27,7 @@ import scala.reflect.ClassTag
 
 class AveragePooling1D[T: ClassTag](
    poolLength: Int = 2,
-   stride: Option[Int] = None,
+   stride: Int = -1,
    borderMode: String = "valid",
    inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends Pooling1D[T](poolLength, stride, borderMode, inputShape) {
@@ -45,8 +45,7 @@ class AveragePooling1D[T: ClassTag](
       padW = pads._2,
       padH = pads._1,
       countIncludePad = false,
-      format = DataFormat.NHWC
-    )
+      format = DataFormat.NHWC)
     model.add(layer)
     model.add(Squeeze(3))
     model.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
@@ -56,7 +55,7 @@ class AveragePooling1D[T: ClassTag](
 object AveragePooling1D {
   def apply[@specialized(Float, Double) T: ClassTag](
     poolLength: Int = 2,
-    stride: Option[Int] = None,
+    stride: Int = -1,
     borderMode: String = "valid",
     inputShape: Shape = null)(implicit ev: TensorNumeric[T]): AveragePooling1D[T] = {
     new AveragePooling1D[T](poolLength, stride, borderMode, inputShape)

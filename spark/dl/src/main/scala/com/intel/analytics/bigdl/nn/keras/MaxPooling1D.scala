@@ -27,7 +27,7 @@ import scala.reflect.ClassTag
 
 class MaxPooling1D[T: ClassTag](
    poolLength: Int = 2,
-   stride: Option[Int] = None,
+   stride: Int = -1,
    borderMode: String = "valid",
    inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends Pooling1D[T](poolLength, stride, borderMode, inputShape) {
@@ -55,7 +55,7 @@ class MaxPooling1D[T: ClassTag](
 object MaxPooling1D {
   def apply[@specialized(Float, Double) T: ClassTag](
     poolLength: Int = 2,
-    stride: Option[Int] = None,
+    stride: Int = -1,
     borderMode: String = "valid",
     inputShape: Shape = null)(implicit ev: TensorNumeric[T]): MaxPooling1D[T] = {
     new MaxPooling1D[T](poolLength, stride, borderMode, inputShape)

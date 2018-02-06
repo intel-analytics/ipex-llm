@@ -65,8 +65,7 @@ class Convolution1D[T: ClassTag](
       wRegularizer = wRegularizer,
       bRegularizer = bRegularizer,
       withBias = bias,
-      format = DataFormat.NHWC
-    )
+      format = DataFormat.NHWC)
     layer.setInitMethod(weightInitMethod = init, biasInitMethod = Zeros)
     model.add(layer)
     model.add(Squeeze(3))

@@ -33,7 +33,7 @@ class Cropping1DSpec extends KerasBaseSpec {
         |model = Model(input=input_tensor, output=output_tensor)
       """.stripMargin
     val seq = KSequential[Float]()
-    val layer = Cropping1D[Float]((1, 2), inputShape = Shape(5, 6))
+    val layer = Cropping1D[Float](Array(1, 2), inputShape = Shape(5, 6))
     seq.add(layer)
     seq.getOutputShape().toSingle().toArray should be (Array(-1, 2, 6))
     checkOutputAndGrad(seq.asInstanceOf[AbstractModule[Tensor[Float], Tensor[Float], Float]],

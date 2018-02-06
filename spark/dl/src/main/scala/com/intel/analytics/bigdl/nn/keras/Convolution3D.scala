@@ -33,7 +33,7 @@ class Convolution3D[T: ClassTag](
    val init: InitializationMethod = Xavier,
    val activation: AbstractModule[Tensor[T], Tensor[T], T] = null,
    val borderMode: String = "valid",
-   val subsample: (Int, Int, Int) = (1, 1, 1),
+   val subsample: Array[Int] = Array(1, 1, 1),
    val wRegularizer: Regularizer[T] = null,
    var bRegularizer: Regularizer[T] = null,
    val bias: Boolean = true,
@@ -42,6 +42,8 @@ class Convolution3D[T: ClassTag](
 
   require(borderMode == "valid" || borderMode == "same", s"Invalid border mode for " +
     s"Convolution3D: $borderMode")
+  require(subsample.length == 3,
+    s"For Convolution3D, subsample should be of length 3 but got length ${subsample.length}")
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
     val input = inputShape.toSingle().toArray
@@ -52,19 +54,17 @@ class Convolution3D[T: ClassTag](
       kT = kernelDim1,
       kW = kernelDim3,
       kH = kernelDim2,
-      dT = subsample._1,
-      dW = subsample._3,
-      dH = subsample._2,
+      dT = subsample(0),
+      dW = subsample(2),
+      dH = subsample(1),
       padT = pads._1,
       padW = pads._3,
       padH = pads._2,
       withBias = bias,
       wRegularizer = wRegularizer,
-      bRegularizer = bRegularizer
-    )
+      bRegularizer = bRegularizer)
     layer.setInitMethod(weightInitMethod = init, biasInitMethod = Zeros)
-    KerasLayer.fuse(layer,
-      activation,
+    KerasLayer.fuse(layer, activation,
       inputShape).asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
   }
 }
@@ -78,7 +78,7 @@ object Convolution3D {
     init: String = "glorot_uniform",
     activation: String = null,
     borderMode: String = "valid",
-    subsample: (Int, Int, Int) = (1, 1, 1),
+    subsample: Array[Int] = Array(1, 1, 1),
     wRegularizer: Regularizer[T] = null,
     bRegularizer: Regularizer[T] = null,
     bias: Boolean = true,

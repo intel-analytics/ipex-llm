@@ -49,7 +49,7 @@ class MaxPooling1DSpec extends KerasBaseSpec {
         |model = Model(input=input_tensor, output=output_tensor)
       """.stripMargin
     val seq = KSequential[Float]()
-    val layer = MaxPooling1D[Float](stride = Some(1), borderMode = "same",
+    val layer = MaxPooling1D[Float](stride = 1, borderMode = "same",
       inputShape = Shape(20, 32))
     seq.add(layer)
     seq.getOutputShape().toSingle().toArray should be (Array(-1, 20, 32))

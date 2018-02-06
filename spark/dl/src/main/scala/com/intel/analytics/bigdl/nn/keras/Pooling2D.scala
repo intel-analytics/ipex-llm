@@ -24,27 +24,31 @@ import com.intel.analytics.bigdl.utils.Shape
 import scala.reflect.ClassTag
 
 abstract class Pooling2D[T: ClassTag](
-   val poolSize: (Int, Int) = (2, 2),
-   var strides: (Int, Int) = null,
+   val poolSize: Array[Int] = Array(2, 2),
+   var strides: Array[Int] = null,
    val borderMode: String = "valid",
    val format: DataFormat = DataFormat.NCHW,
    var inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {
 
+  require(poolSize.length == 2,
+    s"For Pooling2D, poolSize should be of length 2 but got length ${poolSize.length}")
   require(borderMode == "valid" || borderMode == "same", s"Invalid border mode for " +
     s"Pooling2D: $borderMode")
 
-  def strideValues: (Int, Int) = if (strides == null) poolSize else strides
+  def strideValues: Array[Int] = if (strides == null) poolSize else strides
+  require(strideValues.length == 2,
+    s"For Pooling2D, strides should be of length 2 but got length ${strideValues.length}")
 
   override def computeOutputShape(inputShape: Shape): Shape = {
     val input = inputShape.toSingle().toArray
     require(input.length == 4,
       s"Pooling2D requires 4D input, but got input dim ${input.length}")
     val (dimH, dimW, dimC) = format.getHWCDims(4)
-    val rows = KerasUtils.computeConvOutputLength(input(dimH -1), poolSize._1,
-      borderMode, strideValues._1)
-    val cols = KerasUtils.computeConvOutputLength(input(dimW -1), poolSize._2,
-      borderMode, strideValues._2)
+    val rows = KerasUtils.computeConvOutputLength(input(dimH -1), poolSize(0),
+      borderMode, strideValues(0))
+    val cols = KerasUtils.computeConvOutputLength(input(dimW -1), poolSize(1),
+      borderMode, strideValues(1))
     format match {
       case DataFormat.NCHW => Shape(input(0), input(1), rows, cols)
       case DataFormat.NHWC => Shape(input(0), rows, cols, input(3))

@@ -39,43 +39,35 @@ import scala.reflect.ClassTag
  * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now
  */
 class MaxPooling2D[T: ClassTag] (
-   val poolSize: Array[Int] = Array(2, 2),
-   val strides: Array[Int] = null,
-   val borderMode: String = "valid",
-   val format: DataFormat = DataFormat.NCHW,
-   var inputShape: Shape = null)(implicit ev: TensorNumeric[T])
-  extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {
-
-  require(borderMode == "valid" || borderMode == "same", s"Invalid border mode for " +
-    s"MaxPooling2D: $borderMode")
-
-  private val stridesValue = if (strides != null) strides else poolSize
+   poolSize: Array[Int] = Array(2, 2),
+   strides: Array[Int] = null,
+   borderMode: String = "valid",
+   format: DataFormat = DataFormat.NCHW,
+   inputShape: Shape = null)(implicit ev: TensorNumeric[T])
+  extends Pooling2D[T](poolSize, strides, borderMode, format, inputShape) {
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
     val pads = KerasUtils.getPadsFromBorderMode(borderMode)
     val layer = SpatialMaxPooling(
       kW = poolSize(1),
       kH = poolSize(0),
-      dW = stridesValue(1),
-      dH = stridesValue(0),
+      dW = strideValues(1),
+      dH = strideValues(0),
       padW = pads._2,
       padH = pads._1,
-      format = format
-    )
+      format = format)
     layer.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
   }
 }
 
 object MaxPooling2D {
   def apply[@specialized(Float, Double) T: ClassTag](
-    poolSize: (Int, Int) = (2, 2),
-    strides: (Int, Int) = null,
+    poolSize: Array[Int] = Array(2, 2),
+    strides: Array[Int] = null,
     borderMode: String = "valid",
     format: DataFormat = DataFormat.NCHW,
     inputShape: Shape = null)
     (implicit ev: TensorNumeric[T]): MaxPooling2D[T] = {
-    val stridesValue = if (strides != null) Array(strides._1, strides._2) else null
-    new MaxPooling2D[T](Array(poolSize._1, poolSize._2),
-      stridesValue, borderMode, format, inputShape)
+    new MaxPooling2D[T](poolSize, strides, borderMode, format, inputShape)
   }
 }

@@ -23,23 +23,28 @@ import com.intel.analytics.bigdl.utils.Shape
 import scala.reflect.ClassTag
 
 abstract class Pooling3D[T: ClassTag](
-   val poolSize: (Int, Int, Int) = (2, 2, 2),
-   val strides: (Int, Int, Int) = null,
+   val poolSize: Array[Int] = Array(2, 2, 2),
+   val strides: Array[Int] = null,
    var inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {
 
-  def strideValues: (Int, Int, Int) = if (strides == null) poolSize else strides
+  require(poolSize.length == 3,
+    s"For Pooling3D, poolSize should be of length 3 but got length ${poolSize.length}")
+
+  def strideValues: Array[Int] = if (strides == null) poolSize else strides
+  require(strideValues.length == 3,
+    s"For Pooling3D, strides should be of length 3 but got length ${strideValues.length}")
 
   override def computeOutputShape(inputShape: Shape): Shape = {
     val input = inputShape.toSingle().toArray
     require(input.length == 5,
       s"Pooling3D requires 5D input, but got input dim ${input.length}")
-    val dim1Length = KerasUtils.computeConvOutputLength(input(2), poolSize._1,
-      "valid", strideValues._1)
-    val dim2Length = KerasUtils.computeConvOutputLength(input(3), poolSize._2,
-      "valid", strideValues._2)
-    val dim3Length = KerasUtils.computeConvOutputLength(input(4), poolSize._3,
-      "valid", strideValues._3)
+    val dim1Length = KerasUtils.computeConvOutputLength(input(2), poolSize(0),
+      "valid", strideValues(0))
+    val dim2Length = KerasUtils.computeConvOutputLength(input(3), poolSize(1),
+      "valid", strideValues(1))
+    val dim3Length = KerasUtils.computeConvOutputLength(input(4), poolSize(2),
+      "valid", strideValues(2))
     Shape(input(0), input(1), dim1Length, dim2Length, dim3Length)
   }
 

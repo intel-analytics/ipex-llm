@@ -72,7 +72,7 @@ class Convolution2DSpec extends KerasBaseSpec {
         |model = Model(input=input_tensor, output=output_tensor)
       """.stripMargin
     val seq = KSequential[Float]()
-    val layer = Conv2D[Float](64, 2, 5, subsample = (2, 3), init = "normal",
+    val layer = Conv2D[Float](64, 2, 5, subsample = Array(2, 3), init = "normal",
       bias = false, inputShape = Shape(3, 24, 24))
     seq.add(layer)
     checkOutputAndGrad(seq.asInstanceOf[AbstractModule[Tensor[Float], Tensor[Float], Float]],

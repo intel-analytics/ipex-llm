@@ -33,7 +33,7 @@ class MaxPooling3DSpec extends KerasBaseSpec {
         |model = Model(input=input_tensor, output=output_tensor)
       """.stripMargin
     val seq = KSequential[Float]()
-    val layer = MaxPooling3D[Float](poolSize = (2, 2, 3), inputShape = Shape(3, 20, 15, 35))
+    val layer = MaxPooling3D[Float](poolSize = Array(2, 2, 3), inputShape = Shape(3, 20, 15, 35))
     seq.add(layer)
     seq.getOutputShape().toSingle().toArray should be (Array(-1, 3, 10, 7, 11))
     checkOutputAndGrad(seq.asInstanceOf[AbstractModule[Tensor[Float], Tensor[Float], Float]],

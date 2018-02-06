@@ -35,7 +35,7 @@ class Convolution3DSpec extends KerasBaseSpec {
         |model = Model(input=input_tensor, output=output_tensor)
       """.stripMargin
     val seq = KSequential[Float]()
-    val layer = Convolution3D[Float](12, 2, 1, 3, subsample = (1, 2, 3),
+    val layer = Convolution3D[Float](12, 2, 1, 3, subsample = Array(1, 2, 3),
       inputShape = Shape(3, 32, 32, 32))
     seq.add(layer)
     checkOutputAndGrad(seq.asInstanceOf[AbstractModule[Tensor[Float], Tensor[Float], Float]],

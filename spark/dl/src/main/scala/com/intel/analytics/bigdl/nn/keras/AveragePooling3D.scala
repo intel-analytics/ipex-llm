@@ -25,29 +25,28 @@ import com.intel.analytics.bigdl.utils.Shape
 import scala.reflect.ClassTag
 
 class AveragePooling3D[T: ClassTag](
-   poolSize: (Int, Int, Int) = (2, 2, 2),
-   strides: (Int, Int, Int) = null,
+   poolSize: Array[Int] = Array(2, 2, 2),
+   strides: Array[Int] = null,
    inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends Pooling3D[T](poolSize, strides, inputShape) {
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
     val layer = VolumetricAveragePooling(
-      kT = poolSize._1,
-      kW = poolSize._3,
-      kH = poolSize._2,
-      dT = strideValues._1,
-      dW = strideValues._3,
-      dH = strideValues._2,
-      countIncludePad = false
-    )
+      kT = poolSize(0),
+      kW = poolSize(2),
+      kH = poolSize(1),
+      dT = strideValues(0),
+      dW = strideValues(2),
+      dH = strideValues(1),
+      countIncludePad = false)
     layer.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
   }
 }
 
 object AveragePooling3D {
   def apply[@specialized(Float, Double) T: ClassTag](
-    poolSize: (Int, Int, Int) = (2, 2, 2),
-    strides: (Int, Int, Int) = null,
+    poolSize: Array[Int] = Array(2, 2, 2),
+    strides: Array[Int] = null,
     inputShape: Shape = null)
     (implicit ev: TensorNumeric[T]): AveragePooling3D[T] = {
     new AveragePooling3D[T](poolSize, strides, inputShape)

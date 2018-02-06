@@ -25,26 +25,29 @@ import com.intel.analytics.bigdl.utils.Shape
 import scala.reflect.ClassTag
 
 class Cropping1D[T: ClassTag](
-   val cropping: (Int, Int) = (1, 1),
+   val cropping: Array[Int] = Array(1, 1),
    var inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {
+
+  require(cropping.length == 2,
+    s"For Cropping1D, cropping values should be of length 2 but got length ${cropping.length}")
 
   override def computeOutputShape(inputShape: Shape): Shape = {
     val input = inputShape.toSingle().toArray
     require(input.length == 3,
       s"Cropping1D requires 3D input, but got input dim ${input.length}")
-    Shape(input(0), input(1)-cropping._1-cropping._2, input(2))
+    Shape(input(0), input(1)-cropping(0)-cropping(1), input(2))
   }
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
-    val layer = SpatialZeroPadding(0, 0, -cropping._1, -cropping._2)
+    val layer = SpatialZeroPadding(0, 0, -cropping(0), -cropping(1))
     layer.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
   }
 }
 
 object Cropping1D {
   def apply[@specialized(Float, Double) T: ClassTag](
-    cropping: (Int, Int) = (1, 1),
+    cropping: Array[Int] = Array(1, 1),
     inputShape: Shape = null)(implicit ev: TensorNumeric[T]): Cropping1D[T] = {
     new Cropping1D[T](cropping, inputShape)
   }

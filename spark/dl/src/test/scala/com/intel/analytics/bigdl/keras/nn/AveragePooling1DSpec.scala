@@ -49,7 +49,7 @@ class AveragePooling1DSpec extends KerasBaseSpec {
         |model = Model(input=input_tensor, output=output_tensor)
       """.stripMargin
     val seq = KSequential[Float]()
-    val layer = AveragePooling1D[Float](poolLength = 3, stride = Some(1),
+    val layer = AveragePooling1D[Float](poolLength = 3, stride = 1,
       borderMode = "same", inputShape = Shape(32, 32))
     seq.add(layer)
     seq.getOutputShape().toSingle().toArray should be (Array(-1, 32, 32))
