@@ -38,7 +38,8 @@ abstract class Pooling2D[T: ClassTag](
 
   override def computeOutputShape(inputShape: Shape): Shape = {
     val input = inputShape.toSingle().toArray
-    require(input.length == 4, "Pooling2D requires 4D input")
+    require(input.length == 4,
+      s"Pooling2D requires 4D input, but got input dim ${input.length}")
     val (dimH, dimW, dimC) = format.getHWCDims(4)
     val rows = KerasUtils.computeConvOutputLength(input(dimH -1), poolSize._1,
       borderMode, strideValues._1)

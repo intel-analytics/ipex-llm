@@ -33,7 +33,8 @@ abstract class Pooling1D[T: ClassTag](
 
   override def computeOutputShape(inputShape: Shape): Shape = {
     val input = inputShape.toSingle().toArray
-    require(input.length == 3, "Pooling1D requires 3D input")
+    require(input.length == 3,
+      s"Pooling1D requires 3D input, but got input dim ${input.length}")
     val outputLength = KerasUtils.computeConvOutputLength(input(1), poolLength,
       borderMode, strideValue)
     Shape(input(0), outputLength, input(2))

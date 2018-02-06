@@ -30,7 +30,7 @@ class Convolution1D[T: ClassTag](
    val nbFilter: Int,
    val filterLength: Int,
    val init: InitializationMethod = Xavier,
-   val activation: TensorModule[T] = null,
+   val activation: AbstractModule[Tensor[T], Tensor[T], T] = null,
    val borderMode: String = "valid",
    val subsampleLength: Int = 1,
    var wRegularizer: Regularizer[T] = null,
@@ -41,7 +41,8 @@ class Convolution1D[T: ClassTag](
 
   override def computeOutputShape(inputShape: Shape): Shape = {
     val input = inputShape.toSingle().toArray
-    require(input.length == 3, "Convolution1D requires 3D input")
+    require(input.length == 3,
+      s"Convolution1D requires 3D input, but got input dim ${input.length}")
     val outputLength = KerasUtils.computeConvOutputLength(input(1), filterLength,
       borderMode, subsampleLength)
     Shape(input(0), outputLength, nbFilter)
@@ -51,7 +52,7 @@ class Convolution1D[T: ClassTag](
     val input = inputShape.toSingle().toArray
     val pads = KerasUtils.getPadsFromBorderMode(borderMode)
     val model = TSequential[T]()
-    model.add(Reshape(Array(input(1), 1, input(2)), Some(true)))
+    model.add(com.intel.analytics.bigdl.nn.Reshape(Array(input(1), 1, input(2)), Some(true)))
     val layer = SpatialConvolution(
       nInputPlane = input(2),
       nOutputPlane = nbFilter,

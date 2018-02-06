@@ -31,7 +31,8 @@ class RepeatVector[T: ClassTag](
 
   override def computeOutputShape(inputShape: Shape): Shape = {
     val input = inputShape.toSingle().toArray
-    require(input.length == 2, "RepeatVector requires 2D input")
+    require(input.length == 2,
+      s"RepeatVector requires 2D input, but got input dim ${input.length}")
     Shape(input(0), n, input(1))
   }
 

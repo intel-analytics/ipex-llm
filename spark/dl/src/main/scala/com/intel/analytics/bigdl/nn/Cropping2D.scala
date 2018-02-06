@@ -50,8 +50,8 @@ class Cropping2D[T: ClassTag](
 
   override def computeOutputShape(inputShape: Shape): Shape = {
     val input = inputShape.toSingle().toArray
-    require(input.length == 4, "input dimensions should be 4." +
-      " (batchSize, channels, first_axis_to_crop, second_axis_to_crop)")
+    require(input.length == 4,
+      s"Cropping2D requires 4D input, but got input dim ${input.length}")
     val outputShape = dataFormat match {
       case DataFormat.NCHW =>
         Array(input(0), input(1), input(2)-heightCrop(0)-heightCrop(1),

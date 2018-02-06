@@ -31,7 +31,8 @@ class Cropping1D[T: ClassTag](
 
   override def computeOutputShape(inputShape: Shape): Shape = {
     val input = inputShape.toSingle().toArray
-    require(input.length == 3, "Cropping1D requires 3D input")
+    require(input.length == 3,
+      s"Cropping1D requires 3D input, but got input dim ${input.length}")
     Shape(input(0), input(1)-cropping._1-cropping._2, input(2))
   }
 

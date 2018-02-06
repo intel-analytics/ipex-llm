@@ -130,7 +130,7 @@ class VolumetricConvolution[T: ClassTag](
   override def computeOutputShape(inputShape: Shape): Shape = {
     val input = inputShape.toSingle().toArray
     require(input.length == 5,
-      s"4D or 5D (batch mode) tensor expected for input, but got: ${ input.length + 1 }d")
+      s"Convolution3D requires 5D input, but got input dim ${input.length}")
     require(input(1) == nInputPlane, s"input.size(1) should be equal to nInputPlane. " +
       s"But In ${this.getName()} : input.size(1) is: ${ input(1) } ," +
       s" nInputPlane is: ${ nInputPlane }")

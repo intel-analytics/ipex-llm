@@ -53,8 +53,8 @@ class Cropping3D[T: ClassTag](
 
   override def computeOutputShape(inputShape: Shape): Shape = {
     val input = inputShape.toSingle().toArray
-    require(input.length == 5, "input dimensions should be 5." +
-      " (batchSize, channels, first_axis_to_crop, second_axis_to_crop, third_axis_to_crop)")
+    require(input.length == 5,
+      s"Cropping3D requires 5D input, but got input dim ${input.length}")
     val outputShape = dataFormat match {
       case Cropping3D.CHANNEL_FIRST =>
         Array(input(0), input(1), input(2)-dim1Crop(0)-dim1Crop(1),

@@ -31,7 +31,7 @@ class Convolution3D[T: ClassTag](
    val kernelDim2: Int,
    val kernelDim3: Int,
    val init: InitializationMethod = Xavier,
-   val activation: TensorModule[T] = null,
+   val activation: AbstractModule[Tensor[T], Tensor[T], T] = null,
    val borderMode: String = "valid",
    val subsample: (Int, Int, Int) = (1, 1, 1),
    val wRegularizer: Regularizer[T] = null,

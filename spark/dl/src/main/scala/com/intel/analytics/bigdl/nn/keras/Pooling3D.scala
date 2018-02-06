@@ -32,7 +32,8 @@ abstract class Pooling3D[T: ClassTag](
 
   override def computeOutputShape(inputShape: Shape): Shape = {
     val input = inputShape.toSingle().toArray
-    require(input.length == 5, "Pooling3D requires 5D input")
+    require(input.length == 5,
+      s"Pooling3D requires 5D input, but got input dim ${input.length}")
     val dim1Length = KerasUtils.computeConvOutputLength(input(2), poolSize._1,
       "valid", strideValues._1)
     val dim2Length = KerasUtils.computeConvOutputLength(input(3), poolSize._2,
