@@ -24,16 +24,23 @@ import com.intel.analytics.bigdl.utils.Shape
 import scala.reflect.ClassTag
 
 class Cropping2D[T: ClassTag](
-   val cropping: ((Int, Int), (Int, Int)) = ((0, 0), (0, 0)),
+   val cropping: Array[Array[Int]] = Array(Array(0, 0), Array(0, 0)),
    val format: DataFormat = DataFormat.NCHW,
    var inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {
 
+  require(cropping.length == 2,
+    s"Cropping2D requires two cropping dimensions, but got ${cropping.length}")
+  require(cropping(0).length == 2,
+    s"Cropping values in height dimension should be of length 2, but got ${cropping(0).length}")
+  require(cropping(1).length == 2,
+    s"Cropping values in width dimension should be of length 2, but got ${cropping(1).length}")
+
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
     val layer =
       com.intel.analytics.bigdl.nn.Cropping2D(
-        heightCrop = Array(cropping._1._1, cropping._1._2),
-        widthCrop = Array(cropping._2._1, cropping._2._2),
+        heightCrop = cropping(0),
+        widthCrop = cropping(1),
         format = format)
     layer.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
   }
@@ -44,6 +51,8 @@ object Cropping2D {
     cropping: ((Int, Int), (Int, Int)) = ((0, 0), (0, 0)),
     format: DataFormat = DataFormat.NCHW,
     inputShape: Shape = null)(implicit ev: TensorNumeric[T]): Cropping2D[T] = {
-    new Cropping2D[T](cropping, format, inputShape)
+    val heightCrop = Array(cropping._1._1, cropping._1._2)
+    val widthCrop = Array(cropping._2._1, cropping._2._2)
+    new Cropping2D[T](Array(heightCrop, widthCrop), format, inputShape)
   }
 }

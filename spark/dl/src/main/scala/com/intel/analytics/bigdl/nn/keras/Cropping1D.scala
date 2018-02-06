@@ -47,8 +47,8 @@ class Cropping1D[T: ClassTag](
 
 object Cropping1D {
   def apply[@specialized(Float, Double) T: ClassTag](
-    cropping: Array[Int] = Array(1, 1),
+    cropping: (Int, Int) = (1, 1),
     inputShape: Shape = null)(implicit ev: TensorNumeric[T]): Cropping1D[T] = {
-    new Cropping1D[T](cropping, inputShape)
+    new Cropping1D[T](Array(cropping._1, cropping._2), inputShape)
   }
 }

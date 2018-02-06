@@ -24,7 +24,7 @@ import com.intel.analytics.bigdl.utils.Shape
 import scala.reflect.ClassTag
 
 class Cropping3D[T: ClassTag](
-   val cropping: ((Int, Int), (Int, Int), (Int, Int)) = ((1, 1), (1, 1), (1, 1)),
+   val cropping: Array[Array[Int]] = Array(Array(1, 1), Array(1, 1), Array(1, 1)),
    val format: String = "CHANNEL_FIRST",
    var inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {
@@ -40,11 +40,10 @@ class Cropping3D[T: ClassTag](
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
     val layer =
       com.intel.analytics.bigdl.nn.Cropping3D(
-        dim1Crop = Array(cropping._1._1, cropping._1._2),
-        dim2Crop = Array(cropping._2._1, cropping._2._2),
-        dim3Crop = Array(cropping._3._1, cropping._3._2),
-        format = dimOrdering
-      )
+        dim1Crop = cropping(0),
+        dim2Crop = cropping(1),
+        dim3Crop = cropping(2),
+        format = dimOrdering)
     layer.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
   }
 }
@@ -54,6 +53,9 @@ object Cropping3D {
     cropping: ((Int, Int), (Int, Int), (Int, Int)) = ((1, 1), (1, 1), (1, 1)),
     format: String = "CHANNEL_FIRST",
     inputShape: Shape = null)(implicit ev: TensorNumeric[T]): Cropping3D[T] = {
-    new Cropping3D[T](cropping, format, inputShape)
+    val dim1Crop = Array(cropping._1._1, cropping._1._2)
+    val dim2Crop = Array(cropping._2._1, cropping._2._2)
+    val dim3Crop = Array(cropping._3._1, cropping._3._2)
+    new Cropping3D[T](Array(dim1Crop, dim2Crop, dim3Crop), format, inputShape)
   }
 }
