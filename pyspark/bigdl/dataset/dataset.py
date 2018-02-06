@@ -30,3 +30,7 @@ class Dataset(JavaValue):
         self.bigdl_type = bigdl_type
         if isinstance(data, ImageFrame):
             return callBigDlFunc(self.bigdl_type, "createDatasetFromImageFrame", data)
+
+
+    def transform(self, transformer):
+        return callBigDlFunc(self.bigdl_type, "transformDataset", transformer)

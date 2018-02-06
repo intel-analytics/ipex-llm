@@ -142,7 +142,7 @@ class ImageFrameSpec extends FlatSpec with Matchers with BeforeAndAfter {
       RandomTransformer(HFlip(), 0.5) ->
       ChannelNormalize(0.485f, 0.456f, 0.406f, 0.229f, 0.224f, 0.225f) ->
       MatToTensor[Float](toRGB = true) ->
-      ImageFrameToSample[Float](Array(ImageFeature.imageTensor), Array(ImageFeature.label))
+      TensorsToSample[Float](Array(ImageFeature.imageTensor), Array(ImageFeature.label))
 
     val sampleRdd = imageFrame.toDistributed().rdd.map(x => x[Sample[Float]](ImageFeature.sample))
     sampleRdd.foreach(x => {
@@ -181,7 +181,7 @@ class ImageFrameSpec extends FlatSpec with Matchers with BeforeAndAfter {
       ChannelNormalize(testMean * 255, testStd * 255) ->
       ChannelNormalize(testMean, testStd) ->
       MatToTensor[Float](shareBuffer = false) ->
-      ImageFrameToSample[Float]()
+      TensorsToSample[Float]()
     val transformed = transformer(imf)
     transformed.toLocal().array.foreach(x => {
       println(x(ImageFeature.sample))

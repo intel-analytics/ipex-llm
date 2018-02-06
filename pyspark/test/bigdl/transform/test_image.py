@@ -157,7 +157,7 @@ class TestLayer():
     def test_inception_preprocess(self):
         transformer = Pipeline([Resize(256, 256), CenterCrop(224, 224),
                                 ChannelNormalize(0.485, 0.456, 0.406, 0.229, 0.224, 0.225),
-                                MatToTensor(), ImageFrameToSample()])
+                                MatToTensor(), TensorsToSample()])
         self.transformer_test(transformer)
 
     def test_mat_to_floats(self):
@@ -172,8 +172,8 @@ class TestLayer():
         transformer = MatToTensor()
         self.transformer_test(transformer)
 
-    def testImageFrameToSample(self):
-        transformer = Pipeline([MatToTensor(), ImageFrameToSample()])
+    def testTensorsToSample(self):
+        transformer = Pipeline([MatToTensor(), TensorsToSample()])
         self.transformer_test(transformer)
 
     def test_image_frame_transform(self):
