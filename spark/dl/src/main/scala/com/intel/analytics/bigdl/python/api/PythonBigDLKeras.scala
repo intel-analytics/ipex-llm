@@ -41,7 +41,16 @@ object PythonBigDLKeras {
   def ofDouble(): PythonBigDLKeras[Double] = new PythonBigDLKeras[Double]()
 }
 
-class PythonBigDLKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializable  {
+class PythonBigDLKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonBigDL[T] {
+
+  def toScalaShape(inputShape: JList[Int]): Shape = {
+    if (inputShape == null) {
+      null
+    } else {
+      Shape(inputShape.asScala.toArray)
+    }
+  }
+
   def createKerasDense(outputDim: Int,
                    init: InitializationMethod = RandomUniform,
                    activation: TensorModule[T] = null,
@@ -55,10 +64,6 @@ class PythonBigDLKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends Seria
       wRegularizer,
       bRegularizer,
       bias,
-      if (inputShape == null) {
-        null
-      } else {
-        Shape(inputShape.asScala.toArray)
-      })
+      toScalaShape(inputShape))
   }
 }
