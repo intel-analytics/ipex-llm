@@ -16,40 +16,40 @@
 
 package com.intel.analytics.bigdl.nn.keras
 
-import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, DataFormat}
+import com.intel.analytics.bigdl.nn.{SpatialMaxPooling, Squeeze, Sequential => TSequential}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Shape
 
 import scala.reflect.ClassTag
 
-/**
- * Flattens the input without affecting the batch size.
- * When you use this layer as the first layer of a model, you need to provide the argument
- * inputShape (a Single Shape, does not include the batch dimension).
- *
- * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now
- */
-class Flatten[T: ClassTag](
-   val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
-  extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {
-
-  override def computeOutputShape(inputShape: Shape): Shape = {
-    val input = inputShape.toSingle().toArray
-    Shape(input(0), input.slice(1, input.length).product)
-  }
+class GlobalMaxPooling2D[T: ClassTag](
+   format: DataFormat = DataFormat.NCHW,
+   inputShape: Shape = null)(implicit ev: TensorNumeric[T])
+  extends GlobalPooling2D[T](format, inputShape) {
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
     val input = inputShape.toSingle().toArray
-    val layer =
-      com.intel.analytics.bigdl.nn.Reshape(Array(input.slice(1, input.length).product))
-    layer.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
+    val (dimH, dimW, dimC) = format.getHWCDims(4)
+    val model = TSequential[T]()
+    val layer = SpatialMaxPooling(
+      kW = input(dimW -1),
+      kH = input(dimH -1),
+      dW = input(dimW -1),
+      dH = input(dimH -1),
+      format = format)
+    model.add(layer)
+    model.add(Squeeze(dimW))
+    model.add(Squeeze(dimH))
+    model.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
   }
 }
 
-object Flatten {
+object GlobalMaxPooling2D {
   def apply[@specialized(Float, Double) T: ClassTag](
-    inputShape: Shape = null)(implicit ev: TensorNumeric[T]): Flatten[T] = {
-    new Flatten[T](inputShape)
+    dimOrdering: String = "th",
+    inputShape: Shape = null)(implicit ev: TensorNumeric[T]): GlobalMaxPooling2D[T] = {
+    new GlobalMaxPooling2D[T](KerasUtils.toBigDLFormat(dimOrdering), inputShape)
   }
 }
