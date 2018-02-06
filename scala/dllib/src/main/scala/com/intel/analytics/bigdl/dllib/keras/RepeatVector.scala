@@ -16,6 +16,7 @@
 
 package com.intel.analytics.bigdl.nn.keras
 
+import com.intel.analytics.bigdl.nn.{ErrorInfo, Replicate}
 import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -23,36 +24,28 @@ import com.intel.analytics.bigdl.utils.Shape
 
 import scala.reflect.ClassTag
 
-/**
- * Simple activation function to be applied to the output.
- * When you use this layer as the first layer of a model, you need to provide the argument
- * inputShape (a Single Shape, does not include the batch dimension).
- *
- * Available activations: 'tanh', 'relu', 'sigmoid', 'softmax', 'softplus',
- * 'softsign', 'hard_sigmoid'.
- *
- * @param activation Name of activation function as string.
- * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now
- */
-class Activation[T: ClassTag](
-   val activation: String,
+class RepeatVector[T: ClassTag](
+   val n: Int,
    val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {
 
-  require(activation != null, "The name of an activation function as a string is required")
+  override def computeOutputShape(inputShape: Shape): Shape = {
+    val input = inputShape.toSingle().toArray
+    require(input.length == 2,
+      s"RepeatVector requires 2D input, but got input dim ${input.length}")
+    Shape(input(0), n, input(1))
+  }
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
-    val model = Sequential[T]()
-    model.add(InputLayer(inputShape = KerasLayer.removeBatch(inputShape)))
-    val layer = KerasUtils.getActivation(activation)
-    model.add(layer).asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
+    val layer = Replicate(nFeatures = n, nDim = 1)
+    layer.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
   }
 }
 
-object Activation {
+object RepeatVector {
   def apply[@specialized(Float, Double) T: ClassTag](
-    activation: String,
-    inputShape: Shape = null)(implicit ev: TensorNumeric[T]): Activation[T] = {
-    new Activation[T](activation, inputShape)
+    n: Int,
+    inputShape: Shape = null)(implicit ev: TensorNumeric[T]): RepeatVector[T] = {
+    new RepeatVector[T](n, inputShape)
   }
 }
