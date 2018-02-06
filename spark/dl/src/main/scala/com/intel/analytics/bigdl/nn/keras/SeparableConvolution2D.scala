@@ -98,8 +98,7 @@ class SeparableConvolution2D[T: ClassTag](
       dataFormat = format,
       wRegularizer = depthwiseRegularizer,
       bRegularizer = bRegularizer,
-      pRegularizer = pointwiseRegularizer
-    )
+      pRegularizer = pointwiseRegularizer)
     KerasLayer.fuse(layer, activation,
       inputShape).asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
   }
@@ -120,8 +119,7 @@ object SeparableConvolution2D {
     bRegularizer: Regularizer[T] = null,
     format: DataFormat = DataFormat.NCHW,
     bias: Boolean = true,
-    inputShape: Shape = null
-    )(implicit ev: TensorNumeric[T]) : SeparableConvolution2D[T] = {
+    inputShape: Shape = null)(implicit ev: TensorNumeric[T]) : SeparableConvolution2D[T] = {
     new SeparableConvolution2D[T](
       nbFilter, nbCol, nbRow, init, KerasUtils.getActivation(activation),
       borderMode, Array(subsample._1, subsample._2), depthMultiplier, depthwiseRegularizer,

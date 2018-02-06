@@ -46,8 +46,7 @@ class GlobalMaxPooling3D[T: ClassTag](
       dH = 1,
       padT = 0,
       padW = 0,
-      padH = 0
-    )
+      padH = 0)
     model.add(layer)
     model.add(Squeeze(5))
     model.add(Squeeze(4))
@@ -58,8 +57,7 @@ class GlobalMaxPooling3D[T: ClassTag](
 
 object GlobalMaxPooling3D {
   def apply[@specialized(Float, Double) T: ClassTag](
-    inputShape: Shape = null
-    )(implicit ev: TensorNumeric[T]) : GlobalMaxPooling3D[T] = {
+    inputShape: Shape = null)(implicit ev: TensorNumeric[T]) : GlobalMaxPooling3D[T] = {
     new GlobalMaxPooling3D[T](inputShape)
   }
 }

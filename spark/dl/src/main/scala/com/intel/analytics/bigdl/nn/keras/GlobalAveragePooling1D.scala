@@ -48,8 +48,7 @@ class GlobalAveragePooling1D[T: ClassTag](
       ceilMode = false,
       countIncludePad = false,
       divide = true,
-      format = DataFormat.NHWC
-    )
+      format = DataFormat.NHWC)
     model.add(layer)
     model.add(Squeeze(3))
     model.add(Squeeze(2))
@@ -59,8 +58,7 @@ class GlobalAveragePooling1D[T: ClassTag](
 
 object GlobalAveragePooling1D {
   def apply[@specialized(Float, Double) T: ClassTag](
-    inputShape: Shape = null
-    )(implicit ev: TensorNumeric[T]) : GlobalAveragePooling1D[T] = {
+    inputShape: Shape = null)(implicit ev: TensorNumeric[T]) : GlobalAveragePooling1D[T] = {
     new GlobalAveragePooling1D[T](inputShape)
   }
 }

@@ -87,8 +87,7 @@ class LocallyConnected2D[T: ClassTag](
       wRegularizer = wRegularizer,
       bRegularizer = bRegularizer,
       withBias = bias,
-      format = format
-    )
+      format = format)
     KerasLayer.fuse(layer, activation,
       inputShape).asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
   }
@@ -106,8 +105,7 @@ object LocallyConnected2D {
     bRegularizer: Regularizer[T] = null,
     format: DataFormat = DataFormat.NCHW,
     bias: Boolean = true,
-    inputShape: Shape = null)
-    (implicit ev: TensorNumeric[T]): LocallyConnected2D[T] = {
+    inputShape: Shape = null)(implicit ev: TensorNumeric[T]): LocallyConnected2D[T] = {
     new LocallyConnected2D[T](
       nbFilter, nbRow, nbCol, KerasUtils.getActivation(activation), borderMode,
       Array(subsample._1, subsample._2), wRegularizer, bRegularizer, format, bias, inputShape)

@@ -44,8 +44,7 @@ class GlobalMaxPooling1D[T: ClassTag](
       dH = 1,
       padW = 0,
       padH = 0,
-      format = DataFormat.NHWC
-    )
+      format = DataFormat.NHWC)
     model.add(layer)
     model.add(Squeeze(3))
     model.add(Squeeze(2))
@@ -55,8 +54,7 @@ class GlobalMaxPooling1D[T: ClassTag](
 
 object GlobalMaxPooling1D {
   def apply[@specialized(Float, Double) T: ClassTag](
-    inputShape: Shape = null
-    )(implicit ev: TensorNumeric[T]) : GlobalMaxPooling1D[T] = {
+    inputShape: Shape = null)(implicit ev: TensorNumeric[T]) : GlobalMaxPooling1D[T] = {
     new GlobalMaxPooling1D[T](inputShape)
   }
 }

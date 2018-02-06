@@ -114,8 +114,7 @@ object ZeroPadding3D {
   def apply[@specialized(Float, Double) T: ClassTag](
     padding: (Int, Int, Int) = (1, 1, 1),
     format: String = "CHANNEL_FIRST",
-    inputShape: Shape = null
-    )(implicit ev: TensorNumeric[T]) : ZeroPadding3D[T] = {
+    inputShape: Shape = null)(implicit ev: TensorNumeric[T]) : ZeroPadding3D[T] = {
     new ZeroPadding3D[T](Array(padding._1, padding._2, padding._3), format, inputShape)
   }
 }

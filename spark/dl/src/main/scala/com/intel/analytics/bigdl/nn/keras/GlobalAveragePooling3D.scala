@@ -47,8 +47,7 @@ class GlobalAveragePooling3D[T: ClassTag](
       padT = 0,
       padW = 0,
       padH = 0,
-      countIncludePad = false
-    )
+      countIncludePad = false)
     model.add(layer)
     model.add(Squeeze(5))
     model.add(Squeeze(4))
@@ -59,8 +58,7 @@ class GlobalAveragePooling3D[T: ClassTag](
 
 object GlobalAveragePooling3D {
   def apply[@specialized(Float, Double) T: ClassTag](
-    inputShape: Shape = null
-    )(implicit ev: TensorNumeric[T]) : GlobalAveragePooling3D[T] = {
+    inputShape: Shape = null)(implicit ev: TensorNumeric[T]) : GlobalAveragePooling3D[T] = {
     new GlobalAveragePooling3D[T](inputShape)
   }
 }
