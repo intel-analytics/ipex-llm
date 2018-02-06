@@ -42,7 +42,7 @@ object PythonBigDLKeras {
 }
 
 class PythonBigDLKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializable  {
-  def createDense(outputDim: Int,
+  def createKerasDense(outputDim: Int,
                    init: InitializationMethod = RandomUniform,
                    activation: TensorModule[T] = null,
                    wRegularizer: Regularizer[T] = null,

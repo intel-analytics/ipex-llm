@@ -43,7 +43,7 @@ class Node(JavaValue):
     """
     def __init__(self, jvalue, bigdl_type, *args):
         self.value = jvalue if jvalue else callBigDlFunc(
-            bigdl_type, JavaValue.jvm_class_constructor(self), *args)
+            bigdl_type, self.jvm_class_constructor(), *args)
         self.bigdl_type = bigdl_type
 
     @classmethod

@@ -25,7 +25,14 @@ if sys.version >= '3':
     long = int
     unicode = str
 
-class Dense(Layer):
+class KerasLayer(Layer):
+    def jvm_class_constructor(self):
+        name = "createKeras" + self.__class__.__name__
+        print("creating: " + name)
+        return name
+
+
+class Dense(KerasLayer):
     """Just your regular densely-connected NN layer.
 
         # Example
