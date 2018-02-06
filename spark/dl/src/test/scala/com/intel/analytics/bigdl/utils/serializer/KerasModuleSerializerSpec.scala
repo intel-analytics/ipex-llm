@@ -140,5 +140,103 @@ class KerasModuleSerializerSpec extends SerializerSpecHelper {
     runSerializationTest(layer, input)
   }
 
+  "Convolution1D serializer" should "work properly" in {
+    val layer = Convolution1D[Float](64, 3, inputShape = Shape(12, 20))
+    layer.build(Shape(2, 12, 20))
+    val input = Tensor[Float](2, 12, 20).apply1(_ => Random.nextFloat())
+    runSerializationTest(layer, input)
+  }
+
+  "Convolution3D serializer" should "work properly" in {
+    val layer = Convolution3D[Float](12, 2, 1, 3, inputShape = Shape(3, 32, 32, 32))
+    layer.build(Shape(2, 3, 32, 32, 32))
+    val input = Tensor[Float](2, 3, 32, 32, 32).apply1(_ => Random.nextFloat())
+    runSerializationTest(layer, input)
+  }
+
+  "MaxPooling1D serializer" should "work properly" in {
+    val layer = MaxPooling1D[Float](inputShape = Shape(12, 12))
+    layer.build(Shape(2, 12, 12))
+    val input = Tensor[Float](2, 12, 12).apply1(_ => Random.nextFloat())
+    runSerializationTest(layer, input)
+  }
+
+  "MaxPooling3D serializer" should "work properly" in {
+    val layer = MaxPooling3D[Float](inputShape = Shape(3, 20, 15, 35))
+    layer.build(Shape(2, 3, 20, 15, 35))
+    val input = Tensor[Float](2, 3, 20, 15, 35).apply1(_ => Random.nextFloat())
+    runSerializationTest(layer, input)
+  }
+
+  "AveragePooling1D serializer" should "work properly" in {
+    val layer = AveragePooling1D[Float](inputShape = Shape(12, 16))
+    layer.build(Shape(2, 12, 16))
+    val input = Tensor[Float](2, 12, 16).apply1(_ => Random.nextFloat())
+    runSerializationTest(layer, input)
+  }
+
+  "AveragePooling2D serializer" should "work properly" in {
+    val layer = AveragePooling2D[Float](inputShape = Shape(3, 24, 24))
+    layer.build(Shape(2, 3, 24, 24))
+    val input = Tensor[Float](2, 3, 24, 24).apply1(_ => Random.nextFloat())
+    runSerializationTest(layer, input)
+  }
+
+  "AveragePooling3D serializer" should "work properly" in {
+    val layer = AveragePooling3D[Float](inputShape = Shape(3, 12, 12, 12))
+    layer.build(Shape(2, 3, 12, 12, 12))
+    val input = Tensor[Float](2, 3, 12, 12, 12).apply1(_ => Random.nextFloat())
+    runSerializationTest(layer, input)
+  }
+
+  "GlobalMaxPooling2D serializer" should "work properly" in {
+    val layer = GlobalMaxPooling2D[Float](inputShape = Shape(4, 24, 32))
+    layer.build(Shape(2, 4, 24, 32))
+    val input = Tensor[Float](2, 4, 24, 32).apply1(_ => Random.nextFloat())
+    runSerializationTest(layer, input)
+  }
+
+  "GlobalAveragePooling2D serializer" should "work properly" in {
+    val layer = GlobalAveragePooling2D[Float](inputShape = Shape(4, 24, 32))
+    layer.build(Shape(2, 4, 24, 32))
+    val input = Tensor[Float](2, 4, 24, 32).apply1(_ => Random.nextFloat())
+    runSerializationTest(layer, input)
+  }
+
+  "RepeatVector serializer" should "work properly" in {
+    val layer = RepeatVector[Float](4, inputShape = Shape(12))
+    layer.build(Shape(2, 12))
+    val input = Tensor[Float](2, 12).apply1(_ => Random.nextFloat())
+    runSerializationTest(layer, input)
+  }
+
+  "Permute serializer" should "work properly" in {
+    val layer = Permute[Float](Array(3, 1, 4, 2), inputShape = Shape(3, 4, 5, 6))
+    layer.build(Shape(2, 3, 4, 5, 6))
+    val input = Tensor[Float](2, 3, 4, 5, 6).apply1(_ => Random.nextFloat())
+    runSerializationTest(layer, input)
+  }
+
+  "Cropping1D serializer" should "work properly" in {
+    val layer = Cropping1D[Float](inputShape = Shape(5, 6))
+    layer.build(Shape(2, 5, 6))
+    val input = Tensor[Float](2, 5, 6).apply1(_ => Random.nextFloat())
+    runSerializationTest(layer, input)
+  }
+
+  "Cropping2D serializer" should "work properly" in {
+    val layer = Cropping2D[Float](inputShape = Shape(3, 8, 12))
+    layer.build(Shape(2, 3, 8, 12))
+    val input = Tensor[Float](2, 3, 8, 12).apply1(_ => Random.nextFloat())
+    runSerializationTest(layer, input)
+  }
+
+  "Cropping3D serializer" should "work properly" in {
+    val layer = Cropping3D[Float](inputShape = Shape(4, 12, 16, 20))
+    layer.build(Shape(2, 4, 12, 16, 20))
+    val input = Tensor[Float](2, 4, 12, 16, 20).apply1(_ => Random.nextFloat())
+    runSerializationTest(layer, input)
+  }
+
 }
 

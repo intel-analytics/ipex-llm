@@ -16,6 +16,7 @@
 
 package com.intel.analytics.bigdl.nn.keras
 
+import com.intel.analytics.bigdl.nn.VolumetricAveragePooling
 import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -23,33 +24,33 @@ import com.intel.analytics.bigdl.utils.Shape
 
 import scala.reflect.ClassTag
 
-/**
- * Flattens the input without affecting the batch size.
- * When you use this layer as the first layer of a model, you need to provide the argument
- * inputShape (a Single Shape, does not include the batch dimension).
- *
- * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now
- */
-class Flatten[T: ClassTag](
-   val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
-  extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {
-
-  override def computeOutputShape(inputShape: Shape): Shape = {
-    val input = inputShape.toSingle().toArray
-    Shape(input(0), input.slice(1, input.length).product)
-  }
+class AveragePooling3D[T: ClassTag](
+   poolSize: Array[Int] = Array(2, 2, 2),
+   strides: Array[Int] = null,
+   inputShape: Shape = null)(implicit ev: TensorNumeric[T])
+  extends Pooling3D[T](poolSize, strides, inputShape) {
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
-    val input = inputShape.toSingle().toArray
-    val layer =
-      com.intel.analytics.bigdl.nn.Reshape(Array(input.slice(1, input.length).product))
+    val layer = VolumetricAveragePooling(
+      kT = poolSize(0),
+      kW = poolSize(2),
+      kH = poolSize(1),
+      dT = strideValues(0),
+      dW = strideValues(2),
+      dH = strideValues(1),
+      countIncludePad = false)
     layer.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
   }
 }
 
-object Flatten {
+object AveragePooling3D {
   def apply[@specialized(Float, Double) T: ClassTag](
-    inputShape: Shape = null)(implicit ev: TensorNumeric[T]): Flatten[T] = {
-    new Flatten[T](inputShape)
+    poolSize: (Int, Int, Int) = (2, 2, 2),
+    strides: (Int, Int, Int) = null,
+    inputShape: Shape = null)(implicit ev: TensorNumeric[T]): AveragePooling3D[T] = {
+    val strideValues = if (strides != null) Array(strides._1, strides._2, strides._3)
+                       else null
+    new AveragePooling3D[T](Array(poolSize._1, poolSize._2, poolSize._3),
+      strideValues, inputShape)
   }
 }

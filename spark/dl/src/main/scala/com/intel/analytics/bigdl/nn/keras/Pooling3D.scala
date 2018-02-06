@@ -16,40 +16,36 @@
 
 package com.intel.analytics.bigdl.nn.keras
 
-import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Shape
 
 import scala.reflect.ClassTag
 
-/**
- * Flattens the input without affecting the batch size.
- * When you use this layer as the first layer of a model, you need to provide the argument
- * inputShape (a Single Shape, does not include the batch dimension).
- *
- * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now
- */
-class Flatten[T: ClassTag](
+abstract class Pooling3D[T: ClassTag](
+   val poolSize: Array[Int] = Array(2, 2, 2),
+   val strides: Array[Int] = null,
    val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {
 
+  require(poolSize.length == 3,
+    s"For Pooling3D, poolSize should be of length 3 but got length ${poolSize.length}")
+
+  val strideValues: Array[Int] = if (strides == null) poolSize else strides
+  require(strideValues.length == 3,
+    s"For Pooling3D, strides should be of length 3 but got length ${strideValues.length}")
+
   override def computeOutputShape(inputShape: Shape): Shape = {
     val input = inputShape.toSingle().toArray
-    Shape(input(0), input.slice(1, input.length).product)
+    require(input.length == 5,
+      s"Pooling3D requires 5D input, but got input dim ${input.length}")
+    val dim1Length = KerasUtils.computeConvOutputLength(input(2), poolSize(0),
+      "valid", strideValues(0))
+    val dim2Length = KerasUtils.computeConvOutputLength(input(3), poolSize(1),
+      "valid", strideValues(1))
+    val dim3Length = KerasUtils.computeConvOutputLength(input(4), poolSize(2),
+      "valid", strideValues(2))
+    Shape(input(0), input(1), dim1Length, dim2Length, dim3Length)
   }
 
-  override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
-    val input = inputShape.toSingle().toArray
-    val layer =
-      com.intel.analytics.bigdl.nn.Reshape(Array(input.slice(1, input.length).product))
-    layer.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
-  }
-}
-
-object Flatten {
-  def apply[@specialized(Float, Double) T: ClassTag](
-    inputShape: Shape = null)(implicit ev: TensorNumeric[T]): Flatten[T] = {
-    new Flatten[T](inputShape)
-  }
 }
