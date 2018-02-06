@@ -30,7 +30,7 @@ import org.apache.spark.api.java.JavaRDD
 import org.apache.spark.bigdl.api.python.BigDLSerDe
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.transform.vision.image.{ImageFeature, ImageFrame, ImageFrameToSample}
+import com.intel.analytics.bigdl.transform.vision.image.{CachedImageFrame, ImageFeature, ImageFeatureToMiniBatch, ImageFrame, TensorsToSample}
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 
 import scala.util.Random
@@ -297,8 +297,8 @@ class PythonSpec extends FlatSpec with Matchers with BeforeAndAfter {
       imf
     })
 
-    val imageFrame = ImageFrame.rdd(sc.parallelize(images)) ->
-      ImageFrameToSample[Float](targetKeys = Array(ImageFeature.label))
+    val imageFrame = ImageFrame.rdd(sc.parallelize(images), true) ->
+      TensorsToSample[Float](targetKeys = Array(ImageFeature.label))
 
     val model = Sequential[Float]()
     model.add(SpatialConvolution[Float](3, 6, 5, 5))
@@ -310,7 +310,7 @@ class PythonSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
     val pythonBigDL = PythonBigDL.ofFloat()
     val optimizer = pythonBigDL.createDistriOptimizerFromImageFrame(model,
-      imageFrame.toDistributed(),
+      imageFrame,
       criterion = ClassNLLCriterion[Float](),
       optimMethod = sgd,
       endTrigger = Trigger.maxEpoch(2),

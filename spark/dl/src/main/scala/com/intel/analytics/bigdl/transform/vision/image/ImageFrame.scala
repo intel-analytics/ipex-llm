@@ -203,21 +203,26 @@ class LocalImageFrame(var array: Array[ImageFeature])
   override def isDistributed(): Boolean = false
 }
 
+trait AbstractDistributedImageFrame extends DistributedDataSet[ImageFeature]
+  with AbstractImageFrame[RDD[ImageFeature]]{
+
+  override def isLocal(): Boolean = false
+
+  override def isDistributed(): Boolean = true
+}
+
 /**
  * Distributerd ImageFrame, it keeps an rdd of ImageFeature
  * @param rdd rdd of ImageFeature
  */
 class DistributedImageFrame(var rdd: RDD[ImageFeature])
-  extends DistributedDataSet[ImageFeature] with AbstractImageFrame[RDD[ImageFeature]] {
+  extends AbstractDistributedImageFrame with AbstractImageFrame[RDD[ImageFeature]] {
 
   override def transform(transformer: FeatureTransformer): ImageFrame = {
     rdd = transformer(rdd)
     this
   }
 
-  override def isLocal(): Boolean = false
-
-  override def isDistributed(): Boolean = true
 
   /**
    * Get the 'origin' RDD of the dataset.
@@ -256,7 +261,36 @@ class CachedImageFrame(rdd: RDD[Array[ImageFeature]])
 
   override def isDistributed(): Boolean = true
 
-  override def transform(transformer: FeatureTransformer): ImageFrame = {
-    throw new Exception("not implemented")
+  def transform2(transformer: FeatureTransformer): ImageFrame = {
+    val preDataSet = this
+
+    val broadcast = this.originRDD().sparkContext.broadcast(transformer)
+
+    val cachedTransformer =
+      preDataSet.originRDD().mapPartitions(_ => Iterator
+        .single(broadcast.value.cloneTransformer())
+      ).setName("Cached Transformer").persist()
+
+    new AbstractDistributedImageFrame {
+      override def size(): Long = preDataSet.size()
+
+      override def shuffle(): Unit = preDataSet.shuffle()
+
+      override def data(train: Boolean): RDD[ImageFeature] =
+        preDataSet.data(train).zipPartitions(cachedTransformer)(
+          (data, tran) => tran.next()(data))
+
+      override def originRDD(): RDD[_] = preDataSet.originRDD()
+
+      override def cache(): Unit = {
+        cachedTransformer.count()
+        isCached = true
+      }
+
+      override def unpersist(): Unit = {
+        cachedTransformer.unpersist()
+        isCached = false
+      }
+    }
   }
 }
