@@ -39,11 +39,10 @@ class GlobalAveragePooling2D[T: ClassTag](
       dW = input(dimW -1),
       dH = input(dimH -1),
       countIncludePad = false,
-      format = format
-    )
+      format = format)
     model.add(layer)
-    model.add(Squeeze(dimW - 1, numInputDims = 3))
-    model.add(Squeeze(dimH - 1, numInputDims = 2))
+    model.add(Squeeze(dimW))
+    model.add(Squeeze(dimH))
     model.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
   }
 }
