@@ -53,8 +53,7 @@ object AveragePooling2D {
     strides: (Int, Int) = null,
     borderMode: String = "valid",
     dimOrdering: String = "th",
-    inputShape: Shape = null)
-    (implicit ev: TensorNumeric[T]): AveragePooling2D[T] = {
+    inputShape: Shape = null)(implicit ev: TensorNumeric[T]): AveragePooling2D[T] = {
     val strideValues = if (strides != null) Array(strides._1, strides._2) else null
     new AveragePooling2D[T](Array(poolSize._1, poolSize._2), strideValues,
       borderMode, KerasUtils.toBigDLFormat(dimOrdering), inputShape)

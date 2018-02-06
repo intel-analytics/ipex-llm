@@ -22,7 +22,6 @@ import com.intel.analytics.bigdl.nn.keras.{Conv3D, Convolution3D, Sequential => 
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.Shape
 
-
 class Convolution3DSpec extends KerasBaseSpec {
 
   "Convolution3D" should "be the same as Keras" in {

@@ -87,7 +87,7 @@ object Convolution1D {
     wRegularizer: Regularizer[T] = null,
     bRegularizer: Regularizer[T] = null,
     bias: Boolean = true,
-    inputShape: Shape = null)(implicit ev: TensorNumeric[T]) : Convolution1D[T] = {
+    inputShape: Shape = null)(implicit ev: TensorNumeric[T]): Convolution1D[T] = {
     new Convolution1D[T](nbFilter, filterLength,
       KerasUtils.getInitMethod(init), KerasUtils.getActivation(activation),
       borderMode, subsampleLength, wRegularizer, bRegularizer, bias, inputShape)

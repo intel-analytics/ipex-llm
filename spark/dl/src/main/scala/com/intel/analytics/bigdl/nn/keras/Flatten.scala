@@ -30,7 +30,8 @@ import scala.reflect.ClassTag
  *
  * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now
  */
-class Flatten[T: ClassTag](val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
+class Flatten[T: ClassTag](
+   val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {
 
   override def computeOutputShape(inputShape: Shape): Shape = {

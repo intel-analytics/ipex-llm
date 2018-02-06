@@ -29,7 +29,7 @@ abstract class Pooling1D[T: ClassTag](
    val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {
 
-  // -1 means stride default to be poolLength
+  // -1 means stride by default to be poolLength
   require(stride == -1 || stride > 0, s"Invalid stride value for Pooling1D: $stride")
   val strideValue: Int = if (stride > 0) stride else poolLength
 
