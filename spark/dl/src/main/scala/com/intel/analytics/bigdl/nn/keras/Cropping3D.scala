@@ -46,12 +46,11 @@ class Cropping3D[T: ClassTag](
   }
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
-    val layer =
-      com.intel.analytics.bigdl.nn.Cropping3D(
-        dim1Crop = dim1Crop,
-        dim2Crop = dim2Crop,
-        dim3Crop = dim3Crop,
-        format = dimOrdering)
+    val layer = com.intel.analytics.bigdl.nn.Cropping3D(
+      dim1Crop = dim1Crop,
+      dim2Crop = dim2Crop,
+      dim3Crop = dim3Crop,
+      format = dimOrdering)
     layer.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
   }
 }

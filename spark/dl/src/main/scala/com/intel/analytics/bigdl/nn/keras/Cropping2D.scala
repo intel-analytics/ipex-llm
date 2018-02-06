@@ -36,11 +36,10 @@ class Cropping2D[T: ClassTag](
     s"Cropping3D: width cropping values should be of length 2, but got ${widthCrop.length}")
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
-    val layer =
-      com.intel.analytics.bigdl.nn.Cropping2D(
-        heightCrop = heightCrop,
-        widthCrop = widthCrop,
-        format = format)
+    val layer = com.intel.analytics.bigdl.nn.Cropping2D(
+      heightCrop = heightCrop,
+      widthCrop = widthCrop,
+      format = format)
     layer.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
   }
 }

@@ -71,12 +71,12 @@ class Reshape[T: ClassTag](
       val nElements = nonBatchInput.product
       val resizeElements = - targetShape.product
       require(nElements > resizeElements && nElements % resizeElements == 0,
-      "total size after reshape must be unchanged")
+      "Total size after reshape must be unchanged")
       targetShape(inferIndex) = nElements / resizeElements
     }
     else {
       require(targetShape.product == nonBatchInput.product,
-        s"total size after reshape must be unchanged. But In ${this.getName()} : " +
+        s"Total size after reshape must be unchanged. But In ${this.getName()} : " +
           s"original size is: ${ nonBatchInput.product }, " +
           s"reshape size is: ${ targetShape.product }")
     }
