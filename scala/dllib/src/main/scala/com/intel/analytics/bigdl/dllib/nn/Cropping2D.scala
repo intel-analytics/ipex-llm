@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.nn.abstractnn.{DataFormat, TensorModule}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.Shape
 
 import scala.reflect.ClassTag
 
@@ -44,6 +45,24 @@ class Cropping2D[T: ClassTag](
     val dataFormat: DataFormat = DataFormat.NCHW
   )(implicit ev: TensorNumeric[T]) extends TensorModule[T] {
 
+  require(heightCrop.length == 2, "heightCrop should be an array of length 2")
+  require(widthCrop.length == 2, "widthCrop should be an array of length 2")
+
+  override def computeOutputShape(inputShape: Shape): Shape = {
+    val input = inputShape.toSingle().toArray
+    require(input.length == 4,
+      s"Cropping2D requires 4D input, but got input dim ${input.length}")
+    val outputShape = dataFormat match {
+      case DataFormat.NCHW =>
+        Array(input(0), input(1), input(2)-heightCrop(0)-heightCrop(1),
+          input(3)-widthCrop(0)-widthCrop(1))
+      case DataFormat.NHWC =>
+        Array(input(0), input(1)-heightCrop(0)-heightCrop(1),
+          input(2)-widthCrop(0)-widthCrop(1), input(3))
+    }
+    Shape(outputShape)
+  }
+
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
     require(input.dim() == 4, "input dimensions should be 4." +
       " (batchSize, channels, first_axis_to_crop, second_axis_to_crop)")
@@ -67,6 +86,7 @@ class Cropping2D[T: ClassTag](
       .narrow(hdim, hStart, lenHCropped)
       .narrow(wdim, wStart, lenWCropped)
       .copy(gradOutput)
+    gradInput
   }
 
   /**

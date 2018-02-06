@@ -17,7 +17,7 @@
 package com.intel.analytics.bigdl.nn.keras
 
 import com.intel.analytics.bigdl.nn._
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, TensorModule}
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, DataFormat}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
@@ -78,13 +78,31 @@ object KerasUtils {
     (outputLength + stride - 1) / stride
   }
 
-  private[keras] def getPadsFromBorderMode3D
-  (borderMode: String = "valid"): (Int, Int, Int) = {
+  private[keras] def getPadsFromBorderMode3D(
+    borderMode: String = "valid"): (Int, Int, Int) = {
     if (borderMode == "same") {
       // padT, padH, padW
       (-1, -1, -1)
     } else {
       (0, 0, 0)
+    }
+  }
+
+  private[keras] def toBigDLFormat(dimOrdering: String): DataFormat = {
+    require(dimOrdering.toLowerCase() == "tf" || dimOrdering.toLowerCase() == "th",
+      s"Dim ordering must be either tf or th, but got ${dimOrdering.toLowerCase()}")
+    dimOrdering.toLowerCase() match {
+      case "tf" => DataFormat.NHWC
+      case "th" => DataFormat.NCHW
+    }
+  }
+
+  private[keras] def toBigDLFormat5D(dimOrdering: String): String = {
+    require(dimOrdering.toLowerCase() == "tf" || dimOrdering.toLowerCase() == "th",
+      s"Dim ordering must be either tf or th, but got ${dimOrdering.toLowerCase()}")
+    dimOrdering.toLowerCase() match {
+      case "tf" => "CHANNEL_LAST"
+      case "th" => "CHANNEL_FIRST"
     }
   }
 

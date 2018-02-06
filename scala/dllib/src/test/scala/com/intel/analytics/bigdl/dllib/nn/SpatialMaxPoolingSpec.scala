@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.utils.{RandomGenerator, Shape, TestUtils}
+import com.intel.analytics.bigdl.utils.RandomGenerator
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.nn.abstractnn.DataFormat
 import org.scalatest.{FlatSpec, Matchers}
@@ -435,13 +435,4 @@ class SpatialMaxPoolingSpec extends FlatSpec with Matchers {
     }
   }
 
-  "SpatialMaxPooling computeOutputShape NCHW" should "work properly" in {
-    val layer = SpatialMaxPooling[Float](4, 5, 1, 2, 2, 2)
-    TestUtils.compareOutputShape(layer, Shape(3, 12, 16)) should be (true)
-  }
-
-  "SpatialMaxPooling computeOutputShape NHWC" should "work properly" in {
-    val layer = SpatialMaxPooling[Float](2, 4, 1, 2, 1, 1, format = DataFormat.NHWC)
-    TestUtils.compareOutputShape(layer, Shape(18, 20, 5)) should be (true)
-  }
 }
