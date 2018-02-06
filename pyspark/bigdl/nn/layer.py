@@ -74,7 +74,7 @@ class Layer(JavaValue):
             self.value = jvalue
         else:
             self.value = callBigDlFunc(
-                bigdl_type, JavaValue.jvm_class_constructor(self), *args)
+                bigdl_type, self.jvm_class_constructor(), *args)
         self.bigdl_type = bigdl_type
 
     def set_running_mean(self, running_mean):

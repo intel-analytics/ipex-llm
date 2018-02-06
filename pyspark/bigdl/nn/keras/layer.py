@@ -60,7 +60,7 @@ class Dense(KerasLayer):
             the output would have shape `(nb_samples, output_dim)`.
         >>> dense = Dense(10, input_shape=(3, 4))
         creating: createXavier
-        creating: createDense
+        creating: createKerasDense
         """
     def __init__(self, output_dim, init='glorot_uniform',
                  activation=None,
