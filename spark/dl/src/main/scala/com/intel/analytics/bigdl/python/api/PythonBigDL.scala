@@ -2191,17 +2191,16 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def createDistriOptimizerFromImageFrame(model: AbstractModule[Activity, Activity, T],
-    trainingImageFrame: DistributedImageFrame,
+    trainingImageFrame: ImageFrame,
     criterion: Criterion[T],
     optimMethod: OptimMethod[T],
     endTrigger: Trigger,
     batchSize: Int): Optimizer[T, MiniBatch[T]] = {
-    val sampleRDD = trainingImageFrame.rdd.map(x => x[JSample[T]](ImageFeature.sample))
+    val dataSet = trainingImageFrame -> ImageFeatureToMiniBatch[T](batchSize)
 
     val optimizer = new DistriOptimizer(
       _model = model,
-      _dataset = batching(DataSet.rdd(sampleRDD), batchSize)
-        .asInstanceOf[DistributedDataSet[MiniBatch[T]]],
+      _dataset = dataSet.asInstanceOf[DistributedDataSet[MiniBatch[T]]],
       _criterion = criterion
     ).asInstanceOf[Optimizer[T, MiniBatch[T]]]
     enrichOptimizer(optimizer, endTrigger, optimMethod)
