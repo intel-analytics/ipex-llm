@@ -176,7 +176,7 @@ class SpatialConvolution[T: ClassTag](
   override def computeOutputShape(inputShape: Shape): Shape = {
     val input = inputShape.toSingle().toArray
     require(input.length == 4,
-      s"SpatialConvolution requires 4D input, but got input dim ${input.length}")
+      s"Convolution2D requires 4D input, but got input dim ${input.length}")
     val (dimHeight, dimWidth, channelDim) = format.getHWCDims(input.length)
     require(input(channelDim -1) == nInputPlane, s"input channel size " +
       s"${input(channelDim -1)} is not the same as nInputPlane $nInputPlane")
