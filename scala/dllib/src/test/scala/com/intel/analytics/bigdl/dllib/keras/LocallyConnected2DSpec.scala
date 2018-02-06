@@ -19,11 +19,11 @@ package com.intel.analytics.bigdl.keras
 import com.intel.analytics.bigdl.nn.LocallyConnected2D
 import com.intel.analytics.bigdl.nn.abstractnn.DataFormat
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.RandomGenerator
+import com.intel.analytics.bigdl.utils.{Shape, TestUtils}
 
 
 class LocallyConnected2DSpec extends KerasBaseSpec {
-  "LocallyConnected1D NHWC Float" should "be ok" in {
+  "LocallyConnected2D NHWC Float" should "be ok" in {
     ifskipTest()
     val kerasCode =
       """
@@ -31,13 +31,13 @@ class LocallyConnected2DSpec extends KerasBaseSpec {
         |input = np.array([[[[1,2], [2,3], [3,4],[4,5],[5,6],[6,7]],
         | [[2,3], [3,4],[4,5],[5,6],[6,7], [1,2]],
         | [[1,2], [2,3], [3,4],[4,5],[6,7],[5,6]]]])
-        |output_tensor = LocallyConnected2D(3, 2, 1,
+        |output_tensor = LocallyConnected2D(3, 2, 1, dim_ordering="tf",
         |input_shape=(3,6,2))(input_tensor)
         |model = Model(input=input_tensor, output=output_tensor)
       """.stripMargin
-    val locallyConnected1d =
+    val locallyConnected2d =
       LocallyConnected2D[Float](2, 6, 3, 3, 1, 2, format = DataFormat.NHWC)
-    val a = locallyConnected1d.parameters()
+    val a = locallyConnected2d.parameters()
 
 
     val wc = (data: Array[Tensor[Float]]) => {
@@ -64,7 +64,17 @@ class LocallyConnected2DSpec extends KerasBaseSpec {
       out
     }
 
-    checkOutputAndGrad(locallyConnected1d, kerasCode, wc)
+    checkOutputAndGrad(locallyConnected2d, kerasCode, wc)
 
+  }
+
+  "LocallyConnected1D computeOutputShape NCHW" should "work properly" in {
+    val layer = LocallyConnected2D[Float](3, 12, 12, 3, 2, 2, 2, 1)
+    TestUtils.compareOutputShape(layer, Shape(3, 12, 12)) should be (true)
+  }
+
+  "LocallyConnected2D computeOutputShape NHWC" should "work properly" in {
+    val layer = LocallyConnected2D[Float](2, 16, 12, 4, 1, 2, format = DataFormat.NHWC)
+    TestUtils.compareOutputShape(layer, Shape(12, 16, 2)) should be (true)
   }
 }
