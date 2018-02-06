@@ -22,6 +22,33 @@ import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 import scala.util.hashing.MurmurHash3
 
+/**
+ * CategoricalColVocaList operation having an vocabulary mapping feature string to Integer ID
+ *
+ * By default, out-of-vocabulary values are ignored.
+ * Use either (but not both) of num_oov_buckets and default_value
+ * to specify how to include out-of-vocabulary values.
+ *
+ * The num_oov_buckets is Non-negative Integer.
+ *
+ * All out-of-vocabulary inputs will be assigned IDs in the range
+ * [len(vocabulary_list), len(vocabulary_list)+num_oov_buckets) based on a hash of the input value
+ *
+ * A positive num_oov_buckets can not be specified with default_value.
+ *
+ * the input Tensor[String] can be 1-D or 2-D Tensor.
+ *
+ * The Operation support the feature column with single-value or multi-value
+ *
+ * The missing values in input Tensor can be represented by -1 for int and '''' for string
+ *
+ * @param vocaList An vocabulary with the length more than or equal to 1.
+ * @param strDelimiter The delimiter of feature string, default: ",".
+ * @param defaultValue The integer ID value for out-of-vocabulary feature values, default: -1.
+ * @param numOovBuckets the number of out-of-vocabulary buckets, default: 2.
+ * @tparam T Numeric type. Parameter tensor numeric type. Only support float/double now
+ */
+
 class CategoricalColVocaList[T: ClassTag](
   val vocaList: Array[String],
   val strDelimiter: String = ",",
@@ -46,8 +73,11 @@ class CategoricalColVocaList[T: ClassTag](
 
   override def updateOutput(input: Tensor[String]): Tensor[Int] = {
 
-    val resTensor = Tensor[Int]()
-    val rows = input.size(dim = 1)
+    val inputSize = input.size()
+    val rows = inputSize(0)
+    if (inputSize.length==1) {
+      input.resize(rows, 1)
+    }
     val cols = if (numOovBuckets==0) vocaLen + 1 else vocaLen + numOovBuckets
     val shape = Array(rows, cols)
     val indices0 = new ArrayBuffer[Int]()

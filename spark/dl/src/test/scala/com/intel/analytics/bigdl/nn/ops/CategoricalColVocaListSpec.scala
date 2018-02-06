@@ -22,7 +22,25 @@ import org.scalatest.{FlatSpec, Matchers}
 class CategoricalColVocaListSpec extends FlatSpec with Matchers{
 
   "CategoricalColVocaList operation with default value" should "work correctly" in {
-    val input = Tensor[String](T(T("A"), T("B"), T("C"), T("D")))
+      val input = Tensor[String](T(T("A"), T("B"), T("C"), T("D")))
+      val indices = Array(Array(0, 1, 2, 3), Array(0, 0, 0, 0))
+      val values = Array(0, 1, 2, -1)
+      val shape = Array(4, 4)
+      val expectOutput = Tensor.sparse(
+        indices, values, shape
+      )
+    val output = CategoricalColVocaList[Double](
+      vocaList = Array("A", "B", "C"),
+      strDelimiter = ",",
+      defaultValue = -1,
+      numOovBuckets = 0
+    ).forward(input)
+
+    output should be(expectOutput)
+  }
+
+  "CategoricalColVocaList operation with 1-D input" should "work correctly" in {
+    val input = Tensor[String](T("A", "B", "C", "D"))
     val indices = Array(Array(0, 1, 2, 3), Array(0, 0, 0, 0))
     val values = Array(0, 1, 2, -1)
     val shape = Array(4, 4)
