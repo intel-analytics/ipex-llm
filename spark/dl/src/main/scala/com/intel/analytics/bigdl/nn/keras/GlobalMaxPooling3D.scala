@@ -26,8 +26,12 @@ import com.intel.analytics.bigdl.utils.Shape
 
 import scala.reflect.ClassTag
 
-class GlobalMaxPooling3D[T: ClassTag](inputShape: Shape = null
-  )(implicit ev: TensorNumeric[T])
+/**
+  * Global Max pooling operation for 3D data.
+  * Only support dim_ordering='th' now
+  */
+class GlobalMaxPooling3D[T: ClassTag](
+   inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends GlobalPooling3D[T](inputShape) {
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
@@ -52,12 +56,10 @@ class GlobalMaxPooling3D[T: ClassTag](inputShape: Shape = null
   }
 }
 
-
 object GlobalMaxPooling3D {
   def apply[@specialized(Float, Double) T: ClassTag](
     inputShape: Shape = null
     )(implicit ev: TensorNumeric[T]) : GlobalMaxPooling3D[T] = {
-    new GlobalMaxPooling3D[T](
-      inputShape)
+    new GlobalMaxPooling3D[T](inputShape)
   }
 }

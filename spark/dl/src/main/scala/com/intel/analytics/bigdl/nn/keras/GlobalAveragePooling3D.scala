@@ -26,8 +26,12 @@ import com.intel.analytics.bigdl.utils.Shape
 
 import scala.reflect.ClassTag
 
-class GlobalAveragePooling3D[T: ClassTag](inputShape: Shape = null
-  )(implicit ev: TensorNumeric[T])
+/**
+  * Global Average pooling operation for 3D data.
+  * Only support dim_ordering='th' now
+  */
+class GlobalAveragePooling3D[T: ClassTag](
+   inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends GlobalPooling3D[T](inputShape) {
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
@@ -53,12 +57,10 @@ class GlobalAveragePooling3D[T: ClassTag](inputShape: Shape = null
   }
 }
 
-
 object GlobalAveragePooling3D {
   def apply[@specialized(Float, Double) T: ClassTag](
     inputShape: Shape = null
     )(implicit ev: TensorNumeric[T]) : GlobalAveragePooling3D[T] = {
-    new GlobalAveragePooling3D[T](
-      inputShape)
+    new GlobalAveragePooling3D[T](inputShape)
   }
 }

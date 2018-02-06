@@ -217,6 +217,20 @@ class KerasModuleSerializerSpec extends SerializerSpecHelper {
     runSerializationTest(layer, input)
   }
 
+  "GlobalAveragePooling1D serializer" should "work properly" in {
+    val layer = GlobalAveragePooling1D[Float](inputShape = Shape(3, 24))
+    layer.build(Shape(2, 3, 24))
+    val input = Tensor[Float](2, 3, 24).apply1(_ => Random.nextFloat())
+    runSerializationTest(layer, input)
+  }
+
+  "GlobalAveragePooling3D serializer" should "work properly" in {
+    val layer = GlobalAveragePooling3D[Float](inputShape = Shape(3, 4, 5, 6))
+    layer.build(Shape(2, 3, 4, 5, 6))
+    val input = Tensor[Float](2, 3, 4, 5, 6).apply1(_ => Random.nextFloat())
+    runSerializationTest(layer, input)
+  }
+
   "Cropping1D serializer" should "work properly" in {
     val layer = Cropping1D[Float](inputShape = Shape(5, 6))
     layer.build(Shape(2, 5, 6))
@@ -238,5 +252,39 @@ class KerasModuleSerializerSpec extends SerializerSpecHelper {
     runSerializationTest(layer, input)
   }
 
-}
+  "GlobalMaxPooling1D serializer" should "work properly" in {
+    val layer = GlobalMaxPooling1D[Float](inputShape = Shape(12, 24))
+    layer.build(Shape(2, 12, 24))
+    val input = Tensor[Float](2, 12, 24).apply1(_ => Random.nextFloat())
+    runSerializationTest(layer, input)
+  }
 
+  "GlobalMaxPooling3D serializer" should "work properly" in {
+    val layer = GlobalMaxPooling3D[Float](inputShape = Shape(12, 24, 3, 6))
+    layer.build(Shape(2, 12, 24, 3, 6))
+    val input = Tensor[Float](2, 12, 24, 3, 6).apply1(_ => Random.nextFloat())
+    runSerializationTest(layer, input)
+  }
+
+  "LocallyConnected2D serializer" should "work properly" in {
+    val layer = LocallyConnected2D[Float](32, 2, 2, activation = "relu",
+      inputShape = Shape(12, 24, 24))
+    layer.build(Shape(2, 12, 24, 24))
+    val input = Tensor[Float](2, 12, 24, 24).apply1(_ => Random.nextFloat())
+    runSerializationTest(layer, input)
+  }
+
+  "SeparableConvolution2D serializer" should "work properly" in {
+    val layer = SeparableConvolution2D[Float](1, 2, 2, inputShape = Shape(3, 128, 128))
+    layer.build(Shape(2, 3, 128, 128))
+    val input = Tensor[Float](2, 3, 128, 128).apply1(_ => Random.nextFloat())
+    runSerializationTest(layer, input)
+  }
+
+  "ZeroPadding3D serializer" should "work properly" in {
+    val layer = ZeroPadding3D[Float]((1, 1, 1), inputShape = Shape(5, 6, 7, 8))
+    layer.build(Shape(2, 5, 6, 7, 8))
+    val input = Tensor[Float](2, 5, 6, 7, 8).apply1(_ => Random.nextFloat())
+    runSerializationTest(layer, input)
+  }
+}

@@ -26,8 +26,11 @@ import com.intel.analytics.bigdl.utils.Shape
 
 import scala.reflect.ClassTag
 
-class GlobalAveragePooling1D[T: ClassTag](inputShape: Shape = null
-                                         )(implicit ev: TensorNumeric[T])
+/**
+  * Global average pooling operation for temporal data.
+  */
+class GlobalAveragePooling1D[T: ClassTag](
+   inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends GlobalPooling1D[T](inputShape) {
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
@@ -54,12 +57,10 @@ class GlobalAveragePooling1D[T: ClassTag](inputShape: Shape = null
   }
 }
 
-
 object GlobalAveragePooling1D {
   def apply[@specialized(Float, Double) T: ClassTag](
     inputShape: Shape = null
     )(implicit ev: TensorNumeric[T]) : GlobalAveragePooling1D[T] = {
-    new GlobalAveragePooling1D[T](
-      inputShape)
+    new GlobalAveragePooling1D[T](inputShape)
   }
 }

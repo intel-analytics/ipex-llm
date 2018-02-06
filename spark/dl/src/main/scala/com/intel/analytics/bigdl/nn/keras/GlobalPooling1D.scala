@@ -22,8 +22,11 @@ import com.intel.analytics.bigdl.utils.Shape
 
 import scala.reflect.ClassTag
 
-abstract class GlobalPooling1D[T: ClassTag](var inputShape: Shape = null)(
-  implicit ev: TensorNumeric[T])
+/**
+  * Abstract class for different global pooling 1D layers.
+  */
+abstract class GlobalPooling1D[T: ClassTag](
+   var inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {
 
   override def computeOutputShape(inputShape: Shape): Shape = {

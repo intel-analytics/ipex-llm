@@ -26,8 +26,11 @@ import com.intel.analytics.bigdl.utils.Shape
 
 import scala.reflect.ClassTag
 
-class GlobalMaxPooling1D[T: ClassTag](inputShape: Shape = null
-  )(implicit ev: TensorNumeric[T])
+/**
+  * Global max pooling operation for temporal data.
+  */
+class GlobalMaxPooling1D[T: ClassTag](
+   inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends GlobalPooling1D[T](inputShape) {
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
@@ -50,12 +53,10 @@ class GlobalMaxPooling1D[T: ClassTag](inputShape: Shape = null
   }
 }
 
-
 object GlobalMaxPooling1D {
   def apply[@specialized(Float, Double) T: ClassTag](
     inputShape: Shape = null
     )(implicit ev: TensorNumeric[T]) : GlobalMaxPooling1D[T] = {
-    new GlobalMaxPooling1D[T](
-      inputShape)
+    new GlobalMaxPooling1D[T](inputShape)
   }
 }
