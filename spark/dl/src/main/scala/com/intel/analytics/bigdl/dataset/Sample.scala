@@ -227,6 +227,22 @@ class ArraySample[T: ClassTag] private[bigdl](
 }
 
 object ArraySample {
+  private def typeCheck[T: ClassTag](tensor: Tensor[T]): Unit = {
+    tensor.getTensorType match {
+      case DenseType =>
+        require(tensor.isContiguous(), s"tensor in ArraySample should be contiguous," +
+          s" Please check your input.")
+      case _ =>
+        throw new IllegalArgumentException(s"ArraySample doesn't support ${tensor.getTensorType}")
+    }
+  }
+
+  private def typeCheck[T: ClassTag](tensors: Array[Tensor[T]]): Unit = {
+    tensors.foreach{tensor =>
+      typeCheck(tensor)
+    }
+  }
+
   def apply[T: ClassTag](
         data: Array[T],
         featureSize: Array[Array[Int]],
@@ -237,8 +253,8 @@ object ArraySample {
   def apply[T: ClassTag](
         featureTensor: Tensor[T],
         labelTensor: Tensor[T])(implicit ev: TensorNumeric[T]) : Sample[T] = {
-    require(featureTensor.isContiguous(), "featureTensor is not contiguous")
-    require(labelTensor.isContiguous(), "labelTensor is not contiguous")
+    typeCheck(featureTensor)
+    typeCheck(labelTensor)
     val data = new Array[T](featureTensor.nElement() + labelTensor.nElement())
     ev.arraycopy(featureTensor.storage().array(), featureTensor.storageOffset() - 1,
       data, 0, featureTensor.nElement())
@@ -250,7 +266,7 @@ object ArraySample {
   def apply[T: ClassTag](
         featureTensor: Tensor[T],
         label: T)(implicit ev: TensorNumeric[T]) : Sample[T] = {
-    require(featureTensor.isContiguous(), "featureTensor is not contiguous")
+    typeCheck(featureTensor)
     val data = new Array[T](featureTensor.nElement() + 1)
     ev.arraycopy(featureTensor.storage().array(), featureTensor.storageOffset() - 1,
       data, 0, featureTensor.nElement())
@@ -261,6 +277,8 @@ object ArraySample {
   def apply[T: ClassTag](
         featureTensors: Array[Tensor[T]],
         labelTensor: Tensor[T])(implicit ev: TensorNumeric[T]) : Sample[T] = {
+    typeCheck(featureTensors)
+    typeCheck(labelTensor)
     val tensors = featureTensors ++ Array(labelTensor)
     val data = new Array[T](tensors.map(_.nElement()).sum)
     copy(data, tensors)
@@ -270,6 +288,8 @@ object ArraySample {
   def apply[T: ClassTag](
         featureTensors: Array[Tensor[T]],
         labelTensors: Array[Tensor[T]])(implicit ev: TensorNumeric[T]) : Sample[T] = {
+    typeCheck(featureTensors)
+    typeCheck(labelTensors)
     val tensors = featureTensors ++ labelTensors
     val data = new Array[T](tensors.map(_.nElement()).sum)
     copy(data, tensors)
@@ -278,7 +298,7 @@ object ArraySample {
 
   def apply[T: ClassTag](
         featureTensor: Tensor[T])(implicit ev: TensorNumeric[T]) : Sample[T] = {
-    require(featureTensor.isContiguous(), "featureTensor is not contiguous")
+    typeCheck(featureTensor)
     val data = new Array[T](featureTensor.nElement())
     ev.arraycopy(featureTensor.storage().array(), featureTensor.storageOffset() - 1,
       data, 0, featureTensor.nElement())
@@ -287,6 +307,7 @@ object ArraySample {
 
   def apply[T: ClassTag](
         featureTensors: Array[Tensor[T]])(implicit ev: TensorNumeric[T]) : Sample[T] = {
+    typeCheck(featureTensors)
     val data = new Array[T](featureTensors.map(_.nElement()).sum)
     copy(data, featureTensors)
     new ArraySample[T](data, getSize(featureTensors), null)
@@ -404,8 +425,8 @@ object Sample {
 class TensorSample[T: ClassTag] private[bigdl] (
       val features: Array[Tensor[T]],
       val labels: Array[Tensor[T]]) extends Sample[T] {
-  val featureSize = features.map(_.size())
-  val labelSize = labels.map(_.size())
+  protected val featureSize = features.map(_.size())
+  protected val labelSize = labels.map(_.size())
 
   def featureLength(index: Int): Int = {
     features(0).size(1)
@@ -444,7 +465,7 @@ object TensorSample {
           s" Please check your input.")
       case SparseType =>
       case _ =>
-        throw new IllegalArgumentException(s"Unsupported tensor type ${tensor.getTensorType}")
+        throw new IllegalArgumentException(s"TensorSample doesn't support ${tensor.getTensorType}")
     }
   }
 
