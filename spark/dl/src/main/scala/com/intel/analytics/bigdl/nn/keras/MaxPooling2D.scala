@@ -32,7 +32,7 @@ import scala.reflect.ClassTag
  *
  * @param poolSize Int array of length 2 corresponding to the downscale vertically and
  *                 horizontally. Default is (2, 2), which will halve the image in each dimension.
- * @param strides Stride values. Int array of length 2. Default is null, and in this case it will
+ * @param strides Int array of length 2. Stride values. Default is null, and in this case it will
  *                be equal to poolSize.
  * @param borderMode Either 'valid' or 'same'. Default is 'valid'.
  * @param format Format of input data. Either DataFormat.NCHW or DataFormat.NHWC. Default is NCHW.
@@ -62,12 +62,14 @@ class MaxPooling2D[T: ClassTag] (
 
 object MaxPooling2D {
   def apply[@specialized(Float, Double) T: ClassTag](
-    poolSize: Array[Int] = Array(2, 2),
-    strides: Array[Int] = null,
+    poolSize: (Int, Int) = (2, 2),
+    strides: (Int, Int) = null,
     borderMode: String = "valid",
     format: DataFormat = DataFormat.NCHW,
     inputShape: Shape = null)
     (implicit ev: TensorNumeric[T]): MaxPooling2D[T] = {
-    new MaxPooling2D[T](poolSize, strides, borderMode, format, inputShape)
+    val strideValues = if (strides != null) Array(strides._1, strides._2) else null
+    new MaxPooling2D[T](Array(poolSize._1, poolSize._2),
+      strideValues, borderMode, format, inputShape)
   }
 }

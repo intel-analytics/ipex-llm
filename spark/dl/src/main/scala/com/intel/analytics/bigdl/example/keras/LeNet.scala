@@ -26,7 +26,7 @@ object LeNet {
     model.add(Reshape(Array(1, 28, 28), inputShape = Shape(28, 28, 1)))
     model.add(Convolution2D(32, 3, 3, activation = "relu"))
     model.add(Convolution2D(32, 3, 3, activation = "relu"))
-    model.add(MaxPooling2D(poolSize = Array(2, 2)))
+    model.add(MaxPooling2D(poolSize = (2, 2)))
     model.add(Dropout(0.25))
     model.add(Flatten())
     model.add(Dense(128, activation = "relu"))
