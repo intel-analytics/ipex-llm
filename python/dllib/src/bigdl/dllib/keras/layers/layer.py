@@ -25,7 +25,14 @@ if sys.version >= '3':
     long = int
     unicode = str
 
-class Dense(Layer):
+class KerasLayer(Layer):
+    def jvm_class_constructor(self):
+        name = "createKeras" + self.__class__.__name__
+        print("creating: " + name)
+        return name
+
+
+class Dense(KerasLayer):
     """Just your regular densely-connected NN layer.
 
         # Example
@@ -53,7 +60,7 @@ class Dense(Layer):
             the output would have shape `(nb_samples, output_dim)`.
         >>> dense = Dense(10, input_shape=(3, 4))
         creating: createXavier
-        creating: createDense
+        creating: createKerasDense
         """
     def __init__(self, output_dim, init='glorot_uniform',
                  activation=None,
