@@ -55,8 +55,7 @@ class SingletonMixin(object):
 
 
 class JavaCreator(SingletonMixin):
-    __creator_class=["com.intel.analytics.bigdl.python.api.PythonBigDL",
-                    "com.intel.analytics.bigdl.python.api.PythonBigDLKeras"]
+    __creator_class=["com.intel.analytics.bigdl.python.api.PythonBigDLKeras"]
 
     @classmethod
     def add_creator_class(cls, jinvoker):
