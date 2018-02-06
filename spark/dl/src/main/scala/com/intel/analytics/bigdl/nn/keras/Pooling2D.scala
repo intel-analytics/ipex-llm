@@ -25,7 +25,7 @@ import scala.reflect.ClassTag
 
 abstract class Pooling2D[T: ClassTag](
    val poolSize: Array[Int] = Array(2, 2),
-   var strides: Array[Int] = null,
+   val strides: Array[Int] = null,
    val borderMode: String = "valid",
    val format: DataFormat = DataFormat.NCHW,
    var inputShape: Shape = null)(implicit ev: TensorNumeric[T])
@@ -36,7 +36,7 @@ abstract class Pooling2D[T: ClassTag](
   require(borderMode == "valid" || borderMode == "same", s"Invalid border mode for " +
     s"Pooling2D: $borderMode")
 
-  def strideValues: Array[Int] = if (strides == null) poolSize else strides
+  val strideValues: Array[Int] = if (strides == null) poolSize else strides
   require(strideValues.length == 2,
     s"For Pooling2D, strides should be of length 2 but got length ${strideValues.length}")
 

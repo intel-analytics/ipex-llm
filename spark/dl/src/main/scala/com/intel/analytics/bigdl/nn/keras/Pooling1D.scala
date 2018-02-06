@@ -24,13 +24,13 @@ import scala.reflect.ClassTag
 
 abstract class Pooling1D[T: ClassTag](
    val poolLength: Int = 2,
-   var stride: Int = -1,
+   val stride: Int = -1,
    val borderMode: String = "valid",
    var inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {
 
   require(stride == -1 || stride > 0, s"Invalid stride value for Pooling1D: $stride")
-  def strideValue: Int = if (stride > 0) stride else poolLength
+  val strideValue: Int = if (stride > 0) stride else poolLength
 
   override def computeOutputShape(inputShape: Shape): Shape = {
     val input = inputShape.toSingle().toArray

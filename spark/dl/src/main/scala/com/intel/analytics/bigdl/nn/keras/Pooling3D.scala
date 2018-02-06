@@ -31,7 +31,7 @@ abstract class Pooling3D[T: ClassTag](
   require(poolSize.length == 3,
     s"For Pooling3D, poolSize should be of length 3 but got length ${poolSize.length}")
 
-  def strideValues: Array[Int] = if (strides == null) poolSize else strides
+  val strideValues: Array[Int] = if (strides == null) poolSize else strides
   require(strideValues.length == 3,
     s"For Pooling3D, strides should be of length 3 but got length ${strideValues.length}")
 
