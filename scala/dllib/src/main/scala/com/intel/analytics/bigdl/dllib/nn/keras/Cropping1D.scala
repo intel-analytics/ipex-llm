@@ -16,6 +16,7 @@
 
 package com.intel.analytics.bigdl.nn.keras
 
+import com.intel.analytics.bigdl.nn.SpatialZeroPadding
 import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -23,36 +24,31 @@ import com.intel.analytics.bigdl.utils.Shape
 
 import scala.reflect.ClassTag
 
-/**
- * Simple activation function to be applied to the output.
- * When you use this layer as the first layer of a model, you need to provide the argument
- * inputShape (a Single Shape, does not include the batch dimension).
- *
- * Available activations: 'tanh', 'relu', 'sigmoid', 'softmax', 'softplus',
- * 'softsign', 'hard_sigmoid'.
- *
- * @param activation Name of activation function as string.
- * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now
- */
-class Activation[T: ClassTag](
-   val activation: String,
+class Cropping1D[T: ClassTag](
+   val cropping: Array[Int] = Array(1, 1),
    val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {
 
-  require(activation != null, "The name of an activation function as a string is required")
+  require(cropping.length == 2,
+    s"For Cropping1D, cropping values should be of length 2 but got length ${cropping.length}")
+
+  override def computeOutputShape(inputShape: Shape): Shape = {
+    val input = inputShape.toSingle().toArray
+    require(input.length == 3,
+      s"Cropping1D requires 3D input, but got input dim ${input.length}")
+    Shape(input(0), input(1)-cropping(0)-cropping(1), input(2))
+  }
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
-    val model = Sequential[T]()
-    model.add(InputLayer(inputShape = KerasLayer.removeBatch(inputShape)))
-    val layer = KerasUtils.getActivation(activation)
-    model.add(layer).asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
+    val layer = SpatialZeroPadding(0, 0, -cropping(0), -cropping(1))
+    layer.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
   }
 }
 
-object Activation {
+object Cropping1D {
   def apply[@specialized(Float, Double) T: ClassTag](
-    activation: String,
-    inputShape: Shape = null)(implicit ev: TensorNumeric[T]): Activation[T] = {
-    new Activation[T](activation, inputShape)
+    cropping: (Int, Int) = (1, 1),
+    inputShape: Shape = null)(implicit ev: TensorNumeric[T]): Cropping1D[T] = {
+    new Cropping1D[T](Array(cropping._1, cropping._2), inputShape)
   }
 }

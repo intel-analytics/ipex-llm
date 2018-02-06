@@ -18,5 +18,7 @@ package com.intel.analytics.bigdl.nn
 
 package object keras {
   // Alias
+  val Conv1D = Convolution1D
   val Conv2D = Convolution2D
+  val Conv3D = Convolution3D
 }
