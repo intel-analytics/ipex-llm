@@ -36,7 +36,7 @@ import scala.reflect.ClassTag
  */
 class Activation[T: ClassTag](
    val activation: String,
-   var inputShape: Shape = null)(implicit ev: TensorNumeric[T])
+   val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {
 
   require(activation != null, "The name of an activation function as a string is required")

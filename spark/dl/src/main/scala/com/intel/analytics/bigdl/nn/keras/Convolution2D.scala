@@ -65,7 +65,7 @@ class Convolution2D[T: ClassTag](
    var bRegularizer: Regularizer[T] = null,
    val format: DataFormat = DataFormat.NCHW,
    val bias: Boolean = true,
-   var inputShape: Shape = null)(implicit ev: TensorNumeric[T])
+   val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {
 
   require(borderMode == "valid" || borderMode == "same", s"Invalid border mode for " +

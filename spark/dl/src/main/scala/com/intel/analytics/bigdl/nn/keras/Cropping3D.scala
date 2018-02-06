@@ -28,7 +28,7 @@ class Cropping3D[T: ClassTag](
    val dim2Crop: Array[Int] = Array(1, 1),
    val dim3Crop: Array[Int] = Array(1, 1),
    val format: String = "CHANNEL_FIRST",
-   var inputShape: Shape = null)(implicit ev: TensorNumeric[T])
+   val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {
 
   require(dim1Crop.length == 2,

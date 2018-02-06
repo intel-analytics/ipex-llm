@@ -25,7 +25,7 @@ import scala.reflect.ClassTag
 abstract class Pooling3D[T: ClassTag](
    val poolSize: Array[Int] = Array(2, 2, 2),
    val strides: Array[Int] = null,
-   var inputShape: Shape = null)(implicit ev: TensorNumeric[T])
+   val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {
 
   require(poolSize.length == 3,

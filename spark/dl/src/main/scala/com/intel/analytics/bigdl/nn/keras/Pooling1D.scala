@@ -26,7 +26,7 @@ abstract class Pooling1D[T: ClassTag](
    val poolLength: Int = 2,
    val stride: Int = -1,
    val borderMode: String = "valid",
-   var inputShape: Shape = null)(implicit ev: TensorNumeric[T])
+   val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {
 
   // -1 means stride default to be poolLength

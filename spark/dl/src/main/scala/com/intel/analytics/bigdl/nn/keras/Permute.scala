@@ -27,7 +27,7 @@ import scala.reflect.ClassTag
 
 class Permute[T: ClassTag](
    val dims: Array[Int],
-   var inputShape: Shape = null)(implicit ev: TensorNumeric[T])
+   val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {
 
   // from TransposeLoadTF. TODO: put this into utils?

@@ -26,7 +26,7 @@ import scala.reflect.ClassTag
 
 class Cropping1D[T: ClassTag](
    val cropping: Array[Int] = Array(1, 1),
-   var inputShape: Shape = null)(implicit ev: TensorNumeric[T])
+   val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {
 
   require(cropping.length == 2,

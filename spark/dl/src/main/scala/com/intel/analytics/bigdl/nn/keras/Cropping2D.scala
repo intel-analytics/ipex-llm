@@ -27,7 +27,7 @@ class Cropping2D[T: ClassTag](
    val heightCrop: Array[Int] = Array(0, 0),
    val widthCrop: Array[Int] = Array(0, 0),
    val format: DataFormat = DataFormat.NCHW,
-   var inputShape: Shape = null)(implicit ev: TensorNumeric[T])
+   val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {
 
   require(heightCrop.length == 2,

@@ -37,7 +37,7 @@ class Convolution3D[T: ClassTag](
    val wRegularizer: Regularizer[T] = null,
    var bRegularizer: Regularizer[T] = null,
    val bias: Boolean = true,
-   var inputShape: Shape = null)(implicit ev: TensorNumeric[T])
+   val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {
 
   require(borderMode == "valid" || borderMode == "same", s"Invalid border mode for " +

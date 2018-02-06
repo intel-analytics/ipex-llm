@@ -28,7 +28,7 @@ abstract class Pooling2D[T: ClassTag](
    val strides: Array[Int] = null,
    val borderMode: String = "valid",
    val format: DataFormat = DataFormat.NCHW,
-   var inputShape: Shape = null)(implicit ev: TensorNumeric[T])
+   val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {
 
   require(poolSize.length == 2,
