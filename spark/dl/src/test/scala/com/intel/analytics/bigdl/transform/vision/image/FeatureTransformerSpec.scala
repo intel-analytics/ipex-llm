@@ -65,6 +65,7 @@ class FeatureTransformerSpec extends FlatSpec with Matchers {
       MatToFloats(validHeight = 1, validWidth = 1)
     imgAug.enableIgnoreException()
     val out = imgAug(imageFrame)
+
     imageFeature.floats().length should be(3)
     imageFeature.isValid should be(false)
   }
@@ -156,6 +157,23 @@ class FeatureTransformerSpec extends FlatSpec with Matchers {
       HFlip() ->
       ChannelNormalize(123, 117, 104) ->
       MatToFloats(validHeight = 300, validWidth = 300)
+    val out = imgAug(imageFrame)
+    val feature = out.asInstanceOf[LocalImageFrame].array(0)
+    feature.isValid should be(true)
+    feature.getOriginalHeight should be (375)
+    feature.getOriginalWidth should be (500)
+    feature.getHeight should be (300)
+    feature.getWidth should be (300)
+  }
+
+  "tobatch" should "work properly" in {
+    val imageFrame = ImageFrame.read(resource.getFile)
+    val imgAug = ColorJitter() ->
+      Expand() ->
+      Resize(300, 300, -1) ->
+      HFlip() ->
+      ChannelNormalize(123, 117, 104) ->
+      MatToTensor[Float]() -> TensorsToSample[Float]()
     val out = imgAug(imageFrame)
     val feature = out.asInstanceOf[LocalImageFrame].array(0)
     feature.isValid should be(true)

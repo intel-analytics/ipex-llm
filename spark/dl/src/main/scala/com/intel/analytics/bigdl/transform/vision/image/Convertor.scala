@@ -17,7 +17,7 @@
 package com.intel.analytics.bigdl.transform.vision.image
 
 
-import com.intel.analytics.bigdl.dataset.{ArraySample, Sample, Transformer}
+import com.intel.analytics.bigdl.dataset._
 import com.intel.analytics.bigdl.opencv.OpenCV
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -199,7 +199,7 @@ object MatToTensor {
  * @param targetKeys keys that maps targets (each target should be a tensor)
  * @param sampleKey key to store sample
  */
-class ImageFrameToSample[T: ClassTag](inputKeys: Array[String] = Array(ImageFeature.imageTensor),
+class TensorsToSample[T: ClassTag](inputKeys: Array[String] = Array(ImageFeature.imageTensor),
   targetKeys: Array[String] = null,
   sampleKey: String = ImageFeature.sample)
   (implicit ev: TensorNumeric[T]) extends FeatureTransformer {
@@ -228,7 +228,7 @@ class ImageFrameToSample[T: ClassTag](inputKeys: Array[String] = Array(ImageFeat
       case e: Exception =>
         e.printStackTrace()
         val uri = feature.uri()
-        ImageFrameToSample.logger.warn(s"convert imageframe to sample fail for $uri")
+        TensorsToSample.logger.warn(s"convert imageframe to sample fail for $uri")
         feature(ImageFeature.originalSize) = (-1, -1, -1)
         feature.isValid = false
     }
@@ -236,27 +236,55 @@ class ImageFrameToSample[T: ClassTag](inputKeys: Array[String] = Array(ImageFeat
   }
 }
 
-object ImageFrameToSample {
+object TensorsToSample {
   val logger = Logger.getLogger(getClass)
 
   def apply[T: ClassTag](inputKeys: Array[String] = Array(ImageFeature.imageTensor),
     targetKeys: Array[String] = null,
     sampleKey: String = ImageFeature.sample)(implicit ev: TensorNumeric[T])
-  : ImageFrameToSample[T] = new ImageFrameToSample[T](inputKeys, targetKeys, sampleKey)
+  : TensorsToSample[T] = new TensorsToSample[T](inputKeys, targetKeys, sampleKey)
 }
 
-class ImageFrameToSampleRdd[T: ClassTag](sampleKey: String = ImageFeature.sample)
-  (implicit ev: TensorNumeric[T]) extends Transformer[ImageFeature, Sample[T]] {
-  override def apply(prev: Iterator[ImageFeature]): Iterator[Sample[T]] = {
-    prev.map(x => {
-      require(x.contains(sampleKey), s"there is no sample that matches $sampleKey")
-      x[Sample[T]](sampleKey)
-    })
+//class ImageFrameToSamples[T: ClassTag](sampleKey: String = ImageFeature.sample)
+//  (implicit ev: TensorNumeric[T]) extends Transformer[ImageFeature, Sample[T]] {
+//  override def apply(prev: Iterator[ImageFeature]): Iterator[Sample[T]] = {
+//    prev.map(x => {
+//      require(x.contains(sampleKey), s"there is no sample that matches $sampleKey")
+//      x[Sample[T]](sampleKey)
+//    })
+//  }
+//}
+//
+//object ImageFrameToSamples {
+//  def apply[T: ClassTag](sampleKey: String = ImageFeature.sample)(implicit ev: TensorNumeric[T])
+//  : ImageFrameToSamples[T] = new ImageFrameToSamples[T](sampleKey)
+//
+//}
+
+class ImageFeatureToMiniBatch[T: ClassTag](batchSize: Int,
+  featurePaddingParam: Option[PaddingParam[T]] = None,
+  labelPaddingParam: Option[PaddingParam[T]] = None,
+  partitionNum: Option[Int] = None,
+  sampleKey: String = ImageFeature.sample)(implicit ev: TensorNumeric[T])
+  extends Transformer[ImageFeature, MiniBatch[T]] {
+  val toBatch = SampleToMiniBatch[T](
+    batchSize, featurePaddingParam, labelPaddingParam, partitionNum)
+
+  override def apply(prev: Iterator[ImageFeature]): Iterator[MiniBatch[T]] = {
+    toBatch(prev.map(_[Sample[T]](sampleKey)))
   }
 }
 
-object ImageFrameToSampleRdd {
-  def apply[T: ClassTag](sampleKey: String = ImageFeature.sample)(implicit ev: TensorNumeric[T])
-  : ImageFrameToSampleRdd[T] = new ImageFrameToSampleRdd[T](sampleKey)
-
+object ImageFeatureToMiniBatch {
+  def apply[T: ClassTag](batchSize: Int,
+    featurePaddingParam: Option[PaddingParam[T]] = None,
+    labelPaddingParam: Option[PaddingParam[T]] = None,
+    partitionNum: Option[Int] = None,
+    sampleKey: String = ImageFeature.sample)
+    (implicit ev: TensorNumeric[T]): ImageFeatureToMiniBatch[T] =
+    new ImageFeatureToMiniBatch(batchSize,
+      featurePaddingParam,
+      labelPaddingParam,
+      partitionNum,
+      sampleKey)
 }

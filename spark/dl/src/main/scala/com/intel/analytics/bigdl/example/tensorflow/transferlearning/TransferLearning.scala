@@ -78,7 +78,8 @@ object TransferLearning {
 
       val criterion = CrossEntropyCriterion[Float]()
 
-      val optimizer = Optimizer[Float](model, trainingData, criterion, param.batchSize)
+      val optimizer = Optimizer[Float](
+        model, trainingData, criterion, param.batchSize)
 
       val endWhen = Trigger.maxEpoch(param.nEpochs)
       val optim = new RMSprop[Float](learningRate = 0.001, decayRate = 0.9)

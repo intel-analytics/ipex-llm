@@ -593,7 +593,7 @@ class BytesToMat(FeatureTransformer):
     def __init__(self, byte_key = "bytes", bigdl_type="float"):
         super(BytesToMat, self).__init__(bigdl_type, byte_key)
 
-class ImageFrameToSample(FeatureTransformer):
+class TensorsToSample(FeatureTransformer):
     """
     transform imageframe to samples
     :param input_keys keys that maps inputs (each input should be a tensor)
@@ -602,7 +602,7 @@ class ImageFrameToSample(FeatureTransformer):
     """
     def __init__(self, input_keys=["imageTensor"], target_keys=None,
                  sample_key="sample", bigdl_type="float"):
-        super(ImageFrameToSample, self).__init__(bigdl_type, input_keys, target_keys, sample_key)
+        super(TensorsToSample, self).__init__(bigdl_type, input_keys, target_keys, sample_key)
 
 class PixelBytesToMat(FeatureTransformer):
     """

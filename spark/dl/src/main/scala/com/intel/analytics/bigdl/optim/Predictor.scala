@@ -183,7 +183,7 @@ class Predictor[T: ClassTag] private[optim](
   def predictImage(imageFrame: DistributedImageFrame,
     outputLayer: String = null,
     shareBuffer: Boolean = false,
-    predictKey: String = ImageFeature.predict): DistributedImageFrame = {
+    predictKey: String = ImageFeature.predict): ImageFrame = {
     val rdd = imageFrame.asInstanceOf[DistributedImageFrame].rdd
     val modelBroad = ModelBroadcast[T]().broadcast(rdd.sparkContext, model.evaluate())
     val partitionNum = rdd.partitions.length
