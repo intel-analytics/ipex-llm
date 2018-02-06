@@ -23,7 +23,7 @@ import com.intel.analytics.bigdl.dataset.{LocalDataSet, MiniBatch}
 import com.intel.analytics.bigdl.example.loadmodel.AlexNet
 import com.intel.analytics.bigdl.models.inception.{Inception_v1, Inception_v2}
 import com.intel.analytics.bigdl.models.lenet.LeNet5
-import com.intel.analytics.bigdl.models.resnet.ResNet
+import com.intel.analytics.bigdl.models.resnet.{ResNet, ResNet_50}
 import com.intel.analytics.bigdl.models.resnet.ResNet.DatasetType
 import com.intel.analytics.bigdl.models.vgg.{Vgg_16, Vgg_19}
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
@@ -61,6 +61,9 @@ object LocalOptimizerPerf {
     opt[Boolean]('t', "model")
       .text(s"Model name")
       .action((v, p) => p.copy(trainModel = v))
+    opt[Int]('n', "numThreads")
+      .text(s"numThreads")
+      .action((v, p) => p.copy(numThreads = v))
   }
 
   def getModel(module: String,
@@ -76,14 +79,16 @@ object LocalOptimizerPerf {
         (DnnTools.dnnModel(1000), MiniBatch[Float](Tensor(batchSize, 3, 227, 227).randn(),
           Tensor(batchSize, 96, 27, 27).randn()), ClassNLLCriterion())
       case "inception_v1" =>
-        import com.intel.analytics.bigdl.models.inception
-        (inception.Inception_v1(1000), MiniBatch(Tensor(batchSize, 3, 224, 224).randn(),
+        (Inception_v1(1000), MiniBatch(Tensor(batchSize, 3, 224, 224).randn(),
           Tensor(batchSize).fill(1)), ClassNLLCriterion())
       case "inception_v1_dnn" =>
-        (mkldnn.Inception_v1(1000), MiniBatch(Tensor(batchSize, 3, 224, 224).randn(),
+        (Inception_v1_dnn(1000), MiniBatch(Tensor(batchSize, 3, 224, 224).randn(),
           Tensor(batchSize).fill(1)), ClassNLLCriterion())
       case "inception_v2" =>
         (Inception_v2(1000), MiniBatch(Tensor(batchSize, 3, 224, 224).randn(),
+          Tensor(batchSize).fill(1)), ClassNLLCriterion())
+      case "inception_v2_dnn" =>
+        (Inception_v2_dnn(1000), MiniBatch(Tensor(batchSize, 3, 224, 224).randn(),
           Tensor(batchSize).fill(1)), ClassNLLCriterion())
       case "vgg16" =>
         (Vgg_16(1000), MiniBatch(Tensor(batchSize, 3, 224, 224).randn(),
@@ -104,6 +109,14 @@ object LocalOptimizerPerf {
           "dataset" -> DatasetType.ImageNet))
         ResNet.shareGradInput(model)
         ResNet.modelInit(model)
+        (model, MiniBatch(Tensor(batchSize, 3, 224, 224).randn(),
+          Tensor(batchSize).fill(1)), CrossEntropyCriterion())
+
+      case "resnet_50_dnn" =>
+        val model = ResNet_dnn(classNum = 1000, T("depth" -> 50, "optnet" -> true,
+          "dataset" -> ResNet_dnn.DatasetType.ImageNet))
+//        ResNet_dnn.shareGradInput(model)
+//        ResNet_dnn.modelInit(model)
         (model, MiniBatch(Tensor(batchSize, 3, 224, 224).randn(),
           Tensor(batchSize).fill(1)), CrossEntropyCriterion())
     }
@@ -218,7 +231,8 @@ object LocalOptimizerPerf {
       println(s"average time cost ${e1/1e9}")
     }
 
-    // System.setProperty("bigdl.mklNumThreads", "4")
+    System.setProperty("bigdl.mklNumThreads", param.numThreads.toString)
+    // System.setProperty("debug", "2")
     Engine.setCoreNumber(param.coreNumber)
 
     val (_model, miniBatch, criterion) = getModel(param.module, param.batchSize)
@@ -274,6 +288,7 @@ case class LocalOptimizerPerfParam(
     coreNumber: Int = Runtime.getRuntime.availableProcessors() / 2,
     iteration: Int = 50,
     dataType: String = "float",
-    module: String = "alexnetDnn", // "alexnetDnn"
-    trainModel: Boolean = false
+    module: String = "resnet_50_dnn", // "alexnetDnn"
+    trainModel: Boolean = false,
+    numThreads: Int = 1
   )

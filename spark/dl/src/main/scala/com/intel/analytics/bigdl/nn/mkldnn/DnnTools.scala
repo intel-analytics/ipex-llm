@@ -122,7 +122,7 @@ object Inception_Layer_v1 {
   }
 }
 
-object Inception_v1 {
+object Inception_v1_dnn {
   def apply(classNum: Int, hasDropout: Boolean = true): Module[Float] = {
     val feature1 = Sequential()
     feature1.add(ConvolutionDnn(3, 64, 7, 7, 2, 2, 3, 3, 1, false)
@@ -341,6 +341,7 @@ object Inception_Layer_v2 {
       conv1.add(SpatialBatchNormalization(config[Table](1)(1), 1e-3)
         .setName(namePrefix + "1x1/bn"))
       conv1.add(ReLUDnn(true).setName(namePrefix + "1x1/bn/sc/relu"))
+      conv1.add(MemoryReOrder(1, 5))
       concat.add(conv1)
     }
 
@@ -360,6 +361,7 @@ object Inception_Layer_v2 {
     conv3.add(SpatialBatchNormalization(config[Table](2)(2), 1e-3)
       .setName(namePrefix + "3x3/bn"))
     conv3.add(ReLUDnn(true).setName(namePrefix + "3x3/bn/sc/relu"))
+    conv3.add(MemoryReOrder(1, 5))
     concat.add(conv3)
 
     val conv3xx = Sequential()
@@ -385,6 +387,7 @@ object Inception_Layer_v2 {
     conv3xx.add(SpatialBatchNormalization(config[Table](3)(2), 1e-3)
       .setName(namePrefix + "double3x3b/bn"))
     conv3xx.add(ReLUDnn(true).setName(namePrefix + "double3x3b/bn/sc/relu"))
+    conv3xx.add(MemoryReOrder(1, 5))
     concat.add(conv3xx)
 
     val pool = Sequential()
@@ -407,12 +410,18 @@ object Inception_Layer_v2 {
         .setName(namePrefix + "pool_proj/bn"))
       pool.add(ReLUDnn(true).setName(namePrefix + "pool_proj/bn/sc/relu"))
     }
+    pool.add(MemoryReOrder(1, 5))
     concat.add(pool)
     concat.setName(namePrefix + "output")
+
+    val feature1 = Sequential()
+    feature1.add(concat)
+      .add(MemoryReOrder(5, 8).setName("test"))
+    feature1
   }
 }
 
-object Inception_v2 {
+object Inception_v2_dnn {
   def apply(classNum: Int): Module[Float] = {
     val features1 = Sequential()
     features1.add(ConvolutionDnn(3, 64, 7, 7, 2, 2, 3, 3, 1, false)
@@ -502,7 +511,7 @@ object Inception_v2 {
   }
 }
 
-object ResNet {
+object ResNet_dnn {
   val logger = Logger.getLogger(getClass)
 
   def shareGradInput(model: Module[Float]): Unit = {
@@ -584,71 +593,60 @@ object ResNet {
     val dataset = dataSet.getOrElse(DatasetType.CIFAR10).asInstanceOf[DatasetType]
     val optnet = opt.get("optnet").getOrElse(true)
 
-    def shortcut(nInputPlane: Int, nOutputPlane: Int, stride: Int): Module[Float] = {
+    def shortcut(nInputPlane: Int, nOutputPlane: Int, stride: Int, name: String): Module[Float] = {
       val useConv = shortcutType == ShortcutType.C ||
         (shortcutType == ShortcutType.B && nInputPlane != nOutputPlane)
 
       if (useConv) {
         Sequential()
-          .add(Convolution(nInputPlane, nOutputPlane, 1, 1, stride, stride, optnet = optnet))
-          .add(SpatialBatchNormalization(nOutputPlane))
+          .add(ConvolutionDnn(nInputPlane, nOutputPlane, 1, 1, stride, stride).setName(s"res${name}_branch1"))
+          .add(mkldnn.SpatialBatchNormalization(nOutputPlane).setName(s"bn${name}_branch1"))
       } else if (nInputPlane != nOutputPlane) {
-        Sequential()
-          .add(SpatialAveragePooling(1, 1, stride, stride))
-          .add(Concat(2)
-            .add(Identity())
-            .add(MulConstant(0f)))
+        throw new IllegalArgumentException(s"useConv false")
       } else {
         Identity()
       }
     }
 
-    def basicBlock(n: Int, stride: Int): Module[Float] = {
-      val nInputPlane = iChannels
-      iChannels = n
-
-      val s = Sequential()
-      s.add(Convolution(nInputPlane, n, 3, 3, stride, stride, 1, 1, optnet = optnet))
-      s.add(SpatialBatchNormalization(n))
-      s.add(ReLU(true))
-      s.add(Convolution(n, n, 3, 3, 1, 1, 1, 1, optnet = optnet))
-      s.add(SpatialBatchNormalization(n))
-
-      Sequential()
-        .add(ConcatTable()
-          .add(s)
-          .add(shortcut(nInputPlane, n, stride)))
-        .add(CAddTable(true))
-        .add(ReLU(true))
-    }
-
-    def bottleneck(n: Int, stride: Int): Module[Float] = {
+    // output_format = 8
+    def bottleneck(n: Int, stride: Int, name: String = ""): Module[Float] = {
       val nInputPlane = iChannels
       iChannels = n * 4
 
       val s = Sequential()
-      s.add(Convolution(nInputPlane, n, 1, 1, 1, 1, 0, 0, optnet = optnet))
-        .add(SpatialBatchNormalization(n))
-        .add(ReLU(true))
-        .add(Convolution(n, n, 3, 3, stride, stride, 1, 1, optnet = optnet))
-        .add(SpatialBatchNormalization(n))
-        .add(ReLU(true))
-        .add(Convolution(n, n*4, 1, 1, 1, 1, 0, 0, optnet = optnet))
-        .add(SpatialBatchNormalization(n * 4))
+      s.add(ConvolutionDnn(nInputPlane, n, 1, 1, 1, 1, 0, 0).setName(s"res${name}_branch2a"))
+        .add(mkldnn.SpatialBatchNormalization(n).setName(s"bn${name}_branch2a"))
+        .add(ReLUDnn(true).setName(s"res${name}_branch2a_relu"))
+        .add(ConvolutionDnn(n, n, 3, 3, stride, stride, 1, 1).setName(s"res${name}_branch2b"))
+        .add(mkldnn.SpatialBatchNormalization(n).setName(s"bn${name}_branch2b"))
+        .add(ReLUDnn(true).setName(s"res${name}_branch2b_relu"))
+        .add(ConvolutionDnn(n, n*4, 1, 1, 1, 1, 0, 0).setName(s"res${name}_branch2c"))
+        .add(mkldnn.SpatialBatchNormalization(n * 4).setName(s"bn${name}_branch2c"))
 
-      Sequential()
-        .add(ConcatTable()
-          .add(s)
-          .add(shortcut(nInputPlane, n*4, stride)))
-        .add(CAddTable(true))
-        .add(ReLU(true))
+      val model = Sequential()
+        .add(ConcatTable().add(s).add(shortcut(nInputPlane, n*4, stride, name)).setName(s"$name/concatTable"))
+        .add(CAddTable(true).setName(s"$name/caddTable"))
+        .add(ReLUDnn(true).setName(s"res${name}_relu"))
+      model
     }
 
-    def layer(block: (Int, Int) => Module[Float], features: Int,
-              count: Int, stride: Int = 1): Module[Float] = {
+    def getName(i: Int, name: String): String = {
+      val name1 = i match {
+        case 1 => name + "a"
+        case 2 => name + "b"
+        case 3 => name + "c"
+        case 4 => name + "d"
+        case 5 => name + "e"
+        case 6 => name + "f"
+      }
+      return name1
+    }
+
+    def layer(block: (Int, Int, String) => Module[Float], features: Int,
+              count: Int, stride: Int = 1, name : String): Module[Float] = {
       val s = Sequential()
       for (i <- 1 to count) {
-        s.add(block(features, if (i == 1) stride else 1))
+        s.add(block(features, if (i == 1) stride else 1, getName(i, name)))
       }
       s
     }
@@ -656,18 +654,7 @@ object ResNet {
     val model = Sequential()
     if (dataset == DatasetType.ImageNet) {
       val cfg = Map(
-        18 -> ((2, 2, 2, 2), 512,
-          basicBlock: (Int, Int) => Module[Float]),
-        34 -> ((3, 4, 6, 3), 512,
-          basicBlock: (Int, Int) => Module[Float]),
-        50 -> ((3, 4, 6, 3), 2048,
-          bottleneck: (Int, Int) => Module[Float]),
-        101 -> ((3, 4, 23, 3), 2048,
-          bottleneck: (Int, Int) => Module[Float]),
-        152 -> ((3, 8, 36, 3), 2048,
-          bottleneck: (Int, Int) => Module[Float]),
-        200 -> ((3, 24, 36, 3), 2048,
-          bottleneck: (Int, Int) => Module[Float])
+        50 -> ((3, 4, 6, 3), 2048, bottleneck: (Int, Int, String) => Module[Float])
       )
 
       require(cfg.keySet.contains(depth), s"Invalid depth ${depth}")
@@ -676,167 +663,17 @@ object ResNet {
       iChannels = 64
       logger.info(" | ResNet-" + depth + " ImageNet")
 
-      model.add(Convolution(3, 64, 7, 7, 2, 2, 3, 3, optnet = optnet, propagateBack = false))
-        .add(SpatialBatchNormalization(64))
-        .add(ReLU(true))
-        .add(SpatialMaxPooling(3, 3, 2, 2, 1, 1))
-        .add(layer(block, 64, loopConfig._1))
-        .add(layer(block, 128, loopConfig._2, 2))
-        .add(layer(block, 256, loopConfig._3, 2))
-        .add(layer(block, 512, loopConfig._4, 2))
-        .add(SpatialAveragePooling(7, 7, 1, 1))
+      model.add(ConvolutionDnn(3, 64, 7, 7, 2, 2, 3, 3, propagateBack = false).setName("conv1"))
+        .add(mkldnn.SpatialBatchNormalization(64).setName("bn_conv1"))
+        .add(ReLUDnn(true).setName("conv1_relu"))
+        .add(PoolingDnn(3, 3, 2, 2, 1, 1).setName("pool1"))
+        .add(layer(block, 64, loopConfig._1, name = "2"))
+        .add(layer(block, 128, loopConfig._2, 2, name = "3"))
+        .add(layer(block, 256, loopConfig._3, 2, name = "4"))
+        .add(layer(block, 512, loopConfig._4, 2, name = "5"))
+        .add(PoolingDnnAverage(7, 7, 1, 1).setName("pool5"))
         .add(View(nFeatures).setNumInputDims(3))
-        .add(Linear(nFeatures, classNum))
-    } else if (dataset == DatasetType.CIFAR10) {
-      require((depth - 2)%6 == 0,
-        "depth should be one of 20, 32, 44, 56, 110, 1202")
-      val n = (depth-2)/6
-      iChannels = 16
-      logger.info(" | ResNet-" + depth + " CIFAR-10")
-
-      model.add(Convolution(3, 16, 3, 3, 1, 1, 1, 1, optnet = optnet, propagateBack = false))
-      model.add(SpatialBatchNormalization(16))
-      model.add(ReLU(true))
-      model.add(layer(basicBlock, 16, n))
-      model.add(layer(basicBlock, 32, n, 2))
-      model.add(layer(basicBlock, 64, n, 2))
-      model.add(SpatialAveragePooling(8, 8, 1, 1))
-      model.add(View(64).setNumInputDims(3))
-      model.add(Linear(64, 10))
-    } else {
-      throw new IllegalArgumentException(s"Invalid dataset ${dataset}")
-    }
-    model
-  }
-
-
-  def graph(classNum: Int, opt: Table): Module[Float] = {
-    val depth = opt.get("depth").getOrElse(18)
-    val shortCutType = opt.get("shortcutType")
-    val shortcutType = shortCutType.getOrElse(ShortcutType.B).asInstanceOf[ShortcutType]
-    val dataSet = opt.get("dataset")
-    val dataset = dataSet.getOrElse(DatasetType.CIFAR10).asInstanceOf[DatasetType]
-    val optnet = opt.get("optnet").getOrElse(true)
-
-    def shortcutFunc(nInputPlane: Int, nOutputPlane: Int, stride: Int, input: ModuleNode[Float])
-    : ModuleNode[Float] = {
-      val useConv = shortcutType == ShortcutType.C ||
-        (shortcutType == ShortcutType.B && nInputPlane != nOutputPlane)
-
-      if (useConv) {
-        val conv1 = Convolution(nInputPlane, nOutputPlane, 1, 1, stride, stride,
-          optnet = optnet).inputs(input)
-        val bn1 = SpatialBatchNormalization(nOutputPlane).inputs(conv1)
-        bn1
-      } else if (nInputPlane != nOutputPlane) {
-        val pool1 = SpatialAveragePooling(1, 1, stride, stride).inputs(input)
-        val mul1 = MulConstant(0f).inputs(pool1)
-        val concat = JoinTable(2, 0).inputs(pool1, mul1)
-        concat
-      } else {
-        input
-      }
-    }
-
-    def basicBlockFunc(n: Int, stride: Int, input: ModuleNode[Float])
-    : ModuleNode[Float] = {
-      val nInputPlane = iChannels
-      iChannels = n
-
-      val conv1 = SpatialConvolution(nInputPlane, n, 3, 3, stride, stride, 1, 1).inputs(input)
-      val bn1 = SpatialBatchNormalization(n).inputs(conv1)
-      val relu1 = ReLU(true).inputs(bn1)
-      val conv2 = SpatialConvolution(n, n, 3, 3, 1, 1, 1, 1).inputs(relu1)
-      val bn2 = SpatialBatchNormalization(n).inputs(conv2)
-      val shortcut = shortcutFunc(nInputPlane, n, stride, input)
-      val add = CAddTable(true).inputs(bn2, shortcut)
-      val output = ReLU(true).inputs(add)
-      output
-    }
-
-    def bottleneckFunc(n: Int, stride: Int, input: ModuleNode[Float]): ModuleNode[Float] = {
-      val nInputPlane = iChannels
-      iChannels = n * 4
-
-      val conv1 = Convolution(nInputPlane, n, 1, 1, 1, 1, 0, 0, optnet = optnet).inputs(input)
-      val bn1 = SpatialBatchNormalization(n).inputs(conv1)
-      val relu = ReLU(true).inputs(bn1)
-      val conv2 = Convolution(n, n, 3, 3, stride, stride, 1, 1, optnet = optnet).inputs(relu)
-      val bn2 = SpatialBatchNormalization(n).inputs(conv2)
-      val relu2 = ReLU(true).inputs(bn2)
-      val conv3 = Convolution(n, n*4, 1, 1, 1, 1, 0, 0, optnet = optnet).inputs(relu2)
-      val sbn = SpatialBatchNormalization(n * 4).inputs(conv3)
-
-      val shortcut = shortcutFunc(nInputPlane, n * 4, stride, input)
-      val add = CAddTable(true).inputs(sbn, shortcut)
-      val output = ReLU(true).inputs(add)
-      output
-    }
-
-    def layer(block: (Int, Int, ModuleNode[Float]) => ModuleNode[Float], features: Int,
-              count: Int, stride: Int = 1)(input: ModuleNode[Float]): ModuleNode[Float] = {
-      var output = block(features, stride, input)
-      for (i <- 2 to count) {
-        output = block(features, 1, output)
-      }
-      output
-    }
-
-    val model = if (dataset == DatasetType.ImageNet) {
-      val cfg = Map(
-        18 -> ((2, 2, 2, 2), 512,
-          basicBlockFunc: (Int, Int, ModuleNode[Float]) => ModuleNode[Float]),
-        34 -> ((3, 4, 6, 3), 512,
-          basicBlockFunc: (Int, Int, ModuleNode[Float]) => ModuleNode[Float]),
-        50 -> ((3, 4, 6, 3), 2048,
-          bottleneckFunc: (Int, Int, ModuleNode[Float]) => ModuleNode[Float]),
-        101 -> ((3, 4, 23, 3), 2048,
-          bottleneckFunc: (Int, Int, ModuleNode[Float]) => ModuleNode[Float]),
-        152 -> ((3, 8, 36, 3), 2048,
-          bottleneckFunc: (Int, Int, ModuleNode[Float]) => ModuleNode[Float]),
-        200 -> ((3, 24, 36, 3), 2048,
-          bottleneckFunc: (Int, Int, ModuleNode[Float]) => ModuleNode[Float])
-      )
-
-      require(cfg.keySet.contains(depth), s"Invalid depth ${depth}")
-
-      val (loopConfig, nFeatures, block) = cfg.get(depth).get
-      iChannels = 64
-      logger.info(" | ResNet-" + depth + " ImageNet")
-
-      val input = Input()
-      val conv1 = Convolution(3, 64, 7, 7, 2, 2, 3, 3,
-        optnet = optnet, propagateBack = false).inputs(input)
-      val bn = SpatialBatchNormalization(64).inputs(conv1)
-      val relu = ReLU(true).inputs(bn)
-      val pool = SpatialMaxPooling(3, 3, 2, 2, 1, 1).inputs(relu)
-      val layer1 = layer(block, 64, loopConfig._1)(pool)
-      val layer2 = layer(block, 128, loopConfig._2, 2)(layer1)
-      val layer3 = layer(block, 256, loopConfig._3, 2)(layer2)
-      val layer4 = layer(block, 512, loopConfig._4, 2)(layer3)
-      val pool2 = SpatialAveragePooling(7, 7, 1, 1).inputs(layer4)
-      val view = View(nFeatures).setNumInputDims(3).inputs(pool2)
-      val output = Linear(nFeatures, classNum).inputs(view)
-      Graph(input, output)
-    } else if (dataset == DatasetType.CIFAR10) {
-      require((depth - 2)%6 == 0,
-        "depth should be one of 20, 32, 44, 56, 110, 1202")
-      val n = (depth-2)/6
-      iChannels = 16
-      logger.info(" | ResNet-" + depth + " CIFAR-10")
-
-      val input = Input()
-      val conv1 = Convolution(3, 16, 3, 3, 1, 1, 1, 1,
-        optnet = optnet, propagateBack = false).inputs(input)
-      val bn = SpatialBatchNormalization(16).inputs(conv1)
-      val relu = ReLU(true).inputs(bn)
-      val layer1 = layer(basicBlockFunc, 16, n)(relu)
-      val layer2 = layer(basicBlockFunc, 32, n, 2)(layer1)
-      val layer3 = layer(basicBlockFunc, 64, n, 2)(layer2)
-      val pool = SpatialAveragePooling(8, 8, 1, 1).inputs(layer3)
-      val view = View(64).setNumInputDims(3).inputs(pool)
-      val output = Linear(64, 10).inputs(view)
-      Graph(input, output)
+        .add(mkldnn.Linear(nFeatures, classNum).setName("fc1000"))
     } else {
       throw new IllegalArgumentException(s"Invalid dataset ${dataset}")
     }
