@@ -30,10 +30,10 @@ class Cropping2D[T: ClassTag](
    var inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {
 
+  require(heightCrop.length == 2,
+    s"Cropping3D: height cropping values should be of length 2, but got ${heightCrop.length}")
   require(widthCrop.length == 2,
-    s"Cropping values in height dimension should be of length 2, but got ${widthCrop.length}")
-  require(widthCrop.length == 2,
-    s"Cropping values in width dimension should be of length 2, but got ${widthCrop.length}")
+    s"Cropping3D: width cropping values should be of length 2, but got ${widthCrop.length}")
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
     val layer =

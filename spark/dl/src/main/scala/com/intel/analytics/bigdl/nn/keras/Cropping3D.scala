@@ -31,6 +31,12 @@ class Cropping3D[T: ClassTag](
    var inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {
 
+  require(dim1Crop.length == 2,
+    s"Cropping3D: kernel dim1 cropping values should be of length 2, but got ${dim1Crop.length}")
+  require(dim2Crop.length == 2,
+    s"Cropping3D: kernel dim2 cropping values should be of length 2, but got ${dim2Crop.length}")
+  require(dim3Crop.length == 2,
+    s"Cropping3D: kernel dim3 cropping values should be of length 2, but got ${dim3Crop.length}")
   require(format.toLowerCase() == "channel_first" || format.toLowerCase() == "channel_last",
   "Cropping3D only supports format channel_first or channel_last")
 
