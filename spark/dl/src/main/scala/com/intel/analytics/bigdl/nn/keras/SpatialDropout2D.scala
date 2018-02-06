@@ -23,31 +23,41 @@ import com.intel.analytics.bigdl.utils.Shape
 
 import scala.reflect.ClassTag
 
-class SpatialDropout2D[T: ClassTag](val p: Double = 0.5,
-                                    val format: DataFormat = DataFormat.NCHW,
-                                    var inputShape: Shape = null
-                                   )(implicit ev: TensorNumeric[T])
+/**
+  *  Spatial 2D version of Dropout.
+  *  This version performs the same function as Dropout, however it drops
+  *  entire 2D feature maps instead of individual elements. If adjacent pixels
+  *  within feature maps are strongly correlated (as is normally the case in
+  *  early convolution layers) then regular dropout will not regularize the
+  *  activations and will otherwise just result in an effective learning rate
+  *  decrease. In this case, SpatialDropout2D will help promote independence
+  *  between feature maps and should be used instead.
+  *
+  * @param p float between 0 and 1. Fraction of the input units to drop.
+  * @param format  'NCHW' or 'NHWC'.
+            In 'NCHW' mode, the channels dimension (the depth)
+            is at index 1, in 'NHWC' mode is it at index 4.
+  * @tparam T The numeric type in the criterion, usually which are [[Float]] or [[Double]]
+  */
+class SpatialDropout2D[T: ClassTag](
+   val p: Double = 0.5,
+   val format: DataFormat = DataFormat.NCHW,
+   var inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
     val layer = com.intel.analytics.bigdl.nn.SpatialDropout2D(
       initP = p,
-      format = format
-    )
+      format = format)
     layer.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
   }
 }
-
 
 object SpatialDropout2D {
   def apply[@specialized(Float, Double) T: ClassTag](
     p: Double = 0.5,
     format: DataFormat = DataFormat.NCHW,
-    inputShape: Shape = null
-    )(implicit ev: TensorNumeric[T]) : SpatialDropout2D[T] = {
-    new SpatialDropout2D[T](
-      p,
-      format,
-      inputShape)
+    inputShape: Shape = null)(implicit ev: TensorNumeric[T]) : SpatialDropout2D[T] = {
+    new SpatialDropout2D[T](p, format, inputShape)
   }
 }

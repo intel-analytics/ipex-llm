@@ -23,27 +23,27 @@ import com.intel.analytics.bigdl.utils.Shape
 
 import scala.reflect.ClassTag
 
-class Masking[T: ClassTag](val maskValue: Double = 0.0,
-                           var inputShape: Shape = null
-  )(implicit ev: TensorNumeric[T])
+/**
+  * [[Masking]] Use a mask value to skip timesteps for a sequence
+  * Masks a sequence by using a mask value to skip timesteps.
+  *
+  * @param maskValue mask value
+  */
+class Masking[T: ClassTag](
+   val maskValue: Double = 0.0,
+   var inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
-    val layer = com.intel.analytics.bigdl.nn.Masking(
-      maskValue = maskValue
-    )
+    val layer = com.intel.analytics.bigdl.nn.Masking(maskValue = maskValue)
     layer.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
   }
 }
 
 object Masking {
-
   def apply[@specialized(Float, Double) T: ClassTag](
     maskValue: Double = 0.0,
-    inputShape: Shape = null
-    )(implicit ev: TensorNumeric[T]) : Masking[T] = {
-    new Masking[T](
-      maskValue,
-      inputShape)
+    inputShape: Shape = null)(implicit ev: TensorNumeric[T]) : Masking[T] = {
+    new Masking[T](maskValue, inputShape)
   }
 }

@@ -23,27 +23,28 @@ import com.intel.analytics.bigdl.utils.Shape
 
 import scala.reflect.ClassTag
 
-class GaussianDropout[T: ClassTag](val p: Double,
-                                   var inputShape: Shape = null
-  )(implicit ev: TensorNumeric[T])
+/**
+  * Apply multiplicative 1-centered Gaussian noise.
+  * As it is a regularization layer, it is only active at training time.
+  *
+  * @param p float, drop probability (as with `Dropout`).
+  * The multiplicative noise will have standard deviation `sqrt(p / (1 - p))`.
+  */
+class GaussianDropout[T: ClassTag](
+   val p: Double,
+   var inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
-    val layer = com.intel.analytics.bigdl.nn.GaussianDropout(
-      rate = p
-    )
+    val layer = com.intel.analytics.bigdl.nn.GaussianDropout(rate = p)
     layer.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
   }
 }
 
-
 object GaussianDropout {
   def apply[@specialized(Float, Double) T: ClassTag](
     p: Double,
-    inputShape: Shape = null
-    )(implicit ev: TensorNumeric[T]) : GaussianDropout[T] = {
-    new GaussianDropout[T](
-      p,
-      inputShape)
+    inputShape: Shape = null)(implicit ev: TensorNumeric[T]) : GaussianDropout[T] = {
+    new GaussianDropout[T](p, inputShape)
   }
 }

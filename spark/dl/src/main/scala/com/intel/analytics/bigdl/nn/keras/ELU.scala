@@ -23,29 +23,31 @@ import com.intel.analytics.bigdl.utils.Shape
 
 import scala.reflect.ClassTag
 
-
-class ELU[T: ClassTag](val alpha: Double = 1.0,
-                       var inputShape: Shape = null
-  )(implicit ev: TensorNumeric[T])
+/**
+  * Exponential Linear Unit.
+  * It follows:
+  * `f(x) =  alpha * (exp(x) - 1.) for x < 0`,
+  * `f(x) = x for x >= 0`.
+  *
+  * @param alpha scale for the negative factor.
+  */
+class ELU[T: ClassTag](
+   val alpha: Double = 1.0,
+   var inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
     val layer = com.intel.analytics.bigdl.nn.ELU(
       alpha = alpha,
-      inplace = false
-    )
+      inplace = false)
     layer.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
   }
 }
 
 object ELU {
-
   def apply[@specialized(Float, Double) T: ClassTag](
     alpha: Double = 1.0,
-    inputShape: Shape = null
-    )(implicit ev: TensorNumeric[T]) : ELU[T] = {
-    new ELU[T](
-      alpha,
-      inputShape)
+    inputShape: Shape = null)(implicit ev: TensorNumeric[T]) : ELU[T] = {
+    new ELU[T](alpha, inputShape)
   }
 }

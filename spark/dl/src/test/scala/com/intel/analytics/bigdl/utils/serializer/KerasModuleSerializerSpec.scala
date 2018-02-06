@@ -15,6 +15,7 @@
  */
 package com.intel.analytics.bigdl.utils.serializer
 
+import com.intel.analytics.bigdl.nn.abstractnn.DataFormat
 import com.intel.analytics.bigdl.nn.keras.{Sequential => KSequential}
 import com.intel.analytics.bigdl.nn.keras._
 import com.intel.analytics.bigdl.tensor._
@@ -252,6 +253,90 @@ class KerasModuleSerializerSpec extends SerializerSpecHelper {
     runSerializationTest(layer, input)
   }
 
+  "ELU serializer" should "work properly" in {
+    val layer = ELU[Float](2.7, inputShape = Shape(3, 24))
+    layer.build(Shape(2, 3, 24))
+    val input = Tensor[Float](2, 3, 24).apply1(_ => Random.nextFloat())
+    runSerializationTest(layer, input)
+  }
+
+  "GaussianDropout serializer" should "work properly" in {
+    val layer = GaussianDropout[Float](0.6, inputShape = Shape(3, 4))
+    layer.build(Shape(2, 3, 4))
+    val input = Tensor[Float](2, 3, 4).apply1(_ => Random.nextFloat())
+    runSerializationTest(layer, input)
+  }
+
+  "GaussianNoise serializer" should "work properly" in {
+    val layer = GaussianNoise[Float](0.8, inputShape = Shape(12, 24))
+    layer.build(Shape(2, 12, 24))
+    val input = Tensor[Float](2, 12, 24).apply1(_ => Random.nextFloat())
+    runSerializationTest(layer, input)
+  }
+
+  "LeakyReLU serializer" should "work properly" in {
+    val layer = LeakyReLU[Float](1.27, inputShape = Shape(8, 24))
+    layer.build(Shape(2, 8, 24))
+    val input = Tensor[Float](2, 8, 24).apply1(_ => Random.nextFloat())
+    runSerializationTest(layer, input)
+  }
+
+  "Masking serializer" should "work properly" in {
+    val layer = Masking[Float](0.0, inputShape = Shape(3, 12))
+    layer.build(Shape(2, 3, 12))
+    val input = Tensor[Float](2, 3, 12).apply1(_ => Random.nextFloat())
+    runSerializationTest(layer, input)
+  }
+
+  "ParametricSoftPlus serializer" should "work properly" in {
+    val layer = ParametricSoftPlus[Float](5.0, inputShape = Shape(12, 36))
+    layer.build(Shape(2, 12, 36))
+    val input = Tensor[Float](2, 12, 36).apply1(_ => Random.nextFloat())
+    runSerializationTest(layer, input)
+  }
+
+  "PReLU serializer" should "work properly" in {
+    val layer = PReLU[Float](inputShape = Shape(3, 36))
+    layer.build(Shape(2, 3, 36))
+    val input = Tensor[Float](2, 3, 36).apply1(_ => Random.nextFloat())
+    runSerializationTest(layer, input)
+  }
+
+  "SpatialDropout1D serializer" should "work properly" in {
+    val layer = SpatialDropout1D[Float](0.5, inputShape = Shape(3, 4))
+    layer.build(Shape(2, 3, 4))
+    val input = Tensor[Float](2, 3, 4).apply1(_ => Random.nextFloat())
+    runSerializationTest(layer, input)
+  }
+
+  "SpatialDropout2D serializer" should "work properly" in {
+    val layer = SpatialDropout2D[Float](0.5, DataFormat.NHWC, inputShape = Shape(3, 64, 64))
+    layer.build(Shape(2, 3, 64, 64))
+    val input = Tensor[Float](2, 3, 64, 64).apply1(_ => Random.nextFloat())
+    runSerializationTest(layer, input)
+  }
+
+  "SpatialDropout3D serializer" should "work properly" in {
+    val layer = SpatialDropout3D[Float](0.5, "channel_last", inputShape = Shape(3, 4, 5, 6))
+    layer.build(Shape(2, 3, 4, 5, 6))
+    val input = Tensor[Float](2, 3, 4, 5, 6).apply1(_ => Random.nextFloat())
+    runSerializationTest(layer, input)
+  }
+
+  "SReLU serializer" should "work properly" in {
+    val layer = SReLU[Float](Array(1, 2), inputShape = Shape(4, 32))
+    layer.build(Shape(2, 4, 32))
+    val input = Tensor[Float](2, 4, 32).apply1(_ => Random.nextFloat())
+    runSerializationTest(layer, input)
+  }
+
+  "ThresholdedReLU serializer" should "work properly" in {
+    val layer = ThresholdedReLU[Float](2.7, inputShape = Shape(3, 128))
+    layer.build(Shape(2, 3, 128))
+    val input = Tensor[Float](2, 3, 128).apply1(_ => Random.nextFloat())
+    runSerializationTest(layer, input)
+  }
+
   "GlobalMaxPooling1D serializer" should "work properly" in {
     val layer = GlobalMaxPooling1D[Float](inputShape = Shape(12, 24))
     layer.build(Shape(2, 12, 24))
@@ -288,3 +373,4 @@ class KerasModuleSerializerSpec extends SerializerSpecHelper {
     runSerializationTest(layer, input)
   }
 }
+

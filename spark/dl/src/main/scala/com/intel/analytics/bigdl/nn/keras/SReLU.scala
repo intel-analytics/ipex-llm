@@ -23,9 +23,23 @@ import com.intel.analytics.bigdl.utils.Shape
 
 import scala.reflect.ClassTag
 
-class SReLU[T: ClassTag](SharedAxes: Array[Int] = null,
-                         var inputShape: Shape = null
-  )(implicit ev: TensorNumeric[T])
+/**
+  * S-shaped Rectified Linear Unit.
+  * It follows:
+  * `f(x) = t^r + a^r(x - t^r) for x >= t^r`,
+  * `f(x) = x for t^r > x > t^l`,
+  * `f(x) = t^l + a^l(x - t^l) for x <= t^l`.
+  *
+  * @param SharedAxes the axes along which to share learnable parameters for the activation function.
+  *                   For example, if the incoming feature maps are from a 2D convolution
+  *                    with output shape `(batch, height, width, channels)`,
+  *                    and you wish to share parameters across space
+  *                    so that each filter only has one set of parameters,
+  *                    set `shared_axes=[1, 2]`.
+  */
+class SReLU[T: ClassTag](
+   SharedAxes: Array[Int] = null,
+   var inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
@@ -33,23 +47,17 @@ class SReLU[T: ClassTag](SharedAxes: Array[Int] = null,
     if (SharedAxes == null) {
       val layer = com.intel.analytics.bigdl.nn.SReLU(shape.slice(1, shape.length))
       layer.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
-    } else
-    {
+    } else {
       val layer = com.intel.analytics.bigdl.nn.SReLU(shape.slice(1, shape.length), SharedAxes)
       layer.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
     }
   }
 }
 
-
 object SReLU {
-
   def apply[@specialized(Float, Double) T: ClassTag](
     SharedAxes: Array[Int] = null,
-    inputShape: Shape = null
-    )(implicit ev: TensorNumeric[T]) : SReLU[T] = {
-    new SReLU[T](
-      SharedAxes,
-      inputShape)
+    inputShape: Shape = null)(implicit ev: TensorNumeric[T]) : SReLU[T] = {
+    new SReLU[T](SharedAxes, inputShape)
   }
 }

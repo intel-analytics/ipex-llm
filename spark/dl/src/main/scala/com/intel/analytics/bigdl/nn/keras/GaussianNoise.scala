@@ -24,27 +24,30 @@ import com.intel.analytics.bigdl.utils.Shape
 
 import scala.reflect.ClassTag
 
-class GaussianNoise[T: ClassTag](val sigma: Double,
-                                 var inputShape: Shape = null
-  )(implicit ev: TensorNumeric[T])
+/**
+  * Apply additive zero-centered Gaussian noise.
+  * This is useful to mitigate overfitting (you could see it as a form of random data
+  * augmentation).
+  * Gaussian Noise (GS) is a natural choice as corruption process for real valued inputs.
+  * As it is a regularization layer, it is only active at training time.
+  *
+  * @param sigma float, standard deviation of the noise distribution.
+  */
+class GaussianNoise[T: ClassTag](
+   val sigma: Double,
+   var inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape))  {
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
-    val layer = com.intel.analytics.bigdl.nn.GaussianNoise(
-      stddev = sigma
-    )
+    val layer = com.intel.analytics.bigdl.nn.GaussianNoise(stddev = sigma)
     layer.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
   }
 }
 
-
 object GaussianNoise {
   def apply[@specialized(Float, Double) T: ClassTag](
     sigma: Double,
-    inputShape: Shape = null
-    )(implicit ev: TensorNumeric[T]) : GaussianNoise[T] = {
-    new GaussianNoise[T](
-      sigma,
-      inputShape)
+    inputShape: Shape = null)(implicit ev: TensorNumeric[T]) : GaussianNoise[T] = {
+    new GaussianNoise[T](sigma, inputShape)
   }
 }

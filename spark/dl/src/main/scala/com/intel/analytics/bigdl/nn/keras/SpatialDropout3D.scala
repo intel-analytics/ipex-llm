@@ -23,10 +23,26 @@ import com.intel.analytics.bigdl.utils.Shape
 
 import scala.reflect.ClassTag
 
-class SpatialDropout3D[T: ClassTag](val p: Double = 0.5,
-                                    val format: String = "CHANNEL_FIRST",
-                                    var inputShape: Shape = null
-                                   )(implicit ev: TensorNumeric[T])
+/**
+  *  Spatial 3D version of Dropout.
+  *  This version performs the same function as Dropout, however it drops
+  *  entire 3D feature maps instead of individual elements. If adjacent voxels
+  *  within feature maps are strongly correlated (as is normally the case in
+  *  early convolution layers) then regular dropout will not regularize the
+  *  activations and will otherwise just result in an effective learning rate
+  *  decrease. In this case, SpatialDropout3D will help promote independence
+  *  between feature maps and should be used instead.
+  *
+  * @param p float between 0 and 1. Fraction of the input units to drop.
+  * @param format  'NCHW' or 'NHWC'.
+            In 'NCHW' mode, the channels dimension (the depth)
+            is at index 1, in 'NHWC' mode is it at index 4.
+  * @tparam T The numeric type in the criterion, usually which are [[Float]] or [[Double]]
+  */
+class SpatialDropout3D[T: ClassTag](
+   val p: Double = 0.5,
+   val format: String = "CHANNEL_FIRST",
+   var inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {
 
   require(format.toLowerCase() == "channel_first" || format.toLowerCase() == "channel_last",
@@ -38,22 +54,16 @@ class SpatialDropout3D[T: ClassTag](val p: Double = 0.5,
 
     val layer = com.intel.analytics.bigdl.nn.SpatialDropout3D(
       initP = p,
-      format = dimOrdering
-    )
+      format = dimOrdering)
     layer.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
   }
 }
-
 
 object SpatialDropout3D {
   def apply[@specialized(Float, Double) T: ClassTag](
     p: Double = 0.5,
     format: String = "CHANNEL_FIRST",
-    inputShape: Shape = null
-    )(implicit ev: TensorNumeric[T]) : SpatialDropout3D[T] = {
-    new SpatialDropout3D[T](
-      p,
-      format,
-      inputShape)
+    inputShape: Shape = null)(implicit ev: TensorNumeric[T]) : SpatialDropout3D[T] = {
+    new SpatialDropout3D[T](p, format, inputShape)
   }
 }

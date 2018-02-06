@@ -16,7 +16,6 @@
 
 package com.intel.analytics.bigdl.nn.keras
 
-import breeze.numerics.round
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.nn.abstractnn._
 import com.intel.analytics.bigdl.tensor.Tensor
@@ -25,29 +24,29 @@ import com.intel.analytics.bigdl.utils.Shape
 
 import scala.reflect.ClassTag
 
-
-@SerialVersionUID( - 7979267879723622855L)
-class ParametricSoftPlus[T: ClassTag](val beta: Double = 1.0,
-                                      var inputShape: Shape = null
-  )(implicit ev: TensorNumeric[T])
+/**
+  * Parametric Softplus.
+  * It follows:
+  * `f(x) = alpha * log(1 + exp(beta * x))`
+  * Only alpha_init = 1/beta_init is supported for now.
+  *
+  * @param beta float. Initial values of the beta weights.
+  */
+class ParametricSoftPlus[T: ClassTag](
+   val beta: Double = 1.0,
+   var inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
-      val layer = SoftPlus(
-        beta = beta
-      )
+      val layer = SoftPlus(beta = beta)
       layer.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
   }
 }
 
 object ParametricSoftPlus {
-
   def apply[@specialized(Float, Double) T: ClassTag](
     beta: Double = 1.0,
-    inputShape: Shape = null
-    )(implicit ev: TensorNumeric[T]) : ParametricSoftPlus[T] = {
-    new ParametricSoftPlus[T](
-      beta,
-      inputShape)
+    inputShape: Shape = null)(implicit ev: TensorNumeric[T]) : ParametricSoftPlus[T] = {
+    new ParametricSoftPlus[T](beta, inputShape)
   }
 }

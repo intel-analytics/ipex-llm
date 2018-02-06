@@ -23,24 +23,26 @@ import com.intel.analytics.bigdl.utils.Shape
 
 import scala.reflect.ClassTag
 
-class PReLU[T: ClassTag](var inputShape: Shape = null
-                      )(implicit ev: TensorNumeric[T])
+/**
+  * Parametric Rectified Linear Unit.
+  * It follows:
+  * `f(x) = alphas * x for x < 0`,
+  * `f(x) = x for x >= 0`,
+  * where `alphas` is a learned array with the same shape as x.
+  */
+class PReLU[T: ClassTag](
+   var inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
-    val layer = com.intel.analytics.bigdl.nn.PReLU(
-      nOutputPlane = 0
-    )
+    val layer = com.intel.analytics.bigdl.nn.PReLU(nOutputPlane = 0)
     layer.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
   }
 }
 
 object PReLU {
-
   def apply[@specialized(Float, Double) T: ClassTag](
-    inputShape: Shape = null
-    )(implicit ev: TensorNumeric[T]) : PReLU[T] = {
-    new PReLU[T](
-      inputShape)
+    inputShape: Shape = null)(implicit ev: TensorNumeric[T]) : PReLU[T] = {
+    new PReLU[T](inputShape)
   }
 }
