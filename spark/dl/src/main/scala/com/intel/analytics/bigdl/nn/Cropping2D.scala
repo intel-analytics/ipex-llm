@@ -59,8 +59,6 @@ class Cropping2D[T: ClassTag](
       case DataFormat.NHWC =>
         Array(input(0), input(1)-heightCrop(0)-heightCrop(1),
           input(2)-widthCrop(0)-widthCrop(1), input(3))
-      case _ =>
-        throw new IllegalArgumentException("Cropping2D: unsupported data format.")
     }
     Shape(outputShape)
   }

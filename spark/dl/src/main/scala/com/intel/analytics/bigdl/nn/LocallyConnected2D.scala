@@ -220,7 +220,7 @@ class LocallyConnected2D[T: ClassTag](
   override def computeOutputShape(inputShape: Shape): Shape = {
     val input = inputShape.toSingle().toArray
     require(input.length == 4,
-      "LocallyConnected2D: " + ErrorInfo.constrainInputAs3DOrBatch)
+      s"LocallyConnected2D requires 4D input, but got input dim ${input.length}")
     val (dimHeight, dimWidth, channelDim) = format.getHWCDims(input.length)
     require(input(channelDim -1) == nInputPlane, s"input channel size " +
       s"${input(channelDim -1)} is not the same as nInputPlane $nInputPlane")

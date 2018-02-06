@@ -134,14 +134,9 @@ class VolumetricConvolution[T: ClassTag](
     require(input(1) == nInputPlane, s"input.size(1) should be equal to nInputPlane. " +
       s"But In ${this.getName()} : input.size(1) is: ${ input(1) } ," +
       s" nInputPlane is: ${ nInputPlane }")
-    val dimDepth = 3
-    val dimWidth = 5
-    val dimHeight = 4
-
-    val inputWidth = input(dimWidth -1)
-    val inputHeight = input(dimHeight -1)
-    val inputDepth = input(dimDepth -1)
-
+    val inputWidth = input(4)
+    val inputHeight = input(3)
+    val inputDepth = input(2)
     val sizes = if (padW == -1 && padH == -1 && padT == -1) {
       Utils.getSAMEOutSizeAndPadding(inputHeight, inputWidth, dH,
         dW, kH, kW, inputDepth, dT, kT)
@@ -153,7 +148,6 @@ class VolumetricConvolution[T: ClassTag](
     val outputDepth = sizes(6)
     val outputHeight = sizes(7)
     val outputWidth = sizes(8)
-
     require(outputWidth >= 1 && outputDepth >= 1 && outputHeight >= 1,
       s"Given input size: (${ input.mkString("x") })." +
         s" Calculated output size:" +

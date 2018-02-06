@@ -62,8 +62,6 @@ class Cropping3D[T: ClassTag](
       case Cropping3D.CHANNEL_LAST =>
         Array(input(0), input(1)-dim1Crop(0)-dim1Crop(1),
           input(2)-dim2Crop(0)-dim2Crop(1), input(3)-dim3Crop(0)-dim3Crop(1), input(4))
-      case _ =>
-        throw new IllegalArgumentException("Cropping3D: unsupported data format.")
     }
     Shape(outputShape)
   }
