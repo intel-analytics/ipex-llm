@@ -98,6 +98,16 @@ class OperationSerializerSpec extends SerializerSpecHelper {
     runSerializationTest(assert, input)
   }
 
+  "Assign serializer" should "work properly" in {
+    val assign = new Assign[Float]().setName("assign")
+    val input =
+      T(
+        Tensor[Float](T(1f, 2f, 3f)),
+        Tensor[Float](T(2f, 2f, 4f))
+      )
+    runSerializationTest(assign, input)
+  }
+
   "AssignGrad serializer" should "work properly" in {
     val grad = Tensor[Float](5).apply1(_ => Random.nextFloat())
     val assignGrad = new AssignGrad[Float](grad).setName("assignGrad")
@@ -154,6 +164,16 @@ class OperationSerializerSpec extends SerializerSpecHelper {
     val ceil = Ceil[Float, Float]().setName("ceil")
     val input = Tensor[Float](2, 2).apply1(_ => Random.nextFloat())
     runSerializationTest(ceil, input)
+  }
+
+  "MergeOps serializer" should "work properly" in {
+    val mergeOps = new MergeOps[Float](1).setName("mergeOps")
+    val input =
+      T(
+        Tensor[Float](T(1.0f, 2.0f, 3.0f)),
+        Tensor[Float](T(2.0f, 2.0f, 1.0f))
+      )
+    runSerializationTest(mergeOps, input)
   }
 
   "SwitchOps serializer" should "work properly" in {
@@ -254,6 +274,16 @@ class OperationSerializerSpec extends SerializerSpecHelper {
     val decodeRaw = new DecodeRawOps[Float](DataType.DT_UINT8, true).setName("decodeRaw")
     val input = getInputs("raw")
     runSerializationTest(decodeRaw, input)
+  }
+
+  "DepthwiseConv2DBackpropInput serializer" should "work properly" in {
+    val depWiseBackprop =
+      DepthwiseConv2DBackpropInput[Float](1, 1, 0, 0, DataFormat.NHWC).
+        setName("depWiseBackprop")
+    val input = T(Tensor[Int](T(4, 24, 24, 3)),
+      Tensor[Float](2, 2, 3, 1).apply1(_ => Random.nextFloat()),
+      Tensor[Float](4, 23, 23, 3).apply1(_ => Random.nextFloat()))
+    runSerializationTest(depWiseBackprop, input)
   }
 
   "DepthwiseConv2D serializer" should "work properly" in {
@@ -436,6 +466,15 @@ class OperationSerializerSpec extends SerializerSpecHelper {
     runSerializationTest(categoricalColHashBucket, input)
   }
 
+  "LessEqual serializer" should "work properly" in {
+    val lessEqual = LessEqual[Float]().setName("lessEqual")
+    val input1 = Tensor[Float](5).apply1(_ => Random.nextFloat())
+    val input2 = Tensor[Float](5).apply1(_ => Random.nextFloat())
+    val input = T(input1, input2)
+    runSerializationTest(lessEqual, input, lessEqual
+      .asInstanceOf[ModuleToOperation[Float]].module.getClass)
+  }
+
   "LogicalAnd serializer" should "work properly" in {
     val logicalAnd = LogicalAnd[Float].setName("logicalAnd")
     val input = T(Tensor[Boolean](T(true, false)), Tensor[Boolean](T(true, false)))
@@ -604,6 +643,13 @@ class OperationSerializerSpec extends SerializerSpecHelper {
     runSerializationTest(pow, input)
   }
 
+  "Prod serializer" should "work properly" in {
+    val prod = Prod[Float](-1, false).setName("prod")
+    val input = Tensor[Float](3, 3).apply1(_ => Random.nextFloat())
+    runSerializationTest(prod, input, prod.
+      asInstanceOf[ModuleToOperation[Float]].module.getClass)
+  }
+
   "RandomUniform serializer" should "work properly" in {
     val randomUniform = RandomUniform[Float, Float](10, 20).
       setName("randomUniform")
@@ -703,6 +749,13 @@ class OperationSerializerSpec extends SerializerSpecHelper {
       asInstanceOf[ModuleToOperation[Float]].module.getClass)
   }
 
+  "SoftplusGrad serializer" should "work properly" in {
+    val sofplusGrad = SoftplusGrad[Float, Float].setName("sofplusGrad")
+    val input = T(Tensor[Float](2, 2, 2).apply1(_ => Random.nextFloat()),
+      Tensor[Float](2, 2, 2).apply1(_ => Random.nextFloat()))
+    runSerializationTest(sofplusGrad, input)
+  }
+
   "SoftSignGrad serializer" should "work properly" in {
     val softSign = SoftsignGrad[Float, Float].setName("softSign")
     val input = T(Tensor[Float](2, 2, 2).apply1(_ => Random.nextFloat()),
@@ -779,6 +832,14 @@ class OperationSerializerSpec extends SerializerSpecHelper {
     runSerializationTest(const, input)
   }
 
+  "Fill serializer" should "work properly" in {
+    val fill = Fill[Float]().setName("fill")
+    val shape = Tensor[Int](T(2, 3))
+    val value = Tensor[Float](Array(0.1f), Array[Int]())
+    val input = T(shape, value)
+    runSerializationTest(fill, input)
+  }
+
   "Log1p serializer" should "work properly" in {
     val log1p = Log1p[Float, Float]().setName("log1p")
     val input = Tensor[Float](3).apply1(_ => Random.nextFloat())
@@ -833,6 +894,14 @@ class OperationSerializerSpec extends SerializerSpecHelper {
     runSerializationTest(reshapeLoadTF, input)
   }
 
+  "SliceLoadTF serializer" should "work properly" in {
+    val sliceLoadTF = new SliceLoadTF[Float]().setName("sliceLoadTF")
+    val input = T(Tensor[Float](3, 2, 3).apply1(_ => Random.nextFloat()),
+      Tensor[Int](T(0, 1, 1)),
+      Tensor[Int](T(2, -1, 1)))
+    runSerializationTest(sliceLoadTF, input)
+  }
+
   "StridedSliceLoadTF serializer" should "work properly" in {
     val strideSliceLoadTF = new StridedSliceLoadTF[Float, Float]().
       setName("strideSliceLoadTF")
@@ -842,6 +911,14 @@ class OperationSerializerSpec extends SerializerSpecHelper {
       Tensor[Int](T(1))
     )
     runSerializationTest(strideSliceLoadTF, input)
+  }
+
+  "SplitLoadTF serializer" should "work properly" in {
+    val splitLoadTF = new SplitLoadTF[Float](1).setName("splitLoadTD")
+    val input = T(Tensor[Int](T(1)),
+      Tensor[Float](1, 6, 2).apply1(_ => Random.nextFloat())
+    )
+    runSerializationTest(splitLoadTF, input)
   }
 
   "TransposeLoadTF serializer" should "work properly" in {
@@ -953,6 +1030,15 @@ class OperationSerializerSpec extends SerializerSpecHelper {
     runSerializationTest(module, T(input, filter, outputBackprop))
   }
 
+  "Conv3DBackpropFilterV2 serializer" should "work properly" in {
+    val module = Conv3DBackpropFilterV2[Float](1, 2, 3, 0, 0, 0, DataFormat.NHWC)
+    val input = Tensor[Float](4, 20, 30, 40, 3).rand()
+    val filter = Tensor[Int](Array(2, 3, 4, 3, 4), Array(5))
+    val outputBackprop = Tensor[Float](4, 19, 14, 13, 4).rand()
+
+    runSerializationTest(module, T(input, filter, outputBackprop))
+  }
+
   "Conv3DBackpropInputV2 serializer" should "work properly" in {
     val module = Conv3DBackpropInputV2[Float](1, 2, 3, 0, 0, 0, DataFormat.NHWC)
     val inputSize = Tensor[Int](Array(4, 20, 30, 40, 3), Array(5))
@@ -969,6 +1055,50 @@ class OperationSerializerSpec extends SerializerSpecHelper {
     val outputBackprop = Tensor[Float](4, 19, 14, 13, 4).rand()
 
     runSerializationTest(module, input)
+  }
+
+  "Control Ops serializer" should "work properly" in {
+    val input = Input[Float]("input")
+
+    val conditionInput = Input[Float]("conditionInput")
+    val const = new com.intel.analytics.bigdl.nn.tf.Const[Float, Float](Tensor(T(9))).inputs()
+    val constEnter = new com.intel.analytics.bigdl.nn.ops.Enter[Float]("test_frame").inputs(const)
+    val less = Less[Float]().inputs(constEnter, conditionInput)
+
+    val updateInput = Input[Float]()
+    val add = AddConstant[Float](1).inputs(updateInput)
+    val addEnter = new com.intel.analytics.bigdl.nn.ops.Enter[Float]("test_frame").inputs(add)
+    val echo = Echo[Float]().inputs(addEnter)
+
+    val exit = ControlNodes.whileLoop[Float](
+      (Seq(conditionInput), less),
+      (Seq((updateInput, echo))),
+      Seq(input),
+      "while"
+    )
+    val model = Graph.dynamic[Float](Array(input), Array(exit(0)), None, false)
+    runSerializationTestWithMultiClass(model, Tensor.scalar[Float](1), Array(
+      addEnter.element.getClass.asInstanceOf[Class[_]],
+      new com.intel.analytics.bigdl.nn.ops.NextIteration[Float, Float]().getClass,
+      new com.intel.analytics.bigdl.nn.ops.Exit[Float]().getClass,
+      new com.intel.analytics.bigdl.nn.ops.LoopCondition[Float]().getClass
+    ))
+  }
+
+  "Stack operations serializer" should "work properly" in {
+    import com.intel.analytics.bigdl.nn.ops._
+    val data = Const[Float, Float](Tensor.scalar[Float](1)).inputs()
+    val stack = new StackCreator[Float, Float]().inputs()
+    val push = new StackPush[Float, Float]().inputs(stack, data)
+    val ctr = new com.intel.analytics.bigdl.nn.tf.ControlDependency[Float]().inputs(push)
+    val pop = new StackPop[Float, Float]().inputs(stack, ctr)
+    val model = Graph.dynamic[Float](Array(stack), Array(pop))
+
+    runSerializationTestWithMultiClass(model, Tensor.scalar(1), Array(
+      stack.element.getClass.asInstanceOf[Class[_]],
+      push.element.getClass.asInstanceOf[Class[_]],
+      pop.element.getClass.asInstanceOf[Class[_]]
+    ))
   }
 
   "TensorArray serializer R/W" should "work properly" in {

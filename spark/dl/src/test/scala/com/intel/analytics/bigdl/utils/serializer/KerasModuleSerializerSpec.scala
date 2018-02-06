@@ -37,6 +37,13 @@ class KerasModuleSerializerSpec extends SerializerSpecHelper {
     runSerializationTest(input, inputData)
   }
 
+  "Dense serializer" should "work properly" in {
+    val dense = Dense[Float](10, inputShape = Shape(20))
+    dense.build(Shape(2, 20))
+    val input = Tensor[Float](2, 20).apply1(_ => Random.nextFloat())
+    runSerializationTest(dense, input)
+  }
+
   "Sequence serializer" should "work properly" in {
     val dense = Dense[Float](10, inputShape = Shape(20))
     val kseq = KSequential[Float]()

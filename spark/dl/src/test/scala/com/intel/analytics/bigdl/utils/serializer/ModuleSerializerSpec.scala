@@ -204,6 +204,14 @@ class ModuleSerializerSpec extends SerializerSpecHelper {
     runSerializationTest(biRecurrent, input)
   }
 
+  "Bottle serializer" should "work properly" in {
+    val input = Tensor[Float](10).apply1(e => Random.nextFloat())
+
+    val bottle = new Bottle[Float](Linear[Float](10, 2).
+      asInstanceOf[Module[Float]], 2, 2).setName("bottle")
+    runSerializationTest(bottle, input)
+  }
+
   "Caddserializer" should "work properly" in {
     val input = Tensor[Float](5, 1).apply1(e => Random.nextFloat())
     val cadd = CAdd[Float](Array(5, 1)).setName("cadd")
@@ -439,6 +447,16 @@ class ModuleSerializerSpec extends SerializerSpecHelper {
     runSerializationTest(exp, input)
   }
 
+  "FlattenTable serializer" should "work properly" in {
+    val flattenTable = FlattenTable[Float]().setName("flattenTable")
+    val input1 = Tensor[Float](5, 5).apply1(e => Random.nextFloat())
+    val input2 = Tensor[Float](5, 5).apply1(e => Random.nextFloat())
+    var input = new Table()
+    input(1.toFloat) = input1
+    input(2.toFloat) = input2
+    runSerializationTest(flattenTable, input)
+  }
+
   "GaussianDropout serializer" should "work properly" in {
     RNG.setSeed(1000)
     val gaussianDropout = GaussianDropout[Float](0.5).setName("gaussianDropout")
@@ -460,6 +478,12 @@ class ModuleSerializerSpec extends SerializerSpecHelper {
     RNG.setSeed(1000)
     val gaussianSampler = GaussianSampler[Float]().setName("gaussianSampler")
     runSerializationTest(gaussianSampler, input)
+  }
+
+  "GradientReversal serializer" should "work properly" in {
+    val gradientReversal = GradientReversal[Float]().setName("gradientReversal")
+    val input = Tensor[Float](10).apply1(_ => Random.nextFloat())
+    runSerializationTest(gradientReversal, input)
   }
 
   "Graph serializer" should "work properly" in {
@@ -528,6 +552,12 @@ class ModuleSerializerSpec extends SerializerSpecHelper {
     val hardShrink = HardShrink[Float]().setName("hardShrink")
     val input = Tensor[Float](10).apply1(_ => Random.nextFloat())
     runSerializationTest(hardShrink, input)
+  }
+
+  "HardTanh serializer" should "work properly" in {
+    val hardTanh = HardTanh[Float]().setName("hardTanh")
+    val input = Tensor[Float](10).apply1(_ => Random.nextFloat())
+    runSerializationTest(hardTanh, input)
   }
 
   "HardSigmoid serialization" should "work properly" in {
@@ -648,6 +678,13 @@ class ModuleSerializerSpec extends SerializerSpecHelper {
     runSerializationTest(lookupTableSparse, input, lookupTableSparse.getClass)
   }
 
+  "LSTMPeephole serializer" should "work properly" in {
+    val lstmPeephole = LSTMPeephole[Float](6, 4)
+    val lstmPeepholeModel = Recurrent[Float]().add(lstmPeephole).setName("lstmPeephole")
+    val input = Tensor[Float](Array(1, 5, 6)).apply1(_ => Random.nextFloat())
+    runSerializationTest(lstmPeepholeModel, input, lstmPeephole.getClass)
+  }
+
   "MapTable serializer" should "work properly" in {
     val linear = Linear[Float](2, 2)
     val mapTable = new MapTable[Float]().setName("mapTable")
@@ -712,6 +749,16 @@ class ModuleSerializerSpec extends SerializerSpecHelper {
     input(1.0f) = input1
     input(2.0f) = input2
     runSerializationTest(mixTureTable, input)
+  }
+
+  "MM Serializer" should "work properly" in {
+    val mm = MM[Float]().setName("mm_layer")
+    val input1 = Tensor[Float](2, 3).apply1(e => Random.nextFloat())
+    val input2 = Tensor[Float](3, 4).apply1(e => Random.nextFloat())
+    val input = new Table()
+    input(1.0f) = input1
+    input(2.0f) = input2
+    runSerializationTest(mm, input)
   }
 
   "Mul Serializer" should "work properly" in {
@@ -852,6 +899,12 @@ class ModuleSerializerSpec extends SerializerSpecHelper {
     runSerializationTest(proposal, input)
   }
 
+  "PReLU serializer" should "work properly" in {
+    val preLu = PReLU[Float](2).setName("preLu")
+    val input = Tensor[Float](2, 3, 4).apply1(_ => Random.nextFloat())
+    runSerializationTest(preLu, input)
+  }
+
   "Recurrent serializer" should "work properly" in {
     val recurrent = Recurrent[Float]().setName("recurrent")
       .add(RnnCell[Float](5, 4, Tanh[Float]()))
@@ -864,6 +917,13 @@ class ModuleSerializerSpec extends SerializerSpecHelper {
       .add(RnnCell[Float](5, 4, Tanh[Float]()))
     val input = Tensor[Float](Array(10, 5, 5)).apply1(_ => Random.nextFloat())
     runSerializationTest(recurrent, input)
+  }
+
+  "RecurrentDecoder serializer" should "work properly" in {
+    val recDecoder = RecurrentDecoder[Float](5).
+      add(ConvLSTMPeephole[Float](7, 7, 3, 3, 1))
+    val input = Tensor[Float](4, 7, 5, 5).apply1(_ => Random.nextFloat())
+    runSerializationTest(recDecoder, input)
   }
 
   "ReLU serializer" should "work properly" in {
@@ -1085,11 +1145,26 @@ class ModuleSerializerSpec extends SerializerSpecHelper {
     runSerializationTest(spatialFullConvolution, input)
   }
 
+  "SpatialMaxPooling serializer" should "work properly" in {
+    val spatialMaxPooling = SpatialMaxPooling[Float](2, 2, 2, 2).
+      setName("spatialMaxPooling")
+    val input = Tensor[Float](1, 3, 3).apply1( e => Random.nextFloat())
+    runSerializationTest(spatialMaxPooling, input)
+  }
+
   "SpatialShareConvolution serializer" should "work properly" in {
     val spatialShareConvolution = SpatialShareConvolution[Float](1, 1, 2, 2, 1, 1).
       setName("spatialShareConvolution")
     val input = Tensor[Float](3, 1, 3, 4).apply1( e => Random.nextFloat())
     runSerializationTest(spatialShareConvolution, input)
+  }
+
+  "SpatialSubtractiveNormalization serializer" should "work properly" in {
+    val kernel = Tensor[Float](3, 3).apply1( e => Random.nextFloat())
+    val spatialSubtractiveNormalization = SpatialSubtractiveNormalization[Float](1, kernel).
+      setName("spatialSubtractiveNormalization")
+    val input = Tensor[Float](1, 1, 1, 5).apply1( e => Random.nextFloat())
+    runSerializationTest(spatialSubtractiveNormalization, input)
   }
 
   "SpatialWithinChannelLRN serializer" should "work properly" in {
@@ -1172,6 +1247,12 @@ class ModuleSerializerSpec extends SerializerSpecHelper {
     val temporalMaxPooling = new TemporalMaxPooling[Float](4).setName("temporalMaxPooling")
     val input = Tensor[Float](5, 4, 5).apply1(e => Random.nextFloat())
     runSerializationTest(temporalMaxPooling, input)
+  }
+
+  "Threshold serializer" should "work properly" in {
+    val threshold = Threshold[Float](0.5).setName("threshold")
+    val input = Tensor[Float](5, 5).apply1(_ => Random.nextFloat())
+    runSerializationTest(threshold, input)
   }
 
   "Tile serializer" should "work properly" in {
