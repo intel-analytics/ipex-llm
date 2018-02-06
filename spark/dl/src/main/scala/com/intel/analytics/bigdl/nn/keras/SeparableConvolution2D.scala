@@ -79,6 +79,7 @@ class SeparableConvolution2D[T: ClassTag](
 
   require(borderMode.toLowerCase() == "valid" || borderMode.toLowerCase() == "same",
     s"$borderMode is not supported")
+  require(subsample.length == 2, s"Subsample should be of length 2, not ${subsample.length}")
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
     val input = inputShape.toSingle().toArray
@@ -112,7 +113,7 @@ object SeparableConvolution2D {
     init: InitializationMethod = Xavier,
     activation: String = null,
     borderMode: String = "valid",
-    subsample: (Int, Int) = (1, 1),
+    subsample: Array[Int] = Array(1, 1),
     depthMultiplier: Int = 1,
     depthwiseRegularizer: Regularizer[T] = null,
     pointwiseRegularizer: Regularizer[T] = null,
@@ -122,7 +123,7 @@ object SeparableConvolution2D {
     inputShape: Shape = null)(implicit ev: TensorNumeric[T]) : SeparableConvolution2D[T] = {
     new SeparableConvolution2D[T](
       nbFilter, nbCol, nbRow, init, KerasUtils.getActivation(activation),
-      borderMode, Array(subsample._1, subsample._2), depthMultiplier, depthwiseRegularizer,
+      borderMode, subsample, depthMultiplier, depthwiseRegularizer,
       pointwiseRegularizer, bRegularizer, format, bias, inputShape)
   }
 }
