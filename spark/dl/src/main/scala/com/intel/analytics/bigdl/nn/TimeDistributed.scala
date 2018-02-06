@@ -38,7 +38,9 @@ import scala.reflect.ClassTag
  * @tparam T data type, which can be [[Double]] or [[Float]]
  */
 
-class TimeDistributed[T : ClassTag] (val layer: TensorModule[T])
+class TimeDistributed[T : ClassTag] (
+  val layer: TensorModule[T],
+  maskZero: Boolean = false)
   (implicit ev: TensorNumeric[T]) extends TensorModule[T] {
 
   private var inputSize: Array[Int] = _
@@ -95,7 +97,6 @@ class TimeDistributed[T : ClassTag] (val layer: TensorModule[T])
      * combine: [B, T, D] => [B * T, D]
      * split:   [B * T, D] => [B, T, D]
      */
-
     val _inputSize = input.size
     combine(_inputSize, inputSize)
     input.resize(inputSize)
@@ -103,6 +104,18 @@ class TimeDistributed[T : ClassTag] (val layer: TensorModule[T])
     split(_output.size, outputSize, _inputSize(0), _inputSize(1))
     input.resize(_inputSize)
     output.set(_output).resize(outputSize)
+
+    if (maskZero) {
+      val masks = input.abs().max(3)._1.sign()
+      for (i <- 1 to masks.size(1)) {
+        for (j <- 1 to masks.size(2)) {
+          if (masks(Array(i, j, 1)) == ev.zero) {
+            output.select(1, i).select(1, j).zero()
+          }
+        }
+      }
+    }
+
     output
   }
 
@@ -148,6 +161,18 @@ class TimeDistributed[T : ClassTag] (val layer: TensorModule[T])
     input.resize(_inputSize)
     gradOutput.resize(_gradOutputSize)
     backwardTime += System.nanoTime - st
+
+    if (maskZero) {
+      val masks = input.abs().max(3)._1.sign()
+      for (i <- 1 to masks.size(1)) {
+        for (j <- 1 to masks.size(2)) {
+          if (masks(Array(i, j, 1)) == ev.zero) {
+            gradInput.select(1, i).select(1, j).zero()
+          }
+        }
+      }
+    }
+
     gradInput
   }
 
@@ -272,8 +297,10 @@ class TimeDistributed[T : ClassTag] (val layer: TensorModule[T])
 }
 
 object TimeDistributed {
-  def apply[@specialized(Float, Double) T: ClassTag](layer: TensorModule[T])
-    (implicit ev: TensorNumeric[T]): TimeDistributed[T] = {
-    new TimeDistributed[T](layer)
+  def apply[@specialized(Float, Double) T: ClassTag](
+    layer: TensorModule[T],
+    maskZero: Boolean = false
+  )(implicit ev: TensorNumeric[T]): TimeDistributed[T] = {
+    new TimeDistributed[T](layer, maskZero)
   }
 }

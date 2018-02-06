@@ -54,30 +54,30 @@ object Train {
         .asInstanceOf[JHashMap[String, JTensor]]
       val encoderWeight1 = Tensor(tensorMap.get("enc_weight1").storage,
         tensorMap.get("enc_weight1").shape).t()
-//      val encoderWeight2 = Tensor(tensorMap.get("enc_weight2").storage,
-//        tensorMap.get("enc_weight2").shape).t()
-//      val encoderWeight3 = Tensor(tensorMap.get("enc_weight3").storage,
-//        tensorMap.get("enc_weight3").shape).t()
+      val encoderWeight2 = Tensor(tensorMap.get("enc_weight2").storage,
+        tensorMap.get("enc_weight2").shape).t()
+      val encoderWeight3 = Tensor(tensorMap.get("enc_weight3").storage,
+        tensorMap.get("enc_weight3").shape).t()
       val encoderBias1 = Tensor(tensorMap.get("enc_bias1").storage,
         tensorMap.get("enc_bias1").shape)
-//      val encoderBias2 = Tensor(tensorMap.get("enc_bias2").storage,
-//        tensorMap.get("enc_bias2").shape)
-//      val encoderBias3 = Tensor(tensorMap.get("enc_bias3").storage,
-//        tensorMap.get("enc_bias3").shape)
+      val encoderBias2 = Tensor(tensorMap.get("enc_bias2").storage,
+        tensorMap.get("enc_bias2").shape)
+      val encoderBias3 = Tensor(tensorMap.get("enc_bias3").storage,
+        tensorMap.get("enc_bias3").shape)
       val decoderWeight1 = Tensor(tensorMap.get("dec_weight1").storage,
         tensorMap.get("dec_weight1").shape).t()
-//      val decoderWeight2 = Tensor(tensorMap.get("dec_weight2").storage,
-//        tensorMap.get("dec_weight2").shape).t()
-//      val decoderWeight3 = Tensor(tensorMap.get("dec_weight3").storage,
-//        tensorMap.get("dec_weight3").shape).t()
+      val decoderWeight2 = Tensor(tensorMap.get("dec_weight2").storage,
+        tensorMap.get("dec_weight2").shape).t()
+      val decoderWeight3 = Tensor(tensorMap.get("dec_weight3").storage,
+        tensorMap.get("dec_weight3").shape).t()
       val decoderBias1 = Tensor(tensorMap.get("dec_bias1").storage,
         tensorMap.get("dec_bias1").shape)
-//      val decoderBias2 = Tensor(tensorMap.get("dec_bias2").storage,
-//        tensorMap.get("dec_bias2").shape)
-//      val decoderBias3 = Tensor(tensorMap.get("dec_bias3").storage,
-//        tensorMap.get("dec_bias3").shape)
+      val decoderBias2 = Tensor(tensorMap.get("dec_bias2").storage,
+        tensorMap.get("dec_bias2").shape)
+      val decoderBias3 = Tensor(tensorMap.get("dec_bias3").storage,
+        tensorMap.get("dec_bias3").shape)
       val linearWeight = Tensor(tensorMap.get("linear_weight").storage,
-        tensorMap.get("linear_weight").shape)
+        tensorMap.get("linear_weight").shape).t()
       val linearBias = Tensor(tensorMap.get("linear_bias").storage,
         tensorMap.get("linear_bias").shape)
       val embedding = Tensor(tensorMap.get("embedding").storage, tensorMap.get("embedding").shape)
@@ -200,9 +200,9 @@ object Train {
       val padLabel = Tensor[Float](T(padId))
 
 
-      var model = if (param.modelSnapshot.isDefined) {
-        Module.load[Float](param.modelSnapshot.get)
-      } else {
+//      var model = if (param.modelSnapshot.isDefined) {
+//        Module.load[Float](param.modelSnapshot.get)
+//      } else {
 //        val e1 = encoderWeight1.narrow(2, 1, param.embedDim).narrow(1, 1, 10).contiguous()
 //        val e2 = encoderWeight1.narrow(2, 1, param.embedDim).narrow(1, 11, 10).contiguous()
 //        val e3 = encoderWeight1.narrow(2, 1, param.embedDim).narrow(1, 21, 10).contiguous()
@@ -217,19 +217,21 @@ object Train {
 //                        Recurrent().add(RnnCell(param.embedDim, param.embedDim, Sigmoid()))
 //                        Recurrent().add(LSTM(param.embedDim, param.embedDim)),
 //                        Recurrent().add(LSTM(param.embedDim, param.embedDim)),
-            Recurrent().add(LSTM(param.embedDim, param.embedDim))
+            Recurrent().add(LSTM(param.embedDim, param.embedDim, maskZero = true))
               .setWeightsBias(Array(
                 encoderWeight1.narrow(2, 1, param.embedDim),
-//                JoinTable(1, 2).updateOutput(T(e1, e2, e3, e4)).asInstanceOf[Tensor[Float]],
                 encoderBias1,
-                encoderWeight1.narrow(2, param.embedDim + 1, param.embedDim)))
-//                JoinTable(1, 2).updateOutput(T(e5, e6, e7, e8)).asInstanceOf[Tensor[Float]]))
-//            Recurrent().add(LSTM(param.embedDim, param.embedDim))
-//              .setWeightsBias(Array(encoderWeight2.narrow(2, 1, param.embedDim),
-//                encoderBias2, encoderWeight2.narrow(2, param.embedDim + 1, param.embedDim))),
-//            Recurrent().add(LSTM(param.embedDim, param.embedDim))
-//              .setWeightsBias(Array(encoderWeight3.narrow(2, 1, param.embedDim),
-//                encoderBias3, encoderWeight3.narrow(2, param.embedDim + 1, param.embedDim)))
+                encoderWeight1.narrow(2, param.embedDim + 1, param.embedDim))),
+            Recurrent().add(LSTM(param.embedDim, param.embedDim, maskZero = true))
+              .setWeightsBias(Array(
+                encoderWeight2.narrow(2, 1, param.embedDim),
+                encoderBias2,
+                encoderWeight2.narrow(2, param.embedDim + 1, param.embedDim))),
+            Recurrent().add(LSTM(param.embedDim, param.embedDim, maskZero = true))
+              .setWeightsBias(Array(
+                encoderWeight3.narrow(2, 1, param.embedDim),
+                encoderBias3,
+                encoderWeight3.narrow(2, param.embedDim + 1, param.embedDim)))
           )
 
         val decoder =
@@ -237,22 +239,23 @@ object Train {
             //            Recurrent().add(RnnCell(param.embedDim, param.embedDim, Sigmoid()))
 //                        Recurrent().add(LSTM(param.embedDim, param.embedDim)),
 //                        Recurrent().add(LSTM(param.embedDim, param.embedDim)),
-            Recurrent().add(LSTM(param.embedDim, param.embedDim))
+            Recurrent().add(LSTM(param.embedDim, param.embedDim, maskZero = true))
               .setWeightsBias(Array(decoderWeight1.narrow(2, 1, param.embedDim),
-                decoderBias1, decoderWeight1.narrow(2, param.embedDim + 1, param.embedDim)))
-//            Recurrent().add(LSTM(param.embedDim, param.embedDim))
-//              .setWeightsBias(Array(decoderWeight2.narrow(2, 1, param.embedDim),
-//                decoderBias2, decoderWeight2.narrow(2, param.embedDim + 1, param.embedDim))),
-//            Recurrent().add(LSTM(param.embedDim, param.embedDim))
-//              .setWeightsBias(Array(decoderWeight3.narrow(2, 1, param.embedDim),
-//                decoderBias3, decoderWeight3.narrow(2, param.embedDim + 1, param.embedDim)))
+                decoderBias1, decoderWeight1.narrow(2, param.embedDim + 1, param.embedDim))),
+            Recurrent().add(LSTM(param.embedDim, param.embedDim, maskZero = true))
+              .setWeightsBias(Array(decoderWeight2.narrow(2, 1, param.embedDim),
+                decoderBias2, decoderWeight2.narrow(2, param.embedDim + 1, param.embedDim))),
+            Recurrent().add(LSTM(param.embedDim, param.embedDim, maskZero = true))
+              .setWeightsBias(Array(decoderWeight3.narrow(2, 1, param.embedDim),
+                decoderBias3, decoderWeight3.narrow(2, param.embedDim + 1, param.embedDim)))
           )
 
         val enclookuptable = LookupTable(
           vocabSize,
           param.embedDim,
           paddingValue = padId,
-          wInit = RandomUniform(-0.1, 0.1)
+          wInit = RandomUniform(-0.1, 0.1),
+          maskZero = true
         )
 
         enclookuptable.setWeightsBias(Array(embedding))
@@ -261,35 +264,36 @@ object Train {
           vocabSize,
           param.embedDim,
           paddingValue = padId,
-          wInit = RandomUniform(-0.1, 0.1)
+          wInit = RandomUniform(-0.1, 0.1),
+          maskZero = true
         )
         declookuptable.setWeightsBias(Array(embedding))
 
-        //        declookuptable.weight = enclookuptable.weight
-        //        declookuptable.gradWeight = enclookuptable.gradWeight
+        declookuptable.weight = enclookuptable.weight
+        declookuptable.gradWeight = enclookuptable.gradWeight
 
         val preEncoder = enclookuptable
         val preDecoder = declookuptable
 
-        val model = Sequential()
+        var model: Module[Float] = Sequential()
           .add(
             Seq2seq(encoder, decoder,
               preEncoder = preEncoder,
               preDecoder = preDecoder,
               decoderInputType = DecoderInputType.ENCODERINPUTSPLIT))
           .add(TimeDistributed(Linear(param.embedDim, vocabSize)
-            .setWeightsBias(Array(linearWeight, linearBias))))
+            .setWeightsBias(Array(linearWeight, linearBias)), maskZero = true))
           .add(TimeDistributed(LogSoftMax()))
         //        model.reset()
-        model
-      }
+//        model
+//      }
 
 
       //       model.forward(trainSet.collect().head.)
       val optimMethod = if (param.stateSnapshot.isDefined) {
         OptimMethod.load[Float](param.stateSnapshot.get)
       } else {
-        new Adam[Float](learningRate = param.learningRate)
+        new Adam[Float](learningRate = 0.0001)
       }
 
       val optimizer = Optimizer(
@@ -337,7 +341,7 @@ object Train {
       val seeds = Array("happy birthday have a nice day",
         "donald trump won last nights presidential debate according to snap online polls")
 
-      val adam = new Adam[Float](learningRate = param.learningRate)
+      val adam = new Adam[Float](0.0001)
       val criterion = TimeDistributedMaskCriterion(
         ClassNLLCriterion(paddingValue = padId, sizeAverage = false),
         padValue = padId,
@@ -358,6 +362,8 @@ object Train {
       val (weights, grad) = model.getParameters()
       val state = T("learningRate" -> param.learningRate)
       def feval1(x: Tensor[Float]): (Float, Tensor[Float]) = {
+//        enclookuptable.getWeightsBias().foreach(x => println(x))
+//        encoder(0).getWeightsBias().foreach(x => println(x))
         val output = model.forward(input).toTensor[Float]
         val _loss = criterion.forward(output, labels)
         model.zeroGradParameters()
@@ -368,7 +374,7 @@ object Train {
 
       var loss1: Array[Float] = null
       for (i <- 1 to 10) {
-        loss1 = adam.optimize(feval1, weights, state)._2
+        loss1 = adam.optimize(feval1, weights)._2
         println(s"${i}-th loss = ${loss1(0)}")
       }
 

@@ -48,7 +48,8 @@ class LookupTable[T: ClassTag]
   val normType: Double = 2.0,
   shouldScaleGradByFreq: Boolean = false,
   var wRegularizer: Regularizer[T] = null,
-  val wInit: InitializationMethod = RandomNormal(0, 1)
+  val wInit: InitializationMethod = RandomNormal(0, 1),
+  val maskZero: Boolean = false
 )
 (implicit ev: TensorNumeric[T]) extends TensorModule[T] with Initializable {
 
@@ -163,6 +164,9 @@ class LookupTable[T: ClassTag]
   }
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
+    if (maskZero && paddingValue != 0) {
+      weight.select(1, paddingValue.toInt).zero()
+    }
     require(input.dim() == 1 || input.dim() == 2,
       s"LookupTable: ${ErrorInfo.constrainInputAsVectorOrBatch}, input dim [${input.dim()}]"  )
     renorm(input)
@@ -305,11 +309,12 @@ object LookupTable {
     paddingValue: Double = 0, maxNorm: Double = Double.MaxValue,
     normType: Double = 2.0, shouldScaleGradByFreq: Boolean = false,
     wRegularizer: Regularizer[T] = null,
-    wInit: InitializationMethod = RandomNormal(0, 1)
+    wInit: InitializationMethod = RandomNormal(0, 1),
+    maskZero: Boolean = false
   )
    (implicit ev: TensorNumeric[T]): LookupTable[T] =
     new LookupTable[T](nIndex, nOutput, paddingValue,
-      maxNorm, normType, shouldScaleGradByFreq, wRegularizer, wInit)
+      maxNorm, normType, shouldScaleGradByFreq, wRegularizer, wInit, maskZero)
 }
 
 

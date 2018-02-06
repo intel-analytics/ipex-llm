@@ -33,7 +33,10 @@ import scala.reflect.ClassTag
  * [[Recurrent]] module is a container of rnn cells
  * Different types of rnn cells can be added using add() function
  */
-class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
+class Recurrent[T : ClassTag](
+  var batchNormParams: BatchNormParams[T] = null,
+  var maskZero: Boolean = true
+)
   (implicit ev: TensorNumeric[T]) extends Container[Tensor[T], Tensor[T], T] {
 
   protected var hidden: Activity = null
@@ -80,7 +83,7 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
 
     topology = module.asInstanceOf[Cell[T]]
     preTopology = if (topology.preTopology != null) {
-      TimeDistributed(topology.preTopology)
+      TimeDistributed(topology.preTopology, maskZero = maskZero)
     } else topology.preTopology
 
     if (batchNormParams != null && preTopology == null) {
@@ -238,6 +241,10 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
     result
   }
 
+  def retrieveMaskSequenceLength(sequence: Tensor[T]): Tensor[T] = {
+    sequence.abs(sequence).max(3)._1.sign().sum(2)
+  }
+
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
     require(input.dim == 3 || input.dim == 5 || input.dim == 6,
       "Recurrent: input should be a 3D/5D/6D Tensor, e.g [batch, times, nDim], " +
@@ -380,6 +387,11 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
   override def backward(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
     val st = System.nanoTime
     var i = times
+
+    val sequenceLength = retrieveMaskSequenceLength(input)
+    val max_length = sequenceLength.max(1)._2
+    val min_length = sequenceLength.min(1)._2
+    val mask = input.abs(input).max(2)._1
 
     while (i >= 1) {
       currentGradOutput(hidDim) = if (i != times) cells(i).gradInput.toTable(hidDim)
