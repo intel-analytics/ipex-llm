@@ -23,7 +23,7 @@ SPARK_VERSION=${SPARK_VERSION_ENV}
 SPARK_MAJOR_VERSION=${SPARK_VERSION_ENV%%.[0-9]}
 
 export PYSPARK_DRIVER_PYTHON=jupyter
-export PYSPARK_DRIVER_PYTHON_OPTS="notebook --notebook-dir=$BIGDL_TUTORIALS_HOME/notebooks --ip=* --port=$NotebookPort --no-browser --NotebookApp.token='' --allow-root"
+export PYSPARK_DRIVER_PYTHON_OPTS="notebook --notebook-dir=$BIGDL_TUTORIALS_HOME/notebooks --ip=* --port=$NotebookPort --no-browser --NotebookApp.token=$NotebookToken --allow-root"
 
 #source ${BIGDL_HOME}/bin/bigdl.sh
 ${SPARK_HOME}/bin/pyspark \
