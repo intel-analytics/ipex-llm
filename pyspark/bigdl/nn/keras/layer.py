@@ -17,13 +17,14 @@
 import sys
 
 from bigdl.keras.ToBigDLHelper import to_bigdl_reg, to_bigdl_init
-from bigdl.nn.layer import Layer
+from bigdl.nn.layer import Layer, Container
 from bigdl.util.common import get_activation_by_name
 
 
 if sys.version >= '3':
     long = int
     unicode = str
+
 
 class KerasLayer(Layer):
     def jvm_class_constructor(self):
@@ -32,7 +33,12 @@ class KerasLayer(Layer):
         return name
 
 
-class Dense(KerasLayer):
+class Sequential(Container):
+    def __init__(self, bigdl_type="float"):
+        super(Sequential, self).__init__(None, bigdl_type, is_keras=True)
+
+
+class Dense(Layer):
     """Just your regular densely-connected NN layer.
 
         # Example
@@ -74,3 +80,14 @@ class Dense(KerasLayer):
                                     to_bigdl_reg(b_regularizer),
                                     bias,
                                     list(input_shape) if input_shape else None)
+
+
+class Embedding(Layer):
+    def __init__(self, input_dim, output_dim, init='uniform',
+                 W_regularizer=None, input_shape=None, bigdl_type="float"):
+        super(Embedding, self).__init__(None, bigdl_type,
+                                        input_dim,
+                                        output_dim,
+                                        to_bigdl_init(init),
+                                        to_bigdl_reg(W_regularizer),
+                                        list(input_shape) if input_shape else None)
