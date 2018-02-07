@@ -54,7 +54,7 @@ class TestLayer(BigDLTestCase):
     def test_batchnormalization(self):
         K.set_image_dim_ordering("th")
         input_data = np.random.random([2, 3, 32, 32])
-        blayer = BLayer.BatchNormalization(input_shape=(3, 32, 32))
+        blayer = BLayer.BatchNormalization(beta_init=np.zeros(3), input_shape=(3, 32, 32))
         klayer = KLayer.BatchNormalization(axis=1, input_shape=(3, 32, 32))
         self.__compare_results(klayer, blayer, WeightsConverter.convert_batchnormalization, input_data)
 
