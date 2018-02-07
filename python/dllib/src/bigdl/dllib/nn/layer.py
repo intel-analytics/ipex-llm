@@ -2556,6 +2556,35 @@ class CosineDistance(Layer):
         super(CosineDistance, self).__init__(None, bigdl_type)
 
 
+class CrossProduct(Layer):
+
+    """
+    A layer which takes a table of multiple tensors(n >= 2) as input
+    and calculate to dot product for `all combinations of pairs` among input tensors.
+
+    Dot-product outputs are ordered according to orders of pairs in input Table.
+    For instance, input (Table) is T(A, B, C), output (Tensor) will be [A.*B, A.*C, B.*C].
+
+    Dimensions of input' Tensors could be one or two, if two, first dimension is `batchSize`.
+    For convenience, output is 2-dim Tensor regardless of input' dims.
+
+    Table size checking and Tensor size checking will be execute before each forward,
+    when [[numTensor]] and [[embeddingSize]] are set values greater than zero.
+
+    :param numTensor (for checking)number of Tensor input Table contains, :default 0(won't check)
+    :param embeddingSize (for checking)vector length of dot product, :default 0(won't check)
+
+    >>> crossProduct = CrossProduct()
+    creating: createCrossProduct
+    """
+
+    def __init__(self,
+                 numTensor=0,
+                 embeddingSize=0,
+                 bigdl_type="float"):
+        super(CrossProduct, self).__init__(None, bigdl_type, numTensor, embeddingSize)
+
+
 class UpSampling2D(Layer):
     """
     Upsampling layer for 2D inputs.
