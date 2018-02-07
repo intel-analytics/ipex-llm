@@ -264,7 +264,8 @@ if __name__ == "__main__":
 
     if options.action == "train":
         # create dataset
-        train_transformer = Pipeline([RandomCrop(image_size, image_size),
+        train_transformer = Pipeline([PixelBytesToMat(),
+                                      RandomCrop(image_size, image_size),
                                       HFlip(),
                                       ChannelNormalize(0.485, 0.456, 0.406, 0.229, 0.224, 0.225),
                                       MatToTensor(to_rgb=True),
@@ -275,7 +276,8 @@ if __name__ == "__main__":
         # train_data = train_transformer(get_inception_data(options.folder, sc, "train"))
         train_data = DataSet(raw_train_data).transform(train_transformer)
 
-        val_transformer = Pipeline([CenterCrop(image_size, image_size),
+        val_transformer = Pipeline([PixelBytesToMat(),
+                                    CenterCrop(image_size, image_size),
                                     HFlip(),
                                     ChannelNormalize(0.485, 0.456, 0.406, 0.229, 0.224, 0.225),
                                     MatToTensor(to_rgb=True),
@@ -320,7 +322,8 @@ if __name__ == "__main__":
 
     elif options.action == "test":
         # Load a pre-trained model and then validate it through top1 accuracy.
-        test_transformer = Pipeline([CenterCrop(image_size, image_size),
+        test_transformer = Pipeline([PixelBytesToMat(),
+                                     CenterCrop(image_size, image_size),
                                      HFlip(),
                                      ChannelNormalize(0.485, 0.456, 0.406, 0.229, 0.224, 0.225),
                                      MatToTensor(to_rgb=True),
