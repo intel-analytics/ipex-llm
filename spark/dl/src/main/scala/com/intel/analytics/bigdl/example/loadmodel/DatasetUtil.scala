@@ -54,7 +54,7 @@ object AlexNetPreprocessor {
       // do not normalize the pixel values to [0, 1]
     val transfomer = PixelBytesToMat() -> Resize(256, 256) ->
       PixelNormalizer(means.storage.array) -> CenterCrop(imageSize, imageSize) ->
-      MatToTensor[Float]() -> TensorsToSample[Float](targetKeys = Array(ImageFeature.label))
+      MatToTensor[Float]() -> ImageFrameToSample[Float](targetKeys = Array(ImageFeature.label))
     val imgFrame = data -> transfomer
     val validImageFeatures = imgFrame.toDistributed().rdd
     validImageFeatures.map(x => x[Sample[Float]](ImageFeature.sample))
@@ -83,7 +83,7 @@ object InceptionPreprocessor {
     val data = DataSet.SeqFileFolder.filesToImageFrame(path, sc, 1000)
     val transfomer = PixelBytesToMat() -> Resize(256, 256) ->
       CenterCrop(imageSize, imageSize) -> ChannelNormalize(123, 117, 104) ->
-      MatToTensor[Float]() -> TensorsToSample[Float](targetKeys = Array(ImageFeature.label))
+      MatToTensor[Float]() -> ImageFrameToSample[Float](targetKeys = Array(ImageFeature.label))
     val imgFrame = transfomer(data)
     val validImageFeatures = imgFrame.toDistributed().rdd
     validImageFeatures.map(x => x[Sample[Float]](ImageFeature.sample))

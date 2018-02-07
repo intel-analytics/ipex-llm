@@ -199,7 +199,7 @@ object MatToTensor {
  * @param targetKeys keys that maps targets (each target should be a tensor)
  * @param sampleKey key to store sample
  */
-class TensorsToSample[T: ClassTag](inputKeys: Array[String] = Array(ImageFeature.imageTensor),
+class ImageFrameToSample[T: ClassTag](inputKeys: Array[String] = Array(ImageFeature.imageTensor),
   targetKeys: Array[String] = null,
   sampleKey: String = ImageFeature.sample)
   (implicit ev: TensorNumeric[T]) extends FeatureTransformer {
@@ -228,7 +228,7 @@ class TensorsToSample[T: ClassTag](inputKeys: Array[String] = Array(ImageFeature
       case e: Exception =>
         e.printStackTrace()
         val uri = feature.uri()
-        TensorsToSample.logger.warn(s"convert imageframe to sample fail for $uri")
+        ImageFrameToSample.logger.warn(s"convert imageframe to sample fail for $uri")
         feature(ImageFeature.originalSize) = (-1, -1, -1)
         feature.isValid = false
     }
@@ -236,13 +236,13 @@ class TensorsToSample[T: ClassTag](inputKeys: Array[String] = Array(ImageFeature
   }
 }
 
-object TensorsToSample {
+object ImageFrameToSample {
   val logger = Logger.getLogger(getClass)
 
   def apply[T: ClassTag](inputKeys: Array[String] = Array(ImageFeature.imageTensor),
     targetKeys: Array[String] = null,
     sampleKey: String = ImageFeature.sample)(implicit ev: TensorNumeric[T])
-  : TensorsToSample[T] = new TensorsToSample[T](inputKeys, targetKeys, sampleKey)
+  : ImageFrameToSample[T] = new ImageFrameToSample[T](inputKeys, targetKeys, sampleKey)
 }
 
 class ImageFeatureToMiniBatch[T: ClassTag](batchSize: Int,

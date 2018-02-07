@@ -779,16 +779,16 @@ transformed = transformer(data)
 ```
 
 ---
-## **TensorsToSample**
+## **ImageFrameToSample**
 **Scala:**
 ```scala
-val transformer = TensorsToSample(inputKeys: Array[String] = Array(ImageFeature.imageTensor),
+val transformer = ImageFrameToSample(inputKeys: Array[String] = Array(ImageFeature.imageTensor),
                                targetKeys: Array[String] = null,
                                sampleKey: String = ImageFeature.sample)
 ```
 **Python:**
 ```python
-transformer = TensorsToSample(input_keys=["imageTensor"], target_keys=None,
+transformer = ImageFrameToSample(input_keys=["imageTensor"], target_keys=None,
                                            sample_key="sample")
 ```
 Transforms tensors that map inputKeys and targetKeys to sample,
@@ -797,8 +797,8 @@ note that in this transformer, the mat has been released.
   * `targetKeys` keys that maps targets (each target should be a tensor)
   * `sampleKey` key to store sample
 
-Note that you may need to chain `MatToTensor` before `TensorsToSample`,
-since `TensorsToSample` requires all inputkeys map Tensor type
+Note that you may need to chain `MatToTensor` before `ImageFrameToSample`,
+since `ImageFrameToSample` requires all inputkeys map Tensor type
 
 **Scala example:**
 ```scala
@@ -806,7 +806,7 @@ import com.intel.analytics.bigdl.transform.vision.image._
 
 val data = ImageFrame.read("/tmp/test.jpg")
 val transformer = MatToTensor[Float]()
-val toSample = TensorsToSample[Float]()
+val toSample = ImageFrameToSample[Float]()
 val transformed = transformer(data)
 toSample(transformed)
 ```
@@ -816,7 +816,7 @@ toSample(transformed)
 from bigdl.transform.vision.image import *
 data = ImageFrame.read("/tmp/test.jpg")
 transformer = MatToTensor()
-to_sample = TensorsToSample()
+to_sample = ImageFrameToSample()
 transformed = transformer(data)
 to_sample(transformed)
 ```

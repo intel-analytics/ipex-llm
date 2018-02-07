@@ -121,7 +121,7 @@ class PredictorSpec extends FlatSpec with Matchers with BeforeAndAfter{
     val imageFrame = ImageFrame.read(resource.getFile, sc) ->
       Resize(256, 256) -> CenterCrop(224, 224) ->
       ChannelNormalize(0.485f, 0.456f, 0.406f, 0.229f, 0.224f, 0.225f) ->
-      MatToTensor() -> TensorsToSample()
+      MatToTensor() -> ImageFrameToSample()
     val model = Inception_v1_NoAuxClassifier(classNum = 20)
     val detection = model.predictImage(imageFrame).toDistributed()
     val feature = detection.rdd.first()
@@ -141,7 +141,7 @@ class PredictorSpec extends FlatSpec with Matchers with BeforeAndAfter{
     val imageFrame = ImageFrame.read(resource.getFile, sc) ->
       Resize(256, 256) -> CenterCrop(224, 224) ->
       ChannelNormalize(0.485f, 0.456f, 0.406f, 0.229f, 0.224f, 0.225f) ->
-      MatToTensor() -> TensorsToSample()
+      MatToTensor() -> ImageFrameToSample()
     val model = Sequential()
     model.add(SpatialConvolution(3, 6, 5, 5))
     model.add(Tanh())
@@ -167,7 +167,7 @@ class PredictorSpec extends FlatSpec with Matchers with BeforeAndAfter{
       im
     })
 
-    val imageFrame = ImageFrame.array(ims.toArray).toDistributed(sc) -> TensorsToSample()
+    val imageFrame = ImageFrame.array(ims.toArray).toDistributed(sc) -> ImageFrameToSample()
     val model = Sequential()
     model.add(SpatialConvolution(3, 6, 5, 5))
     model.add(Tanh())
@@ -196,7 +196,7 @@ class PredictorSpec extends FlatSpec with Matchers with BeforeAndAfter{
       im
     })
 
-    val imageFrame = ImageFrame.array(ims.toArray).toDistributed(sc) -> TensorsToSample()
+    val imageFrame = ImageFrame.array(ims.toArray).toDistributed(sc) -> ImageFrameToSample()
     val input = Input()
     val conv = SpatialConvolution(3, 6, 5, 5).inputs(input)
     val out1 = Tanh().inputs(conv)

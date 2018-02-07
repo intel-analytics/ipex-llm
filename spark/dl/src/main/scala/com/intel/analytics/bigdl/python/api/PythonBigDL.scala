@@ -2962,10 +2962,10 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
 
   def isDistributed(imageFrame: ImageFrame): Boolean = imageFrame.isDistributed()
 
-  def createTensorsToSample(inputKeys: JList[String],
-    targetKeys: JList[String], sampleKey: String): TensorsToSample[T] = {
+  def createImageFrameToSample(inputKeys: JList[String],
+    targetKeys: JList[String], sampleKey: String): ImageFrameToSample[T] = {
     val targets = if (targetKeys == null) null else targetKeys.asScala.toArray
-    TensorsToSample[T](inputKeys.asScala.toArray, targets, sampleKey)
+    ImageFrameToSample[T](inputKeys.asScala.toArray, targets, sampleKey)
   }
 
   def seqFilesToImageFrame(url: String, sc: JavaSparkContext,
