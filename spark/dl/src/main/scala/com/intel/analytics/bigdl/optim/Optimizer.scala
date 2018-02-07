@@ -22,7 +22,6 @@ import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dataset.{DataSet, SampleToMiniBatch, _}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.transform.vision.image.{CachedImageFrame, ImageFeatureToMiniBatch}
 import com.intel.analytics.bigdl.utils._
 import com.intel.analytics.bigdl.visualization.{TrainSummary, ValidationSummary}
 import org.apache.spark.rdd.RDD
@@ -480,32 +479,6 @@ object Optimizer {
          .asInstanceOf[DistributedDataSet[MiniBatch[T]]],
        _criterion = criterion
      ).asInstanceOf[Optimizer[T, MiniBatch[T]]]
-  }
-
-  def apply[T: ClassTag](
-    model: Module[T],
-    data: ImageFrame,
-    criterion: Criterion[T],
-    batchSize: Int,
-    featurePaddingParam: PaddingParam[T],
-    labelPaddingParam: PaddingParam[T]
-  )(implicit ev: TensorNumeric[T]): Optimizer[T, MiniBatch[T]] = {
-
-    val _featurePaddingParam = if (featurePaddingParam != null) Some(featurePaddingParam) else None
-    val _labelPaddingParam = if (labelPaddingParam != null) Some(labelPaddingParam) else None
-
-    val dataSet = data match {
-      case imageFrame: CachedImageFrame =>
-        imageFrame ->
-          ImageFeatureToMiniBatch(batchSize, _featurePaddingParam, _labelPaddingParam)
-    }
-
-    new DistriOptimizer[T](
-      _model = model,
-      _dataset = dataSet.asInstanceOf[DistributedDataSet[MiniBatch[T]]],
-      _criterion = criterion
-    ).asInstanceOf[Optimizer[T, MiniBatch[T]]]
-
   }
 
 

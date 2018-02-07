@@ -16,7 +16,6 @@
 
 package com.intel.analytics.bigdl.transform.vision.image
 
-import com.intel.analytics.bigdl.ImageFrame
 import com.intel.analytics.bigdl.dataset.{ChainedTransformer, Transformer}
 import com.intel.analytics.bigdl.opencv.OpenCV
 import com.intel.analytics.bigdl.transform.vision.image.opencv.OpenCVMat

@@ -42,16 +42,16 @@ object ImageNet2012 {
 //        transformer = (BytesToBGRImg() -> BGRImgCropper(imageSize, imageSize)
 //          -> HFlip(0.5) -> BGRImgNormalizer(0.485, 0.456, 0.406, 0.229, 0.224, 0.225))
 //      ))
-val imageFrame = DataSet.SeqFileFolder.filesToImageFrame(path, sc, classNumber) ->
-  PixelBytesToMat() ->
-  Resize(256, 256) ->
-  RandomCrop(224, 224) ->
-  RandomTransformer(HFlip(), 0.5) ->
-  ChannelNormalize(0.485f, 0.456f, 0.406f, 0.229f, 0.224f, 0.225f) ->
-  MatToTensor[Float](toRGB = true) ->
-  TensorsToSample[Float](Array(ImageFeature.imageTensor), Array(ImageFeature.label)) ->
-  ImageFeatureToMiniBatch[Float](batchSize)
-    imageFrame.asInstanceOf[DataSet[MiniBatch[Float]]]
+val imageFrame = DataSet.SeqFileFolder.filesToImageFrame(path, sc, classNumber)
+    DataSet.imageFrame(imageFrame) ->
+      PixelBytesToMat() ->
+      Resize(256, 256) ->
+      RandomCrop(224, 224) ->
+      RandomTransformer(HFlip(), 0.5) ->
+      ChannelNormalize(0.485f, 0.456f, 0.406f, 0.229f, 0.224f, 0.225f) ->
+      MatToTensor[Float](toRGB = true) ->
+      TensorsToSample[Float](Array(ImageFeature.imageTensor), Array(ImageFeature.label)) ->
+      ImageFeatureToMiniBatch[Float](batchSize)
   }
 }
 
@@ -74,7 +74,9 @@ object ImageNet2012Val {
 //        transformer = (BytesToBGRImg() -> BGRImgCropper(imageSize, imageSize, CropCenter)
 //          -> HFlip(0.5) -> BGRImgNormalizer(0.485, 0.456, 0.406, 0.229, 0.224, 0.225))
 //      ))
-    val imageFrame = DataSet.SeqFileFolder.filesToImageFrame(path, sc, classNumber) ->
+
+    val imageFrame = DataSet.SeqFileFolder.filesToImageFrame(path, sc, classNumber)
+    DataSet.imageFrame(imageFrame) ->
       PixelBytesToMat() ->
       Resize(256, 256) ->
       CenterCrop(224, 224) ->
@@ -83,8 +85,6 @@ object ImageNet2012Val {
       MatToTensor[Float](toRGB = true) ->
       TensorsToSample[Float](Array(ImageFeature.imageTensor), Array(ImageFeature.label)) ->
       ImageFeatureToMiniBatch[Float](batchSize)
-
-    imageFrame.asInstanceOf[DataSet[MiniBatch[Float]]]
   }
 }
 

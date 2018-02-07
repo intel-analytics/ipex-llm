@@ -2190,13 +2190,13 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     enrichOptimizer(optimizer, endTrigger, optimMethod)
   }
 
-  def createDistriOptimizerFromImageFrame(model: AbstractModule[Activity, Activity, T],
-    trainingImageFrame: ImageFrame,
+  def createDistriOptimizerFromDataSet(model: AbstractModule[Activity, Activity, T],
+    trainDataSet: DataSet[ImageFeature],
     criterion: Criterion[T],
     optimMethod: OptimMethod[T],
     endTrigger: Trigger,
     batchSize: Int): Optimizer[T, MiniBatch[T]] = {
-    val dataSet = trainingImageFrame -> ImageFeatureToMiniBatch[T](batchSize)
+    val dataSet = trainDataSet -> ImageFeatureToMiniBatch[T](batchSize)
 
     val optimizer = new DistriOptimizer(
       _model = model,
@@ -2204,6 +2204,11 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
       _criterion = criterion
     ).asInstanceOf[Optimizer[T, MiniBatch[T]]]
     enrichOptimizer(optimizer, endTrigger, optimMethod)
+  }
+
+  def featureTransformDataset(dataset: DataSet[ImageFeature],
+    transformer: FeatureTransformer): DataSet[ImageFeature] = {
+    dataset -> transformer
   }
 
   def createL1L2Regularizer(l1: Double, l2: Double): L1L2Regularizer[T] = {
@@ -2228,13 +2233,13 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
       vMethods.asScala.toArray)
   }
 
-  def setValidationFromImageFrame(optimizer: Optimizer[T, MiniBatch[T]],
+  def setValidationFromDataSet(optimizer: Optimizer[T, MiniBatch[T]],
     batchSize: Int,
     trigger: Trigger,
-    valRdd: ImageFrame,
+    valDataSet: DataSet[ImageFeature],
     vMethods: JList[ValidationMethod[T]]): Unit = {
-    val sampleRDD = valRdd.toDistributed().rdd.map(x => x[JSample[T]](ImageFeature.sample))
-    optimizer.setValidation(trigger, batching(DataSet.rdd(sampleRDD), batchSize.toInt),
+    val dataSet = valDataSet -> ImageFeatureToMiniBatch[T](batchSize)
+    optimizer.setValidation(trigger, dataSet,
       vMethods.asScala.toArray)
   }
 
@@ -2957,7 +2962,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
 
   def isDistributed(imageFrame: ImageFrame): Boolean = imageFrame.isDistributed()
 
-  def createImageFrameToSample(inputKeys: JList[String],
+  def createTensorsToSample(inputKeys: JList[String],
     targetKeys: JList[String], sampleKey: String): TensorsToSample[T] = {
     val targets = if (targetKeys == null) null else targetKeys.asScala.toArray
     TensorsToSample[T](inputKeys.asScala.toArray, targets, sampleKey)
