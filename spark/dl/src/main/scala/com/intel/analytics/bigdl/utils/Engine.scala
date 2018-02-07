@@ -16,13 +16,16 @@
 
 package com.intel.analytics.bigdl.utils
 
-import java.io.InputStream
+import java.io.{FileOutputStream, InputStream, PrintWriter}
 import java.util.Locale
 import java.util.concurrent.atomic.AtomicBoolean
 
 import org.apache.log4j.Logger
-import org.apache.spark.{SparkConf, SparkContext, SparkException}
+import org.apache.spark.{SparkConf, SparkContext, SparkException, SparkFiles}
 import com.intel.analytics.bigdl.mkl.MKL
+import org.apache.spark.utils.SparkUtils
+
+import scala.util.control.ControlThrowable
 
 /**
  * define engine type trait
@@ -108,6 +111,58 @@ object Engine {
   private val singletonCounter = new AtomicBoolean()
   private var physicalCoreNumber = -1
   private var nodeNum: Int = -1
+
+  private var gatewayServer: py4j.GatewayServer = null
+
+
+  private[bigdl] def createJavaGateway(driverPort: Int): Unit = {
+    if (SparkUtils.isDriver) {
+      val file = new java.io.File(SparkFiles.getRootDirectory(), "gateway_port")
+      if (file.exists()) {
+        file.delete()
+      }
+      file.createNewFile()
+      val out = new PrintWriter(file)
+      out.print(driverPort)
+      out.flush()
+      out.close()
+      return
+    }
+    if (gatewayServer != null) return
+    this.synchronized {
+      if (gatewayServer == null) {
+        gatewayServer = new py4j.GatewayServer(null, 0)
+      }
+    }
+    val thread = new Thread(new Runnable() {
+      override def run(): Unit = try {
+        gatewayServer.start()
+      } catch {
+        case ct: ControlThrowable =>
+          throw ct
+        case t: Throwable =>
+          throw new Exception(s"Uncaught exception in thread ${Thread.currentThread().getName}", t)
+      }
+    })
+    thread.setName("py4j-executor-gateway-init")
+    thread.setDaemon(true)
+    thread.start()
+
+    thread.join()
+
+    val file = new java.io.File(SparkFiles.getRootDirectory(), "gateway_port")
+    if (file.exists()) {
+      file.delete()
+    }
+    file.createNewFile()
+    val out = new PrintWriter(file)
+    out.print(gatewayServer.getListeningPort)
+    out.flush()
+    out.close()
+  }
+
+
+
 
   private[bigdl] def localMode: Boolean = {
     System.getProperty("bigdl.localMode", "false").toLowerCase(Locale.ROOT) match {
