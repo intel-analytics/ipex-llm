@@ -196,7 +196,7 @@ class PredictorSpec extends FlatSpec with Matchers with BeforeAndAfter{
       im
     })
 
-    val imageFrame = ImageFrame.array(ims.toArray).toDistributed(sc) -> ImageFrameToSample()
+    val imageFrame = ImageFrame.array(ims.toArray).toDistributed(sc) -> TensorsToSample()
     val input = Input()
     val conv = SpatialConvolution(3, 6, 5, 5).inputs(input)
     val out1 = Tanh().inputs(conv)

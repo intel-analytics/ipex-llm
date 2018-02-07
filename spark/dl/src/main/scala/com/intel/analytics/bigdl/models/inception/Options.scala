@@ -39,8 +39,7 @@ object Options {
     warmupEpoch: Option[Int] = None,
     gradientL2NormThreshold: Option[Double] = None,
     gradientMin: Option[Double] = None,
-    gradientMax: Option[Double] = None,
-    summary: Option[String] = None
+    gradientMax: Option[Double] = None
   )
 
   val trainParser = new OptionParser[TrainParams]("BigDL Inception Example") {
@@ -100,9 +99,6 @@ object Options {
     opt[Double]("gradientMin")
       .text("min gradient clipping by")
       .action((x, c) => c.copy(gradientMin = Some(x)))
-    opt[String]("summary")
-      .text("summary")
-      .action((x, c) => c.copy(summary = Some(x)))
   }
 
   case class TestParams(
