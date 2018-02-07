@@ -58,12 +58,8 @@ abstract class TensorModule[T: ClassTag]
 abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, T: ClassTag](
   implicit ev: TensorNumeric[T]) extends Serializable with InferShape{
 
-  private var namePostfix = Integer.toHexString(java.util.UUID.randomUUID().hashCode())
+  // ================================= Public APIs =============================================
 
-  final private[bigdl] def getNamePostfix : String = namePostfix
-
-  final private[bigdl] def setNamePostfix(namePostfix : String) : Unit =
-    this.namePostfix = namePostfix
 
   /**
    * The cached output. So we don't compute it again when need it
@@ -74,13 +70,6 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
    * The cached gradient of activities. So we don't compute it again when need it
    */
   var gradInput: A = Activity.allocate[A, T]()
-
-  /**
-   * The scale of gradient weight and gradient bias
-   * before gradParameters being accumulated.
-   */
-  protected var scaleW: Double = 1.0
-  protected var scaleB: Double = 1.0
 
   /**
    * Get the scale of gradientWeight
@@ -139,17 +128,10 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
     this
   }
 
-  private[nn] final def allocateAs(dest: Activity): Activity = dest match {
-    case tensor: Tensor[T] => Tensor[T]()
-    case table: Table => T()
-    case _ => throw new IllegalArgumentException("Activity only support tensor and table now")
-  }
-
   /**
-   * The name of the module
+   * Whether user set a name to the module before
+   * @return
    */
-  private var name : String = null
-
   final def hasName: Boolean = name != null
 
   /**
@@ -176,33 +158,24 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
     }
   }
 
-  protected final def getPrintName(): String = {
-    val postfix = if (name == null) {
-      namePostfix
-    } else {
-      name
-    }
-    s"${this.getClass.getSimpleName}[${postfix}]"
-
-  }
-
   override def toString(): String = getPrintName
 
-  protected var forwardTime = 0L
-
-  protected var backwardTime = 0L
-
+  /**
+   * Get the forward/backward cost time for the module or its submodules
+   * @return
+   */
   def getTimes(): Array[(AbstractModule[_ <: Activity, _ <: Activity, T], Long, Long)] = {
     Array((this, forwardTime, backwardTime))
   }
 
+  /**
+   * Reset the forward/backward record time for the module or its submodules
+   * @return
+   */
   def resetTimes(): Unit = {
     forwardTime = 0
     backwardTime = 0
   }
-
-  private var scaleWCache: Double = scaleW
-  private var scaleBCache: Double = scaleB
 
   /**
    * freeze the module,
@@ -342,28 +315,6 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
   }
 
   /**
-   * This function returns two tensors. One for the flattened trainable parameters flatParameters
-   * and another for the gradients of the energy wrt to the trainable parameters flatGradParameters.
-   *
-   * Custom modules should not override this function. They should instead override parameters(...)
-   * which is, in turn, called by the present function.
-   *
-   * This function will go over all the weights and gradWeights and make them view into a single
-   * tensor (one for weights and one for gradWeights).
-   *
-   * @return
-   */
-  final private[bigdl] def getParameters(): (Tensor[T], Tensor[T]) = {
-    val (weightParameters, gradParameters) = this.parameters()
-
-    // If some gradParameters are not allocated storage, allocate it
-    require(weightParameters.size == gradParameters.size,
-      "weights and gradient number are not match")
-    weightParameters.zip(gradParameters).foreach{ case(w, g) => g.resizeAs(w)}
-    (Module.flatten[T](weightParameters), Module.flatten[T](gradParameters))
-  }
-
-  /**
    * This function returns two arrays. One for the weights and the other the gradients
    * Custom modules should override this function if they have parameters
    *
@@ -394,7 +345,7 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
     if (extraParam != null && currentExtraParam != null) {
       require(extraParam.length == currentExtraParam.length,
         "state's length doesn't match, excepted:" +
-        s"${currentExtraParam.length}, but got  ${extraParam.length}")
+          s"${currentExtraParam.length}, but got  ${extraParam.length}")
       var i = 0
       while (i < extraParam.length) {
         currentExtraParam(i).copy(extraParam(i))
@@ -423,11 +374,6 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
    * @return Table
    */
   def getParametersTable(): Table = null
-
-  /**
-   * Module status. It is useful for modules like dropout/batch normalization
-   */
-  protected var train: Boolean = true
 
   /**
    * Set the module to training mode
@@ -460,30 +406,29 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
    */
   def reset(): Unit = {}
 
-
-  protected var line = "\n"
-
+  /**
+   * Set the line separator when print the module
+   * @param line
+   * @return
+   */
   final def setLine(line: String): this.type = {
     this.line = line
     this
   }
 
-  private val engineType: EngineType = Engine.getEngineType()
-
   /**
-   * get execution engine type
+   * Clone the model
+   * @return
    */
-  def checkEngineType(): this.type = {
-    if (engineType != Engine.getEngineType()) {
-      throw new Error("Module's EngineType doesn't march global EngineType")
-    }
-    this
-  }
-
   final def cloneModule(): AbstractModule[A, B, T] = {
     SerializationUtils.clone(this)
   }
 
+  /**
+   * Clone the module, deep or shallow copy
+   * @param deepCopy
+   * @return
+   */
   final def clone(deepCopy : Boolean): AbstractModule[A, B, T] = {
     val moduleData = ModuleData[T](this.
       asInstanceOf[AbstractModule[Activity, Activity, T]], Seq[String](), Seq[String]())
@@ -502,64 +447,6 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
     setWeightAndBias(copy, deepCopy)
     copy
   }
-
-
-  final private def setWeightAndBias(copy : AbstractModule[A, B, T], deepCopy : Boolean): Unit = {
-    val parameterTable = this.getParametersTable
-    val copiedModuleParamTable = copy.getParametersTable
-    if (parameterTable != null) {
-      require(copiedModuleParamTable != null, "cloned module should have params")
-      parameterTable.foreach {
-        case (name: String, params: Table) =>
-          require(copiedModuleParamTable.get(name) != None, s"cloned module should have for $name")
-          setLayerWeightAndBias(params,
-            copiedModuleParamTable.get(name).get.asInstanceOf[Table], deepCopy)
-      }
-    }
-  }
-
-  final private def setLayerWeightAndBias(params : Table,
-                                    copyParams : Table, deepCopy : Boolean): Unit = {
-    params.foreach(param => {
-      copyParam(params, copyParams, deepCopy, param._1.toString)
-    })
-  }
-
-  final private def copyParam(params : Table, copyParams : Table,
-                        deepCopy : Boolean, paraName : String) : Unit = {
-    if (params.contains(paraName)) {
-      // this is for quantization tensors where the weight might be an array
-      if (params.get(paraName).get
-        .isInstanceOf[Array[Tensor[T]]]) {
-        val copies = copyParams.get(paraName).get
-          .asInstanceOf[Array[Tensor[T]]]
-        val origins = params.get(paraName).get
-          .asInstanceOf[Array[Tensor[T]]]
-        var i = 0
-        while (i < copies.length) {
-          copyTensor(origins(i), copies(i), deepCopy)
-          i += 1
-        }
-      } else {
-        // For normal layers, their params are just tensors
-        copyTensor(params.get(paraName).get.asInstanceOf[Tensor[T]],
-          copyParams.get(paraName).get.asInstanceOf[Tensor[T]], deepCopy)
-      }
-    }
-  }
-
-  final private def copyTensor(t1 : Tensor[T], t2 : Tensor[T], deepCopy : Boolean) = {
-    if (t2.isInstanceOf[QuantizedTensor[_]]) {
-      t2.asInstanceOf[QuantizedTensor[_]].release()
-    }
-    if (deepCopy) {
-      t2.copy(t1)
-    } else {
-      t2.set(t1)
-    }
-  }
-
-  def canEqual(other: Any): Boolean = other.isInstanceOf[AbstractModule[A, B, T]]
 
   override def equals(other: Any): Boolean = other match {
     case that: AbstractModule[A, B, T] =>
@@ -585,7 +472,7 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
    * @param overWrite if overwrite
    * @return self
    */
-  @deprecated("please use recommended saveModule(path, overWrite)")
+  @deprecated("please use recommended saveModule(path, overWrite)", "0.3.0")
   final def save(path : String, overWrite: Boolean = false) : this.type = {
     this.clearState()
     File.save(this, path, overWrite)
@@ -602,7 +489,7 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
    * @return self
    */
   final def saveModule(path : String, weightPath : String = null,
-                 overWrite: Boolean = false) : this.type = {
+    overWrite: Boolean = false) : this.type = {
     this.clearState()
     ModulePersister.saveToFile(path, weightPath, this, overWrite)
     this
@@ -658,10 +545,10 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
    * @return
    */
   final def saveTF(
-              inputs : Seq[(String, Seq[Int])],
-              path: String,
-              byteOrder: ByteOrder = ByteOrder.LITTLE_ENDIAN,
-              dataFormat: TensorflowDataFormat = TensorflowDataFormat.NHWC): this.type = {
+    inputs : Seq[(String, Seq[Int])],
+    path: String,
+    byteOrder: ByteOrder = ByteOrder.LITTLE_ENDIAN,
+    dataFormat: TensorflowDataFormat = TensorflowDataFormat.NHWC): this.type = {
     require(this.isInstanceOf[Graph[T]], "only Graph container can be saved as Tensorflow model")
     this.clearState()
     val inTrainMode = train
@@ -691,8 +578,8 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
    * @param shareBuffer whether to share same memory for each batch predict results
    */
   final def predict(dataset: RDD[Sample[T]],
-              batchSize: Int = -1,
-              shareBuffer: Boolean = false): RDD[Activity] = {
+    batchSize: Int = -1,
+    shareBuffer: Boolean = false): RDD[Activity] = {
     Predictor(this).predict(dataset, batchSize, shareBuffer)
   }
 
@@ -751,9 +638,9 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
     val weights = parameters()._1
     for(i <- newWeights.indices) {
       // TODO: enable this checking as we don't respect shape right now.
-//      require(weights(i).size().deep == newWeights(i).size().deep,
-//        s"Mismatch shape, ${weights(i).size().mkString(",")}" +
-//          s" vs ${newWeights(i).size().mkString(",")} ")
+      //      require(weights(i).size().deep == newWeights(i).size().deep,
+      //        s"Mismatch shape, ${weights(i).size().mkString(",")}" +
+      //          s" vs ${newWeights(i).size().mkString(",")} ")
       weights(i).copy(newWeights(i))
     }
     this
@@ -822,25 +709,6 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
     this
   }
 
-  final private def copyWeights(target: Table, src: Table, matchAll: Boolean): Unit = {
-    target.foreach {
-      case (name: String, targetParams: Table) =>
-        if (src.contains(name)) {
-          val srcParams = src[Table](name)
-          if (srcParams.contains("weight")) {
-            val w = srcParams[Tensor[T]]("weight")
-            targetParams[Tensor[T]]("weight").resizeAs(w).copy(w)
-          }
-          if (srcParams.contains("bias")) {
-            val b = srcParams[Tensor[T]]("bias")
-            targetParams[Tensor[T]]("bias").resizeAs(b).copy(b)
-          }
-        } else {
-          if (matchAll) new Exception(s"module $name cannot find corresponding weight bias")
-        }
-    }
-  }
-
   /**
    * Build graph: some other modules point to current module
    * @param nodes upstream module nodes
@@ -881,6 +749,17 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
       nodeWithIndex._1.add(curNode, Edge(nodeWithIndex._2))
     })
     curNode
+  }
+
+  /**
+   * Generate graph module with start nodes
+   * @param startNodes
+   * @return
+   */
+  def toGraph(startNodes: ModuleNode[T]*): Graph[T] = {
+    val starts = if (startNodes.isEmpty) Array(Input[T]()) else startNodes.toArray
+    val endNodes = this.getEndNodes(starts)
+    Graph(starts, endNodes)
   }
 
   /**
@@ -935,6 +814,169 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
     Quantization.quantize(this)
   }
 
+  // ================================= Internal APIs ===========================================
+
+  private var namePostfix = Integer.toHexString(java.util.UUID.randomUUID().hashCode())
+
+  final private[bigdl] def getNamePostfix : String = namePostfix
+
+  final private[bigdl] def setNamePostfix(namePostfix : String) : Unit =
+    this.namePostfix = namePostfix
+
+  /**
+   * The scale of gradient weight and gradient bias
+   * before gradParameters being accumulated.
+   */
+  protected var scaleW: Double = 1.0
+  protected var scaleB: Double = 1.0
+
+  private[nn] final def allocateAs(dest: Activity): Activity = dest match {
+    case tensor: Tensor[T] => Tensor[T]()
+    case table: Table => T()
+    case _ => throw new IllegalArgumentException("Activity only support tensor and table now")
+  }
+
+  /**
+   * The name of the module
+   */
+  private var name : String = null
+
+  protected final def getPrintName(): String = {
+    val postfix = if (name == null) {
+      namePostfix
+    } else {
+      name
+    }
+    s"${this.getClass.getSimpleName}[${postfix}]"
+
+  }
+
+  protected var forwardTime = 0L
+
+  protected var backwardTime = 0L
+
+  private var scaleWCache: Double = scaleW
+  private var scaleBCache: Double = scaleB
+
+  /**
+   * This function returns two tensors. One for the flattened trainable parameters flatParameters
+   * and another for the gradients of the energy wrt to the trainable parameters flatGradParameters.
+   *
+   * Custom modules should not override this function. They should instead override parameters(...)
+   * which is, in turn, called by the present function.
+   *
+   * This function will go over all the weights and gradWeights and make them view into a single
+   * tensor (one for weights and one for gradWeights).
+   *
+   * @return
+   */
+  final private[bigdl] def getParameters(): (Tensor[T], Tensor[T]) = {
+    val (weightParameters, gradParameters) = this.parameters()
+
+    // If some gradParameters are not allocated storage, allocate it
+    require(weightParameters.size == gradParameters.size,
+      "weights and gradient number are not match")
+    weightParameters.zip(gradParameters).foreach{ case(w, g) => g.resizeAs(w)}
+    (Module.flatten[T](weightParameters), Module.flatten[T](gradParameters))
+  }
+
+  /**
+   * Module status. It is useful for modules like dropout/batch normalization
+   */
+  protected var train: Boolean = true
+
+
+  protected var line = "\n"
+
+
+  private val engineType: EngineType = Engine.getEngineType()
+
+  /**
+   * get execution engine type
+   */
+  private[bigdl] def checkEngineType(): this.type = {
+    if (engineType != Engine.getEngineType()) {
+      throw new Error("Module's EngineType doesn't march global EngineType")
+    }
+    this
+  }
+
+  final private def setWeightAndBias(copy : AbstractModule[A, B, T], deepCopy : Boolean): Unit = {
+    val parameterTable = this.getParametersTable
+    val copiedModuleParamTable = copy.getParametersTable
+    if (parameterTable != null) {
+      require(copiedModuleParamTable != null, "cloned module should have params")
+      parameterTable.foreach {
+        case (name: String, params: Table) =>
+          require(copiedModuleParamTable.get(name) != None, s"cloned module should have for $name")
+          setLayerWeightAndBias(params,
+            copiedModuleParamTable.get(name).get.asInstanceOf[Table], deepCopy)
+      }
+    }
+  }
+
+  final private def setLayerWeightAndBias(params : Table,
+                                    copyParams : Table, deepCopy : Boolean): Unit = {
+    params.foreach(param => {
+      copyParam(params, copyParams, deepCopy, param._1.toString)
+    })
+  }
+
+  final private def copyParam(params : Table, copyParams : Table,
+                        deepCopy : Boolean, paraName : String) : Unit = {
+    if (params.contains(paraName)) {
+      // this is for quantization tensors where the weight might be an array
+      if (params.get(paraName).get
+        .isInstanceOf[Array[Tensor[T]]]) {
+        val copies = copyParams.get(paraName).get
+          .asInstanceOf[Array[Tensor[T]]]
+        val origins = params.get(paraName).get
+          .asInstanceOf[Array[Tensor[T]]]
+        var i = 0
+        while (i < copies.length) {
+          copyTensor(origins(i), copies(i), deepCopy)
+          i += 1
+        }
+      } else {
+        // For normal layers, their params are just tensors
+        copyTensor(params.get(paraName).get.asInstanceOf[Tensor[T]],
+          copyParams.get(paraName).get.asInstanceOf[Tensor[T]], deepCopy)
+      }
+    }
+  }
+
+  final private def copyTensor(t1 : Tensor[T], t2 : Tensor[T], deepCopy : Boolean) = {
+    if (t2.isInstanceOf[QuantizedTensor[_]]) {
+      t2.asInstanceOf[QuantizedTensor[_]].release()
+    }
+    if (deepCopy) {
+      t2.copy(t1)
+    } else {
+      t2.set(t1)
+    }
+  }
+
+  final private def copyWeights(target: Table, src: Table, matchAll: Boolean): Unit = {
+    target.foreach {
+      case (name: String, targetParams: Table) =>
+        if (src.contains(name)) {
+          val srcParams = src[Table](name)
+          if (srcParams.contains("weight")) {
+            val w = srcParams[Tensor[T]]("weight")
+            targetParams[Tensor[T]]("weight").resizeAs(w).copy(w)
+          }
+          if (srcParams.contains("bias")) {
+            val b = srcParams[Tensor[T]]("bias")
+            targetParams[Tensor[T]]("bias").resizeAs(b).copy(b)
+          }
+        } else {
+          if (matchAll) new Exception(s"module $name cannot find corresponding weight bias")
+        }
+    }
+  }
+
+  private[bigdl] def canEqual(other: Any): Boolean = other.isInstanceOf[AbstractModule[A, B, T]]
+
 
   /**
    * Generate end nodes of current module with start nodes
@@ -944,17 +986,6 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
   private[bigdl] def getEndNodes(startNodes: Array[ModuleNode[T]]): Array[ModuleNode[T]] = {
     val endNodes = Array(this.inputs(startNodes: _*))
     endNodes
-  }
-
-  /**
-   * Generate graph module with start nodes
-   * @param startNodes
-   * @return
-   */
-  def toGraph(startNodes: ModuleNode[T]*): Graph[T] = {
-    val starts = if (startNodes.isEmpty) Array(Input[T]()) else startNodes.toArray
-    val endNodes = this.getEndNodes(starts)
-    Graph(starts, endNodes)
   }
 
   /**
