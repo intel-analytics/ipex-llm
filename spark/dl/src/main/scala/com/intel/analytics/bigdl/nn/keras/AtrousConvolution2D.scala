@@ -31,16 +31,20 @@ class AtrousConvolution2D[T: ClassTag](
    val nbCol: Int,
    val init: InitializationMethod = Xavier,
    val activation: AbstractModule[Tensor[T], Tensor[T], T] = null,
-   val subsample: (Int, Int) = (1, 1),
-   val atrousRate: (Int, Int) = (1, 1),
+   val subsample: Array[Int] = Array(1, 1),
+   val atrousRate: Array[Int] = Array(1, 1),
    var wRegularizer: Regularizer[T] = null,
    var bRegularizer: Regularizer[T] = null,
    val format: DataFormat = DataFormat.NCHW,
    val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {
 
-  require(format == DataFormat.NCHW, s"AtrousConvolution2D only supports " +
+  require(format == DataFormat.NCHW, s"AtrousConvolution2D currently only supports " +
     s"format NCHW, but got format $format.")
+  require(subsample.length == 2,
+    s"For AtrousConvolution2D, subsample should be of length 2 but got length ${subsample.length}")
+  require(atrousRate.length == 2, s"For AtrousConvolution2D, " +
+    s"atrousRate should be of length 2 but got length ${atrousRate.length}")
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
     val input = inputShape.toSingle().toArray
@@ -49,10 +53,10 @@ class AtrousConvolution2D[T: ClassTag](
       nOutputPlane = nbFilter,
       kW = nbCol,
       kH = nbRow,
-      dW = subsample._2,
-      dH = subsample._1,
-      dilationW = atrousRate._2,
-      dilationH = atrousRate._1,
+      dW = subsample(1),
+      dH = subsample(0),
+      dilationW = atrousRate(1),
+      dilationH = atrousRate(0),
       wRegularizer = wRegularizer,
       bRegularizer = bRegularizer)
     layer.setInitMethod(weightInitMethod = init, biasInitMethod = Zeros)
@@ -75,7 +79,8 @@ object AtrousConvolution2D {
     dimOrdering: String = "th",
     inputShape: Shape = null)(implicit ev: TensorNumeric[T]): AtrousConvolution2D[T] = {
     new AtrousConvolution2D[T](nbFilter, nbRow, nbCol, KerasUtils.getInitMethod(init),
-      KerasUtils.getActivation(activation), subsample, atrousRate,
+      KerasUtils.getActivation(activation),
+      Array(subsample._1, subsample._2), Array(atrousRate._1, atrousRate._2),
       wRegularizer, bRegularizer, KerasUtils.toBigDLFormat(dimOrdering), inputShape)
   }
 }

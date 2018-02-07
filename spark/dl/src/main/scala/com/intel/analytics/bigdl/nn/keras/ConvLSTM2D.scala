@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.nn.keras
 
-import com.intel.analytics.bigdl.nn.{ConvLSTMPeephole, Recurrent, Reverse, Select, Sequential => TSequential}
+import com.intel.analytics.bigdl.nn.{ConvLSTMPeephole, Reverse, Select, Sequential => TSequential}
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, TensorModule}
 import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.Tensor
@@ -40,7 +40,7 @@ class ConvLSTM2D[T: ClassTag](
    val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {
 
-  require(format.toLowerCase() == "channel_first", s"ConvLSTM2D only supports " +
+  require(format.toLowerCase() == "channel_first", s"ConvLSTM2D currently only supports " +
     s"format CHANNEL_FIRST, but got format $format.")
 
   override def computeOutputShape(inputShape: Shape): Shape = {

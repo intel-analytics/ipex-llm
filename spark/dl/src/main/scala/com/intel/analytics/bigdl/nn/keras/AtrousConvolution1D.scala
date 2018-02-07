@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.nn.keras
 
 import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.nn.{InitializationMethod, Xavier, Zeros}
-import com.intel.analytics.bigdl.nn.{Reshape, SpatialDilatedConvolution, Squeeze, Transpose, Sequential => TSequential}
+import com.intel.analytics.bigdl.nn.{SpatialDilatedConvolution, Squeeze, Transpose, Sequential => TSequential}
 import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric

@@ -32,7 +32,7 @@ abstract class GlobalPooling3D[T: ClassTag](
    val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {
 
-  require(format.toLowerCase() == "channel_first", s"GlobalPooling3D only supports " +
+  require(format.toLowerCase() == "channel_first", s"GlobalPooling3D currently only supports " +
     s"format CHANNEL_FIRST, but got format $format.")
 
   override def computeOutputShape(inputShape: Shape): Shape = {

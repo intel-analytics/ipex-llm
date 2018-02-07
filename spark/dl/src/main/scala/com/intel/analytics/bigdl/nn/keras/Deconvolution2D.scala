@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.nn.keras
 
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, DataFormat, TensorModule}
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, DataFormat}
 import com.intel.analytics.bigdl.nn.{InitializationMethod, SpatialFullConvolution, Xavier, Zeros}
 import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.Tensor
@@ -31,7 +31,7 @@ class Deconvolution2D[T: ClassTag](
    val nbCol: Int,
    val init: InitializationMethod = Xavier,
    val activation: AbstractModule[Tensor[T], Tensor[T], T] = null,
-   val subsample: (Int, Int) = (1, 1),
+   val subsample: Array[Int] = Array(1, 1),
    var wRegularizer: Regularizer[T] = null,
    var bRegularizer: Regularizer[T] = null,
    val bias: Boolean = true,
@@ -39,8 +39,10 @@ class Deconvolution2D[T: ClassTag](
    val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {
 
-  require(format == DataFormat.NCHW, s"Deconvolution2D only supports " +
+  require(format == DataFormat.NCHW, s"Deconvolution2D currently only supports " +
     s"format NCHW, but got format $format.")
+  require(subsample.length == 2,
+    s"For Deconvolution2D, subsample should be of length 2 but got length ${subsample.length}")
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
     val input = inputShape.toSingle().toArray
@@ -49,8 +51,8 @@ class Deconvolution2D[T: ClassTag](
       nOutputPlane = nbFilter,
       kW = nbCol,
       kH = nbRow,
-      dW = subsample._2,
-      dH = subsample._1,
+      dW = subsample(1),
+      dH = subsample(0),
       noBias = !bias,
       wRegularizer = wRegularizer,
       bRegularizer = bRegularizer)
@@ -74,7 +76,7 @@ object Deconvolution2D {
     dimOrdering: String = "th",
     inputShape: Shape = null)(implicit ev: TensorNumeric[T]): Deconvolution2D[T] = {
     new Deconvolution2D[T](nbFilter, nbRow, nbCol, KerasUtils.getInitMethod(init),
-      KerasUtils.getActivation(activation), subsample, wRegularizer,
+      KerasUtils.getActivation(activation), Array(subsample._1, subsample._2), wRegularizer,
       bRegularizer, bias, KerasUtils.toBigDLFormat(dimOrdering), inputShape)
   }
 }
