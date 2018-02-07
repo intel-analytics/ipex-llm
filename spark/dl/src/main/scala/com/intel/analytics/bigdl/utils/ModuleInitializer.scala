@@ -25,22 +25,23 @@ import scala.reflect.runtime.universe._
 import scala.util.Try
 
 /**
- *
+ *  ======== ModuleInitializer ========
+ *  ModuleInitializer, a tool for initializing(reflecting) Modules with a Table.
  */
 object ModuleInitializer {
 
+  private val prefix = "com.intel.analytics.bigdl.nn."
+
   def init[T: ClassTag](state: Table)(implicit ev: TensorNumeric[T]): Module[T] = {
-    val classPath = state.get[String]("name") match {
-      case Some(name) if name.startsWith("com.intel.analytics.bigdl.nn") =>
-        name
-      case Some(name) =>
-        "com.intel.analytics.bigdl.nn." + name
-      case None =>
-        throw new IllegalArgumentException("No param `name` found in state(Table)!")
+    val classPath = if (state.contains("name")) {
+      prefix + state.get[String]("name").get
+    } else {
+      prefix + Try(state.get[String](1).get).getOrElse(
+        throw new IllegalArgumentException("Can't parse Module Name")
+      )
     }
 
-    val cls = Try(Class.forName(classPath))
-      .getOrElse(
+    val cls = Try(Class.forName(classPath)).getOrElse(
         throw new IllegalArgumentException(s"Can't parse Class Path: $classPath")
       )
 
@@ -53,6 +54,7 @@ object ModuleInitializer {
     val pc = pcOrNot.getOrElse(
       throw new IllegalArgumentException("Can't find Primary Constructor!"))
 
+    // get parameters of primary constructor(userDefined override default values)
     val userDefined = state.getState()
     val args = pc.asMethod.paramss.head.zipWithIndex.map {
       case (symbol, index) =>
@@ -61,8 +63,8 @@ object ModuleInitializer {
 
         if (userDefined.contains(fieldName)) {
           userDefined(fieldName)
-        } else if (userDefined.contains(index + 1)) {
-          userDefined(index + 1)
+        } else if (userDefined.contains(index + 2)) {
+          userDefined(index + 2)
         } else if (term.isParamWithDefault) {
           cls.getMethod("$lessinit$greater$default$" + (index + 1).toString).invoke(cls)
         } else {
@@ -71,44 +73,50 @@ object ModuleInitializer {
         }
     }
 
-    var addIndex = args.length
-    val typeArgs: List[Any] = pc.asMethod.paramss.tail.flatMap {
-      _.map { symbol =>
-        symbol.typeSignature match {
-          case tpe if tpe <:< typeOf[ClassTag[_]] =>
-            val typeInfo = tpe.toString
-            val tagName = typeInfo.slice(typeInfo.indexOf("[") + 1, typeInfo.indexOf("]"))
-            addIndex += 1
+    var addIndex = args.length + 1
+
+    // Make a Map[alias of Tag, type of Tag], in order to config TensorNumeric automatically.
+    val tagMap = pc.asMethod.paramss.tail.flatMap {
+      _.filter(_.typeSignature <:< typeOf[ClassTag[_]])
+        .map { symbol =>
+          val typeInfo = symbol.typeSignature.toString
+          val tagName = typeInfo.slice(typeInfo.indexOf("[") + 1, typeInfo.indexOf("]"))
+          addIndex += 1
+
+          val tagValue =
             if (tagName == "T") {
-              ClassTagMapper(TensorNumericMapper(ev))
+              TensorNumericMapper(ev)
             } else if (userDefined.contains(tagName)) {
-              ClassTagMapper(userDefined(tagName).toString)
+              userDefined(tagName).toString
             } else if (userDefined.contains(addIndex)) {
-              ClassTagMapper(userDefined(addIndex).toString)
+              userDefined(addIndex).toString
             } else {
               throw new IllegalArgumentException(
                 s"Type Param $tagName other than T is not defined in Table!")
             }
 
-          case tpe if tpe <:< typeOf[TensorNumeric[_]] =>
-            val evName = symbol.asTerm.name.toString
-            addIndex += 1
-            if (evName == "ev") {
-              ev
-            } else if (userDefined.contains(evName)) {
-              TensorNumericMapper(userDefined(evName).toString)
-            } else if (userDefined.contains(addIndex)) {
-              TensorNumericMapper(userDefined(addIndex).toString)
-            } else {
-              throw new IllegalArgumentException(
-                s"ev Param $evName other than TensorNumeric[T] is not defined in Table!")
-            }
+          tagName -> tagValue
         }
-      }
+    }.toMap
+
+    // get Type Params <:< ClassTag
+    val typeArgs: List[Any] = tagMap.map { case(_, v) => ClassTagMapper(v) }.toList
+
+    // get Type Params <:< TensorNumeric
+    val numericArgs = pc.asMethod.paramss.tail.flatMap {
+      _.filter(_.typeSignature <:< typeOf[TensorNumeric[_]])
+        .map { symbol =>
+          val typeInfo = symbol.typeSignature.toString
+          val tagName = typeInfo.slice(typeInfo.indexOf("[") + 1, typeInfo.indexOf("]"))
+          addIndex += 1
+
+          TensorNumericMapper(tagMap(tagName))
+        }
     }
 
+    val allArgs = args ::: typeArgs ::: numericArgs
     val classMirror = mirror.reflectClass(clsSymbol)
-    val instance = classMirror.reflectConstructor(pc)(args ::: typeArgs: _*)
+    val instance = classMirror.reflectConstructor(pc)(allArgs: _*)
     instance.asInstanceOf[Module[T]]
   }
 
