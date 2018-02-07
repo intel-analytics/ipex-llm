@@ -245,22 +245,6 @@ object TensorsToSample {
   : TensorsToSample[T] = new TensorsToSample[T](inputKeys, targetKeys, sampleKey)
 }
 
-//class ImageFrameToSamples[T: ClassTag](sampleKey: String = ImageFeature.sample)
-//  (implicit ev: TensorNumeric[T]) extends Transformer[ImageFeature, Sample[T]] {
-//  override def apply(prev: Iterator[ImageFeature]): Iterator[Sample[T]] = {
-//    prev.map(x => {
-//      require(x.contains(sampleKey), s"there is no sample that matches $sampleKey")
-//      x[Sample[T]](sampleKey)
-//    })
-//  }
-//}
-//
-//object ImageFrameToSamples {
-//  def apply[T: ClassTag](sampleKey: String = ImageFeature.sample)(implicit ev: TensorNumeric[T])
-//  : ImageFrameToSamples[T] = new ImageFrameToSamples[T](sampleKey)
-//
-//}
-
 class ImageFeatureToMiniBatch[T: ClassTag](batchSize: Int,
   featurePaddingParam: Option[PaddingParam[T]] = None,
   labelPaddingParam: Option[PaddingParam[T]] = None,
