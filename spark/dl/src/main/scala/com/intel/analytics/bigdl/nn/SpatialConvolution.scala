@@ -197,6 +197,7 @@ class SpatialConvolution[T: ClassTag](
     Shape(outputShape)
   }
 
+  // batchSize = -2 by default means no batch. -1 represents batch in shape inference
   private def getOutputShape(oh: Int, ow: Int, batchSize: Int = -2): Array[Int] = {
     format match {
       case DataFormat.NCHW =>
