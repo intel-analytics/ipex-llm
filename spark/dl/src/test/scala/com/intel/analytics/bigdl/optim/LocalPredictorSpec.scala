@@ -58,7 +58,7 @@ class LocalPredictorSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val imageFrame = ImageFrame.read(resource.getFile) ->
       Resize(256, 256) -> CenterCrop(224, 224) ->
       ChannelNormalize(0.485f, 0.456f, 0.406f, 0.229f, 0.224f, 0.225f) ->
-      MatToTensor() -> TensorsToSample()
+      MatToTensor() -> ImageFrameToSample()
     val model = Inception_v1_NoAuxClassifier(classNum = 20)
     val detection = model.predictImage(imageFrame).toLocal()
     val feature = detection.array.head
@@ -82,7 +82,7 @@ class LocalPredictorSpec extends FlatSpec with Matchers with BeforeAndAfter {
       im
     })
 
-    val imageFrame = ImageFrame.array(ims.toArray) -> TensorsToSample()
+    val imageFrame = ImageFrame.array(ims.toArray) -> ImageFrameToSample()
     val model = Sequential()
     model.add(SpatialConvolution(3, 6, 5, 5))
     model.add(Tanh())
@@ -112,7 +112,7 @@ class LocalPredictorSpec extends FlatSpec with Matchers with BeforeAndAfter {
       im
     })
 
-    val imageFrame = ImageFrame.array(ims.toArray) -> TensorsToSample()
+    val imageFrame = ImageFrame.array(ims.toArray) -> ImageFrameToSample()
     val model = Sequential()
     model.add(SpatialConvolution(3, 6, 5, 5))
     model.add(Tanh())
@@ -136,7 +136,7 @@ class LocalPredictorSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val imageFrame = ImageFrame.read(resource.getFile) ->
       Resize(256, 256) -> CenterCrop(224, 224) ->
       ChannelNormalize(0.485f, 0.456f, 0.406f, 0.229f, 0.224f, 0.225f) ->
-      MatToTensor() -> TensorsToSample()
+      MatToTensor() -> ImageFrameToSample()
     val model = Inception_v1_NoAuxClassifier(classNum = 20).quantize()
     val detection = model.predictImage(imageFrame).toLocal()
     val feature = detection.array.head
@@ -156,7 +156,7 @@ class LocalPredictorSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val imageFrame = images ->
       Resize(256, 256) -> CenterCrop(224, 224) ->
       ChannelNormalize(0.485f, 0.456f, 0.406f, 0.229f, 0.224f, 0.225f) ->
-      MatToTensor() -> TensorsToSample()
+      MatToTensor() -> ImageFrameToSample()
     val model = Inception_v1_NoAuxClassifier(classNum = 20)
     val detection = model.predictImage(imageFrame).toLocal()
 
@@ -171,7 +171,7 @@ class LocalPredictorSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val imageFrame = ImageFrame.read(resource.getFile) ->
       Resize(256, 256) -> CenterCrop(224, 224) ->
       ChannelNormalize(0.485f, 0.456f, 0.406f, 0.229f, 0.224f, 0.225f) ->
-      MatToTensor() -> TensorsToSample()
+      MatToTensor() -> ImageFrameToSample()
     val model = Inception_v1_NoAuxClassifier(classNum = 20)
     val localPredictor = LocalPredictor(model)
 
@@ -202,7 +202,7 @@ class LocalPredictorSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val imageFrame = ImageFrame.array(imageFeatures) -> BytesToMat() ->
       Resize(256, 256) -> CenterCrop(224, 224) ->
       ChannelNormalize(0.485f, 0.456f, 0.406f, 0.229f, 0.224f, 0.225f) ->
-      MatToTensor() -> TensorsToSample()
+      MatToTensor() -> ImageFrameToSample()
     val model = Inception_v1_NoAuxClassifier(classNum = 20)
     val localPredictor = LocalPredictor(model)
 

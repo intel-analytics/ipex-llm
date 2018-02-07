@@ -65,7 +65,7 @@ BigDL has many pre-defined image transformers built on top of OpenCV:
 * `BytesToMat`: Transform byte array(original image file in byte) to OpenCVMat
 * `MatToFloats`: Transform OpenCVMat to float array, note that in this transformer, the mat is released.
 * `MatToTensor`: Transform opencv mat to tensor, note that in this transformer, the mat is released.
-* `TensorsToSample`: Transforms tensors that map inputKeys and targetKeys to sample, note that in this transformer, the mat has been released.
+* `ImageFrameToSample`: Transforms tensors that map inputKeys and targetKeys to sample, note that in this transformer, the mat has been released.
 
 More examples can be found [here](../APIGuide/Transformer.md)
 
@@ -87,7 +87,7 @@ val imgAug = BytesToMat() -> ColorJitter() ->
       Resize(300, 300, -1) ->
       HFlip() ->
       ChannelNormalize(123, 117, 104) ->
-      MatToTensor() -> TensorsToSample()
+      MatToTensor() -> ImageFrameToSample()
 ```
 In the above example, the transformations will perform sequentially.
 
@@ -99,7 +99,7 @@ note that `OpenCVMat` is overwrite by default.
 
 `MatToTensor` transform `OpenCVMat` to `Tensor`, and `OpenCVMat` is released in this step.
 
-`TensorsToSample` transform the tensors that map inputKeys and targetKeys to sample,
+`ImageFrameToSample` transform the tensors that map inputKeys and targetKeys to sample,
 which can be used by the following prediction or training tasks.
 
 **Python example:**
@@ -115,7 +115,7 @@ img_aug = Pipeline([BytesToMat(),
       HFlip(),
       ChannelNormalize(123.0, 117.0, 104.0),
       MatToTensor(),
-      TensorsToSample()])
+      ImageFrameToSample()])
 ```
 
 ## **Image Prediction**
@@ -153,7 +153,7 @@ With the above image-related supports, we can easily build a image prediction pi
 val imageFrame = ImageFrame.read(imagePath, sc, nPartition)
 val transformer = Resize(256, 256) -> CenterCrop(224, 224) ->
                  ChannelNormalize(0.485f, 0.456f, 0.406f, 0.229f, 0.224f, 0.225f) ->
-                 MatToTensor() -> TensorsToSample()
+                 MatToTensor() -> ImageFrameToSample()
 val transformed = transformer(imageFrame)
 val model = Module.loadModule(modelPath)
 val output = model.predictImage(transformed)
@@ -171,7 +171,7 @@ with `ImageFrame.read(imagePath)`.
 image_frame = ImageFrame.read(image_path, self.sc)
 transformer = Pipeline([Resize(256, 256), CenterCrop(224, 224),
                         ChannelNormalize(0.485, 0.456, 0.406, 0.229, 0.224, 0.225),
-                        MatToTensor(), TensorsToSample()])
+                        MatToTensor(), ImageFrameToSample()])
 transformed = transformer(image_frame)
 model = Model.loadModel(model_path)
 output = model.predict_image(image_frame)
