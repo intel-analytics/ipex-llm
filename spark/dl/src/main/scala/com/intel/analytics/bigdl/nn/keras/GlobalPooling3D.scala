@@ -23,15 +23,18 @@ import com.intel.analytics.bigdl.utils.Shape
 import scala.reflect.ClassTag
 
 /**
-  * Abstract class for different global pooling 3D layers.
-  */
+ * Abstract class for different global pooling 3D layers.
+ * Do not create a new instance of it or use it in a model.
+ * Please use its child classes, 'GlobalAveragePooling3D' and 'GlobalMaxPooling3D' instead.
+ */
 abstract class GlobalPooling3D[T: ClassTag](
-   var inputShape: Shape = null)(implicit ev: TensorNumeric[T])
+   val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {
 
   override def computeOutputShape(inputShape: Shape): Shape = {
     val input = inputShape.toSingle().toArray
-    require(input.length == 5, "GlobalPooling3D requires 5D input")
+    require(input.length == 5,
+      s"GlobalPooling3D requires 5D input, but got input dim ${input.length}")
     Shape(input(0), input(1))
   }
 }

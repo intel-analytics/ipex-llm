@@ -26,16 +26,21 @@ import com.intel.analytics.bigdl.utils.Shape
 import scala.reflect.ClassTag
 
 /**
-  * Zero-padding layer for 3D data (spatial or spatio-temporal).
-  *
-  * @param padding Int array of length 3. How many zeros to add at the beginning and end of the 3 padding dimensions
-  *                (axis 3, 4 and 5). Currently only symmetric padding is supported. Default is (1, 1, 1).
-  * @param format Format of the input data. Either "CHANNEL_FIRST" or "CHANNEL_LAST". Default is "CHANNEL_FIRST".
-  */
+ * Zero-padding layer for 3D data (spatial or spatio-temporal).
+ * The input of this layer should be 5D.
+ *
+ * When you use this layer as the first layer of a model, you need to provide the argument
+ * inputShape (a Single Shape, does not include the batch dimension),
+ * e.g. inputShape=Shape(3, 128, 128) for 128x128 RGB pictures.
+ *
+ * @param padding Int array of length 3. How many zeros to add at the beginning and end of the 3 padding dimensions.
+ *                Symmetric padding will be applied to each dimension. Default is (1, 1, 1).
+ * @param format Format of the input data. Either "CHANNEL_FIRST" or "CHANNEL_LAST". Default is "CHANNEL_FIRST".
+ */
 class ZeroPadding3D[T: ClassTag](
    val padding: Array[Int] = Array(1, 1, 1),
    val format: String = "CHANNEL_FIRST",
-   var inputShape: Shape = null)(implicit ev: TensorNumeric[T])
+   val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {
 
   require(format.toLowerCase() == "channel_first" || format.toLowerCase() == "channel_last",
@@ -44,7 +49,8 @@ class ZeroPadding3D[T: ClassTag](
 
   override def computeOutputShape(inputShape: Shape): Shape = {
     val input = inputShape.toSingle().toArray
-    require(input.length == 5, "ZeroPadding3D requires 5D input")
+    require(input.length == 5,
+      s"ZeroPadding3D requires 5D input, but got input dim ${input.length}")
     format.toLowerCase() match {
       case "channel_first" =>
         Shape(input(0), input(1), input(2) + 2 * padding(0),
@@ -57,49 +63,14 @@ class ZeroPadding3D[T: ClassTag](
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
     val input = inputShape.toSingle().toArray
-    val dim = if (format.toLowerCase == "channel_first") 2 else 1
+    val dim = if (format.toLowerCase() == "channel_first") 2 else 1
     val model = TSequential[T]()
-    val paddinglayer1 = Padding(
-      dim = dim,
-      pad = -padding(0),
-      nInputDim = input.length - 1,
-      value = 0.0,
-      nIndex = 1)
-
-    val paddinglayer2 = Padding(
-      dim = dim,
-      pad = padding(0),
-      nInputDim = input.length - 1,
-      value = 0.0,
-      nIndex = 1)
-
-    val paddinglayer3 = Padding(
-      dim = dim + 1,
-      pad = -padding(1),
-      nInputDim = input.length - 1,
-      value = 0.0,
-      nIndex = 1)
-
-    val paddinglayer4 = Padding(
-      dim = dim + 1,
-      pad = padding(1),
-      nInputDim = input.length - 1,
-      value = 0.0,
-      nIndex = 1)
-
-    val paddinglayer5 = Padding(
-      dim = dim + 2,
-      pad = -padding(2),
-      nInputDim = input.length - 1,
-      value = 0.0,
-      nIndex = 1)
-
-    val paddinglayer6 = Padding(
-      dim = dim + 2,
-      pad = padding(2),
-      nInputDim = input.length - 1,
-      value = 0.0,
-      nIndex = 1)
+    val paddinglayer1 = Padding(dim = dim, pad = -padding(0), nInputDim = input.length - 1)
+    val paddinglayer2 = Padding(dim = dim, pad = padding(0), nInputDim = input.length - 1)
+    val paddinglayer3 = Padding(dim = dim + 1, pad = -padding(1), nInputDim = input.length - 1)
+    val paddinglayer4 = Padding(dim = dim + 1, pad = padding(1), nInputDim = input.length - 1)
+    val paddinglayer5 = Padding(dim = dim + 2, pad = -padding(2), nInputDim = input.length - 1)
+    val paddinglayer6 = Padding(dim = dim + 2, pad = padding(2), nInputDim = input.length - 1)
 
     model.add(paddinglayer1)
     model.add(paddinglayer2)
@@ -113,9 +84,10 @@ class ZeroPadding3D[T: ClassTag](
 
 object ZeroPadding3D {
   def apply[@specialized(Float, Double) T: ClassTag](
-    padding: Array[Int] = Array(1, 1, 1),
-    format: String = "CHANNEL_FIRST",
+    padding: (Int, Int, Int) = (1, 1, 1),
+    dimOrdering: String = "th",
     inputShape: Shape = null)(implicit ev: TensorNumeric[T]) : ZeroPadding3D[T] = {
-    new ZeroPadding3D[T](padding, format, inputShape)
+    new ZeroPadding3D[T](Array(padding._1, padding._2, padding._3),
+      KerasUtils.toBigDLFormat5D(dimOrdering), inputShape)
   }
 }

@@ -27,9 +27,13 @@ import com.intel.analytics.bigdl.utils.Shape
 import scala.reflect.ClassTag
 
 /**
-  * Global Max pooling operation for 3D data.
-  * Only support dim_ordering='th' now
-  */
+ * Global Max pooling operation for 3D data.
+ * When you use this layer as the first layer of a model, you need to provide the argument
+ * inputShape (a Single Shape, does not include the batch dimension),
+ * e.g. inputShape=Shape(3, 128, 128) for 128x128 RGB pictures.
+ * Data format currently supported for this layer is 'CHANNEL_FIRST' (dimOrdering='th').
+ * The input of this layer should be 5D.
+ */
 class GlobalMaxPooling3D[T: ClassTag](
    inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends GlobalPooling3D[T](inputShape) {

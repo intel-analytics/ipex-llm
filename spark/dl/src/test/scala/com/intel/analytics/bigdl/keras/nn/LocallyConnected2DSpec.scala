@@ -53,7 +53,8 @@ class LocallyConnected2DSpec extends KerasBaseSpec {
         |model = Model(input=input_tensor, output=output_tensor)
       """.stripMargin
     val seq = KSequential[Float]()
-    val layer = LocallyConnected2D[Float](32, 2, 2, activation = "relu", inputShape = Shape(12, 24, 24))
+    val layer = LocallyConnected2D[Float](32, 2, 2,
+      activation = "relu", inputShape = Shape(12, 24, 24))
     seq.add(layer)
     checkOutputAndGrad(seq.asInstanceOf[AbstractModule[Tensor[Float], Tensor[Float], Float]],
       kerasCode, weightConverter)
@@ -69,6 +70,22 @@ class LocallyConnected2DSpec extends KerasBaseSpec {
       """.stripMargin
     val seq = KSequential[Float]()
     val layer = LocallyConnected2D[Float](64, 3, 3, bias = false, inputShape = Shape(8, 32, 32))
+    seq.add(layer)
+    checkOutputAndGrad(seq.asInstanceOf[AbstractModule[Tensor[Float], Tensor[Float], Float]],
+      kerasCode, weightConverter)
+  }
+
+  "LocallyConnected2D tf" should "be the same as Keras" in {
+    val kerasCode =
+      """
+        |input_tensor = Input(shape=[12, 24, 24])
+        |input = np.random.random([2, 12, 24, 24])
+        |output_tensor = LocallyConnected2D(32, 2, 2, dim_ordering="tf", activation="relu")(input_tensor)
+        |model = Model(input=input_tensor, output=output_tensor)
+      """.stripMargin
+    val seq = KSequential[Float]()
+    val layer = LocallyConnected2D[Float](32, 2, 2, activation = "relu",
+      dimOrdering = "tf", inputShape = Shape(12, 24, 24))
     seq.add(layer)
     checkOutputAndGrad(seq.asInstanceOf[AbstractModule[Tensor[Float], Tensor[Float], Float]],
       kerasCode, weightConverter)

@@ -34,7 +34,7 @@ class ZeroPadding3DSpec extends KerasBaseSpec {
         |model = Model(input=input_tensor, output=output_tensor)
       """.stripMargin
     val seq = KSequential[Float]()
-    val layer = ZeroPadding3D[Float](Array(1, 1, 1), "CHANNEL_FIRST", inputShape = Shape(3, 4, 5, 6))
+    val layer = ZeroPadding3D[Float]((1, 1, 1), dimOrdering = "th", inputShape = Shape(3, 4, 5, 6))
     seq.add(layer)
     checkOutputAndGrad(seq.asInstanceOf[AbstractModule[Tensor[Float], Tensor[Float], Float]],
       kerasCode)
@@ -49,7 +49,7 @@ class ZeroPadding3DSpec extends KerasBaseSpec {
         |model = Model(input=input_tensor, output=output_tensor)
       """.stripMargin
     val seq = KSequential[Float]()
-    val layer = ZeroPadding3D[Float](Array(2, 1, 3), "CHANNEL_FIRST", inputShape = Shape(3, 4, 5, 6))
+    val layer = ZeroPadding3D[Float]((2, 1, 3), dimOrdering = "th", inputShape = Shape(3, 4, 5, 6))
     seq.add(layer)
     checkOutputAndGrad(seq.asInstanceOf[AbstractModule[Tensor[Float], Tensor[Float], Float]],
       kerasCode)
@@ -64,7 +64,7 @@ class ZeroPadding3DSpec extends KerasBaseSpec {
         |model = Model(input=input_tensor, output=output_tensor)
       """.stripMargin
     val seq = KSequential[Float]()
-    val layer = ZeroPadding3D[Float](Array(1, 1, 1), "CHANNEL_LAST", inputShape = Shape(3, 4, 5, 6))
+    val layer = ZeroPadding3D[Float]((1, 1, 1), dimOrdering = "tf", inputShape = Shape(3, 4, 5, 6))
     seq.add(layer)
     checkOutputAndGrad(seq.asInstanceOf[AbstractModule[Tensor[Float], Tensor[Float], Float]],
       kerasCode)

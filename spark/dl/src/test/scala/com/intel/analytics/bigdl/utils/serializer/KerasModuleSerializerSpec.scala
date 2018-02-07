@@ -282,7 +282,7 @@ class KerasModuleSerializerSpec extends SerializerSpecHelper {
   }
 
   "ZeroPadding3D serializer" should "work properly" in {
-    val layer = ZeroPadding3D[Float](Array(1, 1, 1), inputShape = Shape(5, 6, 7, 8))
+    val layer = ZeroPadding3D[Float]((1, 1, 1), inputShape = Shape(5, 6, 7, 8))
     layer.build(Shape(2, 5, 6, 7, 8))
     val input = Tensor[Float](2, 5, 6, 7, 8).apply1(_ => Random.nextFloat())
     runSerializationTest(layer, input)

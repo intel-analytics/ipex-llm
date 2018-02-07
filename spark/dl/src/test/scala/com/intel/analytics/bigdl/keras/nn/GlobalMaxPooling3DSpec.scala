@@ -34,8 +34,8 @@ class GlobalMaxPooling3DSpec extends KerasBaseSpec{
         |model = Model(input=input_tensor, output=output_tensor)
       """.stripMargin
     val seq = KSequential[Float]()
-    val globalmaxpooling3d = GlobalMaxPooling3D[Float](inputShape = Shape(3, 4, 5, 6))
-    seq.add(globalmaxpooling3d)
+    val layer = GlobalMaxPooling3D[Float](inputShape = Shape(3, 4, 5, 6))
+    seq.add(layer)
     seq.getOutputShape().toSingle().toArray should be (Array(-1, 3))
     checkOutputAndGrad(seq.asInstanceOf[AbstractModule[Tensor[Float], Tensor[Float], Float]],
       kerasCode)

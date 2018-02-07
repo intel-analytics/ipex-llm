@@ -27,8 +27,12 @@ import com.intel.analytics.bigdl.utils.Shape
 import scala.reflect.ClassTag
 
 /**
-  * Global average pooling operation for temporal data.
-  */
+ * Global average pooling operation for temporal data.
+ * When you use this layer as the first layer of a model, you need to provide the argument
+ * inputShape (a Single Shape, does not include the batch dimension),
+ * e.g. inputShape=Shape(3, 128, 128) for 128x128 RGB pictures.
+ * The input of this layer should be 3D.
+ */
 class GlobalAveragePooling1D[T: ClassTag](
    inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends GlobalPooling1D[T](inputShape) {
@@ -36,18 +40,11 @@ class GlobalAveragePooling1D[T: ClassTag](
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
     val input = inputShape.toSingle().toArray
     val model = TSequential[T]()
-    model.add(Reshape(Array(input(1), 1, input(2)), Some(true)))
+    model.add(com.intel.analytics.bigdl.nn.Reshape(Array(input(1), 1, input(2)), Some(true)))
     val layer = SpatialAveragePooling(
       kW = 1,
       kH = input(1),
-      dW = 1,
-      dH = 1,
-      padW = 0,
-      padH = 0,
-      globalPooling = false,
-      ceilMode = false,
       countIncludePad = false,
-      divide = true,
       format = DataFormat.NHWC)
     model.add(layer)
     model.add(Squeeze(3))

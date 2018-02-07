@@ -29,6 +29,31 @@ class SeparableConvolution2DSpec extends KerasBaseSpec {
       """
         |input_tensor = Input(shape=[3, 4, 5])
         |input = np.random.random([2, 3, 4, 5])
+        |output_tensor = SeparableConvolution2D(3, 3, 3, dim_ordering='th')(input_tensor)
+        |model = Model(input=input_tensor, output=output_tensor)
+      """.stripMargin
+    val seq = KSequential[Float]()
+    val layer = SeparableConvolution2D[Float](3, 3, 3, inputShape = Shape(3, 4, 5))
+    seq.add(layer)
+
+    def weightConverter(in: Array[Tensor[Float]]): Array[Tensor[Float]] = {
+      if (in.length == 2) {
+        val bias = if (layer.format == DataFormat.NCHW) in(1).size(1)
+        else in(1).size(4)
+        val out = Tensor[Float](bias)
+        Array(in(0), in(1), out)
+      }
+      else in
+    }
+    checkOutputAndGrad(seq.asInstanceOf[AbstractModule[Tensor[Float], Tensor[Float], Float]],
+      kerasCode, weightConverter)
+  }
+
+  "SeparableConvolution2D without bias" should "be the same as Keras" in {
+    val kerasCode =
+      """
+        |input_tensor = Input(shape=[3, 4, 5])
+        |input = np.random.random([2, 3, 4, 5])
         |output_tensor = SeparableConvolution2D(3, 3, 3, dim_ordering='th', bias=False)(input_tensor)
         |model = Model(input=input_tensor, output=output_tensor)
       """.stripMargin
@@ -59,7 +84,7 @@ class SeparableConvolution2DSpec extends KerasBaseSpec {
       """.stripMargin
     val seq = KSequential[Float]()
     val layer = SeparableConvolution2D[Float](1, 2, 2, activation = "relu",
-      format = DataFormat.NHWC, inputShape = Shape(3, 128, 128))
+      dimOrdering = "tf", inputShape = Shape(3, 128, 128))
     seq.add(layer)
 
     def weightConverter(in: Array[Tensor[Float]]): Array[Tensor[Float]] = {

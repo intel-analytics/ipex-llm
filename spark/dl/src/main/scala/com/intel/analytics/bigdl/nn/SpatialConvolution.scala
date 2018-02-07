@@ -176,7 +176,7 @@ class SpatialConvolution[T: ClassTag](
   override def computeOutputShape(inputShape: Shape): Shape = {
     val input = inputShape.toSingle().toArray
     require(input.length == 4,
-      s"Convolution2D requires 4D input, but got input dim ${input.length}")
+      "SpatialConvolution: " + ErrorInfo.constrainInputAs3DOrBatch)
     val (dimHeight, dimWidth, channelDim) = format.getHWCDims(input.length)
     require(input(channelDim -1) == nInputPlane, s"input channel size " +
       s"${input(channelDim -1)} is not the same as nInputPlane $nInputPlane")
@@ -197,17 +197,16 @@ class SpatialConvolution[T: ClassTag](
     Shape(outputShape)
   }
 
-  // batchSize = -2 by default means no batch. -1 represents batch in shape inference
-  private def getOutputShape(oh: Int, ow: Int, batchSize: Int = -2): Array[Int] = {
+  private def getOutputShape(oh: Int, ow: Int, batchSize: Int = -1): Array[Int] = {
     format match {
       case DataFormat.NCHW =>
-        if (batchSize == -2) {
+        if (batchSize == -1) {
           Array(nOutputPlane, oh, ow)
         } else {
           Array(batchSize, nOutputPlane, oh, ow)
         }
       case DataFormat.NHWC =>
-        if (batchSize == -2) {
+        if (batchSize == -1) {
           Array(oh, ow, nOutputPlane)
         } else {
           Array(batchSize, oh, ow, nOutputPlane)

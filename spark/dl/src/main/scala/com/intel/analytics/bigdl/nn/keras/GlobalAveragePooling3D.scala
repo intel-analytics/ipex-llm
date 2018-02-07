@@ -27,9 +27,13 @@ import com.intel.analytics.bigdl.utils.Shape
 import scala.reflect.ClassTag
 
 /**
-  * Global Average pooling operation for 3D data.
-  * Only support dim_ordering='th' now
-  */
+ * Global Average pooling operation for 3D data.
+ * When you use this layer as the first layer of a model, you need to provide the argument
+ * inputShape (a Single Shape, does not include the batch dimension),
+ * e.g. inputShape=Shape(3, 128, 128) for 128x128 RGB pictures.
+ * Data format currently supported for this layer is 'CHANNEL_FIRST' (dimOrdering='th').
+ * The input of this layer should be 5D.
+ */
 class GlobalAveragePooling3D[T: ClassTag](
    inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends GlobalPooling3D[T](inputShape) {
@@ -44,9 +48,6 @@ class GlobalAveragePooling3D[T: ClassTag](
       dT = 1,
       dW = 1,
       dH = 1,
-      padT = 0,
-      padW = 0,
-      padH = 0,
       countIncludePad = false)
     model.add(layer)
     model.add(Squeeze(5))
