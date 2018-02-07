@@ -73,11 +73,9 @@ class CategoricalColVocaList[T: ClassTag](
 
   override def updateOutput(input: Tensor[String]): Tensor[Int] = {
 
-    val inputSize = input.size()
-    val rows = inputSize(0)
-    if (inputSize.length==1) {
-      input.resize(rows, 1)
-    }
+    input.squeeze()
+    val rows = input.size(dim = 1)
+
     val cols = if (numOovBuckets==0) vocaLen + 1 else vocaLen + numOovBuckets
     val shape = Array(rows, cols)
     val indices0 = new ArrayBuffer[Int]()
@@ -86,7 +84,7 @@ class CategoricalColVocaList[T: ClassTag](
 
     var i = 1
     while (i <= rows) {
-      val feaStrArr = input.valueAt(i, 1).split(strDelimiter)
+      val feaStrArr = input.valueAt(i).split(strDelimiter)
       var j = 0
       while (j < feaStrArr.length) {
         val mapVal = numOovBuckets==0 match {
