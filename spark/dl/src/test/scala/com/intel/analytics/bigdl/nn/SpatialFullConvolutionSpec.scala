@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.optim.{L2Regularizer, SGD}
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
-import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.utils.{Shape, T, TestUtils}
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import org.scalatest.{FlatSpec, Matchers}
 
@@ -222,5 +222,9 @@ class SpatialFullConvolutionSpec extends FlatSpec with Matchers {
 
   }
 
+  "SpatialFullConvolution computeOutputShape" should "work properly" in {
+    val layer = SpatialFullConvolution[Float](3, 5, 1, 2, 2)
+    TestUtils.compareOutputShape(layer, Shape(3, 28, 32)) should be (true)
+  }
 
 }
