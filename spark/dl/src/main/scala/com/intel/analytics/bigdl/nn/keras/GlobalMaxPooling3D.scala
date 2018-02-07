@@ -33,8 +33,7 @@ import scala.reflect.ClassTag
  * Data format currently supported for this layer is 'CHANNEL_FIRST' (dimOrdering='th').
  * The input of this layer should be 5D.
  *
- * @param format Format of input data. Either DataFormat.NCHW (dimOrdering='th') or
- *               DataFormat.NHWC (dimOrdering='tf'). Default is NCHW.
+ * @param format Format of input data. Please use DataFormat.NCHW (dimOrdering='th').
  * @tparam T The numeric type of parameter(e.g. weight, bias). Only support float/double now.
  */
 class GlobalMaxPooling3D[T: ClassTag](
@@ -42,7 +41,8 @@ class GlobalMaxPooling3D[T: ClassTag](
    inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends GlobalPooling3D[T](inputShape) {
 
-  require(format.toLowerCase() == "channel_first", s"$format is not supported")
+  require(format.toLowerCase() == "channel_first", s"GlobalMaxPooling3D only supports " +
+    s"format CHANNEL_FIRST, but got format $format.")
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
     val input = inputShape.toSingle().toArray

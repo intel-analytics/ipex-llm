@@ -36,6 +36,7 @@ import scala.reflect.ClassTag
  *
  * When using this layer as the first layer in a model, you need to provide the argument
  * inputShape (a Single Shape, does not include the batch dimension).
+ * e.g. inputShape=Shape(3, 128, 128) for 128x128 RGB pictures.
  *
  * @param nbFilter Number of convolution filters to use.
  * @param nbRow Number of rows in the convolution kernel.
