@@ -17,9 +17,6 @@ package com.intel.analytics.bigdl.nn.ops
 
 import com.intel.analytics.bigdl.tensor.{DoubleType, FloatType, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-
-import scala.collection.mutable
-import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
 /**
@@ -55,52 +52,40 @@ class IndicatorCol[T: ClassTag](
   output = Tensor[T]()
 
   override def updateOutput(input: Tensor[Int]): Tensor[T] = {
+
     val rows = input.size(dim = 1)
-    val indices0 = new ArrayBuffer[Int]()
-    val indices1 = new ArrayBuffer[Int]()
-    val values = new ArrayBuffer[T]()
-    val indexMap = mutable.HashMap[Int, Int]()
+    val resTensor = Tensor[T](rows, feaLen)
+
     var i = 1
     while (i <= rows) {
       val narrowTensor = input.narrow(1, i, 1)
-      val selectedArr = narrowTensor.storage().array().slice(
-        narrowTensor.storageOffset()-1, narrowTensor.storageOffset() - 1 + narrowTensor.nElement()
-      )
-      selectedArr.foreach { x =>
-        if (!indexMap.contains(x)) {
-          indexMap(x) = 1
-        }
-        else {
-          indexMap(x) = indexMap(x) + 1
-        }
-      }
-      indexMap.foreach { kv =>
-        indices0 += i-1
-        indices1 += kv._1
+      val tempArr = narrowTensor.storage().array().slice(
+        narrowTensor.storageOffset()-1, narrowTensor.storageOffset() - 1 + narrowTensor.nElement())
+      var j = 0
+      while (j < tempArr.length) {
         ev.getType() match {
           case DoubleType =>
-            if (isCount) {
-              values += kv._2.toDouble.asInstanceOf[T]
-            }
-            else {
-              values += 1.toDouble.asInstanceOf[T]
+            isCount match {
+              case false =>
+                resTensor.setValue(i, tempArr(j) + 1, 1.toDouble.asInstanceOf[T])
+              case true =>
+                val res = resTensor.valueAt(i, tempArr(j) + 1).asInstanceOf[Double] + 1.0
+                resTensor.setValue(i, tempArr(j) + 1, res.asInstanceOf[T])
             }
           case FloatType =>
-            if (isCount) {
-              values += kv._2.toFloat.asInstanceOf[T]
-            }
-            else {
-              values += 1.toFloat.asInstanceOf[T]
+            isCount match {
+              case false =>
+                resTensor.setValue(i, tempArr(j) + 1, 1.toFloat.asInstanceOf[T])
+              case true =>
+                val res = resTensor.valueAt(i, tempArr(j) + 1).asInstanceOf[Float] + 1.0f
+                resTensor.setValue(i, tempArr(j) + 1, res.asInstanceOf[T])
             }
         }
+        j += 1
       }
       i += 1
-      indexMap.clear()
     }
-    val indices = Array(indices0.toArray, indices1.toArray)
-    val shape = Array(rows, feaLen)
-    output = Tensor.dense(
-      Tensor.sparse(indices, values.toArray, shape))
+    output = resTensor
     output
   }
 }
