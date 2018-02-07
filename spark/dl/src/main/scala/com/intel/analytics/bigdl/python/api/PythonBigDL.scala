@@ -786,6 +786,12 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     CosineDistanceCriterion[T](sizeAverage)
   }
 
+  def createCrossProduct(numTensor: Int = 0,
+    embeddingSize: Int = 0)
+  : CrossProduct[T] = {
+    CrossProduct[T](numTensor, embeddingSize)
+  }
+
   def createDiceCoefficientCriterion(sizeAverage: Boolean = true,
     epsilon: Float = 1.0f)
   : DiceCoefficientCriterion[T] = {
