@@ -2580,8 +2580,9 @@ class CrossProduct(Layer):
 
     def __init__(self,
                  numTensor=0,
-                 embeddingSize=0):
-        super(CrossProduct, self).__init__(None, numTensor, embeddingSize)
+                 embeddingSize=0,
+                 bigdl_type="float"):
+        super(CrossProduct, self).__init__(None, bigdl_type, numTensor, embeddingSize)
 
 
 class UpSampling2D(Layer):
