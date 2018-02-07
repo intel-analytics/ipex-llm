@@ -19,6 +19,7 @@ import pytest
 from test.bigdl.test_utils import BigDLTestCase
 import bigdl.nn.keras.layer as BLayer
 import keras.layers as KLayer
+import keras.backend as K
 from keras.models import Sequential as KSequential
 import numpy as np
 from numpy.testing import assert_allclose
@@ -34,6 +35,11 @@ class TestLayer(BigDLTestCase):
         bmodel.add(blayer)
         kmodel = KSequential()
         kmodel.add(klayer)
+        if isinstance(blayer, BLayer.BatchNormalization):
+            k_running_mean = K.eval(klayer.running_mean)
+            k_running_std = K.eval(klayer.running_std)
+            blayer.set_running_mean(k_running_mean)
+            blayer.set_running_std(k_running_std)
         bmodel.set_weights(weight_converter(klayer, kmodel.get_weights()))
         boutput = bmodel.forward(input_data)
         koutput = kmodel.predict(input_data)
@@ -44,6 +50,13 @@ class TestLayer(BigDLTestCase):
         blayer = BLayer.Embedding(1000, 64, input_shape=(10, ))
         klayer = KLayer.Embedding(1000, 64, input_length=10)
         self.__compare_results(klayer, blayer, WeightsConverter.convert_embedding, input_data)
+
+    def test_batchnormalization(self):
+        K.set_image_dim_ordering("th")
+        input_data = np.random.random([2, 3, 32, 32])
+        blayer = BLayer.BatchNormalization(input_shape=(3, 32, 32))
+        klayer = KLayer.BatchNormalization(axis=1, input_shape=(3, 32, 32))
+        self.__compare_results(klayer, blayer, WeightsConverter.convert_batchnormalization, input_data)
 
 
 if __name__ == "__main__":

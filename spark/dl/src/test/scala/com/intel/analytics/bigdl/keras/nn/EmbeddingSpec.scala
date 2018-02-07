@@ -24,6 +24,7 @@ import com.intel.analytics.bigdl.utils.Shape
 
 class EmbeddingSpec extends KerasBaseSpec {
 
+  // Compared results with Keras on Python side
   "Embedding" should "work properly" in {
     val seq = KSequential[Float]()
     val layer = Embedding[Float](1000, 32, inputShape = Shape(4))
@@ -40,7 +41,6 @@ class EmbeddingSpec extends KerasBaseSpec {
     input(Array(2, 4)) = 6
     val output = seq.forward(input)
     val gradInput = seq.backward(input, output)
-    // TODO: compare with keras, error get grad from keras
   }
 
 }

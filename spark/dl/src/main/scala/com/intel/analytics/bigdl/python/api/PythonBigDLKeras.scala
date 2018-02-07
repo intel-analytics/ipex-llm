@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.python.api
 
 import java.util.{ArrayList => JArrayList, HashMap => JHashMap, List => JList, Map => JMap}
 
+import com.intel.analytics.bigdl.nn.SpatialBatchNormalization
 import com.intel.analytics.bigdl.nn.keras._
 import com.intel.analytics.bigdl.numeric._
 import com.intel.analytics.bigdl.optim.Regularizer
@@ -44,6 +45,11 @@ class PythonBigDLKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends Pytho
     } else {
       Shape(inputShape.asScala.toArray)
     }
+  }
+
+  def createKerasInputLayer(
+    inputShape: JList[Int] = null): Input[T] = {
+    InputLayer(inputShape = toScalaShape(inputShape))
   }
 
   def createKerasDense(
@@ -76,6 +82,16 @@ class PythonBigDLKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends Pytho
     inputShape: JList[Int] = null): BatchNormalization[T] = {
     BatchNormalization[T](epsilon, momentum, toTensor(betaInit),
       toTensor(gammaInit), dimOrdering, toScalaShape(inputShape))
+  }
+
+  def setKerasRunningMean(module: BatchNormalization[T], runningMean: JTensor): Unit = {
+    module.labor.asInstanceOf[SpatialBatchNormalization[T]]
+      .runningMean.set(toTensor(runningMean))
+  }
+
+  def setKerasRunningStd(module: BatchNormalization[T], runningStd: JTensor): Unit = {
+    module.labor.asInstanceOf[SpatialBatchNormalization[T]]
+      .runningVar.set(toTensor(runningStd))
   }
 
 }

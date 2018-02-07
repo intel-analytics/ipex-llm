@@ -23,6 +23,7 @@ import com.intel.analytics.bigdl.utils.Shape
 
 class BatchNormalizationSpec extends KerasBaseSpec {
 
+  // Compared results with Keras on Python side
   "BatchNormalization" should "work properly" in {
     val seq = KSequential[Float]()
     val layer = BatchNormalization[Float](inputShape = Shape(3, 12, 12))
@@ -31,7 +32,6 @@ class BatchNormalizationSpec extends KerasBaseSpec {
     val input = Tensor[Float](2, 3, 12, 12).rand()
     val output = seq.forward(input)
     val gradInput = seq.backward(input, output)
-    // TODO: compare with keras, running mean and std
   }
 
 }

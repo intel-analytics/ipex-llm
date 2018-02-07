@@ -16,10 +16,8 @@
 
 import sys
 
-from bigdl.keras.ToBigDLHelper import to_bigdl_reg, to_bigdl_init
 from bigdl.nn.layer import Layer, Container
-from bigdl.util.common import get_activation_by_name
-
+from bigdl.util.common import callBigDlFunc, JTensor
 
 if sys.version >= '3':
     long = int
@@ -35,39 +33,37 @@ class KerasLayer(Layer):
 
 class Sequential(Container):
     def __init__(self, bigdl_type="float"):
-        super(Sequential, self).__init__(None, bigdl_type, is_keras=True)
+        super(Sequential, self).__init__(None, bigdl_type, True)
 
 
-class Dense(Layer):
-    """Just your regular densely-connected NN layer.
+class InputLayer(KerasLayer):
+    def __init__(self, input_shape=None, bigdl_type="float"):
+        super(InputLayer, self).__init__(None, bigdl_type,
+                                         list(input_shape) if input_shape else None)
 
-        # Example
 
-        # Arguments
-            output_dim: int > 0.
-            init: name of initialization function for the weights of the layer
-            activation: name of activation function to use
-            W_regularizer: instance of regularizer (eg. L1 or L2 regularization),
-                applied to the main weights matrix.
-            b_regularizer: nstance of regularizer (eg. L1 or L2 regularization),
-                applied to bias
-            bias: whether to include a bias
-                (i.e. make the layer affine rather than linear).
-            input_shape: is required when using this layer as the first layer in a model.
+class Dense(KerasLayer):
+    """
+    A densely-connected NN layer.
+    When you use this layer as the first layer of a model, you need to provide the argument
+    inputShape (a Single Shape, does not include the batch dimension).
+    The most common input is 2D.
 
-        # Input shape
-            nD tensor with shape: `(nb_samples, ..., input_dim)`.
-            The most common situation would be
-            a 2D input with shape `(nb_samples, input_dim)`.
+    # Arguments
+    output_dim: The size of output dimension.
+    init: String representations of initialization method for the weights of the layer.
+          Default is 'glorot_uniform'.
+    activation: String representations of activation function to use (such as 'relu' or 'sigmoid').
+                Default is null.
+    W_regularizer: An instance of [[Regularizer]], (eg. L1 or L2 regularization),
+                  applied to the input weights matrices. Default is None.
+    b_regularizer: An instance of [[Regularizer]], applied to the bias. Default is None.
+    bias: Whether to include a bias (i.e. make the layer affine rather than linear). Default is True.
 
-        # Output shape
-            nD tensor with shape: `(nb_samples, ..., output_dim)`.
-            For instance, for a 2D input with shape `(nb_samples, input_dim)`,
-            the output would have shape `(nb_samples, output_dim)`.
-        >>> dense = Dense(10, input_shape=(3, 4))
-        creating: createXavier
-        creating: createKerasDense
-        """
+    >>> dense = Dense(10, input_shape=(3, 4))
+    creating: createXavier
+    creating: createKerasDense
+    """
     def __init__(self, output_dim, init='glorot_uniform', activation=None,
                  W_regularizer=None, b_regularizer=None,
                  bias=True, input_shape=None, bigdl_type="float"):
@@ -81,12 +77,34 @@ class Dense(Layer):
                                     list(input_shape) if input_shape else None)
 
 
-class Embedding(Layer):
+class Embedding(KerasLayer):
     def __init__(self, input_dim, output_dim, init='uniform',
                  W_regularizer=None, input_shape=None, bigdl_type="float"):
         super(Embedding, self).__init__(None, bigdl_type,
                                         input_dim,
                                         output_dim,
-                                        to_bigdl_init(init),
-                                        to_bigdl_reg(W_regularizer),
+                                        init,
+                                        W_regularizer,
                                         list(input_shape) if input_shape else None)
+
+
+class BatchNormalization(KerasLayer):
+    def __init__(self, epsilon=0.001, momentum=0.99, beta_init=None, gamma_init=None,
+                 dim_ordering="th", input_shape=None, bigdl_type="float"):
+        super(BatchNormalization, self).__init__(None, bigdl_type,
+                                                 epsilon,
+                                                 momentum,
+                                                 beta_init,
+                                                 gamma_init,
+                                                 dim_ordering,
+                                                 list(input_shape) if input_shape else None)
+
+    def set_running_mean(self, running_mean):
+        callBigDlFunc(self.bigdl_type, "setKerasRunningMean",
+                      self.value, JTensor.from_ndarray(running_mean))
+        return self
+
+    def set_running_std(self, running_std):
+        callBigDlFunc(self.bigdl_type, "setKerasRunningStd",
+                      self.value, JTensor.from_ndarray(running_std))
+        return self
