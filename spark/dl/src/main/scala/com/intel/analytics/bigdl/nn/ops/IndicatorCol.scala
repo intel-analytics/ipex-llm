@@ -44,8 +44,8 @@ import scala.reflect.ClassTag
  */
 
 class IndicatorCol[T: ClassTag](
-  feaLen: Int,
-  isCount: Boolean = true
+  val feaLen: Int,
+  val isCount: Boolean = true
 ) (implicit ev: TensorNumeric[T])
   extends Operation[Tensor[Int], Tensor[T], T]{
 
@@ -63,23 +63,12 @@ class IndicatorCol[T: ClassTag](
         narrowTensor.storageOffset()-1, narrowTensor.storageOffset() - 1 + narrowTensor.nElement())
       var j = 0
       while (j < tempArr.length) {
-        ev.getType() match {
-          case DoubleType =>
-            isCount match {
-              case false =>
-                resTensor.setValue(i, tempArr(j) + 1, 1.toDouble.asInstanceOf[T])
-              case true =>
-                val res = resTensor.valueAt(i, tempArr(j) + 1).asInstanceOf[Double] + 1.0
-                resTensor.setValue(i, tempArr(j) + 1, res.asInstanceOf[T])
-            }
-          case FloatType =>
-            isCount match {
-              case false =>
-                resTensor.setValue(i, tempArr(j) + 1, 1.toFloat.asInstanceOf[T])
-              case true =>
-                val res = resTensor.valueAt(i, tempArr(j) + 1).asInstanceOf[Float] + 1.0f
-                resTensor.setValue(i, tempArr(j) + 1, res.asInstanceOf[T])
-            }
+        isCount match {
+          case false =>
+            resTensor.setValue(i, tempArr(j) + 1, ev.fromType[Int](1))
+          case true =>
+            val res = ev.toType[Int](resTensor.valueAt(i, tempArr(j) + 1)) + 1
+            resTensor.setValue(i, tempArr(j) + 1, ev.fromType[Int](res))
         }
         j += 1
       }
