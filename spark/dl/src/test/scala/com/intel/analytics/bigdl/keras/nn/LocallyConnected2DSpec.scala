@@ -44,7 +44,7 @@ class LocallyConnected2DSpec extends KerasBaseSpec {
     out
   }
 
-  "LocallyConnected2D" should "be the same as Keras" in {
+  "LocallyConnected2D th" should "be the same as Keras" in {
     val kerasCode =
       """
         |input_tensor = Input(shape=[12, 24, 24])
