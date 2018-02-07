@@ -632,7 +632,7 @@ class TestSimple():
         transformer = Pipeline([Resize(256, 256), CenterCrop(224, 224),
                                 ChannelNormalize(0.485, 0.456, 0.406, 0.229, 0.224, 0.225),
                                 MatToTensor(), ImageFrameToSample(target_keys=['label'])])
-        data_set = DataSet(image_frame).transform(transformer)
+        data_set = DataSet.image_frame(image_frame).transform(transformer)
 
         model = Sequential()
         model.add(SpatialConvolution(3, 6, 5, 5))
