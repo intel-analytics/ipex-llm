@@ -293,12 +293,12 @@ class Table private[bigdl](
    * Return the elements of this table as a Seq.
    * This method assumes the key of this table are all
    * the integers between 1 to this.length(),
-   * the values are all Tensor[T]
+   * the values are all D
    */
-  def toSeq[T]: Seq[Tensor[T]] = {
+  def toSeq[D]: Seq[D] = {
     for (i <- 0 until this.length()) yield {
       try {
-        this(i + 1).asInstanceOf[Tensor[T]]
+        this(i + 1).asInstanceOf[D]
       } catch {
         case e: NoSuchElementException =>
           throw new UnsupportedOperationException("toSeq requires the key of this table are" +

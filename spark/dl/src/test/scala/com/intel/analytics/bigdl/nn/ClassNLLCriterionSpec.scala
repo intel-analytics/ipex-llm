@@ -234,4 +234,52 @@ class ClassNLLCriterionSpec extends FlatSpec with Matchers {
       v1
     })
   }
+
+  "A ClassNLL Criterion with probabilities input" should "generate correct output and grad" in {
+
+    val input = Tensor[Float](Array(4, 4)).rand()
+    val target = Tensor[Float](Array[Float](1, 2, 3, 4), Array(4))
+
+    val logSoftMax = LogSoftMax[Float]()
+    val softMax = SoftMax[Float]()
+
+    val logProb = logSoftMax.forward(input)
+    val prob = softMax.forward(input)
+
+    val referenceLayer = ClassNLLCriterion[Float]()
+    val testedLayer = ClassNLLCriterion[Float](logProbAsInput = false)
+
+    val expectedLoss = referenceLayer.forward(logProb, target)
+    val loss = testedLayer.forward(prob, target)
+
+    val expectedGradInput = logSoftMax.backward(input, referenceLayer.backward(logProb, target))
+    val gradInput = softMax.backward(input, testedLayer.backward(prob, target))
+
+    math.abs(expectedLoss - loss) < 1e-5 should be (true)
+    expectedGradInput.almostEqual(gradInput, 1e-5) should be (true)
+  }
+
+  "A ClassNLL Criterion with probabilities input 1d" should "generate correct output and grad" in {
+
+    val input = Tensor[Float](Array(4)).rand()
+    val target = Tensor[Float](Array[Float](4), Array(1))
+
+    val logSoftMax = LogSoftMax[Float]()
+    val softMax = SoftMax[Float]()
+
+    val logProb = logSoftMax.forward(input)
+    val prob = softMax.forward(input)
+
+    val referenceLayer = ClassNLLCriterion[Float]()
+    val testedLayer = ClassNLLCriterion[Float](logProbAsInput = false)
+
+    val expectedLoss = referenceLayer.forward(logProb, target)
+    val loss = testedLayer.forward(prob, target)
+
+    val expectedGradInput = logSoftMax.backward(input, referenceLayer.backward(logProb, target))
+    val gradInput = softMax.backward(input, testedLayer.backward(prob, target))
+
+    math.abs(expectedLoss - loss) < 1e-5 should be (true)
+    expectedGradInput.almostEqual(gradInput, 1e-5) should be (true)
+  }
 }

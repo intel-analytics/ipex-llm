@@ -1078,3 +1078,489 @@ Gives the gradInput,
        [  8.,  10.,  12.]], dtype=float32), array([[  0.73362803,   1.98743176,  -7.66922569],
        [-15.81199932, -10.7408371 , -17.73489189]], dtype=float32)]
 ```
+
+## Masking ##
+
+Use a mask value to skip timesteps for a sequence
+
+**Scala:**
+```scala
+val mask = Masking(0.0)
+```
+
+**Python:**
+```python
+mask = Masking(0.0)
+```
+
+**Scala example:**
+```scala
+import com.intel.analytics.bigdl.nn.Masking
+import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+import com.intel.analytics.bigdl.utils.T
+
+val batchSize = 3
+val times = 5
+val features = 2
+val inputData = Array[Double](1.0, 1, 2, 2, 3, 3, 4, 4, 5, 5, -1, 1, 2, 2, 3, 3, 4, 4, 5, 5,
+  1, 1, -1, -1, 3, 3, 4, 4, 5, 5)
+val input = Tensor[Double](inputData, Array(batchSize, times, features))
+val gradOutput = Tensor[Double](Array(batchSize, times, features)).fill(1.0)
+val maskValue = -1
+
+val mask = Masking(maskValue)
+val output = mask.forward(input)
+println(output)
+
+val gradInput = mask.backward(input, gradOutput)
+println(gradOutput)
+```
+Gives the output,
+```
+output: = 
+(1,.,.) =
+1.0	1.0	
+2.0	2.0	
+3.0	3.0	
+4.0	4.0	
+5.0	5.0	
+
+(2,.,.) =
+-1.0	1.0	
+2.0	2.0	
+3.0	3.0	
+4.0	4.0	
+5.0	5.0	
+
+(3,.,.) =
+1.0	1.0	
+0.0	0.0	
+3.0	3.0	
+4.0	4.0	
+5.0	5.0	
+
+[com.intel.analytics.bigdl.tensor.DenseTensor$mcD$sp of size 3x5x2]
+```
+Gives the gradInput,
+
+```
+gradInput: 
+(1,.,.) =
+1.0	1.0	
+1.0	1.0	
+1.0	1.0	
+1.0	1.0	
+1.0	1.0	
+
+(2,.,.) =
+1.0	1.0	
+1.0	1.0	
+1.0	1.0	
+1.0	1.0	
+1.0	1.0	
+
+(3,.,.) =
+1.0	1.0	
+0.0	0.0	
+1.0	1.0	
+1.0	1.0	
+1.0	1.0	
+
+[com.intel.analytics.bigdl.tensor.DenseTensor$mcD$sp of size 3x5x2]
+```
+
+**Python example:**
+```python
+from bigdl.nn.layer import *
+from bigdl.util.common import *
+import numpy as np
+
+n_samples = 3
+n_timesteps = 7
+n_features = 2
+mask_value = -1.0
+input = np.array([1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, -1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7,
+                 1, 1, 2, 2, 3, 3, -1, -1, 5, 5, 6, 6, 7, 7]).reshape(n_samples, n_timesteps, n_features)
+gradOutput = np.ones((n_samples, n_timesteps, n_features))
+model = Sequential()
+model.add(Masking(mask_value=mask_value))
+
+output = model.forward(input)
+gradInput = model.backward(input, gradOutput)
+
+```
+Gives the output,
+```
+>>> print output
+[[[ 1.  1.]
+  [ 2.  2.]
+  [ 3.  3.]
+  [ 4.  4.]
+  [ 5.  5.]
+  [ 6.  6.]
+  [ 7.  7.]]
+
+ [[-1.  1.]
+  [ 2.  2.]
+  [ 3.  3.]
+  [ 4.  4.]
+  [ 5.  5.]
+  [ 6.  6.]
+  [ 7.  7.]]
+
+ [[ 1.  1.]
+  [ 2.  2.]
+  [ 3.  3.]
+  [ 0.  0.]
+  [ 5.  5.]
+  [ 6.  6.]
+  [ 7.  7.]]]
+```
+
+Gives the gradInput,
+
+```
+>>> print gradInput
+[[[ 1.  1.]
+  [ 1.  1.]
+  [ 1.  1.]
+  [ 1.  1.]
+  [ 1.  1.]
+  [ 1.  1.]
+  [ 1.  1.]]
+
+ [[ 1.  1.]
+  [ 1.  1.]
+  [ 1.  1.]
+  [ 1.  1.]
+  [ 1.  1.]
+  [ 1.  1.]
+  [ 1.  1.]]
+
+ [[ 1.  1.]
+  [ 1.  1.]
+  [ 1.  1.]
+  [ 0.  0.]
+  [ 1.  1.]
+  [ 1.  1.]
+  [ 1.  1.]]]
+```
+
+## Maxout ##    
+
+**Scala:**
+```scala
+val maxout = Maxout(2, 5, 3,
+                    withBias = true,
+                    wRegularizer = null,
+                    bRegularizer = null,
+                    initWeight = null,
+                    initBias = null)
+```
+
+**Python:**
+```python
+maxout = Maxout(2, 5, 3,
+                 with_bias = True,
+                 w_regularizer=None,
+                 b_regularizer=None,
+                 init_weight=None,
+                 init_bias=None)
+```
+
+Maxout layer select the element-wise maximum value of maxoutNumber Linear(inputSize, outputSize) layers
+
+parameters:
+* `inputSize` the size the each input sample
+* `outputSize` the size of the module output of each sample
+* `maxoutNumber` number of Linear layers to use
+* `withBias` whether use bias in Linear
+* `wRegularizer` instance of [[Regularizer]](eg. L1 or L2 regularization), applied to the input weights matrices.
+* `bRegularizer` instance of [[Regularizer]] applied to the bias.
+* `initWeight` initial weight
+* `initBias` initial bias
+
+**Scala example:**
+```scala
+import com.intel.analytics.bigdl.nn.Maxout
+import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+import com.intel.analytics.bigdl.utils.T
+
+val input_size = 2
+val batch_size = 3
+val output_size = 5
+val maxout_number = 3
+
+val input = Tensor[Float](batch_size, input_size).rand()
+val layer = Maxout[Float](input_size, output_size, maxout_number)
+val output = layer.forward(input)
+val gradOutput = Tensor[Float](batch_size, output_size)
+val gradInput = layer.backward(input, gradOutput)
+```
+Gives the output,
+```
+0.19078568	0.94480306	0.25038794	0.8114594	0.7753764	
+0.2822805	0.9095781	0.2815394	0.82958585	0.784589	
+0.35188058	0.7629706	0.18096384	0.7100433	0.6680352	
+[com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 3x5]
+```
+Gives the gradInput,
+
+```
+gradInput: 
+-0.18932924	0.9426162	
+-0.3118648	0.67255044	
+-0.31795382	1.944398	
+[com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 3x2]
+```
+
+**Python example:**
+```python
+from bigdl.nn.layer import *
+from bigdl.util.common import *
+import numpy as np
+
+val input_size = 2
+val batch_size = 3
+val output_size = 5
+val maxout_number = 3
+
+val input = Tensor[Float](batch_size, input_size).rand()
+val layer = Maxout[Float](input_size, output_size, maxout_number)
+val output = layer.forward(input)
+val gradOutput = Tensor[Float](batch_size, output_size).rand()
+val gradInput = layer.backward(input, gradOutput)
+
+```
+Gives the output,
+```
+>>> print output
+[[ 0.12344513  0.19081372  0.15130989  0.6341747   0.70982581]
+ [ 0.04154952 -0.13281995  0.2648508   0.36793122  0.67043799]
+ [ 0.41355255  0.17691913  0.15496807  0.5880245   0.74583203]]
+```
+
+Gives the gradInput,
+
+```
+>>> print gradInput
+[[ 0.53398496  0.01809531]
+ [-0.20667852  0.4962275 ]
+ [ 0.37912956  0.08742841]]
+```
+
+## Cropping2D ##
+
+**Scala:**
+```scala
+val module = Cropping2D(heightCrop, widthCrop, dataFormat=DataFormat.NCHW)
+```
+**Python:**
+```python
+m = Cropping2D(heightCrop, widthCrop, data_format="NCHW")
+```
+
+Cropping layer for 2D input (e.g. picture). It crops along spatial dimensions, i.e. width and height.
+    # Arguments
+        heightCrop: Array of length 2. How many units should be trimmed off at the
+                    beginning and end of the height dimension.
+        widthCrop: Array of length 2. How many units should be trimmed off at the
+                   beginning and end of the width dimension
+        dataFormat: DataFormat.NCHW or DataFormat.NHWC.
+    # Input shape
+        4D tensor with shape:
+        `(samples, depth, first_axis_to_crop, second_axis_to_crop)`
+    # Output shape
+        4D tensor with shape:
+        `(samples, depth, first_cropped_axis, second_cropped_axis)`
+
+**Scala example:**
+```scala
+
+scala >
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.tensor._
+import com.intel.analytics.bigdl.tensor.Storage
+
+val module = Cropping2D(Array(1, 1), Array(1, 1))
+val input = Tensor(2, 1, 3, 3).rand()
+val output = module.forward(input)
+
+> input
+(1,1,.,.) =
+0.024445634	0.73160243	0.1408418	
+0.95527077	0.51474196	0.89850646	
+0.3730063	0.40874788	0.7043526	
+
+(2,1,.,.) =
+0.8549189	0.5019415	0.96255547	
+0.83960533	0.3738476	0.12785637	
+0.08048103	0.6209139	0.6762928	
+
+[com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 2x1x3x3]
+
+> output
+(1,1,.,.) =
+0.51474196	
+
+(2,1,.,.) =
+0.3738476	
+
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 2x1x1x1]
+```
+
+**Python example:**
+```python
+from bigdl.nn.layer import *
+import numpy as np
+
+input = np.random.rand(2, 1, 3, 3)
+print ("input is :",input)
+
+m = Cropping2D([1, 1], [1, 1])
+out = m.forward(input)
+print ("output m is :",out)
+```
+Gives the output,
+
+```python
+input is : [[[[ 0.54167415  0.59110695  0.583436  ]
+   [ 0.7401184   0.93070248  0.88311626]
+   [ 0.08472445  0.90583803  0.83751593]]]
+
+
+ [[[ 0.98047837  0.13156681  0.73104089]
+   [ 0.15081809  0.1791556   0.18849927]
+   [ 0.12054713  0.75931796  0.40090047]]]]
+creating: createCropping2D
+output m is : [[[[ 0.93070251]]]
+
+
+ [[[ 0.1791556 ]]]]
+```
+
+## Cropping3D ##
+
+**Scala:**
+```scala
+val module = Cropping3D(dim1Crop, dim2Crop, dim3Crop, dataFormat="channel_first")
+```
+**Python:**
+```python
+m = Cropping3D(dim1Crop, dim2Crop, dim3Crop, dataFormat="channel_first")
+```
+
+Cropping layer for 3D data (e.g. spatial or spatio-temporal).
+    # Arguments
+        dim1Crop, dim2Crop, dim3Crop: each is an Array of two int, specifies how
+                                      many units should be trimmed off at the
+                                      beginning and end of the 3 cropping dimensions.
+        dataFormat: Cropping3D.CHANNEL_FIRST or Cropping3D.CHANNEL_LAST
+
+**Scala example:**
+```scala
+
+scala >
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.tensor._
+import com.intel.analytics.bigdl.tensor.Storage
+
+val module = Cropping3D(Array(1, 1), Array(1, 1), Array(1, 1))
+val input = Tensor(2, 1, 3, 3, 3).rand()
+val output = module.forward(input)
+
+> input
+(1,1,1,.,.) =
+0.33822843	0.83652526	0.6983564	
+0.40552914	0.50253755	0.26770833	
+0.12843947	0.7388038	0.8611642	
+
+(1,1,2,.,.) =
+0.52169484	0.98340595	0.37585744	
+0.47124776	0.1858571	0.20025288	
+0.24735944	0.68807006	0.12379094	
+
+(1,1,3,.,.) =
+0.3149784	0.43712634	0.9625379	
+0.37466723	0.8551855	0.7831635	
+0.979082	0.6115703	0.09862939	
+
+(2,1,1,.,.) =
+0.8603551	0.64941335	0.382916	
+0.9402129	0.83625364	0.41554055	
+0.9974375	0.7845985	0.4631692	
+
+(2,1,2,.,.) =
+0.41448194	0.06975327	0.68035746	
+0.6495608	0.95513606	0.5103921	
+0.4187052	0.676009	0.00466285	
+
+(2,1,3,.,.) =
+0.043842442	0.9419528	0.9560404	
+0.8702963	0.4117603	0.91820705	
+0.39294028	0.010171742	0.23027366	
+
+[com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 2x1x3x3x3]
+
+> output
+(1,1,1,.,.) =
+0.1858571	
+
+(2,1,1,.,.) =
+0.95513606	
+
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 2x1x1x1x1]
+
+```
+
+**Python example:**
+```python
+from bigdl.nn.layer import *
+import numpy as np
+
+input = np.random.rand(2, 1, 3, 3, 3)
+print ("input is :",input)
+
+m = Cropping3D([1, 1], [1, 1], [1, 1])
+out = m.forward(input)
+print ("output m is :",out)
+```
+Gives the output,
+
+```python
+input is : [[[[[ 0.00484727  0.64335228  0.21672991]
+    [ 0.6667991   0.90280284  0.17537352]
+    [ 0.17573056  0.51962225  0.7946977 ]]
+
+   [[ 0.54374072  0.02084648  0.817017  ]
+    [ 0.10707117  0.96247797  0.97634706]
+    [ 0.23012049  0.7498735   0.67309293]]
+
+   [[ 0.22704888  0.31254715  0.59703825]
+    [ 0.61084924  0.55686219  0.55321829]
+    [ 0.75911533  0.00731942  0.20643018]]]]
+
+
+
+ [[[[ 0.89015703  0.28932907  0.80356569]
+    [ 0.55100695  0.66712567  0.00770912]
+    [ 0.91482596  0.43556021  0.96402856]]
+
+   [[ 0.36694364  0.27634374  0.52885899]
+    [ 0.40754185  0.79033726  0.42423772]
+    [ 0.20636923  0.72467024  0.80372414]]
+
+   [[ 0.50318154  0.54954067  0.71939314]
+    [ 0.52834256  0.26762247  0.32269808]
+    [ 0.53824181  0.42523858  0.95246198]]]]]
+creating: createCropping3D
+output m is : [[[[[ 0.96247798]]]]
+
+
+
+ [[[[ 0.79033726]]]]]
+```

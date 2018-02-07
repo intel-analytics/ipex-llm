@@ -187,4 +187,40 @@ class SpatialFullConvolutionSpec extends FlatSpec with Matchers {
     layer2.gradBias should be(layer.gradBias.mul(2))
 
   }
+
+  "A SpatialFullConvolution " should "work after forward and getParameters" in {
+    val nInputPlane = 3
+    val nOutputPlane = 6
+    val kW = 3
+    val kH = 3
+    val dW = 1
+    val dH = 1
+    val padW = 2
+    val padH = 2
+    val layer = new SpatialFullConvolution[Double](nInputPlane, nOutputPlane,
+      kW, kH, dW, dH, padW, padH)
+    val layer2 = layer.cloneModule().asInstanceOf[SpatialFullConvolution[Double]]
+    Random.setSeed(100)
+    val input = Tensor[Double](3, 3, 6, 6).apply1(e => Random.nextDouble())
+
+    // this two operations should not change layer's behavior
+    layer.forward(input)
+    layer.getParameters()
+
+    val output1 = layer.forward(input)
+    layer.backward(input, output1)
+    layer.updateParameters(0.1)
+
+    val output2 = layer2.forward(input)
+    layer2.backward(input, output2)
+    layer2.updateParameters(0.1)
+
+    val output = layer.forward(input)
+    val expected = layer2.forward(input)
+
+    output should be (expected)
+
+  }
+
+
 }

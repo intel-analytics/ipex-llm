@@ -17,7 +17,10 @@ package com.intel.analytics.bigdl.nn.ops
 
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
+
+import scala.util.Random
 
 class ProdSpec extends FlatSpec with Matchers {
   "Prod operation" should "works correctly" in {
@@ -33,5 +36,14 @@ class ProdSpec extends FlatSpec with Matchers {
 
     val output = Prod(axis = 1).forward(input)
     output should be(expectOutput)
+  }
+}
+
+class ProdSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val prod = Prod[Float](-1, false).setName("prod")
+    val input = Tensor[Float](3, 3).apply1(_ => Random.nextFloat())
+    runSerializationTest(prod, input, prod.
+      asInstanceOf[ModuleToOperation[Float]].module.getClass)
   }
 }

@@ -237,7 +237,7 @@ object Utils {
     override val baseDir: String = "/tmp/.bigdl/dataset/",
     override val batchSize: Int = 128,
     hiddenSize: Int = 250,
-    learningRate: Double = 0.05,
+    override val learningRate: Double = 0.05,
     regRate: Double = 1e-4,
     p: Double = 0.5,
     epoch: Int = 5

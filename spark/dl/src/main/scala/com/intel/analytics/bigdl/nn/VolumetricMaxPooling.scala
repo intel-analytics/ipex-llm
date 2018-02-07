@@ -20,8 +20,9 @@ import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, Tensor
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.serializer._
+import com.intel.analytics.bigdl.utils.serializer.converters.DataConverter
 import org.codehaus.jackson.map.DeserializationContext
-import serialization.Bigdl.{AttrValue, BigDLModule}
+import com.intel.analytics.bigdl.serialization.Bigdl.{AttrValue, BigDLModule}
 
 import scala.reflect._
 import scala.reflect.runtime.universe
@@ -552,7 +553,7 @@ object VolumetricMaxPooling extends ModuleSerializable {
   def apply[@specialized(Float, Double) T: ClassTag]
   (kT: Int, kW: Int, kH: Int, dT: Int, dW: Int, dH: Int,
     padT: Int = 0, padW: Int = 0, padH: Int = 0)(implicit ev: TensorNumeric[T])
-  : VolumetricMaxPooling[T] = new VolumetricMaxPooling[T](kT, kW, kH, dT, dW, dH, padT, padW)
+  : VolumetricMaxPooling[T] = new VolumetricMaxPooling[T](kT, kW, kH, dT, dW, dH, padT, padW, padH)
 
   def apply[@specialized(Float, Double) T: ClassTag]
   (kT: Int, kW: Int, kH: Int)(implicit ev: TensorNumeric[T])

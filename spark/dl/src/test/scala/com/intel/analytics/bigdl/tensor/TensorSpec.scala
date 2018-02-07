@@ -53,4 +53,16 @@ class TensorSpec extends FlatSpec with Matchers {
     tensor.isEmpty should be (true)
   }
 
+  "zero Tensor set " should "work" in {
+    val tensor = Tensor[Int](0)
+    tensor.set()
+    tensor.isEmpty should be (true)
+  }
+
+  "Empty Tensor set " should "work" in {
+    val tensor = Tensor[Int]()
+    tensor.set()
+    tensor.isEmpty should be (true)
+  }
+
 }

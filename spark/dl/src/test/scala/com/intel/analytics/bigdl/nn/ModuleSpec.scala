@@ -28,7 +28,7 @@ class ModuleSpec extends FlatSpec with Matchers {
   "hashcode()" should "behave correctly" in {
     val r1 = new ReLU[Double]()
     val r2 = new ReLU[Double]()
-    val log = new Log[Double, Double]()
+    val log = new Log[Double]()
     val r3 = new ReLU[Float]()
     val r4 = new ReLU[Double]()
     val r5 = new ReLU[Double]()
@@ -49,7 +49,7 @@ class ModuleSpec extends FlatSpec with Matchers {
   "equals()" should "behave correctly" in {
     val r1 = new ReLU[Double]()
     val r2 = new ReLU[Double]()
-    val log = new Log[Double, Double]()
+    val log = new Log[Double]()
     val mNull = null
     val r3 = new ReLU[Float]()
     val r4 = new ReLU[Double]()
@@ -139,6 +139,21 @@ class ModuleSpec extends FlatSpec with Matchers {
 
     weight1.storage().eq(weight2.storage()) should be(true)
     grad1.storage().eq(grad2.storage()) should be(true)
+  }
+
+  "getParameter in submodule" should "not create new storage" in {
+    val module1 = Sequential[Double]().add(Linear[Double](2, 3)).add(Linear[Double](2, 3))
+    val module2 = Sequential[Double]().add(Linear[Double](4, 5)).add(Linear[Double](4, 5))
+    val module = Sequential[Double]().add(module1).add(module2)
+
+    val (weight, grad) = module.getParameters()
+    val (weight1, grad1) = module1.getParameters()
+    val (weight2, grad2) = module2.getParameters()
+
+    weight1.storage().eq(weight.storage()) should be(true)
+    grad1.storage().eq(grad.storage()) should be(true)
+    weight2.storage().eq(weight.storage()) should be(true)
+    grad2.storage().eq(grad.storage()) should be(true)
   }
 
   "clone module" should "work correctly" in {

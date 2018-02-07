@@ -22,7 +22,8 @@ import com.intel.analytics.bigdl.models.inception.Inception_v1_NoAuxClassifier
 import com.intel.analytics.bigdl.models.lenet.LeNet5
 import com.intel.analytics.bigdl.models.vgg.{VggForCifar10, Vgg_16, Vgg_19}
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
-import com.intel.analytics.bigdl.nn.ops.{ControlNodes, Less}
+import com.intel.analytics.bigdl.nn.abstractnn.EmptyGradInput
+import com.intel.analytics.bigdl.nn.ops.{Ceil, ControlNodes, Less}
 import com.intel.analytics.bigdl.nn.tf.Const
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.utils.RandomGenerator._
@@ -34,7 +35,7 @@ import scala.util.Random
 import org.scalatest.{FlatSpec, Matchers}
 
 @com.intel.analytics.bigdl.tags.Parallel
-class GraphSpec extends FlatSpec with Matchers {
+class StaticGraphSpec extends FlatSpec with Matchers {
   "Graph init" should "throw exceptions when there's cycle" in {
     val fc1 = Linear(4, 2).inputs()
     val relu1 = ReLU().inputs(fc1)
@@ -483,14 +484,6 @@ class GraphSpec extends FlatSpec with Matchers {
     seqModel.getParameters()._2 should be(funcModel.getParameters()._2)
   }
 
-  "shift" should "be correct" in {
-    val node = Reshape(Array(1, 28, 28)).inputs()
-    val test = Graph(node, node)
-    test.shift(Array(1, 2, 3, 4), 1, 1) should be(Array(1, 2, 3, 4))
-    test.shift(Array(1, 2, 3, 4), 1, 3) should be(Array(1, 3, 4, 2))
-    test.shift(Array(1, 2, 3, 4), 3, 1) should be(Array(1, 4, 2, 3))
-  }
-
   "ResNet-18 basic block shortcut type A" should "be correct" in {
     RandomGenerator.RNG.setSeed(1000)
     val seqModel = ModelUntils.ResNet.basicBlockSeq(16, 16, 1, "A")
@@ -788,7 +781,7 @@ class GraphSpec extends FlatSpec with Matchers {
     val gradientBPNoBack = funcModelNoBack.backward(inputData, gradient)
     println(s"funcModel model backward time is ${ (System.nanoTime() - start) / 1e6 }ms")
 
-    gradientBPNoBack.toTensor.nElement() should be(0)
+    gradientBPNoBack.isInstanceOf[EmptyGradInput] should be(true)
     val namedModule1 = funcModelOriginal.getParametersTable()
     val namedModule2 = funcModelNoBack.getParametersTable()
     namedModule1("conv1").asInstanceOf[Table] should
@@ -838,7 +831,7 @@ class GraphSpec extends FlatSpec with Matchers {
     val gradientBPOriginal = funcModelOriginal.backward(inputData, gradient)
     val gradientBPNoBack = funcModelNoBack.backward(inputData, gradient)
 
-    gradientBPNoBack.toTensor.nElement() should be(0)
+    gradientBPNoBack.isInstanceOf[EmptyGradInput] should be(true)
     val namedModule1 = Utils.getNamedModules(funcModelOriginal)
     val namedModule2 = Utils.getNamedModules(funcModelNoBack)
     namedModule2("r1").gradInput.toTensor.nElement() should be(0)
@@ -1022,7 +1015,7 @@ class GraphSpec extends FlatSpec with Matchers {
 
     // reset propagateBack
     graphNoBack.reset()
-    graphNoBack.build()
+    graphNoBack.buildBackwardGraph()
     graphNoBack.zeroGradParameters()
     graphNoBack.forward(input) should be (graph.forward(input))
     graphNoBack.backward(input, gradOutput)
@@ -1032,6 +1025,55 @@ class GraphSpec extends FlatSpec with Matchers {
     graphNoBack.parameters()._2 should be (graph.parameters()._2)
   }
 
+  "graph backpropagation" should "ignore nodes on non output path" in {
+    val node1 = Identity[Float]().setName("node1").inputs()
+    val node2 = Identity[Float]().setName("node2").inputs(node1)
+    val node3 = Identity[Float]().setName("node3").inputs(node2)
+    val node4 = Identity[Float]().setName("node4").inputs(node2)
+
+    val model1 = Graph[Float](node1, node3)
+    model1.forward(Tensor[Float](T(1.0f, 2.0f))) should be(Tensor[Float](T(1.0f, 2.0f)))
+    model1.backward(Tensor[Float](T(1.0f, 2.0f)), Tensor[Float](T(3.0f, 4.0f))) should be(
+      Tensor[Float](T(3.0f, 4.0f)))
+
+    val model2 = Graph[Float](node1, Array(node3, node4))
+    model2.forward(Tensor[Float](T(1.0f, 2.0f))) should be(T(Tensor[Float](T(1.0f, 2.0f)),
+      Tensor[Float](T(1.0f, 2.0f))))
+    model2.backward(Tensor[Float](T(1.0f, 2.0f)), T(Tensor[Float](T(3.0f, 4.0f)),
+      Tensor[Float](T(7.0f, 10.0f)))) should be(
+      Tensor[Float](T(10.0f, 14.0f)))
+  }
+
+  "graph backpropagation" should "throw exception if some empty gradInput is used" in {
+    val backwardBranch = Identity[Float]().setName("backward_branch").inputs()
+    val stopBranchShort = Identity[Float]().setName("stop_branch_short").inputs()
+    val stopBranchLong_1 = Identity[Float]().inputs()
+    val stopBranchLong_2 = Identity[Float]().setName("stop_branch_long").inputs(stopBranchLong_1)
+    val addNode = CAddTable[Float]().inputs(backwardBranch, stopBranchShort, stopBranchLong_2)
+    val innerGraph = Graph[Float](Array(backwardBranch, stopBranchShort, stopBranchLong_1),
+      Array(addNode))
+    innerGraph.stopGradient(Array("stop_branch_short", "stop_branch_long"))
+
+    val relu1 = ReLU[Float]().setName("relu1").inputs()
+    val relu2 = ReLU[Float]().setName("relu2").inputs()
+    val relu3 = ReLU[Float]().setName("relu3").inputs()
+    val graphNode = innerGraph.inputs(relu1, relu2, relu3)
+    val outerGraph = Graph[Float](Array(relu1, relu2, relu3), Array(graphNode))
+    outerGraph.stopGradient(Array("relu2", "relu3"))
+    outerGraph.forward(T(Tensor[Float](T(1, 2)), Tensor[Float](T(3, 4)), Tensor[Float](T(3, 4))))
+    outerGraph.backward(T(Tensor[Float](T(1, 2)), Tensor[Float](T(3, 4)), Tensor[Float](T(3, 4))),
+      Tensor[Float](T(7, 4)))
+    innerGraph.gradInput.asInstanceOf[Table].apply(2).isInstanceOf[EmptyGradInput] should be(true)
+    innerGraph.gradInput.asInstanceOf[Table].apply(3).isInstanceOf[EmptyGradInput] should be(true)
+
+    // A class cast exception will be thrown
+    intercept[ClassCastException] {
+      val outerGraph2 = Graph[Float](Array(relu1, relu2, relu3), Array(graphNode))
+      outerGraph2.forward(T(Tensor[Float](T(1, 2)), Tensor[Float](T(3, 4)), Tensor[Float](T(3, 4))))
+      outerGraph2.backward(T(Tensor[Float](T(1, 2)), Tensor[Float](T(3, 4)),
+        Tensor[Float](T(3, 4))), Tensor[Float](T(7, 4)))
+    }
+  }
 
   "markdown test" should "work" in {
     val reshape = Reshape(Array(4)).inputs()
@@ -1042,8 +1084,6 @@ class GraphSpec extends FlatSpec with Matchers {
     val output2_1 = Threshold(10.0).inputs(cadd_1)
 
     val model = Graph(Array(reshape, fc1), Array(output1_1, output2_1))
-
-
 
     val input = T(Tensor(T(0.1f, 0.2f, -0.3f, -0.4f)),
       Tensor(T(0.5f, 0.4f, -0.2f, -0.1f)))
@@ -1086,6 +1126,7 @@ class GraphSpec extends FlatSpec with Matchers {
     println("fc1 weight \n", fc1.element.parameters()._1(0))
     println("fc2 weight \n", fc2.element.parameters()._1(0))
   }
+
   "graph setFreeze" should "work properly" in {
     RandomGenerator.RNG.setSeed(1000)
     val fc1 = Linear(4, 2).inputs()
@@ -1146,7 +1187,7 @@ class GraphSpec extends FlatSpec with Matchers {
     val echo1 = Echo().inputs(swtich.trueEdge())
     val echo2 = Echo().inputs(swtich.falseEdge())
 
-    val model = Graph(Array(data, condition), Array(echo1), None, false)
+    val model = Graph.dynamic(Array(data, condition), Array(echo1), None, false)
     val result = model.forward(T(Tensor[Float](T(1)), Tensor[Boolean](T(true))))
     result.toTensor should be(Tensor[Float](T(1)))
 
@@ -1166,7 +1207,7 @@ class GraphSpec extends FlatSpec with Matchers {
     val merge = ControlNodes.merge(add1, add5)
     val output = Identity().inputs(merge)
 
-    val model = Graph(Array(data, condition), Array(output), None, false)
+    val model = Graph.dynamic(Array(data, condition), Array(output), None, false)
     var result = model.forward(T(Tensor[Float](T(1)), Tensor[Boolean](T(true))))
     result.toTensor should be(Tensor[Float](T(2)))
     result = model.forward(T(Tensor[Float](T(1)), Tensor[Boolean](T(false))))
@@ -1237,6 +1278,56 @@ class GraphSpec extends FlatSpec with Matchers {
     isExecuted1 should be(false)
     isExecuted2 should be(false)
     isExecuted3 should be(false)
+  }
+
+  "Graph get name" should "be correct" in {
+    val data = Identity().setName("input").inputs()
+    val const = Const(Tensor(T(1, 2))).setName("const").inputs()
+    var isExecuted1 = false
+    val l1 = Echo().setName("l1").setBeval((a, b, c) => isExecuted1 = true).inputs(const)
+    val cadd = CAddTable().setName("cadd").inputs(data, l1)
+    val l2 = Identity().setName("l2").inputs(cadd)
+    var isExecuted2 = false
+    var isExecuted3 = false
+    val echo = Echo().setName("echo")
+      .setFeval((a, b) => isExecuted2 = true)
+      .setBeval((a, b, c) => isExecuted3 = true).inputs(cadd)
+    val l3 = Identity().setName("l3").inputs(echo)
+
+    val model = Graph(data, l2)
+    model.node("l1") should be(l1)
+
+    intercept[NoSuchElementException] {
+      model.node("ll1")
+    }
+  }
+
+  "Graph with preprocess and trainable" should "be correct" in {
+    // Ceil1 -> Linear1 -> Ceil3 - Linear2(Trainable)-|
+    // Ceil2 ---------------------Identity(Trainable)-|> Add(Trainable) -> Linear3(Trainable)
+    val ceil1 = Ceil[Float, Float].inputs()
+    val linear1 = Linear[Float](10, 5).inputs(ceil1)
+    val ceil3 = Ceil[Float, Float].inputs(linear1)
+    val ceil2 = Ceil[Float, Float].inputs()
+    val preprocessor = Graph[Float](Array(ceil1, ceil2), Array(ceil3, ceil2))
+
+    val linear2 = Linear[Float](5, 5).inputs()
+    val identity = Identity[Float].inputs()
+    val add = CAddTable[Float]().inputs(linear2, identity)
+    val linear3 = Linear[Float](5, 2).inputs(add)
+    val trainable = Graph[Float](Array(linear2, identity), Array(linear3))
+
+    val model = Graph[Float](preprocessor, trainable)
+    val input = T(Tensor[Float](10).rand(), Tensor[Float](5).rand())
+    val gradOutput = Tensor[Float](2).rand()
+    model.forward(input)
+
+    linear2.element.parameters()._2(0).sum() should be(0)
+    linear3.element.parameters()._2(0).sum() should be(0)
+    model.backward(input, gradOutput)
+    linear2.element.parameters()._2(0).sum() shouldNot be(0)
+    linear3.element.parameters()._2(0).sum() shouldNot be(0)
+    linear1.element.parameters()._2(0).sum() should be(0)
   }
 }
 

@@ -67,7 +67,7 @@ class SpatialAveragePooling[T: ClassTag](
   val padW: Int = 0,
   val padH: Int = 0,
   val globalPooling: Boolean = false,
-  private var ceilMode: Boolean = false,
+  var ceilMode: Boolean = false,
   private var countIncludePad: Boolean = true,
   private var divide: Boolean = true,
   val format: DataFormat = DataFormat.NCHW
@@ -334,7 +334,7 @@ class SpatialAveragePooling[T: ClassTag](
       kH = inputHeight
       kW = inputWidth
     }
-    
+
     val sizes =
       if (padW == -1 && padH == -1) {
         Utils.getSAMEOutSizeAndPadding(inputHeight, inputWidth, dH, dW, kH, kW)
@@ -347,7 +347,11 @@ class SpatialAveragePooling[T: ClassTag](
     val padRight = sizes(3)
     val outputHeight = sizes(4)
     val outputWidth = sizes(5)
-    
+
+    if (ceilMode && padW == 0 && (inputWidth - kW) % dW == 0) {
+      ceilMode = false // The ceil mode is not needed.
+    }
+
     if (input.dim() == 3) {
       format match {
         case DataFormat.NCHW =>
@@ -650,7 +654,6 @@ class SpatialAveragePooling[T: ClassTag](
     val inputHeight = inputSize(dimh - 1)
     val inputWidth = inputSize(dimw - 1)
 
-//    val (padTop, padBottom, padLeft, padRight, outputHeight, outputWidth) =
     val sizes =
       if (padW == -1 && padH == -1) {
         // no ceil/floor mode in SAME padding

@@ -21,6 +21,7 @@ import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, Tensor
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.serializer._
+import com.intel.analytics.bigdl.utils.serializer.converters.DataConverter
 import com.intel.analytics.bigdl.utils.{T, Table}
 import serialization.Bigdl.{AttrValue, BigDLModule}
 
@@ -37,7 +38,7 @@ class BiRecurrent[T : ClassTag] (
   private val merge: AbstractModule[Table, Tensor[T], T] = null,
   val batchNormParams: BatchNormParams[T] = null,
   val isSplitInput: Boolean = false)
-  (implicit ev: TensorNumeric[T]) extends Container[Tensor[T], Tensor[T], T] {
+  (implicit ev: TensorNumeric[T]) extends DynamicContainer[Tensor[T], Tensor[T], T] {
 
   val timeDim = 2
   val featDim = 3
@@ -64,8 +65,7 @@ class BiRecurrent[T : ClassTag] (
   if (merge == null) birnn.add(CAddTable[T](true))
   else birnn.add(merge)
 
-  override def add(module: AbstractModule[_ <: Activity, _ <: Activity, T]):
-    BiRecurrent.this.type = {
+  override def add(module: AbstractModule[_ <: Activity, _ <: Activity, T]): this.type = {
     layer.add(module)
     revLayer.add(module.cloneModule())
     modules.append(birnn)
@@ -223,6 +223,8 @@ object BiRecurrent extends ContainerSerializable {
           .asInstanceOf[Boolean]
     }
 
+    loadSubModules(context, biRecurrent)
+
     biRecurrent
 
   }
@@ -299,5 +301,6 @@ object BiRecurrent extends ContainerSerializable {
       flag, universe.typeOf[Boolean])
     birecurrentBuilder.putAttr("bnorm", bNormBuilder.build)
 
+    serializeSubModules(context, birecurrentBuilder)
   }
 }

@@ -21,6 +21,7 @@ import com.intel.analytics.bigdl.tensor.{QuantizedTensor, QuantizedType, Storage
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import org.apache.spark.SparkContext
 import org.apache.spark.broadcast.Broadcast
+import com.intel.analytics.bigdl.utils.Util._
 
 import scala.reflect.ClassTag
 
@@ -46,11 +47,7 @@ class ModelBroadcast[T: ClassTag]()(implicit ev: TensorNumeric[T]) extends Seria
    * @return this
    */
   def broadcast(sc: SparkContext, model: Module[T]): this.type = {
-    val weightsBias = getAndClearWeightBias(model.parameters())
-    broadcastModel = sc.broadcast(model.cloneModule())
-    broadcastParameters = sc.broadcast(weightsBias)
-    putWeightBias(weightsBias, model)
-    initGradWeightBias(weightsBias, model)
+    broadcastModel = sc.broadcast(model)
     this
   }
 
@@ -62,16 +59,14 @@ class ModelBroadcast[T: ClassTag]()(implicit ev: TensorNumeric[T]) extends Seria
    * @return model
    */
   def value(initGradient: Boolean = false): Module[T] = {
-    val localModel = broadcastModel.value.cloneModule()
-    putWeightBias(broadcastParameters.value, localModel)
+    val localModel = broadcastModel.value.clone(false)
     if (initGradient) {
-      initGradWeightBias(broadcastParameters.value, localModel)
+      initGradWeightBias(getWeightBias(localModel.parameters()), localModel)
     }
     localModel
   }
 
-
-  private def getAndClearWeightBias(parameters: (Array[Tensor[T]], Array[Tensor[T]]))
+  private def getWeightBias(parameters: (Array[Tensor[T]], Array[Tensor[T]]))
   : Array[Tensor[T]] = {
     if (parameters._1.length != 0) {
       var i = 0
@@ -103,10 +98,6 @@ class ModelBroadcast[T: ClassTag]()(implicit ev: TensorNumeric[T]) extends Seria
           i += 1
         }
       }
-      // clear parameters
-      clearTensor(parameters._1)
-      clearTensor(parameters._2)
-
       weightsBias
     } else {
       // just return an empty array when parameters is empty.
@@ -114,50 +105,6 @@ class ModelBroadcast[T: ClassTag]()(implicit ev: TensorNumeric[T]) extends Seria
     }
   }
 
-  private def clearTensor(tensors: Array[Tensor[T]]): Unit = {
-    var i = 0
-    while (i < tensors.length) {
-      if (tensors(i) != null) {
-        tensors(i).set()
-      }
-      i += 1
-    }
-  }
-
-  private def putWeightBias(
-        broadcastWeightBias: Array[Tensor[T]],
-        localModel: Module[T]): Unit = {
-    val localWeightBias = localModel.parameters()._1
-    var i = 0
-    while (i < localWeightBias.length) {
-      if (localWeightBias(i) != null) {
-        localWeightBias(i).set(broadcastWeightBias(i))
-      }
-      i += 1
-    }
-  }
-
-  private def initGradWeightBias(
-        broadcastWeightBias: Array[Tensor[T]],
-        localModel: Module[T]): Unit = {
-    val (localWeightBias, localGradWeightBias) = localModel.parameters()
-    // init gradient with a compacted storage
-    val storage = Storage[T](localGradWeightBias.map(_.nElement()).sum)
-    val isQuantized = broadcastWeightBias.exists(_.getTensorType == QuantizedType)
-    var i = 0
-    while (i < localWeightBias.length) {
-      if (localWeightBias(i) != null) {
-        val wb = broadcastWeightBias(i)
-        wb.getTensorType match {
-          case QuantizedType =>
-            localGradWeightBias(i).set(Tensor(1))
-          case _ =>
-            localGradWeightBias(i).set(storage, wb.storageOffset(), wb.size(), wb.stride())
-        }
-      }
-      i += 1
-    }
-  }
 }
 
 

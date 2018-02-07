@@ -23,8 +23,8 @@ import com.intel.analytics.bigdl.utils.Table
 import scala.reflect.ClassTag
 
 class Pad[T: ClassTag, D: ClassTag](
-  mode: String,
-  constantValue: D)
+  val mode: String,
+  val constantValue: Double)
   (implicit ev: TensorNumeric[T]) extends Operation[Table, Tensor[D], T] {
   output = Activity.allocate[Tensor[D], D]()
 
@@ -158,13 +158,18 @@ class Pad[T: ClassTag, D: ClassTag](
 
     output
   }
+
+  override def getClassTagNumerics() : (Array[ClassTag[_]], Array[TensorNumeric[_]]) = {
+    (Array[ClassTag[_]](scala.reflect.classTag[T], scala.reflect.classTag[D]),
+      Array[TensorNumeric[_]](ev))
+  }
 }
 
 object Pad {
   def apply[T: ClassTag, D: ClassTag](
     mode: String,
-    constantValue: D)
+    constantValue: Double)
     (implicit ev: TensorNumeric[T]): Operation[Activity, Activity, T]
   = ModuleToOperation[T](
-    new Pad(mode = mode, constantValue = constantValue))
+    new Pad[T, D](mode = mode, constantValue = constantValue))
 }

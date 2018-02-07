@@ -570,8 +570,8 @@ class MultiRNNCellSpec extends FlatSpec with BeforeAndAfter with Matchers {
       Tensor[Double](batchSize, hiddenSize).rand)
     map1.put(1, state1)
     val map = mutable.HashMap[Any, Any]()
-    map.put(0, state0)
-    map.put(1, state1)
+    map.put(1, state0)
+    map.put(2, state1)
     val initStates = new Table(map)
     val initStates_0 = new Table(map0)
     val initStates_1 = new Table(map1)
@@ -602,8 +602,8 @@ class MultiRNNCellSpec extends FlatSpec with BeforeAndAfter with Matchers {
       v1
     })
 
-    val state_decoder0 = rec.getHiddenState().toTable[Table](0).getState()
-    val state_decoder1 = rec.getHiddenState().toTable[Table](1).getState()
+    val state_decoder0 = rec.getHiddenState().toTable[Table](1).getState()
+    val state_decoder1 = rec.getHiddenState().toTable[Table](2).getState()
     val stateGet0 = rec0.getHiddenState().toTable.getState()
     val stateGet1 = rec1.getHiddenState().toTable.getState()
     for (k <- state_decoder0.keys) {
@@ -625,7 +625,7 @@ class MultiRNNCellSpec extends FlatSpec with BeforeAndAfter with Matchers {
     }
 
     // init states shoule remain unchanged
-    initStates.get(0).get.asInstanceOf[Table].get(1).get
+    initStates.get(1).get.asInstanceOf[Table].get(1).get
       .asInstanceOf[Tensor[Double]].map(hidden0, (v1, v2) => {
       assert(v1 == v2)
       v1
@@ -633,5 +633,39 @@ class MultiRNNCellSpec extends FlatSpec with BeforeAndAfter with Matchers {
 
     rec.setHiddenState(rec.getHiddenState())
     model.forward(input)
+  }
+
+  "A MultiRNCell backward" should "work with ConvLSTMPeepwhole3D RecurrentDecoder" in {
+    import com.intel.analytics.bigdl.numeric.NumericDouble
+    val hiddenSize = 7
+    val inputSize = 3
+    val seqLength = 3
+    val outputSize = 5
+    val seed = 100
+    val batchSize = 2
+
+    RNG.setSeed(seed)
+
+    val encoder = Recurrent().add(ConvLSTMPeephole3D(inputSize, hiddenSize, 4, 4))
+    val input = Tensor[Double](batchSize, inputSize, 3, 3).rand
+    val gradOutput = Tensor[Double](batchSize, seqLength, hiddenSize, 3, 3).rand
+    val rec = RecurrentDecoder(seqLength)
+    val cells = Array(ConvLSTMPeephole3D[Double](
+      inputSize,
+      hiddenSize,
+      4, 4), ConvLSTMPeephole[Double](
+      inputSize,
+      hiddenSize,
+      kernalW, kernalH,
+      1)).asInstanceOf[Array[Cell[Double]]]
+    val model = rec
+      .add(MultiRNNCell(cells))
+
+    val weights = model.getParameters()._1.clone()
+    model.zeroGradParameters()
+    val output = model.forward(input).toTensor
+    val gradInput = model.backward(input, gradOutput).toTensor
+    val gradient = model.getParameters()._2.clone()
+
   }
 }

@@ -2,7 +2,7 @@
 This example demonstrates how to use BigDL to train and evaluate [Inception v1](https://arxiv.org/abs/1409.4842) architecture on the [ImageNet](http://image-net.org/index) data.
 ## Get the JAR
 You can build one by refer to the
-[Build Page](https://github.com/intel-analytics/BigDL/wiki/Build-Page) from the source code. We
+[Build Page](https://bigdl-project.github.io/master/#ScalaUserGuide/install-build-src/) from the source code. We
 will release a pre-build package soon.
 
 ## Prepare the data
@@ -90,6 +90,11 @@ core_number. In this example, node_number is 1 and the mini-batch size is sugges
 policy.
 * --weightDecay: weight decay.
 * --checkpointIteration: the checkpoint interval in iteration.
+* --maxLr: optional. Max learning rate after warm up. It has to be set together with warmupEpoch.
+* --warmupEpoch: optional. Epoch numbers need to take to increase learning rate from learningRate to maxLR.
+* --gradientL2NormThreshold: optional. Gradient L2-Norm threshold used for norm2 gradient clipping.
+* --gradientMin: optional. Max gradient clipping by value, used in constant gradient clipping.
+* --gradientMax: optional. Min gradient clipping by value, used in constant gradient clipping.
 
 ## Test the Model
 * Spark standalone, example command

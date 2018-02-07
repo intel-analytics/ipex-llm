@@ -18,9 +18,10 @@ package com.intel.analytics.bigdl.nn.quantized
 
 import com.intel.analytics.bigdl.nn.abstractnn.DataFormat
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.tensor.{FloatType, Tensor}
-import com.intel.analytics.bigdl.utils.serializer.{DataConverter, DeserializeContext, ModuleData, SerializeContext}
-import serialization.Bigdl.{AttrValue, BigDLModule}
+import com.intel.analytics.bigdl.tensor.{FloatType, QuantizedTensor, Tensor}
+import com.intel.analytics.bigdl.utils.serializer.converters.DataConverter
+import com.intel.analytics.bigdl.utils.serializer.{DeserializeContext, ModuleData, SerializeContext}
+import com.intel.analytics.bigdl.serialization.Bigdl.{AttrValue, BigDLModule}
 
 import scala.reflect.ClassTag
 import scala.reflect.runtime.universe
@@ -82,7 +83,7 @@ object SpatialDilatedConvolution extends QuantSerializer {
   override def serializeWeight[T: ClassTag](context: SerializeContext[T],
     modelBuilder: BigDLModule.Builder)(implicit ev: TensorNumeric[T]): Unit = {
     val module = context.moduleData.module
-    val conv = module.asInstanceOf[SpatialConvolution[T]]
+    val conv = module.asInstanceOf[SpatialDilatedConvolution[T]]
     val weightBuilder = AttrValue.newBuilder
     ev.getType() match {
       case FloatType =>
@@ -95,10 +96,14 @@ object SpatialDilatedConvolution extends QuantSerializer {
 
   override def loadWeight[T: ClassTag](context: DeserializeContext,
     moduleData: ModuleData[T])(implicit ev: TensorNumeric[T]): Unit = {
-    val conv = moduleData.module.asInstanceOf[SpatialConvolution[T]]
+    val conv = moduleData.module.asInstanceOf[SpatialDilatedConvolution[T]]
     val attrMap = context.bigdlModule.getAttrMap
-    conv.weight = DataConverter.getAttributeValue(context, attrMap.get("weights"))
+    val weights = DataConverter.getAttributeValue(context, attrMap.get("weights"))
       .asInstanceOf[Array[Tensor[T]]]
+    for (i <- 0 until conv.weight.length) {
+      conv.weight(i).asInstanceOf[QuantizedTensor[T]].release()
+      conv.weight(i).set(weights(i))
+    }
   }
 }
 

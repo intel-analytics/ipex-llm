@@ -19,6 +19,7 @@ import java.nio.ByteOrder
 
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.nn.ConcatTable
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.nn.tf.SplitAndSelect
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -33,15 +34,20 @@ class Split extends TensorflowOpsLoader {
 
   override def build[T: ClassTag](nodeDef: NodeDef, byteOrder: ByteOrder,
     context: Context[T])(implicit ev: TensorNumeric[T]): Module[T] = {
-    Adapter[T](Array(1), tensorArrays => {
-      val numSplit = nodeDef.getAttrMap.get("num_split").getI.toInt
-      val dim = tensorArrays(0).asInstanceOf[Tensor[Int]].value() + 1
-      val model = new ConcatTable[T]()
-      for (index <- Range(1, numSplit + 1)) {
-        model.add(SplitAndSelect[T](dim, index, numSplit))
-      }
-      model
-    })
+    val numSplit = nodeDef.getAttrMap.get("num_split").getI.toInt
+    new SplitLoadTF[T](numSplit)
+  }
+}
+
+class SplitLoadTF[T: ClassTag](val numSplit: Int)(implicit ev: TensorNumeric[T])
+  extends Adapter[T](Array(1)) {
+  override def build(tensorArrays: Array[Tensor[_]]): AbstractModule[Activity, Activity, T] = {
+    val dim = tensorArrays(0).asInstanceOf[Tensor[Int]].value() + 1
+    val model = new ConcatTable[T]()
+    for (index <- Range(1, numSplit + 1)) {
+      model.add(SplitAndSelect[T](dim, index, numSplit))
+    }
+    model
   }
 }
 

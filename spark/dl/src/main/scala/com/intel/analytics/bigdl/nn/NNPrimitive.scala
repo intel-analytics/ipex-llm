@@ -1006,9 +1006,9 @@ private[nn] object NNPrimitive {
 
       var y = 0
       while (y < frameSize) {
-        val maxIndex = xp + y
+        val maxIndex = indices(xp + y).toInt - 1
         if (maxIndex != -1) {
-          gradInput(gip + maxIndex * frameSize + y) =
+          gradInput(gip + maxIndex * frameSize + y) +=
             gradOutput(gop + y)
         }
         y += 1
@@ -1250,8 +1250,8 @@ private[nn] object NNPrimitive {
   def unfoldedCopyVolDouble(fInput: Tensor[Double], input: Tensor[Double],
     kT: Int, kW: Int, kH: Int,
     dT: Int, dW: Int, dH: Int,
-//    pT: Int, pW: Int, pH: Int,
-    padFront: Int, padLeft: Int, padTop: Int, padBack: Int, padRight: Int, padBottom: Int,
+    padFront: Int, padLeft: Int, padTop: Int,
+    padBack: Int, padRight: Int, padBottom: Int,
     nInputPlane: Int,
     inputDepth: Int, inputWidth: Int, inputHeight: Int, outputDepth: Int,
     outputWidth: Int, outputHeight: Int): Unit = {
@@ -1273,20 +1273,16 @@ private[nn] object NNPrimitive {
         kw * (outputDepth * outputHeight * outputWidth) + fInput.storageOffset() - 1
       val srcOffset = nip * (inputDepth * inputHeight * inputWidth) + input.storageOffset() - 1
 
-//      if (pT > 0 || pH > 0 || pW > 0) {
       if (padFront > 0 || padBack > 0 || padLeft > 0 || padRight > 0 ||
         padBottom > 0 || padTop > 0) {
         t = 0
         while (t < outputDepth) {
-//          it = t * dT - pT + kt
           it = t * dT - padFront + kt
           var y = 0
           while (y < outputHeight) {
-//            iy = y * dH - pH + kh
             iy = y * dH - padTop + kh
             x = 0
             while (x < outputWidth) {
-//              ix = x * dW - pW + kw
               ix = x * dW - padLeft + kw
               if (it < 0 || it >= inputDepth || iy < 0 || iy >= inputHeight ||
                 ix < 0 || ix >= inputWidth) {
@@ -1327,8 +1323,8 @@ private[nn] object NNPrimitive {
   def unfoldedCopyVolFloat(fInput: Tensor[Float], input: Tensor[Float],
     kT: Int, kW: Int, kH: Int,
     dT: Int, dW: Int, dH: Int,
-//    pT: Int, pW: Int, pH: Int,
-    padFront: Int, padLeft: Int, padTop: Int, padBack: Int, padRight: Int, padBottom: Int,
+    padFront: Int, padLeft: Int, padTop: Int,
+    padBack: Int, padRight: Int, padBottom: Int,
     nInputPlane: Int,
     inputDepth: Int, inputWidth: Int, inputHeight: Int, outputDepth: Int,
     outputWidth: Int, outputHeight: Int): Unit = {
@@ -1350,20 +1346,16 @@ private[nn] object NNPrimitive {
         kw * (outputDepth * outputHeight * outputWidth) + fInput.storageOffset() - 1
       val srcOffset = nip * (inputDepth * inputHeight * inputWidth) + input.storageOffset() - 1
 
-//      if (pT > 0 || pH > 0 || pW > 0) {
       if (padFront > 0 || padLeft > 0 || padTop > 0 || padBack > 0
         || padRight > 0 || padBottom > 0) {
         t = 0
         while (t < outputDepth) {
-//          it = t * dT - pT + kt
           it = t * dT - padFront + kt
           var y = 0
           while (y < outputHeight) {
-//            iy = y * dH - pH + kh
             iy = y * dH - padTop + kh
             x = 0
             while (x < outputWidth) {
-//              ix = x * dW - pW + kw
               ix = x * dW - padLeft + kw
               if (it < 0 || it >= inputDepth || iy < 0 || iy >= inputHeight ||
                 ix < 0 || ix >= inputWidth) {
@@ -1403,8 +1395,8 @@ private[nn] object NNPrimitive {
 
   def unfoldedAccVolDouble(fInput: Tensor[Double], input: Tensor[Double], kT: Int, kW: Int, kH: Int,
     dT: Int, dW: Int, dH: Int,
-//    pT: Int, pW: Int, pH: Int,
-    padFront: Int, padLeft: Int, padTop: Int, padBack: Int, padRight: Int, padBottom: Int,
+    padFront: Int, padLeft: Int, padTop: Int,
+    padBack: Int, padRight: Int, padBottom: Int,
     nInputPlane: Int, inputDepth: Int,
     inputWidth: Int, inputHeight: Int,
     outputDepth: Int, outputWidth: Int, outputHeight: Int): Unit = {
@@ -1426,20 +1418,16 @@ private[nn] object NNPrimitive {
 
             val dstOffset = nip * (inputDepth * inputHeight * inputWidth) +
               input.storageOffset() - 1
-//            if (pT > 0 || pH > 0 || pW > 0) {
             if (padFront > 0 || padLeft > 0 || padTop > 0 || padBack > 0
               || padRight > 0 || padBottom > 0) {
               t = 0
               while (t < outputDepth) {
-//                it = t * dT - pT + kt
                 it = t * dT - padFront + kt
                 y = 0
                 while (y < outputHeight) {
-//                  iy = y * dH - pH + kh
                   iy = y * dH - padTop + kh
                   x = 0
                   while (x < outputWidth) {
-//                    ix = x * dW - pW + kw
                     ix = x * dW - padLeft + kw
                     if (it < 0 || it >= inputDepth || iy < 0 || iy >= inputHeight ||
                       ix < 0 || ix >= inputWidth) {
@@ -1488,8 +1476,8 @@ private[nn] object NNPrimitive {
 
   def unfoldedAccVolFloat(fInput: Tensor[Float], input: Tensor[Float], kT: Int, kW: Int, kH: Int,
     dT: Int, dW: Int, dH: Int,
-//    pT: Int, pW: Int, pH: Int,
-    padFront: Int, padLeft: Int, padTop: Int, padBack: Int, padRight: Int, padBottom: Int,
+    padFront: Int, padLeft: Int, padTop: Int,
+    padBack: Int, padRight: Int, padBottom: Int,
     nInputPlane: Int, inputDepth: Int,
     inputWidth: Int, inputHeight: Int,
     outputDepth: Int, outputWidth: Int, outputHeight: Int): Unit = {
@@ -1511,20 +1499,16 @@ private[nn] object NNPrimitive {
 
             val dstOffset = nip * (inputDepth * inputHeight * inputWidth) +
               input.storageOffset() - 1
-//            if (pT > 0 || pH > 0 || pW > 0) {
             if (padFront > 0 || padLeft > 0 || padTop > 0 || padBack > 0
               || padRight > 0 || padBottom > 0) {
               t = 0
               while (t < outputDepth) {
-//                it = t * dT - pT + kt
                 it = t * dT - padFront + kt
                 y = 0
                 while (y < outputHeight) {
-//                  iy = y * dH - pH + kh
                   iy = y * dH - padTop + kh
                   x = 0
                   while (x < outputWidth) {
-//                    ix = x * dW - pW + kw
                     ix = x * dW - padLeft + kw
                     if (it < 0 || it >= inputDepth || iy < 0 || iy >= inputHeight ||
                       ix < 0 || ix >= inputWidth) {

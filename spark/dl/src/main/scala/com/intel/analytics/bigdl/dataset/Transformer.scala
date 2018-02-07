@@ -316,13 +316,12 @@ class SampleToMiniBatch[T: ClassTag] private[bigdl](
 
   private val batchPerPartition = Utils.getBatchSize(totalBatch, partitionNum)
   var miniBatchBuffer = miniBatch.orNull
+  private val batchSize = batchPerPartition
+  private val sampleData = new Array[Sample[T]](batchSize)
 
   override def apply(prev: Iterator[Sample[T]]): Iterator[MiniBatch[T]] = {
-    val batchSizePerPartition = batchPerPartition
     new Iterator[MiniBatch[T]] {
-      private val batchSize = batchSizePerPartition
 
-      private val sampleData = new Array[Sample[T]](batchSize)
       override def hasNext: Boolean = prev.hasNext
 
       override def next(): MiniBatch[T] = {

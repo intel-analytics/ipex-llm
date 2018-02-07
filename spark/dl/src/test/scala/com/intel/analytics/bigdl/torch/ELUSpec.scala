@@ -29,7 +29,7 @@ class ELUSpec extends TorchSpec {
     val seed = 100
     RNG.setSeed(seed)
 
-    val module = new ELU[Double, Double]()
+    val module = new ELU[Double]()
     val input = Tensor[Double](2, 2, 2)
     input.apply1(x => random())
     val gradOutput = Tensor[Double](2, 2, 2)
@@ -62,7 +62,7 @@ class ELUSpec extends TorchSpec {
     val seed = 100
     RNG.setSeed(seed)
 
-    val module = new ELU[Double, Double](10, false)
+    val module = new ELU[Double](10, false)
     val input = Tensor[Double](2, 2, 2)
     input.apply1(x => random())
     val gradOutput = Tensor[Double](2, 2, 2)

@@ -15,7 +15,7 @@
  */
 package com.intel.analytics.bigdl.nn.ops
 
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
@@ -28,7 +28,7 @@ import scala.reflect.ClassTag
  * @tparam T Numeric type. Only support float/double now
  */
 class ModuleToOperation[T: ClassTag]
-(module: AbstractModule[Activity, Activity, T])
+(val module: AbstractModule[Activity, Activity, T])
   (implicit ev: TensorNumeric[T])
   extends Operation[Activity, Activity, T]{
 

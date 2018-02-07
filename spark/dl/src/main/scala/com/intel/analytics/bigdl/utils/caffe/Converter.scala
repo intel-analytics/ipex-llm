@@ -62,7 +62,7 @@ abstract class Converter[T: ClassTag](implicit ev: TensorNumeric[T]) {
     if (customizedConverter.contains(layerType)) {
       return customizedConverter(layerType)(layer)
     }
-    throw new UnsupportedOperationException(s"$layerType is not supported in BigDL for now")
+    throw new CaffeConversionException(s"$layerType is not supported in BigDL for now")
   }
 
   def convertLayerFromCaffe(layer : GeneratedMessage) : Seq[ModuleNode[T]] = {
@@ -156,7 +156,7 @@ abstract class Converter[T: ClassTag](implicit ev: TensorNumeric[T]) {
 
   private def fromCaffeAbsVal(layer : GeneratedMessage) : Seq[ModuleNode[T]] = {
     val layerName = getLayerName(layer)
-    Seq(Abs[T, T]().setName(layerName).inputs())
+    Seq(Abs[T]().setName(layerName).inputs())
   }
 
   private def fromCaffeConcat(layer : GeneratedMessage) : Seq[ModuleNode[T]] = {
@@ -173,7 +173,7 @@ abstract class Converter[T: ClassTag](implicit ev: TensorNumeric[T]) {
 
   private def fromCaffeLog(layer : GeneratedMessage) : Seq[ModuleNode[T]] = {
     val layerName = getLayerName(layer)
-    Seq(Log[T, T]().setName(layerName).inputs())
+    Seq(Log[T]().setName(layerName).inputs())
   }
 
   private def fromCaffePower(layer : GeneratedMessage) : Seq[ModuleNode[T]] = {
@@ -184,14 +184,16 @@ abstract class Converter[T: ClassTag](implicit ev: TensorNumeric[T]) {
     var shift = 0.0
     if (param.hasScale) scale = param.getScale
     if (param.hasShift) shift = param.getShift
-    Seq(Power[T, T](power, scale, shift).setName(layerName).inputs())
+    Seq(Power[T](power, scale, shift).setName(layerName).inputs())
   }
 
   private def fromCaffePreLU(layer : GeneratedMessage) : Seq[ModuleNode[T]] = {
     val layerName = getLayerName(layer)
-    val weightBlob = getBlob(layer, 0).get
-    val nOutPlane = if (weightBlob.hasShape) weightBlob.getShape.getDim(0)
-    else weightBlob.getNum
+    val weightBlob = getBlob(layer, 0)
+    sanityBlobCheck(layer, "weight", weightBlob)
+    val weight = weightBlob.get
+    val nOutPlane = if (weight.hasShape) weight.getShape.getDim(0)
+    else weight.getNum
     Seq(PReLU[T](nOutPlane.toInt).setName(layerName).inputs())
   }
 
@@ -304,14 +306,14 @@ abstract class Converter[T: ClassTag](implicit ev: TensorNumeric[T]) {
       case logSoftMax : LogSoftMax[_] => toCaffeLogSoftMax(moduleNode, bottoms, nextSize)
       case tanh : Tanh[_] => toCaffeTanh(moduleNode, bottoms, nextSize)
       case sigmoid : Sigmoid[_] => toCaffeSigmoid(moduleNode, bottoms, nextSize)
-      case abs : Abs[_, _] => toCaffeAbs(moduleNode, bottoms, nextSize)
+      case abs : Abs[_] => toCaffeAbs(moduleNode, bottoms, nextSize)
       case bartchNorm : SpatialBatchNormalization[_] =>
         toCaffeBatchNormalization(moduleNode, bottoms, nextSize)
       case joinTable : JoinTable[_] => toCaffeConcat(moduleNode, bottoms, nextSize)
-      case elu : ELU[_, _] => toCaffeElu(moduleNode, bottoms, nextSize)
+      case elu : ELU[_] => toCaffeElu(moduleNode, bottoms, nextSize)
       case infershape : InferReshape[_] => toCaffeFlattern(moduleNode, bottoms, nextSize)
-      case log : Log[_, _] => toCaffeLog(moduleNode, bottoms, nextSize)
-      case power : Power[_, _] => toCaffePower(moduleNode, bottoms, nextSize)
+      case log : Log[_] => toCaffeLog(moduleNode, bottoms, nextSize)
+      case power : Power[_] => toCaffePower(moduleNode, bottoms, nextSize)
       case prelu : PReLU[_] => toCaffePReLu(moduleNode, bottoms, nextSize)
       case recurrent : Recurrent[_] => toCaffeRecurrent(moduleNode, bottoms, nextSize)
       case reshape : Reshape[_] => toCaffeReshape(moduleNode, bottoms, nextSize)
@@ -325,7 +327,7 @@ abstract class Converter[T: ClassTag](implicit ev: TensorNumeric[T]) {
       case cadd : CAdd[_] => toCaffeEltWiseAdd(moduleNode, bottoms, nextSize)
       case csub : CSubTable[_] => toCaffeEltWiseSub(moduleNode, bottoms, nextSize)
       case sequantial : Sequential[_] => toCaffeSequential(moduleNode, bottoms, nextSize)
-      case _ => throw  new UnsupportedOperationException(s"${moduleNode} is not supported")
+      case _ => throw  new CaffeConversionException(s"${moduleNode} is not supported")
     }
     model
   }
@@ -454,7 +456,7 @@ abstract class Converter[T: ClassTag](implicit ev: TensorNumeric[T]) {
     val map = new mutable.HashMap[String, Int]()
     val layer = classOf[SpatialFullConvolution[T]].cast(module)
     if (layer.adjW != 0 || layer.adjH != 0) {
-      throw new IllegalArgumentException("Caffe doesn't support extra width/height amending")
+      throw new CaffeConversionException("Caffe doesn't support extra width/height amending")
     }
     val nInputPlane = layer.nOutputPlane
     val nOutputPlane = layer.nInputPlane
@@ -543,7 +545,7 @@ abstract class Converter[T: ClassTag](implicit ev: TensorNumeric[T]) {
 
   protected def toCaffeEluParam(module : AbstractModule[Activity, Activity, T]) : ELUParameter = {
     val eLUParameter = ELUParameter.newBuilder()
-    val layer = classOf[ELU[T, T]].cast(module)
+    val layer = classOf[ELU[T]].cast(module)
     eLUParameter.setAlpha(layer.alpha.toFloat)
     eLUParameter.build()
   }
@@ -551,7 +553,7 @@ abstract class Converter[T: ClassTag](implicit ev: TensorNumeric[T]) {
   protected def toCaffePowerParam(module : AbstractModule[Activity, Activity, T])
   : PowerParameter = {
     val powerParameter = PowerParameter.newBuilder
-    val layer = classOf[Power[T, T]].cast(module)
+    val layer = classOf[Power[T]].cast(module)
     powerParameter.setPower(layer.power.toFloat)
     powerParameter.setScale(layer.scale.toFloat)
     powerParameter.setShift(layer.shift.toFloat)
@@ -616,6 +618,15 @@ abstract class Converter[T: ClassTag](implicit ev: TensorNumeric[T]) {
 
   protected def getBlob(layer : GeneratedMessage, ind: Int): Option[Caffe.BlobProto]
 
+  protected def sanityBlobCheck(layer : GeneratedMessage, blobInfo: String,
+                                blob : Option[Caffe.BlobProto]) : Unit = {
+    val name = getLayerName(layer)
+    val tpe = getLayerType(layer)
+    if (!blob.isDefined) {
+      throw new CaffeConversionException(s"$tpe : $name missing $blobInfo in binary file")
+    }
+  }
+
   private def init() = {
     caffe2BigDL("CONVOLUTION") = fromCaffeConvolution
     caffe2BigDL("DECONVOLUTION") = fromCaffeConvolution
@@ -626,8 +637,8 @@ abstract class Converter[T: ClassTag](implicit ev: TensorNumeric[T]) {
     caffe2BigDL("POOLING") = fromCaffePooling
     caffe2BigDL("DROPOUT") = fromCaffeDropout
     caffe2BigDL("SOFTMAX") = fromCaffeSoftmax
-    caffe2BigDL("SOFTMAX_LOSS") = fromCaffeSoftmax
-    caffe2BigDL("SOFTMAXWITHLOSS") = fromCaffeSoftmax
+    caffe2BigDL("SOFTMAX_LOSS") = null
+    caffe2BigDL("SOFTMAXWITHLOSS") = null
     caffe2BigDL("TANH") = fromCaffeTanh
     caffe2BigDL("SIGMOID") = fromCaffeSigmoid
     caffe2BigDL("SIGMOIDCROSSENTROPYLOSS") = fromCaffeSigmoid
@@ -653,6 +664,8 @@ abstract class Converter[T: ClassTag](implicit ev: TensorNumeric[T]) {
     caffe2BigDL("DATA") = fromCaffeInput
     caffe2BigDL("DUMMYDATA") = fromCaffeInput
     caffe2BigDL("ANNOTATEDDATA") = fromCaffeInput
+    caffe2BigDL("MEMORYDATA") = fromCaffeInput
+    caffe2BigDL("ACCURACY") = null
     caffe2BigDL("SILENCE") = null
   }
 }

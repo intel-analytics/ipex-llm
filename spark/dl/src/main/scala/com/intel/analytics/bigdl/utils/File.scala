@@ -66,11 +66,19 @@ object File {
    * @param isOverwrite if overwrite.
    */
   def save(obj: Serializable, fileName: String, isOverwrite: Boolean = false): Unit = {
-
-    val byteArrayOut = new ByteArrayOutputStream()
-    val objFile = new ObjectOutputStream(byteArrayOut)
-    objFile.writeObject(obj)
-    saveBytes(byteArrayOut.toByteArray, fileName, isOverwrite)
+    var fw: FileWriter = null
+    var out: OutputStream = null
+    var objFile: ObjectOutputStream = null
+    try {
+      fw = FileWriter(fileName)
+      out = fw.create(isOverwrite)
+      objFile = new ObjectOutputStream(new BufferedOutputStream(out))
+      objFile.writeObject(obj)
+    } finally {
+      if (null != objFile) objFile.close()
+      if (null != out) out.close()
+      if (null != fw) fw.close()
+    }
   }
 
   def saveBytes(bytes: Array[Byte], fileName: String, isOverwrite: Boolean = false) : Unit = {
@@ -166,12 +174,21 @@ object File {
    * @param fileName file name.
    */
   def load[T](fileName: String): T = {
-
-    val objFile = new ObjectInputStream(new ByteArrayInputStream(readBytes(fileName)))
-    val result = objFile.readObject()
-    result.asInstanceOf[T]
+    var fr: FileReader = null
+    var in: InputStream = null
+    var objFile: ObjectInputStream = null
+    try {
+      fr = FileReader(fileName)
+      in = fr.open()
+      val bis = new BufferedInputStream(in)
+      val objFile = new ObjectInputStream(bis)
+      objFile.readObject().asInstanceOf[T]
+    } finally {
+      if (null != in) in.close()
+      if (null != fr) fr.close()
+      if (null != objFile) objFile.close()
+    }
   }
-
 
   def readBytes[T](fileName : String) : Array[Byte] = {
     var fr: FileReader = null

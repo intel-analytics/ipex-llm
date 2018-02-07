@@ -25,7 +25,7 @@ class IsInfSpec extends TensorflowSpecHelper {
     val t = Tensor[Float](4, 4).rand()
     t.setValue(2, 3, Float.NegativeInfinity)
     t.setValue(4, 4, Float.PositiveInfinity)
-    val (t1, t2) = getResult[Boolean](
+    val (t1, t2) = getResult[Float, Boolean](
       NodeDef.newBuilder()
         .setName("isinf_test")
         .putAttr("T", typeAttr(DataType.DT_FLOAT))

@@ -16,8 +16,11 @@
 package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.utils.{T, Table}
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
+
+import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Parallel
 class MMSpec extends FlatSpec with Matchers {
@@ -26,7 +29,7 @@ class MMSpec extends FlatSpec with Matchers {
     val m2 = new MM[Double]()
     val m3 = new MM[Double](true, true)
     val m4 = new MM[Double]()
-    val log = new Log[Double, Double]()
+    val log = new Log[Double]()
     com.intel.analytics.bigdl.tensor.Tensor
     val input1 = Tensor[Double](3, 3).randn()
     val input2 = Tensor[Double](3, 3).randn()
@@ -45,7 +48,7 @@ class MMSpec extends FlatSpec with Matchers {
     val m2 = new MM[Double]()
     val m3 = new MM[Double](true, true)
     val m4 = new MM[Double]()
-    val log = new Log[Double, Double]()
+    val log = new Log[Double]()
     com.intel.analytics.bigdl.tensor.Tensor
     val input1 = Tensor[Double](3, 3).randn()
     val input2 = Tensor[Double](3, 3).randn()
@@ -57,5 +60,17 @@ class MMSpec extends FlatSpec with Matchers {
     m1 should not equal log
     m1 should not equal m3
     m1 should not equal m4
+  }
+}
+
+class MMSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val mm = MM[Float]().setName("mm_layer")
+    val input1 = Tensor[Float](2, 3).apply1(e => Random.nextFloat())
+    val input2 = Tensor[Float](3, 4).apply1(e => Random.nextFloat())
+    val input = new Table()
+    input(1.0f) = input1
+    input(2.0f) = input2
+    runSerializationTest(mm, input)
   }
 }

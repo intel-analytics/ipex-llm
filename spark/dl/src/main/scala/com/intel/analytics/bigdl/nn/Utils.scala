@@ -235,7 +235,7 @@ object Utils {
       s"$src and $dst is not the same type.")
     dstParameters.copy(srcParameters)
     // copy running status
-    dst.copyStatus(src)
+    dst.setExtraParameter(src.getExtraParameter())
     dst
   }
 
@@ -299,7 +299,9 @@ object Utils {
 
   /**
    *
-   * @return (padTop, padBottom, padLeft, padRight, outputHeight, outputWidth)
+   * @return Array(padTop, padBottom, padLeft, padRight, outputHeight, outputWidth)
+   *         or Array(padFront, padBackward, padTop, padBottom, padLeft, padRight,
+   *         outputDepth, outputHeight, outputWidth)
    */
   private[nn] def getSAMEOutSizeAndPadding(
     inputHeight: Int,
@@ -316,7 +318,7 @@ object Utils {
     val padAlongWidth = Math.max(0, (oW -1) * dW + kW - inputWidth)
     val padAlongHeight = Math.max(0, (oH - 1) * dH + kH - inputHeight)
     if (inputDepth != -1) {
-      require(dT != -1 && kT != -1, "kernel size and strideSize cannot greater than 0")
+      require(dT > 0 && kT > 0, "kernel size and strideSize cannot be smaller than 0")
       val oT = Math.ceil(inputDepth.toFloat / dT.toFloat).toInt
       val padAlongDepth = Math.max(0, (oT -1) * dT + kT - inputDepth)
       return Array(padAlongDepth/2, padAlongDepth - padAlongDepth/2, padAlongHeight/2,
@@ -330,25 +332,46 @@ object Utils {
 
   /**
    *
-   * @return (padLeft, padRight, padTop, padBottom, outputHeight, outputWidth)
+   * @return Array(padLeft, padRight, padTop, padBottom, outputHeight, outputWidth)
+   *         or Array(padFront, padBack, padLeft, padRight, padTop, padBottom,
+   *         outputDepth, outputHeight, outputWidth)
    */
   private[nn] def getOutSizeAndPadding(
-                                        inputHeight: Int,
-                                        inputWidth: Int,
-                                        dH: Int,
-                                        dW: Int,
-                                        kH: Int,
-                                        kW: Int,
-                                        padH: Int,
-                                        padW: Int,
-                                        ceilMode: Boolean,
-                                        dilationHeight: Int = 1,
-                                        dilationWidth: Int = 1,
-                                        inputdepth: Int = -1,
-                                        dt: Int = -1,
-                                        kt: Int = -1,
-                                        padt: Int = -1,
-                                        dilationDepth: Int = 1): Array[Int] = {
+//<<<<<<< HEAD
+      inputHeight: Int,
+      inputWidth: Int,
+      dH: Int,
+      dW: Int,
+      kH: Int,
+      kW: Int,
+      padH: Int,
+      padW: Int,
+      ceilMode: Boolean,
+      dilationHeight: Int = 1,
+      dilationWidth: Int = 1,
+      inputdepth: Int = -1,
+      dt: Int = -1,
+      kt: Int = -1,
+      padt: Int = -1,
+      dilationDepth: Int = 1): Array[Int] = {
+//=======
+//    inputHeight: Int,
+//    inputWidth: Int,
+//    dH: Int,
+//    dW: Int,
+//    kH: Int,
+//    kW: Int,
+//    padH: Int,
+//    padW: Int,
+//    ceilMode: Boolean,
+//    dilationHeight: Int = 1,
+//    dilationWidth: Int = 1,
+//    inputdepth: Int = -1,
+//    dt: Int = -1,
+//    kt: Int = -1,
+//    padt: Int = 0,
+//    dilationDepth: Int = 1): Array[Int] = {
+//>>>>>>> upstream_master
     var oheight = 0
     var owidth = 0
     var odepth = 0
@@ -362,7 +385,7 @@ object Utils {
       owidth = math.ceil(1.0 * (inputWidth - dilationKernelWidth + 2*padW) / dW).toInt + 1
       if (inputdepth > 0) {
         require(dt > 0 && kt > 0 && padt >= 0,
-          "kernel size, stride size, padding size need greater than 0")
+          "kernel size, stride size, padding size cannot be smaller than 0")
         odepth = math.ceil(1.0 * (inputdepth - dilationKernelDepth + 2*padt) / dt).toInt + 1
       }
     } else {
@@ -370,19 +393,27 @@ object Utils {
       owidth = math.floor(1.0 * (inputWidth - dilationKernelWidth + 2*padW) / dW).toInt + 1
       if (inputdepth > 0) {
         require(dt > 0 && kt > 0 && padt >= 0,
-          "kernel size, stride size, padding size need greater than 0")
+          "kernel size, stride size, padding size cannot be smaller than 0")
         odepth = math.floor(1.0 * (inputdepth - dilationKernelDepth + 2*padt) / dt).toInt + 1
       }
     }
 
-    if (padH != 0 || padW != 0) {
+    if (padH != 0 || padW != 0 || padt != 0) {
       if ((oheight - 1) * dH >= inputHeight + padH) oheight -= 1
       if ((owidth - 1) * dW >= inputWidth + padW) owidth -= 1
+      if (inputdepth > 0) {
+        if ((odepth - 1) * dt >= inputdepth + padt) odepth -= 1
+        return Array(padt, padt, padH, padH, padW, padW, odepth, oheight, owidth)
+      }
+    } else if (inputdepth > 0) {
+        return Array(padt, padt, padH, padH, padW, padW, odepth, oheight, owidth)
     }
+
     if (inputdepth > 0) {
       if ((odepth - 1) * dt >= inputdepth + padt) oheight -= 1
       return Array(padt, padt, padH, padH, padW, padW, odepth, oheight, owidth)
     }
+
     Array(padH, padH, padW, padW, oheight, owidth)
   }
 
@@ -402,6 +433,21 @@ object Utils {
           Array(batchSize, outputHeight, outputWidth, nOutputPlane)
         }
 
+    }
+  }
+
+  private[nn] def getOutputSize(inputSize: Int, filterSize: Int,
+                    stride: Int, padding: String) = {
+    padding.toLowerCase() match {
+      case "valid" =>
+        val outputSize = (inputSize - filterSize + stride) / stride
+        (outputSize, 0, 0)
+      case "same" =>
+        val outputSize = (inputSize + stride - 1) / stride
+        val paddingNeeded = math.max(0, (outputSize - 1) * stride + filterSize - inputSize)
+        val padBefore = paddingNeeded / 2
+        val padAfter = paddingNeeded - padBefore
+        (outputSize, padBefore, padAfter)
     }
   }
 

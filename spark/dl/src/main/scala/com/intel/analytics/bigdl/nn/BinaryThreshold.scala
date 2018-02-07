@@ -34,8 +34,8 @@ import scala.reflect.ClassTag
  */
 
 @SerialVersionUID(4932292249027276581L)
-class BinaryThreshold[@specialized(Float, Double) T: ClassTag](
-  th: Double = 1e-6, ip: Boolean = false)(
+class BinaryThreshold[T: ClassTag](
+  val th: Double = 1e-6, val ip: Boolean = false)(
   implicit ev: TensorNumeric[T]) extends TensorModule[T] {
   var threshold = th
   var inPlace = ip

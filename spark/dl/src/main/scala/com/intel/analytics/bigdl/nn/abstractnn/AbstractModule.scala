@@ -19,28 +19,30 @@ package com.intel.analytics.bigdl.nn.abstractnn
 import java.nio.ByteOrder
 
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.tensor.{Tensor, TensorDataType}
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils._
-import com.intel.analytics.bigdl.nn.{Module, _}
-import com.intel.analytics.bigdl.utils.TorchObject.TYPE_MODULE
-import org.apache.commons.lang3.SerializationUtils
-import org.apache.spark.rdd.RDD
-import com.intel.analytics.bigdl.optim._
-import com.intel.analytics.bigdl.dataset.{LocalDataSet, MiniBatch, Sample}
+import com.intel.analytics.bigdl.dataset.{LocalDataSet, MiniBatch, PaddingParam, Sample}
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.nn.quantized.Quantization
+import com.intel.analytics.bigdl.nn.{Module, _}
+import com.intel.analytics.bigdl.optim._
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.tensor.{QuantizedTensor, Tensor, TensorDataType}
+import com.intel.analytics.bigdl.transform.vision.image.{DistributedImageFrame, ImageFeature, ImageFrame, LocalImageFrame}
+import com.intel.analytics.bigdl.utils.TorchObject.TYPE_MODULE
+import com.intel.analytics.bigdl.utils._
 import com.intel.analytics.bigdl.utils.caffe.CaffePersister
-import com.intel.analytics.bigdl.utils.serializer.ModulePersister
+import com.intel.analytics.bigdl.utils.serializer._
 import com.intel.analytics.bigdl.utils.tf.{TensorflowDataFormat, TensorflowSaver}
+import org.apache.commons.lang3.SerializationUtils
+import org.apache.spark.rdd.RDD
 
+import scala.collection.mutable
 import scala.reflect.ClassTag
 
 /**
  * [[TensorModule]] is an abstract sub-class of [[AbstractModule]], whose
  * input and output type both are [[Tensor]].
  *
- * @tparam T The numeric type in the criterion, usually which are [[Float]] or [[Double]]
+ * @tparam T The numeric type in this module, usually which are [[Float]] or [[Double]]
  */
 abstract class TensorModule[T: ClassTag]
   (implicit ev: TensorNumeric[T]) extends AbstractModule[Tensor[T], Tensor[T], T]
@@ -54,7 +56,7 @@ abstract class TensorModule[T: ClassTag]
  * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now
  */
 abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, T: ClassTag](
-  implicit ev: TensorNumeric[T]) extends Serializable {
+  implicit ev: TensorNumeric[T]) extends Serializable with InferShape{
 
   private var namePostfix = Integer.toHexString(java.util.UUID.randomUUID().hashCode())
 
@@ -112,19 +114,6 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
    */
   def setScaleB(b: Double): this.type = {
     scaleB = b
-    this
-  }
-
-  /**
-   * Copy the useful running status from src to this.
-   *
-   * The subclass should override this method if it has some parameters besides weight and bias.
-   * Such as runningMean and runningVar of BatchNormalization.
-   *
-   * @param src source Module
-   * @return this
-   */
-  def copyStatus(src: Module[T]) : this.type = {
     this
   }
 
@@ -343,7 +332,13 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
    * If the module has parameters, this will zero the accumulation of the gradients with respect
    * to these parameters. Otherwise, it does nothing.
    */
-  def zeroGradParameters(): Unit = {}
+  def zeroGradParameters(): Unit = {
+    if (parameters() != null) {
+      parameters()._2.foreach(grad => {
+        grad.zero()
+      })
+    }
+  }
 
   def updateParameters(learningRate: T): Unit = {}
 
@@ -365,6 +360,44 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
    * @return (Array of weights, Array of grad)
    */
   def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = null
+
+  /**
+   * Get extra parameter in this module.
+   * Extra parameter means the trainable parameters beside weight and bias. Such as runningMean
+   * and runningVar in BatchNormalization.
+   *
+   * The subclass should override this method if it has some parameters besides weight and bias.
+   *
+   * @return an array of tensor
+   */
+  def getExtraParameter(): Array[Tensor[T]] = null
+
+  /**
+   * Set extra parameter to this module.
+   * Extra parameter means the trainable parameters beside weight and bias. Such as runningMean
+   * and runningVar in BatchNormalization.
+   *
+   * @return this
+   */
+  def setExtraParameter(extraParam: Array[Tensor[T]]): this.type = {
+    val currentExtraParam = this.getExtraParameter()
+    if (extraParam != null && currentExtraParam != null) {
+      require(extraParam.length == currentExtraParam.length,
+        "state's length doesn't match, excepted:" +
+        s"${currentExtraParam.length}, but got  ${extraParam.length}")
+      var i = 0
+      while (i < extraParam.length) {
+        currentExtraParam(i).copy(extraParam(i))
+        i += 1
+      }
+      this
+    } else if (extraParam == null && currentExtraParam == null) {
+      this
+    } else {
+      throw new IllegalArgumentException(s"module's extraParameter is $currentExtraParam" +
+        s", while setting param is ${extraParam}")
+    }
+  }
 
   /**
    * This function returns a table contains ModuleName, the parameter names and parameter value
@@ -426,6 +459,81 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
     SerializationUtils.clone(this)
   }
 
+  def clone(deepCopy : Boolean): AbstractModule[A, B, T] = {
+    val moduleData = ModuleData[T](this.
+      asInstanceOf[AbstractModule[Activity, Activity, T]], Seq[String](), Seq[String]())
+    val storages = new mutable.HashMap[Int, Any]()
+    val context = SerializeContext(moduleData, storages, ProtoStorageType, false)
+    val serializedModule = ModuleSerializer.serialize[T](context).bigDLModule
+    ModulePersister.setTensorStorage(serializedModule, storages)
+
+    storages.clear()
+
+    val deserializeContext = DeserializeContext(serializedModule.build,
+      storages, ProtoStorageType, false)
+    ModuleLoader.initTensorStorage[T](deserializeContext)
+    val copy = ModuleSerializer.load[T](deserializeContext).module
+      .asInstanceOf[AbstractModule[A, B, T]]
+    setWeightAndBias(copy, deepCopy)
+    copy
+  }
+
+
+  private def setWeightAndBias(copy : AbstractModule[A, B, T], deepCopy : Boolean): Unit = {
+    val parameterTable = this.getParametersTable
+    val copiedModuleParamTable = copy.getParametersTable
+    if (parameterTable != null) {
+      require(copiedModuleParamTable != null, "cloned module should have params")
+      parameterTable.foreach {
+        case (name: String, params: Table) =>
+          require(copiedModuleParamTable.get(name) != None, s"cloned module should have for $name")
+          setLayerWeightAndBias(params,
+            copiedModuleParamTable.get(name).get.asInstanceOf[Table], deepCopy)
+      }
+    }
+  }
+
+  private def setLayerWeightAndBias(params : Table,
+                                    copyParams : Table, deepCopy : Boolean): Unit = {
+    params.foreach(param => {
+      copyParam(params, copyParams, deepCopy, param._1.toString)
+    })
+  }
+
+  private def copyParam(params : Table, copyParams : Table,
+                        deepCopy : Boolean, paraName : String) : Unit = {
+    if (params.contains(paraName)) {
+      // this is for quantization tensors where the weight might be an array
+      if (params.get(paraName).get
+        .isInstanceOf[Array[Tensor[T]]]) {
+        val copies = copyParams.get(paraName).get
+          .asInstanceOf[Array[Tensor[T]]]
+        val origins = params.get(paraName).get
+          .asInstanceOf[Array[Tensor[T]]]
+        var i = 0
+        while (i < copies.length) {
+          copyTensor(origins(i), copies(i), deepCopy)
+          i += 1
+        }
+      } else {
+        // For normal layers, their params are just tensors
+        copyTensor(params.get(paraName).get.asInstanceOf[Tensor[T]],
+          copyParams.get(paraName).get.asInstanceOf[Tensor[T]], deepCopy)
+      }
+    }
+  }
+
+  private def copyTensor(t1 : Tensor[T], t2 : Tensor[T], deepCopy : Boolean) = {
+    if (t2.isInstanceOf[QuantizedTensor[_]]) {
+      t2.asInstanceOf[QuantizedTensor[_]].release()
+    }
+    if (deepCopy) {
+      t2.copy(t1)
+    } else {
+      t2.set(t1)
+    }
+  }
+
   def canEqual(other: Any): Boolean = other.isInstanceOf[AbstractModule[A, B, T]]
 
   override def equals(other: Any): Boolean = other match {
@@ -464,12 +572,14 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
    * @param path path to save module, local file system, HDFS and Amazon S3 is supported.
    *             HDFS path should be like "hdfs://[host]:[port]/xxx"
    *             Amazon S3 path should be like "s3a://bucket/xxx"
+   * @param weightPath where to store weight
    * @param overWrite if overwrite
    * @return self
    */
-  def saveModule(path : String, overWrite: Boolean = false) : this.type = {
+  def saveModule(path : String, weightPath : String = null,
+                 overWrite: Boolean = false) : this.type = {
     this.clearState()
-    ModulePersister.saveToFile(path, this, overWrite)
+    ModulePersister.saveToFile(path, weightPath, this, overWrite)
     this
   }
 
@@ -507,7 +617,14 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
               dataFormat: TensorflowDataFormat = TensorflowDataFormat.NHWC): this.type = {
     require(this.isInstanceOf[Graph[T]], "only Graph container can be saved as Tensorflow model")
     this.clearState()
+    val inTrainMode = train
+    if (inTrainMode) {
+      this.evaluate()
+    }
     TensorflowSaver.saveGraph(this.asInstanceOf[Graph[T]], inputs, path, byteOrder, dataFormat)
+    if (inTrainMode) {
+      this.training()
+    }
     this
   }
 
@@ -542,6 +659,36 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
   }
 
   /**
+   * model predict images, return imageFrame with predicted tensor,
+   * if you want to call predictImage multiple times,
+   * it is recommended to use Predictor for DistributedImageFrame
+   * or LocalPredictor for LocalImageFrame
+   * @param imageFrame imageFrame that contains images
+   * @param outputLayer if outputLayer is not null, the output of layer that matches
+   *                      outputLayer will be used as predicted output
+   * @param shareBuffer whether to share same memory for each batch predict results
+   * @param batchPerPartition batch size per partition, default is 4
+   * @param predictKey key to store predicted result
+   * @param featurePaddingParam featurePaddingParam if the inputs have variant size
+   * @return
+   */
+  def predictImage(imageFrame: ImageFrame,
+    outputLayer: String = null,
+    shareBuffer: Boolean = false,
+    batchPerPartition: Int = 4,
+    predictKey: String = ImageFeature.predict,
+    featurePaddingParam: Option[PaddingParam[T]] = None): ImageFrame = {
+    imageFrame match {
+      case distributedImageFrame: DistributedImageFrame =>
+        Predictor(this, featurePaddingParam, batchPerPartition)
+          .predictImage(distributedImageFrame, outputLayer, shareBuffer, predictKey)
+      case localImageFrame: LocalImageFrame =>
+        LocalPredictor(this, featurePaddingParam, batchPerPartition)
+          .predictImage(localImageFrame, outputLayer, shareBuffer, predictKey)
+    }
+  }
+
+  /**
    * Set weight and bias for the module
    * @param newWeights array of weights and bias
    * @return
@@ -555,6 +702,10 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
         s" number of output ${newWeights.length}")
     val weights = parameters()._1
     for(i <- newWeights.indices) {
+      // TODO: enable this checking as we don't respect shape right now.
+//      require(weights(i).size().deep == newWeights(i).size().deep,
+//        s"Mismatch shape, ${weights(i).size().mkString(",")}" +
+//          s" vs ${newWeights(i).size().mkString(",")} ")
       weights(i).copy(newWeights(i))
     }
     this
@@ -657,6 +808,19 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
 
   /**
    * Build graph: some other modules point to current module
+   * @param nodes upstream module nodes in an array
+   * @return node containing current module
+   */
+  def inputs(nodes : Array[ModuleNode[T]]): ModuleNode[T] = {
+    val curNode = new ModuleNode[T](this)
+    nodes.foreach(node => {
+      node.add(curNode, Edge())
+    })
+    curNode
+  }
+
+  /**
+   * Build graph: some other modules point to current module
    * @param first distinguish from another inputs when input parameter list is empty
    * @param nodesWithIndex upstream module nodes and the output tensor index. The start index is 1.
    * @return node containing current module
@@ -729,6 +893,15 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
     val starts = if (startNodes.isEmpty) Array(Input[T]()) else startNodes.toArray
     val endNodes = this.getEndNodes(starts)
     Graph(starts, endNodes)
+  }
+
+  /**
+   * Return classTag numerics for module serialization. If your module contains multiple classtag
+   * in the constructor, you should override this method
+   * @return
+   */
+  def getClassTagNumerics() : (Array[ClassTag[_]], Array[TensorNumeric[_]]) = {
+    (Array(scala.reflect.classTag[T]), Array(ev))
   }
 }
 

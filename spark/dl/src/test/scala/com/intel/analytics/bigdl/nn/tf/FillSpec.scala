@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.nn.tf
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
 
 class FillSpec extends FlatSpec with Matchers {
@@ -45,5 +46,15 @@ class FillSpec extends FlatSpec with Matchers {
     val gradInput = layer.backward(T(shape, value), gradOutput)
     gradInput[Tensor[Int]](1) should be (Tensor[Int](2))
     gradInput[Tensor[Float]](2) should be (Tensor[Float](Array(0.0f), Array[Int]()))
+  }
+}
+
+class FillSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val fill = Fill[Float]().setName("fill")
+    val shape = Tensor[Int](T(2, 3))
+    val value = Tensor[Float](Array(0.1f), Array[Int]())
+    val input = T(shape, value)
+    runSerializationTest(fill, input)
   }
 }

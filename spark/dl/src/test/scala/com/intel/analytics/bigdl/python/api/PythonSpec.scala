@@ -22,7 +22,7 @@ import java.util.{ArrayList => JArrayList, List => JList, Map => JMap}
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.optim.{Loss, SGD, Top1Accuracy, Trigger}
-import com.intel.analytics.bigdl.utils.{Engine, T, TestUtils}
+import com.intel.analytics.bigdl.utils.{Engine, T, Table, TestUtils}
 import com.intel.analytics.bigdl.visualization.{TrainSummary, ValidationSummary}
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
@@ -52,6 +52,15 @@ class PythonSpec extends FlatSpec with Matchers with BeforeAndAfter {
     if (sc != null) {
       sc.stop()
     }
+  }
+
+  "pickle activity" should "be test" in {
+    val tensor = Tensor(Array(1.0f, 2.0f, 3.0f, 4.0f), Array(4, 1))
+    val table = new Table()
+    table.insert(tensor)
+    table.insert(tensor)
+    val r = JActivity(table)
+    org.apache.spark.bigdl.api.python.BigDLSerDe.dumps(r)
   }
 
   "model forward and backward with sigle tensor input" should "be test" in {
@@ -165,7 +174,9 @@ class PythonSpec extends FlatSpec with Matchers with BeforeAndAfter {
         Array(100), "double")
       val features = new JArrayList[JTensor]()
       features.add(feature)
-      Sample(features, label, "double")
+      val labels = new JArrayList[JTensor]()
+      labels.add(label)
+      Sample(features, labels, "double")
     }
 
     BigDLSerDe.javaToPython(data.toJavaRDD().asInstanceOf[JavaRDD[Any]])
@@ -185,7 +196,7 @@ class PythonSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val pp = PythonBigDL.ofDouble()
     val optimMethod = new SGD[Double]()
     optimMethod.learningRateSchedule = SGD.Poly(0.5, math.ceil(1281167.toDouble / batchSize).toInt)
-    val optimizer = pp.createOptimizer(
+    val optimizer = pp.createDistriOptimizer(
       model,
       data.toJavaRDD(),
       ClassNLLCriterion[Double](),
@@ -219,16 +230,16 @@ class PythonSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
     val localData = data.collect()
     pp.toTensor(preResult.get(0)) should be
-    (trainedModel.forward(pp.toSample(localData(0)).feature))
+    (trainedModel.forward(pp.toJSample(localData(0)).feature))
 
     pp.toTensor(preResult.get(25)) should be
-    (trainedModel.forward(pp.toSample(localData(25)).feature))
+    (trainedModel.forward(pp.toJSample(localData(25)).feature))
 
     pp.toTensor(preResult.get(55)) should be
-    (trainedModel.forward(pp.toSample(localData(55)).feature))
+    (trainedModel.forward(pp.toJSample(localData(55)).feature))
 
     pp.toTensor(preResult.get(75)) should be
-    (trainedModel.forward(pp.toSample(localData(75)).feature))
+    (trainedModel.forward(pp.toJSample(localData(75)).feature))
 
     // TODO: verify the parameters result
     val parameters = pp.modelGetParameters(trainedModel)
@@ -239,4 +250,42 @@ class PythonSpec extends FlatSpec with Matchers with BeforeAndAfter {
       valMethods = util.Arrays.asList(new Top1Accuracy()))
     println(testResult)
   }
+
+  "local optimizer" should "be test" in {
+
+    TestUtils.cancelOnWindows()
+
+    Logger.getLogger("org").setLevel(Level.WARN)
+    Logger.getLogger("akka").setLevel(Level.WARN)
+
+    import collection.JavaConverters._
+
+    val featuresShape = util.Arrays.asList(100)
+    val labelShape = util.Arrays.asList(1)
+    val pp = PythonBigDL.ofDouble()
+
+    val X = pp.toJTensor(Tensor[Double](Array(100, 100)).randn())
+    val y = pp.toJTensor(Tensor[Double](Array(100, 1)).zero().add(1))
+
+    val model = Sequential[Double]()
+    model.add(Linear[Double](100, 10))
+    model.add(ReLU[Double]())
+    model.add(LogSoftMax[Double]())
+    val batchSize = 32
+    val optimMethod = new SGD[Double]()
+    val optimizer = pp.createLocalOptimizer(
+      List(X).asJava,
+      y,
+      model,
+      ClassNLLCriterion[Double](),
+      optimMethod,
+      Trigger.maxEpoch(2),
+      32,
+      2)
+    val trainedModel = optimizer.optimize()
+    val predictedResult = pp.predictLocal(
+      trainedModel, List(pp.toJTensor(Tensor[Double](Array(34, 100)).randn())).asJava)
+    println(predictedResult)
+  }
+
 }

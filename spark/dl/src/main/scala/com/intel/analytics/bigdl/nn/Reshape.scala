@@ -20,7 +20,8 @@ import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, Tensor
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.serializer._
-import serialization.Bigdl.{AttrValue, BigDLModule}
+import com.intel.analytics.bigdl.utils.serializer.converters.DataConverter
+import com.intel.analytics.bigdl.serialization.Bigdl.{AttrValue, BigDLModule}
 
 import scala.reflect.ClassTag
 import scala.reflect.runtime.universe
@@ -41,7 +42,7 @@ import scala.reflect.runtime.universe
  *
  */
 @SerialVersionUID(- 830146931795053244L)
-class Reshape[@specialized(Float, Double) T: ClassTag](
+class Reshape[T: ClassTag](
   val size: Array[Int], var batchMode: Option[Boolean] = None)(
   implicit ev: TensorNumeric[T]) extends TensorModule[T]  {
   val batchSize = new Array[Int](size.length + 1)

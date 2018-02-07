@@ -50,12 +50,14 @@ object Module {
    * @param path path to save module, local file system, HDFS and Amazon S3 is supported.
    *             HDFS path should be like "hdfs://[host]:[port]/xxx"
    *             Amazon S3 path should be like "s3a://bucket/xxx"
+   * @param weightPath : where weight is stored
    * @tparam T numeric type
    * @return model loaded from path
    */
-  def loadModule[T: ClassTag](path : String)(implicit ev: TensorNumeric[T])
+  def loadModule[T: ClassTag](path : String,
+    weightPath : String = null)(implicit ev: TensorNumeric[T])
   : AbstractModule[Activity, Activity, T] = {
-    ModuleLoader.loadFromFile(path)
+    ModuleLoader.loadFromFile(path, weightPath)
   }
 
   def loadTorch[T: ClassTag](path : String) : AbstractModule[Activity, Activity, T] = {
@@ -137,27 +139,28 @@ object Module {
     result
   }
 
-  def isCompact[@specialized(Float, Double) T: ClassTag](paramters: Array[Tensor[T]])(
+  def isCompact[@specialized(Float, Double) T: ClassTag](parameters: Array[Tensor[T]])(
     implicit ev: TensorNumeric[T]): Tensor[T] = {
-    require(paramters.length > 0,
+    require(parameters.length > 0,
       "The length of paramters should >= 0" +
       "parameter length" +
-        s" ${paramters.length}")
+        s" ${parameters.length}")
     var i = 1
-    val storage = paramters(0).storage()
-    var length = paramters(0).nElement()
-    while (i < paramters.length) {
-      if (!storage.eq(paramters(i).storage())) {
+    val storage = parameters(0).storage()
+    var length = parameters(0).nElement()
+    val offset = parameters(0).storageOffset()
+    // make sure parameters is shared and contiguous
+    while (i < parameters.length) {
+      if (!storage.eq(parameters(i).storage())) {
         return null
       }
-      length += paramters(i).nElement()
+      if (offset + length != parameters(i).storageOffset()) {
+        return null
+      }
+      length += parameters(i).nElement()
       i += 1
     }
 
-    if (length != storage.array().length) {
-      return null
-    }
-
-    return Tensor(storage)
+    Tensor(storage, offset, Array(length))
   }
 }

@@ -17,8 +17,9 @@ package com.intel.analytics.bigdl.utils.serializer
 
 import com.google.protobuf.ByteString
 import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.utils.serializer.converters.DataConverter
 import org.scalatest.{FlatSpec, Matchers}
-import serialization.Bigdl.{AttrValue, BigDLTensor, TensorStorage}
+import com.intel.analytics.bigdl.serialization.Bigdl.{AttrValue, BigDLTensor, TensorStorage}
 
 import scala.collection.mutable
 import scala.reflect.runtime.universe

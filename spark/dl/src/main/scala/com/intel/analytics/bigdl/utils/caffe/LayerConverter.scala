@@ -39,13 +39,15 @@ class LayerConverter[T: ClassTag](implicit ev: TensorNumeric[T]) extends Convert
   override protected def fromCaffeConvolution(layer : GeneratedMessage) : Seq[ModuleNode[T]] = {
     val param = getConvolutionParam(layer).get
     val group = if (param.getGroup == 0)  1 else param.getGroup
-    val  weightBlob = getBlob(layer, 0).get
+    var  weightBlob = getBlob(layer, 0)
+    sanityBlobCheck(layer, "weight", weightBlob)
+    val weight = weightBlob.get
     val biasBlob = getBlob(layer, 1)
     val withBias = biasBlob.isDefined
-    val nInputPlane = if (weightBlob.hasShape) weightBlob.getShape.getDim(1) * group
-    else weightBlob.getChannels * group
-    val nOutPlane = if (weightBlob.hasShape) weightBlob.getShape.getDim(0)
-    else weightBlob.getNum
+    val nInputPlane = if (weight.hasShape) weight.getShape.getDim(1) * group
+    else weight.getChannels * group
+    val nOutPlane = if (weight.hasShape) weight.getShape.getDim(0)
+    else weight.getNum
     var kw = param.getKernelW
     var kh = param.getKernelH
     var dw = param.getStrideW
@@ -94,13 +96,15 @@ class LayerConverter[T: ClassTag](implicit ev: TensorNumeric[T]) extends Convert
     val param = getInnerProductParam(layer).get
     val withBias = param.getBiasTerm
     val layerName = getLayerName(layer)
-    val weightBlob = getBlob(layer.asInstanceOf[LayerParameter], 0).get
+    val weightBlob = getBlob(layer.asInstanceOf[LayerParameter], 0)
+    sanityBlobCheck(layer, "weight", weightBlob)
+    val weight = weightBlob.get
     var nInputPlane = 0
-    if (weightBlob.hasShape) {
-      nInputPlane = weightBlob.getShape.getDim(1).toInt
+    if (weight.hasShape) {
+      nInputPlane = weight.getShape.getDim(1).toInt
     }
     else {
-      nInputPlane = weightBlob.getWidth
+      nInputPlane = weight.getWidth
     }
     val nOutputPlane = param.getNumOutput
     val linear = Linear[T](nInputPlane, nOutputPlane, withBias = withBias).setName(layerName)
@@ -117,16 +121,22 @@ class LayerConverter[T: ClassTag](implicit ev: TensorNumeric[T]) extends Convert
 
   override protected def fromCaffeBatchNormalization(layer: GeneratedMessage):
   Seq[ModuleNode[T]] = {
-    val weightBlob = getBlob(layer, 0).get
-    val nOutPlane = if (weightBlob.hasShape) weightBlob.getShape.getDim(0).toInt
-    else weightBlob.getNum
+    val weightBlob = getBlob(layer, 0)
+    sanityBlobCheck(layer, "weight", weightBlob)
+    val weight = weightBlob.get
+    val nOutPlane = if (weight.hasShape) weight.getShape.getDim(0).toInt
+    else weight.getNum
     val param = layer.asInstanceOf[LayerParameter].getBatchNormParam
     val eps = param.getEps
     val batchNorm = SpatialBatchNormalization[T](nOutPlane.toInt, eps, affine = false)
         .setName(getLayerName(layer))
-    val scaleData = getBlob(layer, 2).get.getData(0)
+    val scalaBlob = getBlob(layer, 2)
+    sanityBlobCheck(layer, "scale", scalaBlob)
+    val scaleData = scalaBlob.get.getData(0)
     val scale = if (scaleData == 0) 0 else 1 / scaleData
+    sanityBlobCheck(layer, "mean", getBlob(layer, 0))
     val means = getBlob(layer, 0).get.getDataList
+    sanityBlobCheck(layer, "variance", getBlob(layer, 1))
     val variances = getBlob(layer, 1).get.getDataList
     batchNorm.runningMean.resize(nOutPlane)
     batchNorm.runningVar.resize(nOutPlane)
@@ -144,7 +154,7 @@ class LayerConverter[T: ClassTag](implicit ev: TensorNumeric[T]) extends Convert
     val param = layer.asInstanceOf[LayerParameter].getEluParam
     var alpha = 1.0
     if (param.hasAlpha) alpha = param.getAlpha
-    Seq(ELU[T, T](alpha).setName(getLayerName(layer)).inputs())
+    Seq(ELU[T](alpha).setName(getLayerName(layer)).inputs())
   }
 
   override protected def fromCaffeReshape(layer : GeneratedMessage) : Seq[ModuleNode[T]] = {
@@ -167,8 +177,10 @@ class LayerConverter[T: ClassTag](implicit ev: TensorNumeric[T]) extends Convert
       }
       Seq(Scale[T](size).setName(layerName).inputs())
     } else {
-      val inputBlob = getBlob(layer, 0).get
-      val shape = inputBlob.getShape
+      val inputBlob = getBlob(layer, 0)
+      sanityBlobCheck(layer, "weight", getBlob(layer, 0))
+      val input = inputBlob.get
+      val shape = input.getShape
       val axis = param.getAxis
       var numOfAxis = param.getNumAxes
       if (numOfAxis == -1) {
@@ -184,6 +196,7 @@ class LayerConverter[T: ClassTag](implicit ev: TensorNumeric[T]) extends Convert
   override protected def fromCaffeBias(layer : GeneratedMessage) : Seq[ModuleNode[T]] = {
     // input blob
     val weightBlob = getBlob(layer, 0)
+    sanityBlobCheck(layer, "weight", weightBlob)
     val size = weightBlob.get.getShape.getDimList.asScala.map(_.toInt).toArray.product
     Seq(Add[T](size).setName(getLayerName(layer)).inputs())
   }

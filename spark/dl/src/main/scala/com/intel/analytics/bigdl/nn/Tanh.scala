@@ -15,7 +15,7 @@
  */
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
+import com.intel.analytics.bigdl.nn.abstractnn.{IdentityOutputShape, TensorModule}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
 import scala.math.tanh
@@ -29,8 +29,8 @@ import scala.reflect.ClassTag
  * Tanh is defined as f(x) = (exp(x)-exp(-x))/(exp(x)+exp(-x)).
  */
 @SerialVersionUID(9062199894710333035L)
-class Tanh[@specialized(Float, Double) T: ClassTag](
-  implicit ev: TensorNumeric[T]) extends TensorModule[T] {
+class Tanh[T: ClassTag](
+  implicit ev: TensorNumeric[T]) extends TensorModule[T] with IdentityOutputShape {
 
   private val buffer: Tensor[T] = Tensor[T]()
 
@@ -41,6 +41,11 @@ class Tanh[@specialized(Float, Double) T: ClassTag](
   }
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
+    updateGradInputInternal(output, gradOutput)
+  }
+
+  private[bigdl] def updateGradInputInternal(output: Tensor[T],
+                                            gradOutput: Tensor[T]): Tensor[T] = {
     gradInput.resizeAs(gradOutput)
     buffer.resizeAs(output)
     buffer.pow(output, ev.fromType(2)).cmul(gradOutput)

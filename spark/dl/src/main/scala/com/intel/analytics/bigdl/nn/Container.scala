@@ -29,7 +29,7 @@ import scala.reflect.ClassTag
  * [[Container]] is an abstract [[AbstractModule]] class which
  * declares methods defined in all containers. A container usually
  * contain some other modules in the `modules` variable. It overrides
- * many module methods such that calls are propogated to the contained
+ * many module methods such that calls are propagated to the contained
  * modules.
  *
  * @tparam A Input data type
@@ -45,15 +45,10 @@ abstract class Container[A <: Activity : ClassTag,
   val modules: ArrayBuffer[AbstractModule[Activity, Activity, T]]
   = ArrayBuffer[AbstractModule[Activity, Activity, T]]()
 
-  /**
-   * Add a sub-module to the contained `modules`
-   *
-   * @param module module to be add
-   * @return this container
-   */
-  def add(module: AbstractModule[_ <: Activity, _ <: Activity, T]): this.type = {
-    modules += module.asInstanceOf[AbstractModule[Activity, Activity, T]]
-    this
+  override private[bigdl] def isCompatibleWithKeras(): Boolean = false
+
+  override private[bigdl] def isCompatibleWithTorch(): Boolean = {
+    modules.filter(!_.isCompatibleWithTorch()).length <= 0
   }
 
   override def zeroGradParameters(): Unit = {
@@ -107,6 +102,17 @@ abstract class Container[A <: Activity : ClassTag,
     (weights.toArray, gradWeights.toArray)
   }
 
+  override def getExtraParameter(): Array[Tensor[T]] = {
+    val extraParam = new ArrayBuffer[Tensor[T]]()
+    modules.foreach(m => {
+      val state = m.getExtraParameter()
+      if (state != null) {
+        extraParam ++= state
+      }
+    })
+    extraParam.toArray
+  }
+
   override def getParametersTable(): Table = {
     val pt = T()
     modules.foreach(m => {
@@ -135,20 +141,6 @@ abstract class Container[A <: Activity : ClassTag,
     }
 
     nodes
-  }
-
-  override def copyStatus(src: Module[T]): this.type = {
-    require(canEqual(src), s"copyStatus: type mismatch, $src is different from $this")
-    val srcContainer = src.asInstanceOf[Container[A, B, T]]
-    require(srcContainer.modules.length == modules.length,
-      s"copyStatus: container's length mismatch" +
-        s"excepted ${modules.length}, but get ${srcContainer.modules.length}")
-    var i = 0
-    while (i < modules.length) {
-      modules(i).copyStatus(srcContainer.modules(i))
-      i += 1
-    }
-    this
   }
 
   override def clearState() : this.type = {

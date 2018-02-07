@@ -57,27 +57,19 @@ def convert(input_ops, output_ops, byte_order, bigdl_type):
     Convert tensorflow model to bigdl model
     :param input_ops: operation list used for input, should be placeholders
     :param output_ops: operations list used for output
-    :param sess: current tensorflow session
     :return: bigdl model
     """
-    sess = tf.Session()
-    init = tf.global_variables_initializer()
-    sess.run(init)
 
     input_names = map(lambda x: x.name.split(":")[0], input_ops)
     output_names = map(lambda x: x.name.split(":")[0], output_ops)
     temp = tempfile.mkdtemp()
 
-    saver = tf.train.Saver()
-    saver.save(sess, temp + '/model.chkp')
-    tf.train.write_graph(sess.graph, temp, 'model.pbtxt')
+    dump_model(path=temp)
+    model_path = temp + '/model.pb'
+    bin_path = temp + '/model.bin'
 
-    merge_checkpoint(temp + '/model.pbtxt',
-                     temp + '/model.chkp',
-                     output_names,
-                     temp + '/model.pb', sess)
-
-    model = Model.load_tensorflow(temp + '/model.pb', input_names, output_names, byte_order, bigdl_type)
+    model = Model.load_tensorflow(model_path, input_names, output_names,
+                                  byte_order, bin_path, bigdl_type)
 
     try:
         shutil.rmtree(temp)
@@ -117,14 +109,19 @@ def save_variable_bigdl(tensors, target_path, bigdl_type="float"):
     :param bigdl_type: model variable numeric type
     :return: nothing
     """
+    import numpy as np
     jtensors = {}
     for tn in tensors.keys():
-        jtensors[tn] = JTensor.from_ndarray(tensors[tn])
+        if not isinstance(tensors[tn], np.ndarray):
+            value = np.array(tensors[tn])
+        else:
+            value = tensors[tn]
+        jtensors[tn] = JTensor.from_ndarray(value)
         
     callBigDlFunc(bigdl_type, "saveTensorDictionary", jtensors, target_path)
 
 
-def dump_model(path, sess=None, graph=None, bigdl_type="float"):
+def dump_model(path, graph=None, sess=None, ckpt_file=None, bigdl_type="float"):
     """
     Dump a tensorflow model to files. The graph will be dumped to path/model.pb, and the checkpoint will
     be dumped to path/model.bin
@@ -137,33 +134,34 @@ def dump_model(path, sess=None, graph=None, bigdl_type="float"):
     :return: nothing
     """
     if not os.path.isdir(path):
-        print("Folder " + path + " does not exist")
-        raise
+        raise ValueError("Folder " + path + " does not exist")
 
-    if sess is None:
-        sess = tf.Session()
-        init = tf.global_variables_initializer()
-        sess.run(init)
-
-    temp = tempfile.mkdtemp()
-    # dump checkpoint to temp files
-    checkpoint = temp + '/model.chkp'
-    saver = tf.train.Saver()
-    saver.save(sess, checkpoint)
+    temp = None
+    if ckpt_file is None:
+        if sess is None:
+            sess = tf.Session()
+            init = tf.global_variables_initializer()
+            sess.run(init)
+            temp = tempfile.mkdtemp()
+            ckpt_file = temp
+        # dump checkpoint to temp files
+        saver = tf.train.Saver()
+        saver.save(sess, ckpt_file)
 
     # generate bin files
-    tensors = export_checkpoint(checkpoint)
+    tensors = export_checkpoint(ckpt_file)
     save_variable_bigdl(tensors, path + "/model.bin", bigdl_type)
 
     # dump grap to pb file
     graph = sess.graph if graph is None else graph
     with gfile.GFile(path + "/model.pb", "wb") as f:
         f.write(graph.as_graph_def().SerializeToString())
-    try:
-        shutil.rmtree(temp)
-    except OSError as e:
-        if e.errno != errno.ENOENT:
-            raise
+    if temp is not None:
+        try:
+            shutil.rmtree(temp)
+        except OSError as e:
+            if e.errno != errno.ENOENT:
+                raise
 
 
 def merge_checkpoint(input_graph,

@@ -413,7 +413,8 @@ object TensorflowLoader{
       outputNodes
     }
 
-    Graph(inputNodes.toArray, adjustOutputs.toArray, Some((weights.toArray, gradients.toArray)),
+    Graph.dynamic(inputNodes.toArray, adjustOutputs.toArray,
+      Some((weights.toArray, gradients.toArray)),
       generatedBackward)
   }
 

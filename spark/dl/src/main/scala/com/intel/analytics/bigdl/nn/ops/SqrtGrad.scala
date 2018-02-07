@@ -24,6 +24,8 @@ import scala.reflect.ClassTag
 class SqrtGrad[T: ClassTag, D: ClassTag](implicit ev: TensorNumeric[T], ev2: TensorNumeric[D])
   extends Operation[Table, Tensor[D], T] {
 
+  output = Tensor[D]()
+
   override def updateOutput(inputs: Table): Tensor[D] = {
     val grads = inputs[Tensor[D]](2)
     val y = inputs[Tensor[D]](1)
@@ -31,6 +33,11 @@ class SqrtGrad[T: ClassTag, D: ClassTag](implicit ev: TensorNumeric[T], ev2: Ten
     output.resizeAs(grads).copy(grads).mul(ev2.fromType(0.5)).div(y)
 
     output
+  }
+
+  override def getClassTagNumerics() : (Array[ClassTag[_]], Array[TensorNumeric[_]]) = {
+    (Array[ClassTag[_]](scala.reflect.classTag[T], scala.reflect.classTag[D]),
+      Array[TensorNumeric[_]](ev, ev2))
   }
 }
 

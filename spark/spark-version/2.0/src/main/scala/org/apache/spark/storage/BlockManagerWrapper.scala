@@ -30,8 +30,6 @@ object BlockManagerWrapper {
                 bytes: ByteBuffer,
                 level: StorageLevel): Unit = {
     require(bytes != null, "Bytes is null")
-    val blockManager = SparkEnv.get.blockManager
-    blockManager.removeBlock(blockId)
     putBytesFn(blockId, new ChunkedByteBuffer(bytes), level)
   }
 

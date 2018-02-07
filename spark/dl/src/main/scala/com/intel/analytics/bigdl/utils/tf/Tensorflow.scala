@@ -19,8 +19,10 @@ import java.nio.{ByteBuffer, ByteOrder}
 import java.nio.charset.Charset
 
 import com.google.protobuf.ByteString
+import com.intel.analytics.bigdl.nn.{Graph, Module}
 import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.tensor._
+import com.intel.analytics.bigdl.utils.Engine
 import org.tensorflow.framework.AttrValue.ListValue
 import org.tensorflow.framework._
 import org.tensorflow.framework.TensorShapeProto.Dim
@@ -123,6 +125,8 @@ object Tensorflow {
       DataType.DT_FLOAT
     } else if (value.getType() == IntType) {
       DataType.DT_INT32
+    } else if (value.getType() == BooleanType) {
+      DataType.DT_BOOL
     } else {
       throw new UnsupportedOperationException(s"data type ${value.getType()} is not supported")
     }
@@ -169,6 +173,17 @@ object Tensorflow {
       .putAttr("T", getDataType(a))
       .putAttr("transpose_a", booleanAttr(transposeA))
       .putAttr("transpose_b", booleanAttr(transposeB))
+      .build()
+  }
+
+  def transpose(x: NodeDef, perm: NodeDef, name: String): NodeDef = {
+    NodeDef.newBuilder()
+      .setName(name)
+      .setOp("Transpose")
+      .addInput(x.getName)
+      .addInput(perm.getName)
+      .putAttr("T", getDataType(x))
+      .putAttr("Tperm", getDataType(perm))
       .build()
   }
 
@@ -268,7 +283,15 @@ object Tensorflow {
   }
 
   def maxPool(value: NodeDef, kW: Int, kH: Int, pW: Int, pH: Int, sW: Int, sH: Int,
-              dataFormat: TensorflowDataFormat, name: String): NodeDef = {
+    dataFormat: TensorflowDataFormat, name: String,
+    ceilMode: Boolean = false): NodeDef = {
+
+    val paddingType = if (ceilMode) {
+      PaddingType.PADDING_SAME.value
+    } else {
+      getPaddingType(pW, pH, kW, kH, sW, sH).value
+    }
+
     NodeDef.newBuilder()
       .setName(name)
       .setOp("MaxPool")
@@ -276,13 +299,19 @@ object Tensorflow {
       .putAttr("T", getDataType(value))
       .putAttr("data_format", dataFormat.value)
       .putAttr("ksize", kernelAttr(kW, kH, dataFormat))
-      .putAttr("padding", getPaddingType(pW, pH, kW, kH, sW, sH).value)
+      .putAttr("padding", paddingType)
       .putAttr("strides", strideAttr(sW, sH, dataFormat))
       .build()
   }
 
   def avgPool(value: NodeDef, kW: Int, kH: Int, pW: Int, pH: Int, sW: Int, sH: Int,
-              dataFormat: TensorflowDataFormat, name: String): NodeDef = {
+              dataFormat: TensorflowDataFormat, name: String, ceilMode: Boolean): NodeDef = {
+    val paddingType = if (ceilMode) {
+      PaddingType.PADDING_SAME.value
+    } else {
+      getPaddingType(pW, pH, kW, kH, sW, sH).value
+    }
+
     NodeDef.newBuilder()
       .setName(name)
       .setOp("AvgPool")
@@ -290,7 +319,7 @@ object Tensorflow {
       .addInput(value.getName)
       .putAttr("data_format", dataFormat.value)
       .putAttr("ksize", kernelAttr(kW, kH, dataFormat))
-      .putAttr("padding", getPaddingType(pW, pH, kW, kH, sW, sH).value)
+      .putAttr("padding", paddingType)
       .putAttr("strides", strideAttr(sW, sH, dataFormat))
       .build()
   }
@@ -386,7 +415,7 @@ object Tensorflow {
     node.build()
   }
 
-  def concat(inputs: Seq[NodeDef], axis: Int, name: String): NodeDef = {
+  def concat(inputs: Seq[NodeDef], name: String): NodeDef = {
     require(inputs.length >= 1, "at least one inputs for addN")
 
     val node = NodeDef.newBuilder()
@@ -424,6 +453,25 @@ object Tensorflow {
       .build()
   }
 
+  def split(splitDim: NodeDef, value: NodeDef, numSplit: Int, name: String): Seq[NodeDef] = {
+    val splitNode = NodeDef.newBuilder()
+      .setName(name + "/split")
+      .setOp("Split")
+      .putAttr("T", getDataType(value))
+      .putAttr("num_split", intAttr(numSplit))
+      .addInput(splitDim.getName)
+      .addInput(value.getName)
+      .build()
+    (0 until numSplit).map(i => {
+      NodeDef.newBuilder()
+        .setName(name + s"/reader$i")
+        .setOp("Identity")
+        .addInput(name + s"/split:$i")
+        .putAttr("T", getDataType(value))
+        .build()
+    }) ++ Seq(splitNode)
+  }
+
   def softmax(logits: NodeDef, name: String): NodeDef = {
     NodeDef.newBuilder()
       .setName(name)
@@ -439,6 +487,20 @@ object Tensorflow {
       .setOp("LogSoftmax")
       .putAttr("T", getDataType(logits))
       .addInput(logits.getName)
+      .build()
+  }
+
+  def lrn(input: NodeDef, depthRadius: Int, bias: Float, alpha: Float, beta: Float,
+    name: String): NodeDef = {
+    NodeDef.newBuilder()
+      .setName(name)
+      .setOp("LRN")
+      .putAttr("depth_radius", intAttr(depthRadius))
+      .putAttr("bias", floatAttr(bias))
+      .putAttr("beta", floatAttr(beta))
+      .putAttr("alpha", floatAttr(alpha))
+      .putAttr("T", getDataType(input))
+      .addInput(input.getName)
       .build()
   }
 
@@ -459,7 +521,11 @@ object Tensorflow {
     AttrValue.newBuilder().setI(value).build()
   }
 
-  private def listIntAttr(value: Seq[Int]): AttrValue = {
+  private[bigdl] def floatAttr(value: Float): AttrValue = {
+    AttrValue.newBuilder().setF(value).build()
+  }
+
+  private[bigdl] def listIntAttr(value: Seq[Int]): AttrValue = {
     val list = ListValue.newBuilder()
     value.foreach(list.addI(_))
     AttrValue.newBuilder().setList(list).build()
@@ -477,7 +543,7 @@ object Tensorflow {
     val (content, dtype) = if (value.getType() == DoubleType) {
       val array = value.asInstanceOf[Tensor[Double]].storage().array()
       val offset = value.storageOffset() - 1
-      val buffer = ByteBuffer.allocate(array.length * 8)
+      val buffer = ByteBuffer.allocate(value.nElement() * 8)
       buffer.order(byteOrder)
       var i = 0
       while (i < value.nElement()) {
@@ -488,7 +554,7 @@ object Tensorflow {
     } else if (value.getType() == FloatType) {
       val array = value.asInstanceOf[Tensor[Float]].storage().array()
       val offset = value.storageOffset() - 1
-      val buffer = ByteBuffer.allocate(array.length * 4)
+      val buffer = ByteBuffer.allocate(value.nElement() * 4)
       buffer.order(byteOrder)
       var i = 0
       while (i < value.nElement()) {
@@ -499,7 +565,7 @@ object Tensorflow {
     } else if (value.getType() == IntType) {
       val array = value.asInstanceOf[Tensor[Int]].storage().array()
       val offset = value.storageOffset() - 1
-      val buffer = ByteBuffer.allocate(array.length * 4)
+      val buffer = ByteBuffer.allocate(value.nElement() * 4)
       buffer.order(byteOrder)
       var i = 0
       while (i < value.nElement()) {
@@ -507,6 +573,19 @@ object Tensorflow {
         i += 1
       }
       (buffer, DataType.DT_INT32)
+    } else if (value.getType() == BooleanType) {
+      val array = value.asInstanceOf[Tensor[Boolean]].storage().array()
+      val offset = value.storageOffset() - 1
+      val buffer = ByteBuffer.allocate(value.nElement())
+      buffer.order(byteOrder)
+      val t : Byte = 1
+      val f : Byte = 0
+      var i = 0
+      while (i < value.nElement()) {
+        buffer.put(if (array(i + offset)) t else f)
+        i += 1
+      }
+      (buffer, DataType.DT_BOOL)
     } else {
       throw new UnsupportedOperationException(s"")
     }
@@ -540,6 +619,10 @@ object Tensorflow {
     AttrValue.newBuilder().setType(dtyp).build()
   }
 
+  private[bigdl] def stringAttr(node: NodeDef, key: String): String = {
+    node.getAttrMap.get(key).getS().toStringUtf8
+  }
+
   private def shapeAttr(shape: Seq[Int]): AttrValue = {
     val attr = TensorShapeProto.newBuilder()
     shape.foreach(dim => {
@@ -571,12 +654,8 @@ object Tensorflow {
       : PaddingType = {
     if (padW == 0 && padH == 0) {
       return PaddingType.PADDING_VALID
-    } else if (2 * padW == (kW - sW) && 2 * padH == (kH - sH)) {
-      return PaddingType.PADDING_SAME
     } else {
-      throw new IllegalArgumentException(
-        s"Can not get padding type from given parameter " +
-          s"(padW: $padW, padH: $padH, kW: $kW, kH: $kH, sW: $sW, sH: $sH )")
+      return PaddingType.PADDING_SAME
     }
   }
 

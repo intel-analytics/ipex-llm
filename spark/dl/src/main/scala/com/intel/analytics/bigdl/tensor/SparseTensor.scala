@@ -352,6 +352,21 @@ private[tensor] class SparseTensor[@specialized(Float, Double) T: ClassTag](
     }
   }
 
+  private var nonZeroCounting: Array[Int] = _
+
+  override def numNonZeroByRow(): Array[Int] = {
+    if (null == nonZeroCounting || nonZeroCounting.length != size(1)) {
+      nonZeroCounting = new Array[Int](size(1))
+    }
+    java.util.Arrays.fill(nonZeroCounting, 0)
+    var i = _storageOffset
+    while (i < _storageOffset + nElement()) {
+      nonZeroCounting(_indices(0).array()(i) - _indicesOffset(0)) += 1
+      i += 1
+    }
+    nonZeroCounting
+  }
+
   override def copy(other: Tensor[T]): Tensor[T] = {
     throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
   }
@@ -417,7 +432,7 @@ private[tensor] class SparseTensor[@specialized(Float, Double) T: ClassTag](
   }
 
   override def getType(): TensorDataType = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    ev.getType()
   }
 
   override def diff(other: Tensor[T], count: Int, reverse: Boolean): Boolean = {
@@ -464,7 +479,7 @@ private[tensor] class SparseTensor[@specialized(Float, Double) T: ClassTag](
       val _addIndices = new Array[Storage[Int]](size.length - _indices.length)
       for (i <- _addIndices.indices) _addIndices(i) = Storage[Int](nElement + _storageOffset)
       _indicesOffset = new Array[Int](size.length - _indicesOffset.length) ++ _indicesOffset
-      _indices ++= _addIndices
+      _indices = _addIndices ++ _indices
     }
 
     // resize _indices's length
@@ -531,7 +546,15 @@ private[tensor] class SparseTensor[@specialized(Float, Double) T: ClassTag](
   }
 
   override def sum(x: Tensor[T], dim: Int): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    require(x.dim == 1 && x.size(1) == size(1))
+    x.zero()
+    var i = _storageOffset
+    while (i < nElement() + _storageOffset) {
+      val index = _indices(0).array()(i) - _indicesOffset(0)
+      x.setValue(index, ev.plus(x.valueAt(index), _values.array()(i)))
+      i += 1
+    }
+    x
   }
 
   override def mean(): T = {
@@ -611,7 +634,8 @@ private[tensor] class SparseTensor[@specialized(Float, Double) T: ClassTag](
   }
 
   override def dot(y: Tensor[T]): T = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    require(y.getTensorType == DenseType)
+    SparseTensorMath.vdot(y.asInstanceOf[DenseTensor[T]], this)
   }
 
   override def cmax(value: T): Tensor[T] = {
@@ -1037,6 +1061,36 @@ private[tensor] class SparseTensor[@specialized(Float, Double) T: ClassTag](
   override def negative(x: Tensor[T]): Tensor[T] = {
     throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
   }
+
+  override def reduce(dim: Int, result: Tensor[T], reducer: (T, T) => T): Tensor[T] = {
+    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+  }
+
+  override def toArray(): Array[T] = {
+    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+  }
+
+  override def erf(): Tensor[T] = {
+    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+  }
+
+  override def erfc(): Tensor[T] = {
+    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+  }
+
+  override def logGamma(): Tensor[T] = {
+    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+  }
+
+  override def digamma(): Tensor[T] = {
+    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+  }
+
+  override def clamp(minValue: Float, maxValue: Float): Tensor[T] =
+    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+
+  override def sumSquare(): T =
+    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
 }
 
 object SparseTensor{
@@ -1120,6 +1174,63 @@ object SparseTensor{
   }
 
   /**
+   * Find index of last occurrence of value in the array from start index to end index.
+   * The array should be ordered ascending.
+   *
+   * @param array the array will be searched.
+   * @param value the element value to search for.
+   * @param start start index
+   * @param end last index
+   * @return index of last occurrence of value
+   */
+  private def lastIndexOf[T: ClassTag](
+        array: Array[T],
+        value: T,
+        start: Int,
+        end: Int)(implicit ev: TensorNumeric[T]): Int = {
+    if (start > end) return -1
+    require(end <= array.length - 1, s"indexOf end should't exceed array size ${array.length - 1}" +
+      s", but got $end")
+    var i = start
+    while (i < end && array(i) == value) {
+      i += 1
+    }
+    if (array(i) == value) {
+      i
+    } else {
+      i - 1
+    }
+  }
+
+  /**
+   * Find index of first occurrence of value in the array from start index to end index.
+   *
+   * @param array the array will be searched.
+   * @param value the element value to search for.
+   * @param start start index
+   * @param end last index
+   * @return index of first occurrence of value
+   */
+  private def firstIndexOf[T: ClassTag](
+        array: Array[T],
+        value: T,
+        start: Int,
+        end: Int)(implicit ev: TensorNumeric[T]): Int = {
+    if (start > end) return -1
+    require(end <= array.length - 1, s"indexOf end should't exceed array size ${array.length - 1}" +
+      s", but got $end")
+    var i = start
+    while (i <= end && array(i) != value) {
+      i += 1
+    }
+    if (i > end) {
+      -1
+    } else {
+      i
+    }
+  }
+
+  /**
    * Concatenate a sequence of SparseTensor of n-dim to n-dim SparseTensor.
    * The size at n-dim will be concated.
    *
@@ -1174,6 +1285,7 @@ object SparseTensor{
         var start = res._storageOffset
         var end = res._storageOffset
         val tensorsOffset = tensors.map(_.storageOffset() - 1).toArray
+        val tensorsMaxIndex = tensors.map(v => v.storageOffset() + v.nElement() - 2).toArray
         var j = 0
         while (j < res.size(dim - 1)) {
           var index = 0
@@ -1181,10 +1293,12 @@ object SparseTensor{
           while (index < tensors.size) {
             val currentTensor = tensors(index)
             val currentIndicesOffset = currentTensor._indicesOffset
-            val findIndexStart = currentTensor._indices(0).array().indexOf(
-              j + currentIndicesOffset(0), tensorsOffset(index))
-            val findIndexEnd = currentTensor._indices(0).array().lastIndexOf(
-              j + currentIndicesOffset(0))
+            val findIndexStart =
+              firstIndexOf(currentTensor._indices(0).array(), j + currentIndicesOffset(0),
+                tensorsOffset(index), tensorsMaxIndex(index))
+            val findIndexEnd =
+              lastIndexOf(currentTensor._indices(0).array(), j + currentIndicesOffset(0),
+                tensorsOffset(index), tensorsMaxIndex(index))
             val curLength = if (findIndexStart != -1 && findIndexEnd != -1) {
               findIndexEnd - findIndexStart + 1
             } else {

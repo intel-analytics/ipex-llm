@@ -23,7 +23,8 @@ import com.intel.analytics.bigdl.tensor._
 import com.intel.analytics.bigdl.utils.{T, Table, serializer}
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import com.intel.analytics.bigdl.utils.serializer._
-import serialization.Bigdl.{AttrValue, BigDLModule}
+import com.intel.analytics.bigdl.utils.serializer.converters.DataConverter
+import com.intel.analytics.bigdl.serialization.Bigdl.{AttrValue, BigDLModule}
 
 import scala.concurrent.Future
 import scala.reflect.ClassTag
@@ -308,10 +309,9 @@ class SpatialFullConvolution[T: ClassTag](
         inputHeight * inputWidth))
     }
 
-    if (weightMM == null) {
-      weightMM = weight.view(nGroup, nInputPlane / nGroup,
+    // weight's storage might change, so make a view every time
+    weightMM = weight.view(nGroup, nInputPlane / nGroup,
         nOutputPlane * kH * kW / nGroup)
-    }
 
     var elt = 1
     // For each element in batch, do:

@@ -1,5 +1,3 @@
-
----
 ## SoftSign ##
 
 **Scala:**
@@ -846,6 +844,64 @@ l1Penalty = L1Penalty(1, True, True)
 
 ```
 ---
+## NegativeEntropyPenalty ##
+
+**Scala:**
+```scala
+val penalty = NegativeEntropyPenalty(beta = 0.01)
+```
+**Python:**
+```python
+penalty = NegativeEntropyPenalty(beta = 0.01)
+```
+Penalize the input multinomial distribution if it has low entropy.
+The input to this layer should be a batch of vector each representing a
+multinomial distribution. The input is typically the output of a softmax layer.
+
+For forward, the output is the same as input and a NegativeEntropy loss of the latent state will be calculated each time
+For backward, gradInput = gradOutput + gradLoss
+
+This can be used in reinforcement learning to discourage the policy from
+collapsing to a single action for a given state, which improves exploration.
+See the A3C paper for more detail (https://arxiv.org/pdf/1602.01783.pdf).
+
+
+**Scala example:**
+```scala
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.tensor._
+val penalty = NegativeEntropyPenalty(0.01)
+val input = Tensor(3, 3).rand()
+
+> print(input)
+0.0370419	0.03080979	0.22083037	
+0.1547358	0.018475588	0.8102709	
+0.86393493	0.7081842	0.13717912	
+[com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 3x3]
+
+
+> print(l1Penalty.forward(input))
+0.0370419	0.03080979	0.22083037	
+0.1547358	0.018475588	0.8102709	
+0.86393493	0.7081842	0.13717912	
+[com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 3x3]	
+
+```
+
+**Python example:**
+```python
+from bigdl.nn.layer import *
+penalty = NegativeEntropyPenalty(0.01)
+
+>>> l1Penalty.forward(np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]]))
+[array([[ 1.,  2.,  3.],
+       [ 4.,  5.,  6.],
+       [ 7.,  8.,  9.]], dtype=float32)]
+
+```
+
+---
 ## HardShrink ##
 
 **Scala:**
@@ -1378,4 +1434,132 @@ output = module.forward(input)
        [[ 2.32017946,  1.00003302],
         [ 0.80000001,  0.80000001]]], dtype=float32)]
 ```
+## HardSigmoid ##
 
+**Scala:**
+```scala
+val module = HardSigmoid()
+```
+**Python:**
+```python
+module = HardSigmoid()
+```
+
+Activate each element as below
+
+```
+           ⎧  0, if x < -2.5
+    f(x) = ⎨  1, if x > 2.5
+           ⎩  0.2 * x + 0.5, otherwise
+```
+
+
+**Scala example:**
+```scala
+import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+
+val module = HardSigmoid()
+val input = Tensor(2, 2).randn()
+val output = module.forward(input)
+
+> input
+-1.7260494	-0.17521624	
+-1.6705151	0.013930867	
+[com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 2x2]
+
+> output
+0.15479012	0.46495676	
+0.16589698	0.50278616	
+[com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 2x2]
+
+```
+
+**Python example:**
+```python
+from bigdl.nn.layer import *
+import numpy as np
+
+module = HardSigmoid()
+input = np.random.randn(2, 2)
+output = module.forward(input)
+
+> input
+array([[-1.45094354, -1.78217815],
+       [ 0.84914007,  0.7104982 ]])
+  
+> output
+array([[ 0.20981129,  0.14356437],
+       [ 0.669828  ,  0.64209962]], dtype=float32)
+
+```
+
+## SReLU ##
+
+S-shaped Rectified Linear Unit based on paper [Deep Learning with S-shaped Rectified Linear Activation Units](http://arxiv.org/abs/1512.07030).
+
+```
+     ⎧ t^r + a^r(x - t^r) if x >= t^r
+ y = ⎨ x                  if t^r > x > t^l
+     ⎩ t^l + a^l(x - t^l) if x <= t^l
+```
+
+```scala
+import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.tensor.Tensor
+
+val input = Tensor[Float](2, 3, 4).rand()
+val gradOutput = Tensor[Float](2, 3, 4).rand()
+val srelu = SReLU[Float]([3, 4])
+val output = srelu.forward(input)
+val gradInput = srelu.backward(input, gradOutput)
+
+println(input)
+println(gradInput)
+```
+
+The input is,
+
+```
+(1,.,.) =
+0.4835907       0.53359604      0.37766683      0.32341897
+0.96768993      0.78638965      0.6921552       0.49003857
+0.10896994      0.22801183      0.9023593       0.43514457
+
+(2,.,.) =
+0.6720485       0.5893981       0.45753896      0.28696498
+0.16126601      0.75192916      0.79481035      0.24795102
+0.7665252       0.775531        0.74594253      0.23907393
+```
+
+The output is,
+
+```
+srelu: com.intel.analytics.bigdl.nn.SReLU[Float] = SReLU[71e3de13]
+output: com.intel.analytics.bigdl.tensor.Tensor[Float] =
+(1,.,.) =                   
+0.4835907       0.53359604      0.37766683      0.32341897
+0.96768993      0.78638965      0.6921552       0.49003857
+0.10896994      0.22801183      0.9023593       0.43514457
+
+(2,.,.) =                                                                    
+0.6720485       0.5893981       0.45753896      0.28696498
+0.16126601      0.75192916      0.79481035      0.24795102
+0.7665252       0.775531        0.74594253      0.23907393
+```
+
+The python code is,
+
+```python
+from bigdl.nn.layer import *
+import numpy as np
+
+module = SReLU([3, 4])
+input = np.random.randn(2, 3, 4)
+output = module.forward(input)
+gradOutput = np.random.randn(2, 3, 4)
+gradInput = module.backward(input, gradOutput)
+print output
+print gradInput
+```

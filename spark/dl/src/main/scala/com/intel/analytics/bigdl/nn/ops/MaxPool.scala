@@ -23,10 +23,10 @@ import com.intel.analytics.bigdl.tensor._
 import scala.reflect.ClassTag
 
 class MaxPool[T: ClassTag](
-  ksize: Array[Int],
-  strides: Array[Int],
-  padding: String,
-  format: DataFormat = DataFormat.NHWC
+  val ksize: Array[Int],
+  val strides: Array[Int],
+  val padding: String,
+  val format: DataFormat = DataFormat.NHWC
 )(implicit ev: TensorNumeric[T]) extends Operation[Tensor[T], Tensor[T], T] {
   val pool: SpatialMaxPooling[T] = format match {
     case DataFormat.NHWC =>
