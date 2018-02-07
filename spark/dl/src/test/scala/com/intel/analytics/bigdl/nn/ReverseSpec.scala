@@ -17,9 +17,11 @@ package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.RandomGenerator
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
 
 import scala.collection.mutable
+import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Serial
 class ReverseSpec extends FlatSpec with Matchers {
@@ -101,5 +103,13 @@ class ReverseSpec extends FlatSpec with Matchers {
     output should be (expectedOutput)
     gradInput should be (expectedGradInput)
 
+  }
+}
+
+class ReverseSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val reverse = Reverse[Float]().setName("reverse")
+    val input = Tensor[Float](10).apply1(_ => Random.nextFloat())
+    runSerializationTest(reverse, input)
   }
 }
