@@ -22,7 +22,6 @@ import com.intel.analytics.bigdl.nn.keras.{Deconvolution2D, Deconv2D, Sequential
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.Shape
 
-
 class Deconvolution2DSpec extends KerasBaseSpec {
 
   def weightConverter(in: Array[Tensor[Float]]): Array[Tensor[Float]] = {

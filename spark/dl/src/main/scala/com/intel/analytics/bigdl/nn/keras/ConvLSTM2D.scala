@@ -29,15 +29,19 @@ class ConvLSTM2D[T: ClassTag](
    val nbFilter: Int,
    val nbKernel: Int,
    val subsample: Int = 1,
-   val activation: TensorModule[T] = null,
-   val innerActivation: TensorModule[T] = null,
+   val activation: AbstractModule[Tensor[T], Tensor[T], T] = null,
+   val innerActivation: AbstractModule[Tensor[T], Tensor[T], T] = null,
    var wRegularizer: Regularizer[T] = null,
    var uRegularizer: Regularizer[T] = null,
    var bRegularizer: Regularizer[T] = null,
    val returnSequences: Boolean = false,
    val goBackwards: Boolean = false,
-   var inputShape: Shape = null)(implicit ev: TensorNumeric[T])
+   val format: String = "CHANNEL_FIRST",
+   val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {
+
+  require(format.toLowerCase() == "channel_first", s"ConvLSTM2D only supports " +
+    s"format CHANNEL_FIRST, but got format $format.")
 
   override def computeOutputShape(inputShape: Shape): Shape = {
     val input = inputShape.toSingle().toArray
@@ -53,20 +57,19 @@ class ConvLSTM2D[T: ClassTag](
     val input = inputShape.toSingle().toArray
     val model = TSequential[T]()
     if (goBackwards) model.add(Reverse(2))
-    val rec = Recurrent[T]()
+    val rec = com.intel.analytics.bigdl.nn.Recurrent[T]()
     val layer = ConvLSTMPeephole(
       inputSize = input(2),
       outputSize = nbFilter,
       kernelI = nbKernel,
       kernelC = nbKernel,
       stride = subsample,
-      activation = activation,
-      innerActivation = innerActivation,
+      activation = activation.asInstanceOf[TensorModule[T]],
+      innerActivation = innerActivation.asInstanceOf[TensorModule[T]],
       wRegularizer = wRegularizer,
       uRegularizer = uRegularizer,
       bRegularizer = bRegularizer,
-      withPeephole = false
-    )
+      withPeephole = false)
     rec.add(layer)
     model.add(rec)
     if (!returnSequences) model.add(Select(2, -1))
@@ -86,10 +89,11 @@ object ConvLSTM2D {
     bRegularizer: Regularizer[T] = null,
     returnSequences: Boolean = false,
     goBackwards: Boolean = false,
+    dimOrdering: String = "th",
     inputShape: Shape = null)(implicit ev: TensorNumeric[T]): ConvLSTM2D[T] = {
     new ConvLSTM2D[T](nbFilter, nbKernel, subsample,
       KerasUtils.getActivation(activation), KerasUtils.getActivation(innerActivation),
-      wRegularizer, uRegularizer, bRegularizer,
-      returnSequences, goBackwards, inputShape)
+      wRegularizer, uRegularizer, bRegularizer, returnSequences,
+      goBackwards, KerasUtils.toBigDLFormat5D(dimOrdering), inputShape)
   }
 }

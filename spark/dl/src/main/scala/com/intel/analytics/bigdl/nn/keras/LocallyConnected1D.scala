@@ -28,12 +28,12 @@ import scala.reflect.ClassTag
 class LocallyConnected1D[T: ClassTag](
    val nbFilter: Int,
    val filterLength: Int,
-   val activation: TensorModule[T] = null,
+   val activation: AbstractModule[Tensor[T], Tensor[T], T] = null,
    val subsampleLength: Int = 1,
    var wRegularizer: Regularizer[T] = null,
    var bRegularizer: Regularizer[T] = null,
    val bias: Boolean = true,
-   var inputShape: Shape = null)(implicit ev: TensorNumeric[T])
+   val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {
 
   override def computeOutputShape(inputShape: Shape): Shape = {
@@ -48,8 +48,8 @@ class LocallyConnected1D[T: ClassTag](
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
     val input = inputShape.toSingle().toArray
     val model = TSequential[T]()
-    model.add(Reshape(Array(input(1), 1, input(2)), Some(true)))
-    val layer = LocallyConnected2D(
+    model.add(com.intel.analytics.bigdl.nn.Reshape(Array(input(1), 1, input(2)), Some(true)))
+    val layer = com.intel.analytics.bigdl.nn.LocallyConnected2D(
       nInputPlane = input(2),
       inputWidth = 1,
       inputHeight = input(1),
@@ -61,8 +61,7 @@ class LocallyConnected1D[T: ClassTag](
       wRegularizer = wRegularizer,
       bRegularizer = bRegularizer,
       withBias = bias,
-      format = DataFormat.NHWC
-    )
+      format = DataFormat.NHWC)
     model.add(layer)
     model.add(Squeeze(3))
     if (activation != null) {

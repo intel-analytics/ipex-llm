@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.nn.keras
 
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, TensorModule}
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, DataFormat, TensorModule}
 import com.intel.analytics.bigdl.nn.{InitializationMethod, SpatialFullConvolution, Xavier, Zeros}
 import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.Tensor
@@ -30,13 +30,17 @@ class Deconvolution2D[T: ClassTag](
    val nbRow: Int,
    val nbCol: Int,
    val init: InitializationMethod = Xavier,
-   val activation: TensorModule[T] = null,
+   val activation: AbstractModule[Tensor[T], Tensor[T], T] = null,
    val subsample: (Int, Int) = (1, 1),
    var wRegularizer: Regularizer[T] = null,
    var bRegularizer: Regularizer[T] = null,
    val bias: Boolean = true,
-   var inputShape: Shape = null)(implicit ev: TensorNumeric[T])
+   val format: DataFormat = DataFormat.NCHW,
+   val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {
+
+  require(format == DataFormat.NCHW, s"Deconvolution2D only supports " +
+    s"format NCHW, but got format $format.")
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
     val input = inputShape.toSingle().toArray
@@ -49,8 +53,7 @@ class Deconvolution2D[T: ClassTag](
       dH = subsample._1,
       noBias = !bias,
       wRegularizer = wRegularizer,
-      bRegularizer = bRegularizer
-    )
+      bRegularizer = bRegularizer)
     layer.setInitMethod(weightInitMethod = init, biasInitMethod = Zeros)
     KerasLayer.fuse(layer, activation,
       inputShape).asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
@@ -68,9 +71,10 @@ object Deconvolution2D {
     wRegularizer: Regularizer[T] = null,
     bRegularizer: Regularizer[T] = null,
     bias: Boolean = true,
+    dimOrdering: String = "th",
     inputShape: Shape = null)(implicit ev: TensorNumeric[T]): Deconvolution2D[T] = {
     new Deconvolution2D[T](nbFilter, nbRow, nbCol, KerasUtils.getInitMethod(init),
-      KerasUtils.getActivation(activation), subsample,
-      wRegularizer, bRegularizer, bias, inputShape)
+      KerasUtils.getActivation(activation), subsample, wRegularizer,
+      bRegularizer, bias, KerasUtils.toBigDLFormat(dimOrdering), inputShape)
   }
 }

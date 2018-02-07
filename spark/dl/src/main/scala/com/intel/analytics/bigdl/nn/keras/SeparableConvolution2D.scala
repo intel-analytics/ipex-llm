@@ -58,7 +58,7 @@ import scala.reflect.ClassTag
  *                             applied to the pointwise weights matrices. Default is null.
  * @param bRegularizer An instance of [[Regularizer]], applied to the bias. Default is null.
  * @param format Format of input data. Either DataFormat.NCHW (dimOrdering='th') or
-  *              DataFormat.NHWC (dimOrdering='tf'). Default is NCHW.
+ *               DataFormat.NHWC (dimOrdering='tf'). Default is NCHW.
  * @param bias Whether to include a bias (i.e. make the layer affine rather than linear).
  *             Default is true.
  * @tparam T The numeric type of parameter(e.g. weight, bias). Only support float/double now.

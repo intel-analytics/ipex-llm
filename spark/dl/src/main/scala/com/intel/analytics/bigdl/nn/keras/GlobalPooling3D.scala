@@ -28,8 +28,12 @@ import scala.reflect.ClassTag
  * Please use its child classes, 'GlobalAveragePooling3D' and 'GlobalMaxPooling3D' instead.
  */
 abstract class GlobalPooling3D[T: ClassTag](
+   val format: String = "CHANNEL_FIRST",
    val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {
+
+  require(format.toLowerCase() == "channel_first", s"GlobalPooling3D only supports " +
+    s"format CHANNEL_FIRST, but got format $format.")
 
   override def computeOutputShape(inputShape: Shape): Shape = {
     val input = inputShape.toSingle().toArray

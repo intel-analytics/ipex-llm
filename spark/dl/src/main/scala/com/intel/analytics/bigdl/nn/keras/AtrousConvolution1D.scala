@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.nn.keras
 
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, TensorModule}
+import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.nn.{InitializationMethod, Xavier, Zeros}
 import com.intel.analytics.bigdl.nn.{Reshape, SpatialDilatedConvolution, Squeeze, Transpose, Sequential => TSequential}
 import com.intel.analytics.bigdl.optim.Regularizer
@@ -30,12 +30,12 @@ class AtrousConvolution1D[T: ClassTag](
    val nbFilter: Int,
    val filterLength: Int,
    val init: InitializationMethod = Xavier,
-   val activation: TensorModule[T] = null,
+   val activation: AbstractModule[Tensor[T], Tensor[T], T] = null,
    val subsampleLength: Int = 1,
    val atrousRate: Int = 1,
    var wRegularizer: Regularizer[T] = null,
    var bRegularizer: Regularizer[T] = null,
-   var inputShape: Shape = null)(implicit ev: TensorNumeric[T])
+   val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {
 
   override def computeOutputShape(inputShape: Shape): Shape = {
@@ -51,7 +51,7 @@ class AtrousConvolution1D[T: ClassTag](
     val input = inputShape.toSingle().toArray
     val model = TSequential[T]()
     model.add(Transpose(Array((2, 3))))
-    model.add(Reshape(Array(input(2), input(1), 1), Some(true)))
+    model.add(com.intel.analytics.bigdl.nn.Reshape(Array(input(2), input(1), 1), Some(true)))
     val layer = SpatialDilatedConvolution(
       nInputPlane = input(2),
       nOutputPlane = nbFilter,
@@ -62,8 +62,7 @@ class AtrousConvolution1D[T: ClassTag](
       dilationW = 1,
       dilationH = atrousRate,
       wRegularizer = wRegularizer,
-      bRegularizer = bRegularizer
-    )
+      bRegularizer = bRegularizer)
     layer.setInitMethod(weightInitMethod = init, biasInitMethod = Zeros)
     model.add(layer)
     model.add(Transpose(Array((2, 3))))
