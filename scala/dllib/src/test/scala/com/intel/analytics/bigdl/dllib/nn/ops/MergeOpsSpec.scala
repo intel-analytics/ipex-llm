@@ -18,32 +18,15 @@ package com.intel.analytics.bigdl.nn.ops
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
 import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
-import org.scalatest.{FlatSpec, Matchers}
 
-import scala.util.Random
-
-class ProdSpec extends FlatSpec with Matchers {
-  "Prod operation" should "works correctly" in {
-    import com.intel.analytics.bigdl.numeric.NumericFloat
-    val input =
-      Tensor(T(
-        T(1f, 2f, 3f),
-        T(2f, 2f, 4f),
-        T(2f, 2f, 4f)
-      ))
-
-    val expectOutput = Tensor(T(4f, 8f, 48f))
-
-    val output = Prod(axis = 1).forward(input)
-    output should be(expectOutput)
-  }
-}
-
-class ProdSerialTest extends ModuleSerializationTest {
+class MergeOpsSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
-    val prod = Prod[Float](-1, false).setName("prod")
-    val input = Tensor[Float](3, 3).apply1(_ => Random.nextFloat())
-    runSerializationTest(prod, input, prod.
-      asInstanceOf[ModuleToOperation[Float]].module.getClass)
+    val mergeOps = new MergeOps[Float](1).setName("mergeOps")
+    val input =
+      T(
+        Tensor[Float](T(1.0f, 2.0f, 3.0f)),
+        Tensor[Float](T(2.0f, 2.0f, 1.0f))
+      )
+    runSerializationTest(mergeOps, input)
   }
 }
