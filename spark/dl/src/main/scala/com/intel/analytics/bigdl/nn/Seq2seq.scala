@@ -77,9 +77,9 @@ class Seq2seq[T: ClassTag](encoderRecs: Array[Recurrent[T]], decoderRecs: Array[
         for((rec, i) <- encoderRecs.view.zipWithIndex) {
           if (shrinkHiddenStateModules != null &&
             shrinkHiddenStateModules(i) != null) {
-            hiddenState(i) = shrinkHiddenState(rec.getHiddenState(),
+            hiddenState(i + 1) = shrinkHiddenState(rec.getHiddenState(),
               shrinkHiddenStateModules(i))
-          } else hiddenState(i) = rec.getHiddenState()
+          } else hiddenState(i + 1) = rec.getHiddenState()
         }
         decoderRecs.head.setHiddenState(hiddenState)
       }
@@ -133,9 +133,9 @@ class Seq2seq[T: ClassTag](encoderRecs: Array[Recurrent[T]], decoderRecs: Array[
             if (shrinkHiddenStateModules != null &&
               shrinkHiddenStateModules(i) != null) {
               val newGradHiddenState = shrinkGradHiddenState(encoderRecs(i).getHiddenState(),
-                gradHiddenStates.toTable(i), shrinkHiddenStateModules(i))
+                gradHiddenStates.toTable(i + 1), shrinkHiddenStateModules(i))
               x.setGradHiddenState(newGradHiddenState)
-          } else x.setGradHiddenState(gradHiddenStates.toTable(i))
+          } else x.setGradHiddenState(gradHiddenStates.toTable(i + 1))
         }
       }
     } else {

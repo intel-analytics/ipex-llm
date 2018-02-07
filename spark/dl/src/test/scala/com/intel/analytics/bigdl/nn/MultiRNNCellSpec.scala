@@ -634,38 +634,4 @@ class MultiRNNCellSpec extends FlatSpec with BeforeAndAfter with Matchers {
     rec.setHiddenState(rec.getHiddenState())
     model.forward(input)
   }
-
-  "A MultiRNCell backward" should "work with ConvLSTMPeepwhole3D RecurrentDecoder" in {
-    import com.intel.analytics.bigdl.numeric.NumericDouble
-    val hiddenSize = 7
-    val inputSize = 3
-    val seqLength = 3
-    val outputSize = 5
-    val seed = 100
-    val batchSize = 2
-
-    RNG.setSeed(seed)
-
-    val encoder = Recurrent().add(ConvLSTMPeephole3D(inputSize, hiddenSize, 4, 4))
-    val input = Tensor[Double](batchSize, inputSize, 3, 3).rand
-    val gradOutput = Tensor[Double](batchSize, seqLength, hiddenSize, 3, 3).rand
-    val rec = RecurrentDecoder(seqLength)
-    val cells = Array(ConvLSTMPeephole3D[Double](
-      inputSize,
-      hiddenSize,
-      4, 4), ConvLSTMPeephole[Double](
-      inputSize,
-      hiddenSize,
-      kernalW, kernalH,
-      1)).asInstanceOf[Array[Cell[Double]]]
-    val model = rec
-      .add(MultiRNNCell(cells))
-
-    val weights = model.getParameters()._1.clone()
-    model.zeroGradParameters()
-    val output = model.forward(input).toTensor
-    val gradInput = model.backward(input, gradOutput).toTensor
-    val gradient = model.getParameters()._2.clone()
-
-  }
 }
