@@ -29,6 +29,7 @@ from numpy.testing import assert_allclose, assert_array_equal
 from bigdl.util.engine import compare_version
 from bigdl.transform.vision.image import *
 from bigdl.models.utils.model_broadcast import broadcastModel
+from bigdl.dataset.dataset import *
 np.random.seed(1337)  # for reproducibility
 
 
@@ -614,7 +615,7 @@ class TestSimple():
 
         assert_allclose(output, expected)
 
-    def test_train_image_frame(self):
+    def test_train_DataSet(self):
         batch_size = 8
         epoch_num = 5
         images = []
@@ -630,8 +631,8 @@ class TestSimple():
 
         transformer = Pipeline([Resize(256, 256), CenterCrop(224, 224),
                                 ChannelNormalize(0.485, 0.456, 0.406, 0.229, 0.224, 0.225),
-                                MatToTensor(), ImageFrameToSample(target_keys=['label'])])
-        image_frame.transform(transformer)
+                                MatToTensor(), TensorsToSample(target_keys=['label'])])
+        data_set = DataSet(image_frame).transform(transformer)
 
         model = Sequential()
         model.add(SpatialConvolution(3, 6, 5, 5))
@@ -641,14 +642,14 @@ class TestSimple():
         optim_method = SGD(learningrate=0.01)
         optimizer = Optimizer.create(
             model=model,
-            training_set=image_frame,
+            training_set=data_set,
             criterion=ClassNLLCriterion(),
             optim_method=optim_method,
             end_trigger=MaxEpoch(epoch_num),
             batch_size=batch_size)
         optimizer.set_validation(
             batch_size=batch_size,
-            val_rdd=image_frame,
+            val_rdd=data_set,
             trigger=EveryEpoch(),
             val_method=[Top1Accuracy()]
         )
