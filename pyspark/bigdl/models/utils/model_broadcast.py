@@ -65,7 +65,7 @@ class ModelBroadcast(Broadcast):
         """
         if not hasattr(self, "_value") and self._path is not None:
             self._value = self._load(self._path)
-        return self._value.clone(False)
+        return self._value
 
     def __reduce__(self):
         if self._jbroadcast is None:

@@ -540,10 +540,13 @@ def get_spark_context(conf=None):
     :param conf: combining bigdl configs into spark conf
     :return: SparkContext
     """
+    if SparkFiles._is_running_on_worker:
+        return None
     if hasattr(SparkContext, "getOrCreate"):
         with SparkContext._lock:
             if SparkContext._active_spark_context is None:
-                return None
+                spark_conf = create_spark_conf() if conf is None else conf
+                return SparkContext.getOrCreate(spark_conf)
             else:
                 return SparkContext.getOrCreate()
 
@@ -551,7 +554,8 @@ def get_spark_context(conf=None):
         # Might have threading issue but we cann't add _lock here
         # as it's not RLock in spark1.5;
         if SparkContext._active_spark_context is None:
-            return None
+            spark_conf = create_spark_conf() if conf is None else conf
+            return SparkContext(conf=spark_conf)
         else:
             return SparkContext._active_spark_context
 

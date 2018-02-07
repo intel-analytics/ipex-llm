@@ -533,7 +533,7 @@ class TestSimple():
         tensors["tensor1"] = JTensor.from_ndarray(np.random.rand(3, 2))
         tensors["tensor2"] = JTensor.from_ndarray(np.random.rand(3, 2))
         # in old impl, this will throw an exception
-        _py2java(self.sc, tensors)
+        _py2java(self.sc._gateway, tensors)
 
     def test_compare_version(self):
         assert compare_version("2.1.1", "2.2.0") == -1
