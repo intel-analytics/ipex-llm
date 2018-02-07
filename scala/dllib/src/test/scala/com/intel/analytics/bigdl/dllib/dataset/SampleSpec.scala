@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.dataset
 
 import com.intel.analytics.bigdl.dataset.image.LabeledBGRImage
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils.T
 import org.scalatest.{FlatSpec, Matchers}
@@ -59,6 +60,33 @@ class SampleSpec extends FlatSpec with Matchers {
 
     MiniBatch[T](samples(0).numFeature(), samples(0).numLabel(),
       Some(featureParam), Some(labelParam)).set(samples)
+  }
+
+  "create Sample" should "work fine" in {
+    val st1 = Tensor.sparse(Tensor.range(1, 10, 1))
+    val st2 = Tensor.sparse(Tensor.range(1, 10, 1))
+    val dt1 = Tensor.range(1, 10, 1)
+    val dt2 = Tensor.range(1, 10, 1)
+    val label1 = Tensor(1).fill(1)
+    val label2 = Tensor(1).fill(2)
+
+    Sample(st1)
+    Sample(dt1)
+    Sample(Array(st1, st2))
+    Sample(Array(dt1, st2))
+    Sample(Array(dt1, dt2))
+
+    Sample(st1, label1)
+    Sample(dt1, label1)
+    Sample(dt1, 1f)
+    Sample(st1, 1f)
+    Sample(Array(st1, st2), label1)
+    Sample(Array(dt1, st2), label1)
+    Sample(Array(dt1, dt2), label1)
+
+    Sample(Array(st1, st2), Array(label1, label2))
+    Sample(Array(dt1, st2), Array(label1, label2))
+    Sample(Array(dt1, dt2), Array(label1, label2))
   }
 
   "Hashcode" should "work fine" in {
