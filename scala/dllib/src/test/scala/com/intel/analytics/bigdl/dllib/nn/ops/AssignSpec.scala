@@ -17,6 +17,7 @@ package com.intel.analytics.bigdl.nn.ops
 
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
 
 class AssignSpec extends FlatSpec with Matchers {
@@ -46,5 +47,17 @@ class AssignSpec extends FlatSpec with Matchers {
 
     val output = Assign[Double]().forward(input)
     output should be(expectOutput)
+  }
+}
+
+class AssignSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val assign = new Assign[Float]().setName("assign")
+    val input =
+      T(
+        Tensor[Float](T(1f, 2f, 3f)),
+        Tensor[Float](T(2f, 2f, 4f))
+      )
+    runSerializationTest(assign, input)
   }
 }
