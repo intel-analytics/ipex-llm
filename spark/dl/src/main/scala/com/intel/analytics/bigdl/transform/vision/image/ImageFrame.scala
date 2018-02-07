@@ -18,9 +18,6 @@ package com.intel.analytics.bigdl.transform.vision.image
 
 import java.io.{File, FilenameFilter}
 
-import com.intel.analytics.bigdl.{DataSet, ImageFrame}
-import com.intel.analytics.bigdl.dataset._
-import com.intel.analytics.bigdl.utils.Engine
 import org.apache.commons.io.FileUtils
 import org.apache.commons.io.filefilter.WildcardFileFilter
 import org.apache.log4j.Logger
@@ -30,11 +27,10 @@ import org.apache.spark.sql.SQLContext
 
 import scala.collection.mutable.ArrayBuffer
 
-
 /**
  * ImageFrame wraps a set of ImageFeature
  */
-trait AbstractImageFrame[T] extends AbstractDataSet[ImageFeature, T] {
+trait ImageFrame extends Serializable {
 
   /**
    * transform ImageFrame
@@ -62,12 +58,12 @@ trait AbstractImageFrame[T] extends AbstractDataSet[ImageFeature, T] {
   /**
    * return LocalImageFrame
    */
-  override def toLocal(): LocalImageFrame = this.asInstanceOf[LocalImageFrame]
+  def toLocal(): LocalImageFrame = this.asInstanceOf[LocalImageFrame]
 
   /**
    * return DistributedImageFrame
    */
-  override def toDistributed(): DistributedImageFrame = this.asInstanceOf[DistributedImageFrame]
+  def toDistributed(): DistributedImageFrame = this.asInstanceOf[DistributedImageFrame]
 }
 
 object ImageFrame {
@@ -83,21 +79,10 @@ object ImageFrame {
 
   /**
    * create DistributedImageFrame
-   *
    * @param data rdd of ImageFeature
    */
-  def rdd(data: RDD[ImageFeature], cached: Boolean = false): ImageFrame = {
-    if (cached) {
-      val nodeNumber = Engine.nodeNumber()
-      val cachedRdd = data.coalesce(nodeNumber, true)
-        .mapPartitions(iter => {
-          Iterator.single(iter.toArray)
-        }).setName("cached dataset")
-        .cache()
-      new CachedImageFrame(cachedRdd)
-    } else {
-      new DistributedImageFrame(data)
-    }
+  def rdd(data: RDD[ImageFeature]): DistributedImageFrame = {
+    new DistributedImageFrame(data)
   }
 
   /**
@@ -186,8 +171,7 @@ object ImageFrame {
  * Local ImageFrame, keeps an array of ImageFeature
  * @param array array of ImageFeature
  */
-class LocalImageFrame(var array: Array[ImageFeature])
-  extends LocalArrayDataSet[ImageFeature](array) with AbstractImageFrame[Iterator[ImageFeature]] {
+class LocalImageFrame(var array: Array[ImageFeature]) extends ImageFrame {
 
   def toDistributed(sc: SparkContext): DistributedImageFrame = {
     new DistributedImageFrame(sc.parallelize(array))
@@ -203,94 +187,18 @@ class LocalImageFrame(var array: Array[ImageFeature])
   override def isDistributed(): Boolean = false
 }
 
-trait AbstractDistributedImageFrame extends DistributedDataSet[ImageFeature]
-  with AbstractImageFrame[RDD[ImageFeature]]{
-
-  override def isLocal(): Boolean = false
-
-  override def isDistributed(): Boolean = true
-}
-
 /**
  * Distributerd ImageFrame, it keeps an rdd of ImageFeature
  * @param rdd rdd of ImageFeature
  */
-class DistributedImageFrame(var rdd: RDD[ImageFeature])
-  extends AbstractDistributedImageFrame with AbstractImageFrame[RDD[ImageFeature]] {
+class DistributedImageFrame(var rdd: RDD[ImageFeature]) extends ImageFrame {
 
   override def transform(transformer: FeatureTransformer): ImageFrame = {
     rdd = transformer(rdd)
     this
   }
 
-
-  /**
-   * Get the 'origin' RDD of the dataset.
-   *
-   * @return
-   */
-  override def originRDD(): RDD[ImageFeature] = rdd
-
-  /**
-   * Get a sequence of data
-   *
-   * @param train if the data is used in train. If yes, the data sequence is a looped endless
-   * sequence, or it has a limited length.
-   * @return data sequence
-   */
-  override def data(train: Boolean): RDD[ImageFeature] = {
-    throw new Exception("not implemented")
-  }
-
-  /**
-   * Change the order of the data sequence from the data set
-   */
-  override def shuffle(): Unit = {
-    throw new Exception("not implemented")
-  }
-
-  override def size(): Long = {
-    throw new Exception("not implemented")
-  }
-}
-
-class CachedImageFrame(rdd: RDD[Array[ImageFeature]])
-  extends CachedDistriDataSet[ImageFeature](rdd) with AbstractImageFrame[RDD[ImageFeature]] {
-
   override def isLocal(): Boolean = false
 
   override def isDistributed(): Boolean = true
-
-  def transform2(transformer: FeatureTransformer): ImageFrame = {
-    val preDataSet = this
-
-    val broadcast = this.originRDD().sparkContext.broadcast(transformer)
-
-    val cachedTransformer =
-      preDataSet.originRDD().mapPartitions(_ => Iterator
-        .single(broadcast.value.cloneTransformer())
-      ).setName("Cached Transformer").persist()
-
-    new AbstractDistributedImageFrame {
-      override def size(): Long = preDataSet.size()
-
-      override def shuffle(): Unit = preDataSet.shuffle()
-
-      override def data(train: Boolean): RDD[ImageFeature] =
-        preDataSet.data(train).zipPartitions(cachedTransformer)(
-          (data, tran) => tran.next()(data))
-
-      override def originRDD(): RDD[_] = preDataSet.originRDD()
-
-      override def cache(): Unit = {
-        cachedTransformer.count()
-        isCached = true
-      }
-
-      override def unpersist(): Unit = {
-        cachedTransformer.unpersist()
-        isCached = false
-      }
-    }
-  }
 }

@@ -18,19 +18,20 @@ import sys
 from bigdl.util.common import JavaValue
 from bigdl.util.common import callBigDlFunc
 from bigdl.util.common import *
-from bigdl.transform.vision.image import ImageFrame
+from bigdl.transform.vision.image import *
 
 if sys.version >= '3':
     long = int
     unicode = str
 
-class Dataset(JavaValue):
+class DataSet(JavaValue):
 
     def __init__(self, data, bigdl_type="float"):
         self.bigdl_type = bigdl_type
         if isinstance(data, ImageFrame):
-            return callBigDlFunc(self.bigdl_type, "createDatasetFromImageFrame", data)
+            self.value = callBigDlFunc(self.bigdl_type, "createDatasetFromImageFrame", data)
 
 
     def transform(self, transformer):
-        return callBigDlFunc(self.bigdl_type, "transformDataset", transformer)
+        if isinstance(transformer, FeatureTransformer):
+            return callBigDlFunc(self.bigdl_type, "featureTransformDataset", self.value, transformer)

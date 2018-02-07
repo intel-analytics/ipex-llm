@@ -19,7 +19,6 @@ import java.util.Properties
 
 import com.intel.analytics.bigdl.dataset.AbstractDataSet
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
-import com.intel.analytics.bigdl.transform.vision.image.AbstractImageFrame
 
 import scala.language.implicitConversions
 
@@ -40,8 +39,6 @@ package object bigdl {
   val numeric = com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
   type DataSet[D] = AbstractDataSet[D, _]
-
-  type ImageFrame = AbstractImageFrame[_]
 
   private object BigDLBuildInfo {
 

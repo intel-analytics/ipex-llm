@@ -65,7 +65,6 @@ class FeatureTransformerSpec extends FlatSpec with Matchers {
       MatToFloats(validHeight = 1, validWidth = 1)
     imgAug.enableIgnoreException()
     val out = imgAug(imageFrame)
-
     imageFeature.floats().length should be(3)
     imageFeature.isValid should be(false)
   }

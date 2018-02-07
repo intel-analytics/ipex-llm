@@ -4,6 +4,7 @@ from bigdl.nn.criterion import *
 from bigdl.nn.initialization_method import *
 from bigdl.optim.optimizer import *
 from bigdl.transform.vision.image import *
+from bigdl.dataset.dataset import *
 
 
 def scala_T(input_T):
@@ -269,7 +270,10 @@ if __name__ == "__main__":
                                       MatToTensor(to_rgb=True),
                                       TensorsToSample(input_keys=["imageTensor"], target_keys=["label"])
                                       ])
-        train_data = train_transformer(get_inception_data(options.folder, sc, "train"))
+        raw_train_data = get_inception_data(options.folder, sc, "train")
+
+        # train_data = train_transformer(get_inception_data(options.folder, sc, "train"))
+        train_data = DataSet(raw_train_data).transform(train_transformer)
 
         val_transformer = Pipeline([CenterCrop(image_size, image_size),
                                     HFlip(),
@@ -277,7 +281,9 @@ if __name__ == "__main__":
                                     MatToTensor(to_rgb=True),
                                     TensorsToSample(input_keys=["imageTensor"], target_keys=["label"])
                                     ])
-        val_data = val_transformer(get_inception_data(options.folder, sc, "val"))
+        raw_val_data = get_inception_data(options.folder, sc, "val")
+        val_data = DataSet(raw_val_data).transform(val_transformer)
+        # val_data = val_transformer(get_inception_data(options.folder, sc, "val"))
 
         # TODO: Check stateSnapshot opt
 

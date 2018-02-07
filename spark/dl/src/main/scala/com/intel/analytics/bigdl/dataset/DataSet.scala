@@ -20,7 +20,7 @@ import java.nio.ByteBuffer
 import java.nio.file.{Files, Path, Paths}
 import java.util.concurrent.atomic.AtomicInteger
 
-import com.intel.analytics.bigdl.{DataSet, ImageFrame}
+import com.intel.analytics.bigdl.DataSet
 import com.intel.analytics.bigdl.dataset.image.{LabeledBGRImage, _}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.transform.vision.image.{DistributedImageFrame, ImageFeature, ImageFrame, LocalImageFrame}
@@ -128,7 +128,7 @@ trait LocalDataSet[T] extends AbstractDataSet[T, Iterator[T]] {
  * @param buffer
  * @tparam T
  */
-class LocalArrayDataSet[T] private[bigdl](buffer: Array[T]) extends LocalDataSet[T] {
+class LocalArrayDataSet[T] private[dataset](buffer: Array[T]) extends LocalDataSet[T] {
   override def shuffle(): Unit = {
     RandomGenerator.shuffle(buffer)
   }
@@ -240,7 +240,7 @@ trait DistributedDataSet[T] extends AbstractDataSet[T, RDD[T]] {
  *                  only use when need keep original order
  * @tparam T
  */
-class CachedDistriDataSet[T: ClassTag] private[bigdl]
+class CachedDistriDataSet[T: ClassTag] private[dataset]
 (buffer: RDD[Array[T]], isInOrder: Boolean = false, groupSize: Int = 1)
   extends DistributedDataSet[T] {
 
@@ -584,7 +584,7 @@ object DataSet {
         imf
       }).filter(_[Tensor[Float]](ImageFeature.label).valueAt(1) <= classNum)
 //      ImageFrame.rdd(rawData.coalesce(num, true))
-      ImageFrame.rdd(rawData, true)
+      ImageFrame.rdd(rawData)
     }
 
     private[bigdl] def findFiles(path: Path): Array[LocalSeqFilePath] = {
