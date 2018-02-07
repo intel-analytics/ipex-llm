@@ -583,7 +583,6 @@ object DataSet {
         imf(ImageFeature.originalSize) = (height, width, 3)
         imf
       }).filter(_[Tensor[Float]](ImageFeature.label).valueAt(1) <= classNum)
-//      ImageFrame.rdd(rawData.coalesce(num, true))
       ImageFrame.rdd(rawData)
     }
 

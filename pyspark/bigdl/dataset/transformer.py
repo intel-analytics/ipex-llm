@@ -15,14 +15,7 @@
 #
 
 
-import sys
-from bigdl.util.common import JavaValue
-from bigdl.util.common import callBigDlFunc
-from bigdl.util.common import *
-
-if sys.version >= '3':
-    long = int
-    unicode = str
+from bigdl.util.common import Sample
 
 
 def normalizer(data, mean, std):
@@ -31,9 +24,3 @@ def normalizer(data, mean, std):
     data is a ndarray
     """
     return (data - mean) / std
-
-
-class Transformer(JavaValue):
-
-    def __init__(self):
-
