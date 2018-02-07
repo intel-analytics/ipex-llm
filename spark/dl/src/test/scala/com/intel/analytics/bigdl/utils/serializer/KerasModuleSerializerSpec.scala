@@ -287,4 +287,41 @@ class KerasModuleSerializerSpec extends SerializerSpecHelper {
     val input = Tensor[Float](2, 5, 6, 7, 8).apply1(_ => Random.nextFloat())
     runSerializationTest(layer, input)
   }
+
+  "LocallyConnected1D serializer" should "work properly" in {
+    val layer = LocallyConnected1D[Float](32, 3, inputShape = Shape(12, 24))
+    layer.build(Shape(2, 12, 24))
+    val input = Tensor[Float](2, 12, 24).apply1(_ => Random.nextFloat())
+    runSerializationTest(layer, input)
+  }
+
+  "ConvLSTM2D serializer" should "work properly" in {
+    val layer = ConvLSTM2D[Float](32, 4, inputShape = Shape(8, 40, 40, 32))
+    layer.build(Shape(2, 8, 40, 40, 32))
+    val input = Tensor[Float](2, 8, 40, 40, 32).apply1(_ => Random.nextFloat())
+    runSerializationTest(layer, input)
+  }
+
+  "Deconvolution2D serializer" should "work properly" in {
+    val layer = Deconvolution2D[Float](3, 3, 3, inputShape = Shape(3, 24, 24))
+    layer.build(Shape(2, 12, 24, 24))
+    val input = Tensor[Float](2, 12, 24, 24).apply1(_ => Random.nextFloat())
+    runSerializationTest(layer, input)
+  }
+
+  "AtrousConvolution1D serializer" should "work properly" in {
+    val layer = AtrousConvolution1D[Float](64, 3, inputShape = Shape(8, 32))
+    layer.build(Shape(2, 8, 32))
+    val input = Tensor[Float](2, 8, 32).apply1(_ => Random.nextFloat())
+    runSerializationTest(layer, input)
+  }
+
+  "AtrousConvolution2D serializer" should "work properly" in {
+    val layer = AtrousConvolution2D[Float](32, 2, 4, atrousRate = (2, 2),
+      inputShape = Shape(3, 64, 64))
+    layer.build(Shape(2, 3, 64, 64))
+    val input = Tensor[Float](2, 3, 64, 64).apply1(_ => Random.nextFloat())
+    runSerializationTest(layer, input)
+  }
+
 }
