@@ -605,8 +605,8 @@ class Container(Layer):
      A container usually contain some other modules which can be added through the "add" method
     '''
 
-    def __init__(self, jvalue, bigdl_type, is_keras=False, *args):
-        super(Container, self).__init__(jvalue, bigdl_type, is_keras, *args)
+    def __init__(self, jvalue, bigdl_type, *args):
+        super(Container, self).__init__(jvalue, bigdl_type, *args)
 
     def add(self, model):
         self.value.add(model.value)
