@@ -21,4 +21,5 @@ package object keras {
   val Conv1D = Convolution1D
   val Conv2D = Convolution2D
   val Conv3D = Convolution3D
+  val SeparableConv2D = SeparableConvolution2D
 }
