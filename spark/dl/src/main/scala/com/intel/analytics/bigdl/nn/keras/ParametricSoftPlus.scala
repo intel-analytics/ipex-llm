@@ -25,16 +25,16 @@ import com.intel.analytics.bigdl.utils.Shape
 import scala.reflect.ClassTag
 
 /**
-  * Parametric Softplus.
-  * It follows:
-  * `f(x) = alpha * log(1 + exp(beta * x))`
-  * Only alpha_init = 1/beta_init is supported for now.
-  *
-  * @param beta float. Initial values of the beta weights.
-  */
+ * Parametric Softplus.
+ * It follows:
+ * `f(x) = alpha * log(1 + exp(beta * x))`
+ * Only alpha_init = 1/beta_init is supported for now.
+ *
+ * @param beta float. Initial values of the beta weights.
+ */
 class ParametricSoftPlus[T: ClassTag](
    val beta: Double = 1.0,
-   var inputShape: Shape = null)(implicit ev: TensorNumeric[T])
+   val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {

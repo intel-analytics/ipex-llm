@@ -24,16 +24,16 @@ import com.intel.analytics.bigdl.utils.Shape
 import scala.reflect.ClassTag
 
 /**
-  * Leaky version of a Rectified Linear Unit.
-  * It allows a small gradient when the unit is not active:
-  * `f(x) = alpha * x for x < 0`,
-  * `f(x) = x for x >= 0`.
-  *
-  * @param alpha float >= 0. Negative slope coefficient.
-  */
+ * Leaky version of a Rectified Linear Unit.
+ * It allows a small gradient when the unit is not active:
+ * `f(x) = alpha * x for x < 0`,
+ * `f(x) = x for x >= 0`.
+ *
+ * @param alpha float >= 0. Negative slope coefficient.
+ */
 class LeakyReLU[T: ClassTag](
    private val alpha: Double = 0.01,
-   var inputShape: Shape = null)(implicit ev: TensorNumeric[T])
+   val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {

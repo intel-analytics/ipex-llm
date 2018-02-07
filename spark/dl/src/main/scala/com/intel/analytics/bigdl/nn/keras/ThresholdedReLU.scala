@@ -25,16 +25,16 @@ import com.intel.analytics.bigdl.utils.Shape
 import scala.reflect.ClassTag
 
 /**
-  * Thresholded Rectified Linear Unit.
-  * It follows:
-  * `f(x) = x for x > theta`,
-  * `f(x) = 0 otherwise`.
-  *
-  * @param theta float >= 0. Threshold location of activation.
-  */
+ * Thresholded Rectified Linear Unit.
+ * It follows:
+ * `f(x) = x for x > theta`,
+ * `f(x) = 0 otherwise`.
+ *
+ * @param theta float >= 0. Threshold location of activation.
+ */
 class ThresholdedReLU[T: ClassTag](
    val theta: Double = 1.0,
-   var inputShape: Shape = null)(implicit ev: TensorNumeric[T])
+   val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {

@@ -24,20 +24,20 @@ import com.intel.analytics.bigdl.utils.Shape
 import scala.reflect.ClassTag
 
 /**
-  *  Spatial 1D version of Dropout.
-  *  This version performs the same function as Dropout, however it drops
-  *  entire 1D feature maps instead of individual elements. If adjacent frames
-  *  within feature maps are strongly correlated (as is normally the case in
-  *  early convolution layers) then regular dropout will not regularize the
-  *  activations and will otherwise just result in an effective learning rate
-  *  decrease. In this case, SpatialDropout1D will help promote independence
-  *  between feature maps and should be used instead.
-  *
-  * @param p float between 0 and 1. Fraction of the input units to drop.
-  */
+ *  Spatial 1D version of Dropout.
+ *  This version performs the same function as Dropout, however it drops
+ *  entire 1D feature maps instead of individual elements. If adjacent frames
+ *  within feature maps are strongly correlated (as is normally the case in
+ *  early convolution layers) then regular dropout will not regularize the
+ *  activations and will otherwise just result in an effective learning rate
+ *  decrease. In this case, SpatialDropout1D will help promote independence
+ *  between feature maps and should be used instead.
+ *
+ * @param p float between 0 and 1. Fraction of the input units to drop.
+ */
 class SpatialDropout1D[T: ClassTag](
    val p: Double = 0.5,
-   var inputShape: Shape = null)(implicit ev: TensorNumeric[T])
+   val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
