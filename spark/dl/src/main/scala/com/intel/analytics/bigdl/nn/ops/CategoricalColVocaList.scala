@@ -29,9 +29,9 @@ import scala.util.hashing.MurmurHash3
  * Use either (but not both) of num_oov_buckets and default_value
  * to specify how to include out-of-vocabulary values.
  *
- * The num_oov_buckets is Non-negative Integer.
+ * if isSetDefault enabled, the defalut value len(vocabulary_list) will be set.
  *
- * All out-of-vocabulary inputs will be assigned IDs in the range
+ * if num_oov_buckets enabled, all out-of-vocabulary inputs will be assigned IDs in the range
  * [len(vocabulary_list), len(vocabulary_list)+num_oov_buckets) based on a hash of the input value
  *
  * A positive num_oov_buckets can not be specified with default_value.
@@ -44,15 +44,15 @@ import scala.util.hashing.MurmurHash3
  *
  * @param vocaList An vocabulary with the length more than or equal to 1.
  * @param strDelimiter The delimiter of feature string, default: ",".
- * @param defaultValue The integer ID value for out-of-vocabulary feature values, default: -1.
- * @param numOovBuckets the number of out-of-vocabulary buckets, default: 2.
+ * @param isSetDefault Set default value for out-of-vocabulary feature values default: false.
+ * @param numOovBuckets the non-negative number of out-of-vocabulary buckets, default: 0.
  * @tparam T Numeric type. Parameter tensor numeric type. Only support float/double now
  */
 
 class CategoricalColVocaList[T: ClassTag](
   val vocaList: Array[String],
   val strDelimiter: String = ",",
-  val defaultValue: Int = -1,
+  val isSetDefault: Boolean = false,
   val numOovBuckets: Int = 0
 ) (implicit ev: TensorNumeric[T])
   extends Operation[Tensor[String], Tensor[Int], T]{
@@ -62,7 +62,7 @@ class CategoricalColVocaList[T: ClassTag](
 
   require(numOovBuckets >= 0,
     "numOovBuckets is a negative integer")
-  require(!(defaultValue != -1 && numOovBuckets != 0),
+  require(!(isSetDefault && numOovBuckets != 0),
     "defaultValue and numOovBuckets are both specified")
   require(vocaLen > 0,
     "the vocabulary list is empty")
@@ -76,7 +76,12 @@ class CategoricalColVocaList[T: ClassTag](
     input.squeeze()
     val rows = input.size(dim = 1)
 
-    val cols = if (numOovBuckets==0) vocaLen + 1 else vocaLen + numOovBuckets
+    val cols = if (numOovBuckets==0) {
+      if (isSetDefault) vocaLen + 1 else vocaLen
+    }
+    else {
+      vocaLen + numOovBuckets
+    }
     val shape = Array(rows, cols)
     val indices0 = new ArrayBuffer[Int]()
     val indices1 = new ArrayBuffer[Int]()
@@ -84,12 +89,15 @@ class CategoricalColVocaList[T: ClassTag](
 
     var i = 1
     while (i <= rows) {
-      val feaStrArr = input.valueAt(i).split(strDelimiter)
+      var feaStrArr = input.valueAt(i).split(strDelimiter)
+      if (!isSetDefault && numOovBuckets == 0) {
+        feaStrArr = feaStrArr.filter(x => vocaMap.contains(x))
+      }
       var j = 0
       while (j < feaStrArr.length) {
         val mapVal = numOovBuckets==0 match {
           case true =>
-            vocaMap.getOrElse(feaStrArr(j), defaultValue)
+            vocaMap.getOrElse(feaStrArr(j), vocaMap.size)
           case false =>
             vocaMap.getOrElse(feaStrArr(j),
               MurmurHash3.stringHash(feaStrArr(j)) % numOovBuckets match {
@@ -114,13 +122,13 @@ object CategoricalColVocaList {
   def apply[T: ClassTag](
     vocaList: Array[String],
     strDelimiter: String = ",",
-    defaultValue: Int = -1,
+    isSetDefault: Boolean = false,
     numOovBuckets: Int = 0
   ) (implicit ev: TensorNumeric[T]): CategoricalColVocaList[T]
   = new CategoricalColVocaList[T](
     vocaList = vocaList,
     strDelimiter = strDelimiter,
-    defaultValue = defaultValue,
+    isSetDefault = isSetDefault,
     numOovBuckets = numOovBuckets
   )
 }

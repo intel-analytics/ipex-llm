@@ -477,7 +477,7 @@ class OperationSerializerSpec extends SerializerSpecHelper {
     val categoricalColVocaList = CategoricalColVocaList[Float](
       vocaList = Array("A", "B", "C"),
       strDelimiter = ",",
-      defaultValue = -1,
+      isSetDefault = false,
       numOovBuckets = 0
     ).setName("categoricalColVocaList")
     val input = Tensor[String](T(T("A"), T("B"), T("C"), T("D")))
