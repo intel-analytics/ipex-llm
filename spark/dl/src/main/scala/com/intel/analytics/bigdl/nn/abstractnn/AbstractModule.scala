@@ -42,7 +42,7 @@ import scala.reflect.ClassTag
  * [[TensorModule]] is an abstract sub-class of [[AbstractModule]], whose
  * input and output type both are [[Tensor]].
  *
- * @tparam T The numeric type in this module, usually which are [[Float]] or [[Double]]
+ * @tparam T The numeric type in this module parameters
  */
 abstract class TensorModule[T: ClassTag]
   (implicit ev: TensorNumeric[T]) extends AbstractModule[Tensor[T], Tensor[T], T]
@@ -53,16 +53,17 @@ abstract class TensorModule[T: ClassTag]
  *
  * @tparam A Input data type
  * @tparam B Output data type
- * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now
+ * @tparam T The numeric type in this module parameters.
  */
 abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, T: ClassTag](
   implicit ev: TensorNumeric[T]) extends Serializable with InferShape{
 
   private var namePostfix = Integer.toHexString(java.util.UUID.randomUUID().hashCode())
 
-  final def getNamePostfix : String = namePostfix
+  final private[bigdl] def getNamePostfix : String = namePostfix
 
-  final def setNamePostfix(namePostfix : String) : Unit = this.namePostfix = namePostfix
+  final private[bigdl] def setNamePostfix(namePostfix : String) : Unit =
+    this.namePostfix = namePostfix
 
   /**
    * The cached output. So we don't compute it again when need it
@@ -428,20 +429,35 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
    */
   protected var train: Boolean = true
 
+  /**
+   * Set the module to training mode
+   * @return
+   */
   def training(): this.type = {
     train = true
     this
   }
 
+  /**
+   * Set the module to evaluate mode
+   * @return
+   */
   def evaluate(): this.type = {
     train = false
     this
   }
 
+  /**
+   * Check if the model is in training mode
+   * @return
+   */
   final def isTraining(): Boolean = {
     this.train
   }
 
+  /**
+   * Reset module parameters, which is re-initialize the parameter with given initMethod
+   */
   def reset(): Unit = {}
 
 
@@ -606,12 +622,26 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
     this
   }
 
+  /**
+   * Save this module to path in torch7 readable format
+   * @param path
+   * @param overWrite
+   * @return
+   */
   final def saveTorch(path : String, overWrite: Boolean = false) : this.type = {
     this.clearState()
     File.saveTorch(this, path, TYPE_MODULE, overWrite)
     this
   }
 
+  /**
+   * Save this module to path in caffe readable format
+   * @param prototxtPath
+   * @param modelPath
+   * @param useV2
+   * @param overwrite
+   * @return
+   */
   final def saveCaffe(prototxtPath: String, modelPath: String,
     useV2 : Boolean = true, overwrite : Boolean = false) : this.type = {
     this.clearState()
@@ -619,6 +649,14 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
     this
   }
 
+  /**
+   * Save this module to path in tensorflow readable format
+   * @param inputs
+   * @param path
+   * @param byteOrder
+   * @param dataFormat
+   * @return
+   */
   final def saveTF(
               inputs : Seq[(String, Seq[Int])],
               path: String,
@@ -638,7 +676,8 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
   }
 
   /**
-   * @return Float or Double
+   * Get numeric type of module parameters
+   * @return
    */
   final def getNumericType(): TensorDataType = {
     ev.getType()
@@ -859,7 +898,7 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
   }
 
   /**
-   * use ValidationMethod to evaluate module
+   * use ValidationMethod to evaluate module on the given rdd dataset
    * @param dataset dataset for test
    * @param vMethods validation methods
    * @param batchSize total batchsize of all partitions,
@@ -874,13 +913,24 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
     Evaluator(this).test(dataset, vMethods, batchSize)
   }
 
-
-  final def evaluate(dataSet: LocalDataSet[MiniBatch[T]],
-               vMethods: Array[ValidationMethod[T]]
-              ): Array[(ValidationResult, ValidationMethod[T])] = {
+  /**
+   * use ValidationMethod to evaluate module on the given local dataset
+   * @param dataSet
+   * @param vMethods
+   * @return
+   */
+  final def evaluate(
+    dataSet: LocalDataSet[MiniBatch[T]],
+    vMethods: Array[ValidationMethod[T]]
+  ): Array[(ValidationResult, ValidationMethod[T])] = {
     Validator(this, dataSet).test(vMethods)
   }
 
+  /**
+   * Quantize this module, whcih reduces the precison of the parameter. Get a higher speed with a
+   * little accuracy cost.
+   * @return
+   */
   final def quantize(): Module[T] = {
     Quantization.quantize(this)
   }
@@ -912,7 +962,7 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
    * in the constructor, you should override this method
    * @return
    */
-  def getClassTagNumerics() : (Array[ClassTag[_]], Array[TensorNumeric[_]]) = {
+  private[bigdl] def getClassTagNumerics() : (Array[ClassTag[_]], Array[TensorNumeric[_]]) = {
     (Array(scala.reflect.classTag[T]), Array(ev))
   }
 }
