@@ -20,7 +20,6 @@ import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, Module}
 import com.intel.analytics.bigdl.optim.SGD.{Poly, SequentialSchedule, Warmup}
 import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.utils.{Engine, LoggerFilter, T, Table}
-import com.intel.analytics.bigdl.visualization.{TrainSummary, ValidationSummary}
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
 
@@ -110,13 +109,6 @@ object TrainInceptionV1 {
       if (param.overWriteCheckpoint) {
         optimizer.overWriteCheckpoint()
       }
-
-
-      val trainSummary = TrainSummary(param.summary.get, "train inception")
-      val validationSummary = ValidationSummary(param.summary.get, "train inception")
-      trainSummary.setSummaryTrigger("LearningRate", Trigger.severalIteration(1))
-      optimizer.setTrainSummary(trainSummary)
-      optimizer.setValidationSummary(validationSummary)
 
       if (param.gradientMin.isDefined && param.gradientMax.isDefined) {
         optimizer.setConstantGradientClipping(param.gradientMin.get.toFloat,
