@@ -44,7 +44,7 @@ class LocallyConnected2DSpec extends KerasBaseSpec {
     out
   }
 
-  "LocallyConnected2D th" should "be the same as Keras" in {
+  "LocallyConnected2D NCHW" should "be the same as Keras" in {
     val kerasCode =
       """
         |input_tensor = Input(shape=[12, 24, 24])
@@ -77,7 +77,7 @@ class LocallyConnected2DSpec extends KerasBaseSpec {
       kerasCode, weightConverter)
   }
 
-  "LocallyConnected2D tf" should "be the same as Keras" in {
+  "LocallyConnected2D NHWC" should "be the same as Keras" in {
     val kerasCode =
       """
         |input_tensor = Input(shape=[24, 24, 12])
@@ -93,4 +93,5 @@ class LocallyConnected2DSpec extends KerasBaseSpec {
     checkOutputAndGrad(seq.asInstanceOf[AbstractModule[Tensor[Float], Tensor[Float], Float]],
       kerasCode, weightConverter)
   }
+
 }

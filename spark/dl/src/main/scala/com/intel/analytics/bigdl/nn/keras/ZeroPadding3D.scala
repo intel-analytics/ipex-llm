@@ -46,8 +46,9 @@ class ZeroPadding3D[T: ClassTag](
   extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {
 
   require(format.toLowerCase() == "channel_first" || format.toLowerCase() == "channel_last",
-    s"$format is not supported")
-  require(padding.length == 3, s"Subsample should be of length 3, not ${padding.length}")
+    s"For ZeroPadding3D $format is not supported")
+  require(padding.length == 3, s"For ZeroPadding3D Subsample should be of length 3," +
+    s" not ${padding.length}")
 
   override def computeOutputShape(inputShape: Shape): Shape = {
     val input = inputShape.toSingle().toArray
@@ -73,7 +74,6 @@ class ZeroPadding3D[T: ClassTag](
     val paddinglayer4 = Padding(dim = dim + 1, pad = padding(1), nInputDim = input.length - 1)
     val paddinglayer5 = Padding(dim = dim + 2, pad = -padding(2), nInputDim = input.length - 1)
     val paddinglayer6 = Padding(dim = dim + 2, pad = padding(2), nInputDim = input.length - 1)
-
     model.add(paddinglayer1)
     model.add(paddinglayer2)
     model.add(paddinglayer3)

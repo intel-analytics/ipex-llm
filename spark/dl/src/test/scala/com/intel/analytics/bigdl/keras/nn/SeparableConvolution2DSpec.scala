@@ -80,12 +80,12 @@ class SeparableConvolution2DSpec extends KerasBaseSpec {
       """
         |input_tensor = Input(shape=[12, 12, 3])
         |input = np.random.random([2, 12, 12, 3])
-        |output_tensor = SeparableConvolution2D(1, 2, 2, activation="relu",
+        |output_tensor = SeparableConvolution2D(8, 2, 2, activation="relu",
         |                                       dim_ordering='tf')(input_tensor)
         |model = Model(input=input_tensor, output=output_tensor)
       """.stripMargin
     val seq = KSequential[Float]()
-    val layer = SeparableConvolution2D[Float](1, 2, 2, activation = "relu",
+    val layer = SeparableConvolution2D[Float](8, 2, 2, activation = "relu",
       dimOrdering = "tf", inputShape = Shape(12, 12, 3))
     seq.add(layer)
 
@@ -101,4 +101,5 @@ class SeparableConvolution2DSpec extends KerasBaseSpec {
     checkOutputAndGrad(seq.asInstanceOf[AbstractModule[Tensor[Float], Tensor[Float], Float]],
       kerasCode, weightConverter)
   }
+
 }

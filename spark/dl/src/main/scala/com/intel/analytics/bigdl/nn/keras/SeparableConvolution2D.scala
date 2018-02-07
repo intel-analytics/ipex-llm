@@ -65,8 +65,8 @@ import scala.reflect.ClassTag
  */
 class SeparableConvolution2D[T: ClassTag](
    val nbFilter: Int,
-   val nbCol: Int,
    val nbRow: Int,
+   val nbCol: Int,
    val init: InitializationMethod = Xavier,
    val activation: AbstractModule[Tensor[T], Tensor[T], T] = null,
    val borderMode: String = "valid",
@@ -84,7 +84,6 @@ class SeparableConvolution2D[T: ClassTag](
     s"SeparableConvolution2D: $borderMode")
   require(subsample.length == 2, s"For SeparableConvolution2D, " +
     s"subsample should be of length 2 but got length ${subsample.length}")
-
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
     val input = inputShape.toSingle().toArray
@@ -113,8 +112,8 @@ class SeparableConvolution2D[T: ClassTag](
 object SeparableConvolution2D {
   def apply[@specialized(Float, Double) T: ClassTag](
     nbFilter: Int,
-    nbCol: Int,
     nbRow: Int,
+    nbCol: Int,
     init: String = "glorot_uniform",
     activation: String = null,
     borderMode: String = "valid",
@@ -126,7 +125,7 @@ object SeparableConvolution2D {
     dimOrdering: String = "th",
     bias: Boolean = true,
     inputShape: Shape = null)(implicit ev: TensorNumeric[T]) : SeparableConvolution2D[T] = {
-    new SeparableConvolution2D[T](nbFilter, nbCol, nbRow,
+    new SeparableConvolution2D[T](nbFilter, nbRow, nbCol,
       KerasUtils.getInitMethod(init), KerasUtils.getActivation(activation),
       borderMode, Array(subsample._1, subsample._2), depthMultiplier, depthwiseRegularizer,
       pointwiseRegularizer, bRegularizer, KerasUtils.toBigDLFormat(dimOrdering), bias, inputShape)

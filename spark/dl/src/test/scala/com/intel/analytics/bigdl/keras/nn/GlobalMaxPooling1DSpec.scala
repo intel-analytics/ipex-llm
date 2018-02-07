@@ -40,4 +40,5 @@ class GlobalMaxPooling1DSpec extends KerasBaseSpec{
     checkOutputAndGrad(seq.asInstanceOf[AbstractModule[Tensor[Float], Tensor[Float], Float]],
       kerasCode)
   }
+
 }
