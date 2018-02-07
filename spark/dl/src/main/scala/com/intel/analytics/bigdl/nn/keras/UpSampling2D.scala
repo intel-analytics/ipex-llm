@@ -23,9 +23,10 @@ import com.intel.analytics.bigdl.utils.Shape
 
 import scala.reflect.ClassTag
 
-class UpSampling2D[T: ClassTag](val size: (Int, Int) = (2, 2),
-                                val format: DataFormat = DataFormat.NCHW,
-                                var inputShape: Shape = null)(implicit ev: TensorNumeric[T])
+class UpSampling2D[T: ClassTag](
+   val size: (Int, Int) = (2, 2),
+   val format: DataFormat = DataFormat.NCHW,
+   val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {

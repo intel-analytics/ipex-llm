@@ -21,7 +21,7 @@ import java.util.{ArrayList => JArrayList, HashMap => JHashMap, List => JList, M
 
 import com.intel.analytics.bigdl.dataset.{Identity => DIdentity, Sample => JSample}
 import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
-import com.intel.analytics.bigdl.nn.keras.Dense
+import com.intel.analytics.bigdl.nn.keras._
 import com.intel.analytics.bigdl.nn.tf.{Shape => TfShape}
 import com.intel.analytics.bigdl.nn.{InitializationMethod, RandomUniform}
 import com.intel.analytics.bigdl.numeric._
@@ -51,19 +51,36 @@ class PythonBigDLKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends Pytho
     }
   }
 
-  def createKerasDense(outputDim: Int,
-                   init: InitializationMethod = RandomUniform,
-                   activation: TensorModule[T] = null,
-                   wRegularizer: Regularizer[T] = null,
-                   bRegularizer: Regularizer[T] = null,
-                   bias: Boolean = true,
-                   inputShape: JList[Int] = null): Dense[T] = {
-    new Dense(outputDim,
-      init,
-      activation,
-      wRegularizer,
-      bRegularizer,
-      bias,
-      toScalaShape(inputShape))
+  def createKerasDense(
+    outputDim: Int,
+    init: String = "glorot_uniform",
+    activation: String = null,
+    wRegularizer: Regularizer[T] = null,
+    bRegularizer: Regularizer[T] = null,
+    bias: Boolean = true,
+    inputShape: JList[Int] = null): Dense[T] = {
+    Dense(outputDim, init, activation, wRegularizer,
+      bRegularizer, bias, toScalaShape(inputShape))
   }
+
+  def createKerasEmbedding(
+    inputDim: Int,
+    outputDim: Int,
+    init: String = "uniform",
+    wRegularizer: Regularizer[T] = null,
+    inputShape: JList[Int] = null): Embedding[T] = {
+    Embedding[T](inputDim, outputDim, init, wRegularizer, toScalaShape(inputShape))
+  }
+
+  def createKerasBatchNormalization(
+    epsilon: Double = 0.001,
+    momentum: Double = 0.99,
+    betaInit: JTensor = null,
+    gammaInit: JTensor = null,
+    dimOrdering: String = "th",
+    inputShape: JList[Int] = null): BatchNormalization[T] = {
+    BatchNormalization[T](epsilon, momentum, toTensor(betaInit),
+      toTensor(gammaInit), dimOrdering, toScalaShape(inputShape))
+  }
+
 }

@@ -30,7 +30,7 @@ class Embedding[T: ClassTag](
    val outputDim: Int,
    val init: InitializationMethod = RandomUniform,
    var wRegularizer: Regularizer[T] = null,
-   var inputShape: Shape = null)(implicit ev: TensorNumeric[T])
+   val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {
 
   override def computeOutputShape(inputShape: Shape): Shape = {
@@ -47,8 +47,7 @@ class Embedding[T: ClassTag](
     val layer = LookupTable(
       nIndex = inputDim,
       nOutput = outputDim,
-      wRegularizer = wRegularizer
-    )
+      wRegularizer = wRegularizer)
     layer.setInitMethod(weightInitMethod = init, biasInitMethod = Zeros)
     model.add(layer)
     model.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]

@@ -25,12 +25,13 @@ import com.intel.analytics.bigdl.utils.Shape
 
 import scala.reflect.ClassTag
 
-class MaxoutDense[T: ClassTag](val outputDim: Int,
-                               val nbFeature: Int = 4,
-                               val wRegularizer: Regularizer[T] = null,
-                               var bRegularizer: Regularizer[T] = null,
-                               val bias: Boolean = true,
-                               var inputShape: Shape = null)(implicit ev: TensorNumeric[T])
+class MaxoutDense[T: ClassTag](
+   val outputDim: Int,
+   val nbFeature: Int = 4,
+   val wRegularizer: Regularizer[T] = null,
+   var bRegularizer: Regularizer[T] = null,
+   val bias: Boolean = true,
+   val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {

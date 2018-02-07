@@ -68,16 +68,15 @@ class Dense(Layer):
         creating: createXavier
         creating: createKerasDense
         """
-    def __init__(self, output_dim, init='glorot_uniform',
-                 activation=None,
+    def __init__(self, output_dim, init='glorot_uniform', activation=None,
                  W_regularizer=None, b_regularizer=None,
                  bias=True, input_shape=None, bigdl_type="float"):
         super(Dense, self).__init__(None, bigdl_type,
                                     output_dim,
-                                    to_bigdl_init(init),
-                                    get_activation_by_name(activation) if activation else None,  # noqa
-                                    to_bigdl_reg(W_regularizer),
-                                    to_bigdl_reg(b_regularizer),
+                                    init,
+                                    activation,
+                                    W_regularizer,
+                                    b_regularizer,
                                     bias,
                                     list(input_shape) if input_shape else None)
 

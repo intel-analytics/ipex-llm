@@ -29,16 +29,9 @@ class BatchNormalization[T: ClassTag](
    val momentum: Double = 0.99,
    val betaInit: Tensor[T] = null,
    val gammaInit: Tensor[T] = null,
-   val dimOrdering: String = "th",
-   var inputShape: Shape = null)(implicit ev: TensorNumeric[T])
+   val format: DataFormat = DataFormat.NCHW,
+   val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {
-
-  require(dimOrdering.toLowerCase() == "th" || dimOrdering.toLowerCase() == "tf",
-    s"Dim ordering must be either tf or th, but got ${dimOrdering.toLowerCase()}")
-  private val format = dimOrdering.toLowerCase() match {
-    case "th" => DataFormat.NCHW
-    case "tf" => DataFormat.NHWC
-  }
 
   override def computeOutputShape(inputShape: Shape): Shape = {
     val input = inputShape.toSingle().toArray
@@ -60,8 +53,7 @@ class BatchNormalization[T: ClassTag](
       momentum = momentum,
       initWeight = gammaInit,
       initBias = betaInit,
-      dataFormat = format
-    )
+      dataFormat = format)
     layer.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
   }
 }
@@ -72,8 +64,9 @@ object BatchNormalization {
     momentum: Double = 0.99,
     betaInit: Tensor[T] = null,
     gammaInit: Tensor[T] = null,
-    format: String = "th",
+    dimOrdering: String = "th",
     inputShape: Shape = null)(implicit ev: TensorNumeric[T]): BatchNormalization[T] = {
-    new BatchNormalization[T](epsilon, momentum, betaInit, gammaInit, format, inputShape)
+    new BatchNormalization[T](epsilon, momentum, betaInit, gammaInit,
+      KerasUtils.toBigDLFormat(dimOrdering), inputShape)
   }
 }

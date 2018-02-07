@@ -26,7 +26,7 @@ import scala.reflect.ClassTag
 
 class ZeroPadding1D[T: ClassTag](
    val padding: (Int, Int) = (1, 1),
-   var inputShape: Shape = null)(implicit ev: TensorNumeric[T])
+   val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {
 
   override def computeOutputShape(inputShape: Shape): Shape = {
