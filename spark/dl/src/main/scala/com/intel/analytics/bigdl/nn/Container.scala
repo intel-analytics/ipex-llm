@@ -55,19 +55,19 @@ abstract class Container[A <: Activity : ClassTag,
     modules.foreach(_.reset())
   }
 
-  override def training(): this.type = {
+  final override def training(): this.type = {
     train = true
     modules.foreach(_.training())
     this
   }
 
-  override def evaluate(): this.type = {
+  final override def evaluate(): this.type = {
     train = false
     modules.foreach(_.evaluate())
     this
   }
 
-  override def checkEngineType(): this.type = {
+  final override def checkEngineType(): this.type = {
     modules.foreach(_.checkEngineType())
     this
   }

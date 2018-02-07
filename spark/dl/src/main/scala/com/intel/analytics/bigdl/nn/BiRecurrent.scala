@@ -94,18 +94,6 @@ class BiRecurrent[T : ClassTag] (
    */
   override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = birnn.parameters()
 
-  override def training(): BiRecurrent.this.type = {
-    super.training()
-    birnn.training()
-    this
-  }
-
-  override def evaluate(): BiRecurrent.this.type = {
-    super.evaluate()
-    birnn.evaluate()
-    this
-  }
-
   override def canEqual(other: Any): Boolean = other.isInstanceOf[BiRecurrent[T]]
 
 
