@@ -254,7 +254,7 @@ object Vgg_16_dnn {
     model.add(ReLUDnn(true))
     model.add(PoolingDnn(2, 2, 2, 2))
 
-    model.add(View(512 * 7 * 7))
+    // model.add(View(512 * 7 * 7))
     model.add(mkldnn.Linear(512 * 7 * 7, 4096))
     // model.add(Threshold(0, 1e-6))
     model.add(ReLUDnn(value = 1e-6f))

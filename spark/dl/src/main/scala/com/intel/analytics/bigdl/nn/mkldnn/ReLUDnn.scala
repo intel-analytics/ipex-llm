@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.nn.mkldnn
 
 import com.intel.analytics.bigdl.mkl.MklDnn
 import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.tensor.{MklDnnTensor, MklDnnType, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
 import scala.reflect.ClassTag
@@ -54,13 +54,14 @@ class ReLUDnn[T: ClassTag](ip: Boolean = false, value: Float = 0.0f)(
     private var update_primitive: Boolean = true
 
     // for relu, just keep internal format same with input format
-    private var input_format =  MklDnn.MemoryFormat.nchw
+    private var input_format = MklDnn.MemoryFormat.nchw
 
 
     @transient
     private var reorder_gradOutput_memory: Long = 0L
     var reorder_gradOutput: Long = 0L
-    private var gradOutputBuffer = Tensor[Float]()
+    private var inputBuffer : MklDnnTensor[Float] = null
+    private var gradOutputBuffer : MklDnnTensor[Float] = null
 
     def reorderToInternal(user_md: Long, pd: Long, queryType: Int, data: Tensor[Float],
                           data_size: Array[Int], index: Int = 0): (Long, Long) = {
@@ -68,7 +69,6 @@ class ReLUDnn[T: ClassTag](ip: Boolean = false, value: Float = 0.0f)(
       val res = MklDnnOps.prepareReorder(user_md, internal_pd, true)
       if (res._1 != 0L) {
         data.setPrimitiveDesc(internal_pd)
-        data.resize(data_size)
       }
       res
     }
@@ -85,8 +85,14 @@ class ReLUDnn[T: ClassTag](ip: Boolean = false, value: Float = 0.0f)(
         update_primitive = false
       }
 
+      if (inputBuffer == null || inputBuffer.nElement() < input.nElement() ||
+        input.getTensorType != MklDnnType) {
+        inputBuffer = MklDnnTensor[Float](input.size())
+      }
+
       if (update_primitive) {
-        output.resizeAs(input)
+        // todo: output with Dense Tensor
+        output = MklDnnTensor[Float](input.size())
         input_format = input.dim() match {
           case 1 => MklDnn.MemoryFormat.nc
           case 2 => MklDnn.MemoryFormat.nc
@@ -127,8 +133,13 @@ class ReLUDnn[T: ClassTag](ip: Boolean = false, value: Float = 0.0f)(
         println("relu updateoutput start " + this.getName())
       }
 
+      if (input.getTensorType != MklDnnType) {
+        MklDnnTensor.syncFromHeap(inputBuffer, input.storage().array(), input.storageOffset() - 1)
+      } else {
+        inputBuffer = input.asInstanceOf[MklDnnTensor[Float]]
+      }
       val memoryPrimitives = Array(src_memory, dst_memory)
-      val buffer = Array(input, output)
+      val buffer = Array(inputBuffer, output)
       val stream_fwd = Array(relu_fwd)
       val n_fwd = stream_fwd.length
       MklDnnOps.streamSubmit(stream, n_fwd, stream_fwd, n_fwd, memoryPrimitives, buffer)
@@ -144,6 +155,10 @@ class ReLUDnn[T: ClassTag](ip: Boolean = false, value: Float = 0.0f)(
 
     override def updateGradInput(input: Tensor[Float], gradOutput: Tensor[Float]): Tensor[Float] = {
       val s1 = System.nanoTime()
+      if (gradOutputBuffer == null || gradOutputBuffer.nElement() < gradOutput.nElement() ||
+        gradOutput.getTensorType != MklDnnType) {
+        gradOutputBuffer = MklDnnTensor[Float](gradOutput.size())
+      }
       if (update_primitive) {
         var gradOutput_md : Long = 0L
         if (gradOutput.getPrimitiveDesc() != 0L) {
@@ -182,7 +197,8 @@ class ReLUDnn[T: ClassTag](ip: Boolean = false, value: Float = 0.0f)(
         val bwd_pd = MklDnnOps.primitiveDescCreate(bwd_desc, engine, relu_fwd_pd)
 
         /* create memory primities for relu diff src */
-        gradInput.resizeAs(input)
+        // todo: output with Dense Tensor
+        gradInput = MklDnnTensor[Float](input.size())
         val gradInput_pd = MklDnnOps.primitiveDescQueryPd(bwd_pd, MklDnn.Query.diff_src_pd, 0)
         gradInput_memory = MklDnn.PrimitiveCreate0(gradInput_pd)
         gradInput.setPrimitiveDesc(gradInput_pd)
@@ -212,22 +228,31 @@ class ReLUDnn[T: ClassTag](ip: Boolean = false, value: Float = 0.0f)(
       if (System.getProperty("debug") == "1") {
         println("relu backward " + this.getName())
       }
-      val memoryPrimitives = Array(src_memory, gradInput_memory, gradOutput_memory,
-        reorder_gradOutput_memory)
-      val buffer = Array(input, gradInput, gradOutput, gradOutputBuffer)
+
       val stream_bwd = if (reorder_gradOutput_memory == 0L) {
         Array(relu_bwd)
       } else {
         Array(reorder_gradOutput, relu_bwd)
       }
       val n_bwd = stream_bwd.length
+      val (memoryPrimitives, buffer) =
+        if (reorder_gradOutput_memory == 0L && gradOutput.getTensorType != MklDnnType) {
+          // sync here
+          MklDnnTensor.syncFromHeap(
+            gradOutputBuffer, gradOutput.storage().array(), gradOutput.storageOffset() - 1)
+          (Array(src_memory, gradOutput_memory, gradInput_memory),
+            Array(inputBuffer, gradOutputBuffer, gradInput))
+        } else {
+          (Array(src_memory, gradInput_memory, gradOutput_memory, reorder_gradOutput_memory),
+          Array(inputBuffer, gradInput, gradOutput, gradOutputBuffer))
+        }
+
       MklDnnOps.streamSubmit(stream, n_bwd, stream_bwd, n_bwd, memoryPrimitives, buffer)
 
       val end1 = (System.nanoTime() - s1)/1e6
       if (System.getProperty("debug") == "2") {
         println(s"relu dnn ${this.getName()} backward ${end1}")
       }
-
       gradInput.layer_name = this.getName()
       gradInput
     }

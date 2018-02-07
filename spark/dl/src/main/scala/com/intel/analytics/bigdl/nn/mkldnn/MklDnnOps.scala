@@ -15,9 +15,9 @@
  */
 package com.intel.analytics.bigdl.nn.mkldnn
 
-import com.intel.analytics.bigdl.mkl.MklDnn
+import com.intel.analytics.bigdl.mkl.{Memory, MklDnn}
 import com.intel.analytics.bigdl.mkl.MklDnn.EngineType
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.tensor.{MklDnnTensor, Tensor}
 
 object MklDnnOps {
 
@@ -241,8 +241,13 @@ object MklDnnOps {
     val handle = new Array[Long](memory_primitives.length)
     for (i <- 0 to memory_primitives.length - 1) {
       if (memory_primitives(i) != 0L) {
-        handle(i) = MklDnnOps.memorySetDataHandle(
-          memory_primitives(i), buffers(i), buffers(i).storageOffset() - 1)
+        if (buffers(i).isInstanceOf[MklDnnTensor[Float]]) {
+          Memory.SetDataHandle(memory_primitives(i),
+            buffers(i).asInstanceOf[MklDnnTensor[Float]].ptr, 0)
+        } else {
+          handle(i) = MklDnnOps.memorySetDataHandle(
+            memory_primitives(i), buffers(i), buffers(i).storageOffset() - 1)
+        }
       }
     }
 

@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.tensor
 
 import com.intel.analytics.bigdl.mkl.{Memory, MklDnn}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import serialization.Bigdl.TensorType
 
 import scala.reflect.ClassTag
 
@@ -85,7 +86,7 @@ class MklDnnTensor[T: ClassTag](
     if (_storage == null || _storage.length() != nElement()) {
       this._storage = Storage[T](nElement())
     }
-//    MklDnnTensor.syncToHeap(this, this._storage.array(), storageOffset() - 1)
+    MklDnnTensor.syncToHeap(this, this._storage.array(), storageOffset() - 1)
     this._storage
   }
 
@@ -117,6 +118,7 @@ class MklDnnTensor[T: ClassTag](
   }
 
   override def getTensorType: TensorType = MklDnnType
+
 }
 
 object MklDnnTensor {
@@ -132,12 +134,13 @@ object MklDnnTensor {
     new MklDnnTensor[T](null, 0, null, null, 0)
   }
 
-  val DEBUG = true
+  val DEBUG = false
   def syncToHeap[T: ClassTag](dnnTensor: MklDnnTensor[T], heap: Array[T], offset: Int): Unit = {
     require(dnnTensor.ptr != 0, s"native storage has not been allocated")
     def toFloat(array: Array[T]): Array[Float] = array.asInstanceOf[Array[Float]]
-    println("convert from native storage -> heap array")
+
     if (DEBUG) {
+      println("convert from native storage -> heap array")
       for (ste <- Thread.currentThread().getStackTrace) {
         if (ste.toString.contains("com.intel.analytics.bigdl.")) {
           println("\t|----> " + ste)
@@ -151,8 +154,9 @@ object MklDnnTensor {
   def syncFromHeap[T: ClassTag](dnnTensor: MklDnnTensor[T], heap: Array[T], offset: Int): Unit = {
     require(dnnTensor.ptr != 0, s"native storage has not been allocated")
     def toFloat(array: Array[T]): Array[Float] = array.asInstanceOf[Array[Float]]
-    println("sync from heap array -> native storage")
+
     if (DEBUG) {
+      println("sync from heap array -> native storage")
       for (ste <- Thread.currentThread().getStackTrace) {
         if (ste.toString.contains("com.intel.analytics.bigdl.")) {
           println("\t|----> " + ste)

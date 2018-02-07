@@ -20,7 +20,7 @@ import breeze.linalg.*
 import com.intel.analytics.bigdl.mkl.MklDnn
 import com.intel.analytics.bigdl.nn.{SpatialCrossMapLRN, SpatialMaxPooling, Utils}
 import com.intel.analytics.bigdl.nn.abstractnn.{DataFormat, Initializable, TensorModule}
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.tensor.{MklDnnTensor, MklDnnType, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
 import scala.collection.mutable.ArrayBuffer
@@ -73,8 +73,9 @@ class LRNDnn[T: ClassTag](
   private var input_format = MklDnn.MemoryFormat.nchw
   private val dataType = MklDnn.DataType.f32
 
-  private var workSpace = Tensor[Float]()
-  private var gradOutputBuffer = Tensor[Float]()
+  private var workSpace : MklDnnTensor[Float] = null
+  private var inputBuffer : MklDnnTensor[Float] = null
+  private var gradOutputBuffer : MklDnnTensor[Float] = null
 
   // test
   private var dst_pd: Long = 0L
@@ -85,7 +86,6 @@ class LRNDnn[T: ClassTag](
     val res = MklDnnOps.prepareReorder(user_md, internal_pd, true)
     if (res._1 != 0L) {
       data.setPrimitiveDesc(internal_pd)
-      data.resize(data_size)
     }
     res
   }
@@ -102,6 +102,12 @@ class LRNDnn[T: ClassTag](
     } else {
       update_primitive = false
     }
+
+    if (inputBuffer == null || inputBuffer.nElement() < input.nElement() ||
+      input.getTensorType != MklDnnType) {
+      inputBuffer = MklDnnTensor[Float](input.size())
+    }
+
     if (update_primitive) {
       input_format = input.dim() match {
         case 1 => MklDnn.MemoryFormat.x
@@ -111,7 +117,8 @@ class LRNDnn[T: ClassTag](
       val nbatch = input.size(1)
       val input_size = input.size()
       val dst_sizes = input_size
-      output.resize(dst_sizes)
+      // todo: output with Dense Tensor
+      output = MklDnnTensor[Float](dst_sizes)
 
       // create memory desc, for input
       if (input.getPrimitiveDesc() != 0L) {
@@ -138,7 +145,8 @@ class LRNDnn[T: ClassTag](
       val workdspace_pd = MklDnnOps.primitiveDescQueryPd(fwd_pd, MklDnn.Query.workspace_pd, 0)
       work_memory = MklDnn.PrimitiveCreate0(workdspace_pd)
       val workdspace_size = MklDnn.PrimitiveDescGetSize(workdspace_pd)
-      workSpace.resize(workdspace_size.toInt)
+      // todo: support resize
+      if (workSpace == null) workSpace = MklDnnTensor[Float](Array(workdspace_size.toInt))
 
       val inputs = Array(src_memory)
       val outputs = Array(dst_memory, work_memory)
@@ -154,8 +162,13 @@ class LRNDnn[T: ClassTag](
       println("lrn updateoutput " + this.getName())
     }
     val n_fwd = stream_fwd.length
+    if (input.getTensorType != MklDnnType) {
+      MklDnnTensor.syncFromHeap(inputBuffer, input.storage().array(), input.storageOffset() - 1)
+    } else {
+      inputBuffer = input.asInstanceOf[MklDnnTensor[Float]]
+    }
     val memoryPrimitives = Array(src_memory, dst_memory, work_memory)
-    val buffer = Array(input, output, workSpace)
+    val buffer = Array(inputBuffer, output, workSpace)
     MklDnnOps.streamSubmit(stream, n_fwd, stream_fwd.toArray, n_fwd, memoryPrimitives, buffer)
 
     val end1 = (System.nanoTime() - s1)/1e6
@@ -167,6 +180,10 @@ class LRNDnn[T: ClassTag](
 
   override def updateGradInput(input: Tensor[Float], gradOutput: Tensor[Float]): Tensor[Float] = {
     val s1 = System.nanoTime()
+    if (gradOutputBuffer == null || gradOutputBuffer.nElement() < gradOutput.nElement() ||
+      gradOutput.getTensorType != MklDnnType) {
+      gradOutputBuffer = MklDnnTensor[Float](gradOutput.size())
+    }
     if (update_primitive) {
       var gradOutput_md : Long = 0L
       if (gradOutput.getPrimitiveDesc() != 0L) {
@@ -220,8 +237,19 @@ class LRNDnn[T: ClassTag](
       println("lrn backward " + this.getName())
     }
     val n_bwd = stream_bwd.length
-    val memoryPrimitives = Array(src_memory, gradOutput_memory, work_memory, gradInput_memory, reorder_gradOutput_memory)
-    val buffer = Array(input, gradOutput, workSpace, gradInput, gradOutputBuffer)
+    val (memoryPrimitives, buffer) =
+      if (reorder_gradOutput_memory == 0L && gradOutput.getTensorType != MklDnnType) {
+        // sync here
+        MklDnnTensor.syncFromHeap(
+          gradOutputBuffer, gradOutput.storage().array(), gradOutput.storageOffset() - 1)
+        (Array(src_memory, gradOutput_memory, work_memory, gradInput_memory),
+          Array(inputBuffer, gradOutputBuffer, workSpace, gradInput))
+
+      } else {
+        (Array(src_memory, gradOutput_memory, work_memory, gradInput_memory,
+          reorder_gradOutput_memory),
+          Array(inputBuffer, gradOutput, workSpace, gradInput, gradOutputBuffer))
+      }
     MklDnnOps.streamSubmit(stream, n_bwd, stream_bwd.toArray, n_bwd, memoryPrimitives, buffer)
 
     val end1 = (System.nanoTime() - s1)/1e6
@@ -235,6 +263,7 @@ class LRNDnn[T: ClassTag](
     super.clearState()
     gradOutputBuffer.set()
     workSpace.set()
+    inputBuffer.set()
     this
   }
 }

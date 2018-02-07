@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.mkl.MklDnn
 import com.intel.analytics.bigdl.mkl.MklDnn.MemoryFormat
 import com.intel.analytics.bigdl.nn.{SpatialMaxPooling, Utils}
 import com.intel.analytics.bigdl.nn.abstractnn.{DataFormat, Initializable, TensorModule}
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.tensor.{MklDnnTensor, MklDnnType, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
 import scala.collection.mutable.ArrayBuffer
@@ -105,8 +105,9 @@ class PoolingDnn[T: ClassTag](
   private var paddingTB : Array[Int] = null
   private var paddingLR: Array[Int] = null
 
-  private var workSpace = Tensor[Float]()
-  private var gradOutputBuffer = Tensor[Float]()
+  private var workSpace : MklDnnTensor[Float] = null
+  private var inputBuffer : MklDnnTensor[Float] = null
+  private var gradOutputBuffer : MklDnnTensor[Float] = null
 
   // test
   private var dst_pd: Long = 0L
@@ -118,13 +119,11 @@ class PoolingDnn[T: ClassTag](
     val res = MklDnnOps.prepareReorder(user_md, internal_pd, true)
     if (res._1 != 0L) {
       data.setPrimitiveDesc(internal_pd)
-      data.resize(data_size)
     }
     res
   }
 
   override def updateOutput(input: Tensor[Float]): Tensor[Float] = {
-    // println("pooling updateoutput start")
     val s1 = System.nanoTime()
     if (engine == 0L) engine = this.getDnnEngine(0)
     if (stream == 0L) stream = this.getStream()
@@ -135,6 +134,12 @@ class PoolingDnn[T: ClassTag](
     } else {
       update_primitive = false
     }
+
+    if (inputBuffer == null || inputBuffer.nElement() < input.nElement() ||
+      input.getTensorType != MklDnnType) {
+      inputBuffer = MklDnnTensor[Float](input.size())
+    }
+
     if (update_primitive) {
       require(input.dim() == 4 && input.isContiguous())
       val (dimh, dimw, dimc) = format.getHWCDims(input.dim())
@@ -171,26 +176,19 @@ class PoolingDnn[T: ClassTag](
 
       val nbatch = input.size(1)
       val input_size = input.size()
+      // todo: dst size not correct some times
       val dst_sizes = Array(nbatch, nInputPlane, oHeight, oWidth)
-//      input_size.foreach(println(_))
-//      dst_sizes.foreach(println(_))
-//      strides.foreach(println(_))
-//      kernel.foreach(println(_))
-//      paddingLR.foreach(println(_))
-      output.resize(dst_sizes)
+      // todo: output with Dense Tensor
+      output = MklDnnTensor[Float](dst_sizes)
 
       // create memory desc, for input
       if (input.getPrimitiveDesc() != 0L) {
         val input_pd = input.getPrimitiveDesc()
         src_memory = MklDnn.PrimitiveCreate0(input_pd)
         src_md = MklDnnOps.primitiveDescQueryMemory(input_pd)
-        val src_format = MklDnnOps.getFormat(src_md)
-        println("src from last format " + src_format + this.getName())
       } else {
         src_md = MklDnnOps.memoryDescInit(input.dim(), input.size(), dataType, this.input_format)
         src_memory = MklDnnOps.createMemoryPrimitive(src_md, engine)
-        val src_format = MklDnnOps.getFormat(src_md)
-        println("src from here format " + src_format + this.getName())
       }
 
       // for output
@@ -212,7 +210,7 @@ class PoolingDnn[T: ClassTag](
       val workdspace_pd = MklDnnOps.primitiveDescQueryPd(fwd_pd, MklDnn.Query.workspace_pd, 0)
       work_memory = MklDnn.PrimitiveCreate0(workdspace_pd)
       val workdspace_size = MklDnn.PrimitiveDescGetSize(workdspace_pd)
-      workSpace.resize(workdspace_size.toInt)
+      if (workSpace == null) workSpace = MklDnnTensor[Float](Array(workdspace_size.toInt))
 
 
       val inputs = Array(src_memory)
@@ -229,8 +227,13 @@ class PoolingDnn[T: ClassTag](
       println("pooling updateoutput start " + this.getName())
     }
     val n_fwd = stream_fwd.length
+    if (input.getTensorType != MklDnnType) {
+      MklDnnTensor.syncFromHeap(inputBuffer, input.storage().array(), input.storageOffset() - 1)
+    } else {
+      inputBuffer = input.asInstanceOf[MklDnnTensor[Float]]
+    }
     val memoryPrimitives = Array(src_memory, dst_memory, work_memory)
-    val buffer = Array(input, output, workSpace)
+    val buffer = Array(inputBuffer, output, workSpace)
     MklDnnOps.streamSubmit(stream, n_fwd, stream_fwd.toArray, n_fwd, memoryPrimitives, buffer)
 
     val end1 = (System.nanoTime() - s1)/1e6
@@ -242,6 +245,10 @@ class PoolingDnn[T: ClassTag](
 
   override def updateGradInput(input: Tensor[Float], gradOutput: Tensor[Float]): Tensor[Float] = {
     val s1 = System.nanoTime()
+    if (gradOutputBuffer == null || gradOutputBuffer.nElement() < gradOutput.nElement() ||
+      gradOutput.getTensorType != MklDnnType) {
+      gradOutputBuffer = MklDnnTensor[Float](gradOutput.size())
+    }
     if (update_primitive) {
       var gradOutput_md : Long = 0L
       if (gradOutput.getPrimitiveDesc() != 0L) {
@@ -255,7 +262,8 @@ class PoolingDnn[T: ClassTag](
       }
 
       // for gradInput
-      gradInput.resizeAs(input)
+      // todo: output with Dense Tensor
+      gradInput = MklDnnTensor[Float](input.size())
       val gradInput_md = MklDnnOps.memoryDescInit(gradInput.dim(), gradInput.size(),
         dataType, this.internal_format)
 
@@ -296,11 +304,19 @@ class PoolingDnn[T: ClassTag](
       if (reorder_gradOutput_memory != 0L) stream_bwd.append(reorder_gradOutput)
       stream_bwd.append(bwd)
     }
-    // println("pool backward start")
     val n_bwd = stream_bwd.length
-    val memoryPrimitives = Array(gradOutput_memory, reorder_gradOutput_memory, work_memory,
-      gradInput_memory)
-    val buffer = Array(gradOutput, gradOutputBuffer, workSpace, gradInput)
+    val (memoryPrimitives, buffer) =
+      if (reorder_gradOutput_memory == 0L && gradOutput.getTensorType != MklDnnType) {
+      // sync here
+      MklDnnTensor.syncFromHeap(
+        gradOutputBuffer, gradOutput.storage().array(), gradOutput.storageOffset() - 1)
+      (Array(gradOutput_memory, work_memory, gradInput_memory),
+      Array(gradOutputBuffer, workSpace, gradInput))
+    } else {
+      (Array(gradOutput_memory, reorder_gradOutput_memory, work_memory, gradInput_memory),
+        Array(gradOutput, gradOutputBuffer, workSpace, gradInput))
+    }
+
     MklDnnOps.streamSubmit(stream, n_bwd, stream_bwd.toArray, n_bwd, memoryPrimitives, buffer)
 
     val end1 = (System.nanoTime() - s1)/1e6
