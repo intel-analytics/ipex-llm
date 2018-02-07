@@ -16,14 +16,9 @@
 
 package com.intel.analytics.bigdl.python.api
 
-import java.lang.{Boolean => JBoolean}
 import java.util.{ArrayList => JArrayList, HashMap => JHashMap, List => JList, Map => JMap}
 
-import com.intel.analytics.bigdl.dataset.{Identity => DIdentity, Sample => JSample}
-import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.nn.keras._
-import com.intel.analytics.bigdl.nn.tf.{Shape => TfShape}
-import com.intel.analytics.bigdl.nn.{InitializationMethod, RandomUniform}
 import com.intel.analytics.bigdl.numeric._
 import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
