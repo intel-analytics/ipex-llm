@@ -808,7 +808,8 @@ object DistriOptimizer {
     (0 until parameterArray._2.length).foreach(i =>
       parameterArray._2(i).resizeAs(parameterArray._1(i))
     )
-    trainingModel.getParameters()
+
+    val (parameter, gradientParameter) = trainingModel.getParameters()
 
     parameters.foreach { case (moduleName, (pOffset, pLength, p)) =>
       val currentModule = trainingModel(moduleName)
@@ -820,11 +821,9 @@ object DistriOptimizer {
           Map(curPartitionId -> p.gradientPartition)))
       }).reduce((a, b) => (a._1 ++ b._1, a._2 ++ b._2))
 
-      val (parameter, gradientParameter) = currentModule.get.getParameters()
-      val parameterLength = parameter.nElement()
-      val taskSize = parameterLength / partitionNum
+      val taskSize = pLength / partitionNum
       require(taskSize != 0, "parameter length should not less than partition number")
-      val extraSize = parameterLength % partitionNum
+      val extraSize = pLength % partitionNum
 
       (0 until partitionNum).map(pid => {
         val start = pOffset + pid * taskSize + math.min(pid, extraSize)
