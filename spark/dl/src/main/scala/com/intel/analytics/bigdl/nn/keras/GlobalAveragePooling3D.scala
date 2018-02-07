@@ -29,14 +29,21 @@ import scala.reflect.ClassTag
 /**
  * Global Average pooling operation for 3D data.
  * When you use this layer as the first layer of a model, you need to provide the argument
- * inputShape (a Single Shape, does not include the batch dimension),
- * e.g. inputShape=Shape(3, 128, 128) for 128x128 RGB pictures.
+ * inputShape (a Single Shape, does not include the batch dimension).
+ *
  * Data format currently supported for this layer is 'CHANNEL_FIRST' (dimOrdering='th').
  * The input of this layer should be 5D.
+ *
+ * @param format Format of input data. Either DataFormat.NCHW (dimOrdering='th') or
+ *               DataFormat.NHWC (dimOrdering='tf'). Default is NCHW.
+ * @tparam T The numeric type of parameter(e.g. weight, bias). Only support float/double now.
  */
 class GlobalAveragePooling3D[T: ClassTag](
+   val format: String = "CHANNEL_FIRST",
    inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends GlobalPooling3D[T](inputShape) {
+
+  require(format.toLowerCase() == "channel_first", s"$format is not supported")
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
     val input = inputShape.toSingle().toArray
@@ -59,7 +66,8 @@ class GlobalAveragePooling3D[T: ClassTag](
 
 object GlobalAveragePooling3D {
   def apply[@specialized(Float, Double) T: ClassTag](
+    dimOrdering: String = "th",
     inputShape: Shape = null)(implicit ev: TensorNumeric[T]) : GlobalAveragePooling3D[T] = {
-    new GlobalAveragePooling3D[T](inputShape)
+    new GlobalAveragePooling3D[T](KerasUtils.toBigDLFormat5D(dimOrdering), inputShape)
   }
 }

@@ -132,6 +132,9 @@ class SpatialSeperableConvolution[T: ClassTag](
   }
 
   override def computeOutputShape(inputShape: Shape): Shape = {
+    val input = inputShape.toSingle().toArray
+    require(input.length == 4,
+      s"SeparableConvolution2D requires 4D input, but got input dim ${input.length}")
     SpatialConvolution[T](nInputChannel, nOutputChannel, kW, kH,
       sW, sH, pW, pH, format = dataFormat).computeOutputShape(inputShape)
   }

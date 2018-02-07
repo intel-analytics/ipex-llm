@@ -29,9 +29,10 @@ import scala.reflect.ClassTag
 /**
  * Global max pooling operation for temporal data.
  * When you use this layer as the first layer of a model, you need to provide the argument
- * inputShape (a Single Shape, does not include the batch dimension),
- * e.g. inputShape=Shape(3, 128, 128) for 128x128 RGB pictures.
+ * inputShape (a Single Shape, does not include the batch dimension).
  * The input of this layer should be 3D.
+ *
+ * @tparam T The numeric type of parameter(e.g. weight, bias). Only support float/double now.
  */
 class GlobalMaxPooling1D[T: ClassTag](
    inputShape: Shape = null)(implicit ev: TensorNumeric[T])
@@ -44,10 +45,6 @@ class GlobalMaxPooling1D[T: ClassTag](
     val layer = SpatialMaxPooling(
       kW = 1,
       kH = input(1),
-      dW = 1,
-      dH = 1,
-      padW = 0,
-      padH = 0,
       format = DataFormat.NHWC)
     model.add(layer)
     model.add(Squeeze(3))

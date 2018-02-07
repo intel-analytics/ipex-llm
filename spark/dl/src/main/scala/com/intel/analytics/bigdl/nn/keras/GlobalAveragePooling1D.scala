@@ -29,9 +29,10 @@ import scala.reflect.ClassTag
 /**
  * Global average pooling operation for temporal data.
  * When you use this layer as the first layer of a model, you need to provide the argument
- * inputShape (a Single Shape, does not include the batch dimension),
- * e.g. inputShape=Shape(3, 128, 128) for 128x128 RGB pictures.
+ * inputShape (a Single Shape, does not include the batch dimension).
  * The input of this layer should be 3D.
+ *
+ * @tparam T The numeric type of parameter(e.g. weight, bias). Only support float/double now.
  */
 class GlobalAveragePooling1D[T: ClassTag](
    inputShape: Shape = null)(implicit ev: TensorNumeric[T])

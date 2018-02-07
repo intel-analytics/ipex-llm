@@ -30,14 +30,14 @@ import scala.reflect.ClassTag
  * The input of this layer should be 5D.
  *
  * When you use this layer as the first layer of a model, you need to provide the argument
- * inputShape (a Single Shape, does not include the batch dimension),
- * e.g. inputShape=Shape(3, 128, 128) for 128x128 RGB pictures.
+ * inputShape (a Single Shape, does not include the batch dimension).
  *
  * @param padding Int array of length 3.
  *                How many zeros to add at the beginning and end of the 3 padding dimensions.
  *                Symmetric padding will be applied to each dimension. Default is (1, 1, 1).
- * @param format Format of the input data. Either "CHANNEL_FIRST" or "CHANNEL_LAST".
- *               Default is "CHANNEL_FIRST".
+ * @param format Format of the input data. Either "CHANNEL_FIRST" (dimOrdering='th') or
+ *               "CHANNEL_LAST" (dimOrdering='tf'). Default is "CHANNEL_FIRST".
+ * @tparam T The numeric type of parameter(e.g. weight, bias). Only support float/double now.
  */
 class ZeroPadding3D[T: ClassTag](
    val padding: Array[Int] = Array(1, 1, 1),

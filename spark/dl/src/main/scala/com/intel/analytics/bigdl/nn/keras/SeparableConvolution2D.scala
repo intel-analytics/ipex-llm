@@ -35,8 +35,7 @@ import scala.reflect.ClassTag
  * You can also use SeparableConv2D as an alias of this layer.
  *
  * When using this layer as the first layer in a model, you need to provide the argument
- * inputShape (a Single Shape, does not include the batch dimension),
- * e.g. inputShape=Shape(3, 128, 128) for 128x128 RGB pictures.
+ * inputShape (a Single Shape, does not include the batch dimension).
  *
  * @param nbFilter Number of convolution filters to use.
  * @param nbRow Number of rows in the convolution kernel.
@@ -57,11 +56,11 @@ import scala.reflect.ClassTag
  * @param pointwiseRegularizer An instance of [[Regularizer]], (eg. L1 or L2 regularization),
  *                             applied to the pointwise weights matrices. Default is null.
  * @param bRegularizer An instance of [[Regularizer]], applied to the bias. Default is null.
- * @param format Format of the input data.
- *               Either DataFormat.NCHW or DataFormat.NHWC. Default is NCHW.
+ * @param format Format of input data. Either DataFormat.NCHW (dimOrdering='th') or
+  *              DataFormat.NHWC (dimOrdering='tf'). Default is NCHW.
  * @param bias Whether to include a bias (i.e. make the layer affine rather than linear).
  *             Default is true.
- * @tparam T The numeric type of parameter(e.g. weight, bias). Only support float/double now
+ * @tparam T The numeric type of parameter(e.g. weight, bias). Only support float/double now.
  */
 class SeparableConvolution2D[T: ClassTag](
    val nbFilter: Int,
