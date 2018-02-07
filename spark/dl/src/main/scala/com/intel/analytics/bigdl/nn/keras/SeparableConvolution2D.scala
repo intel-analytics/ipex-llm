@@ -50,7 +50,8 @@ import scala.reflect.ClassTag
  * @param borderMode Either 'valid' or 'same'. Default is 'valid'.
  * @param subsample Int array of length 2. The step of the convolution in the height and
  *                  width dimension. Also called strides elsewhere. Default is (1, 1).
- * @param depthMultiplier How many output channel to use per input channel for the depthwise convolution step.
+ * @param depthMultiplier How many output channel to use per input channel
+ *                        for the depthwise convolution step.
  * @param depthwiseRegularizer An instance of [[Regularizer]], (eg. L1 or L2 regularization),
  *                             applied to the depthwise weights matrices. Default is null.
  * @param pointwiseRegularizer An instance of [[Regularizer]], (eg. L1 or L2 regularization),

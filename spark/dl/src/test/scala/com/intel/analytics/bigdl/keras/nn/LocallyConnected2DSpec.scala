@@ -49,7 +49,8 @@ class LocallyConnected2DSpec extends KerasBaseSpec {
       """
         |input_tensor = Input(shape=[12, 24, 24])
         |input = np.random.random([2, 12, 24, 24])
-        |output_tensor = LocallyConnected2D(32, 2, 2, dim_ordering="th", activation="relu")(input_tensor)
+        |output_tensor = LocallyConnected2D(32, 2, 2, dim_ordering="th",
+        |                                   activation="relu")(input_tensor)
         |model = Model(input=input_tensor, output=output_tensor)
       """.stripMargin
     val seq = KSequential[Float]()
@@ -65,7 +66,8 @@ class LocallyConnected2DSpec extends KerasBaseSpec {
       """
         |input_tensor = Input(shape=[8, 32, 32])
         |input = np.random.random([2, 8, 32, 32])
-        |output_tensor = LocallyConnected2D(64, 3, 3, bias=False, dim_ordering="th")(input_tensor)
+        |output_tensor = LocallyConnected2D(64, 3, 3, bias=False,
+        |                                   dim_ordering="th")(input_tensor)
         |model = Model(input=input_tensor, output=output_tensor)
       """.stripMargin
     val seq = KSequential[Float]()
@@ -80,7 +82,8 @@ class LocallyConnected2DSpec extends KerasBaseSpec {
       """
         |input_tensor = Input(shape=[12, 24, 24])
         |input = np.random.random([2, 12, 24, 24])
-        |output_tensor = LocallyConnected2D(32, 2, 2, dim_ordering="tf", activation="relu")(input_tensor)
+        |output_tensor = LocallyConnected2D(32, 2, 2, dim_ordering="tf",
+        |                                   activation="relu")(input_tensor)
         |model = Model(input=input_tensor, output=output_tensor)
       """.stripMargin
     val seq = KSequential[Float]()

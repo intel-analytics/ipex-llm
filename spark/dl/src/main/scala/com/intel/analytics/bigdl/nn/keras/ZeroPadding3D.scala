@@ -33,9 +33,11 @@ import scala.reflect.ClassTag
  * inputShape (a Single Shape, does not include the batch dimension),
  * e.g. inputShape=Shape(3, 128, 128) for 128x128 RGB pictures.
  *
- * @param padding Int array of length 3. How many zeros to add at the beginning and end of the 3 padding dimensions.
+ * @param padding Int array of length 3.
+ *                How many zeros to add at the beginning and end of the 3 padding dimensions.
  *                Symmetric padding will be applied to each dimension. Default is (1, 1, 1).
- * @param format Format of the input data. Either "CHANNEL_FIRST" or "CHANNEL_LAST". Default is "CHANNEL_FIRST".
+ * @param format Format of the input data. Either "CHANNEL_FIRST" or "CHANNEL_LAST".
+ *               Default is "CHANNEL_FIRST".
  */
 class ZeroPadding3D[T: ClassTag](
    val padding: Array[Int] = Array(1, 1, 1),

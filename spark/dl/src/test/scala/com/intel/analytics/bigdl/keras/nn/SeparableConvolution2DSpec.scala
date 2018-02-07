@@ -54,7 +54,8 @@ class SeparableConvolution2DSpec extends KerasBaseSpec {
       """
         |input_tensor = Input(shape=[3, 4, 5])
         |input = np.random.random([2, 3, 4, 5])
-        |output_tensor = SeparableConvolution2D(3, 3, 3, dim_ordering='th', bias=False)(input_tensor)
+        |output_tensor = SeparableConvolution2D(3, 3, 3, dim_ordering='th',
+        |                                       bias=False)(input_tensor)
         |model = Model(input=input_tensor, output=output_tensor)
       """.stripMargin
     val seq = KSequential[Float]()
@@ -79,7 +80,8 @@ class SeparableConvolution2DSpec extends KerasBaseSpec {
       """
         |input_tensor = Input(shape=[3, 128, 128])
         |input = np.random.random([2, 3, 128, 128])
-        |output_tensor = SeparableConvolution2D(1, 2, 2, activation="relu", dim_ordering='tf')(input_tensor)
+        |output_tensor = SeparableConvolution2D(1, 2, 2, activation="relu",
+        |                                       dim_ordering='tf')(input_tensor)
         |model = Model(input=input_tensor, output=output_tensor)
       """.stripMargin
     val seq = KSequential[Float]()
