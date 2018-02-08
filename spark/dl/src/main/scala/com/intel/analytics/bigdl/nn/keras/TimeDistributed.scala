@@ -28,22 +28,23 @@ class TimeDistributed[T: ClassTag](
    val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {
 
+  private def getInnerInput(input: Array[Int]): Array[Int] = {
+    Array(input(0)) ++ input.slice(2, input.length)
+  }
+
   override def computeOutputShape(inputShape: Shape): Shape = {
     val input = inputShape.toSingle().toArray
     require(input.length >=3,
       s"TimeDistributed requires at least 3D input, but got input dim ${input.length}")
-    val innerInput = Array(input(0)) ++ input.slice(2, input.length)
-    val seq = Sequential[T]()
-    seq.add(InputLayer(inputShape = KerasLayer.removeBatch(Shape(innerInput))))
-    seq.add(layer)
-    val innerOutput = seq.getOutputShape().toSingle()
+    val innerInput = getInnerInput(input)
+    val innerOutput = layer.build(Shape(innerInput)).toSingle()
     val output = innerOutput.take(1) ++ List(input(1)) ++ innerOutput.drop(1)
     Shape(output.toArray)
   }
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
     val input = inputShape.toSingle().toArray
-    val innerInput = Array(input(0)) ++ input.slice(2, input.length)
+    val innerInput = getInnerInput(input)
     val klayer = layer.doBuild(Shape(innerInput)).asInstanceOf[TensorModule[T]]
     val timedistributed = com.intel.analytics.bigdl.nn.TimeDistributed(klayer)
     timedistributed.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]

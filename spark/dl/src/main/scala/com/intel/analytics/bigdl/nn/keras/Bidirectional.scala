@@ -34,7 +34,7 @@ class Bidirectional[T: ClassTag](
 
   require(layer.returnSequences, "Bidirectional requires RNNs to return the full sequence")
   require(mode == "sum" || mode == "mul" || mode == "concat" || mode == "ave",
-    s"Invalid merge mode: $mergeMode")
+    s"Invalid merge mode: $mode")
 
   override def computeOutputShape(inputShape: Shape): Shape = {
     val output = layer.computeOutputShape(inputShape)
