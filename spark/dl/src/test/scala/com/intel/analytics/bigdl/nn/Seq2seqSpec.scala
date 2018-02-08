@@ -71,7 +71,8 @@ class Seq2seqSpec extends FlatSpec with BeforeAndAfter with Matchers {
     var decoderRecs = Array(RecurrentDecoder(seqLength).add(MultiRNNCell(decoderCells))
       .asInstanceOf[Recurrent[Double]])
     val model = Seq2seq(encoderRecs, decoderRecs,
-      decoderInputType = DecoderInputType.ENCODERINPUTLASTTIME)
+//      decoderInputType = DecoderInputType.ENCODERINPUTLASTTIME)
+      decoderInputType = "ENCODERINPUTLASTTIME")
 
     for (i <- 0 until 3) {
       model.forward(input).toTensor
@@ -80,7 +81,8 @@ class Seq2seqSpec extends FlatSpec with BeforeAndAfter with Matchers {
 
     decoderRecs = decoderCells.map(Recurrent().add(_))
     val model2 = Seq2seq(encoderRecs, decoderRecs,
-      decoderInputType = DecoderInputType.ENCODERINPUTSPLIT)
+//      decoderInputType = DecoderInputType.ENCODERINPUTSPLIT)
+      decoderInputType = "ENCODERINPUTSPLIT")
 
     for (i <- 0 until 3) {
       val output = model2.forward(T(input, input)).toTensor
@@ -138,7 +140,8 @@ class Seq2seqSpec extends FlatSpec with BeforeAndAfter with Matchers {
     ).asInstanceOf[Array[Array[TensorModule[Double]]]]
     val model = Seq2seq(encoderRecs, decoderRecs,
       shrinkHiddenStateModules = shirnkStatesModules,
-      decoderInputType = DecoderInputType.ENCODERINPUTLASTTIME)
+//      decoderInputType = DecoderInputType.ENCODERINPUTLASTTIME)
+      decoderInputType = "ENCODERINPUTLASTTIME")
 
     for (i <- 0 until 3) {
       model.forward(input).toTensor
@@ -237,7 +240,8 @@ class Seq2seqSpec extends FlatSpec with BeforeAndAfter with Matchers {
     var decoderRecs = Array(RecurrentDecoder(seqLength).add(decoderCells)
       .asInstanceOf[Recurrent[Double]])
     val model = Seq2seq(encoderRecs, decoderRecs,
-      decoderInputType = DecoderInputType.ENCODERINPUTLASTTIME)
+//      decoderInputType = DecoderInputType.ENCODERINPUTLASTTIME)
+      decoderInputType = "ENCODERINPUTLASTTIME")
 
     for (i <- 0 until 3) {
       model.forward(input).toTensor
@@ -246,7 +250,8 @@ class Seq2seqSpec extends FlatSpec with BeforeAndAfter with Matchers {
 
     decoderRecs = Array(Recurrent().add(decoderCells))
     val model2 = Seq2seq(encoderRecs, decoderRecs,
-      decoderInputType = DecoderInputType.ENCODERINPUTSPLIT)
+//      decoderInputType = DecoderInputType.ENCODERINPUTSPLIT)
+      decoderInputType = "ENCODERINPUTSPLIT")
 
     for (i <- 0 until 3) {
       val output = model2.forward(T(input, input)).toTensor
@@ -372,7 +377,8 @@ class Seq2seqSpec extends FlatSpec with BeforeAndAfter with Matchers {
     val preEncoder = enclookuptable
     val preDecoder = declookuptable
     val seq2seq = Seq2seq(encoderRec, decoderRec, preEncoder = preEncoder,
-      preDecoder = preDecoder, decoderInputType = DecoderInputType.ENCODERINPUTSPLIT)
+//      preDecoder = preDecoder, decoderInputType = DecoderInputType.ENCODERINPUTSPLIT)
+      preDecoder = preDecoder, decoderInputType = "ENCODERINPUTSPLIT")
 
     val model = Sequential().add(seq2seq).add(TimeDistributed(linear))
       .add(TimeDistributed(LogSoftMax()))

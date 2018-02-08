@@ -18,17 +18,25 @@ package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
 import com.intel.analytics.bigdl.nn.DecoderInputType.DecoderInputType
+import com.intel.analytics.bigdl.serialization.Bigdl.{AttrValue, BigDLModule}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.serializer.converters.DataConverter
+import com.intel.analytics.bigdl.utils.serializer._
 
 import scala.reflect.ClassTag
 import com.intel.analytics.bigdl.utils.{T, Table}
 
-class Seq2seq[T: ClassTag](encoderRecs: Array[Recurrent[T]], decoderRecs: Array[Recurrent[T]],
-   preEncoder: AbstractModule[Activity, Activity, T] = null,
-   preDecoder: AbstractModule[Activity, Activity, T] = null,
-   shrinkHiddenStateModules: Array[Array[TensorModule[T]]] = null,
-   decoderInputType: DecoderInputType = DecoderInputType.ENCODERINPUTLASTTIME)
+import scala.collection.mutable.ArrayBuffer
+import scala.reflect.runtime._
+
+class Seq2seq[T: ClassTag](val encoderRecs: Array[Recurrent[T]],
+   val decoderRecs: Array[Recurrent[T]],
+   val preEncoder: AbstractModule[Activity, Activity, T] = null,
+   val preDecoder: AbstractModule[Activity, Activity, T] = null,
+   val shrinkHiddenStateModules: Array[Array[TensorModule[T]]] = null,
+//   val decoderInputType: DecoderInputType = DecoderInputType.ENCODERINPUTLASTTIME)
+   val decoderInputType: String = "ENCODERINPUTLASTTIME")
   (implicit ev: TensorNumeric[T]) extends AbstractModule[Activity, Tensor[T], T] {
   var preDecoderInput: Tensor[T] = null
   var decoderInput: Tensor[T] = null
@@ -51,10 +59,12 @@ class Seq2seq[T: ClassTag](encoderRecs: Array[Recurrent[T]], decoderRecs: Array[
   override def updateOutput(input: Activity): Tensor[T] = {
     val feedbackPreviousOutput = decoderRecs.head.isInstanceOf[RecurrentDecoder[T]]
     decoderInputType match {
-      case DecoderInputType.ENCODERINPUTSPLIT =>
+//      case DecoderInputType.ENCODERINPUTSPLIT =>
+      case "ENCODERINPUTSPLIT" =>
         encoderInput = input.toTable(1)
         preDecoderInput = input.toTable(2)
-      case DecoderInputType.ENCODERINPUTLASTTIME =>
+//      case DecoderInputType.ENCODERINPUTLASTTIME =>
+      case "ENCODERINPUTLASTTIME" =>
         require(feedbackPreviousOutput, "ENCODERINPUTLASTTIME can" +
           "only work with RecurrentDecoder")
         encoderInput = input.toTensor
@@ -200,15 +210,125 @@ class Seq2seq[T: ClassTag](encoderRecs: Array[Recurrent[T]], decoderRecs: Array[
   }
 }
 
-object Seq2seq {
+object Seq2seq extends ModuleSerializable {
   def apply[@specialized(Float, Double) T: ClassTag](encoderCells: Array[Recurrent[T]],
      decoderCells: Array[Recurrent[T]], preEncoder: AbstractModule[Activity, Activity, T] = null,
      preDecoder: AbstractModule[Activity, Activity, T] = null,
      shrinkHiddenStateModules: Array[Array[TensorModule[T]]] = null,
-     decoderInputType: DecoderInputType = DecoderInputType.ENCODERINPUTLASTTIME)
+//     decoderInputType: DecoderInputType = DecoderInputType.ENCODERINPUTLASTTIME)
+     decoderInputType: String = "ENCODERINPUTLASTTIME")
     (implicit ev: TensorNumeric[T]): Seq2seq[T] = {
     new Seq2seq[T](encoderCells, decoderCells, preEncoder, preDecoder,
       shrinkHiddenStateModules, decoderInputType)
+  }
+
+  override def doLoadModule[T: ClassTag](context: DeserializeContext)
+    (implicit ev: TensorNumeric[T]) : AbstractModule[Activity, Activity, T] = {
+    val attrMap = context.bigdlModule.getAttrMap
+    val encoderCellsAttr = attrMap.get("encoderCells")
+    val encoderCells = DataConverter.
+      getAttributeValue(context, encoderCellsAttr).
+//      asInstanceOf[Array[Recurrent[T]]]
+      asInstanceOf[Array[AbstractModule[_, _, T]]].map(_.asInstanceOf[Recurrent[T]])
+
+    val decoderCellsAttr = attrMap.get("decoderCells")
+    val decoderCells = DataConverter.
+      getAttributeValue(context, decoderCellsAttr).
+//      asInstanceOf[Array[Recurrent[T]]]
+      asInstanceOf[Array[AbstractModule[_, _, T]]].map(_.asInstanceOf[Recurrent[T]])
+
+    val preEncoderAttr = attrMap.get("preEncoder")
+    val preEncoder = DataConverter.
+      getAttributeValue(context, preEncoderAttr).
+      asInstanceOf[AbstractModule[Activity, Activity, T]]
+
+    val preDecoderAttr = attrMap.get("preDecoder")
+    val preDecoder = DataConverter.
+      getAttributeValue(context, preDecoderAttr).
+      asInstanceOf[AbstractModule[Activity, Activity, T]]
+
+    val shrinkHiddenStateAttr = attrMap.get("shrinkHiddenStateModules")
+    val shrinkHiddenStateModules = DataConverter.
+      getAttributeValue(context, shrinkHiddenStateAttr).
+      asInstanceOf[Array[TensorModule[T]]]
+    val shrinkHiddenStateModulesBuffer = ArrayBuffer[Array[TensorModule[T]]]()
+    var i = 0
+    while (i < shrinkHiddenStateModules.size) {
+      shrinkHiddenStateModulesBuffer += shrinkHiddenStateModules.slice(i, i + 2)
+      i += 2
+    }
+
+//    val decoderInputTypeAttr = attrMap.get("decoderInputType")
+//    val decoderInputTypeStr = DataConverter.
+//      getAttributeValue(context, decoderInputTypeAttr).
+//      asInstanceOf[String]
+//    val decoderInputType = if (decoderInputTypeStr.equals("ENCODERINPUTSPLIT")) {
+//      DecoderInputType.ENCODERINPUTSPLIT
+//    } else {
+//      DecoderInputType.ENCODERINPUTLASTTIME
+//    }
+
+    val decoderInputTypeAttr = attrMap.get("decoderInputType")
+    val decoderInputType = decoderInputTypeAttr.getStringValue
+
+    Seq2seq(encoderCells, decoderCells, preEncoder, preDecoder,
+      shrinkHiddenStateModulesBuffer.toArray, decoderInputType)
+  }
+
+  override def doSerializeModule[T: ClassTag](context: SerializeContext[T],
+    seq2seqBuilder : BigDLModule.Builder)
+   (implicit ev: TensorNumeric[T]) : Unit = {
+    super.doSerializeModule(context, seq2seqBuilder)
+
+    val seq2seq = context.moduleData.module.asInstanceOf[Seq2seq[T]]
+
+    val encoderRecsBuilder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(context,
+      encoderRecsBuilder, seq2seq.encoderRecs,
+//      universe.typeOf[Array[Recurrent[_ <: scala.Any]]]
+      universe.typeOf[Array[_ <:
+        AbstractModule[_ <: Activity, _ <:  Activity, _ <: Any]]]
+    )
+    seq2seqBuilder.putAttr("encoderCells", encoderRecsBuilder.build)
+
+    val decoderRecsBuilder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(context,
+    decoderRecsBuilder, seq2seq.decoderRecs,
+//    universe.typeOf[Array[Recurrent[_ <: scala.Any]]])
+      universe.typeOf[Array[_ <:
+        AbstractModule[_ <: Activity, _ <:  Activity, _ <: Any]]])
+    seq2seqBuilder.putAttr("decoderCells", decoderRecsBuilder.build)
+
+    if (seq2seq.preEncoder != null) {
+      val preEncoderBuilder = AttrValue.newBuilder
+      DataConverter.setAttributeValue(context,
+        preEncoderBuilder, seq2seq.preEncoder,
+        ModuleSerializer.abstractModuleType)
+      seq2seqBuilder.putAttr("preEncoder", preEncoderBuilder.build)
+    }
+
+    if (seq2seq.preDecoder != null) {
+      val preDecoderBuilder = AttrValue.newBuilder
+      DataConverter.setAttributeValue(context,
+        preDecoderBuilder, seq2seq.preDecoder,
+        ModuleSerializer.abstractModuleType)
+      seq2seqBuilder.putAttr("preDecoder", preDecoderBuilder.build)
+    }
+
+    if (seq2seq.shrinkHiddenStateModules != null) {
+      val shrinkHiddenStateModulesBuilder = AttrValue.newBuilder
+      DataConverter.setAttributeValue(context,
+        shrinkHiddenStateModulesBuilder, seq2seq.shrinkHiddenStateModules.flatten,
+        universe.typeOf[Array[TensorModule[_ <: scala.Any]]])
+      seq2seqBuilder.putAttr("shrinkHiddenStateModules", shrinkHiddenStateModulesBuilder.build)
+    }
+
+    val inputType = seq2seq.decoderInputType.toString
+    val decoderInputTypeBuilder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(context,
+      decoderInputTypeBuilder, inputType,
+      universe.typeOf[String])
+    seq2seqBuilder.putAttr("DecoderInputType", decoderInputTypeBuilder.build)
   }
 }
 

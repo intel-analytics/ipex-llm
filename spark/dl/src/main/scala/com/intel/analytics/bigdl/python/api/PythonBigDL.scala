@@ -2550,13 +2550,13 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     shrinkHiddenStateModules: JList[JList[TensorModule[T]]],
     decoderInputType: String
     ): Seq2seq[T] = {
-    val inputType = decoderInputType match {
-      case "ENCODERINPUTSPLIT" => DecoderInputType.ENCODERINPUTSPLIT
-      case "ENCODERINPUTLASTTIME" => DecoderInputType.ENCODERINPUTLASTTIME
-      case n: String =>
-        throw new IllegalArgumentException(s"Only support 'ENCODERINPUTSPLIT', " +
-          s", 'ENCODERINPUTLASTTIME': $n")
-    }
+//    val inputType = decoderInputType match {
+//      case "ENCODERINPUTSPLIT" => DecoderInputType.ENCODERINPUTSPLIT
+//      case "ENCODERINPUTLASTTIME" => DecoderInputType.ENCODERINPUTLASTTIME
+//      case n: String =>
+//        throw new IllegalArgumentException(s"Only support 'ENCODERINPUTSPLIT', " +
+//          s", 'ENCODERINPUTLASTTIME': $n")
+//    }
 
     val shrinkModules = if (shrinkHiddenStateModules != null) {
       shrinkHiddenStateModules.asScala.toArray.map { x =>
@@ -2565,7 +2565,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
       }
     } else null
     Seq2seq(encoderCells.asScala.toArray, decoderCells.asScala.toArray, preEncoder,
-      preDecoder, shrinkModules, inputType)
+      preDecoder, shrinkModules, decoderInputType)
   }
 
   def quantize(module: AbstractModule[Activity, Activity, T]): Module[T] = {
