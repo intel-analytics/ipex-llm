@@ -2962,7 +2962,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def initExecutorGateway(sc: JavaSparkContext, driverPort: Int): Unit = {
-    sc.parallelize(Seq(""))
+    sc.parallelize(Seq(""), Engine.coreNumber())
       .foreachPartition(_ => Engine.createJavaGateway(driverPort))
   }
 }
