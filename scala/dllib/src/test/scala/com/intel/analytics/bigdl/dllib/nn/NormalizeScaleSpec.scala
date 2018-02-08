@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.optim.L2Regularizer
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
 
 class NormalizeScaleSpec extends FlatSpec with Matchers {
@@ -361,5 +362,15 @@ class NormalizeScaleSpec extends FlatSpec with Matchers {
     module.parameters()._2(0).apply1(x => {
       assert(x == 0); x
     })
+  }
+}
+
+class NormalizeScaleSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val module = NormalizeScale[Float](2, scale = 20, size = Array(1, 5, 1, 1),
+      wRegularizer = L2Regularizer[Float](0.2)).setName("NormalizeScale")
+
+    val input = Tensor[Float](1, 5, 3, 4).randn()
+    runSerializationTest(module, input)
   }
 }
