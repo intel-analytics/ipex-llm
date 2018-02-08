@@ -28,6 +28,7 @@ import pytest
 from numpy.testing import assert_allclose, assert_array_equal
 from bigdl.util.engine import compare_version
 from bigdl.transform.vision.image import *
+from bigdl.models.utils.model_broadcast import broadcastModel
 np.random.seed(1337)  # for reproducibility
 
 
@@ -600,6 +601,18 @@ class TestSimple():
         result4 = model.predict_class([JTensor.from_ndarray(np.ones([4, 3])),
                                        JTensor.from_ndarray(np.ones([4, 3]))])
         assert result4.shape == (4,)
+
+    def test_model_broadcast(self):
+
+        init_executor_gateway(self.sc)
+        model = Linear(3, 2)
+        broadcasted = broadcastModel(self.sc, model)
+        input_data = np.random.rand(3)
+        output = self.sc.parallelize([input_data], 1)\
+            .map(lambda x: broadcasted.value.forward(x)).first()
+        expected = model.forward(input_data)
+
+        assert_allclose(output, expected)
 
 if __name__ == "__main__":
     pytest.main([__file__])
