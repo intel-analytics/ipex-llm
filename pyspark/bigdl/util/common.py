@@ -540,8 +540,6 @@ def get_spark_context(conf=None):
     :param conf: combining bigdl configs into spark conf
     :return: SparkContext
     """
-    if SparkFiles._is_running_on_worker:
-        return None
     if hasattr(SparkContext, "getOrCreate"):
         with SparkContext._lock:
             if SparkContext._active_spark_context is None:
