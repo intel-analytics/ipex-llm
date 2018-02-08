@@ -29,11 +29,11 @@ class TimeDistributedSpec extends KerasBaseSpec {
       """
         |input_tensor = Input(shape=[10, 12])
         |input = np.random.random([3, 10, 12])
-        |output_tensor = TimeDistributed(Dense(8))(input_tensor)
+        |output_tensor = TimeDistributed(Dense(8, activation="relu"))(input_tensor)
         |model = Model(input=input_tensor, output=output_tensor)
       """.stripMargin
     val seq = KSequential[Float]()
-    val layer = TimeDistributed[Float](Dense(8), inputShape = Shape(10, 12))
+    val layer = TimeDistributed[Float](Dense(8, activation = "relu"), inputShape = Shape(10, 12))
     seq.add(layer)
     seq.getOutputShape().toSingle().toArray should be (Array(-1, 10, 8))
     def weightConverter(in: Array[Tensor[Float]]): Array[Tensor[Float]] = Array(in(0).t(), in(1))
