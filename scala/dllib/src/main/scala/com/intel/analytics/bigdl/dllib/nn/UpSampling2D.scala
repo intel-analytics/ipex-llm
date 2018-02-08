@@ -19,6 +19,7 @@ package com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.nn.abstractnn.{DataFormat, TensorModule}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.Shape
 
 import scala.reflect.ClassTag
 
@@ -38,6 +39,18 @@ class UpSampling2D[T: ClassTag] (val size: Array[Int], val format: DataFormat = 
     s" 2 elements, but got ${size.mkString("x")}")
   require(size(0) > 0 && size(1) > 0, "UpSampling2D's size should be bigger than 0," +
     s"but got ${size.mkString("x")}")
+
+  override def computeOutputShape(inputShape: Shape): Shape = {
+    val input = inputShape.toSingle().toArray
+    require(input.length == 4,
+      s"UpSampling2D requires 4D input, but got input dim ${input.length}")
+    format match {
+      case DataFormat.NCHW =>
+        Shape(input(0), input(1), input(2)*size(0), input(3)*size(1))
+      case DataFormat.NHWC =>
+        Shape(input(0), input(1)*size(0), input(2)*size(1), input(3))
+    }
+  }
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
     require(input.dim() == 4, "UpSampling2D only supports 4D input")

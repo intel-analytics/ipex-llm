@@ -16,14 +16,10 @@
 
 package com.intel.analytics.bigdl.python.api
 
-import java.lang.{Boolean => JBoolean}
 import java.util.{ArrayList => JArrayList, HashMap => JHashMap, List => JList, Map => JMap}
 
-import com.intel.analytics.bigdl.dataset.{Identity => DIdentity, Sample => JSample}
-import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
-import com.intel.analytics.bigdl.nn.keras.Dense
-import com.intel.analytics.bigdl.nn.tf.{Shape => TfShape}
-import com.intel.analytics.bigdl.nn.{InitializationMethod, RandomUniform}
+import com.intel.analytics.bigdl.nn.SpatialBatchNormalization
+import com.intel.analytics.bigdl.nn.keras._
 import com.intel.analytics.bigdl.numeric._
 import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -51,19 +47,61 @@ class PythonBigDLKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends Pytho
     }
   }
 
-  def createKerasDense(outputDim: Int,
-                   init: InitializationMethod = RandomUniform,
-                   activation: TensorModule[T] = null,
-                   wRegularizer: Regularizer[T] = null,
-                   bRegularizer: Regularizer[T] = null,
-                   bias: Boolean = true,
-                   inputShape: JList[Int] = null): Dense[T] = {
-    new Dense(outputDim,
-      init,
-      activation,
-      wRegularizer,
-      bRegularizer,
-      bias,
-      toScalaShape(inputShape))
+  def createKerasInputLayer(
+    inputShape: JList[Int] = null): Input[T] = {
+    InputLayer(inputShape = toScalaShape(inputShape))
   }
+
+  def createKerasDense(
+    outputDim: Int,
+    init: String = "glorot_uniform",
+    activation: String = null,
+    wRegularizer: Regularizer[T] = null,
+    bRegularizer: Regularizer[T] = null,
+    bias: Boolean = true,
+    inputShape: JList[Int] = null): Dense[T] = {
+    Dense(outputDim, init, activation, wRegularizer,
+      bRegularizer, bias, toScalaShape(inputShape))
+  }
+
+  def createKerasEmbedding(
+    inputDim: Int,
+    outputDim: Int,
+    init: String = "uniform",
+    wRegularizer: Regularizer[T] = null,
+    inputShape: JList[Int] = null): Embedding[T] = {
+    Embedding[T](inputDim, outputDim, init, wRegularizer, toScalaShape(inputShape))
+  }
+
+  def createKerasBatchNormalization(
+    epsilon: Double = 0.001,
+    momentum: Double = 0.99,
+    betaInit: String = "zero",
+    gammaInit: String = "one",
+    dimOrdering: String = "th",
+    inputShape: JList[Int] = null): BatchNormalization[T] = {
+    BatchNormalization[T](epsilon, momentum, betaInit,
+      gammaInit, dimOrdering, toScalaShape(inputShape))
+  }
+
+  def setKerasRunningMean(module: BatchNormalization[T], runningMean: JTensor): Unit = {
+    module.labor.asInstanceOf[SpatialBatchNormalization[T]]
+      .runningMean.set(toTensor(runningMean))
+  }
+
+  def setKerasRunningStd(module: BatchNormalization[T], runningStd: JTensor): Unit = {
+    module.labor.asInstanceOf[SpatialBatchNormalization[T]]
+      .runningVar.set(toTensor(runningStd))
+  }
+
+  def getKerasRunningMean(module: BatchNormalization[T]): JTensor = {
+    toJTensor(module.labor.asInstanceOf[SpatialBatchNormalization[T]]
+      .runningMean)
+  }
+
+  def getKerasRunningStd(module: BatchNormalization[T]): JTensor = {
+    toJTensor(module.labor.asInstanceOf[SpatialBatchNormalization[T]]
+      .runningVar)
+  }
+
 }
