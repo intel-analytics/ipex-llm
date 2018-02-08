@@ -265,4 +265,11 @@ object MklDnnOps {
     MklDnn.getFormat(memoryDesc)
   }
 
+  def reorderToInternal(user_md: Long, pd: Long, queryType: Int, data: Tensor[Float],
+                        data_size: Array[Int], index: Int = 0): (Long, Long, Long) = {
+    val internal_pd = MklDnnOps.primitiveDescQueryPd(pd, queryType, index)
+    val res = MklDnnOps.prepareReorder(user_md, internal_pd, true)
+    (res._1, res._2, internal_pd)
+  }
+
 }

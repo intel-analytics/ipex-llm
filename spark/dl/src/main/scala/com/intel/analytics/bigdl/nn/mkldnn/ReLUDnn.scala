@@ -63,16 +63,6 @@ class ReLUDnn[T: ClassTag](ip: Boolean = false, value: Float = 0.0f)(
     private var inputBuffer : MklDnnTensor[Float] = null
     private var gradOutputBuffer : MklDnnTensor[Float] = null
 
-    def reorderToInternal(user_md: Long, pd: Long, queryType: Int, data: Tensor[Float],
-                          data_size: Array[Int], index: Int = 0): (Long, Long) = {
-      val internal_pd = MklDnnOps.primitiveDescQueryPd(pd, queryType, index)
-      val res = MklDnnOps.prepareReorder(user_md, internal_pd, true)
-      if (res._1 != 0L) {
-        data.setPrimitiveDesc(internal_pd)
-      }
-      res
-    }
-
   override def updateOutput(input: Tensor[Float]): Tensor[Float] = {
       val s1 = System.nanoTime()
       if (engine == 0L) engine = this.getDnnEngine(0)
@@ -83,11 +73,6 @@ class ReLUDnn[T: ClassTag](ip: Boolean = false, value: Float = 0.0f)(
         inputElement = input.nElement()
       } else {
         update_primitive = false
-      }
-
-      if (inputBuffer == null || inputBuffer.nElement() < input.nElement() ||
-        input.getTensorType != MklDnnType) {
-        inputBuffer = MklDnnTensor[Float](input.size())
       }
 
       if (update_primitive) {
@@ -128,6 +113,13 @@ class ReLUDnn[T: ClassTag](ip: Boolean = false, value: Float = 0.0f)(
         val relu_outputs = Array(dst_memory)
         relu_fwd = MklDnnOps.primitiveCreate2(relu_fwd_pd, relu_inputs, indexes, relu_inputs.length,
           relu_outputs, relu_outputs.length)
+
+        if (inputBuffer == null && input.getTensorType != MklDnnType) {
+          inputBuffer = MklDnnTensor[Float](input.size())
+        } else if (inputBuffer != null && inputBuffer.nElement() != input.nElement()) {
+          inputBuffer.release()
+          inputBuffer = MklDnnTensor[Float](input.size())
+        }
       }
       if (System.getProperty("debug") == "1") {
         println("relu updateoutput start " + this.getName())
@@ -155,10 +147,6 @@ class ReLUDnn[T: ClassTag](ip: Boolean = false, value: Float = 0.0f)(
 
     override def updateGradInput(input: Tensor[Float], gradOutput: Tensor[Float]): Tensor[Float] = {
       val s1 = System.nanoTime()
-      if (gradOutputBuffer == null || gradOutputBuffer.nElement() < gradOutput.nElement() ||
-        gradOutput.getTensorType != MklDnnType) {
-        gradOutputBuffer = MklDnnTensor[Float](gradOutput.size())
-      }
       if (update_primitive) {
         var gradOutput_md : Long = 0L
         if (gradOutput.getPrimitiveDesc() != 0L) {
@@ -167,7 +155,9 @@ class ReLUDnn[T: ClassTag](ip: Boolean = false, value: Float = 0.0f)(
           gradOutput_memory = MklDnn.PrimitiveCreate0(gradOutput_pd)
 
           if (input.getFormat() == -1) {
-            gradOutput_md = MklDnnOps.primitiveDescQueryMemory(gradOutput_pd)
+            // gradOutput_md = MklDnnOps.primitiveDescQueryMemory(gradOutput_pd)
+            gradOutput_md = MklDnnOps.memoryDescInit(gradOutput.dim(), gradOutput.size(),
+              MklDnn.DataType.f32, this.input_format)
           } else {
             gradOutput_md = MklDnnOps.memoryDescInit(gradOutput.dim(), gradOutput.size(),
               MklDnn.DataType.f32, input.getFormat())
@@ -205,7 +195,7 @@ class ReLUDnn[T: ClassTag](ip: Boolean = false, value: Float = 0.0f)(
 
 
         /* create reorder primitives between user gradOutput and pooling gradOutput */
-        val res = reorderToInternal(gradOutput_memory, bwd_pd, MklDnn.Query.diff_dst_pd,
+        val res = MklDnnOps.reorderToInternal(gradOutput_memory, bwd_pd, MklDnn.Query.diff_dst_pd,
           gradOutputBuffer, gradOutput.size())
         reorder_gradOutput = res._1
         reorder_gradOutput_memory = res._2
@@ -223,6 +213,15 @@ class ReLUDnn[T: ClassTag](ip: Boolean = false, value: Float = 0.0f)(
 
         relu_bwd = MklDnnOps.primitiveCreate2(bwd_pd, relu_inputs, indexes, relu_inputs.length,
           relu_outputs, relu_outputs.length)
+
+        if ((gradOutputBuffer == null && gradOutput.getTensorType != MklDnnType)
+          || (reorder_gradOutput_memory != 0L && gradOutputBuffer == null)) {
+          gradOutputBuffer = MklDnnTensor[Float](gradOutput.size())
+        } else if (gradOutputBuffer != null && gradOutputBuffer.nElement() != gradOutput.nElement())
+        {
+          gradOutputBuffer.release()
+          gradOutputBuffer = MklDnnTensor[Float](gradOutput.size())
+        }
       }
 
       if (System.getProperty("debug") == "1") {

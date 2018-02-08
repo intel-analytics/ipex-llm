@@ -112,17 +112,6 @@ class PoolingDnn[T: ClassTag](
   // test
   private var dst_pd: Long = 0L
 
-
-  def reorderToInternal(user_md: Long, pd: Long, queryType: Int, data: Tensor[Float],
-                        data_size: Array[Int], index: Int = 0): (Long, Long) = {
-    val internal_pd = MklDnnOps.primitiveDescQueryPd(pd, queryType, index)
-    val res = MklDnnOps.prepareReorder(user_md, internal_pd, true)
-    if (res._1 != 0L) {
-      data.setPrimitiveDesc(internal_pd)
-    }
-    res
-  }
-
   override def updateOutput(input: Tensor[Float]): Tensor[Float] = {
     val s1 = System.nanoTime()
     if (engine == 0L) engine = this.getDnnEngine(0)
@@ -133,11 +122,6 @@ class PoolingDnn[T: ClassTag](
       inputElement = input.nElement()
     } else {
       update_primitive = false
-    }
-
-    if (inputBuffer == null || inputBuffer.nElement() < input.nElement() ||
-      input.getTensorType != MklDnnType) {
-      inputBuffer = MklDnnTensor[Float](input.size())
     }
 
     if (update_primitive) {
@@ -222,6 +206,13 @@ class PoolingDnn[T: ClassTag](
       /* build a simple net */
       stream_fwd.clear()
       stream_fwd.append(fwd)
+
+      if (inputBuffer == null && input.getTensorType != MklDnnType) {
+        inputBuffer = MklDnnTensor[Float](input.size())
+      } else if (inputBuffer != null && inputBuffer.nElement() != input.nElement()) {
+        inputBuffer.release()
+        inputBuffer = MklDnnTensor[Float](input.size())
+      }
     }
     if (System.getProperty("debug") == "1") {
       println("pooling updateoutput start " + this.getName())
@@ -245,10 +236,6 @@ class PoolingDnn[T: ClassTag](
 
   override def updateGradInput(input: Tensor[Float], gradOutput: Tensor[Float]): Tensor[Float] = {
     val s1 = System.nanoTime()
-    if (gradOutputBuffer == null || gradOutputBuffer.nElement() < gradOutput.nElement() ||
-      gradOutput.getTensorType != MklDnnType) {
-      gradOutputBuffer = MklDnnTensor[Float](gradOutput.size())
-    }
     if (update_primitive) {
       var gradOutput_md : Long = 0L
       if (gradOutput.getPrimitiveDesc() != 0L) {
@@ -282,7 +269,7 @@ class PoolingDnn[T: ClassTag](
 
       /* create reorder primitives between user gradOutput and pooling gradOutput */
       var reorder_gradOutput: Long = 0L
-      val res = reorderToInternal(gradOutput_memory, bwd_pd, MklDnn.Query.diff_dst_pd,
+      val res = MklDnnOps.reorderToInternal(gradOutput_memory, bwd_pd, MklDnn.Query.diff_dst_pd,
         gradOutputBuffer, gradOutput.size())
       reorder_gradOutput = res._1
       reorder_gradOutput_memory = res._2
@@ -303,6 +290,14 @@ class PoolingDnn[T: ClassTag](
       stream_bwd.clear()
       if (reorder_gradOutput_memory != 0L) stream_bwd.append(reorder_gradOutput)
       stream_bwd.append(bwd)
+
+      if ((gradOutputBuffer == null && gradOutput.getTensorType != MklDnnType)
+        || (reorder_gradOutput_memory != 0L && gradOutputBuffer == null)) {
+        gradOutputBuffer = MklDnnTensor[Float](gradOutput.size())
+      } else if (gradOutputBuffer != null && gradOutputBuffer.nElement() != gradOutput.nElement()) {
+        gradOutputBuffer.release()
+        gradOutputBuffer = MklDnnTensor[Float](gradOutput.size())
+      }
     }
     val n_bwd = stream_bwd.length
     val (memoryPrimitives, buffer) =
