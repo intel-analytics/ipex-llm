@@ -39,7 +39,7 @@ import scala.reflect.ClassTag
  *
  * @param p Double between 0 and 1. Fraction of the input units to drop.
  * @param dimOrdering Format of input data. Either 'CHANNEL_FIRST' (dimOrdering='th') or
- *               'CHANNEL_LAST' (dimOrdering='tf'). Default is 'CHANNEL_FIRST'.
+ *                    'CHANNEL_LAST' (dimOrdering='tf'). Default is 'CHANNEL_FIRST'.
  * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now.
  */
 class SpatialDropout3D[T: ClassTag](
@@ -54,11 +54,11 @@ class SpatialDropout3D[T: ClassTag](
           s" format $dimOrdering is not supported")
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
-    val dimordering = if (dimOrdering.toLowerCase() == "channel_first") DataFormat.NCHW
+    val format = if (dimOrdering.toLowerCase() == "channel_first") DataFormat.NCHW
                       else DataFormat.NHWC
     val layer = com.intel.analytics.bigdl.nn.SpatialDropout3D(
       initP = p,
-      format = dimordering)
+      format = format)
     layer.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
   }
 }

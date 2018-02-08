@@ -39,7 +39,7 @@ import scala.reflect.ClassTag
  *
  * @param p Double between 0 and 1. Fraction of the input units to drop.
  * @param dimOrdering Format of input data. Either DataFormat.NCHW (dimOrdering='th') or
- *               DataFormat.NHWC (dimOrdering='tf'). Default is NCHW.
+ *                    DataFormat.NHWC (dimOrdering='tf'). Default is NCHW.
  * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now.
  */
 class SpatialDropout2D[T: ClassTag](
