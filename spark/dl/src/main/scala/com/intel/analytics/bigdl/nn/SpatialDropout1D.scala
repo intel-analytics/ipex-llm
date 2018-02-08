@@ -15,7 +15,7 @@
  */
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.nn.abstractnn.{DataFormat, TensorModule}
+import com.intel.analytics.bigdl.nn.abstractnn.{DataFormat, IdentityOutputShape, TensorModule}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
@@ -37,7 +37,7 @@ import scala.reflect.ClassTag
 @SerialVersionUID(- 4636332259181125718L)
 class SpatialDropout1D[T: ClassTag](
   val initP: Double = 0.5)(
-  implicit ev: TensorNumeric[T]) extends TensorModule[T] {
+  implicit ev: TensorNumeric[T]) extends TensorModule[T] with IdentityOutputShape {
   var p = initP
   var noise = Tensor[T]()
 
