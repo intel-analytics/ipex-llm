@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.nn.ops
 import com.google.protobuf.ByteString
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
 
 class SubstrSpec extends FlatSpec with Matchers {
@@ -30,5 +31,15 @@ class SubstrSpec extends FlatSpec with Matchers {
 
     val output = Substr().forward(T(data, pos, len))
     output should be(expectOutput)
+  }
+}
+
+class SubstrSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    import com.intel.analytics.bigdl.utils.tf.TFTensorNumeric.NumericByteString
+    val subStr = Substr[Float]().setName("subStr")
+    val input = T(Tensor.scalar[ByteString](ByteString.copyFromUtf8("HelloBigDL")),
+      Tensor.scalar[Int](0), Tensor.scalar[Int](5))
+    runSerializationTest(subStr, input)
   }
 }
