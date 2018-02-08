@@ -15,7 +15,7 @@
  */
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
+import com.intel.analytics.bigdl.nn.abstractnn.{IdentityOutputShape, TensorModule}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
@@ -38,7 +38,7 @@ import scala.reflect.ClassTag
 @SerialVersionUID(- 2590701089601246637L)
 class GaussianNoise[T: ClassTag](
    val stddev: Double
-  )(implicit ev: TensorNumeric[T]) extends TensorModule[T]{
+  )(implicit ev: TensorNumeric[T]) extends TensorModule[T] with IdentityOutputShape{
 
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
