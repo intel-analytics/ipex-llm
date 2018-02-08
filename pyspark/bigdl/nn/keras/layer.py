@@ -78,7 +78,7 @@ class Dense(KerasLayer):
 
 class Embedding(KerasLayer):
     """
-    >>> embedding = Embedding(1000, 32, input_shape=(10))
+    >>> embedding = Embedding(1000, 32, input_shape=(10, ))
     creating: createKerasEmbedding
     """
     def __init__(self, input_dim, output_dim, init='uniform',
