@@ -256,7 +256,7 @@ class SpatialFullConvolution[T: ClassTag](
   override def computeOutputShape(inputShape: Shape): Shape = {
     val input = inputShape.toSingle().toArray
     require(input.length == 4,
-      s"SpatialFullConvolution requires 4D input, but got input dim ${input.length}")
+      s"Deconvolution2D requires 4D input, but got input dim ${input.length}")
     val inputHeight = input(2)
     val inputWidth = input(3)
     val outputHeight = (inputHeight - 1) * dH - 2 * padH + kH + adjH

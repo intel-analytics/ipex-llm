@@ -40,7 +40,7 @@ class Deconvolution2D[T: ClassTag](
   extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {
 
   require(dimOrdering == DataFormat.NCHW, s"Deconvolution2D currently only supports " +
-    s"format NCHW, but got format $dimOrdering.")
+    s"format NCHW, but got format $dimOrdering")
   require(subsample.length == 2,
     s"For Deconvolution2D, subsample should be of length 2 but got length ${subsample.length}")
 
@@ -70,10 +70,10 @@ object Deconvolution2D {
     init: String = "glorot_uniform",
     activation: String = null,
     subsample: (Int, Int) = (1, 1),
+    dimOrdering: String = "th",
     wRegularizer: Regularizer[T] = null,
     bRegularizer: Regularizer[T] = null,
     bias: Boolean = true,
-    dimOrdering: String = "th",
     inputShape: Shape = null)(implicit ev: TensorNumeric[T]): Deconvolution2D[T] = {
     new Deconvolution2D[T](nbFilter, nbRow, nbCol, KerasUtils.getInitMethod(init),
       KerasUtils.getActivation(activation), Array(subsample._1, subsample._2),

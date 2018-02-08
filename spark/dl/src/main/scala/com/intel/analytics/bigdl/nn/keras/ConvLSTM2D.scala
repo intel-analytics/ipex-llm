@@ -41,7 +41,7 @@ class ConvLSTM2D[T: ClassTag](
   extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {
 
   require(dimOrdering.toLowerCase() == "channel_first", s"ConvLSTM2D currently only supports " +
-    s"format CHANNEL_FIRST, but got format $dimOrdering.")
+    s"format CHANNEL_FIRST, but got format $dimOrdering")
 
   override def computeOutputShape(inputShape: Shape): Shape = {
     val input = inputShape.toSingle().toArray

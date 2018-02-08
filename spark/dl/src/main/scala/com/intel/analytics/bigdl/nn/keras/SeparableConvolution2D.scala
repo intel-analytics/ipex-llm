@@ -119,10 +119,10 @@ object SeparableConvolution2D {
     borderMode: String = "valid",
     subsample: (Int, Int) = (1, 1),
     depthMultiplier: Int = 1,
+    dimOrdering: String = "th",
     depthwiseRegularizer: Regularizer[T] = null,
     pointwiseRegularizer: Regularizer[T] = null,
     bRegularizer: Regularizer[T] = null,
-    dimOrdering: String = "th",
     bias: Boolean = true,
     inputShape: Shape = null)(implicit ev: TensorNumeric[T]) : SeparableConvolution2D[T] = {
     new SeparableConvolution2D[T](nbFilter, nbRow, nbCol,

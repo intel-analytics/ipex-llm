@@ -51,5 +51,4 @@ abstract class Pooling3D[T: ClassTag](
       "valid", strideValues(2))
     Shape(input(0), input(1), dim1Length, dim2Length, dim3Length)
   }
-
 }

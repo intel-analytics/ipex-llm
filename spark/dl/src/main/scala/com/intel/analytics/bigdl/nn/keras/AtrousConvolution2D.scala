@@ -40,7 +40,7 @@ class AtrousConvolution2D[T: ClassTag](
   extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {
 
   require(dimOrdering == DataFormat.NCHW, s"AtrousConvolution2D currently only supports " +
-    s"format NCHW, but got format $dimOrdering.")
+    s"format NCHW, but got format $dimOrdering")
   require(subsample.length == 2,
     s"For AtrousConvolution2D, subsample should be of length 2 but got length ${subsample.length}")
   require(atrousRate.length == 2, s"For AtrousConvolution2D, " +
@@ -74,9 +74,9 @@ object AtrousConvolution2D {
     activation: String = null,
     subsample: (Int, Int) = (1, 1),
     atrousRate: (Int, Int) = (1, 1),
+    dimOrdering: String = "th",
     wRegularizer: Regularizer[T] = null,
     bRegularizer: Regularizer[T] = null,
-    dimOrdering: String = "th",
     inputShape: Shape = null)(implicit ev: TensorNumeric[T]): AtrousConvolution2D[T] = {
     new AtrousConvolution2D[T](nbFilter, nbRow, nbCol, KerasUtils.getInitMethod(init),
       KerasUtils.getActivation(activation),

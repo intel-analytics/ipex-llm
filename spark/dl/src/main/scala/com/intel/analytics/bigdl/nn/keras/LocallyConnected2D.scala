@@ -105,9 +105,9 @@ object LocallyConnected2D {
     activation: String = null,
     borderMode: String = "valid",
     subsample: (Int, Int) = (1, 1),
+    dimOrdering: String = "th",
     wRegularizer: Regularizer[T] = null,
     bRegularizer: Regularizer[T] = null,
-    dimOrdering: String = "th",
     bias: Boolean = true,
     inputShape: Shape = null)(implicit ev: TensorNumeric[T]): LocallyConnected2D[T] = {
     new LocallyConnected2D[T](nbFilter, nbRow, nbCol,

@@ -54,5 +54,4 @@ abstract class Pooling2D[T: ClassTag](
       case DataFormat.NHWC => Shape(input(0), rows, cols, input(3))
     }
   }
-
 }

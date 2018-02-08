@@ -36,7 +36,7 @@ import scala.reflect.ClassTag
  *                be equal to poolSize.
  * @param borderMode Either 'valid' or 'same'. Default is 'valid'.
  * @param dimOrdering Format of input data. Either DataFormat.NCHW (dimOrdering='th') or
- *               DataFormat.NHWC (dimOrdering='tf'). Default is NCHW.
+ *                    DataFormat.NHWC (dimOrdering='tf'). Default is NCHW.
  * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now.
  */
 class MaxPooling2D[T: ClassTag] (

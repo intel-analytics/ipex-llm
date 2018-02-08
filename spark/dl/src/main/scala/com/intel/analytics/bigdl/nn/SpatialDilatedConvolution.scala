@@ -151,7 +151,7 @@ class SpatialDilatedConvolution[T: ClassTag](
   override def computeOutputShape(inputShape: Shape): Shape = {
     val input = inputShape.toSingle().toArray
     require(input.length == 4,
-      s"SpatialDilatedConvolution requires 4D input, but got input dim ${input.length}")
+      s"AtrousConvolution2D requires 4D input, but got input dim ${input.length}")
     val outputWidth = (input(3) + 2*padW - (dilationW * (kW - 1) + 1)) / dW + 1
     val outputHeight = (input(2) + 2*padH - (dilationH * (kH - 1) + 1)) / dH + 1
     Shape(input(0), nOutputPlane, outputHeight, outputWidth)
