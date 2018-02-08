@@ -24,12 +24,15 @@ import com.intel.analytics.bigdl.utils.Shape
 import scala.reflect.ClassTag
 
 class UpSampling3D[T: ClassTag](
-   val size: (Int, Int, Int) = (2, 2, 2),
+   val size: Array[Int] = Array(2, 2, 2),
    val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {
 
+  require(size.length == 3,
+    s"UpSampling3D: upsampling sizes should be of length 3, but got ${size.length}")
+
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
-    val layer = com.intel.analytics.bigdl.nn.UpSampling3D(Array(size._1, size._2, size._3))
+    val layer = com.intel.analytics.bigdl.nn.UpSampling3D(size)
     layer.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
   }
 }
@@ -38,6 +41,6 @@ object UpSampling3D {
   def apply[@specialized(Float, Double) T: ClassTag](
     size: (Int, Int, Int) = (2, 2, 2),
     inputShape: Shape = null)(implicit ev: TensorNumeric[T]): UpSampling3D[T] = {
-    new UpSampling3D[T](size, inputShape)
+    new UpSampling3D[T](Array(size._1, size._2, size._3), inputShape)
   }
 }

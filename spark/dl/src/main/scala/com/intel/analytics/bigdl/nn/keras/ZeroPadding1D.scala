@@ -25,19 +25,23 @@ import com.intel.analytics.bigdl.utils.Shape
 import scala.reflect.ClassTag
 
 class ZeroPadding1D[T: ClassTag](
-   val padding: (Int, Int) = (1, 1),
+   val padding: Array[Int] = Array(1, 1),
    val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {
+
+  require(padding.length == 2,
+    s"For ZeroPadding1D, padding values should be of length 2 " +
+      s"(left_pad, right_pad), but got length ${padding.length}")
 
   override def computeOutputShape(inputShape: Shape): Shape = {
     val input = inputShape.toSingle().toArray
     require(input.length == 3,
       s"ZeroPadding1D requires 3D input, but got input dim ${input.length}")
-    Shape(input(0), input(1) + padding._1 + padding._2, input(2))
+    Shape(input(0), input(1) + padding(0) + padding(1), input(2))
   }
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
-    val layer = SpatialZeroPadding(0, 0, padding._1, padding._2)
+    val layer = SpatialZeroPadding(0, 0, padding(0), padding(1))
     layer.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
   }
 }
@@ -46,6 +50,6 @@ object ZeroPadding1D {
   def apply[@specialized(Float, Double) T: ClassTag](
     padding: Int = 1,
     inputShape: Shape = null)(implicit ev: TensorNumeric[T]): ZeroPadding1D[T] = {
-    new ZeroPadding1D[T]((padding, padding), inputShape)
+    new ZeroPadding1D[T](Array(padding, padding), inputShape)
   }
 }

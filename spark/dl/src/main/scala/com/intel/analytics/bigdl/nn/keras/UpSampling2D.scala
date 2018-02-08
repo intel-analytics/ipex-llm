@@ -24,16 +24,18 @@ import com.intel.analytics.bigdl.utils.Shape
 import scala.reflect.ClassTag
 
 class UpSampling2D[T: ClassTag](
-   val size: (Int, Int) = (2, 2),
-   val format: DataFormat = DataFormat.NCHW,
+   val size: Array[Int] = Array(2, 2),
+   val dimOrdering: DataFormat = DataFormat.NCHW,
    val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {
 
+  require(size.length == 2,
+    s"UpSampling2D: upsampling sizes should be of length 2, but got ${size.length}")
+
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
     val layer = com.intel.analytics.bigdl.nn.UpSampling2D(
-      size = Array(size._1, size._2),
-      format = format
-    )
+      size = Array(size(0), size(1)),
+      format = dimOrdering)
     layer.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
   }
 }
@@ -41,8 +43,9 @@ class UpSampling2D[T: ClassTag](
 object UpSampling2D {
   def apply[@specialized(Float, Double) T: ClassTag](
     size: (Int, Int) = (2, 2),
-    format: DataFormat = DataFormat.NCHW,
+    dimOrdering: String = "th",
     inputShape: Shape = null)(implicit ev: TensorNumeric[T]): UpSampling2D[T] = {
-    new UpSampling2D[T](size, format, inputShape)
+    new UpSampling2D[T](Array(size._1, size._2),
+      KerasUtils.toBigDLFormat(dimOrdering), inputShape)
   }
 }

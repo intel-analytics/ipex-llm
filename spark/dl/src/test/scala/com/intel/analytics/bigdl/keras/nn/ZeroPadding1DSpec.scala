@@ -49,7 +49,7 @@ class ZeroPadding1DSpec extends KerasBaseSpec {
         |model = Model(input=input_tensor, output=output_tensor)
       """.stripMargin
     val seq = KSequential[Float]()
-    val layer = new ZeroPadding1D[Float](padding = (2, 3), inputShape = Shape(3, 3))
+    val layer = new ZeroPadding1D[Float](padding = Array(2, 3), inputShape = Shape(3, 3))
     seq.add(layer)
     seq.getOutputShape().toSingle().toArray should be (Array(-1, 8, 3))
     checkOutputAndGrad(seq.asInstanceOf[AbstractModule[Tensor[Float], Tensor[Float], Float]],

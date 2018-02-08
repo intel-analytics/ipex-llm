@@ -42,8 +42,7 @@ class MaxoutDense[T: ClassTag](
       maxoutNumber = nbFeature,
       withBias = bias,
       wRegularizer = wRegularizer,
-      bRegularizer = bRegularizer
-    )
+      bRegularizer = bRegularizer)
     layer.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
   }
 }
