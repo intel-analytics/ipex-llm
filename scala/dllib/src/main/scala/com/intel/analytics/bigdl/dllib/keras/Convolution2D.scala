@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.nn.keras
 
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, DataFormat, TensorModule}
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, DataFormat}
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.Tensor
@@ -43,16 +43,16 @@ import scala.reflect.ClassTag
  *                   You can also pass in corresponding string representations such as 'relu'
  *                   or 'sigmoid', etc. for simple activations in the factory method.
  * @param borderMode Either 'valid' or 'same'. Default is 'valid'.
+ * @param dimOrdering Format of input data. Either DataFormat.NCHW (dimOrdering='th') or
+ *                    DataFormat.NHWC (dimOrdering='tf'). Default is NCHW.
  * @param subsample Int array of length 2 corresponding to the step of the convolution in the
  *                  height and width dimension. Also called strides elsewhere. Default is (1, 1).
  * @param wRegularizer An instance of [[Regularizer]], (eg. L1 or L2 regularization),
  *                     applied to the input weights matrices. Default is null.
  * @param bRegularizer An instance of [[Regularizer]], applied to the bias. Default is null.
- * @param format Format of input data. Either DataFormat.NCHW (dimOrdering='th') or
- *               DataFormat.NHWC (dimOrdering='tf'). Default is NCHW.
  * @param bias Whether to include a bias (i.e. make the layer affine rather than linear).
  *             Default is true.
- * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now
+ * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now.
  */
 class Convolution2D[T: ClassTag](
    val nbFilter: Int,
@@ -62,9 +62,9 @@ class Convolution2D[T: ClassTag](
    val activation: AbstractModule[Tensor[T], Tensor[T], T] = null,
    val borderMode: String = "valid",
    val subsample: Array[Int] = Array(1, 1),
+   val dimOrdering: DataFormat = DataFormat.NCHW,
    var wRegularizer: Regularizer[T] = null,
    var bRegularizer: Regularizer[T] = null,
-   val format: DataFormat = DataFormat.NCHW,
    val bias: Boolean = true,
    val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {
@@ -78,7 +78,7 @@ class Convolution2D[T: ClassTag](
     val input = inputShape.toSingle().toArray
     val pads = KerasUtils.getPadsFromBorderMode(borderMode)
     val layer = SpatialConvolution(
-      nInputPlane = input(format.getHWCDims(4)._3 - 1),
+      nInputPlane = input(dimOrdering.getHWCDims(4)._3 - 1),
       nOutputPlane = nbFilter,
       kernelW = nbCol,
       kernelH = nbRow,
@@ -89,7 +89,7 @@ class Convolution2D[T: ClassTag](
       wRegularizer = wRegularizer,
       bRegularizer = bRegularizer,
       withBias = bias,
-      format = format)
+      format = dimOrdering)
     layer.setInitMethod(weightInitMethod = init, biasInitMethod = Zeros)
     KerasLayer.fuse(layer, activation,
       inputShape).asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
@@ -112,7 +112,8 @@ object Convolution2D {
     inputShape: Shape = null)(implicit ev: TensorNumeric[T]): Convolution2D[T] = {
     new Convolution2D[T](nbFilter, nbRow, nbCol,
       KerasUtils.getInitMethod(init), KerasUtils.getActivation(activation),
-      borderMode, Array(subsample._1, subsample._2), wRegularizer,
-      bRegularizer, KerasUtils.toBigDLFormat(dimOrdering), bias, inputShape)
+      borderMode, Array(subsample._1, subsample._2),
+      KerasUtils.toBigDLFormat(dimOrdering), wRegularizer,
+      bRegularizer, bias, inputShape)
   }
 }

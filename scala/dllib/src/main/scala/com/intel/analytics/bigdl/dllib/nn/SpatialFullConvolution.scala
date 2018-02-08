@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, Initia
 import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor._
-import com.intel.analytics.bigdl.utils.{T, Table, serializer}
+import com.intel.analytics.bigdl.utils.{Shape, T, Table, serializer}
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import com.intel.analytics.bigdl.utils.serializer._
 import com.intel.analytics.bigdl.utils.serializer.converters.DataConverter
@@ -251,6 +251,17 @@ class SpatialFullConvolution[T: ClassTag](
     if (null != bias) {
       output2d.addr(ev.one, bias, onesBias)
     }
+  }
+
+  override def computeOutputShape(inputShape: Shape): Shape = {
+    val input = inputShape.toSingle().toArray
+    require(input.length == 4,
+      s"Deconvolution2D requires 4D input, but got input dim ${input.length}")
+    val inputHeight = input(2)
+    val inputWidth = input(3)
+    val outputHeight = (inputHeight - 1) * dH - 2 * padH + kH + adjH
+    val outputWidth = (inputWidth - 1) * dW - 2 * padW + kW + adjW
+    Shape(input(0), nOutputPlane, outputHeight, outputWidth)
   }
 
   override def updateOutput(input: Activity): Tensor[T] = {

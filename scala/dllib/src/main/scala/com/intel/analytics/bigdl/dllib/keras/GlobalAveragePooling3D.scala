@@ -30,20 +30,16 @@ import scala.reflect.ClassTag
  * Global Average pooling operation for 3D data.
  * When you use this layer as the first layer of a model, you need to provide the argument
  * inputShape (a Single Shape, does not include the batch dimension).
- *
  * Data format currently supported for this layer is 'CHANNEL_FIRST' (dimOrdering='th').
  * The input of this layer should be 5D.
  *
- * @param format Format of input data. Please use DataFormat.NCHW (dimOrdering='th').
+ * @param dimOrdering Format of input data. Please use 'CHANNEL_FIRST' (dimOrdering='th').
  * @tparam T The numeric type of parameter(e.g. weight, bias). Only support float/double now.
  */
 class GlobalAveragePooling3D[T: ClassTag](
-   val format: String = "CHANNEL_FIRST",
+   dimOrdering: String = "CHANNEL_FIRST",
    inputShape: Shape = null)(implicit ev: TensorNumeric[T])
-  extends GlobalPooling3D[T](inputShape) {
-
-  require(format.toLowerCase() == "channel_first", s"GlobalAveragePooling3D only supports " +
-    s"format CHANNEL_FIRST, but got format $format.")
+  extends GlobalPooling3D[T](dimOrdering, inputShape) {
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
     val input = inputShape.toSingle().toArray
