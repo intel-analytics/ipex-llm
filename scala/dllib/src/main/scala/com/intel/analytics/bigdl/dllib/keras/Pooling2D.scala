@@ -27,7 +27,7 @@ abstract class Pooling2D[T: ClassTag](
    val poolSize: Array[Int] = Array(2, 2),
    val strides: Array[Int] = null,
    val borderMode: String = "valid",
-   val format: DataFormat = DataFormat.NCHW,
+   val dimOrdering: DataFormat = DataFormat.NCHW,
    val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {
 
@@ -44,15 +44,14 @@ abstract class Pooling2D[T: ClassTag](
     val input = inputShape.toSingle().toArray
     require(input.length == 4,
       s"Pooling2D requires 4D input, but got input dim ${input.length}")
-    val (dimH, dimW, dimC) = format.getHWCDims(4)
+    val (dimH, dimW, dimC) = dimOrdering.getHWCDims(4)
     val rows = KerasUtils.computeConvOutputLength(input(dimH -1), poolSize(0),
       borderMode, strideValues(0))
     val cols = KerasUtils.computeConvOutputLength(input(dimW -1), poolSize(1),
       borderMode, strideValues(1))
-    format match {
+    dimOrdering match {
       case DataFormat.NCHW => Shape(input(0), input(1), rows, cols)
       case DataFormat.NHWC => Shape(input(0), rows, cols, input(3))
     }
   }
-
 }
