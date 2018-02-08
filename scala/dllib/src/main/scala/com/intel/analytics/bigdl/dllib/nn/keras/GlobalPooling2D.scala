@@ -24,7 +24,7 @@ import com.intel.analytics.bigdl.utils.Shape
 import scala.reflect.ClassTag
 
 abstract class GlobalPooling2D[T: ClassTag](
-   val format: DataFormat = DataFormat.NCHW,
+   val dimOrdering: DataFormat = DataFormat.NCHW,
    val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {
 
@@ -32,7 +32,7 @@ abstract class GlobalPooling2D[T: ClassTag](
     val input = inputShape.toSingle().toArray
     require(input.length == 4,
       s"GlobalPooling2D requires 4D input, but got input dim ${input.length}")
-    format match {
+    dimOrdering match {
       case DataFormat.NCHW => Shape(input(0), input(1))
       case DataFormat.NHWC => Shape(input(0), input(3))
     }
