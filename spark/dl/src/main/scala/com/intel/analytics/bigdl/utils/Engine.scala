@@ -112,6 +112,7 @@ object Engine {
   private var physicalCoreNumber = -1
   private var nodeNum: Int = -1
 
+  @volatile
   private var gatewayServer: py4j.GatewayServer = null
 
 
@@ -130,9 +131,8 @@ object Engine {
     }
     if (gatewayServer != null) return
     this.synchronized {
-      if (gatewayServer == null) {
-        gatewayServer = new py4j.GatewayServer(null, 0)
-      }
+      if (gatewayServer != null) return
+      gatewayServer = new py4j.GatewayServer(null, 0)
     }
     val thread = new Thread(new Runnable() {
       override def run(): Unit = try {
@@ -149,6 +149,12 @@ object Engine {
     thread.start()
 
     thread.join()
+
+    Runtime.getRuntime().addShutdownHook(new Thread {
+      override def run(): Unit = {
+        gatewayServer.shutdown()
+      }
+    })
 
     val file = new java.io.File(SparkFiles.getRootDirectory(), "gateway_port")
     if (file.exists()) {

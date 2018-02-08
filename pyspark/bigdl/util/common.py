@@ -573,23 +573,26 @@ def _get_port():
     port = int(f.readline())
     return port
 
+def _get_gateway():
+    if SparkFiles._is_running_on_worker:
+        gateway_port = _get_port()
+        gateway = GatewayWrapper.instance(None, gateway_port).value
+    else:
+        sc = get_spark_context()
+        gateway = sc._gateway
+    return gateway
+
 
 def callBigDlFunc(bigdl_type, name, *args):
     """ Call API in PythonBigDL """
-    sc = get_spark_context()
-    if sc is None:
-        gateway_port = _get_port()
-        gateway = GatewayWrapper.instance(bigdl_type, gateway_port).value
-    else:
-        gateway = sc._gateway
-
+    gateway = _get_gateway()
     error = Exception("Cannot find function: %s" % name)
     for jinvoker in JavaCreator.instance(bigdl_type, gateway).value:
         # hasattr(jinvoker, name) always return true here,
         # so you need to invoke the method to check if it exist or not
         try:
             api = getattr(jinvoker, name)
-            result = callJavaFunc(sc, api, *args)
+            result = callJavaFunc(api, *args)
         except Exception as e:
             error = e
             if "does not exist" not in str(e):
@@ -631,13 +634,9 @@ def _java2py(gateway, r, encoding="bytes"):
     return r
 
 
-def callJavaFunc(sc, func, *args):
+def callJavaFunc(func, *args):
     """ Call Java Function """
-    if sc is None:
-        gateway_port = _get_port()
-        gateway = GatewayWrapper.instance("float", gateway_port).value
-    else:
-        gateway = sc._gateway
+    gateway = _get_gateway()
     args = [_py2java(gateway, a) for a in args]
     result = func(*args)
     return _java2py(gateway, result)
