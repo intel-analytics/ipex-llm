@@ -18,7 +18,10 @@ package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
+
+import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Parallel
 class BatchNormalizationSpec extends FlatSpec with Matchers {
@@ -246,5 +249,13 @@ class BatchNormalizationSpec extends FlatSpec with Matchers {
     output should be(Tensor[Float](4, 3).fill(0))
     val gradInput = layer.backward(input, gradOutput)
     gradInput should be(Tensor[Float](4, 3).fill(0))
+  }
+}
+
+class BatchNormalizationSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val batchNorm = BatchNormalization[Float](5).setName("batchNorm")
+    val input = Tensor[Float](2, 5).apply1(_ => Random.nextFloat())
+    runSerializationTest(batchNorm, input)
   }
 }
