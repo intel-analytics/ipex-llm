@@ -24,6 +24,38 @@ import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 import scala.util.hashing.MurmurHash3
 
+/**
+ * CrossCol operation preforms crosses of categorical features.
+ *
+ * The transformation can be thought of as Hash(cartesian product of features) % hashBucketSize)
+ *
+ * The input Table contains more than or equal to 2 Tensor[String].
+ * Each Tensor[String] represents a categorical feature column.
+ * Each row in Tensor[String] represents the string of value,
+ * which supports single-value and multi-value joined by strDelimiter.
+ *
+ * As for the SparseTensor, it should be transformed to
+ * Tensor[String] before feeding into the Operation
+ *
+ *
+ * For example, if the two input tensors with size=3 are:
+ *  "A,D", "B", "A,C"
+ *  "1", "2", "3,4"
+ *
+ *  the output tensor should be an 2D 3 x hashBucketSize SparseTensor:
+ *  [0, 0]: Hash64("1", Hash64("D")) % hashBucketSize
+ *  [0, 1]: Hash64("1", Hash64("A")) % hashBucketSize
+ *  [1, 0]: Hash64("2", Hash64("B")) % hashBucketSize
+ *  [2, 0]: Hash64("3", Hash64("C")) % hashBucketSize
+ *  [2, 1]: Hash64("4", Hash64("C")) % hashBucketSize
+ *  [2, 2]: Hash64("3", Hash64("A")) % hashBucketSize
+ *  [2, 3]: Hash64("4", Hash64("A")) % hashBucketSize
+ *
+ * @param hashBucketSize An Int > 1. The number of buckets.
+ * @param strDelimiter The Delimiter between feature values, default: ",".
+ * @tparam T Numeric type. Parameter tensor numeric type. Only support float/double now
+ */
+
 class CrossCol[T: ClassTag](
   val hashBucketSize: Int,
   val strDelimiter: String = ","
@@ -119,10 +151,12 @@ class CrossCol[T: ClassTag](
 }
 
 object CrossCol {
-  def apply[T](
-  hashBucketSize: Int
+  def apply[T: ClassTag](
+    hashBucketSize: Int,
+    strDelimiter: String = ","
   ) (implicit ev: TensorNumeric[T]): CrossCol[T]
   = new CrossCol[T](
-    hashBucketSize = hashBucketSize
+    hashBucketSize = hashBucketSize,
+    strDelimiter = strDelimiter
   )
 }
