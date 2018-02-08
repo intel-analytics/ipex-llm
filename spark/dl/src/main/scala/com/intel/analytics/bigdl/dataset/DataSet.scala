@@ -572,8 +572,6 @@ object DataSet {
         val bytes = new Array[Byte](3 * width * height)
         System.arraycopy(imgBuffer.array(), 8, bytes, 0, bytes.length)
         val imf = ImageFeature(bytes, label)
-        val mat = OpenCVMat.fromPixelsBytes(bytes, height, width)
-        imf(ImageFeature.mat) = mat
         imf(ImageFeature.originalSize) = (height, width, 3)
         imf
       }).filter(_[Tensor[Float]](ImageFeature.label).valueAt(1) <= classNum)
