@@ -180,7 +180,7 @@ object Engine {
     })
 
     try {
-      createJavaGateway(gatewayServer.getListeningPort)
+      createGatewayPortFile(gatewayServer.getListeningPort)
     } catch {
       case NonFatal(e) =>
         throw new Exception("Could not create java gateway port file", e)
