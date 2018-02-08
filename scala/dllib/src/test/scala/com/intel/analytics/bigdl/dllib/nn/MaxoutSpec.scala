@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.keras
 
 import com.intel.analytics.bigdl.nn.Maxout
 import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.utils.{Shape, TestUtils}
 
 class MaxoutSpec extends KerasBaseSpec {
   "Maxout" should "generate corrent result when batchsize == 1" in {
@@ -26,7 +27,7 @@ class MaxoutSpec extends KerasBaseSpec {
     val maxoutNumber = 3
     val batchSize = 1
 
-    val sigmoidCode =
+    val kerasCode =
       s"""
         |input_tensor = Input(shape=[${inputSize}])
         |input = np.random.uniform(0, 1, [${batchSize}, ${inputSize}])
@@ -53,7 +54,7 @@ class MaxoutSpec extends KerasBaseSpec {
       }
       out
     }
-    checkOutputAndGrad(maxout, sigmoidCode, weightConverter = wc)
+    checkOutputAndGrad(maxout, kerasCode, weightConverter = wc)
   }
 
   "Maxout" should "generate corrent result when batchsize != 1" in {
@@ -62,7 +63,7 @@ class MaxoutSpec extends KerasBaseSpec {
     val maxoutNumber = 3
     val batchSize = 4
 
-    val sigmoidCode =
+    val kerasCode =
       s"""
         |#w1 = np.array([[[1.0, 2.0, 3.0, 4.0],
         |#               [5, 6, 7, 8.0]],
@@ -101,6 +102,12 @@ class MaxoutSpec extends KerasBaseSpec {
       }
       out
     }
-    checkOutputAndGrad(maxout, sigmoidCode, weightConverter = wc)
+    checkOutputAndGrad(maxout, kerasCode, weightConverter = wc)
   }
+
+  "Maxout computeOutputShape" should "work properly" in {
+    val layer = Maxout[Float](4, 5, 3)
+    TestUtils.compareOutputShape(layer, Shape(4)) should be (true)
+  }
+
 }
