@@ -15,7 +15,7 @@
  */
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, TensorModule}
+import com.intel.analytics.bigdl.nn.abstractnn.{IdentityOutputShape, TensorModule}
 import com.intel.analytics.bigdl.tensor.{DenseTensorApply, Tensor, TensorFunc6}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
@@ -32,7 +32,7 @@ class ELU[T: ClassTag](
   val alpha: Double = 1.0,
   val inplace: Boolean = false)(
   implicit ev: TensorNumeric[T])
-  extends TensorModule[T]  {
+  extends TensorModule[T] with IdentityOutputShape {
 
   val _alpha = ev.fromType[Double](alpha)
 

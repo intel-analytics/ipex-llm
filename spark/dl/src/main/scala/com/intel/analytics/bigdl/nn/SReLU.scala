@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, Initializable, TensorModule}
+import com.intel.analytics.bigdl.nn.abstractnn._
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.serializer._
@@ -48,7 +48,8 @@ import scala.reflect.ClassTag
 
 @SerialVersionUID(7173457290010080259L)
 class SReLU[T: ClassTag](val shape: Array[Int], val sharedAxes: Array[Int] = null)(
-  implicit ev: TensorNumeric[T]) extends TensorModule[T] with Initializable {
+  implicit ev: TensorNumeric[T]) extends TensorModule[T]
+    with Initializable with IdentityOutputShape {
   import SReLU._
   val weightsLen = 4
   val weights: Array[Tensor[T]] = Array.fill[Tensor[T]](4)(Tensor[T]())
