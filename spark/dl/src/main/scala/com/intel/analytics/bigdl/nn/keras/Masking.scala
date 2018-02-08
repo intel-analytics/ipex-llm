@@ -24,7 +24,7 @@ import com.intel.analytics.bigdl.utils.Shape
 import scala.reflect.ClassTag
 
 /**
- * [[Masking]] Use a mask value to skip timesteps for a sequence
+ * Use a mask value to skip timesteps for a sequence.
  * Masks a sequence by using a mask value to skip timesteps.
  *
  * When you use this layer as the first layer of a model, you need to provide the argument

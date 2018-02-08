@@ -38,20 +38,20 @@ import scala.reflect.ClassTag
  * The input of this layer should be 4D.
  *
  * @param p Double between 0 and 1. Fraction of the input units to drop.
- * @param format Format of input data. Either DataFormat.NCHW (dimOrdering='th') or
+ * @param dimOrdering Format of input data. Either DataFormat.NCHW (dimOrdering='th') or
  *               DataFormat.NHWC (dimOrdering='tf'). Default is NCHW.
  * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now.
  */
 class SpatialDropout2D[T: ClassTag](
    val p: Double = 0.5,
-   val format: DataFormat = DataFormat.NCHW,
+   val dimOrdering: DataFormat = DataFormat.NCHW,
    val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
     val layer = com.intel.analytics.bigdl.nn.SpatialDropout2D(
       initP = p,
-      format = format)
+      format = dimOrdering)
     layer.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
   }
 }

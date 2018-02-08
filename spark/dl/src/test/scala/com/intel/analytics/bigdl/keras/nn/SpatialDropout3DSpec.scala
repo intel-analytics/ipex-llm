@@ -25,7 +25,7 @@ import com.intel.analytics.bigdl.utils.Shape
 
 class SpatialDropout3DSpec extends KerasBaseSpec {
 
-  "SpatialDropout3D NCHW forward and backward" should "work properly" in {
+  "SpatialDropout3D CHANNEL_FIRST forward and backward" should "work properly" in {
     val seq = KSequential[Float]()
     val layer = SpatialDropout3D[Float](0.5, "th", inputShape = Shape(3, 4, 5, 6))
     seq.add(layer)
@@ -35,7 +35,7 @@ class SpatialDropout3DSpec extends KerasBaseSpec {
     val gradInput = seq.backward(input, output)
   }
 
-  "SpatialDropout3D NHWC forward and backward" should "work properly" in {
+  "SpatialDropout3D CHANNEL_LAST forward and backward" should "work properly" in {
     val seq = KSequential[Float]()
     val layer = SpatialDropout3D[Float](0.5, "tf", inputShape = Shape(3, 4, 5, 6))
     seq.add(layer)

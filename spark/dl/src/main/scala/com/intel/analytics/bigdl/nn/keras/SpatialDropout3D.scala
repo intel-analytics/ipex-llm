@@ -24,40 +24,41 @@ import com.intel.analytics.bigdl.utils.Shape
 import scala.reflect.ClassTag
 
 /**
- *  Spatial 3D version of Dropout.
- *  This version performs the same function as Dropout, however it drops
- *  entire 3D feature maps instead of individual elements. If adjacent voxels
- *  within feature maps are strongly correlated (as is normally the case in
- *  early convolution layers) then regular dropout will not regularize the
- *  activations and will otherwise just result in an effective learning rate
- *  decrease. In this case, SpatialDropout3D will help promote independence
- *  between feature maps and should be used instead.
+ * Spatial 3D version of Dropout.
+ * This version performs the same function as Dropout, however it drops
+ * entire 3D feature maps instead of individual elements. If adjacent voxels
+ * within feature maps are strongly correlated (as is normally the case in
+ * early convolution layers) then regular dropout will not regularize the
+ * activations and will otherwise just result in an effective learning rate
+ * decrease. In this case, SpatialDropout3D will help promote independence
+ * between feature maps and should be used instead.
  *
  * When you use this layer as the first layer of a model, you need to provide the argument
  * inputShape (a Single Shape, does not include the batch dimension).
  * The input of this layer should be 5D.
  *
  * @param p Double between 0 and 1. Fraction of the input units to drop.
- * @param format Format of input data. Either 'CHANNEL_FIRST' (dimOrdering='th') or
+ * @param dimOrdering Format of input data. Either 'CHANNEL_FIRST' (dimOrdering='th') or
  *               'CHANNEL_LAST' (dimOrdering='tf'). Default is 'CHANNEL_FIRST'.
  * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now.
  */
 class SpatialDropout3D[T: ClassTag](
    val p: Double = 0.5,
-   val format: String = "CHANNEL_FIRST",
+   val dimOrdering: String = "CHANNEL_FIRST",
    val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {
 
-  require(format.toLowerCase() == "channel_first" || format.toLowerCase() == "channel_last",
-    s"$format is not supported")
+  require(dimOrdering.toLowerCase() == "channel_first" ||
+          dimOrdering.toLowerCase() == "channel_last",
+          s"SpatialDropout3D only supports format CHANNEL_FIRST or CHANNEL_LAST," +
+          s" format $dimOrdering is not supported")
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
-    val dimOrdering = if (format.toLowerCase() == "channel_first") DataFormat.NCHW
-     else DataFormat.NHWC
-
+    val dimordering = if (dimOrdering.toLowerCase() == "channel_first") DataFormat.NCHW
+                      else DataFormat.NHWC
     val layer = com.intel.analytics.bigdl.nn.SpatialDropout3D(
       initP = p,
-      format = dimOrdering)
+      format = dimordering)
     layer.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
   }
 }
