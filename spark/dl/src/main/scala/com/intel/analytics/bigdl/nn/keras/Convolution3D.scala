@@ -34,12 +34,15 @@ class Convolution3D[T: ClassTag](
    val activation: AbstractModule[Tensor[T], Tensor[T], T] = null,
    val borderMode: String = "valid",
    val subsample: Array[Int] = Array(1, 1, 1),
+   val dimOrdering: String = "CHANNEL_FIRST",
    val wRegularizer: Regularizer[T] = null,
    var bRegularizer: Regularizer[T] = null,
    val bias: Boolean = true,
    val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {
 
+  require(dimOrdering.toLowerCase() == "channel_first", s"Pooling3D currently only supports " +
+    s"format CHANNEL_FIRST, but got format $dimOrdering")
   require(borderMode == "valid" || borderMode == "same", s"Invalid border mode for " +
     s"Convolution3D: $borderMode")
   require(subsample.length == 3,
@@ -79,6 +82,7 @@ object Convolution3D {
     activation: String = null,
     borderMode: String = "valid",
     subsample: (Int, Int, Int) = (1, 1, 1),
+    dimOrdering: String = "th",
     wRegularizer: Regularizer[T] = null,
     bRegularizer: Regularizer[T] = null,
     bias: Boolean = true,
@@ -86,6 +90,7 @@ object Convolution3D {
     new Convolution3D[T](nbFilter, kernelDim1, kernelDim2, kernelDim3,
       KerasUtils.getInitMethod(init), KerasUtils.getActivation(activation),
       borderMode, Array(subsample._1, subsample._2, subsample._3),
+      KerasUtils.toBigDLFormat5D(dimOrdering),
       wRegularizer, bRegularizer, bias, inputShape)
   }
 }

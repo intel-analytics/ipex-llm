@@ -28,9 +28,9 @@ class AveragePooling2D[T: ClassTag](
    poolSize: Array[Int] = Array(2, 2),
    strides: Array[Int] = null,
    borderMode: String = "valid",
-   format: DataFormat = DataFormat.NCHW,
+   dimOrdering: DataFormat = DataFormat.NCHW,
    inputShape: Shape = null)(implicit ev: TensorNumeric[T])
-  extends Pooling2D[T](poolSize, strides, borderMode, format, inputShape) {
+  extends Pooling2D[T](poolSize, strides, borderMode, dimOrdering, inputShape) {
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
     val pads = KerasUtils.getPadsFromBorderMode(borderMode)
@@ -42,7 +42,7 @@ class AveragePooling2D[T: ClassTag](
       padW = pads._2,
       padH = pads._1,
       countIncludePad = false,
-      format = format)
+      format = dimOrdering)
     layer.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
   }
 }

@@ -38,7 +38,7 @@ class SeparableConvolution2DSpec extends KerasBaseSpec {
 
     def weightConverter(in: Array[Tensor[Float]]): Array[Tensor[Float]] = {
       if (in.length == 2) {
-        val bias = if (layer.format == DataFormat.NCHW) in(1).size(1)
+        val bias = if (layer.dimOrdering == DataFormat.NCHW) in(1).size(1)
         else in(1).size(4)
         val out = Tensor[Float](bias)
         Array(in(0), in(1), out)
@@ -64,7 +64,7 @@ class SeparableConvolution2DSpec extends KerasBaseSpec {
 
     def weightConverter(in: Array[Tensor[Float]]): Array[Tensor[Float]] = {
       if (in.length == 2) {
-        val bias = if (layer.format == DataFormat.NCHW) in(1).size(1)
+        val bias = if (layer.dimOrdering == DataFormat.NCHW) in(1).size(1)
         else in(1).size(4)
         val out = Tensor[Float](bias)
         Array(in(0), in(1), out)
@@ -91,7 +91,7 @@ class SeparableConvolution2DSpec extends KerasBaseSpec {
 
     def weightConverter(in: Array[Tensor[Float]]): Array[Tensor[Float]] = {
       if (in.length == 2) {
-        val bias = if (layer.format == DataFormat.NCHW) in(1).size(1)
+        val bias = if (layer.dimOrdering == DataFormat.NCHW) in(1).size(1)
         else in(1).size(4)
         val out = Tensor[Float](bias)
         Array(in(0), in(1), out)

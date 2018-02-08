@@ -32,15 +32,15 @@ class Deconvolution2D[T: ClassTag](
    val init: InitializationMethod = Xavier,
    val activation: AbstractModule[Tensor[T], Tensor[T], T] = null,
    val subsample: Array[Int] = Array(1, 1),
+   val dimOrdering: DataFormat = DataFormat.NCHW,
    var wRegularizer: Regularizer[T] = null,
    var bRegularizer: Regularizer[T] = null,
    val bias: Boolean = true,
-   val format: DataFormat = DataFormat.NCHW,
    val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {
 
-  require(format == DataFormat.NCHW, s"Deconvolution2D currently only supports " +
-    s"format NCHW, but got format $format.")
+  require(dimOrdering == DataFormat.NCHW, s"Deconvolution2D currently only supports " +
+    s"format NCHW, but got format $dimOrdering.")
   require(subsample.length == 2,
     s"For Deconvolution2D, subsample should be of length 2 but got length ${subsample.length}")
 
@@ -76,7 +76,8 @@ object Deconvolution2D {
     dimOrdering: String = "th",
     inputShape: Shape = null)(implicit ev: TensorNumeric[T]): Deconvolution2D[T] = {
     new Deconvolution2D[T](nbFilter, nbRow, nbCol, KerasUtils.getInitMethod(init),
-      KerasUtils.getActivation(activation), Array(subsample._1, subsample._2), wRegularizer,
-      bRegularizer, bias, KerasUtils.toBigDLFormat(dimOrdering), inputShape)
+      KerasUtils.getActivation(activation), Array(subsample._1, subsample._2),
+      KerasUtils.toBigDLFormat(dimOrdering), wRegularizer,
+      bRegularizer, bias, inputShape)
   }
 }

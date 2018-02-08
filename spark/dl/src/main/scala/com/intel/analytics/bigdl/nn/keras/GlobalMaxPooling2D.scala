@@ -25,20 +25,20 @@ import com.intel.analytics.bigdl.utils.Shape
 import scala.reflect.ClassTag
 
 class GlobalMaxPooling2D[T: ClassTag](
-   format: DataFormat = DataFormat.NCHW,
+   dimOrdering: DataFormat = DataFormat.NCHW,
    inputShape: Shape = null)(implicit ev: TensorNumeric[T])
-  extends GlobalPooling2D[T](format, inputShape) {
+  extends GlobalPooling2D[T](dimOrdering, inputShape) {
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
     val input = inputShape.toSingle().toArray
-    val (dimH, dimW, dimC) = format.getHWCDims(4)
+    val (dimH, dimW, dimC) = dimOrdering.getHWCDims(4)
     val model = TSequential[T]()
     val layer = SpatialMaxPooling(
       kW = input(dimW -1),
       kH = input(dimH -1),
       dW = input(dimW -1),
       dH = input(dimH -1),
-      format = format)
+      format = dimOrdering)
     model.add(layer)
     model.add(Squeeze(dimW))
     model.add(Squeeze(dimH))

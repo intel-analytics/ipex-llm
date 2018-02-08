@@ -27,9 +27,9 @@ import scala.reflect.ClassTag
 class AveragePooling3D[T: ClassTag](
    poolSize: Array[Int] = Array(2, 2, 2),
    strides: Array[Int] = null,
-   format: String = "CHANNEL_FIRST",
+   dimOrdering: String = "CHANNEL_FIRST",
    inputShape: Shape = null)(implicit ev: TensorNumeric[T])
-  extends Pooling3D[T](poolSize, strides, format, inputShape) {
+  extends Pooling3D[T](poolSize, strides, dimOrdering, inputShape) {
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
     val layer = VolumetricAveragePooling(

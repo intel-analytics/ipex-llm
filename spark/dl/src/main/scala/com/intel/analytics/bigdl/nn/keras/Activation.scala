@@ -32,7 +32,7 @@ import scala.reflect.ClassTag
  * 'softsign', 'hard_sigmoid'.
  *
  * @param activation Name of activation function as string.
- * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now
+ * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now.
  */
 class Activation[T: ClassTag](
    val activation: String,

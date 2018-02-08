@@ -34,13 +34,13 @@ import scala.reflect.ClassTag
  * Data format currently supported for this layer is 'CHANNEL_FIRST' (dimOrdering='th').
  * The input of this layer should be 5D.
  *
- * @param format Format of input data. Please use 'CHANNEL_FIRST' (dimOrdering='th').
+ * @param dimOrdering Format of input data. Please use 'CHANNEL_FIRST' (dimOrdering='th').
  * @tparam T The numeric type of parameter(e.g. weight, bias). Only support float/double now.
  */
 class GlobalAveragePooling3D[T: ClassTag](
-   format: String = "CHANNEL_FIRST",
+   dimOrdering: String = "CHANNEL_FIRST",
    inputShape: Shape = null)(implicit ev: TensorNumeric[T])
-  extends GlobalPooling3D[T](format, inputShape) {
+  extends GlobalPooling3D[T](dimOrdering, inputShape) {
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
     val input = inputShape.toSingle().toArray

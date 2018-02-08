@@ -28,20 +28,20 @@ import scala.reflect.ClassTag
 class ConvLSTM2D[T: ClassTag](
    val nbFilter: Int,
    val nbKernel: Int,
-   val subsample: Int = 1,
    val activation: AbstractModule[Tensor[T], Tensor[T], T] = null,
    val innerActivation: AbstractModule[Tensor[T], Tensor[T], T] = null,
+   val dimOrdering: String = "CHANNEL_FIRST",
+   val subsample: Int = 1,
    var wRegularizer: Regularizer[T] = null,
    var uRegularizer: Regularizer[T] = null,
    var bRegularizer: Regularizer[T] = null,
    val returnSequences: Boolean = false,
    val goBackwards: Boolean = false,
-   val format: String = "CHANNEL_FIRST",
    val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {
 
-  require(format.toLowerCase() == "channel_first", s"ConvLSTM2D currently only supports " +
-    s"format CHANNEL_FIRST, but got format $format.")
+  require(dimOrdering.toLowerCase() == "channel_first", s"ConvLSTM2D currently only supports " +
+    s"format CHANNEL_FIRST, but got format $dimOrdering.")
 
   override def computeOutputShape(inputShape: Shape): Shape = {
     val input = inputShape.toSingle().toArray
@@ -81,19 +81,20 @@ object ConvLSTM2D {
   def apply[@specialized(Float, Double) T: ClassTag](
     nbFilter: Int,
     nbKernel: Int,
-    subsample: Int = 1,
     activation: String = "tanh",
     innerActivation: String = "hard_sigmoid",
+    dimOrdering: String = "th",
+    subsample: Int = 1,
     wRegularizer: Regularizer[T] = null,
     uRegularizer: Regularizer[T] = null,
     bRegularizer: Regularizer[T] = null,
     returnSequences: Boolean = false,
     goBackwards: Boolean = false,
-    dimOrdering: String = "th",
     inputShape: Shape = null)(implicit ev: TensorNumeric[T]): ConvLSTM2D[T] = {
-    new ConvLSTM2D[T](nbFilter, nbKernel, subsample,
-      KerasUtils.getActivation(activation), KerasUtils.getActivation(innerActivation),
-      wRegularizer, uRegularizer, bRegularizer, returnSequences,
-      goBackwards, KerasUtils.toBigDLFormat5D(dimOrdering), inputShape)
+    new ConvLSTM2D[T](nbFilter, nbKernel, KerasUtils.getActivation(activation),
+      KerasUtils.getActivation(innerActivation),
+      KerasUtils.toBigDLFormat5D(dimOrdering),
+      subsample, wRegularizer, uRegularizer, bRegularizer,
+      returnSequences, goBackwards, inputShape)
   }
 }

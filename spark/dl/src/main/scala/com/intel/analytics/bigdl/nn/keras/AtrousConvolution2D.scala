@@ -33,14 +33,14 @@ class AtrousConvolution2D[T: ClassTag](
    val activation: AbstractModule[Tensor[T], Tensor[T], T] = null,
    val subsample: Array[Int] = Array(1, 1),
    val atrousRate: Array[Int] = Array(1, 1),
+   val dimOrdering: DataFormat = DataFormat.NCHW,
    var wRegularizer: Regularizer[T] = null,
    var bRegularizer: Regularizer[T] = null,
-   val format: DataFormat = DataFormat.NCHW,
    val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {
 
-  require(format == DataFormat.NCHW, s"AtrousConvolution2D currently only supports " +
-    s"format NCHW, but got format $format.")
+  require(dimOrdering == DataFormat.NCHW, s"AtrousConvolution2D currently only supports " +
+    s"format NCHW, but got format $dimOrdering.")
   require(subsample.length == 2,
     s"For AtrousConvolution2D, subsample should be of length 2 but got length ${subsample.length}")
   require(atrousRate.length == 2, s"For AtrousConvolution2D, " +
@@ -81,6 +81,6 @@ object AtrousConvolution2D {
     new AtrousConvolution2D[T](nbFilter, nbRow, nbCol, KerasUtils.getInitMethod(init),
       KerasUtils.getActivation(activation),
       Array(subsample._1, subsample._2), Array(atrousRate._1, atrousRate._2),
-      wRegularizer, bRegularizer, KerasUtils.toBigDLFormat(dimOrdering), inputShape)
+      KerasUtils.toBigDLFormat(dimOrdering), wRegularizer, bRegularizer, inputShape)
   }
 }
