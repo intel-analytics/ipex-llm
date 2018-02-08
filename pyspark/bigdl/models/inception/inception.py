@@ -264,21 +264,24 @@ if __name__ == "__main__":
         # create dataset
         train_transformer = Pipeline([PixelBytesToMat(),
                                       RandomCrop(image_size, image_size),
-                                      HFlip(),
+                                      RandomTransformer(HFlip(), 0.5),
                                       ChannelNormalize(0.485, 0.456, 0.406, 0.229, 0.224, 0.225),
                                       MatToTensor(to_rgb=True),
                                       ImageFrameToSample(input_keys=["imageTensor"], target_keys=["label"])
                                       ])
-        raw_train_data = train_transformer(get_inception_data(options.folder, sc, "train"))
+        raw_train_data = get_inception_data(options.folder, sc, "train")
+
+        train_data = DataSet.image_frame(raw_train_data).transform(train_transformer)
 
         val_transformer = Pipeline([PixelBytesToMat(),
                                     CenterCrop(image_size, image_size),
-                                    HFlip(),
+                                    RandomTransformer(HFlip(), 0.5),
                                     ChannelNormalize(0.485, 0.456, 0.406, 0.229, 0.224, 0.225),
                                     MatToTensor(to_rgb=True),
                                     ImageFrameToSample(input_keys=["imageTensor"], target_keys=["label"])
                                     ])
-        val_data = val_transformer(get_inception_data(options.folder, sc, "val"))
+        raw_val_data = get_inception_data(options.folder, sc, "val")
+        val_data = DataSet.image_frame(raw_val_data).transform(val_transformer)
 
         # TODO: Check stateSnapshot opt
 
@@ -317,7 +320,7 @@ if __name__ == "__main__":
         # Load a pre-trained model and then validate it through top1 accuracy.
         test_transformer = Pipeline([PixelBytesToMat(),
                                      CenterCrop(image_size, image_size),
-                                     HFlip(),
+                                     RandomTransformer(HFlip(), 0.5),
                                      ChannelNormalize(0.485, 0.456, 0.406, 0.229, 0.224, 0.225),
                                      MatToTensor(to_rgb=True),
                                      ImageFrameToSample(input_keys=["imageTensor"], target_keys=["label"])
