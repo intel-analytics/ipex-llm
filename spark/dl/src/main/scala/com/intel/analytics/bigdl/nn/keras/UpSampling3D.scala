@@ -25,9 +25,12 @@ import scala.reflect.ClassTag
 
 class UpSampling3D[T: ClassTag](
    val size: Array[Int] = Array(2, 2, 2),
+   val dimOrdering: String = "CHANNEL_FIRST",
    val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {
 
+  require(dimOrdering.toLowerCase() == "channel_first",
+    s"UpSampling3D currently only supports format CHANNEL_FIRST, but got format $dimOrdering")
   require(size.length == 3,
     s"UpSampling3D: upsampling sizes should be of length 3, but got ${size.length}")
 
@@ -40,7 +43,9 @@ class UpSampling3D[T: ClassTag](
 object UpSampling3D {
   def apply[@specialized(Float, Double) T: ClassTag](
     size: (Int, Int, Int) = (2, 2, 2),
+    dimOrdering: String = "th",
     inputShape: Shape = null)(implicit ev: TensorNumeric[T]): UpSampling3D[T] = {
-    new UpSampling3D[T](Array(size._1, size._2, size._3), inputShape)
+    new UpSampling3D[T](Array(size._1, size._2, size._3),
+      KerasUtils.toBigDLFormat5D(dimOrdering), inputShape)
   }
 }
