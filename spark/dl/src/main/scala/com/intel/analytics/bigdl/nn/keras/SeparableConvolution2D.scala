@@ -129,6 +129,6 @@ object SeparableConvolution2D {
       KerasUtils.getInitMethod(init), KerasUtils.getActivation(activation),
       borderMode, Array(subsample._1, subsample._2), depthMultiplier,
       KerasUtils.toBigDLFormat(dimOrdering), depthwiseRegularizer,
-      pointwiseRegularizer, bRegularizer,  bias, inputShape)
+      pointwiseRegularizer, bRegularizer, bias, inputShape)
   }
 }

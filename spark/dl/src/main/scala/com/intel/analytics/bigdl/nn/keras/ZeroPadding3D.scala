@@ -36,7 +36,7 @@ import scala.reflect.ClassTag
  *                How many zeros to add at the beginning and end of the 3 padding dimensions.
  *                Symmetric padding will be applied to each dimension. Default is (1, 1, 1).
  * @param dimOrdering Format of the input data. Either "CHANNEL_FIRST" (dimOrdering='th') or
- *               "CHANNEL_LAST" (dimOrdering='tf'). Default is "CHANNEL_FIRST".
+ *                    "CHANNEL_LAST" (dimOrdering='tf'). Default is "CHANNEL_FIRST".
  * @tparam T The numeric type of parameter(e.g. weight, bias). Only support float/double now.
  */
 class ZeroPadding3D[T: ClassTag](
