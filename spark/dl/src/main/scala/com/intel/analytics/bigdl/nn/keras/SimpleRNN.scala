@@ -68,7 +68,6 @@ class SimpleRNN[T: ClassTag](
       uRegularizer = uRegularizer,
       bRegularizer = bRegularizer)
   }
-
 }
 
 object SimpleRNN {

@@ -73,7 +73,6 @@ class GRU[T: ClassTag](
       uRegularizer = uRegularizer,
       bRegularizer = bRegularizer)
   }
-
 }
 
 object GRU {

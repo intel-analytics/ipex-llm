@@ -73,7 +73,6 @@ class LSTM[T: ClassTag](
       uRegularizer = uRegularizer,
       bRegularizer = bRegularizer)
   }
-
 }
 
 object LSTM {
