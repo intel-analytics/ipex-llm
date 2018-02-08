@@ -1017,7 +1017,7 @@ class LayerConverter:
 
     def create_batchnormalization(self):
         if len(self.input_shape) != 4:
-            raise Exception("Only 4D input is supported for now, but the current input dim is %d",
+            raise Exception("Only 4D input is supported for now, but the current input dim is %s",
                             len(self.input_shape))
         if keras.backend.image_dim_ordering() == "th" and self.klayer.axis != 1:
             raise Exception("""For BatchNormalization with th image ordering, we only support """ +
