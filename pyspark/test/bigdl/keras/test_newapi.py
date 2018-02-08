@@ -32,19 +32,22 @@ class TestLayer(BigDLTestCase):
         input_data = np.random.randint(1000, size=(32, 10))
         blayer = BLayer.Embedding(1000, 64, input_shape=(10, ))
         klayer = KLayer.Embedding(1000, 64, input_length=10)
-        self.compare_newapi(klayer, blayer, WeightsConverter.convert_embedding, input_data)
+        self.compare_newapi(klayer, blayer, input_data,
+                            WeightsConverter.convert_embedding)
 
     def test_batchnormalization(self):
         K.set_image_dim_ordering("th")
         input_data = np.random.random_sample([2, 5, 32, 32])
         blayer = BLayer.BatchNormalization(input_shape=(5, 32, 32))
         klayer = KLayer.BatchNormalization(axis=1, input_shape=(5, 32, 32))
-        self.compare_newapi(klayer, blayer, WeightsConverter.convert_batchnormalization, input_data)
+        self.compare_newapi(klayer, blayer, input_data,
+                            WeightsConverter.convert_batchnormalization)
         K.set_image_dim_ordering("tf")
         input_data2 = np.random.random_sample([2, 32, 32, 4])
         blayer = BLayer.BatchNormalization(dim_ordering="tf", input_shape=(32, 32, 4))
         klayer = KLayer.BatchNormalization(axis=-1, input_shape=(32, 32, 4))
-        self.compare_newapi(klayer, blayer, WeightsConverter.convert_batchnormalization, input_data2)
+        self.compare_newapi(klayer, blayer, input_data2,
+                            WeightsConverter.convert_batchnormalization)
 
 
 if __name__ == "__main__":

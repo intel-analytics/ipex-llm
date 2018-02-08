@@ -320,8 +320,8 @@ class BigDLTestCase(TestCase):
         np.testing.assert_allclose(bigdl_output, keras_output, rtol=rtol, atol=atol)
 
     # Compare forward results with Keras for new Keras-like API layers.
-    def compare_newapi(self, klayer, blayer, weight_converter,
-                       input_data, is_training=False, rtol=1e-6, atol=1e-6):
+    def compare_newapi(self, klayer, blayer, input_data, weight_converter,
+                       is_training=False, rtol=1e-6, atol=1e-6):
         from keras.models import Sequential as KSequential
         from bigdl.nn.keras.layer import Sequential as BSequential
         bmodel = BSequential()
