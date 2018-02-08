@@ -18,9 +18,11 @@ package com.intel.analytics.bigdl.keras
 
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.nn.abstractnn.DataFormat
+import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.bigdl.utils.TestUtils
 
 class UpSampling2DSpec extends KerasBaseSpec {
-  "updample2D nchw" should "work properly" in {
+  "UpSampling2D nchw" should "work properly" in {
     val kerasCode =
       """
         |input_tensor = Input(shape=[5, 3, 4])
@@ -32,7 +34,7 @@ class UpSampling2DSpec extends KerasBaseSpec {
     checkOutputAndGrad(model, kerasCode)
   }
 
-  "updample2D nhwc" should "work properly" in {
+  "UpSampling2D nhwc" should "work properly" in {
     val kerasCode =
       """
         |input_tensor = Input(shape=[3, 4, 5])
@@ -42,6 +44,16 @@ class UpSampling2DSpec extends KerasBaseSpec {
       """.stripMargin
     val model = UpSampling2D[Float](Array(2, 3), DataFormat.NHWC)
     checkOutputAndGrad(model, kerasCode)
+  }
+
+  "UpSampling2D computeOutputShape NCHW" should "work properly" in {
+    val layer = UpSampling2D[Float](Array(1, 2))
+    TestUtils.compareOutputShape(layer, Shape(3, 4, 5)) should be (true)
+  }
+
+  "UpSampling2D computeOutputShape NHWC" should "work properly" in {
+    val layer = UpSampling2D[Float](Array(3, 3), format = DataFormat.NHWC)
+    TestUtils.compareOutputShape(layer, Shape(8, 12, 2)) should be (true)
   }
 
 }
