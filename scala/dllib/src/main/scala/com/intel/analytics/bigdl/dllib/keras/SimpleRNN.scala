@@ -44,7 +44,7 @@ import scala.reflect.ClassTag
  * @param uRegularizer An instance of [[Regularizer]], applied the recurrent weights matrices.
  *                     Default is null.
  * @param bRegularizer An instance of [[Regularizer]], applied to the bias. Default is null.
- * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now
+ * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now.
  */
 class SimpleRNN[T: ClassTag](
    outputDim: Int,

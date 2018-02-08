@@ -27,20 +27,24 @@ class Cropping3D[T: ClassTag](
    val dim1Crop: Array[Int] = Array(1, 1),
    val dim2Crop: Array[Int] = Array(1, 1),
    val dim3Crop: Array[Int] = Array(1, 1),
-   val format: String = "CHANNEL_FIRST",
+   val dimOrdering: String = "CHANNEL_FIRST",
    val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {
 
   require(dim1Crop.length == 2,
-    s"Cropping3D: kernel dim1 cropping values should be of length 2, but got ${dim1Crop.length}")
+    s"Cropping3D: kernel dim1 cropping values should be of length 2, " +
+      s"but got length ${dim1Crop.length}")
   require(dim2Crop.length == 2,
-    s"Cropping3D: kernel dim2 cropping values should be of length 2, but got ${dim2Crop.length}")
+    s"Cropping3D: kernel dim2 cropping values should be of length 2, " +
+      s"but got length ${dim2Crop.length}")
   require(dim3Crop.length == 2,
-    s"Cropping3D: kernel dim3 cropping values should be of length 2, but got ${dim3Crop.length}")
-  require(format.toLowerCase() == "channel_first" || format.toLowerCase() == "channel_last",
-  "Cropping3D only supports format channel_first or channel_last")
+    s"Cropping3D: kernel dim3 cropping values should be of length 2, " +
+      s"but got length ${dim3Crop.length}")
+  require(dimOrdering.toLowerCase() == "channel_first" ||
+    dimOrdering.toLowerCase() == "channel_last",
+    s"Cropping3D only supports format channel_first or channel_last, but got format $dimOrdering")
 
-  private val dimOrdering = format.toLowerCase() match {
+  private val format = dimOrdering.toLowerCase() match {
     case "channel_first" => com.intel.analytics.bigdl.nn.Cropping3D.CHANNEL_FIRST
     case "channel_last" => com.intel.analytics.bigdl.nn.Cropping3D.CHANNEL_LAST
   }
@@ -50,7 +54,7 @@ class Cropping3D[T: ClassTag](
       dim1Crop = dim1Crop,
       dim2Crop = dim2Crop,
       dim3Crop = dim3Crop,
-      format = dimOrdering)
+      format = format)
     layer.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
   }
 }
