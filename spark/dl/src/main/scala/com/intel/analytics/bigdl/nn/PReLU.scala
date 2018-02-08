@@ -39,7 +39,8 @@ import scala.reflect.ClassTag
 @SerialVersionUID(- 877259619727212424L)
 class PReLU[T: ClassTag](
   val nOutputPlane: Int = 0)
-  (implicit ev: TensorNumeric[T]) extends TensorModule[T] with Initializable with IdentityOutputShape {
+  (implicit ev: TensorNumeric[T]) extends TensorModule[T]
+    with Initializable with IdentityOutputShape {
 
   val weight = if (nOutputPlane == 0) {
     Tensor[T](1)
