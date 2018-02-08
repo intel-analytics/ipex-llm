@@ -806,7 +806,7 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
   }
 
   /**
-   * Quantize this module, whcih reduces the precison of the parameter. Get a higher speed with a
+   * Quantize this module, which reduces the precision of the parameter. Get a higher speed with a
    * little accuracy cost.
    * @return
    */
