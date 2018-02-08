@@ -48,7 +48,7 @@ class Bidirectional[T: ClassTag](
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
     val input = inputShape.toSingle().toArray
-    val recurrent = layer.cell(input)
+    val recurrent = layer.buildCell(input)
     val merge = mode match {
       case "concat" => JoinTable(input.length -1, input.length -1)
       case "sum" => CAddTable()

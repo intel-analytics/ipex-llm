@@ -58,7 +58,7 @@ class SimpleRNN[T: ClassTag](
    inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends Recurrent[T](outputDim, returnSequences, goBackwards, inputShape) {
 
-  override def cell(input: Array[Int]): Cell[T] = {
+  override def buildCell(input: Array[Int]): Cell[T] = {
     RnnCell(
       inputSize = input(2),
       hiddenSize = outputDim,
@@ -69,10 +69,6 @@ class SimpleRNN[T: ClassTag](
       bRegularizer = bRegularizer)
   }
 
-  override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
-    val input = inputShape.toSingle().toArray
-    super.processParameters(cell(input))
-  }
 }
 
 object SimpleRNN {

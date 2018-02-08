@@ -63,7 +63,7 @@ class LSTM[T: ClassTag](
    inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends Recurrent[T](outputDim, returnSequences, goBackwards, inputShape) {
 
-  override def cell(input: Array[Int]): Cell[T] = {
+  override def buildCell(input: Array[Int]): Cell[T] = {
     com.intel.analytics.bigdl.nn.LSTM[T](
       inputSize = input(2),
       hiddenSize = outputDim,
@@ -74,10 +74,6 @@ class LSTM[T: ClassTag](
       bRegularizer = bRegularizer)
   }
 
-  override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
-    val input = inputShape.toSingle().toArray
-    super.processParameters(cell(input))
-  }
 }
 
 object LSTM {
