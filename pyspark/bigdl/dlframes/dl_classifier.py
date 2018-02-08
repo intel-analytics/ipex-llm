@@ -95,11 +95,7 @@ class HasLearningRate(Params):
         return self.getOrDefault(self.learningRate)
 
 class DLEstimator(Estimator, HasFeaturesCol, HasLabelCol, HasPredictionCol, HasBatchSize, HasMaxEpoch, HasLearningRate, JavaValue):
-    """
-    .. note:: Deprecated in 0.5.0. `DLEstimator` has been migrated to package
-     `bigdl.dlframes`. This will be removed in BigDL 0.6.
 
-    """
     def __init__(self,  model, criterion, feature_size, label_size, jvalue=None, bigdl_type="float"):
         super(DLEstimator, self).__init__()
         self.value = jvalue if jvalue else callBigDlFunc(
@@ -115,11 +111,6 @@ class DLEstimator(Estimator, HasFeaturesCol, HasLabelCol, HasPredictionCol, HasB
 
 
 class DLModel(Model, HasFeaturesCol, HasPredictionCol, HasBatchSize, HasFeatureSize, JavaValue):
-    """
-    .. note:: Deprecated in 0.5.0. `DLModel` has been migrated to package
-     `bigdl.dlframes`. This will be removed in BigDL 0.6.
-
-    """
     def __init__(self,  model, featureSize, jvalue=None, bigdl_type="float"):
         super(DLModel, self).__init__()
         self.value = jvalue if jvalue else callBigDlFunc(
@@ -137,11 +128,6 @@ class DLModel(Model, HasFeaturesCol, HasPredictionCol, HasBatchSize, HasFeatureS
 
 
 class DLClassifier(DLEstimator):
-    """
-    .. note:: Deprecated in 0.5.0. `DLClassifier` has been migrated to package
-     `bigdl.dlframes`. This will be removed in BigDL 0.6.
-
-    """
     def __init__(self,  model, criterion, feature_size,  bigdl_type="float"):
         super(DLClassifier, self).__init__(model, criterion, feature_size, [1], None, bigdl_type)
 
@@ -152,11 +138,6 @@ class DLClassifier(DLEstimator):
 
 
 class DLClassifierModel(DLModel):
-    """
-    .. note:: Deprecated in 0.5.0. `DLClassifierModel` has been migrated to package
-     `bigdl.dlframes`. This will be removed in BigDL 0.6.
-
-    """
     def __init__(self,  model, featureSize, jvalue=None, bigdl_type="float"):
         super(DLClassifierModel, self).__init__(model, featureSize, jvalue, bigdl_type)
 

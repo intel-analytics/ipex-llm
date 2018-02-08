@@ -45,7 +45,7 @@ trait VectorCompatibility {
  * Extends MLEstimator and override process to gain compatibility with
  * both spark 1.5 and spark 2.0.
  */
-private[ml] abstract class DLEstimatorBase[Learner <: DLEstimatorBase[Learner, M],
+abstract class DLEstimatorBase[Learner <: DLEstimatorBase[Learner, M],
     M <: DLTransformerBase[M]]
   extends Estimator[M] with HasLabelCol {
 
