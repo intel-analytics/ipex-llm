@@ -203,7 +203,8 @@ class LRNDnn[T: ClassTag](
       val bwd_pd = MklDnnOps.primitiveDescCreate(bwd_desc, engine, fwd_pd)
 
       /* create memory primities for relu gradInput */
-      gradInput.resizeAs(input)
+      // todo: output with Dense Tensor
+      gradInput = MklDnnTensor[Float](input.size())
       val gradInput_pd = MklDnnOps.primitiveDescQueryPd(bwd_pd, MklDnn.Query.diff_src_pd, 0)
       gradInput_memory = MklDnn.PrimitiveCreate0(gradInput_pd)
       gradInput.setPrimitiveDesc(gradInput_pd)
