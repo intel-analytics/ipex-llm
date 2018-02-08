@@ -23,7 +23,7 @@ import java.util.concurrent.atomic.AtomicInteger
 import com.intel.analytics.bigdl.DataSet
 import com.intel.analytics.bigdl.dataset.image.{LabeledBGRImage, _}
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.transform.vision.image.{ImageFeature, ImageFrame}
+import com.intel.analytics.bigdl.transform.vision.image.{DistributedImageFrame, ImageFeature, ImageFrame, LocalImageFrame}
 import com.intel.analytics.bigdl.utils.{Engine, RandomGenerator, T}
 import org.apache.hadoop.io.Text
 import org.apache.log4j.Logger
@@ -366,6 +366,15 @@ object DataSet {
     )
   }
 
+  def imageFrame(imageFrame: ImageFrame): DataSet[ImageFeature] = {
+    imageFrame match {
+      case distributedImageFrame: DistributedImageFrame =>
+        rdd[ImageFeature](distributedImageFrame.rdd)
+      case localImageFrame: LocalImageFrame =>
+        array(localImageFrame.array)
+    }
+  }
+
   /**
    * Wrap a RDD as a DataSet.
    * @param data
@@ -574,7 +583,7 @@ object DataSet {
         imf(ImageFeature.originalSize) = (height, width, 3)
         imf
       }).filter(_[Tensor[Float]](ImageFeature.label).valueAt(1) <= classNum)
-      ImageFrame.rdd(rawData.coalesce(num, true))
+      ImageFrame.rdd(rawData)
     }
 
     private[bigdl] def findFiles(path: Path): Array[LocalSeqFilePath] = {

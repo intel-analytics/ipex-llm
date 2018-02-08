@@ -22,7 +22,7 @@ import java.nio.file.Path
 import com.intel.analytics.bigdl.dataset.Transformer
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{Path => hadoopPath}
-import org.apache.hadoop.io.{SequenceFile, Text}
+import org.apache.hadoop.io.{SequenceFile, Text, BytesWritable}
 
 import scala.collection.Iterator
 

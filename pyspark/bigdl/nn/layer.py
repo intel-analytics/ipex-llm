@@ -1737,6 +1737,9 @@ class Concat(Container):
         super(Concat, self).__init__(None, bigdl_type,
                                      dimension)
 
+    def add(self, model):
+        self.value.add(model.value)
+        return self
 
 class SpatialAveragePooling(Layer):
 

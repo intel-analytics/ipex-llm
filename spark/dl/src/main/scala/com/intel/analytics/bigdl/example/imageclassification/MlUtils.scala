@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.dataset.image.{BGRImage, LocalLabeledImagePath}
 import com.intel.analytics.bigdl.nn.Module
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dataset.DataSet.SeqFileFolder
-import org.apache.hadoop.io.Text
+import org.apache.hadoop.io.{Text, BytesWritable}
 import org.apache.spark.SparkContext
 import org.apache.spark.mllib.linalg.DenseVector
 import org.apache.spark.rdd.RDD
@@ -154,7 +154,7 @@ object MlUtils {
   }
 
   def imagesLoadSeq(url: String, sc: SparkContext, classNum: Int): RDD[ByteImage] = {
-    sc.sequenceFile(url, classOf[Text], classOf[Text]).map(image => {
+    sc.sequenceFile(url, classOf[Text], classOf[BytesWritable]).map(image => {
       ByteImage(image._2.copyBytes(), SeqFileFolder.readName(image._1))
     })
   }
