@@ -137,4 +137,14 @@ class SparseTensorSpec  extends FlatSpec with Matchers {
     sparseResult should be (denseResult)
   }
 
+  "Tensor.cast" should "work on SparseTensor" in {
+    val sTensor = Tensor.sparse(Tensor[Int](6, 5).rand())
+    val sTensor2 = Tensor.sparse[Int](Tensor[Int](6, 5).rand())
+    sTensor.cast(sTensor2)
+    sTensor.storage().array() shouldEqual sTensor2.storage().array()
+
+    val sTensor1 = sTensor.cast(sTensor.asInstanceOf[Tensor[Long]])
+    sTensor1.storage() shouldEqual sTensor.storage()
+  }
+
 }
