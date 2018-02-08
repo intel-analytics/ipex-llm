@@ -49,7 +49,7 @@ class UpSampling2DSpec extends KerasBaseSpec {
         |model = Model(input=input_tensor, output=output_tensor)
       """.stripMargin
     val seq = KSequential[Float]()
-    val layer = UpSampling2D[Float](size = (1, 3), format = DataFormat.NHWC,
+    val layer = UpSampling2D[Float](size = (1, 3), dimOrdering = "tf",
       inputShape = Shape(12, 14, 3))
     seq.add(layer)
     checkOutputAndGrad(seq.asInstanceOf[AbstractModule[Tensor[Float], Tensor[Float], Float]],

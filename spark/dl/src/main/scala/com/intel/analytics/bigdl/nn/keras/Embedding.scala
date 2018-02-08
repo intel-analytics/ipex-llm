@@ -43,12 +43,12 @@ class Embedding[T: ClassTag](
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
     val input = inputShape.toSingle().toArray
     val model = TSequential[T]()
-    model.add(AddConstant(1.0, inplace = true))
+    model.add(AddConstant(1.0))
     val layer = LookupTable(
       nIndex = inputDim,
       nOutput = outputDim,
       wRegularizer = wRegularizer)
-    layer.setInitMethod(weightInitMethod = init, biasInitMethod = Zeros)
+    layer.setInitMethod(weightInitMethod = init)
     model.add(layer)
     model.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
   }

@@ -65,7 +65,7 @@ class ZeroPadding2DSpec extends KerasBaseSpec {
         |model = Model(input=input_tensor, output=output_tensor)
       """.stripMargin
     val seq = KSequential[Float]()
-    val layer = ZeroPadding2D[Float](format = DataFormat.NHWC, inputShape = Shape(6, 8, 1))
+    val layer = ZeroPadding2D[Float](dimOrdering = "tf", inputShape = Shape(6, 8, 1))
     seq.add(layer)
     seq.getOutputShape().toSingle().toArray should be (Array(-1, 8, 10, 1))
     checkOutputAndGrad(seq.asInstanceOf[AbstractModule[Tensor[Float], Tensor[Float], Float]],

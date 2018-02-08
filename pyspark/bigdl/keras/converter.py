@@ -578,7 +578,7 @@ class LayerConverter:
                  should_scale_grad_by_freq=False,
                  wRegularizer=to_bigdl_reg(self.config["W_regularizer"]),
                  bigdl_type="float")
-        bseq.add(BLayer.AddConstant(1.0, inplace=True))  # Add 1 as BigDL is one-based index
+        bseq.add(BLayer.AddConstant(1.0))  # Add 1 as BigDL is one-based index
         bseq.add(blayer)
         return bseq
 
