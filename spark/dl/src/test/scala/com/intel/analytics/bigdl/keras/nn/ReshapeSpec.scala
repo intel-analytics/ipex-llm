@@ -22,6 +22,9 @@ import com.intel.analytics.bigdl.nn.keras.Reshape
 import com.intel.analytics.bigdl.nn.keras.{Sequential => KSequential}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
+
+import scala.util.Random
 
 class ReshapeSpec extends KerasBaseSpec {
 
@@ -57,4 +60,13 @@ class ReshapeSpec extends KerasBaseSpec {
       kerasCode)
   }
 
+}
+
+class ReshapeSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val layer = Reshape[Float](Array(4, 15), inputShape = Shape(3, 4, 5))
+    layer.build(Shape(2, 3, 4, 5))
+    val input = Tensor[Float](2, 3, 4, 5).apply1(_ => Random.nextFloat())
+    runSerializationTest(layer, input)
+  }
 }

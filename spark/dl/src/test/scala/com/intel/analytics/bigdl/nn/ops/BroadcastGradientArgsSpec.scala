@@ -17,6 +17,7 @@ package com.intel.analytics.bigdl.nn.ops
 
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
 
 class BroadcastGradientArgsSpec extends FlatSpec with Matchers {
@@ -46,5 +47,19 @@ class BroadcastGradientArgsSpec extends FlatSpec with Matchers {
 
     val output = BroadcastGradientArgs().forward(input)
     output should be(expectOutput)
+  }
+}
+
+class BroadcastGradientArgsSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val broadcastGradientArgs = BroadcastGradientArgs[Float]().
+      setName("broadcastGradientArgs")
+    val input =
+      T(
+        Tensor[Int](T(1, 2, 3)),
+        Tensor[Int](T(2, 2, 1))
+      )
+    runSerializationTest(broadcastGradientArgs, input, broadcastGradientArgs.
+      asInstanceOf[ModuleToOperation[Float]].module.getClass)
   }
 }

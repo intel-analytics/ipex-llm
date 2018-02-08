@@ -17,6 +17,7 @@ package com.intel.analytics.bigdl.nn.ops
 
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
 
 class BucketizedColSpec
@@ -39,5 +40,14 @@ class BucketizedColSpec
     val output = BucketizedCol[Float](boundaries = Array(0, 10, 100))
       .forward(input)
     output should be(expectOutput)
+  }
+}
+
+class BucketizedColSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val bucketizedCol = BucketizedCol[Float](boundaries = Array(0.0, 10.0, 100.0))
+      .setName("bucketizedCol")
+    val input = Tensor[Float](T(T(-1, 1), T(101, 10), T(5, 100)))
+    runSerializationTest(bucketizedCol, input)
   }
 }

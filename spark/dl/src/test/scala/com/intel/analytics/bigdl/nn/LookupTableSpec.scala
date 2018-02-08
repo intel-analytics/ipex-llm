@@ -20,6 +20,7 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import org.scalatest.{FlatSpec, Matchers}
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import com.intel.analytics.bigdl.utils.Table
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 
 import scala.util.Random
 
@@ -91,5 +92,18 @@ class LookupTableSpec extends FlatSpec with Matchers {
     gradInput1 should be (gradInput2)
 
     layer2.gradWeight should be (layer1.gradWeight.mul(2))
+  }
+}
+
+class LookupTableSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val lookupTable = LookupTable[Float](9, 4, 2, 0.1, 2.0, true).setName("lookupTable")
+    val input = Tensor[Float](5)
+    input(Array(1)) = 5
+    input(Array(2)) = 2
+    input(Array(3)) = 6
+    input(Array(4)) = 9
+    input(Array(5)) = 4
+    runSerializationTest(lookupTable, input)
   }
 }

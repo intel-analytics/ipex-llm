@@ -18,38 +18,14 @@ package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
-import org.scalatest.{FlatSpec, Matchers}
 
 import scala.util.Random
 
-  /**
-  * Created by yao on 9/20/16.
-  */
-@com.intel.analytics.bigdl.tags.Parallel
-class IdentitySpec extends FlatSpec with Matchers {
-  "Identity" should "generate correct output and grad" in {
-    val batchN = 3
-    val inputN = 5
-    val outputN = inputN
 
-    val input = Tensor[Double](batchN, inputN)
-    input.rand()
-    val gradOutput = Tensor[Double](batchN, outputN)
-    gradOutput.rand()
-
-    val module = new Identity[Double]()
-    val output = module.forward(input)
-    assert(input equals output)
-
-    val gradInput = module.backward(input, gradOutput)
-    assert(gradInput equals gradOutput)
-  }
-}
-
-class IdentitySerialTest extends ModuleSerializationTest {
+class ContiguousSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
-    val identity = Identity[Float]().setName("identity")
+    val contiguous = Contiguous[Float]().setName("contiguous")
     val input = Tensor[Float](10).apply1(_ => Random.nextFloat())
-    runSerializationTest(identity, input)
+    runSerializationTest(contiguous, input)
   }
 }

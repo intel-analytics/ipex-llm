@@ -54,10 +54,24 @@ class SerializerSpec extends BigDLSpecHelper {
       "com.intel.analytics.bigdl.nn.ops.StackOpsSerialTest",
     "com.intel.analytics.bigdl.nn.ops.StackPop" ->
       "com.intel.analytics.bigdl.nn.ops.StackOpsSerialTest",
+    "com.intel.analytics.bigdl.nn.ops.TensorArrayWrite" ->
+      "com.intel.analytics.bigdl.nn.ops.TensorArraySerialTest",
+    "com.intel.analytics.bigdl.nn.ops.TensorArrayRead" ->
+      "com.intel.analytics.bigdl.nn.ops.TensorArraySerialTest",
+    "com.intel.analytics.bigdl.nn.ops.TensorArrayGrad" ->
+      "com.intel.analytics.bigdl.nn.ops.TensorArraySerialTest",
 
     // Keras layers
     "com.intel.analytics.bigdl.nn.keras.Dense" ->
-      "com.intel.analytics.bigdl.keras.nn.DenseSerialTest"
+      "com.intel.analytics.bigdl.keras.nn.DenseSerialTest",
+    "com.intel.analytics.bigdl.nn.keras.Cropping3D" ->
+      "com.intel.analytics.bigdl.keras.nn.Cropping3DSerialTest",
+    "com.intel.analytics.bigdl.nn.keras.Reshape" ->
+      "com.intel.analytics.bigdl.keras.nn.ReshapeSerialTest",
+    "com.intel.analytics.bigdl.nn.keras.Permute" ->
+      "com.intel.analytics.bigdl.keras.nn.PermuteSerialTest",
+    "com.intel.analytics.bigdl.nn.keras.Model" ->
+      "com.intel.analytics.bigdl.keras.nn.ModelSerialTest"
   )
 
   private val suffix = "SerialTest"
