@@ -24,7 +24,7 @@ import org.apache.spark.sql.{DataFrame, Dataset}
  * Extends MlTransformer and override process to gain compatibility with
  * both spark 1.5 and spark 2.0.
  */
-private[ml] abstract class DLTransformerBase[M <: DLTransformerBase[M]]
+abstract class DLTransformerBase[M <: DLTransformerBase[M]]
   extends Model[M] {
 
   /**
