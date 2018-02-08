@@ -61,7 +61,6 @@ class Dense(KerasLayer):
     bias: Whether to include a bias (i.e. make the layer affine rather than linear). Default is True.
 
     >>> dense = Dense(10, input_shape=(3, 4))
-    creating: createXavier
     creating: createKerasDense
     """
     def __init__(self, output_dim, init='glorot_uniform', activation=None,
@@ -78,6 +77,10 @@ class Dense(KerasLayer):
 
 
 class Embedding(KerasLayer):
+    """
+    >>> embedding = Embedding(1000, 32, input_shape=(10))
+    creating: createKerasEmbedding
+    """
     def __init__(self, input_dim, output_dim, init='uniform',
                  W_regularizer=None, input_shape=None, bigdl_type="float"):
         super(Embedding, self).__init__(None, bigdl_type,
@@ -89,6 +92,10 @@ class Embedding(KerasLayer):
 
 
 class BatchNormalization(KerasLayer):
+    """
+    >>> batchNormalization = BatchNormalization(input_shape=(3, 12, 12))
+    creating: createKerasBatchNormalization
+    """
     def __init__(self, epsilon=0.001, momentum=0.99, beta_init='zero', gamma_init='one',
                  dim_ordering="th", input_shape=None, bigdl_type="float"):
         super(BatchNormalization, self).__init__(None, bigdl_type,
