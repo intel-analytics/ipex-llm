@@ -25,8 +25,12 @@ import scala.reflect.ClassTag
 abstract class Pooling3D[T: ClassTag](
    val poolSize: Array[Int] = Array(2, 2, 2),
    val strides: Array[Int] = null,
+   val dimOrdering: String = "CHANNEL_FIRST",
    val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {
+
+  require(dimOrdering.toLowerCase() == "channel_first", s"Pooling3D currently only supports " +
+    s"format CHANNEL_FIRST, but got format $dimOrdering")
 
   require(poolSize.length == 3,
     s"For Pooling3D, poolSize should be of length 3 but got length ${poolSize.length}")
@@ -47,5 +51,4 @@ abstract class Pooling3D[T: ClassTag](
       "valid", strideValues(2))
     Shape(input(0), input(1), dim1Length, dim2Length, dim3Length)
   }
-
 }
