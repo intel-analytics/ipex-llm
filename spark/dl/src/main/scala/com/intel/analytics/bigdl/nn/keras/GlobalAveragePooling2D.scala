@@ -25,13 +25,13 @@ import com.intel.analytics.bigdl.utils.Shape
 import scala.reflect.ClassTag
 
 class GlobalAveragePooling2D[T: ClassTag](
-   format: DataFormat = DataFormat.NCHW,
+   dimOrdering: DataFormat = DataFormat.NCHW,
    inputShape: Shape = null)(implicit ev: TensorNumeric[T])
-  extends GlobalPooling2D[T](format, inputShape) {
+  extends GlobalPooling2D[T](dimOrdering, inputShape) {
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
     val input = inputShape.toSingle().toArray
-    val (dimH, dimW, dimC) = format.getHWCDims(4)
+    val (dimH, dimW, dimC) = dimOrdering.getHWCDims(4)
     val model = TSequential[T]()
     val layer = SpatialAveragePooling(
       kW = input(dimW -1),
@@ -39,7 +39,7 @@ class GlobalAveragePooling2D[T: ClassTag](
       dW = input(dimW -1),
       dH = input(dimH -1),
       countIncludePad = false,
-      format = format)
+      format = dimOrdering)
     model.add(layer)
     model.add(Squeeze(dimW))
     model.add(Squeeze(dimH))

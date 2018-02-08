@@ -975,6 +975,8 @@ class LayerConverter:
         if self.config["border_mode"] != 'same':
             raise Exception("Unsupported border_mode: valid")
 
+        if self.klayer.dim_ordering != "th":
+            raise Exception("Please use `th` for `dim_ordering`. `%s` is not supported for now." % klayer.dim_ordering)
         if self.config["nb_row"] != self.config["nb_col"]:
             raise Exception("Only square kernel is supported for now. Please set nb_row=nb_col.")
         if self.klayer.subsample[0] != self.klayer.subsample[1]:

@@ -19,6 +19,7 @@ package com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.tensor.Tensor
 import org.scalatest.{FlatSpec, Matchers}
 import com.intel.analytics.bigdl.utils.RandomGenerator._
+import com.intel.analytics.bigdl.utils.{Shape, TestUtils}
 
 import scala.util.Random
 
@@ -56,6 +57,11 @@ class SpatialDilatedConvolutionSpec extends FlatSpec with Matchers {
     layer2.gradWeight should be (layer1.gradWeight.mul(2))
     layer2.gradBias should be (layer1.gradBias.mul(0.5))
 
+  }
+
+  "SpatialDilatedConvolution computeOutputShape" should "work properly" in {
+    val layer = SpatialDilatedConvolution[Float](4, 8, 2, 3, 1, 2, 0, 0, 2, 2)
+    TestUtils.compareOutputShape(layer, Shape(4, 256, 256)) should be (true)
   }
 
 }

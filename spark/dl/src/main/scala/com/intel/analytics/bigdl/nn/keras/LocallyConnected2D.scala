@@ -44,11 +44,11 @@ import scala.reflect.ClassTag
  * @param borderMode Either 'valid' or 'same'. Default is 'valid'.
  * @param subsample Int array of length 2. The step of the convolution in the height and
  *                  width dimension. Also called strides elsewhere. Default is (1, 1).
+ * @param dimOrdering Format of input data. Either DataFormat.NCHW (dimOrdering='th') or
+ *                    DataFormat.NHWC (dimOrdering='tf'). Default is NCHW.
  * @param wRegularizer An instance of [[Regularizer]], (eg. L1 or L2 regularization),
  *                     applied to the input weights matrices. Default is null.
  * @param bRegularizer An instance of [[Regularizer]], applied to the bias. Default is null.
- * @param format Format of input data. Either DataFormat.NCHW (dimOrdering='th') or
- *               DataFormat.NHWC (dimOrdering='tf'). Default is NCHW.
  * @param bias Whether to include a bias (i.e. make the layer affine rather than linear).
  *             Default is true.
  * @tparam T The numeric type of parameter(e.g. weight, bias). Only support float/double now.
@@ -60,9 +60,9 @@ class LocallyConnected2D[T: ClassTag](
    val activation: AbstractModule[Tensor[T], Tensor[T], T] = null,
    val borderMode: String = "valid",
    val subsample: Array[Int] = Array(1, 1),
+   val dimOrdering: DataFormat = DataFormat.NCHW,
    var wRegularizer: Regularizer[T] = null,
    var bRegularizer: Regularizer[T] = null,
-   val format: DataFormat = DataFormat.NCHW,
    val bias: Boolean = true,
    val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {
@@ -74,7 +74,7 @@ class LocallyConnected2D[T: ClassTag](
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
     val input = inputShape.toSingle().toArray
-    val stack = if (format == DataFormat.NCHW) (input(1), input(3), input(2))
+    val stack = if (dimOrdering == DataFormat.NCHW) (input(1), input(3), input(2))
       else (input(3), input(2), input(1))
     val pad = KerasUtils.getPadsFromBorderMode(borderMode)
     val layer = com.intel.analytics.bigdl.nn.LocallyConnected2D(
@@ -91,7 +91,7 @@ class LocallyConnected2D[T: ClassTag](
       wRegularizer = wRegularizer,
       bRegularizer = bRegularizer,
       withBias = bias,
-      format = format)
+      format = dimOrdering)
     KerasLayer.fuse(layer, activation,
       inputShape).asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
   }
@@ -105,13 +105,13 @@ object LocallyConnected2D {
     activation: String = null,
     borderMode: String = "valid",
     subsample: (Int, Int) = (1, 1),
+    dimOrdering: String = "th",
     wRegularizer: Regularizer[T] = null,
     bRegularizer: Regularizer[T] = null,
-    dimOrdering: String = "th",
     bias: Boolean = true,
     inputShape: Shape = null)(implicit ev: TensorNumeric[T]): LocallyConnected2D[T] = {
     new LocallyConnected2D[T](nbFilter, nbRow, nbCol,
       KerasUtils.getActivation(activation), borderMode, Array(subsample._1, subsample._2),
-      wRegularizer, bRegularizer, KerasUtils.toBigDLFormat(dimOrdering), bias, inputShape)
+      KerasUtils.toBigDLFormat(dimOrdering), wRegularizer, bRegularizer, bias, inputShape)
   }
 }

@@ -26,7 +26,7 @@ import scala.reflect.ClassTag
 class Cropping2D[T: ClassTag](
    val heightCrop: Array[Int] = Array(0, 0),
    val widthCrop: Array[Int] = Array(0, 0),
-   val format: DataFormat = DataFormat.NCHW,
+   val dimOrdering: DataFormat = DataFormat.NCHW,
    val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {
 
@@ -39,7 +39,7 @@ class Cropping2D[T: ClassTag](
     val layer = com.intel.analytics.bigdl.nn.Cropping2D(
       heightCrop = heightCrop,
       widthCrop = widthCrop,
-      format = format)
+      format = dimOrdering)
     layer.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
   }
 }

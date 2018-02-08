@@ -27,8 +27,9 @@ import scala.reflect.ClassTag
 class MaxPooling3D[T: ClassTag](
    poolSize: Array[Int] = Array(2, 2, 2),
    strides: Array[Int] = null,
+   dimOrdering: String = "CHANNEL_FIRST",
    inputShape: Shape = null)(implicit ev: TensorNumeric[T])
-  extends Pooling3D[T](poolSize, strides, inputShape) {
+  extends Pooling3D[T](poolSize, strides, dimOrdering, inputShape) {
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
     val layer = VolumetricMaxPooling(
@@ -46,10 +47,11 @@ object MaxPooling3D {
   def apply[@specialized(Float, Double) T: ClassTag](
     poolSize: (Int, Int, Int) = (2, 2, 2),
     strides: (Int, Int, Int) = null,
+    dimOrdering: String = "th",
     inputShape: Shape = null)(implicit ev: TensorNumeric[T]): MaxPooling3D[T] = {
     val strideValues = if (strides != null) Array(strides._1, strides._2, strides._3)
                        else null
     new MaxPooling3D[T](Array(poolSize._1, poolSize._2, poolSize._3),
-      strideValues, inputShape)
+      strideValues, KerasUtils.toBigDLFormat5D(dimOrdering), inputShape)
   }
 }

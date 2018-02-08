@@ -35,17 +35,17 @@ import scala.reflect.ClassTag
  * @param strides Int array of length 2. Stride values. Default is null, and in this case it will
  *                be equal to poolSize.
  * @param borderMode Either 'valid' or 'same'. Default is 'valid'.
- * @param format Format of input data. Either DataFormat.NCHW (dimOrdering='th') or
- *               DataFormat.NHWC (dimOrdering='tf'). Default is NCHW.
- * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now
+ * @param dimOrdering Format of input data. Either DataFormat.NCHW (dimOrdering='th') or
+ *                    DataFormat.NHWC (dimOrdering='tf'). Default is NCHW.
+ * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now.
  */
 class MaxPooling2D[T: ClassTag] (
    poolSize: Array[Int] = Array(2, 2),
    strides: Array[Int] = null,
    borderMode: String = "valid",
-   format: DataFormat = DataFormat.NCHW,
+   dimOrdering: DataFormat = DataFormat.NCHW,
    inputShape: Shape = null)(implicit ev: TensorNumeric[T])
-  extends Pooling2D[T](poolSize, strides, borderMode, format, inputShape) {
+  extends Pooling2D[T](poolSize, strides, borderMode, dimOrdering, inputShape) {
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
     val pads = KerasUtils.getPadsFromBorderMode(borderMode)
@@ -56,7 +56,7 @@ class MaxPooling2D[T: ClassTag] (
       dH = strideValues(0),
       padW = pads._2,
       padH = pads._1,
-      format = format)
+      format = dimOrdering)
     layer.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
   }
 }

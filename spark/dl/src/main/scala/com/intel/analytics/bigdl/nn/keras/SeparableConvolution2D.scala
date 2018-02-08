@@ -52,13 +52,13 @@ import scala.reflect.ClassTag
  *                  width dimension. Also called strides elsewhere. Default is (1, 1).
  * @param depthMultiplier How many output channel to use per input channel
  *                        for the depthwise convolution step.
+ * @param dimOrdering Format of input data. Either DataFormat.NCHW (dimOrdering='th') or
+ *                    DataFormat.NHWC (dimOrdering='tf'). Default is NCHW.
  * @param depthwiseRegularizer An instance of [[Regularizer]], (eg. L1 or L2 regularization),
  *                             applied to the depthwise weights matrices. Default is null.
  * @param pointwiseRegularizer An instance of [[Regularizer]], (eg. L1 or L2 regularization),
  *                             applied to the pointwise weights matrices. Default is null.
  * @param bRegularizer An instance of [[Regularizer]], applied to the bias. Default is null.
- * @param format Format of input data. Either DataFormat.NCHW (dimOrdering='th') or
-  *              DataFormat.NHWC (dimOrdering='tf'). Default is NCHW.
  * @param bias Whether to include a bias (i.e. make the layer affine rather than linear).
  *             Default is true.
  * @tparam T The numeric type of parameter(e.g. weight, bias). Only support float/double now.
@@ -72,10 +72,10 @@ class SeparableConvolution2D[T: ClassTag](
    val borderMode: String = "valid",
    val subsample: Array[Int] = Array(1, 1),
    val depthMultiplier: Int = 1,
+   val dimOrdering: DataFormat = DataFormat.NCHW,
    var depthwiseRegularizer: Regularizer[T] = null,
    var pointwiseRegularizer: Regularizer[T] = null,
    var bRegularizer: Regularizer[T] = null,
-   val format: DataFormat = DataFormat.NCHW,
    val bias: Boolean = true,
    val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {
@@ -87,7 +87,7 @@ class SeparableConvolution2D[T: ClassTag](
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
     val input = inputShape.toSingle().toArray
-    val stackSize = if (format == DataFormat.NCHW) input(1) else input(3)
+    val stackSize = if (dimOrdering == DataFormat.NCHW) input(1) else input(3)
     val pad = KerasUtils.getPadsFromBorderMode(borderMode)
     val layer = SpatialSeperableConvolution(
       nInputChannel = stackSize,
@@ -100,7 +100,7 @@ class SeparableConvolution2D[T: ClassTag](
       pW = pad._2,
       pH = pad._1,
       hasBias = bias,
-      dataFormat = format,
+      dataFormat = dimOrdering,
       wRegularizer = depthwiseRegularizer,
       bRegularizer = bRegularizer,
       pRegularizer = pointwiseRegularizer)
@@ -119,15 +119,16 @@ object SeparableConvolution2D {
     borderMode: String = "valid",
     subsample: (Int, Int) = (1, 1),
     depthMultiplier: Int = 1,
+    dimOrdering: String = "th",
     depthwiseRegularizer: Regularizer[T] = null,
     pointwiseRegularizer: Regularizer[T] = null,
     bRegularizer: Regularizer[T] = null,
-    dimOrdering: String = "th",
     bias: Boolean = true,
     inputShape: Shape = null)(implicit ev: TensorNumeric[T]) : SeparableConvolution2D[T] = {
     new SeparableConvolution2D[T](nbFilter, nbRow, nbCol,
       KerasUtils.getInitMethod(init), KerasUtils.getActivation(activation),
-      borderMode, Array(subsample._1, subsample._2), depthMultiplier, depthwiseRegularizer,
-      pointwiseRegularizer, bRegularizer, KerasUtils.toBigDLFormat(dimOrdering), bias, inputShape)
+      borderMode, Array(subsample._1, subsample._2), depthMultiplier,
+      KerasUtils.toBigDLFormat(dimOrdering), depthwiseRegularizer,
+      pointwiseRegularizer, bRegularizer, bias, inputShape)
   }
 }

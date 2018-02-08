@@ -22,7 +22,8 @@ import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.{DenseTensorBLAS, DoubleType, FloatType, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.RandomGenerator._
-import com.intel.analytics.bigdl.utils.{T, Table}
+import com.intel.analytics.bigdl.utils.{Shape, T, Table}
+
 import scala.reflect.ClassTag
 
 /**
@@ -145,6 +146,15 @@ class SpatialDilatedConvolution[T: ClassTag](
         gradOutput.size(dimW) == outputWidth
       )
     }
+  }
+
+  override def computeOutputShape(inputShape: Shape): Shape = {
+    val input = inputShape.toSingle().toArray
+    require(input.length == 4,
+      s"AtrousConvolution2D requires 4D input, but got input dim ${input.length}")
+    val outputWidth = (input(3) + 2*padW - (dilationW * (kW - 1) + 1)) / dW + 1
+    val outputHeight = (input(2) + 2*padH - (dilationH * (kH - 1) + 1)) / dH + 1
+    Shape(input(0), nOutputPlane, outputHeight, outputWidth)
   }
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {

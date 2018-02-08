@@ -16,8 +16,8 @@
 
 package com.intel.analytics.bigdl.nn.keras
 
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule}
-import com.intel.analytics.bigdl.nn.{InitializationMethod, VolumetricConvolution, Xavier, Zeros}
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, DataFormat}
+import com.intel.analytics.bigdl.nn.{InitializationMethod, SpatialFullConvolution, Xavier, Zeros}
 import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -25,45 +25,35 @@ import com.intel.analytics.bigdl.utils.Shape
 
 import scala.reflect.ClassTag
 
-class Convolution3D[T: ClassTag](
+class Deconvolution2D[T: ClassTag](
    val nbFilter: Int,
-   val kernelDim1: Int,
-   val kernelDim2: Int,
-   val kernelDim3: Int,
+   val nbRow: Int,
+   val nbCol: Int,
    val init: InitializationMethod = Xavier,
    val activation: AbstractModule[Tensor[T], Tensor[T], T] = null,
-   val borderMode: String = "valid",
-   val subsample: Array[Int] = Array(1, 1, 1),
-   val dimOrdering: String = "CHANNEL_FIRST",
-   val wRegularizer: Regularizer[T] = null,
+   val subsample: Array[Int] = Array(1, 1),
+   val dimOrdering: DataFormat = DataFormat.NCHW,
+   var wRegularizer: Regularizer[T] = null,
    var bRegularizer: Regularizer[T] = null,
    val bias: Boolean = true,
    val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {
 
-  require(dimOrdering.toLowerCase() == "channel_first", s"Pooling3D currently only supports " +
-    s"format CHANNEL_FIRST, but got format $dimOrdering")
-  require(borderMode == "valid" || borderMode == "same", s"Invalid border mode for " +
-    s"Convolution3D: $borderMode")
-  require(subsample.length == 3,
-    s"For Convolution3D, subsample should be of length 3 but got length ${subsample.length}")
+  require(dimOrdering == DataFormat.NCHW, s"Deconvolution2D currently only supports " +
+    s"format NCHW, but got format $dimOrdering")
+  require(subsample.length == 2,
+    s"For Deconvolution2D, subsample should be of length 2 but got length ${subsample.length}")
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
     val input = inputShape.toSingle().toArray
-    val pads = KerasUtils.getPadsFromBorderMode3D(borderMode)
-    val layer = VolumetricConvolution(
+    val layer = SpatialFullConvolution(
       nInputPlane = input(1),
       nOutputPlane = nbFilter,
-      kT = kernelDim1,
-      kW = kernelDim3,
-      kH = kernelDim2,
-      dT = subsample(0),
-      dW = subsample(2),
-      dH = subsample(1),
-      padT = pads._1,
-      padW = pads._3,
-      padH = pads._2,
-      withBias = bias,
+      kW = nbCol,
+      kH = nbRow,
+      dW = subsample(1),
+      dH = subsample(0),
+      noBias = !bias,
       wRegularizer = wRegularizer,
       bRegularizer = bRegularizer)
     layer.setInitMethod(weightInitMethod = init, biasInitMethod = Zeros)
@@ -72,25 +62,22 @@ class Convolution3D[T: ClassTag](
   }
 }
 
-object Convolution3D {
+object Deconvolution2D {
   def apply[@specialized(Float, Double) T: ClassTag](
     nbFilter: Int,
-    kernelDim1: Int,
-    kernelDim2: Int,
-    kernelDim3: Int,
+    nbRow: Int,
+    nbCol: Int,
     init: String = "glorot_uniform",
     activation: String = null,
-    borderMode: String = "valid",
-    subsample: (Int, Int, Int) = (1, 1, 1),
+    subsample: (Int, Int) = (1, 1),
     dimOrdering: String = "th",
     wRegularizer: Regularizer[T] = null,
     bRegularizer: Regularizer[T] = null,
     bias: Boolean = true,
-    inputShape: Shape = null)(implicit ev: TensorNumeric[T]): Convolution3D[T] = {
-    new Convolution3D[T](nbFilter, kernelDim1, kernelDim2, kernelDim3,
-      KerasUtils.getInitMethod(init), KerasUtils.getActivation(activation),
-      borderMode, Array(subsample._1, subsample._2, subsample._3),
-      KerasUtils.toBigDLFormat5D(dimOrdering),
-      wRegularizer, bRegularizer, bias, inputShape)
+    inputShape: Shape = null)(implicit ev: TensorNumeric[T]): Deconvolution2D[T] = {
+    new Deconvolution2D[T](nbFilter, nbRow, nbCol, KerasUtils.getInitMethod(init),
+      KerasUtils.getActivation(activation), Array(subsample._1, subsample._2),
+      KerasUtils.toBigDLFormat(dimOrdering), wRegularizer,
+      bRegularizer, bias, inputShape)
   }
 }

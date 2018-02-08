@@ -41,5 +41,4 @@ abstract class Pooling1D[T: ClassTag](
       borderMode, strideValue)
     Shape(input(0), outputLength, input(2))
   }
-
 }

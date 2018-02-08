@@ -35,26 +35,27 @@ import scala.reflect.ClassTag
  * @param padding Int array of length 3.
  *                How many zeros to add at the beginning and end of the 3 padding dimensions.
  *                Symmetric padding will be applied to each dimension. Default is (1, 1, 1).
- * @param format Format of the input data. Either "CHANNEL_FIRST" (dimOrdering='th') or
- *               "CHANNEL_LAST" (dimOrdering='tf'). Default is "CHANNEL_FIRST".
+ * @param dimOrdering Format of the input data. Either "CHANNEL_FIRST" (dimOrdering='th') or
+ *                    "CHANNEL_LAST" (dimOrdering='tf'). Default is "CHANNEL_FIRST".
  * @tparam T The numeric type of parameter(e.g. weight, bias). Only support float/double now.
  */
 class ZeroPadding3D[T: ClassTag](
    val padding: Array[Int] = Array(1, 1, 1),
-   val format: String = "CHANNEL_FIRST",
+   val dimOrdering: String = "CHANNEL_FIRST",
    val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {
 
-  require(format.toLowerCase() == "channel_first" || format.toLowerCase() == "channel_last",
-    s"For ZeroPadding3D $format is not supported")
-  require(padding.length == 3, s"For ZeroPadding3D Subsample should be of length 3," +
-    s" not ${padding.length}")
+  require(dimOrdering.toLowerCase() == "channel_first" ||
+    dimOrdering.toLowerCase() == "channel_last",
+    s"For ZeroPadding3D $dimOrdering is not supported")
+  require(padding.length == 3, s"For ZeroPadding3D, subsample should be of length 3," +
+    s" but got length ${padding.length}")
 
   override def computeOutputShape(inputShape: Shape): Shape = {
     val input = inputShape.toSingle().toArray
     require(input.length == 5,
       s"ZeroPadding3D requires 5D input, but got input dim ${input.length}")
-    format.toLowerCase() match {
+    dimOrdering.toLowerCase() match {
       case "channel_first" =>
         Shape(input(0), input(1), input(2) + 2 * padding(0),
           input(3) + 2 * padding(1), input(4) + 2 * padding(2))
@@ -66,7 +67,7 @@ class ZeroPadding3D[T: ClassTag](
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
     val input = inputShape.toSingle().toArray
-    val dim = if (format.toLowerCase() == "channel_first") 2 else 1
+    val dim = if (dimOrdering.toLowerCase() == "channel_first") 2 else 1
     val model = TSequential[T]()
     val paddinglayer1 = Padding(dim = dim, pad = -padding(0), nInputDim = input.length - 1)
     val paddinglayer2 = Padding(dim = dim, pad = padding(0), nInputDim = input.length - 1)

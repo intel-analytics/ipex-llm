@@ -31,8 +31,8 @@ import scala.reflect.ClassTag
  * Available activations: 'tanh', 'relu', 'sigmoid', 'softmax', 'softplus',
  * 'softsign', 'hard_sigmoid'.
  *
- * @param activation Name of activation function as string.
- * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now
+ * @param activation Name of the activation function as string.
+ * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now.
  */
 class Activation[T: ClassTag](
    val activation: String,
