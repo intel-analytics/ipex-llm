@@ -36,7 +36,7 @@ import scala.reflect.ClassTag
  *                be equal to poolSize.
  * @param dimOrdering Format of input data. Either 'CHANNEL_FIRST' (dimOrdering='th') or
  *                    'CHANNEL_LAST' (dimOrdering='tf'). Default is 'CHANNEL_FIRST'.
- * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now
+ * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now.
  */
 class AveragePooling3D[T: ClassTag](
    poolSize: Array[Int] = Array(2, 2, 2),

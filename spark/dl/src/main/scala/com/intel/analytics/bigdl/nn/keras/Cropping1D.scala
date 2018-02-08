@@ -32,7 +32,7 @@ import scala.reflect.ClassTag
  *
  * @param cropping Int array of length 2. How many units should be trimmed off
  *                 at the beginning and end of the cropping dimension. Default is (1, 1).
- * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now
+ * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now.
  */
 class Cropping1D[T: ClassTag](
    val cropping: Array[Int] = Array(1, 1),

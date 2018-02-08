@@ -37,7 +37,7 @@ import scala.reflect.ClassTag
  *                 Default is (1, 1).
  * @param dimOrdering Format of input data. Either 'CHANNEL_FIRST' (dimOrdering='th') or
  *                    'CHANNEL_LAST' (dimOrdering='tf'). Default is 'CHANNEL_FIRST'.
- * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now
+ * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now.
  */
 class Cropping3D[T: ClassTag](
    val dim1Crop: Array[Int] = Array(1, 1),

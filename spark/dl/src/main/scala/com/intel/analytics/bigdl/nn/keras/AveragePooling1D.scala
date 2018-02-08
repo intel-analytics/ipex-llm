@@ -31,11 +31,11 @@ import scala.reflect.ClassTag
  * inputShape (a Single Shape, does not include the batch dimension).
  * The input of this layer should be 3D.
  *
- * @param poolLength Size of the region to which average pooling is applied.
- * @param stride Factor by which to downscale. Integer, or None. 2 will halve the input.
- *               If None, it will default to poolLength.
+ * @param poolLength Size of the region to which average pooling is applied. Integer. Default is 2.
+ * @param stride Factor by which to downscale. Integer, or -1. 2 will halve the input.
+ *               If -1, it will default to poolLength. Default is -1.
  * @param borderMode Either 'valid' or 'same'. Default is 'valid'.
- * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now
+ * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now.
  */
 class AveragePooling1D[T: ClassTag](
    poolLength: Int = 2,
