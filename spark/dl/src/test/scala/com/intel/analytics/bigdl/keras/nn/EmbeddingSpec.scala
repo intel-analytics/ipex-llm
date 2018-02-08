@@ -21,7 +21,6 @@ import com.intel.analytics.bigdl.nn.keras.{Embedding, Sequential => KSequential}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.Shape
 
-
 class EmbeddingSpec extends KerasBaseSpec {
 
   // Compared results with Keras on Python side

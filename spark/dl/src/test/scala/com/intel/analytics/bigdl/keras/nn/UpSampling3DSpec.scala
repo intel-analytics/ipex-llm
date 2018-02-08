@@ -22,7 +22,6 @@ import com.intel.analytics.bigdl.nn.keras.{UpSampling3D, Sequential => KSequenti
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.Shape
 
-
 class UpSampling3DSpec extends KerasBaseSpec {
 
   "UpSampling3D with default size" should "be the same as Keras" in {

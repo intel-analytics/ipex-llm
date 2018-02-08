@@ -49,8 +49,6 @@ class UpSampling2D[T: ClassTag] (val size: Array[Int], val format: DataFormat = 
         Shape(input(0), input(1), input(2)*size(0), input(3)*size(1))
       case DataFormat.NHWC =>
         Shape(input(0), input(1)*size(0), input(2)*size(1), input(3))
-      case _ =>
-        throw new IllegalArgumentException("UpSampling2D: unsupported data format.")
     }
   }
 

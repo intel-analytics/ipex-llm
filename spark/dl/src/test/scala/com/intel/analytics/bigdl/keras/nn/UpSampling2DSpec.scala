@@ -22,7 +22,6 @@ import com.intel.analytics.bigdl.nn.keras.{UpSampling2D, Sequential => KSequenti
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.Shape
 
-
 class UpSampling2DSpec extends KerasBaseSpec {
 
   "UpSampling2D NCHW" should "be the same as Keras" in {
