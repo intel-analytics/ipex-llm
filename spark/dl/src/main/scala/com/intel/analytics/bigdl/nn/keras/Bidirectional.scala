@@ -27,7 +27,7 @@ import scala.reflect.ClassTag
 class Bidirectional[T: ClassTag](
    val layer: Recurrent[T],
    val mergeMode: String = "concat",
-   var inputShape: Shape = null)(implicit ev: TensorNumeric[T])
+   val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {
 
   private val mode = mergeMode.toLowerCase()

@@ -25,7 +25,7 @@ import scala.reflect.ClassTag
 
 class TimeDistributed[T: ClassTag](
    val layer: KerasLayer[Tensor[T], Tensor[T], T],
-   var inputShape: Shape = null)(implicit ev: TensorNumeric[T])
+   val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {
 
   override def computeOutputShape(inputShape: Shape): Shape = {
