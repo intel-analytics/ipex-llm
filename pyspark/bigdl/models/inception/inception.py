@@ -253,6 +253,8 @@ if __name__ == "__main__":
     # init
     sparkConf = create_spark_conf().setAppName("inception v1")
     sc = get_spark_context(sparkConf)
+    redire_spark_logs()
+    show_bigdl_info_logs()
     init_engine()
 
     # build model
