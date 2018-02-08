@@ -138,7 +138,7 @@ object Engine {
     if (SparkUtils.isDriver) {
       if (driverPortFileCreated.compareAndSet(false, true)) {
         try {
-          createJavaGateway(driverPort)
+          createGatewayPortFile(driverPort)
         } catch {
           case NonFatal(e) =>
             throw new Exception("Could not create java gateway port file", e)
