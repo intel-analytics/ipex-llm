@@ -30,9 +30,7 @@ class SReLUSpec extends KerasBaseSpec{
       """
         |input_tensor = Input(shape=[2, 3])
         |input = np.random.uniform(-1, 1, [1, 2, 3])
-        |# input = np.array([[[0.1, 0.2, 0.3], [0.1, 0.2, 0.3]]])
-        |output_tensor = SReLU(a_left_init='one', t_right_init='one')(input_tensor)
-        |# output_tensor = SReLU()(input_tensor)
+        |output_tensor = SReLU('one', 'one')(input_tensor)
         |model = Model(input=input_tensor, output=output_tensor)
       """.stripMargin
     val seq = KSequential[Float]()
@@ -42,7 +40,7 @@ class SReLUSpec extends KerasBaseSpec{
       kerasCode)
   }
 
-  "SReLU 3D" should "be the same as Keras" in {
+  "SReLU with shared axes" should "be the same as Keras" in {
     val kerasCode =
       """
         |input_tensor = Input(shape=[3, 24])
@@ -56,4 +54,5 @@ class SReLUSpec extends KerasBaseSpec{
     checkOutputAndGrad(seq.asInstanceOf[AbstractModule[Tensor[Float], Tensor[Float], Float]],
       kerasCode)
   }
+
 }

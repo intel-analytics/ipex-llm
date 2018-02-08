@@ -26,9 +26,12 @@ import scala.reflect.ClassTag
 /**
  * Apply multiplicative 1-centered Gaussian noise.
  * As it is a regularization layer, it is only active at training time.
+ * When you use this layer as the first layer of a model, you need to provide the argument
+ * inputShape (a Single Shape, does not include the batch dimension).
  *
- * @param p float, drop probability (as with `Dropout`).
- * The multiplicative noise will have standard deviation `sqrt(p / (1 - p))`.
+ * @param p Double, drop probability (as with `Dropout`).
+ *          The multiplicative noise will have standard deviation `sqrt(p / (1 - p))`.
+ * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now.
  */
 class GaussianDropout[T: ClassTag](
    val p: Double,
@@ -44,7 +47,7 @@ class GaussianDropout[T: ClassTag](
 object GaussianDropout {
   def apply[@specialized(Float, Double) T: ClassTag](
     p: Double,
-    inputShape: Shape = null)(implicit ev: TensorNumeric[T]) : GaussianDropout[T] = {
+    inputShape: Shape = null)(implicit ev: TensorNumeric[T]): GaussianDropout[T] = {
     new GaussianDropout[T](p, inputShape)
   }
 }

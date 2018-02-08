@@ -27,7 +27,7 @@ class SpatialDropout2DSpec extends KerasBaseSpec {
 
   "SpatialDropout2D NCHW forward and backward" should "work properly" in {
     val seq = KSequential[Float]()
-    val layer = SpatialDropout2D[Float](0.5, DataFormat.NCHW, inputShape = Shape(3, 4, 5))
+    val layer = SpatialDropout2D[Float](0.5, "th", inputShape = Shape(3, 4, 5))
     seq.add(layer)
     seq.getOutputShape().toSingle().toArray should be (Array(-1, 3, 4, 5))
     val input = Tensor[Float](2, 3, 4, 5).rand()
@@ -37,11 +37,12 @@ class SpatialDropout2DSpec extends KerasBaseSpec {
 
   "SpatialDropout2D NHWC forward and backward" should "work properly" in {
     val seq = KSequential[Float]()
-    val layer = SpatialDropout2D[Float](0.5, DataFormat.NHWC, inputShape = Shape(3, 4, 5))
+    val layer = SpatialDropout2D[Float](0.5, "tf", inputShape = Shape(3, 4, 5))
     seq.add(layer)
     seq.getOutputShape().toSingle().toArray should be (Array(-1, 3, 4, 5))
     val input = Tensor[Float](2, 3, 4, 5).rand()
     val output = seq.forward(input)
     val gradInput = seq.backward(input, output)
   }
+
 }

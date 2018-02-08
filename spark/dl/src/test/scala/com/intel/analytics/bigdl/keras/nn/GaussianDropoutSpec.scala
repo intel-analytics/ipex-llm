@@ -33,4 +33,5 @@ class GaussianDropoutSpec extends KerasBaseSpec {
     val output = seq.forward(input)
     val gradInput = seq.backward(input, output)
   }
+
 }

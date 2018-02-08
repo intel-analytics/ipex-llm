@@ -15,7 +15,6 @@
  */
 package com.intel.analytics.bigdl.utils.serializer
 
-import com.intel.analytics.bigdl.nn.abstractnn.DataFormat
 import com.intel.analytics.bigdl.nn.keras.{Sequential => KSequential}
 import com.intel.analytics.bigdl.nn.keras._
 import com.intel.analytics.bigdl.tensor._
@@ -288,20 +287,6 @@ class KerasModuleSerializerSpec extends SerializerSpecHelper {
     runSerializationTest(layer, input)
   }
 
-  "ParametricSoftPlus serializer" should "work properly" in {
-    val layer = ParametricSoftPlus[Float](5.0, inputShape = Shape(12, 36))
-    layer.build(Shape(2, 12, 36))
-    val input = Tensor[Float](2, 12, 36).apply1(_ => Random.nextFloat())
-    runSerializationTest(layer, input)
-  }
-
-  "PReLU serializer" should "work properly" in {
-    val layer = PReLU[Float](inputShape = Shape(3, 36))
-    layer.build(Shape(2, 3, 36))
-    val input = Tensor[Float](2, 3, 36).apply1(_ => Random.nextFloat())
-    runSerializationTest(layer, input)
-  }
-
   "SpatialDropout1D serializer" should "work properly" in {
     val layer = SpatialDropout1D[Float](0.5, inputShape = Shape(3, 4))
     layer.build(Shape(2, 3, 4))
@@ -310,14 +295,14 @@ class KerasModuleSerializerSpec extends SerializerSpecHelper {
   }
 
   "SpatialDropout2D serializer" should "work properly" in {
-    val layer = SpatialDropout2D[Float](0.5, DataFormat.NHWC, inputShape = Shape(3, 64, 64))
+    val layer = SpatialDropout2D[Float](0.5, "tf", inputShape = Shape(3, 64, 64))
     layer.build(Shape(2, 3, 64, 64))
     val input = Tensor[Float](2, 3, 64, 64).apply1(_ => Random.nextFloat())
     runSerializationTest(layer, input)
   }
 
   "SpatialDropout3D serializer" should "work properly" in {
-    val layer = SpatialDropout3D[Float](0.5, "channel_last", inputShape = Shape(3, 4, 5, 6))
+    val layer = SpatialDropout3D[Float](0.5, "tf", inputShape = Shape(3, 4, 5, 6))
     layer.build(Shape(2, 3, 4, 5, 6))
     val input = Tensor[Float](2, 3, 4, 5, 6).apply1(_ => Random.nextFloat())
     runSerializationTest(layer, input)

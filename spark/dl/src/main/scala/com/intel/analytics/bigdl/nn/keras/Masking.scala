@@ -27,7 +27,14 @@ import scala.reflect.ClassTag
  * [[Masking]] Use a mask value to skip timesteps for a sequence
  * Masks a sequence by using a mask value to skip timesteps.
  *
- * @param maskValue mask value
+ * When you use this layer as the first layer of a model, you need to provide the argument
+ * inputShape (a Single Shape, does not include the batch dimension).
+ *
+ * @param maskValue Double, mask value.
+ *                  For each timestep in the input tensor (dimension #1 in the tensor),
+ *                  if all values in the input tensor at that timestep are equal to `mask_value`,
+ *                  then the timestep will masked (skipped) in all downstream layers.
+ * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now.
  */
 class Masking[T: ClassTag](
    val maskValue: Double = 0.0,
@@ -43,7 +50,7 @@ class Masking[T: ClassTag](
 object Masking {
   def apply[@specialized(Float, Double) T: ClassTag](
     maskValue: Double = 0.0,
-    inputShape: Shape = null)(implicit ev: TensorNumeric[T]) : Masking[T] = {
+    inputShape: Shape = null)(implicit ev: TensorNumeric[T]): Masking[T] = {
     new Masking[T](maskValue, inputShape)
   }
 }

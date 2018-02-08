@@ -29,7 +29,11 @@ import scala.reflect.ClassTag
  * `f(x) = alpha * x for x < 0`,
  * `f(x) = x for x >= 0`.
  *
- * @param alpha float >= 0. Negative slope coefficient.
+ * When you use this layer as the first layer of a model, you need to provide the argument
+ * inputShape (a Single Shape, does not include the batch dimension).
+ *
+ * @param alpha Double >= 0. Negative slope coefficient.
+ * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now.
  */
 class LeakyReLU[T: ClassTag](
    private val alpha: Double = 0.01,
@@ -47,7 +51,7 @@ class LeakyReLU[T: ClassTag](
 object LeakyReLU {
   def apply[@specialized(Float, Double) T: ClassTag](
     alpha: Double = 0.01,
-    inputShape: Shape = null)(implicit ev: TensorNumeric[T]) : LeakyReLU[T] = {
+    inputShape: Shape = null)(implicit ev: TensorNumeric[T]): LeakyReLU[T] = {
     new LeakyReLU[T](alpha, inputShape)
   }
 }

@@ -30,7 +30,11 @@ import scala.reflect.ClassTag
  * `f(x) = x for x > theta`,
  * `f(x) = 0 otherwise`.
  *
- * @param theta float >= 0. Threshold location of activation.
+ * When you use this layer as the first layer of a model, you need to provide the argument
+ * inputShape (a Single Shape, does not include the batch dimension).
+ *
+ * @param theta Double >= 0. Threshold location of activation.
+ * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now.
  */
 class ThresholdedReLU[T: ClassTag](
    val theta: Double = 1.0,
@@ -49,7 +53,7 @@ class ThresholdedReLU[T: ClassTag](
 object ThresholdedReLU {
   def apply[@specialized(Float, Double) T: ClassTag](
     theta: Double = 1.0,
-    inputShape: Shape = null)(implicit ev: TensorNumeric[T]) : ThresholdedReLU[T] = {
+    inputShape: Shape = null)(implicit ev: TensorNumeric[T]): ThresholdedReLU[T] = {
     new ThresholdedReLU[T](theta, inputShape)
   }
 }

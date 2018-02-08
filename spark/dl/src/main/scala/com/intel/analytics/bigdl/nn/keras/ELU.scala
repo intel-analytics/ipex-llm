@@ -29,7 +29,11 @@ import scala.reflect.ClassTag
  * `f(x) =  alpha * (exp(x) - 1.) for x < 0`,
  * `f(x) = x for x >= 0`.
  *
- * @param alpha scale for the negative factor.
+ * When you use this layer as the first layer of a model, you need to provide the argument
+ * inputShape (a Single Shape, does not include the batch dimension).
+ *
+ * @param alpha Double, scale for the negative factor.
+ * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now.
  */
 class ELU[T: ClassTag](
    val alpha: Double = 1.0,
@@ -47,7 +51,7 @@ class ELU[T: ClassTag](
 object ELU {
   def apply[@specialized(Float, Double) T: ClassTag](
     alpha: Double = 1.0,
-    inputShape: Shape = null)(implicit ev: TensorNumeric[T]) : ELU[T] = {
+    inputShape: Shape = null)(implicit ev: TensorNumeric[T]): ELU[T] = {
     new ELU[T](alpha, inputShape)
   }
 }

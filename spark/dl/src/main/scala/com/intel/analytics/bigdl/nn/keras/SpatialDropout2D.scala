@@ -24,20 +24,23 @@ import com.intel.analytics.bigdl.utils.Shape
 import scala.reflect.ClassTag
 
 /**
- *  Spatial 2D version of Dropout.
- *  This version performs the same function as Dropout, however it drops
- *  entire 2D feature maps instead of individual elements. If adjacent pixels
- *  within feature maps are strongly correlated (as is normally the case in
- *  early convolution layers) then regular dropout will not regularize the
- *  activations and will otherwise just result in an effective learning rate
- *  decrease. In this case, SpatialDropout2D will help promote independence
- *  between feature maps and should be used instead.
+ * Spatial 2D version of Dropout.
+ * This version performs the same function as Dropout, however it drops
+ * entire 2D feature maps instead of individual elements. If adjacent pixels
+ * within feature maps are strongly correlated (as is normally the case in
+ * early convolution layers) then regular dropout will not regularize the
+ * activations and will otherwise just result in an effective learning rate
+ * decrease. In this case, SpatialDropout2D will help promote independence
+ * between feature maps and should be used instead.
  *
- * @param p float between 0 and 1. Fraction of the input units to drop.
- * @param format  'NCHW' or 'NHWC'.
- *                 In 'NCHW' mode, the channels dimension (the depth)
- *                 is at index 1, in 'NHWC' mode is it at index 4.
- * @tparam T The numeric type in the criterion, usually which are [[Float]] or [[Double]]
+ * When you use this layer as the first layer of a model, you need to provide the argument
+ * inputShape (a Single Shape, does not include the batch dimension).
+ * The input of this layer should be 4D.
+ *
+ * @param p Double between 0 and 1. Fraction of the input units to drop.
+ * @param format Format of input data. Either DataFormat.NCHW (dimOrdering='th') or
+ *               DataFormat.NHWC (dimOrdering='tf'). Default is NCHW.
+ * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now.
  */
 class SpatialDropout2D[T: ClassTag](
    val p: Double = 0.5,
@@ -56,8 +59,8 @@ class SpatialDropout2D[T: ClassTag](
 object SpatialDropout2D {
   def apply[@specialized(Float, Double) T: ClassTag](
     p: Double = 0.5,
-    format: DataFormat = DataFormat.NCHW,
-    inputShape: Shape = null)(implicit ev: TensorNumeric[T]) : SpatialDropout2D[T] = {
-    new SpatialDropout2D[T](p, format, inputShape)
+    dimOrdering: String = "th",
+    inputShape: Shape = null)(implicit ev: TensorNumeric[T]): SpatialDropout2D[T] = {
+    new SpatialDropout2D[T](p, KerasUtils.toBigDLFormat(dimOrdering), inputShape)
   }
 }

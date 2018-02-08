@@ -24,16 +24,21 @@ import com.intel.analytics.bigdl.utils.Shape
 import scala.reflect.ClassTag
 
 /**
- *  Spatial 1D version of Dropout.
- *  This version performs the same function as Dropout, however it drops
- *  entire 1D feature maps instead of individual elements. If adjacent frames
- *  within feature maps are strongly correlated (as is normally the case in
- *  early convolution layers) then regular dropout will not regularize the
- *  activations and will otherwise just result in an effective learning rate
- *  decrease. In this case, SpatialDropout1D will help promote independence
- *  between feature maps and should be used instead.
+ * Spatial 1D version of Dropout.
+ * This version performs the same function as Dropout, however it drops
+ * entire 1D feature maps instead of individual elements. If adjacent frames
+ * within feature maps are strongly correlated (as is normally the case in
+ * early convolution layers) then regular dropout will not regularize the
+ * activations and will otherwise just result in an effective learning rate
+ * decrease. In this case, SpatialDropout1D will help promote independence
+ * between feature maps and should be used instead.
  *
- * @param p float between 0 and 1. Fraction of the input units to drop.
+ * When you use this layer as the first layer of a model, you need to provide the argument
+ * inputShape (a Single Shape, does not include the batch dimension).
+ * The input of this layer should be 3D.
+ *
+ * @param p Double between 0 and 1. Fraction of the input units to drop.
+ * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now.
  */
 class SpatialDropout1D[T: ClassTag](
    val p: Double = 0.5,
@@ -49,7 +54,7 @@ class SpatialDropout1D[T: ClassTag](
 object SpatialDropout1D {
   def apply[@specialized(Float, Double) T: ClassTag](
     p: Double = 0.5,
-    inputShape: Shape = null)(implicit ev: TensorNumeric[T]) : SpatialDropout1D[T] = {
+    inputShape: Shape = null)(implicit ev: TensorNumeric[T]): SpatialDropout1D[T] = {
     new SpatialDropout1D[T](p, inputShape)
   }
 }

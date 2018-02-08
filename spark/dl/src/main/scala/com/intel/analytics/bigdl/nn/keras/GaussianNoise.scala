@@ -26,12 +26,15 @@ import scala.reflect.ClassTag
 
 /**
  * Apply additive zero-centered Gaussian noise.
- * This is useful to mitigate overfitting (you could see it as a form of random data
- * augmentation).
+ * This is useful to mitigate overfitting (you could see it as a form of random data augmentation).
  * Gaussian Noise (GS) is a natural choice as corruption process for real valued inputs.
  * As it is a regularization layer, it is only active at training time.
  *
- * @param sigma float, standard deviation of the noise distribution.
+ * When you use this layer as the first layer of a model, you need to provide the argument
+ * inputShape (a Single Shape, does not include the batch dimension).
+ *
+ * @param sigma Double, standard deviation of the noise distribution.
+ * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now.
  */
 class GaussianNoise[T: ClassTag](
    val sigma: Double,
@@ -47,7 +50,7 @@ class GaussianNoise[T: ClassTag](
 object GaussianNoise {
   def apply[@specialized(Float, Double) T: ClassTag](
     sigma: Double,
-    inputShape: Shape = null)(implicit ev: TensorNumeric[T]) : GaussianNoise[T] = {
+    inputShape: Shape = null)(implicit ev: TensorNumeric[T]): GaussianNoise[T] = {
     new GaussianNoise[T](sigma, inputShape)
   }
 }

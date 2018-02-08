@@ -33,11 +33,14 @@ import scala.reflect.ClassTag
  *  decrease. In this case, SpatialDropout3D will help promote independence
  *  between feature maps and should be used instead.
  *
- * @param p float between 0 and 1. Fraction of the input units to drop.
- * @param format  'NCHW' or 'NHWC'.
- *                 In 'NCHW' mode, the channels dimension (the depth)
- *                 is at index 1, in 'NHWC' mode is it at index 4.
- * @tparam T The numeric type in the criterion, usually which are [[Float]] or [[Double]]
+ * When you use this layer as the first layer of a model, you need to provide the argument
+ * inputShape (a Single Shape, does not include the batch dimension).
+ * The input of this layer should be 5D.
+ *
+ * @param p Double between 0 and 1. Fraction of the input units to drop.
+ * @param format Format of input data. Either 'CHANNEL_FIRST' (dimOrdering='th') or
+ *               'CHANNEL_LAST' (dimOrdering='tf'). Default is 'CHANNEL_FIRST'.
+ * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now.
  */
 class SpatialDropout3D[T: ClassTag](
    val p: Double = 0.5,
@@ -49,8 +52,8 @@ class SpatialDropout3D[T: ClassTag](
     s"$format is not supported")
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
-
-    val dimOrdering = if (format.toLowerCase() == "channel_first") DataFormat.NCHW else DataFormat.NHWC
+    val dimOrdering = if (format.toLowerCase() == "channel_first") DataFormat.NCHW
+     else DataFormat.NHWC
 
     val layer = com.intel.analytics.bigdl.nn.SpatialDropout3D(
       initP = p,
@@ -62,8 +65,8 @@ class SpatialDropout3D[T: ClassTag](
 object SpatialDropout3D {
   def apply[@specialized(Float, Double) T: ClassTag](
     p: Double = 0.5,
-    format: String = "CHANNEL_FIRST",
-    inputShape: Shape = null)(implicit ev: TensorNumeric[T]) : SpatialDropout3D[T] = {
-    new SpatialDropout3D[T](p, format, inputShape)
+    dimOrdering: String = "th",
+    inputShape: Shape = null)(implicit ev: TensorNumeric[T]): SpatialDropout3D[T] = {
+    new SpatialDropout3D[T](p, KerasUtils.toBigDLFormat5D(dimOrdering), inputShape)
   }
 }
