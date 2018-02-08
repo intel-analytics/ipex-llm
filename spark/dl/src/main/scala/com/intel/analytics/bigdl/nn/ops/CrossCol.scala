@@ -19,6 +19,7 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Table
 
+import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 import scala.util.hashing.MurmurHash3
@@ -42,15 +43,22 @@ class CrossCol[T: ClassTag](
     val values = new ArrayBuffer[Int]()
     val shape = Array(batchSize, hashBucketSize)
 
+    (1 to tensorNum).foreach(i =>
+      input[Tensor[String]](i).squeeze()
+    )
+
     var i = 1
     while (i <= batchSize) {
       var j = 1
-      val tempArr = new ArrayBuffer[String]()
+
+      val tempArr = new ArrayBuffer[Array[String]]()
       while (j <= tensorNum) {
-        tempArr += input[Tensor[String]](j).squeeze().valueAt(i)
+        tempArr += input[Tensor[String]](j).valueAt(i).split(strDelimiter)
         j += 1
       }
+
       val resHashArr = crossHash(reCombine(tempArr))
+
       var m = 0
       while (m < resHashArr.length) {
         indices0 += i-1
@@ -58,17 +66,42 @@ class CrossCol[T: ClassTag](
         values += resHashArr(m)
         m += 1
       }
+
       i += 1
     }
+
     output = Tensor.sparse(
       Array(indices0.toArray, indices1.toArray),
       values.toArray,
       shape)
+
     output
   }
-  def reCombine(input: ArrayBuffer[String]): Array[Array[String]] = {
-    Array[Array[String]]()
+
+  def reCombine(input: ArrayBuffer[Array[String]]): Array[Array[String]] = {
+    val stack = mutable.Stack[Array[String]]()
+    stack.pushAll(input(0).map(Array(_)))
+
+    val mkBuilder = (a: Array[String]) => mutable.ArrayBuilder.make[String]() ++= a
+
+    val result = mutable.ArrayBuilder.make[Array[String]]()
+
+    while (stack.nonEmpty) {
+      val current = stack.pop()
+      val children = input(current.length).map { nextStr =>
+        val builder = mkBuilder(current) += nextStr
+        builder.result()
+      }
+      if (current.length == input.length - 1) {
+        result ++= children
+      } else {
+        stack.pushAll(children)
+      }
+    }
+
+    result.result()
   }
+
   def crossHash(input: Array[Array[String]]): Array[Int] = {
     input.map { arr =>
       var hashVal = MurmurHash3.stringHash(arr(0))
