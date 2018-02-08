@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
+import com.intel.analytics.bigdl.nn.abstractnn.{IdentityOutputShape, TensorModule}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor._
 import com.intel.analytics.bigdl.utils.Engine
@@ -37,7 +37,7 @@ import scala.reflect.ClassTag
 @SerialVersionUID(3953292249027271493L)
 class Threshold[T: ClassTag](
   private val th: Double = 1e-6, private val v: Double = 0.0, private val ip: Boolean = false)(
-  implicit ev: TensorNumeric[T]) extends TensorModule[T] {
+  implicit ev: TensorNumeric[T]) extends TensorModule[T] with IdentityOutputShape{
   var threshold = th
   var value = v
   var inPlace = ip
