@@ -29,12 +29,13 @@ class AtrousConvolution2DSpec extends KerasBaseSpec {
       """
         |input_tensor = Input(shape=[3, 64, 64])
         |input = np.random.random([2, 3, 64, 64])
-        |output_tensor = AtrousConvolution2D(32, 2, 4, activation="relu",
+        |output_tensor = AtrousConvolution2D(32, 2, 4, activation="sigmoid",
+        |                                    dim_ordering="th",
         |                                    atrous_rate=(2,2))(input_tensor)
         |model = Model(input=input_tensor, output=output_tensor)
       """.stripMargin
     val seq = KSequential[Float]()
-    val layer = AtrousConvolution2D[Float](32, 2, 4, activation = "relu",
+    val layer = AtrousConvolution2D[Float](32, 2, 4, activation = "sigmoid",
       atrousRate = (2, 2), inputShape = Shape(3, 64, 64))
     seq.add(layer)
     checkOutputAndGrad(seq.asInstanceOf[AbstractModule[Tensor[Float], Tensor[Float], Float]],
