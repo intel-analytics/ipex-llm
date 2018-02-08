@@ -318,3 +318,24 @@ class BigDLTestCase(TestCase):
         keras_output = np.mean(K.eval(kloss(K.variable(y_b), K.variable(y_a))))
         bigdl_output = bloss.forward(y_a, y_b)
         np.testing.assert_allclose(bigdl_output, keras_output, rtol=rtol, atol=atol)
+
+    # Compare forward results with Keras for new Keras-like API layers.
+    def compare_newapi(self, klayer, blayer, input_data, weight_converter,
+                       is_training=False, rtol=1e-6, atol=1e-6):
+        from keras.models import Sequential as KSequential
+        from bigdl.nn.keras.layer import Sequential as BSequential
+        bmodel = BSequential()
+        bmodel.add(blayer)
+        kmodel = KSequential()
+        kmodel.add(klayer)
+        koutput = kmodel.predict(input_data)
+        if isinstance(blayer, BLayer.BatchNormalization):
+            k_running_mean = K.eval(klayer.running_mean)
+            k_running_std = K.eval(klayer.running_std)
+            blayer.set_running_mean(k_running_mean)
+            blayer.set_running_std(k_running_std)
+        if kmodel.get_weights():
+            bmodel.set_weights(weight_converter(klayer, kmodel.get_weights()))
+        bmodel.training(is_training)
+        boutput = bmodel.forward(input_data)
+        self.assert_allclose(boutput, koutput, rtol=rtol, atol=atol)
