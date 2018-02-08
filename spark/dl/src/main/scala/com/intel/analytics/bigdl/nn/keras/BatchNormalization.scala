@@ -34,9 +34,18 @@ class BatchNormalization[T: ClassTag](
   extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {
 
   private def getInit(init: String, n: Int): Tensor[T] = {
-    init match {
-      case "zero" => Tensor[T](n).fill(ev.zero)
-      case "one" => Tensor[T](n).fill(ev.one)
+    val weights = Tensor[T](n)
+    init.toLowerCase() match {
+      case "zero" => weights.fill(ev.zero)
+      case "one" => weights.fill(ev.one)
+      case "glorot_uniform" => Xavier.init(weights)
+        weights
+      case "uniform" => RandomUniform(-0.05, 0.05).init(weights)
+        weights
+      case "normal" => RandomNormal(0.0, 0.05).init(weights)
+        weights
+      case _ => throw new IllegalArgumentException(s"Unsupported initialization method: " +
+        s"${init.toLowerCase()}")
     }
   }
 

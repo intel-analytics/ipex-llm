@@ -26,7 +26,8 @@ class BatchNormalizationSpec extends KerasBaseSpec {
   // Compared results with Keras on Python side
   "BatchNormalization" should "work properly" in {
     val seq = KSequential[Float]()
-    val layer = BatchNormalization[Float](inputShape = Shape(3, 12, 12))
+    val layer = BatchNormalization[Float](betaInit = "glorot_uniform",
+      gammaInit = "normal", inputShape = Shape(3, 12, 12))
     seq.add(layer)
     seq.getOutputShape().toSingle().toArray should be (Array(-1, 3, 12, 12))
     val input = Tensor[Float](2, 3, 12, 12).rand()
