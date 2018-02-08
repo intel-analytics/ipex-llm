@@ -35,8 +35,8 @@ import scala.reflect.ClassTag
  * @param strides Int array of length 2. Stride values. Default is null, and in this case it will
  *                be equal to poolSize.
  * @param borderMode Either 'valid' or 'same'. Default is 'valid'.
- * @param format Format of input data. Either DataFormat.NCHW (dimOrdering='th') or
- *               DataFormat.NHWC (dimOrdering='tf'). Default is NCHW.
+ * @param dimOrdering Format of input data. Either DataFormat.NCHW (dimOrdering='th') or
+ *                    DataFormat.NHWC (dimOrdering='tf'). Default is NCHW.
  * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now
  */
 class AveragePooling2D[T: ClassTag](

@@ -34,6 +34,8 @@ import scala.reflect.ClassTag
  *                 Default is (2, 2, 2), which will halve the image in each dimension.
  * @param strides Int array of length 3. Stride values. Default is null, and in this case it will
  *                be equal to poolSize.
+ * @param dimOrdering Format of input data. Either 'CHANNEL_FIRST' (dimOrdering='th') or
+ *                    'CHANNEL_LAST' (dimOrdering='tf'). Default is 'CHANNEL_FIRST'.
  * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now
  */
 class AveragePooling3D[T: ClassTag](

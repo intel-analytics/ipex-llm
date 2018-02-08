@@ -30,8 +30,8 @@ import scala.reflect.ClassTag
  * inputShape (a Single Shape, does not include the batch dimension).
  * The input of this layer should be 4D.
  *
- * @param format Format of input data. Please use DataFormat.NCHW (dimOrdering='th')
- *               or DataFormat.NHWC (dimOrdering='tf'). Default is NCHW.
+ * @param dimOrdering Format of input data. Please use DataFormat.NCHW (dimOrdering='th')
+ *                    or DataFormat.NHWC (dimOrdering='tf'). Default is NCHW.
  * @tparam T The numeric type of parameter(e.g. weight, bias). Only support float/double now.
  */
 class GlobalAveragePooling2D[T: ClassTag](
