@@ -17,7 +17,8 @@
 package com.intel.analytics.bigdl.transform.vision.image
 
 
-import com.intel.analytics.bigdl.dataset.{ArraySample}
+import com.intel.analytics.bigdl.dataset._
+import com.intel.analytics.bigdl.opencv.OpenCV
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.transform.vision.image.opencv.OpenCVMat
@@ -68,14 +69,32 @@ object BytesToMat {
  */
 class PixelBytesToMat(byteKey: String = ImageFeature.bytes) extends FeatureTransformer {
 
-  override def transformMat(feature: ImageFeature): Unit = {
-    val pixels = feature[Array[Byte]](byteKey)
-    val mat = OpenCVMat.fromPixelsBytes(pixels, feature.getOriginalHeight, feature.getOriginalWidth)
-    feature(ImageFeature.mat) = mat
+  override def transform(feature: ImageFeature): ImageFeature = {
+    require(OpenCV.isOpenCVLoaded, "opencv isn't loaded")
+    if (!feature.isValid) return feature
+    try {
+      require(feature.getOriginalSize != null,
+        "please set the original size of image in ImageFeature")
+      val pixels = feature[Array[Byte]](byteKey)
+      val mat = OpenCVMat.fromPixelsBytes(pixels, feature.getOriginalHeight,
+        feature.getOriginalWidth,
+        feature.getOriginalChannel)
+      val output = feature.clone()
+      output(ImageFeature.mat) = mat
+      output
+    } catch {
+      case e: Exception =>
+        val path = if (feature.contains(ImageFeature.uri)) feature(ImageFeature.uri) else ""
+        PixelBytesToMat.logger.warn(s"failed ${path} in transformer ${getClass}")
+        e.printStackTrace()
+        feature.isValid = false
+        feature
+    }
   }
 }
 
 object PixelBytesToMat {
+  val logger = Logger.getLogger(getClass)
   def apply(byteKey: String = ImageFeature.bytes): PixelBytesToMat = new PixelBytesToMat(byteKey)
 }
 
@@ -132,7 +151,8 @@ object MatToFloats {
  * @param tensorKey key to store transformed tensor
  */
 class MatToTensor[T: ClassTag](toRGB: Boolean = false,
-  tensorKey: String = ImageFeature.imageTensor)(implicit ev: TensorNumeric[T])
+  tensorKey: String = ImageFeature.imageTensor,
+  shareBuffer: Boolean = true)(implicit ev: TensorNumeric[T])
   extends FeatureTransformer {
   private val imageTensor: Tensor[T] = Tensor[T]()
   private val matToFloats = MatToFloats()
@@ -140,10 +160,19 @@ class MatToTensor[T: ClassTag](toRGB: Boolean = false,
   override def transform(feature: ImageFeature): ImageFeature = {
     if (!feature.isValid) return feature
     try {
+      val (height, width, channel) = feature.getSize
       matToFloats.transform(feature)
-      imageTensor.resize(3, feature.getHeight(), feature.getWidth())
+      if (channel == 1) {
+        imageTensor.resize(height, width)
+      } else {
+        imageTensor.resize(channel, height, width)
+      }
       feature.copyTo[T](imageTensor.storage().array(), 0, ImageFeature.floats, toRGB)
-      feature(tensorKey) = imageTensor
+      if (!shareBuffer) {
+        feature(tensorKey) = imageTensor.clone()
+      } else {
+        feature(tensorKey) = imageTensor
+      }
     } catch {
       case e: Exception =>
         val uri = feature.uri()
@@ -158,9 +187,10 @@ class MatToTensor[T: ClassTag](toRGB: Boolean = false,
 object MatToTensor {
   val logger = Logger.getLogger(getClass)
 
-  def apply[T: ClassTag](toRGB: Boolean = false, tensorKey: String = ImageFeature.imageTensor)
+  def apply[T: ClassTag](toRGB: Boolean = false, tensorKey: String = ImageFeature.imageTensor,
+    shareBuffer: Boolean = true)
     (implicit ev: TensorNumeric[T])
-  : MatToTensor[T] = new MatToTensor[T](toRGB, tensorKey)
+  : MatToTensor[T] = new MatToTensor[T](toRGB, tensorKey, shareBuffer)
 }
 
 /**
@@ -213,4 +243,32 @@ object ImageFrameToSample {
     targetKeys: Array[String] = null,
     sampleKey: String = ImageFeature.sample)(implicit ev: TensorNumeric[T])
   : ImageFrameToSample[T] = new ImageFrameToSample[T](inputKeys, targetKeys, sampleKey)
+}
+
+class ImageFeatureToMiniBatch[T: ClassTag](batchSize: Int,
+  featurePaddingParam: Option[PaddingParam[T]] = None,
+  labelPaddingParam: Option[PaddingParam[T]] = None,
+  partitionNum: Option[Int] = None,
+  sampleKey: String = ImageFeature.sample)(implicit ev: TensorNumeric[T])
+  extends Transformer[ImageFeature, MiniBatch[T]] {
+  val toBatch = SampleToMiniBatch[T](
+    batchSize, featurePaddingParam, labelPaddingParam, partitionNum)
+
+  override def apply(prev: Iterator[ImageFeature]): Iterator[MiniBatch[T]] = {
+    toBatch(prev.map(_[Sample[T]](sampleKey)))
+  }
+}
+
+object ImageFeatureToMiniBatch {
+  def apply[T: ClassTag](batchSize: Int,
+    featurePaddingParam: Option[PaddingParam[T]] = None,
+    labelPaddingParam: Option[PaddingParam[T]] = None,
+    partitionNum: Option[Int] = None,
+    sampleKey: String = ImageFeature.sample)
+    (implicit ev: TensorNumeric[T]): ImageFeatureToMiniBatch[T] =
+    new ImageFeatureToMiniBatch(batchSize,
+      featurePaddingParam,
+      labelPaddingParam,
+      partitionNum,
+      sampleKey)
 }

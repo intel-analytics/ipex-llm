@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.{NumericBoolean, NumericChar, NumericDouble, NumericFloat, NumericInt, NumericLong, NumericString}
 import com.intel.analytics.bigdl.utils.tf.TFTensorNumeric.NumericByteString
-import serialization.Bigdl.BigDLModule
+import com.intel.analytics.bigdl.serialization.Bigdl.BigDLModule
 
 import scala.collection.mutable
 import scala.reflect.ClassTag
@@ -33,10 +33,12 @@ object BigDLStorage extends StorageType
 
 case class SerializeContext[T: ClassTag](moduleData: ModuleData[T],
                                          storages: mutable.HashMap[Int, Any],
-                                         storageType: StorageType)
+                                         storageType: StorageType,
+                                         copyWeightAndBias : Boolean = true)
 case class DeserializeContext(bigdlModule : BigDLModule,
                               storages: mutable.HashMap[Int, Any],
-                              storageType: StorageType)
+                              storageType: StorageType,
+                              copyWeightAndBias : Boolean = true)
 
 case class SerializeResult(bigDLModule: BigDLModule.Builder, storages: mutable.HashMap[Int, Any])
 

@@ -99,12 +99,28 @@ class DLClassifierSpec extends FlatSpec with Matchers with BeforeAndAfter {
         .toDF("features", "label"), // Array[Double]
       sqlContext.createDataFrame(sc.parallelize(smallData.map(p => (p._1.map(_.toFloat), p._2))))
         .toDF("features", "label"), // Array[Float]
+      sqlContext.createDataFrame(sc.parallelize(smallData.map(p => (Vectors.dense(p._1), p._2))))
+        .toDF("features", "label") // MLlib Vector
+      // TODO: add ML Vector when ut for Spark 2.0+ is ready
+    ).foreach { df =>
+      val dlModel = classifier.fit(df)
+      dlModel.transform(df).collect()
+    }
+  }
+
+  "An DLClassifier" should "support scalar FEATURE" in {
+    val model = new Sequential().add(Linear[Float](1, 2)).add(LogSoftMax[Float])
+    val criterion = ClassNLLCriterion[Float]()
+    val classifier = new DLClassifier[Float](model, criterion, Array(1))
+      .setLearningRate(0.1)
+      .setBatchSize(2)
+      .setEndWhen(Trigger.maxIteration(2))
+
+    Array(
       sqlContext.createDataFrame(sc.parallelize(smallData.map(p => (p._1.head.toFloat, p._2))))
         .toDF("features", "label"), // Float
       sqlContext.createDataFrame(sc.parallelize(smallData.map(p => (p._1.head, p._2))))
-        .toDF("features", "label"), // Double
-      sqlContext.createDataFrame(sc.parallelize(smallData.map(p => (Vectors.dense(p._1), p._2))))
-        .toDF("features", "label") // MLlib Vector
+        .toDF("features", "label") // Double
       // TODO: add ML Vector when ut for Spark 2.0+ is ready
     ).foreach { df =>
       val dlModel = classifier.fit(df)

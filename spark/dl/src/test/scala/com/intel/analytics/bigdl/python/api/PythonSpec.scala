@@ -20,6 +20,7 @@ import java.util
 import java.util.{ArrayList => JArrayList, List => JList, Map => JMap}
 
 import com.intel.analytics.bigdl._
+import com.intel.analytics.bigdl.dataset.DataSet
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.optim.{Loss, SGD, Top1Accuracy, Trigger}
 import com.intel.analytics.bigdl.utils.{Engine, T, Table, TestUtils}
@@ -297,7 +298,7 @@ class PythonSpec extends FlatSpec with Matchers with BeforeAndAfter {
       imf
     })
 
-    val imageFrame = ImageFrame.rdd(sc.parallelize(images)) ->
+    val imageFrame = DataSet.imageFrame(ImageFrame.rdd(sc.parallelize(images))) ->
       ImageFrameToSample[Float](targetKeys = Array(ImageFeature.label))
 
     val model = Sequential[Float]()
@@ -309,8 +310,8 @@ class PythonSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val sgd = new SGD[Float](0.01)
 
     val pythonBigDL = PythonBigDL.ofFloat()
-    val optimizer = pythonBigDL.createDistriOptimizerFromImageFrame(model,
-      imageFrame.toDistributed(),
+    val optimizer = pythonBigDL.createDistriOptimizerFromDataSet(model,
+      imageFrame,
       criterion = ClassNLLCriterion[Float](),
       optimMethod = sgd,
       endTrigger = Trigger.maxEpoch(2),

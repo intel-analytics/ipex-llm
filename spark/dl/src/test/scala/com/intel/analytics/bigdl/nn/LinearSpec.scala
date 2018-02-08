@@ -23,7 +23,7 @@ import com.intel.analytics.bigdl._
 import scala.math._
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.optim.{L1Regularizer, L2Regularizer, SGD}
-import com.intel.analytics.bigdl.utils.{RandomGenerator, T}
+import com.intel.analytics.bigdl.utils.{RandomGenerator, Shape, T, TestUtils}
 
 @com.intel.analytics.bigdl.tags.Parallel
 class LinearSpec extends FlatSpec with Matchers {
@@ -402,5 +402,10 @@ class LinearSpec extends FlatSpec with Matchers {
     val exceptedBias = Tensor[Float](T(0f, 0f, 0f, 0f, 0f))
     linear.weight should be (exceptedWeight)
     linear.bias should be (exceptedBias)
+  }
+
+  "Linear computeOutputShape" should "work properly" in {
+    val linear = Linear[Float](3, 5)
+    TestUtils.compareOutputShape(linear, Shape(3)) should be (true)
   }
 }

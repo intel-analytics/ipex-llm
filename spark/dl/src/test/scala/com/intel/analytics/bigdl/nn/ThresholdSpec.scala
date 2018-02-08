@@ -18,8 +18,10 @@ package com.intel.analytics.bigdl.nn
 
 import org.scalatest.FlatSpec
 import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 
 import scala.math.abs
+import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Parallel
 class ThresholdSpec extends FlatSpec {
@@ -138,5 +140,13 @@ class ThresholdSpec extends FlatSpec {
     module.forward(input)
     module.clearState()
     assert(input.nElement() == 8)
+  }
+}
+
+class ThresholdSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val threshold = Threshold[Float](0.5).setName("threshold")
+    val input = Tensor[Float](5, 5).apply1(_ => Random.nextFloat())
+    runSerializationTest(threshold, input)
   }
 }

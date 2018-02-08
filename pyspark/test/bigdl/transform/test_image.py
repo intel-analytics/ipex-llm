@@ -142,6 +142,10 @@ class TestLayer():
                         max_expand_ratio=2.0)
         self.transformer_test(expand)
 
+    def test_fix_expand(self):
+        expand = FixExpand(1000, 1000)
+        self.transformer_test(expand)
+
     def test_random_transformer(self):
         transformer = RandomTransformer(HFlip(), 0.5)
         self.transformer_test(transformer)

@@ -55,7 +55,13 @@ class SingletonMixin(object):
 
 
 class JavaCreator(SingletonMixin):
-    __creator_class="com.intel.analytics.bigdl.python.api.PythonBigDL"
+    __creator_class=["com.intel.analytics.bigdl.python.api.PythonBigDLKeras"]
+
+    @classmethod
+    def add_creator_class(cls, jinvoker):
+        with JavaCreator._lock:
+            JavaCreator.__creator_class.append(jinvoker)
+            JavaCreator._instance = None
 
     @classmethod
     def get_creator_class(cls):
@@ -70,13 +76,15 @@ class JavaCreator(SingletonMixin):
 
     def __init__(self, bigdl_type):
         sc = get_spark_context()
-        jclass = getattr(sc._jvm, JavaCreator.get_creator_class())
-        if bigdl_type == "float":
-            self.value = getattr(jclass, "ofFloat")()
-        elif bigdl_type == "double":
-            self.value = getattr(jclass, "ofDouble")()
-        else:
-            raise Exception("Not supported bigdl_type: %s" % bigdl_type)
+        self.value = []
+        for creator_class in JavaCreator.get_creator_class():
+            jclass = getattr(sc._jvm, creator_class)
+            if bigdl_type == "float":
+                self.value.append(getattr(jclass, "ofFloat")())
+            elif bigdl_type == "double":
+                self.value.append(getattr(jclass, "ofDouble")())
+            else:
+                raise Exception("Not supported bigdl_type: %s" % bigdl_type)
 
 
 class JavaValue(object):
@@ -204,12 +212,10 @@ class JTensor(object):
         >>> np.random.seed(123)
         >>> data = np.random.uniform(0, 1, (2, 3)).astype("float32")
         >>> result = JTensor.from_ndarray(data)
-        >>> print(result)
-        JTensor: storage: [[ 0.69646919  0.28613934  0.22685145]
-         [ 0.55131477  0.71946895  0.42310646]], shape: [2 3], float
-        >>> result
-        JTensor: storage: [[ 0.69646919  0.28613934  0.22685145]
-         [ 0.55131477  0.71946895  0.42310646]], shape: [2 3], float
+        >>> expected_storage = np.array([[0.69646919, 0.28613934, 0.22685145], [0.55131477, 0.71946895, 0.42310646]])
+        >>> expected_shape = np.array([2, 3])
+        >>> np.testing.assert_allclose(result.storage, expected_storage, rtol=1e-6, atol=1e-6)
+        >>> np.testing.assert_allclose(result.shape, expected_shape)
         >>> data_back = result.to_ndarray()
         >>> (data == data_back).all()
         True
@@ -254,8 +260,12 @@ class JTensor(object):
         >>> indices = np.arange(1, 7)
         >>> shape = np.array([10])
         >>> result = JTensor.sparse(data, indices, shape)
-        >>> result
-        JTensor: storage: [ 1.  2.  3.  4.  5.  6.], shape: [10] ,indices [1 2 3 4 5 6], float
+        >>> expected_storage = np.array([1., 2., 3., 4., 5., 6.])
+        >>> expected_shape = np.array([10])
+        >>> expected_indices = np.array([1, 2, 3, 4, 5, 6])
+        >>> np.testing.assert_allclose(result.storage, expected_storage)
+        >>> np.testing.assert_allclose(result.shape, expected_shape)
+        >>> np.testing.assert_allclose(result.indices, expected_indices)
         >>> tensor1 = callBigDlFunc("float", "testTensor", result)  # noqa
         >>> array_from_tensor = tensor1.to_ndarray()
         >>> expected_ndarray = np.array([0, 1, 2, 3, 4, 5, 6, 0, 0, 0])
@@ -328,10 +338,14 @@ class Sample(object):
         >>> sample_back = callBigDlFunc("float", "testSample", sample)
         >>> assert_allclose(sample.features[0].to_ndarray(), sample_back.features[0].to_ndarray())
         >>> assert_allclose(sample.label.to_ndarray(), sample_back.label.to_ndarray())
-        >>> print(sample)
-        Sample: features: [JTensor: storage: [[ 0.69646919  0.28613934  0.22685145]
-         [ 0.55131477  0.71946895  0.42310646]], shape: [2 3], float], labels: [JTensor: storage: [[ 0.98076421  0.68482971  0.48093191]
-         [ 0.39211753  0.343178    0.72904968]], shape: [2 3], float],
+        >>> expected_feature_storage = np.array(([[0.69646919, 0.28613934, 0.22685145], [0.55131477, 0.71946895, 0.42310646]]))
+        >>> expected_feature_shape = np.array([2, 3])
+        >>> expected_label_storage = np.array(([[0.98076421, 0.68482971, 0.48093191], [0.39211753, 0.343178, 0.72904968]]))
+        >>> expected_label_shape = np.array([2, 3])
+        >>> assert_allclose(sample.features[0].storage, expected_feature_storage, rtol=1e-6, atol=1e-6)
+        >>> assert_allclose(sample.features[0].shape, expected_feature_shape)
+        >>> assert_allclose(sample.labels[0].storage, expected_label_storage, rtol=1e-6, atol=1e-6)
+        >>> assert_allclose(sample.labels[0].shape, expected_label_shape)
         """
         if isinstance(features, np.ndarray):
             features = [features]
@@ -391,7 +405,6 @@ class Sample(object):
 
     def __repr__(self):
         return "Sample: features: %s, labels: %s" % (self.features, self.labels)
-
 
 class RNG():
     """
@@ -543,13 +556,23 @@ def get_spark_sql_context(sc):
     else:
         return SQLContext(sc)  # Compatible with Spark1.5.1
 
-
 def callBigDlFunc(bigdl_type, name, *args):
     """ Call API in PythonBigDL """
-    jinstance = JavaCreator.instance(bigdl_type=bigdl_type).value
     sc = get_spark_context()
-    api = getattr(jinstance, name)
-    return callJavaFunc(sc, api, *args)
+    error = Exception("Cannot find function: %s" % name)
+    for jinvoker in JavaCreator.instance(bigdl_type=bigdl_type).value:
+        # hasattr(jinvoker, name) always return true here,
+        # so you need to invoke the method to check if it exist or not
+        try:
+            api = getattr(jinvoker, name)
+            result = callJavaFunc(sc, api, *args)
+        except Exception as e:
+            error = e
+            if "does not exist" not in str(e):
+                raise e
+        else:
+            return result
+    raise error
 
 
 def _java2py(sc, r, encoding="bytes"):

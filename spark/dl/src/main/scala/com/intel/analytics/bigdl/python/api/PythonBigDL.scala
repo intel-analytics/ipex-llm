@@ -20,7 +20,7 @@ import java.util.{ArrayList => JArrayList, HashMap => JHashMap, List => JList, M
 
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dataset.{Identity => DIdentity, Sample => JSample, _}
-import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.nn.{PGCriterion, Zeros, _}
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, _}
 import com.intel.analytics.bigdl.numeric._
 import com.intel.analytics.bigdl.optim.{Optimizer, _}
@@ -28,7 +28,6 @@ import com.intel.analytics.bigdl.tensor.{DenseType, SparseType, Storage, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{Table, _}
 import com.intel.analytics.bigdl.visualization.{Summary, TrainSummary, ValidationSummary}
-import com.intel.analytics.bigdl.nn.Zeros
 import org.apache.spark.api.java.{JavaRDD, JavaSparkContext}
 import org.apache.spark.rdd.RDD
 import java.lang.{Integer, Boolean => JBoolean}
@@ -36,7 +35,8 @@ import java.nio.ByteOrder
 import java.util
 
 import com.intel.analytics.bigdl.nn.Graph._
-import com.intel.analytics.bigdl.nn.tf.{Const, Fill, Shape, SplitAndSelect}
+import com.intel.analytics.bigdl.nn.tf.{Const, Fill, Shape => TfShape, SplitAndSelect}
+import com.intel.analytics.bigdl.optim.SGD.{LearningRateSchedule, SequentialSchedule}
 import com.intel.analytics.bigdl.transform.vision.image._
 import com.intel.analytics.bigdl.transform.vision.image.augmentation._
 import com.intel.analytics.bigdl.transform.vision.image.label.roi._
@@ -717,7 +717,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def createCAddTable(inplace: Boolean = false)
-  : CAddTable[T] = {
+  : CAddTable[T, T] = {
     CAddTable[T](inplace)
   }
 
@@ -886,6 +886,10 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
       provideOutput)
   }
 
+  def createNegativeEntropyPenalty(beta: Double): NegativeEntropyPenalty[T] = {
+    NegativeEntropyPenalty(beta)
+  }
+
   def createLeakyReLU(negval: Double = 0.01,
     inplace: Boolean = false)
   : LeakyReLU[T] = {
@@ -1018,13 +1022,13 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     PReLU[T](nOutputPlane)
   }
 
-  def createSReLU(shareAxes: JArrayList[Int] = null): SReLU[T] = {
+  def createSReLU(shape: JArrayList[Int], shareAxes: JArrayList[Int] = null): SReLU[T] = {
     val argv: Array[Int] = if (shareAxes == null) {
       null
     } else {
       shareAxes.asScala.toArray
     }
-    SReLU[T](argv)
+    SReLU[T](shape.asScala.toArray, argv)
   }
 
   def createActivityRegularization(l1: Double, l2: Double): ActivityRegularization[T] = {
@@ -1645,6 +1649,14 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     SGD.Plateau(monitor, factor, patience, mode, epsilon, cooldown, minLr)
   }
 
+  def createWarmup(delta: Double): SGD.Warmup = {
+    SGD.Warmup(delta)
+  }
+
+  def createSequentialSchedule(iterationPerEpoch: Int): SGD.SequentialSchedule = {
+    SGD.SequentialSchedule(iterationPerEpoch)
+  }
+
   def createClassNLLCriterion(weights: JTensor = null,
     sizeAverage: Boolean = true, logProbAsInput: Boolean = true)
   : ClassNLLCriterion[T] = {
@@ -1769,6 +1781,16 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
            targetTransformer: AbstractModule[Activity, Activity, T] = null
            ): TransformerCriterion[T] = {
     TransformerCriterion(criterion, Option(inputTransformer), Option(targetTransformer))
+  }
+
+  def createDotProductCriterion(
+          sizeAverage: Boolean = false): DotProductCriterion[T] = {
+    DotProductCriterion[T](sizeAverage)
+  }
+
+  def createPGCriterion(
+    sizeAverage: Boolean = false): PGCriterion[T] = {
+    PGCriterion(sizeAverage)
   }
 
   def createPack(dimension: Int): Pack[T] = {
@@ -2161,21 +2183,25 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     enrichOptimizer(optimizer, endTrigger, optimMethod)
   }
 
-  def createDistriOptimizerFromImageFrame(model: AbstractModule[Activity, Activity, T],
-    trainingImageFrame: DistributedImageFrame,
+  def createDistriOptimizerFromDataSet(model: AbstractModule[Activity, Activity, T],
+    trainDataSet: DataSet[ImageFeature],
     criterion: Criterion[T],
     optimMethod: OptimMethod[T],
     endTrigger: Trigger,
     batchSize: Int): Optimizer[T, MiniBatch[T]] = {
-    val sampleRDD = trainingImageFrame.rdd.map(x => x[JSample[T]](ImageFeature.sample))
+    val dataSet = trainDataSet -> ImageFeatureToMiniBatch[T](batchSize)
 
     val optimizer = new DistriOptimizer(
       _model = model,
-      _dataset = batching(DataSet.rdd(sampleRDD), batchSize)
-        .asInstanceOf[DistributedDataSet[MiniBatch[T]]],
+      _dataset = dataSet.asInstanceOf[DistributedDataSet[MiniBatch[T]]],
       _criterion = criterion
     ).asInstanceOf[Optimizer[T, MiniBatch[T]]]
     enrichOptimizer(optimizer, endTrigger, optimMethod)
+  }
+
+  def featureTransformDataset(dataset: DataSet[ImageFeature],
+    transformer: FeatureTransformer): DataSet[ImageFeature] = {
+    dataset -> transformer
   }
 
   def createL1L2Regularizer(l1: Double, l2: Double): L1L2Regularizer[T] = {
@@ -2200,13 +2226,13 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
       vMethods.asScala.toArray)
   }
 
-  def setValidationFromImageFrame(optimizer: Optimizer[T, MiniBatch[T]],
+  def setValidationFromDataSet(optimizer: Optimizer[T, MiniBatch[T]],
     batchSize: Int,
     trigger: Trigger,
-    valRdd: ImageFrame,
+    valDataSet: DataSet[ImageFeature],
     vMethods: JList[ValidationMethod[T]]): Unit = {
-    val sampleRDD = valRdd.toDistributed().rdd.map(x => x[JSample[T]](ImageFeature.sample))
-    optimizer.setValidation(trigger, batching(DataSet.rdd(sampleRDD), batchSize.toInt),
+    val dataSet = valDataSet -> ImageFeatureToMiniBatch[T](batchSize)
+    optimizer.setValidation(trigger, dataSet,
       vMethods.asScala.toArray)
   }
 
@@ -2384,6 +2410,11 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     layer.setInitMethod(weightInitMethod, biasInitMethod)
   }
 
+  def setInitMethod(layer: Initializable,
+    initMethods: JArrayList[InitializationMethod]): layer.type = {
+    layer.setInitMethod(initMethods.asScala.toArray)
+  }
+
   def getHiddenState(rec: Recurrent[T]): JActivity = {
     JActivity(rec.getHiddenState())
   }
@@ -2413,11 +2444,12 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   def createResizeBilinear(
     outputHeight: Int,
     outputWidth: Int,
-    alignCorner: Boolean
+    alignCorner: Boolean,
+    dataFormat: String
   ): ResizeBilinear[T] = {
     ResizeBilinear[T](outputHeight,
       outputWidth,
-      alignCorner)
+      alignCorner, DataFormat.apply(dataFormat))
   }
 
   def createMultiRNNCell(cells: JList[Cell[T]]): MultiRNNCell[T] = {
@@ -2729,8 +2761,14 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
       stdR.toFloat, stdG.toFloat, stdB.toFloat)
   }
 
-  def createAspectScale(scale: Int, scaleMultipleOf: Int, maxSize: Int): FeatureTransformer = {
-    AspectScale(scale, scaleMultipleOf, maxSize)
+  def createAspectScale(scale: Int,
+    scaleMultipleOf: Int,
+    maxSize: Int,
+    resizeMode: Int = 1,
+    useScaleFactor: Boolean = true,
+    minScale: Double = -1): FeatureTransformer = {
+    val minS = if (minScale == -1) None else Some(minScale.toFloat)
+    AspectScale(scale, scaleMultipleOf, maxSize, resizeMode, useScaleFactor, minS)
   }
 
   def createFiller(startX: Double, startY: Double, endX: Double, endY: Double,
@@ -2758,11 +2796,14 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     RoiNormalize()
   }
 
+  def createFixExpand(eh: Int, ew: Int): FixExpand = {
+    FixExpand(eh, ew)
+  }
+
   def transformImageFeature(transformer: FeatureTransformer, feature: ImageFeature)
   : ImageFeature = {
     transformer.transform(feature)
   }
-
 
   def transformImageFrame(transformer: FeatureTransformer,
     imageFrame: ImageFrame): ImageFrame = {
@@ -2810,7 +2851,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   : ImageFeature = {
     val feature = new ImageFeature()
     if (null != data) {
-      val mat = OpenCVMat.fromFloats(data.storage, data.shape(0), data.shape(1))
+      val mat = OpenCVMat.fromFloats(data.storage, data.shape(0), data.shape(1), data.shape(2))
       feature(ImageFeature.bytes) = OpenCVMat.imencode(mat)
       feature(ImageFeature.mat) = mat
       feature(ImageFeature.originalSize) = mat.shape()
@@ -2938,6 +2979,15 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
 
   def disableClip(optimizer: Optimizer[T, MiniBatch[T]]): Unit = {
     optimizer.disableGradientClipping()
+  }
+
+  def addScheduler(seq: SequentialSchedule, scheduler: LearningRateSchedule,
+    maxIteration: Int): SequentialSchedule = {
+    seq.add(scheduler, maxIteration)
+  }
+
+  def createDatasetFromImageFrame(imageFrame: ImageFrame): DataSet[ImageFeature] = {
+    DataSet.imageFrame(imageFrame)
   }
 }
 

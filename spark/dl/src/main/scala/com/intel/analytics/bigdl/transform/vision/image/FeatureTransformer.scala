@@ -24,11 +24,18 @@ import org.apache.log4j.Logger
 /**
  * FeatureTransformer is a transformer that transform ImageFeature
  */
-abstract class FeatureTransformer() extends Transformer[ImageFeature, ImageFeature] {
+abstract class FeatureTransformer()
+  extends Transformer[ImageFeature, ImageFeature] {
 
   import FeatureTransformer.logger
 
   private var outKey: Option[String] = None
+
+  /**
+   * if true, catch the exception of the transformer to avoid crashing.
+   * if false, interrupt the transformer when error happens
+   */
+  private[image] var ignoreException: Boolean = false
 
   /**
    * set the output key to store current transformed result
@@ -68,10 +75,14 @@ abstract class FeatureTransformer() extends Transformer[ImageFeature, ImageFeatu
       }
     } catch {
       case e: Exception =>
-        val path = if (feature.contains(ImageFeature.uri)) feature(ImageFeature.uri) else ""
-        logger.warn(s"failed ${path} in transformer ${getClass}")
-        e.printStackTrace()
         feature.isValid = false
+        if (ignoreException) {
+          val path = if (feature.contains(ImageFeature.uri)) feature(ImageFeature.uri) else ""
+          logger.warn(s"failed ${path} in transformer ${getClass}")
+          e.printStackTrace()
+        } else {
+          throw e
+        }
     }
     feature
   }
@@ -95,6 +106,14 @@ abstract class FeatureTransformer() extends Transformer[ImageFeature, ImageFeatu
   override def -> [C](other: Transformer[ImageFeature, C]): Transformer[ImageFeature, C] = {
     new ChainedTransformer(this, other)
   }
+
+  /**
+   * catch the exception of the transformer to avoid crashing.
+   */
+  def enableIgnoreException(): this.type = {
+    ignoreException = true
+    this
+  }
 }
 
 object FeatureTransformer {
@@ -109,5 +128,11 @@ class ChainedFeatureTransformer(first: FeatureTransformer, last: FeatureTransfor
 
   override def transform(prev: ImageFeature): ImageFeature = {
     last.transform(first.transform(prev))
+  }
+
+  override def enableIgnoreException(): this.type = {
+    first.enableIgnoreException()
+    last.enableIgnoreException()
+    this
   }
 }

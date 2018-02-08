@@ -17,7 +17,7 @@ package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.nn.abstractnn.DataFormat
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.BigDLSpecHelper
+import com.intel.analytics.bigdl.utils.{BigDLSpecHelper, Shape, TestUtils}
 
 class SpatialSeperableConvolutionSpec extends BigDLSpecHelper {
   "SpatialSeperableConvolution NHWC and NCHW" should "have same output" in {
@@ -94,4 +94,15 @@ class SpatialSeperableConvolutionSpec extends BigDLSpecHelper {
     conv.saveModule(file.getAbsolutePath, overWrite = true)
     val conv2 = Module.loadModule[Float](file.getAbsolutePath)
   }
+
+  "SpatialSeparableConvolution computeOutputShape NCHW" should "work properly" in {
+    val layer = SpatialSeperableConvolution[Float](3, 6, 1, 2, 2)
+    TestUtils.compareOutputShape(layer, Shape(3, 12, 12)) should be (true)
+  }
+
+  "SpatialSeparableConvolution computeOutputShape NHWC" should "work properly" in {
+    val layer = SpatialSeperableConvolution[Float](2, 5, 2, 2, 1, dataFormat = DataFormat.NHWC)
+    TestUtils.compareOutputShape(layer, Shape(24, 24, 2)) should be (true)
+  }
+
 }

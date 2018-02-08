@@ -22,6 +22,11 @@ cd "`dirname $0`"
 
 export DL_CORE_NUMBER=4
 
+if [ -n $CONDA_DEFAULT_ENV ];
+then
+    export PYTHON_EXECUTABLES=("python")
+fi
+
 for p in ${PYTHON_EXECUTABLES[@]}
 do
     echo "${cyan}Using python version: $p${reset}"

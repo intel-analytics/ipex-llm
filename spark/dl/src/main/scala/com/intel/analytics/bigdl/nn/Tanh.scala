@@ -15,7 +15,7 @@
  */
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
+import com.intel.analytics.bigdl.nn.abstractnn.{IdentityOutputShape, TensorModule}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
 import scala.math.tanh
@@ -30,7 +30,7 @@ import scala.reflect.ClassTag
  */
 @SerialVersionUID(9062199894710333035L)
 class Tanh[T: ClassTag](
-  implicit ev: TensorNumeric[T]) extends TensorModule[T] {
+  implicit ev: TensorNumeric[T]) extends TensorModule[T] with IdentityOutputShape {
 
   private val buffer: Tensor[T] = Tensor[T]()
 

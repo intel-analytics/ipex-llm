@@ -56,27 +56,27 @@
 
 ### To start a notebook directly with a specified port(e.g. 12345). You can view the notebook on http://[host-ip]:12345
 
-    sudo docker run -it --rm -p 12345:12345 -e NotebookPort=12345 bigdl/bigdl:default
+    sudo docker run -it --rm -p 12345:12345 -e NotebookPort=12345 -e NotebookToken=your-token bigdl/bigdl:default
 
-    sudo docker run -it --rm --net=host -e NotebookPort=12345 bigdl/bigdl:default
+    sudo docker run -it --rm --net=host -e NotebookPort=12345 -e NotebookToken=your-token bigdl/bigdl:default
 
-    sudo docker run -it --rm -p 12345:12345 -e NotebookPort=12345 bigdl/bigdl:0.2.0-spark-2.1.1
+    sudo docker run -it --rm -p 12345:12345 -e NotebookPort=12345 -e NotebookToken=your-token bigdl/bigdl:0.2.0-spark-2.1.1
 
-    sudo docker run -it --rm --net=host -e NotebookPort=12345 bigdl/bigdl:0.2.0-spark-2.1.1
+    sudo docker run -it --rm --net=host -e NotebookPort=12345 -e NotebookToken=your-token bigdl/bigdl:0.2.0-spark-2.1.1
 
 ### If you need http and https proxy in your environment:
 
-    sudo docker run -it --rm -p 12345:12345 -e NotebookPort=12345 -e http_proxy=http://your-proxy-host:your-proxy-port -e https_proxy=https://your-proxy-host:your-proxy-port bigdl/bigdl:default
+    sudo docker run -it --rm -p 12345:12345 -e NotebookPort=12345 -e NotebookToken=your-token -e http_proxy=http://your-proxy-host:your-proxy-port -e https_proxy=https://your-proxy-host:your-proxy-port bigdl/bigdl:default
 
-    sudo docker run -it --rm --net=host -e NotebookPort=12345 -e http_proxy=http://your-proxy-host:your-proxy-port -e https_proxy=https://your-proxy-host:your-proxy-port  bigdl/bigdl:default
+    sudo docker run -it --rm --net=host -e NotebookPort=12345 -e NotebookToken=your-token -e http_proxy=http://your-proxy-host:your-proxy-port -e https_proxy=https://your-proxy-host:your-proxy-port  bigdl/bigdl:default
 
-    sudo docker run -it --rm -p 12345:12345 -e NotebookPort=12345 -e http_proxy=http://your-proxy-host:your-proxy-port -e https_proxy=https://your-proxy-host:your-proxy-port  bigdl/bigdl:0.2.0-spark-2.1.1
+    sudo docker run -it --rm -p 12345:12345 -e NotebookPort=12345 -e NotebookToken=your-token -e http_proxy=http://your-proxy-host:your-proxy-port -e https_proxy=https://your-proxy-host:your-proxy-port  bigdl/bigdl:0.2.0-spark-2.1.1
 
-    sudo docker run -it --rm --net=host -e NotebookPort=12345 -e http_proxy=http://your-proxy-host:your-proxy-port -e https_proxy=https://your-proxy-host:your-proxy-port bigdl/bigdl:0.2.0-spark-2.1.1
+    sudo docker run -it --rm --net=host -e NotebookPort=12345 -e NotebookToken=your-token -e http_proxy=http://your-proxy-host:your-proxy-port -e https_proxy=https://your-proxy-host:your-proxy-port bigdl/bigdl:0.2.0-spark-2.1.1
 
 ### You can also start the container first
 
-    sudo docker run -it --rm --net=host bigdl/bigdl:default bash
+    sudo docker run -it --rm --net=host -e NotebookPort=12345 -e NotebookToken=your-token bigdl/bigdl:default bash
 
 ### In the container, after setting proxy and ports, you can start the Notebook by:
 
