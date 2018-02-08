@@ -32,7 +32,6 @@ import scala.reflect.ClassTag
  *                using extra state memory
  */
 
-
 @SerialVersionUID(- 6870619109313859155L)
 class LeakyReLU[T: ClassTag](
   private val negval: Double = 0.01,
