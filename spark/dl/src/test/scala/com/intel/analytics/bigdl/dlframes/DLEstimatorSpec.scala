@@ -14,27 +14,24 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.optim
+package com.intel.analytics.bigdl.dlframes
 
 import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.optim.{LBFGS, Loss, Trigger}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
 import com.intel.analytics.bigdl.utils.Engine
 import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
 import com.intel.analytics.bigdl.visualization.{TrainSummary, ValidationSummary}
-import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
 import org.apache.spark.ml.feature.MinMaxScaler
-import org.apache.spark.ml.{DLEstimator, DLModel, Pipeline, PipelineModel}
+import org.apache.spark.ml.{Pipeline, PipelineModel}
 import org.apache.spark.mllib.linalg.Vectors
-import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{DataFrame, Row, SQLContext}
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.util.Random
 
-@deprecated("`DLEstimator` has been migrated to package `com.intel.analytics.bigdl.dlframes`." +
-  "This will be removed in BigDL 0.6.", "0.5.0")
 class DLEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
   val model = new Sequential[Float]()
   var sc : SparkContext = _

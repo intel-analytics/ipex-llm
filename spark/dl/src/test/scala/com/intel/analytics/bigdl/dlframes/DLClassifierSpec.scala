@@ -14,10 +14,11 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.optim
+package com.intel.analytics.bigdl.dlframes
 
 import com.intel.analytics.bigdl.models.lenet.LeNet5
 import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.optim.{Adam, LBFGS, Loss, Trigger}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
 import com.intel.analytics.bigdl.utils.Engine
@@ -34,8 +35,6 @@ import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 import scala.collection.mutable.ArrayBuffer
 import scala.util.Random
 
-@deprecated("`DLClassifier` has been migrated to package `com.intel.analytics.bigdl.dlframes`." +
-  "This will be removed in BigDL 0.6.", "0.5.0")
 class DLClassifierSpec extends FlatSpec with Matchers with BeforeAndAfter {
   var sc : SparkContext = _
   var sqlContext : SQLContext = _

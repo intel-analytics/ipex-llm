@@ -13,14 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.spark.ml
+package com.intel.analytics.bigdl.dlframes
 
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.{Criterion, Module}
+import org.apache.spark.ml.adapter.SchemaUtils
 import org.apache.spark.ml.param.ParamMap
-import org.apache.spark.ml.util.{Identifiable, SchemaUtils}
-import org.apache.spark.sql.DataFrame
+import org.apache.spark.ml.util.Identifiable
 import org.apache.spark.sql.types._
 
 import scala.reflect.ClassTag
@@ -34,8 +34,6 @@ import scala.reflect.ClassTag
  * @param criterion  BigDL criterion method
  * @param featureSize The size (Tensor dimensions) of the feature data.
  */
-@deprecated("`DLClassifier` has been migrated to package `com.intel.analytics.bigdl.dlframes`." +
-  "This will be removed in BigDL 0.6.", "0.5.0")
 class DLClassifier[@specialized(Float, Double) T: ClassTag](
     @transient override val model: Module[T],
     override val criterion : Criterion[T],
@@ -67,8 +65,6 @@ class DLClassifier[@specialized(Float, Double) T: ClassTag](
  * @param model BigDL module to be optimized
  * @param featureSize The size (Tensor dimensions) of the feature data.
  */
-@deprecated("`DLClassifierModel` is migrated to package `com.intel.analytics.bigdl.dlframes`." +
-  "This will be removed in BigDL 0.6.", "0.5.0")
 class DLClassifierModel[@specialized(Float, Double) T: ClassTag](
     @transient override val model: Module[T],
     featureSize : Array[Int],

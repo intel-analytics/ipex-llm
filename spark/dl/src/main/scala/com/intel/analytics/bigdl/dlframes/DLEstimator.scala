@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.spark.ml
+package com.intel.analytics.bigdl.dlframes
 
 import com.intel.analytics.bigdl.{Criterion, Module}
 import com.intel.analytics.bigdl.dataset._
@@ -23,16 +23,16 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils.T
 import com.intel.analytics.bigdl.visualization.{TrainSummary, ValidationSummary}
-import org.apache.spark.ml.param.shared.{HasFeaturesCol, HasPredictionCol}
+import org.apache.spark.ml.adapter.{HasFeaturesCol, HasPredictionCol, SchemaUtils}
+import org.apache.spark.ml.{DLEstimatorBase, DLTransformerBase, VectorCompatibility}
 import org.apache.spark.ml.param.{IntParam, ParamMap, ParamValidators, _}
-import org.apache.spark.ml.util.SchemaUtils
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{DataFrame, Row}
 
 import scala.reflect.ClassTag
 
-private[ml] trait HasBatchSize extends Params {
+private[dlframes] trait HasBatchSize extends Params {
 
   final val batchSize: Param[Int] = new Param[Int](this, "batchSize", "batchSize")
 
@@ -42,7 +42,7 @@ private[ml] trait HasBatchSize extends Params {
 /**
  * Common trait for DLEstimator and DLModel
  */
-private[ml] trait DLParams[@specialized(Float, Double) T] extends HasFeaturesCol
+private[dlframes] trait DLParams[@specialized(Float, Double) T] extends HasFeaturesCol
   with HasPredictionCol with VectorCompatibility with HasBatchSize {
 
   /**
@@ -160,8 +160,6 @@ private[ml] trait DLParams[@specialized(Float, Double) T] extends HasFeaturesCol
  *                    width * height = 28 * 28, featureSize = Array(28, 28).
  * @param labelSize The size (Tensor dimensions) of the label data.
  */
-@deprecated("`DLEstimator` has been migrated to package `com.intel.analytics.bigdl.dlframes`." +
-  "This will be removed in BigDL 0.6.", "0.5.0")
 class DLEstimator[@specialized(Float, Double) T: ClassTag](
     @transient val model: Module[T],
     val criterion : Criterion[T],
@@ -361,8 +359,6 @@ class DLEstimator[@specialized(Float, Double) T: ClassTag](
  * @param featureSize The size (Tensor dimensions) of the feature data. (e.g. an image may be with
  * featureSize = 28 * 28).
  */
-@deprecated("`DLModel` has been migrated to package `com.intel.analytics.bigdl.dlframes`." +
-  "This will be removed in BigDL 0.6.", "0.5.0")
 class DLModel[@specialized(Float, Double) T: ClassTag](
     @transient val model: Module[T],
     var featureSize : Array[Int],
@@ -391,11 +387,13 @@ class DLModel[@specialized(Float, Double) T: ClassTag](
     val featureColIndex = dataFrame.schema.fieldIndex($(featuresCol))
     val featureFunc = getConvertFunc(featureType)
     val sc = dataFrame.sqlContext.sparkContext
-    val modelBroadCast = ModelBroadcast[T]().broadcast(sc, model)
+    val modelBroadCast = ModelBroadcast[T]().broadcast(sc, model.evaluate())
     val localBatchSize = $(batchSize)
+    val transformerBC = sc.broadcast(SampleToMiniBatch[T](localBatchSize))
 
     val resultRDD = dataFrame.rdd.mapPartitions { rowIter =>
       val localModel = modelBroadCast.value()
+      val transformer = transformerBC.value.cloneTransformer()
       rowIter.grouped(localBatchSize).flatMap { rowBatch =>
         val samples = rowBatch.map { row =>
           val features = featureFunc(row, featureColIndex)
@@ -405,7 +403,7 @@ class DLModel[@specialized(Float, Double) T: ClassTag](
           }
           Sample(Tensor(featureBuffer.toArray, featureSize))
         }.toIterator
-        val predictions = SampleToMiniBatch(localBatchSize).apply(samples).flatMap { batch =>
+        val predictions = transformer(samples).flatMap { batch =>
           val batchResult = localModel.forward(batch.getInput())
           batchResult.toTensor.split(1).map(outputToPrediction)
         }
