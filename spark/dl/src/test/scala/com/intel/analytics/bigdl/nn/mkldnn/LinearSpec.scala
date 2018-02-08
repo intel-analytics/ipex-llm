@@ -22,9 +22,9 @@ import com.intel.analytics.bigdl.dataset.{LocalDataSet, MiniBatch}
 import com.intel.analytics.bigdl.example.loadmodel.AlexNet
 import com.intel.analytics.bigdl.mkl.MKL
 import com.intel.analytics.bigdl.nn
-import com.intel.analytics.bigdl.nn.ClassNLLCriterion
+import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, SpatialMaxPooling}
 import com.intel.analytics.bigdl.nn.mkldnn.Utils.{manyTimes, speedup}
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.tensor.{MklDnnTensor, Tensor}
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.optim.{Optimizer, Trigger}
 import com.intel.analytics.bigdl.utils.Engine
@@ -93,8 +93,8 @@ class LinearSpec extends FlatSpec with Matchers {
   }
 
   "linear updateOutput" should "work much faster than blas" in {
-    val inputSize = 64
-    val outputSize = 64
+    val inputSize = 4096
+    val outputSize = 1000
     val batchSize = 32
 
     val initWeight = Tensor[Float](outputSize, inputSize).rand()
@@ -131,7 +131,7 @@ class LinearSpec extends FlatSpec with Matchers {
     println(speedup(nnCosts, costs))
 
     linear.output should be (nnLinear.output)
-    costs should be < nnCosts
+    (nnCosts - costs) / nnCosts should be > -0.1
   }
 
   "linear updateGradInput" should "work correctly" in {
@@ -198,20 +198,21 @@ class LinearSpec extends FlatSpec with Matchers {
   }
 
   "linear updateGradInput" should "work much faster than blas" in {
-    val inputSize = 64
-    val outputSize = 64
-    val batchSize = 32
+    val inputSize = 4096
+    val outputSize = 1000
+    val batchSize = 4
 
-    val initWeight = Tensor[Float](outputSize, inputSize).rand()
-    val initBias = Tensor[Float](outputSize).rand()
+    val initWeight = Tensor[Float](outputSize, inputSize).rand(-1, 1)
+    val initBias = Tensor[Float](outputSize).rand(-1, 1)
 
     val linear = Linear(inputSize, outputSize, initWeight = initWeight, initBias = initBias)
+      .setShouldConvert(false)
 
     val warm = 10
     val iters = 100
 
-    val input = Tensor[Float](batchSize, inputSize)
-    val gradOutput = Tensor[Float](batchSize, outputSize)
+    val input = Tensor[Float](batchSize, inputSize).rand()
+    val gradOutput = Tensor[Float](batchSize, outputSize).rand()
 
     linear.forward(input)
 
@@ -239,7 +240,7 @@ class LinearSpec extends FlatSpec with Matchers {
     println(speedup(nnCosts, costs))
 
     linear.gradInput should be (nnLinear.gradInput)
-    costs should be < nnCosts
+    (nnCosts - costs) / nnCosts should be > -0.1
   }
 
   "linear accGradParameters" should "work correctly" in {
@@ -269,46 +270,6 @@ class LinearSpec extends FlatSpec with Matchers {
     println("-" * 80)
     println(nnLinear.gradWeight)
     println(nnLinear.gradBias)
-
-    linear.gradWeight should be (nnLinear.gradWeight)
-    linear.gradBias should be (nnLinear.gradBias)
-  }
-
-  "linear accGradParameters multi times" should "work correctly" in {
-    val inputSize = 2
-    val outputSize = 2
-    val batchSize = 2
-
-    val initWeight = Tensor[Float](outputSize, inputSize).rand()
-    val initBias = Tensor[Float](outputSize).rand()
-
-    val length = 100
-    val inputs = new Array[Tensor[Float]](length)
-    for (i <- inputs.indices) {
-      inputs(i) = Tensor[Float](batchSize, inputSize).rand()
-    }
-
-    val gradOutputs = new Array[Tensor[Float]](length)
-    for (i <- 0 until length) {
-      gradOutputs(i) = Tensor[Float](batchSize, outputSize).rand()
-    }
-
-    val linear = Linear(inputSize, outputSize, initWeight = initWeight, initBias = initBias)
-    linear.forward(inputs.last)
-    linear.updateGradInput(inputs.last, gradOutputs.last)
-
-    val nnLinear = nn.Linear(inputSize, outputSize, initWeight = initWeight, initBias = initBias)
-    nnLinear.forward(inputs.last)
-    nnLinear.updateGradInput(inputs.last, gradOutputs.last)
-
-    linear.gradWeight should be (nnLinear.gradWeight)
-    linear.gradBias should be (nnLinear.gradBias)
-
-    for (i <- 0 until length) {
-      linear.accGradParameters(inputs(i), gradOutputs(i))
-      nnLinear.accGradParameters(inputs(i), gradOutputs(i))
-      linear.gradWeight should be (nnLinear.gradWeight)
-    }
 
     linear.gradWeight should be (nnLinear.gradWeight)
     linear.gradBias should be (nnLinear.gradBias)
@@ -354,11 +315,6 @@ class LinearSpec extends FlatSpec with Matchers {
     println(nnCosts)
     println(speedup(nnCosts, costs))
     println("-" * 80)
-//    println(linear.computing / 1e9)
-//    println(linear.aggregating / 1e9)
-
-    linear.gradWeight should be (nnLinear.gradWeight)
-    linear.gradBias should be (nnLinear.gradBias)
 
     costs should be < nnCosts
   }
@@ -368,15 +324,25 @@ class LinearSpec extends FlatSpec with Matchers {
     val outputSize = 1000
     val batchSize = 32
 
+    val initWeight1 = Tensor[Float](inputSize, inputSize).rand(-1, 1)
+    val initBias1 = Tensor[Float](inputSize).rand(-1, 1)
+
     val initWeight = Tensor[Float](outputSize, inputSize).rand(-1, 1)
     val initBias = Tensor[Float](outputSize).rand(-1, 1)
 
-    val linear = Linear(inputSize, outputSize, initWeight = initWeight, initBias = initBias)
-    val input = Tensor[Float](batchSize, inputSize).rand(-1, 1)
-    val output = linear.forward(input)
+    val linear = nn.Sequential()
+      .add(Linear(inputSize, inputSize, initWeight = initWeight1, initBias = initBias1)
+        .setShouldConvert(false))
+      .add(Linear(inputSize, outputSize, initWeight = initWeight, initBias = initBias)
+        .setShouldConvert(false))
+    val input = Tensor[Float](batchSize, 16, 16, 16).rand(-1, 1)
+    val output = linear.forward(input).toTensor
     val gradOutput = Tensor[Float]().resizeAs(output).rand(-1, 1)
 
-    val nnLinear = nn.Linear(inputSize, outputSize, initWeight = initWeight, initBias = initBias)
+    val nnLinear = nn.Sequential()
+      .add(nn.View(Array(batchSize, 4096)))
+      .add(nn.Linear(inputSize, inputSize, initWeight = initWeight1, initBias = initBias1))
+      .add(nn.Linear(inputSize, outputSize, initWeight = initWeight, initBias = initBias))
 
     val warm = 10
     val iters = 100
@@ -388,15 +354,14 @@ class LinearSpec extends FlatSpec with Matchers {
 
     val nnTime = manyTimes {
       nnLinear.forward(input)
-      nnLinear.updateGradInput(input, gradOutput)
-      nnLinear.accGradParameters(input, gradOutput)
+      nnLinear.backward(input, gradOutput)
     } _
 
     nnTime(warm)
-//    linear.computing = 0.0
-//    linear.aggregating = 0.0
-    val (nnCosts, _) = nnTime(iters)
     time(warm)
+    linear.resetTimes()
+    nnLinear.resetTimes()
+    val (nnCosts, _) = nnTime(iters)
     val (costs, _) = time(iters)
 
     println(costs)
@@ -404,44 +369,34 @@ class LinearSpec extends FlatSpec with Matchers {
     println((nnCosts - costs) / nnCosts)
     println(speedup(nnCosts, costs))
 
-    println("-" * 80)
-//    println(linear.computing / 1e9)
-//    println(linear.aggregating / 1e9)
-
-    nnCosts should be > costs
+    linear.getTimes()
+    println(linear.getTimes().mkString("\n"))
+    println(nnLinear.getTimes().mkString("\n"))
+    (nnCosts - costs) / nnCosts should be > -0.05
   }
 
   "linear with maxpooling" should "work correctly" in {
-    val model = nn.Sequential[Float]()
-    model.add(ConvolutionDnn(3, 64, 11, 11, 4, 4, 2, 2, 1)
-      .setName("conv1"))
-    model.add(ReLUDnn(true).setName("relu1"))
-    model.add(PoolingDnn(3, 3, 2, 2).setName("pool1"))
-    model.add(ConvolutionDnn(64, 192, 5, 5, 1, 1, 2, 2).setName("conv2"))
-    model.add(ReLUDnn(true).setName("relu2"))
-    model.add(PoolingDnn(3, 3, 2, 2).setName("pool2"))
-    model.add(ConvolutionDnn(192, 384, 3, 3, 1, 1, 1, 1).setName("conv3"))
-    model.add(ReLUDnn(true).setName("relu3"))
-    model.add(ConvolutionDnn(384, 256, 3, 3, 1, 1, 1, 1).setName("conv4"))
-    model.add(ReLUDnn(true).setName("relu4"))
-    model.add(ConvolutionDnn(256, 256, 3, 3, 1, 1, 1, 1).setName("conv5"))
-    model.add(ReLUDnn(true).setName("relu5"))
-    model.add(PoolingDnn(3, 3, 2, 2).setName("poo5"))
-    model.add(nn.View(256 * 6 * 6).setName("view"))
-    model.add(Linear(256 * 6 * 6, 4096).setName("fc6"))
-    model.add(ReLUDnn(true).setName("relu6"))
-    model.add(nn.Dropout(0.5).setName("drop6"))
-    model.add(Linear(4096, 4096).setName("fc7"))
-    model.add(ReLUDnn(true).setName("relu7"))
-    model.add(nn.Dropout(0.5).setName("drop7"))
-    model.add(Linear(4096, 10).setName("fc8"))
-    model.add(nn.SoftMax().setName("logsoftmax"))
+    val initWeight = Tensor[Float](4096, 256 * 6 * 6).rand()
+    val initBias = Tensor[Float](4096).rand()
+    val dnn = nn.Sequential()
+      .add(PoolingDnn(3, 3, 2, 2))
+      .add(Linear(256 * 6 * 6, 4096, initWeight = initWeight, initBias = initBias))
+    val blas = nn.Sequential()
+      .add(SpatialMaxPooling(3, 3, 2, 2))
+        .add(nn.View(256 * 6 * 6))
+      .add(nn.Linear(256 * 6 * 6, 4096, initWeight = initWeight, initBias = initBias))
+    val input = Tensor[Float](4, 256, 13, 13).rand()
+    dnn.forward(input)
+    blas.forward(input)
 
-    val input = Tensor[Float](4, 3, 227, 227).rand()
-    model.forward(input)
+    val gradOutput = Tensor[Float]().resizeAs(blas.output.toTensor).rand()
+    dnn.backward(input, gradOutput)
+    blas.backward(input, gradOutput)
 
-    val gradOutput = Tensor[Float]().resizeAs(model.output.toTensor).rand()
-    model.backward(input, gradOutput)
+    dnn.gradInput.asInstanceOf[MklDnnTensor[Float]].syncToHeap()
+
+    dnn.output should be (blas.output)
+    dnn.gradInput should be (blas.gradInput)
   }
 
   "linear + relu" should "work correctly" in {
@@ -449,7 +404,6 @@ class LinearSpec extends FlatSpec with Matchers {
     model.getParameters()._2.zero()
     val clone = model.cloneModule()
     System.setProperty("bigdl.localMode", "true")
-    System.setProperty("bigdl.coreNumber", "3")
     Engine.init
 
     val input = Tensor(4, 10).rand()
@@ -464,16 +418,20 @@ class LinearSpec extends FlatSpec with Matchers {
   }
 
   "relu + linear" should "work correctly" in {
-    val model = nn.Sequential().add(ReLUDnn(false)).add(Linear(20, 10))
-    val clone = model.cloneModule()
+    val initWeight = Tensor(10, 20).rand(-1, 1)
+    val initBias = Tensor(10).rand(-1, 1)
+    val dnn = nn.Sequential().add(ReLUDnn(false)).add(Linear(20, 10, initWeight = initWeight,
+      initBias = initBias))
+    val blas = nn.Sequential().add(nn.ReLU(false)).add(nn.Linear(20, 10, initWeight = initWeight,
+      initBias = initBias))
     val input = Tensor(20).rand()
-    model.forward(input)
+    dnn.forward(input)
     println("=" * 80)
-    clone.forward(input)
+    blas.forward(input)
 
-    val gradOutput = Tensor().resizeAs(model.output.toTensor)
-    model.backward(input, gradOutput)
-    clone.backward(input, gradOutput)
+    val gradOutput = Tensor().resizeAs(blas.output.toTensor)
+    dnn.backward(input, gradOutput)
+    blas.backward(input, gradOutput)
   }
 
   "test clone module" should "work correctly" in {
@@ -489,10 +447,13 @@ class LinearSpec extends FlatSpec with Matchers {
 
     model.backward(input, gradOutput)
     clone.backward(input, gradOutput)
+
+    model.output should be (clone.output)
+    model.gradInput should be (clone.gradInput)
   }
 
   "alexnet clone" should "work correctly" in {
-    val model = AlexNet(1000)
+    val model = AlexNet.dnn(1000, hasDropout = false)
     val clone = model.cloneModule()
     model.training()
     clone.training()
@@ -504,6 +465,9 @@ class LinearSpec extends FlatSpec with Matchers {
     val gradOutput = Tensor().resizeAs(model.output.toTensor)
     model.backward(input, gradOutput)
     clone.backward(input, gradOutput)
+
+    model.output should be (clone.output)
+    model.gradInput should be (clone.gradInput)
   }
 
   "AlexNet perf" should "work correctly" in {
@@ -517,7 +481,7 @@ class LinearSpec extends FlatSpec with Matchers {
     blas.forward(input)
     dnn.forward(input)
 
-    val gradOutput = Tensor().resizeAs(blas.output.toTensor)
+    val gradOutput = Tensor().resizeAs(blas.output.toTensor).rand()
     blas.backward(input, gradOutput)
     dnn.backward(input, gradOutput)
 
@@ -582,11 +546,6 @@ class LinearSpec extends FlatSpec with Matchers {
     println(Tabulator.format(header:: forwardTime))
     println("=" * 80)
     println(Tabulator.format(header:: backwardTime))
-  }
-
-  "the num of omp threads" should "be 1" in {
-    val threads = MKL.getNumThreads
-    println(threads)
   }
 
   "1-D input" should "work correctly" in {

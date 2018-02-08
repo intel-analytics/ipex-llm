@@ -157,7 +157,7 @@ object AlexNet {
     model.add(mkldnn.ConvolutionDnn(384, 256, 3, 3, 1, 1, 1, 1, 2).setName("conv5"))
     model.add(mkldnn.ReLUDnn(true).setName("relu5"))
     model.add(mkldnn.PoolingDnn(3, 3, 2, 2).setName("pool5"))
-    model.add(View(256 * 6 * 6))
+    model.add(Identity())
     model.add(mkldnn.Linear(256 * 6 * 6, 4096).setName("fc6"))
     model.add(mkldnn.ReLUDnn(true).setName("relu6"))
     if (hasDropout) model.add(Dropout(0.5).setName("drop6"))

@@ -16,6 +16,8 @@
 
 package com.intel.analytics.bigdl.nn.mkldnn
 
+import java.io.{IOException, ObjectInputStream}
+
 import com.intel.analytics.bigdl.mkl.{Memory, MklDnn}
 import com.intel.analytics.bigdl.nn.abstractnn.{Initializable, TensorModule}
 import com.intel.analytics.bigdl.tensor._
@@ -51,6 +53,15 @@ class SpatialBatchNormalization[T: ClassTag](
   @transient var backwardPrims: ArrayBuffer[Long] = ArrayBuffer.empty
   @transient var backwardReorderPrims: ArrayBuffer[Long] = ArrayBuffer.empty
   @transient var forwardPrimDesc = 0L
+
+  @throws(classOf[IOException])
+  private def readObject(in: ObjectInputStream): Unit = {
+    in.defaultReadObject()
+    forwardPrims = ArrayBuffer.empty
+    forwardReorderPrims = ArrayBuffer.empty
+    backwardPrims = ArrayBuffer.empty
+    backwardReorderPrims = ArrayBuffer.empty
+  }
 
   var _shouldConvert: Boolean = true
   def shouldConvert: Boolean = _shouldConvert

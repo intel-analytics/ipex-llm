@@ -16,6 +16,8 @@
 
 package com.intel.analytics.bigdl.tensor
 
+import java.io.{IOException, ObjectInputStream}
+
 import com.intel.analytics.bigdl.mkl.{Memory, MklDnn}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import serialization.Bigdl.TensorType
@@ -86,7 +88,7 @@ class MklDnnTensor[T: ClassTag](
     if (_storage == null || _storage.length() != nElement()) {
       this._storage = Storage[T](nElement())
     }
-    MklDnnTensor.syncToHeap(this, this._storage.array(), storageOffset() - 1)
+//    MklDnnTensor.syncToHeap(this, this._storage.array(), storageOffset() - 1)
     this._storage
   }
 
@@ -118,6 +120,12 @@ class MklDnnTensor[T: ClassTag](
   }
 
   override def getTensorType: TensorType = MklDnnType
+
+  @throws(classOf[IOException])
+  private def readObject(in: ObjectInputStream): Unit = {
+    in.defaultReadObject()
+    this._pointer = allocate(_size.product)
+  }
 
 }
 
