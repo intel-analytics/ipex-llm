@@ -30,7 +30,7 @@ import scala.reflect.ClassTag
  * inputShape (a Single Shape, does not include the batch dimension).
  * The input of this layer should be 5D.
  *
- * @param poolSize Int array of length 3. factors by which to downscale (dim1, dim2, dim3).
+ * @param poolSize Int array of length 3. Factors by which to downscale (dim1, dim2, dim3).
  *                 Default is (2, 2, 2), which will halve the image in each dimension.
  * @param strides Int array of length 3. Stride values. Default is null, and in this case it will
  *                be equal to poolSize.
