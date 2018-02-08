@@ -578,8 +578,9 @@ class LayerConverter:
                  should_scale_grad_by_freq=False,
                  wRegularizer=to_bigdl_reg(self.config["W_regularizer"]),
                  bigdl_type="float")
-        bseq.add(BLayer.AddConstant(1.0, inplace=True))  # Add 1 as BigDL is one-based index
+        bseq.add(BLayer.AddConstant(1.0))  # Add 1 as BigDL is one-based index
         bseq.add(blayer)
+        blayer.set_init_method(to_bigdl_init(self.config["init"]))
         return bseq
 
     def create_activation(self):
@@ -976,7 +977,8 @@ class LayerConverter:
             raise Exception("Unsupported border_mode: valid")
 
         if self.klayer.dim_ordering != "th":
-            raise Exception("Please use `th` for `dim_ordering`. `%s` is not supported for now." % klayer.dim_ordering)
+            raise Exception("Please use `th` for `dim_ordering`. `%s` is not supported for now."
+                            % self.klayer.dim_ordering)
         if self.config["nb_row"] != self.config["nb_col"]:
             raise Exception("Only square kernel is supported for now. Please set nb_row=nb_col.")
         if self.klayer.subsample[0] != self.klayer.subsample[1]:
@@ -1014,6 +1016,9 @@ class LayerConverter:
                                               self.klayer.go_backwards, rec.add(gru))
 
     def create_batchnormalization(self):
+        if len(self.input_shape) != 4:
+            raise Exception("Only 4D input is supported for now, but the current input dim is %s",
+                            len(self.input_shape))
         if keras.backend.image_dim_ordering() == "th" and self.klayer.axis != 1:
             raise Exception("""For BatchNormalization with th image ordering, we only support """ +
                             """axis = 1 for now, but the current axis is %s

@@ -394,5 +394,68 @@ class KerasModuleSerializerSpec extends SerializerSpecHelper {
     runSerializationTest(layer, input)
   }
 
-}
+  "Embedding serializer" should "work properly" in {
+    val layer = Embedding[Float](1000, 32, inputShape = Shape(4))
+    layer.build(Shape(2, 4))
+    val input = Tensor[Float](2, 4)
+    input(Array(1, 1)) = 1
+    input(Array(1, 2)) = 2
+    input(Array(1, 3)) = 4
+    input(Array(1, 4)) = 5
+    input(Array(2, 1)) = 4
+    input(Array(2, 2)) = 3
+    input(Array(2, 3)) = 2
+    input(Array(2, 4)) = 6
+    runSerializationTest(layer, input)
+  }
 
+  "BatchNormalization serializer" should "work properly" in {
+    val layer = BatchNormalization[Float](inputShape = Shape(3, 12, 12))
+    layer.build(Shape(2, 3, 12, 12))
+    val input = Tensor[Float](2, 3, 12, 12).apply1(_ => Random.nextFloat())
+    runSerializationTest(layer, input)
+  }
+
+  "ZeroPadding1D serializer" should "work properly" in {
+    val layer = ZeroPadding1D[Float](padding = 2, inputShape = Shape(4, 5))
+    layer.build(Shape(2, 4, 5))
+    val input = Tensor[Float](2, 4, 5).apply1(_ => Random.nextFloat())
+    runSerializationTest(layer, input)
+  }
+
+  "ZeroPadding2D serializer" should "work properly" in {
+    val layer = ZeroPadding2D[Float](padding = (2, 1), inputShape = Shape(2, 8, 8))
+    layer.build(Shape(2, 2, 8, 8))
+    val input = Tensor[Float](2, 2, 8, 8).apply1(_ => Random.nextFloat())
+    runSerializationTest(layer, input)
+  }
+
+  "UpSampling1D serializer" should "work properly" in {
+    val layer = UpSampling1D[Float](inputShape = Shape(4, 5))
+    layer.build(Shape(2, 4, 5))
+    val input = Tensor[Float](2, 4, 5).apply1(_ => Random.nextFloat())
+    runSerializationTest(layer, input)
+  }
+
+  "UpSampling2D serializer" should "work properly" in {
+    val layer = UpSampling2D[Float](inputShape = Shape(4, 8, 8))
+    layer.build(Shape(2, 4, 8, 8))
+    val input = Tensor[Float](2, 4, 8, 8).apply1(_ => Random.nextFloat())
+    runSerializationTest(layer, input)
+  }
+
+  "UpSampling3D serializer" should "work properly" in {
+    val layer = UpSampling3D[Float](inputShape = Shape(3, 8, 10, 12))
+    layer.build(Shape(2, 3, 8, 10, 12))
+    val input = Tensor[Float](2, 3, 8, 10, 12).apply1(_ => Random.nextFloat())
+    runSerializationTest(layer, input)
+  }
+
+  "MaxoutDense serializer" should "work properly" in {
+    val layer = MaxoutDense[Float](8, inputShape = Shape(12))
+    layer.build(Shape(3, 12))
+    val input = Tensor[Float](3, 12).apply1(_ => Random.nextFloat())
+    runSerializationTest(layer, input)
+  }
+
+}

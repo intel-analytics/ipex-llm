@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.{DenseTensorApply, Tensor, TensorFunc6}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.Table
+import com.intel.analytics.bigdl.utils.{Shape, Table}
 
 import scala.reflect.ClassTag
 
@@ -50,6 +50,13 @@ class Maxout[T: ClassTag](val inputSize: Int, val outputSize: Int, val maxoutNum
     initBias = initBias))
     .add(View(maxoutNumber, outputSize).setNumInputDims(1))
     .add(Max(1, 2))
+
+  override def computeOutputShape(inputShape: Shape): Shape = {
+    val input = inputShape.toSingle().toArray
+    require(input.length == 2,
+      s"MaxoutDense requires 2D input, but got input dim ${input.length}")
+    Shape(input(0), outputSize)
+  }
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
     output = layer.updateOutput(input)
