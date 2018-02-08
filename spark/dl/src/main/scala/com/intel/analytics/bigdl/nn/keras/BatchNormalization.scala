@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.nn.keras
 
-import com.intel.analytics.bigdl.nn.{InitializationMethod, Ones, SpatialBatchNormalization, Zeros}
+import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, DataFormat}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -27,11 +27,18 @@ import scala.reflect.ClassTag
 class BatchNormalization[T: ClassTag](
    val epsilon: Double = 0.001,
    val momentum: Double = 0.99,
-   val betaInit: Tensor[T] = null,
-   val gammaInit: Tensor[T] = null,
-   val format: DataFormat = DataFormat.NCHW,
+   val betaInit: String = "zero",
+   val gammaInit: String = "one",
+   val dimOrdering: DataFormat = DataFormat.NCHW,
    val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {
+
+  private def getInit(init: String, n: Int): Tensor[T] = {
+    init match {
+      case "zero" => Tensor[T](n).fill(ev.zero)
+      case "one" => Tensor[T](n).fill(ev.one)
+    }
+  }
 
   override def computeOutputShape(inputShape: Shape): Shape = {
     val input = inputShape.toSingle().toArray
@@ -42,7 +49,7 @@ class BatchNormalization[T: ClassTag](
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
     val input = inputShape.toSingle().toArray
-    val nChannel = format match {
+    val nChannel = dimOrdering match {
       case DataFormat.NCHW => input(1)
       case DataFormat.NHWC => input(3)
     }
@@ -51,9 +58,9 @@ class BatchNormalization[T: ClassTag](
       nOutput = nChannel,
       eps = epsilon,
       momentum = momentum,
-      initWeight = gammaInit,
-      initBias = betaInit,
-      dataFormat = format)
+      initWeight = getInit(gammaInit, nChannel),
+      initBias = getInit(betaInit, nChannel),
+      dataFormat = dimOrdering)
     layer.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
   }
 }
@@ -62,8 +69,8 @@ object BatchNormalization {
   def apply[@specialized(Float, Double) T: ClassTag](
     epsilon: Double = 0.001,
     momentum: Double = 0.99,
-    betaInit: Tensor[T] = null,
-    gammaInit: Tensor[T] = null,
+    betaInit: String = "zero",
+    gammaInit: String = "one",
     dimOrdering: String = "th",
     inputShape: Shape = null)(implicit ev: TensorNumeric[T]): BatchNormalization[T] = {
     new BatchNormalization[T](epsilon, momentum, betaInit, gammaInit,

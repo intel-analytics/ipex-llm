@@ -76,12 +76,12 @@ class PythonBigDLKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends Pytho
   def createKerasBatchNormalization(
     epsilon: Double = 0.001,
     momentum: Double = 0.99,
-    betaInit: JTensor = null,
-    gammaInit: JTensor = null,
+    betaInit: String = "zero",
+    gammaInit: String = "one",
     dimOrdering: String = "th",
     inputShape: JList[Int] = null): BatchNormalization[T] = {
-    BatchNormalization[T](epsilon, momentum, toTensor(betaInit),
-      toTensor(gammaInit), dimOrdering, toScalaShape(inputShape))
+    BatchNormalization[T](epsilon, momentum, betaInit,
+      gammaInit, dimOrdering, toScalaShape(inputShape))
   }
 
   def setKerasRunningMean(module: BatchNormalization[T], runningMean: JTensor): Unit = {
@@ -92,6 +92,16 @@ class PythonBigDLKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends Pytho
   def setKerasRunningStd(module: BatchNormalization[T], runningStd: JTensor): Unit = {
     module.labor.asInstanceOf[SpatialBatchNormalization[T]]
       .runningVar.set(toTensor(runningStd))
+  }
+
+  def getKerasRunningMean(module: BatchNormalization[T]): JTensor = {
+    toJTensor(module.labor.asInstanceOf[SpatialBatchNormalization[T]]
+      .runningMean)
+  }
+
+  def getKerasRunningStd(module: BatchNormalization[T]): JTensor = {
+    toJTensor(module.labor.asInstanceOf[SpatialBatchNormalization[T]]
+      .runningVar)
   }
 
 }

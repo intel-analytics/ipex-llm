@@ -54,9 +54,9 @@ class Dense(KerasLayer):
     init: String representations of initialization method for the weights of the layer.
           Default is 'glorot_uniform'.
     activation: String representations of activation function to use (such as 'relu' or 'sigmoid').
-                Default is null.
+                Default is None.
     W_regularizer: An instance of [[Regularizer]], (eg. L1 or L2 regularization),
-                  applied to the input weights matrices. Default is None.
+                   applied to the input weights matrices. Default is None.
     b_regularizer: An instance of [[Regularizer]], applied to the bias. Default is None.
     bias: Whether to include a bias (i.e. make the layer affine rather than linear). Default is True.
 
@@ -89,7 +89,7 @@ class Embedding(KerasLayer):
 
 
 class BatchNormalization(KerasLayer):
-    def __init__(self, epsilon=0.001, momentum=0.99, beta_init=None, gamma_init=None,
+    def __init__(self, epsilon=0.001, momentum=0.99, beta_init='zero', gamma_init='one',
                  dim_ordering="th", input_shape=None, bigdl_type="float"):
         super(BatchNormalization, self).__init__(None, bigdl_type,
                                                  epsilon,
@@ -108,3 +108,11 @@ class BatchNormalization(KerasLayer):
         callBigDlFunc(self.bigdl_type, "setKerasRunningStd",
                       self.value, JTensor.from_ndarray(running_std))
         return self
+
+    def get_running_mean(self):
+        return callBigDlFunc(self.bigdl_type, "getKerasRunningMean",
+                             self.value).to_ndarray()
+
+    def get_running_std(self):
+        return callBigDlFunc(self.bigdl_type, "getKerasRunningStd",
+                      self.value).to_ndarray()
