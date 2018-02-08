@@ -17,7 +17,10 @@
 package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
+
+import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Parallel
 class PowerSpec extends FlatSpec with Matchers {
@@ -126,4 +129,12 @@ class PowerSpec extends FlatSpec with Matchers {
 
   }
 
+}
+
+class PowerSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val power = Power[Float](2.0).setName("power")
+    val input = Tensor[Float](2, 2).apply1(e => Random.nextFloat())
+    runSerializationTest(power, input)
+  }
 }

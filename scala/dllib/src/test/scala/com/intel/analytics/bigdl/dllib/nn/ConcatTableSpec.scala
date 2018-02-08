@@ -20,7 +20,10 @@ import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
+
+import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Parallel
 class ConcatTableSpec extends FlatSpec with Matchers {
@@ -82,5 +85,15 @@ class ConcatTableSpec extends FlatSpec with Matchers {
     intercept[Exception] {
       module.backward(T(), T())
     }
+  }
+}
+
+class ConcatTableSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val concatTable = new  ConcatTable[Float]().setName("concatTable")
+    concatTable.add(Linear[Float](10, 2))
+    concatTable.add(Linear[Float](10, 2))
+    val input = Tensor[Float](10).apply1(_ => Random.nextFloat())
+    runSerializationTest(concatTable, input)
   }
 }
