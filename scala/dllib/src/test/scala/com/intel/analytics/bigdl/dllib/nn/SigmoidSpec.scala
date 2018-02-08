@@ -18,8 +18,10 @@ package com.intel.analytics.bigdl.nn
 
 import org.scalatest.FlatSpec
 import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 
 import scala.math.abs
+import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Parallel
 class SigmoidSpec extends FlatSpec {
@@ -75,5 +77,13 @@ class SigmoidSpec extends FlatSpec {
     })
     assert(input == inputOrg)
     assert(gradOutput == gradOutputOrg)
+  }
+}
+
+class SigmoidSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val sigmoid = Sigmoid[Float]().setName("sigmoid")
+    val input = Tensor[Float](10).apply1(_ => Random.nextFloat())
+    runSerializationTest(sigmoid, input)
   }
 }
