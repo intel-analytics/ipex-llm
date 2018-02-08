@@ -2961,7 +2961,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     seq.add(scheduler, maxIteration)
   }
 
-  def initExecutorGateway(sc: JavaSparkContext, driverPort: Int): Unit = {
+  private[bigdl] def initExecutorGateway(sc: JavaSparkContext, driverPort: Int): Unit = {
     sc.parallelize(Seq(""), Engine.coreNumber() * Engine.nodeNumber())
       .foreachPartition(_ => Engine.createJavaGateway(driverPort))
   }

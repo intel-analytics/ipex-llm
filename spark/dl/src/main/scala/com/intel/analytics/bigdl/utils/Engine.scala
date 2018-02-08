@@ -21,11 +21,12 @@ import java.util.Locale
 import java.util.concurrent.atomic.AtomicBoolean
 
 import org.apache.log4j.Logger
-import org.apache.spark.{SparkConf, SparkContext, SparkException, SparkFiles}
+import org.apache.spark._
 import com.intel.analytics.bigdl.mkl.MKL
 import org.apache.spark.utils.SparkUtils
+import py4j.GatewayServer
 
-import scala.util.control.ControlThrowable
+import scala.util.control.{ControlThrowable, NonFatal}
 
 /**
  * define engine type trait
@@ -114,19 +115,35 @@ object Engine {
 
   @volatile
   private var gatewayServer: py4j.GatewayServer = null
+  private val driverPortFileCreated = new AtomicBoolean()
 
+  private def createGatewayPortFile(port: Int): Unit = {
+    val file = new java.io.File(SparkFiles.getRootDirectory(), "gateway_port")
+    logger.debug(s"Creating JavaGatewayServer port file" +
+      s" on executor-${SparkEnv.get.executorId}:${file.getAbsolutePath}")
+    if (file.exists()) {
+      file.delete()
+    }
+    file.createNewFile()
+    val out = new PrintWriter(file)
+    try {
+      out.print(port)
+      out.flush()
+    } finally {
+      out.close()
+    }
+  }
 
   private[bigdl] def createJavaGateway(driverPort: Int): Unit = {
     if (SparkUtils.isDriver) {
-      val file = new java.io.File(SparkFiles.getRootDirectory(), "gateway_port")
-      if (file.exists()) {
-        file.delete()
+      if (driverPortFileCreated.compareAndSet(false, true)) {
+        try {
+          createJavaGateway(driverPort)
+        } catch {
+          case NonFatal(e) =>
+            throw new Exception("Could not create java gateway port file", e)
+        }
       }
-      file.createNewFile()
-      val out = new PrintWriter(file)
-      out.print(driverPort)
-      out.flush()
-      out.close()
       return
     }
     if (gatewayServer != null) return
@@ -134,6 +151,9 @@ object Engine {
       if (gatewayServer != null) return
       gatewayServer = new py4j.GatewayServer(null, 0)
     }
+
+    logger.info(s"Initializing JavaGatewayServer on executor-${SparkEnv.get.executorId} ")
+    GatewayServer.turnLoggingOn()
     val thread = new Thread(new Runnable() {
       override def run(): Unit = try {
         gatewayServer.start()
@@ -141,7 +161,8 @@ object Engine {
         case ct: ControlThrowable =>
           throw ct
         case t: Throwable =>
-          throw new Exception(s"Uncaught exception in thread ${Thread.currentThread().getName}", t)
+          throw new Exception(s"Uncaught exception " +
+            s"in thread ${Thread.currentThread().getName}, when staring JavaGatewayServer", t)
       }
     })
     thread.setName("py4j-executor-gateway-init")
@@ -150,21 +171,20 @@ object Engine {
 
     thread.join()
 
+    logger.info(s"JavaGatewayServer initialized")
+
     Runtime.getRuntime().addShutdownHook(new Thread {
       override def run(): Unit = {
         gatewayServer.shutdown()
       }
     })
 
-    val file = new java.io.File(SparkFiles.getRootDirectory(), "gateway_port")
-    if (file.exists()) {
-      file.delete()
+    try {
+      createJavaGateway(gatewayServer.getListeningPort)
+    } catch {
+      case NonFatal(e) =>
+        throw new Exception("Could not create java gateway port file", e)
     }
-    file.createNewFile()
-    val out = new PrintWriter(file)
-    out.print(gatewayServer.getListeningPort)
-    out.flush()
-    out.close()
   }
 
 
