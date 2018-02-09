@@ -37,6 +37,7 @@ pages:
   - Define a Model:
     - Using Sequential API: ProgrammingGuide/Model/Sequential.md
     - Using Functional API: ProgrammingGuide/Model/Functional.md
+    - Implement customized serializer: ProgrammingGuide/Model/Serialization.md
   - Optimization: ProgrammingGuide/optimization.md
   - Use Spark ML: ProgrammingGuide/MLPipeline.md
   - Visualization: ProgrammingGuide/visualization.md
