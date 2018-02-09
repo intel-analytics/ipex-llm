@@ -29,26 +29,18 @@ import scala.reflect.ClassTag
  * Normalize the activations of the previous layer at each batch,
  * i.e. applies a transformation that maintains the mean activation
  * close to 0 and the activation standard deviation close to 1.
- * We expect mode = 0, feature-wise normalization.
- * Each feature map in the input will be normalized separately.
+ * Feature-wise normalization, each feature map in the input will be normalized separately.
  * The input of this layer should be 4D.
  *
  * When you use this layer as the first layer of a model, you need to provide the argument
  * inputShape (a Single Shape, does not include the batch dimension).
  *
- * @param epsilon Small Double > 0. Fuzz parameter. Theano expects epsilon >= 1e-5.
- *                Default is 0.001.
+ * @param epsilon Small Double > 0. Fuzz parameter. Default is 0.001.
  * @param momentum Double. Momentum in the computation of the exponential average
  *                 of the mean and standard deviation of the data,
  *                 for feature-wise normalization. Default is 0.99.
- * @param betaInit Name of initialization function for shift parameter.
- *                 You can also pass in corresponding string representations
- *                 such as 'glorot_uniform' or 'normal', etc.
- *                 for simple init methods in the factory method. Default is 'zero'.
- * @param gammaInit Name of initialization function for scale parameter.
- *                  You can also pass in corresponding string representations
- *                  such as 'glorot_uniform' or 'normal', etc.
- *                  for simple init methods in the factory method. Default is 'one'.
+ * @param betaInit Name of initialization function for shift parameter. Default is 'zero'.
+ * @param gammaInit Name of initialization function for scale parameter. Default is 'one'.
  * @param dimOrdering Format of input data. Either DataFormat.NCHW (dimOrdering='th') or
  *                    DataFormat.NHWC (dimOrdering='tf'). Default is NCHW.
  *                    For NCHW, axis along which to normalize is 1. For NHWC, axis is 3.

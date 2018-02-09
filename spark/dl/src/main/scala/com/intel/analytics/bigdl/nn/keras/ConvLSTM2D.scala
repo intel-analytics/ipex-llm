@@ -27,10 +27,10 @@ import scala.reflect.ClassTag
 
 /**
  * Convolutional LSTM.
- * The input of this layer should be 5D.
  * Data format currently supported for this layer is 'CHANNEL_FIRST' (dimOrdering='th').
  * BorderMode of this layer will be 'same'.
  * The convolution kernel for this layer is a square kernel.
+ * The input of this layer should be 5D.
  *
  * When using this layer as the first layer in a model, you need to provide the argument
  * inputShape (a Single Shape, does not include the batch dimension).
