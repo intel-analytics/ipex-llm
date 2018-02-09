@@ -204,7 +204,7 @@ class PoolingDnnAverage[T: ClassTag](
 
       if (inputBuffer == null && input.getTensorType != MklDnnType) {
         inputBuffer = MklDnnTensor[Float](input.size())
-      } else if (inputBuffer.nElement() != input.nElement() && inputBuffer.nElement() > 0) {
+      } else if (inputBuffer != null && inputBuffer.nElement() != input.nElement() ) {
         inputBuffer.release()
         inputBuffer = MklDnnTensor[Float](input.size())
       }
@@ -240,8 +240,8 @@ class PoolingDnnAverage[T: ClassTag](
           this.input_format, dataType, engine)
       }
 
-      // for gradInput
-      gradInput.resizeAs(input)
+      // todo: output with Dense Tensor
+      gradInput = MklDnnTensor[Float](input.size())
       val gradInput_md = MklDnnOps.memoryDescInit(gradInput.dim(), gradInput.size(),
         dataType, this.internal_format)
 
@@ -253,7 +253,6 @@ class PoolingDnnAverage[T: ClassTag](
 
 
       /* create memory primities for relu diff src */
-      gradInput.resizeAs(input)
       val gradInput_pd = MklDnnOps.primitiveDescQueryPd(bwd_pd, MklDnn.Query.diff_src_pd, 0)
       gradInput_memory = MklDnn.PrimitiveCreate0(gradInput_pd)
       gradInput.setPrimitiveDesc(gradInput_pd)

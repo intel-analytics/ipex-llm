@@ -262,7 +262,6 @@ class PoolingDnn[T: ClassTag](
 
 
       /* create memory primities for relu diff src */
-      gradInput.resizeAs(input)
       val gradInput_pd = MklDnnOps.primitiveDescQueryPd(bwd_pd, MklDnn.Query.diff_src_pd, 0)
       gradInput_memory = MklDnn.PrimitiveCreate0(gradInput_pd)
       gradInput.setPrimitiveDesc(gradInput_pd)

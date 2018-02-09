@@ -254,7 +254,7 @@ object MklDnnOps {
     MklDnn.StreamSubmit(loc, block, primitives)
 
     for (i <- 0 to memory_primitives.length - 1) {
-      if (memory_primitives(i) != 0L) {
+      if (handle(i) != 0L) {
          MklDnnOps.memoryReleaseDataHandle(buffers(i), handle(i))
       }
     }

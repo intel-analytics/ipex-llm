@@ -156,8 +156,14 @@ class ReLUDnn[T: ClassTag](ip: Boolean = false, value: Float = 0.0f)(
 
           if (input.getFormat() == -1) {
             // gradOutput_md = MklDnnOps.primitiveDescQueryMemory(gradOutput_pd)
-            gradOutput_md = MklDnnOps.memoryDescInit(gradOutput.dim(), gradOutput.size(),
-              MklDnn.DataType.f32, this.input_format)
+            // todo: refactor
+            if (gradOutput.dim() == 1) {
+              gradOutput_md = MklDnn.MemoryDescInit(gradOutput.dim() + 1,
+                Array(1) ++ gradOutput.size(), MklDnn.DataType.f32, this.input_format)
+            } else {
+              gradOutput_md = MklDnnOps.memoryDescInit(gradOutput.dim(), gradOutput.size(),
+                MklDnn.DataType.f32, this.input_format)
+            }
           } else {
             gradOutput_md = MklDnnOps.memoryDescInit(gradOutput.dim(), gradOutput.size(),
               MklDnn.DataType.f32, input.getFormat())

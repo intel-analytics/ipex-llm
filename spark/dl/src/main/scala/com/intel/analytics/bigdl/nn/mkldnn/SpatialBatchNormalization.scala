@@ -63,7 +63,7 @@ class SpatialBatchNormalization[T: ClassTag](
     backwardReorderPrims = ArrayBuffer.empty
   }
 
-  var _shouldConvert: Boolean = true
+  var _shouldConvert: Boolean = false
   def shouldConvert: Boolean = _shouldConvert
   def setShouldConvert(v: Boolean): this.type = {
     _shouldConvert = v
@@ -141,6 +141,7 @@ class SpatialBatchNormalization[T: ClassTag](
   @transient var varianceUserPrim = 0L
   @transient var previousSize: Array[Int] = _
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
+    val s1 = System.nanoTime()
     if (previousSize == null) {
       previousSize = input.size()
     } else if (previousSize.deep != input.size().deep) {
@@ -264,6 +265,10 @@ class SpatialBatchNormalization[T: ClassTag](
       output.asInstanceOf[MklDnnTensor[T]].syncToHeap()
     }
 
+    val end1 = System.nanoTime() - s1
+    if (System.getProperty("debug") == "2") {
+      println(s"bn dnn ${this.getName()} forward ${end1/1e6}")
+    }
     output
   }
 
@@ -274,6 +279,7 @@ class SpatialBatchNormalization[T: ClassTag](
   @transient var gradWeightAndBiasUserPrim = 0L
   @transient var internalGradInput, internalGradOutput: MklDnnTensor[T] = _
   def backward1(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
+    val s1 = System.nanoTime()
     if (backwardPrims.isEmpty) {
       if (gradInput.getTensorType == MklDnnType) {
         toMklDnnTensor(gradInput).release()
@@ -391,6 +397,10 @@ class SpatialBatchNormalization[T: ClassTag](
       gradInput.asInstanceOf[MklDnnTensor[T]].syncToHeap()
     }
 
+    val end1 = System.nanoTime() - s1
+    if (System.getProperty("debug") == "2") {
+      println(s"bn dnn ${this.getName()} backward ${end1/1e6}")
+    }
     gradInput
   }
 
