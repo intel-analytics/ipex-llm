@@ -27,9 +27,10 @@ import scala.reflect.ClassTag
 /**
  * Densely connected highway network.
  * Highway layers are a natural extension of LSTMs to feedforward networks.
+ * The input of this layer should be 2D, i.e. (batch, input dim).
+ *
  * When you use this layer as the first layer of a model, you need to provide the argument
  * inputShape (a Single Shape, does not include the batch dimension).
- * The input of this layer should be 2D, i.e. (batch, input dim).
  *
  * @param activation Activation function to use. Default is null.
  *                   You can also pass in corresponding string representations such as 'relu'

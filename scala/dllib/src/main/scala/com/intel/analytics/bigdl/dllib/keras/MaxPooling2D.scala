@@ -26,9 +26,10 @@ import scala.reflect.ClassTag
 
 /**
  * Applies max pooling operation for spatial data.
+ * The input of this layer should be 4D.
+ *
  * When you use this layer as the first layer of a model, you need to provide the argument
  * inputShape (a Single Shape, does not include the batch dimension).
- * The input of this layer should be 4D.
  *
  * @param poolSize Int array of length 2 corresponding to the downscale vertically and
  *                 horizontally. Default is (2, 2), which will halve the image in each dimension.
