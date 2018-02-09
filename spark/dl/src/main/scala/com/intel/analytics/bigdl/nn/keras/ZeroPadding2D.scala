@@ -25,6 +25,21 @@ import com.intel.analytics.bigdl.utils.Shape
 
 import scala.reflect.ClassTag
 
+/**
+ * Zero-padding layer for 2D input (e.g. picture).
+ * The input of this layer should be 4D.
+ *
+ * When you use this layer as the first layer of a model, you need to provide the argument
+ * inputShape (a Single Shape, does not include the batch dimension).
+ *
+ * @param padding Int array of length 4.
+ *                How many zeros to add at the beginning and at the end of the 2 padding dimensions
+ *                (rows and cols), in the order '(top_pad, bottom_pad, left_pad, right_pad)'.
+ *                Default is (1, 1, 1, 1).
+ * @param dimOrdering Format of the input data. Either DataFormat.NCHW (dimOrdering='th') or
+ *                    DataFormat.NHWC (dimOrdering='tf'). Default is NCHW.
+ * @tparam T The numeric type of parameter(e.g. weight, bias). Only support float/double now.
+ */
 class ZeroPadding2D[T: ClassTag](
    val padding: Array[Int] = Array(1, 1, 1, 1),
    val dimOrdering: DataFormat = DataFormat.NCHW,

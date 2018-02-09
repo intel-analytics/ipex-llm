@@ -25,11 +25,11 @@ import scala.reflect.ClassTag
 
 /**
  * Simple activation function to be applied to the output.
- * When you use this layer as the first layer of a model, you need to provide the argument
- * inputShape (a Single Shape, does not include the batch dimension).
- *
  * Available activations: 'tanh', 'relu', 'sigmoid', 'softmax', 'softplus',
  * 'softsign', 'hard_sigmoid'.
+ *
+ * When you use this layer as the first layer of a model, you need to provide the argument
+ * inputShape (a Single Shape, does not include the batch dimension).
  *
  * @param activation Name of the activation function as string.
  * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now.

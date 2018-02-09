@@ -26,6 +26,7 @@ import scala.reflect.ClassTag
 /**
  * Applies Dropout to the input by randomly setting a fraction 'p' of input units to 0 at each
  * update during training time in order to prevent overfitting.
+ *
  * When you use this layer as the first layer of a model, you need to provide the argument
  * inputShape (a Single Shape, does not include the batch dimension).
  *

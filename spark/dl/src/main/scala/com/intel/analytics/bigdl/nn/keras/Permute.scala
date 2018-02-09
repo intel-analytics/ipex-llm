@@ -25,6 +25,17 @@ import com.intel.analytics.bigdl.utils.Shape
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
+/**
+ * Permutes the dimensions of the input according to a given pattern.
+ * Useful for e.g. connecting RNNs and convnets together.
+ *
+ * When you use this layer as the first layer of a model, you need to provide the argument
+ * inputShape (a Single Shape, does not include the batch dimension).
+ *
+ * @param dims Int array. Permutation pattern, does not include the samples dimension.
+ *             Indexing starts at 1.
+ * @tparam T The numeric type of parameter(e.g. weight, bias). Only support float/double now.
+ */
 class Permute[T: ClassTag](
    val dims: Array[Int],
    val inputShape: Shape = null)(implicit ev: TensorNumeric[T])

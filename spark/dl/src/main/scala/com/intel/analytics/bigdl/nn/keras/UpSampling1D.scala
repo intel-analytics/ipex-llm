@@ -23,6 +23,17 @@ import com.intel.analytics.bigdl.utils.Shape
 
 import scala.reflect.ClassTag
 
+/**
+ * Upsampling layer for 1D inputs.
+ * Repeats each temporal step `length` times along the time axis.
+ * The input of this layer should be 3D.
+ *
+ * When you use this layer as the first layer of a model, you need to provide the argument
+ * inputShape (a Single Shape, does not include the batch dimension).
+ *
+ * @param length Integer. Upsampling factor. Default is 2.
+ * @tparam T The numeric type of parameter(e.g. weight, bias). Only support float/double now.
+ */
 class UpSampling1D[T: ClassTag](
    val length: Int = 2,
    val inputShape: Shape = null)(implicit ev: TensorNumeric[T])

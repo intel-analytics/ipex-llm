@@ -23,6 +23,20 @@ import com.intel.analytics.bigdl.utils.Shape
 
 import scala.reflect.ClassTag
 
+/**
+ * Upsampling layer for 3D inputs.
+ * Repeats the 1st, 2nd and 3rd dimensions of the data by size(0), size(1) and size(2) respectively.
+ * Data format currently supported for this layer is 'CHANNEL_FIRST' (dimOrdering='th').
+ * The input of this layer should be 5D.
+ *
+ * When you use this layer as the first layer of a model, you need to provide the argument
+ * inputShape (a Single Shape, does not include the batch dimension).
+ *
+ * @param size Int array of length 3. The upsampling factors for dim1, dim2 and dim3.
+ *             Default is (2, 2, 2).
+ * @param dimOrdering Format of the input data. Please use "CHANNEL_FIRST" (dimOrdering='th').
+ * @tparam T The numeric type of parameter(e.g. weight, bias). Only support float/double now.
+ */
 class UpSampling3D[T: ClassTag](
    val size: Array[Int] = Array(2, 2, 2),
    val dimOrdering: String = "CHANNEL_FIRST",

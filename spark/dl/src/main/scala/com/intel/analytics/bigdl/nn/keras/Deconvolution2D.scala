@@ -25,6 +25,39 @@ import com.intel.analytics.bigdl.utils.Shape
 
 import scala.reflect.ClassTag
 
+/**
+ * Transposed convolution operator for filtering windows of 2-D inputs.
+ * The need for transposed convolutions generally arises from the desire to use a transformation
+ * going in the opposite direction of a normal convolution, i.e., from something that has
+ * the shape of the output of some convolution to something that has the shape of its input
+ * while maintaining a connectivity pattern that is compatible with said convolution.
+ * BorderMode of this layer will be 'valid'.
+ * The input of this layer should be 4D.
+ *
+ * When using this layer as the first layer in a model, you need to provide the argument
+ * inputShape (a Single Shape, does not include the batch dimension).
+ * e.g. inputShape=Shape(3, 128, 128) for 128x128 RGB pictures.
+ *
+ * @param nbFilter Number of transposed convolution filters to use.
+ * @param nbRow Number of rows in the transposed convolution kernel.
+ * @param nbCol Number of columns in the transposed convolution kernel.
+ * @param init Initialization method for the weights of the layer. Default is Xavier.
+ *             You can also pass in corresponding string representations such as 'glorot_uniform'
+ *             or 'normal', etc. for simple init methods in the factory method.
+ * @param activation Activation function to use. Default is null.
+ *                   You can also pass in corresponding string representations such as 'relu'
+ *                   or 'sigmoid', etc. for simple activations in the factory method.
+ * @param subsample Int array of length 2. The step of the convolution in the height and
+ *                  width dimension. Also called strides elsewhere. Default is (1, 1).
+ * @param dimOrdering Format of input data. Either DataFormat.NCHW (dimOrdering='th') or
+ *                    DataFormat.NHWC (dimOrdering='tf'). Default is NCHW.
+ * @param wRegularizer An instance of [[Regularizer]], (eg. L1 or L2 regularization),
+ *                     applied to the input weights matrices. Default is null.
+ * @param bRegularizer An instance of [[Regularizer]], applied to the bias. Default is null.
+ * @param bias Whether to include a bias (i.e. make the layer affine rather than linear).
+ *             Default is true.
+ * @tparam T The numeric type of parameter(e.g. weight, bias). Only support float/double now.
+ */
 class Deconvolution2D[T: ClassTag](
    val nbFilter: Int,
    val nbRow: Int,

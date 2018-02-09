@@ -23,6 +23,11 @@ import com.intel.analytics.bigdl.utils.Shape
 
 import scala.reflect.ClassTag
 
+/**
+ * Abstract class for different global pooling 2D layers.
+ * Do not create a new instance of it or use it in a model.
+ * Please use its child classes, 'GlobalAveragePooling2D' and 'GlobalMaxPooling2D' instead.
+ */
 abstract class GlobalPooling2D[T: ClassTag](
    val dimOrdering: DataFormat = DataFormat.NCHW,
    val inputShape: Shape = null)(implicit ev: TensorNumeric[T])

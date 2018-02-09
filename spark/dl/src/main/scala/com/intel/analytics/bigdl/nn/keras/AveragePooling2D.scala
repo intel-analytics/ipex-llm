@@ -24,6 +24,22 @@ import com.intel.analytics.bigdl.utils.Shape
 
 import scala.reflect.ClassTag
 
+/**
+ * Applies average pooling operation for spatial data.
+ * The input of this layer should be 4D.
+ *
+ * When you use this layer as the first layer of a model, you need to provide the argument
+ * inputShape (a Single Shape, does not include the batch dimension).
+ *
+ * @param poolSize Int array of length 2 corresponding to the downscale vertically and
+ *                 horizontally. Default is (2, 2), which will halve the image in each dimension.
+ * @param strides Int array of length 2. Stride values. Default is null, and in this case it will
+ *                be equal to poolSize.
+ * @param borderMode Either 'valid' or 'same'. Default is 'valid'.
+ * @param dimOrdering Format of input data. Either DataFormat.NCHW (dimOrdering='th') or
+ *                    DataFormat.NHWC (dimOrdering='tf'). Default is NCHW.
+ * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now.
+ */
 class AveragePooling2D[T: ClassTag](
    poolSize: Array[Int] = Array(2, 2),
    strides: Array[Int] = null,

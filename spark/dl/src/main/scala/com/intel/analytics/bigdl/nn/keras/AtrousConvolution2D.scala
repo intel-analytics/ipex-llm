@@ -25,6 +25,36 @@ import com.intel.analytics.bigdl.utils.Shape
 
 import scala.reflect.ClassTag
 
+/**
+ * Atrous Convolution operator for filtering windows of 2-D inputs.
+ * A.k.a dilated convolution or convolution with holes.
+ * Bias will be included in this layer.
+ * Data format currently supported for this layer is DataFormat.NCHW (dimOrdering='th').
+ * The input of this layer should be 4D.
+ *
+ * When using this layer as the first layer in a model, you need to provide the argument
+ * inputShape (a Single Shape, does not include the batch dimension).
+ * e.g. input_shape=Shape(3, 128, 128) for 128x128 RGB pictures.
+ *
+ * @param nbFilter Number of convolution filters to use.
+ * @param nbRow Number of rows in the convolution kernel.
+ * @param nbCol Number of columns in the convolution kernel.
+ * @param init Initialization method for the weights of the layer. Default is Xavier.
+ *             You can also pass in corresponding string representations such as 'glorot_uniform'
+ *             or 'normal', etc. for simple init methods in the factory method.
+ * @param activation Activation function to use. Default is null.
+ *                   You can also pass in corresponding string representations such as 'relu'
+ *                   or 'sigmoid', etc. for simple activations in the factory method.
+ * @param subsample Int array of length 2. Factor by which to subsample output.
+ *                  Also called strides elsewhere. Default is (1, 1).
+ * @param atrousRate Int array of length 2. Factor for kernel dilation.
+ *                   Also called filter_dilation elsewhere. Default is (1, 1).
+ * @param dimOrdering Format of input data. Please use DataFormat.NCHW (dimOrdering='th').
+ * @param wRegularizer An instance of [[Regularizer]], (eg. L1 or L2 regularization),
+ *                     applied to the input weights matrices. Default is null.
+ * @param bRegularizer An instance of [[Regularizer]], applied to the bias. Default is null.
+ * @tparam T The numeric type of parameter(e.g. weight, bias). Only support float/double now.
+ */
 class AtrousConvolution2D[T: ClassTag](
    val nbFilter: Int,
    val nbRow: Int,

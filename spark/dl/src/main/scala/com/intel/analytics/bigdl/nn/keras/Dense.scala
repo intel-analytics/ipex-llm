@@ -27,9 +27,10 @@ import scala.reflect.ClassTag
 
 /**
  * A densely-connected NN layer.
+ * The most common input is 2D.
+ *
  * When you use this layer as the first layer of a model, you need to provide the argument
  * inputShape (a Single Shape, does not include the batch dimension).
- * The most common input is 2D.
  *
  * @param outputDim The size of output dimension.
  * @param init Initialization method for the weights of the layer. Default is Xavier.

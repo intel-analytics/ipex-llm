@@ -22,6 +22,11 @@ import com.intel.analytics.bigdl.utils.Shape
 
 import scala.reflect.ClassTag
 
+/**
+ * Abstract class for different pooling 1D layers.
+ * Do not create a new instance of it or use it in a model.
+ * Please use its child classes, 'AveragePooling1D' and 'MaxPooling1D' instead.
+ */
 abstract class Pooling1D[T: ClassTag](
    val poolLength: Int = 2,
    val stride: Int = -1,
