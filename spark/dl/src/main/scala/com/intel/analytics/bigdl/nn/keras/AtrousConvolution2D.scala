@@ -29,7 +29,7 @@ import scala.reflect.ClassTag
  * Atrous Convolution operator for filtering windows of 2-D inputs.
  * A.k.a dilated convolution or convolution with holes.
  * Bias will be included in this layer.
- * Only support dimOrdering = DataFormat.NCHW('th').
+ * Data format currently supported for this layer is DataFormat.NCHW (dimOrdering='th').
  * The input of this layer should be 4D.
  *
  * When using this layer as the first layer in a model, you need to provide the argument

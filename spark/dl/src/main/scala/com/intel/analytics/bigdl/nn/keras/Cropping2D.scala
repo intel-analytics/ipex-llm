@@ -25,9 +25,10 @@ import scala.reflect.ClassTag
 
 /**
  * Cropping layer for 2D input (e.g. picture).
+ * The input of this layer should be 4D.
+ *
  * When you use this layer as the first layer of a model, you need to provide the argument
  * inputShape (a Single Shape, does not include the batch dimension).
- * The input of this layer should be 4D.
  *
  * @param heightCrop Int array of length 2. Height of the 2 cropping dimension. Default is (0, 0).
  * @param widthCrop Int array of length 2. Width of the 2 cropping dimension. Default is (0, 0).

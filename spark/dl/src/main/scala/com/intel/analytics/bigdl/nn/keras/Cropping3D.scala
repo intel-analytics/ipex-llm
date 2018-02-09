@@ -25,9 +25,10 @@ import scala.reflect.ClassTag
 
 /**
  * Cropping layer for 3D data (e.g. spatial or spatio-temporal).
+ * The input of this layer should be 5D.
+ *
  * When you use this layer as the first layer of a model, you need to provide the argument
  * inputShape (a Single Shape, does not include the batch dimension).
- * The input of this layer should be 5D.
  *
  * @param dim1Crop Int array of length 2. Kernel dim1 of the 3 cropping dimension.
  *                 Default is (1, 1).

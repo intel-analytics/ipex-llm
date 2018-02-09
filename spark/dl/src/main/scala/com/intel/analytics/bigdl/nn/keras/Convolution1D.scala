@@ -28,11 +28,11 @@ import scala.reflect.ClassTag
 
 /**
  * Applies convolution operator for filtering neighborhoods of 1-D inputs.
- * When you use this layer as the first layer of a model, you need to provide the argument
- * inputShape (a Single Shape, does not include the batch dimension).
- * e.g. inputShape=Shape(10, 128) sequences of 10 vectors of 128-dimensional vectors).
  * You can also use Conv1D as an alias of this layer.
  * The input of this layer should be 3D.
+ *
+ * When you use this layer as the first layer of a model, you need to provide the argument
+ * inputShape (a Single Shape, does not include the batch dimension).
  *
  * @param nbFilter Number of convolution filters to use.
  * @param filterLength The extension (spatial or temporal) of each filter.
@@ -43,7 +43,7 @@ import scala.reflect.ClassTag
  *                   You can also pass in corresponding string representations such as 'relu'
  *                   or 'sigmoid', etc. for simple activations in the factory method.
  * @param borderMode Either 'valid' or 'same'. Default is 'valid'.
- * @param subsampleLength Factor by which to subsample output.
+ * @param subsampleLength Factor by which to subsample output. Integer. Default is 1.
  * @param wRegularizer An instance of [[Regularizer]], (eg. L1 or L2 regularization),
  *                     applied to the input weights matrices. Default is null.
  * @param bRegularizer An instance of [[Regularizer]], applied to the bias. Default is null.

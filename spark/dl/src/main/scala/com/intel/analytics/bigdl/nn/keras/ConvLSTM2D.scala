@@ -28,20 +28,24 @@ import scala.reflect.ClassTag
 /**
  * Convolutional LSTM.
  * The input of this layer should be 5D.
- * Only supports nbRow = nbCol = nbKernel.
+ * Data format currently supported for this layer is 'CHANNEL_FIRST' (dimOrdering='th').
+ * BorderMode of this layer will be 'same'.
+ * The convolution kernel for this layer is a square kernel.
  *
  * When using this layer as the first layer in a model, you need to provide the argument
  * inputShape (a Single Shape, does not include the batch dimension).
  *
  * @param nbFilter Number of convolution filters to use.
- * @param nbKernel Number in the convolution kernel.
- * @param activation Activation function to use. Default is null.
+ * @param nbKernel Size of the convolution kernel. Integer.
+ * @param activation Activation function to use.
  *                   You can also pass in corresponding string representations such as 'relu'
  *                   or 'sigmoid', etc. for simple activations in the factory method.
- * @param innerActivation activation function for inner cells,
- *                        by default to be Sigmoid if not specified.
- * @param dimOrdering Format of input data. Either "CHANNEL_FIRST" (dimOrdering='th') or
- *                    "CHANNEL_LAST" (dimOrdering='tf'). Default is "CHANNEL_FIRST".
+ *                   Default is 'tanh'.
+ * @param innerActivation Activation function for inner cells.
+ *                        You can also pass in corresponding string representations such as 'relu'
+ *                        or 'sigmoid', etc. for simple activations in the factory method.
+ *                        dDefault is 'hard_sigmoid'.
+ * @param dimOrdering Format of input data. Please use "CHANNEL_FIRST" (dimOrdering='th').
  * @param subsample Int. Default is 1. Factor by which to subsample output.
  *                  Also called strides elsewhere.
  * @param wRegularizer An instance of [[Regularizer]], (eg. L1 or L2 regularization),
@@ -51,7 +55,7 @@ import scala.reflect.ClassTag
  * @param bRegularizer An instance of [[Regularizer]], applied to the bias. Default is null.
  * @param returnSequences Boolean. Default is False. Whether to return the last
  *                        output in the output sequence, or the full sequence.
- * @param goBackwards Boolean. Default is False. If True, rocess the input sequence backwards.
+ * @param goBackwards Boolean. Default is False. If True, process the input sequence backwards.
  * @tparam T The numeric type of parameter(e.g. weight, bias). Only support float/double now.
  */
 class ConvLSTM2D[T: ClassTag](

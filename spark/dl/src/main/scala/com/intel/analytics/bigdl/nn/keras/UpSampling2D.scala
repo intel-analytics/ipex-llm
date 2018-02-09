@@ -25,7 +25,7 @@ import scala.reflect.ClassTag
 
 /**
  * Upsampling layer for 2D inputs.
- * Repeats the rows and columns of the data by size[0] and size[1] respectively.
+ * Repeats the rows and columns of the data by size(0) and size(1) respectively.
  * The input of this layer should be 4D.
  *
  * When you use this layer as the first layer of a model, you need to provide the argument

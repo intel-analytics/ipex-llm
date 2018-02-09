@@ -30,7 +30,7 @@ import scala.reflect.ClassTag
  * The LocallyConnected1D layer works similarly to the TemporalConvolution layer,
  * except that weights are unshared, that is, a different set of filters
  * is applied at each different patch of the input.
- * Only support borderMode = 'valid' now.
+ * BorderMode of this layer will be 'valid'.
  * The input of this layer should be 3D.
  *
  * When using this layer as the first layer in a model, you need to provide the argument

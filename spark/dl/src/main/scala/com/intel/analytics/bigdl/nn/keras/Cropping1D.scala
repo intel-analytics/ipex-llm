@@ -26,9 +26,10 @@ import scala.reflect.ClassTag
 
 /**
  * Cropping layer for 1D input (e.g. temporal sequence).
+ * The input of this layer should be 3D.
+ *
  * When you use this layer as the first layer of a model, you need to provide the argument
  * inputShape (a Single Shape, does not include the batch dimension).
- * The input of this layer should be 3D.
  *
  * @param cropping Int array of length 2. How many units should be trimmed off
  *                 at the beginning and end of the cropping dimension. Default is (1, 1).
