@@ -40,7 +40,7 @@ import scala.reflect.ClassTag
  * @param innerActivation Activation function for inner cells.
  *                        You can also pass in corresponding string representations such as 'relu'
  *                        or 'sigmoid', etc. for simple activations in the factory method.
- *                        Default is 'hard_sigmoid'.
+ *                        dDefault is 'hard_sigmoid'.
  * @param returnSequences Whether to return the full sequence or only return the last output,
  *                        in the output sequence. Default is false.
  * @param goBackwards Whether the input sequence will be processed backwards. Default is false.
