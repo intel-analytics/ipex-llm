@@ -417,7 +417,7 @@ class SpatialBatchNormalization[T: ClassTag](
   // in mkl dnn, the weight and bias should be all in the same array
   private def createParams(initWeight: Tensor[T], initBias: Tensor[T]): Tensor[T] = {
     val weightAndBias: Tensor[T] = if (affine) {
-      MklDnnTensor[T](Array(2 * nOutput))
+      Tensor[T](Array(2 * nOutput))
     } else {
       null
     }

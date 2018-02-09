@@ -151,7 +151,7 @@ class Linear[T: ClassTag](
     primitive
   }
 
-  var _shouldConvert: Boolean = true
+  var _shouldConvert: Boolean = false
   def shouldConvert: Boolean = _shouldConvert
   def setShouldConvert(v: Boolean): this.type = {
     _shouldConvert = v
@@ -683,7 +683,7 @@ class Linear[T: ClassTag](
 
     if (gradOutputReorderPrim != 0) {
       if (gradOutput.getTensorType == DenseType && gradOutputPtr != 0) {
-        MklDnn.MemoryReleaseDataHandle(weight.storage().array().asInstanceOf[Array[Float]],
+        MklDnn.MemoryReleaseDataHandle(gradOutput.storage().array().asInstanceOf[Array[Float]],
           gradOutputPtr)
       }
     }
