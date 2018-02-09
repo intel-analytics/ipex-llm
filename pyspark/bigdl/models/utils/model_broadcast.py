@@ -21,13 +21,11 @@ from tempfile import NamedTemporaryFile
 
 from pyspark.cloudpickle import print_exec
 from pyspark.broadcast import Broadcast
+from pyspark.broadcast import _from_id
 from bigdl.nn.layer import Model
 
 def _from_id_and_type(bid, bigdl_type):
-    from pyspark.broadcast import _broadcastRegistry
-    if bid not in _broadcastRegistry:
-        raise Exception("Broadcast variable '%s' not loaded!" % bid)
-    result = _broadcastRegistry[bid]
+    result = _from_id(bid)
     return ModelBroadcast(path=result._path, bigdl_type=bigdl_type)
 
 def broadcastModel(sc, layer):
