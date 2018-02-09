@@ -25,6 +25,39 @@ import com.intel.analytics.bigdl.utils.Shape
 
 import scala.reflect.ClassTag
 
+/**
+ * Convolutional LSTM.
+ * Data format currently supported for this layer is 'CHANNEL_FIRST' (dimOrdering='th').
+ * BorderMode of this layer will be 'same'.
+ * The convolution kernel for this layer is a square kernel.
+ * The input of this layer should be 5D.
+ *
+ * When using this layer as the first layer in a model, you need to provide the argument
+ * inputShape (a Single Shape, does not include the batch dimension).
+ *
+ * @param nbFilter Number of convolution filters to use.
+ * @param nbKernel Size of the convolution kernel. Integer.
+ * @param activation Activation function to use.
+ *                   You can also pass in corresponding string representations such as 'relu'
+ *                   or 'sigmoid', etc. for simple activations in the factory method.
+ *                   Default is 'tanh'.
+ * @param innerActivation Activation function for inner cells.
+ *                        You can also pass in corresponding string representations such as 'relu'
+ *                        or 'sigmoid', etc. for simple activations in the factory method.
+ *                        Default is 'hard_sigmoid'.
+ * @param dimOrdering Format of input data. Please use "CHANNEL_FIRST" (dimOrdering='th').
+ * @param subsample Int. Default is 1. Factor by which to subsample output.
+ *                  Also called strides elsewhere.
+ * @param wRegularizer An instance of [[Regularizer]], (eg. L1 or L2 regularization),
+ *                     applied to the input weights matrices. Default is null.
+ * @param uRegularizer An instance of [[Regularizer]], (eg. L1 or L2 regularization),
+ *                     applied to the recurrent weights matrices. Default is null.
+ * @param bRegularizer An instance of [[Regularizer]], applied to the bias. Default is null.
+ * @param returnSequences Boolean. Default is False. Whether to return the last
+ *                        output in the output sequence, or the full sequence.
+ * @param goBackwards Boolean. Default is False. If True, process the input sequence backwards.
+ * @tparam T The numeric type of parameter(e.g. weight, bias). Only support float/double now.
+ */
 class ConvLSTM2D[T: ClassTag](
    val nbFilter: Int,
    val nbKernel: Int,

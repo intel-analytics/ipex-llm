@@ -26,6 +26,31 @@ import com.intel.analytics.bigdl.utils.Shape
 
 import scala.reflect.ClassTag
 
+/**
+ * Atrous Convolution operator for filtering neighborhoods of 1-D inputs.
+ * A.k.a dilated convolution or convolution with holes.
+ * Bias will be included in this layer.
+ * The input of this layer should be 3D.
+ *
+ * When using this layer as the first layer in a model, you need to provide the argument
+ * inputShape (a Single Shape, does not include the batch dimension).
+ *
+ * @param nbFilter Number of convolution kernels to use.
+ * @param filterLength The extension (spatial or temporal) of each filter.
+ * @param init Initialization method for the weights of the layer. Default is Xavier.
+ *             You can also pass in corresponding string representations such as 'glorot_uniform'
+ *             or 'normal', etc. for simple init methods in the factory method.
+ * @param activation Activation function to use. Default is null.
+ *                   You can also pass in corresponding string representations such as 'relu'
+ *                   or 'sigmoid', etc. for simple activations in the factory method.
+ * @param subsampleLength Factor by which to subsample output. Integer. Default is 1.
+ * @param atrousRate Factor for kernel dilation. Also called filter_dilation elsewhere.
+ *                   Integer. Default is 1.
+ * @param wRegularizer An instance of [[Regularizer]], (eg. L1 or L2 regularization),
+ *                     applied to the input weights matrices. Default is null.
+ * @param bRegularizer An instance of [[Regularizer]], applied to the bias. Default is null.
+ * @tparam T The numeric type of parameter(e.g. weight, bias). Only support float/double now.
+ */
 class AtrousConvolution1D[T: ClassTag](
    val nbFilter: Int,
    val filterLength: Int,
