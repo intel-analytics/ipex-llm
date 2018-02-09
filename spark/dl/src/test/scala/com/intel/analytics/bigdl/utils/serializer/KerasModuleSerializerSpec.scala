@@ -461,7 +461,7 @@ class KerasModuleSerializerSpec extends SerializerSpecHelper {
   "Merge serializer" should "work properly" in {
     val l1 = InputLayer[Float](inputShape = Shape(4, 8))
     val l2 = InputLayer[Float](inputShape = Shape(4, 8))
-    val layer = Merge[Float](layers = List(l1, l2), "sum")
+    val layer = Merge[Float](layers = List(l1, l2), mode = "sum")
     layer.build(Shape(List(Shape(2, 4, 8), Shape(2, 4, 8))))
     val input1 = Tensor[Float](2, 4, 8).apply1(e => Random.nextFloat())
     val input2 = Tensor[Float](2, 4, 8).apply1(e => Random.nextFloat())
@@ -479,9 +479,8 @@ class KerasModuleSerializerSpec extends SerializerSpecHelper {
   }
 
   "Bidirectional serializer" should "work properly" in {
-    val rnn = SimpleRNN[Float](4, returnSequences = true)
-    rnn.build(Shape(3, 8, 12))
-    val layer = Bidirectional[Float](rnn, inputShape = Shape(8, 12))
+    val layer = Bidirectional[Float](SimpleRNN(4, returnSequences = true),
+      inputShape = Shape(8, 12))
     layer.build(Shape(3, 8, 12))
     val input = Tensor[Float](3, 8, 12).apply1(_ => Random.nextFloat())
     runSerializationTest(layer, input)

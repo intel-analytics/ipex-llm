@@ -37,7 +37,7 @@ class Bidirectional[T: ClassTag](
     s"Invalid merge mode: $mode")
 
   override def computeOutputShape(inputShape: Shape): Shape = {
-    val output = layer.computeOutputShape(inputShape)
+    val output = layer.build(inputShape)
     if (mode == "concat") {
       val outputArray = output.toSingle().toArray
       outputArray(outputArray.length-1) = outputArray(outputArray.length-1) *2
