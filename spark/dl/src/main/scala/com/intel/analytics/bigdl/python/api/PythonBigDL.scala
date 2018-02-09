@@ -20,7 +20,7 @@ import java.util.{ArrayList => JArrayList, HashMap => JHashMap, List => JList, M
 
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dataset.{Identity => DIdentity, Sample => JSample, _}
-import com.intel.analytics.bigdl.nn.{PGCriterion, Zeros, _}
+import com.intel.analytics.bigdl.nn.{DecoderInputType, PGCriterion, Zeros, _}
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, _}
 import com.intel.analytics.bigdl.numeric._
 import com.intel.analytics.bigdl.optim.{Optimizer, _}
@@ -34,8 +34,9 @@ import java.lang.{Integer, Boolean => JBoolean}
 import java.nio.ByteOrder
 import java.util
 
+import com.intel.analytics.bigdl.nn.DecoderInputType.DecoderInputType
 import com.intel.analytics.bigdl.nn.Graph._
-import com.intel.analytics.bigdl.nn.tf.{Const, Fill, Shape => TfShape, SplitAndSelect}
+import com.intel.analytics.bigdl.nn.tf.{Const, Fill, SplitAndSelect, Shape => TfShape}
 import com.intel.analytics.bigdl.optim.SGD.{LearningRateSchedule, SequentialSchedule}
 import com.intel.analytics.bigdl.transform.vision.image._
 import com.intel.analytics.bigdl.transform.vision.image.augmentation._
@@ -2385,79 +2386,6 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     layer.setInitMethod(weightInitMethod, biasInitMethod)
   }
 
-//<<<<<<< HEAD
-//  def getHiddenStates(rec: Recurrent[T]): JList[JList[JTensor]] = {
-//    val states = rec.getHiddenState()
-//    var res: Array[JList[JTensor]] = null
-//    if (!rec.containMultiRNNCell) {
-//      res = new Array[JList[JTensor]](1)
-//      res(0) = activityToJTensors(states)
-//    }
-//    else {
-//      res = new Array[JList[JTensor]](states.toTable.getState().size)
-//      states.toTable.getState().foreach { pair => {
-//          val index = pair._1.asInstanceOf[Int]
-//          res(index) = activityToJTensors(pair._2.asInstanceOf[Activity])
-//        }
-//      }
-//    }
-//    res.toList.asJava
-//  }
-//
-//  def setHiddenStates(rec: Recurrent[T], hiddenStates: JList[JList[JTensor]],
-//                      isTable: JList[Boolean]): Unit = {
-//    if (rec.containMultiRNNCell) {
-//      val activities = (hiddenStates.asScala, isTable.asScala).zipped.map { (state, table) =>
-//        jTensorsToActivity(state, table)}.toArray
-//      val newStates = T()
-//      for((activity, i) <- activities.view.zipWithIndex) {
-//        newStates(i) = activity
-//      }
-//      rec.setHiddenState(newStates)
-//    } else {
-//      rec.setHiddenState(jTensorsToActivity(hiddenStates.asScala.head, isTable.asScala.head))
-//    }
-//  }
-//
-//  def containMultiRNNCell(rec: Recurrent[T]): Boolean = rec.containMultiRNNCell
-//
-//  def getGradHiddenStates(rec: Recurrent[T]): JList[JList[JTensor]] = {
-//    val states = rec.getGradHiddenState()
-//    var res: Array[JList[JTensor]] = null
-//    if (!rec.containMultiRNNCell) {
-//      res = new Array[JList[JTensor]](1)
-//      res(0) = activityToJTensors(states)
-//    }
-//    else {
-//      res = new Array[JList[JTensor]](states.toTable.getState().size)
-//      states.toTable.getState().foreach { pair => {
-//        val index = pair._1.asInstanceOf[Int]
-//        res(index) = activityToJTensors(pair._2.asInstanceOf[Activity])
-//      }
-//      }
-//    }
-//    res.toList.asJava
-//  }
-//
-//  def setGradHiddenStates(rec: Recurrent[T], hiddenStates: JList[JList[JTensor]],
-//                      isTable: JList[Boolean]): Unit = {
-//    if (rec.containMultiRNNCell) {
-//      val activities = (hiddenStates.asScala, isTable.asScala).zipped.map { (state, table) =>
-//        jTensorsToActivity(state, table)}.toArray
-//      val newStates = T()
-//      for((activity, i) <- activities.view.zipWithIndex) {
-//        newStates(i) = activity
-//      }
-//      rec.setGradHiddenState(newStates)
-//    } else {
-//      rec.setGradHiddenState(jTensorsToActivity(hiddenStates.asScala.head, isTable.asScala.head))
-//    }
-//  }
-//
-//  def setLayerFreeze(model: AbstractModule[Activity, Activity, T])
-//  : AbstractModule[Activity, Activity, T] = {
-//    model.freeze()
-//=======
   def setInitMethod(layer: Initializable,
     initMethods: JArrayList[InitializationMethod]): layer.type = {
     layer.setInitMethod(initMethods.asScala.toArray)
@@ -2465,7 +2393,6 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
 
   def getHiddenState(rec: Recurrent[T]): JActivity = {
     JActivity(rec.getHiddenState())
-//>>>>>>> upstream_master
   }
 
   def getGradHiddenStates(rec: Recurrent[T]): JActivity = {
@@ -2550,13 +2477,13 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     shrinkHiddenStateModules: JList[JList[TensorModule[T]]],
     decoderInputType: String
     ): Seq2seq[T] = {
-//    val inputType = decoderInputType match {
-//      case "ENCODERINPUTSPLIT" => DecoderInputType.ENCODERINPUTSPLIT
-//      case "ENCODERINPUTLASTTIME" => DecoderInputType.ENCODERINPUTLASTTIME
-//      case n: String =>
-//        throw new IllegalArgumentException(s"Only support 'ENCODERINPUTSPLIT', " +
-//          s", 'ENCODERINPUTLASTTIME': $n")
-//    }
+    val inputType = decoderInputType match {
+      case "ENCODERINPUTSPLIT" => DecoderInputType.ENCODERINPUTSPLIT
+      case "ENCODERINPUTLASTTIME" => DecoderInputType.ENCODERINPUTLASTTIME
+      case n: String =>
+        throw new IllegalArgumentException(s"Only support 'ENCODERINPUTSPLIT', " +
+          s", 'ENCODERINPUTLASTTIME': $n")
+    }
 
     val shrinkModules = if (shrinkHiddenStateModules != null) {
       shrinkHiddenStateModules.asScala.toArray.map { x =>
@@ -2565,7 +2492,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
       }
     } else null
     Seq2seq(encoderCells.asScala.toArray, decoderCells.asScala.toArray, preEncoder,
-      preDecoder, shrinkModules, decoderInputType)
+      preDecoder, shrinkModules, inputType)
   }
 
   def quantize(module: AbstractModule[Activity, Activity, T]): Module[T] = {
