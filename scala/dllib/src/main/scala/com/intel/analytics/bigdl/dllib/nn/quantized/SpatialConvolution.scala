@@ -216,10 +216,6 @@ private[bigdl] class SpatialConvolution[T: ClassTag](
     (weight :+ bias, Array.fill[Tensor[T]](nGroup + 1)(empty)) // nGroup's weight + bias
   }
 
-  override def getParametersTable(): Table = {
-    T(getName() -> T("weight" -> weight, "bias" -> bias))
-  }
-
   override def equals(obj: Any): Boolean = {
     if (!super.equals(obj)) {
       return false
