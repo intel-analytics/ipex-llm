@@ -15,11 +15,14 @@
  */
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, DataFormat}
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, DataFormat}
 import com.intel.analytics.bigdl.optim.Regularizer
+import com.intel.analytics.bigdl.serialization.Bigdl.{AttrValue, BigDLModule}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.bigdl.utils.serializer.converters.DataConverter
+import com.intel.analytics.bigdl.utils.serializer.{DeserializeContext, ModuleSerializable, ModuleSerializer, SerializeContext}
 
 import scala.reflect.ClassTag
 
@@ -67,33 +70,25 @@ class SpatialSeperableConvolution[T: ClassTag](
 
   private val channelDim = if (dataFormat == DataFormat.NCHW) 2 else 4
 
-  private val weight = Tensor(depthMultiplier * nInputChannel * kW * kH +
-    internalChannel * nOutputChannel)
-  private val gradWeight = Tensor(depthMultiplier * nInputChannel * kW * kH +
-    internalChannel * nOutputChannel)
-
   private val depthWeight = if (initDepthWeight != null) {
     initDepthWeight
   } else if (dataFormat == DataFormat.NCHW) {
-    Tensor[T](weight.storage(), 1, Array(depthMultiplier, nInputChannel, kW, kH))
+    Tensor[T](depthMultiplier, nInputChannel, kW, kH)
   } else {
-    Tensor[T](weight.storage(), 1, Array(kW, kH, nInputChannel, depthMultiplier))
+      Tensor[T](kW, kH, nInputChannel, depthMultiplier)
   }
 
-  private val depthGradWeight = Tensor[T](gradWeight.storage(), 1, depthWeight.size())
+  private val depthGradWeight = Tensor[T].resizeAs(depthWeight)
 
   private val pointWeight = if (initPointWeight != null) {
     initPointWeight
   } else if (dataFormat == DataFormat.NCHW) {
-    Tensor[T](weight.storage(), depthWeight.nElement() + 1,
-      Array(nOutputChannel, internalChannel, 1, 1))
+    Tensor[T](nOutputChannel, internalChannel, 1, 1)
   } else {
-    Tensor[T](weight.storage(), depthWeight.nElement() + 1,
-      Array(1, 1, internalChannel, nOutputChannel))
+    Tensor[T](1, 1, internalChannel, nOutputChannel)
   }
 
-  private val pointGradWeight = Tensor[T](gradWeight.storage(), depthGradWeight.nElement() + 1,
-    pointWeight.size())
+  private val pointGradWeight = Tensor[T].resizeAs(pointWeight)
 
   private val bias = if (initBias != null) initBias else Tensor[T](nOutputChannel)
 
@@ -136,7 +131,7 @@ class SpatialSeperableConvolution[T: ClassTag](
   reset()
 
   override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
-    (Array(weight, bias), Array(gradWeight, gradBias))
+    (Array(depthWeight, pointWeight, bias), Array(depthGradWeight, pointGradWeight, gradBias))
   }
 
   override def computeOutputShape(inputShape: Shape): Shape = {
@@ -221,7 +216,8 @@ class SpatialSeperableConvolution[T: ClassTag](
   }
 }
 
-object SpatialSeperableConvolution {
+object SpatialSeperableConvolution extends ModuleSerializable {
+
   def apply[T: ClassTag](nInputChannel: Int, nOutputChannel: Int, depthMultiplier: Int,
     kW: Int, kH: Int, sW: Int = 1, sH: Int = 1, pW: Int = 0, pH: Int = 0,
     hasBias: Boolean = true, dataFormat: DataFormat = DataFormat.NCHW,
@@ -271,5 +267,55 @@ object SpatialSeperableConvolution {
       }
       in += 1
     }
+  }
+
+  override def doLoadModule[T: ClassTag](context: DeserializeContext)
+    (implicit ev: TensorNumeric[T]) : AbstractModule[Activity, Activity, T] = {
+    val attrMap = context.bigdlModule.getAttrMap
+    val ssc = super.doLoadModule(context).asInstanceOf[SpatialSeperableConvolution[T]]
+    val weights = ssc.parameters()._1
+    val (depthWeight, pointWeight, bias) = (weights(0), weights(1), weights(2))
+
+    val depthWeightLoad = DataConverter.
+      getAttributeValue(context, attrMap.get("depthWeight")).
+      asInstanceOf[Tensor[T]]
+    depthWeight.copy(depthWeightLoad)
+
+    val pointWeightLoad = DataConverter.
+      getAttributeValue(context, attrMap.get("pointWeight")).
+      asInstanceOf[Tensor[T]]
+    pointWeight.copy(pointWeightLoad)
+
+    val biasLoad = DataConverter.
+      getAttributeValue(context, attrMap.get("bias")).
+      asInstanceOf[Tensor[T]]
+    bias.copy(biasLoad)
+
+    ssc.asInstanceOf[AbstractModule[Activity, Activity, T]]
+  }
+  override def doSerializeModule[T: ClassTag](context: SerializeContext[T],
+    sreluBuilder : BigDLModule.Builder)
+    (implicit ev: TensorNumeric[T]) : Unit = {
+
+    super.doSerializeModule(context, sreluBuilder)
+
+    val ssc = context.moduleData.module.asInstanceOf[SpatialSeperableConvolution[T]]
+    val weights = ssc.parameters()._1
+    val (depthWeight, pointWeight, bias) = (weights(0), weights(1), weights(2))
+
+    val depthWeightBuilder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(context, depthWeightBuilder,
+      depthWeight, ModuleSerializer.tensorType)
+    sreluBuilder.putAttr("depthWeight", depthWeightBuilder.build)
+
+    val pointWeightBuilder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(context, pointWeightBuilder,
+      pointWeight, ModuleSerializer.tensorType)
+    sreluBuilder.putAttr("pointWeight", pointWeightBuilder.build)
+
+    val biasBuilder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(context, biasBuilder,
+      bias, ModuleSerializer.tensorType)
+    sreluBuilder.putAttr("bias", biasBuilder.build)
   }
 }
