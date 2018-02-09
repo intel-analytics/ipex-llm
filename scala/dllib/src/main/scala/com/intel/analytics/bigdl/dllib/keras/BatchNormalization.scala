@@ -24,6 +24,28 @@ import com.intel.analytics.bigdl.utils.Shape
 
 import scala.reflect.ClassTag
 
+/**
+ * Batch normalization layer.
+ * Normalize the activations of the previous layer at each batch,
+ * i.e. applies a transformation that maintains the mean activation
+ * close to 0 and the activation standard deviation close to 1.
+ * Feature-wise normalization, each feature map in the input will be normalized separately.
+ * The input of this layer should be 4D.
+ *
+ * When you use this layer as the first layer of a model, you need to provide the argument
+ * inputShape (a Single Shape, does not include the batch dimension).
+ *
+ * @param epsilon Small Double > 0. Fuzz parameter. Default is 0.001.
+ * @param momentum Double. Momentum in the computation of the exponential average
+ *                 of the mean and standard deviation of the data,
+ *                 for feature-wise normalization. Default is 0.99.
+ * @param betaInit Name of initialization function for shift parameter. Default is 'zero'.
+ * @param gammaInit Name of initialization function for scale parameter. Default is 'one'.
+ * @param dimOrdering Format of input data. Either DataFormat.NCHW (dimOrdering='th') or
+ *                    DataFormat.NHWC (dimOrdering='tf'). Default is NCHW.
+ *                    For NCHW, axis along which to normalize is 1. For NHWC, axis is 3.
+ * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now.
+ */
 class BatchNormalization[T: ClassTag](
    val epsilon: Double = 0.001,
    val momentum: Double = 0.99,

@@ -25,6 +25,19 @@ import com.intel.analytics.bigdl.utils.Shape
 
 import scala.reflect.ClassTag
 
+/**
+ * Applies max pooling operation for temporal data.
+ * The input of this layer should be 3D.
+ *
+ * When you use this layer as the first layer of a model, you need to provide the argument
+ * inputShape (a Single Shape, does not include the batch dimension).
+ *
+ * @param poolLength Size of the region to which max pooling is applied.
+ * @param stride Factor by which to downscale. Integer, or -1. 2 will halve the input.
+ *               If -1, it will default to poolLength. Default is -1.
+ * @param borderMode Either 'valid' or 'same'. Default is 'valid'.
+ * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now
+ */
 class MaxPooling1D[T: ClassTag](
    poolLength: Int = 2,
    stride: Int = -1,

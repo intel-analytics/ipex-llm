@@ -24,6 +24,18 @@ import com.intel.analytics.bigdl.utils.Shape
 
 import scala.reflect.ClassTag
 
+/**
+ * Zero-padding layer for 1D input (e.g. temporal sequence).
+ * The input of this layer should be 3D.
+ *
+ * When you use this layer as the first layer of a model, you need to provide the argument
+ * inputShape (a Single Shape, does not include the batch dimension).
+ *
+ * @param padding Int array of length 2.
+ *                How many zeros to add at the beginning and at the end of the padding dimension,
+ *                in order '(left_pad, right_pad)'. Default is (1, 1).
+ * @tparam T The numeric type of parameter(e.g. weight, bias). Only support float/double now.
+ */
 class ZeroPadding1D[T: ClassTag](
    val padding: Array[Int] = Array(1, 1),
    val inputShape: Shape = null)(implicit ev: TensorNumeric[T])

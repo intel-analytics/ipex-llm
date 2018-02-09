@@ -24,6 +24,17 @@ import com.intel.analytics.bigdl.utils.Shape
 
 import scala.reflect.ClassTag
 
+/**
+ * Global average pooling operation for spatial data.
+ * The input of this layer should be 4D.
+ *
+ * When you use this layer as the first layer of a model, you need to provide the argument
+ * inputShape (a Single Shape, does not include the batch dimension).
+ *
+ * @param dimOrdering Format of input data. Please use DataFormat.NCHW (dimOrdering='th')
+ *                    or DataFormat.NHWC (dimOrdering='tf'). Default is NCHW.
+ * @tparam T The numeric type of parameter(e.g. weight, bias). Only support float/double now.
+ */
 class GlobalAveragePooling2D[T: ClassTag](
    dimOrdering: DataFormat = DataFormat.NCHW,
    inputShape: Shape = null)(implicit ev: TensorNumeric[T])
