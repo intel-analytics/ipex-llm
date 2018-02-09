@@ -18,8 +18,10 @@ package com.intel.analytics.bigdl.nn
 
 import org.scalatest.FlatSpec
 import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 
 import scala.math.abs
+import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Parallel
 class ReLUSpec extends FlatSpec {
@@ -129,5 +131,13 @@ class ReLUSpec extends FlatSpec {
     // InPlace test
     assert(output == input)
     assert(gradInput == gradOutput)
+  }
+}
+
+class ReLUSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val relu = ReLU[Float]().setName("relu")
+    val input = Tensor[Float](5, 5).apply1(_ => Random.nextFloat())
+    runSerializationTest(relu, input)
   }
 }
