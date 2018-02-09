@@ -257,18 +257,6 @@ class Concat[T: ClassTag](val dimension: Int)(
     this.gradInput
   }
 
-  // Todo: this is different from torch accUpdateGradParameters
-  override def updateParameters(learningRate: T): Unit = {
-    var offset = 1
-    var i = 0
-    while (i < this.modules.length) {
-      val currentOutput = this.modules(i).output.asInstanceOf[Tensor[T]]
-      this.modules(i).updateParameters(learningRate)
-      i += 1
-      offset += currentOutput.size(dimension)
-    }
-  }
-
   override def equals(obj: Any): Boolean = {
     if (!super.equals(obj)) {
       return false

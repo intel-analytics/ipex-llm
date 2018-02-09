@@ -149,10 +149,6 @@ class Euclidean[T: ClassTag](val inputSize: Int, val outputSize: Int,
     s"${getPrintName}($inputSize, $outputSize)"
   }
 
-  override def zeroGradParameters(): Unit = {
-    gradWeight.zero()
-  }
-
   override def clearState() : this.type = {
     super.clearState()
     inputBuffer.set()
@@ -166,10 +162,6 @@ class Euclidean[T: ClassTag](val inputSize: Int, val outputSize: Int,
 
   override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
     (Array(this.weight), Array(this.gradWeight))
-  }
-
-  override def getParametersTable(): Table = {
-    T(getName() -> T("weight" -> weight, "gradWeight" -> gradWeight))
   }
 
   override def canEqual(other: Any): Boolean = other.isInstanceOf[Euclidean[T]]

@@ -210,11 +210,13 @@ class SpatialFullConvolutionSpec extends FlatSpec with Matchers {
 
     val output1 = layer.forward(input)
     layer.backward(input, output1)
-    layer.updateParameters(0.1)
+    val (weight, grad) = layer.getParameters()
+    weight.add(-0.1, grad)
 
     val output2 = layer2.forward(input)
     layer2.backward(input, output2)
-    layer2.updateParameters(0.1)
+    val (weight2, grad2) = layer2.getParameters()
+    weight2.add(-0.1, grad2)
 
     val output = layer.forward(input)
     val expected = layer2.forward(input)

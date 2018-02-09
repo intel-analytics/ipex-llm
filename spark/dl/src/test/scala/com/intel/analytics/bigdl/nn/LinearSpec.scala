@@ -184,7 +184,8 @@ class LinearSpec extends FlatSpec with Matchers {
       val grad = mse.backward(output, res)
       linear.zeroGradParameters()
       linear.backward(input, grad)
-      linear.updateParameters(0.5 / log(i + 3))
+      val (weight, gradWeight) = linear.getParameters()
+      weight.add(-0.5 / log(i + 3), gradWeight)
     }
     val params = linear.parameters()
     val weight = params._1(0)
@@ -236,7 +237,9 @@ class LinearSpec extends FlatSpec with Matchers {
       val grad = mse.backward(output, res)
       linear.zeroGradParameters()
       linear.backward(input, grad)
-      linear.updateParameters(0.5 / log(i + 3))
+
+      val (weight, gradWeight) = linear.getParameters()
+      weight.add(-0.5 / log(i + 3), gradWeight)
     }
     val params = linear.parameters()
     val weight = params._1(0)
@@ -288,7 +291,8 @@ class LinearSpec extends FlatSpec with Matchers {
       val grad = mse.backward(output, res)
       linear.zeroGradParameters()
       linear.backward(input, grad)
-      linear.updateParameters(0.5 / log(i + 3))
+      val (weight, gradWeight) = linear.getParameters()
+      weight.add(-0.5 / log(i + 3), gradWeight)
     }
     val params = linear.parameters()
     val weight = params._1(0)

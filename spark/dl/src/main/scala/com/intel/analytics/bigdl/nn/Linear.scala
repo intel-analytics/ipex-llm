@@ -170,20 +170,6 @@ class Linear[T: ClassTag](
     }
   }
 
-  override def updateParameters(learningRate: T): Unit = {
-    weight.add(ev.negative(learningRate), gradWeight)
-    if (withBias) bias.add(ev.negative(learningRate), gradBias)
-  }
-
-  override def zeroGradParameters(): Unit = {
-    gradWeight.resize(outputSize, inputSize)
-    gradWeight.zero()
-    if (withBias) {
-      gradBias.resize(outputSize)
-      gradBias.zero()
-    }
-  }
-
   override def clearState() : this.type = {
     super.clearState()
     addBuffer.set()
@@ -195,15 +181,6 @@ class Linear[T: ClassTag](
       (Array(this.weight), Array(this.gradWeight))
     } else {
       (Array(this.weight, this.bias), Array(this.gradWeight, this.gradBias))
-    }
-  }
-
-  override def getParametersTable(): Table = {
-    if (null == bias) {
-      T(getName() -> T("weight" -> weight, "gradWeight" -> gradWeight))
-    } else {
-      T(getName() -> T("weight" -> weight, "bias" -> bias,
-        "gradWeight" -> gradWeight, "gradBias" -> gradBias))
     }
   }
 

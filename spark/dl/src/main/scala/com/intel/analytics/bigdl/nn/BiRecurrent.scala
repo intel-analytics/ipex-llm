@@ -94,26 +94,6 @@ class BiRecurrent[T : ClassTag] (
    */
   override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = birnn.parameters()
 
-  override def updateParameters(learningRate: T): Unit = birnn.updateParameters(learningRate)
-
-  /**
-   * If the module has parameters, this will zero the accumulation of the gradients with respect
-   * to these parameters. Otherwise, it does nothing.
-   */
-  override def zeroGradParameters(): Unit = birnn.zeroGradParameters()
-
-  override def training(): BiRecurrent.this.type = {
-    super.training()
-    birnn.training()
-    this
-  }
-
-  override def evaluate(): BiRecurrent.this.type = {
-    super.evaluate()
-    birnn.evaluate()
-    this
-  }
-
   override def canEqual(other: Any): Boolean = other.isInstanceOf[BiRecurrent[T]]
 
 

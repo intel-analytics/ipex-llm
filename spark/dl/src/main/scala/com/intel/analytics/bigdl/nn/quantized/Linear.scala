@@ -106,10 +106,6 @@ private[bigdl] class Linear[T: ClassTag](
     (Array(weight, bias), Array(empty, empty))
   }
 
-  override def getParametersTable(): Table = {
-    T(getName() -> T("weight" -> weight, "bias" -> bias))
-  }
-
   override def equals(obj: Any): Boolean = {
     if (!super.equals(obj)) {
       return false

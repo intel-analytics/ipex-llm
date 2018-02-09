@@ -151,16 +151,6 @@ class TimeDistributed[T : ClassTag] (val layer: AbstractModule[Tensor[T], Tensor
     gradInput
   }
 
-  /**
-   * If the module has parameters, this will zero the accumulation of the gradients with respect
-   * to these parameters. Otherwise, it does nothing.
-   */
-  override def zeroGradParameters(): Unit = {
-    layer.zeroGradParameters()
-  }
-
-  override def updateParameters(learningRate: T): Unit = layer.updateParameters(learningRate)
-
   override def reset(): Unit = layer.reset()
 
   override def training(): TimeDistributed.this.type = {
@@ -209,14 +199,6 @@ class TimeDistributed[T : ClassTag] (val layer: AbstractModule[Tensor[T], Tensor
    * @return (Array of weights, Array of grad)
    */
   override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = layer.parameters()
-
-  /**
-   * This method compact all parameters and gradients of the model into two tensors. So it's easier
-   * to use optim method
-   *
-   * @return
-   */
-  override def getParameters(): (Tensor[T], Tensor[T]) = layer.getParameters()
 
   /**
    * This method will return a table indicating the name and corresponding parameters.
