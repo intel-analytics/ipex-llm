@@ -254,17 +254,16 @@ object Vgg_16_dnn {
     model.add(ReLUDnn(true))
     model.add(PoolingDnn(2, 2, 2, 2))
 
-    // model.add(View(512 * 7 * 7))
-    model.add(mkldnn.Linear(512 * 7 * 7, 4096))
-    // model.add(Threshold(0, 1e-6))
-    model.add(ReLUDnn(value = 1e-6f))
-    if (hasDropout) model.add(Dropout(0.5))
-    model.add(mkldnn.Linear(4096, 4096))
-    // model.add(Threshold(0, 1e-6))
-    model.add(ReLUDnn(value = 1e-6f))
-    if (hasDropout) model.add(Dropout(0.5))
-    model.add(mkldnn.Linear(4096, classNum))
-    model.add(LogSoftMax())
+//    model.add(mkldnn.Linear(512 * 7 * 7, 4096))
+//    // model.add(Threshold(0, 1e-6))
+//    model.add(ReLUDnn(value = 1e-6f))
+//    // if (hasDropout) model.add(Dropout(0.5))
+//    model.add(mkldnn.Linear(4096, 4096))
+//    // model.add(Threshold(0, 1e-6))
+//    model.add(ReLUDnn(value = 1e-6f))
+//    // if (hasDropout) model.add(Dropout(0.5))
+//    model.add(mkldnn.Linear(4096, classNum))
+//    // model.add(LogSoftMax())
 
     model
   }
@@ -624,8 +623,8 @@ object ResNet_dnn {
         .add(mkldnn.SpatialBatchNormalization(n * 4).setName(s"bn${name}_branch2c"))
 
       val model = Sequential()
-        .add(ConcatTable().add(s).add(shortcut(nInputPlane, n*4, stride, name)).setName(s"$name/concatTable"))
-        .add(CAddTable(true).setName(s"$name/caddTable"))
+        .add(ConcatTableDnn().add(s).add(shortcut(nInputPlane, n*4, stride, name)).setName(s"$name/concatTable"))
+        .add(CAddTableDnn(true).setName(s"$name/caddTable"))
         .add(ReLUDnn(true).setName(s"res${name}_relu"))
       model
     }

@@ -83,6 +83,8 @@ class MklDnnTensor[T: ClassTag](
     this._storage
   }
 
+  override def isEmpty: Boolean = this.ptr == NullPtr
+
   override def nElement(): Int = if (_size == null) { 0 } else { _size.product }
 
   override def storage(): Storage[T] = {
@@ -93,31 +95,68 @@ class MklDnnTensor[T: ClassTag](
     this._storage
   }
 
-  override def resize(size: Array[Int], stride: Array[Int] = null): this.type = {
-    require(size.product != 0, s"size should not be 0")
+  override def resize(s: Array[Int], stride: Array[Int] = null): this.type = {
+    require(s.product != 0, s"size should not be 0")
 
-    if (size.product != nElement()) {
+    if (s.product != nElement()) {
       release()
-      _pointer = allocate(size.product)
+      _pointer = allocate(s.product)
     }
-    this._size = size
-    this._stride = DenseTensor.size2Stride(size)
+    this._size = s
+    this._storage = null
+    this._stride = DenseTensor.size2Stride(s)
 
     this
   }
 
-  override def resize(size: Int): this.type = {
-    require(size != 0, s"size should not be 0")
+  override def resize(s: Int): this.type = {
+    require(s != 0, s"size should not be 0")
 
-    if (size != nElement()) {
+    if (s != nElement()) {
       release()
-      _pointer = allocate(size)
+      _pointer = allocate(s)
     }
 
-    this._size = Array(size)
+    this._size = Array(s)
     this._stride = DenseTensor.size2Stride(this._size)
 
     this
+  }
+
+  override def add(x: Tensor[T]): Tensor[T] = {
+    require(x.getTensorType == MklDnnType, "just support two dnn tensor add")
+    val y = x.asInstanceOf[MklDnnTensor[T]]
+
+    // todo: mkl add
+    this
+  }
+
+  override def copy(other: Tensor[T]): Tensor[T] = {
+    if (other.getTensorType != MklDnnType) {
+      DenseTensor.copy(this, other)
+    } else {
+      require(other.getTensorType == MklDnnType, "just support two dnn tensor copy")
+      val y = other.asInstanceOf[MklDnnTensor[T]]
+
+      require(this.nElement() == y.nElement(), s"self element number(${this.nElement()}) is not" +
+        s" equal to source element number(${y.nElement()})")
+      if (sameStride(this.stride(), y.stride())) {
+        Memory.CopyPtr2Ptr(y.ptr, y.storageOffset(), this.ptr, 0, this.nElement(), this.ELEMENT_SIZE)
+      }
+    }
+    this
+  }
+
+  private def sameStride(l: Array[Int], r: Array[Int]): Boolean = {
+    if (l.length != r.length) return false
+    var i = 0
+    while (i < l.length) {
+      if (l(i) != r(i)) {
+        return false
+      }
+      i += 1
+    }
+    return true
   }
 
   override def getTensorType: TensorType = MklDnnType
