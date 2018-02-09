@@ -26,9 +26,10 @@ import scala.reflect.ClassTag
 
 /**
  * Repeats the input n times.
+ * The input of this layer should be 2D.
+ *
  * When you use this layer as the first layer of a model, you need to provide the argument
  * inputShape (a Single Shape, does not include the batch dimension).
- * The input of this layer should be 2D.
  *
  * @param n Repetition factor. Integer.
  * @tparam T The numeric type of parameter(e.g. weight, bias). Only support float/double now.

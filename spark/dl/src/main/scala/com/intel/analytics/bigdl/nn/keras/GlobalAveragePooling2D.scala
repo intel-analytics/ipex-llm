@@ -26,9 +26,10 @@ import scala.reflect.ClassTag
 
 /**
  * Global average pooling operation for spatial data.
+ * The input of this layer should be 4D.
+ *
  * When you use this layer as the first layer of a model, you need to provide the argument
  * inputShape (a Single Shape, does not include the batch dimension).
- * The input of this layer should be 4D.
  *
  * @param dimOrdering Format of input data. Please use DataFormat.NCHW (dimOrdering='th')
  *                    or DataFormat.NHWC (dimOrdering='tf'). Default is NCHW.
