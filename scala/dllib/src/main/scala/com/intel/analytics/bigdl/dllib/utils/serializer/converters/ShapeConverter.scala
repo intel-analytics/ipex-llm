@@ -36,6 +36,10 @@ object ShapeConverter extends DataConverter {
   }
 
   private def toBigDLShape(shape : Shape): BigDLShape = {
+    if (shape.getSsize == 0) {
+      // null is mapped to empty shape on the serialization stage.
+      return null
+    }
     if (shape.getShapeType == ShapeType.SINGLE) {
       val shapeValues = shape.getShapeValueList.asScala.toList.map(_.intValue)
       SingleShape(shapeValues)
