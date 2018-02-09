@@ -86,10 +86,6 @@ class Add[T: ClassTag](val inputSize: Int
     }
   }
 
-  override def zeroGradParameters(): Unit = {
-    gradBias.zero()
-  }
-
   override def clearState() : this.type = {
     super.clearState()
     ones.set()

@@ -51,31 +51,23 @@ abstract class Container[A <: Activity : ClassTag,
     modules.filter(!_.isCompatibleWithTorch()).length <= 0
   }
 
-  override def zeroGradParameters(): Unit = {
-    modules.foreach(_.zeroGradParameters())
-  }
-
-  override def updateParameters(learningRate: T): Unit = {
-    modules.foreach(_.updateParameters(learningRate))
-  }
-
   override def reset(): Unit = {
     modules.foreach(_.reset())
   }
 
-  override def training(): this.type = {
+  final override def training(): this.type = {
     train = true
     modules.foreach(_.training())
     this
   }
 
-  override def evaluate(): this.type = {
+  final override def evaluate(): this.type = {
     train = false
     modules.foreach(_.evaluate())
     this
   }
 
-  override def checkEngineType(): this.type = {
+  final override def checkEngineType(): this.type = {
     modules.foreach(_.checkEngineType())
     this
   }

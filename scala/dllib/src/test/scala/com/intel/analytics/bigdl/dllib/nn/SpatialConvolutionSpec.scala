@@ -366,8 +366,10 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
       gradInputNHWC.transpose(2, 4).transpose(3, 4)
         .sub(gradInput).pow(2).sum() should be < 1e-7
 
-      layer.updateParameters(0.01)
-      layerNHWC.updateParameters(0.01)
+      val (weight1, grad1) = layer.getParameters()
+      weight1.add(-0.01, grad1)
+      val (weight2, grad2) = layerNHWC.getParameters()
+      weight2.add(-0.01, grad2)
 
       val transWeight = layerNHWC.weight.transpose(2, 5).transpose(3, 4).transpose(4, 5)
       transWeight.sub(layer.weight).pow(2).sum() should be < 1e-7
@@ -2819,13 +2821,14 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
     var gradOutput: Tensor[Double] = null
     var gradInput: Tensor[Double] = null
 
+    val (w, g) = model.getParameters()
     for (k <- 1 to maxIter) {
       model.zeroGradParameters()
       output = model.forward(input(k)).toTensor[Double]
       err = loss.forward(output, t)
       gradOutput = loss.backward(output, t)
       gradInput = model.backward(input(k), gradOutput).toTensor[Double]
-      model.updateParameters(0.001)
+      w.add(-0.001, g)
     }
 
     input(maxIter).map(exInput, (v1, v2) => {

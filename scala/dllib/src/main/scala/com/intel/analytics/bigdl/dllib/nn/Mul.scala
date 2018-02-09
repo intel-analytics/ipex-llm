@@ -63,16 +63,8 @@ class Mul[T: ClassTag](implicit ev: TensorNumeric[T])
     }
   }
 
-  override def zeroGradParameters(): Unit = {
-    gradWeight.zero()
-  }
-
   override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
     (Array(this.weight), Array(this.gradWeight))
-  }
-
-  override def getParametersTable(): Table = {
-    T(getName() -> T("weight" -> weight, "gradWeight" -> gradWeight))
   }
 
   override def canEqual(other: Any): Boolean = other.isInstanceOf[Mul[T]]

@@ -47,7 +47,8 @@ class CAddSpec extends FlatSpec with Matchers {
       val gradCriterion = criterion.backward (pred, y)
       mlp.zeroGradParameters ()
       mlp.backward (x, gradCriterion)
-      mlp.updateParameters (learningRate)
+      val (weight, grad) = mlp.getParameters()
+      weight.add(-learningRate, grad)
       err
     }
 

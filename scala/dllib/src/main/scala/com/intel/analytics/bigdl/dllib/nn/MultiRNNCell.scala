@@ -165,10 +165,6 @@ class MultiRNNCell[T : ClassTag](val cells: Array[Cell[T]])(implicit ev: TensorN
     gradInput
   }
 
-  override def zeroGradParameters(): Unit = {
-    cells.foreach(_.zeroGradParameters())
-  }
-
   override def reset(): Unit = {
     cells.foreach(_.reset())
   }

@@ -293,19 +293,9 @@ class SpatialConvolutionMap[T: ClassTag](
     (Array(this.weight, this.bias), Array(this.gradWeight, this.gradBias))
   }
 
-  override def getParametersTable(): Table = {
-    T(getName() -> T("weight" -> weight, "bias" -> bias,
-      "gradWeight" -> gradWeight, "gradBias" -> gradBias))
-  }
-
   def decayParameters(decay: T): Unit = {
     weight.apply1(ev.minus(_, decay))
     bias.apply1(ev.minus(_, decay))
-  }
-
-  override def zeroGradParameters(): Unit = {
-    gradWeight.zero()
-    gradBias.zero()
   }
 }
 
