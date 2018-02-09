@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.utils.serializer
 import com.intel.analytics.bigdl.nn.keras.{Sequential => KSequential}
 import com.intel.analytics.bigdl.nn.keras._
 import com.intel.analytics.bigdl.tensor._
-import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.bigdl.utils.{Shape, Table}
 
 import scala.collection.mutable
 import scala.util.Random
@@ -455,6 +455,34 @@ class KerasModuleSerializerSpec extends SerializerSpecHelper {
     val layer = MaxoutDense[Float](8, inputShape = Shape(12))
     layer.build(Shape(3, 12))
     val input = Tensor[Float](3, 12).apply1(_ => Random.nextFloat())
+    runSerializationTest(layer, input)
+  }
+
+  "Merge serializer" should "work properly" in {
+    val l1 = InputLayer[Float](inputShape = Shape(4, 8))
+    val l2 = InputLayer[Float](inputShape = Shape(4, 8))
+    val layer = Merge[Float](layers = List(l1, l2), mode = "sum")
+    layer.build(Shape(List(Shape(2, 4, 8), Shape(2, 4, 8))))
+    val input1 = Tensor[Float](2, 4, 8).apply1(e => Random.nextFloat())
+    val input2 = Tensor[Float](2, 4, 8).apply1(e => Random.nextFloat())
+    val input = new Table()
+    input(1.toFloat) = input1
+    input(2.toFloat) = input2
+    runSerializationTest(layer, input)
+  }
+
+  "TimeDistributed serializer" should "work properly" in {
+    val layer = TimeDistributed[Float](Dense(8), inputShape = Shape(10, 12))
+    layer.build(Shape(3, 10, 12))
+    val input = Tensor[Float](3, 10, 12).apply1(_ => Random.nextFloat())
+    runSerializationTest(layer, input)
+  }
+
+  "Bidirectional serializer" should "work properly" in {
+    val layer = Bidirectional[Float](SimpleRNN(4, returnSequences = true),
+      inputShape = Shape(8, 12))
+    layer.build(Shape(3, 8, 12))
+    val input = Tensor[Float](3, 8, 12).apply1(_ => Random.nextFloat())
     runSerializationTest(layer, input)
   }
 
