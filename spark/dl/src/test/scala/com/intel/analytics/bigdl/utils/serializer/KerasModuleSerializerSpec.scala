@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.utils.serializer
 import com.intel.analytics.bigdl.nn.keras.{Sequential => KSequential}
 import com.intel.analytics.bigdl.nn.keras._
 import com.intel.analytics.bigdl.tensor._
-import com.intel.analytics.bigdl.utils.{MultiShape, Shape, Table}
+import com.intel.analytics.bigdl.utils.{Shape, Table}
 
 import scala.collection.mutable
 import scala.util.Random
