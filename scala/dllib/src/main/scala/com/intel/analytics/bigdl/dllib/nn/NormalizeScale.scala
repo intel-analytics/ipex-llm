@@ -65,10 +65,6 @@ class NormalizeScale[T: ClassTag](val p: Double, val eps: Double = 1e-10,
   override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
     (Array(cmul.weight), Array(cmul.gradWeight))
   }
-
-  override def getParametersTable(): Table = {
-    T(getName() -> T("weight" -> cmul.weight, "gradWeight" -> cmul.gradWeight))
-  }
 }
 
 object NormalizeScale {

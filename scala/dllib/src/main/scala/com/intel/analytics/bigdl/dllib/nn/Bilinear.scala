@@ -194,11 +194,6 @@ class Bilinear[T: ClassTag](
     }
   }
 
-  override def zeroGradParameters(): Unit = {
-    gradWeight.zero()
-    gradBias.zero()
-  }
-
   override def clearState(): this.type = {
     super.clearState()
     buff1.set()
@@ -211,15 +206,6 @@ class Bilinear[T: ClassTag](
       (Array(this.weight), Array(this.gradWeight))
     } else {
       (Array(this.weight, this.bias), Array(this.gradWeight, this.gradBias))
-    }
-  }
-
-  override def getParametersTable(): Table = {
-    if (null == bias) {
-      T(getName() -> T("weight" -> weight, "gradWeight" -> gradWeight))
-    } else {
-      T(getName() -> T("weight" -> weight, "bias" -> bias,
-        "gradWeight" -> gradWeight, "gradBias" -> gradBias))
     }
   }
 
