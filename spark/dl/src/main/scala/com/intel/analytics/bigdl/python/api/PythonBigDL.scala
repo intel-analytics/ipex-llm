@@ -30,21 +30,19 @@ import com.intel.analytics.bigdl.utils.{Table, _}
 import com.intel.analytics.bigdl.visualization.{Summary, TrainSummary, ValidationSummary}
 import org.apache.spark.api.java.{JavaRDD, JavaSparkContext}
 import org.apache.spark.rdd.RDD
-import java.lang.{Integer, Boolean => JBoolean}
+import java.lang.{Boolean => JBoolean}
 import java.nio.ByteOrder
-import java.util
 
 import com.intel.analytics.bigdl.nn.DecoderInputType.DecoderInputType
 import com.intel.analytics.bigdl.dlframes.{DLClassifier, DLClassifierModel, DLEstimator, DLModel}
 import com.intel.analytics.bigdl.nn.Graph._
-import com.intel.analytics.bigdl.nn.tf.{Const, Fill, SplitAndSelect, Shape => TfShape}
 import com.intel.analytics.bigdl.optim.SGD.{LearningRateSchedule, SequentialSchedule}
 import com.intel.analytics.bigdl.transform.vision.image._
 import com.intel.analytics.bigdl.transform.vision.image.augmentation._
 import com.intel.analytics.bigdl.transform.vision.image.label.roi._
 import com.intel.analytics.bigdl.transform.vision.image.opencv.OpenCVMat
-import com.intel.analytics.bigdl.utils.tf.{TensorflowDataFormat, TensorflowSaver}
-import com.intel.analytics.bigdl.utils.tf.TensorflowLoader.{buildBigDLModel, buildTFGraph, parse}
+import com.intel.analytics.bigdl.utils.tf.TensorflowDataFormat
+import com.intel.analytics.bigdl.utils.tf.TensorflowLoader.parse
 import com.intel.analytics.bigdl.utils.tf._
 import org.apache.spark.sql.{DataFrame, SQLContext}
 import org.apache.log4j._
@@ -52,8 +50,6 @@ import org.opencv.imgproc.Imgproc
 
 import scala.collection.JavaConverters._
 import scala.collection.mutable.ArrayBuffer
-import scala.collection.mutable
-import scala.collection.mutable.{ArrayBuffer, Map}
 import scala.language.existentials
 import scala.reflect.ClassTag
 
@@ -2888,7 +2884,6 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     imageFrame.rdd.map(imageFeatureToLabelTensor).toJavaRDD()
   }
 
-
   def distributedImageFrameToPredict(imageFrame: DistributedImageFrame, key: String)
   : JavaRDD[JList[Any]] = {
     imageFrame.rdd.map(x => {
@@ -2993,6 +2988,11 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   def addScheduler(seq: SequentialSchedule, scheduler: LearningRateSchedule,
     maxIteration: Int): SequentialSchedule = {
     seq.add(scheduler, maxIteration)
+  }
+
+  private[bigdl] def initExecutorGateway(sc: JavaSparkContext, driverPort: Int): Unit = {
+    sc.parallelize(Seq(""), Engine.coreNumber() * Engine.nodeNumber())
+      .foreachPartition(_ => Engine.createJavaGateway(driverPort))
   }
 }
 

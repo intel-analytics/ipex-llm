@@ -16,16 +16,17 @@
 
 import os
 import sys
-import glob
 from py4j.protocol import Py4JJavaError
 from py4j.java_gateway import JavaObject
 from py4j.java_collections import ListConverter, JavaArray, JavaList, JavaMap, MapConverter
+from py4j.java_gateway import JavaGateway, GatewayClient
 
 from pyspark import RDD, SparkContext
 from pyspark.serializers import PickleSerializer, AutoBatchedSerializer
 from pyspark.sql import DataFrame, SQLContext
 from pyspark.mllib.common import callJavaFunc
 from pyspark import SparkConf
+from pyspark.files import SparkFiles
 import numpy as np
 import threading
 import tempfile
@@ -46,12 +47,17 @@ class SingletonMixin(object):
 
     @classmethod
     def instance(cls,
-                 bigdl_type="float"):
+                 bigdl_type, *args):
         if not cls._instance:
             with cls._lock:
                 if not cls._instance:
-                    cls._instance = cls(bigdl_type)
+                    cls._instance = cls(bigdl_type, *args)
         return cls._instance
+
+class GatewayWrapper(SingletonMixin):
+
+    def __init__(self, bigdl_type, port=25333):
+        self.value = JavaGateway(GatewayClient(port=port), auto_convert=True)
 
 
 class JavaCreator(SingletonMixin):
@@ -74,11 +80,10 @@ class JavaCreator(SingletonMixin):
             JavaCreator.__creator_class = cclass
             JavaCreator._instance = None
 
-    def __init__(self, bigdl_type):
-        sc = get_spark_context()
+    def __init__(self, bigdl_type, gateway):
         self.value = []
         for creator_class in JavaCreator.get_creator_class():
-            jclass = getattr(sc._jvm, creator_class)
+            jclass = getattr(gateway.jvm, creator_class)
             if bigdl_type == "float":
                 self.value.append(getattr(jclass, "ofFloat")())
             elif bigdl_type == "double":
@@ -437,6 +442,9 @@ _picklable_classes = [
 def init_engine(bigdl_type="float"):
     callBigDlFunc(bigdl_type, "initEngine")
 
+def init_executor_gateway(sc, bigdl_type="float"):
+    callBigDlFunc(bigdl_type, "initExecutorGateway", sc, sc._gateway._gateway_client.port)
+
 
 def redire_spark_logs(bigdl_type="float", log_path=os.getcwd()+"/bigdl.log"):
     """
@@ -556,16 +564,33 @@ def get_spark_sql_context(sc):
     else:
         return SQLContext(sc)  # Compatible with Spark1.5.1
 
+def _get_port():
+    root_dir = SparkFiles.getRootDirectory()
+    path = os.path.join(root_dir, "gateway_port")
+    f = open(path)
+    port = int(f.readline())
+    return port
+
+def _get_gateway():
+    if SparkFiles._is_running_on_worker:
+        gateway_port = _get_port()
+        gateway = GatewayWrapper.instance(None, gateway_port).value
+    else:
+        sc = get_spark_context()
+        gateway = sc._gateway
+    return gateway
+
+
 def callBigDlFunc(bigdl_type, name, *args):
     """ Call API in PythonBigDL """
-    sc = get_spark_context()
+    gateway = _get_gateway()
     error = Exception("Cannot find function: %s" % name)
-    for jinvoker in JavaCreator.instance(bigdl_type=bigdl_type).value:
+    for jinvoker in JavaCreator.instance(bigdl_type, gateway).value:
         # hasattr(jinvoker, name) always return true here,
         # so you need to invoke the method to check if it exist or not
         try:
             api = getattr(jinvoker, name)
-            result = callJavaFunc(sc, api, *args)
+            result = callJavaFunc(api, *args)
         except Exception as e:
             error = e
             if "does not exist" not in str(e):
@@ -575,7 +600,7 @@ def callBigDlFunc(bigdl_type, name, *args):
     raise error
 
 
-def _java2py(sc, r, encoding="bytes"):
+def _java2py(gateway, r, encoding="bytes"):
     if isinstance(r, JavaObject):
         clsName = r.getClass().getSimpleName()
         # convert RDD into JavaRDD
@@ -584,20 +609,20 @@ def _java2py(sc, r, encoding="bytes"):
             clsName = 'JavaRDD'
 
         if clsName == 'JavaRDD':
-            jrdd = sc._jvm.SerDe.javaToPython(r)
-            return RDD(jrdd, sc)
+            jrdd = gateway.jvm.SerDe.javaToPython(r)
+            return RDD(jrdd, get_spark_context())
 
         if clsName == 'DataFrame':
-            return DataFrame(r, get_spark_sql_context(sc))
+            return DataFrame(r, get_spark_sql_context(get_spark_context()))
 
         if clsName == 'Dataset':
-            return DataFrame(r, get_spark_sql_context(sc))
+            return DataFrame(r, get_spark_sql_context(get_spark_context()))
 
         if clsName in _picklable_classes:
-            r = sc._jvm.org.apache.spark.bigdl.api.python.BigDLSerDe.dumps(r)
+            r = gateway.jvm.org.apache.spark.bigdl.api.python.BigDLSerDe.dumps(r)
         elif isinstance(r, (JavaArray, JavaList, JavaMap)):
             try:
-                r = sc._jvm.org.apache.spark.bigdl.api.python.BigDLSerDe.dumps(
+                r = gateway.jvm.org.apache.spark.bigdl.api.python.BigDLSerDe.dumps(
                     r)
             except Py4JJavaError:
                 pass  # not pickable
@@ -607,11 +632,12 @@ def _java2py(sc, r, encoding="bytes"):
     return r
 
 
-def callJavaFunc(sc, func, *args):
+def callJavaFunc(func, *args):
     """ Call Java Function """
-    args = [_py2java(sc, a) for a in args]
+    gateway = _get_gateway()
+    args = [_py2java(gateway, a) for a in args]
     result = func(*args)
-    return _java2py(sc, result)
+    return _java2py(gateway, result)
 
 
 def _to_java_object_rdd(rdd):
@@ -627,7 +653,7 @@ def _to_java_object_rdd(rdd):
             rdd._jrdd, True)
 
 
-def _py2java(sc, obj):
+def _py2java(gateway, obj):
     """ Convert Python object into Java """
     if isinstance(obj, RDD):
         obj = _to_java_object_rdd(obj)
@@ -636,13 +662,13 @@ def _py2java(sc, obj):
     elif isinstance(obj, SparkContext):
         obj = obj._jsc
     elif isinstance(obj, (list, tuple)):
-        obj = ListConverter().convert([_py2java(sc, x) for x in obj],
-                                      sc._gateway._gateway_client)
+        obj = ListConverter().convert([_py2java(gateway, x) for x in obj],
+                                      gateway._gateway_client)
     elif isinstance(obj, dict):
         result = {}
         for (key, value) in obj.items():
-            result[key] = _py2java(sc, value)
-        obj = MapConverter().convert(result, sc._gateway._gateway_client)
+            result[key] = _py2java(gateway, value)
+        obj = MapConverter().convert(result, gateway._gateway_client)
     elif isinstance(obj, JavaValue):
         obj = obj.value
     elif isinstance(obj, JavaObject):
@@ -651,7 +677,7 @@ def _py2java(sc, obj):
         pass
     else:
         data = bytearray(PickleSerializer().dumps(obj))
-        obj = sc._jvm.org.apache.spark.bigdl.api.python.BigDLSerDe.loads(data)
+        obj = gateway.jvm.org.apache.spark.bigdl.api.python.BigDLSerDe.loads(data)
     return obj
 
 

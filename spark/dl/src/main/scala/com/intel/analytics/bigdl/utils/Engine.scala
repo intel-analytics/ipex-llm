@@ -16,13 +16,17 @@
 
 package com.intel.analytics.bigdl.utils
 
-import java.io.InputStream
+import java.io.{FileOutputStream, InputStream, PrintWriter}
 import java.util.Locale
 import java.util.concurrent.atomic.AtomicBoolean
 
 import org.apache.log4j.Logger
-import org.apache.spark.{SparkConf, SparkContext, SparkException}
+import org.apache.spark._
 import com.intel.analytics.bigdl.mkl.MKL
+import org.apache.spark.utils.SparkUtils
+import py4j.GatewayServer
+
+import scala.util.control.{ControlThrowable, NonFatal}
 
 /**
  * define engine type trait
@@ -108,6 +112,83 @@ object Engine {
   private val singletonCounter = new AtomicBoolean()
   private var physicalCoreNumber = -1
   private var nodeNum: Int = -1
+
+  @volatile
+  private var gatewayServer: py4j.GatewayServer = null
+  private val driverPortFileCreated = new AtomicBoolean()
+
+  private def createGatewayPortFile(port: Int): Unit = {
+    val file = new java.io.File(SparkFiles.getRootDirectory(), "gateway_port")
+    logger.debug(s"Creating JavaGatewayServer port file" +
+      s" on executor-${SparkEnv.get.executorId}:${file.getAbsolutePath}")
+    if (file.exists()) {
+      file.delete()
+    }
+    file.createNewFile()
+    val out = new PrintWriter(file)
+    try {
+      out.print(port)
+      out.flush()
+    } finally {
+      out.close()
+    }
+  }
+
+  private[bigdl] def createJavaGateway(driverPort: Int): Unit = {
+    if (SparkUtils.isDriver) {
+      if (driverPortFileCreated.compareAndSet(false, true)) {
+        try {
+          createGatewayPortFile(driverPort)
+        } catch {
+          case NonFatal(e) =>
+            throw new Exception("Could not create java gateway port file", e)
+        }
+      }
+      return
+    }
+    if (gatewayServer != null) return
+    this.synchronized {
+      if (gatewayServer != null) return
+      gatewayServer = new py4j.GatewayServer(null, 0)
+    }
+
+    logger.info(s"Initializing JavaGatewayServer on executor-${SparkEnv.get.executorId} ")
+    GatewayServer.turnLoggingOn()
+    val thread = new Thread(new Runnable() {
+      override def run(): Unit = try {
+        gatewayServer.start()
+      } catch {
+        case ct: ControlThrowable =>
+          throw ct
+        case t: Throwable =>
+          throw new Exception(s"Uncaught exception " +
+            s"in thread ${Thread.currentThread().getName}, when staring JavaGatewayServer", t)
+      }
+    })
+    thread.setName("py4j-executor-gateway-init")
+    thread.setDaemon(true)
+    thread.start()
+
+    thread.join()
+
+    logger.info(s"JavaGatewayServer initialized")
+
+    Runtime.getRuntime().addShutdownHook(new Thread {
+      override def run(): Unit = {
+        gatewayServer.shutdown()
+      }
+    })
+
+    try {
+      createGatewayPortFile(gatewayServer.getListeningPort)
+    } catch {
+      case NonFatal(e) =>
+        throw new Exception("Could not create java gateway port file", e)
+    }
+  }
+
+
+
 
   private[bigdl] def localMode: Boolean = {
     System.getProperty("bigdl.localMode", "false").toLowerCase(Locale.ROOT) match {

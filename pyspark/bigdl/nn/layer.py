@@ -54,10 +54,10 @@ class Node(JavaValue):
         return Layer.of(self.value.element())
 
     def remove_pre_edges(self):
-        callJavaFunc(get_spark_context(), self.value.removePreEdges)
+        callJavaFunc(self.value.removePreEdges)
 
     def remove_next_edges(self):
-        callJavaFunc(get_spark_context(), self.value.removeNextEdges)
+        callJavaFunc(self.value.removeNextEdges)
 
 
 
@@ -130,14 +130,14 @@ class Layer(JavaValue):
         Give this model a name. There would be a generated name
         consist of class name and UUID if user doesn't set it.
         """
-        callJavaFunc(get_spark_context(), self.value.setName, name)
+        callJavaFunc(self.value.setName, name)
         return self
 
     def name(self):
         """
         Name of this layer
         """
-        return callJavaFunc(get_spark_context(), self.value.getName)
+        return callJavaFunc(self.value.getName)
 
     def set_seed(self, seed=123):
         """
@@ -230,7 +230,7 @@ class Layer(JavaValue):
         If the module has parameters, this will zero the accumulation of the gradients with respect
         to these parameters. Otherwise, it does nothing.
         """
-        callJavaFunc(get_spark_context(), self.value.zeroGradParameters)
+        callJavaFunc(self.value.zeroGradParameters)
 
     def update_parameters(self, learning_rate):
         """
@@ -245,7 +245,7 @@ class Layer(JavaValue):
         """
         Initialize the model weights.
         """
-        callJavaFunc(get_spark_context(), self.value.reset)
+        callJavaFunc(self.value.reset)
         return self
 
     def parameters(self):
@@ -528,9 +528,9 @@ class Layer(JavaValue):
         Set this layer in the training mode or in predition mode if is_training=False
         '''
         if is_training:
-            callJavaFunc(get_spark_context(), self.value.training)
+            callJavaFunc(self.value.training)
         else:
-            callJavaFunc(get_spark_context(), self.value.evaluate)
+            callJavaFunc(self.value.evaluate)
         return self
 
     def is_training(self):
@@ -546,7 +546,7 @@ class Layer(JavaValue):
         >>> layer.is_training()
         True
         '''
-        return callJavaFunc(get_spark_context(), self.value.isTraining)
+        return callJavaFunc(self.value.isTraining)
 
     def quantize(self):
         '''
