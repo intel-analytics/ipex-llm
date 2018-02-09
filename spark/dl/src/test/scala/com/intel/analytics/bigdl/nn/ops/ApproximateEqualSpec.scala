@@ -18,30 +18,16 @@ package com.intel.analytics.bigdl.nn.ops
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
 import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
-import org.scalatest.{FlatSpec, Matchers}
 
-class SelectSpec extends FlatSpec with Matchers {
-  "select" should "be correct when condition is true" in {
-    val cond = Tensor.scalar[Boolean](true)
-    val t = Tensor[Int](T(1))
-    val e = Tensor[Int](T(2))
+import scala.util.Random
 
-    val ops = Select[Float]()
-    ops.forward(T(cond, t, e)) should be(t)
-  }
-
-  "select" should "be correct when condition is false" in {
-    val cond = Tensor.scalar[Boolean](false)
-    val t = Tensor[Int](T(1))
-    val e = Tensor[Int](T(2))
-
-    val ops = Select[Float]()
-    ops.forward(T(cond, t, e)) should be(e)
-  }
-}
-
-class SelectSerialTest extends ModuleSerializationTest {
+class ApproximateEqualSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
-
+    val approximateEqual = ApproximateEqual[Float](0.01f).setName("approximateEqual")
+    val input = T(Tensor[Float](5).apply1(_ => Random.nextFloat()),
+      Tensor[Float](5).apply1(_ => Random.nextFloat()))
+    runSerializationTest(approximateEqual, input, approximateEqual.
+      asInstanceOf[ModuleToOperation[Float]].module.getClass
+    )
   }
 }

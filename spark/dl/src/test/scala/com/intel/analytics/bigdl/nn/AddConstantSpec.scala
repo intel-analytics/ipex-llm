@@ -13,35 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.bigdl.nn.ops
+
+package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.T
 import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
-import org.scalatest.{FlatSpec, Matchers}
 
-class SelectSpec extends FlatSpec with Matchers {
-  "select" should "be correct when condition is true" in {
-    val cond = Tensor.scalar[Boolean](true)
-    val t = Tensor[Int](T(1))
-    val e = Tensor[Int](T(2))
+import scala.util.Random
 
-    val ops = Select[Float]()
-    ops.forward(T(cond, t, e)) should be(t)
-  }
 
-  "select" should "be correct when condition is false" in {
-    val cond = Tensor.scalar[Boolean](false)
-    val t = Tensor[Int](T(1))
-    val e = Tensor[Int](T(2))
-
-    val ops = Select[Float]()
-    ops.forward(T(cond, t, e)) should be(e)
-  }
-}
-
-class SelectSerialTest extends ModuleSerializationTest {
+class AddConstantSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
-
+    val addconst = AddConstant[Float](5).setName("addconst")
+    val input = Tensor[Float](5).apply1(_ => Random.nextFloat())
+    runSerializationTest(addconst, input)
   }
 }

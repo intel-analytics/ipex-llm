@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
 
 class CrossProductSpec extends FlatSpec with Matchers {
@@ -120,4 +121,13 @@ class CrossProductSpec extends FlatSpec with Matchers {
     t.select(1, 2).toArray() shouldEqual Array(22, 22, 44)
   }
 
+}
+
+class CrossProductSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val crossProd = CrossProduct[Float]()
+    val input = T(Tensor[Float](T(1.0f, 2.0f)),
+      Tensor[Float](T(2.0f, 3.0f)), Tensor[Float](T(3.0f, 4.0f)))
+    runSerializationTest(crossProd, input)
+  }
 }

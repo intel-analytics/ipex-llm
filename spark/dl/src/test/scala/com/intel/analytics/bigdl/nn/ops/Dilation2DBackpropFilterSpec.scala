@@ -18,30 +18,16 @@ package com.intel.analytics.bigdl.nn.ops
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
 import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
-import org.scalatest.{FlatSpec, Matchers}
 
-class SelectSpec extends FlatSpec with Matchers {
-  "select" should "be correct when condition is true" in {
-    val cond = Tensor.scalar[Boolean](true)
-    val t = Tensor[Int](T(1))
-    val e = Tensor[Int](T(2))
-
-    val ops = Select[Float]()
-    ops.forward(T(cond, t, e)) should be(t)
-  }
-
-  "select" should "be correct when condition is false" in {
-    val cond = Tensor.scalar[Boolean](false)
-    val t = Tensor[Int](T(1))
-    val e = Tensor[Int](T(2))
-
-    val ops = Select[Float]()
-    ops.forward(T(cond, t, e)) should be(e)
-  }
-}
-
-class SelectSerialTest extends ModuleSerializationTest {
+class Dilation2DBackpropFilterSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
+    val module = Dilation2DBackpropFilter[Float, Float](
+      Array(1, 3, 2, 1), Array(1, 2, 3, 1), "same")
 
+    val input = T(Tensor[Float](4, 32, 32, 3).rand(),
+      Tensor[Float](3, 4, 3).rand(),
+      Tensor[Float](4, 11, 16, 3).rand())
+
+    runSerializationTest(module, input)
   }
 }

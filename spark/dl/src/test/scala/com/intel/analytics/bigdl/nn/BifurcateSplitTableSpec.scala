@@ -56,3 +56,11 @@ class BifurcateSplitTableSerialTest extends ModuleSerializationTest {
     runSerializationTest(batchNorm, input)
   }
 }
+
+class SplitTableSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val splitTable = SplitTable[Float](2).setName("splitTable")
+    val input = Tensor[Float](2, 10).apply1( e => Random.nextFloat())
+    runSerializationTest(splitTable, input)
+  }
+}

@@ -20,6 +20,8 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import org.scalatest.{FlatSpec, Matchers}
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import com.intel.analytics.bigdl.utils.Table
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
+
 import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Parallel
@@ -62,5 +64,13 @@ class CMulSpec extends FlatSpec with Matchers {
     output3 should be (output4)
     gradInput3 should be (gradInput4)
     layer2.gradWeight should be (layer1.gradWeight.mul(0.5))
+  }
+}
+
+class CMulSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val input = Tensor[Float](5, 1).apply1(e => Random.nextFloat())
+    val cmul = CMul[Float](Array(5, 1)).setName("cmul")
+    runSerializationTest(cmul, input)
   }
 }
