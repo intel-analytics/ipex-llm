@@ -20,6 +20,7 @@ import java.io.{IOException, ObjectInputStream}
 
 import com.intel.analytics.bigdl.mkl.{Memory, MklDnn}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import org.apache.log4j.{Level, Logger}
 import serialization.Bigdl.TensorType
 
 import scala.reflect.ClassTag
@@ -131,6 +132,18 @@ class MklDnnTensor[T: ClassTag](
 
 object MklDnnTensor {
   MklDnn.isLoaded
+
+  private val logger = Logger.getLogger(getClass)
+  logger.setLevel(Level.DEBUG)
+  private def backtrace(): Unit = {
+    logger.debug("BACKTRACE START NOW ---------------")
+    for (ste <- Thread.currentThread().getStackTrace) {
+      if (ste.toString.contains("com.intel.analytics.bigdl.nn")) {
+        logger.debug("\t|----> " + ste)
+      }
+    }
+  }
+
   def apply[T: ClassTag](size: Array[Int])(implicit ev: TensorNumeric[T]): MklDnnTensor[T] = {
     val storageOffset = 0
     val stride = DenseTensor.size2Stride(size)

@@ -128,13 +128,7 @@ class SpatialBatchNormalization[T: ClassTag](
 
   @transient var internalInput, internalOutput: MklDnnTensor[T] = _
 
-  val defaultFormat = if (nOutput % 8 == 0 && nOutput % 16 != 0) {
-    MklDnn.MemoryFormat.nChw8c
-  } else if (nOutput % 16 == 0) {
-    MklDnn.MemoryFormat.nChw8c
-  } else {
-    MklDnn.MemoryFormat.nchw
-  }
+  var defaultFormat = MklDnn.MemoryFormat.nchw
 
   private def toMklDnnTensor(t: Tensor[T]): MklDnnTensor[T] = t.asInstanceOf[MklDnnTensor[T]]
 
@@ -145,24 +139,27 @@ class SpatialBatchNormalization[T: ClassTag](
   @transient var weightAndBiasUserPrim = 0L
   @transient var meanUserPrim = 0L
   @transient var varianceUserPrim = 0L
+  @transient var previousSize: Array[Int] = _
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
-    if (internalInput == null) {
-      internalInput = MklDnnTensor[T](input.size())
-    } else if (internalInput.size().deep != input.size().deep) {
-      internalInput.resize(input.size())
+    if (previousSize == null) {
+      previousSize = input.size()
+    } else if (previousSize.deep != input.size().deep) {
+      previousSize = input.size()
+      for (i <- forwardPrims ++ backwardPrims ++ forwardReorderPrims ++ backwardReorderPrims) {
+        MklDnn.PrimitiveDestroy(i)
+      }
+      forwardPrims = ArrayBuffer.empty
+      backwardPrims = ArrayBuffer.empty
+      forwardReorderPrims = ArrayBuffer.empty
+      backwardReorderPrims = ArrayBuffer.empty
     }
-
-    if (input.getTensorType == DenseType) {
-      internalInput.set(input)
-    }
-
-    if (output.getTensorType != MklDnnType) {
-      output = MklDnnTensor[T](input.size())
-    }
-
-    output.resizeAs(input)
 
     if (forwardPrims.isEmpty) {
+      if (output.getTensorType == MklDnnType) {
+        toMklDnnTensor(output).release()
+      }
+      output = MklDnnTensor[T](input.size())
+
       engine = this.getDnnEngine(0)
       stream = this.getStream()
 
@@ -206,6 +203,24 @@ class SpatialBatchNormalization[T: ClassTag](
 
       forwardPrims += MklDnn.PrimitiveCreate2(opPrimDesc, srcs, indexes, srcs.length,
         dsts, dsts.length)
+
+      if (inputReorderPrim == 0 && input.getTensorType == MklDnnType) {
+        internalInput = input.asInstanceOf[MklDnnTensor[T]]
+      } else {
+        if (internalInput != null) {
+          internalInput.release()
+        }
+        internalInput = MklDnnTensor[T](input.size())
+      }
+
+      if (internalInput.size().deep != input.size().deep) {
+        internalInput.release()
+        internalInput = MklDnnTensor[T](input.size())
+      }
+    }
+
+    if (input.getTensorType == DenseType) {
+      internalInput.set(input)
     }
 
     var inputPtr = 0L
@@ -245,7 +260,6 @@ class SpatialBatchNormalization[T: ClassTag](
 
     MklDnn.StreamSubmit(stream, forwardPrims.length, forwardPrims.toArray)
 
-    println("forward" + "=" * 80)
     if (shouldConvert) {
       output.asInstanceOf[MklDnnTensor[T]].syncToHeap()
     }
@@ -260,22 +274,12 @@ class SpatialBatchNormalization[T: ClassTag](
   @transient var gradWeightAndBiasUserPrim = 0L
   @transient var internalGradInput, internalGradOutput: MklDnnTensor[T] = _
   def backward1(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
-    if (gradInput.getTensorType != MklDnnType) {
-      gradInput = MklDnnTensor[T](input.size())
-    }
-    gradInput.resizeAs(input)
-
-    if (internalGradOutput == null) {
-      internalGradOutput = MklDnnTensor[T](input.size())
-    } else if (internalGradOutput.size().deep != input.size().deep) {
-      internalGradOutput.resize(input.size())
-    }
-
-    if (gradOutput.getTensorType == DenseType) {
-      internalGradOutput.set(gradOutput)
-    }
-
     if (backwardPrims.isEmpty) {
+      if (gradInput.getTensorType == MklDnnType) {
+        toMklDnnTensor(gradInput).release()
+      }
+      gradInput = MklDnnTensor[T](input.size())
+
       val srcMemDesc = if (input.getPrimitiveDesc() == 0) {
         MklDnn.MemoryDescInit(input.dim(), input.size(),
           MklDnn.DataType.f32, defaultFormat)
@@ -283,12 +287,9 @@ class SpatialBatchNormalization[T: ClassTag](
         MklDnnOps.primitiveDescQueryMemory(input.getPrimitiveDesc())
       }
 
-      val diffDstMemDesc = if (gradOutput.getPrimitiveDesc() == 0L) {
-        MklDnn.MemoryDescInit(gradOutput.dim(), gradOutput.size(),
-          MklDnn.DataType.f32, defaultFormat)
-      } else {
-        MklDnnOps.primitiveDescQueryMemory(gradOutput.getPrimitiveDesc())
-      }
+      // [PERF] the format of gradInput should be the same as input
+      val diffDstMemDesc = MklDnn.MemoryDescInit(input.dim(), input.size(),
+        MklDnn.DataType.f32, MklDnn.getFormat(srcMemDesc))
 
       val desc = MklDnn.BatchNormBackwardDescInit(MklDnn.PropKind.backward,
         diffDstMemDesc, srcMemDesc, eps.toFloat, MklDnn.BatchNormFlag.mkldnn_use_scaleshift)
@@ -326,6 +327,24 @@ class SpatialBatchNormalization[T: ClassTag](
 
       backwardPrims += MklDnn.PrimitiveCreate2(primDesc, dataSrcs, dataIndexes, dataSrcs.length,
         dataDsts, dataDsts.length)
+
+      if (backwardReorderPrims.isEmpty && gradOutput.getTensorType == MklDnnType) {
+        internalGradOutput = toMklDnnTensor(gradOutput)
+      } else {
+        if (internalGradOutput != null) {
+          internalGradOutput.release()
+        }
+        internalGradOutput = MklDnnTensor[T](input.size())
+      }
+
+      if (internalGradOutput.size().deep != input.size().deep) {
+        internalGradOutput.release()
+        internalGradOutput = MklDnnTensor[T](input.size())
+      }
+    }
+
+    if (gradOutput.getTensorType == DenseType) {
+      internalGradOutput.set(gradOutput)
     }
 
     var gradOutputPtr = 0L
@@ -363,7 +382,6 @@ class SpatialBatchNormalization[T: ClassTag](
           gradOutputPtr)
       }
     }
-//    MklDnnOps.submit(stream, backwardPrims.toArray)
     MklDnn.StreamSubmit(stream, backwardPrims.length, backwardPrims.toArray)
 
     diffAll.syncToHeap()
@@ -439,7 +457,7 @@ class SpatialBatchNormalization[T: ClassTag](
   }
 
   override def toString(): String = {
-    s"nn.BatchNormalization($nOutput, $eps, $momentum, $affine)"
+    s"mkldnn.BatchNormalization($nOutput, $eps, $momentum, $affine)"
   }
 }
 

@@ -166,32 +166,39 @@ class Linear[T: ClassTag](
   @transient var weightReorderPrim = 0L
   @transient var biasUserPrim = 0L
   @transient var outputUserPrim = 0L
+  @transient var previousSize: Array[Int] = _
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
-    if (input.dim() == 4) {
-      weight.resize(weight.size(1), input.size(2), input.size(3), input.size(4))
-    }
-
-    if (input.getTensorType == DenseType) {
-      if (internalInput == null) {
-        internalInput = MklDnnTensor[T](input.size())
-      } else if (internalInput.size().deep != input.size().deep) {
-        internalInput.resize(input.size())
+    if (previousSize == null) {
+      previousSize = input.size()
+    } else if (previousSize.deep != input.size().deep) {
+      previousSize = input.size()
+      if (forwardPrim != 0) {
+        MklDnn.PrimitiveDestroy(forwardPrim)
+        MklDnn.PrimitiveDestroy(backDataPrim)
+        MklDnn.PrimitiveDestroy(backWeightPrim)
       }
-      internalInput.set(input)
-    } else {
-      internalInput = input.asInstanceOf[MklDnnTensor[T]]
+
+      forwardPrim = 0L
+      backDataPrim = 0L
+      backWeightPrim = 0L
     }
 
-    if (output.getTensorType != MklDnnType) {
+    if (forwardPrim == 0L) {
+      if (input.dim() == 4) {
+        weight.resize(weight.size(1), input.size(2), input.size(3), input.size(4))
+      }
+
+      if (output.getTensorType == MklDnnType) {
+        output.asInstanceOf[MklDnnTensor[T]].release()
+      }
+
       if (input.dim() == 1) {
         output = MklDnnTensor[T](Array(outputSize))
       } else {
         output = MklDnnTensor[T](Array(input.size(1), weight.size(1)))
       }
-    }
 
-    if (forwardPrim == 0L) {
       if (engine == 0L) engine = this.getDnnEngine(0)
       if (stream == 0L) stream = this.getStream()
 
@@ -276,6 +283,24 @@ class Linear[T: ClassTag](
       forwardPrim = MklDnn.PrimitiveCreate2(opPrimDesc, srcs, indexes, srcs.length,
         dsts, dsts.length)
       forwardPrimBuffer += forwardPrim
+
+      if (inputReorderPrim == 0 && input.getTensorType == MklDnnType) {
+        internalInput = input.asInstanceOf[MklDnnTensor[T]]
+      } else {
+        if (internalInput != null) {
+          internalInput.release()
+        }
+        internalInput = MklDnnTensor[T](input.size())
+      }
+
+      if (internalInput.size().deep != input.size().deep) {
+        internalInput.release()
+        internalInput = MklDnnTensor[T](input.size())
+      }
+    }
+
+    if (input.getTensorType == DenseType) {
+      internalInput.set(input)
     }
 
     var inputPtr = 0L
@@ -350,22 +375,12 @@ class Linear[T: ClassTag](
   @transient var gradOutputReorderMemoryPrim = 0L
   @transient var gradInputUserPrim = 0L
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
-    if (gradInput.getTensorType != MklDnnType) {
-      gradInput = MklDnnTensor[T](input.size())
-    }
-
-    if (internalGradOutput == null) {
-      internalGradOutput = MklDnnTensor[T](gradOutput.size())
-    } else if (internalGradOutput.size().deep != gradOutput.size().deep) {
-      internalGradOutput.resize(gradOutput.size())
-    }
-
-    gradOutput.getTensorType match {
-      case DenseType => internalGradOutput.set(gradOutput)
-      case MklDnnType => internalGradOutput = gradOutput.asInstanceOf[MklDnnTensor[T]]
-    }
-
     if (backDataPrim == 0L) {
+      if (gradInput.getTensorType == MklDnnType) {
+        gradInput.asInstanceOf[MklDnnTensor[T]].release()
+      }
+      gradInput = MklDnnTensor[T](input.size())
+
       backwardDataPrimBuffer = ArrayBuffer.empty[Long]
       backwardDataReorderPrimBuffer = ArrayBuffer.empty[Long]
       val diffSrcMemDesc = if (gradInput.dim() == 1) {
@@ -436,6 +451,19 @@ class Linear[T: ClassTag](
       backDataPrim = MklDnn.PrimitiveCreate2(opPrimDesc, srcs, indexes, srcs.length,
         dsts, dsts.length)
       backwardDataPrimBuffer += backDataPrim
+
+      if (gradOutputReorderPrim == 0 && gradOutput.getTensorType == MklDnnType) {
+        internalGradOutput = gradOutput.asInstanceOf[MklDnnTensor[T]]
+      } else {
+        if (internalGradOutput != null) {
+          internalGradOutput.release()
+        }
+        internalGradOutput = MklDnnTensor[T](output.size())
+      }
+    }
+
+    if (gradOutput.getTensorType == DenseType) {
+      internalGradOutput.set(gradOutput)
     }
 
     var gradOutputPtr: Long = 0
@@ -670,7 +698,7 @@ class Linear[T: ClassTag](
         weightPtr)
     }
 
-    MklDnn.MemoryReleaseDataHandle(gradWeight.storage().array().asInstanceOf[Array[Float]],
+    MklDnn.MemoryReleaseDataHandle(gradBias.storage().array().asInstanceOf[Array[Float]],
       biasPtr)
   }
 

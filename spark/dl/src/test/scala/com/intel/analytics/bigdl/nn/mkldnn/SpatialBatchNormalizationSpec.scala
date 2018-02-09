@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.nn.mkldnn
 
 import com.intel.analytics.bigdl.mkl.MklDnn.MemoryFormat
 import com.intel.analytics.bigdl.mkl.{MKL, MklDnn}
-import com.intel.analytics.bigdl.nn
+import com.intel.analytics.bigdl.{Module, nn}
 import com.intel.analytics.bigdl.nn.{Identity, Sequential, View}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.numeric.NumericFloat
@@ -36,20 +36,13 @@ class SpatialBatchNormalizationSpec extends FlatSpec with Matchers {
       initBias = initBias)
     val input = Tensor(batchSize, channel, height, width).rand()
 
-//    val blasWeight = Tensor().resize(Array(2, channel))
-//    blasWeight.select(1, 1).copy(initWeight)
-//    blasWeight.select(1, 2).copy(initBias)
-//
-//    bn.weight should be (initWeight)
-//    bn.bias should be (initBias)
-
     val output = bn.forward(input)
 
     val nnBn = nn.SpatialBatchNormalization(channel, epsilon,
       initWeight = initWeight, initBias = initBias)
     val nnOutput = nnBn.forward(input)
 
-    output shouldEqual nnOutput
+    DnnUtils.nearequals(output, nnOutput)
   }
 
   "bn updateOutput multi times" should "work correctly" in {
@@ -62,9 +55,6 @@ class SpatialBatchNormalizationSpec extends FlatSpec with Matchers {
     val bn = SpatialBatchNormalization(channel, epsilon, initWeight = initWeight,
       initBias = initBias)
     val input = Tensor(batchSize, channel, height, width).rand()
-
-//    bn.weight should be (initWeight)
-//    bn.bias should be (initBias)
 
     Utils.manyTimes(bn.forward(input))(10)
 
@@ -124,8 +114,6 @@ class SpatialBatchNormalizationSpec extends FlatSpec with Matchers {
     Utils.manyTimes(nnBn.backward(input, gradOutput))(10)
 
     bn.gradInput shouldEqual nnBn.gradInput
-//    bn.gradWeight shouldEqual nnBn.gradWeight
-//    bn.gradBias shouldEqual nnBn.gradBias
   }
 
   "bn perf" should "work correctly" in {
@@ -137,6 +125,7 @@ class SpatialBatchNormalizationSpec extends FlatSpec with Matchers {
 
     val bn = SpatialBatchNormalization(channel, epsilon, initWeight = initWeight,
       initBias = initBias)
+    bn.defaultFormat = MklDnn.MemoryFormat.nChw8c
     val input = Tensor(batchSize, channel, height, width).rand(-1, 1)
     val gradOutput = Tensor().resizeAs(input).rand(-1, 1)
 
@@ -258,12 +247,16 @@ class SpatialBatchNormalizationSpec extends FlatSpec with Matchers {
     val initWeight2 = Tensor[Float](Array(channel3, channel2)).rand()
     val initBias2 = Tensor[Float](Array(channel3)).rand()
 
+    val bn1 = SpatialBatchNormalization(64, initWeight = initWeight1, initBias = initBias1)
+        .setShouldConvert(false)
+    bn1.defaultFormat = MklDnn.MemoryFormat.nChw8c
     val seq = Sequential()
+      .add(bn1)
       .add(SpatialBatchNormalization(64, initWeight = initWeight1, initBias = initBias1)
         .setShouldConvert(false))
-      .add(SpatialBatchNormalization(64, initWeight = initWeight1, initBias = initBias1)
+      .add(Linear(channel2, channel3, initWeight = initWeight2, initBias = initBias2)
         .setShouldConvert(false))
-      .add(Linear(channel2, channel3, initWeight = initWeight2, initBias = initBias2))
+      .add(ReLUDnn())
 
     seq.forward(input)
     println("=" * 80)
@@ -276,6 +269,7 @@ class SpatialBatchNormalizationSpec extends FlatSpec with Matchers {
       .add(nn.SpatialBatchNormalization(64, initWeight = initWeight1, initBias = initBias1))
       .add(nn.View(Array(batch, channel2)))
       .add(nn.Linear(channel2, channel3, initWeight = initWeight2, initBias = initBias2))
+      .add(nn.ReLU())
 
     seq2.forward(input)
 
@@ -338,5 +332,128 @@ class SpatialBatchNormalizationSpec extends FlatSpec with Matchers {
     val input = Tensor(batchSize, channel, height, width).rand()
 
     bn.cloneModule().forward(input).toTensor should be (bn.forward(input).toTensor)
+  }
+
+  "bn + conv + relu" should "work correctly" in {
+    val inputChannel = 64
+    val outputChannel = 64
+    val stride = 3
+    val input = Tensor(4, 64, 57, 57).rand(-1, 1)
+
+    val dnn = Sequential()
+      .add(ReLUDnn())
+      .add(ConvolutionDnn(inputChannel, outputChannel, 1, 1, 1, 1, 0, 0))
+      .add(SpatialBatchNormalization(outputChannel))
+      .add(ReLUDnn(true))
+      .add(ConvolutionDnn(outputChannel, outputChannel, 3, 3, stride, stride, 1, 1))
+      .add(SpatialBatchNormalization(outputChannel))
+      .add(ReLUDnn(true))
+      .add(ConvolutionDnn(outputChannel, outputChannel*4, 1, 1, 1, 1, 0, 0))
+      .add(SpatialBatchNormalization(outputChannel * 4))
+
+    val blas = Sequential()
+      .add(nn.ReLU())
+      .add(nn.SpatialConvolution(inputChannel, outputChannel, 1, 1, 1, 1, 0, 0))
+      .add(nn.SpatialBatchNormalization(outputChannel))
+      .add(nn.ReLU(true))
+      .add(nn.SpatialConvolution(outputChannel, outputChannel, 3, 3, stride, stride, 1, 1))
+      .add(nn.SpatialBatchNormalization(outputChannel))
+      .add(nn.ReLU(true))
+      .add(nn.SpatialConvolution(outputChannel, outputChannel*4, 1, 1, 1, 1, 0, 0))
+      .add(nn.SpatialBatchNormalization(outputChannel * 4))
+
+    blas.forward(input)
+    dnn.forward(input)
+    val gradOutput = Tensor().resizeAs(blas.output.toTensor).rand(-1, 1)
+    blas.backward(input, gradOutput)
+    dnn.backward(input, gradOutput)
+
+    val dnnTime = Utils.manyTimes {
+      dnn.forward(input)
+      dnn.backward(input, gradOutput)
+    } _
+
+    val blasTime = Utils.manyTimes {
+      blas.forward(input)
+      blas.backward(input, gradOutput)
+    } _
+
+    val warm = 10
+    val iter = 20
+
+    dnnTime(warm)
+    blasTime(iter)
+
+    dnn.resetTimes()
+    blas.resetTimes()
+
+    dnnTime(iter)
+    blasTime(iter)
+
+    compare(dnn, blas)
+  }
+
+  def compare(dnn: Module[Float], blas: Module[Float]): Unit = {
+    def format(v: Double): Double = {
+      (v / 1e6 / 10).formatted("%2.4f").toDouble
+    }
+    val names = blas.getTimes().map(_._1.getName())
+    val blasForwardTime = blas.getTimes().map(x => format(x._2))
+    val blasBackwardTime = blas.getTimes().map(x => format(x._3))
+
+    val dnnForwardTime = dnn.getTimes().map(x => format(x._2))
+    val dnnBackwardTime = dnn.getTimes().map(x => format(x._3))
+
+    val forwardUpgrade = blasForwardTime.zip(dnnForwardTime).map { t =>
+      ((t._1 - t._2) / t._1.toDouble).formatted("%2.2f")
+    }
+    val backwardUpgrade = blasBackwardTime.zip(dnnBackwardTime).map { t =>
+      ((t._1 - t._2) / t._1.toDouble).formatted("%2.2f")
+    }
+
+    val header = List("MODULE NAME", "MKL-BLAS", "MKL-DNN", "UPGRADE")
+
+    def rows4(input: List[Array[_]]): List[List[_]] = {
+      input(0).toList zip input(1).toList zip input(2) zip input(3) map {
+        case (((a, b), c), d) => List(a, b, c, d)
+      }
+    }
+
+    val forwardTime = rows4(List(names, blasForwardTime, dnnForwardTime, forwardUpgrade))
+
+    val backwardTime = rows4(List(names, blasBackwardTime, dnnBackwardTime, backwardUpgrade))
+
+    println(Tabulator.format(header:: forwardTime))
+    println("=" * 80)
+    println(Tabulator.format(header:: backwardTime))
+  }
+
+  "bn with dynamic input size" should "work correctly" in {
+    val (channel, height, width) = (3, 4, 4)
+    val epsilon = 1e-5
+
+    val initWeight = Tensor(channel).rand()
+    val initBias = Tensor(channel).rand()
+
+    val bn = SpatialBatchNormalization(channel, epsilon, initWeight = initWeight,
+      initBias = initBias)
+    val nnBn = nn.SpatialBatchNormalization(channel, epsilon,
+      initWeight = initWeight, initBias = initBias)
+
+    for (batchSize <- Array(2, 3, 4, 2)) {
+      val input = Tensor(batchSize, channel, height, width).rand()
+      bn.forward(input)
+      nnBn.forward(input)
+
+      val gradOutput = Tensor().resizeAs(input).rand()
+
+      bn.backward(input, gradOutput)
+      nnBn.backward(input, gradOutput)
+
+      DnnUtils.nearequals(bn.output, nnBn.output)
+      DnnUtils.nearequals(bn.gradInput, nnBn.gradInput)
+
+      println("=" * 120)
+    }
   }
 }

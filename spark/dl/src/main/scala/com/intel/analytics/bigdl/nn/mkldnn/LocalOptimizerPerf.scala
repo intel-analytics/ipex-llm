@@ -23,7 +23,7 @@ import com.intel.analytics.bigdl.dataset.{LocalDataSet, MiniBatch}
 import com.intel.analytics.bigdl.example.loadmodel.AlexNet
 import com.intel.analytics.bigdl.models.inception.{Inception_v1, Inception_v2}
 import com.intel.analytics.bigdl.models.lenet.LeNet5
-import com.intel.analytics.bigdl.models.resnet.{ResNet, ResNet_50}
+import com.intel.analytics.bigdl.models.resnet.{ResNet}
 import com.intel.analytics.bigdl.models.resnet.ResNet.DatasetType
 import com.intel.analytics.bigdl.models.vgg.{Vgg_16, Vgg_19}
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
