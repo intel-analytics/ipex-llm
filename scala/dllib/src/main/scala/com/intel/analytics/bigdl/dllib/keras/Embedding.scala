@@ -25,6 +25,22 @@ import com.intel.analytics.bigdl.nn.{AddConstant, InitializationMethod, LookupTa
 
 import scala.reflect.ClassTag
 
+/**
+ * Turn positive integers (indexes) into dense vectors of fixed size.
+ * The input of this layer should be 2D.
+ *
+ * This layer can only be used as the first layer in a model, you need to provide the argument
+ * inputShape (a Single Shape, does not include the batch dimension).
+ *
+ * @param inputDim Int > 0. Size of the vocabulary.
+ * @param outputDim Int >= 0. Dimension of the dense embedding.
+ * @param init Initialization method for the weights of the layer. Default is Xavier.
+ *             You can also pass in corresponding string representations such as 'glorot_uniform'
+ *             or 'normal', etc. for simple init methods in the factory method.
+ * @param wRegularizer An instance of [[Regularizer]], (eg. L1 or L2 regularization),
+ *                     applied to the embedding matrix. Default is null.
+ * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now.
+ */
 class Embedding[T: ClassTag](
    val inputDim: Int,
    val outputDim: Int,

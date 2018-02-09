@@ -24,6 +24,21 @@ import com.intel.analytics.bigdl.utils.Shape
 
 import scala.reflect.ClassTag
 
+/**
+ * Applies average pooling operation for 3D data (spatial or spatio-temporal).
+ * Data format currently supported for this layer is 'CHANNEL_FIRST' (dimOrdering='th').
+ * The input of this layer should be 5D.
+ *
+ * When you use this layer as the first layer of a model, you need to provide the argument
+ * inputShape (a Single Shape, does not include the batch dimension).
+ *
+ * @param poolSize Int array of length 3. Factors by which to downscale (dim1, dim2, dim3).
+ *                 Default is (2, 2, 2), which will halve the image in each dimension.
+ * @param strides Int array of length 3. Stride values. Default is null, and in this case it will
+ *                be equal to poolSize.
+ * @param dimOrdering Format of input data. Please use 'CHANNEL_FIRST' (dimOrdering='th').
+ * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now.
+ */
 class AveragePooling3D[T: ClassTag](
    poolSize: Array[Int] = Array(2, 2, 2),
    strides: Array[Int] = null,
