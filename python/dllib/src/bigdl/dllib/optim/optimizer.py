@@ -628,7 +628,7 @@ class BaseOptimizer(JavaValue):
         """
         Do an optimization.
         """
-        jmodel = callJavaFunc(get_spark_context(), self.value.optimize)
+        jmodel = callJavaFunc(self.value.optimize)
         from bigdl.nn.layer import Layer
         return Layer.of(jmodel)
 
