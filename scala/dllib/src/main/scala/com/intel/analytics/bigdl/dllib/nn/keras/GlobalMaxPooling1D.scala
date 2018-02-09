@@ -28,9 +28,10 @@ import scala.reflect.ClassTag
 
 /**
  * Global max pooling operation for temporal data.
+ * The input of this layer should be 3D.
+ *
  * When you use this layer as the first layer of a model, you need to provide the argument
  * inputShape (a Single Shape, does not include the batch dimension).
- * The input of this layer should be 3D.
  *
  * @tparam T The numeric type of parameter(e.g. weight, bias). Only support float/double now.
  */

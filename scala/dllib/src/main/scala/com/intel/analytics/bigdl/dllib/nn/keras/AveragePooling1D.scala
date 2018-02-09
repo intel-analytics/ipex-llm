@@ -25,6 +25,20 @@ import com.intel.analytics.bigdl.utils.Shape
 
 import scala.reflect.ClassTag
 
+/**
+ * Applies average pooling operation for temporal data.
+ * The input of this layer should be 3D.
+ *
+ * When you use this layer as the first layer of a model, you need to provide the argument
+ * inputShape (a Single Shape, does not include the batch dimension).
+ *
+ * @param poolLength Size of the region to which average pooling is applied. Integer. Default is 2.
+ * @param stride Factor by which to downscale. Positive integer, or -1. 2 will halve the input.
+ *               If -1, it will default to poolLength. Default is -1, and in this case it will
+ *               be equal to poolSize.
+ * @param borderMode Either 'valid' or 'same'. Default is 'valid'.
+ * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now.
+ */
 class AveragePooling1D[T: ClassTag](
    poolLength: Int = 2,
    stride: Int = -1,

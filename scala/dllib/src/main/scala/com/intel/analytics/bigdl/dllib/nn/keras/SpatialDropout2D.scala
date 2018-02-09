@@ -32,10 +32,10 @@ import scala.reflect.ClassTag
  * activations and will otherwise just result in an effective learning rate
  * decrease. In this case, SpatialDropout2D will help promote independence
  * between feature maps and should be used instead.
+ * The input of this layer should be 4D.
  *
  * When you use this layer as the first layer of a model, you need to provide the argument
  * inputShape (a Single Shape, does not include the batch dimension).
- * The input of this layer should be 4D.
  *
  * @param p Double between 0 and 1. Fraction of the input units to drop.
  * @param dimOrdering Format of input data. Either DataFormat.NCHW (dimOrdering='th') or
