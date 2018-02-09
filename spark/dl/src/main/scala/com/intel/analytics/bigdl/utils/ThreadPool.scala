@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.utils
 
 import java.util.concurrent._
 
-import com.intel.analytics.bigdl.mkl.MKL
+import com.intel.analytics.bigdl.mkl.{MKL, MklDnn}
 import org.apache.commons.lang.exception.ExceptionUtils
 import org.apache.log4j.Logger
 
@@ -75,6 +75,7 @@ class ThreadPool(private var poolSize: Int) {
     mklPoolSize = Some(size)
     (1 to poolSize).map(i => Future {
       MKL.setNumThreads(size)
+      MklDnn.setNumThreads(size)
       val tid = Thread.currentThread().getId()
       logger.info(s"Set mkl threads to $size on thread $tid")
     }(context)).foreach(Await.result(_, Duration.Inf))
