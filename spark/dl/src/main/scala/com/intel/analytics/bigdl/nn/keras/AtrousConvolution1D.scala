@@ -29,7 +29,7 @@ import scala.reflect.ClassTag
 /**
  * Atrous Convolution operator for filtering neighborhoods of 1-D inputs.
  * A.k.a dilated convolution or convolution with holes.
- * Only support bias = True.
+ * Bias will be included in this layer.
  * The input of this layer should be 3D.
  *
  * When using this layer as the first layer in a model, you need to provide the argument
