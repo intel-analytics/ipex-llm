@@ -42,7 +42,7 @@ class PriorBox[T: ClassTag](minSizes: Array[Float], maxSizes: Array[Float] = nul
   _aspectRatios: Array[Float] = null, isFlip: Boolean = true, isClip: Boolean = false,
   var variances: Array[Float] = null, offset: Float = 0.5f,
   var imgH: Int = 0, var imgW: Int = 0, imgSize: Int = 0,
-  var stepH: Float = 0, var stepW: Float = 0, step: Float = 0)
+  var stepH: Float = 0, var stepW: Float = 0, step: Float = 0, hasVariances: Boolean = true)
   (implicit ev: TensorNumeric[T]) extends AbstractModule[Activity, Tensor[T], T] {
 
   private var aspectRatios: ArrayBuffer[Float] = _
@@ -80,9 +80,9 @@ class PriorBox[T: ClassTag](minSizes: Array[Float], maxSizes: Array[Float] = nul
       }
     }
 
-    if (variances == null) {
+    if (variances == null && hasVariances) {
       variances = Array[Float](0.1f)
-    } else if (variances.length > 1) {
+    } else if (variances != null && variances.length > 1) {
       require(variances.length == 4, "Must and only provide 4 variance.")
     }
 
@@ -139,7 +139,11 @@ class PriorBox[T: ClassTag](minSizes: Array[Float], maxSizes: Array[Float] = nul
     // generate one set of priors which can be shared across all images.
     // 2 channels. First channel stores the mean of each prior coordinate.
     // Second channel stores the variance of each prior coordinate.
-    output.resize(1, 2, dim)
+    if (hasVariances) {
+      output.resize(1, 2, dim)
+    } else {
+      output.resize(1, 1, dim)
+    }
     val offset = output.storageOffset() - 1
     if (classTag[T] == classTag[Float]) {
       val outputData = output.storage().array().asInstanceOf[Array[Float]]
@@ -216,14 +220,16 @@ class PriorBox[T: ClassTag](minSizes: Array[Float], maxSizes: Array[Float] = nul
     }
     // set the variance.
     // var outputDataOffset = output.storageOffset() - 1 + offset(0, 1, sizes = output.size())
-    if (variances.length == 1) {
-      NumericFloat.fill(outputData, idx, output.nElement(), variances(0))
-    } else {
-      var d = 0
-      while (d < dim) {
-        Array.copy(variances, 0, outputData, idx, 4)
-        idx += 4
-        d += 4
+    if (hasVariances) {
+      if (variances.length == 1) {
+        NumericFloat.fill(outputData, idx, output.nElement(), variances(0))
+      } else {
+        var d = 0
+        while (d < dim) {
+          Array.copy(variances, 0, outputData, idx, 4)
+          idx += 4
+          d += 4
+        }
       }
     }
   }
@@ -293,14 +299,16 @@ class PriorBox[T: ClassTag](minSizes: Array[Float], maxSizes: Array[Float] = nul
     }
     // set the variance.
     // var outputDataOffset = output.storageOffset() - 1 + offset(0, 1, sizes = output.size())
-    if (variances.length == 1) {
-      NumericDouble.fill(outputData, idx, output.nElement(), variances(0))
-    } else {
-      var d = 0
-      while (d < dim) {
-        Array.copy(variances, 0, outputData, idx, 4)
-        idx += 4
-        d += 4
+    if (hasVariances) {
+      if (variances.length == 1) {
+        NumericDouble.fill(outputData, idx, output.nElement(), variances(0))
+      } else {
+        var d = 0
+        while (d < dim) {
+          Array.copy(variances, 0, outputData, idx, 4)
+          idx += 4
+          d += 4
+        }
       }
     }
   }
@@ -317,8 +325,8 @@ object PriorBox {
     _aspectRatios: Array[Float] = null, isFlip: Boolean = true, isClip: Boolean = false,
     variances: Array[Float] = null, offset: Float = 0.5f,
     imgH: Int = 0, imgW: Int = 0, imgSize: Int = 0,
-    stepH: Float = 0, stepW: Float = 0, step: Float = 0)
+    stepH: Float = 0, stepW: Float = 0, step: Float = 0, hasVariances: Boolean = true)
     (implicit ev: TensorNumeric[T]): PriorBox[T] =
     new PriorBox[T](minSizes, maxSizes, _aspectRatios, isFlip, isClip, variances, offset, imgH,
-      imgW, imgSize, stepH, stepW, step)
+      imgW, imgSize, stepH, stepW, step, hasVariances)
 }
