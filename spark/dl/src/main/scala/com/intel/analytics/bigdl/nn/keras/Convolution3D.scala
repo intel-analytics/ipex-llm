@@ -28,6 +28,7 @@ import scala.reflect.ClassTag
 /**
  * Applies convolution operator for filtering windows of three-dimensional inputs.
  * You can also use Conv3D as an alias of this layer.
+ * Data format currently supported for this layer is 'CHANNEL_FIRST' (dimOrdering='th').
  * The input of this layer should be 5D.
  *
  * When you use this layer as the first layer of a model, you need to provide the argument
@@ -47,8 +48,7 @@ import scala.reflect.ClassTag
  * @param borderMode Either 'valid' or 'same'. Default is 'valid'.
  * @param subsample Int array of length 3. Factor by which to subsample output.
  *                  Also called strides elsewhere. Default is (1, 1, 1).
- * @param dimOrdering Format of the input data. Either "CHANNEL_FIRST" (dimOrdering='th') or
- *                    "CHANNEL_LAST" (dimOrdering='tf'). Default is "CHANNEL_FIRST".
+ * @param dimOrdering Format of the input data. Please use "CHANNEL_FIRST" (dimOrdering='th').
  * @param wRegularizer An instance of [[Regularizer]], (eg. L1 or L2 regularization),
  *                     applied to the input weights matrices. Default is null.
  * @param bRegularizer An instance of [[Regularizer]], applied to the bias. Default is null.

@@ -30,11 +30,11 @@ import scala.reflect.ClassTag
  * When you use this layer as the first layer of a model, you need to provide the argument
  * inputShape (a Single Shape, does not include the batch dimension).
  *
- * @param dim1Crop Int array of length 2. Kernel dim1 of the 3 cropping dimension.
+ * @param dim1Crop Int array of length 2. Kernel dim1 of the three cropping dimensions.
  *                 Default is (1, 1).
- * @param dim2Crop Int array of length 2. Kernel dim2 of the 3 cropping dimension.
+ * @param dim2Crop Int array of length 2. Kernel dim2 of the three cropping dimensions.
  *                 Default is (1, 1).
- * @param dim3Crop Int array of length 2. Kernel dim3 of the 3 cropping dimension.
+ * @param dim3Crop Int array of length 2. Kernel dim3 of the three cropping dimensions.
  *                 Default is (1, 1).
  * @param dimOrdering Format of input data. Either 'CHANNEL_FIRST' (dimOrdering='th') or
  *                    'CHANNEL_LAST' (dimOrdering='tf'). Default is 'CHANNEL_FIRST'.
