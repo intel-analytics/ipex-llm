@@ -44,7 +44,7 @@ import scala.reflect.ClassTag
  * @param innerActivation Activation function for inner cells.
  *                        You can also pass in corresponding string representations such as 'relu'
  *                        or 'sigmoid', etc. for simple activations in the factory method.
- *                        dDefault is 'hard_sigmoid'.
+ *                        Default is 'hard_sigmoid'.
  * @param dimOrdering Format of input data. Please use "CHANNEL_FIRST" (dimOrdering='th').
  * @param subsample Int. Default is 1. Factor by which to subsample output.
  *                  Also called strides elsewhere.

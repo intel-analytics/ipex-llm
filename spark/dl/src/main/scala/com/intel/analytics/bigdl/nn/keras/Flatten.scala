@@ -25,6 +25,7 @@ import scala.reflect.ClassTag
 
 /**
  * Flattens the input without affecting the batch size.
+ *
  * When you use this layer as the first layer of a model, you need to provide the argument
  * inputShape (a Single Shape, does not include the batch dimension).
  *

@@ -27,9 +27,10 @@ import scala.reflect.ClassTag
 
 /**
  * Turn positive integers (indexes) into dense vectors of fixed size.
+ * The input of this layer should be 2D.
+ *
  * This layer can only be used as the first layer in a model, you need to provide the argument
  * inputShape (a Single Shape, does not include the batch dimension).
- * The input of this layer should be 2D.
  *
  * @param inputDim Int > 0. Size of the vocabulary.
  * @param outputDim Int >= 0. Dimension of the dense embedding.
