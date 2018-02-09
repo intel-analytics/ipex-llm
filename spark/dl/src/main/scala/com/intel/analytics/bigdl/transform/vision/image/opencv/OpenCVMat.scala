@@ -19,8 +19,9 @@ package com.intel.analytics.bigdl.transform.vision.image.opencv
 import java.io.{File, IOException, ObjectInputStream, ObjectOutputStream}
 
 import com.intel.analytics.bigdl.opencv.OpenCV
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.transform.vision.image.util.BoundingBox
+import com.intel.analytics.bigdl.utils.RandomGenerator
 import org.apache.commons.io.FileUtils
 import org.opencv.core._
 import org.opencv.imgcodecs.Imgcodecs
@@ -89,7 +90,13 @@ class OpenCVMat() extends Mat with Serializable {
   def drawBoundingBox(bbox: BoundingBox, text: String,
     font: Int = Core.FONT_HERSHEY_COMPLEX_SMALL,
     boxColor: (Double, Double, Double) = (0, 255, 0),
-    textColor: (Double, Double, Double) = (255, 255, 255)): this.type = {
+    textColor: (Double, Double, Double) = (255, 255, 255),
+    opacity: Double = 1): this.type = {
+    var imageCopy: OpenCVMat = null
+    if (opacity != 1) {
+      imageCopy = new OpenCVMat()
+      this.copyTo(imageCopy)
+    }
     Imgproc.rectangle(this,
       new Point(bbox.x1, bbox.y1),
       new Point(bbox.x2, bbox.y2),
@@ -98,6 +105,38 @@ class OpenCVMat() extends Mat with Serializable {
       new Point(bbox.x1, bbox.y1 - 2),
       font, 1,
       new Scalar(textColor._1, textColor._2, textColor._3), 1)
+    if (opacity != 1) {
+      Core.addWeighted(this, opacity, imageCopy, 1 - opacity, 0, this)
+      imageCopy.release()
+    }
+    this
+  }
+
+  def drawMask(masks: Array[Tensor[Float]],
+    opacity: Float = 0.5f): OpenCVMat = {
+    val images = OpenCVMat.toTensor(this)
+    masks.foreach(mask => {
+      val r = RandomGenerator.RNG.uniform(0, 255)
+      val g = RandomGenerator.RNG.uniform(0, 255)
+      val b = RandomGenerator.RNG.uniform(0, 255)
+      require(mask.dim() == 2, s"there should be two dim in mask, while got ${mask.dim()}")
+
+      (1 to images.size(1)).foreach(h => {
+        (1 to images.size(2)).foreach(w => {
+          if (mask.valueAt(h, w) == 1) {
+            images.setValue(h, w, 1,
+              images.valueAt(h, w, 1) * opacity + (1 - opacity) * b.toFloat)
+            images.setValue(h, w, 2,
+              images.valueAt(h, w, 2) * opacity + (1 - opacity) * g.toFloat)
+            images.setValue(h, w, 3,
+              images.valueAt(h, w, 3) * opacity + (1 - opacity) * r.toFloat)
+          }
+        })
+      })
+    })
+
+    val mat = OpenCVMat.fromTensor(images)
+    mat.copyTo(this)
     this
   }
 }
@@ -220,6 +259,11 @@ object OpenCVMat {
     }
     input.get(0, 0, floats)
     (floats, input.height(), input.width(), channel)
+  }
+
+  def toTensor(input: Mat): Tensor[Float] = {
+    val floats = toFloatPixels(input)
+    Tensor(Storage(floats._1)).resize(input.height(), input.width(), input.channels())
   }
 
   /**

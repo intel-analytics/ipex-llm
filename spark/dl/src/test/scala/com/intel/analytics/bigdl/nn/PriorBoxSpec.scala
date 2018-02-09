@@ -28,8 +28,6 @@ class PriorBoxSpec extends FlatSpec {
     val minSizes = Array(460.8f)
     val maxSizes = Array(537.6f)
     val aspectRatios = Array(2f)
-//    val param = ComponetParam(256, 4, minSizes = Array(460.8f),
-//      maxSizes = Array(537.6f), aspectRatios = Array(2), isFlip, isClip, variances, 512)
     val layer = PriorBox[Float](minSizes = minSizes, maxSizes = maxSizes,
       _aspectRatios = aspectRatios, isFlip = isFlip, isClip = isClip,
       variances = variances, step = 0, offset = 0.5f, imgH = 512, imgW = 512)
@@ -49,6 +47,34 @@ class PriorBoxSpec extends FlatSpec {
       a
     })
   }
+
+
+  "Priorbox no variances" should "work" in {
+    val isClip = false
+    val isFlip = true
+    val variances = Array(0.1f, 0.1f, 0.2f, 0.2f)
+    val minSizes = Array(460.8f)
+    val maxSizes = Array(537.6f)
+    val aspectRatios = Array(2f)
+    val layer = PriorBox[Float](minSizes = minSizes, maxSizes = maxSizes,
+      _aspectRatios = aspectRatios, isFlip = isFlip, isClip = isClip,
+      variances = variances, step = 0, offset = 0.5f, imgH = 512, imgW = 512, hasVariances = false)
+    val input = Tensor[Float](8, 256, 1, 1)
+
+    val out = layer.forward(input)
+
+    val expectedStr = "0.0507812\n0.0507812\n0.949219\n0.949219\n0.0146376\n" +
+      "0.0146376\n0.985362\n0.985362\n-0.135291\n0.182354\n1.13529\n0.817646\n" +
+      "0.182354\n-0.135291\n0.817646\n1.13529"
+
+    val expected = Tensor(Storage(expectedStr.split("\n").map(_.toFloat))).resize(1, 1, 16)
+
+    out.map(expected, (a, b) => {
+      assert((a - b).abs < 1e-5);
+      a
+    })
+  }
+
 }
 
 class PriorBoxSerialTest extends ModuleSerializationTest {

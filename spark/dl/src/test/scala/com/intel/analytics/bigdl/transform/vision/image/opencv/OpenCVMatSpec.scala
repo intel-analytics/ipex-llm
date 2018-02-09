@@ -209,4 +209,15 @@ class OpenCVMatSpec extends FlatSpec with Matchers with BeforeAndAfter {
     Imgcodecs.imwrite(tmpFile.toString, img)
     println(tmpFile)
   }
+
+  "drawBoundingBox transparent" should "work properly" in {
+    val img = OpenCVMat.read(resource.getFile)
+    val boundingBox = BoundingBox(2.0f, 84.0f, 59.0f, 248.0f, false)
+    val boundingBox2 = BoundingBox(68.0f, 115.0f, 233.0f, 279.0f, false)
+    img.drawBoundingBox(boundingBox, "boundingBox", opacity = 0.5)
+    img.drawBoundingBox(boundingBox2, "boundingBox2", opacity = 0.7)
+    val tmpFile = java.io.File.createTempFile("module", ".jpg")
+    Imgcodecs.imwrite(tmpFile.toString, img)
+    println(tmpFile)
+  }
 }
