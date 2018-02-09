@@ -37,6 +37,7 @@ import scala.reflect.ClassTag
 class ConcatTableDnn[T : ClassTag]
 (implicit ev: TensorNumeric[T]) extends Container[Tensor[T], Table, T] {
   override def updateOutput(input: Tensor[T]): Table = {
+    val s1 = System.nanoTime()
     require(modules.length > 0, "empty modules of concat table")
     var i = 0
     // todo: not care about format ???
@@ -45,10 +46,15 @@ class ConcatTableDnn[T : ClassTag]
       output.toTable(i + 1) = currentOutput
       i += 1
     }
+    val end1 = (System.nanoTime() - s1)/1e6
+    if (System.getProperty("debug") == "2") {
+      DnnTools.debugFwInfo(this.getName(), end1, input.getFormat(), -2)
+    }
     output
   }
 
   override def updateGradInput(input: Tensor[T], gradOutput: Table): Tensor[T] = {
+    val s1 = System.nanoTime()
     require(modules.length > 0, "empty modules of concat table")
     var format: Int = 0
     var i = 0
@@ -71,6 +77,10 @@ class ConcatTableDnn[T : ClassTag]
         gradInput.add(currentGradInput)
       }
       i += 1
+    }
+    val end1 = (System.nanoTime() - s1)/1e6
+    if (System.getProperty("debug") == "2") {
+      DnnTools.debugBwInfo(this.getName(), end1, format, gradInput.getFormat())
     }
     gradInput
   }

@@ -164,7 +164,7 @@ class LRNDnn[T: ClassTag](
 
     val end1 = (System.nanoTime() - s1)/1e6
     if (System.getProperty("debug") == "2") {
-      println(s"lrn dnn ${this.getName()} forward ${end1}")
+      DnnTools.debugFwInfo(this.getName(), end1, input.getFormat(), output.getFormat())
     }
     output
   }
@@ -250,7 +250,7 @@ class LRNDnn[T: ClassTag](
 
     val end1 = (System.nanoTime() - s1)/1e6
     if (System.getProperty("debug") == "2") {
-      println(s"lrn dnn ${this.getName()} backward ${end1} format " + input.getFormat())
+      DnnTools.debugBwInfo(this.getName(), end1, gradOutput.getFormat(), gradInput.getFormat())
     }
     gradInput
   }

@@ -37,6 +37,7 @@ class CAddTableDnn[T: ClassTag](val inplace: Boolean = false)(
 
   // no related with format
   override def updateOutput(input: Table): Tensor[T] = {
+    val s1 = System.nanoTime()
     if (inplace) {
       output = input[Tensor[T]](1)
     } else if (output.getTensorType != MklDnnType) {
@@ -53,10 +54,15 @@ class CAddTableDnn[T: ClassTag](val inplace: Boolean = false)(
       output.add(curTensor)
       i += 1
     }
+    val end1 = (System.nanoTime() - s1)/1e6
+    if (System.getProperty("debug") == "2") {
+      DnnTools.debugFwInfo(this.getName(), end1, -2, format)
+    }
     output
   }
 
   override def updateGradInput(input: Table, gradOutput: Tensor[T]) : Table = {
+    val s1 = System.nanoTime()
     var i = 1
     var sum = ev.zero
     var calculateSum = false
@@ -73,6 +79,10 @@ class CAddTableDnn[T: ClassTag](val inplace: Boolean = false)(
     i = input.length + 1
     while (i <= gradInput.length) {
       gradInput.remove(i)
+    }
+    val end1 = (System.nanoTime() - s1)/1e6
+    if (System.getProperty("debug") == "2") {
+      DnnTools.debugBwInfo(this.getName(), end1, gradOutput.getFormat(), -2)
     }
     gradInput
   }

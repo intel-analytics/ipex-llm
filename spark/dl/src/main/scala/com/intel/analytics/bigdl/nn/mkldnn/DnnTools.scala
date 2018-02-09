@@ -59,6 +59,14 @@ object DnnTools {
     sortData.foreach(println)
   }
 
+  def debugFwInfo(name : String, time: Double, format1: Int, format2: Int): Unit = {
+    println(s"${name} forward ${time} input ${format1} output ${format2}")
+  }
+
+  def debugBwInfo(name : String, time: Double, format1: Int, format2: Int): Unit = {
+    println(s"${name} backward ${time} gradOutput ${format1} gradInput ${format2}")
+  }
+
   def dnnModel(classNum: Int): Module[Float] = {
     val model = Sequential[Float]()
       .add(ConvolutionDnn(3, 96, 11, 11, 4, 4, propagateBack = false))
@@ -254,16 +262,16 @@ object Vgg_16_dnn {
     model.add(ReLUDnn(true))
     model.add(PoolingDnn(2, 2, 2, 2))
 
-//    model.add(mkldnn.Linear(512 * 7 * 7, 4096))
-//    // model.add(Threshold(0, 1e-6))
-//    model.add(ReLUDnn(value = 1e-6f))
-//    // if (hasDropout) model.add(Dropout(0.5))
-//    model.add(mkldnn.Linear(4096, 4096))
-//    // model.add(Threshold(0, 1e-6))
-//    model.add(ReLUDnn(value = 1e-6f))
-//    // if (hasDropout) model.add(Dropout(0.5))
-//    model.add(mkldnn.Linear(4096, classNum))
-//    // model.add(LogSoftMax())
+    model.add(mkldnn.Linear(512 * 7 * 7, 4096))
+    // model.add(Threshold(0, 1e-6))
+    model.add(ReLUDnn(value = 1e-6f))
+    if (hasDropout) model.add(Dropout(0.5))
+    model.add(mkldnn.Linear(4096, 4096))
+    // model.add(Threshold(0, 1e-6))
+    model.add(ReLUDnn(value = 1e-6f))
+    if (hasDropout) model.add(Dropout(0.5))
+    model.add(mkldnn.Linear(4096, classNum))
+    model.add(LogSoftMax())
 
     model
   }
@@ -314,7 +322,7 @@ object Vgg_19_dnn {
     model.add(ReLUDnn(true))
     model.add(PoolingDnn(2, 2, 2, 2))
 
-    model.add(View(512 * 7 * 7))
+    // model.add(View(512 * 7 * 7))
     model.add(mkldnn.Linear(512 * 7 * 7, 4096))
     // model.add(Threshold(0, 1e-6))
     model.add(ReLUDnn(value = 1e-6f))

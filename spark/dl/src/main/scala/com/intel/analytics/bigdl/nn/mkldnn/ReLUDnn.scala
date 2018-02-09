@@ -138,7 +138,7 @@ class ReLUDnn[T: ClassTag](ip: Boolean = false, value: Float = 0.0f)(
 
       val end1 = (System.nanoTime() - s1)/1e6
       if (System.getProperty("debug") == "2") {
-        println(s"relu dnn ${this.getName()} forward ${end1}")
+        DnnTools.debugFwInfo(this.getName(), end1, input.getFormat(), output.getFormat())
       }
 
       output.layer_name = this.getName()
@@ -147,6 +147,9 @@ class ReLUDnn[T: ClassTag](ip: Boolean = false, value: Float = 0.0f)(
 
     override def updateGradInput(input: Tensor[Float], gradOutput: Tensor[Float]): Tensor[Float] = {
       val s1 = System.nanoTime()
+      if (this.getName() == "res2b_relu") {
+        val tmp = 0
+      }
       if (update_primitive) {
         var gradOutput_md : Long = 0L
         if (gradOutput.getPrimitiveDesc() != 0L) {
@@ -256,7 +259,7 @@ class ReLUDnn[T: ClassTag](ip: Boolean = false, value: Float = 0.0f)(
 
       val end1 = (System.nanoTime() - s1)/1e6
       if (System.getProperty("debug") == "2") {
-        println(s"relu dnn ${this.getName()} backward ${end1}")
+        DnnTools.debugBwInfo(this.getName(), end1, gradOutput.getFormat(), gradInput.getFormat())
       }
       gradInput.layer_name = this.getName()
       gradInput

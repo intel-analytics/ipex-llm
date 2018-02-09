@@ -61,6 +61,9 @@ object LocalOptimizerPerf {
     opt[Boolean]('t', "model")
       .text(s"Model name")
       .action((v, p) => p.copy(trainModel = v))
+    opt[Boolean]("debug")
+      .text(s"need Debug")
+      .action((v, p) => p.copy(needDebug = v))
     opt[Int]('n', "numThreads")
       .text(s"numThreads")
       .action((v, p) => p.copy(numThreads = v))
@@ -264,6 +267,10 @@ object LocalOptimizerPerf {
       val optimizer = Optimizer(model, dummyDataSet, criterion)
       optimizer.setEndWhen(Trigger.maxIteration(param.iteration)).optimize()
     } else {
+      if (param.needDebug) {
+        System.setProperty("debug", "2")
+        time(model, miniBatch, param.iteration)
+      }
       all(model, dummyDataSet, param.iteration)
       // time(model, miniBatch, param.iteration)
     }
@@ -290,5 +297,6 @@ case class LocalOptimizerPerfParam(
     dataType: String = "float",
     module: String = "resnet_50_dnn", // "alexnetDnn"
     trainModel: Boolean = false,
-    numThreads: Int = 1
+    numThreads: Int = 1,
+    needDebug: Boolean = false
   )

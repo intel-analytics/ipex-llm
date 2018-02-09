@@ -427,7 +427,7 @@ class ConvolutionDnn[T: ClassTag](
 
     val end1 = (System.nanoTime() - s1)/1e6
     if (System.getProperty("debug") == "2") {
-      println(s"conv dnn ${this.getName()} updateOutput ${end1}")
+      DnnTools.debugFwInfo(this.getName(), end1, input.getFormat(), output.getFormat())
     }
     output
   }
@@ -611,9 +611,9 @@ class ConvolutionDnn[T: ClassTag](
      MklDnnTensor.syncToHeap(gradWeightBuffer, gradWeight.storage().array(), gradWeight.storageOffset() - 1)
    }
 
-   val end1 = System.nanoTime() - s1 + dataTime
+   val end1 = (System.nanoTime() - s1 + dataTime)/1e6
    if (System.getProperty("debug") == "2") {
-     println(s"conv dnn ${this.getName()} acc ${end1/1e6}")
+     DnnTools.debugBwInfo(this.getName(), end1, gradOutput.getFormat(), gradInput.getFormat())
    }
 
    gradWeight.add(original_gradWeights)

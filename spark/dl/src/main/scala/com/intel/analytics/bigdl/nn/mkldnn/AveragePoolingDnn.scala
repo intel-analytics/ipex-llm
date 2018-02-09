@@ -221,7 +221,7 @@ class PoolingDnnAverage[T: ClassTag](
 
     val end1 = (System.nanoTime() - s1)/1e6
     if (System.getProperty("debug") == "2") {
-      println(s"average_pooling dnn ${this.getName()} forward ${end1}")
+      DnnTools.debugFwInfo(this.getName(), end1, input.getFormat(), output.getFormat())
     }
     output
   }
@@ -308,7 +308,7 @@ class PoolingDnnAverage[T: ClassTag](
 
     val end1 = (System.nanoTime() - s1)/1e6
     if (System.getProperty("debug") == "2") {
-      println(s"average_pooling dnn ${this.getName()} backward ${end1}")
+      DnnTools.debugBwInfo(this.getName(), end1, gradOutput.getFormat(), gradInput.getFormat())
     }
     gradInput
   }

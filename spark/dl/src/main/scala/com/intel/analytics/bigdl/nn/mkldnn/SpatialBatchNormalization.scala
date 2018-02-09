@@ -265,9 +265,9 @@ class SpatialBatchNormalization[T: ClassTag](
       output.asInstanceOf[MklDnnTensor[T]].syncToHeap()
     }
 
-    val end1 = System.nanoTime() - s1
+    val end1 = (System.nanoTime() - s1)/1e6
     if (System.getProperty("debug") == "2") {
-      println(s"bn dnn ${this.getName()} forward ${end1/1e6}")
+      DnnTools.debugFwInfo(this.getName(), end1, input.getFormat(), output.getFormat())
     }
     output
   }
@@ -397,9 +397,9 @@ class SpatialBatchNormalization[T: ClassTag](
       gradInput.asInstanceOf[MklDnnTensor[T]].syncToHeap()
     }
 
-    val end1 = System.nanoTime() - s1
+    val end1 = (System.nanoTime() - s1)/1e6
     if (System.getProperty("debug") == "2") {
-      println(s"bn dnn ${this.getName()} backward ${end1/1e6}")
+      DnnTools.debugBwInfo(this.getName(), end1, gradOutput.getFormat(), gradInput.getFormat())
     }
     gradInput
   }
