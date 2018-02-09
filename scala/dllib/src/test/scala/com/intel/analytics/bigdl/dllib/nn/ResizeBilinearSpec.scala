@@ -18,7 +18,10 @@ package com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.nn.abstractnn.DataFormat
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
+
+import scala.util.Random
 
 class ResizeBilinearSpec extends FlatSpec with Matchers {
   private val input = Tensor[Float](T(T(
@@ -145,5 +148,13 @@ class ResizeBilinearSpec extends FlatSpec with Matchers {
         .transpose(2, 4)
         .transpose(2, 3).contiguous() should be(gradInputCLast)
     }
+  }
+}
+
+class ResizeBilinearSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val input = Tensor[Float](1, 3, 2, 3).apply1( _ => Random.nextFloat())
+    val resizeBilinear = ResizeBilinear[Float](3, 2).setName("resizeBilinear")
+    runSerializationTest(resizeBilinear, input)
   }
 }
