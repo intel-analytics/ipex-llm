@@ -477,23 +477,8 @@ class SpatialDilatedConvolution[T: ClassTag](
     }
   }
 
-  override def updateParameters(learningRate: T): Unit = {
-    weight.map(gradWeight, (a, b) => ev.minus(a, ev.times(learningRate, b)))
-    bias.map(gradBias, (a, b) => ev.minus(a, ev.times(learningRate, b)))
-  }
-
-  override def zeroGradParameters(): Unit = {
-    gradWeight.zero()
-    gradBias.zero()
-  }
-
   override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
     (Array(this.weight, this.bias), Array(this.gradWeight, this.gradBias))
-  }
-
-  override def getParametersTable(): Table = {
-    T(getName() -> T("weight" -> weight, "bias" -> bias,
-      "gradWeight" -> gradWeight, "gradBias" -> gradBias))
   }
 
   override def equals(obj: Any): Boolean = {
