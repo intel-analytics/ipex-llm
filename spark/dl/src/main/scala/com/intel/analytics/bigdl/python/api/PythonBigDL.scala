@@ -2316,7 +2316,8 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def updateParameters(model: AbstractModule[Activity, Activity, T], lr: Double): Unit = {
-    model.updateParameters(ev.fromType(lr))
+    val (w, g) = model.getParameters()
+    w.add(ev.negative(ev.fromType(lr)), g)
   }
 
   def uniform(a: Double, b: Double, size: JList[Int]): JTensor = {

@@ -72,10 +72,6 @@ class Maxout[T: ClassTag](val inputSize: Int, val outputSize: Int, val maxoutNum
     layer.accGradParameters(input, gradOutput)
   }
 
-  override def zeroGradParameters(): Unit = {
-    layer.zeroGradParameters()
-  }
-
   override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
     layer.parameters()
   }

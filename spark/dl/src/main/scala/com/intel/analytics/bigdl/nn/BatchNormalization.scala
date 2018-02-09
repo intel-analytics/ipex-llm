@@ -142,13 +142,6 @@ class BatchNormalization[T: ClassTag](
     this
   }
 
-  override def zeroGradParameters(): Unit = {
-    if (affine) {
-      gradWeight.zero()
-      gradBias.zero()
-    }
-  }
-
   override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
     if (affine) {
       (Array(this.weight, this.bias), Array(this.gradWeight, this.gradBias))

@@ -1094,7 +1094,6 @@ class StaticGraphSpec extends FlatSpec with Matchers {
     model.zeroGradParameters()
     println("output1: \n", model.forward(input))
     model.backward(input, gradOutput)
-    model.updateParameters(1)
     println("fc2 weight \n", fc2.element.parameters()._1(0))
 
 
@@ -1104,7 +1103,6 @@ class StaticGraphSpec extends FlatSpec with Matchers {
     model.freeze("fc2")
     println("output2: \n", model.forward(input))
     model.backward(input, gradOutput)
-    model.updateParameters(1)
     println("fc2 weight \n", fc2.element.parameters()._1(0))
 
     fc1.element.getParameters()._1.apply1(_ => 1.0f)
@@ -1113,7 +1111,6 @@ class StaticGraphSpec extends FlatSpec with Matchers {
     model.unFreeze()
     println("output3: \n", model.forward(input))
     model.backward(input, gradOutput)
-    model.updateParameters(1)
     println("fc2 weight \n", fc2.element.parameters()._1(0))
 
     fc1.element.getParameters()._1.apply1(_ => 1.0f)
@@ -1122,7 +1119,6 @@ class StaticGraphSpec extends FlatSpec with Matchers {
     model.zeroGradParameters()
     println("output4: \n", model.forward(input))
     model.backward(input, gradOutput)
-    model.updateParameters(1)
     println("fc1 weight \n", fc1.element.parameters()._1(0))
     println("fc2 weight \n", fc2.element.parameters()._1(0))
   }

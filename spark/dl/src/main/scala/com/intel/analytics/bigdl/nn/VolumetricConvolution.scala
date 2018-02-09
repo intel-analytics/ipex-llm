@@ -97,33 +97,11 @@ class VolumetricConvolution[T: ClassTag](
     this
   }
 
-  override def updateParameters(learningRate: T): Unit = {
-    weight.map(gradWeight, (a, b) => ev.minus(a, ev.times(learningRate, b)))
-    if (withBias) {
-      bias.map(gradBias, (a, b) => ev.minus(a, ev.times(learningRate, b)))
-    }
-  }
-
-  override def zeroGradParameters(): Unit = {
-    gradWeight.zero()
-    if (withBias) gradBias.zero()
-  }
-
   override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
     if (withBias) {
       (Array(this.weight, this.bias), Array(this.gradWeight, this.gradBias))
     } else {
       (Array(this.weight), Array(this.gradWeight))
-    }
-  }
-
-  override def getParametersTable(): Table = {
-    if (withBias) {
-      T(getName() -> T("weight" -> weight, "bias" -> bias,
-        "gradWeight" -> gradWeight, "gradBias" -> gradBias))
-    } else {
-      T(getName() -> T("weight" -> weight,
-        "gradWeight" -> gradWeight))
     }
   }
 
