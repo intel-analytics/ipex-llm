@@ -41,8 +41,9 @@ class Merge[T: ClassTag](
   require(layers.length >= 2, s"Merge must have at least two input layers " +
     s"but found ${layers.length}")
 
-  private def computeOutputShapeForConcat(input: List[Shape], input1: Array[Int]): Shape = {
+  private def computeOutputShapeForConcat(input: List[Shape]): Shape = {
     import scala.util.control.Breaks._
+    val input1 = input.head.toSingle().toArray
     val output = input1.clone()
     require(Math.abs(concatAxis) < output.length, s"Invalid concat axis $concatAxis")
     axis = if (concatAxis < 0) concatAxis + output.length else concatAxis
@@ -66,7 +67,8 @@ class Merge[T: ClassTag](
     Shape(output)
   }
 
-  private def validateInputDim(input: List[Shape], input1: Array[Int]): Unit = {
+  private def checkSameInputShape(input: List[Shape]): Unit = {
+    val input1 = input.head.toSingle().toArray
     var i = 1
     while (i < input.length) {
       val input_i = input(i).toSingle().toArray
@@ -81,10 +83,10 @@ class Merge[T: ClassTag](
     val input = inputShape.toMulti()
     val input1 = input.head.toSingle().toArray
     if (mergeMode == "concat") {
-      computeOutputShapeForConcat(input, input1)
+      computeOutputShapeForConcat(input)
     }
     else {
-      validateInputDim(input, input1)
+      checkSameInputShape(input)
       if (mergeMode == "dot" || mergeMode == "cos") {
         require(input.head.toSingle().length <=2, s"For merge mode $mergeMode, 3D input " +
           s"or above is currently not supported, got input dim ${input.head.toSingle().length}")
