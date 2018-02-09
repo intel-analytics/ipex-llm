@@ -26,9 +26,10 @@ import scala.reflect.ClassTag
 
 /**
  * Gated Recurrent Unit architecture.
+ * The input of this layer should be 3D, i.e. (batch, time steps, input dim).
+ *
  * When you use this layer as the first layer of a model, you need to provide the argument
  * inputShape (a Single Shape, does not include the batch dimension).
- * The input of this layer should be 3D, i.e. (batch, time steps, input dim).
  *
  * @param outputDim Hidden unit size. Dimension of internal projections and final output.
  * @param activation Activation function to use.

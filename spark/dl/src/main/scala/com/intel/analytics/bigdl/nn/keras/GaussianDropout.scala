@@ -26,6 +26,7 @@ import scala.reflect.ClassTag
 /**
  * Apply multiplicative 1-centered Gaussian noise.
  * As it is a regularization layer, it is only active at training time.
+ *
  * When you use this layer as the first layer of a model, you need to provide the argument
  * inputShape (a Single Shape, does not include the batch dimension).
  *

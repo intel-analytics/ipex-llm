@@ -27,11 +27,12 @@ import scala.reflect.ClassTag
 
 /**
  * Applies a 2D convolution over an input image composed of several input planes.
+ * You can also use Conv2D as an alias of this layer.
+ * The input of this layer should be 4D.
+ *
  * When you use this layer as the first layer of a model, you need to provide the argument
  * inputShape (a Single Shape, does not include the batch dimension),
  * e.g. inputShape=Shape(3, 128, 128) for 128x128 RGB pictures.
- * You can also use Conv2D as an alias of this layer.
- * The input of this layer should be 4D.
  *
  * @param nbFilter Number of convolution filters to use.
  * @param nbRow Number of rows in the convolution kernel.

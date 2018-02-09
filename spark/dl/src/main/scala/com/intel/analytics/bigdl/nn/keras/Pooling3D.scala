@@ -22,6 +22,11 @@ import com.intel.analytics.bigdl.utils.Shape
 
 import scala.reflect.ClassTag
 
+/**
+ * Abstract class for different pooling 3D layers.
+ * Do not create a new instance of it or use it in a model.
+ * Please use its child classes, 'AveragePooling3D' and 'MaxPooling3D' instead.
+ */
 abstract class Pooling3D[T: ClassTag](
    val poolSize: Array[Int] = Array(2, 2, 2),
    val strides: Array[Int] = null,
