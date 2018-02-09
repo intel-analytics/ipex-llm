@@ -16,8 +16,11 @@
 package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.utils.{T, Table}
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
+
+import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Parallel
 class CAddTableSpec extends FlatSpec with Matchers {
@@ -39,5 +42,17 @@ class CAddTableSpec extends FlatSpec with Matchers {
     val grads = module.backward(T(tensor, scalar), Tensor[Float](T(1, 2, 3)))
     grads[Tensor[Float]](1) should be(Tensor[Float](T(1, 2, 3)))
     grads[Tensor[Float]](2).value() should be(6)
+  }
+}
+
+class CAddTableSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val input1 = Tensor[Float](5, 5).apply1(e => Random.nextFloat())
+    val input2 = Tensor[Float](5, 5).apply1(e => Random.nextFloat())
+    var input = new Table()
+    input(1.toFloat) = input1
+    input(2.toFloat) = input2
+    val caddTable = CAddTable[Float](false).setName("caddTable")
+    runSerializationTest(caddTable, input)
   }
 }

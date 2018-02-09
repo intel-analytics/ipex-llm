@@ -71,7 +71,19 @@ class SerializerSpec extends BigDLSpecHelper {
     "com.intel.analytics.bigdl.nn.keras.Permute" ->
       "com.intel.analytics.bigdl.keras.nn.PermuteSerialTest",
     "com.intel.analytics.bigdl.nn.keras.Model" ->
-      "com.intel.analytics.bigdl.keras.nn.ModelSerialTest"
+      "com.intel.analytics.bigdl.keras.nn.ModelSerialTest",
+    "com.intel.analytics.bigdl.nn.keras.GlobalAveragePooling3D" ->
+      "com.intel.analytics.bigdl.keras.nn.GlobalAveragePooling3DSerialTest",
+    "com.intel.analytics.bigdl.nn.keras.GlobalAveragePooling1D" ->
+      "com.intel.analytics.bigdl.keras.nn.GlobalAveragePooling1DSerialTest",
+    "com.intel.analytics.bigdl.nn.keras.ZeroPadding3D" ->
+      "com.intel.analytics.bigdl.keras.nn.ZeroPadding3DSerialTest",
+    "com.intel.analytics.bigdl.nn.keras.Dropout" ->
+      "com.intel.analytics.bigdl.keras.nn.DropoutSerialTest",
+    "module com.intel.analytics.bigdl.nn.keras.GlobalMaxPooling1D" ->
+      "module com.intel.analytics.bigdl.keras.nn.GlobalMaxPooling1D",
+    "com.intel.analytics.bigdl.nn.keras.Flatten" ->
+      "com.intel.analytics.bigdl.keras.nn.Flatten"
   )
 
   private val suffix = "SerialTest"

@@ -20,6 +20,7 @@ import com.intel.analytics.bigdl.optim.{L2Regularizer, SGD}
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils.{Shape, T, TestUtils}
 import com.intel.analytics.bigdl.utils.RandomGenerator._
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
 
 import scala.util.Random
@@ -227,4 +228,13 @@ class SpatialFullConvolutionSpec extends FlatSpec with Matchers {
     TestUtils.compareOutputShape(layer, Shape(3, 28, 32)) should be (true)
   }
 
+}
+
+class SpatialFullConvolutionSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val spatialFullConvolution = SpatialFullConvolution[Float](1, 1,
+      2, 2, 1, 1, 0, 0).setName("spatialFullConvolution")
+    val input = Tensor[Float](1, 3, 3).apply1(e => Random.nextFloat())
+    runSerializationTest(spatialFullConvolution, input)
+  }
 }

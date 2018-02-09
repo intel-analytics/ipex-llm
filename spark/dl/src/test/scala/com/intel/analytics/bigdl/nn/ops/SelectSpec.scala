@@ -15,9 +15,13 @@
  */
 package com.intel.analytics.bigdl.nn.ops
 
+import com.intel.analytics.bigdl.nn.Select
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
+
+import scala.util.Random
 
 class SelectSpec extends FlatSpec with Matchers {
   "select" should "be correct when condition is true" in {
@@ -36,5 +40,16 @@ class SelectSpec extends FlatSpec with Matchers {
 
     val ops = Select[Float]()
     ops.forward(T(cond, t, e)) should be(e)
+  }
+}
+
+class SelectSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val select = Select[Float]().setName("select")
+    val cond = Tensor.scalar[Boolean](true)
+    val t = Tensor[Int](T(1))
+    val e = Tensor[Int](T(2))
+    val input = T(cond, t, e)
+    runSerializationTest(select, input)
   }
 }

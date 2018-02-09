@@ -24,6 +24,7 @@ import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.nn.abstractnn.DataFormat
 import com.intel.analytics.bigdl.optim.{L2Regularizer, SGD}
 import com.intel.analytics.bigdl.utils.RandomGenerator._
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 
 import scala.util.Random
 import com.intel.analytics.bigdl.utils.{Shape, T, TestUtils}
@@ -3035,5 +3036,14 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
   "SpatialConvolution computeOutputShape NHWC" should "work properly" in {
     val layer = SpatialConvolution[Float](4, 5, 2, 2, format = DataFormat.NHWC)
     TestUtils.compareOutputShape(layer, Shape(12, 12, 4)) should be (true)
+  }
+}
+
+class SpatialConvolutionSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val spatialConvolution = SpatialConvolution[Float](3, 4, 2, 2).
+      setName("spatialConvolution")
+    val input = Tensor[Float](1, 3, 5, 5).apply1( e => Random.nextFloat())
+    runSerializationTest(spatialConvolution, input)
   }
 }

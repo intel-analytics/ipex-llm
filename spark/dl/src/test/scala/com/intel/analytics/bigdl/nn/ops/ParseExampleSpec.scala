@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.nn.ops
 import com.intel.analytics.bigdl.tensor.{FloatType, LongType, StringType, Tensor}
 import com.google.protobuf.{ByteString, CodedOutputStream}
 import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
 import org.tensorflow.example._
 import com.intel.analytics.bigdl.utils.tf.TFTensorNumeric.NumericByteString
@@ -74,4 +75,46 @@ class ParseExampleSpec extends FlatSpec with Matchers {
       Array(ByteString.copyFromUtf8("abcd")), Array[Int](1)))
   }
 
+}
+
+class ParseExampleSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    import com.intel.analytics.bigdl.utils.tf.TFTensorNumeric.NumericByteString
+
+    val floatBuilder = FloatList.newBuilder()
+      .addValue(0.0f).addValue(1.0f).addValue(2.0f)
+    val floatFeature = Feature.newBuilder().setFloatList(floatBuilder).build()
+
+    val longBuilder = Int64List.newBuilder()
+      .addValue(0).addValue(1).addValue(2)
+    val longFeature = Feature.newBuilder().setInt64List(longBuilder).build()
+
+    val bytesBuilder = BytesList.newBuilder().addValue(ByteString.copyFromUtf8("abcd"))
+    val bytesFeature = Feature.newBuilder().setBytesList(bytesBuilder).build()
+
+    val features = Features.newBuilder()
+      .putFeature("floatFeature", floatFeature)
+      .putFeature("longFeature", longFeature)
+      .putFeature("bytesFeature", bytesFeature)
+    val example = Example.newBuilder().setFeatures(features).build()
+    val length = example.getSerializedSize
+    val data = new Array[Byte](length)
+    val outputStream = CodedOutputStream.newInstance(data)
+    example.writeTo(outputStream)
+
+    val exampleParser = new ParseExample[Float](3, Seq(FloatType, LongType, StringType),
+      Seq(Array(3), Array(3), Array())).setName("parseExample")
+
+    val serialized = Tensor[ByteString](Array(ByteString.copyFrom(data)), Array[Int](1))
+    val names = Tensor[ByteString]()
+    val key1 = Tensor[ByteString](Array(ByteString.copyFromUtf8("floatFeature")), Array[Int]())
+    val key2 = Tensor[ByteString](Array(ByteString.copyFromUtf8("longFeature")), Array[Int]())
+    val key3 = Tensor[ByteString](Array(ByteString.copyFromUtf8("bytesFeature")), Array[Int]())
+
+    val default1 = Tensor[Float]()
+    val default2 = Tensor[Long]()
+    val default3 = Tensor[ByteString]()
+    val input = T(serialized, names, key1, key2, key3, default1, default2, default3)
+    runSerializationTest(exampleParser, input)
+  }
 }

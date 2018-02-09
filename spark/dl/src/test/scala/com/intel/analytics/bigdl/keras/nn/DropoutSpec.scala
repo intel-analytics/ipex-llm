@@ -20,6 +20,9 @@ import org.scalatest.{FlatSpec, Matchers}
 import com.intel.analytics.bigdl.nn.keras.{Dropout, Sequential => KSequential}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
+
+import scala.util.Random
 
 class DropoutSpec extends FlatSpec with Matchers {
 
@@ -34,3 +37,13 @@ class DropoutSpec extends FlatSpec with Matchers {
   }
 
 }
+
+class DropoutSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val layer = Dropout[Float](0.3, inputShape = Shape(3, 4))
+    layer.build(Shape(2, 3, 4))
+    val input = Tensor[Float](2, 3, 4).apply1(_ => Random.nextFloat())
+    runSerializationTest(layer, input)
+  }
+}
+

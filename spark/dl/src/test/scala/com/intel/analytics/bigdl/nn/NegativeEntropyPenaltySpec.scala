@@ -17,7 +17,10 @@ package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
+
+import scala.util.Random
 
 class NegativeEntropyPenaltySpec extends FlatSpec with Matchers {
 
@@ -37,5 +40,13 @@ class NegativeEntropyPenaltySpec extends FlatSpec with Matchers {
                                    0.2 + gradient(0.2),
                                    0.3 + gradient(0.3)))
     gradInput.almostEqual(expected, 1e-5) should be (true)
+  }
+}
+
+class NegativeEntropyPenaltySerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val penalty = NegativeEntropyPenalty[Float](0.01).setName("NegativeEntropyPenalty")
+    val input = Tensor[Float](3, 3).apply1(_ => Random.nextFloat())
+    runSerializationTest(penalty, input)
   }
 }
