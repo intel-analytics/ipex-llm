@@ -123,7 +123,7 @@ class Merge[T: ClassTag](
         seq.add(DotProduct())
         seq.add(com.intel.analytics.bigdl.nn.Reshape(Array(1), Some(true)))
         seq
-      case "cosine" =>
+      case "cos" =>
         seq.add(CosineDistance())
         seq.add(com.intel.analytics.bigdl.nn.Reshape(Array(1, 1), Some(true)))
         seq
