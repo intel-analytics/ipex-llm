@@ -732,15 +732,6 @@ class VolumetricFullConvolution[T: ClassTag](
     }
   }
 
-  override def getParametersTable(): Table = {
-    if (null == bias) {
-      T(getName() -> T("weight" -> weight, "gradWeight" -> gradWeight))
-    } else {
-      T(getName() -> T("weight" -> weight, "bias" -> bias,
-        "gradWeight" -> gradWeight, "gradBias" -> gradBias))
-    }
-  }
-
   override def clearState() : this.type = {
     super.clearState()
     columns.set()

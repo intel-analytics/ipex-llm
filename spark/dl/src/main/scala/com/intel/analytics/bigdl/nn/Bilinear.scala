@@ -209,15 +209,6 @@ class Bilinear[T: ClassTag](
     }
   }
 
-  override def getParametersTable(): Table = {
-    if (null == bias) {
-      T(getName() -> T("weight" -> weight, "gradWeight" -> gradWeight))
-    } else {
-      T(getName() -> T("weight" -> weight, "bias" -> bias,
-        "gradWeight" -> gradWeight, "gradBias" -> gradBias))
-    }
-  }
-
   override def toString(): String = {
     s"${getPrintName}($inputSize1, $inputSize2, $outputSize, $biasRes)"
   }

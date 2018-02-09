@@ -481,11 +481,6 @@ class SpatialDilatedConvolution[T: ClassTag](
     (Array(this.weight, this.bias), Array(this.gradWeight, this.gradBias))
   }
 
-  override def getParametersTable(): Table = {
-    T(getName() -> T("weight" -> weight, "bias" -> bias,
-      "gradWeight" -> gradWeight, "gradBias" -> gradBias))
-  }
-
   override def equals(obj: Any): Boolean = {
 
     if (!super.equals(obj)) {

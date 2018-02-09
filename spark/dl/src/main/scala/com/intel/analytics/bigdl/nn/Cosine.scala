@@ -180,10 +180,6 @@ class Cosine[T: ClassTag](val inputSize : Int, val outputSize : Int)(
     (Array(this.weight), Array(this.gradWeight))
   }
 
-  override def getParametersTable(): Table = {
-    T(getName() -> T("weight" -> weight, "gradWeight" -> gradWeight))
-  }
-
   override def toString(): String = {
     s"${getPrintName}($inputSize, $outputSize)"
   }

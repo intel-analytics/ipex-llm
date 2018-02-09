@@ -67,25 +67,33 @@ class SpatialSeperableConvolution[T: ClassTag](
 
   private val channelDim = if (dataFormat == DataFormat.NCHW) 2 else 4
 
+  private val weight = Tensor(depthMultiplier * nInputChannel * kW * kH +
+    internalChannel * nOutputChannel)
+  private val gradWeight = Tensor(depthMultiplier * nInputChannel * kW * kH +
+    internalChannel * nOutputChannel)
+
   private val depthWeight = if (initDepthWeight != null) {
     initDepthWeight
   } else if (dataFormat == DataFormat.NCHW) {
-    Tensor[T](depthMultiplier, nInputChannel, kW, kH)
+    Tensor[T](weight.storage(), 1, Array(depthMultiplier, nInputChannel, kW, kH))
   } else {
-      Tensor[T](kW, kH, nInputChannel, depthMultiplier)
+    Tensor[T](weight.storage(), 1, Array(kW, kH, nInputChannel, depthMultiplier))
   }
 
-  private val depthGradWeight = Tensor[T].resizeAs(depthWeight)
+  private val depthGradWeight = Tensor[T](gradWeight.storage(), 1, depthWeight.size())
 
   private val pointWeight = if (initPointWeight != null) {
     initPointWeight
   } else if (dataFormat == DataFormat.NCHW) {
-    Tensor[T](nOutputChannel, internalChannel, 1, 1)
+    Tensor[T](weight.storage(), depthWeight.nElement() + 1,
+      Array(nOutputChannel, internalChannel, 1, 1))
   } else {
-    Tensor[T](1, 1, internalChannel, nOutputChannel)
+    Tensor[T](weight.storage(), depthWeight.nElement() + 1,
+      Array(1, 1, internalChannel, nOutputChannel))
   }
 
-  private val pointGradWeight = Tensor[T].resizeAs(pointWeight)
+  private val pointGradWeight = Tensor[T](gradWeight.storage(), depthGradWeight.nElement() + 1,
+    pointWeight.size())
 
   private val bias = if (initBias != null) initBias else Tensor[T](nOutputChannel)
 
@@ -128,7 +136,7 @@ class SpatialSeperableConvolution[T: ClassTag](
   reset()
 
   override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
-    (Array(depthWeight, pointWeight, bias), Array(depthGradWeight, pointGradWeight, gradBias))
+    (Array(weight, bias), Array(gradWeight, gradBias))
   }
 
   override def computeOutputShape(inputShape: Shape): Shape = {

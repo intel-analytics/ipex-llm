@@ -215,14 +215,6 @@ class RecurrentDecoder[T : ClassTag](val seqLength: Int)
     val state = Seq(super.hashCode(), cells)
     state.map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
   }
-
-  override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
-    topology.parameters()
-  }
-
-  override def getParametersTable(): Table = {
-    topology.getParametersTable()
-  }
 }
 
 object RecurrentDecoder extends ContainerSerializable {

@@ -261,10 +261,6 @@ class LookupTable[T: ClassTag]
     (Array(this.weight), Array(this.gradWeight))
   }
 
-  override def getParametersTable(): Table = {
-    T(getName() -> T("weight" -> weight, "gradWeight" -> gradWeight))
-  }
-
   override def clearState() : this.type = {
     super.clearState()
     inputBuffer.set()

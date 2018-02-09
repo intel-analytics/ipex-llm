@@ -105,16 +105,6 @@ class VolumetricConvolution[T: ClassTag](
     }
   }
 
-  override def getParametersTable(): Table = {
-    if (withBias) {
-      T(getName() -> T("weight" -> weight, "bias" -> bias,
-        "gradWeight" -> gradWeight, "gradBias" -> gradBias))
-    } else {
-      T(getName() -> T("weight" -> weight,
-        "gradWeight" -> gradWeight))
-    }
-  }
-
   override def computeOutputShape(inputShape: Shape): Shape = {
     val input = inputShape.toSingle().toArray
     require(input.length == 5,

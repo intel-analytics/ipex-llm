@@ -363,17 +363,50 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
   /**
    * This function returns a table contains ModuleName, the parameter names and parameter value
    * in this module.
+   *
    * The result table is a structure of Table(ModuleName -> Table(ParameterName -> ParameterValue)),
    * and the type is Table[String, Table[String, Tensor[T]]].
    *
    * For example, get the weight of a module named conv1:
    *   table[Table]("conv1")[Tensor[T]]("weight").
    *
-   * Custom modules should override this function if they have parameters.
+   * The names of the parameters follow such convention:
+   *
+   * 1. If there's one parameter, the parameter is named as "weight", the gradient is named as
+   * "gradWeight"
+   *
+   * 2. If there're two parameters, the first parameter is named as "weight", the first gradient is
+   * named as "gradWeight"; the second parameter is named as "bias", the seconcd gradient is
+   * named as "gradBias"
+   *
+   * 3. If there're more parameters, the weight is named as "weight" with a seq number as suffix,
+   * the gradient is named as "gradient" with a seq number as suffix
+   *
+   * Custom modules should override this function the default impl if the convention doesn't meet
+   * the requirement.
    *
    * @return Table
    */
-  def getParametersTable(): Table = null
+  def getParametersTable(): Table = {
+    val params = parameters()
+    if (params == null) return null
+    val (weights, gradients) = params
+    require(gradients.length == weights.length, "weight number is not equal to grad number")
+
+    if (weights.length == 1) {
+      T(getName() -> T("weight" -> weights(0), "gradWeight" -> gradients(0)))
+    } else if (weights.length == 2) {
+      T(getName() -> T("weight" -> weights(0), "bias" -> weights(1),
+        "gradWeight" -> gradients(0), "gradBias" -> gradients(1)))
+    } else {
+      val result = T()
+      weights.zip(gradients).zipWithIndex.map { case ((w, g), i) =>
+        result(s"weight$i") = w
+        result(s"gradient$i") = g
+      }
+      T(getName() -> result)
+    }
+  }
 
   /**
    * Set the module to training mode

@@ -460,16 +460,6 @@ class LocallyConnected2D[T: ClassTag](
     }
   }
 
-  override def getParametersTable(): Table = {
-    if (withBias) {
-      T(getName() -> T("weight" -> weight, "bias" -> bias,
-        "gradWeight" -> gradWeight, "gradBias" -> gradBias))
-    } else {
-      T(getName() -> T("weight" -> weight,
-        "gradWeight" -> gradWeight))
-    }
-  }
-
   override def equals(obj: Any): Boolean = {
 
     if (!super.equals(obj)) {
