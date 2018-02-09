@@ -24,6 +24,20 @@ import com.intel.analytics.bigdl.utils.{MultiShape, Shape}
 
 import scala.reflect.ClassTag
 
+/**
+ * Used to merge a list of tensors into a single tensor, following some merge mode.
+ * Merge must have at least two input layers.
+ *
+ * When using this layer as the first layer in a model, you need to provide the argument
+ * inputShape for input layers (a Single Shape, does not include the batch dimension).
+ *
+ * @param layers A list of layer instances. Must be more than one layer.
+ * @param mode Merge mode. String, must be one of: 'sum', 'mul', 'concat', 'ave', 'cos',
+ *             'dot', 'max'. Default is 'sum'.
+ * @param concatAxis Integer, axis to use in mode concat. Only specify this when mode is 'concat'.
+ *                   Default is -1, meaning the last axis of input.
+ * @tparam T The numeric type of parameter(e.g. weight, bias). Only support float/double now.
+ */
 class Merge[T: ClassTag](
    val layers: Array[AbstractModule[Activity, Activity, T]] = null,
    val mode: String = "sum",

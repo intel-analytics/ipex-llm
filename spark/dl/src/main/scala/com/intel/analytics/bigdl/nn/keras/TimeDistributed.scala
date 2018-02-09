@@ -23,6 +23,20 @@ import com.intel.analytics.bigdl.utils.Shape
 
 import scala.reflect.ClassTag
 
+/**
+ * TimeDistributed wrapper.
+ * Apply a layer to every temporal slice of an input.
+ * The input should be at least 3D, and the dimension of index one
+ * will be considered to be the temporal dimension.
+ * When using this layer as the first layer in a model, you need to provide the argument
+ * inputShape (a Single Shape, does not include the batch dimension).
+ *
+ * If you apply TimeDistributed to a Dense layer, you can use:
+ * TimeDistributed(Dense(8), inputShape = Shape(10, 12))
+ *
+ * @param layer A layer instance.
+ * @tparam T The numeric type of parameter(e.g. weight, bias). Only support float/double now.
+ */
 class TimeDistributed[T: ClassTag](
    val layer: KerasLayer[Tensor[T], Tensor[T], T],
    val inputShape: Shape = null)(implicit ev: TensorNumeric[T])

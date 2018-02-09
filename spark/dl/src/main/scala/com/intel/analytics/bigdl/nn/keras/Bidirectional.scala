@@ -24,6 +24,21 @@ import com.intel.analytics.bigdl.utils.{Shape, Table}
 
 import scala.reflect.ClassTag
 
+/**
+ * Bidirectional wrapper for RNNs.
+ * Bidirectional requires RNNs to return the full sequence, i.e. set returnSequences = true.
+ *
+ * When using this layer as the first layer in a model, you need to provide the argument
+ * inputShape (a Single Shape, does not include the batch dimension).
+ *
+ * Example of creating a bidirectional LSTM:
+ * Bidirectiona(LSTM(12, returnSequences = true), mergeMode = "sum", inputShape = Shape(32, 32))
+ *
+ * @param layer An instance of a recurrent layer.
+ * @param mergeMode Mode by which outputs of the forward and backward RNNs will be combined.
+ *                  Must be one of: 'sum', 'mul', 'concat', 'ave'. Default is 'concat'.
+ * @tparam T The numeric type of parameter(e.g. weight, bias). Only support float/double now.
+ */
 class Bidirectional[T: ClassTag](
    val layer: Recurrent[T],
    val mergeMode: String = "concat",
