@@ -19,8 +19,7 @@ package com.intel.analytics.bigdl.keras.nn
 import com.intel.analytics.bigdl.keras.KerasBaseSpec
 import com.intel.analytics.bigdl.nn.keras.{Dense, InputLayer, Merge, Sequential => KSequential}
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.Shape
-import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.utils.{MultiShape, Shape, T}
 
 class MergeSpec extends KerasBaseSpec {
 
@@ -35,6 +34,17 @@ class MergeSpec extends KerasBaseSpec {
     seq.add(layer)
     seq.getOutputShape().toSingle().toArray should be (Array(-1, 4, 8))
     seq.forward(input) should be (input1 + input2)
+  }
+
+  "Merge with incompatible input shapes" should "raise an exception" in {
+    intercept[RuntimeException] {
+      val seq = KSequential[Float]()
+      val l1 = InputLayer[Float](inputShape = Shape(4))
+      val l2 = InputLayer[Float](inputShape = Shape(5))
+      val layer = Merge[Float](layers = List(l1, l2), mode = "cosine",
+        inputShape = MultiShape(List(Shape(4), Shape(4))))
+      seq.add(layer)
+    }
   }
 
   "Merge ave" should "work properly" in {

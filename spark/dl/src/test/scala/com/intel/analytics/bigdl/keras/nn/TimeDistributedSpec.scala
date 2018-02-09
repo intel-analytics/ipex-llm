@@ -46,7 +46,7 @@ class TimeDistributedSpec extends KerasBaseSpec {
       """
         |input_tensor = Input(shape=[4, 3, 12, 12])
         |input = np.random.random([2, 4, 3, 12, 12])
-        |output_tensor = TimeDistributed(Convolution2D(8, 3, 3))(input_tensor)
+        |output_tensor = TimeDistributed(Convolution2D(8, 3, 3, dim_ordering="th"))(input_tensor)
         |model = Model(input=input_tensor, output=output_tensor)
       """.stripMargin
     val seq = KSequential[Float]()

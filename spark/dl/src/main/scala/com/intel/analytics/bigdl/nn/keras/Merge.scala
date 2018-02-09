@@ -28,8 +28,9 @@ class Merge[T: ClassTag](
    val layers: Array[AbstractModule[Activity, Activity, T]] = null,
    val mode: String = "sum",
    val concatAxis: Int = -1,
-   val inputShape: MultiShape = null)(implicit ev: TensorNumeric[T])
-  extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {
+   // MultiShape isn't directly supported for serialization. Use Shape instead.
+   val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
+  extends KerasLayer[Tensor[T], Tensor[T], T](Merge.calcBatchInputShape(inputShape, layers)) {
 
   private val mergeMode = mode.toLowerCase()
   private var axis = concatAxis
@@ -39,16 +40,6 @@ class Merge[T: ClassTag](
   s"Invalid merge mode: $mergeMode")
   require(layers.length >= 2, s"Merge must have at least two input layers " +
     s"but found ${layers.length}")
-
-  override def getInputShape(): Shape = {
-    val shape = if (inputShape != null) inputShape
-    else {
-      MultiShape(layers.map { layer =>
-        layer.build(layer.getInputShape())
-      }.toList)
-    }
-    shape
-  }
 
   private def computeOutputShapeForConcat(input: List[Shape], input1: Array[Int]): Shape = {
     import scala.util.control.Breaks._
@@ -143,11 +134,28 @@ class Merge[T: ClassTag](
 }
 
 object Merge {
+  def calcBatchInputShape[T: ClassTag](
+    inputShape: Shape = null,
+    layers: Array[AbstractModule[Activity, Activity, T]]): Shape = {
+    val batchInputShape = KerasLayer.addBatch(inputShape)
+    val actualInputShape =
+      MultiShape(layers.map { layer =>
+      layer.build(layer.getInputShape())
+    }.toList)
+    if (batchInputShape != null) {
+      require(batchInputShape.isInstanceOf[MultiShape],
+        "Merge requires inputShape to be MultiShape")
+      require(batchInputShape.toMulti().equals(actualInputShape.toMulti()),
+        "Actual layer input shapes are not the same as expected layer input shapes")
+    }
+    actualInputShape
+  }
+
   def apply[@specialized(Float, Double) T: ClassTag](
     layers: List[AbstractModule[Activity, Activity, T]] = null,
     mode: String = "sum",
     concatAxis: Int = -1,
-    inputShape: MultiShape = null)(implicit ev: TensorNumeric[T]): Merge[T] = {
+    inputShape: Shape = null)(implicit ev: TensorNumeric[T]): Merge[T] = {
     new Merge[T](layers.toArray, mode, concatAxis, inputShape)
   }
 }

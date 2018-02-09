@@ -40,7 +40,7 @@ class Bidirectional[T: ClassTag](
     val output = layer.build(inputShape)
     if (mode == "concat") {
       val outputArray = output.toSingle().toArray
-      outputArray(outputArray.length-1) = outputArray(outputArray.length-1) *2
+      outputArray(outputArray.length-1) = outputArray.last * 2
       Shape(outputArray)
     }
     else output
