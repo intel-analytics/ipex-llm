@@ -44,14 +44,18 @@ abstract class Recurrent[T: ClassTag](
     else Shape(input(0), outputDim)
   }
 
-  def processParameters(rnn: Cell[T]): AbstractModule[Tensor[T], Tensor[T], T] = {
+  def buildCell(input: Array[Int]): Cell[T] = {
+    throw new RuntimeException("Recurrent cell haven't been implemented yet.")
+  }
+
+  override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
+    val input = inputShape.toSingle().toArray
     val model = TSequential[T]()
     if (goBackwards) model.add(Reverse(2))
     val rec = com.intel.analytics.bigdl.nn.Recurrent[T]()
-    rec.add(rnn)
+    rec.add(buildCell(input))
     model.add(rec)
     if (!returnSequences) model.add(Select(2, -1))
     model.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
   }
-
 }
