@@ -19,6 +19,7 @@ package com.intel.analytics.bigdl.python.api
 import java.util.{ArrayList => JArrayList, HashMap => JHashMap, List => JList, Map => JMap}
 
 import com.intel.analytics.bigdl.nn.SpatialBatchNormalization
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.nn.keras._
 import com.intel.analytics.bigdl.numeric._
 import com.intel.analytics.bigdl.optim.Regularizer
@@ -44,6 +45,14 @@ class PythonBigDLKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends Pytho
       null
     } else {
       Shape(inputShape.asScala.toArray)
+    }
+  }
+
+  def toScalaMultiShape(inputShape: JList[JList[Int]]): Shape = {
+    if (inputShape == null) {
+      null
+    } else {
+      Shape(inputShape.asScala.toArray.map(shape => Shape(shape.asScala.toArray)).toList)
     }
   }
 
@@ -102,6 +111,14 @@ class PythonBigDLKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends Pytho
   def getKerasRunningStd(module: BatchNormalization[T]): JTensor = {
     toJTensor(module.labor.asInstanceOf[SpatialBatchNormalization[T]]
       .runningVar)
+  }
+
+  def createKerasMerge(
+    layers: JList[AbstractModule[Activity, Activity, T]] = null,
+    mode: String = "sum",
+    concatAxis: Int = -1,
+    inputShape: JList[JList[Int]]): Merge[T] = {
+    Merge[T](layers.asScala.toList, mode, concatAxis, toScalaMultiShape(inputShape))
   }
 
 }

@@ -32,11 +32,19 @@ class KerasLayer(Layer):
 
 
 class Sequential(Container):
+    """
+    >>> sequential = Sequential()
+    creating: createSequential
+    """
     def __init__(self, bigdl_type="float"):
         super(Sequential, self).__init__(None, bigdl_type, True)
 
 
 class InputLayer(KerasLayer):
+    """
+    >>> inputLayer = InputLayer(input_shape=(3, 5))
+    creating: createKerasInputLayer
+    """
     def __init__(self, input_shape=None, bigdl_type="float"):
         super(InputLayer, self).__init__(None, bigdl_type,
                                          list(input_shape) if input_shape else None)
@@ -123,3 +131,21 @@ class BatchNormalization(KerasLayer):
     def get_running_std(self):
         return callBigDlFunc(self.bigdl_type, "getKerasRunningStd",
                       self.value).to_ndarray()
+
+
+class Merge(KerasLayer):
+    """
+    >>> l1 = InputLayer(input_shape=(3, 5))
+    creating: createKerasInputLayer
+    >>> l2 = InputLayer(input_shape=(3, 5))
+    creating: createKerasInputLayer
+    >>> merge = Merge(layers=[l1, l2], mode='sum')
+    creating: createKerasMerge
+    """
+    def __init__(self, layers=None, mode='sum', concat_axis=-1,
+                 input_shape=None, bigdl_type="float"):
+        super(Merge, self).__init__(None, bigdl_type,
+                                    list(layers) if layers else None,
+                                    mode,
+                                    concat_axis,
+                                    input_shape)

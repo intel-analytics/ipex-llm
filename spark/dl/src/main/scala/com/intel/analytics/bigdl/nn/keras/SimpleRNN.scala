@@ -17,7 +17,7 @@
 package com.intel.analytics.bigdl.nn.keras
 
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, TensorModule}
-import com.intel.analytics.bigdl.nn.RnnCell
+import com.intel.analytics.bigdl.nn.{Cell, RnnCell}
 import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -58,9 +58,8 @@ class SimpleRNN[T: ClassTag](
    inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends Recurrent[T](outputDim, returnSequences, goBackwards, inputShape) {
 
-  override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
-    val input = inputShape.toSingle().toArray
-    val layer = RnnCell(
+  override def buildCell(input: Array[Int]): Cell[T] = {
+    RnnCell(
       inputSize = input(2),
       hiddenSize = outputDim,
       activation = activation.asInstanceOf[TensorModule[T]],
@@ -68,7 +67,6 @@ class SimpleRNN[T: ClassTag](
       wRegularizer = wRegularizer,
       uRegularizer = uRegularizer,
       bRegularizer = bRegularizer)
-    super.processParameters(layer)
   }
 }
 

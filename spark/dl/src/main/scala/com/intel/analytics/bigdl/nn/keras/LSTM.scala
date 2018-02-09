@@ -16,6 +16,7 @@
 
 package com.intel.analytics.bigdl.nn.keras
 
+import com.intel.analytics.bigdl.nn.Cell
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, TensorModule}
 import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.Tensor
@@ -62,9 +63,8 @@ class LSTM[T: ClassTag](
    inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends Recurrent[T](outputDim, returnSequences, goBackwards, inputShape) {
 
-  override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
-    val input = inputShape.toSingle().toArray
-    val layer = com.intel.analytics.bigdl.nn.LSTM[T](
+  override def buildCell(input: Array[Int]): Cell[T] = {
+    com.intel.analytics.bigdl.nn.LSTM[T](
       inputSize = input(2),
       hiddenSize = outputDim,
       activation = activation.asInstanceOf[TensorModule[T]],
@@ -72,7 +72,6 @@ class LSTM[T: ClassTag](
       wRegularizer = wRegularizer,
       uRegularizer = uRegularizer,
       bRegularizer = bRegularizer)
-    super.processParameters(layer)
   }
 }
 

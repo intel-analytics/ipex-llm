@@ -49,6 +49,76 @@ class TestLayer(BigDLTestCase):
         self.compare_newapi(klayer, blayer, input_data2,
                             WeightsConverter.convert_batchnormalization)
 
+    def test_merge_sum(self):
+        b1 = BLayer.InputLayer(input_shape=(3, 5))
+        b2 = BLayer.InputLayer(input_shape=(3, 5))
+        blayer = BLayer.Merge(layers=[b1, b2], mode="sum")
+        k1 = KLayer.InputLayer(input_shape=(3, 5))
+        k2 = KLayer.InputLayer(input_shape=(3, 5))
+        klayer = KLayer.Merge(layers=[k1, k2], mode="sum")
+        input_data = [np.random.random([2, 3, 5]), np.random.random([2, 3, 5])]
+        self.compare_newapi(klayer, blayer, input_data)
+
+    def test_merge_mul(self):
+        b1 = BLayer.InputLayer(input_shape=(3, 5))
+        b2 = BLayer.InputLayer(input_shape=(3, 5))
+        blayer = BLayer.Merge(layers=[b1, b2], mode="mul")
+        k1 = KLayer.InputLayer(input_shape=(3, 5))
+        k2 = KLayer.InputLayer(input_shape=(3, 5))
+        klayer = KLayer.Merge(layers=[k1, k2], mode="mul")
+        input_data = [np.random.random([2, 3, 5]), np.random.random([2, 3, 5])]
+        self.compare_newapi(klayer, blayer, input_data)
+
+    def test_merge_ave(self):
+        b1 = BLayer.InputLayer(input_shape=(2, 5, 8))
+        b2 = BLayer.InputLayer(input_shape=(2, 5, 8))
+        blayer = BLayer.Merge(layers=[b1, b2], mode="ave")
+        k1 = KLayer.InputLayer(input_shape=(2, 5, 8))
+        k2 = KLayer.InputLayer(input_shape=(2, 5, 8))
+        klayer = KLayer.Merge(layers=[k1, k2], mode="ave")
+        input_data = [np.random.random([3, 2, 5, 8]), np.random.random([3, 2, 5, 8])]
+        self.compare_newapi(klayer, blayer, input_data)
+
+    def test_merge_max(self):
+        b1 = BLayer.InputLayer(input_shape=(2, 5, 8))
+        b2 = BLayer.InputLayer(input_shape=(2, 5, 8))
+        blayer = BLayer.Merge(layers=[b1, b2], mode="max")
+        k1 = KLayer.InputLayer(input_shape=(2, 5, 8))
+        k2 = KLayer.InputLayer(input_shape=(2, 5, 8))
+        klayer = KLayer.Merge(layers=[k1, k2], mode="max")
+        input_data = [np.random.random([3, 2, 5, 8]), np.random.random([3, 2, 5, 8])]
+        self.compare_newapi(klayer, blayer, input_data)
+
+    def test_merge_concat(self):
+        b1 = BLayer.InputLayer(input_shape=(2, 5, 11))
+        b2 = BLayer.InputLayer(input_shape=(2, 5, 8))
+        blayer = BLayer.Merge(layers=[b1, b2], mode="concat")
+        k1 = KLayer.InputLayer(input_shape=(2, 5, 11))
+        k2 = KLayer.InputLayer(input_shape=(2, 5, 8))
+        klayer = KLayer.Merge(layers=[k1, k2], mode="concat")
+        input_data = [np.random.random([3, 2, 5, 11]), np.random.random([3, 2, 5, 8])]
+        self.compare_newapi(klayer, blayer, input_data)
+
+    def test_merge_dot(self):
+        b1 = BLayer.InputLayer(input_shape=(4, ))
+        b2 = BLayer.InputLayer(input_shape=(4, ))
+        blayer = BLayer.Merge(layers=[b1, b2], mode="dot")
+        k1 = KLayer.InputLayer(input_shape=(4, ))
+        k2 = KLayer.InputLayer(input_shape=(4, ))
+        klayer = KLayer.Merge(layers=[k1, k2], mode="dot")
+        input_data = [np.random.random([2, 4]), np.random.random([2, 4])]
+        self.compare_newapi(klayer, blayer, input_data)
+
+    def test_merge_cos(self):
+        b1 = BLayer.InputLayer(input_shape=(3, ))
+        b2 = BLayer.InputLayer(input_shape=(3, ))
+        blayer = BLayer.Merge(layers=[b1, b2], mode="cos")
+        k1 = KLayer.InputLayer(input_shape=(3, ))
+        k2 = KLayer.InputLayer(input_shape=(3, ))
+        klayer = KLayer.Merge(layers=[k1, k2], mode="cos")
+        input_data = [np.random.random([2, 3]), np.random.random([2, 3])]
+        self.compare_newapi(klayer, blayer, input_data)
+
 
 if __name__ == "__main__":
     pytest.main([__file__])
