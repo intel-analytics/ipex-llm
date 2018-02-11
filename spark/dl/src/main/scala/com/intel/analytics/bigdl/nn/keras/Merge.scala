@@ -29,13 +29,13 @@ import scala.reflect.ClassTag
  * Merge must have at least two input layers.
  *
  * When using this layer as the first layer in a model, you need to provide the argument
- * inputShape for input layers (a Single Shape, does not include the batch dimension).
+ * inputShape for input layers (each as a Single Shape, does not include the batch dimension).
  *
  * @param layers A list of layer instances. Must be more than one layer.
  * @param mode Merge mode. String, must be one of: 'sum', 'mul', 'concat', 'ave', 'cos',
  *             'dot', 'max'. Default is 'sum'.
  * @param concatAxis Integer, axis to use in mode concat. Only specify this when mode is 'concat'.
- *                   Default is -1, meaning the last axis of input.
+ *                   Default is -1, meaning the last axis of the input.
  * @tparam T The numeric type of parameter(e.g. weight, bias). Only support float/double now.
  */
 class Merge[T: ClassTag](
