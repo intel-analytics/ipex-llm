@@ -48,6 +48,9 @@ class TimeDistributed[T : ClassTag] (
   private var outputSize: Array[Int] = _
   private val timeBuffer =
     new ArrayBuffer[(AbstractModule[_ <: Activity, _ <: Activity, T], Long, Long)]
+  private var maskBuffer: Tensor[T] = _
+  private var indexBuffer: Tensor[T] = _
+  private var inputBuffer: Tensor[T] = _
 
   private def combine(src: Array[Int], target: Array[Int]): Unit = {
     require(src.length == target.length + 1,
@@ -106,10 +109,19 @@ class TimeDistributed[T : ClassTag] (
     output.set(_output).resize(outputSize)
 
     if (maskZero) {
-      val masks = input.abs().max(3)._1.sign()
-      for (i <- 1 to masks.size(1)) {
-        for (j <- 1 to masks.size(2)) {
-          if (masks(Array(i, j, 1)) == ev.zero) {
+      if (maskBuffer == null) {
+        maskBuffer = Tensor()
+      }
+      if (indexBuffer == null) {
+        indexBuffer = Tensor()
+      }
+      if (inputBuffer == null) {
+        inputBuffer = Tensor()
+      }
+      inputBuffer.resizeAs(input).abs(input).max(maskBuffer, indexBuffer, 3)._1
+      for (i <- 1 to maskBuffer.size(1)) {
+        for (j <- 1 to maskBuffer.size(2)) {
+          if (maskBuffer(Array(i, j, 1)) == ev.zero) {
             output.select(1, i).select(1, j).zero()
           }
         }
@@ -163,10 +175,9 @@ class TimeDistributed[T : ClassTag] (
     backwardTime += System.nanoTime - st
 
     if (maskZero) {
-      val masks = input.abs().max(3)._1.sign()
-      for (i <- 1 to masks.size(1)) {
-        for (j <- 1 to masks.size(2)) {
-          if (masks(Array(i, j, 1)) == ev.zero) {
+      for (i <- 1 to maskBuffer.size(1)) {
+        for (j <- 1 to maskBuffer.size(2)) {
+          if (maskBuffer(Array(i, j, 1)) == ev.zero) {
             gradInput.select(1, i).select(1, j).zero()
           }
         }
@@ -271,6 +282,9 @@ class TimeDistributed[T : ClassTag] (
     gradOutputSize = null
     outputSize = null
     timeBuffer.clear
+    maskBuffer = null
+    inputBuffer = null
+    indexBuffer = null
     this
   }
 

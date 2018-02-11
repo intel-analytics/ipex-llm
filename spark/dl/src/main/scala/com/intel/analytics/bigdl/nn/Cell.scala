@@ -46,8 +46,7 @@ import scala.reflect.ClassTag
  */
 abstract class Cell[T : ClassTag](
   val hiddensShape: Array[Int],
-  var regularizers: Array[Regularizer[T]] = null,
-  var isMaskZero: Boolean = false
+  var regularizers: Array[Regularizer[T]] = null
 )(implicit ev: TensorNumeric[T])
   extends AbstractModule[Table, Table, T] {
 
@@ -143,37 +142,8 @@ abstract class Cell[T : ClassTag](
       val inputTensor = input.toTable[Tensor[T]](Recurrent.inputDim)
       input(Recurrent.inputDim) = preTopology.updateOutput(inputTensor)
       output = cell.forward(input).toTable
-      if (isMaskZero) {
-        val mask = inputTensor.abs(inputTensor).max(2)._1
-        if (mask.prod().equals(ev.zero)) {
-          for (i <- 1 to mask.size(1)) {
-            if (mask.select(1, i) == ev.zero) {
-              output
-            }
-          }
-        }
-      }
       input(Recurrent.inputDim) = inputTensor
-    } else {
-      output = cell.forward(input).toTable
-      val inputTensor = input.toTable[Tensor[T]](Recurrent.inputDim)
-      if (isMaskZero && this.isInstanceOf[LSTM[T]]) {
-        output.update(Recurrent.inputDim, output[Table](Recurrent.hidDim)[Tensor[T]](1).clone())
-        val mask = inputTensor.abs(inputTensor).max(2)._1
-        if (mask.prod().equals(ev.zero)) {
-          for (i <- 1 to mask.size(1)) {
-            if (mask(Array(i, 1)) == ev.zero) {
-              val newState = output[Table](Recurrent.hidDim)
-              val originState = input[Table](Recurrent.hidDim)
-              for (j <- 1 to newState.length()) {
-                newState[Tensor[T]](j).select(1, i).copy(originState[Tensor[T]](j).select(1, i))
-              }
-              output[Tensor[T]](Recurrent.inputDim).select(1, i).zero()
-            }
-          }
-        }
-      }
-    }
+    } else output = cell.forward(input).toTable
     output
   }
 
@@ -213,37 +183,6 @@ abstract class Cell[T : ClassTag](
         preTopology.backward(inputTensor, gradInput.toTable[Tensor[T]](Recurrent.inputDim))
       input(Recurrent.inputDim) = inputTensor
     } else {
-      if (isMaskZero && this.isInstanceOf[LSTM[T]]) {
-        val inputTensor = input.toTable[Tensor[T]](Recurrent.inputDim)
-        val mask = inputTensor.abs(inputTensor).max(2)._1
-        if (mask.prod().equals(ev.zero)) {
-          val gradOutputBuff = T()
-          Utils.recursiveResizeAs(gradOutputBuff, gradOutput)
-          Utils.recursiveCopy(gradOutputBuff, gradOutput)
-          for (i <- 1 to mask.size(1)) {
-            if (mask(Array(i, 1)) == ev.zero) {
-              val originState = gradOutputBuff[Table](Recurrent.hidDim)
-              for (j <- 1 to originState.length()) {
-                originState[Tensor[T]](j).select(1, i).zero()
-              }
-            }
-          }
-
-          gradInput = cell.backward(input, gradOutputBuff).toTable
-
-          for (i <- 1 to mask.size(1)) {
-            if (mask(Array(i, 1)) == ev.zero) {
-              val newState = gradInput[Table](Recurrent.hidDim)
-              val originState = gradOutput[Table](Recurrent.hidDim)
-              for (j <- 1 to newState.length()) {
-                newState[Tensor[T]](j).select(1, i).copy(originState[Tensor[T]](j).select(1, i))
-              }
-            }
-          }
-
-          return gradInput
-        }
-      }
       gradInput = cell.backward(input, gradOutput).toTable
     }
 

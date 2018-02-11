@@ -164,6 +164,10 @@ class Seq2seq[T: ClassTag](encoderRecs: Array[Recurrent[T]], decoderRecs: Array[
   override def getParametersTable(): Table = {
     module.getParametersTable()
   }
+
+  override def zeroGradParameters(): Unit = {
+    module.zeroGradParameters()
+  }
   
   private def shrinkHiddenState(state: Activity,
     shrinkModule: Array[TensorModule[T]]): Activity = {

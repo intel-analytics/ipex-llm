@@ -54,14 +54,12 @@ class LSTM[T : ClassTag] (
   val p: Double = 0,
   var wRegularizer: Regularizer[T] = null,
   var uRegularizer: Regularizer[T] = null,
-  var bRegularizer: Regularizer[T] = null,
-  val maskZero: Boolean = false
+  var bRegularizer: Regularizer[T] = null
 )
   (implicit ev: TensorNumeric[T])
   extends Cell[T](
     hiddensShape = Array(hiddenSize, hiddenSize),
-    regularizers = Array(wRegularizer, uRegularizer, bRegularizer),
-    isMaskZero = maskZero
+    regularizers = Array(wRegularizer, uRegularizer, bRegularizer)
   ) {
   var gates: Sequential[T] = _
   var cellLayer: Sequential[T] = _

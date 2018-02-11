@@ -163,13 +163,13 @@ object Train {
         val vocabSize = dictionary.getVocabSize()
         val padId = dictionary.getIndex("_") + 1
         val chat1 = Source
-          .fromFile(param.dataFolder + "chat1.txt", "UTF-8")
+          .fromFile(param.dataFolder + "chat1_1.txt", "UTF-8")
           .getLines
           .toList
           .map(_.split(",").map(_.toInt))
           .map(s => s.filter(id => id != 0))
         val chat2List = Source
-          .fromFile(param.dataFolder + "chat2.txt", "UTF-8")
+          .fromFile(param.dataFolder + "chat2_1.txt", "UTF-8")
           .getLines
           .toList
           .toIterator
@@ -341,42 +341,44 @@ object Train {
       val seeds = Array("happy birthday have a nice day",
         "donald trump won last nights presidential debate according to snap online polls")
 
-      val adam = new Adam[Float](0.0001)
-      val criterion = TimeDistributedMaskCriterion(
-        ClassNLLCriterion(paddingValue = padId, sizeAverage = false),
-        padValue = padId,
-        sizeAverage = false
-      )
-
-      val trainInput = DataSet.rdd(trainSet).transform(
-        SampleToMiniBatch(batchSize = param.batchSize,
-          featurePaddingParam = Some(PaddingParam[Float](
-            paddingTensor =
-              Some(Array(padFeature, padFeature)))),
-          labelPaddingParam = Some(PaddingParam[Float](
-            paddingTensor =
-              Some(Array(padLabel)))))
-      ).toDistributed().data(false).collect()
-      val input = trainInput(0).getInput()
-      val labels = trainInput(0).getTarget()
-      val (weights, grad) = model.getParameters()
-      val state = T("learningRate" -> param.learningRate)
-      def feval1(x: Tensor[Float]): (Float, Tensor[Float]) = {
-//        enclookuptable.getWeightsBias().foreach(x => println(x))
-//        encoder(0).getWeightsBias().foreach(x => println(x))
-        val output = model.forward(input).toTensor[Float]
-        val _loss = criterion.forward(output, labels)
-        model.zeroGradParameters()
-        val gradInput = criterion.backward(output, labels)
-        model.backward(input, gradInput)
-        (_loss, grad)
-      }
-
-      var loss1: Array[Float] = null
-      for (i <- 1 to 10) {
-        loss1 = adam.optimize(feval1, weights)._2
-        println(s"${i}-th loss = ${loss1(0)}")
-      }
+//      val adam = new Adam[Float](0.0001)
+//      val criterion = TimeDistributedMaskCriterion(
+//        ClassNLLCriterion(paddingValue = padId, sizeAverage = false),
+//        padValue = padId,
+//        sizeAverage = false
+//      )
+//
+//      val trainInput = DataSet.rdd(trainSet).transform(
+//        SampleToMiniBatch(batchSize = param.batchSize,
+//          featurePaddingParam = Some(PaddingParam[Float](
+//            paddingTensor =
+//              Some(Array(padFeature, padFeature)))),
+//          labelPaddingParam = Some(PaddingParam[Float](
+//            paddingTensor =
+//              Some(Array(padLabel)))))
+//      ).toDistributed().data(false).collect()
+//      val input = trainInput(0).getInput()
+//      val labels = trainInput(0).getTarget()
+//      val (weights, grad) = model.getParameters()
+//      val state = T("learningRate" -> param.learningRate)
+//      def feval1(x: Tensor[Float]): (Float, Tensor[Float]) = {
+////        enclookuptable.getWeightsBias().foreach(x => println(x))
+////        encoder(0).getWeightsBias().foreach(x => println(x))
+//        val output = model.forward(input).toTensor[Float]
+//        val _loss = criterion.forward(output, labels)
+//        model.zeroGradParameters()
+//        val gradInput = criterion.backward(output, labels)
+//        model.backward(input, gradInput)
+//        (_loss, grad)
+//      }
+//
+//      var loss1: Array[Float] = null
+//      for (i <- 1 to 10) {
+//        declookuptable.weight = enclookuptable.weight.clone()
+//        declookuptable.gradWeight.set(enclookuptable.gradWeight)
+//        loss1 = adam.optimize(feval1, weights)._2
+//        println(s"${i}-th loss = ${loss1(0)}")
+//      }
 
       var i = 1
       while (i <= param.nEpochs) {
