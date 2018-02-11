@@ -443,8 +443,14 @@ _picklable_classes = [
 def init_engine(bigdl_type="float"):
     callBigDlFunc(bigdl_type, "initEngine")
 
+
 def init_executor_gateway(sc, bigdl_type="float"):
     callBigDlFunc(bigdl_type, "initExecutorGateway", sc, sc._gateway._gateway_client.port)
+
+
+def get_node_and_core_number(bigdl_type="float"):
+    result = callBigDlFunc(bigdl_type, "getNodeAndCoreNumber")
+    return result[0], result[1]
 
 
 def redire_spark_logs(bigdl_type="float", log_path=os.getcwd()+"/bigdl.log"):
@@ -462,6 +468,14 @@ def show_bigdl_info_logs(bigdl_type="float"):
     :param bigdl_type: "double" or "float"
     """
     callBigDlFunc(bigdl_type, "showBigDlInfoLogs")
+
+
+def show_bigdl_logs(level, bigdl_type="float"):
+    """
+    Set BigDL log level to INFO.
+    :param bigdl_type: "double" or "float"
+    """
+    callBigDlFunc(bigdl_type, "showBigDlLogs", level)
 
 
 def get_bigdl_conf():
