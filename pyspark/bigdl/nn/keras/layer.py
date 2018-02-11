@@ -16,12 +16,39 @@
 
 import sys
 
-from bigdl.nn.layer import Layer, Container
-from bigdl.util.common import callBigDlFunc, callJavaFunc, JTensor
+from bigdl.nn.layer import Layer, Sequential as TSequential
+from bigdl.util.common import callBigDlFunc, JTensor, JavaValue
 
 if sys.version >= '3':
     long = int
     unicode = str
+
+
+class InferShape(JavaValue):
+    def __init__(self, bigdl_type="float"):
+        self.bigdl_type = bigdl_type
+
+    def __process_shape(self, output_shape):
+        return tuple([None] + output_shape[1:])
+
+    def get_input_shape(self):
+        """
+        Return a list of shape tuples if merge layer is the first layer.
+        Return one shape tuple otherwise.
+        """
+        input = callBigDlFunc(self.bigdl_type, "getInputShape",
+                              self.value)
+        if len(input) == 1:
+            return self.__process_shape(input(0))
+        else:
+            res = []
+            for i in input:
+                res.append(self.__process_shape(i))
+            return res
+
+    def get_output_shape(self):
+        return self.__process_shape(callBigDlFunc(self.bigdl_type, "getOutputShape",
+                                                  self.value))
 
 
 class KerasLayer(Layer):
@@ -31,7 +58,7 @@ class KerasLayer(Layer):
         return name
 
 
-class Sequential(Container):
+class Sequential(TSequential, InferShape):
     """
     Container for a Sequential model.
 
@@ -39,18 +66,7 @@ class Sequential(Container):
     creating: createSequential
     """
     def __init__(self, bigdl_type="float"):
-        super(Sequential, self).__init__(None, bigdl_type, True)
-
-    def __process_shape(self, output_shape):
-        return tuple([None] + output_shape[1:])
-
-    def get_output_shape(self):
-        return self.__process_shape(callBigDlFunc(self.bigdl_type, "getOutputShapeFor",
-                                           self.value, 0))
-
-    def get_output_shape_at(self, node_index):
-        return self.__process_shape(callBigDlFunc(self.bigdl_type, "getOutputShapeFor",
-                                    self.value, node_index))
+        super(Sequential, self).__init__(bigdl_type, True)
 
 
 class InputLayer(KerasLayer):

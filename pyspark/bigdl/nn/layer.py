@@ -1062,8 +1062,8 @@ class Sequential(Container):
 
     '''
 
-    def __init__(self, bigdl_type="float"):
-        super(Sequential, self).__init__(None, bigdl_type, False)
+    def __init__(self, bigdl_type="float", is_keras=False):
+        super(Sequential, self).__init__(None, bigdl_type, is_keras)
 
 class TemporalConvolution(Layer):
 
