@@ -28,7 +28,8 @@ class InferShape(JavaValue):
     def __init__(self, bigdl_type="float"):
         self.bigdl_type = bigdl_type
 
-    def __process_shape(self, output_shape):
+    @classmethod
+    def __process_shape(cls, output_shape):
         return tuple([None] + output_shape[1:])
 
     def get_input_shape(self):
