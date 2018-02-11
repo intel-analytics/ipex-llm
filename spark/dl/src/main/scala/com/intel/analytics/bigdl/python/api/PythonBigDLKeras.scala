@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.python.api
 
 import java.util.{ArrayList => JArrayList, HashMap => JHashMap, List => JList, Map => JMap}
 
-import com.intel.analytics.bigdl.nn.SpatialBatchNormalization
+import com.intel.analytics.bigdl.nn.{Container, SpatialBatchNormalization}
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.nn.keras._
 import com.intel.analytics.bigdl.numeric._
@@ -67,6 +67,11 @@ class PythonBigDLKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends Pytho
   def createKerasInputLayer(
     inputShape: JList[Int] = null): Input[T] = {
     InputLayer(inputShape = toScalaShape(inputShape))
+  }
+
+  def getOutputShapeFor(module: Container[Activity, Activity, T],
+                        index: Int): JList[Int] = {
+    module.getOutputShapeFor(index).toSingle().toList.asJava
   }
 
   def createKerasDense(

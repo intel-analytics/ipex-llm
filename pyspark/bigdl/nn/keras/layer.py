@@ -17,7 +17,7 @@
 import sys
 
 from bigdl.nn.layer import Layer, Container
-from bigdl.util.common import callBigDlFunc, JTensor
+from bigdl.util.common import callBigDlFunc, callJavaFunc, JTensor
 
 if sys.version >= '3':
     long = int
@@ -40,6 +40,17 @@ class Sequential(Container):
     """
     def __init__(self, bigdl_type="float"):
         super(Sequential, self).__init__(None, bigdl_type, True)
+
+    def __process_shape(self, output_shape):
+        return tuple([None] + output_shape[1:])
+
+    def get_output_shape(self):
+        return self.__process_shape(callBigDlFunc(self.bigdl_type, "getOutputShapeFor",
+                                           self.value, 0))
+
+    def get_output_shape_at(self, node_index):
+        return self.__process_shape(callBigDlFunc(self.bigdl_type, "getOutputShapeFor",
+                                    self.value, node_index))
 
 
 class InputLayer(KerasLayer):

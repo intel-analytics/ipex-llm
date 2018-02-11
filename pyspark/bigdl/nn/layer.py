@@ -614,7 +614,7 @@ class Container(Layer):
 
     @property
     def layers(self):
-        jlayers = callBigDlFunc(self.bigdl_type, "getContainerModules" , self)
+        jlayers = callBigDlFunc(self.bigdl_type, "getContainerModules", self)
         layers = [Layer.of(jlayer) for jlayer in jlayers]
         return layers
 
