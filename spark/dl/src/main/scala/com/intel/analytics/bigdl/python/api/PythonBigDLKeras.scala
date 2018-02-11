@@ -56,6 +56,14 @@ class PythonBigDLKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends Pytho
     }
   }
 
+  def toScalaArray(list: JList[Int]): Array[Int] = {
+    if (list == null) {
+      null
+    } else {
+      list.asScala.toArray
+    }
+  }
+
   def createKerasInputLayer(
     inputShape: JList[Int] = null): Input[T] = {
     InputLayer(inputShape = toScalaShape(inputShape))
@@ -119,6 +127,59 @@ class PythonBigDLKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends Pytho
     concatAxis: Int = -1,
     inputShape: JList[JList[Int]]): Merge[T] = {
     Merge[T](layers.asScala.toList, mode, concatAxis, toScalaMultiShape(inputShape))
+  }
+
+  def createKerasConvolution2D(
+    nbFilter: Int,
+    nbRow: Int,
+    nbCol: Int,
+    init: String = "glorot_uniform",
+    activation: String = null,
+    borderMode: String = "valid",
+    subsample: JList[Int],
+    dimOrdering: String = "th",
+    wRegularizer: Regularizer[T] = null,
+    bRegularizer: Regularizer[T] = null,
+    bias: Boolean = true,
+    inputShape: JList[Int] = null): Convolution2D[T] = {
+    val subsampleValues = subsample.asScala.toArray
+    new Convolution2D(nbFilter, nbRow, nbCol, KerasUtils.getInitMethod(init),
+      KerasUtils.getActivation(activation), borderMode,
+      toScalaArray(subsample), KerasUtils.toBigDLFormat(dimOrdering),
+      wRegularizer, bRegularizer, bias, toScalaShape(inputShape))
+  }
+
+  def createKerasMaxPooling2D(
+    poolSize: JList[Int],
+    strides: JList[Int],
+    borderMode: String = "valid",
+    dimOrdering: String = "th",
+    inputShape: JList[Int] = null): MaxPooling2D[T] = {
+    new MaxPooling2D[T](toScalaArray(poolSize), toScalaArray(strides),
+      borderMode, KerasUtils.toBigDLFormat(dimOrdering), toScalaShape(inputShape))
+  }
+
+  def createKerasActivation(
+    activation: String,
+    inputShape: JList[Int] = null): Activation[T] = {
+    Activation(activation, toScalaShape(inputShape))
+  }
+
+  def createKerasReshape(
+    targetShape: JList[Int],
+    inputShape: JList[Int] = null): Reshape[T] = {
+    Reshape(targetShape.asScala.toArray, toScalaShape(inputShape))
+  }
+
+  def createKerasDropout(
+    p: Double,
+    inputShape: JList[Int] = null): Dropout[T] = {
+    Dropout(p, toScalaShape(inputShape))
+  }
+
+  def createKerasFlatten(
+    inputShape: JList[Int] = null): Flatten[T] = {
+    Flatten(toScalaShape(inputShape))
   }
 
 }

@@ -44,10 +44,10 @@ import scala.reflect.ClassTag
  *                   You can also pass in corresponding string representations such as 'relu'
  *                   or 'sigmoid', etc. for simple activations in the factory method.
  * @param borderMode Either 'valid' or 'same'. Default is 'valid'.
- * @param dimOrdering Format of input data. Either DataFormat.NCHW (dimOrdering='th') or
- *                    DataFormat.NHWC (dimOrdering='tf'). Default is NCHW.
  * @param subsample Int array of length 2 corresponding to the step of the convolution in the
  *                  height and width dimension. Also called strides elsewhere. Default is (1, 1).
+ * @param dimOrdering Format of input data. Either DataFormat.NCHW (dimOrdering='th') or
+ *                    DataFormat.NHWC (dimOrdering='tf'). Default is NCHW.
  * @param wRegularizer An instance of [[Regularizer]], (eg. L1 or L2 regularization),
  *                     applied to the input weights matrices. Default is null.
  * @param bRegularizer An instance of [[Regularizer]], applied to the bias. Default is null.
@@ -106,9 +106,9 @@ object Convolution2D {
     activation: String = null,
     borderMode: String = "valid",
     subsample: (Int, Int) = (1, 1),
+    dimOrdering: String = "th",
     wRegularizer: Regularizer[T] = null,
     bRegularizer: Regularizer[T] = null,
-    dimOrdering: String = "th",
     bias: Boolean = true,
     inputShape: Shape = null)(implicit ev: TensorNumeric[T]): Convolution2D[T] = {
     new Convolution2D[T](nbFilter, nbRow, nbCol,

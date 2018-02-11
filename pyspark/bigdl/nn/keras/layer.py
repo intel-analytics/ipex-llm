@@ -149,3 +149,63 @@ class Merge(KerasLayer):
                                     mode,
                                     concat_axis,
                                     input_shape)
+
+
+class Dropout(KerasLayer):
+    def __init__(self, p, input_shape=None, bigdl_type="float"):
+        super(Dropout, self).__init__(None, bigdl_type,
+                                      p,
+                                      list(input_shape) if input_shape else None)
+
+
+class Flatten(KerasLayer):
+    def __init__(self, input_shape=None, bigdl_type="float"):
+        super(Flatten, self).__init__(None, bigdl_type,
+                                      list(input_shape) if input_shape else None)
+
+
+class Reshape(KerasLayer):
+    def __init__(self, target_shape, input_shape=None, bigdl_type="float"):
+        super(Reshape, self).__init__(None, bigdl_type,
+                                      target_shape,
+                                      list(input_shape) if input_shape else None)
+
+
+class Activation(KerasLayer):
+    def __init__(self, activation, input_shape=None, bigdl_type="float"):
+        super(Activation, self).__init__(None, bigdl_type,
+                                         activation,
+                                         list(input_shape) if input_shape else None)
+
+
+class Convolution2D(KerasLayer):
+    def __init__(self, nb_filter, nb_row, nb_col,
+                 init="glorot_uniform", activation=None,
+                 border_mode="valid", subsample=(1, 1), dim_ordering="th",
+                 W_regularizer=None, b_regularizer=None, bias=True,
+                 input_shape=None, bigdl_type="float"):
+        super(Convolution2D, self).__init__(None, bigdl_type,
+                                            nb_filter,
+                                            nb_row,
+                                            nb_col,
+                                            init,
+                                            activation,
+                                            border_mode,
+                                            subsample,
+                                            dim_ordering,
+                                            W_regularizer,
+                                            b_regularizer,
+                                            bias,
+                                            list(input_shape) if input_shape else None)
+
+
+class MaxPooling2D(KerasLayer):
+    def __init__(self, pool_size=(2, 2), strides=None,
+                 border_mode='valid', dim_ordering='th',
+                 input_shape=None, bigdl_type="float"):
+        super(MaxPooling2D, self).__init__(None, bigdl_type,
+                                           pool_size,
+                                           strides,
+                                           border_mode,
+                                           dim_ordering,
+                                           list(input_shape) if input_shape else None)
