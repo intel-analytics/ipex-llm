@@ -17,10 +17,10 @@ package com.intel.analytics.bigdl.nn.ops
 
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.HashFunc
 
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
-import scala.util.hashing.MurmurHash3
 
 /**
  * CategoricalColVocaList operation having an vocabulary mapping feature string to Integer ID
@@ -29,8 +29,8 @@ import scala.util.hashing.MurmurHash3
  * Use either (but not both) of num_oov_buckets and default_value
  * to specify how to include out-of-vocabulary values.
  *
+ * if isSetDefault=false && num_oov_buckets=0 the out-of-vocabulary values will be filtered.
  * if isSetDefault enabled, the defalut value len(vocabulary_list) will be set.
- *
  * if num_oov_buckets enabled, all out-of-vocabulary inputs will be assigned IDs in the range
  * [len(vocabulary_list), len(vocabulary_list)+num_oov_buckets) based on a hash of the input value
  *
@@ -100,10 +100,7 @@ class CategoricalColVocaList[T: ClassTag](
             vocaMap.getOrElse(feaStrArr(j), vocaMap.size)
           case false =>
             vocaMap.getOrElse(feaStrArr(j),
-              MurmurHash3.stringHash(feaStrArr(j)) % numOovBuckets match {
-                case v if v < 0 => v + numOovBuckets + vocaLen
-                case v if v >= 0 => v + vocaLen
-              })
+              HashFunc.stringHashBucket32(feaStrArr(j), numOovBuckets) + vocaLen)
         }
         indices0 += i-1
         indices1 += j
