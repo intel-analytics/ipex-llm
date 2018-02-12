@@ -20,6 +20,7 @@ import java.util
 import java.util.{ArrayList => JArrayList, List => JList, Map => JMap}
 
 import com.intel.analytics.bigdl._
+import com.intel.analytics.bigdl.dataset.DataSet
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.optim.{Loss, SGD, Top1Accuracy, Trigger}
 import com.intel.analytics.bigdl.utils.{Engine, T, Table, TestUtils}
@@ -30,6 +31,7 @@ import org.apache.spark.api.java.JavaRDD
 import org.apache.spark.bigdl.api.python.BigDLSerDe
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.transform.vision.image.{ImageFeature, ImageFrame, ImageFrameToSample}
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 
 import scala.util.Random
@@ -286,6 +288,36 @@ class PythonSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val predictedResult = pp.predictLocal(
       trainedModel, List(pp.toJTensor(Tensor[Double](Array(34, 100)).randn())).asJava)
     println(predictedResult)
+  }
+
+  "train with imageFrame" should "work" in {
+    val images = (1 to 10).map(x => {
+      val imf = new ImageFeature()
+      imf(ImageFeature.imageTensor) = Tensor[Float](3, 224, 224).randn()
+      imf(ImageFeature.label) = Tensor[Float](1).fill(1)
+      imf
+    })
+
+
+    val imageFrame = DataSet.imageFrame(ImageFrame.rdd(sc.parallelize(images))) ->
+      ImageFrameToSample[Float](targetKeys = Array(ImageFeature.label))
+
+    val model = Sequential[Float]()
+    model.add(SpatialConvolution[Float](3, 6, 5, 5))
+    model.add(View[Float](6 * 220 * 220))
+    model.add(Linear[Float](6 * 220 * 220, 20))
+    model.add(LogSoftMax[Float]())
+
+    val sgd = new SGD[Float](0.01)
+
+    val pythonBigDL = PythonBigDL.ofFloat()
+    val optimizer = pythonBigDL.createDistriOptimizerFromDataSet(model,
+      imageFrame,
+      criterion = ClassNLLCriterion[Float](),
+      optimMethod = sgd,
+      endTrigger = Trigger.maxEpoch(2),
+      batchSize = 8)
+    optimizer.optimize()
   }
 
 }
