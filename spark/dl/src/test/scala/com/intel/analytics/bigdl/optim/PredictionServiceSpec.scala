@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
 import org.scalatest.{FlatSpec, Matchers}
 
-class PredictServiceSpec extends FlatSpec with Matchers {
+class PredictionServiceSpec extends FlatSpec with Matchers {
 
   // sharing weights for testModule and testModule2
   private val linearWeights = Tensor[Float](5, 10).rand()
@@ -72,29 +72,29 @@ class PredictServiceSpec extends FlatSpec with Matchers {
       case _: String => Tensor[String](T("a", T("b", "c"), T("d", "e")))
       case _: Char => Tensor[Char](T('a', T('b', 'c', 'd')))
     }
-    val bytes = PredictService.serializeActivity(tensor)
-    val tensor2 = PredictService.deSerializeActivity(bytes)
+    val bytes = PredictionService.serializeActivity(tensor)
+    val tensor2 = PredictionService.deSerializeActivity(bytes)
     tensor shouldEqual tensor2
   }
 
   "Table/ByteArray convert" should "work properly" in {
     val table = T.seq((1 to 5).map(_ => Tensor[Double](3, 5).randn()))
-    val bytes = PredictService.serializeActivity(table)
-    val table2 = PredictService.deSerializeActivity(bytes)
+    val bytes = PredictionService.serializeActivity(table)
+    val table2 = PredictionService.deSerializeActivity(bytes)
     table shouldEqual table2
   }
 
-  "PredictService" should "throw exceptions when params are invalid" in {
+  "PredictionService" should "throw exceptions when params are invalid" in {
     intercept[Exception] {
-      PredictService[Float](testModule, 1)
+      PredictionService[Float](testModule, 1)
     }
     intercept[Exception] {
-      PredictService[Float](testModule, 2, 0)
+      PredictionService[Float](testModule, 2, 0)
     }
   }
 
-  "PredictService" should "work properly with concurrent calls" in {
-    val service = PredictService[Float](testModule, 5, 3)
+  "PredictionService" should "work properly with concurrent calls" in {
+    val service = PredictionService[Float](testModule, 5, 3)
     val sumResults = (1 to 100).par.map { _ =>
       val tensor = Tensor[Float](2, 10).randn()
       val output = service.predict(tensor).asInstanceOf[Tensor[Float]]
@@ -105,18 +105,18 @@ class PredictServiceSpec extends FlatSpec with Matchers {
     sumResults.toList.distinct.lengthCompare(90) > 0 shouldEqual true
   }
 
-  "PredictService" should "work properly with byteArray data" in {
-    var service = PredictService[Float](testModule)
+  "PredictionService" should "work properly with byteArray data" in {
+    var service = PredictionService[Float](testModule)
     val tensor = Tensor[Float](2, 10).randn()
-    val input = PredictService.serializeActivity(tensor)
-    val output = PredictService.deSerializeActivity(service.predict(input))
+    val input = PredictionService.serializeActivity(tensor)
+    val output = PredictionService.deSerializeActivity(service.predict(input))
       .asInstanceOf[Tensor[Float]]
     output.size() shouldEqual Array(2, 1)
 
-    service = PredictService[Float](testModule2)
-    val input2 = PredictService.serializeActivity(
+    service = PredictionService[Float](testModule2)
+    val input2 = PredictionService.serializeActivity(
       T(tensor.narrow(2, 1, 6), tensor.narrow(2, 7, 4)))
-    val output2 = PredictService.deSerializeActivity(service.predict(input2))
+    val output2 = PredictionService.deSerializeActivity(service.predict(input2))
       .asInstanceOf[Tensor[Float]]
     // TestModule and testModule2 have same network weights/bias and same inputs,
     // so their outputs should be equal.

@@ -36,12 +36,12 @@ import scala.reflect.ClassTag
 import scala.reflect.runtime.universe.Type
 
 /**
- * <h6>Predict Service Interface for Concurrent Calls</h6>
+ * <h6>Prediction Service Interface for Concurrent Calls</h6>
  * In this service, several `model instances` sharing weights/bias will be built.
  * <br>
  * A `BlockingQueue` will be built to maintain available `model instances`.
  * <br>
- * When predict method called, service will try to take an instance from `BlockingQueue`,
+ * When `predict` method called, service will try to take an instance from `BlockingQueue`,
  * which means if all instances are on serving, the predicting request will be blocked until
  * some instances are released.
  * <br>
@@ -51,7 +51,7 @@ import scala.reflect.runtime.universe.Type
  * @param nInstances number of model instances
  * @param nBackendThreads number of threads to release instances after predictions.
  */
-class PredictService[T: ClassTag] private[optim](
+class PredictionService[T: ClassTag] private[optim](
   model: Module[T],
   nInstances: Int = 10,
   nBackendThreads: Int = 2
@@ -76,15 +76,25 @@ class PredictService[T: ClassTag] private[optim](
 
   def predict(request: Activity): Activity = {
     val module = fetchInstance()
-    val output = module.forward(request)
+    // cloned values after prediction finished
+    val output = module.forward(request) match {
+      case tensor: Tensor[_] =>
+        tensor.clone()
+      case table: Table =>
+        val clonedMap = mutable.HashMap[Any, Any]()
+        table.getState().foreach { case (k, v) =>
+          clonedMap += k -> v.asInstanceOf[Tensor[_]].clone()
+        }
+        new Table(clonedMap)
+    }
     releaseInstance(module)
     output
   }
 
   def predict(request: Array[Byte]): Array[Byte] = {
-    val activity = PredictService.deSerializeActivity(request)
+    val activity = PredictionService.deSerializeActivity(request)
     val output = predict(activity)
-    val bytesOut = PredictService.serializeActivity(output)
+    val bytesOut = PredictionService.serializeActivity(output)
     bytesOut
   }
 
@@ -107,14 +117,14 @@ class PredictService[T: ClassTag] private[optim](
 }
 
 
-object PredictService {
+object PredictionService {
 
   def apply[T: ClassTag](
     model: Module[T],
     nInstances: Int = 10,
     nBackendThreads: Int = 2
-  )(implicit ev: TensorNumeric[T]): PredictService[T] = {
-    new PredictService[T](model, nInstances, nBackendThreads)
+  )(implicit ev: TensorNumeric[T]): PredictionService[T] = {
+    new PredictionService[T](model, nInstances, nBackendThreads)
   }
 
   /**
