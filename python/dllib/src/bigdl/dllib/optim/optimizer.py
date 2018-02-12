@@ -30,6 +30,7 @@ from bigdl.util.common import callBigDlFunc
 from bigdl.util.common import callJavaFunc
 from bigdl.util.common import get_spark_context
 from bigdl.util.common import to_list
+from bigdl.dataset.dataset import *
 
 if sys.version >= '3':
     long = int
@@ -340,7 +341,7 @@ class SequentialSchedule(JavaValue):
     >>> poly = Poly(0.5, 2)
     creating: createPoly
     >>> test = sequentialSchedule.add(poly, 5)
-    
+
 
 
     """
@@ -738,7 +739,7 @@ class Optimizer(BaseOptimizer):
             end_trigger = MaxEpoch(1)
         if not optim_method:
             optim_method = SGD()
-        if isinstance(training_set, RDD):
+        if isinstance(training_set, RDD) or isinstance(training_set, DataSet):
             return DistriOptimizer(model=model,
                                    training_rdd=training_set,
                                    criterion=criterion,
@@ -772,7 +773,10 @@ class Optimizer(BaseOptimizer):
         """
         if val_method is None:
             val_method = [Top1Accuracy()]
-        callBigDlFunc(self.bigdl_type, "setValidation", self.value, batch_size,
+        func_name = "setValidation"
+        if isinstance(val_rdd, DataSet):
+            func_name = "setValidationFromDataSet"
+        callBigDlFunc(self.bigdl_type, func_name, self.value, batch_size,
                       trigger, val_rdd, to_list(val_method))
 
     def set_traindata(self, training_rdd, batch_size):
@@ -809,9 +813,16 @@ class DistriOptimizer(Optimizer):
         :param end_trigger: when to end the optimization
         :param batch_size: training batch size
         """
-        JavaValue.__init__(self, None, bigdl_type, model.value,
-                           training_rdd, criterion,
-                           optim_method if optim_method else SGD(), end_trigger, batch_size)
+        if isinstance(training_rdd, RDD):
+            JavaValue.__init__(self, None, bigdl_type, model.value,
+                               training_rdd, criterion,
+                               optim_method if optim_method else SGD(), end_trigger, batch_size)
+        elif isinstance(training_rdd, DataSet):
+            self.bigdl_type = bigdl_type
+            self.value = callBigDlFunc(self.bigdl_type, "createDistriOptimizerFromDataSet",
+                                       model.value, training_rdd, criterion,
+                                       optim_method if optim_method else SGD(),
+                                       end_trigger, batch_size)
 
 
 class LocalOptimizer(BaseOptimizer):
