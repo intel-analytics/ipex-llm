@@ -26,16 +26,15 @@ import com.intel.analytics.bigdl.utils.Shape
 import scala.reflect.ClassTag
 
 /**
- * A dense maxout layer.
- * A `MaxoutDense` layer takes the element-wise maximum of `nbFeature`
- * `Dense(inputDim, outputDim)` linear layers.
+ * A dense maxout layer that takes the element-wise maximum of nbFeature,
+ * Dense(inputDim, outputDim) linear layers.
  * This allows the layer to learn a convex, piecewise linear activation function over the inputs.
  * The input of this layer should be 2D.
  *
  * When you use this layer as the first layer of a model, you need to provide the argument
  * inputShape (a Single Shape, does not include the batch dimension).
  *
- * @param outputDim Int > 0.
+ * @param outputDim The size of output dimension.
  * @param nbFeature Number of Dense layers to use internally. Integer. Default is 4.
  * @param wRegularizer An instance of [[Regularizer]], (eg. L1 or L2 regularization),
  *                     applied to the main weights matrices. Default is null.

@@ -77,7 +77,7 @@ class InputLayer(KerasLayer):
     # Arguments
     input_shape: Shape tuple, not including the batch axis.
 
-    >>> inputLayer = InputLayer(input_shape=(3, 5))
+    >>> inputlayer = InputLayer(input_shape=(3, 5))
     creating: createKerasInputLayer
     """
     def __init__(self, input_shape=None, bigdl_type="float"):
@@ -88,10 +88,10 @@ class InputLayer(KerasLayer):
 class Dense(KerasLayer):
     """
     A densely-connected NN layer.
+    The most common input is 2D.
 
     When you use this layer as the first layer of a model, you need to provide the argument
     inputShape (a shape tuple, does not include the batch dimension).
-    The most common input is 2D.
 
     # Arguments
     output_dim: The size of output dimension.
@@ -119,6 +119,38 @@ class Dense(KerasLayer):
                                     b_regularizer,
                                     bias,
                                     list(input_shape) if input_shape else None)
+
+
+class MaxoutDense(Layer):
+    """
+    A dense maxout layer that takes the element-wise maximum of nbFeature, Dense(inputDim, outputDim) linear layers.
+    This allows the layer to learn a convex, piecewise linear activation function over the inputs.
+    The input of this layer should be 2D.
+
+    When you use this layer as the first layer of a model, you need to provide the argument
+    inputShape (a shape tuple, does not include the batch dimension).
+
+    # Arguments
+    output_dim: The size of output dimension.
+    nb_feature: Number of Dense layers to use internally. Integer. Default is 4.
+    W_regularizer: An instance of [[Regularizer]], (eg. L1 or L2 regularization),
+                   applied to the input weights matrices. Default is None.
+    b_regularizer: An instance of [[Regularizer]], applied to the bias. Default is None.
+    bias: Whether to include a bias (i.e. make the layer affine rather than linear). Default is True.
+    input_shape: A shape tuple, not including batch.
+
+    >>> maxoutdense = MaxoutDense(6, input_shape=(10, ))
+    creating: createKerasMaxoutDense
+    """
+    def __init__(self, output_dim, nb_feature=4, W_regularizer=None,
+                 b_regularizer=None, bias=True, input_shape=None, bigdl_type="float"):
+        super(MaxoutDense, self).__init__(None, bigdl_type,
+                                          output_dim,
+                                          nb_feature,
+                                          W_regularizer,
+                                          b_regularizer,
+                                          bias,
+                                          list(input_shape) if input_shape else None)
 
 
 class Embedding(KerasLayer):
@@ -172,7 +204,7 @@ class BatchNormalization(KerasLayer):
                   For 'th', axis along which to normalize is 1. For 'tf', axis is 3.
     input_shape: A shape tuple, not including batch.
 
-    >>> batchNormalization = BatchNormalization(input_shape=(3, 12, 12))
+    >>> batchnormalization = BatchNormalization(input_shape=(3, 12, 12))
     creating: createKerasBatchNormalization
     """
     def __init__(self, epsilon=0.001, momentum=0.99, beta_init='zero', gamma_init='one',
@@ -319,6 +351,37 @@ class Activation(KerasLayer):
                                          list(input_shape) if input_shape else None)
 
 
+class Highway(Layer):
+    """
+    Densely connected highway network. Highway layers are a natural extension of LSTMs to feedforward networks.
+    The input of this layer should be 2D, i.e. (batch, input dim).
+
+    When you use this layer as the first layer of a model, you need to provide the argument
+    inputShape (a shape tuple, does not include the batch dimension).
+
+    # Arguments
+    activation: String representations of activation function to use (such as 'relu' or 'sigmoid').
+                Default is None.
+    W_regularizer: An instance of [[Regularizer]], (eg. L1 or L2 regularization),
+                   applied to the input weights matrices. Default is None.
+    b_regularizer: An instance of [[Regularizer]], applied to the bias. Default is None.
+    bias: Whether to include a bias (i.e. make the layer affine rather than linear).
+          Default is True.
+    input_shape: A shape tuple, not including batch.
+
+    >>> highway = Highway(activation='relu', input_shape=(8, ))
+    creating: createKerasHighway
+    """
+    def __init__(self, activation=None, W_regularizer=None, b_regularizer=None,
+                 bias=True, input_shape=None, bigdl_type="float"):
+        super(Highway, self).__init__(None, bigdl_type,
+                                      activation,
+                                      W_regularizer,
+                                      b_regularizer,
+                                      bias,
+                                      list(input_shape) if input_shape else None)
+
+
 class Convolution2D(KerasLayer):
     """
     Applies a 2D convolution over an input image composed of several input planes.
@@ -374,6 +437,122 @@ class Convolution2D(KerasLayer):
 Conv2D = Convolution2D
 
 
+class UpSampling1D(Layer):
+    """
+    UpSampling layer for 1D inputs.
+    Repeats each temporal step 'length' times along the time axis.
+    The input of this layer should be 3D.
+
+    When you use this layer as the first layer of a model, you need to provide the argument
+    inputShape (a shape tuple, does not include the batch dimension).
+
+    # Arguments
+    length: Integer. UpSampling factor. Default is 2.
+    input_shape: A shape tuple, not including batch.
+
+    >>> upsampling1d = UpSampling1D(length=3, input_shape=(3, 12))
+    creating: createKerasUpSampling1D
+    """
+    def __init__(self, length=2, input_shape=None, bigdl_type="float"):
+        super(UpSampling1D, self).__init__(None, bigdl_type,
+                                           length,
+                                           list(input_shape) if input_shape else None)
+
+
+class UpSampling2D(Layer):
+    """
+    UpSampling layer for 2D inputs.
+    Repeats the rows and columns of the data by size[0] and size[1] respectively.
+    The input of this layer should be 4D.
+
+    When you use this layer as the first layer of a model, you need to provide the argument
+    inputShape (a shape tuple, does not include the batch dimension).
+
+    # Arguments
+    size: Tuple of length 2. UpSampling factors for rows and columns. Default is (2, 2).
+    dim_ordering: Format of input data. Either 'th' (Channel First) or 'tf' (Channel Last). Default is 'th'.
+    input_shape: A shape tuple, not including batch.
+
+    >>> upsampling2d = UpSampling2D(size=(1, 3), input_shape=(3, 16, 16))
+    creating: createKerasUpSampling2D
+    """
+    def __init__(self, size=(2, 2), dim_ordering="th", input_shape=None, bigdl_type="float"):
+        super(UpSampling2D, self).__init__(None, bigdl_type,
+                                           size,
+                                           dim_ordering,
+                                           list(input_shape) if input_shape else None)
+
+
+class UpSampling3D(Layer):
+    """
+    UpSampling layer for 2D inputs.
+    Repeats the 1st, 2nd and 3rd dimensions of the data by size[0], size[1] and size[2] respectively.
+    Data format currently supported for this layer is dimOrdering='th' (Channel First).
+    The input of this layer should be 5D.
+
+    When you use this layer as the first layer of a model, you need to provide the argument
+    inputShape (a shape tuple, does not include the batch dimension).
+
+    # Arguments
+    size: Tuple of length 3. UpSampling factors for dim1, dim2 and dim3. Default is (2, 2, 2).
+    dim_ordering: Format of input data. Only 'th' (Channel First) is supported for now.
+    input_shape: A shape tuple, not including batch.
+
+    >>> upsampling3d = UpSampling3D(size=(1, 2, 3), input_shape=(3, 16, 16, 16))
+    creating: createKerasUpSampling3D
+    """
+    def __init__(self, size=(2, 2, 2), dim_ordering="th", input_shape=None, bigdl_type="float"):
+        super(UpSampling3D, self).__init__(None, bigdl_type,
+                                           size,
+                                           dim_ordering,
+                                           list(input_shape) if input_shape else None)
+
+
+class ZeroPadding1D(Layer):
+    """
+    Zero-padding layer for 1D input (e.g. temporal sequence).
+    The input of this layer should be 3D.
+
+    When you use this layer as the first layer of a model, you need to provide the argument
+    inputShape (a shape tuple, does not include the batch dimension).
+
+    # Arguments
+    padding: Integer. How many zeros to add both at the beginning and at the end of the padding dimension. Default is 1.
+    input_shape: A shape tuple, not including batch.
+
+    >>> zeropadding1d = ZeroPadding1D(padding=2, input_shape=(3, 6))
+    creating: createKerasZeroPadding1D
+    """
+    def __init__(self, padding=1, input_shape=None, bigdl_type="float"):
+        super(ZeroPadding1D, self).__init__(None, bigdl_type,
+                                            padding,
+                                            list(input_shape) if input_shape else None)
+
+
+class ZeroPadding2D(Layer):
+    """
+    Zero-padding layer for 2D input (e.g. picture).
+    The input of this layer should be 4D.
+
+    When you use this layer as the first layer of a model, you need to provide the argument
+    inputShape (a shape tuple, does not include the batch dimension).
+
+    # Arguments
+    padding: Tuple of length 2. How many zeros to add both at the beginning and at the end of the 2 padding dimensions.
+             Default is (1, 1).
+    dim_ordering: Format of input data. Either 'th' (Channel First) or 'tf' (Channel Last). Default is 'th'.
+    input_shape: A shape tuple, not including batch.
+
+    >>> zeropadding2d = ZeroPadding2D(padding=(2, 1), input_shape=(2, 8, 8))
+    creating: createKerasZeroPadding2D
+    """
+    def __init__(self, padding=(1, 1), dim_ordering="th", input_shape=None, bigdl_type="float"):
+        super(ZeroPadding2D, self).__init__(None, bigdl_type,
+                                            padding,
+                                            dim_ordering,
+                                            list(input_shape) if input_shape else None)
+
+
 class MaxPooling2D(KerasLayer):
     """
     Applies max pooling operation for spatial data.
@@ -383,8 +562,8 @@ class MaxPooling2D(KerasLayer):
     inputShape (a shape tuple, does not include the batch dimension).
 
     # Arguments
-    poolSize Tuple of length 2 corresponding to the downscale vertically and horizontally.
-             Default is (2, 2), which will halve the image in each dimension.
+    pool_size: Tuple of length 2 corresponding to the downscale vertically and horizontally.
+               Default is (2, 2), which will halve the image in each dimension.
     strides: Tuple of length 2. Stride values. Default is None, and in this case it will be equal to pool_size.
     border_mode: Either 'valid' or 'same'. Default is 'valid'.
     dim_ordering: Format of input data. Either 'th' (Channel First) or 'tf' (Channel Last). Default is 'th'.
@@ -402,3 +581,123 @@ class MaxPooling2D(KerasLayer):
                                            border_mode,
                                            dim_ordering,
                                            list(input_shape) if input_shape else None)
+
+
+class SimpleRNN(Layer):
+    """
+    A fully-connected recurrent neural network cell. The output is to be fed back to input.
+    The input of this layer should be 3D, i.e. (batch, time steps, input dim).
+
+    When you use this layer as the first layer of a model, you need to provide the argument
+    inputShape (a shape tuple, does not include the batch dimension).
+
+    # Arguments
+    output_dim: Hidden unit size. Dimension of internal projections and final output.
+    activation: String representations of activation function to use (such as 'relu' or 'sigmoid').
+                Default is 'tanh'.
+    return_sequences: Whether to return the full sequence or only return the last output in the output sequence.
+                      Default is False.
+    go_backwards: Whether the input sequence will be processed backwards. Default is False.
+    W_regularizer: An instance of [[Regularizer]], (eg. L1 or L2 regularization),
+                   applied to the input weights matrices. Default is None.
+    U_regularizer: An instance of [[Regularizer]], applied the recurrent weights matrices. Default is None.
+    b_regularizer: An instance of [[Regularizer]], applied to the bias. Default is None.
+    input_shape: A shape tuple, not including batch.
+
+    >>> simplernn = SimpleRNN(16, input_shape=(3, 32))
+    creating: createKerasSimpleRNN
+    """
+    def __init__(self, output_dim, activation="tanh", return_sequences=False,
+                 go_backwards=False, W_regularizer=None, U_regularizer=None,
+                 b_regularizer=None, input_shape=None, bigdl_type="float"):
+        super(SimpleRNN, self).__init__(None, bigdl_type,
+                                        output_dim,
+                                        activation,
+                                        return_sequences,
+                                        go_backwards,
+                                        W_regularizer,
+                                        U_regularizer,
+                                        b_regularizer,
+                                        list(input_shape) if input_shape else None)
+
+
+class LSTM(Layer):
+    """
+    Long Short Term Memory unit architecture.
+    The input of this layer should be 3D, i.e. (batch, time steps, input dim).
+
+    When you use this layer as the first layer of a model, you need to provide the argument
+    inputShape (a shape tuple, does not include the batch dimension).
+
+    # Arguments
+    output_dim: Hidden unit size. Dimension of internal projections and final output.
+    activation: String representations of activation function to use (such as 'relu' or 'sigmoid').
+                Default is 'tanh'.
+    inner_activation: String representations of activation function for inner cells. Default is 'hard_sigmoid'.
+    return_sequences: Whether to return the full sequence or only return the last output in the output sequence.
+                      Default is False.
+    go_backwards: Whether the input sequence will be processed backwards. Default is False.
+    W_regularizer: An instance of [[Regularizer]], (eg. L1 or L2 regularization),
+                   applied to the input weights matrices. Default is None.
+    U_regularizer: An instance of [[Regularizer]], applied the recurrent weights matrices. Default is None.
+    b_regularizer: An instance of [[Regularizer]], applied to the bias. Default is None.
+    input_shape: A shape tuple, not including batch.
+
+    >>> lstm = LSTM(32, input_shape=(8, 16))
+    creating: createKerasLSTM
+    """
+    def __init__(self, output_dim, activation="tanh", inner_activation="hard_sigmoid",
+                 return_sequences=False, go_backwards=False, W_regularizer=None,
+                 U_regularizer=None, b_regularizer=None, input_shape=None, bigdl_type="float"):
+        super(LSTM, self).__init__(None, bigdl_type,
+                                   output_dim,
+                                   activation,
+                                   inner_activation,
+                                   return_sequences,
+                                   go_backwards,
+                                   W_regularizer,
+                                   U_regularizer,
+                                   b_regularizer,
+                                   list(input_shape) if input_shape else None)
+
+
+class GRU(Layer):
+    """
+    Gated Recurrent Unit architecture.
+    The input of this layer should be 3D, i.e. (batch, time steps, input dim).
+
+    When you use this layer as the first layer of a model, you need to provide the argument
+    inputShape (a shape tuple, does not include the batch dimension).
+
+    # Arguments
+    output_dim: Hidden unit size. Dimension of internal projections and final output.
+    activation: String representations of activation function to use (such as 'relu' or 'sigmoid').
+                Default is 'tanh'.
+    inner_activation: String representations of activation function for inner cells. Default is 'hard_sigmoid'.
+    return_sequences: Whether to return the full sequence or only return the last output in the output sequence.
+                      Default is False.
+    go_backwards: Whether the input sequence will be processed backwards. Default is False.
+    W_regularizer: An instance of [[Regularizer]], (eg. L1 or L2 regularization),
+                   applied to the input weights matrices. Default is None.
+    U_regularizer: An instance of [[Regularizer]], applied the recurrent weights matrices. Default is None.
+    b_regularizer: An instance of [[Regularizer]], applied to the bias. Default is None.
+    input_shape: A shape tuple, not including batch.
+
+    >>> lstm = LSTM(32, input_shape=(8, 16))
+    creating: createKerasLSTM
+    """
+    def __init__(self, output_dim, activation="tanh", inner_activation="hard_sigmoid",
+                 return_sequences=False, go_backwards=False, W_regularizer=None,
+                 U_regularizer=None, b_regularizer=None, input_shape=None, bigdl_type="float"):
+        super(GRU, self).__init__(None, bigdl_type,
+                                  output_dim,
+                                  activation,
+                                  inner_activation,
+                                  return_sequences,
+                                  go_backwards,
+                                  W_regularizer,
+                                  U_regularizer,
+                                  b_regularizer,
+                                  list(input_shape) if input_shape else None)
+
+

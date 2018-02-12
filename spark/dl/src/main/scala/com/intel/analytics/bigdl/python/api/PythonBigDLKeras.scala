@@ -197,4 +197,101 @@ class PythonBigDLKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends Pytho
     Flatten(toScalaShape(inputShape))
   }
 
+  def createKerasSimpleRNN(
+    outputDim: Int,
+    activation: String = "tanh",
+    returnSequences: Boolean = false,
+    goBackwards: Boolean = false,
+    wRegularizer: Regularizer[T] = null,
+    uRegularizer: Regularizer[T] = null,
+    bRegularizer: Regularizer[T] = null,
+    inputShape: JList[Int] = null): SimpleRNN[T] = {
+    SimpleRNN(outputDim, activation, returnSequences, goBackwards,
+      wRegularizer, uRegularizer, bRegularizer, toScalaShape(inputShape))
+  }
+
+  def createKerasLSTM(
+    outputDim: Int,
+    activation: String = "tanh",
+    innerActivation: String = "hard_sigmoid",
+    returnSequences: Boolean = false,
+    goBackwards: Boolean = false,
+    wRegularizer: Regularizer[T] = null,
+    uRegularizer: Regularizer[T] = null,
+    bRegularizer: Regularizer[T] = null,
+    inputShape: JList[Int] = null): LSTM[T] = {
+    LSTM(outputDim, activation, innerActivation, returnSequences,
+      goBackwards, wRegularizer, uRegularizer, bRegularizer, toScalaShape(inputShape))
+  }
+
+  def createKerasGRU(
+    outputDim: Int,
+    activation: String = "tanh",
+    innerActivation: String = "hard_sigmoid",
+    returnSequences: Boolean = false,
+    goBackwards: Boolean = false,
+    wRegularizer: Regularizer[T] = null,
+    uRegularizer: Regularizer[T] = null,
+    bRegularizer: Regularizer[T] = null,
+    inputShape: JList[Int] = null): GRU[T] = {
+    GRU(outputDim, activation, innerActivation, returnSequences,
+      goBackwards, wRegularizer, uRegularizer, bRegularizer, toScalaShape(inputShape))
+  }
+
+  def createKerasHighway(
+    activation: String = null,
+    wRegularizer: Regularizer[T] = null,
+    bRegularizer: Regularizer[T] = null,
+    bias: Boolean = true,
+    inputShape: JList[Int] = null): Highway[T] = {
+    Highway(activation, wRegularizer, bRegularizer, bias, toScalaShape(inputShape))
+  }
+
+  def createKerasZeroPadding1D(
+    padding: Int = 1,
+    inputShape: JList[Int] = null): ZeroPadding1D[T] = {
+    ZeroPadding1D(padding, toScalaShape(inputShape))
+  }
+
+  def createKerasZeroPadding2D(
+    padding: JList[Int],
+    dimOrdering: String = "th",
+    inputShape: JList[Int] = null): ZeroPadding2D[T] = {
+    new ZeroPadding2D(padding.asScala.toArray,
+      KerasUtils.toBigDLFormat(dimOrdering), toScalaShape(inputShape))
+  }
+
+  def createKerasUpSampling1D(
+    length: Int = 2,
+    inputShape: JList[Int] = null): UpSampling1D[T] = {
+    UpSampling1D(length, toScalaShape(inputShape))
+  }
+
+  def createKerasUpSampling2D(
+    size: JList[Int],
+    dimOrdering: String = "th",
+    inputShape: JList[Int] = null): UpSampling2D[T] = {
+    new UpSampling2D(size.asScala.toArray, KerasUtils.toBigDLFormat(dimOrdering),
+      toScalaShape(inputShape))
+  }
+
+  def createKerasUpSampling3D(
+    size: JList[Int],
+    dimOrdering: String = "th",
+    inputShape: JList[Int] = null): UpSampling3D[T] = {
+    new UpSampling3D(size.asScala.toArray, KerasUtils.toBigDLFormat5D(dimOrdering),
+      toScalaShape(inputShape))
+  }
+
+  def createKerasMaxoutDense(
+    outputDim: Int,
+    nbFeature: Int = 4,
+    wRegularizer: Regularizer[T] = null,
+    bRegularizer: Regularizer[T] = null,
+    bias: Boolean = true,
+    inputShape: JList[Int] = null): MaxoutDense[T] = {
+    MaxoutDense(outputDim, nbFeature, wRegularizer,
+      bRegularizer, bias, toScalaShape(inputShape))
+  }
+
 }

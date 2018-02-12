@@ -24,14 +24,14 @@ import com.intel.analytics.bigdl.utils.Shape
 import scala.reflect.ClassTag
 
 /**
- * Upsampling layer for 2D inputs.
+ * UpSampling layer for 2D inputs.
  * Repeats the rows and columns of the data by size(0) and size(1) respectively.
  * The input of this layer should be 4D.
  *
  * When you use this layer as the first layer of a model, you need to provide the argument
  * inputShape (a Single Shape, does not include the batch dimension).
  *
- * @param size Int array of length 2. The upsampling factors for rows and columns.
+ * @param size Int array of length 2. UpSampling factors for rows and columns.
  *             Default is (2, 2).
  * @param dimOrdering Format of the input data. Either DataFormat.NCHW (dimOrdering='th') or
  *                    DataFormat.NHWC (dimOrdering='tf'). Default is NCHW.
