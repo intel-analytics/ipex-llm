@@ -24,7 +24,7 @@ import com.intel.analytics.bigdl.nn.keras._
 import com.intel.analytics.bigdl.numeric._
 import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.{MultiShape, Shape, SingleShape}
+import com.intel.analytics.bigdl.utils.{Shape, SingleShape}
 
 import scala.collection.JavaConverters._
 import scala.language.existentials
@@ -157,7 +157,6 @@ class PythonBigDLKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends Pytho
     bRegularizer: Regularizer[T] = null,
     bias: Boolean = true,
     inputShape: JList[Int] = null): Convolution2D[T] = {
-    val subsampleValues = subsample.asScala.toArray
     new Convolution2D(nbFilter, nbRow, nbCol, KerasUtils.getInitMethod(init),
       KerasUtils.getActivation(activation), borderMode,
       toScalaArray(subsample), KerasUtils.toBigDLFormat(dimOrdering),
@@ -183,7 +182,7 @@ class PythonBigDLKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends Pytho
   def createKerasReshape(
     targetShape: JList[Int],
     inputShape: JList[Int] = null): Reshape[T] = {
-    Reshape(targetShape.asScala.toArray, toScalaShape(inputShape))
+    Reshape(toScalaArray(targetShape), toScalaShape(inputShape))
   }
 
   def createKerasDropout(
@@ -250,14 +249,14 @@ class PythonBigDLKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends Pytho
   def createKerasZeroPadding1D(
     padding: JList[Int],
     inputShape: JList[Int] = null): ZeroPadding1D[T] = {
-    new ZeroPadding1D(padding.asScala.toArray, toScalaShape(inputShape))
+    new ZeroPadding1D(toScalaArray(padding), toScalaShape(inputShape))
   }
 
   def createKerasZeroPadding2D(
     padding: JList[Int],
     dimOrdering: String = "th",
     inputShape: JList[Int] = null): ZeroPadding2D[T] = {
-    new ZeroPadding2D(padding.asScala.toArray,
+    new ZeroPadding2D(toScalaArray(padding),
       KerasUtils.toBigDLFormat(dimOrdering), toScalaShape(inputShape))
   }
 
@@ -271,7 +270,7 @@ class PythonBigDLKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends Pytho
     size: JList[Int],
     dimOrdering: String = "th",
     inputShape: JList[Int] = null): UpSampling2D[T] = {
-    new UpSampling2D(size.asScala.toArray, KerasUtils.toBigDLFormat(dimOrdering),
+    new UpSampling2D(toScalaArray(size), KerasUtils.toBigDLFormat(dimOrdering),
       toScalaShape(inputShape))
   }
 
@@ -279,7 +278,7 @@ class PythonBigDLKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends Pytho
     size: JList[Int],
     dimOrdering: String = "th",
     inputShape: JList[Int] = null): UpSampling3D[T] = {
-    new UpSampling3D(size.asScala.toArray, KerasUtils.toBigDLFormat5D(dimOrdering),
+    new UpSampling3D(toScalaArray(size), KerasUtils.toBigDLFormat5D(dimOrdering),
       toScalaShape(inputShape))
   }
 
@@ -292,6 +291,134 @@ class PythonBigDLKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends Pytho
     inputShape: JList[Int] = null): MaxoutDense[T] = {
     MaxoutDense(outputDim, nbFeature, wRegularizer,
       bRegularizer, bias, toScalaShape(inputShape))
+  }
+
+  def createKerasConvolution1D(
+    nbFilter: Int,
+    filterLength: Int,
+    init: String = "glorot_uniform",
+    activation: String = null,
+    borderMode: String = "valid",
+    subsampleLength: Int = 1,
+    wRegularizer: Regularizer[T] = null,
+    bRegularizer: Regularizer[T] = null,
+    bias: Boolean = true,
+    inputShape: JList[Int] = null): Convolution1D[T] = {
+    Convolution1D(nbFilter, filterLength, init, activation, borderMode,
+      subsampleLength, wRegularizer, bRegularizer, bias, toScalaShape(inputShape))
+  }
+
+  def createKerasConvolution3D(
+    nbFilter: Int,
+    kernelDim1: Int,
+    kernelDim2: Int,
+    kernelDim3: Int,
+    init: String = "glorot_uniform",
+    activation: String = null,
+    borderMode: String = "valid",
+    subsample: JList[Int],
+    dimOrdering: String = "th",
+    wRegularizer: Regularizer[T] = null,
+    bRegularizer: Regularizer[T] = null,
+    bias: Boolean = true,
+    inputShape: JList[Int] = null): Convolution3D[T] = {
+    new Convolution3D(nbFilter, kernelDim1, kernelDim2, kernelDim3,
+      KerasUtils.getInitMethod(init), KerasUtils.getActivation(activation),
+      borderMode, toScalaArray(subsample), KerasUtils.toBigDLFormat5D(dimOrdering),
+      wRegularizer, bRegularizer, bias, toScalaShape(inputShape))
+  }
+
+  def createKerasMaxPooling1D(
+    poolLength: Int = 2,
+    stride: Int = -1,
+    borderMode: String = "valid",
+    inputShape: JList[Int] = null): MaxPooling1D[T] = {
+    MaxPooling1D(poolLength, stride, borderMode, toScalaShape(inputShape))
+  }
+
+  def createKerasMaxPooling3D(
+    poolSize: JList[Int],
+    strides: JList[Int],
+    dimOrdering: String = "th",
+    inputShape: JList[Int] = null): MaxPooling3D[T] = {
+    new MaxPooling3D(toScalaArray(poolSize), toScalaArray(strides),
+      KerasUtils.toBigDLFormat5D(dimOrdering), toScalaShape(inputShape))
+  }
+
+  def createKerasAveragePooling1D(
+    poolLength: Int = 2,
+    stride: Int = -1,
+    borderMode: String = "valid",
+    inputShape: JList[Int] = null): AveragePooling1D[T] = {
+    AveragePooling1D(poolLength, stride, borderMode, toScalaShape(inputShape))
+  }
+
+  def createKerasAveragePooling2D(
+    poolSize: JList[Int],
+    strides: JList[Int],
+    borderMode: String = "valid",
+    dimOrdering: String = "th",
+    inputShape: JList[Int] = null): AveragePooling2D[T] = {
+    new AveragePooling2D(toScalaArray(poolSize), toScalaArray(strides),
+      borderMode, KerasUtils.toBigDLFormat(dimOrdering), toScalaShape(inputShape))
+  }
+
+  def createKerasAveragePooling3D(
+    poolSize: JList[Int],
+    strides: JList[Int],
+    dimOrdering: String = "th",
+    inputShape: JList[Int] = null): AveragePooling3D[T] = {
+    new AveragePooling3D(toScalaArray(poolSize), toScalaArray(strides),
+      KerasUtils.toBigDLFormat5D(dimOrdering), toScalaShape(inputShape))
+  }
+
+  def createKerasGlobalAveragePooling2D(
+    dimOrdering: String = "th",
+    inputShape: JList[Int] = null): GlobalAveragePooling2D[T] = {
+    GlobalAveragePooling2D(dimOrdering, toScalaShape(inputShape))
+  }
+
+  def createKerasGlobalMaxPooling2D(
+    dimOrdering: String = "th",
+    inputShape: JList[Int] = null): GlobalMaxPooling2D[T] = {
+    GlobalMaxPooling2D(dimOrdering, toScalaShape(inputShape))
+  }
+
+  def createKerasRepeatVector(
+    n: Int,
+    inputShape: JList[Int] = null): RepeatVector[T] = {
+    RepeatVector(n, toScalaShape(inputShape))
+  }
+
+  def createKerasPermute(
+    dims: Array[Int],
+    inputShape: JList[Int] = null): Permute[T] = {
+    Permute(dims, toScalaShape(inputShape))
+  }
+
+  def createKerasCropping1D(
+    cropping: JList[Int],
+    inputShape: JList[Int] = null): Cropping1D[T] = {
+    new Cropping1D(toScalaArray(cropping), toScalaShape(inputShape))
+  }
+
+  def createKerasCropping2D(
+    heightCrop: JList[Int],
+    widthCrop: JList[Int],
+    dimOrdering: String = "th",
+    inputShape: JList[Int] = null): Cropping2D[T] = {
+    new Cropping2D(toScalaArray(heightCrop), toScalaArray(widthCrop),
+      KerasUtils.toBigDLFormat(dimOrdering), toScalaShape(inputShape))
+  }
+
+  def createKerasCropping3D(
+    dim1Crop: JList[Int],
+    dim2Crop: JList[Int],
+    dim3Crop: JList[Int],
+    dimOrdering: String = "th",
+    inputShape: JList[Int] = null): Cropping3D[T] = {
+    new Cropping3D(toScalaArray(dim1Crop), toScalaArray(dim2Crop), toScalaArray(dim3Crop),
+      KerasUtils.toBigDLFormat5D(dimOrdering), toScalaShape(inputShape))
   }
 
 }

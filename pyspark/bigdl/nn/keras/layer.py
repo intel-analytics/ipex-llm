@@ -108,7 +108,7 @@ class Dense(KerasLayer):
     >>> dense = Dense(10, input_shape=(3, 4))
     creating: createKerasDense
     """
-    def __init__(self, output_dim, init='glorot_uniform', activation=None,
+    def __init__(self, output_dim, init="glorot_uniform", activation=None,
                  W_regularizer=None, b_regularizer=None,
                  bias=True, input_shape=None, bigdl_type="float"):
         super(Dense, self).__init__(None, bigdl_type,
@@ -173,7 +173,7 @@ class Embedding(KerasLayer):
     >>> embedding = Embedding(1000, 32, input_shape=(10, ))
     creating: createKerasEmbedding
     """
-    def __init__(self, input_dim, output_dim, init='uniform',
+    def __init__(self, input_dim, output_dim, init="uniform",
                  W_regularizer=None, input_shape=None, bigdl_type="float"):
         super(Embedding, self).__init__(None, bigdl_type,
                                         input_dim,
@@ -207,7 +207,7 @@ class BatchNormalization(KerasLayer):
     >>> batchnormalization = BatchNormalization(input_shape=(3, 12, 12))
     creating: createKerasBatchNormalization
     """
-    def __init__(self, epsilon=0.001, momentum=0.99, beta_init='zero', gamma_init='one',
+    def __init__(self, epsilon=0.001, momentum=0.99, beta_init="zero", gamma_init="one",
                  dim_ordering="th", input_shape=None, bigdl_type="float"):
         super(BatchNormalization, self).__init__(None, bigdl_type,
                                                  epsilon,
@@ -259,7 +259,7 @@ class Merge(KerasLayer):
     >>> merge = Merge(layers=[l1, l2], mode='sum')
     creating: createKerasMerge
     """
-    def __init__(self, layers=None, mode='sum', concat_axis=-1,
+    def __init__(self, layers=None, mode="sum", concat_axis=-1,
                  input_shape=None, bigdl_type="float"):
         super(Merge, self).__init__(None, bigdl_type,
                                     list(layers) if layers else None,
@@ -351,6 +351,48 @@ class Activation(KerasLayer):
                                          list(input_shape) if input_shape else None)
 
 
+class RepeatVector(KerasLayer):
+    """
+    Repeats the input n times.
+    The input of this layer should be 2D.
+
+    When you use this layer as the first layer of a model, you need to provide the argument
+    inputShape (a shape tuple, does not include the batch dimension).
+
+    # Arguments
+    n: Repetition factor. Int.
+    input_shape: A shape tuple, not including batch.
+
+    >>> repeatvector = RepeatVector(5, input_shape=(3, ))
+    creating: createKerasRepeatVector
+    """
+    def __init__(self, n, input_shape=None, bigdl_type="float"):
+        super(RepeatVector, self).__init__(None, bigdl_type,
+                                           n,
+                                           list(input_shape) if input_shape else None)
+
+
+class Permute(KerasLayer):
+    """
+    Permutes the dimensions of the input according to a given pattern.
+    Useful for connecting RNNs and convnets together.
+
+    When you use this layer as the first layer of a model, you need to provide the argument
+    inputShape (a shape tuple, does not include the batch dimension).
+
+    # Arguments
+    dims: Tuple of int. Permutation pattern, does not include the samples dimension. Indexing starts at 1.
+    input_shape: A shape tuple, not including batch.
+
+    >>> permute = Permute((2, 1, 3), input_shape=(3, 4, 5))
+    creating: createKerasPermute
+    """
+    def __init__(self, dims, input_shape=None, bigdl_type="float"):
+        super(Permute, self).__init__(None, bigdl_type,
+                                      dims,
+                                      list(input_shape) if input_shape else None)
+
+
 class Highway(KerasLayer):
     """
     Densely connected highway network. Highway layers are a natural extension of LSTMs to feedforward networks.
@@ -380,6 +422,51 @@ class Highway(KerasLayer):
                                       b_regularizer,
                                       bias,
                                       list(input_shape) if input_shape else None)
+
+
+class Convolution1D(KerasLayer):
+    """
+    Applies convolution operator for filtering neighborhoods of 1-D inputs.
+    You can also use Conv1D as an alias of this layer.
+    The input of this layer should be 3D.
+
+    When you use this layer as the first layer of a model, you need to provide the argument
+    inputShape (a shape tuple, does not include the batch dimension).
+
+    # Arguments
+    nb_filter: Number of convolution filters to use.
+    filter_length: The extension (spatial or temporal) of each filter.
+    init: String representations of initialization method for the weights of the layer.
+          Default is 'glorot_uniform'.
+    activation: String representations of activation function to use (such as 'relu' or 'sigmoid').
+                Default is None.
+    border_mode: Either 'valid' or 'same'. Default is 'valid'.
+    subsample_length: Factor by which to subsample output. Int. Default is 1.
+    W_regularizer: An instance of [[Regularizer]], (eg. L1 or L2 regularization),
+                   applied to the input weights matrices. Default is None.
+    b_regularizer: An instance of [[Regularizer]], applied to the bias. Default is None.
+    bias: Whether to include a bias (i.e. make the layer affine rather than linear).
+          Default is True.
+    input_shape: A shape tuple, not including batch.
+
+    >>> conv1d = Convolution1D(12, 4, input_shape=(3, 16))
+    creating: createKerasConvolution1D
+    """
+    def __init__(self, nb_filter, filter_length, init="glorot_uniform",
+                 activation=None, border_mode="valid", subsample_length=1,
+                 W_regularizer=None, b_regularizer=None, bias=True,
+                 input_shape=None,bigdl_type="float"):
+        super(Convolution1D, self).__init__(None, bigdl_type,
+                                            nb_filter,
+                                            filter_length,
+                                            init,
+                                            activation,
+                                            border_mode,
+                                            subsample_length,
+                                            W_regularizer,
+                                            b_regularizer,
+                                            bias,
+                                            list(input_shape) if input_shape else None)
 
 
 class Convolution2D(KerasLayer):
@@ -434,7 +521,136 @@ class Convolution2D(KerasLayer):
                                             list(input_shape) if input_shape else None)
 
 
+class Convolution3D(KerasLayer):
+    """
+    Applies convolution operator for filtering windows of three-dimensional inputs.
+    You can also use Conv3D as an alias of this layer.
+    Data format currently supported for this layer is dimOrdering='th' (Channel First).
+    The input of this layer should be 5D.
+
+    When you use this layer as the first layer of a model, you need to provide the argument
+    inputShape (a shape tuple, does not include the batch dimension).
+
+    # Arguments
+    nb_filter: Number of convolution filters to use.
+    kernel_dim1: Length of the first dimension in the convolution kernel.
+    kernel_dim2: Length of the second dimension in the convolution kernel.
+    kernel_dim3: Length of the third dimension in the convolution kernel.
+    init: String representations of initialization method for the weights of the layer.
+          Default is 'glorot_uniform'.
+    activation: String representations of activation function to use (such as 'relu' or 'sigmoid').
+                Default is None.
+    border_mode: Either 'valid' or 'same'. Default is 'valid'.
+    subsample: Int tuple of length 3. Factor by which to subsample output.
+               Also called strides elsewhere. Default is (1, 1, 1).
+    dim_ordering: Format of input data. Only 'th' (Channel First) is supported for now.
+    W_regularizer: An instance of [[Regularizer]], (eg. L1 or L2 regularization),
+                   applied to the input weights matrices. Default is None.
+    b_regularizer: An instance of [[Regularizer]], applied to the bias. Default is None.
+    bias: Whether to include a bias (i.e. make the layer affine rather than linear).
+          Default is True.
+    input_shape: A shape tuple, not including batch.
+
+    >>> conv3d = Convolution3D(32, 3, 4, 5, input_shape=(3, 64, 64, 64))
+    creating: createKerasConvolution3D
+    """
+    def __init__(self, nb_filter, kernel_dim1, kernel_dim2, kernel_dim3,
+                 init="glorot_uniform", activation=None, border_mode="valid",
+                 subsample=(1, 1, 1), dim_ordering="th", W_regularizer=None,
+                 b_regularizer=None, bias=True, input_shape=None, bigdl_type="float"):
+        super(Convolution3D, self).__init__(None, bigdl_type,
+                                            nb_filter,
+                                            kernel_dim1,
+                                            kernel_dim2,
+                                            kernel_dim3,
+                                            init,
+                                            activation,
+                                            border_mode,
+                                            subsample,
+                                            dim_ordering,
+                                            W_regularizer,
+                                            b_regularizer,
+                                            bias,
+                                            list(input_shape) if input_shape else None)
+
+
+Conv1D = Convolution1D
 Conv2D = Convolution2D
+Conv3D = Convolution3D
+
+
+class Cropping1D(KerasLayer):
+    """
+    Cropping layer for 1D input (e.g. temporal sequence).
+    The input of this layer should be 3D.
+
+    When you use this layer as the first layer of a model, you need to provide the argument
+    inputShape (a shape tuple, does not include the batch dimension).
+
+    # Arguments
+    cropping: Int tuple of length 2. How many units should be trimmed off at the beginning and
+              end of the cropping dimension. Default is (1, 1).
+    input_shape: A shape tuple, not including batch.
+
+    >>> cropping1d = Cropping1D(cropping=(1, 2), input_shape=(8, 8))
+    creating: createKerasCropping1D
+    """
+    def __init__(self, cropping=(1, 1), input_shape=None, bigdl_type="float"):
+        super(Cropping1D, self).__init__(None, bigdl_type,
+                                         cropping,
+                                         list(input_shape) if input_shape else None)
+
+
+class Cropping2D(KerasLayer):
+    """
+    Cropping layer for 2D input (e.g. picture).
+    The input of this layer should be 4D.
+
+    When you use this layer as the first layer of a model, you need to provide the argument
+    inputShape (a shape tuple, does not include the batch dimension).
+
+    # Arguments
+    cropping: Int tuple of tuple of length 2. How many units should be trimmed off at the beginning and
+              end of the 2 cropping dimensions (i.e. height and width). Default is ((0, 0), (0, 0)).
+    input_shape: A shape tuple, not including batch.
+
+    >>> cropping2d = Cropping2D(cropping=((1, 2), (0, 1)), input_shape=(12, 12, 12))
+    creating: createKerasCropping2D
+    """
+    def __init__(self, cropping=((0, 0), (0, 0)), dim_ordering="th",
+                 input_shape=None, bigdl_type="float"):
+        super(Cropping2D, self).__init__(None, bigdl_type,
+                                         cropping[0],
+                                         cropping[1],
+                                         dim_ordering,
+                                         list(input_shape) if input_shape else None)
+
+
+class Cropping3D(KerasLayer):
+    """
+    Cropping layer for 3D data (e.g. spatial or spatio-temporal).
+    The input of this layer should be 5D.
+
+    When you use this layer as the first layer of a model, you need to provide the argument
+    inputShape (a shape tuple, does not include the batch dimension).
+
+    # Arguments
+    cropping: Int tuple of tuple of length 3. How many units should be trimmed off at the beginning and
+              end of the 3 cropping dimensions (i.e. kernel_dim1, kernel_dim2 and kernel_dim3).
+              Default is ((1, 1), (1, 1), (1, 1)).
+    input_shape: A shape tuple, not including batch.
+
+    >>> cropping3d = Cropping3D(cropping=((0, 2), (1, 1), (3, 1)), input_shape=(4, 12, 12, 16))
+    creating: createKerasCropping3D
+    """
+    def __init__(self, cropping=((1, 1), (1, 1), (1, 1)), dim_ordering="th",
+                 input_shape=None, bigdl_type="float"):
+        super(Cropping3D, self).__init__(None, bigdl_type,
+                                         cropping[0],
+                                         cropping[1],
+                                         cropping[2],
+                                         dim_ordering,
+                                         list(input_shape) if input_shape else None)
 
 
 class UpSampling1D(KerasLayer):
@@ -560,6 +776,35 @@ class ZeroPadding2D(KerasLayer):
                                             list(input_shape) if input_shape else None)
 
 
+class MaxPooling1D(KerasLayer):
+    """
+    Applies max pooling operation for temporal data.
+    The input of this layer should be 3D.
+
+    When you use this layer as the first layer of a model, you need to provide the argument
+    inputShape (a shape tuple, does not include the batch dimension).
+
+    # Arguments
+    pool_length: Size of the region to which max pooling is applied.
+    strides: Factor by which to downscale. 2 will halve the input.
+             Default is None, and in this case it will be equal to pool_length..
+    border_mode: Either 'valid' or 'same'. Default is 'valid'.
+    input_shape: A shape tuple, not including batch.
+
+    >>> maxpooling1d = MaxPooling1D(3, input_shape=(3, 24))
+    creating: createKerasMaxPooling1D
+    """
+    def __init__(self, pool_length=2, stride=None, border_mode="valid",
+                 input_shape=None, bigdl_type="float"):
+        if not stride:
+            stride = -1
+        super(MaxPooling1D, self).__init__(None, bigdl_type,
+                                           pool_length,
+                                           stride,
+                                           border_mode,
+                                           list(input_shape) if input_shape else None)
+
+
 class MaxPooling2D(KerasLayer):
     """
     Applies max pooling operation for spatial data.
@@ -588,6 +833,164 @@ class MaxPooling2D(KerasLayer):
                                            border_mode,
                                            dim_ordering,
                                            list(input_shape) if input_shape else None)
+
+
+class MaxPooling3D(KerasLayer):
+    """
+    Applies max pooling operation for 3D data (spatial or spatio-temporal).
+    Data format currently supported for this layer is dimOrdering='th' (Channel First).
+    The input of this layer should be 5D.
+
+    When you use this layer as the first layer of a model, you need to provide the argument
+    inputShape (a shape tuple, does not include the batch dimension).
+
+    # Arguments
+    pool_size: Int tuple of length 3. Factors by which to downscale (dim1, dim2, dim3).
+               Default is (2, 2, 2), which will halve the image in each dimension.
+    strides: Int tuple of length 3. Stride values. Default is None, and in this case it will be equal to pool_size.
+    border_mode: Either 'valid' or 'same'. Default is 'valid'.
+    dim_ordering: Format of input data. Only 'th' (Channel First) is supported for now.
+    input_shape: A shape tuple, not including batch.
+
+    >>> maxpooling3d = MaxPooling3D((2, 1, 3), input_shape=(3, 32, 32, 32))
+    creating: createKerasMaxPooling3D
+    """
+    def __init__(self, pool_size=(2, 2, 2), strides=None, dim_ordering="th",
+                 input_shape=None, bigdl_type="float"):
+        super(MaxPooling3D, self).__init__(None, bigdl_type,
+                                           pool_size,
+                                           strides,
+                                           dim_ordering,
+                                           list(input_shape) if input_shape else None)
+
+
+class AveragePooling1D(KerasLayer):
+    """
+    Applies average pooling operation for temporal data.
+    The input of this layer should be 3D.
+
+    When you use this layer as the first layer of a model, you need to provide the argument
+    inputShape (a shape tuple, does not include the batch dimension).
+
+    # Arguments
+    pool_length: Size of the region to which max pooling is applied.
+    strides: Factor by which to downscale. 2 will halve the input.
+             Default is None, and in this case it will be equal to pool_length..
+    border_mode: Either 'valid' or 'same'. Default is 'valid'.
+    input_shape: A shape tuple, not including batch.
+
+    >>> averagepooling1d = AveragePooling1D(input_shape=(3, 24))
+    creating: createKerasAveragePooling1D
+    """
+    def __init__(self, pool_length=2, stride=None, border_mode="valid",
+                 input_shape=None, bigdl_type="float"):
+        if not stride:
+            stride = -1
+        super(AveragePooling1D, self).__init__(None, bigdl_type,
+                                               pool_length,
+                                               stride,
+                                               border_mode,
+                                               list(input_shape) if input_shape else None)
+
+
+class AveragePooling2D(KerasLayer):
+    """
+    Applies average pooling operation for spatial data.
+    The input of this layer should be 4D.
+
+    When you use this layer as the first layer of a model, you need to provide the argument
+    inputShape (a shape tuple, does not include the batch dimension).
+
+    # Arguments
+    pool_size: Int tuple of length 2 corresponding to the downscale vertically and horizontally.
+               Default is (2, 2), which will halve the image in each dimension.
+    strides: Int tuple of length 2. Stride values. Default is None, and in this case it will be equal to pool_size.
+    border_mode: Either 'valid' or 'same'. Default is 'valid'.
+    dim_ordering: Format of input data. Either 'th' (Channel First) or 'tf' (Channel Last). Default is 'th'.
+    input_shape: A shape tuple, not including batch.
+
+    >>> averagepooling2d = AveragePooling2D((1, 2), input_shape=(2, 28, 32))
+    creating: createKerasAveragePooling2D
+    """
+    def __init__(self, pool_size=(2, 2), strides=None, border_mode="valid",
+                 dim_ordering="th", input_shape=None, bigdl_type="float"):
+        super(AveragePooling2D, self).__init__(None, bigdl_type,
+                                               pool_size,
+                                               strides,
+                                               border_mode,
+                                               dim_ordering,
+                                               list(input_shape) if input_shape else None)
+
+
+class AveragePooling3D(KerasLayer):
+    """
+    Applies average pooling operation for 3D data (spatial or spatio-temporal).
+    Data format currently supported for this layer is dimOrdering='th' (Channel First).
+    The input of this layer should be 5D.
+
+    When you use this layer as the first layer of a model, you need to provide the argument
+    inputShape (a shape tuple, does not include the batch dimension).
+
+    # Arguments
+    pool_size: Int tuple of length 3. Factors by which to downscale (dim1, dim2, dim3).
+               Default is (2, 2, 2), which will halve the image in each dimension.
+    strides: Int tuple of length 3. Stride values. Default is None, and in this case it will be equal to pool_size.
+    border_mode: Either 'valid' or 'same'. Default is 'valid'.
+    dim_ordering: Format of input data. Only 'th' (Channel First) is supported for now.
+    input_shape: A shape tuple, not including batch.
+
+    >>> averagepooling3d = AveragePooling3D((1, 1, 2), input_shape=(3, 28, 32, 36))
+    creating: createKerasAveragePooling3D
+    """
+    def __init__(self, pool_size=(2, 2, 2), strides=None, dim_ordering="th",
+                 input_shape=None, bigdl_type="float"):
+        super(AveragePooling3D, self).__init__(None, bigdl_type,
+                                               pool_size,
+                                               strides,
+                                               dim_ordering,
+                                               list(input_shape) if input_shape else None)
+
+
+class GlobalMaxPooling2D(KerasLayer):
+    """
+    Applies global max pooling operation for spatial data.
+    The input of this layer should be 4D.
+
+    When you use this layer as the first layer of a model, you need to provide the argument
+    inputShape (a shape tuple, does not include the batch dimension).
+
+    # Arguments
+    dim_ordering: Format of input data. Either 'th' (Channel First) or 'tf' (Channel Last). Default is 'th'.
+    input_shape: A shape tuple, not including batch.
+
+    >>> globalmaxpooling2d = GlobalMaxPooling2D(input_shape=(4, 32, 32))
+    creating: createKerasGlobalMaxPooling2D
+    """
+    def __init__(self, dim_ordering="th", input_shape=None, bigdl_type="float"):
+        super(GlobalMaxPooling2D, self).__init__(None, bigdl_type,
+                                                 dim_ordering,
+                                                 list(input_shape) if input_shape else None)
+
+
+class GlobalAveragePooling2D(KerasLayer):
+    """
+    Applies global average pooling operation for spatial data.
+    The input of this layer should be 4D.
+
+    When you use this layer as the first layer of a model, you need to provide the argument
+    inputShape (a shape tuple, does not include the batch dimension).
+
+    # Arguments
+    dim_ordering: Format of input data. Either 'th' (Channel First) or 'tf' (Channel Last). Default is 'th'.
+    input_shape: A shape tuple, not including batch.
+
+    >>> globalaveragepooling2d = GlobalAveragePooling2D(input_shape=(4, 32, 32))
+    creating: createKerasGlobalAveragePooling2D
+    """
+    def __init__(self, dim_ordering="th", input_shape=None, bigdl_type="float"):
+        super(GlobalAveragePooling2D, self).__init__(None, bigdl_type,
+                                                     dim_ordering,
+                                                     list(input_shape) if input_shape else None)
 
 
 class SimpleRNN(KerasLayer):
