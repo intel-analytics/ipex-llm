@@ -121,7 +121,7 @@ class Dense(KerasLayer):
                                     list(input_shape) if input_shape else None)
 
 
-class MaxoutDense(Layer):
+class MaxoutDense(KerasLayer):
     """
     A dense maxout layer that takes the element-wise maximum of nbFeature, Dense(inputDim, outputDim) linear layers.
     This allows the layer to learn a convex, piecewise linear activation function over the inputs.
@@ -132,7 +132,7 @@ class MaxoutDense(Layer):
 
     # Arguments
     output_dim: The size of output dimension.
-    nb_feature: Number of Dense layers to use internally. Integer. Default is 4.
+    nb_feature: Number of Dense layers to use internally. Int. Default is 4.
     W_regularizer: An instance of [[Regularizer]], (eg. L1 or L2 regularization),
                    applied to the input weights matrices. Default is None.
     b_regularizer: An instance of [[Regularizer]], applied to the bias. Default is None.
@@ -248,7 +248,7 @@ class Merge(KerasLayer):
     layers: A list of layer instances. Must be more than one layer.
     mode: Merge mode. String, must be one of: 'sum', 'mul', 'concat', 'ave', 'cos',
           'dot', 'max'. Default is 'sum'.
-    concat_axis: Integer, axis to use in mode concat. Only specify this when mode is 'concat'.
+    concat_axis: Int, axis to use in mode concat. Only specify this when mode is 'concat'.
                  Default is -1, meaning the last axis of the input.
     input_shape: A list of shape tuples, each not including batch.
 
@@ -351,7 +351,7 @@ class Activation(KerasLayer):
                                          list(input_shape) if input_shape else None)
 
 
-class Highway(Layer):
+class Highway(KerasLayer):
     """
     Densely connected highway network. Highway layers are a natural extension of LSTMs to feedforward networks.
     The input of this layer should be 2D, i.e. (batch, input dim).
@@ -401,7 +401,7 @@ class Convolution2D(KerasLayer):
     activation: String representations of activation function to use (such as 'relu' or 'sigmoid').
                 Default is None.
     border_mode: Either 'valid' or 'same'. Default is 'valid'.
-    subsample: Tuple of length 2 corresponding to the step of the convolution in the
+    subsample: Int tuple of length 2 corresponding to the step of the convolution in the
                height and width dimension. Also called strides elsewhere. Default is (1, 1).
     dim_ordering: Format of input data. Either 'th' (Channel First) or 'tf' (Channel Last). Default is 'th'.
     W_regularizer: An instance of [[Regularizer]], (eg. L1 or L2 regularization),
@@ -437,7 +437,7 @@ class Convolution2D(KerasLayer):
 Conv2D = Convolution2D
 
 
-class UpSampling1D(Layer):
+class UpSampling1D(KerasLayer):
     """
     UpSampling layer for 1D inputs.
     Repeats each temporal step 'length' times along the time axis.
@@ -447,7 +447,7 @@ class UpSampling1D(Layer):
     inputShape (a shape tuple, does not include the batch dimension).
 
     # Arguments
-    length: Integer. UpSampling factor. Default is 2.
+    length: Int. UpSampling factor. Default is 2.
     input_shape: A shape tuple, not including batch.
 
     >>> upsampling1d = UpSampling1D(length=3, input_shape=(3, 12))
@@ -459,7 +459,7 @@ class UpSampling1D(Layer):
                                            list(input_shape) if input_shape else None)
 
 
-class UpSampling2D(Layer):
+class UpSampling2D(KerasLayer):
     """
     UpSampling layer for 2D inputs.
     Repeats the rows and columns of the data by size[0] and size[1] respectively.
@@ -469,7 +469,7 @@ class UpSampling2D(Layer):
     inputShape (a shape tuple, does not include the batch dimension).
 
     # Arguments
-    size: Tuple of length 2. UpSampling factors for rows and columns. Default is (2, 2).
+    size: Int tuple of length 2. UpSampling factors for rows and columns. Default is (2, 2).
     dim_ordering: Format of input data. Either 'th' (Channel First) or 'tf' (Channel Last). Default is 'th'.
     input_shape: A shape tuple, not including batch.
 
@@ -483,7 +483,7 @@ class UpSampling2D(Layer):
                                            list(input_shape) if input_shape else None)
 
 
-class UpSampling3D(Layer):
+class UpSampling3D(KerasLayer):
     """
     UpSampling layer for 2D inputs.
     Repeats the 1st, 2nd and 3rd dimensions of the data by size[0], size[1] and size[2] respectively.
@@ -494,7 +494,7 @@ class UpSampling3D(Layer):
     inputShape (a shape tuple, does not include the batch dimension).
 
     # Arguments
-    size: Tuple of length 3. UpSampling factors for dim1, dim2 and dim3. Default is (2, 2, 2).
+    size: Int tuple of length 3. UpSampling factors for dim1, dim2 and dim3. Default is (2, 2, 2).
     dim_ordering: Format of input data. Only 'th' (Channel First) is supported for now.
     input_shape: A shape tuple, not including batch.
 
@@ -508,7 +508,7 @@ class UpSampling3D(Layer):
                                            list(input_shape) if input_shape else None)
 
 
-class ZeroPadding1D(Layer):
+class ZeroPadding1D(KerasLayer):
     """
     Zero-padding layer for 1D input (e.g. temporal sequence).
     The input of this layer should be 3D.
@@ -517,7 +517,10 @@ class ZeroPadding1D(Layer):
     inputShape (a shape tuple, does not include the batch dimension).
 
     # Arguments
-    padding: Integer. How many zeros to add both at the beginning and at the end of the padding dimension. Default is 1.
+    padding: Int or int tuple of length 2.
+             If int, how many zeros to add both at the beginning and at the end of the padding dimension.
+             If tuple of length 2, how many zeros to add in the order '(left_pad, right_pad)'.
+             Default is 1.
     input_shape: A shape tuple, not including batch.
 
     >>> zeropadding1d = ZeroPadding1D(padding=2, input_shape=(3, 6))
@@ -529,7 +532,7 @@ class ZeroPadding1D(Layer):
                                             list(input_shape) if input_shape else None)
 
 
-class ZeroPadding2D(Layer):
+class ZeroPadding2D(KerasLayer):
     """
     Zero-padding layer for 2D input (e.g. picture).
     The input of this layer should be 4D.
@@ -538,7 +541,9 @@ class ZeroPadding2D(Layer):
     inputShape (a shape tuple, does not include the batch dimension).
 
     # Arguments
-    padding: Tuple of length 2. How many zeros to add both at the beginning and at the end of the 2 padding dimensions.
+    padding: Int tuple of length 2 or length 4.
+             If tuple of length 2, how many zeros to add both at the beginning and at the end of rows and cols.
+             If tuple of length 4, how many zeros to add in the order '(top_pad, bottom_pad, left_pad, right_pad)'.
              Default is (1, 1).
     dim_ordering: Format of input data. Either 'th' (Channel First) or 'tf' (Channel Last). Default is 'th'.
     input_shape: A shape tuple, not including batch.
@@ -547,6 +552,8 @@ class ZeroPadding2D(Layer):
     creating: createKerasZeroPadding2D
     """
     def __init__(self, padding=(1, 1), dim_ordering="th", input_shape=None, bigdl_type="float"):
+        if len(padding) == 2:
+            padding = (padding[0], padding[0], padding[1], padding[1])
         super(ZeroPadding2D, self).__init__(None, bigdl_type,
                                             padding,
                                             dim_ordering,
@@ -562,9 +569,9 @@ class MaxPooling2D(KerasLayer):
     inputShape (a shape tuple, does not include the batch dimension).
 
     # Arguments
-    pool_size: Tuple of length 2 corresponding to the downscale vertically and horizontally.
+    pool_size: Int tuple of length 2 corresponding to the downscale vertically and horizontally.
                Default is (2, 2), which will halve the image in each dimension.
-    strides: Tuple of length 2. Stride values. Default is None, and in this case it will be equal to pool_size.
+    strides: Int tuple of length 2. Stride values. Default is None, and in this case it will be equal to pool_size.
     border_mode: Either 'valid' or 'same'. Default is 'valid'.
     dim_ordering: Format of input data. Either 'th' (Channel First) or 'tf' (Channel Last). Default is 'th'.
     input_shape: A shape tuple, not including batch.
@@ -583,7 +590,7 @@ class MaxPooling2D(KerasLayer):
                                            list(input_shape) if input_shape else None)
 
 
-class SimpleRNN(Layer):
+class SimpleRNN(KerasLayer):
     """
     A fully-connected recurrent neural network cell. The output is to be fed back to input.
     The input of this layer should be 3D, i.e. (batch, time steps, input dim).
@@ -621,7 +628,7 @@ class SimpleRNN(Layer):
                                         list(input_shape) if input_shape else None)
 
 
-class LSTM(Layer):
+class LSTM(KerasLayer):
     """
     Long Short Term Memory unit architecture.
     The input of this layer should be 3D, i.e. (batch, time steps, input dim).
@@ -661,7 +668,7 @@ class LSTM(Layer):
                                    list(input_shape) if input_shape else None)
 
 
-class GRU(Layer):
+class GRU(KerasLayer):
     """
     Gated Recurrent Unit architecture.
     The input of this layer should be 3D, i.e. (batch, time steps, input dim).

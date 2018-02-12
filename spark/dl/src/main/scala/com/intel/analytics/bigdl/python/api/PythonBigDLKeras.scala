@@ -248,9 +248,9 @@ class PythonBigDLKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends Pytho
   }
 
   def createKerasZeroPadding1D(
-    padding: Int = 1,
+    padding: JList[Int],
     inputShape: JList[Int] = null): ZeroPadding1D[T] = {
-    ZeroPadding1D(padding, toScalaShape(inputShape))
+    new ZeroPadding1D(padding.asScala.toArray, toScalaShape(inputShape))
   }
 
   def createKerasZeroPadding2D(
