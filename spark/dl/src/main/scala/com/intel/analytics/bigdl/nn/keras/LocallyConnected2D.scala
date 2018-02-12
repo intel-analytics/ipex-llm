@@ -40,8 +40,8 @@ import scala.reflect.ClassTag
  *                   You can also pass in corresponding string representations such as 'relu'
  *                   or 'sigmoid', etc. for simple activations in the factory method.
  * @param borderMode Either 'valid' or 'same'. Default is 'valid'.
- * @param subsample Int array of length 2 corresponding to the step of the convolution in the height and
- *                  width dimension. Also called strides elsewhere. Default is (1, 1).
+ * @param subsample Int array of length 2 corresponding to the step of the convolution in the height
+ *                  and width dimension. Also called strides elsewhere. Default is (1, 1).
  * @param dimOrdering Format of input data. Either DataFormat.NCHW (dimOrdering='th') or
  *                    DataFormat.NHWC (dimOrdering='tf'). Default is NCHW.
  * @param wRegularizer An instance of [[Regularizer]], (eg. L1 or L2 regularization),
