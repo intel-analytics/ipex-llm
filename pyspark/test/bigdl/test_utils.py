@@ -338,6 +338,4 @@ class BigDLTestCase(TestCase):
             bmodel.set_weights(weight_converter(klayer, kmodel.get_weights()))
         bmodel.training(is_training)
         boutput = bmodel.forward(input_data)
-        np.testing.assert_allclose(bmodel.get_output_shape()[1:],
-                                   kmodel.get_output_shape_at(0)[1:])
         self.assert_allclose(boutput, koutput, rtol=rtol, atol=atol)
