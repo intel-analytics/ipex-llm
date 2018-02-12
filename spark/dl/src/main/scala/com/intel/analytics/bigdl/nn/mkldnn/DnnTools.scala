@@ -659,7 +659,7 @@ object ResNet_dnn {
         .add(layer(block, 256, loopConfig._3, 2, name = "4"))
         .add(layer(block, 512, loopConfig._4, 2, name = "5"))
         .add(PoolingDnnAverage(7, 7, 1, 1).setName("pool5"))
-        // .add(View(nFeatures).setNumInputDims(3))
+//        .add(View(nFeatures).setNumInputDims(3))
         .add(mkldnn.Linear(nFeatures, classNum).setName("fc1000"))
     } else {
       throw new IllegalArgumentException(s"Invalid dataset ${dataset}")
