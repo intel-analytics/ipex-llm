@@ -421,4 +421,153 @@ class PythonBigDLKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends Pytho
       KerasUtils.toBigDLFormat5D(dimOrdering), toScalaShape(inputShape))
   }
 
+  def createKerasAtrousConvolution1D(
+    nbFilter: Int,
+    filterLength: Int,
+    init: String = "glorot_uniform",
+    activation: String = null,
+    subsampleLength: Int = 1,
+    atrousRate: Int = 1,
+    wRegularizer: Regularizer[T] = null,
+    bRegularizer: Regularizer[T] = null,
+    inputShape: JList[Int] = null): AtrousConvolution1D[T] = {
+    AtrousConvolution1D(nbFilter, filterLength, init, activation,
+      subsampleLength, atrousRate, wRegularizer, bRegularizer, toScalaShape(inputShape))
+  }
+
+  def createKerasAtrousConvolution2D(
+    nbFilter: Int,
+    nbRow: Int,
+    nbCol: Int,
+    init: String = "glorot_uniform",
+    activation: String = null,
+    subsample: JList[Int],
+    atrousRate: JList[Int],
+    dimOrdering: String = "th",
+    wRegularizer: Regularizer[T] = null,
+    bRegularizer: Regularizer[T] = null,
+    inputShape: JList[Int] = null): AtrousConvolution2D[T] = {
+    new AtrousConvolution2D(nbFilter, nbRow, nbCol, KerasUtils.getInitMethod(init),
+      KerasUtils.getActivation(activation), toScalaArray(subsample),
+      toScalaArray(atrousRate), KerasUtils.toBigDLFormat(dimOrdering),
+      wRegularizer, bRegularizer, toScalaShape(inputShape))
+  }
+
+  def createKerasDeconvolution2D(
+    nbFilter: Int,
+    nbRow: Int,
+    nbCol: Int,
+    init: String = "glorot_uniform",
+    activation: String = null,
+    subsample: JList[Int],
+    dimOrdering: String = "th",
+    wRegularizer: Regularizer[T] = null,
+    bRegularizer: Regularizer[T] = null,
+    bias: Boolean = true,
+    inputShape: JList[Int] = null): Deconvolution2D[T] = {
+    new Deconvolution2D(nbFilter, nbRow, nbCol, KerasUtils.getInitMethod(init),
+      KerasUtils.getActivation(activation), toScalaArray(subsample),
+      KerasUtils.toBigDLFormat(dimOrdering), wRegularizer, bRegularizer,
+      bias, toScalaShape(inputShape))
+  }
+
+  def createKerasConvLSTM2D(
+    nbFilter: Int,
+    nbKernel: Int,
+    activation: String = "tanh",
+    innerActivation: String = "hard_sigmoid",
+    dimOrdering: String = "th",
+    subsample: Int = 1,
+    wRegularizer: Regularizer[T] = null,
+    uRegularizer: Regularizer[T] = null,
+    bRegularizer: Regularizer[T] = null,
+    returnSequences: Boolean = false,
+    goBackwards: Boolean = false,
+    inputShape: JList[Int] = null): ConvLSTM2D[T] = {
+    ConvLSTM2D(nbFilter, nbKernel, activation, innerActivation,
+      dimOrdering, subsample, wRegularizer, uRegularizer, bRegularizer,
+      returnSequences, goBackwards, toScalaShape(inputShape))
+  }
+
+  def createKerasLocallyConnected1D(
+    nbFilter: Int,
+    filterLength: Int,
+    activation: String = null,
+    subsampleLength: Int = 1,
+    wRegularizer: Regularizer[T] = null,
+    bRegularizer: Regularizer[T] = null,
+    bias: Boolean = true,
+    inputShape: JList[Int] = null): LocallyConnected1D[T] = {
+    LocallyConnected1D(nbFilter, filterLength, activation, subsampleLength,
+      wRegularizer, bRegularizer, bias, toScalaShape(inputShape))
+  }
+
+  def createKerasLocallyConnected2D(
+    nbFilter: Int,
+    nbRow: Int,
+    nbCol: Int,
+    activation: String = null,
+    borderMode: String = "valid",
+    subsample: JList[Int],
+    dimOrdering: String = "th",
+    wRegularizer: Regularizer[T] = null,
+    bRegularizer: Regularizer[T] = null,
+    bias: Boolean = true,
+    inputShape: JList[Int] = null): LocallyConnected2D[T] = {
+    new LocallyConnected2D(nbFilter, nbRow, nbCol, KerasUtils.getActivation(activation),
+      borderMode, toScalaArray(subsample), KerasUtils.toBigDLFormat(dimOrdering),
+      wRegularizer, bRegularizer, bias, toScalaShape(inputShape))
+  }
+
+  def createKerasSeparableConvolution2D(
+    nbFilter: Int,
+    nbRow: Int,
+    nbCol: Int,
+    init: String = "glorot_uniform",
+    activation: String = null,
+    borderMode: String = "valid",
+    subsample: JList[Int],
+    depthMultiplier: Int = 1,
+    dimOrdering: String = "th",
+    depthwiseRegularizer: Regularizer[T] = null,
+    pointwiseRegularizer: Regularizer[T] = null,
+    bRegularizer: Regularizer[T] = null,
+    bias: Boolean = true,
+    inputShape: JList[Int] = null): SeparableConvolution2D[T] = {
+    new SeparableConvolution2D(nbFilter, nbRow, nbCol, KerasUtils.getInitMethod(init),
+      KerasUtils.getActivation(activation), borderMode, toScalaArray(subsample),
+      depthMultiplier, KerasUtils.toBigDLFormat(dimOrdering),
+      depthwiseRegularizer, pointwiseRegularizer, bRegularizer, bias, toScalaShape(inputShape))
+  }
+
+  def createKerasZeroPadding3D(
+    padding: JList[Int],
+    dimOrdering: String = "th",
+    inputShape: JList[Int] = null): ZeroPadding3D[T] = {
+    new ZeroPadding3D(toScalaArray(padding), KerasUtils.toBigDLFormat5D(dimOrdering),
+      toScalaShape(inputShape))
+  }
+
+  def createKerasGlobalAveragePooling1D(
+    inputShape: JList[Int] = null): GlobalAveragePooling1D[T] = {
+    GlobalAveragePooling1D(toScalaShape(inputShape))
+  }
+
+  def createKerasGlobalMaxPooling1D(
+    inputShape: JList[Int] = null): GlobalMaxPooling1D[T] = {
+    GlobalMaxPooling1D(toScalaShape(inputShape))
+  }
+
+  def createKerasGlobalMaxPooling3D(
+    dimOrdering: String = "th",
+    inputShape: JList[Int] = null): GlobalMaxPooling3D[T] = {
+    GlobalMaxPooling3D(dimOrdering, toScalaShape(inputShape))
+  }
+
+  def createKerasGlobalAveragePooling3D(
+    dimOrdering: String = "th",
+    inputShape: JList[Int] = null): GlobalAveragePooling3D[T] = {
+    GlobalAveragePooling3D(dimOrdering, toScalaShape(inputShape))
+  }
+
 }

@@ -25,11 +25,9 @@ import com.intel.analytics.bigdl.utils.Shape
 import scala.reflect.ClassTag
 
 /**
- * Locally-connected layer for 2D inputs.
- * The LocallyConnected2D layer works similarly to the SpatialConvolution layer,
+ * Locally-connected layer for 2D inputs that works similarly to the SpatialConvolution layer,
  * except that weights are unshared, that is, a different set of filters
  * is applied at each different patch of the input.
- * e.g. inputShape=Shape(3, 128, 128) for 128x128 RGB pictures.
  * The input of this layer should be 4D.
  *
  * When using this layer as the first layer in a model, you need to provide the argument
@@ -42,7 +40,7 @@ import scala.reflect.ClassTag
  *                   You can also pass in corresponding string representations such as 'relu'
  *                   or 'sigmoid', etc. for simple activations in the factory method.
  * @param borderMode Either 'valid' or 'same'. Default is 'valid'.
- * @param subsample Int array of length 2. The step of the convolution in the height and
+ * @param subsample Int array of length 2 corresponding to the step of the convolution in the height and
  *                  width dimension. Also called strides elsewhere. Default is (1, 1).
  * @param dimOrdering Format of input data. Either DataFormat.NCHW (dimOrdering='th') or
  *                    DataFormat.NHWC (dimOrdering='tf'). Default is NCHW.

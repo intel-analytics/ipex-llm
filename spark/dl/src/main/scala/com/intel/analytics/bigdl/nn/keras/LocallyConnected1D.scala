@@ -26,11 +26,10 @@ import com.intel.analytics.bigdl.utils.Shape
 import scala.reflect.ClassTag
 
 /**
- * Locally-connected layer for 1D inputs.
- * The LocallyConnected1D layer works similarly to the TemporalConvolution layer,
+ * Locally-connected layer for 1D inputs which works similarly to the TemporalConvolution layer,
  * except that weights are unshared, that is, a different set of filters
  * is applied at each different patch of the input.
- * BorderMode of this layer will be 'valid'.
+ * Border mode currently supported for this layer is 'valid'.
  * The input of this layer should be 3D.
  *
  * When using this layer as the first layer in a model, you need to provide the argument
@@ -41,7 +40,7 @@ import scala.reflect.ClassTag
  * @param activation Activation function to use. Default is null.
  *                   You can also pass in corresponding string representations such as 'relu'
  *                   or 'sigmoid', etc. for simple activations in the factory method.
- * @param subsampleLength Int. Factor by which to subsample output.
+ * @param subsampleLength Integer. Factor by which to subsample output.
  * @param wRegularizer An instance of [[Regularizer]], (eg. L1 or L2 regularization),
  *                     applied to the input weights matrices. Default is null.
  * @param bRegularizer An instance of [[Regularizer]], applied to the bias. Default is null.

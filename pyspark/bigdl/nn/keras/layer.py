@@ -482,7 +482,7 @@ class Convolution2D(KerasLayer):
     # Arguments
     nb_filter: Number of convolution filters to use.
     nb_row: Number of rows in the convolution kernel.
-    nb_col: Number of rows in the convolution kernel.
+    nb_col: Number of cols in the convolution kernel.
     init: String representations of initialization method for the weights of the layer.
           Default is 'glorot_uniform'.
     activation: String representations of activation function to use (such as 'relu' or 'sigmoid').
@@ -525,7 +525,7 @@ class Convolution3D(KerasLayer):
     """
     Applies convolution operator for filtering windows of three-dimensional inputs.
     You can also use Conv3D as an alias of this layer.
-    Data format currently supported for this layer is dimOrdering='th' (Channel First).
+    Data format currently supported for this layer is dim_ordering='th' (Channel First).
     The input of this layer should be 5D.
 
     When you use this layer as the first layer of a model, you need to provide the argument
@@ -574,9 +574,241 @@ class Convolution3D(KerasLayer):
                                             list(input_shape) if input_shape else None)
 
 
+class AtrousConvolution1D(KerasLayer):
+    """
+    Applies an atrous Convolution operator for filtering neighborhoods of 1-D inputs.
+    A.k.a dilated convolution or convolution with holes.
+    Border mode currently supported for this layer is 'valid'.
+    Bias will be included in this layer.
+    You can also use AtrousConv1D as an alias of this layer.
+    The input of this layer should be 3D.
+
+    When you use this layer as the first layer of a model, you need to provide the argument
+    inputShape (a shape tuple, does not include the batch dimension).
+
+    # Arguments
+    nb_filter: Number of convolution filters to use.
+    filter_length: The extension (spatial or temporal) of each filter.
+    init: String representations of initialization method for the weights of the layer.
+          Default is 'glorot_uniform'.
+    activation: String representations of activation function to use (such as 'relu' or 'sigmoid').
+                Default is None.
+    border_mode: Only 'valid' is supported for now.
+    subsample_length: Factor by which to subsample output. Int. Default is 1.
+    atrous_rate: Factor for kernel dilation. Also called filter_dilation elsewhere. Int. Default is 1.
+    W_regularizer: An instance of [[Regularizer]], (eg. L1 or L2 regularization),
+                   applied to the input weights matrices. Default is None.
+    b_regularizer: An instance of [[Regularizer]], applied to the bias. Default is None.
+    bias: Only 'true' is supported for now.
+    input_shape: A shape tuple, not including batch.
+
+    >>> atrousconv1d = AtrousConvolution1D(8, 3, input_shape=(3, 12))
+    creating: createKerasAtrousConvolution1D
+    """
+    def __init__(self, nb_filter, filter_length, init="glorot_uniform",
+                 activation=None, border_mode='valid', subsample_length=1, atrous_rate=1,
+                 W_regularizer=None, b_regularizer=None, bias=True, input_shape=None, bigdl_type="float"):
+        if border_mode != "valid":
+            raise ValueError("For AtrousConvolution1D, only border_mode='valid' is supported for now")
+        if not bias:
+            raise ValueError("For AtrousConvolution1D, only bias=True is supported for now")
+        super(AtrousConvolution1D, self).__init__(None, bigdl_type,
+                                                  nb_filter,
+                                                  filter_length,
+                                                  init,
+                                                  activation,
+                                                  subsample_length,
+                                                  atrous_rate,
+                                                  W_regularizer,
+                                                  b_regularizer,
+                                                  list(input_shape) if input_shape else None)
+
+
+class AtrousConvolution2D(KerasLayer):
+    """
+    Applies an atrous Convolution operator for filtering windows of 2-D inputs.
+    A.k.a dilated convolution or convolution with holes.
+    Data format currently supported for this layer is dim_ordering='th' (Channel First).
+    Border mode currently supported for this layer is 'valid'.
+    Bias will be included in this layer.
+    You can also use AtrousConv2D as an alias of this layer.
+    The input of this layer should be 4D.
+
+    When you use this layer as the first layer of a model, you need to provide the argument
+    inputShape (a shape tuple, does not include the batch dimension).
+    e.g. input_shape=(3, 128, 128) for 128x128 RGB pictures.
+
+    # Arguments
+    nb_filter: Number of convolution filters to use.
+    nb_row: Number of rows in the convolution kernel.
+    nb_col: Number of cols in the convolution kernel.
+    init: String representations of initialization method for the weights of the layer.
+          Default is 'glorot_uniform'.
+    activation: String representations of activation function to use (such as 'relu' or 'sigmoid').
+                Default is None.
+    border_mode: Only 'valid' is supported for now.
+    subsample: Int tuple of length 2 corresponding to the step of the convolution in the
+               height and width dimension. Also called strides elsewhere. Default is (1, 1).
+    atrous_rate: Int tuple of length 2. Factor for kernel dilation.
+                 Also called filter_dilation elsewhere. Default is (1, 1).
+    dim_ordering: Format of input data. Only 'th' (Channel First) is supported for now.
+    W_regularizer: An instance of [[Regularizer]], (eg. L1 or L2 regularization),
+                   applied to the input weights matrices. Default is None.
+    b_regularizer: An instance of [[Regularizer]], applied to the bias. Default is None.
+    bias: Only 'true' is supported for now.
+    input_shape: A shape tuple, not including batch.
+
+    >>> atrousconv2d = AtrousConvolution2D(12, 4, 3, input_shape=(3, 64, 64))
+    creating: createKerasAtrousConvolution2D
+    """
+    def __init__(self, nb_filter, nb_row, nb_col, init="glorot_uniform",
+                 activation=None, border_mode="valid", subsample=(1, 1),
+                 atrous_rate=(1, 1), dim_ordering="th", W_regularizer=None,
+                 b_regularizer=None, bias=True, input_shape=None, bigdl_type="float"):
+        if border_mode != "valid":
+            raise ValueError("For AtrousConvolution2D, only border_mode='valid' is supported for now")
+        if not bias:
+            raise ValueError("For AtrousConvolution2D, only bias=True is supported for now")
+        super(AtrousConvolution2D, self).__init__(None, bigdl_type,
+                                                  nb_filter,
+                                                  nb_row,
+                                                  nb_col,
+                                                  init,
+                                                  activation,
+                                                  subsample,
+                                                  atrous_rate,
+                                                  dim_ordering,
+                                                  W_regularizer,
+                                                  b_regularizer,
+                                                  list(input_shape) if input_shape else None)
+
+
+class Deconvolution2D(KerasLayer):
+    """
+    Transposed convolution operator for filtering windows of 2-D inputs.
+    The need for transposed convolutions generally arises from the desire to use a transformation
+    going in the opposite direction of a normal convolution, i.e., from something that has
+    the shape of the output of some convolution to something that has the shape of its input
+    while maintaining a connectivity pattern that is compatible with said convolution.
+    Data format currently supported for this layer is dim_ordering='th' (Channel First).
+    Border mode currently supported for this layer is 'valid'.
+    You can also use Deconv2D as an alias of this layer.
+    The input of this layer should be 4D.
+
+    When you use this layer as the first layer of a model, you need to provide the argument
+    inputShape (a shape tuple, does not include the batch dimension).
+    e.g. input_shape=(3, 128, 128) for 128x128 RGB pictures.
+
+    # Arguments
+    nb_filter: Number of transposed convolution filters to use.
+    nb_row: Number of rows in the convolution kernel.
+    nb_col: Number of cols in the convolution kernel.
+    output_shape: Output shape of the transposed convolution operation. Tuple of int.
+    init: String representations of initialization method for the weights of the layer.
+          Default is 'glorot_uniform'.
+    activation: String representations of activation function to use (such as 'relu' or 'sigmoid').
+                Default is None.
+    border_mode: Only 'valid' is supported for now.
+    subsample: Int tuple of length 2 corresponding to the step of the convolution in the
+               height and width dimension. Also called strides elsewhere. Default is (1, 1).
+    dim_ordering: Format of input data. Only 'th' (Channel First) is supported for now.
+    W_regularizer: An instance of [[Regularizer]], (eg. L1 or L2 regularization),
+                   applied to the input weights matrices. Default is None.
+    b_regularizer: An instance of [[Regularizer]], applied to the bias. Default is None.
+    bias: Whether to include a bias (i.e. make the layer affine rather than linear).
+          Default is True.
+    input_shape: A shape tuple, not including batch.
+
+    >>> deconv2d = Deconvolution2D(3, 3, 3, output_shape=(None, 3, 14, 14), input_shape=(3, 12, 12))
+    creating: createKerasDeconvolution2D
+    """
+    def __init__(self, nb_filter, nb_row, nb_col, output_shape, init="glorot_uniform",
+                 activation=None, border_mode="valid", subsample=(1, 1), dim_ordering="th",
+                 W_regularizer=None, b_regularizer=None, bias=True, input_shape=None, bigdl_type="float"):
+        if border_mode != "valid":
+            raise ValueError("For Deconvolution2D, only border_mode='valid' is supported for now")
+        super(Deconvolution2D, self).__init__(None, bigdl_type,
+                                              nb_filter,
+                                              nb_row,
+                                              nb_col,
+                                              init,
+                                              activation,
+                                              subsample,
+                                              dim_ordering,
+                                              W_regularizer,
+                                              b_regularizer,
+                                              bias,
+                                              list(input_shape) if input_shape else None)
+
+
+class SeparableConvolution2D(KerasLayer):
+    """
+    Applies separable convolution operator for 2D inputs.
+    Separable convolutions consist in first performing a depthwise spatial convolution (which acts
+    on each input channel separately) followed by a pointwise convolution which mixes together the
+    resulting output channels. The depthMultiplier argument controls how many output channels are
+    generated per input channel in the depthwise step.
+    You can also use SeparableConv2D as an alias of this layer.
+    The input of this layer should be 4D.
+
+    When you use this layer as the first layer of a model, you need to provide the argument
+    inputShape (a shape tuple, does not include the batch dimension).
+    e.g. input_shape=(3, 128, 128) for 128x128 RGB pictures.
+
+    # Arguments
+    nb_filter: Number of convolution filters to use.
+    nb_row: Number of rows in the convolution kernel.
+    nb_col: Number of cols in the convolution kernel.
+    init: String representations of initialization method for the weights of the layer.
+          Default is 'glorot_uniform'.
+    activation: String representations of activation function to use (such as 'relu' or 'sigmoid').
+                Default is None.
+    border_mode: Either 'valid' or 'same'. Default is 'valid'.
+    subsample: Int tuple of length 2 corresponding to the step of the convolution in the
+               height and width dimension. Also called strides elsewhere. Default is (1, 1).
+    depth_multiplier: How many output channel to use per input channel for the depthwise convolution step.
+                      Int. Default is 1.
+    dim_ordering: Format of input data. Either 'th' (Channel First) or 'tf' (Channel Last). Default is 'th'.
+    depthwise_regularizer: An instance of [[Regularizer]], (eg. L1 or L2 regularization),
+                           applied to the depthwise weights matrices. Default is None.
+    pointwise_regularizer: An instance of [[Regularizer]], applied to the pointwise weights matrices.
+                           Default is None.
+    b_regularizer: An instance of [[Regularizer]], applied to the bias. Default is None.
+    bias: Whether to include a bias (i.e. make the layer affine rather than linear).
+          Default is True.
+    input_shape: A shape tuple, not including batch.
+
+    >>> separableconv2d = SeparableConvolution2D(12, 3, 4, input_shape=(3, 32, 32))
+    creating: createKerasSeparableConvolution2D
+    """
+    def __init__(self, nb_filter, nb_row, nb_col, init="glorot_uniform",
+                 activation=None, border_mode="valid", subsample=(1, 1), depth_multiplier=1,
+                 dim_ordering="th", depthwise_regularizer=None, pointwise_regularizer=None,
+                 b_regularizer=None, bias=True, input_shape=None, bigdl_type="float"):
+        super(SeparableConvolution2D, self).__init__(None, bigdl_type,
+                                                     nb_filter,
+                                                     nb_row,
+                                                     nb_col,
+                                                     init,
+                                                     activation,
+                                                     border_mode,
+                                                     subsample,
+                                                     depth_multiplier,
+                                                     dim_ordering,
+                                                     depthwise_regularizer,
+                                                     pointwise_regularizer,
+                                                     b_regularizer,
+                                                     bias,
+                                                     list(input_shape) if input_shape else None)
+
+
 Conv1D = Convolution1D
 Conv2D = Convolution2D
 Conv3D = Convolution3D
+Deconv2D = Deconvolution2D
+AtrousConv1D = AtrousConvolution1D
+AtrousConv2D = AtrousConvolution2D
+SeparableConv2D = SeparableConvolution2D
 
 
 class Cropping1D(KerasLayer):
@@ -703,7 +935,7 @@ class UpSampling3D(KerasLayer):
     """
     UpSampling layer for 2D inputs.
     Repeats the 1st, 2nd and 3rd dimensions of the data by size[0], size[1] and size[2] respectively.
-    Data format currently supported for this layer is dimOrdering='th' (Channel First).
+    Data format currently supported for this layer is dim_ordering='th' (Channel First).
     The input of this layer should be 5D.
 
     When you use this layer as the first layer of a model, you need to provide the argument
@@ -778,6 +1010,30 @@ class ZeroPadding2D(KerasLayer):
                                             list(input_shape) if input_shape else None)
 
 
+class ZeroPadding3D(KerasLayer):
+    """
+    Zero-padding layer for 3D data (spatial or spatio-temporal).
+    The input of this layer should be 5D.
+
+    When you use this layer as the first layer of a model, you need to provide the argument
+    inputShape (a shape tuple, does not include the batch dimension).
+
+    # Arguments
+    padding: Int tuple of length 3. How many zeros to add at the beginning and at the end of the 3 padding dimensions.
+             Symmetric padding will be applied to each dimension. Default is (1, 1, 1).
+    dim_ordering: Format of input data. Either 'th' (Channel First) or 'tf' (Channel Last). Default is 'th'.
+    input_shape: A shape tuple, not including batch.
+
+    >>> zeropadding3d = ZeroPadding3D(padding=(2, 1, 2), input_shape=(2, 8, 8, 10))
+    creating: createKerasZeroPadding3D
+    """
+    def __init__(self, padding=(1, 1, 1), dim_ordering="th", input_shape=None, bigdl_type="float"):
+        super(ZeroPadding3D, self).__init__(None, bigdl_type,
+                                            padding,
+                                            dim_ordering,
+                                            list(input_shape) if input_shape else None)
+
+
 class MaxPooling1D(KerasLayer):
     """
     Applies max pooling operation for temporal data.
@@ -840,7 +1096,8 @@ class MaxPooling2D(KerasLayer):
 class MaxPooling3D(KerasLayer):
     """
     Applies max pooling operation for 3D data (spatial or spatio-temporal).
-    Data format currently supported for this layer is dimOrdering='th' (Channel First).
+    Data format currently supported for this layer is dim_ordering='th' (Channel First).
+    Border mode currently supported for this layer is 'valid'.
     The input of this layer should be 5D.
 
     When you use this layer as the first layer of a model, you need to provide the argument
@@ -850,15 +1107,17 @@ class MaxPooling3D(KerasLayer):
     pool_size: Int tuple of length 3. Factors by which to downscale (dim1, dim2, dim3).
                Default is (2, 2, 2), which will halve the image in each dimension.
     strides: Int tuple of length 3. Stride values. Default is None, and in this case it will be equal to pool_size.
-    border_mode: Either 'valid' or 'same'. Default is 'valid'.
+    border_mode: Only 'valid' is supported for now.
     dim_ordering: Format of input data. Only 'th' (Channel First) is supported for now.
     input_shape: A shape tuple, not including batch.
 
     >>> maxpooling3d = MaxPooling3D((2, 1, 3), input_shape=(3, 32, 32, 32))
     creating: createKerasMaxPooling3D
     """
-    def __init__(self, pool_size=(2, 2, 2), strides=None, dim_ordering="th",
-                 input_shape=None, bigdl_type="float"):
+    def __init__(self, pool_size=(2, 2, 2), strides=None, border_mode="valid",
+                 dim_ordering="th", input_shape=None, bigdl_type="float"):
+        if border_mode != "valid":
+            raise ValueError("For MaxPooling3D, only border_mode='valid' is supported for now")
         super(MaxPooling3D, self).__init__(None, bigdl_type,
                                            pool_size,
                                            strides,
@@ -927,7 +1186,8 @@ class AveragePooling2D(KerasLayer):
 class AveragePooling3D(KerasLayer):
     """
     Applies average pooling operation for 3D data (spatial or spatio-temporal).
-    Data format currently supported for this layer is dimOrdering='th' (Channel First).
+    Data format currently supported for this layer is dim_ordering='th' (Channel First).
+    Border mode currently supported for this layer is 'valid'.
     The input of this layer should be 5D.
 
     When you use this layer as the first layer of a model, you need to provide the argument
@@ -937,20 +1197,60 @@ class AveragePooling3D(KerasLayer):
     pool_size: Int tuple of length 3. Factors by which to downscale (dim1, dim2, dim3).
                Default is (2, 2, 2), which will halve the image in each dimension.
     strides: Int tuple of length 3. Stride values. Default is None, and in this case it will be equal to pool_size.
-    border_mode: Either 'valid' or 'same'. Default is 'valid'.
+    border_mode: Only 'valid' is supported for now.
     dim_ordering: Format of input data. Only 'th' (Channel First) is supported for now.
     input_shape: A shape tuple, not including batch.
 
     >>> averagepooling3d = AveragePooling3D((1, 1, 2), input_shape=(3, 28, 32, 36))
     creating: createKerasAveragePooling3D
     """
-    def __init__(self, pool_size=(2, 2, 2), strides=None, dim_ordering="th",
-                 input_shape=None, bigdl_type="float"):
+    def __init__(self, pool_size=(2, 2, 2), strides=None, border_mode="valid",
+                 dim_ordering="th", input_shape=None, bigdl_type="float"):
+        if border_mode != "valid":
+            raise ValueError("For AveragePooling3D, only border_mode='valid' is supported for now")
         super(AveragePooling3D, self).__init__(None, bigdl_type,
                                                pool_size,
                                                strides,
                                                dim_ordering,
                                                list(input_shape) if input_shape else None)
+
+
+class GlobalMaxPooling1D(KerasLayer):
+    """
+    Applies global max pooling operation for temporal data.
+    The input of this layer should be 3D.
+
+    When you use this layer as the first layer of a model, you need to provide the argument
+    inputShape (a shape tuple, does not include the batch dimension).
+
+    # Arguments
+    input_shape: A shape tuple, not including batch.
+
+    >>> globalmaxpooling1d = GlobalMaxPooling1D(input_shape=(4, 8))
+    creating: createKerasGlobalMaxPooling1D
+    """
+    def __init__(self, input_shape=None, bigdl_type="float"):
+        super(GlobalMaxPooling1D, self).__init__(None, bigdl_type,
+                                                 list(input_shape) if input_shape else None)
+
+
+class GlobalAveragePooling1D(KerasLayer):
+    """
+    Applies global average pooling operation for temporal data.
+    The input of this layer should be 3D.
+
+    When you use this layer as the first layer of a model, you need to provide the argument
+    inputShape (a shape tuple, does not include the batch dimension).
+
+    # Arguments
+    input_shape: A shape tuple, not including batch.
+
+    >>> globalaveragepooling1d = GlobalAveragePooling1D(input_shape=(12, 12))
+    creating: createKerasGlobalAveragePooling1D
+    """
+    def __init__(self, input_shape=None, bigdl_type="float"):
+        super(GlobalAveragePooling1D, self).__init__(None, bigdl_type,
+                                                     list(input_shape) if input_shape else None)
 
 
 class GlobalMaxPooling2D(KerasLayer):
@@ -991,6 +1291,52 @@ class GlobalAveragePooling2D(KerasLayer):
     """
     def __init__(self, dim_ordering="th", input_shape=None, bigdl_type="float"):
         super(GlobalAveragePooling2D, self).__init__(None, bigdl_type,
+                                                     dim_ordering,
+                                                     list(input_shape) if input_shape else None)
+
+
+class GlobalMaxPooling3D(KerasLayer):
+    """
+    Applies global max pooling operation for 3D data.
+    Data format currently supported for this layer is dim_ordering='th' (Channel First).
+    Border mode currently supported for this layer is 'valid'.
+    The input of this layer should be 5D.
+
+    When you use this layer as the first layer of a model, you need to provide the argument
+    inputShape (a shape tuple, does not include the batch dimension).
+
+    # Arguments
+    dim_ordering: Format of input data. Only 'th' (Channel First) is supported for now.
+    input_shape: A shape tuple, not including batch.
+
+    >>> globalmaxpooling3d = GlobalMaxPooling3D(input_shape=(4, 32, 32, 32))
+    creating: createKerasGlobalMaxPooling3D
+    """
+    def __init__(self, dim_ordering="th", input_shape=None, bigdl_type="float"):
+        super(GlobalMaxPooling3D, self).__init__(None, bigdl_type,
+                                                 dim_ordering,
+                                                 list(input_shape) if input_shape else None)
+
+
+class GlobalAveragePooling3D(KerasLayer):
+    """
+    Applies global average pooling operation for 3D data.
+    Data format currently supported for this layer is dim_ordering='th' (Channel First).
+    Border mode currently supported for this layer is 'valid'.
+    The input of this layer should be 5D.
+
+    When you use this layer as the first layer of a model, you need to provide the argument
+    inputShape (a shape tuple, does not include the batch dimension).
+
+    # Arguments
+    dim_ordering: Format of input data. Only 'th' (Channel First) is supported for now.
+    input_shape: A shape tuple, not including batch.
+
+    >>> globalaveragepooling3d = GlobalAveragePooling3D(input_shape=(4, 16, 16, 20))
+    creating: createKerasGlobalAveragePooling3D
+    """
+    def __init__(self, dim_ordering="th", input_shape=None, bigdl_type="float"):
+        super(GlobalAveragePooling3D, self).__init__(None, bigdl_type,
                                                      dim_ordering,
                                                      list(input_shape) if input_shape else None)
 
@@ -1095,8 +1441,8 @@ class GRU(KerasLayer):
     b_regularizer: An instance of [[Regularizer]], applied to the bias. Default is None.
     input_shape: A shape tuple, not including batch.
 
-    >>> lstm = LSTM(32, input_shape=(8, 16))
-    creating: createKerasLSTM
+    >>> gru = GRU(24, input_shape=(32, 32))
+    creating: createKerasGRU
     """
     def __init__(self, output_dim, activation="tanh", inner_activation="hard_sigmoid",
                  return_sequences=False, go_backwards=False, W_regularizer=None,
@@ -1113,3 +1459,150 @@ class GRU(KerasLayer):
                                   list(input_shape) if input_shape else None)
 
 
+class ConvLSTM2D(KerasLayer):
+    """
+    Convolutional LSTM.
+    Data format currently supported for this layer is dim_ordering='th' (Channel First).
+    Border mode currently supported for this layer is 'same'.
+    The convolution kernel for this layer is a square kernel with equal strides 'subsample'.
+    The input of this layer should be 5D.
+
+    When you use this layer as the first layer of a model, you need to provide the argument
+    inputShape (a shape tuple, does not include the batch dimension).
+
+    # Arguments
+    nb_filter: Number of convolution filters to use.
+    nb_row: Number of rows in the convolution kernel.
+    nb_col: Number of cols in the convolution kernel. Should be equal to nb_row as for a square kernel.
+    activation: String representations of activation function to use (such as 'relu' or 'sigmoid').
+                Default is 'tanh'.
+    inner_activation: String representations of activation function for inner cells. Default is 'hard_sigmoid'.
+    dim_ordering: Format of input data. Only 'th' (Channel First) is supported for now.
+    border_mode: Only 'same' is supported for now.
+    subsample: Tuple of length 2. Factor by which to subsample output. Also called strides elsewhere.
+               Only support subsample[0] equal to subsample[1] for now. Default is (1, 1).
+    W_regularizer: An instance of [[Regularizer]], (eg. L1 or L2 regularization),
+                   applied to the input weights matrices. Default is None.
+    U_regularizer: An instance of [[Regularizer]], applied the recurrent weights matrices. Default is None.
+    b_regularizer: An instance of [[Regularizer]], applied to the bias. Default is None.
+    return_sequences: Whether to return the full sequence or only return the last output in the output sequence.
+                      Default is False.
+    go_backwards: Whether the input sequence will be processed backwards. Default is False.
+    input_shape: A shape tuple, not including batch.
+
+    >>> convlstm2d = ConvLSTM2D(24, 3, input_shape=(4, 32, 32, 32))
+    creating: createKerasConvLSTM2D
+    """
+    def __init__(self, nb_filter, nb_row, nb_col, activation="tanh",
+                 inner_activation="hard_sigmoid", dim_ordering="th", border_mode="same",
+                 subsample=(1, 1), W_regularizer=None, U_regularizer=None, b_regularizer=None,
+                 return_sequences=False, go_backwards=False, input_shape=None, bigdl_type="float"):
+        if nb_row != nb_col:
+            raise ValueError("For ConvLSTM2D, only square kernel is supported for now")
+        if border_mode != "same":
+            raise ValueError("For ConvLSTM2D, only border_mode='same' is supported for now")
+        if subsample[0] != subsample[1]:
+            raise ValueError("For ConvLSTM2D, only equal strides is supported for now")
+        super(ConvLSTM2D, self).__init__(None, bigdl_type,
+                                         nb_filter,
+                                         nb_row,
+                                         activation,
+                                         inner_activation,
+                                         dim_ordering,
+                                         subsample[0],
+                                         W_regularizer,
+                                         U_regularizer,
+                                         b_regularizer,
+                                         return_sequences,
+                                         go_backwards,
+                                         list(input_shape) if input_shape else None)
+
+
+class LocallyConnected1D(KerasLayer):
+    """
+    Locally-connected layer for 1D inputs which works similarly to the TemporalConvolution layer, except that
+    weights are unshared, that is, a different set of filters is applied at each different patch of the input.
+    Border mode currently supported for this layer is 'valid'.
+    The input of this layer should be 3D.
+
+    When you use this layer as the first layer of a model, you need to provide the argument
+    inputShape (a shape tuple, does not include the batch dimension).
+
+    # Arguments
+    nb_filter: Dimensionality of the output.
+    filter_length: The extension (spatial or temporal) of each filter.
+    activation: String representations of activation function to use (such as 'relu' or 'sigmoid').
+                Default is None.
+    border_mode: Only 'valid' is supported for now.
+    subsample_length: Factor by which to subsample output. Int. Default is 1.
+    W_regularizer: An instance of [[Regularizer]], (eg. L1 or L2 regularization),
+                   applied to the input weights matrices. Default is None.
+    b_regularizer: An instance of [[Regularizer]], applied to the bias. Default is None.
+    bias: Whether to include a bias (i.e. make the layer affine rather than linear).
+          Default is True.
+    input_shape: A shape tuple, not including batch.
+
+    >>> locallyconnected1d = LocallyConnected1D(6, 3, input_shape=(8, 12))
+    creating: createKerasLocallyConnected1D
+    """
+    def __init__(self, nb_filter, filter_length, activation=None, border_mode="valid",
+                 subsample_length=1, W_regularizer=None, b_regularizer=None,
+                 bias=True, input_shape=None, bigdl_type="float"):
+        if border_mode != "valid":
+            raise ValueError("For LocallyConnected1D, only border_mode='valid' is supported for now")
+        super(LocallyConnected1D, self).__init__(None, bigdl_type,
+                                                 nb_filter,
+                                                 filter_length,
+                                                 activation,
+                                                 subsample_length,
+                                                 W_regularizer,
+                                                 b_regularizer,
+                                                 bias,
+                                                 list(input_shape) if input_shape else None)
+
+
+class LocallyConnected2D(KerasLayer):
+    """
+    Locally-connected layer for 2D inputs that works similarly to the SpatialConvolution layer, except that
+    weights are unshared, that is, a different set of filters is applied at each different patch of the input.
+    The input of this layer should be 4D.
+
+    When you use this layer as the first layer of a model, you need to provide the argument
+    inputShape (a shape tuple, does not include the batch dimension).
+
+    # Arguments
+    nb_filter: Number of convolution filters to use.
+    nb_row: Number of rows in the convolution kernel.
+    nb_col: Number of cols in the convolution kernel.
+    activation: String representations of activation function to use (such as 'relu' or 'sigmoid').
+                Default is None.
+    border_mode: Either 'valid' or 'same'. Default is 'valid'.
+    subsample: Int tuple of length 2 corresponding to the step of the convolution in the
+               height and width dimension. Also called strides elsewhere. Default is (1, 1).
+    dim_ordering: Format of input data. Either 'th' (Channel First) or 'tf' (Channel Last). Default is 'th'.
+    W_regularizer: An instance of [[Regularizer]], (eg. L1 or L2 regularization),
+                   applied to the input weights matrices. Default is None.
+    b_regularizer: An instance of [[Regularizer]], applied to the bias. Default is None.
+    bias: Whether to include a bias (i.e. make the layer affine rather than linear).
+          Default is True.
+    input_shape: A shape tuple, not including batch.
+
+    >>> locallyconnected2d = LocallyConnected2D(12, 3, 4, input_shape=(3, 128, 128))
+    creating: createKerasLocallyConnected2D
+    """
+    def __init__(self, nb_filter, nb_row, nb_col, activation=None,
+                 border_mode="valid", subsample=(1, 1), dim_ordering="th",
+                 W_regularizer=None, b_regularizer=None, bias=True,
+                 input_shape=None, bigdl_type="float"):
+        super(LocallyConnected2D, self).__init__(None, bigdl_type,
+                                                 nb_filter,
+                                                 nb_row,
+                                                 nb_col,
+                                                 activation,
+                                                 border_mode,
+                                                 subsample,
+                                                 dim_ordering,
+                                                 W_regularizer,
+                                                 b_regularizer,
+                                                 bias,
+                                                 list(input_shape) if input_shape else None)

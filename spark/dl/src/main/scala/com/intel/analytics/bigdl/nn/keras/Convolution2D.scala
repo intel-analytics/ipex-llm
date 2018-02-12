@@ -36,7 +36,7 @@ import scala.reflect.ClassTag
  *
  * @param nbFilter Number of convolution filters to use.
  * @param nbRow Number of rows in the convolution kernel.
- * @param nbCol Number of rows in the convolution kernel.
+ * @param nbCol Number of columns in the convolution kernel.
  * @param init Initialization method for the weights of the layer. Default is Xavier.
  *             You can also pass in corresponding string representations such as 'glorot_uniform'
  *             or 'normal', etc. for simple init methods in the factory method.
