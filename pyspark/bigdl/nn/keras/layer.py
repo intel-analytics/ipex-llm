@@ -1490,7 +1490,7 @@ class ConvLSTM2D(KerasLayer):
     go_backwards: Whether the input sequence will be processed backwards. Default is False.
     input_shape: A shape tuple, not including batch.
 
-    >>> convlstm2d = ConvLSTM2D(24, 3, input_shape=(4, 32, 32, 32))
+    >>> convlstm2d = ConvLSTM2D(24, 3, 3, input_shape=(4, 32, 32, 32))
     creating: createKerasConvLSTM2D
     """
     def __init__(self, nb_filter, nb_row, nb_col, activation="tanh",
