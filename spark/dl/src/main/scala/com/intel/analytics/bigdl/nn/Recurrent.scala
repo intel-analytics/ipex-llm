@@ -299,8 +299,10 @@ class Recurrent[T : ClassTag](
     // Clone N modules along the sequence dimension.
     initHidden(outputSize.drop(2))
     cloneCells()
-    inputBuffer.resizeAs(input).abs(input).max(maskBuffer, indexBuffer, 3)
-    minLength = ev.toType[Int](maskBuffer.sign().sum(2).min(1)._1(Array(1, 1, 1)))
+    if (maskZero) {
+      inputBuffer.resizeAs(input).abs(input).max(maskBuffer, indexBuffer, 3)
+      minLength = ev.toType[Int](maskBuffer.sign().sum(2).min(1)._1(Array(1, 1, 1)))
+    }
 
     currentInput(hidDim) = if (initHiddenState != null) initHiddenState
     else hidden
@@ -309,7 +311,7 @@ class Recurrent[T : ClassTag](
       currentInput(inputDim) = Recurrent.selectCopy(input2Cell, i, stepInput2CellBuf)
       cells(i - 1).forward(currentInput)
       val curOutput = cells(i - 1).output
-      if (i > minLength) {
+      if (maskZero && i > minLength) {
         val curMask = maskBuffer.select(2, i)
         val curOut = curOutput[Table](hidDim)[Tensor[T]](1)
         curOutput.update(inputDim, outputBuffers(i - 1).resizeAs(curOut).copy(curOut))
@@ -384,7 +386,36 @@ class Recurrent[T : ClassTag](
       } else {
         cells(i - 1).regluarized(false)
       }
-      cells(i - 1).accGradParameters(_input, currentGradOutput)
+
+      if (maskZero && i > minLength) {
+        val curMask = maskBuffer.select(2, i)
+        if (gradOutputBuff.length() == 0) {
+          Utils.recursiveResizeAs(gradOutputBuff, currentGradOutput)
+        }
+        Utils.recursiveCopy(gradOutputBuff, currentGradOutput)
+        for (b <- 1 to curMask.size(1)) {
+          if (curMask(Array(b, 1)) == ev.zero) {
+            val originState = gradOutputBuff[Table](Recurrent.hidDim)
+            for (j <- 1 to originState.length()) {
+              originState[Tensor[T]](j).select(1, b).zero()
+            }
+          }
+        }
+
+        cells(i - 1).accGradParameters(_input, currentGradOutput)
+
+        for (b <- 1 to curMask.size(1)) {
+          if (curMask(Array(b, 1)) == ev.zero) {
+            val newState = cells(i - 1).gradInput[Table](hidDim)
+            val originState = currentGradOutput[Table](hidDim)
+            for (j <- 1 to newState.length()) {
+              newState[Tensor[T]](j).select(1, b).copy(originState[Tensor[T]](j).select(1, b))
+            }
+          }
+        }
+      } else {
+        cells(i - 1).accGradParameters(_input, currentGradOutput)
+      }
       currentGradOutput(hidDim) = cells(i - 1).gradInput.toTable(hidDim)
       i -= 1
     }
@@ -415,7 +446,36 @@ class Recurrent[T : ClassTag](
       _input(hidDim) = if (i > 1) cells(i - 2).output.toTable(hidDim)
         else if (initHiddenState == null) hidden else initHiddenState
       _input(inputDim) = Recurrent.selectCopy(input2Cell, i, stepInput2CellBuf)
-      cells(i - 1).updateGradInput(_input, currentGradOutput)
+
+      if (maskZero && i > minLength) {
+        val curMask = maskBuffer.select(2, i)
+        if (gradOutputBuff.length() == 0) {
+          Utils.recursiveResizeAs(gradOutputBuff, currentGradOutput)
+        }
+        Utils.recursiveCopy(gradOutputBuff, currentGradOutput)
+        for (b <- 1 to curMask.size(1)) {
+          if (curMask(Array(b, 1)) == ev.zero) {
+            val originState = gradOutputBuff[Table](Recurrent.hidDim)
+            for (j <- 1 to originState.length()) {
+              originState[Tensor[T]](j).select(1, b).zero()
+            }
+          }
+        }
+
+        cells(i - 1).updateGradInput(_input, currentGradOutput)
+
+        for (b <- 1 to curMask.size(1)) {
+          if (curMask(Array(b, 1)) == ev.zero) {
+            val newState = cells(i - 1).gradInput[Table](hidDim)
+            val originState = currentGradOutput[Table](hidDim)
+            for (j <- 1 to newState.length()) {
+              newState[Tensor[T]](j).select(1, b).copy(originState[Tensor[T]](j).select(1, b))
+            }
+          }
+        }
+      } else {
+        cells(i - 1).updateGradInput(_input, currentGradOutput)
+      }
       currentGradOutput(hidDim) = cells(i - 1).gradInput.toTable(hidDim)
       i -= 1
     }
@@ -446,8 +506,8 @@ class Recurrent[T : ClassTag](
         cells(i - 1).regluarized(false)
       }
 
-      val curMask = maskBuffer.select(2, i)
-      if (i > minLength) {
+      if (maskZero && i > minLength) {
+        val curMask = maskBuffer.select(2, i)
         if (gradOutputBuff.length() == 0) {
           Utils.recursiveResizeAs(gradOutputBuff, currentGradOutput)
         }
