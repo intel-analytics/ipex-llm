@@ -1853,3 +1853,54 @@ class ThresholdedReLU(KerasLayer):
         super(ThresholdedReLU, self).__init__(None, bigdl_type,
                                               theta,
                                               list(input_shape) if input_shape else None)
+
+
+class TimeDistributed(KerasLayer):
+    """
+    TimeDistributed wrapper.
+    Apply a layer to every temporal slice of an input.
+    The input should be at least 3D, and the dimension of index one will be considered to be the temporal dimension.
+
+    When you use this layer as the first layer of a model, you need to provide the argument
+    inputShape (a shape tuple, does not include the batch dimension).
+
+    # Arguments
+    layer: A layer instance.
+    input_shape: A shape tuple, not including batch.
+
+    >>> timedistributed = TimeDistributed(Dense(8), input_shape=(10, 12))
+    creating: createKerasDense
+    creating: createKerasTimeDistributed
+    """
+    def __init__(self, layer, input_shape=None,bigdl_type="float"):
+        super(TimeDistributed, self).__init__(None, bigdl_type,
+                                              layer,
+                                              list(input_shape) if input_shape else None)
+
+
+class Bidirectional(KerasLayer):
+    """
+    Bidirectional wrapper for RNNs.
+    Bidirectional currently requires RNNs to return the full sequence, i.e. return_sequences = true.
+
+    When you use this layer as the first layer of a model, you need to provide the argument
+    inputShape (a shape tuple, does not include the batch dimension).
+
+    Example of creating a bidirectional LSTM:
+    Bidirectiona(LSTM(12, return_sequences=True), merge_mode="sum", input_shape=(32, 32))
+
+    # Arguments
+    layer: An instance of a recurrent layer.
+    merge_mode: Mode by which outputs of the forward and backward RNNs will be combined.
+                Must be one of: 'sum', 'mul', 'concat', 'ave'. Default is 'concat'.
+    input_shape: A shape tuple, not including batch.
+
+    >>> bidiretional = Bidirectional(LSTM(10, return_sequences=True), input_shape=(12, 16))
+    creating: createKerasLSTM
+    creating: createKerasBidirectional
+    """
+    def __init__(self, layer, merge_mode="concat", input_shape=None, bigdl_type="float"):
+        super(Bidirectional, self).__init__(None, bigdl_type,
+                                            layer,
+                                            merge_mode,
+                                            list(input_shape) if input_shape else None)

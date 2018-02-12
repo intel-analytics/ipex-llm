@@ -23,6 +23,7 @@ import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.nn.keras._
 import com.intel.analytics.bigdl.numeric._
 import com.intel.analytics.bigdl.optim.Regularizer
+import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{Shape, SingleShape}
 
@@ -630,6 +631,19 @@ class PythonBigDLKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends Pytho
     theta: Double = 1.0,
     inputShape: JList[Int] = null): ThresholdedReLU[T] = {
     ThresholdedReLU(theta, toScalaShape(inputShape))
+  }
+
+  def createKerasTimeDistributed(
+    layer: KerasLayer[Tensor[T], Tensor[T], T],
+    inputShape: JList[Int] = null): TimeDistributed[T] = {
+    TimeDistributed(layer, toScalaShape(inputShape))
+  }
+
+  def createKerasBidirectional(
+    layer: Recurrent[T],
+    mergeMode: String = "concat",
+    inputShape: JList[Int] = null): Bidirectional[T] = {
+    Bidirectional(layer, mergeMode, toScalaShape(inputShape))
   }
 
 }
