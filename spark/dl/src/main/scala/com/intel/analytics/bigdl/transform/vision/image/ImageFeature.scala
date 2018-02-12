@@ -195,6 +195,15 @@ class ImageFeature extends Serializable {
     isValid = true
   }
 
+  override def clone(): ImageFeature = {
+    val imageFeature = new ImageFeature()
+    state.foreach(x => {
+      imageFeature(x._1) = x._2
+    })
+    imageFeature.isValid = isValid
+    imageFeature
+  }
+
 
   /**
    * copy the float array to a storage

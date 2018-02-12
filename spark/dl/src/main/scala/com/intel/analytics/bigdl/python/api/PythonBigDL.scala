@@ -2191,6 +2191,27 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     enrichOptimizer(optimizer, endTrigger, optimMethod)
   }
 
+  def createDistriOptimizerFromDataSet(model: AbstractModule[Activity, Activity, T],
+    trainDataSet: DataSet[ImageFeature],
+    criterion: Criterion[T],
+    optimMethod: OptimMethod[T],
+    endTrigger: Trigger,
+    batchSize: Int): Optimizer[T, MiniBatch[T]] = {
+    val dataSet = trainDataSet -> ImageFeatureToMiniBatch[T](batchSize)
+
+    val optimizer = new DistriOptimizer(
+      _model = model,
+      _dataset = dataSet.asInstanceOf[DistributedDataSet[MiniBatch[T]]],
+      _criterion = criterion
+    ).asInstanceOf[Optimizer[T, MiniBatch[T]]]
+    enrichOptimizer(optimizer, endTrigger, optimMethod)
+  }
+
+  def featureTransformDataset(dataset: DataSet[ImageFeature],
+    transformer: FeatureTransformer): DataSet[ImageFeature] = {
+    dataset -> transformer
+  }
+
   def createL1L2Regularizer(l1: Double, l2: Double): L1L2Regularizer[T] = {
     L1L2Regularizer[T](l1, l2)
   }
@@ -2210,6 +2231,16 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
                     vMethods: JList[ValidationMethod[T]]): Unit = {
     val sampleRDD = toJSample(valRdd)
     optimizer.setValidation(trigger, batching(DataSet.rdd(sampleRDD), batchSize.toInt),
+      vMethods.asScala.toArray)
+  }
+
+  def setValidationFromDataSet(optimizer: Optimizer[T, MiniBatch[T]],
+    batchSize: Int,
+    trigger: Trigger,
+    valDataSet: DataSet[ImageFeature],
+    vMethods: JList[ValidationMethod[T]]): Unit = {
+    val dataSet = valDataSet -> ImageFeatureToMiniBatch[T](batchSize)
+    optimizer.setValidation(trigger, dataSet,
       vMethods.asScala.toArray)
   }
 
@@ -2994,6 +3025,10 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   private[bigdl] def initExecutorGateway(sc: JavaSparkContext, driverPort: Int): Unit = {
     sc.parallelize(Seq(""), Engine.coreNumber() * Engine.nodeNumber())
       .foreachPartition(_ => Engine.createJavaGateway(driverPort))
+  }
+
+  def createDatasetFromImageFrame(imageFrame: ImageFrame): DataSet[ImageFeature] = {
+    DataSet.imageFrame(imageFrame)
   }
 }
 
