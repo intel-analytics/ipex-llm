@@ -75,7 +75,7 @@ class InputLayer(KerasLayer):
     Layer to be used as an entry point into a model.
 
     # Arguments
-    input_shape: Shape tuple, not including the batch axis.
+    input_shape: A shape tuple, not including the batch axis.
 
     >>> inputlayer = InputLayer(input_shape=(3, 5))
     creating: createKerasInputLayer
@@ -91,7 +91,7 @@ class Dense(KerasLayer):
     The most common input is 2D.
 
     When you use this layer as the first layer of a model, you need to provide the argument
-    inputShape (a shape tuple, does not include the batch dimension).
+    input_shape (a shape tuple, does not include the batch dimension).
 
     # Arguments
     output_dim: The size of output dimension.
@@ -128,7 +128,7 @@ class MaxoutDense(KerasLayer):
     The input of this layer should be 2D.
 
     When you use this layer as the first layer of a model, you need to provide the argument
-    inputShape (a shape tuple, does not include the batch dimension).
+    input_shape (a shape tuple, does not include the batch dimension).
 
     # Arguments
     output_dim: The size of output dimension.
@@ -159,11 +159,11 @@ class Embedding(KerasLayer):
     The input of this layer should be 2D.
 
     This layer can only be used as the first layer in a model, you need to provide the argument
-    inputShape (a shape tuple, does not include the batch dimension).
+    input_shape (a shape tuple, does not include the batch dimension).
 
     # Arguments
-    input_dim: Int > 0. Size of the vocabulary.
-    output_dim: Int >= 0. Dimension of the dense embedding.
+    input_dim: Size of the vocabulary. Int > 0.
+    output_dim: Dimension of the dense embedding. Int >= 0.
     init: String representations of initialization method for the weights of the layer.
           Default is 'uniform'.
     W_regularizer: An instance of [[Regularizer]], (eg. L1 or L2 regularization),
@@ -192,7 +192,7 @@ class BatchNormalization(KerasLayer):
     The input of this layer should be 4D.
 
     When you use this layer as the first layer of a model, you need to provide the argument
-    inputShape (a shape tuple, does not include the batch dimension).
+    input_shape (a shape tuple, does not include the batch dimension).
 
     # Arguments
     epsilon: Small float > 0. Fuzz parameter. Default is 0.001.
@@ -242,7 +242,7 @@ class Merge(KerasLayer):
     Merge must have at least two input layers.
 
     When using this layer as the first layer in a model, you need to provide the argument
-    inputShape for input layers (shape tuples, does not include the batch dimension).
+    input_shape for input layers (a list of shape tuples, does not include the batch dimension).
 
     # Arguments
     layers: A list of layer instances. Must be more than one layer.
@@ -274,7 +274,7 @@ class Dropout(KerasLayer):
     update during training time in order to prevent overfitting.
 
     When you use this layer as the first layer of a model, you need to provide the argument
-    inputShape (a shape tuple, does not include the batch dimension).
+    input_shape (a shape tuple, does not include the batch dimension).
 
     # Arguments
     p: Fraction of the input units to drop. Float between 0 and 1.
@@ -294,7 +294,7 @@ class Flatten(KerasLayer):
     Flattens the input without affecting the batch size.
 
     When you use this layer as the first layer of a model, you need to provide the argument
-    inputShape (a shape tuple, does not include the batch dimension).
+    input_shape (a shape tuple, does not include the batch dimension).
 
     # Arguments
     input_shape: A shape tuple, not including batch.
@@ -315,7 +315,7 @@ class Reshape(KerasLayer):
     then output_shape will be (3, 8).
 
     When you use this layer as the first layer of a model, you need to provide the argument
-    inputShape (a shape tuple, does not include the batch dimension).
+    input_shape (a shape tuple, does not include the batch dimension).
 
     # Arguments
     target_shape: A shape tuple. The target shape that you desire to have. Batch dimension should be excluded.
@@ -336,7 +336,7 @@ class Activation(KerasLayer):
     Available activations: 'tanh', 'relu', 'sigmoid', 'softmax', 'softplus', 'softsign', 'hard_sigmoid'.
 
     When you use this layer as the first layer of a model, you need to provide the argument
-    inputShape (a shape tuple, does not include the batch dimension).
+    input_shape (a shape tuple, does not include the batch dimension).
 
     # Arguments
     activation: Name of the activation function as string.
@@ -357,7 +357,7 @@ class RepeatVector(KerasLayer):
     The input of this layer should be 2D.
 
     When you use this layer as the first layer of a model, you need to provide the argument
-    inputShape (a shape tuple, does not include the batch dimension).
+    input_shape (a shape tuple, does not include the batch dimension).
 
     # Arguments
     n: Repetition factor. Int.
@@ -378,7 +378,7 @@ class Permute(KerasLayer):
     Useful for connecting RNNs and convnets together.
 
     When you use this layer as the first layer of a model, you need to provide the argument
-    inputShape (a shape tuple, does not include the batch dimension).
+    input_shape (a shape tuple, does not include the batch dimension).
 
     # Arguments
     dims: Tuple of int. Permutation pattern, does not include the samples dimension. Indexing starts at 1.
@@ -399,7 +399,7 @@ class Highway(KerasLayer):
     The input of this layer should be 2D, i.e. (batch, input dim).
 
     When you use this layer as the first layer of a model, you need to provide the argument
-    inputShape (a shape tuple, does not include the batch dimension).
+    input_shape (a shape tuple, does not include the batch dimension).
 
     # Arguments
     activation: String representations of activation function to use (such as 'relu' or 'sigmoid').
@@ -426,12 +426,12 @@ class Highway(KerasLayer):
 
 class Convolution1D(KerasLayer):
     """
-    Applies convolution operator for filtering neighborhoods of 1-D inputs.
+    Applies convolution operator for filtering neighborhoods of 1D inputs.
     You can also use Conv1D as an alias of this layer.
     The input of this layer should be 3D.
 
     When you use this layer as the first layer of a model, you need to provide the argument
-    inputShape (a shape tuple, does not include the batch dimension).
+    input_shape (a shape tuple, does not include the batch dimension).
 
     # Arguments
     nb_filter: Number of convolution filters to use.
@@ -476,7 +476,7 @@ class Convolution2D(KerasLayer):
     The input of this layer should be 4D.
 
     When you use this layer as the first layer of a model, you need to provide the argument
-    inputShape (a shape tuple, does not include the batch dimension).
+    input_shape (a shape tuple, does not include the batch dimension).
     e.g. input_shape=(3, 128, 128) for 128x128 RGB pictures.
 
     # Arguments
@@ -529,7 +529,7 @@ class Convolution3D(KerasLayer):
     The input of this layer should be 5D.
 
     When you use this layer as the first layer of a model, you need to provide the argument
-    inputShape (a shape tuple, does not include the batch dimension).
+    input_shape (a shape tuple, does not include the batch dimension).
 
     # Arguments
     nb_filter: Number of convolution filters to use.
@@ -576,7 +576,7 @@ class Convolution3D(KerasLayer):
 
 class AtrousConvolution1D(KerasLayer):
     """
-    Applies an atrous Convolution operator for filtering neighborhoods of 1-D inputs.
+    Applies an atrous convolution operator for filtering neighborhoods of 1D inputs.
     A.k.a dilated convolution or convolution with holes.
     Border mode currently supported for this layer is 'valid'.
     Bias will be included in this layer.
@@ -584,7 +584,7 @@ class AtrousConvolution1D(KerasLayer):
     The input of this layer should be 3D.
 
     When you use this layer as the first layer of a model, you need to provide the argument
-    inputShape (a shape tuple, does not include the batch dimension).
+    input_shape (a shape tuple, does not include the batch dimension).
 
     # Arguments
     nb_filter: Number of convolution filters to use.
@@ -599,7 +599,7 @@ class AtrousConvolution1D(KerasLayer):
     W_regularizer: An instance of [[Regularizer]], (eg. L1 or L2 regularization),
                    applied to the input weights matrices. Default is None.
     b_regularizer: An instance of [[Regularizer]], applied to the bias. Default is None.
-    bias: Only 'true' is supported for now.
+    bias: Only 'True' is supported for now.
     input_shape: A shape tuple, not including batch.
 
     >>> atrousconv1d = AtrousConvolution1D(8, 3, input_shape=(3, 12))
@@ -626,7 +626,7 @@ class AtrousConvolution1D(KerasLayer):
 
 class AtrousConvolution2D(KerasLayer):
     """
-    Applies an atrous Convolution operator for filtering windows of 2-D inputs.
+    Applies an atrous Convolution operator for filtering windows of 2D inputs.
     A.k.a dilated convolution or convolution with holes.
     Data format currently supported for this layer is dim_ordering='th' (Channel First).
     Border mode currently supported for this layer is 'valid'.
@@ -635,7 +635,7 @@ class AtrousConvolution2D(KerasLayer):
     The input of this layer should be 4D.
 
     When you use this layer as the first layer of a model, you need to provide the argument
-    inputShape (a shape tuple, does not include the batch dimension).
+    input_shape (a shape tuple, does not include the batch dimension).
     e.g. input_shape=(3, 128, 128) for 128x128 RGB pictures.
 
     # Arguments
@@ -655,7 +655,7 @@ class AtrousConvolution2D(KerasLayer):
     W_regularizer: An instance of [[Regularizer]], (eg. L1 or L2 regularization),
                    applied to the input weights matrices. Default is None.
     b_regularizer: An instance of [[Regularizer]], applied to the bias. Default is None.
-    bias: Only 'true' is supported for now.
+    bias: Only 'True' is supported for now.
     input_shape: A shape tuple, not including batch.
 
     >>> atrousconv2d = AtrousConvolution2D(12, 4, 3, input_shape=(3, 64, 64))
@@ -685,7 +685,7 @@ class AtrousConvolution2D(KerasLayer):
 
 class Deconvolution2D(KerasLayer):
     """
-    Transposed convolution operator for filtering windows of 2-D inputs.
+    Transposed convolution operator for filtering windows of 2D inputs.
     The need for transposed convolutions generally arises from the desire to use a transformation
     going in the opposite direction of a normal convolution, i.e., from something that has
     the shape of the output of some convolution to something that has the shape of its input
@@ -696,7 +696,7 @@ class Deconvolution2D(KerasLayer):
     The input of this layer should be 4D.
 
     When you use this layer as the first layer of a model, you need to provide the argument
-    inputShape (a shape tuple, does not include the batch dimension).
+    input_shape (a shape tuple, does not include the batch dimension).
     e.g. input_shape=(3, 128, 128) for 128x128 RGB pictures.
 
     # Arguments
@@ -752,7 +752,7 @@ class SeparableConvolution2D(KerasLayer):
     The input of this layer should be 4D.
 
     When you use this layer as the first layer of a model, you need to provide the argument
-    inputShape (a shape tuple, does not include the batch dimension).
+    input_shape (a shape tuple, does not include the batch dimension).
     e.g. input_shape=(3, 128, 128) for 128x128 RGB pictures.
 
     # Arguments
@@ -817,7 +817,7 @@ class Cropping1D(KerasLayer):
     The input of this layer should be 3D.
 
     When you use this layer as the first layer of a model, you need to provide the argument
-    inputShape (a shape tuple, does not include the batch dimension).
+    input_shape (a shape tuple, does not include the batch dimension).
 
     # Arguments
     cropping: Int tuple of length 2. How many units should be trimmed off at the beginning and
@@ -839,7 +839,7 @@ class Cropping2D(KerasLayer):
     The input of this layer should be 4D.
 
     When you use this layer as the first layer of a model, you need to provide the argument
-    inputShape (a shape tuple, does not include the batch dimension).
+    input_shape (a shape tuple, does not include the batch dimension).
 
     # Arguments
     cropping: Int tuple of tuple of length 2. How many units should be trimmed off at the beginning and
@@ -864,7 +864,7 @@ class Cropping3D(KerasLayer):
     The input of this layer should be 5D.
 
     When you use this layer as the first layer of a model, you need to provide the argument
-    inputShape (a shape tuple, does not include the batch dimension).
+    input_shape (a shape tuple, does not include the batch dimension).
 
     # Arguments
     cropping: Int tuple of tuple of length 3. How many units should be trimmed off at the beginning and
@@ -892,7 +892,7 @@ class UpSampling1D(KerasLayer):
     The input of this layer should be 3D.
 
     When you use this layer as the first layer of a model, you need to provide the argument
-    inputShape (a shape tuple, does not include the batch dimension).
+    input_shape (a shape tuple, does not include the batch dimension).
 
     # Arguments
     length: Int. UpSampling factor. Default is 2.
@@ -914,7 +914,7 @@ class UpSampling2D(KerasLayer):
     The input of this layer should be 4D.
 
     When you use this layer as the first layer of a model, you need to provide the argument
-    inputShape (a shape tuple, does not include the batch dimension).
+    input_shape (a shape tuple, does not include the batch dimension).
 
     # Arguments
     size: Int tuple of length 2. UpSampling factors for rows and columns. Default is (2, 2).
@@ -939,7 +939,7 @@ class UpSampling3D(KerasLayer):
     The input of this layer should be 5D.
 
     When you use this layer as the first layer of a model, you need to provide the argument
-    inputShape (a shape tuple, does not include the batch dimension).
+    input_shape (a shape tuple, does not include the batch dimension).
 
     # Arguments
     size: Int tuple of length 3. UpSampling factors for dim1, dim2 and dim3. Default is (2, 2, 2).
@@ -962,7 +962,7 @@ class ZeroPadding1D(KerasLayer):
     The input of this layer should be 3D.
 
     When you use this layer as the first layer of a model, you need to provide the argument
-    inputShape (a shape tuple, does not include the batch dimension).
+    input_shape (a shape tuple, does not include the batch dimension).
 
     # Arguments
     padding: Int or int tuple of length 2.
@@ -988,7 +988,7 @@ class ZeroPadding2D(KerasLayer):
     The input of this layer should be 4D.
 
     When you use this layer as the first layer of a model, you need to provide the argument
-    inputShape (a shape tuple, does not include the batch dimension).
+    input_shape (a shape tuple, does not include the batch dimension).
 
     # Arguments
     padding: Int tuple of length 2 or length 4.
@@ -1016,7 +1016,7 @@ class ZeroPadding3D(KerasLayer):
     The input of this layer should be 5D.
 
     When you use this layer as the first layer of a model, you need to provide the argument
-    inputShape (a shape tuple, does not include the batch dimension).
+    input_shape (a shape tuple, does not include the batch dimension).
 
     # Arguments
     padding: Int tuple of length 3. How many zeros to add at the beginning and at the end of the 3 padding dimensions.
@@ -1040,7 +1040,7 @@ class MaxPooling1D(KerasLayer):
     The input of this layer should be 3D.
 
     When you use this layer as the first layer of a model, you need to provide the argument
-    inputShape (a shape tuple, does not include the batch dimension).
+    input_shape (a shape tuple, does not include the batch dimension).
 
     # Arguments
     pool_length: Size of the region to which max pooling is applied.
@@ -1069,7 +1069,7 @@ class MaxPooling2D(KerasLayer):
     The input of this layer should be 4D.
 
     When you use this layer as the first layer of a model, you need to provide the argument
-    inputShape (a shape tuple, does not include the batch dimension).
+    input_shape (a shape tuple, does not include the batch dimension).
 
     # Arguments
     pool_size: Int tuple of length 2 corresponding to the downscale vertically and horizontally.
@@ -1101,7 +1101,7 @@ class MaxPooling3D(KerasLayer):
     The input of this layer should be 5D.
 
     When you use this layer as the first layer of a model, you need to provide the argument
-    inputShape (a shape tuple, does not include the batch dimension).
+    input_shape (a shape tuple, does not include the batch dimension).
 
     # Arguments
     pool_size: Int tuple of length 3. Factors by which to downscale (dim1, dim2, dim3).
@@ -1131,7 +1131,7 @@ class AveragePooling1D(KerasLayer):
     The input of this layer should be 3D.
 
     When you use this layer as the first layer of a model, you need to provide the argument
-    inputShape (a shape tuple, does not include the batch dimension).
+    input_shape (a shape tuple, does not include the batch dimension).
 
     # Arguments
     pool_length: Size of the region to which max pooling is applied.
@@ -1160,7 +1160,7 @@ class AveragePooling2D(KerasLayer):
     The input of this layer should be 4D.
 
     When you use this layer as the first layer of a model, you need to provide the argument
-    inputShape (a shape tuple, does not include the batch dimension).
+    input_shape (a shape tuple, does not include the batch dimension).
 
     # Arguments
     pool_size: Int tuple of length 2 corresponding to the downscale vertically and horizontally.
@@ -1191,7 +1191,7 @@ class AveragePooling3D(KerasLayer):
     The input of this layer should be 5D.
 
     When you use this layer as the first layer of a model, you need to provide the argument
-    inputShape (a shape tuple, does not include the batch dimension).
+    input_shape (a shape tuple, does not include the batch dimension).
 
     # Arguments
     pool_size: Int tuple of length 3. Factors by which to downscale (dim1, dim2, dim3).
@@ -1221,7 +1221,7 @@ class GlobalMaxPooling1D(KerasLayer):
     The input of this layer should be 3D.
 
     When you use this layer as the first layer of a model, you need to provide the argument
-    inputShape (a shape tuple, does not include the batch dimension).
+    input_shape (a shape tuple, does not include the batch dimension).
 
     # Arguments
     input_shape: A shape tuple, not including batch.
@@ -1240,7 +1240,7 @@ class GlobalAveragePooling1D(KerasLayer):
     The input of this layer should be 3D.
 
     When you use this layer as the first layer of a model, you need to provide the argument
-    inputShape (a shape tuple, does not include the batch dimension).
+    input_shape (a shape tuple, does not include the batch dimension).
 
     # Arguments
     input_shape: A shape tuple, not including batch.
@@ -1259,7 +1259,7 @@ class GlobalMaxPooling2D(KerasLayer):
     The input of this layer should be 4D.
 
     When you use this layer as the first layer of a model, you need to provide the argument
-    inputShape (a shape tuple, does not include the batch dimension).
+    input_shape (a shape tuple, does not include the batch dimension).
 
     # Arguments
     dim_ordering: Format of input data. Either 'th' (Channel First) or 'tf' (Channel Last). Default is 'th'.
@@ -1280,7 +1280,7 @@ class GlobalAveragePooling2D(KerasLayer):
     The input of this layer should be 4D.
 
     When you use this layer as the first layer of a model, you need to provide the argument
-    inputShape (a shape tuple, does not include the batch dimension).
+    input_shape (a shape tuple, does not include the batch dimension).
 
     # Arguments
     dim_ordering: Format of input data. Either 'th' (Channel First) or 'tf' (Channel Last). Default is 'th'.
@@ -1303,7 +1303,7 @@ class GlobalMaxPooling3D(KerasLayer):
     The input of this layer should be 5D.
 
     When you use this layer as the first layer of a model, you need to provide the argument
-    inputShape (a shape tuple, does not include the batch dimension).
+    input_shape (a shape tuple, does not include the batch dimension).
 
     # Arguments
     dim_ordering: Format of input data. Only 'th' (Channel First) is supported for now.
@@ -1326,7 +1326,7 @@ class GlobalAveragePooling3D(KerasLayer):
     The input of this layer should be 5D.
 
     When you use this layer as the first layer of a model, you need to provide the argument
-    inputShape (a shape tuple, does not include the batch dimension).
+    input_shape (a shape tuple, does not include the batch dimension).
 
     # Arguments
     dim_ordering: Format of input data. Only 'th' (Channel First) is supported for now.
@@ -1347,7 +1347,7 @@ class SimpleRNN(KerasLayer):
     The input of this layer should be 3D, i.e. (batch, time steps, input dim).
 
     When you use this layer as the first layer of a model, you need to provide the argument
-    inputShape (a shape tuple, does not include the batch dimension).
+    input_shape (a shape tuple, does not include the batch dimension).
 
     # Arguments
     output_dim: Hidden unit size. Dimension of internal projections and final output.
@@ -1385,7 +1385,7 @@ class LSTM(KerasLayer):
     The input of this layer should be 3D, i.e. (batch, time steps, input dim).
 
     When you use this layer as the first layer of a model, you need to provide the argument
-    inputShape (a shape tuple, does not include the batch dimension).
+    input_shape (a shape tuple, does not include the batch dimension).
 
     # Arguments
     output_dim: Hidden unit size. Dimension of internal projections and final output.
@@ -1425,7 +1425,7 @@ class GRU(KerasLayer):
     The input of this layer should be 3D, i.e. (batch, time steps, input dim).
 
     When you use this layer as the first layer of a model, you need to provide the argument
-    inputShape (a shape tuple, does not include the batch dimension).
+    input_shape (a shape tuple, does not include the batch dimension).
 
     # Arguments
     output_dim: Hidden unit size. Dimension of internal projections and final output.
@@ -1468,7 +1468,7 @@ class ConvLSTM2D(KerasLayer):
     The input of this layer should be 5D.
 
     When you use this layer as the first layer of a model, you need to provide the argument
-    inputShape (a shape tuple, does not include the batch dimension).
+    input_shape (a shape tuple, does not include the batch dimension).
 
     # Arguments
     nb_filter: Number of convolution filters to use.
@@ -1526,7 +1526,7 @@ class LocallyConnected1D(KerasLayer):
     The input of this layer should be 3D.
 
     When you use this layer as the first layer of a model, you need to provide the argument
-    inputShape (a shape tuple, does not include the batch dimension).
+    input_shape (a shape tuple, does not include the batch dimension).
 
     # Arguments
     nb_filter: Dimensionality of the output.
@@ -1568,7 +1568,7 @@ class LocallyConnected2D(KerasLayer):
     The input of this layer should be 4D.
 
     When you use this layer as the first layer of a model, you need to provide the argument
-    inputShape (a shape tuple, does not include the batch dimension).
+    input_shape (a shape tuple, does not include the batch dimension).
 
     # Arguments
     nb_filter: Number of convolution filters to use.
@@ -1619,7 +1619,7 @@ class SpatialDropout1D(KerasLayer):
     The input of this layer should be 3D.
 
     When you use this layer as the first layer of a model, you need to provide the argument
-    inputShape (a shape tuple, does not include the batch dimension).
+    input_shape (a shape tuple, does not include the batch dimension).
 
     # Arguments
     p: Fraction of the input units to drop. Float between 0 and 1.
@@ -1645,7 +1645,7 @@ class SpatialDropout2D(KerasLayer):
     The input of this layer should be 4D.
 
     When you use this layer as the first layer of a model, you need to provide the argument
-    inputShape (a shape tuple, does not include the batch dimension).
+    input_shape (a shape tuple, does not include the batch dimension).
 
     # Arguments
     p: Fraction of the input units to drop. Float between 0 and 1.
@@ -1673,7 +1673,7 @@ class SpatialDropout3D(KerasLayer):
     The input of this layer should be 5D.
 
     When you use this layer as the first layer of a model, you need to provide the argument
-    inputShape (a shape tuple, does not include the batch dimension).
+    input_shape (a shape tuple, does not include the batch dimension).
 
     # Arguments
     p: Fraction of the input units to drop. Float between 0 and 1.
@@ -1696,7 +1696,7 @@ class GaussianDropout(KerasLayer):
     As it is a regularization layer, it is only active at training time.
 
     When you use this layer as the first layer of a model, you need to provide the argument
-    inputShape (a shape tuple, does not include the batch dimension).
+    input_shape (a shape tuple, does not include the batch dimension).
 
     # Arguments
     p: Drop probability. Float between 0 and 1.
@@ -1716,11 +1716,11 @@ class GaussianNoise(KerasLayer):
     """
     Apply additive zero-centered Gaussian noise.
     This is useful to mitigate overfitting (you could see it as a form of random data augmentation).
-    Gaussian Noise (GS) is a natural choice as corruption process for real valued inputs.
+    Gaussian Noise is a natural choice as corruption process for real valued inputs.
     As it is a regularization layer, it is only active at training time.
 
     When you use this layer as the first layer of a model, you need to provide the argument
-    inputShape (a shape tuple, does not include the batch dimension).
+    input_shape (a shape tuple, does not include the batch dimension).
 
     # Arguments
     sigma: Float, standard deviation of the noise distribution.
@@ -1741,7 +1741,7 @@ class Masking(KerasLayer):
     Masks a sequence by using a mask value to skip timesteps.
 
     When you use this layer as the first layer of a model, you need to provide the argument
-    inputShape (a shape tuple, does not include the batch dimension).
+    input_shape (a shape tuple, does not include the batch dimension).
 
     # Arguments
     mask_value: Float, mask value. For each timestep in the input tensor (dimension #1 in the tensor),
@@ -1767,9 +1767,17 @@ class SReLU(KerasLayer):
     f(x) = t^l + a^l(x - t^l) for x <= t^l
 
     When you use this layer as the first layer of a model, you need to provide the argument
-    inputShape (a shape tuple, does not include the batch dimension).
+    input_shape (a shape tuple, does not include the batch dimension).
 
     # Arguments
+    t_left_init: String representations of initialization method for the left part intercept.
+                 Default is 'zero'.
+    a_left_init: String representations of initialization method for the left part slope.
+                 Default is 'glorot_uniform'.
+    t_right_init: String representations of initialization method for the right part intercept.
+                  Default is 'glorot_uniform'.
+    a_right_init: String representations of initialization method for the right part slope.
+                  Default is 'one'.
     shared_axes: Int tuple. The axes along which to share learnable parameters for the activation function.
                  Default is None.
                  For example, if the incoming feature maps are from a 2D convolution with output shape
@@ -1780,8 +1788,14 @@ class SReLU(KerasLayer):
     >>> srelu = SReLU(input_shape=(4, 5))
     creating: createKerasSReLU
     """
-    def __init__(self, shared_axes=None, input_shape=None, bigdl_type="float"):
+    def __init__(self, t_left_init='zero', a_left_init='glorot_uniform',
+                 t_right_init='glorot_uniform', a_right_init='one',
+                 shared_axes=None, input_shape=None, bigdl_type="float"):
         super(SReLU, self).__init__(None, bigdl_type,
+                                    t_left_init,
+                                    a_left_init,
+                                    t_right_init,
+                                    a_right_init,
                                     shared_axes,
                                     list(input_shape) if input_shape else None)
 
@@ -1794,7 +1808,7 @@ class ELU(KerasLayer):
     f(x) = x for x >= 0.
 
     When you use this layer as the first layer of a model, you need to provide the argument
-    inputShape (a shape tuple, does not include the batch dimension).
+    input_shape (a shape tuple, does not include the batch dimension).
 
     # Arguments
     alpha: Float, scale for the negative factor.
@@ -1817,7 +1831,7 @@ class LeakyReLU(KerasLayer):
     f(x) = x for x >= 0.
 
     When you use this layer as the first layer of a model, you need to provide the argument
-    inputShape (a shape tuple, does not include the batch dimension).
+    input_shape (a shape tuple, does not include the batch dimension).
 
     # Arguments
     alpha: Float >= 0. Negative slope coefficient.
@@ -1840,7 +1854,7 @@ class ThresholdedReLU(KerasLayer):
     f(x) = 0 otherwise.
 
     When you use this layer as the first layer of a model, you need to provide the argument
-    inputShape (a shape tuple, does not include the batch dimension).
+    input_shape (a shape tuple, does not include the batch dimension).
 
     # Arguments
     theta: Float >= 0. Threshold location of activation.
@@ -1862,7 +1876,7 @@ class TimeDistributed(KerasLayer):
     The input should be at least 3D, and the dimension of index one will be considered to be the temporal dimension.
 
     When you use this layer as the first layer of a model, you need to provide the argument
-    inputShape (a shape tuple, does not include the batch dimension).
+    input_shape (a shape tuple, does not include the batch dimension).
 
     # Arguments
     layer: A layer instance.
@@ -1881,10 +1895,10 @@ class TimeDistributed(KerasLayer):
 class Bidirectional(KerasLayer):
     """
     Bidirectional wrapper for RNNs.
-    Bidirectional currently requires RNNs to return the full sequence, i.e. return_sequences = true.
+    Bidirectional currently requires RNNs to return the full sequence, i.e. return_sequences = True.
 
     When you use this layer as the first layer of a model, you need to provide the argument
-    inputShape (a shape tuple, does not include the batch dimension).
+    input_shape (a shape tuple, does not include the batch dimension).
 
     Example of creating a bidirectional LSTM:
     Bidirectiona(LSTM(12, return_sequences=True), merge_mode="sum", input_shape=(32, 32))

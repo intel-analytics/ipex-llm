@@ -610,9 +610,14 @@ class PythonBigDLKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends Pytho
   }
 
   def createKerasSReLU(
-    SharedAxes: JList[Int] = null,
+    tLeftInit: String = "zero",
+    aLeftInit: String = "glorot_uniform",
+    tRightInit: String = "glorot_uniform",
+    aRightInit: String = "one",
+    sharedAxes: JList[Int] = null,
     inputShape: JList[Int] = null): SReLU[T] = {
-    SReLU(toScalaArray(SharedAxes), toScalaShape(inputShape))
+    SReLU(tLeftInit, aLeftInit, tRightInit, aRightInit,
+      toScalaArray(sharedAxes), toScalaShape(inputShape))
   }
 
   def createKerasELU(
