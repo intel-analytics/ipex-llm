@@ -570,4 +570,66 @@ class PythonBigDLKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends Pytho
     GlobalAveragePooling3D(dimOrdering, toScalaShape(inputShape))
   }
 
+  def createKerasSpatialDropout1D(
+    p: Double = 0.5,
+    inputShape: JList[Int] = null): SpatialDropout1D[T] = {
+    SpatialDropout1D(p, toScalaShape(inputShape))
+  }
+
+  def createKerasSpatialDropout2D(
+    p: Double = 0.5,
+    dimOrdering: String = "th",
+    inputShape: JList[Int] = null): SpatialDropout2D[T] = {
+    SpatialDropout2D(p, dimOrdering, toScalaShape(inputShape))
+  }
+
+  def createKerasSpatialDropout3D(
+    p: Double = 0.5,
+    dimOrdering: String = "th",
+    inputShape: JList[Int] = null): SpatialDropout3D[T] = {
+    SpatialDropout3D(p, dimOrdering, toScalaShape(inputShape))
+  }
+
+  def createKerasGaussianDropout(
+    p: Double,
+    inputShape: JList[Int] = null): GaussianDropout[T] = {
+    GaussianDropout(p, toScalaShape(inputShape))
+  }
+
+  def createKerasGaussianNoise(
+    sigma: Double,
+    inputShape: JList[Int] = null): GaussianNoise[T] = {
+    GaussianNoise(sigma, toScalaShape(inputShape))
+  }
+
+  def createKerasMasking(
+    maskValue: Double = 0.0,
+    inputShape: JList[Int] = null): Masking[T] = {
+    Masking(maskValue, toScalaShape(inputShape))
+  }
+
+  def createKerasSReLU(
+    SharedAxes: JList[Int] = null,
+    inputShape: JList[Int] = null): SReLU[T] = {
+    SReLU(toScalaArray(SharedAxes), toScalaShape(inputShape))
+  }
+
+  def createKerasELU(
+    alpha: Double = 1.0,
+    inputShape: JList[Int] = null): ELU[T] = {
+    ELU(alpha, toScalaShape(inputShape))
+  }
+
+  def createKerasLeakyReLU(
+    alpha: Double = 0.01,
+    inputShape: JList[Int] = null): LeakyReLU[T] = {
+    LeakyReLU(alpha, toScalaShape(inputShape))
+  }
+
+  def createKerasThresholdedReLU(
+    theta: Double = 1.0,
+    inputShape: JList[Int] = null): ThresholdedReLU[T] = {
+    ThresholdedReLU(theta, toScalaShape(inputShape))
+  }
+
 }

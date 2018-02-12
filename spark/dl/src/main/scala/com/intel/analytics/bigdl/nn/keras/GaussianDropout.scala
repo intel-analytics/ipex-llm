@@ -30,8 +30,8 @@ import scala.reflect.ClassTag
  * When you use this layer as the first layer of a model, you need to provide the argument
  * inputShape (a Single Shape, does not include the batch dimension).
  *
- * @param p Double, drop probability (as with `Dropout`).
- *          The multiplicative noise will have standard deviation `sqrt(p / (1 - p))`.
+ * @param p Double, drop probability (as with 'Dropout').
+ *          The multiplicative noise will have standard deviation 'sqrt(p/(1-p))'.
  * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now.
  */
 class GaussianDropout[T: ClassTag](

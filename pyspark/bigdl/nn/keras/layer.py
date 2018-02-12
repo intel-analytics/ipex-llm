@@ -1606,3 +1606,250 @@ class LocallyConnected2D(KerasLayer):
                                                  b_regularizer,
                                                  bias,
                                                  list(input_shape) if input_shape else None)
+
+
+class SpatialDropout1D(KerasLayer):
+    """
+    Spatial 1D version of Dropout.
+    This version performs the same function as Dropout, however it drops entire 1D feature maps
+    instead of individual elements. If adjacent frames within feature maps are strongly correlated
+    (as is normally the case in early convolution layers) then regular dropout will not regularize the
+    activations and will otherwise just result in an effective learning rate decrease.
+    In this case, SpatialDropout1D will help promote independence between feature maps and should be used instead.
+    The input of this layer should be 3D.
+
+    When you use this layer as the first layer of a model, you need to provide the argument
+    inputShape (a shape tuple, does not include the batch dimension).
+
+    # Arguments
+    p: Fraction of the input units to drop. Float between 0 and 1.
+    input_shape: A shape tuple, not including batch.
+
+    >>> spatialdropout1d = SpatialDropout1D(0.4, input_shape=(10, 12))
+    creating: createKerasSpatialDropout1D
+    """
+    def __init__(self, p=0.5, input_shape=None, bigdl_type="float"):
+        super(SpatialDropout1D, self).__init__(None, bigdl_type,
+                                               p,
+                                               list(input_shape) if input_shape else None)
+
+
+class SpatialDropout2D(KerasLayer):
+    """
+    Spatial 2D version of Dropout.
+    This version performs the same function as Dropout, however it drops entire 2D feature maps
+    instead of individual elements. If adjacent pixels within feature maps are strongly correlated
+    (as is normally the case in early convolution layers) then regular dropout will not regularize the
+    activations and will otherwise just result in an effective learning rate decrease.
+    In this case, SpatialDropout2D will help promote independence between feature maps and should be used instead.
+    The input of this layer should be 4D.
+
+    When you use this layer as the first layer of a model, you need to provide the argument
+    inputShape (a shape tuple, does not include the batch dimension).
+
+    # Arguments
+    p: Fraction of the input units to drop. Float between 0 and 1.
+    dim_ordering: Format of input data. Either 'th' (Channel First) or 'tf' (Channel Last). Default is 'th'.
+    input_shape: A shape tuple, not including batch.
+
+    >>> spatialdropout2d = SpatialDropout2D(0.25, input_shape=(5, 12, 12))
+    creating: createKerasSpatialDropout2D
+    """
+    def __init__(self, p=0.5, dim_ordering="th", input_shape=None, bigdl_type="float"):
+        super(SpatialDropout2D, self).__init__(None, bigdl_type,
+                                               p,
+                                               dim_ordering,
+                                               list(input_shape) if input_shape else None)
+
+
+class SpatialDropout3D(KerasLayer):
+    """
+    Spatial 3D version of Dropout.
+    This version performs the same function as Dropout, however it drops entire 3D feature maps
+    instead of individual elements. If adjacent voxels within feature maps are strongly correlated
+    (as is normally the case in early convolution layers) then regular dropout will not regularize the
+    activations and will otherwise just result in an effective learning rate decrease.
+    In this case, SpatialDropout3D will help promote independence between feature maps and should be used instead.
+    The input of this layer should be 5D.
+
+    When you use this layer as the first layer of a model, you need to provide the argument
+    inputShape (a shape tuple, does not include the batch dimension).
+
+    # Arguments
+    p: Fraction of the input units to drop. Float between 0 and 1.
+    dim_ordering: Format of input data. Either 'th' (Channel First) or 'tf' (Channel Last). Default is 'th'.
+    input_shape: A shape tuple, not including batch.
+
+    >>> spatialdropout3d = SpatialDropout3D(0.6, input_shape=(4, 12, 12, 16))
+    creating: createKerasSpatialDropout3D
+    """
+    def __init__(self, p=0.5, dim_ordering="th", input_shape=None, bigdl_type="float"):
+        super(SpatialDropout3D, self).__init__(None, bigdl_type,
+                                               p,
+                                               dim_ordering,
+                                               list(input_shape) if input_shape else None)
+
+
+class GaussianDropout(KerasLayer):
+    """
+    Apply multiplicative 1-centered Gaussian noise.
+    As it is a regularization layer, it is only active at training time.
+
+    When you use this layer as the first layer of a model, you need to provide the argument
+    inputShape (a shape tuple, does not include the batch dimension).
+
+    # Arguments
+    p: Drop probability. Float between 0 and 1.
+       The multiplicative noise will have standard deviation 'sqrt(p/(1-p))'.
+    input_shape: A shape tuple, not including batch.
+
+    >>> gaussiandropout = GaussianDropout(0.45, input_shape=(4, 8))
+    creating: createKerasGaussianDropout
+    """
+    def __init__(self, p, input_shape=None, bigdl_type="float"):
+        super(GaussianDropout, self).__init__(None, bigdl_type,
+                                              p,
+                                              list(input_shape) if input_shape else None)
+
+
+class GaussianNoise(KerasLayer):
+    """
+    Apply additive zero-centered Gaussian noise.
+    This is useful to mitigate overfitting (you could see it as a form of random data augmentation).
+    Gaussian Noise (GS) is a natural choice as corruption process for real valued inputs.
+    As it is a regularization layer, it is only active at training time.
+
+    When you use this layer as the first layer of a model, you need to provide the argument
+    inputShape (a shape tuple, does not include the batch dimension).
+
+    # Arguments
+    sigma: Float, standard deviation of the noise distribution.
+    input_shape: A shape tuple, not including batch.
+
+    >>> gaussiannoise = GaussianNoise(0.45, input_shape=(3, 4, 5))
+    creating: createKerasGaussianNoise
+    """
+    def __init__(self, sigma, input_shape=None, bigdl_type="float"):
+        super(GaussianNoise, self).__init__(None, bigdl_type,
+                                            sigma,
+                                            list(input_shape) if input_shape else None)
+
+
+class Masking(KerasLayer):
+    """
+    Use a mask value to skip timesteps for a sequence.
+    Masks a sequence by using a mask value to skip timesteps.
+
+    When you use this layer as the first layer of a model, you need to provide the argument
+    inputShape (a shape tuple, does not include the batch dimension).
+
+    # Arguments
+    mask_value: Float, mask value. For each timestep in the input tensor (dimension #1 in the tensor),
+                if all values in the input tensor at that timestep are equal to `mask_value`,
+                then the timestep will masked (skipped) in all downstream layers.
+    input_shape: A shape tuple, not including batch.
+
+    >>> masking = Masking(0.3, input_shape=(6, 8))
+    creating: createKerasMasking
+    """
+    def __init__(self, mask_value=0.0, input_shape=None, bigdl_type="float"):
+        super(Masking, self).__init__(None, bigdl_type,
+                                      mask_value,
+                                      list(input_shape) if input_shape else None)
+
+
+class SReLU(KerasLayer):
+    """
+    S-shaped Rectified Linear Unit.
+    It follows:
+    f(x) = t^r + a^r(x - t^r) for x >= t^r
+    f(x) = x for t^r > x > t^l,
+    f(x) = t^l + a^l(x - t^l) for x <= t^l
+
+    When you use this layer as the first layer of a model, you need to provide the argument
+    inputShape (a shape tuple, does not include the batch dimension).
+
+    # Arguments
+    shared_axes: Int tuple. The axes along which to share learnable parameters for the activation function.
+                 Default is None.
+                 For example, if the incoming feature maps are from a 2D convolution with output shape
+                 (batch, height, width, channels), and you wish to share parameters across space so that
+                 each filter only has one set of parameters, set 'SharedAxes=(1,2)'.
+    input_shape: A shape tuple, not including batch.
+
+    >>> srelu = SReLU(input_shape=(4, 5))
+    creating: createKerasSReLU
+    """
+    def __init__(self, shared_axes=None, input_shape=None, bigdl_type="float"):
+        super(SReLU, self).__init__(None, bigdl_type,
+                                    shared_axes,
+                                    list(input_shape) if input_shape else None)
+
+
+class ELU(KerasLayer):
+    """
+    Exponential Linear Unit.
+    It follows:
+    f(x) =  alpha * (exp(x) - 1.) for x < 0,
+    f(x) = x for x >= 0.
+
+    When you use this layer as the first layer of a model, you need to provide the argument
+    inputShape (a shape tuple, does not include the batch dimension).
+
+    # Arguments
+    alpha: Float, scale for the negative factor.
+    input_shape: A shape tuple, not including batch.
+
+    >>> elu = ELU(1.2, input_shape=(4, 5))
+    creating: createKerasELU
+    """
+    def __init__(self, alpha=1.0, input_shape=None, bigdl_type="float"):
+        super(ELU, self).__init__(None, bigdl_type,
+                                  alpha,
+                                  list(input_shape) if input_shape else None)
+
+
+class LeakyReLU(KerasLayer):
+    """
+    Leaky version of a Rectified Linear Unit.
+    It allows a small gradient when the unit is not active:
+    f(x) = alpha * x for x < 0,
+    f(x) = x for x >= 0.
+
+    When you use this layer as the first layer of a model, you need to provide the argument
+    inputShape (a shape tuple, does not include the batch dimension).
+
+    # Arguments
+    alpha: Float >= 0. Negative slope coefficient.
+    input_shape: A shape tuple, not including batch.
+
+    >>> leakyrelu = LeakyReLU(0.02, input_shape=(4, 5))
+    creating: createKerasLeakyReLU
+    """
+    def __init__(self, alpha=0.01, input_shape=None, bigdl_type="float"):
+        super(LeakyReLU, self).__init__(None, bigdl_type,
+                                        alpha,
+                                        list(input_shape) if input_shape else None)
+
+
+class ThresholdedReLU(KerasLayer):
+    """
+    Thresholded Rectified Linear Unit.
+    It follows:
+    f(x) = x for x > theta,
+    f(x) = 0 otherwise.
+
+    When you use this layer as the first layer of a model, you need to provide the argument
+    inputShape (a shape tuple, does not include the batch dimension).
+
+    # Arguments
+    theta: Float >= 0. Threshold location of activation.
+    input_shape: A shape tuple, not including batch.
+
+    >>> thresholdedrelu = ThresholdedReLU(input_shape=(10, 12))
+    creating: createKerasThresholdedReLU
+    """
+    def __init__(self, theta=1.0, input_shape=None, bigdl_type="float"):
+        super(ThresholdedReLU, self).__init__(None, bigdl_type,
+                                              theta,
+                                              list(input_shape) if input_shape else None)

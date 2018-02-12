@@ -27,8 +27,8 @@ import scala.reflect.ClassTag
 /**
  * Thresholded Rectified Linear Unit.
  * It follows:
- * `f(x) = x for x > theta`,
- * `f(x) = 0 otherwise`.
+ * f(x) = x for x > theta,
+ * f(x) = 0 otherwise.
  *
  * When you use this layer as the first layer of a model, you need to provide the argument
  * inputShape (a Single Shape, does not include the batch dimension).
