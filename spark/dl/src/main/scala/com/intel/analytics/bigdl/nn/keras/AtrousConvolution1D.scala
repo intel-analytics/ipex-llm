@@ -27,7 +27,7 @@ import com.intel.analytics.bigdl.utils.Shape
 import scala.reflect.ClassTag
 
 /**
- * Applies an atrous Convolution operator for filtering neighborhoods of 1-D inputs.
+ * Applies an atrous convolution operator for filtering neighborhoods of 1-D inputs.
  * A.k.a dilated convolution or convolution with holes.
  * Bias will be included in this layer.
  * Border mode currently supported for this layer is 'valid'.

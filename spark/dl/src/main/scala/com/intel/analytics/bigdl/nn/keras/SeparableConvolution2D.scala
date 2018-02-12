@@ -51,7 +51,7 @@ import scala.reflect.ClassTag
  * @param subsample Int array of length 2 corresponding to the step of the convolution in the height
  *                  and width dimension. Also called strides elsewhere. Default is (1, 1).
  * @param depthMultiplier How many output channel to use per input channel
- *                        for the depthwise convolution step. Int. Default is 1.
+ *                        for the depthwise convolution step. Integer. Default is 1.
  * @param dimOrdering Format of input data. Either DataFormat.NCHW (dimOrdering='th') or
  *                    DataFormat.NHWC (dimOrdering='tf'). Default is NCHW.
  * @param depthwiseRegularizer An instance of [[Regularizer]], (eg. L1 or L2 regularization),
