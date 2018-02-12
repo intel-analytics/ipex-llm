@@ -32,7 +32,6 @@ class MergeSpec extends KerasBaseSpec {
     val l2 = InputLayer[Float](inputShape = Shape(4, 8))
     val layer = Merge[Float](layers = List(l1, l2), mode = "sum")
     seq.add(layer)
-    val multi = seq.getInputShape().toMulti()
     seq.getOutputShape().toSingle().toArray should be (Array(-1, 4, 8))
     seq.forward(input) should be (input1 + input2)
   }
