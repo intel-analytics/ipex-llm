@@ -16,24 +16,111 @@
 
 package com.intel.analytics.bigdl.optim
 
+import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
 import org.scalatest.{FlatSpec, Matchers}
 
 class PredictServiceSpec extends FlatSpec with Matchers {
 
+  // sharing weights for testModule and testModule2
+  private val linearWeights = Tensor[Float](5, 10).rand()
+  private val linearBias = Tensor[Float](5).rand()
+  private val linear2Weights = Tensor[Float](1, 5).rand()
+  private val linear2Bias = Tensor[Float](1).rand()
+
+  private val testModule = {
+    val input = Input[Float]()
+    val linear = Linear[Float](10, 5,
+      initWeight = linearWeights, initBias = linearBias).inputs(input)
+    val relu = ReLU[Float]().inputs(linear)
+    val linear2 = Linear[Float](5, 1,
+      initWeight = linear2Weights, initBias = linear2Bias).inputs(relu)
+    val sigmoid = Sigmoid[Float]().inputs(linear2)
+    Graph[Float](input, sigmoid)
+  }
+
+  private val testModule2 = {
+    val (input1, input2) = (Input[Float](), Input[Float]())
+    val concat = JoinTable[Float](1, 1).inputs(input1, input2)
+    val linear = Linear[Float](10, 5,
+      initWeight = linearWeights, initBias = linearBias).inputs(concat)
+    val relu = ReLU[Float]().inputs(linear)
+    val linear2 = Linear[Float](5, 1,
+      initWeight = linear2Weights, initBias = linear2Bias).inputs(relu)
+    val sigmoid = Sigmoid[Float]().inputs(linear2)
+    Graph[Float](Array(input1, input2), sigmoid)
+  }
+
   "Tensor/ByteArray convert" should "work properly" in {
-    val tensor = Tensor[Int](3, 5).randn()
+    testTensorSerialize(0)
+    testTensorSerialize(0L)
+    testTensorSerialize(0.0f)
+    testTensorSerialize(0.0)
+    testTensorSerialize(true)
+    testTensorSerialize('a')
+    testTensorSerialize("aa")
+  }
+
+  private val testTensorSerialize = (flag: Any) => {
+    val tensor = flag match {
+      case _: Int => Tensor[Int](2, 3).randn()
+      case _: Long => Tensor[Long](2, 3).randn()
+      case _: Float => Tensor[Float](2, 3).randn()
+      case _: Double => Tensor[Double](2, 3).randn()
+      case _: Boolean => Tensor[Boolean](T(true, false, T(true, false)))
+      case _: String => Tensor[String](T("a", T("b", "c"), T("d", "e")))
+      case _: Char => Tensor[Char](T('a', T('b', 'c', 'd')))
+    }
     val bytes = PredictService.serializeActivity(tensor)
-    val tensor2 = PredictService.buildActivity(bytes)
+    val tensor2 = PredictService.deSerializeActivity(bytes)
     tensor shouldEqual tensor2
   }
 
   "Table/ByteArray convert" should "work properly" in {
     val table = T.seq((1 to 5).map(_ => Tensor[Double](3, 5).randn()))
     val bytes = PredictService.serializeActivity(table)
-    val table2 = PredictService.buildActivity(bytes)
+    val table2 = PredictService.deSerializeActivity(bytes)
     table shouldEqual table2
+  }
+
+  "PredictService" should "throw exceptions when params are invalid" in {
+    intercept[Exception] {
+      PredictService[Float](testModule, 1)
+    }
+    intercept[Exception] {
+      PredictService[Float](testModule, 2, 0)
+    }
+  }
+
+  "PredictService" should "work properly with concurrent calls" in {
+    val service = PredictService[Float](testModule, 5, 3)
+    val sumResults = (1 to 100).par.map { _ =>
+      val tensor = Tensor[Float](2, 10).randn()
+      val output = service.predict(tensor).asInstanceOf[Tensor[Float]]
+      output.size() shouldEqual Array(2, 1)
+      output.squeeze().toArray().sum
+    }
+    // Check whether instances have independent status(outputs of each Layer).
+    sumResults.toList.distinct.lengthCompare(90) > 0 shouldEqual true
+  }
+
+  "PredictService" should "work properly with byteArray data" in {
+    var service = PredictService[Float](testModule)
+    val tensor = Tensor[Float](2, 10).randn()
+    val input = PredictService.serializeActivity(tensor)
+    val output = PredictService.deSerializeActivity(service.predict(input))
+      .asInstanceOf[Tensor[Float]]
+    output.size() shouldEqual Array(2, 1)
+
+    service = PredictService[Float](testModule2)
+    val input2 = PredictService.serializeActivity(
+      T(tensor.narrow(2, 1, 6), tensor.narrow(2, 7, 4)))
+    val output2 = PredictService.deSerializeActivity(service.predict(input2))
+      .asInstanceOf[Tensor[Float]]
+    // TestModule and testModule2 have same network weights/bias and same inputs,
+    // so their outputs should be equal.
+    output shouldEqual output2
   }
 
 }

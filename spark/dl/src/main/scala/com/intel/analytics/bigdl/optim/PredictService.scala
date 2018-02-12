@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.optim
 
-import java.util.concurrent.LinkedBlockingQueue
+import java.util.concurrent.{Executors, LinkedBlockingQueue}
 
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
@@ -31,17 +31,41 @@ import com.intel.analytics.bigdl.utils.{T, Table}
 
 import scala.collection.JavaConverters._
 import scala.collection.mutable
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, ExecutionContextExecutor, Future}
 import scala.reflect.ClassTag
 import scala.reflect.runtime.universe.Type
 
 /**
+ * <h6>Predict Service Interface for Concurrent Calls</h6>
+ * In this service, several `model instances` sharing weights/bias will be built.
+ * <br>
+ * A `BlockingQueue` will be built to maintain available `model instances`.
+ * <br>
+ * When predict method called, service will try to take an instance from `BlockingQueue`,
+ * which means if all instances are on serving, the predicting request will be blocked until
+ * some instances are released.
+ * <br>
+ * The release method will be executed asynchronously when predictions finished.
  *
+ * @param model BigDL model used to do predictions
+ * @param nInstances number of model instances
+ * @param nBackendThreads number of threads to release instances after predictions.
  */
 class PredictService[T: ClassTag] private[optim](
   model: Module[T],
-  nInstances: Int = 10
+  nInstances: Int = 10,
+  nBackendThreads: Int = 2
 )(implicit ev: TensorNumeric[T]) {
+
+  require(nInstances > 1, "At least two instances are needed!")
+
+  require(nBackendThreads >= 1, "At least one backend threads are needed!")
+
+  // ThreadPool for scala.concurrent.Future,
+  // which is build for keeping threads available for unlocking to avoid dead locks.
+  private implicit val ec: ExecutionContextExecutor = {
+    ExecutionContext.fromExecutor(Executors.newFixedThreadPool(nBackendThreads))
+  }
 
   protected val instQueue: LinkedBlockingQueue[Module[T]] = {
     val shallowCopies = (1 to nInstances)
@@ -58,19 +82,26 @@ class PredictService[T: ClassTag] private[optim](
   }
 
   def predict(request: Array[Byte]): Array[Byte] = {
-    val activity = PredictService.buildActivity(request)
+    val activity = PredictService.deSerializeActivity(request)
     val output = predict(activity)
     val bytesOut = PredictService.serializeActivity(output)
     bytesOut
   }
 
+  // Take an instance from blocking queue,
+  // it will cause a thread blocking when no instance is available.
   protected def fetchInstance(): Module[T] = {
     instQueue.take()
   }
 
+  // Asynchronously release module instance back to blocking queue.
   protected def releaseInstance(inst: Module[T]): Future[Boolean] = {
-    import scala.concurrent.ExecutionContext.Implicits.global
-    Future(instQueue.offer(inst))
+    Future {
+      val isSuccess = instQueue.offer(inst)
+      println(s"Release instance ${if (isSuccess) "successfully" else "failed"}!" +
+        s" ${instQueue.size()} instances are available now!")
+      isSuccess
+    }
   }
 
 }
@@ -78,7 +109,21 @@ class PredictService[T: ClassTag] private[optim](
 
 object PredictService {
 
-  private[bigdl] def serializeActivity(activity: Activity): Array[Byte] = {
+  def apply[T: ClassTag](
+    model: Module[T],
+    nInstances: Int = 10,
+    nBackendThreads: Int = 2
+  )(implicit ev: TensorNumeric[T]): PredictService[T] = {
+    new PredictService[T](model, nInstances, nBackendThreads)
+  }
+
+  /**
+   * <h6>Serialize activities to Array[Byte] according to `Bigdl.proto`.</h6>
+   * For now, `Tensor` and `Table[Int, Tensor]` are supported.
+   *
+   * @param activity activity to be serialized
+   */
+  def serializeActivity(activity: Activity): Array[Byte] = {
     val attrBuilder = AttrValue.newBuilder()
     activity match {
       case table: Table =>
@@ -97,12 +142,23 @@ object PredictService {
 
       case tensor: Tensor[_] =>
         attrBuilder.setTensorValue(buildBigDLTensor(tensor, attrBuilder))
+
+      case _ =>
+        throw new UnsupportedOperationException("Unsupported Activity Type!")
     }
     val attr = attrBuilder.build()
     attr.toByteArray
   }
 
-  private[bigdl] def buildActivity(bytes: Array[Byte]): Activity = {
+  /**
+   * <h6>Deserialize Array[Byte] to activities according to `Bigdl.proto`.</h6>
+   * For now, `Tensor` and `Table[Int, Tensor]` are supported.
+   * It will convert `AttrValue(Array(BigdlTensor))` to a `Table`.
+   * It will convert `AttrValue(BigdlTensor) ` to a `Tensor`.
+   *
+   * @param bytes bytes data for Activity to be deserialized
+   */
+  def deSerializeActivity(bytes: Array[Byte]): Activity = {
     val attr = AttrValue.parseFrom(bytes)
     attr.getDataType match {
       case DataType.ARRAY_VALUE =>
@@ -113,6 +169,8 @@ object PredictService {
         val tValue = attr.getTensorValue
         val tensor = getAttr(tValue.getDatatype, attr)
         tensor.asInstanceOf[Tensor[_]]
+      case tpe =>
+        throw new UnsupportedOperationException(s"Unsupported DataType($tpe)!")
     }
   }
 
