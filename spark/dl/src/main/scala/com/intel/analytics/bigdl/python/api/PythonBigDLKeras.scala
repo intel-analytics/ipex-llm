@@ -391,9 +391,9 @@ class PythonBigDLKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends Pytho
   }
 
   def createKerasPermute(
-    dims: Array[Int],
+    dims: JList[Int],
     inputShape: JList[Int] = null): Permute[T] = {
-    Permute(dims, toScalaShape(inputShape))
+    Permute(toScalaArray(dims), toScalaShape(inputShape))
   }
 
   def createKerasCropping1D(

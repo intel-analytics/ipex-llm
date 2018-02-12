@@ -743,6 +743,8 @@ class ZeroPadding1D(KerasLayer):
     creating: createKerasZeroPadding1D
     """
     def __init__(self, padding=1, input_shape=None, bigdl_type="float"):
+        if isinstance(padding, int):
+            padding = (padding, padding)
         super(ZeroPadding1D, self).__init__(None, bigdl_type,
                                             padding,
                                             list(input_shape) if input_shape else None)
