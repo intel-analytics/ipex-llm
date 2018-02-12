@@ -16,9 +16,11 @@
 
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.nn.Linear.linearLikeBuilder
 import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.{SparseTensorBLAS, SparseTensorMath, SparseType, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.T
 
 import scala.reflect.ClassTag
 
@@ -149,6 +151,7 @@ class SparseLinear[T: ClassTag](
 }
 
 object SparseLinear {
+
   def apply[@specialized(Float, Double) T: ClassTag](
           inputSize: Int,
           outputSize: Int,
@@ -165,4 +168,44 @@ object SparseLinear {
     new SparseLinear[T](inputSize, outputSize, backwardStart, backwardLength,
       withBias, wRegularizer, bRegularizer, initWeight, initBias, initGradWeight, initGradBias)
   }
+
+  /**
+   * A Humanized Builder for SparseLinear
+   *
+   * @param inputSize the size the each input sample
+   * @param outputSize the size of the module output of each sample
+   * @param backwardStart backwardStart index, counting from 1(default: -1)
+   * @param backwardLength backward length(default: -1)
+   * @param withBias whether including bias(default: true)
+   * @param l1Reg `lambda` of L1 Regularization(default: 0.0)
+   * @param l2Reg `lambda` of L2 Regularization(default: 0.0)
+   * @param initWeightMethod initialization method of weights/bias(default: RandomNormal)
+   */
+  def build[T: ClassTag](
+    inputSize: Int,
+    outputSize: Int,
+    backwardStart: Int = -1,
+    backwardLength: Int = -1,
+    withBias: Boolean = true,
+    l1Reg: Double = 0.0,
+    l2Reg: Double = 0.0,
+    initWeightMethod: InitMethodTag.Value = InitMethodTag.RandomNormal
+  )(implicit ev: TensorNumeric[T]): SparseLinear[T] = {
+    require(inputSize > 0, s"found InputSize($inputSize) <= 0 in SparseLinearBuilder!")
+    require(outputSize > 0, s"found OutputSize($outputSize) <= 0 in SparseLinearBuilder!")
+    val state = T("inputSize" -> inputSize, "outputSize" -> outputSize, "withBias" -> withBias)
+    val regBuilder = T("l1" -> l1Reg, "l2" -> l2Reg)
+    state.update("wRegularizer", regBuilder)
+    state.update("bRegularizer", regBuilder)
+    state.update("initWeight", T("name" -> initWeightMethod))
+    if (withBias) {
+      state.update("initBias", T("name" -> initWeightMethod))
+    }
+    val ele = linearLikeBuilder[T](state)
+
+    SparseLinear[T](ele._1, ele._2, ele._3,
+      backwardStart, backwardLength,
+      ele._4, ele._5, ele._6, ele._7, ele._8, ele._9)
+  }
+
 }

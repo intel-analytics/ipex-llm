@@ -18,12 +18,14 @@ package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.nn.abstractnn.{Initializable, TensorModule}
-import com.intel.analytics.bigdl.optim.Regularizer
+import com.intel.analytics.bigdl.optim.{L1L2Regularizer, L1Regularizer, L2Regularizer, Regularizer}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{Shape, T, Table}
+import com.intel.analytics.bigdl.nn.{InitMethodTag => Tag}
 
 import scala.reflect.ClassTag
+import scala.util.Try
 
 /**
  * The `Linear` module applies a linear transformation to the input data,
@@ -87,7 +89,7 @@ class Linear[T: ClassTag](
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
     require(input.dim() == 1 || input.dim() == 2,
       "Linear: " + ErrorInfo.constrainInputAsVectorOrBatch +
-      s"input dim ${input.dim()}")
+        s"input dim ${input.dim()}")
 
 
     if (input.dim() == 1) {
@@ -117,7 +119,7 @@ class Linear[T: ClassTag](
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
     require(input.dim() == 1 || input.dim() == 2,
       "Linear: " + ErrorInfo.constrainInputAsVectorOrBatch +
-    s"input dim ${input.dim()}")
+        s"input dim ${input.dim()}")
 
     val nElement = gradInput.nElement()
     gradInput.resizeAs(input)
@@ -136,7 +138,7 @@ class Linear[T: ClassTag](
   override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T]): Unit = {
     require(input.dim() == 1 || input.dim() == 2,
       "Linear: " + ErrorInfo.constrainInputAsVectorOrBatch +
-    s"input dim ${input.dim()}")
+        s"input dim ${input.dim()}")
 
     gradWeight.resize(outputSize, inputSize)
     if (withBias) {
@@ -222,18 +224,201 @@ class Linear[T: ClassTag](
 
 object Linear extends quantized.Quantizable {
   def apply[@specialized(Float, Double) T: ClassTag](
-      inputSize: Int,
-      outputSize: Int,
-      withBias: Boolean = true,
-      wRegularizer: Regularizer[T] = null,
-      bRegularizer: Regularizer[T] = null,
-      initWeight: Tensor[T] = null,
-      initBias: Tensor[T] = null,
-      initGradWeight: Tensor[T] = null,
-      initGradBias: Tensor[T] = null
+    inputSize: Int,
+    outputSize: Int,
+    withBias: Boolean = true,
+    wRegularizer: Regularizer[T] = null,
+    bRegularizer: Regularizer[T] = null,
+    initWeight: Tensor[T] = null,
+    initBias: Tensor[T] = null,
+    initGradWeight: Tensor[T] = null,
+    initGradBias: Tensor[T] = null
   )(implicit ev: TensorNumeric[T]) : Linear[T] = {
     new Linear[T](inputSize, outputSize,
       withBias, wRegularizer, bRegularizer, initWeight, initBias, initGradWeight, initGradBias)
+  }
+
+  /**
+   * A Humanized Builder for Linear
+   *
+   * @param inputSize the size the each input sample
+   * @param outputSize the size of the module output of each sample
+   * @param withBias whether including bias(default: true)
+   * @param l1Reg `lambda` of L1 Regularization(default: 0.0)
+   * @param l2Reg `lambda` of L2 Regularization(default: 0.0)
+   * @param initWeightMethod initialization method of weights/bias(default: RandomNormal)
+   */
+  def build[T: ClassTag](
+    inputSize: Int,
+    outputSize: Int,
+    withBias: Boolean = true,
+    l1Reg: Double = 0.0,
+    l2Reg: Double = 0.0,
+    initWeightMethod: Tag.Value = Tag.RandomNormal
+  )(implicit ev: TensorNumeric[T]): Linear[T] = {
+    require(inputSize > 0, s"found InputSize($inputSize) <= 0 in LinearBuilder!")
+    require(outputSize > 0, s"found OutputSize($outputSize) <= 0 in LinearBuilder!")
+    val state = T("inputSize" -> inputSize, "outputSize" -> outputSize, "withBias" -> withBias)
+    val regBuilder = T("l1" -> l1Reg, "l2" -> l2Reg)
+    state.update("wRegularizer", regBuilder)
+    state.update("bRegularizer", regBuilder)
+    state.update("initWeight", T("name" -> initWeightMethod))
+    if (withBias) {
+      state.update("initBias", T("name" -> initWeightMethod))
+    }
+
+    val ele = linearLikeBuilder[T](state)
+    Linear[T](ele._1, ele._2, ele._3, ele._4, ele._5, ele._6, ele._7, ele._8, ele._9)
+  }
+
+  def buildRegularizer[T: ClassTag](
+    l1: Double,
+    l2: Double
+  )(implicit ev: TensorNumeric[T]): Regularizer[T] = {
+    if (l1 + l2 == 0.0) {
+      null
+    } else if (l1 * l2 > 0.0) {
+      new L1L2Regularizer[T](l1, l2)
+    } else if (l2 > 0.0) {
+      new L2Regularizer[T](l2)
+    } else {
+      new L1Regularizer[T](l1)
+    }
+  }
+
+  /**
+   * Build linear-like members with [[com.intel.analytics.bigdl.utils.Table]].
+   *
+   * ======Schema of the Table======
+   * {{{
+   *  inputSize: Int
+   *  outputSize: Int
+   *  withBias: Boolean(default: true)
+   *  wRegularizer, bRegularizer: Regularizer[T]/Table(default: null)
+   *    params of Table:
+   *      l1: Double(default: 0.0)
+   *      l2: Double(default: 0.0)
+   *  initWeight, initBias, initGradWeight, initGradBias: Tensor[T]/Table(default: null)
+   *    params of Table:
+   *      same params as buildInitTensor(Table)
+   * }}}
+   *
+   * @param param a Table contains parameters
+   */
+  private[bigdl] def linearLikeBuilder[T: ClassTag](param: Table
+  )(implicit ev: TensorNumeric[T]) = {
+    val inputSize = param.get[Int]("inputSize") match {
+      case Some(e) => e
+      case _ => throw new IllegalArgumentException(
+        "value(type: Int) for key(inputSize) is required!")
+    }
+    val outputSize = param.get[Int]("outputSize") match {
+      case Some(e) => e
+      case _ => throw new IllegalArgumentException(
+        "value(type: Int) for key(outputSize) is required!")
+    }
+    val withBias = param.getOrElse("withBias", true)
+
+    val getRegularizer = (key: String) => param.get[Any](key) match {
+      case None => null
+      case Some(value) => value match {
+        case reg: Regularizer[T] => reg
+        case state: Table =>
+          buildRegularizer[T](state.getOrElse("l1", 0.0), state.getOrElse("l2", 0.0))
+        case _ => throw new IllegalArgumentException(s"wrong value type for key($key)!")
+      }
+    }
+    val (wReg, bReg) = getRegularizer("wRegularizer") -> getRegularizer("bRegularizer")
+
+    val getTensor = (key: String) => param.get[Any](key) match {
+      case None => null
+      case Some(value) => value match {
+        case tensor: Tensor[T] => tensor
+        case state: Table =>
+          // weights tensor of Linear Layer has a shape like: [outputSize, inputSize]
+          if (!state.contains("shape")) key match {
+            case k if k.endsWith("Weight") =>
+              state.update("shape", Array(outputSize, inputSize))
+            case k if k.endsWith("Bias") =>
+              state.update("shape", Array(outputSize))
+          }
+          buildInitTensor[T](state)
+        case _ => throw new IllegalArgumentException(s"wrong value type for key($key)!")
+      }
+    }
+
+    val (initW, initB) = getTensor("initWeight") ->
+      (if (withBias) getTensor("initBias") else null)
+    val (initGradW, initGradB) = getTensor("initGradWeight") ->
+      (if (withBias) getTensor("initGradBias") else null)
+
+    (inputSize, outputSize, withBias, wReg, bReg, initW, initB, initGradW, initGradB)
+  }
+
+  /**
+   * Init a `Tensor` with a [[com.intel.analytics.bigdl.nn.InitializationMethod]]
+   * which is configured by a [[com.intel.analytics.bigdl.utils.Table]].
+   *
+   * ======Schema of the Table======
+   * {{{
+   *  shape: Array[Int], shape of Tensor to be initialized
+   *  name: String, name of InitializationMethod(case-insensitive)
+   *      InitializationMethods:
+   *          RandomUniform
+   *          RandomNormal
+   *              mean: Double(default: 0)
+   *              stdv: Double(default: 1/sqrt(size))
+   *          Xavier
+   *          Ones
+   *          Zeros
+   *          Const
+   *              value: Double(no default)
+   *          BilinearFiller
+   *          MsraFiller
+   *              varianceNormAverage: Boolean(default: true)
+   * }}}
+   *
+   * @param param a Table contains parameters
+   */
+  def buildInitTensor[T: ClassTag](param: Table
+  )(implicit ev: TensorNumeric[T]): Tensor[T] = {
+    val shape = param.get[Array[Int]]("shape") match {
+      case Some(s) => s
+      case None => throw new IllegalArgumentException("missed param shape(type: Array[Int])!")
+    }
+    val tensor = Tensor[T](shape)
+
+    require(param.contains("name"), "param(name) is missing!")
+
+    val initMethod = Try(param.get[String]("name").get)
+      .getOrElse(Try(param.get[Tag.Value]("name").get.toString).getOrElse(""))
+      .toLowerCase
+
+    initMethod match {
+      case s if s.equals(Tag.RandomUniform.toString) =>
+        RandomUniform.init(tensor)
+      case s if s.equals(Tag.RandomNormal.toString) =>
+        val mean = param.getOrElse("mean", 0.0)
+        lazy val _stdv = 1.0 / math.sqrt(tensor.size().product.toDouble)
+        val stdv = param.getOrElse("stdv", _stdv)
+        RandomNormal(mean, stdv).init(tensor)
+      case s if s.equals(Tag.Xavier.toString) =>
+        Xavier.init(tensor, VariableFormat.Default)
+      case s if s.equals(Tag.Ones.toString) =>
+        Ones.init(tensor)
+      case s if s.equals(Tag.Zeros.toString) =>
+        Zeros.init(tensor)
+      case s if s.equals(Tag.Const.toString) =>
+        ConstInitMethod(param.get[Double]("value").get).init(tensor)
+      case s if s.equals(Tag.BilinearFiller.toString) =>
+        BilinearFiller.init(tensor)
+      case s if s.equals(Tag.MsraFiller.toString) =>
+        MsraFiller(param.getOrElse("varianceNormAverage", true)).init(tensor)
+      case _ =>
+        throw new IllegalArgumentException("Error parsing InitMethod name!")
+    }
+
+    tensor
   }
 
   override def quantize[T: ClassTag](module: Module[T])(

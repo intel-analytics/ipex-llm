@@ -22,8 +22,11 @@ import com.intel.analytics.bigdl._
 
 import scala.math._
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.optim.{L1Regularizer, L2Regularizer, SGD}
+import com.intel.analytics.bigdl.optim.{L1L2Regularizer, L1Regularizer, L2Regularizer, SGD}
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{RandomGenerator, Shape, T, TestUtils}
+
+import scala.reflect.ClassTag
 
 @com.intel.analytics.bigdl.tags.Parallel
 class LinearSpec extends FlatSpec with Matchers {
@@ -412,4 +415,89 @@ class LinearSpec extends FlatSpec with Matchers {
     val linear = Linear[Float](3, 5)
     TestUtils.compareOutputShape(linear, Shape(3)) should be (true)
   }
+
+  "buildInitTensor" should "work properly" in {
+    val state = T("shape" -> Array(1, 10, 10, 100, 100))
+    var t = Linear.buildInitTensor[Float](state.update("name", "RandomUniform"))
+    t.size() shouldEqual Array(1, 10, 10, 100, 100)
+    assert (math.abs(t.mean()) <= 1e-3)
+
+    t = Linear.buildInitTensor[Float](
+      state.update("name", "RandomNormal").update("mean", 1.0))
+    assert (math.abs(t.mean() - 1.0f) <= 1e-3)
+
+    t = Linear.buildInitTensor[Float](state.update("name", "Xavier"))
+    assert (math.abs(t.mean()) <= 1e-3)
+
+    t = Linear.buildInitTensor[Float](state.update("name", InitMethodTag.Ones))
+    assert (t.storage().array().forall(_ == 1.0f))
+
+    t = Linear.buildInitTensor[Float](state.update("name", InitMethodTag.Zeros))
+    assert (t.storage().array().forall(_ == 0.0f))
+
+    t = Linear.buildInitTensor[Float](state.update("name", InitMethodTag.Const)
+      .update("value", 5.67))
+    assert (t.storage().array().forall(_ == 5.67f))
+
+    t = Linear.buildInitTensor[Float](state.update("name", InitMethodTag.BilinearFiller))
+    assert (t.storage().array().forall(e => e <= 1 && e > 0))
+
+    t = Linear.buildInitTensor[Float](state.update("name", "MsraFiller"))
+    assert (math.abs(t.mean()) <= 1e-3)
+  }
+
+  "linearLikeBuilder && Linear.build" should "work properly" in {
+    val table = T("inputSize" -> 20, "outputSize" -> 5)
+    val (_in, _out, _bias, _wReg, _bReg, _initW, _initB, _initGW, _initGB
+      ) = Linear.linearLikeBuilder[Float](table)
+    _in shouldEqual 20; _out shouldEqual 5
+    _bias shouldEqual true
+    _wReg shouldEqual null; _bReg shouldEqual null
+    _initW shouldEqual null; _initB shouldEqual null
+    _initGW shouldEqual null; _initGB shouldEqual null
+
+    // check regularizer parser & initMethod parser
+    table.update("wRegularizer", T("l1" -> 0.1, "l2" -> 0.1))
+      .update("bRegularizer", T("l2" -> 0.01))
+      .update("initWeight", T("name" -> "Const", "value" -> 1.0))
+      .update("initBias", T("name" -> "Const", "value" -> 1.0))
+      .update("initGradWeight", T("name" -> "Zeros"))
+      .update("initGradBias", T("name" -> "Ones"))
+    val ele = Linear.linearLikeBuilder[Float](table)
+    ele._4.asInstanceOf[L1L2Regularizer[Float]].l1 shouldEqual 0.1
+    ele._5.asInstanceOf[L2Regularizer[Float]].l2 shouldEqual 0.01
+    ele._6.storage().array().forall(_ == 1.0f) shouldEqual true
+    ele._7.storage().array().forall(_ == 1.0f) shouldEqual true
+    ele._8.storage().array().forall(_ == 0.0f) shouldEqual true
+    ele._9.storage().array().forall(_ == 1.0f) shouldEqual true
+
+    // check whether Linear.Build made same Linear as Linear.apply
+    val (input, gradOut) = Tensor[Float](10, 20).rand() -> Tensor[Float](10, 5).rand()
+
+    val regularizer = new L1L2Regularizer[Float](0.1, 0.1)
+    val wInit = Tensor[Float](5, 20)
+    Ones.init(wInit)
+    var layer = Linear[Float](20, 5, withBias = false,
+      wRegularizer = regularizer, bRegularizer = regularizer, initWeight = wInit)
+    var outputCs = layer.updateOutput(input).toTensor[Float]
+    var gradInCs = layer.updateGradInput(input, gradOut).toTensor[Float]
+
+    layer = Linear.build[Float](20, 5, false, .1, .1, InitMethodTag.Ones)
+    var outputTable = layer.updateOutput(input).toTensor[Float]
+    var gradInTable = layer.updateGradInput(input, gradOut).toTensor[Float]
+    outputTable.storage().array() shouldEqual outputCs.storage().array()
+    gradInTable.storage().array() shouldEqual gradInCs.storage().array()
+
+    val bInit = Tensor[Float](5)
+    Ones.init(bInit)
+    layer = Linear[Float](20, 5, initWeight = wInit, initBias = bInit)
+    outputCs = layer.updateOutput(input).toTensor[Float]
+    gradInCs = layer.updateGradInput(input, gradOut).toTensor[Float]
+    layer = Linear.build[Float](20, 5, true, 0, 0, InitMethodTag.Ones)
+    outputTable = layer.updateOutput(input).toTensor[Float]
+    gradInTable = layer.updateGradInput(input, gradOut).toTensor[Float]
+    outputTable.storage().array() shouldEqual outputCs.storage().array()
+    gradInTable.storage().array() shouldEqual gradInCs.storage().array()
+  }
+
 }
