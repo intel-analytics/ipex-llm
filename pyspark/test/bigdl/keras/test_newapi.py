@@ -119,6 +119,14 @@ class TestLayer(BigDLTestCase):
         input_data = [np.random.random([2, 3]), np.random.random([2, 3])]
         self.compare_newapi(klayer, blayer, input_data)
 
+    def test_input_output_shape(self):
+        from bigdl.examples.lenet.lenet import build_model
+        model = build_model(10)
+        input_shape = model.get_input_shape()
+        np.testing.assert_allclose((28, 28, 1), input_shape[1:])
+        output_shape = model.get_output_shape()
+        np.testing.assert_allclose((10, ), output_shape[1:])
+
 
 if __name__ == "__main__":
     pytest.main([__file__])

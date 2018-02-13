@@ -40,7 +40,7 @@ class InferShape(JavaValue):
         input = callBigDlFunc(self.bigdl_type, "getInputShape",
                               self.value)
         if len(input) == 1:
-            return self.__process_shape(input(0))
+            return self.__process_shape(input[0])
         else:
             res = []
             for i in input:
@@ -48,6 +48,9 @@ class InferShape(JavaValue):
             return res
 
     def get_output_shape(self):
+        """
+        Return the output shape of a model (a shape tuple).
+        """
         return self.__process_shape(callBigDlFunc(self.bigdl_type, "getOutputShape",
                                                   self.value))
 

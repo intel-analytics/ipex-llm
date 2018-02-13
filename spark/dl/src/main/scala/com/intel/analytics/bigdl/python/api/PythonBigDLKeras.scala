@@ -25,7 +25,7 @@ import com.intel.analytics.bigdl.numeric._
 import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.{Shape, SingleShape}
+import com.intel.analytics.bigdl.utils.{MultiShape, Shape, SingleShape}
 
 import scala.collection.JavaConverters._
 import scala.language.existentials
@@ -77,12 +77,12 @@ class PythonBigDLKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends Pytho
   def getInputShape(module: Container[Activity, Activity, T]): JList[JList[Int]] = {
     val input = module.getInputShape()
     val inputs = if (input.isInstanceOf[SingleShape]) {
-      Shape(List(module.getInputShape())).toMulti()
+      MultiShape(List(input))
     }
     else {
-      module.getInputShape().toMulti()
+      input
     }
-    inputs.map(single => single.toSingle().toList.asJava).toList.asJava
+    inputs.toMulti().map(single => single.toSingle().toList.asJava).toList.asJava
   }
 
   def createKerasDense(
