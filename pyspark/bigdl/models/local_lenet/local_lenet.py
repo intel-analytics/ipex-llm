@@ -49,6 +49,7 @@ if __name__ == "__main__":
     (X_train, Y_train) = get_mnist("train", options.dataPath)
     (X_test, Y_test) = get_mnist("test", options.dataPath)
 
+    # The model used here is exactly the same as the model in ../lenet/lenet5.py
     optimizer = Optimizer.create(
         model=build_model(10),
         training_set=(X_train, Y_train),

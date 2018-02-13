@@ -54,7 +54,7 @@ def preprocess_mnist(sc, options):
 
 def get_end_trigger(options):
     """
-    When to end the optimization based on input option
+    When to end the optimization based on input option.
     """
     if options.endTriggerType.lower() == "epoch":
         return MaxEpoch(options.endTriggerNum)
@@ -64,7 +64,7 @@ def get_end_trigger(options):
 
 def validate_optimizer(optimizer, test_data, options):
     """
-    Set validation and checkpoint for optimizer
+    Set validation and checkpoint for distributed optimizer.
     """
     optimizer.set_validation(
         batch_size=options.batchSize,
