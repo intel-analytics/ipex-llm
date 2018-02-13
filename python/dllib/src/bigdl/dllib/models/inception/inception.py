@@ -6,17 +6,17 @@ from bigdl.optim.optimizer import *
 from bigdl.transform.vision.image import *
 
 
-def scala_T(input_T):
-    if type(input_T) is list:
+def t(input_t):
+    if type(input_t) is list:
         # insert into index 0 spot, such that the real data starts from index 1
         temp = [0]
-        temp.extend(input_T)
+        temp.extend(input_t)
         return dict(enumerate(temp))
     # if dictionary, return it back
-    return input_T
+    return input_t
 
 
-def Inception_Layer_v1(input_size, config, name_prefix=""):
+def inception_layer_v1(input_size, config, name_prefix=""):
     concat = Concat(2)
     conv1 = Sequential()
     conv1.add(
@@ -55,7 +55,7 @@ def Inception_Layer_v1(input_size, config, name_prefix=""):
     return concat
 
 
-def Inception_v1_NoAuxClassifier(class_num):
+def inception_v1_no_aux_classifier(class_num):
     model = Sequential()
     model.add(SpatialConvolution(3, 64, 7, 7, 2, 2, 3, 3, 1, False)
               .set_init_method(weight_init_method=Xavier(), bias_init_method=Zeros())
@@ -71,26 +71,26 @@ def Inception_v1_NoAuxClassifier(class_num):
     model.add(ReLU(True).set_name("conv2/relu_3x3"))
     model.add(SpatialCrossMapLRN(5, 0.0001, 0.75).set_name("conv2/norm2"))
     model.add(SpatialMaxPooling(3, 3, 2, 2, to_ceil=True).set_name("pool2/3x3_s2"))
-    model.add(Inception_Layer_v1(192, scala_T([scala_T([64]), scala_T(
-        [96, 128]), scala_T([16, 32]), scala_T([32])]), "inception_3a/"))
-    model.add(Inception_Layer_v1(256, scala_T([scala_T([128]), scala_T(
-        [128, 192]), scala_T([32, 96]), scala_T([64])]), "inception_3b/"))
+    model.add(inception_layer_v1(192, t([t([64]), t(
+        [96, 128]), t([16, 32]), t([32])]), "inception_3a/"))
+    model.add(inception_layer_v1(256, t([t([128]), t(
+        [128, 192]), t([32, 96]), t([64])]), "inception_3b/"))
     model.add(SpatialMaxPooling(3, 3, 2, 2, to_ceil=True))
-    model.add(Inception_Layer_v1(480, scala_T([scala_T([192]), scala_T(
-        [96, 208]), scala_T([16, 48]), scala_T([64])]), "inception_4a/"))
-    model.add(Inception_Layer_v1(512, scala_T([scala_T([160]), scala_T(
-        [112, 224]), scala_T([24, 64]), scala_T([64])]), "inception_4b/"))
-    model.add(Inception_Layer_v1(512, scala_T([scala_T([128]), scala_T(
-        [128, 256]), scala_T([24, 64]), scala_T([64])]), "inception_4c/"))
-    model.add(Inception_Layer_v1(512, scala_T([scala_T([112]), scala_T(
-        [144, 288]), scala_T([32, 64]), scala_T([64])]), "inception_4d/"))
-    model.add(Inception_Layer_v1(528, scala_T([scala_T([256]), scala_T(
-        [160, 320]), scala_T([32, 128]), scala_T([128])]), "inception_4e/"))
+    model.add(inception_layer_v1(480, t([t([192]), t(
+        [96, 208]), t([16, 48]), t([64])]), "inception_4a/"))
+    model.add(inception_layer_v1(512, t([t([160]), t(
+        [112, 224]), t([24, 64]), t([64])]), "inception_4b/"))
+    model.add(inception_layer_v1(512, t([t([128]), t(
+        [128, 256]), t([24, 64]), t([64])]), "inception_4c/"))
+    model.add(inception_layer_v1(512, t([t([112]), t(
+        [144, 288]), t([32, 64]), t([64])]), "inception_4d/"))
+    model.add(inception_layer_v1(528, t([t([256]), t(
+        [160, 320]), t([32, 128]), t([128])]), "inception_4e/"))
     model.add(SpatialMaxPooling(3, 3, 2, 2, to_ceil=True))
-    model.add(Inception_Layer_v1(832, scala_T([scala_T([256]), scala_T(
-        [160, 320]), scala_T([32, 128]), scala_T([128])]), "inception_5a/"))
-    model.add(Inception_Layer_v1(832, scala_T([scala_T([384]), scala_T(
-        [192, 384]), scala_T([48, 128]), scala_T([128])]), "inception_5b/"))
+    model.add(inception_layer_v1(832, t([t([256]), t(
+        [160, 320]), t([32, 128]), t([128])]), "inception_5a/"))
+    model.add(inception_layer_v1(832, t([t([384]), t(
+        [192, 384]), t([48, 128]), t([128])]), "inception_5b/"))
     model.add(SpatialAveragePooling(7, 7, 1, 1).set_name("pool5/7x7_s1"))
     model.add(Dropout(0.4).set_name("pool5/drop_7x7_s1"))
     model.add(View([1024], num_input_dims=3))
@@ -100,7 +100,7 @@ def Inception_v1_NoAuxClassifier(class_num):
     return model
 
 
-def Inception_v1(class_num):
+def inception_v1(class_num):
     feature1 = Sequential()
     feature1.add(SpatialConvolution(3, 64, 7, 7, 2, 2, 3, 3, 1, False).set_init_method(weight_init_method=Xavier())
                  .set_name("conv1/7x7_s2"))
@@ -120,17 +120,16 @@ def Inception_v1(class_num):
     feature1.add(SpatialCrossMapLRN(5, 0.0001, 0.75).set_name("conv2/norm2"))
     feature1.add(
         SpatialMaxPooling(3, 3, 2, 2, to_ceil=True).set_name("pool2/3x3_s2"))
-    feature1.add(Inception_Layer_v1(192,
-                                    scala_T([scala_T([64]), scala_T([96, 128]),
-                                             scala_T([16, 32]), scala_T([32])]),
+    feature1.add(inception_layer_v1(192, t([
+        t([64]), t([96, 128]), t([16, 32]), t([32])]),
                                     "inception_3a/"))
-    feature1.add(Inception_Layer_v1(256, scala_T([
-        scala_T([128]), scala_T([128, 192]), scala_T([32, 96]), scala_T([64])]),
+    feature1.add(inception_layer_v1(256, t([
+        t([128]), t([128, 192]), t([32, 96]), t([64])]),
                                     "inception_3b/"))
     feature1.add(
         SpatialMaxPooling(3, 3, 2, 2, to_ceil=True).set_name("pool3/3x3_s2"))
-    feature1.add(Inception_Layer_v1(480, scala_T([
-        scala_T([192]), scala_T([96, 208]), scala_T([16, 48]), scala_T([64])]),
+    feature1.add(inception_layer_v1(480, t([
+        t([192]), t([96, 208]), t([16, 48]), t([64])]),
                                     "inception_4a/"))
 
     output1 = Sequential()
@@ -147,17 +146,14 @@ def Inception_v1(class_num):
     output1.add(LogSoftMax().set_name("loss1/loss"))
 
     feature2 = Sequential()
-    feature2.add(Inception_Layer_v1(512,
-                                    scala_T([scala_T([160]), scala_T([112, 224]),
-                                             scala_T([24, 64]), scala_T([64])]),
+    feature2.add(inception_layer_v1(512,
+                                    t([t([160]), t([112, 224]), t([24, 64]), t([64])]),
                                     "inception_4b/"))
-    feature2.add(Inception_Layer_v1(512,
-                                    scala_T([scala_T([128]), scala_T([128, 256]),
-                                             scala_T([24, 64]), scala_T([64])]),
+    feature2.add(inception_layer_v1(512,
+                                    t([t([128]), t([128, 256]), t([24, 64]), t([64])]),
                                     "inception_4c/"))
-    feature2.add(Inception_Layer_v1(512,
-                                    scala_T([scala_T([112]), scala_T([144, 288]),
-                                             scala_T([32, 64]), scala_T([64])]),
+    feature2.add(inception_layer_v1(512,
+                                    t([t([112]), t([144, 288]), t([32, 64]), t([64])]),
                                     "inception_4d/"))
 
     output2 = Sequential()
@@ -173,18 +169,15 @@ def Inception_v1(class_num):
     output2.add(LogSoftMax().set_name("loss2/loss"))
 
     output3 = Sequential()
-    output3.add(Inception_Layer_v1(528,
-                                   scala_T([scala_T([256]), scala_T([160, 320]),
-                                            scala_T([32, 128]), scala_T([128])]),
+    output3.add(inception_layer_v1(528,
+                                   t([t([256]), t([160, 320]), t([32, 128]), t([128])]),
                                    "inception_4e/"))
     output3.add(SpatialMaxPooling(3, 3, 2, 2, to_ceil=True).set_name("pool4/3x3_s2"))
-    output3.add(Inception_Layer_v1(832,
-                                   scala_T([scala_T([256]), scala_T([160, 320]),
-                                            scala_T([32, 128]), scala_T([128])]),
+    output3.add(inception_layer_v1(832,
+                                   t([t([256]), t([160, 320]), t([32, 128]), t([128])]),
                                    "inception_5a/"))
-    output3.add(Inception_Layer_v1(832,
-                                   scala_T([scala_T([384]), scala_T([192, 384]),
-                                            scala_T([48, 128]), scala_T([128])]),
+    output3.add(inception_layer_v1(832,
+                                   t([t([384]), t([192, 384]), t([48, 128]), t([128])]),
                                    "inception_5b/"))
     output3.add(SpatialAveragePooling(7, 7, 1, 1).set_name("pool5/7x7_s1"))
     output3.add(Dropout(0.4).set_name("pool5/drop_7x7_s1"))
@@ -257,7 +250,7 @@ if __name__ == "__main__":
     init_engine()
 
     # build model
-    inception_model = Inception_v1_NoAuxClassifier(options.classNum)
+    inception_model = inception_v1_no_aux_classifier(options.classNum)
 
     image_size = 224  # create dataset
     train_transformer = Pipeline([PixelBytesToMat(),
