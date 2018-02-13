@@ -17,6 +17,7 @@ package com.intel.analytics.bigdl.nn.ops
 
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.nn.{InferReshape => Reshape}
 import org.scalatest.{FlatSpec, Matchers}
 
 class ReshapeSpec extends FlatSpec with Matchers {
