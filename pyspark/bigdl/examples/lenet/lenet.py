@@ -60,13 +60,7 @@ if __name__ == "__main__":
         optim_method=SGD(learningrate=0.01, learningrate_decay=0.0002),
         end_trigger=get_end_trigger(options),
         batch_size=options.batchSize)
-    optimizer.set_validation(
-        batch_size=options.batchSize,
-        val_rdd=test_data,
-        trigger=EveryEpoch(),
-        val_method=[Top1Accuracy()]
-    )
-    optimizer.set_checkpoint(EveryEpoch(), options.checkpointPath)
+    validate_optimizer(optimizer, test_data, options.batchSize, options.checkpointPath)
     trained_model = optimizer.optimize()
     parameters = trained_model.parameters()
     sc.stop()

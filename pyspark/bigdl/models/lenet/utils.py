@@ -21,13 +21,13 @@ from bigdl.optim.optimizer import *
 
 def get_mnist(sc, data_type="train", location="/tmp/mnist"):
     """
-    Get and normalize the mnist data. We would download it automatically
+    Get mnist dataset. We would download it automatically
     if the data doesn't present at the specific location.
 
     :param sc: SparkContext
-    :param data_type: training data or testing data
-    :param location: Location storing the mnist
-    :return: A RDD of (features: Ndarray, label: Ndarray)
+    :param data_type: "train" for training data and "test" for testing data
+    :param location: Location to store mnist dataset
+    :return: RDD of (features: ndarray, label: ndarray)
     """
     (images, labels) = mnist.read_data_sets(location, data_type)
     images = sc.parallelize(images)
@@ -38,7 +38,7 @@ def get_mnist(sc, data_type="train", location="/tmp/mnist"):
 
 def process_mnist_rdd(sc, options):
     """
-    Normalize mnist data and transform into RDD Samples
+    Normalize mnist dataset and transform into Sample of RDDs.
     """
     train_data = get_mnist(sc, "train", options.dataPath)\
         .map(lambda rec_tuple: (normalizer(rec_tuple[0], mnist.TRAIN_MEAN, mnist.TRAIN_STD),
@@ -57,3 +57,12 @@ def get_end_trigger(options):
     else:
         return MaxIteration(options.endTriggerNum)
 
+
+def validate_optimizer(optimizer, test_data, batch_size, checkpoint_path):
+    optimizer.set_validation(
+        batch_size=batch_size,
+        val_rdd=test_data,
+        trigger=EveryEpoch(),
+        val_method=[Top1Accuracy()]
+    )
+    optimizer.set_checkpoint(EveryEpoch(), checkpoint_path)
