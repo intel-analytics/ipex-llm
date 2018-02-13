@@ -17,12 +17,9 @@ package com.intel.analytics.bigdl.utils.tf.loaders
 
 import java.nio.ByteOrder
 
-import com.intel.analytics.bigdl.nn.Identity
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-
 import com.intel.analytics.bigdl.Module
-import com.intel.analytics.bigdl.nn.ops._
-import com.intel.analytics.bigdl.nn.ops.{StackPop => StackPopOps, StackPush => StackPushOps}
+import com.intel.analytics.bigdl.nn.tf.{StackCreator, TensorArrayConcat, TensorArrayCreator, TensorArrayGather, TensorArrayGrad, TensorArrayRead, TensorArrayScatter, TensorArraySize, TensorArraySplit, TensorArrayWrite, StackPop => StackPopOps, StackPush => StackPushOps}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath
 import com.intel.analytics.bigdl.utils.tf.Context
 import com.intel.analytics.bigdl.utils.tf.loaders.Utils._

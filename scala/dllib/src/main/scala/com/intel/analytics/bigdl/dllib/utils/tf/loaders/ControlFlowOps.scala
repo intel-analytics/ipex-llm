@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.utils.tf.loaders
 import java.nio.ByteOrder
 
 import com.intel.analytics.bigdl.Module
-import com.intel.analytics.bigdl.nn.ops.{MergeOps, SwitchOps, Enter => EnterOps, Exit => ExitOps,
+import com.intel.analytics.bigdl.nn.tf.{MergeOps, SwitchOps, Enter => EnterOps, Exit => ExitOps,
   LoopCondition => LoopConditionOps, NextIteration => NextIterationOps}
 import com.intel.analytics.bigdl.nn.tf.ControlDependency
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric

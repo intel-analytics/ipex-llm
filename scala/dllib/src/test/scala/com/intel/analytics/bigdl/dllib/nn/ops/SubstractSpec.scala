@@ -15,6 +15,7 @@
  */
 package com.intel.analytics.bigdl.nn.ops
 
+import com.intel.analytics.bigdl.nn.CSubTable
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
 import org.scalatest.{FlatSpec, Matchers}
@@ -30,7 +31,7 @@ class SubstractSpec extends FlatSpec with Matchers {
 
     val expectOutput = Tensor(T(-1f, 0f, -1f))
 
-    val output = Subtract().forward(input)
+    val output = CSubTable().forward(input)
     output should be(expectOutput)
   }
 }

@@ -15,7 +15,7 @@
  */
 package com.intel.analytics.bigdl.nn.ops
 
-import com.intel.analytics.bigdl.nn.Graph
+import com.intel.analytics.bigdl.nn.{Graph, Identity}
 import com.intel.analytics.bigdl.nn.tf.Const
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
@@ -23,7 +23,7 @@ import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 class TensorArraySerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     "TensorArray serializer R/W" should "work properly" in {
-      import com.intel.analytics.bigdl.nn.ops._
+      import com.intel.analytics.bigdl.nn.tf._
       val tensorArray = new TensorArrayCreator[Float, Float]().inputs()
       val data = Const[Float, Float](Tensor.scalar[Float](1)).inputs()
       val index = Const[Float, Int](Tensor.scalar[Int](0)).inputs()

@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.nn
 import java.util.concurrent.atomic.AtomicInteger
 
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
-import com.intel.analytics.bigdl.nn.ops.{Exit, MergeOps, NextIteration}
+import com.intel.analytics.bigdl.nn.tf.{Exit, MergeOps, NextIteration}
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer

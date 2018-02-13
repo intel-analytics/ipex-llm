@@ -13,11 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.bigdl.nn.ops
+package com.intel.analytics.bigdl.nn.tf
 
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.nn.Graph._
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
+import com.intel.analytics.bigdl.nn.Identity
+import com.intel.analytics.bigdl.nn.abstractnn.Activity
+import com.intel.analytics.bigdl.nn.ops.Operation
 import com.intel.analytics.bigdl.tensor.{BooleanType, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{Edge, Node, T}
@@ -30,14 +32,8 @@ import scala.reflect.ClassTag
  */
 sealed abstract class ControlOps[T: ClassTag]()(implicit ev: TensorNumeric[T])
   extends Operation[Activity, Activity, T] {
-  override def updateGradInput(input: Activity, gradOutput: Activity): Activity = {
-    throw new UnsupportedOperationException("Operation does not support updateGradInput() method")
-  }
   override def accGradParameters(input: Activity, gradOutput: Activity): Unit = {
     throw new UnsupportedOperationException("Operation does not support updateGradInput() method")
-  }
-  override def backward(input: Activity, gradOutput: Activity): Activity = {
-    throw new UnsupportedOperationException("Operation does not support backward() method")
   }
 }
 

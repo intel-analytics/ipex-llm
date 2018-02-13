@@ -88,11 +88,6 @@ class DecodeImage[T: ClassTag](val channels: Int)(implicit ev: TensorNumeric[T])
       throw new IllegalArgumentException("image data is not equal to output buffer")
     }
   }
-
-  override def updateGradInput(input: Tensor[ByteString],
-                               gradOutput: Tensor[Int]): Tensor[ByteString] = {
-    throw new UnsupportedOperationException("no backward on ParseExample")
-  }
 }
 
 class DecodeJpeg[T: ClassTag](channels: Int, val ratio: Int = 1)(implicit ev: TensorNumeric[T])
@@ -370,11 +365,6 @@ class DecodeRaw[T: ClassTag](val outType: DataType,
       }
       i = i + 1
     }
-  }
-
-  override def updateGradInput(input: Tensor[ByteString], gradOutput: Activity):
-  Tensor[ByteString] = {
-    throw new IllegalArgumentException()
   }
 }
 
