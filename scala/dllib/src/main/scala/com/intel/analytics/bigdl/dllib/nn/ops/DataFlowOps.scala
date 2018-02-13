@@ -277,6 +277,11 @@ private[bigdl] class TensorArrayWrite[T: ClassTag, D: ClassTag]()(
     (Array[ClassTag[_]](scala.reflect.classTag[T], scala.reflect.classTag[D]),
       Array[TensorNumeric[_]](ev, ev2))
   }
+
+  override def clearState(): this.type = {
+    // Do nothing in clearState as we don't want to change the TensorArray.FlowOut object
+    this
+  }
 }
 
 /**
@@ -409,6 +414,11 @@ private[bigdl] class TensorArrayScatter[T: ClassTag, D: ClassTag]()(
     (Array[ClassTag[_]](scala.reflect.classTag[T], scala.reflect.classTag[D]),
       Array[TensorNumeric[_]](ev, ev2))
   }
+
+  override def clearState(): this.type = {
+    // Do nothing in clearState as we don't want to change the TensorArray.FlowOut object
+    this
+  }
 }
 
 /**
@@ -519,6 +529,11 @@ private[bigdl] class TensorArraySplit[T: ClassTag, D: ClassTag]()(
     (Array[ClassTag[_]](scala.reflect.classTag[T], scala.reflect.classTag[D]),
       Array[TensorNumeric[_]](ev, ev2))
   }
+
+  override def clearState(): this.type = {
+    // Do nothing in clearState as we don't want to change the TensorArray.FlowOut object
+    this
+  }
 }
 
 /**
@@ -554,6 +569,11 @@ private[bigdl] class TensorArrayClose[T: ClassTag]()(implicit ev: TensorNumeric[
     require(input.isScalar, "Handle of a TensorArray must be a scalar")
     TensorArray.release(input.value())
     output
+  }
+
+  override def clearState(): this.type = {
+    // Do nothing in clearState as we don't want to change the TensorArray.FlowOut object
+    this
   }
 }
 
