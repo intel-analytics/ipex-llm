@@ -42,30 +42,6 @@ class Variable[T: ClassTag](val variableValue: Tensor[T], val variableGradient: 
     output
   }
 
-  override def updateGradInput(input: Activity, gradOutput: Tensor[T]): Activity = {
-    require(gradOutput.isSameSizeAs(variableValue),
-      s"Invalid gradOutput size. require (${variableValue.size().mkString(",")}), but " +
-        s"(${gradOutput.size().mkString(",")})")
-    input match {
-      case t: Tensor[T] =>
-        if (gradInput == null || gradInput.isInstanceOf[Table]) {
-          gradInput = Tensor[T]()
-        }
-        gradInput.toTensor[T].resizeAs(t).zero()
-      case t: Table =>
-        if (gradInput == null || !gradInput.isInstanceOf[Table]) {
-          gradInput = T()
-        }
-        t.foreach(kv => {
-          val gradInputTensors = gradInput.toTable
-          val grad = gradInputTensors.getOrElse[Tensor[T]](kv._1, Tensor[T]())
-            .resizeAs(kv._2.asInstanceOf[Tensor[T]]).zero()
-          gradInputTensors(kv._1) = grad
-        })
-    }
-    gradInput
-  }
-
   override def accGradParameters(input: Activity, gradOutput: Tensor[T]): Unit = {
     this.variableGradient.add(ev.fromType[Double](1.0), gradOutput)
   }

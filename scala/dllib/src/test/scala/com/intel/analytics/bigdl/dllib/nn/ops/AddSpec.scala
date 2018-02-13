@@ -15,6 +15,7 @@
  */
 package com.intel.analytics.bigdl.nn.ops
 
+import com.intel.analytics.bigdl.nn.CAddTable
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
 import org.scalatest.{FlatSpec, Matchers}
@@ -31,7 +32,7 @@ class AddSpec extends FlatSpec with Matchers {
 
     val expectOutput = Tensor(T(10f, 7f, 8f))
 
-    val output = Add().forward(input)
+    val output = CAddTable().forward(input)
     output should be(expectOutput)
   }
 }
