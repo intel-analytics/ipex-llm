@@ -48,7 +48,6 @@ SPARK_HOME=...
 PYTHON_API_PATH=${BigDL_HOME}/dist/lib/bigdl-VERSION-python-api.zip
 BigDL_JAR_PATH=${BigDL_HOME}/dist/lib/bigdl-VERSION-jar-with-dependencies.jar
 PYTHONPATH=${PYTHON_API_PATH}:$PYTHONPATH
-source ${BigDL_HOME}/dist/bin/bigdl.sh
 
 ${SPARK_HOME}/bin/spark-submit \
 --master spark://... \
@@ -56,6 +55,7 @@ ${SPARK_HOME}/bin/spark-submit \
 --driver-memory 100g \
 --executor-cores 28 \
 --total-executor-cores 448  \
+--properties-file ${BigDL_HOME}/dist/conf/spark-bigdl.conf \
 --jars ${BigDL_JAR_PATH} \
 --py-files ${PYTHON_API_PATH} \
 ${BigDL_HOME}/pyspark/dl/models/inception/inception.py \
@@ -74,7 +74,6 @@ SPARK_HOME=...
 PYTHON_API_PATH=${BigDL_HOME}/dist/lib/bigdl-VERSION-python-api.zip
 BigDL_JAR_PATH=${BigDL_HOME}/dist/lib/bigdl-VERSION-jar-with-dependencies.jar
 PYTHONPATH=${PYTHON_API_PATH}:$PYTHONPATH
-source ${BigDL_HOME}/dist/bin/bigdl.sh
 
 ${SPARK_HOME}/bin/spark-submit \
 --master yarn \
