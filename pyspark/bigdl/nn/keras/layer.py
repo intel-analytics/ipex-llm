@@ -213,8 +213,8 @@ class BatchNormalization(KerasLayer):
     def __init__(self, epsilon=0.001, momentum=0.99, beta_init="zero", gamma_init="one",
                  dim_ordering="th", input_shape=None, bigdl_type="float"):
         super(BatchNormalization, self).__init__(None, bigdl_type,
-                                                 epsilon,
-                                                 momentum,
+                                                 float(epsilon),
+                                                 float(momentum),
                                                  beta_init,
                                                  gamma_init,
                                                  dim_ordering,
@@ -236,7 +236,7 @@ class BatchNormalization(KerasLayer):
 
     def get_running_std(self):
         return callBigDlFunc(self.bigdl_type, "getKerasRunningStd",
-                      self.value).to_ndarray()
+                             self.value).to_ndarray()
 
 
 class Merge(KerasLayer):
@@ -288,7 +288,7 @@ class Dropout(KerasLayer):
     """
     def __init__(self, p, input_shape=None, bigdl_type="float"):
         super(Dropout, self).__init__(None, bigdl_type,
-                                      p,
+                                      float(p),
                                       list(input_shape) if input_shape else None)
 
 
@@ -1633,7 +1633,7 @@ class SpatialDropout1D(KerasLayer):
     """
     def __init__(self, p=0.5, input_shape=None, bigdl_type="float"):
         super(SpatialDropout1D, self).__init__(None, bigdl_type,
-                                               p,
+                                               float(p),
                                                list(input_shape) if input_shape else None)
 
 
@@ -1660,7 +1660,7 @@ class SpatialDropout2D(KerasLayer):
     """
     def __init__(self, p=0.5, dim_ordering="th", input_shape=None, bigdl_type="float"):
         super(SpatialDropout2D, self).__init__(None, bigdl_type,
-                                               p,
+                                               float(p),
                                                dim_ordering,
                                                list(input_shape) if input_shape else None)
 
@@ -1688,7 +1688,7 @@ class SpatialDropout3D(KerasLayer):
     """
     def __init__(self, p=0.5, dim_ordering="th", input_shape=None, bigdl_type="float"):
         super(SpatialDropout3D, self).__init__(None, bigdl_type,
-                                               p,
+                                               float(p),
                                                dim_ordering,
                                                list(input_shape) if input_shape else None)
 
@@ -1711,7 +1711,7 @@ class GaussianDropout(KerasLayer):
     """
     def __init__(self, p, input_shape=None, bigdl_type="float"):
         super(GaussianDropout, self).__init__(None, bigdl_type,
-                                              p,
+                                              float(p),
                                               list(input_shape) if input_shape else None)
 
 
@@ -1734,7 +1734,7 @@ class GaussianNoise(KerasLayer):
     """
     def __init__(self, sigma, input_shape=None, bigdl_type="float"):
         super(GaussianNoise, self).__init__(None, bigdl_type,
-                                            sigma,
+                                            float(sigma),
                                             list(input_shape) if input_shape else None)
 
 
@@ -1757,7 +1757,7 @@ class Masking(KerasLayer):
     """
     def __init__(self, mask_value=0.0, input_shape=None, bigdl_type="float"):
         super(Masking, self).__init__(None, bigdl_type,
-                                      mask_value,
+                                      float(mask_value),
                                       list(input_shape) if input_shape else None)
 
 
@@ -1822,7 +1822,7 @@ class ELU(KerasLayer):
     """
     def __init__(self, alpha=1.0, input_shape=None, bigdl_type="float"):
         super(ELU, self).__init__(None, bigdl_type,
-                                  alpha,
+                                  float(alpha),
                                   list(input_shape) if input_shape else None)
 
 
@@ -1845,7 +1845,7 @@ class LeakyReLU(KerasLayer):
     """
     def __init__(self, alpha=0.01, input_shape=None, bigdl_type="float"):
         super(LeakyReLU, self).__init__(None, bigdl_type,
-                                        alpha,
+                                        float(alpha),
                                         list(input_shape) if input_shape else None)
 
 
@@ -1868,7 +1868,7 @@ class ThresholdedReLU(KerasLayer):
     """
     def __init__(self, theta=1.0, input_shape=None, bigdl_type="float"):
         super(ThresholdedReLU, self).__init__(None, bigdl_type,
-                                              theta,
+                                              float(theta),
                                               list(input_shape) if input_shape else None)
 
 
