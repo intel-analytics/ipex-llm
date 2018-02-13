@@ -30,7 +30,7 @@ import com.intel.analytics.bigdl.python.api.{JTensor, PythonBigDL, PythonBigDLUt
 import com.intel.analytics.bigdl.tensor.{DoubleType, FloatType, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils._
-import com.intel.analytics.bigdl.nn.ops.{SwitchControlNode, SwitchOps}
+import com.intel.analytics.bigdl.nn.tf.{SwitchControlNode, SwitchOps}
 import com.intel.analytics.bigdl.utils.tf.TensorflowToBigDL._
 import com.intel.analytics.bigdl.utils.tf.loaders.TensorflowOpsLoader
 import org.tensorflow.framework.{GraphDef, NodeDef}
