@@ -455,7 +455,7 @@ class Convolution1D(KerasLayer):
     def __init__(self, nb_filter, filter_length, init="glorot_uniform",
                  activation=None, border_mode="valid", subsample_length=1,
                  W_regularizer=None, b_regularizer=None, bias=True,
-                 input_shape=None,bigdl_type="float"):
+                 input_shape=None, bigdl_type="float"):
         super(Convolution1D, self).__init__(None, bigdl_type,
                                             nb_filter,
                                             filter_length,
@@ -1886,7 +1886,7 @@ class TimeDistributed(KerasLayer):
     creating: createKerasDense
     creating: createKerasTimeDistributed
     """
-    def __init__(self, layer, input_shape=None,bigdl_type="float"):
+    def __init__(self, layer, input_shape=None, bigdl_type="float"):
         super(TimeDistributed, self).__init__(None, bigdl_type,
                                               layer,
                                               list(input_shape) if input_shape else None)
