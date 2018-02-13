@@ -21,7 +21,7 @@ import java.io.{File => JFile}
 import com.google.protobuf.{ByteString, CodedOutputStream}
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.nn.abstractnn.DataFormat
-import com.intel.analytics.bigdl.nn.ops.{All, Any, ApproximateEqual, ArgMax, Assert, Assign, AssignGrad, AvgPoolGrad, BatchMatMul, BiasAddGrad, BroadcastGradientArgs, BucketizedCol, Cast, CategoricalColHashBucket, CategoricalColVocaList, Ceil, ControlNodes, Conv2D, Conv2DBackFilter, Conv2DTranspose, Conv3D, Conv3DBackpropFilter, Conv3DBackpropFilterV2, Conv3DBackpropInput, Conv3DBackpropInputV2, CrossEntropy, DecodeImage, DepthwiseConv2D, DepthwiseConv2DBackpropFilter, DepthwiseConv2DBackpropInput, Digamma, Dilation2D, Dilation2DBackpropFilter, Dilation2DBackpropInput, EluGrad, Equal, Erf, Erfc, Expm1, Floor, FloorDiv, FloorMod, FusedBatchNorm, FusedBatchNormGrad, Greater, GreaterEqual, InTopK, Inv, InvGrad, IsFinite, IsInf, IsNan, Kv2Tensor, L2Loss, LRNGrad, Less, LessEqual, Lgamma, LogicalAnd, LogicalNot, LogicalOr, MaxPool, MaxPoolGrad, Maximum, MergeOps, Minimum, Mod, ModuleToOperation, NotEqual, OneHot, Pad, ParseExample, Prod, RandomUniform, RangeOps, Rank, Relu6Grad, ReluGrad, ResizeBilinearGrad, ResizeBilinearOps, Rint, Round, RsqrtGrad, SegmentSum, SigmoidGrad, Sign, Slice, SoftplusGrad, SoftsignGrad, SqrtGrad, SquaredDifference, Substr, SwitchOps, TanhGrad, TopK, TruncateDiv, TruncatedNormal, Add => AddOps, DecodeGif => DecodeGifOps, DecodeJpeg => DecodeJpegOps, DecodePng => DecodePngOps, DecodeRaw => DecodeRawOps, Exp => ExpOps, Pow => PowOps, Select => SelectOps, Sum => SumOps, Tile => TileOps}
+import com.intel.analytics.bigdl.nn.ops.{All, Any, ApproximateEqual, ArgMax, Assert, Assign, AssignGrad, AvgPoolGrad, BatchMatMul, BiasAddGrad, BroadcastGradientArgs, BucketizedCol, Cast, CategoricalColHashBucket, CategoricalColVocaList, Ceil, Conv2D, Conv2DBackFilter, Conv2DTranspose, Conv3D, Conv3DBackpropFilter, Conv3DBackpropFilterV2, Conv3DBackpropInput, Conv3DBackpropInputV2, CrossEntropy, DecodeImage, DepthwiseConv2D, DepthwiseConv2DBackpropFilter, DepthwiseConv2DBackpropInput, Digamma, Dilation2D, Dilation2DBackpropFilter, Dilation2DBackpropInput, EluGrad, Equal, Erf, Erfc, Expm1, Floor, FloorDiv, FloorMod, FusedBatchNorm, FusedBatchNormGrad, Greater, GreaterEqual, InTopK, Inv, InvGrad, IsFinite, IsInf, IsNan, Kv2Tensor, L2Loss, LRNGrad, Less, LessEqual, Lgamma, LogicalAnd, LogicalNot, LogicalOr, MaxPool, MaxPoolGrad, Maximum, Minimum, Mod, ModuleToOperation, NotEqual, OneHot, Pad, Prod, RandomUniform, RangeOps, Rank, Relu6Grad, ReluGrad, ResizeBilinearGrad, ResizeBilinearOps, Rint, Round, RsqrtGrad, SegmentSum, SigmoidGrad, Sign, Slice, SoftplusGrad, SoftsignGrad, SqrtGrad, SquaredDifference, Substr, TanhGrad, TopK, TruncateDiv, TruncatedNormal, DecodeGif => DecodeGifOps, DecodeJpeg => DecodeJpegOps, DecodePng => DecodePngOps, DecodeRaw => DecodeRawOps, Exp => ExpOps, Pow => PowOps, Select => SelectOps, Sum => SumOps, Tile => TileOps}
 import com.intel.analytics.bigdl.nn.tf._
 import com.intel.analytics.bigdl.nn.{SoftPlus => BigDLSoftPlus}
 import com.intel.analytics.bigdl.tensor._
@@ -40,6 +40,7 @@ class OperationSerializerSpec extends SerializerSpecHelper {
 
   override def addExcludedPackage(): Unit = {
     excludedPackage.add("com.intel.analytics.bigdl.utils.tf.loaders")
+    excludedPackage.add("com.intel.analytics.bigdl.utils.tf.ops")
     // It would be tested in a separated spec
     excludedPackage.add("com.intel.analytics.bigdl.nn.keras")
   }
@@ -637,7 +638,7 @@ class OperationSerializerSpec extends SerializerSpecHelper {
     val outputStream = CodedOutputStream.newInstance(data)
     example.writeTo(outputStream)
 
-    val exampleParser = new ParseExample[Float](3, Seq(FloatType, LongType, StringType),
+    val exampleParser = ParseExample[Float](3, Seq(FloatType, LongType, StringType),
       Seq(Array(3), Array(3), Array())).setName("parseExample")
 
     val serialized = Tensor[ByteString](Array(ByteString.copyFrom(data)), Array[Int](1))
@@ -1080,12 +1081,12 @@ class OperationSerializerSpec extends SerializerSpecHelper {
 
     val conditionInput = Input[Float]("conditionInput")
     val const = new com.intel.analytics.bigdl.nn.tf.Const[Float, Float](Tensor(T(9))).inputs()
-    val constEnter = new com.intel.analytics.bigdl.nn.ops.Enter[Float]("test_frame").inputs(const)
+    val constEnter = new com.intel.analytics.bigdl.nn.tf.Enter[Float]("test_frame").inputs(const)
     val less = Less[Float]().inputs(constEnter, conditionInput)
 
     val updateInput = Input[Float]()
     val add = AddConstant[Float](1).inputs(updateInput)
-    val addEnter = new com.intel.analytics.bigdl.nn.ops.Enter[Float]("test_frame").inputs(add)
+    val addEnter = new com.intel.analytics.bigdl.nn.tf.Enter[Float]("test_frame").inputs(add)
     val echo = Echo[Float]().inputs(addEnter)
 
     val exit = ControlNodes.whileLoop[Float](
@@ -1097,9 +1098,9 @@ class OperationSerializerSpec extends SerializerSpecHelper {
     val model = Graph.dynamic[Float](Array(input), Array(exit(0)), None, false)
     runSerializationTestWithMultiClass(model, Tensor.scalar[Float](1), Array(
       addEnter.element.getClass.asInstanceOf[Class[_]],
-      new com.intel.analytics.bigdl.nn.ops.NextIteration[Float, Float]().getClass,
-      new com.intel.analytics.bigdl.nn.ops.Exit[Float]().getClass,
-      new com.intel.analytics.bigdl.nn.ops.LoopCondition[Float]().getClass
+      new com.intel.analytics.bigdl.nn.tf.NextIteration[Float, Float]().getClass,
+      new com.intel.analytics.bigdl.nn.tf.Exit[Float]().getClass,
+      new LoopCondition[Float]().getClass
     ))
   }
 
@@ -1107,9 +1108,9 @@ class OperationSerializerSpec extends SerializerSpecHelper {
     import com.intel.analytics.bigdl.nn.ops._
     val data = Const[Float, Float](Tensor.scalar[Float](1)).inputs()
     val stack = new StackCreator[Float, Float]().inputs()
-    val push = new StackPush[Float, Float]().inputs(stack, data)
+    val push = new com.intel.analytics.bigdl.nn.tf.StackPush[Float, Float]().inputs(stack, data)
     val ctr = new com.intel.analytics.bigdl.nn.tf.ControlDependency[Float]().inputs(push)
-    val pop = new StackPop[Float, Float]().inputs(stack, ctr)
+    val pop = new com.intel.analytics.bigdl.nn.tf.StackPop[Float, Float]().inputs(stack, ctr)
     val model = Graph.dynamic[Float](Array(stack), Array(pop))
 
     runSerializationTestWithMultiClass(model, Tensor.scalar(1), Array(
@@ -1185,13 +1186,13 @@ class OperationSerializerSpec extends SerializerSpecHelper {
   }
 
   "ConcatOffset serializer" should "work properly" in {
-    val module = new com.intel.analytics.bigdl.nn.ops.ConcatOffset[Float]()
+    val module = new com.intel.analytics.bigdl.nn.tf.ConcatOffset[Float]()
     runSerializationTest(module, T(Tensor.scalar[Int](1), Tensor[Int](T(2, 2, 5, 7)),
       Tensor[Int](T(2, 3, 5, 7)), Tensor[Int](T(2, 4, 5, 7))))
   }
 
   "InvertPermutation serializer" should "work properly" in {
-    val module = new com.intel.analytics.bigdl.nn.ops.InvertPermutation[Float]()
+    val module = new com.intel.analytics.bigdl.nn.tf.InvertPermutation[Float]()
     runSerializationTest(module, Tensor[Int](T(0, 1, 2, 3, 4)))
   }
 

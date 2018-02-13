@@ -24,7 +24,7 @@ import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 
 class TensorArrayScatterSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
-    import com.intel.analytics.bigdl.nn.ops._
+    import com.intel.analytics.bigdl.nn.tf._
     val tensorArray = new TensorArrayCreator[Float, Float]().inputs()
     val data = Const[Float, Float](Tensor[Float](3, 4).rand()).inputs()
     val indices = Const[Float, Int](Tensor[Int](T(0, 1, 2))).inputs()

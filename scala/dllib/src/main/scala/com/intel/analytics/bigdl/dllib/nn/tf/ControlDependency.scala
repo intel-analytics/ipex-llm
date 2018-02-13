@@ -16,6 +16,7 @@
 package com.intel.analytics.bigdl.nn.tf
 
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
+import com.intel.analytics.bigdl.nn.ops.Operation
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
@@ -23,14 +24,9 @@ import scala.reflect.ClassTag
 
 
 private[bigdl] class ControlDependency[T: ClassTag]()(implicit ev: TensorNumeric[T])
-  extends AbstractModule[Activity, Tensor[T], T] {
+  extends Operation[Activity, Tensor[T], T] {
   override def updateOutput(input: Activity): Tensor[T] = {
     val msg = "forward method on ControlDependency should not be called"
-    throw new UnsupportedOperationException(msg)
-  }
-
-  override def updateGradInput(input: Activity, gradOutput: Tensor[T]): Activity = {
-    val msg = "backward method on ControlDependency should not be called"
     throw new UnsupportedOperationException(msg)
   }
 }

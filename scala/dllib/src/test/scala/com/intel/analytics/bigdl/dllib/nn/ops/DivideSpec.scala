@@ -15,6 +15,7 @@
  */
 package com.intel.analytics.bigdl.nn.ops
 
+import com.intel.analytics.bigdl.nn.CDivTable
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
 import org.scalatest.{FlatSpec, Matchers}
@@ -30,7 +31,7 @@ class DivideSpec extends FlatSpec with Matchers {
 
     val expectOutput = Tensor(T(0.5f, 1f, 0.75f))
 
-    val output = Divide().forward(input)
+    val output = CDivTable().forward(input)
     output should be(expectOutput)
   }
 }
