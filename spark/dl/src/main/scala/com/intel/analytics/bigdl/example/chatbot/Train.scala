@@ -79,7 +79,7 @@ object Train {
 
         val maxTrainLength = tokens.map(x => math.max(x._1.length, x._2.length)).max
 
-//         logger.info(s"maxTrain length = ${maxTrainLength}, maxVal = ${maxValLength}")
+        //         logger.info(s"maxTrain length = ${maxTrainLength}, maxVal = ${maxValLength}")
 
         val padId = dictionary.getIndex(padding) + 1
 
@@ -136,18 +136,17 @@ object Train {
 
         val tokens = sc.parallelize(chat1.zip(chat2))
 
-        //        val Array(trainRDD, valRDD) = tokens.randomSplit(
-        //          Array(param.trainingSplit, 1 - param.trainingSplit))
-        val trainRDD = tokens
+        val Array(trainRDD, valRDD) = tokens.randomSplit(
+          Array(param.trainingSplit, 1 - param.trainingSplit))
 
         val trainSet = trainRDD
           .map(chatIdxToLabeledChat(_))
           .map(labeledChatToSample(_))
 
-        //        val validationSet = valRDD
-        //          .map(chatIdxToLabeledChat(dictionary, _))
-        //          .map(x => labeledChatToSample(x))
-        val validationSet = trainSet
+        val validationSet = valRDD
+          .map(chatIdxToLabeledChat(_))
+          .map(labeledChatToSample(_))
+
         (trainSet, validationSet, vocabSize, dictionary, padId)
       }
       val padFeature = Tensor[Float](T(padId))
@@ -173,7 +172,6 @@ object Train {
         vocabSize,
         param.embedDim,
         paddingValue = padId,
-        wInit = RandomUniform(-0.1, 0.1),
         maskZero = true
       )
 
@@ -181,7 +179,6 @@ object Train {
         vocabSize,
         param.embedDim,
         paddingValue = padId,
-        wInit = RandomUniform(-0.1, 0.1),
         maskZero = true
       )
 
@@ -197,8 +194,7 @@ object Train {
             preEncoder = preEncoder,
             preDecoder = preDecoder,
             decoderInputType = DecoderInputType.ENCODERINPUTSPLIT))
-        .add(TimeDistributed(Linear(param.embedDim, vocabSize)
-          .setWeightsBias(Array(linearWeight, linearBias)), maskZero = true))
+        .add(TimeDistributed(Linear(param.embedDim, vocabSize), maskZero = true))
         .add(TimeDistributed(LogSoftMax()))
 
       val optimMethod = if (param.stateSnapshot.isDefined) {
@@ -232,18 +228,18 @@ object Train {
       }
 
       optimizer
-//                .setValidation(
-//                  Trigger.everyEpoch,
-//                  validationSet,
-//                  Array(new Loss[Float](
-//                    TimeDistributedCriterion(ClassNLLCriterion()))),
-//                  param.batchSize,
-//                  featurePaddingParam = PaddingParam[Float](
-//                    paddingTensor =
-//                      Some(Array(padFeature, padFeature))),
-//                  labelPaddingParam = PaddingParam[Float](
-//                    paddingTensor =
-//                      Some(Array(padLabel))))
+        //                .setValidation(
+        //                  Trigger.everyEpoch,
+        //                  validationSet,
+        //                  Array(new Loss[Float](
+        //                    TimeDistributedCriterion(ClassNLLCriterion()))),
+        //                  param.batchSize,
+        //                  featurePaddingParam = PaddingParam[Float](
+        //                    paddingTensor =
+        //                      Some(Array(padFeature, padFeature))),
+        //                  labelPaddingParam = PaddingParam[Float](
+        //                    paddingTensor =
+        //                      Some(Array(padLabel))))
         .setOptimMethod(optimMethod)
         .setCheckpoint(param.checkpoint.get, Trigger.everyEpoch)
 

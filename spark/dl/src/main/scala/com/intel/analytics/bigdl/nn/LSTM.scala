@@ -209,6 +209,6 @@ object LSTM {
   )
     (implicit ev: TensorNumeric[T]): LSTM[T] = {
     new LSTM[T](inputSize, hiddenSize, p, wRegularizer,
-      uRegularizer, bRegularizer, maskZero = maskZero)
+      uRegularizer, bRegularizer)
   }
 }
