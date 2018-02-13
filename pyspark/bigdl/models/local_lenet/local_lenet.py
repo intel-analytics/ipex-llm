@@ -16,38 +16,20 @@
 
 from optparse import OptionParser
 from bigdl.dataset import mnist
-from bigdl.dataset.transformer import *
-from bigdl.nn.layer import *
+from bigdl.models.lenet.lenet5 import build_model
 from bigdl.nn.criterion import *
 from bigdl.optim.optimizer import *
 from bigdl.util.common import *
 
 
-def build_model(class_num):
-    model = Sequential()
-    model.add(Reshape([1, 28, 28]))
-    model.add(SpatialConvolution(1, 6, 5, 5))
-    model.add(Tanh())
-    model.add(SpatialMaxPooling(2, 2, 2, 2))
-    model.add(Tanh())
-    model.add(SpatialConvolution(6, 12, 5, 5))
-    model.add(SpatialMaxPooling(2, 2, 2, 2))
-    model.add(Reshape([12 * 4 * 4]))
-    model.add(Linear(12 * 4 * 4, 100))
-    model.add(Tanh())
-    model.add(Linear(100, class_num))
-    model.add(LogSoftMax())
-    return model
-
-
 def get_mnist(data_type="train", location="/tmp/mnist"):
     """
-    Get and normalize the mnist data. We would download it automatically
-    if the data doesn't present at the specific location.
+    Get mnist dataset with features and label as ndarray.
+    Data would be downloaded automatically if it doesn't present at the specific location.
 
-    :param data_type: training data or testing data
-    :param location: Location storing the mnist
-    :return: (features: Ndarray, label: Ndarray)
+    :param data_type: "train" for training data and "test" for testing data.
+    :param location: Location to store mnist dataset.
+    :return: (features: ndarray, label: ndarray)
     """
     X, Y = mnist.read_data_sets(location, data_type)
     return X, Y + 1  # The label of ClassNLLCriterion starts from 1 instead of 0
@@ -76,8 +58,8 @@ if __name__ == "__main__":
         batch_size=options.batchSize)
     optimizer.set_validation(
         batch_size=options.batchSize,
-        X_val = X_test,
-        Y_val = Y_test,
+        X_val=X_test,
+        Y_val=Y_test,
         trigger=EveryEpoch(),
         val_method=[Top1Accuracy()]
     )

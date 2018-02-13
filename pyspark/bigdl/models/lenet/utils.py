@@ -21,24 +21,25 @@ from bigdl.optim.optimizer import *
 
 def get_mnist(sc, data_type="train", location="/tmp/mnist"):
     """
-    Get mnist dataset. We would download it automatically
-    if the data doesn't present at the specific location.
+    Get mnist dataset and parallelize into RDDs.
+    Data would be downloaded automatically if it doesn't present at the specific location.
 
-    :param sc: SparkContext
-    :param data_type: "train" for training data and "test" for testing data
-    :param location: Location to store mnist dataset
-    :return: RDD of (features: ndarray, label: ndarray)
+    :param sc: SparkContext.
+    :param data_type: "train" for training data and "test" for testing data.
+    :param location: Location to store mnist dataset.
+    :return: RDD of (features: ndarray, label: ndarray).
     """
     (images, labels) = mnist.read_data_sets(location, data_type)
     images = sc.parallelize(images)
-    labels = sc.parallelize(labels + 1) # Target start from 1 in BigDL
+    labels = sc.parallelize(labels + 1)  # Target start from 1 in BigDL
     record = images.zip(labels)
     return record
 
 
-def process_mnist_rdd(sc, options):
+def preprocess_mnist(sc, options):
     """
-    Normalize mnist dataset and transform into Sample of RDDs.
+    Preprocess mnist dataset.
+    Normalize and transform into Sample of RDDs.
     """
     train_data = get_mnist(sc, "train", options.dataPath)\
         .map(lambda rec_tuple: (normalizer(rec_tuple[0], mnist.TRAIN_MEAN, mnist.TRAIN_STD),
@@ -52,17 +53,23 @@ def process_mnist_rdd(sc, options):
 
 
 def get_end_trigger(options):
+    """
+    When to end the optimization based on input option
+    """
     if options.endTriggerType.lower() == "epoch":
         return MaxEpoch(options.endTriggerNum)
     else:
         return MaxIteration(options.endTriggerNum)
 
 
-def validate_optimizer(optimizer, test_data, batch_size, checkpoint_path):
+def validate_optimizer(optimizer, test_data, options):
+    """
+    Set validation and checkpoint for optimizer
+    """
     optimizer.set_validation(
-        batch_size=batch_size,
+        batch_size=options.batchSize,
         val_rdd=test_data,
         trigger=EveryEpoch(),
         val_method=[Top1Accuracy()]
     )
-    optimizer.set_checkpoint(EveryEpoch(), checkpoint_path)
+    optimizer.set_checkpoint(EveryEpoch(), options.checkpointPath)

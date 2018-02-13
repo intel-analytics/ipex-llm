@@ -51,7 +51,7 @@ if __name__ == "__main__":
     show_bigdl_info_logs()
     init_engine()
 
-    (train_data, test_data) = process_mnist_rdd(sc, options)
+    (train_data, test_data) = preprocess_mnist(sc, options)
 
     optimizer = Optimizer(
         model=build_model(10),
@@ -60,7 +60,7 @@ if __name__ == "__main__":
         optim_method=SGD(learningrate=0.01, learningrate_decay=0.0002),
         end_trigger=get_end_trigger(options),
         batch_size=options.batchSize)
-    validate_optimizer(optimizer, test_data, options.batchSize, options.checkpointPath)
+    validate_optimizer(optimizer, test_data, options)
     trained_model = optimizer.optimize()
     parameters = trained_model.parameters()
     sc.stop()
