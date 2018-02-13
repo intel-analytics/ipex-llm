@@ -13,13 +13,42 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.bigdl.nn.ops
+package com.intel.analytics.bigdl.nn.tf
 
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
+import com.intel.analytics.bigdl.nn.ops.Operation
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.{NumericWildCard, TensorNumeric}
 import com.intel.analytics.bigdl.utils.{T, Table}
 
 import scala.reflect.ClassTag
+
+/**
+ * Some operation may not have input
+ */
+private[bigdl] trait WithoutInput
+
+private[bigdl] class Const[T: ClassTag, B: ClassTag](val value: Tensor[B])
+  (implicit ev: TensorNumeric[T])
+  extends Operation[Activity, Tensor[B], T] with WithoutInput {
+
+  override def updateOutput(input: Activity): Tensor[B] = {
+    output = value
+    output
+  }
+
+  override def getClassTagNumerics() : (Array[ClassTag[_]], Array[TensorNumeric[_]]) = {
+    (Array[ClassTag[_]](scala.reflect.classTag[T], scala.reflect.classTag[B]),
+      Array[TensorNumeric[_]](ev))
+  }
+}
+
+private[bigdl] object Const {
+  def apply[T: ClassTag, B: ClassTag](value: Tensor[B])
+    (implicit ev: TensorNumeric[T]): Const[T, B] = {
+    new Const[T, B](value)
+  }
+}
 
 /**
  * This operation computes the inverse of an index permutation. It takes a 1-D integer tensor x,
@@ -96,5 +125,64 @@ private[bigdl] class ConcatOffset[T: ClassTag]()(implicit ev: TensorNumeric[T])
     }
 
     output
+  }
+}
+
+private[bigdl] class Fill[T: ClassTag]() (implicit ev: TensorNumeric[T])
+  extends AbstractModule[Table, Tensor[_], T] {
+
+  override def updateOutput(input: Table): Tensor[_] = {
+    val shapeTensor = input[Tensor[Int]](1)
+    val value = input[Tensor[_]](2)
+    if (shapeTensor.isEmpty) {
+      if (value.getType() != output.getType()) {
+        output = value.emptyInstance()
+      }
+      output.resizeAs(value).asInstanceOf[Tensor[NumericWildCard]]
+        .copy(value.asInstanceOf[Tensor[NumericWildCard]])
+    } else {
+      require(shapeTensor.nDimension() == 1, "shape tensor is not a vector")
+      val shape = new Array[Int](shapeTensor.nElement())
+      var i = 0
+      while (i < shapeTensor.nElement()) {
+        shape(i) = shapeTensor.valueAt(i + 1)
+        i = i + 1
+      }
+      require(value.isScalar, "value tensor is not a scalar")
+      if (value.getType() != output.getType()) {
+        output = value.emptyInstance().resize(shape)
+      } else {
+        output.resize(shape)
+      }
+
+      output.forceFill(value.value())
+    }
+
+    output
+  }
+
+  override def updateGradInput(input: Table, gradOutput: Tensor[_]): Table = {
+    if (gradInput.contains(1)) {
+      gradInput[Tensor[_]](1).resize(input[Tensor[_]](1).size()).zero()
+    } else {
+      val inputTensor = input[Tensor[_]](1)
+      gradInput(1) = inputTensor.emptyInstance().resize(inputTensor.size())
+    }
+
+    if (gradInput.contains(2)) {
+      gradInput[Tensor[_]](2).resize(input[Tensor[_]](2).size()).zero()
+    } else {
+      val inputTensor = input[Tensor[_]](2)
+      gradInput(2) = inputTensor.emptyInstance().resize(inputTensor.size())
+    }
+    gradInput
+  }
+
+}
+
+private[bigdl] object Fill {
+  def apply[T: ClassTag]()
+    (implicit ev: TensorNumeric[T]) : Fill[T] = {
+    new Fill[T]()
   }
 }

@@ -13,26 +13,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.bigdl.nn.ops
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.{NumericWildcard, TensorNumeric}
-import com.intel.analytics.bigdl.tensor._
-import com.intel.analytics.bigdl.utils.{T, Table}
+package com.intel.analytics.bigdl.nn.tf
+
 import com.google.protobuf.ByteString
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
-import com.intel.analytics.bigdl.utils.serializer.converters.DataConverter
-import com.intel.analytics.bigdl.utils.serializer.{DeserializeContext, ModuleSerializable, SerializeContext}
-import org.tensorflow.example.{Example, Feature}
-import com.intel.analytics.bigdl.utils.tf.TFTensorNumeric.NumericByteString
+import com.intel.analytics.bigdl.nn.ops.Operation
 import com.intel.analytics.bigdl.serialization.Bigdl.{AttrValue, BigDLModule}
+import com.intel.analytics.bigdl.tensor._
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.{NumericWildcard, TensorNumeric}
+import com.intel.analytics.bigdl.utils.Table
+import com.intel.analytics.bigdl.utils.serializer.{DeserializeContext, ModuleSerializable, SerializeContext}
+import com.intel.analytics.bigdl.utils.serializer.converters.DataConverter
+import com.intel.analytics.bigdl.utils.tf.TFTensorNumeric._
+
+import org.tensorflow.example.{Example, Feature}
 
 import scala.collection.JavaConverters._
+
 import scala.reflect.ClassTag
 import scala.reflect.runtime.universe
 
-class ParseExample[T: ClassTag](val nDense: Int,
-                                val tDense: Seq[TensorDataType],
-                                val denseShape: Seq[Array[Int]])
-     (implicit ev: TensorNumeric[T])
+private[bigdl] class ParseExample[T: ClassTag](val nDense: Int,
+  val tDense: Seq[TensorDataType],
+  val denseShape: Seq[Array[Int]])
+  (implicit ev: TensorNumeric[T])
   extends Operation[Table, Table, T] {
 
   type StringType = ByteString
@@ -53,12 +57,12 @@ class ParseExample[T: ClassTag](val nDense: Int,
     val outputs = denseDefault
       .zip(denseKeys)
       .zip(tDense).zip(denseShape).map { case (((default, key), tensorType), shape) =>
-        if (featureMap.containsKey(key)) {
-          val feature = featureMap.get(key)
-          getTensorFromFeature(feature, tensorType, shape)
-        } else {
-         default
-        }
+      if (featureMap.containsKey(key)) {
+        val feature = featureMap.get(key)
+        getTensorFromFeature(feature, tensorType, shape)
+      } else {
+        default
+      }
     }
 
     for (elem <- outputs) {
@@ -69,8 +73,8 @@ class ParseExample[T: ClassTag](val nDense: Int,
   }
 
   private def getTensorFromFeature(feature: Feature,
-                                   tensorType: TensorDataType,
-                                   tensorShape: Array[Int]): Tensor[_] = {
+    tensorType: TensorDataType,
+    tensorShape: Array[Int]): Tensor[_] = {
     tensorType match {
       case LongType =>
         val values = feature.getInt64List.getValueList.asScala.map(_.longValue()).toArray
@@ -79,23 +83,18 @@ class ParseExample[T: ClassTag](val nDense: Int,
         val values = feature.getFloatList.getValueList.asScala.map(_.floatValue()).toArray
         Tensor(values, tensorShape)
       case StringType =>
-        val values = feature.getBytesList.getValueList
-          .asScala.toArray.asInstanceOf[Array[ByteString]]
+        val values = feature.getBytesList.getValueList.asScala.toArray
         Tensor(values, tensorShape)
     }
   }
-
-  override def updateGradInput(input: Table, gradOutput: Table): Table = {
-    throw new UnsupportedOperationException("no backward on ParseExample")
-  }
 }
 
-object ParseExample extends ModuleSerializable {
+private[bigdl] object ParseExample extends ModuleSerializable {
   def apply[T: ClassTag](nDense: Int,
-            tDense: Seq[TensorDataType],
-            denseShape: Seq[Array[Int]])
-           (implicit ev: TensorNumeric[T]): ParseExample[T] =
-          new ParseExample[T](nDense, tDense, denseShape)
+    tDense: Seq[TensorDataType],
+    denseShape: Seq[Array[Int]])
+    (implicit ev: TensorNumeric[T]): ParseExample[T] =
+    new ParseExample[T](nDense, tDense, denseShape)
 
   override def doLoadModule[T: ClassTag](context: DeserializeContext)
     (implicit ev: TensorNumeric[T]): AbstractModule[Activity, Activity, T] = {

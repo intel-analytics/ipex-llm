@@ -34,11 +34,11 @@ abstract class Operation[A <: Activity: ClassTag, B <: Activity: ClassTag, T: Cl
 
   gradInput = Activity.emptyGradInput(this.getName()).asInstanceOf[A]
 
-  override def updateGradInput(input: A, gradOutput: B): A = {
+  final override def updateGradInput(input: A, gradOutput: B): A = {
     throw new UnsupportedOperationException("Operation does not support updateGradInput() method")
   }
 
-  override def backward(input: A, gradOutput: B): A = {
+  final override def backward(input: A, gradOutput: B): A = {
     throw new UnsupportedOperationException("Operation does not support backward() method")
   }
 }
