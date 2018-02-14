@@ -26,8 +26,8 @@ import scala.reflect.ClassTag
 /**
  * Exponential Linear Unit.
  * It follows:
- * `f(x) =  alpha * (exp(x) - 1.) for x < 0`,
- * `f(x) = x for x >= 0`.
+ * f(x) =  alpha * (exp(x) - 1.) for x < 0,
+ * f(x) = x for x >= 0.
  *
  * When you use this layer as the first layer of a model, you need to provide the argument
  * inputShape (a Single Shape, does not include the batch dimension).
