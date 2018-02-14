@@ -89,6 +89,7 @@ class PythonBigDLKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends Pytho
     else {
       input
     }
+    // TODO: inputShape can be nested MultiShape
     inputs.toMulti().map(single => single.toSingle().toList.asJava).toList.asJava
   }
 
