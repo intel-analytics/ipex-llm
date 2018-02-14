@@ -614,7 +614,7 @@ class Container(Layer):
 
     @property
     def layers(self):
-        jlayers = callBigDlFunc(self.bigdl_type, "getContainerModules" , self)
+        jlayers = callBigDlFunc(self.bigdl_type, "getContainerModules", self)
         layers = [Layer.of(jlayer) for jlayer in jlayers]
         return layers
 
@@ -654,6 +654,7 @@ class Model(Container):
     def __init__(self,
                  inputs,
                  outputs,
+                 is_keras=False,
                  jvalue=None,
                  bigdl_type="float", byte_order="little_endian", model_type="bigdl"):
         if jvalue:
@@ -661,8 +662,9 @@ class Model(Container):
             self.bigdl_type = bigdl_type
         elif model_type == "bigdl":
             super(Model, self).__init__(None, bigdl_type,
-                                    to_list(inputs),
-                                    to_list(outputs))
+                                        to_list(inputs),
+                                        to_list(outputs),
+                                        is_keras)
         else:
             from bigdl.util.tf_utils import convert
             model = convert(to_list(inputs), to_list(outputs), byte_order, bigdl_type)
@@ -1062,8 +1064,8 @@ class Sequential(Container):
 
     '''
 
-    def __init__(self, bigdl_type="float"):
-        super(Sequential, self).__init__(None, bigdl_type, False)
+    def __init__(self, bigdl_type="float", is_keras=False):
+        super(Sequential, self).__init__(None, bigdl_type, is_keras)
 
 class TemporalConvolution(Layer):
 
