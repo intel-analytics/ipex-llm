@@ -25,7 +25,7 @@ import com.intel.analytics.bigdl.utils.Shape
 import scala.reflect.ClassTag
 
 /**
- * Global max pooling operation for spatial data.
+ * Applies global max pooling operation for spatial data.
  * The input of this layer should be 4D.
  *
  * When you use this layer as the first layer of a model, you need to provide the argument
