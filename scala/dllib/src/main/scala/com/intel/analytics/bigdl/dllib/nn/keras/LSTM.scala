@@ -41,7 +41,7 @@ import scala.reflect.ClassTag
  *                        You can also pass in corresponding string representations such as 'relu'
  *                        or 'sigmoid', etc. for simple activations in the factory method.
  *                        Default is 'hard_sigmoid'.
- * @param returnSequences Whether to return the full sequence or only return the last output,
+ * @param returnSequences Whether to return the full sequence or only return the last output
  *                        in the output sequence. Default is false.
  * @param goBackwards Whether the input sequence will be processed backwards. Default is false.
  * @param wRegularizer An instance of [[Regularizer]], (eg. L1 or L2 regularization),
