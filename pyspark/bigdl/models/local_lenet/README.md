@@ -3,6 +3,8 @@
 LeNet5 is a classical CNN model used in digital number classification. For detailed information,
 please refer to <http://yann.lecun.com/exdb/lenet/>.
 
+The model used here is exactly the same as the model in `../lenet/lenet5.py`.
+
 This example would show how to train and inference a LeNet model in pure local mode without using
 Spark local or Spark distributed cluster.
  
