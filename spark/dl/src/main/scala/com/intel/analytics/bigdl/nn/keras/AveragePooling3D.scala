@@ -27,6 +27,7 @@ import scala.reflect.ClassTag
 /**
  * Applies average pooling operation for 3D data (spatial or spatio-temporal).
  * Data format currently supported for this layer is 'CHANNEL_FIRST' (dimOrdering='th').
+ * Border mode currently supported for this layer is 'valid'.
  * The input of this layer should be 5D.
  *
  * When you use this layer as the first layer of a model, you need to provide the argument

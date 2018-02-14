@@ -34,7 +34,7 @@ object KerasUtils {
     }
   }
 
-  private[keras] def getInitMethod(init: String): InitializationMethod = {
+  private[bigdl] def getInitMethod(init: String): InitializationMethod = {
     init.toLowerCase() match {
       case "glorot_uniform" => Xavier
       case "one" => Ones
@@ -46,7 +46,7 @@ object KerasUtils {
     }
   }
 
-  private[keras] def getActivation[T : ClassTag] (activation: String)
+  private[bigdl] def getActivation[T : ClassTag] (activation: String)
     (implicit ev: TensorNumeric[T]): AbstractModule[Tensor[T], Tensor[T], T] = {
     if (activation == null) null
     else {
@@ -88,7 +88,7 @@ object KerasUtils {
     }
   }
 
-  private[keras] def toBigDLFormat(dimOrdering: String): DataFormat = {
+  private[bigdl] def toBigDLFormat(dimOrdering: String): DataFormat = {
     require(dimOrdering.toLowerCase() == "tf" || dimOrdering.toLowerCase() == "th",
       s"Dim ordering must be either tf or th, but got ${dimOrdering.toLowerCase()}")
     dimOrdering.toLowerCase() match {
@@ -97,7 +97,7 @@ object KerasUtils {
     }
   }
 
-  private[keras] def toBigDLFormat5D(dimOrdering: String): String = {
+  private[bigdl] def toBigDLFormat5D(dimOrdering: String): String = {
     require(dimOrdering.toLowerCase() == "tf" || dimOrdering.toLowerCase() == "th",
       s"Dim ordering must be either tf or th, but got ${dimOrdering.toLowerCase()}")
     dimOrdering.toLowerCase() match {

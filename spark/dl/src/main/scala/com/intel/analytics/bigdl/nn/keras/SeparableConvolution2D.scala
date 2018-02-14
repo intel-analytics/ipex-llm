@@ -26,7 +26,7 @@ import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, DataFormat}
 import scala.reflect.ClassTag
 
 /**
- * Separable convolution operator for 2D inputs.
+ * Applies separable convolution operator for 2D inputs.
  * Separable convolutions consist in first performing a depthwise spatial convolution (which acts
  * on each input channel separately) followed by a pointwise convolution which mixes together the
  * resulting output channels. The depthMultiplier argument controls how many output channels are
@@ -48,16 +48,16 @@ import scala.reflect.ClassTag
  *                   You can also pass in corresponding string representations such as 'relu'
  *                   or 'sigmoid', etc. for simple activations in the factory method.
  * @param borderMode Either 'valid' or 'same'. Default is 'valid'.
- * @param subsample Int array of length 2. The step of the convolution in the height and
- *                  width dimension. Also called strides elsewhere. Default is (1, 1).
+ * @param subsample Int array of length 2 corresponding to the step of the convolution in the height
+ *                  and width dimension. Also called strides elsewhere. Default is (1, 1).
  * @param depthMultiplier How many output channel to use per input channel
- *                        for the depthwise convolution step.
+ *                        for the depthwise convolution step. Integer. Default is 1.
  * @param dimOrdering Format of input data. Either DataFormat.NCHW (dimOrdering='th') or
  *                    DataFormat.NHWC (dimOrdering='tf'). Default is NCHW.
  * @param depthwiseRegularizer An instance of [[Regularizer]], (eg. L1 or L2 regularization),
  *                             applied to the depthwise weights matrices. Default is null.
- * @param pointwiseRegularizer An instance of [[Regularizer]], (eg. L1 or L2 regularization),
- *                             applied to the pointwise weights matrices. Default is null.
+ * @param pointwiseRegularizer An instance of [[Regularizer]], applied to the pointwise weights
+ *                             matrices. Default is null.
  * @param bRegularizer An instance of [[Regularizer]], applied to the bias. Default is null.
  * @param bias Whether to include a bias (i.e. make the layer affine rather than linear).
  *             Default is true.

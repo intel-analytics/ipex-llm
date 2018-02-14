@@ -26,7 +26,7 @@ import scala.reflect.ClassTag
 
 /**
  * Bidirectional wrapper for RNNs.
- * Bidirectional requires RNNs to return the full sequence, i.e. set returnSequences = true.
+ * Bidirectional currently requires RNNs to return the full sequence, i.e. returnSequences = true.
  *
  * When using this layer as the first layer in a model, you need to provide the argument
  * inputShape (a Single Shape, does not include the batch dimension).
@@ -47,7 +47,8 @@ class Bidirectional[T: ClassTag](
 
   private val mode = mergeMode.toLowerCase()
 
-  require(layer.returnSequences, "Bidirectional requires RNNs to return the full sequence")
+  require(layer.returnSequences,
+    "Bidirectional currently requires RNNs to return the full sequence")
   require(mode == "sum" || mode == "mul" || mode == "concat" || mode == "ave",
     s"Invalid merge mode: $mode")
 
