@@ -34,8 +34,8 @@ import scala.reflect.ClassTag
  *
  * @param inputDim Int > 0. Size of the vocabulary.
  * @param outputDim Int >= 0. Dimension of the dense embedding.
- * @param init Initialization method for the weights of the layer. Default is Xavier.
- *             You can also pass in corresponding string representations such as 'glorot_uniform'
+ * @param init Initialization method for the weights of the layer. Default is RandomUniform.
+ *             You can also pass in corresponding string representations such as 'uniform'
  *             or 'normal', etc. for simple init methods in the factory method.
  * @param wRegularizer An instance of [[Regularizer]], (eg. L1 or L2 regularization),
  *                     applied to the embedding matrix. Default is null.

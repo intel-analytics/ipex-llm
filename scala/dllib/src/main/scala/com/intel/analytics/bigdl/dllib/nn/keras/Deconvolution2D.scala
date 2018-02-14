@@ -31,7 +31,8 @@ import scala.reflect.ClassTag
  * going in the opposite direction of a normal convolution, i.e., from something that has
  * the shape of the output of some convolution to something that has the shape of its input
  * while maintaining a connectivity pattern that is compatible with said convolution.
- * BorderMode of this layer will be 'valid'.
+ * Data format currently supported for this layer is DataFormat.NCHW (dimOrdering='th').
+ * Border mode currently supported for this layer is 'valid'.
  * The input of this layer should be 4D.
  *
  * When using this layer as the first layer in a model, you need to provide the argument
