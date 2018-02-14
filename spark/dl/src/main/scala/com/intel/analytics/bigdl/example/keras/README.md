@@ -1,7 +1,6 @@
 # LeNet Model on MNIST with new API
 
-This example defines a classical CNN model used in digital number classification with the new set of API in BigDL. For detailed information with regard to LeNet,
-please refer to <http://yann.lecun.com/exdb/lenet/>.
+This example defines a classical CNN model used in digital number classification with the new set of API in BigDL. For detailed information with regard to LeNet, please refer to <http://yann.lecun.com/exdb/lenet/>.
 
 This example is the same as `../../models/lenet`, except that this example uses new API for model definition.
 
