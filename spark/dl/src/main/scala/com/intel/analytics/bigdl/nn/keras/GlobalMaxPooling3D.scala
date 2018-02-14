@@ -27,7 +27,7 @@ import com.intel.analytics.bigdl.utils.Shape
 import scala.reflect.ClassTag
 
 /**
- * Applies global Max pooling operation for 3D data.
+ * Applies global max pooling operation for 3D data.
  * Data format currently supported for this layer is 'CHANNEL_FIRST' (dimOrdering='th').
  * Border mode currently supported for this layer is 'valid'.
  * The input of this layer should be 5D.
