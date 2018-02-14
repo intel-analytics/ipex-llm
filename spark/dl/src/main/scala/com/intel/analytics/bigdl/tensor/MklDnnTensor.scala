@@ -90,6 +90,8 @@ class MklDnnTensor[T: ClassTag](
   override def storage(): Storage[T] = {
     if (_storage == null || _storage.length() != nElement()) {
       this._storage = Storage[T](nElement())
+      println("****allocate****************")
+      MklDnnTensor.backtrace()
     }
 //    MklDnnTensor.syncToHeap(this, this._storage.array(), storageOffset() - 1)
     this._storage
@@ -124,16 +126,24 @@ class MklDnnTensor[T: ClassTag](
   }
 
   override def add(x: Tensor[T]): Tensor[T] = {
-    require(x.getTensorType == MklDnnType, "just support two dnn tensor add")
-    val y = x.asInstanceOf[MklDnnTensor[T]]
+    if (x.getTensorType != MklDnnType) {
+      require(x.isContiguous(), "MklDnnTensor: ")
+      ev.vAdd(this.nElement(), this.storage().array(), this.storageOffset() - 1,
+        x.storage().array(), x.storageOffset() - 1,
+        this.storage().array(), this.storageOffset() - 1)
+    } else {
+      require(x.getTensorType == MklDnnType, "just support two dnn tensor add")
+      val y = x.asInstanceOf[MklDnnTensor[T]]
 
-    // todo: mkl add
+      // todo: mkl add
+    }
     this
   }
 
   override def copy(other: Tensor[T]): Tensor[T] = {
     if (other.getTensorType != MklDnnType) {
-      DenseTensor.copy(this, other)
+      Memory.CopyArray2Ptr(other.storage().array().asInstanceOf[Array[Float]],
+        other.storageOffset() - 1, this.ptr, 0, this.nElement(), this.ELEMENT_SIZE)
     } else {
       require(other.getTensorType == MklDnnType, "just support two dnn tensor copy")
       val y = other.asInstanceOf[MklDnnTensor[T]]
@@ -141,7 +151,8 @@ class MklDnnTensor[T: ClassTag](
       require(this.nElement() == y.nElement(), s"self element number(${this.nElement()}) is not" +
         s" equal to source element number(${y.nElement()})")
       if (sameStride(this.stride(), y.stride())) {
-        Memory.CopyPtr2Ptr(y.ptr, y.storageOffset(), this.ptr, 0, this.nElement(), this.ELEMENT_SIZE)
+        Memory.CopyPtr2Ptr(y.ptr,
+                y.storageOffset(), this.ptr, 0, this.nElement(), this.ELEMENT_SIZE)
       }
       this.setPrimitiveDesc(y.getPrimitiveDesc())
     }

@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.mkl.MklDnn
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.nn.{Container, JoinTable}
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.tensor.{MklDnnTensor, MklDnnType, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Engine
 
@@ -47,13 +47,15 @@ import scala.reflect.ClassTag
 class ConcatDnn(val dimension: Int) extends Container[Tensor[Float], Tensor[Float], Float] {
   private var size: Array[Int] = null
   @transient
-  private var results: Array[Long] = null
+  private var resultsMPD: Array[Long] = null
+  @transient
+  private var resultsPrimitive: Array[Long] = null
   @transient
   private var gradouts: Array[Tensor[Float]] = null
   @transient
-  private var outBuffers: Array[Tensor[Float]] = null
+  private var outBuffers: Array[MklDnnTensor[Float]] = null
   @transient
-  private var outs: Array[Tensor[Float]] = null
+  private var results: Array[Future[Unit]] = null
 
   protected var forwardTimeOverhead = 0L
 
@@ -89,154 +91,182 @@ class ConcatDnn(val dimension: Int) extends Container[Tensor[Float], Tensor[Floa
   }
 
   override def updateOutput(input: Tensor[Float]): Tensor[Float] = {
-    if (outs == null) outs = new Array[Tensor[Float]](this.modules.length)
-    if (outBuffers == null) outBuffers = new Array[Tensor[Float]](this.modules.length)
-    if (results == null) results = new Array[Long](this.modules.length)
+    val s1 = System.nanoTime()
+    var allModelsTime : Long = 0L
+    if (outBuffers == null) outBuffers = new Array[MklDnnTensor[Float]](modules.length)
+    if (resultsMPD == null) resultsMPD = new Array[Long](this.modules.length)
+    if (resultsPrimitive == null) resultsPrimitive = new Array[Long](this.modules.length)
 
     if (engine == 0L) engine = this.getDnnEngine(0)
     if (stream == 0L) stream = this.getStream()
 
-    user_format = input.dim() match {
-      case 1 => MklDnn.MemoryFormat.x
-      case 2 => MklDnn.MemoryFormat.nc
-      case 4 => MklDnn.MemoryFormat.nchw
-    }
-
+    var default_format = 0
     var i = 0
     while (i < this.modules.length) {
-      val currentOutput = this.modules(i).
-        updateOutput(input.asInstanceOf[Activity]).asInstanceOf[Tensor[Float]]
-      val format = currentOutput.getFormat()
-      if (format != user_format) {
-        reorderToUser(currentOutput, outBuffers(i), user_format)
-        outs(i) = outBuffers(i)
-        val md = MklDnnOps.memoryDescInit( outBuffers(i).dim(),  outBuffers(i).size(), dataType, user_format)
-        results(i) = MklDnnOps.memoryPrimitiveDescCreate(md, engine)
-      } else {
-        outs(i) = currentOutput
-      }
+      val s1 = System.nanoTime()
+      val currentOut = this.modules(i).
+                        updateOutput(input.asInstanceOf[Activity]).asInstanceOf[Tensor[Float]]
+      allModelsTime += System.nanoTime() - s1
       if (i == 0) {
-        this.size = currentOutput.size()
+        default_format = currentOut.dim() match {
+          case 1 => MklDnn.MemoryFormat.x
+          case 2 => MklDnn.MemoryFormat.nc
+          case 4 => MklDnn.MemoryFormat.nchw
+        }
+        user_format = currentOut.getFormat() match {
+          case -1 => default_format
+          case _ => currentOut.getFormat()
+        }
+      }
+
+      val format = currentOut.getFormat() match {
+        case -1 => default_format
+        case _ => currentOut.getFormat()
+      }
+      // reorder all output to user format
+      if (format != user_format) {
+        if (outBuffers(i) == null) outBuffers(i) = MklDnnTensor[Float](currentOut.size())
+        reorderToUser(currentOut, outBuffers(i), user_format)
+      } else if (currentOut.getTensorType != MklDnnType) {
+        // copy results from normal tensor to dnn tensor
+        val tmp = currentOut.getTensorType
+        if (outBuffers(i) == null) outBuffers(i) = MklDnnTensor[Float](currentOut.size())
+        MklDnnTensor.syncFromHeap(outBuffers(i),
+                                currentOut.storage().array(), currentOut.storageOffset() - 1)
       } else {
-        require(this.size.length == currentOutput.size.length,
-        s"${this.modules(i).getName} output size mismatch, expected : ${this.size.length}," +
-          s"actual ${currentOutput.size.length}")
+        outBuffers(i) = currentOut.asInstanceOf[MklDnnTensor[Float]]
+      }
+      val md = MklDnnOps.memoryDescInit(outBuffers(i).dim(),
+                                          outBuffers(i).size(), dataType, user_format)
+      resultsMPD(i) = MklDnnOps.memoryPrimitiveDescCreate(md, engine)
+      resultsPrimitive(i) = MklDnn.PrimitiveCreate0(resultsMPD(i))
+
+      if (i == 0) {
+        this.size = currentOut.size()
+      } else {
+        require(this.size.length == currentOut.size.length,
+          s"${this.modules(i).getName} output size mismatch, expected : ${this.size.length}," +
+            s"actual ${currentOut.size.length}")
         var index = 0
         val ssize = this.size.length
         while (index < ssize) {
           if (index != dimension - 1) {
-            require(this.size(index) == currentOutput.size(index + 1),
+            require(this.size(index) == currentOut.size(index + 1),
               s"${this.modules(i).getName} output size at dimension ${index + 1} mismatch," +
-                s"expected ${this.size(index)}, actual : ${currentOutput.size(index + 1)}")
+                s"expected ${this.size(index)}, actual : ${currentOut.size(index + 1)}")
           }
           index += 1
         }
-        this.size(this.dimension - 1) += currentOutput.size(this.dimension)
+        this.size(this.dimension - 1) += currentOut.size(this.dimension)
       }
       i += 1
     }
-    val before = System.nanoTime()
-    this.output.resize(this.size)
+    if (output.getTensorType != MklDnnType) {
+      // todo: output with Dense Tensor
+      output = MklDnnTensor[Float](this.size)
+    }
     val dst_md = MklDnnOps.memoryDescInit(output.dim(), output.size(), dataType, user_format)
 
-    if (results == null || results.length != this.modules.length) {
-      results = new Array[Long](this.modules.length)
+    val concatDesc = MklDnn.ConcatPrimitiveDescCreate(dst_md,
+                                                      modules.length, dimension - 1, resultsMPD)
+
+    // for dst memory
+    val dst_mpd = MklDnnOps.primitiveDescQueryPd(concatDesc, MklDnn.Query.dst_pd, 0)
+    output.setPrimitiveDesc(dst_mpd)
+    val dst_memory = MklDnn.PrimitiveCreate0(dst_mpd)
+
+    val inputs = resultsPrimitive // input memory
+    val outputs = Array(dst_memory) // dst memory
+    val indexes = new Array[Int](this.modules.length)
+
+    val fwd = MklDnnOps.primitiveCreate2(concatDesc, inputs, indexes, modules.length, outputs, 1)
+    stream_fwd.clear()
+    stream_fwd.append(fwd)
+
+    val length = stream_fwd.length
+    // todo: maybe gc
+    val memoryPrimitives = resultsPrimitive ++ Array(dst_memory)
+    val buffer = outBuffers ++ Array(output)
+    MklDnnOps.streamSubmit(stream, length, stream_fwd.toArray, length, memoryPrimitives, buffer)
+
+    val end1 = (System.nanoTime() - s1 - allModelsTime)/1e6
+    if (System.getProperty("debug") == "2") {
+      DnnTools.debugFwInfo(this.getName(), end1, input.getFormat(), output.getFormat())
     }
-
-    var offset = 1
-    i = 0
-//    while (i < this.modules.length) {
-//      val currentOutput = outs(i)
-//      // add dest
-//      results(i) =
-//      i += 1
-//      offset += currentOutput.size(this.dimension)
-//    }
-//
-//    Engine.model.sync(results)
-    forwardTimeOverhead += System.nanoTime() - before
-
-    this.output
-  }
-
-  override def getTimes(): Array[(AbstractModule[_ <: Activity, _ <: Activity, Float], Long, Long)] = {
-    this.modules.flatMap(_.getTimes()).toArray ++
-      Array((this, forwardTimeOverhead, backwardTime))
+    output
   }
 
   override def updateGradInput(input: Tensor[Float], gradOutput: Tensor[Float]): Tensor[Float] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    throw new UnsupportedOperationException(s"ConcatDnn: Unimplemented method")
   }
 
   override def backward(input: Tensor[Float], gradOutput: Tensor[Float]): Tensor[Float] = {
     var before = System.nanoTime()
-    this.gradInput.resizeAs(input)
-    var offset = 1
+    var allModelsTime : Long = 0L
     if (gradouts == null || gradouts.length != this.modules.length) {
       gradouts = new Array[Tensor[Float]](this.modules.length)
     }
+    if (results == null || results.length != this.modules.length) {
+      results = new Array[Future[Unit]](this.modules.length)
+    }
+
+    if (gradInput.getTensorType != MklDnnType) {
+      gradInput = MklDnnTensor[Float](input.size())
+    }
+
     var i = 0
+    var offset = 1
     while (i < this.modules.length) {
       val currentOutput = this.modules(i).output.asInstanceOf[Tensor[Float]]
       val _offset = offset
       val _i = i
-//      results(i) = Engine.model.invoke( () => {
-//        val narrowedTensor = gradOutput.narrow(dimension, _offset,
-//          currentOutput.size(dimension))
-//        if(dimension == 2) {
-//          gradouts(_i) = Tensor[Float]().resizeAs(narrowedTensor)
-//          var b = 1
-//          val firstSize = narrowedTensor.size(1)
-//          while(b <= firstSize) {
-//            gradouts(_i).select(1, b).copy(narrowedTensor.select(1, b))
-//            b += 1
-//          }
-//        } else {
-//          gradouts(_i) = narrowedTensor.contiguous()
-//        }
-//      })
+      results(i) = Engine.model.invoke( () => {
+        val narrowedTensor = gradOutput.narrow(dimension, _offset, currentOutput.size(dimension))
+        if(dimension == 2) {
+          gradouts(_i) = Tensor[Float]().resizeAs(narrowedTensor)
+          var b = 1
+          val firstSize = narrowedTensor.size(1)
+          while(b <= firstSize) {
+            gradouts(_i).select(1, b).copy(narrowedTensor.select(1, b))
+            b += 1
+          }
+        } else {
+          gradouts(_i) = narrowedTensor.contiguous()
+        }
+      })
       i += 1
       offset += currentOutput.size(dimension)
     }
-    // Engine.model.sync(results)
-    backwardTime += System.nanoTime() - before
+    Engine.model.sync(results)
 
+    var format: Int = 0
     i = 0
     offset = 1
     while (i < this.modules.length) {
+      val s1 = System.nanoTime()
       val currentOutput = this.modules(i).output.asInstanceOf[Tensor[Float]]
-      val currentGradInput = this.modules(i)
-        .backward(input.asInstanceOf[Activity], gradouts(i).asInstanceOf[Activity])
-        .asInstanceOf[Tensor[Float]]
+      val currentGradInput = this.modules(i).backward(input.asInstanceOf[Activity],
+                                gradouts(i).asInstanceOf[Activity]).asInstanceOf[Tensor[Float]]
 
-      before = System.nanoTime()
+      allModelsTime += System.nanoTime() - s1
       if (currentGradInput != null) {
         if (i == 0) {
-          require(this.gradInput.isContiguous())
-          require(currentGradInput.isContiguous())
-          this.gradInput.copy(currentGradInput)
+          format = currentGradInput.getFormat()
+          gradInput.copy(currentGradInput)
         } else {
-          this.gradInput.add(currentGradInput)
+          // todo: before add, need to transfor to same format, here just require
+          gradInput.add(currentGradInput)
         }
       }
       i += 1
       offset += currentOutput.size(dimension)
-      backwardTime += System.nanoTime() - before
     }
 
-    this.gradInput
-  }
-
-  // Todo: this is different from torch accUpdateGradParameters
-  override def updateParameters(learningRate: Float): Unit = {
-    var offset = 1
-    var i = 0
-    while (i < this.modules.length) {
-      val currentOutput = this.modules(i).output.asInstanceOf[Tensor[Float]]
-      this.modules(i).updateParameters(learningRate)
-      i += 1
-      offset += currentOutput.size(dimension)
+    val end1 = (System.nanoTime() - before - allModelsTime)/1e6
+    if (System.getProperty("debug") == "2") {
+      DnnTools.debugBwInfo(this.getName(), end1, format, gradInput.getFormat())
     }
+    gradInput
   }
 
   override def equals(obj: Any): Boolean = {

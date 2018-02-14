@@ -20,7 +20,7 @@ import breeze.linalg
 import breeze.linalg.dim
 import com.intel.analytics.bigdl.mkl.MklDnn
 import com.intel.analytics.bigdl.nn.abstractnn.{DataFormat, TensorModule}
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.tensor.{MklDnnTensor, Tensor}
 
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
@@ -80,7 +80,6 @@ class MemoryReOrder(inputFormat: Int = MklDnn.MemoryFormat.any,
     if (update_primitive) {
       val sizes = input.size()
       val dim = input.dim()
-      output.resizeAs(input)
 
       val src_pd = if (input.getPrimitiveDesc() != 0L) {
         internal_inputFormat = input.getFormat()
@@ -100,6 +99,8 @@ class MemoryReOrder(inputFormat: Int = MklDnn.MemoryFormat.any,
       // val reorder_primitive = res._1
       src_memory = res._2
       if (src_memory != 0L) {
+        // todo: output with Dense Tensor
+        output = MklDnnTensor[Float](input.size())
         output.setPrimitiveDesc(user_pd)
       }
 
@@ -117,7 +118,7 @@ class MemoryReOrder(inputFormat: Int = MklDnn.MemoryFormat.any,
     }
     val end1 = (System.nanoTime() - s1)/1e6
     if (System.getProperty("debug") == "2") {
-      println(s"MemoryReorderForGradoutput dnn ${this.getName()} forward ${end1}")
+      DnnTools.debugFwInfo(this.getName(), end1, input.getFormat(), output.getFormat())
     }
     output
   }
@@ -129,7 +130,6 @@ class MemoryReOrder(inputFormat: Int = MklDnn.MemoryFormat.any,
     if (update_primitive) {
       val sizes = gradOutput.size()
       val dim = gradOutput.dim()
-      gradInput.resizeAs(gradOutput)
 
       val src_pd = if (gradOutput.getPrimitiveDesc() != 0L) {
         gradOutput.getPrimitiveDesc()
@@ -146,6 +146,8 @@ class MemoryReOrder(inputFormat: Int = MklDnn.MemoryFormat.any,
       // val reorder_primitive = res._1
       src_memory2 = res._2
       if (src_memory2 != 0L) {
+        // todo: output with Dense Tensor
+        gradInput = MklDnnTensor[Float](gradOutput.size())
         gradInput.setPrimitiveDesc(user_pd)
       }
 
@@ -164,7 +166,7 @@ class MemoryReOrder(inputFormat: Int = MklDnn.MemoryFormat.any,
 
     val end1 = (System.nanoTime() - s1)/1e6
     if (System.getProperty("debug") == "2") {
-      println(s"MemoryReorderForGradoutput dnn ${this.getName()} backward ${end1}")
+      DnnTools.debugBwInfo(this.getName(), end1, gradOutput.getFormat(), gradInput.getFormat())
     }
     gradInput
   }

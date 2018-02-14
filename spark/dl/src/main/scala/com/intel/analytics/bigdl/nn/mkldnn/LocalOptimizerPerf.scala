@@ -82,10 +82,10 @@ object LocalOptimizerPerf {
         (DnnTools.dnnModel(1000), MiniBatch[Float](Tensor(batchSize, 3, 227, 227).randn(),
           Tensor(batchSize, 96, 27, 27).randn()), ClassNLLCriterion())
       case "inception_v1" =>
-        (Inception_v1(1000), MiniBatch(Tensor(batchSize, 3, 224, 224).randn(),
+        (Inception_v1(1000, false), MiniBatch(Tensor(batchSize, 3, 224, 224).randn(),
           Tensor(batchSize, 3000).fill(1)), ClassNLLCriterion())
       case "inception_v1_dnn" =>
-        (Inception_v1_dnn(1000), MiniBatch(Tensor(batchSize, 3, 224, 224).randn(),
+        (Inception_v1_dnn(1000, false), MiniBatch(Tensor(batchSize, 3, 224, 224).randn(),
           Tensor(batchSize, 3000).fill(1)), ClassNLLCriterion())
       case "inception_v2" =>
         (Inception_v2(1000), MiniBatch(Tensor(batchSize, 3, 224, 224).randn(),
@@ -270,9 +270,10 @@ object LocalOptimizerPerf {
       if (param.needDebug) {
         System.setProperty("debug", "2")
         time(model, miniBatch, param.iteration)
+      } else {
+        all(model, dummyDataSet, param.iteration)
+        // time(model, miniBatch, param.iteration)
       }
-      all(model, dummyDataSet, param.iteration)
-      // time(model, miniBatch, param.iteration)
     }
   }
 
