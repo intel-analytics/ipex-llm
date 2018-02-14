@@ -16,8 +16,8 @@
 
 import sys
 
-from bigdl.nn.layer import Layer, Sequential as TSequential
-from bigdl.util.common import callBigDlFunc, JTensor, JavaValue
+from bigdl.nn.layer import Layer, Node, Sequential as TSequential, Model as TModel
+from bigdl.util.common import callBigDlFunc, JTensor, JavaValue, to_list
 
 if sys.version >= '3':
     long = int
@@ -42,10 +42,7 @@ class InferShape(JavaValue):
         if len(input) == 1:
             return self.__process_shape(input[0])
         else:
-            res = []
-            for i in input:
-                res.append(self.__process_shape(i))
-            return res
+            return [self.__process_shape(i) for i in input]
 
     def get_output_shape(self):
         """
@@ -71,6 +68,21 @@ class Sequential(TSequential, InferShape):
     """
     def __init__(self, bigdl_type="float"):
         super(Sequential, self).__init__(bigdl_type, True)
+
+
+class Model(TModel, InferShape):
+    def __init__(self, input, output, bigdl_type="float"):
+        super(Model, self).__init__(to_list(input),
+                                    to_list(output),
+                                    is_keras=True,
+                                    bigdl_type=bigdl_type)
+
+
+class Input(KerasLayer):
+    def __init__(self, name=None, input_shape=None, bigdl_type="float"):
+        super(Input, self).__init__(None, bigdl_type,
+                                    name,
+                                    list(input_shape) if input_shape else None)
 
 
 class InputLayer(KerasLayer):
