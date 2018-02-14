@@ -16,7 +16,7 @@
 
 import sys
 
-from bigdl.nn.layer import Layer, Node, Sequential as TSequential, Model as TModel
+from bigdl.nn.layer import Layer, Sequential as TSequential, Model as TModel
 from bigdl.util.common import callBigDlFunc, JTensor, JavaValue, to_list
 
 if sys.version >= '3':
