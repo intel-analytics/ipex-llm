@@ -27,7 +27,7 @@ import scala.reflect.ClassTag
 
 /**
  * Permutes the dimensions of the input according to a given pattern.
- * Useful for e.g. connecting RNNs and convnets together.
+ * Useful for connecting RNNs and convnets together.
  *
  * When you use this layer as the first layer of a model, you need to provide the argument
  * inputShape (a Single Shape, does not include the batch dimension).

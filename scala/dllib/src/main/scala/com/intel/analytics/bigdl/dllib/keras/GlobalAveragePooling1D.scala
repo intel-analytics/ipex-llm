@@ -27,7 +27,7 @@ import com.intel.analytics.bigdl.utils.Shape
 import scala.reflect.ClassTag
 
 /**
- * Global average pooling operation for temporal data.
+ * Applies global average pooling operation for temporal data.
  * The input of this layer should be 3D.
  *
  * When you use this layer as the first layer of a model, you need to provide the argument

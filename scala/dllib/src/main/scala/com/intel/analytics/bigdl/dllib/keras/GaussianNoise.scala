@@ -27,7 +27,7 @@ import scala.reflect.ClassTag
 /**
  * Apply additive zero-centered Gaussian noise.
  * This is useful to mitigate overfitting (you could see it as a form of random data augmentation).
- * Gaussian Noise (GS) is a natural choice as corruption process for real valued inputs.
+ * Gaussian Noise is a natural choice as corruption process for real valued inputs.
  * As it is a regularization layer, it is only active at training time.
  *
  * When you use this layer as the first layer of a model, you need to provide the argument
