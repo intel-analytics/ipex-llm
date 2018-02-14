@@ -26,10 +26,12 @@ import com.intel.analytics.bigdl.utils.Shape
 import scala.reflect.ClassTag
 
 /**
- * Atrous Convolution operator for filtering windows of 2-D inputs.
+ * Applies an atrous convolution operator for filtering windows of 2-D inputs.
  * A.k.a dilated convolution or convolution with holes.
  * Bias will be included in this layer.
  * Data format currently supported for this layer is DataFormat.NCHW (dimOrdering='th').
+ * Border mode currently supported for this layer is 'valid'.
+ * You can also use AtrousConv2D as an alias of this layer.
  * The input of this layer should be 4D.
  *
  * When using this layer as the first layer in a model, you need to provide the argument

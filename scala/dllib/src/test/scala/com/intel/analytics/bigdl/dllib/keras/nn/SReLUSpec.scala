@@ -34,7 +34,7 @@ class SReLUSpec extends KerasBaseSpec{
         |model = Model(input=input_tensor, output=output_tensor)
       """.stripMargin
     val seq = KSequential[Float]()
-    val srelu = SReLU[Float](null, inputShape = Shape(2, 3))
+    val srelu = SReLU[Float](sharedAxes = null, inputShape = Shape(2, 3))
     seq.add(srelu)
     checkOutputAndGrad(seq.asInstanceOf[AbstractModule[Tensor[Float], Tensor[Float], Float]],
       kerasCode)
@@ -49,7 +49,7 @@ class SReLUSpec extends KerasBaseSpec{
         |model = Model(input=input_tensor, output=output_tensor)
       """.stripMargin
     val seq = KSequential[Float]()
-    val srelu = SReLU[Float](Array(1, 2), inputShape = Shape(3, 24))
+    val srelu = SReLU[Float](sharedAxes = Array(1, 2), inputShape = Shape(3, 24))
     seq.add(srelu)
     checkOutputAndGrad(seq.asInstanceOf[AbstractModule[Tensor[Float], Tensor[Float], Float]],
       kerasCode)

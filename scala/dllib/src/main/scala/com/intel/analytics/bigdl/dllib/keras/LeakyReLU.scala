@@ -26,8 +26,8 @@ import scala.reflect.ClassTag
 /**
  * Leaky version of a Rectified Linear Unit.
  * It allows a small gradient when the unit is not active:
- * `f(x) = alpha * x for x < 0`,
- * `f(x) = x for x >= 0`.
+ * f(x) = alpha * x for x < 0,
+ * f(x) = x for x >= 0.
  *
  * When you use this layer as the first layer of a model, you need to provide the argument
  * inputShape (a Single Shape, does not include the batch dimension).

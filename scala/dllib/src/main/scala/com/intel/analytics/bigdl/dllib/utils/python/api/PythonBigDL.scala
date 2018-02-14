@@ -2310,8 +2310,15 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     new ValidationSummary(logDir, appName)
   }
 
-  def createModel(input: JList[ModuleNode[T]], output: JList[ModuleNode[T]]): Graph[T] = {
-    Graph(input.asScala.toArray, output.asScala.toArray)
+  def createModel(input: JList[ModuleNode[T]],
+                  output: JList[ModuleNode[T]],
+                  isKeras: Boolean = false): Graph[T] = {
+    if (isKeras) {
+      nn.keras.Model(input.asScala.toArray, output.asScala.toArray)
+    }
+    else {
+      Graph(input.asScala.toArray, output.asScala.toArray)
+    }
   }
 
   def createNode(module: AbstractModule[Activity, Activity, T],

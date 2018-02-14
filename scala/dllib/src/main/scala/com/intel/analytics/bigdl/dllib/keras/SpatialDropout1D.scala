@@ -37,7 +37,7 @@ import scala.reflect.ClassTag
  * When you use this layer as the first layer of a model, you need to provide the argument
  * inputShape (a Single Shape, does not include the batch dimension).
  *
- * @param p Double between 0 and 1. Fraction of the input units to drop.
+ * @param p Fraction of the input units to drop. Double between 0 and 1.
  * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now.
  */
 class SpatialDropout1D[T: ClassTag](
