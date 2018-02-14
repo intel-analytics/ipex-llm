@@ -29,27 +29,32 @@ class InferShape(JavaValue):
         self.bigdl_type = bigdl_type
 
     @classmethod
-    def __process_shape(cls, output_shape):
-        return tuple([None] + output_shape[1:])
+    def __to_keras_shape(cls, shape):
+        return tuple([None] + shape[1:])
+
+    def __process_shape(self, shape):
+        if len(shape) == 1:
+            return self.__to_keras_shape(shape[0])
+        else:
+            return [self.__to_keras_shape(s) for s in shape]
 
     def get_input_shape(self):
         """
-        Return a list of shape tuples if merge layer is the first layer.
+        Return a list of shape tuples if there are multiple inputs.
         Return one shape tuple otherwise.
         """
         input = callBigDlFunc(self.bigdl_type, "getInputShape",
                               self.value)
-        if len(input) == 1:
-            return self.__process_shape(input[0])
-        else:
-            return [self.__process_shape(i) for i in input]
+        return self.__process_shape(input)
 
     def get_output_shape(self):
         """
-        Return the output shape of a model (a shape tuple).
+        Return a list of shape tuples if there are multiple outputs.
+        Return one shape tuple otherwise.
         """
-        return self.__process_shape(callBigDlFunc(self.bigdl_type, "getOutputShape",
-                                                  self.value))
+        output = callBigDlFunc(self.bigdl_type, "getOutputShape",
+                               self.value)
+        return self.__process_shape(output)
 
 
 class KerasLayer(Layer):

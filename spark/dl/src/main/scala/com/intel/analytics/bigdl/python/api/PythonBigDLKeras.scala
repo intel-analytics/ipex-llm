@@ -77,20 +77,25 @@ class PythonBigDLKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends Pytho
     InputLayer(inputShape = toScalaShape(inputShape))
   }
 
-  def getOutputShape(module: Container[Activity, Activity, T]): JList[Int] = {
-    module.getOutputShape().toSingle().toList.asJava
+  def shapeToJList(shape: Shape): JList[JList[Int]] = {
+    val shapes = if (shape.isInstanceOf[SingleShape]) {
+      MultiShape(List(shape))
+    }
+    else {
+      shape
+    }
+    shapes.toMulti().map(single => single.toSingle().toList.asJava).toList.asJava
+  }
+
+  def getOutputShape(module: Container[Activity, Activity, T]): JList[JList[Int]] = {
+    val output = module.getOutputShape()
+    shapeToJList(output)
   }
 
   def getInputShape(module: Container[Activity, Activity, T]): JList[JList[Int]] = {
     val input = module.getInputShape()
-    val inputs = if (input.isInstanceOf[SingleShape]) {
-      MultiShape(List(input))
-    }
-    else {
-      input
-    }
     // TODO: inputShape can be nested MultiShape
-    inputs.toMulti().map(single => single.toSingle().toList.asJava).toList.asJava
+    shapeToJList(input)
   }
 
   def createKerasDense(
