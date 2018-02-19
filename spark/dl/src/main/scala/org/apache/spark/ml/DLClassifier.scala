@@ -15,13 +15,14 @@
  */
 package org.apache.spark.ml
 
-import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.tensor.{Tensor, DoubleType => TensorDouble, FloatType => TensorFloat}
 import com.intel.analytics.bigdl.{Criterion, Module}
+import org.apache.spark.ml.DLModel.DLModelWriter
 import org.apache.spark.ml.param.ParamMap
-import org.apache.spark.ml.util.{Identifiable, SchemaUtils}
-import org.apache.spark.sql.DataFrame
+import org.apache.spark.ml.util._
 import org.apache.spark.sql.types._
+import org.json4s.DefaultFormats
 
 import scala.reflect.ClassTag
 
@@ -82,6 +83,31 @@ class DLClassifierModel[@specialized(Float, Double) T: ClassTag](
   override def transformSchema(schema : StructType): StructType = {
     validateDataType(schema, $(featuresCol))
     SchemaUtils.appendColumn(schema, $(predictionCol), DoubleType)
+  }
+}
+
+object DLClassifierModel extends MLReadable[DLClassifierModel[_]] {
+  private[ml] class DLClassifierModelReader() extends MLReader[DLClassifierModel[_]] {
+    override def load(path: String): DLClassifierModel[_] = {
+      implicit val format: DefaultFormats.type = DefaultFormats
+      val (meta, module, typeTag) = DLModel.loadImpl(path, sc)
+      val featureSize = (meta.metadata \ "featureSize").extract[Seq[Int]].toArray
+      val dlModel = typeTag match {
+        case "TensorDouble" =>
+          new DLClassifierModel[Double](module.asInstanceOf[Module[Double]], featureSize)
+        case "TensorFloat" =>
+          new DLClassifierModel[Float](module.asInstanceOf[Module[Float]], featureSize)
+      }
+      DefaultParamsReader.getAndSetParams(dlModel, meta)
+      dlModel
+    }
+  }
+
+  private[ml] class DLClassifierModelWriter[@specialized(Float, Double) T: ClassTag]
+  (instance: DLClassifierModel[T])(implicit ev: TensorNumeric[T]) extends DLModelWriter[T](instance)
+
+  override def read: MLReader[DLClassifierModel[_]] = {
+    new DLClassifierModel.DLClassifierModelReader
   }
 }
 
