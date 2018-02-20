@@ -16,19 +16,12 @@
 
 package com.intel.analytics.bigdl.dataset.text
 
-import java.io.FileInputStream
-import java.net.{URI, URL}
-
-import com.intel.analytics.bigdl.dataset.Transformer
+import com.intel.analytics.bigdl.dataset.{DataSet, Transformer}
 
 import scala.collection.{Iterator, immutable}
-import opennlp.tools.tokenize.{SimpleTokenizer, Tokenizer, TokenizerME, TokenizerModel}
 import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.{FileSystem, Path}
-import org.apache.spark.SparkContext
-import org.apache.spark.broadcast.Broadcast
-import org.apache.spark.sql.functions.{col, udf}
-import org.apache.spark.sql.{DataFrame, SparkSession}
+import org.apache.hadoop.fs.Path
+import org.apache.spark.sql.SparkSession
 
 import scala.io.Source
 
@@ -66,20 +59,30 @@ class Doc2Vec(glove6BFilePath: String) extends Transformer[String, Array[Float]]
 
     docs.map(doc => {
 
-      val seq: Array[String] = doc.split("\n").flatMap(x => x.split(" ")).filter(x => x.size > 1)
+      val sents = DataSet.array(doc.split("\n")
+        .filter(!_.isEmpty)).transform(SentenceSplitter())
+        .toLocal().data(train = false).flatMap(item => item.iterator)
 
-      val wordCount = seq
+      val tokens = DataSet.array(sents.toArray)
+        .transform(SentenceTokenizer()).toLocal().data(train = false).toArray.flatten
+
+      val wordCount: Map[String, Int] = tokens
         .map(x => (x, 1))
         .groupBy(x => x._1)
         .map(x => (x._1, x._2.map(y => y._2).sum))
 
-      val n = seq.length
+      val n = tokens.length
 
+      // wordcount -> matrix
+      /*
+      *  map(is->10, I -> 20...) -> list(Array[1,2,3,4,4,4], Array[5,6,7,8,9,0]....)
+       */
       val wordFreqVec: immutable.Iterable[Array[Float]] = wordCount
         .filter(p => libMap.value.contains(p._1))
         .map(x => libMap.value(x._1).map(v => v * x._2 / n)
         )
 
+      // matrix summarize by column to array
       val docVec: Array[Float] = wordFreqVec
         .flatMap(x => x.zipWithIndex.map(x => (x._2, x._1)))
         .groupBy(x => x._1)

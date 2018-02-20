@@ -31,7 +31,7 @@ class Doc2VecSpec extends FlatSpec with Matchers {
     val doc1 = "people have new president in the u.s."
     val doc2 = "Who is there?"
     val doc3 = "which state are you from?"
-    val doc4 = "she is not that into you."
+    val doc4 = "she's not that into you."
 
     val docs = Array(doc1, doc2, doc3, doc4)
 
