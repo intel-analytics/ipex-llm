@@ -216,7 +216,7 @@ def config_option_parser():
     parser = OptionParser()
     parser.add_option("-f", "--folder", type=str, dest="folder", default="",
                       help="url of hdfs folder store the hadoop sequence files")
-    parser.add_option("--model", type=str, dest="model", default="./inception.model", help="model snapshot location")
+    parser.add_option("--model", type=str, dest="model", default="", help="model snapshot location")
     parser.add_option("--state", type=str, dest="state", default="", help="state snapshot location")
     parser.add_option("--checkpoint", type=str, dest="checkpoint", default="", help="where to cache the model")
     parser.add_option("-o", "--overwrite", action="store_true", dest="overwrite", default=False,
@@ -250,7 +250,17 @@ if __name__ == "__main__":
     init_engine()
 
     # build model
-    inception_model = inception_v1_no_aux_classifier(options.classNum)
+    if options.model != "":
+        inception_model = Model.load(options.model)
+    else:
+        inception_model = inception_v1_no_aux_classifier(options.classNum)
+
+    # load state
+    if options.state != "":
+        optim = OptimMethod.load(options.state)
+    else:
+        optim = SGD(learningrate=options.learningRate, learningrate_decay=options.weightDecay,
+            momentum=0.9, dampening=0.0)
 
     image_size = 224  # create dataset
     train_transformer = Pipeline([PixelBytesToMat(),
@@ -286,8 +296,7 @@ if __name__ == "__main__":
     optimizer = Optimizer.create(
         model=inception_model,
         training_set=train_data,
-        optim_method=SGD(learningrate=options.learningRate, learningrate_decay=options.weightDecay,
-                         momentum=0.9, dampening=0.0),
+        optim_method=optim,
         criterion=ClassNLLCriterion(),
         end_trigger=end_trigger,
         batch_size=options.batchSize
