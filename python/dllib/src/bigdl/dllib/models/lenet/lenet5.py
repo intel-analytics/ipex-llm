@@ -72,8 +72,10 @@ if __name__ == "__main__":
         parameters = trained_model.parameters()
     elif options.action == "test":
         # Load a pre-trained model and then validate it through top1 accuracy.
-        test_data = get_mnist(sc, "test").map(
-            normalizer(mnist.TEST_MEAN, mnist.TEST_STD))
+        test_data = get_mnist(sc, "test", options.dataPath) \
+            .map(lambda rec_tuple: (normalizer(rec_tuple[0], mnist.TEST_MEAN, mnist.TEST_STD),
+                                    rec_tuple[1])) \
+            .map(lambda t: Sample.from_ndarray(t[0], t[1]))
         model = Model.load(options.modelPath)
         results = model.evaluate(test_data, options.batchSize, [Top1Accuracy()])
         for result in results:
