@@ -571,7 +571,7 @@ def _get_port():
     try:
         with open(path) as f:
             port = int(f.readline())
-    except IOError, e:
+    except IOError as e:
         traceback.print_exc()
         raise RuntimeError("Could not open the file %s, which contains the listening port of"
                            " local Java Gateway, please make sure the init_executor_gateway()"
