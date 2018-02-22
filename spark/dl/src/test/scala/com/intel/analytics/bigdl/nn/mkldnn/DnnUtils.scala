@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.nn.mkldnn
 
 import breeze.numerics.abs
 import com.intel.analytics.bigdl._
+import com.intel.analytics.bigdl.mkl.MklDnn
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.{DenseTensorMath, Tensor}
@@ -42,30 +43,58 @@ object DnnUtils {
     result
   }
 
-  def nearequals(t1: Tensor[Float], t2: Tensor[Float]): Boolean = {
+  def nearequals(t1: Tensor[Float], t2: Tensor[Float],
+                 epsilon: Double = DenseTensorMath.floatEpsilon): Boolean = {
     var result = true
     t1.map(t2, (a, b) => {
       if (result) {
-        result = nearlyEqual(a, b, DenseTensorMath.floatEpsilon)
+        result = nearlyEqual(a, b, epsilon)
+        if (!result) {
+          println("epsilon " + a + "***" + b + "***" + (abs(a-b)/(abs(a) + abs(b))))
+        }
       }
       a
     })
     return result
   }
 
-  def getunequals(t1: Tensor[Float], t2: Tensor[Float]): Boolean = {
+  def getunequals(t1: Tensor[Float], t2: Tensor[Float],
+                  epsilon: Double = DenseTensorMath.floatEpsilon): Boolean = {
     var result = true
     t1.map(t2, (a, b) => {
-      if (result) {
-        // result = nearlyEqual(a, b, DenseTensorMath.floatEpsilon)
-        result = nearlyEqual(a, b, 5e-4)
-        if (result == false) {
-          println(a + " " + b + " " + (abs(a-b)/abs(a)))
+      if (true) {
+        result = nearlyEqual(a, b, epsilon)
+        if (!result) {
+          println("epsilon " + a + "***" + b + "***" + (abs(a-b)/abs(a)))
         }
       }
       a
     })
     return true
+  }
+
+  def reorderToUser(input: Tensor[Float], output: Tensor[Float], outputFormat: Int): Unit = {
+    val dataType = MklDnn.DataType.f32
+    val engine = MklDnn.EngineCreate( MklDnn.EngineType.cpu, 0)
+    val stream = MklDnn.StreamCreate(MklDnn.StreamType.eager)
+    val stream_fwd = new ArrayBuffer[Long]
+    val sizes = input.size()
+    val dim = input.dim()
+    output.resizeAs(input)
+
+    val src_pd = input.getPrimitiveDesc()
+    val dst_memory = MklDnnOps.initDataMemory(dim, sizes, outputFormat, dataType, engine)
+    val res = MklDnnOps.prepareReorder(dst_memory, src_pd, false)
+    // val reorder_primitive = res._1
+    val src_memory = res._2
+
+    stream_fwd.clear()
+    stream_fwd.append(res._1)
+
+    /* build a simple net */
+    val memoryPrimitives = Array(src_memory, dst_memory)
+    val buffer = Array(input, output)
+    MklDnnOps.streamSubmit(stream, 1, stream_fwd.toArray, 1, memoryPrimitives, buffer)
   }
 
   def getTopTimes(times: Array[(AbstractModule[_ <: Activity, _ <: Activity, Float],

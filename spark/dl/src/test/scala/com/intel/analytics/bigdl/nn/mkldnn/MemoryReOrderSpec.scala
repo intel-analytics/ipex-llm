@@ -35,11 +35,11 @@ class MemoryReOrderSpec extends FlatSpec with Matchers {
     val output = reorder.forward(output1)
     val grad = reorder.backward(output1, grad1)
 
-    println(output1)
-    println(output)
+    println(output1.storage())
+    println(output.storage())
 
-    println(grad1)
-    println(grad)
+    println(grad1.storage())
+    println(grad.storage())
 
     println("done")
   }

@@ -59,6 +59,8 @@ class MklDnnTensor[T: ClassTag](
     ptr
   }
 
+  var updateStorage : Boolean = true
+
   def ptr: Long = _pointer
   def release(): Unit = {
     if (_pointer != NullPtr) {
@@ -93,7 +95,10 @@ class MklDnnTensor[T: ClassTag](
       println("****allocate****************")
       MklDnnTensor.backtrace()
     }
-//    MklDnnTensor.syncToHeap(this, this._storage.array(), storageOffset() - 1)
+    if (updateStorage) {
+      MklDnnTensor.syncToHeap(this, this._storage.array(), storageOffset() - 1)
+      this.updateStorage = false
+    }
     this._storage
   }
 
