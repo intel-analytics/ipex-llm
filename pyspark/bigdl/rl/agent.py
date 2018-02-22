@@ -59,6 +59,20 @@ class REINFORCEAgent(Agent):
             i += 1
         return samples
 
+class DistributedAgents(object):
+    def __init__(self, sc, create_agent, parallelism):
+        self.create_agent_func = create_agent
+        self.parallelism = parallelism
+        self.sc = sc
+
+    def __enter__(self):
+        func = self.create_agent_func
+        self.agents = self.sc.parallelize(range(self.parallelism), self.parallelism).map(func).cache()
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.agents.unpersist()
+
 
 def _process_traj(traj):
     traj_size = len(traj.data["actions"])

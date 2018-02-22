@@ -37,7 +37,7 @@ def _to_sample_dense(x):
     return Sample.from_ndarray(x[0], label)
 
 
-class SampledTrajs:
+class SampledTrajs(object):
     def __init__(self, sc, agents, policy, num_steps_per_part=None, num_trajs_per_part=None):
         self.agents = agents
         self.policy = policy
