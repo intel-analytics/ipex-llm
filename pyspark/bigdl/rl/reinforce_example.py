@@ -71,22 +71,28 @@ if __name__ == "__main__":
     parallelism = node_num * core_num
 
     print "parallelism %s " % parallelism
-    #
+
+    # test environment on driver
     env = gym.make('CartPole-v1')
     env = wrappers.Monitor(env, "/tmp/cartpole-experiment", video_callable=lambda x: True, force=True)
     test_agent = REINFORCEAgent(env, 1000)
     state_size = env.observation_space.shape[0]
     action_size = env.action_space.n
+
     model = build_model(state_size)
     criterion = PGCriterion()
 
+    # create and cache several agents on each partition as specified by parallelism
+    # and cache it
     with DistributedAgents(sc, create_agent=create_agent, parallelism=parallelism) as a:
+        # a.agents is a RDD[Agent]
         agents = a.agents
         optimizer = None
         num_trajs_per_part = int(math.ceil(15.0 / parallelism))
 
         for i in range(60):
             with SampledTrajs(sc, agents, model, num_trajs_per_part=num_trajs_per_part) as trajs:
+                # samples is a RDD[Trajectory]
                 trajs = trajs.samples \
                     .map(lambda traj: (traj.data["observations"],
                                        traj.data["actions"],
@@ -136,9 +142,12 @@ if __name__ == "__main__":
                 model = optimizer.optimize()
 
                 if (i + 1) % 10 == 0:
+                    import time
+                    start = time.time()
                     step = test_agent.sample(model, num_trajs=1)[0].data["actions"].shape[0]
+                    end = time.time()
                     print "************************************************************************"
-                    print "*****************sample video generated, %s steps**********************" % step
+                    print "*****************sample video generated, %s steps, using %s seconds**********************" % (step, start - end)
                     print "************************************************************************"
 
     env.close()
