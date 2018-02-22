@@ -80,7 +80,7 @@ pages:
     - Optimization Algorithms: APIGuide/Optimizers/Optim-Methods.md
   - Triggers: APIGuide/Triggers.md
   - Metrics:  APIGuide/Metrics.md
-  - ML Pipeline: APIGuide/MLPipeline/DLEstimator_DLClassifier.md
+  - ML Pipeline: APIGuide/DLFrames/DLEstimator_DLClassifier.md
   - Supported Caffe Layers: APIGuide/caffe_layer_list.md
   - Supported Tensorflow Operations: APIGuide/tensorflow_ops_list.md
   - Keras Issues: APIGuide/keras-issues.md
