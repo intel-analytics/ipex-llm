@@ -18,12 +18,14 @@ package com.intel.analytics.bigdl.models.utils
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dataset.{DistributedDataSet, MiniBatch}
 import com.intel.analytics.bigdl.models.inception.{Inception_v1, Inception_v2}
+import com.intel.analytics.bigdl.models.resnet.ResNet
 import com.intel.analytics.bigdl.models.vgg.{Vgg_16, Vgg_19}
 import com.intel.analytics.bigdl.nn.ClassNLLCriterion
+import com.intel.analytics.bigdl.nn.mkldnn.ResNet_dnn
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.optim.{Optimizer, Trigger}
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.Engine
+import com.intel.analytics.bigdl.utils.{Engine, T}
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
@@ -58,13 +60,7 @@ object DistriOptimizerPerf {
         "vgg19")
       .action((v, p) => p.copy(module = v))
       .validate(v =>
-        if (Set("inception_v1", "inception_v2", "vgg16", "vgg19").
-          contains(v.toLowerCase())) {
           success
-        } else {
-          failure("Data type can only be inception_v1 | " +
-            "vgg16 | vgg19 | inception_v2 now")
-        }
       )
     opt[String]('d', "inputdata")
       .text("Input data type. One of constant | random")
@@ -93,6 +89,14 @@ object DistriOptimizerPerf {
       case "inception_v2" => (Inception_v2(1000), Tensor(param.batchSize, 3, 224, 224))
       case "vgg16" => (Vgg_16(1000), Tensor(param.batchSize, 3, 224, 224))
       case "vgg19" => (Vgg_19(1000), Tensor(param.batchSize, 3, 224, 224))
+      case "resnet_50" =>
+        val model = ResNet(1000, T("depth" -> 50, "optnet" -> true,
+        "dataset" -> ResNet.DatasetType.ImageNet))
+        ResNet.shareGradInput(model)
+        ResNet.modelInit(model)
+        (model, Tensor(param.batchSize, 3, 224, 224))
+      case "resnet_50_dnn" => (ResNet_dnn(1000, T("depth" -> 50, "optnet" -> true,
+        "dataset" -> ResNet_dnn.DatasetType.ImageNet)), Tensor(param.batchSize, 3, 224, 224))
     }
     param.inputData match {
       case "constant" => input.fill(0.01f)
@@ -141,6 +145,6 @@ case class DistriOptimizerPerfParam(
   batchSize: Int = 128,
   maxEpoch: Int = 5,
   dataType: String = "float",
-  module: String = "inception_v1",
+  module: String = "resnet_50_dnn",
   inputData: String = "random"
 )
