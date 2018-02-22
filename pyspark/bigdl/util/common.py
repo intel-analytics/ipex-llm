@@ -30,6 +30,7 @@ from pyspark.files import SparkFiles
 import numpy as np
 import threading
 import tempfile
+import traceback
 from bigdl.util.engine import get_bigdl_classpath, is_spark_below_2_2
 
 INTMAX = 2147483647
@@ -567,8 +568,15 @@ def get_spark_sql_context(sc):
 def _get_port():
     root_dir = SparkFiles.getRootDirectory()
     path = os.path.join(root_dir, "gateway_port")
-    f = open(path)
-    port = int(f.readline())
+    try:
+        with open(path) as f:
+            port = int(f.readline())
+    except IOError, e:
+        traceback.print_exc()
+        raise RuntimeError("Could not open the file %s, which contains the listening port of"
+                           " local Java Gateway, please make sure the init_executor_gateway()"
+                           " function is called before any call of java function on the"
+                           " executor side." % e.filename)
     return port
 
 def _get_gateway():
