@@ -1,3 +1,5 @@
+You can start BigDL with BigDL Amazon Machine Images (AMI).
+
 ---
 ## **AWS Marketplace AMI**
 
@@ -6,6 +8,38 @@ The easiest way to get started with BigDL is to launch the pre-configured BigDL 
 To use the BigDL AMI in the AWS Marketplace, visit [https://aws.amazon.com/marketplace/] and search for 'BigDL'. Launch the AMI by clicking the "Continue to Subscribe" button from the BigDL Product Page. The software stack is free and open source. You only pay standard AWS charges. Because it includes Apache Spark, a t2.large instance is the minimum size recommended to run this BigDL AMI. Once you launch the AMI, type the domain name (URL) and port 8888 (ex: ec2-xxx-xxx-xxx-xxx.compute-1.amazonaws.com:8888) into your favorite web browser. The password for the Jupyter Notebook, which runs automatically, is the Instance ID (ex: i-08ba9c6fcdea6388f) of your EC2 Instance which you can find in your EC2 Dashboard [https://console.aws.amazon.com/ec2/v2/home]. 
 
 If you ssh into your EC2 instance, you can use "docker ps" (ex: docker ps -a) to find the container id, and "docker exec -it <container-id> bash" to see what is installed. Use git to download additional notebooks to the /work directory (ex: "$ git clone github.com/intel-analytics/BigDL-Tutorial". Additional Jupyter Notebooks can be found at [https://github.com/intel-analytics/BigDL-Tutorials]
+
+### **Detailed Instructions**
+#### Login to the AWS Console & go to ec2 dashboard
+![login](../Image/AWS/01.login.jpg) 
+![dashboard](../Image/AWS/02.dashboard.jpg) 
+#### Find BIGDL AMI in the Marketplace
+To choose AMI, select AWS Marketplace, search “BigDL”
+![search](../Image/AWS/03.search.jpg) 
+#### Select BigDL with Apache Spark
+![select](../Image/AWS/04.select.jpg) 
+![overview](../Image/AWS/05.overview.jpg) 
+#### Choosing and configuring instance
+![type](../Image/AWS/06.type.jpg) 
+![detail](../Image/AWS/07.detail.jpg) 
+#### Add storage and tags
+![storage](../Image/AWS/08.storage.jpg) 
+![tag](../Image/AWS/09.tag.jpg) 
+#### Configure Security Group
+![security](../Image/AWS/10.security.jpg) 
+#### Review and Launch
+![launch](../Image/AWS/11.launch.jpg) 
+#### Click the instance
+![status](../Image/AWS/12.status.jpg) 
+#### When the status is running, copy the ip
+![ip](../Image/AWS/13.ip.jpg) 
+#### Open it via a web browser with http://[ip]:12345
+![browse](../Image/AWS/14.browse.jpg) 
+#### Login the notebook with the instance ID
+Copy the instance ID from dashboard and paste it as a password/token
+![token](../Image/AWS/15.token.jpg)
+#### Have fun and build with BigDL!
+![tutorials](../Image/AWS/16.tutorials.jpg) 
 
 ---
 ## **The Public AMI**
