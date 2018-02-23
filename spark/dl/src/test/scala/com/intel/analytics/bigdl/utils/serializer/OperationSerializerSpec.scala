@@ -582,7 +582,7 @@ class OperationSerializerSpec extends SerializerSpecHelper {
   }
 
   "NoOp serializer" should "work properly" in {
-    val noOp = new com.intel.analytics.bigdl.nn.ops.NoOp[Float]().setName("noOp")
+    val noOp = new com.intel.analytics.bigdl.nn.tf.NoOp[Float]().setName("noOp")
     val input = Tensor[Float](5).apply1(_ => Random.nextFloat())
     runSerializationTest(noOp, input)
   }
