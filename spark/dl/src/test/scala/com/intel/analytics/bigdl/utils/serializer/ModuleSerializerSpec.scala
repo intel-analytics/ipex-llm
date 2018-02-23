@@ -1500,18 +1500,10 @@ class ModuleSerializerSpec extends SerializerSpecHelper {
   "Variable serializer" should "work properly" in {
     val out = Tensor[Float](2, 2, 2).apply1(_ => Random.nextFloat())
     val grad = Tensor[Float](2, 2, 2).apply1(_ => Random.nextFloat())
-    val variable = Variable[Float](out, grad).setName("variable")
+    val variable = new Variable[Float](out, grad).setName("variable")
     val input = Tensor[Float](2, 2, 2).apply1(_ => Random.nextFloat())
     runSerializationTest(variable, input)
   }
-
-  // tf.loaders
-
-
-
-
-
-
 
   "DetectionOutputSSD serializer" should "work properly" in {
     val module = DetectionOutputSSD[Float](DetectionOutputParam()).setName("DetectionOutputSSD")

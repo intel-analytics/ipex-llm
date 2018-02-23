@@ -15,6 +15,7 @@
  */
 package com.intel.analytics.bigdl.nn.ops
 
+import com.intel.analytics.bigdl.nn.tf.Assign
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
 import org.scalatest.{FlatSpec, Matchers}
@@ -41,7 +42,7 @@ class CastSpec extends FlatSpec with Matchers {
 
     val expectOutput = Tensor(T(2.0, 2.0, 4.0))
 
-    val output = Assign().forward(input)
+    val output = new Assign().forward(input)
     output should be(expectOutput)
   }
 }
