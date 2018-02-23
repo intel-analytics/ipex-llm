@@ -18,7 +18,7 @@ To choose AMI, select AWS Marketplace, search “BigDL”
 ![search](../Image/AWS/03.search.jpg) 
 #### Select BigDL with Apache Spark
 ![select](../Image/AWS/04.select.jpg) 
-![overview](../Image/AWS/05.overview.jpgg) 
+![overview](../Image/AWS/05.overview.jpg) 
 #### Choosing and configuring instance
 ![type](../Image/AWS/06.type.jpg) 
 ![detail](../Image/AWS/07.detail.jpg) 
