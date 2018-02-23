@@ -13,8 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.bigdl.nn.ops
+package com.intel.analytics.bigdl.nn.tf
 
+import com.intel.analytics.bigdl.nn.ops.ModuleToOperation
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
 import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
@@ -31,7 +32,7 @@ class BroadcastGradientArgsSpec extends FlatSpec with Matchers {
 
     val expectOutput = T(Tensor(T(0)), Tensor(T(2)))
 
-    val output = BroadcastGradientArgs().forward(input)
+    val output = new BroadcastGradientArgs().forward(input)
     output should be(expectOutput)
   }
 
@@ -45,14 +46,14 @@ class BroadcastGradientArgsSpec extends FlatSpec with Matchers {
 
     val expectOutput = T(Tensor(T(0)), Tensor(T(0, 1, 2)))
 
-    val output = BroadcastGradientArgs().forward(input)
+    val output = new BroadcastGradientArgs().forward(input)
     output should be(expectOutput)
   }
 }
 
 class BroadcastGradientArgsSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
-    val broadcastGradientArgs = BroadcastGradientArgs[Float]().
+    val broadcastGradientArgs = new BroadcastGradientArgs[Float]().
       setName("broadcastGradientArgs")
     val input =
       T(

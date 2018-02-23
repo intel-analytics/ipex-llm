@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.bigdl.nn.ops
+package com.intel.analytics.bigdl.nn.tf
 
 import java.awt.image.{BufferedImage, DataBufferByte}
 import java.io.ByteArrayInputStream
@@ -22,6 +22,7 @@ import javax.imageio.ImageIO
 
 import com.google.protobuf.ByteString
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
+import com.intel.analytics.bigdl.nn.ops.Operation
 import com.intel.analytics.bigdl.tensor._
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.serializer.converters.DataConverter
@@ -32,7 +33,7 @@ import com.intel.analytics.bigdl.serialization.Bigdl.{AttrValue, BigDLModule}
 import scala.reflect.ClassTag
 import scala.reflect.runtime.universe
 
-class DecodeImage[T: ClassTag](val channels: Int)(implicit ev: TensorNumeric[T])
+private[bigdl] class DecodeImage[T: ClassTag](val channels: Int)(implicit ev: TensorNumeric[T])
   extends Operation[Tensor[ByteString], Tensor[Int], T] {
 
   output = Tensor[Int]()
@@ -90,15 +91,15 @@ class DecodeImage[T: ClassTag](val channels: Int)(implicit ev: TensorNumeric[T])
   }
 }
 
-class DecodeJpeg[T: ClassTag](channels: Int, val ratio: Int = 1)(implicit ev: TensorNumeric[T])
-  extends DecodeImage[T](channels) {
+private[bigdl] class DecodeJpeg[T: ClassTag](channels: Int, val ratio: Int = 1)
+  (implicit ev: TensorNumeric[T]) extends DecodeImage[T](channels) {
   require(ratio == 1, "currently not supported sub-sampling")
 }
 
-class DecodePng[T: ClassTag](channels: Int)(implicit ev: TensorNumeric[T])
+private[bigdl] class DecodePng[T: ClassTag](channels: Int)(implicit ev: TensorNumeric[T])
   extends DecodeImage[T](channels)
 
-class DecodeGif[T: ClassTag]()(implicit ev: TensorNumeric[T])
+private[bigdl] class DecodeGif[T: ClassTag]()(implicit ev: TensorNumeric[T])
   extends DecodeImage[T](3) {
 
   override def updateOutput(input: Tensor[ByteString]): Tensor[Int] = {
@@ -143,7 +144,7 @@ class DecodeGif[T: ClassTag]()(implicit ev: TensorNumeric[T])
 
 }
 
-class DecodeRaw[T: ClassTag](val outType: DataType,
+private[bigdl] class DecodeRaw[T: ClassTag](val outType: DataType,
                              val littleEndian: Boolean)(implicit ev: TensorNumeric[T])
   extends Operation[Tensor[ByteString], Activity, T] {
   output = {
@@ -368,7 +369,7 @@ class DecodeRaw[T: ClassTag](val outType: DataType,
   }
 }
 
-object DecodeRawSerializer extends ModuleSerializable {
+private[bigdl] object DecodeRawSerializer extends ModuleSerializable {
 
   override def doLoadModule[T: ClassTag](context: DeserializeContext)
     (implicit ev: TensorNumeric[T]): AbstractModule[Activity, Activity, T] = {

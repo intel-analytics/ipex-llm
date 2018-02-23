@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.bigdl.nn.ops
+package com.intel.analytics.bigdl.nn.tf
 
 import java.io.File
 
@@ -22,13 +22,12 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import com.intel.analytics.bigdl.utils.tf.TFRecordIterator
 import org.tensorflow.example.Example
-import org.tensorflow.framework.DataType
 
-class DecodeRawSerialTest extends ModuleSerializationTest {
+class DecodeJpegSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
-    val decodeRaw = new DecodeRaw[Float](DataType.DT_UINT8, true).setName("decodeRaw")
-    val input = getInputs("raw")
-    runSerializationTest(decodeRaw, input)
+    val decodeJpeg = new DecodeJpeg[Float](1).setName("decodeJpeg")
+    val input = getInputs("jpeg")
+    runSerializationTest(decodeJpeg, input)
   }
 
   private def getInputs(name: String): Tensor[ByteString] = {
@@ -54,3 +53,5 @@ class DecodeRawSerialTest extends ModuleSerializationTest {
     Tensor[ByteString](Array(imageByteString), Array[Int]())
   }
 }
+
+
