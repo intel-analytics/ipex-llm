@@ -47,12 +47,13 @@ class LookupTable[T: ClassTag]
   val maxNorm: Double = Double.MaxValue,
   val normType: Double = 2.0,
   shouldScaleGradByFreq: Boolean = false,
-  var wRegularizer: Regularizer[T] = null
+  var wRegularizer: Regularizer[T] = null,
+  val maskZero: Boolean = false
 )
-(implicit ev: TensorNumeric[T]) extends TensorModule[T] with Initializable {
+  (implicit ev: TensorNumeric[T]) extends TensorModule[T] with Initializable {
 
-  val weight = Tensor[T](nIndex, nOutput)
-  val gradWeight = Tensor[T](nIndex, nOutput).zero()
+  var weight = Tensor[T](nIndex, nOutput)
+  var gradWeight = Tensor[T](nIndex, nOutput).zero()
 
   private var inputBuffer = Tensor[T]()
   private var normBuffer = Tensor[T]()
@@ -120,7 +121,7 @@ class LookupTable[T: ClassTag]
   }
 
   private def renormRow(row_data: Array[T], offset: Int, stride: Int,
-                        maxNorm: Double, normType: Double): Unit = {
+    maxNorm: Double, normType: Double): Unit = {
     var norm = 0.0
     var j = 0
     while (j < stride) {
@@ -165,6 +166,9 @@ class LookupTable[T: ClassTag]
   }
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
+    if (maskZero && paddingValue != 0) {
+      weight.select(1, paddingValue.toInt).zero()
+    }
     require(input.dim() == 1 || input.dim() == 2,
       s"LookupTable: ${ErrorInfo.constrainInputAsVectorOrBatch}, input dim [${input.dim()}]"  )
     renorm(input)
@@ -180,7 +184,7 @@ class LookupTable[T: ClassTag]
       case e: IllegalArgumentException =>
         throw new IllegalArgumentException(
           s"LookupTable updateOutput get exception:${e.getMessage}\n" +
-          s"please ensure elements of your input will not exceed ${nIndex}")
+            s"please ensure elements of your input will not exceed ${nIndex}")
       case e: Exception =>
         throw e
     }
@@ -257,8 +261,16 @@ class LookupTable[T: ClassTag]
     }
   }
 
+  override def zeroGradParameters(): Unit = {
+    gradWeight.zero()
+  }
+
   override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
     (Array(this.weight), Array(this.gradWeight))
+  }
+
+  override def getParametersTable(): Table = {
+    T(getName() -> T("weight" -> weight, "gradWeight" -> gradWeight))
   }
 
   override def clearState() : this.type = {
@@ -298,11 +310,11 @@ object LookupTable {
     nIndex: Int, nOutput: Int,
     paddingValue: Double = 0, maxNorm: Double = Double.MaxValue,
     normType: Double = 2.0, shouldScaleGradByFreq: Boolean = false,
-    wRegularizer: Regularizer[T] = null
+    wRegularizer: Regularizer[T] = null,
+    maskZero: Boolean = false
   )
-   (implicit ev: TensorNumeric[T]): LookupTable[T] =
+    (implicit ev: TensorNumeric[T]): LookupTable[T] =
     new LookupTable[T](nIndex, nOutput, paddingValue,
-      maxNorm, normType, shouldScaleGradByFreq, wRegularizer)
+      maxNorm, normType, shouldScaleGradByFreq, wRegularizer, maskZero)
 }
-
 
