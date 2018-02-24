@@ -54,8 +54,8 @@ object ResizeBilinearOps {
   }
 }
 
-class ResizeBilinearGrad[T: ClassTag](alignCorner: Boolean)(implicit ev: TensorNumeric[T])
-  extends Operation[Activity, Tensor[T], T] {
+private[bigdl] class ResizeBilinearGrad[T: ClassTag](alignCorner: Boolean)
+  (implicit ev: TensorNumeric[T]) extends Operation[Activity, Tensor[T], T] {
 
   private var module : ResizeBilinear[T] = _
 
@@ -79,7 +79,7 @@ class ResizeBilinearGrad[T: ClassTag](alignCorner: Boolean)(implicit ev: TensorN
   }
 }
 
-object ResizeBilinearGrad {
+private[bigdl] object ResizeBilinearGrad {
   def apply[T: ClassTag](alignCorner: Boolean)
                         (implicit ev: TensorNumeric[T]): ResizeBilinearGrad[T] = {
     new ResizeBilinearGrad[T](alignCorner)

@@ -13,18 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.bigdl.nn.ops
+package com.intel.analytics.bigdl.nn.tf
 
 import com.intel.analytics.bigdl.nn.abstractnn.DataFormat
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
 import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 
-class Conv3DSerialTest extends ModuleSerializationTest {
+class Conv3DBackpropFilterV2SerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
-    val module = Conv3D[Float](1, 2, 3, 0, 0, 0, DataFormat.NHWC)
+    val module = Conv3DBackpropFilterV2[Float](1, 2, 3, 0, 0, 0, DataFormat.NHWC)
     val input = Tensor[Float](4, 20, 30, 40, 3).rand()
-    val filter = Tensor[Float](2, 3, 4, 3, 4).rand()
-    runSerializationTest(module, T(input, filter))
+    val filter = Tensor[Int](Array(2, 3, 4, 3, 4), Array(5))
+    val outputBackprop = Tensor[Float](4, 19, 14, 13, 4).rand()
+
+    runSerializationTest(module, T(input, filter, outputBackprop))
   }
 }

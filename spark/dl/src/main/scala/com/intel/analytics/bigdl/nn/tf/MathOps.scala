@@ -13,16 +13,42 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.bigdl.nn.ops
+package com.intel.analytics.bigdl.nn.tf
 
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.nn.ops.Operation
 import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Table
 
 import scala.reflect.ClassTag
 
-class RsqrtGrad[T: ClassTag, D: ClassTag](implicit ev: TensorNumeric[T], ev2: TensorNumeric[D])
+class SqrtGrad[T: ClassTag, D: ClassTag](implicit ev: TensorNumeric[T], ev2: TensorNumeric[D])
   extends Operation[Table, Tensor[D], T] {
+
+  output = Tensor[D]()
+
+  override def updateOutput(inputs: Table): Tensor[D] = {
+    val grads = inputs[Tensor[D]](2)
+    val y = inputs[Tensor[D]](1)
+
+    output.resizeAs(grads).copy(grads).mul(ev2.fromType(0.5)).div(y)
+
+    output
+  }
+
+  override def getClassTagNumerics() : (Array[ClassTag[_]], Array[TensorNumeric[_]]) = {
+    (Array[ClassTag[_]](scala.reflect.classTag[T], scala.reflect.classTag[D]),
+      Array[TensorNumeric[_]](ev, ev2))
+  }
+}
+
+object SqrtGrad {
+  def apply[T: ClassTag, D: ClassTag]()
+    (implicit ev: TensorNumeric[T], ev2: TensorNumeric[D]): SqrtGrad[T, D] = new SqrtGrad[T, D]()
+}
+
+private[bigdl] class RsqrtGrad[T: ClassTag, D: ClassTag]
+(implicit ev: TensorNumeric[T], ev2: TensorNumeric[D]) extends Operation[Table, Tensor[D], T] {
 
   output = Tensor[D]()
 
@@ -41,7 +67,7 @@ class RsqrtGrad[T: ClassTag, D: ClassTag](implicit ev: TensorNumeric[T], ev2: Te
   }
 }
 
-object RsqrtGrad {
+private[bigdl] object RsqrtGrad {
   def apply[T: ClassTag, D: ClassTag]()
     (implicit ev: TensorNumeric[T], ev2: TensorNumeric[D]): RsqrtGrad[T, D] = new RsqrtGrad[T, D]()
 }

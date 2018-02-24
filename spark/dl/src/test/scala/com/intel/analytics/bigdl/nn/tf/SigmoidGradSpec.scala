@@ -13,22 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.bigdl.nn.ops
+package com.intel.analytics.bigdl.nn.tf
 
-import com.intel.analytics.bigdl.nn.{SoftSign => SoftSignLayer}
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 
-import scala.reflect.ClassTag
+import scala.util.Random
 
-class SoftsignGrad[T: ClassTag, D: ClassTag]
-(implicit ev: TensorNumeric[T], ev2: TensorNumeric[D])
-  extends UnaryGrad[T, D](true) {
 
-  override val module: Module = SoftSignLayer[D]()
-}
-
-object SoftsignGrad {
-  def apply[T: ClassTag, D: ClassTag]()
-     (implicit ev: TensorNumeric[T], ev2: TensorNumeric[D]): SoftsignGrad[T, D] =
-    new SoftsignGrad[T, D]()
+class SigmoidGradSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val sigMoidGrad = SigmoidGrad[Float, Float]().setName("sigMoidGrad")
+    val input = T(Tensor[Float](2, 2, 2).apply1(_ => Random.nextFloat()),
+      Tensor[Float](2, 2, 2).apply1(_ => Random.nextFloat()))
+    runSerializationTest(sigMoidGrad, input)
+  }
 }

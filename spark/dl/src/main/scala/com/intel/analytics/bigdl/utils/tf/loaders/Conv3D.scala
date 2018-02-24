@@ -20,7 +20,7 @@ import java.nio.ByteOrder
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, DataFormat}
-import com.intel.analytics.bigdl.nn.ops.Conv3D
+import com.intel.analytics.bigdl.nn.tf.Conv3D
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Node
 import com.intel.analytics.bigdl.utils.tf.Context

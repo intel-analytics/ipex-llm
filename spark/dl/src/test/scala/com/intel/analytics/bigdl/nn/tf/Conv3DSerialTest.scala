@@ -13,21 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.bigdl.nn.ops
+package com.intel.analytics.bigdl.nn.tf
 
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.nn.{ELU => ELULayer}
+import com.intel.analytics.bigdl.nn.abstractnn.DataFormat
+import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 
-import scala.reflect.ClassTag
-
-class EluGrad[T: ClassTag, D: ClassTag]
-(implicit ev: TensorNumeric[T], ev2: TensorNumeric[D])
-  extends UnaryGrad[T, D](true, true) {
-
-  override val module: Module = ELULayer[D]()
-}
-
-object EluGrad {
-  def apply[T: ClassTag, D: ClassTag]()
-      (implicit ev: TensorNumeric[T], ev2: TensorNumeric[D]): EluGrad[T, D] = new EluGrad[T, D]()
+class Conv3DSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val module = Conv3D[Float](1, 2, 3, 0, 0, 0, DataFormat.NHWC)
+    val input = Tensor[Float](4, 20, 30, 40, 3).rand()
+    val filter = Tensor[Float](2, 3, 4, 3, 4).rand()
+    runSerializationTest(module, T(input, filter))
+  }
 }
