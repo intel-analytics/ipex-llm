@@ -13,17 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.bigdl.nn.ops
+package com.intel.analytics.bigdl.nn.tf
 
 import com.intel.analytics.bigdl.nn.SpatialConvolution
 import com.intel.analytics.bigdl.nn.abstractnn.{Activity, DataFormat}
-import com.intel.analytics.bigdl.tensor._
+import com.intel.analytics.bigdl.nn.ops.Operation
+import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Table
 
 import scala.reflect.ClassTag
 
-class Conv2D[T: ClassTag](
+private[bigdl] class Conv2D[T: ClassTag](
   strideH: Int,
   strideW: Int,
   padH: Int,
@@ -63,7 +64,7 @@ class Conv2D[T: ClassTag](
   }
 }
 
-object Conv2D {
+private[bigdl] object Conv2D {
   def apply[T: ClassTag](
     strideH: Int,
     strideW: Int,
@@ -77,7 +78,7 @@ object Conv2D {
 /**
  * Backward of SpatialConvolution
  */
-class Conv2DTranspose[T: ClassTag](
+private[bigdl] class Conv2DTranspose[T: ClassTag](
   strideW: Int,
   strideH: Int,
   padW: Int = -1,
@@ -152,7 +153,7 @@ class Conv2DTranspose[T: ClassTag](
   }
 }
 
-object Conv2DTranspose {
+private[bigdl] object Conv2DTranspose {
   def apply[T: ClassTag](
     strideW: Int,
     strideH: Int,
@@ -163,7 +164,7 @@ object Conv2DTranspose {
     new Conv2DTranspose(strideW, strideH, padW, padH, format)
 }
 
-class Conv2DBackFilter[T: ClassTag](
+private[bigdl] class Conv2DBackFilter[T: ClassTag](
   strideW: Int,
   strideH: Int,
   padW: Int = -1,
@@ -230,7 +231,7 @@ class Conv2DBackFilter[T: ClassTag](
   }
 }
 
-object Conv2DBackFilter {
+private[bigdl] object Conv2DBackFilter {
   def apply[T: ClassTag](
     strideW: Int,
     strideH: Int,

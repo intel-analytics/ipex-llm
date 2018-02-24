@@ -13,13 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.bigdl.nn.ops
+package com.intel.analytics.bigdl.nn.tf
 
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
 import org.scalatest.{FlatSpec, Matchers}
 
-class Conv2DSep extends FlatSpec with Matchers {
+class Conv2DSpec extends FlatSpec with Matchers {
   "Add operation" should "works correctly" in {
     import com.intel.analytics.bigdl.numeric.NumericDouble
     val expectOutput = Tensor(
