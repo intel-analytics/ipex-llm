@@ -179,31 +179,6 @@ class Recurrent[T : ClassTag](
     }
   }
 
-  // used for multirnncell, for internal test
-//  def initHidden2(sizes: Array[Int]): Unit = {
-//    val stepSizes = sizes
-//
-//    if (containMultiRNNCell) {
-//      if (hidden == null) {
-//        //      if (hiddenStates.getState().size == 0) {
-//        cells.clear()
-//        cells += topology
-//        hidden = T()
-//        gradHidden = T()
-//      }
-//
-//      val multiCells = topology.asInstanceOf[MultiRNNCell[T]].cells
-//      var i = 0
-//      while (i < multiCells.size) {
-//        //        hiddenStates(i) = multiCells(i).hidResize(null, batchSize, stepSizes)
-//        //        gradHiddenStates(i) = multiCells(i).hidResize(null, batchSize, stepSizes)
-//        hidden.toTable(i) = multiCells(i).hidResize(null, batchSize, stepSizes)
-//        gradHidden.toTable(i) = multiCells(i).hidResize(null, batchSize, stepSizes)
-//        i += 1
-//      }
-//    } else initHidden(sizes)
-//  }
-
   protected def cloneCells(): Unit = {
     var t = cells.length
     if (t < times) {
