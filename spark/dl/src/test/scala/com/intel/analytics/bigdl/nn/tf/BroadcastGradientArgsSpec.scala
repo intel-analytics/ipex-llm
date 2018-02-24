@@ -53,7 +53,7 @@ class BroadcastGradientArgsSpec extends FlatSpec with Matchers {
 
 class BroadcastGradientArgsSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
-    val broadcastGradientArgs = new BroadcastGradientArgs[Float]().
+    val broadcastGradientArgs = BroadcastGradientArgs[Float]().
       setName("broadcastGradientArgs")
     val input =
       T(

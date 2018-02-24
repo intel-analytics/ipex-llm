@@ -16,7 +16,7 @@
 package com.intel.analytics.bigdl.nn.tf
 
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
-import com.intel.analytics.bigdl.nn.ops.Operation
+import com.intel.analytics.bigdl.nn.ops.{ModuleToOperation, Operation}
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.{NumericWildCard, TensorNumeric}
 import com.intel.analytics.bigdl.utils.{T, Table}
@@ -266,4 +266,9 @@ private[bigdl] class BroadcastGradientArgs[T: ClassTag]()
 
     output
   }
+}
+
+private[bigdl] object BroadcastGradientArgs {
+  def apply[T: ClassTag]()(implicit ev: TensorNumeric[T]): Operation[Activity, Activity, T]
+  = ModuleToOperation[T](new BroadcastGradientArgs())
 }

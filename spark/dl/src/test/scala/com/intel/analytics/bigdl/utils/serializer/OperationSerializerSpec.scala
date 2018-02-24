@@ -144,7 +144,7 @@ class OperationSerializerSpec extends SerializerSpecHelper {
   }
 
   "BroadcastGradientArgs serializer" should "work properly" in {
-    val broadcastGradientArgs = new BroadcastGradientArgsOps[Float]().
+    val broadcastGradientArgs = BroadcastGradientArgsOps[Float]().
       setName("broadcastGradientArgs")
     val input =
       T(
