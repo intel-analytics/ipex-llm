@@ -3,8 +3,13 @@
 #setup pathes
 version=0.4.0
 SPARK_HOME=$HOME/spark-2.1.0-bin-hadoop2.7/
-BigDL_HOME=${HOME}/code/Bigdl/spark-dl
-jar=${BigDL_HOME}/spark/dl/target/bigdl-SPARK_2.1-${version}-SNAPSHOT-jar-with-dependencies.jar
+BigDL=dist-spark-2.1.1-scala-2.11.8-all-0.4.0-dist
+jar=${BigDL}/lib/bigdl-SPARK_2.1-${version}-jar-with-dependencies.jar
+
+if [ ! -d $BigDL ]; then
+    wget https://s3-ap-southeast-1.amazonaws.com/bigdl-download/$BigDL.zip
+    unzip $BigDL.zip -d $BigDL
+fi
 
 export PYTHONPATH=${PYTHON_API_ZIP_PATH}:$PYTHONPATH
 export PYSPARK_DRIVER_PYTHON=jupyter
@@ -17,8 +22,8 @@ ${SPARK_HOME}/bin/pyspark \
     --total-executor-cores 3  \
     --executor-cores 1  \
     --executor-memory 20g \
-    --py-files ${BigDL_HOME}/spark/dist/target/bigdl-${version}-SNAPSHOT-python-api.zip \
-    --properties-file ${BigDL_HOME}/dist/conf/spark-bigdl.conf \
+    --py-files ${BigDL}/lib/bigdl-${version}-python-api.zip \
+    --properties-file ${BigDL}/conf/spark-bigdl.conf \
     --jars ${jar} \
     --conf spark.driver.extraClassPath=${jar} \
     --conf spark.executor.extraClassPath=${jar}
