@@ -96,7 +96,9 @@ def inception_v1_no_aux_classifier(class_num):
     model.add(SpatialAveragePooling(7, 7, 1, 1).set_name("pool5/7x7_s1"))
     model.add(Dropout(0.4).set_name("pool5/drop_7x7_s1"))
     model.add(View([1024], num_input_dims=3))
-    model.add(Linear(1024, class_num).set_init_method(weight_init_method=Xavier()).set_name("loss3/classifier"))
+    model.add(Linear(1024, class_num)
+              .set_init_method(weight_init_method=Xavier(), bias_init_method=Zeros())
+              .set_name("loss3/classifier"))
     model.add(LogSoftMax().set_name("loss3/loss3"))
     model.reset()
     return model
