@@ -4,6 +4,7 @@ from bigdl.nn.criterion import *
 from bigdl.nn.initialization_method import *
 from bigdl.optim.optimizer import *
 from bigdl.transform.vision.image import *
+from math import ceil
 
 
 def t(input_t):
@@ -250,19 +251,6 @@ if __name__ == "__main__":
     show_bigdl_info_logs()
     init_engine()
 
-    # build model
-    if options.model != "":
-        inception_model = Model.load(options.model)
-    else:
-        inception_model = inception_v1_no_aux_classifier(options.classNum)
-
-    # load state
-    if options.state != "":
-        optim = OptimMethod.load(options.state)
-    else:
-        optim = SGD(learningrate=options.learningRate, learningrate_decay=options.weightDecay,
-            momentum=0.9, dampening=0.0)
-
     image_size = 224  # create dataset
     train_transformer = Pipeline([PixelBytesToMat(),
                                   RandomCrop(image_size, image_size),
@@ -283,6 +271,24 @@ if __name__ == "__main__":
                                 ])
     raw_val_data = get_inception_data(options.folder, sc, "val")
     val_data = DataSet.image_frame(raw_val_data).transform(val_transformer)
+
+    # build model
+    if options.model != "":
+        inception_model = Model.load(options.model)
+    else:
+        inception_model = inception_v1_no_aux_classifier(options.classNum)
+
+    # load state
+    if options.state != "":
+        optim = OptimMethod.load(options.state)
+    elif options.maxEpoch:
+        optim = SGD(learningrate=options.learningRate, learningrate_decay=options.weightDecay,
+                    momentum=0.9, dampening=0.0,
+                    leaningrate_schedule=Poly(0.5, ceil(float(1281167) / options.batchSize) * options.maxEpoch))
+    else:
+        optim = SGD(learningrate=options.learningRate, learningrate_decay=options.weightDecay,
+                    momentum=0.9, dampening=0.0,
+                    leaningrate_schedule=Poly(0.5, options.maxIteration))
 
     if options.maxEpoch:
         checkpoint_trigger = EveryEpoch()
