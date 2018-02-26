@@ -37,7 +37,6 @@ pages:
   - Define a Model:
     - Using Sequential API: ProgrammingGuide/Model/Sequential.md
     - Using Functional API: ProgrammingGuide/Model/Functional.md
-    - Implement customized serializer: ProgrammingGuide/Model/Serialization.md
   - Optimization: ProgrammingGuide/optimization.md
   - Use Spark ML: ProgrammingGuide/MLPipeline.md
   - Visualization: ProgrammingGuide/visualization.md
@@ -48,7 +47,9 @@ pages:
   - Caffe Support: ProgrammingGuide/caffe-support.md
   - Keras Support: ProgrammingGuide/keras-support.md
   - Quantization Support: ProgrammingGuide/quantization-support.md
-  - Define new Layer/Criterion: ProgrammingGuide/add-layer-criterion.md
+  - Define Customized Layer/Criterion:
+    - Define new Layer/Criterion: ProgrammingGuide/add-layer-criterion.md
+    - Implement customized serializer: ProgrammingGuide/Model/Serialization.md
   - Build Image Application: ProgrammingGuide/image-support.md
 - API Guide:
   - Engine: APIGuide/Engine.md
