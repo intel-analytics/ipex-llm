@@ -101,8 +101,8 @@ class PoolingDnnAverage[T: ClassTag](
 
   private val strides = Array(dW, dH)
   private val kernel = Array(kH, kW)
-  private var paddingTB : Array[Int] = null
-  private var paddingLR: Array[Int] = null
+  private var paddingTL : Array[Int] = null
+  private var paddingBR: Array[Int] = null
 
   private var inputBuffer : MklDnnTensor[Float] = null
   private var gradOutputBuffer : MklDnnTensor[Float] = null
@@ -154,8 +154,8 @@ class PoolingDnnAverage[T: ClassTag](
       val oHeight = sizes(4)
       val oWidth = sizes(5)
 
-      paddingTB = Array(padTop, padBottom)
-      paddingLR = Array(padLeft, padRight)
+      paddingTL = Array(padTop, padLeft)
+      paddingBR = Array(padBottom, padRight)
 
       val nbatch = input.size(1)
       val input_size = input.size()
@@ -179,7 +179,7 @@ class PoolingDnnAverage[T: ClassTag](
       /* create a convolution */
       val pool_desc = MklDnnOps.poolingForwardDescInit(
                         MklDnn.PropKind.forwardTraining, algKind,
-                        src_md, dst_md, strides, kernel, paddingLR, paddingLR,
+                        src_md, dst_md, strides, kernel, paddingTL, paddingBR,
                         MklDnn.PaddingKind.mkldnnPaddingZero)
 
       fwd_pd = MklDnnOps.primitiveDescCreate(pool_desc, engine, 0L)
@@ -247,8 +247,8 @@ class PoolingDnnAverage[T: ClassTag](
 
       /* create backward descriptor */
       val bwd_desc = MklDnnOps.poolingBackwardDescInit(algKind, gradInput_md,
-                                                  gradOutput_md, strides, kernel, paddingTB,
-                                                  paddingLR, MklDnn.PaddingKind.mkldnnPaddingZero)
+                                                  gradOutput_md, strides, kernel, paddingTL,
+                                                  paddingBR, MklDnn.PaddingKind.mkldnnPaddingZero)
       val bwd_pd = MklDnnOps.primitiveDescCreate(bwd_desc, engine, fwd_pd)
 
 

@@ -130,17 +130,31 @@ class MklDnnTensor[T: ClassTag](
     this
   }
 
+
+  override def narrow(dim: Int, index: Int, size: Int): Tensor[T] = {
+    this.storage()
+    val result = DenseTensor.newWithTensor(this)
+    DenseTensor.narrow(result, null, dim - 1, index - 1, size)
+    result
+  }
+
   override def add(x: Tensor[T]): Tensor[T] = {
     if (x.getTensorType != MklDnnType) {
       require(x.isContiguous(), "MklDnnTensor: ")
       ev.vAdd(this.nElement(), this.storage().array(), this.storageOffset() - 1,
         x.storage().array(), x.storageOffset() - 1,
         this.storage().array(), this.storageOffset() - 1)
+      syncFromHeap()
     } else {
       require(x.getTensorType == MklDnnType, "just support two dnn tensor add")
-      val y = x.asInstanceOf[MklDnnTensor[T]]
-
       // todo: mkl add
+      val y = x.asInstanceOf[MklDnnTensor[T]]
+      ev.vAdd(this.nElement(), this.storage().array(), this.storageOffset() - 1,
+        y.storage().array(), y.storageOffset() - 1,
+        this.storage().array(), this.storageOffset() - 1)
+      // sync from heap to native
+      // todo: all operations based on heap must be sync to native
+      syncFromHeap()
     }
     this
   }

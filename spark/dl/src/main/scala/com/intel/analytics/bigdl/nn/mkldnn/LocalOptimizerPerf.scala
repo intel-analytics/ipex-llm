@@ -83,37 +83,37 @@ object LocalOptimizerPerf {
           Tensor(batchSize, 96, 27, 27).randn()), ClassNLLCriterion())
       case "inception_v1" =>
         (Inception_v1(1000, false), MiniBatch(Tensor(batchSize, 3, 224, 224).randn(),
-          Tensor(batchSize, 3000).fill(1)), ClassNLLCriterion())
+          Tensor(batchSize).fill(1)), ClassNLLCriterion())
       case "inception_v1_dnn" =>
-        (Inception_v1_dnn(1000, false), MiniBatch(Tensor(batchSize, 3, 224, 224).randn(),
-          Tensor(batchSize, 3000).fill(1)), ClassNLLCriterion())
+        (Inception_v1_dnn(1000, true), MiniBatch(Tensor(batchSize, 3, 224, 224).randn(),
+          Tensor(batchSize).fill(1)), ClassNLLCriterion())
       case "inception_v2" =>
         (Inception_v2(1000), MiniBatch(Tensor(batchSize, 3, 224, 224).randn(),
-          Tensor(batchSize, 3000).fill(1)), ClassNLLCriterion())
+          Tensor(batchSize).fill(1)), ClassNLLCriterion())
       case "inception_v2_dnn" =>
         (Inception_v2_dnn(1000), MiniBatch(Tensor(batchSize, 3, 224, 224).randn(),
-          Tensor(batchSize, 3000).fill(1)), ClassNLLCriterion())
+          Tensor(batchSize).fill(1)), ClassNLLCriterion())
       case "vgg16" =>
         (Vgg_16(1000), MiniBatch(Tensor(batchSize, 3, 224, 224).randn(),
-          Tensor(batchSize, 1000).fill(1)), ClassNLLCriterion())
+          Tensor(batchSize).fill(1)), ClassNLLCriterion())
       case "vgg16_dnn" =>
         (Vgg_16_dnn(1000), MiniBatch(Tensor(batchSize, 3, 224, 224).randn(),
-          Tensor(batchSize, 1000).fill(1)), ClassNLLCriterion())
+          Tensor(batchSize).fill(1)), ClassNLLCriterion())
       case "vgg19" =>
         println("vgg19")
         (Vgg_19(1000), MiniBatch(Tensor(batchSize, 3, 224, 224).randn(),
-          Tensor(batchSize, 1000).fill(1)), ClassNLLCriterion())
+          Tensor(batchSize).fill(1)), ClassNLLCriterion())
       case "vgg19_dnn" =>
         println("vgg19 mkldnn")
         (Vgg_19_dnn(1000), MiniBatch(Tensor(batchSize, 3, 224, 224).randn(),
-          Tensor(batchSize, 1000).fill(1)), ClassNLLCriterion())
+          Tensor(batchSize).fill(1)), ClassNLLCriterion())
       case "resnet_50" =>
         val model = ResNet(classNum = 1000, T("depth" -> 50, "optnet" -> true,
           "dataset" -> DatasetType.ImageNet))
         ResNet.shareGradInput(model)
         ResNet.modelInit(model)
         (model, MiniBatch(Tensor(batchSize, 3, 224, 224).randn(),
-          Tensor(batchSize, 1000).fill(1)), CrossEntropyCriterion())
+          Tensor(batchSize).fill(1)), CrossEntropyCriterion())
 
       case "resnet_50_dnn" =>
         val model = ResNet_dnn(classNum = 1000, T("depth" -> 50, "optnet" -> true,
@@ -121,7 +121,7 @@ object LocalOptimizerPerf {
 //        ResNet_dnn.shareGradInput(model)
 //        ResNet_dnn.modelInit(model)
         (model, MiniBatch(Tensor(batchSize, 3, 224, 224).randn(),
-          Tensor(batchSize, 1000).fill(1)), CrossEntropyCriterion())
+          Tensor(batchSize).fill(1)), CrossEntropyCriterion())
     }
     _model.createDnnEngine(0)
     _model.createStream()
@@ -185,19 +185,13 @@ object LocalOptimizerPerf {
               val localModel = workingModels(i)
               val input = miniBatchBuffer(i).getInput()
               val output = localModel.forward(input)
-              val target = miniBatchBuffer(i).getTarget()
-              localModel.backward(input, target)
+              output.asInstanceOf[Tensor[Float]].setPrimitiveDesc(0L)
+              localModel.backward(input, output)
               val e1 = (System.nanoTime() - s1)/1e6
               // println(s"thread time ${e1}")
               1
             })
         ).sum
-
-//        val localModel = workingModels(0)
-//        val input = miniBatchBuffer(0).getInput()
-//        val output = localModel.forward(input)
-//        output.toTensor[Float].setPrimitiveDesc(0L)
-//        localModel.backward(input, output)
 
         val end = System.nanoTime()
         logger.info(
@@ -235,7 +229,6 @@ object LocalOptimizerPerf {
     }
 
     System.setProperty("bigdl.mklNumThreads", param.numThreads.toString)
-    // System.setProperty("debug", "2")
     Engine.setCoreNumber(param.coreNumber)
 
     val (_model, miniBatch, criterion) = getModel(param.module, param.batchSize)

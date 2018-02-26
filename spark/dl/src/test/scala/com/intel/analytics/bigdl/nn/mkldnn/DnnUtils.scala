@@ -34,10 +34,8 @@ object DnnUtils {
 
     val result = if (a == b) {
       true
-    } else if (a == 0 || b == 0 || diff < java.lang.Float.MIN_NORMAL) {
-      diff < (epsilon * java.lang.Float.MIN_NORMAL)
     } else {
-      diff / (absA + absB) < epsilon
+      math.min(diff / (absA + absB), diff) < epsilon
     }
 
     result
@@ -50,7 +48,8 @@ object DnnUtils {
       if (result) {
         result = nearlyEqual(a, b, epsilon)
         if (!result) {
-          println("epsilon " + a + "***" + b + "***" + (abs(a-b)/(abs(a) + abs(b))))
+          val diff = math.abs(a - b)
+          println("epsilon " + a + "***" + b + "***" + diff / (abs(a) + abs(b)) + "***" + diff)
         }
       }
       a
@@ -65,7 +64,8 @@ object DnnUtils {
       if (true) {
         result = nearlyEqual(a, b, epsilon)
         if (!result) {
-          println("epsilon " + a + "***" + b + "***" + (abs(a-b)/abs(a)))
+          val diff = math.abs(a - b)
+          println("epsilon " + a + "***" + b + "***" + diff / (abs(a) + abs(b)) + "***" + diff)
         }
       }
       a

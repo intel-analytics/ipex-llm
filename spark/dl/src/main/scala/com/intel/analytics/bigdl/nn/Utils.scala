@@ -409,6 +409,12 @@ object Utils {
     kt: Int = -1,
     padt: Int = 0,
     dilationDepth: Int = 1): Array[Int] = {
+    // compute padding left, right, top and bottom
+    var pad_t = padH
+    var pad_b = padH
+    var pad_l = padW
+    var pad_r = padW
+
     var oheight = 0
     var owidth = 0
     var odepth = 0
@@ -424,14 +430,14 @@ object Utils {
       if ((owidth - 1) * dW >= inputWidth + padW) owidth -= 1
     }
 
-    val h = inputHeight + padH
-    var pad_b = padH
+    val h = inputHeight + pad_t
+//    var pad_b = padH
     while ((h + pad_b) < (dH * (oheight - 1) + kH)) pad_b = pad_b + 1
-    val w = inputWidth + padW
-    var pad_r = padW
+    val w = inputWidth + pad_l
+//    var pad_r = padW
     while ((w + pad_r) < (dW * (owidth - 1) + kW)) pad_r = pad_r + 1
 
-    Array(pad_b, pad_b, pad_r, pad_r, oheight, owidth)
+    Array(pad_t, pad_b, pad_l, pad_r, oheight, owidth)
   }
 
   private[nn] def getOutputShape(outputHeight: Int, outputWidth: Int, nOutputPlane: Int,

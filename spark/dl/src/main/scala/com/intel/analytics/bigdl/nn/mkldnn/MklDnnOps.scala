@@ -272,4 +272,10 @@ object MklDnnOps {
     (res._1, res._2, internal_pd)
   }
 
+  def queryFormat(pd: Long, queryType: Int, index: Int = 0): Int = {
+    val internal_pd = MklDnnOps.primitiveDescQueryPd(pd, queryType, index)
+    val mpd = MklDnnOps.primitiveDescQueryMemory(internal_pd)
+    val format = MklDnnOps.getFormat(mpd)
+    format
+  }
 }

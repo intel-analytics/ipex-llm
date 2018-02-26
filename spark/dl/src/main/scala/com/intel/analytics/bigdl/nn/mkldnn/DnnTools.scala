@@ -81,7 +81,6 @@ object DnnTools {
 object Inception_Layer_v1 {
   def apply(inputSize: Int, config: Table, namePrefix : String = "", format: Int = 8) :
   Module[Float] = {
-    val feature1 = Sequential()
     val concat = ConcatDnn(2)
     val conv1 = Sequential()
     conv1.add(ConvolutionDnn(inputSize,

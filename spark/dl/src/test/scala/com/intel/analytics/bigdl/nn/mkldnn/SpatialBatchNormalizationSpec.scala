@@ -444,14 +444,63 @@ class SpatialBatchNormalizationSpec extends FlatSpec with Matchers {
       val input = Tensor(batchSize, channel, height, width).rand()
       bn.forward(input)
       nnBn.forward(input)
+      DnnUtils.nearequals(bn.output, nnBn.output) should be(true)
 
       val gradOutput = Tensor().resizeAs(input).rand()
 
       bn.backward(input, gradOutput)
       nnBn.backward(input, gradOutput)
 
-      DnnUtils.nearequals(bn.output, nnBn.output)
-      DnnUtils.nearequals(bn.gradInput, nnBn.gradInput)
+      val (weight1, gradweight1) = bn.getParameters()
+      val (weight2, gradweight2) = nnBn.getParameters()
+
+      DnnUtils.nearequals(weight1, weight2) should be(true)
+      DnnUtils.nearequals(gradweight1, gradweight2) should be(true)
+
+      DnnUtils.nearequals(bn.gradInput, nnBn.gradInput) should be(true)
+
+      println("=" * 120)
+    }
+  }
+
+  "bn with dynamic input size 1111" should "work correctly" in {
+    val (channel, height, width) = (64, 112, 112)
+    val epsilon = 1e-3
+
+    val initWeight = Tensor(channel).rand()
+    val initBias = Tensor(channel).rand()
+
+    val bn = SpatialBatchNormalization(channel, epsilon, initWeight = initWeight,
+      initBias = initBias)
+    val nnBn = nn.SpatialBatchNormalization(channel, epsilon,
+      initWeight = initWeight, initBias = initBias)
+
+    for (batchSize <- Array(2, 3, 4, 2)) {
+      val input = Tensor(batchSize, channel, height, width).rand()
+
+      val (weight1, gradweight1) = bn.getParameters()
+      val (weight2, gradweight2) = nnBn.getParameters()
+
+      DnnUtils.nearequals(weight1, weight2) should be(true)
+      DnnUtils.nearequals(gradweight1, gradweight2, 1e-4) should be(true)
+
+      bn.forward(input)
+      nnBn.forward(input)
+      DnnUtils.nearequals(bn.output, nnBn.output, 1e-4) should be(true)
+
+      DnnUtils.nearequals(weight1, weight2) should be(true)
+      DnnUtils.nearequals(gradweight1, gradweight2, 1e-4) should be(true)
+
+      val gradOutput = Tensor().resizeAs(input).rand()
+
+      bn.backward(input, gradOutput)
+      nnBn.backward(input, gradOutput)
+
+      DnnUtils.nearequals(bn.gradInput, nnBn.gradInput, 1e-4) should be(true)
+
+
+      DnnUtils.nearequals(weight1, weight2) should be(true)
+      DnnUtils.nearequals(gradweight1, gradweight2, 1e-4) should be(true)
 
       println("=" * 120)
     }
