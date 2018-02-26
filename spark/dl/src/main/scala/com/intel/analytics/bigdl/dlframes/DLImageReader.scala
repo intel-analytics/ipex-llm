@@ -126,7 +126,7 @@ object DLImageReader {
    * Read the directory of images into DataFrame from the local or remote source.
    *
    * @param path Directory to the input data files, the path can be comma separated paths as the
-   *             list of inputs. Wildcards like "path/" are supported
+   *             list of inputs. Wildcards path are supported similarly to sc.binaryFiles(path).
    * @param sc SparkContext to be used.
    * @param minPartitions Number of the DataFrame partitions,
    *                      if omitted uses defaultParallelism instead
