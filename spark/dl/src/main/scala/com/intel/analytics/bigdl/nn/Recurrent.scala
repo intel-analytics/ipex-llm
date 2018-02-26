@@ -22,8 +22,9 @@ import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, Tensor
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.serializer._
-import com.intel.analytics.bigdl.utils.serializer.{ContainerSerializable, DataConverter, ModuleSerializer}
+import com.intel.analytics.bigdl.utils.serializer.{ContainerSerializable, ModuleSerializer}
 import com.intel.analytics.bigdl.utils.{T, Table}
+import com.intel.analytics.bigdl.utils.serializer.converters.DataConverter
 import serialization.Bigdl.{AttrValue, BigDLModule}
 
 import scala.reflect.runtime.universe
@@ -33,12 +34,21 @@ import scala.reflect.ClassTag
 /**
  * [[Recurrent]] module is a container of rnn cells
  * Different types of rnn cells can be added using add() function
+ *
+ * The recurrent includes some mask mechanisms
+ * if the `maskZero` variable is set to true, the `Recurrent` module will
+ * not consider zero vector inputs. For each time step input, if a certain row is
+ * a zero vector (all the elements of the vector equals zero), then output of certain row
+ * of this time step would be a zero vector, and the hidden state of the certain row of
+ * this time step would be the same as the corresponding row of the hidden state of the
+ * previous step.
+ *
  */
 class Recurrent[T : ClassTag](
   var batchNormParams: BatchNormParams[T] = null,
   var maskZero: Boolean = false
 )
-  (implicit ev: TensorNumeric[T]) extends Container[Tensor[T], Tensor[T], T] {
+  (implicit ev: TensorNumeric[T]) extends DynamicContainer[Tensor[T], Tensor[T], T] {
 
   protected var hidden: Activity = null
   protected var gradHidden: Activity = null
@@ -81,7 +91,7 @@ class Recurrent[T : ClassTag](
    * @param module module to be add
    * @return this container
    */
-  override def add(module: AbstractModule[_ <: Activity, _ <: Activity, T]): Recurrent.this.type = {
+  override def add(module: AbstractModule[_ <: Activity, _ <: Activity, T]): this.type = {
     require(module.isInstanceOf[Cell[T]],
       "Recurrent: added module should be Cell type!")
     require(!module.isInstanceOf[MultiRNNCell[T]],
@@ -323,19 +333,6 @@ class Recurrent[T : ClassTag](
     initHiddenState = hiddenState
   }
 
-  // get gradient hidden state at the first time step
-  def getGradHiddenState(): Activity = {
-    require(cells != null && cells(0).gradInput != null,
-      "getGradHiddenState need to be called after backward")
-    cells(0).gradInput.toTable(hidDim)
-  }
-
-  protected var initGradHiddenState: Activity = null
-  // set gradient hiddent state at the last time step
-  def setGradHiddenState(gradHiddenState: Activity): Unit = {
-    initGradHiddenState = gradHiddenState
-  }
-
   override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T]): Unit = {
     currentGradOutput(hidDim) = gradHidden
     /**
@@ -466,8 +463,6 @@ class Recurrent[T : ClassTag](
     var i = times
 
     while (i >= 1) {
-      currentGradOutput(hidDim) = if (i != times) cells(i).gradInput.toTable(hidDim)
-      else if (initGradHiddenState == null) gradHidden else initGradHiddenState
       currentGradOutput(inputDim) = Recurrent.selectCopy(gradOutput, i, stepGradBuffer)
 
       _input(hidDim) = if (i > 1) cells(i - 2).output.toTable(hidDim)
@@ -606,7 +601,6 @@ class Recurrent[T : ClassTag](
     cells.clear()
     timeBuffer.clear()
     initHiddenState = null
-    initGradHiddenState = null
     stepInput2CellBuf.set()
     stepGradBuffer.set()
     maskBuffer = null
@@ -628,9 +622,8 @@ class Recurrent[T : ClassTag](
 
     modules.foreach(_.reset())
     cells.clear()
+    hidden = null
   }
-
-  lazy val containMultiRNNCell: Boolean = topology.isInstanceOf[MultiRNNCell[T]]
 
   override def canEqual(other: Any): Boolean = other.isInstanceOf[Recurrent[T]]
 

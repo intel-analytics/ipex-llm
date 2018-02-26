@@ -28,19 +28,21 @@ import scala.reflect.ClassTag
 /**
  * This class is intended to support inputs with 3 or more dimensions.
  * Apply Any Provided Criterion to every temporal slice of an input.
+ * In addition, it supports padding mask.
+ *
+ * eg. if the target is [ [-1, 1, 2, 3, -1], [5, 4, 3, -1, -1] ],
+ *     and set the paddingValue property to -1, then the loss of -1 would not
+ *     be accumulated and the loss is only divided by 6 (ont including the amount of
+ *     -1, in this case, we are only interested in 1, 2, 3, 5, 4, 3)
  *
  * @param critrn embedded criterion
- * @param sizeAverage whether to divide the length of input along dimension.
  * @param dimension to compute criterion loss along the input and target dimension
- *                  if sizeAverage=true, and dimension=1, it means to divide the batch size;
- *                  if sizeAverage=true, and dimension=2, it means to divide the sequence length
  */
 
 class TimeDistributedMaskCriterion[T : ClassTag](
   val critrn : TensorCriterion[T],
-  val sizeAverage: Boolean = false,
   val dimension: Int = 2,
-  val padValue: Int = 0
+  val paddingValue: Int = 0
 )
   (implicit ev: TensorNumeric[T]) extends TensorCriterion[T] {
 
@@ -74,7 +76,6 @@ class TimeDistributedMaskCriterion[T : ClassTag](
      * Example with dimension=2:
      * input.size = [B, T, D] => fInput.size = [B, D]
      * target.size = [B, T] => fTarget.size = [B]
-     * If sizeAverage is true, the output is averaged through time dim
      */
     require(input.size(dimension) == target.size(dimension),
       "target should have as many elements as input, " +
@@ -102,14 +103,14 @@ class TimeDistributedMaskCriterion[T : ClassTag](
 
     mask.resizeAs(target)
     mask.applyFun[T](target, x =>
-      if (x != ev.fromType[Int](padValue)) ev.one else ev.zero)
+      if (x != ev.fromType[Int](paddingValue)) ev.one else ev.zero)
     val outputBuff = Tensor()
     outputBuff.resizeAs(mask)
     (0 until nstep).foreach(b => {
-      //      output = ev.plus(output, cells(b).output)
       outputBuff
         .select(2, b + 1)
-        .cmul(mask.select(2, b + 1), cells(b).asInstanceOf[ClassNLLCriterion[T]].sparseOutput)
+        .cmul(mask.select(2, b + 1),
+          cells(b).sparseOutput)
     })
 
     output = ev.divide(outputBuff.sum(), mask.sum())
@@ -120,7 +121,6 @@ class TimeDistributedMaskCriterion[T : ClassTag](
   override def updateGradInput(input: Tensor[T], target: Tensor[T]): Tensor[T] = {
     /**
      * Take each time slice of input and target, and calculate gradInput of each slice
-     * If sizeAverage is true, the gradInput is also averaged through dimension
      */
     require(input.size(dimension) == target.size(dimension),
       s"target should have as many elements as input, " +
@@ -137,9 +137,6 @@ class TimeDistributedMaskCriterion[T : ClassTag](
         fTarget = target.select(dimension, _i)
         _gradInput = gradInput.select(dimension, _i)
         _gradInput.copy(cells(_i - 1).updateGradInput(fInput, fTarget).toTensor[T])
-        //        if (sizeAverage) {
-        //          _gradInput = _gradInput.div(ev.fromType[Int](nstep))
-        //        }
       })
       i += 1
     }
@@ -154,11 +151,10 @@ class TimeDistributedMaskCriterion[T : ClassTag](
 object TimeDistributedMaskCriterion {
   def apply[@specialized(Float, Double) T: ClassTag](
     critrn: TensorCriterion[T] = null,
-    sizeAverage: Boolean = false,
     dimension: Int = 2,
-    padValue: Int = 0
+    paddingValue: Int = 0
   )
     (implicit ev: TensorNumeric[T]) : TimeDistributedMaskCriterion[T] = {
-    new TimeDistributedMaskCriterion[T](critrn, sizeAverage, dimension, padValue)
+    new TimeDistributedMaskCriterion[T](critrn, dimension, paddingValue)
   }
 }

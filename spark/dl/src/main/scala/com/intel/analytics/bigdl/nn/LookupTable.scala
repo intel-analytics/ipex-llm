@@ -40,6 +40,8 @@ import scala.reflect.ClassTag
  * @tparam T The numeric type in the criterion, usually which are [[Float]] or [[Double]]
  * @param wRegularizer: instance of [[Regularizer]]
  *                    (eg. L1 or L2 regularization), applied to the input weights matrices.
+ * @param maskZero: if maskZero is set to true, the input whose value equals `paddingValue`
+ *                the output will be masked to zero vector.
  */
 @SerialVersionUID( - 4832171200145114633L)
 class LookupTable[T: ClassTag]
@@ -50,7 +52,7 @@ class LookupTable[T: ClassTag]
   var wRegularizer: Regularizer[T] = null,
   val maskZero: Boolean = false
 )
-  (implicit ev: TensorNumeric[T]) extends TensorModule[T] with Initializable {
+(implicit ev: TensorNumeric[T]) extends TensorModule[T] with Initializable {
 
   var weight = Tensor[T](nIndex, nOutput)
   var gradWeight = Tensor[T](nIndex, nOutput).zero()
@@ -121,7 +123,7 @@ class LookupTable[T: ClassTag]
   }
 
   private def renormRow(row_data: Array[T], offset: Int, stride: Int,
-    maxNorm: Double, normType: Double): Unit = {
+                        maxNorm: Double, normType: Double): Unit = {
     var norm = 0.0
     var j = 0
     while (j < stride) {
@@ -184,7 +186,7 @@ class LookupTable[T: ClassTag]
       case e: IllegalArgumentException =>
         throw new IllegalArgumentException(
           s"LookupTable updateOutput get exception:${e.getMessage}\n" +
-            s"please ensure elements of your input will not exceed ${nIndex}")
+          s"please ensure elements of your input will not exceed ${nIndex}")
       case e: Exception =>
         throw e
     }
@@ -260,46 +262,6 @@ class LookupTable[T: ClassTag]
       s + s" ,maxNorm=$maxNorm)"
     }
   }
-
-  override def zeroGradParameters(): Unit = {
-    gradWeight.zero()
-  }
-
-  override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
-    (Array(this.weight), Array(this.gradWeight))
-  }
-
-  override def getParametersTable(): Table = {
-    T(getName() -> T("weight" -> weight, "gradWeight" -> gradWeight))
-  }
-
-  override def clearState() : this.type = {
-    super.clearState()
-    inputBuffer.set()
-    countBuffer.set()
-    normBuffer.set()
-    this
-  }
-
-  override def canEqual(other: Any): Boolean = other.isInstanceOf[LookupTable[T]]
-
-  override def equals(other: Any): Boolean = other match {
-    case that: LookupTable[T] =>
-      super.equals(that) &&
-        (that canEqual this) &&
-        weight == that.weight &&
-        gradWeight == that.gradWeight &&
-        nIndex == that.nIndex &&
-        nOutput == that.nOutput &&
-        paddingValue == that.paddingValue &&
-        maxNorm == that.maxNorm &&
-        normType == that.normType
-    case _ => false
-  }
-
-  override def hashCode(): Int = {
-    def getHashCode(a: Any): Int = if (a == null) 0 else a.hashCode()
-    val state = Seq(super.hashCode(), weight, gradWeight, nIndex, nOutput,
       paddingValue, maxNorm, normType)
     state.map(getHashCode).foldLeft(0)((a, b) => 31 * a + b)
   }
@@ -313,8 +275,9 @@ object LookupTable {
     wRegularizer: Regularizer[T] = null,
     maskZero: Boolean = false
   )
-    (implicit ev: TensorNumeric[T]): LookupTable[T] =
+   (implicit ev: TensorNumeric[T]): LookupTable[T] =
     new LookupTable[T](nIndex, nOutput, paddingValue,
       maxNorm, normType, shouldScaleGradByFreq, wRegularizer, maskZero)
 }
+
 

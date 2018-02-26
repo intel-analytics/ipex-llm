@@ -35,11 +35,13 @@ import scala.reflect.ClassTag
  * The input data format is [Batch, Time, Other dims]. For the contained layer, it must not change
  * the Other dims length.
  *
+ * @param maskZero: if `maskZero` is set to true, if the input including zero vectors, the
+ *                corresponding output will be set to zero vecotrs.
  * @tparam T data type, which can be [[Double]] or [[Float]]
  */
 
 class TimeDistributed[T : ClassTag] (
-  val layer: TensorModule[T],
+  val layer: AbstractModule[Tensor[T], Tensor[T], T],
   maskZero: Boolean = false)
   (implicit ev: TensorNumeric[T]) extends TensorModule[T] {
 
@@ -100,6 +102,7 @@ class TimeDistributed[T : ClassTag] (
      * combine: [B, T, D] => [B * T, D]
      * split:   [B * T, D] => [B, T, D]
      */
+
     val _inputSize = input.size
     combine(_inputSize, inputSize)
     input.resize(inputSize)
@@ -187,16 +190,6 @@ class TimeDistributed[T : ClassTag] (
     gradInput
   }
 
-  /**
-   * If the module has parameters, this will zero the accumulation of the gradients with respect
-   * to these parameters. Otherwise, it does nothing.
-   */
-  override def zeroGradParameters(): Unit = {
-    layer.zeroGradParameters()
-  }
-
-  override def updateParameters(learningRate: T): Unit = layer.updateParameters(learningRate)
-
   override def reset(): Unit = layer.reset()
 
   override def training(): TimeDistributed.this.type = {
@@ -247,32 +240,13 @@ class TimeDistributed[T : ClassTag] (
   override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = layer.parameters()
 
   /**
-   * This method compact all parameters and gradients of the model into two tensors. So it's easier
-   * to use optim method
-   *
-   * @return
-   */
-  override def getParameters(): (Tensor[T], Tensor[T]) = layer.getParameters()
-
-  /**
    * This method will return a table indicating the name and corresponding parameters.
    * @return Table
    */
   override def getParametersTable(): Table = layer.getParametersTable()
 
-  /**
-   * Copy the useful running status from src to this.
-   *
-   * The subclass should override this method if it has some parameters besides weight and bias.
-   * Such as runningMean and runningVar of BatchNormalization.
-   *
-   * @param src source Module
-   * @return this
-   */
-  override def copyStatus(src: Module[T]): TimeDistributed.this.type = {
-    val other = src.asInstanceOf[TimeDistributed[T]]
-    layer.copyStatus(other.layer.asInstanceOf[Module[T]])
-    this
+  override def getExtraParameter(): Array[Tensor[T]] = {
+    layer.getExtraParameter()
   }
 
   override def clearState(): TimeDistributed.this.type = {
@@ -312,7 +286,7 @@ class TimeDistributed[T : ClassTag] (
 
 object TimeDistributed {
   def apply[@specialized(Float, Double) T: ClassTag](
-    layer: TensorModule[T],
+    layer: AbstractModule[Tensor[T], Tensor[T], T],
     maskZero: Boolean = false
   )(implicit ev: TensorNumeric[T]): TimeDistributed[T] = {
     new TimeDistributed[T](layer, maskZero)

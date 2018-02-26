@@ -65,7 +65,8 @@ import com.intel.analytics.bigdl.utils.Engine
  */
 @SerialVersionUID(- 8696382776046599502L)
 class ClassNLLCriterion[@specialized(Float, Double) T: ClassTag]
-(weights: Tensor[T] = null, sizeAverage: Boolean = true, logProbAsInput: Boolean = true)
+(weights: Tensor[T] = null, sizeAverage: Boolean = true,
+  logProbAsInput: Boolean = true, paddingValue: Int = -1)
   (implicit ev: TensorNumeric[T]) extends TensorCriterion[T] {
   private var total_weight = ev.fromType[Int](0)
   if (weights != null) require(weights.dim() == 1,
@@ -80,7 +81,6 @@ class ClassNLLCriterion[@specialized(Float, Double) T: ClassTag]
   private val epsilon: T = ev.fromType(1e-8)
 
   private val oneMinusEpsilon: T = ev.minus(ev.one, epsilon)
-
 
 
   override def updateOutput(input: Tensor[T], target: Tensor[T]): T = {
@@ -106,6 +106,7 @@ class ClassNLLCriterion[@specialized(Float, Double) T: ClassTag]
           ev.times(ev.negative(input.valueAt(curTarget)), total_weight)
         }
       }
+      sparseOutput.resize(Array[Int]())
       sparseOutput.setValue(output)
     } else if (input.dim() == 2) {
       val batchSize = input.size(1)
@@ -231,7 +232,9 @@ object ClassNLLCriterion {
   def apply[@specialized(Float, Double) T: ClassTag](
     weights: Tensor[T] = null,
     sizeAverage: Boolean = true,
-    logProbAsInput: Boolean = true)(implicit ev: TensorNumeric[T]) : ClassNLLCriterion[T] = {
-    new ClassNLLCriterion[T](weights, sizeAverage, logProbAsInput)
+    logProbAsInput: Boolean = true,
+    paddingValue: Int = -1
+  )(implicit ev: TensorNumeric[T]) : ClassNLLCriterion[T] = {
+    new ClassNLLCriterion[T](weights, sizeAverage, logProbAsInput, paddingValue)
   }
 }
