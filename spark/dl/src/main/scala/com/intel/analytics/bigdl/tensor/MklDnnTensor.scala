@@ -157,7 +157,7 @@ class MklDnnTensor[T: ClassTag](
         s" equal to source element number(${y.nElement()})")
       if (sameStride(this.stride(), y.stride())) {
         Memory.CopyPtr2Ptr(y.ptr,
-                y.storageOffset(), this.ptr, 0, this.nElement(), this.ELEMENT_SIZE)
+                y.storageOffset() - 1, this.ptr, 0, this.nElement(), this.ELEMENT_SIZE)
       }
       this.setPrimitiveDesc(y.getPrimitiveDesc())
     }
