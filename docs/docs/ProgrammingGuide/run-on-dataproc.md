@@ -6,12 +6,21 @@ Before using BigDL on Google Dataproc, you need setup a project and create a clu
 To make it easy to try out BigDL on Spark on Dataproc, an initial action script is provided. You can use use this initialization action to create a new Dataproc cluster with BigDL pre-installed by https://github.com/GoogleCloudPlatform/dataproc-initialization-actions/blob/master/bigdl/bigdl.sh
 You can use below command to create a new cluster with BigDL preinstall
 ```bash
-gcloud dataproc clusters create <CLUSTER_NAME> \ --initialization-actions=gs://dataproc-initialization-actions/bigdl/bigdl.sh
+gcloud dataproc clusters create <CLUSTER_NAME> --initialization-actions=gs://dataproc-initialization-actions/bigdl/bigdl.sh
 ```
 
 Note:
 
-By default, it will automatically download BigDL 0.4.0 for Dataproc 1.2 (Spark 2.2.0 and Scala 2.11.8). To download a different version of BigDL or one targeted to a different version of Spark/Scala, find the download URL from the BigDL releases page, and set the metadata key BIGDL_DOWNLOAD_URL. More information please refer https://github.com/GoogleCloudPlatform/dataproc-initialization-actions/tree/master/bigdl
+By default, it will automatically download BigDL 0.4.0 for Dataproc 1.2 (Spark 2.2.0 and Scala 2.11.8). To download a different version of BigDL or one targeted to a different version of Spark/Scala, find the download URL from the BigDL releases page, and set the metadata key "bigdl-download-url".
+eg.
+```bash
+gcloud dataproc clusters create <CLUSTER_NAME> \
+    --image-version 1.0 \
+    --initialization-actions gs://dataproc-initialization-actions/bigdl/bigdl.sh \
+    --initialization-action-timeout 10m \
+    --metadata 'bigdl-download-url=https://s3-ap-southeast-1.amazonaws.com/bigdl-download/dist-spark-1.6.2-scala-2.10.5-all-0.4.0-dist.zip'
+```
+More information please refer https://github.com/GoogleCloudPlatform/dataproc-initialization-actions/tree/master/bigdl
 
 Once the cluster is provisioned, you will be able to see the cluster running in the Google Cloud Platform Console. Now you can SSH to the master node.
 
