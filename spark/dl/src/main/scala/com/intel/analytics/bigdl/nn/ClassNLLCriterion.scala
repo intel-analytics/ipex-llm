@@ -16,7 +16,8 @@
 
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.nn.abstractnn.TensorCriterion
+import com.intel.analytics.bigdl.nn.abstractnn.SizeAverageStatus.SizeAverageStatus
+import com.intel.analytics.bigdl.nn.abstractnn.{SizeAverageStatus, TensorCriterion}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.Tensor
 
@@ -24,6 +25,7 @@ import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, Future}
 import scala.reflect.ClassTag
 import com.intel.analytics.bigdl.utils.Engine
+import org.apache.hadoop.mapreduce.v2.app.speculate.TaskRuntimeEstimator
 
 /**
  * The negative log likelihood criterion. It is useful to train a classification problem with n
@@ -82,6 +84,7 @@ class ClassNLLCriterion[@specialized(Float, Double) T: ClassTag]
 
   private val oneMinusEpsilon: T = ev.minus(ev.one, epsilon)
 
+  sizeAverageStatus = if (sizeAverage) SizeAverageStatus.True else SizeAverageStatus.False
 
   override def updateOutput(input: Tensor[T], target: Tensor[T]): T = {
     require(input.dim() == 1 || input.dim() == 2,
@@ -106,8 +109,6 @@ class ClassNLLCriterion[@specialized(Float, Double) T: ClassTag]
           ev.times(ev.negative(input.valueAt(curTarget)), total_weight)
         }
       }
-      sparseOutput.resize(Array[Int]())
-      sparseOutput.setValue(output)
     } else if (input.dim() == 2) {
       val batchSize = input.size(1)
       val targetSize = target.size()
@@ -144,14 +145,12 @@ class ClassNLLCriterion[@specialized(Float, Double) T: ClassTag]
         })
         i += 1
       }
-      sparseOutput.resizeAs(target)
 
       i = 0
       while (i < batchSize) {
         val (o, w) = Await.result(results(i), Duration.Inf)
         output = ev.minus(output, o)
         total_weight = ev.plus(total_weight, w)
-        sparseOutput.setValue(i + 1, ev.negative(o))
         i += 1
       }
       target.resize(targetSize)

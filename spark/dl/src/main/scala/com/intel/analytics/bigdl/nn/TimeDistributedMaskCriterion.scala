@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.nn.abstractnn.TensorCriterion
+import com.intel.analytics.bigdl.nn.abstractnn.{SizeAverageStatus, TensorCriterion}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Engine
@@ -36,16 +36,15 @@ import scala.reflect.ClassTag
  *     -1, in this case, we are only interested in 1, 2, 3, 5, 4, 3)
  *
  * @param critrn embedded criterion
- * @param dimension to compute criterion loss along the input and target dimension
  */
 
 class TimeDistributedMaskCriterion[T : ClassTag](
   val critrn : TensorCriterion[T],
-  val dimension: Int = 2,
   val paddingValue: Int = 0
 )
   (implicit ev: TensorNumeric[T]) extends TensorCriterion[T] {
 
+  val dimension: Int = 2
   private var fInput: Tensor[T] = Tensor[T]()
   private var fTarget: Tensor[T] = Tensor[T]()
   private var _gradInput = Tensor[T]()  // list of cell criterions cloned from added criterion
@@ -55,6 +54,8 @@ class TimeDistributedMaskCriterion[T : ClassTag](
   @transient
   protected var results: Array[Future[Unit]] = _
   private val mask = Tensor[T]()
+  private val sumBuffer = Tensor[T]()
+  private val gradInputBuffer = Tensor[T]()
 
   /**
    * Clone N criterions; N depends on the time dimension of the input
@@ -104,16 +105,22 @@ class TimeDistributedMaskCriterion[T : ClassTag](
     mask.resizeAs(target)
     mask.applyFun[T](target, x =>
       if (x != ev.fromType[Int](paddingValue)) ev.one else ev.zero)
-    val outputBuff = Tensor()
-    outputBuff.resizeAs(mask)
-    (0 until nstep).foreach(b => {
-      outputBuff
-        .select(2, b + 1)
-        .cmul(mask.select(2, b + 1),
-          cells(b).sparseOutput)
+
+    sumBuffer.sum(mask, dimension % 2 + 1)
+    var sum = ev.zero
+    (0 until nstep).foreach(t => {
+      val loss = critrn.sizeAverageStatus match {
+        case SizeAverageStatus.True =>
+          ev.times(cells(t).output, sumBuffer(Array(1, t + 1)))
+        case SizeAverageStatus.False => cells(t).output
+        case SizeAverageStatus.None =>
+          throw new RuntimeException("Using TimeDistributedMaskCriterion," +
+            " the embedded criterion should be set to True or False")
+      }
+      sum = ev.plus(sum, loss)
     })
 
-    output = ev.divide(outputBuff.sum(), mask.sum())
+    output = ev.divide(sum, mask.sum())
 
     output
   }
@@ -136,7 +143,18 @@ class TimeDistributedMaskCriterion[T : ClassTag](
         fInput = input.select(dimension, _i)
         fTarget = target.select(dimension, _i)
         _gradInput = gradInput.select(dimension, _i)
-        _gradInput.copy(cells(_i - 1).updateGradInput(fInput, fTarget).toTensor[T])
+        val _iGradInput = cells(_i - 1).updateGradInput(fInput, fTarget).toTensor[T]
+        _gradInput.copy(
+          critrn.sizeAverageStatus match {
+            case SizeAverageStatus.True =>
+              gradInputBuffer.resizeAs(_iGradInput).mul(
+                _iGradInput,
+                sumBuffer(Array(1, _i)))
+            case SizeAverageStatus.False => _iGradInput
+            case SizeAverageStatus.None =>
+              throw new RuntimeException("Using TimeDistributedMaskCriterion," +
+                " the embedded criterion should be set to True or False")
+          })
       })
       i += 1
     }
@@ -151,10 +169,9 @@ class TimeDistributedMaskCriterion[T : ClassTag](
 object TimeDistributedMaskCriterion {
   def apply[@specialized(Float, Double) T: ClassTag](
     critrn: TensorCriterion[T] = null,
-    dimension: Int = 2,
     paddingValue: Int = 0
   )
     (implicit ev: TensorNumeric[T]) : TimeDistributedMaskCriterion[T] = {
-    new TimeDistributedMaskCriterion[T](critrn, dimension, paddingValue)
+    new TimeDistributedMaskCriterion[T](critrn, paddingValue)
   }
 }
