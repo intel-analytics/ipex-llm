@@ -13,27 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.bigdl.utils.tf.loaders
+package com.intel.analytics.bigdl.nn.tf
 
-import java.nio.ByteOrder
-
-import com.intel.analytics.bigdl.Module
-import com.intel.analytics.bigdl.nn.tf.{DecodePng => DecodePngOp}
+import com.intel.analytics.bigdl.nn.abstractnn.Activity
+import com.intel.analytics.bigdl.nn.ops.Operation
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.tf.Context
-import org.tensorflow.framework.NodeDef
+import com.intel.analytics.bigdl.utils.T
 
 import scala.reflect.ClassTag
 
-class DecodePng extends TensorflowOpsLoader {
+private[bigdl] class NoOp[T: ClassTag]()
+  (implicit ev: TensorNumeric[T]) extends Operation[Activity, Activity, T] with WithoutInput{
 
-  import Utils._
+  private val data = T()
 
-  override def build[T: ClassTag](nodeDef: NodeDef, byteOrder: ByteOrder
-    , context: Context[T])(implicit ev: TensorNumeric[T]): Module[T] = {
-    val attr = nodeDef.getAttrMap
-    val channels = getInt(attr, "channels")
-
-    new DecodePngOp[T](channels)
-  }
+  override def updateOutput(input: Activity): Activity = data
 }

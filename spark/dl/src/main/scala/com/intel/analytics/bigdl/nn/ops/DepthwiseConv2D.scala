@@ -73,7 +73,7 @@ object DepthwiseConv2D {
     new DepthwiseConv2D(strideW, strideH, padW, padH, dataFormat)
 }
 
-class DepthwiseConv2DBackpropInput[T: ClassTag](
+private[bigdl] class DepthwiseConv2DBackpropInput[T: ClassTag](
   strideW: Int, strideH: Int,
   padW: Int, padH: Int,
   dataFormat: DataFormat
@@ -117,7 +117,7 @@ class DepthwiseConv2DBackpropInput[T: ClassTag](
   }
 }
 
-object DepthwiseConv2DBackpropInput {
+private[bigdl] object DepthwiseConv2DBackpropInput {
   def apply[T: ClassTag](
     strideW: Int, strideH: Int,
     padW: Int, padH: Int,
@@ -126,7 +126,7 @@ object DepthwiseConv2DBackpropInput {
     new DepthwiseConv2DBackpropInput(strideW, strideH, padW, padH, dataFormat)
 }
 
-class DepthwiseConv2DBackpropFilter[T: ClassTag](
+private[bigdl] class DepthwiseConv2DBackpropFilter[T: ClassTag](
   strideW: Int, strideH: Int,
   padW: Int, padH: Int,
   dataFormat: DataFormat
@@ -172,7 +172,7 @@ class DepthwiseConv2DBackpropFilter[T: ClassTag](
   }
 }
 
-object DepthwiseConv2DBackpropFilter {
+private[bigdl] object DepthwiseConv2DBackpropFilter {
   def apply[T: ClassTag](
     strideW: Int, strideH: Int,
     padW: Int, padH: Int,
