@@ -22,6 +22,9 @@ import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.nn.keras.Masking
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
+
+import scala.util.Random
 
 class MaskingSpec extends KerasBaseSpec{
 
@@ -55,4 +58,13 @@ class MaskingSpec extends KerasBaseSpec{
       kerasCode)
   }
 
+}
+
+class MaskingSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val layer = Masking[Float](0.0, inputShape = Shape(3, 12))
+    layer.build(Shape(2, 3, 12))
+    val input = Tensor[Float](2, 3, 12).apply1(_ => Random.nextFloat())
+    runSerializationTest(layer, input)
+  }
 }

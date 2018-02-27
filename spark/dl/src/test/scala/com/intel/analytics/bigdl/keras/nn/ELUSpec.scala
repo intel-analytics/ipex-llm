@@ -22,6 +22,9 @@ import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.nn.keras.ELU
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
+
+import scala.util.Random
 
 class ELUSpec extends KerasBaseSpec{
 
@@ -55,4 +58,13 @@ class ELUSpec extends KerasBaseSpec{
       kerasCode)
   }
 
+}
+
+class ELUSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val layer = ELU[Float](2.7, inputShape = Shape(3, 24))
+    layer.build(Shape(2, 3, 24))
+    val input = Tensor[Float](2, 3, 24).apply1(_ => Random.nextFloat())
+    runSerializationTest(layer, input)
+  }
 }

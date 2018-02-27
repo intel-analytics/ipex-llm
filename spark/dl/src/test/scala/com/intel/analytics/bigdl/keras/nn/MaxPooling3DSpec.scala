@@ -21,6 +21,9 @@ import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.nn.keras.{MaxPooling3D, Sequential => KSequential}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
+
+import scala.util.Random
 
 class MaxPooling3DSpec extends KerasBaseSpec {
 
@@ -40,4 +43,13 @@ class MaxPooling3DSpec extends KerasBaseSpec {
       kerasCode)
   }
 
+}
+
+class MaxPooling3DSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val layer = MaxPooling3D[Float](inputShape = Shape(3, 20, 15, 35))
+    layer.build(Shape(2, 3, 20, 15, 35))
+    val input = Tensor[Float](2, 3, 20, 15, 35).apply1(_ => Random.nextFloat())
+    runSerializationTest(layer, input)
+  }
 }
