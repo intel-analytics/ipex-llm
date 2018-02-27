@@ -130,7 +130,7 @@ class ClassNLLCriterion[@specialized(Float, Double) T: ClassTag]
           val curTarget = ev.toType[Int](target.valueAt(_i))
           assert(curTarget >= 1 && curTarget <= nClasses || curTarget == paddingValue,
             s"curTarget ${curTarget} is out of range 1 to ${nClasses}")
-          if (curTarget == paddingValue) (ev.zero, ev.one)
+          if (curTarget == paddingValue) (ev.zero, ev.zero)
           else {
             val curWeight = if (weights != null) weights.valueAt(curTarget) else ev.fromType[Int](1)
             if (!logProbAsInput) {

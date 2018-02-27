@@ -21,7 +21,7 @@ import org.scalatest.{FlatSpec, Matchers}
 import scala.math._
 
 class TimeDistributedMaskCriterionSpec extends FlatSpec with Matchers {
-  "" should "" in {
+  "TimeDistributedMaskCriterion" should "works correctly" in {
     val criterion = ClassNLLCriterion[Double](paddingValue = 0)
     val layer = TimeDistributedMaskCriterion[Double](criterion, paddingValue = 0)
 

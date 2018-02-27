@@ -53,7 +53,6 @@ abstract class AbstractCriterion[A <: Activity: ClassTag, B <: Activity: ClassTa
   var output: T = ev.fromType[Int](0)
 
   var sparseOutput: Tensor[T] = Tensor()
-  var sparseGradInput: Tensor[T] = Tensor()
 
   private[nn] def allocateAs[D <: Activity](dest: D): D = dest match {
     case tensor: Tensor[T] => Tensor[T]().asInstanceOf[D]
