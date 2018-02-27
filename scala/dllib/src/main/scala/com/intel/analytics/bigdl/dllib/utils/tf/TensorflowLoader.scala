@@ -25,7 +25,7 @@ import com.google.protobuf.{CodedInputStream, TextFormat}
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.nn.Graph
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
-import com.intel.analytics.bigdl.nn.ops.AssignGrad
+import com.intel.analytics.bigdl.nn.tf.AssignGrad
 import com.intel.analytics.bigdl.python.api.{JTensor, PythonBigDL, PythonBigDLUtils}
 import com.intel.analytics.bigdl.tensor.{DoubleType, FloatType, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
