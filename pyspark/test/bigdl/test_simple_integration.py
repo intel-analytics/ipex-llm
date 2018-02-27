@@ -28,8 +28,8 @@ import pytest
 from numpy.testing import assert_allclose, assert_array_equal
 from bigdl.util.engine import compare_version
 from bigdl.transform.vision.image import *
-from bigdl.models.utils.model_broadcast import broadcastModel
 from bigdl.dataset.dataset import *
+from bigdl.models.utils.model_broadcast import broadcast_model
 np.random.seed(1337)  # for reproducibility
 
 
@@ -607,7 +607,7 @@ class TestSimple():
 
         init_executor_gateway(self.sc)
         model = Linear(3, 2)
-        broadcasted = broadcastModel(self.sc, model)
+        broadcasted = broadcast_model(self.sc, model)
         input_data = np.random.rand(3)
         output = self.sc.parallelize([input_data], 1)\
             .map(lambda x: broadcasted.value.forward(x)).first()
