@@ -13,20 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.bigdl.nn.ops
+package com.intel.analytics.bigdl.nn.tf
 
+import com.intel.analytics.bigdl.nn.ops.Operation
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.{NumericWildCard, TensorNumeric}
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Table
 
 import scala.reflect.ClassTag
 
-class Inv[T: ClassTag, D: ClassTag]()(implicit ev: TensorNumeric[T], ev2: TensorNumeric[D])
-  extends Operation[Tensor[D], Tensor[D], T] {
+class SqrtGrad[T: ClassTag, D: ClassTag](implicit ev: TensorNumeric[T], ev2: TensorNumeric[D])
+  extends Operation[Table, Tensor[D], T] {
+
   output = Tensor[D]()
 
-  override def updateOutput(input: Tensor[D]): Tensor[D] = {
-    output.resizeAs(input).copy(input).inv()
+  override def updateOutput(inputs: Table): Tensor[D] = {
+    val grads = inputs[Tensor[D]](2)
+    val y = inputs[Tensor[D]](1)
+
+    output.resizeAs(grads).copy(grads).mul(ev2.fromType(0.5)).div(y)
+
     output
   }
 
@@ -36,25 +42,22 @@ class Inv[T: ClassTag, D: ClassTag]()(implicit ev: TensorNumeric[T], ev2: Tensor
   }
 }
 
-object Inv {
-  def apply[T: ClassTag, D: ClassTag]()(
-    implicit ev: TensorNumeric[T], ev2: TensorNumeric[D]): Inv[T, D] = new Inv()
+object SqrtGrad {
+  def apply[T: ClassTag, D: ClassTag]()
+    (implicit ev: TensorNumeric[T], ev2: TensorNumeric[D]): SqrtGrad[T, D] = new SqrtGrad[T, D]()
 }
 
-private[bigdl] class InvGrad[T: ClassTag, D: ClassTag]()
-  (implicit ev: TensorNumeric[T], ev2: TensorNumeric[D]) extends Operation[Table, Tensor[D], T] {
+private[bigdl] class RsqrtGrad[T: ClassTag, D: ClassTag]
+(implicit ev: TensorNumeric[T], ev2: TensorNumeric[D]) extends Operation[Table, Tensor[D], T] {
+
   output = Tensor[D]()
 
-  override def updateOutput(input: Table): Tensor[D] = {
-    require(input.length() == 2, "InvGrad requires two tensors as input")
-    val x = input[Tensor[D]](1)
-    val d = input[Tensor[D]](2)
+  override def updateOutput(inputs: Table): Tensor[D] = {
+    val grads = inputs[Tensor[D]](2)
+    val y = inputs[Tensor[D]](1)
 
-    if (d.getType() != output.getType()) {
-      output = d.emptyInstance()
-    }
-    output.resizeAs(x)
-    output.copy(x).pow(ev2.fromType(2)).cmul(d).mul(ev2.fromType(-1))
+    output.resizeAs(y).copy(y).pow(ev2.fromType(3.0)).mul(ev2.fromType(-0.5f)).cmul(grads)
+
     output
   }
 
@@ -64,7 +67,7 @@ private[bigdl] class InvGrad[T: ClassTag, D: ClassTag]()
   }
 }
 
-private[bigdl] object InvGrad {
-  def apply[T: ClassTag, D: ClassTag]()(implicit ev: TensorNumeric[T], ev2: TensorNumeric[D])
-  : InvGrad[T, D] = new InvGrad()
+private[bigdl] object RsqrtGrad {
+  def apply[T: ClassTag, D: ClassTag]()
+    (implicit ev: TensorNumeric[T], ev2: TensorNumeric[D]): RsqrtGrad[T, D] = new RsqrtGrad[T, D]()
 }

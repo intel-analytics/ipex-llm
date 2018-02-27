@@ -13,26 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.bigdl.utils.tf.loaders
+package com.intel.analytics.bigdl.nn.tf
 
-import java.nio.ByteOrder
-
-import com.intel.analytics.bigdl.Module
-import com.intel.analytics.bigdl.nn.tf.{Assert => AssertOperation}
+import com.intel.analytics.bigdl.nn.abstractnn.DataFormat
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.tf.Context
-import org.tensorflow.framework.NodeDef
+import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 
-import scala.reflect.ClassTag
-
-class Assert extends TensorflowOpsLoader {
-
-  import Utils._
-
-  override def build[T: ClassTag](nodeDef: NodeDef, byteOrder: ByteOrder,
-    context: Context[T])(implicit ev: TensorNumeric[T]): Module[T] = {
-    new AssertOperation[T]()
+class Conv3DSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val module = Conv3D[Float](1, 2, 3, 0, 0, 0, DataFormat.NHWC)
+    val input = Tensor[Float](4, 20, 30, 40, 3).rand()
+    val filter = Tensor[Float](2, 3, 4, 3, 4).rand()
+    runSerializationTest(module, T(input, filter))
   }
 }
-
