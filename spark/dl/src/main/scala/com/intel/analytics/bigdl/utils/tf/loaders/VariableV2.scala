@@ -35,6 +35,6 @@ class VariableV2 extends TensorflowOpsLoader{
     context: Context[T])(implicit ev: TensorNumeric[T]): Module[T] = {
     val w = context(nodeDef.getName)._1
     val g = context(nodeDef.getName)._2
-    Variable[T](w, g)
+    new Variable[T](w, g)
   }
 }

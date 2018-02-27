@@ -16,11 +16,12 @@
 package com.intel.analytics.bigdl.nn.tf
 
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
-import com.intel.analytics.bigdl.nn.ops.Operation
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.nn.ops.{ModuleToOperation, Operation}
+import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.{NumericWildCard, TensorNumeric}
 import com.intel.analytics.bigdl.utils.{T, Table}
 
+import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
 /**
@@ -185,4 +186,89 @@ private[bigdl] object Fill {
     (implicit ev: TensorNumeric[T]) : Fill[T] = {
     new Fill[T]()
   }
+}
+
+/**
+ * Given shapes of two tensors, computes the reduction indices for the
+ * gradient computation.
+ *
+ * @tparam T Numeric type. Only support float/double now
+ */
+private[bigdl] class BroadcastGradientArgs[T: ClassTag]()
+  (implicit ev: TensorNumeric[T]) extends Operation[Table, Table, T] {
+
+  override def updateOutput(input: Table): Table = {
+    val input1 = input[Tensor[Int]](1)
+    val input2 = input[Tensor[Int]](2)
+
+    val output1 = Tensor[Int]()
+    val output2 = Tensor[Int]()
+
+    output.insert(output1).insert(output2)
+
+    // Reverse the shape of x and y for convenience.
+    // After the reverse, 0-th is the inner-most dimension.
+    val rx =
+    if (input1.storage() == null) Array[Int]().toBuffer
+    else input1.storage().array().reverse.toBuffer
+    val ry =
+      if (input2.storage() == null) Array[Int]().toBuffer
+      else input2.storage().array().reverse.toBuffer
+
+    if (rx.length < ry.length) {
+      while (rx.length < ry.length) {
+        rx.append(1)
+      }
+    } else {
+      while (rx.length > ry.length) {
+        ry.append(1)
+      }
+    }
+
+    val xReducedIndexBuffer = new ArrayBuffer[Int]()
+    val yReducedIndexBuffer = new ArrayBuffer[Int]()
+
+    val n = rx.length
+
+    var i = 0
+    while (i < n) {
+      val xi = rx(i)
+      val yi = ry(i)
+
+      if (xi == yi) {
+        if (xi == 1) {
+          xReducedIndexBuffer.append(n - 1 - i)
+          yReducedIndexBuffer.append(n - 1 - i)
+        }
+      } else if (xi == 1) {
+        xReducedIndexBuffer.append(n - 1 - i)
+      } else if (yi == 1) {
+        yReducedIndexBuffer.append(n - 1 - i)
+      } else {
+        return output
+      }
+      i += 1
+    }
+
+    if (xReducedIndexBuffer.isEmpty) {
+      input(1) = Tensor[Int]()
+    } else {
+      output1.resize(Array(xReducedIndexBuffer.length))
+        .set(Tensor[Int](Storage(xReducedIndexBuffer.reverse.toArray)))
+    }
+
+    if (yReducedIndexBuffer.isEmpty) {
+      input(2) = Tensor[Int]()
+    } else {
+      output2.resize(Array(yReducedIndexBuffer.length))
+        .set(Tensor[Int](Storage(yReducedIndexBuffer.reverse.toArray)))
+    }
+
+    output
+  }
+}
+
+private[bigdl] object BroadcastGradientArgs {
+  def apply[T: ClassTag]()(implicit ev: TensorNumeric[T]): Operation[Activity, Activity, T]
+  = ModuleToOperation[T](new BroadcastGradientArgs())
 }

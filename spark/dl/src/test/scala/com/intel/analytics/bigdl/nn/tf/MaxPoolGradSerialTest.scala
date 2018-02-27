@@ -13,26 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.bigdl.utils.tf.loaders
 
-import java.nio.ByteOrder
+package com.intel.analytics.bigdl.nn.tf
 
-import com.intel.analytics.bigdl.Module
-import com.intel.analytics.bigdl.nn.tf.{Assert => AssertOperation}
+import com.intel.analytics.bigdl.nn.abstractnn.DataFormat
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.tf.Context
-import org.tensorflow.framework.NodeDef
+import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 
-import scala.reflect.ClassTag
+import scala.util.Random
 
-class Assert extends TensorflowOpsLoader {
-
-  import Utils._
-
-  override def build[T: ClassTag](nodeDef: NodeDef, byteOrder: ByteOrder,
-    context: Context[T])(implicit ev: TensorNumeric[T]): Module[T] = {
-    new AssertOperation[T]()
+class MaxPoolGradSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val maxPoolGrad = MaxPoolGrad[Float](2, 1, 1, 1, 0, 0, DataFormat.NCHW).
+      setName("maxPoolGrad")
+    val input = T(Tensor[Float](1, 3, 3).apply1(_ => Random.nextFloat()),
+      Tensor[Float](),
+      Tensor[Float](1, 1, 1).apply1(_ => Random.nextFloat()))
+    runSerializationTest(maxPoolGrad, input)
   }
 }
-

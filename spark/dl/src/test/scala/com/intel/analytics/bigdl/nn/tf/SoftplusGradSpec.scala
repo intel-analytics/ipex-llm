@@ -13,26 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.bigdl.utils.tf.loaders
+package com.intel.analytics.bigdl.nn.tf
 
-import java.nio.ByteOrder
-
-import com.intel.analytics.bigdl.Module
-import com.intel.analytics.bigdl.nn.tf.{Assert => AssertOperation}
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.tf.Context
-import org.tensorflow.framework.NodeDef
+import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 
-import scala.reflect.ClassTag
+import scala.util.Random
 
-class Assert extends TensorflowOpsLoader {
-
-  import Utils._
-
-  override def build[T: ClassTag](nodeDef: NodeDef, byteOrder: ByteOrder,
-    context: Context[T])(implicit ev: TensorNumeric[T]): Module[T] = {
-    new AssertOperation[T]()
+class SoftplusGradSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val sofplusGrad = SoftplusGrad[Float, Float].setName("sofplusGrad")
+    val input = T(Tensor[Float](2, 2, 2).apply1(_ => Random.nextFloat()),
+      Tensor[Float](2, 2, 2).apply1(_ => Random.nextFloat()))
+    runSerializationTest(sofplusGrad, input)
   }
 }
-
