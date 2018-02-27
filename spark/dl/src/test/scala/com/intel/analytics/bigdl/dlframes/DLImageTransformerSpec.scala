@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.transform.vision.image.augmentation.{CenterCrop
 import com.intel.analytics.bigdl.utils.Engine
 import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
 import org.apache.spark.SparkContext
-import org.apache.spark.sql.Row
+import org.apache.spark.sql.{Row, SQLContext}
 import org.opencv.core.CvType
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
@@ -30,14 +30,16 @@ import scala.util.Random
 
 class DLImageTransformerSpec extends FlatSpec with Matchers with BeforeAndAfter {
   private var sc : SparkContext = _
+  private var sqlContext : SQLContext = _
   private val pascalResource = getClass.getClassLoader.getResource("pascal/")
   private val imageNetResource = getClass.getClassLoader.getResource("imagenet/")
 
   before {
+    val conf = Engine.createSparkConf().setAppName("Test DLImageTransfomer").setMaster("local[1]")
+    sc = SparkContext.getOrCreate(conf)
+    sqlContext = new SQLContext(sc)
     Random.setSeed(42)
     RNG.setSeed(42)
-    val conf = Engine.createSparkConf().setAppName("Test DLEstimator").setMaster("local[1]")
-    sc = SparkContext.getOrCreate(conf)
     Engine.init
   }
 
@@ -119,6 +121,6 @@ class DLImageTransformerSpec extends FlatSpec with Matchers with BeforeAndAfter 
     assert(r.getInt(1) == 28)
     assert(r.getInt(2) == 28)
     assert(r.getInt(3) == 1)
-    assert(r.getInt(4) == CvType.CV_8UC1)
+    assert(r.getInt(4) == CvType.CV_32FC1)
   }
 }

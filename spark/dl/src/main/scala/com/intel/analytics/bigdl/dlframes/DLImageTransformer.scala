@@ -21,9 +21,8 @@ import com.intel.analytics.bigdl.transform.vision.image.{FeatureTransformer, Ima
 import org.apache.spark.ml.DLTransformerBase
 import org.apache.spark.ml.adapter.{HasInputCol, HasOutputCol, SchemaUtils}
 import org.apache.spark.ml.util.Identifiable
-import org.apache.spark.sql.functions.udf
 import org.apache.spark.sql.types._
-import org.apache.spark.sql.{DataFrame, Row}
+import org.apache.spark.sql.{DataFrame, Row, SqlAdapter}
 
 /**
  * Provides DataFrame-based API for image pre-processing and feature transformation.
@@ -76,7 +75,7 @@ class DLImageTransformer (
     val localTransformer = this.transformer
     val transformerBC = sc.broadcast(localTransformer)
 
-    val transformUDF = udf ({ row: Row =>
+    val transFunc = { row: Row =>
       val transformerValue = transformerBC.value
       val imf = DLImageSchema.row2IMF(row)
       val result = transformerValue.apply(Iterator(imf)).toArray.head
@@ -85,7 +84,9 @@ class DLImageTransformer (
         MatToTensor[Float]().transform(result)
       }
       DLImageSchema.imf2Row(result)
-    }, DLImageSchema.floatSchema)
+    }
+
+    val transformUDF = SqlAdapter.getUDF(transFunc, DLImageSchema.floatSchema)
 
     dataFrame.withColumn($(outputCol), transformUDF(dataFrame($(inputCol))))
   }
