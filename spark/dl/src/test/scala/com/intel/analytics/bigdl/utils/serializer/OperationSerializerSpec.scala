@@ -21,7 +21,7 @@ import java.io.{File => JFile}
 import com.google.protobuf.{ByteString, CodedOutputStream}
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.nn.abstractnn.DataFormat
-import com.intel.analytics.bigdl.nn.ops.{All, Any, ApproximateEqual, ArgMax, Assert, Assign, AssignGrad, AvgPoolGrad, BatchMatMul, BiasAddGrad, BroadcastGradientArgs, BucketizedCol, Cast, CategoricalColHashBucket, CategoricalColVocaList, Ceil, Conv2D, Conv2DBackFilter, Conv2DTranspose, Conv3D, Conv3DBackpropFilter, Conv3DBackpropFilterV2, Conv3DBackpropInput, Conv3DBackpropInputV2, CrossEntropy, DecodeImage, DepthwiseConv2D, DepthwiseConv2DBackpropFilter, DepthwiseConv2DBackpropInput, Digamma, Dilation2D, Dilation2DBackpropFilter, Dilation2DBackpropInput, EluGrad, Equal, Erf, Erfc, Expm1, Floor, FloorDiv, FloorMod, FusedBatchNorm, FusedBatchNormGrad, Greater, GreaterEqual, InTopK, Inv, InvGrad, IsFinite, IsInf, IsNan, Kv2Tensor, L2Loss, LRNGrad, Less, LessEqual, Lgamma, LogicalAnd, LogicalNot, LogicalOr, MaxPool, MaxPoolGrad, Maximum, Minimum, Mod, ModuleToOperation, NotEqual, OneHot, Pad, Prod, RandomUniform, RangeOps, Rank, Relu6Grad, ReluGrad, ResizeBilinearGrad, ResizeBilinearOps, Rint, Round, RsqrtGrad, SegmentSum, SigmoidGrad, Sign, Slice, SoftplusGrad, SoftsignGrad, SqrtGrad, SquaredDifference, Substr, TanhGrad, TopK, TruncateDiv, TruncatedNormal, DecodeGif => DecodeGifOps, DecodeJpeg => DecodeJpegOps, DecodePng => DecodePngOps, DecodeRaw => DecodeRawOps, Exp => ExpOps, Pow => PowOps, Select => SelectOps, Sum => SumOps, Tile => TileOps}
+import com.intel.analytics.bigdl.nn.ops.{All, Any, ApproximateEqual, ArgMax, Assert, Assign, AssignGrad, AvgPoolGrad, BatchMatMul, BiasAddGrad, BroadcastGradientArgs, BucketizedCol, Cast, CategoricalColHashBucket, CategoricalColVocaList, Ceil, Conv2D, Conv2DBackFilter, Conv2DTranspose, Conv3D, Conv3DBackpropFilter, Conv3DBackpropFilterV2, Conv3DBackpropInput, Conv3DBackpropInputV2, CrossEntropy, DecodeImage, DepthwiseConv2D, DepthwiseConv2DBackpropFilter, DepthwiseConv2DBackpropInput, Digamma, Dilation2D, Dilation2DBackpropFilter, Dilation2DBackpropInput, EluGrad, Equal, Erf, Erfc, Expm1, Floor, FloorDiv, FloorMod, FusedBatchNorm, FusedBatchNormGrad, Greater, GreaterEqual, InTopK, IndicatorCol, Inv, InvGrad, IsFinite, IsInf, IsNan, Kv2Tensor, L2Loss, LRNGrad, Less, LessEqual, Lgamma, LogicalAnd, LogicalNot, LogicalOr, MaxPool, MaxPoolGrad, Maximum, Minimum, Mod, ModuleToOperation, NotEqual, OneHot, Pad, Prod, RandomUniform, RangeOps, Rank, Relu6Grad, ReluGrad, ResizeBilinearGrad, ResizeBilinearOps, Rint, Round, RsqrtGrad, SegmentSum, SigmoidGrad, Sign, Slice, SoftplusGrad, SoftsignGrad, SqrtGrad, SquaredDifference, Substr, TanhGrad, TopK, TruncateDiv, TruncatedNormal, DecodeGif => DecodeGifOps, DecodeJpeg => DecodeJpegOps, DecodePng => DecodePngOps, DecodeRaw => DecodeRawOps, Exp => ExpOps, Pow => PowOps, Select => SelectOps, Sum => SumOps, Tile => TileOps}
 import com.intel.analytics.bigdl.nn.tf._
 import com.intel.analytics.bigdl.nn.{SoftPlus => BigDLSoftPlus}
 import com.intel.analytics.bigdl.tensor._
@@ -397,6 +397,20 @@ class OperationSerializerSpec extends SerializerSpecHelper {
     val input = T(input1, input2)
     runSerializationTest(greaterEqual, input, greaterEqual
       .asInstanceOf[ModuleToOperation[Float]].module.getClass)
+  }
+
+  "Indicator serializer" should "work properly" in {
+    val indicatorCol = IndicatorCol[Float](
+      feaLen = 4,
+      isCount = true
+    ).setName("indicatorCol")
+    val input = Tensor.sparse(
+      Array(Array(0, 1, 1, 2, 2, 3, 3, 3),
+        Array(0, 0, 3, 0, 1, 0, 1, 2)),
+      Array(3, 1, 2, 0, 3, 1, 2, 2),
+      Array(4, 4)
+    )
+    runSerializationTest(indicatorCol, input)
   }
 
   "InTopK serializer" should "work properly" in {

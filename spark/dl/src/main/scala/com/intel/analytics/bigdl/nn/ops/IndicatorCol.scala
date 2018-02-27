@@ -15,14 +15,15 @@
  */
 package com.intel.analytics.bigdl.nn.ops
 
-import com.intel.analytics.bigdl.tensor.{DoubleType, FloatType, Tensor}
+import com.intel.analytics.bigdl.tensor.{SparseType, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+
 import scala.reflect.ClassTag
 
 /**
  * Indicator operation represents multi-hot representation of given Tensor.
  *
- * The Input Tensor only support Sparse Tensor.
+ * The Input Tensor should be a 2-D Sparse Tensor.
  * And used to transform the output tensor of CategoricalCol* ops.
  *
  * The output tensor should be a DenseTensor with shape (batch, feaLen).
@@ -53,6 +54,8 @@ class IndicatorCol[T: ClassTag](
 
   override def updateOutput(input: Tensor[Int]): Tensor[T] = {
 
+    require(input.getTensorType == SparseType, "Only sparse input is supported")
+
     val rows = input.size(dim = 1)
     val resTensor = Tensor[T](rows, feaLen)
 
@@ -65,7 +68,7 @@ class IndicatorCol[T: ClassTag](
       while (j < tempArr.length) {
         isCount match {
           case false =>
-            resTensor.setValue(i, tempArr(j) + 1, ev.fromType[Int](1))
+            resTensor.setValue(i, tempArr(j) + 1, ev.one)
           case true =>
             val res = ev.toType[Int](resTensor.valueAt(i, tempArr(j) + 1)) + 1
             resTensor.setValue(i, tempArr(j) + 1, ev.fromType[Int](res))
