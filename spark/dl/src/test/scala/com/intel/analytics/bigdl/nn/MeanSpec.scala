@@ -17,7 +17,10 @@ package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
+
+import scala.util.Random
 
 class MeanSpec extends FlatSpec with Matchers {
 
@@ -45,5 +48,13 @@ class MeanSpec extends FlatSpec with Matchers {
     val expect = Tensor[Float](T(T(1.5f), T(3.5f)))
 
     layer.forward(input) should be(expect)
+  }
+}
+
+class MeanSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val mean = Mean[Float](2).setName("mean")
+    val input = Tensor[Float](5, 5).apply1(_ => Random.nextFloat())
+    runSerializationTest(mean, input)
   }
 }

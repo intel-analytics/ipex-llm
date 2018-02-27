@@ -25,11 +25,12 @@ import com.intel.analytics.bigdl.models.vgg.{VggForCifar10, Vgg_16, Vgg_19}
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.nn.abstractnn.EmptyGradInput
 import com.intel.analytics.bigdl.nn.ops.Less
-import com.intel.analytics.bigdl.nn.tf.{ControlNodes, Enter, Const}
+import com.intel.analytics.bigdl.nn.tf.{Const, ControlNodes, Enter}
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils._
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 
 import scala.reflect.ClassTag
 import scala.util.Random
@@ -1346,5 +1347,19 @@ class DynamicGraphSpec  extends FlatSpec with Matchers {
     val result = model.forward(T(Tensor(T(1)), Tensor(T(2))))
     result.toTable.apply[Tensor[Float]](1).valueAt(1) should be(10)
     result.toTable.apply[Tensor[Float]](2).valueAt(1) should be(47)
+  }
+}
+
+class DynamicGraphSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val linear = Linear[Float](2, 2)
+    val linearNode = linear.inputs()
+    val linearWeight = linear.weight
+    val linearBias = linear.bias
+    val variables = Some(Array(linearWeight), Array(linearBias))
+    val graphWithVariable = Graph.dynamic[Float](Array(linearNode), Array(linearNode),
+      variables, false).setName("graphWithVariable")
+    val input = Tensor[Float](2).apply1(_ => Random.nextFloat())
+    runSerializationTest(graphWithVariable, input)
   }
 }
