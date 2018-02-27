@@ -19,7 +19,7 @@ import java.nio.ByteOrder
 
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.nn.abstractnn.DataFormat
-import com.intel.analytics.bigdl.nn.ops.FusedBatchNormGrad
+import com.intel.analytics.bigdl.nn.tf.FusedBatchNormGrad
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.tf.Context
 import org.tensorflow.framework.NodeDef
