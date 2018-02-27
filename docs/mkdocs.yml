@@ -47,7 +47,9 @@ pages:
   - Caffe Support: ProgrammingGuide/caffe-support.md
   - Keras Support: ProgrammingGuide/keras-support.md
   - Quantization Support: ProgrammingGuide/quantization-support.md
-  - Define new Layer/Criterion: ProgrammingGuide/add-layer-criterion.md
+  - Define Customized Layer/Criterion:
+    - Define New Layer/Criterion: ProgrammingGuide/add-layer-criterion.md
+    - Implement Customized Serializer: ProgrammingGuide/Model/Serialization.md
   - Build Image Application: ProgrammingGuide/image-support.md
 - API Guide:
   - Engine: APIGuide/Engine.md
