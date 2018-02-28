@@ -89,6 +89,18 @@ object Train {
       if (param.checkpoint.isDefined) {
         optimizer.setCheckpoint(param.checkpoint.get, Trigger.everyEpoch)
       }
+      
+      if (param.visualization) {
+        val logdir = "bigdlSummary"
+        val timestamp: Long = System.currentTimeMillis / 1000
+        val appName = "resenet50cifar_"+timestamp
+        val trainSummary = TrainSummary(logdir, appName)
+        val validationSummary = ValidationSummary(logdir, appName)
+        trainSummary.setSummaryTrigger("Parameters", Trigger.severalIteration(10))  
+        optimizer.setValidationSummary(validationSummary) 
+        optimizer.setTrainSummary(trainSummary)
+        model.asInstanceOf[Graph[Float]].saveGraphTopology(logdir)
+      }
 
       optimizer
         .setOptimMethod(optimMethod)
