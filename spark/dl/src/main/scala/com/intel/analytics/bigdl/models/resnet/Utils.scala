@@ -42,7 +42,8 @@ object Utils {
     momentum: Double = 0.9,
     dampening: Double = 0.0,
     nesterov: Boolean = true,
-    graphModel: Boolean = false)
+    graphModel: Boolean = false,
+    visualization: Boolean = true)
 
   val trainParser = new OptionParser[TrainParams]("BigDL ResNet Example") {
     head("Train ResNet model on single node")
