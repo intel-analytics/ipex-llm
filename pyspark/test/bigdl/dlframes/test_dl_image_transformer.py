@@ -31,6 +31,7 @@ class TestDLImageTransformer():
         """
         sparkConf = create_spark_conf().setMaster("local[1]").setAppName("testDLImageTransformer")
         self.sc = get_spark_context(sparkConf)
+        self.sqlContext = SQLContext(self.sc)
         init_engine()
         resource_path = os.path.join(os.path.split(__file__)[0], "../resources")
         self.image_path = os.path.join(resource_path, "pascal/000025.jpg")

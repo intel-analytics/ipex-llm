@@ -104,12 +104,6 @@ class DLImageReaderSpec extends FlatSpec with Matchers with BeforeAndAfter {
     assert(imageDF.count() == 6)
   }
 
-  "DLImageReader" should "has correct #partitions" in {
-    val imageDF = DLImageReader.readImages(imageNetResource.getFile + "*", sc, 4)
-    assert(imageDF.count() == 11)
-    assert(imageDF.rdd.partitions.length >= 4)
-  }
-
   "read gray scale image" should "work" in {
     val resource = getClass().getClassLoader().getResource("gray/gray.bmp")
     val df = DLImageReader.readImages(resource.getFile, sc)
