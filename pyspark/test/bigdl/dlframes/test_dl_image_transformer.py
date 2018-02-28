@@ -22,14 +22,14 @@ from bigdl.util.common import *
 from bigdl.transform.vision.image import *
 
 
-class TestLayer():
+class TestDLImageTransformer():
 
     def setup_method(self, method):
         """
         setup any state tied to the execution of the given method in a
         class.  setup_method is invoked for every test method of a class.
         """
-        sparkConf = create_spark_conf().setMaster("local[1]").setAppName("test model")
+        sparkConf = create_spark_conf().setMaster("local[1]").setAppName("testDLImageTransformer")
         self.sc = get_spark_context(sparkConf)
         init_engine()
         resource_path = os.path.join(os.path.split(__file__)[0], "../resources")

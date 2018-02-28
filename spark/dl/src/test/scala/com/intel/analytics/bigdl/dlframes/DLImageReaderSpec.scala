@@ -34,11 +34,13 @@ class DLImageReaderSpec extends FlatSpec with Matchers with BeforeAndAfter {
   private val imageNetResource = getClass.getClassLoader.getResource("imagenet/")
 
   before {
+    val conf = Engine.createSparkConf().setAppName("Test DLImageReader").setMaster("local[1]")
+    sc = SparkContext.getOrCreate(conf)
+    sQLContext = new SQLContext(sc)
+
     Random.setSeed(42)
     RNG.setSeed(42)
-    val conf = Engine.createSparkConf().setAppName("Test DLEstimator").setMaster("local[1]")
-    sc = SparkContext.getOrCreate(conf)
-    sQLContext = SQLContext.getOrCreate(sc)
+
     Engine.init
   }
 

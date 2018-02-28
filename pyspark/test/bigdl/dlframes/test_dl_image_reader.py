@@ -28,7 +28,7 @@ class TestDLImageReader():
         setup any state tied to the execution of the given method in a
         class.  setup_method is invoked for every test method of a class.
         """
-        sparkConf = create_spark_conf().setMaster("local[1]").setAppName("test model")
+        sparkConf = create_spark_conf().setMaster("local[1]").setAppName("testDLImageReader")
         self.sc = get_spark_context(sparkConf)
         self.sqlContext = SQLContext(self.sc)
         init_engine()
