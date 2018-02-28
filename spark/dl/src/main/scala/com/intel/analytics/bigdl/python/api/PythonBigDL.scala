@@ -338,7 +338,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def createTimeDistributedMaskCriterion(critrn: TensorCriterion[T],
-    paddingValue: Int = 0): TimeDistributedCriterion[T] = {
+    paddingValue: Int = 0): TimeDistributedMaskCriterion[T] = {
     TimeDistributedMaskCriterion[T](critrn, paddingValue)
   }
 
