@@ -36,6 +36,7 @@ import scala.reflect.ClassTag
  *     -1, in this case, we are only interested in 1, 2, 3, 5, 4, 3)
  *
  * @param critrn embedded criterion
+ * @param paddingValue padding value
  */
 
 class TimeDistributedMaskCriterion[T : ClassTag](
