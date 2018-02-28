@@ -659,6 +659,12 @@ class TestSimple():
         predict_result = trained_model.predict_image(image_frame.transform(transformer))
         assert_allclose(predict_result.get_predict().count(), 8)
 
+    def test_get_node_and_core_num(self):
+        node, core = get_node_and_core_number()
+
+        assert node == 1
+        assert core == 4
+
 
 if __name__ == "__main__":
     pytest.main([__file__])
