@@ -149,12 +149,14 @@ class MklDnnTensor[T: ClassTag](
       require(x.getTensorType == MklDnnType, "just support two dnn tensor add")
       // todo: mkl add
       val y = x.asInstanceOf[MklDnnTensor[T]]
-      ev.vAdd(this.nElement(), this.storage().array(), this.storageOffset() - 1,
-        y.storage().array(), y.storageOffset() - 1,
-        this.storage().array(), this.storageOffset() - 1)
+//      ev.vAdd(this.nElement(), this.storage().array(), this.storageOffset() - 1,
+//        y.storage().array(), y.storageOffset() - 1,
+//        this.storage().array(), this.storageOffset() - 1)
+
+      Memory.SAdd(this.nElement(), this.ptr, 0, y.ptr, 0, this.ptr, 0)
       // sync from heap to native
       // todo: all operations based on heap must be sync to native
-      syncFromHeap()
+//      syncFromHeap()
     }
     this
   }
