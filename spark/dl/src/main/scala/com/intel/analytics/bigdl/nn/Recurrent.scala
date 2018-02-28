@@ -265,6 +265,8 @@ class Recurrent[T : ClassTag](
     initHidden(outputSize.drop(2))
     cloneCells()
     if (maskZero) {
+      require(input.dim == 3,
+        "If maskZero set to true, input should be a 3D Tensor, e.g [batch, times, nDim]")
       inputBuffer.resizeAs(input).abs(input).max(maskBuffer, indexBuffer, 3)
       minLength = ev.toType[Int](maskBuffer.sign().sum(2).min(1)._1(Array(1, 1, 1)))
     }
