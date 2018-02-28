@@ -28,7 +28,7 @@ def _from_id_and_type(bid, bigdl_type):
     result = _from_id(bid)
     return ModelBroadcast(path=result._path, bigdl_type=bigdl_type)
 
-def broadcastModel(sc, layer):
+def broadcast_model(sc, layer):
     return ModelBroadcast(sc, layer, sc._pickled_broadcast_vars)
 
 class ModelBroadcast(Broadcast):
