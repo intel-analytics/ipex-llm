@@ -88,13 +88,29 @@ class PredictionServiceSpec extends FlatSpec with Matchers {
     intercept[Exception] {
       PredictionService[Float](testModule, 1)
     }
-    intercept[Exception] {
-      PredictionService[Float](testModule, 2, 0)
-    }
+  }
+
+  "PredictionService.predict" should "return a error message when exception caught" in {
+    // forward exception
+    val service = PredictionService[Float](testModule)
+    val invalidTensor = Tensor[Float](2, 11).randn()
+    var eTensor = service.predict(invalidTensor).asInstanceOf[Tensor[String]]
+    eTensor.isScalar shouldEqual true
+    eTensor.value().contains("running forward") shouldEqual true
+
+    // DeSerialize exception
+    val tensor = Tensor[Float](2, 10).randn()
+    val bytes = PredictionService.serializeActivity(tensor)
+    val invalidBytes = bytes.map(e => (e + 1).toByte)
+    val eBytesOut = service.predict(invalidBytes)
+    eTensor = PredictionService.deSerializeActivity(eBytesOut)
+      .asInstanceOf[Tensor[String]]
+    eTensor.isScalar shouldEqual true
+    eTensor.value().contains("DeSerialize Input") shouldEqual true
   }
 
   "PredictionService" should "work properly with concurrent calls" in {
-    val service = PredictionService[Float](testModule, 5, 3)
+    val service = PredictionService[Float](testModule, 5)
     val sumResults = (1 to 100).par.map { _ =>
       val tensor = Tensor[Float](2, 10).randn()
       val output = service.predict(tensor).asInstanceOf[Tensor[Float]]

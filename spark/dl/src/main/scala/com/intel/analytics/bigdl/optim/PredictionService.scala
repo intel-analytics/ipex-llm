@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.optim
 
-import java.util.concurrent.{Executors, LinkedBlockingQueue}
+import java.util.concurrent.LinkedBlockingQueue
 
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
@@ -31,9 +31,9 @@ import com.intel.analytics.bigdl.utils.{T, Table}
 
 import scala.collection.JavaConverters._
 import scala.collection.mutable
-import scala.concurrent.{ExecutionContext, ExecutionContextExecutor, Future}
 import scala.reflect.ClassTag
 import scala.reflect.runtime.universe.Type
+import scala.util.{Failure, Success, Try}
 
 /**
  * <h6>Prediction Service Interface for Concurrent Calls</h6>
@@ -45,27 +45,18 @@ import scala.reflect.runtime.universe.Type
  * which means if all instances are on serving, the predicting request will be blocked until
  * some instances are released.
  * <br>
- * The release method will be executed asynchronously when predictions finished.
+ * If exceptions caught during predict,
+ * a scalar Tensor[String] will be returned with thrown message.
  *
  * @param model BigDL model used to do predictions
  * @param nInstances number of model instances
- * @param nBackendThreads number of threads to release instances after predictions.
  */
 class PredictionService[T: ClassTag] private[optim](
   model: Module[T],
-  nInstances: Int = 10,
-  nBackendThreads: Int = 2
+  nInstances: Int = 10
 )(implicit ev: TensorNumeric[T]) {
 
   require(nInstances > 1, "At least two instances are needed!")
-
-  require(nBackendThreads >= 1, "At least one backend threads are needed!")
-
-  // ThreadPool for scala.concurrent.Future,
-  // which is build for keeping threads available for unlocking to avoid dead locks.
-  private implicit val ec: ExecutionContextExecutor = {
-    ExecutionContext.fromExecutor(Executors.newFixedThreadPool(nBackendThreads))
-  }
 
   protected val instQueue: LinkedBlockingQueue[Module[T]] = {
     val shallowCopies = (1 to nInstances)
@@ -75,43 +66,55 @@ class PredictionService[T: ClassTag] private[optim](
   }
 
   def predict(request: Activity): Activity = {
-    val module = fetchInstance()
+    // Take an instance from blocking queue,
+    // it will cause a thread blocking when no instance is available.
+    val module = instQueue.take()
+
     // cloned values after prediction finished
-    val output = module.forward(request) match {
-      case tensor: Tensor[_] =>
-        tensor.clone()
-      case table: Table =>
+    val output = Try(module.forward(request)) match {
+      case Success(tensor) if tensor.isTensor =>
+        tensor.asInstanceOf[Tensor[T]].clone()
+
+      case Success(table) if table.isTable =>
         val clonedMap = mutable.HashMap[Any, Any]()
-        table.getState().foreach { case (k, v) =>
-          clonedMap += k -> v.asInstanceOf[Tensor[_]].clone()
-        }
+        table.asInstanceOf[Table].getState()
+          .foreach { case (k, v) =>
+            clonedMap += k -> v.asInstanceOf[Tensor[_]].clone()
+          }
         new Table(clonedMap)
+
+      case Failure(e) =>
+        errorTensor("running forward", e)
     }
-    releaseInstance(module)
+
+    // Release module instance back to blocking queue
+    instQueue.offer(module)
+
     output
   }
 
   def predict(request: Array[Byte]): Array[Byte] = {
-    val activity = PredictionService.deSerializeActivity(request)
-    val output = predict(activity)
-    val bytesOut = PredictionService.serializeActivity(output)
+    val output = Try(
+      PredictionService.deSerializeActivity(request)
+    ) match {
+      case Success(activity) => predict(activity)
+      case Failure(e) => errorTensor("DeSerialize Input", e)
+    }
+
+    val bytesOut = try {
+      PredictionService.serializeActivity(output)
+    } catch {
+      case e: Throwable =>
+        val act = errorTensor("Serialize Output", e)
+        PredictionService.serializeActivity(act)
+    }
+
     bytesOut
   }
 
-  // Take an instance from blocking queue,
-  // it will cause a thread blocking when no instance is available.
-  protected def fetchInstance(): Module[T] = {
-    instQueue.take()
-  }
-
-  // Asynchronously release module instance back to blocking queue.
-  protected def releaseInstance(inst: Module[T]): Future[Boolean] = {
-    Future {
-      val isSuccess = instQueue.offer(inst)
-      println(s"Release instance ${if (isSuccess) "successfully" else "failed"}!" +
-        s" ${instQueue.size()} instances are available now!")
-      isSuccess
-    }
+  private def errorTensor(stage: String, e: Throwable): Tensor[String] = {
+    val msg = s"Exception caught during [$stage]! The cause is ${e.getCause}"
+    Tensor.scalar(msg)
   }
 
 }
@@ -121,10 +124,9 @@ object PredictionService {
 
   def apply[T: ClassTag](
     model: Module[T],
-    nInstances: Int = 10,
-    nBackendThreads: Int = 2
+    nInstances: Int = 10
   )(implicit ev: TensorNumeric[T]): PredictionService[T] = {
-    new PredictionService[T](model, nInstances, nBackendThreads)
+    new PredictionService[T](model, nInstances)
   }
 
   /**
