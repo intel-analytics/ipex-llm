@@ -2338,6 +2338,10 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     Engine.init
   }
 
+  def getNodeAndCoreNumber(): Array[Int] = {
+    Array(Engine.nodeNumber(), Engine.coreNumber())
+  }
+
 
   def setWeights(model: AbstractModule[Activity, Activity, T], weights: JList[JTensor]): Unit = {
     val weightTensor = weights.asScala.toArray.map(toTensor(_))
