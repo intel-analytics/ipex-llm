@@ -134,19 +134,19 @@ class SparseTensorSpec  extends FlatSpec with Matchers {
     val sparseResult = sTensor.dot(dTensor)
     val denseResult = dTensor.dot(Tensor.dense(sTensor))
 
-    sparseResult should be (denseResult)
+    sparseResult should be (denseResult +- 1e-6f)
   }
 
-  "SparseTensor dot DenseTense2" should "return right result" in {
+  "Diagonal SparseTensor dot DenseTense" should "return right result" in {
     val sTensor = Tensor.sparse(
       indices = Array(Array(0, 1, 2, 3), Array(0, 1, 2, 3)),
       values = Array[Float](2f, 4f, 6f, 8f), shape = Array(4, 4))
 
-    val dTensor = Tensor(Array(6, 5)).fill(1.0f)
+    val dTensor = Tensor(Array(4, 4)).fill(1.0f)
 
     val sparseResult = sTensor.dot(dTensor)
 
-    sparseResult should be (20f)
+    sparseResult should be (20f +- 1e-6f)
   }
 
 }
