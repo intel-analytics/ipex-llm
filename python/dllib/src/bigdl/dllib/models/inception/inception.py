@@ -285,11 +285,11 @@ if __name__ == "__main__":
         optim = OptimMethod.load(options.state)
     elif options.maxEpoch:
         optim = SGD(learningrate=options.learningRate, learningrate_decay=0.0, weightdecay=options.weightDecay,
-                    momentum=0.9, dampening=0.0,
-                    leaningrate_schedule=Poly(0.5, ceil(float(1281167) / options.batchSize) * options.maxEpoch))
+                    momentum=0.9, dampening=0.0, nesterov=False,
+                    leaningrate_schedule=Poly(0.5, int(ceil(float(1281167) / options.batchSize)) * options.maxEpoch))
     else:
         optim = SGD(learningrate=options.learningRate, learningrate_decay=0.0, weightdecay=options.weightDecay,
-                    momentum=0.9, dampening=0.0,
+                    momentum=0.9, dampening=0.0, nesterov=False,
                     leaningrate_schedule=Poly(0.5, options.maxIteration))
 
     if options.maxEpoch:
