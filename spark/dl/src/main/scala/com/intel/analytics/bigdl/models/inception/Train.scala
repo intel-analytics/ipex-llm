@@ -22,6 +22,8 @@ import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.utils.{Engine, LoggerFilter, T, Table}
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
+import com.intel.analytics.bigdl.nn.Graph
+import com.intel.analytics.bigdl.visualization.{TrainSummary,ValidationSummary,Summary}
 
 object TrainInceptionV1 {
   LoggerFilter.redirectSparkInfoLogs()
@@ -117,6 +119,19 @@ object TrainInceptionV1 {
 
       if (param.gradientL2NormThreshold.isDefined) {
         optimizer.setGradientClippingByl2Norm(param.gradientL2NormThreshold.get.toFloat)
+      }
+      
+      if (param.visualization) {
+        val logdir = "bigdlSummary"
+        val timestamp: Long = System.currentTimeMillis / 1000
+        val appName = "inception_"+timestamp
+        val trainSummary = TrainSummary(logdir, appName)
+        val validationSummary = ValidationSummary(logdir, appName)
+        trainSummary.setSummaryTrigger("Parameters", Trigger.severalIteration(10))
+        optimizer.setValidationSummary(validationSummary)
+        optimizer.setTrainSummary(trainSummary)
+        model.asInstanceOf[Graph[Float]].saveGraphTopology(logdir)
+        //print("class Num "+param.classNumber)
       }
 
       optimizer
