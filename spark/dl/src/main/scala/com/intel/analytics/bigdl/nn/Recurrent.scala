@@ -72,11 +72,11 @@ class Recurrent[T : ClassTag](
   private val timeBuffer =
     new ArrayBuffer[(AbstractModule[_ <: Activity, _ <: Activity, T], Long, Long)]
   private var layer: TensorModule[T] = null
-  private var maskBuffer: Tensor[T] = _
-  private var gradOutputBuff: Table = _
-  private var indexBuffer: Tensor[T] = _
-  private var inputBuffer: Tensor[T] = _
-  private var outputBuffers: ArrayBuffer[Tensor[T]] = _
+  private var maskBuffer: Tensor[T] = Tensor()
+  private var gradOutputBuff: Table = T()
+  private var indexBuffer: Tensor[T] = Tensor()
+  private var inputBuffer: Tensor[T] = Tensor()
+  private var outputBuffers: ArrayBuffer[Tensor[T]] = ArrayBuffer(Tensor())
   private var minLength: Int = 0
 
   /**
@@ -166,26 +166,6 @@ class Recurrent[T : ClassTag](
     } else {
       cells.head.hidResize(hidden = hidden, batchSize = batchSize, stepShape)
       gradHidden = hidden
-    }
-
-    if (maskBuffer == null) {
-      maskBuffer = Tensor()
-    }
-
-    if (gradOutputBuff == null) {
-      gradOutputBuff = T()
-    }
-
-    if (indexBuffer == null) {
-      indexBuffer = Tensor()
-    }
-
-    if (inputBuffer == null) {
-      inputBuffer = Tensor()
-    }
-
-    if (outputBuffers == null) {
-      outputBuffers = ArrayBuffer(Tensor())
     }
   }
 
@@ -299,6 +279,9 @@ class Recurrent[T : ClassTag](
       if (maskZero && i > minLength) {
         val curMask = maskBuffer.select(2, i)
         val curOut = curOutput[Table](hidDim)[Tensor[T]](1)
+        // Copy output to a new new tensor as output, because for some cells
+        // such as LSTM the hidden h and ouput o refer to the same tensor.
+        // But in this case, we want h and o have difference values.
         curOutput.update(inputDim, outputBuffers(i - 1).resizeAs(curOut).copy(curOut))
         for (b <- 1 to curMask.size(1)) {
           if (curMask(Array(b, 1)) == ev.zero) {
@@ -460,6 +443,7 @@ class Recurrent[T : ClassTag](
 
   override def backward(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
     val st = System.nanoTime
+    currentGradOutput(hidDim) = gradHidden
     var i = times
 
     while (i >= 1) {
@@ -505,6 +489,7 @@ class Recurrent[T : ClassTag](
       } else {
         cells(i - 1).backward(_input, currentGradOutput)
       }
+      currentGradOutput(hidDim) = cells(i - 1).gradInput.toTable(hidDim)
       i -= 1
     }
 
@@ -603,11 +588,11 @@ class Recurrent[T : ClassTag](
     initHiddenState = null
     stepInput2CellBuf.set()
     stepGradBuffer.set()
-    maskBuffer = null
-    gradOutputBuff = null
-    inputBuffer = null
-    indexBuffer = null
-    outputBuffers = null
+    maskBuffer.set()
+    gradOutputBuff.clear()
+    inputBuffer.set()
+    indexBuffer.set()
+    outputBuffers.clear()
     minLength = 0
     this
   }
