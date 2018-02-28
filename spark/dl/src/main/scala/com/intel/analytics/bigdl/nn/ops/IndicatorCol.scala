@@ -66,6 +66,7 @@ class IndicatorCol[T: ClassTag](
         narrowTensor.storageOffset()-1, narrowTensor.storageOffset() - 1 + narrowTensor.nElement())
       var j = 0
       while (j < tempArr.length) {
+        require(tempArr(j) < feaLen, "the parameter feaLen is set too small")
         isCount match {
           case false =>
             resTensor.setValue(i, tempArr(j) + 1, ev.one)
