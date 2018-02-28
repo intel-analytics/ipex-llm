@@ -15,6 +15,7 @@
 #
 
 import pytest
+import os
 from bigdl.dlframes.dl_image_reader import *
 from bigdl.transform.vision.image import *
 from bigdl.util.common import *
@@ -28,12 +29,10 @@ class TestDLImageReader():
         setup any state tied to the execution of the given method in a
         class.  setup_method is invoked for every test method of a class.
         """
-        sparkConf = create_spark_conf().setMaster("local[1]").setAppName("testDLImageReader")
+        sparkConf = create_spark_conf().setMaster("local[1]").setAppName("test model")
         self.sc = get_spark_context(sparkConf)
-        self.sqlContext = SQLContext(self.sc)
         init_engine()
-        resource_path = os.path.join(os.path.split(__file__)[0], "../resources")
-        self.image_path = os.path.join(resource_path, "pascal/000025.jpg")
+        self.resource_path = os.path.join(os.path.split(__file__)[0], "../resources")
 
     def teardown_method(self, method):
         """
@@ -42,8 +41,9 @@ class TestDLImageReader():
         """
         self.sc.stop()
 
-    def test_get_image(self):
-        image_frame = DLImageReader.readImages(self.image_path, self.sc)
+    def test_get_pascal_image(self):
+        image_path = os.path.join(self.resource_path, "pascal/000025.jpg")
+        image_frame = DLImageReader.readImages(image_path, self.sc)
         assert image_frame.count() == 1
         assert type(image_frame).__name__ == 'DataFrame'
         first_row = image_frame.take(1)[0][0]
