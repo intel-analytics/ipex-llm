@@ -24,6 +24,8 @@ import com.intel.analytics.bigdl.utils.{Engine, LoggerFilter, T, Table}
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric._
+import com.intel.analytics.bigdl.nn.Graph
+import com.intel.analytics.bigdl.visualization.{TrainSummary,ValidationSummary,Summary}
 
 object Train {
   LoggerFilter.redirectSparkInfoLogs()
@@ -105,7 +107,7 @@ object Train {
       optimizer
         .setOptimMethod(optimMethod)
         .setValidation(Trigger.everyEpoch,
-          validateSet, Array(new Top1Accuracy[Float]))
+          validateSet, Array(new Top1Accuracy[Float], new Top5Accuracy[Float]))
         .setEndWhen(Trigger.maxEpoch(maxEpoch))
         .optimize()
       sc.stop()
