@@ -55,14 +55,14 @@ object SparseTensorBLAS {
     var sum: Float = 0.0f
     while (valueCounter < vec2.nElement()) {
       var dim = 0
-      var vec2Index = 0
+      var vec1Index = 0
       while (dim < vec2.nDimension) {
-        vec2Index += (vec2._indices(dim)(valueCounter + vec2storageOffset) -
+        vec1Index += (vec2._indices(dim)(valueCounter + vec2storageOffset) -
           vec2._indicesOffset(dim)) * vect1Strides(dim)
         dim += 1
       }
-      sum += vec2Values(vec1StorageOffset + vec2Index) *
-        vec1Values(valueCounter + vec1StorageOffset)
+      sum += vec2Values(vec2storageOffset + valueCounter) *
+        vec1Values(vec1Index + vec1StorageOffset)
       valueCounter += 1
     }
     sum
@@ -84,15 +84,15 @@ object SparseTensorBLAS {
     var sum: Double = 0.0f
     while (valueCounter < vec2.nElement()) {
       var dim = 0
-      var vec2Index = 0
+      var vec1Index = 0
       while (dim < vec2.nDimension) {
-        vec2Index +=
+        vec1Index +=
           (vec2._indices(dim)(valueCounter + vec2storageOffset) -
             vec2._indicesOffset(dim)) * vect1Strides(dim)
         dim += 1
       }
-      sum += vec2Values(vec1StorageOffset + vec2Index) *
-        vec1Values(valueCounter + vec1StorageOffset)
+      sum += vec2Values(vec2storageOffset + valueCounter) *
+        vec1Values(vec1Index + vec1StorageOffset)
       valueCounter += 1
     }
     sum
