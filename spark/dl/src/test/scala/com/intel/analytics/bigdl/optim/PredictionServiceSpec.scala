@@ -21,6 +21,8 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
 import org.scalatest.{FlatSpec, Matchers}
 
+import scala.util.Random
+
 class PredictionServiceSpec extends FlatSpec with Matchers {
 
   // sharing weights for testModule and testModule2
@@ -84,19 +86,21 @@ class PredictionServiceSpec extends FlatSpec with Matchers {
     table shouldEqual table2
   }
 
-  "PredictionService" should "throw exceptions when params are invalid" in {
-    intercept[Exception] {
-      PredictionService[Float](testModule, 1)
-    }
-  }
-
   "PredictionService.predict" should "return a error message when exception caught" in {
     // forward exception
-    val service = PredictionService[Float](testModule)
+    val service = PredictionService[Float](testModule, 2)
     val invalidTensor = Tensor[Float](2, 11).randn()
     var eTensor = service.predict(invalidTensor).asInstanceOf[Tensor[String]]
     eTensor.isScalar shouldEqual true
     eTensor.value().contains("running forward") shouldEqual true
+
+    // Clone Result
+    val module = ParallelTable[Float]()
+      .add(SplitTable[Float](1, 1)).add(SplitTable[Float](1, 1))
+    val tableInput = T(Tensor[Float](2, 3).randn(), Tensor[Float](3, 2).randn())
+    eTensor = PredictionService(module, 2).predict(tableInput).asInstanceOf[Tensor[String]]
+    eTensor.isScalar shouldEqual true
+    eTensor.value().contains("Clone Result") shouldEqual true
 
     // DeSerialize exception
     val tensor = Tensor[Float](2, 10).randn()
@@ -110,11 +114,15 @@ class PredictionServiceSpec extends FlatSpec with Matchers {
   }
 
   "PredictionService" should "work properly with concurrent calls" in {
-    val service = PredictionService[Float](testModule, 5)
+    val service = PredictionService[Float](testModule, 4)
+    val service2 = PredictionService[Float](testModule, 1)
+
     val sumResults = (1 to 100).par.map { _ =>
       val tensor = Tensor[Float](2, 10).randn()
       val output = service.predict(tensor).asInstanceOf[Tensor[Float]]
+      val output2 = service2.predict(tensor).asInstanceOf[Tensor[Float]]
       output.size() shouldEqual Array(2, 1)
+      output shouldEqual output2
       output.squeeze().toArray().sum
     }
     // Check whether instances have independent status(outputs of each Layer).
@@ -122,14 +130,14 @@ class PredictionServiceSpec extends FlatSpec with Matchers {
   }
 
   "PredictionService" should "work properly with byteArray data" in {
-    var service = PredictionService[Float](testModule)
+    var service = PredictionService[Float](testModule, 2)
     val tensor = Tensor[Float](2, 10).randn()
     val input = PredictionService.serializeActivity(tensor)
     val output = PredictionService.deSerializeActivity(service.predict(input))
       .asInstanceOf[Tensor[Float]]
     output.size() shouldEqual Array(2, 1)
 
-    service = PredictionService[Float](testModule2)
+    service = PredictionService[Float](testModule2, 2)
     val input2 = PredictionService.serializeActivity(
       T(tensor.narrow(2, 1, 6), tensor.narrow(2, 7, 4)))
     val output2 = PredictionService.deSerializeActivity(service.predict(input2))
