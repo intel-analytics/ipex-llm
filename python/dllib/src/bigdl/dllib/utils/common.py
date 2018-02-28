@@ -446,6 +446,9 @@ def init_engine(bigdl_type="float"):
 def init_executor_gateway(sc, bigdl_type="float"):
     callBigDlFunc(bigdl_type, "initExecutorGateway", sc, sc._gateway._gateway_client.port)
 
+def get_node_and_core_number(bigdl_type="float"):
+    result = callBigDlFunc(bigdl_type, "getNodeAndCoreNumber")
+    return result[0], result[1]
 
 def redire_spark_logs(bigdl_type="float", log_path=os.getcwd()+"/bigdl.log"):
     """
