@@ -17,7 +17,6 @@ package com.intel.analytics.bigdl.nn.ops
 
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
-import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
 
 class RandomUniformSpec extends FlatSpec with Matchers {
