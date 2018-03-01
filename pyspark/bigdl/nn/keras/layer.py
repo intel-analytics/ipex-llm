@@ -100,9 +100,9 @@ class Dense(KerasLayer):
 
     # Arguments
     output_dim: The size of output dimension.
-    init: String representations of initialization method for the weights of the layer.
+    init: String representation of initialization method for the weights of the layer.
           Default is 'glorot_uniform'.
-    activation: String representations of activation function to use (such as 'relu' or 'sigmoid').
+    activation: String representation of activation function to use (such as 'relu' or 'sigmoid').
                 Default is None.
     W_regularizer: An instance of [[Regularizer]], (eg. L1 or L2 regularization),
                    applied to the input weights matrices. Default is None.
@@ -169,7 +169,7 @@ class Embedding(KerasLayer):
     # Arguments
     input_dim: Size of the vocabulary. Int > 0.
     output_dim: Dimension of the dense embedding. Int >= 0.
-    init: String representations of initialization method for the weights of the layer.
+    init: String representation of initialization method for the weights of the layer.
           Default is 'uniform'.
     W_regularizer: An instance of [[Regularizer]], (eg. L1 or L2 regularization),
                    applied to the embedding matrix. Default is None.
@@ -407,7 +407,7 @@ class Highway(KerasLayer):
     input_shape (a shape tuple, does not include the batch dimension).
 
     # Arguments
-    activation: String representations of activation function to use (such as 'relu' or 'sigmoid').
+    activation: String representation of activation function to use (such as 'relu' or 'sigmoid').
                 Default is None.
     W_regularizer: An instance of [[Regularizer]], (eg. L1 or L2 regularization),
                    applied to the input weights matrices. Default is None.
@@ -441,9 +441,9 @@ class Convolution1D(KerasLayer):
     # Arguments
     nb_filter: Number of convolution filters to use.
     filter_length: The extension (spatial or temporal) of each filter.
-    init: String representations of initialization method for the weights of the layer.
+    init: String representation of initialization method for the weights of the layer.
           Default is 'glorot_uniform'.
-    activation: String representations of activation function to use (such as 'relu' or 'sigmoid').
+    activation: String representation of activation function to use (such as 'relu' or 'sigmoid').
                 Default is None.
     border_mode: Either 'valid' or 'same'. Default is 'valid'.
     subsample_length: Factor by which to subsample output. Int. Default is 1.
@@ -488,9 +488,9 @@ class Convolution2D(KerasLayer):
     nb_filter: Number of convolution filters to use.
     nb_row: Number of rows in the convolution kernel.
     nb_col: Number of cols in the convolution kernel.
-    init: String representations of initialization method for the weights of the layer.
+    init: String representation of initialization method for the weights of the layer.
           Default is 'glorot_uniform'.
-    activation: String representations of activation function to use (such as 'relu' or 'sigmoid').
+    activation: String representation of activation function to use (such as 'relu' or 'sigmoid').
                 Default is None.
     border_mode: Either 'valid' or 'same'. Default is 'valid'.
     subsample: Int tuple of length 2 corresponding to the step of the convolution in the
@@ -541,9 +541,9 @@ class Convolution3D(KerasLayer):
     kernel_dim1: Length of the first dimension in the convolution kernel.
     kernel_dim2: Length of the second dimension in the convolution kernel.
     kernel_dim3: Length of the third dimension in the convolution kernel.
-    init: String representations of initialization method for the weights of the layer.
+    init: String representation of initialization method for the weights of the layer.
           Default is 'glorot_uniform'.
-    activation: String representations of activation function to use (such as 'relu' or 'sigmoid').
+    activation: String representation of activation function to use (such as 'relu' or 'sigmoid').
                 Default is None.
     border_mode: Either 'valid' or 'same'. Default is 'valid'.
     subsample: Int tuple of length 3. Factor by which to subsample output.
@@ -594,9 +594,9 @@ class AtrousConvolution1D(KerasLayer):
     # Arguments
     nb_filter: Number of convolution filters to use.
     filter_length: The extension (spatial or temporal) of each filter.
-    init: String representations of initialization method for the weights of the layer.
+    init: String representation of initialization method for the weights of the layer.
           Default is 'glorot_uniform'.
-    activation: String representations of activation function to use (such as 'relu' or 'sigmoid').
+    activation: String representation of activation function to use (such as 'relu' or 'sigmoid').
                 Default is None.
     border_mode: Only 'valid' is supported for now.
     subsample_length: Factor by which to subsample output. Int. Default is 1.
@@ -647,9 +647,9 @@ class AtrousConvolution2D(KerasLayer):
     nb_filter: Number of convolution filters to use.
     nb_row: Number of rows in the convolution kernel.
     nb_col: Number of cols in the convolution kernel.
-    init: String representations of initialization method for the weights of the layer.
+    init: String representation of initialization method for the weights of the layer.
           Default is 'glorot_uniform'.
-    activation: String representations of activation function to use (such as 'relu' or 'sigmoid').
+    activation: String representation of activation function to use (such as 'relu' or 'sigmoid').
                 Default is None.
     border_mode: Only 'valid' is supported for now.
     subsample: Int tuple of length 2 corresponding to the step of the convolution in the
@@ -709,9 +709,9 @@ class Deconvolution2D(KerasLayer):
     nb_row: Number of rows in the convolution kernel.
     nb_col: Number of cols in the convolution kernel.
     output_shape: Output shape of the transposed convolution operation. Tuple of int.
-    init: String representations of initialization method for the weights of the layer.
+    init: String representation of initialization method for the weights of the layer.
           Default is 'glorot_uniform'.
-    activation: String representations of activation function to use (such as 'relu' or 'sigmoid').
+    activation: String representation of activation function to use (such as 'relu' or 'sigmoid').
                 Default is None.
     border_mode: Only 'valid' is supported for now.
     subsample: Int tuple of length 2 corresponding to the step of the convolution in the
@@ -764,9 +764,9 @@ class SeparableConvolution2D(KerasLayer):
     nb_filter: Number of convolution filters to use.
     nb_row: Number of rows in the convolution kernel.
     nb_col: Number of cols in the convolution kernel.
-    init: String representations of initialization method for the weights of the layer.
+    init: String representation of initialization method for the weights of the layer.
           Default is 'glorot_uniform'.
-    activation: String representations of activation function to use (such as 'relu' or 'sigmoid').
+    activation: String representation of activation function to use (such as 'relu' or 'sigmoid').
                 Default is None.
     border_mode: Either 'valid' or 'same'. Default is 'valid'.
     subsample: Int tuple of length 2 corresponding to the step of the convolution in the
@@ -1356,7 +1356,7 @@ class SimpleRNN(KerasLayer):
 
     # Arguments
     output_dim: Hidden unit size. Dimension of internal projections and final output.
-    activation: String representations of activation function to use (such as 'relu' or 'sigmoid').
+    activation: String representation of activation function to use (such as 'relu' or 'sigmoid').
                 Default is 'tanh'.
     return_sequences: Whether to return the full sequence or only return the last output in the output sequence.
                       Default is False.
@@ -1394,9 +1394,9 @@ class LSTM(KerasLayer):
 
     # Arguments
     output_dim: Hidden unit size. Dimension of internal projections and final output.
-    activation: String representations of activation function to use (such as 'relu' or 'sigmoid').
+    activation: String representation of activation function to use (such as 'relu' or 'sigmoid').
                 Default is 'tanh'.
-    inner_activation: String representations of activation function for inner cells. Default is 'hard_sigmoid'.
+    inner_activation: String representation of activation function for inner cells. Default is 'hard_sigmoid'.
     return_sequences: Whether to return the full sequence or only return the last output in the output sequence.
                       Default is False.
     go_backwards: Whether the input sequence will be processed backwards. Default is False.
@@ -1434,9 +1434,9 @@ class GRU(KerasLayer):
 
     # Arguments
     output_dim: Hidden unit size. Dimension of internal projections and final output.
-    activation: String representations of activation function to use (such as 'relu' or 'sigmoid').
+    activation: String representation of activation function to use (such as 'relu' or 'sigmoid').
                 Default is 'tanh'.
-    inner_activation: String representations of activation function for inner cells. Default is 'hard_sigmoid'.
+    inner_activation: String representation of activation function for inner cells. Default is 'hard_sigmoid'.
     return_sequences: Whether to return the full sequence or only return the last output in the output sequence.
                       Default is False.
     go_backwards: Whether the input sequence will be processed backwards. Default is False.
@@ -1479,9 +1479,9 @@ class ConvLSTM2D(KerasLayer):
     nb_filter: Number of convolution filters to use.
     nb_row: Number of rows in the convolution kernel.
     nb_col: Number of cols in the convolution kernel. Should be equal to nb_row as for a square kernel.
-    activation: String representations of activation function to use (such as 'relu' or 'sigmoid').
+    activation: String representation of activation function to use (such as 'relu' or 'sigmoid').
                 Default is 'tanh'.
-    inner_activation: String representations of activation function for inner cells. Default is 'hard_sigmoid'.
+    inner_activation: String representation of activation function for inner cells. Default is 'hard_sigmoid'.
     dim_ordering: Format of input data. Only 'th' (Channel First) is supported for now.
     border_mode: Only 'same' is supported for now.
     subsample: Tuple of length 2. Factor by which to subsample output. Also called strides elsewhere.
@@ -1536,7 +1536,7 @@ class LocallyConnected1D(KerasLayer):
     # Arguments
     nb_filter: Dimensionality of the output.
     filter_length: The extension (spatial or temporal) of each filter.
-    activation: String representations of activation function to use (such as 'relu' or 'sigmoid').
+    activation: String representation of activation function to use (such as 'relu' or 'sigmoid').
                 Default is None.
     border_mode: Only 'valid' is supported for now.
     subsample_length: Factor by which to subsample output. Int. Default is 1.
@@ -1579,7 +1579,7 @@ class LocallyConnected2D(KerasLayer):
     nb_filter: Number of convolution filters to use.
     nb_row: Number of rows in the convolution kernel.
     nb_col: Number of cols in the convolution kernel.
-    activation: String representations of activation function to use (such as 'relu' or 'sigmoid').
+    activation: String representation of activation function to use (such as 'relu' or 'sigmoid').
                 Default is None.
     border_mode: Either 'valid' or 'same'. Default is 'valid'.
     subsample: Int tuple of length 2 corresponding to the step of the convolution in the
@@ -1775,13 +1775,13 @@ class SReLU(KerasLayer):
     input_shape (a shape tuple, does not include the batch dimension).
 
     # Arguments
-    t_left_init: String representations of initialization method for the left part intercept.
+    t_left_init: String representation of initialization method for the left part intercept.
                  Default is 'zero'.
-    a_left_init: String representations of initialization method for the left part slope.
+    a_left_init: String representation of initialization method for the left part slope.
                  Default is 'glorot_uniform'.
-    t_right_init: String representations of initialization method for the right part intercept.
+    t_right_init: String representation of initialization method for the right part intercept.
                   Default is 'glorot_uniform'.
-    a_right_init: String representations of initialization method for the right part slope.
+    a_right_init: String representation of initialization method for the right part slope.
                   Default is 'one'.
     shared_axes: Int tuple. The axes along which to share learnable parameters for the activation function.
                  Default is None.
