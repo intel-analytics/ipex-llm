@@ -183,6 +183,7 @@ object ModuleSerializer extends ModuleSerializable{
     registerModule("com.intel.analytics.bigdl.nn.keras.Model", Model)
     registerModule("com.intel.analytics.bigdl.nn.keras.Sequential", KSequential)
     registerModule("com.intel.analytics.bigdl.nn.MapTable", MapTable)
+    registerModule("com.intel.analytics.bigdl.nn.Maxout", Maxout)
     registerModule("com.intel.analytics.bigdl.nn.MaskedSelect", MaskedSelect)
     registerModule("com.intel.analytics.bigdl.nn.Recurrent", Recurrent)
     registerModule("com.intel.analytics.bigdl.nn.RecurrentDecoder", RecurrentDecoder)

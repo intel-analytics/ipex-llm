@@ -16,10 +16,13 @@
 
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
 import com.intel.analytics.bigdl.optim.Regularizer
+import com.intel.analytics.bigdl.serialization.Bigdl.{AttrValue, BigDLModule}
 import com.intel.analytics.bigdl.tensor.{DenseTensorApply, Tensor, TensorFunc6}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.serializer.converters.DataConverter
+import com.intel.analytics.bigdl.utils.serializer.{DeserializeContext, ModuleSerializable, ModuleSerializer, SerializeContext}
 import com.intel.analytics.bigdl.utils.{Shape, Table}
 
 import scala.reflect.ClassTag
@@ -45,7 +48,7 @@ class Maxout[T: ClassTag](val inputSize: Int, val outputSize: Int, val maxoutNum
   val bRegularizer: Regularizer[T] = null, val initWeight: Tensor[T] = null,
                           val initBias: Tensor[T] = null)
   (implicit ev: TensorNumeric[T]) extends TensorModule[T] {
-  val layer = Sequential().add(Linear(inputSize, outputSize * maxoutNumber, withBias = withBias,
+  var layer = Sequential().add(Linear(inputSize, outputSize * maxoutNumber, withBias = withBias,
     wRegularizer = wRegularizer, bRegularizer = bRegularizer, initWeight = initWeight,
     initBias = initBias))
     .add(View(maxoutNumber, outputSize).setNumInputDims(1))
@@ -81,11 +84,32 @@ class Maxout[T: ClassTag](val inputSize: Int, val outputSize: Int, val maxoutNum
   }
 }
 
-object Maxout {
+object Maxout extends ModuleSerializable {
   def apply[T : ClassTag](inputSize: Int, outputSize: Int, maxoutNumber: Int,
     withBias: Boolean = true, wRegularizer: Regularizer[T] = null,
     bRegularizer: Regularizer[T] = null, initWeight: Tensor[T] = null, initBias: Tensor[T] = null)
     (implicit ev: TensorNumeric[T]): Maxout[T]
     = new Maxout[T](inputSize, outputSize, maxoutNumber, withBias, wRegularizer,
     bRegularizer, initWeight, initBias)
+
+  override def doLoadModule[T: ClassTag](context: DeserializeContext)
+    (implicit ev: TensorNumeric[T]) : AbstractModule[Activity, Activity, T] = {
+    val maxout = super.doLoadModule(context).asInstanceOf[Maxout[T]]
+    val attrMap = context.bigdlModule.getAttrMap
+    val layerAttr = attrMap.get("layer")
+    maxout.layer = DataConverter.getAttributeValue(context, layerAttr).
+      asInstanceOf[Sequential[T]]
+    maxout
+  }
+
+  override def doSerializeModule[T: ClassTag](context: SerializeContext[T],
+                                              maxoutBuilder : BigDLModule.Builder)
+                                             (implicit ev: TensorNumeric[T]) : Unit = {
+    super.doSerializeModule(context, maxoutBuilder)
+    val layerBuilder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(context, layerBuilder, context.moduleData.
+      module.asInstanceOf[Maxout[T]].layer,
+      ModuleSerializer.abstractModuleType)
+    maxoutBuilder.putAttr("layer", layerBuilder.build)
+  }
 }
