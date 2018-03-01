@@ -17,7 +17,10 @@ package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.nn.abstractnn.DataFormat
 import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import com.intel.analytics.bigdl.utils.{BigDLSpecHelper, Shape, TestUtils}
+
+import scala.util.Random
 
 class SpatialSeperableConvolutionSpec extends BigDLSpecHelper {
   "SpatialSeperableConvolution NHWC and NCHW" should "have same output" in {
@@ -105,4 +108,13 @@ class SpatialSeperableConvolutionSpec extends BigDLSpecHelper {
     TestUtils.compareOutputShape(layer, Shape(24, 24, 2)) should be (true)
   }
 
+}
+
+class SpatialSeperableConvolutionSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val seprableConv = SpatialSeperableConvolution[Float](2, 2, 1, 2, 2,
+      dataFormat = DataFormat.NHWC).setName("seprableConv")
+    val input = Tensor[Float](1, 5, 5, 2).apply1( e => Random.nextFloat())
+    runSerializationTest(seprableConv, input)
+  }
 }
