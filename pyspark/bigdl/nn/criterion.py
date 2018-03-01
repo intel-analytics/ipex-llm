@@ -612,7 +612,7 @@ class TimeDistributedMaskCriterion(Criterion):
 
 
     >>> td = TimeDistributedMaskCriterion(ClassNLLCriterion())
-    creating: createTimeDistributedMaskCriterion
+    creating: createClassNLLCriterion
     creating: createTimeDistributedMaskCriterion
     '''
 
