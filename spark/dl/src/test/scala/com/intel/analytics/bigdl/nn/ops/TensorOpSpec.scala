@@ -111,10 +111,10 @@ class TensorOpSpec extends FlatSpec with Matchers {
 
   private val t1 = Tensor[Float](3, 4).randn()
   private val t2 = Tensor[Double](2, 3).randn()
-  private val table = T(t1, t2)
+  private val table = T().update(Tensor.scalar(1), t1).update(Tensor.scalar("2"), t2)
 
   "SelectedTensor without transformer" should "work correctly" in {
-    val t1Copy = SelectTensor[Float](1).forward(table)
+    val t1Copy = SelectTensor[Float](Tensor.scalar(1)).forward(table)
     t1Copy shouldEqual t1
     val t1Values = t1.storage().array().clone()
     t1Copy.square()
@@ -124,7 +124,7 @@ class TensorOpSpec extends FlatSpec with Matchers {
 
   "SelectedTensor with transformer" should "work correctly" in {
     val transformer = (TensorOp[Double]() ** 3 * 4.5).ceil
-    val select = SelectTensor(2, transformer)
+    val select = SelectTensor(Tensor.scalar("2"), transformer)
     val t2Values = t2.storage().array().clone()
     val t2Convert = select.forward(table)
     t2.storage().array() shouldEqual t2Values

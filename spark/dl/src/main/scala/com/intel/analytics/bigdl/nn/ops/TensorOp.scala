@@ -16,22 +16,29 @@
 
 package com.intel.analytics.bigdl.nn.ops
 
+import com.google.protobuf.ByteString
+import com.intel.analytics.bigdl.serialization.Bigdl
+import com.intel.analytics.bigdl.serialization.Bigdl.{AttrValue, DataType}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Table
+import com.intel.analytics.bigdl.utils.serializer.{DeserializeContext, SerializeContext}
+import com.intel.analytics.bigdl.utils.serializer.converters.DataConverter
+import org.apache.commons.lang3.SerializationUtils
 
 import scala.reflect.ClassTag
+import scala.reflect.runtime.universe
 
 /**
  * [[TensorOp]] is an [[Operation]] with `Tensor[T]-formatted `input and output,
  * which provides shortcuts to build Operations for `tensor transformation` by closures.
- * <br></br>
+ * <br><br>
  * [[TensorOp]] will make a deep copy of input Tensor before transformation,
  * so transformation will take no side effect. For now, `SparseTensors` are not supported.
- * <br></br>
+ * <br><br>
  * Chained feature is supported in [[TensorOp]].
  * And common tensor actions are provided with a chained style.
- * <br></br>
+ * <br><br>
  * For instance:
  * {{{
  * one case:
@@ -257,6 +264,45 @@ class TensorOp[T: ClassTag] private(
 }
 
 object TensorOp {
+
+  // register custom DataConverter for transformer
+  DataConverter.registerConverter(
+    "(com.intel.analytics.bigdl.tensor.Tensor[T], " +
+      "com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric[T]) => " +
+      "com.intel.analytics.bigdl.tensor.Tensor[T]",
+    new DataConverter {
+      override def getAttributeValue[T: ClassTag](
+        context: DeserializeContext,
+        attribute: Bigdl.AttrValue
+      )(implicit ev: TensorNumeric[T]): AnyRef = {
+        val any = attribute.getCustomValue
+        val bytes = any.getValue.toByteArray
+        val wrapper = SerializationUtils.deserialize[ClosureWrapper[T]](bytes)
+        wrapper.closure
+      }
+
+      override def setAttributeValue[T: ClassTag](
+        context: SerializeContext[T],
+        attributeBuilder: AttrValue.Builder,
+        value: scala.Any,
+        valueType: universe.Type
+      )(implicit ev: TensorNumeric[T]): Unit = {
+        attributeBuilder.setDataType(DataType.CUSTOM)
+        val wrapper = new ClosureWrapper(
+          value.asInstanceOf[(Tensor[T], TensorNumeric[T]) => Tensor[T]])
+        val bytes = SerializationUtils.serialize(wrapper)
+        val anyBuilder = com.google.protobuf.Any.newBuilder()
+        anyBuilder.setValue(ByteString.copyFrom(bytes))
+        attributeBuilder.setCustomValue(anyBuilder.build())
+      }
+    }
+  )
+
+  // Class Wrapper for transformer(closure)
+  private class ClosureWrapper[T: ClassTag](
+    val closure: (Tensor[T], TensorNumeric[T]) => Tensor[T]
+  )(implicit ev: TensorNumeric[T]) extends Serializable
+
 
   /**
    * build a TensorOp with user-defined transformer
@@ -552,12 +598,12 @@ object TensorOp {
  * Select and copy a Tensor from a [[Table]] with [[key]].
  * And do tensor transformation if [[transformer]] is defined.
  *
- * @param key the key of selected tensor
- * @param transformer user-defined transformer
+ * @param key the key of selected tensor, a scalar tensor
+ * @param transformer user-defined transformer, default(null) means do nothing
  * @tparam T Numeric type
  */
-class SelectTensor[T: ClassTag](
-  private val key: scala.Any,
+class SelectTensor[T: ClassTag] private(
+  private val key: Tensor[_],
   private val transformer: TensorOp[T] = null
 )(implicit ev: TensorNumeric[T]) extends Operation[Table, Tensor[T], T] {
 
@@ -578,7 +624,7 @@ class SelectTensor[T: ClassTag](
 object SelectTensor {
 
   def apply[T: ClassTag](
-    key: scala.Any,
+    key: Tensor[_],
     transformer: TensorOp[T] = null
   )(implicit ev: TensorNumeric[T]): SelectTensor[T] = {
     new SelectTensor[T](key, transformer)
