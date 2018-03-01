@@ -16,15 +16,20 @@
 package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.utils.Table
 import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 
 import scala.util.Random
 
 
-class SoftPlusSerialTest extends ModuleSerializationTest {
+class MixtureTableSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
-    val softPlus = SoftPlus[Float]().setName("softPlus")
-    val input = Tensor[Float](10).apply1(_ => Random.nextFloat())
-    runSerializationTest(softPlus, input)
+    val mixTureTable = MixtureTable[Float]().setName("mixTureTable")
+    val input1 = Tensor[Float](2, 2).apply1(e => Random.nextFloat())
+    val input2 = Tensor[Float](2, 2).apply1(e => Random.nextFloat())
+    val input = new Table()
+    input(1.0f) = input1
+    input(2.0f) = input2
+    runSerializationTest(mixTureTable, input)
   }
 }

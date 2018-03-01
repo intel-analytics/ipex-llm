@@ -16,11 +16,7 @@
 package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.nn.ops.Ceil
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
-
-import scala.util.Random
 
 class SequentialSpec extends FlatSpec with Matchers {
   "A Sequential Container " should "not contain operation" in {
@@ -29,15 +25,5 @@ class SequentialSpec extends FlatSpec with Matchers {
     intercept[IllegalArgumentException] {
       model.add(Ceil[Double, Double]()) // this is not allowed
     }
-  }
-}
-
-class SequentialSerialTest extends ModuleSerializationTest {
-  override def test(): Unit = {
-    val sequential = Sequential[Float]().setName("sequential")
-    val linear = Linear[Float](10, 2)
-    sequential.add(linear)
-    val input = Tensor[Float](10).apply1(_ => Random.nextFloat())
-    runSerializationTest(sequential, input)
   }
 }

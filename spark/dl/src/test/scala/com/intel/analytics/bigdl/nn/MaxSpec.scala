@@ -21,10 +21,10 @@ import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import scala.util.Random
 
 
-class SoftMaxSerialTest extends ModuleSerializationTest {
+class MaxSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
-    val softMax = SoftMax[Float]().setName("softMax")
-    val input = Tensor[Float](10).apply1(_ => Random.nextFloat())
-    runSerializationTest(softMax, input)
+    val max = new Max[Float](2).setName("max")
+    val input = Tensor[Float](2, 3, 4).apply1(_ => Random.nextFloat())
+    runSerializationTest(max, input)
   }
 }

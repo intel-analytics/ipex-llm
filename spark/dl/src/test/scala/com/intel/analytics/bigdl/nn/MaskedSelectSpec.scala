@@ -16,15 +16,24 @@
 package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.utils.Table
 import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 
 import scala.util.Random
 
 
-class SelectSerialTest extends ModuleSerializationTest {
+class MaskedSelectSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
-    val select = Select[Float](2, 2).setName("select")
-    val input = Tensor[Float](5, 5, 5).apply1(_ => Random.nextFloat())
-    runSerializationTest(select, input)
+    val maskedSelect = MaskedSelect[Float]().setName("maskedSelect")
+    val input1 = Tensor[Float](2, 2).apply1(e => Random.nextFloat())
+    val input2 = Tensor[Float](2, 2)
+    input2(Array(1, 1)) = 1
+    input2(Array(1, 2)) = 0
+    input2(Array(2, 1)) = 0
+    input2(Array(2, 2)) = 1
+    val input = new Table()
+    input(1.0f) = input1
+    input(2.0f) = input2
+    runSerializationTest(maskedSelect, input)
   }
 }
