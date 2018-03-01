@@ -46,7 +46,19 @@ object KerasUtils {
     }
   }
 
-  private[bigdl] def getActivation[T : ClassTag] (activation: String)
+  private[bigdl] def getKerasActivation[T : ClassTag] (activation: String)
+    (implicit ev: TensorNumeric[T]): KerasLayer[Tensor[T], Tensor[T], T] = {
+    if (activation == null) { return null }
+    if (activation.toLowerCase() == "softmax") {
+      SoftMax[T]()
+    } else {
+      val torchActivation = getTorchActivation(activation)
+      new KerasIdentityWrapper[T](torchActivation)
+        .asInstanceOf[KerasLayer[Tensor[T], Tensor[T], T]]
+    }
+  }
+
+  private[keras] def getTorchActivation[T : ClassTag] (activation: String)
     (implicit ev: TensorNumeric[T]): AbstractModule[Tensor[T], Tensor[T], T] = {
     if (activation == null) null
     else {
@@ -54,7 +66,8 @@ object KerasUtils {
           case "tanh" => Tanh[T]()
           case "sigmoid" => Sigmoid[T]()
           case "relu" => ReLU[T]()
-          case "softmax" => SoftMax[T]().asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
+          case "softmax" =>
+                com.intel.analytics.bigdl.nn.SoftMax[T]()
           case "softplus" => SoftPlus[T]()
           case "softsign" => SoftSign[T]()
           case "hard_sigmoid" => HardSigmoid[T]()
@@ -105,5 +118,4 @@ object KerasUtils {
       case "th" => "CHANNEL_FIRST"
     }
   }
-
 }

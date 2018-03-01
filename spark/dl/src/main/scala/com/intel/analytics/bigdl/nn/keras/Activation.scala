@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.nn.keras
 
-import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, IdentityOutputShape}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Shape
@@ -37,15 +37,14 @@ import scala.reflect.ClassTag
 class Activation[T: ClassTag](
    val activation: String,
    val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
-  extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {
+  extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape))
+    with IdentityOutputShape {
 
   require(activation != null, "The name of an activation function as a string is required")
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
-    val model = Sequential[T]()
-    model.add(InputLayer(inputShape = KerasLayer.removeBatch(inputShape)))
-    val layer = KerasUtils.getActivation(activation)
-    model.add(layer).asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
+    val kerasActivation = KerasUtils.getKerasActivation(activation)
+    kerasActivation.doBuild(inputShape)
   }
 }
 

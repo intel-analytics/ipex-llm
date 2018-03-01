@@ -43,7 +43,7 @@ import scala.reflect.ClassTag
  * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now.
  */
 class Highway[T: ClassTag](
-   val activation: AbstractModule[Tensor[T], Tensor[T], T] = null,
+   val activation: KerasLayer[Tensor[T], Tensor[T], T] = null,
    var wRegularizer: Regularizer[T] = null,
    var bRegularizer: Regularizer[T] = null,
    val bias: Boolean = true,
@@ -59,10 +59,11 @@ class Highway[T: ClassTag](
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
     val input = inputShape.toSingle().toArray
+    activation.build(inputShape)
     val layer = com.intel.analytics.bigdl.nn.Highway[T](
       size = input(1),
       withBias = bias,
-      activation = activation.asInstanceOf[TensorModule[T]],
+      activation = activation.labor.asInstanceOf[TensorModule[T]],
       wRegularizer = wRegularizer,
       bRegularizer = bRegularizer
     )
@@ -77,7 +78,7 @@ object Highway {
     bRegularizer: Regularizer[T] = null,
     bias: Boolean = true,
     inputShape: Shape = null)(implicit ev: TensorNumeric[T]) : Highway[T] = {
-    new Highway[T](KerasUtils.getActivation(activation),
+    new Highway[T](KerasUtils.getKerasActivation(activation),
       wRegularizer, bRegularizer, bias, inputShape)
   }
 }

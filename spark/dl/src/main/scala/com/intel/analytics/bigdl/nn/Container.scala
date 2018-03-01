@@ -16,7 +16,6 @@
 
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -45,12 +44,6 @@ abstract class Container[A <: Activity : ClassTag,
   // list of sub modules
   val modules: ArrayBuffer[AbstractModule[Activity, Activity, T]]
   = ArrayBuffer[AbstractModule[Activity, Activity, T]]()
-
-  override private[bigdl] def isCompatibleWithKeras(): Boolean = false
-
-  override private[bigdl] def isCompatibleWithTorch(): Boolean = {
-    modules.filter(!_.isCompatibleWithTorch()).length <= 0
-  }
 
   override def reset(): Unit = {
     modules.foreach(_.reset())

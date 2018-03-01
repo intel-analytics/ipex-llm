@@ -55,7 +55,8 @@ class VolumetricConvolution[T: ClassTag](
   val padT: Int = 0, val padW: Int = 0, val padH: Int = 0, withBias: Boolean = true,
   var wRegularizer: Regularizer[T] = null,
   var bRegularizer: Regularizer[T] = null
-)(implicit ev: TensorNumeric[T]) extends TensorModule[T] with Initializable {
+)(implicit ev: TensorNumeric[T]) extends TensorModule[T] with Initializable
+ {
 
   require(kT > 0 && kW > 0 && kH > 0, "kernel size should be greater than zero," +
     s" but got kT: $kT kH: $kH kW: $kW")
