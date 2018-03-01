@@ -17,7 +17,10 @@ package com.intel.analytics.bigdl.nn.ops
 
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
+
+import scala.util.Random
 
 class SumSpec extends FlatSpec with Matchers {
   "Sum operation" should "works correctly" in {
@@ -34,5 +37,14 @@ class SumSpec extends FlatSpec with Matchers {
     val op1 = Sum[Float, Int](keepDims = true)
     op1.forward(T(input, Tensor.scalar[Int](2))) should be(Tensor[Int](T(T(3), T(3))))
     op.forward(T(input, Tensor[Int](T(1, 2)))) should be(Tensor.scalar[Int](6))
+  }
+}
+
+class SumSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val sum = Sum[Float, Float]().setName("sumOps")
+    val input = T(Tensor[Float](2, 2).apply1(_ => Random.nextFloat()),
+      Tensor[Float]())
+    runSerializationTest(sum, input)
   }
 }

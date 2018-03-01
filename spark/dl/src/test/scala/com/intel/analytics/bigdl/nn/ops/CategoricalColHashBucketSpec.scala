@@ -16,6 +16,7 @@
 package com.intel.analytics.bigdl.nn.ops
 
 import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import com.intel.analytics.bigdl.utils.{T, Table}
 import org.scalatest.{FlatSpec, Matchers}
 
@@ -45,5 +46,15 @@ class CategoricalColHashBucketSpec extends FlatSpec with Matchers {
     val output = CategoricalColHashBucket[Double](hashBucketSize = 100, isSparse = false)
       .forward(input)
     output should be(expectOutput)
+  }
+}
+
+class CategoricalColHashBucketSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val categoricalColHashBucket = CategoricalColHashBucket[Float](
+      hashBucketSize = 100
+    ).setName("categoricalColHashBucket")
+    val input = Tensor[String](T(T(1), T(2), T(3)))
+    runSerializationTest(categoricalColHashBucket, input)
   }
 }

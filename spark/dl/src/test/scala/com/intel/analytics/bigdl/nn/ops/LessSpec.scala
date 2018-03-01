@@ -17,7 +17,10 @@ package com.intel.analytics.bigdl.nn.ops
 
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
+
+import scala.util.Random
 
 class LessSpec extends FlatSpec with Matchers {
   "Less Float operation" should "works correctly" in {
@@ -96,5 +99,16 @@ class LessSpec extends FlatSpec with Matchers {
 
     val output = Less[Float]().forward(input)
     output should be(expectOutput)
+  }
+}
+
+class LessSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val less = Less[Float]().setName("less")
+    val input1 = Tensor[Float](5).apply1(_ => Random.nextFloat())
+    val input2 = Tensor[Float](5).apply1(_ => Random.nextFloat())
+    val input = T(input1, input2)
+    runSerializationTest(less, input, less
+      .asInstanceOf[ModuleToOperation[Float]].module.getClass)
   }
 }
