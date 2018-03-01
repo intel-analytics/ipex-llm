@@ -91,6 +91,9 @@ pages:
   - Full API docs:
     - Scala Docs: APIGuide/scaladoc.md
     - Python API Docs: APIGuide/python-api-doc.md
+- New API Guide:
+  - Layers:
+    - Core Layers: NewAPIGuide/Layers/core.md
 - Powered by: powered-by.md
 - Known Issues: known-issues.md
 - Presentations: presentations.md
