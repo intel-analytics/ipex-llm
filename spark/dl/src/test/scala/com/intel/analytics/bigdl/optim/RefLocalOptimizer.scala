@@ -48,7 +48,7 @@ class RefLocalOptimizer[T: ClassTag](
       val output = model.forward(input).asInstanceOf[Tensor[T]]
       val loss = criterion.forward(output, target)
       model.backward(input, criterion.backward(output, target))
-      optimMethod.optimize(_ => (loss, g), w, state)
+      optimMethods.head._2.optimize(_ => (loss, g), w, state)
       count += batch.size()
       state("neval") = state[Int]("neval") + 1
       println(s"loss is $loss")

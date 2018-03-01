@@ -48,7 +48,7 @@ class LocalOptimizer[T: ClassTag] (
     model, dataset, criterion) {
 
   import LocalOptimizer._
-  import Optimizer.{header, saveModel, saveState}
+  import Optimizer.{header, saveModel, saveState, checkSubModules}
 
   private val coreNumber = Engine.coreNumber()
 
@@ -87,8 +87,15 @@ class LocalOptimizer[T: ClassTag] (
   override def optimize(): Module[T] = {
     var wallClockTime = 0L
     var count = 0
-    optimMethod.clearHistory()
-    optimMethod.loadFromTable(state)
+    optimMethods.foreach{case (subModuleName, optimMethod) =>
+      optimMethod.clearHistory()
+      optimMethod.loadFromTable(state)
+    }
+    checkSubModules(model, optimMethods.keys.toSeq)
+    val currentOptimMethods = optimMethods.map{case (subModuleName, optimMethod) =>
+      val subModule = model(subModuleName)
+      (optimMethod, subModule.get.getParameters())
+    }
     state("epoch") = state.get[Int]("epoch").getOrElse(1)
     state("neval") = state.get[Int]("neval").getOrElse(1)
     state("isLayerwiseScaled") = Utils.isLayerwiseScaled(model)
@@ -176,19 +183,30 @@ class LocalOptimizer[T: ClassTag] (
       if (gradientClippingParams.enableConstantClipping) {
         grad.clamp(gradientClippingParams.minValueClip, gradientClippingParams.maxValueClip)
       }
-      optimMethod.state.update("epoch", state.get("epoch"))
-      optimMethod.state.update("neval", state.get("neval"))
-      optimMethod.optimize(_ => (ev.fromType(loss), grad), weight)
+      currentOptimMethods.foreach { case (optimMethod, (weight, grad)) =>
+        optimMethod.state.update("epoch", state.get("epoch"))
+        optimMethod.state.update("neval", state.get("neval"))
+        optimMethod.optimize(_ => (ev.fromType(loss), grad), weight)
+      }
       val end = System.nanoTime()
       wallClockTime += end - start
       count += batch.size()
+      val hyperParameterLog = optimMethods.map{ case (moduleName, optimMethod) =>
+        optimMethod.updateHyperParameter()
+        val log = optimMethod.getHyperParameter()
+        if (log.isEmpty) {
+          log
+        } else {
+          s"${moduleName}'s hyper parameters: ${log} "
+        }
+      }.reduce(_ + _)
       val head = header(state[Int]("epoch"), count, numSamples, state[Int]("neval"), wallClockTime)
       logger.info(s"$head " +
         s"loss is $loss, iteration time is ${(end - start) / 1e9}s " +
         s"data fetch time is ${(dataFetchTime - start) / 1e9}s, " +
         s"train time ${(end - dataFetchTime) / 1e9}s. " +
         s"Throughput is ${batch.size().toDouble / (end - start) * 1e9} record / second. " +
-        optimMethod.getHyperParameter()
+        hyperParameterLog
         )
       state("neval") = state[Int]("neval") + 1
 

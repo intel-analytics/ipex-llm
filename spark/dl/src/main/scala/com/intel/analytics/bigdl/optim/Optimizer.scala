@@ -49,7 +49,6 @@ abstract class Optimizer[T: ClassTag, D](
   import Optimizer.{logger, checkSubModules}
   protected var state: Table = T()
   // TODO: delete this one and change LocalOptimizer later
-  protected var optimMethod: OptimMethod[T] = new SGD()
   protected var optimMethods: Map[String, OptimMethod[T]] = Map(model.getName -> new SGD())
   protected var endWhen: Trigger = Trigger.maxIteration(100)
 
@@ -257,7 +256,7 @@ abstract class Optimizer[T: ClassTag, D](
 
     // check if the old optimMethods works for this new model.
     try {
-      checkSubModules(model, optimMethods.keys.toArray)
+      checkSubModules(model, optimMethods.keys.toSeq)
     } catch {
       case ie: IllegalArgumentException =>
         logger.warn(s"Old model's optimMethods doesn't match the new model, " +
@@ -353,7 +352,7 @@ abstract class Optimizer[T: ClassTag, D](
    * @param method A mapping of submodule -> OptimMethod
    */
   def setOptimMethods(method: Map[String, OptimMethod[T]]): this.type = {
-    checkSubModules(model, method.keys.toArray)
+    checkSubModules(model, method.keys.toSeq)
     this.optimMethods = method.map(v => (v._1, v._2.clone()))
     this
   }
@@ -438,20 +437,20 @@ object Optimizer {
     s"[Epoch $epoch $count/$total][Iteration $iter][Wall Clock ${wallClockTime / 1e9}s]"
   }
 
-  protected def checkSubModules[T: ClassTag](
+  private[bigdl] def checkSubModules[T: ClassTag](
         model: Module[T],
         subModuleNames: Seq[String])(implicit ev: TensorNumeric[T]): Unit = {
     val modelParameters = model.getParameters()
     val p = subModuleNames.map{subModuleName =>
       val subModule = model(subModuleName)
-      require(subModule.isDefined, s"Optimizer couldn't find $subModuleName in $model")
+      require(subModule.isDefined, s"Optimizer: couldn't find $subModuleName in $model")
       val subModuleWeights = subModule.get.getParameters()._1
       subModuleWeights
     }.toArray
     val sortedWeights = p.sortWith((a, b) => a.storageOffset() < b.storageOffset())
     val compactWeights = Module.isCompact(sortedWeights)
     require(modelParameters._1 == compactWeights,
-      s"DistriOptimizer: All subModules in ${model.getName()} should have an OptimMethod.")
+      s"Optimizer: All subModules in ${model.getName()} should have an OptimMethod.")
   }
 
   /**
