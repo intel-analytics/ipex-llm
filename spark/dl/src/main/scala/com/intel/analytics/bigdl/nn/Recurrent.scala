@@ -23,7 +23,7 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.serializer._
 import com.intel.analytics.bigdl.utils.serializer.{ContainerSerializable, ModuleSerializer}
-import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.utils.{T, Table}
 import com.intel.analytics.bigdl.utils.serializer.converters.DataConverter
 import serialization.Bigdl.{AttrValue, BigDLModule}
 
@@ -34,8 +34,20 @@ import scala.reflect.ClassTag
 /**
  * [[Recurrent]] module is a container of rnn cells
  * Different types of rnn cells can be added using add() function
+ *
+ * The recurrent includes some mask mechanisms
+ * if the `maskZero` variable is set to true, the `Recurrent` module will
+ * not consider zero vector inputs. For each time step input, if a certain row is
+ * a zero vector (all the elements of the vector equals zero), then output of certain row
+ * of this time step would be a zero vector, and the hidden state of the certain row of
+ * this time step would be the same as the corresponding row of the hidden state of the
+ * previous step.
+ *
  */
-class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
+class Recurrent[T : ClassTag](
+  var batchNormParams: BatchNormParams[T] = null,
+  var maskZero: Boolean = false
+)
   (implicit ev: TensorNumeric[T]) extends DynamicContainer[Tensor[T], Tensor[T], T] {
 
   protected var hidden: Activity = null
@@ -60,6 +72,12 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
   private val timeBuffer =
     new ArrayBuffer[(AbstractModule[_ <: Activity, _ <: Activity, T], Long, Long)]
   private var layer: TensorModule[T] = null
+  private var maskBuffer: Tensor[T] = Tensor()
+  private var gradOutputBuff: Table = T()
+  private var indexBuffer: Tensor[T] = Tensor()
+  private var inputBuffer: Tensor[T] = Tensor()
+  private var outputBuffers: ArrayBuffer[Tensor[T]] = ArrayBuffer(Tensor())
+  private var minLength: Int = 0
 
   /**
    *
@@ -82,7 +100,7 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
 
     topology = module.asInstanceOf[Cell[T]]
     preTopology = if (topology.preTopology != null) {
-      TimeDistributed(topology.preTopology)
+      TimeDistributed(topology.preTopology, maskZero = maskZero)
     } else topology.preTopology
 
     if (batchNormParams != null && preTopology == null) {
@@ -185,6 +203,7 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
       while (t < times) {
         cells += cloneCell.cloneModule()
           .asInstanceOf[Cell[T]]
+        outputBuffers.append(Tensor())
         t += 1
       }
       share(cells)
@@ -270,6 +289,12 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
     // Clone N modules along the sequence dimension.
     initHidden(outputSize.drop(2))
     cloneCells()
+    if (maskZero) {
+      require(input.dim == 3,
+        "If maskZero set to true, input should be a 3D Tensor, e.g [batch, times, nDim]")
+      inputBuffer.resizeAs(input).abs(input).max(maskBuffer, indexBuffer, 3)
+      minLength = ev.toType[Int](maskBuffer.sign().sum(2).min(1)._1(Array(1, 1, 1)))
+    }
 
     currentInput(hidDim) = if (initHiddenState != null) initHiddenState
     else hidden
@@ -277,7 +302,26 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
     while (i <= times) {
       currentInput(inputDim) = Recurrent.selectCopy(input2Cell, i, stepInput2CellBuf)
       cells(i - 1).forward(currentInput)
-      currentInput(hidDim) = cells(i - 1).output.toTable(hidDim)
+      val curOutput = cells(i - 1).output
+      if (maskZero && i > minLength) {
+        val curMask = maskBuffer.select(2, i)
+        val curOut = curOutput[Table](hidDim)[Tensor[T]](1)
+        // Copy output to a new new tensor as output, because for some cells
+        // such as LSTM the hidden h and ouput o refer to the same tensor.
+        // But in this case, we want h and o have difference values.
+        curOutput.update(inputDim, outputBuffers(i - 1).resizeAs(curOut).copy(curOut))
+        for (b <- 1 to curMask.size(1)) {
+          if (curMask(Array(b, 1)) == ev.zero) {
+            val newState = curOutput[Table](hidDim)
+            val originState = currentInput[Table](hidDim)
+            for (j <- 1 to newState.length()) {
+              newState[Tensor[T]](j).select(1, b).copy(originState[Tensor[T]](j).select(1, b))
+            }
+            curOutput[Tensor[T]](inputDim).select(1, b).zero()
+          }
+        }
+      }
+      currentInput(hidDim) = curOutput[Table](hidDim)
       i += 1
     }
 
@@ -337,7 +381,36 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
       } else {
         cells(i - 1).regluarized(false)
       }
-      cells(i - 1).accGradParameters(_input, currentGradOutput)
+
+      if (maskZero && i > minLength) {
+        val curMask = maskBuffer.select(2, i)
+        if (gradOutputBuff.length() == 0) {
+          Utils.recursiveResizeAs(gradOutputBuff, currentGradOutput)
+        }
+        Utils.recursiveCopy(gradOutputBuff, currentGradOutput)
+        for (b <- 1 to curMask.size(1)) {
+          if (curMask(Array(b, 1)) == ev.zero) {
+            val originState = gradOutputBuff[Table](Recurrent.hidDim)
+            for (j <- 1 to originState.length()) {
+              originState[Tensor[T]](j).select(1, b).zero()
+            }
+          }
+        }
+
+        cells(i - 1).accGradParameters(_input, currentGradOutput)
+
+        for (b <- 1 to curMask.size(1)) {
+          if (curMask(Array(b, 1)) == ev.zero) {
+            val newState = cells(i - 1).gradInput[Table](hidDim)
+            val originState = currentGradOutput[Table](hidDim)
+            for (j <- 1 to newState.length()) {
+              newState[Tensor[T]](j).select(1, b).copy(originState[Tensor[T]](j).select(1, b))
+            }
+          }
+        }
+      } else {
+        cells(i - 1).accGradParameters(_input, currentGradOutput)
+      }
       currentGradOutput(hidDim) = cells(i - 1).gradInput.toTable(hidDim)
       i -= 1
     }
@@ -368,7 +441,36 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
       _input(hidDim) = if (i > 1) cells(i - 2).output.toTable(hidDim)
         else if (initHiddenState == null) hidden else initHiddenState
       _input(inputDim) = Recurrent.selectCopy(input2Cell, i, stepInput2CellBuf)
-      cells(i - 1).updateGradInput(_input, currentGradOutput)
+
+      if (maskZero && i > minLength) {
+        val curMask = maskBuffer.select(2, i)
+        if (gradOutputBuff.length() == 0) {
+          Utils.recursiveResizeAs(gradOutputBuff, currentGradOutput)
+        }
+        Utils.recursiveCopy(gradOutputBuff, currentGradOutput)
+        for (b <- 1 to curMask.size(1)) {
+          if (curMask(Array(b, 1)) == ev.zero) {
+            val originState = gradOutputBuff[Table](Recurrent.hidDim)
+            for (j <- 1 to originState.length()) {
+              originState[Tensor[T]](j).select(1, b).zero()
+            }
+          }
+        }
+
+        cells(i - 1).updateGradInput(_input, currentGradOutput)
+
+        for (b <- 1 to curMask.size(1)) {
+          if (curMask(Array(b, 1)) == ev.zero) {
+            val newState = cells(i - 1).gradInput[Table](hidDim)
+            val originState = currentGradOutput[Table](hidDim)
+            for (j <- 1 to newState.length()) {
+              newState[Tensor[T]](j).select(1, b).copy(originState[Tensor[T]](j).select(1, b))
+            }
+          }
+        }
+      } else {
+        cells(i - 1).updateGradInput(_input, currentGradOutput)
+      }
       currentGradOutput(hidDim) = cells(i - 1).gradInput.toTable(hidDim)
       i -= 1
     }
@@ -399,6 +501,37 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
         cells(i - 1).regluarized(false)
       }
       cells(i - 1).backward(_input, currentGradOutput)
+
+      if (maskZero && i > minLength) {
+        val curMask = maskBuffer.select(2, i)
+        if (gradOutputBuff.length() == 0) {
+          Utils.recursiveResizeAs(gradOutputBuff, currentGradOutput)
+        }
+        Utils.recursiveCopy(gradOutputBuff, currentGradOutput)
+        for (b <- 1 to curMask.size(1)) {
+          if (curMask(Array(b, 1)) == ev.zero) {
+            val originState = gradOutputBuff[Table](Recurrent.hidDim)
+            for (j <- 1 to originState.length()) {
+              originState[Tensor[T]](j).select(1, b).zero()
+            }
+          }
+        }
+
+        cells(i - 1).backward(_input, gradOutputBuff).toTable
+
+        for (b <- 1 to curMask.size(1)) {
+          if (curMask(Array(b, 1)) == ev.zero) {
+            val newState = cells(i - 1).gradInput[Table](hidDim)
+            val originState = currentGradOutput[Table](hidDim)
+            for (j <- 1 to newState.length()) {
+              newState[Tensor[T]](j).select(1, b).copy(originState[Tensor[T]](j).select(1, b))
+            }
+          }
+        }
+      } else {
+        cells(i - 1).backward(_input, currentGradOutput)
+      }
+      currentGradOutput(hidDim) = cells(i - 1).gradInput.toTable(hidDim)
       i -= 1
     }
 
@@ -498,6 +631,12 @@ class Recurrent[T : ClassTag](var batchNormParams: BatchNormParams[T] = null)
     initGradHiddenState = null
     stepInput2CellBuf.set()
     stepGradBuffer.set()
+    maskBuffer.set()
+    gradOutputBuff.clear()
+    inputBuffer.set()
+    indexBuffer.set()
+    outputBuffers.clear()
+    minLength = 0
     this
   }
 
@@ -542,9 +681,11 @@ object Recurrent extends ContainerSerializable {
   val hidDim = 2
 
   def apply[@specialized(Float, Double) T: ClassTag](
-    batchNormParams: BatchNormParams[T] = null)
+    batchNormParams: BatchNormParams[T] = null,
+    maskZero: Boolean = false
+  )
     (implicit ev: TensorNumeric[T]) : Recurrent[T] = {
-    new Recurrent[T](batchNormParams)
+    new Recurrent[T](batchNormParams, maskZero = maskZero)
   }
 
   /**
