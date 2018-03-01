@@ -19,9 +19,10 @@ package com.intel.analytics.bigdl.nn.mkldnn
 import com.intel.analytics.bigdl.mkl.MklDnn.MemoryFormat
 import com.intel.analytics.bigdl.mkl.{MKL, MklDnn}
 import com.intel.analytics.bigdl.{Module, nn}
-import com.intel.analytics.bigdl.nn.{Identity, Sequential, View}
+import com.intel.analytics.bigdl.nn.{Identity, Sequential, SpatialConvolution, View}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.numeric.NumericFloat
+import com.intel.analytics.bigdl.utils.RandomGenerator._
 import org.scalatest.{FlatSpec, Matchers}
 
 class SpatialBatchNormalizationSpec extends FlatSpec with Matchers {
@@ -500,5 +501,44 @@ class SpatialBatchNormalizationSpec extends FlatSpec with Matchers {
       DnnUtils.nearequals(gradInput, nnGradInput.toTensor) should be (true)
       DnnUtils.nearequals(bn.getParameters()._2, nnBn.getParameters()._2, 1e-3) should be (true)
     }
+  }
+
+  "bn with conv input" should "work correctly" in {
+    val (channel, height, width) = (64, 112, 112)
+    val epsilon = 1e-3
+    val batchSize = 2
+
+    RNG.setSeed(100)
+    val conv = SpatialConvolution(3, 64, 7, 7, 2, 2, 3, 3, 1, false)
+    val in = Tensor[Float](batchSize, 3, 224, 224).fill(1.0f)
+    val input = conv.forward(in)
+    RNG.setSeed(100)
+    val bn = SpatialBatchNormalization(channel, epsilon)
+    RNG.setSeed(100)
+    val nnBn = nn.SpatialBatchNormalization(channel, epsilon)
+
+    val (weight, gradWeight) = bn.getParameters()
+    val (nnWeight, nnGradWeight) = nnBn.getParameters()
+    DnnUtils.nearequals(weight, nnWeight) should be(true)
+    DnnUtils.nearequals(gradWeight, nnGradWeight, 1e-3) should be(true)
+
+    // val input = Tensor(batchSize, channel, height, width).rand(-1, 1)
+    val gradOutput = Tensor().resizeAs(input).rand(-1, 1)
+
+    val out1 = bn.forward(input)
+    val out2 = nnBn.forward(input)
+
+    out1.storage()
+
+    DnnUtils.getunequals(bn.output, nnBn.output, 1e-2) should be (true)
+
+    val gradInput = bn.backward(input, gradOutput)
+    val nnGradInput = nnBn.backward(input, gradOutput)
+
+    DnnUtils.getunequals(gradInput, nnGradInput.toTensor, 1e-2) should be (true)
+    DnnUtils.nearequals(bn.getParameters()._2, nnBn.getParameters()._2, 1e-1) should be (true)
+
+    DnnUtils.nearequals(weight, nnWeight, 1e-2) should be(true)
+    DnnUtils.nearequals(gradWeight, nnGradWeight, 1e-1) should be(true)
   }
 }
