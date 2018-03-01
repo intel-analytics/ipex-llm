@@ -43,13 +43,13 @@ import scala.util.hashing.MurmurHash3
  *  "1", "2", "3,4"
  *
  *  the output tensor should be an 2D 3 x hashBucketSize SparseTensor:
- *  [0, 0]: Hash64("1", Hash64("D")) % hashBucketSize
- *  [0, 1]: Hash64("1", Hash64("A")) % hashBucketSize
- *  [1, 0]: Hash64("2", Hash64("B")) % hashBucketSize
- *  [2, 0]: Hash64("3", Hash64("C")) % hashBucketSize
- *  [2, 1]: Hash64("4", Hash64("C")) % hashBucketSize
- *  [2, 2]: Hash64("3", Hash64("A")) % hashBucketSize
- *  [2, 3]: Hash64("4", Hash64("A")) % hashBucketSize
+ *  [0, 0]: Hash32("1", Hash32("D")) % hashBucketSize
+ *  [0, 1]: Hash32("1", Hash32("A")) % hashBucketSize
+ *  [1, 0]: Hash32("2", Hash32("B")) % hashBucketSize
+ *  [2, 0]: Hash32("3", Hash32("C")) % hashBucketSize
+ *  [2, 1]: Hash32("4", Hash32("C")) % hashBucketSize
+ *  [2, 2]: Hash32("3", Hash32("A")) % hashBucketSize
+ *  [2, 3]: Hash32("4", Hash32("A")) % hashBucketSize
  *
  * @param hashBucketSize An Int > 1. The number of buckets.
  * @param strDelimiter The Delimiter between feature values, default: ",".
@@ -67,7 +67,7 @@ class CrossCol[T: ClassTag](
   override def updateOutput(input: Table): Tensor[Int] = {
 
     val tensorNum = input.length()
-    require(tensorNum >=2, "the input table must contain more than one tensor")
+    require(tensorNum>=2, "the input table must contain more than one tensor")
     val batchSize = input[Tensor[String]](1).size(dim = 1)
 
     val indices0 = new ArrayBuffer[Int]()
