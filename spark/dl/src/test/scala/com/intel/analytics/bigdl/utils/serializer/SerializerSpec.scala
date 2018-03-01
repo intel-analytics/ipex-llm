@@ -62,8 +62,14 @@ class SerializerSpec extends BigDLSpecHelper {
       "com.intel.analytics.bigdl.nn.ops.TensorArraySerialTest",
 
     // Keras layers
+    "com.intel.analytics.bigdl.nn.keras.Input" ->
+      "com.intel.analytics.bigdl.keras.nn.InputSerialTest",
+    "com.intel.analytics.bigdl.nn.keras.Sequential" ->
+      "com.intel.analytics.bigdl.keras.nn.SequentialSerialTest",
     "com.intel.analytics.bigdl.nn.keras.Activation" ->
       "com.intel.analytics.bigdl.keras.nn.ActivationSerialTest",
+    "com.intel.analytics.bigdl.nn.keras.SoftMax" ->
+      "com.intel.analytics.bigdl.keras.nn.SoftMaxSerialTest",
     "com.intel.analytics.bigdl.nn.keras.AtrousConvolution1D" ->
       "com.intel.analytics.bigdl.keras.nn.AtrousConvolution1DSerialTest",
     "com.intel.analytics.bigdl.nn.keras.AtrousConvolution2D" ->
