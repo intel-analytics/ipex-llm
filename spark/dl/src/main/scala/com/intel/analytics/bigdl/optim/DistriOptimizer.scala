@@ -96,7 +96,7 @@ object DistriOptimizer {
     metrics: Metrics,
     models: RDD[Cache[T]],
     optimMethods: Map[String, OptimMethod[T]],
-    parameters: Map[String, (Int, Int, AllReduceParameter[T])],
+    parameters: Map[String, AllReduceParameter[T]],
     validationTrigger: Option[Trigger],
     validationDataSet: Option[DataSet[MiniBatch[T]]],
     validationMethods: Option[Array[ValidationMethod[T]]],
@@ -208,9 +208,9 @@ object DistriOptimizer {
             Note: All models in `cached` share the same storage for weights, so we only need to
             copy the weights from parameter server into the first model's weights.
            */
-          val weightsResult = parameters.values.toArray.map(p =>
-            p._3.getWeights(cached.modelWeights.head.narrow(1, p._1, p._2))
-          )
+          val weightsResults = parameters.values.map(p =>
+            p.getWeights(cached.modelWeights.head.narrow(1, p.paramOffset, p.size))
+          ).toArray
           val miniBatchBuffer = new Array[MiniBatch[T]](_subModelNumber)
           val batch = data.next()
           val stackSize = batch.size() / _subModelNumber
@@ -230,7 +230,7 @@ object DistriOptimizer {
             }
           })
           Engine.default.sync(tasks)
-          weightsResult.foreach(_.waitResult())
+          weightsResults.foreach(_.waitResult())
           val weightSyncTime = System.nanoTime() - syWStart
           driverMetrics.add("get weights average", weightSyncTime)
           driverMetrics.add("get weights for each node", weightSyncTime)
@@ -273,8 +273,10 @@ object DistriOptimizer {
 
           if (finishedThreads.nonEmpty) {
             val finishedGradients = finishedThreads.map(cached.modelGradients(_))
-            parameters.values.foreach { case (pOffset, pLength, p) =>
+            parameters.values.foreach { p =>
               time = System.nanoTime()
+              val pOffset = p.paramOffset
+              val pLength = p.size
               val taskSize = pLength / _subModelNumber
               val extraTask = pLength % _subModelNumber
 
@@ -301,8 +303,8 @@ object DistriOptimizer {
             val putG = System.nanoTime()
             // zero gradient in BlockManager when no thread finished.
             cached.modelGradients(0).zero()
-            parameters.values.foreach{case (pOffset, pLength, p) =>
-              p.putGradients(cached.modelGradients(0).narrow(1, pOffset, pLength))
+            parameters.values.foreach{p =>
+              p.putGradients(cached.modelGradients(0).narrow(1, p.paramOffset, p.size))
             }
             driverMetrics.add("put gradient", System.nanoTime() - putG)
           }
@@ -328,14 +330,14 @@ object DistriOptimizer {
         var l2Norm = 0.0f
         val scale = if (normClippingEnable) {
           val sumSquare = models.mapPartitions(modelIter => {
-            parameters.map { case (moduleName, (pOffset, pLength, p)) =>
+            parameters.map { case (moduleName, p) =>
               val getG = System.nanoTime()
               p.aggregateGradientPartition()
               driverMetrics.add("aggregrateGradientParition average executor",
                 System.nanoTime() - getG)
 
-              val taskSize = pLength / _subModelNumber
-              val extraTask = pLength % _subModelNumber
+              val taskSize = p.size / _subModelNumber
+              val extraTask = p.size % _subModelNumber
               val parallelNum = if (taskSize == 0) extraTask else _subModelNumber
               val squares = new Array[Double](parallelNum)
               Engine.default.invokeAndWait((0 until parallelNum).map(tid => () => {
@@ -370,11 +372,11 @@ object DistriOptimizer {
           val modelCache = modelIter.next()
           if (!normClippingEnable) {
             val getG = System.nanoTime()
-            parameters.values.foreach(_._3.aggregateGradientPartition())
+            parameters.values.foreach(_.aggregateGradientPartition())
             driverMetrics.add("aggregrateGradientParition average executor",
               System.nanoTime() - getG)
           }
-          parameters.foreach{ case (name, (pOffset, pLength, p)) =>
+          parameters.foreach{ case (name, p) =>
             p.gradientPartition.div(scale(name))
             // gradient clipping
             if (constantClippingEnable) {
@@ -390,7 +392,7 @@ object DistriOptimizer {
               optimMethod.state.update("score", driverState[Float]("score"))
             }
 
-            val p = parameters(name)._3
+            val p = parameters(name)
             optimMethod.optimize(_ => (ev.fromType(value), p.gradientPartition),
               p.weightPartition)
             driverMetrics.add("compute weight average", System.nanoTime() - time)
@@ -540,14 +542,14 @@ object DistriOptimizer {
     wallClockTime: Long,
     models: RDD[Cache[T]],
     state: Table,
-    parameters: Map[String, (Int, Int, AllReduceParameter[T])],
+    parameters: Map[String, AllReduceParameter[T]],
     optimMethods: Map[String, OptimMethod[T]],
     trainingModel: Module[T]): Unit = {
     cacheTrigger.foreach { trigger =>
       cachePath.foreach { path =>
         if (trigger(state)) {
           optimMethods.foreach{case (name, optimMethod) =>
-            println(s"[Wall Clock ${wallClockTime / 1e9}s] Save model to $path")
+            logger.info(s"[Wall Clock ${wallClockTime / 1e9}s] Save model to $path")
             saveModel(getModel(models, parameters, trainingModel), cachePath, isOverWrite,
               s".${state[Int]("neval")}")
             optimMethod.state.update("epoch", state[Int]("epoch"))
@@ -571,7 +573,7 @@ object DistriOptimizer {
     trainSummary: TrainSummary,
     models: RDD[Cache[T]],
     driverState: Table,
-    parameters: Map[String, (Int, Int, AllReduceParameter[T])],
+    parameters: Map[String, AllReduceParameter[T]],
     trainingModel: Module[T])(implicit ev: TensorNumeric[T]): Unit = {
     val currentIteration = driverState[Int]("neval") - 1
     val parametersTrigger = trainSummary.getSummaryTrigger("Parameters")
@@ -622,7 +624,7 @@ object DistriOptimizer {
     nodeNumber: Int,
     coresPerNode: Int,
     checkSingleton: Boolean,
-    parameters: Map[String, (Int, Int, AllReduceParameter[T])],
+    parameters: Map[String, AllReduceParameter[T]],
     validationMethods: Option[Array[ValidationMethod[T]]],
     optimMethod: Map[String, OptimMethod[T]]
   )(implicit ev: TensorNumeric[T]) = {
@@ -679,7 +681,7 @@ object DistriOptimizer {
       logger.info("model thread pool size is " + Engine.model.getPoolSize)
       val weights = cached.head._2
       parameters.foreach(v =>
-        v._2._3.init(weights.narrow(1, v._2._1, v._2._2))
+        v._2.init(weights.narrow(1, v._2.paramOffset, v._2.size))
       )
 
       Iterator.single(Cache(
@@ -797,7 +799,7 @@ object DistriOptimizer {
    */
   private def getModel[T: ClassTag](
     models: RDD[Cache[T]],
-    parameters: Map[String, (Int, Int, AllReduceParameter[T])],
+    parameters: Map[String, AllReduceParameter[T]],
     trainingModel: Module[T]): Module[T] = {
     val partitionNum = models.partitions.length
     val extraState = models.map(_.localModels.head.getExtraParameter()).first()
@@ -811,7 +813,7 @@ object DistriOptimizer {
 
     val (parameter, gradientParameter) = trainingModel.getParameters()
 
-    parameters.foreach { case (moduleName, (pOffset, pLength, p)) =>
+    parameters.foreach { case (moduleName, p) =>
       val currentModule = trainingModel(moduleName)
       require(currentModule.isDefined, s"Couldn't find $moduleName in $trainingModel")
       val (weights, gradients) = models.mapPartitions(iter => {
@@ -821,12 +823,12 @@ object DistriOptimizer {
           Map(curPartitionId -> p.gradientPartition)))
       }).reduce((a, b) => (a._1 ++ b._1, a._2 ++ b._2))
 
-      val taskSize = pLength / partitionNum
+      val taskSize = p.size / partitionNum
       require(taskSize != 0, "parameter length should not less than partition number")
-      val extraSize = pLength % partitionNum
+      val extraSize = p.size % partitionNum
 
       (0 until partitionNum).map(pid => {
-        val start = pOffset + pid * taskSize + math.min(pid, extraSize)
+        val start = p.paramOffset + pid * taskSize + math.min(pid, extraSize)
         val length = taskSize + (if (pid < extraSize) 1 else 0)
         parameter.narrow(1, start, length).copy(weights(pid))
         gradientParameter.narrow(1, start, length).copy(gradients(pid))
@@ -947,15 +949,12 @@ class DistriOptimizer[T: ClassTag] (
       require(modelParameters._1 == compactWeights,
         s"DistriOptimizer: All subModules should have an OptimMethod.")
       p.map{case (subModuleName, weights) =>
-        (subModuleName, (weights.storageOffset(),
-          weights.nElement(),
-          AllReduceParameter.newParameter[T](partitionNum, weights.nElement())))
+        (subModuleName, AllReduceParameter.newParameter[T](
+          partitionNum, weights.nElement(), weights.storageOffset()))
       }
     } else if (optimMethods.contains(model.getName())) {
-      Map(model.getName() -> (modelParameters._1.storageOffset(),
-        modelParameters._1.nElement(),
-        AllReduceParameter.newParameter[T](partitionNum, modelParameters._1.nElement()
-        )))
+      Map(model.getName() -> AllReduceParameter.newParameter[T](
+        partitionNum, modelParameters._1.nElement()))
     } else {
       throw new IllegalArgumentException(s"${model.getName()} doesn't " +
         s"have corresponding OptimMethod")

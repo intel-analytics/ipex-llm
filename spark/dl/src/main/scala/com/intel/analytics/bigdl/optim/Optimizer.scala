@@ -20,6 +20,7 @@ import java.nio.file.{Files, Paths}
 
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dataset.{DataSet, SampleToMiniBatch, _}
+import com.intel.analytics.bigdl.nn.Module
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils._
@@ -45,6 +46,7 @@ abstract class Optimizer[T: ClassTag, D](
   protected var dataset: DataSet[D],
   protected var criterion: Criterion[T])(implicit ev : TensorNumeric[T])
 {
+  import Optimizer.{logger, checkSubModules}
   protected var state: Table = T()
   // TODO: delete this one and change LocalOptimizer later
   protected var optimMethod: OptimMethod[T] = new SGD()
@@ -247,18 +249,25 @@ abstract class Optimizer[T: ClassTag, D](
    */
   def setModel(newModel: Module[T]): this.type = {
     // Print some warning if model changed.
-    if (newModel.getName != model.getName()) {
-      Optimizer.logger.warn(s"New model's name ${newModel.getName()} doesn't" +
-        s" match the old model ${model.getName()}. Please set optimMethods for" +
-        s" this new model if needed.")
-      if (optimMethods.size == 1 && optimMethods.contains(model.getName())) {
-        Optimizer.logger.warn(s"Instead the old optimMethods pair automatically")
+    if (newModel.getName != model.getName() && optimMethods.size == 1
+      && optimMethods.contains(model.getName())) {
+        logger.info(s"Instead the old optimMethods pair automatically")
         optimMethods = Map(newModel.getName() -> optimMethods(model.getName()))
-      }
+    }
+
+    // check if the old optimMethods works for this new model.
+    try {
+      checkSubModules(model, optimMethods.keys.toArray)
+    } catch {
+      case ie: IllegalArgumentException =>
+        logger.warn(s"Old model's optimMethods doesn't match the new model, " +
+          s"please set optimMethods for this new model.")
     }
 
     model = newModel
+
     model.checkDuplicate()
+
     // if a new Model is set, then reset "epoch", "neval" .etc.
     resetEpoch()
     this
@@ -333,7 +342,8 @@ abstract class Optimizer[T: ClassTag, D](
    * @param method optimization method
    */
   def setOptimMethod(method : OptimMethod[T]): this.type = {
-    this.optimMethods = Map(model.getName -> method)
+    checkSubModules(model, Array(model.getName()))
+    this.optimMethods = Map(model.getName -> method.clone())
     this
   }
 
@@ -343,7 +353,8 @@ abstract class Optimizer[T: ClassTag, D](
    * @param method A mapping of submodule -> OptimMethod
    */
   def setOptimMethods(method: Map[String, OptimMethod[T]]): this.type = {
-    this.optimMethods = method
+    checkSubModules(model, method.keys.toArray)
+    this.optimMethods = method.map(v => (v._1, v._2.clone()))
     this
   }
 
@@ -420,10 +431,27 @@ abstract class Optimizer[T: ClassTag, D](
 }
 
 object Optimizer {
-  val logger: Logger = Logger.getLogger(getClass)
+  private val logger: Logger = Logger.getLogger(getClass)
+
   private[bigdl] def header(epoch: Int, count: Int, total: Long, iter: Int, wallClockTime: Long)
   : String = {
     s"[Epoch $epoch $count/$total][Iteration $iter][Wall Clock ${wallClockTime / 1e9}s]"
+  }
+
+  protected def checkSubModules[T: ClassTag](
+        model: Module[T],
+        subModuleNames: Seq[String])(implicit ev: TensorNumeric[T]): Unit = {
+    val modelParameters = model.getParameters()
+    val p = subModuleNames.map{subModuleName =>
+      val subModule = model(subModuleName)
+      require(subModule.isDefined, s"Optimizer couldn't find $subModuleName in $model")
+      val subModuleWeights = subModule.get.getParameters()._1
+      subModuleWeights
+    }.toArray
+    val sortedWeights = p.sortWith((a, b) => a.storageOffset() < b.storageOffset())
+    val compactWeights = Module.isCompact(sortedWeights)
+    require(modelParameters._1 == compactWeights,
+      s"DistriOptimizer: All subModules in ${model.getName()} should have an OptimMethod.")
   }
 
   /**
