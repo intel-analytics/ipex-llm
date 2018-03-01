@@ -26,15 +26,15 @@ import org.scalatest.{FlatSpec, Matchers}
 
 class SpatialBatchNormalizationSpec extends FlatSpec with Matchers {
   "bn updateOutput" should "work correctly" in {
-    val (batchSize, channel, height, width) = (2, 3, 4, 4)
+    val (batchSize, channel, height, width) = (4, 64, 112, 112)
     val epsilon = 1e-5
 
-    val initWeight = Tensor(channel).rand()
-    val initBias = Tensor(channel).rand()
+    val initWeight = Tensor(channel).rand(-1, 1)
+    val initBias = Tensor(channel).fill(0)
 
     val bn = SpatialBatchNormalization(channel, epsilon, initWeight = initWeight,
-      initBias = initBias)
-    val input = Tensor(batchSize, channel, height, width).rand()
+      initBias = initBias).setShouldConvert(true)
+    val input = Tensor(batchSize, channel, height, width).rand(-1, 1)
 
     val output = bn.forward(input)
 
@@ -42,19 +42,19 @@ class SpatialBatchNormalizationSpec extends FlatSpec with Matchers {
       initWeight = initWeight, initBias = initBias)
     val nnOutput = nnBn.forward(input)
 
-    DnnUtils.nearequals(output, nnOutput)
+    DnnUtils.nearequals(output, nnOutput) should be (true)
   }
 
   "bn updateOutput multi times" should "work correctly" in {
     val (batchSize, channel, height, width) = (2, 3, 4, 4)
     val epsilon = 1e-5
 
-    val initWeight = Tensor(channel).rand()
-    val initBias = Tensor(channel).rand()
+    val initWeight = Tensor(channel).rand(-1, 1)
+    val initBias = Tensor(channel).rand(-1, 1)
 
     val bn = SpatialBatchNormalization(channel, epsilon, initWeight = initWeight,
-      initBias = initBias)
-    val input = Tensor(batchSize, channel, height, width).rand()
+      initBias = initBias).setShouldConvert(true)
+    val input = Tensor(batchSize, channel, height, width).rand(-1, 1)
 
     Utils.manyTimes(bn.forward(input))(10)
 
@@ -63,18 +63,18 @@ class SpatialBatchNormalizationSpec extends FlatSpec with Matchers {
 
     Utils.manyTimes(nnBn.forward(input))(10)
 
-    DnnUtils.nearequals(bn.output.toTensor, nnBn.output.toTensor)
+    DnnUtils.nearequals(bn.output.toTensor, nnBn.output.toTensor) should be (true)
   }
 
   "bn backward" should "work correctly" in {
-    val (batchSize, channel, height, width) = (2, 3, 4, 4)
+    val (batchSize, channel, height, width) = (5, 64, 112, 112)
     val epsilon = 0.0f
 
     val initWeight = Tensor(channel).rand(-1, 1)
     val initBias = Tensor(channel).rand(-1, 1)
 
     val bn = SpatialBatchNormalization(channel, epsilon, initWeight = initWeight,
-      initBias = initBias)
+      initBias = initBias).setShouldConvert(true)
     val input = Tensor(batchSize, channel, height, width).rand(-1, 1)
     val gradOutput = Tensor().resizeAs(input).rand(-1, 1)
 
@@ -84,12 +84,12 @@ class SpatialBatchNormalizationSpec extends FlatSpec with Matchers {
     bn.forward(input)
     nnBn.forward(input)
 
-    bn.output should be (nnBn.output)
-
+    DnnUtils.nearequals(bn.output, nnBn.output) should be (true)
     val gradInput = bn.backward(input, gradOutput)
     val nnGradInput = nnBn.backward(input, gradOutput)
 
-    DnnUtils.nearequals(gradInput, nnGradInput.toTensor)
+    DnnUtils.nearequals(gradInput, nnGradInput.toTensor) should be (true)
+    DnnUtils.nearequals(bn.getParameters()._2, nnBn.getParameters()._2, 1e-4) should be (true)
   }
 
   "bn backward multi times" should "work correctly" in {
@@ -114,6 +114,10 @@ class SpatialBatchNormalizationSpec extends FlatSpec with Matchers {
     Utils.manyTimes(nnBn.backward(input, gradOutput))(10)
 
     bn.gradInput shouldEqual nnBn.gradInput
+    bn.getParameters()._2 shouldEqual nnBn.getParameters()._2
+
+    DnnUtils.nearequals(bn.gradInput, nnBn.gradInput) should be (true)
+    DnnUtils.nearequals(bn.getParameters()._2, nnBn.getParameters()._2) should be (true)
   }
 
   "bn perf" should "work correctly" in {
@@ -467,8 +471,8 @@ class SpatialBatchNormalizationSpec extends FlatSpec with Matchers {
     val (channel, height, width) = (64, 112, 112)
     val epsilon = 1e-3
 
-    val initWeight = Tensor(channel).rand()
-    val initBias = Tensor(channel).rand()
+    val initWeight = Tensor(channel).rand(-1, 1)
+    val initBias = Tensor(channel).rand(-1, 1)
 
     val bn = SpatialBatchNormalization(channel, epsilon, initWeight = initWeight,
       initBias = initBias)
@@ -476,33 +480,25 @@ class SpatialBatchNormalizationSpec extends FlatSpec with Matchers {
       initWeight = initWeight, initBias = initBias)
 
     for (batchSize <- Array(2, 3, 4, 2)) {
-      val input = Tensor(batchSize, channel, height, width).rand()
+      bn.zeroGradParameters()
+      nnBn.zeroGradParameters()
 
-      val (weight1, gradweight1) = bn.getParameters()
-      val (weight2, gradweight2) = nnBn.getParameters()
+      val (weight, gradWeight) = bn.getParameters()
+      val (nnWeight, nnGradWeight) = nnBn.getParameters()
 
-      DnnUtils.nearequals(weight1, weight2) should be(true)
-      DnnUtils.nearequals(gradweight1, gradweight2, 1e-4) should be(true)
+      val input = Tensor(batchSize, channel, height, width).rand(-1, 1)
+      val gradOutput = Tensor().resizeAs(input).rand(-1, 1)
 
       bn.forward(input)
       nnBn.forward(input)
-      DnnUtils.nearequals(bn.output, nnBn.output, 1e-4) should be(true)
 
-      DnnUtils.nearequals(weight1, weight2) should be(true)
-      DnnUtils.nearequals(gradweight1, gradweight2, 1e-4) should be(true)
+      DnnUtils.nearequals(bn.output, nnBn.output) should be (true)
 
-      val gradOutput = Tensor().resizeAs(input).rand()
+      val gradInput = bn.backward(input, gradOutput)
+      val nnGradInput = nnBn.backward(input, gradOutput)
 
-      bn.backward(input, gradOutput)
-      nnBn.backward(input, gradOutput)
-
-      DnnUtils.nearequals(bn.gradInput, nnBn.gradInput, 1e-4) should be(true)
-
-
-      DnnUtils.nearequals(weight1, weight2) should be(true)
-      DnnUtils.nearequals(gradweight1, gradweight2, 1e-4) should be(true)
-
-      println("=" * 120)
+      DnnUtils.nearequals(gradInput, nnGradInput.toTensor) should be (true)
+      DnnUtils.nearequals(bn.getParameters()._2, nnBn.getParameters()._2, 1e-3) should be (true)
     }
   }
 }

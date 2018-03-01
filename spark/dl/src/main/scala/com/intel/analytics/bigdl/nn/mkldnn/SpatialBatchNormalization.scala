@@ -19,6 +19,7 @@ package com.intel.analytics.bigdl.nn.mkldnn
 import java.io.{IOException, ObjectInputStream}
 
 import com.intel.analytics.bigdl.mkl.{Memory, MklDnn}
+import com.intel.analytics.bigdl.nn.{RandomUniform, VariableFormat, Zeros}
 import com.intel.analytics.bigdl.nn.abstractnn.{Initializable, TensorModule}
 import com.intel.analytics.bigdl.tensor._
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -53,6 +54,33 @@ class SpatialBatchNormalization[T: ClassTag](
   @transient var backwardPrims: ArrayBuffer[Long] = ArrayBuffer.empty
   @transient var backwardReorderPrims: ArrayBuffer[Long] = ArrayBuffer.empty
   @transient var forwardPrimDesc = 0L
+
+  {
+    val wInit = RandomUniform(0, 1)
+    val bInit = Zeros
+    setInitMethod(wInit, bInit)
+  }
+
+  override def reset(): Unit = {
+    val weightAndBias = all.view(Array(2, nOutput))
+    if (initWeight != null) {
+      require(initWeight.size(1) == nOutput)
+      weightAndBias.select(1, 1).copy(initWeight)
+    } else {
+      val weight = weightAndBias.select(1, 1)
+      weightInitMethod.init(weight, VariableFormat.ONE_D)
+    }
+
+    if (initBias != null) {
+      require(initBias.size(1) == nOutput)
+      weightAndBias.select(1, 2).copy(initBias)
+    } else {
+      val bias = weightAndBias.select(1, 2)
+      biasInitMethod.init(bias, VariableFormat.ONE_D)
+    }
+
+    zeroGradParameters()
+  }
 
   @throws(classOf[IOException])
   private def readObject(in: ObjectInputStream): Unit = {
@@ -428,14 +456,16 @@ class SpatialBatchNormalization[T: ClassTag](
       require(initWeight.size(1) == nOutput)
       concat.select(1, 1).copy(initWeight)
     } else {
-      concat.select(1, 1).fill(ev.fromType(1))
+      val weight = concat.select(1, 1)
+      weightInitMethod.init(weight, VariableFormat.ONE_D)
     }
 
     if (initBias != null) {
       require(initBias.size(1) == nOutput)
       concat.select(1, 2).copy(initBias)
     } else {
-      concat.select(1, 2).fill(ev.fromType(0))
+      val bias = concat.select(1, 2)
+      biasInitMethod.init(bias, VariableFormat.ONE_D)
     }
 
     weightAndBias.copy(concat.view(Array(2 * nOutput)))
@@ -445,6 +475,7 @@ class SpatialBatchNormalization[T: ClassTag](
   override def zeroGradParameters(): Unit = {
     if (affine) {
       gradAll.zero()
+      diffAll.zero()
     }
   }
 
