@@ -596,6 +596,29 @@ class SoftmaxWithCriterion(Criterion):
                                                    ignore_label,
                                                    normalize_mode)
 
+class TimeDistributedMaskCriterion(Criterion):
+    '''
+    This class is intended to support inputs with 3 or more dimensions.
+    Apply Any Provided Criterion to every temporal slice of an input.
+    In addition, it supports padding mask.
+
+    eg. if the target is [ [-1, 1, 2, 3, -1], [5, 4, 3, -1, -1] ],
+      and set the paddingValue property to -1, then the loss of -1 would not
+      be accumulated and the loss is only divided by 6 (ont including the amount of
+      -1, in this case, we are only interested in 1, 2, 3, 5, 4, 3)
+
+    :param criterion: embedded criterion
+    :param padding_value: padding value
+
+
+    >>> td = TimeDistributedMaskCriterion(ClassNLLCriterion())
+    creating: createClassNLLCriterion
+    creating: createTimeDistributedMaskCriterion
+    '''
+
+    def __init__(self, criterion, padding_value=0, bigdl_type="float"):
+        super(TimeDistributedMaskCriterion, self).__init__(
+            None, bigdl_type, criterion, padding_value)
 
 class TimeDistributedCriterion(Criterion):
     '''
