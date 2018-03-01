@@ -23,11 +23,13 @@ import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import com.intel.analytics.bigdl.utils.Table
 import com.intel.analytics.bigdl.utils.TorchObject.TYPE_DOUBLE_TENSOR
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 import scala.math._
+import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Parallel
 class MultiRNNCellSpec extends FlatSpec with BeforeAndAfter with Matchers {
@@ -633,5 +635,39 @@ class MultiRNNCellSpec extends FlatSpec with BeforeAndAfter with Matchers {
 
     rec.setHiddenState(rec.getHiddenState())
     model.forward(input)
+  }
+}
+
+class MultiRNNCellSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val hiddenSize = 5
+    val inputSize = 5
+    val seqLength = 4
+    val batchSize = 2
+    val kernalW = 3
+    val kernalH = 3
+    val rec = RecurrentDecoder[Float](seqLength)
+    val cells = Array(ConvLSTMPeephole[Float](
+      inputSize,
+      hiddenSize,
+      kernalW, kernalH,
+      1), ConvLSTMPeephole[Float](
+      inputSize,
+      hiddenSize,
+      kernalW, kernalH,
+      1), ConvLSTMPeephole[Float](
+      inputSize,
+      hiddenSize,
+      kernalW, kernalH,
+      1)).asInstanceOf[Array[Cell[Float]]]
+
+    val multiRNNCell = MultiRNNCell[Float](cells)
+
+    val model = Sequential[Float]()
+      .add(rec
+        .add(multiRNNCell)).setName("multiRNNCell")
+
+    val input = Tensor[Float](batchSize, inputSize, 10, 10).apply1(_ => Random.nextFloat())
+    runSerializationTest(model, input, multiRNNCell.getClass)
   }
 }

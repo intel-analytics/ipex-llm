@@ -17,7 +17,10 @@ package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
+
+import scala.util.Random
 
 class NegativeSpec extends FlatSpec with Matchers {
   "Negative forward" should "be correct" in {
@@ -31,5 +34,13 @@ class NegativeSpec extends FlatSpec with Matchers {
     val grad = Tensor[Double](T(2, 3, 4))
     val m = Negative[Float]()
     m.backward(input, grad) should be(Tensor[Double](T(-2, -3, -4)))
+  }
+}
+
+class NegativeSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val negative = Negative[Float]().setName("negative")
+    val input = Tensor[Float](10).apply1(e => Random.nextFloat())
+    runSerializationTest(negative, input)
   }
 }
