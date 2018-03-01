@@ -18,31 +18,14 @@ package com.intel.analytics.bigdl.nn.ops
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
 import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
-import org.scalatest.{FlatSpec, Matchers}
 
 
-class ArgMaxSpec extends FlatSpec with Matchers {
-
-  "ArgMax Float" should "work properly" in {
-    val dataTensor = Tensor[Float](T(T(1.0f, 2.0f), T(3.0f, 4.0f)))
-    val dimensionTensor = Tensor.scalar[Int](1)
-    val input = T(dataTensor, dimensionTensor)
-    val expectedOutput = Tensor[Int](T(2, 2))
-
-    val layer = ArgMax[Double]()
-    val result = layer.forward(input)
-
-    result should be (expectedOutput)
-  }
-
-}
-
-class ArgMaxSerialTest extends ModuleSerializationTest {
+class FloorDivSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
-    val argMax = ArgMax[Float].setName("argMax")
-    val dataTensor = Tensor[Float](T(T(1.0f, 2.0f), T(3.0f, 4.0f)))
-    val dimensionTensor = Tensor.scalar[Int](1)
-    val input = T(dataTensor, dimensionTensor)
-    runSerializationTest(argMax, input)
+    val floorDiv = FloorDiv[Float, Float]().setName("floorDiv")
+    val input1 = Tensor[Float](5).fill(1.0f)
+    val input2 = Tensor[Float](5).fill(2.0f)
+    val input = T(input1, input2)
+    runSerializationTest(floorDiv, input)
   }
 }

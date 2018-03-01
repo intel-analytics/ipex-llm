@@ -15,34 +15,21 @@
  */
 package com.intel.analytics.bigdl.nn.ops
 
+import com.intel.analytics.bigdl.nn.abstractnn.DataFormat
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
 import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
-import org.scalatest.{FlatSpec, Matchers}
+
+import scala.util.Random
 
 
-class ArgMaxSpec extends FlatSpec with Matchers {
-
-  "ArgMax Float" should "work properly" in {
-    val dataTensor = Tensor[Float](T(T(1.0f, 2.0f), T(3.0f, 4.0f)))
-    val dimensionTensor = Tensor.scalar[Int](1)
-    val input = T(dataTensor, dimensionTensor)
-    val expectedOutput = Tensor[Int](T(2, 2))
-
-    val layer = ArgMax[Double]()
-    val result = layer.forward(input)
-
-    result should be (expectedOutput)
-  }
-
-}
-
-class ArgMaxSerialTest extends ModuleSerializationTest {
+class DepthwiseConv2DBackpropFilterSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
-    val argMax = ArgMax[Float].setName("argMax")
-    val dataTensor = Tensor[Float](T(T(1.0f, 2.0f), T(3.0f, 4.0f)))
-    val dimensionTensor = Tensor.scalar[Int](1)
-    val input = T(dataTensor, dimensionTensor)
-    runSerializationTest(argMax, input)
+    val depWiseConv2dBackProp = DepthwiseConv2DBackpropFilter[Float](1,
+      1, 0, 0, DataFormat.NHWC).setName("depWiseConv2dBackProp")
+    val input = T(Tensor[Float](4, 24, 24, 3).apply1(_ => Random.nextFloat()),
+      Tensor[Int](T(2, 2, 3, 1)),
+      Tensor[Float](4, 23, 23, 3).apply1(_ => Random.nextFloat()))
+    runSerializationTest(depWiseConv2dBackProp, input)
   }
 }

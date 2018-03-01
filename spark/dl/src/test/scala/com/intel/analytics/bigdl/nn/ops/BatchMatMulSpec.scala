@@ -18,31 +18,18 @@ package com.intel.analytics.bigdl.nn.ops
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
 import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
-import org.scalatest.{FlatSpec, Matchers}
+
+import scala.util.Random
 
 
-class ArgMaxSpec extends FlatSpec with Matchers {
-
-  "ArgMax Float" should "work properly" in {
-    val dataTensor = Tensor[Float](T(T(1.0f, 2.0f), T(3.0f, 4.0f)))
-    val dimensionTensor = Tensor.scalar[Int](1)
-    val input = T(dataTensor, dimensionTensor)
-    val expectedOutput = Tensor[Int](T(2, 2))
-
-    val layer = ArgMax[Double]()
-    val result = layer.forward(input)
-
-    result should be (expectedOutput)
-  }
-
-}
-
-class ArgMaxSerialTest extends ModuleSerializationTest {
+class BatchMatMulSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
-    val argMax = ArgMax[Float].setName("argMax")
-    val dataTensor = Tensor[Float](T(T(1.0f, 2.0f), T(3.0f, 4.0f)))
-    val dimensionTensor = Tensor.scalar[Int](1)
-    val input = T(dataTensor, dimensionTensor)
-    runSerializationTest(argMax, input)
+    val batchMatMul = BatchMatMul[Float, Float]().setName("batchMatMul")
+    val input =
+      T(
+        Tensor[Float](2, 2).apply1(_ => Random.nextFloat()),
+        Tensor[Float](2, 2).apply1(_ => Random.nextFloat())
+      )
+    runSerializationTest(batchMatMul, input)
   }
 }

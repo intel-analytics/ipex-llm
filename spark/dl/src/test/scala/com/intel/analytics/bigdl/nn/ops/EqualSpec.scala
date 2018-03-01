@@ -18,7 +18,10 @@ package com.intel.analytics.bigdl.nn.ops
 import com.google.protobuf.ByteString
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
+
+import scala.util.Random
 
 class EqualSpec extends FlatSpec with Matchers {
   "Equal Float operation" should "works correctly" in {
@@ -129,5 +132,15 @@ class EqualSpec extends FlatSpec with Matchers {
 
     val output = Equal[Boolean]().forward(input)
     output should be(expectOutput)
+  }
+}
+
+class EqualSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val equal = Equal[Float]().setName("equal")
+    val input = T(Tensor[Float](5).apply1(_ => Random.nextFloat()),
+      Tensor[Float](5).apply1(_ => Random.nextFloat()))
+    runSerializationTest(equal, input,
+      equal.asInstanceOf[ModuleToOperation[Float]].module.getClass)
   }
 }
