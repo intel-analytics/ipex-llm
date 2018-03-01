@@ -16,8 +16,9 @@
 package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.tensor.Tensor
-import org.scalatest.{Matchers, FlatSpec}
+import org.scalatest.{FlatSpec, Matchers}
 import com.intel.analytics.bigdl.numeric.NumericFloat
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 
 @com.intel.analytics.bigdl.tags.Parallel
 class DenseToSparseSpec extends FlatSpec with Matchers  {
@@ -58,5 +59,13 @@ class DenseToSparseSpec extends FlatSpec with Matchers  {
       .add(SparseLinear[Float](10, 10))
     model.forward(mockInput)
     model.backward(mockInput, mockError)
+  }
+}
+
+class DenseToSparseSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val denseToSparse = DenseToSparse[Float]().setName("denseToSparse")
+    val input = Tensor.range[Float](1, 12, 1)
+    runSerializationTest(denseToSparse, input)
   }
 }

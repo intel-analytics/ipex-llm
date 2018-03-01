@@ -17,6 +17,7 @@ package com.intel.analytics.bigdl.nn.ops
 
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
 
 class OneHotSpec extends FlatSpec with Matchers {
@@ -90,5 +91,18 @@ class OneHotSpec extends FlatSpec with Matchers {
     ).forward(input)
 
     output should be(expectOutput)
+  }
+}
+
+class OneHotSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val oneHot = OneHot[Float, Float](axis = -1).setName("oneHot")
+    val input =
+      T(Tensor[Long](T(0, 2, -1, 1)),
+        Tensor[Int](Array(3), shape = Array[Int]()),
+        Tensor[Float](Array(0.5f), shape = Array[Int]()),
+        Tensor[Float](Array(0.0f), shape = Array[Int]()))
+    runSerializationTest(oneHot, input, oneHot
+      .asInstanceOf[ModuleToOperation[Float]].module.getClass)
   }
 }

@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.nn.ops
 import com.google.protobuf.ByteString
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
 
 class NotEqualSpec extends FlatSpec with Matchers {
@@ -129,5 +130,14 @@ class NotEqualSpec extends FlatSpec with Matchers {
 
     val output = NotEqual[Boolean]().forward(input)
     output should be(expectOutput)
+  }
+}
+
+class NotEqualSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val notEqual = NotEqual[Float].setName("notEqual")
+    val input = T(Tensor[Boolean](T(true, false)), Tensor[Boolean](T(true, false)))
+    runSerializationTest(notEqual, input, notEqual
+      .asInstanceOf[ModuleToOperation[Float]].module.getClass)
   }
 }
