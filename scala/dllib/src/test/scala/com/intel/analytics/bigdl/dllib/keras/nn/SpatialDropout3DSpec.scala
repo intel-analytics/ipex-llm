@@ -22,6 +22,9 @@ import com.intel.analytics.bigdl.nn.keras.SpatialDropout3D
 import com.intel.analytics.bigdl.nn.keras.{Sequential => KSequential}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
+
+import scala.util.Random
 
 class SpatialDropout3DSpec extends KerasBaseSpec {
 
@@ -45,4 +48,13 @@ class SpatialDropout3DSpec extends KerasBaseSpec {
     val gradInput = seq.backward(input, output)
   }
 
+}
+
+class SpatialDropout3DSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val layer = SpatialDropout3D[Float](0.5, "tf", inputShape = Shape(3, 4, 5, 6))
+    layer.build(Shape(2, 3, 4, 5, 6))
+    val input = Tensor[Float](2, 3, 4, 5, 6).apply1(_ => Random.nextFloat())
+    runSerializationTest(layer, input)
+  }
 }

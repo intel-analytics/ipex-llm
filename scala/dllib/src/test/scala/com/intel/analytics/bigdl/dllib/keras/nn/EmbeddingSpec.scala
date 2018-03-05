@@ -20,6 +20,9 @@ import com.intel.analytics.bigdl.keras.KerasBaseSpec
 import com.intel.analytics.bigdl.nn.keras.{Embedding, Sequential => KSequential}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
+
+import scala.util.Random
 
 class EmbeddingSpec extends KerasBaseSpec {
 
@@ -42,4 +45,21 @@ class EmbeddingSpec extends KerasBaseSpec {
     val gradInput = seq.backward(input, output)
   }
 
+}
+
+class EmbeddingSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val layer = Embedding[Float](1000, 32, inputShape = Shape(4))
+    layer.build(Shape(2, 4))
+    val input = Tensor[Float](2, 4)
+    input(Array(1, 1)) = 1
+    input(Array(1, 2)) = 2
+    input(Array(1, 3)) = 4
+    input(Array(1, 4)) = 5
+    input(Array(2, 1)) = 4
+    input(Array(2, 2)) = 3
+    input(Array(2, 3)) = 2
+    input(Array(2, 4)) = 6
+    runSerializationTest(layer, input)
+  }
 }
