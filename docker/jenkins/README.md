@@ -12,7 +12,7 @@ If proxy is needed for building the image, building arguments related to proxy s
 ```bash
 sudo docker build --build-arg http_proxy=http://yourproxyhost:port \
                   --build-arg https_proxy=https://yourproxyhost:port \
-                  --rm -t arda/jenkins-master .
+                  --rm -t bigdl/jenkins-master .
 ```
 Note that you can set any tag of the image by changine the parameter after the option -t.
 
@@ -25,13 +25,13 @@ There are some extra files other than Dockerfile in the directory jenkins-master
 ### 1.2 Build slaves
 Building Jenkins slave is similar to building Jenkins master. First, step into the directory jenkins-slave and run
 ```bash
-sudo docker build --rm -t arda/jenkins-slave .
+sudo docker build --rm -t bigdl/jenkins-slave .
 ```
 If proxy is needed for building the image, the following command should be run.
 ```bash
 sudo docker build --build-arg http_proxy=http://yourproxyhost:port \
                   --build-arg https_proxy=https://yourproxyhost:port \
-                  --rm -t arda/jenkins-slave .
+                  --rm -t bigdl/jenkins-slave .
 ```
 There are some extra files other than Dockerfile in the directory jenkins-slave.
 + pip.conf: provide configurations of pip
@@ -44,15 +44,15 @@ Please modify these files to add your own pypi index, maven settings like proxie
 ### 2.1 Run master
 After building images of Jenkins master and slave agents, you should run the image of Jenkins master first using
 ```bash
-sudo docker run -itd --net=host -p 8080:8080 -p 50000:50000 arda/jenkins-master
+sudo docker run -itd --net=host -p 8080:8080 -p 50000:50000 bigdl/jenkins-master
 ```
 + -p 8080:8080: This mapping of port is used for accessing Jenkins Web UI.
 + -p 50000:50000: This mapping of port aims at attaching build slave servers through JNLP (Java Web Start), which will be used when you connect a slave agent.
-+ arda/jenkins-master: You can change it to your tag of Jenkins master images set in build step.
++ bigdl/jenkins-master: You can change it to your tag of Jenkins master images set in build step.
 If you want to use proxy when running images, two more parameters should be added in the command.
 ```bash
 sudo docker run -itd --net=host -p 8080:8080 -p 50000:50000 \
-                     --env PROXY_HOST=yourproxyhost --env PROXY_PORT=yourproxyport arda/jenkins-master
+                     --env PROXY_HOST=yourproxyhost --env PROXY_PORT=yourproxyport bigdl/jenkins-master
 ```
 
 ### 2.2 Run slave
@@ -64,9 +64,11 @@ sudo docker run -itd --net=host \
                -e jenkins_slave_label=yourslavelabel \
                -e jenkins_slave_name=yourslavename \
                -e jenkins_slave_executors=numberofyourslaveexecutors \
-               arda/jenkins-slave
+               --memory=50g \
+               bigdl/jenkins-slave
 ```
 Note that 8080 is the default Jenkins master port. After that, you can browse to http://yourJenkinsmasterhost:8080 to check information and status of both Jenkins master and slave agents.
+
 
 ## 3. Configure Github and Git plugins
 If you want to link Jenkins with Github, you should conduct some configurations when you first start Jenkins and log in.
