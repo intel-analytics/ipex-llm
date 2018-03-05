@@ -20,6 +20,7 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import org.scalatest.{FlatSpec, Matchers}
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 
 @com.intel.analytics.bigdl.tags.Parallel
 class LookupTableSparseSpec extends FlatSpec with Matchers {
@@ -359,4 +360,15 @@ class LookupTableSparseSpec extends FlatSpec with Matchers {
     layer1.gradWeight should be (exceptedGradWeight)
   }
 
+}
+
+class LookupTableSparseSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val lookupTableSparse = LookupTableSparse[Float](20, 10, "sum", 1)
+    val indices1 = Array(0, 0, 1, 2)
+    val indices2 = Array(0, 1, 0, 3)
+    val values = Array(2f, 4, 1, 2)
+    val input = Tensor.sparse[Float](Array(indices1, indices2), values, Array(3, 4))
+    runSerializationTest(lookupTableSparse, input, lookupTableSparse.getClass)
+  }
 }
