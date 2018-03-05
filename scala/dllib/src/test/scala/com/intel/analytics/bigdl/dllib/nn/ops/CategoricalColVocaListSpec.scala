@@ -17,6 +17,7 @@ package com.intel.analytics.bigdl.nn.ops
 
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
 
 class CategoricalColVocaListSpec extends FlatSpec with Matchers{
@@ -92,5 +93,18 @@ class CategoricalColVocaListSpec extends FlatSpec with Matchers{
     ).forward(input)
 
     output should be(expectOutput)
+  }
+}
+
+class CategoricalColVocaListSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val categoricalColVocaList = CategoricalColVocaList[Float](
+      vocaList = Array("A", "B", "C"),
+      strDelimiter = ",",
+      isSetDefault = false,
+      numOovBuckets = 0
+    ).setName("categoricalColVocaList")
+    val input = Tensor[String](T(T("A"), T("B"), T("C"), T("D")))
+    runSerializationTest(categoricalColVocaList, input)
   }
 }
