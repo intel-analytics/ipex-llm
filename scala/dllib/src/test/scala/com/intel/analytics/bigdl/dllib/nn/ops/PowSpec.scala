@@ -17,6 +17,7 @@ package com.intel.analytics.bigdl.nn.ops
 
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
 
 class PowSpec extends FlatSpec with Matchers {
@@ -33,5 +34,15 @@ class PowSpec extends FlatSpec with Matchers {
     val t = Tensor[Double](T(1, 2, 3))
     val ops = Pow[Double]()
     ops.forward(T(t, v)) should be(Tensor[Double](T(1, 4, 9)))
+  }
+}
+
+class PowSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val pow = Pow[Float]().setName("powOps")
+    val v = Tensor[Float](T(2))
+    val t = Tensor[Float](T(1, 2, 3))
+    val input = (T(t, v))
+    runSerializationTest(pow, input)
   }
 }
