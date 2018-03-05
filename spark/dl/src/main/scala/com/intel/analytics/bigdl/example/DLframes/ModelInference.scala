@@ -15,10 +15,11 @@ import scopt.OptionParser
 
 object Utils {
 
+  //TODO delete local path
   case class LocalParams(caffeDefPath: String = "/Users/guoqiong/intelWork/git/caffe/models/bvlc_googlenet/deploy.prototxt",
                          modelPath: String = "/Users/guoqiong/intelWork/projects/dlFrames/model/caffe/bvlc_googlenet.caffemodel",
                          folder: String = "/Users/guoqiong/intelWork/projects/dlFrames/data/ILSVRC2012_img_val_100/",
-                         batchSize: Int = 8,
+                         batchSize: Int = 16,
                          nEpochs: Int = 10
                         )
 
@@ -41,6 +42,22 @@ object Utils {
       .text("epoch numbers")
       .action((x, c) => c.copy(nEpochs = x))
   }
+
+  //TODO update with ImageTransfer
+  def loadImages(path: String, partitionNum: Int, sqlContext: SQLContext): DataFrame = {
+
+    val paths = LocalImageFiles.readPaths(Paths.get(path), hasLabel = false)
+    val valRDD = sqlContext.sparkContext.parallelize(imagesLoad(paths, 256), partitionNum)
+
+    val transf = RowToByteRecords() ->
+      BytesToBGRImg(1f) ->
+      BGRImgCropper(imageSize, imageSize) ->
+      BGRImgNormalizer(123, 117, 104, 1, 1, 1) ->
+      BGRImgToImageVector()
+    val imagesDF: DataFrame = transformDF(sqlContext.createDataFrame(valRDD), transf)
+
+    imagesDF
+  }
 }
 
 
@@ -52,14 +69,14 @@ object ModelInference {
     Utils.parser.parse(args, defaultParams).map { params =>
 
       val conf = Engine.createSparkConf().setAppName("ModelInference")
-        .setMaster("local[8]")
+      //  .setMaster("local[8]")
       val spark = SparkSession.builder().config(conf).getOrCreate()
       Engine.init
 
       Logger.getLogger("org").setLevel(Level.ERROR)
       spark.sparkContext.setLogLevel("ERROR")
 
-      val imagesDF = loadImages(params.folder, params.batchSize, spark.sqlContext)
+      val imagesDF = Utils.loadImages(params.folder, params.batchSize, spark.sqlContext)
 
       imagesDF.show(5)
       imagesDF.printSchema()
@@ -76,20 +93,5 @@ object ModelInference {
 
       tranDF.select("prediction", "imageName").show(5)
     }
-  }
-
-  def loadImages(path: String, partitionNum: Int, sqlContext: SQLContext): DataFrame = {
-
-    val paths = LocalImageFiles.readPaths(Paths.get(path), hasLabel = false)
-    val valRDD = sqlContext.sparkContext.parallelize(imagesLoad(paths, 256), partitionNum)
-
-    val transf = RowToByteRecords() ->
-      BytesToBGRImg() ->
-      BGRImgCropper(imageSize, imageSize) ->
-      BGRImgNormalizer(testMean, testStd) ->
-      BGRImgToImageVector()
-    val imagesDF: DataFrame = transformDF(sqlContext.createDataFrame(valRDD), transf)
-
-    imagesDF
   }
 }
