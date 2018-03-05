@@ -21,6 +21,9 @@ import com.intel.analytics.bigdl.nn.keras.GaussianDropout
 import com.intel.analytics.bigdl.nn.keras.{Sequential => KSequential}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
+
+import scala.util.Random
 
 class GaussianDropoutSpec extends KerasBaseSpec {
 
@@ -34,4 +37,13 @@ class GaussianDropoutSpec extends KerasBaseSpec {
     val gradInput = seq.backward(input, output)
   }
 
+}
+
+class GaussianDropoutSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val layer = GaussianDropout[Float](0.6, inputShape = Shape(3, 4))
+    layer.build(Shape(2, 3, 4))
+    val input = Tensor[Float](2, 3, 4).apply1(_ => Random.nextFloat())
+    runSerializationTest(layer, input)
+  }
 }

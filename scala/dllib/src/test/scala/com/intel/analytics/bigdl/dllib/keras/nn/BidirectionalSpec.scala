@@ -22,6 +22,9 @@ import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.nn.keras.{Bidirectional, LSTM, SimpleRNN, Sequential => KSequential}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
+
+import scala.util.Random
 
 class BidirectionalSpec extends KerasBaseSpec {
 
@@ -81,4 +84,14 @@ class BidirectionalSpec extends KerasBaseSpec {
       kerasCode, weightConverter)
   }
 
+}
+
+class BidirectionalSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val layer = Bidirectional[Float](SimpleRNN(4, returnSequences = true),
+      inputShape = Shape(8, 12))
+    layer.build(Shape(3, 8, 12))
+    val input = Tensor[Float](3, 8, 12).apply1(_ => Random.nextFloat())
+    runSerializationTest(layer, input)
+  }
 }

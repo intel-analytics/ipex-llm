@@ -21,6 +21,9 @@ import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, DataFormat}
 import com.intel.analytics.bigdl.nn.keras.{LocallyConnected2D, Sequential => KSequential}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
+
+import scala.util.Random
 
 class LocallyConnected2DSpec extends KerasBaseSpec {
 
@@ -94,4 +97,14 @@ class LocallyConnected2DSpec extends KerasBaseSpec {
       kerasCode, weightConverter)
   }
 
+}
+
+class LocallyConnected2DSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val layer = LocallyConnected2D[Float](32, 2, 2, activation = "relu",
+      inputShape = Shape(12, 24, 24))
+    layer.build(Shape(2, 12, 24, 24))
+    val input = Tensor[Float](2, 12, 24, 24).apply1(_ => Random.nextFloat())
+    runSerializationTest(layer, input)
+  }
 }
