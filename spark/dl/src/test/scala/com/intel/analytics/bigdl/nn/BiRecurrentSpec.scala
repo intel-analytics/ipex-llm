@@ -25,12 +25,10 @@ import com.intel.analytics.bigdl.numeric.NumericDouble
 import com.intel.analytics.bigdl.optim.SGD
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.RandomGenerator._
-import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import com.intel.analytics.bigdl.utils.{T, Table}
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.sys.process._
-import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Serial
 class BiRecurrentSpec  extends TorchSpec {
@@ -273,14 +271,4 @@ class BiRecurrentSpec  extends TorchSpec {
     luaOutput2 should be(loss(0) +- 1e-5)
   }
 
-}
-
-class BiRecurrentSerialTest extends ModuleSerializationTest {
-  override def test(): Unit = {
-    val input = Tensor[Float](1, 5, 6).apply1(e => Random.nextFloat()).transpose(1, 2)
-    RNG.setSeed(100)
-    val biRecurrent = BiRecurrent[Float]().add(RnnCell[Float](6, 4,
-      Sigmoid[Float]())).setName("biRecurrent")
-    runSerializationTest(biRecurrent, input)
-  }
 }

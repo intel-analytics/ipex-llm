@@ -22,7 +22,6 @@ import com.intel.analytics.bigdl.optim.{L2Regularizer, SGD}
 import com.intel.analytics.bigdl.utils._
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils.RandomGenerator._
-import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.collection.mutable.ArrayBuffer
@@ -167,30 +166,5 @@ class ConvLSTMPeephole3DSpec extends FlatSpec with BeforeAndAfter with Matchers 
 
     weights1 should be(weights2)
     loss1 should be(loss2)
-  }
-}
-
-class ConvLSTMPeephole3DSerialTest extends ModuleSerializationTest {
-  override def test(): Unit = {
-    val hiddenSize = 5
-    val inputSize = 3
-    val seqLength = 4
-    val batchSize = 2
-    val kernalW = 3
-    val kernalH = 3
-    val c3d = ConvLSTMPeephole3D[Float](
-      inputSize,
-      hiddenSize,
-      kernalW, kernalH,
-      1,
-      withPeephole = false)
-    val convLSTMPeephole3d = Recurrent[Float]().setName("convLSTMPeephole3d")
-    val model = Sequential[Float]()
-      .add(convLSTMPeephole3d
-        .add(c3d))
-      .add(View[Float](hiddenSize * kernalH * kernalW))
-
-    val input = Tensor[Float](batchSize, seqLength, inputSize, kernalW, kernalH, 3).rand
-    runSerializationTest(convLSTMPeephole3d, input, c3d.getClass)
   }
 }
