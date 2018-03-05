@@ -17,7 +17,6 @@ package com.intel.analytics.bigdl.nn.ops
 
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
-import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
 
 
@@ -28,14 +27,5 @@ class TruncatedNormalSpec  extends FlatSpec with Matchers {
       Tensor[Int](T(1, 2, 3))
 
     val output = TruncatedNormal(10, 20).forward(input)
-  }
-}
-
-class TruncatedNormalSerialTest extends ModuleSerializationTest {
-  override def test(): Unit = {
-    val truncateNormal = TruncatedNormal[Float, Float](10, 20).setName("truncateNormal")
-    val input = Tensor[Int](T(1, 2, 3))
-    runSerializationTest(truncateNormal, input, truncateNormal.
-      asInstanceOf[ModuleToOperation[Float]].module.getClass)
   }
 }
