@@ -123,20 +123,6 @@ Hdfs Test Suite
    Remove Environment Variable      hdfsMaster               mnist                   s3aPath
 
 
-Quantization Test Suite
-   ${hadoop}=                       Catenate                 SEPARATOR=/             /opt/work/hadoop-2.6.5/bin        hadoop
-   Run                              ${hadoop} fs -get ${mnist_data_source} /tmp/
-   Log To Console                   got mnist data!!
-   Run                              ${hadoop} fs -get ${cifar_data_source} /tmp/
-   Log To Console                   got cifar data!!
-   Set Environment Variable         mnist                    /tmp/mnist
-   Set Environment Variable         cifar10                  /tmp/cifar
-   Set Environment Variable         lenetfp32model           ${public_hdfs_master}:9000/lenet4IT4J1.7B4.bigdl
-   Set Environment Variable         resnetfp32model          ${public_hdfs_master}:9000/resnet4IT4J1.7B4.bigdl
-   Run Shell                        mvn clean test -Dsuites=com.intel.analytics.bigdl.integration.QuantizationSpec -P integration-test
-   Remove Environment Variable      mnist                    cifar10                 lenetfp32model                  resnetfp32model
-
-
 Yarn Test Suite
    Build SparkJar                   spark_2.x 
    Set Environment Variable         SPARK_HOME               /opt/work/spark-2.0.0-bin-hadoop2.7  
