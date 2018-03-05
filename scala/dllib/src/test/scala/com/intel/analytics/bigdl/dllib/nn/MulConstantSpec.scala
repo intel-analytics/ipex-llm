@@ -17,7 +17,10 @@
 package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import org.scalatest.FlatSpec
+
+import scala.util.Random
 
   /**
   * Created by yao on 9/21/16.
@@ -57,5 +60,13 @@ class MulConstantSpec extends FlatSpec {
     val gradInput = module.backward(input, gradOutput)
     assert(gradInput equals expectedGrad)
     assert(input equals expectedInput)
+  }
+}
+
+class MulConstantSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val mulConst = MulConstant[Float](1.0).setName("mulConst")
+    val input = Tensor[Float](10, 10).apply1(_ => Random.nextFloat())
+    runSerializationTest(mulConst, input)
   }
 }

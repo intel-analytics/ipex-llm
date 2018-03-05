@@ -20,6 +20,7 @@ import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.torch.TH
 import com.intel.analytics.bigdl.utils.Engine
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 
 import scala.util.Random
 
@@ -125,5 +126,13 @@ class LogSoftMaxSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val input = Tensor[Float](2, 5).apply1(e => Random.nextFloat() + 90)
     val output = module.forward(input).toTensor[Float]
     output.apply1(v => {v.isInfinity should be (false); v})
+  }
+}
+
+class LogSoftMaxSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val logSoftMax = LogSoftMax[Float]().setName("logSoftMax")
+    val input = Tensor[Float](10).apply1(_ => Random.nextFloat())
+    runSerializationTest(logSoftMax, input)
   }
 }
