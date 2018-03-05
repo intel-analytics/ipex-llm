@@ -596,3 +596,57 @@ linear = Linear(3, 4)
 model = Graph(linear.inputs(), linear.inputs())
 model.save_caffe(model, "/tmp/linear.prototxt", "/tmp/linear.caffemodel", True, True)
 ```
+
+
+### Dynamical Module Initialization 
+
+Initialize a module dynamically by calling its primary constructor by runtime reflection.
+<br><br>
+A model is defined by its `ClassPath`, which according to state("name"). A optional `ClassPath`
+prefix, `[com.intel.analytics.bigdl.nn.]`, is provided for simplifying model definitions.
+<br><br>
+Parameters of primary constructor can be set by state(state(`ParamKey`)=`ParamValue`).
+`ParamKey` can be either the literal name of param or the index in param list(starting from 1).
+It is unnecessary to set all params in state. For params with default value(in constructor),
+their defaults will work when they are not set in state, otherwise their defaults will be
+overridden by settings.
+<br><br>
+Type parameters can be set with their type tag(as `ParamKey`, such as T,D) and literal
+names of types(as `ParamValue`, such as "Double","Int").
+Only primitive types(Float/Double/Char/Boolean/String/Int/Long) are supported.
+`TensorNumeric` of type parameters will be generated automatically if necessary.
+The main type parameter `T`(of Module[T]) will be set automatically.
+<br><br>
+For now, nested states are not supported.
+
+**Scala example:**
+```scala
+import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.utils._
+import com.intel.analytics.bigdl.tensor.Tensor
+
+// Initialize a Linear with indices
+val linear = Module[Float](T("Linear", 10, 5, false)
+).asInstanceOf[Linear[Float]]
+linear.forward(Tensor[Float](2, 10).rand())
+
+// Initialize a keras.Dense with literal names
+val state = T(
+  "name" -> "keras.Dense",
+  "outputDim" -> 5,
+  "inputShape" -> SingleShape(List(100, 10)),
+  "init" -> Ones,
+  "activation" -> ReLU[Double]()
+)
+val dense = Module[Double](state).asInstanceOf[Dense[Double]]
+
+// Initialize a Module with multiple type parameters
+val rdUniform = Module[Float](T(
+  "name" -> "ops.RandomUniform",
+  "D" -> "Double",
+  "minVal" -> 10.0,
+  "maxVal" -> 20.0
+)).asInstanceOf[ops.RandomUniform[Float, Double]]
+val input = Tensor[Int](T(1, 2, 3))
+rdUniform.forward(input)
+```

@@ -16,9 +16,9 @@
 
 package com.intel.analytics.bigdl.utils
 
-import com.intel.analytics.bigdl.nn.keras.Dense
-import com.intel.analytics.bigdl.nn.ops.{BucketizedCol, CrossEntropy, RandomUniform}
 import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.nn.keras.Dense
+import com.intel.analytics.bigdl.nn.ops.{BucketizedCol, CrossEntropy}
 import com.intel.analytics.bigdl.optim.L2Regularizer
 import com.intel.analytics.bigdl.tensor.Tensor
 import org.scalatest.{FlatSpec, Matchers}
@@ -27,21 +27,21 @@ class ModuleInitializerSpec extends FlatSpec with Matchers {
 
   "ModuleInitializer" should "init a Module correctly" in {
     val state = T("name" -> "Linear", "inputSize" -> 10, "outputSize" -> 5)
-    var linear = ModuleInitializer.init[Float](state).asInstanceOf[Linear[Float]]
+    var linear = Module[Float](state).asInstanceOf[Linear[Float]]
     linear.withBias shouldEqual true
     linear.forward(Tensor[Float](2, 10).rand()).size() shouldEqual Array(2, 5)
 
     state.update("withBias", false)
     state.update("wRegularizer", new L2Regularizer[Float](1e-3))
     state.update("initWeight", Tensor.ones[Float](5, 10))
-    linear = ModuleInitializer.init[Float](state).asInstanceOf[Linear[Float]]
+    linear = Module[Float](state).asInstanceOf[Linear[Float]]
     linear.withBias shouldEqual false
     linear.wRegularizer should not be null
     linear.weight.storage().array().forall(_ == 1.0f) shouldEqual true
   }
 
   "ModuleInitializer" should "init a Module by indices-style Table correctly" in {
-    val linear = ModuleInitializer.init[Float](
+    val linear = Module[Float](
       T("Linear", 10, 5, false)).asInstanceOf[Linear[Float]]
     linear.withBias shouldEqual false
     linear.inputSize shouldEqual 10
@@ -56,7 +56,7 @@ class ModuleInitializerSpec extends FlatSpec with Matchers {
       "init" -> Ones,
       "activation" -> ReLU[Double]()
     )
-    val dense = ModuleInitializer.init[Double](state).asInstanceOf[Dense[Double]]
+    val dense = Module[Double](state).asInstanceOf[Dense[Double]]
     dense.outputDim shouldEqual 5
     dense.activation.getClass.getName.contains("ReLU") shouldEqual true
     dense.inputShape.toSingle() shouldEqual List(100, 10)
@@ -70,12 +70,12 @@ class ModuleInitializerSpec extends FlatSpec with Matchers {
   }
 
   "ModuleInitializer" should "init a Operation correctly" in {
-    val crossEntropy = ModuleInitializer.init[Float](
+    val crossEntropy = Module[Float](
       T("name" -> "ops.CrossEntropy")).asInstanceOf[CrossEntropy[Float]]
     crossEntropy.updateOutput(
       T(Tensor[Float](3, 5).rand(), Tensor[Float](3, 5).rand()))
 
-    val bucketizedCol = ModuleInitializer.init[Double](T(
+    val bucketizedCol = Module[Double](T(
       "name" -> "ops.BucketizedCol",
       "boundaries" -> Array(0.0, 10.0, 100.0)
     )).asInstanceOf[BucketizedCol[Double]]
@@ -85,7 +85,7 @@ class ModuleInitializerSpec extends FlatSpec with Matchers {
   }
 
   "ModuleInitializer" should "init a Module with multiple type params correctly" in {
-    val rdUniform = ModuleInitializer.init[Float](T(
+    val rdUniform = Module[Float](T(
       "name" -> "ops.RandomUniform",
       "D" -> "Double",
       "minVal" -> 10.0,
