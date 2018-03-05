@@ -22,6 +22,9 @@ import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.nn.keras.ThresholdedReLU
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
+
+import scala.util.Random
 
 class ThresholdedReLUSpec extends KerasBaseSpec{
 
@@ -55,4 +58,13 @@ class ThresholdedReLUSpec extends KerasBaseSpec{
       kerasCode)
   }
 
+}
+
+class ThresholdedReLUSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val layer = ThresholdedReLU[Float](2.7, inputShape = Shape(3, 128))
+    layer.build(Shape(2, 3, 128))
+    val input = Tensor[Float](2, 3, 128).apply1(_ => Random.nextFloat())
+    runSerializationTest(layer, input)
+  }
 }

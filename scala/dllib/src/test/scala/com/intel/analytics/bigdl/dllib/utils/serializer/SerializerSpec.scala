@@ -62,6 +62,108 @@ class SerializerSpec extends BigDLSpecHelper {
       "com.intel.analytics.bigdl.nn.ops.TensorArraySerialTest",
 
     // Keras layers
+    "com.intel.analytics.bigdl.nn.keras.Input" ->
+      "com.intel.analytics.bigdl.keras.nn.InputSerialTest",
+    "com.intel.analytics.bigdl.nn.keras.Sequential" ->
+      "com.intel.analytics.bigdl.keras.nn.SequentialSerialTest",
+    "com.intel.analytics.bigdl.nn.keras.Activation" ->
+      "com.intel.analytics.bigdl.keras.nn.ActivationSerialTest",
+    "com.intel.analytics.bigdl.nn.keras.SoftMax" ->
+      "com.intel.analytics.bigdl.keras.nn.SoftMaxSerialTest",
+    "com.intel.analytics.bigdl.nn.keras.AtrousConvolution1D" ->
+      "com.intel.analytics.bigdl.keras.nn.AtrousConvolution1DSerialTest",
+    "com.intel.analytics.bigdl.nn.keras.AtrousConvolution2D" ->
+      "com.intel.analytics.bigdl.keras.nn.AtrousConvolution2DSerialTest",
+    "com.intel.analytics.bigdl.nn.keras.AveragePooling1D" ->
+      "com.intel.analytics.bigdl.keras.nn.AveragePooling1DSerialTest",
+    "com.intel.analytics.bigdl.nn.keras.AveragePooling2D" ->
+      "com.intel.analytics.bigdl.keras.nn.AveragePooling2DSerialTest",
+    "com.intel.analytics.bigdl.nn.keras.AveragePooling3D" ->
+      "com.intel.analytics.bigdl.keras.nn.AveragePooling3DSerialTest",
+    "com.intel.analytics.bigdl.nn.keras.BatchNormalization" ->
+      "com.intel.analytics.bigdl.keras.nn.BatchNormalizationSerialTest",
+    "com.intel.analytics.bigdl.nn.keras.Bidirectional" ->
+      "com.intel.analytics.bigdl.keras.nn.BidirectionalSerialTest",
+    "com.intel.analytics.bigdl.nn.keras.ConvLSTM2D" ->
+      "com.intel.analytics.bigdl.keras.nn.ConvLSTM2DSerialTest",
+    "com.intel.analytics.bigdl.nn.keras.Convolution1D" ->
+      "com.intel.analytics.bigdl.keras.nn.Convolution1DSerialTest",
+    "com.intel.analytics.bigdl.nn.keras.Convolution2D" ->
+      "com.intel.analytics.bigdl.keras.nn.Convolution2DSerialTest",
+    "com.intel.analytics.bigdl.nn.keras.Convolution3D" ->
+      "com.intel.analytics.bigdl.keras.nn.Convolution3DSerialTest",
+    "com.intel.analytics.bigdl.nn.keras.Cropping1D" ->
+      "com.intel.analytics.bigdl.keras.nn.Cropping1DSerialTest",
+    "com.intel.analytics.bigdl.nn.keras.Cropping2D" ->
+      "com.intel.analytics.bigdl.keras.nn.Cropping2DSerialTest",
+    "com.intel.analytics.bigdl.nn.keras.Deconvolution2D" ->
+      "com.intel.analytics.bigdl.keras.nn.Deconvolution2DSerialTest",
+    "com.intel.analytics.bigdl.nn.keras.ELU" ->
+      "com.intel.analytics.bigdl.keras.nn.ELUSerialTest",
+    "com.intel.analytics.bigdl.nn.keras.Embedding" ->
+      "com.intel.analytics.bigdl.keras.nn.EmbeddingSerialTest",
+    "com.intel.analytics.bigdl.nn.keras.GaussianDropout" ->
+      "com.intel.analytics.bigdl.keras.nn.GaussianDropoutSerialTest",
+    "com.intel.analytics.bigdl.nn.keras.GaussianNoise" ->
+      "com.intel.analytics.bigdl.keras.nn.GaussianNoiseSerialTest",
+    "com.intel.analytics.bigdl.nn.keras.GlobalAveragePooling2D" ->
+      "com.intel.analytics.bigdl.keras.nn.GlobalAveragePooling2DSerialTest",
+    "com.intel.analytics.bigdl.nn.keras.GlobalMaxPooling2D" ->
+      "com.intel.analytics.bigdl.keras.nn.GlobalMaxPooling2DSerialTest",
+    "com.intel.analytics.bigdl.nn.keras.GlobalMaxPooling3D" ->
+      "com.intel.analytics.bigdl.keras.nn.GlobalMaxPooling3DSerialTest",
+    "com.intel.analytics.bigdl.nn.keras.GRU" ->
+      "com.intel.analytics.bigdl.keras.nn.GRUSerialTest",
+    "com.intel.analytics.bigdl.nn.keras.Highway" ->
+      "com.intel.analytics.bigdl.keras.nn.HighwaySerialTest",
+    "com.intel.analytics.bigdl.nn.keras.LeakyReLU" ->
+      "com.intel.analytics.bigdl.keras.nn.LeakyReLUSerialTest",
+    "com.intel.analytics.bigdl.nn.keras.LocallyConnected1D" ->
+      "com.intel.analytics.bigdl.keras.nn.LocallyConnected1DSerialTest",
+    "com.intel.analytics.bigdl.nn.keras.LocallyConnected2D" ->
+      "com.intel.analytics.bigdl.keras.nn.LocallyConnected2DSerialTest",
+    "com.intel.analytics.bigdl.nn.keras.LSTM" ->
+      "com.intel.analytics.bigdl.keras.nn.LSTMSerialTest",
+    "com.intel.analytics.bigdl.nn.keras.Masking" ->
+      "com.intel.analytics.bigdl.keras.nn.MaskingSerialTest",
+    "com.intel.analytics.bigdl.nn.keras.MaxoutDense" ->
+      "com.intel.analytics.bigdl.keras.nn.MaxoutDenseSerialTest",
+    "com.intel.analytics.bigdl.nn.keras.MaxPooling1D" ->
+      "com.intel.analytics.bigdl.keras.nn.MaxPooling1DSerialTest",
+    "com.intel.analytics.bigdl.nn.keras.MaxPooling2D" ->
+      "com.intel.analytics.bigdl.keras.nn.MaxPooling2DSerialTest",
+    "com.intel.analytics.bigdl.nn.keras.MaxPooling3D" ->
+      "com.intel.analytics.bigdl.keras.nn.MaxPooling3DSerialTest",
+    "com.intel.analytics.bigdl.nn.keras.Merge" ->
+      "com.intel.analytics.bigdl.keras.nn.MergeSerialTest",
+    "com.intel.analytics.bigdl.nn.keras.RepeatVector" ->
+      "com.intel.analytics.bigdl.keras.nn.RepeatVectorSerialTest",
+    "com.intel.analytics.bigdl.nn.keras.SeparableConvolution2D" ->
+      "com.intel.analytics.bigdl.keras.nn.SeparableConvolution2DSerialTest",
+    "com.intel.analytics.bigdl.nn.keras.SimpleRNN" ->
+      "com.intel.analytics.bigdl.keras.nn.SimpleRNNSerialTest",
+    "com.intel.analytics.bigdl.nn.keras.SpatialDropout1D" ->
+      "com.intel.analytics.bigdl.keras.nn.SpatialDropout1DSerialTest",
+    "com.intel.analytics.bigdl.nn.keras.SpatialDropout2D" ->
+      "com.intel.analytics.bigdl.keras.nn.SpatialDropout2DSerialTest",
+    "com.intel.analytics.bigdl.nn.keras.SpatialDropout3D" ->
+      "com.intel.analytics.bigdl.keras.nn.SpatialDropout3DSerialTest",
+    "com.intel.analytics.bigdl.nn.keras.SReLU" ->
+      "com.intel.analytics.bigdl.keras.nn.SReLUSerialTest",
+    "com.intel.analytics.bigdl.nn.keras.ThresholdedReLU" ->
+      "com.intel.analytics.bigdl.keras.nn.ThresholdedReLUSerialTest",
+    "com.intel.analytics.bigdl.nn.keras.TimeDistributed" ->
+      "com.intel.analytics.bigdl.keras.nn.TimeDistributedSerialTest",
+    "com.intel.analytics.bigdl.nn.keras.UpSampling1D" ->
+      "com.intel.analytics.bigdl.keras.nn.UpSampling1DSerialTest",
+    "com.intel.analytics.bigdl.nn.keras.UpSampling2D" ->
+      "com.intel.analytics.bigdl.keras.nn.UpSampling2DSerialTest",
+    "com.intel.analytics.bigdl.nn.keras.UpSampling3D" ->
+      "com.intel.analytics.bigdl.keras.nn.UpSampling3DSerialTest",
+    "com.intel.analytics.bigdl.nn.keras.ZeroPadding1D" ->
+      "com.intel.analytics.bigdl.keras.nn.ZeroPadding1DSerialTest",
+    "com.intel.analytics.bigdl.nn.keras.ZeroPadding2D" ->
+      "com.intel.analytics.bigdl.keras.nn.ZeroPadding2DSerialTest",
     "com.intel.analytics.bigdl.nn.keras.Dense" ->
       "com.intel.analytics.bigdl.keras.nn.DenseSerialTest",
     "com.intel.analytics.bigdl.nn.keras.Cropping3D" ->
@@ -80,10 +182,10 @@ class SerializerSpec extends BigDLSpecHelper {
       "com.intel.analytics.bigdl.keras.nn.ZeroPadding3DSerialTest",
     "com.intel.analytics.bigdl.nn.keras.Dropout" ->
       "com.intel.analytics.bigdl.keras.nn.DropoutSerialTest",
-    "module com.intel.analytics.bigdl.nn.keras.GlobalMaxPooling1D" ->
-      "module com.intel.analytics.bigdl.keras.nn.GlobalMaxPooling1D",
+    "com.intel.analytics.bigdl.nn.keras.GlobalMaxPooling1D" ->
+      "com.intel.analytics.bigdl.keras.nn.GlobalMaxPooling1DSerialTest",
     "com.intel.analytics.bigdl.nn.keras.Flatten" ->
-      "com.intel.analytics.bigdl.keras.nn.Flatten"
+      "com.intel.analytics.bigdl.keras.nn.FlattenSerialTest"
   )
 
   private val suffix = "SerialTest"

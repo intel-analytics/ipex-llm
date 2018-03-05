@@ -21,6 +21,9 @@ import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, DataFormat}
 import com.intel.analytics.bigdl.nn.keras.{ZeroPadding2D, Sequential => KSequential}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
+
+import scala.util.Random
 
 class ZeroPadding2DSpec extends KerasBaseSpec {
 
@@ -89,4 +92,13 @@ class ZeroPadding2DSpec extends KerasBaseSpec {
       kerasCode)
   }
 
+}
+
+class ZeroPadding2DSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val layer = ZeroPadding2D[Float](padding = (2, 1), inputShape = Shape(2, 8, 8))
+    layer.build(Shape(2, 2, 8, 8))
+    val input = Tensor[Float](2, 2, 8, 8).apply1(_ => Random.nextFloat())
+    runSerializationTest(layer, input)
+  }
 }

@@ -21,6 +21,9 @@ import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.nn.keras.{LSTM, Sequential => KSequential}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
+
+import scala.util.Random
 
 class LSTMSpec extends KerasBaseSpec {
 
@@ -88,4 +91,14 @@ class LSTMSpec extends KerasBaseSpec {
       kerasCode, weightConverter)
   }
 
+}
+
+class LSTMSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val layer = LSTM[Float](8, returnSequences = true,
+      innerActivation = "sigmoid", inputShape = Shape(32, 32))
+    layer.build(Shape(3, 32, 32))
+    val input = Tensor[Float](3, 32, 32).apply1(_ => Random.nextFloat())
+    runSerializationTest(layer, input)
+  }
 }
