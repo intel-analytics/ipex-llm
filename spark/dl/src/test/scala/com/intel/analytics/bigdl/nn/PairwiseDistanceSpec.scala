@@ -74,14 +74,4 @@ class PairwiseDistanceSerialTest extends ModuleSerializationTest {
     val input = T(1.0f -> input1, 2.0f -> input2)
     runSerializationTest(pairwiseDistance, input)
   }
-
-  "ParallelTable serializer" should "work properly" in {
-    val parallelTable = ParallelTable[Float]().setName("parallelTable")
-    parallelTable.add(Linear[Float](2, 2))
-    parallelTable.add(Linear[Float](2, 2))
-    val input1 = Tensor[Float](2, 2).apply1(e => Random.nextFloat())
-    val input2 = Tensor[Float](2, 2).apply1(e => Random.nextFloat())
-    val input = T(1.0f -> input1, 2.0f -> input2)
-    runSerializationTest(parallelTable, input)
-  }
 }
