@@ -21,6 +21,9 @@ import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.nn.keras.{Conv3D, Convolution3D, Sequential => KSequential}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
+
+import scala.util.Random
 
 class Convolution3DSpec extends KerasBaseSpec {
 
@@ -58,4 +61,13 @@ class Convolution3DSpec extends KerasBaseSpec {
       kerasCode, precision = 1e-3)
   }
 
+}
+
+class Convolution3DSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val layer = Convolution3D[Float](12, 2, 1, 3, inputShape = Shape(3, 32, 32, 32))
+    layer.build(Shape(2, 3, 32, 32, 32))
+    val input = Tensor[Float](2, 3, 32, 32, 32).apply1(_ => Random.nextFloat())
+    runSerializationTest(layer, input)
+  }
 }
