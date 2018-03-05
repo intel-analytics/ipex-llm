@@ -83,5 +83,5 @@ Parameters:
 
 * `inputs`: A list of node instances. Must be more than one node.
 * `mode`: Merge mode. String, must be one of: 'sum', 'mul', 'concat', 'ave', 'cos','dot', 'max'. Default is 'sum'.
-* `concat_axis`: Int, axis to use when concatenating nodes. Only specify this when the mode is 'concat'. Default is -1, meaning the last axis of the input.
+* `concat_axis`: Int, axis to use when concatenating nodes. Only specify this when merge mode is 'concat'. Default is -1, meaning the last axis of the input.
 * `name`: String to specify the name of merge. Default is None.
