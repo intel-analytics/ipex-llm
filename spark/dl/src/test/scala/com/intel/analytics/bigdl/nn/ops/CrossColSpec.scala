@@ -30,7 +30,7 @@ class CrossColSpec extends FlatSpec with Matchers {
       Array(Array(0, 0, 1, 2, 2, 2, 2),
         Array(0, 1, 0, 0, 1, 2, 3)),
       Array(80, 98, 50, 99, 27, 89, 33),
-      Array(3, 100)
+      Array(3, 4)
     )
 
     val output = CrossCol[Double](hashBucketSize = 100)
@@ -49,7 +49,7 @@ class CrossColSpec extends FlatSpec with Matchers {
       Array(Array(0, 0, 1, 2, 2, 2, 2),
         Array(0, 1, 0, 0, 1, 2, 3)),
       Array(94, 34, 68, 82, 83, 97, 12),
-      Array(3, 100)
+      Array(3, 4)
     )
 
     val output = CrossCol[Double](hashBucketSize = 100)

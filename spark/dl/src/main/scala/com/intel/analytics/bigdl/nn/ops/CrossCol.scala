@@ -64,6 +64,8 @@ class CrossCol[T: ClassTag](
 
   output = Tensor[Int]()
 
+
+
   override def updateOutput(input: Table): Tensor[Int] = {
 
     val tensorNum = input.length()
@@ -73,21 +75,25 @@ class CrossCol[T: ClassTag](
     val indices0 = new ArrayBuffer[Int]()
     val indices1 = new ArrayBuffer[Int]()
     val values = new ArrayBuffer[Int]()
-    val shape = Array(batchSize, hashBucketSize)
 
-    (1 to tensorNum).foreach(i =>
-      input[Tensor[String]](i).squeeze()
-    )
+    val bufferInput = (1 to tensorNum).map { i =>
+      input[Tensor[String]](i).view(input[Tensor[String]](i).size()).squeeze()
+    }.toArray
 
     var i = 1
+    var maxLen = 1
     while (i <= batchSize) {
-      var j = 1
-
+      var j = 0
+      var tempLen = 1
       val tempArr = new ArrayBuffer[Array[String]]()
-      while (j <= tensorNum) {
-        tempArr += input[Tensor[String]](j).valueAt(i).split(strDelimiter)
+      while (j < tensorNum) {
+        val bufferArr = bufferInput(j).valueAt(i).split(strDelimiter)
+        tempArr += bufferArr
+        tempLen *= bufferArr.length
         j += 1
       }
+
+      maxLen = if (maxLen<tempLen) tempLen else maxLen
 
       val resHashArr = crossHash(reCombine(tempArr))
 
@@ -102,6 +108,8 @@ class CrossCol[T: ClassTag](
       i += 1
     }
 
+    val shape = Array(batchSize, maxLen)
+
     output = Tensor.sparse(
       Array(indices0.toArray, indices1.toArray),
       values.toArray,
@@ -110,7 +118,7 @@ class CrossCol[T: ClassTag](
     output
   }
 
-  def reCombine(input: ArrayBuffer[Array[String]]): Array[Array[String]] = {
+  private def reCombine(input: ArrayBuffer[Array[String]]): Array[Array[String]] = {
     val stack = mutable.Stack[Array[String]]()
     stack.pushAll(input(0).map(Array(_)))
 
@@ -134,7 +142,7 @@ class CrossCol[T: ClassTag](
     result.result()
   }
 
-  def crossHash(input: Array[Array[String]]): Array[Int] = {
+  private def crossHash(input: Array[Array[String]]): Array[Int] = {
     input.map { arr =>
       var hashVal = MurmurHash3.stringHash(arr(0))
       var k = 1
