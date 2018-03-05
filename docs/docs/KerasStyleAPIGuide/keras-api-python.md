@@ -2,13 +2,23 @@
 
 We hereby introduce a new set of __Keras-Style API__ based on [__Keras 1.2.2__](https://faroit.github.io/keras-docs/1.2.2/) in BigDL for the sake of user-friendliness. Users, especially those familiar with Keras, are strongly recommended to use the new API to create a BigDL model and train, evaluate or tune it in a distributed fashion.
 
-To define a model in Python, now you just need to import the package `bigdl.nn.keras.layer`.
+To define a model in Python, now one just need to import the package `bigdl.nn.keras.layer`.
 
 One of the highlighted features of the new API is __shape inference__. Users only need to specify the input shape (a shape tuple __excluding__ batch dimension, for example, `input_shape=(3, 4)` for 3D input) for the first layer of a model and for the remaining layers, the input dimension will be automatically inferred.
 <br>
 
 ## __Sequential API__ ##
-The model is described as a linear stack of layers in the sequential API. You can add the layers into the Sequential container one by one and the order of the layers in the model will be the same as the insertion order.
+The model is described as a linear stack of layers in the sequential API. You can add the layers into the `Sequential` container one by one and the order of the layers in the model will be the same as the insertion order.
+
+To create a sequential container:
+```python
+Sequential(name=None)
+```
+Parameters:
+
+* `name`: String to specify the name of the sequential model. Default is None.
+
+Example code to create a sequential model:
 ```python
 from bigdl.nn.keras.layer import Sequential, Dense, Activation
 
@@ -20,10 +30,32 @@ model.get_output_shape() # (None, 32)
 
 ## __Functional API__ ##
 The model is described as a graph in the functional API. It is more convenient than the sequential API when you want to define some complex model (for example, a model with multiple outputs).
+
+To create an input node:
+```python
+Input(shape=None, name=None)
+```
+Parameters:
+
+* `shape`: Shape tuple of the input node. Batch dimension should be excluded.
+* `name`: String to specify the name of the input node. Default is None.
+
+To create a graph container:
+```python
+Model(input, output, name=None)
+```
+Parameters:
+
+* `input`: An input node or a list of input nodes.
+* `output`: An output node or a list of output nodes.
+* `name`: String to specify the name of the graph model. Default is None.
+
+
+Example code to create a graph model:
 ```python
 from bigdl.nn.keras.layer import Model, Input, Dense, merge
 
-# create input nodes
+# instantiate input nodes
 input1 = Input(shape=(8, )) 
 input2 = Input(shape=(6, ))
 # pass an input node into a layer and get an output node

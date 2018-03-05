@@ -20,7 +20,7 @@ Dense(output_dim, init="glorot_uniform", activation=None, W_regularizer=None, b_
 * `wRegularizer`: An instance of [Regularizer](../../../APIGuide/Regularizers/), applied to the input weights matrices. Default is null.
 * `bRegularizer`: An instance of [Regularizer](../../../APIGuide/Regularizers/), applied to the bias. Default is null.
 * `bias`: Whether to include a bias (i.e. make the layer affine rather than linear). Default is true.
-* `inputShape`: Only need to specify when you use this layer as the first layer of a model. For Scala, it should be a `Shape` object. For Python, it should be a shape tuple. Batch dimension should __not__ be included.
+* `inputShape`: Only need to specify when you use this layer as the first layer of a model. For Scala, it should be a `Shape` object. For Python, it should be a shape tuple. Batch dimension should be excluded.
 * `name`: Set the name of the layer. This parameter is for Python API only. For Scala API, use `setName(name)` instead.
 
 **Scala example:**
