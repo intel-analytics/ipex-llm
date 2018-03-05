@@ -42,23 +42,43 @@ class SerializerSpec extends BigDLSpecHelper {
     // Many to one mapping
     "com.intel.analytics.bigdl.nn.ops.Enter" ->
       "com.intel.analytics.bigdl.nn.ops.ControlOpsSerialTest",
+    "com.intel.analytics.bigdl.nn.tf.Enter" ->
+      "com.intel.analytics.bigdl.nn.tf.ControlOpsSerialTest",
     "com.intel.analytics.bigdl.nn.ops.NextIteration" ->
       "com.intel.analytics.bigdl.nn.ops.ControlOpsSerialTest",
+    "com.intel.analytics.bigdl.nn.tf.NextIteration" ->
+      "com.intel.analytics.bigdl.nn.tf.ControlOpsSerialTest",
     "com.intel.analytics.bigdl.nn.ops.Exit" ->
       "com.intel.analytics.bigdl.nn.ops.ControlOpsSerialTest",
+    "com.intel.analytics.bigdl.nn.tf.Exit" ->
+      "com.intel.analytics.bigdl.nn.tf.ControlOpsSerialTest",
     "com.intel.analytics.bigdl.nn.ops.LoopCondition" ->
       "com.intel.analytics.bigdl.nn.ops.ControlOpsSerialTest",
+    "com.intel.analytics.bigdl.nn.tf.LoopCondition" ->
+      "com.intel.analytics.bigdl.nn.tf.ControlOpsSerialTest",
     "com.intel.analytics.bigdl.nn.ops.StackCreator" ->
       "com.intel.analytics.bigdl.nn.ops.StackOpsSerialTest",
+    "com.intel.analytics.bigdl.nn.tf.StackCreator" ->
+      "com.intel.analytics.bigdl.nn.tf.StackOpsSerialTest",
     "com.intel.analytics.bigdl.nn.ops.StackPush" ->
       "com.intel.analytics.bigdl.nn.ops.StackOpsSerialTest",
+    "com.intel.analytics.bigdl.nn.tf.StackPush" ->
+      "com.intel.analytics.bigdl.nn.tf.StackOpsSerialTest",
     "com.intel.analytics.bigdl.nn.ops.StackPop" ->
       "com.intel.analytics.bigdl.nn.ops.StackOpsSerialTest",
+    "com.intel.analytics.bigdl.nn.tf.StackPop" ->
+      "com.intel.analytics.bigdl.nn.tf.StackOpsSerialTest",
     "com.intel.analytics.bigdl.nn.ops.TensorArrayWrite" ->
+      "com.intel.analytics.bigdl.nn.ops.TensorArraySerialTest",
+    "com.intel.analytics.bigdl.nn.tf.TensorArrayWrite" ->
       "com.intel.analytics.bigdl.nn.ops.TensorArraySerialTest",
     "com.intel.analytics.bigdl.nn.ops.TensorArrayRead" ->
       "com.intel.analytics.bigdl.nn.ops.TensorArraySerialTest",
+    "com.intel.analytics.bigdl.nn.tf.TensorArrayRead" ->
+      "com.intel.analytics.bigdl.nn.ops.TensorArraySerialTest",
     "com.intel.analytics.bigdl.nn.ops.TensorArrayGrad" ->
+      "com.intel.analytics.bigdl.nn.ops.TensorArraySerialTest",
+    "com.intel.analytics.bigdl.nn.tf.TensorArrayGrad" ->
       "com.intel.analytics.bigdl.nn.ops.TensorArraySerialTest",
 
     // Keras layers
