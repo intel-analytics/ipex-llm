@@ -6,7 +6,7 @@ Jenkins has master nodes and slave agents. To make Jenkins well functioning, mas
 ### 1.1 Build master
 First, you should step into the directory jenkins-master and run
 ```bash
-sudo docker build --rm -t arda/jenkins-master .
+sudo docker build --rm -t bigdl/jenkins-master .
 ```
 If proxy is needed for building the image, building arguments related to proxy should be added in the command above. For example,
 ```bash
@@ -68,7 +68,7 @@ sudo docker run -itd --net=host \
                bigdl/jenkins-slave
 ```
 Note that 8080 is the default Jenkins master port. After that, you can browse to http://yourJenkinsmasterhost:8080 to check information and status of both Jenkins master and slave agents.
-
+Note that memory should be larger than 50G.
 
 ## 3. Configure Github and Git plugins
 If you want to link Jenkins with Github, you should conduct some configurations when you first start Jenkins and log in.
