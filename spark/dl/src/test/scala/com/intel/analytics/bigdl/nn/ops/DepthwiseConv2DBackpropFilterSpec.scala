@@ -15,28 +15,21 @@
  */
 package com.intel.analytics.bigdl.nn.ops
 
+import com.intel.analytics.bigdl.nn.abstractnn.DataFormat
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
 import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
-import org.scalatest.{FlatSpec, Matchers}
 
-class LogicalNotSpec extends FlatSpec with Matchers {
-  "LogicalNot operation" should "works correctly" in {
-    import com.intel.analytics.bigdl.numeric.NumericBoolean
-    val input = Tensor(T(true, false, true))
+import scala.util.Random
 
-    val expectOutput = Tensor(T(false, true, false))
 
-    val output = LogicalNot().forward(input)
-    output should be(expectOutput)
-  }
-}
-
-class LogicalNotSerialTest extends ModuleSerializationTest {
+class DepthwiseConv2DBackpropFilterSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
-    val logicalNot = LogicalNot[Float].setName("logicalNot")
-    val input = Tensor[Boolean](T(true, false))
-    runSerializationTest(logicalNot, input, logicalNot
-      .asInstanceOf[ModuleToOperation[Float]].module.getClass)
+    val depWiseConv2dBackProp = DepthwiseConv2DBackpropFilter[Float](1,
+      1, 0, 0, DataFormat.NHWC).setName("depWiseConv2dBackProp")
+    val input = T(Tensor[Float](4, 24, 24, 3).apply1(_ => Random.nextFloat()),
+      Tensor[Int](T(2, 2, 3, 1)),
+      Tensor[Float](4, 23, 23, 3).apply1(_ => Random.nextFloat()))
+    runSerializationTest(depWiseConv2dBackProp, input)
   }
 }

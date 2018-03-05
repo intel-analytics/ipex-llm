@@ -17,7 +17,10 @@ package com.intel.analytics.bigdl.nn.ops
 
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
+
+import scala.util.Random
 
 class FloorSpec extends FlatSpec with Matchers {
   "Floor Float operation" should "works correctly" in {
@@ -48,5 +51,14 @@ class FloorSpec extends FlatSpec with Matchers {
 
     val output = Floor[Int]().forward(input)
     output should be(expectOutput)
+  }
+}
+
+class FloorSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val floor = Floor[Float]().setName("floor")
+    val input = Tensor[Float](5).apply1(_ => Random.nextFloat())
+    runSerializationTest(floor, input, floor.
+      asInstanceOf[ModuleToOperation[Float]].module.getClass)
   }
 }
