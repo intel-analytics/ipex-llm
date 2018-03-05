@@ -21,7 +21,7 @@ import java.io.{File => JFile}
 import com.google.protobuf.{ByteString, CodedOutputStream}
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.nn.abstractnn.DataFormat
-import com.intel.analytics.bigdl.nn.ops.{All, Any, ApproximateEqual, ArgMax, BatchMatMul, BucketizedCol, Cast, CategoricalColHashBucket, CategoricalColVocaList, Ceil, CrossEntropy, DepthwiseConv2D, DepthwiseConv2DBackpropFilter, DepthwiseConv2DBackpropInput, Digamma, Dilation2D, Dilation2DBackpropFilter, Dilation2DBackpropInput, Equal, Erf, Erfc, Expm1, Floor, FloorDiv, FloorMod, Greater, GreaterEqual, InTopK, IndicatorCol, Inv, InvGrad, IsFinite, IsInf, IsNan, Kv2Tensor, L2Loss, Less, LessEqual, Lgamma, LogicalAnd, LogicalNot, LogicalOr, Maximum, Minimum, Mod, ModuleToOperation, NotEqual, OneHot, Pad, Prod, RandomUniform, RangeOps, Rank, ResizeBilinearGrad, ResizeBilinearOps, Rint, Round, SegmentSum, Sign, Slice, SquaredDifference, Substr, TopK, TruncateDiv, TruncatedNormal, Exp => ExpOps, Pow => PowOps, Select => SelectOps, Sum => SumOps, Tile => TileOps}
+import com.intel.analytics.bigdl.nn.ops.{All, Any, ApproximateEqual, ArgMax, BatchMatMul, BucketizedCol, Cast, CategoricalColHashBucket, CategoricalColVocaList, Ceil, CrossEntropy, DepthwiseConv2D, DepthwiseConv2DBackpropFilter, DepthwiseConv2DBackpropInput, Digamma, Dilation2D, Dilation2DBackpropFilter, Dilation2DBackpropInput, Equal, Erf, Erfc, Expm1, Floor, FloorDiv, FloorMod, Greater, GreaterEqual, InTopK, IndicatorCol, Inv, InvGrad, IsFinite, IsInf, IsNan, Kv2Tensor, L2Loss, Less, LessEqual, Lgamma, LogicalAnd, LogicalNot, LogicalOr, Maximum, Minimum, Mod, ModuleToOperation, NotEqual, OneHot, Pad, Prod, RandomUniform, RangeOps, Rank, ResizeBilinearGrad, ResizeBilinearOps, Rint, Round, SegmentSum, SelectTensor, Sign, Slice, SquaredDifference, Substr, TensorOp, TopK, TruncateDiv, TruncatedNormal, Exp => ExpOps, Pow => PowOps, Select => SelectOps, Sum => SumOps, Tile => TileOps}
 import com.intel.analytics.bigdl.nn.tf.{Assert => AssertOps, BroadcastGradientArgs => BroadcastGradientArgsOps, DecodeGif => DecodeGifOps, DecodeJpeg => DecodeJpegOps, DecodePng => DecodePngOps, DecodeRaw => DecodeRawOps}
 import com.intel.analytics.bigdl.nn.tf._
 import com.intel.analytics.bigdl.nn.{SoftPlus => BigDLSoftPlus}
@@ -775,6 +775,15 @@ class OperationSerializerSpec extends SerializerSpecHelper {
     runSerializationTest(sign, input)
   }
 
+  "SelectTensor serializer" should "work properly" in {
+    val transformer = (TensorOp[Float]() ** 3 * 4.5f).ceil
+    val select = SelectTensor(Tensor.scalar("2"), transformer)
+    val t1 = Tensor[Float](3, 4).randn()
+    val t2 = Tensor[Float](2, 3).randn()
+    val input = T().update(Tensor.scalar(1), t1).update(Tensor.scalar("2"), t2)
+    runSerializationTest(select, input)
+  }
+
   "Slice serializer" should "work properly" in {
     val slice = Slice[Float](begin = Array(0, 1, 1),
       size = Array(2, -1, 1)).setName("slice")
@@ -832,6 +841,13 @@ class OperationSerializerSpec extends SerializerSpecHelper {
       Tensor[Int](T(2, 1, 2)))
     runSerializationTest(tileOps, input, tileOps.
       asInstanceOf[ModuleToOperation[Float]].module.getClass)
+  }
+
+  "TensorOp serializer" should "work properly" in {
+    val op = (((TensorOp[Float]() + 1.5f) ** 2) -> TensorOp.sigmoid()
+      ).setName("TensorOP")
+    val input = Tensor[Float](3, 3).apply1(_ => Random.nextFloat())
+    runSerializationTest(op, input)
   }
 
   "TopK serializer" should "work properly" in {
