@@ -13,101 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.intel.analytics.bigdl.nn
 
-package com.intel.analytics.bigdl.keras
-
-import com.intel.analytics.bigdl.nn.Maxout
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.{Shape, TestUtils}
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 
-class MaxoutSpec extends KerasBaseSpec {
-  "Maxout" should "generate corrent result when batchsize == 1" in {
-    val inputSize = 2
-    val outputSize = 4
-    val maxoutNumber = 3
-    val batchSize = 1
+import scala.util.Random
 
-    val kerasCode =
-      s"""
-        |input_tensor = Input(shape=[${inputSize}])
-        |input = np.random.uniform(0, 1, [${batchSize}, ${inputSize}])
-        |output_tensor = MaxoutDense(output_dim=${outputSize}, input_dim=${inputSize},
-        |nb_feature=${maxoutNumber})(input_tensor)
-        |model = Model(input=input_tensor, output=output_tensor)
-      """.stripMargin
 
-    val maxout = Maxout[Float](inputSize, outputSize, maxoutNumber)
-
-    val wc = (data: Array[Tensor[Float]]) => {
-      val out = new Array[Tensor[Float]](data.length)
-      out(0) = Tensor(inputSize, maxoutNumber * outputSize)
-      val weight = out.head.storage().array()
-      var index = 0
-      for (i <- 1 to maxoutNumber) {
-        val sliceW = data(0).select(1, i).t.clone().storage().array()
-        System.arraycopy(sliceW, 0, weight, index, sliceW.size)
-        index += sliceW.size
-      }
-
-      if (data.length > 1) {
-        out(1) = data(1)
-      }
-      out
-    }
-    checkOutputAndGrad(maxout, kerasCode, weightConverter = wc)
+class MaxoutSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val maxout = Maxout[Float](2, 4, 5).setName("maxout")
+    val input = Tensor[Float](2).apply1(_ => Random.nextFloat())
+    runSerializationTest(maxout, input)
   }
-
-  "Maxout" should "generate corrent result when batchsize != 1" in {
-    val inputSize = 5
-    val outputSize = 4
-    val maxoutNumber = 3
-    val batchSize = 4
-
-    val kerasCode =
-      s"""
-        |#w1 = np.array([[[1.0, 2.0, 3.0, 4.0],
-        |#               [5, 6, 7, 8.0]],
-        |#              [[-1, -2, -3, -4],
-        |#               [-5, -6, -7, -8]],
-        |#              [[9, 10, 11, 12],
-        |#               [-9, -10, -11, -12]]])
-        |#b = np.array([[ 0.0,  0.0,  0.0,  0.0],
-        |#       [ 0.0,  0.0,  0.0,  0.0],
-        |#       [ 0.0,  0.0,  0.0,  0.0]])
-        |# w = [w1, b]
-        |
-        |input_tensor = Input(shape=[${inputSize}])
-        |input = np.random.uniform(0, 1, [${batchSize}, ${inputSize}])
-        |#output_tensor=MaxoutDense(output_dim=4,input_dim=2,nb_feature=3,weights=w)(input_tensor)
-        |output_tensor = MaxoutDense(output_dim=${outputSize}, input_dim=${inputSize},
-        |nb_feature=${maxoutNumber})(input_tensor)
-        |model = Model(input=input_tensor, output=output_tensor)
-      """.stripMargin
-
-    val maxout = Maxout[Float](inputSize, outputSize, maxoutNumber)
-
-    val wc = (data: Array[Tensor[Float]]) => {
-      val out = new Array[Tensor[Float]](data.length)
-      out(0) = Tensor(inputSize, maxoutNumber * outputSize)
-      val weight = out.head.storage().array()
-      var index = 0
-      for (i <- 1 to maxoutNumber) {
-        val sliceW = data(0).select(1, i).t.clone().storage().array()
-        System.arraycopy(sliceW, 0, weight, index, sliceW.size)
-        index += sliceW.size
-      }
-
-      if (data.length > 1) {
-        out(1) = data(1)
-      }
-      out
-    }
-    checkOutputAndGrad(maxout, kerasCode, weightConverter = wc)
-  }
-
-  "Maxout computeOutputShape" should "work properly" in {
-    val layer = Maxout[Float](4, 5, 3)
-    TestUtils.compareOutputShape(layer, Shape(4)) should be (true)
-  }
-
 }

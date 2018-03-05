@@ -13,52 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.intel.analytics.bigdl.nn
 
-package com.intel.analytics.bigdl.keras
+import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 
-import com.intel.analytics.bigdl.nn.{Masking}
+import scala.util.Random
 
-class MaskingSpec extends KerasBaseSpec {
 
-  "Masking" should "generate corrent result when batchsize == 1" in {
-    val inputSize = 2
-    val times = 7
-    val batchSize = 1
-    val mask_value = -1
-
-    val sigmoidCode =
-      s"""
-         |input_tensor = Input(shape=[${times}, ${inputSize}])
-         |input = np.array([1, 1, ${mask_value}, 2, 3, 3, 4, 4, ${mask_value}, ${mask_value}, 6, 6,
-         |7, 7]).reshape(${batchSize}, ${times}, ${inputSize})
-         |output_tensor = Masking(${mask_value})(input_tensor)
-         |model = Model(input=input_tensor, output=output_tensor)
-      """.stripMargin
-
-    val masking = Masking[Float](mask_value)
-
-    checkOutputAndGrad(masking, sigmoidCode)
-  }
-
-  "Masking" should "generate corrent result when batchsize != 1" in {
-    val inputSize = 2
-    val times = 7
-    val batchSize = 3
-    val mask_value = -1
-
-    val sigmoidCode =
-      s"""
-        |input_tensor = Input(shape=[${times}, ${inputSize}])
-        |input = np.array([1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, ${mask_value}, 1, 2,
-        |        2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 1, 1, 2, 2, 3, 3,
-        |        ${mask_value}, ${mask_value}, 5,
-        |        5, 6, 6, 7, 7]).reshape(${batchSize}, ${times}, ${inputSize})
-        |output_tensor = Masking(${mask_value})(input_tensor)
-        |model = Model(input=input_tensor, output=output_tensor)
-      """.stripMargin
-
-    val masking = Masking[Float](mask_value)
-
-    checkOutputAndGrad(masking, sigmoidCode)
+class MaskingSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val masking = Masking[Float](0.1).setName("masking")
+    val input = Tensor[Float](2, 3, 4).apply1(_ => Random.nextFloat())
+    runSerializationTest(masking, input)
   }
 }
