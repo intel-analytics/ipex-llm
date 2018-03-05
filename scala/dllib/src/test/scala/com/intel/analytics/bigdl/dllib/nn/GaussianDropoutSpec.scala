@@ -17,7 +17,11 @@
 package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.utils.RandomGenerator._
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
+
+import scala.util.Random
 
   /**
   * Unit test for GaussianDropout.
@@ -76,5 +80,14 @@ class GaussianDropoutSpec extends FlatSpec with Matchers {
 
   def assertIntArrayEqual(a1: Array[Int], a2: Array[Int]): Unit = {
     (a1 zip a2).foreach(x => assert(x._1 == x._2))
+  }
+}
+
+class GaussianDropoutSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    RNG.setSeed(1000)
+    val gaussianDropout = GaussianDropout[Float](0.5).setName("gaussianDropout")
+    val input = Tensor[Float](10).apply1(_ => Random.nextFloat())
+    runSerializationTest(gaussianDropout, input)
   }
 }
