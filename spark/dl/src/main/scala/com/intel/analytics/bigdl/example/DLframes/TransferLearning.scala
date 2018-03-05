@@ -64,17 +64,17 @@ object TransferLearning {
 
       val time2 = System.nanoTime()
 
-      println(validationDF.count())
-      // println("training time: " + (time2 - time1) * (EXP(-9)) + "s")
+      val count = validationDF.count().toInt
+      println("training time: " + (time2 - time1) * (1e-9) + "s")
       validationDF.show(100)
-      val predictions = dlModel.setBatchSize(params.batchSize).transform(validationDF.limit(46))
+      val predictions = dlModel.setBatchSize(params.batchSize).transform(validationDF.limit(count))
 
       predictions.persist()
       predictions.show(100)
 
-      val evaluation2 = new MulticlassClassificationEvaluator().setPredictionCol("prediction")
+      val evaluation = new MulticlassClassificationEvaluator().setPredictionCol("prediction")
         .setMetricName("accuracy").evaluate(predictions)
-      println("evaluation result on validationDF: " + evaluation2)
+      println("evaluation result on validationDF: " + evaluation)
     }
   }
 
