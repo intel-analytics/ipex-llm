@@ -16,6 +16,7 @@
 package com.intel.analytics.bigdl.nn.ops
 
 import com.intel.analytics.bigdl.tensor.{DenseType, SparseType, Tensor}
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import com.intel.analytics.bigdl.utils.{T, Table}
 import org.scalatest.{FlatSpec, Matchers}
 
@@ -97,5 +98,19 @@ class Kv2TensorSpec extends FlatSpec with Matchers {
       .forward(input)
 
     output should be(expectOutput)
+  }
+}
+
+class Kv2TensorSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val kv2tensor = Kv2Tensor[Float, Float](
+      kvDelimiter = ",", itemDelimiter = ":", transType = 0
+    ).setName("kv2tensor")
+    val input = T(
+      Tensor[String](
+        T(T("0:0.1,1:0.2"), T("1:0.3,3:0.5"), T("2:0.15,4:0.25"))),
+      Tensor[Int](Array(5), shape = Array[Int]())
+    )
+    runSerializationTest(kv2tensor, input)
   }
 }

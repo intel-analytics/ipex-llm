@@ -17,6 +17,7 @@ package com.intel.analytics.bigdl.nn.ops
 
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
 
 class IndicatorColSpec extends FlatSpec with Matchers {
@@ -63,5 +64,21 @@ class IndicatorColSpec extends FlatSpec with Matchers {
     ).forward(input)
 
     output should be(expectedOutput)
+  }
+}
+
+class IndicatorColSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val indicatorCol = IndicatorCol[Float](
+      feaLen = 4,
+      isCount = true
+    ).setName("indicatorCol")
+    val input = Tensor.sparse(
+      Array(Array(0, 1, 1, 2, 2, 3, 3, 3),
+        Array(0, 0, 3, 0, 1, 0, 1, 2)),
+      Array(3, 1, 2, 0, 3, 1, 2, 2),
+      Array(4, 4)
+    )
+    runSerializationTest(indicatorCol, input)
   }
 }

@@ -17,7 +17,10 @@ package com.intel.analytics.bigdl.nn.ops
 
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
+
+import scala.util.Random
 
 class GreaterSpec extends FlatSpec with Matchers {
   "Greater Float operation" should "works correctly" in {
@@ -96,5 +99,16 @@ class GreaterSpec extends FlatSpec with Matchers {
 
     val output = Greater[Float]().forward(input)
     output should be(expectOutput)
+  }
+}
+
+class GreaterSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val greater = Greater[Float]().setName("greater")
+    val input1 = Tensor[Float](5).apply1(_ => Random.nextFloat())
+    val input2 = Tensor[Float](5).apply1(_ => Random.nextFloat())
+    val input = T(input1, input2)
+    runSerializationTest(greater, input, greater.
+      asInstanceOf[ModuleToOperation[Float]].module.getClass)
   }
 }
