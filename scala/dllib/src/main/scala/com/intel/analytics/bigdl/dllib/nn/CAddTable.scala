@@ -20,6 +20,7 @@ import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Table
+import com.intel.analytics.bigdl.utils.serializer.{DeserializeContext, ModuleSerializable}
 
 import scala.reflect._
 
@@ -122,10 +123,24 @@ class CAddTable[T: ClassTag, D: ClassTag](val inplace: Boolean = false)(
 }
 
 
-object CAddTable {
+object CAddTable extends ModuleSerializable {
   def apply[T: ClassTag](
       inplace: Boolean = false)(implicit ev: TensorNumeric[T]) : CAddTable[T, T] = {
     new CAddTable[T, T](inplace)
+  }
+
+  override def getTypes(context: DeserializeContext): (Array[ClassTag[_]],
+    Array[TensorNumeric[_]]) = {
+    var (tags, numerics) = super.getTypes(context)
+    val defaultTag = tags(0)
+    val defaultNumeric = numerics(0)
+    if (tags.size < 2) {
+      val extendedTags = Array[ClassTag[_]](defaultTag, defaultTag)
+      val extendNumerics = Array[TensorNumeric[_]](defaultNumeric, defaultNumeric)
+      (extendedTags, extendNumerics)
+    } else {
+      (tags, numerics)
+    }
   }
 }
 
