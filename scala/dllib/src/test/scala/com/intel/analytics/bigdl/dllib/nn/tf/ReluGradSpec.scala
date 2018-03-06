@@ -13,35 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.bigdl.nn
+package com.intel.analytics.bigdl.nn.tf
 
 import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.utils.T
 import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 
 import scala.util.Random
 
-
-class ConvLSTMPeephole3DSerialTest extends ModuleSerializationTest {
+class ReluGradSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
-    val hiddenSize = 5
-    val inputSize = 3
-    val seqLength = 4
-    val batchSize = 2
-    val kernalW = 3
-    val kernalH = 3
-    val c3d = ConvLSTMPeephole3D[Float](
-      inputSize,
-      hiddenSize,
-      kernalW, kernalH,
-      1,
-      withPeephole = false)
-    val convLSTMPeephole3d = Recurrent[Float]().setName("convLSTMPeephole3d")
-    val model = Sequential[Float]()
-      .add(convLSTMPeephole3d
-        .add(c3d))
-      .add(View[Float](hiddenSize * kernalH * kernalW))
-
-    val input = Tensor[Float](batchSize, seqLength, inputSize, kernalW, kernalH, 3).rand
-    runSerializationTest(convLSTMPeephole3d, input, c3d.getClass)
+    val reluGrad = ReluGrad[Float]
+    val input = T(Tensor[Float](2, 2, 2).apply1(_ => Random.nextFloat()),
+      Tensor[Float](2, 2, 2).apply1(_ => Random.nextFloat()))
+    runSerializationTest(reluGrad, input)
   }
 }
