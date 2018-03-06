@@ -143,7 +143,7 @@ trait ModuleSerializable extends Loadable with Savable{
       asInstanceOf[AbstractModule[Activity, Activity, T]]
   }
 
-  private def getTypes(context: DeserializeContext):
+  protected def getTypes(context: DeserializeContext):
   (Array[ClassTag[_]], Array[TensorNumeric[_]]) = {
     val attrMap = context.bigdlModule.getAttrMap
     val tags = attrMap.get(SerConst.MODULE_TAGES).getArrayValue.getStrList.asScala
