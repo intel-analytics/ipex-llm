@@ -19,6 +19,7 @@ package com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.tensor.Tensor
 import org.scalatest.{FlatSpec, Matchers}
 import com.intel.analytics.bigdl.utils.RandomGenerator._
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import com.intel.analytics.bigdl.utils.{Shape, TestUtils}
 
 import scala.util.Random
@@ -64,4 +65,13 @@ class SpatialDilatedConvolutionSpec extends FlatSpec with Matchers {
     TestUtils.compareOutputShape(layer, Shape(4, 256, 256)) should be (true)
   }
 
+}
+
+class SpatialDilatedConvolutionSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val spatialDilatedConvolution = SpatialDilatedConvolution[Float](1, 1,
+      2, 2, 1, 1, 0, 0).setName("spatialDilatedConvolution")
+    val input = Tensor[Float](1, 3, 3).apply1( e => Random.nextFloat())
+    runSerializationTest(spatialDilatedConvolution, input)
+  }
 }

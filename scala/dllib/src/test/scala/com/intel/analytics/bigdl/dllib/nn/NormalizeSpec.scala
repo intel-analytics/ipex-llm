@@ -19,6 +19,7 @@ package com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils.RandomGenerator._
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
 
 import scala.util.Random
@@ -127,5 +128,13 @@ class NormalizeSpec extends FlatSpec with Matchers {
 
     val checker = new GradientChecker(1e-4)
     checker.checkLayer(layer, input, 1e-3) should be(true)
+  }
+}
+
+class NormalizeSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val normalizer = Normalize[Float](2).setName("normalizer")
+    val input = Tensor[Float](2, 3, 4, 4).apply1(e => Random.nextFloat())
+    runSerializationTest(normalizer, input)
   }
 }
