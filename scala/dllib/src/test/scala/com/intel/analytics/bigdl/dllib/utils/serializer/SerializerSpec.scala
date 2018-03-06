@@ -80,6 +80,21 @@ class SerializerSpec extends BigDLSpecHelper {
       "com.intel.analytics.bigdl.nn.ops.TensorArraySerialTest",
     "com.intel.analytics.bigdl.nn.tf.TensorArrayGrad" ->
       "com.intel.analytics.bigdl.nn.ops.TensorArraySerialTest",
+    "com.intel.analytics.bigdl.nn.tf.TensorArrayCreator" ->
+      "com.intel.analytics.bigdl.nn.ops.TensorArrayScatterSerialTest",
+    "com.intel.analytics.bigdl.nn.tf.TensorArrayScatter" ->
+      "com.intel.analytics.bigdl.nn.ops.TensorArrayScatterSerialTest",
+    "com.intel.analytics.bigdl.nn.tf.TensorArrayGather" ->
+      "com.intel.analytics.bigdl.nn.ops.TensorArrayScatterSerialTest",
+    "com.intel.analytics.bigdl.nn.tf.TensorArrayClose" ->
+      "com.intel.analytics.bigdl.nn.ops.TensorArrayScatterSerialTest",
+    "com.intel.analytics.bigdl.nn.tf.TensorArrayConcat" ->
+      "com.intel.analytics.bigdl.nn.ops.TensorArraySplitSerialTest",
+    "com.intel.analytics.bigdl.nn.tf.TensorArraySplit" ->
+      "com.intel.analytics.bigdl.nn.ops.TensorArraySplitSerialTest",
+    "com.intel.analytics.bigdl.nn.tf.TensorArraySize" ->
+      "com.intel.analytics.bigdl.nn.ops.TensorArraySplitSerialTest",
+
 
     // Keras layers
     "com.intel.analytics.bigdl.nn.keras.Input" ->
