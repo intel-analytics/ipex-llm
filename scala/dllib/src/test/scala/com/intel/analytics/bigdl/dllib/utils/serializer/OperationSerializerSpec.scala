@@ -21,7 +21,7 @@ import java.io.{File => JFile}
 import com.google.protobuf.{ByteString, CodedOutputStream}
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.nn.abstractnn.DataFormat
-import com.intel.analytics.bigdl.nn.ops.{All, Any, ApproximateEqual, ArgMax, BatchMatMul, BucketizedCol, Cast, CategoricalColHashBucket, CategoricalColVocaList, Ceil, CrossEntropy, DepthwiseConv2D, DepthwiseConv2DBackpropFilter, DepthwiseConv2DBackpropInput, Digamma, Dilation2D, Dilation2DBackpropFilter, Dilation2DBackpropInput, Equal, Erf, Erfc, Expm1, Floor, FloorDiv, FloorMod, Greater, GreaterEqual, InTopK, IndicatorCol, Inv, InvGrad, IsFinite, IsInf, IsNan, Kv2Tensor, L2Loss, Less, LessEqual, Lgamma, LogicalAnd, LogicalNot, LogicalOr, Maximum, Minimum, Mod, ModuleToOperation, NotEqual, OneHot, Pad, Prod, RandomUniform, RangeOps, Rank, ResizeBilinearGrad, ResizeBilinearOps, Rint, Round, SegmentSum, SelectTensor, Sign, Slice, SquaredDifference, Substr, TensorOp, TopK, TruncateDiv, TruncatedNormal, Exp => ExpOps, Pow => PowOps, Select => SelectOps, Sum => SumOps, Tile => TileOps}
+import com.intel.analytics.bigdl.nn.ops.{All, Any, ApproximateEqual, ArgMax, BatchMatMul, BucketizedCol, Cast, CategoricalColHashBucket, CategoricalColVocaList, Ceil, CrossCol, CrossEntropy, DepthwiseConv2D, DepthwiseConv2DBackpropFilter, DepthwiseConv2DBackpropInput, Digamma, Dilation2D, Dilation2DBackpropFilter, Dilation2DBackpropInput, Equal, Erf, Erfc, Expm1, Floor, FloorDiv, FloorMod, Greater, GreaterEqual, InTopK, IndicatorCol, Inv, InvGrad, IsFinite, IsInf, IsNan, Kv2Tensor, L2Loss, Less, LessEqual, Lgamma, LogicalAnd, LogicalNot, LogicalOr, Maximum, Minimum, Mod, ModuleToOperation, NotEqual, OneHot, Pad, Prod, RandomUniform, RangeOps, Rank, ResizeBilinearGrad, ResizeBilinearOps, Rint, Round, SegmentSum, SelectTensor, Sign, Slice, SquaredDifference, Substr, TensorOp, TopK, TruncateDiv, TruncatedNormal, Exp => ExpOps, Pow => PowOps, Select => SelectOps, Sum => SumOps, Tile => TileOps}
 import com.intel.analytics.bigdl.nn.tf.{Assert => AssertOps, BroadcastGradientArgs => BroadcastGradientArgsOps, DecodeGif => DecodeGifOps, DecodeJpeg => DecodeJpegOps, DecodePng => DecodePngOps, DecodeRaw => DecodeRawOps}
 import com.intel.analytics.bigdl.nn.tf._
 import com.intel.analytics.bigdl.nn.{SoftPlus => BigDLSoftPlus}
@@ -221,6 +221,16 @@ class OperationSerializerSpec extends SerializerSpecHelper {
     val data = Tensor[Float](1, 2, 2, 3)apply1(_ => Random.nextFloat())
     val input = T(inputTensor, kernelSize, data)
     runSerializationTest(conv2dTranspose, input)
+  }
+
+  "CrossCol Serializer" should "work proprly" in {
+    val crosscol = CrossCol[Float](hashBucketSize = 100)
+      .setName("CrossCol")
+    val input = T(
+      Tensor[String](T("A,D", "B", "A,C")),
+      Tensor[String](T("1", "2", "3,4"))
+    )
+    runSerializationTest(crosscol, input)
   }
 
   "CrossEntropy serializer" should "work properly" in {
