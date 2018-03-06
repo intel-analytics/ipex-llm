@@ -14,11 +14,15 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.keras
+package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.nn.Maxout
+import com.intel.analytics.bigdl.keras.KerasBaseSpec
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.{Shape, TestUtils}
+import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
+
+import scala.util.Random
 
 class MaxoutSpec extends KerasBaseSpec {
   "Maxout" should "generate corrent result when batchsize == 1" in {
@@ -110,4 +114,12 @@ class MaxoutSpec extends KerasBaseSpec {
     TestUtils.compareOutputShape(layer, Shape(4)) should be (true)
   }
 
+}
+
+class MaxoutSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val maxout = Maxout[Float](2, 4, 5).setName("maxout")
+    val input = Tensor[Float](2).apply1(_ => Random.nextFloat())
+    runSerializationTest(maxout, input)
+  }
 }

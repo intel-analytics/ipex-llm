@@ -13,21 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.bigdl.nn
+package com.intel.analytics.bigdl.nn.tf
 
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.RandomGenerator._
+import com.intel.analytics.bigdl.utils.T
 import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 
-import scala.util.Random
-
-
-class BiRecurrentSerialTest extends ModuleSerializationTest {
+class TanhGradSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
-    val input = Tensor[Float](1, 5, 6).apply1(e => Random.nextFloat()).transpose(1, 2)
-    RNG.setSeed(100)
-    val biRecurrent = BiRecurrent[Float]().add(RnnCell[Float](6, 4,
-      Sigmoid[Float]())).setName("biRecurrent")
-    runSerializationTest(biRecurrent, input)
+    val module = TanhGrad[Float, Float]()
+
+    val input = T(Tensor[Float](1, 5, 3, 4).rand(), Tensor[Float](1, 5, 3, 4).rand())
+
+    runSerializationTest(module, input)
   }
 }
