@@ -120,12 +120,14 @@ object SparseTensorBLAS {
         beta: T,
         r: Tensor[T])(implicit ev: TensorNumeric[T]): Unit = {
     (alpha, mat, vec, beta, r)  match {
-      case (alpha: Double, a: SparseTensor[Double], x: DenseTensor[Double],
-      beta: Double, y: DenseTensor[Double]) =>
-        dcoomv(alpha, a, x, beta, y)
-      case (alpha: Float, a: SparseTensor[Float], x: DenseTensor[Float],
-      beta: Float, y: DenseTensor[Float]) =>
-        scoomv(alpha, a, x, beta, y)
+      case (alpha: Double, a: SparseTensor[_], x: DenseTensor[_],
+      beta: Double, y: DenseTensor[_]) =>
+        dcoomv(alpha, a.asInstanceOf[SparseTensor[Double]], x.asInstanceOf[DenseTensor[Double]],
+          beta, y.asInstanceOf[DenseTensor[Double]])
+      case (alpha: Float, a: SparseTensor[_], x: DenseTensor[_],
+      beta: Float, y: DenseTensor[_]) =>
+        scoomv(alpha, a.asInstanceOf[SparseTensor[Float]], x.asInstanceOf[DenseTensor[Float]],
+          beta, y.asInstanceOf[DenseTensor[Float]])
       case _ =>
         throw new IllegalArgumentException(s"Sparse addmv doesn't support")
     }
@@ -206,18 +208,22 @@ object SparseTensorBLAS {
         beta: T,
         r: Tensor[T])(implicit ev: TensorNumeric[T]): Unit = {
     (alpha, mat1, mat2, beta, r)  match {
-      case (alpha: Float, a: SparseTensor[Float], x: DenseTensor[Float],
-            beta: Float, y: DenseTensor[Float]) =>
-        scoomm(alpha, a, x, beta, y)
-      case (alpha: Double, a: SparseTensor[Double], x: DenseTensor[Double],
-            beta: Double, y: DenseTensor[Double]) =>
-        dcoomm(alpha, a, x, beta, y)
-      case (alpha: Float, a: DenseTensor[Float], x: SparseTensor[Float],
-            beta: Float, y: DenseTensor[Float]) =>
-        scoomm(alpha, a, x, beta, y)
-      case (alpha: Double, a: DenseTensor[Double], x: SparseTensor[Double],
-            beta: Double, y: DenseTensor[Double]) =>
-        dcoomm(alpha, a, x, beta, y)
+      case (alpha: Float, a: SparseTensor[_], x: DenseTensor[_],
+            beta: Float, y: DenseTensor[_]) =>
+        scoomm(alpha, a.asInstanceOf[SparseTensor[Float]], x.asInstanceOf[DenseTensor[Float]],
+          beta, y.asInstanceOf[DenseTensor[Float]])
+      case (alpha: Double, a: SparseTensor[_], x: DenseTensor[_],
+            beta: Double, y: DenseTensor[_]) =>
+        dcoomm(alpha, a.asInstanceOf[SparseTensor[Double]], x.asInstanceOf[DenseTensor[Double]],
+          beta, y.asInstanceOf[DenseTensor[Double]])
+      case (alpha: Float, a: DenseTensor[_], x: SparseTensor[_],
+            beta: Float, y: DenseTensor[_]) =>
+        scoomm(alpha, a.asInstanceOf[DenseTensor[Float]], x.asInstanceOf[SparseTensor[Float]],
+          beta, y.asInstanceOf[DenseTensor[Float]])
+      case (alpha: Double, a: DenseTensor[_], x: SparseTensor[_],
+            beta: Double, y: DenseTensor[_]) =>
+        dcoomm(alpha, a.asInstanceOf[DenseTensor[Double]], x.asInstanceOf[SparseTensor[Double]],
+          beta, y.asInstanceOf[DenseTensor[Double]])
       case _ =>
         throw new IllegalArgumentException(s"Sparse addmm doesn't support")
     }
