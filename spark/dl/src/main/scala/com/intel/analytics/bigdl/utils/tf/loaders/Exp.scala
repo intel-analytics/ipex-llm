@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.utils.tf.loaders
 import java.nio.ByteOrder
 
 import com.intel.analytics.bigdl.Module
-import com.intel.analytics.bigdl.nn.ops.{Exp, FloorDiv}
+import com.intel.analytics.bigdl.nn.ops.{Exp => ExpOps}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.tf.Context
 import org.tensorflow.framework.{DataType, NodeDef}
@@ -33,9 +33,9 @@ class Exp extends TensorflowOpsLoader {
     (implicit ev: TensorNumeric[T]): Module[T] = {
     val t = getType(nodeDef.getAttrMap, "T")
     if (t == DataType.DT_FLOAT) {
-      Exp[T, Float]()
+      ExpOps[T, Float]()
     } else if (t == DataType.DT_DOUBLE) {
-      Exp[T, Double]()
+      ExpOps[T, Double]()
     } else {
       throw new UnsupportedOperationException(s"Not support load Exp when type is ${t}")
     }
