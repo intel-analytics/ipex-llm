@@ -110,7 +110,7 @@ class ModelSpec extends FlatSpec with Matchers {
 
   }
 
-  "Inception_v2_dnn" should " be same with inception_v1" in {
+  "Inception_v2_dnn" should " be same with inception_v2" in {
     val batchSize = 2
     val (model1, batch1) = getModel("inception_v2", batchSize)
     val (model2, batch2) = getModel("inception_v2_dnn", batchSize)
@@ -170,7 +170,7 @@ class ModelSpec extends FlatSpec with Matchers {
     model2.accGradParameters(input, out1)
     println("compare params")
     DnnUtils.nearequals(weightAll1, weightAll2, 1e-4) should be(true)
-    DnnUtils.getunequals(biasAll1, biasAll2, 1e-2) should be(true)
+    DnnUtils.nearequals(biasAll1, biasAll2, 1e-3) should be(true)
 
     println("done")
   }
@@ -200,8 +200,8 @@ class ModelSpec extends FlatSpec with Matchers {
     model1.accGradParameters(input, out1)
     model2.accGradParameters(input, out1)
     println("compare params")
-    DnnUtils.nearequals(weightAll1, weightAll2, 1e-4) should be(true)
-    DnnUtils.getunequals(biasAll1, biasAll2, 1e-2) should be(true)
+    DnnUtils.nearequals(weightAll1, weightAll2, 1e-4) shoul d be(true)
+    DnnUtils.nearequals(biasAll1, biasAll2, 1e-3) should be(true)
 
     println("done")
 

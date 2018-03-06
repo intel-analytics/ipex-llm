@@ -25,6 +25,7 @@ import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.utils.{T, Table}
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.Module
+import com.intel.analytics.bigdl.mkl.MklDnn
 import com.intel.analytics.bigdl.models.inception.Inception_Layer_v2
 import com.intel.analytics.bigdl.models.resnet.Convolution
 import com.intel.analytics.bigdl.models.resnet.ResNet.{apply => _, _}
@@ -75,6 +76,34 @@ object DnnTools {
       .add(LRNDnn[Float](5, 0.0001, 0.75, 1.0))
       .add(PoolingDnn[Float](3, 3, 2, 2, 0, 0))
     model
+  }
+
+  def reorderTwoTensor(input: Tensor[Float], inputFormat: Int,
+                       output: Tensor[Float], outputFormat: Int): Unit = {
+    val dataType = MklDnn.DataType.f32
+    val engine = MklDnn.EngineCreate( MklDnn.EngineType.cpu, 0)
+    val stream = MklDnn.StreamCreate(MklDnn.StreamType.eager)
+    val stream_fwd = new ArrayBuffer[Long]
+    val sizes = input.size()
+    val dim = input.dim()
+    output.resizeAs(input)
+
+    // val src_pd = input.getPrimitiveDesc()
+    val src_md = MklDnnOps.memoryDescInit(dim, sizes, dataType, inputFormat)
+    val src_pd = MklDnnOps.memoryPrimitiveDescCreate(src_md, engine)
+
+    val dst_memory = MklDnnOps.initDataMemory(dim, sizes, outputFormat, dataType, engine)
+    val res = MklDnnOps.prepareReorder(dst_memory, src_pd, false)
+    // val reorder_primitive = res._1
+    val src_memory = res._2
+
+    stream_fwd.clear()
+    stream_fwd.append(res._1)
+
+    /* build a simple net */
+    val memoryPrimitives = Array(src_memory, dst_memory)
+    val buffer = Array(input, output)
+    MklDnnOps.streamSubmit(stream, 1, stream_fwd.toArray, 1, memoryPrimitives, buffer)
   }
 }
 

@@ -269,6 +269,6 @@ class ReLUDnn[T: ClassTag](ip: Boolean = false, value: Float = 0.0f)(
 object ReLUDnn {
   def apply[T: ClassTag](ip: Boolean = false, value: Float = 0.0f)
     (implicit ev: TensorNumeric[T]): ReLUDnn[T] = {
-    new ReLUDnn[T](ip, value)
+    new ReLUDnn[T](false, value)
   }
 }

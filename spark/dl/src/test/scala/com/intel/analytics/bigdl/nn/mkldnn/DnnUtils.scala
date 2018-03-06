@@ -97,6 +97,35 @@ object DnnUtils {
     MklDnnOps.streamSubmit(stream, 1, stream_fwd.toArray, 1, memoryPrimitives, buffer)
   }
 
+
+  def reorderTwoTensor(input: Tensor[Float], inputFormat: Int,
+                       output: Tensor[Float], outputFormat: Int): Unit = {
+    val dataType = MklDnn.DataType.f32
+    val engine = MklDnn.EngineCreate( MklDnn.EngineType.cpu, 0)
+    val stream = MklDnn.StreamCreate(MklDnn.StreamType.eager)
+    val stream_fwd = new ArrayBuffer[Long]
+    val sizes = input.size()
+    val dim = input.dim()
+    output.resizeAs(input)
+
+    // val src_pd = input.getPrimitiveDesc()
+    val src_md = MklDnnOps.memoryDescInit(dim, sizes, dataType, inputFormat)
+    val src_pd = MklDnnOps.memoryPrimitiveDescCreate(src_md, engine)
+
+    val dst_memory = MklDnnOps.initDataMemory(dim, sizes, outputFormat, dataType, engine)
+    val res = MklDnnOps.prepareReorder(dst_memory, src_pd, false)
+    // val reorder_primitive = res._1
+    val src_memory = res._2
+
+    stream_fwd.clear()
+    stream_fwd.append(res._1)
+
+    /* build a simple net */
+    val memoryPrimitives = Array(src_memory, dst_memory)
+    val buffer = Array(input, output)
+    MklDnnOps.streamSubmit(stream, 1, stream_fwd.toArray, 1, memoryPrimitives, buffer)
+  }
+
   def getTopTimes(times: Array[(AbstractModule[_ <: Activity, _ <: Activity, Float],
     Long, Long)]): Unit = {
     var forwardSum = 0L
