@@ -178,6 +178,7 @@ object ModuleSerializer extends ModuleSerializable{
     registerModule("com.intel.analytics.bigdl.nn.SpatialBatchNormalization", BatchNormalization)
     registerModule("com.intel.analytics.bigdl.nn.BinaryTreeLSTM", BinaryTreeLSTM)
     registerModule("com.intel.analytics.bigdl.nn.BiRecurrent", BiRecurrent)
+    registerModule("com.intel.analytics.bigdl.nn.CAddTable", CAddTable)
     registerModule("com.intel.analytics.bigdl.nn.StaticGraph", Graph)
     registerModule("com.intel.analytics.bigdl.nn.DynamicGraph", Graph)
     registerModule("com.intel.analytics.bigdl.nn.keras.Model", Model)
