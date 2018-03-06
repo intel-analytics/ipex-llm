@@ -2,7 +2,9 @@
 ## **Introduction**
 We hereby introduce a new set of __Keras-Style API__ based on [__Keras 1.2.2__](https://faroit.github.io/keras-docs/1.2.2/) in BigDL for the sake of user-friendliness. Users, especially those familiar with Keras, are recommended to use the new API to create a BigDL model and train, evaluate or tune it in a distributed fashion.
 
-To define a model in Python, now one just need to import the package `bigdl.nn.keras.layer`.
+To define a model in Python, now one just need to import the package
+
+`bigdl.nn.keras.layer`.
 
 One of the highlighted features with regard to the new API is __shape inference__. Users only need to specify the input shape (a shape tuple __excluding__ batch dimension, for example, `input_shape=(3, 4)` for 3D input) for the first layer of a model and for the remaining layers, the input dimension will be automatically inferred.
 

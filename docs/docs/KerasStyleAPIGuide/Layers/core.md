@@ -15,13 +15,13 @@ Dense(output_dim, init="glorot_uniform", activation=None, W_regularizer=None, b_
 
 **Parameters:**
 
-* `outputDim`: The size of output dimension.
+* `outputDim`: The size of the output dimension.
 * `init`: String representation of the initialization method for the weights of the layer. Default is "glorot_uniform".
 * `activation`: String representation of the activation function to use. Default is null.
 * `wRegularizer`: An instance of [Regularizer](../../../APIGuide/Regularizers/), applied to the input weights matrices. Default is null.
 * `bRegularizer`: An instance of [Regularizer](../../../APIGuide/Regularizers/), applied to the bias. Default is null.
 * `bias`: Whether to include a bias (i.e. make the layer affine rather than linear). Default is true.
-* `inputShape`: Only need to specify this argument when you use this layer as the first layer of a model. For Scala API, it should be a `Shape` object. For Python API, it should be a shape tuple. Batch dimension should be excluded.
+* `inputShape`: Only need to specify this argument when you use this layer as the first layer of a model. For Scala API, it should be a [`Shape`](../keras-api-scala/#shape) object. For Python API, it should be a shape tuple. Batch dimension should be excluded.
 * `input_dim`: This parameter is for Python API only. Int, dimensionality of the input for 2D input. Default is None. For Scala API or nD input, you can alternatively specify `inputShape`. Only need to specify this argument when you use this layer as the first layer of a model.
 * `name`: This parameter is for Python API only. String to specify the name of the layer. Default is None. For Scala API, please use `setName(name)` instead.
 
