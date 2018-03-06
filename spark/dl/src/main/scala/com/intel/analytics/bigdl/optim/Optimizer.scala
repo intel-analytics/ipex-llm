@@ -48,7 +48,6 @@ abstract class Optimizer[T: ClassTag, D](
 {
   import Optimizer.{logger, checkSubModules}
   protected var state: Table = T()
-  // TODO: delete this one and change LocalOptimizer later
   protected var optimMethods: Map[String, OptimMethod[T]] = Map(model.getName -> new SGD())
   protected var endWhen: Trigger = Trigger.maxIteration(100)
 
@@ -247,18 +246,31 @@ abstract class Optimizer[T: ClassTag, D](
    * @param newModel new model
    */
   def setModel(newModel: Module[T]): this.type = {
-    // Print some warning if model changed.
-    if (newModel.getName != model.getName() && optimMethods.size == 1
-      && optimMethods.contains(model.getName())) {
-        logger.info(s"Instead the old optimMethods pair automatically")
-        optimMethods = Map(newModel.getName() -> optimMethods(model.getName()))
-    }
-
     // check if the old optimMethods works for this new model.
     try {
-      checkSubModules(model, optimMethods.keys.toSeq)
+      // Print some warning if model changed.
+      if (newModel.getName != model.getName() && optimMethods.size == 1
+        && optimMethods.contains(model.getName())) {
+        if (newModel(model.getName()).isEmpty) {
+          logger.info(s"Set a new model with a different name from the old one." +
+            s" Automatically associate the current optimMethod with the new model name.")
+          optimMethods = Map(newModel.getName() -> optimMethods(model.getName()))
+        } else {
+          logger.warn(s"Detect the old model is the new model's submodel, please" +
+            s" set a new optimMethods if you want to optimize the hole new model.")
+        }
+      }
     } catch {
-      case ie: IllegalArgumentException =>
+      case IllegalArgumentException =>
+        logger.warn(s"New model have an duplicated submodel name ${model.getName()}")
+    }
+
+    try {
+      logger.info(s"Starting to verify if optimMethods fit this new model...")
+      checkSubModules(newModel, optimMethods.keys.toSeq)
+      logger.info(s"${optimMethods.mkString} fits this new model...")
+    } catch {
+      case IllegalArgumentException =>
         logger.warn(s"Old model's optimMethods doesn't match the new model, " +
           s"please set optimMethods for this new model.")
     }

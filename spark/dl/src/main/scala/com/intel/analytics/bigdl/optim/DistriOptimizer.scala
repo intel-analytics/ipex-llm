@@ -548,13 +548,14 @@ object DistriOptimizer {
     cacheTrigger.foreach { trigger =>
       cachePath.foreach { path =>
         if (trigger(state)) {
+          saveModel(getModel(models, parameters, trainingModel), cachePath, isOverWrite,
+            s".${state[Int]("neval")}")
+          logger.info(s"[Wall Clock ${wallClockTime / 1e9}s] Save model to $path")
           optimMethods.foreach{case (name, optimMethod) =>
-            logger.info(s"[Wall Clock ${wallClockTime / 1e9}s] Save model to $path")
-            saveModel(getModel(models, parameters, trainingModel), cachePath, isOverWrite,
-              s".${state[Int]("neval")}")
             optimMethod.state.update("epoch", state[Int]("epoch"))
             optimMethod.state.update("neval", state[Int]("neval"))
             saveOptimMethod(optimMethod, cachePath, isOverWrite, s"-$name.${state[Int]("neval")}")
+            logger.info(s"[Wall Clock ${wallClockTime / 1e9}s] Save optimMethod ${optimMethod} to $path")
           }
         }
       }

@@ -70,6 +70,14 @@ object DistriOptimizerSpecModel {
       .add(Sigmoid())
   }
 
+  def mse2: Module[Double] = {
+    Sequential[Double]()
+      .add(Linear[Double](4, 8).setName("fc_1"))
+      .add(Sigmoid())
+      .add(Linear[Double](8, 1).setName("fc_2"))
+      .add(Sigmoid())
+  }
+
   def bn: Module[Double] = {
     Sequential[Double]
       .add(Linear(4, 2))
@@ -251,6 +259,28 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
     val result2 = model.forward(input2).asInstanceOf[Tensor[Double]]
     result2(Array(1)) should be(1.0 +- 1e-2)
+  }
+
+  "Train with MSE with two LBFGS after set a new Model" should "be good" in {
+    RandomGenerator.RNG.setSeed(10)
+    val optimizer = new DistriOptimizer[Double](
+      mse,
+      dataSet,
+      new MSECriterion[Double]())
+      .setOptimMethods(
+        Map("fc_1" -> new LBFGS(), "fc_2" -> new LBFGS()))
+    optimizer.optimize()
+
+    Array(mse, mse2).foreach { mse =>
+      optimizer.setModel(mse)
+      val model = optimizer.optimize()
+
+      val result1 = model.forward(input1).asInstanceOf[Tensor[Double]]
+      result1(Array(1)) should be(0.0 +- 1e-2)
+
+      val result2 = model.forward(input2).asInstanceOf[Tensor[Double]]
+      result2(Array(1)) should be(1.0 +- 1e-2)
+    }
   }
 
   "Train with MSE and SGD" should "be trained with good result" in {
