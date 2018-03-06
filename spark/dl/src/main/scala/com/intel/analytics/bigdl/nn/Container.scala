@@ -22,6 +22,7 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{T, Table}
 
+import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
@@ -213,5 +214,26 @@ abstract class Container[A <: Activity : ClassTag,
         None
       }
     }
+  }
+
+  /**
+   * Check if some module is duplicated in the model
+   */
+  private[bigdl] override final def checkDuplicate(
+    record: mutable.HashMap[Int, Boolean] = mutable.HashMap()
+  ): Unit = {
+    val errMsg = "Some module is duplicate in the current model: "
+    val curId = System.identityHashCode(this)
+    require(record.get(curId).isEmpty, errMsg + this.getName())
+    record(curId) = true
+    modules.foreach(m => {
+      if (m.isInstanceOf[Container[_, _, _]]) {
+        m.asInstanceOf[Container[_, _, _]].checkDuplicate(record)
+      } else {
+        val mId = System.identityHashCode(m)
+        require(record.get(mId).isEmpty, errMsg + m.getName())
+        record(mId) = true
+      }
+    })
   }
 }

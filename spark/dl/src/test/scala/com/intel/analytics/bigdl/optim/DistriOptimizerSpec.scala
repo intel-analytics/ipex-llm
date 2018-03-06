@@ -181,6 +181,23 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
     }
   }
 
+  it should "not train model with duplicate layers" in {
+    val m = Sequential[Double]()
+    val l1 = Identity[Double]()
+    val l2 = Identity[Double]()
+    val c = Sequential[Double]()
+    m.add(l1).add(c)
+    c.add(l1).add(l2)
+
+    intercept[IllegalArgumentException] {
+      val optimizer = new DistriOptimizer[Double](
+        m,
+        dataSet,
+        ClassNLLCriterion[Double]()
+      )
+    }
+  }
+
   "Train with MSE and LBFGS" should "be good" in {
     RandomGenerator.RNG.setSeed(10)
     val optimizer = new DistriOptimizer(

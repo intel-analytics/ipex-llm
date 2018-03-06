@@ -176,6 +176,23 @@ class LocalOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter{
     }
   }
 
+  "LocalOptimizer" should "not train model with duplicate layers" in {
+    val m = Sequential[Float]()
+    val l1 = Identity[Float]()
+    val l2 = Identity[Float]()
+    val c = Sequential[Float]()
+    m.add(l1).add(c)
+    c.add(l1).add(l2)
+
+    intercept[IllegalArgumentException] {
+      val optimizer = new LocalOptimizer(
+        m,
+        creDataSet,
+        ClassNLLCriterion[Float]()
+      )
+    }
+  }
+
   "Train model with CrossEntropy and SGD" should "be good" in {
     RandomGenerator.RNG.setSeed(1000)
     val optimizer = new LocalOptimizer[Float](
