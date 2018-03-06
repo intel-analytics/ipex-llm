@@ -37,27 +37,31 @@ Input(name = null, inputShape = null)
 Parameters:
 
 * `name`: String to specify the name of the input node. Default is null.
-* `shape`: A shape tuple indicating the shape of the input node, not including batch.
+* `shape`: A `Shape` object indicating the shape of the input node, not including batch.
 
 To create a graph container:
 ```scala
-Model(input, output, name=None)
+Model(input, output)
 ```
 Parameters:
 
-* `input`: An input node or a list of input nodes.
-* `output`: An output node or a list of output nodes.
-* `name`: String to specify the name of the graph model. Default is None.
+* `input`: An input node or an array of input nodes.
+* `output`: An output node or an array of output nodes.
 
 
 Example code to create a graph model:
 ```scala
-from bigdl.nn.keras.layer import Model, Input, Dense, merge
+import com.intel.analytics.bigdl.nn.keras.{Input, Dense, Model}
+import com.intel.analytics.bigdl.utils.Shape
 
-input1 = Input(shape=(8, )) 
-input2 = Input(shape=(6, ))
-dense1 = Dense(10)(input1)
-dense2 = Dense(10)(input2)
-output = merge([dense1, dense2], mode="sum")
-model = Model([input1, input2], output)
+val input = Input[Float](inputShape = Shape(128))
+val dense = Dense[Float](32, activation = "relu").inputs(input)
+val output = Dense[Float](10).inputs(dense)
+val model = Model[Float](input, output)
 ```
+
+
+---
+## **Layers**
+See [here](Layers/core.md) for all the available layers for the new set of Keras-Style API.
+
