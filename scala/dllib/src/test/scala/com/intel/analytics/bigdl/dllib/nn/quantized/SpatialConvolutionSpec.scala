@@ -20,7 +20,10 @@ import com.intel.analytics.bigdl.nn.abstractnn.DataFormat
 import com.intel.analytics.bigdl.nn.{Reshape, SpatialConvolution => NNSpatialConvolution}
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers, ParallelTestExecution}
+
+import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Parallel
 class SpatialConvolutionSpec extends FlatSpec with Matchers with ParallelTestExecution {
@@ -156,4 +159,13 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers with ParallelTestExe
   case class TestCase(batchSize: Int, inputChannel: Int, inputHeight: Int, inputWidth: Int,
     group: Int, outputChannel: Int, kernelHeight: Int, kernelWidth: Int,
     strideHeight: Int, strideWidth: Int, padHeight: Int, padWidth: Int)
+}
+
+class SpatialConvolutionSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val spatialConvolution = NNSpatialConvolution[Float](3, 4, 2, 2).
+      setName("spatialConvolution")
+    val input = Tensor[Float](1, 3, 5, 5).apply1( e => Random.nextFloat())
+    runSerializationTest(spatialConvolution, input)
+  }
 }

@@ -15,9 +15,13 @@
  */
 package com.intel.analytics.bigdl.nn.tf
 
+import com.intel.analytics.bigdl.nn.ops.ModuleToOperation
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
+
+import scala.util.Random
 
 class MaxPoolSpec extends FlatSpec with Matchers {
   "MaxPool operation VALID padding" should "works correctly" in {
@@ -113,5 +117,17 @@ class MaxPoolSpec extends FlatSpec with Matchers {
     ).forward(input)
 
     output should equal(expectOutput)
+  }
+}
+
+class MaxPoolSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val maxPool = MaxPool[Float](
+      Array(1, 2, 3, 1),
+      Array(1, 2, 1, 1),
+      "VALID").setName("maxPool")
+    val input = Tensor[Float](1, 4, 3, 3).apply1(_ => Random.nextFloat())
+    runSerializationTest(maxPool, input, maxPool.
+      asInstanceOf[ModuleToOperation[Float]].module.getClass)
   }
 }

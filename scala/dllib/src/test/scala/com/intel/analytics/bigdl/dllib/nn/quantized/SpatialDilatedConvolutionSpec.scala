@@ -19,6 +19,9 @@ package com.intel.analytics.bigdl.nn.quantized
 import com.intel.analytics.bigdl.tensor.Tensor
 import org.scalatest.{FlatSpec, Matchers}
 import com.intel.analytics.bigdl.nn
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
+
+import scala.util.Random
 
 class SpatialDilatedConvolutionSpec extends FlatSpec with Matchers {
   "A SpatialDilatedConvolution" should "work correctly" in {
@@ -52,4 +55,13 @@ class SpatialDilatedConvolutionSpec extends FlatSpec with Matchers {
     group: Int, outputChannel: Int, kernelHeight: Int, kernelWidth: Int,
     strideHeight: Int, strideWidth: Int, padHeight: Int, padWidth: Int, dilatedW: Int,
     dilatedH: Int)
+}
+
+class SpatialDilatedConvolutionSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val spatialDilatedConvolution = nn.SpatialDilatedConvolution[Float](1, 1,
+      2, 2, 1, 1, 0, 0).setName("spatialDilatedConvolution")
+    val input = Tensor[Float](1, 3, 3).apply1( e => Random.nextFloat())
+    runSerializationTest(spatialDilatedConvolution, input)
+  }
 }

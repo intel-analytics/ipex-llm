@@ -15,9 +15,13 @@
  */
 package com.intel.analytics.bigdl.nn.tf
 
+import com.intel.analytics.bigdl.nn.abstractnn.DataFormat
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
+
+import scala.util.Random
 
 class BiasAddSpec extends FlatSpec with Matchers {
   "BiasAdd operation" should "works correctly" in {
@@ -70,5 +74,14 @@ class BiasAddSpec extends FlatSpec with Matchers {
     output should be(expectOutput)
     gradInput[Tensor[Float]](1) should be(expectedGradValue)
     gradInput[Tensor[Float]](2) should be(expectedGradBias)
+  }
+}
+
+class BiasAddSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val biasAddGrad = BiasAddGrad[Float](DataFormat.NCHW).
+      setName("biasAddGrad")
+    val input = Tensor[Float](2, 2, 2).apply1(_ => Random.nextFloat())
+    runSerializationTest(biasAddGrad, input)
   }
 }
