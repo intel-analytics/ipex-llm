@@ -18,6 +18,9 @@ package com.intel.analytics.bigdl.nn
 import org.scalatest.{FlatSpec, Matchers}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
+
+import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Parallel
 class ParallelTableSpec extends FlatSpec with Matchers {
@@ -128,4 +131,16 @@ class ParallelTableSpec extends FlatSpec with Matchers {
     }
   }
 
+}
+
+class ParallelTableSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val parallelTable = ParallelTable[Float]().setName("parallelTable")
+    parallelTable.add(Linear[Float](2, 2))
+    parallelTable.add(Linear[Float](2, 2))
+    val input1 = Tensor[Float](2, 2).apply1(e => Random.nextFloat())
+    val input2 = Tensor[Float](2, 2).apply1(e => Random.nextFloat())
+    val input = T(1.0f -> input1, 2.0f -> input2)
+    runSerializationTest(parallelTable, input)
+  }
 }
