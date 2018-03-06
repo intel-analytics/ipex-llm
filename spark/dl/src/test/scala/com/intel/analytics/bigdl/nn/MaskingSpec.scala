@@ -52,13 +52,13 @@ class MaskingSpec extends KerasBaseSpec {
 
     val sigmoidCode =
       s"""
-         |input_tensor = Input(shape=[${times}, ${inputSize}])
-         |input = np.array([1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, ${mask_value}, 1, 2,
-         |        2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 1, 1, 2, 2, 3, 3,
-         |        ${mask_value}, ${mask_value}, 5,
-         |        5, 6, 6, 7, 7]).reshape(${batchSize}, ${times}, ${inputSize})
-         |output_tensor = Masking(${mask_value})(input_tensor)
-         |model = Model(input=input_tensor, output=output_tensor)
+        |input_tensor = Input(shape=[${times}, ${inputSize}])
+        |input = np.array([1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, ${mask_value}, 1, 2,
+        |        2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 1, 1, 2, 2, 3, 3,
+        |        ${mask_value}, ${mask_value}, 5,
+        |        5, 6, 6, 7, 7]).reshape(${batchSize}, ${times}, ${inputSize})
+        |output_tensor = Masking(${mask_value})(input_tensor)
+        |model = Model(input=input_tensor, output=output_tensor)
       """.stripMargin
 
     val masking = Masking[Float](mask_value)

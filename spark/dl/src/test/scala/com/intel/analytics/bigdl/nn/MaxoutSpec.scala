@@ -33,11 +33,11 @@ class MaxoutSpec extends KerasBaseSpec {
 
     val kerasCode =
       s"""
-         |input_tensor = Input(shape=[${inputSize}])
-         |input = np.random.uniform(0, 1, [${batchSize}, ${inputSize}])
-         |output_tensor = MaxoutDense(output_dim=${outputSize}, input_dim=${inputSize},
-         |nb_feature=${maxoutNumber})(input_tensor)
-         |model = Model(input=input_tensor, output=output_tensor)
+        |input_tensor = Input(shape=[${inputSize}])
+        |input = np.random.uniform(0, 1, [${batchSize}, ${inputSize}])
+        |output_tensor = MaxoutDense(output_dim=${outputSize}, input_dim=${inputSize},
+        |nb_feature=${maxoutNumber})(input_tensor)
+        |model = Model(input=input_tensor, output=output_tensor)
       """.stripMargin
 
     val maxout = Maxout[Float](inputSize, outputSize, maxoutNumber)
@@ -69,23 +69,23 @@ class MaxoutSpec extends KerasBaseSpec {
 
     val kerasCode =
       s"""
-         |#w1 = np.array([[[1.0, 2.0, 3.0, 4.0],
-         |#               [5, 6, 7, 8.0]],
-         |#              [[-1, -2, -3, -4],
-         |#               [-5, -6, -7, -8]],
-         |#              [[9, 10, 11, 12],
-         |#               [-9, -10, -11, -12]]])
-         |#b = np.array([[ 0.0,  0.0,  0.0,  0.0],
-         |#       [ 0.0,  0.0,  0.0,  0.0],
-         |#       [ 0.0,  0.0,  0.0,  0.0]])
-         |# w = [w1, b]
-         |
+        |#w1 = np.array([[[1.0, 2.0, 3.0, 4.0],
+        |#               [5, 6, 7, 8.0]],
+        |#              [[-1, -2, -3, -4],
+        |#               [-5, -6, -7, -8]],
+        |#              [[9, 10, 11, 12],
+        |#               [-9, -10, -11, -12]]])
+        |#b = np.array([[ 0.0,  0.0,  0.0,  0.0],
+        |#       [ 0.0,  0.0,  0.0,  0.0],
+        |#       [ 0.0,  0.0,  0.0,  0.0]])
+        |# w = [w1, b]
+        |
         |input_tensor = Input(shape=[${inputSize}])
-         |input = np.random.uniform(0, 1, [${batchSize}, ${inputSize}])
-         |#output_tensor=MaxoutDense(output_dim=4,input_dim=2,nb_feature=3,weights=w)(input_tensor)
-         |output_tensor = MaxoutDense(output_dim=${outputSize}, input_dim=${inputSize},
-         |nb_feature=${maxoutNumber})(input_tensor)
-         |model = Model(input=input_tensor, output=output_tensor)
+        |input = np.random.uniform(0, 1, [${batchSize}, ${inputSize}])
+        |#output_tensor=MaxoutDense(output_dim=4,input_dim=2,nb_feature=3,weights=w)(input_tensor)
+        |output_tensor = MaxoutDense(output_dim=${outputSize}, input_dim=${inputSize},
+        |nb_feature=${maxoutNumber})(input_tensor)
+        |model = Model(input=input_tensor, output=output_tensor)
       """.stripMargin
 
     val maxout = Maxout[Float](inputSize, outputSize, maxoutNumber)
