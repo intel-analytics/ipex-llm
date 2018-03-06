@@ -17,6 +17,7 @@ package com.intel.analytics.bigdl.tensor
 
 import org.scalatest.{FlatSpec, Matchers}
 import com.intel.analytics.bigdl.numeric.NumericFloat
+import com.intel.analytics.bigdl.utils.RandomGenerator
 
 import scala.util.Random
 
@@ -126,7 +127,9 @@ class SparseTensorSpec  extends FlatSpec with Matchers {
   }
 
   "SparseTensor dot DenseTense" should "return right result" in {
-    val values = Array.fill(30)(Random.nextFloat())
+    val rng = RandomGenerator.RNG
+    rng.setSeed(10)
+    val values = Array.fill(30)(rng.normal(1.0, 1.0).toFloat)
     val sTensor = Tensor.sparse(Tensor(values, Array(6, 5)))
 
     val dTensor = Tensor(Array(6, 5)).rand()
