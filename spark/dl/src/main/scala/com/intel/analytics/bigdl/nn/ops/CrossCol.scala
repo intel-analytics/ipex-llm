@@ -42,7 +42,7 @@ import scala.util.hashing.MurmurHash3
  *  "A,D", "B", "A,C"
  *  "1", "2", "3,4"
  *
- *  the output tensor should be an 2D 3 x hashBucketSize SparseTensor:
+ *  the output tensor should be an 2D 3 x maxLength SparseTensor:
  *  [0, 0]: Hash32("1", Hash32("D")) % hashBucketSize
  *  [0, 1]: Hash32("1", Hash32("A")) % hashBucketSize
  *  [1, 0]: Hash32("2", Hash32("B")) % hashBucketSize
@@ -63,8 +63,6 @@ class CrossCol[T: ClassTag](
   extends Operation[Table, Tensor[Int], T]{
 
   output = Tensor[Int]()
-
-
 
   override def updateOutput(input: Table): Tensor[Int] = {
 
