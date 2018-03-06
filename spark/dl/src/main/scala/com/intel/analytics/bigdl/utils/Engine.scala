@@ -105,6 +105,8 @@ object Engine {
       logger.info(s"Executor number is $nExecutor and executor cores number is $executorCores")
       setNodeAndCore(nExecutor, executorCores)
       checkSparkContext
+      // set AliyunOSS configurations if exists
+      setAliyunOSSConfig()
     }
   }
 
@@ -523,6 +525,25 @@ object Engine {
       Some(nodeNum, core)
     } else {
       throw new IllegalArgumentException(s"Engine.init: Unsupported master format $master")
+    }
+  }
+
+  /**
+   * Fetch AliyunOSS conf from sparkConf, if exists, put them into system.properties.
+   */
+  private def setAliyunOSSConfig(): Unit = {
+    val sparkConf = SparkContext.getOrCreate().getConf
+    sparkConf.getOption("spark.hadoop.fs.oss.accessKeyId") match {
+      case Some(value) =>
+        System.setProperty("fs.oss.accessKeyId", value)
+    }
+    sparkConf.getOption("spark.hadoop.fs.oss.accessKeySecret") match {
+      case Some(value) =>
+        System.setProperty("fs.oss.accessKeySecret", value)
+    }
+    sparkConf.getOption("spark.hadoop.fs.oss.endpoint") match {
+      case Some(value) =>
+        System.setProperty("fs.oss.endpoint", value)
     }
   }
 }

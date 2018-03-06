@@ -23,9 +23,12 @@ import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FSDataInputStream, FSDataOutputStream, FileSystem, Path}
 import org.apache.hadoop.io.IOUtils
 
+import scala.util.Try
+
 object File {
   private[bigdl] val hdfsPrefix: String = "hdfs:"
   private[bigdl] val s3aPrefix: String = "s3a:"
+  private[bigdl] val ossPrefix: String = "oss:"
 
   /**
    * Load torch object from a torch binary file
@@ -54,12 +57,27 @@ object File {
   }
 
   /**
-   * Save scala object into a local/hdfs/s3 path
+   * Save scala object into a local/hdfs/s3/AliyunOSS path
    *
-   * Notice: S3 path should be like s3a://bucket/xxx.
+   * Notice: {{{
+   * S3 path should be like s3a://bucket/xxx.
    *
-   * See (hadoop aws)[http://hadoop.apache.org/docs/r2.7.3/hadoop-aws/tools/hadoop-aws/index.html]
-   * for details, if you want to save model to s3.
+   *  See (hadoop aws)[http://hadoop.apache.org/docs/r2.7.3/hadoop-aws/tools/hadoop-aws/index.html]
+   *  for details, if you want to save model to s3.
+   *
+   * AliyunOSS path should be like oss://bucket/xxx.
+   *
+   *   If you want to save model to AliyunOSS, please set
+   *     fs.oss.accessKeyId,
+   *     fs.oss.accessKeySecret,
+   *     fs.oss.endpoint
+   *   into System.properity. Otherwise, append below configs to sparkConf:
+   *     spark.hadoop.fs.oss.accessKeyId,
+   *     spark.hadoop.fs.oss.accessKeySecret,
+   *     spark.hadoop.fs.oss.endpoint.
+   *
+   *   And add maven dependency: hadoop-aliyun:3.0.0-alpha2(aliyun-sdk-oss:2.2.1).
+   * }}}
    *
    * @param obj object to be saved.
    * @param fileName local/hdfs output path.
@@ -106,6 +124,21 @@ object File {
   private[bigdl] def getConfiguration(fileName: String): Configuration = {
     if (fileName.startsWith(File.hdfsPrefix) || fileName.startsWith(s3aPrefix)) {
       new Configuration()
+    } else if (fileName.startsWith(File.ossPrefix)) {
+      val accessKeyId = Try(System.getProperty("fs.oss.accessKeyId")).getOrElse(null)
+      require(accessKeyId != null, "Could not found accessKeyId in System.properties!")
+      val accessKeySecret = Try(System.getProperty("fs.oss.accessKeySecret")).getOrElse(null)
+      require(accessKeySecret != null, "Could not found accessKeySecret in System.properties!")
+      val endpoint = Try(System.getProperty("fs.oss.endpoint")).getOrElse(null)
+      require(endpoint != null, "Could not found endpoint in System.properties!")
+
+      val hadoopConf = new Configuration()
+      hadoopConf.set("fs.oss.connection.secure.enabled", "false")
+      hadoopConf.set("fs.oss.impl", "org.apache.hadoop.fs.aliyun.oss.AliyunOSSFileSystem")
+      hadoopConf.set("fs.oss.accessKeyId", accessKeyId)
+      hadoopConf.set("fs.oss.accessKeySecret", accessKeySecret)
+      hadoopConf.set("fs.oss.endpoint", endpoint)
+      hadoopConf
     } else {
       new Configuration(false)
     }
@@ -164,12 +197,27 @@ object File {
   }
 
   /**
-   * Load a scala object from a local/hdfs/s3 path.
+   * Load a scala object from a local/hdfs/s3/AliyunOSS path.
    *
-   * Notice: S3 path should be like s3a://bucket/xxx.
+   * Notice: {{{
+   * S3 path should be like s3a://bucket/xxx.
    *
-   * See (hadoop aws)[http://hadoop.apache.org/docs/r2.7.3/hadoop-aws/tools/hadoop-aws/index.html]
-   * for details, if you want to load model from s3.
+   *   See (hadoop aws)[http://hadoop.apache.org/docs/r2.7.3/hadoop-aws/tools/hadoop-aws/index.html]
+   *   for details, if you want to load model from s3.
+   *
+   * AliyunOSS path should be like oss://bucket/xxx.
+   *
+   *   If you want to load model from AliyunOSS, please set
+   *     fs.oss.accessKeyId,
+   *     fs.oss.accessKeySecret,
+   *     fs.oss.endpoint
+   *   into System.properity. Otherwise, append below configs to sparkConf:
+   *     spark.hadoop.fs.oss.accessKeyId,
+   *     spark.hadoop.fs.oss.accessKeySecret,
+   *     spark.hadoop.fs.oss.endpoint.
+   *
+   *   And add maven dependency: hadoop-aliyun:3.0.0-alpha2(aliyun-sdk-oss:2.2.1).
+   * }}}
    *
    * @param fileName file name.
    */
