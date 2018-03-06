@@ -176,9 +176,9 @@ class LocalOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter{
     }
   }
 
-  "LocalOptimizer" should "not train model with duplicate layers" in {
+  it should "not train model with duplicate layers" in {
     val m = Sequential[Float]()
-    val l1 = Identity[Float]()
+    val l1 = Linear[Float](2, 3)
     val l2 = Identity[Float]()
     val c = Sequential[Float]()
     m.add(l1).add(c)
@@ -190,6 +190,24 @@ class LocalOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter{
         creDataSet,
         ClassNLLCriterion[Float]()
       )
+    }
+  }
+
+  it should "not set model with duplicate layers" in {
+    val m = Sequential[Float]()
+    val l1 = Linear[Float](2, 3)
+    val l2 = Identity[Float]()
+    val c = Sequential[Float]()
+    m.add(l1).add(c)
+    c.add(l1).add(l2)
+
+    val optimizer = new LocalOptimizer(
+      c,
+      creDataSet,
+      ClassNLLCriterion[Float]()
+    )
+    intercept[IllegalArgumentException] {
+      optimizer.setModel(m)
     }
   }
 
