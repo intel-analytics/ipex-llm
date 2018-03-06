@@ -15,29 +15,17 @@
  */
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.nn.ops.Ceil
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
-import org.scalatest.{FlatSpec, Matchers}
 
 import scala.util.Random
 
-class SequentialSpec extends FlatSpec with Matchers {
-  "A Sequential Container " should "not contain operation" in {
-    val model = Sequential[Double]()
-    model.add(Linear(10, 100))  // this should work
-    intercept[IllegalArgumentException] {
-      model.add(Ceil[Double, Double]()) // this is not allowed
-    }
-  }
-}
 
-class SequentialSerialTest extends ModuleSerializationTest {
+class SpatialZeroPaddingSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
-    val sequential = Sequential[Float]().setName("sequential")
-    val linear = Linear[Float](10, 2)
-    sequential.add(linear)
-    val input = Tensor[Float](10).apply1(_ => Random.nextFloat())
-    runSerializationTest(sequential, input)
+    val spatialZeroPadding = SpatialZeroPadding[Float](1, 0, -1, 0).
+      setName("spatialZeroPadding")
+    val input = Tensor[Float](3, 3, 3).apply1(_ => Random.nextFloat())
+    runSerializationTest(spatialZeroPadding, input)
   }
 }

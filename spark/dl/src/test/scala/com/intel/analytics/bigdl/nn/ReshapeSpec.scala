@@ -19,6 +19,9 @@ package com.intel.analytics.bigdl.nn
 import org.scalatest.FlatSpec
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.LayerException
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
+
+import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Parallel
 class ReshapeSpec extends FlatSpec {
@@ -132,5 +135,13 @@ class ReshapeSpec extends FlatSpec {
     intercept[LayerException] {
       module.forward(Tensor[Double](3, 2))
     }
+  }
+}
+
+class ReshapeSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val reshape = Reshape[Float](Array(1, 4, 5)).setName("reshape")
+    val input = Tensor[Float](2, 2, 5).apply1( _ => Random.nextFloat())
+    runSerializationTest(reshape, input)
   }
 }
