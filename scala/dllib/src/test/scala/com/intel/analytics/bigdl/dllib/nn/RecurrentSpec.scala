@@ -19,11 +19,13 @@ package com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.optim.SGD
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import com.intel.analytics.bigdl.utils.{Engine, T, Table}
 import org.scalatest.{FlatSpec, Matchers}
 
 import scala.collection.mutable.ArrayBuffer
 import scala.math._
+import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Serial
 class RecurrentSpec extends FlatSpec with Matchers {
@@ -702,4 +704,13 @@ class RecurrentSpec extends FlatSpec with Matchers {
     model.forward(input)
   }
 
+}
+
+class RecurrentSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val recurrent = Recurrent[Float]().setName("recurrent")
+      .add(RnnCell[Float](5, 4, Tanh[Float]()))
+    val input = Tensor[Float](Array(10, 5, 5)).apply1(_ => Random.nextFloat())
+    runSerializationTest(recurrent, input)
+  }
 }
