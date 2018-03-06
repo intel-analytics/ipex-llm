@@ -22,6 +22,7 @@ import java.nio.{ByteBuffer, ByteOrder}
 
 import com.google.protobuf.ByteString
 import com.intel.analytics.bigdl.tensor.{FloatType, Tensor}
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import org.tensorflow.example.Example
 import org.tensorflow.framework.DataType
 import com.intel.analytics.bigdl.utils.tf.TFTensorNumeric.NumericByteString
@@ -122,4 +123,34 @@ class DecodeImageSpec extends FlatSpec with Matchers {
     Tensor[ByteString](Array(imageByteString), Array[Int]())
   }
 
+}
+
+class DecodeImageSerialTest extends ModuleSerializationTest {
+  private def getInputs(name: String): Tensor[ByteString] = {
+    val index = name match {
+      case "png" => 0
+      case "jpeg" => 1
+      case "gif" => 2
+      case "raw" => 3
+    }
+
+    val resource = getClass.getClassLoader.getResource("tf")
+    val path = resource.getPath + JFile.separator + "decode_image_test_case.tfrecord"
+    val file = new JFile(path)
+
+    val bytesVector = TFRecordIterator(file).toVector
+    val pngBytes = bytesVector(index)
+
+    val example = Example.parseFrom(pngBytes)
+    val imageByteString = example.getFeatures.getFeatureMap.get("image/encoded")
+      .getBytesList.getValueList.get(0)
+
+    Tensor[ByteString](Array(imageByteString), Array[Int]())
+  }
+
+  override def test(): Unit = {
+    val decodeImage = new DecodeImage[Float](1).setName("decodeImage")
+    val input = getInputs("png")
+    runSerializationTest(decodeImage, input)
+  }
 }

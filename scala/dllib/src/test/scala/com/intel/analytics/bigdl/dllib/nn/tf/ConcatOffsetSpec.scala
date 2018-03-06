@@ -13,37 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.intel.analytics.bigdl.nn.tf
 
-import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
 import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
-import org.scalatest.{FlatSpec, Matchers}
 
 import scala.util.Random
 
-class ConstSpec extends FlatSpec with Matchers {
-  "Const forward tensor" should "be correct" in {
-    val value = Tensor(2, 3).rand()
-    val layer = Const(value)
-    val input = Tensor(4, 5).rand()
-    layer.forward(input) should be(value)
-  }
-
-  "Const forward tensors" should "be correct" in {
-    val value = Tensor(2, 3).rand()
-    val layer = Const(value)
-    val input = T(Tensor(4, 5).rand(), Tensor(3, 4).rand())
-    layer.forward(input) should be(value)
-  }
-}
-
-class ConstSerialTest extends ModuleSerializationTest {
+class ConcatOffsetSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
-    val value = Tensor[Float](3).apply1(_ => Random.nextFloat())
-    val const = Const[Float, Float](value).setName("const")
-    val input = Tensor[Float](3).apply1(_ => Random.nextFloat())
-    runSerializationTest(const, input)
+    val module = new com.intel.analytics.bigdl.nn.tf.ConcatOffset[Float]()
+    runSerializationTest(module, T(Tensor.scalar[Int](1), Tensor[Int](T(2, 2, 5, 7)),
+      Tensor[Int](T(2, 3, 5, 7)), Tensor[Int](T(2, 4, 5, 7))))
   }
 }
