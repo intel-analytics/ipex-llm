@@ -652,7 +652,7 @@ object Recurrent extends ContainerSerializable {
    * @param src
    * @param dst
    */
-  private[bigdl] def copy[@specialized(Float, Double) T: ClassTag](
+  private[bigdl] def copy[T: ClassTag](
     src: ArrayBuffer[Tensor[T]], dst: Tensor[T]): Unit = {
     val timeSize = dst.size(timeDim)
     var t = 1
@@ -668,7 +668,7 @@ object Recurrent extends ContainerSerializable {
    * @param srcIndex the index of 2-th dimension from src
    * @param dst
    */
-  private[bigdl] def selectCopy[@specialized(Float, Double) T: ClassTag](
+  private[bigdl] def selectCopy[T: ClassTag](
     src: Tensor[T], srcIndex: Int, dst: Tensor[T]): Tensor[T] = {
     if (src.isContiguous() && dst.isContiguous()) {
       if ((dst.nElement() == 0) || (dst.nElement() != (src.nElement() / src.size(2)))) {
@@ -707,7 +707,7 @@ object Recurrent extends ContainerSerializable {
    * @param dst
    * @param dstIndex the index of 2-th dimension from dst
    */
-  private[bigdl] def copyToIndex[@specialized(Float, Double) T: ClassTag](
+  private[bigdl] def copyToIndex[T: ClassTag](
     src: Tensor[T], dst: Tensor[T], dstIndex: Int): Tensor[T] = {
     if (src.isContiguous() && dst.isContiguous()) {
       val batchSize = dst.size(batchDim)

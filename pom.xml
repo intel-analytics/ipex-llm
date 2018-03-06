@@ -448,7 +448,8 @@
                     <useZincServer>true</useZincServer>
                     <args>
                         <arg>-unchecked</arg>
-                        <arg>-deprecation</arg>
+                        <!-- Too many deprecation usage, let's suspend it temporary-->
+                        <!-- arg>-deprecation</arg-->
                         <arg>-feature</arg>
                         <arg>-Xfatal-warnings</arg>
                     </args>

@@ -39,6 +39,7 @@ object TensorConverter extends DataConverter {
         tensor.storage == null
       case QuantizedType =>
         tensor.asInstanceOf[QuantizedTensor[_]].getStorage == null
+      case t => throw new NotImplementedError(s"$t is not supported")
     }
     emptyTensor
   }
@@ -279,6 +280,7 @@ object TensorConverter extends DataConverter {
             tensorBuilder.setTensorType(TensorType.DENSE)
           case QuantizedType =>
             tensorBuilder.setTensorType(TensorType.QUANT)
+          case t => throw new NotImplementedError(s"$t is not supported")
         }
 
         val tensorEmpty = isEmptyTensor(tensor)

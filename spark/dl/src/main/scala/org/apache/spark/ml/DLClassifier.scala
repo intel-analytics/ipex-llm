@@ -36,7 +36,7 @@ import scala.reflect.ClassTag
  */
 @deprecated("`DLClassifier` has been migrated to package `com.intel.analytics.bigdl.dlframes`." +
   "This will be removed in BigDL 0.6.", "0.5.0")
-class DLClassifier[@specialized(Float, Double) T: ClassTag](
+class DLClassifier[T: ClassTag](
     @transient override val model: Module[T],
     override val criterion : Criterion[T],
     override val featureSize : Array[Int],
@@ -69,7 +69,7 @@ class DLClassifier[@specialized(Float, Double) T: ClassTag](
  */
 @deprecated("`DLClassifierModel` is migrated to package `com.intel.analytics.bigdl.dlframes`." +
   "This will be removed in BigDL 0.6.", "0.5.0")
-class DLClassifierModel[@specialized(Float, Double) T: ClassTag](
+class DLClassifierModel[T: ClassTag](
     @transient override val model: Module[T],
     featureSize : Array[Int],
     override val uid: String = "DLClassifierModel"
