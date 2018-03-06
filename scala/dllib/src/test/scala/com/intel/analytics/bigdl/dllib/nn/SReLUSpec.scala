@@ -18,6 +18,9 @@ package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.keras.KerasBaseSpec
 import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
+
+import scala.util.Random
 
 class SReLUSpec extends KerasBaseSpec {
   "SReLU without share axes" should "same as keras" in {
@@ -78,5 +81,13 @@ class SReLUSpec extends KerasBaseSpec {
     val weight = Tensor[Float](shape).fill(1)
 
     srelu.weights.foreach(x => x should be (weight))
+  }
+}
+
+class SReLUSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val srelu = SReLU[Float](shape = Array(4)).setName("srelu")
+    val input = Tensor[Float](3, 4).apply1( e => Random.nextFloat())
+    runSerializationTest(srelu, input)
   }
 }

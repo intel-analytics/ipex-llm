@@ -20,6 +20,7 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import org.scalatest.{FlatSpec, Matchers}
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import com.intel.analytics.bigdl.utils.Table
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 
 import scala.util.Random
 
@@ -57,5 +58,14 @@ class SpatialConvolutionMapSpec extends FlatSpec with Matchers {
 
     layer2.gradWeight should be (layer1.gradWeight.mul(2))
     layer2.gradBias should be (layer1.gradBias.mul(0.5))
+  }
+}
+
+class SpatialConvolutionMapSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val spatialConvolutionMap = SpatialConvolutionMap[Float](
+      SpatialConvolutionMap.random(1, 1, 1), 2, 2).setName("spatialConvolutionMap")
+    val input = Tensor[Float](1, 3, 3).apply1( e => Random.nextFloat())
+    runSerializationTest(spatialConvolutionMap, input)
   }
 }
