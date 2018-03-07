@@ -125,7 +125,7 @@ object Transpose extends ModuleSerializable {
     while (i < size) {
       val nextPermutationBuilder = AttrValue.newBuilder
       val arr : Array[Int] = Array(transpose.permutations(i)._1,
-        transpose.permutations(i)_2)
+        transpose.permutations(i)._2)
       DataConverter.setAttributeValue(context, nextPermutationBuilder,
         arr, universe.typeOf[Array[Int]])
       transposeBuilder.putAttr(s"permutation_$i", nextPermutationBuilder.build)

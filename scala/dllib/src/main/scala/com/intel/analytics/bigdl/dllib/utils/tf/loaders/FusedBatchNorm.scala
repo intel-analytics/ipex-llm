@@ -19,7 +19,7 @@ import java.nio.ByteOrder
 
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.nn.abstractnn.DataFormat
-import com.intel.analytics.bigdl.nn.tf.FusedBatchNorm
+import com.intel.analytics.bigdl.nn.tf.{FusedBatchNorm => FusedBatchNormOps}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.tf.Context
 import org.tensorflow.framework.{DataType, NodeDef}
@@ -38,9 +38,9 @@ class FusedBatchNorm extends TensorflowOpsLoader {
     val dataFormat = getString(nodeDef.getAttrMap, "data_format")
     val isTrain = getBoolean(nodeDef.getAttrMap, "is_training")
     if (dataFormat == "NHWC") {
-      FusedBatchNorm[T](eps, isTrain, dataFormat = DataFormat.NHWC)
+      FusedBatchNormOps[T](eps, isTrain, dataFormat = DataFormat.NHWC)
     } else {
-      FusedBatchNorm[T](eps, isTrain, dataFormat = DataFormat.NCHW)
+      FusedBatchNormOps[T](eps, isTrain, dataFormat = DataFormat.NCHW)
     }
   }
 }

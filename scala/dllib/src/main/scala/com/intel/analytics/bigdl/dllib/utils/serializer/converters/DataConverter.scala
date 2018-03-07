@@ -83,7 +83,7 @@ object DataConverter extends DataConverter{
     : universe.Type = {
     if (value.isInstanceOf[Tensor[_]]) {
       ModuleSerializer.tensorType
-    } else if (value.isInstanceOf[AbstractModule[_, _, T]]) {
+    } else if (value.isInstanceOf[AbstractModule[_, _, _]]) {
       ModuleSerializer.abstractModuleType
     } else if (value.isInstanceOf[Regularizer[_]]) {
       ModuleSerializer.regularizerType
@@ -180,10 +180,10 @@ object DataConverter extends DataConverter{
       || valueType <:< universe.typeOf[AbstractModule[_, _, _]]
       ) {
       ModuleConverter.setAttributeValue(context, attributeBuilder, value)
-    } else if (value.isInstanceOf[mutable.Map[String, _ <: Any]]) {
+    } else if (value.isInstanceOf[mutable.Map[_, _]]) {
       NameListConverter.setAttributeValue(context, attributeBuilder, value)
     } else if (valueType <:< universe.typeOf[Array[_]] ||
-      valueType.typeSymbol == universe.typeOf[Array[_ ]].typeSymbol) {
+      valueType.typeSymbol == universe.typeOf[Array[_]].typeSymbol) {
       ArrayConverter.setAttributeValue(context, attributeBuilder, value, valueType)
     } else if (valueType =:= universe.typeOf[DataFormat]) {
       DataFormatConverter.setAttributeValue(context, attributeBuilder, value)
@@ -500,7 +500,7 @@ object DataConverter extends DataConverter{
           })
           arrayBuilder.setSize(modules.size)
         }
-      } else if (value.isInstanceOf[Array[Map[String, Any]]]) {
+      } else if (value.isInstanceOf[Array[Map[_, _]]]) {
         arrayBuilder.setDatatype(DataType.NAME_ATTR_LIST)
         value.asInstanceOf[Array[Map[String, Any]]].foreach(map => {
           val attrValueBuilder = AttrValue.newBuilder

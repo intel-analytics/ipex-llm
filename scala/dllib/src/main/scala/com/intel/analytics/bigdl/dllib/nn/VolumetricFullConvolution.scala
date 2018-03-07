@@ -570,6 +570,7 @@ class VolumetricFullConvolution[T: ClassTag](
         1, 1, 1,
         columns.asInstanceOf[Tensor[Float]]
       )
+      case t => throw new NotImplementedError(s"$t is not supported")
     }
 
     // M,N,K are dims of matrix A and B

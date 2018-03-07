@@ -19,8 +19,7 @@ import java.nio.ByteOrder
 
 import com.google.protobuf.ByteString
 import com.intel.analytics.bigdl.Module
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
-import com.intel.analytics.bigdl.nn.tf.Const
+import com.intel.analytics.bigdl.nn.tf.{Const => ConstOps}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.{NumericBoolean, NumericChar, NumericDouble, NumericFloat, NumericInt, NumericLong, NumericShort, NumericString}
@@ -35,15 +34,15 @@ class Const extends TensorflowOpsLoader {
     context: Context[T])(implicit ev: TensorNumeric[T]): Module[T] = {
     val value = TFUtils.parseTensor(nodeDef.getAttrMap.get("value").getTensor, byteOrder)
     val const = value.getTensorNumeric() match {
-      case NumericFloat => Const[T, Float](value.asInstanceOf[Tensor[Float]])
-      case NumericDouble => Const[T, Double](value.asInstanceOf[Tensor[Double]])
-      case NumericInt => Const[T, Int](value.asInstanceOf[Tensor[Int]])
-      case NumericLong => Const[T, Long](value.asInstanceOf[Tensor[Long]])
-      case NumericChar => Const[T, Char](value.asInstanceOf[Tensor[Char]])
-      case NumericBoolean => Const[T, Boolean](value.asInstanceOf[Tensor[Boolean]])
-      case NumericShort => Const[T, Short](value.asInstanceOf[Tensor[Short]])
-      case NumericString => Const[T, String](value.asInstanceOf[Tensor[String]])
-      case NumericByteString => Const[T, ByteString](value.asInstanceOf[Tensor[ByteString]])
+      case NumericFloat => ConstOps[T, Float](value.asInstanceOf[Tensor[Float]])
+      case NumericDouble => ConstOps[T, Double](value.asInstanceOf[Tensor[Double]])
+      case NumericInt => ConstOps[T, Int](value.asInstanceOf[Tensor[Int]])
+      case NumericLong => ConstOps[T, Long](value.asInstanceOf[Tensor[Long]])
+      case NumericChar => ConstOps[T, Char](value.asInstanceOf[Tensor[Char]])
+      case NumericBoolean => ConstOps[T, Boolean](value.asInstanceOf[Tensor[Boolean]])
+      case NumericShort => ConstOps[T, Short](value.asInstanceOf[Tensor[Short]])
+      case NumericString => ConstOps[T, String](value.asInstanceOf[Tensor[String]])
+      case NumericByteString => ConstOps[T, ByteString](value.asInstanceOf[Tensor[ByteString]])
     }
     const.asInstanceOf[Module[T]]
   }
