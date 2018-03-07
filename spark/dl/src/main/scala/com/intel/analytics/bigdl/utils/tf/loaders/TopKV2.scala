@@ -19,7 +19,7 @@ import java.nio.ByteOrder
 
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
-import com.intel.analytics.bigdl.nn.ops.TopK
+import com.intel.analytics.bigdl.nn.ops.{TopK => TopKOps}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.tf.Context
@@ -60,9 +60,9 @@ class TopKV2LoadTF[T: ClassTag](s: Boolean, t: String)(implicit ev: TensorNumeri
     val k = kTensor.value()
 
     if (t == "Float") {
-      TopK[T, Float](k, s, startIndex = 0)
+      TopKOps[T, Float](k, s, startIndex = 0)
     } else if (t == "Double") {
-      TopK[T, Double](k, s, startIndex = 0)
+      TopKOps[T, Double](k, s, startIndex = 0)
     } else {
       throw new UnsupportedOperationException(s"Not support load Inv when type is ${t}")
     }

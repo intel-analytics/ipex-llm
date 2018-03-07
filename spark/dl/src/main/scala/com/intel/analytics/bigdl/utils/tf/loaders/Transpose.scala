@@ -19,7 +19,7 @@ import java.nio.ByteOrder
 
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
-import com.intel.analytics.bigdl.nn.{Contiguous, Sequential, Transpose}
+import com.intel.analytics.bigdl.nn.{Contiguous, Sequential, Transpose => TransposeLayer}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.tf.Context
@@ -85,7 +85,7 @@ class TransposeLoadTF[T: ClassTag]()(implicit ev: TensorNumeric[T]) extends Adap
     val perm = tensorArrays(0).asInstanceOf[Tensor[Int]].storage().array()
     val paris = permToPair(perm)
     val layer = Sequential()
-    layer.add(Transpose[T](paris.map(x => (x._1 + 1, x._2 + 1))))
+    layer.add(TransposeLayer[T](paris.map(x => (x._1 + 1, x._2 + 1))))
     layer.add(Contiguous())
     layer
   }

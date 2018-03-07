@@ -19,7 +19,7 @@ import java.nio.ByteOrder
 
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.nn.abstractnn.DataFormat
-import com.intel.analytics.bigdl.nn.tf.FusedBatchNormGrad
+import com.intel.analytics.bigdl.nn.tf.{FusedBatchNormGrad => FusedBatchNormGradOps}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.tf.Context
 import org.tensorflow.framework.NodeDef
@@ -35,7 +35,7 @@ class FusedBatchNormGradV2 extends TensorflowOpsLoader {
     val eps = getFloat(nodeDef.getAttrMap, "epsilon")
     val dataFormat = getString(nodeDef.getAttrMap, "data_format")
     val isTrain = getBoolean(nodeDef.getAttrMap, "is_training")
-    FusedBatchNormGrad[T](eps,
+    FusedBatchNormGradOps[T](eps,
       if (dataFormat == "NHWC") DataFormat.NHWC else DataFormat.NCHW,
       isTrain)
   }

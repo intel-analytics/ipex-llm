@@ -47,16 +47,6 @@ private[bigdl] class SpatialConvolution[T: ClassTag](
   require(nInputPlane % nGroup == 0, "Number of input channels should be multiples of group.")
   require(nOutputPlane % nGroup == 0, "Number of output channels should be multiples of group.")
 
-  val params = ConvWeightParams(nOutputPlane / nGroup, nInputPlane / nGroup, kernelH, kernelW,
-    quantFormat)
-  val weight: Array[Tensor[T]] = {
-    val array = new Array[Tensor[T]](nGroup)
-    for (i <- 0 until nGroup) {
-      array(i) = QuantizedTensor[T](Tensor[T](Array(nGroup, kernelH, kernelW, nInputPlane / nGroup,
-        nOutputPlane / nGroup)), params)
-    }
-    array
-  }
   private val data: QuantizedTensor[T] = QuantizedDummyTensor[T]()
   val bias: Tensor[T] = Tensor[T](nOutputPlane)
 
@@ -64,6 +54,18 @@ private[bigdl] class SpatialConvolution[T: ClassTag](
     BigQuant.NCHW
   } else {
     BigQuant.NHWC
+  }
+
+  val params = ConvWeightParams(nOutputPlane / nGroup, nInputPlane / nGroup, kernelH, kernelW,
+    quantFormat)
+
+  val weight: Array[Tensor[T]] = {
+    val array = new Array[Tensor[T]](nGroup)
+    for (i <- 0 until nGroup) {
+      array(i) = QuantizedTensor[T](Tensor[T](Array(nGroup, kernelH, kernelW, nInputPlane / nGroup,
+        nOutputPlane / nGroup)), params)
+    }
+    array
   }
 
   val dilationHeight = 1

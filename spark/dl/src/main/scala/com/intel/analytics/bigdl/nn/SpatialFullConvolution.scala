@@ -527,6 +527,7 @@ class SpatialFullConvolution[T: ClassTag](
         dH, dW,
         1, 1
       )
+      case t => throw new NotImplementedError(s"$t is not supported")
     }
     im2colTime += System.nanoTime() - before
 

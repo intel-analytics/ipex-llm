@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.utils.tf.loaders
 import java.nio.ByteOrder
 
 import com.intel.analytics.bigdl.Module
-import com.intel.analytics.bigdl.nn.ops.Sum
+import com.intel.analytics.bigdl.nn.ops.{Sum => SumOps}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.tf.Context
 import org.tensorflow.framework.{DataType, NodeDef}
@@ -36,21 +36,21 @@ class Sum extends TensorflowOpsLoader {
     val dataType = getType(attr, "T")
     dataType match {
       case DataType.DT_INT8 =>
-        Sum[T, Int](keepDims, startFromZero = true)
+        SumOps[T, Int](keepDims, startFromZero = true)
       case DataType.DT_INT16 =>
-        Sum[T, Int](keepDims, startFromZero = true)
+        SumOps[T, Int](keepDims, startFromZero = true)
       case DataType.DT_UINT8 =>
-        Sum[T, Int](keepDims, startFromZero = true)
+        SumOps[T, Int](keepDims, startFromZero = true)
       case DataType.DT_UINT16 =>
-        Sum[T, Int](keepDims, startFromZero = true)
+        SumOps[T, Int](keepDims, startFromZero = true)
       case DataType.DT_INT32 =>
-        Sum[T, Int](keepDims, startFromZero = true)
+        SumOps[T, Int](keepDims, startFromZero = true)
       case DataType.DT_INT64 =>
-        Sum[T, Int](keepDims, startFromZero = true)
+        SumOps[T, Int](keepDims, startFromZero = true)
       case DataType.DT_FLOAT =>
-        Sum[T, Float](keepDims, startFromZero = true)
+        SumOps[T, Float](keepDims, startFromZero = true)
       case DataType.DT_DOUBLE =>
-        Sum[T, Double](keepDims, startFromZero = true)
+        SumOps[T, Double](keepDims, startFromZero = true)
     }
   }
 }

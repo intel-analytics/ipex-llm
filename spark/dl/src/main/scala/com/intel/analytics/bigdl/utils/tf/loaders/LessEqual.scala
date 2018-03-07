@@ -20,14 +20,14 @@ import java.nio.ByteOrder
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import org.tensorflow.framework.NodeDef
-import com.intel.analytics.bigdl.nn.ops.LessEqual
+import com.intel.analytics.bigdl.nn.ops.{LessEqual => LessEqualOps}
 import com.intel.analytics.bigdl.utils.tf.Context
 
 import scala.reflect.ClassTag
 
 class LessEqual extends TensorflowOpsLoader {
   override def build[T: ClassTag](nodeDef: NodeDef, byteOrder: ByteOrder,
-                                  context: Context[T])(implicit ev: TensorNumeric[T]): Module[T] = {
-    LessEqual[T]()
+      context: Context[T])(implicit ev: TensorNumeric[T]): Module[T] = {
+    LessEqualOps[T]()
   }
 }

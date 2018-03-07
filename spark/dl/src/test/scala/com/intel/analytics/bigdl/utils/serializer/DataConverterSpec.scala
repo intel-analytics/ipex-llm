@@ -129,9 +129,9 @@ class DataConverterSpec extends FlatSpec with Matchers{
     map.clear()
     val retrievedValue = DataConverter.getAttributeValue(DeserializeContext(null, map, null),
       attriBulder.build)
-    retrievedValue.isInstanceOf[L1L2Regularizer[Float]] should be (true)
-    retrievedValue.asInstanceOf[L1L2Regularizer[Float]].l1 should be (regularizer.l1)
-    retrievedValue.asInstanceOf[L1L2Regularizer[Float]].l2 should be (regularizer.l2)
+    retrievedValue.isInstanceOf[L1L2Regularizer[_]] should be (true)
+    retrievedValue.asInstanceOf[L1L2Regularizer[_]].l1 should be (regularizer.l1)
+    retrievedValue.asInstanceOf[L1L2Regularizer[_]].l2 should be (regularizer.l2)
   }
 
   "L1Regularizer conversion" should  "work properly" in {
@@ -143,7 +143,7 @@ class DataConverterSpec extends FlatSpec with Matchers{
     map.clear()
     val retrievedValue = DataConverter.getAttributeValue(DeserializeContext(null, map, null),
       attriBulder.build)
-    retrievedValue.isInstanceOf[L1Regularizer[Float]] should be (true)
+    retrievedValue.isInstanceOf[L1Regularizer[_]] should be (true)
     retrievedValue.asInstanceOf[L1Regularizer[Float]].l1 should be (regularizer.l1)
   }
 
@@ -156,7 +156,7 @@ class DataConverterSpec extends FlatSpec with Matchers{
     map.clear()
     val retrievedValue = DataConverter.getAttributeValue(DeserializeContext(null, map, null),
       attriBulder.build)
-    retrievedValue.isInstanceOf[L2Regularizer[Float]] should be (true)
+    retrievedValue.isInstanceOf[L2Regularizer[_]] should be (true)
     retrievedValue.asInstanceOf[L2Regularizer[Float]].l2 should be (regularizer.l2)
   }
 
@@ -597,7 +597,7 @@ class DataConverterSpec extends FlatSpec with Matchers{
     map.clear()
     val retrievedValue = DataConverter.
       getAttributeValue(DeserializeContext(null, map, null), attr)
-    retrievedValue.isInstanceOf[Array[Tensor[Float]]] should be (true)
+    retrievedValue.isInstanceOf[Array[Tensor[_]]] should be (true)
     retrievedValue should be (tensorArray)
   }
 

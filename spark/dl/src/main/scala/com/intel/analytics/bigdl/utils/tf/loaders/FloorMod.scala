@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.utils.tf.loaders
 import java.nio.ByteOrder
 
 import com.intel.analytics.bigdl.Module
-import com.intel.analytics.bigdl.nn.ops.{FloorMod, Mod}
+import com.intel.analytics.bigdl.nn.ops.{FloorMod => FloorModOps}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.tf.Context
 import org.tensorflow.framework.{DataType, NodeDef}
@@ -33,11 +33,11 @@ class FloorMod extends TensorflowOpsLoader {
     (implicit ev: TensorNumeric[T]): Module[T] = {
     val t = getType(nodeDef.getAttrMap, "T")
     if (t == DataType.DT_FLOAT) {
-      FloorMod[T, Float]()
+      FloorModOps[T, Float]()
     } else if (t == DataType.DT_DOUBLE) {
-      FloorMod[T, Double]()
+      FloorModOps[T, Double]()
     } else if (t == DataType.DT_INT32) {
-      FloorMod[T, Int]()
+      FloorModOps[T, Int]()
     } else {
       throw new UnsupportedOperationException(s"Not support load Mod when type is ${t}")
     }

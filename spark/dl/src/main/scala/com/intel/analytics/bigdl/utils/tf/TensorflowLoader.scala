@@ -113,6 +113,7 @@ object TensorflowLoader{
           tensor.size(), "float")
         case DoubleType => new JTensor(tensor.asInstanceOf[Tensor[Double]].storage().array()
           .map(_.toFloat), tensor.size(), "double")
+        case t => throw new NotImplementedError(s"$t is not supported")
       }
       save.put(n, saveTensor)
     })
@@ -126,6 +127,7 @@ object TensorflowLoader{
       val tensor = ev.getType() match {
         case FloatType => PythonBigDLUtils.toTensor(m(k), "float")
         case DoubleType => PythonBigDLUtils.toTensor(m(k), "double")
+        case t => throw new NotImplementedError(s"$t is not supported")
       }
 
       map(k) = (tensor, tensor.clone(), None)

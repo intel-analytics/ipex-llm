@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.utils.tf.loaders
 import java.nio.ByteOrder
 
 import com.intel.analytics.bigdl.Module
-import com.intel.analytics.bigdl.nn.tf.SqrtGrad
+import com.intel.analytics.bigdl.nn.tf.{SqrtGrad => SqrtGradOps}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.tf.Context
 import com.intel.analytics.bigdl.utils.tf.loaders.Utils.getType
@@ -31,9 +31,9 @@ class SqrtGrad extends TensorflowOpsLoader {
                                   context: Context[T])(implicit ev: TensorNumeric[T]): Module[T] = {
     val t = getType(nodeDef.getAttrMap, "T")
     if (t == DataType.DT_FLOAT) {
-      SqrtGrad[T, Float]()
+      SqrtGradOps[T, Float]()
     } else if (t == DataType.DT_DOUBLE) {
-      SqrtGrad[T, Double]()
+      SqrtGradOps[T, Double]()
     } else {
       throw new UnsupportedOperationException(s"Not support load SqrtGrad when type is $t")
     }
