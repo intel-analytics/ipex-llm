@@ -78,6 +78,7 @@ pages:
   - Optim Methods:
     - OptimMethod: APIGuide/Optimizers/OptimMethod.md 
     - Optimization Algorithms: APIGuide/Optimizers/Optim-Methods.md
+    - LearningRate Scheduler: APIGuide/Optimizers/Learningrate-Scheduler.md
   - Triggers: APIGuide/Triggers.md
   - Metrics:  APIGuide/Metrics.md
   - ML Pipeline: APIGuide/DLFrames/DLEstimator_DLClassifier.md
