@@ -26,6 +26,7 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
 import scala.collection.mutable
+import scala.language.existentials
 import scala.reflect.ClassTag
 import scala.reflect.runtime.universe
 
@@ -131,7 +132,8 @@ object ModuleSerializer extends ModuleSerializable{
       // to make it compatible with both 2.11 and 2.10
       val ctorCs = clsSymbol.toType.declaration(universe.nme.CONSTRUCTOR)
       val primary: Option[universe.MethodSymbol] = ctorCs.asTerm.alternatives.collectFirst {
-        case cstor: universe.MethodSymbol if cstor.isPrimaryConstructor => cstor
+        case cstor if cstor.asInstanceOf[universe.MethodSymbol].isPrimaryConstructor =>
+          cstor.asInstanceOf[universe.MethodSymbol]
       }
       cm.reflectConstructor(primary.get)
     }

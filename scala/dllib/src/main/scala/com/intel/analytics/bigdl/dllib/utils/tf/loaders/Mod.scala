@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.utils.tf.loaders
 import java.nio.ByteOrder
 
 import com.intel.analytics.bigdl.Module
-import com.intel.analytics.bigdl.nn.ops.{FloorDiv, Mod}
+import com.intel.analytics.bigdl.nn.ops.{Mod => ModOps}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.tf.Context
 import org.tensorflow.framework.{DataType, NodeDef}
@@ -33,11 +33,11 @@ class Mod extends TensorflowOpsLoader {
     (implicit ev: TensorNumeric[T]): Module[T] = {
     val t = getType(nodeDef.getAttrMap, "T")
     if (t == DataType.DT_FLOAT) {
-      Mod[T, Float]()
+      ModOps[T, Float]()
     } else if (t == DataType.DT_DOUBLE) {
-      Mod[T, Double]()
+      ModOps[T, Double]()
     } else if (t == DataType.DT_INT32) {
-      Mod[T, Int]()
+      ModOps[T, Int]()
     } else {
       throw new UnsupportedOperationException(s"Not support load Mod when type is ${t}")
     }

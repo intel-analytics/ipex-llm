@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.utils.tf.loaders
 import java.nio.ByteOrder
 
 import com.intel.analytics.bigdl.Module
-import com.intel.analytics.bigdl.nn.ops.BatchMatMul
+import com.intel.analytics.bigdl.nn.ops.{BatchMatMul => BatchMatMulOps}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.tf.Context
 import org.tensorflow.framework.{DataType, NodeDef}
@@ -35,9 +35,9 @@ class BatchMatMul extends TensorflowOpsLoader {
     val adjX = getBoolean(nodeDef.getAttrMap, "adj_x")
     val adjY = getBoolean(nodeDef.getAttrMap, "adj_y")
     if (t == DataType.DT_FLOAT) {
-      BatchMatMul[T, Float](adjX, adjY)
+      BatchMatMulOps[T, Float](adjX, adjY)
     } else if (t == DataType.DT_DOUBLE) {
-      BatchMatMul[T, Double](adjX, adjY)
+      BatchMatMulOps[T, Double](adjX, adjY)
     } else {
       throw new UnsupportedOperationException(s"Not support load ReLU6 when type is $t")
     }

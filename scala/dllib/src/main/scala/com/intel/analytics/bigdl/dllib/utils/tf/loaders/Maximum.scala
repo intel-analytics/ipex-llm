@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.utils.tf.loaders
 import java.nio.ByteOrder
 
 import com.intel.analytics.bigdl.Module
-import com.intel.analytics.bigdl.nn.ops.Maximum
+import com.intel.analytics.bigdl.nn.ops.{Maximum => MaximumOps}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import org.tensorflow.framework.{DataType, NodeDef}
 import Utils._
@@ -31,9 +31,9 @@ class Maximum extends TensorflowOpsLoader {
                                   context: Context[T])(implicit ev: TensorNumeric[T]): Module[T] = {
     val t = getType(nodeDef.getAttrMap, "T")
     if (t == DataType.DT_FLOAT) {
-      Maximum[T, Float]()
+      MaximumOps[T, Float]()
     } else if (t == DataType.DT_DOUBLE) {
-      Maximum[T, Double]()
+      MaximumOps[T, Double]()
     } else {
       throw new UnsupportedOperationException(s"Not support load Maximum when type is $t")
     }

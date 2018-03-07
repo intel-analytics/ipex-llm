@@ -38,6 +38,6 @@ class ShapeSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
   "singleShape not equal" should "be test" in {
     intercept[RuntimeException] {
-      assert(Shape(1, 2, 3) == List(Shape(1, 2, 4)))
+      assert(Shape(1, 2, 3) == Shape(1, 2, 4))
     }}
 }
