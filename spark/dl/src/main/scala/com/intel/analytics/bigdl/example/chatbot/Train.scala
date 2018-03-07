@@ -46,48 +46,6 @@ object Train {
 
   def main(args: Array[String]): Unit = {
     trainParser.parse(args, new TrainParams()).map(param => {
-
-      val tensorMap = File.load("/home/yao/git/bigdl/BigDL/model.bin")
-        .asInstanceOf[JHashMap[String, JTensor]]
-      val encoderWeight1 = Tensor(tensorMap.get("enc_weight1").storage,
-        tensorMap.get("enc_weight1").shape).t()
-      val encoderWeight2 = Tensor(tensorMap.get("enc_weight2").storage,
-        tensorMap.get("enc_weight2").shape).t()
-      val encoderWeight3 = Tensor(tensorMap.get("enc_weight3").storage,
-        tensorMap.get("enc_weight3").shape).t()
-      val encoderBias1 = Tensor(tensorMap.get("enc_bias1").storage,
-        tensorMap.get("enc_bias1").shape)
-      val encoderBias2 = Tensor(tensorMap.get("enc_bias2").storage,
-        tensorMap.get("enc_bias2").shape)
-      val encoderBias3 = Tensor(tensorMap.get("enc_bias3").storage,
-        tensorMap.get("enc_bias3").shape)
-      val decoderWeight1 = Tensor(tensorMap.get("dec_weight1").storage,
-        tensorMap.get("dec_weight1").shape).t()
-      val decoderWeight2 = Tensor(tensorMap.get("dec_weight2").storage,
-        tensorMap.get("dec_weight2").shape).t()
-      val decoderWeight3 = Tensor(tensorMap.get("dec_weight3").storage,
-        tensorMap.get("dec_weight3").shape).t()
-      val decoderBias1 = Tensor(tensorMap.get("dec_bias1").storage,
-        tensorMap.get("dec_bias1").shape)
-      val decoderBias2 = Tensor(tensorMap.get("dec_bias2").storage,
-        tensorMap.get("dec_bias2").shape)
-      val decoderBias3 = Tensor(tensorMap.get("dec_bias3").storage,
-        tensorMap.get("dec_bias3").shape)
-      val linearWeight = Tensor(tensorMap.get("linear_weight").storage,
-        tensorMap.get("linear_weight").shape).t()
-      val linearBias = Tensor(tensorMap.get("linear_bias").storage,
-        tensorMap.get("linear_bias").shape)
-      val embedding = Tensor(tensorMap.get("embedding").storage, tensorMap.get("embedding").shape)
-      val output = Tensor(tensorMap.get("output").storage,
-        tensorMap.get("output").shape)
-//      val e1 = Tensor(tensorMap.get("e1").storage,
-//        tensorMap.get("e1").shape)
-//      val r1 = Tensor(tensorMap.get("r1").storage,
-//        tensorMap.get("r1").shape)
-//      val e2 = Tensor(tensorMap.get("e2").storage,
-//        tensorMap.get("e2").shape)
-//      val r2 = Tensor(tensorMap.get("r2").storage,
-//        tensorMap.get("r2").shape)
       val conf = Engine.createSparkConf()
         .setAppName("Train rnn on text")
         .set("spark.task.maxFailures", "1")
@@ -191,40 +149,16 @@ object Train {
 
         val encoder =
           Array(
-//                        Recurrent().add(RnnCell(param.embedDim, param.embedDim, Sigmoid()))
-//                        Recurrent().add(LSTM(param.embedDim, param.embedDim)),
-//                        Recurrent().add(LSTM(param.embedDim, param.embedDim)),
+            Recurrent(maskZero = true).add(LSTM(param.embedDim, param.embedDim)),
+            Recurrent(maskZero = true).add(LSTM(param.embedDim, param.embedDim)),
             Recurrent(maskZero = true).add(LSTM(param.embedDim, param.embedDim))
-              .setWeightsBias(Array(
-                encoderWeight1.narrow(2, 1, param.embedDim),
-                encoderBias1,
-                encoderWeight1.narrow(2, param.embedDim + 1, param.embedDim))),
-            Recurrent(maskZero = true).add(LSTM(param.embedDim, param.embedDim))
-              .setWeightsBias(Array(
-                encoderWeight2.narrow(2, 1, param.embedDim),
-                encoderBias2,
-                encoderWeight2.narrow(2, param.embedDim + 1, param.embedDim))),
-            Recurrent(maskZero = true).add(LSTM(param.embedDim, param.embedDim))
-              .setWeightsBias(Array(
-                encoderWeight3.narrow(2, 1, param.embedDim),
-                encoderBias3,
-                encoderWeight3.narrow(2, param.embedDim + 1, param.embedDim)))
           )
 
         val decoder =
           Array(
-            //            Recurrent().add(RnnCell(param.embedDim, param.embedDim, Sigmoid()))
-//                        Recurrent().add(LSTM(param.embedDim, param.embedDim)),
-//                        Recurrent().add(LSTM(param.embedDim, param.embedDim)),
+            Recurrent(maskZero = true).add(LSTM(param.embedDim, param.embedDim)),
+            Recurrent(maskZero = true).add(LSTM(param.embedDim, param.embedDim)),
             Recurrent(maskZero = true).add(LSTM(param.embedDim, param.embedDim))
-              .setWeightsBias(Array(decoderWeight1.narrow(2, 1, param.embedDim),
-                decoderBias1, decoderWeight1.narrow(2, param.embedDim + 1, param.embedDim))),
-            Recurrent(maskZero = true).add(LSTM(param.embedDim, param.embedDim))
-              .setWeightsBias(Array(decoderWeight2.narrow(2, 1, param.embedDim),
-                decoderBias2, decoderWeight2.narrow(2, param.embedDim + 1, param.embedDim))),
-            Recurrent(maskZero = true).add(LSTM(param.embedDim, param.embedDim))
-              .setWeightsBias(Array(decoderWeight3.narrow(2, 1, param.embedDim),
-                decoderBias3, decoderWeight3.narrow(2, param.embedDim + 1, param.embedDim)))
           )
 
         val enclookuptable = LookupTable(
@@ -234,15 +168,12 @@ object Train {
           maskZero = true
         )
 
-        enclookuptable.setWeightsBias(Array(embedding))
-
         val declookuptable = LookupTable(
           vocabSize,
           param.embedDim,
           paddingValue = padId,
           maskZero = true
         )
-        declookuptable.setWeightsBias(Array(embedding))
 
       declookuptable.weight = enclookuptable.weight
       declookuptable.gradWeight = enclookuptable.gradWeight
@@ -256,12 +187,8 @@ object Train {
               preEncoder = preEncoder,
               preDecoder = preDecoder,
               decoderInputType = DecoderInputType.ENCODERINPUTSPLIT))
-          .add(TimeDistributed(Linear(param.embedDim, vocabSize)
-            .setWeightsBias(Array(linearWeight, linearBias)), maskZero = true))
+          .add(TimeDistributed(Linear(param.embedDim, vocabSize), maskZero = true))
           .add(TimeDistributed(LogSoftMax()))
-        //        model.reset()
-//        model
-//      }
 
       val optimMethod = if (param.stateSnapshot.isDefined) {
         OptimMethod.load[Float](param.stateSnapshot.get)
@@ -299,43 +226,6 @@ object Train {
       val seeds = Array("happy birthday have a nice day",
         "donald trump won last nights presidential debate according to snap online polls")
 
-      val adam = new Adam[Float](0.0001)
-      val criterion = TimeDistributedMaskCriterion(
-        ClassNLLCriterion(paddingValue = padId, sizeAverage = false),
-        paddingValue = padId
-      )
-
-      val trainInput = DataSet.rdd(trainSet).transform(
-        SampleToMiniBatch(batchSize = param.batchSize,
-          featurePaddingParam = Some(PaddingParam[Float](
-            paddingTensor =
-              Some(Array(padFeature, padFeature)))),
-          labelPaddingParam = Some(PaddingParam[Float](
-            paddingTensor =
-              Some(Array(padLabel)))))
-      ).toDistributed().data(false).collect()
-      val input = trainInput(0).getInput()
-      val labels = trainInput(0).getTarget()
-      val (weights, grad) = model.getParameters()
-      val state = T("learningRate" -> param.learningRate)
-      def feval1(x: Tensor[Float]): (Float, Tensor[Float]) = {
-//        enclookuptable.getWeightsBias().foreach(x => println(x))
-//        encoder(0).getWeightsBias().foreach(x => println(x))
-        val output = model.forward(input).toTensor[Float]
-        val _loss = criterion.forward(output, labels)
-        model.zeroGradParameters()
-        val gradInput = criterion.backward(output, labels)
-        model.backward(input, gradInput)
-        (_loss, grad)
-      }
-
-      var loss1: Array[Float] = null
-      for (i <- 1 to 10) {
-        declookuptable.weight = enclookuptable.weight.clone()
-        declookuptable.gradWeight.set(enclookuptable.gradWeight)
-        loss1 = adam.optimize(feval1, weights)._2
-        println(s"${i}-th loss = ${loss1(0)}")
-      }
 
       var i = 1
       while (i <= param.nEpochs) {
@@ -354,11 +244,11 @@ object Train {
             .map(chatToLabeledChat(dictionary, _)).apply(0)
 
           val sent1 = Tensor(Storage(labeledChat._1), 1, Array(1, labeledChat._1.length))
-          val sent2 = Tensor(Storage(labeledChat._2), 1, Array(1, labeledChat._2.length))
+          var sent2 = Tensor(Storage(labeledChat._2), 1, Array(1, labeledChat._2.length))
           val timeDim = 2
           val featDim = 3
           val concat = Tensor[Float]()
-          val curInput = sent2
+          var curInput = sent2
           val end = dictionary.getIndex(SentenceToken.end) + 1
           var break = false
 
