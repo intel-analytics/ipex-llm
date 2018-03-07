@@ -16,6 +16,7 @@
 
 import os
 import sys
+import six
 from py4j.protocol import Py4JJavaError
 from py4j.java_gateway import JavaObject
 from py4j.java_collections import ListConverter, JavaArray, JavaList, JavaMap, MapConverter
@@ -77,6 +78,8 @@ class JavaCreator(SingletonMixin):
 
     @classmethod
     def set_creator_class(cls, cclass):
+        if isinstance(cclass, six.string_types):
+            cclass = [cclass]
         with JavaCreator._lock:
             JavaCreator.__creator_class = cclass
             JavaCreator._instance = None
@@ -134,37 +137,6 @@ class EvaluatedResult():
 def get_dtype(bigdl_type):
     # Always return float32 for now
     return "float32"
-
-
-class Configuration(object):
-    __bigdl_jars = [get_bigdl_classpath()]
-
-    @staticmethod
-    def add_extra_jars(jars):
-        """
-        Add extra jars to classpath
-        :param jars: a string or a list of strings as jar paths
-        """
-        import six
-        if isinstance(jars, six.string_types):
-            jars = [jars]
-        Configuration.__bigdl_jars += jars
-
-    @staticmethod
-    def add_extra_python_modules(packages):
-        """
-        Add extra python modules to sys.path
-        :param packages: a string or a list of strings as python package paths
-        """
-        import six
-        if isinstance(packages, six.string_types):
-            packages = [packages]
-        for package in packages:
-            sys.path.insert(0, package)
-
-    @staticmethod
-    def get_bigdl_jars():
-        return Configuration.__bigdl_jars
 
 
 class JActivity(object):
@@ -522,7 +494,7 @@ def create_spark_conf():
     sparkConf = SparkConf()
     sparkConf.setAll(bigdl_conf.items())
     if not is_spark_below_2_2():
-        for jar in Configuration.get_bigdl_jars():
+        for jar in os.environ["BIGDL_JARS"].split(":"):
             extend_spark_driver_cp(sparkConf, jar)
 
     # add content in PYSPARK_FILES in spark.submit.pyFiles
