@@ -25,7 +25,7 @@ import scala.reflect.ClassTag
  *
  * the output shape will be 1-D Tensor[String].
  *
- * @param strDelimiter The delimiter between key and value, default: ":"
+ * @param strDelimiter The delimiter between values, default: ","
  * @tparam T Numeric type. Parameter tensor numeric type. Only support float/double now
  */
 
