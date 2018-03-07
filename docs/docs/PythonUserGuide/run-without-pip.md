@@ -68,26 +68,3 @@ the dashboard URL is http://your_node:8888/
 
 ## **BigDL Configuration**
 Please check [this page](../ScalaUserGuide/configuration.md)
-
-## **FAQ**
-1. ImportError   from bigdl.nn.layer import *
-    - Check if the path is pointing to python-api.zip: ```--py-files ${PYTHON_API_ZIP_PATH} ```
-    - Check if the path is pointing to python-api.zip: ``` export PYTHONPATH=${PYTHON_API_ZIP_PATH}:$PYTHONPATH```
-
-2. Python in worker has a different version 2.7 than that in driver 3.4
-    - ```export PYSPARK_PYTHON=/usr/local/bin/python3.4```  This path should be valid on every worker node.
-    - ```export PYSPARK_DRIVER_PYTHON=/usr/local/bin/python3.4```  This path should be valid on every driver node.
-  
-3. TypeError: 'JavaPackage' object is not callable
-    - Check if every path within the launch script is valid especially the path that ends with jar.
-
-4. java.lang.NoSuchMethodError:XXX
-    - Check if the Spark version matches, i.e check if you are using Spark2.x but the underneath BigDL is compiled with Spark1.6.
-
-5. If you want to redirect spark logs to file and keep BigDL logs in console only, call the following API before you train your model:
-```python
-from bigdl.util.common import *
-
-redire_spark_logs(log_path=file path to redirect logs to)
-show_bigdl_info_logs()
-```
