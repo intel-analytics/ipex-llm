@@ -120,11 +120,11 @@ class Seq2seq[T: ClassTag](val encoderRecs: Array[Recurrent[T]],
   override def backward(input: Activity, gradOutput: Tensor[T]): Tensor[T] = {
     val decoderGradInput = decoder.backward(decoderInput, gradOutput).toTensor
     if (preDecoder != null) {
-      if (preDecoderInput.dim == decoderGradInput.dim) {
+//      if (preDecoderInput.dim == decoderGradInput.dim) {
         preDecoder.backward(preDecoderInput, decoderGradInput)
-      } else {
-        preDecoder.backward(preDecoderInput, decoderGradInput.select(2, 1).contiguous())
-      }
+//      } else {
+//        preDecoder.backward(preDecoderInput, decoderGradInput.select(2, 1).contiguous())
+//      }
     }
     if (decoderRecs.head.isInstanceOf[RecurrentDecoder[T]]) {
       val gradHiddenStates = decoderRecs.head.getGradHiddenState()
@@ -162,6 +162,8 @@ class Seq2seq[T: ClassTag](val encoderRecs: Array[Recurrent[T]],
     gradInput.toTensor
   }
 
+  override def reset(): Unit = module.reset()
+
   override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
     module.parameters()
   }
@@ -185,6 +187,16 @@ class Seq2seq[T: ClassTag](val encoderRecs: Array[Recurrent[T]],
       newState.toTable(2) = shrinkModule(1).forward(state.toTable(2))
     }
     newState
+  }
+
+  override def clearState() : this.type = {
+    super.clearState()
+    preDecoderInput = null
+    decoderInput = null
+    encoderInput = null
+    encoderOutput = null
+    module.clearState()
+    this
   }
 
   private def shrinkGradHiddenState(state: Activity, gradState: Activity,

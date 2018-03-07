@@ -500,7 +500,6 @@ class Recurrent[T : ClassTag](
       } else {
         cells(i - 1).regluarized(false)
       }
-      cells(i - 1).backward(_input, currentGradOutput)
 
       if (maskZero && i > minLength) {
         val curMask = maskBuffer.select(2, i)
@@ -531,7 +530,6 @@ class Recurrent[T : ClassTag](
       } else {
         cells(i - 1).backward(_input, currentGradOutput)
       }
-      currentGradOutput(hidDim) = cells(i - 1).gradInput.toTable(hidDim)
       i -= 1
     }
 

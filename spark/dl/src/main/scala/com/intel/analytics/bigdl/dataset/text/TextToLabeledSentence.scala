@@ -24,7 +24,7 @@ import scala.reflect.ClassTag
 
 object TextToLabeledSentence {
   def apply[T: ClassTag](dictionary: Dictionary)
-           (implicit ev: TensorNumeric[T])
+    (implicit ev: TensorNumeric[T])
   : TextToLabeledSentence[T] =
     new TextToLabeledSentence[T](dictionary)
   def apply[T: ClassTag](numSteps: Int)(implicit ev: TensorNumeric[T])
@@ -62,13 +62,13 @@ class TextToLabeledSentence[T: ClassTag](dictionary: Dictionary)
 
 object TextToLabeledSentence2 {
   def apply[T: ClassTag](dictionary: Dictionary)
-                        (implicit ev: TensorNumeric[T])
+    (implicit ev: TensorNumeric[T])
   : TextToLabeledSentence2[T] =
     new TextToLabeledSentence2[T](dictionary)
 }
 
 class TextToLabeledSentence2[T: ClassTag](dictionary: Dictionary)
-                                        (implicit ev: TensorNumeric[T])
+  (implicit ev: TensorNumeric[T])
   extends Transformer[Array[String], LabeledSentence[T]] {
   private val buffer = new LabeledSentence[T]()
 
