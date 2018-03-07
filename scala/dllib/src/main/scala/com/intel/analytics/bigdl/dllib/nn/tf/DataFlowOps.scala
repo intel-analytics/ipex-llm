@@ -16,13 +16,11 @@
 package com.intel.analytics.bigdl.nn.tf
 
 import java.util
-import java.util.concurrent.ConcurrentHashMap
 
 import com.intel.analytics.bigdl.nn.ops.Operation
-import com.intel.analytics.bigdl.nn.tf.WithoutInput
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.{RandomGenerator, T, Table}
+import com.intel.analytics.bigdl.utils.{T, Table}
 
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag

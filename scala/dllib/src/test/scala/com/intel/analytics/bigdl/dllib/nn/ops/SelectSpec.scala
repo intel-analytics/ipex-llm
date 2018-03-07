@@ -15,13 +15,10 @@
  */
 package com.intel.analytics.bigdl.nn.ops
 
-import com.intel.analytics.bigdl.nn.Select
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
 import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
-
-import scala.util.Random
 
 class SelectSpec extends FlatSpec with Matchers {
   "select" should "be correct when condition is true" in {

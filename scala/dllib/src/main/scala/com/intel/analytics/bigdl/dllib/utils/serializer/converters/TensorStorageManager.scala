@@ -37,6 +37,7 @@ trait TensorStorageManager {
         tensor.storage == null
       case QuantizedType =>
         tensor.asInstanceOf[QuantizedTensor[_]].getStorage == null
+      case t => throw new NotImplementedError(s"$t is not supported")
     }
     emptyTensor
   }
@@ -52,6 +53,7 @@ trait TensorStorageManager {
         } else {
           System.identityHashCode(tensor.asInstanceOf[QuantizedTensor[T]].getStorage)
         }
+      case t => throw new NotImplementedError(s"$t is not supported")
     }
   }
 
@@ -128,6 +130,7 @@ object BigDLTensorStorageManager extends TensorStorageManager {
         if (tensor.storage() == null) null else tensor.storage().array()
       case QuantizedType =>
         tensor.asInstanceOf[QuantizedTensor[Float]].getStorage
+      case t => throw new NotImplementedError(s"$t is not supported")
     }
 
     if (storage != null) {
@@ -183,6 +186,7 @@ object ProtoTensorStorageManager extends TensorStorageManager {
                 case LinearData => storageBuilder.addIntData(2)
                 case LinearWeight => storageBuilder.addIntData(3)
               }
+            case t => throw new NotImplementedError(s"$t is not supported")
           }
         }
       } else if (tensorNumeric == NumericDouble) {

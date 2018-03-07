@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.utils.tf.loaders
 import java.nio.ByteOrder
 
 import com.intel.analytics.bigdl.Module
-import com.intel.analytics.bigdl.nn.ops.InTopK
+import com.intel.analytics.bigdl.nn.ops.{InTopK => InTopKOps}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.tf.Context
 import org.tensorflow.framework.NodeDef
@@ -32,6 +32,6 @@ class InTopK extends TensorflowOpsLoader {
   override def build[T: ClassTag](nodeDef: NodeDef, byteOrder: ByteOrder, context: Context[T])
     (implicit ev: TensorNumeric[T]): Module[T] = {
     val k = getInt(nodeDef.getAttrMap, "k")
-    InTopK[T](k, true)
+    InTopKOps[T](k, true)
   }
 }

@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.utils.tf.loaders
 import java.nio.ByteOrder
 
 import com.intel.analytics.bigdl.Module
-import com.intel.analytics.bigdl.nn.ops.Ceil
+import com.intel.analytics.bigdl.nn.ops.{Ceil => CeilOps}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.tf.Context
 import org.tensorflow.framework.{DataType, NodeDef}
@@ -33,9 +33,9 @@ class Ceil extends TensorflowOpsLoader {
     (implicit ev: TensorNumeric[T]): Module[T] = {
     val t = getType(nodeDef.getAttrMap, "T")
     if (t == DataType.DT_FLOAT) {
-      Ceil[T, Float]()
+      CeilOps[T, Float]()
     } else if (t == DataType.DT_DOUBLE) {
-      Ceil[T, Double]()
+      CeilOps[T, Double]()
     } else {
       throw new UnsupportedOperationException(s"not support load Cell operation for type $t")
     }

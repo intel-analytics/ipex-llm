@@ -16,7 +16,6 @@
 
 package com.intel.analytics.bigdl.nn.tf
 
-import com.intel.analytics.bigdl.nn.Log
 import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric

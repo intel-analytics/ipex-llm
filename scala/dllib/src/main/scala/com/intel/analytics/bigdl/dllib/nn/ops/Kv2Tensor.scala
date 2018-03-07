@@ -72,6 +72,7 @@ class Kv2Tensor[T: ClassTag, D: ClassTag](
             values += kv.split(itemDelimiter)(1).toDouble.asInstanceOf[D]
           case FloatType =>
             values += kv.split(itemDelimiter)(1).toFloat.asInstanceOf[D]
+          case t => throw new NotImplementedError(s"$t is not supported")
         }
       }
       i += 1

@@ -39,7 +39,8 @@ object Module {
    * @tparam T numeric type
    * @return model loaded from path
    */
-  @deprecated("Java based serialization not recommended any more, please use loadModule instead")
+  @deprecated("Java based serialization not recommended any more, please use loadModule instead",
+    "0.3")
   def load[T: ClassTag](path : String) : AbstractModule[Activity, Activity, T] = {
     File.load[AbstractModule[Activity, Activity, T]](path)
   }
@@ -64,7 +65,7 @@ object Module {
     File.loadTorch[AbstractModule[Activity, Activity, T]](path)
   }
 
-  @deprecated
+  @deprecated("Please try to use the loadCaffeModel API", "0.2")
   def loadCaffe[T: ClassTag](model: AbstractModule[Activity, Activity, T],
     defPath: String, modelPath: String, matchAll: Boolean = true)(
     implicit ev: TensorNumeric[T]): AbstractModule[Activity, Activity, T] = {
