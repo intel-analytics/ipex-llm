@@ -41,8 +41,8 @@ object Engine {
     "See https://bigdl-project.github.io/master/#APIGuide/Engine/",
     "0.1.0")
   def init(nExecutor: Int,
-           executorCores: Int,
-           onSpark: Boolean): Option[SparkConf] = {
+      executorCores: Int,
+      onSpark: Boolean): Option[SparkConf] = {
     logger.warn("Engine.init(nExecutor, executorCores, onSpark) is deprecated. " +
       "Please refer to " +
       "https://bigdl-project.github.io/master/#APIGuide/Engine/")
@@ -105,8 +105,6 @@ object Engine {
       logger.info(s"Executor number is $nExecutor and executor cores number is $executorCores")
       setNodeAndCore(nExecutor, executorCores)
       checkSparkContext
-      // set AliyunOSS configurations if exists
-      setAliyunOSSConfig()
     }
   }
 
@@ -525,25 +523,6 @@ object Engine {
       Some(nodeNum, core)
     } else {
       throw new IllegalArgumentException(s"Engine.init: Unsupported master format $master")
-    }
-  }
-
-  /**
-   * Fetch AliyunOSS conf from sparkConf, if exists, put them into system.properties.
-   */
-  private def setAliyunOSSConfig(): Unit = {
-    val sparkConf = SparkContext.getOrCreate().getConf
-    sparkConf.getOption("spark.hadoop.fs.oss.accessKeyId") match {
-      case Some(value) =>
-        System.setProperty("fs.oss.accessKeyId", value)
-    }
-    sparkConf.getOption("spark.hadoop.fs.oss.accessKeySecret") match {
-      case Some(value) =>
-        System.setProperty("fs.oss.accessKeySecret", value)
-    }
-    sparkConf.getOption("spark.hadoop.fs.oss.endpoint") match {
-      case Some(value) =>
-        System.setProperty("fs.oss.endpoint", value)
     }
   }
 }
