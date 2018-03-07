@@ -80,9 +80,26 @@ class PredictionServiceSpec extends FlatSpec with Matchers {
   }
 
   "Table/ByteArray convert" should "work properly" in {
-    val table = T.seq((1 to 5).map(_ => Tensor[Double](3, 5).randn()))
-    val bytes = PredictionService.serializeActivity(table)
-    val table2 = PredictionService.deSerializeActivity(bytes)
+    // test with increment keys
+    var table = T.seq((1 to 5).map(_ => Tensor[Double](3, 5).randn()))
+    var bytes = PredictionService.serializeActivity(table)
+    var table2 = PredictionService.deSerializeActivity(bytes)
+    table shouldEqual table2
+
+    // test with double keys
+    table = T()
+    (1 to 5).foreach(_ =>
+      table.update(Random.nextDouble(), Tensor[Double](3, 5).randn()))
+    bytes = PredictionService.serializeActivity(table)
+    table2 = PredictionService.deSerializeActivity(bytes)
+    table shouldEqual table2
+
+    // test with Tensor[String] keys
+    table = T()
+    (1 to 5).foreach(i =>
+      table.update(Tensor.scalar(i.toString), Tensor[Double](3, 5).randn()))
+    bytes = PredictionService.serializeActivity(table)
+    table2 = PredictionService.deSerializeActivity(bytes)
     table shouldEqual table2
   }
 

@@ -25,9 +25,9 @@ import com.intel.analytics.bigdl.serialization.Bigdl.{AttrValue, BigDLTensor, Da
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.{NumericBoolean, NumericChar, NumericDouble, NumericFloat, NumericInt, NumericLong, NumericString}
+import com.intel.analytics.bigdl.utils._
 import com.intel.analytics.bigdl.utils.serializer.converters.DataConverter
 import com.intel.analytics.bigdl.utils.serializer.{DeserializeContext, ModuleSerializer, ProtoStorageType, SerializeContext}
-import com.intel.analytics.bigdl.utils._
 
 import scala.collection.JavaConverters._
 import scala.collection.mutable
@@ -43,7 +43,7 @@ import scala.util.{Failure, Success, Try}
  * [[numThreads]] model instances sharing weights/bias
  * will be put into the `BlockingQueue` during initialization.
  * <br><br>
- * When predict method called, service will try to take an instance from BlockingQueue`,
+ * When predict method called, service will try to take an instance from `BlockingQueue`,
  * which means if all instances are on serving, the predicting request will be blocked until
  * some instances are released.
  * <br><br>
@@ -54,16 +54,9 @@ import scala.util.{Failure, Success, Try}
  * @param numThreads max concurrency
  */
 class PredictionService[T: ClassTag] private[optim](
-  model: Module[T],
-  numThreads: Int
+    model: Module[T],
+    numThreads: Int
 )(implicit ev: TensorNumeric[T]) {
-
-  initThreads()
-
-  private def initThreads(): Unit = {
-    Engine.setEngineType(LocalEngine)
-    Engine.setCoreNumber(numThreads)
-  }
 
   protected val instQueue: LinkedBlockingQueue[Module[T]] = {
     val shallowCopies = (1 to numThreads)
@@ -72,6 +65,17 @@ class PredictionService[T: ClassTag] private[optim](
     new LinkedBlockingQueue[Module[T]](shallowCopies)
   }
 
+  /**
+   * <h6>Thread-safe single sample prediction</h6>
+   * Running model prediction with input Activity as soon as
+   * there exists vacant instances(the size of pool is [[numThreads]]).
+   * Otherwise, it will hold on till some instances are released.
+   * <br><br>
+   * Outputs will be deeply copied after model prediction, so they are invariant.
+   *
+   * @param request input Activity, could be Tensor or Table(key, Tensor)
+   * @return output Activity, could be Tensor or Table(key, Tensor)
+   */
   def predict(request: Activity): Activity = {
     // Take an instance from blocking queue,
     // it will cause a thread blocking when no instance is available.
@@ -90,8 +94,11 @@ class PredictionService[T: ClassTag] private[optim](
           tensor.clone()
         case table: Table =>
           val clonedMap = mutable.HashMap[Any, Any]()
-          table.getState().foreach { case (k, v) =>
-            clonedMap += k -> v.asInstanceOf[Tensor[_]].clone()
+          table.getState().foreach {
+            case (k: Tensor[_], v: Tensor[_]) =>
+              clonedMap += k.clone() -> v.clone()
+            case (k, v: Tensor[_]) =>
+              clonedMap += k -> v.clone()
           }
           new Table(clonedMap)
       }
@@ -105,6 +112,19 @@ class PredictionService[T: ClassTag] private[optim](
     output
   }
 
+  /**
+   * <h6>Thread-safe single sample prediction</h6>
+   * Firstly, deserialization tasks will be run with inputs(Array[Byte]).
+   * <br><br>
+   * Then, run model prediction with deserialized inputs
+   * as soon as there exists vacant instances(total number is [[numThreads]]).
+   * Otherwise, it will hold on till some instances are released.
+   * <br><br>
+   * Finally, prediction results will be serialized to Array[Byte] according to BigDL.proto.
+   *
+   * @param request input bytes, which will be deserialized by BigDL.proto
+   * @return output bytes, which is serialized by BigDl.proto
+   */
   def predict(request: Array[Byte]): Array[Byte] = {
     val output = Try(
       PredictionService.deSerializeActivity(request)
@@ -136,16 +156,28 @@ class PredictionService[T: ClassTag] private[optim](
 
 object PredictionService {
 
+  /**
+   * <h6>Thread-safe Prediction Service for Concurrent Calls</h6>
+   * In this service, concurrency is kept not greater than `numThreads` by a `BlockingQueue`,
+   * which contains available model instances.
+   * <br><br>
+   * If exceptions caught during predict,
+   * a scalar Tensor[String] will be returned with thrown message.
+   *
+   * @param model BigDL model used to do predictions
+   * @param numThreads max concurrency
+   * @return a PredictionService instance
+   */
   def apply[T: ClassTag](
-    model: Module[T],
-    numThreads: Int
+      model: Module[T],
+      numThreads: Int
   )(implicit ev: TensorNumeric[T]): PredictionService[T] = {
     new PredictionService[T](model, numThreads)
   }
 
   /**
    * <h6>Serialize activities to Array[Byte] according to `Bigdl.proto`.</h6>
-   * For now, `Tensor` and `Table[Int, Tensor]` are supported.
+   * For now, `Tensor` and `Table[primitive|Tensor, Tensor]` are supported.
    *
    * @param activity activity to be serialized
    */
@@ -153,8 +185,44 @@ object PredictionService {
     val attrBuilder = AttrValue.newBuilder()
     activity match {
       case table: Table =>
-        val tensors = table.getState().toArray.sortBy(_._1.toString.toInt)
-          .map(_._2.asInstanceOf[Tensor[_]])
+        var keyIsPrimitive = true
+        val firstKey = table.getState().head._1
+        val tensorState: Array[(Tensor[_], Tensor[_])] = firstKey match {
+          case _: Tensor[_] =>
+            keyIsPrimitive = false
+            table.getState().map { case (k: Tensor[_], v: Tensor[_]) =>
+              k -> v }.toArray
+          case _: Int =>
+            table.getState().map { case (k: Int, v: Tensor[_]) =>
+              Tensor.scalar(k) -> v }.toArray
+          case _: Long =>
+            table.getState().map { case (k: Long, v: Tensor[_]) =>
+              Tensor.scalar(k) -> v }.toArray
+          case _: Char =>
+            table.getState().map { case (k: Char, v: Tensor[_]) =>
+              Tensor.scalar(k) -> v }.toArray
+          case _: Short =>
+            table.getState().map { case (k: Short, v: Tensor[_]) =>
+              Tensor.scalar(k) -> v }.toArray
+          case _: Float =>
+            table.getState().map { case (k: Float, v: Tensor[_]) =>
+              Tensor.scalar(k) -> v }.toArray
+          case _: Double =>
+            table.getState().map { case (k: Double, v: Tensor[_]) =>
+              Tensor.scalar(k) -> v }.toArray
+          case _: Boolean =>
+            table.getState().map { case (k: Boolean, v: Tensor[_]) =>
+              Tensor.scalar(k) -> v }.toArray
+          case _: String =>
+            table.getState().map { case (k: String, v: Tensor[_]) =>
+              Tensor.scalar(k) -> v }.toArray
+          case key =>
+            throw new UnsupportedOperationException(s"Unsupported Table key: $key!")
+        }
+
+        val (keys, values) = tensorState.unzip
+        // tensors structure: [isKeyPrimitive, keys, values]
+        val tensors = Array(Tensor.scalar(keyIsPrimitive)) ++ keys ++ values
 
         val arrayValue = ArrayValue.newBuilder
         arrayValue.setDatatype(DataType.TENSOR)
@@ -178,7 +246,7 @@ object PredictionService {
 
   /**
    * <h6>Deserialize Array[Byte] to activities according to `Bigdl.proto`.</h6>
-   * For now, `Tensor` and `Table[Int, Tensor]` are supported.
+   * For now, `Tensor` and `Table[primitive|Tensor, Tensor]` are supported.
    * It will convert `AttrValue(Array(BigdlTensor))` to a `Table`.
    * It will convert `AttrValue(BigdlTensor) ` to a `Tensor`.
    *
@@ -189,12 +257,23 @@ object PredictionService {
     attr.getDataType match {
       case DataType.ARRAY_VALUE =>
         val dataType = attr.getArrayValue.getTensor(0).getDatatype
+        // tensors structure: [isKeyPrimitive, keys, values]
         val tensors = getAttr(dataType, attr).asInstanceOf[Array[Tensor[_]]]
-        T.array(tensors)
+
+        val nElement = (tensors.length - 1) / 2
+        val keyIsPrimitive = tensors.head.asInstanceOf[Tensor[Boolean]].value()
+        val _keys = tensors.slice(1, nElement + 1)
+        val keys = if (keyIsPrimitive) _keys.map(_.value()) else _keys
+        val values = tensors.slice(nElement + 1, tensors.length)
+        val table = T()
+        keys.zip(values).foreach { case(k, v) => table.update(k, v) }
+        table
+
       case DataType.TENSOR =>
         val tValue = attr.getTensorValue
         val tensor = getAttr(tValue.getDatatype, attr)
         tensor.asInstanceOf[Tensor[_]]
+
       case tpe =>
         throw new UnsupportedOperationException(s"Unsupported DataType($tpe)!")
     }

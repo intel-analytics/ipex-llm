@@ -35,7 +35,6 @@ sealed trait EngineType
 
 case object MklBlas extends EngineType
 
-case object LocalEngine extends EngineType
 
 object Engine {
   @deprecated(
