@@ -119,6 +119,7 @@ class StaticGraph[T: ClassTag](
         .filter(n => !n.eq(dummyOutput)).map(_.element)
         .reverse
     )
+    checkDuplicate()
   }
 
 
