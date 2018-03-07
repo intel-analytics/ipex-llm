@@ -91,8 +91,6 @@ Run Spark Test
    Run Shell                        ${submit} --master ${spark_master} --driver-memory 5g --executor-memory 5g --executor-cores 12 --total-executor-cores 12 --class com.intel.analytics.bigdl.models.rnn.Train ${jar_path} -f ./ -s ./models --nEpochs 1 --checkpoint ./model/ -b 12
    Log To Console                   begin inceptionV1 train
    Run Shell                        ${submit} --master ${spark_master} --conf "spark.serializer=org.apache.spark.serializer.JavaSerializer" --driver-memory 60g --executor-memory 200g --executor-cores 24 --total-executor-cores 24 --class com.intel.analytics.bigdl.models.inception.TrainInceptionV1 ${jar_path} -b 24 -f ${imagenet_test_data_source} --learningRate 0.1 -e 1
-   Log To Console                   begin treeLSTM
-   Run Shell                        ${submit} --master ${spark_master} --driver-memory 20g --executor-memory 10g --total-executor-cores 8 --executor-cores 8 --class com.intel.analytics.bigdl.example.treeLSTMSentiment.Train ${jar_path} --baseDir ${public_hdfs_master}:9000/dataset/ --epoch 1
    Log To Console                   begin text classification
    Run Shell                        ${submit} --master ${spark_master} --driver-memory 5g --executor-memory 5g --total-executor-cores 32 --executor-cores 8 --class com.intel.analytics.bigdl.example.textclassification.TextClassifier ${jar_path} --batchSize 128 --baseDir /tmp/text_data --partitionNum 32
    Remove Input
