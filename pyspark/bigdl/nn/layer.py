@@ -1058,8 +1058,6 @@ class Sequential(Container):
     >>> s = Sequential()
     creating: createSequential
     >>> s = s.add(echo)
-    >>> s = s.add(s)
-    >>> s = s.add(echo)
 
 
     '''

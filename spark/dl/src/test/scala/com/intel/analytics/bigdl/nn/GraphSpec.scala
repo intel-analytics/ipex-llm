@@ -1325,6 +1325,17 @@ class StaticGraphSpec extends FlatSpec with Matchers {
     linear3.element.parameters()._2(0).sum() shouldNot be(0)
     linear1.element.parameters()._2(0).sum() should be(0)
   }
+
+  "Graph" should "not contain duplicate modules" in {
+    val n1 = Identity[Float]().inputs()
+    val n2 = Identity[Float]().inputs()
+    val duplicate = Identity[Float]()
+    val n3 = duplicate.inputs(n1)
+    val n4 = duplicate.inputs(n2)
+    intercept[IllegalArgumentException] {
+      val model = Graph(Array(n1, n2), Array(n3, n4))
+    }
+  }
 }
 
 object ModelUntils {
