@@ -19,9 +19,9 @@ package com.intel.analytics.bigdl.dataset.text
 import java.io.{File, PrintWriter, Serializable}
 
 import org.apache.log4j.Logger
-import org.apache.log4j.spi.LoggerFactory
 import org.apache.spark.rdd.RDD
 
+import scala.collection.mutable
 import scala.util.Random
 
 /**
@@ -46,9 +46,9 @@ class Dictionary()
   /**
    * Word encoding by its index in the dictionary
    */
-  def word2Index(): Map[String, Int] = _word2index
+  def word2Index(): mutable.Map[String, Int] = _word2index
 
-  def index2Word(): Map[Int, String] = _index2word
+  def index2Word(): mutable.Map[Int, String] = _index2word
 
   /**
    * Return the array of all selected words.
@@ -67,7 +67,7 @@ class Dictionary()
    * @param word
    */
   def getIndex(word: String): Int = {
-    _word2index.getOrElse(word, _vocabSize)
+    _word2index.getOrElse(word, getIndex("unk"))
   }
 
   def getWord(index: Float): String = {
@@ -76,6 +76,12 @@ class Dictionary()
 
   def getWord(index: Double): String = {
     getWord(index.toInt)
+  }
+
+  def addWord(word: String): Unit = {
+    _word2index.update(word, _vocabSize)
+    _index2word.update(_vocabSize, word)
+    _vocabSize += 1
   }
 
   /**
@@ -142,7 +148,7 @@ class Dictionary()
   }
 
   def this(sentences: Iterator[Array[String]],
-           vocabSize: Int) = {
+    vocabSize: Int) = {
     this()
     val freqDict = sentences
       .flatMap(x => x)
@@ -153,8 +159,18 @@ class Dictionary()
     update(freqDict, vocabSize)
   }
 
+  def this(
+    index2word: Map[Int, String],
+    word2index: Map[String, Int]) = {
+    this()
+    _index2word = collection.mutable.Map(index2word.toSeq: _*)
+    _word2index = collection.mutable.Map(word2index.toSeq: _*)
+    _vocabulary = word2index.keySet.toSeq
+    _vocabSize = _vocabulary.length
+  }
+
   def this(words: Array[String],
-           vocabSize: Int) = {
+    vocabSize: Int) = {
     this()
     val freqDict = words
       .foldLeft(Map.empty[String, Int]) {
@@ -165,7 +181,7 @@ class Dictionary()
   }
 
   def this(sentences: Stream[Array[String]],
-           vocabSize: Int) = {
+    vocabSize: Int) = {
     this()
     val freqDict = sentences
       .flatMap(x => x)
@@ -188,10 +204,10 @@ class Dictionary()
       "discardFile does not exist or is not a File type.")
 
     import scala.io.Source
-    _word2index = Source.fromFile(dictionaryFile.getAbsolutePath)
+    _word2index = mutable.Map(Source.fromFile(dictionaryFile.getAbsolutePath)
       .getLines.map(_.stripLineEnd.split("->", -1))
       .map(fields => fields(0).stripSuffix(" ") -> fields(1).stripPrefix(" ").toInt)
-      .toMap[String, Int]
+      .toMap[String, Int].toSeq: _*)
     _index2word = _word2index.map(x => (x._2, x._1))
     _vocabulary = _word2index.keys.toSeq
     _vocabSize = _word2index.size
@@ -204,7 +220,7 @@ class Dictionary()
     val length = math.min(vocabSize, freqDict.length)
     _vocabulary = freqDict.drop(freqDict.length - length).map(_._1)
     _vocabSize = _vocabulary.length
-    _word2index = _vocabulary.zipWithIndex.toMap
+    _word2index = mutable.Map(_vocabulary.zipWithIndex.toMap.toSeq: _*)
     _index2word = _word2index.map(x => (x._2, x._1))
     _discardVocab = freqDict.take(freqDict.length - length).map(_._1)
     _discardSize = _discardVocab.length
@@ -215,8 +231,8 @@ class Dictionary()
 
   private var _vocabSize: Int = 0
   private var _discardSize: Int = 0
-  private var _word2index: Map[String, Int] = null
-  private var _index2word: Map[Int, String] = null
+  private var _word2index: mutable.Map[String, Int] = null
+  private var _index2word: mutable.Map[Int, String] = null
   private var _vocabulary: Seq[String] = null
   private var _discardVocab: Seq[String] = null
 }
@@ -236,4 +252,9 @@ object Dictionary {
 
   def apply(dataset: RDD[Array[String]], vocabSize: Int = 10000)
   : Dictionary = new Dictionary(dataset, vocabSize)
+
+  def apply(
+    index2word: Map[Int, String],
+    word2index: Map[String, Int])
+  : Dictionary = new Dictionary(index2word, word2index)
 }
