@@ -1035,7 +1035,7 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
    * Container should override this method
    */
   private[bigdl] def checkDuplicate(
-    record: mutable.HashMap[Int, Boolean] = mutable.HashMap()
+    record: mutable.HashSet[Int] = mutable.HashSet()
   ): Unit = {}
 }
 

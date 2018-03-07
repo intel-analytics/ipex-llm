@@ -220,19 +220,19 @@ abstract class Container[A <: Activity : ClassTag,
    * Check if some module is duplicated in the model
    */
   private[bigdl] override final def checkDuplicate(
-    record: mutable.HashMap[Int, Boolean] = mutable.HashMap()
+    record: mutable.HashSet[Int] = mutable.HashSet()
   ): Unit = {
     val errMsg = "Some module is duplicate in the current model: "
     val curId = System.identityHashCode(this)
-    require(record.get(curId).isEmpty, errMsg + this.getName())
-    record(curId) = true
+    require(!record.contains(curId), errMsg + this.getName())
+    record.add(curId)
     modules.foreach(m => {
       if (m.isInstanceOf[Container[_, _, _]]) {
         m.asInstanceOf[Container[_, _, _]].checkDuplicate(record)
       } else {
         val mId = System.identityHashCode(m)
-        require(record.get(mId).isEmpty, errMsg + m.getName())
-        record(mId) = true
+        require(!record.contains(mId), errMsg + m.getName())
+        record.add(mId)
       }
     })
   }
