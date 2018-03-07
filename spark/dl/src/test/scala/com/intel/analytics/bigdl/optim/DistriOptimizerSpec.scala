@@ -649,7 +649,7 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val targetOriArr = targetOri.collect()
 
 
-    val myOpt = new DistriOptimizer[Double](null, dataSet, null) {
+    val myOpt = new DistriOptimizer[Double](Identity[Double](), dataSet, null) {
         override def optimize(): Module[Double] = {
           val dds = this.dataset.asInstanceOf[DistributedDataSet[MiniBatch[Double]]]
           val rdd = dds.data(train = false)
@@ -664,9 +664,6 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
           inputArr.sameElements(inputOriArr) should be (true)
           targetArr.sameElements(targetOriArr) should be (true)
 
-          // println(s"get=(input=${inputArr.mkString("\n")}\ntarget=${targetArr.mkString("\n")})")
-          // println(s"original=(input=${inputOriArray.mkString("\n")}"
-          // + s"\ntarget=${targetOriArray.mkString("\n")})")
           model
         }
     }
