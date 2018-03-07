@@ -173,7 +173,6 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
 
   private def copyBlobs(from : GeneratedMessage, to : GeneratedMessage): GeneratedMessage = {
     import scala.language.existentials
-    
     val blobList = from match {
       case v1 : V1LayerParameter => v1.asInstanceOf[V1LayerParameter].getBlobsList.asScala
       case v2 : LayerParameter => v2.asInstanceOf[LayerParameter].getBlobsList.asScala
