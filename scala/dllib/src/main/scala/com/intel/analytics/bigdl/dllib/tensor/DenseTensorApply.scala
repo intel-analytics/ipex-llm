@@ -29,7 +29,7 @@ object DenseTensorApply {
   def apply1[A, B](tensor1: Tensor[A], tensor2: Tensor[B],
     func: TensorDiffTypeFunc4[A, B]): Unit = {
 
-    if (tensor1.isEmpty == 0) {
+    if (tensor1.isEmpty) {
       return
     }
 

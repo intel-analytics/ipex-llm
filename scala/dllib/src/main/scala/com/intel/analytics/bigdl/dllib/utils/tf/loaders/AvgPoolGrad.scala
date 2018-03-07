@@ -19,7 +19,7 @@ import java.nio.ByteOrder
 
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.nn.abstractnn.DataFormat
-import com.intel.analytics.bigdl.nn.tf.AvgPoolGrad
+import com.intel.analytics.bigdl.nn.tf.{AvgPoolGrad => AvgPoolGradOps}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.tf.Context
 import org.tensorflow.framework.NodeDef
@@ -52,7 +52,7 @@ class AvgPoolGrad extends TensorflowOpsLoader {
         val strideH = strideList(2)
         val kW = kernelSize(1)
         val kH = kernelSize(2)
-        AvgPoolGrad[T](kW, kH, strideW, strideH, pW, pH, DataFormat.NHWC)
+        AvgPoolGradOps[T](kW, kH, strideW, strideH, pW, pH, DataFormat.NHWC)
 
       case "NCHW" =>
         require(strideList(1) == 1, s"not support strides on depth")
@@ -60,7 +60,7 @@ class AvgPoolGrad extends TensorflowOpsLoader {
         val strideH = strideList(3)
         val kW = kernelSize(2)
         val kH = kernelSize(3)
-        AvgPoolGrad[T](kW, kH, strideW, strideH, pW, pH, DataFormat.NCHW)
+        AvgPoolGradOps[T](kW, kH, strideW, strideH, pW, pH, DataFormat.NCHW)
       case _ =>
         throw new IllegalArgumentException(s"not supported data format: $format")
     }

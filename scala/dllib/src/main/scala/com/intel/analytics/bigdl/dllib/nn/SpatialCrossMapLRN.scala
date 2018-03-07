@@ -236,7 +236,6 @@ object SpatialCrossMapLRN {
     scale.mul(ev.fromType(alpha / size)).add(ev.fromType(k))
     output.pow(scale, ev.fromType(-beta))
     output.cmul(input)
-    output
   }
 
   def forwardFrameNHWCFloat(
@@ -282,7 +281,6 @@ object SpatialCrossMapLRN {
         Math.pow(k + alpha / size * l2sum, -beta).toFloat
       i += 1
     }
-    output
   }
 
   private def backwardFrameNCHW[T](

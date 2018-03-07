@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.utils.tf.loaders
 import java.nio.ByteOrder
 
 import com.intel.analytics.bigdl.Module
-import com.intel.analytics.bigdl.nn.tf.{SoftplusGrad, SoftsignGrad}
+import com.intel.analytics.bigdl.nn.tf.{SoftsignGrad => SoftsignGradOps}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.tf.Context
 import com.intel.analytics.bigdl.utils.tf.loaders.Utils.getType
@@ -33,9 +33,9 @@ class SoftsignGrad extends TensorflowOpsLoader {
                                   context: Context[T])(implicit ev: TensorNumeric[T]): Module[T] = {
     val t = getType(nodeDef.getAttrMap, "T")
     if (t == DataType.DT_FLOAT) {
-      SoftsignGrad[T, Float]()
+      SoftsignGradOps[T, Float]()
     } else if (t == DataType.DT_DOUBLE) {
-      SoftsignGrad[T, Double]()
+      SoftsignGradOps[T, Double]()
     } else {
       throw new UnsupportedOperationException(s"Not support load SoftsignGrad when type is ${t}")
     }

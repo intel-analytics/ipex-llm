@@ -85,6 +85,7 @@ private[bigdl] class ParseExample[T: ClassTag](val nDense: Int,
       case StringType =>
         val values = feature.getBytesList.getValueList.asScala.toArray
         Tensor(values, tensorShape)
+      case t => throw new NotImplementedError(s"$t is not supported")
     }
   }
 }
@@ -156,6 +157,7 @@ private[bigdl] object ParseExample extends ModuleSerializable {
       case LongType => "Long"
       case FloatType => "Float"
       case StringType => "String"
+      case t => throw new NotImplementedError(s"$t is not supported")
     }
   }
 
