@@ -80,11 +80,11 @@ def __prepare_bigdl_env():
         print("Prepending %s to sys.path" % conf_paths[0])
         sys.path.insert(0, conf_paths[0])
 
-    if os.environ.get('BIGDL_JARS', None) and is_spark_below_2_2():
+    if os.environ.get("BIGDL_JARS", None) and is_spark_below_2_2():
         for jar in os.environ["BIGDL_JARS"].split(":"):
             append_path("SPARK_CLASSPATH", jar)
 
-    if os.environ.get('BIGDL_PACKAGES', None):
+    if os.environ.get("BIGDL_PACKAGES", None):
         for package in os.environ["BIGDL_PACKAGES"].split(":"):
             sys.path.insert(0, package)
 

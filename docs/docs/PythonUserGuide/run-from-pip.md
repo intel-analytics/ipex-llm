@@ -46,13 +46,13 @@ linear = Linear(2, 3) # Try to create a Linear layer
 ## **BigDL Configurations**
 
 * Increase memory
-```commandline
+```bash
 export SPARK_DRIVER_MEMORY=20g
 ```
 * Add extra jars or python packages
 
- &emsp; Set the environment variables `BIGDL_JARS` and `BIGDL_PACKAGES`:
-```commandline
+ &emsp; Set the environment variables `BIGDL_JARS` and `BIGDL_PACKAGES` __BEFORE__ creating `SparkContext`:
+```bash
 export BIGDL_JARS=...
 export BIGDL_PACKAGES=...
 ```

@@ -497,7 +497,7 @@ def create_spark_conf():
     bigdl_conf = get_bigdl_conf()
     sparkConf = SparkConf()
     sparkConf.setAll(bigdl_conf.items())
-    if not is_spark_below_2_2():
+    if os.environ.get("BIGDL_JARS", None) and not is_spark_below_2_2():
         for jar in os.environ["BIGDL_JARS"].split(":"):
             extend_spark_driver_cp(sparkConf, jar)
 
