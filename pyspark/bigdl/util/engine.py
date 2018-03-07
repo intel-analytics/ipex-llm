@@ -64,6 +64,14 @@ def __prepare_bigdl_env():
     jar_dir = os.path.abspath(__file__ + "/../../")
     conf_paths = glob.glob(os.path.join(jar_dir, "share/conf/*.conf"))
     bigdl_classpath = get_bigdl_classpath()
+
+    def append_path(env_var_name, path):
+        try:
+            print("Adding %s to %s" % (path, env_var_name))
+            os.environ[env_var_name] = path + ":" + os.environ[env_var_name]  # noqa
+        except KeyError:
+            os.environ[env_var_name] = path
+
     if bigdl_classpath:
         append_path("BIGDL_JARS", bigdl_classpath)
 
@@ -79,14 +87,6 @@ def __prepare_bigdl_env():
     if os.environ.get('BIGDL_PACKAGES', None):
         for package in os.environ["BIGDL_PACKAGES"].split(":"):
             sys.path.insert(0, package)
-
-
-def append_path(env_var_name, path):
-    try:
-        print("Adding %s to %s" % (path, env_var_name))
-        os.environ[env_var_name] = path + ":" + os.environ[env_var_name]  # noqa
-    except KeyError:
-        os.environ[env_var_name] = path
 
 
 def get_bigdl_classpath():
