@@ -46,24 +46,23 @@ linear = Linear(2, 3) # Try to create a Linear layer
 ## **BigDL Configurations**
 
 * Increase memory
-    - export SPARK_DRIVER_MEMORY=20g
-* Add extra jars or python packages
-    - Call the following API __BEFORE__ creating `SparkContext`:
-```python
-from bigdl.util.common import Configuration
-
-Configuration.add_extra_jars(jars)
-Configuration.add_extra_python_modules(packages)
+```commandline
+export SPARK_DRIVER_MEMORY=20g
 ```
-   `jars` can be a string or a list of strings as jar paths to be added.
+* Add extra jars or python packages
 
-   `packages` can be a string or a list of strings as python package paths to be appended to `sys.path`.
-
+ &emsp; Set the environment variables `BIGDL_JARS` and `BIGDL_PACKAGES`:
+```commandline
+export BIGDL_JARS=...
+export BIGDL_PACKAGES=...
+```
 * Redirect logs
-    - If you want to redirect spark logs to file and keep BigDL logs in console only, call the following API before you train your model:
+
+ &emsp; If you want to redirect spark logs to file and keep BigDL logs in console only, call the following API before you train your model:
 ```python
 from bigdl.util.common import *
 
-redire_spark_logs(log_path=file path to redirect logs to)
+# by default redirected to `bigdl.log` under the current workspace
+redire_spark_logs(log_path="bigdl.log")
 show_bigdl_info_logs()
 ```

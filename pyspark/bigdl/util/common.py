@@ -56,6 +56,7 @@ class SingletonMixin(object):
                     cls._instance = cls(bigdl_type, *args)
         return cls._instance
 
+
 class GatewayWrapper(SingletonMixin):
 
     def __init__(self, bigdl_type, port=25333):
@@ -415,12 +416,15 @@ _picklable_classes = [
 def init_engine(bigdl_type="float"):
     callBigDlFunc(bigdl_type, "initEngine")
 
+
 def init_executor_gateway(sc, bigdl_type="float"):
     callBigDlFunc(bigdl_type, "initExecutorGateway", sc, sc._gateway._gateway_client.port)
+
 
 def get_node_and_core_number(bigdl_type="float"):
     result = callBigDlFunc(bigdl_type, "getNodeAndCoreNumber")
     return result[0], result[1]
+
 
 def redire_spark_logs(bigdl_type="float", log_path=os.getcwd()+"/bigdl.log"):
     """
@@ -540,6 +544,7 @@ def get_spark_sql_context(sc):
     else:
         return SQLContext(sc)  # Compatible with Spark1.5.1
 
+
 def _get_port():
     root_dir = SparkFiles.getRootDirectory()
     path = os.path.join(root_dir, "gateway_port")
@@ -553,6 +558,7 @@ def _get_port():
                            " function is called before any call of java function on the"
                            " executor side." % e.filename)
     return port
+
 
 def _get_gateway():
     if SparkFiles._is_running_on_worker:
