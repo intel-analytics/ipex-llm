@@ -58,7 +58,7 @@ Refer to python_submit_yarn_cluster.sh.example to run lenet example on yarn clus
     --archives venv.zip \
     --conf spark.driver.extraClassPath=bigdl-VERSION-jar-with-dependencies.jar \
     --conf spark.executor.extraClassPath=bigdl-VERSION-jar-with-dependencies.jar \
-    ${BigDL_HOME}/pyspark/dl/models/lenet/lenet5.py
+    ${BigDL_HOME}/pyspark/bigdl/models/lenet/lenet5.py
  ```
 details can be found at: [LeNet5](https://github.com/intel-analytics/BigDL/tree/master/pyspark/dl/models/lenet/README.md).
 
@@ -87,5 +87,5 @@ Refer to python_submit_yarn_client.sh.example to run lenet example on yarn clien
     --archives venv.zip \
     --conf spark.driver.extraClassPath=${BigDL_JAR_PATH} \
     --conf spark.executor.extraClassPath=bigdl-VERSION-jar-with-dependencies.jar \
-    ${BigDL_HOME}/pyspark/dl/models/lenet/lenet5.py
+    ${BigDL_HOME}/pyspark/bigdl/models/lenet/lenet5.py
  ```

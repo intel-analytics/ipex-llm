@@ -21,8 +21,10 @@ SPARK_HOME=...
 PYTHON_API_PATH=${BigDL_HOME}/dist/lib/bigdl-VERSION-python-api.zip
 BigDL_JAR_PATH=${BigDL_HOME}/dist/lib/bigdl-VERSION-jar-with-dependencies.jar
 PYTHONPATH=${PYTHON_API_PATH}:$PYTHONPATH
+VENV_HOME=...
+
 # http_proxy=http://...
-PYSPARK_DRIVER_PYTHON=./venv/bin/python PYSPARK_PYTHON=./venv.zip/venv/bin/python ${SPARK_HOME}/bin/spark-submit \
+PYSPARK_DRIVER_PYTHON=${VENV_HOME}/venv/bin/python PYSPARK_PYTHON=./venv.zip/venv/bin/python ${SPARK_HOME}/bin/spark-submit \
 --master yarn \
 --deploy-mode client \
 #--conf spark.executorEnv.http_proxy=http://... \
@@ -33,7 +35,7 @@ PYSPARK_DRIVER_PYTHON=./venv/bin/python PYSPARK_PYTHON=./venv.zip/venv/bin/pytho
 --properties-file ${BigDL_HOME}/dist/conf/spark-bigdl.conf \
 --jars ${BigDL_JAR_PATH} \
 --py-files ${PYTHON_API_PATH} \
---archives venv.zip \
+--archives ${VENV_HOME}/venv.zip \
 --conf spark.driver.extraClassPath=${BigDL_JAR_PATH} \
 --conf spark.executor.extraClassPath=bigdl-VERSION-jar-with-dependencies.jar \
-${BigDL_HOME}/pyspark/dl/models/lenet/lenet5.py
+${BigDL_HOME}/pyspark/bigdl/models/lenet/lenet5.py
