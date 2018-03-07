@@ -1348,6 +1348,17 @@ class DynamicGraphSpec  extends FlatSpec with Matchers {
     result.toTable.apply[Tensor[Float]](1).valueAt(1) should be(10)
     result.toTable.apply[Tensor[Float]](2).valueAt(1) should be(47)
   }
+
+  "DynamicGraph" should "not contain duplicate modules" in {
+    val n1 = Identity[Float]().inputs()
+    val n2 = Identity[Float]().inputs()
+    val duplicate = Identity[Float]()
+    val n3 = duplicate.inputs(n1)
+    val n4 = duplicate.inputs(n2)
+    intercept[IllegalArgumentException] {
+      val model = Graph.dynamic(Array(n1, n2), Array(n3, n4))
+    }
+  }
 }
 
 class DynamicGraphSerialTest extends ModuleSerializationTest {
