@@ -68,6 +68,8 @@ abstract class Optimizer[T: ClassTag, D](
 
   protected val gradientClippingParams = GradientClippingParams(false, 0.0f, 0.0f, false, 0.0f)
 
+  model.checkDuplicate()
+
   /**
    * Trigger the optimization process
    * @return the model to be trained
@@ -240,6 +242,7 @@ abstract class Optimizer[T: ClassTag, D](
    */
   def setModel(newModel: Module[T]): this.type = {
     model = newModel
+    model.checkDuplicate()
     // if a new Model is set, then reset "epoch", "neval" .etc.
     resetEpoch()
     this

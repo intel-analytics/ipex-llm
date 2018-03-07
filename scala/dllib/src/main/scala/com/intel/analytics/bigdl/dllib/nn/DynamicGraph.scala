@@ -115,6 +115,7 @@ private[bigdl] class DynamicGraph[T: ClassTag](
         .filterNot(_.element.isInstanceOf[ControlDependency[T]])
         .filter(n => !n.eq(dummyOutput)).map(_.element)
     )
+    checkDuplicate()
   }
 
   private def backwardExecution(input: Activity, gradOutput: Activity, isBackward: Boolean)
