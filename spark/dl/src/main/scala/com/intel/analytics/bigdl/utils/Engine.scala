@@ -41,8 +41,8 @@ object Engine {
     "See https://bigdl-project.github.io/master/#APIGuide/Engine/",
     "0.1.0")
   def init(nExecutor: Int,
-      executorCores: Int,
-      onSpark: Boolean): Option[SparkConf] = {
+           executorCores: Int,
+           onSpark: Boolean): Option[SparkConf] = {
     logger.warn("Engine.init(nExecutor, executorCores, onSpark) is deprecated. " +
       "Please refer to " +
       "https://bigdl-project.github.io/master/#APIGuide/Engine/")
