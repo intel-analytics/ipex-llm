@@ -34,12 +34,12 @@ The model is described as a graph in the functional API. It is more convenient t
 
 To create an input node:
 ```scala
-Input(name = null, inputShape = null)
+Input(inputShape = null, name = null)
 ```
 Parameters:
 
+* `inputShape`: A [`Shape`](#shape) object indicating the shape of the input node, not including batch.
 * `name`: String to specify the name of the input node. Default is null.
-* `shape`: A [`Shape`](#shape) object indicating the shape of the input node, not including batch.
 
 To create a graph container:
 ```scala

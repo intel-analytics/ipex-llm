@@ -95,6 +95,8 @@ pages:
   - Python Guide: KerasStyleAPIGuide/keras-api-python.md
   - Scala Guide: KerasStyleAPIGuide/keras-api-scala.md
   - Layers:
+    - Activation: KerasStyleAPIGuide/Layers/activation.md
+    - Initialization: KerasStyleAPIGuide/Layers/initialization.md
     - Core Layers: KerasStyleAPIGuide/Layers/core.md
 - Powered by: powered-by.md
 - Known Issues: known-issues.md
