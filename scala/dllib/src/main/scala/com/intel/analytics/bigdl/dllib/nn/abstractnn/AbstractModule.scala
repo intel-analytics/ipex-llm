@@ -1029,5 +1029,13 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
   private[bigdl] def getClassTagNumerics() : (Array[ClassTag[_]], Array[TensorNumeric[_]]) = {
     (Array(scala.reflect.classTag[T]), Array(ev))
   }
+
+  /**
+   * Check if some module is duplicated in the model. For a layer it cannot be duplicated.
+   * Container should override this method
+   */
+  private[bigdl] def checkDuplicate(
+    record: mutable.HashSet[Int] = mutable.HashSet()
+  ): Unit = {}
 }
 

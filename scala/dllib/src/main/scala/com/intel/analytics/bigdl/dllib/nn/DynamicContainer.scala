@@ -43,6 +43,7 @@ abstract class DynamicContainer[A <: Activity : ClassTag, B <: Activity : ClassT
         "Operation can only be used in Graph")
     Util.excludeNotTorch[T](Seq(module))
     modules += module.asInstanceOf[AbstractModule[Activity, Activity, T]]
+    checkDuplicate()
     this
   }
 }
