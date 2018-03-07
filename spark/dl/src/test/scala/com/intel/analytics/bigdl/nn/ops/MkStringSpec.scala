@@ -15,8 +15,6 @@
  */
 package com.intel.analytics.bigdl.nn.ops
 
-import javafx.scene.control.SpinnerValueFactory.DoubleSpinnerValueFactory
-
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
 import org.scalatest.{FlatSpec, Matchers}
