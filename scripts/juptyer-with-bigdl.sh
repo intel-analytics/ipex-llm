@@ -11,7 +11,7 @@ if [ -z "${SPARK_HOME}" ]; then
     exit 1
 fi
 
-#setup pathes
+#setup paths
 export PYSPARK_DRIVER_PYTHON=jupyter
 export PYSPARK_DRIVER_PYTHON_OPTS="notebook --notebook-dir=./ --ip=* --no-browser --NotebookApp.token=''"
 export BIGDL_JAR_NAME=`ls ${BIGDL_HOME}/lib/ | grep jar-with-dependencies.jar`

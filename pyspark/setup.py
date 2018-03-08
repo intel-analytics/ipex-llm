@@ -80,7 +80,7 @@ def setup_package():
         packages=['bigdl',
                   'bigdl.dataset',
                   'bigdl.nn',
-                  'bigdl.nn.keras'
+                  'bigdl.nn.keras',
                   'bigdl.transform',
                   'bigdl.transform.vision',
                   'bigdl.keras',
