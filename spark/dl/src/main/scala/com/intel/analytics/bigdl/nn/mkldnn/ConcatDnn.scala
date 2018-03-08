@@ -222,8 +222,17 @@ class ConcatDnn(val dimension: Int) extends Container[Tensor[Float], Tensor[Floa
       val _i = i
       results(i) = Engine.model.invoke( () => {
         val narrowedTensor = gradOutput.narrow(dimension, _offset, currentOutput.size(dimension))
+        if (gradOutput.getPrimitiveDesc() != 0L) {
+          val md = MklDnnOps.memoryDescInit(
+            narrowedTensor.dim(), narrowedTensor.size(), dataType, gradOutput.getFormat())
+          val pd = MklDnnOps.memoryPrimitiveDescCreate(md, engine)
+          narrowedTensor.setPrimitiveDesc(pd)
+        }
         if(dimension == 2) {
           gradouts(_i) = Tensor[Float]().resizeAs(narrowedTensor)
+          if (narrowedTensor.getPrimitiveDesc() != 0L) {
+            gradouts(_i).setPrimitiveDesc(narrowedTensor.getPrimitiveDesc())
+          }
           var b = 1
           val firstSize = narrowedTensor.size(1)
           while(b <= firstSize) {

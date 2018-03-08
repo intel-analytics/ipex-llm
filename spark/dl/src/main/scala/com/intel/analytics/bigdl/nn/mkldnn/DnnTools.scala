@@ -235,6 +235,44 @@ object Inception_Layer_v2 {
   }
 }
 
+object Inception_v1_NoAuxClassifier_dnn {
+  def apply(classNum: Int, hasDropout: Boolean = true): Module[Float] = {
+    val model = Sequential()
+    model.add(ConvolutionDnn(3, 64, 7, 7, 2, 2, 3, 3, 1, false)
+      .setInitMethod(weightInitMethod = Xavier, Zeros)
+      .setName("conv1/7x7_s2"))
+    model.add(ReLUDnn(true).setName("conv1/relu_7x7"))
+    model.add(PoolingDnn(3, 3, 2, 2).ceil().setName("pool1/3x3_s2"))
+    model.add(LRNDnn(5, 0.0001, 0.75).setName("pool1/norm1"))
+    model.add(ConvolutionDnn(64, 64, 1, 1, 1, 1).setInitMethod(weightInitMethod = Xavier, Zeros)
+      .setName("conv2/3x3_reduce"))
+    model.add(ReLUDnn(true).setName("conv2/relu_3x3_reduce"))
+    model.add(ConvolutionDnn(64, 192, 3, 3, 1, 1, 1, 1)
+      .setInitMethod(weightInitMethod = Xavier, Zeros).setName("conv2/3x3"))
+    model.add(ReLUDnn(true).setName("conv2/relu_3x3"))
+    model.add(LRNDnn(5, 0.0001, 0.75). setName("conv2/norm2"))
+    model.add(PoolingDnn(3, 3, 2, 2).ceil().setName("pool2/3x3_s2"))
+    model.add(Inception_Layer_v1(192, T(T(64), T(96, 128), T(16, 32), T(32)), "inception_3a/"))
+    model.add(Inception_Layer_v1(256, T(T(128), T(128, 192), T(32, 96), T(64)), "inception_3b/"))
+    model.add(PoolingDnn(3, 3, 2, 2).ceil().setName("pool3/3x3_s2"))
+    model.add(Inception_Layer_v1(480, T(T(192), T(96, 208), T(16, 48), T(64)), "inception_4a/"))
+    model.add(Inception_Layer_v1(512, T(T(160), T(112, 224), T(24, 64), T(64)), "inception_4b/"))
+    model.add(Inception_Layer_v1(512, T(T(128), T(128, 256), T(24, 64), T(64)), "inception_4c/"))
+    model.add(Inception_Layer_v1(512, T(T(112), T(144, 288), T(32, 64), T(64)), "inception_4d/"))
+    model.add(Inception_Layer_v1(528, T(T(256), T(160, 320), T(32, 128), T(128)), "inception_4e/"))
+    model.add(PoolingDnn(3, 3, 2, 2).ceil().setName("pool4/3x3_s2"))
+    model.add(Inception_Layer_v1(832, T(T(256), T(160, 320), T(32, 128), T(128)), "inception_5a/"))
+    model.add(Inception_Layer_v1(832, T(T(384), T(192, 384), T(48, 128), T(128)), "inception_5b/"))
+    model.add(PoolingDnnAverage(7, 7, 1, 1).setName("pool5/7x7_s1"))
+    if (hasDropout) model.add(Dropout(0.4).setName("pool5/drop_7x7_s1"))
+    // model.add(View(1024).setNumInputDims(3))
+    model.add(mkldnn.Linear(1024, classNum)
+      .setInitMethod(weightInitMethod = Xavier, Zeros).setName("loss3/classifier"))
+    model.add(LogSoftMax().setName("loss3/loss3"))
+    model
+  }
+}
+
 object Inception_v1_dnn {
   def apply(classNum: Int, hasDropout: Boolean = true): Module[Float] = {
     val feature1 = Sequential()

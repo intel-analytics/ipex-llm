@@ -18,11 +18,12 @@ package com.intel.analytics.bigdl.nn.mkldnn
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dataset.MiniBatch
 import com.intel.analytics.bigdl.example.loadmodel.AlexNet
-import com.intel.analytics.bigdl.models.inception.{Inception_v1, Inception_v2}
+import com.intel.analytics.bigdl.models.inception
+import com.intel.analytics.bigdl.models.inception.{Inception_v1, Inception_v1_NoAuxClassifier, Inception_v2}
 import com.intel.analytics.bigdl.models.resnet.ResNet
 import com.intel.analytics.bigdl.models.resnet.ResNet.DatasetType
 import com.intel.analytics.bigdl.models.vgg.{Vgg_16, Vgg_19}
-import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, CrossEntropyCriterion, SpatialConvolution}
+import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, CrossEntropyCriterion, Sequential, SpatialConvolution}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import com.intel.analytics.bigdl.utils.T
@@ -47,6 +48,14 @@ class ModelSpec extends FlatSpec with Matchers {
       case "inception_v2_dnn" =>
         (Inception_v2_dnn(1000), MiniBatch(Tensor[Float](batchSize, 3, 224, 224)
           .apply1(e => RNG.uniform(0, 1).toFloat), Tensor[Float](batchSize, 3000).randn()))
+      case "inception_no_dnn" =>
+        (Inception_v1_NoAuxClassifier_dnn(1000, false),
+          MiniBatch(Tensor[Float](batchSize, 3, 224, 224).randn(),
+            Tensor[Float](batchSize).fill(1)))
+      case "inception_no" =>
+        (Inception_v1_NoAuxClassifier(1000, false),
+          MiniBatch(Tensor[Float](batchSize, 3, 224, 224).randn(),
+            Tensor[Float](batchSize).fill(1)))
       case "vgg16" =>
         (Vgg_16(1000, false), MiniBatch(Tensor[Float](batchSize, 3, 224, 224)
           .apply1(e => RNG.uniform(0, 1).toFloat), Tensor[Float](batchSize, 1000).randn()))
@@ -80,13 +89,55 @@ class ModelSpec extends FlatSpec with Matchers {
     (_model, input)
   }
 
-  "Inception_v1_dnn" should " be same with inception_v1" in {
+  def formatEqual(out1: Tensor[Float], out2: Tensor[Float],
+                  epsilion: Double, format: Int = 0): Unit = {
+    var userOut2 = Tensor[Float]()
+    if (out1.getFormat() != out2.getFormat() && out2.getFormat() != 5) {
+      DnnUtils.reorderToUser(out2, userOut2, 5)
+    } else {
+      userOut2 = out2
+    }
+
+    DnnUtils.nearequals(out1, userOut2, epsilion) should be(true)
+  }
+
+  "inception_no_dnn" should "be same with inception_no" in {
+    val batchSize = 2
+    val (model1, batch1) = getModel("inception_no", batchSize)
+    val (model2, batch2) = getModel("inception_no_dnn", batchSize)
+
+    RNG.setSeed(1)
+    val input = Tensor[Float](batchSize, 3, 224, 224).apply1(e => RNG.uniform(0, 1).toFloat)
+
+    val (weight1, gradWeight1) = model1.getParameters()
+    val (weight2, gradWeight2) = model2.getParameters()
+    DnnUtils.nearequals(weight1, weight2, 1e-10) should be(true)
+    DnnUtils.nearequals(gradWeight1, gradWeight2, 1e-10) should be(true)
+
+    val out1 = model1.forward(input).toTensor[Float]
+    val out2 = model2.forward(input).toTensor[Float]
+
+    formatEqual(out1, out2, 1e-4)
+    DnnUtils.nearequals(weight1, weight2, 1e-10) should be(true)
+    DnnUtils.nearequals(gradWeight1, gradWeight2, 1e-10) should be(true)
+
+    val grad1 = model1.backward(input, out1).toTensor[Float]
+    val grad2 = model2.backward(input, out1).toTensor[Float]
+
+    // DnnUtils.nearequals(grad1, grad2, 1e-3) should be(true)
+    DnnUtils.nearequals(weight1, weight2, 1e-4) should be(true)
+    DnnUtils.getunequals(gradWeight1, gradWeight2, 2e-4) should be(true)
+
+    println("done")
+  }
+
+  "Inception_v1_dnn" should "be same with inception_v1" in {
     val batchSize = 2
     val (model1, batch1) = getModel("inception_v1", batchSize)
     val (model2, batch2) = getModel("inception_v1_dnn", batchSize)
 
     RNG.setSeed(1)
-    val input = Tensor[Float](batchSize, 3, 224, 224).fill(1.0f)
+    val input = Tensor[Float](batchSize, 3, 224, 224).apply1(e => RNG.uniform(0, 1).toFloat)
 
     val (weight1, bias1) = model1.getParameters()
     val (weight2, bias2) = model2.getParameters()
@@ -104,13 +155,13 @@ class ModelSpec extends FlatSpec with Matchers {
     val grad2 = model2.backward(input, out1).toTensor[Float]
 
     DnnUtils.nearequals(weight1, weight2, 1e-4) should be(true)
-    DnnUtils.nearequals(bias1, bias2, 1e-4) should be(true)
+    DnnUtils.nearequals(bias1, bias2, 2e-4) should be(true)
 
     println("done")
 
   }
 
-  "Inception_v2_dnn" should " be same with inception_v2" in {
+  "Inception_v2_dnn" should "be same with inception_v2" in {
     val batchSize = 2
     val (model1, batch1) = getModel("inception_v2", batchSize)
     val (model2, batch2) = getModel("inception_v2_dnn", batchSize)
@@ -144,7 +195,7 @@ class ModelSpec extends FlatSpec with Matchers {
     println("done")
   }
 
-  "Vgg16_dnn" should " be same with Vgg16_dnn" in {
+  "Vgg16_dnn" should "be same with Vgg16_dnn" in {
     val batchSize = 2
     val (model1, batch1) = getModel("vgg16", batchSize)
     val (model2, batch2) = getModel("vgg16_dnn", batchSize)
@@ -175,7 +226,7 @@ class ModelSpec extends FlatSpec with Matchers {
     println("done")
   }
 
-  "Vgg19_dnn" should " be same with Vgg19_dnn" in {
+  "Vgg19_dnn" should "be same with Vgg19_dnn" in {
     val batchSize = 2
     val (model1, batch1) = getModel("vgg19", batchSize)
     val (model2, batch2) = getModel("vgg19_dnn", batchSize)
@@ -200,14 +251,14 @@ class ModelSpec extends FlatSpec with Matchers {
     model1.accGradParameters(input, out1)
     model2.accGradParameters(input, out1)
     println("compare params")
-    DnnUtils.nearequals(weightAll1, weightAll2, 1e-4) shoul d be(true)
+    DnnUtils.nearequals(weightAll1, weightAll2, 1e-4) should be(true)
     DnnUtils.nearequals(biasAll1, biasAll2, 1e-3) should be(true)
 
     println("done")
 
 
   }
-  "Resnet50-dnn" should " be same with resnet-50" in {
+  "Resnet50-dnn" should "be same with resnet-50" in {
     val batchSize = 2
     val (model1, batch1) = getModel("resnet_50", batchSize)
     val (model2, batch2) = getModel("resnet_50_dnn", batchSize)
@@ -239,6 +290,5 @@ class ModelSpec extends FlatSpec with Matchers {
 
 
     println("done")
-
   }
 }

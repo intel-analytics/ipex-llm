@@ -21,9 +21,9 @@ import breeze.linalg.all
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dataset.{LocalDataSet, MiniBatch}
 import com.intel.analytics.bigdl.example.loadmodel.AlexNet
-import com.intel.analytics.bigdl.models.inception.{Inception_v1, Inception_v2}
+import com.intel.analytics.bigdl.models.inception.{Inception_v1, Inception_v1_NoAuxClassifier, Inception_v2}
 import com.intel.analytics.bigdl.models.lenet.LeNet5
-import com.intel.analytics.bigdl.models.resnet.{ResNet}
+import com.intel.analytics.bigdl.models.resnet.ResNet
 import com.intel.analytics.bigdl.models.resnet.ResNet.DatasetType
 import com.intel.analytics.bigdl.models.vgg.{Vgg_16, Vgg_19}
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
@@ -87,6 +87,14 @@ object LocalOptimizerPerf {
       case "inception_v1_dnn" =>
         (Inception_v1_dnn(1000, true), MiniBatch(Tensor(batchSize, 3, 224, 224).randn(),
           Tensor(batchSize).fill(1)), ClassNLLCriterion())
+      case "inception_no_dnn" =>
+        (Inception_v1_NoAuxClassifier_dnn(1000, true),
+          MiniBatch(Tensor(batchSize, 3, 224, 224).randn(),
+            Tensor(batchSize).fill(1)), ClassNLLCriterion())
+      case "inception_no" =>
+        (Inception_v1_NoAuxClassifier(1000, true),
+          MiniBatch(Tensor(batchSize, 3, 224, 224).randn(),
+            Tensor(batchSize).fill(1)), ClassNLLCriterion())
       case "inception_v2" =>
         (Inception_v2(1000), MiniBatch(Tensor(batchSize, 3, 224, 224).randn(),
           Tensor(batchSize).fill(1)), ClassNLLCriterion())
