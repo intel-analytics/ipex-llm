@@ -82,8 +82,9 @@ class ConvLSTM2D[T: ClassTag](
       s"ConvLSTM2D requires 5D input, but got input dim ${input.length}")
     val rows = KerasUtils.computeConvOutputLength(input(3), nbKernel, "same", subsample)
     val cols = KerasUtils.computeConvOutputLength(input(4), nbKernel, "same", subsample)
-    if (returnSequences) Shape(input(0), input(1), nbFilter, rows, cols)
-    else Shape(input(0), nbFilter, rows, cols)
+    val output = if (returnSequences) Array(input(0), input(1), nbFilter, rows, cols)
+    else Array(input(0), nbFilter, rows, cols)
+    KerasUtils.validateSingleOutputShape(output, this.toString())
   }
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {

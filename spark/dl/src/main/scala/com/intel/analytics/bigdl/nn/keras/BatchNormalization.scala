@@ -75,7 +75,7 @@ class BatchNormalization[T: ClassTag](
     val input = inputShape.toSingle().toArray
     require(input.length == 4,
       s"BatchNormalization requires 4D input, but got input dim ${input.length}")
-    inputShape
+    KerasUtils.validateSingleOutputShape(input, this.toString())
   }
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {

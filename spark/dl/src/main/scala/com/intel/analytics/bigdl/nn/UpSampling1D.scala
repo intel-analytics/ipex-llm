@@ -19,6 +19,7 @@ package com.intel.analytics.bigdl.nn
 import java.util
 
 import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
+import com.intel.analytics.bigdl.nn.keras.KerasUtils
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Shape
@@ -44,7 +45,8 @@ class UpSampling1D[T: ClassTag] (val length: Int)
     val input = inputShape.toSingle().toArray
     require(input.length == 3,
       s"UpSampling1D requires 3D input, but got input dim ${input.length}")
-    Shape(input(0), input(1) * length, input(2))
+    val output = Array(input(0), input(1) * length, input(2))
+    KerasUtils.validateSingleOutputShape(output, this.toString())
   }
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {

@@ -53,7 +53,8 @@ class Embedding[T: ClassTag](
     val input = inputShape.toSingle().toArray
     require(input.length == 2,
       s"Embedding requires 2D input, but got input dim ${input.length}")
-    Shape(input(0), input(1), outputDim)
+    val output = Array(input(0), input(1), outputDim)
+    KerasUtils.validateSingleOutputShape(output, this.toString())
   }
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {

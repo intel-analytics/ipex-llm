@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.nn.abstractnn.{DataFormat, Initializable, TensorModule}
+import com.intel.analytics.bigdl.nn.keras.KerasUtils
 import com.intel.analytics.bigdl.nn.quantized.Quantizable
 import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -193,8 +194,8 @@ class SpatialConvolution[T: ClassTag](
     val outputWidth = sizes(5)
     require(outputWidth >= 1 && outputHeight >= 1,
       s"output size is too small. outputWidth: $outputWidth, outputHeight: $outputHeight")
-    val outputShape = getOutputShape(outputHeight, outputWidth, input(0))
-    Shape(outputShape)
+    val output = getOutputShape(outputHeight, outputWidth, input(0))
+    KerasUtils.validateSingleOutputShape(output, this.toString())
   }
 
   // batchSize = -2 by default means no batch. -1 represents batch in shape inference

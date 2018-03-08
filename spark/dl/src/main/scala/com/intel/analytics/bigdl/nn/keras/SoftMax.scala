@@ -35,7 +35,7 @@ class SoftMax[T: ClassTag](
     val input = inputShape.toSingle().toArray
     require(input.length == 2 || input.length == 3,
       s"SoftMax requires 2D or 3D input, but got input dim ${input.length}")
-    inputShape
+    KerasUtils.validateSingleOutputShape(input, this.toString())
   }
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {

@@ -81,7 +81,8 @@ class Reshape[T: ClassTag](
           s"original size is: ${ nonBatchInput.product }, " +
           s"reshape size is: ${ targetShape.product }")
     }
-    Shape(Array(input(0)) ++ targetShape)
+    val output = Array(input(0)) ++ targetShape
+    KerasUtils.validateSingleOutputShape(output, this.toString())
   }
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {

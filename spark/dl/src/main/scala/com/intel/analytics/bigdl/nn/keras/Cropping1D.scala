@@ -47,7 +47,8 @@ class Cropping1D[T: ClassTag](
     val input = inputShape.toSingle().toArray
     require(input.length == 3,
       s"Cropping1D requires 3D input, but got input dim ${input.length}")
-    Shape(input(0), input(1)-cropping(0)-cropping(1), input(2))
+    val output = Array(input(0), input(1)-cropping(0)-cropping(1), input(2))
+    KerasUtils.validateSingleOutputShape(output, this.toString())
   }
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {

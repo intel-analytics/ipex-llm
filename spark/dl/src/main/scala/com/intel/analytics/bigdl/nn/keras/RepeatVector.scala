@@ -43,7 +43,8 @@ class RepeatVector[T: ClassTag](
     val input = inputShape.toSingle().toArray
     require(input.length == 2,
       s"RepeatVector requires 2D input, but got input dim ${input.length}")
-    Shape(input(0), n, input(1))
+    val output = Array(input(0), n, input(1))
+    KerasUtils.validateSingleOutputShape(output, this.toString())
   }
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {

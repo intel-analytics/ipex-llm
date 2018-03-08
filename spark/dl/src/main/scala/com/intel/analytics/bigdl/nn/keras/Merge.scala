@@ -55,7 +55,7 @@ class Merge[T: ClassTag](
   require(layers.length >= 2, s"Merge must have at least two input layers " +
     s"but found ${layers.length}")
 
-  private def computeOutputShapeForConcat(input: List[Shape]): Shape = {
+  private def computeOutputShapeForConcat(input: List[Shape]): Array[Int] = {
     import scala.util.control.Breaks._
     val input1 = input.head.toSingle().toArray
     val output = input1.clone()
@@ -78,7 +78,7 @@ class Merge[T: ClassTag](
       output(axis) = output(axis) + input_i(axis)
       i += 1
     }
-    Shape(output)
+    output
   }
 
   private def checkSameInputShape(input: List[Shape]): Unit = {
@@ -96,7 +96,7 @@ class Merge[T: ClassTag](
   override def computeOutputShape(inputShape: Shape): Shape = {
     val input = inputShape.toMulti()
     val input1 = input.head.toSingle().toArray
-    if (mergeMode == "concat") {
+    val output = if (mergeMode == "concat") {
       computeOutputShapeForConcat(input)
     }
     else {
@@ -106,12 +106,13 @@ class Merge[T: ClassTag](
           s"or above is currently not supported, got input dim ${input.head.toSingle().length}")
         require(input.length == 2, s"Merge mode $mergeMode takes exactly two layers, " +
           s"but got ${input.length}")
-        if (mergeMode == "dot") Shape(-1, 1) else Shape(-1, 1, 1)
+        if (mergeMode == "dot") Array(-1, 1) else Array(-1, 1, 1)
       }
       else {
-        input.head
+        input1
       }
     }
+    KerasUtils.validateSingleOutputShape(output, this.toString())
   }
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {

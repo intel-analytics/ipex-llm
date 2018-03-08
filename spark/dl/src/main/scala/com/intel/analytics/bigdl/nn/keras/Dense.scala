@@ -60,7 +60,8 @@ class Dense[T: ClassTag](
     val input = inputShape.toSingle().toArray
     require(inputShape.toSingle().size >=2,
       s"Dense requires input dim >=2, but got dim: ${inputShape.toSingle().length}")
-    Shape(input.slice(0, input.length -1) ++ Array(outputDim))
+    val output = input.slice(0, input.length -1) ++ Array(outputDim)
+    KerasUtils.validateSingleOutputShape(output, this.toString())
   }
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {

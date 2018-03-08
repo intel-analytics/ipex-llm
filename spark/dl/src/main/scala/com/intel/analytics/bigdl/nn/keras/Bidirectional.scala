@@ -53,13 +53,12 @@ class Bidirectional[T: ClassTag](
     s"Invalid merge mode: $mode")
 
   override def computeOutputShape(inputShape: Shape): Shape = {
-    val output = layer.build(inputShape)
-    if (mode == "concat") {
-      val outputArray = output.toSingle().toArray
-      outputArray(outputArray.length-1) = outputArray.last * 2
-      Shape(outputArray)
-    }
-    else output
+    val outputShape = layer.build(inputShape).toSingle().toArray
+    val output = if (mode == "concat") {
+      outputShape(outputShape.length-1) = outputShape.last * 2
+      outputShape
+    } else outputShape
+    KerasUtils.validateSingleOutputShape(output, this.toString())
   }
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {

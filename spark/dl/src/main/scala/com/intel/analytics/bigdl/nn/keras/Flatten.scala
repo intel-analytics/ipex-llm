@@ -37,7 +37,8 @@ class Flatten[T: ClassTag](
 
   override def computeOutputShape(inputShape: Shape): Shape = {
     val input = inputShape.toSingle().toArray
-    Shape(input(0), input.slice(1, input.length).product)
+    val output = Array(input(0), input.slice(1, input.length).product)
+    KerasUtils.validateSingleOutputShape(output, this.toString())
   }
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {

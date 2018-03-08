@@ -16,6 +16,7 @@
 package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
+import com.intel.analytics.bigdl.nn.keras.KerasUtils
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Shape
@@ -55,7 +56,7 @@ class Cropping3D[T: ClassTag](
     val input = inputShape.toSingle().toArray
     require(input.length == 5,
       s"Cropping3D requires 5D input, but got input dim ${input.length}")
-    val outputShape = dataFormat match {
+    val output = dataFormat match {
       case Cropping3D.CHANNEL_FIRST =>
         Array(input(0), input(1), input(2)-dim1Crop(0)-dim1Crop(1),
           input(3)-dim2Crop(0)-dim2Crop(1), input(4)-dim3Crop(0)-dim3Crop(1))
@@ -63,7 +64,7 @@ class Cropping3D[T: ClassTag](
         Array(input(0), input(1)-dim1Crop(0)-dim1Crop(1),
           input(2)-dim2Crop(0)-dim2Crop(1), input(3)-dim3Crop(0)-dim3Crop(1), input(4))
     }
-    Shape(outputShape)
+    KerasUtils.validateSingleOutputShape(output, this.toString())
   }
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {

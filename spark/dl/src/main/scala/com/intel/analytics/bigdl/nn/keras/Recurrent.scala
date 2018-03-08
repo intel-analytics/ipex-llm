@@ -40,8 +40,9 @@ abstract class Recurrent[T: ClassTag](
     val input = inputShape.toSingle().toArray
     require(input.length == 3,
       s"Recurrent layers require 3D input, but got input dim ${input.length}")
-    if (returnSequences) Shape(input(0), input(1), outputDim)
-    else Shape(input(0), outputDim)
+    val output = if (returnSequences) Array(input(0), input(1), outputDim)
+    else Array(input(0), outputDim)
+    KerasUtils.validateSingleOutputShape(output, this.toString())
   }
 
   def buildCell(input: Array[Int]): Cell[T] = {

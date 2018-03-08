@@ -80,13 +80,13 @@ class Permute[T: ClassTag](
 
   override def computeOutputShape(inputShape: Shape): Shape = {
     val input = inputShape.toSingle().toArray
-    val outputShape = input.clone()
+    val output = input.clone()
     var i = 0
     while (i < dims.length) {
-      outputShape(i + 1) = input(dims(i))
+      output(i + 1) = input(dims(i))
       i += 1
     }
-    Shape(outputShape)
+    KerasUtils.validateSingleOutputShape(output, this.toString())
   }
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {

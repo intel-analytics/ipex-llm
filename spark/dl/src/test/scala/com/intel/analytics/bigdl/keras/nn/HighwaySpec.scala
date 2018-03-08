@@ -29,8 +29,8 @@ class HighwaySpec extends KerasBaseSpec {
 
   "Highway computeOutputShape" should "work properly" in {
     val seq = KSequential[Float]()
-    val klayer = Highway[Float](inputShape = Shape(6))
-    seq.add(klayer)
+    val layer = Highway[Float](inputShape = Shape(6))
+    seq.add(layer)
     seq.add(Dense(5))
     seq.getOutputShape().toSingle().toArray should be (Array(-1, 5))
   }

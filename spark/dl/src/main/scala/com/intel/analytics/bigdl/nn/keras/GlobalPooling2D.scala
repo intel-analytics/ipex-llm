@@ -37,10 +37,11 @@ abstract class GlobalPooling2D[T: ClassTag](
     val input = inputShape.toSingle().toArray
     require(input.length == 4,
       s"GlobalPooling2D requires 4D input, but got input dim ${input.length}")
-    dimOrdering match {
-      case DataFormat.NCHW => Shape(input(0), input(1))
-      case DataFormat.NHWC => Shape(input(0), input(3))
+    val output = dimOrdering match {
+      case DataFormat.NCHW => Array(input(0), input(1))
+      case DataFormat.NHWC => Array(input(0), input(3))
     }
+    KerasUtils.validateSingleOutputShape(output, this.toString())
   }
 
 }

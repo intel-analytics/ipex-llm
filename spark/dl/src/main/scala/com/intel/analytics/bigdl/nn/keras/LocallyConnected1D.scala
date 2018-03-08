@@ -65,7 +65,8 @@ class LocallyConnected1D[T: ClassTag](
       s"LocallyConnected1D requires 3D input, but got input dim ${input.length}")
     val length = KerasUtils.computeConvOutputLength(input(1), filterLength,
       "valid", subsampleLength)
-    Shape(input(0), length, nbFilter)
+    val output = Array(input(0), length, nbFilter)
+    KerasUtils.validateSingleOutputShape(output, this.toString())
   }
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
