@@ -48,7 +48,7 @@ class LocalOptimizer[T: ClassTag] (
     model, dataset, criterion) {
 
   import LocalOptimizer._
-  import Optimizer.{header, saveModel, saveState, checkSubModules}
+  import Optimizer.{header, saveModel, saveState, checkSubModules, getHyperParameterLog}
 
   private val coreNumber = Engine.coreNumber()
 
@@ -87,10 +87,15 @@ class LocalOptimizer[T: ClassTag] (
   override def optimize(): Module[T] = {
     var wallClockTime = 0L
     var count = 0
-    optimMethods.foreach{case (subModuleName, optimMethod) =>
+    optimMethods.values.foreach{ optimMethod =>
       optimMethod.clearHistory()
-      optimMethod.loadFromTable(state)
     }
+
+    // To be compatible with the old usage that user define hyperparameters in a table.
+    if (optimMethods.size == 1) {
+      optimMethods.head._2.loadFromTable(state)
+    }
+
     checkSubModules(model, optimMethods.keys.toSeq)
     val currentOptimMethods = optimMethods.map{case (subModuleName, optimMethod) =>
       val subModule = model(subModuleName)
@@ -206,7 +211,7 @@ class LocalOptimizer[T: ClassTag] (
         s"data fetch time is ${(dataFetchTime - start) / 1e9}s, " +
         s"train time ${(end - dataFetchTime) / 1e9}s. " +
         s"Throughput is ${batch.size().toDouble / (end - start) * 1e9} record / second. " +
-        hyperParameterLog
+        getHyperParameterLog(optimMethods)
         )
       state("neval") = state[Int]("neval") + 1
 

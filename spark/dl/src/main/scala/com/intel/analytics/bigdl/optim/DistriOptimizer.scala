@@ -407,22 +407,12 @@ object DistriOptimizer {
         val end = System.nanoTime()
         wallClockTime += end - start
         driverState("Loss") = lossSum.value.toFloat / numFinishedModelUpdates
-        val hyperParameterLog = optimMethods.map{ case (moduleName, optimMethod) =>
-          optimMethod.updateHyperParameter()
-          val log = optimMethod.getHyperParameter()
-          driverState(s"LearningRate-${moduleName}") = -optimMethod.getLearningRate().toFloat
-          if (log.isEmpty) {
-            log
-          } else {
-            s"${moduleName}'s hyper parameters: ${log} "
-          }
-        }.reduce(_ + _)
         driverState("Throughput") = recordsNum.value.toFloat / ((end - start) / 1e9f)
         val _header = header(driverState[Int]("epoch"), recordsProcessedThisEpoch, numSamples,
           driverState[Int]("neval"), wallClockTime)
         logger.info(s"${_header} Trained ${recordsNum.value} records in ${(end - start) / 1e9} " +
           s"seconds. Throughput is ${driverState("Throughput")} records/second. Loss is ${
-            driverState("Loss")}. $hyperParameterLog")
+            driverState("Loss")}. ${getHyperParameterLog(optimMethods)}")
         logger.debug("\n" + metrics.summary())
         logger.debug("Dropped modules: " + (driverSubModelNum - numFinishedModelUpdates))
         lossArray = new Array[Double](_subModelNumber)
@@ -555,7 +545,8 @@ object DistriOptimizer {
             optimMethod.state.update("epoch", state[Int]("epoch"))
             optimMethod.state.update("neval", state[Int]("neval"))
             saveOptimMethod(optimMethod, cachePath, isOverWrite, s"-$name.${state[Int]("neval")}")
-            logger.info(s"[Wall Clock ${wallClockTime / 1e9}s] Save optimMethod ${optimMethod} to $path")
+            logger.info(s"[Wall Clock ${wallClockTime / 1e9}s] Save optimMethod " +
+              s"${optimMethod} to $path")
           }
         }
       }
@@ -922,10 +913,15 @@ class DistriOptimizer[T: ClassTag] (
 
     val distDataset = dataset.asInstanceOf[DistributedDataSet[MiniBatch[T]]]
 
-    optimMethods.foreach { case (moduleName, optimMethod) =>
+    optimMethods.values.foreach { optimMethod =>
       optimMethod.clearHistory()
-      optimMethod.loadFromTable(state)
     }
+
+    // To be compatible with the old usage that user define hyperparameters in a table.
+    if (optimMethods.size == 1) {
+      optimMethods.head._2.loadFromTable(state)
+    }
+
     state("dropPercentage") = dropPercentage
     state("warmupIterationNum") = warmupIterationNum
     state("computeThresholdbatchSize") = computeThresholdbatchSize

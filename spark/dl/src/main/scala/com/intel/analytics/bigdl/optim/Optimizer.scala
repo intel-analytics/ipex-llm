@@ -457,12 +457,41 @@ object Optimizer {
       val subModule = model(subModuleName)
       require(subModule.isDefined, s"Optimizer: couldn't find $subModuleName in $model")
       val subModuleWeights = subModule.get.getParameters()._1
-      subModuleWeights
+      require(subModuleWeights.nElement() > 0, s"Optimizer: $subModuleName doesn't have" +
+        s" any trainable parameters, please check your model and optimMethods.")
+      require(modelParameters._1.storage() == subModuleWeights.storage(), s"Optimizer:" +
+        s" $subModuleName's parameter is not contiguous.")
+      (subModuleName, subModuleWeights)
     }.toArray
-    val sortedWeights = p.sortWith((a, b) => a.storageOffset() < b.storageOffset())
-    val compactWeights = Module.isCompact(sortedWeights)
-    require(modelParameters._1 == compactWeights,
-      s"Optimizer: All subModules in ${model.getName()} should have an OptimMethod.")
+
+    // make sure if parameters in submodules aren't duplicated.
+    if (p.length != 1) {
+      val sortedWeights = p.sortWith((a, b) => a._2.storageOffset() < b._2.storageOffset())
+      var i = 0
+      while (i < sortedWeights.length - 1) {
+        val current = sortedWeights(i)
+        val next = sortedWeights(i + 1)
+        require(current._2.storageOffset() + current._2.nElement() <= next._2.storageOffset(),
+          s"Optimizer: ${current._1} and ${next._1}'s parameters are duplicated." +
+            s" Please check your model and optimMethods.")
+        i += 1
+      }
+    }
+  }
+
+  /**
+   * Combine the hyper parameters in optimMethods.
+   */
+  private[bigdl] def getHyperParameterLog(optimMethods: Map[String, OptimMethod[_]]): String = {
+    optimMethods.map{ case (moduleName, optimMethod) =>
+        optimMethod.updateHyperParameter()
+        val log = optimMethod.getHyperParameter()
+        if (log.isEmpty) {
+          log
+        } else {
+          s"${moduleName}'s hyper parameters: ${log} "
+        }
+      }.reduce(_ + _)
   }
 
   /**
