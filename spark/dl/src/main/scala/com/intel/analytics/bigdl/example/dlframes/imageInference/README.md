@@ -1,7 +1,7 @@
 ## Overview
    Deep Learning Frames provides high-level APIs for scalable deep learning in Scala with Apache Spark.
    The current version of Deep Learning Frames provides a suite of tools around working with and processing images using deep learning. 
-   Two exmaples demostrates how to use BigDL for transfer learning and applying deep learning models as scale.
+   Two exmaples demostrates how to use BigDL to apply popular iamge deep learning models at scale.
 
 ## Image Model Inference
    1. You can apply your own or known popular models to image data to make predictions or transform them into features.

@@ -1,4 +1,4 @@
-package com.intel.analytics.bigdl.example.DLframes.imageInference
+package com.intel.analytics.bigdl.example.dlframes.imageInference
 
 import com.intel.analytics.bigdl.dlframes.{DLClassifierModel, DLModel}
 
@@ -20,7 +20,6 @@ object ImageInference {
     Utils.parser.parse(args, defaultParams).map { params =>
 
       val conf = Engine.createSparkConf().setAppName("ModelInference")
-        .setMaster("local[8]")
       val spark = SparkSession.builder().config(conf).getOrCreate()
       Engine.init
 
