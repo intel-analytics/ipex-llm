@@ -68,21 +68,25 @@ def __prepare_bigdl_env():
     def append_path(env_var_name, path):
         try:
             print("Adding %s to %s" % (path, env_var_name))
-            os.environ[env_var_name] = path + ":" + os.environ[
-                env_var_name]  # noqa
+            os.environ[env_var_name] = path + ":" + os.environ[env_var_name]  # noqa
         except KeyError:
             os.environ[env_var_name] = path
+
+    if bigdl_classpath:
+        append_path("BIGDL_JARS", bigdl_classpath)
 
     if conf_paths:
         assert len(conf_paths) == 1, "Expecting one conf: %s" % len(conf_paths)
         print("Prepending %s to sys.path" % conf_paths[0])
         sys.path.insert(0, conf_paths[0])
 
-    if bigdl_classpath and is_spark_below_2_2():
-        append_path("SPARK_CLASSPATH", bigdl_classpath)
-        from bigdl.util.common import Configuration
-        for jar in Configuration.get_bigdl_jars():
+    if os.environ.get("BIGDL_JARS", None) and is_spark_below_2_2():
+        for jar in os.environ["BIGDL_JARS"].split(":"):
             append_path("SPARK_CLASSPATH", jar)
+
+    if os.environ.get("BIGDL_PACKAGES", None):
+        for package in os.environ["BIGDL_PACKAGES"].split(":"):
+            sys.path.insert(0, package)
 
 
 def get_bigdl_classpath():
