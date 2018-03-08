@@ -97,7 +97,7 @@ class MklDnnTensor[T: ClassTag](
     }
     if (updateStorage) {
       MklDnnTensor.syncToHeap(this, this._storage.array(), storageOffset() - 1)
-      this.updateStorage = false
+      // this.updateStorage = false
     }
     this._storage
   }
@@ -169,7 +169,9 @@ class MklDnnTensor[T: ClassTag](
         Memory.CopyPtr2Ptr(y.ptr,
                 y.storageOffset() - 1, this.ptr, 0, this.nElement(), this.ELEMENT_SIZE)
       }
-      this.setPrimitiveDesc(y.getPrimitiveDesc())
+    }
+    if (other.getPrimitiveDesc() != 0L) {
+      this.setPrimitiveDesc(other.getPrimitiveDesc())
     }
     this
   }

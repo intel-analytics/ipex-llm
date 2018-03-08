@@ -264,7 +264,10 @@ object Inception_v1_NoAuxClassifier_dnn {
     model.add(Inception_Layer_v1(832, T(T(256), T(160, 320), T(32, 128), T(128)), "inception_5a/"))
     model.add(Inception_Layer_v1(832, T(T(384), T(192, 384), T(48, 128), T(128)), "inception_5b/"))
     model.add(PoolingDnnAverage(7, 7, 1, 1).setName("pool5/7x7_s1"))
-    if (hasDropout) model.add(Dropout(0.4).setName("pool5/drop_7x7_s1"))
+    // if (hasDropout) model.add(Dropout(0.4).setName("pool5/drop_7x7_s1"))
+
+    if (hasDropout) model.add(DropoutDnn(0.4).setName("pool5/drop_7x7_s1"))
+
     // model.add(View(1024).setNumInputDims(3))
     model.add(mkldnn.Linear(1024, classNum)
       .setInitMethod(weightInitMethod = Xavier, Zeros).setName("loss3/classifier"))
