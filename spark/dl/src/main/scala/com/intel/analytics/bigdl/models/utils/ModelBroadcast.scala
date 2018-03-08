@@ -32,11 +32,14 @@ import scala.reflect.ClassTag
  * the model. And before broadcasting please make sure the model's parameter is compacted.
  *
  * @tparam T data type
+ * @param applyProtoBuffer it will use proto buffer serialization for broadcasting if set true
  */
-class ModelBroadcast[T: ClassTag]()(implicit ev: TensorNumeric[T]) extends Serializable {
+class ModelBroadcast[T: ClassTag](applyProtoBuffer: Boolean = false)
+  (implicit ev: TensorNumeric[T]) extends Serializable {
 
   private var broadcastModel: Broadcast[Module[T]] = _
   private var broadcastParameters: Broadcast[Array[Tensor[T]]] = _
+
 
   /**
    * broadcast the model
@@ -47,7 +50,15 @@ class ModelBroadcast[T: ClassTag]()(implicit ev: TensorNumeric[T]) extends Seria
    * @return this
    */
   def broadcast(sc: SparkContext, model: Module[T]): this.type = {
-    broadcastModel = sc.broadcast(model)
+    if (applyProtoBuffer) {
+      broadcastModel = sc.broadcast(model)
+    } else {
+      val weightsBias = getAndClearWeightBias(model.parameters())
+      broadcastModel = sc.broadcast(model.cloneModule())
+      broadcastParameters = sc.broadcast(weightsBias)
+      putWeightBias(weightsBias, model)
+      initGradWeightBias(weightsBias, model)
+    }
     this
   }
 
@@ -59,11 +70,20 @@ class ModelBroadcast[T: ClassTag]()(implicit ev: TensorNumeric[T]) extends Seria
    * @return model
    */
   def value(initGradient: Boolean = false): Module[T] = {
-    val localModel = broadcastModel.value.clone(false)
-    if (initGradient) {
-      initGradWeightBias(getWeightBias(localModel.parameters()), localModel)
+    if (applyProtoBuffer) {
+      val localModel = broadcastModel.value.clone(false)
+      if (initGradient) {
+        initGradWeightBias(getWeightBias(localModel.parameters()), localModel)
+      }
+      localModel
+    } else {
+      val localModel = broadcastModel.value.cloneModule()
+      putWeightBias(broadcastParameters.value, localModel)
+      if (initGradient) {
+        initGradWeightBias(broadcastParameters.value, localModel)
+      }
+      localModel
     }
-    localModel
   }
 
   private def getWeightBias(parameters: (Array[Tensor[T]], Array[Tensor[T]]))
@@ -109,8 +129,8 @@ class ModelBroadcast[T: ClassTag]()(implicit ev: TensorNumeric[T]) extends Seria
 
 
 object ModelBroadcast {
-  def apply[@specialized(Float, Double) T: ClassTag]()
+  def apply[@specialized(Float, Double) T: ClassTag](applyProtoBuffer: Boolean = false)
         (implicit ev: TensorNumeric[T]) : ModelBroadcast[T] = {
-    new ModelBroadcast()
+    new ModelBroadcast(applyProtoBuffer)
   }
 }
