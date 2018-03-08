@@ -15,7 +15,7 @@
 #
 
 from optparse import OptionParser
-from utils import *
+from bigdl.models.lenet.utils import *
 from bigdl.dataset.transformer import *
 from bigdl.nn.layer import *
 from bigdl.nn.criterion import *
