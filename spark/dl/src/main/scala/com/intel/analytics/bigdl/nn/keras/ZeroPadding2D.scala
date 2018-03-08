@@ -54,14 +54,15 @@ class ZeroPadding2D[T: ClassTag](
     val input = inputShape.toSingle().toArray
     require(input.length == 4,
       s"ZeroPadding2D requires 4D input, but got input dim ${input.length}")
-    dimOrdering match {
+    val output = dimOrdering match {
       case DataFormat.NCHW =>
-        Shape(input(0), input(1),
+        Array(input(0), input(1),
           input(2) + padding(0) + padding(1), input(3) + padding(2) + padding(3))
       case DataFormat.NHWC =>
-        Shape(input(0), input(1) + padding(0) + padding(1),
+        Array(input(0), input(1) + padding(0) + padding(1),
           input(2) + padding(2) + padding(3), input(3))
     }
+    KerasUtils.validateSingleOutputShape(output, this.toString())
   }
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {

@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.nn.abstractnn.{Initializable, TensorModule}
+import com.intel.analytics.bigdl.nn.keras.KerasUtils
 import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.{DenseTensorBLAS, DoubleType, FloatType, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -154,7 +155,8 @@ class SpatialDilatedConvolution[T: ClassTag](
       s"AtrousConvolution2D requires 4D input, but got input dim ${input.length}")
     val outputWidth = (input(3) + 2*padW - (dilationW * (kW - 1) + 1)) / dW + 1
     val outputHeight = (input(2) + 2*padH - (dilationH * (kH - 1) + 1)) / dH + 1
-    Shape(input(0), nOutputPlane, outputHeight, outputWidth)
+    val output = Array(input(0), nOutputPlane, outputHeight, outputWidth)
+    KerasUtils.validateSingleOutputShape(output, this.toString())
   }
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {

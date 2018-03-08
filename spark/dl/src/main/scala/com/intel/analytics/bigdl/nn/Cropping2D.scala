@@ -16,6 +16,7 @@
 package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.nn.abstractnn.{DataFormat, TensorModule}
+import com.intel.analytics.bigdl.nn.keras.KerasUtils
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Shape
@@ -52,7 +53,7 @@ class Cropping2D[T: ClassTag](
     val input = inputShape.toSingle().toArray
     require(input.length == 4,
       s"Cropping2D requires 4D input, but got input dim ${input.length}")
-    val outputShape = dataFormat match {
+    val output = dataFormat match {
       case DataFormat.NCHW =>
         Array(input(0), input(1), input(2)-heightCrop(0)-heightCrop(1),
           input(3)-widthCrop(0)-widthCrop(1))
@@ -60,7 +61,7 @@ class Cropping2D[T: ClassTag](
         Array(input(0), input(1)-heightCrop(0)-heightCrop(1),
           input(2)-widthCrop(0)-widthCrop(1), input(3))
     }
-    Shape(outputShape)
+    KerasUtils.validateSingleOutputShape(output, this.toString())
   }
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {

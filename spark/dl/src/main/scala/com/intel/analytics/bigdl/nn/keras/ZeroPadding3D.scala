@@ -55,14 +55,15 @@ class ZeroPadding3D[T: ClassTag](
     val input = inputShape.toSingle().toArray
     require(input.length == 5,
       s"ZeroPadding3D requires 5D input, but got input dim ${input.length}")
-    dimOrdering.toLowerCase() match {
+    val output = dimOrdering.toLowerCase() match {
       case "channel_first" =>
-        Shape(input(0), input(1), input(2) + 2 * padding(0),
+        Array(input(0), input(1), input(2) + 2 * padding(0),
           input(3) + 2 * padding(1), input(4) + 2 * padding(2))
       case "channel_last" =>
-        Shape(input(0), input(1) + 2 * padding(0), input(2) + 2 * padding(1),
+        Array(input(0), input(1) + 2 * padding(0), input(2) + 2 * padding(1),
           input(3) + 2 * padding(2), input(4))
     }
+    KerasUtils.validateSingleOutputShape(output, this.toString())
   }
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {

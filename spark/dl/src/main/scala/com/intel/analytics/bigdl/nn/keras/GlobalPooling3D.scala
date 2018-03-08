@@ -39,6 +39,7 @@ abstract class GlobalPooling3D[T: ClassTag](
     val input = inputShape.toSingle().toArray
     require(input.length == 5,
       s"GlobalPooling3D requires 5D input, but got input dim ${input.length}")
-    Shape(input(0), input(1))
+    val output = Array(input(0), input(1))
+    KerasUtils.validateSingleOutputShape(output, this.toString())
   }
 }

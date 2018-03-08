@@ -17,6 +17,7 @@
 package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
+import com.intel.analytics.bigdl.nn.keras.KerasUtils
 import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.serialization.Bigdl.{AttrValue, BigDLModule}
 import com.intel.analytics.bigdl.tensor.{DenseTensorApply, Tensor, TensorFunc6}
@@ -58,7 +59,8 @@ class Maxout[T: ClassTag](val inputSize: Int, val outputSize: Int, val maxoutNum
     val input = inputShape.toSingle().toArray
     require(input.length == 2,
       s"MaxoutDense requires 2D input, but got input dim ${input.length}")
-    Shape(input(0), outputSize)
+    val output = Array(input(0), outputSize)
+    KerasUtils.validateSingleOutputShape(output, this.toString())
   }
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {

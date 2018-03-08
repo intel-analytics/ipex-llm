@@ -53,7 +53,7 @@ class TimeDistributed[T: ClassTag](
     val innerInput = getInnerInput(input)
     val innerOutput = layer.build(Shape(innerInput)).toSingle()
     val output = innerOutput.take(1) ++ List(input(1)) ++ innerOutput.drop(1)
-    Shape(output.toArray)
+    KerasUtils.validateSingleOutputShape(output.toArray, this.toString())
   }
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {

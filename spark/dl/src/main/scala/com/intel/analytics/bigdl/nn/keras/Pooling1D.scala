@@ -44,6 +44,7 @@ abstract class Pooling1D[T: ClassTag](
       s"Pooling1D requires 3D input, but got input dim ${input.length}")
     val outputLength = KerasUtils.computeConvOutputLength(input(1), poolLength,
       borderMode, strideValue)
-    Shape(input(0), outputLength, input(2))
+    val output = Array(input(0), outputLength, input(2))
+    KerasUtils.validateSingleOutputShape(output, this.toString())
   }
 }

@@ -17,6 +17,7 @@
 package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, Initializable}
+import com.intel.analytics.bigdl.nn.keras.KerasUtils
 import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor._
@@ -261,7 +262,8 @@ class SpatialFullConvolution[T: ClassTag](
     val inputWidth = input(3)
     val outputHeight = (inputHeight - 1) * dH - 2 * padH + kH + adjH
     val outputWidth = (inputWidth - 1) * dW - 2 * padW + kW + adjW
-    Shape(input(0), nOutputPlane, outputHeight, outputWidth)
+    val output = Array(input(0), nOutputPlane, outputHeight, outputWidth)
+    KerasUtils.validateSingleOutputShape(output, this.toString())
   }
 
   override def updateOutput(input: Activity): Tensor[T] = {

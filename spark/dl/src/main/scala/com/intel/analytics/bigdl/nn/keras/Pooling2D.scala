@@ -54,9 +54,10 @@ abstract class Pooling2D[T: ClassTag](
       borderMode, strideValues(0))
     val cols = KerasUtils.computeConvOutputLength(input(dimW -1), poolSize(1),
       borderMode, strideValues(1))
-    dimOrdering match {
-      case DataFormat.NCHW => Shape(input(0), input(1), rows, cols)
-      case DataFormat.NHWC => Shape(input(0), rows, cols, input(3))
+    val output = dimOrdering match {
+      case DataFormat.NCHW => Array(input(0), input(1), rows, cols)
+      case DataFormat.NHWC => Array(input(0), rows, cols, input(3))
     }
+    KerasUtils.validateSingleOutputShape(output, this.toString())
   }
 }

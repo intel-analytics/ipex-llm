@@ -20,6 +20,7 @@ import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, DataFormat}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.Shape
 
 import scala.reflect.ClassTag
 
@@ -104,6 +105,14 @@ object KerasUtils {
       case "tf" => "CHANNEL_LAST"
       case "th" => "CHANNEL_FIRST"
     }
+  }
+
+  private[bigdl] def validateSingleOutputShape(shape: Array[Int], layerName: String): Shape = {
+    for (i <- shape.slice(1, shape.length)) {
+      require(i > 0, s"$layerName will result in an invalid " +
+        s"output shape (${shape.mkString(", ")}). Please check your layer parameters")
+    }
+    Shape(shape)
   }
 
 }

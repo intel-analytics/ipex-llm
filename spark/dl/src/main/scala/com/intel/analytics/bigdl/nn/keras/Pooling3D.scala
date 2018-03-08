@@ -54,6 +54,7 @@ abstract class Pooling3D[T: ClassTag](
       "valid", strideValues(1))
     val dim3Length = KerasUtils.computeConvOutputLength(input(4), poolSize(2),
       "valid", strideValues(2))
-    Shape(input(0), input(1), dim1Length, dim2Length, dim3Length)
+    val output = Array(input(0), input(1), dim1Length, dim2Length, dim3Length)
+    KerasUtils.validateSingleOutputShape(output, this.toString())
   }
 }

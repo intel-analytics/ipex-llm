@@ -17,6 +17,7 @@
 package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.nn.abstractnn.{Initializable, TensorModule}
+import com.intel.analytics.bigdl.nn.keras.KerasUtils
 import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.{DoubleType, FloatType, Tensor}
@@ -131,7 +132,8 @@ class VolumetricConvolution[T: ClassTag](
         s" Calculated output size:" +
         s" (${ nOutputPlane }x${ outputDepth }x${ outputHeight }x${ outputWidth })." +
         s" Output size is too small")
-    Shape(input(0), nOutputPlane, outputDepth, outputHeight, outputWidth)
+    val output = Array(input(0), nOutputPlane, outputDepth, outputHeight, outputWidth)
+    KerasUtils.validateSingleOutputShape(output, this.toString())
   }
 
   /**

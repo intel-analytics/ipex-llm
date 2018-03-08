@@ -18,7 +18,10 @@
 package com.intel.analytics.bigdl.nn.abstractnn
 
 import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.bigdl.nn.keras.KerasUtils.validateSingleOutputShape
 
 trait IdentityOutputShape extends InferShape{
-  override def computeOutputShape(inputShape: Shape): Shape = inputShape
+  override def computeOutputShape(inputShape: Shape): Shape = {
+    validateSingleOutputShape(inputShape.toSingle().toArray, this.toString)
+  }
 }
