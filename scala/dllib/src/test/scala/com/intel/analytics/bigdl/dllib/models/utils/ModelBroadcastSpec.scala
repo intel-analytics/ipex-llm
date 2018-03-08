@@ -40,6 +40,14 @@ class ModelBroadcastSpec extends FlatSpec with Matchers with BeforeAndAfter {
     modelBroadCast.value().parameters()._1 should be(model.parameters()._1)
   }
 
+  "model broadcast with applyProtoBuffer" should "work properly" in {
+    val model = LeNet5(10)
+
+    val modelBroadCast = ModelBroadcast[Float](true).broadcast(sc, model)
+    modelBroadCast.value().toString should be(model.toString)
+    modelBroadCast.value().parameters()._1 should be(model.parameters()._1)
+  }
+
   "model broadcast with getParameters" should "work properly" in {
     val model = LeNet5(10)
     model.getParameters()
@@ -49,10 +57,27 @@ class ModelBroadcastSpec extends FlatSpec with Matchers with BeforeAndAfter {
     modelBroadCast.value().parameters()._1 should be(model.parameters()._1)
   }
 
+  "model broadcast with applyProtoBuffer with getParameters" should "work properly" in {
+    val model = LeNet5(10)
+    model.getParameters()
+
+    val modelBroadCast = ModelBroadcast[Float](true).broadcast(sc, model)
+    modelBroadCast.value().toString should be(model.toString)
+    modelBroadCast.value().parameters()._1 should be(model.parameters()._1)
+  }
+
   "quantized model broadcast" should "work properly" in {
     val model = LeNet5(10).quantize()
 
-    val modelBroadCast = ModelBroadcast[Float].broadcast(sc, model)
+    val modelBroadCast = ModelBroadcast[Float]().broadcast(sc, model)
+    modelBroadCast.value().toString should be(model.toString)
+    modelBroadCast.value().parameters()._1 should be(model.parameters()._1)
+  }
+
+  "quantized model broadcast with applyProtoBuffer" should "work properly" in {
+    val model = LeNet5(10).quantize()
+
+    val modelBroadCast = ModelBroadcast[Float](true).broadcast(sc, model)
     modelBroadCast.value().toString should be(model.toString)
     modelBroadCast.value().parameters()._1 should be(model.parameters()._1)
   }
@@ -62,7 +87,7 @@ class ModelBroadcastSpec extends FlatSpec with Matchers with BeforeAndAfter {
       .add(SpatialConvolution[Float](2, 4, 4, 4, 1, 1, 0, 0, 2))
       .quantize()
 
-    val modelBroadCast = ModelBroadcast[Float].broadcast(sc, model)
+    val modelBroadCast = ModelBroadcast[Float]().broadcast(sc, model)
     modelBroadCast.value().toString should be(model.toString)
     modelBroadCast.value().parameters()._1 should be(model.parameters()._1)
   }
