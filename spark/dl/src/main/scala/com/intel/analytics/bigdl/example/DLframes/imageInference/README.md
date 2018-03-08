@@ -39,7 +39,7 @@
                 spark-submit \
                 --master local[physcial_core_number] \
                 --driver-memory 10g --executor-memory 20g \
-                --class com.intel.analytics.bigdl.example.DLFrames.ImageModelInference \
+                --class com.intel.analytics.bigdl.example.DLFrames.ImageInference \
                 ./dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
                 --modelPath ./model/bvlc_googlenet.caffemodel \
                 --caffeDefPath ./model/deploy.prototxt \
@@ -56,7 +56,7 @@
                 --deploy-mode client \
                 --executor-cores 8 \
                 --num-executors 4 \
-                --class com.intel.analytics.bigdl.example.imageclassification.ImageModelInference \
+                --class com.intel.analytics.bigdl.example.imageclassification.ImageInference \
                 ./dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
                 --modelPath ./model/bvlc_googlenet.caffemodel \
                 --folder ./predict \

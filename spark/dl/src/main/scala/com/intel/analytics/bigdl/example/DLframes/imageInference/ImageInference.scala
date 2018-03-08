@@ -12,7 +12,7 @@ import com.intel.analytics.bigdl.transform.vision.image.{ImageFeature, ImageFram
 import com.intel.analytics.bigdl.utils.Engine
 import org.apache.spark.sql.SQLContext
 
-object ModelInference {
+object ImageInference {
 
   def main(args: Array[String]): Unit = {
 
