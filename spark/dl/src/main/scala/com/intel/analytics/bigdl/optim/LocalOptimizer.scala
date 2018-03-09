@@ -25,6 +25,7 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils._
 import org.apache.log4j.Logger
+import net.openhft.affinity.{Affinity, AffinityLock}
 
 import scala.reflect.ClassTag
 
@@ -134,6 +135,7 @@ class LocalOptimizer[T: ClassTag] (
       val lossSum = Engine.default.invokeAndWait(
         (0 until parallelism).map(i =>
           () => {
+            Affinity.setAffinity(i)
             val localModel = workingModels(i)
             localModel.zeroGradParameters()
             localModel.training()
@@ -152,6 +154,7 @@ class LocalOptimizer[T: ClassTag] (
       Engine.default.invokeAndWait(
         (0 until syncGradParallelNum).map(tid =>
           () => {
+            Affinity.setAffinity(tid)
             val offset = tid * syncGradTaskSize + math.min(tid, syncGradExtraTask)
             val length = syncGradTaskSize + (if (tid < syncGradExtraTask) 1 else 0)
             var i = 0

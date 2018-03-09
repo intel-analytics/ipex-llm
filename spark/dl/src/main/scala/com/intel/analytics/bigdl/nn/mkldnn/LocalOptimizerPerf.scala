@@ -127,7 +127,7 @@ object LocalOptimizerPerf {
         val model = ResNet_dnn(classNum = 1000, T("depth" -> 50, "optnet" -> true,
           "dataset" -> ResNet_dnn.DatasetType.ImageNet))
 //        ResNet_dnn.shareGradInput(model)
-//        ResNet_dnn.modelInit(model)
+        ResNet_dnn.modelInit(model)
         (model, MiniBatch(Tensor(batchSize, 3, 224, 224).randn(),
           Tensor(batchSize).fill(1)), CrossEntropyCriterion())
     }
