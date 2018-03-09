@@ -21,6 +21,7 @@ import org.apache.spark.SparkContext
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{DataFrame, Row, SQLContext}
 import org.opencv.core.CvType
+import scala.language.existentials
 
 /**
  * Definition for image data in a DataFrame
