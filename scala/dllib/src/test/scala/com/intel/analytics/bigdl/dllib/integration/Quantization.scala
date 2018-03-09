@@ -86,7 +86,7 @@ class QuantizationSpec extends FlatSpec with Matchers with BeforeAndAfter{
   Logger.getLogger("com.intel.analytics.bigdl.optim").setLevel(Level.INFO)
 
   "Quantize LeNet5" should "generate the same top1 accuracy" in {
-    val lenetFP32Model = System.getenv("lenet.fp32.model")
+    val lenetFP32Model = System.getenv("lenetfp32model")
     val mnist = System.getenv("mnist")
 
     val conf = Engine.createSparkConf()
@@ -118,7 +118,7 @@ class QuantizationSpec extends FlatSpec with Matchers with BeforeAndAfter{
   }
 
   "Quantize ResNet on Cifar" should "generate the same top1 accuracy" in {
-    val resnetFP32Model = System.getenv("resnet.fp32.model")
+    val resnetFP32Model = System.getenv("resnetfp32model")
     val cifar10 = System.getenv("cifar10")
 
     val conf = Engine.createSparkConf()
@@ -146,7 +146,7 @@ class QuantizationSpec extends FlatSpec with Matchers with BeforeAndAfter{
   }
 
   "Load quantized model of LeNet5 on mnist" should "generate the same top1 accuracy" in {
-    val lenetFP32Model = System.getenv("lenet.fp32.model")
+    val lenetFP32Model = System.getenv("lenetfp32model")
     val mnist = System.getenv("mnist")
 
     val tempDir = Paths.get(System.getProperty("java.io.tmpdir"))
