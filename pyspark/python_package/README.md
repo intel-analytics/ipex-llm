@@ -42,6 +42,7 @@ Refer to python_submit_yarn_cluster.sh.example to run lenet example on yarn clus
     PYTHON_API_PATH=${BigDL_HOME}/dist/lib/bigdl-VERSION-python-api.zip
     BigDL_JAR_PATH=${BigDL_HOME}/dist/lib/bigdl-VERSION-jar-with-dependencies.jar
     PYTHONPATH=${PYTHON_API_PATH}:$PYTHONPATH
+    VENV_HOME=...
     
     PYSPARK_PYTHON=./venv.zip/venv/bin/python ${SPARK_HOME}/bin/spark-submit \
     --conf spark.yarn.appMasterEnv.PYSPARK_PYTHON=./venv.zip/venv/bin/python \
@@ -55,10 +56,10 @@ Refer to python_submit_yarn_cluster.sh.example to run lenet example on yarn clus
     --properties-file ${BigDL_HOME}/dist/conf/spark-bigdl.conf \
     --jars ${BigDL_JAR_PATH} \
     --py-files ${PYTHON_API_PATH} \
-    --archives venv.zip \
+    --archives ${VENV_HOME}/venv.zip \
     --conf spark.driver.extraClassPath=bigdl-VERSION-jar-with-dependencies.jar \
     --conf spark.executor.extraClassPath=bigdl-VERSION-jar-with-dependencies.jar \
-    ${BigDL_HOME}/pyspark/bigdl/models/lenet/lenet5.py
+    ${BigDL_HOME}/pyspark/bigdl/examples/lenet/lenet.py
  ```
 details can be found at: [LeNet5](https://github.com/intel-analytics/BigDL/tree/master/pyspark/dl/models/lenet/README.md).
 
@@ -72,8 +73,10 @@ Refer to python_submit_yarn_client.sh.example to run lenet example on yarn clien
     PYTHON_API_PATH=${BigDL_HOME}/dist/lib/bigdl-VERSION-python-api.zip
     BigDL_JAR_PATH=${BigDL_HOME}/dist/lib/bigdl-VERSION-jar-with-dependencies.jar
     PYTHONPATH=${PYTHON_API_PATH}:$PYTHONPATH
+    VENV_HOME=...
     # http_proxy=http://...
-    PYSPARK_DRIVER_PYTHON=./venv/bin/python PYSPARK_PYTHON=./venv.zip/venv/bin/python ${SPARK_HOME}/bin/spark-submit \
+    
+    PYSPARK_DRIVER_PYTHON=${VENV_HOME}/venv/bin/python PYSPARK_PYTHON=./venv.zip/venv/bin/python ${SPARK_HOME}/bin/spark-submit \
     --master yarn \
     --deploy-mode client \
     #--conf spark.executorEnv.http_proxy=http://... \
@@ -84,8 +87,8 @@ Refer to python_submit_yarn_client.sh.example to run lenet example on yarn clien
     --properties-file ${BigDL_HOME}/dist/conf/spark-bigdl.conf \
     --jars ${BigDL_JAR_PATH} \
     --py-files ${PYTHON_API_PATH} \
-    --archives venv.zip \
+    --archives ${VENV_HOME}/venv.zip \
     --conf spark.driver.extraClassPath=${BigDL_JAR_PATH} \
     --conf spark.executor.extraClassPath=bigdl-VERSION-jar-with-dependencies.jar \
-    ${BigDL_HOME}/pyspark/bigdl/models/lenet/lenet5.py
+    ${BigDL_HOME}/pyspark/bigdl/examples/lenet/lenet.py
  ```

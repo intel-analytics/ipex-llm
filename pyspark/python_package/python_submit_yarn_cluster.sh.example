@@ -38,5 +38,5 @@ PYSPARK_PYTHON=./venv.zip/venv/bin/python ${SPARK_HOME}/bin/spark-submit \
 --archives ${VENV_HOME}/venv.zip \
 --conf spark.driver.extraClassPath=bigdl-VERSION-jar-with-dependencies.jar \
 --conf spark.executor.extraClassPath=bigdl-VERSION-jar-with-dependencies.jar \
-${BigDL_HOME}/pyspark/bigdl/models/lenet/lenet5.py
+${BigDL_HOME}/pyspark/bigdl/examples/lenet/lenet.py
 
