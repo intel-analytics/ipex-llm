@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.nn.mkldnn
 import com.intel.analytics.bigdl.mkl.MklDnn.MemoryFormat
 import com.intel.analytics.bigdl.mkl.{MKL, MklDnn}
 import com.intel.analytics.bigdl.{Module, nn}
-import com.intel.analytics.bigdl.nn.{Identity, Sequential, SpatialConvolution, View}
+import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.utils.RandomGenerator._
@@ -90,7 +90,7 @@ class SpatialBatchNormalizationSpec extends FlatSpec with Matchers {
     val nnGradInput = nnBn.backward(input, gradOutput)
 
     DnnUtils.nearequals(gradInput, nnGradInput.toTensor) should be (true)
-    DnnUtils.nearequals(bn.getParameters()._2, nnBn.getParameters()._2, 1e-4) should be (true)
+    DnnUtils.nearequals(bn.getParameters()._2, nnBn.getParameters()._2) should be (true)
   }
 
   "bn backward multi times" should "work correctly" in {
@@ -512,10 +512,17 @@ class SpatialBatchNormalizationSpec extends FlatSpec with Matchers {
     val conv = SpatialConvolution(3, 64, 7, 7, 2, 2, 3, 3, 1, false)
     val in = Tensor[Float](batchSize, 3, 224, 224).fill(1.0f)
     val input = conv.forward(in)
+    for (c <- 0 until channel) {
+      input.narrow(2, c + 1, 1).fill(c * 0.001f)
+    }
     RNG.setSeed(100)
-    val bn = SpatialBatchNormalization(channel, epsilon)
+    val initWeight = Tensor(channel).rand(-1, 1)
+    val initBias = Tensor(channel).fill(0f)
+    val bn = SpatialBatchNormalization(channel, epsilon, initWeight = initWeight,
+      initBias = initBias)
     RNG.setSeed(100)
-    val nnBn = nn.SpatialBatchNormalization(channel, epsilon)
+    val nnBn = nn.SpatialBatchNormalization(channel, epsilon, initWeight = initWeight,
+      initBias = initBias)
 
     val (weight, gradWeight) = bn.getParameters()
     val (nnWeight, nnGradWeight) = nnBn.getParameters()
@@ -523,22 +530,62 @@ class SpatialBatchNormalizationSpec extends FlatSpec with Matchers {
     DnnUtils.nearequals(gradWeight, nnGradWeight, 1e-3) should be(true)
 
     // val input = Tensor(batchSize, channel, height, width).rand(-1, 1)
-    val gradOutput = Tensor().resizeAs(input).rand(-1, 1)
+    val gradOutput = Tensor().resizeAs(input).copy(input)
 
     val out1 = bn.forward(input)
     val out2 = nnBn.forward(input)
 
     out1.storage()
 
-    DnnUtils.getunequals(bn.output, nnBn.output, 1e-2) should be (true)
+    bn.output.almostEqual(nnBn.output, 1e-5)
+//    DnnUtils.nearequals(bn.output, nnBn.output) should be (true)
 
     val gradInput = bn.backward(input, gradOutput)
     val nnGradInput = nnBn.backward(input, gradOutput)
 
-    DnnUtils.getunequals(gradInput, nnGradInput.toTensor, 1e-2) should be (true)
-    DnnUtils.nearequals(bn.getParameters()._2, nnBn.getParameters()._2, 1e-1) should be (true)
+    bn.getParameters()._2.almostEqual(nnBn.getParameters()._2, 1e-5)
+    DnnUtils.getunequals(gradInput, nnGradInput.toTensor) should be (true)
+    DnnUtils.nearequals(bn.getParameters()._2, nnBn.getParameters()._2, 1e-4) should be (true)
 
-    DnnUtils.nearequals(weight, nnWeight, 1e-2) should be(true)
-    DnnUtils.nearequals(gradWeight, nnGradWeight, 1e-1) should be(true)
+    DnnUtils.nearequals(weight, nnWeight) should be(true)
+    DnnUtils.nearequals(gradWeight, nnGradWeight, 1e-4) should be(true)
+  }
+
+  "bn backward read from txt" should "work correctly" in {
+    import scala.io.Source
+    import java.nio.file.{Files, Paths}
+    val (batchSize, channel, height, width) = (4, 64, 112, 112)
+    val epsilon = 0.0f
+
+    def array(file: String): Array[Float] = {
+      val buffer = java.nio.file.Files.readAllBytes(Paths.get(file))
+      val bb = java.nio.ByteBuffer.wrap(buffer)
+      bb.order(java.nio.ByteOrder.nativeOrder)
+      val floats = new Array[Float](buffer.length/4)
+      bb.asFloatBuffer().get(floats)
+      floats
+    }
+
+    val weightAndBias = array("/tmp/weights.txt")
+    val initWeight = Tensor(weightAndBias.slice(0, 64), Array(channel))
+    val initBias = Tensor(weightAndBias.slice(64, 128), Array(channel))
+    val input = Tensor(array("/tmp/input.txt"), Array(batchSize, channel, height, width))
+    val output = Tensor(array("/tmp/dst.txt"), Array(batchSize, channel, height, width))
+    val gradOutput = Tensor(array("/tmp/diff_dst.txt"), Array(batchSize, channel, height, width))
+    val mean = Tensor(array("/tmp/mean.txt"), Array(64))
+    val variance = Tensor(array("/tmp/variance.txt"), Array(64))
+    val gradWeight = Tensor(array("/tmp/diff_weights.txt"), Array(128))
+
+    val bn = SpatialBatchNormalization(channel, epsilon, initWeight = initWeight,
+      initBias = initBias).setShouldConvert(true)
+
+    bn.forward(input)
+    bn.backward(input, gradOutput)
+
+    bn.mean should be (mean)
+    bn.variance should be (variance)
+    bn.all should be (Tensor(weightAndBias, bn.all.size()))
+    bn.output should be (output)
+    bn.gradAll should be (gradWeight)
   }
 }
