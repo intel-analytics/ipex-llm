@@ -110,7 +110,7 @@ class DLImageTransformerSpec extends FlatSpec with Matchers with BeforeAndAfter 
     assert(r.getSeq[Float](5).toArray.deep == convertedR.getAs[Array[Float]](5).deep)
   }
 
-  "transform gray scale image" should "work" in {
+  "DLTransformer" should "transform gray scale image" in {
     val resource = getClass().getClassLoader().getResource("gray/gray.bmp")
     val df = DLImageReader.readImages(resource.getFile, sc)
     val dlTransformer = new DLImageTransformer(Resize(28, 28) -> MatToTensor[Float]())
@@ -123,4 +123,21 @@ class DLImageTransformerSpec extends FlatSpec with Matchers with BeforeAndAfter 
     assert(r.getInt(3) == 1)
     assert(r.getInt(4) == CvType.CV_32FC1)
   }
+
+  "DLTransformer" should "support same input and output columns" in {
+    val resource = getClass().getClassLoader().getResource("gray/gray.bmp")
+    val df = DLImageReader.readImages(resource.getFile, sc)
+    val dlTransformer = new DLImageTransformer(Resize(28, 28) -> MatToTensor[Float]())
+      .setInputCol("image")
+      .setOutputCol("image")
+    val transformed = dlTransformer.transform(df)
+    transformed.show(false)
+    val r = transformed.select("image").rdd.first().getAs[Row](0)
+    assert(r.getString(0).endsWith("gray.bmp"))
+    assert(r.getInt(1) == 28)
+    assert(r.getInt(2) == 28)
+    assert(r.getInt(3) == 1)
+    assert(r.getInt(4) == CvType.CV_32FC1)
+  }
+
 }

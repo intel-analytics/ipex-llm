@@ -48,6 +48,7 @@ class DLImageTransformer (
   setDefault(inputCol -> "image")
   def setInputCol(value: String): this.type = set(inputCol, value)
 
+  setDefault(outputCol -> "output")
   def setOutputCol(value: String): this.type = set(outputCol, value)
 
   protected def validateInputType(inputType: DataType): Unit = {
@@ -60,10 +61,6 @@ class DLImageTransformer (
   override def transformSchema(schema: StructType): StructType = {
     val inputType = schema($(inputCol)).dataType
     validateInputType(inputType)
-    if (schema.fieldNames.contains($(outputCol))) {
-      throw new IllegalArgumentException(s"Output column ${$(outputCol)} already exists.")
-    }
-
     val outputFields = schema.fields :+
       StructField($(outputCol), DLImageSchema.floatSchema, nullable = false)
     StructType(outputFields)
@@ -81,7 +78,7 @@ class DLImageTransformer (
       val result = transformerValue.apply(Iterator(imf)).toArray.head
 
       if (!result.contains(ImageFeature.imageTensor)) {
-        MatToTensor[Float]().transform(result)
+        MatToTensor[Float](shareBuffer = true).transform(result)
       }
       DLImageSchema.imf2Row(result)
     }

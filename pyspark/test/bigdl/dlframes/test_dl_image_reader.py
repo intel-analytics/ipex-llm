@@ -27,7 +27,7 @@ class TestDLImageReader():
     def setup_method(self, method):
         """
         setup any state tied to the execution of the given method in a
-        class.  setup_method is invoked for every test method of a class.
+        class. setup_method is invoked for every test method of a class.
         """
         sparkConf = create_spark_conf().setMaster("local[1]").setAppName("test model")
         self.sc = get_spark_context(sparkConf)
@@ -36,7 +36,7 @@ class TestDLImageReader():
 
     def teardown_method(self, method):
         """
-         teardown any state that was previously setup with a setup_method
+        teardown any state that was previously setup with a setup_method
         call.
         """
         self.sc.stop()
