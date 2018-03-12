@@ -335,7 +335,12 @@ class ConvolutionDnn[T: ClassTag](
       val input_size = input.size()
       val dst_sizes = getOutputShape(outputHeight, outputWidth, input_size(0))
       // todo: output with Dense Tensor
-      output = MklDnnTensor[Float](dst_sizes)
+      if (output.getTensorType != MklDnnType) {
+        output = MklDnnTensor[Float](dst_sizes)
+      } else if (output.nElement() != dst_sizes.product) {
+        output.asInstanceOf[MklDnnTensor[Float]].release()
+        output = MklDnnTensor[Float](dst_sizes)
+      }
 
       src_md = MklDnnOps.memoryDescInit(input.dim(), input_size, dataType, this.internal_format)
       weights_md = MklDnnOps.memoryDescInit(dimWeight, weightSize, dataType, this.internal_format)

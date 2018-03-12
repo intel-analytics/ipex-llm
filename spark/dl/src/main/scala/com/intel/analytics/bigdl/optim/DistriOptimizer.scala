@@ -714,6 +714,11 @@ object DistriOptimizer {
       val workingModels = cached.localModels
 
       workingModels.foreach(_.evaluate())
+      // test
+      workingModels.foreach(e => {
+        e.createDnnEngine(0)
+        e.createStream()
+      })
       dataIter.map(batch => {
         val stackSize = batch.size() / _subModelNumber
         val extraSize = batch.size() % _subModelNumber

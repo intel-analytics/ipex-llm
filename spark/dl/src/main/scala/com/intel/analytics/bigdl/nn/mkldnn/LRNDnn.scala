@@ -102,7 +102,12 @@ class LRNDnn[T: ClassTag](
       val input_size = input.size()
       val dst_sizes = input_size
       // todo: output with Dense Tensor
-      output = MklDnnTensor[Float](dst_sizes)
+      if (output.getTensorType != MklDnnType) {
+        output = MklDnnTensor[Float](dst_sizes)
+      } else if (output.nElement() != dst_sizes.product) {
+        output.asInstanceOf[MklDnnTensor[Float]].release()
+        output = MklDnnTensor[Float](dst_sizes)
+      }
 
       // create memory desc, for input
       if (input.getPrimitiveDesc() != 0L) {
@@ -234,14 +239,10 @@ class LRNDnn[T: ClassTag](
     }
     val n_bwd = stream_bwd.length
     val (memoryPrimitives, buffer) =
-      if (reorder_gradOutput_memory == 0L) {
+      if (reorder_gradOutput_memory == 0L && gradOutput.getTensorType != MklDnnType) {
         // sync here
-        if (gradOutput.getTensorType != MklDnnType) {
-          MklDnnTensor.syncFromHeap(
-            gradOutputBuffer, gradOutput.storage().array(), gradOutput.storageOffset() - 1)
-        } else {
-          gradOutputBuffer = gradOutput.asInstanceOf[MklDnnTensor[Float]]
-        }
+        MklDnnTensor.syncFromHeap(
+          gradOutputBuffer, gradOutput.storage().array(), gradOutput.storageOffset() - 1)
         (Array(src_memory, gradOutput_memory, work_memory, gradInput_memory),
           Array(inputBuffer, gradOutputBuffer, workSpace, gradInput))
 

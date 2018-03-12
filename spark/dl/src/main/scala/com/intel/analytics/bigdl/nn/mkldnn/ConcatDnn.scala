@@ -124,13 +124,20 @@ class ConcatDnn(val dimension: Int) extends Container[Tensor[Float], Tensor[Floa
         case _ => currentOut.getFormat()
       }
       // reorder all output to user format
+      if (outBuffers(i) == null) {
+        outBuffers(i) = MklDnnTensor[Float](currentOut.size())
+      } else if (outBuffers(i) != null && outBuffers(i).nElement() != currentOut.nElement()) {
+        println("ConcatDnn: release and re allocate")
+        outBuffers(i).release()
+        outBuffers(i) = MklDnnTensor[Float](currentOut.size())
+      }
+
       if (format != user_format) {
-        if (outBuffers(i) == null) outBuffers(i) = MklDnnTensor[Float](currentOut.size())
+        // if (outBuffers(i) == null) outBuffers(i) = MklDnnTensor[Float](currentOut.size())
         reorderToUser(currentOut, outBuffers(i), user_format)
       } else if (currentOut.getTensorType != MklDnnType) {
         // copy results from normal tensor to dnn tensor
-        val tmp = currentOut.getTensorType
-        if (outBuffers(i) == null) outBuffers(i) = MklDnnTensor[Float](currentOut.size())
+        // if (outBuffers(i) == null) outBuffers(i) = MklDnnTensor[Float](currentOut.size())
         MklDnnTensor.syncFromHeap(outBuffers(i),
                                 currentOut.storage().array(), currentOut.storageOffset() - 1)
       } else {
@@ -164,7 +171,14 @@ class ConcatDnn(val dimension: Int) extends Container[Tensor[Float], Tensor[Floa
     if (output.getTensorType != MklDnnType) {
       // todo: output with Dense Tensor
       output = MklDnnTensor[Float](this.size)
+    } else if (output.nElement() != this.size.product) {
+      println("ConcatDnn: resize output")
+      output.asInstanceOf[MklDnnTensor[Float]].release()
+      output = MklDnnTensor[Float](this.size)
     }
+
+    // println("output size " + output.size().foreach(println(_)))
+
     val dst_md = MklDnnOps.memoryDescInit(output.dim(), output.size(), dataType, user_format)
 
     val concatDesc = MklDnn.ConcatPrimitiveDescCreate(dst_md,
