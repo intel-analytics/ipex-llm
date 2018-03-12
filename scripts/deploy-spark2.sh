@@ -30,17 +30,17 @@ else
     exit 1
 fi
 
-# We deploy artifacts build from jdk 1.7
+# We deploy artifacts build from jdk 1.8
 JDK_VERSION=$("$_java" -version 2>&1 | awk -F '"' '/version/ {print $2}')
-if [[ "$JDK_VERSION" > "1.8" ]]; then
-    echo Require a jdk 1.7 version
+if [[ "$JDK_VERSION" > "1.9" ]]; then
+    echo Require a jdk 1.8 version
     exit 1
 fi
-if [[ "$JDK_VERSION" < "1.7" ]]; then
-    echo Require a jdk 1.7 version
+if [[ "$JDK_VERSION" < "1.8" ]]; then
+    echo Require a jdk 1.8 version
     exit 1
 fi
-export MAVEN_OPTS="-Xmx2g -XX:ReservedCodeCacheSize=512m -XX:MaxPermSize=1G"
+export MAVEN_OPTS="-Xmx2g -XX:ReservedCodeCacheSize=512m"
 
 # Check if mvn installed
 MVN_INSTALL=$(which mvn 2>/dev/null | grep mvn | wc -l)
@@ -66,8 +66,6 @@ function deploy {
     cd dist && mvn deploy -DskipTests -P sign -Dspark.version=$1 -DSPARK_PLATFORM=$2 $3 && cd ..
 }
 
-deploy 1.5.2 SPARK_1.5 ''
-deploy 1.6.2 SPARK_1.6 ''
 deploy 2.1.1 SPARK_2.1 '-P spark_2.x'
 deploy 2.2.0 SPARK_2.2 '-P spark_2.x'
 
