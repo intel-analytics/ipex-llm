@@ -415,6 +415,8 @@ _picklable_classes = [
 
 def init_engine(bigdl_type="float"):
     callBigDlFunc(bigdl_type, "initEngine")
+    # Spark context is supposed to have been created when init_engine is called
+    get_spark_context()._jvm.org.apache.spark.bigdl.api.python.BigDLSerDe.initialize()
 
 
 def init_executor_gateway(sc, bigdl_type="float"):
