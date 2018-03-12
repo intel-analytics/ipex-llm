@@ -66,6 +66,7 @@ class KerasLayer(Layer, KerasCreator):
     pass
 
 class KerasModel(KerasLayer):
+    # TODO: enrich the KerasModel related API here.
     pass
 
 
