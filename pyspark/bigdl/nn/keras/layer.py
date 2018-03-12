@@ -80,6 +80,10 @@ class Sequential(KerasModel):
     def __init__(self, bigdl_type="float"):
         super(Sequential, self).__init__(None, bigdl_type=bigdl_type)
 
+    def add(self, model):
+        self.value.add(model.value)
+        return self
+
 
 class Model(KerasModel):
     def __init__(self, input, output, bigdl_type="float"):
