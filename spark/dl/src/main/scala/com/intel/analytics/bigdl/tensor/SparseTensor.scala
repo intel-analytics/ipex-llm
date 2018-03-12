@@ -1146,7 +1146,7 @@ object SparseTensor{
       val curLength = currentTensor.nElement()
       val curTensorOffset = currentTensor.storageOffset() - 1
       // copy to concat _values
-      ev.arraycopy(currentTensor.storage().array(), curTensorOffset,
+      System.arraycopy(currentTensor.storage().array(), curTensorOffset,
         res.storage().array(), offset, curLength)
       // make new Indices
       var indicesIndex = 0
