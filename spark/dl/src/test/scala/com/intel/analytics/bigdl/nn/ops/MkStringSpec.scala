@@ -17,6 +17,7 @@ package com.intel.analytics.bigdl.nn.ops
 
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
 
 class MkStringSpec extends FlatSpec with Matchers {
@@ -41,5 +42,17 @@ class MkStringSpec extends FlatSpec with Matchers {
 
     val output = MkString[Double]().forward(input)
     output should be(expectOutput)
+  }
+}
+
+class MkStringSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val mkString = new MkString[Float](strDelimiter = ",").setName("MkString")
+    val input = Tensor.sparse(
+      indices = Array(Array(0, 0, 1, 1, 1, 2), Array(0, 1, 0, 1, 2, 2)),
+      values = Array(1, 2, 3, 4, 5, 6),
+      shape = Array(3, 4)
+    )
+    runSerializationTest(mkString, input)
   }
 }

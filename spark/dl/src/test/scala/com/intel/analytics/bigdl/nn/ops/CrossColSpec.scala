@@ -17,6 +17,7 @@ package com.intel.analytics.bigdl.nn.ops
 
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
 
 class CrossColSpec extends FlatSpec with Matchers {
@@ -56,5 +57,17 @@ class CrossColSpec extends FlatSpec with Matchers {
       .forward(input)
 
     output should be(expectedOutput)
+  }
+}
+
+class CrossColSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val crosscol = CrossCol[Float](hashBucketSize = 100)
+      .setName("CrossCol")
+    val input = T(
+      Tensor[String](T("A,D", "B", "A,C")),
+      Tensor[String](T("1", "2", "3,4"))
+    )
+    runSerializationTest(crosscol, input)
   }
 }

@@ -17,6 +17,7 @@ package com.intel.analytics.bigdl.nn.ops
 
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
 
 class RandomUniformSpec extends FlatSpec with Matchers {
@@ -26,5 +27,15 @@ class RandomUniformSpec extends FlatSpec with Matchers {
       Tensor[Int](T(1, 2, 3))
 
     val output = RandomUniform[Float, Double](10, 20).forward(input)
+  }
+}
+
+class RandomUniformSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val randomUniform = RandomUniform[Float, Float](10, 20).
+      setName("randomUniform")
+    val input = Tensor[Int](T(1, 2, 3))
+    runSerializationTest(randomUniform, input, randomUniform.
+      asInstanceOf[ModuleToOperation[Float]].module.getClass)
   }
 }
