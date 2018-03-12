@@ -731,8 +731,7 @@ object DistriOptimizer {
       require(parameterPerLayerSizes.length == norm2PerLayer.length,
         "lookupDic length is not correct!")
       for((parameter, i) <- model.parameters()._1.view.zipWithIndex) {
-        require(ev.isGreater(ev.fromType(1e-3),
-          (ev.minus(parameter.sumSquare(), ev.fromType(norm2PerLayer(i)._2._1)))),
+        require(ev.nearlyEqual(parameter.sumSquare(), ev.fromType(norm2PerLayer(i)._2._1), 1e-3),
           s"lookupDic value is not correct! ori is ${parameter.sumSquare()}" +
             s" now is ${norm2PerLayer(i)._2._1}")
       }
