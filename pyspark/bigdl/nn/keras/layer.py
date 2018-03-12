@@ -62,7 +62,7 @@ class KerasCreator(JavaValue):
         print("creating: " + name)
         return name
 
-class KerasLayer(Layer, KerasCreator):
+class KerasLayer(Layer, InferShape, KerasCreator):
     pass
 
 class KerasModel(KerasLayer):
@@ -87,9 +87,10 @@ class Sequential(KerasModel):
 
 class Model(KerasModel):
     def __init__(self, input, output, bigdl_type="float"):
-        super(Model, self).__init__(None, to_list(input),
+        super(Model, self).__init__(None, bigdl_type,
+                                    to_list(input),
                                     to_list(output),
-                                    bigdl_type=bigdl_type)
+                                    )
 
 
 class Input(Node, KerasCreator):
