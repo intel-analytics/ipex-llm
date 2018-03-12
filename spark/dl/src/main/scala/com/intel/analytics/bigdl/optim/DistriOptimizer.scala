@@ -618,6 +618,7 @@ object DistriOptimizer {
     val computeThresholdbatchSize = state.get[Int]("computeThresholdbatchSize").get
     val nExecutor = Engine.nodeNumber()
     val executorCores = Engine.coreNumber()
+
     val models = dataset.originRDD().mapPartitions(_ => {
       val (broadcastCriterion, broadcastState, broadcastMethod,
       broadcastOptim) = broadcast.value

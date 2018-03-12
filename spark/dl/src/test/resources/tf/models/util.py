@@ -60,24 +60,16 @@ def merge_checkpoint(input_graph,
         f.write(output_graph_def.SerializeToString())
 
 def run_model(end_points, output_path, model_scope=None, backward=True):
-    outputs = []
-    results = []
     grad_inputs = []
     grad_inputs_assign = []
     grad_vars = []
     grad_results = []
-    i = 0
-    for end_point in end_points:
-        output = tf.Variable(tf.random_uniform(tf.shape(end_point)), name='output' + str(i))
-        outputs.append(output)
-        results.append(tf.assign(output, end_point, name = 'assign' + str(i)))
-        i = i + 1
 
     if backward:
         loss = reduce(lambda x, y: tf.abs(x - y), end_points)
         loss = loss * loss
         for i in range(len(end_points)):
-            grad_input = tf.Variable(tf.random_uniform(tf.shape(end_point), minval=0.5, maxval=1),
+            grad_input = tf.Variable(tf.random_uniform(tf.shape(end_points[i]), minval=0.5, maxval=1),
                                      name='grad_input' + str(i))
             grad_inputs.append(grad_input)
             grad_input_endpoint = tf.gradients(loss, end_points[i])[0]
@@ -99,10 +91,17 @@ def run_model(end_points, output_path, model_scope=None, backward=True):
         print 'Compute {} variables for backward in {} ms'.format(k, tt)
 
     saver = tf.train.Saver()
+    output_results = []
     with tf.Session() as sess:
         init = tf.global_variables_initializer()
         sess.run(init) 
-        sess.run(results)
+        tensorflow_tensors = sess.run(end_points)
+        i = 0
+        for e in end_points:
+            tf.constant(tensorflow_tensors[i], name='output' + str(i))
+            output_results.append('output' + str(i))
+            i = i + 1
+
         if backward:
             sess.run(grad_results)
             sess.run(grad_inputs_assign)
@@ -114,7 +113,8 @@ def run_model(end_points, output_path, model_scope=None, backward=True):
     input_checkpoint = output_path + "/model.chkp"
     output_file = output_path + "/model.pb"
 
-    output_nodes = map(lambda x: 'assign' + str(x), range(len(end_points)))
+    output_nodes = map(lambda x: x.name.split(":")[0], end_points)
+    output_nodes.extend(output_results)
     if backward:
         grades_nodes = map(lambda x: 'grad_assign' + str(x), range(len(grad_results)))
         grades_input_nodes = map(lambda x: 'grad_input_assign' + str(x), range(len(grad_inputs)))

@@ -399,6 +399,7 @@ It can be created by
 * `read`: read local image path as opencv mat
 * `fromImageBytes`: convert image file in bytes to opencv mat
 * `fromFloats`: convert float array(pixels) to OpenCV mat
+* `fromTensor`: convert float tensor to OpenCV mat
 
 **Scala example:**
 ```scala
@@ -411,6 +412,9 @@ val mat2 = OpenCVMat.fromImageBytes(bytes)
 
 // Convert float array(pixels) to OpenCVMat
 val mat3 = OpenCVMat.fromFloats(floatPixels, height=300, width=300)
+
+// Convert tensor to OpenCVMat
+val mat4 = OpenCVMat.fromTensor(tensor, format = "HWC")
 ```
 
 ---
@@ -557,7 +561,7 @@ distributed_image_frame = ImageFrame.read("/tmp/test.jpg", sc, 2)
 # create DistributedImageFrame from an image folder
 distributed_image_frame = ImageFrame.read("/tmp/image/", sc, 2)
 
-# create LocalImageFrame from image rdd
+# create DistributedImageFrame from image rdd
 image = cv2.imread("/tmp/test.jpg")
 image_rdd = sc.parallelize([image], 2)
 distributed_image_frame = DistributedImageFrame(image_rdd)

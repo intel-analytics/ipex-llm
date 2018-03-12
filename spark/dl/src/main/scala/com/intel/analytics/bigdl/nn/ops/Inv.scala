@@ -17,6 +17,7 @@ package com.intel.analytics.bigdl.nn.ops
 
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.{NumericWildCard, TensorNumeric}
+import com.intel.analytics.bigdl.utils.Table
 
 import scala.reflect.ClassTag
 
@@ -38,4 +39,32 @@ class Inv[T: ClassTag, D: ClassTag]()(implicit ev: TensorNumeric[T], ev2: Tensor
 object Inv {
   def apply[T: ClassTag, D: ClassTag]()(
     implicit ev: TensorNumeric[T], ev2: TensorNumeric[D]): Inv[T, D] = new Inv()
+}
+
+private[bigdl] class InvGrad[T: ClassTag, D: ClassTag]()
+  (implicit ev: TensorNumeric[T], ev2: TensorNumeric[D]) extends Operation[Table, Tensor[D], T] {
+  output = Tensor[D]()
+
+  override def updateOutput(input: Table): Tensor[D] = {
+    require(input.length() == 2, "InvGrad requires two tensors as input")
+    val x = input[Tensor[D]](1)
+    val d = input[Tensor[D]](2)
+
+    if (d.getType() != output.getType()) {
+      output = d.emptyInstance()
+    }
+    output.resizeAs(x)
+    output.copy(x).pow(ev2.fromType(2)).cmul(d).mul(ev2.fromType(-1))
+    output
+  }
+
+  override def getClassTagNumerics() : (Array[ClassTag[_]], Array[TensorNumeric[_]]) = {
+    (Array[ClassTag[_]](scala.reflect.classTag[T], scala.reflect.classTag[D]),
+      Array[TensorNumeric[_]](ev, ev2))
+  }
+}
+
+private[bigdl] object InvGrad {
+  def apply[T: ClassTag, D: ClassTag]()(implicit ev: TensorNumeric[T], ev2: TensorNumeric[D])
+  : InvGrad[T, D] = new InvGrad()
 }

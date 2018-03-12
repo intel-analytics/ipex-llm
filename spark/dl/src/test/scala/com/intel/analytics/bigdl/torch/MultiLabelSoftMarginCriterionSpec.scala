@@ -51,8 +51,8 @@ class MultiLabelSoftMarginCriterionSpec extends TorchSpec {
     val luaOutput1 = torchResult("output").asInstanceOf[Double]
     val luaOutput2 = torchResult("gradInput").asInstanceOf[Tensor[Double]]
 
-    luaOutput1 should be(output)
-    luaOutput2 should be(gradInput)
+    luaOutput1 should be(output +- 1e-7)
+    luaOutput2.almostEqual(gradInput, 1e-7) should be(true)
 
     println("Test case : MultiLabelSoftMarginCriterion, Torch : " +
       luaTime + " s, Scala : " + scalaTime / 1e9 + " s")

@@ -16,12 +16,13 @@
 
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
+import com.intel.analytics.bigdl.nn.abstractnn._
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.serializer._
+import com.intel.analytics.bigdl.utils.serializer.converters.DataConverter
 import com.intel.analytics.bigdl.utils.{T, Table}
-import serialization.Bigdl.{AttrValue, BigDLModule}
+import com.intel.analytics.bigdl.serialization.Bigdl.{AttrValue, BigDLModule}
 
 import scala.reflect.ClassTag
 
@@ -34,6 +35,8 @@ import scala.reflect.ClassTag
  *
  * [Deep Learning with S-shaped Rectified Linear Activation Units](http://arxiv.org/abs/1512.07030)
  *
+ * @param shape shape for tleft, aleft, tright, aright.
+ *              E.g. for a 4-D input, the shape is the last 3-D
  * @param sharedAxes the axes along which to share learnable parameters
  *                    for the activation function.
  *                    For example, if the incoming feature maps are from a 2D convolution
@@ -44,8 +47,9 @@ import scala.reflect.ClassTag
  */
 
 @SerialVersionUID(7173457290010080259L)
-class SReLU[T: ClassTag](sharedAxes: Array[Int] = null)(
-  implicit ev: TensorNumeric[T]) extends TensorModule[T] {
+class SReLU[T: ClassTag](val shape: Array[Int], val sharedAxes: Array[Int] = null)(
+  implicit ev: TensorNumeric[T]) extends TensorModule[T]
+    with Initializable with IdentityOutputShape {
   import SReLU._
   val weightsLen = 4
   val weights: Array[Tensor[T]] = Array.fill[Tensor[T]](4)(Tensor[T]())
@@ -56,8 +60,9 @@ class SReLU[T: ClassTag](sharedAxes: Array[Int] = null)(
   // this attribute for computing the offset in weight because of sharedAxes
   private var indexes: Array[Int] = null
 
-  private def init(input: Tensor[T]): Unit = {
-    val shape = input.size().slice(1, input.size().length)
+  init(shape).reset()
+
+  private def init(shape: Array[Int]): this.type = {
     if (sharedAxes != null) {
       var i = 0
       while (i < sharedAxes.length) {
@@ -86,6 +91,14 @@ class SReLU[T: ClassTag](sharedAxes: Array[Int] = null)(
 
     // ensure the the right part is always to the right of the left
     weights(tRight).abs().add(weights(tLeft))
+    this
+  }
+
+  override def reset(): Unit = {
+    for ((initMethod, weight) <- weightsInit.zip(weights)) {
+      initMethod.init(weight)
+    }
+    zeroGradParameters()
   }
 
   private def getIndex(indexes: Array[Int], stride: Array[Int], ndim: Int, offset: Int): Unit = {
@@ -115,12 +128,9 @@ class SReLU[T: ClassTag](sharedAxes: Array[Int] = null)(
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
     require(input.isContiguous(), s"the input of SReLU must be contiguous")
+    // ensure the the right part is always to the right of the left
+    weights(tRight).abs().add(weights(tLeft))
     output.resizeAs(input)
-
-    // the weight's size depends on the input
-    if (weights.exists(_.isEmpty)) {
-      init(input)
-    }
 
     // temp buf for indexes
     if (indexes == null) {
@@ -273,25 +283,6 @@ class SReLU[T: ClassTag](sharedAxes: Array[Int] = null)(
     }
   }
 
-  override def setWeightsBias(newWeights: Array[Tensor[T]]): this.type = {
-    // SReLU will split the weights from a tensor
-    if (!newWeights.isEmpty) {
-      var i = 0
-      while (i < weightsLen) {
-        val weight = newWeights(i)
-        weights(i).resizeAs(weight).set(weight)
-        gradWeights(i) = Tensor[T]().resizeAs(weight)
-
-        i += 1
-      }
-
-      // ensure the the right part is always to the right of the left
-      weights(tRight).abs().add(weights(tLeft))
-    }
-
-    this
-  }
-
   override def getParametersTable(): Table = {
     T(getName() -> T(
       "tLeft" -> weights(tLeft),
@@ -304,28 +295,28 @@ class SReLU[T: ClassTag](sharedAxes: Array[Int] = null)(
     (weights, gradWeights)
   }
 
-  def setInitMethod(
-    tLeftInit: InitializationMethod = null,
-    aLeftInit: InitializationMethod = null,
-    tRightInit: InitializationMethod = null,
-    aRightInit: InitializationMethod = null): this.type = {
-    val inits = Array(tLeftInit, aLeftInit, tRightInit, aRightInit)
-
+  override def setInitMethod(initMethods: Array[InitializationMethod]): this.type = {
     for (i <- Array(tLeft, aLeft, tRight, aRight)) {
-      if (inits(i) != null) {
-        weightsInit(i) = inits(i)
+      if (initMethods(i) != null) {
+        weightsInit(i) = initMethods(i)
       }
     }
-
+    reset()
     this
+  }
+
+  override def setInitMethod(weightInitMethod: InitializationMethod = null,
+    biasInitMethod: InitializationMethod = null): this.type = {
+    throw new UnsupportedOperationException(
+      s"SReLU should call setInitMethod(initMethods: Array[InitializationMethod])")
   }
 }
 
 
 object SReLU extends ModuleSerializable {
-  def apply[T: ClassTag](share_axes: Array[Int] = null)(implicit ev: TensorNumeric[T])
-  : SReLU[T] = {
-    new SReLU[T](share_axes)
+  def apply[T: ClassTag](shape: Array[Int], shareAxes: Array[Int] = null)(
+    implicit ev: TensorNumeric[T]): SReLU[T] = {
+    new SReLU[T](shape, shareAxes)
   }
 
   val (tLeft, aLeft, tRight, aRight) = (0, 1, 2, 3)

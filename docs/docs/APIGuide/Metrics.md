@@ -1,5 +1,3 @@
-
----
 ValidationMethod is a method to validate the model during model training or evaluation.
 The trait can be extended by user-defined method. Now we have defined Top1Accuracy, Top5Accuracy, Loss.
 You can use those methods to evaluate model, please refer to [Module](https://github.com/intel-analytics/BigDL/blob/master/docs/docs/APIdocs/Module.md) for details.

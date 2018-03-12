@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Table
 import com.intel.analytics.bigdl.utils.serializer.{ContainerSerializable, DeserializeContext, ModuleData, SerializeContext}
-import serialization.Bigdl.BigDLModule
+import com.intel.analytics.bigdl.serialization.Bigdl.BigDLModule
 
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
@@ -36,7 +36,7 @@ import scala.reflect.ClassTag
 @SerialVersionUID( 4403280698280280268L)
 class MapTable[T: ClassTag](
   var module: AbstractModule[_ <: Activity, _ <: Activity, T] = null)
-  (implicit ev: TensorNumeric[T]) extends Container[Table, Table, T]  {
+  (implicit ev: TensorNumeric[T]) extends DynamicContainer[Table, Table, T]  {
 
   if ( module != null) {
     this.add(module)
@@ -102,19 +102,6 @@ class MapTable[T: ClassTag](
 
   override def getEndNodes(startNodes: Array[ModuleNode[T]]): Array[ModuleNode[T]] = {
     throw new IllegalArgumentException("Can not transform Container MapTable to graph")
-  }
-
-  override def zeroGradParameters(): Unit = {
-    if (module != null) {
-      module.zeroGradParameters()
-    }
-  }
-
-
-  override def updateParameters(learningRate: T): Unit = {
-    if (module != null) {
-      module.updateParameters(learningRate)
-    }
   }
 
   override def toString(): String = {

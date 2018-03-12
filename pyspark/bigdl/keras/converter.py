@@ -28,6 +28,7 @@ from keras.models import Sequential, Model, Layer
 import keras
 import warnings
 from math import ceil
+from bigdl.keras.ToBigDLHelper import *
 
 
 def unsupport_exp(name):
@@ -507,8 +508,8 @@ class LayerConverter:
             input_size=in_dim,
             output_size=out_dim,
             with_bias=self.config["bias"],
-            wRegularizer=self.to_bigdl_reg(self.config["W_regularizer"]),
-            bRegularizer=self.to_bigdl_reg(self.config["b_regularizer"])
+            wRegularizer=to_bigdl_reg(self.config["W_regularizer"]),
+            bRegularizer=to_bigdl_reg(self.config["b_regularizer"])
         )
 
         if len(self.input_shape) <= 2:
@@ -525,8 +526,8 @@ class LayerConverter:
             input_size=int(self.input_shape[-1]),
             output_size=self.config["output_dim"],
             with_bias=self.config["bias"],
-            wRegularizer=self.to_bigdl_reg(self.config["W_regularizer"]),
-            bRegularizer=self.to_bigdl_reg(self.config["b_regularizer"])
+            wRegularizer=to_bigdl_reg(self.config["W_regularizer"]),
+            bRegularizer=to_bigdl_reg(self.config["b_regularizer"])
         ))
         return self.combo_parameter_layer(blayer, self.config)
 
@@ -575,10 +576,11 @@ class LayerConverter:
                  padding_value=0.0,
                  norm_type=2.0,
                  should_scale_grad_by_freq=False,
-                 wRegularizer=self.to_bigdl_reg(self.config["W_regularizer"]),
+                 wRegularizer=to_bigdl_reg(self.config["W_regularizer"]),
                  bigdl_type="float")
-        bseq.add(BLayer.AddConstant(1.0, inplace=True))  # Add 1 as BigDL is one-based index
+        bseq.add(BLayer.AddConstant(1.0))  # Add 1 as BigDL is one-based index
         bseq.add(blayer)
+        blayer.set_init_method(to_bigdl_init(self.config["init"]))
         return bseq
 
     def create_activation(self):
@@ -639,7 +641,10 @@ class LayerConverter:
         return list(filter(lambda pair: pair[0] != pair[1], pairs))
 
     def create_reshape(self):
-        blayer = BLayer.Reshape(self.klayer.target_shape, None)
+        if -1 in self.klayer.target_shape:
+            blayer = BLayer.InferReshape(self.klayer.target_shape, True)
+        else:
+            blayer = BLayer.Reshape(self.klayer.target_shape, None)
         return blayer
 
     def create_repeatvector(self):
@@ -904,9 +909,9 @@ class LayerConverter:
                              hidden_size=klayer.output_dim,
                              activation=activation,
                              isInputWithBias=False,
-                             wRegularizer=self.to_bigdl_reg(config["W_regularizer"]),
-                             uRegularizer=self.to_bigdl_reg(config["U_regularizer"]),
-                             bRegularizer=self.to_bigdl_reg(config["b_regularizer"]),
+                             wRegularizer=to_bigdl_reg(config["W_regularizer"]),
+                             uRegularizer=to_bigdl_reg(config["U_regularizer"]),
+                             bRegularizer=to_bigdl_reg(config["b_regularizer"]),
                              bigdl_type="float")
         return rnn
 
@@ -928,9 +933,9 @@ class LayerConverter:
                            p=0.0,
                            activation=activation,
                            inner_activation=inner_activation,
-                           wRegularizer=self.to_bigdl_reg(config["W_regularizer"]),
-                           uRegularizer=self.to_bigdl_reg(config["U_regularizer"]),
-                           bRegularizer=self.to_bigdl_reg(config["b_regularizer"]),
+                           wRegularizer=to_bigdl_reg(config["W_regularizer"]),
+                           uRegularizer=to_bigdl_reg(config["U_regularizer"]),
+                           bRegularizer=to_bigdl_reg(config["b_regularizer"]),
                            bigdl_type="float")
         return lstm
 
@@ -958,9 +963,9 @@ class LayerConverter:
                                            activation=activation,
                                            inner_activation=inner_activation,
                                            # NB: ConvLSTM doesn't serialize regularizers to json file
-                                           # wRegularizer=self.to_bigdl_reg(config["W_regularizer"]),
-                                           # uRegularizer=self.to_bigdl_reg(config["U_regularizer"]),
-                                           # bRegularizer=self.to_bigdl_reg(config["b_regularizer"]),
+                                           # wRegularizer=to_bigdl_reg(config["W_regularizer"]),
+                                           # uRegularizer=to_bigdl_reg(config["U_regularizer"]),
+                                           # bRegularizer=to_bigdl_reg(config["b_regularizer"]),
                                            cRegularizer=None,
                                            with_peephole=False,
                                            bigdl_type="float")
@@ -971,6 +976,9 @@ class LayerConverter:
         if self.config["border_mode"] != 'same':
             raise Exception("Unsupported border_mode: valid")
 
+        if self.klayer.dim_ordering != "th":
+            raise Exception("Please use `th` for `dim_ordering`. `%s` is not supported for now."
+                            % self.klayer.dim_ordering)
         if self.config["nb_row"] != self.config["nb_col"]:
             raise Exception("Only square kernel is supported for now. Please set nb_row=nb_col.")
         if self.klayer.subsample[0] != self.klayer.subsample[1]:
@@ -995,9 +1003,9 @@ class LayerConverter:
                          p=0.0,
                          activation=activation,
                          inner_activation=inner_activation,
-                         wRegularizer=self.to_bigdl_reg(config["W_regularizer"]),
-                         uRegularizer=self.to_bigdl_reg(config["U_regularizer"]),
-                         bRegularizer=self.to_bigdl_reg(config["b_regularizer"]),
+                         wRegularizer=to_bigdl_reg(config["W_regularizer"]),
+                         uRegularizer=to_bigdl_reg(config["U_regularizer"]),
+                         bRegularizer=to_bigdl_reg(config["b_regularizer"]),
                          bigdl_type="float")
         return gru
 
@@ -1008,6 +1016,9 @@ class LayerConverter:
                                               self.klayer.go_backwards, rec.add(gru))
 
     def create_batchnormalization(self):
+        if len(self.input_shape) != 4:
+            raise Exception("Only 4D input is supported for now, but the current input dim is %s",
+                            len(self.input_shape))
         if keras.backend.image_dim_ordering() == "th" and self.klayer.axis != 1:
             raise Exception("""For BatchNormalization with th image ordering, we only support """ +
                             """axis = 1 for now, but the current axis is %s
@@ -1026,7 +1037,7 @@ class LayerConverter:
         if self.config["beta_regularizer"]:
             raise Exception("We don't support beta_regularizer for now")
 
-        bigdl_order = self.to_bigdl_2d_ordering(keras.backend.image_dim_ordering())
+        bigdl_order = to_bigdl_2d_ordering(keras.backend.image_dim_ordering())
         n_input_channel = int(self.input_shape[self.klayer.axis])
 
         # init gamma and beta
@@ -1059,60 +1070,14 @@ class LayerConverter:
             warnings.warn("Cannot find dim_ordering from json definition. Using the default instead.")
             order = keras.backend.image_dim_ordering()
         if dim == "3D":
-            return self.to_bigdl_3d_ordering(order)
-        return self.to_bigdl_2d_ordering(order)
-
-    def to_bigdl_2d_ordering(self, order):
-        if order == "tf":
-            return "NHWC"
-        elif order == "th":
-            return "NCHW"
-        else:
-            raise Exception("Unsupported dim_ordering: %s" % order)
-
-    def to_bigdl_3d_ordering(self, order):
-        if order == "tf":
-            return "channel_last"
-        elif order == "th":
-            return "channel_first"
-        else:
-            raise Exception("Unsupported dim_ordering: %s" % order)
-
-    def to_bigdl_3d_padding(self, border_mode):
-        if border_mode == "valid":
-            return 0, 0, 0
-        elif border_mode == "same":
-            return -1, -1, -1
-        else:
-            raise Exception("Unsupported border mode: %s" % border_mode)
-
-    def __calculate_2d_same_padding(self, x, kx, dx, dilation_x):
-        return int(ceil((x * (dx - 1) + dilation_x * (kx - 1) - dx + 1) / 2))
-
-    def to_bigdl_2d_padding(self, border_mode, *args):
-        if border_mode == "same":
-            if len(args) == 0:  # if -1 for same padding is supported
-                return -1, -1
-            # calculate padding by given parameters
-            elif len(args) == 4:  # used by 1d layers constructed from 2d, just need one pad
-                h, kh, dh, dilation_h = args
-                pad_h = self.__calculate_2d_same_padding(h, kh, dh, dilation_h)
-                return pad_h, 0
-            elif len(args) == 8:
-                h, kh, dh, dilation_h, w, kw, dw, dilation_w = args
-                pad_h = self.__calculate_2d_same_padding(h, kh, dh, dilation_h)
-                pad_w = self.__calculate_2d_same_padding(w, kw, dw, dilation_w)
-                return pad_h, pad_w
-        elif border_mode == "valid":
-            return 0, 0
-        else:
-            raise Exception("Unsupported border mode: %s" % border_mode)
+            return to_bigdl_3d_ordering(order)
+        return to_bigdl_2d_ordering(order)
 
     def create_convolution1d(self):
         # batch, steps, dim, batch is None here, so you cannot use it directly.
         stack_size = int(self.input_shape[2])
 
-        bpadW, bpadH = self.to_bigdl_2d_padding(self.klayer.border_mode)
+        bpadW, bpadH = to_bigdl_2d_padding(self.klayer.border_mode)
         seq = BLayer.Sequential()
         seq.add(BLayer.Reshape([int(self.input_shape[1]), 1, int(self.input_shape[2])], True))
         blayer = BLayer.SpatialConvolution(
@@ -1126,8 +1091,8 @@ class LayerConverter:
                  pad_h=bpadH,
                  n_group=1,
                  propagate_back=True,
-                 wRegularizer=self.to_bigdl_reg(self.config["W_regularizer"]),
-                 bRegularizer=self.to_bigdl_reg(self.config["b_regularizer"]),
+                 wRegularizer=to_bigdl_reg(self.config["W_regularizer"]),
+                 bRegularizer=to_bigdl_reg(self.config["b_regularizer"]),
                  init_weight=None,
                  init_bias=None,
                  init_grad_weight=None,
@@ -1147,7 +1112,7 @@ class LayerConverter:
         elif bigdl_order == "NHWC":
             stack_size = int(self.input_shape[3])
 
-        bpadW, bpadH = self.to_bigdl_2d_padding(self.klayer.border_mode)
+        bpadW, bpadH = to_bigdl_2d_padding(self.klayer.border_mode)
         blayer = BLayer.SpatialConvolution(
                  n_input_plane=stack_size,
                  n_output_plane=self.klayer.nb_filter,
@@ -1159,8 +1124,8 @@ class LayerConverter:
                  pad_h=bpadH,
                  n_group=1,
                  propagate_back=True,
-                 wRegularizer=self.to_bigdl_reg(self.config["W_regularizer"]),
-                 bRegularizer=self.to_bigdl_reg(self.config["b_regularizer"]),
+                 wRegularizer=to_bigdl_reg(self.config["W_regularizer"]),
+                 bRegularizer=to_bigdl_reg(self.config["b_regularizer"]),
                  init_weight=None,
                  init_bias=None,
                  init_grad_weight=None,
@@ -1175,7 +1140,7 @@ class LayerConverter:
         if self.klayer.dim_ordering != "th":
             raise Exception("Please use `th` for `dim_ordering`. `%s` is not supported for now." % self.klayer.dim_ordering)
 
-        bpadT, bpadW, bpadH = self.to_bigdl_3d_padding(self.klayer.border_mode)
+        bpadT, bpadW, bpadH = to_bigdl_3d_padding(self.klayer.border_mode)
         blayer = BLayer.VolumetricConvolution(
             n_input_plane=int(self.input_shape[1]),
             n_output_plane=self.klayer.nb_filter,
@@ -1189,8 +1154,8 @@ class LayerConverter:
             pad_w=bpadW,
             pad_h=bpadH,
             with_bias=self.config["bias"],
-            wRegularizer=self.to_bigdl_reg(self.config["W_regularizer"]),
-            bRegularizer=self.to_bigdl_reg(self.config["b_regularizer"]),
+            wRegularizer=to_bigdl_reg(self.config["W_regularizer"]),
+            bRegularizer=to_bigdl_reg(self.config["b_regularizer"]),
             bigdl_type="float")
 
         return self.combo_parameter_layer(blayer, self.config)
@@ -1203,7 +1168,7 @@ class LayerConverter:
         kh = self.config["filter_length"]
         dh = self.config["subsample_length"]
         dilation_h = self.config["atrous_rate"]
-        pad_h, pad_w = self.to_bigdl_2d_padding(self.config["border_mode"], h, kh, dh, dilation_h)
+        pad_h, pad_w = to_bigdl_2d_padding(self.config["border_mode"], h, kh, dh, dilation_h)
         seq = BLayer.Sequential()
         seq.add(BLayer.Transpose([(2, 3)]))
         seq.add(BLayer.Reshape([int(self.input_shape[2]), int(self.input_shape[1]), 1], True))
@@ -1218,8 +1183,8 @@ class LayerConverter:
             pad_h=pad_h,
             dilation_w=1,
             dilation_h=dilation_h,
-            wRegularizer=self.to_bigdl_reg(self.config["W_regularizer"]),
-            bRegularizer=self.to_bigdl_reg(self.config["b_regularizer"]),
+            wRegularizer=to_bigdl_reg(self.config["W_regularizer"]),
+            bRegularizer=to_bigdl_reg(self.config["b_regularizer"]),
             bigdl_type="float")
 
         seq.add(blayer)
@@ -1241,7 +1206,7 @@ class LayerConverter:
         dw = self.config["subsample"][1]
         dilation_h = self.config["atrous_rate"][0]
         dilation_w = self.config["atrous_rate"][1]
-        pad_h, pad_w = self.to_bigdl_2d_padding(self.config["border_mode"], h, kh, dh, dilation_h,
+        pad_h, pad_w = to_bigdl_2d_padding(self.config["border_mode"], h, kh, dh, dilation_h,
                                                 w, kw, dw, dilation_w)
         blayer = BLayer.SpatialDilatedConvolution(
             n_input_plane=int(self.input_shape[1]),
@@ -1254,8 +1219,8 @@ class LayerConverter:
             pad_h=pad_h,
             dilation_w=dilation_w,
             dilation_h=dilation_h,
-            wRegularizer=self.to_bigdl_reg(self.config["W_regularizer"]),
-            bRegularizer=self.to_bigdl_reg(self.config["b_regularizer"]),
+            wRegularizer=to_bigdl_reg(self.config["W_regularizer"]),
+            bRegularizer=to_bigdl_reg(self.config["b_regularizer"]),
             bigdl_type="float")
 
         return self.combo_parameter_layer(blayer, self.config)
@@ -1301,8 +1266,8 @@ class LayerConverter:
             adj_h=0,
             n_group=1,
             no_bias=not self.klayer.bias,
-            wRegularizer=self.to_bigdl_reg(self.config["W_regularizer"]),
-            bRegularizer=self.to_bigdl_reg(self.config["b_regularizer"]),
+            wRegularizer=to_bigdl_reg(self.config["W_regularizer"]),
+            bRegularizer=to_bigdl_reg(self.config["b_regularizer"]),
             bigdl_type="float")
 
         return self.combo_parameter_layer(blayer, self.config)
@@ -1314,7 +1279,7 @@ class LayerConverter:
         if self.klayer.border_mode == 'same':
             raise Exception("Unsupported border_mode: same")
 
-        bpadT, bpadW, bpadH = self.to_bigdl_3d_padding(self.klayer.border_mode)
+        bpadT, bpadW, bpadH = to_bigdl_3d_padding(self.klayer.border_mode)
         blayer = BLayer.VolumetricMaxPooling(
                 k_t=self.klayer.pool_size[0],
                 k_w=self.klayer.pool_size[2],
@@ -1330,7 +1295,7 @@ class LayerConverter:
 
     def create_maxpooling2d(self):
         bigdl_order = self.get_bdim_order()
-        bpadW, bpadH = self.to_bigdl_2d_padding(self.klayer.border_mode)
+        bpadW, bpadH = to_bigdl_2d_padding(self.klayer.border_mode)
         blayer = BLayer.SpatialMaxPooling(
                  kw=self.klayer.pool_size[1],
                  kh=self.klayer.pool_size[0],
@@ -1402,7 +1367,7 @@ class LayerConverter:
 
     def create_averagepooling2d(self):
         bigdl_order = self.get_bdim_order()
-        bpadW, bpadH = self.to_bigdl_2d_padding(self.klayer.border_mode)
+        bpadW, bpadH = to_bigdl_2d_padding(self.klayer.border_mode)
         blayer = BLayer.SpatialAveragePooling(
             kw=self.klayer.pool_size[1],
             kh=self.klayer.pool_size[0],
@@ -1426,7 +1391,7 @@ class LayerConverter:
         if self.klayer.border_mode == 'same':
             raise Exception("Unsupported border_mode: same")
 
-        bpadT, bpadW, bpadH = self.to_bigdl_3d_padding(self.klayer.border_mode)
+        bpadT, bpadW, bpadH = to_bigdl_3d_padding(self.klayer.border_mode)
         blayer = BLayer.VolumetricAveragePooling(
                 k_t=self.klayer.pool_size[0],
                 k_w=self.klayer.pool_size[2],
@@ -1476,12 +1441,12 @@ class LayerConverter:
         b_kh = int(self.input_shape[1])
 
         seq = BLayer.Sequential()
-        seq.add(BLayer.View([int(self.input_shape[1]), 1, int(self.input_shape[2])], num_input_dims=2))
+        seq.add(BLayer.Reshape([int(self.input_shape[1]), 1, int(self.input_shape[2])], True))
         blayer = BLayer.SpatialMaxPooling(
             kw=b_kw,
             kh=b_kh,
-            dw=0,
-            dh=0,
+            dw=1,
+            dh=1,
             pad_w=0,
             pad_h=0,
             to_ceil=False,
@@ -1489,8 +1454,8 @@ class LayerConverter:
             bigdl_type="float"
         )
         seq.add(blayer)
-        seq.add(BLayer.Squeeze(2, num_input_dims=2))
-        seq.add(BLayer.Squeeze(1, num_input_dims=1))
+        seq.add(BLayer.Squeeze(3))
+        seq.add(BLayer.Squeeze(2))
         return seq
 
     def create_globalaveragepooling1d(self):
@@ -1498,12 +1463,12 @@ class LayerConverter:
         b_kh = int(self.input_shape[1])
 
         seq = BLayer.Sequential()
-        seq.add(BLayer.View([int(self.input_shape[1]), 1, int(self.input_shape[2])], num_input_dims=2))
+        seq.add(BLayer.Reshape([int(self.input_shape[1]), 1, int(self.input_shape[2])], True))
         blayer = BLayer.SpatialAveragePooling(
             kw=b_kw,
             kh=b_kh,
-            dw=0,
-            dh=0,
+            dw=1,
+            dh=1,
             pad_w=0,
             pad_h=0,
             global_pooling=False,
@@ -1514,13 +1479,12 @@ class LayerConverter:
             bigdl_type="float"
         )
         seq.add(blayer)
-        seq.add(BLayer.Squeeze(2, num_input_dims=2))  # the index start from one but without batch
-        seq.add(BLayer.Squeeze(1, num_input_dims=1))
-
+        seq.add(BLayer.Squeeze(3))
+        seq.add(BLayer.Squeeze(2))
         return seq
 
     def create_maxpooling1d(self):
-        bpadW, bpadH = self.to_bigdl_2d_padding(self.klayer.border_mode)
+        bpadW, bpadH = to_bigdl_2d_padding(self.klayer.border_mode)
 
         seq = BLayer.Sequential()
         seq.add(BLayer.Reshape([int(self.input_shape[1]), 1, int(self.input_shape[2])], True))
@@ -1540,7 +1504,7 @@ class LayerConverter:
         return seq
 
     def create_averagepooling1d(self):
-        bpadW, bpadH = self.to_bigdl_2d_padding(self.klayer.border_mode)
+        bpadW, bpadH = to_bigdl_2d_padding(self.klayer.border_mode)
 
         seq = BLayer.Sequential()
         seq.add(BLayer.Reshape([int(self.input_shape[1]), 1, int(self.input_shape[2])], True))
@@ -1626,8 +1590,8 @@ class LayerConverter:
         blayer = BLayer.Highway(size=int(self.input_shape[1]),
                                 with_bias=self.klayer.bias,
                                 activation=activation,
-                                wRegularizer=self.to_bigdl_reg(self.config["W_regularizer"]),
-                                bRegularizer=self.to_bigdl_reg(self.config["b_regularizer"]))
+                                wRegularizer=to_bigdl_reg(self.config["W_regularizer"]),
+                                bRegularizer=to_bigdl_reg(self.config["b_regularizer"]))
         return blayer
 
     def create_maxoutdense(self):
@@ -1635,8 +1599,8 @@ class LayerConverter:
                                output_size=self.klayer.output_dim,
                                maxout_number=self.klayer.nb_feature,
                                with_bias=self.klayer.bias,
-                               w_regularizer=self.to_bigdl_reg(self.config["W_regularizer"]),
-                               b_regularizer=self.to_bigdl_reg(self.config["b_regularizer"]))
+                               w_regularizer=to_bigdl_reg(self.config["W_regularizer"]),
+                               b_regularizer=to_bigdl_reg(self.config["b_regularizer"]))
         return blayer
 
     def create_masking(self):
@@ -1645,10 +1609,18 @@ class LayerConverter:
     def create_srelu(self):
         if "shared_axes" not in self.config:
             warnings.warn("Cannot find shared_axes from json definition. Using shared_axes=None instead.")
+        shape = self.input_shape[1:]
+        t_left_init = to_bigdl_init(self.config["t_left_init"])
+        a_left_init = to_bigdl_init(self.config["a_left_init"])
+        t_right_init = to_bigdl_init(self.config["t_right_init"])
+        a_right_init = to_bigdl_init(self.config["a_right_init"])
         if self.klayer.shared_axes == [None]:
-            return BLayer.SReLU()
+            srelu = BLayer.SReLU(shape)
         else:
-            return BLayer.SReLU(self.klayer.shared_axes)
+            srelu = BLayer.SReLU(shape, self.klayer.shared_axes)
+
+        srelu.set_init_method(t_left_init, a_left_init, t_right_init, a_right_init)
+        return srelu
 
     def create_separableconvolution2d(self):
         if keras.backend.backend() != 'tensorflow':
@@ -1661,7 +1633,7 @@ class LayerConverter:
         elif bigdl_order == "NHWC":
             stack_size = int(self.input_shape[3])
 
-        bpadW, bpadH = self.to_bigdl_2d_padding(self.klayer.border_mode)
+        bpadW, bpadH = to_bigdl_2d_padding(self.klayer.border_mode)
         blayer = BLayer.SpatialSeperableConvolution(
             n_input_channel=stack_size,
             n_output_channel=self.klayer.nb_filter,
@@ -1674,9 +1646,9 @@ class LayerConverter:
             pad_h=bpadH,
             with_bias=self.klayer.bias,
             data_format=bigdl_order,
-            w_regularizer=self.to_bigdl_reg(self.config["depthwise_regularizer"]),
-            b_regularizer=self.to_bigdl_reg(self.config["b_regularizer"]),
-            p_regularizer=self.to_bigdl_reg(self.config["pointwise_regularizer"])
+            w_regularizer=to_bigdl_reg(self.config["depthwise_regularizer"]),
+            b_regularizer=to_bigdl_reg(self.config["b_regularizer"]),
+            p_regularizer=to_bigdl_reg(self.config["pointwise_regularizer"])
         )
 
         return self.combo_parameter_layer(blayer, self.config)
@@ -1712,8 +1684,8 @@ class LayerConverter:
                                            stride_h=self.klayer.subsample_length,
                                            pad_w=0,
                                            pad_h=0,
-                                           wRegularizer=self.to_bigdl_reg(self.config["W_regularizer"]),
-                                           bRegularizer=self.to_bigdl_reg(self.config["b_regularizer"]),
+                                           wRegularizer=to_bigdl_reg(self.config["W_regularizer"]),
+                                           bRegularizer=to_bigdl_reg(self.config["b_regularizer"]),
                                            with_bias=self.klayer.bias,
                                            data_format="NHWC")
         seq.add(blayer)
@@ -1737,7 +1709,7 @@ class LayerConverter:
             input_width = int(self.input_shape[2])
             input_height = int(self.input_shape[1])
 
-        bpadW, bpadH = self.to_bigdl_2d_padding(self.klayer.border_mode)
+        bpadW, bpadH = to_bigdl_2d_padding(self.klayer.border_mode)
         blayer = BLayer.LocallyConnected2D(n_input_plane=stack_size,
                                            input_width=input_width,
                                            input_height=input_height,
@@ -1748,8 +1720,8 @@ class LayerConverter:
                                            stride_h=self.klayer.subsample[0],
                                            pad_w=bpadW,
                                            pad_h=bpadH,
-                                           wRegularizer=self.to_bigdl_reg(self.config["W_regularizer"]),
-                                           bRegularizer=self.to_bigdl_reg(self.config["b_regularizer"]),
+                                           wRegularizer=to_bigdl_reg(self.config["W_regularizer"]),
+                                           bRegularizer=to_bigdl_reg(self.config["b_regularizer"]),
                                            with_bias=self.klayer.bias,
                                            data_format=bigdl_order)
 
@@ -1764,7 +1736,7 @@ class LayerConverter:
         blayer.set_name(config["name"])
         if hasattr(blayer, "set_init_method"):
             try:
-                blayer.set_init_method(self.to_bigdl_init(config["init"]),
+                blayer.set_init_method(to_bigdl_init(config["init"]),
                                        BInit.Zeros())  # Keras always set this to be zeros
             except Exception:
                 warning_msg = "We don't support initialization " + config["init"] + " for now. " \
@@ -1785,28 +1757,6 @@ class LayerConverter:
             return np.ones(shape)
         else:
             raise Exception("We don't support % for now", kinit_method)
-
-    def to_bigdl_init(self, kinit_method):  # kinit_method is a string
-        init = None
-        if kinit_method == "glorot_uniform":
-            init = BInit.Xavier()
-        elif kinit_method == "one":
-            init = BInit.Ones()
-        elif kinit_method == "zero":
-            init = BInit.Zeros()
-        elif kinit_method == "uniform":
-            init = BInit.RandomUniform(lower=-0.05, upper=0.05)
-        elif kinit_method == "normal":
-            init = BInit.RandomNormal(mean=0.0, stdv=0.05)
-        else:
-            raise Exception("Unsupported init type: %s" % kinit_method)
-        return init
-
-    def to_bigdl_reg(self, reg):  # reg is a dict
-        if reg:
-            return BRegularizer(reg['l1'], reg['l2'])
-        else:
-            return None
 
     def fuse(self, src_blayer, activation):  # activation is a layer
         seq = BLayer.Sequential()

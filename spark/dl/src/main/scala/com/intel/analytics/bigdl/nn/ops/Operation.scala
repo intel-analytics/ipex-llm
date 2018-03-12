@@ -16,15 +16,15 @@
 package com.intel.analytics.bigdl.nn.ops
 
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
-import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
 import scala.reflect.ClassTag
 
 /**
- * [[Operation]] is an abstract class which represents the most basic operations
+ * [[Operation]] is an abstract class which represents a forward only layer.
  * An operations has only forward functions and without backward functions.
- * An operations can be used to build a computational graph
+ * An operations should be only used in graph and make sure the backward graph won't contain
+ * operations.
  *
  * @tparam A Input data type
  * @tparam T Numeric type. Only support float/double now
@@ -32,16 +32,13 @@ import scala.reflect.ClassTag
 abstract class Operation[A <: Activity: ClassTag, B <: Activity: ClassTag, T: ClassTag]
 (implicit ev: TensorNumeric[T]) extends AbstractModule[A, B, T]{
 
-  override def updateGradInput(input: A, gradOutput: B): A = {
+  gradInput = Activity.emptyGradInput(this.getName()).asInstanceOf[A]
+
+  final override def updateGradInput(input: A, gradOutput: B): A = {
     throw new UnsupportedOperationException("Operation does not support updateGradInput() method")
   }
 
-  override def accGradParameters(input: A, gradOutput: B): Unit = {
-    throw new UnsupportedOperationException("Operation does not support updateGradInput() method")
-  }
-
-  override def backward(input: A, gradOutput: B): A = {
+  final override def backward(input: A, gradOutput: B): A = {
     throw new UnsupportedOperationException("Operation does not support backward() method")
   }
 }
-

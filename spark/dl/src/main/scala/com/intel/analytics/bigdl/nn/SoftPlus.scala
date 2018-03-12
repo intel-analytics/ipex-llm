@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, TensorModule}
+import com.intel.analytics.bigdl.nn.abstractnn.{IdentityOutputShape, TensorModule}
 import com.intel.analytics.bigdl.tensor.{DenseTensorApply, Tensor, TensorFunc4, TensorFunc6}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
@@ -34,7 +34,7 @@ import scala.reflect.ClassTag
 class SoftPlus[T: ClassTag](
     val beta: Double = 1.0
   )( implicit ev: TensorNumeric[T])
-  extends TensorModule[T] {
+  extends TensorModule[T] with IdentityOutputShape {
 
   // Avoid floating point issues with exp(x), x>20
   private val threshold = ev.fromType[Double](20.0)

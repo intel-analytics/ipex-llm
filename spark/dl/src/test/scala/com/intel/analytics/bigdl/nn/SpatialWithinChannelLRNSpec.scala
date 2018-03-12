@@ -19,6 +19,7 @@ package com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils.RandomGenerator._
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
 
 import scala.util.Random
@@ -130,5 +131,14 @@ class SpatialWithinChannelLRNSpec extends FlatSpec with Matchers{
 
     val checker = new GradientChecker(1e-4)
     checker.checkLayer[Double](layer, input, 1e-3) should be(true)
+  }
+}
+
+class SpatialWithinChannelLRNSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val spatialWithinChannelLRN = new SpatialWithinChannelLRN[Float](5, 5e-4, 0.75).
+      setName("spatialWithinChannelLRN")
+    val input = Tensor[Float](1, 4, 7, 6).apply1( e => Random.nextFloat())
+    runSerializationTest(spatialWithinChannelLRN, input)
   }
 }

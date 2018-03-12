@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.utils.tf.loaders
 import java.nio.ByteOrder
 
 import com.intel.analytics.bigdl.Module
-import com.intel.analytics.bigdl.nn.ops.{IsInf, IsNan}
+import com.intel.analytics.bigdl.nn.ops.{IsNan => IsNanOps}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.tf.Context
 import org.tensorflow.framework.{DataType, NodeDef}
@@ -33,9 +33,9 @@ class IsNan extends TensorflowOpsLoader {
     (implicit ev: TensorNumeric[T]): Module[T] = {
     val t = getType(nodeDef.getAttrMap, "T")
     if (t == DataType.DT_FLOAT) {
-      IsNan[T, Float]()
+      IsNanOps[T, Float]()
     } else if (t == DataType.DT_DOUBLE) {
-      IsNan[T, Double]()
+      IsNanOps[T, Double]()
     } else {
       throw new UnsupportedOperationException(s"Not support load Inv when type is ${t}")
     }

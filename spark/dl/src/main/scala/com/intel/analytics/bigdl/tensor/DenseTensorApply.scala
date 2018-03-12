@@ -29,7 +29,17 @@ object DenseTensorApply {
   def apply1[A, B](tensor1: Tensor[A], tensor2: Tensor[B],
     func: TensorDiffTypeFunc4[A, B]): Unit = {
 
-    if (tensor1.nDimension == 0) {
+    if (tensor1.isEmpty) {
+      return
+    }
+
+    // shortcut for scalar
+    if (tensor1.isScalar && tensor2.isScalar) {
+      val data1 = tensor1.storage().array()
+      val index1 = tensor1.storageOffset() - 1
+      val data2 = tensor2.storage().array()
+      val index2 = tensor2.storageOffset() - 1
+      func(data1, index1, data2, index2)
       return
     }
 

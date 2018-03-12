@@ -20,6 +20,7 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import org.scalatest.{FlatSpec, Matchers}
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import com.intel.analytics.bigdl.utils.Table
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 
 import scala.util.Random
 
@@ -50,5 +51,17 @@ class BilinearSpec extends FlatSpec with Matchers {
     gradInput1 should be (gradInput2)
 
     layer2.gradBias should be (layer1.gradBias.mul(2))
+  }
+}
+
+class BilinearSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val input1 = Tensor[Float](5, 5).apply1(e => Random.nextFloat())
+    val input2 = Tensor[Float](5, 3).apply1(e => Random.nextFloat())
+    var input = new Table()
+    input(1.toFloat) = input1
+    input(2.toFloat) = input2
+    val biLinear = Bilinear[Float](5, 3, 2)
+    runSerializationTest(biLinear, input)
   }
 }

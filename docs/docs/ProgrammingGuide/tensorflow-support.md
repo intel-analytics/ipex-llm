@@ -1,5 +1,3 @@
-# Tensorflow Support
-
 BigDL supports loading and saving tensorflow models.
 This page will give you a basic introduction of this feature. For more
 interesting and sophisticated examples, please checkout [here](https://github.com/intel-analytics/BigDL/tree/master/spark/dl/src/main/scala/com/intel/analytics/bigdl/example/tensorflow).

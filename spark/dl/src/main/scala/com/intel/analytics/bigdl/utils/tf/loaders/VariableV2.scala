@@ -18,9 +18,7 @@ package com.intel.analytics.bigdl.utils.tf.loaders
 import java.nio.ByteOrder
 
 import com.intel.analytics.bigdl.Module
-import com.intel.analytics.bigdl.nn.Identity
-import com.intel.analytics.bigdl.nn.tf.{Const, Variable, WithoutInput}
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.nn.tf.{Variable}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.tf.Context
 import org.tensorflow.framework.NodeDef
@@ -29,12 +27,10 @@ import scala.reflect.ClassTag
 
 class VariableV2 extends TensorflowOpsLoader{
 
-  import Utils._
-
   override def build[T: ClassTag](nodeDef: NodeDef, byteOrder: ByteOrder,
     context: Context[T])(implicit ev: TensorNumeric[T]): Module[T] = {
     val w = context(nodeDef.getName)._1
     val g = context(nodeDef.getName)._2
-    Variable[T](w, g)
+    new Variable[T](w, g)
   }
 }

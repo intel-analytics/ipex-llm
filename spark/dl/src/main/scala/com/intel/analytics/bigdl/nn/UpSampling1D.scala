@@ -21,6 +21,7 @@ import java.util
 import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.Shape
 
 import scala.reflect.ClassTag
 
@@ -38,6 +39,13 @@ class UpSampling1D[T: ClassTag] (val length: Int)
   (implicit ev: TensorNumeric[T]) extends TensorModule[T] {
   require(length > 0, "UpSampling1D's length should be bigger than 0," +
     s"but got $length")
+
+  override def computeOutputShape(inputShape: Shape): Shape = {
+    val input = inputShape.toSingle().toArray
+    require(input.length == 3,
+      s"UpSampling1D requires 3D input, but got input dim ${input.length}")
+    Shape(input(0), input(1) * length, input(2))
+  }
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
     require(input.dim() == 3, "UpSampling1D only supports 3D input")

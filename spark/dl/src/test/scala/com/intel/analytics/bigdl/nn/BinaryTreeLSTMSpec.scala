@@ -16,7 +16,9 @@
 package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.utils.RandomGenerator._
 import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 class BinaryTreeLSTMSpec extends FlatSpec with Matchers with BeforeAndAfter {
@@ -91,3 +93,29 @@ class BinaryTreeLSTMSpec extends FlatSpec with Matchers with BeforeAndAfter {
     gradInput should be(expectGradInput)
   }
 }
+
+class BinaryTreeLSTMSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    RNG.setSeed(1000)
+    val binaryTreeLSTM = BinaryTreeLSTM[Float](2, 2).setName("binaryTreeLSTM")
+
+    val inputs =
+      Tensor[Float](
+        T(T(T(1f, 2f),
+          T(2f, 3f),
+          T(4f, 5f))))
+
+    val tree =
+      Tensor[Float](
+        T(T(T(2f, 5f, -1f),
+          T(0f, 0f, 1f),
+          T(0f, 0f, 2f),
+          T(0f, 0f, 3f),
+          T(3f, 4f, 0f))))
+
+    val input = T(inputs, tree)
+
+    runSerializationTest(binaryTreeLSTM, input)
+  }
+}
+

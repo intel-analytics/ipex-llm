@@ -15,12 +15,8 @@
  */
 package com.intel.analytics.bigdl.torch
 
-import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.nn.BCECriterion
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.RandomGenerator._
-
-import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Serial
 class BCECriterionSpec extends TorchSpec{
@@ -29,10 +25,10 @@ class BCECriterionSpec extends TorchSpec{
     torchCheck()
     val criterion = new BCECriterion[Double]()
     val input = Tensor[Double](3, 1).rand()
-    val target = Tensor[Double](3)
-    target(Array(1)) = 1
-    target(Array(2)) = 0
-    target(Array(3)) = 1
+    val target = Tensor[Double](3, 1)
+    target(Array(1, 1)) = 1
+    target(Array(2, 1)) = 0
+    target(Array(3, 1)) = 1
 
     val start = System.nanoTime()
     val output1 = criterion.forward(input, target)
@@ -50,8 +46,8 @@ class BCECriterionSpec extends TorchSpec{
     val luaOutput1 = torchResult("output1").asInstanceOf[Double]
     val luaOutput2 = torchResult("output2").asInstanceOf[Tensor[Double]]
 
-    luaOutput1 should be(output1)
-    luaOutput2 should be(output2)
+    luaOutput1 should be(output1 +- 1e-7)
+    luaOutput2.almostEqual(output2, 1e-7) should be(true)
 
     println("Test case : BCECriterion, Torch : " + luaTime + " s, Scala : " +
       scalaTime / 1e9 + " s")
@@ -59,13 +55,16 @@ class BCECriterionSpec extends TorchSpec{
 
   "A BCECriterion with weights" should "generate correct output and grad" in {
     torchCheck()
-    val weights = Tensor[Double](3).rand()
+    val weights = Tensor[Double](2).rand()
     val criterion = new BCECriterion[Double](weights)
-    val input = Tensor[Double](3, 1).rand()
-    val target = Tensor[Double](3)
-    target(Array(1)) = 1
-    target(Array(2)) = 0
-    target(Array(3)) = 1
+    val input = Tensor[Double](3, 2).rand()
+    val target = Tensor[Double](3, 2)
+    target(Array(1, 1)) = 1
+    target(Array(2, 1)) = 0
+    target(Array(3, 1)) = 1
+    target(Array(1, 2)) = 1
+    target(Array(2, 2)) = 0
+    target(Array(3, 2)) = 1
 
     val start = System.nanoTime()
     val output1 = criterion.forward(input, target)
@@ -84,8 +83,8 @@ class BCECriterionSpec extends TorchSpec{
     val luaOutput1 = torchResult("output1").asInstanceOf[Double]
     val luaOutput2 = torchResult("output2").asInstanceOf[Tensor[Double]]
 
-    luaOutput1 should be(output1)
-    luaOutput2 should be(output2)
+    luaOutput1 should be(output1 +- 1e-7)
+    luaOutput2.almostEqual(output2, 1e-7) should be(true)
 
     println("Test case : BCECriterion, Torch : " + luaTime + " s, Scala : " +
       scalaTime / 1e9 + " s")
@@ -93,13 +92,16 @@ class BCECriterionSpec extends TorchSpec{
 
   "A BCECriterion with sizeAverage" should "generate correct output and grad" in {
     torchCheck()
-    val weights = Tensor[Double](3).rand()
-    val criterion = new BCECriterion[Double](weights, true)
-    val input = Tensor[Double](3, 1).rand()
-    val target = Tensor[Double](3)
-    target(Array(1)) = 1
-    target(Array(2)) = 0
-    target(Array(3)) = 1
+    val weights = Tensor[Double](2).rand()
+    val criterion = new BCECriterion[Double](weights)
+    val input = Tensor[Double](3, 2).rand()
+    val target = Tensor[Double](3, 2)
+    target(Array(1, 1)) = 1
+    target(Array(2, 1)) = 0
+    target(Array(3, 1)) = 1
+    target(Array(1, 2)) = 1
+    target(Array(2, 2)) = 0
+    target(Array(3, 2)) = 1
 
     val start = System.nanoTime()
     val output1 = criterion.forward(input, target)
@@ -118,8 +120,99 @@ class BCECriterionSpec extends TorchSpec{
     val luaOutput1 = torchResult("output1").asInstanceOf[Double]
     val luaOutput2 = torchResult("output2").asInstanceOf[Tensor[Double]]
 
-    luaOutput1 should be(output1)
-    luaOutput2 should be(output2)
+    luaOutput1 should be(output1 +- 1e-7)
+    luaOutput2.almostEqual(output2, 1e-7) should be(true)
+
+    println("Test case : BCECriterion, Torch : " + luaTime + " s, Scala : " +
+      scalaTime / 1e9 + " s")
+  }
+
+  "A BCECriterion with large input" should "generate correct output and grad" in {
+    torchCheck()
+    val criterion = new BCECriterion[Double]()
+    val input = Tensor[Double](3, 100).rand()
+    val target = Tensor[Double](3, 100).rand()
+
+    val start = System.nanoTime()
+    val output1 = criterion.forward(input, target)
+    val output2 = criterion.backward(input, target)
+    val end = System.nanoTime()
+    val scalaTime = end - start
+
+    val code = "criterion = nn.BCECriterion()\n" +
+      "output1 = criterion:forward(input, target)\n " +
+      "output2 = criterion:backward(input, target)"
+
+
+    val (luaTime, torchResult) = TH.run(code, Map("input" -> input, "target" -> target),
+      Array("output1", "output2"))
+    val luaOutput1 = torchResult("output1").asInstanceOf[Double]
+    val luaOutput2 = torchResult("output2").asInstanceOf[Tensor[Double]]
+
+    luaOutput1 should be(output1 +- 1e-7)
+    luaOutput2.almostEqual(output2, 1e-7) should be (true)
+
+    println("Test case : BCECriterion, Torch : " + luaTime + " s, Scala : " +
+      scalaTime / 1e9 + " s")
+  }
+
+  "A BCECriterion with weights and large input" should "generate correct output and grad" in {
+    torchCheck()
+    val weights = Tensor[Double](300).rand()
+    val criterion = new BCECriterion[Double](weights)
+    val input = Tensor[Double](3, 300).rand()
+    val target = Tensor[Double](3, 300).rand()
+
+    val start = System.nanoTime()
+    val output1 = criterion.forward(input, target)
+    val output2 = criterion.backward(input, target)
+    val end = System.nanoTime()
+    val scalaTime = end - start
+
+    val code = "criterion = nn.BCECriterion(weights)\n" +
+      "output1 = criterion:forward(input, target)\n " +
+      "output2 = criterion:backward(input, target)"
+
+
+    val (luaTime, torchResult) = TH.run(code,
+      Map("input" -> input, "target" -> target, "weights" -> weights),
+      Array("output1", "output2"))
+    val luaOutput1 = torchResult("output1").asInstanceOf[Double]
+    val luaOutput2 = torchResult("output2").asInstanceOf[Tensor[Double]]
+
+    luaOutput1 should be(output1 +- 1e-7)
+    luaOutput2.almostEqual(output2, 1e-7) should be (true)
+
+    println("Test case : BCECriterion, Torch : " + luaTime + " s, Scala : " +
+      scalaTime / 1e9 + " s")
+  }
+
+  "A BCECriterion with sizeAverage and large input" should "generate correct output and grad" in {
+    torchCheck()
+    val weights = Tensor[Double](300).rand()
+    val criterion = new BCECriterion[Double](weights, true)
+    val input = Tensor[Double](3, 300).rand()
+    val target = Tensor[Double](3, 300).rand()
+
+    val start = System.nanoTime()
+    val output1 = criterion.forward(input, target)
+    val output2 = criterion.backward(input, target)
+    val end = System.nanoTime()
+    val scalaTime = end - start
+
+    val code = "criterion = nn.BCECriterion(weights, true)\n" +
+      "output1 = criterion:forward(input, target)\n " +
+      "output2 = criterion:backward(input, target)"
+
+
+    val (luaTime, torchResult) = TH.run(code,
+      Map("input" -> input, "target" -> target, "weights" -> weights),
+      Array("output1", "output2"))
+    val luaOutput1 = torchResult("output1").asInstanceOf[Double]
+    val luaOutput2 = torchResult("output2").asInstanceOf[Tensor[Double]]
+
+    luaOutput1 should be(output1 +- 1e-7)
+    luaOutput2.almostEqual(output2, 1e-7) should be (true)
 
     println("Test case : BCECriterion, Torch : " + luaTime + " s, Scala : " +
       scalaTime / 1e9 + " s")

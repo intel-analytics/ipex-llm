@@ -23,12 +23,15 @@ import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, DataFo
 import com.intel.analytics.bigdl.nn.quantized.{LinearWeight, LinearWeightParams}
 import com.intel.analytics.bigdl.optim.{L1L2Regularizer, L1Regularizer, L2Regularizer, Regularizer}
 import com.intel.analytics.bigdl.tensor.{QuantizedTensor, Storage, Tensor}
+import com.intel.analytics.bigdl.utils.{MultiShape, SingleShape, Shape => BigDLShape}
 import org.scalatest.{FlatSpec, Matchers}
-import serialization.Bigdl.{AttrValue, BigDLTensor, DataType, TensorStorage}
+import com.intel.analytics.bigdl.serialization.Bigdl.{AttrValue, BigDLTensor, DataType, TensorStorage}
 
 import scala.reflect.runtime.universe
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
-import serialization.Bigdl.AttrValue.ArrayValue
+import com.intel.analytics.bigdl.utils.SingleShape
+import com.intel.analytics.bigdl.utils.serializer.converters.DataConverter
+import com.intel.analytics.bigdl.serialization.Bigdl.AttrValue.ArrayValue
 
 import scala.collection.mutable
 import scala.util.Random
@@ -126,9 +129,9 @@ class DataConverterSpec extends FlatSpec with Matchers{
     map.clear()
     val retrievedValue = DataConverter.getAttributeValue(DeserializeContext(null, map, null),
       attriBulder.build)
-    retrievedValue.isInstanceOf[L1L2Regularizer[Float]] should be (true)
-    retrievedValue.asInstanceOf[L1L2Regularizer[Float]].l1 should be (regularizer.l1)
-    retrievedValue.asInstanceOf[L1L2Regularizer[Float]].l2 should be (regularizer.l2)
+    retrievedValue.isInstanceOf[L1L2Regularizer[_]] should be (true)
+    retrievedValue.asInstanceOf[L1L2Regularizer[_]].l1 should be (regularizer.l1)
+    retrievedValue.asInstanceOf[L1L2Regularizer[_]].l2 should be (regularizer.l2)
   }
 
   "L1Regularizer conversion" should  "work properly" in {
@@ -140,7 +143,7 @@ class DataConverterSpec extends FlatSpec with Matchers{
     map.clear()
     val retrievedValue = DataConverter.getAttributeValue(DeserializeContext(null, map, null),
       attriBulder.build)
-    retrievedValue.isInstanceOf[L1Regularizer[Float]] should be (true)
+    retrievedValue.isInstanceOf[L1Regularizer[_]] should be (true)
     retrievedValue.asInstanceOf[L1Regularizer[Float]].l1 should be (regularizer.l1)
   }
 
@@ -153,7 +156,7 @@ class DataConverterSpec extends FlatSpec with Matchers{
     map.clear()
     val retrievedValue = DataConverter.getAttributeValue(DeserializeContext(null, map, null),
       attriBulder.build)
-    retrievedValue.isInstanceOf[L2Regularizer[Float]] should be (true)
+    retrievedValue.isInstanceOf[L2Regularizer[_]] should be (true)
     retrievedValue.asInstanceOf[L2Regularizer[Float]].l2 should be (regularizer.l2)
   }
 
@@ -594,7 +597,7 @@ class DataConverterSpec extends FlatSpec with Matchers{
     map.clear()
     val retrievedValue = DataConverter.
       getAttributeValue(DeserializeContext(null, map, null), attr)
-    retrievedValue.isInstanceOf[Array[Tensor[Float]]] should be (true)
+    retrievedValue.isInstanceOf[Array[Tensor[_]]] should be (true)
     retrievedValue should be (tensorArray)
   }
 
@@ -752,5 +755,62 @@ class DataConverterSpec extends FlatSpec with Matchers{
     map.clear()
     val retrievedValue = DataConverter.getAttributeValue(DeserializeContext(null, map,
       ProtoStorageType), attr)
+  }
+
+  "Single Shape converter" should "work properly" in {
+    val shape = SingleShape(List(1, 3, 4))
+    map.clear()
+    val attriBulder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(SerializeContext(null, map, ProtoStorageType), attriBulder,
+      shape, universe.typeOf[BigDLShape])
+    val attr = attriBulder.build
+    map.clear()
+    val retrievedValue = DataConverter.
+      getAttributeValue(DeserializeContext(null, map, ProtoStorageType),
+        attriBulder.build)
+
+    shape should be (retrievedValue)
+
+  }
+
+  "Multiple shape converter" should "work properly" in {
+    val shape1 = SingleShape(List(1, 3, 4))
+    val shape2 = SingleShape(List(1, 3, 4))
+
+    val mul1 = MultiShape(List(shape1, shape2))
+
+    val shape3 = SingleShape(List(1, 3, 4))
+
+    val mul2 = MultiShape(List(shape3, mul1))
+
+    map.clear()
+    val attriBulder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(SerializeContext(null, map, ProtoStorageType), attriBulder,
+      mul2, universe.typeOf[BigDLShape])
+    val attr = attriBulder.build
+    map.clear()
+    val retrievedValue = DataConverter.
+      getAttributeValue(DeserializeContext(null, map, ProtoStorageType),
+        attriBulder.build)
+
+    mul2 should be (retrievedValue)
+  }
+
+  "Array of shape converter" should "work properly" in {
+    val shape1 = SingleShape(List(1, 3, 4))
+    val shape2 = SingleShape(List(1, 3, 4))
+    val array = Array[BigDLShape](shape1, shape2)
+    map.clear()
+    val attriBulder = AttrValue.newBuilder
+    DataConverter.setAttributeValue(SerializeContext(null, map, ProtoStorageType), attriBulder,
+      array, universe.typeOf[Array[BigDLShape]])
+    val attr = attriBulder.build
+    map.clear()
+    val retrievedValue = DataConverter.
+      getAttributeValue(DeserializeContext(null, map, ProtoStorageType),
+        attriBulder.build)
+
+    array should be (retrievedValue)
+
   }
 }

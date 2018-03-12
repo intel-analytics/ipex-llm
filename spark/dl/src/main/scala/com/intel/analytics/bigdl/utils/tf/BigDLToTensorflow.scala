@@ -105,6 +105,7 @@ object LinearToTF extends BigDLToTensorflow {
 object SpatialConvolutionToTF extends BigDLToTensorflow {
   override def toTFDef(module: AbstractModule[_, _, _], inputs: Seq[NodeDef],
                        byteOrder: ByteOrder): Seq[NodeDef] = {
+    import scala.language.existentials
     require(inputs.length == 1, "SpatialConvolution only accept one input")
     val spatialConv = module.asInstanceOf[SpatialConvolution[_]]
     if (spatialConv.nGroup == 1) {

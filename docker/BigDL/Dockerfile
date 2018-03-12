@@ -31,26 +31,26 @@ ENV JAVA_HOME 			/opt/jdk
 ENV PATH 			${JAVA_HOME}/bin:${PATH}
 
 RUN apt-get update && \
-    apt-get install -y vim curl nano wget unzip maven git && \
+    apt-get install -y vim curl nano wget unzip maven git
 #java
-    wget --no-cookies --no-check-certificate --header "Cookie: gpw_e24=http%3A%2F%2Fwww.oracle.com%2F; oraclelicense=accept-securebackup-cookie" "http://download.oracle.com/otn-pub/java/jdk/8u152-b16/aa0333dd3019491ca4f6ddbe78cdb6d0/jdk-8u152-linux-x64.tar.gz" && \
+RUN wget http://ftp.osuosl.org/pub/funtoo/distfiles/oracle-java/jdk-8u152-linux-x64.tar.gz && \
     gunzip jdk-8u152-linux-x64.tar.gz && \
     tar -xf jdk-8u152-linux-x64.tar -C /opt && \
     rm jdk-8u152-linux-x64.tar && \
-    ln -s /opt/jdk1.8.0_152 /opt/jdk && \
+    ln -s /opt/jdk1.8.0_152 /opt/jdk
 #python
-    apt-get install -y build-essential python python-setuptools python-dev && \
+RUN apt-get install -y build-essential python python-setuptools python-dev && \
     easy_install pip && \
     pip install numpy scipy pandas scikit-learn matplotlib seaborn jupyter wordcloud && \
     python2 -m pip install ipykernel && \
-    python2 -m ipykernel install --user && \
+    python2 -m ipykernel install --user
 #spark
-    wget https://d3kbcqa49mib13.cloudfront.net/spark-${SPARK_VERSION}-bin-hadoop2.7.tgz && \
+RUN wget https://d3kbcqa49mib13.cloudfront.net/spark-${SPARK_VERSION}-bin-hadoop2.7.tgz && \
     tar -zxvf spark-${SPARK_VERSION}-bin-hadoop2.7.tgz && \
     mv spark-${SPARK_VERSION}-bin-hadoop2.7 spark-${SPARK_VERSION} && \
-    rm spark-${SPARK_VERSION}-bin-hadoop2.7.tgz && \
+    rm spark-${SPARK_VERSION}-bin-hadoop2.7.tgz
 #bigdl
-    git clone https://github.com/intel-analytics/BigDL-Tutorials.git 
+RUN git clone https://github.com/intel-analytics/BigDL-Tutorials.git 
 
 ADD ./start-notebook.sh /opt/work
 ADD ./download-bigdl.sh /opt/work

@@ -2650,7 +2650,7 @@ object DenseTensor {
     gauss
   }
 
-  private[tensor] def canFastBroadcast[@specialized T](tensor: Tensor[T],
+  private[tensor] def canFastBroadcast[T](tensor: Tensor[T],
     other: Tensor[T]): Boolean = {
     if (tensor.nDimension < other.nDimension()) return false
 
@@ -2671,7 +2671,7 @@ object DenseTensor {
     return true
   }
 
-  private[tensor] def expandSize[@specialized T: ClassTag](tensor: Tensor[T],
+  private[tensor] def expandSize[T: ClassTag](tensor: Tensor[T],
     other: Tensor[T]): Array[Int] = {
     val errorMsg = s"tensor size not match ${tensor.size.mkString("x")} " +
       s"${other.size.mkString("x")}"

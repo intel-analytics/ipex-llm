@@ -16,8 +16,11 @@
 package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
-import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.utils.{T, Table}
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
+
+import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Parallel
 class DotProductSpec extends FlatSpec with Matchers {
@@ -43,5 +46,17 @@ class DotProductSpec extends FlatSpec with Matchers {
 
     dotOutput should be (expectedOutput)
     dotGradInput should be (expectedgradInput)
+  }
+}
+
+class DotProductSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val dotProduct = DotProduct[Float]().setName("dotProduct")
+    val input1 = Tensor[Float](5, 5).apply1(e => Random.nextFloat())
+    val input2 = Tensor[Float](5, 5).apply1(e => Random.nextFloat())
+    var input = new Table()
+    input(1.toFloat) = input1
+    input(2.toFloat) = input2
+    runSerializationTest(dotProduct, input)
   }
 }

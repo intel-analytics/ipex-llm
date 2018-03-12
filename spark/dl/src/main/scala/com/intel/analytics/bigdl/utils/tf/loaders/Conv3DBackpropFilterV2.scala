@@ -19,7 +19,7 @@ import java.nio.ByteOrder
 
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, DataFormat}
-import com.intel.analytics.bigdl.nn.ops.Conv3DBackpropFilterV2
+import com.intel.analytics.bigdl.nn.tf.{Conv3DBackpropFilterV2 => Conv3DBackpropFilterV2Ops}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.tf.Context
 import org.tensorflow.framework.NodeDef
@@ -49,13 +49,13 @@ class Conv3DBackpropFilterV2 extends TensorflowOpsLoader {
         val dT = strideList(1)
         val dW = strideList(2)
         val dH = strideList(3)
-        Conv3DBackpropFilterV2[T](dT, dW, dH, pT, pW, pH, DataFormat.NHWC)
+        Conv3DBackpropFilterV2Ops[T](dT, dW, dH, pT, pW, pH, DataFormat.NHWC)
       case "NCDHW" =>
         require(strideList(1) == 1, s"not support strides on depth")
         val dT = strideList(2)
         val dW = strideList(3)
         val dH = strideList(4)
-        Conv3DBackpropFilterV2[T](dT, dW, dH, pT, pW, pH, DataFormat.NCHW)
+        Conv3DBackpropFilterV2Ops[T](dT, dW, dH, pT, pW, pH, DataFormat.NCHW)
       case _ =>
         throw new IllegalArgumentException(s"not supported data format: $format")
     }

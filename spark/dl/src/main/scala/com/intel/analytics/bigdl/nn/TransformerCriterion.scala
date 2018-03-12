@@ -48,13 +48,16 @@ class TransformerCriterion[T: ClassTag](
   private var transformedTarget: Activity = _
 
   override def updateOutput(input: Activity, target: Activity): T = {
-    transformedInput = inputTransformer.map(t => t.forward(input))
-      .getOrElse(input) match {
+    transformedTarget = targetTransformer.map(t => t.forward(target))
+      .getOrElse(target) match {
       case t: Tensor[T] => t.clone()
       case t: Table => t.clone()
     }
-    transformedTarget = targetTransformer.map(t => t.forward(target))
-      .getOrElse(target) match {
+
+    // if inputTransformer and target transformer are the same instance
+    // we must do inputTransformer last to preserve the forward state
+    transformedInput = inputTransformer.map(t => t.forward(input))
+      .getOrElse(input) match {
       case t: Tensor[T] => t.clone()
       case t: Table => t.clone()
     }

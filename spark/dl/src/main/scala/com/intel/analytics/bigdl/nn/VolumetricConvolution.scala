@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.{DoubleType, FloatType, Tensor}
 import com.intel.analytics.bigdl.utils.RandomGenerator._
-import com.intel.analytics.bigdl.utils.{T, Table}
+import com.intel.analytics.bigdl.utils.{Shape, T, Table}
 import org.apache.spark.sql.catalyst.optimizer.OptimizeIn
 
 import scala.reflect.ClassTag
@@ -97,18 +97,6 @@ class VolumetricConvolution[T: ClassTag](
     this
   }
 
-  override def updateParameters(learningRate: T): Unit = {
-    weight.map(gradWeight, (a, b) => ev.minus(a, ev.times(learningRate, b)))
-    if (withBias) {
-      bias.map(gradBias, (a, b) => ev.minus(a, ev.times(learningRate, b)))
-    }
-  }
-
-  override def zeroGradParameters(): Unit = {
-    gradWeight.zero()
-    if (withBias) gradBias.zero()
-  }
-
   override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
     if (withBias) {
       (Array(this.weight, this.bias), Array(this.gradWeight, this.gradBias))
@@ -117,14 +105,33 @@ class VolumetricConvolution[T: ClassTag](
     }
   }
 
-  override def getParametersTable(): Table = {
-    if (withBias) {
-      T(getName() -> T("weight" -> weight, "bias" -> bias,
-        "gradWeight" -> gradWeight, "gradBias" -> gradBias))
+  override def computeOutputShape(inputShape: Shape): Shape = {
+    val input = inputShape.toSingle().toArray
+    require(input.length == 5,
+      s"Convolution3D requires 5D input, but got input dim ${input.length}")
+    require(input(1) == nInputPlane, s"input.size(1) should be equal to nInputPlane. " +
+      s"But In ${this.getName()} : input.size(1) is: ${ input(1) } ," +
+      s" nInputPlane is: ${ nInputPlane }")
+    val inputWidth = input(4)
+    val inputHeight = input(3)
+    val inputDepth = input(2)
+    val sizes = if (padW == -1 && padH == -1 && padT == -1) {
+      Utils.getSAMEOutSizeAndPadding(inputHeight, inputWidth, dH,
+        dW, kH, kW, inputDepth, dT, kT)
     } else {
-      T(getName() -> T("weight" -> weight,
-        "gradWeight" -> gradWeight))
+      Utils.getOutSizeAndPadding(inputHeight, inputWidth, dH,
+        dW, kH, kW, padH, padW, ceilMode = false, inputdepth = inputDepth,
+        dt = dT, kt = kT, padt = padT)
     }
+    val outputDepth = sizes(6)
+    val outputHeight = sizes(7)
+    val outputWidth = sizes(8)
+    require(outputWidth >= 1 && outputDepth >= 1 && outputHeight >= 1,
+      s"Given input size: (${ input.mkString("x") })." +
+        s" Calculated output size:" +
+        s" (${ nOutputPlane }x${ outputDepth }x${ outputHeight }x${ outputWidth })." +
+        s" Output size is too small")
+    Shape(input(0), nOutputPlane, outputDepth, outputHeight, outputWidth)
   }
 
   /**
@@ -310,6 +317,7 @@ object VolumetricConvolution {
           padFront, padLeft, padTop, padBack, padRight, padBottom,
           nInputPlane,
           inputDepth, inputWidth, inputHeight, outputDepth, outputWidth, outputHeight)
+      case t => throw new NotImplementedError(s"$t is not supported")
     }
 
     output2d.addmm(ev.zero, output2d, ev.one, weight, fInput)
@@ -423,6 +431,7 @@ object VolumetricConvolution {
           padFront, padLeft, padTop, padBack, padRight, padBottom,
           gradInput.size(1), gradInput.size(2), gradInput.size(4), gradInput.size(3),
           gradOutput.size(2), gradOutput.size(4), gradOutput.size(3))
+      case t => throw new NotImplementedError(s"$t is not supported")
     }
 
   }
@@ -514,6 +523,7 @@ object VolumetricConvolution {
           padFront, padLeft, padTop, padBack, padRight, padBottom,
           nInputPlane,
           inputDepth, inputWidth, inputHeight, outputDepth, outputWidth, outputHeight)
+      case t => throw new NotImplementedError(s"$t is not supported")
     }
   }
 

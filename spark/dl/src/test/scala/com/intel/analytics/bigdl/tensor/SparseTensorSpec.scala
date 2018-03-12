@@ -17,6 +17,7 @@ package com.intel.analytics.bigdl.tensor
 
 import org.scalatest.{FlatSpec, Matchers}
 import com.intel.analytics.bigdl.numeric.NumericFloat
+import com.intel.analytics.bigdl.utils.RandomGenerator
 
 import scala.util.Random
 
@@ -123,6 +124,32 @@ class SparseTensorSpec  extends FlatSpec with Matchers {
     val narrowed = sTensor.narrow(1, 2, 4)
     val narrowedSum = values.slice(5, 25).sum
     Tensor.dense(narrowed).resize(20).toArray().sum shouldEqual narrowedSum
+  }
+
+  "SparseTensor dot DenseTense" should "return right result" in {
+    val rng = RandomGenerator.RNG
+    rng.setSeed(10)
+    val values = Array.fill(30)(rng.normal(1.0, 1.0).toFloat)
+    val sTensor = Tensor.sparse(Tensor(values, Array(6, 5)))
+
+    val dTensor = Tensor(Array(6, 5)).rand()
+
+    val sparseResult = sTensor.dot(dTensor)
+    val denseResult = dTensor.dot(Tensor.dense(sTensor))
+
+    sparseResult should be (denseResult +- 1e-6f)
+  }
+
+  "Diagonal SparseTensor dot DenseTense" should "return right result" in {
+    val sTensor = Tensor.sparse(
+      indices = Array(Array(0, 1, 2, 3), Array(0, 1, 2, 3)),
+      values = Array[Float](2f, 4f, 6f, 8f), shape = Array(4, 4))
+
+    val dTensor = Tensor(Array(4, 4)).fill(1.0f)
+
+    val sparseResult = sTensor.dot(dTensor)
+
+    sparseResult should be (20f +- 1e-6f)
   }
 
 }

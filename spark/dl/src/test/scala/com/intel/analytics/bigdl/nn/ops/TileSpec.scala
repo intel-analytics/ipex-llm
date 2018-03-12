@@ -17,7 +17,10 @@ package com.intel.analytics.bigdl.nn.ops
 
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
+
+import scala.util.Random
 
 class TileSpec extends FlatSpec with Matchers {
   "Tile operation" should "works correctly" in {
@@ -66,5 +69,15 @@ class TileSpec extends FlatSpec with Matchers {
     val scalar = Tensor.scalar(1)
     val multiply = Tensor[Int]()
     Tile[Float]().forward(T(scalar, multiply)) should be(Tensor.scalar(1))
+  }
+}
+
+class TileSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val tile = Tile[Float]().setName("tileOps")
+    val input = T(Tensor[Float](2, 3, 3).apply1(_ => Random.nextFloat()),
+      Tensor[Int](T(2, 1, 2)))
+    runSerializationTest(tile, input, tile.
+      asInstanceOf[ModuleToOperation[Float]].module.getClass)
   }
 }

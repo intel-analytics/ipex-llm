@@ -1,6 +1,3 @@
----
-# **Run BigDL on Kubernetes**
-
 The [Apache Spark on Kubernetes](https://apache-spark-on-k8s.github.io/userdocs/index.html) project enables
 native support for submitting Spark application to a kubernetes cluster. As a deep learning library for Apache
 Spark, BigDL can also run on Kubernetes by leveraging Spark on Kubernetes.

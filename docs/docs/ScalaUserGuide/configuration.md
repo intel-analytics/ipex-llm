@@ -1,4 +1,3 @@
-# BigDL Configuration
 BigDL uses Java properties to control its behavior. Here's the list of
 these properties.
 

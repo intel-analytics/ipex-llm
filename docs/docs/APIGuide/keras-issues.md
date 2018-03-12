@@ -1,4 +1,3 @@
-# **Summary**
 Up to now, we have generally supported __ALL__ the layers of [__Keras 1.2.2__](https://faroit.github.io/keras-docs/1.2.2/) to be loaded into BigDL.
 
 Self-defined Keras layers or [`Lambda`](https://faroit.github.io/keras-docs/1.2.2/layers/core/#lambda) layers are not supported for now. Weight sharing is not supported for now.
@@ -29,7 +28,7 @@ If RNNs are wrapped with [`Bidirectional`](https://faroit.github.io/keras-docs/1
 * For [`Embedding`](https://faroit.github.io/keras-docs/1.2.2/layers/embeddings/#embedding), `mask_zero` and `dropout` are not supported.
 * For [`PReLU`](https://faroit.github.io/keras-docs/1.2.2/layers/advanced-activations/#prelu), `init`, `weights` and `shared_axes` are not supported.
 * For [`ParametricSoftplus`](https://faroit.github.io/keras-docs/1.2.2/layers/advanced-activations/#parametricsoftplus), `weights` and `shared_axes` are not supported. Only `alpha_init = 1/beta_init` is supported.
-* For [`BatchNormalization`](https://faroit.github.io/keras-docs/1.2.2/layers/normalization/#batchnormalization), only `mode=0` is supported. Only `channel_first` (`dim_ordering='th'` with `axis=1`) and `channel_last` (`dim_ordering='tf'` with `axis=-1`) is supported. `gamma_regularizer` and `beta_regularizer` are not supported.
+* For [`BatchNormalization`](https://faroit.github.io/keras-docs/1.2.2/layers/normalization/#batchnormalization), only 4D input with `mode=0` is supported. Only `channel_first` (`dim_ordering='th'` with `axis=1`) and `channel_last` (`dim_ordering='tf'` with `axis=-1`) is supported. `gamma_regularizer` and `beta_regularizer` are not supported.
 
 
 ## **Known Issues**

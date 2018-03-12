@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.utils.tf.loaders
 import java.nio.ByteOrder
 
 import com.intel.analytics.bigdl.Module
-import com.intel.analytics.bigdl.nn.ops.{FloorDiv, Round}
+import com.intel.analytics.bigdl.nn.ops.{FloorDiv => FloorDivOps}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.tf.Context
 import org.tensorflow.framework.{DataType, NodeDef}
@@ -33,11 +33,11 @@ class FloorDiv extends TensorflowOpsLoader {
     (implicit ev: TensorNumeric[T]): Module[T] = {
     val t = getType(nodeDef.getAttrMap, "T")
     if (t == DataType.DT_FLOAT) {
-      FloorDiv[T, Float]()
+      FloorDivOps[T, Float]()
     } else if (t == DataType.DT_DOUBLE) {
-      FloorDiv[T, Double]()
+      FloorDivOps[T, Double]()
     } else if (t == DataType.DT_INT32) {
-      FloorDiv[T, Int]()
+      FloorDivOps[T, Int]()
     } else {
       throw new UnsupportedOperationException(s"Not support load FloorDiv when type is ${t}")
     }

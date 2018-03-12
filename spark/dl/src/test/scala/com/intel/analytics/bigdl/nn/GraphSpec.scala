@@ -22,8 +22,9 @@ import com.intel.analytics.bigdl.models.inception.Inception_v1_NoAuxClassifier
 import com.intel.analytics.bigdl.models.lenet.LeNet5
 import com.intel.analytics.bigdl.models.vgg.{VggForCifar10, Vgg_16, Vgg_19}
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
-import com.intel.analytics.bigdl.nn.ops.{ControlNodes, Less}
-import com.intel.analytics.bigdl.nn.tf.Const
+import com.intel.analytics.bigdl.nn.abstractnn.EmptyGradInput
+import com.intel.analytics.bigdl.nn.ops.{Ceil, Less}
+import com.intel.analytics.bigdl.nn.tf.{Const, ControlNodes}
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import com.intel.analytics.bigdl.tensor.Tensor
@@ -780,7 +781,7 @@ class StaticGraphSpec extends FlatSpec with Matchers {
     val gradientBPNoBack = funcModelNoBack.backward(inputData, gradient)
     println(s"funcModel model backward time is ${ (System.nanoTime() - start) / 1e6 }ms")
 
-    gradientBPNoBack.toTensor.nElement() should be(0)
+    gradientBPNoBack.isInstanceOf[EmptyGradInput] should be(true)
     val namedModule1 = funcModelOriginal.getParametersTable()
     val namedModule2 = funcModelNoBack.getParametersTable()
     namedModule1("conv1").asInstanceOf[Table] should
@@ -830,7 +831,7 @@ class StaticGraphSpec extends FlatSpec with Matchers {
     val gradientBPOriginal = funcModelOriginal.backward(inputData, gradient)
     val gradientBPNoBack = funcModelNoBack.backward(inputData, gradient)
 
-    gradientBPNoBack.toTensor.nElement() should be(0)
+    gradientBPNoBack.isInstanceOf[EmptyGradInput] should be(true)
     val namedModule1 = Utils.getNamedModules(funcModelOriginal)
     val namedModule2 = Utils.getNamedModules(funcModelNoBack)
     namedModule2("r1").gradInput.toTensor.nElement() should be(0)
@@ -1043,6 +1044,37 @@ class StaticGraphSpec extends FlatSpec with Matchers {
       Tensor[Float](T(10.0f, 14.0f)))
   }
 
+  "graph backpropagation" should "throw exception if some empty gradInput is used" in {
+    val backwardBranch = Identity[Float]().setName("backward_branch").inputs()
+    val stopBranchShort = Identity[Float]().setName("stop_branch_short").inputs()
+    val stopBranchLong_1 = Identity[Float]().inputs()
+    val stopBranchLong_2 = Identity[Float]().setName("stop_branch_long").inputs(stopBranchLong_1)
+    val addNode = CAddTable[Float]().inputs(backwardBranch, stopBranchShort, stopBranchLong_2)
+    val innerGraph = Graph[Float](Array(backwardBranch, stopBranchShort, stopBranchLong_1),
+      Array(addNode))
+    innerGraph.stopGradient(Array("stop_branch_short", "stop_branch_long"))
+
+    val relu1 = ReLU[Float]().setName("relu1").inputs()
+    val relu2 = ReLU[Float]().setName("relu2").inputs()
+    val relu3 = ReLU[Float]().setName("relu3").inputs()
+    val graphNode = innerGraph.inputs(relu1, relu2, relu3)
+    val outerGraph = Graph[Float](Array(relu1, relu2, relu3), Array(graphNode))
+    outerGraph.stopGradient(Array("relu2", "relu3"))
+    outerGraph.forward(T(Tensor[Float](T(1, 2)), Tensor[Float](T(3, 4)), Tensor[Float](T(3, 4))))
+    outerGraph.backward(T(Tensor[Float](T(1, 2)), Tensor[Float](T(3, 4)), Tensor[Float](T(3, 4))),
+      Tensor[Float](T(7, 4)))
+    innerGraph.gradInput.asInstanceOf[Table].apply(2).isInstanceOf[EmptyGradInput] should be(true)
+    innerGraph.gradInput.asInstanceOf[Table].apply(3).isInstanceOf[EmptyGradInput] should be(true)
+
+    // A class cast exception will be thrown
+    intercept[ClassCastException] {
+      val outerGraph2 = Graph[Float](Array(relu1, relu2, relu3), Array(graphNode))
+      outerGraph2.forward(T(Tensor[Float](T(1, 2)), Tensor[Float](T(3, 4)), Tensor[Float](T(3, 4))))
+      outerGraph2.backward(T(Tensor[Float](T(1, 2)), Tensor[Float](T(3, 4)),
+        Tensor[Float](T(3, 4))), Tensor[Float](T(7, 4)))
+    }
+  }
+
   "markdown test" should "work" in {
     val reshape = Reshape(Array(4)).inputs()
     val fc1 = Linear(4, 2).setName("fc1").inputs()
@@ -1062,7 +1094,6 @@ class StaticGraphSpec extends FlatSpec with Matchers {
     model.zeroGradParameters()
     println("output1: \n", model.forward(input))
     model.backward(input, gradOutput)
-    model.updateParameters(1)
     println("fc2 weight \n", fc2.element.parameters()._1(0))
 
 
@@ -1072,7 +1103,6 @@ class StaticGraphSpec extends FlatSpec with Matchers {
     model.freeze("fc2")
     println("output2: \n", model.forward(input))
     model.backward(input, gradOutput)
-    model.updateParameters(1)
     println("fc2 weight \n", fc2.element.parameters()._1(0))
 
     fc1.element.getParameters()._1.apply1(_ => 1.0f)
@@ -1081,7 +1111,6 @@ class StaticGraphSpec extends FlatSpec with Matchers {
     model.unFreeze()
     println("output3: \n", model.forward(input))
     model.backward(input, gradOutput)
-    model.updateParameters(1)
     println("fc2 weight \n", fc2.element.parameters()._1(0))
 
     fc1.element.getParameters()._1.apply1(_ => 1.0f)
@@ -1090,7 +1119,6 @@ class StaticGraphSpec extends FlatSpec with Matchers {
     model.zeroGradParameters()
     println("output4: \n", model.forward(input))
     model.backward(input, gradOutput)
-    model.updateParameters(1)
     println("fc1 weight \n", fc1.element.parameters()._1(0))
     println("fc2 weight \n", fc2.element.parameters()._1(0))
   }
@@ -1267,6 +1295,45 @@ class StaticGraphSpec extends FlatSpec with Matchers {
 
     intercept[NoSuchElementException] {
       model.node("ll1")
+    }
+  }
+
+  "Graph with preprocess and trainable" should "be correct" in {
+    // Ceil1 -> Linear1 -> Ceil3 - Linear2(Trainable)-|
+    // Ceil2 ---------------------Identity(Trainable)-|> Add(Trainable) -> Linear3(Trainable)
+    val ceil1 = Ceil[Float, Float].inputs()
+    val linear1 = Linear[Float](10, 5).inputs(ceil1)
+    val ceil3 = Ceil[Float, Float].inputs(linear1)
+    val ceil2 = Ceil[Float, Float].inputs()
+    val preprocessor = Graph[Float](Array(ceil1, ceil2), Array(ceil3, ceil2))
+
+    val linear2 = Linear[Float](5, 5).inputs()
+    val identity = Identity[Float].inputs()
+    val add = CAddTable[Float]().inputs(linear2, identity)
+    val linear3 = Linear[Float](5, 2).inputs(add)
+    val trainable = Graph[Float](Array(linear2, identity), Array(linear3))
+
+    val model = Graph[Float](preprocessor, trainable)
+    val input = T(Tensor[Float](10).rand(), Tensor[Float](5).rand())
+    val gradOutput = Tensor[Float](2).rand()
+    model.forward(input)
+
+    linear2.element.parameters()._2(0).sum() should be(0)
+    linear3.element.parameters()._2(0).sum() should be(0)
+    model.backward(input, gradOutput)
+    linear2.element.parameters()._2(0).sum() shouldNot be(0)
+    linear3.element.parameters()._2(0).sum() shouldNot be(0)
+    linear1.element.parameters()._2(0).sum() should be(0)
+  }
+
+  "Graph" should "not contain duplicate modules" in {
+    val n1 = Identity[Float]().inputs()
+    val n2 = Identity[Float]().inputs()
+    val duplicate = Identity[Float]()
+    val n3 = duplicate.inputs(n1)
+    val n4 = duplicate.inputs(n2)
+    intercept[IllegalArgumentException] {
+      val model = Graph(Array(n1, n2), Array(n3, n4))
     }
   }
 }

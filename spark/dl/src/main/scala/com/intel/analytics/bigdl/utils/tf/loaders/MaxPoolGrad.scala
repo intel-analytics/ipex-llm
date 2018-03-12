@@ -19,9 +19,7 @@ import java.nio.ByteOrder
 
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.nn.abstractnn.DataFormat
-import com.intel.analytics.bigdl.nn.ops.MaxPoolGrad
-import com.intel.analytics.bigdl.nn.{Identity, SpatialMaxPooling}
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.nn.tf.{MaxPoolGrad => MaxPoolGradOps}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.tf.Context
 import org.tensorflow.framework.NodeDef
@@ -54,7 +52,7 @@ class MaxPoolGrad extends TensorflowOpsLoader {
         val strideH = strideList(2)
         val kW = kernelSize(1)
         val kH = kernelSize(2)
-        MaxPoolGrad[T](kW, kH, strideW, strideH, pW, pH, DataFormat.NHWC)
+        MaxPoolGradOps[T](kW, kH, strideW, strideH, pW, pH, DataFormat.NHWC)
 
       case "NCHW" =>
         require(strideList(1) == 1, s"not support strides on depth")
@@ -62,7 +60,7 @@ class MaxPoolGrad extends TensorflowOpsLoader {
         val strideH = strideList(3)
         val kW = kernelSize(2)
         val kH = kernelSize(3)
-        MaxPoolGrad[T](kW, kH, strideW, strideH, pW, pH, DataFormat.NCHW)
+        MaxPoolGradOps[T](kW, kH, strideW, strideH, pW, pH, DataFormat.NCHW)
       case _ =>
         throw new IllegalArgumentException(s"not supported data format: $format")
     }

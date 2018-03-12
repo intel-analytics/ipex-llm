@@ -1,5 +1,3 @@
-# Supported Caffe Layers
-
 * AbsVal
 * BatchNorm
 * Bias

@@ -16,19 +16,22 @@
 
 import os
 import sys
-import glob
+import six
 from py4j.protocol import Py4JJavaError
 from py4j.java_gateway import JavaObject
 from py4j.java_collections import ListConverter, JavaArray, JavaList, JavaMap, MapConverter
+from py4j.java_gateway import JavaGateway, GatewayClient
 
 from pyspark import RDD, SparkContext
 from pyspark.serializers import PickleSerializer, AutoBatchedSerializer
 from pyspark.sql import DataFrame, SQLContext
 from pyspark.mllib.common import callJavaFunc
 from pyspark import SparkConf
+from pyspark.files import SparkFiles
 import numpy as np
 import threading
 import tempfile
+import traceback
 from bigdl.util.engine import get_bigdl_classpath, is_spark_below_2_2
 
 INTMAX = 2147483647
@@ -46,16 +49,28 @@ class SingletonMixin(object):
 
     @classmethod
     def instance(cls,
-                 bigdl_type="float"):
+                 bigdl_type, *args):
         if not cls._instance:
             with cls._lock:
                 if not cls._instance:
-                    cls._instance = cls(bigdl_type)
+                    cls._instance = cls(bigdl_type, *args)
         return cls._instance
 
 
+class GatewayWrapper(SingletonMixin):
+
+    def __init__(self, bigdl_type, port=25333):
+        self.value = JavaGateway(GatewayClient(port=port), auto_convert=True)
+
+
 class JavaCreator(SingletonMixin):
-    __creator_class="com.intel.analytics.bigdl.python.api.PythonBigDL"
+    __creator_class=["com.intel.analytics.bigdl.python.api.PythonBigDLKeras"]
+
+    @classmethod
+    def add_creator_class(cls, jinvoker):
+        with JavaCreator._lock:
+            JavaCreator.__creator_class.append(jinvoker)
+            JavaCreator._instance = None
 
     @classmethod
     def get_creator_class(cls):
@@ -64,19 +79,22 @@ class JavaCreator(SingletonMixin):
 
     @classmethod
     def set_creator_class(cls, cclass):
+        if isinstance(cclass, six.string_types):
+            cclass = [cclass]
         with JavaCreator._lock:
             JavaCreator.__creator_class = cclass
             JavaCreator._instance = None
 
-    def __init__(self, bigdl_type):
-        sc = get_spark_context()
-        jclass = getattr(sc._jvm, JavaCreator.get_creator_class())
-        if bigdl_type == "float":
-            self.value = getattr(jclass, "ofFloat")()
-        elif bigdl_type == "double":
-            self.value = getattr(jclass, "ofDouble")()
-        else:
-            raise Exception("Not supported bigdl_type: %s" % bigdl_type)
+    def __init__(self, bigdl_type, gateway):
+        self.value = []
+        for creator_class in JavaCreator.get_creator_class():
+            jclass = getattr(gateway.jvm, creator_class)
+            if bigdl_type == "float":
+                self.value.append(getattr(jclass, "ofFloat")())
+            elif bigdl_type == "double":
+                self.value.append(getattr(jclass, "ofDouble")())
+            else:
+                raise Exception("Not supported bigdl_type: %s" % bigdl_type)
 
 
 class JavaValue(object):
@@ -120,37 +138,6 @@ class EvaluatedResult():
 def get_dtype(bigdl_type):
     # Always return float32 for now
     return "float32"
-
-
-class Configuration(object):
-    __bigdl_jars = [get_bigdl_classpath()]
-
-    @staticmethod
-    def add_extra_jars(jars):
-        """
-        Add extra jars to classpath
-        :param jars: a string or a list of strings as jar paths
-        """
-        import six
-        if isinstance(jars, six.string_types):
-            jars = [jars]
-        Configuration.__bigdl_jars += jars
-
-    @staticmethod
-    def add_extra_python_modules(packages):
-        """
-        Add extra python modules to sys.path
-        :param packages: a string or a list of strings as python package paths
-        """
-        import six
-        if isinstance(packages, six.string_types):
-            packages = [packages]
-        for package in packages:
-            sys.path.insert(0, package)
-
-    @staticmethod
-    def get_bigdl_jars():
-        return Configuration.__bigdl_jars
 
 
 class JActivity(object):
@@ -204,12 +191,10 @@ class JTensor(object):
         >>> np.random.seed(123)
         >>> data = np.random.uniform(0, 1, (2, 3)).astype("float32")
         >>> result = JTensor.from_ndarray(data)
-        >>> print(result)
-        JTensor: storage: [[ 0.69646919  0.28613934  0.22685145]
-         [ 0.55131477  0.71946895  0.42310646]], shape: [2 3], float
-        >>> result
-        JTensor: storage: [[ 0.69646919  0.28613934  0.22685145]
-         [ 0.55131477  0.71946895  0.42310646]], shape: [2 3], float
+        >>> expected_storage = np.array([[0.69646919, 0.28613934, 0.22685145], [0.55131477, 0.71946895, 0.42310646]])
+        >>> expected_shape = np.array([2, 3])
+        >>> np.testing.assert_allclose(result.storage, expected_storage, rtol=1e-6, atol=1e-6)
+        >>> np.testing.assert_allclose(result.shape, expected_shape)
         >>> data_back = result.to_ndarray()
         >>> (data == data_back).all()
         True
@@ -254,8 +239,12 @@ class JTensor(object):
         >>> indices = np.arange(1, 7)
         >>> shape = np.array([10])
         >>> result = JTensor.sparse(data, indices, shape)
-        >>> result
-        JTensor: storage: [ 1.  2.  3.  4.  5.  6.], shape: [10] ,indices [1 2 3 4 5 6], float
+        >>> expected_storage = np.array([1., 2., 3., 4., 5., 6.])
+        >>> expected_shape = np.array([10])
+        >>> expected_indices = np.array([1, 2, 3, 4, 5, 6])
+        >>> np.testing.assert_allclose(result.storage, expected_storage)
+        >>> np.testing.assert_allclose(result.shape, expected_shape)
+        >>> np.testing.assert_allclose(result.indices, expected_indices)
         >>> tensor1 = callBigDlFunc("float", "testTensor", result)  # noqa
         >>> array_from_tensor = tensor1.to_ndarray()
         >>> expected_ndarray = np.array([0, 1, 2, 3, 4, 5, 6, 0, 0, 0])
@@ -328,10 +317,14 @@ class Sample(object):
         >>> sample_back = callBigDlFunc("float", "testSample", sample)
         >>> assert_allclose(sample.features[0].to_ndarray(), sample_back.features[0].to_ndarray())
         >>> assert_allclose(sample.label.to_ndarray(), sample_back.label.to_ndarray())
-        >>> print(sample)
-        Sample: features: [JTensor: storage: [[ 0.69646919  0.28613934  0.22685145]
-         [ 0.55131477  0.71946895  0.42310646]], shape: [2 3], float], labels: [JTensor: storage: [[ 0.98076421  0.68482971  0.48093191]
-         [ 0.39211753  0.343178    0.72904968]], shape: [2 3], float],
+        >>> expected_feature_storage = np.array(([[0.69646919, 0.28613934, 0.22685145], [0.55131477, 0.71946895, 0.42310646]]))
+        >>> expected_feature_shape = np.array([2, 3])
+        >>> expected_label_storage = np.array(([[0.98076421, 0.68482971, 0.48093191], [0.39211753, 0.343178, 0.72904968]]))
+        >>> expected_label_shape = np.array([2, 3])
+        >>> assert_allclose(sample.features[0].storage, expected_feature_storage, rtol=1e-6, atol=1e-6)
+        >>> assert_allclose(sample.features[0].shape, expected_feature_shape)
+        >>> assert_allclose(sample.labels[0].storage, expected_label_storage, rtol=1e-6, atol=1e-6)
+        >>> assert_allclose(sample.labels[0].shape, expected_label_shape)
         """
         if isinstance(features, np.ndarray):
             features = [features]
@@ -392,7 +385,6 @@ class Sample(object):
     def __repr__(self):
         return "Sample: features: %s, labels: %s" % (self.features, self.labels)
 
-
 class RNG():
     """
     generate tensor data with seed
@@ -423,6 +415,15 @@ _picklable_classes = [
 
 def init_engine(bigdl_type="float"):
     callBigDlFunc(bigdl_type, "initEngine")
+
+
+def init_executor_gateway(sc, bigdl_type="float"):
+    callBigDlFunc(bigdl_type, "initExecutorGateway", sc, sc._gateway._gateway_client.port)
+
+
+def get_node_and_core_number(bigdl_type="float"):
+    result = callBigDlFunc(bigdl_type, "getNodeAndCoreNumber")
+    return result[0], result[1]
 
 
 def redire_spark_logs(bigdl_type="float", log_path=os.getcwd()+"/bigdl.log"):
@@ -496,8 +497,8 @@ def create_spark_conf():
     bigdl_conf = get_bigdl_conf()
     sparkConf = SparkConf()
     sparkConf.setAll(bigdl_conf.items())
-    if not is_spark_below_2_2():
-        for jar in Configuration.get_bigdl_jars():
+    if os.environ.get("BIGDL_JARS", None) and not is_spark_below_2_2():
+        for jar in os.environ["BIGDL_JARS"].split(":"):
             extend_spark_driver_cp(sparkConf, jar)
 
     # add content in PYSPARK_FILES in spark.submit.pyFiles
@@ -544,15 +545,51 @@ def get_spark_sql_context(sc):
         return SQLContext(sc)  # Compatible with Spark1.5.1
 
 
+def _get_port():
+    root_dir = SparkFiles.getRootDirectory()
+    path = os.path.join(root_dir, "gateway_port")
+    try:
+        with open(path) as f:
+            port = int(f.readline())
+    except IOError as e:
+        traceback.print_exc()
+        raise RuntimeError("Could not open the file %s, which contains the listening port of"
+                           " local Java Gateway, please make sure the init_executor_gateway()"
+                           " function is called before any call of java function on the"
+                           " executor side." % e.filename)
+    return port
+
+
+def _get_gateway():
+    if SparkFiles._is_running_on_worker:
+        gateway_port = _get_port()
+        gateway = GatewayWrapper.instance(None, gateway_port).value
+    else:
+        sc = get_spark_context()
+        gateway = sc._gateway
+    return gateway
+
+
 def callBigDlFunc(bigdl_type, name, *args):
     """ Call API in PythonBigDL """
-    jinstance = JavaCreator.instance(bigdl_type=bigdl_type).value
-    sc = get_spark_context()
-    api = getattr(jinstance, name)
-    return callJavaFunc(sc, api, *args)
+    gateway = _get_gateway()
+    error = Exception("Cannot find function: %s" % name)
+    for jinvoker in JavaCreator.instance(bigdl_type, gateway).value:
+        # hasattr(jinvoker, name) always return true here,
+        # so you need to invoke the method to check if it exist or not
+        try:
+            api = getattr(jinvoker, name)
+            result = callJavaFunc(api, *args)
+        except Exception as e:
+            error = e
+            if "does not exist" not in str(e):
+                raise e
+        else:
+            return result
+    raise error
 
 
-def _java2py(sc, r, encoding="bytes"):
+def _java2py(gateway, r, encoding="bytes"):
     if isinstance(r, JavaObject):
         clsName = r.getClass().getSimpleName()
         # convert RDD into JavaRDD
@@ -561,20 +598,20 @@ def _java2py(sc, r, encoding="bytes"):
             clsName = 'JavaRDD'
 
         if clsName == 'JavaRDD':
-            jrdd = sc._jvm.SerDe.javaToPython(r)
-            return RDD(jrdd, sc)
+            jrdd = gateway.jvm.SerDe.javaToPython(r)
+            return RDD(jrdd, get_spark_context())
 
         if clsName == 'DataFrame':
-            return DataFrame(r, get_spark_sql_context(sc))
+            return DataFrame(r, get_spark_sql_context(get_spark_context()))
 
         if clsName == 'Dataset':
-            return DataFrame(r, get_spark_sql_context(sc))
+            return DataFrame(r, get_spark_sql_context(get_spark_context()))
 
         if clsName in _picklable_classes:
-            r = sc._jvm.org.apache.spark.bigdl.api.python.BigDLSerDe.dumps(r)
+            r = gateway.jvm.org.apache.spark.bigdl.api.python.BigDLSerDe.dumps(r)
         elif isinstance(r, (JavaArray, JavaList, JavaMap)):
             try:
-                r = sc._jvm.org.apache.spark.bigdl.api.python.BigDLSerDe.dumps(
+                r = gateway.jvm.org.apache.spark.bigdl.api.python.BigDLSerDe.dumps(
                     r)
             except Py4JJavaError:
                 pass  # not pickable
@@ -584,11 +621,12 @@ def _java2py(sc, r, encoding="bytes"):
     return r
 
 
-def callJavaFunc(sc, func, *args):
+def callJavaFunc(func, *args):
     """ Call Java Function """
-    args = [_py2java(sc, a) for a in args]
+    gateway = _get_gateway()
+    args = [_py2java(gateway, a) for a in args]
     result = func(*args)
-    return _java2py(sc, result)
+    return _java2py(gateway, result)
 
 
 def _to_java_object_rdd(rdd):
@@ -604,7 +642,7 @@ def _to_java_object_rdd(rdd):
             rdd._jrdd, True)
 
 
-def _py2java(sc, obj):
+def _py2java(gateway, obj):
     """ Convert Python object into Java """
     if isinstance(obj, RDD):
         obj = _to_java_object_rdd(obj)
@@ -613,13 +651,13 @@ def _py2java(sc, obj):
     elif isinstance(obj, SparkContext):
         obj = obj._jsc
     elif isinstance(obj, (list, tuple)):
-        obj = ListConverter().convert([_py2java(sc, x) for x in obj],
-                                      sc._gateway._gateway_client)
+        obj = ListConverter().convert([_py2java(gateway, x) for x in obj],
+                                      gateway._gateway_client)
     elif isinstance(obj, dict):
         result = {}
         for (key, value) in obj.items():
-            result[key] = _py2java(sc, value)
-        obj = MapConverter().convert(result, sc._gateway._gateway_client)
+            result[key] = _py2java(gateway, value)
+        obj = MapConverter().convert(result, gateway._gateway_client)
     elif isinstance(obj, JavaValue):
         obj = obj.value
     elif isinstance(obj, JavaObject):
@@ -628,7 +666,7 @@ def _py2java(sc, obj):
         pass
     else:
         data = bytearray(PickleSerializer().dumps(obj))
-        obj = sc._jvm.org.apache.spark.bigdl.api.python.BigDLSerDe.loads(data)
+        obj = gateway.jvm.org.apache.spark.bigdl.api.python.BigDLSerDe.loads(data)
     return obj
 
 

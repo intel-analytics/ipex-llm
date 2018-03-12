@@ -37,48 +37,61 @@ import scala.reflect.ClassTag
  */
 @SerialVersionUID(- 1953992758534446600L)
 class BCECriterion[@specialized(Float, Double) T: ClassTag]
-(var weights: Tensor[T] = null, sizeAverage: Boolean = true)
+(val weights: Tensor[T] = null, sizeAverage: Boolean = true)
   (implicit ev: TensorNumeric[T]) extends TensorCriterion[T] {
   private val eps = 1e-12
-  if (weights != null) require(weights.dim() == 1,
-    "weights input should be 1-D Tensor" +
-    s"weights input dim(${weights.dim()})")
+
+  val buffer: Tensor[T] = Tensor[T]()
+
+  val onesBuffer: Tensor[T] = Tensor[T]()
 
   override def updateOutput(input: Tensor[T], target: Tensor[T]): T = {
-    require(input.nElement() == target.nElement())
+    require(input.size().sameElements(target.size()),
+      s"input size should be equal to target size, but got input size: ${input.size().toList}," +
+        s" target size: ${input.size().toList}")
 
-    if (null != weights && target.dim() != 1) {
-      weights = weights.view(1, target.size(2)).expandAs(target)
+    if (weights != null) {
+      if (weights.nDimension() < input.nDimension()) {
+        require(weights.size().sameElements(input.size().tail),
+          s"weights size should be equal to input size or input size's tail, but got" +
+            s" input size: ${input.size().toList}, weights size: ${weights.size().toList}")
+      } else if (weights.nDimension() == input.nDimension()) {
+        require(weights.size().sameElements(input.size()),
+          s"weights size should be equal to input size or input size's tail, but got" +
+            s" input size: ${input.size().toList}, weights size: ${weights.size().toList}")
+      } else {
+        throw new IllegalArgumentException(
+          s"weights size should be equal to input size or input size's tail, but got" +
+          s" input size: ${input.size().toList}, weights size: ${weights.size().toList}")
+      }
     }
 
     var sum = 0.0
     if (null != weights) {
-      val func = new TensorFunc6[T] {
-        override def apply(data1: Array[T], offset1: Int, data2: Array[T], offset2: Int,
-                           data3: Array[T], offset3: Int): Unit = {
-          val x = ev.toType[Double](data1(offset1))
-          val y = ev.toType[Double](data2(offset2))
-          val w = ev.toType[Double](data3(offset3))
-          sum -= (Math.log(x + eps) * y + Math.log(1.0 - x + eps) * (1.0 - y)) * w
-        }
+      buffer.resizeAs(input).copy(input).add(ev.fromType(eps)).log()
+      // cmul support broadcasting
+      buffer.cmul(weights)
+      sum += ev.toType[Double](buffer.dot(target))
+      buffer.fill(ev.fromType(1.0 + eps)).sub(input).log().cmul(weights)
+      sum -= ev.toType[Double](buffer.dot(target))
+      if (onesBuffer.nElement() != buffer.nElement()) {
+        onesBuffer.resizeAs(buffer).fill(ev.one)
       }
-      DenseTensorApply.apply3(input, target, weights, func)
+      sum += ev.toType[Double](buffer.dot(onesBuffer))
     } else {
-      val func = new TensorFunc4[T] {
-        override def apply(data1: Array[T], offset1: Int,
-                           data2: Array[T], offset2: Int): Unit = {
-          val x = ev.toType[Double](data1(offset1))
-          val y = ev.toType[Double](data2(offset2))
-          sum -= Math.log(x + eps) * y + Math.log(1.0 - x + eps) * (1.0 - y)
-        }
+      buffer.resizeAs(input).copy(input).add(ev.fromType(eps)).log()
+      sum += ev.toType[Double](buffer.dot(target))
+      buffer.fill(ev.fromType(1.0 + eps)).sub(input).log()
+      sum -= ev.toType[Double](buffer.dot(target))
+      if (onesBuffer.nElement() != buffer.nElement()) {
+        onesBuffer.resizeAs(buffer).fill(ev.one)
       }
-      DenseTensorApply.apply2(input, target, func)
-
+      sum += ev.toType[Double](buffer.sum())
     }
 
     if (sizeAverage) sum /= input.nElement()
 
-    output = ev.fromType[Double](sum)
+    output = ev.fromType[Double](-sum)
 
     output
   }
@@ -87,27 +100,21 @@ class BCECriterion[@specialized(Float, Double) T: ClassTag]
     require(input.nElement() == target.nElement(),
       "input and target should have the same dims." +
         s"input dim(${input.nElement()})" +
-        s"taget dim(${target.nElement()})")
+        s"target dim(${target.nElement()})")
 
-    if (null != weights && target.dim() != 1) {
-      weights = weights.view(1, target.size(2)).expandAs(target)
-    }
-
-    val norm = if (sizeAverage) 1.0 / input.nElement() else 1.0
+    val nElement = input.nElement()
+    val norm = if (sizeAverage) 1.0 / nElement else 1.0
 
     gradInput.resizeAs(input)
 
-    val func = new TensorFunc6[T] {
-      override def apply(data1: Array[T], offset1: Int, data2: Array[T], offset2: Int,
-                         data3: Array[T], offset3: Int): Unit = {
-        val x = ev.toType[Double](data2(offset2))
-        val y = ev.toType[Double](data3(offset3))
-        data1(offset1) = ev.fromType(-norm * (y - x) / ((1.0 - x + eps) * (x + eps)))
-      }
-    }
-    DenseTensorApply.apply3(gradInput, input, target, func)
+    // gradInput = -norm * (y - x) / ((1.0 - x + eps) * (x + eps))
+    // - (1 - x + eps)*(x + eps) = x^2 - x - eps - eps^2
+    // eps^12 is negligible
+    buffer.pow(input, ev.fromType(2)).sub(input).sub(ev.fromType(eps))
+    gradInput.copy(target).sub(input).cdiv(buffer).mul(ev.fromType(norm))
 
     if (null != weights) {
+      // cmul support broadcasting
       gradInput.cmul(weights)
     }
 

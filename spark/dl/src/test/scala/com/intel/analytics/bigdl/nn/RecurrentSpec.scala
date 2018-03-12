@@ -19,11 +19,13 @@ package com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.optim.SGD
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
-import com.intel.analytics.bigdl.utils.{Engine, T}
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
+import com.intel.analytics.bigdl.utils.{Engine, T, Table}
 import org.scalatest.{FlatSpec, Matchers}
 
 import scala.collection.mutable.ArrayBuffer
 import scala.math._
+import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Serial
 class RecurrentSpec extends FlatSpec with Matchers {
@@ -83,6 +85,57 @@ class RecurrentSpec extends FlatSpec with Matchers {
       forwardSum(i) should be (rnnCell1.getTimes()(i)._2)
       backwardSum(i) should be (rnnCell1.getTimes()(i)._3)
     }
+  }
+
+  "Recurrent" should "outputs correct hiddens" in {
+    val hiddenSize = 4
+    val batchSize = 3
+    val inputSize = 6
+    val seqLength = 5
+    val seed = 100
+
+    RNG.setSeed(seed)
+    val input = Tensor[Double](Array(batchSize, seqLength, inputSize)).rand()
+    input.select(1, 2).zero()
+
+    val rec = Recurrent[Double](maskZero = true)
+    val initHidden = T(
+      Tensor[Double](Array(batchSize, hiddenSize)).rand(),
+      Tensor[Double](Array(batchSize, hiddenSize)).rand()
+    )
+    rec.setHiddenState(initHidden)
+
+    val lstm = LSTM[Double](inputSize, hiddenSize)
+    val model = Sequential[Double]()
+      .add(rec
+        .add(lstm))
+
+    model.forward(input)
+
+    lstm.output.toTable[Table](2).toTable[Tensor[Double]](1)
+      .select(1, 2) should be (initHidden[Tensor[Double]](1).select(1, 2))
+  }
+
+  "Recurrent" should "ouputs correclty" in {
+    val hiddenSize = 4
+    val batchSize = 3
+    val inputSize = 6
+    val seqLength = 5
+    val seed = 100
+
+    RNG.setSeed(seed)
+    val input = Tensor[Double](Array(batchSize, seqLength, inputSize)).rand()
+    input.select(1, 2).select(1, seqLength).zero()
+
+    val rec = Recurrent[Double](maskZero = true)
+
+    val model = Sequential[Double]()
+      .add(rec
+        .add(LSTM[Double](inputSize, hiddenSize)))
+
+    val output = model.forward(input)
+
+    output.toTensor[Double].select(1, 2).select(1, seqLength).abs().max() should be (0)
   }
 
   "A Recurrent" should " call getTimes correctly" in {
@@ -630,5 +683,34 @@ class RecurrentSpec extends FlatSpec with Matchers {
 
     Recurrent.copy(arrInput, output2)
     output2 should be (input)
+  }
+
+  "A Recurrent Module " should " work after reset " in {
+    val hiddenSize = 4
+    val inputSize = 5
+    val outputSize = 5
+    val seed = 100
+    RNG.setSeed(seed)
+
+    val model = Sequential[Double]()
+      .add(Recurrent[Double]()
+        .add(RnnCell[Double](inputSize, hiddenSize, Tanh())))
+      .add(Select(1, 1))
+      .add(Linear[Double](hiddenSize, outputSize))
+
+    val input = Tensor[Double](Array(1, 5, inputSize))
+    val output1 = model.forward(input).toTensor[Double].clone()
+    model.reset()
+    model.forward(input)
+  }
+
+}
+
+class RecurrentSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val recurrent = Recurrent[Float]().setName("recurrent")
+      .add(RnnCell[Float](5, 4, Tanh[Float]()))
+    val input = Tensor[Float](Array(10, 5, 5)).apply1(_ => Random.nextFloat())
+    runSerializationTest(recurrent, input)
   }
 }

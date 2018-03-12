@@ -20,6 +20,12 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath._
 
 object SparseTensorMath {
 
+  def vdot[@specialized(Float, Double) T](
+        vec1: DenseTensor[T],
+        vec2: SparseTensor[T]): T = {
+    SparseTensorBLAS.vdot(vec1, vec2)
+  }
+
   def addmv[@specialized(Float, Double) T](
         r : Tensor[T],
         beta : T,

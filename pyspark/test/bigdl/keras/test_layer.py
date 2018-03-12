@@ -309,6 +309,8 @@ class TestLayer(BigDLTestCase):
         input_data = np.random.random_sample([1, 3, 5, 4])
         layer = Reshape(target_shape=(3, 20), input_shape=(3, 5, 4))
         self.modelTestSingleLayer(input_data, layer)
+        layer2 = Reshape(target_shape=(-1, 2, 3), input_shape=(3, 5, 4))
+        self.modelTestSingleLayer(input_data, layer2)
 
     def test_repeatvector(self):
         input_data = np.random.random_sample([2, 3])

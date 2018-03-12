@@ -39,17 +39,17 @@ class ClassNLLCriterionSpec extends FlatSpec with Matchers {
     target(Array(1)) = -1
     target(Array(2)) = 2
     target(Array(3)) = 3
-    val expectedOutput = 0.8793184268272333
+    val expectedOutput = 1.31897764024085
     val expectedGrad = Tensor[Double](3, 3)
     expectedGrad(Array(1, 1)) = 0
     expectedGrad(Array(1, 2)) = 0
     expectedGrad(Array(1, 3)) = 0
     expectedGrad(Array(2, 1)) = 0
-    expectedGrad(Array(2, 2)) = -0.33333333333333
+    expectedGrad(Array(2, 2)) = -0.5
     expectedGrad(Array(2, 3)) = 0
     expectedGrad(Array(3, 1)) = 0
     expectedGrad(Array(3, 2)) = 0
-    expectedGrad(Array(3, 3)) = -0.33333333333333
+    expectedGrad(Array(3, 3)) = -0.5
     val output = criterion.forward(input, target)
     val gradInput = criterion.backward(input, target)
     assert(abs(expectedOutput - output) < 1e-6)

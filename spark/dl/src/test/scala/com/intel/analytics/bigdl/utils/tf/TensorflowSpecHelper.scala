@@ -28,6 +28,7 @@ import com.intel.analytics.bigdl.utils.{BigDLSpecHelper, FileWriter, RandomGener
 import com.intel.analytics.bigdl.utils.tf.Tensorflow.const
 import org.tensorflow.framework.{GraphDef, NodeDef}
 
+import scala.language.postfixOps
 import scala.reflect.ClassTag
 import scala.sys.process._
 import scala.util.control.NonFatal
@@ -88,6 +89,13 @@ abstract class TensorflowSpecHelper extends BigDLSpecHelper {
     val tfOutput = runGraphTF[T](graphFile, nodeDefBuilder.getName + s":$outputIndex")
     bigdlOutputTensor.asInstanceOf[Tensor[NumericWildCard]]
       .almostEqual(tfOutput.asInstanceOf[Tensor[NumericWildCard]], delta) should be(true)
+  }
+
+  protected def compare[T: ClassTag](nodeDefBuilder: NodeDef.Builder,
+    inputs: Seq[Tensor[_]], outputIndexes: Seq[Int],
+    delta: Double)(implicit ev: TensorNumeric[T])
+  : Unit = {
+    outputIndexes.foreach(compare(nodeDefBuilder.clone(), inputs, _, delta))
   }
 
   protected def getResult[T: ClassTag, D](nodeDefBuilder: NodeDef.Builder, inputs: Seq[Tensor[_]],

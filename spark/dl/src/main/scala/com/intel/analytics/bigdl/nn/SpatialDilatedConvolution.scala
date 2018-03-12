@@ -22,7 +22,8 @@ import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.{DenseTensorBLAS, DoubleType, FloatType, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.RandomGenerator._
-import com.intel.analytics.bigdl.utils.{T, Table}
+import com.intel.analytics.bigdl.utils.{Shape, T, Table}
+
 import scala.reflect.ClassTag
 
 /**
@@ -147,6 +148,15 @@ class SpatialDilatedConvolution[T: ClassTag](
     }
   }
 
+  override def computeOutputShape(inputShape: Shape): Shape = {
+    val input = inputShape.toSingle().toArray
+    require(input.length == 4,
+      s"AtrousConvolution2D requires 4D input, but got input dim ${input.length}")
+    val outputWidth = (input(3) + 2*padW - (dilationW * (kW - 1) + 1)) / dW + 1
+    val outputHeight = (input(2) + 2*padH - (dilationH * (kH - 1) + 1)) / dH + 1
+    Shape(input(0), nOutputPlane, outputHeight, outputWidth)
+  }
+
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
     shapeCheck(input, null, weight, bias,
       kH, kW, dH, dW, padH, padW, dilationH, dilationW)
@@ -237,6 +247,7 @@ class SpatialDilatedConvolution[T: ClassTag](
           dH, dW,
           dilationH, dilationW
         )
+        case t => throw new NotImplementedError(s"$t is not supported")
       }
       im2colTime += System.nanoTime() - before
 
@@ -337,6 +348,7 @@ class SpatialDilatedConvolution[T: ClassTag](
           dH, dW,
           dilationH, dilationW
         )
+        case t => throw new NotImplementedError(s"$t is not supported")
       }
       col2imTime += System.nanoTime() - before
       elt += 1
@@ -411,6 +423,7 @@ class SpatialDilatedConvolution[T: ClassTag](
           dH, dW,
           dilationH, dilationW
         )
+        case t => throw new NotImplementedError(s"$t is not supported")
       }
       im2colTime += System.nanoTime() - before
 
@@ -467,23 +480,8 @@ class SpatialDilatedConvolution[T: ClassTag](
     }
   }
 
-  override def updateParameters(learningRate: T): Unit = {
-    weight.map(gradWeight, (a, b) => ev.minus(a, ev.times(learningRate, b)))
-    bias.map(gradBias, (a, b) => ev.minus(a, ev.times(learningRate, b)))
-  }
-
-  override def zeroGradParameters(): Unit = {
-    gradWeight.zero()
-    gradBias.zero()
-  }
-
   override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
     (Array(this.weight, this.bias), Array(this.gradWeight, this.gradBias))
-  }
-
-  override def getParametersTable(): Table = {
-    T(getName() -> T("weight" -> weight, "bias" -> bias,
-      "gradWeight" -> gradWeight, "gradBias" -> gradBias))
   }
 
   override def equals(obj: Any): Boolean = {

@@ -23,12 +23,14 @@ import com.intel.analytics.bigdl.models.inception.Inception_v1_NoAuxClassifier
 import com.intel.analytics.bigdl.models.lenet.LeNet5
 import com.intel.analytics.bigdl.models.vgg.{VggForCifar10, Vgg_16, Vgg_19}
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
-import com.intel.analytics.bigdl.nn.ops.{ControlNodes, Less}
-import com.intel.analytics.bigdl.nn.tf.Const
+import com.intel.analytics.bigdl.nn.abstractnn.EmptyGradInput
+import com.intel.analytics.bigdl.nn.ops.Less
+import com.intel.analytics.bigdl.nn.tf.{ControlNodes, Enter, Const}
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils._
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 
 import scala.reflect.ClassTag
 import scala.util.Random
@@ -483,7 +485,6 @@ class DynamicGraphSpec  extends FlatSpec with Matchers {
     println(s"funcModel model backward time is ${(System.nanoTime() - start) / 1e6}ms")
 
     gradientBP1 should be(gradientBP2)
-    seqModel.getParameters()._2 should be(funcModel.getParameters()._2)
   }
 
   "ResNet-18 basic block shortcut type A" should "be correct" in {
@@ -643,7 +644,6 @@ class DynamicGraphSpec  extends FlatSpec with Matchers {
     val gradInput2 = graphModel.backward(input, gradOutput)
     gradInput1 should be(gradInput2)
     gradInput1 should be(gradInput2)
-    model.getParameters().equals(graphModel.getParameters()) should be(true)
   }
 
   "Lenet graph" should "be correct" in {
@@ -685,7 +685,6 @@ class DynamicGraphSpec  extends FlatSpec with Matchers {
     val gradInput1 = model.backward(input, gradOutput)
     val gradInput2 = graphModel.backward(input, gradOutput)
     gradInput1 should be(gradInput2)
-    model.getParameters().equals(graphModel.getParameters()) should be(true)
   }
 
   "Vgg_16 graph" should "be correct" in {
@@ -706,7 +705,6 @@ class DynamicGraphSpec  extends FlatSpec with Matchers {
     val gradInput1 = model.backward(input, gradOutput)
     val gradInput2 = graphModel.backward(input, gradOutput)
     gradInput1 should be(gradInput2)
-    model.getParameters().equals(graphModel.getParameters()) should be(true)
   }
 
   "Vgg_19 graph" should "be correct" in {
@@ -727,7 +725,6 @@ class DynamicGraphSpec  extends FlatSpec with Matchers {
     val gradInput1 = model.backward(input, gradOutput)
     val gradInput2 = graphModel.backward(input, gradOutput)
     gradInput1 should be(gradInput2)
-    model.getParameters().equals(graphModel.getParameters()) should be(true)
   }
 
   "Dynamic Graph backward sequential with propagateBack false in the " +
@@ -784,7 +781,7 @@ class DynamicGraphSpec  extends FlatSpec with Matchers {
     val gradientBPNoBack = funcModelNoBack.backward(inputData, gradient)
     println(s"funcModel model backward time is ${ (System.nanoTime() - start) / 1e6 }ms")
 
-    gradientBPNoBack.toTensor.nElement() should be(0)
+    gradientBPNoBack.isInstanceOf[EmptyGradInput] should be(true)
     val namedModule1 = funcModelOriginal.getParametersTable()
     val namedModule2 = funcModelNoBack.getParametersTable()
     namedModule1("conv1").asInstanceOf[Table] should
@@ -835,7 +832,7 @@ class DynamicGraphSpec  extends FlatSpec with Matchers {
     val gradientBPOriginal = funcModelOriginal.backward(inputData, gradient)
     val gradientBPNoBack = funcModelNoBack.backward(inputData, gradient)
 
-    gradientBPNoBack.toTensor.nElement() should be(0)
+    gradientBPNoBack.isInstanceOf[EmptyGradInput] should be(true)
     val namedModule1 = Utils.getNamedModules(funcModelOriginal)
     val namedModule2 = Utils.getNamedModules(funcModelNoBack)
     namedModule2("r1").gradInput.toTensor.nElement() should be(0)
@@ -1067,7 +1064,6 @@ class DynamicGraphSpec  extends FlatSpec with Matchers {
     model.zeroGradParameters()
     println("output1: \n", model.forward(input))
     model.backward(input, gradOutput)
-    model.updateParameters(1)
     println("fc2 weight \n", fc2.element.parameters()._1(0))
 
 
@@ -1077,7 +1073,6 @@ class DynamicGraphSpec  extends FlatSpec with Matchers {
     model.freeze("fc2")
     println("output2: \n", model.forward(input))
     model.backward(input, gradOutput)
-    model.updateParameters(1)
     println("fc2 weight \n", fc2.element.parameters()._1(0))
 
     fc1.element.getParameters()._1.apply1(_ => 1.0f)
@@ -1086,7 +1081,6 @@ class DynamicGraphSpec  extends FlatSpec with Matchers {
     model.unFreeze()
     println("output3: \n", model.forward(input))
     model.backward(input, gradOutput)
-    model.updateParameters(1)
     println("fc2 weight \n", fc2.element.parameters()._1(0))
 
     fc1.element.getParameters()._1.apply1(_ => 1.0f)
@@ -1095,7 +1089,6 @@ class DynamicGraphSpec  extends FlatSpec with Matchers {
     model.zeroGradParameters()
     println("output4: \n", model.forward(input))
     model.backward(input, gradOutput)
-    model.updateParameters(1)
     println("fc1 weight \n", fc1.element.parameters()._1(0))
     println("fc2 weight \n", fc2.element.parameters()._1(0))
   }
@@ -1274,5 +1267,110 @@ class DynamicGraphSpec  extends FlatSpec with Matchers {
     intercept[NoSuchElementException] {
       model.node("ll1")
     }
+  }
+
+  "Dynamic Graph" should "support while loop" in {
+    val input = Input("input")
+
+    val conditionInput = Input("conditionInput")
+    val const = new com.intel.analytics.bigdl.nn.tf.Const(Tensor(T(9))).inputs()
+    val constEnter = new Enter("test_frame").inputs(const)
+    val less = Less().inputs(constEnter, conditionInput)
+
+    val updateInput = Input()
+    val add = AddConstant(1).inputs(updateInput)
+    val addEnter = new Enter("test_frame").inputs(add)
+    val echo = Echo().inputs(addEnter)
+
+    val exit = ControlNodes.whileLoop(
+      (Seq(conditionInput), less),
+      (Seq((updateInput, echo))),
+      Seq(input),
+      "while"
+    )
+    val model = Graph.dynamic(Array(input), Array(exit(0)), None, false)
+    val result = model.forward(Tensor(T(1)))
+    result.toTensor.valueAt(1) should be(10)
+  }
+
+  "Dynamic Graph" should "support while loop twice and const node should not be executed twice" in {
+    val input = Input()
+
+    val conditionInput = Input()
+    val const = new com.intel.analytics.bigdl.nn.tf.Const(Tensor(T(9))).inputs()
+    var count = 0
+    def feval(module: Echo[Float], input: Tensor[Float]): Unit = {
+      count += 1
+    }
+    val echo = Echo(feval).inputs(const)
+    val less = Less().inputs(echo, conditionInput)
+
+    val updateInput = Input()
+    val add = AddConstant(1).inputs(updateInput)
+
+    val exit = ControlNodes.whileLoop(
+      (Seq(conditionInput), less),
+      Seq((updateInput, add)),
+      Seq(input)
+    )
+    val model = Graph.dynamic(Array(input), Array(exit(0)), None, false)
+    model.forward(Tensor(T(1)))
+    val result = model.forward(Tensor(T(1)))
+    result.toTensor.valueAt(1) should be(10)
+    count should be(1)
+  }
+
+  "Dynamic Graph" should "support while loop with multiple loop vars" in {
+    val input1 = Input("Input1")
+    val input2 = Input("Input2")
+
+    val conditionInput1 = Input("conditionInput1")
+    val conditionInput2 = Input("conditionInput2")
+    val const = new com.intel.analytics.bigdl.nn.tf.Const(Tensor(T(9))).setName("inc").inputs()
+    val less = Less().setName("less").inputs(const, conditionInput1)
+
+    val updateInput1 = Input("updateInput1")
+    val add1 = AddConstant(1).setName("add1").inputs(updateInput1)
+    val echo1 = Echo().setName("echo1").inputs(add1)
+
+    val updateInput2 = Input("updateInput2")
+    val add2 = AddConstant(5).setName("add5").inputs(updateInput2)
+    val echo2 = Echo().setName("echo2").inputs(add2)
+
+    val exit = ControlNodes.whileLoop(
+      (Seq(conditionInput1, conditionInput2), less),
+      (Seq((updateInput1, echo1), (updateInput2, echo2))),
+      Seq(input1, input2),
+      "while"
+    )
+    val model = Graph.dynamic(Array(input1, input2), exit.toArray, None, false)
+    val result = model.forward(T(Tensor(T(1)), Tensor(T(2))))
+    result.toTable.apply[Tensor[Float]](1).valueAt(1) should be(10)
+    result.toTable.apply[Tensor[Float]](2).valueAt(1) should be(47)
+  }
+
+  "DynamicGraph" should "not contain duplicate modules" in {
+    val n1 = Identity[Float]().inputs()
+    val n2 = Identity[Float]().inputs()
+    val duplicate = Identity[Float]()
+    val n3 = duplicate.inputs(n1)
+    val n4 = duplicate.inputs(n2)
+    intercept[IllegalArgumentException] {
+      val model = Graph.dynamic(Array(n1, n2), Array(n3, n4))
+    }
+  }
+}
+
+class DynamicGraphSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val linear = Linear[Float](2, 2)
+    val linearNode = linear.inputs()
+    val linearWeight = linear.weight
+    val linearBias = linear.bias
+    val variables = Some(Array(linearWeight), Array(linearBias))
+    val graphWithVariable = Graph.dynamic[Float](Array(linearNode), Array(linearNode),
+      variables, false).setName("graphWithVariable")
+    val input = Tensor[Float](2).apply1(_ => Random.nextFloat())
+    runSerializationTest(graphWithVariable, input)
   }
 }

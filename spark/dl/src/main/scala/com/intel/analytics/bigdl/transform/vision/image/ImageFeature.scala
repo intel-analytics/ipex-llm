@@ -168,6 +168,11 @@ class ImageFeature extends Serializable {
   def getOriginalHeight: Int = getOriginalSize._1
 
   /**
+   * get original channel
+   */
+  def getOriginalChannel: Int = getOriginalSize._3
+
+  /**
    * get label from ImageFeature
    */
   def getLabel[T: ClassTag]: T = apply[T](ImageFeature.label)
@@ -190,6 +195,15 @@ class ImageFeature extends Serializable {
     isValid = true
   }
 
+  override def clone(): ImageFeature = {
+    val imageFeature = new ImageFeature()
+    state.foreach(x => {
+      imageFeature(x._1) = x._2
+    })
+    imageFeature.isValid = isValid
+    imageFeature
+  }
+
 
   /**
    * copy the float array to a storage
@@ -200,12 +214,22 @@ class ImageFeature extends Serializable {
    */
   def copyTo[T: ClassTag](storage: Array[T], offset: Int, floatKey: String = ImageFeature.floats,
     toRGB: Boolean = true)(implicit ev: TensorNumeric[T]): Unit = {
+    val channel = getChannel()
     require(contains(floatKey), s"there should be ${floatKey} in ImageFeature")
     val data = floats(floatKey)
-    require(data.length >= getWidth() * getHeight() * 3,
-      s"float array length should be larger than 3 * ${getWidth()} * ${getHeight()}")
+    require(data.length >= getWidth() * getHeight() * channel,
+      s"float array length should be larger than $channel * ${getWidth()} * ${getHeight()}")
     val frameLength = getWidth() * getHeight()
-    require(frameLength * 3 + offset <= storage.length)
+    require(frameLength * channel + offset <= storage.length)
+    if (channel == 3) {
+      copyBGR(storage, offset, toRGB, data, frameLength)
+    } else {
+      copyChannels(storage, offset, channel, data, frameLength)
+    }
+  }
+
+  private def copyBGR[T: ClassTag](storage: Array[T], offset: Int, toRGB: Boolean,
+    data: Array[Float], frameLength: Int): Unit = {
     if (classTag[T] == classTag[Float]) {
       val storageFloat = storage.asInstanceOf[Array[Float]]
       var j = 0
@@ -241,6 +265,33 @@ class ImageFeature extends Serializable {
           storageDouble(offset + j + frameLength * 2) = data(j * 3 + 2)
           j += 1
         }
+      }
+    }
+  }
+
+  private def copyChannels[T: ClassTag](storage: Array[T], offset: Int, channel: Int,
+    data: Array[Float], frameLength: Int): Unit = {
+    if (classTag[T] == classTag[Float]) {
+      val storageFloat = storage.asInstanceOf[Array[Float]]
+      var j = 0
+      while (j < frameLength) {
+        var c = 0
+        while (c < channel) {
+          storageFloat(offset + j + frameLength * c) = data(j * channel + c)
+          c += 1
+        }
+        j += 1
+      }
+    } else if (classTag[T] == classTag[Double]) {
+      val storageDouble = storage.asInstanceOf[Array[Double]]
+      var j = 0
+      while (j < frameLength) {
+        var c = 0
+        while (c < channel) {
+          storageDouble(offset + j + frameLength * c) = data(j * channel + c)
+          c += 1
+        }
+        j += 1
       }
     }
   }

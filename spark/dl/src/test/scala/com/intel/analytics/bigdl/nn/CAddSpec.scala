@@ -20,6 +20,9 @@ import com.intel.analytics.bigdl.nn.abstractnn.{TensorCriterion, TensorModule}
 import com.intel.analytics.bigdl.tensor.Tensor
 import org.scalatest.{FlatSpec, Matchers}
 import com.intel.analytics.bigdl.utils.RandomGenerator._
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
+
+import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Parallel
 class CAddSpec extends FlatSpec with Matchers {
@@ -44,7 +47,8 @@ class CAddSpec extends FlatSpec with Matchers {
       val gradCriterion = criterion.backward (pred, y)
       mlp.zeroGradParameters ()
       mlp.backward (x, gradCriterion)
-      mlp.updateParameters (learningRate)
+      val (weight, grad) = mlp.getParameters()
+      weight.add(-learningRate, grad)
       err
     }
 
@@ -86,5 +90,13 @@ class CAddSpec extends FlatSpec with Matchers {
     gradInput1 should be (gradInput2)
 
     layer2.gradBias should be (layer1.gradBias.mul(2))
+  }
+}
+
+class CAddSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val input = Tensor[Float](5, 1).apply1(e => Random.nextFloat())
+    val cadd = CAdd[Float](Array(5, 1)).setName("cadd")
+    runSerializationTest(cadd, input)
   }
 }

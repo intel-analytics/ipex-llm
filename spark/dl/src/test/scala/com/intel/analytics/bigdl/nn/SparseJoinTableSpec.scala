@@ -19,6 +19,7 @@ package com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.{RandomGenerator, T}
 import com.intel.analytics.bigdl.numeric.NumericFloat
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
 
 import scala.util.Random
@@ -131,4 +132,17 @@ class SparseJoinTableSpec  extends FlatSpec with Matchers {
     output should be (exceptedOutput)
   }
 
+}
+
+class SparseJoinTableSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val sparseJoinTable = SparseJoinTable[Float](2).setName("sparseJoinTable")
+    val sparseModel = Sequential[Float]().
+      add(ParallelTable[Float]().add(Identity[Float]()).add(Identity[Float]()))
+      .add(sparseJoinTable)
+    val input1 = Tensor[Float](4, 3).apply1(_ => Random.nextInt(2) * Random.nextFloat())
+    val input2 = Tensor[Float](4, 2).apply1(_ => Random.nextInt(2) * Random.nextFloat())
+    val sparseInput = T(Tensor.sparse(input1), Tensor.sparse(input2))
+    runSerializationTest(sparseJoinTable, sparseInput)
+  }
 }

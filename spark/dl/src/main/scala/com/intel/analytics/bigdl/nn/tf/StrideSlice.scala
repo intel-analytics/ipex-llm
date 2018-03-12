@@ -18,8 +18,9 @@ package com.intel.analytics.bigdl.nn.tf
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.serializer.{DataConverter, DeserializeContext, ModuleSerializable, SerializeContext}
-import serialization.Bigdl.{AttrValue, BigDLModule}
+import com.intel.analytics.bigdl.utils.serializer.converters.DataConverter
+import com.intel.analytics.bigdl.utils.serializer.{DeserializeContext, ModuleSerializable, SerializeContext}
+import com.intel.analytics.bigdl.serialization.Bigdl.{AttrValue, BigDLModule}
 
 import scala.reflect.ClassTag
 import scala.reflect.runtime.universe
@@ -29,23 +30,28 @@ import scala.reflect.runtime.universe
  * @param sliceSpecs Array(dim, begin_index, end_index, stride)
  */
 @SerialVersionUID(4436600172725317184L)
-private[bigdl] class StrideSlice[T: ClassTag](val sliceSpecs: Array[(Int, Int, Int, Int)])
-                (implicit ev: TensorNumeric[T]) extends TensorModule[T] {
+private[bigdl] class StrideSlice[T: ClassTag, D: ClassTag](
+  val sliceSpecs: Array[(Int, Int, Int, Int)])
+  (implicit ev: TensorNumeric[T], ev2: TensorNumeric[D])
+  extends AbstractModule[Tensor[D], Tensor[D], T] {
+
+  output = Tensor[D]()
 
   require(sliceSpecs.map(_._4 == 1).reduce(_ && _), "only support stride 1 for now")
 
-  override def updateOutput(input: Tensor[T]): Tensor[T] = {
+  override def updateOutput(input: Tensor[D]): Tensor[D] = {
     var tmp = input
     var i = 0
     while(i < sliceSpecs.length) {
       tmp = tmp.narrow(sliceSpecs(i)._1, sliceSpecs(i)._2, sliceSpecs(i)._3 - sliceSpecs(i)._2)
       i += 1
     }
+    if (tmp.dim() == 1 && tmp.size(1) == 1) tmp = Tensor.scalar[D](tmp.valueAt(1))
     output.resizeAs(tmp)
     output.copy(tmp)
   }
 
-  override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
+  override def updateGradInput(input: Tensor[D], gradOutput: Tensor[D]): Tensor[D] = {
     gradInput.resizeAs(input)
     gradInput.zero()
     var tmp = gradInput
@@ -61,17 +67,15 @@ private[bigdl] class StrideSlice[T: ClassTag](val sliceSpecs: Array[(Int, Int, I
 }
 
 private[bigdl] object StrideSlice extends ModuleSerializable {
-  def apply[T: ClassTag](sliceSpecs: Array[(Int, Int, Int, Int)])
-                        (implicit ev: TensorNumeric[T]) : StrideSlice[T] = {
-    new StrideSlice[T](sliceSpecs)
+  def apply[T: ClassTag, D: ClassTag](sliceSpecs: Array[(Int, Int, Int, Int)])
+    (implicit ev: TensorNumeric[T], ev2: TensorNumeric[D]): StrideSlice[T, D] = {
+    new StrideSlice[T, D](sliceSpecs)
   }
 
   override def doLoadModule[T: ClassTag](context: DeserializeContext)
     (implicit ev: TensorNumeric[T]) : AbstractModule[Activity, Activity, T] = {
 
     val attrMap = context.bigdlModule.getAttrMap
-    // val module = super.doLoadModule(context)
-
     val sliceLen = attrMap.get("sliceLen").getInt32Value
 
     val specs = new Array[(Int, Int, Int, Int)](sliceLen)
@@ -81,14 +85,14 @@ private[bigdl] object StrideSlice extends ModuleSerializable {
         getAttributeValue(context, spec).asInstanceOf[Array[Int]]
       specs(i) = (lst(0), lst(1), lst(2), lst(3))
     }
-    StrideSlice[T](specs)
+    StrideSlice[T, Float](specs)
   }
 
   override def doSerializeModule[T: ClassTag](context: SerializeContext[T],
                                               recurrentBuilder : BigDLModule.Builder)
                                              (implicit ev: TensorNumeric[T]) : Unit = {
 
-    val strideSlice = context.moduleData.module.asInstanceOf[StrideSlice[T]]
+    val strideSlice = context.moduleData.module.asInstanceOf[StrideSlice[T, Float]]
 
     val sliceSpecs = strideSlice.sliceSpecs
 

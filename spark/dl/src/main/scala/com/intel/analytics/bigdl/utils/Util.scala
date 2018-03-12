@@ -17,6 +17,7 @@
 package com.intel.analytics.bigdl.utils
 
 import com.intel.analytics.bigdl._
+import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.{QuantizedTensor, QuantizedType, Storage, Tensor}
 
@@ -173,6 +174,22 @@ object Util {
         }
       }
       i += 1
+    }
+  }
+
+  private[bigdl] def excludeNotTorch[T: ClassTag]
+  (modules : Seq[AbstractModule[_, _, T]]): Unit = {
+    val invalidNodes = modules.filter{!_.isCompatibleWithTorch()}
+    if (invalidNodes.length > 0) {
+      throw new RuntimeException(s"Do not mix with Layer: ${invalidNodes.mkString(",")}")
+    }
+  }
+
+  private[bigdl] def excludeNotKeras[T: ClassTag]
+  (modules : Seq[AbstractModule[_, _, T]]): Unit = {
+    val invalidNodes = modules.filter{!_.isCompatibleWithKeras()}
+    if (invalidNodes.length > 0) {
+      throw new RuntimeException(s"Do not mix with Layer: ${invalidNodes.mkString(",")}")
     }
   }
 }

@@ -30,6 +30,7 @@ from bigdl.util.common import callBigDlFunc
 from bigdl.util.common import callJavaFunc
 from bigdl.util.common import get_spark_context
 from bigdl.util.common import to_list
+from bigdl.dataset.dataset import *
 
 if sys.version >= '3':
     long = int
@@ -225,9 +226,8 @@ class Poly(JavaValue):
     Calculation: base_lr (1 - iter/max_iteration) ^ (power)
 
 
-    :param power:
-    :param max_iteration:
-
+    :param power: coeffient of decay, refer to calculation formula
+    :param max_iteration: max iteration when lr becomes zero
 
     >>> poly = Poly(0.5, 2)
     creating: createPoly
@@ -315,6 +315,47 @@ class Plateau(JavaValue):
                  bigdl_type="float"):
         JavaValue.__init__(self, None, bigdl_type, monitor, factor, patience, mode, epsilon,
                            cooldown, min_lr)
+
+class Warmup(JavaValue):
+    """
+    A learning rate gradual increase policy, where the effective learning rate
+    increase delta after each iteration.
+    Calculation: base_lr + delta * iteration
+
+    :param delta: increase amount after each iteration
+
+    >>> warmup = Warmup(0.05)
+    creating: createWarmup
+    """
+    def __init__(self, delta, bigdl_type="float"):
+        JavaValue.__init__(self, None, bigdl_type, delta)
+
+class SequentialSchedule(JavaValue):
+    """
+    Stack several learning rate schedulers.
+
+    :param iterationPerEpoch: iteration numbers per epoch
+
+    >>> sequentialSchedule = SequentialSchedule(5)
+    creating: createSequentialSchedule
+    >>> poly = Poly(0.5, 2)
+    creating: createPoly
+    >>> test = sequentialSchedule.add(poly, 5)
+
+
+
+    """
+    def __init__(self, iteration_per_epoch, bigdl_type="float"):
+        JavaValue.__init__(self, None, bigdl_type, iteration_per_epoch)
+
+    def add(self, scheduler, max_iteration, bigdl_type="float"):
+        """
+        Add a learning rate scheduler to the contained `schedules`
+
+        :param scheduler: learning rate scheduler to be add
+        :param max_iteration: iteration numbers this scheduler will run
+        """
+        return callBigDlFunc(bigdl_type, "addScheduler", self.value, scheduler, max_iteration)
 
 class OptimMethod(JavaValue):
 
@@ -588,7 +629,7 @@ class BaseOptimizer(JavaValue):
         """
         Do an optimization.
         """
-        jmodel = callJavaFunc(get_spark_context(), self.value.optimize)
+        jmodel = callJavaFunc(self.value.optimize)
         from bigdl.nn.layer import Layer
         return Layer.of(jmodel)
 
@@ -698,7 +739,7 @@ class Optimizer(BaseOptimizer):
             end_trigger = MaxEpoch(1)
         if not optim_method:
             optim_method = SGD()
-        if isinstance(training_set, RDD):
+        if isinstance(training_set, RDD) or isinstance(training_set, DataSet):
             return DistriOptimizer(model=model,
                                    training_rdd=training_set,
                                    criterion=criterion,
@@ -732,7 +773,10 @@ class Optimizer(BaseOptimizer):
         """
         if val_method is None:
             val_method = [Top1Accuracy()]
-        callBigDlFunc(self.bigdl_type, "setValidation", self.value, batch_size,
+        func_name = "setValidation"
+        if isinstance(val_rdd, DataSet):
+            func_name = "setValidationFromDataSet"
+        callBigDlFunc(self.bigdl_type, func_name, self.value, batch_size,
                       trigger, val_rdd, to_list(val_method))
 
     def set_traindata(self, training_rdd, batch_size):
@@ -769,9 +813,16 @@ class DistriOptimizer(Optimizer):
         :param end_trigger: when to end the optimization
         :param batch_size: training batch size
         """
-        JavaValue.__init__(self, None, bigdl_type, model.value,
-                           training_rdd, criterion,
-                           optim_method if optim_method else SGD(), end_trigger, batch_size)
+        if isinstance(training_rdd, RDD):
+            JavaValue.__init__(self, None, bigdl_type, model.value,
+                               training_rdd, criterion,
+                               optim_method if optim_method else SGD(), end_trigger, batch_size)
+        elif isinstance(training_rdd, DataSet):
+            self.bigdl_type = bigdl_type
+            self.value = callBigDlFunc(self.bigdl_type, "createDistriOptimizerFromDataSet",
+                                       model.value, training_rdd, criterion,
+                                       optim_method if optim_method else SGD(),
+                                       end_trigger, batch_size)
 
 
 class LocalOptimizer(BaseOptimizer):

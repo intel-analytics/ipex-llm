@@ -19,7 +19,7 @@ import java.nio.ByteOrder
 
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, DataFormat}
-import com.intel.analytics.bigdl.nn.ops.Conv2DTranspose
+import com.intel.analytics.bigdl.nn.tf.Conv2DTranspose
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import org.tensorflow.framework.NodeDef
 

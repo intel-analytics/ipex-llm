@@ -19,10 +19,11 @@ package com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.serializer.DataConverter.ArrayConverter
 import com.intel.analytics.bigdl.utils.serializer._
+import com.intel.analytics.bigdl.utils.serializer.converters.DataConverter
+import com.intel.analytics.bigdl.utils.serializer.converters.DataConverter.ArrayConverter
 import com.intel.analytics.bigdl.utils.{T, Table}
-import serialization.Bigdl.{AttrValue, BigDLModule}
+import com.intel.analytics.bigdl.serialization.Bigdl.{AttrValue, BigDLModule}
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
@@ -162,10 +163,6 @@ class MultiRNNCell[T : ClassTag](val cells: Array[Cell[T]])(implicit ev: TensorN
     this.gradInput = error
     gradInput(hidDim) = outputGradStates
     gradInput
-  }
-
-  override def zeroGradParameters(): Unit = {
-    cells.foreach(_.zeroGradParameters())
   }
 
   override def reset(): Unit = {

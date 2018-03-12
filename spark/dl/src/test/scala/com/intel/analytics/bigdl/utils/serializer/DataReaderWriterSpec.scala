@@ -19,6 +19,7 @@ import java.io._
 
 import com.google.protobuf.ByteString
 import com.intel.analytics.bigdl.tensor.Storage
+import com.intel.analytics.bigdl.utils.serializer.converters._
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 class DataReaderWriterSpec extends FlatSpec with Matchers with BeforeAndAfter {

@@ -91,4 +91,42 @@ object Expand {
     new Expand(meansR, meansG, meansB, minExpandRatio, maxExpandRatio)
 }
 
+/**
+ * expand image with given expandHeight and expandWidth,
+ * put the original image to the center of expanded image
+ * @param expandHeight height expand to
+ * @param expandWidth width expand to
+ */
+class FixExpand(expandHeight: Int, expandWidth: Int) extends FeatureTransformer {
+  override def transformMat(feature: ImageFeature): Unit = {
+    val input = feature.opencvMat()
+    var output: OpenCVMat = null
+    try {
+      val width = input.width()
+      val height = input.height()
+      require(width <= expandWidth,
+        s"width ${width} of input mat is not <= expandWidth $expandWidth")
+      output = new OpenCVMat()
+      // Get new height and width
+      val topPad = ((expandHeight - input.height()) / 2).floor
+      val leftPad = ((expandWidth - input.width()) / 2).floor
+      val bboxRoi = new Rect(leftPad.toInt, topPad.toInt, width, height)
+      output.create(expandHeight, expandWidth, input.`type`())
+      input.copyTo(output.submat(bboxRoi))
+      output.copyTo(input)
+      feature(ImageFeature.boundingBox) =
+        BoundingBox(leftPad, topPad, leftPad + width, topPad + height)
+    } finally {
+      if (null != output) {
+        output.release()
+      }
+    }
+  }
+}
+
+object FixExpand {
+  def apply(expandHeight: Int, expandWidth: Int): FixExpand =
+    new FixExpand(expandHeight, expandWidth)
+}
+
 

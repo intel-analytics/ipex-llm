@@ -16,6 +16,7 @@
 package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl._
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 
@@ -35,7 +36,7 @@ class Bottle[T: ClassTag](
   val module: Module[T],
   val nInputDim: Int = 2,
   val nOutputDim1: Int = Int.MaxValue)
- (implicit ev: TensorNumeric[T]) extends Container[Tensor[T], Tensor[T], T] {
+ (implicit ev: TensorNumeric[T]) extends DynamicContainer[Tensor[T], Tensor[T], T] {
 
   private val nOutputDim = if (nOutputDim1 == Int.MaxValue) nInputDim else nOutputDim1
 

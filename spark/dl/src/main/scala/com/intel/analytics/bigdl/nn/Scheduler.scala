@@ -16,16 +16,12 @@
 package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.Module
+import com.intel.analytics.bigdl.nn.FrameManager.Frame
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.nn.ops._
-import com.intel.analytics.bigdl.nn.tf.{ControlDependency, WithoutInput}
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.{Edge, Node, T}
+import com.intel.analytics.bigdl.nn.tf._
 
 import scala.collection.mutable
-import scala.reflect.ClassTag
 
 /**
  * Scheduler of a graph execution. It supports a graph with cycle. Please note that the cycle must
@@ -46,6 +42,7 @@ private[bigdl] class Scheduler[T] (
 
   private val readyQueue = new mutable.Queue[ModuleNode[T]]()
   private val nodeStatus = new NodeStatusManager[T]()
+  private val frameManayger = new FrameManager[T]()
 
   /**
    * User must reset the scheduler after first use it or finish a graph execution
@@ -81,13 +78,22 @@ private[bigdl] class Scheduler[T] (
    */
   def fetch(): ModuleNode[T] = {
     var node = readyQueue.dequeue()
-    while (nodeStatus.isConst(node) || node.element.isInstanceOf[ControlDependency[_]]) {
-      if (!nodeStatus.isConst(node)) {
-        schedule(node)
-      }
+    while (skipExecution(node)) {
       node = readyQueue.dequeue()
     }
+
     node
+  }
+
+  private def skipExecution(node: ModuleNode[T]): Boolean = {
+    if (nodeStatus.isConst(node)) return true
+
+    if (node.element.isInstanceOf[ControlDependency[_]]) {
+      schedule(node)
+      return true
+    }
+
+    return false
   }
 
   /**
@@ -95,6 +101,29 @@ private[bigdl] class Scheduler[T] (
    * @param node
    */
   def schedule(node: ModuleNode[T]): Unit = {
+    val curFrame = frameManayger(node)
+
+    val nextNodeFrame = if (node.element.isInstanceOf[Enter[_]]) {
+      val e = node.element.asInstanceOf[Enter[_]]
+      Some(frameManayger.createFrame(e.frame, curFrame))
+    } else if (node.element.isInstanceOf[LoopCondition[_]]) {
+      require(curFrame.isDefined, "LoopCondition should be in a frame")
+      val f = curFrame.get
+      require(f.barrier.get() == 0, "frame barrier should be 0 when execute loop condition")
+      f.barrier.set(node.nextNodes.size)
+      curFrame
+    } else if (node.element.isInstanceOf[NextIteration[_, _]]) {
+      require(curFrame.isDefined, "NextIteration should be in a frame")
+      curFrame
+    } else if (node.element.isInstanceOf[Exit[_]]) {
+      require(curFrame.isDefined, "Exit should be in a frame")
+      val f = curFrame.get
+      f.barrier.set(0)
+      f.parent
+    } else {
+      curFrame
+    }
+
     if (!nodeStatus.isConst(node)) {
       // Update status of current node
       nodeStatus(node) = if (node.prevNodes.length == 0) {
@@ -117,25 +146,38 @@ private[bigdl] class Scheduler[T] (
     node.element match {
       case s: SwitchOps[_] =>
         val switchNode = node.asInstanceOf[SwitchControlNode[Module[T]]]
-        selectNexts(switchNode.availableNodes(), node)
+        selectNexts(switchNode.availableNodes(), node, nextNodeFrame)
       case _ =>
-        selectNexts(node.nextNodes, node)
+        selectNexts(node.nextNodes, node, nextNodeFrame)
     }
   }
 
-  private def selectNexts(candidateNodes: Seq[ModuleNode[T]], curNode: ModuleNode[T]): Unit = {
+  private def startNextIteration(frame: Frame[T]): Unit = {
+    // Wake up the waiting nodes
+    frame.waitingNodes.foreach(readyQueue.enqueue(_))
+    frame.waitingNodes.clear()
+
+    // As frame is refreshed, mark all nodes in the frame are not ready
+    frame.nodes.filterNot(_.element.isInstanceOf[NextIteration[_, _]]).foreach(n => {
+      nodeStatus.unset(n)
+    })
+  }
+
+  private def selectNexts(candidateNodes: Seq[ModuleNode[T]], curNode: ModuleNode[T],
+    frame: Option[Frame[T]]): Unit = {
     val nodeSet = new mutable.LinkedHashSet[ModuleNode[T]]()
     candidateNodes.foreach(nodeSet.add(_))  // remove duplicate nodes and keep the order
+
     nodeSet.filter(n => executableNodes.contains(n.element.getName())).foreach(nextNode => {
       if (nextNode.element.isInstanceOf[MergeOps[_]]) {
         val merge = nextNode.element.asInstanceOf[MergeOps[_]]
         require(nodeStatus.notExecuted(nextNode), s"Merge node(${nextNode.element.getName()}) " +
           s"should not be executed twice out of loop or in a same iteration of a loop")
         merge.setSwitch(nextNode.prevNodes.indexOf(curNode) + 1)
-        readyQueue.enqueue(nextNode)
+        enQueue(nextNode, frame)
       } else {
         if (isNodeReady(nextNode)) {
-          readyQueue.enqueue(nextNode)
+          enQueue(nextNode, frame)
         }
       }
     })
@@ -152,6 +194,20 @@ private[bigdl] class Scheduler[T] (
     })
 
     return true
+  }
+
+  private def enQueue(node: ModuleNode[T], frame: Option[Frame[T]]): Unit = {
+    if (node.element.isInstanceOf[NextIteration[_, _]]) {
+      require(frame.isDefined, "current node should be in a frame")
+      frameManayger.pend(node, frame.get)
+      nodeStatus.unset(node) // mark current node is in not ready status
+      if (frame.get.barrier.get() == 0) {
+        startNextIteration(frame.get)
+      }
+    } else {
+      frame.foreach(frameManayger.enter(node, _))
+      readyQueue.enqueue(node)
+    }
   }
 }
 
@@ -211,6 +267,14 @@ object Scheduler {
         }
       }
       this
+    }
+
+    /**
+     * Remove status of node.
+     * @param node
+     */
+    def unset(node: ModuleNode[T]): Unit = {
+      nodeStatus.remove(node.element.getName())
     }
   }
 

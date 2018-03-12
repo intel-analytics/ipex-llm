@@ -1,5 +1,3 @@
-
----
 ## **Latest Master**
 
 [Master Docs](https://bigdl-project.github.io/master)

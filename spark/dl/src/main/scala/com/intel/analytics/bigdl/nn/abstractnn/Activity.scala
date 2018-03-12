@@ -40,6 +40,32 @@ trait Activity {
   def isTable: Boolean
 }
 
+/**
+ * Sometimes a module may not have gradInput in the backward(e.g. some operation layer or
+ * stopGradient in a Graph). This is allowed when the gradInput is not used anywhere.
+ *
+ * In such case, the gradInput of the module should be marked as EmptyGradInput. This class make
+ * sure an error will happen when user try to use such gradInput.
+ */
+class EmptyGradInput private[abstractnn](moduleName: String) extends Activity with Serializable {
+
+  override def toTensor[D](implicit ev: TensorNumeric[D]): Tensor[D] =
+    throw new UnsupportedOperationException(s"The gradInput of $moduleName is empty. You should" +
+      s"not use it anywhere")
+
+  override def toTable: Table =
+    throw new UnsupportedOperationException(s"The gradInput of $moduleName is empty. You should" +
+      s"not use it anywhere")
+
+  override def isTensor: Boolean =
+    throw new UnsupportedOperationException(s"The gradInput of $moduleName is empty. You should" +
+      s"not use it anywhere")
+
+  override def isTable: Boolean =
+    throw new UnsupportedOperationException(s"The gradInput of $moduleName is empty. You should" +
+      s"not use it anywhere")
+}
+
 object Activity {
   /**
    * Allocate a data instance by given type D and numeric type T
@@ -86,4 +112,6 @@ object Activity {
     }
     buffer.asInstanceOf[D]
   }
+
+  def emptyGradInput(name: String): EmptyGradInput = new EmptyGradInput(name)
 }

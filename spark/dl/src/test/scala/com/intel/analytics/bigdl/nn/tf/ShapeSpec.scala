@@ -18,7 +18,10 @@ package com.intel.analytics.bigdl.nn.tf
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
+
+import scala.util.Random
 
 class ShapeSpec extends FlatSpec with Matchers {
 
@@ -38,5 +41,13 @@ class ShapeSpec extends FlatSpec with Matchers {
       T(0.0f, 0.0f),
       T(0.0f, 0.0f)
     )))
+  }
+}
+
+class ShapeSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val shape = Shape[Float]().setName("shape")
+    val input = Tensor[Float](3).apply1(_ => Random.nextFloat())
+    runSerializationTest(shape, input)
   }
 }

@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.utils.tf.loaders
 import java.nio.ByteOrder
 
 import com.intel.analytics.bigdl.Module
-import com.intel.analytics.bigdl.nn.ops.LRNGrad
+import com.intel.analytics.bigdl.nn.tf.{LRNGrad => LRNGradOps}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.tf.Context
 import org.tensorflow.framework.NodeDef
@@ -36,6 +36,6 @@ class LRNGrad extends TensorflowOpsLoader {
     val alpha = getFloat(nodeDef.getAttrMap, "alpha")
     val beta = getFloat(nodeDef.getAttrMap, "beta")
 
-    LRNGrad[T](size, k, alpha, beta)
+    LRNGradOps[T](size, k, alpha, beta)
   }
 }

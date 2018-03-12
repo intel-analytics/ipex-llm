@@ -18,7 +18,10 @@ package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils.LayerException
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
+
+import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Parallel
 class ConcatSpec extends FlatSpec with Matchers {
@@ -85,5 +88,15 @@ class ConcatSpec extends FlatSpec with Matchers {
     }
     val contains = caught.error.getMessage.contains("output size at dimension 1 mismatch")
     contains should be (true)
+  }
+}
+
+class ConcatSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val input = Tensor[Float](2, 2, 2).apply1(e => Random.nextFloat())
+    val concat = Concat[Float](2).setName("concat")
+    concat.add(Abs[Float]())
+    concat.add(Abs[Float]())
+    runSerializationTest(concat, input)
   }
 }

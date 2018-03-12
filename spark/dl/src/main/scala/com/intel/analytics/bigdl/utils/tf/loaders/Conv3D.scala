@@ -18,11 +18,9 @@ package com.intel.analytics.bigdl.utils.tf.loaders
 import java.nio.ByteOrder
 
 import com.intel.analytics.bigdl.Module
-import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, DataFormat}
-import com.intel.analytics.bigdl.nn.ops.{Conv2D, Conv3D}
+import com.intel.analytics.bigdl.nn.tf.{Conv3D => Conv3DOps}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.Node
 import com.intel.analytics.bigdl.utils.tf.Context
 import org.tensorflow.framework.NodeDef
 
@@ -52,13 +50,13 @@ class Conv3D extends TensorflowOpsLoader {
         val dW = strideList(2)
         val dH = strideList(3)
 
-        Conv3D[T](dT, dW, dH, pT, pW, pH, DataFormat.NHWC)
+        Conv3DOps[T](dT, dW, dH, pT, pW, pH, DataFormat.NHWC)
       case "NCDHW" =>
         require(strideList(1) == 1, s"not support strides on depth")
         val dT = strideList(2)
         val dW = strideList(3)
         val dH = strideList(4)
-        Conv3D[T](dT, dW, dH, pT, pW, pH, DataFormat.NCHW)
+        Conv3DOps[T](dT, dW, dH, pT, pW, pH, DataFormat.NCHW)
       case _ =>
         throw new IllegalArgumentException(s"not supported data format: $format")
     }

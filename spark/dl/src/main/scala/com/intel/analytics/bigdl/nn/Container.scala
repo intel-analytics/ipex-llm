@@ -22,6 +22,7 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{T, Table}
 
+import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
@@ -29,7 +30,7 @@ import scala.reflect.ClassTag
  * [[Container]] is an abstract [[AbstractModule]] class which
  * declares methods defined in all containers. A container usually
  * contain some other modules in the `modules` variable. It overrides
- * many module methods such that calls are propogated to the contained
+ * many module methods such that calls are propagated to the contained
  * modules.
  *
  * @tparam A Input data type
@@ -45,42 +46,29 @@ abstract class Container[A <: Activity : ClassTag,
   val modules: ArrayBuffer[AbstractModule[Activity, Activity, T]]
   = ArrayBuffer[AbstractModule[Activity, Activity, T]]()
 
-  /**
-   * Add a sub-module to the contained `modules`
-   *
-   * @param module module to be add
-   * @return this container
-   */
-  def add(module: AbstractModule[_ <: Activity, _ <: Activity, T]): this.type = {
-    modules += module.asInstanceOf[AbstractModule[Activity, Activity, T]]
-    this
-  }
+  override private[bigdl] def isCompatibleWithKeras(): Boolean = false
 
-  override def zeroGradParameters(): Unit = {
-    modules.foreach(_.zeroGradParameters())
-  }
-
-  override def updateParameters(learningRate: T): Unit = {
-    modules.foreach(_.updateParameters(learningRate))
+  override private[bigdl] def isCompatibleWithTorch(): Boolean = {
+    modules.filter(!_.isCompatibleWithTorch()).length <= 0
   }
 
   override def reset(): Unit = {
     modules.foreach(_.reset())
   }
 
-  override def training(): this.type = {
+  final override def training(): this.type = {
     train = true
     modules.foreach(_.training())
     this
   }
 
-  override def evaluate(): this.type = {
+  final override def evaluate(): this.type = {
     train = false
     modules.foreach(_.evaluate())
     this
   }
 
-  override def checkEngineType(): this.type = {
+  final override def checkEngineType(): this.type = {
     modules.foreach(_.checkEngineType())
     this
   }
@@ -226,5 +214,26 @@ abstract class Container[A <: Activity : ClassTag,
         None
       }
     }
+  }
+
+  /**
+   * Check if some module is duplicated in the model
+   */
+  private[bigdl] override final def checkDuplicate(
+    record: mutable.HashSet[Int] = mutable.HashSet()
+  ): Unit = {
+    val errMsg = "Some module is duplicate in the current model: "
+    val curId = System.identityHashCode(this)
+    require(!record.contains(curId), errMsg + this.getName())
+    record.add(curId)
+    modules.foreach(m => {
+      if (m.isInstanceOf[Container[_, _, _]]) {
+        m.asInstanceOf[Container[_, _, _]].checkDuplicate(record)
+      } else {
+        val mId = System.identityHashCode(m)
+        require(!record.contains(mId), errMsg + m.getName())
+        record.add(mId)
+      }
+    })
   }
 }

@@ -17,7 +17,7 @@
 package com.intel.analytics.bigdl.models.utils
 
 import com.intel.analytics.bigdl.Module
-import com.intel.analytics.bigdl.tensor.{Tensor}
+import com.intel.analytics.bigdl.tensor.{QuantizedTensor, QuantizedType, Storage, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import org.apache.spark.SparkContext
 import org.apache.spark.broadcast.Broadcast
@@ -32,11 +32,14 @@ import scala.reflect.ClassTag
  * the model. And before broadcasting please make sure the model's parameter is compacted.
  *
  * @tparam T data type
+ * @param applyProtoBuffer it will use proto buffer serialization for broadcasting if set true
  */
-class ModelBroadcast[T: ClassTag]()(implicit ev: TensorNumeric[T]) extends Serializable {
+class ModelBroadcast[T: ClassTag](applyProtoBuffer: Boolean = false)
+  (implicit ev: TensorNumeric[T]) extends Serializable {
 
   private var broadcastModel: Broadcast[Module[T]] = _
   private var broadcastParameters: Broadcast[Array[Tensor[T]]] = _
+
 
   /**
    * broadcast the model
@@ -47,11 +50,15 @@ class ModelBroadcast[T: ClassTag]()(implicit ev: TensorNumeric[T]) extends Seria
    * @return this
    */
   def broadcast(sc: SparkContext, model: Module[T]): this.type = {
-    val weightsBias = getAndClearWeightBias(model.parameters())
-    broadcastModel = sc.broadcast(model.cloneModule())
-    broadcastParameters = sc.broadcast(weightsBias)
-    putWeightBias(weightsBias, model)
-    initGradWeightBias(weightsBias, model)
+    if (applyProtoBuffer) {
+      broadcastModel = sc.broadcast(model)
+    } else {
+      val weightsBias = getAndClearWeightBias(model.parameters())
+      broadcastModel = sc.broadcast(model.cloneModule())
+      broadcastParameters = sc.broadcast(weightsBias)
+      putWeightBias(weightsBias, model)
+      initGradWeightBias(weightsBias, model)
+    }
     this
   }
 
@@ -63,19 +70,67 @@ class ModelBroadcast[T: ClassTag]()(implicit ev: TensorNumeric[T]) extends Seria
    * @return model
    */
   def value(initGradient: Boolean = false): Module[T] = {
-    val localModel = broadcastModel.value.cloneModule()
-    putWeightBias(broadcastParameters.value, localModel)
-    if (initGradient) {
-      initGradWeightBias(broadcastParameters.value, localModel)
+    if (applyProtoBuffer) {
+      val localModel = broadcastModel.value.clone(false)
+      if (initGradient) {
+        initGradWeightBias(getWeightBias(localModel.parameters()), localModel)
+      }
+      localModel
+    } else {
+      val localModel = broadcastModel.value.cloneModule()
+      putWeightBias(broadcastParameters.value, localModel)
+      if (initGradient) {
+        initGradWeightBias(broadcastParameters.value, localModel)
+      }
+      localModel
     }
-    localModel
   }
+
+  private def getWeightBias(parameters: (Array[Tensor[T]], Array[Tensor[T]]))
+  : Array[Tensor[T]] = {
+    if (parameters._1.length != 0) {
+      var i = 0
+      val weightsBias = new Array[Tensor[T]](parameters._1.length)
+      val isQuantized = parameters._1.exists(_.getTensorType == QuantizedType)
+      val (isCompacted, storage) = if (!isQuantized) {
+        val storage = Storage(parameters._1(0).storage.array())
+        (parameters._1.map(_.nElement()).sum == storage.length(), storage)
+      } else {
+        (false, null)
+      }
+
+      // get weight and bias
+      while (i < parameters._1.length) {
+        if (parameters._1(i) != null) {
+          val wb = parameters._1(i)
+          wb.getTensorType match {
+            case QuantizedType =>
+              val quantTensor = wb.asInstanceOf[QuantizedTensor[T]]
+              weightsBias(i) = QuantizedTensor[T](quantTensor.getStorage, quantTensor.maxOfRow,
+                quantTensor.minOfRow, quantTensor.sumOfRow, quantTensor.size(), quantTensor.params)
+            case _ =>
+              weightsBias(i) = if (isCompacted) {
+                Tensor[T](storage, wb.storageOffset(), wb.size(), wb.stride())
+              } else {
+                Tensor[T](Storage(wb.storage().array()), wb.storageOffset(), wb.size(), wb.stride())
+              }
+          }
+          i += 1
+        }
+      }
+      weightsBias
+    } else {
+      // just return an empty array when parameters is empty.
+      Array()
+    }
+  }
+
 }
 
 
 object ModelBroadcast {
-  def apply[@specialized(Float, Double) T: ClassTag]()
+  def apply[@specialized(Float, Double) T: ClassTag](applyProtoBuffer: Boolean = false)
         (implicit ev: TensorNumeric[T]) : ModelBroadcast[T] = {
-    new ModelBroadcast()
+    new ModelBroadcast(applyProtoBuffer)
   }
 }

@@ -15,7 +15,7 @@
  */
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, TensorModule}
+import com.intel.analytics.bigdl.nn.abstractnn.{IdentityOutputShape, TensorModule}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
@@ -30,7 +30,7 @@ import scala.reflect.ClassTag
 @SerialVersionUID(- 3936698382129844874L)
 class SoftSign[T: ClassTag]()
     (implicit ev: TensorNumeric[T])
-  extends TensorModule[T] {
+  extends TensorModule[T] with IdentityOutputShape {
 
   @transient private var temp: Tensor[T] = null
   @transient private var tempGrad: Tensor[T] = null

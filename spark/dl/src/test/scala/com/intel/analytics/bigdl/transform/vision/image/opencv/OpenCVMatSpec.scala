@@ -19,8 +19,9 @@ package com.intel.analytics.bigdl.transform.vision.image.opencv
 import java.io.File
 
 import com.intel.analytics.bigdl.opencv.OpenCV
+import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.transform.vision.image.util.BoundingBox
-import com.intel.analytics.bigdl.utils.Engine
+import com.intel.analytics.bigdl.utils.{Engine, T}
 import org.apache.commons.io.FileUtils
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
@@ -95,6 +96,57 @@ class OpenCVMatSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val bytes2 = OpenCVMat.toBytePixels(mat)
     bytes1._1 should equal(bytes2._1)
   }
+
+  "fromTensor" should "work properly" in {
+    val tensor = Tensor[Float](T(1, 2, 3,
+      1, 2, 3,
+      1, 2, 3,
+      1, 2, 3)).resize(2, 2, 3)
+    val mat = OpenCVMat.fromTensor(tensor)
+    mat.shape() should be (2, 2, 3)
+    OpenCVMat.toFloatPixels(mat)._1 should equal(Array[Float](1, 2, 3,
+      1, 2, 3,
+      1, 2, 3,
+      1, 2, 3))
+  }
+
+  "fromFloats" should "work properly" in {
+    val arr = Array[Float](1, 2, 3,
+      1, 2, 3,
+      1, 2, 3,
+      1, 2, 3)
+    val mat = OpenCVMat.fromFloats(arr, 2, 2)
+    mat.shape() should be (2, 2, 3)
+    OpenCVMat.toFloatPixels(mat)._1 should equal(Array[Float](1, 2, 3,
+      1, 2, 3,
+      1, 2, 3,
+      1, 2, 3))
+  }
+
+  "fromTensor CHW" should "work properly" in {
+    val tensor = Tensor[Float](T(1, 2, 3,
+      1, 2, 3,
+      1, 2, 3,
+      1, 2, 3)).resize(2, 2, 3).transpose(1, 3).transpose(2, 3)
+    val mat = OpenCVMat.fromTensor(tensor, "CHW")
+    mat.shape() should be (2, 2, 3)
+    OpenCVMat.toFloatPixels(mat)._1 should equal(Array[Float](1, 2, 3,
+      1, 2, 3,
+      1, 2, 3,
+      1, 2, 3))
+  }
+
+  "fromTensor offset not equal to 0" should "work properly" in {
+    val tensor = Tensor[Float](T(4, 5, 6,
+      7, 8, 9,
+      1, 2, 3,
+      1, 2, 3)).resize(2, 2, 3).narrow(1, 2, 1)
+    val mat = OpenCVMat.fromTensor(tensor)
+    mat.shape() should be (1, 2, 3)
+    OpenCVMat.toFloatPixels(mat)._1 should equal(Array[Float](1, 2, 3,
+      1, 2, 3))
+  }
+
 
 
   var sc: SparkContext = null

@@ -26,7 +26,7 @@ def main():
     saver = tf.train.import_meta_graph(argv[1])
     with tf.Session() as sess:
         saver.restore(sess, argv[2])
-        dump_model(argv[3], sess)
+        dump_model(argv[3], None, sess, argv[2])
 
 if __name__ == "__main__":
     main()

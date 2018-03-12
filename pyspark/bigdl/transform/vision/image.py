@@ -559,13 +559,21 @@ class MatToTensor(FeatureTransformer):
 class AspectScale(FeatureTransformer):
     """
     Resize the image, keep the aspect ratio. scale according to the short edge
-    :param scale scale size, apply to short edge
+    :param min_size scale size, apply to short edge
     :param scale_multiple_of make the scaled size multiple of some value
     :param max_size max size after scale
+    :param resize_mode if resizeMode = -1, random select a mode from
+    (Imgproc.INTER_LINEAR, Imgproc.INTER_CUBIC, Imgproc.INTER_AREA,
+    Imgproc.INTER_NEAREST, Imgproc.INTER_LANCZOS4)
+    :param use_scale_factor if true, scale factor fx and fy is used, fx = fy = 0
+    :aram min_scale control the minimum scale up for image
     """
 
-    def __init__(self, scale, scale_multiple_of = 1, max_size = 1000, bigdl_type="float"):
-        super(AspectScale, self).__init__(bigdl_type, scale, scale_multiple_of, max_size)
+    def __init__(self, min_size, scale_multiple_of = 1, max_size = 1000,
+                 resize_mode = 1, use_scale_factor=True, min_scale=-1.0,
+                 bigdl_type="float"):
+        super(AspectScale, self).__init__(bigdl_type, min_size, scale_multiple_of, max_size,
+                                          resize_mode, use_scale_factor, min_scale)
         
 class RandomAspectScale(FeatureTransformer):
     """
@@ -604,6 +612,15 @@ class PixelBytesToMat(FeatureTransformer):
     def __init__(self, byte_key = "bytes", bigdl_type="float"):
         super(PixelBytesToMat, self).__init__(bigdl_type, byte_key)
 
+class FixExpand(FeatureTransformer):
+    """
+    Expand image with given expandHeight and expandWidth,
+    put the original image to the center of expanded image
+    :param expand_height height expand to
+    :param expand_width width expand to
+    """
+    def __init__(self, expand_height, expand_width, bigdl_type="float"):
+        super(FixExpand, self).__init__(bigdl_type, expand_height, expand_width)
 
 class SeqFileFolder(JavaValue):
 

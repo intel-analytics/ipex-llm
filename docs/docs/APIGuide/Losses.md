@@ -2255,3 +2255,122 @@ loss = transCriterion.forward(input, target)
 > loss
 15.166667
 ```
+
+## DotProductCriterion ##
+**Scala:**
+```scala
+val criterion = DotProductCriterion(sizeAverage=false)
+```
+**Python:**
+```python
+criterion = DotProductCriterion(sizeAverage=False)
+```
+
+Compute the dot product of input and target tensor.
+Input and target are required to have the same size.
+
+* sizeAverage:  whether to average over each observations in the same batch
+
+**Scala example:**
+```scala
+import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+
+val criterion = DotProductCriterion()
+val input = Tensor[Float](2, 3).range(1, 6, 1)
+val target = Tensor[Float](2, 3).range(2, 13, 2)
+
+val loss = criterion.forward(input, target)
+
+> loss
+182.0
+
+```
+
+**Python example:**
+```python
+import numpy as np
+from bigdl.nn.criterion import *
+from bigdl.optim.optimizer import *
+from bigdl.util.common import *
+
+criterion = DotProductCriterion()
+input = np.arange(1, 7, 1).astype("float32")
+input = input.reshape(2, 3)
+target = np.arange(2, 13, 2).astype("float32")
+target = target.reshape(2, 3)
+
+loss = criterion.forward(input, target)
+
+
+> loss
+182.0
+```
+
+## PGCriterion ##
+**Scala:**
+```scala
+val criterion = PGCriterion(sizeAverage=false)
+```
+**Python:**
+```python
+criterion = PGCriterion(sizeAverage=False)
+```
+
+The Criterion to compute the negative policy gradient given a
+multinomial distribution and the sampled action and reward.
+
+The input to this criterion should be a 2-D tensor representing
+a batch of multinomial distribution, the target should also be
+a 2-D tensor with the same size of input, representing the sampled
+action and reward/advantage with the index of non-zero element in the vector
+represents the sampled action and the non-zero element itself represents
+the reward. If the action is space is large, you should consider using
+SparseTensor for target.
+
+The loss computed is simple the standard policy gradient,
+
+   loss = - 1/n * sum(R_{n} dot_product log(P_{n}))
+
+ where R_{n} is the reward vector, and P_{n} is the input distribution.
+ 
+ 
+* sizeAverage:  whether to average over each observations in the same batch
+
+**Scala example:**
+```scala
+import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+
+val criterion = PGCriterion()
+val input = Tensor[Float](2, 3).range(1, 6, 1)
+val target = Tensor[Float](2, 3).range(2, 13, 2)
+
+val loss = criterion.forward(input, target)
+
+> loss
+-58.05011
+
+```
+
+**Python example:**
+```python
+import numpy as np
+from bigdl.nn.criterion import *
+from bigdl.optim.optimizer import *
+from bigdl.util.common import *
+
+criterion = PGCriterion()
+input = np.arange(1, 7, 1).astype("float32")
+input = input.reshape(2, 3)
+target = np.arange(2, 13, 2).astype("float32")
+target = target.reshape(2, 3)
+
+loss = criterion.forward(input, target)
+
+
+> loss
+-58.05011
+```

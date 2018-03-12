@@ -570,6 +570,7 @@ class VolumetricFullConvolution[T: ClassTag](
         1, 1, 1,
         columns.asInstanceOf[Tensor[Float]]
       )
+      case t => throw new NotImplementedError(s"$t is not supported")
     }
 
     // M,N,K are dims of matrix A and B
@@ -724,32 +725,11 @@ class VolumetricFullConvolution[T: ClassTag](
     }
   }
 
-  override def updateParameters(learningRate: T): Unit = {
-    weight.map(gradWeight, (a, b) => ev.minus(a, ev.times(learningRate, b)))
-    bias.map(gradBias, (a, b) => ev.minus(a, ev.times(learningRate, b)))
-  }
-
-  override def zeroGradParameters(): Unit = {
-    gradWeight.zero()
-    if(!noBias) {
-      gradBias.zero()
-    }
-  }
-
   override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
     if (null == bias) {
       (Array(this.weight), Array(this.gradWeight))
     } else {
       (Array(this.weight, this.bias), Array(this.gradWeight, this.gradBias))
-    }
-  }
-
-  override def getParametersTable(): Table = {
-    if (null == bias) {
-      T(getName() -> T("weight" -> weight, "gradWeight" -> gradWeight))
-    } else {
-      T(getName() -> T("weight" -> weight, "bias" -> bias,
-        "gradWeight" -> gradWeight, "gradBias" -> gradBias))
     }
   }
 

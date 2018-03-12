@@ -24,9 +24,10 @@ import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.nn.abstractnn.DataFormat
 import com.intel.analytics.bigdl.optim.{L2Regularizer, SGD}
 import com.intel.analytics.bigdl.utils.RandomGenerator._
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 
 import scala.util.Random
-import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.utils.{Shape, T, TestUtils}
 
 @com.intel.analytics.bigdl.tags.Parallel
 class SpatialConvolutionSpec extends FlatSpec with Matchers {
@@ -365,8 +366,10 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
       gradInputNHWC.transpose(2, 4).transpose(3, 4)
         .sub(gradInput).pow(2).sum() should be < 1e-7
 
-      layer.updateParameters(0.01)
-      layerNHWC.updateParameters(0.01)
+      val (weight1, grad1) = layer.getParameters()
+      weight1.add(-0.01, grad1)
+      val (weight2, grad2) = layerNHWC.getParameters()
+      weight2.add(-0.01, grad2)
 
       val transWeight = layerNHWC.weight.transpose(2, 5).transpose(3, 4).transpose(4, 5)
       transWeight.sub(layer.weight).pow(2).sum() should be < 1e-7
@@ -2818,13 +2821,14 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
     var gradOutput: Tensor[Double] = null
     var gradInput: Tensor[Double] = null
 
+    val (w, g) = model.getParameters()
     for (k <- 1 to maxIter) {
       model.zeroGradParameters()
       output = model.forward(input(k)).toTensor[Double]
       err = loss.forward(output, t)
       gradOutput = loss.backward(output, t)
       gradInput = model.backward(input(k), gradOutput).toTensor[Double]
-      model.updateParameters(0.001)
+      w.add(-0.001, g)
     }
 
     input(maxIter).map(exInput, (v1, v2) => {
@@ -3025,5 +3029,24 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
     layer3.equals(layer) should be (false)
     layer3.weight.copy(layer.weight)
     layer3.equals(layer) should be (false)
+  }
+
+  "SpatialConvolution computeOutputShape NCHW" should "work properly" in {
+    val layer = SpatialConvolution[Float](3, 5, 2, 2)
+    TestUtils.compareOutputShape(layer, Shape(3, 12, 12)) should be (true)
+  }
+
+  "SpatialConvolution computeOutputShape NHWC" should "work properly" in {
+    val layer = SpatialConvolution[Float](4, 5, 2, 2, format = DataFormat.NHWC)
+    TestUtils.compareOutputShape(layer, Shape(12, 12, 4)) should be (true)
+  }
+}
+
+class SpatialConvolutionSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val spatialConvolution = SpatialConvolution[Float](3, 4, 2, 2).
+      setName("spatialConvolution")
+    val input = Tensor[Float](1, 3, 5, 5).apply1( e => Random.nextFloat())
+    runSerializationTest(spatialConvolution, input)
   }
 }
