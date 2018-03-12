@@ -665,13 +665,6 @@ class TestSimple():
         assert node == 1
         assert core == 4
 
-    def tes_read_image_frame(self):
-        init_engine()
-        resource_path = os.path.join(os.path.split(__file__)[0], "resources")
-        image_path = os.path.join(resource_path, "pascal/000025.jpg")
-        image_frame = ImageFrame.read(image_path, self.sc)
-        count = image_frame.get_image().count()
-        assert count == 1
 
 if __name__ == "__main__":
     pytest.main([__file__])
