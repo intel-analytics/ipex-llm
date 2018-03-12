@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.keras.nn
 
 import com.intel.analytics.bigdl.example.loadmodel.AlexNet_OWT
 import com.intel.analytics.bigdl.nn.abstractnn.InvalidLayer
-import com.intel.analytics.bigdl.nn.keras.{Activation, Dense, Input, InputLayer, KerasIdentityWrapper, KerasLayerWrapper, Model, Sequential => KSequential}
+import com.intel.analytics.bigdl.nn.keras.{Activation, Dense, Input, InputLayer, KerasIdentityWrapper, Model, Sequential => KSequential}
 import com.intel.analytics.bigdl.nn.{Input => TInput, Sequential => TSequential, _}
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.tensor.Tensor
@@ -83,7 +83,7 @@ class KerasStyleSpec extends BigDLSpecHelper {
       assert(seq.getInputShape().toSingle().sameElements(Array(-1, 10)))
       assert(seq.getOutputShape().toSingle().sameElements(Array(-1, 5)))
     }
-    assert(thrown.getMessage().contains("Reuse module as dest is not allowed"))
+    assert(thrown.getMessage().contains("multiple times"))
   }
 
   "Graph: shared relu" should "not work correctly" in {
@@ -98,7 +98,7 @@ class KerasStyleSpec extends BigDLSpecHelper {
       val out2 = seq.inputs(out1)
       val model = Model(input, out2)
     }
-    assert(thrown.getMessage().contains("Reuse module as dest is not allowed"))
+    assert(thrown.getMessage().contains("multiple times"))
   }
 
   "Graph: shared relu as dest" should "not work correctly" in {
@@ -108,7 +108,7 @@ class KerasStyleSpec extends BigDLSpecHelper {
       val out1 = sharedRelu.inputs(input)
       val out2 = sharedRelu.inputs(Input(inputShape = Shape(10, 20)))
     }
-    assert(thrown.getMessage().contains("Reuse module as dest is not allowed"))
+    assert(thrown.getMessage().contains("multiple times"))
   }
 
   "TSequential" should "work with alex" in {
@@ -148,7 +148,28 @@ class KerasStyleSpec extends BigDLSpecHelper {
       val seq = KSequential[Float]().add(dense1).inputs(node1)
       Model(input, seq)
     }
-    assert(thrown.getMessage().contains("Reuse module as dest is not allowed"))
+    assert(thrown.getMessage().contains("multiple times"))
+  }
+
+  "KGraph" should "not work with shared weights" in {
+    val thrown = intercept[RuntimeException] {
+      val input1 = Input(inputShape = Shape(10))
+      val input2 = Input(inputShape = Shape(10))
+      val l = Dense(10, inputShape = Shape(10))
+      val node1 = l.inputs(input1)
+      val node2 = l.inputs(input2)
+      Model(Array(input1, input2), Array(node1, node2))
+    }
+    assert(thrown.getMessage().contains("multiple times"))
+  }
+
+  "KGraph" should "work with shared input" in {
+    val input1 = Input(inputShape = Shape(10))
+    val l1 = Dense(10, inputShape = Shape(10))
+    val l2 = Dense(10, inputShape = Shape(10))
+    val node1 = l1.inputs(input1)
+    val node2 = l2.inputs(input1)
+    Model(input1, Array(node1, node2))
   }
 
   "Torch style linear and seq and linear" should "not work with keras Model" in {
@@ -223,12 +244,14 @@ class KerasStyleSpec extends BigDLSpecHelper {
     val input2 = Input[Float](inputShape = Shape(10))
     val d1 = Dense[Float](20).setName("dense1").inputs(input1)
     val d2 = Dense[Float](5).setName("dense2").inputs(input2)
-    val multiOutput = Model[Float](Array(input1, input2), Array(d1, d2))
-      .inputs(Array(input1, input2))
+    val multiOutputGraph = Model[Float](Array(input1, input2), Array(d1, d2))
 
+    val input3 = Input[Float](inputShape = Shape(10))
+    val input4 = Input[Float](inputShape = Shape(10))
+    val multiOutput = multiOutputGraph.inputs(Array(input3, input4))
 
     val relu1 = Activation[Float]("relu").inputs(multiOutput(1))
-    val model = Model[Float](Array(input1, input2), relu1)
+    val model = Model[Float](Array(input3, input4), relu1)
     model.forward(T(Tensor[Float](Array(2, 10)).rand(), Tensor[Float](Array(2, 10)).rand()))
     assert(model.getOutputShape().toSingle().sameElements(Array(-1, 20)))
   }

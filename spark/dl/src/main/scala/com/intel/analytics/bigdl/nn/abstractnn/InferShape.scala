@@ -27,10 +27,6 @@ class InvalidLayer(msg: String) extends RuntimeException(msg)
 
 trait InferShape {
 
-  private[bigdl] var usedAsSrc = false
-
-  private[bigdl] var usedAsDest = false
-
   private[bigdl] var _inputShapeValue: Shape = null
 
   private[bigdl] var _outputShapeValue: Shape = null
@@ -87,41 +83,6 @@ trait InferShape {
     throw new RuntimeException("Haven't been implemented yet. Do not use it with Keras Layer")
   }
 
-
-
-  private def ensureNotShared[T: ClassTag](modules : Seq[AbstractModule[_, _, T]]): Unit = {
-    def skip(infer: InferShape): Boolean = {
-      infer.isInstanceOf[TInput[_]] || infer.isInstanceOf[KInput[_]]
-    }
-    // We can add module into Sequential multiple times.
-    if (this.isInstanceOf[KSequential[_]]) {
-      val submodules = this.asInstanceOf[KSequential[_]].getSubModules()
-      if (!submodules.isEmpty) {
-        if (!skip(submodules.last) && submodules.last.usedAsSrc == true) {
-          throw new RuntimeException(s"Reuse module as src is not allowed: $this")
-        }
-        submodules.last.usedAsSrc = true
-      }
-      modules.foreach{module =>
-        if (!skip(this) && module.usedAsDest == true) {
-          throw new RuntimeException(s"Reuse module as dest is not allowed: $this")
-        }
-        module.usedAsDest = true
-      }
-    } else {
-      if (!skip(this) && this.usedAsDest == true) {
-        throw new RuntimeException(s"Reuse module as dest is not allowed: $this")
-      }
-      this.usedAsDest = true
-      modules.foreach{module =>
-        if (!skip(module) && module.usedAsSrc == true) {
-          throw new RuntimeException(s"Reuse module as src is not allowed: $this")
-        }
-        module.usedAsSrc = true
-      }
-    }
-  }
-
   private[bigdl] def excludeInvalidLayers[T: ClassTag]
   (modules : Seq[AbstractModule[_, _, T]]): Unit = {
     val invalidNodes = if (this.isKerasStyle()) {
@@ -139,7 +100,6 @@ trait InferShape {
   private[bigdl] def validateInput[T: ClassTag](modules : Seq[AbstractModule[_, _, T]]): Unit = {
     if (this.isKerasStyle()) {
       require(modules != null && !modules.isEmpty, "Empty input is not allowed")
-      ensureNotShared(modules)
     }
     excludeInvalidLayers(modules)
   }
