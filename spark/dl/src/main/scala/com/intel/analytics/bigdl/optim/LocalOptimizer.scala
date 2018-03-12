@@ -196,15 +196,6 @@ class LocalOptimizer[T: ClassTag] (
       val end = System.nanoTime()
       wallClockTime += end - start
       count += batch.size()
-      val hyperParameterLog = optimMethods.map{ case (moduleName, optimMethod) =>
-        optimMethod.updateHyperParameter()
-        val log = optimMethod.getHyperParameter()
-        if (log.isEmpty) {
-          log
-        } else {
-          s"${moduleName}'s hyper parameters: ${log} "
-        }
-      }.reduce(_ + _)
       val head = header(state[Int]("epoch"), count, numSamples, state[Int]("neval"), wallClockTime)
       logger.info(s"$head " +
         s"loss is $loss, iteration time is ${(end - start) / 1e9}s " +
