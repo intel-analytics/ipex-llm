@@ -69,7 +69,6 @@ class VolumetricConvolution[T: ClassTag](
   val gradBias: Tensor[T] = if (withBias) Tensor[T](nOutputPlane) else null
 
   val fInput = Tensor[T]()
-  val fGradInput = Tensor[T]()
 
   private val onesBias = if (withBias) Tensor[T]() else null
   protected var weightMM: Tensor[T] = null
@@ -92,7 +91,6 @@ class VolumetricConvolution[T: ClassTag](
   override def clearState(): this.type = {
     super.clearState()
     fInput.set()
-    fGradInput.set()
     if (withBias) onesBias.set()
     this
   }
@@ -197,8 +195,11 @@ class VolumetricConvolution[T: ClassTag](
     require(input.dim() == 4 || input.dim() == 5,
       s"4D or 5D (batch mode) tensor expected for input, but got: ${ input.dim() }d")
 
+    val fGradInput = Tensor[T]()
     VolumetricConvolution.conv3DBackpropInput(input, gradInput, gradOutput, weightMM,
       fGradInput, kT, kW, kH, dT, dW, dH, padT, padW, padH)
+    fGradInput.set()
+
     gradInput
   }
 
