@@ -20,6 +20,7 @@ import com.intel.analytics.bigdl.nn.Sigmoid
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
 
 import scala.util.Random
@@ -132,4 +133,13 @@ class TensorOpSpec extends FlatSpec with Matchers {
       t2Values.map(e => math.ceil(math.pow(e, 3) * 4.5))
   }
 
+}
+
+class TensorOpSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val op = (((TensorOp[Float]() + 1.5f) ** 2) -> TensorOp.sigmoid()
+      ).setName("TensorOP")
+    val input = Tensor[Float](3, 3).apply1(_ => Random.nextFloat())
+    runSerializationTest(op, input)
+  }
 }
