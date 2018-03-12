@@ -36,7 +36,7 @@ if [[ "$JDK_VERSION" > "1.9" ]]; then
     echo Require a jdk 1.8 version
     exit 1
 fi
-if [[ "$JDK_VERSION" < "1.9" ]]; then
+if [[ "$JDK_VERSION" < "1.8" ]]; then
     echo Require a jdk 1.8 version
     exit 1
 fi
