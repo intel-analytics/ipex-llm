@@ -4312,7 +4312,7 @@ class VolumetricConvolution(Layer):
     :param with_bias: whether with bias
     :param wRegularizer: instance of [[Regularizer]] (eg. L1 or L2 regularization), applied to the input weights matrices.
     :param bRegularizer: instance of [[Regularizer]] applied to the bias.
-
+    :param memory_optim: whether run in a memory optimization way which will sacrifice some performance.
 
     >>> volumetricConvolution = VolumetricConvolution(6, 12, 5, 5, 5, 1, 1, 1)
     creating: createVolumetricConvolution
@@ -4333,6 +4333,7 @@ class VolumetricConvolution(Layer):
                  with_bias=True,
                  wRegularizer=None,
                  bRegularizer=None,
+                 memory_optim=False,
                  bigdl_type="float"):
         super(VolumetricConvolution, self).__init__(None, bigdl_type,
                                                     n_input_plane,
@@ -4348,7 +4349,8 @@ class VolumetricConvolution(Layer):
                                                     pad_h,
                                                     with_bias,
                                                     wRegularizer,
-                                                    bRegularizer)
+                                                    bRegularizer,
+                                                    memory_optim)
 
     def set_init_method(self, weight_init_method = None, bias_init_method = None):
         callBigDlFunc(self.bigdl_type, "setInitMethod", self.value,
@@ -5087,8 +5089,9 @@ class ConvLSTMPeephole3D(Layer):
     :param bRegularizer: instance of [[Regularizer]]applied to the bias.
     :param cRegularizer: instance of [[Regularizer]]applied to peephole.
     :param with_peephole: whether use last cell status control a gate.
+    :param memory_optim: whether run in a memory optimization way which will sacrifice some performance.
 
-    >>> convlstm = ConvLSTMPeephole3D(4, 3, 3, 3, 1, -1, L1Regularizer(0.5), L1Regularizer(0.5), L1Regularizer(0.5), L1Regularizer(0.5))
+    >>> convlstm = ConvLSTMPeephole3D(4, 3, 3, 3, 1, -1, L1Regularizer(0.5), L1Regularizer(0.5), L1Regularizer(0.5), L1Regularizer(0.5), false)
     creating: createL1Regularizer
     creating: createL1Regularizer
     creating: createL1Regularizer
@@ -5097,9 +5100,10 @@ class ConvLSTMPeephole3D(Layer):
     '''
 
     def __init__(self, input_size, output_size, kernel_i, kernel_c, stride=1, padding=-1, wRegularizer=None, uRegularizer=None,
-                 bRegularizer=None, cRegularizer=None, with_peephole=True, bigdl_type="float"):
+                 bRegularizer=None, cRegularizer=None, with_peephole=True, memory_optim=False, bigdl_type="float"):
         super(ConvLSTMPeephole3D, self).__init__(None, bigdl_type, input_size, output_size, kernel_i, kernel_c, stride,
-                                                 padding, wRegularizer, uRegularizer, bRegularizer, cRegularizer, with_peephole)
+                                                 padding, wRegularizer, uRegularizer, bRegularizer, cRegularizer, with_peephole,
+                                                 memory_optim)
 
 class Seq2seq(Layer):
     '''

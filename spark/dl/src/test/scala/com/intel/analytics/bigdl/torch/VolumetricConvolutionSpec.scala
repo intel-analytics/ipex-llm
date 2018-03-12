@@ -77,6 +77,56 @@ class VolumetricConvolutionSpec extends TorchSpec {
     output should be (luaOutput)
   }
 
+  "A VolumetricConvolution with memoryOptim true" should "generate correct output" in {
+    torchCheck()
+    val seed = 100
+    RNG.setSeed(seed)
+    val from = 3
+    val to = 2
+    val kt = 2
+    val ki = 2
+    val kj = 2
+    val st = 2
+    val si = 2
+    val sj = 2
+    val padT = 1
+    val padW = 1
+    val padH = 1
+    val outt = 6
+    val outi = 6
+    val outj = 6
+    val int = (outt - 1) * st + kt - padT * 2
+    val ini = (outi - 1) * si + ki - padW * 2
+    val inj = (outj - 1) * sj + kj - padH * 2
+    val layer = new VolumetricConvolution[Double](from, to, kt, ki, kj, st, si, sj,
+      padT, padW, padH, memoryOptim = true)
+
+    val input = Tensor[Double](3, 100, 56, 56).apply1(e => Random.nextDouble())
+
+    val output = layer.updateOutput(input)
+
+    val code = "torch.manualSeed(" + seed + ")\n" +
+      s"layer = nn.VolumetricConvolution($from, $to, $kt, $ki, $kj, $st, $si, $sj, $padT," +
+      s" $padW, $padH)\n" +
+      "weight = layer.weight\n" +
+      "bias = layer.bias \n" +
+      "output = layer:forward(input)"
+
+    val (luaTime, torchResult) = TH.run(code, Map("input" -> input),
+      Array("weight", "bias", "output"))
+
+    val luaWeight = torchResult("weight").asInstanceOf[Tensor[Double]]
+    val luaBias = torchResult("bias").asInstanceOf[Tensor[Double]]
+    val luaOutput = torchResult("output").asInstanceOf[Tensor[Double]]
+
+    val weight = layer.weight
+    val bias = layer.bias
+
+    weight should be (luaWeight)
+    bias should be (luaBias)
+    output should be (luaOutput)
+  }
+
   "A VolumetricConvolution without bias" should "generate correct output" in {
     torchCheck()
     val seed = 100
@@ -152,6 +202,57 @@ class VolumetricConvolutionSpec extends TorchSpec {
     val batch = 3
     val layer = new VolumetricConvolution[Double](from, to, kt, ki, kj, st, si, sj,
       padT, padW, padH)
+
+    val input = Tensor[Double](batch, from, int, inj, ini).apply1(e => Random.nextDouble())
+
+    val output = layer.updateOutput(input)
+
+    val code = "torch.manualSeed(" + seed + ")\n" +
+      s"layer = nn.VolumetricConvolution($from, $to, $kt, $ki, $kj, $st, $si, $sj, $padT," +
+      s" $padW, $padH)\n" +
+      "weight = layer.weight\n" +
+      "bias = layer.bias \n" +
+      "output = layer:forward(input) "
+
+    val (luaTime, torchResult) = TH.run(code, Map("input" -> input),
+      Array("weight", "bias", "output"))
+
+    val luaWeight = torchResult("weight").asInstanceOf[Tensor[Double]]
+    val luaBias = torchResult("bias").asInstanceOf[Tensor[Double]]
+    val luaOutput = torchResult("output").asInstanceOf[Tensor[Double]]
+
+    val weight = layer.weight
+    val bias = layer.bias
+
+    weight should be (luaWeight)
+    bias should be (luaBias)
+    output shouldEqual luaOutput
+  }
+
+  "A VolumetricConvolution with batch input optim memory true" should "generate correct output" in {
+    torchCheck()
+    val seed = 100
+    RNG.setSeed(seed)
+    val from = 3
+    val to = 2
+    val kt = 2
+    val ki = 2
+    val kj = 2
+    val st = 2
+    val si = 2
+    val sj = 2
+    val padT = 1
+    val padW = 1
+    val padH = 1
+    val outt = 6
+    val outi = 6
+    val outj = 6
+    val int = (outt - 1) * st + kt - padT * 2
+    val ini = (outi - 1) * si + ki - padW * 2
+    val inj = (outj - 1) * sj + kj - padH * 2
+    val batch = 3
+    val layer = new VolumetricConvolution[Double](from, to, kt, ki, kj, st, si, sj,
+      padT, padW, padH, memoryOptim = true)
 
     val input = Tensor[Double](batch, from, int, inj, ini).apply1(e => Random.nextDouble())
 

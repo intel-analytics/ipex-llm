@@ -187,12 +187,14 @@ grad input of m is : [[[[-0.02344826 -0.06515953 -0.03618064]
 **Scala:**
 ```scala
 val module = VolumetricConvolution(nInputPlane, nOutputPlane, kT, kW, kH,
-  dT=1, dW=1, dH=1, padT=0, padW=0, padH=0, withBias=true, wRegularizer=null, bRegularizer=null)
+  dT=1, dW=1, dH=1, padT=0, padW=0, padH=0, withBias=true, wRegularizer=null, bRegularizer=null,
+  memoryOptim=false)
 ```
 **Python:**
 ```python
 module = VolumetricConvolution(n_input_plane, n_output_plane, k_t, k_w, k_h,
-  d_t=1, d_w=1, d_h=1, pad_t=0, pad_w=0, pad_h=0, with_bias=true, wRegularizer=null, bRegularizer=null)
+  d_t=1, d_w=1, d_h=1, pad_t=0, pad_w=0, pad_h=0, with_bias=true, wRegularizer=null, bRegularizer=null,
+  memory_optim=False)
 ```
 
 Applies a 3D convolution over an input image composed of several input planes. The input tensor
@@ -219,7 +221,8 @@ As for padding, when padW,padH, padT are all -1, we use a padding algorithm simi
                    (eg. L1 or L2 regularization), applied to the input weights matrices.
 * `bRegularizer` instance of [[Regularizer]]
                    applied to the bias.
- 
+* `memoryOptim` whether run in a memory optimization way which will sacrifice some performance.
+
 **Scala example:**
 ```scala
 val layer = VolumetricConvolution(2, 3, 2, 2, 2, dT=1, dW=1, dH=1,

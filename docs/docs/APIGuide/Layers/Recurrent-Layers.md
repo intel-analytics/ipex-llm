@@ -1053,7 +1053,8 @@ val model = ConvLSTMPeephole3D(
   uRegularizer = null,
   bRegularizer = null,
   cRegularizer = null,
-  withPeephole = true)
+  withPeephole = true,
+  memoryOptim = false)
 ```
 
 **Python:**
@@ -1069,7 +1070,8 @@ model = ConvLSTMPeephole3D(
   uRegularizer=None,
   bRegularizer=None,
   cRegularizer=None,
-  with_peephole = True)
+  with_peephole = True,
+  memory_optim = False)
 ```
 
 Similar to Convlstm2D, it's a Convolution Long Short Term Memory architecture with peephole but for 3 spatial dimension images.
@@ -1094,6 +1096,7 @@ Parameters:
 * `bRegularizer` instance of [[Regularizer]], applied to the bias.
 * `cRegularizer` instance of [[Regularizer]], applied to peephole.
 * `withPeephole` whether use last cell status control a gate
+* `memoryOptim` whether run in a memory optimization way which will sacrifice some performance.
 
 **Scala example:**
 ```scala

@@ -416,9 +416,11 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     uRegularizer: Regularizer[T] = null,
     bRegularizer: Regularizer[T] = null,
     cRegularizer: Regularizer[T] = null,
-    withPeephole: Boolean = true): ConvLSTMPeephole3D[T] = {
+    withPeephole: Boolean = true,
+    memoryOptim: Boolean = false): ConvLSTMPeephole3D[T] = {
     ConvLSTMPeephole3D[T](inputSize, outputSize, kernelI, kernelC, stride, padding,
-      wRegularizer, uRegularizer, bRegularizer, cRegularizer, withPeephole)
+      wRegularizer, uRegularizer, bRegularizer, cRegularizer, withPeephole,
+      memoryOptim)
   }
 
   def createEcho(): Echo[T] = {
@@ -1556,7 +1558,8 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     padH: Int = 0,
     withBias: Boolean = true,
     wRegularizer: Regularizer[T] = null,
-    bRegularizer: Regularizer[T] = null)
+    bRegularizer: Regularizer[T] = null,
+    memoryOptim: Boolean = false)
   : VolumetricConvolution[T] = {
     VolumetricConvolution[T](nInputPlane,
       nOutputPlane,
@@ -1571,7 +1574,8 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
       padH,
       withBias,
       wRegularizer,
-      bRegularizer)
+      bRegularizer,
+      memoryOptim)
   }
 
   def createVolumetricMaxPooling(kT: Int,

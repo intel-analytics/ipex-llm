@@ -46,6 +46,8 @@ import scala.reflect.ClassTag
  * (eg. L1 or L2 regularization), applied to the input weights matrices.
  * @param bRegularizer: instance of [[Regularizer]]
  * applied to the bias.
+ * @param memoryOptim: whether run in a memory optimization way
+  *                   which will sacrifice some performance.
  * @tparam T The numeric type in the criterion, usually which are [[Float]] or [[Double]]
  */
 class VolumetricConvolution[T: ClassTag](
@@ -54,7 +56,8 @@ class VolumetricConvolution[T: ClassTag](
   val dT: Int = 1, val dW: Int = 1, val dH: Int = 1,
   val padT: Int = 0, val padW: Int = 0, val padH: Int = 0, withBias: Boolean = true,
   var wRegularizer: Regularizer[T] = null,
-  var bRegularizer: Regularizer[T] = null
+  var bRegularizer: Regularizer[T] = null,
+  val memoryOptim: Boolean = false
 )(implicit ev: TensorNumeric[T]) extends TensorModule[T] with Initializable {
 
   require(kT > 0 && kW > 0 && kH > 0, "kernel size should be greater than zero," +
@@ -69,6 +72,7 @@ class VolumetricConvolution[T: ClassTag](
   val gradBias: Tensor[T] = if (withBias) Tensor[T](nOutputPlane) else null
 
   val fInput = Tensor[T]()
+  val fGradInput = Tensor[T]()
 
   private val onesBias = if (withBias) Tensor[T]() else null
   protected var weightMM: Tensor[T] = null
@@ -91,6 +95,7 @@ class VolumetricConvolution[T: ClassTag](
   override def clearState(): this.type = {
     super.clearState()
     fInput.set()
+    fGradInput.set()
     if (withBias) onesBias.set()
     this
   }
@@ -181,6 +186,7 @@ class VolumetricConvolution[T: ClassTag](
 
     VolumetricConvolution.conv3d(input, output, weightMM, bias, onesBias, fInput,
       nInputPlane, nOutputPlane, withBias, kT, kW, kH, dT, dW, dH, padT, padW, padH)
+    if (memoryOptim) fInput.set()
     output
   }
 
@@ -195,10 +201,10 @@ class VolumetricConvolution[T: ClassTag](
     require(input.dim() == 4 || input.dim() == 5,
       s"4D or 5D (batch mode) tensor expected for input, but got: ${ input.dim() }d")
 
-    val fGradInput = Tensor[T]()
     VolumetricConvolution.conv3DBackpropInput(input, gradInput, gradOutput, weightMM,
       fGradInput, kT, kW, kH, dT, dW, dH, padT, padW, padH)
-    fGradInput.set()
+
+    if (memoryOptim) fGradInput.set()
 
     gradInput
   }
@@ -209,6 +215,11 @@ class VolumetricConvolution[T: ClassTag](
       gradWeightMM = gradWeight.view(nOutputPlane, nInputPlane * kT * kH * kW)
     }
 
+    if (memoryOptim) {
+      VolumetricConvolution.populateFInput(input, fInput, nInputPlane, nOutputPlane,
+        kT, kW, kH, dT, dW, dH, padT, padW, padH)
+    }
+
     VolumetricConvolution.conv3DBackpropFilter(input, gradOutput, gradWeightMM, gradBias,
       fInput, scaleB, scaleW, withBias)
 
@@ -217,6 +228,10 @@ class VolumetricConvolution[T: ClassTag](
     }
     if (withBias && null != bRegularizer) {
       bRegularizer.accRegularization(bias, gradBias, scaleB)
+    }
+
+    if (memoryOptim) {
+      fInput.set()
     }
   }
 
@@ -233,10 +248,11 @@ object VolumetricConvolution {
     dT: Int = 1, dW: Int = 1, dH: Int = 1,
     padT: Int = 0, padW: Int = 0, padH: Int = 0, withBias: Boolean = true,
     wRegularizer: Regularizer[T] = null,
-    bRegularizer: Regularizer[T] = null
+    bRegularizer: Regularizer[T] = null,
+    memoryOptim: Boolean = false
   )(implicit ev: TensorNumeric[T]): VolumetricConvolution[T] = {
     new VolumetricConvolution[T](nInputPlane, nOutputPlane, kT, kW, kH,
-      dT, dW, dH, padT, padW, padH, withBias, wRegularizer, bRegularizer)
+      dT, dW, dH, padT, padW, padH, withBias, wRegularizer, bRegularizer, memoryOptim)
   }
 
   private[bigdl] def conv3d[T](input: Tensor[T],
