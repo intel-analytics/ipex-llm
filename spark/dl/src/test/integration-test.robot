@@ -93,7 +93,7 @@ Run Spark Test
    Run Shell                        ${submit} --master ${spark_master} --conf "spark.serializer=org.apache.spark.serializer.JavaSerializer" --driver-memory 60g --executor-memory 200g --executor-cores 24 --total-executor-cores 24 --class com.intel.analytics.bigdl.models.inception.TrainInceptionV1 ${jar_path} -b 24 -f ${imagenet_test_data_source} --learningRate 0.1 -e 1
    Log To Console                   begin text classification
    Run Shell                        ${submit} --master ${spark_master} --driver-memory 5g --executor-memory 5g --total-executor-cores 32 --executor-cores 8 --class com.intel.analytics.bigdl.example.textclassification.TextClassifier ${jar_path} --batchSize 128 --baseDir /tmp/text_data --partitionNum 32
-   Remove Input
+
 
 
 Spark2.0 Test Suite
@@ -189,6 +189,6 @@ PySpark1.6 Test Suite
    Run Shell                        ${submit} --master ${spark_tf_163_3_master} --conf "spark.serializer=org.apache.spark.serializer.JavaSerializer" --driver-memory 60g --executor-memory 200g --executor-cores 24 --total-executor-cores 24 --class com.intel.analytics.bigdl.models.inception.TrainInceptionV1 ${jar_path} -b 24 -f ${imagenet_test_data_source} --learningRate 0.1 -e 1
    Log To Console                   begin text classification
    Run Shell                        ${submit} --master ${spark_tf_163_3_master} --driver-memory 5g --executor-memory 5g --total-executor-cores 32 --executor-cores 8 --class com.intel.analytics.bigdl.example.textclassification.TextClassifier ${jar_path} --batchSize 128 --baseDir /tmp/text_data --partitionNum 32
-
+   Remove Input
 
 
