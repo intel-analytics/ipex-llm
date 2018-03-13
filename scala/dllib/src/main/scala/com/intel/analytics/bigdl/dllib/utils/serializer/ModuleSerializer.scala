@@ -36,6 +36,8 @@ object ModuleSerializer extends ModuleSerializable{
 
   private val serializerMaps = new mutable.HashMap[String, ModuleSerializable]()
 
+  private[serializer] val _lock = new Object
+
   // generic type definition for type matching
 
   var tensorNumericType : universe.Type = null
@@ -126,7 +128,7 @@ object ModuleSerializer extends ModuleSerializable{
 
   private[serializer] def getCostructorMirror[T : ClassTag](cls : Class[_]):
     universe.MethodMirror = {
-    lock.synchronized {
+    getLock.synchronized {
       val clsSymbol = runtimeMirror.classSymbol(cls)
       val cm = runtimeMirror.reflectClass(clsSymbol)
       // to make it compatible with both 2.11 and 2.10
