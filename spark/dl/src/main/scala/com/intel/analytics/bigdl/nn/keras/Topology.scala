@@ -60,6 +60,7 @@ abstract class KerasModel[T: ClassTag](implicit ev: TensorNumeric[T])
     this.vMethods = metrics
   }
 
+  // TODO: support checkpoint, summary
   def compile(optimizer: String,
               loss: String,
               metrics: Array[String])
