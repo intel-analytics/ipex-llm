@@ -389,6 +389,12 @@ object Utils {
     } else if (inputdepth > 0) {
         return Array(padt, padt, padH, padH, padW, padW, odepth, oheight, owidth)
     }
+
+    if (inputdepth > 0) {
+      if ((odepth - 1) * dt >= inputdepth + padt) oheight -= 1
+      return Array(padt, padt, padH, padH, padW, padW, odepth, oheight, owidth)
+    }
+
     Array(padH, padH, padW, padW, oheight, owidth)
   }
 

@@ -1498,6 +1498,9 @@ class Recurrent(Container):
     def __init__(self, bigdl_type="float"):
         super(Recurrent, self).__init__(None, bigdl_type)
 
+    def contain_multiRNNCell(self):
+            callBigDlFunc(self.bigdl_type, "containMultiRNNCell", self.value)
+
     def get_hidden_state(self):
         """
         get hidden state and cell at last time step.
@@ -1505,6 +1508,15 @@ class Recurrent(Container):
         :return: list of hidden state and cell
         """
         states = callBigDlFunc(self.bigdl_type, "getHiddenState", self.value)
+        return states
+
+    def get_grad_hidden_state(self):
+        """
+        get gradient hidden states at first time step.
+
+        :return: list of gradient hidden state
+        """
+        states = callBigDlFunc(self.bigdl_type, "getGradHiddenState", self.value)
         return states
 
 class RecurrentDecoder(Recurrent):
@@ -5087,6 +5099,38 @@ class ConvLSTMPeephole3D(Layer):
         super(ConvLSTMPeephole3D, self).__init__(None, bigdl_type, input_size, output_size, kernel_i, kernel_c, stride,
                                                  padding, wRegularizer, uRegularizer, bRegularizer, cRegularizer, with_peephole)
 
+class Seq2seq(Layer):
+    '''
+|   Sequence to sequence mode.
+|   Ref.
+|   A.: https://arxiv.org/abs/1506.04214 (blueprint for this module)
+
+    :param encoder_cells: a list of cells used to compose encoder
+    :param decoder_cells: a list of cells used to compose decoder
+
+    >>> encoderRecs = []
+    >>> encoderRecs.append(Recurrent().add(ConvLSTMPeephole3D(4, 3, 3, 3, 1)))
+    >>> encoderRecs.append(Recurrent().add(ConvLSTMPeephole3D(4, 3, 3, 3, 1)))
+    >>> decodercells = []
+    >>> decodercells.append(ConvLSTMPeephole3D(4, 3, 3, 3, 1))
+    >>> decodercells.append(ConvLSTMPeephole3D(4, 3, 3, 3, 1))
+    >>> decoderRecs = []
+    >>> decoderRecs.append(RecurrentDecoder(2).add(MultiRNNCell(decodercells)))
+    >>> layer = Seq2seq(encoderRecs, decoderRecs)
+    creating: createConvLSTMPeephole3D
+    creating: createConvLSTMPeephole3D
+    creating: createConvLSTMPeephole3D
+    creating: createConvLSTMPeephole3D
+    creating: createRecurrent
+    creating: createMultiRNNCell
+    creating: createRecurrentDecoder
+    creating: createSeq2seq
+    '''
+    def __init__(self, encoder_recs, decoder_recs, pre_encoder=None, pre_decoder=None,
+                 shrink_encoder_hiddenstate=None, decoder_input_type="ENCODERINPUTLASTTIME",
+                  bigdl_type="float"):
+        super(Seq2seq, self).__init__(None, bigdl_type, encoder_recs, decoder_recs,
+          pre_encoder, pre_decoder, shrink_encoder_hiddenstate, decoder_input_type)
 
 class MultiRNNCell(Layer):
     '''

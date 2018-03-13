@@ -1901,20 +1901,663 @@ println(output)
 ```
 Gives the output,
 ```
-1.096164	0.08578972
-0.2580359	1.629636
--0.7571692	0.28832582
-[com.intel.analytics.bigdl.tensor.DenseTensor of size 3x2]
-0.65883696	0.108842306
--0.032798193	0.047720015
--0.5495165	-0.16949607
-[com.intel.analytics.bigdl.tensor.DenseTensor of size 3x2]
+## MultiRNNCell ##
+
+**Scala:**
+```scala
+val model = MultiRNNCell(cells = multiRNNCells)
+
+```
+**Python:**
+```python
+model = MultiRNNCell(cells = multiRNNCells)
+```
+
+A cell that stack multiple rnn cells(simpleRNN/LSTM/LSTMPeephole/GRU/ConvLSTMPeephole/ConvLSTMPeephole3D).
+Only works with RecurrentDecoder. If you want to stack multiple cells with Recurrent. Use Sequential().add(Recurrent(cell)).add(Recurrent(cell))... instead
+
+Parameters:
+
+* `cells` list of RNNCells that will be composed in this order.
+
+**Scala example:**
+```scala
+import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+
+val hiddenSize = 2
+val inputSize = 2
+val batchSize = 2
+val seqLength = 2
+val input = Tensor(batchSize, inputSize, 3, 3).rand()
+val gradOutput = Tensor(batchSize, seqLength, hiddenSize, 3, 3).rand()
+
+val cells = Array(ConvLSTMPeephole(
+  inputSize, hiddenSize, 3, 3, 1), ConvLSTMPeephole(
+  inputSize, hiddenSize, 3, 3, 1)).asInstanceOf[Array[Cell[Float]]]
+val model = RecurrentDecoder(seqLength).add(MultiRNNCell[Float](cells))
+
+val output = model.forward(input)
+val gradientInput = model.backward(input, gradOutput)
+
+val states = model.getHiddenState()
+model.setHiddenState(states)
+-> print(output)
+(1,1,1,.,.) =
+0.035993136	0.04062611	0.038863156	
+0.038338557	0.035591327	0.030849852	
+0.03203216	0.026839556	0.033618193	
+
+(1,1,2,.,.) =
+-0.011673012	-0.013518209	-0.0079738535	
+-0.013537201	-0.018129712	-0.013903147	
+-0.015891023	-0.016045166	-0.015133085	
+
+(1,2,1,.,.) =
+0.051638972	0.06415851	0.0562743	
+0.052649997	0.0433068	0.03683649	
+0.0408955	0.0315791	0.043429054	
+
+(1,2,2,.,.) =
+-0.019818805	-0.024628056	-0.014551916	
+-0.028422609	-0.036376823	-0.027259855	
+-0.030024627	-0.033032943	-0.030440552	
+
+(2,1,1,.,.) =
+0.037235383	0.03971467	0.039468434	
+0.032075796	0.031177454	0.029096292	
+0.03708834	0.031535562	0.036211465	
+
+(2,1,2,.,.) =
+-0.010179557	-0.011387618	-0.008739926	
+-0.013536877	-0.015962215	-0.017361978	
+-0.014717996	-0.014296502	-0.016867846	
+
+(2,2,1,.,.) =
+0.053095814	0.05863748	0.05486801	
+0.048524074	0.043160528	0.040398546	
+0.04628137	0.04125476	0.043807983	
+
+(2,2,2,.,.) =
+-0.017849356	-0.019537563	-0.018888	
+-0.025026768	-0.034455147	-0.02970969	
+-0.026703741	-0.033036336	-0.027824042	
+
+[com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 2x2x2x3x3]
+-> print(gradientInput)
+(1,1,1,.,.) =
+-0.021843424	-0.015910733	-0.013524098	
+-0.019261343	-0.017457811	-0.013539563	
+-0.016062422	-0.00383057	-0.0021248849	
+
+(1,1,2,.,.) =
+-0.0067594885	-0.012176989	-0.009976602	
+-0.007914364	-0.012559764	-7.768459E-4	
+-0.0026864496	-3.4671678E-4	-0.004467619	
+
+(1,2,1,.,.) =
+-0.011175868	-0.011886302	-0.0074315416	
+-0.009660093	-0.009753445	-0.008733444	
+-0.007047931	-0.0055002044	8.1458344E-4	
+
+(1,2,2,.,.) =
+-0.0016122719	-0.003776702	-0.006306042	
+-0.0032693855	-0.005982614	-0.0010739439	
+-0.0020354516	-9.59815E-4	-0.0010912241	
+
+(2,1,1,.,.) =
+-0.01399023	-0.01809205	-0.015330672	
+-0.025769815	-0.00905557	-0.021059947	
+4.068871E-4	-0.0060698274	-0.0048879837	
+
+(2,1,2,.,.) =
+-0.0013799625	-0.012721367	-0.008014497	
+-0.014288196	-0.0185386	-0.017980032	
+-0.0022621946	-0.015537363	-0.0024578157	
+
+(2,2,1,.,.) =
+-0.009561457	-0.007107652	-0.009356419	
+-0.009839717	-0.0021937331	-0.011457165	
+-0.0044140965	-0.0031195688	-0.0034824142	
+
+(2,2,2,.,.) =
+-3.2559165E-4	-0.0054697054	-0.0073612086	
+-0.0014059425	-0.006272946	-0.0028436938	
+0.0028391986	-0.005325649	-0.0028171889	
+
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 2x2x2x3x3]
 ```
 
 **Python example:**
 ```python
 from bigdl.nn.layer import *
+from bigdl.nn.criterion import *
 import numpy as np
+input_size = 2
+output_size = 2
+seq_length = 2
+batch_size = 2
+input = np.random.randn(batch_size, input_size, 3, 3)
+grad_output = np.random.randn(batch_size, seq_length, output_size, 3, 3)
+cells = []
+cells.append(ConvLSTMPeephole(input_size, output_size, 3, 3, 1, with_peephole = False))
+cells.append(ConvLSTMPeephole(input_size, output_size, 3, 3, 1, with_peephole = False))
+
+model = RecurrentDecoder(seq_length).add(MultiRNNCell(cells))
+
+output = model.forward(input)
+gradient_input = model.backward(input, grad_output)
+
+states = model.get_states()
+-> print output
+[[[[[ 0.01858711  0.03114421  0.02070103]
+    [ 0.01312863  0.00865137  0.02380039]
+    [ 0.02127378  0.02221535  0.02805275]]
+
+   [[ 0.05865936  0.06254016  0.07285608]
+    [ 0.07795827  0.06420417  0.06744433]
+    [ 0.07241444  0.06128554  0.0572256 ]]]
+
+
+  [[[ 0.01813958  0.0388087   0.03606314]
+    [ 0.00914392  0.01012017  0.03544089]
+    [ 0.02192647  0.02542255  0.04978891]]
+
+   [[ 0.06317041  0.07505058  0.10311646]
+    [ 0.10012341  0.06632978  0.09895241]
+    [ 0.10852461  0.08559311  0.07942865]]]]
+
+
+
+ [[[[ 0.01352384  0.02394648  0.02436183]
+    [ 0.00793007  0.01043395  0.03022798]
+    [ 0.01539317  0.01955615  0.01543968]]
+
+   [[ 0.05844339  0.05187995  0.05877664]
+    [ 0.06405409  0.08493486  0.07711712]
+    [ 0.0737301   0.05892281  0.05127344]]]
+
+
+  [[[ 0.01918509  0.037876    0.04408969]
+    [ 0.01470916  0.01985376  0.03152689]
+    [ 0.02578159  0.04284319  0.0319238 ]]
+
+   [[ 0.08844157  0.07580076  0.07929584]
+    [ 0.09811849  0.08237181  0.09161879]
+    [ 0.11196285  0.08747569  0.09312635]]]]]
+    
+-> print gradient_input
+[[[[[-0.01967927  0.0118104   0.00034992]
+    [-0.0132792  -0.0127134   0.01193821]
+    [ 0.01297736  0.00550178  0.00874622]]
+
+   [[-0.00718097  0.01717402  0.00893286]
+    [-0.01143209  0.00079105  0.00920936]
+    [ 0.01638926  0.02479215  0.01613754]]]
+
+
+  [[[-0.02959971 -0.00214246 -0.00665301]
+    [-0.02010076  0.00135842  0.01485039]
+    [ 0.01877127  0.00205219 -0.01012903]]
+
+   [[-0.01455194  0.00882864  0.00075077]
+    [-0.0089175  -0.00774059  0.00534623]
+    [ 0.00421638  0.01152828  0.00886414]]]]
+
+
+
+ [[[[ 0.00945553  0.01345219 -0.01787379]
+    [-0.02221245 -0.0047606   0.03430083]
+    [ 0.01496986 -0.01156155  0.00733263]]
+
+   [[ 0.02018309  0.00937438 -0.00253335]
+    [-0.00616324  0.00972739  0.02758386]
+    [ 0.01057806  0.01101648  0.00341856]]]
+
+
+  [[[ 0.00486301 -0.00717946 -0.01368812]
+    [-0.01296435  0.0466785  -0.0126987 ]
+    [ 0.01161697 -0.01207331  0.01638841]]
+
+   [[ 0.02077198 -0.00770913 -0.00807941]
+    [-0.00096983  0.01721167  0.0265876 ]
+    [ 0.00845431  0.01232574  0.0126167 ]]]]]
+
+```
+
+## Seq2seq ##
+
+**Scala:**
+```scala
+val model = Seq2seq(encoderRecs, decoderRecs, preEncoder = null,
+  preDecoder = null, decoderInputType = DecoderInputType.ENCODERINPUTLASTTIME)
+
+```
+**Python:**
+```python
+model = Seq2seq(encoderRecs, decoderRecs)
+```
+
+Sequence to sequence model.
+Size of input in `forward(input)` is depenced on the first cell type set in encoderRecs
+If first cell is SimpleRnn/LSTM/LSTMPeephole/GRU, input is 3D tensor (`batch x time x inputSize`). output of
+`forward(input)` is also expected to be a 3D tensor (`batch x time x outputSize`).
+If first cell is ConvLSTMPeephole, input is 5D tensor (`batch x time x nInputPlane x height x width`). output of
+`forward(input)` is also expected to be a 5D tensor (`batch x time x outputPlane x height x width`).
+If first cell is ConvLSTMPeephole3D, input is 6D tensor (`batch x time x nInputPlane x length x height x width`). output of
+`forward(input)` is expected to be a 5D tensor (`batch x time x outputLen x outputPlane x length x height x width`).
+
+Ref.
+
+1. http://arxiv.org/abs/1409.3215
+
+Parameters:
+
+* `encoderRecs` List of Recurrents used for encodering
+* `decoderRecs` List of Recurrents/RecurrentDecoders userd for decodering
+* `PreEncoder` Modules that used to process input before feeding data to encoder
+* `PreDecoder` Modules that used to process before feeding data to decoder
+* `decoderInputType` decoder input type. Currently support ZEROS, ENCODERINPUTSPLIT, ENCODERINPUTLASTTIME 
+                     ZEROS: Input for seq2seq should be a tensor and will be feed to preEncoder/encoder. Data feed to decoder is a tensor of zeros
+                     ENCODERINPUTSPLIT: Input for seq2seq should be a table, the first element is feed to preEncoder/encoder while the second is to preDecoder/decoder.
+                     ENCODERINPUTLASTTIME: Input for seq2seq should be a tensor. And it's feed to preEncoder/encoder. Data at last time step of input is feed to preDecoder/decoder.    
+
+**Scala example:**
+```scala
+import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+
+val hiddenSize = 2
+val inputSize = 2
+val kernalW = 3
+val kernalH = 3
+val seqLength = 2
+val batchSize = 2
+
+val input = Tensor(batchSize, seqLength, inputSize, 3, 3).rand
+val gradOutput = Tensor(batchSize, seqLength, hiddenSize, 3, 3).rand
+
+val encoderRecs = Array(Recurrent().add(ConvLSTMPeephole[Float](
+  inputSize,
+  hiddenSize,
+  kernalW, kernalH,
+  1)), Recurrent().add(ConvLSTMPeephole[Float](
+  inputSize,
+  hiddenSize,
+  kernalW, kernalH,
+  1)), Recurrent().add(ConvLSTMPeephole[Float](
+  inputSize,
+  hiddenSize,
+  kernalW, kernalH,
+  1)))
+
+val decoderCells = Array(ConvLSTMPeephole[Float](
+  inputSize,
+  hiddenSize,
+  kernalW, kernalH,
+  1), ConvLSTMPeephole[Float](
+  inputSize,
+  hiddenSize,
+  kernalW, kernalH,
+  1), ConvLSTMPeephole[Float](
+  inputSize,
+  hiddenSize,
+  kernalW, kernalH,
+  1).asInstanceOf[Cell[Float]])
+
+var decoderRecs = Array(RecurrentDecoder(seqLength).add(MultiRNNCell(decoderCells))
+  .asInstanceOf[Recurrent[Float]])
+val model = Seq2seq(encoderRecs, decoderRecs,
+  decoderInputType = DecoderInputType.ENCODERINPUTLASTTIME)
+  
+val output = model.forward(input).toTensor
+val gradInput = model.backward(input, gradOutput)
+print(output)
+(1,1,1,.,.) =
+0.09377811	0.087361485	0.08845293	
+0.08399979	0.08004771	0.07581956	
+0.08227642	0.08598123	0.08756879	
+
+(1,1,2,.,.) =
+-0.015245175	-0.009391416	-0.017192945	
+-0.021153765	-0.018428003	-0.020675952	
+-0.030651921	-0.028933076	-0.028453384	
+
+(1,2,1,.,.) =
+0.11834409	0.11413989	0.10741178	
+0.101260744	0.105522074	0.096976765	
+0.09272581	0.103773616	0.10760765	
+
+(1,2,2,.,.) =
+-0.008274932	-0.008004173	-0.01991817	
+-0.0113132	-0.013861701	-0.023674397	
+-0.02634751	-0.029778276	-0.033276256	
+
+(2,1,1,.,.) =
+0.09299462	0.08918527	0.08852013	
+0.08312476	0.07971387	0.07505075	
+0.08281709	0.08685498	0.08782833	
+
+(2,1,2,.,.) =
+-0.015723152	-0.008590006	-0.017468799	
+-0.021068955	-0.018229088	-0.02036657	
+-0.029713785	-0.02776999	-0.028017918	
+
+(2,2,1,.,.) =
+0.11709351	0.11615646	0.107678406	
+0.09978042	0.10568939	0.09596709	
+0.09349913	0.10513644	0.10719794	
+
+(2,2,2,.,.) =
+-0.008543567	-0.007743992	-0.02006805	
+-0.010809418	-0.013622663	-0.023199294	
+-0.025700169	-0.028778322	-0.03277739	
+
+[com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 2x2x2x3x3]
+
+print(gradInput)
+(1,1,1,.,.) =
+1.916746E-4	-0.002308734	-0.0011944541	
+8.1199245E-4	-0.0018709629	3.869338E-4	
+-7.47049E-4	-7.9238473E-4	0.0011585366	
+
+(1,1,2,.,.) =
+2.0892825E-4	9.2878146E-4	-9.178977E-5	
+-0.0019250205	-0.0033665225	-0.0018433356	
+0.0011942331	-2.9077602E-4	5.189262E-4	
+
+(1,2,1,.,.) =
+0.0012569914	-0.0016914873	-8.2268304E-4	
+0.0014652155	-0.0023586575	1.2544647E-4	
+-3.4083013E-4	-0.0016782478	2.4988948E-4	
+
+(1,2,2,.,.) =
+4.073592E-4	9.887527E-4	-5.298236E-6	
+-0.0023630464	-0.0035406991	-0.0015248362	
+0.001687992	-3.3586111E-6	9.8497825E-5	
+
+(2,1,1,.,.) =
+2.2035567E-4	-0.0016975375	-0.0013399533	
+1.8093738E-4	-0.0034471096	9.061664E-5	
+1.3480757E-4	-3.3502805E-4	9.1435626E-4	
+
+(2,1,2,.,.) =
+9.1947964E-4	7.6260674E-4	2.6205048E-4	
+-0.0025965553	-0.0024062393	-3.2449752E-4	
+0.0018706968	-0.0013914269	-0.002036764	
+
+(2,2,1,.,.) =
+8.1992685E-4	-8.8625564E-4	-2.802831E-4	
+3.848227E-4	-0.0030158446	-3.9309048E-4	
+1.8604717E-4	-0.0010252773	1.9580754E-4	
+
+(2,2,2,.,.) =
+8.2485337E-4	6.2603055E-4	-7.2991694E-5	
+-0.002423973	-0.0023977659	-5.807263E-4	
+0.0013414564	-0.0010619332	-6.874731E-4	
+
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 2x2x2x3x3]
+```
+
+**Python example:**
+```python
+from bigdl.nn.layer import *
+from bigdl.nn.criterion import *
+import numpy as np
+input_size = 2
+output_size = 2
+seq_length = 2
+batch_size = 2
+# seq2seq with single cell in encoder and decoder
+encoderRecs = []
+encoderRecs.append(Recurrent().add(ConvLSTMPeephole3D(batch_size, seq_length, 3, 3, 1)))
+decoderRecs = []
+decoderRecs.append(RecurrentDecoder(seq_length).add(ConvLSTMPeephole3D(2, 2, 3, 3, 1)))
+
+input = np.random.randn(batch_size, seq_length, input_size, 3, 3, 3)
+grad_output = np.random.randn(batch_size, seq_length, input_size, 3, 3, 3)
+
+layer = Seq2seq(encoderRecs, decoderRecs)
+output = layer.forward(input)
+grad_input = layer.backward(input, grad_output)
+
+print output
+[[[[[[-0.1011508  -0.09621368 -0.06068759]
+     [-0.03697032 -0.06041487 -0.05961777]
+     [-0.03247637  0.00268706 -0.10710604]]
+
+    [[-0.04061839 -0.19154598 -0.08930088]
+     [-0.07140718 -0.00835474 -0.01959297]
+     [-0.06022812 -0.09966736 -0.09722332]]
+
+    [[-0.00615657 -0.07040907 -0.05468877]
+     [-0.09845187 -0.13043909 -0.07227293]
+     [-0.00324269  0.00664256 -0.06544033]]]
+
+
+   [[[ 0.02128923  0.00369536  0.08160446]
+     [ 0.06821559 -0.04109773  0.0798748 ]
+     [ 0.03249834  0.05952019 -0.01544324]]
+
+    [[ 0.03870401  0.06568822 -0.02812445]
+     [-0.02480623 -0.00268553  0.10973474]
+     [ 0.03547898  0.06611893  0.0603447 ]]
+
+    [[ 0.01523988  0.06077055 -0.03171252]
+     [ 0.10198921  0.03022584  0.03646833]
+     [ 0.01934103  0.01450784  0.02934781]]]]
+
+
+
+  [[[[-0.07697339 -0.08408429 -0.06125683]
+     [-0.04133455 -0.06310491 -0.06518473]
+     [-0.04442713 -0.02259536 -0.0865804 ]]
+
+    [[-0.05706632 -0.15614332 -0.08344298]
+     [-0.05407604 -0.03616888 -0.03614516]
+     [-0.06879559 -0.08691658 -0.08449215]]
+
+    [[-0.03630486 -0.06959733 -0.06346893]
+     [-0.09480549 -0.10513148 -0.05909691]
+     [-0.02839164 -0.02692134 -0.06032665]]]
+
+
+   [[[ 0.05253121  0.03873529  0.08480597]
+     [ 0.06569429  0.00546861  0.07004893]
+     [ 0.05229807  0.07842311  0.02052009]]
+
+    [[ 0.0579274   0.0674346   0.02595129]
+     [ 0.03272696  0.02691688  0.0896203 ]
+     [ 0.04256178  0.06286748  0.0658799 ]]
+
+    [[ 0.03229903  0.05973743  0.01618223]
+     [ 0.10130586  0.05046812  0.05150994]
+     [ 0.04203159  0.03429691  0.04237018]]]]]
+
+
+
+
+ [[[[[-0.07634043 -0.00090713 -0.06124327]
+     [-0.04056874 -0.10887274 -0.04010595]
+     [-0.06638715  0.01518711 -0.11787438]]
+
+    [[-0.04472831 -0.0246351  -0.08864006]
+     [-0.13358392 -0.10411103 -0.10946485]
+     [ 0.02967595 -0.11802052 -0.05360211]]
+
+    [[-0.03631561 -0.05248572 -0.05023096]
+     [-0.12424619 -0.09120964 -0.04686933]
+     [ 0.00395403 -0.0239003  -0.11428692]]]
+
+
+   [[[ 0.0330588   0.0739724   0.07119788]
+     [ 0.01878985 -0.0076813   0.11206997]
+     [ 0.02225247  0.15580337 -0.01202303]]
+
+    [[ 0.04759425  0.11564463  0.06588775]
+     [ 0.02429484  0.12637363  0.07381675]
+     [ 0.06839464 -0.03185821  0.08993083]]
+
+    [[ 0.11576739  0.05724104  0.01538792]
+     [ 0.05626165  0.10193904  0.01163712]
+     [-0.02227624  0.11587392  0.0213838 ]]]]
+
+
+
+  [[[[-0.06277011 -0.03728988 -0.07359491]
+     [-0.03895733 -0.0770634  -0.06037688]
+     [-0.06727894 -0.02335832 -0.09506878]]
+
+    [[-0.0584239  -0.05924298 -0.08432288]
+     [-0.09086744 -0.09613816 -0.10432541]
+     [-0.01072768 -0.08719076 -0.05812988]]
+
+    [[-0.05824835 -0.06636126 -0.06451297]
+     [-0.11037287 -0.08797259 -0.0482407 ]
+     [-0.025469   -0.04145216 -0.08430223]]]
+
+
+   [[[ 0.06024687  0.081136    0.07390807]
+     [ 0.0482241   0.04428155  0.08495448]
+     [ 0.0332134   0.12305321  0.02094404]]
+
+    [[ 0.06955095  0.09734795  0.07035015]
+     [ 0.04528818  0.11721351  0.08787243]
+     [ 0.08167917  0.01221857  0.07725131]]
+
+    [[ 0.09096033  0.06804397  0.04582097]
+     [ 0.06729616  0.09776539  0.03968565]
+     [ 0.02566476  0.09568699  0.04110873]]]]]]
+
+print grad_input
+[[[[[[ 0.02344248  0.01511547  0.01713175]
+     [ 0.02269241  0.04227861  0.00711118]
+     [ 0.00229808 -0.02148689  0.04902251]]
+
+    [[ 0.01306898 -0.04317803  0.01519087]
+     [ 0.0363079   0.03559739 -0.01932799]
+     [-0.02974268  0.04031081 -0.0398538 ]]
+
+    [[-0.01216996 -0.00363822 -0.00337593]
+     [ 0.03206872 -0.0073173   0.02892859]
+     [-0.00094824  0.00169231 -0.03303275]]]
+
+
+   [[[-0.0059578  -0.00131863  0.00600606]
+     [ 0.04212404  0.00906473 -0.02076549]
+     [-0.02813034 -0.00848385 -0.04526396]]
+
+    [[-0.01714826  0.0405824   0.00889577]
+     [ 0.01266021 -0.02076012 -0.01088968]
+     [-0.02532111  0.02229481 -0.01214271]]
+
+    [[-0.01890014  0.00421102 -0.00349678]
+     [ 0.00706229  0.00378337  0.03230501]
+     [ 0.02028202 -0.01625987  0.01667957]]]]
+
+
+
+  [[[[ 0.04987922  0.01845289  0.02875098]
+     [-0.01098129  0.09280834 -0.04362979]
+     [ 0.02347034 -0.09200174  0.12913007]]
+
+    [[ 0.02069676 -0.03822296  0.02394571]
+     [ 0.06860939  0.0236428   0.02644894]
+     [-0.0595833   0.07606134 -0.07842013]]
+
+    [[-0.00034429 -0.00885015 -0.01729249]
+     [ 0.03474656  0.04451769  0.03968178]
+     [-0.01922787 -0.00518654 -0.01825218]]]
+
+
+   [[[-0.01957604 -0.01094339  0.01465523]
+     [ 0.07405359  0.0205412  -0.00113074]
+     [-0.02350687  0.05326585 -0.08031672]]
+
+    [[-0.01485366 -0.01744455  0.06823603]
+     [-0.02037457  0.00351703 -0.07053904]
+     [ 0.0123528   0.08643614 -0.04106796]]
+
+    [[-0.03265826 -0.00422247 -0.00405523]
+     [ 0.01849398 -0.00828499  0.11343793]
+     [ 0.02224174  0.03095467 -0.0624096 ]]]]]
+
+
+
+
+ [[[[[-0.00572288 -0.02556941  0.00041958]
+     [ 0.02404802 -0.01552757 -0.04756732]
+     [-0.0057325  -0.00164765  0.01843918]]
+
+    [[-0.01752234 -0.00057781 -0.01298503]
+     [ 0.01800611 -0.02816303  0.00660089]
+     [ 0.0385845  -0.00813232 -0.04157929]]
+
+    [[-0.00329099 -0.01596137 -0.01093881]
+     [-0.00237502 -0.01758038 -0.01328683]
+     [-0.01033991 -0.01380171  0.0063542 ]]]
+
+
+   [[[ 0.01237468  0.03733168 -0.00490518]
+     [ 0.01436013 -0.03380769  0.00513401]
+     [ 0.01754563  0.04087592 -0.00443493]]
+
+    [[ 0.02025319  0.01700382 -0.00859886]
+     [ 0.07740035  0.00442001 -0.03747907]
+     [ 0.01187311 -0.01800647 -0.00882681]]
+
+    [[-0.01348783  0.04637632 -0.00496997]
+     [ 0.00839395 -0.02826494 -0.02536379]
+     [ 0.03778552 -0.02393785 -0.0077814 ]]]]
+
+
+
+  [[[[-0.01501311 -0.02504806  0.00423239]
+     [ 0.04528151 -0.01840566 -0.07110151]
+     [ 0.01455334  0.03333855  0.00086832]]
+
+    [[-0.03709995  0.04282137 -0.03632485]
+     [ 0.07606447 -0.04285651  0.02405355]
+     [ 0.01446454 -0.02148958 -0.08436391]]
+
+    [[ 0.00133082 -0.02719201 -0.00334639]
+     [-0.02400598 -0.07458806 -0.03988137]
+     [-0.02461842  0.02021143  0.02112163]]]
+
+
+   [[[ 0.00230603  0.09808153 -0.04725538]
+     [ 0.02560046 -0.08162209  0.03854931]
+     [ 0.00571524  0.04465967 -0.00753822]]
+
+    [[ 0.03666142  0.02992773 -0.01547549]
+     [ 0.07759072 -0.02146211 -0.049746  ]
+     [ 0.04294893  0.01807866 -0.0506611 ]]
+
+    [[-0.00837765  0.02776322 -0.00291457]
+     [ 0.03995193 -0.0324218  -0.0035981 ]
+     [ 0.04257021  0.00660692 -0.05767066]]]]]]
+
+# seq2seq with multiple cell in encoder and decoder
+encoderRecs = []
+encoderRecs.append(Recurrent().add(ConvLSTMPeephole3D(batch_size, seq_length, 3, 3, 1)))
+encoderRecs.append(Recurrent().add(ConvLSTMPeephole3D(batch_size, seq_length, 3, 3, 1)))
+decodercells = []
+decodercells.append(ConvLSTMPeephole3D(batch_size, seq_length, 3, 3, 1))
+decodercells.append(ConvLSTMPeephole3D(batch_size, seq_length, 3, 3, 1))
+decoderRecs = []
+decoderRecs.append(RecurrentDecoder(seq_length).add(MultiRNNCell(decodercells)))
+
+input = np.random.randn(batch_size, seq_length, input_size, 3, 3, 3)
+grad_output = np.random.randn(batch_size, seq_length, input_size, 3, 3, 3)
+
+layer = Seq2seq(encoderRecs, decoderRecs)
+output = layer.forward(input)
+layer.backward(input, grad_output)
+```
 
 input = np.random.rand(3, 2)
 print "input is :",input

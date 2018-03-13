@@ -166,7 +166,7 @@ class ClassNLLCriterion[@specialized(Float, Double) T: ClassTag]
       "ClassNLLCriterion: " +
         ErrorInfo.constrainInputAsVectorOrBatch +
         s"input dim ${input.dim()}")
-    assert(ev.toType[Double](total_weight) > 0.0, "total weight must larger than 0")
+
     gradInput.resizeAs(input)
     gradInput.zero()
 

@@ -24,7 +24,7 @@ import scala.reflect.ClassTag
 
 object TextToLabeledSentence {
   def apply[T: ClassTag](dictionary: Dictionary)
-           (implicit ev: TensorNumeric[T])
+    (implicit ev: TensorNumeric[T])
   : TextToLabeledSentence[T] =
     new TextToLabeledSentence[T](dictionary)
   def apply[T: ClassTag](numSteps: Int)(implicit ev: TensorNumeric[T])
@@ -55,6 +55,30 @@ class TextToLabeledSentence[T: ClassTag](dictionary: Dictionary)
       val nWords = indexes.length - 1
       val data = indexes.take(nWords)
       val label = indexes.drop(1)
+      buffer.copy(data, label)
+    })
+  }
+}
+
+object TextToLabeledSentence2 {
+  def apply[T: ClassTag](dictionary: Dictionary)
+    (implicit ev: TensorNumeric[T])
+  : TextToLabeledSentence2[T] =
+    new TextToLabeledSentence2[T](dictionary)
+}
+
+class TextToLabeledSentence2[T: ClassTag](dictionary: Dictionary)
+  (implicit ev: TensorNumeric[T])
+  extends Transformer[Array[String], LabeledSentence[T]] {
+  private val buffer = new LabeledSentence[T]()
+
+  override def apply(prev: Iterator[Array[String]]): Iterator[LabeledSentence[T]] = {
+    prev.map(sentence => {
+      val indexes = sentence.map(x =>
+        ev.fromType[Int](dictionary.getIndex(x)))
+      val nWords = indexes.length / 2.0
+      val data = indexes.take(Math.floor(nWords).toInt)
+      val label = indexes.takeRight(Math.floor(nWords).toInt)
       buffer.copy(data, label)
     })
   }

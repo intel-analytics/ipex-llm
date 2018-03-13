@@ -2432,6 +2432,10 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     JActivity(rec.getHiddenState())
   }
 
+  def getGradHiddenStates(rec: Recurrent[T]): JActivity = {
+    JActivity(rec.getGradHiddenState())
+  }
+
   def freeze(model: AbstractModule[Activity, Activity, T], freezeLayers: JList[String])
   : AbstractModule[Activity, Activity, T] = {
     if (null == freezeLayers) model.freeze() else model.freeze(freezeLayers.asScala: _*)
@@ -2502,6 +2506,30 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
 
   def showBigDlInfoLogs(): Unit = {
     Logger.getLogger("com.intel.analytics.bigdl.optim").setLevel(Level.INFO)
+  }
+
+  def createSeq2seq(encoderCells: JList[Recurrent[T]], decoderCells: JList[Recurrent[T]],
+    preEncoder: AbstractModule[Activity, Activity, T],
+    preDecoder: AbstractModule[Activity, Activity, T],
+    shrinkHiddenStateModules: JList[JList[TensorModule[T]]],
+    decoderInputType: String
+    ): Seq2seq[T] = {
+    val inputType = decoderInputType match {
+      case "ENCODERINPUTSPLIT" => DecoderInputType.ENCODERINPUTSPLIT
+      case "ENCODERINPUTLASTTIME" => DecoderInputType.ENCODERINPUTLASTTIME
+      case n: String =>
+        throw new IllegalArgumentException(s"Only support 'ENCODERINPUTSPLIT', " +
+          s", 'ENCODERINPUTLASTTIME': $n")
+    }
+
+    val shrinkModules = if (shrinkHiddenStateModules != null) {
+      shrinkHiddenStateModules.asScala.toArray.map { x =>
+        if (x != null) x.asScala.toArray
+        else null
+      }
+    } else null
+    Seq2seq(encoderCells.asScala.toArray, decoderCells.asScala.toArray, preEncoder,
+      preDecoder, shrinkModules, inputType)
   }
 
   def quantize(module: AbstractModule[Activity, Activity, T]): Module[T] = {
