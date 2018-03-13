@@ -1895,6 +1895,9 @@ The input has to be a table. The first element of input is the mean of the distr
 the second element of input is the log_variance of the distribution. The input distribution is
 assumed to be diagonal.
 
+The mean and log_variance are both assumed to be two dimensional tensors. The first dimension are
+interpreted as batch. The output is the average/sum of each observation
+
 **Scala example:**
 ```scala
 import com.intel.analytics.bigdl.tensor.Tensor
@@ -2185,4 +2188,189 @@ loss = criterion.forward(input, target)
 
 > loss
 -6.1750183
+```
+
+
+## TransformerCriterion ##
+**Scala:**
+```scala
+val criterion = TransformerCriterion(criterion, Some(inputTransformer), Some(targetTransformer))
+```
+**Python:**
+```python
+criterion = TransformerCriterion(criterion, input_transformer, targetTransformer)
+```
+
+The criterion that takes two modules (optional) to transform input and target, and take
+one criterion to compute the loss with the transformed input and target.
+
+This criterion can be used to construct complex criterion. For example, the
+`inputTransformer` and `targetTransformer` can be pre-trained CNN networks,
+and we can use the networks' output to compute the high-level feature
+reconstruction loss, which is commonly used in areas like neural style transfer
+(https://arxiv.org/abs/1508.06576), texture synthesis (https://arxiv.org/abs/1505.07376),
+.etc.
+
+**Scala example:**
+```scala
+import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+import com.intel.analytics.bigdl.nn.TransformerCriterion
+import com.intel.analytics.bigdl.utils.T
+
+val criterion = MSECriterion()
+val input = Tensor[Float](2, 3).range(1, 6, 1)
+val target = Tensor[Float](2, 3).range(2, 13, 2)
+val inputTransformer = Identity()
+val targetTransformer = Identity()
+val transCriterion = TransformerCriterion(criterion,
+     Some(inputTransformer), Some(targetTransformer))
+val loss = transCriterion.forward(input, target)
+
+> loss
+15.166667
+
+```
+
+**Python example:**
+```python
+import numpy as np
+from bigdl.nn.criterion import *
+from bigdl.optim.optimizer import *
+from bigdl.util.common import *
+
+criterion = MSECriterion()
+input = np.arange(1, 7, 1).astype("float32")
+input = input.reshape(2, 3)
+target = np.arange(2, 13, 2).astype("float32")
+target = target.reshape(2, 3)
+
+inputTransformer = Identity()
+targetTransformer = Identity()
+transCriterion = TransformerCriterion(criterion, inputTransformer, targetTransformer)
+loss = transCriterion.forward(input, target)
+
+
+> loss
+15.166667
+```
+
+## DotProductCriterion ##
+**Scala:**
+```scala
+val criterion = DotProductCriterion(sizeAverage=false)
+```
+**Python:**
+```python
+criterion = DotProductCriterion(sizeAverage=False)
+```
+
+Compute the dot product of input and target tensor.
+Input and target are required to have the same size.
+
+* sizeAverage:  whether to average over each observations in the same batch
+
+**Scala example:**
+```scala
+import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+
+val criterion = DotProductCriterion()
+val input = Tensor[Float](2, 3).range(1, 6, 1)
+val target = Tensor[Float](2, 3).range(2, 13, 2)
+
+val loss = criterion.forward(input, target)
+
+> loss
+182.0
+
+```
+
+**Python example:**
+```python
+import numpy as np
+from bigdl.nn.criterion import *
+from bigdl.optim.optimizer import *
+from bigdl.util.common import *
+
+criterion = DotProductCriterion()
+input = np.arange(1, 7, 1).astype("float32")
+input = input.reshape(2, 3)
+target = np.arange(2, 13, 2).astype("float32")
+target = target.reshape(2, 3)
+
+loss = criterion.forward(input, target)
+
+
+> loss
+182.0
+```
+
+## PGCriterion ##
+**Scala:**
+```scala
+val criterion = PGCriterion(sizeAverage=false)
+```
+**Python:**
+```python
+criterion = PGCriterion(sizeAverage=False)
+```
+
+The Criterion to compute the negative policy gradient given a
+multinomial distribution and the sampled action and reward.
+
+The input to this criterion should be a 2-D tensor representing
+a batch of multinomial distribution, the target should also be
+a 2-D tensor with the same size of input, representing the sampled
+action and reward/advantage with the index of non-zero element in the vector
+represents the sampled action and the non-zero element itself represents
+the reward. If the action is space is large, you should consider using
+SparseTensor for target.
+
+The loss computed is simple the standard policy gradient,
+
+   loss = - 1/n * sum(R_{n} dot_product log(P_{n}))
+
+ where R_{n} is the reward vector, and P_{n} is the input distribution.
+ 
+ 
+* sizeAverage:  whether to average over each observations in the same batch
+
+**Scala example:**
+```scala
+import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+
+val criterion = PGCriterion()
+val input = Tensor[Float](2, 3).range(1, 6, 1)
+val target = Tensor[Float](2, 3).range(2, 13, 2)
+
+val loss = criterion.forward(input, target)
+
+> loss
+-58.05011
+
+```
+
+**Python example:**
+```python
+import numpy as np
+from bigdl.nn.criterion import *
+from bigdl.optim.optimizer import *
+from bigdl.util.common import *
+
+criterion = PGCriterion()
+input = np.arange(1, 7, 1).astype("float32")
+input = input.reshape(2, 3)
+target = np.arange(2, 13, 2).astype("float32")
+target = target.reshape(2, 3)
+
+loss = criterion.forward(input, target)
+
+
+> loss
+-58.05011
 ```

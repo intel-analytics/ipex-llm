@@ -17,7 +17,10 @@ package com.intel.analytics.bigdl.nn.ops
 
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
+
+import scala.util.Random
 
 class PadSpec extends FlatSpec with Matchers {
   "Pad operation" should "works correctly" in {
@@ -69,5 +72,16 @@ class PadSpec extends FlatSpec with Matchers {
 
     val output = Pad[Float, Float](mode = "CONSTANT", 0.0f).forward(T(input, padding))
     output should be(expectOutput)
+  }
+}
+
+class PadSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val pad = Pad[Float, Float](mode = "CONSTANT", 0.0f).setName("pad")
+    val inputTensor = Tensor[Float](2, 2, 3).apply1(_ => Random.nextFloat())
+    val padding = Tensor[Int](T(T(1, 2), T(1, 2), T(1, 2)))
+    val input = T(inputTensor, padding)
+    runSerializationTest(pad, input, pad.
+      asInstanceOf[ModuleToOperation[Float]].module.getClass)
   }
 }

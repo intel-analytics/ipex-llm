@@ -20,6 +20,7 @@ import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Table
+import com.intel.analytics.bigdl.utils.serializer.{DeserializeContext, ModuleSerializable}
 
 import scala.reflect._
 
@@ -31,20 +32,23 @@ import scala.reflect._
  * @tparam T Numeric type. Only support float/double now
  */
 @SerialVersionUID(7959261460060075605L)
-class CAddTable[T: ClassTag](val inplace: Boolean = false)(
-  implicit ev: TensorNumeric[T]) extends AbstractModule[Table, Tensor[T], T] {
+class CAddTable[T: ClassTag, D: ClassTag](val inplace: Boolean = false)(
+  implicit ev: TensorNumeric[T], ev2: TensorNumeric[D])
+  extends AbstractModule[Table, Tensor[D], T] {
 
-  override def updateOutput(input: Table): Tensor[T] = {
-    var scalar = ev.zero
+  output = Tensor[D]()
+
+  override def updateOutput(input: Table): Tensor[D] = {
+    var scalar = ev2.zero
     var hasTensor = false
     var hasScalar = false
     var initTensor = false
 
     var i = 1
     while (i <= input.length()) {
-      val curTensor = input[Tensor[T]](i)
+      val curTensor = input[Tensor[D]](i)
       if (curTensor.isScalar) {
-        scalar = ev.plus(scalar, curTensor.value())
+        scalar = ev2.plus(scalar, curTensor.value())
         hasScalar = true
       } else if (curTensor.isTensor) {
         if (initTensor) {
@@ -66,34 +70,34 @@ class CAddTable[T: ClassTag](val inplace: Boolean = false)(
       output.add(scalar)
     } else if (hasScalar) {
       if (inplace) {
-        output.set(input[Tensor[T]](1)).setValue(scalar)
+        output.set(input[Tensor[D]](1)).setValue(scalar)
       } else {
-        output.resizeAs(input[Tensor[T]](1)).setValue(scalar)
+        output.resizeAs(input[Tensor[D]](1)).setValue(scalar)
       }
     }
 
     output
   }
 
-  override def updateGradInput(input: Table, gradOutput: Tensor[T]) : Table = {
+  override def updateGradInput(input: Table, gradOutput: Tensor[D]) : Table = {
     var i = 1
-    var sum = ev.zero
+    var sum = ev2.zero
     var calculateSum = false
     while (i <= input.length()) {
       if (i > gradInput.length) gradInput.insert(i, Tensor[T]().resizeAs(input(1)))
       if (inplace) {
-        require(input[Tensor[T]](1).isSameSizeAs(gradOutput), "cannot use inplace for broadcast")
-        gradInput[Tensor[T]](i).set(gradOutput)
+        require(input[Tensor[D]](1).isSameSizeAs(gradOutput), "cannot use inplace for broadcast")
+        gradInput[Tensor[D]](i).set(gradOutput)
       } else {
-        if (input[Tensor[T]](i).isSameSizeAs(gradOutput)) {
-          gradInput[Tensor[T]](i).resizeAs(gradOutput).copy(gradOutput)
+        if (input[Tensor[D]](i).isSameSizeAs(gradOutput)) {
+          gradInput[Tensor[D]](i).resizeAs(gradOutput).copy(gradOutput)
         } else {
-          require(input[Tensor[T]](i).isScalar, "Only support scalar broadcast backward now")
+          require(input[Tensor[D]](i).isScalar, "Only support scalar broadcast backward now")
           if (!calculateSum) {
             sum = gradOutput.sum()
             calculateSum = true
           }
-          gradInput[Tensor[T]](i).resizeAs(input[Tensor[T]](i)).setValue(sum)
+          gradInput[Tensor[D]](i).resizeAs(input[Tensor[D]](i)).setValue(sum)
         }
       }
       i += 1
@@ -111,13 +115,32 @@ class CAddTable[T: ClassTag](val inplace: Boolean = false)(
     }
     this
   }
+
+  override def getClassTagNumerics() : (Array[ClassTag[_]], Array[TensorNumeric[_]]) = {
+    (Array[ClassTag[_]](scala.reflect.classTag[T], scala.reflect.classTag[D]),
+      Array[TensorNumeric[_]](ev, ev2))
+  }
 }
 
 
-object CAddTable {
-  def apply[@specialized(Float, Double) T: ClassTag](
-      inplace: Boolean = false)(implicit ev: TensorNumeric[T]) : CAddTable[T] = {
-    new CAddTable[T](inplace)
+object CAddTable extends ModuleSerializable {
+  def apply[T: ClassTag](
+      inplace: Boolean = false)(implicit ev: TensorNumeric[T]) : CAddTable[T, T] = {
+    new CAddTable[T, T](inplace)
+  }
+
+  override def getTypes(context: DeserializeContext): (Array[ClassTag[_]],
+    Array[TensorNumeric[_]]) = {
+    var (tags, numerics) = super.getTypes(context)
+    val defaultTag = tags(0)
+    val defaultNumeric = numerics(0)
+    if (tags.size < 2) {
+      val extendedTags = Array[ClassTag[_]](defaultTag, defaultTag)
+      val extendNumerics = Array[TensorNumeric[_]](defaultNumeric, defaultNumeric)
+      (extendedTags, extendNumerics)
+    } else {
+      (tags, numerics)
+    }
   }
 }
 

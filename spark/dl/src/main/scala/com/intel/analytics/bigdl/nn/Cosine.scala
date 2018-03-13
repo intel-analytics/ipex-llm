@@ -176,23 +176,15 @@ class Cosine[T: ClassTag](val inputSize : Int, val outputSize : Int)(
     }
   }
 
-  override def zeroGradParameters(): Unit = {
-    gradWeight.zero()
-  }
-
   override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
     (Array(this.weight), Array(this.gradWeight))
-  }
-
-  override def getParametersTable(): Table = {
-    T(getName() -> T("weight" -> weight, "gradWeight" -> gradWeight))
   }
 
   override def toString(): String = {
     s"${getPrintName}($inputSize, $outputSize)"
   }
 
-  override def canEqual(other: Any): Boolean = other.isInstanceOf[Contiguous[T]]
+  override def canEqual(other: Any): Boolean = other.isInstanceOf[Cosine[T]]
 
   override def equals(other: Any): Boolean = other match {
     case that: Cosine[T] =>

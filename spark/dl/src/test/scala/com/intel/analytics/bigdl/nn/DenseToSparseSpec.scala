@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.tensor.Tensor
 import org.scalatest.{Matchers, FlatSpec}
 import com.intel.analytics.bigdl.numeric.NumericFloat
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 
 @com.intel.analytics.bigdl.tags.Parallel
 class DenseToSparseSpec extends FlatSpec with Matchers  {
@@ -40,4 +41,31 @@ class DenseToSparseSpec extends FlatSpec with Matchers  {
     output should be (exceptedOutput)
   }
 
+  // It is useful when DenseToSparse layer is placed on the top of model,
+  // received gradient from sparselinear layer.
+  "A DenseToSparse backward" should "be able to work without gradOutput" in {
+    val mockInput = Tensor[Float](5, 10).rand()
+    val mockError = Tensor[Float](5, 10).rand()
+    var model = Sequential[Float]()
+      .add(DenseToSparse[Float](propagateBack = true))
+      .add(SparseLinear[Float](10, 10))
+    model.forward(mockInput)
+    intercept[Exception] {
+      model.backward(mockInput, mockError)
+    }
+
+    model = Sequential[Float]()
+      .add(DenseToSparse[Float](propagateBack = false))
+      .add(SparseLinear[Float](10, 10))
+    model.forward(mockInput)
+    model.backward(mockInput, mockError)
+  }
+}
+
+class DenseToSparseSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val denseToSparse = DenseToSparse[Float]().setName("denseToSparse")
+    val input = Tensor.range[Float](1, 12, 1)
+    runSerializationTest(denseToSparse, input)
+  }
 }

@@ -27,7 +27,7 @@ class Sum[T: ClassTag, D: ClassTag](val keepDims: Boolean, val startFromZero: Bo
   (implicit ev: TensorNumeric[T], ev2: TensorNumeric[D])
   extends Operation[Table, Tensor[D], T] {
 
-  private val sum: SumLayer[T, D] = SumLayer[T, D](squeeze = !keepDims)
+  private val sum: SumLayer[D] = SumLayer[D](squeeze = !keepDims)
 
   output = Tensor[D]()
 

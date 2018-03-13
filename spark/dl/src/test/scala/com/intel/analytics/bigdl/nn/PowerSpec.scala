@@ -17,7 +17,10 @@
 package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
+
+import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Parallel
 class PowerSpec extends FlatSpec with Matchers {
@@ -26,7 +29,7 @@ class PowerSpec extends FlatSpec with Matchers {
 
     val output = Tensor(Storage(Array(1.0, 4, 9, 16, 25, 36)), 1, Array(2, 3))
 
-    val power = new Power[Double, Double](2)
+    val power = new Power[Double](2)
 
     val powerOutput = power.forward(input)
 
@@ -34,11 +37,11 @@ class PowerSpec extends FlatSpec with Matchers {
   }
 
   "A float Power" should "generate correct output" in {
-    val input = Tensor(Storage[Double](Array(1.0, 2, 3, 4, 5, 6)), 1, Array(2, 3))
+    val input = Tensor(Storage[Float](Array(1.0f, 2, 3, 4, 5, 6)), 1, Array(2, 3))
 
-    val output = Tensor(Storage(Array(1.0, 4, 9, 16, 25, 36)), 1, Array(2, 3))
+    val output = Tensor(Storage(Array(1.0f, 4, 9, 16, 25, 36)), 1, Array(2, 3))
 
-    val power = new Power[Float, Double](2)
+    val power = new Power[Float](2)
 
     val powerOutput = power.forward(input)
 
@@ -50,7 +53,7 @@ class PowerSpec extends FlatSpec with Matchers {
 
     val output = Tensor(Storage(Array(4.0, 16, 36, 64, 100, 144)), 1, Array(2, 3))
 
-    val power = new Power[Double, Double](2, 2)
+    val power = new Power[Double](2, 2)
 
     val powerOutput = power.forward(input)
 
@@ -62,7 +65,7 @@ class PowerSpec extends FlatSpec with Matchers {
 
     val output = Tensor(Storage(Array(1.0, 4, 9, 16, 25, 36)), 1, Array(2, 3))
 
-    val power = new Power[Double, Double](2, 1, 1)
+    val power = new Power[Double](2, 1, 1)
 
     val powerOutput = power.forward(input)
 
@@ -74,7 +77,7 @@ class PowerSpec extends FlatSpec with Matchers {
 
     val output = Tensor(Storage(Array(1.0, 9, 25, 49, 81, 121)), 1, Array(2, 3))
 
-    val power = new Power[Double, Double](2, 2, 1)
+    val power = new Power[Double](2, 2, 1)
 
     val powerOutput = power.forward(input)
 
@@ -86,7 +89,7 @@ class PowerSpec extends FlatSpec with Matchers {
 
     val gradOutput = Tensor(Storage(Array(0.1, 0.2, 0.3, 0.4, 0.5, 0.6)), 1, Array(2, 3))
 
-    val power = new Power[Double, Double](2, 2, 2)
+    val power = new Power[Double](2, 2, 2)
 
     val output = power.forward(input)
     val gradInput = power.backward(input, gradOutput)
@@ -101,7 +104,7 @@ class PowerSpec extends FlatSpec with Matchers {
 
     val gradOutput = Tensor(Storage(Array(0.1, 0.2, 0.3, 0.4, 0.5, 0.6)), 1, Array(2, 3))
 
-    val power = new Power[Double, Double](1, -1)
+    val power = new Power[Double](1, -1)
 
     val output = power.forward(input)
     val gradInput = power.backward(input, gradOutput)
@@ -116,7 +119,7 @@ class PowerSpec extends FlatSpec with Matchers {
 
     val gradOutput = Tensor(Storage(Array(0.1, 0.2, 0.3, 0.4, 0.5, 0.6)), 1, Array(2, 3))
 
-    val power = new Power[Double, Double](3, 2, 2)
+    val power = new Power[Double](3, 2, 2)
 
     val output = power.forward(input)
     val gradInput = power.backward(input, gradOutput)
@@ -126,4 +129,12 @@ class PowerSpec extends FlatSpec with Matchers {
 
   }
 
+}
+
+class PowerSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val power = Power[Float](2.0).setName("power")
+    val input = Tensor[Float](2, 2).apply1(e => Random.nextFloat())
+    runSerializationTest(power, input)
+  }
 }

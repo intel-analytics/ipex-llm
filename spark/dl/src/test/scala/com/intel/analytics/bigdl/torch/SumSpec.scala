@@ -25,7 +25,7 @@ class SumSpec extends TorchSpec {
 
   "An Sum()" should "generate correct output and grad" in {
     torchCheck()
-    val layer = Sum[Double, Double]()
+    val layer = Sum[Double]()
     val input = Tensor[Double](2, 2, 2)
     input.apply1(x => randomn())
     val gradOutput = Tensor[Double](1, 2, 2)
@@ -54,7 +54,7 @@ class SumSpec extends TorchSpec {
 
   "An Sum(2)" should "generate correct output and grad" in {
     torchCheck()
-    val layer = Sum[Double, Double](2)
+    val layer = Sum[Double](2)
     val input = Tensor[Double](2, 2, 2)
     input.apply1(x => randomn())
     val gradOutput = Tensor[Double](1, 2, 2)
@@ -83,7 +83,7 @@ class SumSpec extends TorchSpec {
 
   "An Sum(2,1,true)" should "generate correct output and grad" in {
     torchCheck()
-    val layer = Sum[Double, Double](2, 1, true)
+    val layer = Sum[Double](2, 1, true)
     val input = Tensor[Double](2, 2, 2)
     input.apply1(x => randomn())
     val gradOutput = Tensor[Double](1, 2, 2)
@@ -112,7 +112,7 @@ class SumSpec extends TorchSpec {
 
   "An Sum(-1,1,true)" should "generate correct output and grad" in {
     torchCheck()
-    val layer = Sum[Double, Double](-1, 1, true)
+    val layer = Sum[Double](-1, 1, true)
     val input = Tensor[Double](2, 2, 2)
     input.apply1(x => randomn())
     val gradOutput = Tensor[Double](1, 2, 2)

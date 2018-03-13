@@ -24,13 +24,13 @@ import scala.reflect.ClassTag
  */
 
 @SerialVersionUID(5169592189338322411L)
-class Square[T: ClassTag, D: ClassTag](implicit ev: TensorNumeric[T], ev2: TensorNumeric[D])
-  extends Power[T, D](2, 1, 0) {
+class Square[T: ClassTag](implicit ev: TensorNumeric[T])
+  extends Power[T](2, 1, 0) {
 }
 
 object Square {
-  def apply[@specialized(Float, Double) T: ClassTag, D: ClassTag]()
-      (implicit ev: TensorNumeric[T], ev2: TensorNumeric[D]) : Square[T, D] = {
-    new Square[T, D]()
+  def apply[@specialized(Float, Double) T: ClassTag]()
+      (implicit ev: TensorNumeric[T]) : Square[T] = {
+    new Square[T]()
   }
 }

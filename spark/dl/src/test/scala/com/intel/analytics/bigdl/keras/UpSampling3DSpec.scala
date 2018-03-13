@@ -18,9 +18,10 @@ package com.intel.analytics.bigdl.keras
 
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.utils.{Shape, TestUtils}
 
 class UpSampling3DSpec extends KerasBaseSpec {
-  "updample3d forward with size 1" should "work properly" in {
+  "UpSampling3D forward with size 1" should "work properly" in {
     val kerasCode =
       """
         |input_tensor = Input(shape=[1, 2, 3, 4])
@@ -32,7 +33,7 @@ class UpSampling3DSpec extends KerasBaseSpec {
     checkOutputAndGrad(model, kerasCode)
   }
 
-  "updample3d forward with size 2" should "work properly" in {
+  "UpSampling3D forward with size 2" should "work properly" in {
     val kerasCode =
       """
         |input_tensor = Input(shape=[1, 1, 2, 4])
@@ -44,7 +45,7 @@ class UpSampling3DSpec extends KerasBaseSpec {
     checkOutputAndGrad(model, kerasCode)
   }
 
-  "updample3d forward with size 2, 3, 4" should "work properly" in {
+  "UpSampling3D forward with size 2, 3, 4" should "work properly" in {
     val kerasCode =
       """
         |input_tensor = Input(shape=[2, 3, 2, 4])
@@ -56,7 +57,7 @@ class UpSampling3DSpec extends KerasBaseSpec {
     checkOutputAndGrad(model, kerasCode)
   }
 
-  "updample3d serializer" should "work properly" in {
+  "UpSampling3D serializer" should "work properly" in {
     val module = UpSampling3D[Float](Array(2, 2, 2))
 
     val input = Tensor[Float](1, 2, 2, 2, 2).randn()
@@ -70,4 +71,10 @@ class UpSampling3DSpec extends KerasBaseSpec {
       tmpFile.delete()
     }
   }
+
+  "UpSampling3D computeOutputShape" should "work properly" in {
+    val layer = UpSampling3D[Float](Array(2, 1, 3))
+    TestUtils.compareOutputShape(layer, Shape(3, 8, 12, 8)) should be (true)
+  }
+
 }

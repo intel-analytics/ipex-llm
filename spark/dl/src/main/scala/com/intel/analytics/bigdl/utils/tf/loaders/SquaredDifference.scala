@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.utils.tf.loaders
 import java.nio.ByteOrder
 
 import com.intel.analytics.bigdl.Module
-import com.intel.analytics.bigdl.nn.ops.SquaredDifference
+import com.intel.analytics.bigdl.nn.ops.{SquaredDifference => SquaredDifferenceOps}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.tf.Context
 import org.tensorflow.framework.NodeDef
@@ -29,7 +29,7 @@ class SquaredDifference extends TensorflowOpsLoader {
 
 
   override def build[T: ClassTag](nodeDef: NodeDef, byteOrder: ByteOrder,
-                                  context: Context[T])(implicit ev: TensorNumeric[T]): Module[T] = {
-    SquaredDifference[T]()
+      context: Context[T])(implicit ev: TensorNumeric[T]): Module[T] = {
+    SquaredDifferenceOps[T]()
   }
 }

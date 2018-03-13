@@ -154,7 +154,7 @@ class LayerConverter[T: ClassTag](implicit ev: TensorNumeric[T]) extends Convert
     val param = layer.asInstanceOf[LayerParameter].getEluParam
     var alpha = 1.0
     if (param.hasAlpha) alpha = param.getAlpha
-    Seq(ELU[T, T](alpha).setName(getLayerName(layer)).inputs())
+    Seq(ELU[T](alpha).setName(getLayerName(layer)).inputs())
   }
 
   override protected def fromCaffeReshape(layer : GeneratedMessage) : Seq[ModuleNode[T]] = {

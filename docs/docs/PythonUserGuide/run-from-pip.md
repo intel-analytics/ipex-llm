@@ -10,16 +10,16 @@
 
 ## **Run as a local program**
  * If the type of input data is ndarray instead of RDD or DataFrame, the model would be trained or validated in local mode.
- * Check [LeNet](../../../pyspark/bigdl/models/local_lenet/README.md) for more details
+ * Check [LeNet](https://github.com/intel-analytics/BigDL/blob/master/pyspark/bigdl/models/local_lenet/README.md) for more details
 
- ```
-    # X_train, Y_train, X_test are all ndarray and the first dimension is the sample number.
-    local_optimizer = Optimizer.create(
-        model=model_definition,
-        training_set=(X_train, Y_train))
-    local_optimizer.predict(X_test)
-    local_optimizer.predict_class(X_test)
- ```
+```python
+# X_train, Y_train, X_test are all ndarray and the first dimension is the sample number.
+local_optimizer = Optimizer.create(
+    model=model_definition,
+    training_set=(X_train, Y_train))
+local_optimizer.predict(X_test)
+local_optimizer.predict_class(X_test)
+```
 
 ## **Use Jupyter Notebook**
  * Just start jupyter notebook as you normally do, e.g.
@@ -43,15 +43,26 @@ bigdl.version.__version__ # Get the current BigDL version
 linear = Linear(2, 3) # Try to create a Linear layer
 ```
 
-## **BigDL Configuration**
-- Increase memory
-    - export SPARK_DRIVER_MEMORY=20g
+## **BigDL Configurations**
 
-## **NOTES**
-- If you want to redirect spark logs to file and keep BigDL logs in console only, call the following API before you train your model:
+* Increase memory
+```bash
+export SPARK_DRIVER_MEMORY=20g
+```
+* Add extra jars or python packages
+
+ &emsp; Set the environment variables `BIGDL_JARS` and `BIGDL_PACKAGES` __BEFORE__ creating `SparkContext`:
+```bash
+export BIGDL_JARS=...
+export BIGDL_PACKAGES=...
+```
+* Redirect logs
+
+ &emsp; If you want to redirect spark logs to file and keep BigDL logs in console only, call the following API before you train your model:
 ```python
 from bigdl.util.common import *
 
-redire_spark_logs(log_path=file path to redirect logs to)
+# by default redirected to `bigdl.log` under the current workspace
+redire_spark_logs(log_path="bigdl.log")
 show_bigdl_info_logs()
 ```

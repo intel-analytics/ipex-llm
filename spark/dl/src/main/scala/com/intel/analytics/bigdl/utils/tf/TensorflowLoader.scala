@@ -25,12 +25,12 @@ import com.google.protobuf.{CodedInputStream, TextFormat}
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.nn.Graph
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
-import com.intel.analytics.bigdl.nn.ops.AssignGrad
+import com.intel.analytics.bigdl.nn.tf.AssignGrad
 import com.intel.analytics.bigdl.python.api.{JTensor, PythonBigDL, PythonBigDLUtils}
 import com.intel.analytics.bigdl.tensor.{DoubleType, FloatType, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils._
-import com.intel.analytics.bigdl.nn.ops.{SwitchControlNode, SwitchOps}
+import com.intel.analytics.bigdl.nn.tf.{SwitchControlNode, SwitchOps}
 import com.intel.analytics.bigdl.utils.tf.TensorflowToBigDL._
 import com.intel.analytics.bigdl.utils.tf.loaders.TensorflowOpsLoader
 import org.tensorflow.framework.{GraphDef, NodeDef}
@@ -113,6 +113,7 @@ object TensorflowLoader{
           tensor.size(), "float")
         case DoubleType => new JTensor(tensor.asInstanceOf[Tensor[Double]].storage().array()
           .map(_.toFloat), tensor.size(), "double")
+        case t => throw new NotImplementedError(s"$t is not supported")
       }
       save.put(n, saveTensor)
     })
@@ -126,6 +127,7 @@ object TensorflowLoader{
       val tensor = ev.getType() match {
         case FloatType => PythonBigDLUtils.toTensor(m(k), "float")
         case DoubleType => PythonBigDLUtils.toTensor(m(k), "double")
+        case t => throw new NotImplementedError(s"$t is not supported")
       }
 
       map(k) = (tensor, tensor.clone(), None)

@@ -16,9 +16,13 @@
 package com.intel.analytics.bigdl.utils.tf.loaders
 
 import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import com.intel.analytics.bigdl.utils.tf.Tensorflow.typeAttr
 import com.intel.analytics.bigdl.utils.tf.TensorflowSpecHelper
 import org.tensorflow.framework.{DataType, NodeDef}
+
+import scala.util.Random
 
 class Expm1Spec extends TensorflowSpecHelper {
   "Expm1" should "be correct for float" in {
@@ -41,5 +45,14 @@ class Expm1Spec extends TensorflowSpecHelper {
       Seq(Tensor[Double](10).rand()),
       0
     )
+  }
+}
+
+class ExpandDimsLoadTFSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val expandDim = new ExpandDimsLoadTF[Float]().setName("expandDim")
+    val input = T(Tensor[Float](1, 2).apply1(_ => Random.nextFloat()),
+      Tensor.scalar[Int](1))
+    runSerializationTest(expandDim, input)
   }
 }

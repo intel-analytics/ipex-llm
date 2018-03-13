@@ -260,7 +260,7 @@ private[bigdl] class QuantizedTensor[T: ClassTag](
       sumOfRow = new Array[T](length)
       System.arraycopy(quantizedTensor.sumOfRow, 0, sumOfRow, 0, length)
 
-      new QuantizedTensor[T](internalStorage, size(), maxOfRow, minOfRow, sumOfRow, params)
+      this.desc = Desc.get(params, internalStorage, 0, this.maxOfRow, this.minOfRow)
     } else {
       throw new UnsupportedOperationException(s"can't set from other type of tensor.")
     }

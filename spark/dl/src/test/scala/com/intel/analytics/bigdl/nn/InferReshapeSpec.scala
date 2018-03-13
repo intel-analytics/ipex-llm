@@ -18,7 +18,10 @@ package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.LayerException
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import org.scalatest.FlatSpec
+
+import scala.util.Random
 
 class InferReshapeSpec extends FlatSpec {
   "A InferReshape Module with infer" should "generate correct output and grad" in {
@@ -171,5 +174,13 @@ class InferReshapeSpec extends FlatSpec {
 
   def assertIntArrayEqual(a1: Array[Int], a2: Array[Int]): Unit = {
     (a1 zip a2).foreach(x => assert(x._1 == x._2))
+  }
+}
+
+class InferReshapeSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val inferReshape = InferReshape[Float](Array(-1, 2, 0, 5)).setName("inferReshape")
+    val input = Tensor[Float](2, 5, 2, 2).apply1(_ => Random.nextFloat())
+    runSerializationTest(inferReshape, input)
   }
 }

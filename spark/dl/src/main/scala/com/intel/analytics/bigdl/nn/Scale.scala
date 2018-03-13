@@ -20,8 +20,9 @@ import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.serializer._
+import com.intel.analytics.bigdl.utils.serializer.converters.DataConverter
 import com.intel.analytics.bigdl.utils.{T, Table}
-import serialization.Bigdl.{AttrValue, BigDLModule}
+import com.intel.analytics.bigdl.serialization.Bigdl.{AttrValue, BigDLModule}
 
 import scala.reflect.ClassTag
 
@@ -70,11 +71,6 @@ class Scale[T: ClassTag](val size: Array[Int])
   override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
     (Array(cmul.parameters()._1(0), cadd.parameters()._1(0)),
       Array(cmul.parameters()._2(0), cadd.parameters()._2(0)))
-  }
-
-  override def getParametersTable(): Table = {
-    T(getName() -> T("weight" -> cmul.weight, "bias" -> cadd.bias,
-      "gradWeight" -> cmul.gradWeight, "gradBias" -> cadd.gradBias))
   }
 
   override def toString: String = "nn.Scale"

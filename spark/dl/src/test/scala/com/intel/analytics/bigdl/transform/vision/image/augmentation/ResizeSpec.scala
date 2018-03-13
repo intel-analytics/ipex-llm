@@ -36,6 +36,19 @@ class ResizeSpec extends FlatSpec with Matchers {
     println(tmpFile)
   }
 
+  "resize useScaleFactor false" should "work properly" in {
+    val data = ImageFrame.read(resource.getFile)
+    val transformer = Resize(300, 300, useScaleFactor = false)
+    val transformed = transformer(data)
+    val imageFeature = transformed.asInstanceOf[LocalImageFrame].array(0)
+    imageFeature.getHeight() should be(300)
+    imageFeature.getWidth() should be(300)
+
+    val tmpFile = java.io.File.createTempFile("module", ".jpg")
+    Imgcodecs.imwrite(tmpFile.toString, imageFeature.opencvMat())
+    println(tmpFile)
+  }
+
   "AspectScale" should "work properly" in {
     val data = ImageFrame.read(resource.getFile)
     val transformer = AspectScale(750, maxSize = 3000)

@@ -17,6 +17,10 @@
 package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.keras.{KerasBaseSpec, KerasRunner, Regularizer}
+import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
+
+import scala.util.Random
 
 class ActivityRegularizationSpec extends KerasBaseSpec {
   "ActivityRegularization" should "same as keras" in {
@@ -48,5 +52,14 @@ class ActivityRegularizationSpec extends KerasBaseSpec {
 
     val bgradInput = ar.backward(input, boutput.clone())
     bgradInput.almostEqual(gradInput, 1e-5) should be(true)
+  }
+}
+
+class ActivityRegularizationSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val activityRegularization = ActivityRegularization[Float](l1 = 0.01, l2 = 0.01).
+      setName("activityRegularization")
+    val input = Tensor[Float](5, 5).apply1(_ => Random.nextFloat())
+    runSerializationTest(activityRegularization, input)
   }
 }

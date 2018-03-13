@@ -17,7 +17,10 @@
 package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
+
+import scala.util.Random
 
   /**
   * Created by yao on 9/20/16.
@@ -40,5 +43,13 @@ class IdentitySpec extends FlatSpec with Matchers {
 
     val gradInput = module.backward(input, gradOutput)
     assert(gradInput equals gradOutput)
+  }
+}
+
+class IdentitySerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val identity = Identity[Float]().setName("identity")
+    val input = Tensor[Float](10).apply1(_ => Random.nextFloat())
+    runSerializationTest(identity, input)
   }
 }

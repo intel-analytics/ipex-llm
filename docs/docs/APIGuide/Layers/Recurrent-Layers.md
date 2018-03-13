@@ -1560,87 +1560,70 @@ import com.intel.analytics.bigdl.utils.T
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
 
-val layer = TimeDistributed(Sum(1, squeeze = false, nInputDims = 2))
-val input = Tensor(T(T(
-  T(
-    T(1.0f, 2.0f),
-    T(3.0f, 4.0f)
-  ),
-  T(
-    T(2.0f, 3.0f),
-    T(4.0f, 5.0f)
-  )
-)))
+val layer = TimeDistributed(Linear(3, 2))
+val input = Tensor(2, 3, 3).rand()
 layer.forward(input)
-layer.backward(input, Tensor(T(T(
-  T(
-    T(0.1f, 0.2f)
-  ),
-  T(
-    T(0.3f, 0.4f)
-  )
-))))
+```
+Input:
+```
+input: com.intel.analytics.bigdl.tensor.Tensor[Float] =
+(1,.,.) =
+0.101178855	0.24703512	0.5021639
+0.44016296	0.5694682	0.9227419
+0.44305947	0.99880695	0.061260134
+
+(2,.,.) =
+0.7969414	0.20669454	0.27941006
+0.22917499	0.21765763	0.22535545
+0.389746	0.3487412	0.09982143
+
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 2x3x3]
 ```
 Gives the output,
 ```
-(1,1,.,.) =
-4.0     6.0
+res0: com.intel.analytics.bigdl.tensor.Tensor[Float] =
+(1,.,.) =
+0.38540328	-0.4002408
+0.64361376	-0.33423418
+0.4066636	-0.36263257
 
-(1,2,.,.) =
-6.0     8.0
+(2,.,.) =
+0.023447769	-0.77664447
+0.18752512	-0.53049827
+0.13314348	-0.5799509
 
-[com.intel.analytics.bigdl.tensor.DenseTensor of size 1x2x1x2]
-
-(1,1,.,.) =
-0.1     0.2
-0.1     0.2
-
-(1,2,.,.) =
-0.3     0.4
-0.3     0.4
-
-[com.intel.analytics.bigdl.tensor.DenseTensor of size 1x2x2x2]
-
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 2x3x2]
 ```
 
 **Python example:**
 ```python
-from bigdl.nn.layer import TimeDistributed,Sum
+from bigdl.nn.layer import TimeDistributed,Linear
 import numpy as np
 
-layer = TimeDistributed(Sum(1, squeeze = False, n_input_dims = 2))
+layer = TimeDistributed(Linear(3, 2))
 
-input = np.array([[
-  [
-    [1.0, 2.0],
-    [3.0, 4.0]
-  ],
-  [
-    [2.0, 3.0],
-    [4.0, 5.0]
-  ]
-]])
+input = np.random.random([2, 3, 3])
 layer.forward(input)
-layer.backward(input, np.array([[
-  [
-    [0.1, 0.2]
-  ],
-  [
-    [0.3, 0.4]
-  ]
-]]))
+```
+Input:
+```
+array([[[ 0.3033118 ,  0.14485594,  0.58064829],
+        [ 0.72854527,  0.5051743 ,  0.42110462],
+        [ 0.78737995,  0.62032715,  0.20156085]],
+
+       [[ 0.17852246,  0.72772084,  0.24014506],
+        [ 0.01344367,  0.47754396,  0.65238232],
+        [ 0.29103965,  0.50614159,  0.2816109 ]]])
 ```
 Gives the output,
 ```
-array([[[[ 4.,  6.]],
+array([[[-0.10115834, -0.19001636],
+        [-0.1446743 , -0.47479331],
+        [-0.14148773, -0.61194205]],
 
-        [[ 6.,  8.]]]], dtype=float32)
-        
-array([[[[ 0.1       ,  0.2       ],
-         [ 0.1       ,  0.2       ]],
-
-        [[ 0.30000001,  0.40000001],
-         [ 0.30000001,  0.40000001]]]], dtype=float32)
+       [[-0.28484675, -0.58061397],
+        [-0.28640711, -0.29945394],
+        [-0.18956462, -0.46879411]]], dtype=float32)
 ```
 ---
 

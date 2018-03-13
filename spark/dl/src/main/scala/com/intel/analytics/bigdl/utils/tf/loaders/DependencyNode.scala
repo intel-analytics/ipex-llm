@@ -29,6 +29,6 @@ import scala.reflect.ClassTag
 class DependencyNode extends TensorflowOpsLoader {
   override def build[T: ClassTag](nodeDef: NodeDef, byteOrder: ByteOrder,
     context: Context[T])(implicit ev: TensorNumeric[T]): Module[T] = {
-    ControlDependency[T]()
+    new ControlDependency[T]()
   }
 }

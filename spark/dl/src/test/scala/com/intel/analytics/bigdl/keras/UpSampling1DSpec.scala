@@ -17,9 +17,10 @@
 package com.intel.analytics.bigdl.keras
 
 import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.utils.{Shape, TestUtils}
 
 class UpSampling1DSpec extends KerasBaseSpec {
-  "updample1d forward with size 1" should "work properly" in {
+  "UpSampling1D forward with size 1" should "work properly" in {
     val kerasCode =
       """
         |input_tensor = Input(shape=[3, 4])
@@ -31,7 +32,7 @@ class UpSampling1DSpec extends KerasBaseSpec {
     checkOutputAndGrad(model, kerasCode)
   }
 
-  "updample1d forward with size 2" should "work properly" in {
+  "UpSampling1D forward with size 2" should "work properly" in {
     val kerasCode =
       """
         |input_tensor = Input(shape=[3, 4])
@@ -41,6 +42,11 @@ class UpSampling1DSpec extends KerasBaseSpec {
       """.stripMargin
     val model = UpSampling1D[Float](2)
     checkOutputAndGrad(model, kerasCode)
+  }
+
+  "UpSampling1D computeOutputShape" should "work properly" in {
+    val layer = UpSampling1D[Float](3)
+    TestUtils.compareOutputShape(layer, Shape(4, 5)) should be (true)
   }
 
 }

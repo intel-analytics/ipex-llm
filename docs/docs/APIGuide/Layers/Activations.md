@@ -1,5 +1,3 @@
-
----
 ## SoftSign ##
 
 **Scala:**
@@ -846,6 +844,64 @@ l1Penalty = L1Penalty(1, True, True)
 
 ```
 ---
+## NegativeEntropyPenalty ##
+
+**Scala:**
+```scala
+val penalty = NegativeEntropyPenalty(beta = 0.01)
+```
+**Python:**
+```python
+penalty = NegativeEntropyPenalty(beta = 0.01)
+```
+Penalize the input multinomial distribution if it has low entropy.
+The input to this layer should be a batch of vector each representing a
+multinomial distribution. The input is typically the output of a softmax layer.
+
+For forward, the output is the same as input and a NegativeEntropy loss of the latent state will be calculated each time
+For backward, gradInput = gradOutput + gradLoss
+
+This can be used in reinforcement learning to discourage the policy from
+collapsing to a single action for a given state, which improves exploration.
+See the A3C paper for more detail (https://arxiv.org/pdf/1602.01783.pdf).
+
+
+**Scala example:**
+```scala
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.tensor._
+val penalty = NegativeEntropyPenalty(0.01)
+val input = Tensor(3, 3).rand()
+
+> print(input)
+0.0370419	0.03080979	0.22083037	
+0.1547358	0.018475588	0.8102709	
+0.86393493	0.7081842	0.13717912	
+[com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 3x3]
+
+
+> print(l1Penalty.forward(input))
+0.0370419	0.03080979	0.22083037	
+0.1547358	0.018475588	0.8102709	
+0.86393493	0.7081842	0.13717912	
+[com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 3x3]	
+
+```
+
+**Python example:**
+```python
+from bigdl.nn.layer import *
+penalty = NegativeEntropyPenalty(0.01)
+
+>>> l1Penalty.forward(np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]]))
+[array([[ 1.,  2.,  3.],
+       [ 4.,  5.,  6.],
+       [ 7.,  8.,  9.]], dtype=float32)]
+
+```
+
+---
 ## HardShrink ##
 
 **Scala:**
@@ -1455,7 +1511,7 @@ import com.intel.analytics.bigdl.tensor.Tensor
 
 val input = Tensor[Float](2, 3, 4).rand()
 val gradOutput = Tensor[Float](2, 3, 4).rand()
-val srelu = SReLU[Float]()
+val srelu = SReLU[Float]([3, 4])
 val output = srelu.forward(input)
 val gradInput = srelu.backward(input, gradOutput)
 
@@ -1499,7 +1555,7 @@ The python code is,
 from bigdl.nn.layer import *
 import numpy as np
 
-module = SReLU()
+module = SReLU([3, 4])
 input = np.random.randn(2, 3, 4)
 output = module.forward(input)
 gradOutput = np.random.randn(2, 3, 4)

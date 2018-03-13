@@ -21,6 +21,7 @@
 # The Keras version we support and test is Keras 1.2.2 with TensorFlow backend.
 # See README.md for how to run this example.
 
+from optparse import OptionParser
 from bigdl.examples.keras.keras_utils import *
 
 import keras.backend
@@ -32,7 +33,7 @@ else:
 
 def get_mnist(sc, data_type="train", location="/tmp/mnist"):
     """
-    Download or load MNIST dataset.
+    Download or load MNIST dataset to/from the specified path.
     Normalize and transform input data into an RDD of Sample
     """
     from bigdl.dataset import mnist
@@ -73,6 +74,12 @@ def build_keras_model():
 
 
 if __name__ == "__main__":
+    parser = OptionParser()
+    parser.add_option("-b", "--batchSize", type=int, dest="batchSize", default="128")
+    parser.add_option("-m", "--max_epoch", type=int, dest="max_epoch", default="12")
+    parser.add_option("-d", "--dataPath", dest="dataPath", default="/tmp/mnist")
+    (options, args) = parser.parse_args(sys.argv)
+
     keras_model = build_keras_model()
     json_path = "/tmp/lenet.json"
     save_keras_definition(keras_model, json_path)
@@ -90,18 +97,18 @@ if __name__ == "__main__":
     show_bigdl_info_logs()
     init_engine()
 
-    train_data = get_mnist(sc, "train")
-    test_data = get_mnist(sc, "test")
+    train_data = get_mnist(sc, "train", options.dataPath)
+    test_data = get_mnist(sc, "test", options.dataPath)
 
     optimizer = Optimizer(
         model=bigdl_model,
         training_rdd=train_data,
         criterion=ClassNLLCriterion(logProbAsInput=False),
         optim_method=Adadelta(),
-        end_trigger=MaxEpoch(12),
-        batch_size=128)
+        end_trigger=MaxEpoch(options.max_epoch),
+        batch_size=options.batchSize)
     optimizer.set_validation(
-        batch_size=128,
+        batch_size=options.batchSize,
         val_rdd=test_data,
         trigger=EveryEpoch(),
         val_method=[Top1Accuracy()]

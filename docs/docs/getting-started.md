@@ -19,11 +19,12 @@ Your data need to be transformed into RDD of [Sample](APIGuide/Data.md#sample) i
 
 If you have an existing model and want to use BigDL only for prediction, you need first load the model, and then do prediction or evaluation. 
 
-BigDL supports loading models trained and saved in BigDL, or a trained Caffe or Tensorflow model. 
+BigDL supports loading models trained and saved in BigDL, or a trained Tensorflow, Caffe or Keras model. 
 
 * To load a BigDL model, you can use `Module.load` interface (Scala) or `Model.load` (in Python). Refer to [Model Save](APIGuide/Module/#model-save) for details.  
 * To load a Tensorflow model, refer to [Tensorflow Support](ProgrammingGuide/tensorflow-support.md) for details.
 * To load a Caffe model, refer to [Caffe Support](ProgrammingGuide/caffe-support.md) for details.
+* To load a Keras model, refer to [Keras Support](ProgrammingGuide/keras-support.md) for details.
 
 Refer to [Model Predict](APIGuide/Module/#model-prediction) for details about how to use a model for prediction.
 

@@ -41,10 +41,10 @@ class SpatialWithinChannelLRN[T: ClassTag]
     .add(new ConcatTable[T]()
       .add(Identity[T]())
       .add(Sequential[T]()
-        .add(Power[T, T](2))
+        .add(Power[T](2))
         .add(SpatialAveragePooling[T](size, size, padW = (size - 1) / 2,
           padH = (size - 1) / 2).ceil())
-        .add(Power[T, T](-beta, alpha, 1))))
+        .add(Power[T](-beta, alpha, 1))))
     .add(CMulTable[T]())
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {

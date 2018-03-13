@@ -19,6 +19,7 @@ import os
 import glob
 import warnings
 
+
 def exist_pyspark():
     # check whether pyspark package exists
     try:
@@ -26,6 +27,7 @@ def exist_pyspark():
         return True
     except ImportError:
         return False
+
 
 def check_spark_source_conflict(spark_home, pyspark_path):
     # check if both spark_home env var and pyspark package exist
@@ -37,6 +39,7 @@ def check_spark_source_conflict(spark_home, pyspark_path):
                       "please use one source only to avoid conflict. " + \
                       "For example, you can unset SPARK_HOME and use pyspark only."
         warnings.warn(warning_msg)
+
 
 def __prepare_spark_env():
     spark_home = os.environ.get('SPARK_HOME', None)
@@ -65,25 +68,32 @@ def __prepare_bigdl_env():
     def append_path(env_var_name, path):
         try:
             print("Adding %s to %s" % (path, env_var_name))
-            os.environ[env_var_name] = path + ":" + os.environ[
-                env_var_name]  # noqa
+            os.environ[env_var_name] = path + ":" + os.environ[env_var_name]  # noqa
         except KeyError:
             os.environ[env_var_name] = path
+
+    if bigdl_classpath:
+        append_path("BIGDL_JARS", bigdl_classpath)
 
     if conf_paths:
         assert len(conf_paths) == 1, "Expecting one conf: %s" % len(conf_paths)
         print("Prepending %s to sys.path" % conf_paths[0])
         sys.path.insert(0, conf_paths[0])
 
-    if bigdl_classpath and is_spark_below_2_2():
-        append_path("SPARK_CLASSPATH", bigdl_classpath)
+    if os.environ.get("BIGDL_JARS", None) and is_spark_below_2_2():
+        for jar in os.environ["BIGDL_JARS"].split(":"):
+            append_path("SPARK_CLASSPATH", jar)
+
+    if os.environ.get("BIGDL_PACKAGES", None):
+        for package in os.environ["BIGDL_PACKAGES"].split(":"):
+            sys.path.insert(0, package)
 
 
 def get_bigdl_classpath():
     """
     Get and return the jar path for bigdl if exists.
     """
-    if(os.getenv("BIGDL_CLASSPATH")):
+    if os.getenv("BIGDL_CLASSPATH"):
         return os.environ["BIGDL_CLASSPATH"]
     jar_dir = os.path.abspath(__file__ + "/../../")
     jar_paths = glob.glob(os.path.join(jar_dir, "share/lib/*.jar"))

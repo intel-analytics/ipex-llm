@@ -20,6 +20,9 @@ import com.intel.analytics.bigdl.nn.abstractnn.{TensorCriterion, TensorModule}
 import com.intel.analytics.bigdl.tensor.Tensor
 import org.scalatest.{FlatSpec, Matchers}
 import com.intel.analytics.bigdl.utils.RandomGenerator._
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
+
+import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Parallel
 class AddSpec extends FlatSpec with Matchers {
@@ -54,5 +57,13 @@ class AddSpec extends FlatSpec with Matchers {
     gradInput1 should be (gradInput2)
 
     layer2.gradBias should be (layer1.gradBias.mul(2))
+  }
+}
+
+class AddSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val add = Add[Float](5).setName("add")
+    val input = Tensor[Float](5).apply1(_ => Random.nextFloat())
+    runSerializationTest(add, input)
   }
 }

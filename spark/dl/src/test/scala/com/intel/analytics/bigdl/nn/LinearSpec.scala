@@ -23,7 +23,10 @@ import com.intel.analytics.bigdl._
 import scala.math._
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.optim.{L1Regularizer, L2Regularizer, SGD}
-import com.intel.analytics.bigdl.utils.{RandomGenerator, T}
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
+import com.intel.analytics.bigdl.utils.{RandomGenerator, Shape, T, TestUtils}
+
+import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Parallel
 class LinearSpec extends FlatSpec with Matchers {
@@ -184,7 +187,8 @@ class LinearSpec extends FlatSpec with Matchers {
       val grad = mse.backward(output, res)
       linear.zeroGradParameters()
       linear.backward(input, grad)
-      linear.updateParameters(0.5 / log(i + 3))
+      val (weight, gradWeight) = linear.getParameters()
+      weight.add(-0.5 / log(i + 3), gradWeight)
     }
     val params = linear.parameters()
     val weight = params._1(0)
@@ -236,7 +240,9 @@ class LinearSpec extends FlatSpec with Matchers {
       val grad = mse.backward(output, res)
       linear.zeroGradParameters()
       linear.backward(input, grad)
-      linear.updateParameters(0.5 / log(i + 3))
+
+      val (weight, gradWeight) = linear.getParameters()
+      weight.add(-0.5 / log(i + 3), gradWeight)
     }
     val params = linear.parameters()
     val weight = params._1(0)
@@ -288,7 +294,8 @@ class LinearSpec extends FlatSpec with Matchers {
       val grad = mse.backward(output, res)
       linear.zeroGradParameters()
       linear.backward(input, grad)
-      linear.updateParameters(0.5 / log(i + 3))
+      val (weight, gradWeight) = linear.getParameters()
+      weight.add(-0.5 / log(i + 3), gradWeight)
     }
     val params = linear.parameters()
     val weight = params._1(0)
@@ -402,5 +409,18 @@ class LinearSpec extends FlatSpec with Matchers {
     val exceptedBias = Tensor[Float](T(0f, 0f, 0f, 0f, 0f))
     linear.weight should be (exceptedWeight)
     linear.bias should be (exceptedBias)
+  }
+
+  "Linear computeOutputShape" should "work properly" in {
+    val linear = Linear[Float](3, 5)
+    TestUtils.compareOutputShape(linear, Shape(3)) should be (true)
+  }
+}
+
+class LinearSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val linear = Linear[Float](10, 2).setName("linear")
+    val input = Tensor[Float](10).apply1(_ => Random.nextFloat())
+    runSerializationTest(linear, input)
   }
 }

@@ -1,5 +1,3 @@
-
----
 ## SparseLinear ##
 
 **Scala:**

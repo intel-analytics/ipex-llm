@@ -40,12 +40,12 @@ class TestLayer():
 
     def transformer_test(self, transformer):
         image_frame = ImageFrame.read(self.image_path)
-        transformer(image_frame)
-        image_frame.get_image()
+        transformed = transformer(image_frame)
+        transformed.get_image()
 
         image_frame = ImageFrame.read(self.image_path, self.sc)
-        transformer(image_frame)
-        images = image_frame.get_image()
+        transformed = transformer(image_frame)
+        images = transformed.get_image()
         images.count()
 
     def test_get_image(self):
@@ -142,6 +142,10 @@ class TestLayer():
                         max_expand_ratio=2.0)
         self.transformer_test(expand)
 
+    def test_fix_expand(self):
+        expand = FixExpand(1000, 1000)
+        self.transformer_test(expand)
+
     def test_random_transformer(self):
         transformer = RandomTransformer(HFlip(), 0.5)
         self.transformer_test(transformer)
@@ -160,6 +164,10 @@ class TestLayer():
         transformer = MatToFloats()
         self.transformer_test(transformer)
 
+    def test_mat_to_floats_no_share(self):
+        transformer = MatToFloats(share_buffer=False)
+        self.transformer_test(transformer)
+
     def test_mat_to_tensor(self):
         transformer = MatToTensor()
         self.transformer_test(transformer)
@@ -171,8 +179,16 @@ class TestLayer():
     def test_image_frame_transform(self):
         transformer = MatToTensor()
         image_frame = ImageFrame.read(self.image_path)
-        image_frame.transform(transformer)
-        image_frame.get_image()
+        transformed = image_frame.transform(transformer)
+        transformed.get_image()
+
+    def test_empty_get_predict_local(self):
+        image_frame = ImageFrame.read(self.image_path)
+        image_frame.get_predict()
+
+    def test_empty_get_predict_distributed(self):
+        image_frame = ImageFrame.read(self.image_path, self.sc)
+        image_frame.get_predict()
 
 
 if __name__ == "__main__":

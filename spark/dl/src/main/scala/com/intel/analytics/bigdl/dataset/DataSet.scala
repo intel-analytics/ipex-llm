@@ -16,12 +16,15 @@
 
 package com.intel.analytics.bigdl.dataset
 
+import java.nio.ByteBuffer
 import java.nio.file.{Files, Path, Paths}
 import java.util.concurrent.atomic.AtomicInteger
 
 import com.intel.analytics.bigdl.DataSet
 import com.intel.analytics.bigdl.dataset.image.{LabeledBGRImage, _}
-import com.intel.analytics.bigdl.utils.{Engine, RandomGenerator}
+import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.transform.vision.image.{DistributedImageFrame, ImageFeature, ImageFrame, LocalImageFrame}
+import com.intel.analytics.bigdl.utils.{Engine, RandomGenerator, T}
 import org.apache.hadoop.io.Text
 import org.apache.log4j.Logger
 import org.apache.spark.SparkContext
@@ -363,6 +366,15 @@ object DataSet {
     )
   }
 
+  def imageFrame(imageFrame: ImageFrame): DataSet[ImageFeature] = {
+    imageFrame match {
+      case distributedImageFrame: DistributedImageFrame =>
+        rdd[ImageFeature](distributedImageFrame.rdd)
+      case localImageFrame: LocalImageFrame =>
+        array(localImageFrame.array)
+    }
+  }
+
   /**
    * Wrap a RDD as a DataSet.
    * @param data
@@ -546,6 +558,32 @@ object DataSet {
         ByteRecord(image._2.copyBytes(), readLabel(image._1).toFloat)
       }).filter(_.label <= classNum)
       rawData.coalesce(num, true)
+    }
+
+    /**
+     * Extract hadoop sequence files from an HDFS path as ImageFrame
+     * @param url sequence files folder path
+     * @param sc spark context
+     * @param classNum class number of data
+     * @param partitionNum partition number, default: Engine.nodeNumber() * Engine.coreNumber()
+     * @return
+     */
+    private[bigdl] def filesToImageFrame(url: String, sc: SparkContext,
+      classNum: Int, partitionNum: Option[Int] = None): ImageFrame = {
+      val num = partitionNum.getOrElse(Engine.nodeNumber() * Engine.coreNumber())
+      val rawData = sc.sequenceFile(url, classOf[Text], classOf[Text], num).map(image => {
+        val rawBytes = image._2.copyBytes()
+        val label = Tensor[Float](T(readLabel(image._1).toFloat))
+        val imgBuffer = ByteBuffer.wrap(rawBytes)
+        val width = imgBuffer.getInt
+        val height = imgBuffer.getInt
+        val bytes = new Array[Byte](3 * width * height)
+        System.arraycopy(imgBuffer.array(), 8, bytes, 0, bytes.length)
+        val imf = ImageFeature(bytes, label)
+        imf(ImageFeature.originalSize) = (height, width, 3)
+        imf
+      }).filter(_[Tensor[Float]](ImageFeature.label).valueAt(1) <= classNum)
+      ImageFrame.rdd(rawData)
     }
 
     private[bigdl] def findFiles(path: Path): Array[LocalSeqFilePath] = {

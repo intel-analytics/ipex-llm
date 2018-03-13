@@ -18,7 +18,10 @@ package com.intel.analytics.bigdl.nn.tf
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
+
+import scala.util.Random
 
 class ConstSpec extends FlatSpec with Matchers {
   "Const forward tensor" should "be correct" in {
@@ -28,31 +31,19 @@ class ConstSpec extends FlatSpec with Matchers {
     layer.forward(input) should be(value)
   }
 
-  "Const backward tensor" should "be correct" in {
-    val value = Tensor(2, 3).rand()
-    val layer = Const(value)
-    val input = Tensor(4, 5).rand()
-    val gradOutput = Tensor(2, 3).rand()
-    layer.forward(input) should be(value)
-    val grad = layer.backward(input, gradOutput).toTensor
-    grad should be(Tensor(4, 5).zero())
-  }
-
   "Const forward tensors" should "be correct" in {
     val value = Tensor(2, 3).rand()
     val layer = Const(value)
     val input = T(Tensor(4, 5).rand(), Tensor(3, 4).rand())
     layer.forward(input) should be(value)
   }
+}
 
-  "Const backward tensor" should "be correct when input is tensors" in {
-    val value = Tensor(2, 3).rand()
-    val layer = Const(value)
-    val input = T(Tensor(4, 5).rand(), Tensor(3, 4).rand())
-    val gradOutput = Tensor(2, 3).rand()
-    layer.forward(input) should be(value)
-    val grad = layer.backward(input, gradOutput).toTable
-    grad[Tensor[Float]](1) should be(Tensor(4, 5).zero())
-    grad[Tensor[Float]](2) should be(Tensor(3, 4).zero())
+class ConstSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val value = Tensor[Float](3).apply1(_ => Random.nextFloat())
+    val const = Const[Float, Float](value).setName("const")
+    val input = Tensor[Float](3).apply1(_ => Random.nextFloat())
+    runSerializationTest(const, input)
   }
 }

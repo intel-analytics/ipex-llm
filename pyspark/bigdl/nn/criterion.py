@@ -491,12 +491,12 @@ class KLDCriterion(Criterion):
     The input has to be a table. The first element of input is the mean of the distribution,
     the second element of input is the log_variance of the distribution. The input distribution is
     assumed to be diagonal.
-    >>> KLDCriterion = KLDCriterion()
+    >>> KLDCriterion = KLDCriterion(True)
     creating: createKLDCriterion
     '''
 
-    def __init__(self, bigdl_type="float"):
-        super(KLDCriterion, self).__init__(None, bigdl_type)
+    def __init__(self, size_average=True, bigdl_type="float"):
+        super(KLDCriterion, self).__init__(None, bigdl_type, size_average)
 
 
 class GaussianCriterion(Criterion):
@@ -596,6 +596,29 @@ class SoftmaxWithCriterion(Criterion):
                                                    ignore_label,
                                                    normalize_mode)
 
+class TimeDistributedMaskCriterion(Criterion):
+    '''
+    This class is intended to support inputs with 3 or more dimensions.
+    Apply Any Provided Criterion to every temporal slice of an input.
+    In addition, it supports padding mask.
+
+    eg. if the target is [ [-1, 1, 2, 3, -1], [5, 4, 3, -1, -1] ],
+      and set the paddingValue property to -1, then the loss of -1 would not
+      be accumulated and the loss is only divided by 6 (ont including the amount of
+      -1, in this case, we are only interested in 1, 2, 3, 5, 4, 3)
+
+    :param criterion: embedded criterion
+    :param padding_value: padding value
+
+
+    >>> td = TimeDistributedMaskCriterion(ClassNLLCriterion())
+    creating: createClassNLLCriterion
+    creating: createTimeDistributedMaskCriterion
+    '''
+
+    def __init__(self, criterion, padding_value=0, bigdl_type="float"):
+        super(TimeDistributedMaskCriterion, self).__init__(
+            None, bigdl_type, criterion, padding_value)
 
 class TimeDistributedCriterion(Criterion):
     '''
@@ -820,7 +843,7 @@ class MeanAbsolutePercentageCriterion(Criterion):
     '''
     This method is same as `mean_absolute_percentage_error` loss in keras.
     It caculates diff = K.abs((y - x) / K.clip(K.abs(y), K.epsilon(), Double.MaxValue))
-    and return 100 * K.mean(diff) as outpout. Here, the x and y can have or not have a batch.
+    and return 100 * K.mean(diff) as output. Here, the x and y can have or not have a batch.
     >>> error = MeanAbsolutePercentageCriterion()
     creating: createMeanAbsolutePercentageCriterion
     '''
@@ -873,6 +896,84 @@ class PoissonCriterion(Criterion):
     def __init__(self,
                  bigdl_type="float"):
         super(PoissonCriterion, self).__init__(None, bigdl_type)
+
+class TransformerCriterion(Criterion):
+    '''
+    The criterion that takes two modules to transform input and target, and take
+    one criterion to compute the loss with the transformed input and target.
+    
+    This criterion can be used to construct complex criterion. For example, the
+    `inputTransformer` and `targetTransformer` can be pre-trained CNN networks,
+    and we can use the networks' output to compute the high-level feature
+    reconstruction loss, which is commonly used in areas like neural style transfer
+    (https://arxiv.org/abs/1508.06576), texture synthesis (https://arxiv.org/abs/1505.07376),
+    .etc.
+    
+    >>> trans = TransformerCriterion(MSECriterion())
+    creating: createMSECriterion
+    creating: createTransformerCriterion
+    '''
+
+    def __init__(self,
+                 criterion,
+                 input_transformer = None,
+                 target_transformer = None,
+                 bigdl_type="float"):
+        super(TransformerCriterion, self).__init__(None,
+                                                   bigdl_type,
+                                                   criterion,
+                                                   input_transformer,
+                                                   target_transformer)
+
+class DotProductCriterion(Criterion):
+    '''
+    Compute the dot product of input and target tensor.
+    Input and target are required to have the same size.
+    :param size_average: whether to average over each observations in the same batch
+    
+    >>> dp =DotProductCriterion(False)
+    creating: createDotProductCriterion
+    '''
+
+    def __init__(self,
+                 size_average = False,
+                 bigdl_type="float"):
+        super(DotProductCriterion, self).__init__(None,
+                                                  bigdl_type,
+                                                  size_average)
+
+class PGCriterion(Criterion):
+    '''
+    The Criterion to compute the negative policy gradient given a
+    multinomial distribution and the sampled action and reward.
+
+    The input to this criterion should be a 2-D tensor representing
+    a batch of multinomial distribution, the target should also be
+    a 2-D tensor with the same size of input, representing the sampled
+    action and reward/advantage with the index of non-zero element in the vector
+    represents the sampled action and the non-zero element itself represents
+    the reward. If the action is space is large, you should consider using
+    SparseTensor for target.
+    
+    The loss computed is simple the standard policy gradient,
+
+      loss = - 1/n * sum(R_{n} dot_product log(P_{n}))
+
+    where R_{n} is the reward vector, and P_{n} is the input distribution.
+
+    :param sizeAverage whether to average over each observations in the same batch
+                           
+    >>> pg = PGCriterion()
+    creating: createPGCriterion
+    '''
+
+    def __init__(self,
+                 sizeAverage = False,
+                 bigdl_type="float"):
+        super(PGCriterion, self).__init__(None,
+                                          bigdl_type,
+                                          sizeAverage)
+
 
 def _test():
     import doctest

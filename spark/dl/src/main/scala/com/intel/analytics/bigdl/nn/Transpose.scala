@@ -20,7 +20,8 @@ import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, Tensor
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.{NumericWildcard, TensorNumeric}
 import com.intel.analytics.bigdl.utils.serializer._
-import serialization.Bigdl.{AttrValue, BigDLModule}
+import com.intel.analytics.bigdl.utils.serializer.converters.DataConverter
+import com.intel.analytics.bigdl.serialization.Bigdl.{AttrValue, BigDLModule}
 
 import scala.reflect.ClassTag
 import scala.reflect.runtime.universe
@@ -124,7 +125,7 @@ object Transpose extends ModuleSerializable {
     while (i < size) {
       val nextPermutationBuilder = AttrValue.newBuilder
       val arr : Array[Int] = Array(transpose.permutations(i)._1,
-        transpose.permutations(i)_2)
+        transpose.permutations(i)._2)
       DataConverter.setAttributeValue(context, nextPermutationBuilder,
         arr, universe.typeOf[Array[Int]])
       transposeBuilder.putAttr(s"permutation_$i", nextPermutationBuilder.build)

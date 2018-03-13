@@ -2650,7 +2650,7 @@ object DenseTensor {
     gauss
   }
 
-  private[tensor] def canFastBroadcast[@specialized T](tensor: Tensor[T],
+  private[tensor] def canFastBroadcast[T](tensor: Tensor[T],
     other: Tensor[T]): Boolean = {
     if (tensor.nDimension < other.nDimension()) return false
 
@@ -2671,7 +2671,7 @@ object DenseTensor {
     return true
   }
 
-  private[tensor] def expandSize[@specialized T: ClassTag](tensor: Tensor[T],
+  private[tensor] def expandSize[T: ClassTag](tensor: Tensor[T],
     other: Tensor[T]): Array[Int] = {
     val errorMsg = s"tensor size not match ${tensor.size.mkString("x")} " +
       s"${other.size.mkString("x")}"
@@ -2701,16 +2701,16 @@ object DenseTensor {
         sparseTensor: SparseTensor[T],
         res: Tensor[T] = null)(implicit ev: TensorNumeric[T]): Tensor[T] = {
     val dt = if (null == res) Tensor(sparseTensor.size()) else res
-    var i = 0
-    val index = new Array[Int](dt.dim())
-    while (i < sparseTensor._indices(0).length) {
-      var j = 0
-      while (j < index.length) {
-        index(j) = sparseTensor._indices(j)(i) + 1
-        j += 1
+    val srcIndex = new Array[Int](dt.dim())
+    val tgtIndex = new Array[Int](dt.dim())
+    // fill DenseTensor with sparseTensors' active values one by one
+    (0 until sparseTensor._nElement).foreach { i =>
+      // targetIndex = sourceIndex - indicesOffset
+      srcIndex.indices.foreach { j =>
+        srcIndex(j) = sparseTensor._indices(j)(i + sparseTensor._storageOffset) + 1
+        tgtIndex(j) = srcIndex(j) - sparseTensor._indicesOffset(j)
       }
-      dt(index) = sparseTensor(index)
-      i += 1
+      dt(tgtIndex) = sparseTensor(srcIndex)
     }
     dt
   }

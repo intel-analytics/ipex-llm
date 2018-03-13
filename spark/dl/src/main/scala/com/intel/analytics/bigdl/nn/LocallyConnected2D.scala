@@ -19,7 +19,7 @@ import com.intel.analytics.bigdl.nn.abstractnn.{DataFormat, Initializable, Tenso
 import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.{DoubleType, FloatType, Tensor}
-import com.intel.analytics.bigdl.utils.{Engine, T, Table}
+import com.intel.analytics.bigdl.utils.{Engine, Shape, T, Table}
 
 import scala.concurrent.Future
 import scala.reflect.ClassTag
@@ -217,9 +217,22 @@ class LocallyConnected2D[T: ClassTag](
     }
   }
 
+  override def computeOutputShape(inputShape: Shape): Shape = {
+    val input = inputShape.toSingle().toArray
+    require(input.length == 4,
+      s"LocallyConnected2D requires 4D input, but got input dim ${input.length}")
+    val (dimHeight, dimWidth, channelDim) = format.getHWCDims(input.length)
+    require(input(channelDim -1) == nInputPlane, s"input channel size " +
+      s"${input(channelDim -1)} is not the same as nInputPlane $nInputPlane")
+    require(outputWidth >= 1 && outputHeight >= 1,
+      s"output size is too small. outputWidth: $outputWidth, outputHeight: $outputHeight")
+    val outputShape = getOutputShape(outputHeight, outputWidth)
+    Shape(Array(input(0)) ++ outputShape)
+  }
+
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
     require(input.dim() == 3 || input.dim() == 4,
-      "SpatialConvolution: " + ErrorInfo.constrainInputAs3DOrBatch)
+      "LocallyConnected2D: " + ErrorInfo.constrainInputAs3DOrBatch)
     require(input.isContiguous())
 
     val (dimHeight, dimWidth, channelDim) = format.getHWCDims(input.dim())
@@ -439,35 +452,11 @@ class LocallyConnected2D[T: ClassTag](
     }
   }
 
-  override def updateParameters(learningRate: T): Unit = {
-    weight.map(gradWeight, (a, b) => ev.minus(a, ev.times(learningRate, b)))
-    if (withBias) {
-      bias.map(gradBias, (a, b) => ev.minus(a, ev.times(learningRate, b)))
-    }
-  }
-
-  override def zeroGradParameters(): Unit = {
-    gradWeight.zero()
-    if (withBias) {
-      gradBias.zero()
-    }
-  }
-
   override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
     if (withBias) {
       (Array(this.weight, this.bias), Array(this.gradWeight, this.gradBias))
     } else {
       (Array(this.weight), Array(this.gradWeight))
-    }
-  }
-
-  override def getParametersTable(): Table = {
-    if (withBias) {
-      T(getName() -> T("weight" -> weight, "bias" -> bias,
-        "gradWeight" -> gradWeight, "gradBias" -> gradBias))
-    } else {
-      T(getName() -> T("weight" -> weight,
-        "gradWeight" -> gradWeight))
     }
   }
 

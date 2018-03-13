@@ -15,8 +15,8 @@
  */
 package com.intel.analytics.bigdl.nn.ops
 
+import com.intel.analytics.bigdl.nn.Squeeze
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.T
 import org.scalatest.{FlatSpec, Matchers}
 
 class SqueezeSpec extends FlatSpec with Matchers {
@@ -27,7 +27,7 @@ class SqueezeSpec extends FlatSpec with Matchers {
 
     val expectOutput = input.squeeze()
 
-    val output = Squeeze().forward(input)
+    val output = Squeeze(null, false).forward(input)
     output should be(expectOutput)
   }
 }

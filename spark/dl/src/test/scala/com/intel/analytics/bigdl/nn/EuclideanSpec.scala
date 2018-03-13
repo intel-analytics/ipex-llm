@@ -20,6 +20,7 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import org.scalatest.{FlatSpec, Matchers}
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import com.intel.analytics.bigdl.utils.Table
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 
 import scala.util.Random
 
@@ -75,5 +76,13 @@ class EuclideanSpec extends FlatSpec with Matchers {
     gradInput1 should be (gradInput2)
 
     layer2.gradWeight should be (layer1.gradWeight.mul(2))
+  }
+}
+
+class EuclideanSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val euclidean = Euclidean[Float](7, 7).setName("euclidean")
+    val input = Tensor[Float](8, 7).apply1(_ => Random.nextFloat())
+    runSerializationTest(euclidean, input)
   }
 }

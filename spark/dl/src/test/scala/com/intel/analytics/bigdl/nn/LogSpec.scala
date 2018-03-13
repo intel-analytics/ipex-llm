@@ -16,7 +16,10 @@
 package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
+
+import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Parallel
 class LogSpec extends FlatSpec with Matchers {
@@ -26,7 +29,7 @@ class LogSpec extends FlatSpec with Matchers {
     val output = Tensor(Storage(Array(0.0, 0.6931471805599453, 1.0986122886681098,
       1.3862943611198906, 1.6094379124341003, 1.791759469228055)), 1, Array(2, 3))
 
-    val log = new Log[Double, Double]()
+    val log = new Log[Double]()
 
     val logOutput = log.forward(input)
 
@@ -38,10 +41,18 @@ class LogSpec extends FlatSpec with Matchers {
 
     val gradOutput = Tensor(Storage(Array(0.1, 0.2, 0.3, 0.4, 0.5, 0.6)), 1, Array(2, 3))
 
-    val log = new Log[Double, Double]()
+    val log = new Log[Double]()
 
     val gradInput = log.backward(input, gradOutput)
 
     gradInput should equal (Tensor(Storage(Array(0.1, 0.1, 0.1, 0.1, 0.1, 0.1)), 1, Array(2, 3)))
+  }
+}
+
+class LogSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val log = Log[Float]().setName("log")
+    val input = Tensor[Float](10).apply1(_ => Random.nextFloat())
+    runSerializationTest(log, input)
   }
 }

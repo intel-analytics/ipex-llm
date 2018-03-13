@@ -17,7 +17,10 @@
 package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
+
+import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Parallel
 class ExpSpec extends FlatSpec with Matchers {
@@ -51,5 +54,13 @@ class ExpSpec extends FlatSpec with Matchers {
       2980.9607151396153, 22026.47186452252, 162754.79404422196)), 1, Array(2, 3))
 
     gradInput should equal (expectedGradInput)
+  }
+}
+
+class ExpSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val exp = Exp[Float]().setName("exp")
+    val input = Tensor[Float](10).apply1(_ => Random.nextFloat())
+    runSerializationTest(exp, input)
   }
 }

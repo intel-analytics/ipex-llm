@@ -19,6 +19,7 @@ package com.intel.analytics.bigdl.transform.vision.image.opencv
 import java.io.{File, IOException, ObjectInputStream, ObjectOutputStream}
 
 import com.intel.analytics.bigdl.opencv.OpenCV
+import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.transform.vision.image.util.BoundingBox
 import org.apache.commons.io.FileUtils
 import org.opencv.core._
@@ -26,7 +27,7 @@ import org.opencv.imgcodecs.Imgcodecs
 import org.opencv.imgproc.Imgproc
 
 /**
- * OpenCVMat is a Serializable wrapper of original Mat
+ * OpenCVMat is a Serializable wrapper of org.opencv.core.Mat
  */
 class OpenCVMat() extends Mat with Serializable {
 
@@ -37,26 +38,27 @@ class OpenCVMat() extends Mat with Serializable {
 
   @throws(classOf[IOException])
   private def writeObject(out: ObjectOutputStream): Unit = {
-    out.writeInt(rows())
-    out.writeInt(cols())
-    out.writeInt(`type`())
-    val size = (elemSize() * rows() * cols()).toInt
-    out.writeInt(size)
-    val bytes = new Array[Byte](size)
-    get(rows(), cols(), bytes)
-    out.write(bytes)
+    try {
+      val bytes = OpenCVMat.imencode(this)
+      out.writeInt(`type`())
+      out.writeObject(bytes)
+    } catch {
+      case e: Exception =>
+        out.writeInt(`type`())
+        out.writeObject(Array[Byte]())
+    }
   }
 
   @throws(classOf[IOException])
   private def readObject(input: ObjectInputStream): Unit = {
-    val rows = input.readInt()
-    val cols = input.readInt()
     val t = input.readInt()
-    val size = input.readInt()
-    val data = new Array[Byte](size)
-    input.read(data)
-    create(rows, cols, t)
-    put(rows, cols, data)
+    val data = input.readObject.asInstanceOf[Array[Byte]]
+    if (data.length == 0) {
+      create(0, 0, t)
+    } else {
+      val mat = OpenCVMat.fromImageBytes(data)
+      mat.convertTo(this, t)
+    }
   }
 
   var isReleased: Boolean = false
@@ -126,7 +128,7 @@ object OpenCVMat {
     var result: OpenCVMat = null
     try {
       matOfByte = new MatOfByte(fileContent: _*)
-      mat = Imgcodecs.imdecode(matOfByte, Imgcodecs.CV_LOAD_IMAGE_COLOR)
+      mat = Imgcodecs.imdecode(matOfByte, Imgcodecs.CV_LOAD_IMAGE_UNCHANGED)
       result = new OpenCVMat(mat)
     } catch {
       case e: Exception =>
@@ -164,10 +166,15 @@ object OpenCVMat {
    * @param width image width
    * @return image in mat
    */
-  def fromFloats(floats: Array[Float], height: Int, width: Int): OpenCVMat = {
-    val mat = new Mat(height, width, CvType.CV_32FC3)
+  def fromFloats(floats: Array[Float], height: Int, width: Int, channel: Int = 3): OpenCVMat = {
+    require(channel >= 1 && channel <= 4, s"channel $channel is out of range [1,4]")
+    require(floats.length >= height * width * channel,
+      s"pixels array length ${floats.length} is less than " +
+        s"height*width*channel ${height * width * channel}")
+    val mat = new OpenCVMat()
+    mat.create(height, width, CvType.CV_32FC(channel))
     mat.put(0, 0, floats)
-    new OpenCVMat(mat)
+    mat
   }
 
   /**
@@ -177,14 +184,19 @@ object OpenCVMat {
    * @param buffer
    * @return
    */
-  def toBytePixels(input: Mat, buffer: Array[Byte] = null): (Array[Byte], Int, Int) = {
+  def toBytePixels(input: Mat, buffer: Array[Byte] = null): (Array[Byte], Int, Int, Int) = {
+    val channel = input.channels()
+    // the mat need to be type CV_8UCX in order to get pixels byte array
+    if (input.`type`() != CvType.CV_8UC(channel)) {
+      input.convertTo(input, CvType.CV_8UC(channel))
+    }
     var bytes = buffer
     val length = input.channels() * input.height() * input.width()
     if (null == buffer || buffer.length < length) {
       bytes = new Array[Byte](length)
     }
     input.get(0, 0, bytes)
-    (bytes, input.height(), input.width())
+    (bytes, input.height(), input.width(), channel)
   }
 
 
@@ -196,16 +208,60 @@ object OpenCVMat {
    * @return
    */
   def toFloatPixels(input: Mat,
-    buffer: Array[Float] = null): (Array[Float], Int, Int) = {
+    buffer: Array[Float] = null): (Array[Float], Int, Int, Int) = {
     var floats = buffer
     val length = input.channels() * input.height() * input.width()
     if (null == buffer || buffer.length < length) {
       floats = new Array[Float](length)
     }
-    if (input.`type`() != CvType.CV_32FC3) {
-      input.convertTo(input, CvType.CV_32FC3)
+    val channel = input.channels()
+    if (input.`type`() != CvType.CV_32FC(channel)) {
+      input.convertTo(input, CvType.CV_32FC(channel))
     }
     input.get(0, 0, floats)
-    (floats, input.height(), input.width())
+    (floats, input.height(), input.width(), channel)
+  }
+
+  /**
+   * convert pixel bytes to OpenCVMat
+   * @param pixels pixels in byte array
+   * @param height image height
+   * @param width image width
+   */
+  def fromPixelsBytes(pixels: Array[Byte], height: Int, width: Int, channel: Int = 3): OpenCVMat = {
+    require(channel >= 1 && channel <= 4, s"channel $channel is out of range [1,4]")
+    require(pixels.length >= height * width * channel,
+      s"pixels array length ${pixels.length} is less than " +
+        s"height*width*channel ${height * width * channel}")
+    val mat = new OpenCVMat()
+    mat.create(height, width, CvType.CV_8UC(channel))
+    mat.put(0, 0, pixels)
+    mat
+  }
+
+  /**
+   * convert float tensor to OpenCVMat,
+   * Note that if you want to convert the tensor to BGR image,
+   * the element should be in range [0, 255]
+   * @param tensor tensor that represent an image
+   * @param format "HWC" or "CHW",
+   *               "HWC" means (height, width, channel) order,
+   *               "CHW" means (channel, height, width) order
+   * @return OpenCVMat
+   */
+  def fromTensor(tensor: Tensor[Float], format: String = "HWC"): OpenCVMat = {
+    require(format == "HWC" || format == "CHW", "the format should be HWC or CHW")
+    var image = if (format == "CHW") {
+      tensor.transpose(1, 2).transpose(2, 3)
+    } else {
+      tensor
+    }
+    image = image.contiguous()
+    val offset = tensor.storageOffset() - 1
+    var floatArr = image.storage().array()
+    if (offset > 0) {
+      floatArr = floatArr.slice(offset, tensor.nElement() + offset)
+    }
+    fromFloats(floatArr, image.size(1), image.size(2), image.size(3))
   }
 }

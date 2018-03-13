@@ -1,4 +1,3 @@
-# Engine
 BigDL need some environment variables be set correctly to get a good performance. Engine.init method
 can help you set and verify them.
 

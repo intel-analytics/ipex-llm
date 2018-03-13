@@ -16,14 +16,14 @@
 
 package com.intel.analytics.bigdl.optim
 
-import com.intel.analytics.bigdl.dataset.Sample
+import com.intel.analytics.bigdl.dataset.{PaddingParam, Sample}
 import com.intel.analytics.bigdl.models.inception.Inception_v1_NoAuxClassifier
 import com.intel.analytics.bigdl.models.lenet.LeNet5
-import com.intel.analytics.bigdl.nn.{Sequential, SpatialConvolution, Tanh}
+import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.transform.vision.image._
 import com.intel.analytics.bigdl.transform.vision.image.augmentation.{CenterCrop, ChannelNormalize, Resize}
-import com.intel.analytics.bigdl.utils.Engine
+import com.intel.analytics.bigdl.utils.{Engine, Table}
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import org.apache.spark.{SparkConf, SparkContext}
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
@@ -171,7 +171,8 @@ class PredictorSpec extends FlatSpec with Matchers with BeforeAndAfter{
     val model = Sequential()
     model.add(SpatialConvolution(3, 6, 5, 5))
     model.add(Tanh())
-    val detection = model.predictImage(imageFrame, batchPerPartition = 1, shareBuffer = false)
+    val detection = model.predictImage(imageFrame, batchPerPartition = 1, shareBuffer = false,
+      featurePaddingParam = Some(PaddingParam[Float]()))
       .toDistributed()
     val imageFeatures = detection.rdd.collect()
     (1 to 20).foreach(x => {
@@ -181,6 +182,33 @@ class PredictorSpec extends FlatSpec with Matchers with BeforeAndAfter{
         .getFeatureSize()(0).mkString("x"))
       println(x, imageFeatures(x - 1).predict().asInstanceOf[Tensor[Float]].size().mkString("x"))
       assert(imageFeatures(x - 1).predict() != null)
+    })
+  }
+
+
+  "predictImage with table output" should "work properly" in {
+    import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+    RNG.setSeed(100)
+    val ims = (1 to 50).map(x => {
+      val im = ImageFeature()
+      im(ImageFeature.uri) = x.toString
+      im(ImageFeature.imageTensor) = Tensor[Float](3, 24, 24).randn()
+      im
+    })
+
+    val imageFrame = ImageFrame.array(ims.toArray).toDistributed(sc) -> ImageFrameToSample()
+    val input = Input()
+    val conv = SpatialConvolution(3, 6, 5, 5).inputs(input)
+    val out1 = Tanh().inputs(conv)
+    val out2 = ReLU().inputs(conv)
+    val model = Graph(input, Array(out1, out2))
+    val detection = model.predictImage(imageFrame).toDistributed()
+
+    val imageFeatures = detection.rdd.collect()
+    (1 to 20).foreach(x => {
+      imageFeatures(x - 1).uri() should be (x.toString)
+      assert(imageFeatures(x - 1).predict() != null)
+      assert(imageFeatures(x - 1).predict().asInstanceOf[Table].length() == 2)
     })
   }
 }

@@ -68,17 +68,20 @@ class TestLayer(BigDLTestCase):
     def test_dense(self):
         input_data = np.random.random_sample([2, 10, 5, 7])
         layer = Dense(2, init='one', activation="relu",
-                      input_shape=(10, ), W_regularizer=l1l2(l1=0.01, l2=0.02))
-        input_data = np.random.random_sample([2, 10])
+                      input_shape=(10, 5, 7), W_regularizer=l1l2(l1=0.01, l2=0.02))
         self.modelTestSingleLayer(input_data, layer, dump_weights=True)
+        input_data2 = np.random.random_sample([2, 10])
         layer2 = Dense(2, init='one', activation="softplus",
                        input_shape=(10, ), b_regularizer=l2(0.02))
-        self.modelTestSingleLayer(input_data, layer2, dump_weights=True)
+        self.modelTestSingleLayer(input_data2, layer2, dump_weights=True)
         layer3 = Dense(2, init='one', input_shape=(10, ),
                        W_regularizer=keras.regularizers.WeightRegularizer(l1=0.1))
-        self.modelTestSingleLayer(input_data, layer3, dump_weights=True)
+        self.modelTestSingleLayer(input_data2, layer3, dump_weights=True)
         layer4 = Dense(2, init='glorot_uniform', activation="hard_sigmoid", input_shape=(10, ))
-        self.modelTestSingleLayer(input_data, layer4, dump_weights=True)
+        self.modelTestSingleLayer(input_data2, layer4, dump_weights=True)
+        # Test for unsupported init_method. Should get a warning not an exception.
+        layer5 = Dense(4, init='he_uniform', input_shape=(10, ))
+        self.modelTestSingleLayer(input_data2, layer5, dump_weights=True)
 
     def test_timedistributeddense(self):
         input_data = np.random.random_sample([2, 4, 5])
@@ -281,7 +284,10 @@ class TestLayer(BigDLTestCase):
     def test_batchnormalization(self):
         input_data = np.random.random_sample([2, 6, 128, 128])
         layer = BatchNormalization(input_shape=(6, 128, 128), axis=1)
-        self.modelTestSingleLayer(input_data, layer, dump_weights=True, random_weights=False)
+        self.modelTestSingleLayer(input_data, layer, dump_weights=True)
+        K.set_image_dim_ordering("tf")
+        layer2 = BatchNormalization(input_shape=(6, 128, 128), axis=-1)
+        self.modelTestSingleLayer(input_data, layer2, dump_weights=True)
 
     def test_flatten(self):
         input_data = np.random.random_sample([1, 2, 3])
@@ -303,6 +309,8 @@ class TestLayer(BigDLTestCase):
         input_data = np.random.random_sample([1, 3, 5, 4])
         layer = Reshape(target_shape=(3, 20), input_shape=(3, 5, 4))
         self.modelTestSingleLayer(input_data, layer)
+        layer2 = Reshape(target_shape=(-1, 2, 3), input_shape=(3, 5, 4))
+        self.modelTestSingleLayer(input_data, layer2)
 
     def test_repeatvector(self):
         input_data = np.random.random_sample([2, 3])
@@ -566,19 +574,23 @@ class TestLayer(BigDLTestCase):
 
     def test_zeropadding2d(self):
         input_data = np.random.uniform(0, 1, [1, 2, 3, 4])
-        layer1 = ZeroPadding2D(padding=(2, 3), input_shape=(2, 3, 4))
-        self.modelTestSingleLayer(input_data, layer1)
-        layer2 = ZeroPadding2D(padding=(2, 3, 4, 1), input_shape=(2, 3, 4))
-        self.modelTestSingleLayer(input_data, layer2)
-        layer3 = ZeroPadding2D(
+        layer1 = lambda: ZeroPadding2D(padding=(2, 3), input_shape=(2, 3, 4))
+        self.modelTestSingleLayerWithOrdersModes(input_data, layer1,
+                                                 border_modes=[None])
+        layer2 = lambda: ZeroPadding2D(padding=(2, 3, 4, 1), input_shape=(2, 3, 4))
+        self.modelTestSingleLayerWithOrdersModes(input_data, layer2,
+                                                 border_modes=[None])
+        layer3 = lambda: ZeroPadding2D(
             padding={'top_pad': 1, 'bottom_pad': 2, 'left_pad': 3, 'right_pad': 4},
             input_shape=(2, 3, 4))
-        self.modelTestSingleLayer(input_data, layer3)
+        self.modelTestSingleLayerWithOrdersModes(input_data, layer3,
+                                                 border_modes=[None])
 
     def test_zeropadding3d(self):
         input_data = np.random.uniform(0, 1, [3, 2, 4, 1, 5])
-        layer = ZeroPadding3D(padding=(1, 2, 3), input_shape=(2, 4, 1, 5))
-        self.modelTestSingleLayer(input_data, layer)
+        layer = lambda: ZeroPadding3D(padding=(1, 2, 3), input_shape=(2, 4, 1, 5))
+        self.modelTestSingleLayerWithOrdersModes(input_data, layer,
+                                                 border_modes=[None])
 
     def test_cropping1d(self):
         input_data = np.random.uniform(0, 1, [3, 10, 10])
@@ -586,18 +598,22 @@ class TestLayer(BigDLTestCase):
         self.modelTestSingleLayer(input_data, layer)
 
     def test_cropping2d(self):
-        input_data = np.random.random([2, 3, 28, 28])
-        layer1 = Cropping2D(cropping=((2, 2), (4, 4)))
-        self.modelTestSingleLayer(input_data, layer1)
-        layer2 = Cropping2D(cropping=((0, 2), (3, 1)))
-        self.modelTestSingleLayer(input_data, layer2)
+        input_data = np.random.random([2, 5, 28, 28])
+        layer1 = lambda: Cropping2D(cropping=((2, 2), (4, 4)))
+        self.modelTestSingleLayerWithOrdersModes(input_data, layer1,
+                                                 border_modes=[None])
+        layer2 = lambda: Cropping2D(cropping=((0, 2), (3, 1)))
+        self.modelTestSingleLayerWithOrdersModes(input_data, layer2,
+                                                 border_modes=[None])
 
     def test_cropping3d(self):
         input_data = np.random.random([2, 10, 28, 28, 32])
-        layer1 = Cropping3D(cropping=((1, 1), (2, 2), (4, 4)))
-        self.modelTestSingleLayer(input_data, layer1)
-        layer2 = Cropping3D(cropping=((0, 2), (3, 1), (2, 3)))
-        self.modelTestSingleLayer(input_data, layer2)
+        layer1 = lambda: Cropping3D(cropping=((1, 1), (2, 2), (4, 4)))
+        self.modelTestSingleLayerWithOrdersModes(input_data, layer1,
+                                                 border_modes=[None])
+        layer2 = lambda: Cropping3D(cropping=((0, 2), (3, 1), (2, 3)))
+        self.modelTestSingleLayerWithOrdersModes(input_data, layer2,
+                                                 border_modes=[None])
 
     def test_simplernn(self):
         input_data = np.random.random([3, 4, 5])
@@ -694,10 +710,12 @@ class TestLayer(BigDLTestCase):
 
     def test_upsampling2d(self):
         input_data = np.random.random([2, 5, 6, 8])
-        layer1 = UpSampling2D(input_shape=(5, 6, 8))
-        self.modelTestSingleLayer(input_data, layer1)
-        layer2 = UpSampling2D(size=(1, 3), input_shape=(5, 6, 8))
-        self.modelTestSingleLayer(input_data, layer2)
+        layer1 = lambda: UpSampling2D(input_shape=(5, 6, 8))
+        self.modelTestSingleLayerWithOrdersModes(input_data, layer1,
+                                                 border_modes=[None])
+        layer2 = lambda: UpSampling2D(size=(1, 3), input_shape=(5, 6, 8))
+        self.modelTestSingleLayerWithOrdersModes(input_data, layer2,
+                                                 border_modes=[None])
 
     def test_upsampling3d(self):
         input_data = np.random.random([2, 5, 12, 12, 12])

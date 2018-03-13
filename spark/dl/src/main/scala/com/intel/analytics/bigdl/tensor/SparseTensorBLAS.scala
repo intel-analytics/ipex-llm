@@ -21,6 +21,86 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath._
 object SparseTensorBLAS {
 
   /**
+   * Perform vector dot product of vec1, and vec2
+   */
+  def vdot[@specialized(Float, Double) T](
+       vec1: DenseTensor[T],
+       vec2: SparseTensor[T]): T = {
+    vec1.getType() match {
+      case FloatType =>
+        vdotFloat(vec1.asInstanceOf[DenseTensor[Float]],
+          vec2.asInstanceOf[SparseTensor[Float]])
+          .asInstanceOf[T]
+      case DoubleType =>
+        vdotDouble(vec1.asInstanceOf[DenseTensor[Double]],
+          vec2.asInstanceOf[SparseTensor[Double]])
+          .asInstanceOf[T]
+      case t => throw new IllegalArgumentException(s"Sparse vdot doesn't support $t")
+    }
+  }
+
+  private def vdotFloat(vec1: DenseTensor[Float],
+                   vec2: SparseTensor[Float]): Float = {
+    require(vec1.isContiguous(), "The DenseTensor must be contiguous")
+
+    val vec1Values = vec1.storage().array()
+    val vec1StorageOffset = vec1.storageOffset() - 1
+    val vect1Strides = vec1.stride()
+
+    val vec2Values = vec2._values.array()
+    val vec2storageOffset = vec2.storageOffset() - 1
+
+
+    var valueCounter = 0
+    var sum: Float = 0.0f
+    while (valueCounter < vec2.nElement()) {
+      var dim = 0
+      var vec1Index = 0
+      while (dim < vec2.nDimension) {
+        vec1Index += (vec2._indices(dim)(valueCounter + vec2storageOffset) -
+          vec2._indicesOffset(dim)) * vect1Strides(dim)
+        dim += 1
+      }
+      sum += vec2Values(vec2storageOffset + valueCounter) *
+        vec1Values(vec1Index + vec1StorageOffset)
+      valueCounter += 1
+    }
+    sum
+  }
+
+  private def vdotDouble(vec1: DenseTensor[Double],
+                   vec2: SparseTensor[Double]): Double = {
+    require(vec1.isContiguous(), "The DenseTensor must be contiguous")
+
+    val vec1Values = vec1.storage().array()
+    val vec1StorageOffset = vec1.storageOffset() - 1
+    val vect1Strides = vec1.stride()
+
+    val vec2Values = vec2._values.array()
+    val vec2storageOffset = vec2.storageOffset() - 1
+
+
+    var valueCounter = 0
+    var sum: Double = 0.0f
+    while (valueCounter < vec2.nElement()) {
+      var dim = 0
+      var vec1Index = 0
+      while (dim < vec2.nDimension) {
+        vec1Index +=
+          (vec2._indices(dim)(valueCounter + vec2storageOffset) -
+            vec2._indicesOffset(dim)) * vect1Strides(dim)
+        dim += 1
+      }
+      sum += vec2Values(vec2storageOffset + valueCounter) *
+        vec1Values(vec1Index + vec1StorageOffset)
+      valueCounter += 1
+    }
+    sum
+  }
+
+
+
+  /**
    * Perform r := beta * r + alpha * mat * vec
    * mat should be a 2D SparseTensor, vec should be a 1D DenseTensor,
    * r should be a 2D DenseTensor.
@@ -40,12 +120,14 @@ object SparseTensorBLAS {
         beta: T,
         r: Tensor[T])(implicit ev: TensorNumeric[T]): Unit = {
     (alpha, mat, vec, beta, r)  match {
-      case (alpha: Double, a: SparseTensor[Double], x: DenseTensor[Double],
-      beta: Double, y: DenseTensor[Double]) =>
-        dcoomv(alpha, a, x, beta, y)
-      case (alpha: Float, a: SparseTensor[Float], x: DenseTensor[Float],
-      beta: Float, y: DenseTensor[Float]) =>
-        scoomv(alpha, a, x, beta, y)
+      case (alpha: Double, a: SparseTensor[_], x: DenseTensor[_],
+      beta: Double, y: DenseTensor[_]) =>
+        dcoomv(alpha, a.asInstanceOf[SparseTensor[Double]], x.asInstanceOf[DenseTensor[Double]],
+          beta, y.asInstanceOf[DenseTensor[Double]])
+      case (alpha: Float, a: SparseTensor[_], x: DenseTensor[_],
+      beta: Float, y: DenseTensor[_]) =>
+        scoomv(alpha, a.asInstanceOf[SparseTensor[Float]], x.asInstanceOf[DenseTensor[Float]],
+          beta, y.asInstanceOf[DenseTensor[Float]])
       case _ =>
         throw new IllegalArgumentException(s"Sparse addmv doesn't support")
     }
@@ -126,18 +208,22 @@ object SparseTensorBLAS {
         beta: T,
         r: Tensor[T])(implicit ev: TensorNumeric[T]): Unit = {
     (alpha, mat1, mat2, beta, r)  match {
-      case (alpha: Float, a: SparseTensor[Float], x: DenseTensor[Float],
-            beta: Float, y: DenseTensor[Float]) =>
-        scoomm(alpha, a, x, beta, y)
-      case (alpha: Double, a: SparseTensor[Double], x: DenseTensor[Double],
-            beta: Double, y: DenseTensor[Double]) =>
-        dcoomm(alpha, a, x, beta, y)
-      case (alpha: Float, a: DenseTensor[Float], x: SparseTensor[Float],
-            beta: Float, y: DenseTensor[Float]) =>
-        scoomm(alpha, a, x, beta, y)
-      case (alpha: Double, a: DenseTensor[Double], x: SparseTensor[Double],
-            beta: Double, y: DenseTensor[Double]) =>
-        dcoomm(alpha, a, x, beta, y)
+      case (alpha: Float, a: SparseTensor[_], x: DenseTensor[_],
+            beta: Float, y: DenseTensor[_]) =>
+        scoomm(alpha, a.asInstanceOf[SparseTensor[Float]], x.asInstanceOf[DenseTensor[Float]],
+          beta, y.asInstanceOf[DenseTensor[Float]])
+      case (alpha: Double, a: SparseTensor[_], x: DenseTensor[_],
+            beta: Double, y: DenseTensor[_]) =>
+        dcoomm(alpha, a.asInstanceOf[SparseTensor[Double]], x.asInstanceOf[DenseTensor[Double]],
+          beta, y.asInstanceOf[DenseTensor[Double]])
+      case (alpha: Float, a: DenseTensor[_], x: SparseTensor[_],
+            beta: Float, y: DenseTensor[_]) =>
+        scoomm(alpha, a.asInstanceOf[DenseTensor[Float]], x.asInstanceOf[SparseTensor[Float]],
+          beta, y.asInstanceOf[DenseTensor[Float]])
+      case (alpha: Double, a: DenseTensor[_], x: SparseTensor[_],
+            beta: Double, y: DenseTensor[_]) =>
+        dcoomm(alpha, a.asInstanceOf[DenseTensor[Double]], x.asInstanceOf[SparseTensor[Double]],
+          beta, y.asInstanceOf[DenseTensor[Double]])
       case _ =>
         throw new IllegalArgumentException(s"Sparse addmm doesn't support")
     }

@@ -15,9 +15,13 @@
  */
 package com.intel.analytics.bigdl.nn.ops
 
+import com.intel.analytics.bigdl.nn.tf.Assign
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
+
+import scala.util.Random
 
 class CastSpec extends FlatSpec with Matchers {
   "Cast operation Float" should "works correctly" in {
@@ -41,7 +45,16 @@ class CastSpec extends FlatSpec with Matchers {
 
     val expectOutput = Tensor(T(2.0, 2.0, 4.0))
 
-    val output = Assign().forward(input)
+    val output = new Assign().forward(input)
     output should be(expectOutput)
+  }
+}
+
+class CastSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val cast = Cast[Float, Float]().setName("cast")
+    val input = Tensor[Float](2, 2).apply1(_ => Random.nextFloat())
+    runSerializationTest(cast, input, cast.
+      asInstanceOf[ModuleToOperation[Float]].module.getClass)
   }
 }

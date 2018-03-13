@@ -173,16 +173,41 @@ class SpatialConvolution[T: ClassTag](
     zeroGradParameters()
   }
 
-  private def getOutputShape(oh: Int, ow: Int, batchSize: Int = -1): Array[Int] = {
+  override def computeOutputShape(inputShape: Shape): Shape = {
+    val input = inputShape.toSingle().toArray
+    require(input.length == 4,
+      s"Convolution2D requires 4D input, but got input dim ${input.length}")
+    val (dimHeight, dimWidth, channelDim) = format.getHWCDims(input.length)
+    require(input(channelDim -1) == nInputPlane, s"input channel size " +
+      s"${input(channelDim -1)} is not the same as nInputPlane $nInputPlane")
+    val inputWidth = input(dimWidth -1)
+    val inputHeight = input(dimHeight -1)
+    val sizes =
+      if (padW == -1 && padH == -1) {
+        Utils.getSAMEOutSizeAndPadding(inputHeight, inputWidth, strideH, strideW, kernelH, kernelW)
+      } else {
+        Utils.getOutSizeAndPadding(inputHeight, inputWidth, strideH, strideW,
+          kernelH, kernelW, padH, padW, ceilMode = false)
+      }
+    val outputHeight = sizes(4)
+    val outputWidth = sizes(5)
+    require(outputWidth >= 1 && outputHeight >= 1,
+      s"output size is too small. outputWidth: $outputWidth, outputHeight: $outputHeight")
+    val outputShape = getOutputShape(outputHeight, outputWidth, input(0))
+    Shape(outputShape)
+  }
+
+  // batchSize = -2 by default means no batch. -1 represents batch in shape inference
+  private def getOutputShape(oh: Int, ow: Int, batchSize: Int = -2): Array[Int] = {
     format match {
       case DataFormat.NCHW =>
-        if (batchSize == -1) {
+        if (batchSize == -2) {
           Array(nOutputPlane, oh, ow)
         } else {
           Array(batchSize, nOutputPlane, oh, ow)
         }
       case DataFormat.NHWC =>
-        if (batchSize == -1) {
+        if (batchSize == -2) {
           Array(oh, ow, nOutputPlane)
         } else {
           Array(batchSize, oh, ow, nOutputPlane)
@@ -494,35 +519,11 @@ class SpatialConvolution[T: ClassTag](
     }
   }
 
-  override def updateParameters(learningRate: T): Unit = {
-    weight.map(gradWeight, (a, b) => ev.minus(a, ev.times(learningRate, b)))
-    if (withBias) {
-      bias.map(gradBias, (a, b) => ev.minus(a, ev.times(learningRate, b)))
-    }
-  }
-
-  override def zeroGradParameters(): Unit = {
-    gradWeight.zero()
-    if (withBias) {
-      gradBias.zero()
-    }
-  }
-
   override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
     if (withBias) {
       (Array(this.weight, this.bias), Array(this.gradWeight, this.gradBias))
     } else {
       (Array(this.weight), Array(this.gradWeight))
-    }
-  }
-
-  override def getParametersTable(): Table = {
-    if (withBias) {
-      T(getName() -> T("weight" -> weight, "bias" -> bias,
-        "gradWeight" -> gradWeight, "gradBias" -> gradBias))
-    } else {
-      T(getName() -> T("weight" -> weight,
-        "gradWeight" -> gradWeight))
     }
   }
 

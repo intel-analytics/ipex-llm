@@ -17,11 +17,11 @@ package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
-import com.intel.analytics.bigdl.nn.Input
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.serializer._
+import com.intel.analytics.bigdl.utils.serializer.converters.DataConverter
 import com.intel.analytics.bigdl.utils.{T, Table}
 import serialization.Bigdl.{AttrValue, BigDLModule}
 
@@ -367,11 +367,6 @@ class BinaryTreeLSTM[T: ClassTag](
     (cp ++ lp, cg ++ lg)
   }
 
-  override def updateParameters(learningRate: T): Unit = {
-    composer.updateParameters(learningRate)
-    leafModule.updateParameters(learningRate)
-  }
-
   override def getParametersTable(): Table = {
     val pt = T()
     val t1 = composer.getParametersTable()
@@ -379,11 +374,6 @@ class BinaryTreeLSTM[T: ClassTag](
     t1.keySet.foreach(key => pt(key) = t1(key))
     t2.keySet.foreach(key => pt(key) = t2(key))
     pt
-  }
-
-  override def zeroGradParameters(): Unit = {
-    composer.zeroGradParameters()
-    leafModule.zeroGradParameters()
   }
 
   override def reset(): Unit = {

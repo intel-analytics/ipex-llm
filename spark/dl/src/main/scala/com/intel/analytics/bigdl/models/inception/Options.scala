@@ -35,8 +35,11 @@ object Options {
     weightDecay: Double = 0.0001,
     checkpointIteration: Int = 620,
     graphModel: Boolean = false,
-    lars: Boolean = false,
-    gwRatio: Double = 1.0
+    maxLr: Option[Double] = None,
+    warmupEpoch: Option[Int] = None,
+    gradientL2NormThreshold: Option[Double] = None,
+    gradientMin: Option[Double] = None,
+    gradientMax: Option[Double] = None
   )
 
   val trainParser = new OptionParser[TrainParams]("BigDL Inception Example") {
@@ -81,12 +84,21 @@ object Options {
     opt[Unit]('g', "graphModel")
       .text("use graph model")
       .action((x, c) => c.copy(graphModel = true))
-    opt[Unit]("lars")
-      .text("use lars")
-      .action((x, c) => c.copy(lars = true))
-    opt[Double]("gwRatio")
-      .text("trust coefficient for lars")
-      .action((x, c) => c.copy(gwRatio = x))
+    opt[Double]("maxLr")
+      .text("max Lr after warm up")
+      .action((x, c) => c.copy(maxLr = Some(x)))
+    opt[Int]("warmupEpoch")
+      .text("warm up epoch numbers")
+      .action((x, c) => c.copy(warmupEpoch = Some(x)))
+    opt[Double]("gradientL2NormThreshold")
+      .text("gradient L2-Norm threshold")
+      .action((x, c) => c.copy(gradientL2NormThreshold = Some(x)))
+    opt[Double]("gradientMax")
+      .text("max gradient clipping by")
+      .action((x, c) => c.copy(gradientMax = Some(x)))
+    opt[Double]("gradientMin")
+      .text("min gradient clipping by")
+      .action((x, c) => c.copy(gradientMin = Some(x)))
   }
 
   case class TestParams(

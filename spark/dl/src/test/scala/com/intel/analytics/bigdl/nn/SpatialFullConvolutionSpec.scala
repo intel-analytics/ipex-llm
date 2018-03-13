@@ -18,8 +18,9 @@ package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.optim.{L2Regularizer, SGD}
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
-import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.utils.{Shape, T, TestUtils}
 import com.intel.analytics.bigdl.utils.RandomGenerator._
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
 
 import scala.util.Random
@@ -186,5 +187,56 @@ class SpatialFullConvolutionSpec extends FlatSpec with Matchers {
     layer2.gradWeight should be(layer.gradWeight.mul(0.5))
     layer2.gradBias should be(layer.gradBias.mul(2))
 
+  }
+
+  "A SpatialFullConvolution " should "work after forward and getParameters" in {
+    val nInputPlane = 3
+    val nOutputPlane = 6
+    val kW = 3
+    val kH = 3
+    val dW = 1
+    val dH = 1
+    val padW = 2
+    val padH = 2
+    val layer = new SpatialFullConvolution[Double](nInputPlane, nOutputPlane,
+      kW, kH, dW, dH, padW, padH)
+    val layer2 = layer.cloneModule().asInstanceOf[SpatialFullConvolution[Double]]
+    Random.setSeed(100)
+    val input = Tensor[Double](3, 3, 6, 6).apply1(e => Random.nextDouble())
+
+    // this two operations should not change layer's behavior
+    layer.forward(input)
+    layer.getParameters()
+
+    val output1 = layer.forward(input)
+    layer.backward(input, output1)
+    val (weight, grad) = layer.getParameters()
+    weight.add(-0.1, grad)
+
+    val output2 = layer2.forward(input)
+    layer2.backward(input, output2)
+    val (weight2, grad2) = layer2.getParameters()
+    weight2.add(-0.1, grad2)
+
+    val output = layer.forward(input)
+    val expected = layer2.forward(input)
+
+    output should be (expected)
+
+  }
+
+  "SpatialFullConvolution computeOutputShape" should "work properly" in {
+    val layer = SpatialFullConvolution[Float](3, 5, 1, 2, 2)
+    TestUtils.compareOutputShape(layer, Shape(3, 28, 32)) should be (true)
+  }
+
+}
+
+class SpatialFullConvolutionSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val spatialFullConvolution = SpatialFullConvolution[Float](1, 1,
+      2, 2, 1, 1, 0, 0).setName("spatialFullConvolution")
+    val input = Tensor[Float](1, 3, 3).apply1(e => Random.nextFloat())
+    runSerializationTest(spatialFullConvolution, input)
   }
 }

@@ -1,8 +1,8 @@
-# **Keras Support**
-
-For __Python__ users, BigDL supports loading pre-defined Keras models. After loading a model, you can train, evaluate or tune this model on BigDL in a distributed manner.
+For __Python__ users, BigDL supports loading pre-defined Keras models.
 
 The Keras version we support and test is [__Keras 1.2.2__](https://faroit.github.io/keras-docs/1.2.2/) with TensorFlow backend. Up to now, we have generally supported __ALL__ its layers.
+
+After loading a model into BigDL, you can train, evaluate or tune this model in a distributed manner. We have generally supported __ALL__ the [losses](https://faroit.github.io/keras-docs/1.2.2/objectives/) in Keras 1.2.2. See [here](../APIGuide/Losses.md) to find the corresponding criterions in BigDL.
 
 If you haven't been familiar with BigDL yet, you may refer to Python User Guide on how to [install](../PythonUserGuide/install-from-pip.md) and [run](../PythonUserGuide/run-from-pip.md) BigDL for Python users before you start this page.
 
@@ -24,7 +24,7 @@ bigdl_model = Model.load_keras(json_path=None, hdf5_path=None, by_name=False)
 __Parameters__:
 
 * `json_path` The JSON file path containing the Keras model definition to be loaded. Default to be `None` if you choose to load a Keras model from a HDF5 file.
-* `hdf5_path` The HDF5 file path containing the pre-trained weights with or without the model architecture. Default to be `None` if you choose to only load the model definition from JSON but not to load weights. In this case, BigDL will use initialized weights for the model.
+* `hdf5_path` The HDF5 file path containing the pre-trained weights with or without the model architecture. Please use weights from Keras 1.2.2 with __`tensorflow backend`__. Default to be `None` if you choose to only load the model definition from JSON but not to load weights. In this case, BigDL will use initialized weights for the model.
 * `by_name`  Whether to load the weights of layers by name. Use this option only when you provide a HDF5 file. Default to be `False`, meaning that  weights are loaded based on the network's execution order topology. Otherwise, if it is set to be `True`, only those layers with the same name will be loaded with weights.
 
 __NOTES__:

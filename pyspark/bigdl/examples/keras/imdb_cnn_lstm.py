@@ -20,6 +20,9 @@
 # The Keras version we support and test is Keras 1.2.2 with TensorFlow backend.
 # See README.md for how to run this example.
 
+from optparse import OptionParser
+import sys
+
 
 def load_imdb():
     """
@@ -59,6 +62,11 @@ def build_keras_model():
 
 
 if __name__ == "__main__":
+    parser = OptionParser()
+    parser.add_option("-b", "--batchSize", type=int, dest="batchSize", default="32")
+    parser.add_option("-m", "--max_epoch", type=int, dest="max_epoch", default="2")
+    (options, args) = parser.parse_args(sys.argv)
+
     keras_model = build_keras_model()
     hdf5_path = "/tmp/imdb.h5"
     keras_model.save(hdf5_path)
@@ -85,10 +93,10 @@ if __name__ == "__main__":
         training_rdd=train_data,
         criterion=BCECriterion(),
         optim_method=Adam(),
-        end_trigger=MaxEpoch(2),
-        batch_size=32)
+        end_trigger=MaxEpoch(options.max_epoch),
+        batch_size=options.batchSize)
     optimizer.set_validation(
-        batch_size=32,
+        batch_size=options.batchSize,
         val_rdd=test_data,
         trigger=EveryEpoch(),
         val_method=[Top1Accuracy()]

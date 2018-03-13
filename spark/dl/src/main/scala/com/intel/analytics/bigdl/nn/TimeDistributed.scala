@@ -35,10 +35,14 @@ import scala.reflect.ClassTag
  * The input data format is [Batch, Time, Other dims]. For the contained layer, it must not change
  * the Other dims length.
  *
+ * @param maskZero: if `maskZero` is set to true, if the input including zero vectors, the
+ *                corresponding output will be set to zero vecotrs.
  * @tparam T data type, which can be [[Double]] or [[Float]]
  */
 
-class TimeDistributed[T : ClassTag] (val layer: TensorModule[T])
+class TimeDistributed[T : ClassTag] (
+  val layer: AbstractModule[Tensor[T], Tensor[T], T],
+  maskZero: Boolean = false)
   (implicit ev: TensorNumeric[T]) extends TensorModule[T] {
 
   private var inputSize: Array[Int] = _
@@ -46,6 +50,9 @@ class TimeDistributed[T : ClassTag] (val layer: TensorModule[T])
   private var outputSize: Array[Int] = _
   private val timeBuffer =
     new ArrayBuffer[(AbstractModule[_ <: Activity, _ <: Activity, T], Long, Long)]
+  private var maskBuffer: Tensor[T] = _
+  private var indexBuffer: Tensor[T] = _
+  private var inputBuffer: Tensor[T] = _
 
   private def combine(src: Array[Int], target: Array[Int]): Unit = {
     require(src.length == target.length + 1,
@@ -103,6 +110,27 @@ class TimeDistributed[T : ClassTag] (val layer: TensorModule[T])
     split(_output.size, outputSize, _inputSize(0), _inputSize(1))
     input.resize(_inputSize)
     output.set(_output).resize(outputSize)
+
+    if (maskZero) {
+      if (maskBuffer == null) {
+        maskBuffer = Tensor()
+      }
+      if (indexBuffer == null) {
+        indexBuffer = Tensor()
+      }
+      if (inputBuffer == null) {
+        inputBuffer = Tensor()
+      }
+      inputBuffer.resizeAs(input).abs(input).max(maskBuffer, indexBuffer, 3)._1
+      for (i <- 1 to maskBuffer.size(1)) {
+        for (j <- 1 to maskBuffer.size(2)) {
+          if (maskBuffer(Array(i, j, 1)) == ev.zero) {
+            output.select(1, i).select(1, j).zero()
+          }
+        }
+      }
+    }
+
     output
   }
 
@@ -148,18 +176,19 @@ class TimeDistributed[T : ClassTag] (val layer: TensorModule[T])
     input.resize(_inputSize)
     gradOutput.resize(_gradOutputSize)
     backwardTime += System.nanoTime - st
+
+    if (maskZero) {
+      for (i <- 1 to maskBuffer.size(1)) {
+        for (j <- 1 to maskBuffer.size(2)) {
+          if (maskBuffer(Array(i, j, 1)) == ev.zero) {
+            gradInput.select(1, i).select(1, j).zero()
+          }
+        }
+      }
+    }
+
     gradInput
   }
-
-  /**
-   * If the module has parameters, this will zero the accumulation of the gradients with respect
-   * to these parameters. Otherwise, it does nothing.
-   */
-  override def zeroGradParameters(): Unit = {
-    layer.zeroGradParameters()
-  }
-
-  override def updateParameters(learningRate: T): Unit = layer.updateParameters(learningRate)
 
   override def reset(): Unit = layer.reset()
 
@@ -211,14 +240,6 @@ class TimeDistributed[T : ClassTag] (val layer: TensorModule[T])
   override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = layer.parameters()
 
   /**
-   * This method compact all parameters and gradients of the model into two tensors. So it's easier
-   * to use optim method
-   *
-   * @return
-   */
-  override def getParameters(): (Tensor[T], Tensor[T]) = layer.getParameters()
-
-  /**
    * This method will return a table indicating the name and corresponding parameters.
    * @return Table
    */
@@ -235,6 +256,9 @@ class TimeDistributed[T : ClassTag] (val layer: TensorModule[T])
     gradOutputSize = null
     outputSize = null
     timeBuffer.clear
+    maskBuffer = null
+    inputBuffer = null
+    indexBuffer = null
     this
   }
 
@@ -261,8 +285,10 @@ class TimeDistributed[T : ClassTag] (val layer: TensorModule[T])
 }
 
 object TimeDistributed {
-  def apply[@specialized(Float, Double) T: ClassTag](layer: TensorModule[T])
-    (implicit ev: TensorNumeric[T]): TimeDistributed[T] = {
-    new TimeDistributed[T](layer)
+  def apply[@specialized(Float, Double) T: ClassTag](
+    layer: AbstractModule[Tensor[T], Tensor[T], T],
+    maskZero: Boolean = false
+  )(implicit ev: TensorNumeric[T]): TimeDistributed[T] = {
+    new TimeDistributed[T](layer, maskZero)
   }
 }

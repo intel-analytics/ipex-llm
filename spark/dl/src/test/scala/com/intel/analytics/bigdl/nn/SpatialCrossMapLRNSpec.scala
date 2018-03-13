@@ -18,7 +18,10 @@ package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl._
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
+
+import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Parallel
 class SpatialCrossMapLRNSpec extends FlatSpec with Matchers {
@@ -155,5 +158,14 @@ class SpatialCrossMapLRNSpec extends FlatSpec with Matchers {
     val output = layer.forward(input)
 
     output should be(outputRef)
+  }
+}
+
+class SpatialCrossMapLRNSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val spatialCrossMapLRN = SpatialCrossMapLRN[Float](5, 0.01, 0.75, 1.0).
+      setName("spatialCrossMapLRN")
+    val input = Tensor[Float](2, 2, 2, 2).apply1( e => Random.nextFloat())
+    runSerializationTest(spatialCrossMapLRN, input)
   }
 }

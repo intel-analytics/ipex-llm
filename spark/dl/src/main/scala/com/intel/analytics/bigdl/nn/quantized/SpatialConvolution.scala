@@ -22,12 +22,13 @@ import com.intel.analytics.bigdl.nn.ErrorInfo
 import com.intel.analytics.bigdl.nn.abstractnn.{DataFormat, Initializable}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor._
-import com.intel.analytics.bigdl.utils.serializer.{DataConverter, DeserializeContext, ModuleData, SerializeContext}
+import com.intel.analytics.bigdl.utils.serializer.converters.DataConverter
+import com.intel.analytics.bigdl.utils.serializer.{DeserializeContext, ModuleData, SerializeContext}
 import com.intel.analytics.bigdl.utils.{T, Table}
 
 import scala.reflect.runtime.universe
 import scala.reflect.ClassTag
-import serialization.Bigdl.{AttrValue, BigDLModule}
+import com.intel.analytics.bigdl.serialization.Bigdl.{AttrValue, BigDLModule}
 
 @SerialVersionUID(- 8008252944905538960L)
 private[bigdl] class SpatialConvolution[T: ClassTag](
@@ -46,16 +47,6 @@ private[bigdl] class SpatialConvolution[T: ClassTag](
   require(nInputPlane % nGroup == 0, "Number of input channels should be multiples of group.")
   require(nOutputPlane % nGroup == 0, "Number of output channels should be multiples of group.")
 
-  val params = ConvWeightParams(nOutputPlane / nGroup, nInputPlane / nGroup, kernelH, kernelW,
-    quantFormat)
-  val weight: Array[Tensor[T]] = {
-    val array = new Array[Tensor[T]](nGroup)
-    for (i <- 0 until nGroup) {
-      array(i) = QuantizedTensor[T](Tensor[T](Array(nGroup, kernelH, kernelW, nInputPlane / nGroup,
-        nOutputPlane / nGroup)), params)
-    }
-    array
-  }
   private val data: QuantizedTensor[T] = QuantizedDummyTensor[T]()
   val bias: Tensor[T] = Tensor[T](nOutputPlane)
 
@@ -63,6 +54,18 @@ private[bigdl] class SpatialConvolution[T: ClassTag](
     BigQuant.NCHW
   } else {
     BigQuant.NHWC
+  }
+
+  val params = ConvWeightParams(nOutputPlane / nGroup, nInputPlane / nGroup, kernelH, kernelW,
+    quantFormat)
+
+  val weight: Array[Tensor[T]] = {
+    val array = new Array[Tensor[T]](nGroup)
+    for (i <- 0 until nGroup) {
+      array(i) = QuantizedTensor[T](Tensor[T](Array(nGroup, kernelH, kernelW, nInputPlane / nGroup,
+        nOutputPlane / nGroup)), params)
+    }
+    array
   }
 
   val dilationHeight = 1
@@ -213,10 +216,6 @@ private[bigdl] class SpatialConvolution[T: ClassTag](
 
   override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
     (weight :+ bias, Array.fill[Tensor[T]](nGroup + 1)(empty)) // nGroup's weight + bias
-  }
-
-  override def getParametersTable(): Table = {
-    T(getName() -> T("weight" -> weight, "bias" -> bias))
   }
 
   override def equals(obj: Any): Boolean = {

@@ -15,8 +15,8 @@
  */
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
-import com.intel.analytics.bigdl.tensor.{DenseTensorApply, Tensor, TensorFunc6}
+import com.intel.analytics.bigdl.nn.abstractnn.{IdentityOutputShape, TensorModule}
+import com.intel.analytics.bigdl.tensor._
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
 import scala.reflect.ClassTag
@@ -36,34 +36,23 @@ import scala.reflect.ClassTag
 class LeakyReLU[T: ClassTag](
   private val negval: Double = 0.01,
   var inplace: Boolean = false)(
-  implicit ev: TensorNumeric[T]) extends TensorModule[T] {
-
-  private val negVal = ev.fromType[Double](negval)
+  implicit ev: TensorNumeric[T]) extends TensorModule[T] with IdentityOutputShape {
+  import LeakyReLU._
 
   if (negval < 0) {
     inplace = false
   }
 
-  // Todo: performance should be optimized by replacing apply for contiguous input
+
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
-    if (inplace) {
-      input.apply1(x => {
-        if (ev.isGreaterEq(ev.fromType[Int](0), x)) {
-          negVal
-        } else {
-          x
-        }
-      })
-      output.set(input)
-    } else {
-      output.resizeAs(input)
-      output.map(input, (out, in) => {
-        if (ev.isGreater(in, ev.fromType[Int](0))) {
-          in
-        } else {
-          ev.times(in, negVal)
-        }
-      })
+    require(input.isContiguous(), "input should be contiguous")
+    if (inplace) output = input
+    input.getType() match {
+      case FloatType => updateOutputFloat(input.toTensor[Float], output.toTensor[Float],
+        negval.toFloat, inplace)
+      case DoubleType => updateOutputDouble(input.toTensor[Double], output.toTensor[Double],
+        negval, inplace)
+      case t => throw new NotImplementedError(s"$t is not supported")
     }
     output
   }
@@ -72,28 +61,14 @@ class LeakyReLU[T: ClassTag](
     require(input.isSameSizeAs(gradOutput),
       "input should have the same size with gradOutput" +
         s"input size ${input.dim()} gradOutput size ${gradOutput.dim()}")
-    if (inplace) {
-      gradInput.set(gradOutput)
-      gradOutput.map(input, (grad, in) => {
-        if (ev.isGreaterEq(ev.fromType[Int](0), in)) {
-          negVal
-        } else {
-          grad
-        }
-      })
-    } else {
-      gradInput.resizeAs(input)
-      val func = new TensorFunc6[T] {
-        override def apply (data1: Array[T], offset1: Int, data2: Array[T],
-          offset2: Int, data3: Array[T], offset3: Int): Unit = {
-          data1(offset1) = if (ev.isGreater(data3(offset3), ev.fromType[Int](0))) {
-            data2(offset2)
-          } else {
-            ev.times(negVal, data2(offset2))
-          }
-        }
-      }
-      DenseTensorApply.apply3[T](gradInput, gradOutput, input, func)
+    require(gradOutput.isContiguous(), "gradOutput should be contiguous")
+    if (inplace) gradInput = gradOutput
+    input.getType() match {
+      case FloatType => updateGradInputFloat(input.toTensor[Float], gradOutput.toTensor[Float],
+        gradInput.toTensor[Float], negval.toFloat, inplace)
+      case DoubleType => updateGradInputDouble(input.toTensor[Double], gradOutput.toTensor[Double],
+        gradInput.toTensor[Double], negval, inplace)
+      case t => throw new NotImplementedError(s"$t is not supported")
     }
     gradInput
   }
@@ -111,5 +86,153 @@ object LeakyReLU {
       negval: Double = 0.01,
       inplace: Boolean = false)(implicit ev: TensorNumeric[T]) : LeakyReLU[T] = {
     new LeakyReLU[T](negval, inplace)
+  }
+
+  protected def updateOutputFloat(
+        input: Tensor[Float],
+        output: Tensor[Float],
+        negVal: Float,
+        inplace: Boolean): Unit = {
+    if (inplace) {
+      var i = input.storageOffset() - 1
+      val array = input.storage().array()
+      val end = input.nElement() + input.storageOffset() - 1
+      while (i < end) {
+        if (array(i) < 0) {
+          array(i) *= negVal
+        }
+        i += 1
+      }
+    } else {
+      output.resizeAs(input)
+      var i = 0
+      val inputOffset = input.storageOffset() - 1
+      val inputArray = input.storage().array()
+      val outputOffset = output.storageOffset() - 1
+      val outputArray = output.storage().array()
+      val end = input.nElement()
+      while (i < end) {
+        if (inputArray(i + inputOffset) < 0) {
+          outputArray(i + outputOffset) = inputArray(i + inputOffset) * negVal
+        } else {
+          outputArray(i + outputOffset) = inputArray(i + inputOffset)
+        }
+        i += 1
+      }
+    }
+  }
+
+  protected def updateOutputDouble(
+        input: Tensor[Double],
+        output: Tensor[Double],
+        negVal: Double,
+        inplace: Boolean): Unit = {
+    if (inplace) {
+      var i = input.storageOffset() - 1
+      val array = input.storage().array()
+      val end = input.nElement() + input.storageOffset() - 1
+      while (i < end) {
+        if (array(i) < 0) {
+          array(i) *= negVal
+        }
+        i += 1
+      }
+    } else {
+      output.resizeAs(input)
+      var i = 0
+      val inputOffset = input.storageOffset() - 1
+      val inputArray = input.storage().array()
+      val outputOffset = output.storageOffset() - 1
+      val outputArray = output.storage().array()
+      val end = input.nElement()
+      while (i < end) {
+        if (inputArray(i + inputOffset) < 0) {
+          outputArray(i + outputOffset) = inputArray(i + inputOffset) * negVal
+        } else {
+          outputArray(i + outputOffset) = inputArray(i + inputOffset)
+        }
+        i += 1
+      }
+    }
+  }
+
+  protected def updateGradInputFloat(
+        input: Tensor[Float],
+        gradOutput: Tensor[Float],
+        gradInput: Tensor[Float],
+        negVal: Float,
+        inplace: Boolean): Unit = {
+    if (inplace) {
+      var i = 0
+      val inputOffset = input.storageOffset() - 1
+      val inputArray = input.storage().array()
+      val gradInputOffset = gradInput.storageOffset() - 1
+      val gradInputArray = gradInput.storage().array()
+      val end = input.nElement()
+      while (i < end) {
+        if (inputArray(i + inputOffset) > 0) {
+          gradInputArray(i + gradInputOffset) *= negVal
+        }
+        i += 1
+      }
+    } else {
+      gradInput.resizeAs(input)
+      var i = 0
+      val inputOffset = input.storageOffset() - 1
+      val inputArray = input.storage().array()
+      val gradOutputOffset = gradOutput.storageOffset() - 1
+      val gradOutputArray = gradOutput.storage().array()
+      val gradInputOffset = gradInput.storageOffset() - 1
+      val gradInputArray = gradInput.storage().array()
+      val end = input.nElement()
+      while (i < end) {
+        if (inputArray(i + inputOffset) < 0) {
+          gradInputArray(i + gradInputOffset) = gradOutputArray(i + gradOutputOffset) * negVal
+        } else {
+          gradInputArray(i + gradInputOffset) = gradOutputArray(i + gradOutputOffset)
+        }
+        i += 1
+      }
+    }
+  }
+
+  protected def updateGradInputDouble(
+        input: Tensor[Double],
+        gradOutput: Tensor[Double],
+        gradInput: Tensor[Double],
+        negVal: Double,
+        inplace: Boolean): Unit = {
+    if (inplace) {
+      var i = 0
+      val inputOffset = input.storageOffset() - 1
+      val inputArray = input.storage().array()
+      val gradInputOffset = gradInput.storageOffset() - 1
+      val gradInputArray = gradInput.storage().array()
+      val end = input.nElement()
+      while (i < end) {
+        if (inputArray(i + inputOffset) > 0) {
+          gradInputArray(i + gradInputOffset) *= negVal
+        }
+        i += 1
+      }
+    } else {
+      gradInput.resizeAs(input)
+      var i = 0
+      val inputOffset = input.storageOffset() - 1
+      val inputArray = input.storage().array()
+      val gradOutputOffset = gradOutput.storageOffset() - 1
+      val gradOutputArray = gradOutput.storage().array()
+      val gradInputOffset = gradInput.storageOffset() - 1
+      val gradInputArray = gradInput.storage().array()
+      val end = input.nElement()
+      while (i < end) {
+        if (inputArray(i + inputOffset) < 0) {
+          gradInputArray(i + gradInputOffset) = gradOutputArray(i + gradOutputOffset) * negVal
+        } else {
+          gradInputArray(i + gradInputOffset) = gradOutputArray(i + gradOutputOffset)
+        }
+        i += 1
+      }
+    }
   }
 }

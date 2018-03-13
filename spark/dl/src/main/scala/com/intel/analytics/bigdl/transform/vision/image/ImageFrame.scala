@@ -30,7 +30,7 @@ import scala.collection.mutable.ArrayBuffer
 /**
  * ImageFrame wraps a set of ImageFeature
  */
-trait ImageFrame {
+trait ImageFrame extends Serializable {
 
   /**
    * transform ImageFrame
@@ -145,8 +145,8 @@ object ImageFrame {
       val uri = row.getAs[String](ImageFeature.uri)
       val image = row.getAs[Array[Byte]](ImageFeature.bytes)
       ImageFeature(image, uri = uri)
-    }).map(BytesToMat.transform)
-    ImageFrame.rdd(images)
+    })
+    (ImageFrame.rdd(images) -> BytesToMat()).toDistributed()
   }
 
   /**

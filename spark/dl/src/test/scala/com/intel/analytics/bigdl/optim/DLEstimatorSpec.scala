@@ -21,15 +21,20 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
 import com.intel.analytics.bigdl.utils.Engine
 import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
+import com.intel.analytics.bigdl.visualization.{TrainSummary, ValidationSummary}
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
 import org.apache.spark.ml.feature.MinMaxScaler
 import org.apache.spark.ml.{DLEstimator, DLModel, Pipeline, PipelineModel}
+import org.apache.spark.mllib.linalg.Vectors
+import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{DataFrame, Row, SQLContext}
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.util.Random
 
+@deprecated("`DLEstimator` has been migrated to package `com.intel.analytics.bigdl.dlframes`." +
+  "This will be removed in BigDL 0.6.", "0.5.0")
 class DLEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
   val model = new Sequential[Float]()
   var sc : SparkContext = _
@@ -68,7 +73,7 @@ class DLEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
   }
 
-  "An DLEstimator" should "fit on feature(one dimension Array[Double]) and label(Double)" in {
+  "An DLEstimator" should "get reasonable accuracy" in {
     val model = new Sequential().add(Linear[Float](6, 2)).add(LogSoftMax[Float])
     val criterion = ClassNLLCriterion[Float]()
     val estimator = new DLEstimator[Float](model, criterion, Array(6), Array(1))
@@ -82,59 +87,94 @@ class DLEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val dlModel = estimator.fit(df)
     dlModel.isInstanceOf[DLModel[_]] should be(true)
     val correct = dlModel.transform(df).select("label", "prediction").rdd.filter {
-      case Row(label: Double, prediction: Seq[Double]) =>
-        label == prediction.indexOf(prediction.max) + 1
+      case Row(label: Double, prediction: Seq[_]) =>
+        label == prediction.indexOf(prediction.asInstanceOf[Seq[Double]].max) + 1
     }.count()
     assert(correct > nRecords * 0.8)
   }
 
-  "An DLEstimator" should "fit on feature(one dimension Array[Float]) and label(Double)" in {
+  "An DLEstimator" should "support different FEATURE types" in {
     val model = new Sequential().add(Linear[Float](6, 2)).add(LogSoftMax[Float])
     val criterion = ClassNLLCriterion[Float]()
     val estimator = new DLEstimator[Float](model, criterion, Array(6), Array(1))
-      .setBatchSize(nRecords)
-      // intentionally set low since this only validates data format compatibitliy
-      .setMaxEpoch(1)
-    val data = sc.parallelize(smallData.map(p => (p._1.map(_.toFloat), p._2)))
-    val df: DataFrame = sqlContext.createDataFrame(data).toDF("features", "label")
+      .setBatchSize(2)
+      // intentionally set low since this only validates data format compatibility
+      .setEndWhen(Trigger.maxIteration(1))
 
-    val dlModel = estimator.fit(df)
-    dlModel.isInstanceOf[DLModel[_]] should be(true)
-    dlModel.transform(df).count()
+    Array(
+      sqlContext.createDataFrame(sc.parallelize(smallData.map(p => (p._1, p._2))))
+        .toDF("features", "label"), // Array[Double]
+      sqlContext.createDataFrame(sc.parallelize(smallData.map(p => (p._1.map(_.toFloat), p._2))))
+        .toDF("features", "label"), // Array[Float]
+      sqlContext.createDataFrame(sc.parallelize(smallData.map(p => (Vectors.dense(p._1), p._2))))
+        .toDF("features", "label") // MLlib Vector
+      // TODO: add ML Vector when ut for Spark 2.0+ is ready
+    ).foreach { df =>
+      val dlModel = estimator.fit(df)
+      dlModel.transform(df).collect()
+    }
   }
 
-  "An DLEstimator" should
-    "fit on feature(one dimension Array[Double]) and label(Array[Double])" in {
+  "An DLEstimator" should "support scalar FEATURE types" in {
+    val model = new Sequential().add(Linear[Float](1, 2)).add(LogSoftMax[Float])
+    val criterion = ClassNLLCriterion[Float]()
+    val estimator = new DLEstimator[Float](model, criterion, Array(1), Array(1))
+      .setBatchSize(2)
+      // intentionally set low since this only validates data format compatibility
+      .setEndWhen(Trigger.maxIteration(1))
+
+    Array(
+      sqlContext.createDataFrame(sc.parallelize(smallData.map(p => (p._1.head.toFloat, p._2))))
+        .toDF("features", "label"), // Float
+      sqlContext.createDataFrame(sc.parallelize(smallData.map(p => (p._1.head, p._2))))
+        .toDF("features", "label") // Double
+      // TODO: add ML Vector when ut for Spark 2.0+ is ready
+    ).foreach { df =>
+      val dlModel = estimator.fit(df)
+      dlModel.transform(df).collect()
+    }
+  }
+
+  "An DLEstimator" should "support different LABEL types" in {
     val model = new Sequential().add(Linear[Float](6, 2)).add(LogSoftMax[Float])
     val criterion = MultiLabelSoftMarginCriterion[Float]()
     val estimator = new DLEstimator[Float](model, criterion, Array(6), Array(2))
       // intentionally set low since this only validates data format compatibitliy
-      .setMaxEpoch(1)
-      .setBatchSize(nRecords)
-    val data = sc.parallelize(
-      smallData.map(p => (p._1, if (p._2 == 1.0) Array(0.0, 1.0) else Array(1.0, 0.0))))
-    val df: DataFrame = sqlContext.createDataFrame(data).toDF("features", "label")
+      .setEndWhen(Trigger.maxIteration(1))
+      .setBatchSize(2)
 
-    val dlModel = estimator.fit(df)
-    dlModel.isInstanceOf[DLModel[_]] should be(true)
-    dlModel.transform(df).count()
+    Array(
+      sqlContext.createDataFrame(sc.parallelize(smallData.map(p => (p._1, Array(p._2, p._2)))))
+        .toDF("features", "label"), // Array[Double]
+      sqlContext.createDataFrame(sc.parallelize(smallData.map(p => (p._1,
+        Array(p._2.toFloat, p._2.toFloat))))).toDF("features", "label"), // Array[Float]
+      sqlContext.createDataFrame(sc.parallelize(smallData.map(p => (p._1,
+        Vectors.dense(p._2, p._2))))).toDF("features", "label") // MLlib Vector
+      // TODO: add ML Vector when ut for Spark 2.0+ is ready
+    ).foreach { df =>
+      val dlModel = estimator.fit(df)
+      dlModel.transform(df).collect()
+    }
   }
 
-  "An DLEstimator" should "fit on feature(one dimension Array[Float]) and label(Array[Float])" in {
+  "An DLEstimator" should "support scalar LABEL types" in {
     val model = new Sequential().add(Linear[Float](6, 2)).add(LogSoftMax[Float])
-    val criterion = MultiLabelSoftMarginCriterion[Float]()
-    val estimator = new DLEstimator[Float](model, criterion, Array(6), Array(2))
+    val criterion = ClassNLLCriterion[Float]()
+    val estimator = new DLEstimator[Float](model, criterion, Array(6), Array(1))
       // intentionally set low since this only validates data format compatibitliy
-      .setMaxEpoch(1)
-      .setBatchSize(nRecords)
-    val data = sc.parallelize(
-      smallData.map(p => (p._1.map(_.toFloat),
-        if (p._2 == 1.0) Array(0.0f, 1.0f) else Array(1.0f, 0.0f))))
-    val df: DataFrame = sqlContext.createDataFrame(data).toDF("features", "label")
+      .setEndWhen(Trigger.maxIteration(1))
+      .setBatchSize(2)
 
-    val dlModel = estimator.fit(df)
-    dlModel.isInstanceOf[DLModel[_]] should be(true)
-    dlModel.transform(df).count()
+    Array(
+      sqlContext.createDataFrame(sc.parallelize(smallData.map(p => (p._1, p._2.toFloat))))
+        .toDF("features", "label"), // Float
+      sqlContext.createDataFrame(sc.parallelize(smallData.map(p => (p._1, p._2))))
+        .toDF("features", "label") // Double
+      // TODO: add ML Vector when ut for Spark 2.0+ is ready
+    ).foreach { df =>
+      val dlModel = estimator.fit(df)
+      dlModel.transform(df).collect()
+    }
   }
 
   "An DLEstimator" should "work with tensor data" in {
@@ -154,31 +194,10 @@ class DLEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val trainingDF: DataFrame = sqlContext.createDataFrame(miniBatch).toDF("features", "label")
 
     val dlModel = estimator.fit(trainingDF)
-    dlModel.isInstanceOf[DLModel[_]] should be(true)
     dlModel.transform(trainingDF).collect()
   }
 
-  "An DLEstimator" should "work with MLlib Vectors" in {
-    var appSparkVersion = org.apache.spark.SPARK_VERSION
-    if (appSparkVersion.trim.startsWith("1")) {
-      val model = new Sequential().add(Linear[Float](6, 2)).add(LogSoftMax[Float])
-      val criterion = ClassNLLCriterion[Float]()
-      val estimator = new DLEstimator[Float](model, criterion, Array(6), Array(1))
-        // intentionally set low since this only validates data format compatibitliy
-        .setMaxEpoch(1)
-        .setBatchSize(nRecords)
-      val data = sc.parallelize(
-        smallData.map(p => (org.apache.spark.mllib.linalg.Vectors.dense(p._1), p._2)))
-      val df: DataFrame = sqlContext.createDataFrame(data).toDF("features", "label")
-
-      val dlModel = estimator.fit(df)
-      dlModel.isInstanceOf[DLModel[_]] should be(true)
-      dlModel.transform(df).count()
-    }
-    // TODO find a way to test ML Vectors.
-  }
-
-  "An DLEstimator" should "has good result for different batchSize" in {
+  "An DLEstimator" should "support different batchSize" in {
     val model = new Sequential().add(Linear[Float](6, 2)).add(LogSoftMax[Float])
     val criterion = ClassNLLCriterion[Float]()
     val estimator = new DLEstimator[Float](model, criterion, Array(6), Array(1))
@@ -190,6 +209,18 @@ class DLEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val dlModel = estimator.fit(df)
     dlModel.isInstanceOf[DLModel[_]] should be(true)
     dlModel.transform(df).count()
+  }
+
+  "An DLModel" should "support transform with different batchSize" in {
+    val model = new Sequential().add(Linear[Float](6, 2)).add(LogSoftMax[Float])
+    val criterion = ClassNLLCriterion[Float]()
+    val estimator = new DLEstimator[Float](model, criterion, Array(6), Array(1))
+      .setBatchSize(nRecords)
+      .setMaxEpoch(maxEpoch)
+    val data = sc.parallelize(smallData)
+    val df: DataFrame = sqlContext.createDataFrame(data).toDF("features", "label")
+    val dlModel = estimator.fit(df)
+    assert(df.count() == dlModel.setBatchSize(51).transform(df).count())
   }
 
   "An DLEstimator" should "throws exception without correct inputs" in {
@@ -205,8 +236,63 @@ class DLEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
       MinibatchData[Float](featureData.storage().array(), labelData.storage().array())
     ))
     var df: DataFrame = sqlContext.createDataFrame(miniBatch).toDF(inputs: _*)
-
     // Spark 1.6 and 2.0 throws different exception here
+    intercept[Exception] {
+      estimator.fit(df)
+    }
+  }
+
+  "An DLEstimator" should "supports training summary" in {
+    val model = new Sequential().add(Linear[Float](6, 2)).add(LogSoftMax[Float])
+    val criterion = ClassNLLCriterion[Float]()
+    val logdir = com.google.common.io.Files.createTempDir()
+    val estimator = new DLEstimator[Float](model, criterion, Array(6), Array(1))
+      .setBatchSize(nRecords)
+      .setMaxEpoch(5)
+      .setTrainSummary(TrainSummary(logdir.getPath, "DLEstimatorTrain"))
+    val data = sc.parallelize(smallData)
+    val df = sqlContext.createDataFrame(data).toDF("features", "label")
+
+    val dlModel = estimator.fit(df)
+    val trainSummary = estimator.getTrainSummary.get
+    val losses = trainSummary.readScalar("Loss")
+    assert(losses.length == 5)
+    trainSummary.close()
+    logdir.deleteOnExit()
+  }
+
+  "An DLEstimator" should "supports validation data and summary" in {
+    val model = new Sequential().add(Linear[Float](6, 2)).add(LogSoftMax[Float])
+    val criterion = ClassNLLCriterion[Float]()
+    val logdir = com.google.common.io.Files.createTempDir()
+    val data = sc.parallelize(smallData)
+    val df = sqlContext.createDataFrame(data).toDF("features", "label")
+    val estimator = new DLEstimator[Float](model, criterion, Array(6), Array(1))
+      .setBatchSize(4)
+      .setEndWhen(Trigger.maxIteration(5))
+      .setValidation(Trigger.severalIteration(1), df, Array(new Loss[Float]()), 2)
+      .setValidationSummary(ValidationSummary(logdir.getPath, "DLEstimatorValidation"))
+
+    val dlModel = estimator.fit(df)
+    val validationSummary = estimator.getValidationSummary.get
+    val losses = validationSummary.readScalar("Loss")
+    assert(losses.length == 5)
+    validationSummary.close()
+    logdir.deleteOnExit()
+  }
+
+  "An DLEstimator" should "throws exception when EndWhen and MaxEpoch are set" in {
+    val model = new Sequential().add(Linear[Float](6, 2)).add(LogSoftMax[Float])
+    val criterion = ClassNLLCriterion[Float]()
+    val logdir = com.google.common.io.Files.createTempDir()
+
+    val data = sc.parallelize(smallData)
+    val df = sqlContext.createDataFrame(data).toDF("features", "label")
+    val estimator = new DLEstimator[Float](model, criterion, Array(6), Array(1))
+      .setBatchSize(4)
+      .setEndWhen(Trigger.maxIteration(5))
+      .setMaxEpoch(5)
+
     intercept[Exception] {
       estimator.fit(df)
     }
@@ -234,8 +320,8 @@ class DLEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
       val pipelineModel = pipeline.fit(df)
       pipelineModel.isInstanceOf[PipelineModel] should be(true)
       val correct = pipelineModel.transform(df).select("label", "prediction").rdd.filter {
-        case Row(label: Double, prediction: Seq[Double]) =>
-          label == prediction.indexOf(prediction.max) + 1
+        case Row(label: Double, prediction: Seq[_]) =>
+          label == prediction.indexOf(prediction.asInstanceOf[Seq[Double]].max) + 1
       }.count()
       assert(correct > nRecords * 0.8)
     }

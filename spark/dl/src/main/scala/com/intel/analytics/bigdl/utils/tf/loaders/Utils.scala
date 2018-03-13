@@ -38,7 +38,8 @@ object Utils {
       val result = context(node.getName)
       (result._1, result._2)
     } else {
-      var weight = toTensor[T](node.getAttrMap.get("value").getTensor, byteOrder)
+      var weight = toTensor(node.getAttrMap.get("value").getTensor, byteOrder)
+        .asInstanceOf[Tensor[T]]
       trans match {
         case Some(transposes) =>
           for ((first, second) <- transposes) {
@@ -54,27 +55,45 @@ object Utils {
   }
 
   private[loaders] def getString(attrMap: util.Map[String, AttrValue], key: String): String = {
+    require(attrMap.containsKey(key), s"Operation doesn't contain attributed $key")
     attrMap.get(key).getS.toString(Charset.defaultCharset())
   }
 
+  private[loaders] def getString(nodeDef: NodeDef, key: String): String = {
+    getString(nodeDef.getAttrMap, key)
+  }
+
   private[loaders] def getInt(attrMap: util.Map[String, AttrValue], key: String): Int = {
+    require(attrMap.containsKey(key), s"Operation doesn't contain attributed $key")
     attrMap.get(key).getI.toInt
   }
 
   private[loaders] def getFloat(attrMap: util.Map[String, AttrValue], key: String): Float = {
+    require(attrMap.containsKey(key), s"Operation doesn't contain attributed $key")
     attrMap.get(key).getF
   }
 
   private[loaders] def getBoolean(attrMap: util.Map[String, AttrValue], key: String): Boolean = {
+    require(attrMap.containsKey(key), s"Operation doesn't contain attributed $key")
     attrMap.get(key).getB
   }
 
+  private[loaders] def getBoolean(nodeDef: NodeDef, key: String): Boolean = {
+    getBoolean(nodeDef.getAttrMap, key)
+  }
+
   private[loaders] def getIntList(attrMap: util.Map[String, AttrValue], key: String): Seq[Int] = {
+    require(attrMap.containsKey(key), s"Operation doesn't contain attributed $key")
     attrMap.get(key).getList.getIList.asScala.map(_.toInt)
   }
 
   private[loaders] def getType(attrMap: util.Map[String, AttrValue], key: String): DataType = {
+    require(attrMap.containsKey(key), s"Operation doesn't contain attributed $key")
     attrMap.get(key).getType
+  }
+
+  private[loaders] def getType(nodeDef: NodeDef, key: String): DataType = {
+    getType(nodeDef.getAttrMap, key)
   }
 
   private[loaders] def toArray[T: ClassTag](tensor: Tensor[T]): Array[T] = {

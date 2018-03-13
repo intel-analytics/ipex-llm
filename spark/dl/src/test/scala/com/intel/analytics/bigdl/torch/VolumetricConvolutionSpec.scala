@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.optim.{L2Regularizer, SGD}
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils.RandomGenerator._
-import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.utils.{Shape, T, TestUtils}
 
 import scala.util.Random
 
@@ -474,6 +474,11 @@ class VolumetricConvolutionSpec extends TorchSpec {
     val output = layer.updateOutput(input)
     val gradInput = layer.backward(input, output)
     output.storage().array() should be (Array(0.0f, 2, 6, 8, 18, 20, 24, 26))
+  }
+
+  "VolumetricConvolution computeOutputShape" should "work properly" in {
+    val layer = VolumetricConvolution[Float](3, 8, 2, 1, 2)
+    TestUtils.compareOutputShape(layer, Shape(3, 24, 28, 32)) should be (true)
   }
 }
 

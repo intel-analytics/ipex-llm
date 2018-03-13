@@ -20,10 +20,11 @@ import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, Initia
 import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor._
-import com.intel.analytics.bigdl.utils.{T, Table, serializer}
+import com.intel.analytics.bigdl.utils.{Shape, T, Table, serializer}
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import com.intel.analytics.bigdl.utils.serializer._
-import serialization.Bigdl.{AttrValue, BigDLModule}
+import com.intel.analytics.bigdl.utils.serializer.converters.DataConverter
+import com.intel.analytics.bigdl.serialization.Bigdl.{AttrValue, BigDLModule}
 
 import scala.concurrent.Future
 import scala.reflect.ClassTag
@@ -252,6 +253,17 @@ class SpatialFullConvolution[T: ClassTag](
     }
   }
 
+  override def computeOutputShape(inputShape: Shape): Shape = {
+    val input = inputShape.toSingle().toArray
+    require(input.length == 4,
+      s"Deconvolution2D requires 4D input, but got input dim ${input.length}")
+    val inputHeight = input(2)
+    val inputWidth = input(3)
+    val outputHeight = (inputHeight - 1) * dH - 2 * padH + kH + adjH
+    val outputWidth = (inputWidth - 1) * dW - 2 * padW + kW + adjW
+    Shape(input(0), nOutputPlane, outputHeight, outputWidth)
+  }
+
   override def updateOutput(input: Activity): Tensor[T] = {
     val inputTensor: Tensor[T] = if (input.isInstanceOf[Table]) {
       if (gradInput == null || !gradInput.isInstanceOf[Table]) {
@@ -308,10 +320,9 @@ class SpatialFullConvolution[T: ClassTag](
         inputHeight * inputWidth))
     }
 
-    if (weightMM == null) {
-      weightMM = weight.view(nGroup, nInputPlane / nGroup,
+    // weight's storage might change, so make a view every time
+    weightMM = weight.view(nGroup, nInputPlane / nGroup,
         nOutputPlane * kH * kW / nGroup)
-    }
 
     var elt = 1
     // For each element in batch, do:
@@ -516,6 +527,7 @@ class SpatialFullConvolution[T: ClassTag](
         dH, dW,
         1, 1
       )
+      case t => throw new NotImplementedError(s"$t is not supported")
     }
     im2colTime += System.nanoTime() - before
 
@@ -659,32 +671,11 @@ class SpatialFullConvolution[T: ClassTag](
     }
   }
 
-  override def updateParameters(learningRate: T): Unit = {
-    weight.map(gradWeight, (a, b) => ev.minus(a, ev.times(learningRate, b)))
-    bias.map(gradBias, (a, b) => ev.minus(a, ev.times(learningRate, b)))
-  }
-
-  override def zeroGradParameters(): Unit = {
-    gradWeight.zero()
-    if(!noBias) {
-      gradBias.zero()
-    }
-  }
-
   override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
     if (null == bias) {
       (Array(this.weight), Array(this.gradWeight))
     } else {
       (Array(this.weight, this.bias), Array(this.gradWeight, this.gradBias))
-    }
-  }
-
-  override def getParametersTable(): Table = {
-    if (null == bias) {
-      T(getName() -> T("weight" -> weight, "gradWeight" -> gradWeight))
-    } else {
-      T(getName() -> T("weight" -> weight, "bias" -> bias,
-        "gradWeight" -> gradWeight, "gradBias" -> gradBias))
     }
   }
 

@@ -18,24 +18,28 @@ package com.intel.analytics.bigdl.nn
 import org.scalatest.{FlatSpec, Matchers}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
+
+import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Parallel
 class ParallelTableSpec extends FlatSpec with Matchers {
   "hashcode()" should "behave correctly" in {
-    val log = new Log[Double, Double]()
+    val log = new Log[Double]()
+    val log2 = new Log[Double]()
     val exp = new Exp[Double]()
     val m1 = new ParallelTable[Double]()
     m1.add(log)
-    m1.add(log)
+    m1.add(log2)
     val m2 = new ParallelTable[Double]()
     m2.add(log)
-    m2.add(log)
+    m2.add(log2)
     val m3 = new ParallelTable[Double]()
     m3.add(log)
     m3.add(exp)
     val m4 = new ParallelTable[Double]()
     m4.add(log)
-    m4.add(log)
+    m4.add(log2)
     val input1 = Tensor[Double](3, 3).randn()
     val input2 = Tensor[Double](3).randn()
     val input = T(1 -> input1, 2 -> input2)
@@ -49,20 +53,21 @@ class ParallelTableSpec extends FlatSpec with Matchers {
   }
 
   "equals()" should "behave correctly" in {
-    val log = new Log[Double, Double]()
+    val log = new Log[Double]()
+    val log2 = new Log[Double]()
     val exp = new Exp[Double]()
     val m1 = new ParallelTable[Double]()
     m1.add(log)
-    m1.add(log)
+    m1.add(log2)
     val m2 = new ParallelTable[Double]()
     m2.add(log)
-    m2.add(log)
+    m2.add(log2)
     val m3 = new ParallelTable[Double]()
     m3.add(log)
     m3.add(exp)
     val m4 = new ParallelTable[Double]()
     m4.add(log)
-    m4.add(log)
+    m4.add(log2)
     val input1 = Tensor[Double](3, 3).randn()
     val input2 = Tensor[Double](3).randn()
     val input = T(1 -> input1, 2 -> input2)
@@ -128,4 +133,16 @@ class ParallelTableSpec extends FlatSpec with Matchers {
     }
   }
 
+}
+
+class ParallelTableSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val parallelTable = ParallelTable[Float]().setName("parallelTable")
+    parallelTable.add(Linear[Float](2, 2))
+    parallelTable.add(Linear[Float](2, 2))
+    val input1 = Tensor[Float](2, 2).apply1(e => Random.nextFloat())
+    val input2 = Tensor[Float](2, 2).apply1(e => Random.nextFloat())
+    val input = T(1.0f -> input1, 2.0f -> input2)
+    runSerializationTest(parallelTable, input)
+  }
 }

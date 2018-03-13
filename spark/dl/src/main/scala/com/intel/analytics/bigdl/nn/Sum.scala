@@ -41,20 +41,17 @@ import scala.reflect.ClassTag
  */
 
 @SerialVersionUID(- 8025422596092583688L)
-class Sum[T: ClassTag, D: ClassTag](
+class Sum[T: ClassTag](
   private var dimension: Int = 1,
   nInputDims: Int = -1,
   sizeAverage: Boolean = false,
   squeeze: Boolean = true)
-  (implicit ev: TensorNumeric[T], evd: TensorNumeric[D])
-  extends AbstractModule[Tensor[D], Tensor[D], T] {
+  (implicit ev: TensorNumeric[T])
+  extends TensorModule[T] {
   @transient
-  private var _gradOutput: Tensor[D] = null
+  private var _gradOutput: Tensor[T] = null
 
-  output = Tensor[D]()
-  gradInput = Tensor[D]()
-
-  private def getPositiveDimension(input: Tensor[D]): Int = {
+  private def getPositiveDimension(input: Tensor[T]): Int = {
     var dimension = this.dimension
     if (dimension < 0) {
       dimension = input.dim() + dimension + 1
@@ -74,12 +71,12 @@ class Sum[T: ClassTag, D: ClassTag](
     this
   }
 
-  override def updateOutput(input: Tensor[D]): Tensor[D] = {
+  override def updateOutput(input: Tensor[T]): Tensor[T] = {
     val dimension = getPositiveDimension(input)
     output.sum(input, dimension)
 
     if (sizeAverage) {
-      output.div(evd.fromType(input.size(dimension)))
+      output.div(ev.fromType(input.size(dimension)))
     }
 
     if (output.nDimension() > 1 && squeeze) {
@@ -87,13 +84,13 @@ class Sum[T: ClassTag, D: ClassTag](
     }
 
     if (output.nElement() == 1 && squeeze) {
-      output = Tensor.scalar[D](output.storage.apply(output.storageOffset() - 1))
+      output = Tensor.scalar[T](output.storage.apply(output.storageOffset() - 1))
     }
 
     output
   }
 
-  override def updateGradInput(input: Tensor[D], gradOutput: Tensor[D]): Tensor[D] = {
+  override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
     val dimension = getPositiveDimension(input)
     val size = input.size()
     size(dimension - 1) = 1
@@ -106,25 +103,20 @@ class Sum[T: ClassTag, D: ClassTag](
     gradInput.resizeAs(input)
     gradInput.copy(_gradOutput.expandAs(input))
     if (sizeAverage) {
-      gradInput.div(evd.fromType(input.size(dimension)))
+      gradInput.div(ev.fromType(input.size(dimension)))
     }
     gradInput
-  }
-
-  override def getClassTagNumerics() : (Array[ClassTag[_]], Array[TensorNumeric[_]]) = {
-    (Array[ClassTag[_]](scala.reflect.classTag[T], scala.reflect.classTag[D]),
-      Array[TensorNumeric[_]](ev, evd))
   }
 
   override def toString: String = s"nn.Sum"
 }
 
 object Sum {
-  def apply[T: ClassTag, D: ClassTag](
+  def apply[T: ClassTag](
     dimension: Int = 1,
     nInputDims: Int = -1,
     sizeAverage: Boolean = false,
-    squeeze: Boolean = true)(implicit ev: TensorNumeric[T], evd: TensorNumeric[D]) : Sum[T, D] = {
-    new Sum[T, D](dimension, nInputDims, sizeAverage, squeeze)
+    squeeze: Boolean = true)(implicit ev: TensorNumeric[T]) : Sum[T] = {
+    new Sum[T](dimension, nInputDims, sizeAverage, squeeze)
   }
 }

@@ -23,7 +23,7 @@ import com.intel.analytics.bigdl.tensor.Tensor
 class PowerSpec extends TorchSpec {
     "A Power(2)" should "generate correct output and grad" in {
     torchCheck()
-    val layer = new Power[Double, Double](2)
+    val layer = new Power[Double](2)
     val input = Tensor[Double](2, 2, 2)
     input(Array(1, 1, 1)) = 1
     input(Array(1, 1, 2)) = 2
@@ -66,7 +66,7 @@ class PowerSpec extends TorchSpec {
 
   "A Power(3)" should "generate correct output and grad" in {
     torchCheck()
-    val layer = new Power[Double, Double](3)
+    val layer = new Power[Double](3)
     val input = Tensor[Double](2, 2, 2)
     input(Array(1, 1, 1)) = 1
     input(Array(1, 1, 2)) = 2

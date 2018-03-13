@@ -1,7 +1,3 @@
-
-
----
-
 * __Cray__: [Cray Urika-XC Analytics Suite](http://www.cray.com/products/analytics/urika-xc) uses BigDL to provide AI support
 * __Databricks__: [Intel’s BigDL on Databricks](https://databricks.com/blog/2017/02/09/intels-bigdl-databricks.html)
 * __Azure__: [Use BigDL on AZure HDInsight](https://azure.microsoft.com/en-us/blog/use-bigdl-on-hdinsight-spark-for-distributed-deep-learning/)

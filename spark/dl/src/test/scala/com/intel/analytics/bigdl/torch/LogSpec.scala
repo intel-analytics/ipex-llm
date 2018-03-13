@@ -24,7 +24,7 @@ class LogSpec extends TorchSpec {
     "A Log()" should "generate correct output and grad" in {
     torchCheck()
     def randomn(): Double = RandomGenerator.RNG.uniform(2, 10)
-    val layer = new Log[Double, Double]()
+    val layer = new Log[Double]()
     val input = Tensor[Double](2, 2, 2)
     input.apply1(x => randomn())
     val gradOutput = Tensor[Double](2, 2, 2)

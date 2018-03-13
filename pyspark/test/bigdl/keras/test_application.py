@@ -24,6 +24,7 @@ from bigdl.keras.converter import *
 from keras.applications.music_tagger_crnn import MusicTaggerCRNN
 
 from test.bigdl.test_utils import BigDLTestCase, TestModels
+from bigdl.keras.backend import *
 
 
 class TestApplication(BigDLTestCase):
@@ -43,14 +44,10 @@ class TestApplication(BigDLTestCase):
         kmodel, input_data, output_data = TestModels.kmodel_seq_lenet_mnist()
         self.modelTest(input_data, kmodel, dump_weights=True)
 
-    @pytest.mark.skip(reason="need to fix todo before running the test")
     def test_text_classification(self):
-        '''This example demonstrates the use of Convolution1D for text classification.
-           This example is from Keras
-        '''
-
-        # TODO: support backend support
-
+        # This example demonstrates the use of Convolution1D for text classification.
+        # This example is from Keras
+        K.set_image_dim_ordering("th")
         import numpy as np
         np.random.seed(1337)  # for reproducibility
 
@@ -69,7 +66,7 @@ class TestApplication(BigDLTestCase):
         nb_filter = 250
         filter_length = 3
         hidden_dims = 250
-        nb_epoch = 2
+        nb_epoch = 1
 
         print('Loading data...')
         (X_train, y_train), (X_test, y_test) = imdb.load_data(nb_words=max_features)
@@ -112,17 +109,18 @@ class TestApplication(BigDLTestCase):
         model.compile(loss='binary_crossentropy',
                       optimizer='adam',
                       metrics=['accuracy'])
-        model = use_bigdl_backend(model)
+        model = with_bigdl_backend(model)
 
         model.fit(X_train, y_train,
                   batch_size=batch_size,
                   nb_epoch=nb_epoch,
-                  validation_data=(X_test, y_test))
+                  validation_data=(X_test, y_test),
+                  is_distributed=True)
         # 2017-09-22 15:53:45 INFO  DistriOptimizer$:657
         # - Top1Accuracy is Accuracy(correct: 21557, count: 25000, accuracy: 0.86228)
         # this result is from GlobalAveragePooling not GlobalMaxPooling.
-        model.predict(X_test)
-        model.evaluate(X_test, y_test)
+        model.predict(X_test, is_distributed=True)
+        model.evaluate(X_test, y_test, is_distributed=True)
         print(model)
 
     def test_resnet50(self):
@@ -180,6 +178,7 @@ class TestApplication(BigDLTestCase):
         bigdl_output = bmodel.forward(input_data)
 
         self.assert_allclose(keras_output, bigdl_output, rtol=1e-3, atol=1e-3)
+
 
 if __name__ == "__main__":
     pytest.main([__file__])

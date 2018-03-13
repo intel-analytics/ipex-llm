@@ -22,6 +22,7 @@ import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.visualization.{TrainSummary, ValidationSummary}
 import org.apache.spark.ml.param.shared.{HasFeaturesCol, HasPredictionCol}
 import org.apache.spark.ml.param.{IntParam, ParamMap, ParamValidators, _}
 import org.apache.spark.ml.util.SchemaUtils
@@ -45,21 +46,11 @@ private[ml] trait DLParams[@specialized(Float, Double) T] extends HasFeaturesCol
   with HasPredictionCol with VectorCompatibility with HasBatchSize {
 
   /**
-   * optimization method to be used. BigDL supports many optimization methods like Adam,
-   * SGD and LBFGS. Refer to package com.intel.analytics.bigdl.optim for all the options.
-   * Default: SGD
+   * When to stop the training, passed in a [[Trigger]]. E.g. Trigger.maxIterations
    */
-  final val optimMethod = new Param[OptimMethod[T]](this, "optimMethod", "optimMethod")
+  final val endWhen = new Param[Trigger](this, "endWhen", "Trigger to stop the training")
 
-  def getOptimMethod: OptimMethod[T] = $(optimMethod)
-
-  /**
-   * number of max Epoch for the training, an epoch refers to a traverse over the training data
-   * Default: 100
-   */
-  final val maxEpoch = new IntParam(this, "maxEpoch", "number of max Epoch", ParamValidators.gt(0))
-
-  def getMaxEpoch: Int = $(maxEpoch)
+  def getEndWhen: Trigger = $(endWhen)
 
   /**
    * learning rate for the optimizer in the DLEstimator.
@@ -77,6 +68,23 @@ private[ml] trait DLParams[@specialized(Float, Double) T] extends HasFeaturesCol
   final val learningRateDecay = new DoubleParam(this, "learningRateDecay", "learningRateDecay")
 
   def getLearningRateDecay: Double = $(learningRateDecay)
+
+  /**
+   * Number of max Epoch for the training, an epoch refers to a traverse over the training data
+   * Default: 50
+   */
+  final val maxEpoch = new IntParam(this, "maxEpoch", "number of max Epoch", ParamValidators.gt(0))
+
+  def getMaxEpoch: Int = $(maxEpoch)
+
+  /**
+   * optimization method to be used. BigDL supports many optimization methods like Adam,
+   * SGD and LBFGS. Refer to package com.intel.analytics.bigdl.optim for all the options.
+   * Default: SGD
+   */
+  final val optimMethod = new Param[OptimMethod[T]](this, "optimMethod", "optimMethod")
+
+  def getOptimMethod: OptimMethod[T] = $(optimMethod)
 
   setDefault(batchSize -> 1)
 
@@ -152,6 +160,8 @@ private[ml] trait DLParams[@specialized(Float, Double) T] extends HasFeaturesCol
  *                    width * height = 28 * 28, featureSize = Array(28, 28).
  * @param labelSize The size (Tensor dimensions) of the label data.
  */
+@deprecated("`DLEstimator` has been migrated to package `com.intel.analytics.bigdl.dlframes`." +
+  "This will be removed in BigDL 0.6.", "0.5.0")
 class DLEstimator[@specialized(Float, Double) T: ClassTag](
     @transient val model: Module[T],
     val criterion : Criterion[T],
@@ -168,10 +178,7 @@ class DLEstimator[@specialized(Float, Double) T: ClassTag](
 
   def setBatchSize(value: Int): this.type = set(batchSize, value)
 
-  def setOptimMethod(value: OptimMethod[T]): this.type = set(optimMethod, value)
-
-  def setMaxEpoch(value: Int): this.type = set(maxEpoch, value)
-  setDefault(maxEpoch -> 50)
+  def setEndWhen(trigger: Trigger): this.type = set(endWhen, trigger)
 
   def setLearningRate(value: Double): this.type = set(learningRate, value)
   setDefault(learningRate -> 1e-3)
@@ -179,53 +186,151 @@ class DLEstimator[@specialized(Float, Double) T: ClassTag](
   def setLearningRateDecay(value: Double): this.type = set(learningRateDecay, value)
   setDefault(learningRateDecay -> 0.0)
 
-  override def transformSchema(schema : StructType): StructType = {
+  def setMaxEpoch(value: Int): this.type = set(maxEpoch, value)
+  setDefault(maxEpoch -> 50)
+
+  def setOptimMethod(value: OptimMethod[T]): this.type = set(optimMethod, value)
+  set(optimMethod, new SGD[T])
+
+  @transient private var trainSummary: Option[TrainSummary] = None
+
+  def getTrainSummary: Option[TrainSummary] = trainSummary
+
+  /**
+   * Statistics (LearningRate, Loss, Throughput, Parameters) collected during training for the
+   * training data, which can be used for visualization via Tensorboard.
+   * Use setTrainSummary to enable train logger. Then the log will be saved to
+   * logDir/appName/train as specified by the parameters of TrainSummary.
+   *
+   * Default: Not enabled
+   */
+  def setTrainSummary(value: TrainSummary): this.type = {
+    this.trainSummary = Some(value)
+    this
+  }
+
+  @transient private var validationSummary: Option[ValidationSummary] = None
+
+  /**
+   * Statistics (LearningRate, Loss, Throughput, Parameters) collected during training for the
+   * validation data if validation data is set, which can be used for visualization via
+   * Tensorboard. Use setValidationSummary to enable validation logger. Then the log will be
+   * saved to logDir/appName/ as specified by the parameters of validationSummary.
+   *
+   * Default: None
+   */
+  def getValidationSummary: Option[ValidationSummary] = validationSummary
+
+  /**
+   * Enable validation Summary
+   */
+  def setValidationSummary(value: ValidationSummary): this.type = {
+    this.validationSummary = Some(value)
+    this
+  }
+
+  @transient private var validationTrigger: Option[Trigger] = None
+  @transient private var validationDF: DataFrame = _
+  @transient private var validationMethods: Array[ValidationMethod[T]] = _
+  @transient private var validationBatchSize: Int = 0
+  /**
+   * Set a validate evaluation during training
+   *
+   * @param trigger how often to evaluation validation set
+   * @param validationDF validate data set
+   * @param vMethods a set of validation method [[ValidationMethod]]
+   * @param batchSize batch size for validation
+   * @return this optimizer
+   */
+  def setValidation(trigger: Trigger, validationDF: DataFrame,
+      vMethods : Array[ValidationMethod[T]], batchSize: Int)
+  : this.type = {
+    this.validationTrigger = Some(trigger)
+    this.validationDF = validationDF
+    this.validationMethods = vMethods
+    this.validationBatchSize = batchSize
+    this
+  }
+
+  protected def validateParams(schema : StructType): Unit = {
     validateDataType(schema, $(featuresCol))
     validateDataType(schema, $(labelCol))
+    if(isSet(endWhen) && isSet(maxEpoch)) {
+      throw new IllegalArgumentException(s"endWhen and maxEpoch cannot be both set")
+    }
+    if (validationTrigger.isEmpty && validationSummary.isDefined) {
+      throw new IllegalArgumentException(
+        s"validationSummary is only valid if validation data is set.")
+    }
+  }
+
+  override def transformSchema(schema : StructType): StructType = {
+    validateParams(schema)
     SchemaUtils.appendColumn(schema, $(predictionCol), ArrayType(DoubleType, false))
   }
 
   protected override def internalFit(dataFrame: DataFrame): DLModel[T] = {
-    val featureType = dataFrame.schema($(featuresCol)).dataType
-    val featureColIndex = dataFrame.schema.fieldIndex($(featuresCol))
-    val labelType = dataFrame.schema($(labelCol)).dataType
-    val labelColIndex = dataFrame.schema.fieldIndex($(labelCol))
+    val localFeatureCol = $(featuresCol)
+    val localLabelCol = $(labelCol)
 
-    val featureFunc = getConvertFunc(featureType)
-    val labelFunc = getConvertFunc(labelType)
+    def getSamples(dataFrame: DataFrame): RDD[Sample[T]] = {
+      val featureType = dataFrame.schema(localFeatureCol).dataType
+      val featureColIndex = dataFrame.schema.fieldIndex(localFeatureCol)
+      val labelType = dataFrame.schema(localLabelCol).dataType
+      val labelColIndex = dataFrame.schema.fieldIndex(localLabelCol)
 
-    val featureAndLabel: RDD[(Seq[AnyVal], Seq[AnyVal])] = dataFrame.rdd.map { row =>
-      val features = featureFunc(row, featureColIndex)
-      val labels = labelFunc(row, labelColIndex)
-      (features, labels)
-    }
+      val featureFunc = getConvertFunc(featureType)
+      val labelFunc = getConvertFunc(labelType)
 
-    val samples = featureAndLabel.map { case (f, l) =>
-      // convert feature and label data type to the same type with model
-      // TODO: investigate to reduce memory consumption during conversion.
-      val feature = f.head match {
-        case dd: Double => f.asInstanceOf[Seq[Double]].map(ev.fromType(_))
-        case ff: Float => f.asInstanceOf[Seq[Float]].map(ev.fromType(_))
+      val featureAndLabel: RDD[(Seq[AnyVal], Seq[AnyVal])] = dataFrame.rdd.map { row =>
+        val features = featureFunc(row, featureColIndex)
+        val labels = labelFunc(row, labelColIndex)
+        (features, labels)
       }
-      val label = l.head match {
-        case dd: Double => l.asInstanceOf[Seq[Double]].map(ev.fromType(_))
-        case ff: Float => l.asInstanceOf[Seq[Float]].map(ev.fromType(_))
+
+      val samples = featureAndLabel.map { case (f, l) =>
+        // convert feature and label data type to the same type with model
+        // TODO: investigate to reduce memory consumption during conversion.
+        val feature = f.head match {
+          case dd: Double => f.asInstanceOf[Seq[Double]].map(ev.fromType(_))
+          case ff: Float => f.asInstanceOf[Seq[Float]].map(ev.fromType(_))
+        }
+        val label = l.head match {
+          case dd: Double => l.asInstanceOf[Seq[Double]].map(ev.fromType(_))
+          case ff: Float => l.asInstanceOf[Seq[Float]].map(ev.fromType(_))
+        }
+        (feature, label)
+      }.map { case (feature, label) =>
+        Sample(Tensor(feature.toArray, featureSize), Tensor(label.toArray, labelSize))
       }
-      (feature, label)
-    }.map { case (feature, label) =>
-      Sample(Tensor(feature.toArray, featureSize), Tensor(label.toArray, labelSize))
+      samples
     }
 
-    if(!isDefined(optimMethod)) {
-      set(optimMethod, new SGD[T])
-    }
+    val trainingSamples = getSamples(dataFrame)
     val state = T("learningRate" -> $(learningRate), "learningRateDecay" -> $(learningRateDecay))
-    val optimizer = Optimizer(model, samples, criterion, $(batchSize))
+    val endTrigger = if (isSet(endWhen)) $(endWhen) else Trigger.maxEpoch($(maxEpoch))
+    val optimizer = Optimizer(model, trainingSamples, criterion, $(batchSize))
       .setState(state)
       .setOptimMethod($(optimMethod))
-      .setEndWhen(Trigger.maxEpoch($(maxEpoch)))
-    val optimizedModel = optimizer.optimize()
+      .setEndWhen(endTrigger)
 
+    if (validationTrigger.isDefined) {
+      val validationSamples = getSamples(validationDF)
+      optimizer.setValidation(
+        validationTrigger.get,
+        validationSamples,
+        validationMethods,
+        validationBatchSize)
+      if (this.validationSummary.isDefined) {
+        optimizer.setValidationSummary(this.validationSummary.get)
+      }
+    }
+
+    if (this.trainSummary.isDefined) {
+      optimizer.setTrainSummary(this.trainSummary.get)
+    }
+
+    val optimizedModel = optimizer.optimize()
     wrapBigDLModel(optimizedModel, featureSize)
   }
 
@@ -256,6 +361,8 @@ class DLEstimator[@specialized(Float, Double) T: ClassTag](
  * @param featureSize The size (Tensor dimensions) of the feature data. (e.g. an image may be with
  * featureSize = 28 * 28).
  */
+@deprecated("`DLModel` has been migrated to package `com.intel.analytics.bigdl.dlframes`." +
+  "This will be removed in BigDL 0.6.", "0.5.0")
 class DLModel[@specialized(Float, Double) T: ClassTag](
     @transient val model: Module[T],
     var featureSize : Array[Int],

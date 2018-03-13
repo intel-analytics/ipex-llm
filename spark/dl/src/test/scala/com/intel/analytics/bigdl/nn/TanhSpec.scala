@@ -18,6 +18,9 @@ package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl._
+import com.intel.analytics.bigdl.nn.tf.TanhGrad
+import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
 
 import scala.math.abs
@@ -84,5 +87,15 @@ class TanhSpec extends FlatSpec with Matchers {
 
     val checker = new GradientChecker(1e-4, 1e-2)
     checker.checkLayer[Double](module, input) should be(true)
+  }
+}
+
+class TanhSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val module = TanhGrad[Float, Float]()
+
+    val input = T(Tensor[Float](1, 5, 3, 4).rand(), Tensor[Float](1, 5, 3, 4).rand())
+
+    runSerializationTest(module, input)
   }
 }

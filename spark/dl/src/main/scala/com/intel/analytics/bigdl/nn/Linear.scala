@@ -16,15 +16,14 @@
 
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.{RandomGenerator, T, Table}
-
-import scala.reflect.ClassTag
-import RandomGenerator._
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.nn.abstractnn.{Initializable, TensorModule}
 import com.intel.analytics.bigdl.optim.Regularizer
+import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.{Shape, T, Table}
+
+import scala.reflect.ClassTag
 
 /**
  * The `Linear` module applies a linear transformation to the input data,
@@ -79,6 +78,10 @@ class Linear[T: ClassTag](
       Option(bias).foreach(biasInitMethod.init(_, VariableFormat.ONE_D))
     }
     zeroGradParameters()
+  }
+
+  override def computeOutputShape(inputShape: Shape): Shape = {
+    inputShape.copyAndUpdate(-1, outputSize)
   }
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
@@ -167,20 +170,6 @@ class Linear[T: ClassTag](
     }
   }
 
-  override def updateParameters(learningRate: T): Unit = {
-    weight.add(ev.negative(learningRate), gradWeight)
-    if (withBias) bias.add(ev.negative(learningRate), gradBias)
-  }
-
-  override def zeroGradParameters(): Unit = {
-    gradWeight.resize(outputSize, inputSize)
-    gradWeight.zero()
-    if (withBias) {
-      gradBias.resize(outputSize)
-      gradBias.zero()
-    }
-  }
-
   override def clearState() : this.type = {
     super.clearState()
     addBuffer.set()
@@ -192,15 +181,6 @@ class Linear[T: ClassTag](
       (Array(this.weight), Array(this.gradWeight))
     } else {
       (Array(this.weight, this.bias), Array(this.gradWeight, this.gradBias))
-    }
-  }
-
-  override def getParametersTable(): Table = {
-    if (null == bias) {
-      T(getName() -> T("weight" -> weight, "gradWeight" -> gradWeight))
-    } else {
-      T(getName() -> T("weight" -> weight, "bias" -> bias,
-        "gradWeight" -> gradWeight, "gradBias" -> gradBias))
     }
   }
 

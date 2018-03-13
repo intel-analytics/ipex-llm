@@ -34,7 +34,9 @@ import scala.reflect.ClassTag
  * @param criterion  BigDL criterion method
  * @param featureSize The size (Tensor dimensions) of the feature data.
  */
-class DLClassifier[@specialized(Float, Double) T: ClassTag](
+@deprecated("`DLClassifier` has been migrated to package `com.intel.analytics.bigdl.dlframes`." +
+  "This will be removed in BigDL 0.6.", "0.5.0")
+class DLClassifier[T: ClassTag](
     @transient override val model: Module[T],
     override val criterion : Criterion[T],
     override val featureSize : Array[Int],
@@ -49,8 +51,7 @@ class DLClassifier[@specialized(Float, Double) T: ClassTag](
   }
 
   override def transformSchema(schema : StructType): StructType = {
-    validateDataType(schema, $(featuresCol))
-    validateDataType(schema, $(labelCol))
+    validateParams(schema)
     SchemaUtils.appendColumn(schema, $(predictionCol), DoubleType)
   }
 
@@ -66,7 +67,9 @@ class DLClassifier[@specialized(Float, Double) T: ClassTag](
  * @param model BigDL module to be optimized
  * @param featureSize The size (Tensor dimensions) of the feature data.
  */
-class DLClassifierModel[@specialized(Float, Double) T: ClassTag](
+@deprecated("`DLClassifierModel` is migrated to package `com.intel.analytics.bigdl.dlframes`." +
+  "This will be removed in BigDL 0.6.", "0.5.0")
+class DLClassifierModel[T: ClassTag](
     @transient override val model: Module[T],
     featureSize : Array[Int],
     override val uid: String = "DLClassifierModel"

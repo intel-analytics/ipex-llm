@@ -17,6 +17,7 @@
 package com.intel.analytics.bigdl.torch
 
 import java.io._
+import java.util.Random
 
 import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.tensor._
@@ -44,13 +45,13 @@ object TH {
   // Run with map
   def run(code: String, parameters: Map[String, Any],
     result: Array[String]): (Double, Map[String, Any]) = {
-    val suffix = ".t7"
+    val suffix = ".t7" + (new Random()).nextLong()
     val tmpFile = java.io.File.createTempFile("UnitTest", "lua")
     val absolutePath = tmpFile.getAbsolutePath
     val subPath = absolutePath.substring(0, absolutePath.lastIndexOf(java.io.File.separator) + 1)
     var resultMap: Map[String, Any] = Map()
 
-    val luaTime = runNM(code: String, parameters: Map[String, Any], result: Array[String])
+    val luaTime = runNM(code: String, parameters: Map[String, Any], result: Array[String], suffix)
 
     result.foreach { k =>
       val tmp: Any = File.loadTorch(subPath + k + suffix)
@@ -70,8 +71,8 @@ object TH {
   }
 
   // Run without map
-  def runNM(code: String, parameters: Map[String, Any], result: Array[String]): Double = {
-    val suffix = ".t7"
+  def runNM(code: String, parameters: Map[String, Any], result: Array[String], suffix: String)
+  : Double = {
     val varCode = new StringBuilder("require 'nn'\n" + "require 'optim'\n")
     val usrCode = new StringBuilder("")
     val resCode = new StringBuilder("")
@@ -149,8 +150,7 @@ object TH {
   }
 
   // Single map
-  def map(result: String): (Any) = {
-    val suffix = ".t7"
+  def map(result: String, suffix: String): (Any) = {
     val tmpFile = java.io.File.createTempFile("UnitTest", "lua")
     val absolutePath = tmpFile.getAbsolutePath
     val subPath = absolutePath.substring(0, absolutePath.lastIndexOf(java.io.File.separator) + 1)

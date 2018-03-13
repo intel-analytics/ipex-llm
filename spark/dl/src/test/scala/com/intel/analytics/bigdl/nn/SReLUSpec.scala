@@ -18,7 +18,9 @@ package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.keras.KerasBaseSpec
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.serializer.{ModuleLoader, ModulePersister}
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
+
+import scala.util.Random
 
 class SReLUSpec extends KerasBaseSpec {
   "SReLU without share axes" should "same as keras" in {
@@ -30,7 +32,7 @@ class SReLUSpec extends KerasBaseSpec {
         |model = Model(input=input_tensor, output=output_tensor)
       """.stripMargin
 
-    val srelu = SReLU[Float]()
+    val srelu = SReLU[Float](Array(3, 4))
     checkOutputAndGrad(srelu, keras)
   }
 
@@ -45,7 +47,7 @@ class SReLUSpec extends KerasBaseSpec {
         |model = Model(input=input_tensor, output=output_tensor)
       """.stripMargin
 
-    val srelu = SReLU[Float](Array(1, 2))
+    val srelu = SReLU[Float](shape = Array(2, 3, 4), shareAxes = Array(1, 2))
     checkOutputAndGrad(srelu, keras)
   }
 
@@ -60,15 +62,32 @@ class SReLUSpec extends KerasBaseSpec {
         |model = Model(input=input_tensor, output=output_tensor)
       """.stripMargin
 
-    val srelu = SReLU[Float](Array(2, 4))
+    val srelu = SReLU[Float](shape = Array(2, 3, 4, 5), shareAxes = Array(2, 4))
     checkOutputAndGrad(srelu, keras)
   }
 
   // do not delete this, it's for testing the initialization of SReLU
   "SReLU init" should "same as keras" in {
-    val srelu = SReLU[Float]()
+    val srelu = SReLU[Float](shape = Array(2, 3, 4))
     val input = Tensor[Float](5, 2, 3, 4).randn()
     srelu.forward(input)
     println(srelu.output)
+  }
+
+  "SReLU set init method" should "work correctly" in {
+    val inits = Array[InitializationMethod](Ones, Ones, Ones, Ones)
+    val shape = Array(2, 3, 4)
+    val srelu = SReLU[Float](shape).setInitMethod(inits)
+    val weight = Tensor[Float](shape).fill(1)
+
+    srelu.weights.foreach(x => x should be (weight))
+  }
+}
+
+class SReLUSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val srelu = SReLU[Float](shape = Array(4)).setName("srelu")
+    val input = Tensor[Float](3, 4).apply1( e => Random.nextFloat())
+    runSerializationTest(srelu, input)
   }
 }

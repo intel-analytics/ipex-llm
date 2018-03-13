@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.keras
 
 import com.intel.analytics.bigdl.nn.{Cropping2D, _}
 import com.intel.analytics.bigdl.nn.abstractnn.DataFormat
+import com.intel.analytics.bigdl.utils.{Shape, TestUtils}
 
 class Cropping2DSpec extends KerasBaseSpec {
   "Cropping2D" should "with NCHW work properly" in {
@@ -42,6 +43,16 @@ class Cropping2DSpec extends KerasBaseSpec {
       """.stripMargin
     val model = Cropping2D[Float](Array(1, 1), Array(1, 1), DataFormat.NHWC)
     checkOutputAndGrad(model, kerasCode)
+  }
+
+  "Cropping2D computeOutputShape NCHW" should "work properly" in {
+    val layer = Cropping2D[Float](Array(2, 3), Array(2, 4))
+    TestUtils.compareOutputShape(layer, Shape(3, 12, 12)) should be (true)
+  }
+
+  "Cropping2D computeOutputShape NHWC" should "work properly" in {
+    val layer = Cropping2D[Float](Array(1, 3), Array(2, 2), format = DataFormat.NHWC)
+    TestUtils.compareOutputShape(layer, Shape(18, 12, 3)) should be (true)
   }
 
 }

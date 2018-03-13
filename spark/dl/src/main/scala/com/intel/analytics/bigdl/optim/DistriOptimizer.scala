@@ -200,12 +200,24 @@ object DistriOptimizer {
     val partitionNum = dataset.originRDD().partitions.length
     var wallClockTime = 0L
     var lastEpochTime = 0L
+
+    // driverState is needed to prevent serializing the whole optimizer
+    if (!optimMethod.state.contains("epoch")) optimMethod.state.update("epoch", 1)
+    if (!optimMethod.state.contains("neval")) optimMethod.state.update("neval", 1)
+    if (!optimMethod.state.contains("Loss")) {
+      optimMethod.state.update("Loss", Float.PositiveInfinity)
+    }
+    if (!optimMethod.state.contains("score")) optimMethod.state.update("score", 0f)
+    if (!optimMethod.state.contains("recordsProcessedThisEpoch")) {
+      optimMethod.state.update("recordsProcessedThisEpoch", 0)
+    }
     val driverState = T(
-      "epoch" -> optimMethod.state.get[Int]("epoch").getOrElse(1),
-      "neval" -> optimMethod.state.get[Int]("neval").getOrElse(1),
-      "Loss" -> optimMethod.state.get[Float]("Loss").getOrElse(Float.PositiveInfinity),
-      "score" -> optimMethod.state.get[Float]("score").getOrElse(0f)
+      "epoch" -> optimMethod.state("epoch"),
+      "neval" -> optimMethod.state("neval"),
+      "Loss" -> optimMethod.state("Loss"),
+      "score" -> optimMethod.state("score")
     )
+
     val _subModelNumber = Engine.getEngineType() match {
       case MklBlas => coresPerNode
     }
@@ -222,12 +234,16 @@ object DistriOptimizer {
         "fly from random samples, which is better for convergence.")
     }
 
-    val shuffleBefore = System.nanoTime()
     logger.info(s"config $state")
-    logger.info("Shuffle data")
-    dataset.shuffle()
-    val shuffleEnd = System.nanoTime()
-    logger.info(s"Shuffle data complete. Takes ${(shuffleEnd - shuffleBefore) / 1e9}s")
+    var recordsProcessedThisEpoch = optimMethod.state[Int]("recordsProcessedThisEpoch")
+    if (recordsProcessedThisEpoch == 0) {
+      val shuffleBefore = System.nanoTime()
+      logger.info("Shuffle data")
+      dataset.shuffle()
+      val shuffleEnd = System.nanoTime()
+      logger.info(s"Shuffle data complete. Takes ${(shuffleEnd - shuffleBefore) / 1e9}s")
+
+    }
 
     var tasks: ArrayBuffer[Future[_]] = new ArrayBuffer()
     var threshold = Long.MaxValue
@@ -254,7 +270,6 @@ object DistriOptimizer {
     }
     var epochStart = System.nanoTime()
     var dataRDD = dataset.data(train = true)
-    var recordsProcessedThisEpoch = 0
 
     while (!endWhen(driverState)) {
       val lossSum = sc.accumulator(0.0, "loss sum")
@@ -430,13 +445,7 @@ object DistriOptimizer {
         recordsProcessedThisEpoch += recordsNum.value
         val end = System.nanoTime()
         wallClockTime += end - start
-        optimMethod.state.update("epoch", driverState[Int]("epoch"))
-        optimMethod.state.update("neval", driverState[Int]("neval"))
         driverState("Loss") = lossSum.value.toFloat / numFinishedModelUpdates
-        optimMethod.state.update("Loss", driverState[Float]("Loss"))
-        if (validationMethods.isDefined) {
-          optimMethod.state.update("score", driverState[Float]("score"))
-        }
         optimMethod.updateHyperParameter()
         driverState("Throughput") = recordsNum.value.toFloat / ((end - start) / 1e9f)
         driverState("LearningRate") = -optimMethod.getLearningRate().toFloat
@@ -492,6 +501,15 @@ object DistriOptimizer {
           dataset.shuffle()
           dataRDD = dataset.data(train = true)
           recordsProcessedThisEpoch = 0
+        }
+
+        optimMethod.state.update("recordsProcessedThisEpoch", recordsProcessedThisEpoch)
+
+        optimMethod.state.update("epoch", driverState[Int]("epoch"))
+        optimMethod.state.update("neval", driverState[Int]("neval"))
+        optimMethod.state.update("Loss", driverState[Float]("Loss"))
+        if (validationMethods.isDefined) {
+          optimMethod.state.update("score", driverState[Float]("score"))
         }
 
         validate(
@@ -932,6 +950,13 @@ class DistriOptimizer[T: ClassTag] (
     }).count()
   }
 
+  private def endEpoch(): Unit = {
+    val records = this.optimMethod.state.get[Int]("recordsProcessedThisEpoch")
+    if (records.isDefined && records.get != 0) {
+      this.optimMethod.state("epoch") = this.optimMethod.state[Int]("epoch") + 1
+      this.optimMethod.state("recordsProcessedThisEpoch") = 0
+    }
+  }
 
   override def setTrainData(sampleRDD: RDD[Sample[T]],
     batchSize: Int,
@@ -939,6 +964,9 @@ class DistriOptimizer[T: ClassTag] (
     this.dataset = (DataSet.rdd(sampleRDD) ->
       SampleToMiniBatch(miniBatch, batchSize, None))
       .asInstanceOf[DistributedDataSet[MiniBatch[T]]]
+    // if current epoch is not finished, we will end the
+    // current epoch and start a new epoch when optimize is called
+    endEpoch()
     this
   }
 
@@ -951,6 +979,9 @@ class DistriOptimizer[T: ClassTag] (
     dataset = (DataSet.rdd(sampleRDD) ->
       SampleToMiniBatch(batchSize, _featurePaddingParam, _labelPaddingParam))
       .asInstanceOf[DistributedDataSet[MiniBatch[T]]]
+    // if current epoch is not finished, we will end the
+    // current epoch and start a new epoch when optimize is called
+    endEpoch()
     this
   }
 
@@ -1073,6 +1104,10 @@ class DistriOptimizer[T: ClassTag] (
 
     // Reset some internal states, so this or other optimizers can run optimize again
     clearState()
+
+    // unpersist the model because the next time optimize is called, new `models` will be
+    // created
+    models.unpersist()
 
     model
   }

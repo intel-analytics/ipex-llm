@@ -15,7 +15,7 @@
  */
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, TensorModule}
+import com.intel.analytics.bigdl.nn.abstractnn.{IdentityOutputShape, TensorModule}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
@@ -28,47 +28,42 @@ import scala.reflect.ClassTag
  */
 
 @SerialVersionUID(- 3936698382129844874L)
-class SoftSign[T: ClassTag, D: ClassTag]()
-    (implicit ev: TensorNumeric[T], ev2: TensorNumeric[D])
-  extends AbstractModule[Tensor[D], Tensor[D], T] {
+class SoftSign[T: ClassTag]()
+    (implicit ev: TensorNumeric[T])
+  extends TensorModule[T] with IdentityOutputShape {
 
-  @transient private var temp: Tensor[D] = null
-  @transient private var tempGrad: Tensor[D] = null
+  @transient private var temp: Tensor[T] = null
+  @transient private var tempGrad: Tensor[T] = null
 
-  output = Tensor[D]()
-  gradInput = Tensor[D]()
+  output = Tensor[T]()
+  gradInput = Tensor[T]()
 
-  override def updateOutput(input: Tensor[D]): Tensor[D] = {
+  override def updateOutput(input: Tensor[T]): Tensor[T] = {
     if (null == temp) {
       temp = input.clone()
     } else {
       temp.resizeAs(input).copy(input)
     }
-    temp.abs().add(ev2.fromType[Int](1))
+    temp.abs().add(ev.fromType[Int](1))
     output.resizeAs(input).copy(input).cdiv(temp)
     output
   }
 
-  override def updateGradInput(input: Tensor[D], gradOutput: Tensor[D]): Tensor[D] = {
+  override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
     if (null == tempGrad) {
       tempGrad = input.clone()
     } else {
       tempGrad.resizeAs(output).copy(input)
     }
-    tempGrad.abs().add(ev2.fromType[Int](1)).cmul(tempGrad)
+    tempGrad.abs().add(ev.fromType[Int](1)).cmul(tempGrad)
     gradInput.resizeAs(input).copy(gradOutput).cdiv(tempGrad)
     gradInput
-  }
-
-  override def getClassTagNumerics() : (Array[ClassTag[_]], Array[TensorNumeric[_]]) = {
-    (Array[ClassTag[_]](scala.reflect.classTag[T], scala.reflect.classTag[D]),
-      Array[TensorNumeric[_]](ev, ev2))
   }
 }
 
 object SoftSign {
-  def apply[@specialized(Float, Double) T: ClassTag, D: ClassTag]()
-      (implicit ev: TensorNumeric[T], ev2: TensorNumeric[D]) : SoftSign[T, D] = {
-    new SoftSign[T, D]()
+  def apply[@specialized(Float, Double) T: ClassTag]()
+      (implicit ev: TensorNumeric[T]) : SoftSign[T] = {
+    new SoftSign[T]()
   }
 }

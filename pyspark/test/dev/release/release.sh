@@ -66,11 +66,11 @@ sdist_command="python setup.py sdist"
 echo "packing source code: ${sdist_command}"
 $sdist_command
 
-if [-d "${BIGDL_DIR}/pyspark/build" ]; then
+if [ -d "${BIGDL_DIR}/pyspark/build" ]; then
    rm -r ${BIGDL_DIR}/pyspark/build
 fi
 
-if [-d "${BIGDL_DIR}/pyspark/dist" ]; then
+if [ -d "${BIGDL_DIR}/pyspark/dist" ]; then
    rm -r ${BIGDL_DIR}/pyspark/dist
 fi
 wheel_command="python setup.py bdist_wheel --plat-name ${verbose_pname}"

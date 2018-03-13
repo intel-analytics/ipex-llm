@@ -18,8 +18,7 @@ package com.intel.analytics.bigdl.utils.tf.loaders
 import java.nio.ByteOrder
 
 import com.intel.analytics.bigdl.Module
-import com.intel.analytics.bigdl.nn.ELU
-import com.intel.analytics.bigdl.nn.ops.Dilation2D
+import com.intel.analytics.bigdl.nn.ops.{Dilation2D => Dilation2DOps}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.tf.Context
 import org.tensorflow.framework.{DataType, NodeDef}
@@ -39,9 +38,9 @@ class Dilation2D extends TensorflowOpsLoader {
     val t = getType(nodeDef.getAttrMap, "T")
 
     if (t == DataType.DT_FLOAT) {
-      Dilation2D[T, Float](strides, rates, padding)
+      Dilation2DOps[T, Float](strides, rates, padding)
     } else if (t == DataType.DT_DOUBLE) {
-      Dilation2D[T, Double](strides, rates, padding)
+      Dilation2DOps[T, Double](strides, rates, padding)
     } else {
       throw new UnsupportedOperationException(s"Not support load Dilation2D when type is ${t}")
     }

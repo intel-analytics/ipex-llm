@@ -105,6 +105,7 @@ object LinearToTF extends BigDLToTensorflow {
 object SpatialConvolutionToTF extends BigDLToTensorflow {
   override def toTFDef(module: AbstractModule[_, _, _], inputs: Seq[NodeDef],
                        byteOrder: ByteOrder): Seq[NodeDef] = {
+    import scala.language.existentials
     require(inputs.length == 1, "SpatialConvolution only accept one input")
     val spatialConv = module.asInstanceOf[SpatialConvolution[_]]
     if (spatialConv.nGroup == 1) {
@@ -377,7 +378,7 @@ object MeanToTF extends BigDLToTensorflow {
   override def toTFDef(module: AbstractModule[_, _, _], inputs: Seq[NodeDef],
                        byteOrder: ByteOrder): Seq[NodeDef] = {
     require(inputs.length == 1, "Mean only accept one input")
-    val layer = module.asInstanceOf[Mean[_, _]]
+    val layer = module.asInstanceOf[Mean[_]]
     require(layer.squeeze == true, "Mean must squeeze input")
     val dimsTensor = Tensor[Int](layer.dimension)
     dimsTensor.setValue(1, layer.dimension - 1)

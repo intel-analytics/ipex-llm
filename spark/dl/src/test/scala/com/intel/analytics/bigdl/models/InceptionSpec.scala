@@ -31,6 +31,8 @@ import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Serial
 class InceptionSpec extends TorchSpec {
+  private val suffix = ".t7" + (new java.util.Random()).nextLong()
+
   "Inception+bn" should "generate correct output" in {
     torchCheck()
 
@@ -159,16 +161,18 @@ class InceptionSpec extends TorchSpec {
       """
 
     TH.runNM(code, Map("input" -> input, "labels" -> labels), Array("output", "gradOutput", "err",
-      "parameters_initial", "gradParameters_initial", "gradParameters", "parameters", "model2"))
+      "parameters_initial", "gradParameters_initial", "gradParameters", "parameters", "model2"),
+      suffix)
 
     val model = Inception.getModel[Double](1000, "inception-bn")
 
     val parameters = model.getParameters()._1.asInstanceOf[Tensor[Double]]
     println(s"model size: ${parameters.nElement()}")
-    val parametersInitTorch = TH.map("parameters_initial").asInstanceOf[Tensor[Double]]
+    val parametersInitTorch = TH.map("parameters_initial", suffix).asInstanceOf[Tensor[Double]]
     require(parameters == parametersInitTorch, "parameter compare failed")
 
-    val gradGarametersInitTorch = TH.map("gradParameters_initial").asInstanceOf[Tensor[Double]]
+    val gradGarametersInitTorch = TH.map("gradParameters_initial", suffix)
+      .asInstanceOf[Tensor[Double]]
     val gradparameters = model.getParameters()._2.asInstanceOf[Tensor[Double]]
     require(gradparameters == gradGarametersInitTorch, "gradparameter compare failed")
 
@@ -180,24 +184,24 @@ class InceptionSpec extends TorchSpec {
 
     model.zeroGradParameters()
     val outputTest = model.forward(input).toTensor[Double]
-    val outputTorch = TH.map("output").asInstanceOf[Tensor[Double]]
+    val outputTorch = TH.map("output", suffix).asInstanceOf[Tensor[Double]]
     outputTest shouldEqual outputTorch
 
-    val errTorch = TH.map("err").asInstanceOf[Table][Double](1)
+    val errTorch = TH.map("err", suffix).asInstanceOf[Table][Double](1)
     val errTest = criterion.forward(outputTest, labels)
     println(s"err:${abs(errTest - errTorch)}")
-    assert(abs(errTest - errTorch) < 2e-15)
+    assert(abs(errTest - errTorch) < 4e-15)
 
-    val gradOutputTorch = TH.map("gradOutput").asInstanceOf[Tensor[Double]]
+    val gradOutputTorch = TH.map("gradOutput", suffix).asInstanceOf[Tensor[Double]]
     val gradOutputTest = criterion.backward(outputTest, labels)
     model.backward(input, gradOutputTest)
     gradOutputTest shouldEqual gradOutputTorch
 
     sgd.optimize(_ => (errTest, grad), weights, state, state)
 
-    val gradParametersTorch = TH.map("gradParameters").asInstanceOf[Tensor[Double]]
+    val gradParametersTorch = TH.map("gradParameters", suffix).asInstanceOf[Tensor[Double]]
     grad.equals(gradParametersTorch) should be (true)
-    val parametersTorch = TH.map("parameters").asInstanceOf[Tensor[Double]]
+    val parametersTorch = TH.map("parameters", suffix).asInstanceOf[Tensor[Double]]
     parameters.equals(parametersTorch) should be (true)
   }
 
@@ -345,19 +349,19 @@ class InceptionSpec extends TorchSpec {
       """
 
     TH.runNM(code, Map("input" -> input, "labels" -> labels), Array("output", "gradOutput", "err",
-      "parameters_initial", "gradParameters_initial", "gradInput", "parameters"))
+      "parameters_initial", "gradParameters_initial", "gradInput", "parameters"), suffix)
 
-    val gradInputTorch = TH.map("gradInput").asInstanceOf[Tensor[Double]]
+    val gradInputTorch = TH.map("gradInput", suffix).asInstanceOf[Tensor[Double]]
 
     val parameters = model.getParameters()._1.asInstanceOf[Tensor[Double]]
     model.zeroGradParameters()
     println(s"model size: ${parameters.nElement()}")
-    val parameterTorch = TH.map("parameters_initial").asInstanceOf[Tensor[Double]]
+    val parameterTorch = TH.map("parameters_initial", suffix).asInstanceOf[Tensor[Double]]
     require(parameters == parameterTorch, "parameter compare failed")
 
     val gradparameters = model.getParameters()._2.asInstanceOf[Tensor[Double]]
-    val parametersTorch = TH.map("parameters").asInstanceOf[Tensor[Double]]
-    val gradparameterTorch = TH.map("gradParameters_initial").asInstanceOf[Tensor[Double]]
+    val parametersTorch = TH.map("parameters", suffix).asInstanceOf[Tensor[Double]]
+    val gradparameterTorch = TH.map("gradParameters_initial", suffix).asInstanceOf[Tensor[Double]]
     require(gradparameters == gradparameterTorch, "gradparameter compare failed")
 
     val (weights, grad) = model.getParameters()
@@ -379,7 +383,7 @@ class InceptionSpec extends TorchSpec {
 
     model.zeroGradParameters()
     var outputAbs = 0.0
-    val outputTorch = TH.map("output").asInstanceOf[Tensor[Double]]
+    val outputTorch = TH.map("output", suffix).asInstanceOf[Tensor[Double]]
     val outputTest = model.forward(input).toTensor[Double]
     outputTest.map(outputTorch, (v1, v2) => {
       outputAbs += abs(v1 - v2)
@@ -388,12 +392,12 @@ class InceptionSpec extends TorchSpec {
     println(s"outputAbs:$outputAbs")
 
     val errTest = criterion.forward(outputTest, labels)
-    val errTorch = TH.map("err").asInstanceOf[Table][Double](1)
+    val errTorch = TH.map("err", suffix).asInstanceOf[Table][Double](1)
     println(s"err:${abs(errTest - errTorch)}")
     assert(abs(errTest - errTorch) == 0)
 
     val gradOutputTest = criterion.backward(outputTest, labels)
-    val gradOutputTorch = TH.map("gradOutput").asInstanceOf[Tensor[Double]]
+    val gradOutputTorch = TH.map("gradOutput", suffix).asInstanceOf[Tensor[Double]]
     gradOutputTest shouldEqual gradOutputTorch
 
     val gradInput = model.backward(input, gradOutputTest)
@@ -531,17 +535,18 @@ class InceptionSpec extends TorchSpec {
     TH.runNM(code,
       Map("input" -> input, "labels" -> labels),
       Array("output", "gradOutput", "err", "parameters_initial", "gradParameters_initial",
-        "gradParameters", "parameters", "initModel"))
+        "gradParameters", "parameters", "initModel"), suffix)
 
-    val model = TH.map("initModel").
+    val model = TH.map("initModel", suffix).
       asInstanceOf[AbstractModule[Tensor[Double], Tensor[Double], Double]]
 
     val parameters = model.getParameters()._1.asInstanceOf[Tensor[Double]]
     println(s"model size: ${parameters.nElement()}")
-    val parametersInitTorch = TH.map("parameters_initial").asInstanceOf[Tensor[Double]]
+    val parametersInitTorch = TH.map("parameters_initial", suffix).asInstanceOf[Tensor[Double]]
     require(parameters == parametersInitTorch, "parameter compare failed")
 
-    val gradGarametersInitTorch = TH.map("gradParameters_initial").asInstanceOf[Tensor[Double]]
+    val gradGarametersInitTorch = TH.map("gradParameters_initial", suffix)
+      .asInstanceOf[Tensor[Double]]
     val gradparameters = model.getParameters()._2.asInstanceOf[Tensor[Double]]
     require(gradparameters == gradGarametersInitTorch, "gradparameter compare failed")
 
@@ -553,23 +558,23 @@ class InceptionSpec extends TorchSpec {
 
     model.zeroGradParameters()
     val outputTest = model.forward(input)
-    val outputTorch = TH.map("output").asInstanceOf[Tensor[Double]]
+    val outputTorch = TH.map("output", suffix).asInstanceOf[Tensor[Double]]
     outputTest shouldEqual outputTorch
 
-    val errTorch = TH.map("err").asInstanceOf[Table][Double](1)
+    val errTorch = TH.map("err", suffix).asInstanceOf[Table][Double](1)
     val errTest = criterion.forward(outputTest, labels)
     println(s"err:${abs(errTest - errTorch)}")
     assert(abs(errTest - errTorch) < 4e-10)
 
-    val gradOutputTorch = TH.map("gradOutput").asInstanceOf[Tensor[Double]]
+    val gradOutputTorch = TH.map("gradOutput", suffix).asInstanceOf[Tensor[Double]]
     val gradOutputTest = criterion.backward(outputTest, labels)
     model.backward(input, gradOutputTest)
     gradOutputTest shouldEqual gradOutputTorch
 
     sgd.optimize(_ => (errTest, grad), weights, state, state)
-    val gradParametersTorch = TH.map("gradParameters").asInstanceOf[Tensor[Double]]
+    val gradParametersTorch = TH.map("gradParameters", suffix).asInstanceOf[Tensor[Double]]
     grad == gradParametersTorch should be (true)
-    val parametersTorch = TH.map("parameters").asInstanceOf[Tensor[Double]]
+    val parametersTorch = TH.map("parameters", suffix).asInstanceOf[Tensor[Double]]
     parameters == parametersTorch should be (true)
   }
 
@@ -696,10 +701,10 @@ class InceptionSpec extends TorchSpec {
         end
       """
 
-    TH.runNM(code, Map("input" -> input, "labels" -> labels), Array("initModel"))
+    TH.runNM(code, Map("input" -> input, "labels" -> labels), Array("initModel"), suffix)
 
     val model = Inception.getModel[Float](1000, "inception-bn")
-    val model2 = TH.map("initModel").
+    val model2 = TH.map("initModel", suffix).
       asInstanceOf[AbstractModule[Tensor[Float], Tensor[Float], Float]]
     model2 should be (model)
 

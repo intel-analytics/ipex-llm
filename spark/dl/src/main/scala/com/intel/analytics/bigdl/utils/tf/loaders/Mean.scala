@@ -19,7 +19,8 @@ import java.nio.ByteOrder
 
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
-import com.intel.analytics.bigdl.nn.{Sequential, Mean => MeanNN}
+import com.intel.analytics.bigdl.nn.Sequential
+import com.intel.analytics.bigdl.nn.tf.Mean
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.tf.Context
@@ -71,13 +72,13 @@ class MeanLoadTF[T: ClassTag](val dataType: String,
     }
     dataType match {
       case "Int" =>
-        dim.foreach(i => mean.add(new MeanNN[T, Int](i, squeeze = squeeze)))
+        dim.foreach(i => mean.add(Mean[T, Int](i, squeeze = squeeze)))
       case "Long" =>
-        dim.foreach(i => mean.add(new MeanNN[T, Long](i, squeeze = squeeze)))
+        dim.foreach(i => mean.add(Mean[T, Long](i, squeeze = squeeze)))
       case "Float" =>
-        dim.foreach(i => mean.add(new MeanNN[T, Float](i, squeeze = squeeze)))
+        dim.foreach(i => mean.add(Mean[T, Float](i, squeeze = squeeze)))
       case "Double" =>
-        dim.foreach(i => mean.add(new MeanNN[T, Double](i, squeeze = squeeze)))
+        dim.foreach(i => mean.add(Mean[T, Double](i, squeeze = squeeze)))
     }
     mean
   }

@@ -15,6 +15,7 @@
  */
 package com.intel.analytics.bigdl.nn.ops
 
+import com.intel.analytics.bigdl.nn.CMulTable
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
 import org.scalatest.{FlatSpec, Matchers}
@@ -31,7 +32,7 @@ class MultiplySpec extends FlatSpec with Matchers {
 
     val expectOutput = Tensor(T(14f, 12f, 12f))
 
-    val output = Multiply().forward(input)
+    val output = CMulTable().forward(input)
     output should be(expectOutput)
   }
 }

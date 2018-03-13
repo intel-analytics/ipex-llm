@@ -17,8 +17,9 @@
 package com.intel.analytics.bigdl.example.lenetLocal
 import com.intel.analytics.bigdl.dataset.image.{BytesToGreyImg, GreyImgNormalizer, GreyImgToSample}
 import com.intel.analytics.bigdl.nn.Module
-import com.intel.analytics.bigdl.utils.{Engine, LocalModule}
+import com.intel.analytics.bigdl.utils.Engine
 import com.intel.analytics.bigdl.dataset.Sample
+import com.intel.analytics.bigdl.optim.LocalPredictor
 import org.apache.log4j.{Level, Logger}
 
 import scala.collection.mutable.ArrayBuffer
@@ -54,9 +55,9 @@ object Predict {
       val samples = samplesBuffer.toArray
 
       val model = Module.load[Float](param.model)
-      val localModel = LocalModule(model)
-      val result = localModel.predict(samples)
-      val result_class = localModel.predictClass(samples)
+      val localPredictor = LocalPredictor(model)
+      val result = localPredictor.predict(samples)
+      val result_class = localPredictor.predictClass(samples)
       result_class.foreach(r => println(s"${r}"))
     }
   }

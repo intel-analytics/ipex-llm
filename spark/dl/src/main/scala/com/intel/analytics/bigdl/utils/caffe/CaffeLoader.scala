@@ -172,6 +172,7 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
   }
 
   private def copyBlobs(from : GeneratedMessage, to : GeneratedMessage): GeneratedMessage = {
+    import scala.language.existentials
     val blobList = from match {
       case v1 : V1LayerParameter => v1.asInstanceOf[V1LayerParameter].getBlobsList.asScala
       case v2 : LayerParameter => v2.asInstanceOf[LayerParameter].getBlobsList.asScala
@@ -283,7 +284,7 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
   : (Module[T], ParallelCriterion[T]) = {
     loadCaffe(prototxtPath, modelPath)
     registerCustomizedConverter()
-    val layers = createLayers()
+    val layers = createLayers(outputNames)
     val inputs = layers.filter(layer => layer.prevNodes.isEmpty).toArray
     val outputs = layers.filter(layer => layer.nextNodes.isEmpty ||
       outputNames.contains(layer.element.getName())).toArray
@@ -338,7 +339,7 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
   }
 
   // create directed graph based on the module relationships
-  private def createLayers() : ArrayBuffer[ModuleNode[T]] = {
+  private def createLayers(outputNames: Array[String]) : ArrayBuffer[ModuleNode[T]] = {
     val layers = ArrayBuffer[ModuleNode[T]]()
     val layersMap = new mutable.HashMap[String, ModuleNode[T]]()
     val top2LayerMap = new mutable.HashMap[String, String]()
@@ -446,7 +447,8 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
         }
       })
     })
-    layers.filter(layer => !(layer.prevNodes.isEmpty && layer.nextNodes.isEmpty))
+    layers.filter(layer => !(layer.prevNodes.isEmpty && layer.nextNodes.isEmpty)
+    || outputNames.contains(layer.element.getName))
   }
 
   private def convertCaffeLayer(layer : GeneratedMessage): Seq[ModuleNode[T]] = {

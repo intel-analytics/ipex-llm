@@ -22,16 +22,20 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
 import com.intel.analytics.bigdl.utils.Engine
 import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
+import com.intel.analytics.bigdl.visualization.ValidationSummary
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.ml.feature.MinMaxScaler
 import org.apache.spark.SparkContext
 import org.apache.spark.ml._
+import org.apache.spark.mllib.linalg.Vectors
 import org.apache.spark.sql.{DataFrame, SQLContext}
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.collection.mutable.ArrayBuffer
 import scala.util.Random
 
+@deprecated("`DLClassifier` has been migrated to package `com.intel.analytics.bigdl.dlframes`." +
+  "This will be removed in BigDL 0.6.", "0.5.0")
 class DLClassifierSpec extends FlatSpec with Matchers with BeforeAndAfter {
   var sc : SparkContext = _
   var sqlContext : SQLContext = _
@@ -68,7 +72,7 @@ class DLClassifierSpec extends FlatSpec with Matchers with BeforeAndAfter {
     assert(estimator.getLearningRateDecay == 0)
   }
 
-  "An DLClassifier" should "fit on feature(one dimension Array[Double]) and label(Double)" in {
+  "An DLClassifier" should "get reasonale accuracy" in {
     val model = new Sequential().add(Linear[Float](6, 2)).add(LogSoftMax[Float])
     val criterion = ClassNLLCriterion[Float]()
     val classifier = new DLClassifier[Float](model, criterion, Array(6))
@@ -82,6 +86,48 @@ class DLClassifierSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val dlModel = classifier.fit(df)
     dlModel.isInstanceOf[DLClassifierModel[_]] should be(true)
     assert(dlModel.transform(df).where("prediction=label").count() > nRecords * 0.8)
+  }
+
+  "An DLClassifier" should "support different FEATURE types" in {
+    val model = new Sequential().add(Linear[Float](6, 2)).add(LogSoftMax[Float])
+    val criterion = ClassNLLCriterion[Float]()
+    val classifier = new DLClassifier[Float](model, criterion, Array(6))
+      .setLearningRate(0.1)
+      .setBatchSize(2)
+      .setEndWhen(Trigger.maxIteration(2))
+
+    Array(
+      sqlContext.createDataFrame(sc.parallelize(smallData.map(p => (p._1, p._2))))
+        .toDF("features", "label"), // Array[Double]
+      sqlContext.createDataFrame(sc.parallelize(smallData.map(p => (p._1.map(_.toFloat), p._2))))
+        .toDF("features", "label"), // Array[Float]
+      sqlContext.createDataFrame(sc.parallelize(smallData.map(p => (Vectors.dense(p._1), p._2))))
+        .toDF("features", "label") // MLlib Vector
+      // TODO: add ML Vector when ut for Spark 2.0+ is ready
+    ).foreach { df =>
+      val dlModel = classifier.fit(df)
+      dlModel.transform(df).collect()
+    }
+  }
+
+  "An DLClassifier" should "support scalar FEATURE" in {
+    val model = new Sequential().add(Linear[Float](1, 2)).add(LogSoftMax[Float])
+    val criterion = ClassNLLCriterion[Float]()
+    val classifier = new DLClassifier[Float](model, criterion, Array(1))
+      .setLearningRate(0.1)
+      .setBatchSize(2)
+      .setEndWhen(Trigger.maxIteration(2))
+
+    Array(
+      sqlContext.createDataFrame(sc.parallelize(smallData.map(p => (p._1.head.toFloat, p._2))))
+        .toDF("features", "label"), // Float
+      sqlContext.createDataFrame(sc.parallelize(smallData.map(p => (p._1.head, p._2))))
+        .toDF("features", "label") // Double
+      // TODO: add ML Vector when ut for Spark 2.0+ is ready
+    ).foreach { df =>
+      val dlModel = classifier.fit(df)
+      dlModel.transform(df).collect()
+    }
   }
 
   "An DLClassifier" should "fit with adam and LBFGS" in {
@@ -98,6 +144,28 @@ class DLClassifierSpec extends FlatSpec with Matchers with BeforeAndAfter {
       val dlModel = classifier.fit(df)
       dlModel.isInstanceOf[DLClassifierModel[_]] should be(true)
     }
+  }
+
+  "An DLClassifier" should "supports validation data and summary" in {
+    val data = sc.parallelize(smallData)
+    val df = sqlContext.createDataFrame(data).toDF("features", "label")
+
+    val logdir = com.google.common.io.Files.createTempDir()
+    val model = new Sequential().add(Linear[Float](6, 2)).add(LogSoftMax[Float])
+    val criterion = ClassNLLCriterion[Float]()
+    val classifier = new DLClassifier[Float](model, criterion, Array(6))
+      .setBatchSize(nRecords)
+      .setEndWhen(Trigger.maxIteration(5))
+      .setOptimMethod(new Adam[Float])
+      .setLearningRate(0.1)
+      .setValidation(Trigger.severalIteration(1), df, Array(new Loss[Float]()), 2)
+      .setValidationSummary(ValidationSummary(logdir.getPath, "DLEstimatorValidation"))
+
+    classifier.fit(df)
+    val validationSummary = classifier.getValidationSummary.get
+    val losses = validationSummary.readScalar("Loss")
+    validationSummary.close()
+    logdir.deleteOnExit()
   }
 
   "An DLClassifier" should "get the same classification result with BigDL model" in {

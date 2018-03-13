@@ -23,7 +23,7 @@ import com.intel.analytics.bigdl.utils.Table
  * and a corresponding action will be taken when the timespot(s)
  * is reached.
  */
-trait Trigger {
+trait Trigger extends Serializable {
   def apply(state: Table): Boolean
 }
 

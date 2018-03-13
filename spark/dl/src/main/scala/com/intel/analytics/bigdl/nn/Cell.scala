@@ -21,8 +21,9 @@ import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.serializer._
+import com.intel.analytics.bigdl.utils.serializer.converters.DataConverter
 import com.intel.analytics.bigdl.utils.{T, Table}
-import serialization.Bigdl.{AttrValue, BigDLModule}
+import com.intel.analytics.bigdl.serialization.Bigdl.{AttrValue, BigDLModule}
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
@@ -189,11 +190,6 @@ abstract class Cell[T : ClassTag](
     gradInput
   }
 
-  override def updateParameters(learningRate: T): Unit = {
-    cell.updateParameters(learningRate)
-    if (includePreTopology) preTopology.updateParameters(learningRate)
-  }
-
   private def initAddTimes(): Unit = {
     val cellTimes = cell.getTimes
     if (subModules == null || subModules.length < cellTimes.length) {
@@ -261,11 +257,6 @@ abstract class Cell[T : ClassTag](
   override def resetTimes(): Unit = {
     resetAddTimes()
     cell.resetTimes
-  }
-
-  override def zeroGradParameters(): Unit = {
-    cell.zeroGradParameters()
-    if (includePreTopology) preTopology.zeroGradParameters()
   }
 
   override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {

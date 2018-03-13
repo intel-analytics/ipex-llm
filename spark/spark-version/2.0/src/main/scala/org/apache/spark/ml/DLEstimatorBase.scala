@@ -16,9 +16,8 @@
 package org.apache.spark.ml
 
 import org.apache.spark.ml.param.ParamMap
-import org.apache.spark.ml.param.shared.{HasFeaturesCol, HasLabelCol, HasPredictionCol}
+import org.apache.spark.ml.param.shared.HasLabelCol
 import org.apache.spark.ml.linalg.{Vector, VectorUDT}
-import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{DataFrame, Dataset, Row}
 
@@ -48,7 +47,7 @@ trait VectorCompatibility {
  * Extends MLEstimator and override process to gain compatibility with
  * both spark 1.5 and spark 2.0.
  */
-private[ml] abstract class DLEstimatorBase[Learner <: DLEstimatorBase[Learner, M],
+abstract class DLEstimatorBase[Learner <: DLEstimatorBase[Learner, M],
     M <: DLTransformerBase[M]]
   extends Estimator[M] with HasLabelCol {
 

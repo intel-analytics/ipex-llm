@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.utils.tf.loaders
 import java.nio.ByteOrder
 
 import com.intel.analytics.bigdl.Module
-import com.intel.analytics.bigdl.nn.ops.Dilation2DBackpropInput
+import com.intel.analytics.bigdl.nn.ops.{Dilation2DBackpropInput => Dilation2DBackpropInputOps}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.tf.Context
 import org.tensorflow.framework.{DataType, NodeDef}
@@ -38,9 +38,9 @@ class Dilation2DBackpropInput extends TensorflowOpsLoader {
     val t = getType(nodeDef.getAttrMap, "T")
 
     if (t == DataType.DT_FLOAT) {
-      Dilation2DBackpropInput[T, Float](strides, rates, padding)
+      Dilation2DBackpropInputOps[T, Float](strides, rates, padding)
     } else if (t == DataType.DT_DOUBLE) {
-      Dilation2DBackpropInput[T, Double](strides, rates, padding)
+      Dilation2DBackpropInputOps[T, Double](strides, rates, padding)
     } else {
       throw new UnsupportedOperationException(
         s"Not support load Dilation2DBackpropInput when type is ${t}")

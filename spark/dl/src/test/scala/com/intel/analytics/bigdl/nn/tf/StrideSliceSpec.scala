@@ -16,13 +16,16 @@
 package com.intel.analytics.bigdl.nn.tf
 
 import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
+
+import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Parallel
 class StrideSliceSpec extends FlatSpec with Matchers {
 
   "StrideSlice " should "compute correct output and gradient" in {
-    val module1 = new StrideSlice[Double](Array((1, 1, 2, 1)))
+    val module1 = new StrideSlice[Double, Double](Array((1, 1, 2, 1)))
     val input = Tensor[Double](2, 2, 2)
     input(Array(1, 1, 1)) = -0.17020166106522
     input(Array(1, 1, 2)) = 0.57785657607019
@@ -57,4 +60,12 @@ class StrideSliceSpec extends FlatSpec with Matchers {
     gradInput should be(expectedGradInput)
   }
 
+}
+
+class StrideSliceSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val strideSlice = new StrideSlice[Float, Float](Array((1, 1, 2, 1))).setName("strideSlice")
+    val input = Tensor[Float](2, 2, 2).apply1(_ => Random.nextFloat())
+    runSerializationTest(strideSlice, input)
+  }
 }

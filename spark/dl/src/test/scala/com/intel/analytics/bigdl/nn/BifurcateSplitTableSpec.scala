@@ -15,9 +15,9 @@
  */
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.nn.SplitTable
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.util.Random
@@ -45,5 +45,21 @@ class SplitTableSpec extends FlatSpec with BeforeAndAfter with Matchers {
     right should be (input.narrow(dim, 3, 2))
 
     gradInput should be (expectedGradInput)
+  }
+}
+
+class BifurcateSplitTableSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val batchNorm = BifurcateSplitTable[Float](1).setName("batchNorm")
+    val input = Tensor[Float](2, 5).apply1(_ => Random.nextFloat())
+    runSerializationTest(batchNorm, input)
+  }
+}
+
+class SplitTableSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val splitTable = SplitTable[Float](2).setName("splitTable")
+    val input = Tensor[Float](2, 10).apply1( e => Random.nextFloat())
+    runSerializationTest(splitTable, input)
   }
 }

@@ -31,9 +31,14 @@ import scala.util.Random
  * @param resizeMode if resizeMode = -1, random select a mode from
  * (Imgproc.INTER_LINEAR, Imgproc.INTER_CUBIC, Imgproc.INTER_AREA,
  *                   Imgproc.INTER_NEAREST, Imgproc.INTER_LANCZOS4)
+ * @param useScaleFactor if true, scale factor fx and fy is used, fx = fy = 0
+ * note that the result of the following are different
+ * Imgproc.resize(mat, mat, new Size(resizeWH, resizeWH), 0, 0, Imgproc.INTER_LINEAR)
+ * Imgproc.resize(mat, mat, new Size(resizeWH, resizeWH))
  */
 class Resize(resizeH: Int, resizeW: Int,
-  resizeMode: Int = Imgproc.INTER_LINEAR)
+  resizeMode: Int = Imgproc.INTER_LINEAR,
+  useScaleFactor: Boolean = true)
   extends FeatureTransformer {
 
   private val interpMethods = Array(Imgproc.INTER_LINEAR, Imgproc.INTER_CUBIC, Imgproc.INTER_AREA,
@@ -45,7 +50,8 @@ class Resize(resizeH: Int, resizeW: Int,
     } else {
       resizeMode
     }
-    Resize.transform(feature.opencvMat(), feature.opencvMat(), resizeW, resizeH, interpMethod)
+    Resize.transform(feature.opencvMat(), feature.opencvMat(), resizeW, resizeH, interpMethod,
+      useScaleFactor)
   }
 }
 
@@ -53,58 +59,85 @@ object Resize {
   val logger = Logger.getLogger(getClass)
 
   def apply(resizeH: Int, resizeW: Int,
-    resizeMode: Int = Imgproc.INTER_LINEAR): Resize =
-    new Resize(resizeH, resizeW, resizeMode)
+    resizeMode: Int = Imgproc.INTER_LINEAR, useScaleFactor: Boolean = true): Resize =
+    new Resize(resizeH, resizeW, resizeMode, useScaleFactor)
 
   def transform(input: OpenCVMat, output: OpenCVMat, resizeW: Int, resizeH: Int,
-                mode: Int = Imgproc.INTER_LINEAR)
+                mode: Int = Imgproc.INTER_LINEAR, useScaleFactor: Boolean = true)
   : OpenCVMat = {
-    Imgproc.resize(input, output, new Size(resizeW, resizeH), 0, 0, mode)
+    if (useScaleFactor) {
+      Imgproc.resize(input, output, new Size(resizeW, resizeH), 0, 0, mode)
+    } else {
+      Imgproc.resize(input, output, new Size(resizeW, resizeH))
+    }
     output
   }
 }
 
 /**
  * Resize the image, keep the aspect ratio. scale according to the short edge
- * @param scale scale size, apply to short edge
+ * @param minSize scale size, apply to short edge
  * @param scaleMultipleOf make the scaled size multiple of some value
  * @param maxSize max size after scale
+ * @param resizeMode if resizeMode = -1, random select a mode from
+ * (Imgproc.INTER_LINEAR, Imgproc.INTER_CUBIC, Imgproc.INTER_AREA,
+ *                   Imgproc.INTER_NEAREST, Imgproc.INTER_LANCZOS4)
+ * @param useScaleFactor if true, scale factor fx and fy is used, fx = fy = 0
+ * @param minScale control the minimum scale up for image
  */
-class AspectScale(scale: Int, scaleMultipleOf: Int = 1,
-  maxSize: Int = 1000) extends FeatureTransformer {
+class AspectScale(minSize: Int,
+  scaleMultipleOf: Int = 1,
+  maxSize: Int = 1000,
+  resizeMode: Int = Imgproc.INTER_LINEAR,
+  useScaleFactor: Boolean = true,
+  minScale: Option[Float] = None)
+  extends FeatureTransformer {
 
   override def transformMat(feature: ImageFeature): Unit = {
     val (height, width) = AspectScale.getHeightWidthAfterRatioScale(feature.opencvMat(),
-      scale, maxSize, scaleMultipleOf)
-    Resize.transform(feature.opencvMat(), feature.opencvMat(), width, height)
+      minSize, maxSize, scaleMultipleOf, minScale)
+    Resize.transform(feature.opencvMat(), feature.opencvMat(),
+      width, height, resizeMode, useScaleFactor)
   }
 }
 
 object AspectScale {
 
-  def apply(scale: Int, scaleMultipleOf: Int = 1,
-    maxSize: Int = 1000): AspectScale = new AspectScale(scale, scaleMultipleOf, maxSize)
+  def apply(minSize: Int,
+    scaleMultipleOf: Int = 1,
+    maxSize: Int = 1000,
+    mode: Int = Imgproc.INTER_LINEAR,
+    useScaleFactor: Boolean = true,
+    minScale: Option[Float] = None): AspectScale =
+    new AspectScale(minSize, scaleMultipleOf, maxSize, mode, useScaleFactor, minScale)
   /**
    * get the width and height of scaled image
    * @param img original image
    */
   def getHeightWidthAfterRatioScale(img: OpenCVMat, scaleTo: Float,
-    maxSize: Int, scaleMultipleOf: Int): (Int, Int) = {
+    maxSize: Int, scaleMultipleOf: Int, minScale: Option[Float] = None): (Int, Int) = {
     val imSizeMin = Math.min(img.width(), img.height())
     val imSizeMax = Math.max(img.width(), img.height())
     var imScale = scaleTo.toFloat / imSizeMin.toFloat
+    if (minScale.isDefined) {
+      imScale = Math.max(minScale.get, imScale)
+    }
     // Prevent the biggest axis from being more than MAX_SIZE
     if (Math.round(imScale * imSizeMax) > maxSize) {
       imScale = maxSize / imSizeMax.toFloat
     }
 
-    val imScaleH = (Math.floor(img.height() * imScale / scaleMultipleOf) *
-      scaleMultipleOf / img.height()).toFloat
-    val imScaleW = (Math.floor(img.width() * imScale / scaleMultipleOf) *
-      scaleMultipleOf / img.width()).toFloat
+    var imScaleH, imScaleW = imScale
+    if (scaleMultipleOf > 1) {
+      imScaleH = (Math.floor(img.height() * imScale / scaleMultipleOf) *
+        scaleMultipleOf / img.height()).toFloat
+      imScaleW = (Math.floor(img.width() * imScale / scaleMultipleOf) *
+        scaleMultipleOf / img.width()).toFloat
+    }
+
     val width = imScaleW * img.width()
     val height = imScaleH * img.height()
-    (height.toInt, width.toInt)
+    (height.round, width.round)
   }
 }
 

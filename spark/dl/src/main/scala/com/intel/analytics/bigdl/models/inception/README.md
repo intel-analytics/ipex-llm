@@ -90,6 +90,11 @@ core_number. In this example, node_number is 1 and the mini-batch size is sugges
 policy.
 * --weightDecay: weight decay.
 * --checkpointIteration: the checkpoint interval in iteration.
+* --maxLr: optional. Max learning rate after warm up. It has to be set together with warmupEpoch.
+* --warmupEpoch: optional. Epoch numbers need to take to increase learning rate from learningRate to maxLR.
+* --gradientL2NormThreshold: optional. Gradient L2-Norm threshold used for norm2 gradient clipping.
+* --gradientMin: optional. Max gradient clipping by value, used in constant gradient clipping.
+* --gradientMax: optional. Min gradient clipping by value, used in constant gradient clipping.
 
 ## Test the Model
 * Spark standalone, example command

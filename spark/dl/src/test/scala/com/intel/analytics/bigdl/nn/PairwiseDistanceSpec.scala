@@ -17,7 +17,10 @@ package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
+
+import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Parallel
 class PairwiseDistanceSpec extends FlatSpec with Matchers {
@@ -27,7 +30,7 @@ class PairwiseDistanceSpec extends FlatSpec with Matchers {
     val m2 = new PairwiseDistance[Double]()
     val m3 = new PairwiseDistance[Double](3)
     val m4 = new PairwiseDistance[Double]()
-    val log = new Log[Double, Double]()
+    val log = new Log[Double]()
     com.intel.analytics.bigdl.tensor.Tensor
     val input1 = Tensor[Double](3, 3).randn()
     val input2 = Tensor[Double](3, 3).randn()
@@ -47,7 +50,7 @@ class PairwiseDistanceSpec extends FlatSpec with Matchers {
     val m2 = new PairwiseDistance[Double]()
     val m3 = new PairwiseDistance[Double](3)
     val m4 = new PairwiseDistance[Double]()
-    val log = new Log[Double, Double]()
+    val log = new Log[Double]()
     com.intel.analytics.bigdl.tensor.Tensor
     val input1 = Tensor[Double](3, 3).randn()
     val input2 = Tensor[Double](3, 3).randn()
@@ -60,5 +63,15 @@ class PairwiseDistanceSpec extends FlatSpec with Matchers {
     m1 should not equal log
     m1 should not equal m3
     m1 should not equal m4
+  }
+}
+
+class PairwiseDistanceSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val pairwiseDistance = new PairwiseDistance[Float](3).setName("pairwiseDistance")
+    val input1 = Tensor[Float](3, 3).apply1(e => Random.nextFloat())
+    val input2 = Tensor[Float](3, 3).apply1(e => Random.nextFloat())
+    val input = T(1.0f -> input1, 2.0f -> input2)
+    runSerializationTest(pairwiseDistance, input)
   }
 }

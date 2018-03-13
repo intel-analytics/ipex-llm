@@ -39,7 +39,8 @@ object Module {
    * @tparam T numeric type
    * @return model loaded from path
    */
-  @deprecated("Java based serialization not recommended any more, please use loadModule instead")
+  @deprecated("Java based serialization not recommended any more, please use loadModule instead",
+    "0.3")
   def load[T: ClassTag](path : String) : AbstractModule[Activity, Activity, T] = {
     File.load[AbstractModule[Activity, Activity, T]](path)
   }
@@ -64,7 +65,7 @@ object Module {
     File.loadTorch[AbstractModule[Activity, Activity, T]](path)
   }
 
-  @deprecated
+  @deprecated("Please try to use the loadCaffeModel API", "0.2")
   def loadCaffe[T: ClassTag](model: AbstractModule[Activity, Activity, T],
     defPath: String, modelPath: String, matchAll: Boolean = true)(
     implicit ev: TensorNumeric[T]): AbstractModule[Activity, Activity, T] = {
@@ -139,27 +140,28 @@ object Module {
     result
   }
 
-  def isCompact[@specialized(Float, Double) T: ClassTag](paramters: Array[Tensor[T]])(
+  def isCompact[@specialized(Float, Double) T: ClassTag](parameters: Array[Tensor[T]])(
     implicit ev: TensorNumeric[T]): Tensor[T] = {
-    require(paramters.length > 0,
+    require(parameters.length > 0,
       "The length of paramters should >= 0" +
       "parameter length" +
-        s" ${paramters.length}")
+        s" ${parameters.length}")
     var i = 1
-    val storage = paramters(0).storage()
-    var length = paramters(0).nElement()
-    while (i < paramters.length) {
-      if (!storage.eq(paramters(i).storage())) {
+    val storage = parameters(0).storage()
+    var length = parameters(0).nElement()
+    val offset = parameters(0).storageOffset()
+    // make sure parameters is shared and contiguous
+    while (i < parameters.length) {
+      if (!storage.eq(parameters(i).storage())) {
         return null
       }
-      length += paramters(i).nElement()
+      if (offset + length != parameters(i).storageOffset()) {
+        return null
+      }
+      length += parameters(i).nElement()
       i += 1
     }
 
-    if (length != storage.array().length) {
-      return null
-    }
-
-    return Tensor(storage)
+    Tensor(storage, offset, Array(length))
   }
 }

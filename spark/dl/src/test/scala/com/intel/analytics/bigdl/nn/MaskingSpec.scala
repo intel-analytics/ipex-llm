@@ -14,9 +14,13 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.keras
+package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.nn.{Masking}
+import com.intel.analytics.bigdl.keras.KerasBaseSpec
+import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
+
+import scala.util.Random
 
 class MaskingSpec extends KerasBaseSpec {
 
@@ -60,5 +64,14 @@ class MaskingSpec extends KerasBaseSpec {
     val masking = Masking[Float](mask_value)
 
     checkOutputAndGrad(masking, sigmoidCode)
+  }
+}
+
+
+class MaskingSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val masking = Masking[Float](0.1).setName("masking")
+    val input = Tensor[Float](2, 3, 4).apply1(_ => Random.nextFloat())
+    runSerializationTest(masking, input)
   }
 }

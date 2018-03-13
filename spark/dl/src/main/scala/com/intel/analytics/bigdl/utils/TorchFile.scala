@@ -152,6 +152,7 @@ object TorchFile {
       case "nn.Concat" => readConcatWithType(elements)
       case "nn.ConcatTable" => readConcatTableWithType(elements)
       case "nn.Dropout" => readDropoutWithType(elements)
+      case "nn.LeakyReLU" => readLeakyReLUWithType(elements)
       case "nn.Linear" => readLinearWithType(elements)
       case "nn.ReLU" => ReLU(elements("inplace").asInstanceOf[Boolean])
       case "nn.Reshape" => Reshape(elements("size").asInstanceOf[Array[Int]])
@@ -929,6 +930,15 @@ object TorchFile {
     result
   }
 
+  private def readLeakyReLUWithType[T: ClassTag](
+      elements: Table)(implicit ev: TensorNumeric[T]): LeakyReLU[T] = {
+    val result = LeakyReLU[T](
+      negval = elements.getOrElse("negval", 0.01),
+      inplace = elements.getOrElse("inplace", false)
+    )
+    result
+  }
+
   private def readLinearWithType[T: ClassTag](
       elements: Table)(implicit ev: TensorNumeric[T]) : Linear[T] = {
     val weight = elements("weight").asInstanceOf[Tensor[T]]
@@ -1059,6 +1069,7 @@ object TorchFile {
   private def readSpatialConvolutionWithType[T: ClassTag](
       elements: Table)(implicit ev: TensorNumeric[T]): SpatialConvolution[T] = {
     val propagateBack = if (null == elements("gradInput")) false else true
+    val withBias = elements.contains("bias")
     val result = SpatialConvolution[T](
       nInputPlane = elements[Double]("nInputPlane").toInt,
       nOutputPlane = elements[Double]("nOutputPlane").toInt,
@@ -1069,10 +1080,13 @@ object TorchFile {
       padW = elements.getOrElse("padW", 0.0).toInt,
       padH = elements.getOrElse("padH", 0.0).toInt,
       nGroup = 1,
-      propagateBack = propagateBack
+      propagateBack = propagateBack,
+      withBias = withBias
     )
     result.weight.copy(elements("weight").asInstanceOf[Tensor[T]])
-    result.bias.copy(elements("bias").asInstanceOf[Tensor[T]])
+    if (withBias) {
+      result.bias.copy(elements("bias").asInstanceOf[Tensor[T]])
+    }
     result
   }
 

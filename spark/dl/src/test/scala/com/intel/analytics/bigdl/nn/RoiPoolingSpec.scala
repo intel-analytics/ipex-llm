@@ -17,8 +17,11 @@
 package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
-import com.intel.analytics.bigdl.utils.Table
+import com.intel.analytics.bigdl.utils.{T, Table}
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
+
+import scala.util.Random
 
 class RoiPoolingSpec extends FlatSpec with Matchers {
   val data = Array(-3.8623801600318241611, -5.5763739585689267031, 10.298773638368681205,
@@ -249,5 +252,18 @@ class RoiPoolingSpec extends FlatSpec with Matchers {
       assert(expectedGradInput2.length == gradInputData2.length)
       assert(Math.abs(expectedGradInput2(i) - gradInputData2(i)) < 1e-6)
     }
+  }
+}
+
+class RoiPoolingSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val input = T()
+    val input1 = Tensor[Float](1, 1, 2, 2).apply1(_ => Random.nextFloat())
+    val input2 = Tensor[Float](1, 5).apply1(_ => Random.nextFloat())
+    input(1.0f) = input1
+    input(2.0f) = input2
+    val roiPooling = new RoiPooling[Float](pooledW = 3,
+      pooledH = 2, 1.0f).setName("roiPooling")
+    runSerializationTest(roiPooling, input)
   }
 }

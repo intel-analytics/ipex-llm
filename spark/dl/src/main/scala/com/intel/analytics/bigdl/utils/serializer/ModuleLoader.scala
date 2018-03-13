@@ -25,9 +25,10 @@ import com.intel.analytics.bigdl.nn.Container
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.{DenseType, QuantizedTensor, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.serializer.DataConverter.TensorConverter
+import com.intel.analytics.bigdl.utils.serializer.converters.TensorConverter
+import com.intel.analytics.bigdl.utils.serializer.converters.DataReaderWriter
 import com.intel.analytics.bigdl.utils.{File, FileReader, FileWriter, Table}
-import serialization.Bigdl._
+import com.intel.analytics.bigdl.serialization.Bigdl._
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
@@ -114,7 +115,7 @@ object ModuleLoader {
     }
   }
 
-  private def initTensorStorage[T: ClassTag](context: DeserializeContext)
+  private[bigdl] def initTensorStorage[T: ClassTag](context: DeserializeContext)
                                             (implicit ev: TensorNumeric[T]): Unit = {
     val attrMap = context.bigdlModule.getAttrMap
 
@@ -298,7 +299,7 @@ object ModulePersister {
   }
 
 
-  private def setTensorStorage(bigDLModule: BigDLModule.Builder,
+  private[bigdl] def setTensorStorage(bigDLModule: BigDLModule.Builder,
     storages: mutable.HashMap[Int, Any]) : Unit = {
     val storageIds = new mutable.HashSet[Int]
     val tensorStorages = storages.filter(_._2.isInstanceOf[TensorStorage])
