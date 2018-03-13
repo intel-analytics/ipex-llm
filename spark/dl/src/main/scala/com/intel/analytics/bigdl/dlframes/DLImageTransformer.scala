@@ -16,13 +16,12 @@
 package com.intel.analytics.bigdl.dlframes
 
 import com.intel.analytics.bigdl.dataset.Transformer
-import com.intel.analytics.bigdl.transform.vision.image.{FeatureTransformer, ImageFeature,
-  MatToTensor}
+import com.intel.analytics.bigdl.transform.vision.image.{FeatureTransformer, ImageFeature, MatToTensor}
 import org.apache.spark.ml.DLTransformerBase
 import org.apache.spark.ml.adapter.{HasInputCol, HasOutputCol, SchemaUtils}
 import org.apache.spark.ml.util.Identifiable
 import org.apache.spark.sql.types._
-import org.apache.spark.sql.{DataFrame, Row, SqlAdapter}
+import org.apache.spark.sql.{DataFrame, Row}
 
 /**
  * Provides DataFrame-based API for image pre-processing and feature transformation.
@@ -61,6 +60,10 @@ class DLImageTransformer (
   override def transformSchema(schema: StructType): StructType = {
     val inputType = schema($(inputCol)).dataType
     validateInputType(inputType)
+    if (schema.fieldNames.contains($(outputCol))) {
+      throw new IllegalArgumentException(s"Output column ${$(outputCol)} already exists.")
+    }
+
     val outputFields = schema.fields :+
       StructField($(outputCol), DLImageSchema.floatSchema, nullable = false)
     StructType(outputFields)
@@ -71,20 +74,23 @@ class DLImageTransformer (
     val sc = dataFrame.sqlContext.sparkContext
     val localTransformer = this.transformer
     val transformerBC = sc.broadcast(localTransformer)
+    val toTensorBC = sc.broadcast(MatToTensor[Float](shareBuffer = true))
 
-    val transFunc = { row: Row =>
-      val transformerValue = transformerBC.value
-      val imf = DLImageSchema.row2IMF(row)
-      val result = transformerValue.apply(Iterator(imf)).toArray.head
-
-      if (!result.contains(ImageFeature.imageTensor)) {
-        MatToTensor[Float](shareBuffer = true).transform(result)
+    val inputColIndex = dataFrame.schema.fieldIndex($(inputCol))
+    val resultRDD = dataFrame.rdd.mapPartitions { rowIter =>
+      val localTransformer = transformerBC.value.cloneTransformer()
+      val toTensorTransformer = toTensorBC.value.cloneTransformer().asInstanceOf[MatToTensor[Float]]
+      rowIter.map { row =>
+        val imf = DLImageSchema.row2IMF(row.getAs[Row](inputColIndex))
+        val output = localTransformer.apply(Iterator(imf)).toArray.head
+        if (!output.contains(ImageFeature.imageTensor)) {
+          toTensorTransformer.transform(output)
+        }
+        Row.fromSeq(row.toSeq ++ Seq(DLImageSchema.imf2Row(output)))
       }
-      DLImageSchema.imf2Row(result)
     }
 
-    val transformUDF = SqlAdapter.getUDF(transFunc, DLImageSchema.floatSchema)
-
-    dataFrame.withColumn($(outputCol), transformUDF(dataFrame($(inputCol))))
+    val resultSchema = transformSchema(dataFrame.schema)
+    dataFrame.sqlContext.createDataFrame(resultRDD, resultSchema)
   }
 }
