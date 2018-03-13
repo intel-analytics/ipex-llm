@@ -258,13 +258,8 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     optimizer
   }
 
-  def createSequential(isKeras: Boolean = false): Sequential[T] = {
-    if (isKeras) {
-      nn.keras.Sequential[T]()
-    }
-    else {
+  def createSequential(): Container[Activity, Activity, T] = {
       Sequential[T]()
-    }
   }
 
   def createLinear(inputSize: Int, outputSize: Int,
@@ -2316,14 +2311,8 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def createModel(input: JList[ModuleNode[T]],
-                  output: JList[ModuleNode[T]],
-                  isKeras: Boolean = false): Graph[T] = {
-    if (isKeras) {
-      nn.keras.Model(input.asScala.toArray, output.asScala.toArray)
-    }
-    else {
-      Graph(input.asScala.toArray, output.asScala.toArray)
-    }
+                  output: JList[ModuleNode[T]]): Graph[T] = {
+    Graph(input.asScala.toArray, output.asScala.toArray)
   }
 
   def createNode(module: AbstractModule[Activity, Activity, T],

@@ -55,7 +55,7 @@ class Convolution1D[T: ClassTag](
    val nbFilter: Int,
    val filterLength: Int,
    val init: InitializationMethod = Xavier,
-   val activation: AbstractModule[Tensor[T], Tensor[T], T] = null,
+   val activation: KerasLayer[Tensor[T], Tensor[T], T] = null,
    val borderMode: String = "valid",
    val subsampleLength: Int = 1,
    var wRegularizer: Regularizer[T] = null,
@@ -95,7 +95,7 @@ class Convolution1D[T: ClassTag](
     model.add(layer)
     model.add(Squeeze(3))
     if (activation != null) {
-      model.add(activation)
+      model.add(activation.doBuild(inputShape))
     }
     model.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
   }
@@ -114,7 +114,7 @@ object Convolution1D {
     bias: Boolean = true,
     inputShape: Shape = null)(implicit ev: TensorNumeric[T]): Convolution1D[T] = {
     new Convolution1D[T](nbFilter, filterLength,
-      KerasUtils.getInitMethod(init), KerasUtils.getActivation(activation),
+      KerasUtils.getInitMethod(init), KerasUtils.getKerasActivation(activation),
       borderMode, subsampleLength, wRegularizer, bRegularizer, bias, inputShape)
   }
 }

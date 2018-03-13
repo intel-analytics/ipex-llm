@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.nn.keras
 
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, IdentityOutputShape}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Shape
@@ -36,7 +36,8 @@ import scala.reflect.ClassTag
 class Dropout[T: ClassTag](
    val p: Double,
    val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
-  extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {
+  extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape))
+    with IdentityOutputShape {
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
     val layer = com.intel.analytics.bigdl.nn.Dropout(p)

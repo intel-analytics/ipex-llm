@@ -592,7 +592,7 @@ trait GraphSerializable extends ContainerSerializable {
         context.storages, context.storageType))
       val moduleNode = bigDLModule.module match {
         case controlOps: ControlOps[T] => createControlNode(controlOps)
-        case _ => bigDLModule.module.inputs()
+        case _ => new ModuleNode[T](bigDLModule.module)
       }
       val preNodes = bigDLModule.pre
       layerMap(bigDLModule.module.getName) = (moduleNode, preNodes)
@@ -642,7 +642,7 @@ trait GraphSerializable extends ContainerSerializable {
         .asInstanceOf[Boolean]
       Graph.dynamic[T](inputs.toArray, outputs.toArray, sharedVariables, generateBackward)
     } else {
-      Graph[T](inputs.toArray, outputs.toArray, sharedVariables)
+      new StaticGraph[T](inputs, outputs, sharedVariables, false)
     }
     var serializedStopGradientLayers : Array[String] = null
     // this is to keep backward compatible

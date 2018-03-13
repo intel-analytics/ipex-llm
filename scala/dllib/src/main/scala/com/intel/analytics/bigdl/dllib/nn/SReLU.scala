@@ -49,7 +49,7 @@ import scala.reflect.ClassTag
 @SerialVersionUID(7173457290010080259L)
 class SReLU[T: ClassTag](val shape: Array[Int], val sharedAxes: Array[Int] = null)(
   implicit ev: TensorNumeric[T]) extends TensorModule[T]
-    with Initializable with IdentityOutputShape {
+    with Initializable {
   import SReLU._
   val weightsLen = 4
   val weights: Array[Tensor[T]] = Array.fill[Tensor[T]](4)(Tensor[T]())

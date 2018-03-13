@@ -29,7 +29,7 @@ import scala.reflect.ClassTag
  */
 @SerialVersionUID(6855417348268610044L)
 class Sigmoid[T: ClassTag](
-  implicit ev: TensorNumeric[T]) extends TensorModule[T] with IdentityOutputShape {
+  implicit ev: TensorNumeric[T]) extends TensorModule[T] {
 
   private val buffer: Tensor[T] = Tensor[T]()
 

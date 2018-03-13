@@ -51,7 +51,7 @@ class TimeDistributed[T: ClassTag](
     require(input.length >=3,
       s"TimeDistributed requires at least 3D input, but got input dim ${input.length}")
     val innerInput = getInnerInput(input)
-    val innerOutput = layer.build(Shape(innerInput)).toSingle()
+    val innerOutput = layer.computeOutputShape(Shape(innerInput)).toSingle()
     val output = innerOutput.take(1) ++ List(input(1)) ++ innerOutput.drop(1)
     Shape(output.toArray)
   }
@@ -59,9 +59,9 @@ class TimeDistributed[T: ClassTag](
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
     val input = inputShape.toSingle().toArray
     val innerInput = getInnerInput(input)
-    val klayer = layer.doBuild(Shape(innerInput))
-      .asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
-    val timedistributed = com.intel.analytics.bigdl.nn.TimeDistributed(klayer)
+    layer.build(Shape(innerInput))
+    layer.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
+    val timedistributed = com.intel.analytics.bigdl.nn.TimeDistributed(layer)
     timedistributed.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
   }
 }

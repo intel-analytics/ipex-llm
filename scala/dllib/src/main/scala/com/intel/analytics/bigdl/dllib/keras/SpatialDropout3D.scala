@@ -46,7 +46,8 @@ class SpatialDropout3D[T: ClassTag](
    val p: Double = 0.5,
    val dimOrdering: String = "CHANNEL_FIRST",
    val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
-  extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {
+  extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape))
+    with IdentityOutputShape {
 
   require(dimOrdering.toLowerCase() == "channel_first" ||
           dimOrdering.toLowerCase() == "channel_last",
