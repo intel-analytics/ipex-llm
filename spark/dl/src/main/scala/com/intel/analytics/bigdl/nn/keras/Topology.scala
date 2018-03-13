@@ -16,13 +16,17 @@
 
 package com.intel.analytics.bigdl.nn.keras
 
+import com.intel.analytics.bigdl.{Criterion, DataSet}
+import com.intel.analytics.bigdl.dataset.{LocalDataSet, MiniBatch, Sample}
 import com.intel.analytics.bigdl.nn.Graph._
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
-import com.intel.analytics.bigdl.nn.{Container, Identity, StaticGraph, Sequential => TSequential}
+import com.intel.analytics.bigdl.nn.{Container, StaticGraph, Sequential => TSequential}
+import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.serialization.Bigdl.BigDLModule
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.bigdl.utils.{LoggerFilter, Shape}
 import com.intel.analytics.bigdl.utils.serializer._
+import org.apache.spark.rdd.RDD
 
 import scala.collection.JavaConverters._
 import scala.collection.mutable.ArrayBuffer
@@ -30,13 +34,117 @@ import scala.reflect.ClassTag
 
 abstract class KerasModel[T: ClassTag](implicit ev: TensorNumeric[T])
   extends KerasLayer[Activity, Activity, T] {
-  // TODO: enrich fit, compile, evaluate etc here.
 
   def getSubModules(): List[AbstractModule[Activity, Activity, T]] = {
     require(this.labor.isInstanceOf[Container[Activity, Activity, T]],
       "labor should be a container, but we got: $this")
     this.labor.asInstanceOf[Container[Activity, Activity, T]].modules.toList
   }
+
+  private var optimMethod: OptimMethod[T] = null
+  private var criterion: Criterion[T] = null
+  private var vMethods: Array[ValidationMethod[T]] = null
+
+  /**
+   * Configures the learning process.
+   * @param optimizer Optimization method to be used.
+   * @param loss Criterion to be used.
+   * @param metrics Array of validation methods to be used.
+   * Must be called before fit.
+   */
+  def compile(optimizer: OptimMethod[T],
+              loss: Criterion[T],
+              metrics: Array[ValidationMethod[T]] = null): Unit = {
+    this.optimMethod = optimizer
+    this.criterion = loss
+    this.vMethods = metrics
+  }
+
+  def compile(optimizer: String,
+              loss: String,
+              metrics: Array[String])
+    (implicit ev: TensorNumeric[T]): Unit = {
+    this.compile(KerasUtils.toBigDLOptimMethod[T](optimizer),
+      KerasUtils.toBigDLCriterion[T](loss),
+      KerasUtils.toBigDLMetrics[T](metrics))
+  }
+
+  private def isCompiled(): Unit = {
+    require(this.optimMethod != null && this.criterion != null,
+      "compile must be called before fit")
+  }
+
+  private def doOptimize[D: ClassTag](optimizer: Optimizer[T, D], nbEpoch: Int)
+    (implicit ev: TensorNumeric[T]): Unit = {
+    LoggerFilter.redirectSparkInfoLogs()
+    optimizer.setOptimMethod(this.optimMethod)
+      .setEndWhen(Trigger.maxEpoch(nbEpoch))
+    optimizer.optimize()
+  }
+
+  /**
+   * Trains the model for a fixed number of epochs on a dataset.
+   * @param x Training data.
+   * @param batchSize Number of samples per gradient update.
+   * @param nbEpoch Number of iterations to train.
+   * @param validationData Null if validation is not configured.
+   */
+  def fit(x: RDD[Sample[T]], batchSize: Int = 32, nbEpoch: Int = 10,
+          validationData: RDD[Sample[T]] = null)
+    (implicit ev: TensorNumeric[T]): Unit = {
+    isCompiled()
+    val optimizer = Optimizer(
+      model = this,
+      sampleRDD = x,
+      criterion = this.criterion,
+      batchSize = batchSize)
+    if (validationData != null) {
+      require(this.vMethods != null, "validation metrics haven't been set yet")
+      optimizer.setValidation(trigger = Trigger.everyEpoch,
+        sampleRDD = validationData,
+        vMethods = this.vMethods,
+        batchSize = batchSize)
+    }
+    doOptimize(optimizer, nbEpoch)
+  }
+
+  def fit[D: ClassTag](x: DataSet[D], nbEpoch: Int,
+                       validationData: DataSet[MiniBatch[T]])
+    (implicit ev: TensorNumeric[T]): Unit = {
+    isCompiled()
+    val optimizer = Optimizer(
+      model = this,
+      dataset = x,
+      criterion = this.criterion)
+    if (validationData != null) {
+      require(this.vMethods != null, "Validation metrics haven't been set yet")
+      optimizer.setValidation(trigger = Trigger.everyEpoch,
+        dataset = validationData,
+        vMethods = this.vMethods)
+    }
+    doOptimize(optimizer, nbEpoch)
+  }
+
+  /**
+   * Trains the model for a fixed number of epochs on a dataset in LOCAL mode.
+   */
+  def fit[D: ClassTag](x: LocalDataSet[MiniBatch[T]], nbEpoch: Int,
+                       validationData: DataSet[MiniBatch[T]])
+    (implicit ev: TensorNumeric[T]): Unit = {
+    isCompiled()
+    val optimizer = new LocalOptimizer[T](
+      model = this,
+      dataset = x,
+      criterion = this.criterion)
+    if (validationData != null) {
+      require(this.vMethods != null, "Validation metrics haven't been set yet")
+      optimizer.setValidation(trigger = Trigger.everyEpoch,
+        dataset = validationData,
+        vMethods = this.vMethods)
+    }
+    doOptimize(optimizer, nbEpoch)
+  }
+
 }
 
 class Model[T: ClassTag](private val _inputs : Seq[ModuleNode[T]],

@@ -16,12 +16,11 @@
 
 package com.intel.analytics.bigdl.example.keras
 
-import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.nn.keras._
 import com.intel.analytics.bigdl.utils.Shape
 
 object LeNet {
-  def apply(): Module[Float] = {
+  def apply(): Sequential[Float] = {
     val model = Sequential[Float]()
     model.add(Reshape(Array(1, 28, 28), inputShape = Shape(28, 28, 1)))
     model.add(Convolution2D(32, 3, 3, activation = "relu"))

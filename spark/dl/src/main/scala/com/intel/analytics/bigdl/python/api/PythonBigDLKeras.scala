@@ -18,16 +18,19 @@ package com.intel.analytics.bigdl.python.api
 
 import java.util.{ArrayList => JArrayList, HashMap => JHashMap, List => JList, Map => JMap}
 
+import com.intel.analytics.bigdl.Criterion
+import com.intel.analytics.bigdl.dataset.{DataSet, LocalDataSet, MiniBatch}
 import com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.nn.{Container, Graph, SpatialBatchNormalization}
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.nn.keras._
 import com.intel.analytics.bigdl.numeric._
-import com.intel.analytics.bigdl.optim.Regularizer
+import com.intel.analytics.bigdl.optim.{OptimMethod, Regularizer, ValidationMethod}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.{MultiShape, Shape, SingleShape}
+import com.intel.analytics.bigdl.utils.{Engine, MultiShape, Shape, SingleShape}
+import org.apache.spark.api.java.JavaRDD
 
 import scala.collection.JavaConverters._
 import scala.language.existentials
@@ -672,6 +675,54 @@ class PythonBigDLKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends Pytho
     mergeMode: String = "concat",
     inputShape: JList[Int] = null): Bidirectional[T] = {
     Bidirectional(layer, mergeMode, toScalaShape(inputShape))
+  }
+
+  def compile(
+    module: Training[T],
+    optimizer: String,
+    loss: String,
+    metrics: JList[String] = null): Unit = {
+    module.compile(optimizer, loss,
+      if (metrics == null) null else metrics.asScala.toArray)
+  }
+
+  def compile(
+    module: Training[T],
+    optimizer: OptimMethod[T],
+    loss: Criterion[T],
+    metrics: JList[ValidationMethod[T]]): Unit = {
+    module.compile(optimizer, loss,
+      if (metrics == null) null else metrics.asScala.toArray)
+  }
+
+  def fit(
+    module: Training[T],
+    x: JavaRDD[Sample],
+    batchSize: Int = 32,
+    epochs: Int = 10,
+    validationData: JavaRDD[Sample] = null): Unit = {
+    module.fit(toJSample(x), batchSize, epochs,
+      if (validationData == null) null else toJSample(validationData))
+  }
+
+  def fit(
+    module: Training[T],
+    xTrain: JList[JTensor],
+    yTrain: JTensor,
+    batchSize: Int,
+    epochs: Int,
+    xVal: JList[JTensor],
+    yVal: JTensor,
+    localCores: Int): Unit = {
+    val trainArray = toSampleArray(xTrain.asScala.toList.map{f => toTensor(f)}, toTensor(yTrain))
+    val trainData = batching(DataSet.array(trainArray), batchSize)
+      .asInstanceOf[LocalDataSet[MiniBatch[T]]]
+    val valData = if (xVal != null && yVal != null) {
+      val valArray = toSampleArray(xVal.asScala.toList.map{f => toTensor(f)}, toTensor(yVal))
+      batching(DataSet.array(valArray), batchSize)
+    } else null
+    Engine.setNodeAndCore(1, localCores)
+    module.fit(trainData, epochs, valData)
   }
 
 }
