@@ -23,10 +23,14 @@ trait HasPredictionCol extends org.apache.spark.ml.param.shared.HasPredictionCol
 
 trait HasFeaturesCol extends org.apache.spark.ml.param.shared.HasFeaturesCol
 
+trait HasInputCol extends org.apache.spark.ml.param.shared.HasInputCol
+
+trait HasOutputCol extends org.apache.spark.ml.param.shared.HasOutputCol
+
 object SchemaUtils {
 
   /**
-   * Appends a new column to the input schema. This fails if the given output column already exists.
+   * Appends a new column to the input schema. This fails if the given output column already exists
    * @param schema input schema
    * @param colName new column name. If this column name is an empty string "", this method returns
    *                the input schema unchanged. This allows users to disable output columns.
@@ -40,4 +44,7 @@ object SchemaUtils {
       nullable: Boolean = false): StructType = {
     org.apache.spark.ml.util.SchemaUtils.appendColumn(schema, colName, dataType)
   }
+
+  def sameType(a: DataType, b: DataType): Boolean = a.sameType(b)
+
 }
