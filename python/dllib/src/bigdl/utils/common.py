@@ -600,7 +600,7 @@ def _java2py(gateway, r, encoding="bytes"):
             clsName = 'JavaRDD'
 
         if clsName == 'JavaRDD':
-            jrdd = gateway.jvm.SerDe.javaToPython(r)
+            jrdd = gateway.jvm.org.apache.spark.bigdl.api.python.BigDLSerDe.javaToPython(r)
             return RDD(jrdd, get_spark_context())
 
         if clsName == 'DataFrame':
