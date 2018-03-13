@@ -644,8 +644,8 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val rdd = sc.parallelize(1 to (2 * nodeNumber), nodeNumber)
       .map(_ => Sample[Double](Tensor[Double](2, 3).fill(2.0), Tensor[Double](1).fill(1.0)))
 
-    val inputOri = rdd.map { s => s.feature }
-    val targetOri = rdd.map { s => s.label }
+    val inputOri = rdd.map{s => s.feature}
+    val targetOri = rdd.map{s => s.label}
     val inputOriArr = inputOri.collect()
     val targetOriArr = targetOri.collect()
 
@@ -655,23 +655,21 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
         val dds = this.dataset.asInstanceOf[DistributedDataSet[MiniBatch[Double]]]
         val rdd = dds.data(train = false)
         // flatmap to break minibatches into single tensors
-        val input = rdd.flatMap[Tensor[Double]] {
-          data => data.getInput().asInstanceOf[Tensor[Double]].split(dim = 1)
-        }
-        val target = rdd.flatMap[Tensor[Double]] {
-          data => data.getTarget().asInstanceOf[Tensor[Double]].split(dim = 1)
-        }
+        val input = rdd.flatMap[Tensor[Double]]{
+          data => data.getInput().asInstanceOf[Tensor[Double]].split(dim = 1)}
+        val target = rdd.flatMap[Tensor[Double]]{
+          data => data.getTarget().asInstanceOf[Tensor[Double]].split(dim = 1)}
         val inputArr = input.collect()
         val targetArr = target.collect()
 
-        inputArr.sameElements(inputOriArr) should be(true)
-        targetArr.sameElements(targetOriArr) should be(true)
+        inputArr.sameElements(inputOriArr) should be (true)
+        targetArr.sameElements(targetOriArr) should be (true)
 
         model
       }
     }
 
-    myOpt.setTrainData(rdd, 2 * nodeNumber)
+    myOpt.setTrainData(rdd, 2*nodeNumber)
     myOpt.optimize()
   }
 
