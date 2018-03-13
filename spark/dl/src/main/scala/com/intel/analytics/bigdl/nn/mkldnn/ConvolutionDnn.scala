@@ -846,12 +846,24 @@ class ConvolutionDnn[T: ClassTag](
 
   override def clearState() : this.type = {
     super.clearState()
-    gradOutputBuffer.set()
-    inputBuffer.set()
-    weightsBuffer.set()
-    gradWeightBuffer.set()
-    original_gradWeights.set()
-    original_gradBias.set()
+    if (gradOutputBuffer != null) {
+      gradOutputBuffer.release()
+      gradOutputBuffer.set()
+    }
+    if (inputBuffer != null) {
+      inputBuffer.release()
+      inputBuffer.set()
+    }
+    if (weightsBuffer != null) {
+      weightsBuffer.release()
+      weightsBuffer.set()
+    }
+    if (gradWeightBuffer != null) {
+      gradWeightBuffer.release()
+      gradWeightBuffer.set()
+    }
+    if (original_gradWeights != null) original_gradWeights.set()
+    if (original_gradBias != null) original_gradBias.set()
     this
   }
 }

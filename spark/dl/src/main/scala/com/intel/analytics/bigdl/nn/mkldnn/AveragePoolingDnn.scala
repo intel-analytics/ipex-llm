@@ -320,7 +320,14 @@ class PoolingDnnAverage[T: ClassTag](
 
   override def clearState() : this.type = {
     super.clearState()
-    gradOutputBuffer.set()
+    if (gradOutputBuffer != null) {
+      gradOutputBuffer.release()
+      gradOutputBuffer.set()
+    }
+    if (inputBuffer != null) {
+      inputBuffer.release()
+      inputBuffer.set()
+    }
     this
   }
 }

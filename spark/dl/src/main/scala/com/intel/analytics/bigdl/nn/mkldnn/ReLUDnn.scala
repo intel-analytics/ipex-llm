@@ -270,6 +270,19 @@ class ReLUDnn[T: ClassTag](ip: Boolean = false, value: Float = 0.0f)(
       gradInput.layer_name = this.getName()
       gradInput
     }
+
+  override def clearState() : this.type = {
+    super.clearState()
+    if (gradOutputBuffer != null) {
+      gradOutputBuffer.release()
+      gradOutputBuffer.set()
+    }
+    if (inputBuffer != null) {
+      inputBuffer.release()
+      inputBuffer.set()
+    }
+    this
+  }
   }
 
 object ReLUDnn {
