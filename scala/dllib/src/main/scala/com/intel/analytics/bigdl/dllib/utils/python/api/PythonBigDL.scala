@@ -33,7 +33,7 @@ import org.apache.spark.rdd.RDD
 import java.lang.{Boolean => JBoolean}
 import java.nio.ByteOrder
 
-import com.intel.analytics.bigdl.dlframes.{DLClassifier, DLClassifierModel, DLEstimator, DLModel}
+import com.intel.analytics.bigdl.dlframes._
 import com.intel.analytics.bigdl.nn.Graph._
 import com.intel.analytics.bigdl.optim.SGD.{LearningRateSchedule, SequentialSchedule}
 import com.intel.analytics.bigdl.transform.vision.image._
@@ -3005,6 +3005,19 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
 
   def createDatasetFromImageFrame(imageFrame: ImageFrame): DataSet[ImageFeature] = {
     DataSet.imageFrame(imageFrame)
+  }
+
+  def dlReadImage(path: String, sc: JavaSparkContext, minParitions: Int): DataFrame = {
+    val df = DLImageReader.readImages(path, sc.sc, minParitions)
+    df
+  }
+
+  def createDLImageTransformer(transformer: FeatureTransformer): DLImageTransformer = {
+    new DLImageTransformer(transformer)
+  }
+
+  def dlImageTransform(dlImageTransformer: DLImageTransformer, dataSet: DataFrame): DataFrame = {
+    dlImageTransformer.transform(dataSet)
   }
 }
 
