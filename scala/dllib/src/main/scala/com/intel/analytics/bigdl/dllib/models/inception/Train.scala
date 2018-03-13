@@ -37,25 +37,17 @@ object TrainInceptionV1 {
       val sc = new SparkContext(conf)
       Engine.init
 
-      val trainSet = ImageNet2012(
+      val trainSet = ImageNet2012.rdd(
         param.folder + "/train",
-        sc,
-        imageSize,
         param.batchSize,
-        Engine.nodeNumber(),
-        Engine.coreNumber(),
-        param.classNumber,
-        1281167
+        sc,
+        imageSize
       )
-      val valSet = ImageNet2012Val(
+      val valSet = ImageNet2012Val.rdd(
         param.folder + "/val",
-        sc,
-        imageSize,
         param.batchSize,
-        Engine.nodeNumber(),
-        Engine.coreNumber(),
-        param.classNumber,
-        50000
+        sc,
+        imageSize
       )
 
       val model = if (param.modelSnapshot.isDefined) {
