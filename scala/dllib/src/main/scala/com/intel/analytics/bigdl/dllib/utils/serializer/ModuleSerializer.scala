@@ -185,6 +185,7 @@ object ModuleSerializer extends ModuleSerializable{
     registerModule("com.intel.analytics.bigdl.nn.DynamicGraph", Graph)
     registerModule("com.intel.analytics.bigdl.nn.keras.Model", Model)
     registerModule("com.intel.analytics.bigdl.nn.keras.Sequential", KSequential)
+    registerModule("com.intel.analytics.bigdl.nn.keras.KerasLayerWrapper", KerasLayerSerializer)
     registerModule("com.intel.analytics.bigdl.nn.MapTable", MapTable)
     registerModule("com.intel.analytics.bigdl.nn.Maxout", Maxout)
     registerModule("com.intel.analytics.bigdl.nn.MaskedSelect", MaskedSelect)

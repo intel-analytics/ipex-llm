@@ -156,7 +156,11 @@ object Merge {
     val batchInputShape = KerasLayer.addBatch(inputShape)
     val actualInputShape =
       MultiShape(layers.map { layer =>
-      layer.build(layer.getInputShape())
+      if (layer.isBuilt()) {  // it's possible while reloaded from file
+        layer.getOutputShape()
+      } else {
+        layer.build(layer.getInputShape())
+      }
     }.toList)
     if (batchInputShape != null) {
       require(batchInputShape.isInstanceOf[MultiShape],

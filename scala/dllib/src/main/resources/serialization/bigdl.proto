@@ -1,5 +1,5 @@
 syntax = "proto3";
-package serialization;
+package com.intel.analytics.bigdl.serialization;
 import "google/protobuf/any.proto";
 message BigDLModule
 {
@@ -16,7 +16,7 @@ message BigDLModule
     string namePostfix = 11; // name post fix
     int32 id = 12; // unique ID of this module , used for shared modules
     Shape inputShape = 13; // input shape
-    repeated Shape outputShape = 14; //output shape
+    Shape outputShape = 14; //output shape
 }
 enum VarFormat {
     EMPTY_FORMAT = 0;

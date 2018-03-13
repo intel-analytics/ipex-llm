@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.nn.keras
 
-import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.nn.{InferReshape, InitializationMethod, Linear, Xavier, Zeros, Sequential => TSequential}
 import com.intel.analytics.bigdl.nn.abstractnn._
 import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.Tensor
@@ -49,7 +49,7 @@ import scala.reflect.ClassTag
 class Dense[T: ClassTag](
    val outputDim: Int,
    val init: InitializationMethod = Xavier,
-   val activation: AbstractModule[Tensor[T], Tensor[T], T] = null,
+   val activation: KerasLayer[Tensor[T], Tensor[T], T] = null,
    var wRegularizer: Regularizer[T] = null,
    var bRegularizer: Regularizer[T] = null,
    val bias: Boolean = true,
@@ -73,22 +73,19 @@ class Dense[T: ClassTag](
       bRegularizer = bRegularizer)
     layer.setInitMethod(weightInitMethod = init, biasInitMethod = Zeros)
 
-    if (inputShape.toSingle().size <= 2) {
-      KerasLayer.fuse(layer, activation,
-        inputShape).asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
-    } else {
-      val seq = new Sequential[T](stopInferShape = true)
+    var torchLayer: AbstractModule[Tensor[T], Tensor[T], T] = layer
+
+    if (inputShape.toSingle().size > 2) {
+      val seq = new TSequential[T]()
       val inDim = inputShapeList.last
-      seq.add(InputLayer(inputShape = inputShape))
       seq.add(InferReshape(Array(-1, inDim), false))
       seq.add(layer)
       seq.add(InferReshape(Array(-1) ++
         inputShapeList.slice(1, inputShapeList.size - 1) ++ Array(outputDim), false))
-      if (activation != null) {
-        seq.add(activation)
-      }
-      seq.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
+      torchLayer = seq.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
     }
+    KerasLayer.fuse(torchLayer, activation,
+      inputShape).asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
   }
 }
 
@@ -102,7 +99,7 @@ object Dense {
     bias: Boolean = true,
     inputShape: Shape = null)(implicit ev: TensorNumeric[T]): Dense[T] = {
     new Dense[T](outputDim, KerasUtils.getInitMethod(init),
-      KerasUtils.getActivation(activation),
+      KerasUtils.getKerasActivation(activation),
       wRegularizer, bRegularizer, bias, inputShape)
   }
 }

@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.nn.keras
 
-import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.nn.{InitializationMethod, Xavier, Zeros}
 import com.intel.analytics.bigdl.nn.{SpatialDilatedConvolution, Squeeze, Transpose, Sequential => TSequential}
 import com.intel.analytics.bigdl.optim.Regularizer
@@ -57,7 +57,7 @@ class AtrousConvolution1D[T: ClassTag](
    val nbFilter: Int,
    val filterLength: Int,
    val init: InitializationMethod = Xavier,
-   val activation: AbstractModule[Tensor[T], Tensor[T], T] = null,
+   val activation: KerasLayer[Tensor[T], Tensor[T], T] = null,
    val subsampleLength: Int = 1,
    val atrousRate: Int = 1,
    var wRegularizer: Regularizer[T] = null,
@@ -95,7 +95,7 @@ class AtrousConvolution1D[T: ClassTag](
     model.add(Transpose(Array((2, 3))))
     model.add(Squeeze(4))
     if (activation != null) {
-      model.add(activation)
+      model.add(activation.doBuild(inputShape))
     }
     model.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
   }
@@ -113,7 +113,7 @@ object AtrousConvolution1D {
     bRegularizer: Regularizer[T] = null,
     inputShape: Shape = null)(implicit ev: TensorNumeric[T]): AtrousConvolution1D[T] = {
     new AtrousConvolution1D[T](nbFilter, filterLength, KerasUtils.getInitMethod(init),
-      KerasUtils.getActivation(activation), subsampleLength, atrousRate,
+      KerasUtils.getKerasActivation(activation), subsampleLength, atrousRate,
       wRegularizer, bRegularizer, inputShape)
   }
 }
