@@ -2,9 +2,9 @@
 ## **Introduction**
 We hereby introduce a new set of __Keras-Style API__ based on [__Keras 1.2.2__](https://faroit.github.io/keras-docs/1.2.2/) in BigDL for the sake of user-friendliness. Users, especially those familiar with Keras, are recommended to use the new API to create a BigDL model and train, evaluate or tune it in a distributed fashion.
 
-To define a model in Python, now one just need to import the package
+To define a model in Python using the Keras-Style API, now one just need to import the package
 
-`bigdl.nn.keras.layer`.
+`bigdl.nn.keras.layer`
 
 One of the highlighted features with regard to the new API is __shape inference__. Users only need to specify the input shape (a shape tuple __excluding__ batch dimension, for example, `input_shape=(3, 4)` for 3D input) for the first layer of a model and for the remaining layers, the input dimension will be automatically inferred.
 
@@ -79,6 +79,8 @@ See [here](Layers/core.md) for all the available layers for the new set of Keras
 
 ---
 ## **Methods**
+__Methods for a [sequential](#sequential-api) or a [functional](#functional-api) model:__
+
 ```python
 get_output_shape()
 ```
@@ -93,12 +95,14 @@ Return the input shape of a model, which is a shape tuple. The first entry is `N
 
 For a model with multiple inputs, it will return a list of shape tuples.
 
+__Methods for a [functional](#functional-api) model only:__
+
 ```python
 merge(inputs, mode="sum", concat_axis=-1, name=None)
 ```
-Functional merge. Only use this method if you are defining a model with [Functional API](#functional-api).
+Used to merge a list of input __nodes__ (__NOT__ layers), following some merge mode.
 
-Used to merge a list of input __nodes__ into a single output __node__ (__NOT__ layers!), following some merge mode.
+Return an output __node__.
 
 Parameters:
 
@@ -106,6 +110,17 @@ Parameters:
 * `mode`: Merge mode. String, must be one of: 'sum', 'mul', 'concat', 'ave', 'cos','dot', 'max'. Default is 'sum'.
 * `concat_axis`: Int, axis to use when concatenating nodes. Only specify this when merge mode is 'concat'. Default is -1, meaning the last axis of the input.
 * `name`: String to specify the name of merge. Default is None.
+
+__Methods for either a [layer](Layers/core.md) or a [model](#sequential-api):__
+
+```python
+set_name(name)
+```
+Set the name of a module. Can alternatively specify the parameter `name` when creating a layer or a model.
+
+Parameters:
+
+* `name`: String to specify the name.
 
 
 ---

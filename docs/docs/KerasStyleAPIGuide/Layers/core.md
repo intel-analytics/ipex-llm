@@ -40,7 +40,6 @@ Dense(output_dim, init="glorot_uniform", activation=None, W_regularizer=None, b_
 * `bRegularizer`: An instance of [Regularizer](../../../APIGuide/Regularizers/), applied to the bias. Default is null.
 * `bias`: Whether to include a bias (i.e. make the layer affine rather than linear). Default is true.
 * `inputShape`: Only need to specify this argument when you use this layer as the first layer of a model. For Scala API, it should be a [`Shape`](../keras-api-scala/#shape) object. For Python API, it should be a shape tuple. Batch dimension should be excluded.
-* `name`: This parameter is for Python API only. String to specify the name of the layer. Default is None. For Scala API, please use `setName(name)` instead.
 
 **Scala example:**
 ```scala

@@ -2,9 +2,9 @@
 ## **Introduction**
 We hereby introduce a new set of __Keras-Style API__ based on [__Keras 1.2.2__](https://faroit.github.io/keras-docs/1.2.2/) in BigDL for the sake of user-friendliness. Users, especially those familiar with Keras, are recommended to use the new API to create a BigDL model and train, evaluate or tune it in a distributed fashion.
 
-To define a model in Scala, now one just need to import the package
+To define a model in Scala using the Keras-Style API, now one just need to import the package
 
-`com.intel.analytics.bigdl.nn.keras`.
+`com.intel.analytics.bigdl.nn.keras`
 
 One of the highlighted features with regard to the new API is __shape inference__. Users only need to specify the input shape (a [`Shape`](#shape) object __excluding__ batch dimension, for example, `inputShape=Shape(3, 4)` for 3D input) for the first layer of a model and for the remaining layers, the input dimension will be automatically inferred.
 
@@ -88,6 +88,8 @@ See [here](Layers/core.md) for all the available layers for the new set of Keras
 
 ---
 ## **Methods**
+#### __Methods for a [sequential](#sequential-api) or a [functional](#functional-api) model:__
+
 ```scala
 getOutputShape()
 ```
@@ -105,6 +107,8 @@ Return the input shape of a model, which is a [`Shape`](#shape) object.
 For `SingleShape`, the first entry is `-1` representing the batch dimension.
 
 For a model with multiple inputs, it will return a `MultiShape`.
+
+#### __Methods for either a [layer](Layers/core.md) or a [model](#sequential-api):__
 
 ```scala
 setName(name)
