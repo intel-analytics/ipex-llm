@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.nn.keras
 
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, DataFormat}
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, DataFormat}
 import com.intel.analytics.bigdl.nn.{Squeeze, Sequential => TSequential}
 import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.Tensor
@@ -51,7 +51,7 @@ import scala.reflect.ClassTag
 class LocallyConnected1D[T: ClassTag](
    val nbFilter: Int,
    val filterLength: Int,
-   val activation: AbstractModule[Tensor[T], Tensor[T], T] = null,
+   val activation: KerasLayer[Tensor[T], Tensor[T], T] = null,
    val subsampleLength: Int = 1,
    var wRegularizer: Regularizer[T] = null,
    var bRegularizer: Regularizer[T] = null,
@@ -88,7 +88,7 @@ class LocallyConnected1D[T: ClassTag](
     model.add(layer)
     model.add(Squeeze(3))
     if (activation != null) {
-      model.add(activation)
+      model.add(activation.doBuild(inputShape))
     }
     model.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
   }
@@ -105,7 +105,7 @@ object LocallyConnected1D {
     bias: Boolean = true,
     inputShape: Shape = null)(implicit ev: TensorNumeric[T]): LocallyConnected1D[T] = {
     new LocallyConnected1D[T](nbFilter, filterLength,
-      KerasUtils.getActivation(activation), subsampleLength,
+      KerasUtils.getKerasActivation(activation), subsampleLength,
       wRegularizer, bRegularizer, bias, inputShape)
   }
 }
