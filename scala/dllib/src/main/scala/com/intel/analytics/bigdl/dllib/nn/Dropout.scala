@@ -45,7 +45,7 @@ class Dropout[T: ClassTag](
   val initP: Double = 0.5,
   val inplace: Boolean = false,
   var scale: Boolean = true)(
-  implicit ev: TensorNumeric[T]) extends TensorModule[T] with IdentityOutputShape {
+  implicit ev: TensorNumeric[T]) extends TensorModule[T] {
   private var p = initP
   var noise = Tensor[T]()
   var isResampling = true

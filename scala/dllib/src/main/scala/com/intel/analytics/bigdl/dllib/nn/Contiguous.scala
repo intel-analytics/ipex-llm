@@ -27,7 +27,7 @@ import scala.reflect.ClassTag
 
 @SerialVersionUID(- 4704727587714736531L)
 class Contiguous[T: ClassTag]
-(implicit ev: TensorNumeric[T]) extends TensorModule[T]{
+(implicit ev: TensorNumeric[T]) extends TensorModule[T] {
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
     output = input.contiguous()

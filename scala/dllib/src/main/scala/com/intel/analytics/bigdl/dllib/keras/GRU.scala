@@ -53,8 +53,8 @@ import scala.reflect.ClassTag
  */
 class GRU[T: ClassTag](
    outputDim: Int,
-   val activation: AbstractModule[Tensor[T], Tensor[T], T] = null,
-   val innerActivation: AbstractModule[Tensor[T], Tensor[T], T] = null,
+   val activation: KerasLayer[Tensor[T], Tensor[T], T] = null,
+   val innerActivation: KerasLayer[Tensor[T], Tensor[T], T] = null,
    returnSequences: Boolean = false,
    goBackwards: Boolean = false,
    var wRegularizer: Regularizer[T] = null,
@@ -67,8 +67,8 @@ class GRU[T: ClassTag](
     com.intel.analytics.bigdl.nn.GRU[T](
       inputSize = input(2),
       outputSize = outputDim,
-      activation = activation.asInstanceOf[TensorModule[T]],
-      innerActivation = innerActivation.asInstanceOf[TensorModule[T]],
+      activation = activation.doBuild(inputShape).asInstanceOf[TensorModule[T]],
+      innerActivation = innerActivation.doBuild(inputShape).asInstanceOf[TensorModule[T]],
       wRegularizer = wRegularizer,
       uRegularizer = uRegularizer,
       bRegularizer = bRegularizer)
@@ -86,8 +86,8 @@ object GRU {
     uRegularizer: Regularizer[T] = null,
     bRegularizer: Regularizer[T] = null,
     inputShape: Shape = null)(implicit ev: TensorNumeric[T]) : GRU[T] = {
-    new GRU(outputDim, KerasUtils.getActivation(activation),
-      KerasUtils.getActivation(innerActivation), returnSequences,
+    new GRU(outputDim, KerasUtils.getKerasActivation(activation),
+      KerasUtils.getKerasActivation(innerActivation), returnSequences,
       goBackwards, wRegularizer, uRegularizer, bRegularizer, inputShape)
   }
 }
