@@ -62,7 +62,7 @@ class Convolution3D[T: ClassTag](
    val kernelDim2: Int,
    val kernelDim3: Int,
    val init: InitializationMethod = Xavier,
-   val activation: AbstractModule[Tensor[T], Tensor[T], T] = null,
+   val activation: KerasLayer[Tensor[T], Tensor[T], T] = null,
    val borderMode: String = "valid",
    val subsample: Array[Int] = Array(1, 1, 1),
    val dimOrdering: String = "CHANNEL_FIRST",
@@ -119,7 +119,7 @@ object Convolution3D {
     bias: Boolean = true,
     inputShape: Shape = null)(implicit ev: TensorNumeric[T]): Convolution3D[T] = {
     new Convolution3D[T](nbFilter, kernelDim1, kernelDim2, kernelDim3,
-      KerasUtils.getInitMethod(init), KerasUtils.getActivation(activation),
+      KerasUtils.getInitMethod(init), KerasUtils.getKerasActivation(activation),
       borderMode, Array(subsample._1, subsample._2, subsample._3),
       KerasUtils.toBigDLFormat5D(dimOrdering),
       wRegularizer, bRegularizer, bias, inputShape)
