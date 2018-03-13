@@ -243,23 +243,8 @@ trait ModuleSerializable extends Loadable with Savable{
     } else {
       module.evaluate()
     }
-
-    if (model.hasInputShape) {
-      val attrbute = AttrValue.newBuilder
-      attrbute.setShape(model.getInputShape)
-      val shape = ShapeConverter.getAttributeValue(context, attrbute.build).asInstanceOf[BigDLShape]
-      module.inputShapeValue = shape
-    }
-
-    val outputShapes = model.getOutputShapeList.asScala
-    if (outputShapes.length > 0) {
-      val shapes = outputShapes.map(outputShape => {
-        val attrbute = AttrValue.newBuilder
-        attrbute.setShape(outputShape)
-        ShapeConverter.getAttributeValue(context, attrbute.build).asInstanceOf[BigDLShape]
-      }).toArray
-      module.outputShapeValue = shapes
-    }
+    module.inputShapeValue = ShapeConverter.shapeToBigDL(context, model, "input")
+    module.outputShapeValue = ShapeConverter.shapeToBigDL(context, model, "output")
     if (_copyWeightAndBias) {
       copy2BigDL(context, bigDLModule)
     }
@@ -280,19 +265,11 @@ trait ModuleSerializable extends Loadable with Savable{
     modelBuilder.setId(System.identityHashCode(module.module))
     val inputShape = module.module.inputShapeValue
     if (inputShape != null) {
-      val attribute = AttrValue.newBuilder
-      ShapeConverter.setAttributeValue(context, attribute, inputShape,
-        universe.typeOf[BigDLShape])
-      modelBuilder.setInputShape(attribute.getShape)
+      modelBuilder.setInputShape(ShapeConverter.shapeToProto(context, inputShape))
     }
-    val outputShapes = module.module.outputShapeValue
-    if (outputShapes != null && outputShapes.length > 0) {
-      outputShapes.foreach(outputShape => {
-        val attribute = AttrValue.newBuilder
-        ShapeConverter.setAttributeValue(context, attribute, outputShape,
-          universe.typeOf[BigDLShape])
-        modelBuilder.addOutputShape(attribute.getShape)
-      })
+    val outputShape = module.module.outputShapeValue
+    if (outputShape != null) {
+      modelBuilder.setOutputShape(ShapeConverter.shapeToProto(context, outputShape))
     }
     if (_copyWeightAndBias) {
       copyFromBigDL(context, modelBuilder)

@@ -16,24 +16,31 @@
 
 package com.intel.analytics.bigdl.nn.abstractnn
 
+import com.intel.analytics.bigdl.nn.keras.{Input => KInput, Sequential => KSequential}
+import com.intel.analytics.bigdl.nn.{Input => TInput}
 import com.intel.analytics.bigdl.utils.Shape
+
+import scala.language.existentials
+import scala.reflect.ClassTag
+
+class InvalidLayer(msg: String) extends RuntimeException(msg)
 
 trait InferShape {
 
   private[bigdl] var _inputShapeValue: Shape = null
 
-  private[bigdl] var _outputShapeValue: Array[Shape] = Array[Shape]()
+  private[bigdl] var _outputShapeValue: Shape = null
 
   private[bigdl] def inputShapeValue: Shape = _inputShapeValue
 
-  private[bigdl] def outputShapeValue: Array[Shape] = _outputShapeValue
+  private[bigdl] def outputShapeValue: Shape = _outputShapeValue
 
   // scalastyle:off
   private[bigdl] def inputShapeValue_=(value: Shape): Unit = {
     _inputShapeValue = value
   }
 
-  private[bigdl] def outputShapeValue_=(value: Array[Shape]): Unit = {
+  private[bigdl] def outputShapeValue_=(value: Shape): Unit = {
     _outputShapeValue = value
   }
   // scalastyle:on
@@ -41,28 +48,15 @@ trait InferShape {
   /**
    * We suppose the first dim is batch
    */
-  private[bigdl] def getInputShape(): Shape = {
+  private[bigdl] final def getInputShape(): Shape = {
     _inputShapeValue
-  }
-
-  /**
-   * Get the outputshape by index.
-   * @param index start from 0
-   * @return
-   */
-  private[bigdl] def getOutputShapeFor(index: Int): Shape = {
-    _outputShapeValue(index)
   }
 
   /**
    * We suppose the first dim is batch
    */
-  private[bigdl] def getOutputShape(): Shape = {
-    if (_outputShapeValue.length > 1) {
-      throw new RuntimeException(
-        "There are multiple outputs for this layer. Please use getInputShapeFor instead")
-    }
-    outputShapeValue(0)
+  private[bigdl] final def getOutputShape(): Shape = {
+    outputShapeValue
   }
 
   /**
@@ -71,24 +65,43 @@ trait InferShape {
    */
   private[bigdl] def build(inputShape: Shape): Shape = {
     val outputShape = computeOutputShape(inputShape)
-    this._outputShapeValue ++ Array(outputShape)
-    this._inputShapeValue = inputShape
-    isBuilt = true
+    this.outputShapeValue = outputShape
+    this.inputShapeValue = inputShape
     outputShape
   }
 
-  private[bigdl] var isBuilt: Boolean = false
+  private[bigdl] def isBuilt(): Boolean = outputShapeValue != null
 
+  private[bigdl] def isKerasStyle(): Boolean = false
 
-  private[bigdl] def isCompatibleWithKeras(): Boolean = true
-
-  private[bigdl] def isCompatibleWithTorch(): Boolean = true
+  private[bigdl] def allowRebuilt(): Boolean = false
 
   /**
    * We suppose the first dim is batch
    */
   private[bigdl] def computeOutputShape(inputShape: Shape): Shape = {
     throw new RuntimeException("Haven't been implemented yet. Do not use it with Keras Layer")
+  }
+
+  private[bigdl] def excludeInvalidLayers[T: ClassTag]
+  (modules : Seq[AbstractModule[_, _, T]]): Unit = {
+    val invalidNodes = if (this.isKerasStyle()) {
+      modules.filter{!_.isKerasStyle()}
+    } else {
+      modules.filter{_.isKerasStyle()}
+    }
+    if (invalidNodes.length > 0) {
+      throw new InvalidLayer(s"""Do not mix ${this}(isKerasStyle=${isKerasStyle()}) with Layer
+                           (isKerasStyle=${invalidNodes(0).isKerasStyle()}):
+         ${invalidNodes.mkString(",")}""")
+    }
+  }
+
+  private[bigdl] def validateInput[T: ClassTag](modules : Seq[AbstractModule[_, _, T]]): Unit = {
+    if (this.isKerasStyle()) {
+      require(modules != null && !modules.isEmpty, "Empty input is not allowed")
+    }
+    excludeInvalidLayers(modules)
   }
 }
 

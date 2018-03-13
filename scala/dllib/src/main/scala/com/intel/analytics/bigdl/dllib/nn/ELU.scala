@@ -32,7 +32,7 @@ class ELU[T: ClassTag](
   val alpha: Double = 1.0,
   val inplace: Boolean = false)(
   implicit ev: TensorNumeric[T])
-  extends TensorModule[T] with IdentityOutputShape {
+  extends TensorModule[T] {
 
   val _alpha = ev.fromType[Double](alpha)
 

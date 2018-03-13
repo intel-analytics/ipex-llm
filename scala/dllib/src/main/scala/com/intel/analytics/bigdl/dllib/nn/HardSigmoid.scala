@@ -30,7 +30,7 @@ import scala.reflect.ClassTag
  *           ⎩  0.2 * x + 0.5, otherwise
  */
 class HardSigmoid[T: ClassTag]
-(implicit ev: TensorNumeric[T]) extends TensorModule[T] with IdentityOutputShape {
+(implicit ev: TensorNumeric[T]) extends TensorModule[T] {
 
   val minValue = ev.fromType[Double](-2.5)
   val maxValue = ev.fromType[Double](2.5)
