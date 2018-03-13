@@ -31,7 +31,7 @@ import scala.reflect.ClassTag
 class AddConstant[T: ClassTag](
    val constant_scalar: Double,
    val inplace: Boolean = false
-  )(implicit ev: TensorNumeric[T]) extends TensorModule[T]{
+  )(implicit ev: TensorNumeric[T]) extends TensorModule[T] {
   val scalar = ev.fromType[Double](constant_scalar)
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {

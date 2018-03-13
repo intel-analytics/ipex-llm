@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.keras.nn
 
-import com.intel.analytics.bigdl.nn.keras.InputLayer
+import com.intel.analytics.bigdl.nn.keras.{InputLayer, Sequential}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.Shape
 import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
@@ -26,7 +26,9 @@ import scala.util.Random
 class InputSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val input = InputLayer[Float](inputShape = Shape(20))
+    val seq = Sequential[Float]()
+    seq.add(input)
     val inputData = Tensor[Float](2, 20).apply1(_ => Random.nextFloat())
-    runSerializationTest(input, inputData)
+    runSerializationTest(seq, inputData)
   }
 }

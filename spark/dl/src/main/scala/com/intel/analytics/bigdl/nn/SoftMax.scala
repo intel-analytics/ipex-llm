@@ -31,7 +31,7 @@ import scala.reflect.ClassTag
  * where shift = max_i(x_i).
  */
 @SerialVersionUID(- 7842335603491194236L)
-class SoftMax[T: ClassTag]()(implicit ev: TensorNumeric[T]) extends TensorModule[T]{
+class SoftMax[T: ClassTag]()(implicit ev: TensorNumeric[T]) extends TensorModule[T] {
 
   @transient
   private var results: Array[Future[Unit]] = null

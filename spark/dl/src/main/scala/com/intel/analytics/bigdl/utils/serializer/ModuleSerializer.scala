@@ -36,6 +36,8 @@ object ModuleSerializer extends ModuleSerializable{
 
   private val serializerMaps = new mutable.HashMap[String, ModuleSerializable]()
 
+  private[serializer] val _lock = new Object
+
   // generic type definition for type matching
 
   var tensorNumericType : universe.Type = null
@@ -126,7 +128,7 @@ object ModuleSerializer extends ModuleSerializable{
 
   private[serializer] def getCostructorMirror[T : ClassTag](cls : Class[_]):
     universe.MethodMirror = {
-    lock.synchronized {
+    getLock.synchronized {
       val clsSymbol = runtimeMirror.classSymbol(cls)
       val cm = runtimeMirror.reflectClass(clsSymbol)
       // to make it compatible with both 2.11 and 2.10
@@ -185,6 +187,7 @@ object ModuleSerializer extends ModuleSerializable{
     registerModule("com.intel.analytics.bigdl.nn.DynamicGraph", Graph)
     registerModule("com.intel.analytics.bigdl.nn.keras.Model", Model)
     registerModule("com.intel.analytics.bigdl.nn.keras.Sequential", KSequential)
+    registerModule("com.intel.analytics.bigdl.nn.keras.KerasLayerWrapper", KerasLayerSerializer)
     registerModule("com.intel.analytics.bigdl.nn.MapTable", MapTable)
     registerModule("com.intel.analytics.bigdl.nn.Maxout", Maxout)
     registerModule("com.intel.analytics.bigdl.nn.MaskedSelect", MaskedSelect)

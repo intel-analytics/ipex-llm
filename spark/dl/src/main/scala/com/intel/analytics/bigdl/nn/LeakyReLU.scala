@@ -36,7 +36,7 @@ import scala.reflect.ClassTag
 class LeakyReLU[T: ClassTag](
   private val negval: Double = 0.01,
   var inplace: Boolean = false)(
-  implicit ev: TensorNumeric[T]) extends TensorModule[T] with IdentityOutputShape {
+  implicit ev: TensorNumeric[T]) extends TensorModule[T] {
   import LeakyReLU._
 
   if (negval < 0) {

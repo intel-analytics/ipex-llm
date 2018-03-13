@@ -47,6 +47,8 @@ trait ModuleSerializable extends Loadable with Savable{
 
   protected var _copyWeightAndBias = true
 
+  protected def getLock: Object = ModuleSerializer._lock
+
   // Separate this two methods for reuse in sub-classes
   protected def checkVersion[T: ClassTag](module : BigDLModule)
                                          (implicit ev: TensorNumeric[T]) : Unit = {
@@ -88,9 +90,11 @@ trait ModuleSerializable extends Loadable with Savable{
     val module = if (storages.contains(moduleId)) {
       storages.get(moduleId).get.asInstanceOf[AbstractModule[Activity, Activity, T]]
     } else {
-      val loadedModule = doLoadModule(context)
-      storages(moduleId) = loadedModule
-      loadedModule
+      getLock.synchronized {
+        val loadedModule = doLoadModule(context)
+        storages(moduleId) = loadedModule
+        loadedModule
+      }
     }
     // step3 : copy params (weight & bias) and linkage
     createBigDLModule(context, module)
@@ -116,29 +120,27 @@ trait ModuleSerializable extends Loadable with Savable{
     val constructorFullParams = constructorMirror.symbol.paramss
     val args = new Array[Object](constructorFullParams.map(_.size).sum)
     var i = 0
-    lock.synchronized {
-      constructorFullParams.foreach(map => {
-        map.foreach(param => {
-          val name = param.name.decodedName.toString
-          val ptype = param.typeSignature
-          if (ptype <:< universe.typeOf[ClassTag[_]]||
-            ptype.typeSymbol == universe.typeOf[ClassTag[_]].typeSymbol) {
-            require(tagIter.hasNext, "If your module contains multiple class tags, " +
-              "do you forget to override getClassTagNumerics method")
-            args(i) = tagIter.next
-          } else if (ptype <:< universe.typeOf[TensorNumeric[_]]
-            || ptype.typeSymbol == universe.typeOf[TensorNumeric[_]].typeSymbol) {
-            args(i) = numericIter.next
-          } else {
-            require(modelAttributes.containsKey(name), s"$name value cannot be found")
-            val attribute = modelAttributes.get(name)
-            val value = DataConverter.getAttributeValue(context, attribute)
-            args(i) = value
-          }
-          i += 1
-        })
+    constructorFullParams.foreach(map => {
+      map.foreach(param => {
+        val name = param.name.decodedName.toString
+        val ptype = param.typeSignature
+        if (ptype <:< universe.typeOf[ClassTag[_]]||
+          ptype.typeSymbol == universe.typeOf[ClassTag[_]].typeSymbol) {
+          require(tagIter.hasNext, "If your module contains multiple class tags, " +
+            "do you forget to override getClassTagNumerics method")
+          args(i) = tagIter.next
+        } else if (ptype <:< universe.typeOf[TensorNumeric[_]]
+          || ptype.typeSymbol == universe.typeOf[TensorNumeric[_]].typeSymbol) {
+          args(i) = numericIter.next
+        } else {
+          require(modelAttributes.containsKey(name), s"$name value cannot be found")
+          val attribute = modelAttributes.get(name)
+          val value = DataConverter.getAttributeValue(context, attribute)
+          args(i) = value
+        }
+        i += 1
       })
-    }
+    })
    constructorMirror.apply(args : _*).
       asInstanceOf[AbstractModule[Activity, Activity, T]]
   }
@@ -172,11 +174,12 @@ trait ModuleSerializable extends Loadable with Savable{
     // step 2: set module type
     bigDLModelBuilder.setModuleType(cls.getName)
 
-    // step 3 : set data types (ClassTag and TensorNumric)
-    setDataTypes(context, bigDLModelBuilder)
-
-    // step 4 : apply module specific logic to create module
-    doSerializeModule(context, bigDLModelBuilder)
+    getLock.synchronized {
+      // step 3 : set data types (ClassTag and TensorNumric)
+      setDataTypes(context, bigDLModelBuilder)
+      // step 4 : apply module specific logic to create module
+      doSerializeModule(context, bigDLModelBuilder)
+    }
 
     // step 5 : copy params (weight & bias) a and linkage
     createSerializeBigDLModule(bigDLModelBuilder, context)
@@ -204,26 +207,24 @@ trait ModuleSerializable extends Loadable with Savable{
     val cls = module.getClass
     val fullParams = getCostructorMirror(cls).symbol.paramss
     val constructorParams = fullParams(0)
-    lock.synchronized {
-      constructorParams.foreach(param => {
-        val paramName = param.name.decodedName.toString
-        var ptype = param.typeSignature
-        val attrBuilder = AttrValue.newBuilder
-        // For some modules, fields are declared inside but passed to Super directly
-        var field : Field = null
-        try {
-          field = cls.getDeclaredField(paramName)
-        } catch {
-          case e : NoSuchFieldException =>
-            field = cls.getSuperclass.getDeclaredField(paramName)
-        }
-        field.setAccessible(true)
-        val fieldValue = field.get(module)
-        DataConverter.setAttributeValue(context, attrBuilder, fieldValue, ptype)
+    constructorParams.foreach(param => {
+      val paramName = param.name.decodedName.toString
+      var ptype = param.typeSignature
+      val attrBuilder = AttrValue.newBuilder
+      // For some modules, fields are declared inside but passed to Super directly
+      var field : Field = null
+      try {
+        field = cls.getDeclaredField(paramName)
+      } catch {
+        case e : NoSuchFieldException =>
+          field = cls.getSuperclass.getDeclaredField(paramName)
+      }
+      field.setAccessible(true)
+      val fieldValue = field.get(module)
+      DataConverter.setAttributeValue(context, attrBuilder, fieldValue, ptype)
 
-        bigDLModelBuilder.putAttr(paramName, attrBuilder.build)
+      bigDLModelBuilder.putAttr(paramName, attrBuilder.build)
       })
-    }
   }
 
   protected def createBigDLModule[T: ClassTag](context: DeserializeContext,
@@ -243,23 +244,8 @@ trait ModuleSerializable extends Loadable with Savable{
     } else {
       module.evaluate()
     }
-
-    if (model.hasInputShape) {
-      val attrbute = AttrValue.newBuilder
-      attrbute.setShape(model.getInputShape)
-      val shape = ShapeConverter.getAttributeValue(context, attrbute.build).asInstanceOf[BigDLShape]
-      module.inputShapeValue = shape
-    }
-
-    val outputShapes = model.getOutputShapeList.asScala
-    if (outputShapes.length > 0) {
-      val shapes = outputShapes.map(outputShape => {
-        val attrbute = AttrValue.newBuilder
-        attrbute.setShape(outputShape)
-        ShapeConverter.getAttributeValue(context, attrbute.build).asInstanceOf[BigDLShape]
-      }).toArray
-      module.outputShapeValue = shapes
-    }
+    module.inputShapeValue = ShapeConverter.shapeToBigDL(context, model, "input")
+    module.outputShapeValue = ShapeConverter.shapeToBigDL(context, model, "output")
     if (_copyWeightAndBias) {
       copy2BigDL(context, bigDLModule)
     }
@@ -280,19 +266,11 @@ trait ModuleSerializable extends Loadable with Savable{
     modelBuilder.setId(System.identityHashCode(module.module))
     val inputShape = module.module.inputShapeValue
     if (inputShape != null) {
-      val attribute = AttrValue.newBuilder
-      ShapeConverter.setAttributeValue(context, attribute, inputShape,
-        universe.typeOf[BigDLShape])
-      modelBuilder.setInputShape(attribute.getShape)
+      modelBuilder.setInputShape(ShapeConverter.shapeToProto(context, inputShape))
     }
-    val outputShapes = module.module.outputShapeValue
-    if (outputShapes != null && outputShapes.length > 0) {
-      outputShapes.foreach(outputShape => {
-        val attribute = AttrValue.newBuilder
-        ShapeConverter.setAttributeValue(context, attribute, outputShape,
-          universe.typeOf[BigDLShape])
-        modelBuilder.addOutputShape(attribute.getShape)
-      })
+    val outputShape = module.module.outputShapeValue
+    if (outputShape != null) {
+      modelBuilder.setOutputShape(ShapeConverter.shapeToProto(context, outputShape))
     }
     if (_copyWeightAndBias) {
       copyFromBigDL(context, modelBuilder)
