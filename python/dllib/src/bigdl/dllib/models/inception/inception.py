@@ -55,7 +55,7 @@ def inception_layer_v1(input_size, config, name_prefix=""):
     return concat
 
 
-def inception_v1_no_aux_classifier(class_num):
+def inception_v1_no_aux_classifier(class_num, has_dropout=True):
     model = Sequential()
     model.add(SpatialConvolution(3, 64, 7, 7, 2, 2, 3, 3, 1, False)
               .set_init_method(weight_init_method=Xavier(), bias_init_method=Zeros())
@@ -94,7 +94,8 @@ def inception_v1_no_aux_classifier(class_num):
     model.add(inception_layer_v1(832, t([t([384]), t(
         [192, 384]), t([48, 128]), t([128])]), "inception_5b/"))
     model.add(SpatialAveragePooling(7, 7, 1, 1).set_name("pool5/7x7_s1"))
-    model.add(Dropout(0.4).set_name("pool5/drop_7x7_s1"))
+    if has_dropout:
+        model.add(Dropout(0.4).set_name("pool5/drop_7x7_s1"))
     model.add(View([1024], num_input_dims=3))
     model.add(Linear(1024, class_num)
               .set_init_method(weight_init_method=Xavier(), bias_init_method=Zeros())
@@ -104,9 +105,10 @@ def inception_v1_no_aux_classifier(class_num):
     return model
 
 
-def inception_v1(class_num):
+def inception_v1(class_num, has_dropout=True):
     feature1 = Sequential()
-    feature1.add(SpatialConvolution(3, 64, 7, 7, 2, 2, 3, 3, 1, False).set_init_method(weight_init_method=Xavier())
+    feature1.add(SpatialConvolution(3, 64, 7, 7, 2, 2, 3, 3, 1, False)
+                 .set_init_method(weight_init_method=Xavier(), bias_init_method=Zeros())
                  .set_name("conv1/7x7_s2"))
     feature1.add(ReLU(True).set_name("conv1/relu_7x7"))
     feature1.add(
@@ -114,11 +116,12 @@ def inception_v1(class_num):
             .set_name("pool1/3x3_s2"))
     feature1.add(SpatialCrossMapLRN(5, 0.0001, 0.75)
                  .set_name("pool1/norm1"))
-    feature1.add(SpatialConvolution(64, 64, 1, 1, 1, 1).set_init_method(weight_init_method=Xavier())
+    feature1.add(SpatialConvolution(64, 64, 1, 1, 1, 1)
+                 .set_init_method(weight_init_method=Xavier(), bias_init_method=Zeros())
                  .set_name("conv2/3x3_reduce"))
     feature1.add(ReLU(True).set_name("conv2/relu_3x3_reduce"))
-    feature1.add(SpatialConvolution(64, 192, 3, 3, 1,
-                                    1, 1, 1).set_init_method(weight_init_method=Xavier())
+    feature1.add(SpatialConvolution(64, 192, 3, 3, 1, 1, 1, 1)
+                 .set_init_method(weight_init_method=Xavier(), bias_init_method=Zeros())
                  .set_name("conv2/3x3"))
     feature1.add(ReLU(True).set_name("conv2/relu_3x3"))
     feature1.add(SpatialCrossMapLRN(5, 0.0001, 0.75).set_name("conv2/norm2"))
@@ -145,7 +148,8 @@ def inception_v1(class_num):
     output1.add(View([128 * 4 * 4, 3]))
     output1.add(Linear(128 * 4 * 4, 1024).set_name("loss1/fc"))
     output1.add(ReLU(True).set_name("loss1/relu_fc"))
-    output1.add(Dropout(0.7).set_name("loss1/drop_fc"))
+    if has_dropout:
+        output1.add(Dropout(0.7).set_name("loss1/drop_fc"))
     output1.add(Linear(1024, class_num).set_name("loss1/classifier"))
     output1.add(LogSoftMax().set_name("loss1/loss"))
 
@@ -168,7 +172,8 @@ def inception_v1(class_num):
     output2.add(View([128 * 4 * 4, 3]))
     output2.add(Linear(128 * 4 * 4, 1024).set_name("loss2/fc"))
     output2.add(ReLU(True).set_name("loss2/relu_fc"))
-    output2.add(Dropout(0.7).set_name("loss2/drop_fc"))
+    if has_dropout:
+        output2.add(Dropout(0.7).set_name("loss2/drop_fc"))
     output2.add(Linear(1024, class_num).set_name("loss2/classifier"))
     output2.add(LogSoftMax().set_name("loss2/loss"))
 
@@ -184,9 +189,11 @@ def inception_v1(class_num):
                                    t([t([384]), t([192, 384]), t([48, 128]), t([128])]),
                                    "inception_5b/"))
     output3.add(SpatialAveragePooling(7, 7, 1, 1).set_name("pool5/7x7_s1"))
-    output3.add(Dropout(0.4).set_name("pool5/drop_7x7_s1"))
+    if has_dropout:
+        output3.add(Dropout(0.4).set_name("pool5/drop_7x7_s1"))
     output3.add(View([1024, 3]))
-    output3.add(Linear(1024, class_num).set_init_method(weight_init_method=Xavier())
+    output3.add(Linear(1024, class_num)
+                .set_init_method(weight_init_method=Xavier(), bias_init_method=Zeros())
                 .set_name("loss3/classifier"))
     output3.add(LogSoftMax().set_name("loss3/loss3"))
 
@@ -228,6 +235,8 @@ def config_option_parser():
     parser.add_option("-e", "--maxEpoch", type=int, dest="maxEpoch", default=0, help="epoch numbers")
     parser.add_option("-i", "--maxIteration", type=int, dest="maxIteration", default=62000, help="iteration numbers")
     parser.add_option("-l", "--learningRate", type=float, dest="learningRate", default=0.01, help="learning rate")
+    parser.add_option("--warmupEpoch", type=int, dest="warmupEpoch", default=0, help="warm up epoch numbers")
+    parser.add_option("--maxLr", type=float, dest="maxLr", default=0.0, help="max Lr after warm up")
     parser.add_option("-b", "--batchSize", type=int, dest="batchSize", help="batch size")
     parser.add_option("--classNum", type=int, dest="classNum", default=1000, help="class number")
     parser.add_option("--weightDecay", type=float, dest="weightDecay", default=0.0001, help="weight decay")
@@ -255,6 +264,7 @@ if __name__ == "__main__":
 
     image_size = 224  # create dataset
     train_transformer = Pipeline([PixelBytesToMat(),
+                                  Resize(256, 256),
                                   RandomCrop(image_size, image_size),
                                   RandomTransformer(HFlip(), 0.5),
                                   ChannelNormalize(0.485, 0.456, 0.406, 0.229, 0.224, 0.225),
@@ -265,11 +275,12 @@ if __name__ == "__main__":
     train_data = DataSet.image_frame(raw_train_data).transform(train_transformer)
 
     val_transformer = Pipeline([PixelBytesToMat(),
+                                Resize(256, 256),
                                 CenterCrop(image_size, image_size),
                                 RandomTransformer(HFlip(), 0.5),
                                 ChannelNormalize(0.485, 0.456, 0.406, 0.229, 0.224, 0.225),
                                 MatToTensor(to_rgb=True),
-                                ImageFrameToSample(input_keys=["imageTensor"], target_keys=["label"])
+                                  ImageFrameToSample(input_keys=["imageTensor"], target_keys=["label"])
                                 ])
     raw_val_data = get_inception_data(options.folder, sc, "val")
     val_data = DataSet.image_frame(raw_val_data).transform(val_transformer)
@@ -281,16 +292,30 @@ if __name__ == "__main__":
         inception_model = inception_v1_no_aux_classifier(options.classNum)
 
     # load state
+    iterationPerEpoch = int(ceil(float(1281167) / options.batchSize))
+    if options.maxEpoch:
+        maxIteration = iterationPerEpoch * options.maxEpoch
+    else:
+        maxIteration = options.maxIteration
+    warmup_iteration = options.warmupEpoch * iterationPerEpoch
     if options.state != "":
         optim = OptimMethod.load(options.state)
-    elif options.maxEpoch:
-        optim = SGD(learningrate=options.learningRate, learningrate_decay=0.0, weightdecay=options.weightDecay,
-                    momentum=0.9, dampening=0.0, nesterov=False,
-                    leaningrate_schedule=Poly(0.5, int(ceil(float(1281167) / options.batchSize)) * options.maxEpoch))
     else:
+        if warmup_iteration == 0:
+            warmupDelta = 0.0
+        else:
+            if options.maxLr:
+                maxlr = options.maxLr
+            else:
+                maxlr = options.learningRate
+            warmupDelta = (maxlr - options.learningRate)/warmup_iteration
+        polyIteration = maxIteration - warmup_iteration
+        lrSchedule = SequentialSchedule(iterationPerEpoch)
+        lrSchedule.add(Warmup(warmupDelta), warmup_iteration)
+        lrSchedule.add(Poly(0.5, polyIteration), polyIteration)
         optim = SGD(learningrate=options.learningRate, learningrate_decay=0.0, weightdecay=options.weightDecay,
                     momentum=0.9, dampening=0.0, nesterov=False,
-                    leaningrate_schedule=Poly(0.5, options.maxIteration))
+                    leaningrate_schedule=lrSchedule)
 
     if options.maxEpoch:
         checkpoint_trigger = EveryEpoch()
