@@ -30,7 +30,7 @@ import scala.reflect.ClassTag
  */
 @SerialVersionUID(9062199894710333035L)
 class Tanh[T: ClassTag](
-  implicit ev: TensorNumeric[T]) extends TensorModule[T] with IdentityOutputShape {
+  implicit ev: TensorNumeric[T]) extends TensorModule[T] {
 
   private val buffer: Tensor[T] = Tensor[T]()
 

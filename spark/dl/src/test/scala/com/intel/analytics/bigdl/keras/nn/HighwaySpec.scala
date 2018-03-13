@@ -45,11 +45,11 @@ class HighwaySpec extends KerasBaseSpec {
       """
         |input_tensor = Input(shape=[10])
         |input = np.random.random([4, 10])
-        |output_tensor = Highway()(input_tensor)
+        |output_tensor = Highway(activation="relu")(input_tensor)
         |model = Model(input=input_tensor, output=output_tensor)
       """.stripMargin
     val seq = KSequential[Float]()
-    val layer = Highway[Float](inputShape = Shape(10))
+    val layer = Highway[Float](inputShape = Shape(10), activation = "relu")
     seq.add(layer)
     seq.getOutputShape().toSingle().toArray should be (Array(-1, 10))
     checkOutputAndGrad(seq.asInstanceOf[AbstractModule[Tensor[Float], Tensor[Float], Float]],

@@ -18,7 +18,8 @@ package com.intel.analytics.bigdl.utils
 
 import java.util.concurrent.atomic.AtomicInteger
 
-import com.intel.analytics.bigdl.nn.keras.{InputLayer, Sequential => KSequential}
+import com.intel.analytics.bigdl.nn.Sequential
+import com.intel.analytics.bigdl.nn.keras.{InputLayer, KerasLayer, Sequential => KSequential}
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -32,13 +33,19 @@ object TestUtils {
    * Compare the output of `computeOutputShape` with the `forward` result
    */
   def compareOutputShape(layer: AbstractModule[Activity, Activity, Float],
-                         inputShape: Shape): Boolean = {
-    val inputData = Tensor[Float](Array(2) ++ inputShape.toSingle()).randn()
-    val seq = KSequential[Float]()
-    seq.add(InputLayer[Float](inputShape = inputShape))
-    seq.add(layer)
-    val calcOutputShape = seq.getOutputShape().toSingle()
-    val forwardOutputShape = seq.forward(inputData).toTensor[Float].size()
+                         inputShapeWithoutBatch: Shape): Boolean = {
+    val inputData = Tensor[Float](Array(2) ++ inputShapeWithoutBatch.toSingle()).randn()
+    val runnableLayer = layer match {
+      case k: KerasLayer[_, _, _] =>
+        if (!k.isBuilt()) {
+          k.build(KerasLayer.addBatch(inputShapeWithoutBatch))
+        }
+        k
+      case a: AbstractModule[_, _, _] => a
+    }
+    val calcOutputShape = runnableLayer.computeOutputShape(
+      KerasLayer.addBatch(inputShapeWithoutBatch)).toSingle()
+    val forwardOutputShape = runnableLayer.forward(inputData).toTensor[Float].size()
     calcOutputShape.slice(1, calcOutputShape.length).sameElements(
       forwardOutputShape.slice(1, forwardOutputShape.length))
   }
