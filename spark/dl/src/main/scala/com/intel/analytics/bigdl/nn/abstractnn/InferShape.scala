@@ -16,11 +16,11 @@
 
 package com.intel.analytics.bigdl.nn.abstractnn
 
-import com.intel.analytics.bigdl.nn.keras.{Sequential => KSequential, Input => KInput}
+import com.intel.analytics.bigdl.nn.keras.{Input => KInput, Sequential => KSequential}
 import com.intel.analytics.bigdl.nn.{Input => TInput}
 import com.intel.analytics.bigdl.utils.Shape
-import scala.language.existentials
 
+import scala.language.existentials
 import scala.reflect.ClassTag
 
 class InvalidLayer(msg: String) extends RuntimeException(msg)

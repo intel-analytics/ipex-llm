@@ -59,11 +59,15 @@ class Highway[T: ClassTag](
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
     val input = inputShape.toSingle().toArray
-    activation.build(inputShape)
     val layer = com.intel.analytics.bigdl.nn.Highway[T](
       size = input(1),
       withBias = bias,
-      activation = activation.labor.asInstanceOf[TensorModule[T]],
+      activation = if (activation != null) {
+        activation.build(inputShape)
+        activation.labor.asInstanceOf[TensorModule[T]]
+      } else {
+        null
+      },
       wRegularizer = wRegularizer,
       bRegularizer = bRegularizer
     )
