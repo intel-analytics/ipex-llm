@@ -17,7 +17,6 @@
 import pytest
 
 from test.bigdl.test_utils import BigDLTestCase
-from bigdl.nn.keras.topology import Model as BModel
 import bigdl.nn.keras.layer as BLayer
 import keras.layers as KLayer
 import keras.backend as K
@@ -129,6 +128,7 @@ class TestLayer(BigDLTestCase):
         np.testing.assert_allclose((10, ), output_shape[1:])
 
     def test_graph(self):
+        from bigdl.nn.keras.topology import Model as BModel
         x1 = BLayer.Input(input_shape=(8, ))
         x2 = BLayer.Input(input_shape=(6, ))
         y1 = BLayer.Dense(10)(x1)
@@ -137,6 +137,17 @@ class TestLayer(BigDLTestCase):
         input_shapes = model.get_input_shape()
         np.testing.assert_allclose((8, ), input_shapes[0][1:])
         np.testing.assert_allclose((6, ), input_shapes[1][1:])
+
+    def test_training(self):
+        from bigdl.nn.keras.topology import Sequential as BSequential
+        x = np.random.random([32, 10])
+        y = np.random.random([32, ])
+        model = BSequential()
+        model.add(BLayer.Dense(5, input_shape=(10, )))
+        model.compile(optimizer="sgd", loss="mse", metrics=["accuracy"])
+        model.fit(x, y, batch_size=8, nb_epoch=1, validation_data=(x, y))
+        model.predict(x)
+        model.evaluate(x, y, batch_size=8)
 
 
 if __name__ == "__main__":

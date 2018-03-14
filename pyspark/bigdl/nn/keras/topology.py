@@ -27,7 +27,7 @@ class KerasModel(KerasLayer):
     # Arguments
     optimizer: Optimization method to be used.
     loss: Criterion to be used.
-    metrics: List of validation methods to be used.
+    metrics: List of validation methods to be used. Default is None.
     """
     def compile(self, optimizer, loss, metrics=None):
         if isinstance(optimizer, six.string_types):
