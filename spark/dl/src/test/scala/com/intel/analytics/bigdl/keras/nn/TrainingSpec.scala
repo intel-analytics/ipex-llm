@@ -74,7 +74,7 @@ class TrainingSpec extends FlatSpec with Matchers with BeforeAndAfter {
     model.fit(data, batchSize = 8)
   }
 
-  "compile and fit with validation" should "work properly" in {
+  "compile, fit with validation, evaluate and predict" should "work properly" in {
     val testData = sc.range(0, 8, 1).map { _ =>
       val featureTensor = Tensor[Float](10)
       featureTensor.apply1(_ => scala.util.Random.nextFloat())
@@ -86,14 +86,18 @@ class TrainingSpec extends FlatSpec with Matchers with BeforeAndAfter {
     model.add(Dense(8, activation = "relu", inputShape = Shape(10)))
     model.compile(optimizer = "sgd", loss = "mse", metrics = Array("accuracy"))
     model.fit(data, batchSize = 8, validationData = testData)
+    val accuracy = model.evaluate(testData, batchSize = 8)
+    val results = model.predict(testData, batchSize = 8)
   }
 
-  "compile and fit in local mode" should "work properly" in {
+  "compile, fit, evaluate and predict in local mode" should "work properly" in {
     val localData = DummyDataSet.mseDataSet
     val model = Sequential[Float]()
     model.add(Dense(8, activation = "relu", inputShape = Shape(4)))
-    model.compile(optimizer = new SGD[Float](), loss = MSECriterion[Float]())
+    model.compile(optimizer = "sgd", loss = "mse", metrics = Array("accuracy"))
     model.fit(localData, nbEpoch = 5, validationData = null)
+    val accuracy = model.evaluate(localData)
+    val results = model.predict(localData)
   }
 
 }

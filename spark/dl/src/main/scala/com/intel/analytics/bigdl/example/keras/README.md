@@ -1,8 +1,8 @@
 # LeNet Model on MNIST with new API
 
-This example defines a classical CNN model used in digital number classification with the new set of API in BigDL. For detailed information with regard to LeNet, please refer to <http://yann.lecun.com/exdb/lenet/>.
+This example defines a classical CNN model used in digital number classification with the new set of Keras-Style API in BigDL, which is more user-friendly. For detailed information with regard to LeNet, please refer to <http://yann.lecun.com/exdb/lenet/>.
 
-This example is the same as [../../models/lenet](../../models/lenet), except that this example uses new API for model definition.
+This example is the same as [../../models/lenet](../../models/lenet), except that here we use the new Keras-Style API for model definition and training.
 
 
 ## Prepare MNIST Data
@@ -31,7 +31,6 @@ spark-submit \
 dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
 -f path_to_mnist_folder \
 -b batch_size \
---checkpoint ./model
 ```
 Standalone cluster mode, example command
 ```
@@ -44,7 +43,6 @@ spark-submit \
 dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
 -f path_to_mnist_folder \
 -b batch_size \
---checkpoint ./model
 ```
 Yarn cluster mode, example command
 ```
@@ -58,13 +56,7 @@ spark-submit \
 dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
 -f path_to_mnist_folder \
 -b batch_size \
---checkpoint ./model
 ```
 In the above commands
-* -f: where you put your MNIST data
-* --checkpoint: Where you cache the model/train_state snapshot. You should input a folder and
-make sure the folder is created when you run this example. The model snapshot will be named as
-model.#iteration_number, and train state will be named as state.#iteration_number. Note that if
-there are some files already exist in the folder, the old file will not be overwritten for the
-safety of your model files.
+* -f: The path where you put your MNIST data.
 * -b: The mini-batch size. It is expected that the mini-batch size is a multiple of node_number * core_number.

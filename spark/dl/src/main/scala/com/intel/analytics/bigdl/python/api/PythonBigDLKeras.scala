@@ -725,4 +725,16 @@ class PythonBigDLKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends Pytho
     module.fit(trainData, epochs, valData)
   }
 
+  def evaluate(
+    module: KerasModel[T],
+    x: JavaRDD[Sample],
+    batchSize: Int = 32): JList[EvaluatedResult] = {
+    val resultArray = module.evaluate(toJSample(x), batchSize)
+    val testResultArray = resultArray.map { result =>
+      EvaluatedResult(result._1.result()._1, result._1.result()._2,
+        result._2.toString())
+    }
+    testResultArray.toList.asJava
+  }
+
 }

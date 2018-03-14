@@ -364,7 +364,7 @@ class Layer(JavaValue):
         :return: An RDD represent the predict result.
         """
         result = callBigDlFunc(self.bigdl_type,
-                             "modelPredictRDD", self.value, data_rdd)
+                               "modelPredictRDD", self.value, data_rdd)
         return result.map(lambda data: data.to_ndarray())
 
     def predict_class_distributed(self, data_rdd):

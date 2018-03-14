@@ -46,11 +46,10 @@ abstract class KerasModel[T: ClassTag](implicit ev: TensorNumeric[T])
   private var vMethods: Array[ValidationMethod[T]] = null
 
   /**
-   * Configures the learning process.
+   * Configures the learning process. Must be called before fit.
    * @param optimizer Optimization method to be used.
    * @param loss Criterion to be used.
    * @param metrics Array of validation methods to be used.
-   * Must be called before fit.
    */
   def compile(optimizer: OptimMethod[T],
               loss: Criterion[T],
@@ -70,11 +69,6 @@ abstract class KerasModel[T: ClassTag](implicit ev: TensorNumeric[T])
       KerasUtils.toBigDLMetrics[T](metrics))
   }
 
-  private def isCompiled(): Unit = {
-    require(this.optimMethod != null && this.criterion != null,
-      "compile must be called before fit")
-  }
-
   private def doOptimize[D: ClassTag](optimizer: Optimizer[T, D], nbEpoch: Int)
     (implicit ev: TensorNumeric[T]): Unit = {
     LoggerFilter.redirectSparkInfoLogs()
@@ -84,7 +78,7 @@ abstract class KerasModel[T: ClassTag](implicit ev: TensorNumeric[T])
   }
 
   /**
-   * Trains the model for a fixed number of epochs on a dataset.
+   * Train a model for a fixed number of epochs on a dataset.
    * @param x Training data.
    * @param batchSize Number of samples per gradient update.
    * @param nbEpoch Number of iterations to train.
@@ -93,7 +87,8 @@ abstract class KerasModel[T: ClassTag](implicit ev: TensorNumeric[T])
   def fit(x: RDD[Sample[T]], batchSize: Int = 32, nbEpoch: Int = 10,
           validationData: RDD[Sample[T]] = null)
     (implicit ev: TensorNumeric[T]): Unit = {
-    isCompiled()
+    require(this.optimMethod != null && this.criterion != null,
+      "compile must be called before fit")
     val optimizer = Optimizer(
       model = this,
       sampleRDD = x,
@@ -112,7 +107,8 @@ abstract class KerasModel[T: ClassTag](implicit ev: TensorNumeric[T])
   def fit[D: ClassTag](x: DataSet[D], nbEpoch: Int,
                        validationData: DataSet[MiniBatch[T]])
     (implicit ev: TensorNumeric[T]): Unit = {
-    isCompiled()
+    require(this.optimMethod != null && this.criterion != null,
+      "compile must be called before fit")
     val optimizer = Optimizer(
       model = this,
       dataset = x,
@@ -127,12 +123,13 @@ abstract class KerasModel[T: ClassTag](implicit ev: TensorNumeric[T])
   }
 
   /**
-   * Trains the model for a fixed number of epochs on a dataset in LOCAL mode.
+   * Train a model for a fixed number of epochs on a dataset in LOCAL mode.
    */
   def fit[D: ClassTag](x: LocalDataSet[MiniBatch[T]], nbEpoch: Int,
                        validationData: DataSet[MiniBatch[T]])
     (implicit ev: TensorNumeric[T]): Unit = {
-    isCompiled()
+    require(this.optimMethod != null && this.criterion != null,
+      "compile must be called before fit")
     val optimizer = new LocalOptimizer[T](
       model = this,
       dataset = x,
@@ -144,6 +141,37 @@ abstract class KerasModel[T: ClassTag](implicit ev: TensorNumeric[T])
         vMethods = this.vMethods)
     }
     doOptimize(optimizer, nbEpoch)
+  }
+
+  /**
+   * Evaluate a model on a given dataset.
+   * @param x Evaluation data.
+   * @param batchSize Number of samples per gradient update.
+   */
+  def evaluate(x: RDD[Sample[T]],
+               batchSize: Int)
+      (implicit ev: TensorNumeric[T]): Array[(ValidationResult, ValidationMethod[T])] = {
+    require(this.vMethods != null, "Evaluation metrics haven't been set yet")
+    this.evaluate(x, this.vMethods, Some(batchSize))
+  }
+
+  /**
+   * Evaluate a model in LOCAL mode.
+   */
+  def evaluate(x: LocalDataSet[MiniBatch[T]])
+    (implicit ev: TensorNumeric[T]): Array[(ValidationResult, ValidationMethod[T])] = {
+    require(this.vMethods != null, "Evaluation metrics haven't been set yet")
+    this.evaluate(x, this.vMethods)
+  }
+
+  def predict(x: RDD[Sample[T]],
+              batchSize: Int)(implicit ev: TensorNumeric[T]): RDD[Activity] = {
+    this.predict(x, batchSize, false)
+  }
+
+  def predict(x: LocalDataSet[MiniBatch[T]])(implicit ev: TensorNumeric[T]): Array[Activity] = {
+    val localPredictor = LocalPredictor(this)
+    localPredictor.predict(x)
   }
 
 }

@@ -1,8 +1,8 @@
 # LeNet5 Model on MNIST with new API
 
-This example defines a classical CNN model used in digital number classification with the new set of API in BigDL. For detailed information with regard to LeNet, please refer to <http://yann.lecun.com/exdb/lenet/>.
+This example defines a classical CNN model used in digital number classification with the new set of Keras-Style API in BigDL, which is more user-friendly. For detailed information with regard to LeNet, please refer to <http://yann.lecun.com/exdb/lenet/>.
 
-This example is the same as [../../model/lenet/lenet5.py](../../models/lenet/lenet5.py), except that this example uses new API for model definition.
+This example is the same as [../../model/lenet/lenet5.py](../../models/lenet/lenet5.py), except that here we use the new Keras-Style API for model definition and training.
 
 ## Install dependencies
  * [Install dependencies](../../../README.md#install.dependencies)

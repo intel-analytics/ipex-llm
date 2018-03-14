@@ -62,6 +62,39 @@ class KerasModel(KerasLayer):
                           val_y,
                           multiprocessing.cpu_count())
 
+    def evaluate(self, x, y=None, batch_size=32):
+        init_engine()
+        redire_spark_logs()
+        show_bigdl_info_logs()
+        if isinstance(x, np.ndarray) and isinstance(y, np.ndarray):
+            evaluation_data = to_sample_rdd(x, y)
+        elif isinstance(x, RDD) and not y:
+            evaluation_data = x
+        else:
+            raise TypeError("Unsupported evaluation data type: %s" % type(x))
+        return callBigDlFunc(self.bigdl_type, "evaluate",
+                             self.value,
+                             evaluation_data,
+                             batch_size)
+
+    def predict(self, x, distributed=True):
+        init_engine()
+        redire_spark_logs()
+        show_bigdl_info_logs()
+        if is_distributed:
+            if isinstance(x, np.ndarray):
+                features = to_sample_rdd(x, np.zeros([x.shape[0]]))
+            elif isinstance(x, RDD):
+                features = x
+            else:
+                raise TypeError("Unsupported prediction data type: %s" % type(x))
+            return self.predict_distributed(features)
+        else:
+            if isinstance(x, np.ndarray):
+                return self.predict_local(x)
+            else:
+                raise TypeError("Unsupported prediction data type: %s" % type(x))
+
 
 class Sequential(KerasModel):
     """
