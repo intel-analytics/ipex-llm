@@ -6,45 +6,34 @@
 ## Transfer Learning 
    1. DLFrames provides utilities to perform transfer learning on images, which is one of the fastest (code and run-time-wise) ways to start using deep learning.             
          
-          val createLabel = udf((name: String) => if (name.contains("cat")) 1.0 else 0.0)
           val imagesDF: DataFrame = Utils.loadImages(params.folder, params.batchSize, spark.sqlContext)
             .withColumn("label", createLabel(col("imageName")))
-            .withColumnRenamed("features", "imageFeatures")
-    
+            .withColumnRenamed("features", "imageFeatures") 
           val Array(validationDF, trainingDF) = imagesDF.randomSplit(Array(0.90, 0.10), seed = 1L)
     
-          val criterion = ClassNLLCriterion[Float]()
-    
+          val criterion = ClassNLLCriterion[Float]()    
           val loadedModel: AbstractModule[Activity, Activity, Float] = Module
-            .loadCaffeModel[Float](params.caffeDefPath, params.modelPath)
-    
+            .loadCaffeModel[Float](params.caffeDefPath, params.modelPath)    
           val featurizer = new DLModel[Float](loadedModel, Array(3, 224, 224))
-            .setBatchSize(params.batchSize)
             .setFeaturesCol("imageFeatures")
-            .setPredictionCol("tmp1")
-    
-    
+            .setPredictionCol("tmp1")    
           val schemaTransformer = new Array2Vector()
             .setFeaturesCol("tmp1")
-            .setPredictionCol("features")
-    
+            .setPredictionCol("features") 
           val lr = new LogisticRegression()
-            .setMaxIter(20)
-            .setRegParam(0.05)
-            .setElasticNetParam(0.3)
             .setFeaturesCol("features")
     
           val pipeline = new Pipeline().setStages(
-            Array(featurizer, schemaTransformer, lr))
-    
-          val pipelineModel = pipeline.fit(trainingDF)
-    
+            Array(featurizer, schemaTransformer, lr))   
+          val pipelineModel = pipeline.fit(trainingDF) 
           val predictions = pipelineModel.transform(trainingDF)
          
-   2. You can run the full TransferLearning example by following steps.
+   2. You can run the full ImageTransferLearning example by following steps.
         
-        2.1 Prepare pre-trained model and defenition file as Model Inference.
-        
+        2.1 Prepare pre-trained model and defenition file.
+        Download [caffe inception v1](http://dl.caffe.berkeleyvision.org/bvlc_googlenet.caffemodel) and [deploy.proxfile](https://github.com/BVLC/caffe/blob/master/models/bvlc_googlenet/deploy.prototxt) 
+        then put the trained model in $modelPath, and set corresponding $caffeDefPath.
+              
         2.2 Prepare dataset
         Put your image data for training and validation in the ./data folder. Alternatively, you may also use kaggle [Dogs vs. Cats](https://www.kaggle.com/c/dogs-vs-cats/data) train dataset to run the example. After you download the file (train.zip), run the follow commands to prepare the data.
     

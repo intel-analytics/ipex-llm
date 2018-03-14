@@ -1,7 +1,7 @@
 ## Overview
    Deep Learning Frames provides high-level APIs for scalable deep learning in Scala with Apache Spark.
    The current version of Deep Learning Frames provides a suite of tools around working with and processing images using deep learning. 
-   Two exmaples demostrates how to use BigDL to apply popular iamge deep learning models at scale.
+   This exmaple demostrates how to use BigDL to apply popular iamge deep learning models at scale.
 
 ## Image Model Inference
    1. You can apply your own or known popular models to image data to make predictions or transform them into features.
@@ -21,8 +21,8 @@
    2. You can run the full ModelInference example by following steps.
         
         2.1 Prepare pre-trained model and defenition file.
-        Download [caffe inception v1](http://dl.caffe.berkeleyvision.org/bvlc_googlenet.caffemodel) and [deploy.proxfile](https://github.com/BVLC/caffe/blob/master/models/bvlc_googlenet/deploy.prototxt) from 
-        and then put the trained model in $modelPath, and set corresponding $caffeDefPath.
+        Download [caffe inception v1](http://dl.caffe.berkeleyvision.org/bvlc_googlenet.caffemodel) and [deploy.proxfile](https://github.com/BVLC/caffe/blob/master/models/bvlc_googlenet/deploy.prototxt)  
+        then put the trained model in $modelPath, and set corresponding $caffeDefPath.
    
         2.2 Prepare predict dataset
         Put your image data for prediction in the ./predict folder. Alternatively, you may also use imagenet-2012 validation dataset to run the example, which can be found from <http://image-net.org/download-images>. After you download the file (ILSVRC2012_img_val.tar), run the follow commands to prepare the data.

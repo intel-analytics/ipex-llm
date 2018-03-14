@@ -20,9 +20,10 @@ import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.{DataFrame, Dataset, SQLContext, SparkSession}
 import scopt.OptionParser
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+import org.apache.spark.SparkContext
 
 
-object TransferLearning {
+object ImageTransferLearning {
 
   def main(args: Array[String]): Unit = {
 
@@ -31,11 +32,12 @@ object TransferLearning {
     Utils.parser.parse(args, defaultParams).map { params =>
 
       val conf = Engine.createSparkConf().setAppName("TransferLearning")
-      val spark = SparkSession.builder().config(conf).getOrCreate()
       Engine.init
+      val sc = SparkContext.getOrCreate(conf)
+      val sqlContext = new SQLContext(sc)
 
       val createLabel = udf((name: String) => if (name.contains("cat")) 1.0 else 0.0)
-      val imagesDF: DataFrame = Utils.loadImages(params.folder, params.batchSize, spark.sqlContext)
+      val imagesDF: DataFrame = Utils.loadImages(params.folder, params.batchSize, sqlContext)
         .withColumn("label", createLabel(col("imageName")))
         .withColumnRenamed("features", "imageFeatures")
 

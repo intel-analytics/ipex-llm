@@ -1,7 +1,6 @@
 package com.intel.analytics.bigdl.example.dlframes.imageInference
 
 import com.intel.analytics.bigdl.dlframes.{DLClassifierModel, DLModel}
-
 import org.apache.spark.sql.{DataFrame, SparkSession}
 import scopt.OptionParser
 import com.intel.analytics.bigdl.dataset.Sample
@@ -10,6 +9,7 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericF
 import com.intel.analytics.bigdl.transform.vision.image.augmentation.{CenterCrop, ChannelNormalize, Resize}
 import com.intel.analytics.bigdl.transform.vision.image.{ImageFeature, ImageFrame, ImageFrameToSample, MatToTensor}
 import com.intel.analytics.bigdl.utils.Engine
+import org.apache.spark.SparkContext
 import org.apache.spark.sql.SQLContext
 
 object ImageInference {
@@ -20,10 +20,11 @@ object ImageInference {
     Utils.parser.parse(args, defaultParams).map { params =>
 
       val conf = Engine.createSparkConf().setAppName("ModelInference")
-      val spark = SparkSession.builder().config(conf).getOrCreate()
       Engine.init
+      val sc = SparkContext.getOrCreate(conf)
+      val sqlContext = new SQLContext(sc)
 
-      val imagesDF = Utils.loadImages(params.folder, params.batchSize, spark.sqlContext)
+      val imagesDF = Utils.loadImages(params.folder, params.batchSize, sqlContext)
 
       imagesDF.show(10)
       imagesDF.printSchema()
