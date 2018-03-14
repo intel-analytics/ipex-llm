@@ -17,7 +17,7 @@
 import sys
 
 from bigdl.nn.layer import Layer, Node
-from bigdl.util.common import callBigDlFunc, JTensor, JavaValue, to_list
+from bigdl.util.common import callBigDlFunc, JTensor, JavaValue
 
 if sys.version >= '3':
     long = int
@@ -56,41 +56,16 @@ class InferShape(JavaValue):
                                self.value)
         return self.__process_shape(output)
 
+
 class KerasCreator(JavaValue):
     def jvm_class_constructor(self):
         name = "createKeras" + self.__class__.__name__
         print("creating: " + name)
         return name
 
+
 class KerasLayer(Layer, InferShape, KerasCreator):
     pass
-
-class KerasModel(KerasLayer):
-    # TODO: enrich the KerasModel related API here.
-    pass
-
-
-class Sequential(KerasModel):
-    """
-    Container for a Sequential model.
-    >>> import bigdl.nn.keras.layer
-    >>> sequential = bigdl.nn.keras.layer.Sequential()
-    creating: createKerasSequential
-    """
-    def __init__(self, bigdl_type="float"):
-        super(Sequential, self).__init__(None, bigdl_type=bigdl_type)
-
-    def add(self, model):
-        self.value.add(model.value)
-        return self
-
-
-class Model(KerasModel):
-    def __init__(self, input, output, bigdl_type="float"):
-        super(Model, self).__init__(None, bigdl_type,
-                                    to_list(input),
-                                    to_list(output),
-                                    )
 
 
 class Input(Node, KerasCreator):
