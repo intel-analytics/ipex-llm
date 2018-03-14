@@ -1,4 +1,3 @@
----
 ## **Activation**
 Simple activation function to be applied to the output.
 
