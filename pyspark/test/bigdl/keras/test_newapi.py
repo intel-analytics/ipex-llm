@@ -138,7 +138,7 @@ class TestLayer(BigDLTestCase):
         np.testing.assert_allclose((8, ), input_shapes[0][1:])
         np.testing.assert_allclose((6, ), input_shapes[1][1:])
 
-    def test_training(self):
+    def test_train(self):
         from bigdl.nn.keras.topology import Sequential as BSequential
         x = np.random.random([32, 10])
         y = np.random.random([32, ])
@@ -149,7 +149,7 @@ class TestLayer(BigDLTestCase):
         model.predict(x)
         model.evaluate(x, y, batch_size=8)
 
-    def test_training_dataset(self):
+    def test_train_dataset(self):
         images = []
         labels = []
         for i in range(0, 8):
@@ -157,7 +157,6 @@ class TestLayer(BigDLTestCase):
             label = np.array([2])
             images.append(features)
             labels.append(label)
-
         image_frame = DistributedImageFrame(self.sc.parallelize(images),
                                             self.sc.parallelize(labels))
 
@@ -165,6 +164,7 @@ class TestLayer(BigDLTestCase):
                                 ChannelNormalize(0.485, 0.456, 0.406, 0.229, 0.224, 0.225),
                                 MatToTensor(), ImageFrameToSample(target_keys=['label'])])
         data_set = DataSet.image_frame(image_frame).transform(transformer)
+
         from bigdl.nn.keras.topology import Sequential as BSequential
         model = BSequential()
         model.add(BLayer.Convolution2D(1, 5, 5, input_shape=(3, 224, 224)))
@@ -172,7 +172,7 @@ class TestLayer(BigDLTestCase):
         model.add(BLayer.Dense(20, activation="softmax"))
         model.compile(optimizer="sgd", loss="sparse_categorical_crossentropy", metrics=["accuracy"])
         model.fit(data_set, batch_size=8, nb_epoch=2, validation_data=data_set)
-
+        model.evaluate(data_set)
 
 
 if __name__ == "__main__":
