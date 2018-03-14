@@ -14,13 +14,8 @@
 # limitations under the License.
 #
 
-import numpy as np
-from pyspark.rdd import RDD
-
 from bigdl.keras.optimization import *
-from bigdl.util.common import get_spark_context
-from bigdl.util.common import to_sample_rdd
-from bigdl.util.common import redire_spark_logs, show_bigdl_info_logs
+from bigdl.util.common import *
 
 
 class KerasModelWrapper:
@@ -180,6 +175,6 @@ class KerasModelWrapper:
 
 
 def with_bigdl_backend(kmodel):
-    bcommon.init_engine()
+    init_engine()
     return KerasModelWrapper(kmodel)
 
