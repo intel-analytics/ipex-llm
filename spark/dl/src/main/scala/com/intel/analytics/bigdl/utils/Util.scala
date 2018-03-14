@@ -16,11 +16,15 @@
 
 package com.intel.analytics.bigdl.utils
 
+import java.io._
+
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.{QuantizedTensor, QuantizedType, Storage, Tensor}
+import org.apache.commons.lang3.SerializationException
 
 import scala.reflect.ClassTag
+import scala.util.Try
 
 object Util {
   def kthLargest(arr: Array[Long], l: Int, r: Int, k: Int): Long = {
@@ -142,8 +146,8 @@ object Util {
   }
 
   private[bigdl] def putWeightBias[T: ClassTag](
-    broadcastWeightBias: Array[Tensor[T]],
-    localModel: Module[T])(implicit ev: TensorNumeric[T]): Unit = {
+      broadcastWeightBias: Array[Tensor[T]],
+      localModel: Module[T])(implicit ev: TensorNumeric[T]): Unit = {
     val localWeightBias = localModel.parameters()._1
     var i = 0
     while (i < localWeightBias.length) {
@@ -155,8 +159,8 @@ object Util {
   }
 
   private[bigdl] def initGradWeightBias[T: ClassTag](
-    broadcastWeightBias: Array[Tensor[T]],
-    localModel: Module[T])(implicit ev: TensorNumeric[T]): Unit = {
+      broadcastWeightBias: Array[Tensor[T]],
+      localModel: Module[T])(implicit ev: TensorNumeric[T]): Unit = {
     val (localWeightBias, localGradWeightBias) = localModel.parameters()
     // init gradient with a compacted storage
     val storage = Storage[T](localGradWeightBias.map(_.nElement()).sum)
@@ -175,4 +179,46 @@ object Util {
       i += 1
     }
   }
+
+
+  /**
+   * This method is quite like [[org.apache.commons.lang3.SerializationUtils.deserialize]],
+   * except `resolveClass` method of [[ObjectInputStream]] is overridden,
+   * which fix potential [[ClassNotFoundException]] caused by uncertain `latestUserDefinedLoader`.
+   */
+  private[bigdl] def deserialize[T: ClassTag](objectData: Array[Byte]): T = {
+    if (objectData == null) {
+      throw new IllegalArgumentException("The byte[] must not be null")
+    }
+    deserialize[T](new ByteArrayInputStream(objectData))
+  }
+
+  /**
+   * This method is quite like [[org.apache.commons.lang3.SerializationUtils.deserialize]],
+   * except `resolveClass` method of [[ObjectInputStream]] is overridden,
+   * which fix potential [[ClassNotFoundException]] caused by uncertain `latestUserDefinedLoader`.
+   */
+  private[bigdl] def deserialize[T: ClassTag](inputStream: InputStream): T = {
+    if (inputStream == null) {
+      throw new IllegalArgumentException("The InputStream must not be null")
+    }
+    var in: ObjectInputStream = null
+    try {
+      // stream closed in the finally
+      in = new ObjectInputStream(inputStream) {
+        override def resolveClass(desc: ObjectStreamClass): Class[_] = {
+          Try(Class.forName(desc.getName, false, getClass.getClassLoader)
+          ).getOrElse(super.resolveClass(desc))
+        }
+      }
+      in.readObject().asInstanceOf[T]
+    } catch {
+      case ex: ClassCastException => throw new SerializationException(ex)
+      case ex: ClassNotFoundException => throw new SerializationException(ex)
+      case ex: IOException => throw new SerializationException(ex)
+    } finally {
+      if (in != null) Try(in.close())
+    }
+  }
+
 }
