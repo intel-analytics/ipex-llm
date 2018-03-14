@@ -21,15 +21,17 @@ import multiprocessing
 
 
 class KerasModel(KerasLayer):
-    """
-    Configures the learning process. Must be called before fit.
-
-    # Arguments
-    optimizer: Optimization method to be used.
-    loss: Criterion to be used.
-    metrics: List of validation methods to be used. Default is None.
-    """
     def compile(self, optimizer, loss, metrics=None):
+        """
+        Configures the learning process. Must be called before fit.
+
+        # Arguments
+        optimizer: Optimization method to be used. One can alternatively pass in the corresponding
+                   string representation, such as 'sgd'.
+        loss: Criterion to be used. One can alternatively pass in the corresponding string
+              representation, such as 'mse'.
+        metrics: List of validation methods to be used. Default is None. One can alternatively use ['accuracy'].
+        """
         if isinstance(optimizer, six.string_types):
             optimizer = OptimConverter.to_bigdl_optim_method(optimizer)
         if isinstance(loss, six.string_types):
@@ -43,6 +45,19 @@ class KerasModel(KerasLayer):
                       metrics)
 
     def fit(self, x, y=None, batch_size=32, nb_epoch=10, validation_data=None, distributed=True):
+        """
+        Train a model for a fixed number of epochs on a dataset.
+
+        # Arguments
+        x: Input data. A Numpy array or RDD of Sample or Image DataSet.
+        y: Labels. A Numpy array. Default is None if x is already RDD of Sample or Image DataSet.
+        batch_size: Number of samples per gradient update.
+        nb_epoch: Number of iterations to train.
+        validation_data: Tuple (x_val, y_val) where x_val and y_val are both Numpy arrays.
+                         Or RDD of Sample. Default is None if no validation is involved.
+        distributed: Boolean. Whether to train the model in distributed mode or local mode.
+                     Default is True. In local mode, x and y must both be Numpy arrays.
+        """
         if distributed:
             if isinstance(x, np.ndarray) and isinstance(y, np.ndarray):
                 training_data = to_sample_rdd(x, y)
@@ -75,6 +90,14 @@ class KerasModel(KerasLayer):
                           multiprocessing.cpu_count())
 
     def evaluate(self, x, y=None, batch_size=32):
+        """
+        Evaluate a model on a given dataset in distributed mode.
+
+        # Arguments
+        x: Input data. ANumpy array or RDD of Sample.
+        y: Labels. A Numpy array. Default is None if x is already RDD of Sample.
+        batch_size: Number of samples per gradient update.
+        """
         if isinstance(x, np.ndarray) and isinstance(y, np.ndarray):
             evaluation_data = to_sample_rdd(x, y)
         elif isinstance(x, RDD) and not y:
@@ -87,6 +110,14 @@ class KerasModel(KerasLayer):
                              batch_size)
 
     def predict(self, x, distributed=True):
+        """
+        Use a model to do prediction.
+
+        # Arguments
+        x: Input data. A Numpy array or RDD of Sample.
+        distributed: Boolean. Whether to do prediction in distributed mode or local mode.
+                     Default is True. In local mode, x must be a Numpy array.
+        """
         if is_distributed:
             if isinstance(x, np.ndarray):
                 features = to_sample_rdd(x, np.zeros([x.shape[0]]))

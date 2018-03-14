@@ -28,7 +28,6 @@ import com.intel.analytics.bigdl.utils.{LoggerFilter, Shape}
 import com.intel.analytics.bigdl.utils.serializer._
 import org.apache.spark.rdd.RDD
 
-import scala.collection.JavaConverters._
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
@@ -46,11 +45,12 @@ abstract class KerasModel[T: ClassTag](implicit ev: TensorNumeric[T])
   private var vMethods: Array[ValidationMethod[T]] = null
 
   /**
-   * Configures the learning process. Must be called before fit.
+   * Configure the learning process. Must be called before fit.
    * @param optimizer Optimization method to be used.
    * @param loss Criterion to be used.
    * @param metrics Array of validation methods to be used.
    */
+  // TODO: support checkpoint, summary, etc.
   def compile(optimizer: OptimMethod[T],
               loss: Criterion[T],
               metrics: Array[ValidationMethod[T]] = null): Unit = {
@@ -60,7 +60,10 @@ abstract class KerasModel[T: ClassTag](implicit ev: TensorNumeric[T])
     this.vMethods = metrics
   }
 
-  // TODO: support checkpoint, summary, etc.
+  /**
+   * Alternatively, one can pass in string representations when calling compile.
+   * For example: optimizer = "sgd", loss = "mse", metrics = Array("accuracy")
+   */
   def compile(optimizer: String,
               loss: String,
               metrics: Array[String])
@@ -70,7 +73,7 @@ abstract class KerasModel[T: ClassTag](implicit ev: TensorNumeric[T])
       KerasUtils.toBigDLMetrics[T](metrics))
   }
 
-  def toDataSet(x: RDD[Sample[T]], batchSize: Int)
+  private def toDataSet(x: RDD[Sample[T]], batchSize: Int)
   : DataSet[MiniBatch[T]] = {
     if (x != null) DataSet.rdd(x) -> SampleToMiniBatch[T](batchSize)
     else null
@@ -78,7 +81,7 @@ abstract class KerasModel[T: ClassTag](implicit ev: TensorNumeric[T])
 
   /**
    * Train a model for a fixed number of epochs on a dataset.
-   * @param x Training dataset.
+   * @param x Training dataset. If x is an instance of LocalDataSet, train in local mode.
    * @param nbEpoch Number of iterations to train.
    * @param validationData Dataset, or null if validation is not configured.
    */
@@ -117,7 +120,7 @@ abstract class KerasModel[T: ClassTag](implicit ev: TensorNumeric[T])
 
   /**
    * Evaluate a model on a given dataset.
-   * @param x Evaluation data.
+   * @param x Evaluation data, RDD of Sample.
    * @param batchSize Number of samples per batch.
    */
   def evaluate(x: RDD[Sample[T]],
@@ -128,7 +131,8 @@ abstract class KerasModel[T: ClassTag](implicit ev: TensorNumeric[T])
   }
 
   /**
-   * Evaluate a model in LOCAL mode.
+   * Evaluate a model in local mode.
+   * @param x Evaluation data, LocalDataSet.
    */
   def evaluate(x: LocalDataSet[MiniBatch[T]])
     (implicit ev: TensorNumeric[T]): Array[(ValidationResult, ValidationMethod[T])] = {
@@ -138,7 +142,7 @@ abstract class KerasModel[T: ClassTag](implicit ev: TensorNumeric[T])
 
   /**
    * Use a model to do prediction.
-   * @param x Prediction data.
+   * @param x Prediction data, RDD of Sample.
    * @param batchSize Number of samples per batch.
    */
   def predict(x: RDD[Sample[T]],
@@ -148,6 +152,7 @@ abstract class KerasModel[T: ClassTag](implicit ev: TensorNumeric[T])
 
   /**
    * Use a model to do prediction in LOCAL mode.
+   * @param x Prediction data, LocalDataSet.
    */
   def predict(x: LocalDataSet[MiniBatch[T]])(implicit ev: TensorNumeric[T]): Array[Activity] = {
     val localPredictor = LocalPredictor(this)
