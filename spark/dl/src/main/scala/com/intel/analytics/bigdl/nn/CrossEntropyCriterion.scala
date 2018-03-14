@@ -31,7 +31,7 @@ import scala.reflect.ClassTag
 class CrossEntropyCriterion[T: ClassTag](
   val weights: Tensor[T] = null,
   val sizeAverage: Boolean = true)
-  (implicit ev: TensorNumeric[T]) extends TensorCriterion[T]{
+  (implicit ev: TensorNumeric[T]) extends TensorCriterion[T] {
   private val lsm = new LogSoftMax[T]()
   private val nll = new ClassNLLCriterion[T](weights, sizeAverage)
 

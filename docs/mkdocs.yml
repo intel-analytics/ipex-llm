@@ -31,6 +31,7 @@ pages:
   - Run:
     - After pip install: PythonUserGuide/run-from-pip.md
     - Without pip install: PythonUserGuide/run-without-pip.md
+    - FAQ: PythonUserGuide/python-faq.md
   - Examples: PythonUserGuide/python-examples.md
   - More Examples and Tutorials: PythonUserGuide/python-resources.md
 - Programming Guide:
@@ -47,7 +48,9 @@ pages:
   - Caffe Support: ProgrammingGuide/caffe-support.md
   - Keras Support: ProgrammingGuide/keras-support.md
   - Quantization Support: ProgrammingGuide/quantization-support.md
-  - Define new Layer/Criterion: ProgrammingGuide/add-layer-criterion.md
+  - Define Customized Layer/Criterion:
+    - Define New Layer/Criterion: ProgrammingGuide/add-layer-criterion.md
+    - Implement Customized Serializer: ProgrammingGuide/Model/Serialization.md
   - Build Image Application: ProgrammingGuide/image-support.md
 - API Guide:
   - Engine: APIGuide/Engine.md
@@ -78,9 +81,10 @@ pages:
   - Optim Methods:
     - OptimMethod: APIGuide/Optimizers/OptimMethod.md 
     - Optimization Algorithms: APIGuide/Optimizers/Optim-Methods.md
+    - LearningRate Scheduler: APIGuide/Optimizers/Learningrate-Scheduler.md
   - Triggers: APIGuide/Triggers.md
   - Metrics:  APIGuide/Metrics.md
-  - ML Pipeline: APIGuide/MLPipeline/DLEstimator_DLClassifier.md
+  - ML Pipeline: APIGuide/DLFrames/DLEstimator_DLClassifier.md
   - Supported Caffe Layers: APIGuide/caffe_layer_list.md
   - Supported Tensorflow Operations: APIGuide/tensorflow_ops_list.md
   - Keras Issues: APIGuide/keras-issues.md

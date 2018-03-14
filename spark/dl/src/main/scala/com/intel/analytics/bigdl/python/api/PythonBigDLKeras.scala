@@ -18,8 +18,9 @@ package com.intel.analytics.bigdl.python.api
 
 import java.util.{ArrayList => JArrayList, HashMap => JHashMap, List => JList, Map => JMap}
 
+import com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
-import com.intel.analytics.bigdl.nn.{Container, SpatialBatchNormalization}
+import com.intel.analytics.bigdl.nn.{Container, Graph, SpatialBatchNormalization}
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.nn.keras._
 import com.intel.analytics.bigdl.numeric._
@@ -66,6 +67,15 @@ class PythonBigDLKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends Pytho
     }
   }
 
+  def createKerasModel(input: JList[ModuleNode[T]],
+      output: JList[ModuleNode[T]]): Model[T] = {
+      nn.keras.Model(input.asScala.toArray, output.asScala.toArray)
+  }
+
+  def createKerasSequential(): nn.keras.Sequential[T] = {
+      nn.keras.Sequential[T]()
+  }
+
   def createKerasInput(
     name : String = null,
     inputShape: JList[Int] = null): ModuleNode[T] = {
@@ -73,7 +83,7 @@ class PythonBigDLKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends Pytho
   }
 
   def createKerasInputLayer(
-    inputShape: JList[Int] = null): Input[T] = {
+    inputShape: JList[Int] = null): KerasLayer[Activity, Activity, T] = {
     InputLayer(inputShape = toScalaShape(inputShape))
   }
 
@@ -172,7 +182,7 @@ class PythonBigDLKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends Pytho
     bias: Boolean = true,
     inputShape: JList[Int] = null): Convolution2D[T] = {
     new Convolution2D(nbFilter, nbRow, nbCol, KerasUtils.getInitMethod(init),
-      KerasUtils.getActivation(activation), borderMode,
+      KerasUtils.getKerasActivation(activation), borderMode,
       toScalaArray(subsample), KerasUtils.toBigDLFormat(dimOrdering),
       wRegularizer, bRegularizer, bias, toScalaShape(inputShape))
   }
@@ -337,7 +347,7 @@ class PythonBigDLKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends Pytho
     bias: Boolean = true,
     inputShape: JList[Int] = null): Convolution3D[T] = {
     new Convolution3D(nbFilter, kernelDim1, kernelDim2, kernelDim3,
-      KerasUtils.getInitMethod(init), KerasUtils.getActivation(activation),
+      KerasUtils.getInitMethod(init), KerasUtils.getKerasActivation(activation),
       borderMode, toScalaArray(subsample), KerasUtils.toBigDLFormat5D(dimOrdering),
       wRegularizer, bRegularizer, bias, toScalaShape(inputShape))
   }
@@ -462,7 +472,7 @@ class PythonBigDLKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends Pytho
     bRegularizer: Regularizer[T] = null,
     inputShape: JList[Int] = null): AtrousConvolution2D[T] = {
     new AtrousConvolution2D(nbFilter, nbRow, nbCol, KerasUtils.getInitMethod(init),
-      KerasUtils.getActivation(activation), toScalaArray(subsample),
+      KerasUtils.getKerasActivation(activation), toScalaArray(subsample),
       toScalaArray(atrousRate), KerasUtils.toBigDLFormat(dimOrdering),
       wRegularizer, bRegularizer, toScalaShape(inputShape))
   }
@@ -480,7 +490,7 @@ class PythonBigDLKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends Pytho
     bias: Boolean = true,
     inputShape: JList[Int] = null): Deconvolution2D[T] = {
     new Deconvolution2D(nbFilter, nbRow, nbCol, KerasUtils.getInitMethod(init),
-      KerasUtils.getActivation(activation), toScalaArray(subsample),
+      KerasUtils.getKerasActivation(activation), toScalaArray(subsample),
       KerasUtils.toBigDLFormat(dimOrdering), wRegularizer, bRegularizer,
       bias, toScalaShape(inputShape))
   }
@@ -528,7 +538,7 @@ class PythonBigDLKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends Pytho
     bRegularizer: Regularizer[T] = null,
     bias: Boolean = true,
     inputShape: JList[Int] = null): LocallyConnected2D[T] = {
-    new LocallyConnected2D(nbFilter, nbRow, nbCol, KerasUtils.getActivation(activation),
+    new LocallyConnected2D(nbFilter, nbRow, nbCol, KerasUtils.getKerasActivation(activation),
       borderMode, toScalaArray(subsample), KerasUtils.toBigDLFormat(dimOrdering),
       wRegularizer, bRegularizer, bias, toScalaShape(inputShape))
   }
@@ -549,7 +559,7 @@ class PythonBigDLKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends Pytho
     bias: Boolean = true,
     inputShape: JList[Int] = null): SeparableConvolution2D[T] = {
     new SeparableConvolution2D(nbFilter, nbRow, nbCol, KerasUtils.getInitMethod(init),
-      KerasUtils.getActivation(activation), borderMode, toScalaArray(subsample),
+      KerasUtils.getKerasActivation(activation), borderMode, toScalaArray(subsample),
       depthMultiplier, KerasUtils.toBigDLFormat(dimOrdering),
       depthwiseRegularizer, pointwiseRegularizer, bRegularizer, bias, toScalaShape(inputShape))
   }

@@ -18,9 +18,7 @@ package com.intel.analytics.bigdl.utils.tf.loaders
 import java.nio.ByteOrder
 
 import com.intel.analytics.bigdl.Module
-import com.intel.analytics.bigdl.nn.Identity
-import com.intel.analytics.bigdl.nn.ops.RandomUniform
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.nn.ops.{RandomUniform => RandomUniformOps}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.tf.Context
 import org.tensorflow.framework.{DataType, NodeDef}
@@ -28,9 +26,6 @@ import org.tensorflow.framework.{DataType, NodeDef}
 import scala.reflect.ClassTag
 
 class RandomUniform extends TensorflowOpsLoader {
-
-  import Utils._
-
   override def build[T: ClassTag](nodeDef: NodeDef, byteOrder: ByteOrder,
     context: Context[T])(implicit ev: TensorNumeric[T]): Module[T] = {
     val seed = if (nodeDef.getAttrMap.containsKey("seed")) {
@@ -43,11 +38,11 @@ class RandomUniform extends TensorflowOpsLoader {
       case DataType.DT_FLOAT =>
         val min = 0
         val max = 1
-        RandomUniform[T, Float](min, max, seed)
+        RandomUniformOps[T, Float](min, max, seed)
       case DataType.DT_DOUBLE =>
         val min = 0
         val max = 1
-        RandomUniform[T, Double](min, max, seed)
+        RandomUniformOps[T, Double](min, max, seed)
       case _ =>
         throw new IllegalArgumentException("Not support data type")
     }

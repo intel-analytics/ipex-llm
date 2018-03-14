@@ -62,7 +62,6 @@ Prepare DataSource And Verticals
 Check Verticals
    :FOR                   ${vertical}           IN             @{verticals}
    \                      Status Equal          ${vertical}    deployed/stopped
-   Status Equal           ${public_hdfs_vid}    running
 
 Run Shell
    [Arguments]       ${program}

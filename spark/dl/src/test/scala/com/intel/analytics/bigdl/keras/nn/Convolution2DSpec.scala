@@ -21,6 +21,9 @@ import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, DataFormat}
 import com.intel.analytics.bigdl.nn.keras.{Conv2D, Convolution2D, Sequential => KSequential}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
+
+import scala.util.Random
 
 class Convolution2DSpec extends KerasBaseSpec {
 
@@ -79,4 +82,13 @@ class Convolution2DSpec extends KerasBaseSpec {
       kerasCode, weightConverter, 1e-4)
   }
 
+}
+
+class Convolution2DSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val layer = Convolution2D[Float](64, 2, 5, inputShape = Shape(3, 24, 24))
+    layer.build(Shape(2, 3, 24, 24))
+    val input = Tensor[Float](2, 3, 24, 24).apply1(_ => Random.nextFloat())
+    runSerializationTest(layer, input)
+  }
 }

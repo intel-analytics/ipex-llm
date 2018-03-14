@@ -181,6 +181,45 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
     }
   }
 
+  it should "not train model with duplicate layers" in {
+    val m = Sequential[Double]()
+    val l1 = Identity[Double]()
+    val l2 = Identity[Double]()
+    val c = Sequential[Double]()
+    m.add(l1).add(c)
+    c.add(l1).add(l2)
+
+    intercept[IllegalArgumentException] {
+      val optimizer = new DistriOptimizer[Double](
+        m,
+        dataSet,
+        ClassNLLCriterion[Double]()
+      )
+    }
+  }
+
+  it should "not set model with duplicate layers" in {
+    val m = Sequential[Double]()
+    val l1 = Identity[Double]()
+    val l2 = Identity[Double]()
+    val c = Sequential[Double]()
+    m.add(l1).add(c)
+    c.add(l1).add(l2)
+
+    val optimizer = new DistriOptimizer[Double](
+      c,
+      dataSet,
+      ClassNLLCriterion[Double]()
+    )
+    intercept[IllegalArgumentException] {
+      val optimizer = new DistriOptimizer[Double](
+        m,
+        dataSet,
+        ClassNLLCriterion[Double]()
+      )
+    }
+  }
+
   "Train with MSE and LBFGS" should "be good" in {
     RandomGenerator.RNG.setSeed(10)
     val optimizer = new DistriOptimizer(
@@ -610,7 +649,7 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val targetOriArr = targetOri.collect()
 
 
-    val myOpt = new DistriOptimizer[Double](null, dataSet, null) {
+    val myOpt = new DistriOptimizer[Double](Identity[Double](), dataSet, null) {
         override def optimize(): Module[Double] = {
           val dds = this.dataset.asInstanceOf[DistributedDataSet[MiniBatch[Double]]]
           val rdd = dds.data(train = false)
@@ -625,9 +664,6 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
           inputArr.sameElements(inputOriArr) should be (true)
           targetArr.sameElements(targetOriArr) should be (true)
 
-          // println(s"get=(input=${inputArr.mkString("\n")}\ntarget=${targetArr.mkString("\n")})")
-          // println(s"original=(input=${inputOriArray.mkString("\n")}"
-          // + s"\ntarget=${targetOriArray.mkString("\n")})")
           model
         }
     }

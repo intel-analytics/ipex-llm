@@ -17,6 +17,7 @@ package com.intel.analytics.bigdl.nn.ops
 
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
 
 class LogicalNotSpec extends FlatSpec with Matchers {
@@ -28,5 +29,14 @@ class LogicalNotSpec extends FlatSpec with Matchers {
 
     val output = LogicalNot().forward(input)
     output should be(expectOutput)
+  }
+}
+
+class LogicalNotSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val logicalNot = LogicalNot[Float].setName("logicalNot")
+    val input = Tensor[Boolean](T(true, false))
+    runSerializationTest(logicalNot, input, logicalNot
+      .asInstanceOf[ModuleToOperation[Float]].module.getClass)
   }
 }

@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.utils.tf.loaders
 import java.nio.ByteOrder
 
 import com.intel.analytics.bigdl.Module
-import com.intel.analytics.bigdl.nn.ops.Any
+import com.intel.analytics.bigdl.nn.ops.{Any => AnyOps}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.tf.Context
 import org.tensorflow.framework.NodeDef
@@ -32,6 +32,6 @@ class Any extends TensorflowOpsLoader {
   override def build[T: ClassTag](nodeDef: NodeDef, byteOrder: ByteOrder, context: Context[T])
     (implicit ev: TensorNumeric[T]): Module[T] = {
     val keepDims = getBoolean(nodeDef.getAttrMap, "keep_dims")
-    Any[T](keepDims, true)
+    AnyOps[T](keepDims, true)
   }
 }

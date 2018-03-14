@@ -16,6 +16,7 @@
 
 package com.intel.analytics.bigdl.nn.abstractnn
 
+import com.intel.analytics.bigdl.nn.abstractnn.SizeAverageStatus.SizeAverageStatus
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{T, Table}
@@ -51,6 +52,8 @@ abstract class AbstractCriterion[A <: Activity: ClassTag, B <: Activity: ClassTa
   implicit ev: TensorNumeric[T]) extends Serializable {
   var gradInput: A = Activity.allocate[A, T]()
   var output: T = ev.fromType[Int](0)
+
+  private[nn] var sizeAverageStatus: SizeAverageStatus = SizeAverageStatus.None
 
   private[nn] def allocateAs[D <: Activity](dest: D): D = dest match {
     case tensor: Tensor[T] => Tensor[T]().asInstanceOf[D]
@@ -127,4 +130,9 @@ abstract class AbstractCriterion[A <: Activity: ClassTag, B <: Activity: ClassTa
     val state = Seq(output)
     state.map(getHashCode).foldLeft(0)((a, b) => 31 * a + b)
   }
+}
+
+object SizeAverageStatus extends Enumeration {
+  type SizeAverageStatus = Value
+  val True, False, None = Value
 }

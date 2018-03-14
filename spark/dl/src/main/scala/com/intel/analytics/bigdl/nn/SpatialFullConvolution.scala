@@ -18,15 +18,13 @@ package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, Initializable}
 import com.intel.analytics.bigdl.optim.Regularizer
+import com.intel.analytics.bigdl.serialization.Bigdl.{AttrValue, BigDLModule}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor._
-import com.intel.analytics.bigdl.utils.{Shape, T, Table, serializer}
-import com.intel.analytics.bigdl.utils.RandomGenerator._
 import com.intel.analytics.bigdl.utils.serializer._
 import com.intel.analytics.bigdl.utils.serializer.converters.DataConverter
-import com.intel.analytics.bigdl.serialization.Bigdl.{AttrValue, BigDLModule}
+import com.intel.analytics.bigdl.utils.{Shape, T, Table}
 
-import scala.concurrent.Future
 import scala.reflect.ClassTag
 import scala.reflect.runtime.universe
 
@@ -527,6 +525,7 @@ class SpatialFullConvolution[T: ClassTag](
         dH, dW,
         1, 1
       )
+      case t => throw new NotImplementedError(s"$t is not supported")
     }
     im2colTime += System.nanoTime() - before
 

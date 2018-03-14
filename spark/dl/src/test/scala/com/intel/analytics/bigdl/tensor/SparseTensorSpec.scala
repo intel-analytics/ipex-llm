@@ -17,6 +17,7 @@ package com.intel.analytics.bigdl.tensor
 
 import org.scalatest.{FlatSpec, Matchers}
 import com.intel.analytics.bigdl.numeric.NumericFloat
+import com.intel.analytics.bigdl.utils.RandomGenerator
 
 import scala.util.Random
 
@@ -126,15 +127,48 @@ class SparseTensorSpec  extends FlatSpec with Matchers {
   }
 
   "SparseTensor dot DenseTense" should "return right result" in {
-    val values = Array.fill(30)(Random.nextFloat())
+    val rng = RandomGenerator.RNG
+    rng.setSeed(10)
+    val values = Array.fill(30)(rng.normal(1.0, 1.0).toFloat)
     val sTensor = Tensor.sparse(Tensor(values, Array(6, 5)))
 
-    val dTensor = Tensor(Array(6, 5))
+    val dTensor = Tensor(Array(6, 5)).rand()
 
     val sparseResult = sTensor.dot(dTensor)
     val denseResult = dTensor.dot(Tensor.dense(sTensor))
 
-    sparseResult should be (denseResult)
+    sparseResult should be (denseResult +- 1e-6f)
+  }
+
+  "Diagonal SparseTensor dot DenseTense" should "return right result" in {
+    val sTensor = Tensor.sparse(
+      indices = Array(Array(0, 1, 2, 3), Array(0, 1, 2, 3)),
+      values = Array[Float](2f, 4f, 6f, 8f), shape = Array(4, 4))
+
+    val dTensor = Tensor(Array(4, 4)).fill(1.0f)
+
+    val sparseResult = sTensor.dot(dTensor)
+
+    sparseResult should be (20f +- 1e-6f)
+  }
+
+  "SparseTensor.applyFun" should "work correctly" in {
+    val func = (a: Float) => a.round * 2
+    val srcTensor = Tensor.sparse(Tensor(3, 4).randn())
+    val dstTensor = Tensor.sparse[Int](Array(3, 4), 12)
+    dstTensor.applyFun(srcTensor, func)
+    dstTensor.storage().array() shouldEqual
+      srcTensor.storage().array().map(func)
+  }
+
+  "Tensor.cast" should "work on SparseTensor" in {
+    val sTensor = Tensor.sparse(Tensor[Int](6, 5).rand())
+    val sTensor2 = Tensor.sparse[Int](Tensor[Int](6, 5).rand())
+    sTensor.cast(sTensor2)
+    sTensor.storage().array() shouldEqual sTensor2.storage().array()
+
+    val sTensor1 = sTensor.cast(sTensor.asInstanceOf[Tensor[Long]])
+    sTensor1.storage() shouldEqual sTensor.storage()
   }
 
 }

@@ -19,7 +19,10 @@ package com.intel.analytics.bigdl.nn.quantized
 import com.intel.analytics.bigdl.nn.{Module, Linear => NNLinear}
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers, ParallelTestExecution}
+
+import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Parallel
 class LinearSpec extends FlatSpec with Matchers with ParallelTestExecution {
@@ -53,3 +56,10 @@ class LinearSpec extends FlatSpec with Matchers with ParallelTestExecution {
   case class TestCase(batchSize: Int, inputSize: Int, outputSize: Int)
 }
 
+class LinearSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val linear = NNLinear[Float](10, 2).setName("linear")
+    val input = Tensor[Float](10).apply1(_ => Random.nextFloat())
+    runSerializationTest(linear, input)
+  }
+}

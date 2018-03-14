@@ -20,14 +20,14 @@ import java.nio.ByteOrder
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import org.tensorflow.framework.NodeDef
-import com.intel.analytics.bigdl.nn.ops.GreaterEqual
+import com.intel.analytics.bigdl.nn.ops.{GreaterEqual => GreaterEqualOps}
 import com.intel.analytics.bigdl.utils.tf.Context
 
 import scala.reflect.ClassTag
 
 class GreaterEqual extends TensorflowOpsLoader {
   override def build[T: ClassTag](nodeDef: NodeDef, byteOrder: ByteOrder,
-                                  context: Context[T])(implicit ev: TensorNumeric[T]): Module[T] = {
-    GreaterEqual[T]()
+      context: Context[T])(implicit ev: TensorNumeric[T]): Module[T] = {
+    GreaterEqualOps[T]()
   }
 }

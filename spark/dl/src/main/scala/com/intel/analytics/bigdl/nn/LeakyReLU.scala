@@ -36,7 +36,7 @@ import scala.reflect.ClassTag
 class LeakyReLU[T: ClassTag](
   private val negval: Double = 0.01,
   var inplace: Boolean = false)(
-  implicit ev: TensorNumeric[T]) extends TensorModule[T] with IdentityOutputShape {
+  implicit ev: TensorNumeric[T]) extends TensorModule[T] {
   import LeakyReLU._
 
   if (negval < 0) {
@@ -52,6 +52,7 @@ class LeakyReLU[T: ClassTag](
         negval.toFloat, inplace)
       case DoubleType => updateOutputDouble(input.toTensor[Double], output.toTensor[Double],
         negval, inplace)
+      case t => throw new NotImplementedError(s"$t is not supported")
     }
     output
   }
@@ -67,6 +68,7 @@ class LeakyReLU[T: ClassTag](
         gradInput.toTensor[Float], negval.toFloat, inplace)
       case DoubleType => updateGradInputDouble(input.toTensor[Double], gradOutput.toTensor[Double],
         gradInput.toTensor[Double], negval, inplace)
+      case t => throw new NotImplementedError(s"$t is not supported")
     }
     gradInput
   }

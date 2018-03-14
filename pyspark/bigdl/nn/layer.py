@@ -654,7 +654,6 @@ class Model(Container):
     def __init__(self,
                  inputs,
                  outputs,
-                 is_keras=False,
                  jvalue=None,
                  bigdl_type="float", byte_order="little_endian", model_type="bigdl"):
         if jvalue:
@@ -663,8 +662,7 @@ class Model(Container):
         elif model_type == "bigdl":
             super(Model, self).__init__(None, bigdl_type,
                                         to_list(inputs),
-                                        to_list(outputs),
-                                        is_keras)
+                                        to_list(outputs))
         else:
             from bigdl.util.tf_utils import convert
             model = convert(to_list(inputs), to_list(outputs), byte_order, bigdl_type)
@@ -1058,14 +1056,12 @@ class Sequential(Container):
     >>> s = Sequential()
     creating: createSequential
     >>> s = s.add(echo)
-    >>> s = s.add(s)
-    >>> s = s.add(echo)
 
 
     '''
 
-    def __init__(self, bigdl_type="float", is_keras=False):
-        super(Sequential, self).__init__(None, bigdl_type, is_keras)
+    def __init__(self, bigdl_type="float"):
+        super(Sequential, self).__init__(None, bigdl_type)
 
 class TemporalConvolution(Layer):
 

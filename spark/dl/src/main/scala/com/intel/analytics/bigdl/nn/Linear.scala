@@ -80,10 +80,6 @@ class Linear[T: ClassTag](
     zeroGradParameters()
   }
 
-  override def computeOutputShape(inputShape: Shape): Shape = {
-    inputShape.copyAndUpdate(-1, outputSize)
-  }
-
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
     require(input.dim() == 1 || input.dim() == 2,
       "Linear: " + ErrorInfo.constrainInputAsVectorOrBatch +

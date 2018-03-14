@@ -36,7 +36,7 @@ class StaticGraph[T: ClassTag](
   private val _inputs : Seq[ModuleNode[T]],
   private val _outputs : Seq[ModuleNode[T]],
   private val _variables: Option[(Array[Tensor[T]], Array[Tensor[T]])] = None,
-  private val excludeKeras: Boolean = true
+  private val enableExcludeChecking: Boolean = true
 )(implicit ev: TensorNumeric[T]) extends Graph[T](_inputs, _outputs, _variables) {
   private val forwardExecution = forwardGraph.topologySort.reverse
   private var backwardExecution: Array[Node[AbstractModule[Activity, Activity, T]]] = _
@@ -44,9 +44,8 @@ class StaticGraph[T: ClassTag](
   private var backId2ForwardId: Array[Int] = _
   private var gradOutputCache: Array[Activity] = _
 
-  if (excludeKeras) {
-    Util.excludeNotTorch(inputs.map(_.element))
-    Util.excludeNotTorch(outputs.map(_.element))
+  if (enableExcludeChecking) {
+    excludeInvalidLayers(forwardExecution.map {_.element})
   }
 
   buildBackwardGraph()
@@ -119,6 +118,7 @@ class StaticGraph[T: ClassTag](
         .filter(n => !n.eq(dummyOutput)).map(_.element)
         .reverse
     )
+    checkDuplicate()
   }
 
 

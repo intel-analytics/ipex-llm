@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.utils.serializer.{DeserializeContext, Serialize
 import com.intel.analytics.bigdl.utils.{MultiShape, SingleShape, Shape => BigDLShape}
 import com.intel.analytics.bigdl.serialization.Bigdl
 import com.intel.analytics.bigdl.serialization.Bigdl.Shape.ShapeType
-import com.intel.analytics.bigdl.serialization.Bigdl.{AttrValue, DataType, Shape}
+import com.intel.analytics.bigdl.serialization.Bigdl.{AttrValue, BigDLModule, DataType, Shape}
 
 import scala.collection.JavaConverters._
 import scala.reflect.ClassTag
@@ -49,6 +49,26 @@ object ShapeConverter extends DataConverter {
     } else {
       throw new RuntimeException(s"${shape.getShapeType} not supported for now")
     }
+  }
+
+  def shapeToBigDL[T: ClassTag](context: DeserializeContext,
+      model: BigDLModule, name: String)
+    (implicit ev: TensorNumericMath.TensorNumeric[T]): BigDLShape = {
+    val attrbute = AttrValue.newBuilder
+    attrbute.setShape(
+      name match {
+        case "input" => model.getInputShape
+        case "output" => model.getOutputShape
+      })
+    ShapeConverter.getAttributeValue(context, attrbute.build).asInstanceOf[BigDLShape]
+  }
+
+  def shapeToProto[T: ClassTag](context: SerializeContext[T], shape: BigDLShape)
+    (implicit ev: TensorNumericMath.TensorNumeric[T]): Shape = {
+    val attribute = AttrValue.newBuilder
+    ShapeConverter.setAttributeValue(context, attribute, shape,
+      universe.typeOf[BigDLShape])
+    attribute.getShape
   }
 
   override def setAttributeValue[T: ClassTag]

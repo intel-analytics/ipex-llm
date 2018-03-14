@@ -19,8 +19,7 @@ import java.nio.ByteOrder
 
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, DataFormat}
-import com.intel.analytics.bigdl.nn.ops.Conv2D
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.nn.tf.{Conv2D => Conv2DOps}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.tf.Context
 import org.tensorflow.framework.NodeDef
@@ -49,13 +48,13 @@ class Conv2D extends TensorflowOpsLoader {
         require(strideList(3) == 1, s"not support strides on depth")
         val strideW = strideList(1)
         val strideH = strideList(2)
-        Conv2D[T](strideW, strideH, pW, pH, DataFormat.NHWC)
+        Conv2DOps[T](strideW, strideH, pW, pH, DataFormat.NHWC)
 
       case "NCHW" =>
         require(strideList(1) == 1, s"not support strides on depth")
         val strideW = strideList(2)
         val strideH = strideList(3)
-        Conv2D[T](strideW, strideH, pW, pH, DataFormat.NCHW)
+        Conv2DOps[T](strideW, strideH, pW, pH, DataFormat.NCHW)
       case _ =>
         throw new IllegalArgumentException(s"not supported data format: $format")
     }

@@ -34,7 +34,7 @@ import scala.reflect.ClassTag
  * @param criterion  BigDL criterion method
  * @param featureSize The size (Tensor dimensions) of the feature data.
  */
-class DLClassifier[@specialized(Float, Double) T: ClassTag](
+class DLClassifier[T: ClassTag](
     @transient override val model: Module[T],
     override val criterion : Criterion[T],
     override val featureSize : Array[Int],
@@ -65,7 +65,7 @@ class DLClassifier[@specialized(Float, Double) T: ClassTag](
  * @param model BigDL module to be optimized
  * @param featureSize The size (Tensor dimensions) of the feature data.
  */
-class DLClassifierModel[@specialized(Float, Double) T: ClassTag](
+class DLClassifierModel[T: ClassTag](
     @transient override val model: Module[T],
     featureSize : Array[Int],
     override val uid: String = "DLClassifierModel"

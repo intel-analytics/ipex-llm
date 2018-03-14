@@ -20,6 +20,7 @@ import org.scalatest.{FlatSpec, Matchers}
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.tensor.{SparseTensor, Tensor}
 import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 
 import scala.util.Random
 
@@ -170,5 +171,14 @@ class SparseLinearSpec extends FlatSpec with Matchers {
     out1 shouldEqual out2
     sl.gradInput should be (gradInput2)
     sl.getParameters()._2.equals(l.getParameters()._2) shouldEqual true
+  }
+}
+
+class SparseLinearSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val sparseLinear = SparseLinear[Float](4, 2).setName("sparseLinear")
+    val input = Tensor[Float](2, 4).apply1(_ => Random.nextFloat())
+    val sparseInput = Tensor.sparse(input)
+    runSerializationTest(sparseLinear, sparseInput)
   }
 }

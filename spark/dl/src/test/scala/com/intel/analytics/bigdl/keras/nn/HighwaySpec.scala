@@ -21,6 +21,9 @@ import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.nn.keras.{Dense, Highway, Sequential => KSequential}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
+
+import scala.util.Random
 
 class HighwaySpec extends KerasBaseSpec {
 
@@ -42,11 +45,11 @@ class HighwaySpec extends KerasBaseSpec {
       """
         |input_tensor = Input(shape=[10])
         |input = np.random.random([4, 10])
-        |output_tensor = Highway()(input_tensor)
+        |output_tensor = Highway(activation="relu")(input_tensor)
         |model = Model(input=input_tensor, output=output_tensor)
       """.stripMargin
     val seq = KSequential[Float]()
-    val layer = Highway[Float](inputShape = Shape(10))
+    val layer = Highway[Float](inputShape = Shape(10), activation = "relu")
     seq.add(layer)
     seq.getOutputShape().toSingle().toArray should be (Array(-1, 10))
     checkOutputAndGrad(seq.asInstanceOf[AbstractModule[Tensor[Float], Tensor[Float], Float]],
@@ -69,4 +72,13 @@ class HighwaySpec extends KerasBaseSpec {
       kerasCode, weightConverter)
   }
 
+}
+
+class HighwaySerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val layer = Highway[Float](activation = "tanh", bias = false, inputShape = Shape(4))
+    layer.build(Shape(3, 4))
+    val input = Tensor[Float](3, 4).apply1(_ => Random.nextFloat())
+    runSerializationTest(layer, input)
+  }
 }

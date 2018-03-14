@@ -33,7 +33,7 @@ import org.apache.spark.rdd.RDD
 import java.lang.{Boolean => JBoolean}
 import java.nio.ByteOrder
 
-import com.intel.analytics.bigdl.dlframes.{DLClassifier, DLClassifierModel, DLEstimator, DLModel}
+import com.intel.analytics.bigdl.dlframes._
 import com.intel.analytics.bigdl.nn.Graph._
 import com.intel.analytics.bigdl.optim.SGD.{LearningRateSchedule, SequentialSchedule}
 import com.intel.analytics.bigdl.transform.vision.image._
@@ -258,13 +258,8 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     optimizer
   }
 
-  def createSequential(isKeras: Boolean = false): Sequential[T] = {
-    if (isKeras) {
-      nn.keras.Sequential[T]()
-    }
-    else {
+  def createSequential(): Container[Activity, Activity, T] = {
       Sequential[T]()
-    }
   }
 
   def createLinear(inputSize: Int, outputSize: Int,
@@ -335,6 +330,11 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
       wRegularizer,
       uRegularizer,
       bRegularizer)
+  }
+
+  def createTimeDistributedMaskCriterion(critrn: TensorCriterion[T],
+    paddingValue: Int = 0): TimeDistributedMaskCriterion[T] = {
+    TimeDistributedMaskCriterion[T](critrn, paddingValue)
   }
 
   def createTimeDistributedCriterion(critrn: TensorCriterion[T],
@@ -2311,14 +2311,8 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def createModel(input: JList[ModuleNode[T]],
-                  output: JList[ModuleNode[T]],
-                  isKeras: Boolean = false): Graph[T] = {
-    if (isKeras) {
-      nn.keras.Model(input.asScala.toArray, output.asScala.toArray)
-    }
-    else {
-      Graph(input.asScala.toArray, output.asScala.toArray)
-    }
+                  output: JList[ModuleNode[T]]): Graph[T] = {
+    Graph(input.asScala.toArray, output.asScala.toArray)
   }
 
   def createNode(module: AbstractModule[Activity, Activity, T],
@@ -2336,6 +2330,10 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
 
   def initEngine(): Unit = {
     Engine.init
+  }
+
+  def getNodeAndCoreNumber(): Array[Int] = {
+    Array(Engine.nodeNumber(), Engine.coreNumber())
   }
 
 
@@ -3007,6 +3005,19 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
 
   def createDatasetFromImageFrame(imageFrame: ImageFrame): DataSet[ImageFeature] = {
     DataSet.imageFrame(imageFrame)
+  }
+
+  def dlReadImage(path: String, sc: JavaSparkContext, minParitions: Int): DataFrame = {
+    val df = DLImageReader.readImages(path, sc.sc, minParitions)
+    df
+  }
+
+  def createDLImageTransformer(transformer: FeatureTransformer): DLImageTransformer = {
+    new DLImageTransformer(transformer)
+  }
+
+  def dlImageTransform(dlImageTransformer: DLImageTransformer, dataSet: DataFrame): DataFrame = {
+    dlImageTransformer.transform(dataSet)
   }
 }
 

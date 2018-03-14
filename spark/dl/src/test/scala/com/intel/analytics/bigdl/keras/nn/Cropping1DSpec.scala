@@ -21,6 +21,9 @@ import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.nn.keras.{Cropping1D, Sequential => KSequential}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
+
+import scala.util.Random
 
 class Cropping1DSpec extends KerasBaseSpec {
 
@@ -40,4 +43,13 @@ class Cropping1DSpec extends KerasBaseSpec {
       kerasCode)
   }
 
+}
+
+class Cropping1DSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val layer = Cropping1D[Float](inputShape = Shape(5, 6))
+    layer.build(Shape(2, 5, 6))
+    val input = Tensor[Float](2, 5, 6).apply1(_ => Random.nextFloat())
+    runSerializationTest(layer, input)
+  }
 }

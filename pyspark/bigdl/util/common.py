@@ -16,6 +16,7 @@
 
 import os
 import sys
+import six
 from py4j.protocol import Py4JJavaError
 from py4j.java_gateway import JavaObject
 from py4j.java_collections import ListConverter, JavaArray, JavaList, JavaMap, MapConverter
@@ -30,6 +31,7 @@ from pyspark.files import SparkFiles
 import numpy as np
 import threading
 import tempfile
+import traceback
 from bigdl.util.engine import get_bigdl_classpath, is_spark_below_2_2
 
 INTMAX = 2147483647
@@ -54,6 +56,7 @@ class SingletonMixin(object):
                     cls._instance = cls(bigdl_type, *args)
         return cls._instance
 
+
 class GatewayWrapper(SingletonMixin):
 
     def __init__(self, bigdl_type, port=25333):
@@ -76,8 +79,10 @@ class JavaCreator(SingletonMixin):
 
     @classmethod
     def set_creator_class(cls, cclass):
+        if isinstance(cclass, six.string_types):
+            cclass = [cclass]
         with JavaCreator._lock:
-            JavaCreator.__creator_class = cclass
+            JavaCreator.__creator_class = [cclass]
             JavaCreator._instance = None
 
     def __init__(self, bigdl_type, gateway):
@@ -133,37 +138,6 @@ class EvaluatedResult():
 def get_dtype(bigdl_type):
     # Always return float32 for now
     return "float32"
-
-
-class Configuration(object):
-    __bigdl_jars = [get_bigdl_classpath()]
-
-    @staticmethod
-    def add_extra_jars(jars):
-        """
-        Add extra jars to classpath
-        :param jars: a string or a list of strings as jar paths
-        """
-        import six
-        if isinstance(jars, six.string_types):
-            jars = [jars]
-        Configuration.__bigdl_jars += jars
-
-    @staticmethod
-    def add_extra_python_modules(packages):
-        """
-        Add extra python modules to sys.path
-        :param packages: a string or a list of strings as python package paths
-        """
-        import six
-        if isinstance(packages, six.string_types):
-            packages = [packages]
-        for package in packages:
-            sys.path.insert(0, package)
-
-    @staticmethod
-    def get_bigdl_jars():
-        return Configuration.__bigdl_jars
 
 
 class JActivity(object):
@@ -441,9 +415,17 @@ _picklable_classes = [
 
 def init_engine(bigdl_type="float"):
     callBigDlFunc(bigdl_type, "initEngine")
+    # Spark context is supposed to have been created when init_engine is called
+    get_spark_context()._jvm.org.apache.spark.bigdl.api.python.BigDLSerDe.initialize()
+
 
 def init_executor_gateway(sc, bigdl_type="float"):
     callBigDlFunc(bigdl_type, "initExecutorGateway", sc, sc._gateway._gateway_client.port)
+
+
+def get_node_and_core_number(bigdl_type="float"):
+    result = callBigDlFunc(bigdl_type, "getNodeAndCoreNumber")
+    return result[0], result[1]
 
 
 def redire_spark_logs(bigdl_type="float", log_path=os.getcwd()+"/bigdl.log"):
@@ -517,8 +499,8 @@ def create_spark_conf():
     bigdl_conf = get_bigdl_conf()
     sparkConf = SparkConf()
     sparkConf.setAll(bigdl_conf.items())
-    if not is_spark_below_2_2():
-        for jar in Configuration.get_bigdl_jars():
+    if os.environ.get("BIGDL_JARS", None) and not is_spark_below_2_2():
+        for jar in os.environ["BIGDL_JARS"].split(":"):
             extend_spark_driver_cp(sparkConf, jar)
 
     # add content in PYSPARK_FILES in spark.submit.pyFiles
@@ -564,12 +546,21 @@ def get_spark_sql_context(sc):
     else:
         return SQLContext(sc)  # Compatible with Spark1.5.1
 
+
 def _get_port():
     root_dir = SparkFiles.getRootDirectory()
     path = os.path.join(root_dir, "gateway_port")
-    f = open(path)
-    port = int(f.readline())
+    try:
+        with open(path) as f:
+            port = int(f.readline())
+    except IOError as e:
+        traceback.print_exc()
+        raise RuntimeError("Could not open the file %s, which contains the listening port of"
+                           " local Java Gateway, please make sure the init_executor_gateway()"
+                           " function is called before any call of java function on the"
+                           " executor side." % e.filename)
     return port
+
 
 def _get_gateway():
     if SparkFiles._is_running_on_worker:
@@ -609,7 +600,7 @@ def _java2py(gateway, r, encoding="bytes"):
             clsName = 'JavaRDD'
 
         if clsName == 'JavaRDD':
-            jrdd = gateway.jvm.SerDe.javaToPython(r)
+            jrdd = gateway.jvm.org.apache.spark.bigdl.api.python.BigDLSerDe.javaToPython(r)
             return RDD(jrdd, get_spark_context())
 
         if clsName == 'DataFrame':

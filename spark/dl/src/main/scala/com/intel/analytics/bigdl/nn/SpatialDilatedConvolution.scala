@@ -247,6 +247,7 @@ class SpatialDilatedConvolution[T: ClassTag](
           dH, dW,
           dilationH, dilationW
         )
+        case t => throw new NotImplementedError(s"$t is not supported")
       }
       im2colTime += System.nanoTime() - before
 
@@ -347,6 +348,7 @@ class SpatialDilatedConvolution[T: ClassTag](
           dH, dW,
           dilationH, dilationW
         )
+        case t => throw new NotImplementedError(s"$t is not supported")
       }
       col2imTime += System.nanoTime() - before
       elt += 1
@@ -421,6 +423,7 @@ class SpatialDilatedConvolution[T: ClassTag](
           dH, dW,
           dilationH, dilationW
         )
+        case t => throw new NotImplementedError(s"$t is not supported")
       }
       im2colTime += System.nanoTime() - before
 

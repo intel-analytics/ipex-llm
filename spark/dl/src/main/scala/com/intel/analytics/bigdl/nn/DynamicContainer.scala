@@ -41,8 +41,9 @@ abstract class DynamicContainer[A <: Activity : ClassTag, B <: Activity : ClassT
     require(!module.isInstanceOf[Operation[_, _, _]],
       "Add operations to dynamic container is not allowed, as operations don't have backward. " +
         "Operation can only be used in Graph")
-    Util.excludeNotTorch[T](Seq(module))
+    validateInput[T](Seq(module))
     modules += module.asInstanceOf[AbstractModule[Activity, Activity, T]]
+    checkDuplicate()
     this
   }
 }

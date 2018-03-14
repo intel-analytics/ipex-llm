@@ -28,6 +28,7 @@ import com.intel.analytics.bigdl.utils.{BigDLSpecHelper, FileWriter, RandomGener
 import com.intel.analytics.bigdl.utils.tf.Tensorflow.const
 import org.tensorflow.framework.{GraphDef, NodeDef}
 
+import scala.language.postfixOps
 import scala.reflect.ClassTag
 import scala.sys.process._
 import scala.util.control.NonFatal

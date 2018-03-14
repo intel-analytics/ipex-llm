@@ -84,8 +84,8 @@ class DLEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val dlModel = estimator.fit(df)
     dlModel.isInstanceOf[DLModel[_]] should be(true)
     val correct = dlModel.transform(df).select("label", "prediction").rdd.filter {
-      case Row(label: Double, prediction: Seq[Double]) =>
-        label == prediction.indexOf(prediction.max) + 1
+      case Row(label: Double, prediction: Seq[_]) =>
+        label == prediction.indexOf(prediction.asInstanceOf[Seq[Double]].max) + 1
     }.count()
     assert(correct > nRecords * 0.8)
   }
@@ -317,8 +317,8 @@ class DLEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
       val pipelineModel = pipeline.fit(df)
       pipelineModel.isInstanceOf[PipelineModel] should be(true)
       val correct = pipelineModel.transform(df).select("label", "prediction").rdd.filter {
-        case Row(label: Double, prediction: Seq[Double]) =>
-          label == prediction.indexOf(prediction.max) + 1
+        case Row(label: Double, prediction: Seq[_]) =>
+          label == prediction.indexOf(prediction.asInstanceOf[Seq[Double]].max) + 1
       }.count()
       assert(correct > nRecords * 0.8)
     }

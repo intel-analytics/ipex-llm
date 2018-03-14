@@ -23,7 +23,10 @@ import com.intel.analytics.bigdl._
 import scala.math._
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.optim.{L1Regularizer, L2Regularizer, SGD}
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import com.intel.analytics.bigdl.utils.{RandomGenerator, Shape, T, TestUtils}
+
+import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Parallel
 class LinearSpec extends FlatSpec with Matchers {
@@ -407,9 +410,12 @@ class LinearSpec extends FlatSpec with Matchers {
     linear.weight should be (exceptedWeight)
     linear.bias should be (exceptedBias)
   }
+}
 
-  "Linear computeOutputShape" should "work properly" in {
-    val linear = Linear[Float](3, 5)
-    TestUtils.compareOutputShape(linear, Shape(3)) should be (true)
+class LinearSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val linear = Linear[Float](10, 2).setName("linear")
+    val input = Tensor[Float](10).apply1(_ => Random.nextFloat())
+    runSerializationTest(linear, input)
   }
 }

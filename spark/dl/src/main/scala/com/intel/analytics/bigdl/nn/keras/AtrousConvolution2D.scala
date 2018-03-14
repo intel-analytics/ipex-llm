@@ -62,7 +62,7 @@ class AtrousConvolution2D[T: ClassTag](
    val nbRow: Int,
    val nbCol: Int,
    val init: InitializationMethod = Xavier,
-   val activation: AbstractModule[Tensor[T], Tensor[T], T] = null,
+   val activation: KerasLayer[Tensor[T], Tensor[T], T] = null,
    val subsample: Array[Int] = Array(1, 1),
    val atrousRate: Array[Int] = Array(1, 1),
    val dimOrdering: DataFormat = DataFormat.NCHW,
@@ -111,7 +111,7 @@ object AtrousConvolution2D {
     bRegularizer: Regularizer[T] = null,
     inputShape: Shape = null)(implicit ev: TensorNumeric[T]): AtrousConvolution2D[T] = {
     new AtrousConvolution2D[T](nbFilter, nbRow, nbCol, KerasUtils.getInitMethod(init),
-      KerasUtils.getActivation(activation),
+      KerasUtils.getKerasActivation(activation),
       Array(subsample._1, subsample._2), Array(atrousRate._1, atrousRate._2),
       KerasUtils.toBigDLFormat(dimOrdering), wRegularizer, bRegularizer, inputShape)
   }

@@ -34,7 +34,7 @@ import scala.reflect.ClassTag
 class SoftPlus[T: ClassTag](
     val beta: Double = 1.0
   )( implicit ev: TensorNumeric[T])
-  extends TensorModule[T] with IdentityOutputShape {
+  extends TensorModule[T] {
 
   // Avoid floating point issues with exp(x), x>20
   private val threshold = ev.fromType[Double](20.0)

@@ -30,7 +30,7 @@ import scala.reflect.ClassTag
 @SerialVersionUID(- 3936698382129844874L)
 class SoftSign[T: ClassTag]()
     (implicit ev: TensorNumeric[T])
-  extends TensorModule[T] with IdentityOutputShape {
+  extends TensorModule[T] {
 
   @transient private var temp: Tensor[T] = null
   @transient private var tempGrad: Tensor[T] = null

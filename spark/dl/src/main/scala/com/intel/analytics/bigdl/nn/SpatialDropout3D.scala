@@ -41,7 +41,7 @@ import scala.reflect.ClassTag
 class SpatialDropout3D[T: ClassTag](
   val initP: Double = 0.5,
   val format: DataFormat = DataFormat.NCHW)(
-  implicit ev: TensorNumeric[T]) extends TensorModule[T] with IdentityOutputShape {
+  implicit ev: TensorNumeric[T]) extends TensorModule[T] {
   var p = initP
   var noise = Tensor[T]()
 

@@ -16,7 +16,7 @@
 
 import sys
 
-from bigdl.nn.layer import Layer, Sequential as TSequential, Model as TModel
+from bigdl.nn.layer import Layer, Node
 from bigdl.util.common import callBigDlFunc, JTensor, JavaValue, to_list
 
 if sys.version >= '3':
@@ -56,34 +56,44 @@ class InferShape(JavaValue):
                                self.value)
         return self.__process_shape(output)
 
-
-class KerasLayer(Layer):
+class KerasCreator(JavaValue):
     def jvm_class_constructor(self):
         name = "createKeras" + self.__class__.__name__
         print("creating: " + name)
         return name
 
+class KerasLayer(Layer, InferShape, KerasCreator):
+    pass
 
-class Sequential(TSequential, InferShape):
+class KerasModel(KerasLayer):
+    # TODO: enrich the KerasModel related API here.
+    pass
+
+
+class Sequential(KerasModel):
     """
     Container for a Sequential model.
-
-    >>> sequential = Sequential()
-    creating: createSequential
+    >>> import bigdl.nn.keras.layer
+    >>> sequential = bigdl.nn.keras.layer.Sequential()
+    creating: createKerasSequential
     """
     def __init__(self, bigdl_type="float"):
-        super(Sequential, self).__init__(bigdl_type, True)
+        super(Sequential, self).__init__(None, bigdl_type=bigdl_type)
+
+    def add(self, model):
+        self.value.add(model.value)
+        return self
 
 
-class Model(TModel, InferShape):
+class Model(KerasModel):
     def __init__(self, input, output, bigdl_type="float"):
-        super(Model, self).__init__(to_list(input),
+        super(Model, self).__init__(None, bigdl_type,
+                                    to_list(input),
                                     to_list(output),
-                                    is_keras=True,
-                                    bigdl_type=bigdl_type)
+                                    )
 
 
-class Input(KerasLayer):
+class Input(Node, KerasCreator):
     def __init__(self, name=None, input_shape=None, bigdl_type="float"):
         super(Input, self).__init__(None, bigdl_type,
                                     name,

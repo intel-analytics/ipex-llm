@@ -18,7 +18,10 @@ package com.intel.analytics.bigdl.nn.tf
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
+
+import scala.util.Random
 
 class ConstSpec extends FlatSpec with Matchers {
   "Const forward tensor" should "be correct" in {
@@ -33,5 +36,14 @@ class ConstSpec extends FlatSpec with Matchers {
     val layer = Const(value)
     val input = T(Tensor(4, 5).rand(), Tensor(3, 4).rand())
     layer.forward(input) should be(value)
+  }
+}
+
+class ConstSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val value = Tensor[Float](3).apply1(_ => Random.nextFloat())
+    val const = Const[Float, Float](value).setName("const")
+    val input = Tensor[Float](3).apply1(_ => Random.nextFloat())
+    runSerializationTest(const, input)
   }
 }

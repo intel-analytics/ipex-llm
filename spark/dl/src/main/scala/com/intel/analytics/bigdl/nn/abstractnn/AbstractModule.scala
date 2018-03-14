@@ -742,17 +742,32 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
     this
   }
 
+  protected def processInputs(nodes: Seq[ModuleNode[T]]): ModuleNode[T] = {
+    val curNode = new ModuleNode[T](this)
+    nodes.foreach(node => {
+      node.add(curNode, Edge())
+    })
+    curNode
+  }
+
+  protected def processInputs(first: (ModuleNode[T], Int),
+      nodesWithIndex : (ModuleNode[T], Int)*): ModuleNode[T] = {
+    val curNode = new ModuleNode[T](this)
+    first._1.add(curNode, Edge(first._2))
+    nodesWithIndex.foreach(nodeWithIndex => {
+      nodeWithIndex._1.add(curNode, Edge(nodeWithIndex._2))
+    })
+    curNode
+  }
+
   /**
    * Build graph: some other modules point to current module
    * @param nodes upstream module nodes
    * @return node containing current module
    */
   def inputs(nodes : ModuleNode[T]*): ModuleNode[T] = {
-    val curNode = new ModuleNode[T](this)
-    nodes.foreach(node => {
-      node.add(curNode, Edge())
-    })
-    curNode
+    validateInput(nodes.map(_.element))
+    processInputs(nodes)
   }
 
   /**
@@ -761,11 +776,8 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
    * @return node containing current module
    */
   def inputs(nodes : Array[ModuleNode[T]]): ModuleNode[T] = {
-    val curNode = new ModuleNode[T](this)
-    nodes.foreach(node => {
-      node.add(curNode, Edge())
-    })
-    curNode
+    validateInput(nodes.map(_.element))
+    processInputs(nodes)
   }
 
   /**
@@ -774,14 +786,10 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
    * @param nodesWithIndex upstream module nodes and the output tensor index. The start index is 1.
    * @return node containing current module
    */
-  def inputs(first: (ModuleNode[T], Int), nodesWithIndex : (ModuleNode[T], Int)*)
-  : ModuleNode[T] = {
-    val curNode = new ModuleNode[T](this)
-    first._1.add(curNode, Edge(first._2))
-    nodesWithIndex.foreach(nodeWithIndex => {
-      nodeWithIndex._1.add(curNode, Edge(nodeWithIndex._2))
-    })
-    curNode
+  def inputs(first: (ModuleNode[T], Int), nodesWithIndex : (ModuleNode[T], Int)*): ModuleNode[T] = {
+    validateInput(List(first._1.element))
+    validateInput(nodesWithIndex.map(_._1.element))
+    processInputs(first, nodesWithIndex: _*)
   }
 
   /**
@@ -1029,5 +1037,13 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
   private[bigdl] def getClassTagNumerics() : (Array[ClassTag[_]], Array[TensorNumeric[_]]) = {
     (Array(scala.reflect.classTag[T]), Array(ev))
   }
+
+  /**
+   * Check if some module is duplicated in the model. For a layer it cannot be duplicated.
+   * Container should override this method
+   */
+  private[bigdl] def checkDuplicate(
+    record: mutable.HashSet[Int] = mutable.HashSet()
+  ): Unit = {}
 }
 
