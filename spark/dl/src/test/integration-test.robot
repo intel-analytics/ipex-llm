@@ -169,7 +169,6 @@ PySpark1.6 Test Suite
    Set Environment Variable         SPARK_HOME     /opt/work/spark-1.6.3-bin-hadoop2.6
    ${submit}=                       Catenate       SEPARATOR=/    /opt/work/spark-1.6.3-bin-hadoop2.6/bin    spark-submit
    Run Shell                        ${submit} --master ${spark_tf_163_3_master} --conf "spark.serializer=org.apache.spark.serializer.JavaSerializer" --driver-memory 150g --executor-cores 28 --total-executor-cores 56 --py-files ${curdir}/dist/lib/bigdl-${version}-python-api.zip --jars ${jar_path} --properties-file ${curdir}/dist/conf/spark-bigdl.conf --conf spark.driver.extraClassPath=${jar_path} --conf spark.executor.extraClassPath=bigdl-${version}-jar-with-dependencies.jar ${curdir}/pyspark/bigdl/models/lenet/lenet5.py -b 224 --action train --endTriggerType epoch --endTriggerNum 1
-
    Log To Console                   begin lenet Train local[4]
    Run Shell                        ${submit} --master local[4] --class com.intel.analytics.bigdl.models.lenet.Train ${jar_path} -f ./mnist -b 120 -e 1    
    Log To Console                   begin autoencoder Train 
