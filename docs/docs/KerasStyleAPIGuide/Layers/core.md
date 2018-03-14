@@ -1,4 +1,3 @@
----
 ## **InputLayer**
 Can be used as an entry point into a model.
 
