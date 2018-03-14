@@ -28,6 +28,7 @@ import com.intel.analytics.bigdl.utils.{LoggerFilter, Shape}
 import com.intel.analytics.bigdl.utils.serializer._
 import org.apache.spark.rdd.RDD
 
+import scala.collection.JavaConverters._
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
