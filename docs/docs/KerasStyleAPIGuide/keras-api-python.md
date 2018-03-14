@@ -1,15 +1,38 @@
 ## **Introduction**
 We hereby introduce a new set of __Keras-Style API__ based on [__Keras 1.2.2__](https://faroit.github.io/keras-docs/1.2.2/) in BigDL for the sake of user-friendliness. Users, especially those familiar with Keras, are recommended to use the new API to create a BigDL model and train, evaluate or tune it in a distributed fashion.
 
-To define a model in Python using the Keras-Style API, now one just need to import the package
+To define a model in Python using the Keras-Style API, now one just need to import the following:
 
-`bigdl.nn.keras.layer`
+```python
+from bigdl.nn.keras.topology import *
+from bigdl.nn.keras.layer import *
+```
 
 One of the highlighted features with regard to the new API is __shape inference__. Users only need to specify the input shape (a shape tuple __excluding__ batch dimension, for example, `input_shape=(3, 4)` for 3D input) for the first layer of a model and for the remaining layers, the input dimension will be automatically inferred.
 
 
 ---
-## **Sequential API**
+## **Define a model**
+You can create a model either using [Sequential API](#sequential-api) or [Functional API](#functional-api). Remember to specify the input shape for the first layer.
+
+After creating a model, you can call the following __methods__:
+
+```python
+get_input_shape()
+```
+```python
+get_output_shape()
+```
+* Return the input or output shape of a model, which is a shape tuple. The first entry is `None` representing the batch dimension. For a model with multiple inputs or outputs, a list of shape tuples will be returned.
+
+```python
+set_name(name)
+```
+* Set the name of the model. Can alternatively specify the argument `name` in the constructor when creating a model.
+
+
+---
+### **Sequential API**
 The model is described as a linear stack of layers in the sequential API. Layers can be added into the `Sequential` container one by one and the order of the layers in the model will be the same as the insertion order.
 
 To create a sequential container:
@@ -22,7 +45,8 @@ Parameters:
 
 Example code to create a sequential model:
 ```python
-from bigdl.nn.keras.layer import Sequential, Dense, Activation
+from bigdl.nn.keras.topology import Sequential
+from bigdl.nn.keras.layer import Dense, Activation
 
 model = Sequential()
 model.add(Dense(32, input_shape=(128, )))
@@ -31,7 +55,7 @@ model.add(Activation("relu"))
 
 
 ---
-## **Functional API**
+### **Functional API**
 The model is described as a graph in the functional API. It is more convenient than the sequential API when defining some complex model (for example, a model with multiple outputs).
 
 To create an input node:
@@ -53,10 +77,22 @@ Parameters:
 * `output`: An output node or a list of output nodes.
 * `name`: String to specify the name of the graph model. Default is None.
 
+To merge a list of input __nodes__ (__NOT__ layers), following some merge mode in the functional API:
+```python
+merge(inputs, mode="sum", concat_axis=-1, name=None) # This will return an output NODE.
+```
+
+Parameters:
+
+* `inputs`: A list of node instances. Must be more than one node.
+* `mode`: Merge mode. String, must be one of: 'sum', 'mul', 'concat', 'ave', 'cos','dot', 'max'. Default is 'sum'.
+* `concat_axis`: Int, axis to use when concatenating nodes. Only specify this when merge mode is 'concat'. Default is -1, meaning the last axis of the input.
+* `name`: String to specify the name of merge. Default is None.
 
 Example code to create a graph model:
 ```python
-from bigdl.nn.keras.layer import Model, Input, Dense, merge
+from bigdl.nn.keras.topology import Model
+from bigdl.nn.keras.layer import Input, Dense, merge
 
 # instantiate input nodes
 input1 = Input(shape=(8, )) 
@@ -75,51 +111,7 @@ model = Model([input1, input2], output)
 ## **Layers**
 See [here](Layers/core.md) for all the available layers for the new set of Keras-Style API.
 
-
----
-## **Methods**
-__Methods for a [sequential](#sequential-api) or a [functional](#functional-api) model:__
-
-```python
-get_output_shape()
-```
-Return the output shape of a model, which is a shape tuple. The first entry is `None` representing the batch dimension.
-
-For a model with multiple outputs, it will return a list of shape tuples.
-
-```python
-get_input_shape()
-```
-Return the input shape of a model, which is a shape tuple. The first entry is `None` representing the batch dimension.
-
-For a model with multiple inputs, it will return a list of shape tuples.
-
-__Methods for a [functional](#functional-api) model only:__
-
-```python
-merge(inputs, mode="sum", concat_axis=-1, name=None)
-```
-Used to merge a list of input __nodes__ (__NOT__ layers), following some merge mode.
-
-Return an output __node__.
-
-Parameters:
-
-* `inputs`: A list of node instances. Must be more than one node.
-* `mode`: Merge mode. String, must be one of: 'sum', 'mul', 'concat', 'ave', 'cos','dot', 'max'. Default is 'sum'.
-* `concat_axis`: Int, axis to use when concatenating nodes. Only specify this when merge mode is 'concat'. Default is -1, meaning the last axis of the input.
-* `name`: String to specify the name of merge. Default is None.
-
-__Methods for either a [layer](Layers/core.md) or a [model](#sequential-api):__
-
-```python
-set_name(name)
-```
-Set the name of a module. Can alternatively specify the parameter `name` when creating a layer or a model.
-
-Parameters:
-
-* `name`: String to specify the name.
+To set the name of a layer, you can either call `set_name(name)` or alternatively specify the argument `name` in the constructor when creating a layer.
 
 
 ---
