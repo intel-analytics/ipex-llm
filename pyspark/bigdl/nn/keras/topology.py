@@ -14,14 +14,12 @@
 # limitations under the License.
 #
 
+from bigdl.nn.keras.layer import KerasLayer
 from bigdl.util.common import *
 import multiprocessing
 
 
-class Training(JavaValue):
-    def __init__(self, bigdl_type="float"):
-        self.bigdl_type = bigdl_type
-
+class KerasModel(KerasLayer):
     def compile(self, optimizer, loss, metrics=None):
         callBigDlFunc(self.bigdl_type, "compile",
                       self.value,
@@ -30,6 +28,9 @@ class Training(JavaValue):
                       metrics)
 
     def fit(self, x, y=None, batch_size=32, nb_epoch=10, validation_data=None, distributed=True):
+        init_engine()
+        redire_spark_logs()
+        show_bigdl_info_logs()
         if distributed:
             if isinstance(x, np.ndarray) and isinstance(y, np.ndarray):
                 training_data = to_sample_rdd(x, y)
@@ -60,3 +61,25 @@ class Training(JavaValue):
                           val_x,
                           val_y,
                           multiprocessing.cpu_count())
+
+
+class Sequential(KerasModel):
+    """
+    Container for a Sequential model.
+
+    >>> sequential = Sequential()
+    creating: createKerasSequential
+    """
+    def __init__(self, bigdl_type="float"):
+        super(Sequential, self).__init__(None, bigdl_type=bigdl_type)
+
+    def add(self, model):
+        self.value.add(model.value)
+        return self
+
+
+class Model(KerasModel):
+    def __init__(self, input, output, bigdl_type="float"):
+        super(Model, self).__init__(None, bigdl_type,
+                                    to_list(input),
+                                    to_list(output))

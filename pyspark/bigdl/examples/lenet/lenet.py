@@ -14,6 +14,8 @@
 # limitations under the License.
 #
 
+from optparse import OptionParser
+from bigdl.nn.keras.topology import Sequential
 from bigdl.nn.keras.layer import *
 from bigdl.dataset import mnist
 
@@ -33,11 +35,17 @@ def build_model(class_num):
 
 
 if __name__ == "__main__":
-    (X_train, Y_train), (X_test, Y_test) = mnist.load_data()
+    parser = OptionParser()
+    parser.add_option("-b", "--batchSize", type=int, dest="batchSize", default="128")
+    parser.add_option("-n", "--maxEpoch", type=int, dest="maxEpoch", default="20")
+    parser.add_option("-d", "--dataPath", dest="dataPath", default="/tmp/mnist")
+    (options, args) = parser.parse_args(sys.argv)
+
+    (X_train, Y_train), (X_test, Y_test) = mnist.load_data(options.dataPath)
 
     model = build_model(10)
     model.compile(loss='sparse_categorical_crossentropy',
                   optimizer='adadelta',
                   metrics=['accuracy'])
-    model.fit(X_train, Y_train, batch_size=128, nb_epoch=12,
+    model.fit(X_train, Y_train, batch_size=options.batchSize, nb_epoch=options.maxEpoch,
               validation_data=(X_test, Y_test))

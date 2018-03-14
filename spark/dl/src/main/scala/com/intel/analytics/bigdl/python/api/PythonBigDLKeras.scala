@@ -678,7 +678,7 @@ class PythonBigDLKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends Pytho
   }
 
   def compile(
-    module: Training[T],
+    module: KerasModel[T],
     optimizer: String,
     loss: String,
     metrics: JList[String] = null): Unit = {
@@ -687,7 +687,7 @@ class PythonBigDLKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends Pytho
   }
 
   def compile(
-    module: Training[T],
+    module: KerasModel[T],
     optimizer: OptimMethod[T],
     loss: Criterion[T],
     metrics: JList[ValidationMethod[T]]): Unit = {
@@ -696,7 +696,7 @@ class PythonBigDLKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends Pytho
   }
 
   def fit(
-    module: Training[T],
+    module: KerasModel[T],
     x: JavaRDD[Sample],
     batchSize: Int = 32,
     epochs: Int = 10,
@@ -706,7 +706,7 @@ class PythonBigDLKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends Pytho
   }
 
   def fit(
-    module: Training[T],
+    module: KerasModel[T],
     xTrain: JList[JTensor],
     yTrain: JTensor,
     batchSize: Int,

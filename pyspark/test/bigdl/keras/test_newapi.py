@@ -17,6 +17,7 @@
 import pytest
 
 from test.bigdl.test_utils import BigDLTestCase
+from bigdl.nn.keras.topology import Model as BModel
 import bigdl.nn.keras.layer as BLayer
 import keras.layers as KLayer
 import keras.backend as K
@@ -132,7 +133,7 @@ class TestLayer(BigDLTestCase):
         x2 = BLayer.Input(input_shape=(6, ))
         y1 = BLayer.Dense(10)(x1)
         y2 = BLayer.Dense(10)(x2)
-        model = BLayer.Model([x1, x2], [y1, y2])
+        model = BModel([x1, x2], [y1, y2])
         input_shapes = model.get_input_shape()
         np.testing.assert_allclose((8, ), input_shapes[0][1:])
         np.testing.assert_allclose((6, ), input_shapes[1][1:])

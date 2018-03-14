@@ -60,7 +60,6 @@ class Node(JavaValue):
         callJavaFunc(self.value.removeNextEdges)
 
 
-
 class Layer(JavaValue):
     """
     Layer is the basic component of a neural network
