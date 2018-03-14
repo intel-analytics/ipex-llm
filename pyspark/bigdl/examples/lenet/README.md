@@ -47,11 +47,11 @@ We would train a LeNet model in spark local mode with the following commands and
         ${BigDL_HOME}/pyspark/bigdl/models/lenet/lenet5.py
  ```
 
-* ```--dataPath``` option can be used to set the path for downloading mnist data, the default value is /tmp/mnist. Make sure that you have write permission to the specified path.
+* ```--dataPath``` an option to set the path for downloading mnist data, the default value is /tmp/mnist. Make sure that you have write permission to the specified path.
 
-* ```--batchSize``` option can be used to set batch size, the default value is 128.
+* ```--batchSize``` an option to set the batch size, the default value is 128.
 
-* ```--maxEpoch``` option can be used to set the number of epochs to train the model, the default value is 20.
+* ```--maxEpoch``` an option to set the number of epochs to train the model, the default value is 20.
 
 To verify the accuracy, search "accuracy" from log:
 

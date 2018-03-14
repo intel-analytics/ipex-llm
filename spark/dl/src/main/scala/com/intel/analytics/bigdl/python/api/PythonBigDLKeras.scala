@@ -16,12 +16,12 @@
 
 package com.intel.analytics.bigdl.python.api
 
-import java.util.{ArrayList => JArrayList, HashMap => JHashMap, List => JList, Map => JMap}
+import java.util.{List => JList}
 
 import com.intel.analytics.bigdl.{Criterion, DataSet, nn}
 import com.intel.analytics.bigdl.dataset.{DataSet, LocalDataSet, MiniBatch}
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
-import com.intel.analytics.bigdl.nn.{Container, Graph, SpatialBatchNormalization}
+import com.intel.analytics.bigdl.nn.{Container, SpatialBatchNormalization}
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.nn.keras._
 import com.intel.analytics.bigdl.numeric._

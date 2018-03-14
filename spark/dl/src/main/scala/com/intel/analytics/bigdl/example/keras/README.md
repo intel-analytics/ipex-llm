@@ -58,5 +58,5 @@ dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
 -b batch_size \
 ```
 In the above commands
-* -f: The path where you put your MNIST data.
-* -b: The mini-batch size. It is expected that the mini-batch size is a multiple of node_number * core_number.
+* -f: an option to set the path where you put your MNIST data.
+* -b: an option to set the mini-batch size. It is expected that the mini-batch size is a multiple of node_number * core_number.
