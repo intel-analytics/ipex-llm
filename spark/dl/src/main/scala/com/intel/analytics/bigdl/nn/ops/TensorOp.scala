@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.serialization.Bigdl
 import com.intel.analytics.bigdl.serialization.Bigdl.{AttrValue, DataType}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.Table
+import com.intel.analytics.bigdl.utils.{Table, Util}
 import com.intel.analytics.bigdl.utils.serializer.{DeserializeContext, SerializeContext}
 import com.intel.analytics.bigdl.utils.serializer.converters.DataConverter
 import org.apache.commons.lang3.SerializationUtils
@@ -61,8 +61,8 @@ import scala.reflect.runtime.universe
  * @tparam T Numeric type
  */
 class TensorOp[T: ClassTag] private(
-  private[bigdl] val transformer: (Tensor[T], TensorNumeric[T]) => Tensor[T]
-)(implicit ev: TensorNumeric[T]) extends Operation[Tensor[T], Tensor[T], T] {
+    private[bigdl] val transformer: (Tensor[T], TensorNumeric[T]) => Tensor[T])
+  (implicit ev: TensorNumeric[T]) extends Operation[Tensor[T], Tensor[T], T] {
 
   private lazy val buffer: Tensor[T] = Tensor[T]()
 
@@ -272,20 +272,21 @@ object TensorOp {
       "com.intel.analytics.bigdl.tensor.Tensor[T]",
     new DataConverter {
       override def getAttributeValue[T: ClassTag](
-        context: DeserializeContext,
-        attribute: Bigdl.AttrValue
+          context: DeserializeContext,
+          attribute: Bigdl.AttrValue
       )(implicit ev: TensorNumeric[T]): AnyRef = {
         val any = attribute.getCustomValue
         val bytes = any.getValue.toByteArray
-        val wrapper = SerializationUtils.deserialize[ClosureWrapper[T]](bytes)
+        // using Util.deserialize instead of SerializationUtils.deserialize
+        val wrapper = Util.deserialize[ClosureWrapper[T]](bytes)
         wrapper.closure
       }
 
       override def setAttributeValue[T: ClassTag](
-        context: SerializeContext[T],
-        attributeBuilder: AttrValue.Builder,
-        value: scala.Any,
-        valueType: universe.Type
+          context: SerializeContext[T],
+          attributeBuilder: AttrValue.Builder,
+          value: scala.Any,
+          valueType: universe.Type
       )(implicit ev: TensorNumeric[T]): Unit = {
         attributeBuilder.setDataType(DataType.CUSTOM)
         val wrapper = new ClosureWrapper(
@@ -300,8 +301,8 @@ object TensorOp {
 
   // Class Wrapper for transformer(closure)
   private class ClosureWrapper[T: ClassTag](
-    val closure: (Tensor[T], TensorNumeric[T]) => Tensor[T]
-  )(implicit ev: TensorNumeric[T]) extends Serializable
+      val closure: (Tensor[T], TensorNumeric[T]) => Tensor[T])
+    (implicit ev: TensorNumeric[T]) extends Serializable
 
 
   /**
@@ -595,20 +596,25 @@ object TensorOp {
 
 
 /**
- * Select and copy a Tensor from a [[Table]] with [[key]].
+ * Select and copy a Tensor from a [[Table]] with a key.
  * And do tensor transformation if [[transformer]] is defined.
+ * If [[isTensorKey]] is `false`, the real key is the value of [[keyTensor]].
+ * Otherwise, the real key is [[keyTensor]].
  *
- * @param key the key of selected tensor, a scalar tensor
+ * @param keyTensor the key or tensor wrapper of key, must be a scalar tensor
+ * @param isTensorKey whether the key is a scalar tensor or a primitive value, default true
  * @param transformer user-defined transformer, default(null) means do nothing
  * @tparam T Numeric type
  */
 class SelectTensor[T: ClassTag] private(
-  private val key: Tensor[_],
-  private val transformer: TensorOp[T] = null
-)(implicit ev: TensorNumeric[T]) extends Operation[Table, Tensor[T], T] {
+    private val keyTensor: Tensor[_],
+    private val isTensorKey: Boolean = true,
+    private val transformer: TensorOp[T] = null)
+  (implicit ev: TensorNumeric[T]) extends Operation[Table, Tensor[T], T] {
 
   override def updateOutput(input: Table): Tensor[T] = {
-    val selected = input[Tensor[T]](key)
+    val _key = if (isTensorKey) keyTensor else keyTensor.value()
+    val selected = input[Tensor[T]](_key)
     if (transformer != null) {
       output = transformer.updateOutput(selected)
     } else {
@@ -623,11 +629,36 @@ class SelectTensor[T: ClassTag] private(
 
 object SelectTensor {
 
+  /**
+   * Build a `SelectTensor` Instance with a keyTensor.
+   *
+   * @param keyTensor the key or tensor wrapper of key, must be a scalar tensor
+   * @param isTensorKey whether the key is a scalar tensor or a primitive value, default true
+   * @param transformer user-defined transformer, default(null) means do nothing
+   * @tparam T Numeric type
+   * @return a `SelectTensor` Instance
+   */
   def apply[T: ClassTag](
-    key: Tensor[_],
-    transformer: TensorOp[T] = null
-  )(implicit ev: TensorNumeric[T]): SelectTensor[T] = {
-    new SelectTensor[T](key, transformer)
+      keyTensor: Tensor[_],
+      isTensorKey: Boolean = true,
+      transformer: TensorOp[T] = null)
+    (implicit ev: TensorNumeric[T]): SelectTensor[T] = {
+    require(keyTensor.isScalar, "The key must be a Scalar Tensor!")
+    new SelectTensor[T](keyTensor, isTensorKey, transformer)
+  }
+
+  /**
+   * Build a `SelectTensor` Instance with a non-Tensor key with Type [[D]].
+   *
+   * @param key the key, must be able to be wrapped by Tensor
+   * @tparam T Numeric type
+   * @tparam D type of key, must be supported by TensorDataType
+   * @return a `SelectTensor` Instance
+   */
+  def apply[T: ClassTag, D: ClassTag](key: D)
+    (implicit ev: TensorNumeric[T], ev2: TensorNumeric[D]): SelectTensor[T] = {
+    val keyTensor = Tensor.scalar(key)
+    new SelectTensor[T](keyTensor, false, null)
   }
 
 }

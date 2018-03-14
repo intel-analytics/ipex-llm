@@ -16,11 +16,16 @@
 
 package com.intel.analytics.bigdl.utils
 
+import java.io.{ByteArrayInputStream, IOException, ObjectInputStream, ObjectStreamClass}
+
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.{QuantizedTensor, QuantizedType, Storage, Tensor}
+import org.apache.commons.lang3.SerializationException
 
 import scala.reflect.ClassTag
+import scala.tools.nsc.interpreter.InputStream
+import scala.util.Try
 
 object Util {
   def kthLargest(arr: Array[Long], l: Int, r: Int, k: Int): Long = {
@@ -175,4 +180,64 @@ object Util {
       i += 1
     }
   }
+
+
+  private[bigdl] def excludeNotTorch[T: ClassTag]
+  (modules : Seq[AbstractModule[_, _, T]]): Unit = {
+    val invalidNodes = modules.filter{!_.isCompatibleWithTorch()}
+    if (invalidNodes.length > 0) {
+      throw new RuntimeException(s"Do not mix with Layer: ${invalidNodes.mkString(",")}")
+    }
+  }
+
+  private[bigdl] def excludeNotKeras[T: ClassTag]
+  (modules : Seq[AbstractModule[_, _, T]]): Unit = {
+    val invalidNodes = modules.filter{!_.isCompatibleWithKeras()}
+    if (invalidNodes.length > 0) {
+      throw new RuntimeException(s"Do not mix with Layer: ${invalidNodes.mkString(",")}")
+    }
+  }
+
+
+  /**
+   * This method is quite like [[org.apache.commons.lang3.SerializationUtils.deserialize]],
+   * except `resolveClass` method of [[ObjectInputStream]] is overridden,
+   * which fix potential [[ClassNotFoundException]] caused by uncertain `latestUserDefinedLoader`.
+   */
+  private[bigdl] def deserialize[T: ClassTag](objectData: Array[Byte]): T = {
+    if (objectData == null) {
+      throw new IllegalArgumentException("The byte[] must not be null")
+    }
+    deserialize[T](new ByteArrayInputStream(objectData))
+  }
+
+  /**
+   * This method is quite like [[org.apache.commons.lang3.SerializationUtils.deserialize]],
+   * except `resolveClass` method of [[ObjectInputStream]] is overridden,
+   * which fix potential [[ClassNotFoundException]] caused by uncertain `latestUserDefinedLoader`.
+   */
+  private[bigdl] def deserialize[T: ClassTag](inputStream: InputStream): T = {
+    if (inputStream == null) {
+      throw new IllegalArgumentException("The InputStream must not be null")
+    }
+    var in: ObjectInputStream = null
+    try {
+      // stream closed in the finally
+      in = new ObjectInputStream(inputStream) {
+        override def resolveClass(desc: ObjectStreamClass): Class[_] = {
+          Try(Class.forName(desc.getName, false, getClass.getClassLoader)
+          ).getOrElse(super.resolveClass(desc))
+        }
+      }
+      in.readObject().asInstanceOf[T]
+    } catch {
+      case ex: ClassCastException => throw new SerializationException(ex)
+      case ex: ClassNotFoundException => throw new SerializationException(ex)
+      case ex: IOException => throw new SerializationException(ex)
+    } finally {
+      if (in != null) Try(in.close())
+    }
+  }
+
+
 }
