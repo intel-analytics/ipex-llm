@@ -16,8 +16,10 @@
 
 package com.intel.analytics.bigdl.nn.keras
 
+import com.intel.analytics.bigdl.Criterion
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, DataFormat}
+import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
@@ -118,4 +120,47 @@ object KerasUtils {
       case "th" => "CHANNEL_FIRST"
     }
   }
+
+  private[keras] def toBigDLCriterion[T : ClassTag](loss: String)
+    (implicit ev: TensorNumeric[T]): Criterion[T] = {
+    loss.toLowerCase() match {
+      case "categorical_crossentropy" => CategoricalCrossEntropy[T]()
+      case "mse" => MSECriterion[T]()
+      case "mae" => AbsCriterion[T]()
+      case "hinge" => MarginCriterion[T]()
+      case "mape" => MeanAbsolutePercentageCriterion[T]()
+      case "msle" => MeanSquaredLogarithmicCriterion[T]()
+      case "squared_hinge" => MarginCriterion[T](squared = true)
+      case "sparse_categorical_crossentropy" => ClassNLLCriterion[T](logProbAsInput = false)
+      case "kld" => KullbackLeiblerDivergenceCriterion[T]()
+      case "cosine_proximity" => CosineProximityCriterion[T]()
+      case _ => throw new IllegalArgumentException(s"Invalid loss: ${loss.toLowerCase()}")
+    }
+  }
+
+  private[keras] def toBigDLOptimMethod[T: ClassTag](optimMethod: String)
+    (implicit ev: TensorNumeric[T]): OptimMethod[T] = {
+    optimMethod.toLowerCase() match {
+      case "sgd" => new SGD[T](learningRate = 0.01)
+      case "rmsprop" => new RMSprop[T](learningRate = 0.001, decayRate = 0.9)
+      case "adamax" => new Adamax[T](Epsilon = 1e-8)
+      case "adagrad" => new Adagrad[T](learningRate = 0.01)
+      case "adadelta" => new Adadelta[T](decayRate = 0.95, Epsilon = 1e-8)
+      case "adam" => new Adam[T]()
+    }
+  }
+
+  private[keras] def toBigDLMetrics[T: ClassTag](metrics: Array[String])
+    (implicit ev: TensorNumeric[T]): Array[ValidationMethod[T]] = {
+    if (metrics == null) {
+      null
+    }
+    else if (metrics.sameElements(Array("accuracy"))) {
+      Array(new Top1Accuracy[T]())
+    }
+    else {
+      throw new IllegalArgumentException(s"Unsupported metrics: ${metrics.mkString(", ")}")
+    }
+  }
+
 }
