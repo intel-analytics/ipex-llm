@@ -220,9 +220,19 @@ class ModelSpec extends FlatSpec with Matchers {
     model1.accGradParameters(input, out1)
     model2.accGradParameters(input, out1)
     println("compare params")
-    DnnUtils.nearequals(weightAll1, weightAll2, 1e-4) should be(true)
-    DnnUtils.nearequals(biasAll1, biasAll2, 1e-3) should be(true)
+//    DnnUtils.nearequals(weightAll1, weightAll2, 1e-4) should be(true)
+//    DnnUtils.nearequals(biasAll1, biasAll2, 1e-3) should be(true)
 
+    val params1 = model1.parameters()._2
+    val params2 = model2.parameters()._2
+
+    params1.length should be (params2.length)
+
+    for (i <- params1.indices.reverse) {
+      DnnUtils.nearequals(params1(i), params2(i)) should be (true)
+      println(s"module $i done")
+    }
+    DnnUtils.nearequals(model1.getParameters()._2, model2.getParameters()._2) should be (true)
     println("done")
   }
 
@@ -290,6 +300,30 @@ class ModelSpec extends FlatSpec with Matchers {
     DnnUtils.nearequals(weight1, weight2, 1e-4) should be(true)
     DnnUtils.getunequals(bias1, bias2, 1e-2) should be(true)
 
+
+    println("done")
+  }
+
+  "VGG on Cifar10" should "work correctly" in {
+    RNG.setSeed(1)
+    val dnn = VggForCifar10.dnn(10, hasDropout = false)
+    val blas = VggForCifar10(10, hasDropout = false)
+
+    dnn.getParameters()._1.copy(blas.getParameters()._1)
+    dnn.getParameters()._1 should be (blas.getParameters()._1)
+
+    val input = Tensor[Float](4, 3, 32, 32).rand(-1, 1)
+    val gradOutput = Tensor[Float](4, 256, 4, 4).rand(-1, 1)
+
+    for (i <- 0 until 1) {
+      blas.forward(input)
+      dnn.forward(input)
+      blas.backward(input, gradOutput)
+      dnn.backward(input, gradOutput)
+      dnn.gradInput.toTensor[Float].storage()
+    }
+
+    DnnUtils.getunequals(blas.getParameters()._2, dnn.getParameters()._2, 1e-3) should be (true)
 
     println("done")
   }
