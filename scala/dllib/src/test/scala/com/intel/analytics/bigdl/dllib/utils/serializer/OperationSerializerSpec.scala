@@ -787,7 +787,7 @@ class OperationSerializerSpec extends SerializerSpecHelper {
 
   "SelectTensor serializer" should "work properly" in {
     val transformer = (TensorOp[Float]() ** 3 * 4.5f).ceil
-    val select = SelectTensor(Tensor.scalar("2"), transformer)
+    val select = SelectTensor(Tensor.scalar("2"), transformer = transformer)
     val t1 = Tensor[Float](3, 4).randn()
     val t2 = Tensor[Float](2, 3).randn()
     val input = T().update(Tensor.scalar(1), t1).update(Tensor.scalar("2"), t2)
