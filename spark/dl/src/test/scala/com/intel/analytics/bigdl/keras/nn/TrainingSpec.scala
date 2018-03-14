@@ -87,7 +87,7 @@ class TrainingSpec extends FlatSpec with Matchers with BeforeAndAfter {
     model.compile(optimizer = "sgd", loss = "mse", metrics = Array("accuracy"))
     model.fit(data, batchSize = 8, validationData = testData)
     val accuracy = model.evaluate(testData, batchSize = 8)
-    val results = model.predict(testData, batchSize = 8)
+    val predictResults = model.predict(testData, batchSize = 8)
   }
 
   "compile, fit, evaluate and predict in local mode" should "work properly" in {
@@ -97,7 +97,7 @@ class TrainingSpec extends FlatSpec with Matchers with BeforeAndAfter {
     model.compile(optimizer = "sgd", loss = "mse", metrics = Array("accuracy"))
     model.fit(localData, nbEpoch = 5, validationData = null)
     val accuracy = model.evaluate(localData)
-    val results = model.predict(localData)
+    val predictResults = model.predict(localData)
   }
 
 }

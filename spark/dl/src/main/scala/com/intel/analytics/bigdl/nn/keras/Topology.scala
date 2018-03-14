@@ -17,7 +17,7 @@
 package com.intel.analytics.bigdl.nn.keras
 
 import com.intel.analytics.bigdl.{Criterion, DataSet}
-import com.intel.analytics.bigdl.dataset.{LocalDataSet, MiniBatch, Sample}
+import com.intel.analytics.bigdl.dataset._
 import com.intel.analytics.bigdl.nn.Graph._
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.nn.{Container, StaticGraph, Sequential => TSequential}
@@ -54,6 +54,7 @@ abstract class KerasModel[T: ClassTag](implicit ev: TensorNumeric[T])
   def compile(optimizer: OptimMethod[T],
               loss: Criterion[T],
               metrics: Array[ValidationMethod[T]] = null): Unit = {
+    LoggerFilter.redirectSparkInfoLogs()
     this.optimMethod = optimizer
     this.criterion = loss
     this.vMethods = metrics
@@ -69,41 +70,18 @@ abstract class KerasModel[T: ClassTag](implicit ev: TensorNumeric[T])
       KerasUtils.toBigDLMetrics[T](metrics))
   }
 
-  private def doOptimize[D: ClassTag](optimizer: Optimizer[T, D], nbEpoch: Int)
-    (implicit ev: TensorNumeric[T]): Unit = {
-    LoggerFilter.redirectSparkInfoLogs()
-    optimizer.setOptimMethod(this.optimMethod)
-      .setEndWhen(Trigger.maxEpoch(nbEpoch))
-    optimizer.optimize()
+  def toDataSet(x: RDD[Sample[T]], batchSize: Int)
+  : DataSet[MiniBatch[T]] = {
+    if (x != null) DataSet.rdd(x) -> SampleToMiniBatch[T](batchSize)
+    else null
   }
 
   /**
    * Train a model for a fixed number of epochs on a dataset.
-   * @param x Training data.
-   * @param batchSize Number of samples per gradient update.
+   * @param x Training dataset.
    * @param nbEpoch Number of iterations to train.
-   * @param validationData Null if validation is not configured.
+   * @param validationData Dataset, or null if validation is not configured.
    */
-  def fit(x: RDD[Sample[T]], batchSize: Int = 32, nbEpoch: Int = 10,
-          validationData: RDD[Sample[T]] = null)
-    (implicit ev: TensorNumeric[T]): Unit = {
-    require(this.optimMethod != null && this.criterion != null,
-      "compile must be called before fit")
-    val optimizer = Optimizer(
-      model = this,
-      sampleRDD = x,
-      criterion = this.criterion,
-      batchSize = batchSize)
-    if (validationData != null) {
-      require(this.vMethods != null, "validation metrics haven't been set yet")
-      optimizer.setValidation(trigger = Trigger.everyEpoch,
-        sampleRDD = validationData,
-        vMethods = this.vMethods,
-        batchSize = batchSize)
-    }
-    doOptimize(optimizer, nbEpoch)
-  }
-
   def fit[D: ClassTag](x: DataSet[D], nbEpoch: Int,
                        validationData: DataSet[MiniBatch[T]])
     (implicit ev: TensorNumeric[T]): Unit = {
@@ -119,34 +97,28 @@ abstract class KerasModel[T: ClassTag](implicit ev: TensorNumeric[T])
         dataset = validationData,
         vMethods = this.vMethods)
     }
-    doOptimize(optimizer, nbEpoch)
+    optimizer.setOptimMethod(this.optimMethod)
+      .setEndWhen(Trigger.maxEpoch(nbEpoch))
+    optimizer.optimize()
   }
 
   /**
-   * Train a model for a fixed number of epochs on a dataset in LOCAL mode.
+   * Train a model for a fixed number of epochs on a dataset.
+   * @param x Training data, RDD of Sample.
+   * @param batchSize Number of samples per gradient update.
+   * @param nbEpoch Number of iterations to train.
+   * @param validationData RDD of Sample, or null if validation is not configured.
    */
-  def fit[D: ClassTag](x: LocalDataSet[MiniBatch[T]], nbEpoch: Int,
-                       validationData: DataSet[MiniBatch[T]])
+  def fit(x: RDD[Sample[T]], batchSize: Int = 32, nbEpoch: Int = 10,
+          validationData: RDD[Sample[T]] = null)
     (implicit ev: TensorNumeric[T]): Unit = {
-    require(this.optimMethod != null && this.criterion != null,
-      "compile must be called before fit")
-    val optimizer = new LocalOptimizer[T](
-      model = this,
-      dataset = x,
-      criterion = this.criterion)
-    if (validationData != null) {
-      require(this.vMethods != null, "Validation metrics haven't been set yet")
-      optimizer.setValidation(trigger = Trigger.everyEpoch,
-        dataset = validationData,
-        vMethods = this.vMethods)
-    }
-    doOptimize(optimizer, nbEpoch)
+    this.fit(toDataSet(x, batchSize), nbEpoch, toDataSet(validationData, batchSize))
   }
 
   /**
    * Evaluate a model on a given dataset.
    * @param x Evaluation data.
-   * @param batchSize Number of samples per gradient update.
+   * @param batchSize Number of samples per batch.
    */
   def evaluate(x: RDD[Sample[T]],
                batchSize: Int)
@@ -164,11 +136,19 @@ abstract class KerasModel[T: ClassTag](implicit ev: TensorNumeric[T])
     this.evaluate(x, this.vMethods)
   }
 
+  /**
+   * Use a model to do prediction.
+   * @param x Prediction data.
+   * @param batchSize Number of samples per batch.
+   */
   def predict(x: RDD[Sample[T]],
               batchSize: Int)(implicit ev: TensorNumeric[T]): RDD[Activity] = {
     this.predict(x, batchSize, false)
   }
 
+  /**
+   * Use a model to do prediction in LOCAL mode.
+   */
   def predict(x: LocalDataSet[MiniBatch[T]])(implicit ev: TensorNumeric[T]): Array[Activity] = {
     val localPredictor = LocalPredictor(this)
     localPredictor.predict(x)

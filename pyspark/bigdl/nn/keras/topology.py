@@ -15,12 +15,27 @@
 #
 
 from bigdl.nn.keras.layer import KerasLayer
-from bigdl.util.common import *
+from bigdl.dataset.dataset import *
+from bigdl.keras.optimization import OptimConverter
 import multiprocessing
 
 
 class KerasModel(KerasLayer):
+    """
+    Configures the learning process. Must be called before fit.
+
+    # Arguments
+    optimizer: Optimization method to be used.
+    loss: Criterion to be used.
+    metrics: List of validation methods to be used.
+    """
     def compile(self, optimizer, loss, metrics=None):
+        if isinstance(optimizer, six.string_types):
+            optimizer = OptimConverter.to_bigdl_optim_method(optimizer)
+        if isinstance(loss, six.string_types):
+            loss = OptimConverter.to_bigdl_criterion(loss)
+        if all(isinstance(metric, six.string_types) for metric in metrics):
+            metrics = OptimConverter.to_bigdl_metrics(metrics)
         callBigDlFunc(self.bigdl_type, "compile",
                       self.value,
                       optimizer,
@@ -33,7 +48,7 @@ class KerasModel(KerasLayer):
                 training_data = to_sample_rdd(x, y)
                 if validation_data:
                     validation_data = to_sample_rdd(*validation_data)
-            elif isinstance(x, RDD) and not y:
+            elif (isinstance(x, RDD) or isinstance(x, DataSet)) and not y:
                 training_data = x
             else:
                 raise TypeError("Unsupported training data type: %s" % type(x))

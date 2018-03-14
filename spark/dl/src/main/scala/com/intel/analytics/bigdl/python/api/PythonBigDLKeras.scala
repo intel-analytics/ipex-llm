@@ -18,9 +18,8 @@ package com.intel.analytics.bigdl.python.api
 
 import java.util.{ArrayList => JArrayList, HashMap => JHashMap, List => JList, Map => JMap}
 
-import com.intel.analytics.bigdl.Criterion
+import com.intel.analytics.bigdl.{Criterion, DataSet, nn}
 import com.intel.analytics.bigdl.dataset.{DataSet, LocalDataSet, MiniBatch}
-import com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.nn.{Container, Graph, SpatialBatchNormalization}
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
@@ -29,6 +28,7 @@ import com.intel.analytics.bigdl.numeric._
 import com.intel.analytics.bigdl.optim.{OptimMethod, Regularizer, ValidationMethod}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.transform.vision.image.{ImageFeature, ImageFeatureToMiniBatch}
 import com.intel.analytics.bigdl.utils.{Engine, MultiShape, Shape, SingleShape}
 import org.apache.spark.api.java.JavaRDD
 
@@ -679,18 +679,9 @@ class PythonBigDLKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends Pytho
 
   def compile(
     module: KerasModel[T],
-    optimizer: String,
-    loss: String,
-    metrics: JList[String] = null): Unit = {
-    module.compile(optimizer, loss,
-      if (metrics == null) null else metrics.asScala.toArray)
-  }
-
-  def compile(
-    module: KerasModel[T],
     optimizer: OptimMethod[T],
     loss: Criterion[T],
-    metrics: JList[ValidationMethod[T]]): Unit = {
+    metrics: JList[ValidationMethod[T]] = null): Unit = {
     module.compile(optimizer, loss,
       if (metrics == null) null else metrics.asScala.toArray)
   }
@@ -703,6 +694,19 @@ class PythonBigDLKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends Pytho
     validationData: JavaRDD[Sample] = null): Unit = {
     module.fit(toJSample(x), batchSize, epochs,
       if (validationData == null) null else toJSample(validationData))
+  }
+
+  def fit(
+    module: KerasModel[T],
+    x: DataSet[ImageFeature],
+    batchSize: Int,
+    epochs: Int,
+    validationData: DataSet[ImageFeature]): Unit = {
+    val trainData = x -> ImageFeatureToMiniBatch[T](batchSize)
+    val valData =
+      if (validationData != null) validationData -> ImageFeatureToMiniBatch[T](batchSize)
+      else null
+    module.fit(trainData, epochs, valData)
   }
 
   def fit(
