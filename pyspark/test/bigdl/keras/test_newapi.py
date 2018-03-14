@@ -20,8 +20,8 @@ from test.bigdl.test_utils import BigDLTestCase
 import bigdl.nn.keras.layer as BLayer
 import keras.layers as KLayer
 import keras.backend as K
-import numpy as np
 from bigdl.keras.converter import WeightsConverter
+from bigdl.dataset.dataset import *
 
 np.random.seed(1337)  # for reproducibility
 
@@ -145,9 +145,34 @@ class TestLayer(BigDLTestCase):
         model = BSequential()
         model.add(BLayer.Dense(5, input_shape=(10, )))
         model.compile(optimizer="sgd", loss="mse", metrics=["accuracy"])
-        model.fit(x, y, batch_size=8, nb_epoch=1, validation_data=(x, y))
+        model.fit(x, y, batch_size=8, nb_epoch=2, validation_data=(x, y))
         model.predict(x)
         model.evaluate(x, y, batch_size=8)
+
+    def test_training_dataset(self):
+        images = []
+        labels = []
+        for i in range(0, 8):
+            features = np.random.uniform(0, 1, (200, 200, 3))
+            label = np.array([2])
+            images.append(features)
+            labels.append(label)
+
+        image_frame = DistributedImageFrame(self.sc.parallelize(images),
+                                            self.sc.parallelize(labels))
+
+        transformer = Pipeline([BytesToMat(), Resize(256, 256), CenterCrop(224, 224),
+                                ChannelNormalize(0.485, 0.456, 0.406, 0.229, 0.224, 0.225),
+                                MatToTensor(), ImageFrameToSample(target_keys=['label'])])
+        data_set = DataSet.image_frame(image_frame).transform(transformer)
+        from bigdl.nn.keras.topology import Sequential as BSequential
+        model = BSequential()
+        model.add(BLayer.Convolution2D(1, 5, 5, input_shape=(3, 224, 224)))
+        model.add(BLayer.Reshape((1*220*220, )))
+        model.add(BLayer.Dense(20, activation="softmax"))
+        model.compile(optimizer="sgd", loss="sparse_categorical_crossentropy", metrics=["accuracy"])
+        model.fit(data_set, batch_size=8, nb_epoch=2, validation_data=data_set)
+
 
 
 if __name__ == "__main__":
