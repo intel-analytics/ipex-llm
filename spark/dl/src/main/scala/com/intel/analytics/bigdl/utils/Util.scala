@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.utils
 
-import java.io.{ByteArrayInputStream, IOException, ObjectInputStream, ObjectStreamClass}
+import java.io._
 
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -24,7 +24,6 @@ import com.intel.analytics.bigdl.tensor.{QuantizedTensor, QuantizedType, Storage
 import org.apache.commons.lang3.SerializationException
 
 import scala.reflect.ClassTag
-import scala.tools.nsc.interpreter.InputStream
 import scala.util.Try
 
 object Util {
@@ -147,8 +146,8 @@ object Util {
   }
 
   private[bigdl] def putWeightBias[T: ClassTag](
-    broadcastWeightBias: Array[Tensor[T]],
-    localModel: Module[T])(implicit ev: TensorNumeric[T]): Unit = {
+      broadcastWeightBias: Array[Tensor[T]],
+      localModel: Module[T])(implicit ev: TensorNumeric[T]): Unit = {
     val localWeightBias = localModel.parameters()._1
     var i = 0
     while (i < localWeightBias.length) {
@@ -160,8 +159,8 @@ object Util {
   }
 
   private[bigdl] def initGradWeightBias[T: ClassTag](
-    broadcastWeightBias: Array[Tensor[T]],
-    localModel: Module[T])(implicit ev: TensorNumeric[T]): Unit = {
+      broadcastWeightBias: Array[Tensor[T]],
+      localModel: Module[T])(implicit ev: TensorNumeric[T]): Unit = {
     val (localWeightBias, localGradWeightBias) = localModel.parameters()
     // init gradient with a compacted storage
     val storage = Storage[T](localGradWeightBias.map(_.nElement()).sum)
@@ -178,23 +177,6 @@ object Util {
         }
       }
       i += 1
-    }
-  }
-
-
-  private[bigdl] def excludeNotTorch[T: ClassTag]
-  (modules : Seq[AbstractModule[_, _, T]]): Unit = {
-    val invalidNodes = modules.filter{!_.isCompatibleWithTorch()}
-    if (invalidNodes.length > 0) {
-      throw new RuntimeException(s"Do not mix with Layer: ${invalidNodes.mkString(",")}")
-    }
-  }
-
-  private[bigdl] def excludeNotKeras[T: ClassTag]
-  (modules : Seq[AbstractModule[_, _, T]]): Unit = {
-    val invalidNodes = modules.filter{!_.isCompatibleWithKeras()}
-    if (invalidNodes.length > 0) {
-      throw new RuntimeException(s"Do not mix with Layer: ${invalidNodes.mkString(",")}")
     }
   }
 
@@ -238,6 +220,5 @@ object Util {
       if (in != null) Try(in.close())
     }
   }
-
 
 }
