@@ -17,13 +17,13 @@ package com.intel.analytics.bigdl.models.utils
 
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dataset.{DistributedDataSet, MiniBatch}
-import com.intel.analytics.bigdl.models.inception.{Inception_v1, Inception_v2}
+import com.intel.analytics.bigdl.models.inception.{Inception_v1, Inception_v1_NoAuxClassifier, Inception_v2}
 import com.intel.analytics.bigdl.models.resnet.ResNet
 import com.intel.analytics.bigdl.models.vgg.{Vgg_16, Vgg_19}
 import com.intel.analytics.bigdl.nn.ClassNLLCriterion
-import com.intel.analytics.bigdl.nn.mkldnn.ResNet_dnn
+import com.intel.analytics.bigdl.nn.mkldnn.{Inception_v1_NoAuxClassifier_dnn, ResNet_dnn}
 import com.intel.analytics.bigdl.numeric.NumericFloat
-import com.intel.analytics.bigdl.optim.{Optimizer, Trigger}
+import com.intel.analytics.bigdl.optim.{Optimizer, Top1Accuracy, Top5Accuracy, Trigger}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.{Engine, T}
 import org.apache.log4j.{Level, Logger}
@@ -87,6 +87,10 @@ object DistriOptimizerPerf {
     val (_model, input) = param.module match {
       case "inception_v1" => (Inception_v1(1000), Tensor(param.batchSize, 3, 224, 224))
       case "inception_v2" => (Inception_v2(1000), Tensor(param.batchSize, 3, 224, 224))
+      case "inception_no_dnn" =>
+        (Inception_v1_NoAuxClassifier_dnn(1000, true), Tensor(param.batchSize, 3, 224, 224))
+      case "inception_no" =>
+        (Inception_v1_NoAuxClassifier(1000, true), Tensor(param.batchSize, 3, 224, 224))
       case "vgg16" => (Vgg_16(1000), Tensor(param.batchSize, 3, 224, 224))
       case "vgg19" => (Vgg_19(1000), Tensor(param.batchSize, 3, 224, 224))
       case "resnet_50" =>
@@ -114,7 +118,7 @@ object DistriOptimizerPerf {
       .mapPartitions(iter => {
         Iterator.single((broadcast.value))
       }).persist()
-    rdd.count()
+    println("rdd count " + rdd.count())
     val dummyDataSet = new DistributedDataSet[MiniBatch[Float]] {
       override def size(): Long = 10000
       override def shuffle(): Unit = {}
@@ -127,7 +131,12 @@ object DistriOptimizerPerf {
       dummyDataSet,
       criterion
     )
-    optimizer.setEndWhen(Trigger.maxEpoch(param.maxEpoch)).optimize()
+
+    optimizer
+      .setValidation(Trigger.everyEpoch,
+        dummyDataSet, Array(new Top1Accuracy[Float], new Top5Accuracy[Float]))
+      .setEndWhen(Trigger.maxEpoch(param.maxEpoch))
+      .optimize()
     sc.stop()
   }
 }

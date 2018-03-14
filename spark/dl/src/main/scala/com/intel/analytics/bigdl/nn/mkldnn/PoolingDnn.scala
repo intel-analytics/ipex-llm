@@ -143,9 +143,11 @@ class PoolingDnn[T: ClassTag](
               s"kernel size(${kW-padW},${kH-padH})")
           require(kW / 2 >= padW && kH / 2 >= padH, "pad should be smaller than half of kernel" +
             "size pad size($padW,$padH) kernel size($kW, $kH)")
-          Utils.getOutSizeAndPaddingForDNN(inputHeight, inputWidth, dH, dW, kH, kW, padH, padW, ceilMode)
-          // change padding
-
+          if (ceilMode) {
+            Utils.getOutSizeAndPaddingForDNN(inputHeight, inputWidth, dH, dW, kH, kW, padH, padW, ceilMode)
+          } else {
+            Utils.getOutSizeAndPadding(inputHeight, inputWidth, dH, dW, kH, kW, padH, padW, ceilMode)
+          }
         }
 
       val padTop = sizes(0)
