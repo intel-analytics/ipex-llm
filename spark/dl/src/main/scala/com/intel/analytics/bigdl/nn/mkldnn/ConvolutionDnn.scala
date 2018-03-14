@@ -20,6 +20,7 @@ import breeze.linalg.max
 import com.intel.analytics.bigdl.mkl.MklDnn
 import com.intel.analytics.bigdl.nn.abstractnn._
 import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.{MklDnnTensor, MklDnnType, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{T, Table}
@@ -38,7 +39,9 @@ class ConvolutionDnn[T: ClassTag](
      val padW: Int = 0, // The additional zeros added per width to the input planes.
      val padH: Int = 0, // The additional zeros added per height to the input planes.
      val nGroup: Int = 1, // Kernel group number
-                                 val propagateBack: Boolean = true,
+     val propagateBack: Boolean = true,
+     var wRegularizer: Regularizer[Float] = null,
+     var bRegularizer: Regularizer[Float] = null,
      val initWeight: Tensor[Float] = null,
      val initBias: Tensor[Float] = null,
      val initGradWeight: Tensor[Float] = null,
@@ -810,6 +813,13 @@ class ConvolutionDnn[T: ClassTag](
 
     gradWeight.add(original_gradWeights)
     gradBias.add(original_gradBias)
+
+    if (null != wRegularizer) {
+      wRegularizer.accRegularization(weight, gradWeight, scaleW)
+    }
+    if (withBias && null != bRegularizer) {
+      bRegularizer.accRegularization(bias, gradBias, scaleB)
+    }
   }
 
   override def updateParameters(learningRate: Float): Unit = {
@@ -880,6 +890,8 @@ object ConvolutionDnn {
    padH: Int = 0,
    nGroup: Int = 1,
    propagateBack: Boolean = true,
+   wRegularizer: Regularizer[Float] = null,
+   bRegularizer: Regularizer[Float] = null,
    initWeight: Tensor[Float] = null,
    initBias: Tensor[Float] = null,
    initGradWeight: Tensor[Float] = null,
@@ -887,7 +899,7 @@ object ConvolutionDnn {
    withBias: Boolean = true,
    format: DataFormat = DataFormat.NCHW): ConvolutionDnn[Float] = {
     new ConvolutionDnn[Float](nInputPlane, nOutputPlane, kW, kH, dW,
-    dH, padW, padH, nGroup, propagateBack, initWeight, initBias,
-    initGradWeight, initGradBias, withBias, format)
+    dH, padW, padH, nGroup, propagateBack, wRegularizer, bRegularizer,
+      initWeight, initBias, initGradWeight, initGradBias, withBias, format)
   }
 }

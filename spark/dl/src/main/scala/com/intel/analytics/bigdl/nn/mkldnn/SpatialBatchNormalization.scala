@@ -46,6 +46,10 @@ class SpatialBatchNormalization[T: ClassTag](
   val diffAll = MklDnnTensor[T](all.size())
   val prvAll = MklDnnTensor[T](all.size())
 
+  val allWeight = all.view(Array(2, nOutput))
+  val weight = allWeight.select(1, 1)
+  val bias = allWeight.select(1, 2)
+
   @transient var engine = 0L
   @transient var stream = 0L
 

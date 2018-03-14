@@ -60,9 +60,27 @@ object DnnUtils {
   def getunequals(t1: Tensor[Float], t2: Tensor[Float],
                   epsilon: Double = DenseTensorMath.floatEpsilon): Boolean = {
     var result = true
+    var num = 0
     t1.map(t2, (a, b) => {
       if (true) {
         result = nearlyEqual(a, b, epsilon)
+        if (!result) {
+          num += 1
+          val diff = math.abs(a - b)
+          println("epsilon " + a + "***" + b + "***" + diff / (abs(a) + abs(b)) + "***" + diff)
+        }
+      }
+      a
+    })
+    println("diff num " + num)
+    return true
+  }
+
+  def isEquals(t1: Tensor[Float], t2: Tensor[Float]): Boolean = {
+    var result = true
+    t1.map(t2, (a, b) => {
+      if (result) {
+        result = if (a == b) true else false
         if (!result) {
           val diff = math.abs(a - b)
           println("epsilon " + a + "***" + b + "***" + diff / (abs(a) + abs(b)) + "***" + diff)
@@ -70,7 +88,7 @@ object DnnUtils {
       }
       a
     })
-    return true
+    return result
   }
 
   def reorderToUser(input: Tensor[Float], output: Tensor[Float], outputFormat: Int): Unit = {

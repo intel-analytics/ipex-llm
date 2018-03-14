@@ -16,6 +16,7 @@
 
 package com.intel.analytics.bigdl.nn.mkldnn
 
+import breeze.numerics._
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.nn.Graph._
 import com.intel.analytics.bigdl.nn.{Graph, Linear, SpatialBatchNormalization, Module => _, _}
@@ -30,12 +31,15 @@ import com.intel.analytics.bigdl.models.inception.Inception_Layer_v2
 import com.intel.analytics.bigdl.models.resnet.Convolution
 import com.intel.analytics.bigdl.models.resnet.ResNet.{apply => _, _}
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
-import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
+import com.intel.analytics.bigdl.optim.L2Regularizer
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.tensor.{DenseTensorMath, Storage, Tensor}
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import org.apache.log4j.Logger
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
+import scala.reflect.ClassTag
 
 object DnnTools {
   def getTopTimes(times: Array[(AbstractModule[_ <: Activity, _ <: Activity, Float],
@@ -104,6 +108,70 @@ object DnnTools {
     val memoryPrimitives = Array(src_memory, dst_memory)
     val buffer = Array(input, output)
     MklDnnOps.streamSubmit(stream, 1, stream_fwd.toArray, 1, memoryPrimitives, buffer)
+  }
+
+  def nearlyEqual(a: Float, b: Float, epsilon: Double): Boolean = {
+    val absA = math.abs(a)
+    val absB = math.abs(b)
+    val diff = math.abs(a - b)
+
+    val result = if (a == b) {
+      true
+    } else {
+      math.min(diff / (absA + absB), diff) < epsilon
+    }
+
+    result
+  }
+
+  def nearequals(t1: Tensor[Float], t2: Tensor[Float],
+                 epsilon: Double = DenseTensorMath.floatEpsilon): Boolean = {
+    var result = true
+    t1.map(t2, (a, b) => {
+      if (result) {
+        result = nearlyEqual(a, b, epsilon)
+        if (!result) {
+          val diff = math.abs(a - b)
+          println("epsilon " + a + "***" + b + "***" + diff / (abs(a) + abs(b)) + "***" + diff)
+        }
+      }
+      a
+    })
+    return result
+  }
+
+  def getunequals(t1: Tensor[Float], t2: Tensor[Float],
+                  epsilon: Double = DenseTensorMath.floatEpsilon): Boolean = {
+    var result = true
+    var num = 0
+    t1.map(t2, (a, b) => {
+      if (true) {
+        result = nearlyEqual(a, b, epsilon)
+        if (!result) {
+          num += 1
+          val diff = math.abs(a - b)
+          println("epsilon " + a + "***" + b + "***" + diff / (abs(a) + abs(b)) + "***" + diff)
+        }
+      }
+      a
+    })
+    println("diff num " + num)
+    return true
+  }
+
+  def isEquals(t1: Tensor[Float], t2: Tensor[Float]): Boolean = {
+    var result = true
+    t1.map(t2, (a, b) => {
+      if (result) {
+        result = if (a == b) true else false
+        if (!result) {
+          val diff = math.abs(a - b)
+          println("epsilon " + a + "***" + b + "***" + diff / (abs(a) + abs(b)) + "***" + diff)
+        }
+      }
+      a
+    })
+    return result
   }
 }
 
@@ -568,6 +636,44 @@ object Vgg_19_dnn {
   }
 }
 
+object SbnDnn {
+  def apply[@specialized(Float, Double) T: ClassTag](
+    nOutput: Int,
+    eps: Double = 1e-3,
+    momentum: Double = 0.1,
+    //    momentum: Double = 0.9,
+    affine: Boolean = true)
+  (implicit ev: TensorNumeric[T]): SpatialBatchNormalization[T] = {
+    mkldnn.SpatialBatchNormalization[T](nOutput, eps, momentum, affine).setInitMethod(Ones, Zeros)
+    //    SpatialBatchNormalization[T](nOutput, eps, momentum, affine).setInitMethod(Ones)
+  }
+}
+
+object Convolution {
+  def apply[@specialized(Float, Double) T: ClassTag](
+      nInputPlane: Int,
+      nOutputPlane: Int,
+      kernelW: Int,
+      kernelH: Int,
+      strideW: Int = 1,
+      strideH: Int = 1,
+      padW: Int = 0,
+      padH: Int = 0,
+      nGroup: Int = 1,
+      propagateBack: Boolean = true,
+      optnet: Boolean = true,
+      weightDecay: Double = 1e-4)
+    (implicit ev: TensorNumeric[Float]): ConvolutionDnn[Float] = {
+    val wReg = L2Regularizer[Float](weightDecay)
+    val bReg = L2Regularizer[Float](weightDecay)
+    val conv = mkldnn.ConvolutionDnn(nInputPlane, nOutputPlane, kernelW, kernelH,
+        strideW, strideH, padW, padH, nGroup, propagateBack, wReg, bReg)
+    conv.setInitMethod(MsraFiller(false), Zeros)
+    //    conv.setInitMethod(MsraFiller(false))
+    conv
+  }
+}
+
 object ResNet_dnn {
   val logger = Logger.getLogger(getClass)
 
@@ -617,22 +723,21 @@ object ResNet_dnn {
       model match {
         case container: Container[Activity, Activity, Float]
         => container.modules.foreach(m => initModules(m))
-        case spatialShareConvolution
-          if (spatialShareConvolution.isInstanceOf[SpatialShareConvolution[Float]]) =>
-          val curModel = spatialShareConvolution.asInstanceOf[SpatialShareConvolution[Float]]
+        case convolutionDnn
+          if (convolutionDnn.isInstanceOf[mkldnn.ConvolutionDnn[Float]]) =>
+          val curModel = convolutionDnn.asInstanceOf[mkldnn.ConvolutionDnn[Float]]
           val n: Float = curModel.kernelW * curModel.kernelW * curModel.nOutputPlane
           curModel.weight.apply1(_ => RNG.normal(0, Math.sqrt(2.0f / n)).toFloat)
           curModel.bias.apply1(_ => 0.0f)
-        case spatialConvolution
-          if (spatialConvolution.isInstanceOf[SpatialConvolution[Float]]) =>
-          val curModel = spatialConvolution.asInstanceOf[SpatialConvolution[Float]]
-          val n: Float = curModel.kernelW * curModel.kernelW * curModel.nOutputPlane
-          curModel.weight.apply1(_ => RNG.normal(0, Math.sqrt(2.0f / n)).toFloat)
-          curModel.bias.apply1(_ => 0.0f)
+          curModel
         case spatialBatchNormalization
-          if (spatialBatchNormalization.isInstanceOf[SpatialBatchNormalization[Float]]) =>
-          val curModel = spatialBatchNormalization.asInstanceOf[SpatialBatchNormalization[Float]]
-        case linear if (linear.isInstanceOf[Linear[Float]]) =>
+          if (spatialBatchNormalization.isInstanceOf[mkldnn.SpatialBatchNormalization[Float]]) =>
+          val curModel =
+            spatialBatchNormalization.asInstanceOf[mkldnn.SpatialBatchNormalization[Float]]
+          curModel.weight.apply1(_ => 1.0f)
+          curModel.bias.apply1(_ => 0.0f)
+        case linear
+          if (linear.isInstanceOf[mkldnn.Linear[Float]]) =>
           linear.asInstanceOf[Linear[Float]].bias.apply1(_ => 0.0f)
         case _ => Unit
       }
@@ -646,8 +751,7 @@ object ResNet_dnn {
     val depth = opt.get("depth").getOrElse(18)
     val shortCutType = opt.get("shortcutType")
     val shortcutType = shortCutType.getOrElse(ShortcutType.B).asInstanceOf[ShortcutType]
-    val dataSet = opt.get("dataset")
-    val dataset = dataSet.getOrElse(DatasetType.CIFAR10).asInstanceOf[DatasetType]
+    val dataSet = opt.getOrElse[DatasetType]("dataSet", DatasetType.CIFAR10)
     val optnet = opt.get("optnet").getOrElse(true)
 
     def shortcut(nInputPlane: Int, nOutputPlane: Int, stride: Int, name: String): Module[Float] = {
@@ -656,8 +760,9 @@ object ResNet_dnn {
 
       if (useConv) {
         Sequential()
-          .add(ConvolutionDnn(nInputPlane, nOutputPlane, 1, 1, stride, stride).setName(s"res${name}_branch1"))
-          .add(mkldnn.SpatialBatchNormalization(nOutputPlane).setName(s"bn${name}_branch1"))
+          .add(mkldnn.Convolution(nInputPlane, nOutputPlane, 1, 1, stride, stride,
+            optnet = optnet).setName(s"res${name}_branch1"))
+          .add(mkldnn.SbnDnn(nOutputPlane).setName(s"bn${name}_branch1"))
       } else if (nInputPlane != nOutputPlane) {
         throw new IllegalArgumentException(s"useConv false")
       } else {
@@ -670,17 +775,22 @@ object ResNet_dnn {
       iChannels = n * 4
 
       val s = Sequential()
-      s.add(ConvolutionDnn(nInputPlane, n, 1, 1, 1, 1, 0, 0).setName(s"res${name}_branch2a"))
-        .add(mkldnn.SpatialBatchNormalization(n).setName(s"bn${name}_branch2a"))
+      s.add(mkldnn.Convolution(nInputPlane, n, 1, 1, 1, 1, 0, 0,
+        optnet = optnet).setName(s"res${name}_branch2a"))
+        .add(mkldnn.SbnDnn(n).setName(s"bn${name}_branch2a"))
         .add(ReLUDnn(true).setName(s"res${name}_branch2a_relu"))
-        .add(ConvolutionDnn(n, n, 3, 3, stride, stride, 1, 1).setName(s"res${name}_branch2b"))
-        .add(mkldnn.SpatialBatchNormalization(n).setName(s"bn${name}_branch2b"))
+        .add(mkldnn.Convolution(n, n, 3, 3, stride, stride, 1, 1,
+          optnet = optnet).setName(s"res${name}_branch2b"))
+        .add(mkldnn.SbnDnn(n).setName(s"bn${name}_branch2b"))
         .add(ReLUDnn(true).setName(s"res${name}_branch2b_relu"))
-        .add(ConvolutionDnn(n, n*4, 1, 1, 1, 1, 0, 0).setName(s"res${name}_branch2c"))
-        .add(mkldnn.SpatialBatchNormalization(n * 4).setName(s"bn${name}_branch2c"))
+        .add(mkldnn.Convolution(n, n*4, 1, 1, 1, 1, 0, 0,
+          optnet = optnet).setName(s"res${name}_branch2c"))
+        .add(mkldnn.SbnDnn(n * 4).setInitMethod(Zeros, Zeros).setName(s"bn${name}_branch2c"))
 
       val model = Sequential()
-        .add(ConcatTableDnn().add(s).add(shortcut(nInputPlane, n*4, stride, name)).setName(s"$name/concatTable"))
+        .add(ConcatTableDnn().
+          add(s).
+          add(shortcut(nInputPlane, n*4, stride, name)).setName(s"$name/concatTable"))
         .add(CAddTableDnn(true).setName(s"$name/caddTable"))
         .add(ReLUDnn(true).setName(s"res${name}_relu"))
       model
@@ -708,7 +818,7 @@ object ResNet_dnn {
     }
 
     val model = Sequential()
-    if (dataset == DatasetType.ImageNet) {
+    if (dataSet == DatasetType.ImageNet) {
       val cfg = Map(
         50 -> ((3, 4, 6, 3), 2048, bottleneck: (Int, Int, String) => Module[Float])
       )
@@ -719,8 +829,9 @@ object ResNet_dnn {
       iChannels = 64
       logger.info(" | ResNet-" + depth + " ImageNet")
 
-      model.add(ConvolutionDnn(3, 64, 7, 7, 2, 2, 3, 3, propagateBack = false).setName("conv1"))
-        .add(mkldnn.SpatialBatchNormalization(64).setName("bn_conv1"))
+      model.add(mkldnn.Convolution(3, 64, 7, 7, 2, 2, 3, 3, propagateBack = false,
+        optnet = optnet).setName("conv1"))
+        .add(mkldnn.SbnDnn(64).setName("bn_conv1"))
         .add(ReLUDnn(true).setName("conv1_relu"))
         .add(PoolingDnn(3, 3, 2, 2, 1, 1).setName("pool1"))
         .add(layer(block, 64, loopConfig._1, name = "2"))
@@ -728,9 +839,10 @@ object ResNet_dnn {
         .add(layer(block, 256, loopConfig._3, 2, name = "4"))
         .add(layer(block, 512, loopConfig._4, 2, name = "5"))
         .add(PoolingDnnAverage(7, 7, 1, 1).setName("pool5"))
-        .add(mkldnn.Linear(nFeatures, classNum).setName("fc1000"))
+        .add(mkldnn.Linear(nFeatures, classNum, true, L2Regularizer(1e-4), L2Regularizer(1e-4))
+          .setInitMethod(RandomNormal(0.0, 0.01), Zeros).setName("fc1000"))
     } else {
-      throw new IllegalArgumentException(s"Invalid dataset ${dataset}")
+      throw new IllegalArgumentException(s"Invalid dataset ${dataSet}")
     }
     model
   }

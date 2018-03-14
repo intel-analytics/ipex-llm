@@ -57,6 +57,7 @@ object Convolution {
         strideW, strideH, padW, padH, nGroup, propagateBack, wReg, bReg)
     }
     conv.setInitMethod(MsraFiller(false), Zeros)
+//    conv.setInitMethod(MsraFiller(false))
     conv
   }
 }
@@ -66,9 +67,11 @@ object Sbn {
     nOutput: Int,
     eps: Double = 1e-3,
     momentum: Double = 0.1,
+//    momentum: Double = 0.9,
     affine: Boolean = true)
   (implicit ev: TensorNumeric[T]): SpatialBatchNormalization[T] = {
     SpatialBatchNormalization[T](nOutput, eps, momentum, affine).setInitMethod(Ones, Zeros)
+//    SpatialBatchNormalization[T](nOutput, eps, momentum, affine).setInitMethod(Ones)
   }
 }
 
@@ -206,6 +209,8 @@ object ResNet {
         .add(ReLU(true))
         .add(Convolution(n, n*4, 1, 1, 1, 1, 0, 0, optnet = optnet))
         .add(Sbn(n * 4).setInitMethod(Zeros, Zeros))
+//        .add(Sbn(n * 4).setInitMethod(Zeros))
+
       Sequential()
         .add(ConcatTable()
           .add(s)
@@ -258,6 +263,7 @@ object ResNet {
         .add(View(nFeatures).setNumInputDims(3))
         .add(Linear(nFeatures, classNum, true, L2Regularizer(1e-4), L2Regularizer(1e-4))
           .setInitMethod(RandomNormal(0.0, 0.01), Zeros))
+//          .setInitMethod(RandomNormal(0.0, 0.01)))
     } else if (dataSet == DatasetType.CIFAR10) {
       require((depth - 2)%6 == 0,
         "depth should be one of 20, 32, 44, 56, 110, 1202")
@@ -297,7 +303,7 @@ object ResNet {
       if (useConv) {
         val conv1 = Convolution(nInputPlane, nOutputPlane, 1, 1, stride, stride,
           optnet = optnet).inputs(input)
-        val bn1 = Sbn(nOutputPlane).inputs(conv1)
+        val bn1 = SpatialBatchNormalization(nOutputPlane).inputs(conv1)
         bn1
       } else if (nInputPlane != nOutputPlane) {
         val pool1 = SpatialAveragePooling(1, 1, stride, stride).inputs(input)
@@ -314,11 +320,11 @@ object ResNet {
       val nInputPlane = iChannels
       iChannels = n
 
-      val conv1 = Convolution(nInputPlane, n, 3, 3, stride, stride, 1, 1).inputs(input)
-      val bn1 = Sbn(n).inputs(conv1)
+      val conv1 = SpatialConvolution(nInputPlane, n, 3, 3, stride, stride, 1, 1).inputs(input)
+      val bn1 = SpatialBatchNormalization(n).inputs(conv1)
       val relu1 = ReLU(true).inputs(bn1)
-      val conv2 = Convolution(n, n, 3, 3, 1, 1, 1, 1).inputs(relu1)
-      val bn2 = Sbn(n).inputs(conv2)
+      val conv2 = SpatialConvolution(n, n, 3, 3, 1, 1, 1, 1).inputs(relu1)
+      val bn2 = SpatialBatchNormalization(n).inputs(conv2)
       val shortcut = shortcutFunc(nInputPlane, n, stride, input)
       val add = CAddTable(true).inputs(bn2, shortcut)
       val output = ReLU(true).inputs(add)
@@ -330,13 +336,13 @@ object ResNet {
       iChannels = n * 4
 
       val conv1 = Convolution(nInputPlane, n, 1, 1, 1, 1, 0, 0, optnet = optnet).inputs(input)
-      val bn1 = Sbn(n).inputs(conv1)
+      val bn1 = SpatialBatchNormalization(n).inputs(conv1)
       val relu = ReLU(true).inputs(bn1)
       val conv2 = Convolution(n, n, 3, 3, stride, stride, 1, 1, optnet = optnet).inputs(relu)
-      val bn2 = Sbn(n).inputs(conv2)
+      val bn2 = SpatialBatchNormalization(n).inputs(conv2)
       val relu2 = ReLU(true).inputs(bn2)
       val conv3 = Convolution(n, n*4, 1, 1, 1, 1, 0, 0, optnet = optnet).inputs(relu2)
-      val sbn = Sbn(n * 4).setInitMethod(Zeros, Zeros).inputs(conv3)
+      val sbn = SpatialBatchNormalization(n * 4).inputs(conv3)
 
       val shortcut = shortcutFunc(nInputPlane, n * 4, stride, input)
       val add = CAddTable(true).inputs(sbn, shortcut)
@@ -378,7 +384,7 @@ object ResNet {
       val input = Input()
       val conv1 = Convolution(3, 64, 7, 7, 2, 2, 3, 3,
         optnet = optnet, propagateBack = false).inputs(input)
-      val bn = Sbn(64).inputs(conv1)
+      val bn = SpatialBatchNormalization(64).inputs(conv1)
       val relu = ReLU(true).inputs(bn)
       val pool = SpatialMaxPooling(3, 3, 2, 2, 1, 1).inputs(relu)
       val layer1 = layer(block, 64, loopConfig._1)(pool)
@@ -387,8 +393,7 @@ object ResNet {
       val layer4 = layer(block, 512, loopConfig._4, 2)(layer3)
       val pool2 = SpatialAveragePooling(7, 7, 1, 1).inputs(layer4)
       val view = View(nFeatures).setNumInputDims(3).inputs(pool2)
-      val output = Linear(nFeatures, classNum, true, L2Regularizer(1e-4), L2Regularizer(1e-4))
-               .setInitMethod(RandomNormal(0.0, 0.01), Zeros).inputs(view)
+      val output = Linear(nFeatures, classNum).inputs(view)
       Graph(input, output)
     } else if (dataset == DatasetType.CIFAR10) {
       require((depth - 2)%6 == 0,
