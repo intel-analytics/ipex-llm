@@ -267,7 +267,6 @@ if __name__ == "__main__":
 
     image_size = 224  # create dataset
     train_transformer = Pipeline([PixelBytesToMat(),
-                                  Resize(256, 256),
                                   RandomCrop(image_size, image_size),
                                   RandomTransformer(HFlip(), 0.5),
                                   ChannelNormalize(0.485, 0.456, 0.406, 0.229, 0.224, 0.225),
@@ -278,7 +277,6 @@ if __name__ == "__main__":
     train_data = DataSet.image_frame(raw_train_data).transform(train_transformer)
 
     val_transformer = Pipeline([PixelBytesToMat(),
-                                Resize(256, 256),
                                 CenterCrop(image_size, image_size),
                                 RandomTransformer(HFlip(), 0.5),
                                 ChannelNormalize(0.485, 0.456, 0.406, 0.229, 0.224, 0.225),
