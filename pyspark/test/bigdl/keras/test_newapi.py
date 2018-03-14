@@ -146,8 +146,8 @@ class TestLayer(BigDLTestCase):
         model.add(BLayer.Dense(5, input_shape=(10, )))
         model.compile(optimizer="sgd", loss="mse", metrics=["accuracy"])
         model.fit(x, y, batch_size=8, nb_epoch=2, validation_data=(x, y))
-        model.predict(x)
         model.evaluate(x, y, batch_size=8)
+        model.predict(x)
 
     def test_train_dataset(self):
         images = []
@@ -172,7 +172,6 @@ class TestLayer(BigDLTestCase):
         model.add(BLayer.Dense(20, activation="softmax"))
         model.compile(optimizer="sgd", loss="sparse_categorical_crossentropy", metrics=["accuracy"])
         model.fit(data_set, batch_size=8, nb_epoch=2, validation_data=data_set)
-        model.evaluate(data_set)
 
 
 if __name__ == "__main__":
