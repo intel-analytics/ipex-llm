@@ -712,6 +712,9 @@ class Linear[T: ClassTag](
     if (withBias) {
       gradBias.zero()
     }
+
+    Memory.Zero(diffWeight.ptr, gradWeight.nElement(), 4)
+    Memory.Zero(diffBias.ptr, gradBias.nElement(), 4)
   }
 
   override def clearState() : this.type = {
