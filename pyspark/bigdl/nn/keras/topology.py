@@ -28,9 +28,6 @@ class KerasModel(KerasLayer):
                       metrics)
 
     def fit(self, x, y=None, batch_size=32, nb_epoch=10, validation_data=None, distributed=True):
-        init_engine()
-        redire_spark_logs()
-        show_bigdl_info_logs()
         if distributed:
             if isinstance(x, np.ndarray) and isinstance(y, np.ndarray):
                 training_data = to_sample_rdd(x, y)
@@ -63,9 +60,6 @@ class KerasModel(KerasLayer):
                           multiprocessing.cpu_count())
 
     def evaluate(self, x, y=None, batch_size=32):
-        init_engine()
-        redire_spark_logs()
-        show_bigdl_info_logs()
         if isinstance(x, np.ndarray) and isinstance(y, np.ndarray):
             evaluation_data = to_sample_rdd(x, y)
         elif isinstance(x, RDD) and not y:
@@ -78,9 +72,6 @@ class KerasModel(KerasLayer):
                              batch_size)
 
     def predict(self, x, distributed=True):
-        init_engine()
-        redire_spark_logs()
-        show_bigdl_info_logs()
         if is_distributed:
             if isinstance(x, np.ndarray):
                 features = to_sample_rdd(x, np.zeros([x.shape[0]]))
