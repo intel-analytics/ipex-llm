@@ -323,7 +323,7 @@ class BigDLTestCase(TestCase):
     def compare_newapi(self, klayer, blayer, input_data, weight_converter=None,
                        is_training=False, rtol=1e-6, atol=1e-6):
         from keras.models import Sequential as KSequential
-        from bigdl.nn.keras.layer import Sequential as BSequential
+        from bigdl.nn.keras.topology import Sequential as BSequential
         bmodel = BSequential()
         bmodel.add(blayer)
         kmodel = KSequential()

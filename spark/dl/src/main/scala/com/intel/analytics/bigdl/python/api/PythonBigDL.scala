@@ -215,7 +215,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   // The first dimension is batch for both X and y
-  private def toSampleArray(Xs: List[Tensor[T]], y: Tensor[T] = null): Array[JSample[T]] = {
+  def toSampleArray(Xs: List[Tensor[T]], y: Tensor[T] = null): Array[JSample[T]] = {
     require(!Xs.isEmpty, "Xs should not be empty")
     val totalNum = Xs(0).size()(0)
     var i = 1
