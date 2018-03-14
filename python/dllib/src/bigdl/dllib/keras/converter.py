@@ -14,20 +14,14 @@
 # limitations under the License.
 #
 
-import bigdl.nn.initialization_method as BInit
 import numpy as np
 import bigdl.nn.layer as BLayer
-from bigdl.optim.optimizer import L1L2Regularizer as BRegularizer
-import bigdl.optim.optimizer as boptimizer
-import bigdl.nn.criterion as bcriterion
 import bigdl.util.common as BCommon
 from bigdl.util.common import get_activation_by_name
-import keras.optimizers as koptimizers
 from keras.models import model_from_json
 from keras.models import Sequential, Model, Layer
 import keras
 import warnings
-from math import ceil
 from bigdl.keras.ToBigDLHelper import *
 
 
