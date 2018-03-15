@@ -36,8 +36,8 @@ class Input[T: ClassTag](val inputShape: Shape)(implicit ev: TensorNumeric[T])
 
 object Input {
   def apply[T: ClassTag](
-    name : String = null,
-    inputShape: Shape = null)(implicit ev: TensorNumeric[T]): ModuleNode[T] = {
+    inputShape: Shape = null,
+    name : String = null)(implicit ev: TensorNumeric[T]): ModuleNode[T] = {
     val module = new Input(inputShape)
     module.build(KerasLayer.addBatch(inputShape))
     if (name != null) {
@@ -49,8 +49,8 @@ object Input {
 
 object InputLayer {
   def apply[T: ClassTag](
-    name : String = null,
-    inputShape: Shape = null)(implicit ev: TensorNumeric[T]): KerasLayer[Activity, Activity, T] = {
+    inputShape: Shape = null,
+    name : String = null)(implicit ev: TensorNumeric[T]): KerasLayer[Activity, Activity, T] = {
     val module = new Input(inputShape)
     if (name != null) {
       module.setName(name)

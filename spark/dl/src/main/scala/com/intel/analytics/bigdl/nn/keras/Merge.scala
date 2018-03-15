@@ -26,7 +26,7 @@ import scala.reflect.ClassTag
 
 /**
  * Used to merge a list of inputs into a single output, following some merge mode.
- * Merge must have at least two input layers.
+ * To merge layers, it must take at least two input layers.
  *
  * When using this layer as the first layer in a model, you need to provide the argument
  * inputShape for input layers (each as a Single Shape, does not include the batch dimension).
@@ -39,7 +39,7 @@ import scala.reflect.ClassTag
  * @tparam T The numeric type of parameter(e.g. weight, bias). Only support float/double now.
  */
 class Merge[T: ClassTag](
-   val layers: Array[AbstractModule[Activity, Activity, T]] = null,
+   val layers: Array[KerasLayer[_, _, T]] = null,
    val mode: String = "sum",
    val concatAxis: Int = -1,
    // MultiShape isn't directly supported for serialization. Use Shape instead.
@@ -53,7 +53,7 @@ class Merge[T: ClassTag](
   || mergeMode == "cos" || mergeMode == "dot" || mergeMode == "max",
   s"Invalid merge mode: $mergeMode")
   if (layers != null) {
-    require(layers.length >= 2, s"Merge must have at least two input layers " +
+    require(layers.length >= 2, s"Merge must take at least two input layers " +
       s"but found ${layers.length}")
   }
 
@@ -141,11 +141,7 @@ class Merge[T: ClassTag](
       val parallel = ParallelTable()
       var i = 0
       while(i < layers.length) {
-        val tlayer = layers(i) match {
-          case k: KerasLayer[_, _, T] => k.labor
-          case t: AbstractModule[Activity, Activity, T] => t
-        }
-        parallel.add(tlayer)
+        parallel.add(layers(i).labor)
         i += 1
       }
       model.add(parallel)
@@ -161,18 +157,17 @@ class Merge[T: ClassTag](
 object Merge {
   def calcBatchInputShape[T: ClassTag](
     inputShape: Shape = null,
-    layers: Array[AbstractModule[Activity, Activity, T]]): Shape = {
+    layers: Array[KerasLayer[_, _, T]]): Shape = {
     val batchInputShape = KerasLayer.addBatch(inputShape)
     val actualInputShape = if (layers != null) {
       MultiShape(layers.map { layer =>
-      if (layer.isBuilt()) {  // it's possible while reloaded from file
-        layer.getOutputShape()
-      } else {
-        layer.build(layer.getInputShape())
-      }
-    }.toList)
-    }
-    else null
+        if (layer.isBuilt()) {  // it's possible while reloaded from file
+          layer.getOutputShape()
+        } else {
+          layer.build(layer.getInputShape())
+        }
+      }.toList)
+    } else null
     if (batchInputShape != null) {
       require(batchInputShape.isInstanceOf[MultiShape],
         "Merge requires inputShape to be MultiShape")
@@ -183,7 +178,7 @@ object Merge {
   }
 
   def apply[@specialized(Float, Double) T: ClassTag](
-    layers: List[AbstractModule[Activity, Activity, T]] = null,
+    layers: List[KerasLayer[_, _, T]] = null,
     mode: String = "sum",
     concatAxis: Int = -1,
     inputShape: Shape = null)(implicit ev: TensorNumeric[T]): Merge[T] = {

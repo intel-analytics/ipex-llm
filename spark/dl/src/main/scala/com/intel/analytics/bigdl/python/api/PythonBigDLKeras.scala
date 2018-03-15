@@ -164,7 +164,7 @@ class PythonBigDLKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends Pytho
   }
 
   def createKerasMerge(
-    layers: JList[AbstractModule[Activity, Activity, T]] = null,
+    layers: JList[KerasLayer[Activity, Activity, T]] = null,
     mode: String = "sum",
     concatAxis: Int = -1,
     inputShape: JList[JList[Int]]): Merge[T] = {
