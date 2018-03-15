@@ -138,8 +138,11 @@ class TestNewAPI(BigDLTestCase):
         y2 = BLayer.Dense(10)(x2)
         model = BModel([x1, x2], [y1, y2])
         input_shapes = model.get_input_shape()
+        output_shapes = model.get_output_shape()
         np.testing.assert_allclose((8, ), input_shapes[0][1:])
         np.testing.assert_allclose((6, ), input_shapes[1][1:])
+        np.testing.assert_allclose((10, ), output_shapes[0][1:])
+        np.testing.assert_allclose((10, ), output_shapes[1][1:])
 
     def test_train(self):
         x = np.random.random([32, 10])
@@ -240,7 +243,6 @@ class TestNewAPI(BigDLTestCase):
 
         input_data = [np.random.random([2, 10]), np.random.random([2, 10])]
         self.compare_newapi(kmodel, bmodel, input_data, self.convert_two_dense_model)
-
 
 
 if __name__ == "__main__":

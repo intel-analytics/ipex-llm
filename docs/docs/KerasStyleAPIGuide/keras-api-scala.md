@@ -109,7 +109,7 @@ import com.intel.analytics.bigdl.nn.keras.{Input, Dense, Model}
 import com.intel.analytics.bigdl.utils.Shape
 import com.intel.analytics.bigdl.nn.keras.Merge.merge
 
-// instantiate input node
+// instantiate input nodes
 val input1 = Input[Float](inputShape = Shape(8))
 val input2 = Input[Float](inputShape = Shape(6))
 // call inputs() with an input node and get an output node
