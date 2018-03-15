@@ -91,6 +91,13 @@ pages:
   - Full API docs:
     - Scala Docs: APIGuide/scaladoc.md
     - Python API Docs: APIGuide/python-api-doc.md
+- Keras-Style API Guide:
+  - Python Guide: KerasStyleAPIGuide/keras-api-python.md
+  - Scala Guide: KerasStyleAPIGuide/keras-api-scala.md
+  - Layers:
+    - Activation: KerasStyleAPIGuide/Layers/activation.md
+    - Initialization: KerasStyleAPIGuide/Layers/initialization.md
+    - Core Layers: KerasStyleAPIGuide/Layers/core.md
 - Powered by: powered-by.md
 - Known Issues: known-issues.md
 - Presentations: presentations.md
