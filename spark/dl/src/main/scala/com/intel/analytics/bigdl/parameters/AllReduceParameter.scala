@@ -78,7 +78,7 @@ object AllReduceParameter {
  * @param size size of the parameter (1D vector)
  * @tparam T Tensor element type
  */
-class AllReduceParameter[T: ClassTag](id: Long, partitionNum: Int, size: Int)
+private[bigdl] class AllReduceParameter[T: ClassTag](id: Long, partitionNum: Int, size: Int)
   (implicit ev: TensorNumeric[T]) extends Serializable {
   import AllReduceParameter._
 
@@ -138,7 +138,7 @@ class AllReduceParameter[T: ClassTag](id: Long, partitionNum: Int, size: Int)
    * @param parameter A tensor representing the initial underlying weights of this
    *                  `AllReduceParameter`
    */
-  def init(parameter: Tensor[T], sizes: Array[Int])(implicit ev: TensorNumeric[T]):
+  def init(parameter: Tensor[T])(implicit ev: TensorNumeric[T]):
     (Int, Int, Int) = {
     val _classTag = classTag[T]
     val start = partitionId * taskSize + math.min(partitionId, extraSize)
@@ -312,7 +312,15 @@ class AllReduceParameter[T: ClassTag](id: Long, partitionNum: Int, size: Int)
     weights.copy(weightPartition)
   }
 
-  def squarePerLayer(lookupDic: Array[mutable.HashMap[Int, (Int, Int)]]):
+  /**
+   * Get square sum for given region
+   *
+   * @param lookupDic A list of region information.
+   *                  Array index is partition number,
+   *                  key for hashmap is layerId, value is (start, length)
+   * @return a list of square sum of weights and gradients with given region information
+   */
+  def squareSumForRegion(lookupDic: Array[mutable.HashMap[Int, (Int, Int)]]):
     Array[(Int, (Float, Float))] = {
     val lookupMap = lookupDic(partitionId)
     val list = new Array[(Int, (Float, Float))](lookupMap.size)
