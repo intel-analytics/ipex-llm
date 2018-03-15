@@ -16,20 +16,24 @@
 
 package com.intel.analytics.bigdl.dlframes
 
+import com.intel.analytics.bigdl.models.inception.Inception_v1
 import com.intel.analytics.bigdl.models.lenet.LeNet5
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.optim.{Adam, LBFGS, Loss, Trigger}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+import com.intel.analytics.bigdl.transform.vision.image.MatToTensor
+import com.intel.analytics.bigdl.transform.vision.image.augmentation.{CenterCrop, ChannelNormalize, Resize}
 import com.intel.analytics.bigdl.utils.Engine
 import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
 import com.intel.analytics.bigdl.visualization.ValidationSummary
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.ml.feature.MinMaxScaler
 import org.apache.spark.SparkContext
-import org.apache.spark.ml._
+import org.apache.spark.ml.{Pipeline, PipelineModel}
 import org.apache.spark.mllib.linalg.Vectors
-import org.apache.spark.sql.{DataFrame, SQLContext}
+import org.apache.spark.sql.functions._
+import org.apache.spark.sql.{DataFrame, Row, SQLContext}
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.collection.mutable.ArrayBuffer
@@ -127,6 +131,24 @@ class DLClassifierSpec extends FlatSpec with Matchers with BeforeAndAfter {
       val dlModel = classifier.fit(df)
       dlModel.transform(df).collect()
     }
+  }
+
+  "An DLClasifier" should "support image FEATURE types" in {
+    val pascalResource = getClass.getClassLoader.getResource("pascal/")
+    val imageDF = DLImageReader.readImages(pascalResource.getFile, sc)
+    assert(imageDF.count() == 1)
+    val transformer = Resize(256, 256) -> CenterCrop(224, 224) ->
+      ChannelNormalize(123, 117, 104, 1, 1, 1) -> MatToTensor()
+    val transformedDF = new DLImageTransformer(transformer)
+      .setInputCol("image")
+      .setOutputCol("features")
+      .transform(imageDF)
+      .withColumn("label", lit(2.0f))
+    val estimator = new DLClassifier(
+      Inception_v1(1000), ClassNLLCriterion[Float](), Array(3, 224, 224))
+      .setBatchSize(1)
+      .setEndWhen(Trigger.maxIteration(1))
+    estimator.fit(transformedDF)
   }
 
   "An DLClassifier" should "fit with adam and LBFGS" in {
