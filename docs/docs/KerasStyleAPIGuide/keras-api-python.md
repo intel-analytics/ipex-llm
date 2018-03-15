@@ -13,7 +13,7 @@ One of the highlighted features with regard to the new API is __shape inference_
 
 ---
 ## **Define a model**
-You can create a model either using [Sequential API](#sequential-api) or [Functional API](#functional-api). Remember to specify the input shape for the first layer.
+You can define a model either using [Sequential API](#sequential-api) or [Functional API](#functional-api). Remember to specify the input shape for the first layer.
 
 After creating a model, you can call the following __methods__:
 
@@ -32,8 +32,8 @@ set_name(name)
 
 
 ---
-### **Sequential API**
-The model is described as a linear stack of layers in the sequential API. Layers can be added into the `Sequential` container one by one and the order of the layers in the model will be the same as the insertion order.
+## **Sequential API**
+The model is described as a linear stack of layers in the Sequential API. Layers can be added into the `Sequential` container one by one and the order of the layers in the model will be the same as the insertion order.
 
 To create a sequential container:
 ```python
@@ -55,8 +55,8 @@ model.add(Activation("relu"))
 
 
 ---
-### **Functional API**
-The model is described as a graph in the functional API. It is more convenient than the sequential API when defining some complex model (for example, a model with multiple outputs).
+## **Functional API**
+The model is described as a graph in the Functional API. It is more convenient than the Sequential API when defining some complex model (for example, a model with multiple outputs).
 
 To create an input node:
 ```python
@@ -77,7 +77,7 @@ Parameters:
 * `output`: An output node or a list of output nodes.
 * `name`: String to specify the name of the graph model. Default is None.
 
-To merge a list of input __nodes__ (__NOT__ layers), following some merge mode in the functional API:
+To merge a list of input __nodes__ (__NOT__ layers), following some merge mode in the Functional API:
 ```python
 merge(inputs, mode="sum", concat_axis=-1, name=None) # This will return an output NODE.
 ```
@@ -119,6 +119,7 @@ To set the name of a layer, you can either call `set_name(name)` or alternativel
 Here we adopt our Keras-Style API to define a LeNet CNN model to be trained on the MNIST dataset:
 
 ```python
+from bigdl.nn.keras.topology import Sequential
 from bigdl.nn.keras.layer import *
 
 model = Sequential()
