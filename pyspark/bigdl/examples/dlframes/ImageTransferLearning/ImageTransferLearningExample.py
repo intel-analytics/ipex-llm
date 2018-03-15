@@ -21,7 +21,7 @@ from bigdl.dlframes.dl_image_transformer import *
 from bigdl.transform.vision.image import *
 from bigdl.dlframes.dl_classifier import *
 from pyspark.sql.functions import col, udf
-from pyspark.sql.types import FloatType, StringType
+from pyspark.sql.types import DoubleType, StringType
 from bigdl.nn.layer import *
 from bigdl.nn.criterion import *
 from pyspark.ml.evaluation import MulticlassClassificationEvaluator
@@ -46,7 +46,7 @@ if __name__ == "__main__":
     # validation data contains 200 cats images and 200 dog images (id 1000 ~ 1200)
     getName = udf(lambda row: re.search(r'(cat|dog)\.([\d]*)\.jpg', row[0], re.IGNORECASE).group(0), StringType())
     getID = udf(lambda name: re.search(r'([\d]+)', name).group(0), StringType())
-    getLabel = udf(lambda name: 1.0 if name.startswith('cat') else 2.0, FloatType())
+    getLabel = udf(lambda name: 1.0 if name.startswith('cat') else 2.0, DoubleType())
     labelDF = imageDF.withColumn("name", getName(col("image"))) \
         .withColumn("id", getID(col('name'))) \
         .withColumn("label", getLabel(col('name'))) \
@@ -76,7 +76,7 @@ if __name__ == "__main__":
     predictionDF.show()
 
     evaluator = MulticlassClassificationEvaluator(
-        labelCol="label", predictionCol="prediction", metricName="accuracy")
+        labelCol="label", predictionCol="prediction", metricName="weightedPrecision")
     accuracy = evaluator.evaluate(predictionDF)
     # expected error should be less than 10%
     print("Test Error = %g " % (1.0 - accuracy))
