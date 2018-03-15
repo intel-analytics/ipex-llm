@@ -2390,6 +2390,26 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     Xavier
   }
 
+  def createXavierNormal(): XavierNormal.type = {
+    XavierNormal
+  }
+
+  def createHeNormal(): HeNormal.type = {
+    HeNormal
+  }
+
+  def createHeUniform(): HeUniform.type = {
+    HeUniform
+  }
+
+  def createLeCunUniform(): LeCunUniform.type = {
+    LeCunUniform
+  }
+
+  def createLeCunNormal(): LeCunNormal.type = {
+    LeCunNormal
+  }
+
   def createMsraFiller(varianceNormAverage: Boolean = true): MsraFiller = {
     MsraFiller(varianceNormAverage)
   }
