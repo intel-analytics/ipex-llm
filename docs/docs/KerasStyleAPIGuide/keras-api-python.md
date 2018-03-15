@@ -1,7 +1,7 @@
 ## **Introduction**
 We hereby introduce a new set of __Keras-Style API__ based on [__Keras 1.2.2__](https://faroit.github.io/keras-docs/1.2.2/) in BigDL for the sake of user-friendliness. Users, especially those familiar with Keras, are recommended to use the new API to create a BigDL model and train, evaluate or tune it in a distributed fashion.
 
-To define a model in Python using the Keras-Style API, now one just need to import the following:
+To define a model in Python using the Keras-Style API, now one just need to import the following packages:
 
 ```python
 from bigdl.nn.keras.topology import *

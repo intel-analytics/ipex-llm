@@ -1,15 +1,55 @@
 ## **Introduction**
 We hereby introduce a new set of __Keras-Style API__ based on [__Keras 1.2.2__](https://faroit.github.io/keras-docs/1.2.2/) in BigDL for the sake of user-friendliness. Users, especially those familiar with Keras, are recommended to use the new API to create a BigDL model and train, evaluate or tune it in a distributed fashion.
 
-To define a model in Scala using the Keras-Style API, now one just need to import the package
+To define a model in Scala using the Keras-Style API, now one just need to import the following packages:
 
-`com.intel.analytics.bigdl.nn.keras`
+```scala
+import com.intel.analytics.bigdl.nn.keras._
+import com.intel.analytics.bigdl.utils.Shape
+```
 
 One of the highlighted features with regard to the new API is __shape inference__. Users only need to specify the input shape (a [`Shape`](#shape) object __excluding__ batch dimension, for example, `inputShape=Shape(3, 4)` for 3D input) for the first layer of a model and for the remaining layers, the input dimension will be automatically inferred.
 
+
+---
+## **Shape**
+Input and output shapes of a model in the Keras-Style API will be described by the `Shape` object in Scala, which can be classified into `SingleShape` and `MultiShape`.
+
+`SingleShape` is just a list of Int indicating shape dimensions while `MultiShape` is essentially a list of `Shape`.
+
+Example code to create a shape:
+```scala
+// create a SingleShape
+val shape1 = Shape(3, 4)
+// create a MultiShape consisting of two SingleShape
+val shape2 = Shape(List(Shape(1, 2, 3), Shape(4, 5, 6)))
+```
+You can use method `toSingle()` to cast a `Shape` to a `SingleShape`. Similarly, use `toMulti()` to cast a `Shape` to a `MultiShape`.
+
+
+---
+## **Define a model**
+You can define a model either using [Sequential API](#sequential-api) or [Functional API](#functional-api). Remember to specify the input shape for the first layer.
+
+After creating a model, you can call the following __methods__:
+
+```scala
+getInputShape()
+```
+```scala
+getOutputShape()
+```
+* Return the input or output shape of a model, which is a [`Shape`](#shape) object. For `SingleShape`, the first entry is `-1` representing the batch dimension. For a model with multiple inputs or outputs, it will return a `MultiShape`.
+
+```scala
+setName(name)
+```
+* Set the name of the model.
+
+
 ---
 ## **Sequential API**
-The model is described as a linear stack of layers in the sequential API. Layers can be added into the `Sequential` container one by one and the order of the layers in the model will be the same as the insertion order.
+The model is described as a linear stack of layers in the Sequential API. Layers can be added into the `Sequential` container one by one and the order of the layers in the model will be the same as the insertion order.
 
 To create a sequential container:
 ```scala
@@ -29,7 +69,7 @@ model.add(Activation("relu"))
 
 ---
 ## **Functional API**
-The model is described as a graph in the functional API. It is more convenient than the sequential API when defining some complex model (for example, a model with multiple outputs).
+The model is described as a graph in the Functional API. It is more convenient than the Sequential API when defining some complex model (for example, a model with multiple outputs).
 
 To create an input node:
 ```scala
@@ -66,57 +106,10 @@ val model = Model[Float](input, output)
 
 
 ---
-## **Shape**
-Input and output shapes of a model in the new API will be described by the `Shape` object in Scala, which can be classified into `SingleShape` and `MultiShape`.
-
-`SingleShape` is just a list of Int indicating shape dimensions while `MultiShape` is essentially a list of `Shape`.
-
-Example code to create a shape:
-```scala
-// create a SingleShape
-val shape1 = Shape(3, 4)
-// create a MultiShape consisting of two SingleShape
-val shape2 = Shape(List(Shape(1, 2, 3), Shape(4, 5, 6)))
-```
-You can use method `toSingle()` to cast a `Shape` to a `SingleShape`. Similarly, use `toMulti()` to cast a `Shape` to a `MultiShape`.
-
----
 ## **Layers**
 See [here](Layers/core.md) for all the available layers for the new set of Keras-Style API.
 
-
----
-## **Methods**
-#### __Methods for a [sequential](#sequential-api) or a [functional](#functional-api) model:__
-
-```scala
-getOutputShape()
-```
-Return the output shape of a model, which is a [`Shape`](#shape) object.
-
-For `SingleShape`, the first entry is `-1` representing the batch dimension.
-
-For a model with multiple outputs, it will return a `MultiShape`.
-
-```scala
-getInputShape()
-```
-Return the input shape of a model, which is a [`Shape`](#shape) object.
-
-For `SingleShape`, the first entry is `-1` representing the batch dimension.
-
-For a model with multiple inputs, it will return a `MultiShape`.
-
-#### __Methods for either a [layer](Layers/core.md) or a [model](#sequential-api):__
-
-```scala
-setName(name)
-```
-Set the name of a module.
-
-Parameters:
-
-* `name`: String to specify the name.
+To set the name of a layer, call the method `set_name(name)` of the layer.
 
 
 ---
