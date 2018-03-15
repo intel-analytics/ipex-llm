@@ -61,8 +61,8 @@ input: com.intel.analytics.bigdl.tensor.Tensor[Float] =
 Output is:
 ```scala
 output: com.intel.analytics.bigdl.nn.abstractnn.Activity =
-1.0648216	      0.0  0.0  0.0         0.0
-      0.0  0.20690927  0.0  0.0  0.34191078
+1.0648216  0.0         0.0  0.0  0.0
+0.0        0.20690927  0.0  0.0  0.34191078
 [com.intel.analytics.bigdl.tensor.DenseTensor of size 2x5]
 ```
 

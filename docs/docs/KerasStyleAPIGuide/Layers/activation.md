@@ -14,7 +14,6 @@ Parameters:
 
 * `activation`: Name of the activation function as string. See [here](#available-activations) for available activation strings.
 * `inputShape`: Only need to specify this argument when you use this layer as the first layer of a model. For Scala API, it should be a [`Shape`](../keras-api-scala/#shape) object. For Python API, it should be a shape tuple. Batch dimension should be excluded.
-* `name`: This parameter is for Python API only. String to specify the name of the layer. Default is None. For Scala API, please use `setName(name)` instead.
 
 **Scala example:**
 ```scala
