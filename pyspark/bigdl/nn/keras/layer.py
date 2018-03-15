@@ -17,7 +17,7 @@
 import sys
 
 from bigdl.nn.layer import Layer, Node
-from bigdl.util.common import callBigDlFunc, JTensor, JavaValue
+from bigdl.util.common import callBigDlFunc, JavaValue
 
 if sys.version >= '3':
     long = int
@@ -65,11 +65,32 @@ class KerasCreator(JavaValue):
 
 
 class KerasLayer(Layer, InferShape, KerasCreator):
-    pass
+    def __init__(self, jvalue, *args, **kwargs):
+        allowed_kwargs = {"name", "bigdl_type"}
+        for kwarg in kwargs.keys():
+            if kwarg not in allowed_kwargs:
+                raise TypeError("Wrong argument for the layer:", kwarg)
+        bigdl_type = kwargs.get("bigdl_type")
+        if not bigdl_type:
+            bigdl_type = "float"
+        super(KerasCreator, self).__init__(jvalue, bigdl_type, *args)
+        name = kwargs.get("name")
+        if name:
+            self.set_name(name)
 
 
 class Input(Node, KerasCreator):
-    def __init__(self, name=None, shape=None, bigdl_type="float"):
+    """
+    Used to instantiate an input node.
+
+    # Arguments
+    shape: A shape tuple, not including batch.
+    name: String to specify the name of the input node. Default is None.
+
+    >>> input = Input(name="input1", shape=(3, 5))
+    creating: createKerasInput
+    """
+    def __init__(self, shape=None, name=None, bigdl_type="float"):
         super(Input, self).__init__(None, bigdl_type,
                                     name,
                                     list(shape) if shape else None)
@@ -86,9 +107,10 @@ class InputLayer(KerasLayer):
     >>> inputlayer = InputLayer(input_shape=(3, 5))
     creating: createKerasInputLayer
     """
-    def __init__(self, input_shape=None, name=None, bigdl_type="float"):
-        super(InputLayer, self).__init__(None, bigdl_type, name,
-                                         list(input_shape) if input_shape else None)
+    def __init__(self, input_shape=None, **kwargs):
+        super(InputLayer, self).__init__(None,
+                                         list(input_shape) if input_shape else None,
+                                         **kwargs)
 
 
 class Dense(KerasLayer):
@@ -119,17 +141,18 @@ class Dense(KerasLayer):
     """
     def __init__(self, output_dim, init="glorot_uniform", activation=None,
                  W_regularizer=None, b_regularizer=None,
-                 bias=True, input_dim=None, input_shape=None, name=None, bigdl_type="float"):
+                 bias=True, input_dim=None, input_shape=None, **kwargs):
         if input_dim:
             input_shape = (input_dim, )
-        super(Dense, self).__init__(None, bigdl_type, name,
+        super(Dense, self).__init__(None,
                                     output_dim,
                                     init,
                                     activation,
                                     W_regularizer,
                                     b_regularizer,
                                     bias,
-                                    list(input_shape) if input_shape else None)
+                                    list(input_shape) if input_shape else None,
+                                    **kwargs)
 
 
 class MaxoutDense(KerasLayer):
@@ -157,16 +180,17 @@ class MaxoutDense(KerasLayer):
     creating: createKerasMaxoutDense
     """
     def __init__(self, output_dim, nb_feature=4, W_regularizer=None, b_regularizer=None,
-                 bias=True, input_dim=None, input_shape=None, name=None, bigdl_type="float"):
+                 bias=True, input_dim=None, input_shape=None, **kwargs):
         if input_dim:
             input_shape = (input_dim, )
-        super(MaxoutDense, self).__init__(None, bigdl_type, name,
+        super(MaxoutDense, self).__init__(None,
                                           output_dim,
                                           nb_feature,
                                           W_regularizer,
                                           b_regularizer,
                                           bias,
-                                          list(input_shape) if input_shape else None)
+                                          list(input_shape) if input_shape else None,
+                                          **kwargs)
 
 
 class Embedding(KerasLayer):
@@ -187,17 +211,18 @@ class Embedding(KerasLayer):
     input_shape: A shape tuple, not including batch.
     name: String to specify the name of the layer. Default is None.
 
-    >>> embedding = Embedding(1000, 32, input_shape=(10, ))
+    >>> embedding = Embedding(1000, 32, input_shape=(10, ), name="embedding1")
     creating: createKerasEmbedding
     """
     def __init__(self, input_dim, output_dim, init="uniform", W_regularizer=None,
-                 input_shape=None, name=None, bigdl_type="float"):
-        super(Embedding, self).__init__(None, bigdl_type, name,
+                 input_shape=None, **kwargs):
+        super(Embedding, self).__init__(None,
                                         input_dim,
                                         output_dim,
                                         init,
                                         W_regularizer,
-                                        list(input_shape) if input_shape else None)
+                                        list(input_shape) if input_shape else None,
+                                        **kwargs)
 
 
 class BatchNormalization(KerasLayer):
@@ -226,20 +251,21 @@ class BatchNormalization(KerasLayer):
     creating: createKerasBatchNormalization
     """
     def __init__(self, epsilon=0.001, mode=0, axis=1, momentum=0.99, beta_init="zero", gamma_init="one",
-                 dim_ordering="th", input_shape=None, name=None, bigdl_type="float"):
+                 dim_ordering="th", input_shape=None, **kwargs):
         if mode != 0:
             raise ValueError("For BatchNormalization, only mode=0 is supported for now")
         if dim_ordering == "th" and axis != 1:
             raise ValueError("For BatchNormalization with th dim ordering, only axis=1 is supported for now")
         if dim_ordering == "tf" and axis != -1 and axis != 3:
             raise ValueError("For BatchNormalization with tf dim ordering, only axis=-1 is supported for now")
-        super(BatchNormalization, self).__init__(None, bigdl_type, name,
+        super(BatchNormalization, self).__init__(None,
                                                  float(epsilon),
                                                  float(momentum),
                                                  beta_init,
                                                  gamma_init,
                                                  dim_ordering,
-                                                 list(input_shape) if input_shape else None)
+                                                 list(input_shape) if input_shape else None,
+                                                 **kwargs)
 
 
 class Merge(KerasLayer):
@@ -263,16 +289,17 @@ class Merge(KerasLayer):
     creating: createKerasInputLayer
     >>> l2 = InputLayer(input_shape=(3, 5))
     creating: createKerasInputLayer
-    >>> merge = Merge(layers=[l1, l2], mode='sum')
+    >>> merge = Merge(layers=[l1, l2], mode='sum', name="merge1")
     creating: createKerasMerge
     """
     def __init__(self, layers=None, mode="sum", concat_axis=-1,
-                 input_shape=None, name=None, bigdl_type="float"):
-        super(Merge, self).__init__(None, bigdl_type, name,
+                 input_shape=None, **kwargs):
+        super(Merge, self).__init__(None,
                                     list(layers) if layers else None,
                                     mode,
                                     concat_axis,
-                                    input_shape)
+                                    input_shape,
+                                    **kwargs)
 
 
 def merge(inputs, mode="sum", concat_axis=-1, name=None):
@@ -308,10 +335,11 @@ class Dropout(KerasLayer):
     >>> dropout = Dropout(0.25, input_shape=(2, 3))
     creating: createKerasDropout
     """
-    def __init__(self, p, input_shape=None, name=None, bigdl_type="float"):
-        super(Dropout, self).__init__(None, bigdl_type, name,
+    def __init__(self, p, input_shape=None, **kwargs):
+        super(Dropout, self).__init__(None,
                                       float(p),
-                                      list(input_shape) if input_shape else None)
+                                      list(input_shape) if input_shape else None,
+                                      **kwargs)
 
 
 class Flatten(KerasLayer):
@@ -328,9 +356,10 @@ class Flatten(KerasLayer):
     >>> flatten = Flatten(input_shape=(3, 10, 2))
     creating: createKerasFlatten
     """
-    def __init__(self, input_shape=None, name=None, bigdl_type="float"):
-        super(Flatten, self).__init__(None, bigdl_type, name,
-                                      list(input_shape) if input_shape else None)
+    def __init__(self, input_shape=None, **kwargs):
+        super(Flatten, self).__init__(None,
+                                      list(input_shape) if input_shape else None,
+                                      **kwargs)
 
 
 class Reshape(KerasLayer):
@@ -351,10 +380,11 @@ class Reshape(KerasLayer):
     >>> reshape = Reshape((2, 10), input_shape=(5, 4))
     creating: createKerasReshape
     """
-    def __init__(self, target_shape, input_shape=None, name=None, bigdl_type="float"):
-        super(Reshape, self).__init__(None, bigdl_type, name,
+    def __init__(self, target_shape, input_shape=None, **kwargs):
+        super(Reshape, self).__init__(None,
                                       target_shape,
-                                      list(input_shape) if input_shape else None)
+                                      list(input_shape) if input_shape else None,
+                                      **kwargs)
 
 
 class Activation(KerasLayer):
@@ -373,10 +403,11 @@ class Activation(KerasLayer):
     >>> activation = Activation("relu", input_shape=(3, 4))
     creating: createKerasActivation
     """
-    def __init__(self, activation, input_shape=None, name=None, bigdl_type="float"):
-        super(Activation, self).__init__(None, bigdl_type, name,
+    def __init__(self, activation, input_shape=None, **kwargs):
+        super(Activation, self).__init__(None,
                                          activation,
-                                         list(input_shape) if input_shape else None)
+                                         list(input_shape) if input_shape else None,
+                                         **kwargs)
 
 
 class RepeatVector(KerasLayer):
@@ -397,12 +428,13 @@ class RepeatVector(KerasLayer):
     >>> repeatvector = RepeatVector(5, input_shape=(3, ))
     creating: createKerasRepeatVector
     """
-    def __init__(self, n, input_dim=None, input_shape=None, name=None, bigdl_type="float"):
+    def __init__(self, n, input_dim=None, input_shape=None, **kwargs):
         if input_dim:
             input_shape = (input_dim, )
-        super(RepeatVector, self).__init__(None, bigdl_type, name,
+        super(RepeatVector, self).__init__(None,
                                            n,
-                                           list(input_shape) if input_shape else None)
+                                           list(input_shape) if input_shape else None,
+                                           **kwargs)
 
 
 class Permute(KerasLayer):
@@ -421,10 +453,11 @@ class Permute(KerasLayer):
     >>> permute = Permute((2, 1, 3), input_shape=(3, 4, 5))
     creating: createKerasPermute
     """
-    def __init__(self, dims, input_shape=None, name=None, bigdl_type="float"):
-        super(Permute, self).__init__(None, bigdl_type, name,
+    def __init__(self, dims, input_shape=None, **kwargs):
+        super(Permute, self).__init__(None,
                                       dims,
-                                      list(input_shape) if input_shape else None)
+                                      list(input_shape) if input_shape else None,
+                                      **kwargs)
 
 
 class Highway(KerasLayer):
@@ -452,15 +485,16 @@ class Highway(KerasLayer):
     creating: createKerasHighway
     """
     def __init__(self, activation=None, W_regularizer=None, b_regularizer=None,
-                 bias=True, input_dim=None, input_shape=None, name=None, bigdl_type="float"):
+                 bias=True, input_dim=None, input_shape=None, **kwargs):
         if input_dim:
             input_shape = (input_dim, )
-        super(Highway, self).__init__(None, bigdl_type, name,
+        super(Highway, self).__init__(None,
                                       activation,
                                       W_regularizer,
                                       b_regularizer,
                                       bias,
-                                      list(input_shape) if input_shape else None)
+                                      list(input_shape) if input_shape else None,
+                                      **kwargs)
 
 
 class Convolution1D(KerasLayer):
@@ -495,8 +529,8 @@ class Convolution1D(KerasLayer):
     def __init__(self, nb_filter, filter_length, init="glorot_uniform",
                  activation=None, border_mode="valid", subsample_length=1,
                  W_regularizer=None, b_regularizer=None, bias=True,
-                 input_shape=None, name=None, bigdl_type="float"):
-        super(Convolution1D, self).__init__(None, bigdl_type, name,
+                 input_shape=None, **kwargs):
+        super(Convolution1D, self).__init__(None,
                                             nb_filter,
                                             filter_length,
                                             init,
@@ -506,7 +540,8 @@ class Convolution1D(KerasLayer):
                                             W_regularizer,
                                             b_regularizer,
                                             bias,
-                                            list(input_shape) if input_shape else None)
+                                            list(input_shape) if input_shape else None,
+                                            **kwargs)
 
 
 class Convolution2D(KerasLayer):
@@ -539,15 +574,15 @@ class Convolution2D(KerasLayer):
     input_shape: A shape tuple, not including batch.
     name: String to specify the name of the layer. Default is None.
 
-    >>> conv2d = Convolution2D(32, 3, 3, input_shape=(3, 128, 128))
+    >>> conv2d = Convolution2D(32, 3, 3, input_shape=(3, 128, 128), name="convolution2d_1")
     creating: createKerasConvolution2D
     """
     def __init__(self, nb_filter, nb_row, nb_col,
                  init="glorot_uniform", activation=None,
                  border_mode="valid", subsample=(1, 1), dim_ordering="th",
                  W_regularizer=None, b_regularizer=None, bias=True,
-                 input_shape=None, name=None, bigdl_type="float"):
-        super(Convolution2D, self).__init__(None, bigdl_type, name,
+                 input_shape=None, **kwargs):
+        super(Convolution2D, self).__init__(None,
                                             nb_filter,
                                             nb_row,
                                             nb_col,
@@ -559,7 +594,8 @@ class Convolution2D(KerasLayer):
                                             W_regularizer,
                                             b_regularizer,
                                             bias,
-                                            list(input_shape) if input_shape else None)
+                                            list(input_shape) if input_shape else None,
+                                            **kwargs)
 
 
 class Convolution3D(KerasLayer):
@@ -599,8 +635,8 @@ class Convolution3D(KerasLayer):
     def __init__(self, nb_filter, kernel_dim1, kernel_dim2, kernel_dim3,
                  init="glorot_uniform", activation=None, border_mode="valid",
                  subsample=(1, 1, 1), dim_ordering="th", W_regularizer=None,
-                 b_regularizer=None, bias=True, input_shape=None, name=None, bigdl_type="float"):
-        super(Convolution3D, self).__init__(None, bigdl_type, name,
+                 b_regularizer=None, bias=True, input_shape=None, **kwargs):
+        super(Convolution3D, self).__init__(None,
                                             nb_filter,
                                             kernel_dim1,
                                             kernel_dim2,
@@ -613,7 +649,8 @@ class Convolution3D(KerasLayer):
                                             W_regularizer,
                                             b_regularizer,
                                             bias,
-                                            list(input_shape) if input_shape else None)
+                                            list(input_shape) if input_shape else None,
+                                            **kwargs)
 
 
 class AtrousConvolution1D(KerasLayer):
@@ -650,12 +687,12 @@ class AtrousConvolution1D(KerasLayer):
     """
     def __init__(self, nb_filter, filter_length, init="glorot_uniform", activation=None,
                  border_mode='valid', subsample_length=1, atrous_rate=1, W_regularizer=None,
-                 b_regularizer=None, bias=True, input_shape=None, name=None, bigdl_type="float"):
+                 b_regularizer=None, bias=True, input_shape=None, **kwargs):
         if border_mode != "valid":
             raise ValueError("For AtrousConvolution1D, only border_mode='valid' is supported for now")
         if not bias:
             raise ValueError("For AtrousConvolution1D, only bias=True is supported for now")
-        super(AtrousConvolution1D, self).__init__(None, bigdl_type, name,
+        super(AtrousConvolution1D, self).__init__(None,
                                                   nb_filter,
                                                   filter_length,
                                                   init,
@@ -664,7 +701,8 @@ class AtrousConvolution1D(KerasLayer):
                                                   atrous_rate,
                                                   W_regularizer,
                                                   b_regularizer,
-                                                  list(input_shape) if input_shape else None)
+                                                  list(input_shape) if input_shape else None,
+                                                  **kwargs)
 
 
 class AtrousConvolution2D(KerasLayer):
@@ -708,12 +746,12 @@ class AtrousConvolution2D(KerasLayer):
     def __init__(self, nb_filter, nb_row, nb_col, init="glorot_uniform",
                  activation=None, border_mode="valid", subsample=(1, 1),
                  atrous_rate=(1, 1), dim_ordering="th", W_regularizer=None,
-                 b_regularizer=None, bias=True, input_shape=None, name=None, bigdl_type="float"):
+                 b_regularizer=None, bias=True, input_shape=None, **kwargs):
         if border_mode != "valid":
             raise ValueError("For AtrousConvolution2D, only border_mode='valid' is supported for now")
         if not bias:
             raise ValueError("For AtrousConvolution2D, only bias=True is supported for now")
-        super(AtrousConvolution2D, self).__init__(None, bigdl_type, name,
+        super(AtrousConvolution2D, self).__init__(None,
                                                   nb_filter,
                                                   nb_row,
                                                   nb_col,
@@ -724,7 +762,8 @@ class AtrousConvolution2D(KerasLayer):
                                                   dim_ordering,
                                                   W_regularizer,
                                                   b_regularizer,
-                                                  list(input_shape) if input_shape else None)
+                                                  list(input_shape) if input_shape else None,
+                                                  **kwargs)
 
 
 class Deconvolution2D(KerasLayer):
@@ -769,10 +808,10 @@ class Deconvolution2D(KerasLayer):
     """
     def __init__(self, nb_filter, nb_row, nb_col, output_shape, init="glorot_uniform",
                  activation=None, border_mode="valid", subsample=(1, 1), dim_ordering="th",
-                 W_regularizer=None, b_regularizer=None, bias=True, input_shape=None, name=None, bigdl_type="float"):
+                 W_regularizer=None, b_regularizer=None, bias=True, input_shape=None, **kwargs):
         if border_mode != "valid":
             raise ValueError("For Deconvolution2D, only border_mode='valid' is supported for now")
-        super(Deconvolution2D, self).__init__(None, bigdl_type, name,
+        super(Deconvolution2D, self).__init__(None,
                                               nb_filter,
                                               nb_row,
                                               nb_col,
@@ -783,7 +822,8 @@ class Deconvolution2D(KerasLayer):
                                               W_regularizer,
                                               b_regularizer,
                                               bias,
-                                              list(input_shape) if input_shape else None)
+                                              list(input_shape) if input_shape else None,
+                                              **kwargs)
 
 
 class SeparableConvolution2D(KerasLayer):
@@ -830,8 +870,8 @@ class SeparableConvolution2D(KerasLayer):
     def __init__(self, nb_filter, nb_row, nb_col, init="glorot_uniform",
                  activation=None, border_mode="valid", subsample=(1, 1), depth_multiplier=1,
                  dim_ordering="th", depthwise_regularizer=None, pointwise_regularizer=None,
-                 b_regularizer=None, bias=True, input_shape=None, name=None, bigdl_type="float"):
-        super(SeparableConvolution2D, self).__init__(None, bigdl_type, name,
+                 b_regularizer=None, bias=True, input_shape=None, **kwargs):
+        super(SeparableConvolution2D, self).__init__(None,
                                                      nb_filter,
                                                      nb_row,
                                                      nb_col,
@@ -845,7 +885,8 @@ class SeparableConvolution2D(KerasLayer):
                                                      pointwise_regularizer,
                                                      b_regularizer,
                                                      bias,
-                                                     list(input_shape) if input_shape else None)
+                                                     list(input_shape) if input_shape else None,
+                                                     **kwargs)
 
 
 Conv1D = Convolution1D
@@ -874,10 +915,11 @@ class Cropping1D(KerasLayer):
     >>> cropping1d = Cropping1D(cropping=(1, 2), input_shape=(8, 8))
     creating: createKerasCropping1D
     """
-    def __init__(self, cropping=(1, 1), input_shape=None, name=None, bigdl_type="float"):
-        super(Cropping1D, self).__init__(None, bigdl_type, name,
+    def __init__(self, cropping=(1, 1), input_shape=None, **kwargs):
+        super(Cropping1D, self).__init__(None,
                                          cropping,
-                                         list(input_shape) if input_shape else None)
+                                         list(input_shape) if input_shape else None,
+                                         **kwargs)
 
 
 class Cropping2D(KerasLayer):
@@ -898,12 +940,13 @@ class Cropping2D(KerasLayer):
     creating: createKerasCropping2D
     """
     def __init__(self, cropping=((0, 0), (0, 0)), dim_ordering="th",
-                 input_shape=None, name=None, bigdl_type="float"):
-        super(Cropping2D, self).__init__(None, bigdl_type, name,
+                 input_shape=None, **kwargs):
+        super(Cropping2D, self).__init__(None,
                                          cropping[0],
                                          cropping[1],
                                          dim_ordering,
-                                         list(input_shape) if input_shape else None)
+                                         list(input_shape) if input_shape else None,
+                                         **kwargs)
 
 
 class Cropping3D(KerasLayer):
@@ -925,13 +968,14 @@ class Cropping3D(KerasLayer):
     creating: createKerasCropping3D
     """
     def __init__(self, cropping=((1, 1), (1, 1), (1, 1)), dim_ordering="th",
-                 input_shape=None, name=None, bigdl_type="float"):
-        super(Cropping3D, self).__init__(None, bigdl_type, name,
+                 input_shape=None, **kwargs):
+        super(Cropping3D, self).__init__(None,
                                          cropping[0],
                                          cropping[1],
                                          cropping[2],
                                          dim_ordering,
-                                         list(input_shape) if input_shape else None)
+                                         list(input_shape) if input_shape else None,
+                                         **kwargs)
 
 
 class UpSampling1D(KerasLayer):
@@ -951,10 +995,11 @@ class UpSampling1D(KerasLayer):
     >>> upsampling1d = UpSampling1D(length=3, input_shape=(3, 12))
     creating: createKerasUpSampling1D
     """
-    def __init__(self, length=2, input_shape=None, name=None, bigdl_type="float"):
-        super(UpSampling1D, self).__init__(None, bigdl_type, name,
+    def __init__(self, length=2, input_shape=None, **kwargs):
+        super(UpSampling1D, self).__init__(None,
                                            length,
-                                           list(input_shape) if input_shape else None)
+                                           list(input_shape) if input_shape else None,
+                                           **kwargs)
 
 
 class UpSampling2D(KerasLayer):
@@ -975,11 +1020,12 @@ class UpSampling2D(KerasLayer):
     >>> upsampling2d = UpSampling2D(size=(1, 3), input_shape=(3, 16, 16))
     creating: createKerasUpSampling2D
     """
-    def __init__(self, size=(2, 2), dim_ordering="th", input_shape=None, name=None, bigdl_type="float"):
-        super(UpSampling2D, self).__init__(None, bigdl_type, name,
+    def __init__(self, size=(2, 2), dim_ordering="th", input_shape=None, **kwargs):
+        super(UpSampling2D, self).__init__(None,
                                            size,
                                            dim_ordering,
-                                           list(input_shape) if input_shape else None)
+                                           list(input_shape) if input_shape else None,
+                                           **kwargs)
 
 
 class UpSampling3D(KerasLayer):
@@ -1001,11 +1047,12 @@ class UpSampling3D(KerasLayer):
     >>> upsampling3d = UpSampling3D(size=(1, 2, 3), input_shape=(3, 16, 16, 16))
     creating: createKerasUpSampling3D
     """
-    def __init__(self, size=(2, 2, 2), dim_ordering="th", input_shape=None, name=None, bigdl_type="float"):
-        super(UpSampling3D, self).__init__(None, bigdl_type, name,
+    def __init__(self, size=(2, 2, 2), dim_ordering="th", input_shape=None, **kwargs):
+        super(UpSampling3D, self).__init__(None,
                                            size,
                                            dim_ordering,
-                                           list(input_shape) if input_shape else None)
+                                           list(input_shape) if input_shape else None,
+                                           **kwargs)
 
 
 class ZeroPadding1D(KerasLayer):
@@ -1027,12 +1074,13 @@ class ZeroPadding1D(KerasLayer):
     >>> zeropadding1d = ZeroPadding1D(padding=2, input_shape=(3, 6))
     creating: createKerasZeroPadding1D
     """
-    def __init__(self, padding=1, input_shape=None, name=None, bigdl_type="float"):
+    def __init__(self, padding=1, input_shape=None, **kwargs):
         if isinstance(padding, int):
             padding = (padding, padding)
-        super(ZeroPadding1D, self).__init__(None, bigdl_type, name,
+        super(ZeroPadding1D, self).__init__(None,
                                             padding,
-                                            list(input_shape) if input_shape else None)
+                                            list(input_shape) if input_shape else None,
+                                            **kwargs)
 
 
 class ZeroPadding2D(KerasLayer):
@@ -1055,13 +1103,14 @@ class ZeroPadding2D(KerasLayer):
     >>> zeropadding2d = ZeroPadding2D(padding=(2, 1), input_shape=(2, 8, 8))
     creating: createKerasZeroPadding2D
     """
-    def __init__(self, padding=(1, 1), dim_ordering="th", input_shape=None, name=None, bigdl_type="float"):
+    def __init__(self, padding=(1, 1), dim_ordering="th", input_shape=None, **kwargs):
         if len(padding) == 2:
             padding = (padding[0], padding[0], padding[1], padding[1])
-        super(ZeroPadding2D, self).__init__(None, bigdl_type, name,
+        super(ZeroPadding2D, self).__init__(None,
                                             padding,
                                             dim_ordering,
-                                            list(input_shape) if input_shape else None)
+                                            list(input_shape) if input_shape else None,
+                                            **kwargs)
 
 
 class ZeroPadding3D(KerasLayer):
@@ -1082,11 +1131,12 @@ class ZeroPadding3D(KerasLayer):
     >>> zeropadding3d = ZeroPadding3D(padding=(2, 1, 2), input_shape=(2, 8, 8, 10))
     creating: createKerasZeroPadding3D
     """
-    def __init__(self, padding=(1, 1, 1), dim_ordering="th", input_shape=None, name=None, bigdl_type="float"):
-        super(ZeroPadding3D, self).__init__(None, bigdl_type, name,
+    def __init__(self, padding=(1, 1, 1), dim_ordering="th", input_shape=None, **kwargs):
+        super(ZeroPadding3D, self).__init__(None,
                                             padding,
                                             dim_ordering,
-                                            list(input_shape) if input_shape else None)
+                                            list(input_shape) if input_shape else None,
+                                            **kwargs)
 
 
 class MaxPooling1D(KerasLayer):
@@ -1109,14 +1159,15 @@ class MaxPooling1D(KerasLayer):
     creating: createKerasMaxPooling1D
     """
     def __init__(self, pool_length=2, stride=None, border_mode="valid",
-                 input_shape=None, name=None, bigdl_type="float"):
+                 input_shape=None, **kwargs):
         if not stride:
             stride = -1
-        super(MaxPooling1D, self).__init__(None, bigdl_type, name,
+        super(MaxPooling1D, self).__init__(None,
                                            pool_length,
                                            stride,
                                            border_mode,
-                                           list(input_shape) if input_shape else None)
+                                           list(input_shape) if input_shape else None,
+                                           **kwargs)
 
 
 class MaxPooling2D(KerasLayer):
@@ -1136,18 +1187,19 @@ class MaxPooling2D(KerasLayer):
     input_shape: A shape tuple, not including batch.
     name: String to specify the name of the layer. Default is None.
 
-    >>> maxpooling2d = MaxPooling2D((2, 2), input_shape=(3, 32, 32))
+    >>> maxpooling2d = MaxPooling2D((2, 2), input_shape=(3, 32, 32), name="maxpooling2d_1")
     creating: createKerasMaxPooling2D
     """
     def __init__(self, pool_size=(2, 2), strides=None,
                  border_mode='valid', dim_ordering='th',
-                 input_shape=None, name=None, bigdl_type="float"):
-        super(MaxPooling2D, self).__init__(None, bigdl_type, name,
+                 input_shape=None, **kwargs):
+        super(MaxPooling2D, self).__init__(None,
                                            pool_size,
                                            strides,
                                            border_mode,
                                            dim_ordering,
-                                           list(input_shape) if input_shape else None)
+                                           list(input_shape) if input_shape else None,
+                                           **kwargs)
 
 
 class MaxPooling3D(KerasLayer):
@@ -1173,14 +1225,15 @@ class MaxPooling3D(KerasLayer):
     creating: createKerasMaxPooling3D
     """
     def __init__(self, pool_size=(2, 2, 2), strides=None, border_mode="valid",
-                 dim_ordering="th", input_shape=None, name=None, bigdl_type="float"):
+                 dim_ordering="th", input_shape=None, **kwargs):
         if border_mode != "valid":
             raise ValueError("For MaxPooling3D, only border_mode='valid' is supported for now")
-        super(MaxPooling3D, self).__init__(None, bigdl_type, name,
+        super(MaxPooling3D, self).__init__(None,
                                            pool_size,
                                            strides,
                                            dim_ordering,
-                                           list(input_shape) if input_shape else None)
+                                           list(input_shape) if input_shape else None,
+                                           **kwargs)
 
 
 class AveragePooling1D(KerasLayer):
@@ -1203,14 +1256,15 @@ class AveragePooling1D(KerasLayer):
     creating: createKerasAveragePooling1D
     """
     def __init__(self, pool_length=2, stride=None, border_mode="valid",
-                 input_shape=None, name=None, bigdl_type="float"):
+                 input_shape=None, **kwargs):
         if not stride:
             stride = -1
-        super(AveragePooling1D, self).__init__(None, bigdl_type, name,
+        super(AveragePooling1D, self).__init__(None,
                                                pool_length,
                                                stride,
                                                border_mode,
-                                               list(input_shape) if input_shape else None)
+                                               list(input_shape) if input_shape else None,
+                                               **kwargs)
 
 
 class AveragePooling2D(KerasLayer):
@@ -1234,13 +1288,14 @@ class AveragePooling2D(KerasLayer):
     creating: createKerasAveragePooling2D
     """
     def __init__(self, pool_size=(2, 2), strides=None, border_mode="valid",
-                 dim_ordering="th", input_shape=None, name=None, bigdl_type="float"):
-        super(AveragePooling2D, self).__init__(None, bigdl_type, name,
+                 dim_ordering="th", input_shape=None, **kwargs):
+        super(AveragePooling2D, self).__init__(None,
                                                pool_size,
                                                strides,
                                                border_mode,
                                                dim_ordering,
-                                               list(input_shape) if input_shape else None)
+                                               list(input_shape) if input_shape else None,
+                                               **kwargs)
 
 
 class AveragePooling3D(KerasLayer):
@@ -1266,14 +1321,15 @@ class AveragePooling3D(KerasLayer):
     creating: createKerasAveragePooling3D
     """
     def __init__(self, pool_size=(2, 2, 2), strides=None, border_mode="valid",
-                 dim_ordering="th", input_shape=None, name=None, bigdl_type="float"):
+                 dim_ordering="th", input_shape=None, **kwargs):
         if border_mode != "valid":
             raise ValueError("For AveragePooling3D, only border_mode='valid' is supported for now")
-        super(AveragePooling3D, self).__init__(None, bigdl_type, name,
+        super(AveragePooling3D, self).__init__(None,
                                                pool_size,
                                                strides,
                                                dim_ordering,
-                                               list(input_shape) if input_shape else None)
+                                               list(input_shape) if input_shape else None,
+                                               **kwargs)
 
 
 class GlobalMaxPooling1D(KerasLayer):
@@ -1291,9 +1347,10 @@ class GlobalMaxPooling1D(KerasLayer):
     >>> globalmaxpooling1d = GlobalMaxPooling1D(input_shape=(4, 8))
     creating: createKerasGlobalMaxPooling1D
     """
-    def __init__(self, input_shape=None, name=None, bigdl_type="float"):
-        super(GlobalMaxPooling1D, self).__init__(None, bigdl_type, name,
-                                                 list(input_shape) if input_shape else None)
+    def __init__(self, input_shape=None, **kwargs):
+        super(GlobalMaxPooling1D, self).__init__(None,
+                                                 list(input_shape) if input_shape else None,
+                                                 **kwargs)
 
 
 class GlobalAveragePooling1D(KerasLayer):
@@ -1311,9 +1368,10 @@ class GlobalAveragePooling1D(KerasLayer):
     >>> globalaveragepooling1d = GlobalAveragePooling1D(input_shape=(12, 12))
     creating: createKerasGlobalAveragePooling1D
     """
-    def __init__(self, input_shape=None, name=None, bigdl_type="float"):
-        super(GlobalAveragePooling1D, self).__init__(None, bigdl_type, name,
-                                                     list(input_shape) if input_shape else None)
+    def __init__(self, input_shape=None, **kwargs):
+        super(GlobalAveragePooling1D, self).__init__(None,
+                                                     list(input_shape) if input_shape else None,
+                                                     **kwargs)
 
 
 class GlobalMaxPooling2D(KerasLayer):
@@ -1332,10 +1390,11 @@ class GlobalMaxPooling2D(KerasLayer):
     >>> globalmaxpooling2d = GlobalMaxPooling2D(input_shape=(4, 32, 32))
     creating: createKerasGlobalMaxPooling2D
     """
-    def __init__(self, dim_ordering="th", input_shape=None, name=None, bigdl_type="float"):
-        super(GlobalMaxPooling2D, self).__init__(None, bigdl_type, name,
+    def __init__(self, dim_ordering="th", input_shape=None, **kwargs):
+        super(GlobalMaxPooling2D, self).__init__(None,
                                                  dim_ordering,
-                                                 list(input_shape) if input_shape else None)
+                                                 list(input_shape) if input_shape else None,
+                                                 **kwargs)
 
 
 class GlobalAveragePooling2D(KerasLayer):
@@ -1354,10 +1413,11 @@ class GlobalAveragePooling2D(KerasLayer):
     >>> globalaveragepooling2d = GlobalAveragePooling2D(input_shape=(4, 32, 32))
     creating: createKerasGlobalAveragePooling2D
     """
-    def __init__(self, dim_ordering="th", input_shape=None, name=None, bigdl_type="float"):
-        super(GlobalAveragePooling2D, self).__init__(None, bigdl_type, name,
+    def __init__(self, dim_ordering="th", input_shape=None, **kwargs):
+        super(GlobalAveragePooling2D, self).__init__(None,
                                                      dim_ordering,
-                                                     list(input_shape) if input_shape else None)
+                                                     list(input_shape) if input_shape else None,
+                                                     **kwargs)
 
 
 class GlobalMaxPooling3D(KerasLayer):
@@ -1378,10 +1438,11 @@ class GlobalMaxPooling3D(KerasLayer):
     >>> globalmaxpooling3d = GlobalMaxPooling3D(input_shape=(4, 32, 32, 32))
     creating: createKerasGlobalMaxPooling3D
     """
-    def __init__(self, dim_ordering="th", input_shape=None, name=None, bigdl_type="float"):
-        super(GlobalMaxPooling3D, self).__init__(None, bigdl_type, name,
+    def __init__(self, dim_ordering="th", input_shape=None, **kwargs):
+        super(GlobalMaxPooling3D, self).__init__(None,
                                                  dim_ordering,
-                                                 list(input_shape) if input_shape else None)
+                                                 list(input_shape) if input_shape else None,
+                                                 **kwargs)
 
 
 class GlobalAveragePooling3D(KerasLayer):
@@ -1402,10 +1463,11 @@ class GlobalAveragePooling3D(KerasLayer):
     >>> globalaveragepooling3d = GlobalAveragePooling3D(input_shape=(4, 16, 16, 20))
     creating: createKerasGlobalAveragePooling3D
     """
-    def __init__(self, dim_ordering="th", input_shape=None, name=None, bigdl_type="float"):
-        super(GlobalAveragePooling3D, self).__init__(None, bigdl_type, name,
+    def __init__(self, dim_ordering="th", input_shape=None, **kwargs):
+        super(GlobalAveragePooling3D, self).__init__(None,
                                                      dim_ordering,
-                                                     list(input_shape) if input_shape else None)
+                                                     list(input_shape) if input_shape else None,
+                                                     **kwargs)
 
 
 class SimpleRNN(KerasLayer):
@@ -1435,8 +1497,8 @@ class SimpleRNN(KerasLayer):
     """
     def __init__(self, output_dim, activation="tanh", return_sequences=False,
                  go_backwards=False, W_regularizer=None, U_regularizer=None,
-                 b_regularizer=None, input_shape=None, name=None, bigdl_type="float"):
-        super(SimpleRNN, self).__init__(None, bigdl_type, name,
+                 b_regularizer=None, input_shape=None, **kwargs):
+        super(SimpleRNN, self).__init__(None,
                                         output_dim,
                                         activation,
                                         return_sequences,
@@ -1444,7 +1506,8 @@ class SimpleRNN(KerasLayer):
                                         W_regularizer,
                                         U_regularizer,
                                         b_regularizer,
-                                        list(input_shape) if input_shape else None)
+                                        list(input_shape) if input_shape else None,
+                                        **kwargs)
 
 
 class LSTM(KerasLayer):
@@ -1470,13 +1533,13 @@ class LSTM(KerasLayer):
     input_shape: A shape tuple, not including batch.
     name: String to specify the name of the layer. Default is None.
 
-    >>> lstm = LSTM(32, input_shape=(8, 16))
+    >>> lstm = LSTM(32, input_shape=(8, 16), name="lstm1")
     creating: createKerasLSTM
     """
     def __init__(self, output_dim, activation="tanh", inner_activation="hard_sigmoid",
                  return_sequences=False, go_backwards=False, W_regularizer=None,
-                 U_regularizer=None, b_regularizer=None, input_shape=None, name=None, bigdl_type="float"):
-        super(LSTM, self).__init__(None, bigdl_type, name,
+                 U_regularizer=None, b_regularizer=None, input_shape=None, **kwargs):
+        super(LSTM, self).__init__(None,
                                    output_dim,
                                    activation,
                                    inner_activation,
@@ -1485,7 +1548,8 @@ class LSTM(KerasLayer):
                                    W_regularizer,
                                    U_regularizer,
                                    b_regularizer,
-                                   list(input_shape) if input_shape else None)
+                                   list(input_shape) if input_shape else None,
+                                   **kwargs)
 
 
 class GRU(KerasLayer):
@@ -1516,8 +1580,8 @@ class GRU(KerasLayer):
     """
     def __init__(self, output_dim, activation="tanh", inner_activation="hard_sigmoid",
                  return_sequences=False, go_backwards=False, W_regularizer=None,
-                 U_regularizer=None, b_regularizer=None, input_shape=None, name=None, bigdl_type="float"):
-        super(GRU, self).__init__(None, bigdl_type, name,
+                 U_regularizer=None, b_regularizer=None, input_shape=None, **kwargs):
+        super(GRU, self).__init__(None,
                                   output_dim,
                                   activation,
                                   inner_activation,
@@ -1526,7 +1590,8 @@ class GRU(KerasLayer):
                                   W_regularizer,
                                   U_regularizer,
                                   b_regularizer,
-                                  list(input_shape) if input_shape else None)
+                                  list(input_shape) if input_shape else None,
+                                  **kwargs)
 
 
 class ConvLSTM2D(KerasLayer):
@@ -1567,14 +1632,14 @@ class ConvLSTM2D(KerasLayer):
     def __init__(self, nb_filter, nb_row, nb_col, activation="tanh",
                  inner_activation="hard_sigmoid", dim_ordering="th", border_mode="same",
                  subsample=(1, 1), W_regularizer=None, U_regularizer=None, b_regularizer=None,
-                 return_sequences=False, go_backwards=False, input_shape=None, name=None, bigdl_type="float"):
+                 return_sequences=False, go_backwards=False, input_shape=None, **kwargs):
         if nb_row != nb_col:
             raise ValueError("For ConvLSTM2D, only square kernel is supported for now")
         if border_mode != "same":
             raise ValueError("For ConvLSTM2D, only border_mode='same' is supported for now")
         if subsample[0] != subsample[1]:
             raise ValueError("For ConvLSTM2D, only equal strides is supported for now")
-        super(ConvLSTM2D, self).__init__(None, bigdl_type, name,
+        super(ConvLSTM2D, self).__init__(None,
                                          nb_filter,
                                          nb_row,
                                          activation,
@@ -1586,7 +1651,8 @@ class ConvLSTM2D(KerasLayer):
                                          b_regularizer,
                                          return_sequences,
                                          go_backwards,
-                                         list(input_shape) if input_shape else None)
+                                         list(input_shape) if input_shape else None,
+                                         **kwargs)
 
 
 class LocallyConnected1D(KerasLayer):
@@ -1619,10 +1685,10 @@ class LocallyConnected1D(KerasLayer):
     """
     def __init__(self, nb_filter, filter_length, activation=None, border_mode="valid",
                  subsample_length=1, W_regularizer=None, b_regularizer=None,
-                 bias=True, input_shape=None, name=None, bigdl_type="float"):
+                 bias=True, input_shape=None, **kwargs):
         if border_mode != "valid":
             raise ValueError("For LocallyConnected1D, only border_mode='valid' is supported for now")
-        super(LocallyConnected1D, self).__init__(None, bigdl_type, name,
+        super(LocallyConnected1D, self).__init__(None,
                                                  nb_filter,
                                                  filter_length,
                                                  activation,
@@ -1630,7 +1696,8 @@ class LocallyConnected1D(KerasLayer):
                                                  W_regularizer,
                                                  b_regularizer,
                                                  bias,
-                                                 list(input_shape) if input_shape else None)
+                                                 list(input_shape) if input_shape else None,
+                                                 **kwargs)
 
 
 class LocallyConnected2D(KerasLayer):
@@ -1666,8 +1733,8 @@ class LocallyConnected2D(KerasLayer):
     def __init__(self, nb_filter, nb_row, nb_col, activation=None,
                  border_mode="valid", subsample=(1, 1), dim_ordering="th",
                  W_regularizer=None, b_regularizer=None, bias=True,
-                 input_shape=None, name=None, bigdl_type="float"):
-        super(LocallyConnected2D, self).__init__(None, bigdl_type, name,
+                 input_shape=None, **kwargs):
+        super(LocallyConnected2D, self).__init__(None,
                                                  nb_filter,
                                                  nb_row,
                                                  nb_col,
@@ -1678,7 +1745,8 @@ class LocallyConnected2D(KerasLayer):
                                                  W_regularizer,
                                                  b_regularizer,
                                                  bias,
-                                                 list(input_shape) if input_shape else None)
+                                                 list(input_shape) if input_shape else None,
+                                                 **kwargs)
 
 
 class SpatialDropout1D(KerasLayer):
@@ -1702,10 +1770,11 @@ class SpatialDropout1D(KerasLayer):
     >>> spatialdropout1d = SpatialDropout1D(0.4, input_shape=(10, 12))
     creating: createKerasSpatialDropout1D
     """
-    def __init__(self, p=0.5, input_shape=None, name=None, bigdl_type="float"):
-        super(SpatialDropout1D, self).__init__(None, bigdl_type, name,
+    def __init__(self, p=0.5, input_shape=None, **kwargs):
+        super(SpatialDropout1D, self).__init__(None,
                                                float(p),
-                                               list(input_shape) if input_shape else None)
+                                               list(input_shape) if input_shape else None,
+                                               **kwargs)
 
 
 class SpatialDropout2D(KerasLayer):
@@ -1730,11 +1799,12 @@ class SpatialDropout2D(KerasLayer):
     >>> spatialdropout2d = SpatialDropout2D(0.25, input_shape=(5, 12, 12))
     creating: createKerasSpatialDropout2D
     """
-    def __init__(self, p=0.5, dim_ordering="th", input_shape=None, name=None, bigdl_type="float"):
-        super(SpatialDropout2D, self).__init__(None, bigdl_type, name,
+    def __init__(self, p=0.5, dim_ordering="th", input_shape=None, **kwargs):
+        super(SpatialDropout2D, self).__init__(None,
                                                float(p),
                                                dim_ordering,
-                                               list(input_shape) if input_shape else None)
+                                               list(input_shape) if input_shape else None,
+                                               **kwargs)
 
 
 class SpatialDropout3D(KerasLayer):
@@ -1759,11 +1829,12 @@ class SpatialDropout3D(KerasLayer):
     >>> spatialdropout3d = SpatialDropout3D(0.6, input_shape=(4, 12, 12, 16))
     creating: createKerasSpatialDropout3D
     """
-    def __init__(self, p=0.5, dim_ordering="th", input_shape=None, name=None, bigdl_type="float"):
-        super(SpatialDropout3D, self).__init__(None, bigdl_type, name,
+    def __init__(self, p=0.5, dim_ordering="th", input_shape=None, **kwargs):
+        super(SpatialDropout3D, self).__init__(None,
                                                float(p),
                                                dim_ordering,
-                                               list(input_shape) if input_shape else None)
+                                               list(input_shape) if input_shape else None,
+                                               **kwargs)
 
 
 class GaussianDropout(KerasLayer):
@@ -1783,10 +1854,11 @@ class GaussianDropout(KerasLayer):
     >>> gaussiandropout = GaussianDropout(0.45, input_shape=(4, 8))
     creating: createKerasGaussianDropout
     """
-    def __init__(self, p, input_shape=None, name=None, bigdl_type="float"):
-        super(GaussianDropout, self).__init__(None, bigdl_type, name,
+    def __init__(self, p, input_shape=None, **kwargs):
+        super(GaussianDropout, self).__init__(None,
                                               float(p),
-                                              list(input_shape) if input_shape else None)
+                                              list(input_shape) if input_shape else None,
+                                              **kwargs)
 
 
 class GaussianNoise(KerasLayer):
@@ -1804,13 +1876,14 @@ class GaussianNoise(KerasLayer):
     input_shape: A shape tuple, not including batch.
     name: String to specify the name of the layer. Default is None.
 
-    >>> gaussiannoise = GaussianNoise(0.45, input_shape=(3, 4, 5))
+    >>> gaussiannoise = GaussianNoise(0.45, input_shape=(3, 4, 5), name="gaussiannoise1")
     creating: createKerasGaussianNoise
     """
-    def __init__(self, sigma, input_shape=None, name=None, bigdl_type="float"):
-        super(GaussianNoise, self).__init__(None, bigdl_type, name,
+    def __init__(self, sigma, input_shape=None, **kwargs):
+        super(GaussianNoise, self).__init__(None,
                                             float(sigma),
-                                            list(input_shape) if input_shape else None)
+                                            list(input_shape) if input_shape else None,
+                                            **kwargs)
 
 
 class Masking(KerasLayer):
@@ -1831,10 +1904,11 @@ class Masking(KerasLayer):
     >>> masking = Masking(0.3, input_shape=(6, 8))
     creating: createKerasMasking
     """
-    def __init__(self, mask_value=0.0, input_shape=None, name=None, bigdl_type="float"):
-        super(Masking, self).__init__(None, bigdl_type, name,
+    def __init__(self, mask_value=0.0, input_shape=None, **kwargs):
+        super(Masking, self).__init__(None,
                                       float(mask_value),
-                                      list(input_shape) if input_shape else None)
+                                      list(input_shape) if input_shape else None,
+                                      **kwargs)
 
 
 class SReLU(KerasLayer):
@@ -1870,14 +1944,15 @@ class SReLU(KerasLayer):
     """
     def __init__(self, t_left_init='zero', a_left_init='glorot_uniform',
                  t_right_init='glorot_uniform', a_right_init='one',
-                 shared_axes=None, input_shape=None, name=None, bigdl_type="float"):
-        super(SReLU, self).__init__(None, bigdl_type, name,
+                 shared_axes=None, input_shape=None, **kwargs):
+        super(SReLU, self).__init__(None,
                                     t_left_init,
                                     a_left_init,
                                     t_right_init,
                                     a_right_init,
                                     shared_axes,
-                                    list(input_shape) if input_shape else None)
+                                    list(input_shape) if input_shape else None,
+                                    **kwargs)
 
 
 class ELU(KerasLayer):
@@ -1898,10 +1973,11 @@ class ELU(KerasLayer):
     >>> elu = ELU(1.2, input_shape=(4, 5))
     creating: createKerasELU
     """
-    def __init__(self, alpha=1.0, input_shape=None, name=None, bigdl_type="float"):
-        super(ELU, self).__init__(None, bigdl_type, name,
+    def __init__(self, alpha=1.0, input_shape=None, **kwargs):
+        super(ELU, self).__init__(None,
                                   float(alpha),
-                                  list(input_shape) if input_shape else None)
+                                  list(input_shape) if input_shape else None,
+                                  **kwargs)
 
 
 class LeakyReLU(KerasLayer):
@@ -1922,10 +1998,11 @@ class LeakyReLU(KerasLayer):
     >>> leakyrelu = LeakyReLU(0.02, input_shape=(4, 5))
     creating: createKerasLeakyReLU
     """
-    def __init__(self, alpha=0.01, input_shape=None, name=None, bigdl_type="float"):
-        super(LeakyReLU, self).__init__(None, bigdl_type, name,
+    def __init__(self, alpha=0.01, input_shape=None, **kwargs):
+        super(LeakyReLU, self).__init__(None,
                                         float(alpha),
-                                        list(input_shape) if input_shape else None)
+                                        list(input_shape) if input_shape else None,
+                                        **kwargs)
 
 
 class ThresholdedReLU(KerasLayer):
@@ -1946,10 +2023,11 @@ class ThresholdedReLU(KerasLayer):
     >>> thresholdedrelu = ThresholdedReLU(input_shape=(10, 12))
     creating: createKerasThresholdedReLU
     """
-    def __init__(self, theta=1.0, input_shape=None, name=None, bigdl_type="float"):
-        super(ThresholdedReLU, self).__init__(None, bigdl_type, name,
+    def __init__(self, theta=1.0, input_shape=None, **kwargs):
+        super(ThresholdedReLU, self).__init__(None,
                                               float(theta),
-                                              list(input_shape) if input_shape else None)
+                                              list(input_shape) if input_shape else None,
+                                              **kwargs)
 
 
 class TimeDistributed(KerasLayer):
@@ -1966,14 +2044,15 @@ class TimeDistributed(KerasLayer):
     layer: A layer instance.
     input_shape: A shape tuple, not including batch.
 
-    >>> timedistributed = TimeDistributed(Dense(8), input_shape=(10, 12))
+    >>> timedistributed = TimeDistributed(Dense(8), input_shape=(10, 12), name="timedistributeddense")
     creating: createKerasDense
     creating: createKerasTimeDistributed
     """
-    def __init__(self, layer, input_shape=None, name=None, bigdl_type="float"):
-        super(TimeDistributed, self).__init__(None, bigdl_type, name,
+    def __init__(self, layer, input_shape=None, **kwargs):
+        super(TimeDistributed, self).__init__(None,
                                               layer,
-                                              list(input_shape) if input_shape else None)
+                                              list(input_shape) if input_shape else None,
+                                              **kwargs)
 
 
 class Bidirectional(KerasLayer):
@@ -1994,12 +2073,13 @@ class Bidirectional(KerasLayer):
     input_shape: A shape tuple, not including batch.
     name: String to specify the name of the wrapper. Default is None.
 
-    >>> bidiretional = Bidirectional(LSTM(10, return_sequences=True), input_shape=(12, 16))
+    >>> bidiretional = Bidirectional(LSTM(10, return_sequences=True), input_shape=(12, 16), name="bidirectionallstm")
     creating: createKerasLSTM
     creating: createKerasBidirectional
     """
-    def __init__(self, layer, merge_mode="concat", input_shape=None, name=None, bigdl_type="float"):
-        super(Bidirectional, self).__init__(None, bigdl_type, name,
+    def __init__(self, layer, merge_mode="concat", input_shape=None, **kwargs):
+        super(Bidirectional, self).__init__(None,
                                             layer,
                                             merge_mode,
-                                            list(input_shape) if input_shape else None)
+                                            list(input_shape) if input_shape else None,
+                                            **kwargs)

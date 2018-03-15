@@ -174,12 +174,13 @@ class TestNewAPI(BigDLTestCase):
         model.fit(data_set, batch_size=8, nb_epoch=2, validation_data=data_set)
 
     def test_merge_method(self):
+        from bigdl.nn.keras.topology import Model as BModel
         bx1 = BLayer.Input(shape=(8, ))
         bx2 = BLayer.Input(shape=(6, ))
         by1 = BLayer.Dense(10)(bx1)
         by2 = BLayer.Dense(10)(bx2)
         z = BLayer.merge([by1, by2], mode="sum")
-        bmodel = BLayer.Model([bx1, bx2], z)
+        bmodel = BModel([bx1, bx2], z, name="graph1")
 
         from keras.engine import merge, Model
         kx1 = KLayer.Input(shape=(8, ))
@@ -193,6 +194,14 @@ class TestNewAPI(BigDLTestCase):
         def weight_converter(kmodel, weights):
             return [weights[0].T, weights[1], weights[2].T, weights[3]]
         self.compare_newapi(kmodel, bmodel, input_data, weight_converter)
+
+    def test_name(self):
+        from bigdl.nn.keras.topology import Sequential as BSequential
+        model = BSequential(name="seq")
+        input = BLayer.InputLayer(input_shape=(8, ), name="input111")
+        model.add(input)
+        dense = BLayer.Dense(10, input_dim=8, name="dense1")
+        model.add(dense)
 
 
 if __name__ == "__main__":
