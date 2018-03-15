@@ -17,6 +17,7 @@ export BIGDL_JAR="${BIGDL_HOME}/lib/$BIGDL_JAR_NAME"
 export BIGDL_PY_ZIP_NAME=`ls ${BIGDL_HOME}/lib/ | grep python-api.zip`
 export BIGDL_PY_ZIP="${BIGDL_HOME}/lib/$BIGDL_PY_ZIP_NAME"
 export BIGDL_CONF=${BIGDL_HOME}/conf/spark-bigdl.conf
+export PYTHONPATH="${BIGDL_PY_ZIP}":"${PYTHONPATH}"
 
 # Check files
 if [ ! -f ${BIGDL_CONF} ]; then
