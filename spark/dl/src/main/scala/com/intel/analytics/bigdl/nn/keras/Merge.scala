@@ -190,7 +190,8 @@ object Merge {
   def merge[@specialized(Float, Double) T: ClassTag](
     inputs: List[ModuleNode[T]],
     mode: String = "sum",
-    concatAxis: Int = -1)(implicit ev: TensorNumeric[T]): ModuleNode[T] = {
-    new Merge[T](mode = mode, concatAxis = concatAxis).inputs(inputs.toArray)
+    concatAxis: Int = -1,
+    name: String = null)(implicit ev: TensorNumeric[T]): ModuleNode[T] = {
+    new Merge[T](mode = mode, concatAxis = concatAxis).setName(name).inputs(inputs.toArray)
   }
 }
