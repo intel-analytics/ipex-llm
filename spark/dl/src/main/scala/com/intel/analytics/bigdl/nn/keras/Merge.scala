@@ -16,6 +16,7 @@
 
 package com.intel.analytics.bigdl.nn.keras
 
+import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.nn.{CAddTable, CAveTable, CMaxTable, CMulTable, CosineDistance, DotProduct, JoinTable, ParallelTable, Sequential => TSequential}
 import com.intel.analytics.bigdl.tensor.Tensor
@@ -184,5 +185,12 @@ object Merge {
     inputShape: Shape = null)(implicit ev: TensorNumeric[T]): Merge[T] = {
     val layersArray = if (layers != null) layers.toArray else null
     new Merge[T](layersArray, mode, concatAxis, inputShape)
+  }
+
+  def merge[@specialized(Float, Double) T: ClassTag](
+    inputs: List[ModuleNode[T]],
+    mode: String = "sum",
+    concatAxis: Int = -1)(implicit ev: TensorNumeric[T]): ModuleNode[T] = {
+    new Merge[T](mode = mode, concatAxis = concatAxis).inputs(inputs.toArray)
   }
 }
