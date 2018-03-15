@@ -26,7 +26,7 @@ from bigdl.dataset.dataset import *
 np.random.seed(1337)  # for reproducibility
 
 
-class TestLayer(BigDLTestCase):
+class TestNewAPI(BigDLTestCase):
 
     def test_embedding(self):
         input_data = np.random.randint(1000, size=(32, 10))
@@ -38,13 +38,13 @@ class TestLayer(BigDLTestCase):
     def test_batchnormalization(self):
         K.set_image_dim_ordering("th")
         input_data = np.random.random_sample([2, 5, 32, 32])
-        blayer = BLayer.BatchNormalization(input_shape=(5, 32, 32))
+        blayer = BLayer.BatchNormalization(axis=1, input_shape=(5, 32, 32))
         klayer = KLayer.BatchNormalization(axis=1, input_shape=(5, 32, 32))
         self.compare_newapi(klayer, blayer, input_data,
                             WeightsConverter.convert_batchnormalization)
         K.set_image_dim_ordering("tf")
         input_data2 = np.random.random_sample([2, 32, 32, 4])
-        blayer = BLayer.BatchNormalization(dim_ordering="tf", input_shape=(32, 32, 4))
+        blayer = BLayer.BatchNormalization(axis=-1, dim_ordering="tf", input_shape=(32, 32, 4))
         klayer = KLayer.BatchNormalization(axis=-1, input_shape=(32, 32, 4))
         self.compare_newapi(klayer, blayer, input_data2,
                             WeightsConverter.convert_batchnormalization)
@@ -129,8 +129,8 @@ class TestLayer(BigDLTestCase):
 
     def test_graph(self):
         from bigdl.nn.keras.topology import Model as BModel
-        x1 = BLayer.Input(input_shape=(8, ))
-        x2 = BLayer.Input(input_shape=(6, ))
+        x1 = BLayer.Input(shape=(8, ))
+        x2 = BLayer.Input(shape=(6, ))
         y1 = BLayer.Dense(10)(x1)
         y2 = BLayer.Dense(10)(x2)
         model = BModel([x1, x2], [y1, y2])
@@ -172,6 +172,27 @@ class TestLayer(BigDLTestCase):
         model.add(BLayer.Dense(20, activation="softmax"))
         model.compile(optimizer="sgd", loss="sparse_categorical_crossentropy", metrics=["accuracy"])
         model.fit(data_set, batch_size=8, nb_epoch=2, validation_data=data_set)
+
+    def test_merge_method(self):
+        bx1 = BLayer.Input(shape=(8, ))
+        bx2 = BLayer.Input(shape=(6, ))
+        by1 = BLayer.Dense(10)(bx1)
+        by2 = BLayer.Dense(10)(bx2)
+        z = BLayer.merge([by1, by2], mode="sum")
+        bmodel = BLayer.Model([bx1, bx2], z)
+
+        from keras.engine import merge, Model
+        kx1 = KLayer.Input(shape=(8, ))
+        kx2 = KLayer.Input(shape=(6, ))
+        ky1 = KLayer.Dense(10)(kx1)
+        ky2 = KLayer.Dense(10)(kx2)
+        z = merge([ky1, ky2], mode="sum")
+        kmodel = Model([kx1, kx2], z)
+        input_data = [np.random.random([2, 8]), np.random.random([2, 6])]
+
+        def weight_converter(kmodel, weights):
+            return [weights[0].T, weights[1], weights[2].T, weights[3]]
+        self.compare_newapi(kmodel, bmodel, input_data, weight_converter)
 
 
 if __name__ == "__main__":

@@ -143,22 +143,22 @@ class PythonBigDLKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends Pytho
       gammaInit, dimOrdering, toScalaShape(inputShape))
   }
 
-  def setKerasRunningMean(module: BatchNormalization[T], runningMean: JTensor): Unit = {
+  def setRunningMean(module: BatchNormalization[T], runningMean: JTensor): Unit = {
     module.labor.asInstanceOf[SpatialBatchNormalization[T]]
       .runningMean.set(toTensor(runningMean))
   }
 
-  def setKerasRunningStd(module: BatchNormalization[T], runningStd: JTensor): Unit = {
+  def setRunningStd(module: BatchNormalization[T], runningStd: JTensor): Unit = {
     module.labor.asInstanceOf[SpatialBatchNormalization[T]]
       .runningVar.set(toTensor(runningStd))
   }
 
-  def getKerasRunningMean(module: BatchNormalization[T]): JTensor = {
+  def getRunningMean(module: BatchNormalization[T]): JTensor = {
     toJTensor(module.labor.asInstanceOf[SpatialBatchNormalization[T]]
       .runningMean)
   }
 
-  def getKerasRunningStd(module: BatchNormalization[T]): JTensor = {
+  def getRunningStd(module: BatchNormalization[T]): JTensor = {
     toJTensor(module.labor.asInstanceOf[SpatialBatchNormalization[T]]
       .runningVar)
   }
@@ -168,7 +168,9 @@ class PythonBigDLKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends Pytho
     mode: String = "sum",
     concatAxis: Int = -1,
     inputShape: JList[JList[Int]]): Merge[T] = {
-    Merge[T](layers.asScala.toList, mode, concatAxis, toScalaMultiShape(inputShape))
+    val layersList = if (layers != null) layers.asScala.toList
+                     else null
+    Merge[T](layersList, mode, concatAxis, toScalaMultiShape(inputShape))
   }
 
   def createKerasConvolution2D(

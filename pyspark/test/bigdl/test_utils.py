@@ -329,7 +329,8 @@ class BigDLTestCase(TestCase):
         kmodel = KSequential()
         kmodel.add(klayer)
         koutput = kmodel.predict(input_data)
-        if isinstance(blayer, BLayer.BatchNormalization):
+        from bigdl.nn.keras.layer import BatchNormalization
+        if isinstance(blayer, BatchNormalization):
             k_running_mean = K.eval(klayer.running_mean)
             k_running_std = K.eval(klayer.running_std)
             blayer.set_running_mean(k_running_mean)
@@ -339,3 +340,10 @@ class BigDLTestCase(TestCase):
         bmodel.training(is_training)
         boutput = bmodel.forward(input_data)
         self.assert_allclose(boutput, koutput, rtol=rtol, atol=atol)
+
+    def compare_model(self, bmodel, kmodel, input_data, rtol=1e-5, atol=1e-5):
+        WeightLoader.load_weights_from_kmodel(bmodel, kmodel)
+        bmodel.training(is_training=False)
+        bigdl_output = bmodel.forward(input_data)
+        keras_output = kmodel.predict(input_data)
+        self.assert_allclose(bigdl_output, keras_output, rtol=rtol, atol=atol)

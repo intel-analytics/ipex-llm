@@ -17,7 +17,7 @@
 package com.intel.analytics.bigdl.keras.nn
 
 import com.intel.analytics.bigdl.keras.KerasBaseSpec
-import com.intel.analytics.bigdl.nn.keras.{Dense, InputLayer, Merge, Sequential => KSequential}
+import com.intel.analytics.bigdl.nn.keras.{Dense, Input, InputLayer, Merge, Model, Sequential => KSequential}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import com.intel.analytics.bigdl.utils.{MultiShape, Shape, T, Table}
@@ -37,6 +37,20 @@ class MergeSpec extends KerasBaseSpec {
     seq.add(layer)
     seq.getOutputShape().toSingle().toArray should be (Array(-1, 4, 8))
     seq.forward(input) should be (input1 + input2)
+  }
+
+  "merge method" should "work correctly" in {
+    val l1 = Input[Float](inputShape = Shape(10))
+    val l2 = Input[Float](inputShape = Shape(10))
+    // equivalent to output = merge(inputs=[l1, l2], mode="sum") on python side
+    val output = Merge[Float](mode = "sum").inputs(Array(l1, l2))
+    val model = Model[Float](Array(l1, l2), output)
+    val input1 = Tensor[Float](2, 4, 8).rand(0, 1)
+    val input2 = Tensor[Float](2, 4, 8).rand(0, 1)
+    val inputData = T(1 -> input1, 2 -> input2)
+    val outputData = model.forward(inputData)
+    require(model.getOutputShape().toSingle().sameElements(Array(-1, 10)))
+    outputData should be (input1 + input2)
   }
 
   "Merge with incompatible input shapes" should "raise an exception" in {
