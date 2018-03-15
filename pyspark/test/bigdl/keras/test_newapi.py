@@ -22,6 +22,10 @@ import keras.layers as KLayer
 import keras.backend as K
 from bigdl.keras.converter import WeightsConverter
 from bigdl.dataset.dataset import *
+from bigdl.nn.keras.topology import Model as BModel
+from bigdl.nn.keras.topology import Sequential as BSequential
+from keras.engine import merge as kmerge, Model as KModel
+from keras.models import Sequential as KSequential
 
 np.random.seed(1337)  # for reproducibility
 
@@ -128,7 +132,6 @@ class TestNewAPI(BigDLTestCase):
         np.testing.assert_allclose((10, ), output_shape[1:])
 
     def test_graph(self):
-        from bigdl.nn.keras.topology import Model as BModel
         x1 = BLayer.Input(shape=(8, ))
         x2 = BLayer.Input(shape=(6, ))
         y1 = BLayer.Dense(10)(x1)
@@ -139,7 +142,6 @@ class TestNewAPI(BigDLTestCase):
         np.testing.assert_allclose((6, ), input_shapes[1][1:])
 
     def test_train(self):
-        from bigdl.nn.keras.topology import Sequential as BSequential
         x = np.random.random([32, 10])
         y = np.random.random([32, ])
         model = BSequential()
@@ -165,7 +167,6 @@ class TestNewAPI(BigDLTestCase):
                                 MatToTensor(), ImageFrameToSample(target_keys=['label'])])
         data_set = DataSet.image_frame(image_frame).transform(transformer)
 
-        from bigdl.nn.keras.topology import Sequential as BSequential
         model = BSequential()
         model.add(BLayer.Convolution2D(1, 5, 5, input_shape=(3, 224, 224)))
         model.add(BLayer.Reshape((1*220*220, )))
@@ -173,35 +174,73 @@ class TestNewAPI(BigDLTestCase):
         model.compile(optimizer="sgd", loss="sparse_categorical_crossentropy", metrics=["accuracy"])
         model.fit(data_set, batch_size=8, nb_epoch=2, validation_data=data_set)
 
-    def test_merge_method(self):
-        from bigdl.nn.keras.topology import Model as BModel
+    def convert_two_dense_model(self, kmodel, weights):
+        return [weights[2].T, weights[3], weights[0].T, weights[1]]
+
+    def test_merge_method_sum(self):
         bx1 = BLayer.Input(shape=(8, ))
         bx2 = BLayer.Input(shape=(6, ))
         by1 = BLayer.Dense(10)(bx1)
         by2 = BLayer.Dense(10)(bx2)
-        z = BLayer.merge([by1, by2], mode="sum")
-        bmodel = BModel([bx1, bx2], z, name="graph1")
+        bz = BLayer.merge([by1, by2], mode="sum")
+        bmodel = BModel([bx1, bx2], bz, name="graph1")
 
-        from keras.engine import merge, Model
         kx1 = KLayer.Input(shape=(8, ))
         kx2 = KLayer.Input(shape=(6, ))
         ky1 = KLayer.Dense(10)(kx1)
         ky2 = KLayer.Dense(10)(kx2)
-        z = merge([ky1, ky2], mode="sum")
-        kmodel = Model([kx1, kx2], z)
+        kz = kmerge([ky1, ky2], mode="sum")
+        kmodel = KModel([kx1, kx2], kz)
+
         input_data = [np.random.random([2, 8]), np.random.random([2, 6])]
+        self.compare_newapi(kmodel, bmodel, input_data, self.convert_two_dense_model)
 
-        def weight_converter(kmodel, weights):
-            return [weights[0].T, weights[1], weights[2].T, weights[3]]
-        self.compare_newapi(kmodel, bmodel, input_data, weight_converter)
+    def test_merge_method_model_concat(self):
+        bx1 = BLayer.Input(shape=(4, ))
+        bx1_1 = BLayer.Input(shape=(4, ))
+        bx2 = BLayer.Input(shape=(5, ))
+        by1 = BLayer.Dense(6, activation="sigmoid")(bx1)
+        bbranch1 = BModel(bx1, by1)(bx1_1)
+        bbranch2 = BLayer.Dense(8)(bx2)
+        bz = BLayer.merge([bbranch1, bbranch2], mode="concat")
+        bmodel = BModel([bx1_1, bx2], bz)
 
-    def test_name(self):
-        from bigdl.nn.keras.topology import Sequential as BSequential
-        model = BSequential(name="seq")
-        input = BLayer.InputLayer(input_shape=(8, ), name="input111")
-        model.add(input)
-        dense = BLayer.Dense(10, input_dim=8, name="dense1")
-        model.add(dense)
+        kx1 = KLayer.Input(shape=(4, ))
+        kx2 = KLayer.Input(shape=(5, ))
+        ky1 = KLayer.Dense(6, activation="sigmoid")(kx1)
+        kbranch1 = KModel(kx1, ky1)(kx1)
+        kbranch2 = KLayer.Dense(8)(kx2)
+        kz = KLayer.merge([kbranch1, kbranch2], mode="concat")
+        kmodel = KModel([kx1, kx2], kz)
+
+        input_data = [np.random.random([2, 4]), np.random.random([2, 5])]
+        self.compare_newapi(kmodel, bmodel, input_data, self.convert_two_dense_model)
+
+    def test_merge_method_seq_concat(self):
+        bx1 = BLayer.Input(shape=(10, ))
+        bx1_1 = BLayer.Input(shape=(10, ))
+        bx2 = BLayer.Input(shape=(10, ))
+        by1 = BLayer.Dense(12, activation="sigmoid")(bx1)
+        bbranch1_node = BModel(bx1, by1)(bx1_1)
+        bbranch2 = BSequential()
+        bbranch2.add(BLayer.Dense(12, input_dim=10))
+        bbranch2_node = bbranch2(bx2)
+        bz = BLayer.merge([bbranch1_node, bbranch2_node], mode="concat")
+        bmodel = BModel([bx1_1, bx2], bz)
+
+        kx1 = KLayer.Input(shape=(10, ))
+        kx2 = KLayer.Input(shape=(10, ))
+        ky1 = KLayer.Dense(12, activation="sigmoid")(kx1)
+        kbranch1_node = KModel(kx1, ky1)(kx1)
+        kbranch2 = KSequential()
+        kbranch2.add(KLayer.Dense(12, input_dim=10))
+        kbranch2_node = kbranch2(kx2)
+        kz = KLayer.merge([kbranch1_node, kbranch2_node], mode="concat")
+        kmodel = KModel([kx1, kx2], kz)
+
+        input_data = [np.random.random([2, 10]), np.random.random([2, 10])]
+        self.compare_newapi(kmodel, bmodel, input_data, self.convert_two_dense_model)
+
 
 
 if __name__ == "__main__":

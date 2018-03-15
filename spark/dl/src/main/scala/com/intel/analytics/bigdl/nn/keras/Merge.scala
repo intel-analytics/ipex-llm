@@ -40,7 +40,7 @@ import scala.reflect.ClassTag
  * @tparam T The numeric type of parameter(e.g. weight, bias). Only support float/double now.
  */
 class Merge[T: ClassTag](
-   val layers: Array[KerasLayer[_, _, T]] = null,
+   val layers: Array[AbstractModule[Activity, Activity, T]] = null,
    val mode: String = "sum",
    val concatAxis: Int = -1,
    // MultiShape isn't directly supported for serialization. Use Shape instead.
@@ -56,6 +56,7 @@ class Merge[T: ClassTag](
   if (layers != null) {
     require(layers.length >= 2, s"Merge must take at least two input layers " +
       s"but found ${layers.length}")
+    this.excludeInvalidLayers(layers)
   }
 
   private def computeOutputShapeForConcat(input: List[Shape]): Shape = {
@@ -142,7 +143,7 @@ class Merge[T: ClassTag](
       val parallel = ParallelTable()
       var i = 0
       while(i < layers.length) {
-        parallel.add(layers(i).labor)
+        parallel.add(layers(i).asInstanceOf[KerasLayer[Activity, Activity, T]].labor)
         i += 1
       }
       model.add(parallel)
@@ -158,7 +159,7 @@ class Merge[T: ClassTag](
 object Merge {
   def calcBatchInputShape[T: ClassTag](
     inputShape: Shape = null,
-    layers: Array[KerasLayer[_, _, T]]): Shape = {
+    layers: Array[AbstractModule[Activity, Activity, T]]): Shape = {
     val batchInputShape = KerasLayer.addBatch(inputShape)
     val actualInputShape = if (layers != null) {
       MultiShape(layers.map { layer =>
@@ -179,7 +180,7 @@ object Merge {
   }
 
   def apply[@specialized(Float, Double) T: ClassTag](
-    layers: List[KerasLayer[_, _, T]] = null,
+    layers: List[AbstractModule[Activity, Activity, T]] = null,
     mode: String = "sum",
     concatAxis: Int = -1,
     inputShape: Shape = null)(implicit ev: TensorNumeric[T]): Merge[T] = {

@@ -316,7 +316,7 @@ def merge(inputs, mode="sum", concat_axis=-1, name=None):
                  Default is -1, meaning the last axis of the input.
     name: String to specify the name of merge. Default is None.
     """
-    return Merge(mode=mode, concat_axis=concat_axis, name=name)(list(reversed(inputs)))
+    return Merge(mode=mode, concat_axis=concat_axis, name=name)(list(inputs))
 
 
 class Dropout(KerasLayer):
