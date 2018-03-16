@@ -19,8 +19,10 @@ from bigdl.dataset.dataset import *
 from bigdl.keras.optimization import OptimConverter
 import multiprocessing
 
+from bigdl.nn.layer import SharedStaticUtils, Container
 
-class KerasModel(KerasLayer):
+
+class KerasModel(KerasLayer, Container, SharedStaticUtils):
     def compile(self, optimizer, loss, metrics=None):
         """
         Configures the learning process. Must be called before fit.
@@ -143,8 +145,19 @@ class Sequential(KerasModel):
     >>> sequential = Sequential(name="seq1")
     creating: createKerasSequential
     """
-    def __init__(self, **kwargs):
-        super(Sequential, self).__init__(None, **kwargs)
+    def __init__(self, jvalue=None, **kwargs):
+        super(Sequential, self).__init__(jvalue, **kwargs)
+
+    @staticmethod
+    def from_jvalue(jvalue, bigdl_type="float"):
+        """
+        Create a Python Model base on the given java value
+        :param jvalue: Java object create by Py4j
+        :return: A Python Model
+        """
+        model = Sequential(jvalue=jvalue)
+        model.value = jvalue
+        return model
 
     def add(self, model):
         self.value.add(model.value)
@@ -160,8 +173,18 @@ class Model(KerasModel):
     output: An output node or a list of output nodes.
     name: String to specify the name of the graph model. Default is None.
     """
-    def __init__(self, input, output, **kwargs):
-        super(Model, self).__init__(None,
+    def __init__(self, input, output, jvalue=None,  **kwargs):
+        super(Model, self).__init__(jvalue,
                                     to_list(input),
                                     to_list(output),
                                     **kwargs)
+    @staticmethod
+    def from_jvalue(jvalue, bigdl_type="float"):
+        """
+        Create a Python Model base on the given java value
+        :param jvalue: Java object create by Py4j
+        :return: A Python Model
+        """
+        model = Model([], [], jvalue=jvalue)
+        model.value = jvalue
+        return model
