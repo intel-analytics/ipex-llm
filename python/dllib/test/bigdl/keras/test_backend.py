@@ -37,6 +37,11 @@ class TestBackend(BigDLTestCase):
 
         self.assert_allclose(keras_output, bigdl_output, rtol=rtol, atol=atol)
 
+    def test_lenet_local_predict(self):
+        kmodel, X_train, y_train = TestModels.kmodel_seq_lenet_mnist()
+        model = with_bigdl_backend(kmodel)
+        model.predict(X_train)
+
     def test_lenet_local(self):
         kmodel, X_train, y_train = TestModels.kmodel_seq_lenet_mnist()
         self.modelTest(X_train, kmodel, dump_weights=True)
