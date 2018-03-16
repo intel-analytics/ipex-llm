@@ -220,7 +220,11 @@ class SerializerSpec extends BigDLSpecHelper {
     "com.intel.analytics.bigdl.nn.keras.GlobalMaxPooling1D" ->
       "com.intel.analytics.bigdl.keras.nn.GlobalMaxPooling1DSerialTest",
     "com.intel.analytics.bigdl.nn.keras.Flatten" ->
-      "com.intel.analytics.bigdl.keras.nn.FlattenSerialTest"
+      "com.intel.analytics.bigdl.keras.nn.FlattenSerialTest",
+  "com.intel.analytics.bigdl.nn.keras.KerasIdentityWrapper" ->
+    "com.intel.analytics.bigdl.keras.nn.KerasIdentityWrapperSerialTest",
+    "com.intel.analytics.bigdl.nn.keras.KerasLayerWrapper" ->
+      "com.intel.analytics.bigdl.keras.nn.KerasLayerWrapperSerialTest"
   )
 
   private val suffix = "SerialTest"
@@ -259,11 +263,6 @@ class SerializerSpec extends BigDLSpecHelper {
           s"subclass of com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest")
         testClass.asInstanceOf[ModuleSerializationTest].test()
       } catch {
-        case e: ClassNotFoundException =>
-          cancel(s"Serialization test of module $cls has not " +
-            s"been implemented. Please consider creating a serialization test class with name " +
-            s"${clsWholeName} which extend com.intel.analytics.bigdl.utils.serializer." +
-            s"ModuleSerializationTest")
         case t: Throwable => throw t
       }
     }
