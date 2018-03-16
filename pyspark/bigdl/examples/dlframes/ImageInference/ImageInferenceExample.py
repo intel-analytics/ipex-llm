@@ -26,7 +26,7 @@ from bigdl.nn.layer import Model
 if __name__ == "__main__":
 
     if len(sys.argv) != 3:
-        print("Need parameters: <model> <imagePath>", file=sys.stderr)
+        print("Need parameters: <model> <imagePath>")
         exit(-1)
 
     sc = SparkContext(appName="ImageInferenceExample", conf=create_spark_conf())

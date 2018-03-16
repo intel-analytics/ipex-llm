@@ -29,7 +29,7 @@ from pyspark.ml.evaluation import MulticlassClassificationEvaluator
 if __name__ == "__main__":
 
     if len(sys.argv) != 3:
-        print("Need parameters: <model> <imagePath>", file=sys.stderr)
+        print("Need parameters: <model> <imagePath>")
         exit(-1)
 
     sc = SparkContext(appName="ImageTransferLearningExample", conf=create_spark_conf())
