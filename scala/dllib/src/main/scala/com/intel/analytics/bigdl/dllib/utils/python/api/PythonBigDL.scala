@@ -35,6 +35,7 @@ import java.nio.ByteOrder
 
 import com.intel.analytics.bigdl.dlframes._
 import com.intel.analytics.bigdl.nn.Graph._
+import com.intel.analytics.bigdl.nn.keras.{KerasLayer, KerasModel}
 import com.intel.analytics.bigdl.optim.SGD.{LearningRateSchedule, SequentialSchedule}
 import com.intel.analytics.bigdl.transform.vision.image._
 import com.intel.analytics.bigdl.transform.vision.image.augmentation._
@@ -2594,7 +2595,14 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
 
   def getContainerModules(module: Container[Activity, Activity, T])
   : JList[AbstractModule[Activity, Activity, T]] = {
-    module.modules.toList.asJava
+    module match {
+      case m: KerasModel[T] =>
+        m.getSubModules().asJava
+      case kl: KerasLayer[Activity, Activity, T] =>
+        throw new RuntimeException(s"There's no sub modules for ${kl}")
+      case _ =>
+        module.modules.toList.asJava
+    }
   }
 
   def getFlattenModules(module: Container[Activity, Activity, T],
@@ -2605,11 +2613,21 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     result.toList.asJava
   }
 
+  // TODO: refactor Container and KerasLayer to simplify this logic
+  private def hasSubModules(module: AbstractModule[Activity, Activity, T]) = {
+    module match {
+      case km: KerasModel[T] => true
+      case kl: KerasLayer[Activity, Activity, T] => false
+      case c: Container[_, _, _] => true
+      case _ => false
+    }
+  }
+
   private def doGetFlattenModules(module: Container[Activity, Activity, T],
     includeContainer: Boolean,
     result: ArrayBuffer[AbstractModule[Activity, Activity, T]]): Unit = {
-    module.modules.foreach {m =>
-      if (m.isInstanceOf[Container[Activity, Activity, T]]) {
+    getContainerModules(module).asScala.foreach {m =>
+      if (hasSubModules(m)) {
         doGetFlattenModules(m.asInstanceOf[Container[Activity, Activity, T]],
           includeContainer,
           result)
@@ -3026,6 +3044,10 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
 
   def dlImageTransform(dlImageTransformer: DLImageTransformer, dataSet: DataFrame): DataFrame = {
     dlImageTransformer.transform(dataSet)
+  }
+
+  def getRealClassNameOfJValue(module: AbstractModule[Activity, Activity, T]): String = {
+    module.getClass.getCanonicalName
   }
 }
 
