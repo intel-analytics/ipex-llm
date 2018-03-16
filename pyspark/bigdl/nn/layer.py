@@ -102,10 +102,8 @@ class SharedStaticUtils():
             base_module = importlib.import_module('bigdl.nn.keras.topology')
         elif "com.intel.analytics.bigdl.nn.keras" == jpackage_name:
             base_module = importlib.import_module('bigdl.nn.keras.layer')
-        elif "com.intel.analytics.bigdl.nn" == jpackage_name:
-            base_module = importlib.import_module('bigdl.nn.layer')
         else:
-            raise Exception("Not supported type: %s" % jname)
+            base_module = importlib.import_module('bigdl.nn.layer')
 
         realClassName = "Layer" # The top base class
         if pclass_name in dir(base_module):
