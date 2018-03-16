@@ -31,13 +31,7 @@ class TestApplication(BigDLTestCase):
 
     def assert_model(self, input_data, kmodel, rtol=1e-5, atol=1e-5):
         bmodel = DefinitionLoader.from_kmodel(kmodel)
-        WeightLoader.load_weights_from_kmodel(bmodel, kmodel)
-
-        keras_output = kmodel.predict(input_data)
-        bmodel.training(is_training=False)
-        bigdl_output = bmodel.forward(input_data)
-
-        self.assert_allclose(keras_output, bigdl_output, rtol=rtol, atol=atol)
+        self.compare_model(bmodel, kmodel, input_data, rtol, atol)
 
     def test_lenet(self):
         K.set_image_dim_ordering("th")

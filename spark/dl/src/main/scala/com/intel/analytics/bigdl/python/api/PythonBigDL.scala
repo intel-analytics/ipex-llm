@@ -2635,6 +2635,14 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     module.runningVar.set(toTensor(runningStd))
   }
 
+  def getRunningMean(module: BatchNormalization[T]): JTensor = {
+    toJTensor(module.runningMean)
+  }
+
+  def getRunningStd(module: BatchNormalization[T]): JTensor = {
+    toJTensor(module.runningVar)
+  }
+
   def createMasking(maskValue: Double)
   : Masking[T] = {
     Masking[T](maskValue)

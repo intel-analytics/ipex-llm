@@ -78,7 +78,7 @@ Input(inputShape = null, name = null)
 Parameters:
 
 * `inputShape`: A [`Shape`](#shape) object indicating the shape of the input node, not including batch.
-* `name`: String to specify the name of the input node. Default is null.
+* `name`: String to set the name of the input node. If not specified, its name will by default to be a generated string.
 
 To create a graph container:
 ```scala
@@ -89,19 +89,35 @@ Parameters:
 * `input`: An input node or an array of input nodes.
 * `output`: An output node or an array of output nodes.
 
+To merge a list of input __nodes__ (__NOT__ layers), following some merge mode in the Functional API:
+```scala
+import com.intel.analytics.bigdl.nn.keras.Merge.merge
+
+merge(inputs, mode = "sum", concat_axis = -1) // This will return an output NODE.
+```
+
+Parameters:
+
+* `inputs`: A list of node instances. Must be more than one node.
+* `mode`: Merge mode. String, must be one of: 'sum', 'mul', 'concat', 'ave', 'cos','dot', 'max'. Default is 'sum'.
+* `concat_axis`: Int, axis to use when concatenating nodes. Only specify this when merge mode is 'concat'. Default is -1, meaning the last axis of the input.
 
 Example code to create a graph model:
 ```scala
 import com.intel.analytics.bigdl.nn.keras.{Input, Dense, Model}
 import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.bigdl.nn.keras.Merge.merge
 
-// instantiate an input node
-val input = Input[Float](inputShape = Shape(128))
+// instantiate input nodes
+val input1 = Input[Float](inputShape = Shape(8))
+val input2 = Input[Float](inputShape = Shape(6))
 // call inputs() with an input node and get an output node
-val dense = Dense[Float](32, activation = "relu").inputs(input)
-val output = Dense[Float](10).inputs(dense)
+val dense1 = Dense[Float](10).inputs(input1)
+val dense2 = Dense[Float](10).inputs(input2)
+// merge two nodes following some merge mode
+val output = merge(inputs = List(dense1, dense2), mode = "sum")
 // create a graph container
-val model = Model[Float](input, output)
+val model = Model[Float](Array(input1, input2), output)
 ```
 
 
@@ -109,7 +125,7 @@ val model = Model[Float](input, output)
 ## **Layers**
 See [here](Layers/core.md) for all the available layers for the new set of Keras-Style API.
 
-To set the name of a layer, call the method `set_name(name)` of the layer.
+To set the name of a layer, call the method `setName(name)` of the layer.
 
 
 ---

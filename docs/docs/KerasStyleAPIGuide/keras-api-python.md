@@ -37,11 +37,8 @@ The model is described as a linear stack of layers in the Sequential API. Layers
 
 To create a sequential container:
 ```python
-Sequential(name=None)
+Sequential()
 ```
-Parameters:
-
-* `name`: String to specify the name of the sequential model. Default is None.
 
 Example code to create a sequential model:
 ```python
@@ -65,21 +62,20 @@ Input(shape=None, name=None)
 Parameters:
 
 * `shape`: A shape tuple indicating the shape of the input node, not including batch.
-* `name`: String to specify the name of the input node. Default is None.
+* `name`: String to set the name of the input node. If not specified, its name will by default to be a generated string.
 
 To create a graph container:
 ```python
-Model(input, output, name=None)
+Model(input, output)
 ```
 Parameters:
 
 * `input`: An input node or a list of input nodes.
 * `output`: An output node or a list of output nodes.
-* `name`: String to specify the name of the graph model. Default is None.
 
 To merge a list of input __nodes__ (__NOT__ layers), following some merge mode in the Functional API:
 ```python
-merge(inputs, mode="sum", concat_axis=-1, name=None) # This will return an output NODE.
+merge(inputs, mode="sum", concat_axis=-1) # This will return an output NODE.
 ```
 
 Parameters:
@@ -87,7 +83,6 @@ Parameters:
 * `inputs`: A list of node instances. Must be more than one node.
 * `mode`: Merge mode. String, must be one of: 'sum', 'mul', 'concat', 'ave', 'cos','dot', 'max'. Default is 'sum'.
 * `concat_axis`: Int, axis to use when concatenating nodes. Only specify this when merge mode is 'concat'. Default is -1, meaning the last axis of the input.
-* `name`: String to specify the name of merge. Default is None.
 
 Example code to create a graph model:
 ```python

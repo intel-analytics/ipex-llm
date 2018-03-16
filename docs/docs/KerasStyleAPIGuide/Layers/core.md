@@ -12,7 +12,7 @@ InputLayer(input_shape=None, name=None)
 Parameters:
 
 * `inputShape`: For Scala API, it should be a [`Shape`](../keras-api-scala/#shape) object. For Python API, it should be a shape tuple. Batch dimension should be excluded.
-* `name`: String to specify the name of the input layer. Default is null.
+* `name`: String to set the name of the input node. If not specified, its name will by default to be a generated string.
 
 
 ---

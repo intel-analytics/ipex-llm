@@ -34,4 +34,12 @@ class LeNetSpec extends FlatSpec with Matchers {
     val gradInput = cnn.backward(input, output)
   }
 
+  "LeNet forward with incompatible input tensor" should "raise an exception" in {
+    intercept[RuntimeException] {
+      val cnn = LeNet()
+      val input = Tensor[Float](Array(28, 28, 1)).rand()
+      val output = cnn.forward(input)
+    }
+  }
+
 }
