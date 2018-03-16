@@ -33,6 +33,8 @@ ${BIGDL_HOME}/bin/pyspark-with-bigdl.sh --master local[*]
 * `--jars` if there are extra jars needed.
 * `--py-files` if there are extra python packages needed.
 
+You can also specify other options available for pyspark in the above command if needed.
+
 [Example code to verify if BigDL can run successfully](run-from-pip.md#code.verification)
 
 ## **Run with spark-submit**
@@ -60,11 +62,13 @@ sudo pip install numpy scipy pandas scikit-learn matplotlib seaborn wordcloud
 
 Launch the Jupyter notebook as follows:
 ```bash
-${BIGDL_HOME}/bin/juptyer-with-bigdl.sh --master local[*]
+${BIGDL_HOME}/bin/jupyter-with-bigdl.sh --master local[*]
 ```
 * `--master` set the master URL to connect to
 * `--jars` if there are extra jars needed.
 * `--py-files` if there are extra python packages needed.
+
+You can also specify other options available for pyspark in the above command if needed.
 
 After successfully launching Jupyter, you will be able to navigate to the notebook dashboard using
 your browser. You can find the exact URL in the console output when you started Jupyter; by default,
