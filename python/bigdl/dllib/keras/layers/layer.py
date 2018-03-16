@@ -65,29 +65,52 @@ class KerasCreator(JavaValue):
 
 
 class KerasLayer(Layer, InferShape, KerasCreator):
-    pass
+    def __init__(self, jvalue, *args, **kwargs):
+        allowed_kwargs = {"name", "bigdl_type"}
+        for kwarg in kwargs.keys():
+            if kwarg not in allowed_kwargs:
+                raise TypeError("Wrong argument for the layer:", kwarg)
+        bigdl_type = kwargs.get("bigdl_type")
+        if not bigdl_type:
+            bigdl_type = "float"
+        super(KerasCreator, self).__init__(jvalue, bigdl_type, *args)
+        name = kwargs.get("name")
+        if name:
+            self.set_name(name)
 
 
 class Input(Node, KerasCreator):
-    def __init__(self, name=None, input_shape=None, bigdl_type="float"):
+    """
+    Used to instantiate an input node.
+
+    # Arguments
+    shape: A shape tuple, not including batch.
+    name: String to set the name of the input node. If not specified, its name will by default to be a generated string.
+
+    >>> input = Input(name="input1", shape=(3, 5))
+    creating: createKerasInput
+    """
+    def __init__(self, shape=None, name=None, bigdl_type="float"):
         super(Input, self).__init__(None, bigdl_type,
                                     name,
-                                    list(input_shape) if input_shape else None)
+                                    list(shape) if shape else None)
 
 
 class InputLayer(KerasLayer):
     """
-    Layer to be used as an entry point into a model.
+    Used as an entry point into a model.
 
     # Arguments
-    input_shape: A shape tuple, not including the batch axis.
+    input_shape: A shape tuple, not including batch.
+    name: String to set the name of the input layer. If not specified, its name will by default to be a generated string.
 
     >>> inputlayer = InputLayer(input_shape=(3, 5))
     creating: createKerasInputLayer
     """
-    def __init__(self, input_shape=None, bigdl_type="float"):
-        super(InputLayer, self).__init__(None, bigdl_type,
-                                         list(input_shape) if input_shape else None)
+    def __init__(self, input_shape=None, **kwargs):
+        super(InputLayer, self).__init__(None,
+                                         list(input_shape) if input_shape else None,
+                                         **kwargs)
 
 
 class Dense(KerasLayer):
@@ -100,30 +123,36 @@ class Dense(KerasLayer):
 
     # Arguments
     output_dim: The size of output dimension.
-    init: String representations of initialization method for the weights of the layer.
+    init: String representation of the initialization method for the weights of the layer.
           Default is 'glorot_uniform'.
-    activation: String representations of activation function to use (such as 'relu' or 'sigmoid').
+    activation: String representation of the activation function to use (such as 'relu' or 'sigmoid').
                 Default is None.
     W_regularizer: An instance of [[Regularizer]], (eg. L1 or L2 regularization),
                    applied to the input weights matrices. Default is None.
     b_regularizer: An instance of [[Regularizer]], applied to the bias. Default is None.
     bias: Whether to include a bias (i.e. make the layer affine rather than linear). Default is True.
+    input_dim: Dimensionality of the input for 2D input. For nD input, you can alternatively specify
+               'input_shape' when using this layer as the first layer.
     input_shape: A shape tuple, not including batch.
+    name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
 
-    >>> dense = Dense(10, input_shape=(3, 4))
+    >>> dense = Dense(10, input_dim=8, name="dense1")
     creating: createKerasDense
     """
     def __init__(self, output_dim, init="glorot_uniform", activation=None,
                  W_regularizer=None, b_regularizer=None,
-                 bias=True, input_shape=None, bigdl_type="float"):
-        super(Dense, self).__init__(None, bigdl_type,
+                 bias=True, input_dim=None, input_shape=None, **kwargs):
+        if input_dim:
+            input_shape = (input_dim, )
+        super(Dense, self).__init__(None,
                                     output_dim,
                                     init,
                                     activation,
                                     W_regularizer,
                                     b_regularizer,
                                     bias,
-                                    list(input_shape) if input_shape else None)
+                                    list(input_shape) if input_shape else None,
+                                    **kwargs)
 
 
 class MaxoutDense(KerasLayer):
@@ -142,20 +171,26 @@ class MaxoutDense(KerasLayer):
                    applied to the input weights matrices. Default is None.
     b_regularizer: An instance of [[Regularizer]], applied to the bias. Default is None.
     bias: Whether to include a bias (i.e. make the layer affine rather than linear). Default is True.
+    input_dim: Dimensionality of the input. Alternatively, you can specify 'input_shape'
+               when using this layer as the first layer.
     input_shape: A shape tuple, not including batch.
+    name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
 
     >>> maxoutdense = MaxoutDense(6, input_shape=(10, ))
     creating: createKerasMaxoutDense
     """
-    def __init__(self, output_dim, nb_feature=4, W_regularizer=None,
-                 b_regularizer=None, bias=True, input_shape=None, bigdl_type="float"):
-        super(MaxoutDense, self).__init__(None, bigdl_type,
+    def __init__(self, output_dim, nb_feature=4, W_regularizer=None, b_regularizer=None,
+                 bias=True, input_dim=None, input_shape=None, **kwargs):
+        if input_dim:
+            input_shape = (input_dim, )
+        super(MaxoutDense, self).__init__(None,
                                           output_dim,
                                           nb_feature,
                                           W_regularizer,
                                           b_regularizer,
                                           bias,
-                                          list(input_shape) if input_shape else None)
+                                          list(input_shape) if input_shape else None,
+                                          **kwargs)
 
 
 class Embedding(KerasLayer):
@@ -169,23 +204,25 @@ class Embedding(KerasLayer):
     # Arguments
     input_dim: Size of the vocabulary. Int > 0.
     output_dim: Dimension of the dense embedding. Int >= 0.
-    init: String representations of initialization method for the weights of the layer.
+    init: String representation of the initialization method for the weights of the layer.
           Default is 'uniform'.
     W_regularizer: An instance of [[Regularizer]], (eg. L1 or L2 regularization),
                    applied to the embedding matrix. Default is None.
     input_shape: A shape tuple, not including batch.
+    name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
 
-    >>> embedding = Embedding(1000, 32, input_shape=(10, ))
+    >>> embedding = Embedding(1000, 32, input_shape=(10, ), name="embedding1")
     creating: createKerasEmbedding
     """
-    def __init__(self, input_dim, output_dim, init="uniform",
-                 W_regularizer=None, input_shape=None, bigdl_type="float"):
-        super(Embedding, self).__init__(None, bigdl_type,
+    def __init__(self, input_dim, output_dim, init="uniform", W_regularizer=None,
+                 input_shape=None, **kwargs):
+        super(Embedding, self).__init__(None,
                                         input_dim,
                                         output_dim,
                                         init,
                                         W_regularizer,
-                                        list(input_shape) if input_shape else None)
+                                        list(input_shape) if input_shape else None,
+                                        **kwargs)
 
 
 class BatchNormalization(KerasLayer):
@@ -203,47 +240,69 @@ class BatchNormalization(KerasLayer):
     epsilon: Small float > 0. Fuzz parameter. Default is 0.001.
     momentum: Float. Momentum in the computation of the exponential average of the mean and
               standard deviation of the data, for feature-wise normalization. Default is 0.99.
-    beta_init: Name of initialization function for shift parameter. Default is 'zero'.
-    gamma_init: Name of initialization function for scale parameter. Default is 'one'.
+    beta_init: Name of the initialization function for shift parameter. Default is 'zero'.
+    gamma_init: Name of the initialization function for scale parameter. Default is 'one'.
     dim_ordering: Format of input data. Either 'th' (Channel First) or 'tf' (Channel Last). Default is 'th'.
                   For 'th', axis along which to normalize is 1. For 'tf', axis is 3.
     input_shape: A shape tuple, not including batch.
+    name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
 
-    >>> batchnormalization = BatchNormalization(input_shape=(3, 12, 12))
+    >>> batchnormalization = BatchNormalization(input_shape=(3, 12, 12), name="bn1")
     creating: createKerasBatchNormalization
     """
-    def __init__(self, epsilon=0.001, momentum=0.99, beta_init="zero", gamma_init="one",
-                 dim_ordering="th", input_shape=None, bigdl_type="float"):
-        super(BatchNormalization, self).__init__(None, bigdl_type,
+    def __init__(self, epsilon=0.001, mode=0, axis=1, momentum=0.99, beta_init="zero", gamma_init="one",
+                 dim_ordering="th", input_shape=None, **kwargs):
+        if mode != 0:
+            raise ValueError("For BatchNormalization, only mode=0 is supported for now")
+        if dim_ordering == "th" and axis != 1:
+            raise ValueError("For BatchNormalization with th dim ordering, only axis=1 is supported for now")
+        if dim_ordering == "tf" and axis != -1 and axis != 3:
+            raise ValueError("For BatchNormalization with tf dim ordering, only axis=-1 is supported for now")
+        super(BatchNormalization, self).__init__(None,
                                                  float(epsilon),
                                                  float(momentum),
                                                  beta_init,
                                                  gamma_init,
                                                  dim_ordering,
-                                                 list(input_shape) if input_shape else None)
+                                                 list(input_shape) if input_shape else None,
+                                                 **kwargs)
 
     def set_running_mean(self, running_mean):
-        callBigDlFunc(self.bigdl_type, "setKerasRunningMean",
+        """
+        Set the running mean of the BatchNormalization layer.
+        :param running_mean: a Numpy array.
+        """
+        callBigDlFunc(self.bigdl_type, "setRunningMean",
                       self.value, JTensor.from_ndarray(running_mean))
         return self
 
     def set_running_std(self, running_std):
-        callBigDlFunc(self.bigdl_type, "setKerasRunningStd",
+        """
+        Set the running variance of the BatchNormalization layer.
+        :param running_std: a Numpy array.
+        """
+        callBigDlFunc(self.bigdl_type, "setRunningStd",
                       self.value, JTensor.from_ndarray(running_std))
         return self
 
     def get_running_mean(self):
-        return callBigDlFunc(self.bigdl_type, "getKerasRunningMean",
+        """
+        Get the running meaning of the BatchNormalization layer.
+        """
+        return callBigDlFunc(self.bigdl_type, "getRunningMean",
                              self.value).to_ndarray()
 
     def get_running_std(self):
-        return callBigDlFunc(self.bigdl_type, "getKerasRunningStd",
+        """
+        Get the running variance of the BatchNormalization layer.
+        """
+        return callBigDlFunc(self.bigdl_type, "getRunningStd",
                              self.value).to_ndarray()
 
 
 class Merge(KerasLayer):
     """
-    Used to merge a list of tensors into a single tensor, following some merge mode.
+    Used to merge a list of inputs into a single output, following some merge mode.
     Merge must have at least two input layers.
 
     When using this layer as the first layer in a model, you need to provide the argument
@@ -253,24 +312,43 @@ class Merge(KerasLayer):
     layers: A list of layer instances. Must be more than one layer.
     mode: Merge mode. String, must be one of: 'sum', 'mul', 'concat', 'ave', 'cos',
           'dot', 'max'. Default is 'sum'.
-    concat_axis: Int, axis to use in mode concat. Only specify this when mode is 'concat'.
+    concat_axis: Int, axis to use when concatenating layers. Only specify this when merge mode is 'concat'.
                  Default is -1, meaning the last axis of the input.
     input_shape: A list of shape tuples, each not including batch.
+    name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
 
     >>> l1 = InputLayer(input_shape=(3, 5))
     creating: createKerasInputLayer
     >>> l2 = InputLayer(input_shape=(3, 5))
     creating: createKerasInputLayer
-    >>> merge = Merge(layers=[l1, l2], mode='sum')
+    >>> merge = Merge(layers=[l1, l2], mode='sum', name="merge1")
     creating: createKerasMerge
     """
     def __init__(self, layers=None, mode="sum", concat_axis=-1,
-                 input_shape=None, bigdl_type="float"):
-        super(Merge, self).__init__(None, bigdl_type,
+                 input_shape=None, **kwargs):
+        super(Merge, self).__init__(None,
                                     list(layers) if layers else None,
                                     mode,
                                     concat_axis,
-                                    input_shape)
+                                    input_shape,
+                                    **kwargs)
+
+
+def merge(inputs, mode="sum", concat_axis=-1, name=None):
+    """
+    Functional merge. Only use this method if you are defining a graph model.
+    Used to merge a list of input nodes into a single output node (NOT layers!),
+    following some merge mode.
+
+    # Arguments
+    inputs: A list of node instances. Must be more than one node.
+    mode: Merge mode. String, must be one of: 'sum', 'mul', 'concat', 'ave', 'cos',
+          'dot', 'max'. Default is 'sum'.
+    concat_axis: Int, axis to use when concatenating nodes. Only specify this when merge mode is 'concat'.
+                 Default is -1, meaning the last axis of the input.
+    name: String to set the name of the merge. If not specified, its name will by default to be a generated string.
+    """
+    return Merge(mode=mode, concat_axis=concat_axis, name=name)(list(inputs))
 
 
 class Dropout(KerasLayer):
@@ -284,14 +362,16 @@ class Dropout(KerasLayer):
     # Arguments
     p: Fraction of the input units to drop. Float between 0 and 1.
     input_shape: A shape tuple, not including batch.
+    name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
 
     >>> dropout = Dropout(0.25, input_shape=(2, 3))
     creating: createKerasDropout
     """
-    def __init__(self, p, input_shape=None, bigdl_type="float"):
-        super(Dropout, self).__init__(None, bigdl_type,
+    def __init__(self, p, input_shape=None, **kwargs):
+        super(Dropout, self).__init__(None,
                                       float(p),
-                                      list(input_shape) if input_shape else None)
+                                      list(input_shape) if input_shape else None,
+                                      **kwargs)
 
 
 class Flatten(KerasLayer):
@@ -303,13 +383,15 @@ class Flatten(KerasLayer):
 
     # Arguments
     input_shape: A shape tuple, not including batch.
+    name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
 
     >>> flatten = Flatten(input_shape=(3, 10, 2))
     creating: createKerasFlatten
     """
-    def __init__(self, input_shape=None, bigdl_type="float"):
-        super(Flatten, self).__init__(None, bigdl_type,
-                                      list(input_shape) if input_shape else None)
+    def __init__(self, input_shape=None, **kwargs):
+        super(Flatten, self).__init__(None,
+                                      list(input_shape) if input_shape else None,
+                                      **kwargs)
 
 
 class Reshape(KerasLayer):
@@ -325,14 +407,16 @@ class Reshape(KerasLayer):
     # Arguments
     target_shape: A shape tuple. The target shape that you desire to have. Batch dimension should be excluded.
     input_shape: A shape tuple, not including batch.
+    name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
 
     >>> reshape = Reshape((2, 10), input_shape=(5, 4))
     creating: createKerasReshape
     """
-    def __init__(self, target_shape, input_shape=None, bigdl_type="float"):
-        super(Reshape, self).__init__(None, bigdl_type,
+    def __init__(self, target_shape, input_shape=None, **kwargs):
+        super(Reshape, self).__init__(None,
                                       target_shape,
-                                      list(input_shape) if input_shape else None)
+                                      list(input_shape) if input_shape else None,
+                                      **kwargs)
 
 
 class Activation(KerasLayer):
@@ -346,14 +430,16 @@ class Activation(KerasLayer):
     # Arguments
     activation: Name of the activation function as string.
     input_shape: A shape tuple, not including batch.
+    name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
 
     >>> activation = Activation("relu", input_shape=(3, 4))
     creating: createKerasActivation
     """
-    def __init__(self, activation, input_shape=None, bigdl_type="float"):
-        super(Activation, self).__init__(None, bigdl_type,
+    def __init__(self, activation, input_shape=None, **kwargs):
+        super(Activation, self).__init__(None,
                                          activation,
-                                         list(input_shape) if input_shape else None)
+                                         list(input_shape) if input_shape else None,
+                                         **kwargs)
 
 
 class RepeatVector(KerasLayer):
@@ -366,15 +452,21 @@ class RepeatVector(KerasLayer):
 
     # Arguments
     n: Repetition factor. Int.
+    input_dim: Dimensionality of the input. Alternatively, you can specify 'input_shape'
+               when using this layer as the first layer.
     input_shape: A shape tuple, not including batch.
+    name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
 
     >>> repeatvector = RepeatVector(5, input_shape=(3, ))
     creating: createKerasRepeatVector
     """
-    def __init__(self, n, input_shape=None, bigdl_type="float"):
-        super(RepeatVector, self).__init__(None, bigdl_type,
+    def __init__(self, n, input_dim=None, input_shape=None, **kwargs):
+        if input_dim:
+            input_shape = (input_dim, )
+        super(RepeatVector, self).__init__(None,
                                            n,
-                                           list(input_shape) if input_shape else None)
+                                           list(input_shape) if input_shape else None,
+                                           **kwargs)
 
 
 class Permute(KerasLayer):
@@ -388,14 +480,16 @@ class Permute(KerasLayer):
     # Arguments
     dims: Tuple of int. Permutation pattern, does not include the samples dimension. Indexing starts at 1.
     input_shape: A shape tuple, not including batch.
+    name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
 
     >>> permute = Permute((2, 1, 3), input_shape=(3, 4, 5))
     creating: createKerasPermute
     """
-    def __init__(self, dims, input_shape=None, bigdl_type="float"):
-        super(Permute, self).__init__(None, bigdl_type,
+    def __init__(self, dims, input_shape=None, **kwargs):
+        super(Permute, self).__init__(None,
                                       dims,
-                                      list(input_shape) if input_shape else None)
+                                      list(input_shape) if input_shape else None,
+                                      **kwargs)
 
 
 class Highway(KerasLayer):
@@ -407,26 +501,32 @@ class Highway(KerasLayer):
     input_shape (a shape tuple, does not include the batch dimension).
 
     # Arguments
-    activation: String representations of activation function to use (such as 'relu' or 'sigmoid').
+    activation: String representation of the activation function to use (such as 'relu' or 'sigmoid').
                 Default is None.
     W_regularizer: An instance of [[Regularizer]], (eg. L1 or L2 regularization),
                    applied to the input weights matrices. Default is None.
     b_regularizer: An instance of [[Regularizer]], applied to the bias. Default is None.
     bias: Whether to include a bias (i.e. make the layer affine rather than linear).
           Default is True.
+    input_dim: Dimensionality of the input. Alternatively, you can specify 'input_shape'
+               when using this layer as the first layer.
     input_shape: A shape tuple, not including batch.
+    name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
 
     >>> highway = Highway(activation='relu', input_shape=(8, ))
     creating: createKerasHighway
     """
     def __init__(self, activation=None, W_regularizer=None, b_regularizer=None,
-                 bias=True, input_shape=None, bigdl_type="float"):
-        super(Highway, self).__init__(None, bigdl_type,
+                 bias=True, input_dim=None, input_shape=None, **kwargs):
+        if input_dim:
+            input_shape = (input_dim, )
+        super(Highway, self).__init__(None,
                                       activation,
                                       W_regularizer,
                                       b_regularizer,
                                       bias,
-                                      list(input_shape) if input_shape else None)
+                                      list(input_shape) if input_shape else None,
+                                      **kwargs)
 
 
 class Convolution1D(KerasLayer):
@@ -441,9 +541,9 @@ class Convolution1D(KerasLayer):
     # Arguments
     nb_filter: Number of convolution filters to use.
     filter_length: The extension (spatial or temporal) of each filter.
-    init: String representations of initialization method for the weights of the layer.
+    init: String representation of the initialization method for the weights of the layer.
           Default is 'glorot_uniform'.
-    activation: String representations of activation function to use (such as 'relu' or 'sigmoid').
+    activation: String representation of the activation function to use (such as 'relu' or 'sigmoid').
                 Default is None.
     border_mode: Either 'valid' or 'same'. Default is 'valid'.
     subsample_length: Factor by which to subsample output. Int. Default is 1.
@@ -453,6 +553,7 @@ class Convolution1D(KerasLayer):
     bias: Whether to include a bias (i.e. make the layer affine rather than linear).
           Default is True.
     input_shape: A shape tuple, not including batch.
+    name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
 
     >>> conv1d = Convolution1D(12, 4, input_shape=(3, 16))
     creating: createKerasConvolution1D
@@ -460,8 +561,8 @@ class Convolution1D(KerasLayer):
     def __init__(self, nb_filter, filter_length, init="glorot_uniform",
                  activation=None, border_mode="valid", subsample_length=1,
                  W_regularizer=None, b_regularizer=None, bias=True,
-                 input_shape=None, bigdl_type="float"):
-        super(Convolution1D, self).__init__(None, bigdl_type,
+                 input_shape=None, **kwargs):
+        super(Convolution1D, self).__init__(None,
                                             nb_filter,
                                             filter_length,
                                             init,
@@ -471,7 +572,8 @@ class Convolution1D(KerasLayer):
                                             W_regularizer,
                                             b_regularizer,
                                             bias,
-                                            list(input_shape) if input_shape else None)
+                                            list(input_shape) if input_shape else None,
+                                            **kwargs)
 
 
 class Convolution2D(KerasLayer):
@@ -488,9 +590,9 @@ class Convolution2D(KerasLayer):
     nb_filter: Number of convolution filters to use.
     nb_row: Number of rows in the convolution kernel.
     nb_col: Number of cols in the convolution kernel.
-    init: String representations of initialization method for the weights of the layer.
+    init: String representation of the initialization method for the weights of the layer.
           Default is 'glorot_uniform'.
-    activation: String representations of activation function to use (such as 'relu' or 'sigmoid').
+    activation: String representation of the activation function to use (such as 'relu' or 'sigmoid').
                 Default is None.
     border_mode: Either 'valid' or 'same'. Default is 'valid'.
     subsample: Int tuple of length 2 corresponding to the step of the convolution in the
@@ -502,16 +604,17 @@ class Convolution2D(KerasLayer):
     bias: Whether to include a bias (i.e. make the layer affine rather than linear).
           Default is True.
     input_shape: A shape tuple, not including batch.
+    name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
 
-    >>> conv2d = Convolution2D(32, 3, 3, input_shape=(3, 128, 128))
+    >>> conv2d = Convolution2D(32, 3, 3, input_shape=(3, 128, 128), name="convolution2d_1")
     creating: createKerasConvolution2D
     """
     def __init__(self, nb_filter, nb_row, nb_col,
                  init="glorot_uniform", activation=None,
                  border_mode="valid", subsample=(1, 1), dim_ordering="th",
                  W_regularizer=None, b_regularizer=None, bias=True,
-                 input_shape=None, bigdl_type="float"):
-        super(Convolution2D, self).__init__(None, bigdl_type,
+                 input_shape=None, **kwargs):
+        super(Convolution2D, self).__init__(None,
                                             nb_filter,
                                             nb_row,
                                             nb_col,
@@ -523,7 +626,8 @@ class Convolution2D(KerasLayer):
                                             W_regularizer,
                                             b_regularizer,
                                             bias,
-                                            list(input_shape) if input_shape else None)
+                                            list(input_shape) if input_shape else None,
+                                            **kwargs)
 
 
 class Convolution3D(KerasLayer):
@@ -541,9 +645,9 @@ class Convolution3D(KerasLayer):
     kernel_dim1: Length of the first dimension in the convolution kernel.
     kernel_dim2: Length of the second dimension in the convolution kernel.
     kernel_dim3: Length of the third dimension in the convolution kernel.
-    init: String representations of initialization method for the weights of the layer.
+    init: String representation of the initialization method for the weights of the layer.
           Default is 'glorot_uniform'.
-    activation: String representations of activation function to use (such as 'relu' or 'sigmoid').
+    activation: String representation of the activation function to use (such as 'relu' or 'sigmoid').
                 Default is None.
     border_mode: Either 'valid' or 'same'. Default is 'valid'.
     subsample: Int tuple of length 3. Factor by which to subsample output.
@@ -555,6 +659,7 @@ class Convolution3D(KerasLayer):
     bias: Whether to include a bias (i.e. make the layer affine rather than linear).
           Default is True.
     input_shape: A shape tuple, not including batch.
+    name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
 
     >>> conv3d = Convolution3D(32, 3, 4, 5, input_shape=(3, 64, 64, 64))
     creating: createKerasConvolution3D
@@ -562,8 +667,8 @@ class Convolution3D(KerasLayer):
     def __init__(self, nb_filter, kernel_dim1, kernel_dim2, kernel_dim3,
                  init="glorot_uniform", activation=None, border_mode="valid",
                  subsample=(1, 1, 1), dim_ordering="th", W_regularizer=None,
-                 b_regularizer=None, bias=True, input_shape=None, bigdl_type="float"):
-        super(Convolution3D, self).__init__(None, bigdl_type,
+                 b_regularizer=None, bias=True, input_shape=None, **kwargs):
+        super(Convolution3D, self).__init__(None,
                                             nb_filter,
                                             kernel_dim1,
                                             kernel_dim2,
@@ -576,7 +681,8 @@ class Convolution3D(KerasLayer):
                                             W_regularizer,
                                             b_regularizer,
                                             bias,
-                                            list(input_shape) if input_shape else None)
+                                            list(input_shape) if input_shape else None,
+                                            **kwargs)
 
 
 class AtrousConvolution1D(KerasLayer):
@@ -594,9 +700,9 @@ class AtrousConvolution1D(KerasLayer):
     # Arguments
     nb_filter: Number of convolution filters to use.
     filter_length: The extension (spatial or temporal) of each filter.
-    init: String representations of initialization method for the weights of the layer.
+    init: String representation of the initialization method for the weights of the layer.
           Default is 'glorot_uniform'.
-    activation: String representations of activation function to use (such as 'relu' or 'sigmoid').
+    activation: String representation of the activation function to use (such as 'relu' or 'sigmoid').
                 Default is None.
     border_mode: Only 'valid' is supported for now.
     subsample_length: Factor by which to subsample output. Int. Default is 1.
@@ -606,18 +712,19 @@ class AtrousConvolution1D(KerasLayer):
     b_regularizer: An instance of [[Regularizer]], applied to the bias. Default is None.
     bias: Only 'True' is supported for now.
     input_shape: A shape tuple, not including batch.
+    name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
 
     >>> atrousconv1d = AtrousConvolution1D(8, 3, input_shape=(3, 12))
     creating: createKerasAtrousConvolution1D
     """
-    def __init__(self, nb_filter, filter_length, init="glorot_uniform",
-                 activation=None, border_mode='valid', subsample_length=1, atrous_rate=1,
-                 W_regularizer=None, b_regularizer=None, bias=True, input_shape=None, bigdl_type="float"):
+    def __init__(self, nb_filter, filter_length, init="glorot_uniform", activation=None,
+                 border_mode='valid', subsample_length=1, atrous_rate=1, W_regularizer=None,
+                 b_regularizer=None, bias=True, input_shape=None, **kwargs):
         if border_mode != "valid":
             raise ValueError("For AtrousConvolution1D, only border_mode='valid' is supported for now")
         if not bias:
             raise ValueError("For AtrousConvolution1D, only bias=True is supported for now")
-        super(AtrousConvolution1D, self).__init__(None, bigdl_type,
+        super(AtrousConvolution1D, self).__init__(None,
                                                   nb_filter,
                                                   filter_length,
                                                   init,
@@ -626,7 +733,8 @@ class AtrousConvolution1D(KerasLayer):
                                                   atrous_rate,
                                                   W_regularizer,
                                                   b_regularizer,
-                                                  list(input_shape) if input_shape else None)
+                                                  list(input_shape) if input_shape else None,
+                                                  **kwargs)
 
 
 class AtrousConvolution2D(KerasLayer):
@@ -647,9 +755,9 @@ class AtrousConvolution2D(KerasLayer):
     nb_filter: Number of convolution filters to use.
     nb_row: Number of rows in the convolution kernel.
     nb_col: Number of cols in the convolution kernel.
-    init: String representations of initialization method for the weights of the layer.
+    init: String representation of the initialization method for the weights of the layer.
           Default is 'glorot_uniform'.
-    activation: String representations of activation function to use (such as 'relu' or 'sigmoid').
+    activation: String representation of the activation function to use (such as 'relu' or 'sigmoid').
                 Default is None.
     border_mode: Only 'valid' is supported for now.
     subsample: Int tuple of length 2 corresponding to the step of the convolution in the
@@ -662,6 +770,7 @@ class AtrousConvolution2D(KerasLayer):
     b_regularizer: An instance of [[Regularizer]], applied to the bias. Default is None.
     bias: Only 'True' is supported for now.
     input_shape: A shape tuple, not including batch.
+    name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
 
     >>> atrousconv2d = AtrousConvolution2D(12, 4, 3, input_shape=(3, 64, 64))
     creating: createKerasAtrousConvolution2D
@@ -669,12 +778,12 @@ class AtrousConvolution2D(KerasLayer):
     def __init__(self, nb_filter, nb_row, nb_col, init="glorot_uniform",
                  activation=None, border_mode="valid", subsample=(1, 1),
                  atrous_rate=(1, 1), dim_ordering="th", W_regularizer=None,
-                 b_regularizer=None, bias=True, input_shape=None, bigdl_type="float"):
+                 b_regularizer=None, bias=True, input_shape=None, **kwargs):
         if border_mode != "valid":
             raise ValueError("For AtrousConvolution2D, only border_mode='valid' is supported for now")
         if not bias:
             raise ValueError("For AtrousConvolution2D, only bias=True is supported for now")
-        super(AtrousConvolution2D, self).__init__(None, bigdl_type,
+        super(AtrousConvolution2D, self).__init__(None,
                                                   nb_filter,
                                                   nb_row,
                                                   nb_col,
@@ -685,7 +794,8 @@ class AtrousConvolution2D(KerasLayer):
                                                   dim_ordering,
                                                   W_regularizer,
                                                   b_regularizer,
-                                                  list(input_shape) if input_shape else None)
+                                                  list(input_shape) if input_shape else None,
+                                                  **kwargs)
 
 
 class Deconvolution2D(KerasLayer):
@@ -709,9 +819,9 @@ class Deconvolution2D(KerasLayer):
     nb_row: Number of rows in the convolution kernel.
     nb_col: Number of cols in the convolution kernel.
     output_shape: Output shape of the transposed convolution operation. Tuple of int.
-    init: String representations of initialization method for the weights of the layer.
+    init: String representation of the initialization method for the weights of the layer.
           Default is 'glorot_uniform'.
-    activation: String representations of activation function to use (such as 'relu' or 'sigmoid').
+    activation: String representation of the activation function to use (such as 'relu' or 'sigmoid').
                 Default is None.
     border_mode: Only 'valid' is supported for now.
     subsample: Int tuple of length 2 corresponding to the step of the convolution in the
@@ -723,16 +833,17 @@ class Deconvolution2D(KerasLayer):
     bias: Whether to include a bias (i.e. make the layer affine rather than linear).
           Default is True.
     input_shape: A shape tuple, not including batch.
+    name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
 
     >>> deconv2d = Deconvolution2D(3, 3, 3, output_shape=(None, 3, 14, 14), input_shape=(3, 12, 12))
     creating: createKerasDeconvolution2D
     """
     def __init__(self, nb_filter, nb_row, nb_col, output_shape, init="glorot_uniform",
                  activation=None, border_mode="valid", subsample=(1, 1), dim_ordering="th",
-                 W_regularizer=None, b_regularizer=None, bias=True, input_shape=None, bigdl_type="float"):
+                 W_regularizer=None, b_regularizer=None, bias=True, input_shape=None, **kwargs):
         if border_mode != "valid":
             raise ValueError("For Deconvolution2D, only border_mode='valid' is supported for now")
-        super(Deconvolution2D, self).__init__(None, bigdl_type,
+        super(Deconvolution2D, self).__init__(None,
                                               nb_filter,
                                               nb_row,
                                               nb_col,
@@ -743,7 +854,8 @@ class Deconvolution2D(KerasLayer):
                                               W_regularizer,
                                               b_regularizer,
                                               bias,
-                                              list(input_shape) if input_shape else None)
+                                              list(input_shape) if input_shape else None,
+                                              **kwargs)
 
 
 class SeparableConvolution2D(KerasLayer):
@@ -764,9 +876,9 @@ class SeparableConvolution2D(KerasLayer):
     nb_filter: Number of convolution filters to use.
     nb_row: Number of rows in the convolution kernel.
     nb_col: Number of cols in the convolution kernel.
-    init: String representations of initialization method for the weights of the layer.
+    init: String representation of the initialization method for the weights of the layer.
           Default is 'glorot_uniform'.
-    activation: String representations of activation function to use (such as 'relu' or 'sigmoid').
+    activation: String representation of the activation function to use (such as 'relu' or 'sigmoid').
                 Default is None.
     border_mode: Either 'valid' or 'same'. Default is 'valid'.
     subsample: Int tuple of length 2 corresponding to the step of the convolution in the
@@ -782,6 +894,7 @@ class SeparableConvolution2D(KerasLayer):
     bias: Whether to include a bias (i.e. make the layer affine rather than linear).
           Default is True.
     input_shape: A shape tuple, not including batch.
+    name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
 
     >>> separableconv2d = SeparableConvolution2D(12, 3, 4, input_shape=(3, 32, 32))
     creating: createKerasSeparableConvolution2D
@@ -789,8 +902,8 @@ class SeparableConvolution2D(KerasLayer):
     def __init__(self, nb_filter, nb_row, nb_col, init="glorot_uniform",
                  activation=None, border_mode="valid", subsample=(1, 1), depth_multiplier=1,
                  dim_ordering="th", depthwise_regularizer=None, pointwise_regularizer=None,
-                 b_regularizer=None, bias=True, input_shape=None, bigdl_type="float"):
-        super(SeparableConvolution2D, self).__init__(None, bigdl_type,
+                 b_regularizer=None, bias=True, input_shape=None, **kwargs):
+        super(SeparableConvolution2D, self).__init__(None,
                                                      nb_filter,
                                                      nb_row,
                                                      nb_col,
@@ -804,7 +917,8 @@ class SeparableConvolution2D(KerasLayer):
                                                      pointwise_regularizer,
                                                      b_regularizer,
                                                      bias,
-                                                     list(input_shape) if input_shape else None)
+                                                     list(input_shape) if input_shape else None,
+                                                     **kwargs)
 
 
 Conv1D = Convolution1D
@@ -828,14 +942,16 @@ class Cropping1D(KerasLayer):
     cropping: Int tuple of length 2. How many units should be trimmed off at the beginning and
               end of the cropping dimension. Default is (1, 1).
     input_shape: A shape tuple, not including batch.
+    name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
 
     >>> cropping1d = Cropping1D(cropping=(1, 2), input_shape=(8, 8))
     creating: createKerasCropping1D
     """
-    def __init__(self, cropping=(1, 1), input_shape=None, bigdl_type="float"):
-        super(Cropping1D, self).__init__(None, bigdl_type,
+    def __init__(self, cropping=(1, 1), input_shape=None, **kwargs):
+        super(Cropping1D, self).__init__(None,
                                          cropping,
-                                         list(input_shape) if input_shape else None)
+                                         list(input_shape) if input_shape else None,
+                                         **kwargs)
 
 
 class Cropping2D(KerasLayer):
@@ -850,17 +966,19 @@ class Cropping2D(KerasLayer):
     cropping: Int tuple of tuple of length 2. How many units should be trimmed off at the beginning and
               end of the 2 cropping dimensions (i.e. height and width). Default is ((0, 0), (0, 0)).
     input_shape: A shape tuple, not including batch.
+    name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
 
     >>> cropping2d = Cropping2D(cropping=((1, 2), (0, 1)), input_shape=(12, 12, 12))
     creating: createKerasCropping2D
     """
     def __init__(self, cropping=((0, 0), (0, 0)), dim_ordering="th",
-                 input_shape=None, bigdl_type="float"):
-        super(Cropping2D, self).__init__(None, bigdl_type,
+                 input_shape=None, **kwargs):
+        super(Cropping2D, self).__init__(None,
                                          cropping[0],
                                          cropping[1],
                                          dim_ordering,
-                                         list(input_shape) if input_shape else None)
+                                         list(input_shape) if input_shape else None,
+                                         **kwargs)
 
 
 class Cropping3D(KerasLayer):
@@ -876,18 +994,20 @@ class Cropping3D(KerasLayer):
               end of the 3 cropping dimensions (i.e. kernel_dim1, kernel_dim2 and kernel_dim3).
               Default is ((1, 1), (1, 1), (1, 1)).
     input_shape: A shape tuple, not including batch.
+    name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
 
     >>> cropping3d = Cropping3D(cropping=((0, 2), (1, 1), (3, 1)), input_shape=(4, 12, 12, 16))
     creating: createKerasCropping3D
     """
     def __init__(self, cropping=((1, 1), (1, 1), (1, 1)), dim_ordering="th",
-                 input_shape=None, bigdl_type="float"):
-        super(Cropping3D, self).__init__(None, bigdl_type,
+                 input_shape=None, **kwargs):
+        super(Cropping3D, self).__init__(None,
                                          cropping[0],
                                          cropping[1],
                                          cropping[2],
                                          dim_ordering,
-                                         list(input_shape) if input_shape else None)
+                                         list(input_shape) if input_shape else None,
+                                         **kwargs)
 
 
 class UpSampling1D(KerasLayer):
@@ -902,14 +1022,16 @@ class UpSampling1D(KerasLayer):
     # Arguments
     length: Int. UpSampling factor. Default is 2.
     input_shape: A shape tuple, not including batch.
+    name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
 
     >>> upsampling1d = UpSampling1D(length=3, input_shape=(3, 12))
     creating: createKerasUpSampling1D
     """
-    def __init__(self, length=2, input_shape=None, bigdl_type="float"):
-        super(UpSampling1D, self).__init__(None, bigdl_type,
+    def __init__(self, length=2, input_shape=None, **kwargs):
+        super(UpSampling1D, self).__init__(None,
                                            length,
-                                           list(input_shape) if input_shape else None)
+                                           list(input_shape) if input_shape else None,
+                                           **kwargs)
 
 
 class UpSampling2D(KerasLayer):
@@ -925,15 +1047,17 @@ class UpSampling2D(KerasLayer):
     size: Int tuple of length 2. UpSampling factors for rows and columns. Default is (2, 2).
     dim_ordering: Format of input data. Either 'th' (Channel First) or 'tf' (Channel Last). Default is 'th'.
     input_shape: A shape tuple, not including batch.
+    name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
 
     >>> upsampling2d = UpSampling2D(size=(1, 3), input_shape=(3, 16, 16))
     creating: createKerasUpSampling2D
     """
-    def __init__(self, size=(2, 2), dim_ordering="th", input_shape=None, bigdl_type="float"):
-        super(UpSampling2D, self).__init__(None, bigdl_type,
+    def __init__(self, size=(2, 2), dim_ordering="th", input_shape=None, **kwargs):
+        super(UpSampling2D, self).__init__(None,
                                            size,
                                            dim_ordering,
-                                           list(input_shape) if input_shape else None)
+                                           list(input_shape) if input_shape else None,
+                                           **kwargs)
 
 
 class UpSampling3D(KerasLayer):
@@ -950,15 +1074,17 @@ class UpSampling3D(KerasLayer):
     size: Int tuple of length 3. UpSampling factors for dim1, dim2 and dim3. Default is (2, 2, 2).
     dim_ordering: Format of input data. Only 'th' (Channel First) is supported for now.
     input_shape: A shape tuple, not including batch.
+    name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
 
     >>> upsampling3d = UpSampling3D(size=(1, 2, 3), input_shape=(3, 16, 16, 16))
     creating: createKerasUpSampling3D
     """
-    def __init__(self, size=(2, 2, 2), dim_ordering="th", input_shape=None, bigdl_type="float"):
-        super(UpSampling3D, self).__init__(None, bigdl_type,
+    def __init__(self, size=(2, 2, 2), dim_ordering="th", input_shape=None, **kwargs):
+        super(UpSampling3D, self).__init__(None,
                                            size,
                                            dim_ordering,
-                                           list(input_shape) if input_shape else None)
+                                           list(input_shape) if input_shape else None,
+                                           **kwargs)
 
 
 class ZeroPadding1D(KerasLayer):
@@ -975,16 +1101,18 @@ class ZeroPadding1D(KerasLayer):
              If tuple of length 2, how many zeros to add in the order '(left_pad, right_pad)'.
              Default is 1.
     input_shape: A shape tuple, not including batch.
+    name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
 
     >>> zeropadding1d = ZeroPadding1D(padding=2, input_shape=(3, 6))
     creating: createKerasZeroPadding1D
     """
-    def __init__(self, padding=1, input_shape=None, bigdl_type="float"):
+    def __init__(self, padding=1, input_shape=None, **kwargs):
         if isinstance(padding, int):
             padding = (padding, padding)
-        super(ZeroPadding1D, self).__init__(None, bigdl_type,
+        super(ZeroPadding1D, self).__init__(None,
                                             padding,
-                                            list(input_shape) if input_shape else None)
+                                            list(input_shape) if input_shape else None,
+                                            **kwargs)
 
 
 class ZeroPadding2D(KerasLayer):
@@ -1002,17 +1130,19 @@ class ZeroPadding2D(KerasLayer):
              Default is (1, 1).
     dim_ordering: Format of input data. Either 'th' (Channel First) or 'tf' (Channel Last). Default is 'th'.
     input_shape: A shape tuple, not including batch.
+    name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
 
     >>> zeropadding2d = ZeroPadding2D(padding=(2, 1), input_shape=(2, 8, 8))
     creating: createKerasZeroPadding2D
     """
-    def __init__(self, padding=(1, 1), dim_ordering="th", input_shape=None, bigdl_type="float"):
+    def __init__(self, padding=(1, 1), dim_ordering="th", input_shape=None, **kwargs):
         if len(padding) == 2:
             padding = (padding[0], padding[0], padding[1], padding[1])
-        super(ZeroPadding2D, self).__init__(None, bigdl_type,
+        super(ZeroPadding2D, self).__init__(None,
                                             padding,
                                             dim_ordering,
-                                            list(input_shape) if input_shape else None)
+                                            list(input_shape) if input_shape else None,
+                                            **kwargs)
 
 
 class ZeroPadding3D(KerasLayer):
@@ -1028,15 +1158,17 @@ class ZeroPadding3D(KerasLayer):
              Symmetric padding will be applied to each dimension. Default is (1, 1, 1).
     dim_ordering: Format of input data. Either 'th' (Channel First) or 'tf' (Channel Last). Default is 'th'.
     input_shape: A shape tuple, not including batch.
+    name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
 
     >>> zeropadding3d = ZeroPadding3D(padding=(2, 1, 2), input_shape=(2, 8, 8, 10))
     creating: createKerasZeroPadding3D
     """
-    def __init__(self, padding=(1, 1, 1), dim_ordering="th", input_shape=None, bigdl_type="float"):
-        super(ZeroPadding3D, self).__init__(None, bigdl_type,
+    def __init__(self, padding=(1, 1, 1), dim_ordering="th", input_shape=None, **kwargs):
+        super(ZeroPadding3D, self).__init__(None,
                                             padding,
                                             dim_ordering,
-                                            list(input_shape) if input_shape else None)
+                                            list(input_shape) if input_shape else None,
+                                            **kwargs)
 
 
 class MaxPooling1D(KerasLayer):
@@ -1053,19 +1185,21 @@ class MaxPooling1D(KerasLayer):
              Default is None, and in this case it will be equal to pool_length..
     border_mode: Either 'valid' or 'same'. Default is 'valid'.
     input_shape: A shape tuple, not including batch.
+    name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
 
     >>> maxpooling1d = MaxPooling1D(3, input_shape=(3, 24))
     creating: createKerasMaxPooling1D
     """
     def __init__(self, pool_length=2, stride=None, border_mode="valid",
-                 input_shape=None, bigdl_type="float"):
+                 input_shape=None, **kwargs):
         if not stride:
             stride = -1
-        super(MaxPooling1D, self).__init__(None, bigdl_type,
+        super(MaxPooling1D, self).__init__(None,
                                            pool_length,
                                            stride,
                                            border_mode,
-                                           list(input_shape) if input_shape else None)
+                                           list(input_shape) if input_shape else None,
+                                           **kwargs)
 
 
 class MaxPooling2D(KerasLayer):
@@ -1083,19 +1217,21 @@ class MaxPooling2D(KerasLayer):
     border_mode: Either 'valid' or 'same'. Default is 'valid'.
     dim_ordering: Format of input data. Either 'th' (Channel First) or 'tf' (Channel Last). Default is 'th'.
     input_shape: A shape tuple, not including batch.
+    name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
 
-    >>> maxpooling2d = MaxPooling2D((2, 2), input_shape=(3, 32, 32))
+    >>> maxpooling2d = MaxPooling2D((2, 2), input_shape=(3, 32, 32), name="maxpooling2d_1")
     creating: createKerasMaxPooling2D
     """
     def __init__(self, pool_size=(2, 2), strides=None,
                  border_mode='valid', dim_ordering='th',
-                 input_shape=None, bigdl_type="float"):
-        super(MaxPooling2D, self).__init__(None, bigdl_type,
+                 input_shape=None, **kwargs):
+        super(MaxPooling2D, self).__init__(None,
                                            pool_size,
                                            strides,
                                            border_mode,
                                            dim_ordering,
-                                           list(input_shape) if input_shape else None)
+                                           list(input_shape) if input_shape else None,
+                                           **kwargs)
 
 
 class MaxPooling3D(KerasLayer):
@@ -1115,19 +1251,21 @@ class MaxPooling3D(KerasLayer):
     border_mode: Only 'valid' is supported for now.
     dim_ordering: Format of input data. Only 'th' (Channel First) is supported for now.
     input_shape: A shape tuple, not including batch.
+    name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
 
     >>> maxpooling3d = MaxPooling3D((2, 1, 3), input_shape=(3, 32, 32, 32))
     creating: createKerasMaxPooling3D
     """
     def __init__(self, pool_size=(2, 2, 2), strides=None, border_mode="valid",
-                 dim_ordering="th", input_shape=None, bigdl_type="float"):
+                 dim_ordering="th", input_shape=None, **kwargs):
         if border_mode != "valid":
             raise ValueError("For MaxPooling3D, only border_mode='valid' is supported for now")
-        super(MaxPooling3D, self).__init__(None, bigdl_type,
+        super(MaxPooling3D, self).__init__(None,
                                            pool_size,
                                            strides,
                                            dim_ordering,
-                                           list(input_shape) if input_shape else None)
+                                           list(input_shape) if input_shape else None,
+                                           **kwargs)
 
 
 class AveragePooling1D(KerasLayer):
@@ -1144,19 +1282,21 @@ class AveragePooling1D(KerasLayer):
              Default is None, and in this case it will be equal to pool_length..
     border_mode: Either 'valid' or 'same'. Default is 'valid'.
     input_shape: A shape tuple, not including batch.
+    name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
 
     >>> averagepooling1d = AveragePooling1D(input_shape=(3, 24))
     creating: createKerasAveragePooling1D
     """
     def __init__(self, pool_length=2, stride=None, border_mode="valid",
-                 input_shape=None, bigdl_type="float"):
+                 input_shape=None, **kwargs):
         if not stride:
             stride = -1
-        super(AveragePooling1D, self).__init__(None, bigdl_type,
+        super(AveragePooling1D, self).__init__(None,
                                                pool_length,
                                                stride,
                                                border_mode,
-                                               list(input_shape) if input_shape else None)
+                                               list(input_shape) if input_shape else None,
+                                               **kwargs)
 
 
 class AveragePooling2D(KerasLayer):
@@ -1174,18 +1314,20 @@ class AveragePooling2D(KerasLayer):
     border_mode: Either 'valid' or 'same'. Default is 'valid'.
     dim_ordering: Format of input data. Either 'th' (Channel First) or 'tf' (Channel Last). Default is 'th'.
     input_shape: A shape tuple, not including batch.
+    name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
 
     >>> averagepooling2d = AveragePooling2D((1, 2), input_shape=(2, 28, 32))
     creating: createKerasAveragePooling2D
     """
     def __init__(self, pool_size=(2, 2), strides=None, border_mode="valid",
-                 dim_ordering="th", input_shape=None, bigdl_type="float"):
-        super(AveragePooling2D, self).__init__(None, bigdl_type,
+                 dim_ordering="th", input_shape=None, **kwargs):
+        super(AveragePooling2D, self).__init__(None,
                                                pool_size,
                                                strides,
                                                border_mode,
                                                dim_ordering,
-                                               list(input_shape) if input_shape else None)
+                                               list(input_shape) if input_shape else None,
+                                               **kwargs)
 
 
 class AveragePooling3D(KerasLayer):
@@ -1205,19 +1347,21 @@ class AveragePooling3D(KerasLayer):
     border_mode: Only 'valid' is supported for now.
     dim_ordering: Format of input data. Only 'th' (Channel First) is supported for now.
     input_shape: A shape tuple, not including batch.
+    name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
 
     >>> averagepooling3d = AveragePooling3D((1, 1, 2), input_shape=(3, 28, 32, 36))
     creating: createKerasAveragePooling3D
     """
     def __init__(self, pool_size=(2, 2, 2), strides=None, border_mode="valid",
-                 dim_ordering="th", input_shape=None, bigdl_type="float"):
+                 dim_ordering="th", input_shape=None, **kwargs):
         if border_mode != "valid":
             raise ValueError("For AveragePooling3D, only border_mode='valid' is supported for now")
-        super(AveragePooling3D, self).__init__(None, bigdl_type,
+        super(AveragePooling3D, self).__init__(None,
                                                pool_size,
                                                strides,
                                                dim_ordering,
-                                               list(input_shape) if input_shape else None)
+                                               list(input_shape) if input_shape else None,
+                                               **kwargs)
 
 
 class GlobalMaxPooling1D(KerasLayer):
@@ -1230,13 +1374,15 @@ class GlobalMaxPooling1D(KerasLayer):
 
     # Arguments
     input_shape: A shape tuple, not including batch.
+    name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
 
     >>> globalmaxpooling1d = GlobalMaxPooling1D(input_shape=(4, 8))
     creating: createKerasGlobalMaxPooling1D
     """
-    def __init__(self, input_shape=None, bigdl_type="float"):
-        super(GlobalMaxPooling1D, self).__init__(None, bigdl_type,
-                                                 list(input_shape) if input_shape else None)
+    def __init__(self, input_shape=None, **kwargs):
+        super(GlobalMaxPooling1D, self).__init__(None,
+                                                 list(input_shape) if input_shape else None,
+                                                 **kwargs)
 
 
 class GlobalAveragePooling1D(KerasLayer):
@@ -1249,13 +1395,15 @@ class GlobalAveragePooling1D(KerasLayer):
 
     # Arguments
     input_shape: A shape tuple, not including batch.
+    name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
 
     >>> globalaveragepooling1d = GlobalAveragePooling1D(input_shape=(12, 12))
     creating: createKerasGlobalAveragePooling1D
     """
-    def __init__(self, input_shape=None, bigdl_type="float"):
-        super(GlobalAveragePooling1D, self).__init__(None, bigdl_type,
-                                                     list(input_shape) if input_shape else None)
+    def __init__(self, input_shape=None, **kwargs):
+        super(GlobalAveragePooling1D, self).__init__(None,
+                                                     list(input_shape) if input_shape else None,
+                                                     **kwargs)
 
 
 class GlobalMaxPooling2D(KerasLayer):
@@ -1269,14 +1417,16 @@ class GlobalMaxPooling2D(KerasLayer):
     # Arguments
     dim_ordering: Format of input data. Either 'th' (Channel First) or 'tf' (Channel Last). Default is 'th'.
     input_shape: A shape tuple, not including batch.
+    name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
 
     >>> globalmaxpooling2d = GlobalMaxPooling2D(input_shape=(4, 32, 32))
     creating: createKerasGlobalMaxPooling2D
     """
-    def __init__(self, dim_ordering="th", input_shape=None, bigdl_type="float"):
-        super(GlobalMaxPooling2D, self).__init__(None, bigdl_type,
+    def __init__(self, dim_ordering="th", input_shape=None, **kwargs):
+        super(GlobalMaxPooling2D, self).__init__(None,
                                                  dim_ordering,
-                                                 list(input_shape) if input_shape else None)
+                                                 list(input_shape) if input_shape else None,
+                                                 **kwargs)
 
 
 class GlobalAveragePooling2D(KerasLayer):
@@ -1290,14 +1440,16 @@ class GlobalAveragePooling2D(KerasLayer):
     # Arguments
     dim_ordering: Format of input data. Either 'th' (Channel First) or 'tf' (Channel Last). Default is 'th'.
     input_shape: A shape tuple, not including batch.
+    name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
 
     >>> globalaveragepooling2d = GlobalAveragePooling2D(input_shape=(4, 32, 32))
     creating: createKerasGlobalAveragePooling2D
     """
-    def __init__(self, dim_ordering="th", input_shape=None, bigdl_type="float"):
-        super(GlobalAveragePooling2D, self).__init__(None, bigdl_type,
+    def __init__(self, dim_ordering="th", input_shape=None, **kwargs):
+        super(GlobalAveragePooling2D, self).__init__(None,
                                                      dim_ordering,
-                                                     list(input_shape) if input_shape else None)
+                                                     list(input_shape) if input_shape else None,
+                                                     **kwargs)
 
 
 class GlobalMaxPooling3D(KerasLayer):
@@ -1313,14 +1465,16 @@ class GlobalMaxPooling3D(KerasLayer):
     # Arguments
     dim_ordering: Format of input data. Only 'th' (Channel First) is supported for now.
     input_shape: A shape tuple, not including batch.
+    name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
 
     >>> globalmaxpooling3d = GlobalMaxPooling3D(input_shape=(4, 32, 32, 32))
     creating: createKerasGlobalMaxPooling3D
     """
-    def __init__(self, dim_ordering="th", input_shape=None, bigdl_type="float"):
-        super(GlobalMaxPooling3D, self).__init__(None, bigdl_type,
+    def __init__(self, dim_ordering="th", input_shape=None, **kwargs):
+        super(GlobalMaxPooling3D, self).__init__(None,
                                                  dim_ordering,
-                                                 list(input_shape) if input_shape else None)
+                                                 list(input_shape) if input_shape else None,
+                                                 **kwargs)
 
 
 class GlobalAveragePooling3D(KerasLayer):
@@ -1336,14 +1490,16 @@ class GlobalAveragePooling3D(KerasLayer):
     # Arguments
     dim_ordering: Format of input data. Only 'th' (Channel First) is supported for now.
     input_shape: A shape tuple, not including batch.
+    name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
 
     >>> globalaveragepooling3d = GlobalAveragePooling3D(input_shape=(4, 16, 16, 20))
     creating: createKerasGlobalAveragePooling3D
     """
-    def __init__(self, dim_ordering="th", input_shape=None, bigdl_type="float"):
-        super(GlobalAveragePooling3D, self).__init__(None, bigdl_type,
+    def __init__(self, dim_ordering="th", input_shape=None, **kwargs):
+        super(GlobalAveragePooling3D, self).__init__(None,
                                                      dim_ordering,
-                                                     list(input_shape) if input_shape else None)
+                                                     list(input_shape) if input_shape else None,
+                                                     **kwargs)
 
 
 class SimpleRNN(KerasLayer):
@@ -1356,7 +1512,7 @@ class SimpleRNN(KerasLayer):
 
     # Arguments
     output_dim: Hidden unit size. Dimension of internal projections and final output.
-    activation: String representations of activation function to use (such as 'relu' or 'sigmoid').
+    activation: String representation of the activation function to use (such as 'relu' or 'sigmoid').
                 Default is 'tanh'.
     return_sequences: Whether to return the full sequence or only return the last output in the output sequence.
                       Default is False.
@@ -1366,14 +1522,15 @@ class SimpleRNN(KerasLayer):
     U_regularizer: An instance of [[Regularizer]], applied the recurrent weights matrices. Default is None.
     b_regularizer: An instance of [[Regularizer]], applied to the bias. Default is None.
     input_shape: A shape tuple, not including batch.
+    name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
 
     >>> simplernn = SimpleRNN(16, input_shape=(3, 32))
     creating: createKerasSimpleRNN
     """
     def __init__(self, output_dim, activation="tanh", return_sequences=False,
                  go_backwards=False, W_regularizer=None, U_regularizer=None,
-                 b_regularizer=None, input_shape=None, bigdl_type="float"):
-        super(SimpleRNN, self).__init__(None, bigdl_type,
+                 b_regularizer=None, input_shape=None, **kwargs):
+        super(SimpleRNN, self).__init__(None,
                                         output_dim,
                                         activation,
                                         return_sequences,
@@ -1381,7 +1538,8 @@ class SimpleRNN(KerasLayer):
                                         W_regularizer,
                                         U_regularizer,
                                         b_regularizer,
-                                        list(input_shape) if input_shape else None)
+                                        list(input_shape) if input_shape else None,
+                                        **kwargs)
 
 
 class LSTM(KerasLayer):
@@ -1394,9 +1552,9 @@ class LSTM(KerasLayer):
 
     # Arguments
     output_dim: Hidden unit size. Dimension of internal projections and final output.
-    activation: String representations of activation function to use (such as 'relu' or 'sigmoid').
+    activation: String representation of the activation function to use (such as 'relu' or 'sigmoid').
                 Default is 'tanh'.
-    inner_activation: String representations of activation function for inner cells. Default is 'hard_sigmoid'.
+    inner_activation: String representation of the activation function for inner cells. Default is 'hard_sigmoid'.
     return_sequences: Whether to return the full sequence or only return the last output in the output sequence.
                       Default is False.
     go_backwards: Whether the input sequence will be processed backwards. Default is False.
@@ -1405,14 +1563,15 @@ class LSTM(KerasLayer):
     U_regularizer: An instance of [[Regularizer]], applied the recurrent weights matrices. Default is None.
     b_regularizer: An instance of [[Regularizer]], applied to the bias. Default is None.
     input_shape: A shape tuple, not including batch.
+    name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
 
-    >>> lstm = LSTM(32, input_shape=(8, 16))
+    >>> lstm = LSTM(32, input_shape=(8, 16), name="lstm1")
     creating: createKerasLSTM
     """
     def __init__(self, output_dim, activation="tanh", inner_activation="hard_sigmoid",
                  return_sequences=False, go_backwards=False, W_regularizer=None,
-                 U_regularizer=None, b_regularizer=None, input_shape=None, bigdl_type="float"):
-        super(LSTM, self).__init__(None, bigdl_type,
+                 U_regularizer=None, b_regularizer=None, input_shape=None, **kwargs):
+        super(LSTM, self).__init__(None,
                                    output_dim,
                                    activation,
                                    inner_activation,
@@ -1421,7 +1580,8 @@ class LSTM(KerasLayer):
                                    W_regularizer,
                                    U_regularizer,
                                    b_regularizer,
-                                   list(input_shape) if input_shape else None)
+                                   list(input_shape) if input_shape else None,
+                                   **kwargs)
 
 
 class GRU(KerasLayer):
@@ -1434,9 +1594,9 @@ class GRU(KerasLayer):
 
     # Arguments
     output_dim: Hidden unit size. Dimension of internal projections and final output.
-    activation: String representations of activation function to use (such as 'relu' or 'sigmoid').
+    activation: String representation of the activation function to use (such as 'relu' or 'sigmoid').
                 Default is 'tanh'.
-    inner_activation: String representations of activation function for inner cells. Default is 'hard_sigmoid'.
+    inner_activation: String representation of the activation function for inner cells. Default is 'hard_sigmoid'.
     return_sequences: Whether to return the full sequence or only return the last output in the output sequence.
                       Default is False.
     go_backwards: Whether the input sequence will be processed backwards. Default is False.
@@ -1445,14 +1605,15 @@ class GRU(KerasLayer):
     U_regularizer: An instance of [[Regularizer]], applied the recurrent weights matrices. Default is None.
     b_regularizer: An instance of [[Regularizer]], applied to the bias. Default is None.
     input_shape: A shape tuple, not including batch.
+    name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
 
     >>> gru = GRU(24, input_shape=(32, 32))
     creating: createKerasGRU
     """
     def __init__(self, output_dim, activation="tanh", inner_activation="hard_sigmoid",
                  return_sequences=False, go_backwards=False, W_regularizer=None,
-                 U_regularizer=None, b_regularizer=None, input_shape=None, bigdl_type="float"):
-        super(GRU, self).__init__(None, bigdl_type,
+                 U_regularizer=None, b_regularizer=None, input_shape=None, **kwargs):
+        super(GRU, self).__init__(None,
                                   output_dim,
                                   activation,
                                   inner_activation,
@@ -1461,7 +1622,8 @@ class GRU(KerasLayer):
                                   W_regularizer,
                                   U_regularizer,
                                   b_regularizer,
-                                  list(input_shape) if input_shape else None)
+                                  list(input_shape) if input_shape else None,
+                                  **kwargs)
 
 
 class ConvLSTM2D(KerasLayer):
@@ -1479,9 +1641,9 @@ class ConvLSTM2D(KerasLayer):
     nb_filter: Number of convolution filters to use.
     nb_row: Number of rows in the convolution kernel.
     nb_col: Number of cols in the convolution kernel. Should be equal to nb_row as for a square kernel.
-    activation: String representations of activation function to use (such as 'relu' or 'sigmoid').
+    activation: String representation of the activation function to use (such as 'relu' or 'sigmoid').
                 Default is 'tanh'.
-    inner_activation: String representations of activation function for inner cells. Default is 'hard_sigmoid'.
+    inner_activation: String representation of the activation function for inner cells. Default is 'hard_sigmoid'.
     dim_ordering: Format of input data. Only 'th' (Channel First) is supported for now.
     border_mode: Only 'same' is supported for now.
     subsample: Tuple of length 2. Factor by which to subsample output. Also called strides elsewhere.
@@ -1494,6 +1656,7 @@ class ConvLSTM2D(KerasLayer):
                       Default is False.
     go_backwards: Whether the input sequence will be processed backwards. Default is False.
     input_shape: A shape tuple, not including batch.
+    name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
 
     >>> convlstm2d = ConvLSTM2D(24, 3, 3, input_shape=(4, 32, 32, 32))
     creating: createKerasConvLSTM2D
@@ -1501,14 +1664,14 @@ class ConvLSTM2D(KerasLayer):
     def __init__(self, nb_filter, nb_row, nb_col, activation="tanh",
                  inner_activation="hard_sigmoid", dim_ordering="th", border_mode="same",
                  subsample=(1, 1), W_regularizer=None, U_regularizer=None, b_regularizer=None,
-                 return_sequences=False, go_backwards=False, input_shape=None, bigdl_type="float"):
+                 return_sequences=False, go_backwards=False, input_shape=None, **kwargs):
         if nb_row != nb_col:
             raise ValueError("For ConvLSTM2D, only square kernel is supported for now")
         if border_mode != "same":
             raise ValueError("For ConvLSTM2D, only border_mode='same' is supported for now")
         if subsample[0] != subsample[1]:
             raise ValueError("For ConvLSTM2D, only equal strides is supported for now")
-        super(ConvLSTM2D, self).__init__(None, bigdl_type,
+        super(ConvLSTM2D, self).__init__(None,
                                          nb_filter,
                                          nb_row,
                                          activation,
@@ -1520,7 +1683,8 @@ class ConvLSTM2D(KerasLayer):
                                          b_regularizer,
                                          return_sequences,
                                          go_backwards,
-                                         list(input_shape) if input_shape else None)
+                                         list(input_shape) if input_shape else None,
+                                         **kwargs)
 
 
 class LocallyConnected1D(KerasLayer):
@@ -1536,7 +1700,7 @@ class LocallyConnected1D(KerasLayer):
     # Arguments
     nb_filter: Dimensionality of the output.
     filter_length: The extension (spatial or temporal) of each filter.
-    activation: String representations of activation function to use (such as 'relu' or 'sigmoid').
+    activation: String representation of the activation function to use (such as 'relu' or 'sigmoid').
                 Default is None.
     border_mode: Only 'valid' is supported for now.
     subsample_length: Factor by which to subsample output. Int. Default is 1.
@@ -1546,16 +1710,17 @@ class LocallyConnected1D(KerasLayer):
     bias: Whether to include a bias (i.e. make the layer affine rather than linear).
           Default is True.
     input_shape: A shape tuple, not including batch.
+    name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
 
     >>> locallyconnected1d = LocallyConnected1D(6, 3, input_shape=(8, 12))
     creating: createKerasLocallyConnected1D
     """
     def __init__(self, nb_filter, filter_length, activation=None, border_mode="valid",
                  subsample_length=1, W_regularizer=None, b_regularizer=None,
-                 bias=True, input_shape=None, bigdl_type="float"):
+                 bias=True, input_shape=None, **kwargs):
         if border_mode != "valid":
             raise ValueError("For LocallyConnected1D, only border_mode='valid' is supported for now")
-        super(LocallyConnected1D, self).__init__(None, bigdl_type,
+        super(LocallyConnected1D, self).__init__(None,
                                                  nb_filter,
                                                  filter_length,
                                                  activation,
@@ -1563,7 +1728,8 @@ class LocallyConnected1D(KerasLayer):
                                                  W_regularizer,
                                                  b_regularizer,
                                                  bias,
-                                                 list(input_shape) if input_shape else None)
+                                                 list(input_shape) if input_shape else None,
+                                                 **kwargs)
 
 
 class LocallyConnected2D(KerasLayer):
@@ -1579,7 +1745,7 @@ class LocallyConnected2D(KerasLayer):
     nb_filter: Number of convolution filters to use.
     nb_row: Number of rows in the convolution kernel.
     nb_col: Number of cols in the convolution kernel.
-    activation: String representations of activation function to use (such as 'relu' or 'sigmoid').
+    activation: String representation of the activation function to use (such as 'relu' or 'sigmoid').
                 Default is None.
     border_mode: Either 'valid' or 'same'. Default is 'valid'.
     subsample: Int tuple of length 2 corresponding to the step of the convolution in the
@@ -1591,6 +1757,7 @@ class LocallyConnected2D(KerasLayer):
     bias: Whether to include a bias (i.e. make the layer affine rather than linear).
           Default is True.
     input_shape: A shape tuple, not including batch.
+    name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
 
     >>> locallyconnected2d = LocallyConnected2D(12, 3, 4, input_shape=(3, 128, 128))
     creating: createKerasLocallyConnected2D
@@ -1598,8 +1765,8 @@ class LocallyConnected2D(KerasLayer):
     def __init__(self, nb_filter, nb_row, nb_col, activation=None,
                  border_mode="valid", subsample=(1, 1), dim_ordering="th",
                  W_regularizer=None, b_regularizer=None, bias=True,
-                 input_shape=None, bigdl_type="float"):
-        super(LocallyConnected2D, self).__init__(None, bigdl_type,
+                 input_shape=None, **kwargs):
+        super(LocallyConnected2D, self).__init__(None,
                                                  nb_filter,
                                                  nb_row,
                                                  nb_col,
@@ -1610,7 +1777,8 @@ class LocallyConnected2D(KerasLayer):
                                                  W_regularizer,
                                                  b_regularizer,
                                                  bias,
-                                                 list(input_shape) if input_shape else None)
+                                                 list(input_shape) if input_shape else None,
+                                                 **kwargs)
 
 
 class SpatialDropout1D(KerasLayer):
@@ -1629,14 +1797,16 @@ class SpatialDropout1D(KerasLayer):
     # Arguments
     p: Fraction of the input units to drop. Float between 0 and 1.
     input_shape: A shape tuple, not including batch.
+    name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
 
     >>> spatialdropout1d = SpatialDropout1D(0.4, input_shape=(10, 12))
     creating: createKerasSpatialDropout1D
     """
-    def __init__(self, p=0.5, input_shape=None, bigdl_type="float"):
-        super(SpatialDropout1D, self).__init__(None, bigdl_type,
+    def __init__(self, p=0.5, input_shape=None, **kwargs):
+        super(SpatialDropout1D, self).__init__(None,
                                                float(p),
-                                               list(input_shape) if input_shape else None)
+                                               list(input_shape) if input_shape else None,
+                                               **kwargs)
 
 
 class SpatialDropout2D(KerasLayer):
@@ -1656,15 +1826,17 @@ class SpatialDropout2D(KerasLayer):
     p: Fraction of the input units to drop. Float between 0 and 1.
     dim_ordering: Format of input data. Either 'th' (Channel First) or 'tf' (Channel Last). Default is 'th'.
     input_shape: A shape tuple, not including batch.
+    name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
 
     >>> spatialdropout2d = SpatialDropout2D(0.25, input_shape=(5, 12, 12))
     creating: createKerasSpatialDropout2D
     """
-    def __init__(self, p=0.5, dim_ordering="th", input_shape=None, bigdl_type="float"):
-        super(SpatialDropout2D, self).__init__(None, bigdl_type,
+    def __init__(self, p=0.5, dim_ordering="th", input_shape=None, **kwargs):
+        super(SpatialDropout2D, self).__init__(None,
                                                float(p),
                                                dim_ordering,
-                                               list(input_shape) if input_shape else None)
+                                               list(input_shape) if input_shape else None,
+                                               **kwargs)
 
 
 class SpatialDropout3D(KerasLayer):
@@ -1684,15 +1856,17 @@ class SpatialDropout3D(KerasLayer):
     p: Fraction of the input units to drop. Float between 0 and 1.
     dim_ordering: Format of input data. Either 'th' (Channel First) or 'tf' (Channel Last). Default is 'th'.
     input_shape: A shape tuple, not including batch.
+    name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
 
     >>> spatialdropout3d = SpatialDropout3D(0.6, input_shape=(4, 12, 12, 16))
     creating: createKerasSpatialDropout3D
     """
-    def __init__(self, p=0.5, dim_ordering="th", input_shape=None, bigdl_type="float"):
-        super(SpatialDropout3D, self).__init__(None, bigdl_type,
+    def __init__(self, p=0.5, dim_ordering="th", input_shape=None, **kwargs):
+        super(SpatialDropout3D, self).__init__(None,
                                                float(p),
                                                dim_ordering,
-                                               list(input_shape) if input_shape else None)
+                                               list(input_shape) if input_shape else None,
+                                               **kwargs)
 
 
 class GaussianDropout(KerasLayer):
@@ -1707,14 +1881,16 @@ class GaussianDropout(KerasLayer):
     p: Drop probability. Float between 0 and 1.
        The multiplicative noise will have standard deviation 'sqrt(p/(1-p))'.
     input_shape: A shape tuple, not including batch.
+    name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
 
     >>> gaussiandropout = GaussianDropout(0.45, input_shape=(4, 8))
     creating: createKerasGaussianDropout
     """
-    def __init__(self, p, input_shape=None, bigdl_type="float"):
-        super(GaussianDropout, self).__init__(None, bigdl_type,
+    def __init__(self, p, input_shape=None, **kwargs):
+        super(GaussianDropout, self).__init__(None,
                                               float(p),
-                                              list(input_shape) if input_shape else None)
+                                              list(input_shape) if input_shape else None,
+                                              **kwargs)
 
 
 class GaussianNoise(KerasLayer):
@@ -1730,14 +1906,16 @@ class GaussianNoise(KerasLayer):
     # Arguments
     sigma: Float, standard deviation of the noise distribution.
     input_shape: A shape tuple, not including batch.
+    name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
 
-    >>> gaussiannoise = GaussianNoise(0.45, input_shape=(3, 4, 5))
+    >>> gaussiannoise = GaussianNoise(0.45, input_shape=(3, 4, 5), name="gaussiannoise1")
     creating: createKerasGaussianNoise
     """
-    def __init__(self, sigma, input_shape=None, bigdl_type="float"):
-        super(GaussianNoise, self).__init__(None, bigdl_type,
+    def __init__(self, sigma, input_shape=None, **kwargs):
+        super(GaussianNoise, self).__init__(None,
                                             float(sigma),
-                                            list(input_shape) if input_shape else None)
+                                            list(input_shape) if input_shape else None,
+                                            **kwargs)
 
 
 class Masking(KerasLayer):
@@ -1753,14 +1931,16 @@ class Masking(KerasLayer):
                 if all values in the input tensor at that timestep are equal to `mask_value`,
                 then the timestep will masked (skipped) in all downstream layers.
     input_shape: A shape tuple, not including batch.
+    name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
 
     >>> masking = Masking(0.3, input_shape=(6, 8))
     creating: createKerasMasking
     """
-    def __init__(self, mask_value=0.0, input_shape=None, bigdl_type="float"):
-        super(Masking, self).__init__(None, bigdl_type,
+    def __init__(self, mask_value=0.0, input_shape=None, **kwargs):
+        super(Masking, self).__init__(None,
                                       float(mask_value),
-                                      list(input_shape) if input_shape else None)
+                                      list(input_shape) if input_shape else None,
+                                      **kwargs)
 
 
 class SReLU(KerasLayer):
@@ -1775,13 +1955,13 @@ class SReLU(KerasLayer):
     input_shape (a shape tuple, does not include the batch dimension).
 
     # Arguments
-    t_left_init: String representations of initialization method for the left part intercept.
+    t_left_init: String representation of the initialization method for the left part intercept.
                  Default is 'zero'.
-    a_left_init: String representations of initialization method for the left part slope.
+    a_left_init: String representation of the initialization method for the left part slope.
                  Default is 'glorot_uniform'.
-    t_right_init: String representations of initialization method for the right part intercept.
+    t_right_init: String representation of ithe nitialization method for the right part intercept.
                   Default is 'glorot_uniform'.
-    a_right_init: String representations of initialization method for the right part slope.
+    a_right_init: String representation of the initialization method for the right part slope.
                   Default is 'one'.
     shared_axes: Int tuple. The axes along which to share learnable parameters for the activation function.
                  Default is None.
@@ -1789,20 +1969,22 @@ class SReLU(KerasLayer):
                  (batch, height, width, channels), and you wish to share parameters across space so that
                  each filter only has one set of parameters, set 'SharedAxes=(1,2)'.
     input_shape: A shape tuple, not including batch.
+    name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
 
     >>> srelu = SReLU(input_shape=(4, 5))
     creating: createKerasSReLU
     """
     def __init__(self, t_left_init='zero', a_left_init='glorot_uniform',
                  t_right_init='glorot_uniform', a_right_init='one',
-                 shared_axes=None, input_shape=None, bigdl_type="float"):
-        super(SReLU, self).__init__(None, bigdl_type,
+                 shared_axes=None, input_shape=None, **kwargs):
+        super(SReLU, self).__init__(None,
                                     t_left_init,
                                     a_left_init,
                                     t_right_init,
                                     a_right_init,
                                     shared_axes,
-                                    list(input_shape) if input_shape else None)
+                                    list(input_shape) if input_shape else None,
+                                    **kwargs)
 
 
 class ELU(KerasLayer):
@@ -1818,14 +2000,16 @@ class ELU(KerasLayer):
     # Arguments
     alpha: Float, scale for the negative factor.
     input_shape: A shape tuple, not including batch.
+    name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
 
     >>> elu = ELU(1.2, input_shape=(4, 5))
     creating: createKerasELU
     """
-    def __init__(self, alpha=1.0, input_shape=None, bigdl_type="float"):
-        super(ELU, self).__init__(None, bigdl_type,
+    def __init__(self, alpha=1.0, input_shape=None, **kwargs):
+        super(ELU, self).__init__(None,
                                   float(alpha),
-                                  list(input_shape) if input_shape else None)
+                                  list(input_shape) if input_shape else None,
+                                  **kwargs)
 
 
 class LeakyReLU(KerasLayer):
@@ -1841,14 +2025,16 @@ class LeakyReLU(KerasLayer):
     # Arguments
     alpha: Float >= 0. Negative slope coefficient.
     input_shape: A shape tuple, not including batch.
+    name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
 
     >>> leakyrelu = LeakyReLU(0.02, input_shape=(4, 5))
     creating: createKerasLeakyReLU
     """
-    def __init__(self, alpha=0.01, input_shape=None, bigdl_type="float"):
-        super(LeakyReLU, self).__init__(None, bigdl_type,
+    def __init__(self, alpha=0.01, input_shape=None, **kwargs):
+        super(LeakyReLU, self).__init__(None,
                                         float(alpha),
-                                        list(input_shape) if input_shape else None)
+                                        list(input_shape) if input_shape else None,
+                                        **kwargs)
 
 
 class ThresholdedReLU(KerasLayer):
@@ -1864,14 +2050,16 @@ class ThresholdedReLU(KerasLayer):
     # Arguments
     theta: Float >= 0. Threshold location of activation.
     input_shape: A shape tuple, not including batch.
+    name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
 
     >>> thresholdedrelu = ThresholdedReLU(input_shape=(10, 12))
     creating: createKerasThresholdedReLU
     """
-    def __init__(self, theta=1.0, input_shape=None, bigdl_type="float"):
-        super(ThresholdedReLU, self).__init__(None, bigdl_type,
+    def __init__(self, theta=1.0, input_shape=None, **kwargs):
+        super(ThresholdedReLU, self).__init__(None,
                                               float(theta),
-                                              list(input_shape) if input_shape else None)
+                                              list(input_shape) if input_shape else None,
+                                              **kwargs)
 
 
 class TimeDistributed(KerasLayer):
@@ -1882,19 +2070,22 @@ class TimeDistributed(KerasLayer):
 
     When you use this layer as the first layer of a model, you need to provide the argument
     input_shape (a shape tuple, does not include the batch dimension).
+    name: String to specify the name of the wrapper. Default is None.
 
     # Arguments
     layer: A layer instance.
     input_shape: A shape tuple, not including batch.
+    name: String to set the name of the wrapper. If not specified, its name will by default to be a generated string.
 
-    >>> timedistributed = TimeDistributed(Dense(8), input_shape=(10, 12))
+    >>> timedistributed = TimeDistributed(Dense(8), input_shape=(10, 12), name="timedistributeddense")
     creating: createKerasDense
     creating: createKerasTimeDistributed
     """
-    def __init__(self, layer, input_shape=None, bigdl_type="float"):
-        super(TimeDistributed, self).__init__(None, bigdl_type,
+    def __init__(self, layer, input_shape=None, **kwargs):
+        super(TimeDistributed, self).__init__(None,
                                               layer,
-                                              list(input_shape) if input_shape else None)
+                                              list(input_shape) if input_shape else None,
+                                              **kwargs)
 
 
 class Bidirectional(KerasLayer):
@@ -1913,13 +2104,15 @@ class Bidirectional(KerasLayer):
     merge_mode: Mode by which outputs of the forward and backward RNNs will be combined.
                 Must be one of: 'sum', 'mul', 'concat', 'ave'. Default is 'concat'.
     input_shape: A shape tuple, not including batch.
+    name: String to set the name of the wrapper. If not specified, its name will by default to be a generated string.
 
-    >>> bidiretional = Bidirectional(LSTM(10, return_sequences=True), input_shape=(12, 16))
+    >>> bidiretional = Bidirectional(LSTM(10, return_sequences=True), input_shape=(12, 16), name="bidirectionallstm")
     creating: createKerasLSTM
     creating: createKerasBidirectional
     """
-    def __init__(self, layer, merge_mode="concat", input_shape=None, bigdl_type="float"):
-        super(Bidirectional, self).__init__(None, bigdl_type,
+    def __init__(self, layer, merge_mode="concat", input_shape=None, **kwargs):
+        super(Bidirectional, self).__init__(None,
                                             layer,
                                             merge_mode,
-                                            list(input_shape) if input_shape else None)
+                                            list(input_shape) if input_shape else None,
+                                            **kwargs)
