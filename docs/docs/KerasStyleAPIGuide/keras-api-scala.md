@@ -78,7 +78,7 @@ Input(inputShape = null, name = null)
 Parameters:
 
 * `inputShape`: A [`Shape`](#shape) object indicating the shape of the input node, not including batch.
-* `name`: String to specify the name of the input node. Default is null.
+* `name`: String to set the name of the input node. If not specified, its name will by default to be a generated string.
 
 To create a graph container:
 ```scala
@@ -93,7 +93,7 @@ To merge a list of input __nodes__ (__NOT__ layers), following some merge mode i
 ```scala
 import com.intel.analytics.bigdl.nn.keras.Merge.merge
 
-merge(inputs, mode = "sum", concat_axis = -1, name = null) // This will return an output NODE.
+merge(inputs, mode = "sum", concat_axis = -1) // This will return an output NODE.
 ```
 
 Parameters:
@@ -101,7 +101,6 @@ Parameters:
 * `inputs`: A list of node instances. Must be more than one node.
 * `mode`: Merge mode. String, must be one of: 'sum', 'mul', 'concat', 'ave', 'cos','dot', 'max'. Default is 'sum'.
 * `concat_axis`: Int, axis to use when concatenating nodes. Only specify this when merge mode is 'concat'. Default is -1, meaning the last axis of the input.
-* `name`: String to specify the name of merge. Default is null.
 
 Example code to create a graph model:
 ```scala
@@ -126,7 +125,7 @@ val model = Model[Float](Array(input1, input2), output)
 ## **Layers**
 See [here](Layers/core.md) for all the available layers for the new set of Keras-Style API.
 
-To set the name of a layer, call the method `set_name(name)` of the layer.
+To set the name of a layer, call the method `setName(name)` of the layer.
 
 
 ---
