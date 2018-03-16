@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.nn.Graph._
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.nn.keras.{Sequential => KSequential}
-import com.intel.analytics.bigdl.nn.{Container => TContainer, Sequential => TSequential}
+import com.intel.analytics.bigdl.nn.{Container => TContainer}
 import com.intel.analytics.bigdl.serialization.Bigdl.{AttrValue, BigDLModule}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
