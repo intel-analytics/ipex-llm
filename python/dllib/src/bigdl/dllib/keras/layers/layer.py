@@ -16,7 +16,7 @@
 
 import sys
 
-from bigdl.nn.layer import Layer, Node
+from bigdl.nn.layer import Layer, Node, SharedStaticUtils, Container
 from bigdl.util.common import callBigDlFunc, JTensor, JavaValue
 
 if sys.version >= '3':
