@@ -16,6 +16,7 @@
 
 
 import sys
+import importlib
 
 import numpy as np
 import six
@@ -60,7 +61,60 @@ class Node(JavaValue):
         callJavaFunc(self.value.removeNextEdges)
 
 
-class Layer(JavaValue):
+class SharedStaticUtils():
+
+    @staticmethod
+    def load(path, bigdl_type="float"):
+        """
+        Load a pre-trained Bigdl model.
+
+        :param path: The path containing the pre-trained model.
+        :return: A pre-trained model.
+        """
+        jmodel = callBigDlFunc(bigdl_type, "loadBigDL", path)
+        return Layer.of(jmodel)
+
+
+    @staticmethod
+    def of(jvalue, bigdl_type="float"):
+        """
+        Create a Python Layer base on the given java value and the real type.
+        :param jvalue: Java object create by Py4j
+        :return: A Python Layer
+        """
+        def get_py_name(jclass_name):
+            if jclass_name == "StaticGraph" or jclass_name == "DynamicGraph":
+                return "Model"
+            elif jclass_name == "Input":
+                return "Layer"
+            else:
+                return jclass_name
+
+        jname = callBigDlFunc(bigdl_type,
+                                      "getRealClassNameOfJValue",
+                                      jvalue)
+
+        jpackage_name = ".".join(jname.split(".")[:-1])
+        pclass_name = get_py_name(jname.split(".")[-1])
+
+        if "com.intel.analytics.bigdl.nn.keras.Model" == jname or \
+                        "com.intel.analytics.bigdl.nn.keras.Sequential" == jname:
+            base_module = importlib.import_module('bigdl.nn.keras.topology')
+        elif "com.intel.analytics.bigdl.nn.keras" == jpackage_name:
+            base_module = importlib.import_module('bigdl.nn.keras.layer')
+        else:
+            base_module = importlib.import_module('bigdl.nn.layer')
+
+        realClassName = "Layer" # The top base class
+        if pclass_name in dir(base_module):
+            realClassName = pclass_name
+        module = getattr(base_module, realClassName)
+        jvalue_creator = getattr(module, "from_jvalue")
+        model = jvalue_creator(jvalue, bigdl_type)
+        return model
+
+
+class Layer(JavaValue, SharedStaticUtils):
     """
     Layer is the basic component of a neural network
     and it's also the base class of layers.
@@ -118,14 +172,15 @@ class Layer(JavaValue):
                                      self,
                                      to_list(x)))
 
-    @classmethod
-    def of(cls, jvalue, bigdl_type="float"):
+    @staticmethod
+    def from_jvalue(jvalue, bigdl_type="float"):
         """
-        Create a Python Layer base on the given java value
+        Create a Python Model base on the given java value
         :param jvalue: Java object create by Py4j
-        :return: A Python Layer
+        :return: A Python Model
         """
-        model = Layer(jvalue, bigdl_type)
+        model = Layer(jvalue=jvalue, bigdl_type=bigdl_type)
+        model.value = jvalue
         return model
 
     def set_name(self, name):
@@ -686,16 +741,6 @@ class Model(Container):
     def __str__(self):
         return "->".join(self.layers())
 
-    @staticmethod
-    def load(path, bigdl_type="float"):
-        """
-        Load a pre-trained Bigdl model.
-
-        :param path: The path containing the pre-trained model.
-        :return: A pre-trained model.
-        """
-        jmodel = callBigDlFunc(bigdl_type, "loadBigDL", path)
-        return Layer.of(jmodel)
 
     @staticmethod
     def loadModel(modelPath, weightPath =None, bigdl_type="float"):
@@ -1063,8 +1108,19 @@ class Sequential(Container):
 
     '''
 
-    def __init__(self, bigdl_type="float"):
-        super(Sequential, self).__init__(None, bigdl_type)
+    def __init__(self, jvalue=None, bigdl_type="float"):
+        super(Sequential, self).__init__(jvalue, bigdl_type)
+
+    @staticmethod
+    def from_jvalue(jvalue, bigdl_type="float"):
+        """
+        Create a Python Model base on the given java value
+        :param jvalue: Java object create by Py4j
+        :return: A Python Model
+        """
+        model = Sequential(jvalue=jvalue)
+        model.value = jvalue
+        return model
 
 class TemporalConvolution(Layer):
 
