@@ -135,13 +135,16 @@ class KerasModel(KerasLayer):
 
 class Sequential(KerasModel):
     """
-    Container for a Sequential model.
+    Container for a sequential model.
 
-    >>> sequential = Sequential()
+    # Arguments
+    name: String to specify the name of the sequential model. Default is None.
+
+    >>> sequential = Sequential(name="seq1")
     creating: createKerasSequential
     """
-    def __init__(self, bigdl_type="float"):
-        super(Sequential, self).__init__(None, bigdl_type=bigdl_type)
+    def __init__(self, **kwargs):
+        super(Sequential, self).__init__(None, **kwargs)
 
     def add(self, model):
         self.value.add(model.value)
@@ -149,7 +152,16 @@ class Sequential(KerasModel):
 
 
 class Model(KerasModel):
-    def __init__(self, input, output, bigdl_type="float"):
-        super(Model, self).__init__(None, bigdl_type,
+    """
+    Container for a graph model.
+
+    # Arguments
+    input: An input node or a list of input nodes.
+    output: An output node or a list of output nodes.
+    name: String to specify the name of the graph model. Default is None.
+    """
+    def __init__(self, input, output, **kwargs):
+        super(Model, self).__init__(None,
                                     to_list(input),
-                                    to_list(output))
+                                    to_list(output),
+                                    **kwargs)
