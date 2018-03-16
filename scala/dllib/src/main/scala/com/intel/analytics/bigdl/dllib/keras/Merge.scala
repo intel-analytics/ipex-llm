@@ -16,6 +16,7 @@
 
 package com.intel.analytics.bigdl.nn.keras
 
+import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.nn.{CAddTable, CAveTable, CMaxTable, CMulTable, CosineDistance, DotProduct, JoinTable, ParallelTable, Sequential => TSequential}
 import com.intel.analytics.bigdl.tensor.Tensor
@@ -25,8 +26,8 @@ import com.intel.analytics.bigdl.utils.{MultiShape, Shape}
 import scala.reflect.ClassTag
 
 /**
- * Used to merge a list of tensors into a single tensor, following some merge mode.
- * Merge must have at least two input layers.
+ * Used to merge a list of inputs into a single output, following some merge mode.
+ * To merge layers, it must take at least two input layers.
  *
  * When using this layer as the first layer in a model, you need to provide the argument
  * inputShape for input layers (each as a Single Shape, does not include the batch dimension).
@@ -34,8 +35,8 @@ import scala.reflect.ClassTag
  * @param layers A list of layer instances. Must be more than one layer.
  * @param mode Merge mode. String, must be one of: 'sum', 'mul', 'concat', 'ave', 'cos',
  *             'dot', 'max'. Default is 'sum'.
- * @param concatAxis Integer, axis to use in mode concat. Only specify this when mode is 'concat'.
- *                   Default is -1, meaning the last axis of the input.
+ * @param concatAxis Integer, axis to use when concatenating layers. Only specify this when merge
+ *                   mode is 'concat'. Default is -1, meaning the last axis of the input.
  * @tparam T The numeric type of parameter(e.g. weight, bias). Only support float/double now.
  */
 class Merge[T: ClassTag](
@@ -52,8 +53,11 @@ class Merge[T: ClassTag](
   require(mergeMode == "sum" || mergeMode == "mul" || mergeMode == "concat" || mergeMode == "ave"
   || mergeMode == "cos" || mergeMode == "dot" || mergeMode == "max",
   s"Invalid merge mode: $mergeMode")
-  require(layers.length >= 2, s"Merge must have at least two input layers " +
-    s"but found ${layers.length}")
+  if (layers != null) {
+    require(layers.length >= 2, s"Merge must take at least two input layers " +
+      s"but found ${layers.length}")
+    this.excludeInvalidLayers(layers)
+  }
 
   private def computeOutputShapeForConcat(input: List[Shape]): Shape = {
     import scala.util.control.Breaks._
@@ -116,36 +120,40 @@ class Merge[T: ClassTag](
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
     val input = inputShape.toMulti()
-    val model = TSequential[T]()
-    val parallel = ParallelTable()
-    var i = 0
-    while(i < layers.length) {
-      val tlayer = layers(i) match {
-        case k: KerasLayer[_, _, T] => k.labor
-        case t: AbstractModule[Activity, Activity, T] => t
-      }
-      parallel.add(tlayer)
-      i += 1
-    }
-    model.add(parallel)
-    val seq = TSequential[T]()
-    val layer = mergeMode match {
+    val mergeLayer = mergeMode match {
       case "sum" => CAddTable()
       case "mul" => CMulTable()
       case "max" => CMaxTable()
       case "ave" => CAveTable()
-      case "concat" => JoinTable(axis, input.length)
+      case "concat" =>
+        val input1 = input.head.toSingle().toArray
+        JoinTable(axis, input1.length -1)
       case "dot" =>
+        val seq = TSequential[T]()
         seq.add(DotProduct())
         seq.add(com.intel.analytics.bigdl.nn.Reshape(Array(1), Some(true)))
         seq
       case "cos" =>
+        val seq = TSequential[T]()
         seq.add(CosineDistance())
         seq.add(com.intel.analytics.bigdl.nn.Reshape(Array(1, 1), Some(true)))
         seq
     }
-    model.add(layer)
-    model.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
+    if (layers != null) { // In the case `layers != null`, return a ParallelTable to merge layers
+      val model = TSequential[T]()
+      val parallel = ParallelTable()
+      var i = 0
+      while(i < layers.length) {
+        parallel.add(layers(i).asInstanceOf[KerasLayer[Activity, Activity, T]].labor)
+        i += 1
+      }
+      model.add(parallel)
+      model.add(mergeLayer)
+      model.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
+    }
+    else { // In the case `layers == null`, only return a merge layer to merge nodes not layers.
+      mergeLayer.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
+    }
   }
 }
 
@@ -154,14 +162,15 @@ object Merge {
     inputShape: Shape = null,
     layers: Array[AbstractModule[Activity, Activity, T]]): Shape = {
     val batchInputShape = KerasLayer.addBatch(inputShape)
-    val actualInputShape =
+    val actualInputShape = if (layers != null) {
       MultiShape(layers.map { layer =>
-      if (layer.isBuilt()) {  // it's possible while reloaded from file
-        layer.getOutputShape()
-      } else {
-        layer.build(layer.getInputShape())
-      }
-    }.toList)
+        if (layer.isBuilt()) {  // it's possible while reloaded from file
+          layer.getOutputShape()
+        } else {
+          layer.build(layer.getInputShape())
+        }
+      }.toList)
+    } else null
     if (batchInputShape != null) {
       require(batchInputShape.isInstanceOf[MultiShape],
         "Merge requires inputShape to be MultiShape")
@@ -176,6 +185,17 @@ object Merge {
     mode: String = "sum",
     concatAxis: Int = -1,
     inputShape: Shape = null)(implicit ev: TensorNumeric[T]): Merge[T] = {
-    new Merge[T](layers.toArray, mode, concatAxis, inputShape)
+    val layersArray = if (layers != null) layers.toArray else null
+    new Merge[T](layersArray, mode, concatAxis, inputShape)
+  }
+
+  def merge[@specialized(Float, Double) T: ClassTag](
+    inputs: List[ModuleNode[T]],
+    mode: String = "sum",
+    concatAxis: Int = -1,
+    name: String = null)(implicit ev: TensorNumeric[T]): ModuleNode[T] = {
+    val mergeLayer = new Merge[T](mode = mode, concatAxis = concatAxis)
+    if (name != null) mergeLayer.setName(name)
+    mergeLayer.inputs(inputs.toArray)
   }
 }
