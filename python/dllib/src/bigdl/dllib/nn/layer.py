@@ -78,7 +78,9 @@ class Layer(JavaValue):
 
     def set_running_mean(self, running_mean):
         """
-        :param running_mean: a ndarray
+        Set the running mean of the layer.
+        Only use this method for a BatchNormalization layer.
+        :param running_mean: a Numpy array.
         """
         callBigDlFunc(self.bigdl_type, "setRunningMean",
                       self.value, JTensor.from_ndarray(running_mean))
@@ -86,7 +88,9 @@ class Layer(JavaValue):
 
     def set_running_std(self, running_std):
         """
-        :param running_mean: a ndarray
+        Set the running variance of the layer.
+        Only use this method for a BatchNormalization layer.
+        :param running_std: a Numpy array.
         """
         callBigDlFunc(self.bigdl_type, "setRunningStd",
                       self.value, JTensor.from_ndarray(running_std))
