@@ -61,7 +61,7 @@ Refer to python_submit_yarn_cluster.sh.example to run lenet example on yarn clus
     --conf spark.executor.extraClassPath=bigdl-VERSION-jar-with-dependencies.jar \
     ${BigDL_HOME}/pyspark/bigdl/examples/lenet/lenet.py
  ```
-details can be found at: [LeNet5](https://github.com/intel-analytics/BigDL/tree/master/pyspark/dl/models/lenet/README.md).
+details can be found at: [LeNet5](https://github.com/intel-analytics/BigDL/tree/master/pyspark/bigdl/models/lenet/README.md).
 
 ### Run Lenet example on YARN Client mode
 
