@@ -50,7 +50,14 @@ object Train {
       val model = if (param.modelSnapshot.isDefined) {
         Module.load[Float](param.modelSnapshot.get)
       } else {
-        if (param.graphModel) VggForCifar10.graph(classNum = 10) else VggForCifar10(classNum = 10)
+        if (param.kerasModel) {
+          println("Using Keras-Style API for model definition")
+          if (param.graphModel) VggForCifar10.kerasGraph(classNum = 10)
+          else VggForCifar10.keras(classNum = 10)
+        }
+        else {
+          if (param.graphModel) VggForCifar10.graph(classNum = 10) else VggForCifar10(classNum = 10)
+        }
       }
 
       val optimMethod = if (param.stateSnapshot.isDefined) {
@@ -61,10 +68,13 @@ object Train {
           learningRateSchedule = SGD.EpochStep(25, 0.5))
       }
 
+      val criterion = if (param.kerasModel) ClassNLLCriterion[Float](logProbAsInput = false)
+      else ClassNLLCriterion[Float]()
+
       val optimizer = Optimizer(
         model = model,
         dataset = trainDataSet,
-        criterion = new ClassNLLCriterion[Float]()
+        criterion = criterion
       )
 
       val validateSet = DataSet.array(Utils.loadTest(param.folder), sc) ->

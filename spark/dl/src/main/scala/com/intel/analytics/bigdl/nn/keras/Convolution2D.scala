@@ -67,6 +67,8 @@ class Convolution2D[T: ClassTag](
    var wRegularizer: Regularizer[T] = null,
    var bRegularizer: Regularizer[T] = null,
    val bias: Boolean = true,
+   val padH: Int = 0,
+   val padW: Int = 0,
    val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {
 
@@ -77,7 +79,8 @@ class Convolution2D[T: ClassTag](
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
     val input = inputShape.toSingle().toArray
-    val pads = KerasUtils.getPadsFromBorderMode(borderMode)
+    val pads = if (padH == 0 && padW == 0) KerasUtils.getPadsFromBorderMode(borderMode)
+    else (padH, padW)
     val layer = SpatialConvolution(
       nInputPlane = input(dimOrdering.getHWCDims(4)._3 - 1),
       nOutputPlane = nbFilter,
@@ -110,11 +113,13 @@ object Convolution2D {
     wRegularizer: Regularizer[T] = null,
     bRegularizer: Regularizer[T] = null,
     bias: Boolean = true,
+    padH: Int = 0,
+    padW: Int = 0,
     inputShape: Shape = null)(implicit ev: TensorNumeric[T]): Convolution2D[T] = {
     new Convolution2D[T](nbFilter, nbRow, nbCol,
       KerasUtils.getInitMethod(init), KerasUtils.getKerasActivation(activation),
       borderMode, Array(subsample._1, subsample._2),
       KerasUtils.toBigDLFormat(dimOrdering), wRegularizer,
-      bRegularizer, bias, inputShape)
+      bRegularizer, bias, padH, padW, inputShape)
   }
 }
