@@ -1,15 +1,31 @@
+/*
+ * Copyright 2016 The BigDL Authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.intel.analytics.bigdl.example.dlframes.imageInference
 
 import com.intel.analytics.bigdl.dlframes.{DLClassifierModel, DLModel}
-import org.apache.spark.sql.{DataFrame, SparkSession}
+import org.apache.spark.sql.DataFrame
 import scopt.OptionParser
 import com.intel.analytics.bigdl.dataset.Sample
 import com.intel.analytics.bigdl.nn.Module
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
-import com.intel.analytics.bigdl.transform.vision.image.augmentation.{CenterCrop, ChannelNormalize, Resize}
-import com.intel.analytics.bigdl.transform.vision.image.{ImageFeature, ImageFrame, ImageFrameToSample, MatToTensor}
+import com.intel.analytics.bigdl.transform.vision.image.augmentation._
+import com.intel.analytics.bigdl.transform.vision.image._
 import com.intel.analytics.bigdl.utils.Engine
 import org.apache.spark.SparkContext
+import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SQLContext
 
 object ImageInference {
@@ -20,11 +36,12 @@ object ImageInference {
     Utils.parser.parse(args, defaultParams).map { params =>
 
       val conf = Engine.createSparkConf().setAppName("ModelInference")
-      Engine.init
+        .setMaster("local[4]")
       val sc = SparkContext.getOrCreate(conf)
       val sqlContext = new SQLContext(sc)
+      Engine.init
 
-      val imagesDF = Utils.loadImages(params.folder, params.batchSize, sqlContext)
+      val imagesDF = Utils.loadImages(params.folder, params.batchSize, sqlContext).cache()
 
       imagesDF.show(10)
       imagesDF.printSchema()
@@ -36,7 +53,8 @@ object ImageInference {
         .setFeaturesCol("features")
         .setPredictionCol("prediction")
 
-      val tranDF = dlmodel.transform(imagesDF)
+      val count = imagesDF.count().toInt
+      val tranDF = dlmodel.transform(imagesDF.limit(count))
 
       tranDF.select("imageName", "prediction").show(100, false)
     }
@@ -45,12 +63,19 @@ object ImageInference {
 
 object Utils {
 
-  case class LocalParams(caffeDefPath: String = " ",
-                         modelPath: String = " ",
-                         folder: String = " ",
+  case class LocalParams(caffeDefPath: String = "/Users/guoqiong/intelWork/git/caffe/models/bvlc_googlenet/deploy.prototxt",
+                         modelPath: String = "/Users/guoqiong/intelWork/projects/dlFrames/model/caffe/bvlc_googlenet.caffemodel",
+                         folder: String = "/Users/guoqiong/intelWork/projects/dlFrames/data/ILSVRC2012_img_val_20/",
                          batchSize: Int = 16,
                          nEpochs: Int = 10
                         )
+
+  //  case class LocalParams(caffeDefPath: String = " ",
+  //                         modelPath: String = " ",
+  //                         folder: String = " ",
+  //                         batchSize: Int = 16,
+  //                         nEpochs: Int = 10
+  //                        )
 
   val defaultParams = LocalParams()
 

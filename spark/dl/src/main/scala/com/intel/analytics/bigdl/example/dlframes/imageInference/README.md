@@ -56,10 +56,11 @@
                 --deploy-mode client \
                 --executor-cores 8 \
                 --num-executors 4 \
-                --class com.intel.analytics.bigdl.example.imageclassification.ImageInference \
+                --class com.intel.analytics.bigdl.example.DLFrames.ImageInference \
                 ./dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
                 --modelPath ./model/bvlc_googlenet.caffemodel \
+                --caffeDefPath ./model/deploy.prototxt \
+                --batchSize 32 \
                 --folder ./predict \
-                --batchSizePerCore 16 \
                 --nEpochs 10
         ```

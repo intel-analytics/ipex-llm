@@ -1,23 +1,33 @@
+/*
+ * Copyright 2016 The BigDL Authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.intel.analytics.bigdl.example.dlframes.imageTransferLearning
 
 import com.intel.analytics.bigdl.dataset.Sample
-import com.intel.analytics.bigdl.dlframes.DLModel
+import com.intel.analytics.bigdl.dlframes.{DLClassifier, DLModel}
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
-import com.intel.analytics.bigdl.transform.vision.image.{ImageFeature, ImageFrame, ImageFrameToSample, MatToTensor}
-import com.intel.analytics.bigdl.transform.vision.image.augmentation.{CenterCrop, ChannelNormalize, Resize}
+import com.intel.analytics.bigdl.transform.vision.image._
+import com.intel.analytics.bigdl.transform.vision.image.augmentation._
 import com.intel.analytics.bigdl.utils.Engine
 import org.apache.log4j.{Level, Logger}
-import org.apache.spark.ml.adapter.{HasFeaturesCol, HasPredictionCol}
-import org.apache.spark.ml.classification.{LogisticRegression, LogisticRegressionModel}
 import org.apache.spark.ml.evaluation.MulticlassClassificationEvaluator
-import org.apache.spark.ml.linalg.SQLDataTypes.VectorType
-import org.apache.spark.ml.linalg.{Vector, Vectors}
-import org.apache.spark.ml.param.ParamMap
+
 import org.apache.spark.ml.{Pipeline, Transformer}
 import org.apache.spark.sql.functions.{col, udf}
-import org.apache.spark.sql.types.StructType
-import org.apache.spark.sql.{DataFrame, Dataset, SQLContext, SparkSession}
+import org.apache.spark.sql.{DataFrame, SQLContext}
 import scopt.OptionParser
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
 import org.apache.spark.SparkContext
@@ -31,19 +41,24 @@ object ImageTransferLearning {
 
     Utils.parser.parse(args, defaultParams).map { params =>
 
+
       val conf = Engine.createSparkConf().setAppName("TransferLearning")
-      Engine.init
+        .setMaster("local[4]")
+
       val sc = SparkContext.getOrCreate(conf)
       val sqlContext = new SQLContext(sc)
+      Engine.init
 
-      val createLabel = udf((name: String) => if (name.contains("cat")) 1.0 else 0.0)
+      val createLabel = udf((name: String) => if (name.contains("cat")) 1.0 else 2.0)
       val imagesDF: DataFrame = Utils.loadImages(params.folder, params.batchSize, sqlContext)
         .withColumn("label", createLabel(col("imageName")))
         .withColumnRenamed("features", "imageFeatures")
+        .drop("features")
 
-      val Array(validationDF, trainingDF) = imagesDF.randomSplit(Array(0.90, 0.10), seed = 1L)
+      imagesDF.printSchema()
+      imagesDF.show(5)
 
-      val criterion = ClassNLLCriterion[Float]()
+      val Array(validationDF, trainingDF) = imagesDF.randomSplit(Array(0.10, 0.90), seed = 1L)
 
       val loadedModel: AbstractModule[Activity, Activity, Float] = Module
         .loadCaffeModel[Float](params.caffeDefPath, params.modelPath)
@@ -51,25 +66,33 @@ object ImageTransferLearning {
       val featurizer = new DLModel[Float](loadedModel, Array(3, 224, 224))
         .setBatchSize(params.batchSize)
         .setFeaturesCol("imageFeatures")
-        .setPredictionCol("tmp1")
-
-
-      val schemaTransformer = new Array2Vector()
-        .setFeaturesCol("tmp1")
         .setPredictionCol("features")
 
-      val lr = new LogisticRegression()
-        .setMaxIter(20)
-        .setRegParam(0.05)
-        .setElasticNetParam(0.3)
-        .setFeaturesCol("features")
+      val criterion = ClassNLLCriterion[Float]()
 
+      val lrModel = Sequential().add(Linear(1000, 2)).add(LogSoftMax())
+
+      val classifier = new DLClassifier(lrModel, criterion, Array(1000))
+        .setLearningRate(0.003).setBatchSize(params.batchSize)
+        .setMaxEpoch(20)
+
+       val Array(validationDFManual, trainingDFManual) = featurizer.transform(imagesDF)
+              .randomSplit(Array(0.10, 0.90), seed = 1L)
+
+       val catdogModel = classifier.fit(trainingDFManual)
+
+       val count = validationDFManual.count().toInt
+
+       val predictionDF = catdogModel.transform(validationDFManual).cache()
+
+       predictionDF.show()
+      
       val pipeline = new Pipeline().setStages(
-        Array(featurizer, schemaTransformer, lr))
+        Array(featurizer, classifier))
 
       val pipelineModel = pipeline.fit(trainingDF)
 
-      val predictions = pipelineModel.transform(trainingDF)
+      val predictions = pipelineModel.transform(validationDF)
 
       predictions.show(200)
       predictions.printSchema()
@@ -83,38 +106,12 @@ object ImageTransferLearning {
 
 }
 
-class Array2Vector(override val uid: String = "array2vector") extends Transformer with HasFeaturesCol
-  with HasPredictionCol {
-
-  def setFeaturesCol(featuresColName: String): this.type = set(featuresCol, featuresColName)
-
-  def setPredictionCol(value: String): this.type = set(predictionCol, value)
-
-  override def transform(dataset: Dataset[_]): DataFrame = {
-    val df = dataset.toDF()
-    df.printSchema()
-    val toVector = udf { features: Seq[Double] =>
-      Vectors.dense(features.toArray)
-    }
-
-    df.withColumn(getPredictionCol, toVector(col(getFeaturesCol)))
-  }
-
-  override def transformSchema(schema: StructType): StructType = {
-    schema.add(getPredictionCol, VectorType)
-  }
-
-  override def copy(extra: ParamMap): Array2Vector = {
-    val array = new Array2Vector()
-    copyValues(array, extra)
-  }
-}
 
 object Utils {
 
-  case class LocalParams(caffeDefPath: String = " ",
-                         modelPath: String = " ",
-                         folder: String = " ",
+  case class LocalParams(caffeDefPath: String = "/Users/guoqiong/intelWork/git/caffe/models/bvlc_googlenet/deploy.prototxt",
+                         modelPath: String = "/Users/guoqiong/intelWork/projects/dlFrames/model/caffe/bvlc_googlenet.caffemodel",
+                         folder: String = "/Users/guoqiong/intelWork/projects/dlFrames/data/kaggle/train_100",
                          batchSize: Int = 16,
                          nEpochs: Int = 10
                         )
