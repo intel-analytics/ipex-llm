@@ -11,22 +11,22 @@
             .withColumnRenamed("features", "imageFeatures") 
           val Array(validationDF, trainingDF) = imagesDF.randomSplit(Array(0.90, 0.10), seed = 1L)
     
-          val criterion = ClassNLLCriterion[Float]()    
           val loadedModel: AbstractModule[Activity, Activity, Float] = Module
             .loadCaffeModel[Float](params.caffeDefPath, params.modelPath)    
           val featurizer = new DLModel[Float](loadedModel, Array(3, 224, 224))
             .setFeaturesCol("imageFeatures")
             .setPredictionCol("tmp1")    
-          val schemaTransformer = new Array2Vector()
-            .setFeaturesCol("tmp1")
-            .setPredictionCol("features") 
-          val lr = new LogisticRegression()
-            .setFeaturesCol("features")
+          
+          val lrModel = Sequential().add(Linear(1000, 2)).add(LogSoftMax())
+          val classifier = new DLClassifier(lrModel, ClassNLLCriterion[Float](), Array(1000))
+            .setLearningRate(0.003).setBatchSize(params.batchSize)
+            .setMaxEpoch(20)
     
           val pipeline = new Pipeline().setStages(
-            Array(featurizer, schemaTransformer, lr))   
-          val pipelineModel = pipeline.fit(trainingDF) 
-          val predictions = pipelineModel.transform(trainingDF)
+            Array(featurizer, classifier))
+    
+          val pipelineModel = pipeline.fit(trainingDF)    
+          val predictions = pipelineModel.transform(validationDF)
          
    2. You can run the full ImageTransferLearning example by following steps.
         

@@ -36,7 +36,6 @@ object ImageInference {
     Utils.parser.parse(args, defaultParams).map { params =>
 
       val conf = Engine.createSparkConf().setAppName("ModelInference")
-        .setMaster("local[4]")
       val sc = SparkContext.getOrCreate(conf)
       val sqlContext = new SQLContext(sc)
       Engine.init
@@ -63,19 +62,12 @@ object ImageInference {
 
 object Utils {
 
-  case class LocalParams(caffeDefPath: String = "/Users/guoqiong/intelWork/git/caffe/models/bvlc_googlenet/deploy.prototxt",
-                         modelPath: String = "/Users/guoqiong/intelWork/projects/dlFrames/model/caffe/bvlc_googlenet.caffemodel",
-                         folder: String = "/Users/guoqiong/intelWork/projects/dlFrames/data/ILSVRC2012_img_val_20/",
+  case class LocalParams(caffeDefPath: String = " ",
+                         modelPath: String = " ",
+                         folder: String = " ",
                          batchSize: Int = 16,
                          nEpochs: Int = 10
                         )
-
-  //  case class LocalParams(caffeDefPath: String = " ",
-  //                         modelPath: String = " ",
-  //                         folder: String = " ",
-  //                         batchSize: Int = 16,
-  //                         nEpochs: Int = 10
-  //                        )
 
   val defaultParams = LocalParams()
 

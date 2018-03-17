@@ -51,13 +51,11 @@ object ImageTransferLearning {
         .withColumnRenamed("features", "imageFeatures")
         .drop("features")
 
-      //      imagesDF.printSchema()
-      //      imagesDF.show(5)
-
       val Array(validationDF, trainingDF) = imagesDF.randomSplit(Array(0.20, 0.80), seed = 1L)
 
       validationDF.persist()
       trainingDF.persist()
+
       val loadedModel = Module
         .loadCaffeModel[Float](params.caffeDefPath, params.modelPath)
 
@@ -66,48 +64,28 @@ object ImageTransferLearning {
         .setFeaturesCol("imageFeatures")
         .setPredictionCol("features")
 
-      val criterion = ClassNLLCriterion[Float]()
-
       val lrModel = Sequential().add(Linear(1000, 2)).add(LogSoftMax())
 
-      val classifier = new DLClassifier(lrModel, criterion, Array(1000))
+      val classifier = new DLClassifier(lrModel, ClassNLLCriterion[Float](), Array(1000))
         .setLearningRate(0.003).setBatchSize(params.batchSize)
         .setMaxEpoch(20)
-
-      val Array(validationDFManual, trainingDFManual) = featurizer.transform(imagesDF)
-        .randomSplit(Array(0.20, 0.80), seed = 1L)
-
-      validationDFManual.persist()
-      trainingDFManual.persist()
-      val catdogModel = classifier.fit(trainingDFManual)
-
-      // val count = validationDFManual.count().toInt
-
-      val predictionDF = catdogModel.transform(validationDFManual).cache()
-
-      predictionDF.show()
-      validationDFManual.unpersist()
-      trainingDFManual.unpersist()
 
       val pipeline = new Pipeline().setStages(
         Array(featurizer, classifier))
 
       val pipelineModel = pipeline.fit(trainingDF)
+      trainingDF.unpersist()
 
       val predictions = pipelineModel.transform(validationDF)
 
       predictions.show(200)
       predictions.printSchema()
-      validationDF.unpersist()
-      trainingDF.unpersist()
-      val evaluationManual = new MulticlassClassificationEvaluator().setPredictionCol("prediction")
-        .setMetricName("weightedPrecision").evaluate(predictionDF)
-      println("evaluation result on validationDF: " + evaluationManual)
 
       val evaluation = new MulticlassClassificationEvaluator().setPredictionCol("prediction")
         .setMetricName("weightedPrecision").evaluate(predictions)
       println("evaluation result on validationDF: " + evaluation)
 
+      validationDF.unpersist()
     }
   }
 
