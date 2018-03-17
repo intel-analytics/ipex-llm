@@ -32,7 +32,6 @@ import scopt.OptionParser
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
 import org.apache.spark.SparkContext
 
-
 object ImageTransferLearning {
 
   def main(args: Array[String]): Unit = {
@@ -41,10 +40,7 @@ object ImageTransferLearning {
 
     Utils.parser.parse(args, defaultParams).map { params =>
 
-
       val conf = Engine.createSparkConf().setAppName("TransferLearning")
-        .setMaster("local[4]")
-
       val sc = SparkContext.getOrCreate(conf)
       val sqlContext = new SQLContext(sc)
       Engine.init
@@ -55,12 +51,14 @@ object ImageTransferLearning {
         .withColumnRenamed("features", "imageFeatures")
         .drop("features")
 
-      imagesDF.printSchema()
-      imagesDF.show(5)
+      //      imagesDF.printSchema()
+      //      imagesDF.show(5)
 
-      val Array(validationDF, trainingDF) = imagesDF.randomSplit(Array(0.10, 0.90), seed = 1L)
+      val Array(validationDF, trainingDF) = imagesDF.randomSplit(Array(0.20, 0.80), seed = 1L)
 
-      val loadedModel: AbstractModule[Activity, Activity, Float] = Module
+      validationDF.persist()
+      trainingDF.persist()
+      val loadedModel = Module
         .loadCaffeModel[Float](params.caffeDefPath, params.modelPath)
 
       val featurizer = new DLModel[Float](loadedModel, Array(3, 224, 224))
@@ -76,17 +74,21 @@ object ImageTransferLearning {
         .setLearningRate(0.003).setBatchSize(params.batchSize)
         .setMaxEpoch(20)
 
-       val Array(validationDFManual, trainingDFManual) = featurizer.transform(imagesDF)
-              .randomSplit(Array(0.10, 0.90), seed = 1L)
+      val Array(validationDFManual, trainingDFManual) = featurizer.transform(imagesDF)
+        .randomSplit(Array(0.20, 0.80), seed = 1L)
 
-       val catdogModel = classifier.fit(trainingDFManual)
+      validationDFManual.persist()
+      trainingDFManual.persist()
+      val catdogModel = classifier.fit(trainingDFManual)
 
-       val count = validationDFManual.count().toInt
+      // val count = validationDFManual.count().toInt
 
-       val predictionDF = catdogModel.transform(validationDFManual).cache()
+      val predictionDF = catdogModel.transform(validationDFManual).cache()
 
-       predictionDF.show()
-      
+      predictionDF.show()
+      validationDFManual.unpersist()
+      trainingDFManual.unpersist()
+
       val pipeline = new Pipeline().setStages(
         Array(featurizer, classifier))
 
@@ -96,9 +98,14 @@ object ImageTransferLearning {
 
       predictions.show(200)
       predictions.printSchema()
+      validationDF.unpersist()
+      trainingDF.unpersist()
+      val evaluationManual = new MulticlassClassificationEvaluator().setPredictionCol("prediction")
+        .setMetricName("weightedPrecision").evaluate(predictionDF)
+      println("evaluation result on validationDF: " + evaluationManual)
 
       val evaluation = new MulticlassClassificationEvaluator().setPredictionCol("prediction")
-        .setMetricName("accuracy").evaluate(predictions)
+        .setMetricName("weightedPrecision").evaluate(predictions)
       println("evaluation result on validationDF: " + evaluation)
 
     }
