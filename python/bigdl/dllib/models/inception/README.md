@@ -2,14 +2,14 @@
 This example demonstrates how to use BigDL to train [Inception v1](https://arxiv.org/abs/1409.4842) architecture on the [ImageNet](http://image-net.org/index) data.
 ## Get the JAR
 You can build one by refer to the
-[Build Page](https://github.com/intel-analytics/BigDL/wiki/Build-Page) from the source code. We
+[Build Page](https://bigdl-project.github.io/master/#ScalaUserGuide/install-build-src/) from the source code. We
 will release a pre-build package soon.
 
 ## Prepare the data
 You can download imagenet-2012 data from <http://image-net.org/download-images>.
  
 After you download the files(**ILSVRC2012_img_train.tar** and **ILSVRC2012_img_val.tar**), 
-run the follow commands to prepare the data.
+run the following commands to prepare the data.
 
 ```bash
 mkdir train
@@ -29,13 +29,13 @@ cat img_class.lst | while read PARAM; do mv ${PARAM/ n[0-9]*/} ${PARAM/ILSVRC*JP
 rm ILSVRC2012_img_val.tar
 ```
 
-Now all the images belong to the same category are moved to the same folder.
+Now all the images belonging to the same category are moved to the same folder.
 
 This command will transform the images into hadoop sequence files, which are 
 more suitable for a distributed training.
 
 ```bash
-java -cp bigdl_folder/lib/bigdl-VERSION-jar-with-dependencies-and-spark.jar com.intel.analytics.bigdl.models.utils.ImageNetSeqFileGenerator -r -f imagenet_folder -o output_folder -p cores_number
+java -cp bigdl_source_folder/spark/dl/target/bigdl-VERSION-jar-with-dependencies-and-spark.jar com.intel.analytics.bigdl.models.utils.ImageNetSeqFileGenerator -f imagenet_folder -o output_folder -p cores_number
 ```
 
 It will generate the hadoop sequence files in the output folder.
@@ -58,7 +58,7 @@ ${SPARK_HOME}/bin/spark-submit \
 --properties-file ${BigDL_HOME}/dist/conf/spark-bigdl.conf \
 --jars ${BigDL_JAR_PATH} \
 --py-files ${PYTHON_API_PATH} \
-${BigDL_HOME}/pyspark/dl/models/inception/inception.py \
+${BigDL_HOME}/pyspark/bigdl/models/inception/inception.py \
 -f hdfs://... \
 --batchSize 1792 \
 --learningRate 0.0898 \
@@ -87,7 +87,7 @@ ${SPARK_HOME}/bin/spark-submit \
 --conf spark.driver.extraClassPath=${BigDL_JAR_PATH} \
 --conf spark.executor.extraClassPath=bigdl-VERSION-jar-with-dependencies.jar \
 --py-files ${PYTHON_API_PATH} \
-${BigDL_HOME}/pyspark/dl/models/inception/inception.py \
+${BigDL_HOME}/pyspark/bigdl/models/inception/inception.py \
 -f hdfs://... \
 --batchSize 1792 \
 --learningRate 0.0898 \
@@ -102,8 +102,8 @@ In the above commands
 * -f: where you put your ImageNet data, it should be a hdfs folder
 * --checkpoint: Where you cache the model/train_state snapshot. You should input a folder and
 make sure the folder is created when you run this example. The model snapshot will be named as
-model.#iteration_number, and train state will be named as state.#iteration_number. Note that if
-there are some files already exist in the folder, the old file will not be overwrite for the
+model.#iteration_number, and train state will be named as optimMethod.#iteration_number. Note that if
+there are some files already exist in the folder, the old file will not be overwritten for the
 safety of your model files.
 * --batchSize: The mini-batch size. It is expected that the mini-batch size is a multiple of node_number *
 core_number. In this example, node_number is 1 and the mini-batch size is suggested to be set to core_number * 4
