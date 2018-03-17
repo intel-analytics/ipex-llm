@@ -288,11 +288,12 @@ if __name__ == "__main__":
 
     # build model
     if options.model != "":
+        # load model snapshot
         inception_model = Model.load(options.model)
     else:
         inception_model = inception_v1_no_aux_classifier(options.classNum)
 
-    # load state
+    # set optimization method
     iterationPerEpoch = int(ceil(float(1281167) / options.batchSize))
     if options.maxEpoch:
         maxIteration = iterationPerEpoch * options.maxEpoch
@@ -300,6 +301,7 @@ if __name__ == "__main__":
         maxIteration = options.maxIteration
     warmup_iteration = options.warmupEpoch * iterationPerEpoch
     if options.state != "":
+        # load state snapshot
         optim = OptimMethod.load(options.state)
     else:
         if warmup_iteration == 0:
@@ -318,6 +320,7 @@ if __name__ == "__main__":
                     momentum=0.9, dampening=0.0, nesterov=False,
                     leaningrate_schedule=lrSchedule)
 
+    # create triggers
     if options.maxEpoch:
         checkpoint_trigger = EveryEpoch()
         test_trigger = EveryEpoch()
