@@ -50,7 +50,6 @@ object ImageNet2012 {
   : DataSet[MiniBatch[Float]] = {
     val imageFrame = DataSet.SeqFileFolder.filesToImageFrame(path, sc, 1000)
     val transfomer = PixelBytesToMat() ->
-      Resize(256, 256) ->
       RandomCrop(imageSize, imageSize) ->
       RandomTransformer(HFlip(), 0.5) ->
       ChannelNormalize(0.485f, 0.456f, 0.406f, 0.229f, 0.224f, 0.225f) ->
@@ -87,7 +86,6 @@ object ImageNet2012Val {
   : DataSet[MiniBatch[Float]] = {
     val imageFrame = DataSet.SeqFileFolder.filesToImageFrame(path, sc, 1000)
     val transfomer = PixelBytesToMat() ->
-      Resize(256, 256) ->
       CenterCrop(imageSize, imageSize) ->
       RandomTransformer(HFlip(), 0.5) ->
       ChannelNormalize(0.485f, 0.456f, 0.406f, 0.229f, 0.224f, 0.225f) ->
