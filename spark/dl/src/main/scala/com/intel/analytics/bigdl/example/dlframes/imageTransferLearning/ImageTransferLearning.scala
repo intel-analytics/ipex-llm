@@ -94,9 +94,9 @@ object ImageTransferLearning {
 
 object Utils {
 
-  case class LocalParams(caffeDefPath: String = "/Users/guoqiong/intelWork/git/caffe/models/bvlc_googlenet/deploy.prototxt",
-                         modelPath: String = "/Users/guoqiong/intelWork/projects/dlFrames/model/caffe/bvlc_googlenet.caffemodel",
-                         folder: String = "/Users/guoqiong/intelWork/projects/dlFrames/data/kaggle/train_100",
+  case class LocalParams(caffeDefPath: String = " ",
+                         modelPath: String = " ",
+                         folder: String = " ",
                          batchSize: Int = 16,
                          nEpochs: Int = 10
                         )
