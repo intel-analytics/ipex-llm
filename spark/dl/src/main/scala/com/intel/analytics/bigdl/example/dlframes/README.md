@@ -21,7 +21,7 @@ Learn more about Spark ML please refer to <http://spark.apache.org/docs/latest/a
 To start with this example, you need prepare your dataset.
 
 
-1. Prepare  dataset
+1. Prepare dataset
 
 You can download the MNIST Data from [here](http://yann.lecun.com/exdb/mnist/). Unzip all the
 files and put them in one folder(e.g. mnist).
@@ -41,7 +41,7 @@ Command to run the example in Spark local mode:
 ```
 spark-submit \
 --master local[physcial_core_number] \
---class com.intel.analytics.bigdl.example.MLPipeline.DLClassifierLeNet \
+--class com.intel.analytics.bigdl.example.dlframes.DLClassifierLeNet \
 ./dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
 -f path_to_mnist_folder \
 -b batch_size
@@ -53,7 +53,7 @@ spark-submit \
 --executor-cores cores_per_executor \
 --total-executor-cores total_cores_for_the_job \
 --driver-class-path dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
---class com.intel.analytics.bigdl.example.MLPipeline.DLClassifierLeNet  \
+--class com.intel.analytics.bigdl.example.dlframes.DLClassifierLeNet  \
 dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
 -f path_to_mnist_folder \
 -b batch_size
@@ -65,7 +65,7 @@ Command to run the example in Spark yarn mode:
 --executor-cores cores_per_executor \
 --num-executors executors_number \
 --driver-class-path dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
---class com.intel.analytics.bigdl.example.MLPipeline.DLClassifierLeNet  \
+--class com.intel.analytics.bigdl.example.dlframes.DLClassifierLeNet  \
 dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
 -f path_to_mnist_folder \
 -b batch_size

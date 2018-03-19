@@ -23,7 +23,7 @@ BigDL ships plenty of Scala examples to show how to use BigDL to solve real prob
     and then applies the loaded model to classify the contents of a set of images in Spark ML pipeline.
    * [Load Model](https://github.com/intel-analytics/BigDL/tree/master/spark/dl/src/main/scala/com/intel/analytics/bigdl/example/loadmodel):
     it demonstrates how to use BigDL to load a pre-trained [Torch](http://torch.ch/) or [Caffe](http://caffe.berkeleyvision.org/) model into Spark program for prediction.
-   * [ML Pipline](https://github.com/intel-analytics/BigDL/tree/master/spark/dl/src/main/scala/com/intel/analytics/bigdl/example/MLPipeline):
+   * [DLFrames](https://github.com/intel-analytics/BigDL/tree/master/spark/dl/src/main/scala/com/intel/analytics/bigdl/example/dlframes):
     it demonstrates how to use BigDL DLClassifier to train a Logistic Regression Model. DLClassifier extends Spark Estimator and can act as a stage in a ML Pipeline.
    * [TreeLSTM Sentiment](https://github.com/intel-analytics/BigDL/tree/master/spark/dl/src/main/scala/com/intel/analytics/bigdl/example/treeLSTMSentiment):
     it demonstrates how to use BigDL train a model on [Stanford Treebank dataset](https://nlp.stanford.edu/sentiment/index.html) dataset using binary TreeLSTM and [Glove](https://nlp.stanford.edu/projects/glove/)

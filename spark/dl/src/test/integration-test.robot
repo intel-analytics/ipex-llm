@@ -86,7 +86,7 @@ Run Spark Test
    Log To Console                   begin resnet Train
    Run Shell                        ${submit} --master ${spark_master} --conf "spark.serializer=org.apache.spark.serializer.JavaSerializer" --driver-memory 5g --executor-memory 5g --executor-cores 8 --total-executor-cores 32 --class com.intel.analytics.bigdl.models.resnet.Train ${jar_path} -f ./cifar --batchSize 448 --optnet true --depth 20 --classes 10 --shortcutType A --nEpochs 1 --learningRate 0.1
    Log To Console                   begin DLClassifierLeNet
-   Run Shell                        ${submit} --master ${spark_master} --executor-cores 24 --total-executor-cores 24 --driver-memory 60g --executor-memory 200g --class com.intel.analytics.bigdl.example.MLPipeline.DLClassifierLeNet ${jar_path} -b 1200 -f ./mnist --maxEpoch 1
+   Run Shell                        ${submit} --master ${spark_master} --executor-cores 24 --total-executor-cores 24 --driver-memory 60g --executor-memory 200g --class com.intel.analytics.bigdl.example.dlframes.DLClassifierLeNet ${jar_path} -b 1200 -f ./mnist --maxEpoch 1
    Log To Console                   begin rnn Train
    Run Shell                        ${submit} --master ${spark_master} --driver-memory 5g --executor-memory 5g --executor-cores 12 --total-executor-cores 12 --class com.intel.analytics.bigdl.models.rnn.Train ${jar_path} -f ./ -s ./models --nEpochs 1 --checkpoint ./model/ -b 12
    Log To Console                   begin inceptionV1 train

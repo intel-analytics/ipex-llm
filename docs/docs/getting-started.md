@@ -28,8 +28,8 @@ BigDL supports loading models trained and saved in BigDL, or a trained Tensorflo
 
 Refer to [Model Predict](APIGuide/Module/#model-prediction) for details about how to use a model for prediction.
 
-If you are using the trained model as a component inside a Spark ML pipeline, refer to
-[Using BigDL in Spark ML Pipeline](ProgrammingGuide/MLPipeline.md) page for usage. 
+If you are using the trained model based on DataFrame or in a Spark ML pipeline, refer to
+[Using BigDL in Spark ML Pipeline](ProgrammingGuide/DLFrames.md) page for usage. 
 
 ---
 
@@ -56,7 +56,7 @@ Model Evaluation can be performed periodically during a training. Refer to [Vali
 
 When `Optimizer.optimize` finishes, it will return a trained model. You can then use the trained model for prediction or evaluation. Refer to [Model Prediction](APIGuide/Module.md#model-prediction) and [Model Evaluation](APIGuide/Module.md#model-evaluation) for detailed usage.    
 
-If you prefer to train a model inside a Spark ML pipeline, please refer to  [Using BigDL in Spark ML Pipeline](ProgrammingGuide/MLPipeline.md) page for usage.
+If you prefer to train a model based on Spark DataFrame or in a Spark ML pipeline, please refer to  [BigDL DLFrames](ProgrammingGuide/DLFrames.md) page for usage.
 
 ---
 

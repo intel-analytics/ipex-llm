@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.bigdl.example.MLPipeline
+package com.intel.analytics.bigdl.example.dlframes
 
 import com.intel.analytics.bigdl.dlframes.DLClassifier
 import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, Linear, LogSoftMax, Sequential}

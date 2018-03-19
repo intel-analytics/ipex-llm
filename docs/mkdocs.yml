@@ -39,7 +39,7 @@ pages:
     - Using Sequential API: ProgrammingGuide/Model/Sequential.md
     - Using Functional API: ProgrammingGuide/Model/Functional.md
   - Optimization: ProgrammingGuide/optimization.md
-  - Use Spark ML: ProgrammingGuide/MLPipeline.md
+  - Use Spark ML: ProgrammingGuide/DLFrames.md
   - Visualization: ProgrammingGuide/visualization.md
   - Run on Amazon EC2: ProgrammingGuide/run-on-ec2.md
   - Run on Google Cloud Dataproc: ProgrammingGuide/run-on-dataproc.md
