@@ -63,10 +63,10 @@ object LeNet5 {
     model.add(Convolution2D(6, 5, 5, activation = "tanh").setName("conv1_5x5"))
     model.add(MaxPooling2D())
     model.add(Activation("tanh"))
-    model.add(Convolution2D(12, 5, 5, activation = "tanh").setName("conv2_5x5"))
+    model.add(Convolution2D(12, 5, 5).setName("conv2_5x5"))
     model.add(MaxPooling2D())
     model.add(Reshape(Array(12 * 4 * 4)))
-    model.add(Dense(100, activation = "tanh"))
-    model.add(Dense(classNum, activation = "softmax"))
+    model.add(Dense(100, activation = "tanh").setName("fc1"))
+    model.add(Dense(classNum, activation = "softmax").setName("fc2"))
   }
 }
