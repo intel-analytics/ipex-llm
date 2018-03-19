@@ -31,4 +31,19 @@ object SimpleRNN {
       .add(TimeDistributed[Float](Linear[Float](hiddenSize, outputSize)))
     model
   }
+
+  def keras(
+  inputSize: Int,
+  hiddenSize: Int,
+  outputSize: Int): com.intel.analytics.bigdl.nn.keras.Sequential[Float] = {
+    import com.intel.analytics.bigdl.nn.keras._
+    import com.intel.analytics.bigdl.nn.keras.{SimpleRNN => RNN}
+    import com.intel.analytics.bigdl.utils.Shape
+
+    val model = Sequential[Float]()
+    model.add(RNN(hiddenSize, returnSequences = true, bias = true,
+      inputShape = Shape(25, inputSize)))
+    model.add(TimeDistributed(Dense(outputSize)))
+    model
+  }
 }

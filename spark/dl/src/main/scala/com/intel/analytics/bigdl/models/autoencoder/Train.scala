@@ -70,7 +70,14 @@ object Train {
       val model = if (param.modelSnapshot.isDefined) {
         Module.load[Float](param.modelSnapshot.get)
       } else {
-        if (param.graphModel) Autoencoder.graph(classNum = 32) else Autoencoder(classNum = 32)
+        if (param.kerasModel) {
+          println("Using Keras-Style API for model definition")
+          if (param.graphModel) Autoencoder.kerasGraph(classNum = 32)
+          else Autoencoder.keras(classNum = 32)
+        }
+        else {
+          if (param.graphModel) Autoencoder.graph(classNum = 32) else Autoencoder(classNum = 32)
+        }
       }
 
       val optimMethod = if (param.stateSnapshot.isDefined) {

@@ -43,4 +43,26 @@ object Autoencoder {
     val output = Sigmoid().inputs(linear2)
     Graph(input, output)
   }
+
+  def keras(classNum: Int): nn.keras.Sequential[Float] = {
+    import com.intel.analytics.bigdl.nn.keras._
+    import com.intel.analytics.bigdl.utils.Shape
+
+    val model = Sequential[Float]()
+    model.add(Reshape(Array(featureSize), inputShape = Shape(28, 28)))
+    model.add(Dense(classNum, activation = "relu"))
+    model.add(Dense(featureSize, activation = "sigmoid"))
+    model
+  }
+
+  def kerasGraph(classNum: Int): nn.keras.Model[Float] = {
+    import com.intel.analytics.bigdl.nn.keras._
+    import com.intel.analytics.bigdl.utils.Shape
+
+    val input = Input(inputShape = Shape(28, 28))
+    val reshape = Reshape(Array(featureSize)).inputs(input)
+    val dense1 = Dense(classNum, activation = "relu").inputs(reshape)
+    val output = Dense(featureSize, activation = "sigmoid").inputs(dense1)
+    Model[Float](input, output)
+  }
 }

@@ -93,10 +93,19 @@ object Train {
       val model = if (param.modelSnapshot.isDefined) {
         Module.load[Float](param.modelSnapshot.get)
       } else {
-        val curModel = SimpleRNN(
-          inputSize = totalVocabLength,
-          hiddenSize = param.hiddenSize,
-          outputSize = totalVocabLength)
+        val curModel = if (param.kerasModel) {
+          println("Using Keras-Style API for model definition")
+          SimpleRNN.keras(
+            inputSize = totalVocabLength,
+            hiddenSize = param.hiddenSize,
+            outputSize = totalVocabLength)
+        }
+        else {
+          SimpleRNN(
+            inputSize = totalVocabLength,
+            hiddenSize = param.hiddenSize,
+            outputSize = totalVocabLength)
+        }
         curModel.reset()
         curModel
       }

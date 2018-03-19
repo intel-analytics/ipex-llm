@@ -236,9 +236,10 @@ class PythonBigDLKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends Pytho
     wRegularizer: Regularizer[T] = null,
     uRegularizer: Regularizer[T] = null,
     bRegularizer: Regularizer[T] = null,
+    bias: Boolean = false,
     inputShape: JList[Int] = null): SimpleRNN[T] = {
     SimpleRNN(outputDim, activation, returnSequences, goBackwards,
-      wRegularizer, uRegularizer, bRegularizer, toScalaShape(inputShape))
+      wRegularizer, uRegularizer, bRegularizer, bias, toScalaShape(inputShape))
   }
 
   def createKerasLSTM(

@@ -14,7 +14,9 @@
  * limitations under the License.
  */
 package com.intel.analytics.bigdl.keras
+import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractCriterion, AbstractModule}
+import com.intel.analytics.bigdl.nn.keras.KerasModel
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
 import com.intel.analytics.bigdl.utils.BigDLSpecHelper
@@ -77,6 +79,20 @@ abstract class KerasBaseSpec extends BigDLSpecHelper {
     val kgradInput = gradInput.div(output.nElement())  // div is an in-place operation.
     val bgradInput = bmodel.backward(input, target.clone())
     bgradInput.almostEqual(kgradInput, precision) should be(true)
+  }
+
+  // compare the output and gradInput of Keras-Style API against Torch-Style API
+  def compareKerasTorchModels(kmodel: KerasModel[Float],
+                              tmodel: Module[Float],
+                              input: Tensor[Float],
+                              precision: Double = 1e-5): Unit = {
+    kmodel.setWeightsBias(tmodel.getWeightsBias())
+    val koutput = kmodel.forward(input)
+    val toutput = tmodel.forward(input)
+    val kgradInput = kmodel.backward(input, koutput)
+    val tgradInput = tmodel.backward(input, toutput)
+    koutput.toTensor[Float].almostEqual(toutput.toTensor[Float], precision) should be(true)
+    kgradInput.toTensor[Float].almostEqual(tgradInput.toTensor[Float], precision) should be(true)
   }
 }
 

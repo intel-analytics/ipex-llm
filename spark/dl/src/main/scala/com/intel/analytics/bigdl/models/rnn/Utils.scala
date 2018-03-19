@@ -51,7 +51,8 @@ object Utils {
                           nEpochs: Int = 30,
                           sentFile: Option[String] = None,
                           tokenFile: Option[String] = None,
-                          overWriteCheckpoint: Boolean = false)
+                          overWriteCheckpoint: Boolean = false,
+                          kerasModel: Boolean = false)
 
   val trainParser = new OptionParser[TrainParams]("BigDL SimpleRNN Train Example") {
     opt[String]('f', "dataFolder")
@@ -123,6 +124,10 @@ object Utils {
     opt[Unit]("overWrite")
       .text("overwrite checkpoint files")
       .action( (_, c) => c.copy(overWriteCheckpoint = true) )
+
+    opt[Unit]('k', "kerasModel")
+      .text("use Keras-Style API for model definition")
+      .action((x, c) => c.copy(kerasModel = true))
   }
 
   case class TestParams(
