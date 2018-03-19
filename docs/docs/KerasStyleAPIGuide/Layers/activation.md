@@ -44,7 +44,8 @@ output: com.intel.analytics.bigdl.nn.abstractnn.Activity =
 **Python example:**
 ```python
 import numpy as np
-from bigdl.nn.keras.layer import Sequential, Activation
+from bigdl.nn.keras.topology import Sequential
+from bigdl.nn.keras.layer import Activation
 
 model = Sequential()
 model.add(Activation("tanh", input_shape=(3, )))

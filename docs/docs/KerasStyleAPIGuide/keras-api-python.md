@@ -81,7 +81,7 @@ merge(inputs, mode="sum", concat_axis=-1) # This will return an output NODE.
 Parameters:
 
 * `inputs`: A list of node instances. Must be more than one node.
-* `mode`: Merge mode. String, must be one of: 'sum', 'mul', 'concat', 'ave', 'cos','dot', 'max'. Default is 'sum'.
+* `mode`: Merge mode. String, must be one of: 'sum', 'mul', 'concat', 'ave', 'cos', 'dot', 'max'. Default is 'sum'.
 * `concat_axis`: Int, axis to use when concatenating nodes. Only specify this when merge mode is 'concat'. Default is -1, meaning the last axis of the input.
 
 Example code to create a graph model:

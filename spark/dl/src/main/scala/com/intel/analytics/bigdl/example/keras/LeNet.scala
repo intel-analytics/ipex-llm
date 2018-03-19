@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl.nn.keras._
 import com.intel.analytics.bigdl.utils.Shape
 
 object LeNet {
-  def apply(): Sequential[Float] = {
+  def apply(classNum: Int): Sequential[Float] = {
     val model = Sequential[Float]()
     model.add(Reshape(Array(1, 28, 28), inputShape = Shape(28, 28, 1)))
     model.add(Convolution2D(32, 3, 3, activation = "relu"))
@@ -30,7 +30,7 @@ object LeNet {
     model.add(Flatten())
     model.add(Dense(128, activation = "relu"))
     model.add(Dropout(0.5))
-    model.add(Dense(10, activation = "softmax"))
+    model.add(Dense(classNum, activation = "softmax"))
     model
   }
 }
