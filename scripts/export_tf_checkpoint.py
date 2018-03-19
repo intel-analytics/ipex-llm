@@ -15,6 +15,10 @@
 #
 
 #
+# This script can export tensorflow graph and variables from tensorflow checkpoint files or
+# tf.saved_model API saved folder. The graph file is named as model.pb, which is protobuf format.
+# Varibales file is named as model.bin, which is loadable by BigDL.
+#
 # How to run this script:
 # python export_tf_checkpoint.py checkpoint_name
 # python export_tf_checkpoint.py saver_folder
