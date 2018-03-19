@@ -37,6 +37,16 @@ class InputSpec extends BigDLSpecHelper {
 
     // No exception should be threw in the above code
   }
+
+  "Duplicate input layer" should "throw exception" in {
+    val i = InputLayer(Shape(4))
+    val seq = Sequential()
+    seq.add(i)
+
+    intercept[IllegalArgumentException] {
+      seq.add(i)
+    }
+  }
 }
 
 class InputSerialTest extends ModuleSerializationTest {
