@@ -18,7 +18,6 @@ package com.intel.analytics.bigdl.nn.abstractnn
 
 import com.intel.analytics.bigdl.nn.keras.{Input => KInput, Sequential => KSequential}
 import com.intel.analytics.bigdl.nn.{Input => TInput}
-import com.intel.analytics.bigdl.transform.vision.image.util.BboxUtil.getClass
 import com.intel.analytics.bigdl.utils.Shape
 import org.apache.log4j.Logger
 
@@ -49,7 +48,7 @@ trait InferShape {
   // scalastyle:on
 
   /**
-   * We suppose the first dim is batch
+   * Return the inputShape for the current Layer and the first dim is batch.
    */
   final def getInputShape(): Shape = {
     if (! this.isKerasStyle()) {
@@ -59,7 +58,7 @@ trait InferShape {
   }
 
   /**
-   * We suppose the first dim is batch
+   * Return the outputShape for the current Layer and the first dim is batch.
    */
   final def getOutputShape(): Shape = {
     if (! this.isKerasStyle()) {
