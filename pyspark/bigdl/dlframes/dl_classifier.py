@@ -1,4 +1,19 @@
-from pyspark.ml.pipeline import Estimator, Model
+#
+# Copyright 2016 The BigDL Authors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
 from pyspark.ml.param.shared import *
 from pyspark.ml.wrapper import JavaModel, JavaEstimator, JavaTransformer
 from bigdl.util.common import *
@@ -89,7 +104,10 @@ class DLEstimator(JavaEstimator, HasFeaturesCol, HasLabelCol, HasPredictionCol, 
         self.featureSize = feature_size
 
     def _create_model(self, java_model):
-        return DLModel.of(java_model, self.featureSize, self.bigdl_type).setFeaturesCol(self.getFeaturesCol())
+        dlModel = DLModel.of(java_model, self.featureSize, self.bigdl_type)
+        dlModel.setFeaturesCol(self.getFeaturesCol()).setPredictionCol(self.getPredictionCol()) \
+            .setBatchSize(self.getBatchSize())
+        return dlModel
 
 class DLModel(JavaTransformer, HasFeaturesCol, HasPredictionCol, HasBatchSize, JavaValue):
     def __init__(self,  model, featureSize, jvalue=None, bigdl_type="float"):
@@ -100,19 +118,15 @@ class DLModel(JavaTransformer, HasFeaturesCol, HasPredictionCol, HasBatchSize, J
         self.bigdl_type = bigdl_type
         self.setFeatureSize(featureSize)
 
-    def transform(self, dataset):
-        self._transfer_params_to_java()
-        return callBigDlFunc(self.bigdl_type, "dlModelTransform", self.value, dataset)
-
     @classmethod
     def of(self, jvalue, feature_size=None, bigdl_type="float"):
         model = DLModel(model=None, featureSize=feature_size, jvalue=jvalue, bigdl_type=bigdl_type)
         return model
 
     def setFeatureSize(self, val):
-        pythonBigDL_mehtod_name = "setFeatureSize" + self.__class__.__name__
+        pythonBigDL_method_name = "setFeatureSize" + self.__class__.__name__
         self.__featuresize = val
-        callBigDlFunc(self.bigdl_type, pythonBigDL_mehtod_name, self.value, val)
+        callBigDlFunc(self.bigdl_type, pythonBigDL_method_name, self.value, val)
         return self
 
     def getFeatureSize(self):
@@ -123,18 +137,10 @@ class DLClassifier(DLEstimator):
     def __init__(self,  model, criterion, feature_size,  bigdl_type="float"):
         super(DLClassifier, self).__init__(model, criterion, feature_size, [1], None, bigdl_type)
 
-    def _fit(self, dataset):
-        jmodel = callBigDlFunc(self.bigdl_type, "fitClassifier", self.value, dataset)
-        model = DLClassifierModel.of(jmodel, self.featureSize, self.bigdl_type)
-        return model
-
 
 class DLClassifierModel(DLModel):
     def __init__(self,  model, featureSize, jvalue=None, bigdl_type="float"):
         super(DLClassifierModel, self).__init__(model, featureSize, jvalue, bigdl_type)
-
-    def _transform(self, dataset):
-        return callBigDlFunc(self.bigdl_type, "dlClassifierModelTransform", self.value, dataset)
 
     @classmethod
     def of(self, jvalue, feature_size=None, bigdl_type="float"):

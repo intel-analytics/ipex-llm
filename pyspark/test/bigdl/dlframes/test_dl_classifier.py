@@ -19,8 +19,8 @@ from bigdl.nn.criterion import *
 from bigdl.util.common import *
 from bigdl.dlframes.dl_classifier import *
 from pyspark.sql.types import *
-from pyspark.context import SparkContext
-import numpy as np
+from pyspark.ml import Pipeline
+from pyspark.ml.feature import MinMaxScaler
 import pytest
 from numpy.testing import assert_allclose
 
@@ -61,7 +61,7 @@ class TestDLClassifer():
         dl_model = DLClassifierModel(model=linear_model, featureSize=[1])
 
         assert dl_model.setFeatureSize([2]).getFeatureSize() == [2]
-        assert dl_model.setBatchSize((20)).getBatchSize() == 20
+        assert dl_model.setBatchSize(20).getBatchSize() == 20
 
         '''
         use linear model and ClassNLL criterion to test the DLClassifier and DLClassifierModel
@@ -98,6 +98,7 @@ class TestDLClassifer():
             StructField("label", ArrayType(DoubleType(), False), False)])
         df = self.sqlContext.createDataFrame(data, schema)
         dlModel = estimator.fit(df)
+        assert dlModel.getBatchSize() == 4
 
         res = dlModel.transform(df)
         assert type(res).__name__ == 'DataFrame'
@@ -117,8 +118,8 @@ class TestDLClassifer():
         model = Sequential().add(Linear(2, 2))
         criterion = MSECriterion()
         estimator = DLEstimator(model, criterion, [2], [2]).setBatchSize(4)\
-            .setLearningRate(0.01).setMaxEpoch(1000) \
-            .setFeaturesCol("abcd").setLabelCol("xyz")
+            .setLearningRate(0.01).setMaxEpoch(1) \
+            .setFeaturesCol("abcd").setLabelCol("xyz").setPredictionCol("tt")
 
         data = self.sc.parallelize([
             ((2.0, 1.0), (1.0, 2.0)),
@@ -134,6 +135,7 @@ class TestDLClassifer():
 
         res = dlModel.transform(df)
         assert type(res).__name__ == 'DataFrame'
+        assert res.select("abcd", "xyz", "tt").count() == 4
 
     def test_DLModel_transform_with_nonDefault_featureCol(self):
         model = Sequential().add(Linear(2, 2))
@@ -182,6 +184,31 @@ class TestDLClassifer():
             row_label = data[i][1]
             row_prediction = data[i][2]
             assert row_label == row_prediction
+
+    def test_dlclassifier_in_pipeline(self):
+        if self.sc.version.startswith("1"):
+            from pyspark.mllib.linalg import Vectors
+        else:
+            from pyspark.ml.linalg import Vectors
+
+        df = self.sqlContext.createDataFrame([(Vectors.dense([2.0, 1.0]), 1.0),
+                                              (Vectors.dense([1.0, 2.0]), 2.0),
+                                              (Vectors.dense([2.0, 1.0]), 1.0),
+                                              (Vectors.dense([1.0, 2.0]), 2.0),
+                                              ], ["features", "label"])
+
+        scaler = MinMaxScaler().setInputCol("features").setOutputCol("scaled")
+        model = Sequential().add(Linear(2, 2))
+        criterion = ClassNLLCriterion()
+        classifier = DLClassifier(model, criterion, [2]).setBatchSize(4) \
+            .setLearningRate(0.01).setMaxEpoch(10).setFeaturesCol("scaled")
+
+        pipeline = Pipeline(stages=[scaler, classifier])
+
+        pipelineModel = pipeline.fit(df)
+
+        res = pipelineModel.transform(df)
+        assert type(res).__name__ == 'DataFrame'
 
 if __name__ == "__main__":
     pytest.main()
