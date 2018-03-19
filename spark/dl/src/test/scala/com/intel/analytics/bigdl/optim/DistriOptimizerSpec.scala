@@ -674,6 +674,11 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
   }
 
   "Train with MSE and LarsSGD" should "be trained with good result in 1 iteration" in {
+    val _learningRate = 20.0
+    val _weightDecay = 0.1
+    val _momentum = 0.05
+    val _gwRation = 0.8
+
     val mm = mse
     mm.getParameters()._1.fill(0.125)
     val oriW = mm.parameters()._1
@@ -691,10 +696,6 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
     val wNorm2 = oriW.map(x => math.sqrt(x.sumSquare()))
 
-    val _learningRate = 20.0
-    val _weightDecay = 0.1
-    val _momentum = 0.05
-    val _gwRation = 0.8
     val optimizer = new DistriOptimizer[Double](mm, dataSet, new MSECriterion[Double]())
       .setEndWhen(Trigger.maxIteration(1))
       .setOptimMethod(new LarsSGD[Double](
@@ -785,9 +786,10 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val scale = math.sqrt(gradient.sumSquare()) / 0.03
     val expectedG = gradient.clone().div(scale)
 
-    mm.getParameters()._1.fill(0.125)
+    val mm2 = mse
+    mm2.getParameters()._1.fill(0.125)
     val optimizationMethod2 = new SGD[Double](learningRate = _learningRate)
-    val optimizer2 = new DistriOptimizer[Double](mm, dataSet, new MSECriterion[Double]())
+    val optimizer2 = new DistriOptimizer[Double](mm2, dataSet, new MSECriterion[Double]())
       .setEndWhen(Trigger.maxIteration(1))
       .setOptimMethod(optimizationMethod2)
       .setGradientClippingByl2Norm(0.03)

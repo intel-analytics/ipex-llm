@@ -84,7 +84,7 @@ private[bigdl] class AllReduceParameter[T: ClassTag](id: Long, partitionNum: Int
 
   @transient private var taskSize = 0
   @transient private var extraSize = 0
-  @transient private var partitionId: Int = 0
+  @transient var partitionId: Int = 0
 
   /** Tensor to hold a slice of the global weights. */
   @transient lazy val weightPartition: Tensor[T] = readWeightPartition()
@@ -218,7 +218,7 @@ private[bigdl] class AllReduceParameter[T: ClassTag](id: Long, partitionNum: Int
    * other nodes. A new thread is created for each separate node. The gradients are then summed
    * and then stored in decompressed form in `gradientPartition`.
    */
-  def aggregateGradientPartition(numbers: T): Unit = {
+  def aggregateGradientPartition(numbers: Int): Unit = {
     require(partitionId < partitionNum, s"This parameter was created with $partitionNum " +
       s"partitions. It cannot be used on RDDs with > $partitionNum partitions.")
     val params = new Array[CompressedTensor[T]](partitionNum)
@@ -259,7 +259,7 @@ private[bigdl] class AllReduceParameter[T: ClassTag](id: Long, partitionNum: Int
       }
     ).asJava)
     params.head.deCompress(gradientPartition)
-    gradientPartition.div(numbers)
+    gradientPartition.div(ev.fromType(numbers))
   }
 
   /**

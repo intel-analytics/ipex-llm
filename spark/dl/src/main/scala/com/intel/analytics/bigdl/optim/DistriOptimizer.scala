@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.optim
 import com.intel.analytics.bigdl.{Module, _}
 import com.intel.analytics.bigdl.dataset.{DataSet, DistributedDataSet, MiniBatch, PaddingParam, Sample, SampleToMiniBatch}
 import com.intel.analytics.bigdl.nn.{Module, Utils}
-import com.intel.analytics.bigdl.parameters.AllReduceParameter
+import com.intel.analytics.bigdl.parameters.{AllReduceParameter, LarsProcessor, ParameterProcessor}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils._
@@ -80,73 +80,73 @@ object DistriOptimizer {
    * @param lookupDicBroadcast A broadcast value which has information of
    *                           layerId, start, length of each layer
    */
-  private def collectGlobalData[T: ClassTag](
-    models: RDD[Cache[T]],
-    parameters: AllReduceParameter[T],
-    operations: Array[ParameterOperations],
-    numFinishedModelUpdatesT: T,
-    coresPernode: Int,
-    metrics: Metrics,
-    lookupDicBroadcast: Broadcast[Array[mutable.HashMap[Int, (Int, Int)]]])
-    (implicit ev: TensorNumeric[T]):
-    (Boolean, Double, Broadcast[Array[(Int, (Double, Double))]]) = {
-    var aggregatedG: Boolean = false
-    // array element is a tuple, first element is layer id, value is (wNorm2, gNorm2)
-    var gwNorm2ListBroadcast: Broadcast[Array[(Int, (Double, Double))]] = null
-    var l2Norm = 0.0
-    operations.foreach { oper =>
-      oper match {
-        case ParameterOperations.L2NORMCLIPPING =>
-          val sumSquare = models.mapPartitions(modelIter => {
-            val getG = System.nanoTime()
-            parameters.aggregateGradientPartition(numFinishedModelUpdatesT)
-            metrics.add("aggregrateGradientParition average executor",
-              System.nanoTime() - getG)
-
-            val gradLength = parameters.gradientPartition.nElement()
-            val taskSize = gradLength / coresPernode
-            val extraTask = gradLength % coresPernode
-            val parallelNum = if (taskSize == 0) extraTask else coresPernode
-            val squares = new Array[Double](parallelNum)
-            Engine.default.invokeAndWait((0 until parallelNum).map(tid => () => {
-              val offset = tid * taskSize + math.min(tid, extraTask)
-              val length = taskSize + (if (tid < extraTask) 1 else 0)
-              squares(tid) = ev.toType[Double](
-                parameters.gradientPartition.narrow(1, offset + 1, length).sumSquare())
-            }))
-            var sum = 0.0
-            var i = 0
-            while (i < parallelNum) {
-              sum += squares(i)
-              i += 1
-            }
-            Iterator.single(sum)
-          }).reduce(_ + _)
-          l2Norm = math.sqrt(sumSquare)
-          aggregatedG = true
-
-        case ParameterOperations.LARS =>
-          val gwNorm2List = models.mapPartitions(_ => {
-            if (!aggregatedG) {
-              val getG = System.nanoTime()
-              parameters.aggregateGradientPartition(numFinishedModelUpdatesT)
-              metrics.add("aggregrateGradientParition average executor",
-                System.nanoTime() - getG)
-            }
-            parameters.squareSumForRegion(lookupDicBroadcast.value).iterator
-          }).reduceByKey((a, b) => (a._1 + b._1, a._2 + b._2))
-            .sortByKey(true).collect().map(x => (x._1, (math.sqrt(x._2._1), math.sqrt(x._2._2))))
-          gwNorm2ListBroadcast = models.sparkContext.broadcast(gwNorm2List)
-          aggregatedG = true
-
-        case ParameterOperations.CONSTANTCLIPPING =>
-
-        case _ => throw new IllegalArgumentException("Unknown parameter operations," +
-          "current only support constant clipping, l2normclipping, lars")
-      }
-    }
-    (aggregatedG, l2Norm, gwNorm2ListBroadcast)
-  }
+//  private def collectGlobalData[T: ClassTag](
+//    models: RDD[Cache[T]],
+//    parameters: AllReduceParameter[T],
+//    operations: Array[ParameterOperations],
+//    numFinishedModelUpdatesT: T,
+//    coresPernode: Int,
+//    metrics: Metrics,
+//    lookupDicBroadcast: Broadcast[Array[mutable.HashMap[Int, (Int, Int)]]])
+//    (implicit ev: TensorNumeric[T]):
+//    (Boolean, Double, Broadcast[Array[(Int, (Double, Double))]]) = {
+//    var aggregatedG: Boolean = false
+//    // array element is a tuple, first element is layer id, value is (wNorm2, gNorm2)
+//    var gwNorm2ListBroadcast: Broadcast[Array[(Int, (Double, Double))]] = null
+//    var l2Norm = 0.0
+//    operations.foreach { oper =>
+//      oper match {
+//        case ParameterOperations.L2NORMCLIPPING =>
+//          val sumSquare = models.mapPartitions(modelIter => {
+//            val getG = System.nanoTime()
+//            parameters.aggregateGradientPartition(numFinishedModelUpdatesT)
+//            metrics.add("aggregrateGradientParition average executor",
+//              System.nanoTime() - getG)
+//
+//            val gradLength = parameters.gradientPartition.nElement()
+//            val taskSize = gradLength / coresPernode
+//            val extraTask = gradLength % coresPernode
+//            val parallelNum = if (taskSize == 0) extraTask else coresPernode
+//            val squares = new Array[Double](parallelNum)
+//            Engine.default.invokeAndWait((0 until parallelNum).map(tid => () => {
+//              val offset = tid * taskSize + math.min(tid, extraTask)
+//              val length = taskSize + (if (tid < extraTask) 1 else 0)
+//              squares(tid) = ev.toType[Double](
+//                parameters.gradientPartition.narrow(1, offset + 1, length).sumSquare())
+//            }))
+//            var sum = 0.0
+//            var i = 0
+//            while (i < parallelNum) {
+//              sum += squares(i)
+//              i += 1
+//            }
+//            Iterator.single(sum)
+//          }).reduce(_ + _)
+//          l2Norm = math.sqrt(sumSquare)
+//          aggregatedG = true
+//
+//        case ParameterOperations.LARS =>
+//          val gwNorm2List = models.mapPartitions(_ => {
+//            if (!aggregatedG) {
+//              val getG = System.nanoTime()
+//              parameters.aggregateGradientPartition(numFinishedModelUpdatesT)
+//              metrics.add("aggregrateGradientParition average executor",
+//                System.nanoTime() - getG)
+//            }
+//            parameters.squareSumForRegion(lookupDicBroadcast.value).iterator
+//          }).reduceByKey((a, b) => (a._1 + b._1, a._2 + b._2))
+//            .sortByKey(true).collect().map(x => (x._1, (math.sqrt(x._2._1), math.sqrt(x._2._2))))
+//          gwNorm2ListBroadcast = models.sparkContext.broadcast(gwNorm2List)
+//          aggregatedG = true
+//
+//        case ParameterOperations.CONSTANTCLIPPING =>
+//
+//        case _ => throw new IllegalArgumentException("Unknown parameter operations," +
+//          "current only support constant clipping, l2normclipping, lars")
+//      }
+//    }
+//    (aggregatedG, l2Norm, gwNorm2ListBroadcast)
+//  }
 
   /**
    * Advance operations to process parameters.
@@ -160,31 +160,31 @@ object DistriOptimizer {
    * @param lookupDicBroadcast A broadcast value which has information of
    *                           layerId, start, length of each layer
    */
-  private def advanceOperations[T: ClassTag](modelCache: Cache[T],
-    parameters: AllReduceParameter[T],
-    clippingParams: GradientClippingParams,
-    l2Norm: Double,
-    gwNorm2ListBroadcast: Broadcast[Array[(Int, (Double, Double))]],
-    lookupDicBroadcast: Broadcast[Array[mutable.HashMap[Int, (Int, Int)]]])
-    (implicit ev: TensorNumeric[T]) = {
-    if (gwNorm2ListBroadcast != null) {
-      // Array index is partition id, hashmap key is layer Id, hash value is (start, length)
-      val lookupList = lookupDicBroadcast.value(TaskContext.getPartitionId())
-      // gwNorm2List array element is a tuple, first element is layer id,
-      // value is (wNorm2, gNorm2)
-      modelCache.optimMethod.state.update("lookupList", lookupList)
-      val gwNorm2List = gwNorm2ListBroadcast.value
-      modelCache.optimMethod.state.update("gwNorm2List", gwNorm2List)
-    }
-    // gradient clipping
-    if (l2Norm > clippingParams.normValueClip) {
-      val scale = ev.fromType[Double](l2Norm / clippingParams.normValueClip)
-      parameters.gradientPartition.div(scale)
-    }
-    if (clippingParams.enableConstantClipping) {
-      parameters.gradientPartition.clamp(clippingParams.minValueClip, clippingParams.maxValueClip)
-    }
-  }
+//  private def advanceOperations[T: ClassTag](modelCache: Cache[T],
+//    parameters: AllReduceParameter[T],
+//    clippingParams: GradientClippingParams,
+//    l2Norm: Double,
+//    gwNorm2ListBroadcast: Broadcast[Array[(Int, (Double, Double))]],
+//    lookupDicBroadcast: Broadcast[Array[mutable.HashMap[Int, (Int, Int)]]])
+//    (implicit ev: TensorNumeric[T]) = {
+//    if (gwNorm2ListBroadcast != null) {
+//      // Array index is partition id, hashmap key is layer Id, hash value is (start, length)
+//      val lookupList = lookupDicBroadcast.value(TaskContext.getPartitionId())
+//      // gwNorm2List array element is a tuple, first element is layer id,
+//      // value is (wNorm2, gNorm2)
+//      modelCache.optimMethod.state.update("lookupList", lookupList)
+//      val gwNorm2List = gwNorm2ListBroadcast.value
+//      modelCache.optimMethod.state.update("gwNorm2List", gwNorm2List)
+//    }
+//    // gradient clipping
+//    if (l2Norm > clippingParams.normValueClip) {
+//      val scale = ev.fromType[Double](l2Norm / clippingParams.normValueClip)
+//      parameters.gradientPartition.div(scale)
+//    }
+//    if (clippingParams.enableConstantClipping) {
+//      parameters.gradientPartition.clamp(clippingParams.minValueClip, clippingParams.maxValueClip)
+//    }
+//  }
 
   /**
    * Train the model.
@@ -205,9 +205,9 @@ object DistriOptimizer {
    * @param trainSummary train summary
    * @param validationSummary validation summary
    * @param isOverWrite  if overwrite the checkpoint
-   * @param clippingParams  gradient clipping configurations
-   * @param lookupDicBroadcast A broadcast value which has information of
-   *                           layerId, start, length of each layer
+//   * @param clippingParams  gradient clipping configurations
+//   * @param lookupDicBroadcast A broadcast value which has information of
+//   *                           layerId, start, length of each layer
    */
   private[optim] def optimize[T: ClassTag](
     trainingModel: Module[T],
@@ -227,8 +227,9 @@ object DistriOptimizer {
     trainSummary: Option[TrainSummary],
     validationSummary: Option[ValidationSummary],
     isOverWrite: Boolean,
-    clippingParams: GradientClippingParams,
-    lookupDicBroadcast: Broadcast[Array[mutable.HashMap[Int, (Int, Int)]]]
+//    clippingParams: GradientClippingParams,
+//    lookupDicBroadcast: Broadcast[Array[mutable.HashMap[Int, (Int, Int)]]],
+    parameterProcessers: ArrayBuffer[ParameterProcessor]
   )(implicit ev: TensorNumeric[T]): Unit = {
     val sc = dataset.originRDD().sparkContext
     val partitionNum = dataset.originRDD().partitions.length
@@ -245,15 +246,19 @@ object DistriOptimizer {
     if (!optimMethod.state.contains("recordsProcessedThisEpoch")) {
       optimMethod.state.update("recordsProcessedThisEpoch", 0)
     }
+
+    val _subModelNumber = Engine.getEngineType() match {
+      case MklBlas => coresPerNode
+    }
     val driverState = T(
       "epoch" -> optimMethod.state("epoch"),
       "neval" -> optimMethod.state("neval"),
       "Loss" -> optimMethod.state("Loss"),
-      "score" -> optimMethod.state("score")
+      "score" -> optimMethod.state("score"),
+      "threadNumbers" -> _subModelNumber
     )
-
-    val _subModelNumber = Engine.getEngineType() match {
-      case MklBlas => coresPerNode
+    if (state.contains("lookupDic")) {
+      driverState("lookupDic") = state("lookupDic")
     }
 
     logger.info("Count dataset")
@@ -276,7 +281,6 @@ object DistriOptimizer {
       dataset.shuffle()
       val shuffleEnd = System.nanoTime()
       logger.info(s"Shuffle data complete. Takes ${(shuffleEnd - shuffleBefore) / 1e9}s")
-
     }
 
     var tasks: ArrayBuffer[Future[_]] = new ArrayBuffer()
@@ -291,17 +295,14 @@ object DistriOptimizer {
     var dropModelNumBatch = 0
     var lossArray = new Array[Double](_subModelNumber)
 
-    val advanceOperationList = new ArrayBuffer[ParameterOperations]()
-    if (clippingParams.enableL2NormClipping) {
-      advanceOperationList += ParameterOperations.L2NORMCLIPPING
-    }
-    if (clippingParams.enableConstantClipping) {
-      advanceOperationList += ParameterOperations.CONSTANTCLIPPING
-    }
-    if (optimMethod.isInstanceOf[LarsSGD[T]]) {
-      advanceOperationList += ParameterOperations.LARS
-      require(lookupDicBroadcast != null, "look up table cannot be null with lars")
-    }
+//    val advanceOperationList = new ArrayBuffer[ParameterOperations]()
+//    if (clippingParams.enableL2NormClipping) {
+//      advanceOperationList += ParameterOperations.L2NORMCLIPPING
+//    }
+//    if (clippingParams.enableConstantClipping) {
+//      advanceOperationList += ParameterOperations.CONSTANTCLIPPING
+//    }
+
     var epochStart = System.nanoTime()
     var dataRDD = dataset.data(train = true)
 
@@ -443,22 +444,29 @@ object DistriOptimizer {
         numFinishedModelUpdates >= driverSubModelNum * (1.0 - maxDropPercentage)) {
         // enough records were processed for this batch, so update the model
         val value = lossSum.value / numFinishedModelUpdates
-        val numFinishedModelUpdatesT = ev.fromType(numFinishedModelUpdates)
-        val (aggregateG, l2Norm, gwNorm2ListBroadcast) = if (!advanceOperationList.isEmpty) {
-          collectGlobalData(models, parameters, advanceOperationList.toArray,
-            numFinishedModelUpdatesT, _subModelNumber, driverMetrics, lookupDicBroadcast)
-        } else (false, 0.0, null)
+//        val numFinishedModelUpdatesT = ev.fromType(numFinishedModelUpdates)
+//        val (aggregateG, l2Norm, gwNorm2ListBroadcast) = if (!advanceOperationList.isEmpty) {
+//          collectGlobalData(models, parameters, advanceOperationList.toArray,
+//            numFinishedModelUpdatesT, _subModelNumber, driverMetrics, lookupDicBroadcast)
+//        } else (false, 0.0, null)
+
+        driverState("numFinishedModel") = numFinishedModelUpdates
+        parameterProcessers.foreach(_.collectGlobalData(models, parameters, metrics, driverState))
+        val stateBroadcast = sc.broadcast(driverState)
 
         models.mapPartitions { modelIter =>
           val modelCache = modelIter.next()
+          val driveState = stateBroadcast.value
+          val aggregateG = driveState.get[Boolean]("aggregateG").getOrElse(false)
           if (!aggregateG) {
             val getG = System.nanoTime()
-            parameters.aggregateGradientPartition(numFinishedModelUpdatesT)
+            parameters.aggregateGradientPartition(numFinishedModelUpdates)
             driverMetrics.add("aggregrateGradientParition average executor",
               System.nanoTime() - getG)
           }
-            advanceOperations(modelCache, parameters, clippingParams, l2Norm,
-              gwNorm2ListBroadcast, lookupDicBroadcast)
+//            advanceOperations(modelCache, parameters, clippingParams, l2Norm,
+//              gwNorm2ListBroadcast, lookupDicBroadcast)
+          parameterProcessers.foreach(_.processParameters(parameters, modelCache, driveState))
 
           modelCache.optimMethod.state.update("epoch", driverState[Int]("epoch"))
           modelCache.optimMethod.state.update("neval", driverState[Int]("neval"))
@@ -476,6 +484,7 @@ object DistriOptimizer {
           Iterator.empty
         }.count()
 
+        stateBroadcast.destroy()
         recordsProcessedThisEpoch += recordsNum.value
         val end = System.nanoTime()
         wallClockTime += end - start
@@ -689,7 +698,8 @@ object DistriOptimizer {
     checkSingleton: Boolean,
     parameters: AllReduceParameter[T],
     validationMethods: Option[Array[ValidationMethod[T]]],
-    optimMethod: OptimMethod[T]
+    optimMethod: OptimMethod[T],
+    parameterProcessors: ArrayBuffer[ParameterProcessor]
   )(implicit ev: TensorNumeric[T]) = {
     val sc = dataset.originRDD().sparkContext
     val broadcast = sc.broadcast((criterion, state, validationMethods, optimMethod))
@@ -710,12 +720,10 @@ object DistriOptimizer {
       s"Passed in rdd partition number ${dataset.originRDD().partitions.length}" +
         s" is not equal to configured node number ${nodeNumber}")
 
-    val partitionNum = dataset.originRDD().partitions.length
+
     val computeThresholdbatchSize = state.get[Int]("computeThresholdbatchSize").get
     val nExecutor = Engine.nodeNumber()
     val executorCores = Engine.coreNumber()
-
-    val parameterPerLayerSizes = model.parameters()._1.map(_.nElement())
 
     val parameterPerNodeSizes = dataset.originRDD().mapPartitions { _ =>
       if (!Engine.checkSingleton()) {
@@ -735,57 +743,13 @@ object DistriOptimizer {
       Iterator.single(parameters.init(weights))
     }.collect()
 
-    var lookupDic: Array[mutable.HashMap[Int, (Int, Int)]] = null
     if (optimMethod.isInstanceOf[LarsSGD[T]]) {
-      // stores each layers start, end on each partition
-      // Array index is partition id, hashmap key is layer Id, hash value is (start, length)
-      lookupDic = new Array[mutable.HashMap[Int, (Int, Int)]](parameterPerNodeSizes.length)
-      var i = 0
-      require(parameterPerNodeSizes.length == partitionNum,
-        "each partition shoule return its parameter meta data")
+      val stateForLars = T("parameterPerNodeSizes" -> parameterPerNodeSizes,
+      "weights" -> model.parameters()._1)
 
-      var layerIndex = -1
-      var parameterPerLayerLeftLen = 0
-      while (i < parameterPerNodeSizes.length) {
-        var start = 1
-        var parameterPerNodeLeftLen = parameterPerNodeSizes(i)._3
-        if (parameterPerLayerLeftLen == 0) {
-          layerIndex += 1
-          parameterPerLayerLeftLen
-            = parameterPerLayerSizes(layerIndex)
-        }
-        val map = new mutable.HashMap[Int, (Int, Int)]()
-        while (parameterPerNodeLeftLen > 0) {
-          if (parameterPerNodeLeftLen <= parameterPerLayerLeftLen) {
-            parameterPerLayerLeftLen -= parameterPerNodeLeftLen
-            map(layerIndex) = (start, parameterPerNodeLeftLen)
-            parameterPerNodeLeftLen = 0
-          } else {
-            map(layerIndex) = (start, parameterPerLayerLeftLen)
-            parameterPerNodeLeftLen -= parameterPerLayerLeftLen
-            start += parameterPerLayerLeftLen
-            layerIndex += 1
-            parameterPerLayerLeftLen = parameterPerLayerSizes(layerIndex)
-          }
-        }
-        lookupDic(i) = map
-        i += 1
-      }
-
-      // Check if lookupDic is correct
-      // array element is a tuple, first element is layer id, value is (wNorm2, gNorm2)
-      val norm2PerLayer = dataset.originRDD().mapPartitions( _ => {
-        parameters.squareSumForRegion(lookupDic).iterator
-      }).reduceByKey((a, b) => (a._1 + b._1, a._2 + b._2)).sortByKey(true).collect()
-
-      require(parameterPerLayerSizes.length == norm2PerLayer.length,
-        "lookupDic length is not correct!")
-      for((parameter, i) <- model.parameters()._1.view.zipWithIndex) {
-        require(ev.nearlyEqual(parameter.sumSquare(), ev.fromType(norm2PerLayer(i)._2._1), 1e-3),
-          s"lookupDic value is not correct! ori is ${parameter.sumSquare()}" +
-            s" now is ${norm2PerLayer(i)._2._1}")
-      }
-      logger.info("lookupDic check pass!!")
+      parameterProcessors.append(new LarsProcessor())
+      parameterProcessors.foreach(_.init(dataset, parameters, stateForLars))
+      state("lookupDic") = stateForLars("lookupDic")
     }
 
     val models = dataset.originRDD().mapPartitions(_ => {
@@ -818,7 +782,7 @@ object DistriOptimizer {
     logger.info("Cache thread models...")
     models.count()
     logger.info("Cache thread models... done")
-    (models, sc.broadcast(lookupDic))
+    models
   }
 
   /**
@@ -1047,10 +1011,10 @@ class DistriOptimizer[T: ClassTag] (
 
     prepareInput()
 
-    var initedVariables = DistriOptimizer.initThreadModels(model, distDataset, criterion, state,
-      nodeNumber, coresPerNode, checkSingleton, parameters, validationMethods, optimMethod)
+    models = DistriOptimizer.initThreadModels(model, distDataset, criterion, state,
+      nodeNumber, coresPerNode, checkSingleton, parameters, validationMethods,
+      optimMethod, parameterProcessors)
 
-    models = initedVariables._1
     if (checkpointPath.isDefined) {
       val file = checkpointPath.get + "/" +
         new SimpleDateFormat("yyyyMMdd_HHmmss").format(Calendar.getInstance().getTime())
@@ -1083,8 +1047,7 @@ class DistriOptimizer[T: ClassTag] (
           trainSummary,
           validationSummary,
           isOverWrite,
-          gradientClippingParams,
-          initedVariables._2
+          parameterProcessors
         )
         retryNum = Int.MaxValue
       } catch {
@@ -1122,10 +1085,9 @@ class DistriOptimizer[T: ClassTag] (
               DistriOptimizer.logger.info("Recover from origin model")
             }
             optimMethod.clearHistory()
-            initedVariables = DistriOptimizer.initThreadModels(newModel, distDataset, criterion,
+            models = DistriOptimizer.initThreadModels(newModel, distDataset, criterion,
               state, nodeNumber, coresPerNode, checkSingleton, parameters, validationMethods,
-              optimMethod)
-            models = initedVariables._1
+              optimMethod, parameterProcessors)
           } else {
             throw t
           }

@@ -20,12 +20,15 @@ import java.nio.file.{Files, Paths}
 
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dataset.{DataSet, SampleToMiniBatch, _}
+import com.intel.analytics.bigdl.optim.ParameterOperations.ParameterOperations
+import com.intel.analytics.bigdl.parameters.{ConstantClippingProcessor, L2NormClippingProcessor, ParameterProcessor}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils._
 import com.intel.analytics.bigdl.visualization.{TrainSummary, ValidationSummary}
 import org.apache.spark.rdd.RDD
 
+import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
 /**
@@ -66,7 +69,7 @@ abstract class Optimizer[T: ClassTag, D](
   protected var computeThresholdbatchSize: Int = 100
   protected var warmupIterationNum: Int = 200
 
-  protected val gradientClippingParams = GradientClippingParams(false, 0.0f, 0.0f, false, 0.0f)
+//  protected val gradientClippingParams = GradientClippingParams(false, 0.0f, 0.0f, false, 0.0f)
 
   model.checkDuplicate()
 
@@ -360,8 +363,11 @@ abstract class Optimizer[T: ClassTag, D](
    */
   def disableGradientClipping()
   : this.type = {
-    gradientClippingParams.enableConstantClipping = false
-    gradientClippingParams.enableL2NormClipping = false
+//    gradientClippingParams.enableConstantClipping = false
+//    gradientClippingParams.enableL2NormClipping = false
+    parameterProcessors = parameterProcessors.filterNot(processor =>
+      (processor.isInstanceOf[ConstantClippingProcessor] ||
+        processor.isInstanceOf[L2NormClippingProcessor]))
     this
   }
 
@@ -374,23 +380,27 @@ abstract class Optimizer[T: ClassTag, D](
   def setConstantGradientClipping(min: Float, max: Float)
   : this.type = {
     require(min <= max, "min value must be smaller than max")
-    gradientClippingParams.enableConstantClipping = true
-    gradientClippingParams.minValueClip = min
-    gradientClippingParams.maxValueClip = max
+//    gradientClippingParams.enableConstantClipping = true
+//    gradientClippingParams.minValueClip = min
+//    gradientClippingParams.maxValueClip = max
+    parameterProcessors.append(new ConstantClippingProcessor(min, max))
     this
   }
 
   /**
    * Clip gradient to a maximum L2-norm
-   * @param clipNorm gradient L2-Norm threshold
+   * @param l2NormThreshold gradient L2-Norm threshold
    * @return
    */
-  def setGradientClippingByl2Norm(clipNorm: Double)
+  def setGradientClippingByl2Norm(l2NormThreshold: Double)
   : this.type = {
-    gradientClippingParams.enableL2NormClipping = true
-    gradientClippingParams.normValueClip = clipNorm
+//    gradientClippingParams.enableL2NormClipping = true
+//    gradientClippingParams.normValueClip = clipNorm
+    parameterProcessors.append(new L2NormClippingProcessor(l2NormThreshold))
     this
   }
+
+  protected var parameterProcessors = ArrayBuffer[ParameterProcessor]()
 }
 
 object Optimizer {
@@ -545,9 +555,9 @@ object Optimizer {
   }
 }
 
-case class GradientClippingParams(
-   var enableConstantClipping: Boolean,
-   var minValueClip: Double,
-   var maxValueClip: Double,
-   var enableL2NormClipping: Boolean,
-   var normValueClip: Double)
+//case class GradientClippingParams(
+//   var enableConstantClipping: Boolean,
+//   var minValueClip: Double,
+//   var maxValueClip: Double,
+//   var enableL2NormClipping: Boolean,
+//   var normValueClip: Double)
