@@ -59,6 +59,7 @@ trait InferShape {
   final def getOutputShape(): Shape = {
     require(this.isKerasStyle(),
       "Torch style definition doesn't support getOutputShape for now.")
+    require(this.isBuilt(), "This module hasn't been built.")
     outputShapeValue
   }
 
