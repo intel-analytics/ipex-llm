@@ -13,22 +13,44 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
+#
+# How to run this script:
+# python dump_tf_graph.py protxt_file_path [log_dir]
+# python dump_tf_graph.py saver_folder [log_dir]
+#
+# log_dir default value is log
+#
+
 from sys import argv
 from tensorflow.python.platform import gfile
 import tensorflow as tf
+import os.path as op
 
 def main():
-    """
-    How to run this script:
-    python dump_tf_graph.py protxt_file_path
-    """
-    with gfile.FastGFile(argv[1],'rb') as f:
-        graph_def = tf.GraphDef()
-        graph_def.ParseFromString(f.read())
-        with tf.Graph().as_default() as graph:
-            tf.import_graph_def(graph_def, name='')
-            tf.summary.FileWriter('./log', graph)
+    if len(argv) == 1 or len(argv) > 3:
+        print("How to run this script:")
+        print("python dump_tf_graph.py protxt_file_path [log_dir]")
+        print("python dump_tf_graph.py saver_folder [log_dir]")
+        exit(1)
 
+    log_dir = 'log'
+    if len(argv) == 3:
+        log_dir = argv[2]
+
+    # If the model is saved by saver
+    if op.isdir(argv[1]):
+        with tf.Session() as sess:
+            tf.saved_model.loader.load(sess, [tf.saved_model.tag_constants.SERVING], argv[1])
+            tf.summary.FileWriter(log_dir, sess.graph)
+    # If the graph is saved directly by protobuf
+    else:
+        with gfile.FastGFile(argv[1],'rb') as f:
+            graph_def = tf.GraphDef()
+            graph_def.ParseFromString(f.read())
+            with tf.Graph().as_default() as graph:
+                tf.import_graph_def(graph_def, name='')
+                tf.summary.FileWriter(log_dir, graph)
 
 if __name__ == "__main__":
     main()
