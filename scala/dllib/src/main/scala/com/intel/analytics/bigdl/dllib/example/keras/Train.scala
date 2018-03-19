@@ -41,7 +41,7 @@ object Train {
       val validationData = param.folder + "/t10k-images-idx3-ubyte"
       val validationLabel = param.folder + "/t10k-labels-idx1-ubyte"
 
-      val model = LeNet()
+      val model = LeNet(classNum = 10)
 
       val optimMethod = if (param.stateSnapshot.isDefined) {
         OptimMethod.load[Float](param.stateSnapshot.get)
@@ -61,7 +61,7 @@ object Train {
       model.compile(optimizer = optimMethod,
         loss = ClassNLLCriterion[Float](logProbAsInput = false),
         metrics = Array(new Top1Accuracy[Float](), new Top5Accuracy[Float](), new Loss[Float]))
-      model.fit(trainSet, nbEpoch = 10, validationData = validationSet)
+      model.fit(trainSet, nbEpoch = param.maxEpoch, validationData = validationSet)
 
       sc.stop()
     })
