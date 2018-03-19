@@ -73,6 +73,7 @@ object KerasUtils {
           case "softplus" => SoftPlus[T]()
           case "softsign" => SoftSign[T]()
           case "hard_sigmoid" => HardSigmoid[T]()
+          case "log_softmax" => LogSoftMax[T]()
           case _ => throw new IllegalArgumentException(s"Invalid activation: " +
             s"${activation.toLowerCase}. Only simple activations can be constructed using string")
       }
