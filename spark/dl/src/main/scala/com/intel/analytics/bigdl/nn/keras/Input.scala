@@ -32,6 +32,8 @@ class Input[T: ClassTag](val inputShape: Shape)(implicit ev: TensorNumeric[T])
   override def doBuild(inputShape: Shape): TInput[T] = new TInput[T]()
 
   override def allowRebuilt(): Boolean = true
+
+  override def skipDuplicateCheck(): Boolean = true
 }
 
 object Input {
