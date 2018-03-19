@@ -36,6 +36,7 @@ object LeNet5 {
       .add(Linear(100, classNum).setName("fc2"))
       .add(LogSoftMax())
   }
+
   def graph(classNum: Int): Module[Float] = {
     val input = Reshape(Array(1, 28, 28)).inputs()
     val conv1 = SpatialConvolution(1, 6, 5, 5).setName("conv1_5x5").inputs(input)
@@ -51,5 +52,21 @@ object LeNet5 {
     val output = LogSoftMax().inputs(fc2)
 
     Graph(input, output)
+  }
+
+  def keras(classNum: Int): nn.keras.Sequential[Float] = {
+    import com.intel.analytics.bigdl.nn.keras._
+    import com.intel.analytics.bigdl.utils.Shape
+
+    val model = Sequential[Float]()
+    model.add(Reshape(Array(1, 28, 28), inputShape = Shape(28, 28, 1)))
+    model.add(Convolution2D(6, 5, 5, activation = "tanh").setName("conv1_5x5"))
+    model.add(MaxPooling2D())
+    model.add(Activation("tanh"))
+    model.add(Convolution2D(12, 5, 5, activation = "tanh").setName("conv2_5x5"))
+    model.add(MaxPooling2D())
+    model.add(Reshape(Array(12 * 4 * 4)))
+    model.add(Dense(100, activation = "tanh"))
+    model.add(Dense(classNum, activation = "softmax"))
   }
 }
