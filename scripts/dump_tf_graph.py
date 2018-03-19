@@ -38,7 +38,7 @@ def main():
     if len(argv) == 3:
         log_dir = argv[2]
 
-    # If the model is saved by saver
+    # If the model is saved by tf.saved_model API
     if op.isdir(argv[1]):
         with tf.Session() as sess:
             tf.saved_model.loader.load(sess, [tf.saved_model.tag_constants.SERVING], argv[1])
