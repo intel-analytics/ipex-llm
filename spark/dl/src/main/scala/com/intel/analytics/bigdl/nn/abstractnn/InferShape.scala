@@ -19,7 +19,6 @@ package com.intel.analytics.bigdl.nn.abstractnn
 import com.intel.analytics.bigdl.nn.keras.{Input => KInput, Sequential => KSequential}
 import com.intel.analytics.bigdl.nn.{Input => TInput}
 import com.intel.analytics.bigdl.utils.Shape
-import org.apache.log4j.Logger
 
 import scala.language.existentials
 import scala.reflect.ClassTag
@@ -27,8 +26,6 @@ import scala.reflect.ClassTag
 class InvalidLayer(msg: String) extends RuntimeException(msg)
 
 trait InferShape {
-  val logger = Logger.getLogger(getClass)
-
   private[bigdl] var _inputShapeValue: Shape = null
 
   private[bigdl] var _outputShapeValue: Shape = null
@@ -51,9 +48,8 @@ trait InferShape {
    * Return the inputShape for the current Layer and the first dim is batch.
    */
   final def getInputShape(): Shape = {
-    if (! this.isKerasStyle()) {
-      logger.warn("Torch style definition doesn't support getInputShape for now.")
-    }
+    require(this.isKerasStyle(),
+      "Torch style definition doesn't support getInputShape for now.")
     _inputShapeValue
   }
 
@@ -61,9 +57,8 @@ trait InferShape {
    * Return the outputShape for the current Layer and the first dim is batch.
    */
   final def getOutputShape(): Shape = {
-    if (! this.isKerasStyle()) {
-      logger.warn("Torch style definition doesn't support getOutputShape for now.")
-    }
+    require(this.isKerasStyle(),
+      "Torch style definition doesn't support getOutputShape for now.")
     outputShapeValue
   }
 
