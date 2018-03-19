@@ -13,7 +13,7 @@ One of the highlighted features with regard to the new API is __shape inference_
 
 ---
 ## **Shape**
-Input and output shapes of a model in the Keras-Style API will be described by the `Shape` object in Scala, which can be classified into `SingleShape` and `MultiShape`.
+Input and output shapes of a model in the Keras-Style API are described by the `Shape` object in Scala, which can be classified into `SingleShape` and `MultiShape`.
 
 `SingleShape` is just a list of Int indicating shape dimensions while `MultiShape` is essentially a list of `Shape`.
 
@@ -93,14 +93,14 @@ To merge a list of input __nodes__ (__NOT__ layers), following some merge mode i
 ```scala
 import com.intel.analytics.bigdl.nn.keras.Merge.merge
 
-merge(inputs, mode = "sum", concat_axis = -1) // This will return an output NODE.
+merge(inputs, mode = "sum", concatAxis = -1) // This will return an output NODE.
 ```
 
 Parameters:
 
 * `inputs`: A list of node instances. Must be more than one node.
-* `mode`: Merge mode. String, must be one of: 'sum', 'mul', 'concat', 'ave', 'cos','dot', 'max'. Default is 'sum'.
-* `concat_axis`: Int, axis to use when concatenating nodes. Only specify this when merge mode is 'concat'. Default is -1, meaning the last axis of the input.
+* `mode`: Merge mode. String, must be one of: 'sum', 'mul', 'concat', 'ave', 'cos', 'dot', 'max'. Default is 'sum'.
+* `concatAxis`: Int, axis to use when concatenating nodes. Only specify this when merge mode is 'concat'. Default is -1, meaning the last axis of the input.
 
 Example code to create a graph model:
 ```scala

@@ -69,7 +69,8 @@ output: com.intel.analytics.bigdl.nn.abstractnn.Activity =
 **Python example:**
 ```python
 import numpy as np
-from bigdl.nn.keras.layer import Sequential, Dense
+from bigdl.nn.keras.topology import Sequential
+from bigdl.nn.keras.layer import Dense
 
 model = Sequential()
 model.add(Dense(5, activation="relu", input_shape=(4, )))
