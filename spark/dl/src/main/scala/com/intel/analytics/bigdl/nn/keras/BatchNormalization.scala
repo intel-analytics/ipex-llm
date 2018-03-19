@@ -82,17 +82,17 @@ class BatchNormalization[T: ClassTag](
         nOutput = nChannel,
         eps = epsilon,
         momentum = momentum,
-        initWeight = getInit(gammaInit, nChannel),
-        initBias = getInit(betaInit, nChannel),
+//        initWeight = getInit(gammaInit, nChannel),
+//        initBias = getInit(betaInit, nChannel),
         dataFormat = dimOrdering)
     }
     else {
       com.intel.analytics.bigdl.nn.BatchNormalization(
         nOutput = input(1),
         eps = epsilon,
-        momentum = momentum,
-        initWeight = getInit(gammaInit, input(1)),
-        initBias = getInit(betaInit, input(1)))
+        momentum = momentum)
+//        initWeight = getInit(gammaInit, input(1)),
+//        initBias = getInit(betaInit, input(1)))
     }
     layer.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
   }

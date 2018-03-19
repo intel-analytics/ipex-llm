@@ -137,7 +137,7 @@ object VggForCifar10 {
     def convBNReLU(nOutPutPlane: Int)
     : Sequential[Float] = {
       vggBnDo.add(Convolution2D(nOutPutPlane, 3, 3, padH = 1, padW = 1))
-      vggBnDo.add(BatchNormalization())
+      vggBnDo.add(BatchNormalization(momentum = 0.1))
       vggBnDo.add(Activation("relu"))
       vggBnDo
     }
