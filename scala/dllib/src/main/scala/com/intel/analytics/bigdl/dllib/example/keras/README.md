@@ -60,3 +60,4 @@ dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
 In the above commands
 * -f: an option to set the path where you put your MNIST data.
 * -b: an option to set the mini-batch size. It is expected that the mini-batch size is a multiple of node_number * core_number.
+* -e: an option to set the number of epochs to train the model, the default value is 15.
