@@ -63,7 +63,7 @@ class DLClassifierSpec extends FlatSpec with Matchers with BeforeAndAfter {
     }
   }
 
-  "An DLClassifier" should "has correct default params" in {
+  "DLClassifier" should "has correct default params" in {
     val model = Linear[Float](10, 1)
     val criterion = ClassNLLCriterion[Float]()
     val estimator = new DLClassifier[Float](model, criterion, Array(10))
@@ -75,7 +75,7 @@ class DLClassifierSpec extends FlatSpec with Matchers with BeforeAndAfter {
     assert(estimator.getLearningRateDecay == 0)
   }
 
-  "An DLClassifier" should "get reasonale accuracy" in {
+  "DLClassifier" should "get reasonale accuracy" in {
     val model = new Sequential().add(Linear[Float](6, 2)).add(LogSoftMax[Float])
     val criterion = ClassNLLCriterion[Float]()
     val classifier = new DLClassifier[Float](model, criterion, Array(6))
@@ -91,7 +91,7 @@ class DLClassifierSpec extends FlatSpec with Matchers with BeforeAndAfter {
     assert(dlModel.transform(df).where("prediction=label").count() > nRecords * 0.8)
   }
 
-  "An DLClassifier" should "support different FEATURE types" in {
+  "DLClassifier" should "support different FEATURE types" in {
     val model = new Sequential().add(Linear[Float](6, 2)).add(LogSoftMax[Float])
     val criterion = ClassNLLCriterion[Float]()
     val classifier = new DLClassifier[Float](model, criterion, Array(6))
@@ -113,7 +113,7 @@ class DLClassifierSpec extends FlatSpec with Matchers with BeforeAndAfter {
     }
   }
 
-  "An DLClassifier" should "support scalar FEATURE" in {
+  "DLClassifier" should "support scalar FEATURE" in {
     val model = new Sequential().add(Linear[Float](1, 2)).add(LogSoftMax[Float])
     val criterion = ClassNLLCriterion[Float]()
     val classifier = new DLClassifier[Float](model, criterion, Array(1))
@@ -133,7 +133,7 @@ class DLClassifierSpec extends FlatSpec with Matchers with BeforeAndAfter {
     }
   }
 
-  "An DLClasifier" should "support image FEATURE types" in {
+  "DLClasifier" should "support image FEATURE types" in {
     val pascalResource = getClass.getClassLoader.getResource("pascal/")
     val imageDF = DLImageReader.readImages(pascalResource.getFile, sc)
     assert(imageDF.count() == 1)
@@ -151,7 +151,7 @@ class DLClassifierSpec extends FlatSpec with Matchers with BeforeAndAfter {
     estimator.fit(transformedDF)
   }
 
-  "An DLClassifier" should "fit with adam and LBFGS" in {
+  "DLClassifier" should "fit with adam and LBFGS" in {
     val model = new Sequential().add(Linear[Float](6, 2)).add(LogSoftMax[Float])
     val criterion = ClassNLLCriterion[Float]()
     Seq(new LBFGS[Float], new Adam[Float]).foreach { optimMethod =>
@@ -167,7 +167,7 @@ class DLClassifierSpec extends FlatSpec with Matchers with BeforeAndAfter {
     }
   }
 
-  "An DLClassifier" should "supports validation data and summary" in {
+  "DLClassifier" should "supports validation data and summary" in {
     val data = sc.parallelize(smallData)
     val df = sqlContext.createDataFrame(data).toDF("features", "label")
 
@@ -189,7 +189,7 @@ class DLClassifierSpec extends FlatSpec with Matchers with BeforeAndAfter {
     logdir.deleteOnExit()
   }
 
-  "An DLClassifier" should "get the same classification result with BigDL model" in {
+  "DLClassifier" should "get the same classification result with BigDL model" in {
     Logger.getLogger("org").setLevel(Level.WARN)
     Logger.getLogger("akka").setLevel(Level.WARN)
 
@@ -216,7 +216,7 @@ class DLClassifierSpec extends FlatSpec with Matchers with BeforeAndAfter {
     tensorBuffer.clear()
   }
 
-  "An DLClassifier" should "works in ML pipeline" in {
+  "DLClassifier" should "works in ML pipeline" in {
     var appSparkVersion = org.apache.spark.SPARK_VERSION
     if (appSparkVersion.trim.startsWith("1")) {
       val data = sc.parallelize(
