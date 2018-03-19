@@ -451,13 +451,14 @@ object DistriOptimizer {
 //        } else (false, 0.0, null)
 
         driverState("numFinishedModel") = numFinishedModelUpdates
+        driverState("aggregateG") = false
         parameterProcessers.foreach(_.collectGlobalData(models, parameters, metrics, driverState))
         val stateBroadcast = sc.broadcast(driverState)
 
         models.mapPartitions { modelIter =>
           val modelCache = modelIter.next()
           val driveState = stateBroadcast.value
-          val aggregateG = driveState.get[Boolean]("aggregateG").getOrElse(false)
+          val aggregateG = driveState.get[Boolean]("aggregateG").get
           if (!aggregateG) {
             val getG = System.nanoTime()
             parameters.aggregateGradientPartition(numFinishedModelUpdates)
@@ -488,6 +489,7 @@ object DistriOptimizer {
         recordsProcessedThisEpoch += recordsNum.value
         val end = System.nanoTime()
         wallClockTime += end - start
+        driverState("aggregateG") = true
         driverState("Loss") = lossSum.value.toFloat / numFinishedModelUpdates
         optimMethod.updateHyperParameter()
         driverState("Throughput") = recordsNum.value.toFloat / ((end - start) / 1e9f)
