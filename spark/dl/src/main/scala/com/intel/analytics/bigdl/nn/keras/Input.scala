@@ -47,6 +47,10 @@ object Input {
   def apply[T: ClassTag](
     inputShape: Shape = null,
     name : String = null)(implicit ev: TensorNumeric[T]): ModuleNode[T] = {
+    // As this method return a node, so it cannot be added to a container or connect from other
+    // nodes multiple times. So we can skip the duplicate checking.
+    // Even it is repeated appears multiple time in a nested container, it's okay as it will always
+    // be the first layer.
     val module = new Input(inputShape).setSkipDuplicate()
     module.build(KerasLayer.addBatch(inputShape))
     if (name != null) {
