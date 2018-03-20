@@ -16,12 +16,38 @@
 
 package com.intel.analytics.bigdl.keras.nn
 
-import com.intel.analytics.bigdl.nn.keras.{InputLayer, Sequential}
+import com.intel.analytics.bigdl.nn.keras.Merge.merge
+import com.intel.analytics.bigdl.nn.keras._
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.bigdl.utils.{BigDLSpecHelper, Shape}
 import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
+import com.intel.analytics.bigdl.numeric.NumericFloat
 
 import scala.util.Random
+
+class InputSpec extends BigDLSpecHelper {
+  "Duplicate container" should "not throw exception" in {
+    val bx1 = Input(Shape(4))
+    val bx2 = Input(Shape(5))
+    val by1 = Dense(6, activation = "sigmoid").inputs(bx1)
+    val bbranch1 = Model(bx1, by1).inputs(bx1)
+    val bbranch2 = Dense(8).inputs(bx2)
+    val bz = merge(List(bbranch1, bbranch2), mode = "concat")
+    val bmodel = Model(Array(bx1, bx2), bz)
+
+    // No exception should be threw in the above code
+  }
+
+  "Duplicate input layer" should "throw exception" in {
+    val i = InputLayer(Shape(4))
+    val seq = Sequential()
+    seq.add(i)
+
+    intercept[IllegalArgumentException] {
+      seq.add(i)
+    }
+  }
+}
 
 class InputSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
