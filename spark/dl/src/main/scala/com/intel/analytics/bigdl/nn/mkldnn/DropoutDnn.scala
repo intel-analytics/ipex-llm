@@ -66,34 +66,43 @@ class DropoutDnn(
   }
 
   @transient
+  private var inputElement : Int = 0
+  @transient
+  private var reorder_dst_memory : Long = 0L
+  @transient
+  private var reorder_src_memory : Long = 0L
+  @transient
+  private var update_primitive: Boolean = true
+  @transient
   private var engine: Long = 0L
   @transient
   private var stream: Long = 0L
   val dataType = MklDnn.DataType.f32
+  val stream_fwd = new ArrayBuffer[Long]
 
   def reorderTwoTensor(input: Tensor[Float], inputFormat: Int,
                        output: Tensor[Float], outputFormat: Int): Unit = {
-    val stream_fwd = new ArrayBuffer[Long]
-    val sizes = input.size()
-    val dim = input.dim()
-    output.resizeAs(input)
+    if (update_primitive) {
+      val sizes = input.size()
+      val dim = input.dim()
+      output.resizeAs(input)
 
-    val src_md = MklDnnOps.memoryDescInit(dim, sizes, dataType, inputFormat)
-    val src_pd = MklDnnOps.memoryPrimitiveDescCreate(src_md, engine)
+      val src_md = MklDnnOps.memoryDescInit(dim, sizes, dataType, inputFormat)
+      val src_pd = MklDnnOps.memoryPrimitiveDescCreate(src_md, engine)
 
-    val prim_md = MklDnn.MemoryDescInit(dim, sizes, dataType, outputFormat)
-    val user_pd = MklDnn.MemoryPrimitiveDescCreate(prim_md, engine)
-    val dst_memory = MklDnn.PrimitiveCreate0(user_pd)
-    output.setPrimitiveDesc(user_pd)
+      val prim_md = MklDnn.MemoryDescInit(dim, sizes, dataType, outputFormat)
+      val user_pd = MklDnn.MemoryPrimitiveDescCreate(prim_md, engine)
+      reorder_dst_memory = MklDnn.PrimitiveCreate0(user_pd)
+      output.setPrimitiveDesc(user_pd)
 
-    val res = MklDnnOps.prepareReorder(dst_memory, src_pd, false)
-    val src_memory = res._2
+      val res = MklDnnOps.prepareReorder(reorder_dst_memory, src_pd, false)
+      reorder_src_memory = res._2
 
-    stream_fwd.clear()
-    stream_fwd.append(res._1)
-
+      stream_fwd.clear()
+      stream_fwd.append(res._1)
+    }
     /* build a simple net */
-    val memoryPrimitives = Array(src_memory, dst_memory)
+    val memoryPrimitives = Array(reorder_src_memory, reorder_dst_memory)
     val buffer = Array(input, output)
     MklDnnOps.streamSubmit(stream, 1, stream_fwd.toArray, 1, memoryPrimitives, buffer)
   }
@@ -103,6 +112,13 @@ class DropoutDnn(
       this.output = input
     } else {
       this.output.resizeAs(input).copy(input)
+    }
+
+    if (inputElement != input.nElement()) {
+      update_primitive = true
+      inputElement = input.nElement()
+    } else {
+      update_primitive = false
     }
 
     if (results == null) {
@@ -247,7 +263,7 @@ class DropoutDnn(
       throw new IllegalArgumentException("backprop only defined while training")
     }
 
-    if (user_format != default_format) {
+    if (user_format != default_format && update_primitive) {
       val md = MklDnnOps.memoryDescInit(gradInput.dim(), gradInput.size(), dataType, user_format)
       val pd = MklDnnOps.memoryPrimitiveDescCreate(md, engine)
       gradInput.setPrimitiveDesc(pd)

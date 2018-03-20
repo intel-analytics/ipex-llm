@@ -29,7 +29,7 @@ import org.dmg.pmml.False
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
-class ConvolutionDnn[T: ClassTag](
+class ConvolutionDnn(
      val nInputPlane: Int, // The number of expected input planes in the image given into forward()
      val nOutputPlane: Int, // The number of output planes the convolution layer will produce.
      val kernelW: Int, // The kernel width of the convolution
@@ -48,8 +48,7 @@ class ConvolutionDnn[T: ClassTag](
      val initGradBias: Tensor[Float] = null,
      val withBias: Boolean = true,
      val format: DataFormat = DataFormat.NCHW
-   )(implicit ev: TensorNumeric[T])
-  extends TensorModule[Float] with Initializable {
+   ) extends TensorModule[Float] with Initializable {
 
   @transient
   private var engine: Long = 0L
@@ -63,10 +62,10 @@ class ConvolutionDnn[T: ClassTag](
   }
   this.output_format = input_format
 
+  private var weightDnnFormat = MklDnn.MemoryFormat.oihw
   private var internal_inputFormat: Int = input_format
   private var internal_gradOutputFormat: Int = input_format
   private var internal_weightFormat: Int = weightDnnFormat
-
   private var internal_gradWeightFormat: Int = weightDnnFormat
 
   private var inputBuffer : MklDnnTensor[Float] = null
@@ -97,7 +96,6 @@ class ConvolutionDnn[T: ClassTag](
   require((padW >= 0 && padH >= 0) || (padW == -1 && padH == -1),
     s"Illegal padding configuration (padW: $padW, padH: $padH)")
 
-  private var weightDnnFormat = MklDnn.MemoryFormat.oihw
   private val weightShape = format match {
     case DataFormat.NCHW =>
       if (nGroup == 1) {
@@ -236,12 +234,17 @@ class ConvolutionDnn[T: ClassTag](
   @transient
   private var update_primitive: Boolean = true
 
-  private var memoryPrimitives = new  ArrayBuffer[Long]
-  private var buffer = new ArrayBuffer[Tensor[Float]]
+  private val memoryPrimitives = new  ArrayBuffer[Long]
+  private val buffer = new ArrayBuffer[Tensor[Float]]
 
   val stream_fwd = new ArrayBuffer[Long]
   val stream_bwd = new ArrayBuffer[Long]
   val stream_acc = new ArrayBuffer[Long]
+  val stream_reOrder = new ArrayBuffer[Long]
+  @transient
+  private var reorder_input_memory : Long = 0L // src
+  @transient
+  private var reorder_output_memory : Long = 0L // dst
 
   var dataTime: Long = 0L
 
@@ -274,28 +277,26 @@ class ConvolutionDnn[T: ClassTag](
 
   def reorderTwoTensor(input: Tensor[Float], inputFormat: Int,
                        output: Tensor[Float], outputFormat: Int): Unit = {
-    // val dataType = MklDnn.DataType.f32
-    // val engine = MklDnn.EngineCreate( MklDnn.EngineType.cpu, 0)
-    // val stream = MklDnn.StreamCreate(MklDnn.StreamType.eager)
-    val stream_fwd = new ArrayBuffer[Long]
-    val sizes = input.size()
-    val dim = input.dim()
-    output.resizeAs(input)
+    if (update_primitive) {
+      val sizes = input.size()
+      val dim = input.dim()
+      output.resizeAs(input)
 
-    val src_md = MklDnnOps.memoryDescInit(dim, sizes, dataType, inputFormat)
-    val src_pd = MklDnnOps.memoryPrimitiveDescCreate(src_md, engine)
+      val src_md = MklDnnOps.memoryDescInit(dim, sizes, dataType, inputFormat)
+      val src_pd = MklDnnOps.memoryPrimitiveDescCreate(src_md, engine)
 
-    val dst_memory = MklDnnOps.initDataMemory(dim, sizes, outputFormat, dataType, engine)
-    val res = MklDnnOps.prepareReorder(dst_memory, src_pd, false)
-    val src_memory = res._2
+      reorder_output_memory = MklDnnOps.initDataMemory(dim, sizes, outputFormat, dataType, engine)
+      val res = MklDnnOps.prepareReorder(reorder_output_memory, src_pd, false)
+      reorder_input_memory = res._2
 
-    stream_fwd.clear()
-    stream_fwd.append(res._1)
+      stream_reOrder.clear()
+      stream_reOrder.append(res._1)
+    }
 
     /* build a simple net */
-    val memoryPrimitives = Array(src_memory, dst_memory)
+    val memoryPrimitives = Array(reorder_input_memory, reorder_output_memory)
     val buffer = Array(input, output)
-    MklDnnOps.streamSubmit(stream, 1, stream_fwd.toArray, 1, memoryPrimitives, buffer)
+    MklDnnOps.streamSubmit(stream, 1, stream_reOrder.toArray, 1, memoryPrimitives, buffer)
   }
 
   override def updateOutput(input: Tensor[Float]): Tensor[Float] = {
@@ -897,8 +898,8 @@ object ConvolutionDnn {
    initGradWeight: Tensor[Float] = null,
    initGradBias: Tensor[Float] = null,
    withBias: Boolean = true,
-   format: DataFormat = DataFormat.NCHW): ConvolutionDnn[Float] = {
-    new ConvolutionDnn[Float](nInputPlane, nOutputPlane, kW, kH, dW,
+   format: DataFormat = DataFormat.NCHW): ConvolutionDnn = {
+    new ConvolutionDnn(nInputPlane, nOutputPlane, kW, kH, dW,
     dH, padW, padH, nGroup, propagateBack, wRegularizer, bRegularizer,
       initWeight, initBias, initGradWeight, initGradBias, withBias, format)
   }

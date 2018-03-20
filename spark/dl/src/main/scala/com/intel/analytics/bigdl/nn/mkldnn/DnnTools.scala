@@ -650,7 +650,7 @@ object SbnDnn {
 }
 
 object Convolution {
-  def apply[@specialized(Float, Double) T: ClassTag](
+  def apply(
       nInputPlane: Int,
       nOutputPlane: Int,
       kernelW: Int,
@@ -662,8 +662,7 @@ object Convolution {
       nGroup: Int = 1,
       propagateBack: Boolean = true,
       optnet: Boolean = true,
-      weightDecay: Double = 1e-4)
-    (implicit ev: TensorNumeric[Float]): ConvolutionDnn[Float] = {
+      weightDecay: Double = 1e-4): ConvolutionDnn = {
     val wReg = L2Regularizer[Float](weightDecay)
     val bReg = L2Regularizer[Float](weightDecay)
     val conv = mkldnn.ConvolutionDnn(nInputPlane, nOutputPlane, kernelW, kernelH,
@@ -677,46 +676,6 @@ object Convolution {
 object ResNet_dnn {
   val logger = Logger.getLogger(getClass)
 
-  def shareGradInput(model: Module[Float]): Unit = {
-    logger.info("Share gradients in ResNet")
-    def sharingKey(m: Module[Float]) = m.getClass.getName
-    val cache = mutable.Map[Any, Storage[Float]]()
-    val packageName: String = model.getName().stripSuffix("Sequential")
-    cache.put("fInput", Storage(Array(1.0f)))
-    cache.put("fGradInput", Storage(Array(1.0f)))
-
-    var index = 0
-    def matchModels(model: Module[Float]): Unit = {
-      model match {
-        case container: Container[Activity, Activity, Float] =>
-          container.modules.foreach( m => {
-            if (m.gradInput.isInstanceOf[Tensor[_]] &&
-              !m.getClass.getName.equals(packageName + "ConcatTable")) {
-              val key = sharingKey(m)
-              if (!cache.contains(key)) {
-                cache.put(key, Storage(Array(1.0f)))
-              }
-              m.gradInput = Tensor(cache.get(key).get, 1, Array(0))
-            }
-            matchModels(m)
-          })
-        case concatTable if (concatTable.isInstanceOf[ConcatTable[Float]]) =>
-          if (!cache.contains(index % 2)) {
-            cache.put(index % 2, Storage(Array(1.0f)))
-          }
-          concatTable.gradInput = Tensor[Float](cache.get(index % 2).get, 1, Array(0))
-          index = index + 1
-        case spatialShareConvolution
-          if (spatialShareConvolution.isInstanceOf[SpatialShareConvolution[Float]]) =>
-          val curModel = spatialShareConvolution.asInstanceOf[SpatialShareConvolution[Float]]
-          curModel.fInput = Tensor[Float](cache.get("fInput").get)
-          curModel.fGradInput = Tensor[Float](cache.get("fGradInput").get)
-        case _ => Unit
-      }
-    }
-    matchModels(model)
-  }
-
   def modelInit(model: Module[Float]): Unit = {
     logger.info("Initialize ResNet")
     def initModules(model: Module[Float]): Unit = {
@@ -724,8 +683,8 @@ object ResNet_dnn {
         case container: Container[Activity, Activity, Float]
         => container.modules.foreach(m => initModules(m))
         case convolutionDnn
-          if (convolutionDnn.isInstanceOf[mkldnn.ConvolutionDnn[Float]]) =>
-          val curModel = convolutionDnn.asInstanceOf[mkldnn.ConvolutionDnn[Float]]
+          if (convolutionDnn.isInstanceOf[mkldnn.ConvolutionDnn]) =>
+          val curModel = convolutionDnn.asInstanceOf[mkldnn.ConvolutionDnn]
           val n: Float = curModel.kernelW * curModel.kernelW * curModel.nOutputPlane
           curModel.weight.apply1(_ => RNG.normal(0, Math.sqrt(2.0f / n)).toFloat)
           curModel.bias.apply1(_ => 0.0f)

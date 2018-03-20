@@ -16,12 +16,16 @@
 package com.intel.analytics.bigdl.models.inception
 
 import com.intel.analytics.bigdl._
+import com.intel.analytics.bigdl.dataset.{DataSet, DistributedDataSet, MiniBatch}
+import com.intel.analytics.bigdl.nn.mkldnn.{DnnTools, Inception_v1_NoAuxClassifier_dnn}
 import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, Module}
 import com.intel.analytics.bigdl.optim.SGD.{Poly, SequentialSchedule, Warmup}
 import com.intel.analytics.bigdl.optim._
+import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.{Engine, LoggerFilter, T, Table}
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
+import org.apache.spark.rdd.RDD
 
 object TrainInceptionV1 {
   LoggerFilter.redirectSparkInfoLogs()
@@ -59,7 +63,8 @@ object TrainInceptionV1 {
       val model = if (param.modelSnapshot.isDefined) {
         Module.load[Float](param.modelSnapshot.get)
       } else if (param.graphModel) {
-        Inception_v1_NoAuxClassifier.graph(classNum = param.classNumber)
+        // Inception_v1_NoAuxClassifier.graph(classNum = param.classNumber)
+        Inception_v1_NoAuxClassifier_dnn(classNum = param.classNumber)
       } else {
         Inception_v1_NoAuxClassifier(classNum = param.classNumber)
       }
