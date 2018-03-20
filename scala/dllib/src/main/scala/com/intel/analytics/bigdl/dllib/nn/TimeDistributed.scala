@@ -21,6 +21,8 @@ import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, Tensor
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Table
+import com.intel.analytics.bigdl.utils.serializer.{DeserializeContext, ModuleSerializable}
+import com.intel.analytics.bigdl.utils.serializer.converters.DataConverter
 
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
@@ -284,11 +286,25 @@ class TimeDistributed[T : ClassTag] (
   override def toString(): String = s"${getPrintName}${layer}"
 }
 
-object TimeDistributed {
+object TimeDistributed extends ModuleSerializable {
   def apply[@specialized(Float, Double) T: ClassTag](
     layer: AbstractModule[Tensor[T], Tensor[T], T],
     maskZero: Boolean = false
   )(implicit ev: TensorNumeric[T]): TimeDistributed[T] = {
     new TimeDistributed[T](layer, maskZero)
+  }
+  // To make ti compatible with release 0.4
+  override def doLoadModule[T: ClassTag](context: DeserializeContext)
+    (implicit ev: TensorNumeric[T]) : AbstractModule[Activity, Activity, T] = {
+    val attrMap = context.bigdlModule.getAttrMap
+    val layerAttr = attrMap.get("layer")
+    val layer = DataConverter.getAttributeValue(context, layerAttr).
+      asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
+    var maskZero = false
+    if (attrMap.containsKey("maskZero")) {
+      maskZero = DataConverter.getAttributeValue(context, attrMap.get("maskZero")).
+        asInstanceOf[Boolean]
+    }
+    TimeDistributed(layer, maskZero)
   }
 }
