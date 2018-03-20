@@ -103,10 +103,10 @@ Spark2.0 Test Suite
 #   Run Spark Test                   ${submit}                ${spark_200_3_master} 
 
 Spark2.1 Test Suite
- #  Build SparkJar                   spark_2.x
- #  Set Environment Variable         SPARK_HOME               /opt/work/spark-2.1.0-bin-hadoop2.7
- #  ${submit}=                       Catenate                 SEPARATOR=/    /opt/work/spark-2.1.0-bin-hadoop2.7/bin    spark-submit
- #  Run Spark Test                   ${submit}                ${spark_210_3_master} 
+#  Build SparkJar                   spark_2.x
+#  Set Environment Variable         SPARK_HOME               /opt/work/spark-2.1.0-bin-hadoop2.7
+#  ${submit}=                       Catenate                 SEPARATOR=/    /opt/work/spark-2.1.0-bin-hadoop2.7/bin    spark-submit
+#  Run Spark Test                   ${submit}                ${spark_210_3_master} 
 
 Hdfs Test Suite
 #   Set Environment Variable         hdfsMaster               ${hdfs_264_3_master}
@@ -118,16 +118,16 @@ Hdfs Test Suite
 
 
 Quantization Test Suite
- #  ${hadoop}=                       Catenate                 SEPARATOR=/             /opt/work/hadoop-2.6.5/bin        hadoop
- #  Run                              ${hadoop} fs -get ${mnist_data_source} /tmp/
- #  Log To Console                   got mnist data!!
- #  Run                              ${hadoop} fs -get ${cifar_data_source} /tmp/
- #  Log To Console                   got cifar data!!
- #  Set Environment Variable         mnist                    /tmp/mnist
- #  Set Environment Variable         cifar10                  /tmp/cifar
- #  Set Environment Variable         lenetfp32model           ${public_hdfs_master}:9000/lenet4IT4J1.7B4.bigdl
- #  Set Environment Variable         resnetfp32model          ${public_hdfs_master}:9000/resnet4IT4J1.7B4.bigdl
- #  Remove Environment Variable      mnist                    cifar10                 lenetfp32model                  resnetfp32model
+#  ${hadoop}=                       Catenate                 SEPARATOR=/             /opt/work/hadoop-2.6.5/bin        hadoop
+#  Run                              ${hadoop} fs -get ${mnist_data_source} /tmp/
+#  Log To Console                   got mnist data!!
+#  Run                              ${hadoop} fs -get ${cifar_data_source} /tmp/
+#  Log To Console                   got cifar data!!
+#  Set Environment Variable         mnist                    /tmp/mnist
+#  Set Environment Variable         cifar10                  /tmp/cifar
+#  Set Environment Variable         lenetfp32model           ${public_hdfs_master}:9000/lenet4IT4J1.7B4.bigdl
+#  Set Environment Variable         resnetfp32model          ${public_hdfs_master}:9000/resnet4IT4J1.7B4.bigdl
+#  Remove Environment Variable      mnist                    cifar10                 lenetfp32model                  resnetfp32model
 
 Yarn Test Suite
    Build SparkJar                   spark_2.x 
