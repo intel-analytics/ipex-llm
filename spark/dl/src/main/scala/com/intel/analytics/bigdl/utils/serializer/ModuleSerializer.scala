@@ -206,6 +206,7 @@ object ModuleSerializer extends ModuleSerializable{
     registerModule("com.intel.analytics.bigdl.nn.SpatialSubtractiveNormalization",
       SpatialSubtractiveNormalization)
     registerModule("com.intel.analytics.bigdl.nn.Transpose", Transpose)
+    registerModule("com.intel.analytics.bigdl.nn.TimeDistributed", TimeDistributed)
     registerModule("com.intel.analytics.bigdl.nn.VolumetricMaxPooling", VolumetricMaxPooling)
     registerModule("com.intel.analytics.bigdl.nn.Echo", Echo)
     registerModule("com.intel.analytics.bigdl.nn.quantized.SpatialConvolution",
