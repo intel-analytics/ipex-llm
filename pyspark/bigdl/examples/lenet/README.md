@@ -1,4 +1,4 @@
-# LeNet5 Model on MNIST with new API
+# LeNet5 Model on MNIST using Keras-Style API
 
 LeNet5 is a classical CNN model used in digital number classification. For detailed information with regard to LeNet, please refer to <http://yann.lecun.com/exdb/lenet/>.
 
