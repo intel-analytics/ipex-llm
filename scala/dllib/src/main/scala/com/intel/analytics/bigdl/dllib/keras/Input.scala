@@ -27,18 +27,31 @@ import scala.reflect.ClassTag
 class Input[T: ClassTag](val inputShape: Shape)(implicit ev: TensorNumeric[T])
   extends KerasLayer[Activity, Activity, T](KerasLayer.addBatch(inputShape)) {
 
+  private var skipDuplicate = false
+
+  private[Input] def setSkipDuplicate(): this.type = {
+    this.skipDuplicate = true
+    this
+  }
+
   override def computeOutputShape(inputShape: Shape): Shape = inputShape
 
   override def doBuild(inputShape: Shape): TInput[T] = new TInput[T]()
 
   override def allowRebuilt(): Boolean = true
+
+  override def skipDuplicateCheck(): Boolean = skipDuplicate
 }
 
 object Input {
   def apply[T: ClassTag](
     inputShape: Shape = null,
     name : String = null)(implicit ev: TensorNumeric[T]): ModuleNode[T] = {
-    val module = new Input(inputShape)
+    // As this method return a node, so it cannot be added to a container or connect from other
+    // nodes multiple times. So we can skip the duplicate checking.
+    // Even it is repeated appears multiple time in a nested container, it's okay as it will always
+    // be the first layer.
+    val module = new Input(inputShape).setSkipDuplicate()
     module.build(KerasLayer.addBatch(inputShape))
     if (name != null) {
       module.setName(name)
