@@ -138,16 +138,16 @@ import com.intel.analytics.bigdl.utils.Shape
 
 val model = Sequential[Float]()
 model.add(Reshape(Array(1, 28, 28), inputShape = Shape(28, 28, 1)))
-model.add(Convolution2D(32, 3, 3, activation = "relu"))
-model.add(Convolution2D(32, 3, 3, activation = "relu"))
-model.add(MaxPooling2D(poolSize = (2, 2)))
-model.add(Dropout(0.25))
-model.add(Flatten())
-model.add(Dense(128, activation = "relu"))
-model.add(Dropout(0.5))
-model.add(Dense(10, activation = "softmax"))
+model.add(Convolution2D(6, 5, 5, activation = "tanh").setName("conv1_5x5"))
+model.add(MaxPooling2D())
+model.add(Activation("tanh"))
+model.add(Convolution2D(12, 5, 5).setName("conv2_5x5"))
+model.add(MaxPooling2D())
+model.add(Reshape(Array(12 * 4 * 4)))
+model.add(Dense(100, activation = "tanh").setName("fc1"))
+model.add(Dense(10, activation = "softmax").setName("fc2"))
 
 model.getInputShape().toSingle().toArray // Array(-1, 28, 28, 1)
 model.getOutputShape().toSingle().toArray // Array(-1, 10)
 ```
-See [here](https://github.com/intel-analytics/BigDL/tree/master/spark/dl/src/main/scala/com/intel/analytics/bigdl/example/keras) for the full example code and running instructions.
+See [here](https://github.com/intel-analytics/BigDL/tree/master/spark/dl/src/main/scala/com/intel/analytics/bigdl/example/keras) for detailed introduction of LeNet, the full example code and running instructions.

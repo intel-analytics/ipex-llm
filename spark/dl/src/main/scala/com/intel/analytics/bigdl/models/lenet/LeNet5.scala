@@ -58,7 +58,7 @@ object LeNet5 {
     import com.intel.analytics.bigdl.nn.keras._
     import com.intel.analytics.bigdl.utils.Shape
 
-    val model = Sequential[Float]()
+    val model = Sequential()
     model.add(Reshape(Array(1, 28, 28), inputShape = Shape(28, 28, 1)))
     model.add(Convolution2D(6, 5, 5, activation = "tanh").setName("conv1_5x5"))
     model.add(MaxPooling2D())
@@ -68,5 +68,22 @@ object LeNet5 {
     model.add(Reshape(Array(12 * 4 * 4)))
     model.add(Dense(100, activation = "tanh").setName("fc1"))
     model.add(Dense(classNum, activation = "softmax").setName("fc2"))
+  }
+
+  def kerasGraph(classNum: Int): nn.keras.Model[Float] = {
+    import com.intel.analytics.bigdl.nn.keras._
+    import com.intel.analytics.bigdl.utils.Shape
+
+    val input = Input(inputShape = Shape(28, 28, 1))
+    val reshape1 = Reshape(Array(1, 28, 28)).inputs(input)
+    val conv1 = Convolution2D(6, 5, 5, activation = "tanh").setName("conv1_5x5").inputs(reshape1)
+    val pool1 = MaxPooling2D().inputs(conv1)
+    val tanh = Activation("tanh").inputs(pool1)
+    val conv2 = Convolution2D(12, 5, 5).setName("conv2_5x5").inputs(tanh)
+    val pool2 = MaxPooling2D().inputs(conv2)
+    val reshape2 = Reshape(Array(12 * 4 * 4)).inputs(pool2)
+    val fc1 = Dense(100, activation = "tanh").setName("fc1").inputs(reshape2)
+    val fc2 = Dense(classNum, activation = "softmax").setName("fc2").inputs(fc1)
+    Model(input, fc2)
   }
 }
