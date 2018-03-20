@@ -23,13 +23,17 @@ from bigdl.dataset import mnist
 def build_model(class_num):
     model = Sequential()
     model.add(Reshape((1, 28, 28), input_shape=(28, 28, 1)))
-    model.add(Convolution2D(6, 5, 5, activation="tanh", name="conv1_5x5"))
+    model.add(Convolution2D(6, 5, 5, name="conv1_5x5"))
+    model.add(Activation("tanh"))
     model.add(MaxPooling2D())
-    model.add(Convolution2D(12, 5, 5, activation="tanh", name="conv2_5x5"))
+    model.add(Convolution2D(12, 5, 5, name="conv2_5x5"))
+    model.add(Activation("tanh"))
     model.add(MaxPooling2D())
     model.add(Flatten())
-    model.add(Dense(100, activation="tanh", name="fc1"))
-    model.add(Dense(class_num, activation="softmax", name="fc2"))
+    model.add(Dense(100, name="fc1"))
+    model.add(Activation("tanh"))
+    model.add(Dense(class_num, name="fc2"))
+    model.add(Activation("softmax"))
     return model
 
 
