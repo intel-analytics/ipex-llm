@@ -36,7 +36,7 @@ input_version=$4
 bigdl_version=$(python -c "exec(open('$BIGDL_DIR/pyspark/bigdl/version.py').read()); print(__version__)")
 
 if [ "$input_version" != "$bigdl_version" ]; then
-   echo "Not the proposed version"
+   echo "Not the proposed version: $bigdl_version"
    exit -1
 fi
 
