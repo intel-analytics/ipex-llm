@@ -302,6 +302,7 @@ class Sequential[T: ClassTag]()
 
     labor.asInstanceOf[TSequential[T]].modules +=
       module.asInstanceOf[AbstractModule[Activity, Activity, T]]
+    checkDuplicate()
     this
   }
 

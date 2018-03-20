@@ -1044,6 +1044,17 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
    */
   private[bigdl] def checkDuplicate(
     record: mutable.HashSet[Int] = mutable.HashSet()
-  ): Unit = {}
+  ): Unit = {
+    val errMsg = "Some module is duplicate in the current model: "
+    val curId = System.identityHashCode(this)
+    require(this.skipDuplicateCheck() || !record.contains(curId), errMsg + this.getName())
+    record.add(curId)
+  }
+
+  /**
+   * Sometimes, some layer need skip the duplicate check process, e.g. Keras-like input layer
+   * @return
+   */
+  private[nn] def skipDuplicateCheck(): Boolean = false
 }
 
