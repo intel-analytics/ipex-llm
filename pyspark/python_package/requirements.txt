@@ -1,12 +1,5 @@
 numpy
-scipy
-pandas
-scikit-learn
-matplotlib
-seaborn
-IPython==5.0
-jupyter
-tensorboard
-wordcloud
-opencv-python
+six
 nltk
+keras==1.2.2
+h5py
