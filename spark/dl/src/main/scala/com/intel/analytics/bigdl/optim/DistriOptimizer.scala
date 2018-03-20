@@ -548,6 +548,8 @@ object DistriOptimizer {
    * @param checkSingleton if checkSingleton
    * @param parameters all reduce parameter instance
    * @param validationMethods validation methods
+   * @param optimMethod optimization method
+   * @param parameterProcessors a list of ParameterProcessor used to process parameters
    * @return cached models
    */
   private def initThreadModels[T: ClassTag](

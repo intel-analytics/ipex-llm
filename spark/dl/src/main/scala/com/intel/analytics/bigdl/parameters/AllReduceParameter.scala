@@ -217,8 +217,9 @@ private[bigdl] class AllReduceParameter[T: ClassTag](id: Long, partitionNum: Int
    * Retrieve gradients for the slice of the model that this node is responsible for from all the
    * other nodes. A new thread is created for each separate node. The gradients are then summed
    * and then stored in decompressed form in `gradientPartition`.
+   * @param avgNumbers average numbers.
    */
-  def aggregateGradientPartition(numbers: Int): Unit = {
+  def aggregateGradientPartition(avgNumbers: Int): Unit = {
     require(partitionId < partitionNum, s"This parameter was created with $partitionNum " +
       s"partitions. It cannot be used on RDDs with > $partitionNum partitions.")
     val params = new Array[CompressedTensor[T]](partitionNum)
@@ -259,7 +260,7 @@ private[bigdl] class AllReduceParameter[T: ClassTag](id: Long, partitionNum: Int
       }
     ).asJava)
     params.head.deCompress(gradientPartition)
-    gradientPartition.div(ev.fromType(numbers))
+    gradientPartition.div(ev.fromType(avgNumbers))
   }
 
   /**

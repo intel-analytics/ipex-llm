@@ -68,8 +68,6 @@ abstract class Optimizer[T: ClassTag, D](
   protected var computeThresholdbatchSize: Int = 100
   protected var warmupIterationNum: Int = 200
 
-//  protected val gradientClippingParams = GradientClippingParams(false, 0.0f, 0.0f, false, 0.0f)
-
   model.checkDuplicate()
 
   /**
@@ -553,10 +551,3 @@ object Optimizer {
     }
   }
 }
-
-//case class GradientClippingParams(
-//   var enableConstantClipping: Boolean,
-//   var minValueClip: Double,
-//   var maxValueClip: Double,
-//   var enableL2NormClipping: Boolean,
-//   var normValueClip: Double)

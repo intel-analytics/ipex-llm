@@ -114,24 +114,6 @@ private[bigdl] class L2NormClippingProcessor(l2NormThreshold: Double)
         metrics.add("aggregrateGradientParition average executor",
           System.nanoTime() - getG)
       }
-
-//      val gradLength = parameters.gradientPartition.nElement()
-//      val taskSize = gradLength / threadNum
-//      val extraTask = gradLength % threadNum
-//      val parallelNum = if (taskSize == 0) extraTask else threadNum
-//      val squares = new Array[Double](parallelNum)
-//      Engine.default.invokeAndWait((0 until parallelNum).map(tid => () => {
-//        val offset = tid * taskSize + math.min(tid, extraTask)
-//        val length = taskSize + (if (tid < extraTask) 1 else 0)
-//        squares(tid) = ev.toType[Double](
-//          parameters.gradientPartition.narrow(1, offset + 1, length).sumSquare())
-//      }))
-//      var sum = 0.0
-//      var i = 0
-//      while (i < parallelNum) {
-//        sum += squares(i)
-//        i += 1
-//      }
       val sum = Util.getSumsquareInParallel(parameters.gradientPartition, parallelism)
       Iterator.single(sum)
     }).reduce(_ + _)
