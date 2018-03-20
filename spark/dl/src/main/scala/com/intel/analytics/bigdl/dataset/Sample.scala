@@ -516,4 +516,29 @@ object TensorSample {
     typeCheck(featureTensor)
     new TensorSample[T](Array(featureTensor), Array(Tensor(1).fill(label)))
   }
+
+  /**
+   * Create a TensorSample which is able to contains Tensors with different types.
+   *
+   * @tparam T main type
+   * @param featureTensors feature tensors
+   * @param labelTensors label tensors, can be null or empty, default value is null
+   * @return TensorSample
+   */
+  def create[T: ClassTag](
+      featureTensors: Array[Tensor[_]],
+      labelTensors: Array[Tensor[_]] = null)
+    (implicit ev: TensorNumeric[T]) : Sample[T] = {
+    if (labelTensors == null || labelTensors.isEmpty) {
+      TensorSample(wrapType(featureTensors))
+    } else {
+      TensorSample(wrapType(featureTensors), wrapType(labelTensors))
+    }
+  }
+
+  private def wrapType[T: ClassTag](tensor: Array[Tensor[_]])
+    (implicit ev: TensorNumeric[T]): Array[Tensor[T]] = {
+    tensor.map(_.asInstanceOf[Tensor[T]])
+  }
+
 }
