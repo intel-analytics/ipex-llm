@@ -26,7 +26,6 @@ import scala.reflect.ClassTag
 class InvalidLayer(msg: String) extends RuntimeException(msg)
 
 trait InferShape {
-
   private[bigdl] var _inputShapeValue: Shape = null
 
   private[bigdl] var _outputShapeValue: Shape = null
@@ -46,16 +45,21 @@ trait InferShape {
   // scalastyle:on
 
   /**
-   * We suppose the first dim is batch
+   * Return the inputShape for the current Layer and the first dim is batch.
    */
-  private[bigdl] final def getInputShape(): Shape = {
+  final def getInputShape(): Shape = {
+    require(this.isKerasStyle(),
+      "Torch style definition doesn't support getInputShape for now.")
     _inputShapeValue
   }
 
   /**
-   * We suppose the first dim is batch
+   * Return the outputShape for the current Layer and the first dim is batch.
    */
-  private[bigdl] final def getOutputShape(): Shape = {
+  final def getOutputShape(): Shape = {
+    require(this.isKerasStyle(),
+      "Torch style definition doesn't support getOutputShape for now.")
+    require(this.isBuilt(), "This module hasn't been built.")
     outputShapeValue
   }
 

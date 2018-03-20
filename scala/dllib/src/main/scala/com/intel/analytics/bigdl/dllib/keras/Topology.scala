@@ -267,7 +267,7 @@ class Sequential[T: ClassTag]()
   this.labor = doBuild(null)
 
   private def triggerBuilding(module: AbstractModule[_ <: Activity, _ <: Activity, T]): Unit = {
-    if (this.getOutputShape() == null) {
+    if (!this.isBuilt()) {
       if (module.getInputShape() == null) {
         throw new RuntimeException("The first layer should explicitly declare inputshape")
       } else {
