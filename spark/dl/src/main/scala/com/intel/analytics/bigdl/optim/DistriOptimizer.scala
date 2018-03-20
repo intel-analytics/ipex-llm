@@ -255,7 +255,7 @@ object DistriOptimizer {
       "neval" -> optimMethod.state("neval"),
       "Loss" -> optimMethod.state("Loss"),
       "score" -> optimMethod.state("score"),
-      "threadNumbers" -> _subModelNumber
+      "parallelism" -> _subModelNumber
     )
     if (state.contains("lookupDic")) {
       driverState("lookupDic") = state("lookupDic")
@@ -745,14 +745,14 @@ object DistriOptimizer {
       Iterator.single(parameters.init(weights))
     }.collect()
 
-    if (optimMethod.isInstanceOf[LarsSGD[T]]) {
-      val stateForLars = T("parameterPerNodeSizes" -> parameterPerNodeSizes,
+//    if (optimMethod.isInstanceOf[LarsSGD[T]]) {
+      val initState = T("parameterPerNodeSizes" -> parameterPerNodeSizes,
       "weights" -> model.parameters()._1)
 
-      parameterProcessors.append(new LarsProcessor())
-      parameterProcessors.foreach(_.init(dataset, parameters, stateForLars))
-      state("lookupDic") = stateForLars("lookupDic")
-    }
+//      parameterProcessors.append(new LarsProcessor())
+      parameterProcessors.foreach(_.init(dataset, parameters, initState))
+      state("lookupDic") = initState("lookupDic")
+//    }
 
     val models = dataset.originRDD().mapPartitions(_ => {
       val (broadcastCriterion, broadcastState, broadcastMethod,

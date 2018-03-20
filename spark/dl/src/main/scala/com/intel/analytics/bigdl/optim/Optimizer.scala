@@ -321,6 +321,10 @@ abstract class Optimizer[T: ClassTag, D](
    */
   def setOptimMethod(method : OptimMethod[T]): this.type = {
     this.optimMethod = method
+    val processor = method.getParameterProcessor()
+    if (processor != null) {
+      parameterProcessors += processor
+    }
     this
   }
 
@@ -363,8 +367,6 @@ abstract class Optimizer[T: ClassTag, D](
    */
   def disableGradientClipping()
   : this.type = {
-//    gradientClippingParams.enableConstantClipping = false
-//    gradientClippingParams.enableL2NormClipping = false
     parameterProcessors = parameterProcessors.filterNot(processor =>
       (processor.isInstanceOf[ConstantClippingProcessor] ||
         processor.isInstanceOf[L2NormClippingProcessor]))
@@ -377,12 +379,9 @@ abstract class Optimizer[T: ClassTag, D](
    * @param max the maximum value to clip by
    * @return
    */
-  def setConstantGradientClipping(min: Float, max: Float)
+  def setConstantGradientClipping(min: Double, max: Double)
   : this.type = {
-    require(min <= max, "min value must be smaller than max")
-//    gradientClippingParams.enableConstantClipping = true
-//    gradientClippingParams.minValueClip = min
-//    gradientClippingParams.maxValueClip = max
+    require(min <= max, "min value can not be larger than max")
     parameterProcessors.append(new ConstantClippingProcessor(min, max))
     this
   }
@@ -394,8 +393,6 @@ abstract class Optimizer[T: ClassTag, D](
    */
   def setGradientClippingByl2Norm(l2NormThreshold: Double)
   : this.type = {
-//    gradientClippingParams.enableL2NormClipping = true
-//    gradientClippingParams.normValueClip = clipNorm
     parameterProcessors.append(new L2NormClippingProcessor(l2NormThreshold))
     this
   }

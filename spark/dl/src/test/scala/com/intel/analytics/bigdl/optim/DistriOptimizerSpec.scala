@@ -761,7 +761,7 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val optimizer = new DistriOptimizer[Double](mm, dataSet, new MSECriterion[Double]())
       .setEndWhen(Trigger.maxEpoch(1))
       .setOptimMethod(optimizationMethod)
-      .setConstantGradientClipping(-0.0f, 0.0f)
+      .setConstantGradientClipping(-0.0, 0.0)
 
     val model = optimizer.optimize()
     val newW = model.getParameters()._1
