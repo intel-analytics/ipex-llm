@@ -124,7 +124,7 @@ model.add(MaxPooling2D())
 model.add(Activation("tanh"))
 model.add(Convolution2D(12, 5, 5, name="conv2_5x5"))
 model.add(MaxPooling2D())
-model.add(Reshape((12 * 4 * 4, )))
+model.add(Flatten())
 model.add(Dense(100, activation="tanh", name="fc1"))
 model.add(Dense(10, activation="softmax", name="fc2"))
 
