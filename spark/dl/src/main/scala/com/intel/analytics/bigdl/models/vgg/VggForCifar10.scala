@@ -32,7 +32,7 @@ object VggForCifar10 {
       vggBnDo
     }
     convBNReLU(3, 64)
-    if (hasDropout) vggBnDo.add(Dropout((0.3)))
+    if (hasDropout) vggBnDo.add(Dropout(0.3))
     convBNReLU(64, 64)
     vggBnDo.add(SpatialMaxPooling(2, 2, 2, 2).ceil())
 

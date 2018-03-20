@@ -67,7 +67,7 @@ object KerasUtils {
       activation.toLowerCase() match {
           case "tanh" => Tanh[T]()
           case "sigmoid" => Sigmoid[T]()
-          case "relu" => ReLU[T]()
+          case "relu" => ReLU[T](true)
           case "softmax" =>
                 com.intel.analytics.bigdl.nn.SoftMax[T]()
           case "softplus" => SoftPlus[T]()
