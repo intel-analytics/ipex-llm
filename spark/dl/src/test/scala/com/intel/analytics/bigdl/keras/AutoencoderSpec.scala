@@ -18,12 +18,15 @@ package com.intel.analytics.bigdl.keras
 
 import com.intel.analytics.bigdl.models.autoencoder.Autoencoder
 import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.utils.RandomGenerator
 
 class AutoencoderSpec extends KerasBaseSpec {
 
   "Autoencoder Sequential Keras-Style definition" should
     "be the same as Torch-Style definition" in {
+    RandomGenerator.RNG.setSeed(1000)
     val kmodel = Autoencoder.keras(classNum = 32)
+    RandomGenerator.RNG.setSeed(1000)
     val tmodel = Autoencoder(classNum = 32)
     val input = Tensor[Float](Array(32, 28, 28)).rand()
     compareKerasTorchModels(kmodel, tmodel, input)
