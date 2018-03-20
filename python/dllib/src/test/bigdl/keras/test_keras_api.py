@@ -30,7 +30,7 @@ from keras.models import Sequential as KSequential
 np.random.seed(1337)  # for reproducibility
 
 
-class TestNewAPI(BigDLTestCase):
+class TestKerasAPI(BigDLTestCase):
 
     def test_embedding(self):
         input_data = np.random.randint(1000, size=(32, 10))
@@ -200,13 +200,12 @@ class TestNewAPI(BigDLTestCase):
 
     def test_merge_method_model_concat(self):
         bx1 = BLayer.Input(shape=(4, ))
-        bx1_1 = BLayer.Input(shape=(4, ))
         bx2 = BLayer.Input(shape=(5, ))
         by1 = BLayer.Dense(6, activation="sigmoid")(bx1)
-        bbranch1 = BModel(bx1, by1)(bx1_1)
+        bbranch1 = BModel(bx1, by1)(bx1)
         bbranch2 = BLayer.Dense(8)(bx2)
         bz = BLayer.merge([bbranch1, bbranch2], mode="concat")
-        bmodel = BModel([bx1_1, bx2], bz)
+        bmodel = BModel([bx1, bx2], bz)
 
         kx1 = KLayer.Input(shape=(4, ))
         kx2 = KLayer.Input(shape=(5, ))
@@ -221,15 +220,14 @@ class TestNewAPI(BigDLTestCase):
 
     def test_merge_method_seq_concat(self):
         bx1 = BLayer.Input(shape=(10, ))
-        bx1_1 = BLayer.Input(shape=(10, ))
         bx2 = BLayer.Input(shape=(10, ))
         by1 = BLayer.Dense(12, activation="sigmoid")(bx1)
-        bbranch1_node = BModel(bx1, by1)(bx1_1)
+        bbranch1_node = BModel(bx1, by1)(bx1)
         bbranch2 = BSequential()
         bbranch2.add(BLayer.Dense(12, input_dim=10))
         bbranch2_node = bbranch2(bx2)
         bz = BLayer.merge([bbranch1_node, bbranch2_node], mode="concat")
-        bmodel = BModel([bx1_1, bx2], bz)
+        bmodel = BModel([bx1, bx2], bz)
 
         kx1 = KLayer.Input(shape=(10, ))
         kx2 = KLayer.Input(shape=(10, ))
