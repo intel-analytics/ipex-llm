@@ -20,9 +20,13 @@ import com.intel.analytics.bigdl.utils.Engine
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
-import scala.reflect.ClassTag
-
-object Util {
+private[bigdl] object Util {
+  /** Get square sum of a tensor in parallel, which has better
+   * performance if tensor is in large size
+   * @param parameters
+   * @param parallelism
+   * @return square sum of the tensor
+   */
   def getSumsquareInParallel[T](parameters: Tensor[T], parallelism: Int)
                                (implicit ev: TensorNumeric[T]): Double = {
     val gradLength = parameters.nElement()

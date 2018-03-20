@@ -20,9 +20,8 @@ import java.nio.file.{Files, Paths}
 
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dataset.{DataSet, SampleToMiniBatch, _}
-import com.intel.analytics.bigdl.optim.ParameterOperations.ParameterOperations
-import com.intel.analytics.bigdl.parameters.{ConstantClippingProcessor, L2NormClippingProcessor, ParameterProcessor}
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.parameters.{ConstantClippingProcessor,
+  L2NormClippingProcessor, ParameterProcessor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils._
 import com.intel.analytics.bigdl.visualization.{TrainSummary, ValidationSummary}
@@ -397,6 +396,9 @@ abstract class Optimizer[T: ClassTag, D](
     this
   }
 
+  /**
+   * a list of ParameterProcessor, orders matter
+   */
   protected var parameterProcessors = ArrayBuffer[ParameterProcessor]()
 }
 

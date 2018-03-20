@@ -28,16 +28,23 @@ import org.apache.spark.broadcast.Broadcast
 import scala.collection.mutable
 
 /**
- * Process parameters
+ * Process parameters trait, subclass must be independent of each other
  */
 private[bigdl] trait ParameterProcessor
   extends Serializable {
+  /**
+   * Get meta data, only executed once in driver
+   *
+   * @param dataset a RDD of training data
+   * @param parameters [[AllReduceParameter]]
+   * @param state A table contained needed information
+   */
   def init[T](dataset: DistributedDataSet[MiniBatch[T]],
     parameters: AllReduceParameter[T],
     state: Table)(implicit ev: TensorNumeric[T]) : Unit = {}
 
   /**
-   * Collect global data according to operations list.
+   * Collect global data according to operations list, usually executed in driver
    *
    * @param models cached models
    * @param parameters [[AllReduceParameter]]
@@ -50,7 +57,7 @@ private[bigdl] trait ParameterProcessor
     state: Table)(implicit ev: TensorNumeric[T]) : Unit = {}
 
   /**
-   * Advance operations to process parameters.
+   * Advance operations to process parameters, usually executed in worker
    *
    * @param parameters [[AllReduceParameter]]
    * @param state A table contained needed information
@@ -60,7 +67,7 @@ private[bigdl] trait ParameterProcessor
     state: Table)(implicit ev: TensorNumeric[T]): Unit = {}
 
   /**
-   * Advance operations to process parameters.
+   * Advance operations to process parameters, usually executed in local optimer
    *
    * @param model the model to be trained
    * @param state A table contained needed information
@@ -72,8 +79,7 @@ private[bigdl] trait ParameterProcessor
 /**
  * Process constant clipping
  */
-// needs to be independant
-class ConstantClippingProcessor(min: Double, max: Double)
+private[bigdl] class ConstantClippingProcessor(min: Double, max: Double)
   extends ParameterProcessor {
   override def processParameters[T](parameters: AllReduceParameter[T],
     modelCache: Cache[T],
@@ -91,7 +97,7 @@ class ConstantClippingProcessor(min: Double, max: Double)
 /**
  * Process l2 norm clipping
  */
-class L2NormClippingProcessor(l2NormThreshold: Double)
+private[bigdl] class L2NormClippingProcessor(l2NormThreshold: Double)
   extends ParameterProcessor {
   override def collectGlobalData[T](models: RDD[Cache[T]],
     parameters: AllReduceParameter[T],
@@ -267,19 +273,3 @@ private[bigdl] class LarsProcessor()
     throw new NotImplementedError("Currently don't support LARS for local optimizer")
   }
 }
-
-//private[bigdl] class ConstantClippingProcessor4LocalOptim(min: Double, max: Double)
-//  extends ParameterProcessor {
-//
-//}
-//
-//private[bigdl] class L2normClippingProcessor4LocalOptim(l2NormThreshold: Double)
-//  extends ParameterProcessor {
-//
-//}
-
-//private[bigdl] class LARSProcessor4LocalOptim()
-//  extends ParameterProcessor {
-//
-//}
-
