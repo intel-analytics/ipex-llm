@@ -2,3 +2,6 @@ numpy
 six
 nltk
 keras==1.2.2
+h5py
+
+
