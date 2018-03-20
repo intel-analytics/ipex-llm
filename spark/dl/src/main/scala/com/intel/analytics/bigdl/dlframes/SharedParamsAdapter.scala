@@ -16,7 +16,7 @@
 
 package org.apache.spark.ml.adapter
 
-import org.apache.spark.sql.types.{DataType, StructType}
+import org.apache.spark.sql.types.{DataType, StructField, StructType}
 
 
 trait HasPredictionCol extends org.apache.spark.ml.param.shared.HasPredictionCol
@@ -42,7 +42,10 @@ object SchemaUtils {
       colName: String,
       dataType: DataType,
       nullable: Boolean = false): StructType = {
-    org.apache.spark.ml.util.SchemaUtils.appendColumn(schema, colName, dataType)
+
+    val colSF = StructField(colName, dataType, nullable)
+    require(!schema.fieldNames.contains(colSF.name), s"Column ${colSF.name} already exists.")
+    StructType(schema.fields :+ colSF)
   }
 
   def sameType(a: DataType, b: DataType): Boolean = a.sameType(b)
