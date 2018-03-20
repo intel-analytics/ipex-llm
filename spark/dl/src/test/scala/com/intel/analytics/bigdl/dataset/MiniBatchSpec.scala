@@ -110,18 +110,18 @@ class MiniBatchSpec extends FlatSpec with Matchers {
   }
 
   "SparseTensorMiniBatch with different TensorTypes" should "return right result" in {
-    val a1 = Tensor.sparse(Tensor[Double](4).range(1, 4, 1)).asInstanceOf[Tensor[Float]]
-    val a2 = Tensor.sparse(Tensor[Double](4).range(5, 8, 1)).asInstanceOf[Tensor[Float]]
+    val a1 = Tensor.sparse(Tensor[Double](4).range(1, 4, 1))
+    val a2 = Tensor.sparse(Tensor[Double](4).range(5, 8, 1))
     val b1 = Tensor[String](5)
-      .setValue(1, "a").setValue(2, "b").setValue(3, "c").setValue(4, "d").setValue(5, "e")
-      .asInstanceOf[Tensor[Float]]
+      .setValue(1, "a").setValue(2, "b")
+      .setValue(3, "c").setValue(4, "d").setValue(5, "e")
     val b2 = Tensor[String](5)
-      .setValue(1, "1").setValue(2, "2").setValue(3, "3").setValue(4, "4").setValue(5, "5")
-      .asInstanceOf[Tensor[Float]]
-    val c1 = Tensor[Double](1).fill(1).asInstanceOf[Tensor[Float]]
-    val c2 = Tensor[Double](1).fill(0).asInstanceOf[Tensor[Float]]
-    val sample1 = TensorSample[Float](Array(a1, b1), Array(c1))
-    val sample2 = TensorSample[Float](Array(a2, b2), Array(c2))
+      .setValue(1, "1").setValue(2, "2")
+      .setValue(3, "3").setValue(4, "4").setValue(5, "5")
+    val c1 = Tensor[Double](1).fill(1)
+    val c2 = Tensor[Double](1).fill(0)
+    val sample1 = TensorSample.create[Float](Array(a1, b1), Array(c1))
+    val sample2 = TensorSample.create[Float](Array(a2, b2), Array(c2))
     val miniBatch = SparseMiniBatch[Float](2, 1)
     miniBatch.set(Array(sample1, sample2))
 
