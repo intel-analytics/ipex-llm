@@ -656,3 +656,146 @@ Output is
   [0.68505836 1.7576246  0.71985936 1.8025242 ]
   [1.5343305  1.3676738  0.50516313 1.1503248 ]]]
 ```
+
+---
+## **Masking**
+Use a mask value to skip timesteps for a sequence.
+
+Masks a sequence by using a mask value to skip timesteps.
+
+**Scala:**
+```scala
+Masking(maskValue = 0.0, inputShape = null)
+```
+**Python:**
+```python
+Masking(mask_value=0.0, input_shape=None)
+```
+
+**Parameters:**
+
+* `maskValue`: Double, mask value. For each timestep in the input tensor (dimension #1 in the tensor),
+               if all values in the input tensor at that timestep are equal to `mask_value`, then the timestep will masked (skipped) in all downstream layers.
+* `inputShape`: Only need to specify this argument when you use this layer as the first layer of a model. For Scala API, it should be a [`Shape`](../keras-api-scala/#shape) object. For Python API, it should be a shape tuple. Batch dimension should be excluded.
+
+**Scala example:**
+```scala
+import com.intel.analytics.bigdl.nn.keras.{Sequential, Masking}
+import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.bigdl.tensor._
+
+val model = Sequential[Float]()
+model.add(Masking(inputShape = Shape(3)))
+val input = Tensor[Float](2, 3).randn()
+val output = model.forward(input)
+```
+Input is:
+```scala
+input: com.intel.analytics.bigdl.tensor.Tensor[Float] =
+0.00938185	-1.1461893	-1.0204586
+0.24702129	-2.2756217	0.010394359
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 2x3]
+```
+Output is:
+```scala
+output: com.intel.analytics.bigdl.nn.abstractnn.Activity =
+0.00938185	-1.1461893	-1.0204586
+0.24702129	-2.2756217	0.010394359
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 2x3]
+```
+
+**Python example:**
+```python
+import numpy as np
+from bigdl.nn.keras.topology import Sequential
+from bigdl.nn.keras.layer import Masking
+
+model = Sequential()
+model.add(Masking(input_shape=(3, )))
+input = np.random.random([2, 3])
+output = model.forward(input)
+```
+Input is:
+```python
+[[0.59540156 0.24933489 0.04434161]
+ [0.89243422 0.68499562 0.36788333]]
+```
+Output is
+```python
+[[0.5954016  0.24933489 0.04434161]
+ [0.89243424 0.68499565 0.36788332]]
+```
+
+---
+## **MaxoutDense**
+A dense maxout layer that takes the element-wise maximum of nbFeature, Dense(inputDim, outputDim) linear layers.
+
+This allows the layer to learn a convex, piecewise linear activation function over the inputs.
+
+The input of this layer should be 2D.
+
+**Scala:**
+```scala
+MaxoutDense(outputDim, nbFeature = 4, wRegularizer = null, bRegularizer = null, bias = true, inputShape = null)
+```
+**Python:**
+```python
+MaxoutDense(output_dim, nb_feature=4, W_regularizer=None, b_regularizer=None, bias=True, input_dim=None, input_shape=None)
+```
+
+**Parameters:**
+
+* `outputDim`: The size of output dimension.
+* `nbFeature`: Number of Dense layers to use internally. Integer. Default is 4.
+* `wRegularizer`: An instance of [Regularizer](../../../APIGuide/Regularizers/), (eg. L1 or L2 regularization), applied to the input weights matrices. Default is null.
+* `bRegularizer`: An instance of [Regularizer](../../../APIGuide/Regularizers/), applied to the bias. Default is null.
+* `bias`: Whether to include a bias (i.e. make the layer affine rather than linear). Default is true.
+* `inputShape`: Only need to specify this argument when you use this layer as the first layer of a model. For Scala API, it should be a [`Shape`](../keras-api-scala/#shape) object. For Python API, it should be a shape tuple. Batch dimension should be excluded.
+
+**Scala example:**
+```scala
+import com.intel.analytics.bigdl.nn.keras.{Sequential, MaxoutDense}
+import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.bigdl.tensor._
+
+val model = Sequential[Float]()
+model.add(MaxoutDense(2, inputShape = Shape(3)))
+val input = Tensor[Float](2, 3).randn()
+val output = model.forward(input)
+```
+Input is:
+```scala
+input: com.intel.analytics.bigdl.tensor.Tensor[Float] =
+-1.3550005	-1.1668127	-1.2882779
+0.83600295	-1.94683	1.323666
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 2x3]
+```
+Output is:
+```scala
+output: com.intel.analytics.bigdl.nn.abstractnn.Activity =
+0.71675766	1.2987505
+0.9871184	0.6634239
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 2x2]
+```
+
+**Python example:**
+```python
+import numpy as np
+from bigdl.nn.keras.topology import Sequential
+from bigdl.nn.keras.layer import MaxoutDense
+
+model = Sequential()
+model.add(MaxoutDense(2, input_shape=(3, )))
+input = np.random.random([2, 3])
+output = model.forward(input)
+```
+Input is:
+```python
+[[0.15996114 0.8391686  0.81922903]
+ [0.52929427 0.35061754 0.88167693]]
+```
+Output is
+```python
+[[0.4479192  0.4842512 ]
+ [0.16833156 0.521764  ]]
+```

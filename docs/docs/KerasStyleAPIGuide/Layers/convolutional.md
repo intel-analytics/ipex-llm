@@ -882,3 +882,356 @@ Output is
   [[[0.45523635 0.9846309  0.569503  ]
     [0.5274428  0.39455718 0.57384753]]]]]
 ```
+
+---
+## **ZeroPadding1D**
+Zero-padding layer for 1D input (e.g. temporal sequence).
+
+The input of this layer should be 3D.
+
+**Scala:**
+```scala
+ZeroPadding1D(padding = 1, inputShape = null)
+```
+**Python:**
+```python
+ZeroPadding1D(padding=1, input_shape=None)
+```
+
+**Parameters:**
+
+* `padding`: How many zeros to add at the beginning and at the end of the padding dimension.
+* `inputShape`: Only need to specify this argument when you use this layer as the first layer of a model. For Scala API, it should be a [`Shape`](../keras-api-scala/#shape) object. For Python API, it should be a shape tuple. Batch dimension should be excluded.
+
+**Scala example:**
+```scala
+import com.intel.analytics.bigdl.nn.keras.{Sequential, ZeroPadding1D}
+import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.bigdl.tensor._
+
+val model = Sequential[Float]()
+model.add(ZeroPadding1D(inputShape = Shape(3, 4)))
+val input = Tensor[Float](2, 3, 4).randn()
+val output = model.forward(input)
+```
+Input is:
+```scala
+input: com.intel.analytics.bigdl.tensor.Tensor[Float] =
+(1,.,.) =
+0.7421485	-0.13270181	-0.12605186	-0.7442475
+0.36977226	-0.90300065	-0.34193754	-0.035565257
+-0.23300397	0.8183156	0.7023575	-0.16938858
+
+(2,.,.) =
+-0.7785278	0.36642975	-1.0542017	-0.29036212
+-0.22632122	0.46808097	-0.68293047	1.2529073
+-0.8619831	1.3846883	1.0762612	1.1351995
+
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 2x3x4]
+```
+Output is:
+```scala
+output: com.intel.analytics.bigdl.nn.abstractnn.Activity =
+(1,.,.) =
+0.0	        0.0	        0.0	        0.0
+0.7421485	-0.13270181	-0.12605186	-0.7442475
+0.36977226	-0.90300065	-0.34193754	-0.035565257
+-0.23300397	0.8183156	0.7023575	-0.16938858
+0.0	        0.0	        0.0	        0.0
+
+(2,.,.) =
+0.0	        0.0	        0.0	        0.0
+-0.7785278	0.36642975	-1.0542017	-0.29036212
+-0.22632122	0.46808097	-0.68293047	1.2529073
+-0.8619831	1.3846883	1.0762612	1.1351995
+0.0	        0.0	        0.0	        0.0
+
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 2x5x4]
+```
+
+**Python example:**
+```python
+import numpy as np
+from bigdl.nn.keras.topology import Sequential
+from bigdl.nn.keras.layer import ZeroPadding1D
+
+model = Sequential()
+model.add(ZeroPadding1D(input_shape=(3, 4)))
+input = np.random.random([2, 3, 4])
+output = model.forward(input)
+```
+Input is:
+```python
+[[[0.74177145 0.75805981 0.2091588  0.46929227]
+  [0.46041743 0.13213793 0.51065024 0.36081853]
+  [0.60803218 0.27764702 0.31788482 0.65445294]]
+
+ [[0.96255443 0.74692762 0.50050961 0.88456158]
+  [0.55492653 0.50850271 0.17788885 0.91569285]
+  [0.27356035 0.74622588 0.39690752 0.75229177]]]
+```
+Output is
+```python
+[[[0.0        0.0        0.0        0.0       ]
+  [0.74177146 0.7580598  0.2091588  0.46929225]
+  [0.46041742 0.13213794 0.5106502  0.36081854]
+  [0.60803217 0.27764702 0.31788483 0.6544529 ]
+  [0.0        0.0        0.0        0.0       ]]
+
+ [[0.0        0.0        0.0        0.0       ]
+  [0.96255445 0.7469276  0.5005096  0.8845616 ]
+  [0.5549265  0.5085027  0.17788884 0.91569287]
+  [0.27356035 0.7462259  0.39690754 0.75229174]
+  [0.0        0.0        0.0        0.0       ]]]
+```
+
+---
+## **ZeroPadding2D**
+Zero-padding layer for 2D input (e.g. picture).
+
+The input of this layer should be 4D.
+
+**Scala:**
+```scala
+ZeroPadding2D(padding = (1, 1), dimOrdering = "th", inputShape = null)
+```
+**Python:**
+```python
+ZeroPadding2D(padding=(1, 1), dim_ordering="th", input_shape=None)
+```
+
+**Parameters:**
+
+* `padding`: How many zeros to add at the beginning and at the end of the 2 padding dimensions (rows and cols).
+* `dimOrdering`: Format of input data. Either 'th' (Channel First) or 'tf' (Channel Last). Default is 'th'.
+* `inputShape`: Only need to specify this argument when you use this layer as the first layer of a model. For Scala API, it should be a [`Shape`](../keras-api-scala/#shape) object. For Python API, it should be a shape tuple. Batch dimension should be excluded.
+
+**Scala example:**
+```scala
+import com.intel.analytics.bigdl.nn.keras.{Sequential, ZeroPadding2D}
+import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.bigdl.tensor._
+
+val model = Sequential[Float]()
+model.add(ZeroPadding2D(inputShape = Shape(2, 2, 3)))
+val input = Tensor[Float](2, 2, 2, 3).randn()
+val output = model.forward(input)
+```
+Input is:
+```scala
+input: com.intel.analytics.bigdl.tensor.Tensor[Float] =
+(1,1,.,.) =
+1.7201442	-1.0197405	1.3163399
+-0.23921064	0.7732504	-0.069928266
+
+(1,2,.,.) =
+0.46323594	-1.3043984	-0.67622787
+-1.610615	-0.39253974	-0.89652705
+
+(2,1,.,.) =
+-0.3784847	-0.6738694	0.30479854
+-0.49577644	1.0704983	0.6288544
+
+(2,2,.,.) =
+0.2821439	0.790223	0.34665197
+0.24190207	0.10775433	0.46225727
+
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 2x2x2x3]
+```
+Output is:
+```scala
+output: com.intel.analytics.bigdl.nn.abstractnn.Activity =
+(1,1,.,.) =
+0.0	    0.0	        0.0	        0.0	            0.0
+0.0	    1.7201442	-1.0197405	1.3163399	    0.0
+0.0	    -0.23921064	0.7732504	-0.069928266	0.0
+0.0	    0.0	        0.0	        0.0	            0.0
+
+(1,2,.,.) =
+0.0	    0.0	        0.0	        0.0	            0.0
+0.0	    0.46323594	-1.3043984	-0.67622787	    0.0
+0.0	    -1.610615	-0.39253974	-0.89652705	    0.0
+0.0	    0.0	        0.0	        0.0	            0.0
+
+(2,1,.,.) =
+0.0	    0.0	        0.0	        0.0	            0.0
+0.0	    -0.3784847	-0.6738694	0.30479854	    0.0
+0.0	    -0.49577644	1.0704983	0.6288544	    0.0
+0.0	    0.0	        0.0	        0.0	            0.0
+
+(2,2,.,.) =
+0.0	    0.0	        0.0	        0.0	            0.0
+0.0	    0.2821439	0.790223	0.34665197	    0.0
+0.0	    0.24190207	0.10775433	0.46225727	    0.0
+0.0	    0.0	        0.0	        0.0	            0.0
+
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 2x2x4x5]
+```
+
+**Python example:**
+```python
+import numpy as np
+from bigdl.nn.keras.topology import Sequential
+from bigdl.nn.keras.layer import ZeroPadding2D
+
+model = Sequential()
+model.add(ZeroPadding2D(input_shape=(2, 2, 3)))
+input = np.random.random([2, 2, 2, 3])
+output = model.forward(input)
+```
+Input is:
+```python
+[[[[0.44048214 0.72494886 0.96654241]
+   [0.66254801 0.37409083 0.47681466]]
+
+  [[0.23204026 0.52762765 0.15072852]
+   [0.45052127 0.29016392 0.0133929 ]]]
+
+
+ [[[0.09347565 0.4754528  0.63618458]
+   [0.08016674 0.21696158 0.83892852]]
+
+  [[0.81864575 0.90813398 0.08347963]
+   [0.57234761 0.76060611 0.65707858]]]]
+```
+Output is
+```python
+[[[[0.0        0.0        0.0        0.0        0.0       ]
+   [0.0        0.44048214 0.7249489  0.9665424  0.0       ]
+   [0.0        0.662548   0.37409082 0.47681466 0.0       ]
+   [0.0        0.0        0.0        0.0        0.0       ]]
+
+  [[0.0        0.0        0.0        0.0        0.0       ]
+   [0.0        0.23204026 0.52762765 0.15072852 0.0       ]
+   [0.0        0.45052126 0.29016393 0.0133929  0.0       ]
+   [0.0        0.0        0.0        0.0        0.0       ]]]
+
+
+ [[[0.0        0.0        0.0        0.0        0.0       ]
+   [0.0        0.09347565 0.4754528  0.6361846  0.0       ]
+   [0.0        0.08016673 0.21696158 0.8389285  0.0       ]
+   [0.0        0.0        0.0        0.0        0.0       ]]
+
+  [[0.0        0.0        0.0        0.0        0.0       ]
+   [0.0        0.8186458  0.908134   0.08347963 0.0       ]
+   [0.0        0.5723476  0.7606061  0.65707856 0.0       ]
+   [0.0        0.0        0.0        0.0        0.0       ]]]]
+```
+
+---
+## **ZeroPadding3D**
+Zero-padding layer for 3D data (spatial or spatio-temporal).
+
+The input of this layer should be 5D.
+
+**Scala:**
+```scala
+ZeroPadding3D(padding = (1, 1, 1), dimOrdering = "th", inputShape = null)
+```
+**Python:**
+```python
+ZeroPadding3D(padding=(1, 1, 1), dim_ordering="th", input_shape=None)
+```
+
+**Parameters:**
+
+* `padding`: How many zeros to add at the beginning and end of the 3 padding dimensions. Symmetric padding will be applied to each dimension.
+* `dimOrdering`: Format of input data. Either 'th' (Channel First) or 'tf' (Channel Last). Default is 'th'.
+* `inputShape`: Only need to specify this argument when you use this layer as the first layer of a model. For Scala API, it should be a [`Shape`](../keras-api-scala/#shape) object. For Python API, it should be a shape tuple. Batch dimension should be excluded.
+
+**Scala example:**
+```scala
+import com.intel.analytics.bigdl.nn.keras.{Sequential, ZeroPadding3D}
+import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.bigdl.tensor._
+
+val model = Sequential[Float]()
+model.add(ZeroPadding3D(inputShape = Shape(1, 2, 2, 2)))
+val input = Tensor[Float](1, 1, 2, 2, 2).randn()
+val output = model.forward(input)
+```
+Input is:
+```scala
+input: com.intel.analytics.bigdl.tensor.Tensor[Float] =
+(1,1,1,.,.) =
+1.086798	2.162806
+-0.50501716	-0.17430544
+
+(1,1,2,.,.) =
+-1.7388326	0.27966997
+1.6211525	1.1713351
+
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 1x1x2x2x2]
+
+```
+Output is:
+```scala
+output: com.intel.analytics.bigdl.nn.abstractnn.Activity =
+(1,1,1,.,.) =
+0.0	    0.0	        0.0	        0.0
+0.0	    0.0	        0.0	        0.0
+0.0	    0.0	        0.0	        0.0
+0.0	    0.0	        0.0	        0.0
+
+(1,1,2,.,.) =
+0.0	    0.0	        0.0	        0.0
+0.0	    1.086798	2.162806	0.0
+0.0	    -0.50501716	-0.17430544	0.0
+0.0	    0.0	        0.0	        0.0
+
+(1,1,3,.,.) =
+0.0	    0.0	        0.0	        0.0
+0.0	    -1.7388326	0.27966997	0.0
+0.0	    1.6211525	1.1713351	0.0
+0.0	    0.0	        0.0	        0.0
+
+(1,1,4,.,.) =
+0.0	    0.0	        0.0	        0.0
+0.0	    0.0	        0.0	        0.0
+0.0	    0.0	        0.0	        0.0
+0.0	    0.0	        0.0	        0.0
+
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 1x1x4x4x4]
+```
+
+**Python example:**
+```python
+import numpy as np
+from bigdl.nn.keras.topology import Sequential
+from bigdl.nn.keras.layer import ZeroPadding3D
+
+model = Sequential()
+model.add(ZeroPadding3D(input_shape=(1, 2, 2, 2)))
+input = np.random.random([1, 1, 2, 2, 2])
+output = model.forward(input)
+```
+Input is:
+```python
+[[[[[0.12432462 0.19244616]
+    [0.39039533 0.88140855]]
+
+   [[0.71426182 0.86085132]
+    [0.04443494 0.679125  ]]]]]
+```
+Output is
+```python
+[[[[[0.0        0.0        0.0        0.0       ]
+    [0.0        0.0        0.0        0.0       ]
+    [0.0        0.0        0.0        0.0       ]
+    [0.0        0.0        0.0        0.0       ]]
+
+   [[0.0        0.0        0.0        0.0       ]
+    [0.0        0.12432462 0.19244616 0.0       ]
+    [0.0        0.39039534 0.8814086  0.0       ]
+    [0.0        0.0        0.0        0.0       ]]
+
+   [[0.0        0.0        0.0        0.0       ]
+    [0.0        0.71426183 0.8608513  0.0       ]
+    [0.0        0.04443494 0.679125   0.0       ]
+    [0.0        0.0        0.0        0.0       ]]
+
+   [[0.0        0.0        0.0        0.0       ]
+    [0.0        0.0        0.0        0.0       ]
+    [0.0        0.0        0.0        0.0       ]
+    [0.0        0.0        0.0        0.0       ]]]]]
+```
