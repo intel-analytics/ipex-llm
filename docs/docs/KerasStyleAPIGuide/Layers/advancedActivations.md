@@ -74,11 +74,11 @@ It allows a small gradient when the unit is not active: f(x) = alpha * x for x <
 
 **Scala:**
 ```scala
-LeakyReLU(alpha = 0.01, inputShape = null)
+LeakyReLU(alpha = 0.3, inputShape = null)
 ```
 **Python:**
 ```python
-LeakyReLU(alpha=0.01, input_shape=None)
+LeakyReLU(alpha=0.3, input_shape=None)
 ```
 
 **Parameters:**
@@ -100,15 +100,15 @@ val output = model.forward(input)
 Input is:
 ```scala
 input: com.intel.analytics.bigdl.tensor.Tensor[Float] =
-0.87583905	0.17511077	1.5674616
-0.5608507	-0.7401811	-0.049983025
+0.8846715	-0.5720033	-0.8220917
+-0.51755846	1.099684	2.6011446
 [com.intel.analytics.bigdl.tensor.DenseTensor of size 2x3]
 ```
 Output is:
 ```scala
 output: com.intel.analytics.bigdl.nn.abstractnn.Activity =
-0.87583905	0.17511077	    1.5674616
-0.5608507	-0.0074018105	-4.9983023
+0.8846715	    -0.005720033	-0.008220917
+-0.0051755845	1.099684	    2.6011446
 [com.intel.analytics.bigdl.tensor.DenseTensor of size 2x3]
 ```
 
@@ -125,13 +125,13 @@ output = model.forward(input)
 ```
 Input is:
 ```python
-[[0.93740357 0.60127816 0.90725787]
- [0.73843463 0.50795536 0.49504337]]
+[[0.14422043 0.38066946 0.55092494]
+ [0.60075682 0.53505094 0.78330962]]
 ```
 Output is
 ```python
-[[0.93740356 0.6012782  0.90725785]
- [0.7384346  0.5079554  0.49504337]]
+[[0.14422044 0.38066944 0.55092496]
+ [0.6007568  0.5350509  0.78330964]]
 ```
 
 ---

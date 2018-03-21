@@ -36,7 +36,7 @@ import scala.reflect.ClassTag
  * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now.
  */
 class LeakyReLU[T: ClassTag](
-   private val alpha: Double = 0.01,
+   private val alpha: Double = 0.3,
    val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape))
     with IdentityOutputShape {
@@ -51,7 +51,7 @@ class LeakyReLU[T: ClassTag](
 
 object LeakyReLU {
   def apply[@specialized(Float, Double) T: ClassTag](
-    alpha: Double = 0.01,
+    alpha: Double = 0.3,
     inputShape: Shape = null)(implicit ev: TensorNumeric[T]): LeakyReLU[T] = {
     new LeakyReLU[T](alpha, inputShape)
   }
