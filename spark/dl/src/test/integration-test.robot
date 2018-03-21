@@ -130,6 +130,7 @@ Quantization Test Suite
 #  Remove Environment Variable      mnist                    cifar10                 lenetfp32model                  resnetfp32model
 
 Yarn Test Suite
+   DownLoad Input
    Build SparkJar                   spark_2.x 
    Set Environment Variable         SPARK_HOME               /opt/work/spark-2.0.0-bin-hadoop2.7  
    Set Environment Variable         http_proxy               ${http_proxy}
