@@ -17,7 +17,7 @@ Embedding(input_dim, output_dim, init="uniform", W_regularizer=None, input_shape
 
 * `inputDim`: Int > 0. Size of the vocabulary.
 * `outputDim`: Int >= 0. Dimension of the dense embedding.
-* `init`: String representation of the initialization method for the weights of the layer. Default is RandomUniform. You can also pass in corresponding string representations such as 'uniform' or 'normal', etc. for simple init methods in the factory method.
+* `init`: String representation of the initialization method for the weights of the layer. See [here](initialization/#available-initialization-methods) for available initialization strings. Default is RandomUniform.
 * `wRegularizer`: An instance of [Regularizer](../../../APIGuide/Regularizers/), (eg. L1 or L2 regularization), applied to the input weights matrices. Default is null.
 * `inputShape`: Only need to specify this argument when you use this layer as the first layer of a model. For Scala API, it should be a [`Shape`](../keras-api-scala/#shape) object. For Python API, it should be a shape tuple. Batch dimension should be excluded.
 

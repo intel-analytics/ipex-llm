@@ -19,8 +19,8 @@ Convolution1D(nb_filter, filter_length, init="glorot_uniform", activation=None, 
 
 * `nbFilter`: Number of convolution filters to use.
 * `filterLength`: The extension (spatial or temporal) of each filter.
-* `init`: String representation of the initialization method for the weights of the layer. Default is Xavier. You can also pass in corresponding string representations such as 'glorot_uniform' or 'normal', etc. for simple init methods in the factory method.
-* `activation`: String representation of the activation function to use. Default is null. You can also pass in corresponding string representations such as 'relu' or 'sigmoid', etc. for simple activations in the factory method.
+* `init`: String representation of the initialization method for the weights of the layer. See [here](initialization/#available-initialization-methods) for available initialization strings. Default is Xavier.
+* `activation`: String representation of the activation function to use. See [here](activation/#available-activations) for available activation strings. Default is null.
 * `borderMode`: Either 'valid' or 'same'. Default is 'valid'.
 * `subsampleLength`: Factor by which to subsample output. Integer. Default is 1.
 * `wRegularizer`: An instance of [Regularizer](../../../APIGuide/Regularizers/), (eg. L1 or L2 regularization), applied to the input weights matrices. Default is null.
@@ -116,8 +116,8 @@ Convolution2D(nb_filter, nb_row, nb_col, init="glorot_uniform", activation=None,
 * `nbFilter`: Number of convolution filters to use.
 * `nbRow`: Number of rows in the convolution kernel.
 * `nbCol`: Number of columns in the convolution kernel.
-* `init`: String representation of the initialization method for the weights of the layer. Default is Xavier. You can also pass in corresponding string representations such as 'glorot_uniform' or 'normal', etc. for simple init methods in the factory method.
-* `activation`: String representation of the activation function to use. Default is null. You can also pass in corresponding string representations such as 'relu' or 'sigmoid', etc. for simple activations in the factory method.
+* `init`: String representation of the initialization method for the weights of the layer. See [here](initialization/#available-initialization-methods) for available initialization strings. Default is Xavier.
+* `activation`: String representation of the activation function to use. See [here](activation/#available-activations) for available activation strings. Default is null.
 * `borderMode`: Either 'valid' or 'same'. Default is 'valid'.
 * `subsample`: Int array of length 2 corresponding to the step of the convolution in the height and width dimension. Also called strides elsewhere. Default is (1, 1).
 * `dimOrdering`: Format of input data. Either DataFormat.NCHW (dimOrdering='th') or DataFormat.NHWC (dimOrdering='tf'). Default is NCHW.
@@ -307,8 +307,8 @@ Convolution3D(nb_filter, kernel_dim1, kernel_dim2, kernel_dim3, init="glorot_uni
 * `kernelDim1`: Length of the first dimension in the convolution kernel.
 * `kernelDim2`: Length of the second dimension in the convolution kernel.
 * `kernelDim3`: Length of the third dimension in the convolution kernel.
-* `init`: String representation of the initialization method for the weights of the layer. Default is Xavier. You can also pass in corresponding string representations such as 'glorot_uniform' or 'normal', etc. for simple init methods in the factory method.
-* `activation`: String representation of the activation function to use. Default is null. You can also pass in corresponding string representations such as 'relu' or 'sigmoid', etc. for simple activations in the factory method.
+* `init`: String representation of the initialization method for the weights of the layer. See [here](initialization/#available-initialization-methods) for available initialization strings. Default is Xavier.
+* `activation`: String representation of the activation function to use. See [here](activation/#available-activations) for available activation strings. Default is null.
 * `borderMode`: Either 'valid' or 'same'. Default is 'valid'.
 * `subsample`: Int array of length 3. Factor by which to subsample output. Also called strides elsewhere. Default is (1, 1, 1).
 * `dimOrdering`: Format of the input data. Please use "CHANNEL_FIRST" (dimOrdering='th').
