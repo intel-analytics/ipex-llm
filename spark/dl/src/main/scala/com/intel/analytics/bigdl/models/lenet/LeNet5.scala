@@ -60,17 +60,21 @@ object LeNet5 {
 
     val model = Sequential()
     model.add(Reshape(Array(1, 28, 28), inputShape = Shape(28, 28, 1)))
+//    model.add(Convolution2D(6, 5, 5, activation = "tanh").setName("conv1_5x5"))
     model.add(Convolution2D(6, 5, 5).setName("conv1_5x5"))
     model.add(Activation("tanh"))
     model.add(MaxPooling2D())
+//    model.add(Convolution2D(12, 5, 5, activation = "tanh").setName("conv2_5x5"))
     model.add(Convolution2D(12, 5, 5).setName("conv2_5x5"))
     model.add(Activation("tanh"))
     model.add(MaxPooling2D())
     model.add(Flatten())
     model.add(Dense(100, activation = "tanh").setName("fc1"))
-    model.add(Activation("tanh"))
-    model.add(Dense(classNum).setName("fc2"))
-    model.add(Activation("softmax"))
+//    model.add(Dense(100).setName("fc1"))
+//    model.add(Activation("tanh"))
+    model.add(Dense(classNum, activation = "softmax").setName("fc2"))
+//    model.add(Dense(classNum).setName("fc1"))
+//    model.add(Activation("softmax"))
   }
 
   def kerasGraph(classNum: Int): nn.keras.Model[Float] = {
