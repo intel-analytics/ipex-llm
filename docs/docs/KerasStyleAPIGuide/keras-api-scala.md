@@ -144,7 +144,7 @@ model.add(Convolution2D(12, 5, 5, activation = "tanh").setName("conv2_5x5"))
 model.add(MaxPooling2D())
 model.add(Flatten())
 model.add(Dense(100, activation = "tanh").setName("fc1"))
-model.add(Dense(classNum, activation = "softmax").setName("fc2"))
+model.add(Dense(10, activation = "softmax").setName("fc2"))
 
 model.getInputShape().toSingle().toArray // Array(-1, 28, 28, 1)
 model.getOutputShape().toSingle().toArray // Array(-1, 10)
