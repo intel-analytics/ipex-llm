@@ -1,0 +1,939 @@
+---
+## **Convolution1D**
+Applies convolution operator for filtering neighborhoods of 1-D inputs.
+
+You can also use Conv1D as an alias of this layer.
+
+The input of this layer should be 3D.
+
+**Scala:**
+```scala
+Convolution1D(nbFilter, filterLength, init = Xavier, activation = null, borderMode = "valid", subsampleLength = 1, wRegularizer = null, bRegularizer = null, bias = true, inputShape = null)
+```
+**Python:**
+```python
+Convolution1D(nb_filter, filter_length, init="glorot_uniform", activation=None, border_mode="valid", subsample_length=1, W_regularizer=None, b_regularizer=None, bias=True, input_shape=None)
+```
+
+**Parameters:**
+
+* `nbFilter`: Number of convolution filters to use.
+* `filterLength`: The extension (spatial or temporal) of each filter.
+* `init`: String representation of the initialization method for the weights of the layer. Default is Xavier. You can also pass in corresponding string representations such as 'glorot_uniform' or 'normal', etc. for simple init methods in the factory method.
+* `activation`: String representation of the activation function to use. Default is null. You can also pass in corresponding string representations such as 'relu' or 'sigmoid', etc. for simple activations in the factory method.
+* `borderMode`: Either 'valid' or 'same'. Default is 'valid'.
+* `subsampleLength`: Factor by which to subsample output. Integer. Default is 1.
+* `wRegularizer`: An instance of [Regularizer](../../../APIGuide/Regularizers/), (eg. L1 or L2 regularization), applied to the input weights matrices. Default is null.
+* `bRegularizer`: An instance of [Regularizer](../../../APIGuide/Regularizers/), applied to the bias. Default is null.
+* `bias`: Whether to include a bias (i.e. make the layer affine rather than linear). Default is true.
+* `inputShape`: Only need to specify this argument when you use this layer as the first layer of a model. For Scala API, it should be a [`Shape`](../keras-api-scala/#shape) object. For Python API, it should be a shape tuple. Batch dimension should be excluded.
+
+**Scala example:**
+```scala
+import com.intel.analytics.bigdl.nn.keras.{Sequential, Convolution1D}
+import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.bigdl.tensor._
+
+val model = Sequential[Float]()
+model.add(Convolution1D(8, 3, inputShape = Shape(3, 4)))
+val input = Tensor[Float](2, 3, 4).randn()
+val output = model.forward(input)
+```
+Input is:
+```scala
+input: com.intel.analytics.bigdl.tensor.Tensor[Float] =
+(1,.,.) =
+-1.4253887	-0.044403594	-1.1169672	-0.19499049
+0.85463065	0.6665206	0.21340805	0.56255895
+1.1126599	-0.3423326	0.09643264	-0.34345046
+
+(2,.,.) =
+-0.04046587	-0.2710401	0.10183265	1.4503858
+1.0639644	1.5317003	-0.18313104	-0.7098296
+0.612399	1.7357533	0.4641411	0.13530721
+
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 2x3x4]
+```
+Output is:
+```scala
+output: com.intel.analytics.bigdl.nn.abstractnn.Activity =
+(1,.,.) =
+0.22175728	0.76192796	1.7907748	1.1534728	-1.5304534	0.07466106	-0.18292685	0.6038852
+
+(2,.,.) =
+0.85337734	0.43939286	-0.16770163	-0.8380078	0.7825804	-0.3485601	0.3017909	0.5823619
+
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 2x1x8]
+```
+
+**Python example:**
+```python
+import numpy as np
+from bigdl.nn.keras.topology import Sequential
+from bigdl.nn.keras.layer import Convolution1D
+
+model = Sequential()
+model.add(Convolution1D(8, 3, input_shape=(3, 4)))
+input = np.random.random([2, 3, 4])
+output = model.forward(input)
+```
+Input is:
+```python
+[[[0.06092268 0.0508438  0.47256153 0.80004565]
+  [0.48706905 0.65704781 0.04297214 0.42288264]
+  [0.92286158 0.85394381 0.46423248 0.87896669]]
+
+ [[0.216527   0.13880484 0.93482372 0.44812419]
+  [0.95553331 0.27084259 0.58913626 0.01879454]
+  [0.6656435  0.1985877  0.94133745 0.57504128]]]
+```
+Output is
+```python
+[[[ 0.7461933  -2.3189526  -1.454972   -0.7323345   1.5272427  -0.87963724  0.6278059  -0.23403725]]
+
+ [[ 1.2397771  -0.9249111  -1.1432207  -0.92868984  0.53766745 -1.0271561  -0.9593589  -0.4768026 ]]]
+```
+
+---
+## **Convolution2D**
+Applies a 2D convolution over an input image composed of several input planes.
+
+You can also use Conv2D as an alias of this layer.
+
+The input of this layer should be 4D.
+
+**Scala:**
+```scala
+Convolution2D(nbFilter, nbRow, nbCol, init = Xavier, activation = null, borderMode = "valid", subsample = Array(1, 1), dimOrdering = DataFormat.NCHW, wRegularizer = null, bRegularizer = null, bias = true, inputShape = null)
+```
+**Python:**
+```python
+Convolution2D(nb_filter, nb_row, nb_col, init="glorot_uniform", activation=None, border_mode="valid", subsample=(1, 1), dim_ordering="th", W_regularizer=None, b_regularizer=None, bias=True, input_shape=None)
+```
+
+**Parameters:**
+
+* `nbFilter`: Number of convolution filters to use.
+* `nbRow`: Number of rows in the convolution kernel.
+* `nbCol`: Number of columns in the convolution kernel.
+* `init`: String representation of the initialization method for the weights of the layer. Default is Xavier. You can also pass in corresponding string representations such as 'glorot_uniform' or 'normal', etc. for simple init methods in the factory method.
+* `activation`: String representation of the activation function to use. Default is null. You can also pass in corresponding string representations such as 'relu' or 'sigmoid', etc. for simple activations in the factory method.
+* `borderMode`: Either 'valid' or 'same'. Default is 'valid'.
+* `subsample`: Int array of length 2 corresponding to the step of the convolution in the height and width dimension. Also called strides elsewhere. Default is (1, 1).
+* `dimOrdering`: Format of input data. Either DataFormat.NCHW (dimOrdering='th') or DataFormat.NHWC (dimOrdering='tf'). Default is NCHW.
+* `wRegularizer`: An instance of [Regularizer](../../../APIGuide/Regularizers/), (eg. L1 or L2 regularization), applied to the input weights matrices. Default is null.
+* `bRegularizer`: An instance of [Regularizer](../../../APIGuide/Regularizers/), applied to the bias. Default is null.
+* `bias`: Whether to include a bias (i.e. make the layer affine rather than linear). Default is true.
+* `inputShape`: Only need to specify this argument when you use this layer as the first layer of a model. For Scala API, it should be a [`Shape`](../keras-api-scala/#shape) object. For Python API, it should be a shape tuple. Batch dimension should be excluded.
+
+**Scala example:**
+```scala
+import com.intel.analytics.bigdl.nn.keras.{Sequential, Convolution2D}
+import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.bigdl.tensor._
+
+val model = Sequential[Float]()
+model.add(Convolution2D(4, 2, 2, activation = "relu", inputShape = Shape(2, 3, 4)))
+val input = Tensor[Float](2, 2, 3, 4).randn()
+val output = model.forward(input)
+```
+Input is:
+```scala
+input: com.intel.analytics.bigdl.tensor.Tensor[Float] =
+(1,1,.,.) =
+-1.6687597	1.3452173	-1.9608531	-0.30892205
+1.7459077	-0.443617	0.25789636	0.44496542
+-1.5395774	-0.37713575	-0.9973955	0.16208267
+
+(1,2,.,.) =
+0.593965	1.0544858	-1.0765858	0.22257836
+0.69452614	1.3700147	-0.886259	0.013910895
+-1.9819669	0.32151425	1.8303248	0.24231844
+
+(2,1,.,.) =
+-2.150859	-1.5894475	0.7543173	0.7713991
+-0.17536041	0.89053404	0.50489277	-0.098128
+0.11551995	1.3663125	0.76734704	0.28318745
+
+(2,2,.,.) =
+-0.9801306	0.39797616	-0.6403248	1.0090133
+-0.16866015	-1.426308	-2.4097774	0.26011375
+-2.5700948	1.0486397	-0.4585798	-0.94231766
+
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 2x2x3x4]
+```
+Output is:
+```scala
+output: com.intel.analytics.bigdl.nn.abstractnn.Activity =
+(1,1,.,.) =
+0.0	        0.6800046	0.0
+1.0366663	0.235024	0.0
+
+(1,2,.,.) =
+0.0	        0.84696645	0.0
+0.9099177	0.0	        0.0
+
+(1,3,.,.) =
+0.122891426	0.0	        0.86579126
+0.0	        0.0	        0.0
+
+(1,4,.,.) =
+0.0	        0.7185988	0.0
+1.0967548	0.48376864	0.0
+
+(2,1,.,.) =
+0.0	        0.0	        0.29164955
+0.06815311	0.0	        0.0
+
+(2,2,.,.) =
+0.36370438	0.42393038	0.26948324
+1.1676859	0.5698308	0.44842285
+
+(2,3,.,.) =
+1.0797265	1.2410768	0.18289843
+0.0	        0.0	        0.18757495
+
+(2,4,.,.) =
+0.0	        0.35713753	0.0
+0.0	        0.0	        0.0
+
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 2x4x2x3]
+```
+
+**Python example:**
+```python
+import numpy as np
+from bigdl.nn.keras.topology import Sequential
+from bigdl.nn.keras.layer import Convolution2D
+
+model = Sequential()
+model.add(Convolution2D(8, 2, 2, input_shape=(2, 3, 4)))
+input = np.random.random([2, 2, 3, 4])
+output = model.forward(input)
+```
+Input is:
+```python
+[[[[0.19437731 0.64183138 0.36600651 0.88419427]
+   [0.84540741 0.18648179 0.18337501 0.76412979]
+   [0.97224245 0.40981473 0.58031837 0.18746691]]
+
+  [[0.44815756 0.76851744 0.05282321 0.96850342]
+   [0.55505585 0.32746871 0.8203892  0.68081071]
+   [0.98298028 0.09181376 0.45529601 0.27574963]]]
+
+
+ [[[0.05470002 0.6619536  0.66807666 0.89828294]
+   [0.97384261 0.46686647 0.09836094 0.94738915]
+   [0.84818782 0.36590349 0.12251775 0.27480784]]
+
+  [[0.66748889 0.41166346 0.20491785 0.7505849 ]
+   [0.82542638 0.06154247 0.52622523 0.60633963]
+   [0.2514689  0.05039539 0.62357231 0.67481365]]]]
+```
+Output is
+```python
+[[[[-0.0988009   0.26246473 -0.4662117 ]
+   [ 0.05075793 -0.16602461 -0.03777824]]
+
+  [[-0.02134421 -0.19602485  0.33376762]
+   [-0.5586269   0.28378856 -0.06127208]]
+
+  [[-0.1213189   0.00907892 -0.14043418]
+   [ 0.17288052  0.08276197 -0.07103536]]
+
+  [[ 0.05794746  0.11944796  0.25101256]
+   [ 0.5302597  -0.16872913 -0.08647149]]
+
+  [[ 0.3122023  -0.01873633  0.2288805 ]
+   [ 0.01633764  0.33552125  0.3166185 ]]
+
+  [[ 0.07855795 -0.04435034  0.39226973]
+   [ 0.04580283  0.21235713  0.10258953]]
+
+  [[-0.5998042   0.07232806 -0.42452678]
+   [-0.3526574  -0.4502435  -0.570247  ]]
+
+  [[-0.5334501  -0.14428003 -0.22441173]
+   [-0.26046216 -0.3884946  -0.4769727 ]]]
+
+
+ [[[-0.07789     0.23409587 -0.30493957]
+   [ 0.34930268  0.02882592 -0.18473886]]
+
+  [[-0.26778093 -0.16204454  0.2071411 ]
+   [-0.5981453   0.13439535  0.17060181]]
+
+  [[-0.1304613   0.06076932  0.08724628]
+   [ 0.35134685  0.04502768 -0.27199256]]
+
+  [[ 0.19735415  0.18726759  0.29029   ]
+   [ 0.34519124  0.03399585  0.010462  ]]
+
+  [[ 0.32732677  0.03846358  0.16215432]
+   [ 0.02890245  0.08278318  0.22489181]]
+
+  [[-0.02788929 -0.02636322  0.3856727 ]
+   [-0.04678471  0.08730496  0.15912437]]
+
+  [[-0.65168756 -0.21884279 -0.39584833]
+   [-0.40088344 -0.12628973 -0.30378893]]
+
+  [[-0.34098598 -0.3239963  -0.15135863]
+   [-0.31352553 -0.3404264  -0.25214154]]]]
+```
+
+---
+## **Convolution3D**
+Applies convolution operator for filtering windows of three-dimensional inputs.
+
+You can also use Conv3D as an alias of this layer.
+
+Data format currently supported for this layer is 'CHANNEL_FIRST' (dimOrdering='th').
+
+The input of this layer should be 5D.
+
+**Scala:**
+```scala
+Convolution3D(nbFilter, kernelDim1, kernelDim2, kernelDim3, init = Xavier, activation = null, borderMode = "valid", subsample = Array(1, 1, 1), dimOrdering = "CHANNEL_FIRST", wRegularizer = null, bRegularizer = null, bias = true, inputShape = null)
+```
+**Python:**
+```python
+Convolution3D(nb_filter, kernel_dim1, kernel_dim2, kernel_dim3, init="glorot_uniform", activation=None, border_mode="valid", subsample=(1, 1, 1), dim_ordering="th", W_regularizer=None, b_regularizer=None, bias=True, input_shape=None)
+```
+
+**Parameters:**
+
+* `nbFilter`: Number of convolution filters to use.
+* `kernelDim1`: Length of the first dimension in the convolution kernel.
+* `kernelDim2`: Length of the second dimension in the convolution kernel.
+* `kernelDim3`: Length of the third dimension in the convolution kernel.
+* `init`: String representation of the initialization method for the weights of the layer. Default is Xavier. You can also pass in corresponding string representations such as 'glorot_uniform' or 'normal', etc. for simple init methods in the factory method.
+* `activation`: String representation of the activation function to use. Default is null. You can also pass in corresponding string representations such as 'relu' or 'sigmoid', etc. for simple activations in the factory method.
+* `borderMode`: Either 'valid' or 'same'. Default is 'valid'.
+* `subsample`: Int array of length 3. Factor by which to subsample output. Also called strides elsewhere. Default is (1, 1, 1).
+* `dimOrdering`: Format of the input data. Please use "CHANNEL_FIRST" (dimOrdering='th').
+* `wRegularizer`: An instance of [Regularizer](../../../APIGuide/Regularizers/), (eg. L1 or L2 regularization), applied to the input weights matrices. Default is null.
+* `bRegularizer`: An instance of [Regularizer](../../../APIGuide/Regularizers/), applied to the bias. Default is null.
+* `bias`: Whether to include a bias (i.e. make the layer affine rather than linear). Default is true.
+* `inputShape`: Only need to specify this argument when you use this layer as the first layer of a model. For Scala API, it should be a [`Shape`](../keras-api-scala/#shape) object. For Python API, it should be a shape tuple. Batch dimension should be excluded.
+
+**Scala example:**
+```scala
+import com.intel.analytics.bigdl.nn.keras.{Sequential, Convolution3D}
+import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.bigdl.tensor._
+
+val model = Sequential[Float]()
+model.add(Convolution3D(4, 2, 2, 2, subsample = (1, 2, 3), inputShape = Shape(2, 2, 2, 3)))
+val input = Tensor[Float](2, 2, 2, 2, 3).randn()
+val output = model.forward(input)
+```
+Input is:
+```scala
+input: com.intel.analytics.bigdl.tensor.Tensor[Float] =
+(1,1,1,.,.) =
+-0.46693054	-0.82378006	0.68157125
+-0.655717	0.22282869	-1.219964
+
+(1,1,2,.,.) =
+-0.16400066	-1.6805111	-0.24999277
+2.699782	0.2547899	0.17759864
+
+(1,2,1,.,.) =
+1.7259076	-0.99749154	-1.537182
+0.012021423	-0.081680365	1.8739177
+
+(1,2,2,.,.) =
+0.78475255	-0.11866267	2.2575433
+-0.06437661	-0.27033052	1.0787231
+
+(2,1,1,.,.) =
+0.40398896	-0.093779854	-1.1305497
+-0.28969595	-0.25105247	0.4547002
+
+(2,1,2,.,.) =
+1.5595043	-0.022417855	-0.23875986
+-0.39391303	-0.11820283	0.5350003
+
+(2,2,1,.,.) =
+-0.19726531	-0.3812657	0.70397776
+0.14577204	-0.4403172	-0.21128723
+
+(2,2,2,.,.) =
+-1.7018273	0.0813673	-0.1336328
+-0.224897	0.40324107	0.78319305
+
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 2x2x2x2x3]
+```
+Output is:
+```scala
+output: com.intel.analytics.bigdl.nn.abstractnn.Activity =
+(1,1,1,.,.) =
+0.35372344
+
+(1,2,1,.,.) =
+0.10047977
+
+(1,3,1,.,.) =
+0.35816973
+
+(1,4,1,.,.) =
+-7.693302E-4
+
+(2,1,1,.,.) =
+-0.31896958
+
+(2,2,1,.,.) =
+0.8743005
+
+(2,3,1,.,.) =
+0.059266374
+
+(2,4,1,.,.) =
+-0.31279063
+
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 2x4x1x1x1]
+```
+
+**Python example:**
+```python
+import numpy as np
+from bigdl.nn.keras.topology import Sequential
+from bigdl.nn.keras.layer import Convolution3D
+
+model = Sequential()
+model.add(Convolution3D(8, 2, 2, 2, input_shape=(2, 2, 2, 3)))
+input = np.random.random([2, 2, 2, 2, 3])
+output = model.forward(input)
+```
+Input is:
+```python
+[[[[[0.7406232  0.17069595 0.49049509]
+    [0.46894878 0.3212728  0.67086282]]
+
+   [[0.23254671 0.68656094 0.24549312]
+    [0.74192528 0.83829765 0.60144398]]]
+
+
+  [[[0.62275673 0.43123044 0.59355009]
+    [0.43760104 0.99686728 0.63331727]]
+
+   [[0.14536146 0.66020257 0.69773928]
+    [0.75140452 0.7018655  0.28522137]]]]
+
+
+
+ [[[[0.55329413 0.89737907 0.87660139]
+    [0.91262388 0.43710714 0.07763915]]
+
+   [[0.44165432 0.66862791 0.59550845]
+    [0.88850245 0.47524854 0.20496623]]]
+
+
+  [[[0.35428448 0.35574329 0.10725457]
+    [0.99730458 0.89431943 0.16040405]]
+
+   [[0.80648277 0.73987872 0.47469033]
+    [0.46962067 0.86281987 0.49115133]]]]]
+```
+Output is
+```python
+[[[[[ 0.05922231 -0.20380439]]]
+
+
+  [[[-0.0689057  -0.11754047]]]
+
+
+  [[[-0.06682246  0.05929434]]]
+
+
+  [[[ 0.15217274 -0.09087251]]]
+
+
+  [[[ 0.4490165   0.561387  ]]]
+
+
+  [[[-0.0929302  -0.17395487]]]
+
+
+  [[[ 0.5934771   0.70535845]]]
+
+
+  [[[-0.833964   -0.9994378 ]]]]
+
+
+
+ [[[[-0.16287786 -0.26494405]]]
+
+
+  [[[ 0.1437061   0.3184694 ]]]
+
+
+  [[[ 0.34620482  0.32837263]]]
+
+
+  [[[ 0.23377436  0.08530965]]]
+
+
+  [[[ 0.6995939   0.91586936]]]
+
+
+  [[[-0.15703988 -0.12611805]]]
+
+
+  [[[ 0.7837722   0.8422351 ]]]
+
+
+  [[[-1.2703606  -0.91368437]]]]]
+```
+
+---
+## **Cropping1D**
+Cropping layer for 1D input (e.g. temporal sequence).
+
+The input of this layer should be 3D.
+
+**Scala:**
+```scala
+Cropping1D(cropping = Array(1, 1), inputShape = null)
+```
+**Python:**
+```python
+Cropping1D(cropping=(1, 1), input_shape=None)
+```
+
+**Parameters:**
+
+* `cropping`: Int array of length 2. How many units should be trimmed off at the beginning and end of the cropping dimension. Default is (1, 1).
+* `inputShape`: Only need to specify this argument when you use this layer as the first layer of a model. For Scala API, it should be a [`Shape`](../keras-api-scala/#shape) object. For Python API, it should be a shape tuple. Batch dimension should be excluded.
+
+**Scala example:**
+```scala
+import com.intel.analytics.bigdl.nn.keras.{Sequential, Cropping1D}
+import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.bigdl.tensor._
+
+val model = Sequential[Float]()
+model.add(Cropping1D(inputShape = Shape(3, 4)))
+val input = Tensor[Float](2, 3, 4).randn()
+val output = model.forward(input)
+```
+Input is:
+```scala
+input: com.intel.analytics.bigdl.tensor.Tensor[Float] =
+(1,.,.) =
+-1.0038188	-0.75265634	0.7417358	1.0674809
+-1.4702164	0.64112693	0.17750219	-0.21439286
+-0.93766433	-1.0809567	0.7706962	0.16380796
+
+(2,.,.) =
+0.45019576	-0.36689326	0.08852628	-0.21602148
+0.66039973	0.11638404	0.062985964	-1.0420738
+0.46727908	-0.85894865	1.9853845	0.059447426
+
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 2x3x4]
+```
+Output is:
+```scala
+output: com.intel.analytics.bigdl.nn.abstractnn.Activity =
+(1,.,.) =
+-1.4702164	0.64112693	0.17750219	-0.21439286
+
+(2,.,.) =
+0.66039973	0.11638404	0.062985964	-1.0420738
+
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 2x1x4]
+```
+
+**Python example:**
+```python
+import numpy as np
+from bigdl.nn.keras.topology import Sequential
+from bigdl.nn.keras.layer import Cropping1D
+
+model = Sequential()
+model.add(Cropping1D(input_shape=(3, 4)))
+input = np.random.random([2, 3, 4])
+output = model.forward(input)
+```
+Input is:
+```python
+[[[0.01030651 0.77603525 0.97263208 0.15933375]
+  [0.05135971 0.01139832 0.28809891 0.57260363]
+  [0.28128354 0.55290954 0.77011153 0.09879061]]
+
+ [[0.75765909 0.55102462 0.42426818 0.14383546]
+  [0.85198966 0.3990277  0.13061313 0.10349525]
+  [0.69892804 0.30310119 0.2241441  0.05978997]]]
+```
+Output is
+```python
+[[[0.05135971 0.01139832 0.2880989  0.57260364]]
+
+ [[0.8519896  0.3990277  0.13061313 0.10349525]]]
+```
+
+---
+## **Cropping2D**
+Cropping layer for 2D input (e.g. picture).
+
+The input of this layer should be 4D.
+
+**Scala:**
+```scala
+Cropping2D(heightCrop = Array(0, 0), widthCrop = Array(0, 0), dimOrdering = DataFormat.NCHW, inputShape = null)
+```
+**Python:**
+```python
+Cropping2D(cropping=((0, 0), (0, 0)), dim_ordering="th", input_shape=None)
+```
+
+**Parameters:**
+
+* `heightCrop`: Int array of length 2. Height of the 2 cropping dimension. Default is (0, 0).
+* `widthCrop`: Int array of length 2. Width of the 2 cropping dimension. Default is (0, 0).
+* `dimOrdering`: Format of input data. Either DataFormat.NCHW (dimOrdering='th') or DataFormat.NHWC (dimOrdering='tf'). Default is NCHW.
+* `inputShape`: Only need to specify this argument when you use this layer as the first layer of a model. For Scala API, it should be a [`Shape`](../keras-api-scala/#shape) object. For Python API, it should be a shape tuple. Batch dimension should be excluded.
+
+**Scala example:**
+```scala
+import com.intel.analytics.bigdl.nn.keras.{Sequential, Cropping2D}
+import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.bigdl.tensor._
+
+val model = Sequential[Float]()
+model.add(Cropping2D(inputShape = Shape(2, 3, 4)))
+val input = Tensor[Float](2, 2, 3, 4).randn()
+val output = model.forward(input)
+```
+Input is:
+```scala
+input: com.intel.analytics.bigdl.tensor.Tensor[Float] =
+(1,1,.,.) =
+3.0181491	    0.39339828	0.4084114	-0.7549943
+2.2580957	    -2.0485866	1.7900336	-0.2639151
+0.2533084	    1.3308302	-0.57494026	0.08826585
+
+(1,2,.,.) =
+-0.82792234	    0.13290255	-0.30093324	-0.24207604
+-0.055458296	-0.8811668	0.8884301	0.5545515
+2.379106	    0.8125195	0.6664347	0.7499066
+
+(2,1,.,.) =
+-0.3470294	    -0.41142288	0.3438717	1.2533135
+-0.33849892	    0.9443926	0.8818804	-1.1636207
+-0.68680257	    0.94270635	-0.7203154	0.2628462
+
+(2,2,.,.) =
+0.04728707	    1.8275687	0.5546023	0.6797352
+-0.35856625	    -1.1059879	-0.06116452	-0.7903911
+0.13801727	    -0.14702533	1.2484895	1.4973202
+
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 2x2x3x4]
+```
+Output is:
+```scala
+output: com.intel.analytics.bigdl.nn.abstractnn.Activity =
+(1,1,.,.) =
+3.0181491	    0.39339828	0.4084114	-0.7549943
+2.2580957	    -2.0485866	1.7900336	-0.2639151
+0.2533084	    1.3308302	-0.57494026	0.08826585
+
+(1,2,.,.) =
+-0.82792234	    0.13290255	-0.30093324	-0.24207604
+-0.055458296	-0.8811668	0.8884301	0.5545515
+2.379106	    0.8125195	0.6664347	0.7499066
+
+(2,1,.,.) =
+-0.3470294	    -0.41142288	0.3438717	1.2533135
+-0.33849892	    0.9443926	0.8818804	-1.1636207
+-0.68680257	    0.94270635	-0.7203154	0.2628462
+
+(2,2,.,.) =
+0.04728707	    1.8275687	0.5546023	0.6797352
+-0.35856625	    -1.1059879	-0.06116452	-0.7903911
+0.13801727	    -0.14702533	1.2484895	1.4973202
+
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 2x2x3x4]
+```
+
+**Python example:**
+```python
+import numpy as np
+from bigdl.nn.keras.topology import Sequential
+from bigdl.nn.keras.layer import Cropping2D
+
+model = Sequential()
+model.add(Cropping2D(input_shape=(2, 3, 4)))
+input = np.random.random([2, 2, 3, 4])
+output = model.forward(input)
+```
+Input is:
+```python
+[[[[0.03691489 0.60233732 0.96327319 0.99561146]
+   [0.85728883 0.77923287 0.41328434 0.87490199]
+   [0.3389653  0.94804499 0.72922732 0.21191413]]
+
+  [[0.28962322 0.30133445 0.58516862 0.22476588]
+   [0.95386045 0.72488497 0.12056255 0.01265548]
+   [0.48645173 0.34426033 0.09410422 0.86815053]]]
+
+
+ [[[0.57444115 0.79141167 0.20755353 0.38616465]
+   [0.95793123 0.22366943 0.5080078  0.27193368]
+   [0.65402317 0.1023231  0.67207896 0.2229965 ]]
+
+  [[0.04160647 0.55577895 0.30907277 0.42227706]
+   [0.54489229 0.90423796 0.50782414 0.51441165]
+   [0.87544565 0.47791071 0.0341273  0.14728084]]]]
+```
+Output is
+```python
+[[[[0.03691489 0.6023373  0.96327317 0.9956115 ]
+   [0.85728884 0.77923286 0.41328433 0.874902  ]
+   [0.3389653  0.948045   0.7292273  0.21191412]]
+
+  [[0.28962323 0.30133444 0.5851686  0.22476588]
+   [0.95386046 0.724885   0.12056255 0.01265548]
+   [0.48645175 0.34426033 0.09410422 0.86815053]]]
+
+
+ [[[0.57444113 0.7914117  0.20755354 0.38616467]
+   [0.9579312  0.22366942 0.5080078  0.27193367]
+   [0.6540232  0.10232309 0.67207897 0.2229965 ]]
+
+  [[0.04160647 0.555779   0.30907276 0.42227706]
+   [0.5448923  0.904238   0.5078241  0.5144116 ]
+   [0.87544566 0.47791073 0.0341273  0.14728084]]]]
+```
+
+---
+## **Cropping3D**
+Cropping layer for 3D data (e.g. spatial or spatio-temporal).
+
+The input of this layer should be 5D.
+
+**Scala:**
+```scala
+Cropping3D(dim1Crop = Array(1, 1), dim2Crop = Array(1, 1), dim3Crop = Array(1, 1), dimOrdering = "CHANNEL_FIRST", inputShape = null)
+```
+**Python:**
+```python
+Cropping3D(cropping=((1, 1), (1, 1), (1, 1)), dim_ordering="th", input_shape=None)
+```
+
+**Parameters:**
+
+* `dim1Crop`: Int array of length 2. Kernel dim1 of the three cropping dimensions. Default is (1, 1).
+* `dim2Crop`: Int array of length 2. Kernel dim2 of the three cropping dimensions. Default is (1, 1).
+* `dim3Crop`: Int array of length 2. Kernel dim3 of the three cropping dimensions. Default is (1, 1).
+* `dimOrdering`: Format of input data. Either 'CHANNEL_FIRST' (dimOrdering='th') or 'CHANNEL_LAST' (dimOrdering='tf'). Default is 'CHANNEL_FIRST'.
+* `inputShape`: Only need to specify this argument when you use this layer as the first layer of a model. For Scala API, it should be a [`Shape`](../keras-api-scala/#shape) object. For Python API, it should be a shape tuple. Batch dimension should be excluded.
+
+**Scala example:**
+```scala
+import com.intel.analytics.bigdl.nn.keras.{Sequential, Cropping3D}
+import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.bigdl.tensor._
+
+val model = Sequential[Float]()
+model.add(Cropping3D(inputShape = Shape(2, 3, 4, 5)))
+val input = Tensor[Float](2, 2, 3, 4, 5).randn()
+val output = model.forward(input)
+```
+Input is:
+```scala
+input: com.intel.analytics.bigdl.tensor.Tensor[Float] =
+(1,1,1,.,.) =
+-0.12339484	    0.25661087	    0.04387503	    -1.1047344	    -1.1413815
+1.1830065	    -0.07189157	    -0.5418846	    0.5576781	    -0.5460917
+-0.5679186	    -0.30854696	    1.2614665	    -0.6774269	    -0.63295823
+0.5269464	    -2.7981617	    -0.056265026	-1.0814936	    -1.0848739
+
+(1,1,2,.,.) =
+-1.9100302	    0.461067	    0.4014941	    0.60723174	    -0.40414023
+0.34300476	    0.7107094	    1.3142885	    1.5696589	    0.97591686
+0.38320687	    0.07036536	    -0.43628898	    0.58050656	    -0.57882625
+-0.43699506	    -0.0094956765	0.15171598	    0.038076796	    -1.2433665
+
+(1,1,3,.,.) =
+0.39671394	    0.880047	    0.30971292	    -0.3369089	    0.13062176
+-0.27803114 	-0.62177086	    0.16659822	    0.89428085	    0.23684736
+1.6151237	    -1.1479733	    -0.2229254	    1.1361892	    0.79478127
+-1.8207864	    1.6544164	    0.07977915	    -1.1316417	    -0.25483203
+
+(1,2,1,.,.) =
+1.3165517	    -0.9479057	    -1.4662051	    -0.3343554	    -0.4522552
+-1.5829691	    0.6378519	    -0.16399206	    1.4724066	    1.2387054
+-1.1467208	    -0.6325814	    -1.2106491	    -0.035734158	0.19871919
+2.285004	    1.0482147	    -2.0056705  	-0.80917794	    2.523167
+
+(1,2,2,.,.) =
+-0.57108706	    -0.23606259	    -0.45569882	    -0.034214735    -1.9130942
+-0.2743481	    1.61177	        -0.7052599	    0.17889105	    -0.31241596
+0.22377247	    1.5860337	    -0.3226252	    -0.1341058	    0.9239994
+0.03615294	    0.6233593	    0.757827	    -0.72271305	    0.9429943
+
+(1,2,3,.,.) =
+-0.4409662	    0.8867786	    2.0036085	    0.16242673	    -0.3332395
+0.09082064	    0.04958198	    -0.27834833	    1.8025815	    -0.04848101
+0.2690667	    -1.1263227	    -0.95486647	    0.09473259	    0.98166656
+-0.9509363	    -0.10084029	    -0.35410827	    0.29626986	    0.97203517
+
+(2,1,1,.,.) =
+0.42096403	    0.14016314	    0.20216857	    -0.678293	    -1.0970931
+-0.4981112	    0.12429344	    1.7156922	    -0.24384527 	-0.010780937
+0.03672217	    2.3021698	    1.568247	    -0.43173146	    -0.5550057
+0.30469602	    1.4772439	    -0.21195345 	0.04221814	    -1.6883365
+
+(2,1,2,.,.) =
+0.22468264	    0.72787744	    -0.9597003	    -0.28472963	    -1.4575284
+1.0487963	    0.4982454	    -1.0186157	    -1.9877508	    -1.133779
+0.17539643	    -0.35151628	    -1.8955303	    2.1854792	    0.59556997
+0.6893949	    -0.19556235	    0.25862908	    0.24450152	    0.17786922
+
+(2,1,3,.,.) =
+1.147159	    -0.8849993	    0.9826487	    0.95360875	    -0.9210176
+1.3439047	    0.6739913	    0.06558858	    0.91963255  	-1.1758618
+1.747105	    -0.7225308	    -1.0160877	    0.67554474	    -0.7762811
+0.21184689	    -0.43668815	    -1.0738864	    0.04661594	    0.9613895
+
+(2,2,1,.,.) =
+-0.377159	    -0.28094378	    0.1081715	    1.3683178       1.2572801
+0.47781375	    0.4545212	    0.55356956	    1.0366637	    -0.1962683
+-1.820227	    -0.111765414	1.9194998	    -1.6089902	    -1.6960226
+0.14896627	    0.9360371	    0.49156702	    0.08601956	    -0.08815153
+
+(2,2,2,.,.) =
+0.056315728	    -0.13061485	    -0.49018836	    -0.59103477     -1.6910721
+-0.023719765	-0.44977355	    0.11218439	    0.224829	    1.400084
+0.31496882	    -1.6386473	    -0.6715097	    0.14816228	    0.3240011
+-0.80607724	    -0.37951842	    -0.2187672	    1.1087769	    0.43044603
+
+(2,2,3,.,.) =
+-1.6647842	    -0.5720825	    -1.5150099	    0.42346838	    1.495052
+-0.3567161	    -1.4341534	    -0.19422509	    -1.2871891	    -1.2758921
+-0.47077888	    -0.42217267	    0.67764246	    1.2170314	    0.8420698
+-0.4263702	    1.2792329	    0.38645822	    -2.4653213	    -1.512707
+
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 2x2x3x4x5]
+
+```
+Output is:
+```scala
+output: com.intel.analytics.bigdl.nn.abstractnn.Activity =
+(1,1,1,.,.) =
+0.7107094	1.3142885	1.5696589
+0.07036536	-0.43628898	0.58050656
+
+(1,2,1,.,.) =
+1.61177	    -0.7052599	0.17889105
+1.5860337	-0.3226252	-0.1341058
+
+(2,1,1,.,.) =
+0.4982454	-1.0186157	-1.9877508
+-0.35151628	-1.8955303	2.1854792
+
+(2,2,1,.,.) =
+-0.44977355	0.11218439	0.224829
+-1.6386473	-0.6715097	0.14816228
+
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 2x2x1x2x3]
+```
+
+**Python example:**
+```python
+import numpy as np
+from bigdl.nn.keras.topology import Sequential
+from bigdl.nn.keras.layer import Cropping3D
+
+model = Sequential()
+model.add(Cropping3D(input_shape=(2, 3, 4, 5)))
+input = np.random.random([2, 2, 3, 4, 5])
+output = model.forward(input)
+```
+Input is:
+```python
+[[[[[0.17398425 0.68189365 0.77769123 0.53108205 0.64715435]
+    [0.14553671 0.56312657 0.68612354 0.69176945 0.30109699]
+    [0.09732807 0.37460879 0.19945361 0.86471357 0.66225896]
+    [0.23071766 0.7940814  0.20828491 0.05256511 0.39059369]]
+
+   [[0.61604377 0.08752888 0.0373393  0.2074062  0.60620641]
+    [0.72873275 0.86871873 0.89248703 0.9407502  0.71830713]
+    [0.23277175 0.75968678 0.2160847  0.76278034 0.27796526]
+    [0.45593022 0.31406512 0.83030059 0.17528758 0.56134316]]
+
+   [[0.65576189 0.41055457 0.90979203 0.76003643 0.26369912]
+    [0.20767533 0.60489496 0.44996379 0.20016757 0.39282226]
+    [0.14055952 0.15767185 0.70149107 0.88403803 0.77345544]
+    [0.34344548 0.03721154 0.86204782 0.45349481 0.69348787]]]
+
+
+  [[[0.55441874 0.59949813 0.4450893  0.2103161  0.6300366 ]
+    [0.71573331 0.32423206 0.06302588 0.91902299 0.30852669]
+    [0.73540519 0.20697542 0.20543135 0.44461869 0.89286638]
+    [0.41614996 0.48155318 0.51663767 0.23681825 0.34780746]]
+
+   [[0.34529962 0.81156897 0.77911935 0.65392321 0.45178564]
+    [0.39702465 0.36180668 0.37867952 0.24818676 0.84365902]
+    [0.67836434 0.24043224 0.59870659 0.81976809 0.95442206]
+    [0.15342281 0.48607751 0.11420129 0.68621285 0.09892679]]
+
+   [[0.61122758 0.40359022 0.99805441 0.76764677 0.6281926 ]
+    [0.44867213 0.81206033 0.40117858 0.98967612 0.76897064]
+    [0.90603977 0.17299288 0.68803644 0.75164168 0.4161878 ]
+    [0.18996933 0.93317759 0.77711184 0.50760022 0.77439241]]]]
+
+
+
+ [[[[0.49974828 0.74486599 0.12447392 0.15415173 0.36715309]
+    [0.49334423 0.66699219 0.22202136 0.52689596 0.15497081]
+    [0.4117844  0.21886979 0.13096058 0.82589121 0.00621519]
+    [0.38257617 0.60924058 0.53549974 0.64299846 0.66315369]]
+
+   [[0.78048895 0.20350694 0.16485496 0.71243727 0.4581091 ]
+    [0.554526   0.66891789 0.90082079 0.76729771 0.40647459]
+    [0.72809646 0.68164733 0.83008334 0.90941546 0.1441997 ]
+    [0.44580521 0.78015871 0.63982938 0.26813225 0.15588673]]
+
+   [[0.85294056 0.0928758  0.37056251 0.82930655 0.27178195]
+    [0.95953427 0.60170629 0.69156911 0.27902576 0.55613879]
+    [0.97101437 0.49876892 0.36313494 0.11233855 0.24221145]
+    [0.28739626 0.2990425  0.68940864 0.95621615 0.6922569 ]]]
+
+
+  [[[0.90283303 0.51320503 0.78356741 0.79301195 0.17681709]
+    [0.61624755 0.95418399 0.68118889 0.69241549 0.17943311]
+    [0.71129437 0.55478761 0.34121912 0.86018439 0.03652437]
+    [0.39098173 0.87916544 0.39647239 0.00104663 0.01377085]]
+
+   [[0.28875017 0.03733266 0.47260498 0.2896268  0.55976704]
+    [0.08723092 0.45523634 0.98463086 0.56950302 0.98261442]
+    [0.20716971 0.52744283 0.39455719 0.57384754 0.76698272]
+    [0.3079253  0.88143353 0.85897125 0.0969679  0.43760548]]
+
+   [[0.44239165 0.56141652 0.30344311 0.05425044 0.34003295]
+    [0.31417344 0.39485584 0.47300811 0.38006721 0.23185974]
+    [0.06158527 0.95330693 0.63043506 0.9480669  0.93758737]
+    [0.05340179 0.2064604  0.97254971 0.60841205 0.89738937]]]]]
+```
+Output is
+```python
+[[[[[0.86871874 0.89248705 0.9407502 ]
+    [0.75968677 0.2160847  0.7627803 ]]]
+
+
+  [[[0.3618067  0.3786795  0.24818675]
+    [0.24043223 0.5987066  0.8197681 ]]]]
+
+
+
+ [[[[0.6689179  0.9008208  0.7672977 ]
+    [0.68164736 0.8300834  0.9094155 ]]]
+
+
+  [[[0.45523635 0.9846309  0.569503  ]
+    [0.5274428  0.39455718 0.57384753]]]]]
+```
+
