@@ -98,6 +98,14 @@ pages:
     - Activation: KerasStyleAPIGuide/Layers/activation.md
     - Initialization: KerasStyleAPIGuide/Layers/initialization.md
     - Core Layers: KerasStyleAPIGuide/Layers/core.md
+    - Convolutional Layers: KerasStyleAPIGuide/Layers/convolutional.md
+    - Pooling Layers: KerasStyleAPIGuide/Layers/pooling.md
+    - Recurrent Layers: KerasStyleAPIGuide/Layers/recurrent.md
+    - Normalization Layers: KerasStyleAPIGuide/Layers/normalization.md
+    - Embedding Layers: KerasStyleAPIGuide/Layers/embedding.md
+    - Dropout Layers: KerasStyleAPIGuide/Layers/dropout.md
+    - Advanced Activations Layers: KerasStyleAPIGuide/Layers/advanced-activation.md
+    - Wrappers Layers: KerasStyleAPIGuide/Layers/wrappers.md
 - Powered by: powered-by.md
 - Known Issues: known-issues.md
 - Presentations: presentations.md
