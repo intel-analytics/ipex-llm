@@ -159,7 +159,8 @@ Yarn Test Suite
    Log To Console                   begin DLClassifierLeNet
    Run Shell                        ${submit} --master yarn --executor-cores 24 --total-executor-cores 24 --driver-memory 60g --executor-memory 200g --class com.intel.analytics.bigdl.example.MLPipeline.DLClassifierLeNet ${jar_path} -b 1200 -f ./mnist --maxEpoch 1
    Remove Environment Variable      http_proxy                https_proxy              PYSPARK_DRIVER_PYTHON            PYSPARK_PYTHON
-
+   Remove Input
+   
 
 PySpark2.1 Test Suite
    Build SparkJar                   spark_2.x
@@ -168,6 +169,7 @@ PySpark2.1 Test Suite
 #   Run Shell                        ${submit} --master ${spark_tf_210_3_master} --conf "spark.serializer=org.apache.spark.serializer.JavaSerializer" --driver-memory 150g --executor-cores 28 --total-executor-cores 56 --py-files ${curdir}/dist/lib/bigdl-${version}-python-api.zip --jars ${jar_path} --properties-file ${curdir}/dist/conf/spark-bigdl.conf ${curdir}/pyspark/bigdl/models/lenet/lenet5.py -b 224 --action train --endTriggerType epoch --endTriggerNum 1
  
 PySpark1.6 Test Suite
+   DownLoad Input
    Build SparkJar                   spark_1.6
    Set Environment Variable         SPARK_HOME     /opt/work/spark-1.6.3-bin-hadoop2.6
    ${submit}=                       Catenate       SEPARATOR=/    /opt/work/spark-1.6.3-bin-hadoop2.6/bin    spark-submit
