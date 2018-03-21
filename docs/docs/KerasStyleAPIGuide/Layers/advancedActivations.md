@@ -4,8 +4,6 @@ Exponential Linear Unit.
 
 It follows: f(x) =  alpha * (exp(x) - 1.) for x < 0, f(x) = x for x >= 0.
 
-The input of this layer should be 2D.
-
 **Scala:**
 ```scala
 ELU(alpha = 1.0, inputShape = null)
@@ -27,22 +25,22 @@ import com.intel.analytics.bigdl.utils.Shape
 import com.intel.analytics.bigdl.tensor._
 
 val model = Sequential[Float]()
-model.add(ELU(1.2, inputShape = Shape(3)))
+model.add(ELU(inputShape = Shape(3)))
 val input = Tensor[Float](2, 3).randn()
 val output = model.forward(input)
 ```
 Input is:
 ```scala
 input: com.intel.analytics.bigdl.tensor.Tensor[Float] =
--1.0929747	0.14862451	0.99774605
--0.30431095	0.94252837	0.58443505
+-0.13405465	0.05160992	-1.4711418
+1.5808829	-1.3145303	0.6709266
 [com.intel.analytics.bigdl.tensor.DenseTensor of size 2x3]
 ```
 Output is:
 ```scala
 output: com.intel.analytics.bigdl.nn.abstractnn.Activity =
--0.7977386	0.14862451	0.99774605
--0.31484228	0.94252837	0.58443505
+-0.1254577	0.05160992	-0.77033687
+1.5808829	-0.73139954	0.6709266
 [com.intel.analytics.bigdl.tensor.DenseTensor of size 2x3]
 ```
 
