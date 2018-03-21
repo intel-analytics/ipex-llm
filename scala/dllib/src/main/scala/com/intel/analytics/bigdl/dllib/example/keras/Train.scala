@@ -23,6 +23,7 @@ import com.intel.analytics.bigdl.nn.ClassNLLCriterion
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.utils.Engine
+import com.intel.analytics.bigdl.models.lenet.LeNet5
 import org.apache.spark.SparkContext
 
 object Train {
@@ -41,7 +42,8 @@ object Train {
       val validationData = param.folder + "/t10k-images-idx3-ubyte"
       val validationLabel = param.folder + "/t10k-labels-idx1-ubyte"
 
-      val model = LeNet(classNum = 10)
+      val model = if (param.graphModel) LeNet5.kerasGraph(classNum = 10)
+                  else LeNet5.keras(classNum = 10)
 
       val optimMethod = if (param.stateSnapshot.isDefined) {
         OptimMethod.load[Float](param.stateSnapshot.get)

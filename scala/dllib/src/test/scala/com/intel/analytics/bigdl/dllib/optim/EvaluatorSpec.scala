@@ -70,9 +70,9 @@ class EvaluatorSpec extends FlatSpec with Matchers with BeforeAndAfter{
 
     result(0)._1 should be (new AccuracyResult(0, 100))
     result(1)._1 should be (new AccuracyResult(100, 100))
-    result(2)._1 should be (new LossResult(57.669075f, 25))
+    result(2)._1 should be (new LossResult(57.610695f, 25))
     result(0)._1.result()._1 should be (0f)
     result(1)._1.result()._1 should be (1f)
-    result(2)._1.result()._1 should be (2.306763f+-0.000001f)
+    result(2)._1.result()._1 should be (2.3044279f+-0.000001f)
   }
 }

@@ -101,8 +101,8 @@ class KerasLayerWrapper[T: ClassTag]
 
   override def computeOutputShape(calcInputShape: Shape): Shape = {
     val dummyOutTensor =
-      torchLayer.forward(Tensor[T](
-        (List(2) ++ KerasLayer.removeBatch(calcInputShape).toSingle()).toArray).rand())
+      torchLayer.cloneModule().forward(Tensor[T](
+        (List(2) ++ KerasLayer.removeBatch(calcInputShape).toSingle()).toArray).fill(ev.one))
     val outSize = dummyOutTensor.toTensor.size()
     KerasLayer.addBatch(Shape(outSize.slice(1, outSize.length)))
   }
