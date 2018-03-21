@@ -137,9 +137,6 @@ Yarn Test Suite
    Set Environment Variable         https_proxy              ${https_proxy}
    ${submit}=                       Catenate                 SEPARATOR=/    /opt/work/spark-2.0.0-bin-hadoop2.7/bin    spark-submit
    Run Shell                        ${submit} --master yarn --deploy-mode client --conf "spark.serializer=org.apache.spark.serializer.JavaSerializer" --executor-cores 10 --num-executors 3 --driver-memory 150g --class com.intel.analytics.bigdl.models.lenet.Train ${jar_path} -f ${mnist_data_source} -b 120 -e 3
-   Set Environment Variable         PYSPARK_DRIVER_PYTHON    /var/jenkins_home/venv/bin/python
-   Set Environment Variable         PYSPARK_PYTHON           ./venv.zip/venv/bin/python      
-   Run Shell                        ${submit} --master yarn --deploy-mode client --executor-memory 2g --driver-memory 2g --executor-cores 10 --num-executors 2 --properties-file ${curdir}/dist/conf/spark-bigdl.conf --jars ${jar_path} --py-files ${curdir}/dist/lib/bigdl-${version}-python-api.zip --archives /var/jenkins_home/venv.zip --conf spark.driver.extraClassPath=${jar_path} --conf spark.executor.extraClassPath=bigdl-${version}-jar-with-dependencies.jar ${curdir}/pyspark/bigdl/models/lenet/lenet5.py -b 200 --action train --endTriggerType epoch --endTriggerNum 1
    Log To Console                   begin lenet Train
    Run Shell                        ${submit} --master yarn --deploy-mode client  --conf "spark.serializer=org.apache.spark.serializer.JavaSerializer" --driver-memory 150g --executor-cores 28 --total-executor-cores 84 --class com.intel.analytics.bigdl.models.lenet.Train ${jar_path} -f ${mnist_data_source} -b 336 -e 3
    Log To Console                   begin lenet Train local[4]
@@ -157,7 +154,11 @@ Yarn Test Suite
    Log To Console                   begin text classification
    Run Shell                        ${submit} --master yarn --deploy-mode client  --driver-memory 5g --executor-memory 5g --total-executor-cores 32 --executor-cores 8 --class com.intel.analytics.bigdl.example.textclassification.TextClassifier ${jar_path} --batchSize 128 --baseDir /tmp/text_data --partitionNum 32
    Log To Console                   begin DLClassifierLeNet
-   Run Shell                        ${submit} --master yarn --executor-cores 24 --total-executor-cores 24 --driver-memory 60g --executor-memory 200g --class com.intel.analytics.bigdl.example.MLPipeline.DLClassifierLeNet ${jar_path} -b 1200 -f ./mnist --maxEpoch 1
+   Run Shell                        ${submit} --master yarn --deploy-mode client  --executor-cores 24 --total-executor-cores 24 --driver-memory 60g --executor-memory 200g --class com.intel.analytics.bigdl.example.MLPipeline.DLClassifierLeNet ${jar_path} -b 1200 -f ./mnist --maxEpoch 1
+   Set Environment Variable         PYSPARK_DRIVER_PYTHON    /var/jenkins_home/venv/bin/python
+   Set Environment Variable         PYSPARK_PYTHON           ./venv.zip/venv/bin/python      
+   Run Shell                        ${submit} --master yarn --deploy-mode client --executor-memory 2g --driver-memory 2g --executor-cores 10 --num-executors 2 --properties-file ${curdir}/dist/conf/spark-bigdl.conf --jars ${jar_path} --py-files ${curdir}/dist/lib/bigdl-${version}-python-api.zip --archives /var/jenkins_home/venv.zip --conf spark.driver.extraClassPath=${jar_path} --conf spark.executor.extraClassPath=bigdl-${version}-jar-with-dependencies.jar ${curdir}/pyspark/bigdl/models/lenet/lenet5.py -b 200 --action train --endTriggerType epoch --endTriggerNum 1
+
    Remove Environment Variable      http_proxy                https_proxy              PYSPARK_DRIVER_PYTHON            PYSPARK_PYTHON
    Remove Input
    
