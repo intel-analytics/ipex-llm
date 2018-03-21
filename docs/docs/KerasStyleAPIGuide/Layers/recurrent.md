@@ -5,7 +5,7 @@ The input of this layer should be 3D, i.e. (batch, time steps, input dim).
 
 **Scala:**
 ```scala
-SimpleRNN(outputDim, activation, returnSequences = false, goBackwards = false, wRegularizer = null, uRegularizer = null, bRegularizer = null, inputShape = null)
+SimpleRNN(outputDim, activation = "tanh", returnSequences = false, goBackwards = false, wRegularizer = null, uRegularizer = null, bRegularizer = null, inputShape = null)
 ```
 **Python:**
 ```python
@@ -89,90 +89,6 @@ Output is:
 ```
 
 ---
-## **GRU**
-Gated Recurrent Unit architecture.
-
-The input of this layer should be 3D, i.e. (batch, time steps, input dim).
-
-**Scala:**
-```scala
-GRU(outputDim, activation = null, innerActivation = null, returnSequences = false, goBackwards = false, wRegularizer = null, uRegularizer = null, bRegularizer = null, inputShape = null)
-```
-**Python:**
-```python
-GRU(output_dim, activation="tanh", inner_activation="hard_sigmoid", return_sequences=False, go_backwards=False, W_regularizer=None, U_regularizer=None, b_regularizer=None, input_shape=None)
-```
-
-Parameters:
-
-* `outputDim`: Hidden unit size. Dimension of internal projections and final output.
-* `activation`: String representation of the activation function to use. See [here](activation/#available-activations) for available activation strings. Default is 'tanh'.
-* `innerActivation`: String representation of the activation function for inner cells. See [here](activation/#available-activations) for available activation strings. Default is 'hard_sigmoid'.
-* `returnSequences`: Whether to return the full sequence or only return the last output in the output sequence. Default is false.
-* `goBackwards`: Whether the input sequence will be processed backwards. Default is false.
-* `wRegularizer`: An instance of [Regularizer](../../../APIGuide/Regularizers/), (eg. L1 or L2 regularization), applied to the input weights matrices. Default is null.
-* `uRegularizer`: An instance of [Regularizer](../../../APIGuide/Regularizers/), applied the recurrent weights matrices. Default is null.
-* `bRegularizer`: An instance of [Regularizer](../../../APIGuide/Regularizers/), applied to the bias. Default is null.
-* `inputShape`: Only need to specify this argument when you use this layer as the first layer of a model. For Scala API, it should be a [`Shape`](../keras-api-scala/#shape) object. For Python API, it should be a shape tuple. Batch dimension should be excluded.
-
-**Scala example:**
-```scala
-import com.intel.analytics.bigdl.nn.keras.{Sequential, GRU}
-import com.intel.analytics.bigdl.utils.Shape
-import com.intel.analytics.bigdl.tensor._
-
-val model = Sequential[Float]()
-model.add(GRU(8, inputShape = Shape(2, 3)))
-val input = Tensor[Float](2, 2, 3).randn()
-val output = model.forward(input)
-```
-Input is:
-```scala
-input: com.intel.analytics.bigdl.tensor.Tensor[Float] =
-(1,.,.) =
--0.010477358 -1.1201298  -0.86472356
-0.12688802   -0.6696582  0.08027417
-
-(2,.,.) =
-0.1724209    -0.52319324 -0.8808063
-0.17918338   -0.552886	 -0.11891741
-
-[com.intel.analytics.bigdl.tensor.DenseTensor of size 2x2x3]
-```
-Output is:
-```scala
-output: com.intel.analytics.bigdl.nn.abstractnn.Activity =
--0.12018716	 -0.31560755	0.2867627	0.6728765	0.13287778	0.2112865	0.13381396	-0.4267934
--0.18521798	 -0.30512968	0.14875418	0.63962734	0.1841841	0.25272882	0.016909363	-0.38463163
-[com.intel.analytics.bigdl.tensor.DenseTensor of size 2x8]
-```
-
-**Python example:**
-```python
-import numpy as np
-from bigdl.nn.keras.topology import Sequential
-from bigdl.nn.keras.layer import GRU
-
-model = Sequential()
-model.add(GRU(8, input_shape = (2, 3)))
-input = np.random.random([2, 2, 3])
-output = model.forward(input)
-```
-Input is:
-```python
-[[[0.25026651 0.35433442 0.01417391]
-  [0.77236921 0.97315472 0.66090386]]
-
- [[0.76037554 0.41029034 0.68725938]
-  [0.17888889 0.67670088 0.70580547]]]
-```
-Output is:
-```python
-[[-0.03584666  0.07984452 -0.06159414 -0.13331707  0.34015405 -0.07107028  0.12444386 -0.06606203]
- [ 0.02881907  0.04856917 -0.15306929 -0.24991018  0.23814955  0.0303434   0.06634206 -0.15335503]]
-```
-
----
 ## **LSTM**
 Long Short Term Memory unit architecture.
 
@@ -180,7 +96,7 @@ The input of this layer should be 3D, i.e. (batch, time steps, input dim).
 
 **Scala:**
 ```scala
-LSTM(outputDim, activation = null, innerActivation = null, returnSequences = false, goBackwards = false, wRegularizer = null, uRegularizer = null, bRegularizer = null, inputShape = null)
+LSTM(outputDim, activation = "tanh", innerActivation = "hard_sigmoid", returnSequences = false, goBackwards = false, wRegularizer = null, uRegularizer = null, bRegularizer = null, inputShape = null)
 ```
 **Python:**
 ```python
@@ -256,6 +172,90 @@ Output is:
    0.14166507  0.01017009]
  [ 0.0144811   0.03360332  0.00676281 -0.01473055  0.09639315 -0.16620669
    0.07391933  0.01746811]]
+```
+
+---
+## **GRU**
+Gated Recurrent Unit architecture.
+
+The input of this layer should be 3D, i.e. (batch, time steps, input dim).
+
+**Scala:**
+```scala
+GRU(outputDim, activation = "tanh", innerActivation = "hard_sigmoid", returnSequences = false, goBackwards = false, wRegularizer = null, uRegularizer = null, bRegularizer = null, inputShape = null)
+```
+**Python:**
+```python
+GRU(output_dim, activation="tanh", inner_activation="hard_sigmoid", return_sequences=False, go_backwards=False, W_regularizer=None, U_regularizer=None, b_regularizer=None, input_shape=None)
+```
+
+Parameters:
+
+* `outputDim`: Hidden unit size. Dimension of internal projections and final output.
+* `activation`: String representation of the activation function to use. See [here](activation/#available-activations) for available activation strings. Default is 'tanh'.
+* `innerActivation`: String representation of the activation function for inner cells. See [here](activation/#available-activations) for available activation strings. Default is 'hard_sigmoid'.
+* `returnSequences`: Whether to return the full sequence or only return the last output in the output sequence. Default is false.
+* `goBackwards`: Whether the input sequence will be processed backwards. Default is false.
+* `wRegularizer`: An instance of [Regularizer](../../../APIGuide/Regularizers/), (eg. L1 or L2 regularization), applied to the input weights matrices. Default is null.
+* `uRegularizer`: An instance of [Regularizer](../../../APIGuide/Regularizers/), applied the recurrent weights matrices. Default is null.
+* `bRegularizer`: An instance of [Regularizer](../../../APIGuide/Regularizers/), applied to the bias. Default is null.
+* `inputShape`: Only need to specify this argument when you use this layer as the first layer of a model. For Scala API, it should be a [`Shape`](../keras-api-scala/#shape) object. For Python API, it should be a shape tuple. Batch dimension should be excluded.
+
+**Scala example:**
+```scala
+import com.intel.analytics.bigdl.nn.keras.{Sequential, GRU}
+import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.bigdl.tensor._
+
+val model = Sequential[Float]()
+model.add(GRU(8, inputShape = Shape(2, 3)))
+val input = Tensor[Float](2, 2, 3).randn()
+val output = model.forward(input)
+```
+Input is:
+```scala
+input: com.intel.analytics.bigdl.tensor.Tensor[Float] =
+(1,.,.) =
+-0.010477358 -1.1201298  -0.86472356
+0.12688802   -0.6696582  0.08027417
+
+(2,.,.) =
+0.1724209    -0.52319324 -0.8808063
+0.17918338   -0.552886	 -0.11891741
+
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 2x2x3]
+```
+Output is:
+```scala
+output: com.intel.analytics.bigdl.nn.abstractnn.Activity =
+-0.12018716	 -0.31560755	0.2867627	0.6728765	0.13287778	0.2112865	0.13381396	-0.4267934
+-0.18521798	 -0.30512968	0.14875418	0.63962734	0.1841841	0.25272882	0.016909363	-0.38463163
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 2x8]
+```
+
+**Python example:**
+```python
+import numpy as np
+from bigdl.nn.keras.topology import Sequential
+from bigdl.nn.keras.layer import GRU
+
+model = Sequential()
+model.add(GRU(8, input_shape = (2, 3)))
+input = np.random.random([2, 2, 3])
+output = model.forward(input)
+```
+Input is:
+```python
+[[[0.25026651 0.35433442 0.01417391]
+  [0.77236921 0.97315472 0.66090386]]
+
+ [[0.76037554 0.41029034 0.68725938]
+  [0.17888889 0.67670088 0.70580547]]]
+```
+Output is:
+```python
+[[-0.03584666  0.07984452 -0.06159414 -0.13331707  0.34015405 -0.07107028  0.12444386 -0.06606203]
+ [ 0.02881907  0.04856917 -0.15306929 -0.24991018  0.23814955  0.0303434   0.06634206 -0.15335503]]
 ```
 
 ---

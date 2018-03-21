@@ -387,7 +387,7 @@ The input of this layer should be 4D.
 
 **Scala:**
 ```scala
-SpatialDropout2D(p = 0.5, dimOrdering = DataFormat.NCHW, inputShape = null)
+SpatialDropout2D(p = 0.5, dimOrdering = "th", inputShape = null)
 ```
 **Python:**
 ```python
@@ -397,7 +397,7 @@ SpatialDropout2D(p=0.5, dim_ordering="th", input_shape=None)
 **Parameters:**
 
 * `p`: Fraction of the input units to drop. Double between 0 and 1.
-* `dimOrdering`: Format of input data. Either DataFormat.NCHW (dimOrdering='th') or DataFormat.NHWC (dimOrdering='tf'). Default is NCHW.
+* `dimOrdering`: Format of input data. Either 'th' (Channel First) or 'tf' (Channel Last). Default is 'th'.
 * `inputShape`: Only need to specify this argument when you use this layer as the first layer of a model. For Scala API, it should be a [`Shape`](../keras-api-scala/#shape) object. For Python API, it should be a shape tuple. Batch dimension should be excluded.
 
 **Scala example:**
@@ -522,7 +522,7 @@ The input of this layer should be 5D.
 
 **Scala:**
 ```scala
-SpatialDropout3D(p = 0.5, dimOrdering = "CHANNEL_FIRST", inputShape = null)
+SpatialDropout3D(p = 0.5, dimOrdering = "th", inputShape = null)
 ```
 **Python:**
 ```python
@@ -532,7 +532,7 @@ SpatialDropout3D(p=0.5, dim_ordering="th", input_shape=None)
 **Parameters:**
 
 * `p`: Fraction of the input units to drop. Double between 0 and 1.
-* `dimOrdering`: Format of input data. Either 'CHANNEL_FIRST' (dimOrdering='th') or 'CHANNEL_LAST' (dimOrdering='tf'). Default is 'CHANNEL_FIRST'.
+* `dimOrdering`: Format of input data. Either 'th' (Channel First) or 'tf' (Channel Last). Default is 'th'.
 * `inputShape`: Only need to specify this argument when you use this layer as the first layer of a model. For Scala API, it should be a [`Shape`](../keras-api-scala/#shape) object. For Python API, it should be a shape tuple. Batch dimension should be excluded.
 
 **Scala example:**
@@ -675,7 +675,7 @@ Output is
     [0.0        0.0       ]]
 
    [[0.0        0.0       ]
-    [0.0        0.        ]]]]
+    [0.0        0.0       ]]]]
 
 
 

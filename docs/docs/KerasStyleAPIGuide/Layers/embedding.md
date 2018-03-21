@@ -5,7 +5,7 @@ The input of this layer should be 2D.
 
 **Scala:**
 ```scala
-Embedding(inputDim, outputDim, init = RandomUniform, wRegularizer = null, inputShape = null)
+Embedding(inputDim, outputDim, init = "uniform", wRegularizer = null, inputShape = null)
 ```
 **Python:**
 ```python
@@ -16,7 +16,7 @@ Embedding(input_dim, output_dim, init="uniform", W_regularizer=None, input_shape
 
 * `inputDim`: Int > 0. Size of the vocabulary.
 * `outputDim`: Int >= 0. Dimension of the dense embedding.
-* `init`: String representation of the initialization method for the weights of the layer. See [here](initialization/#available-initialization-methods) for available initialization strings. Default is RandomUniform.
+* `init`: String representation of the initialization method for the weights of the layer. See [here](initialization/#available-initialization-methods) for available initialization strings. Default is "uniform".
 * `wRegularizer`: An instance of [Regularizer](../../../APIGuide/Regularizers/), (eg. L1 or L2 regularization), applied to the input weights matrices. Default is null.
 * `inputShape`: Only need to specify this argument when you use this layer as the first layer of a model. For Scala API, it should be a [`Shape`](../keras-api-scala/#shape) object. For Python API, it should be a shape tuple. Batch dimension should be excluded.
 
@@ -28,7 +28,7 @@ import com.intel.analytics.bigdl.tensor._
 
 val model = Sequential[Float]()
 model.add(Embedding(8, 2, inputShape = Shape(4)))
-val input = Tensor[Float](2, 4).randn()
+val input = Tensor[Float](2, 4)
 input(Array(1, 1)) = 1
 input(Array(1, 2)) = 2
 input(Array(1, 3)) = 4
@@ -42,15 +42,15 @@ val output = model.forward(input)
 Input is:
 ```scala
 input: com.intel.analytics.bigdl.tensor.Tensor[Float] =
-1.0137138	1.381202	1.4343464	-1.5142528
-1.4069169	-0.28375286	-0.33866704	0.2702669
+1.0	2.0	4.0	5.0
+4.0	3.0	2.0	6.0
 [com.intel.analytics.bigdl.tensor.DenseTensor of size 2x4]
 ```
 Output is:
 ```scala
 output: com.intel.analytics.bigdl.nn.abstractnn.Activity =
 (1,.,.) =
-0.03256504	-0.043232664
+0.03256504	    -0.043232664
 -0.044753443	0.026075097
 0.045668535	    0.02456015
 0.021222712	    -0.04373116

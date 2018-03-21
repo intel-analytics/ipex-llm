@@ -33,7 +33,7 @@ Dense(output_dim, init="glorot_uniform", activation=None, W_regularizer=None, b_
 **Parameters:**
 
 * `outputDim`: The size of the output dimension.
-* `init`: String representation of the initialization method for the weights of the layer. See [here](initialization/#available-initialization-methods) for available initialization strings. Default is "glorot_uniform".
+* `init`: String representation of the initialization method for the weights of the layer. See [here](initialization/#available-initialization-methods) for available initialization strings. Default is 'glorot_uniform'.
 * `activation`: String representation of the activation function to use. See [here](activation/#available-activations) for available activation strings. Default is null.
 * `wRegularizer`: An instance of [Regularizer](../../../APIGuide/Regularizers/), applied to the input weights matrices. Default is null.
 * `bRegularizer`: An instance of [Regularizer](../../../APIGuide/Regularizers/), applied to the bias. Default is null.
@@ -239,14 +239,14 @@ Output is:
 ```scala
 output: com.intel.analytics.bigdl.nn.abstractnn.Activity =
 (1,.,.) =
--1.7092276	-1.3941092	-0.6348466	0.71309644	0.3605411	0.025597548	0.4287048	-0.548675
+-1.7092276	-1.3941092	-0.6348466	0.71309644	    0.3605411	0.025597548	0.4287048	-0.548675
 0.4623341	-2.3912702	0.22030865	-0.058272455	-1.5049093	-1.8828062	0.8230564	-0.020209199
--0.3415721	1.1219939	1.1089007	-0.74697906	-1.503861	-1.616539	0.048006497	1.1613717
+-0.3415721	1.1219939	1.1089007	-0.74697906	    -1.503861	-1.616539	0.048006497	1.1613717
 
 (2,.,.) =
-0.21216023	1.0107462	0.8586909	-0.05644316	-0.31436008	1.6892323	-0.9961186	-0.08169463
-0.3559391	0.010261055	-0.70408463	-1.2480727	1.7663039	0.07122444	0.073556066	-0.7847014
-0.17604464	-0.99110585	-1.0302067	-0.39024687	-0.0260166	-0.43142694	0.28443158	0.72679126
+0.21216023	1.0107462	0.8586909	-0.05644316	    -0.31436008	1.6892323	-0.9961186	-0.08169463
+0.3559391	0.010261055	-0.70408463	-1.2480727	    1.7663039	0.07122444	0.073556066	-0.7847014
+0.17604464	-0.99110585	-1.0302067	-0.39024687	    -0.0260166	-0.43142694	0.28443158	0.72679126
 
 [com.intel.analytics.bigdl.tensor.DenseTensor of size 2x3x8]
 ```
@@ -541,7 +541,7 @@ Output is
 
 ---
 ## **Merge**
-Used to merge a list of tensors into a single tensor, following some merge mode.
+Used to merge a list of inputs into a single output, following some merge mode.
 
 Merge must have at least two input layers.
 

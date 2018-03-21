@@ -15,7 +15,7 @@ MaxPooling1D(pool_length=2, stride=None, border_mode="valid", input_shape=None)
 Parameters:
 
 * `poolLength`: Size of the region to which max pooling is applied.
-* `stride`: Factor by which to downscale. Integer, or -1. 2 will halve the input. If -1, it will default to poolLength. Default is -1.
+* `stride`: Factor by which to downscale. 2 will halve the input. If not specified, it will default to poolLength.
 * `borderMode`: Either 'valid' or 'same'. Default is 'valid'.
 * `inputShape`: Only need to specify this argument when you use this layer as the first layer of a model. For Scala API, it should be a [`Shape`](../keras-api-scala/#shape) object. For Python API, it should be a shape tuple. Batch dimension should be excluded.
 
@@ -113,19 +113,19 @@ The input of this layer should be 4D.
 
 **Scala:**
 ```scala
-MaxPooling2D(poolSize = Array(2, 2), strides = null, borderMode = "valid", dimOrdering = DataFormat.NCHW, inputShape = null)
+MaxPooling2D(poolSize = Array(2, 2), strides = null, borderMode = "valid", dimOrdering = "th", inputShape = null)
 ```
 **Python:**
 ```python
-MaxPooling2D(pool_size=(2, 2), strides=None, border_mode='valid', dim_ordering='th', input_shape=None)
+MaxPooling2D(pool_size=(2, 2), strides=None, border_mode="valid", dim_ordering="th", input_shape=None)
 ```
 
 Parameters:
 
-* `poolSize`: Int array of length 2 corresponding to the downscale vertically and horizontally. Default is (2, 2), which will halve the image in each dimension.
-* `strides`: Int array of length 2. Stride values. Default is null, and in this case it will be equal to poolSize.
+* `poolSize`: Length 2 corresponding to the downscale vertically and horizontally. Default is (2, 2), which will halve the image in each dimension.
+* `strides`: Length 2. Stride values. Default is null, and in this case it will be equal to poolSize.
 * `borderMode`: Either 'valid' or 'same'. Default is 'valid'.
-* `dimOrdering`: Format of input data. Either DataFormat.NCHW (dimOrdering='th') or DataFormat.NHWC (dimOrdering='tf'). Default is NCHW.
+* `dimOrdering`: Format of input data. Either 'th' (Channel First) or 'tf' (Channel Last). Default is 'th'.
 * `inputShape`: Only need to specify this argument when you use this layer as the first layer of a model. For Scala API, it should be a [`Shape`](../keras-api-scala/#shape) object. For Python API, it should be a shape tuple. Batch dimension should be excluded.
 
 **Scala example:**
@@ -236,7 +236,7 @@ The input of this layer should be 5D.
 
 **Scala:**
 ```scala
-MaxPooling3D(poolSize = Array(2, 2, 2), strides = null, dimOrdering = "CHANNEL_FIRST", inputShape = null)
+MaxPooling3D(poolSize = Array(2, 2, 2), strides = null, dimOrdering = "th", inputShape = null)
 ```
 **Python:**
 ```python
@@ -245,9 +245,9 @@ MaxPooling3D(pool_size=(2, 2, 2), strides=None, border_mode="valid", dim_orderin
 
 Parameters:
 
-* `poolSize`: Int array of length 3. Factors by which to downscale (dim1, dim2, dim3). Default is (2, 2, 2), which will halve the image in each dimension.
-* `strides`: Int array of length 3. Stride values. Default is null, and in this case it will be equal to poolSize.
-* `dimOrdering`: Format of input data. Please use 'CHANNEL_FIRST' (dimOrdering='th').
+* `poolSize`: Length 3. Factors by which to downscale (dim1, dim2, dim3). Default is (2, 2, 2), which will halve the image in each dimension.
+* `strides`: Length 3. Stride values. Default is null, and in this case it will be equal to poolSize.
+* `dimOrdering`: Format of input data. Only 'th' (Channel First) is supported for now.
 * `inputShape`: Only need to specify this argument when you use this layer as the first layer of a model. For Scala API, it should be a [`Shape`](../keras-api-scala/#shape) object. For Python API, it should be a shape tuple. Batch dimension should be excluded.
 
 **Scala example:**
@@ -387,7 +387,7 @@ AveragePooling1D(pool_length=2, stride=None, border_mode="valid", input_shape=No
 Parameters:
 
 * `poolLength`: Size of the region to which average pooling is applied. Integer. Default is 2.
-* `stride`: Factor by which to downscale. Positive integer, or -1. 2 will halve the input. If -1, it will default to poolLength. Default is -1, and in this case it will be equal to poolSize.
+* `stride`: Factor by which to downscale. 2 will halve the input. If not specified, it will default to poolLength.
 * `borderMode`: Either 'valid' or 'same'. Default is 'valid'.
 * `inputShape`: Only need to specify this argument when you use this layer as the first layer of a model. For Scala API, it should be a [`Shape`](../keras-api-scala/#shape) object. For Python API, it should be a shape tuple. Batch dimension should be excluded.
 
@@ -485,7 +485,7 @@ The input of this layer should be 4D.
 
 **Scala:**
 ```scala
-AveragePooling2D(poolSize = Array(2, 2), strides = null, borderMode = "valid", dimOrdering = DataFormat.NCHW, inputShape = null)
+AveragePooling2D(poolSize = Array(2, 2), strides = null, borderMode = "valid", dimOrdering = "th", inputShape = null)
 ```
 **Python:**
 ```python
@@ -494,10 +494,10 @@ AveragePooling2D(pool_size=(2, 2), strides=None, border_mode="valid", dim_orderi
 
 Parameters:
 
-* `poolSize`: Int array of length 2 corresponding to the downscale vertically and horizontally. Default is (2, 2), which will halve the image in each dimension.
-* `strides`: Int array of length 2. Stride values. Default is null, and in this case it will be equal to poolSize.
+* `poolSize`: Length 2 corresponding to the downscale vertically and horizontally. Default is (2, 2), which will halve the image in each dimension.
+* `strides`: Length 2. Stride values. Default is null, and in this case it will be equal to poolSize.
 * `borderMode`: Either 'valid' or 'same'. Default is 'valid'.
-* `dimOrdering`: Format of input data. Either DataFormat.NCHW (dimOrdering='th') or DataFormat.NHWC (dimOrdering='tf'). Default is NCHW.
+* `dimOrdering`: Format of input data. Either 'th' (Channel First) or 'tf' (Channel Last). Default is 'th'.
 * `inputShape`: Only need to specify this argument when you use this layer as the first layer of a model. For Scala API, it should be a [`Shape`](../keras-api-scala/#shape) object. For Python API, it should be a shape tuple. Batch dimension should be excluded.
 
 **Scala example:**
@@ -608,7 +608,7 @@ The input of this layer should be 5D.
 
 **Scala:**
 ```scala
-AveragePooling3D(poolSize = Array(2, 2, 2), strides = null, dimOrdering = "CHANNEL_FIRST", inputShape = null)
+AveragePooling3D(poolSize = Array(2, 2, 2), strides = null, dimOrdering = "th", inputShape = null)
 ```
 **Python:**
 ```python
@@ -617,9 +617,9 @@ AveragePooling3D(pool_size=(2, 2, 2), strides=None, border_mode="valid", dim_ord
 
 Parameters:
 
-* `poolSize`: Int array of length 3. Factors by which to downscale (dim1, dim2, dim3). Default is (2, 2, 2), which will halve the image in each dimension.
-* `strides`: Int array of length 3. Stride values. Default is null, and in this case it will be equal to poolSize.
-* `dimOrdering`: Format of input data. Please use 'CHANNEL_FIRST' (dimOrdering='th').
+* `poolSize`: Length 3. Factors by which to downscale (dim1, dim2, dim3). Default is (2, 2, 2), which will halve the image in each dimension.
+* `strides`: Length 3. Stride values. Default is null, and in this case it will be equal to poolSize.
+* `dimOrdering`: Format of input data. Only 'th' (Channel First) is supported for now.
 * `inputShape`: Only need to specify this argument when you use this layer as the first layer of a model. For Scala API, it should be a [`Shape`](../keras-api-scala/#shape) object. For Python API, it should be a shape tuple. Batch dimension should be excluded.
 
 **Scala example:**
@@ -743,309 +743,6 @@ Output is:
 ```
 
 ---
-## **GlobalAveragePooling1D**
-Global average pooling operation for temporal data.
-
-The input of this layer should be 3D.
-
-**Scala:**
-```scala
-GlobalAveragePooling1D(inputShape = null)
-```
-**Python:**
-```python
-GlobalAveragePooling1D(input_shape=None)
-```
-
-Parameters:
-
-* `inputShape`: Only need to specify this argument when you use this layer as the first layer of a model. For Scala API, it should be a [`Shape`](../keras-api-scala/#shape) object. For Python API, it should be a shape tuple. Batch dimension should be excluded.
-
-**Scala example:**
-```scala
-import com.intel.analytics.bigdl.nn.keras.{Sequential, GlobalAveragePooling1D}
-import com.intel.analytics.bigdl.utils.Shape
-import com.intel.analytics.bigdl.tensor._
-
-val model = Sequential[Float]()
-model.add(GlobalAveragePooling1D(inputShape = Shape(2, 3)))
-val input = Tensor[Float](2, 2, 3).randn()
-val output = model.forward(input)
-```
-Input is:
-```scala
-input: com.intel.analytics.bigdl.tensor.Tensor[Float] =
-(1,.,.) =
-0.52390736	-0.2733816	0.124149635
--1.351596	-1.1435038	-1.5176618
-
-(2,.,.) =
-1.0428048	-0.65227276	-0.44158915
--0.23790422	0.4179904	-0.12358317
-
-[com.intel.analytics.bigdl.tensor.DenseTensor of size 2x2x3]
-```
-Output is:
-```scala
-output: com.intel.analytics.bigdl.nn.abstractnn.Activity =
--0.41384432	-0.7084427	-0.69675606
-0.40245032	-0.11714119	-0.28258616
-[com.intel.analytics.bigdl.tensor.DenseTensor of size 2x3]
-```
-
-**Python example:**
-```python
-import numpy as np
-from bigdl.nn.keras.topology import Sequential
-from bigdl.nn.keras.layer import GlobalAveragePooling1D
-
-model = Sequential()
-model.add(GlobalAveragePooling1D(input_shape = (2, 3)))
-input = np.random.random([2, 2, 3])
-output = model.forward(input)
-```
-Input is:
-```python
-[[[0.93869359 0.22245741 0.9744004 ]
-  [0.89151128 0.8211663  0.73579694]]
-
- [[0.37929716 0.509159   0.21713254]
-  [0.81838451 0.72323228 0.0370643 ]]]
-```
-Output is:
-```python
-[[0.9151024   0.52181184 0.85509866]
- [0.59884083  0.6161956  0.12709841]]
-```
-
----
-## **GlobalAveragePooling2D**
-Global average pooling operation for spatial data.
-
-The input of this layer should be 4D.
-
-**Scala:**
-```scala
-GlobalAveragePooling2D(dimOrdering = DataFormat.NCHW, inputShape = null)
-```
-**Python:**
-```python
-GlobalAveragePooling2D(dim_ordering="th", input_shape=None)
-```
-
-Parameters:
-
-* `dimOrdering`: Format of input data. Either DataFormat.NCHW (dimOrdering='th') or DataFormat.NHWC (dimOrdering='tf'). Default is NCHW.
-* `inputShape`: Only need to specify this argument when you use this layer as the first layer of a model. For Scala API, it should be a [`Shape`](../keras-api-scala/#shape) object. For Python API, it should be a shape tuple. Batch dimension should be excluded.
-
-**Scala example:**
-```scala
-import com.intel.analytics.bigdl.nn.keras.{Sequential, GlobalAveragePooling2D}
-import com.intel.analytics.bigdl.utils.Shape
-import com.intel.analytics.bigdl.tensor._
-
-val model = Sequential[Float]()
-model.add(GlobalAveragePooling2D(inputShape = Shape(2, 3, 4)))
-val input = Tensor[Float](2, 2, 3, 4).randn()
-val output = model.forward(input)
-```
-Input is:
-```scala
-input: com.intel.analytics.bigdl.tensor.Tensor[Float] =
-(1,1,.,.) =
-0.110688895	    -0.95155084	1.8221924	-2.0326483
--0.013243215	-1.2766567	-0.16704278	-0.97121066
--2.4606674	    -0.24223651	-0.5687073	0.69842345
-
-(1,2,.,.) =
-0.14165956	    0.17032783	2.5329256	0.011501087
--0.3236992	    1.1332442	0.18139894	-2.3126595
-0.1546373	    0.35264283	-0.04404357	-0.70906943
-
-(2,1,.,.) =
--0.08527824	    0.29270124	-0.7355773	-0.6026267
--0.71629876	    0.83938205	0.5129336	0.118145116
-0.17555784	    -0.8842884	0.12628363	-0.5556226
-
-(2,2,.,.) =
-0.6230317	    0.64954233	-1.3002442	-0.44802713
--0.7294096	    0.29014868	-0.55649257	2.1427174
-0.0146621745	0.67039204	0.12979278	1.8543824
-
-[com.intel.analytics.bigdl.tensor.DenseTensor of size 2x2x3x4]
-```
-Output is:
-```scala
-output: com.intel.analytics.bigdl.nn.abstractnn.Activity =
--0.5043883	0.10740545
--0.12622404	0.27837467
-[com.intel.analytics.bigdl.tensor.DenseTensor of size 2x2]
-```
-
-**Python example:**
-```python
-import numpy as np
-from bigdl.nn.keras.topology import Sequential
-from bigdl.nn.keras.layer import GlobalAveragePooling2D
-
-model = Sequential()
-model.add(GlobalAveragePooling2D(input_shape = (2, 3, 4)))
-input = np.random.random([2, 2, 3, 4])
-output = model.forward(input)
-```
-Input is:
-```python
-[[[[0.44851152 0.94140516 0.45500829 0.07239139]
-   [0.58724461 0.7386701  0.69641719 0.70497337]
-   [0.15950558 0.56006247 0.82534941 0.59303245]]
-
-  [[0.94628326 0.75747177 0.92495215 0.16233194]
-   [0.21553426 0.65968036 0.72130258 0.8929379 ]
-   [0.91295078 0.36362834 0.04734189 0.32399088]]]
-
-
- [[[0.74069289 0.8804913  0.38783329 0.82279268]
-   [0.29561186 0.86405938 0.21608269 0.618583  ]
-   [0.16823803 0.65690701 0.85394726 0.94541932]]
-
-  [[0.33876558 0.47517543 0.25908204 0.81933296]
-   [0.16176792 0.57166    0.28295922 0.95254489]
-   [0.10532106 0.98495855 0.41048516 0.86755462]]]]
-```
-Output is:
-```python
-[[0.5652142 0.5773672]
- [0.6208883 0.519134 ]]
-```
-
----
-## **GlobalAveragePooling3D**
-Applies global average pooling operation for 3D data.
-
-Data format currently supported for this layer is 'CHANNEL_FIRST' (dimOrdering='th').
-
-Border mode currently supported for this layer is 'valid'.
-
-The input of this layer should be 5D.
-
-**Scala:**
-```scala
-GlobalAveragePooling3D(dimOrdering = "CHANNEL_FIRST", inputShape = null)
-```
-**Python:**
-```python
-GlobalAveragePooling3D(dim_ordering="th", input_shape=None)
-```
-
-Parameters:
-
-* `dimOrdering`: Format of input data. Please use 'CHANNEL_FIRST' (dimOrdering='th').
-* `inputShape`: Only need to specify this argument when you use this layer as the first layer of a model. For Scala API, it should be a [`Shape`](../keras-api-scala/#shape) object. For Python API, it should be a shape tuple. Batch dimension should be excluded.
-
-**Scala example:**
-```scala
-import com.intel.analytics.bigdl.nn.keras.{Sequential, GlobalAveragePooling3D}
-import com.intel.analytics.bigdl.utils.Shape
-import com.intel.analytics.bigdl.tensor._
-
-val model = Sequential[Float]()
-model.add(GlobalAveragePooling3D(inputShape = Shape(2, 2, 2, 3)))
-val input = Tensor[Float](2, 2, 2, 2, 3).randn()
-val output = model.forward(input)
-```
-Input is:
-```scala
-input: com.intel.analytics.bigdl.tensor.Tensor[Float] =
-(1,1,1,.,.) =
-1.8996966	 -0.20018125	-0.3271749
-0.27594963	 -1.0520669	0.86003053
-
-(1,1,2,.,.) =
--0.7652662	 0.72945994	 0.9008456
-0.8692407	 -1.1327444	 2.0664887
-
-(1,2,1,.,.) =
-0.10636215	 -0.812925   -0.3757974
-0.48761207	 0.017417012 -2.395701
-
-(1,2,2,.,.) =
--1.3122851	 -0.5942121	 -0.6180062
--0.032230377 -0.27521232 -0.3567782
-
-(2,1,1,.,.) =
-1.8668615	 -0.4244298	 1.0701258
-0.63794065	 -1.023562	 0.16939393
-
-(2,1,2,.,.) =
-0.20582832	 0.5321886	 -1.5412451
--0.38068503	 1.4506307	 -0.47838798
-
-(2,2,1,.,.) =
--0.7344984	 -0.28647164 2.410416
--1.8175911	 -1.1973995	 1.001777
-
-(2,2,2,.,.) =
--0.09646813	 0.11988298	 1.4687495
-1.493955	 0.16738588	 1.133337
-
-[com.intel.analytics.bigdl.tensor.DenseTensor of size 2x2x2x2x3]
-```
-Output is:
-```scala
-output: com.intel.analytics.bigdl.nn.abstractnn.Activity =
-0.34368983	-0.51347965
-0.17372166	0.30525622
-[com.intel.analytics.bigdl.tensor.DenseTensor of size 2x2]
-```
-
-**Python example:**
-```python
-import numpy as np
-from bigdl.nn.keras.topology import Sequential
-from bigdl.nn.keras.layer import GlobalAveragePooling3D
-
-model = Sequential()
-model.add(GlobalAveragePooling3D(input_shape = (2, 2, 2, 3)))
-input = np.random.random([2, 2, 2, 2, 3])
-output = model.forward(input)
-```
-Input is:
-```python
-[[[[[0.38403874 0.30696173 0.25682854]
-    [0.53124253 0.62668969 0.21927777]]
-
-   [[0.33040063 0.37388563 0.75210039]
-    [0.08358634 0.80063745 0.13251887]]]
-
-
-  [[[0.41724617 0.2241106  0.55527267]
-    [0.69493785 0.71098284 0.54058444]]
-
-   [[0.4773658  0.92236993 0.76933649]
-    [0.45217032 0.61153948 0.01976393]]]]
-
-
-
- [[[[0.27256789 0.56008397 0.19898919]
-    [0.44973465 0.66605998 0.77117999]]
-
-   [[0.07868799 0.94786045 0.2240451 ]
-    [0.92261946 0.4053334  0.2572511 ]]]
-
-
-  [[[0.33754374 0.28838802 0.79900278]
-    [0.26374789 0.25610211 0.9320699 ]]
-
-   [[0.19518511 0.80707822 0.29660536]
-    [0.56917623 0.07653736 0.77836375]]]]]
-```
-Output is:
-```python
-[[0.3998474  0.53297335]
- [0.47953442 0.46665   ]]
-```
-
----
 ## **GlobalMaxPooling1D**
 Global max pooling operation for temporal data.
 
@@ -1129,7 +826,7 @@ The input of this layer should be 4D.
 
 **Scala:**
 ```scala
-GlobalMaxPooling2D(dimOrdering = DataFormat.NCHW, inputShape = null)
+GlobalMaxPooling2D(dimOrdering = "th", inputShape = null)
 ```
 **Python:**
 ```python
@@ -1138,7 +835,7 @@ GlobalMaxPooling2D(dim_ordering="th", input_shape=None)
 
 Parameters:
 
-* `dimOrdering`: Format of input data. Either DataFormat.NCHW (dimOrdering='th') or DataFormat.NHWC (dimOrdering='tf'). Default is NCHW.
+* `dimOrdering`: Format of input data. Either 'th' (Channel First) or 'tf' (Channel Last). Default is 'th'.
 * `inputShape`: Only need to specify this argument when you use this layer as the first layer of a model. For Scala API, it should be a [`Shape`](../keras-api-scala/#shape) object. For Python API, it should be a shape tuple. Batch dimension should be excluded.
 
 **Scala example:**
@@ -1233,7 +930,7 @@ The input of this layer should be 5D.
 
 **Scala:**
 ```scala
-GlobalMaxPooling3D(dimOrdering = "CHANNEL_FIRST", inputShape = null)
+GlobalMaxPooling3D(dimOrdering = "th", inputShape = null)
 ```
 **Python:**
 ```python
@@ -1242,7 +939,7 @@ GlobalMaxPooling3D(dim_ordering="th", input_shape=None)
 
 Parameters:
 
-* `dimOrdering`: Format of input data. Please use 'CHANNEL_FIRST' (dimOrdering='th').
+* `dimOrdering`: Format of input data. Only 'th' (Channel First) is supported for now.
 * `inputShape`: Only need to specify this argument when you use this layer as the first layer of a model. For Scala API, it should be a [`Shape`](../keras-api-scala/#shape) object. For Python API, it should be a shape tuple. Batch dimension should be excluded.
 
 **Scala example:**
@@ -1346,4 +1043,307 @@ Output is:
 ```python
 [[0.99958104 0.8030557 ]
  [0.91781414 0.9774504 ]]
+```
+
+---
+## **GlobalAveragePooling1D**
+Global average pooling operation for temporal data.
+
+The input of this layer should be 3D.
+
+**Scala:**
+```scala
+GlobalAveragePooling1D(inputShape = null)
+```
+**Python:**
+```python
+GlobalAveragePooling1D(input_shape=None)
+```
+
+Parameters:
+
+* `inputShape`: Only need to specify this argument when you use this layer as the first layer of a model. For Scala API, it should be a [`Shape`](../keras-api-scala/#shape) object. For Python API, it should be a shape tuple. Batch dimension should be excluded.
+
+**Scala example:**
+```scala
+import com.intel.analytics.bigdl.nn.keras.{Sequential, GlobalAveragePooling1D}
+import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.bigdl.tensor._
+
+val model = Sequential[Float]()
+model.add(GlobalAveragePooling1D(inputShape = Shape(2, 3)))
+val input = Tensor[Float](2, 2, 3).randn()
+val output = model.forward(input)
+```
+Input is:
+```scala
+input: com.intel.analytics.bigdl.tensor.Tensor[Float] =
+(1,.,.) =
+0.52390736	-0.2733816	0.124149635
+-1.351596	-1.1435038	-1.5176618
+
+(2,.,.) =
+1.0428048	-0.65227276	-0.44158915
+-0.23790422	0.4179904	-0.12358317
+
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 2x2x3]
+```
+Output is:
+```scala
+output: com.intel.analytics.bigdl.nn.abstractnn.Activity =
+-0.41384432	-0.7084427	-0.69675606
+0.40245032	-0.11714119	-0.28258616
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 2x3]
+```
+
+**Python example:**
+```python
+import numpy as np
+from bigdl.nn.keras.topology import Sequential
+from bigdl.nn.keras.layer import GlobalAveragePooling1D
+
+model = Sequential()
+model.add(GlobalAveragePooling1D(input_shape = (2, 3)))
+input = np.random.random([2, 2, 3])
+output = model.forward(input)
+```
+Input is:
+```python
+[[[0.93869359 0.22245741 0.9744004 ]
+  [0.89151128 0.8211663  0.73579694]]
+
+ [[0.37929716 0.509159   0.21713254]
+  [0.81838451 0.72323228 0.0370643 ]]]
+```
+Output is:
+```python
+[[0.9151024   0.52181184 0.85509866]
+ [0.59884083  0.6161956  0.12709841]]
+```
+
+---
+## **GlobalAveragePooling2D**
+Global average pooling operation for spatial data.
+
+The input of this layer should be 4D.
+
+**Scala:**
+```scala
+GlobalAveragePooling2D(dimOrdering = "th", inputShape = null)
+```
+**Python:**
+```python
+GlobalAveragePooling2D(dim_ordering="th", input_shape=None)
+```
+
+Parameters:
+
+* `dimOrdering`: Format of input data. Either 'th' (Channel First) or 'tf' (Channel Last). Default is 'th'.
+* `inputShape`: Only need to specify this argument when you use this layer as the first layer of a model. For Scala API, it should be a [`Shape`](../keras-api-scala/#shape) object. For Python API, it should be a shape tuple. Batch dimension should be excluded.
+
+**Scala example:**
+```scala
+import com.intel.analytics.bigdl.nn.keras.{Sequential, GlobalAveragePooling2D}
+import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.bigdl.tensor._
+
+val model = Sequential[Float]()
+model.add(GlobalAveragePooling2D(inputShape = Shape(2, 3, 4)))
+val input = Tensor[Float](2, 2, 3, 4).randn()
+val output = model.forward(input)
+```
+Input is:
+```scala
+input: com.intel.analytics.bigdl.tensor.Tensor[Float] =
+(1,1,.,.) =
+0.110688895	    -0.95155084	1.8221924	-2.0326483
+-0.013243215	-1.2766567	-0.16704278	-0.97121066
+-2.4606674	    -0.24223651	-0.5687073	0.69842345
+
+(1,2,.,.) =
+0.14165956	    0.17032783	2.5329256	0.011501087
+-0.3236992	    1.1332442	0.18139894	-2.3126595
+0.1546373	    0.35264283	-0.04404357	-0.70906943
+
+(2,1,.,.) =
+-0.08527824	    0.29270124	-0.7355773	-0.6026267
+-0.71629876	    0.83938205	0.5129336	0.118145116
+0.17555784	    -0.8842884	0.12628363	-0.5556226
+
+(2,2,.,.) =
+0.6230317	    0.64954233	-1.3002442	-0.44802713
+-0.7294096	    0.29014868	-0.55649257	2.1427174
+0.0146621745	0.67039204	0.12979278	1.8543824
+
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 2x2x3x4]
+```
+Output is:
+```scala
+output: com.intel.analytics.bigdl.nn.abstractnn.Activity =
+-0.5043883	0.10740545
+-0.12622404	0.27837467
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 2x2]
+```
+
+**Python example:**
+```python
+import numpy as np
+from bigdl.nn.keras.topology import Sequential
+from bigdl.nn.keras.layer import GlobalAveragePooling2D
+
+model = Sequential()
+model.add(GlobalAveragePooling2D(input_shape = (2, 3, 4)))
+input = np.random.random([2, 2, 3, 4])
+output = model.forward(input)
+```
+Input is:
+```python
+[[[[0.44851152 0.94140516 0.45500829 0.07239139]
+   [0.58724461 0.7386701  0.69641719 0.70497337]
+   [0.15950558 0.56006247 0.82534941 0.59303245]]
+
+  [[0.94628326 0.75747177 0.92495215 0.16233194]
+   [0.21553426 0.65968036 0.72130258 0.8929379 ]
+   [0.91295078 0.36362834 0.04734189 0.32399088]]]
+
+
+ [[[0.74069289 0.8804913  0.38783329 0.82279268]
+   [0.29561186 0.86405938 0.21608269 0.618583  ]
+   [0.16823803 0.65690701 0.85394726 0.94541932]]
+
+  [[0.33876558 0.47517543 0.25908204 0.81933296]
+   [0.16176792 0.57166    0.28295922 0.95254489]
+   [0.10532106 0.98495855 0.41048516 0.86755462]]]]
+```
+Output is:
+```python
+[[0.5652142 0.5773672]
+ [0.6208883 0.519134 ]]
+```
+
+---
+## **GlobalAveragePooling3D**
+Applies global average pooling operation for 3D data.
+
+Data format currently supported for this layer is 'CHANNEL_FIRST' (dimOrdering='th').
+
+Border mode currently supported for this layer is 'valid'.
+
+The input of this layer should be 5D.
+
+**Scala:**
+```scala
+GlobalAveragePooling3D(dimOrdering = "th", inputShape = null)
+```
+**Python:**
+```python
+GlobalAveragePooling3D(dim_ordering="th", input_shape=None)
+```
+
+Parameters:
+
+* `dimOrdering`: Format of input data. Only 'th' (Channel First) is supported for now.
+* `inputShape`: Only need to specify this argument when you use this layer as the first layer of a model. For Scala API, it should be a [`Shape`](../keras-api-scala/#shape) object. For Python API, it should be a shape tuple. Batch dimension should be excluded.
+
+**Scala example:**
+```scala
+import com.intel.analytics.bigdl.nn.keras.{Sequential, GlobalAveragePooling3D}
+import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.bigdl.tensor._
+
+val model = Sequential[Float]()
+model.add(GlobalAveragePooling3D(inputShape = Shape(2, 2, 2, 3)))
+val input = Tensor[Float](2, 2, 2, 2, 3).randn()
+val output = model.forward(input)
+```
+Input is:
+```scala
+input: com.intel.analytics.bigdl.tensor.Tensor[Float] =
+(1,1,1,.,.) =
+1.8996966	 -0.20018125	-0.3271749
+0.27594963	 -1.0520669	0.86003053
+
+(1,1,2,.,.) =
+-0.7652662	 0.72945994	 0.9008456
+0.8692407	 -1.1327444	 2.0664887
+
+(1,2,1,.,.) =
+0.10636215	 -0.812925   -0.3757974
+0.48761207	 0.017417012 -2.395701
+
+(1,2,2,.,.) =
+-1.3122851	 -0.5942121	 -0.6180062
+-0.032230377 -0.27521232 -0.3567782
+
+(2,1,1,.,.) =
+1.8668615	 -0.4244298	 1.0701258
+0.63794065	 -1.023562	 0.16939393
+
+(2,1,2,.,.) =
+0.20582832	 0.5321886	 -1.5412451
+-0.38068503	 1.4506307	 -0.47838798
+
+(2,2,1,.,.) =
+-0.7344984	 -0.28647164 2.410416
+-1.8175911	 -1.1973995	 1.001777
+
+(2,2,2,.,.) =
+-0.09646813	 0.11988298	 1.4687495
+1.493955	 0.16738588	 1.133337
+
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 2x2x2x2x3]
+```
+Output is:
+```scala
+output: com.intel.analytics.bigdl.nn.abstractnn.Activity =
+0.34368983	-0.51347965
+0.17372166	0.30525622
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 2x2]
+```
+
+**Python example:**
+```python
+import numpy as np
+from bigdl.nn.keras.topology import Sequential
+from bigdl.nn.keras.layer import GlobalAveragePooling3D
+
+model = Sequential()
+model.add(GlobalAveragePooling3D(input_shape = (2, 2, 2, 3)))
+input = np.random.random([2, 2, 2, 2, 3])
+output = model.forward(input)
+```
+Input is:
+```python
+[[[[[0.38403874 0.30696173 0.25682854]
+    [0.53124253 0.62668969 0.21927777]]
+
+   [[0.33040063 0.37388563 0.75210039]
+    [0.08358634 0.80063745 0.13251887]]]
+
+
+  [[[0.41724617 0.2241106  0.55527267]
+    [0.69493785 0.71098284 0.54058444]]
+
+   [[0.4773658  0.92236993 0.76933649]
+    [0.45217032 0.61153948 0.01976393]]]]
+
+
+
+ [[[[0.27256789 0.56008397 0.19898919]
+    [0.44973465 0.66605998 0.77117999]]
+
+   [[0.07868799 0.94786045 0.2240451 ]
+    [0.92261946 0.4053334  0.2572511 ]]]
+
+
+  [[[0.33754374 0.28838802 0.79900278]
+    [0.26374789 0.25610211 0.9320699 ]]
+
+   [[0.19518511 0.80707822 0.29660536]
+    [0.56917623 0.07653736 0.77836375]]]]]
+```
+Output is:
+```python
+[[0.3998474  0.53297335]
+ [0.47953442 0.46665   ]]
 ```

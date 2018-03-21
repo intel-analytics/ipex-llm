@@ -7,7 +7,7 @@ The input of this layer should be 3D.
 
 **Scala:**
 ```scala
-Convolution1D(nbFilter, filterLength, init = Xavier, activation = null, borderMode = "valid", subsampleLength = 1, wRegularizer = null, bRegularizer = null, bias = true, inputShape = null)
+Convolution1D(nbFilter, filterLength, init = "glorot_uniform", activation = null, borderMode = "valid", subsampleLength = 1, wRegularizer = null, bRegularizer = null, bias = true, inputShape = null)
 ```
 **Python:**
 ```python
@@ -18,7 +18,7 @@ Convolution1D(nb_filter, filter_length, init="glorot_uniform", activation=None, 
 
 * `nbFilter`: Number of convolution filters to use.
 * `filterLength`: The extension (spatial or temporal) of each filter.
-* `init`: String representation of the initialization method for the weights of the layer. See [here](initialization/#available-initialization-methods) for available initialization strings. Default is Xavier.
+* `init`: String representation of the initialization method for the weights of the layer. See [here](initialization/#available-initialization-methods) for available initialization strings. Default is "glorot_uniform".
 * `activation`: String representation of the activation function to use. See [here](activation/#available-activations) for available activation strings. Default is null.
 * `borderMode`: Either 'valid' or 'same'. Default is 'valid'.
 * `subsampleLength`: Factor by which to subsample output. Integer. Default is 1.
@@ -103,7 +103,7 @@ The input of this layer should be 4D.
 
 **Scala:**
 ```scala
-Convolution2D(nbFilter, nbRow, nbCol, init = Xavier, activation = null, borderMode = "valid", subsample = Array(1, 1), dimOrdering = DataFormat.NCHW, wRegularizer = null, bRegularizer = null, bias = true, inputShape = null)
+Convolution2D(nbFilter, nbRow, nbCol, init = "glorot_uniform", activation = null, borderMode = "valid", subsample = Array(1, 1), dimOrdering = "th", wRegularizer = null, bRegularizer = null, bias = true, inputShape = null)
 ```
 **Python:**
 ```python
@@ -115,11 +115,11 @@ Convolution2D(nb_filter, nb_row, nb_col, init="glorot_uniform", activation=None,
 * `nbFilter`: Number of convolution filters to use.
 * `nbRow`: Number of rows in the convolution kernel.
 * `nbCol`: Number of columns in the convolution kernel.
-* `init`: String representation of the initialization method for the weights of the layer. See [here](initialization/#available-initialization-methods) for available initialization strings. Default is Xavier.
+* `init`: String representation of the initialization method for the weights of the layer. See [here](initialization/#available-initialization-methods) for available initialization strings. Default is "glorot_uniform".
 * `activation`: String representation of the activation function to use. See [here](activation/#available-activations) for available activation strings. Default is null.
 * `borderMode`: Either 'valid' or 'same'. Default is 'valid'.
-* `subsample`: Int array of length 2 corresponding to the step of the convolution in the height and width dimension. Also called strides elsewhere. Default is (1, 1).
-* `dimOrdering`: Format of input data. Either DataFormat.NCHW (dimOrdering='th') or DataFormat.NHWC (dimOrdering='tf'). Default is NCHW.
+* `subsample`: Length 2 corresponding to the step of the convolution in the height and width dimension. Also called strides elsewhere. Default is (1, 1).
+* `dimOrdering`: Format of input data. Either 'th' (Channel First) or 'tf' (Channel Last). Default is 'th'.
 * `wRegularizer`: An instance of [Regularizer](../../../APIGuide/Regularizers/), (eg. L1 or L2 regularization), applied to the input weights matrices. Default is null.
 * `bRegularizer`: An instance of [Regularizer](../../../APIGuide/Regularizers/), applied to the bias. Default is null.
 * `bias`: Whether to include a bias (i.e. make the layer affine rather than linear). Default is true.
@@ -269,7 +269,7 @@ The input of this layer should be 5D.
 
 **Scala:**
 ```scala
-Convolution3D(nbFilter, kernelDim1, kernelDim2, kernelDim3, init = Xavier, activation = null, borderMode = "valid", subsample = Array(1, 1, 1), dimOrdering = "CHANNEL_FIRST", wRegularizer = null, bRegularizer = null, bias = true, inputShape = null)
+Convolution3D(nbFilter, kernelDim1, kernelDim2, kernelDim3, init = "glorot_uniform", activation = null, borderMode = "valid", subsample = Array(1, 1, 1), dimOrdering = "th", wRegularizer = null, bRegularizer = null, bias = true, inputShape = null)
 ```
 **Python:**
 ```python
@@ -282,11 +282,11 @@ Convolution3D(nb_filter, kernel_dim1, kernel_dim2, kernel_dim3, init="glorot_uni
 * `kernelDim1`: Length of the first dimension in the convolution kernel.
 * `kernelDim2`: Length of the second dimension in the convolution kernel.
 * `kernelDim3`: Length of the third dimension in the convolution kernel.
-* `init`: String representation of the initialization method for the weights of the layer. See [here](initialization/#available-initialization-methods) for available initialization strings. Default is Xavier.
+* `init`: String representation of the initialization method for the weights of the layer. See [here](initialization/#available-initialization-methods) for available initialization strings. Default is "glorot_uniform".
 * `activation`: String representation of the activation function to use. See [here](activation/#available-activations) for available activation strings. Default is null.
 * `borderMode`: Either 'valid' or 'same'. Default is 'valid'.
-* `subsample`: Int array of length 3. Factor by which to subsample output. Also called strides elsewhere. Default is (1, 1, 1).
-* `dimOrdering`: Format of the input data. Please use "CHANNEL_FIRST" (dimOrdering='th').
+* `subsample`: Length 3. Factor by which to subsample output. Also called strides elsewhere. Default is (1, 1, 1).
+* `dimOrdering`: Format of input data. Only 'th' (Channel First) is supported for now.
 * `wRegularizer`: An instance of [Regularizer](../../../APIGuide/Regularizers/), (eg. L1 or L2 regularization), applied to the input weights matrices. Default is null.
 * `bRegularizer`: An instance of [Regularizer](../../../APIGuide/Regularizers/), applied to the bias. Default is null.
 * `bias`: Whether to include a bias (i.e. make the layer affine rather than linear). Default is true.
@@ -450,7 +450,7 @@ Cropping1D(cropping=(1, 1), input_shape=None)
 
 **Parameters:**
 
-* `cropping`: Int array of length 2. How many units should be trimmed off at the beginning and end of the cropping dimension. Default is (1, 1).
+* `cropping`: Length 2. How many units should be trimmed off at the beginning and end of the cropping dimension. Default is (1, 1).
 * `inputShape`: Only need to specify this argument when you use this layer as the first layer of a model. For Scala API, it should be a [`Shape`](../keras-api-scala/#shape) object. For Python API, it should be a shape tuple. Batch dimension should be excluded.
 
 **Scala example:**
@@ -527,7 +527,7 @@ The input of this layer should be 4D.
 
 **Scala:**
 ```scala
-Cropping2D(heightCrop = Array(0, 0), widthCrop = Array(0, 0), dimOrdering = DataFormat.NCHW, inputShape = null)
+Cropping2D(heightCrop = Array(0, 0), widthCrop = Array(0, 0), dimOrdering = "th", inputShape = null)
 ```
 **Python:**
 ```python
@@ -536,9 +536,9 @@ Cropping2D(cropping=((0, 0), (0, 0)), dim_ordering="th", input_shape=None)
 
 **Parameters:**
 
-* `heightCrop`: Int array of length 2. Height of the 2 cropping dimension. Default is (0, 0).
-* `widthCrop`: Int array of length 2. Width of the 2 cropping dimension. Default is (0, 0).
-* `dimOrdering`: Format of input data. Either DataFormat.NCHW (dimOrdering='th') or DataFormat.NHWC (dimOrdering='tf'). Default is NCHW.
+* `heightCrop`: Length 2. Height of the 2 cropping dimension. Default is (0, 0).
+* `widthCrop`: Length 2. Width of the 2 cropping dimension. Default is (0, 0).
+* `dimOrdering`: Format of input data. Either 'th' (Channel First) or 'tf' (Channel Last). Default is 'th'.
 * `inputShape`: Only need to specify this argument when you use this layer as the first layer of a model. For Scala API, it should be a [`Shape`](../keras-api-scala/#shape) object. For Python API, it should be a shape tuple. Batch dimension should be excluded.
 
 **Scala example:**
@@ -661,7 +661,7 @@ The input of this layer should be 5D.
 
 **Scala:**
 ```scala
-Cropping3D(dim1Crop = Array(1, 1), dim2Crop = Array(1, 1), dim3Crop = Array(1, 1), dimOrdering = "CHANNEL_FIRST", inputShape = null)
+Cropping3D(dim1Crop = Array(1, 1), dim2Crop = Array(1, 1), dim3Crop = Array(1, 1), dimOrdering = "th", inputShape = null)
 ```
 **Python:**
 ```python
@@ -670,10 +670,10 @@ Cropping3D(cropping=((1, 1), (1, 1), (1, 1)), dim_ordering="th", input_shape=Non
 
 **Parameters:**
 
-* `dim1Crop`: Int array of length 2. Kernel dim1 of the three cropping dimensions. Default is (1, 1).
-* `dim2Crop`: Int array of length 2. Kernel dim2 of the three cropping dimensions. Default is (1, 1).
-* `dim3Crop`: Int array of length 2. Kernel dim3 of the three cropping dimensions. Default is (1, 1).
-* `dimOrdering`: Format of input data. Either 'CHANNEL_FIRST' (dimOrdering='th') or 'CHANNEL_LAST' (dimOrdering='tf'). Default is 'CHANNEL_FIRST'.
+* `dim1Crop`: Length 2. Kernel dim1 of the three cropping dimensions. Default is (1, 1).
+* `dim2Crop`: Length 2. Kernel dim2 of the three cropping dimensions. Default is (1, 1).
+* `dim3Crop`: Length 2. Kernel dim3 of the three cropping dimensions. Default is (1, 1).
+* `dimOrdering`: Format of input data. Either 'th' (Channel First) or 'tf' (Channel Last). Default is 'th'.
 * `inputShape`: Only need to specify this argument when you use this layer as the first layer of a model. For Scala API, it should be a [`Shape`](../keras-api-scala/#shape) object. For Python API, it should be a shape tuple. Batch dimension should be excluded.
 
 **Scala example:**
