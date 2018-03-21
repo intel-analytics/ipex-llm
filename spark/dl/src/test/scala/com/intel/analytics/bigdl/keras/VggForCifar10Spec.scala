@@ -18,12 +18,15 @@ package com.intel.analytics.bigdl.keras
 
 import com.intel.analytics.bigdl.models.vgg.VggForCifar10
 import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.utils.RandomGenerator
 
 class VggForCifar10Spec extends KerasBaseSpec {
 
   "VggForCifar10 Sequential Keras-Style definition" should
     "be the same as Torch-Style definition" in {
+    RandomGenerator.RNG.setSeed(1000)
     val kmodel = VggForCifar10.keras(classNum = 10, hasDropout = false)
+    RandomGenerator.RNG.setSeed(1000)
     val tmodel = VggForCifar10(classNum = 10, hasDropout = false)
     val input = Tensor[Float](Array(32, 3, 32, 32)).rand()
     compareKerasTorchModels(kmodel, tmodel, input)
@@ -31,7 +34,9 @@ class VggForCifar10Spec extends KerasBaseSpec {
 
   "VggForCifar10 Graph Keras-Style definition" should
     "be the same as Torch-Style definition" in {
+    RandomGenerator.RNG.setSeed(1000)
     val kmodel = VggForCifar10.kerasGraph(classNum = 10, hasDropout = false)
+    RandomGenerator.RNG.setSeed(1000)
     val tmodel = VggForCifar10.graph(classNum = 10, hasDropout = false)
     val input = Tensor[Float](Array(32, 3, 32, 32)).rand()
     compareKerasTorchModels(kmodel, tmodel, input)
