@@ -802,6 +802,124 @@ output m is : [[[-0.04712385  0.21949144  0.0843184   0.14336972]
   [-0.38188276 -0.36746511 -0.37627563 -0.34141305]]]
 ```
 
+## SpatialSeperableConvolution ##
+
+**Scala:**
+```scala
+val m  = SpatialSeperableConvolution(nInputChannel, nOutputChannel, depthMultiplier, kW, kH, sW, sH, pW, pH, hasBias, dataFormat, wRegularizer = null,bRegularizer = null, pRegularizer = null, initDepthWeight = null, initPointWeight = null, initBias = null)
+```
+**Python:**
+```python
+m = SpatialFullConvolution(n_input_channel, n_output_channel, depth_multiplier, kernel_w, kernel_h, stride_w = 1, stride_h = 1, pad_w = 0, pad_h = 0, with_bias = True, data_format="NCHW", w_regularizer=None, b_regularizer=None, p_regularizer=None)
+```
+
+Separable convolutions consist in first performing a depthwise spatial convolution (which acts
+on each input channel separately) followed by a pointwise convolution which mixes together the
+resulting output channels. The  depthMultiplier argument controls how many output channels are
+enerated per input channel in the depthwise step.
+
+ * `nInputChannel` The number of expected input planes in the image given into forward()
+ * `nOutputChannel` The number of output planes the convolution layer will produce.
+ * `depthMultiplier` how many internal channels are generated per input channel
+ * `kW` The kernel width of the convolution.
+ * `kH` The kernel height of the convolution.
+ * `sW` The step of the convolution in the width dimension.
+ * `sH` The step of the convolution in the height dimension.
+ * `pW` The additional zeros added per width to the input planes. Default is 0.
+ * `pH` The additional zeros added per height to the input planes. Default is 0.
+ * `hasBias` do we use a bias on the output
+ * `dataFormat` image data format, which can be NHWC or NCHW
+ * `wRegularizer` kernel parameter regularizer
+ * `bRegularizer` bias regularizer
+ * `pRegularizer` point wise kernel parameter regularizer
+ * `initDepthWeight` kernel parameter init tensor
+ * `initPointWeight` point wise kernel parameter init tensor
+ * `initBias` bias init tensor
+ 
+**Scala example:**
+
+```scala
+
+scala>
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.tensor._
+import com.intel.analytics.bigdl.nn.abstractnn.DataFormat
+
+val m = SpatialSeperableConvolution[Float](1, 2, 1, 2, 2, dataFormat = DataFormat.NCHW)
+val input = Tensor(1, 1, 3, 3).randn()
+val output = m.forward(input)
+val gradOut = Tensor(1, 2, 2, 2).fill(0.1f)
+val gradIn = m.backward(input,gradOut)
+
+scala> print(input)
+(1,1,.,.) =
+-0.6636712      -1.3765892      -1.51044
+0.4502934       -0.38438025     -0.4279503
+-1.5327895      -0.33594692     1.5972415
+
+[com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 1x1x3x3]
+
+scala> print(output)
+(1,1,.,.) =
+-0.2903078      -0.5241474
+-0.17961408     -0.11239494
+
+(1,2,.,.) =
+-1.3147768      -2.3738143
+-0.81345534     -0.5090261
+
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 1x2x2x2]
+
+scala> print(gradOut)
+(1,1,.,.) =
+0.1     0.1
+0.1     0.1
+
+(1,2,.,.) =
+0.1     0.1
+0.1     0.1
+
+[com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 1x2x2x2]
+
+scala> print(gradIn)
+(1,1,.,.) =
+0.088415675     0.17780215      0.08938648
+0.15242647      0.26159728      0.109170794
+0.06401079      0.08379511      0.019784318
+
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 1x1x3x3]
+```
+
+
+**Python example:**
+```python
+from bigdl.nn.layer import *
+import numpy as np
+
+m = SpatialSeperableConvolution(1, 2, 1, 2, 2)
+
+print "--------- tensor input---------"
+tensor_input = np.random.rand(1, 1, 3, 3)
+print "input is :",tensor_input
+out = m.forward(tensor_input)
+print "output m is :",out
+```
+Gives the output,
+
+```python
+creating: createSpatialFullConvolution
+--------- tensor input---------
+input is : [[[[ 0.77269038  0.82476003  0.58228669]
+   [ 0.35123569  0.25496535  0.16736527]
+   [ 0.62138293  0.83156875  0.77565037]]]]
+output m is : [[[[ 0.91489887  0.81591743]
+   [ 0.84698057  0.76615578]]
+
+  [[ 1.05583775  0.94160837]
+   [ 0.97745675  0.88418102]]]]
+```
+
 ## SpatialConvolutionMap ##
 
 **Scala:**

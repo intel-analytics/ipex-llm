@@ -15,7 +15,7 @@
  */
 package com.intel.analytics.bigdl.nn.ops
 
-import com.intel.analytics.bigdl.nn.{SpatialConvolution, SpatialSeperableConvolution}
+import com.intel.analytics.bigdl.nn.{SpatialConvolution, SpatialSeparableConvolution}
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, DataFormat}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -57,7 +57,7 @@ class DepthwiseConv2D[T: ClassTag](
       conv.weight.zero()
     }
 
-    SpatialSeperableConvolution.copyWeight(conv.weight, input.size(channelDim), channelMultiplier,
+    SpatialSeparableConvolution.copyWeight(conv.weight, input.size(channelDim), channelMultiplier,
       filter, dataFormat)
     output = conv.forward(input)
     output
@@ -110,7 +110,7 @@ private[bigdl] class DepthwiseConv2DBackpropInput[T: ClassTag](
       conv.forward(dummyInput)
     }
 
-    SpatialSeperableConvolution.copyWeight(conv.weight, inputSize.valueAt(channelDim),
+    SpatialSeparableConvolution.copyWeight(conv.weight, inputSize.valueAt(channelDim),
       channelMultiplier, filter, dataFormat)
     output = conv.updateGradInput(dummyInput, gradOutput)
     output
@@ -165,7 +165,7 @@ private[bigdl] class DepthwiseConv2DBackpropFilter[T: ClassTag](
     conv.accGradParameters(input, gradOutput)
     output.resize(filterSize.toArray())
 
-    SpatialSeperableConvolution.copyDepthGradWeight(input.size(channelDim), channelMultiplier,
+    SpatialSeparableConvolution.copyDepthGradWeight(input.size(channelDim), channelMultiplier,
       conv.gradWeight, output, dataFormat)
 
     output

@@ -23,6 +23,7 @@ import scala.reflect.ClassTag
 
 /**
  * This is same with cross entropy criterion, except the target tensor is a one-hot tensor
+ *
  * @tparam T The numeric type in the criterion, usually which are [[Float]] or [[Double]]
  */
 class CategoricalCrossEntropy[T: ClassTag]()(implicit ev: TensorNumeric[T])

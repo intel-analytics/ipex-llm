@@ -559,8 +559,8 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     bRegularizer: Regularizer[T] = null,
     pRegularizer: Regularizer[T] = null
   )
-  : SpatialSeperableConvolution[T] = {
-    SpatialSeperableConvolution[T](nInputChannel,
+  : SpatialSeparableConvolution[T] = {
+    SpatialSeparableConvolution[T](nInputChannel,
       nOutputChannel,
       depthMultiplier,
       kW,
