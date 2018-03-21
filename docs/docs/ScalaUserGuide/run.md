@@ -83,13 +83,13 @@ You can run a BigDL program, e.g., the [VGG](https://github.com/intel-analytics/
   -b batch_size
   
   # Spark yarn cluster mode
-    spark-submit --master yarn --deploy-mode cluster \
-    --executor-cores cores_per_executor \
-    --num-executors executors_number \
-    --class com.intel.analytics.bigdl.models.vgg.Train \
-    dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
-    -f path_to_your_cifar_folder \
-    -b batch_size
+  spark-submit --master yarn --deploy-mode cluster \
+  --executor-cores cores_per_executor \
+  --num-executors executors_number \
+  --class com.intel.analytics.bigdl.models.vgg.Train \
+  dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
+  -f path_to_your_cifar_folder \
+  -b batch_size
 ```
 
   The parameters used in the above command are:
