@@ -357,6 +357,7 @@ class LocalOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter{
       mseDataSet,
       new MSECriterion[Float].asInstanceOf[Criterion[Float]]
     ).setOptimMethod(new LBFGS[Float]())
+    optimizer.setValidation(Trigger.everyEpoch, mseDataSet, Array(new Top1Accuracy[Float]()))
     val model = optimizer.optimize()
     val weight = model.getParameters()._1
 
