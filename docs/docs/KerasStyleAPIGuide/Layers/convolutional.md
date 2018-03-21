@@ -1,4 +1,3 @@
----
 ## **Convolution1D**
 Applies convolution operator for filtering neighborhoods of 1-D inputs.
 
@@ -883,5 +882,3 @@ Output is
   [[[0.45523635 0.9846309  0.569503  ]
     [0.5274428  0.39455718 0.57384753]]]]]
 ```
-
----

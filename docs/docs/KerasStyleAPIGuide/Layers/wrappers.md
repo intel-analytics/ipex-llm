@@ -1,4 +1,3 @@
----
 ## **TimeDistributed**
 TimeDistributed wrapper. Apply a layer to every temporal slice of an input.
 
@@ -174,5 +173,3 @@ Output is:
   [-0.17816684  0.077871    0.3195565  -0.40989208]
   [-0.13442594  0.08941883  0.3418655  -0.29824993]]]
 ```
-
----

@@ -1,4 +1,3 @@
----
 ## **Embedding**
 Turn positive integers (indexes) into dense vectors of fixed size.
 
@@ -93,5 +92,3 @@ Output is
   [-0.03603687 -0.03708585]
   [ 0.0094721  -0.01927968]]]
 ```
-
----

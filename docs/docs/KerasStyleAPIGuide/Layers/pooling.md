@@ -1,4 +1,3 @@
----
 ## **MaxPooling1D**
 Max pooling operation for temporal data.
 
@@ -1348,5 +1347,3 @@ Output is:
 [[0.99958104 0.8030557 ]
  [0.91781414 0.9774504 ]]
 ```
-
----

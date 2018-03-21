@@ -1,4 +1,3 @@
----
 ## **SimpleRNN**
 A fully-connected recurrent neural network cell. The output is to be fed back to input.
 
@@ -331,5 +330,3 @@ Output is:
 [[0.5762107  0.4567929  0.00370956]
  [0.24133313 0.38104653 0.05249191]]
 ```
-
----

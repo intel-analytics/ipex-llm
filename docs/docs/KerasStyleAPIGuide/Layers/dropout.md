@@ -1,4 +1,3 @@
----
 ## **Dropout**
 Applies Dropout to the input by randomly setting a fraction 'p' of input units to 0 at each update during training time in order to prevent overfitting.
 
@@ -693,5 +692,3 @@ Output is
    [[0.53651035 0.66013485]
     [0.45874837 0.7613676 ]]]]]
 ```
-
----
