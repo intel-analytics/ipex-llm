@@ -1,8 +1,8 @@
-# LeNet Model on MNIST with new API
+# LeNet Model on MNIST using Keras-Style API
 
-This example defines a classical CNN model used in digital number classification with the new set of Keras-Style API in BigDL, which is more user-friendly. For detailed information with regard to LeNet, please refer to <http://yann.lecun.com/exdb/lenet/>.
+LeNet5 is a classical CNN model used in digital number classification. For detailed information with regard to LeNet, please refer to <http://yann.lecun.com/exdb/lenet/>.
 
-This example is the same as [../../models/lenet](../../models/lenet), except that here we use the new Keras-Style API for model definition and training.
+This example is the same as [../../models/lenet](../../models/lenet), except that here we use the new set of Keras-Style API in BigDL for model definition and training, which is more user-friendly.
 
 
 ## Prepare MNIST Data

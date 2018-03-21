@@ -119,19 +119,18 @@ from bigdl.nn.keras.layer import *
 
 model = Sequential()
 model.add(Reshape((1, 28, 28), input_shape=(28, 28, 1)))
-model.add(Convolution2D(32, 3, 3, activation="relu"))
-model.add(Convolution2D(32, 3, 3, activation="relu"))
-model.add(MaxPooling2D(pool_size=(2, 2)))
-model.add(Dropout(0.25))
+model.add(Convolution2D(6, 5, 5, activation="tanh", name="conv1_5x5"))
+model.add(MaxPooling2D())
+model.add(Convolution2D(12, 5, 5, activation="tanh", name="conv2_5x5"))
+model.add(MaxPooling2D())
 model.add(Flatten())
-model.add(Dense(128, activation="relu"))
-model.add(Dropout(0.5))
-model.add(Dense(10, activation="softmax"))
+model.add(Dense(100, activation="tanh", name="fc1"))
+model.add(Dense(10, activation="softmax", name="fc2"))
 
 model.get_input_shape() # (None, 28, 28, 1)
 model.get_output_shape() # (None, 10)
 ```
-See [here](https://github.com/intel-analytics/BigDL/tree/master/pyspark/bigdl/examples/lenet) for the full example code and running instructions.
+See [here](https://github.com/intel-analytics/BigDL/tree/master/pyspark/bigdl/examples/lenet) for detailed introduction of LeNet, the full example code and running instructions.
 
 
 ---

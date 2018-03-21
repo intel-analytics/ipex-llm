@@ -82,7 +82,7 @@ class JavaCreator(SingletonMixin):
         if isinstance(cclass, six.string_types):
             cclass = [cclass]
         with JavaCreator._lock:
-            JavaCreator.__creator_class = [cclass]
+            JavaCreator.__creator_class = cclass
             JavaCreator._instance = None
 
     def __init__(self, bigdl_type, gateway):
