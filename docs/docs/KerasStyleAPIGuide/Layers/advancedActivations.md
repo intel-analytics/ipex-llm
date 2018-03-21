@@ -51,19 +51,19 @@ from bigdl.nn.keras.topology import Sequential
 from bigdl.nn.keras.layer import ELU
 
 model = Sequential()
-model.add(ELU(1.2, input_shape=(3, )))
+model.add(ELU(input_shape=(3, )))
 input = np.random.random([2, 3])
 output = model.forward(input)
 ```
 Input is:
 ```python
-[[0.98624221 0.93625254 0.51908689]
- [0.93353209 0.72231469 0.41468629]]
+[[0.90404922 0.23530925 0.49711093]
+ [0.43009161 0.22446032 0.90144771]]
 ```
 Output is
 ```python
-[[0.98624223 0.93625253 0.5190869 ]
- [0.93353206 0.7223147  0.4146863 ]]
+[[0.9040492  0.23530924 0.49711093]
+ [0.43009162 0.22446032 0.9014477 ]]
 ```
 
 ---
@@ -93,39 +93,23 @@ import com.intel.analytics.bigdl.utils.Shape
 import com.intel.analytics.bigdl.tensor._
 
 val model = Sequential[Float]()
-model.add(LeakyReLU(1.27, inputShape = Shape(3, 4)))
-val input = Tensor[Float](2, 3, 4).randn()
+model.add(LeakyReLU(inputShape = Shape(3)))
+val input = Tensor[Float](2, 3).randn()
 val output = model.forward(input)
 ```
 Input is:
 ```scala
 input: com.intel.analytics.bigdl.tensor.Tensor[Float] =
-(1,.,.) =
--0.5824592	-0.67302877	-1.7967145	0.071719564
-0.6605261	0.08600852	0.30068552	0.11830905
--0.29188097	1.6119281	-0.9510023	-0.40019512
-
-(2,.,.) =
-0.39399254	-0.23085448	-1.2176765	-0.51953214
-0.7793783	0.4649485	0.9937087	-0.8057158
--1.0953056	0.43886897	0.39663073	0.77146864
-
-[com.intel.analytics.bigdl.tensor.DenseTensor of size 2x3x4]
+0.87583905	0.17511077	1.5674616
+0.5608507	-0.7401811	-0.049983025
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 2x3]
 ```
 Output is:
 ```scala
 output: com.intel.analytics.bigdl.nn.abstractnn.Activity =
-(1,.,.) =
--0.7397232	-0.8547465	-2.2818274	0.071719564
-0.6605261	0.08600852	0.30068552	0.11830905
--0.37068883	1.6119281	-1.2077729	-0.5082478
-
-(2,.,.) =
-0.39399254	-0.29318517	-1.5464492	-0.65980583
-0.7793783	0.4649485	0.9937087	-1.023259
--1.3910381	0.43886897	0.39663073	0.77146864
-
-[com.intel.analytics.bigdl.tensor.DenseTensor of size 2x3x4]
+0.87583905	0.17511077	    1.5674616
+0.5608507	-0.0074018105	-4.9983023
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 2x3]
 ```
 
 **Python example:**
@@ -220,29 +204,25 @@ from bigdl.nn.keras.topology import Sequential
 from bigdl.nn.keras.layer import SReLU
 
 model = Sequential()
-model.add(SReLU(input_shape=(3, 4)))
-input = np.random.random([2, 3, 4])
+model.add(SReLU(input_shape=(2, 3)))
+input = np.random.random([2, 2, 3])
 output = model.forward(input)
 ```
 Input is:
 ```python
-[[[0.18934493 0.41314691 0.52979433 0.54267574]
-  [0.40451538 0.17045234 0.01904761 0.11590762]
-  [0.17007451 0.09039303 0.9700648  0.8030194 ]]
+[[[0.42998132 0.47736492 0.9554154 ]
+  [0.93264942 0.56851545 0.39508313]]
 
- [[0.42074793 0.00447267 0.36424064 0.92617442]
-  [0.97258511 0.46134389 0.82389101 0.45722536]
-  [0.97305309 0.76862034 0.71869518 0.88380866]]]
+ [[0.5164102  0.22304862 0.44380779]
+  [0.69137804 0.26413953 0.60638032]]]
 ```
 Output is
 ```python
-[[[0.18934493 0.4131469  0.52979434 0.54267573]
-  [0.4045154  0.17045234 0.01904761 0.11590762]
-  [0.17007451 0.09039303 0.9700648  0.8030194 ]]
+[[[0.42998132 0.47736493 0.9554154 ]
+  [0.93264943 0.5685154  0.39508313]]
 
- [[0.42074794 0.00447267 0.36424065 0.9261744 ]
-  [0.9725851  0.46134388 0.823891   0.45722535]
-  [0.9730531  0.7686203  0.71869516 0.8838087 ]]]
+ [[0.5164102  0.22304863 0.44380778]
+  [0.69137806 0.26413953 0.60638034]]]
 ```
 
 ---
@@ -272,39 +252,23 @@ import com.intel.analytics.bigdl.utils.Shape
 import com.intel.analytics.bigdl.tensor._
 
 val model = Sequential[Float]()
-model.add(ThresholdedReLU(inputShape = Shape(3, 4)))
-val input = Tensor[Float](2, 3, 4).randn()
+model.add(ThresholdedReLU(inputShape = Shape(3)))
+val input = Tensor[Float](2, 3).randn()
 val output = model.forward(input)
 ```
 Input is:
 ```scala
 input: com.intel.analytics.bigdl.tensor.Tensor[Float] =
-(1,.,.) =
--2.1033075	1.4546076	-0.96647346	    -0.4511009
--2.4208899	-0.52082974	-0.081632175	-0.86960655
--0.6928835	2.7436976	1.538436	    -0.25845975
-
-(2,.,.) =
-0.34507668	-1.7959352	-0.62471783	    -0.75249046
--0.5291317	1.1868533	0.05719685	    0.8247873
--0.8376612	1.5174114	0.29486847	    -0.45751894
-
-[com.intel.analytics.bigdl.tensor.DenseTensor of size 2x3x4]
+2.220999	1.2022058	-1.0015608
+0.6532913	0.31831574	1.6747104
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 2x3]
 ```
 Output is:
 ```scala
 output: com.intel.analytics.bigdl.nn.abstractnn.Activity =
-(1,.,.) =
-0.0	    1.4546076	0.0	        0.0
-0.0	    0.0	        0.0	        0.0
-0.0	    2.7436976	1.538436	0.0
-
-(2,.,.) =
-0.0	    0.0	        0.0	        0.0
-0.0	    1.1868533	0.0	        0.0
-0.0	    1.5174114	0.0	        0.0
-
-[com.intel.analytics.bigdl.tensor.DenseTensor of size 2x3x4]
+2.220999	1.2022058	0.0
+0.0	        0.0	        1.6747104
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 2x3]
 ```
 
 **Python example:**
