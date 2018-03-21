@@ -1223,7 +1223,7 @@ class MaxPooling2D(KerasLayer):
     creating: createKerasMaxPooling2D
     """
     def __init__(self, pool_size=(2, 2), strides=None,
-                 border_mode='valid', dim_ordering='th',
+                 border_mode="valid", dim_ordering="th",
                  input_shape=None, **kwargs):
         super(MaxPooling2D, self).__init__(None,
                                            pool_size,
