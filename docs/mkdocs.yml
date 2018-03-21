@@ -105,6 +105,7 @@ pages:
     - Embedding Layers: KerasStyleAPIGuide/Layers/embedding.md
     - Normalization Layers: KerasStyleAPIGuide/Layers/normalization.md
     - Advanced Activations Layers: KerasStyleAPIGuide/Layers/advancedActivations.md
+    - Wrappers Layers: KerasStyleAPIGuide/Layers/wrappers.md
 - Powered by: powered-by.md
 - Known Issues: known-issues.md
 - Presentations: presentations.md
