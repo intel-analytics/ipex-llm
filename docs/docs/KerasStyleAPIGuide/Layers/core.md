@@ -87,3 +87,471 @@ Output is
 [[ 0.  0.  0.  0.02094215  0.38839486]
  [ 0.  0.  0.  0.24498197  0.38024583]]
 ```
+
+---
+## **Flatten**
+Flattens the input without affecting the batch size.
+
+**Scala:**
+```scala
+Flatten(inputShape = null)
+```
+**Python:**
+```python
+Flatten(input_shape=None)
+```
+
+**Parameters:**
+
+* `inputShape`: Only need to specify this argument when you use this layer as the first layer of a model. For Scala API, it should be a [`Shape`](../keras-api-scala/#shape) object. For Python API, it should be a shape tuple. Batch dimension should be excluded.
+
+**Scala example:**
+```scala
+import com.intel.analytics.bigdl.nn.keras.{Sequential, Flatten}
+import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.bigdl.tensor._
+
+val model = Sequential[Float]()
+model.add(Flatten(inputShape = Shape(2, 2, 3)))
+val input = Tensor[Float](2, 2, 2, 3).randn()
+val output = model.forward(input)
+```
+Input is:
+```scala
+input: com.intel.analytics.bigdl.tensor.Tensor[Float] =
+(1,1,.,.) =
+1.2196734	-0.37271047	-0.31215316
+-0.68951845	-0.20356052	-0.85899264
+
+(1,2,.,.) =
+-1.7452804	-0.1138052	-0.9124519
+-0.94204897	0.28943604	-0.71905166
+
+(2,1,.,.) =
+0.7228912	-0.51781553	-0.5869045
+-0.82529205	0.26846665	-0.6199292
+
+(2,2,.,.) =
+-0.4529333	-0.57688874	0.9097755
+0.7112487	-0.6711465	1.3074298
+
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 2x2x2x3]
+```
+Output is:
+```scala
+output: com.intel.analytics.bigdl.nn.abstractnn.Activity =
+1.2196734	-0.37271047	-0.31215316	-0.68951845	-0.20356052	-0.85899264	-1.7452804	-0.1138052	-0.9124519	-0.94204897	0.28943604	-0.71905166
+0.7228912	-0.51781553	-0.5869045	-0.82529205	0.26846665	-0.6199292	-0.4529333	-0.57688874	0.9097755	0.7112487	-0.6711465	1.3074298
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 2x12]
+```
+
+**Python example:**
+```python
+import numpy as np
+from bigdl.nn.keras.topology import Sequential
+from bigdl.nn.keras.layer import Flatten
+
+model = Sequential()
+model.add(Flatten(input_shape=(2, 4)))
+input = np.random.random([2, 2, 4])
+output = model.forward(input)
+```
+Input is:
+```python
+[[[0.23566997 0.89368838 0.21225493 0.08271606]
+  [0.56553029 0.94980164 0.27770336 0.66696008]]
+
+ [[0.45052917 0.23468265 0.81973834 0.32676311]
+  [0.80632879 0.72353573 0.92546756 0.08359752]]]
+```
+Output is
+```python
+[[0.23566997 0.8936884  0.21225493 0.08271606 0.5655303  0.9498016 0.27770337 0.66696006]
+ [0.45052916 0.23468265 0.8197383  0.32676312 0.8063288  0.7235357 0.92546755 0.08359752]]
+```
+
+---
+## **Reshape**
+Reshapes an output to a certain shape.
+
+Supports shape inference by allowing one -1 in the target shape. For example, if inputShape = Shape(2, 3, 4), targetShape = Array(3, -1), then outputShape will be Shape(3, 8).
+
+**Scala:**
+```scala
+Reshape(targetShape, inputShape = null)
+```
+**Python:**
+```python
+Reshape(target_shape, input_shape=None)
+```
+
+**Parameters:**
+
+* `targetShape`: Array of int. The target shape that you desire to have. Batch dimension should be excluded.
+* `inputShape`: Only need to specify this argument when you use this layer as the first layer of a model. For Scala API, it should be a [`Shape`](../keras-api-scala/#shape) object. For Python API, it should be a shape tuple. Batch dimension should be excluded.
+
+**Scala example:**
+```scala
+import com.intel.analytics.bigdl.nn.keras.{Sequential, Reshape}
+import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.bigdl.tensor._
+
+val model = Sequential[Float]()
+model.add(Reshape(Array(3, -1), inputShape = Shape(2, 3, 4)))
+val input = Tensor[Float](2, 2, 3, 4).randn()
+val output = model.forward(input)
+```
+Input is:
+```scala
+input: com.intel.analytics.bigdl.tensor.Tensor[Float] =
+(1,1,.,.) =
+-0.33993733	0.6321729	-0.8098835	-0.59065235
+-1.5887159	0.715828	-0.85611266	1.0672033
+1.2596635	-1.237745	-0.12619138	0.4679131
+
+(1,2,.,.) =
+-0.6356864	-0.2645429	-0.6001224	-0.97786295
+-0.35982707	0.8466941	0.91678447	0.8477781
+-0.9805214	0.19218816	0.77162135	0.087835714
+
+(2,1,.,.) =
+0.073235944	-0.86371166	0.16353804	0.052104328
+1.6936276	-1.2721802	1.0948435	-0.99680495
+-0.30766153	1.175706	-0.07466983	0.13588612
+
+(2,2,.,.) =
+-1.0921284	-0.55233824	1.8577499	-0.20041502
+0.27287027	-0.22101387	0.11674305	-1.1666387
+-0.2115776	-0.38883215	0.6829677	-0.40729326
+
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 2x2x3x4]
+```
+Output is:
+```scala
+output: com.intel.analytics.bigdl.nn.abstractnn.Activity =
+-0.33993733	0.6321729	-0.8098835	-0.59065235	-1.5887159	0.715828	-0.85611266	1.0672033	1.2596635	-1.237745	-0.12619138	0.4679131	-0.6356864	-0.2645429	-0.6001224	-0.97786295
+-0.35982707	0.8466941	0.91678447	0.8477781	-0.9805214	0.19218816	0.77162135	0.087835714	0.073235944	-0.86371166	0.16353804	0.052104328	1.6936276	-1.2721802	1.0948435	-0.99680495
+-0.30766153	1.175706	-0.07466983	0.13588612	-1.0921284	-0.55233824	1.8577499	-0.20041502	0.27287027	-0.22101387	0.11674305	-1.1666387	-0.2115776	-0.38883215	0.6829677	-0.40729326
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 3x16]
+```
+
+**Python example:**
+```python
+import numpy as np
+from bigdl.nn.keras.topology import Sequential
+from bigdl.nn.keras.layer import Reshape
+
+model = Sequential()
+model.add(Reshape(target_shape=(2, -1), input_shape=(2, 4)))
+input = np.random.random([2, 2, 4])
+output = model.forward(input)
+```
+Input is:
+```python
+[[[0.99479657 0.72003003 0.27257293 0.20336115]
+  [0.36859189 0.46676955 0.47797856 0.34351521]]
+
+ [[0.55229533 0.31991237 0.49872441 0.88507726]
+  [0.52530685 0.38835236 0.44346276 0.46687194]]]
+```
+Output is
+```python
+[[0.9947966  0.72003    0.27257293 0.20336115 0.3685919  0.46676955 0.47797856 0.34351522]
+ [0.5522953  0.31991237 0.4987244  0.88507724 0.5253069  0.38835236 0.44346276 0.46687195]]
+```
+
+---
+## **Permute**
+Permutes the dimensions of the input according to a given pattern.
+
+Useful for connecting RNNs and convnets together.
+
+**Scala:**
+```scala
+Permute(dims, inputShape = null)
+```
+**Python:**
+```python
+Permute(dims, input_shape=None)
+```
+
+**Parameters:**
+
+* `dims`: Int array. Permutation pattern, does not include the samples dimension. Indexing starts at 1.
+* `inputShape`: Only need to specify this argument when you use this layer as the first layer of a model. For Scala API, it should be a [`Shape`](../keras-api-scala/#shape) object. For Python API, it should be a shape tuple. Batch dimension should be excluded.
+
+**Scala example:**
+```scala
+import com.intel.analytics.bigdl.nn.keras.{Sequential, Permute}
+import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.bigdl.tensor._
+
+val model = Sequential[Float]()
+model.add(Permute(Array(2, 3, 1), inputShape = Shape(2, 3, 4)))
+val input = Tensor[Float](2, 2, 3, 4).randn()
+val output = model.forward(input)
+```
+Input is:
+```scala
+input: com.intel.analytics.bigdl.tensor.Tensor[Float] =
+(1,1,.,.) =
+-1.1030567	-1.4624393	0.6139582	0.21287616
+-2.2278674	-2.5211496	1.9219213	0.85134244
+0.32953477	-2.1209111	-0.82459116	-0.82447577
+
+(1,2,.,.) =
+1.0540756	2.2638302	0.19139263	-0.9037997
+-0.20562297	-0.07835103	0.3883783	0.20750551
+-0.56583923	0.9617757	-0.5792387	0.9008493
+
+(2,1,.,.) =
+-0.54270995	-1.9089237	0.9289245	0.27833897
+-1.4734148	-0.9408616	-0.40362656	-1.1730295
+0.9813707	-0.0040280274	-1.5321463	-1.4322052
+
+(2,2,.,.) =
+-0.056844145	2.2309854	2.1172705	0.10043324
+1.121064	0.16069101	-0.51750094	-1.9682871
+0.9011646	0.47903928	-0.54172426	-0.6604068
+
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 2x2x3x4]
+```
+Output is:
+```scala
+output: com.intel.analytics.bigdl.nn.abstractnn.Activity =
+(1,1,.,.) =
+-1.1030567	1.0540756
+-1.4624393	2.2638302
+0.6139582	0.19139263
+0.21287616	-0.9037997
+
+(1,2,.,.) =
+-2.2278674	-0.20562297
+-2.5211496	-0.07835103
+1.9219213	0.3883783
+0.85134244	0.20750551
+
+(1,3,.,.) =
+0.32953477	-0.56583923
+-2.1209111	0.9617757
+-0.82459116	-0.5792387
+-0.82447577	0.9008493
+
+(2,1,.,.) =
+-0.54270995	-0.056844145
+-1.9089237	2.2309854
+0.9289245	2.1172705
+0.27833897	0.10043324
+
+(2,2,.,.) =
+-1.4734148	1.121064
+-0.9408616	0.16069101
+-0.40362656	-0.51750094
+-1.1730295	-1.9682871
+
+(2,3,.,.) =
+0.9813707	0.9011646
+-0.0040280274	0.47903928
+-1.5321463	-0.54172426
+-1.4322052	-0.6604068
+
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 2x3x4x2]
+```
+
+**Python example:**
+```python
+import numpy as np
+from bigdl.nn.keras.topology import Sequential
+from bigdl.nn.keras.layer import Permute
+
+model = Sequential()
+model.add(Permute(dims=(2, 1), input_shape=(2, 4)))
+input = np.random.random([2, 2, 4])
+output = model.forward(input)
+```
+Input is:
+```python
+[[[0.63966353 0.79842335 0.2066892  0.56806715]
+  [0.1639401  0.61301646 0.81731068 0.53734401]]
+
+ [[0.87178529 0.51120426 0.94765845 0.38695451]
+  [0.32721816 0.19257422 0.44084815 0.65827817]]]
+```
+Output is
+```python
+[[[0.6396635  0.1639401 ]
+  [0.79842335 0.6130165 ]
+  [0.2066892  0.8173107 ]
+  [0.56806713 0.537344  ]]
+
+ [[0.8717853  0.32721817]
+  [0.51120424 0.19257422]
+  [0.9476585  0.44084814]
+  [0.38695452 0.65827817]]]
+```
+
+---
+## **RepeatVector**
+Repeats the input n times.
+
+The input of this layer should be 2D.
+
+**Scala:**
+```scala
+RepeatVector(n, inputShape = null)
+```
+**Python:**
+```python
+RepeatVector(n, input_shape=None)
+```
+
+**Parameters:**
+
+* `n`: Repetition factor. Integer.
+* `inputShape`: Only need to specify this argument when you use this layer as the first layer of a model. For Scala API, it should be a [`Shape`](../keras-api-scala/#shape) object. For Python API, it should be a shape tuple. Batch dimension should be excluded.
+
+**Scala example:**
+```scala
+import com.intel.analytics.bigdl.nn.keras.{Sequential, RepeatVector}
+import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.bigdl.tensor._
+
+val model = Sequential[Float]()
+model.add(RepeatVector(4, inputShape = Shape(3)))
+val input = Tensor[Float](2, 3).randn()
+val output = model.forward(input)
+```
+Input is:
+```scala
+input: com.intel.analytics.bigdl.tensor.Tensor[Float] =
+1.4182444	2.858577	1.3975657
+-0.19606766	0.8585809	0.3027246
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 2x3]
+```
+Output is:
+```scala
+output: com.intel.analytics.bigdl.nn.abstractnn.Activity =
+(1,.,.) =
+1.4182444	2.858577	1.3975657
+1.4182444	2.858577	1.3975657
+1.4182444	2.858577	1.3975657
+1.4182444	2.858577	1.3975657
+
+(2,.,.) =
+-0.19606766	0.8585809	0.3027246
+-0.19606766	0.8585809	0.3027246
+-0.19606766	0.8585809	0.3027246
+-0.19606766	0.8585809	0.3027246
+
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 2x4x3]
+```
+
+**Python example:**
+```python
+import numpy as np
+from bigdl.nn.keras.topology import Sequential
+from bigdl.nn.keras.layer import RepeatVector
+
+model = Sequential()
+model.add(RepeatVector(2, input_shape=(3, )))
+input = np.random.random([2, 3])
+output = model.forward(input)
+```
+Input is:
+```python
+[[0.62618263 0.06431292 0.42046559]
+ [0.83101863 0.53810303 0.47986746]]
+```
+Output is
+```python
+[[[0.6261826  0.06431292 0.4204656 ]
+  [0.6261826  0.06431292 0.4204656 ]]
+
+ [[0.8310186  0.53810304 0.47986746]
+  [0.8310186  0.53810304 0.47986746]]]
+```
+
+---
+## **Merge**
+Used to merge a list of tensors into a single tensor, following some merge mode.
+
+Merge must have at least two input layers.
+
+**Scala:**
+```scala
+Merge(layers =  null, mode = "sum", concatAxis = -1, inputShape = null)
+```
+**Python:**
+```python
+Merge(layers=None, mode="sum", concat_axis=-1, input_shape=None)
+```
+
+**Parameters:**
+
+* `layers`: A list of layer instances. Must be more than one layer.
+* `mode`: Merge mode. String, must be one of: 'sum', 'mul', 'concat', 'ave', 'cos', 'dot', 'max'. Default is 'sum'.
+* `concatAxis`: Integer, axis to use in mode concat. Only specify this when mode is 'concat'. Default is -1, meaning the last axis of the input.
+* `inputShape`: Only need to specify this argument when you use this layer as the first layer of a model. For Scala API, it should be a [`Shape`](../keras-api-scala/#shape) object. For Python API, it should be a shape tuple. Batch dimension should be excluded.
+
+**Scala example:**
+```scala
+import com.intel.analytics.bigdl.nn.keras.{Sequential, Merge}
+import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.bigdl.tensor._
+
+val model = Sequential[Float]()
+model.add(Merge(4, inputShape = Shape(3)))
+val input = Tensor[Float](2, 3).randn()
+val output = model.forward(input)
+```
+Input is:
+```scala
+input: com.intel.analytics.bigdl.tensor.Tensor[Float] =
+1.4182444	2.858577	1.3975657
+-0.19606766	0.8585809	0.3027246
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 2x3]
+```
+Output is:
+```scala
+output: com.intel.analytics.bigdl.nn.abstractnn.Activity =
+(1,.,.) =
+1.4182444	2.858577	1.3975657
+1.4182444	2.858577	1.3975657
+1.4182444	2.858577	1.3975657
+1.4182444	2.858577	1.3975657
+
+(2,.,.) =
+-0.19606766	0.8585809	0.3027246
+-0.19606766	0.8585809	0.3027246
+-0.19606766	0.8585809	0.3027246
+-0.19606766	0.8585809	0.3027246
+
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 2x4x3]
+```
+
+**Python example:**
+```python
+import numpy as np
+from bigdl.nn.keras.topology import Sequential
+from bigdl.nn.keras.layer import Merge
+
+model = Sequential()
+l1 = InputLayer(input_shape=(3, 5))
+l2 = InputLayer(input_shape=(3, 5))
+model.add(Merge(layers=[l1, l2], mode='sum'))
+input = np.random.random([2, 3])
+output = model.forward(input)
+```
+Input is:
+```python
+[[0.62618263 0.06431292 0.42046559]
+ [0.83101863 0.53810303 0.47986746]]
+```
+Output is
+```python
+[[[0.6261826  0.06431292 0.4204656 ]
+  [0.6261826  0.06431292 0.4204656 ]]
+
+ [[0.8310186  0.53810304 0.47986746]
+  [0.8310186  0.53810304 0.47986746]]]
+```
