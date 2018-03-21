@@ -68,31 +68,25 @@ from bigdl.nn.keras.layer import SimpleRNN
 
 model = Sequential()
 model.add(SimpleRNN(8, activation = "relu", input_shape = (4, 5)))
-input = np.random.random([3, 4, 5])
+input = np.random.random([2, 4, 5])
 output = model.forward(input)
 ```
 Input is:
 ```python
-[[[0.84667859 0.46843956 0.58500761 0.49466075 0.80869937]
-  [0.33858098 0.49313598 0.11871868 0.40802442 0.33438503]
-  [0.76465152 0.70995096 0.35533213 0.76722302 0.92509398]
-  [0.50201632 0.50159765 0.79646517 0.0496403  0.1004305 ]]
+[[[0.43400622 0.65452575 0.94952774 0.96210478 0.05286231]
+  [0.2162183  0.33225502 0.09725628 0.80813221 0.29556109]
+  [0.19720487 0.35077585 0.80904872 0.80576513 0.82035253]
+  [0.36175687 0.63291153 0.08437936 0.71581099 0.790709  ]]
 
- [[0.73492087 0.60507454 0.50498809 0.57438087 0.45531948]
-  [0.99241301 0.93581154 0.26433406 0.90715382 0.98946954]
-  [0.5146376  0.34173451 0.52074524 0.0618145  0.35984059]
-  [0.65040384 0.04413242 0.37820717 0.24391006 0.95041634]]
-
- [[0.87342021 0.8067062  0.62405708 0.85380849 0.0204989 ]
-  [0.43654301 0.25973309 0.03199391 0.79672145 0.65800269]
-  [0.31261367 0.686876   0.0629408  0.23044748 0.3881871 ]
-  [0.2636806  0.37639863 0.64793255 0.84616263 0.66620196]]]
+ [[0.35387003 0.36532078 0.9834315  0.07562338 0.05600369]
+  [0.65927201 0.14652252 0.10848068 0.88225065 0.88871385]
+  [0.23627135 0.72620104 0.60391828 0.51571874 0.73550574]
+  [0.80773506 0.35121494 0.66889362 0.530684   0.52066982]]]
 ```
 Output is:
 ```python
-[[0.1865956  0.286946   0.03105135 0.5189484  0.63897055 0.0  0.40103152 0.5835867 ]
- [0.15814234 0.15947476 0.0        0.5763033  0.59285486 0.0  0.33782864 0.0       ]
- [0.43670028 0.32656467 0.27376643 0.5266341  0.4105177  0.0  0.07578468 0.34243858]]
+[[0.77534926 0.23742369 0.14946866 0.0        0.16289112 0.0  0.71689016 0.24594748]
+ [0.8987881  0.06123672 0.3312829  0.29757586 0.0        0.0  1.0179179  0.23447856]]
 ```
 
 ---
@@ -162,17 +156,21 @@ from bigdl.nn.keras.layer import GRU
 
 model = Sequential()
 model.add(GRU(8, input_shape = (2, 3)))
-input = np.random.random([1, 2, 3])
+input = np.random.random([2, 2, 3])
 output = model.forward(input)
 ```
 Input is:
 ```python
-[[[0.1933675  0.06995704 0.64020873]
-  [0.53693786 0.52344421 0.70939187]]]
+[[[0.25026651 0.35433442 0.01417391]
+  [0.77236921 0.97315472 0.66090386]]
+
+ [[0.76037554 0.41029034 0.68725938]
+  [0.17888889 0.67670088 0.70580547]]]
 ```
 Output is:
 ```python
-[[-0.28945404 -0.04611638 -0.3548464  -0.2695646  -0.01624351 -0.37065172 0.30741248 -0.12380156]]
+[[-0.03584666  0.07984452 -0.06159414 -0.13331707  0.34015405 -0.07107028  0.12444386 -0.06606203]
+ [ 0.02881907  0.04856917 -0.15306929 -0.24991018  0.23814955  0.0303434   0.06634206 -0.15335503]]
 ```
 
 ---
@@ -210,24 +208,28 @@ import com.intel.analytics.bigdl.tensor._
 
 val model = Sequential[Float]()
 model.add(LSTM(8, inputShape = Shape(2, 3)))
-val input = Tensor[Float](1, 2, 3).randn()
+val input = Tensor[Float](2, 2, 3).randn()
 val output = model.forward(input)
 ```
 Input is:
 ```scala
 input: com.intel.analytics.bigdl.tensor.Tensor[Float] =
 (1,.,.) =
--2.1447723	0.31525767	-1.5426548
--0.63483864	-0.92148876	-2.0270665
+1.3485646	0.38385049	0.676986
+0.13189854	0.30926105	0.4539456
 
-[com.intel.analytics.bigdl.tensor.DenseTensor of size 1x2x3]
+(2,.,.) =
+-1.7166822	-0.71257055	-0.477679
+-0.36572325	-0.5534503	-0.018431915
+
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 2x2x3]
 ```
 Output is:
 ```scala
 output: com.intel.analytics.bigdl.nn.abstractnn.Activity =
--0.059685573 -0.06620621 -0.11752512 -0.00423051 -0.36373916 0.17949651 -0.011495307 -0.3951684
-[com.intel.analytics.bigdl.tensor.DenseTensor of size 1x8]
-
+-0.20168768	-0.20359062	-0.11801678	-0.08987579	0.20480658	-0.05170132	-0.048530716	0.08447949
+-0.07134238	-0.11233686	0.073534355	0.047955263	0.13415548	0.12862797	-0.07839044	    0.28296617
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 2x8]
 ```
 
 **Python example:**
@@ -289,23 +291,23 @@ import com.intel.analytics.bigdl.utils.Shape
 import com.intel.analytics.bigdl.tensor._
 
 val model = Sequential[Float]()
-model.add(Highway(activation = "tanh", bias = false, inputShape = Shape(4)))
-val input = Tensor[Float](2, 4).randn()
+model.add(Highway(inputShape = Shape(3)))
+val input = Tensor[Float](2, 3).randn()
 val output = model.forward(input)
 ```
 Input is:
 ```scala
 input: com.intel.analytics.bigdl.tensor.Tensor[Float] =
--1.1009767	-1.7566829	0.98709023	0.7114766
-1.1036539	-0.6377753	-1.9605356	-2.4905455
-[com.intel.analytics.bigdl.tensor.DenseTensor of size 2x4]
+-0.26041138	0.4286919	1.723103
+1.4516269	0.5557163	-0.1149741
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 2x3]
 ```
 Output is:
 ```scala
 output: com.intel.analytics.bigdl.nn.abstractnn.Activity =
--0.9396665	0.12595776	0.41412824	0.5987828
-0.90716076	-0.54083437	-1.5220025	-1.3661726
-[com.intel.analytics.bigdl.tensor.DenseTensor of size 2x4]
+-0.006746907	-0.109112576	1.3375516
+0.6065166	0.41575465	-0.06849813
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 2x3]
 ```
 
 **Python example:**
