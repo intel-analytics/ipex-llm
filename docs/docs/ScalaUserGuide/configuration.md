@@ -25,6 +25,17 @@ java -cp xxx.jar -DFOO=BAR your.main.class.name
 
 ## Available Properties
 
+**Logging**
+- `bigdl.utils.LoggerFilter.disable`: To disable redirecting logs of Spark and BigDL to a file. Default is false.
+- `bigdl.utils.LoggerFilter.logFile`: To set the path to redirect log. By default, it will be directed to `bigdl.log` in the current working directory.
+- `bigdl.utils.LoggerFilter.enableSparkLog`: To enable redirecting Spark logs to logFile. Set it to false when you don't want to see Spark logs in the redirected log file. Default is true.
+
+**Mode**
+- `bigdl.localMode`: Whether BigDL is running as a local Java/Scala program. Default is false.
+
+**Multi-threading**
+- `bigdl.coreNumber`: To set how many cores BigDL will use on your machine. It will only be used when bigdl.localMode is set to true. If hyper thread is enabled on your machine, __DO NOT__ set it larger than half of the virtual core number. Default is half of the virtual core number.
+
 Category|Property|Default value|Description
 -----|-----|------|-----
 **Logging**|bigdl.utils.LoggerFilter.disable|*false*|Disable redirecting logs of Spark and BigDL to  a file.
