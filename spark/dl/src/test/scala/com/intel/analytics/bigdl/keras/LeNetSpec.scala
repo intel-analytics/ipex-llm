@@ -55,19 +55,4 @@ class LeNetSpec extends FlatSpec with Matchers {
     }
   }
 
-  "LeNet Torch and Keras definition" should "have same weights and bias" in {
-    RandomGenerator.RNG.setSeed(1000)
-    val klenet = LeNet5.keras(classNum = 10)
-    RandomGenerator.RNG.setSeed(1000)
-    val tlenet = LeNet5(classNum = 10)
-    println("111")
-    (klenet.getWeightsBias(), tlenet.getWeightsBias()).zipped.foreach { (bweight, kweight) =>
-      bweight.almostEqual(kweight, 1e-5) should be(true)
-    }
-    val input = Tensor[Float](Array(2, 28, 28, 1)).rand()
-    val output1 = klenet.forward(input)
-    val output2 = tlenet.forward(input)
-    output1.toTensor[Float].almostEqual(output2.toTensor[Float], 1e-5) should be(true)
-  }
-
 }

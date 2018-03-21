@@ -136,19 +136,15 @@ Here we adopt our Keras-Style API to define a LeNet CNN model to be trained on t
 import com.intel.analytics.bigdl.nn.keras._
 import com.intel.analytics.bigdl.utils.Shape
 
-val model = Sequential[Float]()
+val model = Sequential()
 model.add(Reshape(Array(1, 28, 28), inputShape = Shape(28, 28, 1)))
-model.add(Convolution2D(6, 5, 5).setName("conv1_5x5"))
-model.add(Activation("tanh"))
+model.add(Convolution2D(6, 5, 5, activation = "tanh").setName("conv1_5x5"))
 model.add(MaxPooling2D())
-model.add(Convolution2D(12, 5, 5).setName("conv2_5x5"))
-model.add(Activation("tanh"))
+model.add(Convolution2D(12, 5, 5, activation = "tanh").setName("conv2_5x5"))
 model.add(MaxPooling2D())
 model.add(Flatten())
 model.add(Dense(100, activation = "tanh").setName("fc1"))
-model.add(Activation("tanh"))
-model.add(Dense(10).setName("fc2"))
-model.add(Activation("softmax"))
+model.add(Dense(classNum, activation = "softmax").setName("fc2"))
 
 model.getInputShape().toSingle().toArray // Array(-1, 28, 28, 1)
 model.getOutputShape().toSingle().toArray // Array(-1, 10)
