@@ -11,7 +11,7 @@ if [ -z "${SPARK_HOME}" ]; then
     exit 1
 fi
 
-#setup pathes
+#setup paths
 export BIGDL_JAR_NAME=`ls ${BIGDL_HOME}/lib/ | grep jar-with-dependencies.jar`
 export BIGDL_JAR="${BIGDL_HOME}/lib/$BIGDL_JAR_NAME"
 export BIGDL_PY_ZIP_NAME=`ls ${BIGDL_HOME}/lib/ | grep python-api.zip`
