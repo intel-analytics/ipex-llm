@@ -171,6 +171,7 @@ optimizer = Optimizer(
 ## RMSprop ##
 
 An implementation of RMSprop (Reference: http://arxiv.org/pdf/1308.0850v5.pdf, Sec 4.2)
+
 * learningRate : learning rate
 * learningRateDecaye : learning rate decay
 * decayRatee : decayRate, also called rho
@@ -276,6 +277,7 @@ large-scale stochastic problems, where opfunc is a noisy approximation of f(x). 
 case, the learning rate allows a reduction of confidence in the step size.
 
 **Parameters:**
+
 * **maxIter** - Maximum number of iterations allowed. Default: 20
 * **maxEval** - Maximum number of function evaluations. Default: Double.MaxValue
 * **tolFun** - Termination tolerance on the first-order optimality. Default: 1e-5
