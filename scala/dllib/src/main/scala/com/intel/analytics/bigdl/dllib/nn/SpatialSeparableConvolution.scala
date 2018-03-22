@@ -32,31 +32,34 @@ import scala.reflect.ClassTag
  * resulting output channels. The  depthMultiplier argument controls how many output channels are
  * generated per input channel in the depthwise step.
  *
- * @param nInputChannel
- * @param nOutputChannel
- * @param depthMultiplier
- * @param kW
- * @param kH
- * @param sW
- * @param sH
- * @param pW
- * @param pH
- * @param hasBias
- * @param dataFormat
- * @param wRegularizer
- * @param bRegularizer
- * @param pRegularizer
- * @tparam T Numeric type. Only support float/double now
+ * @param nInputChannel input image channel number
+ * @param nOutputChannel output image channel number
+ * @param depthMultiplier how many output channels are generated in the hidden depthwise step
+ * @param kW kernel width
+ * @param kH kernel height
+ * @param sW stride width
+ * @param sH stride height
+ * @param pW padding width
+ * @param pH padding height
+ * @param hasBias do we use a bias on the output, default value is true
+ * @param dataFormat image data format, which can be NHWC or NCHW, default value is NCHW
+ * @param wRegularizer kernel parameter regularizer
+ * @param bRegularizer bias regularizer
+ * @param pRegularizer point wise kernel parameter regularizer
+ * @param initDepthWeight kernel parameter init tensor
+ * @param initPointWeight point wise kernel parameter init tensor
+ * @param initBias bias init tensor
+ * @tparam T module parameter numeric type
  */
-class SpatialSeperableConvolution[T: ClassTag](
+class SpatialSeparableConvolution[T: ClassTag](
   val nInputChannel: Int,
   val nOutputChannel: Int,
   val depthMultiplier: Int,
   val kW: Int, val kH: Int,
-  val sW: Int, val sH: Int,
-  val pW: Int, val pH: Int,
-  val hasBias: Boolean,
-  val dataFormat: DataFormat,
+  val sW: Int = 1, val sH: Int = 1,
+  val pW: Int = 0, val pH: Int = 0,
+  val hasBias: Boolean = true,
+  val dataFormat: DataFormat = DataFormat.NCHW,
   var wRegularizer: Regularizer[T] = null,
   var bRegularizer: Regularizer[T] = null,
   var pRegularizer: Regularizer[T] = null,
@@ -143,13 +146,13 @@ class SpatialSeperableConvolution[T: ClassTag](
   }
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
-    require(input.nDimension() == 4, "SpatialSeperableConvolution only accept 4D input")
-    require(input.isContiguous(), "SpatialSeperableConvolution require contiguous input")
+    require(input.nDimension() == 4, "SpatialSeparableConvolution only accept 4D input")
+    require(input.isContiguous(), "SpatialSeparableConvolution require contiguous input")
     require(nInputChannel == input.size(channelDim),
       s"input tensor channel dimension size(${input.size(channelDim)}) doesn't " +
         s"match layer nInputChannel $nInputChannel")
 
-    SpatialSeperableConvolution.copyWeight(depthConv.weight, input.size(channelDim),
+    SpatialSeparableConvolution.copyWeight(depthConv.weight, input.size(channelDim),
       depthMultiplier, depthWeight, dataFormat)
 
     depthConv.forward(input)
@@ -158,31 +161,31 @@ class SpatialSeperableConvolution[T: ClassTag](
   }
 
   override def backward(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
-    require(input.nDimension() == 4, "SpatialSeperableConvolution only accept 4D input")
-    require(input.isContiguous(), "SpatialSeperableConvolution require contiguous input")
+    require(input.nDimension() == 4, "SpatialSeparableConvolution only accept 4D input")
+    require(input.isContiguous(), "SpatialSeparableConvolution require contiguous input")
     require(nInputChannel == input.size(channelDim),
       "input tensor channel dimension size doesn't match layer nInputChannel")
 
-    require(gradOutput.nDimension() == 4, "SpatialSeperableConvolution only accept 4D gradOutput")
-    require(gradOutput.isContiguous(), "SpatialSeperableConvolution require contiguous gradOutput")
+    require(gradOutput.nDimension() == 4, "SpatialSeparableConvolution only accept 4D gradOutput")
+    require(gradOutput.isContiguous(), "SpatialSeparableConvolution require contiguous gradOutput")
     require(nOutputChannel == gradOutput.size(channelDim),
       "gradOutput tensor channel dimension size doesn't match layer nOutputChannel")
 
     pointWiseConv2D.backward(depthConv.output, gradOutput)
     gradInput = depthConv.backward(input, pointWiseConv2D.gradInput)
-    SpatialSeperableConvolution.copyDepthGradWeight(nInputChannel, depthMultiplier,
+    SpatialSeparableConvolution.copyDepthGradWeight(nInputChannel, depthMultiplier,
       depthConv.gradWeight, depthGradWeight, dataFormat)
     gradInput
   }
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
-    require(input.nDimension() == 4, "SpatialSeperableConvolution only accept 4D input")
-    require(input.isContiguous(), "SpatialSeperableConvolution require contiguous input")
+    require(input.nDimension() == 4, "SpatialSeparableConvolution only accept 4D input")
+    require(input.isContiguous(), "SpatialSeparableConvolution require contiguous input")
     require(nInputChannel == input.size(channelDim),
       "input tensor channel dimension size doesn't match layer nInputChannel")
 
-    require(gradOutput.nDimension() == 4, "SpatialSeperableConvolution only accept 4D gradOutput")
-    require(gradOutput.isContiguous(), "SpatialSeperableConvolution require contiguous gradOutput")
+    require(gradOutput.nDimension() == 4, "SpatialSeparableConvolution only accept 4D gradOutput")
+    require(gradOutput.isContiguous(), "SpatialSeparableConvolution require contiguous gradOutput")
     require(nOutputChannel == gradOutput.size(channelDim),
       "gradOutput tensor channel dimension size doesn't match layer nOutputChannel")
 
@@ -192,19 +195,19 @@ class SpatialSeperableConvolution[T: ClassTag](
   }
 
   override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T]): Unit = {
-    require(input.nDimension() == 4, "SpatialSeperableConvolution only accept 4D input")
-    require(input.isContiguous(), "SpatialSeperableConvolution require contiguous input")
+    require(input.nDimension() == 4, "SpatialSeparableConvolution only accept 4D input")
+    require(input.isContiguous(), "SpatialSeparableConvolution require contiguous input")
     require(nInputChannel == input.size(channelDim),
       "input tensor channel dimension size doesn't match layer nInputChannel")
 
-    require(gradOutput.nDimension() == 4, "SpatialSeperableConvolution only accept 4D gradOutput")
-    require(gradOutput.isContiguous(), "SpatialSeperableConvolution require contiguous gradOutput")
+    require(gradOutput.nDimension() == 4, "SpatialSeparableConvolution only accept 4D gradOutput")
+    require(gradOutput.isContiguous(), "SpatialSeparableConvolution require contiguous gradOutput")
     require(nOutputChannel == gradOutput.size(channelDim),
       "gradOutput tensor channel dimension size doesn't match layer nOutputChannel")
 
     pointWiseConv2D.accGradParameters(depthConv.output, gradOutput)
     depthConv.accGradParameters(input, pointWiseConv2D.gradInput)
-    SpatialSeperableConvolution.copyDepthGradWeight(nInputChannel, depthMultiplier,
+    SpatialSeparableConvolution.copyDepthGradWeight(nInputChannel, depthMultiplier,
       depthConv.gradWeight, depthGradWeight, dataFormat)
   }
 
@@ -216,7 +219,7 @@ class SpatialSeperableConvolution[T: ClassTag](
   }
 }
 
-object SpatialSeperableConvolution extends ModuleSerializable {
+object SpatialSeparableConvolution extends ModuleSerializable {
 
   def apply[T: ClassTag](nInputChannel: Int, nOutputChannel: Int, depthMultiplier: Int,
     kW: Int, kH: Int, sW: Int = 1, sH: Int = 1, pW: Int = 0, pH: Int = 0,
@@ -225,7 +228,7 @@ object SpatialSeperableConvolution extends ModuleSerializable {
     pRegularizer: Regularizer[T] = null, initDepthWeight: Tensor[T] = null,
     initPointWeight: Tensor[T] = null, initBias: Tensor[T] = null
   )(implicit ev: TensorNumeric[T])
-  : SpatialSeperableConvolution[T] = new SpatialSeperableConvolution[T](nInputChannel,
+  : SpatialSeparableConvolution[T] = new SpatialSeparableConvolution[T](nInputChannel,
     nOutputChannel, depthMultiplier, kW, kH, sW, sH, pW, pH, hasBias, dataFormat, wRegularizer,
     bRegularizer, pRegularizer, initDepthWeight, initPointWeight, initBias)
 
@@ -272,7 +275,7 @@ object SpatialSeperableConvolution extends ModuleSerializable {
   override def doLoadModule[T: ClassTag](context: DeserializeContext)
     (implicit ev: TensorNumeric[T]) : AbstractModule[Activity, Activity, T] = {
     val attrMap = context.bigdlModule.getAttrMap
-    val ssc = super.doLoadModule(context).asInstanceOf[SpatialSeperableConvolution[T]]
+    val ssc = super.doLoadModule(context).asInstanceOf[SpatialSeparableConvolution[T]]
     val weights = ssc.parameters()._1
     val (depthWeight, pointWeight, bias) = (weights(0), weights(1), weights(2))
 
@@ -299,7 +302,7 @@ object SpatialSeperableConvolution extends ModuleSerializable {
 
     super.doSerializeModule(context, sreluBuilder)
 
-    val ssc = context.moduleData.module.asInstanceOf[SpatialSeperableConvolution[T]]
+    val ssc = context.moduleData.module.asInstanceOf[SpatialSeparableConvolution[T]]
     val weights = ssc.parameters()._1
     val (depthWeight, pointWeight, bias) = (weights(0), weights(1), weights(2))
 
