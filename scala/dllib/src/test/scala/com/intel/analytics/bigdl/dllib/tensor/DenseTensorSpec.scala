@@ -1082,4 +1082,14 @@ class DenseTensorSpec extends FlatSpec with Matchers {
 
     scalar2.value() should be(1)
   }
+
+  "size" should "work on empty tensor" in {
+    val t = Tensor[Float]()
+    t.size() should be (null)
+  }
+
+  "stride" should "work on empty tensor" in {
+    val t = Tensor[Float]()
+    t.stride() should be (null)
+  }
 }
