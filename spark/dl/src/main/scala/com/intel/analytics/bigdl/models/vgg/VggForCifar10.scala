@@ -136,7 +136,7 @@ object VggForCifar10 {
 
     def convBNReLU(nOutPutPlane: Int)
     : Sequential[Float] = {
-      vggBnDo.add(Convolution2D(nOutPutPlane, 3, 3, padH = 1, padW = 1))
+      vggBnDo.add(Convolution2D(nOutPutPlane, 3, 3, borderMode = "same"))
       vggBnDo.add(BatchNormalization(momentum = 0.1))
       vggBnDo.add(Activation("relu"))
       vggBnDo
@@ -195,7 +195,7 @@ object VggForCifar10 {
 
     def convBNReLU(nOutPutPlane: Int)(input: ModuleNode[Float])
     : ModuleNode[Float] = {
-      val conv = Convolution2D(nOutPutPlane, 3, 3, padH = 1, padW = 1).inputs(input)
+      val conv = Convolution2D(nOutPutPlane, 3, 3, borderMode = "same").inputs(input)
       val bn = BatchNormalization().inputs(conv)
       Activation("relu").inputs(bn)
     }
