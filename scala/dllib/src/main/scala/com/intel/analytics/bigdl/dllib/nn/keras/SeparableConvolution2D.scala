@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.nn.keras
 
-import com.intel.analytics.bigdl.nn.{InitializationMethod, SpatialSeperableConvolution, Xavier}
+import com.intel.analytics.bigdl.nn.{InitializationMethod, SpatialSeparableConvolution, Xavier}
 import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -89,7 +89,7 @@ class SeparableConvolution2D[T: ClassTag](
     val input = inputShape.toSingle().toArray
     val stackSize = if (dimOrdering == DataFormat.NCHW) input(1) else input(3)
     val pad = KerasUtils.getPadsFromBorderMode(borderMode)
-    val layer = SpatialSeperableConvolution(
+    val layer = SpatialSeparableConvolution(
       nInputChannel = stackSize,
       nOutputChannel = nbFilter,
       depthMultiplier = depthMultiplier,
