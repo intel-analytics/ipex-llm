@@ -42,7 +42,12 @@ class DepthwiseConv2dNative extends TensorflowOpsLoader {
     val strideList = getIntList(attributes, "strides")
     require(strideList.head == 1, s"not support strides on batch")
 
-    val format = getString(attributes, "data_format")
+    val format = if (attributes.containsKey("data_format")) {
+      getString(attributes, "data_format")
+    } else {
+      "NHWC"
+    }
+
     val conv = format match {
       case "NHWC" =>
         require(strideList(3) == 1, s"not support strides on depth")
