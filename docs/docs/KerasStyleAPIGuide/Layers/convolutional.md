@@ -812,6 +812,146 @@ Output is
 ```
 
 ---
+## **SeparableConvolution2D**
+Applies separable convolution operator for 2D inputs.
+
+Separable convolutions consist in first performing a depthwise spatial convolution (which acts on each input channel separately) followed by a pointwise convolution which mixes together the resulting output channels. The depthMultiplier argument controls how many output channels are generated per input channel in the depthwise step.
+
+The input of this layer should be 4D.
+
+You can also use SeparableConv2D as an alias of this layer.
+
+**Scala:**
+```scala
+SeparableConvolution2D(nbFilter, nbRow, nbCol, init = "glorot_uniform", activation = null, borderMode = "valid", subsample = (1, 1), depthMultiplier = 1, dimOrdering = "th", depthwiseRegularizer = null, pointwiseRegularizer= null, bRegularizer = null, bias = true, inputShape = null)
+```
+**Python:**
+```python
+SeparableConvolution2D(nb_filter, nb_row, nb_col, init="glorot_uniform", activation=None, border_mode="valid", subsample=(1, 1), depth_multiplier=1, dim_ordering="th", depthwise_regularizer=None, pointwise_regularizer=None, b_regularizer=None, bias=True, input_shape=None, name=None)
+```
+
+**Parameters:**
+
+* `nbFilter`: Number of convolution filters to use.
+* `nbRow`: Number of rows in the convolution kernel.
+* `nbCol`: Number of columns in the convolution kernel.
+* `init`: String representation of the initialization method for the weights of the layer. See [here](initialization/#available-initialization-methods) for available initialization strings. Default is "glorot_uniform".
+* `activation`: String representation of the activation function to use. See [here](activation/#available-activations) for available activation strings. Default is null.
+* `borderMode`: Either 'valid' or 'same'. Default is 'valid'.
+* `subsample`: Length 2 corresponding to the step of the convolution in the height and width dimension. Also called strides elsewhere. Default is (1, 1).
+* `depthMultiplier`: How many output channel to use per input channel for the depthwise convolution step. Integer. Default is 1.
+* `dimOrdering`: Format of input data. Either 'th' (Channel First) or 'tf' (Channel Last). Default is 'th'.
+* `depthwiseRegularizer`: An instance of [Regularizer](../../../APIGuide/Regularizers/), (eg. L1 or L2 regularization), applied to the depthwise weights matrices. Default is null.
+* `pointwiseRegularizer`: An instance of [Regularizer](../../../APIGuide/Regularizers/), applied to the pointwise weights matrices. Default is null.
+* `bRegularizer`: An instance of [Regularizer](../../../APIGuide/Regularizers/), applied to the bias. Default is null.
+* `bias`: Whether to include a bias (i.e. make the layer affine rather than linear). Default is true.
+* `inputShape`: Only need to specify this argument when you use this layer as the first layer of a model. For Scala API, it should be a [`Shape`](../keras-api-scala/#shape) object. For Python API, it should be a shape tuple. Batch dimension should be excluded.
+
+**Scala example:**
+```scala
+import com.intel.analytics.bigdl.nn.keras.{Sequential, SeparableConvolution2D}
+import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.bigdl.tensor._
+
+val model = Sequential[Float]()
+model.add(SeparableConvolution2D(2, 2, 2, activation = "relu", inputShape = Shape(2, 3, 4)))
+val input = Tensor[Float](2, 2, 3, 4).randn()
+val output = model.forward(input)
+```
+Input is:
+```scala
+input: com.intel.analytics.bigdl.tensor.Tensor[Float] =
+(1,1,.,.) =
+0.61846036	0.13724488	    1.9047198	0.8788536
+0.74383116	-0.7590018	    0.17210509	1.8095028
+-0.21476124	-0.010768774	0.5437478	0.97470677
+
+(1,2,.,.) =
+-0.22464052	-1.7141389	    1.8457758	0.81563693
+-0.17250067	-1.2183974	    -2.5329974	-1.3014348
+0.43760046	0.32672745	    -0.6059157	0.31439257
+
+(2,1,.,.) =
+-0.32413644	-0.1871411	    -0.13821407	-0.16577224
+-0.02138366	1.2260025	    -0.48404458	-1.0251912
+-1.8844653	0.6796752	    -0.5881143	2.1656246
+
+(2,2,.,.) =
+0.17234507	-0.6455974	    1.9615031	0.6552883
+-0.05861185	1.8847446	    -0.857622	-0.5949971
+-0.41135395	-0.92089206	    0.13154007	-0.9326055
+
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 2x2x3x4]
+```
+Output is:
+```scala
+output: com.intel.analytics.bigdl.nn.abstractnn.Activity =
+(1,1,.,.) =
+0.0	        0.0	        0.0
+0.029595211	0.0	        0.34002993
+
+(1,2,.,.) =
+0.0	        0.0	        0.0
+0.073145226	0.0	        0.5542682
+
+(2,1,.,.) =
+0.4973382	0.36478913	0.0
+0.0	        0.0	        0.0
+
+(2,2,.,.) =
+0.9668598	0.7102739	0.0
+0.0	        0.0	        0.0
+
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 2x2x2x3]
+```
+
+**Python example:**
+```python
+import numpy as np
+from bigdl.nn.keras.topology import Sequential
+from bigdl.nn.keras.layer import SeparableConvolution2D
+
+model = Sequential()
+model.add(SeparableConvolution2D(2, 2, 2, input_shape=(2, 3, 4)))
+input = np.random.random([2, 2, 3, 4])
+output = model.forward(input)
+```
+Input is:
+```python
+[[[[0.39277921 0.36904141 0.16768533 0.41712068]
+   [0.62416696 0.19334139 0.83341541 0.16486488]
+   [0.57287259 0.47809379 0.11103843 0.01746644]]
+
+  [[0.24945342 0.05728102 0.19076369 0.70498077]
+   [0.39147172 0.08100018 0.74426575 0.74251056]
+   [0.61840056 0.00771785 0.65170218 0.04492181]]]
+
+
+ [[[0.08337509 0.19320791 0.66757918 0.38905916]
+   [0.50237454 0.0996316  0.3981495  0.32274897]
+   [0.01598124 0.52896577 0.76068351 0.10099803]]
+
+  [[0.20396797 0.48682425 0.11302674 0.57491998]
+   [0.71529612 0.11720466 0.57783092 0.45790133]
+   [0.41573101 0.60269287 0.613528   0.32717263]]]]
+```
+Output is
+```python
+[[[[0.15971108 0.12109925 0.17461367]
+   [0.20024002 0.13661252 0.1871847 ]]
+
+  [[0.47139192 0.36838844 0.45902973]
+   [0.57752806 0.41371965 0.5079273 ]]]
+
+
+ [[[0.11111417 0.10702941 0.2030398 ]
+   [0.13108528 0.15029006 0.18544158]]
+
+  [[0.27002305 0.31479427 0.57750916]
+   [0.3573216  0.40100253 0.5122235 ]]]]
+```
+
+---
 ## **Cropping1D**
 Cropping layer for 1D input (e.g. temporal sequence).
 

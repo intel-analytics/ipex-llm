@@ -330,3 +330,105 @@ Output is:
 [[0.5762107  0.4567929  0.00370956]
  [0.24133313 0.38104653 0.05249191]]
 ```
+
+---
+## **ConvLSTM2D**
+Convolutional LSTM.
+
+Data format currently supported for this layer is 'CHANNEL_FIRST' (dimOrdering='th').
+
+Border mode currently supported for this layer is 'same'.
+
+The convolution kernel for this layer is a square kernel with equal strides 'subsample'.
+
+The input of this layer should be 5D.
+
+**Scala:**
+```scala
+ConvLSTM2D(nbFilter, nbKernel, activation = "tanh", innerActivation = "hard_sigmoid", dimOrdering = "th", subsample = 1, wRegularizer = null, uRegularizer = null, bRegularizer = null, returnSequences = false, goBackwards = false, inputShape = null)
+```
+**Python:**
+```python
+ConvLSTM2D(nb_filter, nb_row, nb_col, activation="tanh", inner_activation="hard_sigmoid", dim_ordering="th", border_mode="same", subsample=(1, 1), W_regularizer=None, U_regularizer=None, b_regularizer=None, return_sequences=False, go_backwards=False, input_shape=None, name=None)
+```
+
+**Parameters:**
+
+* `nbFilter`: Number of convolution filters to use.
+* `nbKernel`: Number of rows/columns in the convolution kernel. Square kernel.
+* `activation`: String representation of the activation function to use. See [here](activation/#available-activations) for available activation strings. Default is 'tanh'.
+* `innerActivation`: String representation of the activation function to use for inner cells. See [here](activation/#available-activations) for available activation strings. Default is 'hard_sigmoid'.
+* `dimOrdering`: Format of input data. Only 'th' (Channel First) is supported for now.
+* `subsample`: Factor by which to subsample output. Also called strides elsewhere.
+* `wRegularizer`: An instance of [Regularizer](../../../APIGuide/Regularizers/), (eg. L1 or L2 regularization), applied to the input weights matrices. Default is null.
+* `uRegularizer`: An instance of [Regularizer](../../../APIGuide/Regularizers/), (eg. L1 or L2 regularization), applied to the recurrent weights matrices. Default is null.
+* `bRegularizer`: An instance of [Regularizer](../../../APIGuide/Regularizers/), applied to the bias. Default is null.
+* `returnSequences`: Whether to return the full sequence or the last output in the output sequence. Default is false.
+* `goBackwards`: Whether the input sequence will be processed backwards. Default is false.
+* `inputShape`: Only need to specify this argument when you use this layer as the first layer of a model. For Scala API, it should be a [`Shape`](../keras-api-scala/#shape) object. For Python API, it should be a shape tuple. Batch dimension should be excluded.
+
+**Scala example:**
+```scala
+import com.intel.analytics.bigdl.nn.keras.{Sequential, ConvLSTM2D}
+import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.bigdl.tensor._
+
+val model = Sequential[Float]()
+model.add(ConvLSTM2D(2, 2, inputShape = Shape(1, 2, 2, 2)))
+val input = Tensor[Float](1, 1, 2, 2, 2).randn()
+val output = model.forward(input)
+```
+Input is:
+```scala
+input: com.intel.analytics.bigdl.tensor.Tensor[Float] =
+(1,1,1,.,.) =
+-0.3935159	-2.0734277
+0.16473202	-1.0574125
+
+(1,1,2,.,.) =
+1.2325795	0.510846
+-0.4246685	-0.109434046
+
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 1x1x2x2x2]
+```
+Output is:
+```scala
+output: com.intel.analytics.bigdl.nn.abstractnn.Activity =
+(1,1,.,.) =
+-0.12613402	    0.035963967
+0.046498444	    0.03568305
+
+(1,2,.,.) =
+-0.1547083	    -0.046905644
+-0.115438126	-0.08817647
+
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 1x2x2x2]
+```
+
+**Python example:**
+```python
+import numpy as np
+from bigdl.nn.keras.topology import Sequential
+from bigdl.nn.keras.layer import ConvLSTM2D
+
+model = Sequential()
+model.add(ConvLSTM2D(2, 2, 2, input_shape=(1, 2, 2, 2)))
+input = np.random.random([1, 1, 2, 2, 2])
+output = model.forward(input)
+```
+Input is:
+```python
+[[[[[0.53293431 0.02606896]
+    [0.50916001 0.6927234 ]]
+
+   [[0.44282168 0.05963464]
+    [0.22863441 0.45312165]]]]]
+```
+Output is
+```python
+[[[[ 0.09322705  0.09817358]
+   [ 0.12197719  0.11264911]]
+
+  [[ -0.03922357 -0.11715978]
+   [ -0.01915754 -0.03141996]]]]
+```
