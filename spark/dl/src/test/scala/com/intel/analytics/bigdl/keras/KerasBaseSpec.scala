@@ -86,6 +86,9 @@ abstract class KerasBaseSpec extends BigDLSpecHelper {
                               tmodel: Module[Float],
                               input: Tensor[Float],
                               precision: Double = 1e-5): Unit = {
+    (kmodel.getWeightsBias(), tmodel.getWeightsBias()).zipped.foreach { (kw, tw) =>
+      kw.almostEqual(tw, precision) should be(true)
+    }
     val koutput = kmodel.forward(input)
     val toutput = tmodel.forward(input)
     val kgradInput = kmodel.backward(input, koutput)
