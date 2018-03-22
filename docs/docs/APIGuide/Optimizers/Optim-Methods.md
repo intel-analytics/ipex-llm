@@ -278,13 +278,13 @@ case, the learning rate allows a reduction of confidence in the step size.
 
 **Parameters:**
 
-* **maxIter** - Maximum number of iterations allowed. Default: 20
-* **maxEval** - Maximum number of function evaluations. Default: Double.MaxValue
-* **tolFun** - Termination tolerance on the first-order optimality. Default: 1e-5
-* **tolX** - Termination tol on progress in terms of func/param changes. Default: 1e-9
-* **learningRate** - the learning rate. Default: 1.0
-* **lineSearch** - A line search function. Default: None
-* **lineSearchOptions** - If no line search provided, then a fixed step size is used. Default: None
+* maxIter - Maximum number of iterations allowed. Default: 20
+* maxEval - Maximum number of function evaluations. Default: Double.MaxValue
+* tolFun - Termination tolerance on the first-order optimality. Default: 1e-5
+* tolX - Termination tol on progress in terms of func/param changes. Default: 1e-9
+* learningRate - the learning rate. Default: 1.0
+* lineSearch - A line search function. Default: None
+* lineSearchOptions - If no line search provided, then a fixed step size is used. Default: None
 
 **Scala example:**
 ```scala
