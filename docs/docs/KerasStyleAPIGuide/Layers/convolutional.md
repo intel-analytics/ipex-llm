@@ -952,6 +952,233 @@ Output is
 ```
 
 ---
+## **LocallyConnected1D**
+Locally-connected layer for 1D inputs which works similarly to the TemporalConvolution layer, except that weights are unshared, that is, a different set of filters is applied at each different patch of the input.
+
+Border mode currently supported for this layer is 'valid'.
+
+The input of this layer should be 3D.
+
+**Scala:**
+```scala
+LocallyConnected1D(nbFilter, filterLength, activation = null, subsampleLength = 1, wRegularizer = null, bRegularizer = null, bias = true, inputShape = null)
+```
+**Python:**
+```python
+LocallyConnected1D(nb_filter, filter_length, activation=None, border_mode="valid", subsample_length=1, W_regularizer=None, b_regularizer=None, bias=True, input_shape=None, name=None)
+```
+
+**Parameters:**
+
+* `nbFilter`: Dimensionality of the output.
+* `filterLength`: The extension (spatial or temporal) of each filter.
+* `activation`: String representation of the activation function to use. See [here](activation/#available-activations) for available activation strings. Default is null.
+* `subsampleLength`: Integer. Factor by which to subsample output.
+* `wRegularizer`: An instance of [Regularizer](../../../APIGuide/Regularizers/), (eg. L1 or L2 regularization), applied to the input weights matrices. Default is null.
+* `bRegularizer`: An instance of [Regularizer](../../../APIGuide/Regularizers/), applied to the bias. Default is null.
+* `bias`: Whether to include a bias (i.e. make the layer affine rather than linear). Default is true.
+* `inputShape`: Only need to specify this argument when you use this layer as the first layer of a model. For Scala API, it should be a [`Shape`](../keras-api-scala/#shape) object. For Python API, it should be a shape tuple. Batch dimension should be excluded.
+
+**Scala example:**
+```scala
+import com.intel.analytics.bigdl.nn.keras.{Sequential, LocallyConnected1D}
+import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.bigdl.tensor._
+
+val model = Sequential[Float]()
+model.add(LocallyConnected1D(6, 3, inputShape = Shape(3, 4)))
+val input = Tensor[Float](2, 3, 4).randn()
+val output = model.forward(input)
+```
+Input is:
+```scala
+input: com.intel.analytics.bigdl.tensor.Tensor[Float] =
+(1,.,.) =
+1.6755046	0.47923228	-0.41470557	-1.4644535
+-1.580751	-0.36924785	-1.1507624	0.20131736
+-0.4983051	-2.0898817	0.1623063	0.8118141
+
+(2,.,.) =
+1.5955191	-1.1017833	1.6614468	1.7959124
+1.1084127	0.528379	-1.114553	-1.030853
+0.37758648	-2.5828059	1.0172523	-1.6773314
+
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 2x3x4]
+```
+Output is:
+```scala
+output: com.intel.analytics.bigdl.nn.abstractnn.Activity =
+(1,.,.) =
+-0.20011228	0.7842446	-0.57892114	0.2405633	-0.35126245	-0.5116563
+
+(2,.,.) =
+-0.33687726	0.7863857	0.30202985	0.33251244	-0.7414977	0.14271683
+
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 2x1x6]
+```
+
+**Python example:**
+```python
+import numpy as np
+from bigdl.nn.keras.topology import Sequential
+from bigdl.nn.keras.layer import LocallyConnected1D
+
+model = Sequential()
+model.add(LocallyConnected1D(6, 3, input_shape=(3, 4)))
+input = np.random.random([2, 3, 4])
+output = model.forward(input)
+```
+Input is:
+```python
+[[[0.67992353 0.88287213 0.98861104 0.17401607]
+  [0.23660068 0.02779148 0.52982599 0.19876749]
+  [0.38880073 0.6498778  0.81532701 0.91719509]]
+
+ [[0.30532677 0.1574227  0.40535271 0.03174637]
+  [0.37303714 0.27821415 0.02314422 0.64516966]
+  [0.74813923 0.9884225  0.40667151 0.21894944]]]
+```
+Output is
+```python
+[[[ 0.66351205 -0.03819168 -0.48071918 -0.05209085 -0.07307816  0.94942856]]
+
+ [[ 0.5890693   0.0179258  -0.31232932  0.4427027  -0.30954808  0.4486028 ]]]
+```
+
+---
+## **LocallyConnected2D**
+Locally-connected layer for 2D inputs that works similarly to the SpatialConvolution layer, except that weights are unshared, that is, a different set of filters is applied at each different patch of the input.
+
+The input of this layer should be 4D.
+
+**Scala:**
+```scala
+LocallyConnected2D(nbFilter, nbRow, nbCol, activation = null, borderMode = "valid", subsample = (1, 1), dimOrdering = "th", wRegularizer = null, bRegularizer = null, bias = true, inputShape = null)
+```
+**Python:**
+```python
+LocallyConnected2D(nb_filter, nb_row, nb_col, activation=None, border_mode="valid", subsample=(1, 1), dim_ordering="th", W_regularizer=None, b_regularizer=None, bias=True, input_shape=None, name=None)
+```
+
+**Parameters:**
+
+* `nbFilter`: Number of convolution filters to use.
+* `nbRow`: Number of rows in the convolution kernel.
+* `nbCol`: Number of columns in the convolution kernel.
+* `activation`: String representation of the activation function to use. See [here](activation/#available-activations) for available activation strings. Default is null.
+* `borderMode`: Either 'valid' or 'same'. Default is 'valid'.
+* `subsample`: Length 2 corresponding to the step of the convolution in the height and width dimension. Also called strides elsewhere. Default is (1, 1).
+* `dimOrdering`: Format of input data. Either 'th' (Channel First) or 'tf' (Channel Last). Default is 'th'.
+* `wRegularizer`: An instance of [Regularizer](../../../APIGuide/Regularizers/), (eg. L1 or L2 regularization), applied to the input weights matrices. Default is null.
+* `bRegularizer`: An instance of [Regularizer](../../../APIGuide/Regularizers/), applied to the bias. Default is null.
+* `bias`: Whether to include a bias (i.e. make the layer affine rather than linear). Default is true.
+* `inputShape`: Only need to specify this argument when you use this layer as the first layer of a model. For Scala API, it should be a [`Shape`](../keras-api-scala/#shape) object. For Python API, it should be a shape tuple. Batch dimension should be excluded.
+
+**Scala example:**
+```scala
+import com.intel.analytics.bigdl.nn.keras.{Sequential, LocallyConnected2D}
+import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.bigdl.tensor._
+
+val model = Sequential[Float]()
+model.add(LocallyConnected2D(2, 2, 2, inputShape = Shape(2, 3, 4)))
+val input = Tensor[Float](2, 2, 3, 4).randn()
+val output = model.forward(input)
+```
+Input is:
+```scala
+input: com.intel.analytics.bigdl.tensor.Tensor[Float] =
+(1,1,.,.) =
+1.3119988	    -1.8982307	    -0.13138956	    1.0872058
+-0.11329581	    -0.7087005	    0.085274234	    -0.94051
+1.04928	        2.1579344	    -1.4412278	    -0.90965116
+
+(1,2,.,.) =
+-0.6119555	    1.2226686	    -0.10441754	    -1.6240023
+0.5598073	    -0.099059306	-1.543586	    0.72533834
+-1.6674699	    -1.0901593	    -0.24129404	    0.30954796
+
+(2,1,.,.) =
+-0.78856885	    -0.5567014	    -1.1273636	    -0.98069143
+-0.40949664	    0.92562497	    -1.3729718	    0.7423901
+-0.29498738	    -0.044669412	1.0937366	    0.90768206
+
+(2,2,.,.) =
+1.0948726	    -0.23575573	    -0.051821854	-0.58692485
+1.9133459	    -1.0849183	    2.1423934	    0.6559134
+-0.8390565	    -0.27111387	    -0.8439365	    -1.3939567
+
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 2x2x3x4]
+```
+Output is:
+```scala
+output: com.intel.analytics.bigdl.nn.abstractnn.Activity =
+(1,1,.,.) =
+-0.42428172	0.25790718	-0.5227444
+0.6963143	-0.34605533	-0.35524538
+
+(1,2,.,.) =
+0.61758286	0.8430548	0.1378907
+0.24116383	0.15782532	0.16882366
+
+(2,1,.,.) =
+-0.5603108	0.5107949	-0.112701565
+0.62288725	0.6909297	-0.9253155
+
+(2,2,.,.) =
+-0.2443612	0.9310517	-0.2417406
+-0.82973266	-1.0886648	0.19112866
+
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 2x2x2x3]
+```
+
+**Python example:**
+```python
+import numpy as np
+from bigdl.nn.keras.topology import Sequential
+from bigdl.nn.keras.layer import LocallyConnected2D
+
+model = Sequential()
+model.add(LocallyConnected2D(2, 2, 2, input_shape=(2, 3, 4)))
+input = np.random.random([2, 2, 3, 4])
+output = model.forward(input)
+```
+Input is:
+```python
+[[[[0.57424593 0.49505236 0.63711108 0.43693806]
+   [0.34655799 0.0058394  0.69310344 0.70403367]
+   [0.4620432  0.58679338 0.64529398 0.78130808]]
+
+  [[0.49651564 0.32201482 0.02470762 0.80535793]
+   [0.94485185 0.07150504 0.58789497 0.4562848 ]
+   [0.63595033 0.04600271 0.89771801 0.95419454]]]
+
+
+ [[[0.69641827 0.21785002 0.15815588 0.8317213 ]
+   [0.84192366 0.3939658  0.64309395 0.3858968 ]
+   [0.16545408 0.58533897 0.99486481 0.84651898]]
+
+  [[0.05144159 0.94930242 0.26842063 0.6341632 ]
+   [0.442836   0.38544902 0.04266468 0.22600452]
+   [0.2705393  0.07313841 0.24295287 0.9573069 ]]]]
+```
+Output is
+```python
+[[[[ 0.1600316   0.178018   -0.07472821]
+   [ 0.0570091  -0.19973318  0.44483435]]
+
+  [[-0.20258084 -0.37692443 -0.27103102]
+   [-0.624092   -0.09749079 -0.00799894]]]
+
+
+ [[[ 0.58953685  0.35287908 -0.2203412 ]
+   [ 0.13649486 -0.29554832  0.16932982]]
+
+  [[-0.00787066 -0.06614903 -0.2027885 ]
+   [-0.33434835 -0.33458236 -0.15103136]]]]
+```
+
+---
 ## **Cropping1D**
 Cropping layer for 1D input (e.g. temporal sequence).
 
