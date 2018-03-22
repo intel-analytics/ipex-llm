@@ -75,61 +75,44 @@ class OptimConverter:
 
     @staticmethod
     def to_bigdl_optim_method(koptim_method):
-        if isinstance(koptim_method, six.string_types):
-            koptim_method = koptim_method.lower()
-            if koptim_method == "adagrad":
-                return boptimizer.Adagrad(learningrate=0.01)
-            elif koptim_method == "sgd":
-                return boptimizer.SGD(learningrate=0.01)
-            elif koptim_method == "adam":
-                return boptimizer.Adam()
-            elif koptim_method == "rmsprop":
-                return boptimizer.RMSprop(learningrate=0.001, decayrate=0.9)
-            elif koptim_method == "adadelta":
-                return boptimizer.Adadelta(decayrate=0.95, epsilon=1e-8)
-            elif koptim_method == "adamax":
-                return boptimizer.Adamax(epsilon=1e-8)
-            else:
-                unsupport_exp(koptim_method)
-        else:
-            # koptim_method a Keras object
-            lr = float(K.eval(koptim_method.lr))
-            decay = float(K.eval(koptim_method.decay))
-            if isinstance(koptim_method, koptimizers.Adagrad):
-                warnings.warn("For Adagrad, we don't support epsilon for now")
-                return boptimizer.Adagrad(learningrate=lr,
-                                          learningrate_decay=decay)
-            elif isinstance(koptim_method, koptimizers.SGD):
-                momentum = float(K.eval(koptim_method.momentum))
-                return boptimizer.SGD(learningrate=lr,
+        # koptim_method is always an object
+        lr = float(K.eval(koptim_method.lr))
+        decay = float(K.eval(koptim_method.decay))
+        if isinstance(koptim_method, koptimizers.Adagrad):
+            warnings.warn("For Adagrad, we don't support epsilon for now")
+            return boptimizer.Adagrad(learningrate=lr,
+                                      learningrate_decay=decay)
+        elif isinstance(koptim_method, koptimizers.SGD):
+            momentum = float(K.eval(koptim_method.momentum))
+            return boptimizer.SGD(learningrate=lr,
+                                  learningrate_decay=decay,
+                                  momentum=momentum,
+                                  nesterov=koptim_method.nesterov)
+        elif isinstance(koptim_method, koptimizers.Adam):
+            beta1 = float(K.eval(koptim_method.beta_1))
+            beta2 = float(K.eval(koptim_method.beta_2))
+            return boptimizer.Adam(learningrate=lr,
+                                   learningrate_decay=decay,
+                                   beta1=beta1,
+                                   beta2=beta2,
+                                   epsilon=koptim_method.epsilon)
+        elif isinstance(koptim_method, koptimizers.RMSprop):
+            rho = float(K.eval(koptim_method.rho))
+            return boptimizer.RMSprop(learningrate=lr,
                                       learningrate_decay=decay,
-                                      momentum=momentum,
-                                      nesterov=koptim_method.nesterov)
-            elif isinstance(koptim_method, koptimizers.Adam):
-                beta1 = float(K.eval(koptim_method.beta_1))
-                beta2 = float(K.eval(koptim_method.beta_2))
-                return boptimizer.Adam(learningrate=lr,
-                                       learningrate_decay=decay,
-                                       beta1=beta1,
-                                       beta2=beta2,
+                                      decayrate=rho,
+                                      epsilon=koptim_method.epsilon)
+        elif isinstance(koptim_method, koptimizers.Adadelta):
+            warnings.warn("For Adadelta, we don't support learning rate and learning rate decay for now")
+            return boptimizer.Adadelta(decayrate=koptim_method.rho,
                                        epsilon=koptim_method.epsilon)
-            elif isinstance(koptim_method, koptimizers.RMSprop):
-                rho = float(K.eval(koptim_method.rho))
-                return boptimizer.RMSprop(learningrate=lr,
-                                          learningrate_decay=decay,
-                                          decayrate=rho,
-                                          epsilon=koptim_method.epsilon)
-            elif isinstance(koptim_method, koptimizers.Adadelta):
-                warnings.warn("For Adadelta, we don't support learning rate and learning rate decay for now")
-                return boptimizer.Adadelta(decayrate=koptim_method.rho,
-                                           epsilon=koptim_method.epsilon)
-            elif isinstance(koptim_method, koptimizers.Adamax):
-                beta1 = float(K.eval(koptim_method.beta_1))
-                beta2 = float(K.eval(koptim_method.beta_2))
-                warnings.warn("For Adamax, we don't support learning rate decay for now")
-                return boptimizer.Adamax(learningrate=lr,
-                                         beta1=beta1,
-                                         beta2=beta2,
-                                         epsilon=koptim_method.epsilon)
-            else:
-                unsupport_exp(koptim_method)
+        elif isinstance(koptim_method, koptimizers.Adamax):
+            beta1 = float(K.eval(koptim_method.beta_1))
+            beta2 = float(K.eval(koptim_method.beta_2))
+            warnings.warn("For Adamax, we don't support learning rate decay for now")
+            return boptimizer.Adamax(learningrate=lr,
+                                     beta1=beta1,
+                                     beta2=beta2,
+                                     epsilon=koptim_method.epsilon)
+        else:
+            unsupport_exp(koptim_method)
