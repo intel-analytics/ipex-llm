@@ -1215,23 +1215,320 @@ Input is:
 ```
 Output is
 ```python
-[[[[[0.0        0.0        0.0        0.0       ]
-    [0.0        0.0        0.0        0.0       ]
-    [0.0        0.0        0.0        0.0       ]
-    [0.0        0.0        0.0        0.0       ]]
+[[[[[0.0   0.0        0.0        0.0 ]
+    [0.0   0.0        0.0        0.0 ]
+    [0.0   0.0        0.0        0.0 ]
+    [0.0   0.0        0.0        0.0 ]]
 
-   [[0.0        0.0        0.0        0.0       ]
-    [0.0        0.12432462 0.19244616 0.0       ]
-    [0.0        0.39039534 0.8814086  0.0       ]
-    [0.0        0.0        0.0        0.0       ]]
+   [[0.0   0.0        0.0        0.0 ]
+    [0.0   0.12432462 0.19244616 0.0 ]
+    [0.0   0.39039534 0.8814086  0.0 ]
+    [0.0   0.0        0.0        0.0 ]]
 
-   [[0.0        0.0        0.0        0.0       ]
-    [0.0        0.71426183 0.8608513  0.0       ]
-    [0.0        0.04443494 0.679125   0.0       ]
-    [0.0        0.0        0.0        0.0       ]]
+   [[0.0   0.0        0.0        0.0 ]
+    [0.0   0.71426183 0.8608513  0.0 ]
+    [0.0   0.04443494 0.679125   0.0 ]
+    [0.0   0.0        0.0        0.0 ]]
 
-   [[0.0        0.0        0.0        0.0       ]
-    [0.0        0.0        0.0        0.0       ]
-    [0.0        0.0        0.0        0.0       ]
-    [0.0        0.0        0.0        0.0       ]]]]]
+   [[0.0   0.0        0.0        0.0 ]
+    [0.0   0.0        0.0        0.0 ]
+    [0.0   0.0        0.0        0.0 ]
+    [0.0   0.0        0.0        0.0 ]]]]]
+```
+
+---
+## **UpSampling1D**
+UpSampling layer for 1D inputs.
+
+Repeats each temporal step 'length' times along the time axis.
+
+The input of this layer should be 3D.
+
+**Scala:**
+```scala
+UpSampling1D(length = 2, inputShape = null)
+```
+**Python:**
+```python
+UpSampling1D(length=2, input_shape=None, name=None)
+```
+
+**Parameters:**
+
+* `length`: Integer. UpSampling factor. Default is 2.
+* `inputShape`: Only need to specify this argument when you use this layer as the first layer of a model. For Scala API, it should be a [`Shape`](../keras-api-scala/#shape) object. For Python API, it should be a shape tuple. Batch dimension should be excluded.
+
+**Scala example:**
+```scala
+import com.intel.analytics.bigdl.nn.keras.{Sequential, UpSampling1D}
+import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.bigdl.tensor._
+
+val model = Sequential[Float]()
+model.add(UpSampling1D(inputShape = Shape(3, 4)))
+val input = Tensor[Float](2, 3, 4).randn()
+val output = model.forward(input)
+```
+Input is:
+```scala
+input: com.intel.analytics.bigdl.tensor.Tensor[Float] =
+(1,.,.) =
+0.80225134	-0.9644977	-0.71038723	    -1.5673652
+0.67224514	-0.24330814	-0.082499735	0.2807591
+-0.9299857	-1.8893008	-1.1062661	    -1.1637908
+
+(2,.,.) =
+-0.1831344	-0.6621819	-0.667329	    -0.26960346
+-0.6601015	1.0819869	1.0307902	    1.1801233
+-0.18303517	0.2565441	-0.39598823	    0.23400643
+
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 2x3x4]
+```
+Output is:
+```scala
+output: com.intel.analytics.bigdl.nn.abstractnn.Activity =
+(1,.,.) =
+0.80225134	-0.9644977	-0.71038723	    -1.5673652
+0.80225134	-0.9644977	-0.71038723	    -1.5673652
+0.67224514	-0.24330814	-0.082499735	0.2807591
+0.67224514	-0.24330814	-0.082499735	0.2807591
+-0.9299857	-1.8893008	-1.1062661	    -1.1637908
+-0.9299857	-1.8893008	-1.1062661	    -1.1637908
+
+(2,.,.) =
+-0.1831344	-0.6621819	-0.667329	    -0.26960346
+-0.1831344	-0.6621819	-0.667329	    -0.26960346
+-0.6601015	1.0819869	1.0307902	    1.1801233
+-0.6601015	1.0819869	1.0307902	    1.1801233
+-0.18303517	0.2565441	-0.39598823	    0.23400643
+-0.18303517	0.2565441	-0.39598823	    0.23400643
+
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 2x6x4]
+```
+
+**Python example:**
+```python
+import numpy as np
+from bigdl.nn.keras.topology import Sequential
+from bigdl.nn.keras.layer import UpSampling1D
+
+model = Sequential()
+model.add(UpSampling1D(input_shape=(3, 4)))
+input = np.random.random([2, 3, 4])
+output = model.forward(input)
+```
+Input is:
+```python
+[[[0.66227662 0.00663032 0.49010329 0.26836567]
+  [0.34225774 0.26000732 0.27628499 0.49861887]
+  [0.11619066 0.28123766 0.60770962 0.80773197]]
+
+ [[0.477639   0.88906297 0.38577295 0.99058504]
+  [0.50690837 0.38107999 0.05881034 0.96402145]
+  [0.42226283 0.77350512 0.54961295 0.55315271]]]
+```
+Output is
+```python
+[[[0.6622766  0.00663032 0.4901033  0.26836568]
+  [0.6622766  0.00663032 0.4901033  0.26836568]
+  [0.34225774 0.26000732 0.276285   0.49861887]
+  [0.34225774 0.26000732 0.276285   0.49861887]
+  [0.11619066 0.28123766 0.60770965 0.807732  ]
+  [0.11619066 0.28123766 0.60770965 0.807732  ]]
+
+ [[0.477639   0.88906294 0.38577294 0.990585  ]
+  [0.477639   0.88906294 0.38577294 0.990585  ]
+  [0.50690836 0.38107997 0.05881034 0.96402144]
+  [0.50690836 0.38107997 0.05881034 0.96402144]
+  [0.42226282 0.7735051  0.54961294 0.5531527 ]
+  [0.42226282 0.7735051  0.54961294 0.5531527 ]]]
+```
+
+---
+## **UpSampling2D**
+UpSampling layer for 2D inputs.
+
+Repeats the rows and columns of the data by size(0) and size(1) respectively.
+
+The input of this layer should be 4D.
+
+**Scala:**
+```scala
+UpSampling2D(size = (2, 2), dimOrdering = "th", inputShape = null)
+```
+**Python:**
+```python
+UpSampling2D(size=(2, 2), dim_ordering="th", input_shape=None, name=None)
+```
+
+**Parameters:**
+
+* `size`: Int tuple of length 2. UpSampling factors for rows and columns. Default is (2, 2).
+* `dimOrdering`: Format of input data. Either 'th' (Channel First) or 'tf' (Channel Last). Default is 'th'.
+* `inputShape`: Only need to specify this argument when you use this layer as the first layer of a model. For Scala API, it should be a [`Shape`](../keras-api-scala/#shape) object. For Python API, it should be a shape tuple. Batch dimension should be excluded.
+
+**Scala example:**
+```scala
+import com.intel.analytics.bigdl.nn.keras.{Sequential, UpSampling2D}
+import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.bigdl.tensor._
+
+val model = Sequential[Float]()
+model.add(UpSampling2D(inputShape = Shape(2, 2, 2)))
+val input = Tensor[Float](1, 2, 2, 2).randn()
+val output = model.forward(input)
+```
+Input is:
+```scala
+input: com.intel.analytics.bigdl.tensor.Tensor[Float] =
+(1,1,.,.) =
+-0.07563081	-1.921836
+-1.7368479	0.1043008
+
+(1,2,.,.) =
+-1.825055	-0.096810855
+-0.89331573	0.72812295
+
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 1x2x2x2]
+```
+Output is:
+```scala
+output: com.intel.analytics.bigdl.nn.abstractnn.Activity =
+(1,1,.,.) =
+-0.07563081	-0.07563081	-1.921836	-1.921836
+-0.07563081	-0.07563081	-1.921836	-1.921836
+-1.7368479	-1.7368479	0.1043008	0.1043008
+-1.7368479	-1.7368479	0.1043008	0.1043008
+
+(1,2,.,.) =
+-1.825055	-1.825055	-0.096810855	-0.096810855
+-1.825055	-1.825055	-0.096810855	-0.096810855
+-0.89331573	-0.89331573	0.72812295	0.72812295
+-0.89331573	-0.89331573	0.72812295	0.72812295
+
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 1x2x4x4]
+```
+
+**Python example:**
+```python
+import numpy as np
+from bigdl.nn.keras.topology import Sequential
+from bigdl.nn.keras.layer import UpSampling2D
+
+model = Sequential()
+model.add(UpSampling2D(input_shape=(2, 2, 2)))
+input = np.random.random([1, 2, 2, 2])
+output = model.forward(input)
+```
+Input is:
+```python
+[[[[0.55660253 0.21984387]
+   [0.36271854 0.57464162]]
+
+  [[0.55307278 0.33007518]
+   [0.31527167 0.87789644]]]]
+```
+Output is
+```python
+[[[[0.55660254 0.55660254 0.21984388 0.21984388]
+   [0.55660254 0.55660254 0.21984388 0.21984388]
+   [0.36271855 0.36271855 0.57464164 0.57464164]
+   [0.36271855 0.36271855 0.57464164 0.57464164]]
+
+  [[0.55307275 0.55307275 0.33007517 0.33007517]
+   [0.55307275 0.55307275 0.33007517 0.33007517]
+   [0.31527168 0.31527168 0.8778964  0.8778964 ]
+   [0.31527168 0.31527168 0.8778964  0.8778964 ]]]]
+```
+
+---
+## **UpSampling3D**
+UpSampling layer for 3D inputs.
+
+Repeats the 1st, 2nd and 3rd dimensions of the data by size(0), size(1) and size(2) respectively.
+
+Data format currently supported for this layer is 'CHANNEL_FIRST' (dimOrdering='th').
+
+The input of this layer should be 5D.
+
+**Scala:**
+```scala
+UpSampling3D(size = (2, 2, 2), dimOrdering = "th", inputShape = null)
+```
+**Python:**
+```python
+UpSampling3D(size=(2, 2, 2), dim_ordering="th", input_shape=None, name=None)
+```
+
+**Parameters:**
+
+* `size`: Int tuple of length 3. UpSampling factors for dim1, dim2 and dim3. Default is (2, 2, 2).
+* `dimOrdering`: Format of input data. Only 'th' (Channel First) is supported for now.
+* `inputShape`: Only need to specify this argument when you use this layer as the first layer of a model. For Scala API, it should be a [`Shape`](../keras-api-scala/#shape) object. For Python API, it should be a shape tuple. Batch dimension should be excluded.
+
+**Scala example:**
+```scala
+import com.intel.analytics.bigdl.nn.keras.{Sequential, UpSampling3D}
+import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.bigdl.tensor._
+
+val model = Sequential[Float]()
+model.add(UpSampling3D(inputShape = Shape(1, 1, 2, 2)))
+val input = Tensor[Float](1, 1, 1, 2, 2).randn()
+val output = model.forward(input)
+```
+Input is:
+```scala
+input: com.intel.analytics.bigdl.tensor.Tensor[Float] =
+(1,1,1,.,.) =
+0.9906968	-0.2451235
+1.5133694	-0.34076887
+
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 1x1x1x2x2]
+```
+Output is:
+```scala
+output: com.intel.analytics.bigdl.nn.abstractnn.Activity =
+(1,1,1,.,.) =
+0.9906968	0.9906968	-0.2451235	-0.2451235
+0.9906968	0.9906968	-0.2451235	-0.2451235
+1.5133694	1.5133694	-0.34076887	-0.34076887
+1.5133694	1.5133694	-0.34076887	-0.34076887
+
+(1,1,2,.,.) =
+0.9906968	0.9906968	-0.2451235	-0.2451235
+0.9906968	0.9906968	-0.2451235	-0.2451235
+1.5133694	1.5133694	-0.34076887	-0.34076887
+1.5133694	1.5133694	-0.34076887	-0.34076887
+
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 1x1x2x4x4]
+```
+
+**Python example:**
+```python
+import numpy as np
+from bigdl.nn.keras.topology import Sequential
+from bigdl.nn.keras.layer import UpSampling3D
+
+model = Sequential()
+model.add(UpSampling3D(input_shape=(1, 1, 2, 2)))
+input = np.random.random([1, 1, 1, 2, 2])
+output = model.forward(input)
+```
+Input is:
+```python
+[[[[[0.58361205 0.2096227 ]
+    [0.51686662 0.70260105]]]]]
+```
+Output is
+```python
+[[[[[0.583612  0.583612  0.2096227 0.2096227]
+    [0.583612  0.583612  0.2096227 0.2096227]
+    [0.5168666 0.5168666 0.7026011 0.7026011]
+    [0.5168666 0.5168666 0.7026011 0.7026011]]
+
+   [[0.583612  0.583612  0.2096227 0.2096227]
+    [0.583612  0.583612  0.2096227 0.2096227]
+    [0.5168666 0.5168666 0.7026011 0.7026011]
+    [0.5168666 0.5168666 0.7026011 0.7026011]]]]]
 ```
