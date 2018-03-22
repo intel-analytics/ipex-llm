@@ -456,9 +456,9 @@ object DistriOptimizer {
           validationMethods,
           coresPerNode,
           models,
-          wallClockTime,
           driverState,
-          validationSummary
+          validationSummary,
+          _header
         )
 
         trainSummary.foreach { summary =>
@@ -676,9 +676,9 @@ object DistriOptimizer {
    * @param validationMethods validation methods
    * @param coresPerNode cores per node
    * @param models cached models
-   * @param wallClockTime wall clock time
    * @param state state table
    * @param validationSummary validation logger.
+   * @param header log header string
    */
   private def validate[T](
     validationTrigger: Option[Trigger],
@@ -686,9 +686,9 @@ object DistriOptimizer {
     validationMethods: Option[Array[ValidationMethod[T]]],
     coresPerNode: Int,
     models: RDD[Cache[T]],
-    wallClockTime: Long,
     state: Table,
-    validationSummary: Option[ValidationSummary]
+    validationSummary: Option[ValidationSummary],
+    header: String
   ): Unit = {
     if (validationTrigger.isEmpty || validationDataSet.isEmpty) {
       return
@@ -699,7 +699,7 @@ object DistriOptimizer {
     }
     val vMethods = validationMethods.get
     val validateRDD = validationDataSet.get.toDistributed().data(train = false)
-    logger.info(s"[Wall Clock ${wallClockTime / 1e9}s] Validate model...")
+    logger.info(s"$header Validate model...")
     val _subModelNumber = Engine.getEngineType match {
       case MklBlas => coresPerNode
       case _ => throw new IllegalArgumentException
@@ -741,7 +741,7 @@ object DistriOptimizer {
       }
     }).zip(vMethods)
     results.foreach(r => {
-      logger.info(s"${r._2} is ${r._1}")
+      logger.info(s"$header ${r._2} is ${r._1}")
     })
     state("score") = results(0)._1.result._1
     if(validationSummary.isDefined) {
