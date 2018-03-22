@@ -67,13 +67,12 @@ object KerasUtils {
       activation.toLowerCase() match {
           case "tanh" => Tanh[T]()
           case "sigmoid" => Sigmoid[T]()
-          case "relu" => ReLU[T](true)
+          case "relu" => ReLU[T]()
           case "softmax" =>
                 com.intel.analytics.bigdl.nn.SoftMax[T]()
           case "softplus" => SoftPlus[T]()
           case "softsign" => SoftSign[T]()
           case "hard_sigmoid" => HardSigmoid[T]()
-          case "log_softmax" => LogSoftMax[T]()
           case _ => throw new IllegalArgumentException(s"Invalid activation: " +
             s"${activation.toLowerCase}. Only simple activations can be constructed using string")
       }

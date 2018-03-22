@@ -68,13 +68,13 @@ object Train {
           learningRateSchedule = SGD.EpochStep(25, 0.5))
       }
 
-//      val criterion = if (param.kerasModel) ClassNLLCriterion[Float](logProbAsInput = false)
-//      else ClassNLLCriterion[Float]()
+      val criterion = if (param.kerasModel) ClassNLLCriterion[Float](logProbAsInput = false)
+      else ClassNLLCriterion[Float]()
 
       val optimizer = Optimizer(
         model = model,
         dataset = trainDataSet,
-        criterion = new ClassNLLCriterion[Float]()
+        criterion = criterion
       )
 
       val validateSet = DataSet.array(Utils.loadTest(param.folder), sc) ->

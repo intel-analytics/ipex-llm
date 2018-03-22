@@ -181,7 +181,7 @@ object VggForCifar10 {
     classifier.add(Activation("relu"))
     if (hasDropout) classifier.add(Dropout(0.5))
     classifier.add(Dense(classNum))
-    classifier.add(Activation("log_softmax"))
+    classifier.add(Activation("softmax"))
     vggBnDo.add(classifier)
 
     vggBnDo
@@ -237,7 +237,7 @@ object VggForCifar10 {
     val relu = Activation("relu").inputs(bn)
     val drop10 = if (hasDropout) Dropout(0.5).inputs(relu) else relu
     val linear2 = Dense(classNum).inputs(drop10)
-    val output = Activation("log_softmax").inputs(linear2)
+    val output = Activation("softmax").inputs(linear2)
     Model(input, output)
   }
 }
