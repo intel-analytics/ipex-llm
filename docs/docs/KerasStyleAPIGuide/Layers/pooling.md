@@ -9,7 +9,7 @@ MaxPooling1D(poolLength = 2, stride = -1, borderMode = "valid", inputShape = nul
 ```
 **Python:**
 ```python
-MaxPooling1D(pool_length=2, stride=None, border_mode="valid", input_shape=None)
+MaxPooling1D(pool_length=2, stride=None, border_mode="valid", input_shape=None, name=None)
 ```
 
 Parameters:
@@ -117,7 +117,7 @@ MaxPooling2D(poolSize = Array(2, 2), strides = null, borderMode = "valid", dimOr
 ```
 **Python:**
 ```python
-MaxPooling2D(pool_size=(2, 2), strides=None, border_mode="valid", dim_ordering="th", input_shape=None)
+MaxPooling2D(pool_size=(2, 2), strides=None, border_mode="valid", dim_ordering="th", input_shape=None, name=None)
 ```
 
 Parameters:
@@ -240,7 +240,7 @@ MaxPooling3D(poolSize = Array(2, 2, 2), strides = null, dimOrdering = "th", inpu
 ```
 **Python:**
 ```python
-MaxPooling3D(pool_size=(2, 2, 2), strides=None, border_mode="valid", dim_ordering="th", input_shape=None)
+MaxPooling3D(pool_size=(2, 2, 2), strides=None, border_mode="valid", dim_ordering="th", input_shape=None, name=None)
 ```
 
 Parameters:
@@ -381,7 +381,7 @@ AveragePooling1D(poolLength = 2, stride = -1, borderMode = "valid", inputShape =
 ```
 **Python:**
 ```python
-AveragePooling1D(pool_length=2, stride=None, border_mode="valid", input_shape=None)
+AveragePooling1D(pool_length=2, stride=None, border_mode="valid", input_shape=None, name=None)
 ```
 
 Parameters:
@@ -489,7 +489,7 @@ AveragePooling2D(poolSize = Array(2, 2), strides = null, borderMode = "valid", d
 ```
 **Python:**
 ```python
-AveragePooling2D(pool_size=(2, 2), strides=None, border_mode="valid", dim_ordering="th", input_shape=None)
+AveragePooling2D(pool_size=(2, 2), strides=None, border_mode="valid", dim_ordering="th", input_shape=None, name=None)
 ```
 
 Parameters:
@@ -612,7 +612,7 @@ AveragePooling3D(poolSize = Array(2, 2, 2), strides = null, dimOrdering = "th", 
 ```
 **Python:**
 ```python
-AveragePooling3D(pool_size=(2, 2, 2), strides=None, border_mode="valid", dim_ordering="th", input_shape=None)
+AveragePooling3D(pool_size=(2, 2, 2), strides=None, border_mode="valid", dim_ordering="th", input_shape=None, name=None)
 ```
 
 Parameters:
@@ -754,7 +754,7 @@ GlobalMaxPooling1D(inputShape = null)
 ```
 **Python:**
 ```python
-GlobalMaxPooling1D(input_shape=None)
+GlobalMaxPooling1D(input_shape=None, name=None)
 ```
 
 Parameters:
@@ -830,7 +830,7 @@ GlobalMaxPooling2D(dimOrdering = "th", inputShape = null)
 ```
 **Python:**
 ```python
-GlobalMaxPooling2D(dim_ordering="th", input_shape=None)
+GlobalMaxPooling2D(dim_ordering="th", input_shape=None, name=None)
 ```
 
 Parameters:
@@ -934,7 +934,7 @@ GlobalMaxPooling3D(dimOrdering = "th", inputShape = null)
 ```
 **Python:**
 ```python
-GlobalMaxPooling3D(dim_ordering="th", input_shape=None)
+GlobalMaxPooling3D(dim_ordering="th", input_shape=None, name=None)
 ```
 
 Parameters:
@@ -1057,7 +1057,7 @@ GlobalAveragePooling1D(inputShape = null)
 ```
 **Python:**
 ```python
-GlobalAveragePooling1D(input_shape=None)
+GlobalAveragePooling1D(input_shape=None, name=None)
 ```
 
 Parameters:
@@ -1133,7 +1133,7 @@ GlobalAveragePooling2D(dimOrdering = "th", inputShape = null)
 ```
 **Python:**
 ```python
-GlobalAveragePooling2D(dim_ordering="th", input_shape=None)
+GlobalAveragePooling2D(dim_ordering="th", input_shape=None, name=None)
 ```
 
 Parameters:
@@ -1237,7 +1237,7 @@ GlobalAveragePooling3D(dimOrdering = "th", inputShape = null)
 ```
 **Python:**
 ```python
-GlobalAveragePooling3D(dim_ordering="th", input_shape=None)
+GlobalAveragePooling3D(dim_ordering="th", input_shape=None, name=None)
 ```
 
 Parameters:

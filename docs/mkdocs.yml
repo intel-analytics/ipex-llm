@@ -105,7 +105,7 @@ pages:
     - Embedding Layers: KerasStyleAPIGuide/Layers/embedding.md
     - Dropout Layers: KerasStyleAPIGuide/Layers/dropout.md
     - Advanced Activations Layers: KerasStyleAPIGuide/Layers/advanced-activation.md
-    - Wrappers Layers: KerasStyleAPIGuide/Layers/wrappers.md
+    - Layer Wrappers: KerasStyleAPIGuide/Layers/wrappers.md
 - Powered by: powered-by.md
 - Known Issues: known-issues.md
 - Presentations: presentations.md

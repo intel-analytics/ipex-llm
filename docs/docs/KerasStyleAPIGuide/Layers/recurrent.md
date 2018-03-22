@@ -9,7 +9,7 @@ SimpleRNN(outputDim, activation = "tanh", returnSequences = false, goBackwards =
 ```
 **Python:**
 ```python
-SimpleRNN(output_dim, activation="tanh", return_sequences=False, go_backwards=False, W_regularizer=None, U_regularizer=None, b_regularizer=None, input_shape=None)
+SimpleRNN(output_dim, activation="tanh", return_sequences=False, go_backwards=False, W_regularizer=None, U_regularizer=None, b_regularizer=None, input_shape=None, name=None)
 ```
 
 Parameters:
@@ -100,7 +100,7 @@ LSTM(outputDim, activation = "tanh", innerActivation = "hard_sigmoid", returnSeq
 ```
 **Python:**
 ```python
-LSTM(output_dim, activation="tanh", inner_activation="hard_sigmoid", return_sequences=False, go_backwards=False, W_regularizer=None, U_regularizer=None, b_regularizer=None, input_shape=None, input_shape=None)
+LSTM(output_dim, activation="tanh", inner_activation="hard_sigmoid", return_sequences=False, go_backwards=False, W_regularizer=None, U_regularizer=None, b_regularizer=None, input_shape=None, input_shape=None, name=None)
 ```
 
 Parameters:
@@ -186,7 +186,7 @@ GRU(outputDim, activation = "tanh", innerActivation = "hard_sigmoid", returnSequ
 ```
 **Python:**
 ```python
-GRU(output_dim, activation="tanh", inner_activation="hard_sigmoid", return_sequences=False, go_backwards=False, W_regularizer=None, U_regularizer=None, b_regularizer=None, input_shape=None)
+GRU(output_dim, activation="tanh", inner_activation="hard_sigmoid", return_sequences=False, go_backwards=False, W_regularizer=None, U_regularizer=None, b_regularizer=None, input_shape=None, name=None)
 ```
 
 Parameters:
@@ -272,7 +272,7 @@ Highway(activation = null, wRegularizer = null, bRegularizer = null, bias = true
 ```
 **Python:**
 ```python
-Highway(activation=None, W_regularizer=None, b_regularizer=None, bias=True, input_shape=None)
+Highway(activation=None, W_regularizer=None, b_regularizer=None, bias=True, input_shape=None, name=None)
 ```
 
 Parameters:

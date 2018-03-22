@@ -98,7 +98,7 @@ Flatten(inputShape = null)
 ```
 **Python:**
 ```python
-Flatten(input_shape=None)
+Flatten(input_shape=None, name=None)
 ```
 
 **Parameters:**
@@ -191,7 +191,7 @@ Reshape(targetShape, inputShape = null)
 ```
 **Python:**
 ```python
-Reshape(target_shape, input_shape=None)
+Reshape(target_shape, input_shape=None, name=None)
 ```
 
 **Parameters:**
@@ -304,7 +304,7 @@ Permute(dims, inputShape = null)
 ```
 **Python:**
 ```python
-Permute(dims, input_shape=None)
+Permute(dims, input_shape=None, name=None)
 ```
 
 **Parameters:**
@@ -466,7 +466,7 @@ RepeatVector(n, inputShape = null)
 ```
 **Python:**
 ```python
-RepeatVector(n, input_shape=None)
+RepeatVector(n, input_shape=None, name=None)
 ```
 
 **Parameters:**
@@ -551,7 +551,7 @@ Merge(layers = null, mode = "sum", concatAxis = -1, inputShape = null)
 ```
 **Python:**
 ```python
-Merge(layers=None, mode="sum", concat_axis=-1, input_shape=None)
+Merge(layers=None, mode="sum", concat_axis=-1, input_shape=None, name=None)
 ```
 
 **Parameters:**
@@ -661,21 +661,18 @@ Output is
 ## **Masking**
 Use a mask value to skip timesteps for a sequence.
 
-Masks a sequence by using a mask value to skip timesteps.
-
 **Scala:**
 ```scala
 Masking(maskValue = 0.0, inputShape = null)
 ```
 **Python:**
 ```python
-Masking(mask_value=0.0, input_shape=None)
+Masking(mask_value=0.0, input_shape=None, name=None)
 ```
 
 **Parameters:**
 
-* `maskValue`: Double, mask value. For each timestep in the input tensor (dimension #1 in the tensor),
-               if all values in the input tensor at that timestep are equal to `mask_value`, then the timestep will masked (skipped) in all downstream layers.
+* `maskValue`: Double, mask value. For each timestep in the input tensor (dimension #1 in the tensor), if all values in the input tensor at that timestep are equal to `maskValue`, then the timestep will masked (skipped) in all downstream layers.
 * `inputShape`: Only need to specify this argument when you use this layer as the first layer of a model. For Scala API, it should be a [`Shape`](../keras-api-scala/#shape) object. For Python API, it should be a shape tuple. Batch dimension should be excluded.
 
 **Scala example:**
@@ -740,7 +737,7 @@ MaxoutDense(outputDim, nbFeature = 4, wRegularizer = null, bRegularizer = null, 
 ```
 **Python:**
 ```python
-MaxoutDense(output_dim, nb_feature=4, W_regularizer=None, b_regularizer=None, bias=True, input_dim=None, input_shape=None)
+MaxoutDense(output_dim, nb_feature=4, W_regularizer=None, b_regularizer=None, bias=True, input_dim=None, input_shape=None, name=None)
 ```
 
 **Parameters:**

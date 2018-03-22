@@ -11,7 +11,7 @@ Convolution1D(nbFilter, filterLength, init = "glorot_uniform", activation = null
 ```
 **Python:**
 ```python
-Convolution1D(nb_filter, filter_length, init="glorot_uniform", activation=None, border_mode="valid", subsample_length=1, W_regularizer=None, b_regularizer=None, bias=True, input_shape=None)
+Convolution1D(nb_filter, filter_length, init="glorot_uniform", activation=None, border_mode="valid", subsample_length=1, W_regularizer=None, b_regularizer=None, bias=True, input_shape=None, name=None)
 ```
 
 **Parameters:**
@@ -107,7 +107,7 @@ Convolution2D(nbFilter, nbRow, nbCol, init = "glorot_uniform", activation = null
 ```
 **Python:**
 ```python
-Convolution2D(nb_filter, nb_row, nb_col, init="glorot_uniform", activation=None, border_mode="valid", subsample=(1, 1), dim_ordering="th", W_regularizer=None, b_regularizer=None, bias=True, input_shape=None)
+Convolution2D(nb_filter, nb_row, nb_col, init="glorot_uniform", activation=None, border_mode="valid", subsample=(1, 1), dim_ordering="th", W_regularizer=None, b_regularizer=None, bias=True, input_shape=None, name=None)
 ```
 
 **Parameters:**
@@ -273,7 +273,7 @@ Convolution3D(nbFilter, kernelDim1, kernelDim2, kernelDim3, init = "glorot_unifo
 ```
 **Python:**
 ```python
-Convolution3D(nb_filter, kernel_dim1, kernel_dim2, kernel_dim3, init="glorot_uniform", activation=None, border_mode="valid", subsample=(1, 1, 1), dim_ordering="th", W_regularizer=None, b_regularizer=None, bias=True, input_shape=None)
+Convolution3D(nb_filter, kernel_dim1, kernel_dim2, kernel_dim3, init="glorot_uniform", activation=None, border_mode="valid", subsample=(1, 1, 1), dim_ordering="th", W_regularizer=None, b_regularizer=None, bias=True, input_shape=None, name=None)
 ```
 
 **Parameters:**
@@ -445,7 +445,7 @@ Cropping1D(cropping = Array(1, 1), inputShape = null)
 ```
 **Python:**
 ```python
-Cropping1D(cropping=(1, 1), input_shape=None)
+Cropping1D(cropping=(1, 1), input_shape=None, name=None)
 ```
 
 **Parameters:**
@@ -531,7 +531,7 @@ Cropping2D(heightCrop = Array(0, 0), widthCrop = Array(0, 0), dimOrdering = "th"
 ```
 **Python:**
 ```python
-Cropping2D(cropping=((0, 0), (0, 0)), dim_ordering="th", input_shape=None)
+Cropping2D(cropping=((0, 0), (0, 0)), dim_ordering="th", input_shape=None, name=None)
 ```
 
 **Parameters:**
@@ -665,7 +665,7 @@ Cropping3D(dim1Crop = Array(1, 1), dim2Crop = Array(1, 1), dim3Crop = Array(1, 1
 ```
 **Python:**
 ```python
-Cropping3D(cropping=((1, 1), (1, 1), (1, 1)), dim_ordering="th", input_shape=None)
+Cropping3D(cropping=((1, 1), (1, 1), (1, 1)), dim_ordering="th", input_shape=None, name=None)
 ```
 
 **Parameters:**
@@ -895,7 +895,7 @@ ZeroPadding1D(padding = 1, inputShape = null)
 ```
 **Python:**
 ```python
-ZeroPadding1D(padding=1, input_shape=None)
+ZeroPadding1D(padding=1, input_shape=None, name=None)
 ```
 
 **Parameters:**
@@ -997,7 +997,7 @@ ZeroPadding2D(padding = (1, 1), dimOrdering = "th", inputShape = null)
 ```
 **Python:**
 ```python
-ZeroPadding2D(padding=(1, 1), dim_ordering="th", input_shape=None)
+ZeroPadding2D(padding=(1, 1), dim_ordering="th", input_shape=None, name=None)
 ```
 
 **Parameters:**
@@ -1096,26 +1096,26 @@ Input is:
 ```
 Output is
 ```python
-[[[[0.0        0.0        0.0        0.0        0.0       ]
-   [0.0        0.44048214 0.7249489  0.9665424  0.0       ]
-   [0.0        0.662548   0.37409082 0.47681466 0.0       ]
-   [0.0        0.0        0.0        0.0        0.0       ]]
+[[[[0.0   0.0        0.0        0.0        0.0 ]
+   [0.0   0.44048214 0.7249489  0.9665424  0.0 ]
+   [0.0   0.662548   0.37409082 0.47681466 0.0 ]
+   [0.0   0.0        0.0        0.0        0.0 ]]
 
-  [[0.0        0.0        0.0        0.0        0.0       ]
-   [0.0        0.23204026 0.52762765 0.15072852 0.0       ]
-   [0.0        0.45052126 0.29016393 0.0133929  0.0       ]
-   [0.0        0.0        0.0        0.0        0.0       ]]]
+  [[0.0   0.0        0.0        0.0        0.0 ]
+   [0.0   0.23204026 0.52762765 0.15072852 0.0 ]
+   [0.0   0.45052126 0.29016393 0.0133929  0.0 ]
+   [0.0   0.0        0.0        0.0        0.0 ]]]
 
 
- [[[0.0        0.0        0.0        0.0        0.0       ]
-   [0.0        0.09347565 0.4754528  0.6361846  0.0       ]
-   [0.0        0.08016673 0.21696158 0.8389285  0.0       ]
-   [0.0        0.0        0.0        0.0        0.0       ]]
+ [[[0.0   0.0        0.0        0.0        0.0 ]
+   [0.0   0.09347565 0.4754528  0.6361846  0.0 ]
+   [0.0   0.08016673 0.21696158 0.8389285  0.0 ]
+   [0.0   0.0        0.0        0.0        0.0 ]]
 
-  [[0.0        0.0        0.0        0.0        0.0       ]
-   [0.0        0.8186458  0.908134   0.08347963 0.0       ]
-   [0.0        0.5723476  0.7606061  0.65707856 0.0       ]
-   [0.0        0.0        0.0        0.0        0.0       ]]]]
+  [[0.0   0.0        0.0        0.0        0.0 ]
+   [0.0   0.8186458  0.908134   0.08347963 0.0 ]
+   [0.0   0.5723476  0.7606061  0.65707856 0.0 ]
+   [0.0   0.0        0.0        0.0        0.0 ]]]]
 ```
 
 ---
@@ -1130,7 +1130,7 @@ ZeroPadding3D(padding = (1, 1, 1), dimOrdering = "th", inputShape = null)
 ```
 **Python:**
 ```python
-ZeroPadding3D(padding=(1, 1, 1), dim_ordering="th", input_shape=None)
+ZeroPadding3D(padding=(1, 1, 1), dim_ordering="th", input_shape=None, name=None)
 ```
 
 **Parameters:**

@@ -7,7 +7,7 @@ Dropout(p, inputShape = null)
 ```
 **Python:**
 ```python
-Dropout(p, input_shape=None)
+Dropout(p, input_shape=None, name=None)
 ```
 
 **Parameters:**
@@ -101,7 +101,7 @@ GaussianDropout(p, inputShape = null)
 ```
 **Python:**
 ```python
-GaussianDropout(p, input_shape=None)
+GaussianDropout(p, input_shape=None, name=None)
 ```
 
 **Parameters:**
@@ -199,7 +199,7 @@ GaussianNoise(sigma, inputShape = null)
 ```
 **Python:**
 ```python
-GaussianNoise(sigma, input_shape=None)
+GaussianNoise(sigma, input_shape=None, name=None)
 ```
 
 **Parameters:**
@@ -295,7 +295,7 @@ SpatialDropout1D(p = 0.5, inputShape = null)
 ```
 **Python:**
 ```python
-SpatialDropout1D(p=0.5, input_shape=None)
+SpatialDropout1D(p=0.5, input_shape=None, name=None)
 ```
 
 **Parameters:**
@@ -391,7 +391,7 @@ SpatialDropout2D(p = 0.5, dimOrdering = "th", inputShape = null)
 ```
 **Python:**
 ```python
-SpatialDropout2D(p=0.5, dim_ordering="th", input_shape=None)
+SpatialDropout2D(p=0.5, dim_ordering="th", input_shape=None, name=None)
 ```
 
 **Parameters:**
@@ -526,7 +526,7 @@ SpatialDropout3D(p = 0.5, dimOrdering = "th", inputShape = null)
 ```
 **Python:**
 ```python
-SpatialDropout3D(p=0.5, dim_ordering="th", input_shape=None)
+SpatialDropout3D(p=0.5, dim_ordering="th", input_shape=None, name=None)
 ```
 
 **Parameters:**
