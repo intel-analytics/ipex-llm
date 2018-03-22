@@ -1844,7 +1844,7 @@ val module = LocallyConnected2D(
 **Python:**
 ```python
 module = LocallyConnected2D(
-    self, n_input_plane, input_width, input_height, n_output_plane, 
+    n_input_plane, input_width, input_height, n_output_plane, 
     kernel_w, kernel_h, stride_w=1, stride_h=1, pad_w=0, pad_h=0，
     propagate_back=True wRegularizer=None, bRegularizer=None, 
     init_weight=None, init_bias=None, init_grad_weight=None, 
@@ -1854,9 +1854,9 @@ module = LocallyConnected2D(
 
 The LocallyConnected2D layer works similarly to the [SpatialConvolution](APIGuide/Layers/Convolution-Layers.md#SpatialConvolution) layer, except that weights are unshared, that is, a different set of filters is applied at each different patch of the input.
 
-    * `n_input_plane` The number of expected input planes in the image given into forward()
-    * `input_width` The input width
-    * `input_height` The input height
+    * `nInputPlane` The number of expected input planes in the image given into forward()
+    * `inputWidth` The input width
+    * `inputHeight` The input height
     * `n_output_plane` The number of output planes the convolution layer will produce.
     * `kernelW` The kernel width of the convolution
     * `kernelH` The kernel height of the convolution
