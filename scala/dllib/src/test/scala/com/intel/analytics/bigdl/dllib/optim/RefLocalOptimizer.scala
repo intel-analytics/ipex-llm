@@ -18,8 +18,10 @@ package com.intel.analytics.bigdl.optim
 import com.intel.analytics.bigdl.DataSet
 import com.intel.analytics.bigdl.dataset.MiniBatch
 import com.intel.analytics.bigdl._
+import com.intel.analytics.bigdl.optim.DistriOptimizer.getClass
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import org.apache.log4j.Logger
 
 import scala.reflect.ClassTag
 
@@ -31,6 +33,8 @@ class RefLocalOptimizer[T: ClassTag](
   dataset: DataSet[MiniBatch[T]],
   criterion: Criterion[T]
 )(implicit ev: TensorNumeric[T]) extends Optimizer[T, MiniBatch[T]](model, dataset, criterion) {
+
+  val logger: Logger = Logger.getLogger(getClass)
 
   val (w, g) = model.getParameters()
 
@@ -51,7 +55,7 @@ class RefLocalOptimizer[T: ClassTag](
       optimMethod.optimize(_ => (loss, g), w, state)
       count += batch.size()
       state("neval") = state[Int]("neval") + 1
-      println(s"loss is $loss")
+      logger.info(s"loss is $loss")
       if (count >= dataset.size()) {
         state("epoch") = state[Int]("epoch") + 1
         count = 0
