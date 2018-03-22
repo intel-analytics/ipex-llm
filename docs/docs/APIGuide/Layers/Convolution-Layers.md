@@ -802,15 +802,15 @@ output m is : [[[-0.04712385  0.21949144  0.0843184   0.14336972]
   [-0.38188276 -0.36746511 -0.37627563 -0.34141305]]]
 ```
 
-## SpatialSeperableConvolution ##
+## SpatialSeparableConvolution ##
 
 **Scala:**
 ```scala
-val m  = SpatialSeperableConvolution(nInputChannel, nOutputChannel, depthMultiplier, kW, kH, sW, sH, pW, pH, hasBias, dataFormat, wRegularizer = null,bRegularizer = null, pRegularizer = null, initDepthWeight = null, initPointWeight = null, initBias = null)
+val m  = SpatialSeparableConvolution(nInputChannel, nOutputChannel, depthMultiplier, kW, kH, sW = 1, sH = 1, pW = 0, pH = 0, hasBias = True, dataFormat = DataFormat.NCHW, wRegularizer = null, bRegularizer = null, pRegularizer = null, initDepthWeight = null, initPointWeight = null, initBias = null)
 ```
 **Python:**
 ```python
-m = SpatialFullConvolution(n_input_channel, n_output_channel, depth_multiplier, kernel_w, kernel_h, stride_w = 1, stride_h = 1, pad_w = 0, pad_h = 0, with_bias = True, data_format="NCHW", w_regularizer=None, b_regularizer=None, p_regularizer=None)
+m = SpatialSeparableConvolution(n_input_channel, n_output_channel, depth_multiplier, kernel_w, kernel_h, stride_w=1, stride_h=1, pad_w=0, pad_h=0, with_bias=True, data_format="NCHW", w_regularizer=None, b_regularizer=None, p_regularizer=None)
 ```
 
 Separable convolutions consist in first performing a depthwise spatial convolution (which acts
@@ -827,8 +827,8 @@ enerated per input channel in the depthwise step.
  * `sH` The step of the convolution in the height dimension.
  * `pW` The additional zeros added per width to the input planes. Default is 0.
  * `pH` The additional zeros added per height to the input planes. Default is 0.
- * `hasBias` do we use a bias on the output
- * `dataFormat` image data format, which can be NHWC or NCHW
+ * `hasBias` do we use a bias on the output, default is true
+ * `dataFormat` image data format, which can be NHWC or NCHW, default value is NCHW
  * `wRegularizer` kernel parameter regularizer
  * `bRegularizer` bias regularizer
  * `pRegularizer` point wise kernel parameter regularizer
@@ -846,7 +846,7 @@ import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.tensor._
 import com.intel.analytics.bigdl.nn.abstractnn.DataFormat
 
-val m = SpatialSeperableConvolution[Float](1, 2, 1, 2, 2, dataFormat = DataFormat.NCHW)
+val m = SpatialSeparableConvolution[Float](1, 2, 1, 2, 2, dataFormat = DataFormat.NCHW)
 val input = Tensor(1, 1, 3, 3).randn()
 val output = m.forward(input)
 val gradOut = Tensor(1, 2, 2, 2).fill(0.1f)
@@ -897,9 +897,7 @@ scala> print(gradIn)
 from bigdl.nn.layer import *
 import numpy as np
 
-m = SpatialSeperableConvolution(1, 2, 1, 2, 2)
-
-print "--------- tensor input---------"
+m = SpatialSeparableConvolution(1, 2, 1, 2, 2)
 tensor_input = np.random.rand(1, 1, 3, 3)
 print "input is :",tensor_input
 out = m.forward(tensor_input)
@@ -909,7 +907,6 @@ Gives the output,
 
 ```python
 creating: createSpatialFullConvolution
---------- tensor input---------
 input is : [[[[ 0.77269038  0.82476003  0.58228669]
    [ 0.35123569  0.25496535  0.16736527]
    [ 0.62138293  0.83156875  0.77565037]]]]

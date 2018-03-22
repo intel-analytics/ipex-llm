@@ -41,8 +41,8 @@ import scala.reflect.ClassTag
  * @param sH stride height
  * @param pW padding width
  * @param pH padding height
- * @param hasBias do we use a bias on the output
- * @param dataFormat image data format, which can be NHWC or NCHW
+ * @param hasBias do we use a bias on the output, default value is true
+ * @param dataFormat image data format, which can be NHWC or NCHW, default value is NCHW
  * @param wRegularizer kernel parameter regularizer
  * @param bRegularizer bias regularizer
  * @param pRegularizer point wise kernel parameter regularizer
@@ -56,10 +56,10 @@ class SpatialSeparableConvolution[T: ClassTag](
   val nOutputChannel: Int,
   val depthMultiplier: Int,
   val kW: Int, val kH: Int,
-  val sW: Int, val sH: Int,
-  val pW: Int, val pH: Int,
-  val hasBias: Boolean,
-  val dataFormat: DataFormat,
+  val sW: Int = 1, val sH: Int = 1,
+  val pW: Int = 0, val pH: Int = 0,
+  val hasBias: Boolean = true,
+  val dataFormat: DataFormat = DataFormat.NCHW,
   var wRegularizer: Regularizer[T] = null,
   var bRegularizer: Regularizer[T] = null,
   var pRegularizer: Regularizer[T] = null,
