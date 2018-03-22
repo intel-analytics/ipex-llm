@@ -1852,12 +1852,12 @@ module = LocallyConnected2D(
   )
 ```                            
 
-The LocallyConnected2D layer works similarly to the [SpatialConvolution](APIGuide/Layers/Convolution-Layers.md#SpatialConvolution) layer, except that weights are unshared, that is, a different set of filters is applied at each different patch of the input.
+The LocallyConnected2D layer works similarly to the [SpatialConvolution](#SpatialConvolution) layer, except that weights are unshared, that is, a different set of filters is applied at each different patch of the input.
 
     * `nInputPlane` The number of expected input planes in the image given into forward()
     * `inputWidth` The input width
     * `inputHeight` The input height
-    * `n_output_plane` The number of output planes the convolution layer will produce.
+    * `nOutputPlane` The number of output planes the convolution layer will produce.
     * `kernelW` The kernel width of the convolution
     * `kernelH` The kernel height of the convolution
     * `strideW` The step of the convolution in the width dimension.
@@ -1871,7 +1871,7 @@ The LocallyConnected2D layer works similarly to the [SpatialConvolution](APIGuid
     * `initBias` initial bias
     * `initGradWeight` initial gradient weight
     * `initGradBias` initial gradient bias
-    * `with_bias` if has bias
+    * `withBias` if has bias
     * `format` data format of "NHWC" or "NCHW" 
 
                 
