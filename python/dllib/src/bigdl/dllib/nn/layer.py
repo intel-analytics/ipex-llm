@@ -3663,7 +3663,7 @@ class RReLU(Layer):
                                     upper,
                                     inplace)
 
-class SpatialSeperableConvolution(Layer):
+class SpatialSeparableConvolution(Layer):
 
     '''
     Separable convolutions consist in first performing a depthwise spatial convolution (which acts
@@ -3688,17 +3688,17 @@ class SpatialSeperableConvolution(Layer):
     :param b_regularizer: instance of [[Regularizer]]applied to the pointwise bias.
     :param p_regularizer: instance of [[Regularizer]]applied to the pointwise weights.
 
-    >>> conv = SpatialSeperableConvolution(6, 12, 1, 5, 5)
-    creating: createSpatialSeperableConvolution
+    >>> conv = SpatialSeparableConvolution(6, 12, 1, 5, 5)
+    creating: createSpatialSeparableConvolution
     >>> conv.setWRegularizer(L1Regularizer(0.5))
     creating: createL1Regularizer
     >>> conv.setBRegularizer(L1Regularizer(0.5))
     creating: createL1Regularizer
-    >>> conv = SpatialSeperableConvolution(6, 12, 1, 5, 5, 1, 1, 0, 0, True, "NCHW", L1Regularizer(0.5), L1Regularizer(0.5), L1Regularizer(0.5))
+    >>> conv = SpatialSeparableConvolution(6, 12, 1, 5, 5, 1, 1, 0, 0, True, "NCHW", L1Regularizer(0.5), L1Regularizer(0.5), L1Regularizer(0.5))
     creating: createL1Regularizer
     creating: createL1Regularizer
     creating: createL1Regularizer
-    creating: createSpatialSeperableConvolution
+    creating: createSpatialSeparableConvolution
     '''
 
     def __init__(self,
@@ -3717,22 +3717,22 @@ class SpatialSeperableConvolution(Layer):
                  b_regularizer=None,
                  p_regularizer=None,
                  bigdl_type="float"):
-        super(SpatialSeperableConvolution, self).__init__(None, bigdl_type,
-                                                 n_input_channel,
-                                                 n_output_channel,
-                                                 depth_multiplier,
-                                                 kernel_w,
-                                                 kernel_h,
-                                                 stride_w,
-                                                 stride_h,
-                                                 pad_w,
-                                                 pad_h,
-                                                 with_bias,
-                                                 data_format,
-                                                 w_regularizer,
-                                                 b_regularizer,
-                                                 p_regularizer,
-                                                 )
+        super(SpatialSeparableConvolution, self).__init__(None, bigdl_type,
+                                                          n_input_channel,
+                                                          n_output_channel,
+                                                          depth_multiplier,
+                                                          kernel_w,
+                                                          kernel_h,
+                                                          stride_w,
+                                                          stride_h,
+                                                          pad_w,
+                                                          pad_h,
+                                                          with_bias,
+                                                          data_format,
+                                                          w_regularizer,
+                                                          b_regularizer,
+                                                          p_regularizer,
+                                                          )
 
 class ReLU6(Layer):
 
