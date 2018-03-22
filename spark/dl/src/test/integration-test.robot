@@ -147,7 +147,7 @@ Yarn Test Suite
    Log To Console                   begin inceptionV1 train
    Run Shell                        ${submit} --master yarn --deploy-mode client --conf "spark.serializer=org.apache.spark.serializer.JavaSerializer" --executor-cores 10 --num-executors 3 --driver-memory 150g --class com.intel.analytics.bigdl.models.inception.TrainInceptionV1 ${jar_path} -b 12 -f ${imagenet_test_data_source} --learningRate 0.1 -e 1
    Log To Console                   begin text classification
-   Run Shell                        ${submit} --master yarn --deploy-mode client --conf "spark.serializer=org.apache.spark.serializer.JavaSerializer" --executor-cores 10 --num-executors 3 --driver-memory 150g --class com.intel.analytics.bigdl.example.textclassification.TextClassifier ${jar_path} --batchSize 16 --baseDir /tmp/text_data --partitionNum 32
+   Run Shell                        ${submit} --master yarn --deploy-mode client --conf "spark.serializer=org.apache.spark.serializer.JavaSerializer" --executor-cores 10 --num-executors 3 --driver-memory 150g --class com.intel.analytics.bigdl.example.textclassification.TextClassifier ${jar_path} --batchSize 12 --baseDir /tmp/text_data --partitionNum 24
    Log To Console                   begin DLClassifierLeNet
    Run Shell                        ${submit} --master yarn --deploy-mode client --conf "spark.serializer=org.apache.spark.serializer.JavaSerializer" --executor-cores 10 --num-executors 3 --driver-memory 150g --class com.intel.analytics.bigdl.example.MLPipeline.DLClassifierLeNet ${jar_path} -b 12 -f ./mnist --maxEpoch 1
    Log To Console                   begin PTBWordLM
