@@ -1831,49 +1831,49 @@ output m is : [[[[[ 0.80314147  0.80314147  0.7915861   0.7915861 ]
 ```
 
 
-## LocallyConnected1D ##
+## LocallyConnected2D ##
 **Scala:**
 ```scala
-+val module = LocallyConnected1D(
-+  nInputFrame,inputFrameSize, outputFrameSize, kernelW, strideW = 1, propagateBack = true,
-+  wRegularizer = null, bRegularizer = null, initWeight = null, initBias = null,
-+  initGradWeight = null, initGradBias = null
-+  )
-+```
-+**Python:**
-+```python
-+module = LocallyConnected1D(
-+  n_input_frame, input_frame_size, output_frame_size, kernel_w, stride_w = 1, propagate_back = True,
-+  w_regularizer = None, b_regularizer = None, init_weight = None, init_bias = None,
-+  init_grad_weight = None, init_grad_bias = None
-+  )
+val module = LocallyConnected2D(
+   nInputPlane, inputWidth, inputHeight, nOutputPlane, kernelW, kernelH, 
+   strideW = 1, strideH = 1, padW = 0, padH = 0, propagateBack = true, 
+   wRegularizer = null, bRegularizer = null, initWeight = null, initBias = null,
+   initGradWeight = null, initGradBias = null, withBias = true, format = DataFormat.NCHW
+  )
 ```
+**Python:**
+```python
+module = LocallyConnected2D(
+    n_input_plane, input_width, input_height, n_output_plane, 
+    kernel_w, kernel_h, stride_w=1, stride_h=1, pad_w=0, pad_h=0，
+    propagate_back=True wRegularizer=None, bRegularizer=None, 
+    init_weight=None, init_bias=None, init_grad_weight=None, 
+    init_grad_bias=None, with_bias=True, data_format="NCHW", bigdl_type="float"
+  )
+```                            
 
-The LocallyConnected2D layer works similarly to the [[SpatialConvolution]] layer,
-    except that weights are unshared, that is, a different set of filters
-    is applied at each different patch of the input.
+The LocallyConnected2D layer works similarly to the [SpatialConvolution](#SpatialConvolution) layer, except that weights are unshared, that is, a different set of filters is applied at each different patch of the input.
 
-    * `n_input_plane` The number of expected input planes in the image given into forward()
-    * `input_width` The expected width of input
-    * `input_height` The expected height of input
-    * `n_output_plane` The number of output planes the convolution layer will produce.
-    * `kernel_w` The kernel width of the convolution
-    * `kernel_h` The kernel height of the convolution
-    * `stride_w` The step of the convolution in the width dimension.
-    * `stride_h` The step of the convolution in the height dimension
-    * `pad_w` The additional zeros added per width to the input planes.
-    * `pad_h` The additional zeros added per height to the input planes.
-    * `propagate_back` Propagate gradient back
-    * `wRegularizer` instance of [[Regularizer]](eg. L1 or L2 regularization), applied to the input weights matrices.
-    * `bRegularizer` instance of [[Regularizer]]applied to the bias.
-    * `init_weight` the optional initial value for the weight
-    * `init_bias` the optional initial value for the bias
-    * `init_grad_weight` the optional initial value for the grad_weight
-    * `init_grad_bias` the optional initial value for the grad_bias
-    * `with_bias` the optional initial value for if need bias
-    * `data_format` a string value of "NHWC" or "NCHW" to specify the input data format of this layer. In "NHWC" format
-                data is stored in the order of [batch_size, height, width, channels], in "NCHW" format data is stored
-                in the order of [batch_size, channels, height, width].
+    * `nInputPlane` The number of expected input planes in the image given into forward()
+    * `inputWidth` The input width
+    * `inputHeight` The input height
+    * `nOutputPlane` The number of output planes the convolution layer will produce.
+    * `kernelW` The kernel width of the convolution
+    * `kernelH` The kernel height of the convolution
+    * `strideW` The step of the convolution in the width dimension.
+    * `strideH` The step of the convolution in the height dimension
+    * `padW` The additional zeros added per width to the input planes.
+    * `padH` The additional zeros added per height to the input planes.
+    * `propagateBack` Propagate gradient back
+    * `wRegularizer` weight regularizer
+    * `bRegularizer` bias regularizer
+    * `initWeight` initial weight
+    * `initBias` initial bias
+    * `initGradWeight` initial gradient weight
+    * `initGradBias` initial gradient bias
+    * `withBias` if has bias
+    * `format` data format of "NHWC" or "NCHW" 
+
                 
 **Scala example:**
 ```scala
