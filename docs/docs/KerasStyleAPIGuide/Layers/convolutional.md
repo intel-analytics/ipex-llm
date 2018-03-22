@@ -706,6 +706,112 @@ Output is
 ```
 
 ---
+## **Deconvolution2D**
+Transposed convolution operator for filtering windows of 2-D inputs.
+
+The need for transposed convolutions generally arises from the desire to use a transformation going in the opposite direction of a normal convolution, i.e., from something that has
+the shape of the output of some convolution to something that has the shape of its input while maintaining a connectivity pattern that is compatible with said convolution.
+
+Data format currently supported for this layer is DataFormat.NCHW (dimOrdering='th').
+
+Border mode currently supported for this layer is 'valid'.
+
+The input of this layer should be 4D.
+
+**Scala:**
+```scala
+Deconvolution2D(nbFilter, nbRow, nbCol, init = "glorot_uniform", activation = null, subsample = (1, 1), dimOrdering = "th", wRegularizer = null, bRegularizer = null, bias = true, inputShape = null)
+```
+**Python:**
+```python
+Deconvolution2D(nb_filter, nb_row, nb_col, output_shape, init="glorot_uniform", activation=None, border_mode="valid", subsample=(1, 1), dim_ordering="th", W_regularizer=None, b_regularizer=None, bias=True, input_shape=None, name=None)
+```
+
+**Parameters:**
+
+* `nbFilter`: Number of transposed convolution filters to use.
+* `nbRow`: Number of rows in the transposed convolution kernel.
+* `nbCol`: Number of columns in the transposed convolution kernel.
+* `init`: String representation of the initialization method for the weights of the layer. See [here](initialization/#available-initialization-methods) for available initialization strings. Default is "glorot_uniform".
+* `activation`: String representation of the activation function to use. See [here](activation/#available-activations) for available activation strings. Default is null.
+* `subsample`: Length 2 . The step of the convolution in the height and width dimension. Also called strides elsewhere. Default is (1, 1).
+* `dimOrdering`: Format of input data. Only 'th' (Channel First) is supported for now.
+* `wRegularizer`: An instance of [Regularizer](../../../APIGuide/Regularizers/), (eg. L1 or L2 regularization), applied to the input weights matrices. Default is null.
+* `bRegularizer`: An instance of [Regularizer](../../../APIGuide/Regularizers/), applied to the bias. Default is null.
+* `bias`: Whether to include a bias (i.e. make the layer affine rather than linear). Default is true.
+* `inputShape`: Only need to specify this argument when you use this layer as the first layer of a model. For Scala API, it should be a [`Shape`](../keras-api-scala/#shape) object. For Python API, it should be a shape tuple. Batch dimension should be excluded.
+
+**Scala example:**
+```scala
+import com.intel.analytics.bigdl.nn.keras.{Sequential, Deconvolution2D}
+import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.bigdl.tensor._
+
+val model = Sequential[Float]()
+model.add(Deconvolution2D(2, 2, 2, activation = "relu", inputShape = Shape(2, 2, 3)))
+val input = Tensor[Float](1, 2, 2, 3).randn()
+val output = model.forward(input)
+```
+Input is:
+```scala
+input: com.intel.analytics.bigdl.tensor.Tensor[Float] =
+(1,1,.,.) =
+-1.1157457	-0.8626509	-0.7326707
+1.8340882	-1.1647098	-1.0159439
+
+(1,2,.,.) =
+-0.13360074	0.4507607	-0.5922559
+0.15494606	0.16541296	1.6870573
+
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 1x2x2x3]
+```
+Output is:
+```scala
+output: com.intel.analytics.bigdl.nn.abstractnn.Activity =
+(1,1,.,.) =
+0.0	        0.0	        0.0	    0.020009547
+0.0	        0.0	        0.0	    0.0
+0.9656998	0.0	        0.0	    0.5543601
+
+(1,2,.,.) =
+0.0	        0.0	        0.0	    0.07773054
+1.4971795	0.029338006	0.0	    0.0
+0.0	        0.45826393	0.0	    0.0
+
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 1x2x3x4]
+```
+
+**Python example:**
+```python
+import numpy as np
+from bigdl.nn.keras.topology import Sequential
+from bigdl.nn.keras.layer import Deconvolution2D
+
+model = Sequential()
+model.add(Deconvolution2D(2, 2, 2, (2, 3, 4), input_shape=(2, 2, 3)))
+input = np.random.random([1, 2, 2, 3])
+output = model.forward(input)
+```
+Input is:
+```python
+[[[[0.65315139 0.21904901 0.57943617]
+   [0.35141043 0.14628658 0.81862311]]
+
+  [[0.60094717 0.84649884 0.08338504]
+   [0.26753695 0.83676038 0.87466877]]]]
+```
+Output is
+```python
+[[[[-0.35380065  0.22048733  0.3084591   0.23341973]
+   [-0.11611718  0.5349988  -0.26301163  1.0291481 ]
+   [ 0.00479569  0.48814884  0.00127316  0.2546792 ]]
+
+  [[-0.02683929 -0.21759698 -0.8542665  -0.25376737]
+   [ 0.04426606  0.05486238 -0.9282576  -1.1576774 ]
+   [ 0.01637976  0.1838439  -0.01419228 -0.60704494]]]]
+```
+
+---
 ## **Cropping1D**
 Cropping layer for 1D input (e.g. temporal sequence).
 
