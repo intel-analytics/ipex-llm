@@ -22,17 +22,17 @@ import com.intel.analytics.bigdl.utils.{BigDLSpecHelper, Shape, TestUtils}
 
 import scala.util.Random
 
-class SpatialSeperableConvolutionSpec extends BigDLSpecHelper {
-  "SpatialSeperableConvolution NHWC and NCHW" should "have same output" in {
+class SpatialSeparableConvolutionSpec extends BigDLSpecHelper {
+  "SpatialSeparableConvolution NHWC and NCHW" should "have same output" in {
     val depthWeightNHWC = Tensor[Float](2, 2, 3, 1).rand()
     val depthWeightNCHW = depthWeightNHWC.transpose(1, 4).transpose(2, 4).transpose(2, 3)
       .contiguous()
     val pointWeightNHWC = Tensor[Float](1, 1, 3, 6).rand()
     val pointWeightNCHW = pointWeightNHWC.transpose(1, 4).transpose(2, 4).transpose(2, 3)
       .contiguous()
-    val convNHWC = SpatialSeperableConvolution[Float](3, 6, 1, 2, 2, dataFormat = DataFormat.NHWC,
+    val convNHWC = SpatialSeparableConvolution[Float](3, 6, 1, 2, 2, dataFormat = DataFormat.NHWC,
       initDepthWeight = depthWeightNHWC, initPointWeight = pointWeightNHWC)
-    val convNCHW = SpatialSeperableConvolution[Float](3, 6, 1, 2, 2, dataFormat = DataFormat.NCHW,
+    val convNCHW = SpatialSeparableConvolution[Float](3, 6, 1, 2, 2, dataFormat = DataFormat.NCHW,
       initDepthWeight = depthWeightNCHW, initPointWeight = pointWeightNCHW)
     val inputNHWC = Tensor[Float](2, 24, 24, 3).rand()
     val inputNCHW = inputNHWC.transpose(2, 4).transpose(3, 4).contiguous()
@@ -57,16 +57,16 @@ class SpatialSeperableConvolutionSpec extends BigDLSpecHelper {
     }
   }
 
-  "SpatialSeperableConvolution NHWC and NCHW" should "have same output when depth mul is 2" in {
+  "SpatialSeparableConvolution NHWC and NCHW" should "have same output when depth mul is 2" in {
     val depthWeightNHWC = Tensor[Float](2, 2, 3, 2).rand()
     val depthWeightNCHW = depthWeightNHWC.transpose(1, 4).transpose(2, 4).transpose(2, 3)
       .contiguous()
     val pointWeightNHWC = Tensor[Float](1, 1, 6, 6).rand()
     val pointWeightNCHW = pointWeightNHWC.transpose(1, 4).transpose(2, 4).transpose(2, 3)
       .contiguous()
-    val convNHWC = SpatialSeperableConvolution[Float](3, 6, 2, 2, 2, dataFormat = DataFormat.NHWC,
+    val convNHWC = SpatialSeparableConvolution[Float](3, 6, 2, 2, 2, dataFormat = DataFormat.NHWC,
       initDepthWeight = depthWeightNHWC, initPointWeight = pointWeightNHWC)
-    val convNCHW = SpatialSeperableConvolution[Float](3, 6, 2, 2, 2, dataFormat = DataFormat.NCHW,
+    val convNCHW = SpatialSeparableConvolution[Float](3, 6, 2, 2, 2, dataFormat = DataFormat.NCHW,
       initDepthWeight = depthWeightNCHW, initPointWeight = pointWeightNCHW)
     val inputNHWC = Tensor[Float](2, 24, 24, 3).rand()
     val inputNCHW = inputNHWC.transpose(2, 4).transpose(3, 4).contiguous()
@@ -91,30 +91,30 @@ class SpatialSeperableConvolutionSpec extends BigDLSpecHelper {
     }
   }
 
-  "SpatialSeperableConvolution" should "be able to serialized" in {
-    val conv = SpatialSeperableConvolution[Float](3, 6, 2, 2, 2)
+  "SpatialSeparableConvolution" should "be able to serialized" in {
+    val conv = SpatialSeparableConvolution[Float](3, 6, 2, 2, 2)
     val file = createTmpFile()
     conv.saveModule(file.getAbsolutePath, overWrite = true)
     val conv2 = Module.loadModule[Float](file.getAbsolutePath)
   }
 
   "SpatialSeparableConvolution computeOutputShape NCHW" should "work properly" in {
-    val layer = SpatialSeperableConvolution[Float](3, 6, 1, 2, 2)
+    val layer = SpatialSeparableConvolution[Float](3, 6, 1, 2, 2)
     TestUtils.compareOutputShape(layer, Shape(3, 12, 12)) should be (true)
   }
 
   "SpatialSeparableConvolution computeOutputShape NHWC" should "work properly" in {
-    val layer = SpatialSeperableConvolution[Float](2, 5, 2, 2, 1, dataFormat = DataFormat.NHWC)
+    val layer = SpatialSeparableConvolution[Float](2, 5, 2, 2, 1, dataFormat = DataFormat.NHWC)
     TestUtils.compareOutputShape(layer, Shape(24, 24, 2)) should be (true)
   }
 
 }
 
-class SpatialSeperableConvolutionSerialTest extends ModuleSerializationTest {
+class SpatialSeparableConvolutionSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
-    val seprableConv = SpatialSeperableConvolution[Float](2, 2, 1, 2, 2,
-      dataFormat = DataFormat.NHWC).setName("seprableConv")
+    val separableConv = SpatialSeparableConvolution[Float](2, 2, 1, 2, 2,
+      dataFormat = DataFormat.NHWC).setName("separableConv")
     val input = Tensor[Float](1, 5, 5, 2).apply1( e => Random.nextFloat())
-    runSerializationTest(seprableConv, input)
+    runSerializationTest(separableConv, input)
   }
 }

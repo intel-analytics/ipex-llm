@@ -16,9 +16,9 @@
 package com.intel.analytics.bigdl.keras
 
 import com.intel.analytics.bigdl.nn.abstractnn.DataFormat
-import com.intel.analytics.bigdl.nn.{CategoricalCrossEntropy, SpatialSeperableConvolution}
+import com.intel.analytics.bigdl.nn.{CategoricalCrossEntropy, SpatialSeparableConvolution}
 
-class SpatialSeperableConvolutionSpec extends KerasBaseSpec {
+class SpatialSeparableConvolutionSpec extends KerasBaseSpec {
   "SpatialSeperableConvolution" should "be ok" in {
     ifskipTest()
     val kerasCode =
@@ -28,7 +28,7 @@ class SpatialSeperableConvolutionSpec extends KerasBaseSpec {
         |model = Model(input=input_tensor, output=output_tensor)
         |input = np.random.uniform(0, 1, [2, 5, 5, 2])
       """.stripMargin
-    val layer = SpatialSeperableConvolution[Float](2, 2, 1, 2, 2, dataFormat = DataFormat.NHWC)
+    val layer = SpatialSeparableConvolution[Float](2, 2, 1, 2, 2, dataFormat = DataFormat.NHWC)
     checkOutputAndGrad(layer, kerasCode)
   }
 
@@ -41,7 +41,7 @@ class SpatialSeperableConvolutionSpec extends KerasBaseSpec {
         |model = Model(input=input_tensor, output=output_tensor)
         |input = np.random.uniform(0, 1, [2, 5, 5, 2])
       """.stripMargin
-    val layer = SpatialSeperableConvolution[Float](2, 4, 2, 2, 2, dataFormat = DataFormat.NHWC)
+    val layer = SpatialSeparableConvolution[Float](2, 4, 2, 2, 2, dataFormat = DataFormat.NHWC)
     checkOutputAndGrad(layer, kerasCode)
   }
 }

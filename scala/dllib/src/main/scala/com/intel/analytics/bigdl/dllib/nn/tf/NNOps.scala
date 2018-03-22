@@ -16,7 +16,7 @@
 package com.intel.analytics.bigdl.nn.tf
 
 import com.intel.analytics.bigdl.nn.{Sigmoid, SpatialAveragePooling, SpatialBatchNormalization,
-SpatialConvolution, SpatialCrossMapLRN, SpatialMaxPooling, SpatialSeperableConvolution, Tanh, Utils,
+SpatialConvolution, SpatialCrossMapLRN, SpatialMaxPooling, SpatialSeparableConvolution, Tanh, Utils,
 VolumetricConvolution, ELU => ELULayer, ReLU6 => ReLU6Layer, SoftPlus => SoftPlusLayer,
 SoftSign => SoftSignLayer, ReLU => ReLULayer}
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, DataFormat}
