@@ -106,6 +106,8 @@ pages:
     - Dropout Layers: KerasStyleAPIGuide/Layers/dropout.md
     - Advanced Activations Layers: KerasStyleAPIGuide/Layers/advanced-activation.md
     - Layer Wrappers: KerasStyleAPIGuide/Layers/wrappers.md
+  - Optimization:
+    - Train, predict or evaluate a model: KerasStyleAPIGuide/Optimization/training.md
 - Powered by: powered-by.md
 - Known Issues: known-issues.md
 - Presentations: presentations.md

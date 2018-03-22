@@ -81,7 +81,7 @@ class KerasModel(KerasLayer, Container, SharedStaticUtils):
 
     def compile(self, optimizer, loss, metrics=None):
         """
-        Configures the learning process. Must be called before fit.
+        Configures the learning process. Must be called before fit or evaluate.
 
         # Arguments
         optimizer: Optimization method to be used. One can alternatively pass in the corresponding
