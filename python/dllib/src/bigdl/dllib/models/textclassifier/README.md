@@ -8,14 +8,14 @@
 * Embedding: 200-dimensional pre-trained GloVe embeddings of 400k words which trained on a 2014 dump of English Wikipedia.
 * Training data: "20 Newsgroup dataset" which containing 20 categories and with totally 19997 texts.
 
-## Install dependencies
- * [Install dependencies](../../../README.md#install.dependencies)
 
 ## How to run this example:
 
-Please note that due to some permission issue, this example **cannot** be run on Windows.
+- Please note that due to some permission issue, this example **cannot** be run on Windows.
 
-If there is no [Pre-train GloVe word embeddings](http://nlp.stanford.edu/data/glove.6B.zip)
+### Data preparation
+- You don't need to download the data by yourself.
+- If there is no [Pre-train GloVe word embeddings](http://nlp.stanford.edu/data/glove.6B.zip)
 or [20 Newsgroup dataset](http://www.cs.cmu.edu/afs/cs.cmu.edu/project/theo-20/www/data/news20.html) in
 `./data/news20` directory with the following structure looks like:
 
@@ -26,15 +26,20 @@ $ [/tmp/news20]$ tree . -L 1
   └── glove.6B.zip
 ```
 - The example code would automatically download the data during the first run.
-- If you install BigDL via pip, you can run this example locally by the following command:
-  - Check [Run after pip install](../../../../docs/docs/PythonUserGuide/run-from-pip.md)
+
+### Run via pip install
+- [Install from pip](https://bigdl-project.github.io/0.6.0-SNAPSHOT/#PythonUserGuide/install-from-pip/)
+- Optional: check [Run after pip install](https://bigdl-project.github.io/0.6.0-SNAPSHOT/#PythonUserGuide/run-from-pip/)
+- Run the following command locally
 ```
 python ${BigDL_HOME}/pyspark/bigdl/models/textclassifier/textclassifier.py --max_epoch 3 --model cnn
       
 ```
 
-- You can also use `spark-submit` to launch this example:
-
+### Run via spark-submit
+- [Install without pip](https://bigdl-project.github.io/0.6.0-SNAPSHOT/#PythonUserGuide/install-without-pip/)
+- Optional: check [Run without pip](https://bigdl-project.github.io/0.6.0-SNAPSHOT/#PythonUserGuide/run-without-pip/)
+- Run the following command
 ```{r, engine='sh'}
         PYTHONHASHSEED=0
         BigDL_HOME=...
