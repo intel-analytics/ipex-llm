@@ -199,7 +199,7 @@ class LocalOptimizer[T: ClassTag] (
         count = 0
       }
 
-      validate(wallClockTime)
+      validate(head)
       checkpoint(wallClockTime)
     }
 
@@ -222,7 +222,7 @@ class LocalOptimizer[T: ClassTag] (
     }
   }
 
-  private def validate(wallClockTime: Long): Unit = {
+  private def validate(header: String): Unit = {
     if (validationTrigger.isEmpty || validationDataSet.isEmpty) {
       return
     }
@@ -233,7 +233,7 @@ class LocalOptimizer[T: ClassTag] (
     val vMethods = validationMethods.get
     val vMethodsArr = (1 to subModelNumber).map(i => vMethods.map(_.clone())).toArray
     val dataIter = validationDataSet.get.toLocal().data(train = false)
-    logger.info(s"[Wall Clock ${wallClockTime / 1e9}s] Validate model...")
+    logger.info(s"$header Validate model...")
 
     workingModels.foreach(_.evaluate())
 
@@ -264,7 +264,7 @@ class LocalOptimizer[T: ClassTag] (
         }
       })
       count += batch.size()
-      logger.info(s"[Validation] $count/${validationDataSet.get.size()} Throughput is ${
+      logger.info(s"$header Throughput is ${
         batch.size() / ((System.nanoTime() - start) / 1e9)
       } record / sec")
       result
@@ -273,7 +273,7 @@ class LocalOptimizer[T: ClassTag] (
         l + r
       }
     }).zip(vMethods).foreach(r => {
-      logger.info(s"${r._2} is ${r._1}")
+      logger.info(s"$header ${r._2} is ${r._1}")
     })
   }
 }
