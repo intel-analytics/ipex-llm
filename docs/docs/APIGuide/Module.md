@@ -170,7 +170,7 @@ val testSet = sc.parallelize(Seq(testSample))
 
 //train a new model or load an existing model
 //val model=...
-val evaluateResult = model.evaluate(testSet, Array(new Top1Accuracy), None)
+val evaluateResult = model.evaluate(testSet, Array(new Top1Accuracy))
 ```
 
 **Python example**
