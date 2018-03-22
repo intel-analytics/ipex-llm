@@ -50,8 +50,7 @@ import scala.reflect.ClassTag
  *                   or 'sigmoid', etc. for simple activations in the factory method.
  * @param subsample Int array of length 2. The step of the convolution in the height and
  *                  width dimension. Also called strides elsewhere. Default is (1, 1).
- * @param dimOrdering Format of input data. Either DataFormat.NCHW (dimOrdering='th') or
- *                    DataFormat.NHWC (dimOrdering='tf'). Default is NCHW.
+ * @param dimOrdering Format of input data. Please use DataFormat.NCHW (dimOrdering='th').
  * @param wRegularizer An instance of [[Regularizer]], (eg. L1 or L2 regularization),
  *                     applied to the input weights matrices. Default is null.
  * @param bRegularizer An instance of [[Regularizer]], applied to the bias. Default is null.
