@@ -9,7 +9,7 @@ TimeDistributed(layer, inputShape = null)
 ```
 **Python:**
 ```python
-TimeDistributed(layer, input_shape=None)
+TimeDistributed(layer, input_shape=None, name=None)
 ```
 
 Parameters:
@@ -95,7 +95,7 @@ Bidirectional(layer, mergeMode = "concat", inputShape = null)
 ```
 **Python:**
 ```python
-Bidirectional(layer, merge_mode="concat", input_shape=None)
+Bidirectional(layer, merge_mode="concat", input_shape=None, name=None)
 ```
 
 Parameters:

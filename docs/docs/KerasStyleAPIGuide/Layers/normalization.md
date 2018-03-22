@@ -13,7 +13,7 @@ BatchNormalization(epsilon = 0.001, momentum = 0.99, betaInit = "zero", gammaIni
 ```
 **Python:**
 ```python
-BatchNormalization(epsilon=0.001, momentum=0.99, beta_init="zero", gamma_init="one", dim_ordering="th", input_shape=None)
+BatchNormalization(epsilon=0.001, momentum=0.99, beta_init="zero", gamma_init="one", dim_ordering="th", input_shape=None, name=None)
 ```
 
 **Parameters:**
