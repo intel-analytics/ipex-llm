@@ -161,14 +161,14 @@ Yarn Test Suite
    
 
 PySpark2.1 Test Suite
-   Build SparkJar                   spark_2.x
+#   Build SparkJar                   spark_2.x
    Set Environment Variable         SPARK_HOME     /opt/work/spark-2.1.0-bin-hadoop2.7
 #   ${submit}=                       Catenate       SEPARATOR=/    /opt/work/spark-2.1.0-bin-hadoop2.7/bin    spark-submit
 #   Run Shell                        ${submit} --master ${spark_tf_210_3_master} --conf "spark.serializer=org.apache.spark.serializer.JavaSerializer" --driver-memory 150g --executor-cores 28 --total-executor-cores 56 --py-files ${curdir}/dist/lib/bigdl-${version}-python-api.zip --jars ${jar_path} --properties-file ${curdir}/dist/conf/spark-bigdl.conf ${curdir}/pyspark/bigdl/models/lenet/lenet5.py -b 224 --action train --endTriggerType epoch --endTriggerNum 1
  
 PySpark1.6 Test Suite
 #   DownLoad Input
-   Build SparkJar                   spark_1.6
+#   Build SparkJar                   spark_1.6
    Set Environment Variable         SPARK_HOME     /opt/work/spark-1.6.3-bin-hadoop2.6
    ${submit}=                       Catenate       SEPARATOR=/    /opt/work/spark-1.6.3-bin-hadoop2.6/bin    spark-submit
    Log To Console                   begin lenet Train local[4]
