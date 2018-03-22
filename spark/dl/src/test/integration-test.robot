@@ -145,7 +145,7 @@ Yarn Test Suite
    Log To Console                   begin rnn Train
    Run Shell                        ${submit} --master yarn --deploy-mode client --conf "spark.serializer=org.apache.spark.serializer.JavaSerializer" --executor-cores 10 --num-executors 3 --driver-memory 150g --class com.intel.analytics.bigdl.models.rnn.Train ${jar_path} -f ./ -s ./models --nEpochs 1 --checkpoint ./model/ -b 120
    Log To Console                   begin inceptionV1 train
-   Run Shell                        ${submit} --master yarn --deploy-mode client --conf "spark.serializer=org.apache.spark.serializer.JavaSerializer" --executor-cores 10 --num-executors 3 --driver-memory 150g --class com.intel.analytics.bigdl.models.inception.TrainInceptionV1 ${jar_path} -b 120 -f ${imagenet_test_data_source} --learningRate 0.1 -e 1
+   Run Shell                        ${submit} --master yarn --deploy-mode client --conf "spark.serializer=org.apache.spark.serializer.JavaSerializer" --executor-cores 10 --num-executors 2 --driver-memory 150g --class com.intel.analytics.bigdl.models.inception.TrainInceptionV1 ${jar_path} -b 20 -f ${imagenet_test_data_source} --learningRate 0.1 -e 1
    Log To Console                   begin text classification
    Run Shell                        ${submit} --master yarn --deploy-mode client --conf "spark.serializer=org.apache.spark.serializer.JavaSerializer" --executor-cores 10 --num-executors 3 --driver-memory 150g --class com.intel.analytics.bigdl.example.textclassification.TextClassifier ${jar_path} --batchSize 120 --baseDir /tmp/text_data --partitionNum 120
    Log To Console                   begin DLClassifierLeNet
