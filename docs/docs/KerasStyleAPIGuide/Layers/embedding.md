@@ -9,7 +9,7 @@ Embedding(inputDim, outputDim, init = "uniform", wRegularizer = null, inputShape
 ```
 **Python:**
 ```python
-Embedding(input_dim, output_dim, init="uniform", W_regularizer=None, input_shape=None)
+Embedding(input_dim, output_dim, init="uniform", W_regularizer=None, input_shape=None, name=None)
 ```
 
 **Parameters:**
