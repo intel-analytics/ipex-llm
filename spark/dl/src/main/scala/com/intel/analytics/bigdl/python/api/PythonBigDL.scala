@@ -543,7 +543,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     )
   }
 
-  def createSpatialSeperableConvolution(
+  def createSpatialSeparableConvolution(
     nInputChannel: Int,
     nOutputChannel: Int,
     depthMultiplier: Int,

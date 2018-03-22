@@ -112,9 +112,9 @@ class SpatialSeparableConvolutionSpec extends BigDLSpecHelper {
 
 class SpatialSeparableConvolutionSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
-    val seprableConv = SpatialSeparableConvolution[Float](2, 2, 1, 2, 2,
-      dataFormat = DataFormat.NHWC).setName("seprableConv")
+    val separableConv = SpatialSeparableConvolution[Float](2, 2, 1, 2, 2,
+      dataFormat = DataFormat.NHWC).setName("separableConv")
     val input = Tensor[Float](1, 5, 5, 2).apply1( e => Random.nextFloat())
-    runSerializationTest(seprableConv, input)
+    runSerializationTest(separableConv, input)
   }
 }
