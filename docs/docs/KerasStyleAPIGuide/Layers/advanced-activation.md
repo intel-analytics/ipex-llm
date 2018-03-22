@@ -9,7 +9,7 @@ ELU(alpha = 1.0, inputShape = null)
 ```
 **Python:**
 ```python
-ELU(alpha=1.0, input_shape=None)
+ELU(alpha=1.0, input_shape=None, name=None)
 ```
 
 **Parameters:**
@@ -77,7 +77,7 @@ LeakyReLU(alpha = 0.3, inputShape = null)
 ```
 **Python:**
 ```python
-LeakyReLU(alpha=0.3, input_shape=None)
+LeakyReLU(alpha=0.3, input_shape=None, name=None)
 ```
 
 **Parameters:**
@@ -145,7 +145,7 @@ SReLU(tLeftInit = "zero", aLeftInit = "glorot_uniform", tRightInit = "glorot_uni
 ```
 **Python:**
 ```python
-SReLU(t_left_init="zero", a_left_init="glorot_uniform", t_right_init="glorot_uniform", a_right_init="one", shared_axes=None, input_shape=None)
+SReLU(t_left_init="zero", a_left_init="glorot_uniform", t_right_init="glorot_uniform", a_right_init="one", shared_axes=None, input_shape=None, name=None)
 ```
 
 **Parameters:**
@@ -236,7 +236,7 @@ ThresholdedReLU(theta = 1.0, inputShape = null)
 ```
 **Python:**
 ```python
-ThresholdedReLU(theta=1.0, input_shape=None)
+ThresholdedReLU(theta=1.0, input_shape=None, name=None)
 ```
 
 **Parameters:**
