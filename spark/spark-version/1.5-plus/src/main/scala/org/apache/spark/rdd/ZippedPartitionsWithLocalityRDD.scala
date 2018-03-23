@@ -18,6 +18,7 @@ package org.apache.spark.rdd
 
 import java.io.{IOException, ObjectOutputStream}
 
+import org.apache.log4j.Logger
 import org.apache.spark.{Partition, SparkContext}
 
 import scala.collection.mutable.ArrayBuffer
@@ -32,6 +33,8 @@ object ZippedPartitionsWithLocalityRDD {
     new ZippedPartitionsWithLocalityRDD(
       sc, sc.clean(f), rdd1, rdd2, preservesPartitioning)
   }
+
+  val logger: Logger = Logger.getLogger(getClass)
 }
 
 /**
@@ -91,9 +94,9 @@ class ZippedPartitionsWithLocalityRDD[A: ClassTag, B: ClassTag, V: ClassTag](
         parts(i) =
           new ZippedPartitionsLocalityPartition(i, Array(i, matchPartition._1), rdds, locs)
       } else {
-        println(s"can't find locality partition for partition $i " +
-          s"Partition locations are (${curPrefs}) Candidate partition locations are\n" +
-          s"${candidateLocs.mkString("\n")}.")
+        ZippedPartitionsWithLocalityRDD.logger.warn(s"can't find locality partition for" +
+          s" partition $i Partition locations are (${curPrefs}) Candidate partition" +
+          s" locations are\n" + s"${candidateLocs.mkString("\n")}.")
         nonmatchPartitionId.append(i)
       }
     }
