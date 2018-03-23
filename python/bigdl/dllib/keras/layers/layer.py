@@ -157,7 +157,7 @@ class Dense(KerasLayer):
 
 class MaxoutDense(KerasLayer):
     """
-    A dense maxout layer that takes the element-wise maximum of nbFeature, Dense(inputDim, outputDim) linear layers.
+    A dense maxout layer that takes the element-wise maximum of linear layers.
     This allows the layer to learn a convex, piecewise linear activation function over the inputs.
     The input of this layer should be 2D.
 
@@ -478,7 +478,7 @@ class Permute(KerasLayer):
     input_shape (a shape tuple, does not include the batch dimension).
 
     # Arguments
-    dims: Tuple of int. Permutation pattern, does not include the samples dimension. Indexing starts at 1.
+    dims: Tuple of int. Permutation pattern, does not include the batch dimension. Indexing starts at 1.
     input_shape: A shape tuple, not including batch.
     name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
 
@@ -718,7 +718,7 @@ class AtrousConvolution1D(KerasLayer):
     creating: createKerasAtrousConvolution1D
     """
     def __init__(self, nb_filter, filter_length, init="glorot_uniform", activation=None,
-                 border_mode='valid', subsample_length=1, atrous_rate=1, W_regularizer=None,
+                 border_mode="valid", subsample_length=1, atrous_rate=1, W_regularizer=None,
                  b_regularizer=None, bias=True, input_shape=None, **kwargs):
         if border_mode != "valid":
             raise ValueError("For AtrousConvolution1D, only border_mode='valid' is supported for now")
@@ -863,7 +863,7 @@ class SeparableConvolution2D(KerasLayer):
     Applies separable convolution operator for 2D inputs.
     Separable convolutions consist in first performing a depthwise spatial convolution (which acts
     on each input channel separately) followed by a pointwise convolution which mixes together the
-    resulting output channels. The depthMultiplier argument controls how many output channels are
+    resulting output channels. The depth_multiplier argument controls how many output channels are
     generated per input channel in the depthwise step.
     You can also use SeparableConv2D as an alias of this layer.
     The input of this layer should be 4D.
@@ -1180,7 +1180,7 @@ class MaxPooling1D(KerasLayer):
     input_shape (a shape tuple, does not include the batch dimension).
 
     # Arguments
-    pool_length: Size of the region to which max pooling is applied.
+    pool_length: Size of the region to which max pooling is applied. Integer. Default is 2.
     strides: Factor by which to downscale. 2 will halve the input.
              Default is None, and in this case it will be equal to pool_length..
     border_mode: Either 'valid' or 'same'. Default is 'valid'.
@@ -1927,8 +1927,8 @@ class Masking(KerasLayer):
     input_shape (a shape tuple, does not include the batch dimension).
 
     # Arguments
-    mask_value: Float, mask value. For each timestep in the input tensor (dimension #1 in the tensor),
-                if all values in the input tensor at that timestep are equal to `mask_value`,
+    mask_value: Float, mask value. For each timestep in the input (the second dimension),
+                if all values in the input at that timestep are equal to 'mask_value',
                 then the timestep will masked (skipped) in all downstream layers.
     input_shape: A shape tuple, not including batch.
     name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
@@ -1967,15 +1967,15 @@ class SReLU(KerasLayer):
                  Default is None.
                  For example, if the incoming feature maps are from a 2D convolution with output shape
                  (batch, height, width, channels), and you wish to share parameters across space so that
-                 each filter only has one set of parameters, set 'SharedAxes=(1,2)'.
+                 each filter only has one set of parameters, set 'shared_axes=(1,2)'.
     input_shape: A shape tuple, not including batch.
     name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
 
     >>> srelu = SReLU(input_shape=(4, 5))
     creating: createKerasSReLU
     """
-    def __init__(self, t_left_init='zero', a_left_init='glorot_uniform',
-                 t_right_init='glorot_uniform', a_right_init='one',
+    def __init__(self, t_left_init="zero", a_left_init="glorot_uniform",
+                 t_right_init="glorot_uniform", a_right_init="one",
                  shared_axes=None, input_shape=None, **kwargs):
         super(SReLU, self).__init__(None,
                                     t_left_init,
@@ -1998,7 +1998,7 @@ class ELU(KerasLayer):
     input_shape (a shape tuple, does not include the batch dimension).
 
     # Arguments
-    alpha: Float, scale for the negative factor.
+    alpha: Float, scale for the negative factor. Default is 1.0.
     input_shape: A shape tuple, not including batch.
     name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
 
@@ -2023,7 +2023,7 @@ class LeakyReLU(KerasLayer):
     input_shape (a shape tuple, does not include the batch dimension).
 
     # Arguments
-    alpha: Float >= 0. Negative slope coefficient.
+    alpha: Float >= 0. Negative slope coefficient. Default is 0.3.
     input_shape: A shape tuple, not including batch.
     name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
 
@@ -2048,7 +2048,7 @@ class ThresholdedReLU(KerasLayer):
     input_shape (a shape tuple, does not include the batch dimension).
 
     # Arguments
-    theta: Float >= 0. Threshold location of activation.
+    theta: Float >= 0. Threshold location of activation. Default is 1.0.
     input_shape: A shape tuple, not including batch.
     name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
 
