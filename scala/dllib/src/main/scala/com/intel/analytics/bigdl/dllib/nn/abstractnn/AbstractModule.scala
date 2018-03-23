@@ -827,10 +827,10 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
    */
   final def evaluate(
     dataset: RDD[Sample[T]],
-    vMethods: Array[ValidationMethod[T]],
+    vMethods: Array[_ <:ValidationMethod[T]],
     batchSize: Option[Int] = None
   ): Array[(ValidationResult, ValidationMethod[T])] = {
-    Evaluator(this).test(dataset, vMethods, batchSize)
+    Evaluator(this).test(dataset, vMethods.map(v => v), batchSize)
   }
 
   /**
@@ -841,9 +841,9 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
    */
   final def evaluate(
     dataSet: LocalDataSet[MiniBatch[T]],
-    vMethods: Array[ValidationMethod[T]]
+    vMethods: Array[_ <:ValidationMethod[T]]
   ): Array[(ValidationResult, ValidationMethod[T])] = {
-    Validator(this, dataSet).test(vMethods)
+    Validator(this, dataSet).test(vMethods.map(v => v))
   }
 
   /**
