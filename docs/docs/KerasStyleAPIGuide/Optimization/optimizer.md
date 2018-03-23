@@ -1,6 +1,6 @@
 An optimizer, specified when you [compile](training/#compile) the model, is used to update model gradient parameters in the process of training.
 
-See [here](../../APIGuide/Optimizers/Optim-Methods) for available optimizer objects.
+See [here](../../APIGuide/Optimizers/Optim-Methods/) for available optimizer objects.
 
 For the sake of convenience, you can also use the corresponding string representation of an optimizer. In this case, the default parameters of an optimizer will be applied.
 
