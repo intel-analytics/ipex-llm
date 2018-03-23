@@ -171,6 +171,7 @@ optimizer = Optimizer(
 ## RMSprop ##
 
 An implementation of RMSprop (Reference: http://arxiv.org/pdf/1308.0850v5.pdf, Sec 4.2)
+
 * learningRate : learning rate
 * learningRateDecay : learning rate decay
 * decayRate : decayRate, also called rho
