@@ -152,7 +152,7 @@ private[ml] trait DLParams[@specialized(Float, Double) T] extends HasFeaturesCol
  * converted to BigDL tensors, to further train a BigDL model efficiently.
  *
  * For details usage, please refer to examples in package
- * com.intel.analytics.bigdl.example.MLPipeline
+ * com.intel.analytics.bigdl.example.dlframes
  *
  * @param model BigDL module to be optimized
  * @param criterion  BigDL criterion method

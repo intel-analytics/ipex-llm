@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intel.analytics.bigdl.example.MLPipeline
+package com.intel.analytics.bigdl.example.dlframes
 
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dataset.image.{BytesToGreyImg, GreyImgNormalizer, GreyImgToBatch}
@@ -42,7 +42,7 @@ object DLClassifierLeNet {
     val inputs = Array[String]("Feature data", "Label data")
     trainParser.parse(args, new TrainParams()).foreach(param => {
       val conf = Engine.createSparkConf()
-        .setAppName("MLPipeline Example")
+        .setAppName("DLClassifierLeNet")
         .set("spark.task.maxFailures", "1")
       val sc = new SparkContext(conf)
       val sqLContext = SQLContext.getOrCreate(sc)

@@ -30,16 +30,15 @@ object DLImageSchema {
 
   /**
    * Schema for the image column in a DataFrame. Image data is saved in an array of Bytes.
-   * The format is compatible with Spark Image format in v2.3
    */
   val byteSchema = StructType(
     StructField("origin", StringType, true) ::
       StructField("height", IntegerType, false) ::
       StructField("width", IntegerType, false) ::
       StructField("nChannels", IntegerType, false) ::
-      // OpenCV-compatible type: CV_8UC3, CV_32FC3 in most cases
+      // OpenCV-compatible type: CV_8UC3, CV_8UC1 in most cases
       StructField("mode", IntegerType, false) ::
-      // Bytes in OpenCV-compatible order: row-wise BGR in most cases
+      // Bytes in image file
       StructField("data", BinaryType, false) :: Nil)
 
   /**
@@ -50,7 +49,7 @@ object DLImageSchema {
       StructField("height", IntegerType, false) ::
       StructField("width", IntegerType, false) ::
       StructField("nChannels", IntegerType, false) ::
-      // OpenCV-compatible type: CV_8UC3, CV_32FC3 in most cases
+      // OpenCV-compatible type: CV_32FC3 in most cases
       StructField("mode", IntegerType, false) ::
       // floats in OpenCV-compatible order: row-wise BGR in most cases
       StructField("data", new ArrayType(FloatType, false), false) :: Nil)
@@ -132,7 +131,7 @@ object DLImageReader {
    * @param minPartitions Number of the DataFrame partitions,
    *                      if omitted uses defaultParallelism instead
    * @return DataFrame with a single column "image" of images;
-   *         see DLImageSchema for the details
+   *         see DLImageSchema.byteSchema for the details
    */
   def readImages(path: String, sc: SparkContext, minPartitions: Int = 1): DataFrame = {
     val imageFrame = ImageFrame.read(path, sc, minPartitions)
