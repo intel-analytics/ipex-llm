@@ -124,16 +124,23 @@ object KerasUtils {
   private[keras] def toBigDLCriterion[T : ClassTag](loss: String)
     (implicit ev: TensorNumeric[T]): Criterion[T] = {
     loss.toLowerCase() match {
+      case "binary_crossentropy" => BCECriterion[T]()
       case "categorical_crossentropy" => CategoricalCrossEntropy[T]()
       case "mse" => MSECriterion[T]()
+      case "mean_squared_error" => MSECriterion[T]()
       case "mae" => AbsCriterion[T]()
+      case "mean_absolute_error" => AbsCriterion[T]()
       case "hinge" => MarginCriterion[T]()
       case "mape" => MeanAbsolutePercentageCriterion[T]()
+      case "mean_absolute_percentage_error" => MeanAbsolutePercentageCriterion[T]()
       case "msle" => MeanSquaredLogarithmicCriterion[T]()
+      case "mean_squared_logarithmic_error" => MeanSquaredLogarithmicCriterion[T]()
       case "squared_hinge" => MarginCriterion[T](squared = true)
       case "sparse_categorical_crossentropy" => ClassNLLCriterion[T](logProbAsInput = false)
       case "kld" => KullbackLeiblerDivergenceCriterion[T]()
+      case "kullback_leibler_divergence" => KullbackLeiblerDivergenceCriterion[T]()
       case "cosine_proximity" => CosineProximityCriterion[T]()
+      case "poisson" => PoissonCriterion[T]()
       case _ => throw new IllegalArgumentException(s"Invalid loss: ${loss.toLowerCase()}")
     }
   }

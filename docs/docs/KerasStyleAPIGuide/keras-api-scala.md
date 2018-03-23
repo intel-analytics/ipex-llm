@@ -46,6 +46,8 @@ setName(name)
 ```
 * Set the name of the model.
 
+See [here](Optimization/training/) on how to train, predict or evaluate a defined model.
+
 
 ---
 ## **Sequential API**

@@ -30,6 +30,8 @@ set_name(name)
 ```
 * Set the name of the model. Can alternatively specify the argument `name` in the constructor when creating a model.
 
+See [here](Optimization/training/) on how to train, predict or evaluate a defined model.
+
 
 ---
 ## **Sequential API**

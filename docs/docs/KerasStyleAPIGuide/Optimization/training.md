@@ -2,7 +2,7 @@ This page shows how to train, predict or evaluate a model using the Keras-Style 
 
 You may refer to the `User Guide` page to see how to define a model in [Python](../keras-api-python) or [Scala](../keras-api-scala) correspondingly.
 
-You may refer to [`Layers`](../Layers/core.md) section to find all the available layers.
+You may refer to [`Layers`](../Layers/core) section to find all the available layers.
 
 After defining a model with the Keras-Style API, you can call the following __methods__ on the model:
 
@@ -23,8 +23,8 @@ compile(optimizer, loss, metrics=None)
 
 Parameters:
 
-* `optimizer`: Optimization method to be used. Can either use the string representation of an optimization method (see here) or an instance of [OptimMethod](../../../APIGuide/Optimizers/Optim-Methods). 
-* `loss`: Criterion to be used. Can either use the string representation of a criterion (see here) or an instance of [Loss](../../../APIGuide/Losses).
+* `optimizer`: Optimization method to be used. Can either use the string representation of an optimization method (see [here](optimizer/#available-optimizers)) or an instance of [OptimMethod](../../../APIGuide/Optimizers/Optim-Methods). 
+* `loss`: Criterion to be used. Can either use the string representation of a criterion (see [here](loss/#available-losses)) or an instance of [Loss](../../../APIGuide/Losses).
 * `metrics`: One or more validation methods to be used. Default is null if no validation needs to be configured. Can either use the string representation `Array("accuracy")`(Scala) `["accuracy"]`(Python) or instances of [ValidationMethod](../../../APIGuide/Metrics).
 
 ---
@@ -99,6 +99,6 @@ Parameters:
 
 **Remark**
 
-- For __Scala__, x can either be RDD of [Sample](../../../APIGuide/Data/#sample) (with batch size) or an instance of `LocalDataSet`.
+- For __Scala__, x can either be RDD of [Sample](../../../APIGuide/Data/#sample) (specifying `batchSize`) or an instance of `LocalDataSet`.
 - For __Python__, x can either be a Numpy array representing labels or RDD of [Sample](../../../APIGuide/Data/#sample).
 - The parameter `distributed` is to choose whether to do prediction using distributed mode or local mode in __Python__. Default is true. If in local mode, x must be a Numpy array.
