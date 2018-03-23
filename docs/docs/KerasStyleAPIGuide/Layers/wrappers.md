@@ -21,7 +21,7 @@ Parameters:
 ```scala
 import com.intel.analytics.bigdl.nn.keras.{Sequential, TimeDistributed, Dense}
 import com.intel.analytics.bigdl.utils.Shape
-import com.intel.analytics.bigdl.tensor._
+import com.intel.analytics.bigdl.tensor.Tensor
 
 val model = Sequential[Float]()
 model.add(TimeDistributed(Dense(8, activation = "relu"), inputShape = Shape(2, 3)))
@@ -108,7 +108,7 @@ Parameters:
 ```scala
 import com.intel.analytics.bigdl.nn.keras.{Sequential, Bidirectional, SimpleRNN}
 import com.intel.analytics.bigdl.utils.Shape
-import com.intel.analytics.bigdl.tensor._
+import com.intel.analytics.bigdl.tensor.Tensor
 
 val model = Sequential[Float]()
 model.add(Bidirectional(SimpleRNN(4, returnSequences = true), inputShape = Shape(2, 3)))

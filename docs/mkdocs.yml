@@ -104,7 +104,7 @@ pages:
     - Normalization Layers: KerasStyleAPIGuide/Layers/normalization.md
     - Embedding Layers: KerasStyleAPIGuide/Layers/embedding.md
     - Dropout Layers: KerasStyleAPIGuide/Layers/dropout.md
-    - Advanced Activations Layers: KerasStyleAPIGuide/Layers/advanced-activation.md
+    - Advanced Activations: KerasStyleAPIGuide/Layers/advanced-activation.md
     - Layer Wrappers: KerasStyleAPIGuide/Layers/wrappers.md
   - Optimization:
     - Train, predict or evaluate a model: KerasStyleAPIGuide/Optimization/training.md

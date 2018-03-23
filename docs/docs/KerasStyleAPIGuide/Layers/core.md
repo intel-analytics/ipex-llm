@@ -35,8 +35,8 @@ Dense(output_dim, init="glorot_uniform", activation=None, W_regularizer=None, b_
 * `outputDim`: The size of the output dimension.
 * `init`: String representation of the initialization method for the weights of the layer. See [here](initialization/#available-initialization-methods) for available initialization strings. Default is 'glorot_uniform'.
 * `activation`: String representation of the activation function to use. See [here](activation/#available-activations) for available activation strings. Default is null.
-* `wRegularizer`: An instance of [Regularizer](../../../APIGuide/Regularizers/), applied to the input weights matrices. Default is null.
-* `bRegularizer`: An instance of [Regularizer](../../../APIGuide/Regularizers/), applied to the bias. Default is null.
+* `wRegularizer`: An instance of [Regularizer](../../APIGuide/Regularizers/), applied to the input weights matrices. Default is null.
+* `bRegularizer`: An instance of [Regularizer](../../APIGuide/Regularizers/), applied to the bias. Default is null.
 * `bias`: Whether to include a bias (i.e. make the layer affine rather than linear). Default is true.
 * `inputShape`: Only need to specify this argument when you use this layer as the first layer of a model. For Scala API, it should be a [`Shape`](../keras-api-scala/#shape) object. For Python API, it should be a shape tuple. Batch dimension should be excluded.
 
@@ -44,7 +44,7 @@ Dense(output_dim, init="glorot_uniform", activation=None, W_regularizer=None, b_
 ```scala
 import com.intel.analytics.bigdl.nn.keras.{Sequential, Dense}
 import com.intel.analytics.bigdl.utils.Shape
-import com.intel.analytics.bigdl.tensor._
+import com.intel.analytics.bigdl.tensor.Tensor
 
 val model = Sequential[Float]()
 model.add(Dense(5, activation = "relu", inputShape = Shape(4)))
@@ -109,7 +109,7 @@ Flatten(input_shape=None, name=None)
 ```scala
 import com.intel.analytics.bigdl.nn.keras.{Sequential, Flatten}
 import com.intel.analytics.bigdl.utils.Shape
-import com.intel.analytics.bigdl.tensor._
+import com.intel.analytics.bigdl.tensor.Tensor
 
 val model = Sequential[Float]()
 model.add(Flatten(inputShape = Shape(2, 2, 3)))
@@ -160,14 +160,11 @@ Input is:
 ```python
 [[[[0.86901694 0.18961039 0.40317114]
    [0.03546013 0.44338256 0.14267447]]
-
   [[0.08971508 0.04943281 0.47568212]
    [0.21874466 0.54040762 0.19513549]]]
 
-
  [[[0.89994454 0.10154699 0.19762439]
    [0.90341835 0.44006613 0.08758557]]
-
   [[0.51165122 0.15523108 0.47434121]
    [0.24526962 0.79663289 0.52078471]]]]
 ```
@@ -183,7 +180,7 @@ Output is
 ## **Reshape**
 Reshapes an output to a certain shape.
 
-Supports shape inference by allowing one -1 in the target shape. For example, if inputShape is (2, 3, 4), targetShape is (3, -1), then outputShape will be (3, 8).
+Supports shape inference by allowing one -1 in the target shape. For example, if input shape is (2, 3, 4), target shape is (3, -1), then output shape will be (3, 8).
 
 **Scala:**
 ```scala
@@ -196,14 +193,14 @@ Reshape(target_shape, input_shape=None, name=None)
 
 **Parameters:**
 
-* `targetShape`: Array of int. The target shape that you desire to have. Batch dimension should be excluded.
+* `targetShape`: The target shape that you desire to have. Batch dimension should be excluded.
 * `inputShape`: Only need to specify this argument when you use this layer as the first layer of a model. For Scala API, it should be a [`Shape`](../keras-api-scala/#shape) object. For Python API, it should be a shape tuple. Batch dimension should be excluded.
 
 **Scala example:**
 ```scala
 import com.intel.analytics.bigdl.nn.keras.{Sequential, Reshape}
 import com.intel.analytics.bigdl.utils.Shape
-import com.intel.analytics.bigdl.tensor._
+import com.intel.analytics.bigdl.tensor.Tensor
 
 val model = Sequential[Float]()
 model.add(Reshape(Array(3, 8), inputShape = Shape(2, 3, 4)))
@@ -267,16 +264,13 @@ Input is:
 [[[[0.39260304 0.10383185 0.87490319 0.89167328]
    [0.61649117 0.43285247 0.86851582 0.97743004]
    [0.90018969 0.04303951 0.74263493 0.14208656]]
-
   [[0.66193405 0.93432157 0.76160537 0.70437459]
    [0.99953431 0.23016734 0.42293405 0.66078049]
    [0.03357645 0.9695145  0.30111138 0.67109948]]]
 
-
  [[[0.39640201 0.92930203 0.86027666 0.13958544]
    [0.34584767 0.14743425 0.93804016 0.38053062]
    [0.55068792 0.77375329 0.84161166 0.48131356]]
-
   [[0.90116368 0.53253689 0.03332962 0.58278686]
    [0.34935685 0.32599554 0.97641892 0.57696434]
    [0.53974677 0.90682861 0.20027319 0.05962118]]]]
@@ -309,14 +303,14 @@ Permute(dims, input_shape=None, name=None)
 
 **Parameters:**
 
-* `dims`: Permutation pattern, does not include the samples dimension. Indexing starts at 1.
+* `dims`: Permutation pattern, does not include the batch dimension. Indexing starts at 1.
 * `inputShape`: Only need to specify this argument when you use this layer as the first layer of a model. For Scala API, it should be a [`Shape`](../keras-api-scala/#shape) object. For Python API, it should be a shape tuple. Batch dimension should be excluded.
 
 **Scala example:**
 ```scala
 import com.intel.analytics.bigdl.nn.keras.{Sequential, Permute}
 import com.intel.analytics.bigdl.utils.Shape
-import com.intel.analytics.bigdl.tensor._
+import com.intel.analytics.bigdl.tensor.Tensor
 
 val model = Sequential[Float]()
 model.add(Permute(Array(2, 3, 1), inputShape = Shape(2, 3, 4)))
@@ -337,14 +331,14 @@ input: com.intel.analytics.bigdl.tensor.Tensor[Float] =
 -0.56583923	0.9617757	-0.5792387	0.9008493
 
 (2,1,.,.) =
--0.54270995	-1.9089237	0.9289245	0.27833897
--1.4734148	-0.9408616	-0.40362656	-1.1730295
-0.9813707	-0.0040280274	-1.5321463	-1.4322052
+-0.54270995	-1.9089237	   0.9289245	0.27833897
+-1.4734148	-0.9408616	   -0.40362656	-1.1730295
+0.9813707	-0.0040280274  -1.5321463	-1.4322052
 
 (2,2,.,.) =
--0.056844145	2.2309854	2.1172705	0.10043324
-1.121064	0.16069101	-0.51750094	-1.9682871
-0.9011646	0.47903928	-0.54172426	-0.6604068
+-0.056844145   2.2309854	2.1172705	  0.10043324
+1.121064	   0.16069101	-0.51750094	  -1.9682871
+0.9011646	   0.47903928	-0.54172426	  -0.6604068
 
 [com.intel.analytics.bigdl.tensor.DenseTensor of size 2x2x3x4]
 ```
@@ -382,10 +376,10 @@ output: com.intel.analytics.bigdl.nn.abstractnn.Activity =
 -1.1730295	-1.9682871
 
 (2,3,.,.) =
-0.9813707	0.9011646
--0.0040280274	0.47903928
--1.5321463	-0.54172426
--1.4322052	-0.6604068
+0.9813707	   0.9011646
+-0.0040280274  0.47903928
+-1.5321463	   -0.54172426
+-1.4322052	   -0.6604068
 
 [com.intel.analytics.bigdl.tensor.DenseTensor of size 2x3x4x2]
 ```
@@ -406,16 +400,13 @@ Input is:
 [[[[0.47372355 0.18103412 0.07076151 0.51208742]
    [0.3830121  0.2036672  0.24978515 0.3458438 ]
    [0.34180976 0.54635229 0.90048856 0.89178666]]
-
   [[0.15893009 0.62223068 0.1060953  0.26898095]
    [0.97659789 0.72022333 0.12613522 0.66538681]
    [0.79589927 0.32906473 0.27806256 0.99698214]]]
 
-
  [[[0.14608597 0.96667223 0.17876087 0.37672275]
    [0.89726934 0.09588159 0.19987136 0.99728596]
    [0.592439   0.40126537 0.18349086 0.88102044]]
-
   [[0.29313258 0.94066727 0.57244849 0.79352687]
    [0.31302252 0.65390325 0.54829736 0.63749209]
    [0.76679177 0.43937809 0.06966902 0.27204878]]]]
@@ -426,17 +417,14 @@ Output is
    [0.18103412 0.6222307 ]
    [0.07076152 0.1060953 ]
    [0.5120874  0.26898095]]
-
   [[0.38301212 0.9765979 ]
    [0.2036672  0.7202233 ]
    [0.24978516 0.12613523]
    [0.3458438  0.6653868 ]]
-
   [[0.34180975 0.7958993 ]
    [0.54635227 0.32906473]
    [0.90048856 0.27806255]
    [0.89178663 0.99698216]]]
-
 
  [[[0.14608598 0.29313257]
    [0.96667224 0.9406673 ]
@@ -478,7 +466,7 @@ RepeatVector(n, input_shape=None, name=None)
 ```scala
 import com.intel.analytics.bigdl.nn.keras.{Sequential, RepeatVector}
 import com.intel.analytics.bigdl.utils.Shape
-import com.intel.analytics.bigdl.tensor._
+import com.intel.analytics.bigdl.tensor.Tensor
 
 val model = Sequential[Float]()
 model.add(RepeatVector(4, inputShape = Shape(3)))
@@ -565,16 +553,16 @@ Merge(layers=None, mode="sum", concat_axis=-1, input_shape=None, name=None)
 ```scala
 import com.intel.analytics.bigdl.nn.keras.{Sequential, Merge, InputLayer}
 import com.intel.analytics.bigdl.utils.{Shape, T}
-import com.intel.analytics.bigdl.tensor._
+import com.intel.analytics.bigdl.tensor.Tensor
 
-val input1 = Tensor[Float](2, 2, 3).rand(0, 1)
-val input2 = Tensor[Float](2, 2, 3).rand(0, 1)
-val input = T(1 -> input1, 2 -> input2)
 val model = Sequential[Float]()
 val l1 = InputLayer[Float](inputShape = Shape(2, 3))
 val l2 = InputLayer[Float](inputShape = Shape(2, 3))
 val layer = Merge[Float](layers = List(l1, l2), mode = "sum")
 model.add(layer)
+val input1 = Tensor[Float](2, 2, 3).rand(0, 1)
+val input2 = Tensor[Float](2, 2, 3).rand(0, 1)
+val input = T(1 -> input1, 2 -> input2)
 val output = model.forward(input)
 ```
 Input is:
@@ -672,14 +660,14 @@ Masking(mask_value=0.0, input_shape=None, name=None)
 
 **Parameters:**
 
-* `maskValue`: Double, mask value. For each timestep in the input (the second dimension), if all values in the input at that timestep are equal to `maskValue`, then the timestep will masked (skipped) in all downstream layers.
+* `maskValue`: Mask value. For each timestep in the input (the second dimension), if all the values in the input at that timestep are equal to 'maskValue', then the timestep will masked (skipped) in all downstream layers.
 * `inputShape`: Only need to specify this argument when you use this layer as the first layer of a model. For Scala API, it should be a [`Shape`](../keras-api-scala/#shape) object. For Python API, it should be a shape tuple. Batch dimension should be excluded.
 
 **Scala example:**
 ```scala
 import com.intel.analytics.bigdl.nn.keras.{Sequential, Masking}
 import com.intel.analytics.bigdl.utils.Shape
-import com.intel.analytics.bigdl.tensor._
+import com.intel.analytics.bigdl.tensor.Tensor
 
 val model = Sequential[Float]()
 model.add(Masking(inputShape = Shape(3)))
@@ -725,7 +713,7 @@ Output is
 
 ---
 ## **MaxoutDense**
-A dense maxout layer that takes the element-wise maximum of nbFeature, Dense(inputDim, outputDim) linear layers.
+A dense maxout layer that takes the element-wise maximum of linear layers.
 
 This allows the layer to learn a convex, piecewise linear activation function over the inputs.
 
@@ -744,8 +732,8 @@ MaxoutDense(output_dim, nb_feature=4, W_regularizer=None, b_regularizer=None, bi
 
 * `outputDim`: The size of output dimension.
 * `nbFeature`: Number of Dense layers to use internally. Integer. Default is 4.
-* `wRegularizer`: An instance of [Regularizer](../../../APIGuide/Regularizers/), (eg. L1 or L2 regularization), applied to the input weights matrices. Default is null.
-* `bRegularizer`: An instance of [Regularizer](../../../APIGuide/Regularizers/), applied to the bias. Default is null.
+* `wRegularizer`: An instance of [Regularizer](../../APIGuide/Regularizers/), (eg. L1 or L2 regularization), applied to the input weights matrices. Default is null.
+* `bRegularizer`: An instance of [Regularizer](../../APIGuide/Regularizers/), applied to the bias. Default is null.
 * `bias`: Whether to include a bias (i.e. make the layer affine rather than linear). Default is true.
 * `inputShape`: Only need to specify this argument when you use this layer as the first layer of a model. For Scala API, it should be a [`Shape`](../keras-api-scala/#shape) object. For Python API, it should be a shape tuple. Batch dimension should be excluded.
 
@@ -753,7 +741,7 @@ MaxoutDense(output_dim, nb_feature=4, W_regularizer=None, b_regularizer=None, bi
 ```scala
 import com.intel.analytics.bigdl.nn.keras.{Sequential, MaxoutDense}
 import com.intel.analytics.bigdl.utils.Shape
-import com.intel.analytics.bigdl.tensor._
+import com.intel.analytics.bigdl.tensor.Tensor
 
 val model = Sequential[Float]()
 model.add(MaxoutDense(2, inputShape = Shape(3)))
@@ -793,6 +781,6 @@ Input is:
 ```
 Output is
 ```python
-[[0.4479192  0.4842512 ]
- [0.16833156 0.521764  ]]
+[[0.4479192  0.4842512]
+ [0.16833156 0.521764 ]]
 ```

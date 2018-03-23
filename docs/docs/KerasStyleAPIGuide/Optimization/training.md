@@ -23,9 +23,9 @@ compile(optimizer, loss, metrics=None)
 
 Parameters:
 
-* `optimizer`: Optimization method to be used. Can either use the string representation of an optimization method (see [here](optimizer/#available-optimizers)) or an instance of [OptimMethod](../../../APIGuide/Optimizers/Optim-Methods). 
-* `loss`: Criterion to be used. Can either use the string representation of a criterion (see [here](loss/#available-losses)) or an instance of [Loss](../../../APIGuide/Losses).
-* `metrics`: One or more validation methods to be used. Default is null if no validation needs to be configured. Can either use the string representation `Array("accuracy")`(Scala) `["accuracy"]`(Python) or instances of [ValidationMethod](../../../APIGuide/Metrics).
+* `optimizer`: Optimization method to be used. Can either use the string representation of an optimization method (see [here](optimizer/#available-optimizers)) or an instance of [OptimMethod](../../APIGuide/Optimizers/Optim-Methods). 
+* `loss`: Criterion to be used. Can either use the string representation of a criterion (see [here](loss/#available-losses)) or an instance of [Loss](../../APIGuide/Losses).
+* `metrics`: One or more validation methods to be used. Default is null if no validation needs to be configured. Can either use the string representation `Array("accuracy")`(Scala) `["accuracy"]`(Python) or instances of [ValidationMethod](../../APIGuide/Metrics).
 
 ---
 ## **Fit**
@@ -50,8 +50,8 @@ Parameters:
 
 **Remark**
 
-- For __Scala__, x can either be RDD of [Sample](../../../APIGuide/Data/#sample) (recommended) or an instance of [DataSet](../../../APIGuide/Data/#dataset).
-- For __Python__, you can use x (a Numpy array) as features with y (a Numpy array) as labels; or only x (RDD of [Sample](../../../APIGuide/Data/#sample)) without specifying y.
+- For __Scala__, x can either be RDD of [Sample](../../APIGuide/Data/#sample) (recommended) or an instance of [DataSet](../../APIGuide/Data/#dataset).
+- For __Python__, you can use x (a Numpy array) as features with y (a Numpy array) as labels; or only x (RDD of [Sample](../../APIGuide/Data/#sample)) without specifying y.
 - The parameter `distributed` is to choose whether to train the model using distributed mode or local mode in __Python__. Default is true. If in local mode, x and y must both be Numpy arrays.
 
 
@@ -76,8 +76,8 @@ Parameters:
 
 **Remark**
 
-- For __Scala__, x can either be RDD of [Sample](../../../APIGuide/Data/#sample) (recommended) or an instance of [DataSet](../../../APIGuide/Data/#dataset).
-- For __Python__, you can use x (a Numpy array) as features with y (a Numpy array) as labels; or only x (RDD of [Sample](../../../APIGuide/Data/#sample)) without specifying y. Currently only evaluation in distributed mode is supported in Python.
+- For __Scala__, x can either be RDD of [Sample](../../APIGuide/Data/#sample) (recommended) or an instance of [DataSet](../../APIGuide/Data/#dataset).
+- For __Python__, you can use x (a Numpy array) as features with y (a Numpy array) as labels; or only x (RDD of [Sample](../../APIGuide/Data/#sample)) without specifying y. Currently only evaluation in distributed mode is supported in Python.
 
 ---
 ## **Predict**
@@ -99,6 +99,6 @@ Parameters:
 
 **Remark**
 
-- For __Scala__, x can either be RDD of [Sample](../../../APIGuide/Data/#sample) (specifying `batchSize`) or an instance of `LocalDataSet`.
-- For __Python__, x can either be a Numpy array representing labels or RDD of [Sample](../../../APIGuide/Data/#sample).
+- For __Scala__, x can either be RDD of [Sample](../../APIGuide/Data/#sample) (specifying `batchSize`) or an instance of `LocalDataSet`.
+- For __Python__, x can either be a Numpy array representing labels or RDD of [Sample](../../APIGuide/Data/#sample).
 - The parameter `distributed` is to choose whether to do prediction using distributed mode or local mode in __Python__. Default is true. If in local mode, x must be a Numpy array.

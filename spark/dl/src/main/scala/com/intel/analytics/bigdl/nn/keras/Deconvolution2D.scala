@@ -33,6 +33,7 @@ import scala.reflect.ClassTag
  * while maintaining a connectivity pattern that is compatible with said convolution.
  * Data format currently supported for this layer is DataFormat.NCHW (dimOrdering='th').
  * Border mode currently supported for this layer is 'valid'.
+ * You can also use Deconv2D as an alias of this layer.
  * The input of this layer should be 4D.
  *
  * When using this layer as the first layer in a model, you need to provide the argument

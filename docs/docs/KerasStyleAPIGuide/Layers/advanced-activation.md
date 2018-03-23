@@ -14,14 +14,14 @@ ELU(alpha=1.0, input_shape=None, name=None)
 
 **Parameters:**
 
-* `alpha`: Double, scale for the negative factor.
+* `alpha`: Scale for the negative factor. Default is 1.0.
 * `inputShape`: Only need to specify this argument when you use this layer as the first layer of a model. For Scala API, it should be a [`Shape`](../keras-api-scala/#shape) object. For Python API, it should be a shape tuple. Batch dimension should be excluded.
 
 **Scala example:**
 ```scala
 import com.intel.analytics.bigdl.nn.keras.{Sequential, ELU}
 import com.intel.analytics.bigdl.utils.Shape
-import com.intel.analytics.bigdl.tensor._
+import com.intel.analytics.bigdl.tensor.Tensor
 
 val model = Sequential[Float]()
 model.add(ELU(inputShape = Shape(3)))
@@ -82,14 +82,14 @@ LeakyReLU(alpha=0.3, input_shape=None, name=None)
 
 **Parameters:**
 
-* `alpha`: Double >= 0. Negative slope coefficient.
+* `alpha`: Negative slope coefficient. Default is 0.3.
 * `inputShape`: Only need to specify this argument when you use this layer as the first layer of a model. For Scala API, it should be a [`Shape`](../keras-api-scala/#shape) object. For Python API, it should be a shape tuple. Batch dimension should be excluded.
 
 **Scala example:**
 ```scala
 import com.intel.analytics.bigdl.nn.keras.{Sequential, LeakyReLU}
 import com.intel.analytics.bigdl.utils.Shape
-import com.intel.analytics.bigdl.tensor._
+import com.intel.analytics.bigdl.tensor.Tensor
 
 val model = Sequential[Float]()
 model.add(LeakyReLU(inputShape = Shape(3)))
@@ -99,15 +99,15 @@ val output = model.forward(input)
 Input is:
 ```scala
 input: com.intel.analytics.bigdl.tensor.Tensor[Float] =
-0.8846715	-0.5720033	-0.8220917
--0.51755846	1.099684	2.6011446
+0.8846715	 -0.5720033	 -0.8220917
+-0.51755846	 1.099684	 2.6011446
 [com.intel.analytics.bigdl.tensor.DenseTensor of size 2x3]
 ```
 Output is:
 ```scala
 output: com.intel.analytics.bigdl.nn.abstractnn.Activity =
-0.8846715	    -0.005720033	-0.008220917
--0.0051755845	1.099684	    2.6011446
+0.8846715	    -0.005720033   -0.008220917
+-0.0051755845   1.099684	   2.6011446
 [com.intel.analytics.bigdl.tensor.DenseTensor of size 2x3]
 ```
 
@@ -150,19 +150,19 @@ SReLU(t_left_init="zero", a_left_init="glorot_uniform", t_right_init="glorot_uni
 
 **Parameters:**
 
-* `tLeftInit`: String representation of the initialization method for the left part intercept. Default is 'zero'.
-* `aLeftInit`: String representation of the initialization method for the left part slope. Default is 'glorot_uniform'.
-* `tRightInit`: String representation of ithe nitialization method for the right part intercept. Default is 'glorot_uniform'.
-* `aRightInit`: String representation of the initialization method for the right part slope. Default is 'one'.
+* `tLeftInit`: String representation of the initialization method for the left part intercept. See [here](initialization/#available-initialization-methods) for available initialization strings. Default is 'zero'.
+* `aLeftInit`: String representation of the initialization method for the left part slope. See [here](initialization/#available-initialization-methods) for available initialization strings. Default is 'glorot_uniform'.
+* `tRightInit`: String representation of ithe nitialization method for the right part intercept. See [here](initialization/#available-initialization-methods) for available initialization strings. Default is 'glorot_uniform'.
+* `aRightInit`: String representation of the initialization method for the right part slope. See [here](initialization/#available-initialization-methods) for available initialization strings. Default is 'one'.
 * `sharedAxes`: The axes along which to share learnable parameters for the activation function. Default is null.
-For example, if the incoming feature maps are from a 2D convolution with output shape (batch, height, width, channels), and you wish to share parameters across space so that each filter only has one set of parameters, set 'SharedAxes = Array(1,2)'.
+For example, if the incoming feature maps are from a 2D convolution with output shape (batch, height, width, channels), and you wish to share parameters across space so that each filter only has one set of parameters, set 'sharedAxes = Array(1,2)'.
 * `inputShape`: Only need to specify this argument when you use this layer as the first layer of a model. For Scala API, it should be a [`Shape`](../keras-api-scala/#shape) object. For Python API, it should be a shape tuple. Batch dimension should be excluded.
 
 **Scala example:**
 ```scala
 import com.intel.analytics.bigdl.nn.keras.{Sequential, SReLU}
 import com.intel.analytics.bigdl.utils.Shape
-import com.intel.analytics.bigdl.tensor._
+import com.intel.analytics.bigdl.tensor.Tensor
 
 val model = Sequential[Float]()
 model.add(SReLU(inputShape = Shape(2, 3)))
@@ -241,14 +241,14 @@ ThresholdedReLU(theta=1.0, input_shape=None, name=None)
 
 **Parameters:**
 
-* `theta`: Double >= 0. Threshold location of activation.
+* `theta`: Threshold location of activation. Default is 1.0.
 * `inputShape`: Only need to specify this argument when you use this layer as the first layer of a model. For Scala API, it should be a [`Shape`](../keras-api-scala/#shape) object. For Python API, it should be a shape tuple. Batch dimension should be excluded.
 
 **Scala example:**
 ```scala
 import com.intel.analytics.bigdl.nn.keras.{Sequential, ThresholdedReLU}
 import com.intel.analytics.bigdl.utils.Shape
-import com.intel.analytics.bigdl.tensor._
+import com.intel.analytics.bigdl.tensor.Tensor
 
 val model = Sequential[Float]()
 model.add(ThresholdedReLU(inputShape = Shape(3)))

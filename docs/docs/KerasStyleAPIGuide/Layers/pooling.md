@@ -14,7 +14,7 @@ MaxPooling1D(pool_length=2, stride=None, border_mode="valid", input_shape=None, 
 
 Parameters:
 
-* `poolLength`: Size of the region to which max pooling is applied.
+* `poolLength`: Size of the region to which max pooling is applied. Integer. Default is 2.
 * `stride`: Factor by which to downscale. 2 will halve the input. If not specified, it will default to poolLength.
 * `borderMode`: Either 'valid' or 'same'. Default is 'valid'.
 * `inputShape`: Only need to specify this argument when you use this layer as the first layer of a model. For Scala API, it should be a [`Shape`](../keras-api-scala/#shape) object. For Python API, it should be a shape tuple. Batch dimension should be excluded.
@@ -23,7 +23,7 @@ Parameters:
 ```scala
 import com.intel.analytics.bigdl.nn.keras.{Sequential, MaxPooling1D}
 import com.intel.analytics.bigdl.utils.Shape
-import com.intel.analytics.bigdl.tensor._
+import com.intel.analytics.bigdl.tensor.Tensor
 
 val model = Sequential[Float]()
 model.add(MaxPooling1D(poolLength = 3, inputShape = Shape(4, 5)))
@@ -113,7 +113,7 @@ The input of this layer should be 4D.
 
 **Scala:**
 ```scala
-MaxPooling2D(poolSize = Array(2, 2), strides = null, borderMode = "valid", dimOrdering = "th", inputShape = null)
+MaxPooling2D(poolSize = (2, 2), strides = null, borderMode = "valid", dimOrdering = "th", inputShape = null)
 ```
 **Python:**
 ```python
@@ -132,7 +132,7 @@ Parameters:
 ```scala
 import com.intel.analytics.bigdl.nn.keras.{Sequential, MaxPooling2D}
 import com.intel.analytics.bigdl.utils.Shape
-import com.intel.analytics.bigdl.tensor._
+import com.intel.analytics.bigdl.tensor.Tensor
 
 val model = Sequential[Float]()
 model.add(MaxPooling2D(inputShape = Shape(2, 3, 4)))
@@ -198,16 +198,13 @@ Input is:
 [[[[0.82279705 0.62487892 0.37391352 0.22834848]
    [0.68709158 0.40902972 0.73191486 0.40095294]
    [0.651977   0.93330601 0.45785981 0.45939351]]
-
   [[0.372833   0.39871945 0.13426243 0.83083849]
    [0.24290548 0.04446027 0.58070741 0.37752852]
    [0.13116942 0.59339663 0.94669915 0.02460278]]]
 
-
  [[[0.46505904 0.96103464 0.75846419 0.77357123]
    [0.37835688 0.88438048 0.5679742  0.74607276]
    [0.41415466 0.73945737 0.39188398 0.52736799]]
-
   [[0.51772064 0.19857965 0.15476197 0.64569767]
    [0.21794751 0.74455093 0.48423447 0.15482331]
    [0.38363071 0.78733222 0.2542284  0.88671892]]]]
@@ -215,12 +212,9 @@ Input is:
 Output is:
 ```python
 [[[[0.82279706 0.7319149 ]]
-
   [[0.39871946 0.8308385 ]]]
 
-
  [[[0.96103466 0.77357125]]
-
   [[0.74455094 0.64569765]]]]
 ```
 
@@ -236,7 +230,7 @@ The input of this layer should be 5D.
 
 **Scala:**
 ```scala
-MaxPooling3D(poolSize = Array(2, 2, 2), strides = null, dimOrdering = "th", inputShape = null)
+MaxPooling3D(poolSize = (2, 2, 2), strides = null, dimOrdering = "th", inputShape = null)
 ```
 **Python:**
 ```python
@@ -254,7 +248,7 @@ Parameters:
 ```scala
 import com.intel.analytics.bigdl.nn.keras.{Sequential, MaxPooling3D}
 import com.intel.analytics.bigdl.utils.Shape
-import com.intel.analytics.bigdl.tensor._
+import com.intel.analytics.bigdl.tensor.Tensor
 
 val model = Sequential[Float]()
 model.add(MaxPooling3D(inputShape = Shape(2, 2, 2, 3)))
@@ -331,41 +325,28 @@ Input is:
 ```python
 [[[[[0.73349746 0.9811588  0.86071417]
     [0.33287621 0.37991739 0.87029317]]
-
    [[0.62537904 0.48099174 0.06194759]
     [0.38747972 0.05175308 0.36096032]]]
-
-
   [[[0.63260385 0.69990236 0.63353249]
     [0.19081261 0.56210617 0.75985185]]
-
    [[0.8624058  0.47224318 0.26524027]
     [0.75317792 0.39251436 0.98938982]]]]
 
-
-
  [[[[0.00556086 0.18833728 0.80340438]
     [0.9317538  0.88142596 0.90724509]]
-
    [[0.90243612 0.04594116 0.43662143]
     [0.24205094 0.58687822 0.57977055]]]
-
-
   [[[0.17240398 0.18346483 0.02520754]
     [0.06968248 0.02442692 0.56078895]]
-
    [[0.69503427 0.09528588 0.46104647]
     [0.16752596 0.88175901 0.71032998]]]]]
 ```
 Output is:
 ```python
 [[[[[0.9811588]]]
-
   [[[0.8624058]]]]
 
-
  [[[[0.9317538]]]
-
   [[[0.881759 ]]]]]
 ```
 
@@ -395,7 +376,7 @@ Parameters:
 ```scala
 import com.intel.analytics.bigdl.nn.keras.{Sequential, AveragePooling1D}
 import com.intel.analytics.bigdl.utils.Shape
-import com.intel.analytics.bigdl.tensor._
+import com.intel.analytics.bigdl.tensor.Tensor
 
 val model = Sequential[Float]()
 model.add(AveragePooling1D(poolLength = 3, inputShape = Shape(4, 5)))
@@ -485,7 +466,7 @@ The input of this layer should be 4D.
 
 **Scala:**
 ```scala
-AveragePooling2D(poolSize = Array(2, 2), strides = null, borderMode = "valid", dimOrdering = "th", inputShape = null)
+AveragePooling2D(poolSize = (2, 2), strides = null, borderMode = "valid", dimOrdering = "th", inputShape = null)
 ```
 **Python:**
 ```python
@@ -504,7 +485,7 @@ Parameters:
 ```scala
 import com.intel.analytics.bigdl.nn.keras.{Sequential, AveragePooling2D}
 import com.intel.analytics.bigdl.utils.Shape
-import com.intel.analytics.bigdl.tensor._
+import com.intel.analytics.bigdl.tensor.Tensor
 
 val model = Sequential[Float]()
 model.add(AveragePooling2D(inputShape = Shape(2, 3, 4)))
@@ -570,16 +551,13 @@ Input is:
 [[[[0.23128514 0.69922098 0.52158685 0.43063779]
    [0.89149649 0.33910949 0.4402748  0.08933058]
    [0.71712488 0.21574851 0.76768248 0.57027882]]
-
   [[0.08349921 0.85318742 0.49922456 0.6256355 ]
    [0.22331336 0.78402155 0.91424506 0.18895412]
    [0.89722286 0.31067545 0.82655572 0.37775551]]]
 
-
  [[[0.9706926  0.28398186 0.36623623 0.23701637]
    [0.49936358 0.50951663 0.48116156 0.89941571]
    [0.06519683 0.34624179 0.2462403  0.48512833]]
-
   [[0.58408752 0.68318898 0.67886418 0.43403476]
    [0.87328453 0.8412756  0.59168164 0.49972216]
    [0.82188585 0.63685579 0.50966912 0.51439279]]]]
@@ -587,12 +565,9 @@ Input is:
 Output is:
 ```python
 [[[[0.540278   0.3704575 ]]
-
   [[0.48600537 0.5570148 ]]]
 
-
  [[[0.56588864 0.49595746]]
-
   [[0.7454592  0.5510757 ]]]]
 ```
 
@@ -608,7 +583,7 @@ The input of this layer should be 5D.
 
 **Scala:**
 ```scala
-AveragePooling3D(poolSize = Array(2, 2, 2), strides = null, dimOrdering = "th", inputShape = null)
+AveragePooling3D(poolSize = (2, 2, 2), strides = null, dimOrdering = "th", inputShape = null)
 ```
 **Python:**
 ```python
@@ -626,7 +601,7 @@ Parameters:
 ```scala
 import com.intel.analytics.bigdl.nn.keras.{Sequential, AveragePooling3D}
 import com.intel.analytics.bigdl.utils.Shape
-import com.intel.analytics.bigdl.tensor._
+import com.intel.analytics.bigdl.tensor.Tensor
 
 val model = Sequential[Float]()
 model.add(AveragePooling3D(inputShape = Shape(2, 2, 2, 3)))
@@ -703,41 +678,28 @@ Input is:
 ```python
 [[[[[0.97536696 0.01017816 0.77256405]
     [0.53928594 0.80710453 0.71903394]]
-
    [[0.67067647 0.38680811 0.05431165]
     [0.98320357 0.8602754  0.12535218]]]
-
-
   [[[0.32317928 0.17129988 0.51584225]
     [0.70060648 0.36568169 0.36353108]]
-
    [[0.90675921 0.68967216 0.29854921]
     [0.72568459 0.34304905 0.9501725 ]]]]
 
-
-
  [[[[0.96295459 0.51457555 0.15752579]
     [0.29569757 0.73166152 0.24217882]]
-
    [[0.69938844 0.98315048 0.36022304]
     [0.97079866 0.03950786 0.18505114]]]
-
-
   [[[0.10255992 0.87988966 0.13163776]
     [0.286857   0.56472867 0.73914834]]
-
    [[0.51970598 0.19869426 0.47845175]
     [0.86776147 0.60381965 0.88064078]]]]]
 ```
 Output is:
 ```python
 [[[[[0.6541124 ]]]
-
   [[[0.5282415 ]]]]
 
-
  [[[[0.64971685]]]
-
   [[[0.5030021 ]]]]]
 
 ```
@@ -765,7 +727,7 @@ Parameters:
 ```scala
 import com.intel.analytics.bigdl.nn.keras.{Sequential, GlobalMaxPooling1D}
 import com.intel.analytics.bigdl.utils.Shape
-import com.intel.analytics.bigdl.tensor._
+import com.intel.analytics.bigdl.tensor.Tensor
 
 val model = Sequential[Float]()
 model.add(GlobalMaxPooling1D(inputShape = Shape(2, 3)))
@@ -842,7 +804,7 @@ Parameters:
 ```scala
 import com.intel.analytics.bigdl.nn.keras.{Sequential, GlobalMaxPooling2D}
 import com.intel.analytics.bigdl.utils.Shape
-import com.intel.analytics.bigdl.tensor._
+import com.intel.analytics.bigdl.tensor.Tensor
 
 val model = Sequential[Float]()
 model.add(GlobalMaxPooling2D(inputShape = Shape(2, 3, 4)))
@@ -898,24 +860,21 @@ Input is:
 [[[[0.4037502  0.02214535 0.83987632 0.63656679]
    [0.57757778 0.41884406 0.94446159 0.55776242]
    [0.40213234 0.4463349  0.04457756 0.99123233]]
-
   [[0.71114675 0.88609155 0.40299526 0.01648121]
    [0.23102758 0.89673552 0.07030409 0.79674961]
    [0.84665248 0.18257089 0.87211872 0.22697933]]]
 
-
  [[[0.08033122 0.26298654 0.10863184 0.57894922]
    [0.03999134 0.90867755 0.80473921 0.79913378]
    [0.60443084 0.92055786 0.17994007 0.87414516]]
-
   [[0.50193442 0.52639178 0.72124789 0.41776979]
    [0.09495006 0.91797563 0.48755794 0.50458372]
    [0.47387433 0.93445126 0.83216554 0.67275364]]]]
 ```
 Output is:
 ```python
-[[0.99123234 0.8967355 ]
- [0.92055786 0.9344513 ]]
+[[0.99123234 0.8967355]
+ [0.92055786 0.9344513]]
 ```
 
 ---
@@ -946,7 +905,7 @@ Parameters:
 ```scala
 import com.intel.analytics.bigdl.nn.keras.{Sequential, GlobalMaxPooling3D}
 import com.intel.analytics.bigdl.utils.Shape
-import com.intel.analytics.bigdl.tensor._
+import com.intel.analytics.bigdl.tensor.Tensor
 
 val model = Sequential[Float]()
 model.add(GlobalMaxPooling3D(inputShape = Shape(2, 2, 2, 3)))
@@ -957,8 +916,8 @@ Input is:
 ```scala
 input: com.intel.analytics.bigdl.tensor.Tensor[Float] =
 (1,1,1,.,.) =
-0.5882856	0.6403546	-0.42084476
--0.097307995	-0.52530056	-0.36757985
+0.5882856	   0.6403546	-0.42084476
+-0.097307995   -0.52530056	-0.36757985
 
 (1,1,2,.,.) =
 0.60983604	-0.24730012	-0.07744695
@@ -1013,36 +972,26 @@ Input is:
 ```python
 [[[[[0.35670186 0.12860978 0.99958102]
     [0.17345679 0.19473725 0.41235665]]
-
    [[0.98948429 0.26686797 0.4632353 ]
     [0.15791828 0.07452679 0.73215605]]]
-
-
   [[[0.80305568 0.73208753 0.31179214]
     [0.43452576 0.563038   0.65955869]]
-
    [[0.31947806 0.00899334 0.55208827]
     [0.57471665 0.10157217 0.42698318]]]]
 
-
-
  [[[[0.59277903 0.35379325 0.5311834 ]
     [0.91781414 0.10407255 0.58049721]]
-
    [[0.14371521 0.24279466 0.26071055]
     [0.89431752 0.66817043 0.61662462]]]
-
-
   [[[0.6672706  0.38855847 0.88462881]
     [0.38859986 0.80439572 0.27661295]]
-
    [[0.41453042 0.11527795 0.75953012]
     [0.77940987 0.26283438 0.97745039]]]]]
 ```
 Output is:
 ```python
-[[0.99958104 0.8030557 ]
- [0.91781414 0.9774504 ]]
+[[0.99958104 0.8030557]
+ [0.91781414 0.9774504]]
 ```
 
 ---
@@ -1068,7 +1017,7 @@ Parameters:
 ```scala
 import com.intel.analytics.bigdl.nn.keras.{Sequential, GlobalAveragePooling1D}
 import com.intel.analytics.bigdl.utils.Shape
-import com.intel.analytics.bigdl.tensor._
+import com.intel.analytics.bigdl.tensor.Tensor
 
 val model = Sequential[Float]()
 model.add(GlobalAveragePooling1D(inputShape = Shape(2, 3)))
@@ -1145,7 +1094,7 @@ Parameters:
 ```scala
 import com.intel.analytics.bigdl.nn.keras.{Sequential, GlobalAveragePooling2D}
 import com.intel.analytics.bigdl.utils.Shape
-import com.intel.analytics.bigdl.tensor._
+import com.intel.analytics.bigdl.tensor.Tensor
 
 val model = Sequential[Float]()
 model.add(GlobalAveragePooling2D(inputShape = Shape(2, 3, 4)))
@@ -1156,24 +1105,24 @@ Input is:
 ```scala
 input: com.intel.analytics.bigdl.tensor.Tensor[Float] =
 (1,1,.,.) =
-0.110688895	    -0.95155084	1.8221924	-2.0326483
--0.013243215	-1.2766567	-0.16704278	-0.97121066
--2.4606674	    -0.24223651	-0.5687073	0.69842345
+0.110688895	   -0.95155084	1.8221924	-2.0326483
+-0.013243215   -1.2766567	-0.16704278	-0.97121066
+-2.4606674	   -0.24223651	-0.5687073	0.69842345
 
 (1,2,.,.) =
-0.14165956	    0.17032783	2.5329256	0.011501087
--0.3236992	    1.1332442	0.18139894	-2.3126595
-0.1546373	    0.35264283	-0.04404357	-0.70906943
+0.14165956	   0.17032783	2.5329256	0.011501087
+-0.3236992	   1.1332442	0.18139894	-2.3126595
+0.1546373	   0.35264283	-0.04404357	-0.70906943
 
 (2,1,.,.) =
--0.08527824	    0.29270124	-0.7355773	-0.6026267
--0.71629876	    0.83938205	0.5129336	0.118145116
-0.17555784	    -0.8842884	0.12628363	-0.5556226
+-0.08527824	   0.29270124	-0.7355773	-0.6026267
+-0.71629876	   0.83938205	0.5129336	0.118145116
+0.17555784	   -0.8842884	0.12628363	-0.5556226
 
 (2,2,.,.) =
-0.6230317	    0.64954233	-1.3002442	-0.44802713
--0.7294096	    0.29014868	-0.55649257	2.1427174
-0.0146621745	0.67039204	0.12979278	1.8543824
+0.6230317	   0.64954233	-1.3002442	-0.44802713
+-0.7294096	   0.29014868	-0.55649257	2.1427174
+0.0146621745   0.67039204	0.12979278	1.8543824
 
 [com.intel.analytics.bigdl.tensor.DenseTensor of size 2x2x3x4]
 ```
@@ -1201,16 +1150,13 @@ Input is:
 [[[[0.44851152 0.94140516 0.45500829 0.07239139]
    [0.58724461 0.7386701  0.69641719 0.70497337]
    [0.15950558 0.56006247 0.82534941 0.59303245]]
-
   [[0.94628326 0.75747177 0.92495215 0.16233194]
    [0.21553426 0.65968036 0.72130258 0.8929379 ]
    [0.91295078 0.36362834 0.04734189 0.32399088]]]
 
-
  [[[0.74069289 0.8804913  0.38783329 0.82279268]
    [0.29561186 0.86405938 0.21608269 0.618583  ]
    [0.16823803 0.65690701 0.85394726 0.94541932]]
-
   [[0.33876558 0.47517543 0.25908204 0.81933296]
    [0.16176792 0.57166    0.28295922 0.95254489]
    [0.10532106 0.98495855 0.41048516 0.86755462]]]]
@@ -1249,7 +1195,7 @@ Parameters:
 ```scala
 import com.intel.analytics.bigdl.nn.keras.{Sequential, GlobalAveragePooling3D}
 import com.intel.analytics.bigdl.utils.Shape
-import com.intel.analytics.bigdl.tensor._
+import com.intel.analytics.bigdl.tensor.Tensor
 
 val model = Sequential[Float]()
 model.add(GlobalAveragePooling3D(inputShape = Shape(2, 2, 2, 3)))
@@ -1260,36 +1206,36 @@ Input is:
 ```scala
 input: com.intel.analytics.bigdl.tensor.Tensor[Float] =
 (1,1,1,.,.) =
-1.8996966	 -0.20018125	-0.3271749
-0.27594963	 -1.0520669	0.86003053
+1.8996966	 -0.20018125  -0.3271749
+0.27594963	 -1.0520669	  0.86003053
 
 (1,1,2,.,.) =
--0.7652662	 0.72945994	 0.9008456
-0.8692407	 -1.1327444	 2.0664887
+-0.7652662	 0.72945994	  0.9008456
+0.8692407	 -1.1327444	  2.0664887
 
 (1,2,1,.,.) =
-0.10636215	 -0.812925   -0.3757974
-0.48761207	 0.017417012 -2.395701
+0.10636215	 -0.812925    -0.3757974
+0.48761207	 0.017417012  -2.395701
 
 (1,2,2,.,.) =
--1.3122851	 -0.5942121	 -0.6180062
--0.032230377 -0.27521232 -0.3567782
+-1.3122851	 -0.5942121	  -0.6180062
+-0.032230377 -0.27521232  -0.3567782
 
 (2,1,1,.,.) =
-1.8668615	 -0.4244298	 1.0701258
-0.63794065	 -1.023562	 0.16939393
+1.8668615	 -0.4244298	  1.0701258
+0.63794065	 -1.023562	  0.16939393
 
 (2,1,2,.,.) =
-0.20582832	 0.5321886	 -1.5412451
--0.38068503	 1.4506307	 -0.47838798
+0.20582832	 0.5321886	  -1.5412451
+-0.38068503	 1.4506307	  -0.47838798
 
 (2,2,1,.,.) =
--0.7344984	 -0.28647164 2.410416
--1.8175911	 -1.1973995	 1.001777
+-0.7344984	 -0.28647164  2.410416
+-1.8175911	 -1.1973995	  1.001777
 
 (2,2,2,.,.) =
--0.09646813	 0.11988298	 1.4687495
-1.493955	 0.16738588	 1.133337
+-0.09646813	 0.11988298	  1.4687495
+1.493955	 0.16738588	  1.133337
 
 [com.intel.analytics.bigdl.tensor.DenseTensor of size 2x2x2x2x3]
 ```
@@ -1316,29 +1262,19 @@ Input is:
 ```python
 [[[[[0.38403874 0.30696173 0.25682854]
     [0.53124253 0.62668969 0.21927777]]
-
    [[0.33040063 0.37388563 0.75210039]
     [0.08358634 0.80063745 0.13251887]]]
-
-
   [[[0.41724617 0.2241106  0.55527267]
     [0.69493785 0.71098284 0.54058444]]
-
    [[0.4773658  0.92236993 0.76933649]
     [0.45217032 0.61153948 0.01976393]]]]
 
-
-
  [[[[0.27256789 0.56008397 0.19898919]
     [0.44973465 0.66605998 0.77117999]]
-
    [[0.07868799 0.94786045 0.2240451 ]
     [0.92261946 0.4053334  0.2572511 ]]]
-
-
   [[[0.33754374 0.28838802 0.79900278]
     [0.26374789 0.25610211 0.9320699 ]]
-
    [[0.19518511 0.80707822 0.29660536]
     [0.56917623 0.07653736 0.77836375]]]]]
 ```

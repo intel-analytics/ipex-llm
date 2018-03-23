@@ -19,7 +19,7 @@ Parameters:
 ```scala
 import com.intel.analytics.bigdl.nn.keras.{Sequential, Activation}
 import com.intel.analytics.bigdl.utils.Shape
-import com.intel.analytics.bigdl.tensor._
+import com.intel.analytics.bigdl.tensor.Tensor
 
 val model = Sequential[Float]()
 model.add(Activation("tanh", inputShape = Shape(3)))
@@ -75,10 +75,10 @@ model.add(Dense(32, activation="relu"))
 
 ---
 ## **Available Activations**
-* [relu](../../../APIGuide/Layers/Activations/#relu)
-* [tanh](../../../APIGuide/Layers/Activations/#tanh)
-* [sigmoid](../../../APIGuide/Layers/Activations/#sigmoid)
-* [hard_sigmoid](../../../APIGuide/Layers/Activations/#hardsigmoid)
-* [softmax](../../../APIGuide/Layers/Activations/#softmax)
-* [softplus](../../../APIGuide/Layers/Activations/#softplus)
-* [softsign](../../../APIGuide/Layers/Activations/#softsign)
+* [relu](../../APIGuide/Layers/Activations/#relu)
+* [tanh](../../APIGuide/Layers/Activations/#tanh)
+* [sigmoid](../../APIGuide/Layers/Activations/#sigmoid)
+* [hard_sigmoid](../../APIGuide/Layers/Activations/#hardsigmoid)
+* [softmax](../../APIGuide/Layers/Activations/#softmax)
+* [softplus](../../APIGuide/Layers/Activations/#softplus)
+* [softsign](../../APIGuide/Layers/Activations/#softsign)

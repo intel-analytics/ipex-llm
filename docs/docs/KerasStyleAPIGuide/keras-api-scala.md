@@ -10,7 +10,6 @@ import com.intel.analytics.bigdl.utils.Shape
 
 One of the highlighted features with regard to the new API is __shape inference__. Users only need to specify the input shape (a [`Shape`](#shape) object __excluding__ batch dimension, for example, `inputShape=Shape(3, 4)` for 3D input) for the first layer of a model and for the remaining layers, the input dimension will be automatically inferred.
 
-
 ---
 ## **Shape**
 Input and output shapes of a model in the Keras-Style API are described by the `Shape` object in Scala, which can be classified into `SingleShape` and `MultiShape`.
@@ -25,7 +24,6 @@ val shape1 = Shape(3, 4)
 val shape2 = Shape(List(Shape(1, 2, 3), Shape(4, 5, 6)))
 ```
 You can use method `toSingle()` to cast a `Shape` to a `SingleShape`. Similarly, use `toMulti()` to cast a `Shape` to a `MultiShape`.
-
 
 ---
 ## **Define a model**
@@ -48,7 +46,6 @@ setName(name)
 
 See [here](Optimization/training/) on how to train, predict or evaluate a defined model.
 
-
 ---
 ## **Sequential API**
 The model is described as a linear stack of layers in the Sequential API. Layers can be added into the `Sequential` container one by one and the order of the layers in the model will be the same as the insertion order.
@@ -67,7 +64,6 @@ val model = Sequential[Float]()
 model.add(Dense(32, inputShape = Shape(128)))
 model.add(Activation("relu"))
 ```
-
 
 ---
 ## **Functional API**
@@ -122,19 +118,18 @@ val output = merge(inputs = List(dense1, dense2), mode = "sum")
 val model = Model[Float](Array(input1, input2), output)
 ```
 
-
 ---
 ## **Layers**
 See [here](Layers/core.md) for all the available layers for the new set of Keras-Style API.
 
 To set the name of a layer, call the method `setName(name)` of the layer.
 
-
 ---
 ## **LeNet Example**
 Here we adopt our Keras-Style API to define a LeNet CNN model to be trained on the MNIST dataset:
 
 ```scala
+import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.nn.keras._
 import com.intel.analytics.bigdl.utils.Shape
 

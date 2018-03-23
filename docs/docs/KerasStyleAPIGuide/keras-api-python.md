@@ -10,7 +10,6 @@ from bigdl.nn.keras.layer import *
 
 One of the highlighted features with regard to the new API is __shape inference__. Users only need to specify the input shape (a shape tuple __excluding__ batch dimension, for example, `input_shape=(3, 4)` for 3D input) for the first layer of a model and for the remaining layers, the input dimension will be automatically inferred.
 
-
 ---
 ## **Define a model**
 You can define a model either using [Sequential API](#sequential-api) or [Functional API](#functional-api). Remember to specify the input shape for the first layer.
@@ -32,7 +31,6 @@ set_name(name)
 
 See [here](Optimization/training/) on how to train, predict or evaluate a defined model.
 
-
 ---
 ## **Sequential API**
 The model is described as a linear stack of layers in the Sequential API. Layers can be added into the `Sequential` container one by one and the order of the layers in the model will be the same as the insertion order.
@@ -51,7 +49,6 @@ model = Sequential()
 model.add(Dense(32, input_shape=(128, )))
 model.add(Activation("relu"))
 ```
-
 
 ---
 ## **Functional API**
@@ -103,13 +100,11 @@ output = merge([dense1, dense2], mode="sum")
 model = Model([input1, input2], output)
 ```
 
-
 ---
 ## **Layers**
 See [here](Layers/core.md) for all the available layers for the new set of Keras-Style API.
 
 To set the name of a layer, you can either call `set_name(name)` or alternatively specify the argument `name` in the constructor when creating a layer.
-
 
 ---
 ## **LeNet Example**
@@ -134,12 +129,16 @@ model.get_output_shape() # (None, 10)
 ```
 See [here](https://github.com/intel-analytics/BigDL/tree/master/pyspark/bigdl/examples/lenet) for detailed introduction of LeNet, the full example code and running instructions.
 
-
 ---
 ## **Keras Code Support**
 If you have an existing piece of Keras code for a model definition, without installing Keras, you can directly migrate the code to construct a BigDL model by just replacing Keras import lines with:
 
-`from bigdl.nn.keras.layer import *` and making modifications subject to the following limitations:
+```python
+from bigdl.nn.keras.topology import *
+from bigdl.nn.keras.layer import *
+```
+
+and making modifications subject to the following limitations:
 
 1. The Keras version we support and test is [__Keras 1.2.2__](https://faroit.github.io/keras-docs/1.2.2/) with TensorFlow backend.
 
