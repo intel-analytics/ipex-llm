@@ -2929,6 +2929,27 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     })
   }
 
+  def distributedImageFrameToSample(imageFrame: DistributedImageFrame, key: String):
+  JavaRDD[Sample] = {
+    imageFrame.rdd.map(x => {
+      if (x.isValid && x.contains(key)) {
+        toPySample(x[JSample[T]](key))
+      } else {
+        null
+      }
+    })
+  }
+
+  def localImageFrameToSample(imageFrame: LocalImageFrame, key: String): JList[Sample] = {
+    imageFrame.array.map(x => {
+      if (x.isValid && x.contains(key)) {
+        toPySample(x[JSample[T]](key))
+      } else {
+        null
+      }
+    }).toList.asJava
+  }
+
   def localImageFrameToPredict(imageFrame: LocalImageFrame, key: String)
   : JList[JList[Any]] = {
     imageFrame.array.map(x =>
