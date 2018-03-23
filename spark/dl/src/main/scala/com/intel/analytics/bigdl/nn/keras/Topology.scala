@@ -125,7 +125,7 @@ abstract class KerasModel[T: ClassTag](implicit ev: TensorNumeric[T])
    * @param batchSize Number of samples per batch.
    */
   def evaluate(x: RDD[Sample[T]],
-               batchSize: Int = 32)
+               batchSize: Int)
       (implicit ev: TensorNumeric[T]): Array[(ValidationResult, ValidationMethod[T])] = {
     require(this.vMethods != null, "Evaluation metrics haven't been set yet")
     this.evaluate(x, this.vMethods, Some(batchSize))
@@ -147,7 +147,7 @@ abstract class KerasModel[T: ClassTag](implicit ev: TensorNumeric[T])
    * @param batchSize Number of samples per batch.
    */
   def predict(x: RDD[Sample[T]],
-              batchSize: Int = 32)(implicit ev: TensorNumeric[T]): RDD[Activity] = {
+              batchSize: Int)(implicit ev: TensorNumeric[T]): RDD[Activity] = {
     this.predict(x, batchSize, false)
   }
 
