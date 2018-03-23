@@ -31,8 +31,8 @@ import scala.reflect.ClassTag
  * on each input channel separately) followed by a pointwise convolution which mixes together the
  * resulting output channels. The depthMultiplier argument controls how many output channels are
  * generated per input channel in the depthwise step.
- * The input of this layer should be 4D.
  * You can also use SeparableConv2D as an alias of this layer.
+ * The input of this layer should be 4D.
  *
  * When using this layer as the first layer in a model, you need to provide the argument
  * inputShape (a Single Shape, does not include the batch dimension).

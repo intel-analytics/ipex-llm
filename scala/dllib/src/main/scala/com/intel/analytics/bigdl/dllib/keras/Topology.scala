@@ -46,7 +46,7 @@ abstract class KerasModel[T: ClassTag](implicit ev: TensorNumeric[T])
   private var vMethods: Array[ValidationMethod[T]] = null
 
   /**
-   * Configure the learning process. Must be called before fit.
+   * Configure the learning process. Must be called before fit or evaluate.
    * @param optimizer Optimization method to be used.
    * @param loss Criterion to be used.
    * @param metrics Array of validation methods to be used.
@@ -84,7 +84,7 @@ abstract class KerasModel[T: ClassTag](implicit ev: TensorNumeric[T])
    * Train a model for a fixed number of epochs on a dataset.
    * @param x Training dataset. If x is an instance of LocalDataSet, train in local mode.
    * @param nbEpoch Number of iterations to train.
-   * @param validationData Dataset, or null if validation is not configured.
+   * @param validationData Dataset for validation, or null if validation is not configured.
    */
   def fit[D: ClassTag](x: DataSet[D], nbEpoch: Int,
                        validationData: DataSet[MiniBatch[T]])
@@ -108,7 +108,7 @@ abstract class KerasModel[T: ClassTag](implicit ev: TensorNumeric[T])
 
   /**
    * Train a model for a fixed number of epochs on a dataset.
-   * @param x Training data, RDD of Sample.
+   * @param x Training dataset, RDD of Sample.
    * @param batchSize Number of samples per gradient update.
    * @param nbEpoch Number of iterations to train.
    * @param validationData RDD of Sample, or null if validation is not configured.
@@ -121,7 +121,7 @@ abstract class KerasModel[T: ClassTag](implicit ev: TensorNumeric[T])
 
   /**
    * Evaluate a model on a given dataset.
-   * @param x Evaluation data, RDD of Sample.
+   * @param x Evaluation dataset, RDD of Sample.
    * @param batchSize Number of samples per batch.
    */
   def evaluate(x: RDD[Sample[T]],
@@ -133,7 +133,7 @@ abstract class KerasModel[T: ClassTag](implicit ev: TensorNumeric[T])
 
   /**
    * Evaluate a model in local mode.
-   * @param x Evaluation data, LocalDataSet.
+   * @param x Evaluation dataset, LocalDataSet.
    */
   def evaluate(x: LocalDataSet[MiniBatch[T]])
     (implicit ev: TensorNumeric[T]): Array[(ValidationResult, ValidationMethod[T])] = {

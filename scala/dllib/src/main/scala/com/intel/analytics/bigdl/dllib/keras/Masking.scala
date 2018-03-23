@@ -31,8 +31,8 @@ import scala.reflect.ClassTag
  * inputShape (a Single Shape, does not include the batch dimension).
  *
  * @param maskValue Double, mask value.
- *                  For each timestep in the input tensor (dimension #1 in the tensor),
- *                  if all values in the input tensor at that timestep are equal to `mask_value`,
+ *                  For each timestep in the input (the second dimension),
+ *                  if all the values in the input at that timestep are equal to 'maskValue',
  *                  then the timestep will masked (skipped) in all downstream layers.
  * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now.
  */
