@@ -152,7 +152,7 @@ class KerasModel(KerasLayer, Container, SharedStaticUtils):
         Evaluate a model on a given dataset in distributed mode.
 
         # Arguments
-        x: Input data. ANumpy array or RDD of Sample.
+        x: Input data. A Numpy array or RDD of Sample.
         y: Labels. A Numpy array. Default is None if x is already RDD of Sample.
         batch_size: Number of samples per gradient update.
         """
