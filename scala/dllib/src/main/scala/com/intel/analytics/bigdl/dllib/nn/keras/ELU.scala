@@ -32,7 +32,7 @@ import scala.reflect.ClassTag
  * When you use this layer as the first layer of a model, you need to provide the argument
  * inputShape (a Single Shape, does not include the batch dimension).
  *
- * @param alpha Double, scale for the negative factor.
+ * @param alpha Double, scale for the negative factor. Default is 1.0.
  * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now.
  */
 class ELU[T: ClassTag](
