@@ -1,8 +1,8 @@
 This page shows how to train, predict or evaluate a model using the Keras-Style API.
 
-You may refer to the `User Guide` page to see how to define a model in [Python](../keras-api-python) or [Scala](../keras-api-scala) correspondingly.
+You may refer to the `User Guide` page to see how to define a model in [Python](../keras-api-python/) or [Scala](../keras-api-scala/) correspondingly.
 
-You may refer to [`Layers`](../Layers/core) section to find all the available layers.
+You may refer to [`Layers`](../Layers/core/) section to find all the available layers.
 
 After defining a model with the Keras-Style API, you can call the following __methods__ on the model:
 
@@ -23,9 +23,9 @@ compile(optimizer, loss, metrics=None)
 
 Parameters:
 
-* `optimizer`: Optimization method to be used. Can either use the string representation of an optimization method (see [here](optimizer/#available-optimizers)) or an instance of [OptimMethod](../../APIGuide/Optimizers/Optim-Methods). 
-* `loss`: Criterion to be used. Can either use the string representation of a criterion (see [here](loss/#available-losses)) or an instance of [Loss](../../APIGuide/Losses).
-* `metrics`: One or more validation methods to be used. Default is null if no validation needs to be configured. Can either use the string representation `Array("accuracy")`(Scala) `["accuracy"]`(Python) or instances of [ValidationMethod](../../APIGuide/Metrics).
+* `optimizer`: Optimization method to be used. Can either use the string representation of an optimization method (see [here](optimizer/#available-optimizers)) or an instance of [OptimMethod](../../APIGuide/Optimizers/Optim-Methods/). 
+* `loss`: Criterion to be used. Can either use the string representation of a criterion (see [here](loss/#available-losses)) or an instance of [Loss](../../APIGuide/Losses/).
+* `metrics`: One or more validation methods to be used. Default is null if no validation needs to be configured. Can either use the string representation `Array("accuracy")`(Scala) `["accuracy"]`(Python) or instances of [ValidationMethod](../../APIGuide/Metrics/).
 
 ---
 ## **Fit**
