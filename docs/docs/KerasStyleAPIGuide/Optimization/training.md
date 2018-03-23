@@ -34,7 +34,7 @@ Train a model for a fixed number of epochs on a dataset. Need to first [compile]
 
 **Scala:**
 ```scala
-fit(x, batchSize = 32, nbEpoch = 10, validationData = null)
+fit(x, nbEpoch = 10, validationData = null)
 ```
 **Python**
 ```python
@@ -50,7 +50,7 @@ Parameters:
 
 **Remark**
 
-- For __Scala__, x can either be RDD of [Sample](../../APIGuide/Data/#sample) (recommended) or an instance of [DataSet](../../APIGuide/Data/#dataset).
+- For __Scala__, x can either be RDD of [Sample](../../APIGuide/Data/#sample) (specifying `batchSize`) or an instance of [DataSet](../../APIGuide/Data/#dataset).
 - For __Python__, you can use x (a Numpy array) as features with y (a Numpy array) as labels; or only x (RDD of [Sample](../../APIGuide/Data/#sample)) without specifying y.
 - The parameter `distributed` is to choose whether to train the model using distributed mode or local mode in __Python__. Default is true. If in local mode, x and y must both be Numpy arrays.
 
@@ -62,7 +62,7 @@ Evaluate a model on a given dataset using the metrics specified when you [compil
 
 **Scala:**
 ```scala
-evaluate(x, batchSize = 32)
+evaluate(x)
 ```
 **Python**
 ```python
@@ -76,7 +76,7 @@ Parameters:
 
 **Remark**
 
-- For __Scala__, x can either be RDD of [Sample](../../APIGuide/Data/#sample) (recommended) or an instance of [DataSet](../../APIGuide/Data/#dataset).
+- For __Scala__, x can either be RDD of [Sample](../../APIGuide/Data/#sample) (specifying `batchSize`) or an instance of [DataSet](../../APIGuide/Data/#dataset).
 - For __Python__, you can use x (a Numpy array) as features with y (a Numpy array) as labels; or only x (RDD of [Sample](../../APIGuide/Data/#sample)) without specifying y. Currently only evaluation in distributed mode is supported in Python.
 
 ---
