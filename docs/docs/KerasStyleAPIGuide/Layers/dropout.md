@@ -12,14 +12,14 @@ Dropout(p, input_shape=None, name=None)
 
 **Parameters:**
 
-* `p`: Fraction of the input units to drop. Double between 0 and 1.
+* `p`: Fraction of the input units to drop. Between 0 and 1.
 * `inputShape`: Only need to specify this argument when you use this layer as the first layer of a model. For Scala API, it should be a [`Shape`](../keras-api-scala/#shape) object. For Python API, it should be a shape tuple. Batch dimension should be excluded.
 
 **Scala example:**
 ```scala
 import com.intel.analytics.bigdl.nn.keras.{Sequential, Dropout}
 import com.intel.analytics.bigdl.utils.Shape
-import com.intel.analytics.bigdl.tensor._
+import com.intel.analytics.bigdl.tensor.Tensor
 
 val model = Sequential[Float]()
 model.add(Dropout(0.3, inputShape = Shape(3, 4)))
@@ -30,14 +30,14 @@ Input is:
 ```scala
 input: com.intel.analytics.bigdl.tensor.Tensor[Float] =
 (1,.,.) =
--1.1256621	2.5402398	-1.1346831	0.50337905
--1.3835752	0.9513693	-0.24547328	-0.28897092
--0.0302343	-0.4106753	0.46467322	-0.7328933
+-1.1256621	   2.5402398	-1.1346831	 0.50337905
+-1.3835752	   0.9513693	-0.24547328	 -0.28897092
+-0.0302343	   -0.4106753	0.46467322	 -0.7328933
 
 (2,.,.) =
-1.2569109	0.16947697	-0.5000246	2.0856402
--0.04246076	1.5827807	-1.0235463	1.7278075
--0.0035352164	-1.2579697	0.206815	-0.053890422
+1.2569109	   0.16947697	-0.5000246	 2.0856402
+-0.04246076	   1.5827807	-1.0235463	 1.7278075
+-0.0035352164  -1.2579697	0.206815	 -0.053890422
 
 [com.intel.analytics.bigdl.tensor.DenseTensor of size 2x3x4]
 ```
@@ -106,14 +106,14 @@ GaussianDropout(p, input_shape=None, name=None)
 
 **Parameters:**
 
-* `p`: Double, drop probability (as with 'Dropout'). The multiplicative noise will have standard deviation 'sqrt(p/(1-p))'.
+* `p`: Drop probability (as with 'Dropout'). The multiplicative noise will have standard deviation 'sqrt(p/(1-p))'.
 * `inputShape`: Only need to specify this argument when you use this layer as the first layer of a model. For Scala API, it should be a [`Shape`](../keras-api-scala/#shape) object. For Python API, it should be a shape tuple. Batch dimension should be excluded.
 
 **Scala example:**
 ```scala
 import com.intel.analytics.bigdl.nn.keras.{Sequential, GaussianDropout}
 import com.intel.analytics.bigdl.utils.Shape
-import com.intel.analytics.bigdl.tensor._
+import com.intel.analytics.bigdl.tensor.Tensor
 
 val model = Sequential[Float]()
 model.add(GaussianDropout(0.45, inputShape = Shape(3, 4)))
@@ -139,14 +139,14 @@ Output is:
 ```scala
 output: com.intel.analytics.bigdl.nn.abstractnn.Activity =
 (1,.,.) =
--0.27553135	0.15290284	-0.23144199	0.619676
--0.6648747	0.053253293	-0.08241931	-0.47651786
--0.46381548	-1.0048811	1.5911313	0.39929882
+-0.27553135	 0.15290284	  -0.23144199  0.619676
+-0.6648747	 0.053253293  -0.08241931  -0.47651786
+-0.46381548	 -1.0048811	  1.5911313	   0.39929882
 
 (2,.,.) =
--0.43828326	0.4397059	-0.7071283	-1.440457
--0.27415445	-1.6525689	-0.14050363	0.8728552
--2.0516112	-2.1537325	1.4714862	0.29218474
+-0.43828326	 0.4397059	  -0.7071283   -1.440457
+-0.27415445	 -1.6525689	  -0.14050363  0.8728552
+-2.0516112	 -2.1537325	  1.4714862	   0.29218474
 
 [com.intel.analytics.bigdl.tensor.DenseTensor of size 2x3x4]
 ```
@@ -204,14 +204,14 @@ GaussianNoise(sigma, input_shape=None, name=None)
 
 **Parameters:**
 
-* `sigma`: Double, standard deviation of the noise distribution.
+* `sigma`: Standard deviation of the noise distribution.
 * `inputShape`: Only need to specify this argument when you use this layer as the first layer of a model. For Scala API, it should be a [`Shape`](../keras-api-scala/#shape) object. For Python API, it should be a shape tuple. Batch dimension should be excluded.
 
 **Scala example:**
 ```scala
 import com.intel.analytics.bigdl.nn.keras.{Sequential, GaussianNoise}
 import com.intel.analytics.bigdl.utils.Shape
-import com.intel.analytics.bigdl.tensor._
+import com.intel.analytics.bigdl.tensor.Tensor
 
 val model = Sequential[Float]()
 model.add(GaussianNoise(0.6, inputShape = Shape(3, 4)))
@@ -222,14 +222,14 @@ Input is:
 ```scala
 input: com.intel.analytics.bigdl.tensor.Tensor[Float] =
 (1,.,.) =
-0.4226985	-0.010519333	-0.49748304	-0.3176052
-0.52444375	0.31100306	1.0308859	2.0337727
-0.21513703	-0.396619	-0.055275716	-0.40603992
+0.4226985	-0.010519333  -0.49748304	-0.3176052
+0.52444375	0.31100306	  1.0308859	    2.0337727
+0.21513703	-0.396619	  -0.055275716	-0.40603992
 
 (2,.,.) =
--1.2393064	-0.536477	-0.35633054	-0.09068655
--1.7297741	-0.5812992	-1.2833812	-0.7185058
-0.13474904	0.06468039	-0.6630115	1.2471422
+-1.2393064	-0.536477	  -0.35633054	-0.09068655
+-1.7297741	-0.5812992	  -1.2833812	-0.7185058
+0.13474904	0.06468039	  -0.6630115	1.2471422
 
 [com.intel.analytics.bigdl.tensor.DenseTensor of size 2x3x4]
 ```
@@ -237,14 +237,14 @@ Output is:
 ```scala
 output: com.intel.analytics.bigdl.nn.abstractnn.Activity =
 (1,.,.) =
--0.72299504	0.7733576	-0.13965577	0.72079915
-0.20137814	0.6300731	2.5559645	2.3056328
--0.19732013	-0.482926	-0.22114205	-0.88772345
+-0.72299504	  0.7733576	   -0.13965577	 0.72079915
+0.20137814	  0.6300731	   2.5559645	 2.3056328
+-0.19732013	  -0.482926	   -0.22114205	 -0.88772345
 
 (2,.,.) =
--1.4293398	-1.0870209	-0.5509953	-0.31268832
--2.244024	-0.23773572	-3.022697	-0.65151817
--0.035656676	-0.7470889	-0.8566216	1.1347939
+-1.4293398	  -1.0870209   -0.5509953	 -0.31268832
+-2.244024	  -0.23773572  -3.022697	 -0.65151817
+-0.035656676  -0.7470889   -0.8566216	 1.1347939
 
 [com.intel.analytics.bigdl.tensor.DenseTensor of size 2x3x4]
 ```
@@ -300,14 +300,14 @@ SpatialDropout1D(p=0.5, input_shape=None, name=None)
 
 **Parameters:**
 
-* `p`: Fraction of the input units to drop. Double between 0 and 1.
+* `p`: Fraction of the input units to drop. Between 0 and 1.
 * `inputShape`: Only need to specify this argument when you use this layer as the first layer of a model. For Scala API, it should be a [`Shape`](../keras-api-scala/#shape) object. For Python API, it should be a shape tuple. Batch dimension should be excluded.
 
 **Scala example:**
 ```scala
 import com.intel.analytics.bigdl.nn.keras.{Sequential, SpatialDropout1D}
 import com.intel.analytics.bigdl.utils.Shape
-import com.intel.analytics.bigdl.tensor._
+import com.intel.analytics.bigdl.tensor.Tensor
 
 val model = Sequential[Float]()
 model.add(SpatialDropout1D(inputShape = Shape(3, 4)))
@@ -333,14 +333,14 @@ Output is:
 ```scala
 output: com.intel.analytics.bigdl.nn.abstractnn.Activity =
 (1,.,.) =
--0.41961443	-0.0	-0.11937201	1.2904007
--1.7623849	-0.0	-0.30053464	0.33295104
--0.29824665	-0.0	-2.1878588	1.2741995
+-0.41961443	-0.0   -0.11937201	1.2904007
+-1.7623849	-0.0   -0.30053464	0.33295104
+-0.29824665	-0.0   -2.1878588	1.2741995
 
 (2,.,.) =
-0.24517925	0.0	    -0.4281332	-0.0
--0.7767442	0.0	    -0.5614063	0.0
--1.4832486	0.0	    -0.13351384	-0.0
+0.24517925	0.0	   -0.4281332	-0.0
+-0.7767442	0.0	   -0.5614063	0.0
+-1.4832486	0.0	   -0.13351384	-0.0
 
 [com.intel.analytics.bigdl.tensor.DenseTensor of size 2x3x4]
 ```
@@ -396,7 +396,7 @@ SpatialDropout2D(p=0.5, dim_ordering="th", input_shape=None, name=None)
 
 **Parameters:**
 
-* `p`: Fraction of the input units to drop. Double between 0 and 1.
+* `p`: Fraction of the input units to drop. Between 0 and 1.
 * `dimOrdering`: Format of input data. Either 'th' (Channel First) or 'tf' (Channel Last). Default is 'th'.
 * `inputShape`: Only need to specify this argument when you use this layer as the first layer of a model. For Scala API, it should be a [`Shape`](../keras-api-scala/#shape) object. For Python API, it should be a shape tuple. Batch dimension should be excluded.
 
@@ -404,7 +404,7 @@ SpatialDropout2D(p=0.5, dim_ordering="th", input_shape=None, name=None)
 ```scala
 import com.intel.analytics.bigdl.nn.keras.{Sequential, SpatialDropout2D}
 import com.intel.analytics.bigdl.utils.Shape
-import com.intel.analytics.bigdl.tensor._
+import com.intel.analytics.bigdl.tensor.Tensor
 
 val model = Sequential[Float]()
 model.add(SpatialDropout2D(inputShape = Shape(2, 3, 4)))
@@ -478,16 +478,13 @@ Input is:
 [[[[0.21864846 0.43531162 0.23078088 0.81122115]
    [0.19442596 0.11110444 0.533805   0.68291312]
    [0.40738259 0.05448269 0.04647733 0.41683944]]
-
   [[0.23354645 0.46005503 0.87695602 0.13318982]
    [0.2596346  0.67654484 0.79389709 0.50408343]
    [0.50043622 0.28028835 0.81897585 0.01629935]]]
 
-
  [[[0.32173241 0.38367311 0.10315543 0.22691558]
    [0.41640003 0.45932496 0.70795718 0.67185326]
    [0.11911477 0.90231481 0.49881045 0.74297438]]
-
   [[0.48873758 0.53475116 0.06801025 0.50640297]
    [0.95740488 0.14928652 0.10466387 0.29040436]
    [0.44062539 0.36983024 0.35326756 0.60592402]]]]
@@ -497,16 +494,13 @@ Output is
 [[[[0.21864846 0.43531162 0.23078088 0.8112211 ]
    [0.19442596 0.11110444 0.533805   0.6829131 ]
    [0.4073826  0.05448269 0.04647733 0.41683942]]
-
   [[0.23354645 0.46005502 0.87695605 0.13318983]
    [0.2596346  0.67654485 0.7938971  0.50408345]
    [0.50043625 0.28028834 0.81897587 0.01629935]]]
 
-
  [[[0.0        0.0        0.0        0.0       ]
    [0.0        0.0        0.0        0.0       ]
    [0.0        0.0        0.0        0.0       ]]
-
   [[0.48873758 0.5347512  0.06801025 0.50640297]
    [0.95740485 0.14928652 0.10466387 0.29040435]
    [0.4406254  0.36983025 0.35326755 0.605924  ]]]]
@@ -531,7 +525,7 @@ SpatialDropout3D(p=0.5, dim_ordering="th", input_shape=None, name=None)
 
 **Parameters:**
 
-* `p`: Fraction of the input units to drop. Double between 0 and 1.
+* `p`: Fraction of the input units to drop. Between 0 and 1.
 * `dimOrdering`: Format of input data. Either 'th' (Channel First) or 'tf' (Channel Last). Default is 'th'.
 * `inputShape`: Only need to specify this argument when you use this layer as the first layer of a model. For Scala API, it should be a [`Shape`](../keras-api-scala/#shape) object. For Python API, it should be a shape tuple. Batch dimension should be excluded.
 
@@ -539,7 +533,7 @@ SpatialDropout3D(p=0.5, dim_ordering="th", input_shape=None, name=None)
 ```scala
 import com.intel.analytics.bigdl.nn.keras.{Sequential, SpatialDropout3D}
 import com.intel.analytics.bigdl.utils.Shape
-import com.intel.analytics.bigdl.tensor._
+import com.intel.analytics.bigdl.tensor.Tensor
 
 val model = Sequential[Float]()
 model.add(SpatialDropout3D(inputShape = Shape(2, 2, 2, 3)))
@@ -550,36 +544,36 @@ Input is:
 ```scala
 input: com.intel.analytics.bigdl.tensor.Tensor[Float] =
 (1,1,1,.,.) =
-0.28834015	    -0.74598366	0.16951436
-0.17009573	    0.3626017	-0.24652131
+0.28834015	  -0.74598366  0.16951436
+0.17009573	  0.3626017	   -0.24652131
 
 (1,1,2,.,.) =
-1.3008109	    0.37243804	0.073205866
-1.0715603	    0.02033514	-1.7862324
+1.3008109	  0.37243804   0.073205866
+1.0715603	  0.02033514   -1.7862324
 
 (1,2,1,.,.) =
--0.5285066	    -1.3859391	-1.0543352
-0.7904896	    0.7473174	-0.5941196
+-0.5285066	  -1.3859391   -1.0543352
+0.7904896	  0.7473174	   -0.5941196
 
 (1,2,2,.,.) =
--0.060706574	-2.4405587	1.5963978
--0.33285397	    -0.48576602	0.8121179
+-0.060706574  -2.4405587	1.5963978
+-0.33285397	  -0.48576602	0.8121179
 
 (2,1,1,.,.) =
--0.7060156	    0.31667668	-0.28765643
--1.3115436	    -1.7266335	1.0080509
+-0.7060156	  0.31667668	-0.28765643
+-1.3115436	  -1.7266335	1.0080509
 
 (2,1,2,.,.) =
-1.2365453	    -0.13272893	-1.2130978
-0.26921487	    -0.66259027	0.5537464
+1.2365453	  -0.13272893	-1.2130978
+0.26921487	  -0.66259027	0.5537464
 
 (2,2,1,.,.) =
-1.6578121	    -0.09890133	0.4794677
-1.5102282	    0.067802615	0.76998603
+1.6578121	  -0.09890133	0.4794677
+1.5102282	  0.067802615	0.76998603
 
 (2,2,2,.,.) =
--0.47348467	    0.19535838	0.62601316
--2.4771519	    -0.40744382	0.04029308
+-0.47348467	  0.19535838	0.62601316
+-2.4771519	  -0.40744382	0.04029308
 
 [com.intel.analytics.bigdl.tensor.DenseTensor of size 2x2x2x2x3]
 ```
@@ -636,29 +630,19 @@ Input is:
 ```python
 [[[[[0.68128454 0.57379206]
     [0.19533742 0.19906853]]
-
    [[0.21527836 0.79586573]
     [0.51065215 0.94422278]]]
-
-
   [[[0.95178211 0.50359204]
     [0.0306965  0.92563536]]
-
    [[0.33744311 0.58750719]
     [0.45437398 0.7081438 ]]]]
 
-
-
  [[[[0.00235233 0.8092749 ]
     [0.65525661 0.01079958]]
-
    [[0.29877429 0.42090468]
     [0.28265598 0.81520172]]]
-
-
   [[[0.91811333 0.3275563 ]
     [0.66125455 0.15555596]]
-
    [[0.53651033 0.66013486]
     [0.45874838 0.7613676 ]]]]]
 ```
@@ -666,29 +650,19 @@ Output is
 ```python
 [[[[[0.68128455 0.57379204]
     [0.19533743 0.19906853]]
-
    [[0.21527836 0.7958657 ]
     [0.5106521  0.94422275]]]
-
-
   [[[0.0        0.0       ]
     [0.0        0.0       ]]
-
    [[0.0        0.0       ]
     [0.0        0.0       ]]]]
 
-
-
  [[[[0.0        0.0       ]
     [0.0        0.0       ]]
-
    [[0.0        0.0       ]
     [0.0        0.0       ]]]
-
-
   [[[0.91811335 0.3275563 ]
     [0.6612545  0.15555596]]
-
    [[0.53651035 0.66013485]
     [0.45874837 0.7613676 ]]]]]
 ```
