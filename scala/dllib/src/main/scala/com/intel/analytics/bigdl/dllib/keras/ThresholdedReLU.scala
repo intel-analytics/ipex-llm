@@ -33,7 +33,7 @@ import scala.reflect.ClassTag
  * When you use this layer as the first layer of a model, you need to provide the argument
  * inputShape (a Single Shape, does not include the batch dimension).
  *
- * @param theta Double >= 0. Threshold location of activation.
+ * @param theta Double >= 0. Threshold location of activation. Default is 1.0.
  * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now.
  */
 class ThresholdedReLU[T: ClassTag](
