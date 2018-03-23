@@ -99,7 +99,8 @@ private[dlframes] trait DLParams[@specialized(Float, Double) T] extends HasFeatu
       new ArrayType(FloatType, false),
       new ArrayType(FloatType, true),
       DoubleType,
-      FloatType
+      FloatType,
+      DLImageSchema.floatSchema
     ) ++ validVectorTypes
 
     // TODO use SchemaUtils.checkColumnTypes after convert to 2.0
@@ -111,7 +112,6 @@ private[dlframes] trait DLParams[@specialized(Float, Double) T] extends HasFeatu
 
   /**
    * Get conversion function to extract data from original DataFrame
-   * Default: 0
    */
   protected def getConvertFunc(colType: DataType): (Row, Int) => Seq[AnyVal] = {
     colType match {
@@ -127,6 +127,8 @@ private[dlframes] trait DLParams[@specialized(Float, Double) T] extends HasFeatu
         (row: Row, index: Int) => Seq[Double](row.getDouble(index))
       case FloatType =>
         (row: Row, index: Int) => Seq[Float](row.getFloat(index))
+      case DLImageSchema.floatSchema =>
+        (row: Row, index: Int) => row.getAs[Row](index).getSeq[Float](5)
       case _ =>
         if (colType.typeName.contains("vector")) {
           (row: Row, index: Int) => getVectorSeq(row, colType, index)
@@ -404,8 +406,15 @@ class DLModel[@specialized(Float, Double) T: ClassTag](
           Sample(Tensor(featureBuffer.toArray, featureSize))
         }.toIterator
         val predictions = transformer(samples).flatMap { batch =>
-          val batchResult = localModel.forward(batch.getInput())
-          batchResult.toTensor.split(1).map(outputToPrediction)
+          val batchResult = localModel.forward(batch.getInput()).toTensor
+          if (batchResult.size().length == 2) {
+            batchResult.split(1).map(outputToPrediction)
+          } else if (batchResult.size().length == 1) {
+            Array(outputToPrediction(batchResult))
+          } else {
+            throw new RuntimeException(
+              "unexpected batchResult dimension: " + batchResult.size().mkString(", "))
+          }
         }
         rowBatch.toIterator.zip(predictions).map { case (row, predict) =>
           Row.fromSeq(row.toSeq ++ Seq(predict))
