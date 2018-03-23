@@ -26,8 +26,7 @@ import com.intel.analytics.bigdl.utils.Shape
 import scala.reflect.ClassTag
 
 /**
- * A dense maxout layer that takes the element-wise maximum of nbFeature,
- * Dense(inputDim, outputDim) linear layers.
+ * A dense maxout layer that takes the element-wise maximum of linear layers.
  * This allows the layer to learn a convex, piecewise linear activation function over the inputs.
  * The input of this layer should be 2D.
  *
