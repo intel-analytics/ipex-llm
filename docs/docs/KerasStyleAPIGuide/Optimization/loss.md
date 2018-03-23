@@ -18,5 +18,3 @@ For the sake of convenience, you can also use the corresponding string represent
 * [squared_hinge](../../../APIGuide/Losses/#margincriterion)
 * [poisson](../../../APIGuide/Losses/#poissoncriterion)
 * [cosine_proximity](../../../APIGuide/Losses/#cosineproximitycriterion)
-
-
