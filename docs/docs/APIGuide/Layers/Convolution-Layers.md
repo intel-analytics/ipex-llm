@@ -182,6 +182,8 @@ grad input of m is : [[[[-0.02344826 -0.06515953 -0.03618064]
    [-0.02346931 -0.1815301  -0.18314059]]]]
 ```
 
+
+---
 ## VolumetricConvolution ##
 
 **Scala:**
@@ -288,6 +290,8 @@ array([[[[ 0.54268712]]],
 
 ```
 
+
+---
 ## SpatialDilatedConvolution ##
 
 **Scala:**
@@ -550,6 +554,8 @@ array([[[[-3.55372381, -4.0352459 , -2.65861344],
        [[[-3.55372381, -4.0352459 , -2.65861344],
          [-4.99829054, -5.4798131 , -3.29477644]]]], dtype=float32)
 ```
+
+
 ---
 ## SpatialFullConvolution ##
 
@@ -802,6 +808,7 @@ output m is : [[[-0.04712385  0.21949144  0.0843184   0.14336972]
   [-0.38188276 -0.36746511 -0.37627563 -0.34141305]]]
 ```
 
+---
 ## SpatialSeparableConvolution ##
 
 **Scala:**
@@ -917,6 +924,7 @@ output m is : [[[[ 0.91489887  0.81591743]
    [ 0.97745675  0.88418102]]]]
 ```
 
+---
 ## SpatialConvolutionMap ##
 
 **Scala:**
@@ -1035,6 +1043,8 @@ Gives the output,
         [ 0.86757064,  0.91269422,  0.95781779]]], dtype=float32)]
 ```
 
+
+---
 ## TemporalConvolution ##
 
 **Scala:**
@@ -1148,126 +1158,8 @@ gradInput = layer.backward(input, gradOutput)
  [ 0.          0.          0.          0.          0.        ]]
 
 ```
----
-## LocallyConnected1D ##
 
-**Scala:**
-```scala
-val module = LocallyConnected1D(
-  nInputFrame,inputFrameSize, outputFrameSize, kernelW, strideW = 1, propagateBack = true,
-  wRegularizer = null, bRegularizer = null, initWeight = null, initBias = null,
-  initGradWeight = null, initGradBias = null
-  )
-```
-**Python:**
-```python
-module = LocallyConnected1D(
-  n_input_frame, input_frame_size, output_frame_size, kernel_w, stride_w = 1, propagate_back = True,
-  w_regularizer = None, b_regularizer = None, init_weight = None, init_bias = None,
-  init_grad_weight = None, init_grad_bias = None
-  )
-```
 
- Applies a 1D convolution over an input sequence composed of nInputFrame frames with unshared weights.
- The input tensor in `forward(input)` is expected to be a 3D tensor
- (`nBatchFrame` x `nInputFrame` x `inputFrameSize`) or a 2D tensor
- (`nInputFrame` x `inputFrameSize`).
- Output of `forward(input)` is expected to be a 3D tensor
- (`nBatchFrame` x `nOutputFrame` x `outputFrameSize`) or a 2D tensor
- (`nOutputFrame` x `outputFrameSize`).
-
- * `nInputFrame` Length of the input frame expected in sequences given into `forward()`.
- * `inputFrameSize` The input frame size expected in sequences given into `forward()`.
- * `outputFrameSize` The output frame size the convolution layer will produce.
- * `kernelW` The kernel width of the convolution
- * `strideW` The step of the convolution in the width dimension.
- * `propagateBack` Whether propagate gradient back, default is true.
- * `wRegularizer` instance of `Regularizer`
-                     (eg. L1 or L2 regularization), applied to the input weights matrices.
- * `bRegularizer` instance of `Regularizer`
-                     applied to the bias.
- * `initWeight` Initial weight
- * `initBias` Initial bias
- * `initGradWeight` Initial gradient weight
- * `initGradBias` Initial gradient bias
- * `T` The numeric type in the criterion, usually which are `Float` or `Double`
- 
-**Scala example:**
-```scala
-import com.intel.analytics.bigdl.numeric.NumericFloat
-val seed = 100
-RNG.setSeed(seed)
-val nInputFrame = 10
-val inputFrameSize = 5
-val outputFrameSize = 3
-val kW = 5
-val dW = 2
-val layer = LocallyConnected1D(nInputFrame, inputFrameSize, outputFrameSize, kW, dW)
-
-Random.setSeed(seed)
-val input = Tensor(10, 5).apply1(e => Random.nextFloat())
-val gradOutput = Tensor(3, 3).apply1(e => Random.nextFloat())
-
-val output = layer.updateOutput(input)
-> println(output)
-(1,.,.) =
--0.2896616	0.018883035	-0.45641226	
--0.41183263	-0.33292565	0.27988705	
-0.076636955	-0.39710814	0.59631383	
-
-[com.intel.analytics.bigdl.tensor.DenseTensor of size 3x3]
-
-val gradInput = layer.updateGradInput(input, gradOutput)
-> println(gradInput)
-(1,.,.) =
-0.018415622	-0.10201519	-0.15641063	-0.08271551	-0.060939234	
-0.13609992	0.14934899	0.06083451	-0.13943195	-0.11092151	
--0.08760113	0.06923811	-0.07376863	0.06743649	0.042455398	
-0.064692274	0.15720972	0.13673763	0.03617531	0.12507091	
--0.078272685	-0.25193688	0.10712688	-0.11330205	-0.19239372	
--0.10032463	-0.06266674	0.1048636	0.26058376	-0.40386787	
--0.10379471	0.07291742	-0.28790376	0.06023993	0.057165086	
-0.15167418	0.07384029	-0.052450493	-0.07709345	-0.016432922	
--0.1044948	0.060714033	0.08341185	-0.082587965	0.052750245	
-0.0	0.0	0.0	0.0	0.0	
-
-[com.intel.analytics.bigdl.tensor.DenseTensor of size 10x5]
-```
-
-**Python example:**
-```python
-from bigdl.nn.layer import LocallyConnected1D
-import numpy as np
-nInputFrame = 10
-inputFrameSize = 5
-outputFrameSize = 3
-kW = 5
-dW = 2
-layer = LocallyConnected1D(nInputFrame, inputFrameSize, outputFrameSize, kW, dW)
-
-input = np.random.rand(10, 5)
-gradOutput = np.random.rand(3, 3)
-
-output = layer.forward(input)
-> print(output)
-[[ 0.37944531 -0.25905907 -0.02284177]
-  [-0.06727666 -0.48430425 -0.12338555]
-  [ 0.5237388  -0.72521925 -0.21979821]]
- 
-gradInput = layer.backward(input, gradOutput)
-> print(gradInput)
-[[-0.22256926 -0.11267932  0.05445758 -0.06569604  0.00799843]
-  [ 0.08402308  0.00340014  0.04202492 -0.05055574  0.11835655]
-  [ 0.00352848 -0.02568576 -0.08056175  0.06994451  0.09152003]
-  [ 0.04089724 -0.19517297  0.19212601 -0.21531224  0.03563112]
-  [-0.28906721  0.07873128 -0.01326483 -0.18504807  0.02452871]
-  [-0.09979478 -0.1009931  -0.25594842  0.14314197 -0.30875987]
-  [-0.00814501 -0.02431242 -0.1140819  -0.14522757 -0.09230929]
-  [-0.11231296  0.0053857   0.00582423  0.18309449  0.13369997]
-  [-0.01302226 -0.13035376  0.02006471  0.09794775 -0.08067283]
-  [ 0.          0.          0.          0.          0.        ]]
-
-```
 ---
 ## TemporalMaxPooling
 
@@ -1359,6 +1251,8 @@ gradient input m is : [[[0.0	0.0	0.0	0.0	0.012729122070595622]
 
 [com.intel.analytics.bigdl.tensor.DenseTensor of size 1x8x5]
 ```
+
+
 ---
 ## VolumetricFullConvolution ##
 
@@ -1826,8 +1720,278 @@ output m is : [[[[[ 0.24059629  0.11875484 -0.07601731  0.18490529]
     [ 0.25339472 -0.09679155  0.09070791  0.21198538]]]]]
 ```
 
+
 ---
-## Upsampling1D ##
+## LocallyConnected1D ##
+
+**Scala:**
+```scala
+val module = LocallyConnected1D(
+  nInputFrame,inputFrameSize, outputFrameSize, kernelW, strideW = 1, propagateBack = true,
+  wRegularizer = null, bRegularizer = null, initWeight = null, initBias = null,
+  initGradWeight = null, initGradBias = null)
+```
+**Python:**
+```python
+module = LocallyConnected1D(
+  n_input_frame, input_frame_size, output_frame_size, kernel_w, stride_w=1, propagate_back=True,
+  w_regularizer=None, b_regularizer=None, init_weight=None, init_bias=None,
+  init_grad_weight=None, init_grad_bias=None)
+```
+
+ Applies a 1D convolution over an input sequence composed of nInputFrame frames with unshared weights.
+ The input tensor in `forward(input)` is expected to be a 3D tensor
+ (`nBatchFrame` x `nInputFrame` x `inputFrameSize`) or a 2D tensor
+ (`nInputFrame` x `inputFrameSize`).
+ Output of `forward(input)` is expected to be a 3D tensor
+ (`nBatchFrame` x `nOutputFrame` x `outputFrameSize`) or a 2D tensor
+ (`nOutputFrame` x `outputFrameSize`).
+
+* `nInputFrame` Length of the input frame expected in sequences given into `forward()`.
+* `inputFrameSize` The input frame size expected in sequences given into `forward()`.
+* `outputFrameSize` The output frame size the convolution layer will produce.
+* `kernelW` The kernel width of the convolution
+* `strideW` The step of the convolution in the width dimension.
+* `propagateBack` Whether propagate gradient back, default is true.
+* `wRegularizer` instance of `Regularizer`
+                 (eg. L1 or L2 regularization), applied to the input weights matrices.
+* `bRegularizer` instance of `Regularizer`
+                 applied to the bias.
+* `initWeight` Initial weight
+* `initBias` Initial bias
+* `initGradWeight` Initial gradient weight
+* `initGradBias` Initial gradient bias
+* `T` The numeric type in the criterion, usually which are `Float` or `Double`
+ 
+**Scala example:**
+```scala
+import com.intel.analytics.bigdl.numeric.NumericFloat
+val seed = 100
+RNG.setSeed(seed)
+val nInputFrame = 10
+val inputFrameSize = 5
+val outputFrameSize = 3
+val kW = 5
+val dW = 2
+val layer = LocallyConnected1D(nInputFrame, inputFrameSize, outputFrameSize, kW, dW)
+
+Random.setSeed(seed)
+val input = Tensor(10, 5).apply1(e => Random.nextFloat())
+val gradOutput = Tensor(3, 3).apply1(e => Random.nextFloat())
+
+val output = layer.updateOutput(input)
+> println(output)
+(1,.,.) =
+-0.2896616	0.018883035	-0.45641226	
+-0.41183263	-0.33292565	0.27988705	
+0.076636955	-0.39710814	0.59631383	
+
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 3x3]
+
+val gradInput = layer.updateGradInput(input, gradOutput)
+> println(gradInput)
+(1,.,.) =
+0.018415622	 -0.10201519  -0.15641063	-0.08271551	  -0.060939234	
+0.13609992	 0.14934899	  0.06083451	-0.13943195	  -0.11092151	
+-0.08760113	 0.06923811	  -0.07376863	0.06743649	  0.042455398	
+0.064692274	 0.15720972	  0.13673763	0.03617531	  0.12507091	
+-0.078272685 -0.25193688  0.10712688	-0.11330205	  -0.19239372	
+-0.10032463	 -0.06266674  0.1048636	    0.26058376	  -0.40386787	
+-0.10379471	 0.07291742	  -0.28790376   0.06023993	  0.057165086	
+0.15167418	 0.07384029	  -0.052450493  -0.07709345	  -0.016432922	
+-0.1044948	 0.060714033  0.08341185	-0.082587965  0.052750245	
+0.0	         0.0	      0.0	        0.0	          0.0	
+
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 10x5]
+```
+
+**Python example:**
+```python
+from bigdl.nn.layer import LocallyConnected1D
+import numpy as np
+nInputFrame = 10
+inputFrameSize = 5
+outputFrameSize = 3
+kW = 5
+dW = 2
+layer = LocallyConnected1D(nInputFrame, inputFrameSize, outputFrameSize, kW, dW)
+
+input = np.random.rand(10, 5)
+gradOutput = np.random.rand(3, 3)
+
+output = layer.forward(input)
+> print(output)
+[[ 0.37944531 -0.25905907 -0.02284177]
+ [-0.06727666 -0.48430425 -0.12338555]
+ [ 0.5237388  -0.72521925 -0.21979821]]
+ 
+gradInput = layer.backward(input, gradOutput)
+> print(gradInput)
+[[-0.22256926 -0.11267932  0.05445758 -0.06569604  0.00799843]
+ [ 0.08402308  0.00340014  0.04202492 -0.05055574  0.11835655]
+ [ 0.00352848 -0.02568576 -0.08056175  0.06994451  0.09152003]
+ [ 0.04089724 -0.19517297  0.19212601 -0.21531224  0.03563112]
+ [-0.28906721  0.07873128 -0.01326483 -0.18504807  0.02452871]
+ [-0.09979478 -0.1009931  -0.25594842  0.14314197 -0.30875987]
+ [-0.00814501 -0.02431242 -0.1140819  -0.14522757 -0.09230929]
+ [-0.11231296  0.0053857   0.00582423  0.18309449  0.13369997]
+ [-0.01302226 -0.13035376  0.02006471  0.09794775 -0.08067283]
+ [ 0.          0.          0.          0.          0.        ]]
+
+```
+
+---
+## LocallyConnected2D ##
+**Scala:**
+```scala
+val module = LocallyConnected2D(
+   nInputPlane, inputWidth, inputHeight, nOutputPlane, kernelW, kernelH, 
+   strideW = 1, strideH = 1, padW = 0, padH = 0, propagateBack = true, 
+   wRegularizer = null, bRegularizer = null, initWeight = null, initBias = null,
+   initGradWeight = null, initGradBias = null, withBias = true, format = DataFormat.NCHW)
+```
+**Python:**
+```python
+module = LocallyConnected2D(
+    n_input_plane, input_width, input_height, n_output_plane,
+    kernel_w, kernel_h, stride_w=1, stride_h=1, pad_w=0, pad_h=0,
+    propagate_back=True, wRegularizer=None, bRegularizer=None,
+    init_weight=None, init_bias=None, init_grad_weight=None,
+    init_grad_bias=None, with_bias=True, data_format="NCHW")
+```                            
+
+The LocallyConnected2D layer works similarly to the [SpatialConvolution](#spatialconvolution) layer, except that weights are unshared, that is, a different set of filters is applied at each different patch of the input.
+
+* `nInputPlane` The number of expected input planes in the image.
+* `inputWidth` The input width.
+* `inputHeight` The input height.
+* `nOutputPlane` The number of output planes the convolution layer will produce.
+* `kernelW` The kernel width of the convolution.
+* `kernelH` The kernel height of the convolution.
+* `strideW` The step of the convolution in the width dimension.
+* `strideH` The step of the convolution in the height dimension.
+* `padW` The additional zeros added per width to the input planes.
+* `padH` The additional zeros added per height to the input planes.
+* `propagateBack` Whether to propagate gradient back.
+* `wRegularizer` Weight regularizer.
+* `bRegularizer` Bias regularizer.
+* `initWeight` Initial weight.
+* `initBias` Initial bias.
+* `initGradWeight` Initial gradient weight.
+* `initGradBias` Initial gradient bias.
+* `withBias` Whether to include bias.
+* `format` Data format of the input. Either "NHWC" or "NCHW".
+
+                
+**Scala example:**
+```scala
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+import com.intel.analytics.bigdl.nn.abstractnn.DataFormat
+import com.intel.analytics.bigdl.nn.LocallyConnected2D
+import com.intel.analytics.bigdl.tensor.Tensor
+
+val layer = LocallyConnected2D(2, 6, 3, 3, 1, 2, format=DataFormat.NHWC)
+val input = Tensor(1, 3, 6, 2).rand()
+val output = layer.forward(input)
+
+input: com.intel.analytics.bigdl.tensor.Tensor[Float] =
+(1,1,.,.) =
+0.580334	0.59774524
+0.35452667	0.9134508
+0.56355035	0.10698065
+0.95197415	0.10339011
+0.6571263	0.35572186
+0.31106102	0.97996104
+
+(1,2,.,.) =
+0.87887615	0.8108329
+0.7184107	0.487163
+0.85714895	0.30265027
+0.4407469	0.94804007
+0.5460197	0.01421738
+0.74672765	0.23766468
+
+(1,3,.,.) =
+0.10655104	0.008004449
+0.142883	0.7885532
+0.12025218	0.9536053
+0.85908693	0.088657066
+0.42529714	0.64380044
+0.8999299	0.6074533
+
+[com.intel.analytics.bigdl.tensor.DenseTensor$mcF$sp of size 1x3x6x2]
+
+
+output: com.intel.analytics.bigdl.tensor.Tensor[Float] =
+(1,1,.,.) =
+0.7493179	  0.27513236	-0.2982489
+-0.41126582	  0.21310717	0.36723173
+-0.039210618  0.13379198	-0.28216434
+0.19143593	  -0.61731964	-0.018212453
+0.24316064	  -1.1187351	0.74201244
+0.060099036	  -0.5223875	-0.95892024
+
+(1,2,.,.) =
+-0.4977209	 0.19270697	   -0.00647337
+-0.18642347	 -0.057786018  0.33848432
+0.044415057	 -0.12975587   -0.054034393
+0.46163	     0.06908426	   -0.17127737
+-0.07933617	 0.190754	   0.6044696
+-0.723027	 0.14250416	   0.51286244
+
+[com.intel.analytics.bigdl.tensor.DenseTensor of size 1x2x6x3]
+```
+
+**Python example:**
+```python
+import numpy as np
+from bigdl.nn.layer import LocallyConnected2D
+
+layer = LocallyConnected2D(2, 6, 3, 3, 1, 2, data_format="NHWC")
+input = np.random.rand(1, 3, 6, 2)
+output = layer.forward(input)
+
+print(input)
+[[[[  6.13867469e-01,   5.15609721e-01],
+   [  5.14951616e-01,   4.93308310e-01],
+   [  7.34218405e-01,   6.06311945e-01],
+   [  9.38263668e-01,   3.26766196e-01],
+   [  4.24955447e-02,   3.30625440e-01],
+   [  3.55858423e-01,   6.10869469e-01]],
+
+  [[  3.75525334e-02,   4.93555936e-02],
+   [  4.44188497e-01,   3.51001813e-02],
+   [  8.11139320e-01,   4.87916727e-01],
+   [  4.00786464e-01,   1.65522882e-01],
+   [  5.98298525e-01,   9.54343135e-01],
+   [  2.25942857e-01,   5.76090257e-02]],
+
+  [[  1.34708024e-01,   4.81133433e-01],
+   [  7.63198918e-01,   2.96906096e-01],
+   [  6.01935030e-01,   2.39748841e-01],
+   [  5.32036004e-01,   1.86107334e-01],
+   [  9.38617798e-01,   6.83511632e-04],
+   [  2.34639435e-01,   8.04904706e-01]]]]
+  
+print(output)
+[[[[-0.01100884,  0.59226239, -0.15626255],
+   [ 0.29099607,  0.16722232, -0.39429453],
+   [ 0.22557285,  0.30368266,  0.53235221],
+   [ 0.05602939, -0.07677993, -0.32399753],
+   [ 0.47589377, -0.15926963,  0.1135996 ],
+   [ 0.25957716,  0.17047183,  0.21640816]],
+
+  [[-0.15497619,  0.29392233, -0.12167639],
+   [ 0.60150111, -0.001901  ,  0.294438  ],
+   [-0.05004713,  0.22379839,  0.53971994],
+   [ 0.23204027,  0.17921877,  0.29594338],
+   [ 0.91105354,  0.881271  , -0.69958985],
+   [ 0.45518994, -0.645486  ,  0.37325871]]]]
+```
+
+
+---
+## UpSampling1D ##
 
 **Scala:**
 ```scala
@@ -1837,7 +2001,7 @@ val module = UpSampling1D(length: Int)
 ```python
 m = UpSampling1D(length)
 ```
-Upsampling layer for 1D inputs. Repeats each temporal step length times along the time axis. 
+UpSampling layer for 1D inputs. Repeats each temporal step length times along the time axis. 
 
 If input's size is (batch, steps, features), then the output's size will be (batch, steps * length, features). 
 
@@ -1890,20 +2054,19 @@ print "output m is :",out
 Gives the output,
 
 ```python
-input is : [[[[[ 0.80314148  0.79158609]
+input is : 
+[[[[[ 0.80314148  0.79158609]
     [ 0.3988551   0.91726511]]
-
    [[ 0.86814757  0.90733343]
     [ 0.34470172  0.03056507]]]
 
-
   [[[ 0.62367481  0.20093996]
     [ 0.57614891  0.75442351]]
-
    [[ 0.52572424  0.04730832]
     [ 0.74973562  0.2245238 ]]]]]
 creating: createUpSampling3D
-output m is : [[[[[ 0.80314147  0.80314147  0.7915861   0.7915861 ]
+output m is : 
+[[[[[ 0.80314147  0.80314147  0.7915861   0.7915861 ]
     [ 0.80314147  0.80314147  0.7915861   0.7915861 ]
     [ 0.39885509  0.39885509  0.91726512  0.91726512]
     [ 0.39885509  0.39885509  0.91726512  0.91726512]]
@@ -1946,185 +2109,8 @@ output m is : [[[[[ 0.80314147  0.80314147  0.7915861   0.7915861 ]
 ```
 
 
-## LocallyConnected2D ##
-**Scala:**
-```scala
-val module = LocallyConnected2D(
-   nInputPlane, inputWidth, inputHeight, nOutputPlane, kernelW, kernelH, 
-   strideW = 1, strideH = 1, padW = 0, padH = 0, propagateBack = true, 
-   wRegularizer = null, bRegularizer = null, initWeight = null, initBias = null,
-   initGradWeight = null, initGradBias = null, withBias = true, format = DataFormat.NCHW
-  )
-```
-**Python:**
-```python
-module = LocallyConnected2D(
-    n_input_plane, input_width, input_height, n_output_plane, 
-    kernel_w, kernel_h, stride_w=1, stride_h=1, pad_w=0, pad_h=0，
-    propagate_back=True wRegularizer=None, bRegularizer=None, 
-    init_weight=None, init_bias=None, init_grad_weight=None, 
-    init_grad_bias=None, with_bias=True, data_format="NCHW", bigdl_type="float"
-  )
-```                            
-
-The LocallyConnected2D layer works similarly to the [SpatialConvolution](#SpatialConvolution) layer, except that weights are unshared, that is, a different set of filters is applied at each different patch of the input.
-
-    * `nInputPlane` The number of expected input planes in the image given into forward()
-    * `inputWidth` The input width
-    * `inputHeight` The input height
-    * `nOutputPlane` The number of output planes the convolution layer will produce.
-    * `kernelW` The kernel width of the convolution
-    * `kernelH` The kernel height of the convolution
-    * `strideW` The step of the convolution in the width dimension.
-    * `strideH` The step of the convolution in the height dimension
-    * `padW` The additional zeros added per width to the input planes.
-    * `padH` The additional zeros added per height to the input planes.
-    * `propagateBack` Propagate gradient back
-    * `wRegularizer` weight regularizer
-    * `bRegularizer` bias regularizer
-    * `initWeight` initial weight
-    * `initBias` initial bias
-    * `initGradWeight` initial gradient weight
-    * `initGradBias` initial gradient bias
-    * `withBias` if has bias
-    * `format` data format of "NHWC" or "NCHW" 
-
-                
-**Scala example:**
-```scala
-    import com.intel.analytics.bigdl.numeric.NumericFloat
-    val seed = 100
-    val nInputPlane = 2
-    val inputWidth = 5
-    val inputHeight = 6
-    val nOutputPlane = 3
-    val kernelW = 2
-    val kernelH = 2
-    val layer =
-      LocallyConnected2D(nInputPlane, inputWidth, inputHeight, nOutputPlane, kernelW, kernelH)
-    RandomGenerator.RNG.setSeed(seed)
-
-    val input = Tensor(2, 6, 5).rand()
-    val gradOutput = Tensor(3, 5, 4).rand()
-
-    val output = layer.updateOutput(input)
-    println(output)
-    (1,.,.) =
-    0.17647906	0.8775271	-0.080036566	-0.004671626	
-    0.14355466	0.45643336	-0.10494915	-0.1735943	
-    -0.12197773	-0.49329764	-0.24249703	-0.2617478	
-    0.19447346	0.4703284	-0.3527537	0.23077014	
-    -0.20599177	0.28811574	-0.18620077	-0.18386546	
-    
-    (2,.,.) =
-    3.384333E-4	-0.12615602	-0.40002483	-0.27152276	
-    -0.7540833	-0.32054484	-0.35863683	-0.57660246	
-    0.28343976	-0.35724318	-0.10704574	-0.26895517	
-    -0.0562459	0.22421414	0.47788614	-0.05190593	
-    0.057448015	0.23087567	-0.25494385	0.4489367	
-    
-    (3,.,.) =
-    -0.13777356	-0.31562907	-0.11815577	0.6334404	
-    -0.28615183	-0.63486195	-0.0037879273	0.027466595	
-    0.43977723	-0.64502287	-0.19895981	-0.47112313	
-    0.18942249	-0.20536484	0.4162589	-0.021808714	
-    -0.65722156	0.20808706	0.03519762	-0.52184033	
-    
-    [com.intel.analytics.bigdl.tensor.DenseTensor of size 3x5x4]
-
-    val gradInput = layer.updateGradInput(input, gradOutput)
-    println(gradInput)
-    (1,.,.) =
-    -0.48506415	0.14029236	0.8532893	-0.20905504	0.19171616	
-    -0.06936024	0.2187909	-0.43443507	0.23042351	-0.24841747	
-    -0.37955117	-0.092436604	-0.07581052	0.40431964	-0.09160684	
-    0.28536522	0.11569499	-0.0021990687	-0.775666	0.41174507	
-    0.20034207	0.21737753	0.2034649	0.3731114	0.3860089	
-    -0.0064089634	-0.112695396	0.020010173	0.23506415	0.12413055	
-    
-    (2,.,.) =
-    0.17158572	-0.35514742	-0.21654607	-0.05913275	-0.14893425	
-    0.024896637	-0.24267367	0.7055824	0.1219407	-0.054450452	
-    -0.19930995	-0.2985004	-0.031985015	0.56274873	-0.4794579	
-    0.017137006	0.31225458	0.5399339	-0.7097369	-0.012160815	
-    -0.22102061	-0.44103062	-0.21408686	-0.1520442	0.10273472	
-    -0.23141515	-0.18224181	-0.13244827	-0.15743408	-0.106396414	
-    
-    [com.intel.analytics.bigdl.tensor.DenseTensor of size 2x6x5]
-```
-
-**Python example:**
-```python
-from bigdl.nn.layer import LocallyConnected2D
-import numpy as np
-seed = 100         
-nInputPlane = 2    
-inputWidth = 5     
-inputHeight = 6    
-nOutputPlane = 3   
-layer = LocallyConnected2D(nInputPlane, inputWidth, inputHeight, nOutputPlane, kernelW, kernelH) 
-
-input = np.random.rand(2, 6, 5)
-gradOutput = np.random.rand(3, 5, 4)
-
-output = layer.forward(input)
-print(output)
-    [[0.17647906 0.8775271	-0.080036566	-0.004671626]	
-       [0.14355466	0.45643336	-0.10494915	-0.1735943]	
-       [-0.12197773	-0.49329764	-0.24249703	-0.2617478]	
-       [0.19447346	0.4703284	-0.3527537	0.23077014]	
-       [-0.20599177	0.28811574	-0.18620077	-0.18386546]]
-       
-       [3.384333E-4	-0.12615602	-0.40002483	-0.27152276]	
-       [-0.7540833	-0.32054484	-0.35863683	-0.57660246]	
-       [0.28343976	-0.35724318	-0.10704574	-0.26895517]	
-       [-0.0562459	0.22421414	0.47788614	-0.05190593]	
-       [0.057448015	0.23087567	-0.25494385	0.4489367]]
-       
-       [-0.13777356	-0.31562907	-0.11815577	0.6334404]	
-       [-0.28615183	-0.63486195	-0.0037879273	0.027466595]
-       [0.43977723	-0.64502287	-0.19895981	-0.47112313]	
-       [0.18942249	-0.20536484	0.4162589	-0.021808714]	
-       [-0.65722156	0.20808706	0.03519762	-0.52184033]]]
- 
-gradInput = layer.backward(input, gradOutput)
-print(gradInput)
-[[-0.48506415	0.14029236	0.8532893	-0.20905504	0.19171616]	
-    [-0.06936024	0.2187909	-0.43443507	0.23042351	-0.24841747	]
-    [-0.37955117	-0.092436604	-0.07581052	0.40431964	-0.09160684]	
-    [0.28536522	0.11569499	-0.0021990687	-0.775666	0.41174507]
-    [0.20034207	0.21737753	0.2034649	0.3731114	0.3860089]	
-    [-0.0064089634	-0.112695396	0.020010173	0.23506415	0.12413055]]
-    
-    [0.17158572	-0.35514742	-0.21654607	-0.05913275	-0.14893425]	
-    [0.024896637	-0.24267367	0.7055824	0.1219407	-0.054450452]	
-    [-0.19930995	-0.2985004	-0.031985015	0.56274873	-0.4794579]	
-    [0.017137006	0.31225458	0.5399339	-0.7097369	-0.012160815]	
-    [-0.22102061	-0.44103062	-0.21408686	-0.1520442	0.10273472]	
-    [-0.23141515	-0.18224181	-0.13244827	-0.15743408	-0.106396414]]]	
-```module = UpSampling1D(2)
-input = np.arange(1, 19).reshape(2, 3, 3)
-module.forward(input)
-```
-The output is 
-```python
-array([[[  1.,   2.,   3.],
-        [  1.,   2.,   3.],
-        [  4.,   5.,   6.],
-        [  4.,   5.,   6.],
-        [  7.,   8.,   9.],
-        [  7.,   8.,   9.]],
-
-       [[ 10.,  11.,  12.],
-        [ 10.,  11.,  12.],
-        [ 13.,  14.,  15.],
-        [ 13.,  14.,  15.],
-        [ 16.,  17.,  18.],
-        [ 16.,  17.,  18.]]], dtype=float32)
-```
-
 ---
-## Upsampling2D ##
+## UpSampling2D ##
 
 **Scala:**
 ```scala
@@ -2134,7 +2120,7 @@ val module = UpSampling2D(size: Array[Int], format: DataFormat = DataFormat.NCHW
 ```python
 m = UpSampling2D(size, data_format)
 ```
-Upsampling layer for 2D inputs. 
+UpSampling layer for 2D inputs. 
 Repeats the heights and widths of the data by size[0] and size[1] respectively. 
 
 If input's dataformat is NCHW, then the size of output will be (N, C, H * size[0], W * size[1]). 
@@ -2226,7 +2212,7 @@ array([[[[  1.,   1.,   1.,   2.,   2.,   2.,   3.,   3.,   3.],
          [ 34.,  34.,  34.,  35.,  35.,  35.,  36.,  36.,  36.]]]], dtype=float32)
 ```
 ---
-## Upsampling3D ##
+## UpSampling3D ##
 
 **Scala:**
 ```scala
@@ -2237,7 +2223,7 @@ val module = UpSampling3D(size: Array[Int])
 m = UpSampling3D(size)
 ```
 
-Upsampling3D is a module that upsamples for 3D inputs.
+UpSampling3D is a module that upsamples for 3D inputs.
 It repeats the 1st, 2nd and 3rd dimensions of the data by size[0], size[1] and size[2] respectively.
 The input data is assumed to be of the form ```minibatch x channels x depth x height x width```.
 
