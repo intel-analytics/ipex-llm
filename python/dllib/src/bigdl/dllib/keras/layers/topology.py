@@ -81,7 +81,7 @@ class KerasModel(KerasLayer, Container, SharedStaticUtils):
 
     def compile(self, optimizer, loss, metrics=None):
         """
-        Configures the learning process. Must be called before fit.
+        Configures the learning process. Must be called before fit or evaluate.
 
         # Arguments
         optimizer: Optimization method to be used. One can alternatively pass in the corresponding
@@ -152,7 +152,7 @@ class KerasModel(KerasLayer, Container, SharedStaticUtils):
         Evaluate a model on a given dataset in distributed mode.
 
         # Arguments
-        x: Input data. ANumpy array or RDD of Sample.
+        x: Input data. A Numpy array or RDD of Sample.
         y: Labels. A Numpy array. Default is None if x is already RDD of Sample.
         batch_size: Number of samples per gradient update.
         """
