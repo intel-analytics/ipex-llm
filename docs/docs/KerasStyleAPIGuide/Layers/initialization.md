@@ -6,4 +6,4 @@ Initialization methods initialize weights for layers. String representations of 
 * one
 * uniform
 * normal
-* glorot_uniform (a.k.a [Xavier](../../../APIGuide/Initializers/#xavier))
+* glorot_uniform (a.k.a [Xavier](../../APIGuide/Initializers/#xavier))
