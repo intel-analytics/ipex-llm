@@ -93,9 +93,15 @@ PYSPARK_DRIVER_PYTHON=./venv/bin/python PYSPARK_PYTHON=./venv.zip/venv/bin/pytho
        ${BigDL_HOME}/pyspark/bigdl/models/rnn/rnnexample.py --folder hdfs://xxx:9000/rnn/ --batchSize 12
 ```
 
-* `--folder` hdfs directory where `train.txt` and `val.txt` are located.
-
-* `--batchSize` option can be used to set batch size, the default value is 128.
+* `--folder` hdfs directory where `train.txt` and `val.txt` are located. the default value is /tmp/rnn.
+* `--batchSize` option can be used to set batch size, the default value is 12.
+* `--hiddenSize` hidden unit size in the rnn cell, the default value is 40.
+* `--vocabSize` vocabulary size, the default value is 4000.
+* `--learningRate` inital learning rate, the default value is 0.1.
+* `--weightDecay` weight decay, the default value is 0.
+* `--momentum` momentum, the default value is 0.
+* `--dampening` dampening for momentum, the default value is 0.
+* `--maxEpoch` max number of epochs to train, the default value is 30.
 
 ## Expected Training Output
 Users can see the Loss of the model printed by the program. The Loss, in this case, is the perplexity of the language model. The lower, the better.
