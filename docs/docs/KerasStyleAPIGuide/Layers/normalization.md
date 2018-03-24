@@ -20,8 +20,8 @@ BatchNormalization(epsilon=0.001, momentum=0.99, beta_init="zero", gamma_init="o
 
 * `epsilon`: Fuzz parameter. Default is 0.001.
 * `momentum`: Momentum in the computation of the exponential average of the mean and standard deviation of the data, for feature-wise normalization. Default is 0.99.
-* `betaInit`: Name of initialization function for shift parameter. Default is 'zero'.
-* `gammaInit`: Name of initialization function for scale parameter. Default is 'one'.
+* `betaInit`: Name of initialization function for shift parameter. See [here](initialization/#available-initialization-methods) for available initialization strings. Default is 'zero'.
+* `gammaInit`: Name of initialization function for scale parameter. See [here](initialization/#available-initialization-methods) for available initialization strings. Default is 'one'.
 * `dimOrdering`: Format of input data. Either 'th' (Channel First) or 'tf' (Channel Last). Default is 'th'. For 'th', axis along which to normalize is 1. For 'tf', axis is 3.
 * `inputShape`: Only need to specify this argument when you use this layer as the first layer of a model. For Scala API, it should be a [`Shape`](../keras-api-scala/#shape) object. For Python API, it should be a shape tuple. Batch dimension should be excluded.
 
