@@ -1,6 +1,6 @@
 A loss function (or objective function), specified when you [compile](training/#compile) the model, is the function that the model intends to optimize in the process of training.
 
-See [here](../../APIGuide/Losses) for available loss objects.
+See [here](../../APIGuide/Losses/) for available loss objects.
 
 For the sake of convenience, you can also use the corresponding string representation of a loss.
 
