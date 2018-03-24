@@ -1,4 +1,4 @@
-This page shows how to train, predict or evaluate a model using the Keras-Style API.
+This page shows how to train, evaluate or predict a model using the Keras-Style API.
 
 You may refer to the `User Guide` page to see how to define a model in [Python](../keras-api-python/) or [Scala](../keras-api-scala/) correspondingly.
 
