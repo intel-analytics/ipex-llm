@@ -137,7 +137,7 @@ Yarn Test Suite
    Set Environment Variable         https_proxy              ${https_proxy}
    ${submit}=                       Catenate                 SEPARATOR=/    /opt/work/spark-2.0.0-bin-hadoop2.7/bin    spark-submit
    Log To Console                   begin text classification
-   Run Shell                        ${submit} --master yarn --deploy-mode client --conf "spark.serializer=org.apache.spark.serializer.JavaSerializer" --conf spark.yarn.executor.memoryOverhead=600 --executor-cores 2 --num-executors 2 --driver-memory 150g --executor-memory 40g --class com.intel.analytics.bigdl.example.textclassification.TextClassifier ${jar_path} --batchSize 8 --baseDir /tmp/text_data --partitionNum 4
+   Run Shell                        ${submit} --master yarn --deploy-mode client --conf "spark.serializer=org.apache.spark.serializer.JavaSerializer" --conf spark.yarn.executor.memoryOverhead=10000 --executor-cores 2 --num-executors 2 --driver-memory 150g --executor-memory 40g --class com.intel.analytics.bigdl.example.textclassification.TextClassifier ${jar_path} --batchSize 8 --baseDir /tmp/text_data --partitionNum 4
    Log To Console                   begin DLClassifierLeNet
    Run Shell                        ${submit} --master yarn --deploy-mode client --conf "spark.serializer=org.apache.spark.serializer.JavaSerializer" --executor-cores 2 --num-executors 2 --driver-memory 150g --executor-memory 40g --class com.intel.analytics.bigdl.example.MLPipeline.DLClassifierLeNet ${jar_path} -f ./mnist -b 8 --maxEpoch 1
    Log To Console                   begin lenet
