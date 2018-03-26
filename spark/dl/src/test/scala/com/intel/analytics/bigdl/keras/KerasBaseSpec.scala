@@ -81,7 +81,7 @@ abstract class KerasBaseSpec extends BigDLSpecHelper {
     bgradInput.almostEqual(kgradInput, precision) should be(true)
   }
 
-  // compare the output and gradInput of Keras-Style API against Torch-Style API
+  // compare the output and gradInput of two supposedly compatible model definitions
   def compareModels(model1: Module[Float],
                     model2: Module[Float],
                     input: Tensor[Float],
