@@ -388,7 +388,7 @@ class ConvolutionDnn(
       }
 
       internal_weightFormat = MklDnnOps.queryFormat(fwd_pd, MklDnn.Query.weights_pd, 0)
-      if (internal_inputFormat != this.weightDnnFormat) {
+      if (internal_weightFormat != this.weightDnnFormat) {
         val res = MklDnnOps.reorderToInternal(
                   weights_memory, fwd_pd, MklDnn.Query.weights_pd, weightsBuffer, weight.size())
         reorder_weights = res._1
@@ -451,6 +451,10 @@ class ConvolutionDnn(
       if (input.getTensorType != MklDnnType) {
         MklDnnTensor.syncFromHeap(inputBuffer, input.storage().array(), input.storageOffset() - 1)
       } else {
+        if (inputBuffer != null && inputBuffer.ptr != 0 &&
+          inputBuffer.ptr != input.asInstanceOf[MklDnnTensor[Float]].ptr) {
+          inputBuffer.release()
+        }
         inputBuffer = input.asInstanceOf[MklDnnTensor[Float]]
       }
       inputBuffer_sync = true
@@ -570,7 +574,10 @@ class ConvolutionDnn(
 
       // for gradOutput
       if ((gradOutputBuffer == null && gradOutput.getTensorType != MklDnnType)
-        || (reorder_gradOutput_memory != 0L && gradOutputBuffer == null)) {
+        || (reorder_gradOutput_memory != 0L)) {
+        if (gradOutputBuffer != null) {
+          gradOutputBuffer.release()
+        }
         gradOutputBuffer = MklDnnTensor[Float](gradOutput.size())
       } else if (gradOutputBuffer != null && gradOutputBuffer.nElement() != gradOutput.nElement()) {
         gradOutputBuffer.release()
@@ -596,6 +603,10 @@ class ConvolutionDnn(
     } else {
       memoryPrimitives.append(reorder_gradOutput_memory, gradInput_memory, gradOutput_memory)
       buffer.append(gradOutputBuffer, gradInput, gradOutput)
+    }
+    if (gradOutputBuffer.ptr == 0) {
+      println(s"${reorder_gradOutput_memory}, ${update_primitive}")
+      println(s"gradOutput.ptr ${gradOutput.asInstanceOf[MklDnnTensor[Float]].ptr} ${gradOutput.size().mkString("\t")}")
     }
     if (reorder_weights_memory == 0L) {
       // sync here
@@ -740,6 +751,11 @@ class ConvolutionDnn(
       } else if (gradOutputBuffer != null && gradOutputBuffer.nElement() != gradOutput.nElement()) {
         gradOutputBuffer.release()
         gradOutputBuffer = MklDnnTensor[Float](gradOutput.size())
+      }
+
+      if (inputBuffer != null && reorder_src != 0 && input.isInstanceOf[MklDnnTensor[Float]] &&
+        input.asInstanceOf[MklDnnTensor[Float]].ptr == inputBuffer.asInstanceOf[MklDnnTensor[Float]].ptr) {
+        inputBuffer = MklDnnTensor[Float](input.size())
       }
     }
     /* build a simple net */

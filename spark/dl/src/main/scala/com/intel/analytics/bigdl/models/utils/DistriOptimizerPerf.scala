@@ -95,12 +95,12 @@ object DistriOptimizerPerf {
       case "vgg19" => (Vgg_19(1000), Tensor(param.batchSize, 3, 224, 224))
       case "resnet_50" =>
         val model = ResNet(1000, T("depth" -> 50, "optnet" -> true,
-        "dataset" -> ResNet.DatasetType.ImageNet))
+        "dataSet" -> ResNet.DatasetType.ImageNet))
         ResNet.shareGradInput(model)
         ResNet.modelInit(model)
         (model, Tensor(param.batchSize, 3, 224, 224))
       case "resnet_50_dnn" => (ResNet_dnn(1000, T("depth" -> 50, "optnet" -> true,
-        "dataset" -> ResNet_dnn.DatasetType.ImageNet)), Tensor(param.batchSize, 3, 224, 224))
+        "dataSet" -> ResNet_dnn.DatasetType.ImageNet)), Tensor(param.batchSize, 3, 224, 224))
     }
     param.inputData match {
       case "constant" => input.fill(0.01f)

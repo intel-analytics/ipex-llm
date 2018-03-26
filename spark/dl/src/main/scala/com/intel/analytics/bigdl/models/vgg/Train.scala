@@ -74,7 +74,7 @@ object Train {
         BGRImgToBatch(param.batchSize)
 
       if (param.checkpoint.isDefined) {
-        optimizer.setCheckpoint(param.checkpoint.get, Trigger.everyEpoch)
+        optimizer.setCheckpoint(param.checkpoint.get, Trigger.maxEpoch(param.maxEpoch))
       }
 
       if (param.overWriteCheckpoint) {
@@ -93,7 +93,7 @@ object Train {
       }
 
       optimizer
-        .setValidation(Trigger.everyEpoch, validateSet, Array(new Top1Accuracy[Float]))
+        .setValidation(Trigger.maxIteration(1), validateSet, Array(new Top1Accuracy[Float]))
         .setOptimMethod(optimMethod)
         .setEndWhen(Trigger.maxEpoch(param.maxEpoch))
         .optimize()

@@ -202,8 +202,13 @@ class SpatialBatchNormalization[T: ClassTag](
         MklDnnOps.primitiveDescQueryMemory(input.getPrimitiveDesc())
       }
 
-      val bnDesc = MklDnn.BatchNormForwardDescInit(MklDnn.PropKind.forward,
-        srcMemDesc, eps.toFloat, MklDnn.BatchNormFlag.mkldnn_use_scaleshift)
+      val bnDesc = if (isTraining()) {
+        MklDnn.BatchNormForwardDescInit(MklDnn.PropKind.forward,
+          srcMemDesc, eps.toFloat, MklDnn.BatchNormFlag.mkldnn_use_scaleshift)
+      } else {
+        MklDnn.BatchNormForwardDescInit(MklDnn.PropKind.forwardInference,
+          srcMemDesc, eps.toFloat, MklDnn.BatchNormFlag.mkldnn_use_scaleshift)
+      }
       val opPrimDesc = MklDnn.PrimitiveDescCreate(bnDesc, engine, 0)
 
       forwardPrimDesc = opPrimDesc

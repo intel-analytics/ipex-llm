@@ -27,7 +27,7 @@ object VggForCifar10 {
     def convBNReLU(nInputPlane: Int, nOutPutPlane: Int)
     : Sequential[Float] = {
       vggBnDo.add(SpatialConvolution(nInputPlane, nOutPutPlane, 3, 3, 1, 1, 1, 1))
-//      vggBnDo.add(SpatialBatchNormalization(nOutPutPlane, 1e-3))
+      vggBnDo.add(SpatialBatchNormalization(nOutPutPlane, 1e-3))
       vggBnDo.add(ReLU(false))
       vggBnDo
     }
@@ -48,30 +48,30 @@ object VggForCifar10 {
     convBNReLU(256, 256)
     vggBnDo.add(SpatialMaxPooling(2, 2, 2, 2).ceil())
 
-//    convBNReLU(256, 512)
-//    if (hasDropout) vggBnDo.add(Dropout(0.4))
-//    convBNReLU(512, 512)
-//    if (hasDropout) vggBnDo.add(Dropout(0.4))
-//    convBNReLU(512, 512)
-//    vggBnDo.add(SpatialMaxPooling(2, 2, 2, 2).ceil())
-//
-//    convBNReLU(512, 512)
-//    if (hasDropout) vggBnDo.add(Dropout(0.4))
-//    convBNReLU(512, 512)
-//    if (hasDropout) vggBnDo.add(Dropout(0.4))
-//    convBNReLU(512, 512)
-//    vggBnDo.add(SpatialMaxPooling(2, 2, 2, 2).ceil())
-//    vggBnDo.add(View(512))
-//
-//    val classifier = Sequential[Float]()
-//    if (hasDropout) classifier.add(Dropout(0.5))
-//    classifier.add(Linear(512, 512))
-//    classifier.add(BatchNormalization(512))
-//    classifier.add(ReLU(true))
-//    if (hasDropout) classifier.add(Dropout(0.5))
-//    classifier.add(Linear(512, classNum))
-//    classifier.add(LogSoftMax())
-//    vggBnDo.add(classifier)
+    convBNReLU(256, 512)
+    if (hasDropout) vggBnDo.add(Dropout(0.4))
+    convBNReLU(512, 512)
+    if (hasDropout) vggBnDo.add(Dropout(0.4))
+    convBNReLU(512, 512)
+    vggBnDo.add(SpatialMaxPooling(2, 2, 2, 2).ceil())
+
+    convBNReLU(512, 512)
+    if (hasDropout) vggBnDo.add(Dropout(0.4))
+    convBNReLU(512, 512)
+    if (hasDropout) vggBnDo.add(Dropout(0.4))
+    convBNReLU(512, 512)
+    vggBnDo.add(SpatialMaxPooling(2, 2, 2, 2).ceil())
+    vggBnDo.add(View(512))
+
+    val classifier = Sequential[Float]()
+    if (hasDropout) classifier.add(Dropout(0.5))
+    classifier.add(Linear(512, 512))
+    classifier.add(BatchNormalization(512))
+    classifier.add(ReLU(true))
+    if (hasDropout) classifier.add(Dropout(0.5))
+    classifier.add(Linear(512, classNum))
+    classifier.add(LogSoftMax())
+    vggBnDo.add(classifier)
 
     vggBnDo
   }
@@ -126,14 +126,13 @@ object VggForCifar10 {
     val output = LogSoftMax().inputs(linear2)
     Graph(input, output)
   }
-
   def dnn(classNum: Int, hasDropout: Boolean = true): Module[Float] = {
     val vggBnDo = Sequential[Float]()
 
     def convBNReLU(nInputPlane: Int, nOutPutPlane: Int)
     : Sequential[Float] = {
       vggBnDo.add(mkldnn.ConvolutionDnn(nInputPlane, nOutPutPlane, 3, 3, 1, 1, 1, 1))
-//      vggBnDo.add(mkldnn.SpatialBatchNormalization(nOutPutPlane, 1e-3))
+      vggBnDo.add(mkldnn.SpatialBatchNormalization(nOutPutPlane, 1e-3))
       vggBnDo.add(mkldnn.ReLUDnn(false))
       vggBnDo
     }
@@ -154,31 +153,29 @@ object VggForCifar10 {
     convBNReLU(256, 256)
     vggBnDo.add(mkldnn.PoolingDnn(2, 2, 2, 2).ceil())
 
-//    convBNReLU(256, 512)
-//    if (hasDropout) vggBnDo.add(mkldnn.DropoutDnn(0.4))
-//    convBNReLU(512, 512)
-//    if (hasDropout) vggBnDo.add(mkldnn.DropoutDnn(0.4))
-//    convBNReLU(512, 512)
-//    vggBnDo.add(mkldnn.PoolingDnn(2, 2, 2, 2).ceil())
-//
-//    convBNReLU(512, 512)
-//    if (hasDropout) vggBnDo.add(mkldnn.DropoutDnn(0.4))
-//    convBNReLU(512, 512)
-//    if (hasDropout) vggBnDo.add(mkldnn.DropoutDnn(0.4))
-//    convBNReLU(512, 512)
-//    vggBnDo.add(mkldnn.PoolingDnn(2, 2, 2, 2).ceil())
-//    vggBnDo.add(mkldnn.MemoryReOrder(1, 4))
-//    vggBnDo.add(View(512))
+    convBNReLU(256, 512)
+    if (hasDropout) vggBnDo.add(mkldnn.DropoutDnn(0.4))
+    convBNReLU(512, 512)
+    if (hasDropout) vggBnDo.add(mkldnn.DropoutDnn(0.4))
+    convBNReLU(512, 512)
+    vggBnDo.add(mkldnn.PoolingDnn(2, 2, 2, 2).ceil())
 
-//    val classifier = Sequential[Float]()
-//    if (hasDropout) classifier.add(mkldnn.DropoutDnn(0.5))
-//    classifier.add(mkldnn.Linear(512, 512))
-//    classifier.add(BatchNormalization(512))
-//    classifier.add(mkldnn.ReLUDnn(true))
-//    if (hasDropout) classifier.add(mkldnn.DropoutDnn(0.5))
-//    classifier.add(mkldnn.Linear(512, classNum).setShouldConvert(true))
-//    classifier.add(LogSoftMax())
-//    vggBnDo.add(classifier)
+    convBNReLU(512, 512)
+    if (hasDropout) vggBnDo.add(mkldnn.DropoutDnn(0.4))
+    convBNReLU(512, 512)
+    if (hasDropout) vggBnDo.add(mkldnn.DropoutDnn(0.4))
+    convBNReLU(512, 512)
+    vggBnDo.add(mkldnn.PoolingDnn(2, 2, 2, 2).ceil())
+
+    val classifier = Sequential[Float]()
+    if (hasDropout) classifier.add(mkldnn.DropoutDnn(0.5))
+    classifier.add(mkldnn.Linear(512, 512))
+    classifier.add(BatchNormalization(512))
+    classifier.add(mkldnn.ReLUDnn(true))
+    if (hasDropout) classifier.add(mkldnn.DropoutDnn(0.5))
+    classifier.add(mkldnn.Linear(512, classNum).setShouldConvert(true))
+    classifier.add(LogSoftMax())
+    vggBnDo.add(classifier)
 
     vggBnDo
   }
