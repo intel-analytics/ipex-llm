@@ -29,6 +29,8 @@
           <include>spark-submit-with-bigdl.sh</include>
           <include>jupyter-with-bigdl.sh</include>
           <include>spark-shell-with-bigdl.sh</include>
+          <include>python_package.sh</include>
+          <include>requirements.txt</include>
       </includes>
     </fileSet>
     <fileSet>
