@@ -133,7 +133,7 @@ object DistriOptimizerPerf {
     )
 
     optimizer
-      .setValidation(Trigger.everyEpoch,
+      .setValidation(Trigger.maxEpoch(param.maxEpoch),
         dummyDataSet, Array(new Top1Accuracy[Float], new Top5Accuracy[Float]))
       .setEndWhen(Trigger.maxEpoch(param.maxEpoch))
       .optimize()
