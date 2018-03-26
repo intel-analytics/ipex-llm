@@ -16,8 +16,10 @@
 * BroadcastGradientArgs
 * Cast
 * Ceil
+* ConcatOffset
 * ConcatV2
 * Const
+* ControlTrigger
 * Conv2D
 * Conv2DBackpropFilter
 * Conv2DBackpropInput
@@ -41,9 +43,11 @@
 * Div
 * Elu
 * EluGrad
+* Enter
 * Equal
 * Erf
 * Erfc
+* Exit
 * Exp
 * ExpandDims
 * Expm1
@@ -60,6 +64,7 @@
 * Identity
 * InTopK
 * Inv
+* InvertPermutation
 * InvGrad
 * IsFinite
 * IsInf
@@ -76,6 +81,7 @@
 * LogicalAnd
 * LogicalNot
 * LogicalOr
+* LoopCond
 * MatMul
 * MaxPool
 * MaxPoolGrad
@@ -86,6 +92,7 @@
 * Mod
 * Mul
 * Neg
+* NextIteration
 * NoOp
 * NotEqual
 * OneHot
@@ -107,6 +114,7 @@
 * RealDiv
 * Reciprocal
 * ReciprocalGrad
+* RefEnter
 * Relu
 * Relu6
 * Relu6Grad
@@ -136,6 +144,12 @@
 * Square
 * SquaredDifference
 * Squeeze
+* Stack
+* StackPopV2
+* StackPop
+* StackPush
+* StackPushV2
+* StackV2
 * StridedSlice
 * Sub
 * Substr
@@ -143,6 +157,15 @@
 * Switch
 * Tanh
 * TanhGrad
+* TensorArrayConcatV3
+* TensorArrayGatherV3
+* TensorArrayGradV3
+* TensorArrayReadV3
+* TensorArrayScatterV3
+* TensorArraySizeV3
+* TensorArraySplitV3
+* TensorArrayV3
+* TensorArrayWriteV3
 * TensorflowOpsLoader
 * Tile
 * TopK
