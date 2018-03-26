@@ -138,6 +138,8 @@ Yarn Test Suite
    ${submit}=                       Catenate                 SEPARATOR=/    /opt/work/spark-2.0.0-bin-hadoop2.7/bin    spark-submit
    Log To Console                   begin lenet
    Run Shell                        ${submit} --master yarn --deploy-mode client --conf "spark.serializer=org.apache.spark.serializer.JavaSerializer" --executor-cores 10 --num-executors 3 --driver-memory 150g --class com.intel.analytics.bigdl.models.lenet.Train ${jar_path} -f ${mnist_data_source} -b 120 -e 3
+   Log To Console                   begin DLClassifierLeNet
+   Run Shell                        ${submit} --master yarn --deploy-mode client --conf "spark.serializer=org.apache.spark.serializer.JavaSerializer" --executor-cores 2 --num-executors 2 --driver-memory 150g --executor-memory 40g --class com.intel.analytics.bigdl.example.MLPipeline.DLClassifierLeNet ${jar_path} -f ./mnist -b 8 --maxEpoch 1
    Log To Console                   begin autoencoder Train 
    Run Shell                        ${submit} --master yarn --deploy-mode client --conf "spark.serializer=org.apache.spark.serializer.JavaSerializer" --executor-cores 10 --num-executors 3 --driver-memory 150g --class com.intel.analytics.bigdl.models.autoencoder.Train ${jar_path} -b 120 -e 1 -f ./mnist
    Log To Console                   begin resnet Train
@@ -146,8 +148,6 @@ Yarn Test Suite
    Run Shell                        ${submit} --master yarn --deploy-mode client --conf "spark.serializer=org.apache.spark.serializer.JavaSerializer" --executor-cores 10 --num-executors 3 --driver-memory 150g --class com.intel.analytics.bigdl.models.rnn.Train ${jar_path} -f ./ -s ./models --nEpochs 1 --checkpoint ./model/ -b 120
    Log To Console                   begin PTBWordLM
    Run Shell                        ${submit} --master yarn --deploy-mode client --conf "spark.serializer=org.apache.spark.serializer.JavaSerializer" --executor-cores 2 --num-executors 2 --driver-memory 150g --executor-memory 40g --class com.intel.analytics.bigdl.example.languagemodel.PTBWordLM ${jar_path} -f ./simple-examples/data -b 8 --numLayers 2 --vocab 10001 --hidden 650 --numSteps 35 --learningRate 0.005 -e 1 --learningRateDecay 0.001 --keepProb 0.5 --overWrite
-   Log To Console                   begin DLClassifierLeNet
-   Run Shell                        ${submit} --master yarn --deploy-mode client --conf "spark.serializer=org.apache.spark.serializer.JavaSerializer" --executor-cores 2 --num-executors 2 --driver-memory 150g --executor-memory 40g --class com.intel.analytics.bigdl.example.MLPipeline.DLClassifierLeNet ${jar_path} -f ./mnist -b 8 --maxEpoch 1
    Log To Console                   begin inceptionV1 train
    Run Shell                        ${submit} --master yarn --deploy-mode client --conf "spark.serializer=org.apache.spark.serializer.JavaSerializer" --executor-cores 2 --num-executors 2 --driver-memory 150g --executor-memory 40g --class com.intel.analytics.bigdl.models.inception.TrainInceptionV1 ${jar_path} -b 8 -f ${imagenet_test_data_source} --learningRate 0.1 -e 1
    Log To Console                   begin text classification
