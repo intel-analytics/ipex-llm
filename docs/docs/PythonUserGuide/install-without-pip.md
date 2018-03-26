@@ -19,6 +19,30 @@
        ```sudo apt-get install python-numpy``` (Ubuntu)
         * Install Six: 
        ```sudo apt-get install python-six``` (Ubuntu)
+       
+    <a name="yarn.cluster"></a>
     * For Yarn cluster:
-        - You can run BigDL Python programs on YARN clusters without changes to the cluster (e.g., no need to pre-install the Python dependencies). You can first package all the required Python dependencies into a virtual environment on the local node (where you will run the spark-submit command), and then directly use spark-submit to run the BigDL Python program on the YARN cluster (using that virtual environment). Please refer to this [Packing-dependencies](https://github.com/intel-analytics/BigDL/tree/master/pyspark/python_package) for more details.
+        - You can run BigDL Python programs on YARN clusters without changes to the cluster (e.g., no need to pre-install the Python dependencies). You can first package all the required Python dependencies into a virtual environment on the local node (where you will run the spark-submit command), and then directly use spark-submit to run the BigDL Python program on the YARN cluster (using that virtual environment). Please follow the steps below: 
+        * Make sure you already install such libraries(python-setuptools, python-dev, gcc, make, zip, pip) for creating virtual environment. If not, please install them first. For example, on Ubuntu, run these commands to install:
+          ```
+            apt-get update
+            apt-get install -y python-setuptools python-dev
+            apt-get install -y gcc make
+            apt-get install -y zip
+            easy_install pip
+          ```	
+         * Create dependency virtualenv package
+            * Under BigDL home directory, you can find ```bin/python_package.sh```. Run this script to create dependency virtual environment according to dependency descriptions in requirements.txt. You can add your own dependencies in requirements.txt. The current requirements.txt only contains dependencies for BigDL python examples and models.
+            * After running this script, there will be venv.zip and venv directory generated in current directory. Use them to submit your python jobs. Please refer to [example](run-without-pip.md#yarn.example) script of submitting bigdl python job with virtual environment in Yarn cluster.
+        
+        __FAQ__
+        
+        In case you encounter the following errors when you create the environment package using the above command:
+        
+        1. virtualenv ImportError: No module named urllib3
+            - Using python in anaconda to create virtualenv may cause this problem. Try using python default in your system instead of installing virtualenv in anaconda.
+        2. AttributeError: 'module' object has no attribute 'sslwrap'
+            - Try upgrading `gevent` with `pip install --upgrade gevent`.
+        
+
    
