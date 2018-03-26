@@ -84,13 +84,15 @@ object KerasUtils {
     filterSize: Int,
     borderMode: String,
     stride: Int,
-    dilation: Int = 1): Int = {
+    dilation: Int = 1,
+    ceil: Boolean = false): Int = {
     val dilatedFilterSize = filterSize + (filterSize - 1) * (dilation - 1)
     val outputLength = borderMode match {
       case "valid" => inputLength - dilatedFilterSize + 1
       case "same" => inputLength
     }
-    (outputLength + stride - 1) / stride
+    if (ceil) math.ceil((outputLength + stride - 1f) / stride).toInt
+    else (outputLength + stride - 1) / stride
   }
 
   private[keras] def getPadsFromBorderMode3D(

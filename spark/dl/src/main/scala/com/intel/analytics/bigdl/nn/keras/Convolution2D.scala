@@ -69,6 +69,7 @@ class Convolution2D[T: ClassTag](
    val bias: Boolean = true,
    val padH: Int = 0,
    val padW: Int = 0,
+   val propagateBack: Boolean = true,
    val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {
 
@@ -90,6 +91,7 @@ class Convolution2D[T: ClassTag](
       strideH = subsample(0),
       padW = pads._2,
       padH = pads._1,
+      propagateBack = propagateBack,
       wRegularizer = wRegularizer,
       bRegularizer = bRegularizer,
       withBias = bias,
@@ -115,11 +117,12 @@ object Convolution2D {
     bias: Boolean = true,
     padH: Int = 0,
     padW: Int = 0,
+    propagateBack: Boolean = true,
     inputShape: Shape = null)(implicit ev: TensorNumeric[T]): Convolution2D[T] = {
     new Convolution2D[T](nbFilter, nbRow, nbCol,
       KerasUtils.getInitMethod(init), KerasUtils.getKerasActivation(activation),
       borderMode, Array(subsample._1, subsample._2),
       KerasUtils.toBigDLFormat(dimOrdering), wRegularizer,
-      bRegularizer, bias, padH, padW, inputShape)
+      bRegularizer, bias, padH, padW, propagateBack, inputShape)
   }
 }

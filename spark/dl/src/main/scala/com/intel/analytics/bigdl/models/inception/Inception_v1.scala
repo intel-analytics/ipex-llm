@@ -92,6 +92,38 @@ object Inception_Layer_v1 {
 
     JoinTable(2, 0).inputs(relu1x1, relu3x3_2, relu5x5_2, reluPool)
   }
+
+  def keras(input: ModuleNode[Float], config: Table, namePrefix : String = "")
+  : ModuleNode[Float] = {
+    import com.intel.analytics.bigdl.nn.keras._
+    import com.intel.analytics.bigdl.nn.keras.Merge.merge
+
+    val conv1x1 = Convolution2D(config[Table](1)[Int](1), 1, 1)
+      .setName(namePrefix + "1x1").inputs(input)
+    val relu1x1 = Activation("relu").setName(namePrefix + "relu_1x1").inputs(conv1x1)
+
+    val conv3x3_1 = Convolution2D(config[Table](2)[Int](1), 1, 1)
+      .setName(namePrefix + "3x3_reduce").inputs(input)
+    val relu3x3_1 = Activation("relu").setName(namePrefix + "relu_3x3_reduce").inputs(conv3x3_1)
+    val conv3x3_2 = Convolution2D(config[Table](2)[Int](2), 3, 3, padH = 1, padW = 1)
+      .setName(namePrefix + "3x3").inputs(relu3x3_1)
+    val relu3x3_2 = Activation("relu").setName(namePrefix + "relu_3x3").inputs(conv3x3_2)
+
+    val conv5x5_1 = Convolution2D(config[Table](3)[Int](1), 1, 1)
+      .setName(namePrefix + "5x5_reduce").inputs(input)
+    val relu5x5_1 = Activation("relu").setName(namePrefix + "relu_5x5_reduce").inputs(conv5x5_1)
+    val conv5x5_2 = Convolution2D(config[Table](3)[Int](2), 5, 5, padH = 2, padW = 2)
+      .setName(namePrefix + "5x5").inputs(relu5x5_1)
+    val relu5x5_2 = Activation("relu").setName(namePrefix + "relu_5x5").inputs(conv5x5_2)
+
+    val pool = MaxPooling2D(poolSize = (3, 3), strides = (1, 1), borderMode = "same", ceil = true)
+      .setName(namePrefix + "pool").inputs(input)
+    val convPool = Convolution2D(config[Table](4)[Int](1), 1, 1)
+      .setName(namePrefix + "pool_proj").inputs(pool)
+    val reluPool = Activation("relu").setName(namePrefix + "relu_pool_proj").inputs(convPool)
+
+    merge(inputs = List(relu1x1, relu3x3_2, relu5x5_2, reluPool), mode = "concat", concatAxis = 1)
+  }
 }
 
 object Inception_v1_NoAuxClassifier {
@@ -175,6 +207,57 @@ object Inception_v1_NoAuxClassifier {
     val loss = LogSoftMax().setName("loss3/loss3").inputs(classifier)
 
     Graph(input, loss)
+  }
+
+  def keras(classNum: Int, hasDropout: Boolean = true): nn.keras.Model[Float] = {
+    import com.intel.analytics.bigdl.nn.keras._
+    import com.intel.analytics.bigdl.utils.Shape
+
+    val input = Input(inputShape = Shape(3, 224, 224))
+    val conv1 = Convolution2D(64, 7, 7, activation = "relu", subsample = (2, 2),
+      padH = 3, padW = 3, propagateBack = false)
+      .setName("conv1/7x7_s2").inputs(input)
+    val pool1_s2 = MaxPooling2D(poolSize = (3, 3), strides = (2, 2), ceil = true)
+      .setName("pool1/3x3_s2").inputs(conv1)
+    val pool1_norm1 = new KerasLayerWrapper(SpatialCrossMapLRN[Float](5, 0.0001, 0.75))
+      .setName("pool1/norm1").inputs(pool1_s2)
+    val conv2 = Convolution2D(64, 1, 1, activation = "relu")
+      .setName("conv2/3x3_reduce").inputs(pool1_norm1)
+    val conv2_3x3 = Convolution2D(192, 3, 3, activation = "relu", padH = 1, padW = 1)
+      .setName("conv2/3x3").inputs(conv2)
+    val conv2_norm2 = new KerasLayerWrapper(SpatialCrossMapLRN[Float](5, 0.0001, 0.75))
+      .setName("conv2/norm2").inputs(conv2_3x3)
+    val pool2_s2 = MaxPooling2D(poolSize = (3, 3), strides = (2, 2), ceil = true)
+      .setName("pool2/3x3_s2").inputs(conv2_norm2)
+    val inception_3a = Inception_Layer_v1.keras(pool2_s2,
+      T(T(64), T(96, 128), T(16, 32), T(32)), "inception_3a/")
+    val inception_3b = Inception_Layer_v1.keras(inception_3a,
+      T(T(128), T(128, 192), T(32, 96), T(64)), "inception_3b/")
+    val pool3 = MaxPooling2D(poolSize = (3, 3), strides = (2, 2), ceil = true)
+      .setName("pool3/3x3_s2").inputs(inception_3b)
+    val inception_4a = Inception_Layer_v1.keras(pool3,
+      T(T(192), T(96, 208), T(16, 48), T(64)), "inception_4a/")
+    val inception_4b = Inception_Layer_v1.keras(inception_4a,
+      T(T(160), T(112, 224), T(24, 64), T(64)), "inception_4b/")
+    val inception_4c = Inception_Layer_v1.keras(inception_4b,
+      T(T(128), T(128, 256), T(24, 64), T(64)), "inception_4c/")
+    val inception_4d = Inception_Layer_v1.keras(inception_4c,
+      T(T(112), T(144, 288), T(32, 64), T(64)), "inception_4d/")
+    val inception_4e = Inception_Layer_v1.keras(inception_4d,
+      T(T(256), T(160, 320), T(32, 128), T(128)), "inception_4e/")
+    val pool4 = MaxPooling2D(poolSize = (3, 3), strides = (2, 2), ceil = true)
+      .setName("pool4/3x3_s2").inputs(inception_4e)
+    val inception_5a = Inception_Layer_v1.keras(pool4,
+      T(T(256), T(160, 320), T(32, 128), T(128)), "inception_5a/")
+    val inception_5b = Inception_Layer_v1.keras(inception_5a,
+      T(T(384), T(192, 384), T(48, 128), T(128)), "inception_5b/")
+    val pool5 = AveragePooling2D(poolSize = (7, 7), strides = (1, 1))
+      .setName("pool5/7x7_s1").inputs(inception_5b)
+    val drop = if (hasDropout) Dropout(0.4).setName("pool5/drop_7x7_s1").inputs(pool5) else pool5
+    val reshape = Reshape(Array(1024)).inputs(drop)
+    val classifier = Dense(classNum).setName("loss3/classifier").inputs(reshape)
+    val loss = Activation("softmax").setName("loss3/loss3").inputs(classifier)
+    Model(input, loss)
   }
 }
 

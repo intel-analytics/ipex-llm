@@ -82,19 +82,16 @@ abstract class KerasBaseSpec extends BigDLSpecHelper {
   }
 
   // compare the output and gradInput of Keras-Style API against Torch-Style API
-  def compareKerasTorchModels(kmodel: KerasModel[Float],
-                              tmodel: Module[Float],
-                              input: Tensor[Float],
-                              precision: Double = 1e-5): Unit = {
-    (kmodel.getWeightsBias(), tmodel.getWeightsBias()).zipped.foreach { (kw, tw) =>
-      kw.almostEqual(tw, precision) should be(true)
-    }
-    val koutput = kmodel.forward(input)
-    val toutput = tmodel.forward(input)
-    val kgradInput = kmodel.backward(input, koutput)
-    val tgradInput = tmodel.backward(input, toutput)
-    koutput.toTensor[Float].almostEqual(toutput.toTensor[Float], precision) should be(true)
+  def compareModels(model1: Module[Float],
+                    model2: Module[Float],
+                    input: Tensor[Float],
+                    precision: Double = 1e-5): Unit = {
+    model1.setWeightsBias(model2.getWeightsBias())
+    val output1 = model1.forward(input)
+    val output2 = model2.forward(input)
+    val kgradInput = model1.backward(input, output1)
+    val tgradInput = model2.backward(input, output2)
+    output1.toTensor[Float].almostEqual(output2.toTensor[Float], precision) should be(true)
     kgradInput.toTensor[Float].almostEqual(tgradInput.toTensor[Float], precision) should be(true)
   }
 }
-

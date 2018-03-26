@@ -22,23 +22,23 @@ import com.intel.analytics.bigdl.utils.RandomGenerator
 
 class VggForCifar10Spec extends KerasBaseSpec {
 
-  "VggForCifar10 Sequential Keras-Style definition" should
-    "be the same as Torch-Style definition" in {
-    RandomGenerator.RNG.setSeed(1000)
-    val kmodel = VggForCifar10.keras(classNum = 10, hasDropout = false)
-    RandomGenerator.RNG.setSeed(1000)
-    val tmodel = VggForCifar10(classNum = 10, hasDropout = false)
-    val input = Tensor[Float](Array(32, 3, 32, 32)).rand()
-    compareKerasTorchModels(kmodel, tmodel, input)
+  "VggForCifar10 sequential" should "generate the correct outputShape" in {
+    val vgg = VggForCifar10.keras(classNum = 10)
+    vgg.getOutputShape().toSingle().toArray should be (Array(-1, 10))
   }
 
-  "VggForCifar10 Graph Keras-Style definition" should
-    "be the same as Torch-Style definition" in {
-    RandomGenerator.RNG.setSeed(1000)
-    val kmodel = VggForCifar10.kerasGraph(classNum = 10, hasDropout = false)
-    RandomGenerator.RNG.setSeed(1000)
-    val tmodel = VggForCifar10.graph(classNum = 10, hasDropout = false)
-    val input = Tensor[Float](Array(32, 3, 32, 32)).rand()
-    compareKerasTorchModels(kmodel, tmodel, input)
+  "VggForCifar10 graph" should "generate the correct outputShape" in {
+    val vgg = VggForCifar10.kerasGraph(classNum = 10)
+    vgg.getOutputShape().toSingle().toArray should be (Array(-1, 10))
   }
+
+  "VggForCifar10 sequential definition" should "be the same as graph definition" in {
+    RandomGenerator.RNG.setSeed(1000)
+    val kseq = VggForCifar10.keras(classNum = 10, hasDropout = false)
+    RandomGenerator.RNG.setSeed(1000)
+    val kgraph = VggForCifar10.kerasGraph(classNum = 10, hasDropout = false)
+    val input = Tensor[Float](Array(32, 3, 32, 32)).rand()
+    compareModels(kseq, kgraph, input)
+  }
+
 }

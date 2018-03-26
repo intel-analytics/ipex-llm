@@ -47,7 +47,7 @@ class MaxPooling2D[T: ClassTag] (
    dimOrdering: DataFormat = DataFormat.NCHW,
    ceil: Boolean = false,
    inputShape: Shape = null)(implicit ev: TensorNumeric[T])
-  extends Pooling2D[T](poolSize, strides, borderMode, dimOrdering, inputShape) {
+  extends Pooling2D[T](poolSize, strides, borderMode, dimOrdering, ceil, inputShape) {
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
     val pads = KerasUtils.getPadsFromBorderMode(borderMode)

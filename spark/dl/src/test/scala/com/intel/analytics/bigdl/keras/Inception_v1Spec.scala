@@ -16,24 +16,22 @@
 
 package com.intel.analytics.bigdl.keras
 
-import com.intel.analytics.bigdl.models.rnn.SimpleRNN
+import com.intel.analytics.bigdl.models.inception._
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.RandomGenerator
 
-class SimpleRNNSpec extends KerasBaseSpec {
+class Inception_v1Spec extends KerasBaseSpec {
 
-  "SimpleRNN" should "generate the correct outputShape" in {
-    val rnn = SimpleRNN.keras(4001, 40, 4001)
-    rnn.getOutputShape().toSingle().toArray should be (Array(-1, 25, 4001))
+  "Inception_v1_NoAuxClassifier" should "generate the correct outputShape" in {
+    val inception = Inception_v1_NoAuxClassifier.keras(classNum = 1000)
+    inception.getOutputShape().toSingle().toArray should be (Array(-1, 1000))
   }
 
-  "SimpleRNN Keras-Style definition" should "be the same as Torch-Style definition" in {
-    RandomGenerator.RNG.setSeed(1000)
-    val kmodel = SimpleRNN.keras(4001, 40, 4001)
-    RandomGenerator.RNG.setSeed(1000)
-    val tmodel = SimpleRNN(4001, 40, 4001)
-    val input = Tensor[Float](Array(3, 25, 4001)).rand()
-    compareModels(kmodel, tmodel, input)
+  "Inception_v1_NoAuxClassifier forward and backward" should
+    "work properly" in {
+    val inception = Inception_v1_NoAuxClassifier.keras(classNum = 1000)
+    val input = Tensor[Float](Array(10, 3, 224, 224)).rand()
+    val output = inception.forward(input)
+    val gradInput = inception.backward(input, output)
   }
 
 }

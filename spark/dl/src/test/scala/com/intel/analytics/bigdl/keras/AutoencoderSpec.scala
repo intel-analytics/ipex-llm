@@ -22,6 +22,16 @@ import com.intel.analytics.bigdl.utils.RandomGenerator
 
 class AutoencoderSpec extends KerasBaseSpec {
 
+  "Autoencoder sequential" should "generate the correct outputShape" in {
+    val autoencoder = Autoencoder.keras(classNum = 32)
+    autoencoder.getOutputShape().toSingle().toArray should be (Array(-1, 784))
+  }
+
+  "Autoencoder graph" should "generate the correct outputShape" in {
+    val autoencoder = Autoencoder.kerasGraph(classNum = 32)
+    autoencoder.getOutputShape().toSingle().toArray should be (Array(-1, 784))
+  }
+
   "Autoencoder Sequential Keras-Style definition" should
     "be the same as Torch-Style definition" in {
     RandomGenerator.RNG.setSeed(1000)
@@ -29,7 +39,7 @@ class AutoencoderSpec extends KerasBaseSpec {
     RandomGenerator.RNG.setSeed(1000)
     val tmodel = Autoencoder(classNum = 32)
     val input = Tensor[Float](Array(32, 28, 28)).rand()
-    compareKerasTorchModels(kmodel, tmodel, input)
+    compareModels(kmodel, tmodel, input)
   }
 
   "Autoencoder Graph Keras-Style definition" should
@@ -37,7 +47,16 @@ class AutoencoderSpec extends KerasBaseSpec {
     val kmodel = Autoencoder.kerasGraph(classNum = 32)
     val tmodel = Autoencoder.graph(classNum = 32)
     val input = Tensor[Float](Array(32, 28, 28)).rand()
-    compareKerasTorchModels(kmodel, tmodel, input)
+    compareModels(kmodel, tmodel, input)
+  }
+
+  "Autoencoder sequential definition" should "be the same as graph definition" in {
+    RandomGenerator.RNG.setSeed(1000)
+    val kseq = Autoencoder.keras(classNum = 32)
+    RandomGenerator.RNG.setSeed(1000)
+    val kgraph = Autoencoder.kerasGraph(classNum = 32)
+    val input = Tensor[Float](Array(2, 28, 28, 1)).rand()
+    compareModels(kseq, kgraph, input)
   }
 
 }

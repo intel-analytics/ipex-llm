@@ -58,6 +58,9 @@ object TrainInceptionV1 {
 
       val model = if (param.modelSnapshot.isDefined) {
         Module.load[Float](param.modelSnapshot.get)
+      } else if (param.kerasModel) {
+        println("Using Keras-Style API for model definition")
+        Inception_v1_NoAuxClassifier.keras(classNum = param.classNumber)
       } else if (param.graphModel) {
         Inception_v1_NoAuxClassifier.graph(classNum = param.classNumber)
       } else {
@@ -84,10 +87,13 @@ object TrainInceptionV1 {
           learningRateSchedule = lrSchedule)
       }
 
+      val criterion = if (param.kerasModel) ClassNLLCriterion[Float](logProbAsInput = false)
+      else ClassNLLCriterion[Float]()
+
       val optimizer = Optimizer(
         model = model,
         dataset = trainSet,
-        criterion = new ClassNLLCriterion[Float]()
+        criterion = criterion
       )
 
       val (checkpointTrigger, testTrigger, endTrigger) = if (param.maxEpoch.isDefined) {

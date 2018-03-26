@@ -187,11 +187,12 @@ class PythonBigDLKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends Pytho
     bias: Boolean = true,
     padH: Int = 0,
     padW: Int = 0,
+    propagateBack: Boolean = true,
     inputShape: JList[Int] = null): Convolution2D[T] = {
     new Convolution2D(nbFilter, nbRow, nbCol, KerasUtils.getInitMethod(init),
       KerasUtils.getKerasActivation(activation), borderMode,
       toScalaArray(subsample), KerasUtils.toBigDLFormat(dimOrdering),
-      wRegularizer, bRegularizer, bias, padH, padW, toScalaShape(inputShape))
+      wRegularizer, bRegularizer, bias, padH, padW, propagateBack, toScalaShape(inputShape))
   }
 
   def createKerasMaxPooling2D(
@@ -391,9 +392,10 @@ class PythonBigDLKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends Pytho
     strides: JList[Int],
     borderMode: String = "valid",
     dimOrdering: String = "th",
+    ceil: Boolean = false,
     inputShape: JList[Int] = null): AveragePooling2D[T] = {
     new AveragePooling2D(toScalaArray(poolSize), toScalaArray(strides),
-      borderMode, KerasUtils.toBigDLFormat(dimOrdering), toScalaShape(inputShape))
+      borderMode, KerasUtils.toBigDLFormat(dimOrdering), ceil, toScalaShape(inputShape))
   }
 
   def createKerasAveragePooling3D(
