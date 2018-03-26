@@ -26,8 +26,7 @@ class Inception_v1Spec extends KerasBaseSpec {
     inception.getOutputShape().toSingle().toArray should be (Array(-1, 1000))
   }
 
-  "Inception_v1_NoAuxClassifier forward and backward" should
-    "work properly" in {
+  "Inception_v1_NoAuxClassifier forward and backward" should "work properly" in {
     val inception = Inception_v1_NoAuxClassifier.keras(classNum = 1000)
     val input = Tensor[Float](Array(10, 3, 224, 224)).rand()
     val output = inception.forward(input)
