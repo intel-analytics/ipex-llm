@@ -1,6 +1,6 @@
-## **Latest Master**
+## **Release 0.5.0**
 
-[Master Docs](https://bigdl-project.github.io/master)
+[BigDL 0.5.0 Docs](https://bigdl-project.github.io/0.5.0)
 
 ---
 ## **Release 0.4.0**
