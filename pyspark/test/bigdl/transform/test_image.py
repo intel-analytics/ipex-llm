@@ -40,7 +40,7 @@ class TestLayer():
 
     def test_get_sample(self):
         image_frame = ImageFrame.read(self.image_path)
-        transformer = Pipeline([PixelBytesToMat(),Resize(256, 256), CenterCrop(224, 224),
+        transformer = Pipeline([PixelBytesToMat(), Resize(256, 256), CenterCrop(224, 224),
                                 ChannelNormalize(0.485, 0.456, 0.406, 0.229, 0.224, 0.225),
                                 MatToTensor(), ImageFrameToSample()])
         transformed = transformer(image_frame)
