@@ -40,7 +40,7 @@ class TestLayer():
 
     def test_get_sample(self):
         image_frame = ImageFrame.read(self.image_path)
-        train_transformer = Pipeline([PixelBytesToMat(),
+        transformer = Pipeline([PixelBytesToMat(),
                                       Resize(10, 10),
                                       ChannelNormalize(123.0, 117.0, 104.0, 1.0, 1.0, 1.0),
                                       MatToTensor(to_rgb=False),
