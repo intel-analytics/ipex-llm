@@ -3010,6 +3010,11 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     ImageFrame.readParquet(path, sqlContext)
   }
 
+  def writeParquet(path: String, output: String,
+                   sqlContext: SQLContext, partitionNum: Int = 1): Unit = {
+    ImageFrame.writeParquet(path, output, sqlContext, partitionNum)
+  }
+
   def createBytesToMat(byteKey: String): BytesToMat = {
     BytesToMat(byteKey)
   }
