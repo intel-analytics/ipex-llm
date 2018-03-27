@@ -32,6 +32,14 @@ np.random.seed(1337)  # for reproducibility
 
 class TestKerasAPI(BigDLTestCase):
 
+    def test_keraslayerwrapper(self):
+        input_data = np.random.randint(1000, size=(32, 10))
+        blayer = BLayer.Linear(1000, 64, input_shape=(10, ))
+        klayer = BSequential.add(
+            KLayer.KerasLayerWrapper(torch_layer=BLayer.Linear(1000, 64, input_length=10)))
+        self.compare_newapi(klayer, blayer, input_data,
+                            WeightsConverter.convert_embedding)
+
     def test_embedding(self):
         input_data = np.random.randint(1000, size=(32, 10))
         blayer = BLayer.Embedding(1000, 64, input_shape=(10, ))

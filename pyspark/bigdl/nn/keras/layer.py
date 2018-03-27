@@ -1170,6 +1170,22 @@ class ZeroPadding3D(KerasLayer):
                                             list(input_shape) if input_shape else None,
                                             **kwargs)
 
+class KerasLayerWrapper(KerasLayer):
+    """
+    Wrap a torch style layer to keras style layer.
+    This layer can be built multiple times.
+    # Arguments
+    torch_layer: a torch style layer
+                 i.e If the input data is (2, 3, 4) and 2 is the batch size, you should input: (3, 4) here.
+    >>> kerasLayerWrapper = KerasLayerWrapper(Linear(2, 3))
+    creating: createKerasKerasLayerWrapper
+    """
+    def __init__(self, torch_layer, input_shape=None, **kwargs):
+        super(KerasLayerWrapper, self).__init__(None,
+                                            torch_layer,
+                                            list(input_shape) if input_shape else None,
+                                            **kwargs)
+
 
 class MaxPooling1D(KerasLayer):
     """
