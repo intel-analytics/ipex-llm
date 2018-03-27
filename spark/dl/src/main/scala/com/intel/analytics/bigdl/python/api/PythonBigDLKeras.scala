@@ -654,6 +654,11 @@ class PythonBigDLKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends Pytho
     ELU(alpha, toScalaShape(inputShape))
   }
 
+  def createKerasKerasLayerWrapper(
+      torchLayer: AbstractModule[Activity, Activity, T]): KerasLayerWrapper[T] = {
+    new KerasLayerWrapper(torchLayer)
+  }
+
   def createKerasLeakyReLU(
     alpha: Double = 0.01,
     inputShape: JList[Int] = null): LeakyReLU[T] = {
