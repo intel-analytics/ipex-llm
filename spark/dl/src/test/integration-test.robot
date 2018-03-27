@@ -93,7 +93,7 @@ Run Spark Test
    Run Shell                        ${submit} --master ${spark_master} --conf "spark.serializer=org.apache.spark.serializer.JavaSerializer" --driver-memory 60g --executor-memory 200g --executor-cores 24 --total-executor-cores 24 --class com.intel.analytics.bigdl.models.inception.TrainInceptionV1 ${jar_path} -b 24 -f ${imagenet_test_data_source} --learningRate 0.1 -e 1
    Log To Console                   begin text classification
    Run Shell                        ${submit} --master ${spark_master} --driver-memory 5g --executor-memory 5g --total-executor-cores 32 --executor-cores 8 --class com.intel.analytics.bigdl.example.textclassification.TextClassifier ${jar_path} --batchSize 128 --baseDir /tmp/text_data --partitionNum 32
-
+   Remove Input
 
 
 Spark2.0 Test Suite
@@ -155,7 +155,6 @@ Yarn Test Suite
    Set Environment Variable         PYSPARK_DRIVER_PYTHON    /var/jenkins_home/venv/bin/python
    Set Environment Variable         PYSPARK_PYTHON           ./venv.zip/venv/bin/python      
    Run Shell                        ${submit} --master yarn --deploy-mode client --executor-memory 2g --driver-memory 2g --executor-cores 10 --num-executors 2 --properties-file ${curdir}/dist/conf/spark-bigdl.conf --jars ${jar_path} --py-files ${curdir}/dist/lib/bigdl-${version}-python-api.zip --archives /var/jenkins_home/venv.zip --conf spark.driver.extraClassPath=${jar_path} --conf spark.executor.extraClassPath=bigdl-${version}-jar-with-dependencies.jar ${curdir}/pyspark/bigdl/models/lenet/lenet5.py -b 200 --action train --endTriggerType epoch --endTriggerNum 1
-
    Remove Environment Variable      http_proxy                https_proxy              PYSPARK_DRIVER_PYTHON            PYSPARK_PYTHON
    Remove Input
    
