@@ -14,7 +14,7 @@ set -x
 BIGDL_HOME=${WORKSPACE}/dist
 JAR_HOME=${BIGDL_HOME}/spark/dl/target
 SPARK_JAR=/opt/spark/jars/*
-JAR=${JAR_HOME}/bigdl-0.5.0-SNAPSHOT-jar-with-dependencies.jar:${SPARK_JAR}
+JAR=${JAR_HOME}/bigdl-0.5.0-jar-with-dependencies.jar:${SPARK_JAR}
 CLASS=com.intel.analytics.bigdl.utils.ConvertModel
 
 FROM=caffe
