@@ -1837,7 +1837,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
                     batchSize: Int,
                     valMethods: JList[ValidationMethod[T]])
   : JList[EvaluatedResult] = {
-    val resultArray = model.evaluate(imageFrame,
+    val resultArray = model.evaluateImage(imageFrame,
       valMethods.asScala.toArray, Some(batchSize))
     val testResultArray = resultArray.map { result =>
       EvaluatedResult(result._1.result()._1, result._1.result()._2,

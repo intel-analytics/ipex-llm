@@ -841,7 +841,7 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
    *  @return
    */
 
-  final def evaluate(imageFrame: ImageFrame,
+  final def evaluateImage(imageFrame: ImageFrame,
     vMethods: Array[_ <:ValidationMethod[T]],
     batchSize: Option[Int] = None
     ): Array[(ValidationResult, ValidationMethod[T])] = {
