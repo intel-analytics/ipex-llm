@@ -33,7 +33,7 @@ from bigdl.optim.optimizer import L1Regularizer, L2Regularizer, L1L2Regularizer
 from py4j.java_gateway import JavaObject
 from pyspark.rdd import RDD
 from bigdl.transform.vision.image import ImageFrame
-from bigdl.dataset import DataSet
+from bigdl.dataset.dataset import DataSet
 
 if sys.version >= '3':
     long = int
@@ -346,7 +346,7 @@ class Layer(JavaValue, SharedStaticUtils):
             return self
         elif len(args) == 3:
             dataset, batch_size, val_methods = args
-            if (dataset.isinstance(DataSet)):
+            if (isinstance(dataset, ImageFrame)):
                 return callBigDlFunc(self.bigdl_type,
                                     "modelEvaluateImageFrame",
                                     self.value,

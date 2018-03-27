@@ -36,7 +36,7 @@ class DataSet(JavaValue):
     @classmethod
     def image_frame(cls, image_frame, bigdl_type="float"):
         jvalue = callBigDlFunc(bigdl_type, "createDatasetFromImageFrame", image_frame)
-        return DataSet(jvalue=jvalue)
+        return DataSet(jvalue=jvalue, image_frame = image_frame)
 
     def transform(self, transformer):
         if isinstance(transformer, FeatureTransformer):
