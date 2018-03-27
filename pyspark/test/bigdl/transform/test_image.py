@@ -40,11 +40,11 @@ class TestLayer():
 
     def test_get_sample(self):
         image_frame = ImageFrame.read(self.image_path)
-        transformer = Pipeline([PixelBytesToMat(),
-                                      Resize(10, 10),
-                                      ChannelNormalize(123.0, 117.0, 104.0, 1.0, 1.0, 1.0),
-                                      MatToTensor(to_rgb=False),
-                                      ImageFrameToSample(input_keys=["imageTensor"],
+        transformer = Pipeline([PixelBytesToMat(), \
+                                      Resize(10, 10), \
+                                      ChannelNormalize(123.0, 117.0, 104.0, 1.0, 1.0, 1.0), \
+                                      MatToTensor(to_rgb=False), \
+                                      ImageFrameToSample(input_keys=["imageTensor"], \
                                                          target_keys=["label"])])
         transformed = transformer(image_frame)
         transformed.get_sample()
