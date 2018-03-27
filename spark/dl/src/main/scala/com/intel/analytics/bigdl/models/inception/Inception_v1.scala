@@ -98,18 +98,18 @@ object Inception_Layer_v1 {
     import com.intel.analytics.bigdl.nn.keras._
     import com.intel.analytics.bigdl.nn.keras.Merge.merge
 
-    val conv1x1 = Convolution2D(config[Table](1)[Int](1), 1, 1)
+    val conv1x1 = Convolution2D(config[Table](1)(1), 1, 1)
       .setName(namePrefix + "1x1").inputs(input)
     val relu1x1 = Activation("relu").setName(namePrefix + "relu_1x1").inputs(conv1x1)
 
-    val conv3x3_1 = Convolution2D(config[Table](2)[Int](1), 1, 1)
+    val conv3x3_1 = Convolution2D(config[Table](2)(1), 1, 1)
       .setName(namePrefix + "3x3_reduce").inputs(input)
     val relu3x3_1 = Activation("relu").setName(namePrefix + "relu_3x3_reduce").inputs(conv3x3_1)
     val conv3x3_2 = Convolution2D(config[Table](2)[Int](2), 3, 3, padH = 1, padW = 1)
       .setName(namePrefix + "3x3").inputs(relu3x3_1)
     val relu3x3_2 = Activation("relu").setName(namePrefix + "relu_3x3").inputs(conv3x3_2)
 
-    val conv5x5_1 = Convolution2D(config[Table](3)[Int](1), 1, 1)
+    val conv5x5_1 = Convolution2D(config[Table](3)(1), 1, 1)
       .setName(namePrefix + "5x5_reduce").inputs(input)
     val relu5x5_1 = Activation("relu").setName(namePrefix + "relu_5x5_reduce").inputs(conv5x5_1)
     val conv5x5_2 = Convolution2D(config[Table](3)[Int](2), 5, 5, padH = 2, padW = 2)
@@ -118,7 +118,7 @@ object Inception_Layer_v1 {
 
     val pool = MaxPooling2D(poolSize = (3, 3), strides = (1, 1), borderMode = "same", ceil = true)
       .setName(namePrefix + "pool").inputs(input)
-    val convPool = Convolution2D(config[Table](4)[Int](1), 1, 1)
+    val convPool = Convolution2D(config[Table](4)(1), 1, 1)
       .setName(namePrefix + "pool_proj").inputs(pool)
     val reluPool = Activation("relu").setName(namePrefix + "relu_pool_proj").inputs(convPool)
 
