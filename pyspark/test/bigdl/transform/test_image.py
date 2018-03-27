@@ -49,7 +49,6 @@ class TestLayer():
         transformed = transformer(image_frame)
         transformed.get_sample()
 
-
     def transformer_test(self, transformer):
         image_frame = ImageFrame.read(self.image_path)
         transformed = transformer(image_frame)
