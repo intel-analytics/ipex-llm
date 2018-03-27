@@ -171,6 +171,12 @@ class ImageFrame(JavaValue):
         """
         return self.image_frame.get_predict(key)
 
+    def get_sample(self):
+        """
+        get sample from ImageFrame
+        """
+        return self.image_frame.get_sample()
+
 
 class LocalImageFrame(ImageFrame):
     """
@@ -211,7 +217,8 @@ class LocalImageFrame(ImageFrame):
         predicts = callBigDlFunc(self.bigdl_type, "localImageFrameToPredict", self.value, key)
         return map(lambda predict: (predict[0], predict[1].to_ndarray()) if predict[1] else (predict[0], None), predicts)
 
-
+    def get_sample(self,  key="sample"):
+        return callBigDlFunc(self.bigdl_type, "localImageFrameToSample", self.value, key)
 
 class DistributedImageFrame(ImageFrame):
     """
@@ -252,7 +259,8 @@ class DistributedImageFrame(ImageFrame):
         """
         predicts = callBigDlFunc(self.bigdl_type, "distributedImageFrameToPredict", self.value, key)
         return predicts.map(lambda predict: (predict[0], predict[1].to_ndarray()) if predict[1] else (predict[0], None))
-
+    def get_sample(self,  key="sample"):
+        return callBigDlFunc(self.bigdl_type, "distributedImageFrameToSample", self.value, key)
 
 class HFlip(FeatureTransformer):
     """
