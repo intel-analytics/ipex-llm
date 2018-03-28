@@ -127,11 +127,18 @@ class ImageFrame(JavaValue):
         return ImageFrame(jvalue=callBigDlFunc(bigdl_type, "read", path, sc, min_partitions))
 
     @classmethod
-    def read_parquet(cls, path, sql_context, bigdl_type="float"):
+    def read_parquet(cls, path, sc, bigdl_type="float"):
         """
         Read parquet file as DistributedImageFrame
         """
-        return DistributedImageFrame(jvalue=callBigDlFunc(bigdl_type, "readParquet", path, sql_context))
+        return DistributedImageFrame(jvalue=callBigDlFunc(bigdl_type, "readParquet", path, sc))
+
+    @classmethod
+    def write_parquet(cls, path, output, sc, partition_num = 1, bigdl_type="float"):
+        """
+        write ImageFrame as parquet file
+        """
+        return callBigDlFunc(bigdl_type, "writeParquet", path, output, sc, partition_num)
 
     def is_local(self):
         """
