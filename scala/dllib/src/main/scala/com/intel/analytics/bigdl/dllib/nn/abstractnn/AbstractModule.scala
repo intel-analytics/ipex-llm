@@ -834,6 +834,30 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
   }
 
   /**
+   * use ValidationMethod to evaluate module on the given ImageFrame
+   *  @param imageFrame ImageFrame for valudation
+   *  @param vMethods validation methods
+   *  @param batchSize total batch size of all partitions
+   *  @return
+   */
+
+  final def evaluateImage(imageFrame: ImageFrame,
+    vMethods: Array[_ <:ValidationMethod[T]],
+    batchSize: Option[Int] = None
+    ): Array[(ValidationResult, ValidationMethod[T])] = {
+    require(imageFrame.isDistributed(), "ImageFrame must be distributed")
+    val rdd = imageFrame.toDistributed().rdd.map(imageFeature => {
+      if (imageFeature.isValid) {
+        require(imageFeature.contains(ImageFeature.sample), "ImageFeature must have sample")
+        imageFeature[Sample[T]](ImageFeature.sample)
+      } else {
+        null
+      }
+    }).filter(_ != null)
+    evaluate(rdd, vMethods, batchSize)
+  }
+
+  /**
    * use ValidationMethod to evaluate module on the given local dataset
    * @param dataSet
    * @param vMethods
