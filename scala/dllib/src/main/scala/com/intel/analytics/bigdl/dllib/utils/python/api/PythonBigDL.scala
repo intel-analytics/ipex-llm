@@ -1831,6 +1831,21 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     testResultArray.toList.asJava
   }
 
+
+  def modelEvaluateImageFrame(model: AbstractModule[Activity, Activity, T],
+                    imageFrame: ImageFrame,
+                    batchSize: Int,
+                    valMethods: JList[ValidationMethod[T]])
+  : JList[EvaluatedResult] = {
+    val resultArray = model.evaluateImage(imageFrame,
+      valMethods.asScala.toArray, Some(batchSize))
+    val testResultArray = resultArray.map { result =>
+      EvaluatedResult(result._1.result()._1, result._1.result()._2,
+        result._2.toString())
+    }
+    testResultArray.toList.asJava
+  }
+
   def loadBigDL(path: String): AbstractModule[Activity, Activity, T] = {
     Module.load[T](path)
   }
@@ -2991,8 +3006,15 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     }
   }
 
-  def readParquet(path: String, sqlContext: SQLContext): DistributedImageFrame = {
+  def readParquet(path: String, sc: JavaSparkContext): DistributedImageFrame = {
+    val sqlContext = new SQLContext(sc)
     ImageFrame.readParquet(path, sqlContext)
+  }
+
+  def writeParquet(path: String, output: String,
+                   sc: JavaSparkContext, partitionNum: Int = 1): Unit = {
+    val sqlContext = new SQLContext(sc)
+    ImageFrame.writeParquet(path, output, sqlContext, partitionNum)
   }
 
   def createBytesToMat(byteKey: String): BytesToMat = {
