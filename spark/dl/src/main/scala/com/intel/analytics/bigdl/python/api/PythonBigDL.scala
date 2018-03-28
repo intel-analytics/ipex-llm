@@ -3006,12 +3006,14 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     }
   }
 
-  def readParquet(path: String, sqlContext: SQLContext): DistributedImageFrame = {
+  def readParquet(path: String, sc: JavaSparkContext): DistributedImageFrame = {
+    val sqlContext = new SQLContext(sc)
     ImageFrame.readParquet(path, sqlContext)
   }
 
   def writeParquet(path: String, output: String,
-                   sqlContext: SQLContext, partitionNum: Int = 1): Unit = {
+                   sc: JavaSparkContext, partitionNum: Int = 1): Unit = {
+    val sqlContext = new SQLContext(sc)
     ImageFrame.writeParquet(path, output, sqlContext, partitionNum)
   }
 
