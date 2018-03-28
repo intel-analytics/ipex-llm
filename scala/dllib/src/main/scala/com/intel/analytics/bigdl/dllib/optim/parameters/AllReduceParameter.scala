@@ -42,8 +42,8 @@ object AllReduceParameter {
     }
   })
 
-  private val computePoolSize: Int = System.getProperty("bigdl.Parameter.computePoolSize",
-    (Runtime.getRuntime().availableProcessors() / 2).toString).toInt
+  private val computePoolSize: Int = Math.max(System.getProperty("bigdl.Parameter.computePoolSize",
+    (Runtime.getRuntime().availableProcessors() / 2).toString).toInt, 1)
   val computePool: ExecutorService = Executors.newFixedThreadPool(computePoolSize,
     new ThreadFactory {
     override def newThread(r: Runnable): Thread = {
