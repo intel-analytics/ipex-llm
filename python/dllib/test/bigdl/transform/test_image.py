@@ -18,6 +18,7 @@ import pytest
 import os
 from bigdl.util.common import *
 from bigdl.transform.vision.image import *
+import tempfile
 
 
 class TestLayer():
@@ -197,6 +198,12 @@ class TestLayer():
     def test_empty_get_predict_distributed(self):
         image_frame = ImageFrame.read(self.image_path, self.sc)
         image_frame.get_predict()
+
+    def test_read_write_parquet(self):
+        temp = tempfile.mkdtemp() + "testParquet/"
+        resource_path = os.path.join(os.path.split(__file__)[0], "../resources/pascal")
+        ImageFrame.write_parquet(resource_path, temp, self.sc, 1)
+        read_image_frame = ImageFrame.read_parquet(temp, self.sc)
 
 
 if __name__ == "__main__":
