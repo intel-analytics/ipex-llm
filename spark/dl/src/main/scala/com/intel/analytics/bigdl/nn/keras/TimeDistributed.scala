@@ -67,7 +67,7 @@ class TimeDistributed[T: ClassTag](
 }
 
 object TimeDistributed {
-    def apply[@specialized(Float, Double) T: ClassTag](
+  def apply[@specialized(Float, Double) T: ClassTag](
     layer: KerasLayer[Tensor[T], Tensor[T], T],
     inputShape: Shape = null)(implicit ev: TensorNumeric[T]): TimeDistributed[T] = {
     new TimeDistributed[T](layer, inputShape)

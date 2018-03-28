@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.example.languagemodel
 
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.nn.Graph._
-import com.intel.analytics.bigdl.nn.{TimeDistributed, _}
+import com.intel.analytics.bigdl.nn._
 
 object PTBModel {
   def apply(
@@ -60,6 +60,47 @@ object PTBModel {
         Recurrent[Float]()
           .add(LSTM[Float](inputSize, hiddenSize, 0, null, null, null))
           .inputs(input)
+      )
+    }
+  }
+
+  def keras(
+    inputSize: Int,
+    hiddenSize: Int,
+    outputSize: Int,
+    numLayers: Int,
+    keepProb: Float = 2.0f)
+  : com.intel.analytics.bigdl.nn.keras.Model[Float] = {
+    import com.intel.analytics.bigdl.nn.keras._
+    import com.intel.analytics.bigdl.utils.Shape
+
+    val input = Input[Float](inputShape = Shape(35))
+    val embeddingLookup = Embedding[Float](inputSize, hiddenSize)
+      .inputs(new KerasLayerWrapper[Float](AddConstant[Float](-1.0)).inputs(input))
+
+    val inputs = if (keepProb < 1) {
+      Dropout[Float](keepProb).inputs(embeddingLookup)
+    } else embeddingLookup
+
+    val lstm = addKerasLayer(hiddenSize, 1, numLayers, inputs)
+    val output = TimeDistributed[Float](Dense(outputSize)).inputs(lstm)
+
+    Model(input, output)
+  }
+
+  private def addKerasLayer(hiddenSize: Int,
+                            depth: Int,
+                            numLayers: Int,
+                            input: ModuleNode[Float]): ModuleNode[Float] = {
+    import com.intel.analytics.bigdl.nn.keras._
+    if (depth == numLayers) {
+      LSTM[Float](hiddenSize, innerActivation = "sigmoid", returnSequences = true).inputs(input)
+    } else {
+      addKerasLayer(
+        hiddenSize,
+        depth + 1,
+        numLayers,
+        LSTM[Float](hiddenSize, innerActivation = "sigmoid", returnSequences = true).inputs(input)
       )
     }
   }
