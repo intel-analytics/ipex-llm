@@ -33,6 +33,7 @@ from bigdl.optim.optimizer import L1Regularizer, L2Regularizer, L1L2Regularizer
 from py4j.java_gateway import JavaObject
 from pyspark.rdd import RDD
 from bigdl.transform.vision.image import ImageFrame
+from bigdl.dataset.dataset import DataSet
 
 if sys.version >= '3':
     long = int
@@ -334,7 +335,7 @@ class Layer(JavaValue, SharedStaticUtils):
         Three arguments passed in:
         A method to benchmark the model quality.
 
-        :param val_rdd: the input data
+        :param dataset: the input data
         :param batch_size: batch size
         :param val_methods: a list of validation methods. i.e: Top1Accuracy,Top5Accuracy and Loss.
         :return: a list of the metrics result
@@ -344,11 +345,17 @@ class Layer(JavaValue, SharedStaticUtils):
                           "evaluate", self.value)
             return self
         elif len(args) == 3:
-            val_rdd, batch_size, val_methods = args
-            return callBigDlFunc(self.bigdl_type,
-                                 "modelEvaluate",
-                                 self.value,
-                                 val_rdd, batch_size, val_methods)
+            dataset, batch_size, val_methods = args
+            if (isinstance(dataset, ImageFrame)):
+                return callBigDlFunc(self.bigdl_type,
+                                    "modelEvaluateImageFrame",
+                                    self.value,
+                                    dataset, batch_size, val_methods)
+            else:
+                return callBigDlFunc(self.bigdl_type,
+                                     "modelEvaluate",
+                                     self.value,
+                                     dataset, batch_size, val_methods)
         else:
             raise Exception("Error when calling evaluate(): it takes no argument or exactly three arguments only")
 
