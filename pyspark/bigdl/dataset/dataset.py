@@ -42,5 +42,5 @@ class DataSet(JavaValue):
         if isinstance(transformer, FeatureTransformer):
             jvalue = callBigDlFunc(self.bigdl_type, "featureTransformDataset", self.value, transformer)
             return DataSet(jvalue=jvalue)
-    def image_frame(self):
+    def get_image_frame(self):
         return self.image_frame
