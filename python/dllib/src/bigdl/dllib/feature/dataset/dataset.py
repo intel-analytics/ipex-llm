@@ -26,17 +26,21 @@ if sys.version >= '3':
 
 class DataSet(JavaValue):
 
-    def __init__(self, jvalue=None, bigdl_type="float"):
+    def __init__(self, jvalue=None, image_frame = None, bigdl_type="float"):
         self.bigdl_type = bigdl_type
         if jvalue:
             self.value = jvalue
+        if image_frame:
+            self.image_frame = image_frame
 
     @classmethod
     def image_frame(cls, image_frame, bigdl_type="float"):
         jvalue = callBigDlFunc(bigdl_type, "createDatasetFromImageFrame", image_frame)
-        return DataSet(jvalue=jvalue)
+        return DataSet(jvalue=jvalue, image_frame = image_frame)
 
     def transform(self, transformer):
         if isinstance(transformer, FeatureTransformer):
             jvalue = callBigDlFunc(self.bigdl_type, "featureTransformDataset", self.value, transformer)
             return DataSet(jvalue=jvalue)
+    def get_image_frame(self):
+        return self.image_frame
