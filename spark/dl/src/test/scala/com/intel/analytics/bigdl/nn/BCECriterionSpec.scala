@@ -45,6 +45,37 @@ class BCECriterionSpec extends FlatSpec with Matchers {
 
   }
 
+  "BCECriterion's eps" should "works" in {
+    val criterion = BCECriterion[Float]()
+    val output = Tensor[Float](3)
+    output.setValue(1, 0f)
+    output.setValue(2, 1f)
+    output.setValue(3, 0.5f)
+    val target = Tensor[Float](3)
+    target.setValue(1, 0)
+    target.setValue(2, 1)
+    target.setValue(3, 1)
+
+    val loss = criterion.forward(output, target)
+    java.lang.Float.isNaN(loss) should be (false)
+  }
+
+  "BCECriterion's eps with weight" should "works" in {
+    val weights = Tensor[Float](3).rand()
+    val criterion = BCECriterion[Float](weights)
+    val output = Tensor[Float](3)
+    output.setValue(1, 0f)
+    output.setValue(2, 1f)
+    output.setValue(3, 0.5f)
+    val target = Tensor[Float](3)
+    target.setValue(1, 0)
+    target.setValue(2, 1)
+    target.setValue(3, 1)
+
+    val loss = criterion.forward(output, target)
+    java.lang.Float.isNaN(loss) should be (false)
+  }
+
   "BCECriterion with more than two dimensions small input" should "" +
     "return return right output and gradInput" in {
 
