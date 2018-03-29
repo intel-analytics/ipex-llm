@@ -55,6 +55,9 @@ object TextClassifier {
       opt[Int]('l', "learningRate")
         .text("learningRate")
         .action((x, c) => c.copy(learningRate = x))
+      opt[Unit]('k', "kerasModel")
+        .text("use Keras-Style API for model definition")
+        .action((x, c) => c.copy(kerasModel = true))
     }
 
     localParser.parse(args, TextClassificationParams()).map { param =>

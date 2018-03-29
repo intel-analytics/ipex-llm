@@ -18,9 +18,9 @@ package com.intel.analytics.bigdl.keras
 
 import com.intel.analytics.bigdl.models.lenet.LeNet5
 import com.intel.analytics.bigdl.tensor.Tensor
-import org.scalatest.{FlatSpec, Matchers}
+import com.intel.analytics.bigdl.utils.RandomGenerator
 
-class LeNetSpec extends FlatSpec with Matchers {
+class LeNetSpec extends KerasBaseSpec {
 
   "LeNet sequential" should "generate the correct outputShape" in {
     val lenet = LeNet5.keras(classNum = 10)
@@ -32,18 +32,13 @@ class LeNetSpec extends FlatSpec with Matchers {
     lenet.getOutputShape().toSingle().toArray should be (Array(-1, 10))
   }
 
-  "LeNet sequential forward and backward" should "work properly" in {
-    val lenet = LeNet5.keras(classNum = 10)
+  "LeNet sequential definition" should "be the same as graph definition" in {
+    RandomGenerator.RNG.setSeed(1000)
+    val kseq = LeNet5.keras(classNum = 10)
+    RandomGenerator.RNG.setSeed(1000)
+    val kgraph = LeNet5.kerasGraph(classNum = 10)
     val input = Tensor[Float](Array(2, 28, 28, 1)).rand()
-    val output = lenet.forward(input)
-    val gradInput = lenet.backward(input, output)
-  }
-
-  "LeNet graph forward and backward" should "work properly" in {
-    val lenet = LeNet5.kerasGraph(classNum = 10)
-    val input = Tensor[Float](Array(2, 28, 28, 1)).rand()
-    val output = lenet.forward(input)
-    val gradInput = lenet.backward(input, output)
+    compareModels(kseq, kgraph, input)
   }
 
   "LeNet forward with incompatible input tensor" should "raise an exception" in {

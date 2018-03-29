@@ -45,8 +45,9 @@ class AveragePooling2D[T: ClassTag](
    strides: Array[Int] = null,
    borderMode: String = "valid",
    dimOrdering: DataFormat = DataFormat.NCHW,
+   ceil: Boolean = false,
    inputShape: Shape = null)(implicit ev: TensorNumeric[T])
-  extends Pooling2D[T](poolSize, strides, borderMode, dimOrdering, inputShape) {
+  extends Pooling2D[T](poolSize, strides, borderMode, dimOrdering, ceil, inputShape) {
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
     val pads = KerasUtils.getPadsFromBorderMode(borderMode)
@@ -60,6 +61,8 @@ class AveragePooling2D[T: ClassTag](
       countIncludePad = false,
       format = dimOrdering)
     layer.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
+    if (ceil) layer.ceil().asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
+    else layer.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
   }
 }
 
@@ -69,9 +72,10 @@ object AveragePooling2D {
     strides: (Int, Int) = null,
     borderMode: String = "valid",
     dimOrdering: String = "th",
+    ceil: Boolean = false,
     inputShape: Shape = null)(implicit ev: TensorNumeric[T]): AveragePooling2D[T] = {
     val strideValues = if (strides != null) Array(strides._1, strides._2) else null
     new AveragePooling2D[T](Array(poolSize._1, poolSize._2), strideValues,
-      borderMode, KerasUtils.toBigDLFormat(dimOrdering), inputShape)
+      borderMode, KerasUtils.toBigDLFormat(dimOrdering), ceil, inputShape)
   }
 }

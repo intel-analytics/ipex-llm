@@ -55,6 +55,7 @@ class SimpleRNN[T: ClassTag](
    var wRegularizer: Regularizer[T] = null,
    var uRegularizer: Regularizer[T] = null,
    var bRegularizer: Regularizer[T] = null,
+   val bias: Boolean = false,
    inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends Recurrent[T](outputDim, returnSequences, goBackwards, inputShape) {
 
@@ -63,7 +64,7 @@ class SimpleRNN[T: ClassTag](
       inputSize = input(2),
       hiddenSize = outputDim,
       activation = activation.doBuild(inputShape).asInstanceOf[TensorModule[T]],
-      isInputWithBias = false,
+      isInputWithBias = bias,
       wRegularizer = wRegularizer,
       uRegularizer = uRegularizer,
       bRegularizer = bRegularizer)
@@ -79,9 +80,10 @@ object SimpleRNN {
     wRegularizer: Regularizer[T] = null,
     uRegularizer: Regularizer[T] = null,
     bRegularizer: Regularizer[T] = null,
+    bias: Boolean = false,
     inputShape: Shape = null)(implicit ev: TensorNumeric[T]) : SimpleRNN[T] = {
     new SimpleRNN[T](outputDim, KerasUtils.getKerasActivation(activation),
       returnSequences, goBackwards, wRegularizer,
-      uRegularizer, bRegularizer, inputShape)
+      uRegularizer, bRegularizer, bias, inputShape)
   }
 }

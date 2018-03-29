@@ -34,6 +34,7 @@ object Utils {
     stateSnapshot: Option[String] = None,
     batchSize: Int = 150,
     maxEpoch: Int = 10,
+    kerasModel: Boolean = false,
     graphModel: Boolean = false
   )
 
@@ -56,6 +57,9 @@ object Utils {
     opt[Int]('e', "maxEpoch")
       .text("max epoch")
       .action((x, c) => c.copy(maxEpoch = x))
+    opt[Unit]('k', "kerasModel")
+      .text("use Keras-Style API for model definition")
+      .action((x, c) => c.copy(kerasModel = true))
     opt[Unit]('g', "graphModel")
       .text("use graph model")
       .action((x, c) => c.copy(graphModel = true))

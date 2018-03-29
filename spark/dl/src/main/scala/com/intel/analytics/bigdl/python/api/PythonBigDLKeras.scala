@@ -185,11 +185,14 @@ class PythonBigDLKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends Pytho
     wRegularizer: Regularizer[T] = null,
     bRegularizer: Regularizer[T] = null,
     bias: Boolean = true,
+    padH: Int = 0,
+    padW: Int = 0,
+    propagateBack: Boolean = true,
     inputShape: JList[Int] = null): Convolution2D[T] = {
     new Convolution2D(nbFilter, nbRow, nbCol, KerasUtils.getInitMethod(init),
       KerasUtils.getKerasActivation(activation), borderMode,
       toScalaArray(subsample), KerasUtils.toBigDLFormat(dimOrdering),
-      wRegularizer, bRegularizer, bias, toScalaShape(inputShape))
+      wRegularizer, bRegularizer, bias, padH, padW, propagateBack, toScalaShape(inputShape))
   }
 
   def createKerasMaxPooling2D(
@@ -197,9 +200,10 @@ class PythonBigDLKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends Pytho
     strides: JList[Int],
     borderMode: String = "valid",
     dimOrdering: String = "th",
+    ceil: Boolean = false,
     inputShape: JList[Int] = null): MaxPooling2D[T] = {
     new MaxPooling2D[T](toScalaArray(poolSize), toScalaArray(strides),
-      borderMode, KerasUtils.toBigDLFormat(dimOrdering), toScalaShape(inputShape))
+      borderMode, KerasUtils.toBigDLFormat(dimOrdering), ceil, toScalaShape(inputShape))
   }
 
   def createKerasActivation(
@@ -233,9 +237,10 @@ class PythonBigDLKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends Pytho
     wRegularizer: Regularizer[T] = null,
     uRegularizer: Regularizer[T] = null,
     bRegularizer: Regularizer[T] = null,
+    bias: Boolean = false,
     inputShape: JList[Int] = null): SimpleRNN[T] = {
     SimpleRNN(outputDim, activation, returnSequences, goBackwards,
-      wRegularizer, uRegularizer, bRegularizer, toScalaShape(inputShape))
+      wRegularizer, uRegularizer, bRegularizer, bias, toScalaShape(inputShape))
   }
 
   def createKerasLSTM(
@@ -387,9 +392,10 @@ class PythonBigDLKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends Pytho
     strides: JList[Int],
     borderMode: String = "valid",
     dimOrdering: String = "th",
+    ceil: Boolean = false,
     inputShape: JList[Int] = null): AveragePooling2D[T] = {
     new AveragePooling2D(toScalaArray(poolSize), toScalaArray(strides),
-      borderMode, KerasUtils.toBigDLFormat(dimOrdering), toScalaShape(inputShape))
+      borderMode, KerasUtils.toBigDLFormat(dimOrdering), ceil, toScalaShape(inputShape))
   }
 
   def createKerasAveragePooling3D(

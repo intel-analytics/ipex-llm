@@ -43,6 +43,7 @@ object Utils {
     overWriteCheckpoint: Boolean = false,
     learningRate: Double = 0.01,
     weightDecay: Double = 0.0005,
+    kerasModel: Boolean = false,
     graphModel: Boolean = false
   )
 
@@ -77,6 +78,9 @@ object Utils {
     opt[Double]('l', "learningRate")
       .text("inital learning rate")
       .action((x, c) => c.copy(learningRate = x))
+    opt[Unit]('k', "kerasModel")
+      .text("use Keras-Style API for model definition")
+      .action((x, c) => c.copy(kerasModel = true))
     opt[Unit]('g', "graphModel")
       .text("use graph model")
       .action((x, c) => c.copy(graphModel = true))

@@ -183,6 +183,21 @@ class TextClassifier(param: AbstractTextClassificationParams) extends Serializab
     model
   }
 
+  def buildKerasModel(classNum: Int): nn.keras.Sequential[Float] = {
+    import com.intel.analytics.bigdl.nn.keras._
+    import com.intel.analytics.bigdl.utils.Shape
+
+    val model = Sequential[Float]()
+    model.add(Convolution1D(256, 5, activation = "relu", inputShape = Shape(500, 200)))
+    model.add(MaxPooling1D(param.maxSequenceLength - 5 + 1))
+    model.add(Dense(128))
+    model.add(Dropout(0.2))
+    model.add(Activation("relu"))
+    model.add(Dense(classNum, activation = "softmax"))
+    model.add(Reshape(Array(classNum)))
+    model
+  }
+
 
   /**
    * Start to train the text classification model
@@ -216,10 +231,19 @@ class TextClassifier(param: AbstractTextClassificationParams) extends Serializab
     val Array(trainingRDD, valRDD) = sampleRDD.randomSplit(
       Array(trainingSplit, 1 - trainingSplit))
 
+    val model = if (param.kerasModel) {
+      println("Using Keras-Style API for model definition")
+      buildKerasModel(classNum)
+    }
+    else buildModel(classNum)
+
+    val criterion = if (param.kerasModel) ClassNLLCriterion[Float](logProbAsInput = false)
+    else ClassNLLCriterion[Float]()
+
     val optimizer = Optimizer(
-      model = buildModel(classNum),
+      model = model,
       sampleRDD = trainingRDD,
-      criterion = new ClassNLLCriterion[Float](),
+      criterion = criterion,
       batchSize = param.batchSize
     )
 
@@ -279,6 +303,7 @@ abstract class AbstractTextClassificationParams extends Serializable {
   def embeddingDim: Int = 100
   def partitionNum: Int = 4
   def learningRate: Double = 0.01
+  def kerasModel: Boolean = false
 }
 
 
@@ -298,5 +323,6 @@ case class TextClassificationParams(override val baseDir: String = "./",
   override val batchSize: Int = 128,
   override val embeddingDim: Int = 200,
   override val learningRate: Double = 0.01,
-  override val partitionNum: Int = 4)
+  override val partitionNum: Int = 4,
+  override val kerasModel: Boolean = false)
   extends AbstractTextClassificationParams

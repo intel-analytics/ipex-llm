@@ -35,6 +35,7 @@ object Options {
     weightDecay: Double = 0.0001,
     checkpointIteration: Int = 620,
     graphModel: Boolean = false,
+    kerasModel: Boolean = false,
     maxLr: Option[Double] = None,
     warmupEpoch: Option[Int] = None,
     gradientL2NormThreshold: Option[Double] = None,
@@ -81,6 +82,9 @@ object Options {
     opt[Int]("checkpointIteration")
       .text("checkpoint interval of iterations")
       .action((x, c) => c.copy(checkpointIteration = x))
+    opt[Unit]('k', "kerasModel")
+      .text("use Keras-Style API for model definition")
+      .action((x, c) => c.copy(kerasModel = true))
     opt[Unit]('g', "graphModel")
       .text("use graph model")
       .action((x, c) => c.copy(graphModel = true))

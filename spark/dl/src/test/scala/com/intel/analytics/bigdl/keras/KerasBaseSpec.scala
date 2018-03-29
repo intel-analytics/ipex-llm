@@ -14,7 +14,9 @@
  * limitations under the License.
  */
 package com.intel.analytics.bigdl.keras
+import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractCriterion, AbstractModule}
+import com.intel.analytics.bigdl.nn.keras.KerasModel
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
 import com.intel.analytics.bigdl.utils.BigDLSpecHelper
@@ -78,5 +80,18 @@ abstract class KerasBaseSpec extends BigDLSpecHelper {
     val bgradInput = bmodel.backward(input, target.clone())
     bgradInput.almostEqual(kgradInput, precision) should be(true)
   }
-}
 
+  // compare the output and gradInput of two supposedly compatible model definitions
+  def compareModels(model1: Module[Float],
+                    model2: Module[Float],
+                    input: Tensor[Float],
+                    precision: Double = 1e-5): Unit = {
+    model1.setWeightsBias(model2.getWeightsBias())
+    val output1 = model1.forward(input)
+    val output2 = model2.forward(input)
+    val kgradInput = model1.backward(input, output1)
+    val tgradInput = model2.backward(input, output2)
+    output1.toTensor[Float].almostEqual(output2.toTensor[Float], precision) should be(true)
+    kgradInput.toTensor[Float].almostEqual(tgradInput.toTensor[Float], precision) should be(true)
+  }
+}

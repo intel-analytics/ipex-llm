@@ -66,7 +66,18 @@ object PTBWordLM {
 
       val model = if (param.modelSnapshot.isDefined) {
         Module.loadModule[Float](param.modelSnapshot.get)
-      } else {
+      } else if (param.kerasModel) {
+        println("Using Keras-Style API for model definition")
+        val curModel = PTBModel.keras(
+          inputSize = param.vocabSize,
+          hiddenSize = param.hiddenSize,
+          outputSize = param.vocabSize,
+          numLayers = param.numLayers,
+          keepProb = param.keepProb)
+        curModel.reset()
+        curModel
+      }
+      else {
         val curModel = PTBModel(
           inputSize = param.vocabSize,
           hiddenSize = param.hiddenSize,
