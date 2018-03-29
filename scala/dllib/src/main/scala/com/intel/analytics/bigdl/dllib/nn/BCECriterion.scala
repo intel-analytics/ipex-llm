@@ -72,7 +72,7 @@ class BCECriterion[@specialized(Float, Double) T: ClassTag]
       // cmul support broadcasting
       buffer.cmul(weights)
       sum += ev.toType[Double](buffer.dot(target))
-      buffer.fill(ev.fromType(1.0 + eps)).sub(input).log().cmul(weights)
+      buffer.fill(ev.one).sub(input).add(ev.fromType(eps)).log().cmul(weights)
       sum -= ev.toType[Double](buffer.dot(target))
       if (onesBuffer.nElement() != buffer.nElement()) {
         onesBuffer.resizeAs(buffer).fill(ev.one)
@@ -81,7 +81,7 @@ class BCECriterion[@specialized(Float, Double) T: ClassTag]
     } else {
       buffer.resizeAs(input).copy(input).add(ev.fromType(eps)).log()
       sum += ev.toType[Double](buffer.dot(target))
-      buffer.fill(ev.fromType(1.0 + eps)).sub(input).log()
+      buffer.fill(ev.one).sub(input).add(ev.fromType(eps)).log()
       sum -= ev.toType[Double](buffer.dot(target))
       if (onesBuffer.nElement() != buffer.nElement()) {
         onesBuffer.resizeAs(buffer).fill(ev.one)
