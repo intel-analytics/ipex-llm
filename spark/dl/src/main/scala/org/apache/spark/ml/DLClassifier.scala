@@ -56,7 +56,14 @@ class DLClassifier[T: ClassTag](
   }
 
   override def copy(extra: ParamMap): DLClassifier[T] = {
-    copyValues(new DLClassifier(model, criterion, featureSize), extra)
+    val copied = copyValues(
+      new DLClassifier(model.cloneModule(), criterion.cloneCriterion(), featureSize.clone()), extra)
+
+    if (this.validationTrigger.isDefined) {
+      copied.setValidation(
+        validationTrigger.get, validationDF, validationMethods.clone(), validationBatchSize)
+    }
+    copied
   }
 }
 
@@ -82,6 +89,12 @@ class DLClassifierModel[T: ClassTag](
   override def transformSchema(schema : StructType): StructType = {
     validateDataType(schema, $(featuresCol))
     SchemaUtils.appendColumn(schema, $(predictionCol), DoubleType)
+  }
+
+  override def copy(extra: ParamMap): DLModel[T] = {
+    val copied = new DLClassifierModel(model.cloneModule(), featureSize.clone(), uid)
+      .setParent(parent)
+    copyValues(copied, extra)
   }
 }
 

@@ -25,7 +25,8 @@ import com.intel.analytics.bigdl.visualization.{TrainSummary, ValidationSummary}
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
 import org.apache.spark.ml.feature.MinMaxScaler
-import org.apache.spark.ml.{DLEstimator, DLModel, Pipeline, PipelineModel}
+import org.apache.spark.ml.param.ParamMap
+import org.apache.spark.ml._
 import org.apache.spark.mllib.linalg.Vectors
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{DataFrame, Row, SQLContext}
@@ -325,6 +326,78 @@ class DLEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
       }.count()
       assert(correct > nRecords * 0.8)
     }
+  }
+
+  "An DLEstimator" should "supports deep copy" in {
+    val model = new Sequential().add(Linear[Float](6, 2)).add(LogSoftMax[Float])
+    val criterion = ClassNLLCriterion[Float]()
+    val data = sc.parallelize(
+      smallData.map(p => (org.apache.spark.mllib.linalg.Vectors.dense(p._1), p._2)))
+    val df: DataFrame = sqlContext.createDataFrame(data).toDF("features", "label")
+    val estimator = new DLEstimator[Float](model, criterion, Array(6), Array(1))
+      .setBatchSize(31)
+      .setOptimMethod(new LBFGS[Float]())
+      .setLearningRate(0.123)
+      .setLearningRateDecay(0.432)
+      .setMaxEpoch(13)
+      .setFeaturesCol("abc")
+      .setTrainSummary(new TrainSummary("/tmp", "1"))
+      .setValidationSummary(new ValidationSummary("/tmp", "2"))
+      .setValidation(Trigger.maxIteration(3), df, Array(new Loss[Float]()), 2)
+    val copied = estimator.copy(ParamMap.empty)
+    assert(estimator.model ne copied.model)
+    assert(estimator.criterion ne copied.criterion)
+    assert(estimator.featureSize ne copied.featureSize)
+
+    assert(estimator.model == copied.model)
+    assert(estimator.criterion == copied.criterion)
+    assert(estimator.featureSize.deep == copied.featureSize.deep)
+    assert(estimator.getMaxEpoch == copied.getMaxEpoch)
+    assert(estimator.getBatchSize == copied.getBatchSize)
+    assert(estimator.getLearningRate == copied.getLearningRate)
+    assert(estimator.getLearningRateDecay == copied.getLearningRateDecay)
+    assert(estimator.getFeaturesCol == copied.getFeaturesCol)
+    assert(estimator.getLabelCol == copied.getLabelCol)
+    val estVal = estimator.getValidation.get
+    val copiedVal = copied.getValidation.get
+    assert(estVal._1 == copiedVal._1)
+    assert(estVal._2 == copiedVal._2)
+    assert(estVal._3.deep == copiedVal._3.deep)
+    assert(estVal._4 == copiedVal._4)
+
+    // train Summary and validation Summary are not copied since they are not thread-safe and cannot
+    // be shared among estimators
+    assert(copied.getTrainSummary.isEmpty)
+    assert(copied.getTrainSummary.isEmpty)
+  }
+
+  "An DLModel" should "supports deep copy" in {
+    val model = new Sequential().add(Linear[Float](6, 2)).add(LogSoftMax[Float])
+    val criterion = ClassNLLCriterion[Float]()
+    val data = sc.parallelize(
+      smallData.map(p => (org.apache.spark.mllib.linalg.Vectors.dense(p._1), p._2)))
+    val df: DataFrame = sqlContext.createDataFrame(data).toDF("abc", "la")
+    val estimator = new DLEstimator[Float](model, criterion, Array(6), Array(1))
+      .setBatchSize(31)
+      .setOptimMethod(new LBFGS[Float]())
+      .setLearningRate(0.123)
+      .setLearningRateDecay(0.432)
+      .setMaxEpoch(3)
+      .setFeaturesCol("abc")
+      .setLabelCol("la")
+
+    val dlModel = estimator.fit(df)
+    val copied = dlModel.copy(ParamMap.empty)
+    assert(dlModel.model ne copied.model)
+    assert(dlModel.featureSize ne copied.featureSize)
+
+    assert(dlModel.model == copied.model)
+    assert(dlModel.featureSize.deep == copied.featureSize.deep)
+    assert(dlModel.getBatchSize == copied.getBatchSize)
+    assert(dlModel.getLearningRate == copied.getLearningRate)
+    assert(dlModel.getMaxEpoch == copied.getMaxEpoch)
+    assert(dlModel.getLearningRateDecay == copied.getLearningRateDecay)
+    assert(dlModel.getFeaturesCol == copied.getFeaturesCol)
   }
 }
 
