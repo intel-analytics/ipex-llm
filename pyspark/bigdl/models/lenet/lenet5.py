@@ -15,7 +15,7 @@
 #
 
 from optparse import OptionParser
-from utils import *
+from bigdl.models.lenet.utils import *
 from bigdl.dataset.transformer import *
 from bigdl.nn.layer import *
 from bigdl.nn.criterion import *
@@ -29,8 +29,8 @@ def build_model(class_num):
     model.add(SpatialConvolution(1, 6, 5, 5))
     model.add(Tanh())
     model.add(SpatialMaxPooling(2, 2, 2, 2))
-    model.add(Tanh())
     model.add(SpatialConvolution(6, 12, 5, 5))
+    model.add(Tanh())
     model.add(SpatialMaxPooling(2, 2, 2, 2))
     model.add(Reshape([12 * 4 * 4]))
     model.add(Linear(12 * 4 * 4, 100))
@@ -72,8 +72,10 @@ if __name__ == "__main__":
         parameters = trained_model.parameters()
     elif options.action == "test":
         # Load a pre-trained model and then validate it through top1 accuracy.
-        test_data = get_mnist(sc, "test").map(
-            normalizer(mnist.TEST_MEAN, mnist.TEST_STD))
+        test_data = get_mnist(sc, "test", options.dataPath) \
+            .map(lambda rec_tuple: (normalizer(rec_tuple[0], mnist.TEST_MEAN, mnist.TEST_STD),
+                                    rec_tuple[1])) \
+            .map(lambda t: Sample.from_ndarray(t[0], t[1]))
         model = Model.load(options.modelPath)
         results = model.evaluate(test_data, options.batchSize, [Top1Accuracy()])
         for result in results:

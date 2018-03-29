@@ -742,17 +742,32 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
     this
   }
 
+  protected def processInputs(nodes: Seq[ModuleNode[T]]): ModuleNode[T] = {
+    val curNode = new ModuleNode[T](this)
+    nodes.foreach(node => {
+      node.add(curNode, Edge())
+    })
+    curNode
+  }
+
+  protected def processInputs(first: (ModuleNode[T], Int),
+      nodesWithIndex : (ModuleNode[T], Int)*): ModuleNode[T] = {
+    val curNode = new ModuleNode[T](this)
+    first._1.add(curNode, Edge(first._2))
+    nodesWithIndex.foreach(nodeWithIndex => {
+      nodeWithIndex._1.add(curNode, Edge(nodeWithIndex._2))
+    })
+    curNode
+  }
+
   /**
    * Build graph: some other modules point to current module
    * @param nodes upstream module nodes
    * @return node containing current module
    */
   def inputs(nodes : ModuleNode[T]*): ModuleNode[T] = {
-    val curNode = new ModuleNode[T](this)
-    nodes.foreach(node => {
-      node.add(curNode, Edge())
-    })
-    curNode
+    validateInput(nodes.map(_.element))
+    processInputs(nodes)
   }
 
   /**
@@ -761,11 +776,8 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
    * @return node containing current module
    */
   def inputs(nodes : Array[ModuleNode[T]]): ModuleNode[T] = {
-    val curNode = new ModuleNode[T](this)
-    nodes.foreach(node => {
-      node.add(curNode, Edge())
-    })
-    curNode
+    validateInput(nodes.map(_.element))
+    processInputs(nodes)
   }
 
   /**
@@ -774,14 +786,10 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
    * @param nodesWithIndex upstream module nodes and the output tensor index. The start index is 1.
    * @return node containing current module
    */
-  def inputs(first: (ModuleNode[T], Int), nodesWithIndex : (ModuleNode[T], Int)*)
-  : ModuleNode[T] = {
-    val curNode = new ModuleNode[T](this)
-    first._1.add(curNode, Edge(first._2))
-    nodesWithIndex.foreach(nodeWithIndex => {
-      nodeWithIndex._1.add(curNode, Edge(nodeWithIndex._2))
-    })
-    curNode
+  def inputs(first: (ModuleNode[T], Int), nodesWithIndex : (ModuleNode[T], Int)*): ModuleNode[T] = {
+    validateInput(List(first._1.element))
+    validateInput(nodesWithIndex.map(_._1.element))
+    processInputs(first, nodesWithIndex: _*)
   }
 
   /**
@@ -819,10 +827,34 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
    */
   final def evaluate(
     dataset: RDD[Sample[T]],
-    vMethods: Array[ValidationMethod[T]],
+    vMethods: Array[_ <:ValidationMethod[T]],
     batchSize: Option[Int] = None
   ): Array[(ValidationResult, ValidationMethod[T])] = {
-    Evaluator(this).test(dataset, vMethods, batchSize)
+    Evaluator(this).test(dataset, vMethods.map(v => v), batchSize)
+  }
+
+  /**
+   * use ValidationMethod to evaluate module on the given ImageFrame
+   *  @param imageFrame ImageFrame for valudation
+   *  @param vMethods validation methods
+   *  @param batchSize total batch size of all partitions
+   *  @return
+   */
+
+  final def evaluateImage(imageFrame: ImageFrame,
+    vMethods: Array[_ <:ValidationMethod[T]],
+    batchSize: Option[Int] = None
+    ): Array[(ValidationResult, ValidationMethod[T])] = {
+    require(imageFrame.isDistributed(), "ImageFrame must be distributed")
+    val rdd = imageFrame.toDistributed().rdd.map(imageFeature => {
+      if (imageFeature.isValid) {
+        require(imageFeature.contains(ImageFeature.sample), "ImageFeature must have sample")
+        imageFeature[Sample[T]](ImageFeature.sample)
+      } else {
+        null
+      }
+    }).filter(_ != null)
+    evaluate(rdd, vMethods, batchSize)
   }
 
   /**
@@ -833,9 +865,9 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
    */
   final def evaluate(
     dataSet: LocalDataSet[MiniBatch[T]],
-    vMethods: Array[ValidationMethod[T]]
+    vMethods: Array[_ <:ValidationMethod[T]]
   ): Array[(ValidationResult, ValidationMethod[T])] = {
-    Validator(this, dataSet).test(vMethods)
+    Validator(this, dataSet).test(vMethods.map(v => v))
   }
 
   /**
@@ -1036,6 +1068,17 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
    */
   private[bigdl] def checkDuplicate(
     record: mutable.HashSet[Int] = mutable.HashSet()
-  ): Unit = {}
+  ): Unit = {
+    val errMsg = "Some module is duplicate in the current model: "
+    val curId = System.identityHashCode(this)
+    require(this.skipDuplicateCheck() || !record.contains(curId), errMsg + this.getName())
+    record.add(curId)
+  }
+
+  /**
+   * Sometimes, some layer need skip the duplicate check process, e.g. Keras-like input layer
+   * @return
+   */
+  private[nn] def skipDuplicateCheck(): Boolean = false
 }
 

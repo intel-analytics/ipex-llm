@@ -1241,44 +1241,25 @@ public final class Bigdl {
      *output shape
      * </pre>
      *
-     * <code>repeated .com.intel.analytics.bigdl.serialization.Shape outputShape = 14;</code>
+     * <code>.com.intel.analytics.bigdl.serialization.Shape outputShape = 14;</code>
      */
-    java.util.List<com.intel.analytics.bigdl.serialization.Bigdl.Shape> 
-        getOutputShapeList();
+    boolean hasOutputShape();
     /**
      * <pre>
      *output shape
      * </pre>
      *
-     * <code>repeated .com.intel.analytics.bigdl.serialization.Shape outputShape = 14;</code>
+     * <code>.com.intel.analytics.bigdl.serialization.Shape outputShape = 14;</code>
      */
-    com.intel.analytics.bigdl.serialization.Bigdl.Shape getOutputShape(int index);
+    com.intel.analytics.bigdl.serialization.Bigdl.Shape getOutputShape();
     /**
      * <pre>
      *output shape
      * </pre>
      *
-     * <code>repeated .com.intel.analytics.bigdl.serialization.Shape outputShape = 14;</code>
+     * <code>.com.intel.analytics.bigdl.serialization.Shape outputShape = 14;</code>
      */
-    int getOutputShapeCount();
-    /**
-     * <pre>
-     *output shape
-     * </pre>
-     *
-     * <code>repeated .com.intel.analytics.bigdl.serialization.Shape outputShape = 14;</code>
-     */
-    java.util.List<? extends com.intel.analytics.bigdl.serialization.Bigdl.ShapeOrBuilder> 
-        getOutputShapeOrBuilderList();
-    /**
-     * <pre>
-     *output shape
-     * </pre>
-     *
-     * <code>repeated .com.intel.analytics.bigdl.serialization.Shape outputShape = 14;</code>
-     */
-    com.intel.analytics.bigdl.serialization.Bigdl.ShapeOrBuilder getOutputShapeOrBuilder(
-        int index);
+    com.intel.analytics.bigdl.serialization.Bigdl.ShapeOrBuilder getOutputShapeOrBuilder();
   }
   /**
    * Protobuf type {@code com.intel.analytics.bigdl.serialization.BigDLModule}
@@ -1302,7 +1283,6 @@ public final class Bigdl {
       train_ = false;
       namePostfix_ = "";
       id_ = 0;
-      outputShape_ = java.util.Collections.emptyList();
     }
 
     @java.lang.Override
@@ -1447,12 +1427,16 @@ public final class Bigdl {
               break;
             }
             case 114: {
-              if (!((mutable_bitField0_ & 0x00002000) == 0x00002000)) {
-                outputShape_ = new java.util.ArrayList<com.intel.analytics.bigdl.serialization.Bigdl.Shape>();
-                mutable_bitField0_ |= 0x00002000;
+              com.intel.analytics.bigdl.serialization.Bigdl.Shape.Builder subBuilder = null;
+              if (outputShape_ != null) {
+                subBuilder = outputShape_.toBuilder();
               }
-              outputShape_.add(
-                  input.readMessage(com.intel.analytics.bigdl.serialization.Bigdl.Shape.parser(), extensionRegistry));
+              outputShape_ = input.readMessage(com.intel.analytics.bigdl.serialization.Bigdl.Shape.parser(), extensionRegistry);
+              if (subBuilder != null) {
+                subBuilder.mergeFrom(outputShape_);
+                outputShape_ = subBuilder.buildPartial();
+              }
+
               break;
             }
           }
@@ -1471,9 +1455,6 @@ public final class Bigdl {
         }
         if (((mutable_bitField0_ & 0x00000020) == 0x00000020)) {
           nextModules_ = nextModules_.getUnmodifiableView();
-        }
-        if (((mutable_bitField0_ & 0x00002000) == 0x00002000)) {
-          outputShape_ = java.util.Collections.unmodifiableList(outputShape_);
         }
         this.unknownFields = unknownFields.build();
         makeExtensionsImmutable();
@@ -2034,58 +2015,36 @@ public final class Bigdl {
     }
 
     public static final int OUTPUTSHAPE_FIELD_NUMBER = 14;
-    private java.util.List<com.intel.analytics.bigdl.serialization.Bigdl.Shape> outputShape_;
+    private com.intel.analytics.bigdl.serialization.Bigdl.Shape outputShape_;
     /**
      * <pre>
      *output shape
      * </pre>
      *
-     * <code>repeated .com.intel.analytics.bigdl.serialization.Shape outputShape = 14;</code>
+     * <code>.com.intel.analytics.bigdl.serialization.Shape outputShape = 14;</code>
      */
-    public java.util.List<com.intel.analytics.bigdl.serialization.Bigdl.Shape> getOutputShapeList() {
-      return outputShape_;
+    public boolean hasOutputShape() {
+      return outputShape_ != null;
     }
     /**
      * <pre>
      *output shape
      * </pre>
      *
-     * <code>repeated .com.intel.analytics.bigdl.serialization.Shape outputShape = 14;</code>
+     * <code>.com.intel.analytics.bigdl.serialization.Shape outputShape = 14;</code>
      */
-    public java.util.List<? extends com.intel.analytics.bigdl.serialization.Bigdl.ShapeOrBuilder> 
-        getOutputShapeOrBuilderList() {
-      return outputShape_;
+    public com.intel.analytics.bigdl.serialization.Bigdl.Shape getOutputShape() {
+      return outputShape_ == null ? com.intel.analytics.bigdl.serialization.Bigdl.Shape.getDefaultInstance() : outputShape_;
     }
     /**
      * <pre>
      *output shape
      * </pre>
      *
-     * <code>repeated .com.intel.analytics.bigdl.serialization.Shape outputShape = 14;</code>
+     * <code>.com.intel.analytics.bigdl.serialization.Shape outputShape = 14;</code>
      */
-    public int getOutputShapeCount() {
-      return outputShape_.size();
-    }
-    /**
-     * <pre>
-     *output shape
-     * </pre>
-     *
-     * <code>repeated .com.intel.analytics.bigdl.serialization.Shape outputShape = 14;</code>
-     */
-    public com.intel.analytics.bigdl.serialization.Bigdl.Shape getOutputShape(int index) {
-      return outputShape_.get(index);
-    }
-    /**
-     * <pre>
-     *output shape
-     * </pre>
-     *
-     * <code>repeated .com.intel.analytics.bigdl.serialization.Shape outputShape = 14;</code>
-     */
-    public com.intel.analytics.bigdl.serialization.Bigdl.ShapeOrBuilder getOutputShapeOrBuilder(
-        int index) {
-      return outputShape_.get(index);
+    public com.intel.analytics.bigdl.serialization.Bigdl.ShapeOrBuilder getOutputShapeOrBuilder() {
+      return getOutputShape();
     }
 
     private byte memoizedIsInitialized = -1;
@@ -2142,8 +2101,8 @@ public final class Bigdl {
       if (inputShape_ != null) {
         output.writeMessage(13, getInputShape());
       }
-      for (int i = 0; i < outputShape_.size(); i++) {
-        output.writeMessage(14, outputShape_.get(i));
+      if (outputShape_ != null) {
+        output.writeMessage(14, getOutputShape());
       }
       unknownFields.writeTo(output);
     }
@@ -2215,9 +2174,9 @@ public final class Bigdl {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(13, getInputShape());
       }
-      for (int i = 0; i < outputShape_.size(); i++) {
+      if (outputShape_ != null) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(14, outputShape_.get(i));
+          .computeMessageSize(14, getOutputShape());
       }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
@@ -2270,8 +2229,11 @@ public final class Bigdl {
         result = result && getInputShape()
             .equals(other.getInputShape());
       }
-      result = result && getOutputShapeList()
-          .equals(other.getOutputShapeList());
+      result = result && (hasOutputShape() == other.hasOutputShape());
+      if (hasOutputShape()) {
+        result = result && getOutputShape()
+            .equals(other.getOutputShape());
+      }
       result = result && unknownFields.equals(other.unknownFields);
       return result;
     }
@@ -2324,9 +2286,9 @@ public final class Bigdl {
         hash = (37 * hash) + INPUTSHAPE_FIELD_NUMBER;
         hash = (53 * hash) + getInputShape().hashCode();
       }
-      if (getOutputShapeCount() > 0) {
+      if (hasOutputShape()) {
         hash = (37 * hash) + OUTPUTSHAPE_FIELD_NUMBER;
-        hash = (53 * hash) + getOutputShapeList().hashCode();
+        hash = (53 * hash) + getOutputShape().hashCode();
       }
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
@@ -2476,7 +2438,6 @@ public final class Bigdl {
         if (com.google.protobuf.GeneratedMessageV3
                 .alwaysUseFieldBuilders) {
           getSubModulesFieldBuilder();
-          getOutputShapeFieldBuilder();
         }
       }
       public Builder clear() {
@@ -2523,10 +2484,10 @@ public final class Bigdl {
           inputShapeBuilder_ = null;
         }
         if (outputShapeBuilder_ == null) {
-          outputShape_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00002000);
+          outputShape_ = null;
         } else {
-          outputShapeBuilder_.clear();
+          outputShape_ = null;
+          outputShapeBuilder_ = null;
         }
         return this;
       }
@@ -2595,10 +2556,6 @@ public final class Bigdl {
           result.inputShape_ = inputShapeBuilder_.build();
         }
         if (outputShapeBuilder_ == null) {
-          if (((bitField0_ & 0x00002000) == 0x00002000)) {
-            outputShape_ = java.util.Collections.unmodifiableList(outputShape_);
-            bitField0_ = (bitField0_ & ~0x00002000);
-          }
           result.outputShape_ = outputShape_;
         } else {
           result.outputShape_ = outputShapeBuilder_.build();
@@ -2724,31 +2681,8 @@ public final class Bigdl {
         if (other.hasInputShape()) {
           mergeInputShape(other.getInputShape());
         }
-        if (outputShapeBuilder_ == null) {
-          if (!other.outputShape_.isEmpty()) {
-            if (outputShape_.isEmpty()) {
-              outputShape_ = other.outputShape_;
-              bitField0_ = (bitField0_ & ~0x00002000);
-            } else {
-              ensureOutputShapeIsMutable();
-              outputShape_.addAll(other.outputShape_);
-            }
-            onChanged();
-          }
-        } else {
-          if (!other.outputShape_.isEmpty()) {
-            if (outputShapeBuilder_.isEmpty()) {
-              outputShapeBuilder_.dispose();
-              outputShapeBuilder_ = null;
-              outputShape_ = other.outputShape_;
-              bitField0_ = (bitField0_ & ~0x00002000);
-              outputShapeBuilder_ = 
-                com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
-                   getOutputShapeFieldBuilder() : null;
-            } else {
-              outputShapeBuilder_.addAllMessages(other.outputShape_);
-            }
-          }
+        if (other.hasOutputShape()) {
+          mergeOutputShape(other.getOutputShape());
         }
         this.mergeUnknownFields(other.unknownFields);
         onChanged();
@@ -4392,156 +4326,69 @@ public final class Bigdl {
         return inputShapeBuilder_;
       }
 
-      private java.util.List<com.intel.analytics.bigdl.serialization.Bigdl.Shape> outputShape_ =
-        java.util.Collections.emptyList();
-      private void ensureOutputShapeIsMutable() {
-        if (!((bitField0_ & 0x00002000) == 0x00002000)) {
-          outputShape_ = new java.util.ArrayList<com.intel.analytics.bigdl.serialization.Bigdl.Shape>(outputShape_);
-          bitField0_ |= 0x00002000;
-         }
-      }
-
-      private com.google.protobuf.RepeatedFieldBuilderV3<
+      private com.intel.analytics.bigdl.serialization.Bigdl.Shape outputShape_ = null;
+      private com.google.protobuf.SingleFieldBuilderV3<
           com.intel.analytics.bigdl.serialization.Bigdl.Shape, com.intel.analytics.bigdl.serialization.Bigdl.Shape.Builder, com.intel.analytics.bigdl.serialization.Bigdl.ShapeOrBuilder> outputShapeBuilder_;
+      /**
+       * <pre>
+       *output shape
+       * </pre>
+       *
+       * <code>.com.intel.analytics.bigdl.serialization.Shape outputShape = 14;</code>
+       */
+      public boolean hasOutputShape() {
+        return outputShapeBuilder_ != null || outputShape_ != null;
+      }
+      /**
+       * <pre>
+       *output shape
+       * </pre>
+       *
+       * <code>.com.intel.analytics.bigdl.serialization.Shape outputShape = 14;</code>
+       */
+      public com.intel.analytics.bigdl.serialization.Bigdl.Shape getOutputShape() {
+        if (outputShapeBuilder_ == null) {
+          return outputShape_ == null ? com.intel.analytics.bigdl.serialization.Bigdl.Shape.getDefaultInstance() : outputShape_;
+        } else {
+          return outputShapeBuilder_.getMessage();
+        }
+      }
+      /**
+       * <pre>
+       *output shape
+       * </pre>
+       *
+       * <code>.com.intel.analytics.bigdl.serialization.Shape outputShape = 14;</code>
+       */
+      public Builder setOutputShape(com.intel.analytics.bigdl.serialization.Bigdl.Shape value) {
+        if (outputShapeBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          outputShape_ = value;
+          onChanged();
+        } else {
+          outputShapeBuilder_.setMessage(value);
+        }
 
-      /**
-       * <pre>
-       *output shape
-       * </pre>
-       *
-       * <code>repeated .com.intel.analytics.bigdl.serialization.Shape outputShape = 14;</code>
-       */
-      public java.util.List<com.intel.analytics.bigdl.serialization.Bigdl.Shape> getOutputShapeList() {
-        if (outputShapeBuilder_ == null) {
-          return java.util.Collections.unmodifiableList(outputShape_);
-        } else {
-          return outputShapeBuilder_.getMessageList();
-        }
+        return this;
       }
       /**
        * <pre>
        *output shape
        * </pre>
        *
-       * <code>repeated .com.intel.analytics.bigdl.serialization.Shape outputShape = 14;</code>
-       */
-      public int getOutputShapeCount() {
-        if (outputShapeBuilder_ == null) {
-          return outputShape_.size();
-        } else {
-          return outputShapeBuilder_.getCount();
-        }
-      }
-      /**
-       * <pre>
-       *output shape
-       * </pre>
-       *
-       * <code>repeated .com.intel.analytics.bigdl.serialization.Shape outputShape = 14;</code>
-       */
-      public com.intel.analytics.bigdl.serialization.Bigdl.Shape getOutputShape(int index) {
-        if (outputShapeBuilder_ == null) {
-          return outputShape_.get(index);
-        } else {
-          return outputShapeBuilder_.getMessage(index);
-        }
-      }
-      /**
-       * <pre>
-       *output shape
-       * </pre>
-       *
-       * <code>repeated .com.intel.analytics.bigdl.serialization.Shape outputShape = 14;</code>
+       * <code>.com.intel.analytics.bigdl.serialization.Shape outputShape = 14;</code>
        */
       public Builder setOutputShape(
-          int index, com.intel.analytics.bigdl.serialization.Bigdl.Shape value) {
-        if (outputShapeBuilder_ == null) {
-          if (value == null) {
-            throw new NullPointerException();
-          }
-          ensureOutputShapeIsMutable();
-          outputShape_.set(index, value);
-          onChanged();
-        } else {
-          outputShapeBuilder_.setMessage(index, value);
-        }
-        return this;
-      }
-      /**
-       * <pre>
-       *output shape
-       * </pre>
-       *
-       * <code>repeated .com.intel.analytics.bigdl.serialization.Shape outputShape = 14;</code>
-       */
-      public Builder setOutputShape(
-          int index, com.intel.analytics.bigdl.serialization.Bigdl.Shape.Builder builderForValue) {
-        if (outputShapeBuilder_ == null) {
-          ensureOutputShapeIsMutable();
-          outputShape_.set(index, builderForValue.build());
-          onChanged();
-        } else {
-          outputShapeBuilder_.setMessage(index, builderForValue.build());
-        }
-        return this;
-      }
-      /**
-       * <pre>
-       *output shape
-       * </pre>
-       *
-       * <code>repeated .com.intel.analytics.bigdl.serialization.Shape outputShape = 14;</code>
-       */
-      public Builder addOutputShape(com.intel.analytics.bigdl.serialization.Bigdl.Shape value) {
-        if (outputShapeBuilder_ == null) {
-          if (value == null) {
-            throw new NullPointerException();
-          }
-          ensureOutputShapeIsMutable();
-          outputShape_.add(value);
-          onChanged();
-        } else {
-          outputShapeBuilder_.addMessage(value);
-        }
-        return this;
-      }
-      /**
-       * <pre>
-       *output shape
-       * </pre>
-       *
-       * <code>repeated .com.intel.analytics.bigdl.serialization.Shape outputShape = 14;</code>
-       */
-      public Builder addOutputShape(
-          int index, com.intel.analytics.bigdl.serialization.Bigdl.Shape value) {
-        if (outputShapeBuilder_ == null) {
-          if (value == null) {
-            throw new NullPointerException();
-          }
-          ensureOutputShapeIsMutable();
-          outputShape_.add(index, value);
-          onChanged();
-        } else {
-          outputShapeBuilder_.addMessage(index, value);
-        }
-        return this;
-      }
-      /**
-       * <pre>
-       *output shape
-       * </pre>
-       *
-       * <code>repeated .com.intel.analytics.bigdl.serialization.Shape outputShape = 14;</code>
-       */
-      public Builder addOutputShape(
           com.intel.analytics.bigdl.serialization.Bigdl.Shape.Builder builderForValue) {
         if (outputShapeBuilder_ == null) {
-          ensureOutputShapeIsMutable();
-          outputShape_.add(builderForValue.build());
+          outputShape_ = builderForValue.build();
           onChanged();
         } else {
-          outputShapeBuilder_.addMessage(builderForValue.build());
+          outputShapeBuilder_.setMessage(builderForValue.build());
         }
+
         return this;
       }
       /**
@@ -4549,17 +4396,21 @@ public final class Bigdl {
        *output shape
        * </pre>
        *
-       * <code>repeated .com.intel.analytics.bigdl.serialization.Shape outputShape = 14;</code>
+       * <code>.com.intel.analytics.bigdl.serialization.Shape outputShape = 14;</code>
        */
-      public Builder addOutputShape(
-          int index, com.intel.analytics.bigdl.serialization.Bigdl.Shape.Builder builderForValue) {
+      public Builder mergeOutputShape(com.intel.analytics.bigdl.serialization.Bigdl.Shape value) {
         if (outputShapeBuilder_ == null) {
-          ensureOutputShapeIsMutable();
-          outputShape_.add(index, builderForValue.build());
+          if (outputShape_ != null) {
+            outputShape_ =
+              com.intel.analytics.bigdl.serialization.Bigdl.Shape.newBuilder(outputShape_).mergeFrom(value).buildPartial();
+          } else {
+            outputShape_ = value;
+          }
           onChanged();
         } else {
-          outputShapeBuilder_.addMessage(index, builderForValue.build());
+          outputShapeBuilder_.mergeFrom(value);
         }
+
         return this;
       }
       /**
@@ -4567,35 +4418,17 @@ public final class Bigdl {
        *output shape
        * </pre>
        *
-       * <code>repeated .com.intel.analytics.bigdl.serialization.Shape outputShape = 14;</code>
-       */
-      public Builder addAllOutputShape(
-          java.lang.Iterable<? extends com.intel.analytics.bigdl.serialization.Bigdl.Shape> values) {
-        if (outputShapeBuilder_ == null) {
-          ensureOutputShapeIsMutable();
-          com.google.protobuf.AbstractMessageLite.Builder.addAll(
-              values, outputShape_);
-          onChanged();
-        } else {
-          outputShapeBuilder_.addAllMessages(values);
-        }
-        return this;
-      }
-      /**
-       * <pre>
-       *output shape
-       * </pre>
-       *
-       * <code>repeated .com.intel.analytics.bigdl.serialization.Shape outputShape = 14;</code>
+       * <code>.com.intel.analytics.bigdl.serialization.Shape outputShape = 14;</code>
        */
       public Builder clearOutputShape() {
         if (outputShapeBuilder_ == null) {
-          outputShape_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00002000);
+          outputShape_ = null;
           onChanged();
         } else {
-          outputShapeBuilder_.clear();
+          outputShape_ = null;
+          outputShapeBuilder_ = null;
         }
+
         return this;
       }
       /**
@@ -4603,56 +4436,26 @@ public final class Bigdl {
        *output shape
        * </pre>
        *
-       * <code>repeated .com.intel.analytics.bigdl.serialization.Shape outputShape = 14;</code>
+       * <code>.com.intel.analytics.bigdl.serialization.Shape outputShape = 14;</code>
        */
-      public Builder removeOutputShape(int index) {
-        if (outputShapeBuilder_ == null) {
-          ensureOutputShapeIsMutable();
-          outputShape_.remove(index);
-          onChanged();
-        } else {
-          outputShapeBuilder_.remove(index);
-        }
-        return this;
+      public com.intel.analytics.bigdl.serialization.Bigdl.Shape.Builder getOutputShapeBuilder() {
+        
+        onChanged();
+        return getOutputShapeFieldBuilder().getBuilder();
       }
       /**
        * <pre>
        *output shape
        * </pre>
        *
-       * <code>repeated .com.intel.analytics.bigdl.serialization.Shape outputShape = 14;</code>
+       * <code>.com.intel.analytics.bigdl.serialization.Shape outputShape = 14;</code>
        */
-      public com.intel.analytics.bigdl.serialization.Bigdl.Shape.Builder getOutputShapeBuilder(
-          int index) {
-        return getOutputShapeFieldBuilder().getBuilder(index);
-      }
-      /**
-       * <pre>
-       *output shape
-       * </pre>
-       *
-       * <code>repeated .com.intel.analytics.bigdl.serialization.Shape outputShape = 14;</code>
-       */
-      public com.intel.analytics.bigdl.serialization.Bigdl.ShapeOrBuilder getOutputShapeOrBuilder(
-          int index) {
-        if (outputShapeBuilder_ == null) {
-          return outputShape_.get(index);  } else {
-          return outputShapeBuilder_.getMessageOrBuilder(index);
-        }
-      }
-      /**
-       * <pre>
-       *output shape
-       * </pre>
-       *
-       * <code>repeated .com.intel.analytics.bigdl.serialization.Shape outputShape = 14;</code>
-       */
-      public java.util.List<? extends com.intel.analytics.bigdl.serialization.Bigdl.ShapeOrBuilder> 
-           getOutputShapeOrBuilderList() {
+      public com.intel.analytics.bigdl.serialization.Bigdl.ShapeOrBuilder getOutputShapeOrBuilder() {
         if (outputShapeBuilder_ != null) {
-          return outputShapeBuilder_.getMessageOrBuilderList();
+          return outputShapeBuilder_.getMessageOrBuilder();
         } else {
-          return java.util.Collections.unmodifiableList(outputShape_);
+          return outputShape_ == null ?
+              com.intel.analytics.bigdl.serialization.Bigdl.Shape.getDefaultInstance() : outputShape_;
         }
       }
       /**
@@ -4660,43 +4463,15 @@ public final class Bigdl {
        *output shape
        * </pre>
        *
-       * <code>repeated .com.intel.analytics.bigdl.serialization.Shape outputShape = 14;</code>
+       * <code>.com.intel.analytics.bigdl.serialization.Shape outputShape = 14;</code>
        */
-      public com.intel.analytics.bigdl.serialization.Bigdl.Shape.Builder addOutputShapeBuilder() {
-        return getOutputShapeFieldBuilder().addBuilder(
-            com.intel.analytics.bigdl.serialization.Bigdl.Shape.getDefaultInstance());
-      }
-      /**
-       * <pre>
-       *output shape
-       * </pre>
-       *
-       * <code>repeated .com.intel.analytics.bigdl.serialization.Shape outputShape = 14;</code>
-       */
-      public com.intel.analytics.bigdl.serialization.Bigdl.Shape.Builder addOutputShapeBuilder(
-          int index) {
-        return getOutputShapeFieldBuilder().addBuilder(
-            index, com.intel.analytics.bigdl.serialization.Bigdl.Shape.getDefaultInstance());
-      }
-      /**
-       * <pre>
-       *output shape
-       * </pre>
-       *
-       * <code>repeated .com.intel.analytics.bigdl.serialization.Shape outputShape = 14;</code>
-       */
-      public java.util.List<com.intel.analytics.bigdl.serialization.Bigdl.Shape.Builder> 
-           getOutputShapeBuilderList() {
-        return getOutputShapeFieldBuilder().getBuilderList();
-      }
-      private com.google.protobuf.RepeatedFieldBuilderV3<
+      private com.google.protobuf.SingleFieldBuilderV3<
           com.intel.analytics.bigdl.serialization.Bigdl.Shape, com.intel.analytics.bigdl.serialization.Bigdl.Shape.Builder, com.intel.analytics.bigdl.serialization.Bigdl.ShapeOrBuilder> 
           getOutputShapeFieldBuilder() {
         if (outputShapeBuilder_ == null) {
-          outputShapeBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
+          outputShapeBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
               com.intel.analytics.bigdl.serialization.Bigdl.Shape, com.intel.analytics.bigdl.serialization.Bigdl.Shape.Builder, com.intel.analytics.bigdl.serialization.Bigdl.ShapeOrBuilder>(
-                  outputShape_,
-                  ((bitField0_ & 0x00002000) == 0x00002000),
+                  getOutputShape(),
                   getParentForChildren(),
                   isClean());
           outputShape_ = null;
@@ -21819,7 +21594,7 @@ public final class Bigdl {
       "\r\n\005train\030\n \001(\010\022\023\n\013namePostfix\030\013 \001(\t\022\n\n\002i" +
       "d\030\014 \001(\005\022B\n\ninputShape\030\r \001(\0132..com.intel." +
       "analytics.bigdl.serialization.Shape\022C\n\013o" +
-      "utputShape\030\016 \003(\0132..com.intel.analytics.b" +
+      "utputShape\030\016 \001(\0132..com.intel.analytics.b" +
       "igdl.serialization.Shape\032_\n\tAttrEntry\022\013\n" +
       "\003key\030\001 \001(\t\022A\n\005value\030\002 \001(\01322.com.intel.an" +
       "alytics.bigdl.serialization.AttrValue:\0028" +

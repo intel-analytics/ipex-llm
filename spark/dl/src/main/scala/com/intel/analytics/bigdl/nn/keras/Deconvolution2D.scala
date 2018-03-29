@@ -33,6 +33,7 @@ import scala.reflect.ClassTag
  * while maintaining a connectivity pattern that is compatible with said convolution.
  * Data format currently supported for this layer is DataFormat.NCHW (dimOrdering='th').
  * Border mode currently supported for this layer is 'valid'.
+ * You can also use Deconv2D as an alias of this layer.
  * The input of this layer should be 4D.
  *
  * When using this layer as the first layer in a model, you need to provide the argument
@@ -50,8 +51,7 @@ import scala.reflect.ClassTag
  *                   or 'sigmoid', etc. for simple activations in the factory method.
  * @param subsample Int array of length 2. The step of the convolution in the height and
  *                  width dimension. Also called strides elsewhere. Default is (1, 1).
- * @param dimOrdering Format of input data. Either DataFormat.NCHW (dimOrdering='th') or
- *                    DataFormat.NHWC (dimOrdering='tf'). Default is NCHW.
+ * @param dimOrdering Format of input data. Please use DataFormat.NCHW (dimOrdering='th').
  * @param wRegularizer An instance of [[Regularizer]], (eg. L1 or L2 regularization),
  *                     applied to the input weights matrices. Default is null.
  * @param bRegularizer An instance of [[Regularizer]], applied to the bias. Default is null.
@@ -64,7 +64,7 @@ class Deconvolution2D[T: ClassTag](
    val nbRow: Int,
    val nbCol: Int,
    val init: InitializationMethod = Xavier,
-   val activation: AbstractModule[Tensor[T], Tensor[T], T] = null,
+   val activation: KerasLayer[Tensor[T], Tensor[T], T] = null,
    val subsample: Array[Int] = Array(1, 1),
    val dimOrdering: DataFormat = DataFormat.NCHW,
    var wRegularizer: Regularizer[T] = null,
@@ -110,7 +110,7 @@ object Deconvolution2D {
     bias: Boolean = true,
     inputShape: Shape = null)(implicit ev: TensorNumeric[T]): Deconvolution2D[T] = {
     new Deconvolution2D[T](nbFilter, nbRow, nbCol, KerasUtils.getInitMethod(init),
-      KerasUtils.getActivation(activation), Array(subsample._1, subsample._2),
+      KerasUtils.getKerasActivation(activation), Array(subsample._1, subsample._2),
       KerasUtils.toBigDLFormat(dimOrdering), wRegularizer,
       bRegularizer, bias, inputShape)
   }

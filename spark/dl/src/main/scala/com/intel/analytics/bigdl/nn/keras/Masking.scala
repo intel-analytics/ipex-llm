@@ -31,15 +31,16 @@ import scala.reflect.ClassTag
  * inputShape (a Single Shape, does not include the batch dimension).
  *
  * @param maskValue Double, mask value.
- *                  For each timestep in the input tensor (dimension #1 in the tensor),
- *                  if all values in the input tensor at that timestep are equal to `mask_value`,
+ *                  For each timestep in the input (the second dimension),
+ *                  if all the values in the input at that timestep are equal to 'maskValue',
  *                  then the timestep will masked (skipped) in all downstream layers.
  * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now.
  */
 class Masking[T: ClassTag](
    val maskValue: Double = 0.0,
    val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
-  extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {
+  extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape))
+    with IdentityOutputShape {
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
     val layer = com.intel.analytics.bigdl.nn.Masking(maskValue = maskValue)

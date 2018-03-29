@@ -16,7 +16,8 @@
 
 package com.intel.analytics.bigdl.nn.keras
 
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, DataFormat, TensorModule}
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, DataFormat}
+import com.intel.analytics.bigdl.nn.{Container => TContainer, LocallyConnected2D => TLocallyConnected2D}
 import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -55,7 +56,7 @@ class LocallyConnected2D[T: ClassTag](
    val nbFilter: Int,
    val nbRow: Int,
    val nbCol: Int,
-   val activation: AbstractModule[Tensor[T], Tensor[T], T] = null,
+   val activation: KerasLayer[Tensor[T], Tensor[T], T] = null,
    val borderMode: String = "valid",
    val subsample: Array[Int] = Array(1, 1),
    val dimOrdering: DataFormat = DataFormat.NCHW,
@@ -109,7 +110,7 @@ object LocallyConnected2D {
     bias: Boolean = true,
     inputShape: Shape = null)(implicit ev: TensorNumeric[T]): LocallyConnected2D[T] = {
     new LocallyConnected2D[T](nbFilter, nbRow, nbCol,
-      KerasUtils.getActivation(activation), borderMode, Array(subsample._1, subsample._2),
+      KerasUtils.getKerasActivation(activation), borderMode, Array(subsample._1, subsample._2),
       KerasUtils.toBigDLFormat(dimOrdering), wRegularizer, bRegularizer, bias, inputShape)
   }
 }

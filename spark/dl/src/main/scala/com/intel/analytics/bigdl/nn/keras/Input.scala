@@ -25,27 +25,34 @@ import com.intel.analytics.bigdl.utils.{Node, Shape}
 import scala.reflect.ClassTag
 
 class Input[T: ClassTag](val inputShape: Shape)(implicit ev: TensorNumeric[T])
-  extends TInput[T]() {
+  extends KerasLayer[Activity, Activity, T](KerasLayer.addBatch(inputShape)) {
 
-  private val batchInputShape = KerasLayer.addBatch(inputShape)
+  private var skipDuplicate = false
 
-  override def getInputShape(): Shape = {
-    batchInputShape
-  }
-
-  override def getOutputShape(): Shape = {
-    batchInputShape
+  private[Input] def setSkipDuplicate(): this.type = {
+    this.skipDuplicate = true
+    this
   }
 
   override def computeOutputShape(inputShape: Shape): Shape = inputShape
 
+  override def doBuild(inputShape: Shape): TInput[T] = new TInput[T]()
+
+  override def allowRebuilt(): Boolean = true
+
+  override def skipDuplicateCheck(): Boolean = skipDuplicate
 }
 
 object Input {
   def apply[T: ClassTag](
-    name : String = null,
-    inputShape: Shape = null)(implicit ev: TensorNumeric[T]): ModuleNode[T] = {
-    val module = new Input(inputShape)
+    inputShape: Shape = null,
+    name : String = null)(implicit ev: TensorNumeric[T]): ModuleNode[T] = {
+    // As this method return a node, so it cannot be added to a container or connect from other
+    // nodes multiple times. So we can skip the duplicate checking.
+    // Even it is repeated appears multiple time in a nested container, it's okay as it will always
+    // be the first layer.
+    val module = new Input(inputShape).setSkipDuplicate()
+    module.build(KerasLayer.addBatch(inputShape))
     if (name != null) {
       module.setName(name)
     }
@@ -55,8 +62,8 @@ object Input {
 
 object InputLayer {
   def apply[T: ClassTag](
-    name : String = null,
-    inputShape: Shape = null)(implicit ev: TensorNumeric[T]): Input[T] = {
+    inputShape: Shape = null,
+    name : String = null)(implicit ev: TensorNumeric[T]): KerasLayer[Activity, Activity, T] = {
     val module = new Input(inputShape)
     if (name != null) {
       module.setName(name)

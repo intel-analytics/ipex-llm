@@ -16,8 +16,10 @@
 
 package com.intel.analytics.bigdl.nn.keras
 
+import com.intel.analytics.bigdl.Criterion
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, DataFormat}
+import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
@@ -46,7 +48,19 @@ object KerasUtils {
     }
   }
 
-  private[bigdl] def getActivation[T : ClassTag] (activation: String)
+  private[bigdl] def getKerasActivation[T : ClassTag] (activation: String)
+    (implicit ev: TensorNumeric[T]): KerasLayer[Tensor[T], Tensor[T], T] = {
+    if (activation == null) { return null }
+    if (activation.toLowerCase() == "softmax") {
+      SoftMax[T]()
+    } else {
+      val torchActivation = getTorchActivation(activation)
+      new KerasIdentityWrapper[T](torchActivation)
+        .asInstanceOf[KerasLayer[Tensor[T], Tensor[T], T]]
+    }
+  }
+
+  private[keras] def getTorchActivation[T : ClassTag] (activation: String)
     (implicit ev: TensorNumeric[T]): AbstractModule[Tensor[T], Tensor[T], T] = {
     if (activation == null) null
     else {
@@ -54,7 +68,8 @@ object KerasUtils {
           case "tanh" => Tanh[T]()
           case "sigmoid" => Sigmoid[T]()
           case "relu" => ReLU[T]()
-          case "softmax" => SoftMax[T]().asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
+          case "softmax" =>
+                com.intel.analytics.bigdl.nn.SoftMax[T]()
           case "softplus" => SoftPlus[T]()
           case "softsign" => SoftSign[T]()
           case "hard_sigmoid" => HardSigmoid[T]()
@@ -103,6 +118,55 @@ object KerasUtils {
     dimOrdering.toLowerCase() match {
       case "tf" => "CHANNEL_LAST"
       case "th" => "CHANNEL_FIRST"
+    }
+  }
+
+  private[keras] def toBigDLCriterion[T : ClassTag](loss: String)
+    (implicit ev: TensorNumeric[T]): Criterion[T] = {
+    loss.toLowerCase() match {
+      case "binary_crossentropy" => BCECriterion[T]()
+      case "categorical_crossentropy" => CategoricalCrossEntropy[T]()
+      case "mse" => MSECriterion[T]()
+      case "mean_squared_error" => MSECriterion[T]()
+      case "mae" => AbsCriterion[T]()
+      case "mean_absolute_error" => AbsCriterion[T]()
+      case "hinge" => MarginCriterion[T]()
+      case "mape" => MeanAbsolutePercentageCriterion[T]()
+      case "mean_absolute_percentage_error" => MeanAbsolutePercentageCriterion[T]()
+      case "msle" => MeanSquaredLogarithmicCriterion[T]()
+      case "mean_squared_logarithmic_error" => MeanSquaredLogarithmicCriterion[T]()
+      case "squared_hinge" => MarginCriterion[T](squared = true)
+      case "sparse_categorical_crossentropy" => ClassNLLCriterion[T](logProbAsInput = false)
+      case "kld" => KullbackLeiblerDivergenceCriterion[T]()
+      case "kullback_leibler_divergence" => KullbackLeiblerDivergenceCriterion[T]()
+      case "cosine_proximity" => CosineProximityCriterion[T]()
+      case "poisson" => PoissonCriterion[T]()
+      case _ => throw new IllegalArgumentException(s"Invalid loss: ${loss.toLowerCase()}")
+    }
+  }
+
+  private[keras] def toBigDLOptimMethod[T: ClassTag](optimMethod: String)
+    (implicit ev: TensorNumeric[T]): OptimMethod[T] = {
+    optimMethod.toLowerCase() match {
+      case "sgd" => new SGD[T](learningRate = 0.01)
+      case "rmsprop" => new RMSprop[T](learningRate = 0.001, decayRate = 0.9)
+      case "adamax" => new Adamax[T](Epsilon = 1e-8)
+      case "adagrad" => new Adagrad[T](learningRate = 0.01)
+      case "adadelta" => new Adadelta[T](decayRate = 0.95, Epsilon = 1e-8)
+      case "adam" => new Adam[T]()
+    }
+  }
+
+  private[keras] def toBigDLMetrics[T: ClassTag](metrics: Array[String])
+    (implicit ev: TensorNumeric[T]): Array[ValidationMethod[T]] = {
+    if (metrics == null) {
+      null
+    }
+    else if (metrics.sameElements(Array("accuracy"))) {
+      Array(new Top1Accuracy[T]())
+    }
+    else {
+      throw new IllegalArgumentException(s"Unsupported metrics: ${metrics.mkString(", ")}")
     }
   }
 

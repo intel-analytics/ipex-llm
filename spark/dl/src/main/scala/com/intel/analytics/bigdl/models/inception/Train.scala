@@ -44,8 +44,7 @@ object TrainInceptionV1 {
         param.batchSize,
         Engine.nodeNumber(),
         Engine.coreNumber(),
-        param.classNumber,
-        1281167
+        param.classNumber
       )
       val valSet = ImageNet2012Val(
         param.folder + "/val",
@@ -54,8 +53,7 @@ object TrainInceptionV1 {
         param.batchSize,
         Engine.nodeNumber(),
         Engine.coreNumber(),
-        param.classNumber,
-        50000
+        param.classNumber
       )
 
       val model = if (param.modelSnapshot.isDefined) {

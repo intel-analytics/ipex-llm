@@ -1,8 +1,8 @@
-# LeNet5 Model on MNIST with new API
+# LeNet5 Model on MNIST using Keras-Style API
 
-This example defines a classical CNN model used in digital number classification with the new set of API in BigDL. For detailed information with regard to LeNet, please refer to <http://yann.lecun.com/exdb/lenet/>.
+LeNet5 is a classical CNN model used in digital number classification. For detailed information with regard to LeNet, please refer to <http://yann.lecun.com/exdb/lenet/>.
 
-This example is the same as [../../model/lenet/lenet5.py](../../models/lenet/lenet5.py), except that this example uses new API for model definition.
+This example is the same as [../../model/lenet/lenet5.py](../../models/lenet/lenet5.py), except that here we use the new set of Keras-Style API in BigDL for model definition and training, which is more user-friendly.
 
 ## Install dependencies
  * [Install dependencies](../../../README.md#install.dependencies)
@@ -44,21 +44,14 @@ We would train a LeNet model in spark local mode with the following commands and
         --jars ${BigDL_JAR_PATH} \
         --conf spark.driver.extraClassPath=${BigDL_JAR_PATH} \
         --conf spark.executor.extraClassPath=bigdl-VERSION-jar-with-dependencies.jar \
-        ${BigDL_HOME}/pyspark/bigdl/models/lenet/lenet5.py \
-        --dataPath /tmp/mnist
+        ${BigDL_HOME}/pyspark/bigdl/models/lenet/lenet5.py
  ```
 
-* ```--dataPath``` option can be used to set the path for downloading mnist data, the default value is /tmp/mnist. Make sure that you have write permission to the specified path.
+* ```--dataPath``` an option to set the path for downloading mnist data, the default value is /tmp/mnist. Make sure that you have write permission to the specified path.
 
-* ```--batchSize``` option can be used to set batch size, the default value is 128.
+* ```--batchSize``` an option to set the batch size, the default value is 128.
 
-* ```--endTriggerType``` option can be used to control how to end the training process, the value can be "epoch" or "iteration" and default value is "epoch".
-
-* ```--endTriggerNum``` use together with ```endTriggerType```, the default value is 20.
-
-* ```--modelPath``` option can be used to set model path for testing, the default value is /tmp/lenet5/model.470.
-
-* ```--checkpointPath``` option can be used to set checkpoint path for saving model, the default value is /tmp/lenet5/.
+* ```--maxEpoch``` an option to set the number of epochs to train the model, the default value is 20.
 
 To verify the accuracy, search "accuracy" from log:
 

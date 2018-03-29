@@ -14,13 +14,8 @@
 # limitations under the License.
 #
 
-import numpy as np
-from pyspark.rdd import RDD
-
 from bigdl.keras.optimization import *
-from bigdl.util.common import get_spark_context
-from bigdl.util.common import to_sample_rdd
-from bigdl.util.common import redire_spark_logs, show_bigdl_info_logs
+from bigdl.util.common import *
 
 
 class KerasModelWrapper:
@@ -30,8 +25,9 @@ class KerasModelWrapper:
         show_bigdl_info_logs()
         self.bmodel = DefinitionLoader.from_kmodel(kmodel)
         WeightLoader.load_weights_from_kmodel(self.bmodel, kmodel)  # share the same weight.
-        self.criterion = OptimConverter.to_bigdl_criterion(kmodel.loss)
-        self.optim_method = OptimConverter.to_bigdl_optim_method(kmodel.optimizer)
+        self.criterion = OptimConverter.to_bigdl_criterion(kmodel.loss) if kmodel.loss else None
+        self.optim_method =\
+            OptimConverter.to_bigdl_optim_method(kmodel.optimizer) if kmodel.optimizer else None
         self.metrics = OptimConverter.to_bigdl_metrics(kmodel.metrics) if kmodel.metrics else None
 
     def evaluate(self, x, y, batch_size=32, sample_weight=None, is_distributed=False):
@@ -180,6 +176,6 @@ class KerasModelWrapper:
 
 
 def with_bigdl_backend(kmodel):
-    bcommon.init_engine()
+    init_engine()
     return KerasModelWrapper(kmodel)
 

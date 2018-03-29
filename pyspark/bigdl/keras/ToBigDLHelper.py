@@ -28,6 +28,7 @@ def to_bigdl_2d_ordering(order):
     else:
         raise Exception("Unsupported dim_ordering: %s" % order)
 
+
 def to_bigdl_3d_ordering(order):
     if order == "tf":
         return "channel_last"
@@ -35,6 +36,7 @@ def to_bigdl_3d_ordering(order):
         return "channel_first"
     else:
         raise Exception("Unsupported dim_ordering: %s" % order)
+
 
 def to_bigdl_3d_padding(border_mode):
     if border_mode == "valid":

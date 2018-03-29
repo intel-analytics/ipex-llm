@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.nn.keras
 
-import com.intel.analytics.bigdl.nn.{InitializationMethod, SpatialSeperableConvolution, Xavier}
+import com.intel.analytics.bigdl.nn.{InitializationMethod, SpatialSeparableConvolution, Xavier}
 import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -31,8 +31,8 @@ import scala.reflect.ClassTag
  * on each input channel separately) followed by a pointwise convolution which mixes together the
  * resulting output channels. The depthMultiplier argument controls how many output channels are
  * generated per input channel in the depthwise step.
- * The input of this layer should be 4D.
  * You can also use SeparableConv2D as an alias of this layer.
+ * The input of this layer should be 4D.
  *
  * When using this layer as the first layer in a model, you need to provide the argument
  * inputShape (a Single Shape, does not include the batch dimension).
@@ -68,7 +68,7 @@ class SeparableConvolution2D[T: ClassTag](
    val nbRow: Int,
    val nbCol: Int,
    val init: InitializationMethod = Xavier,
-   val activation: AbstractModule[Tensor[T], Tensor[T], T] = null,
+   val activation: KerasLayer[Tensor[T], Tensor[T], T] = null,
    val borderMode: String = "valid",
    val subsample: Array[Int] = Array(1, 1),
    val depthMultiplier: Int = 1,
@@ -89,7 +89,7 @@ class SeparableConvolution2D[T: ClassTag](
     val input = inputShape.toSingle().toArray
     val stackSize = if (dimOrdering == DataFormat.NCHW) input(1) else input(3)
     val pad = KerasUtils.getPadsFromBorderMode(borderMode)
-    val layer = SpatialSeperableConvolution(
+    val layer = SpatialSeparableConvolution(
       nInputChannel = stackSize,
       nOutputChannel = nbFilter,
       depthMultiplier = depthMultiplier,
@@ -126,7 +126,7 @@ object SeparableConvolution2D {
     bias: Boolean = true,
     inputShape: Shape = null)(implicit ev: TensorNumeric[T]) : SeparableConvolution2D[T] = {
     new SeparableConvolution2D[T](nbFilter, nbRow, nbCol,
-      KerasUtils.getInitMethod(init), KerasUtils.getActivation(activation),
+      KerasUtils.getInitMethod(init), KerasUtils.getKerasActivation(activation),
       borderMode, Array(subsample._1, subsample._2), depthMultiplier,
       KerasUtils.toBigDLFormat(dimOrdering), depthwiseRegularizer,
       pointwiseRegularizer, bRegularizer, bias, inputShape)

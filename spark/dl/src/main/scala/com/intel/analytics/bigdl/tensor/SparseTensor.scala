@@ -53,14 +53,14 @@ import scala.reflect.ClassTag
  */
 // indices is zero based.
 private[tensor] class SparseTensor[@specialized(Float, Double) T: ClassTag](
-     private[tensor] var _indices : Array[Storage[Int]],
-     private[tensor] var _values : Storage[T],
-     private[tensor] var _storageOffset: Int,
-     private[tensor] var _nElement: Int,
-     private[tensor] var _shape : Array[Int],
-     private[tensor] var _indicesOffset : Array[Int],
-     var nDimension: Int
-    )(implicit ev: TensorNumeric[T]) extends Tensor[T] {
+    private[tensor] var _indices : Array[Storage[Int]],
+    private[tensor] var _values : Storage[T],
+    private[tensor] var _storageOffset: Int,
+    private[tensor] var _nElement: Int,
+    private[tensor] var _shape : Array[Int],
+    private[tensor] var _indicesOffset : Array[Int],
+    var nDimension: Int)
+  (implicit ev: TensorNumeric[T]) extends Tensor[T] {
 
   // todo: add transpose, indices order, count from 0
   // var indices_order = Array.range(0, _shape.length)
@@ -95,8 +95,9 @@ private[tensor] class SparseTensor[@specialized(Float, Double) T: ClassTag](
     this
   }
 
-  override def setValue(d1: Int, d2: Int,
-                        d3: Int, d4: Int, d5: Int, value: T): SparseTensor.this.type = {
+  override def setValue(
+      d1: Int, d2: Int,
+      d3: Int, d4: Int, d5: Int, value: T): SparseTensor.this.type = {
     throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
     this
   }
@@ -279,8 +280,9 @@ private[tensor] class SparseTensor[@specialized(Float, Double) T: ClassTag](
     throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
   }
 
-  override def set(storage: Storage[T], storageOffset: Int,
-                   sizes: Array[Int], strides: Array[Int]): Tensor[T] = {
+  override def set(
+      storage: Storage[T], storageOffset: Int,
+      sizes: Array[Int], strides: Array[Int]): Tensor[T] = {
     throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
   }
 
@@ -755,8 +757,9 @@ private[tensor] class SparseTensor[@specialized(Float, Double) T: ClassTag](
     throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
   }
 
-  override def addmv(beta: T, vec1: Tensor[T], alpha: T,
-                     mat: Tensor[T], vec2: Tensor[T]): Tensor[T] = {
+  override def addmv(
+      beta: T, vec1: Tensor[T], alpha: T,
+      mat: Tensor[T], vec2: Tensor[T]): Tensor[T] = {
     throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
   }
 
@@ -772,8 +775,9 @@ private[tensor] class SparseTensor[@specialized(Float, Double) T: ClassTag](
     throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
   }
 
-  override def baddbmm(beta: T, M: Tensor[T],
-                       alpha: T, batch1: Tensor[T], batch2: Tensor[T]): Tensor[T] = {
+  override def baddbmm(
+      beta: T, M: Tensor[T],
+      alpha: T, batch1: Tensor[T], batch2: Tensor[T]): Tensor[T] = {
     throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
   }
 
@@ -801,7 +805,8 @@ private[tensor] class SparseTensor[@specialized(Float, Double) T: ClassTag](
     throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
   }
 
-  override def topk(k: Int, dim: Int, increase: Boolean, result: Tensor[T],
+  override def topk(
+      k: Int, dim: Int, increase: Boolean, result: Tensor[T],
       indices: Tensor[T], sortedResult: Boolean = true): (Tensor[T], Tensor[T]) = {
     throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
   }
@@ -1000,14 +1005,24 @@ private[tensor] class SparseTensor[@specialized(Float, Double) T: ClassTag](
     throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
   }
 
-  override def applyFun[A : ClassTag](t: Tensor[A], func: (A) => T): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+  override def applyFun[A: ClassTag](
+      t: Tensor[A],
+      func: (A) => T): Tensor[T] = {
+    val func2 = new TensorDiffTypeFunc4[A, T] {
+      override def apply(
+          data1: Array[A], index1: Int,
+          data2: Array[T], index2: Int): Unit = {
+        data2(index2) = func(data1(index1))
+      }
+    }
+    SparseTensorApply.apply1[A, T](t, this, func2)
+    this
   }
 
   override def zipWith[A: ClassTag, B: ClassTag](
-        t1: Tensor[A],
-        t2: Tensor[B],
-        func: (A, B) => T): Tensor[T] = {
+      t1: Tensor[A],
+      t2: Tensor[B],
+      func: (A, B) => T): Tensor[T] = {
     throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
   }
 
@@ -1035,9 +1050,29 @@ private[tensor] class SparseTensor[@specialized(Float, Double) T: ClassTag](
     throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
   }
 
-  override def cast[D: ClassTag](
-        castTensor: Tensor[D])(implicit ev: TensorNumeric[D]): Tensor[D] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+  override def cast[@specialized(Long, Int, Short, Double, Float) D: ClassTag]
+  (castTensor: Tensor[D])
+    (implicit ev1: TensorNumeric[D]): Tensor[D] = {
+    castTensor.getType() match {
+      case FloatType =>
+        castTensor.applyFun[T](this.asInstanceOf[SparseTensor[T]],
+          x => ev.toType[Float](x).asInstanceOf[D])
+      case DoubleType =>
+        castTensor.applyFun[T](this.asInstanceOf[SparseTensor[T]],
+          x => ev.toType[Double](x).asInstanceOf[D])
+      case LongType =>
+        castTensor.applyFun[T](this.asInstanceOf[SparseTensor[T]],
+          x => ev.toType[Long](x).asInstanceOf[D])
+      case IntType =>
+        castTensor.applyFun[T](this.asInstanceOf[SparseTensor[T]],
+          x => ev.toType[Int](x).asInstanceOf[D])
+      case ShortType =>
+        castTensor.applyFun[T](this.asInstanceOf[SparseTensor[T]],
+          x => ev.toType[Short](x).asInstanceOf[D])
+      case _ =>
+        throw new RuntimeException("Unspported type")
+    }
+    castTensor
   }
 
   override def getTensorType: TensorType = SparseType
@@ -1095,9 +1130,9 @@ private[tensor] class SparseTensor[@specialized(Float, Double) T: ClassTag](
 
 object SparseTensor{
   private[tensor] def concat[T: ClassTag](
-        dim: Int,
-        tensors: Seq[Tensor[T]],
-        res: Tensor[T])(implicit ev: TensorNumeric[T]): Tensor[T] = {
+      dim: Int,
+      tensors: Seq[Tensor[T]],
+      res: Tensor[T])(implicit ev: TensorNumeric[T]): Tensor[T] = {
     require(dim == 1 || dim == 2)
     var size = tensors.head.size()
     require(size.length <= 2, "Dimension larger than 2 are not supported yet!")
@@ -1136,8 +1171,8 @@ object SparseTensor{
    * @return res
    */
   private def concat[T: ClassTag](
-        tensors: Seq[SparseTensor[T]],
-        res: SparseTensor[T])(implicit ev: TensorNumeric[T]): Tensor[T] = {
+      tensors: Seq[SparseTensor[T]],
+      res: SparseTensor[T])(implicit ev: TensorNumeric[T]): Tensor[T] = {
     val numOfIndices = res.dim()  // usually is 2
     require(tensors.head.dim() == 1, "Not suitable for this interface.")
     var i, offset, dimOffset = 0
@@ -1146,7 +1181,7 @@ object SparseTensor{
       val curLength = currentTensor.nElement()
       val curTensorOffset = currentTensor.storageOffset() - 1
       // copy to concat _values
-      ev.arraycopy(currentTensor.storage().array(), curTensorOffset,
+      System.arraycopy(currentTensor.storage().array(), curTensorOffset,
         res.storage().array(), offset, curLength)
       // make new Indices
       var indicesIndex = 0
@@ -1184,10 +1219,10 @@ object SparseTensor{
    * @return index of last occurrence of value
    */
   private def lastIndexOf[T: ClassTag](
-        array: Array[T],
-        value: T,
-        start: Int,
-        end: Int)(implicit ev: TensorNumeric[T]): Int = {
+      array: Array[T],
+      value: T,
+      start: Int,
+      end: Int)(implicit ev: TensorNumeric[T]): Int = {
     if (start > end) return -1
     require(end <= array.length - 1, s"indexOf end should't exceed array size ${array.length - 1}" +
       s", but got $end")
@@ -1212,10 +1247,10 @@ object SparseTensor{
    * @return index of first occurrence of value
    */
   private def firstIndexOf[T: ClassTag](
-        array: Array[T],
-        value: T,
-        start: Int,
-        end: Int)(implicit ev: TensorNumeric[T]): Int = {
+      array: Array[T],
+      value: T,
+      start: Int,
+      end: Int)(implicit ev: TensorNumeric[T]): Int = {
     if (start > end) return -1
     require(end <= array.length - 1, s"indexOf end should't exceed array size ${array.length - 1}" +
       s", but got $end")
@@ -1239,9 +1274,9 @@ object SparseTensor{
    * @return res
    */
   private def concat[T: ClassTag](
-        dim: Int,
-        tensors: Seq[SparseTensor[T]],
-        res: SparseTensor[T])(implicit ev: TensorNumeric[T]): Tensor[T] = {
+      dim: Int,
+      tensors: Seq[SparseTensor[T]],
+      res: SparseTensor[T])(implicit ev: TensorNumeric[T]): Tensor[T] = {
     val numOfIndices = res.dim()
     dim match {
       case 1 =>
@@ -1348,9 +1383,9 @@ object SparseTensor{
   }
 
   private[tensor] def apply[T: ClassTag](
-        shape : Array[Int],
-        nElement: Int = 1)(
-        implicit ev: TensorNumeric[T]): SparseTensor[T] = {
+      shape : Array[Int],
+      nElement: Int = 1)(
+      implicit ev: TensorNumeric[T]): SparseTensor[T] = {
     new SparseTensor(shape.map(_ => Storage[Int](nElement)), Storage(nElement),
       0, nElement,
       shape, shape.map(_ => 0), shape.length)
@@ -1371,7 +1406,7 @@ object SparseTensor{
       values : Storage[T],
       shape : Array[Int],
       dimension: Int)(
-    implicit ev: TensorNumeric[T]): SparseTensor[T] = {
+      implicit ev: TensorNumeric[T]): SparseTensor[T] = {
     new SparseTensor(indices.map(Storage(_)), values,
       0, values.length(),
       shape, shape.map(_ => 0), dimension)

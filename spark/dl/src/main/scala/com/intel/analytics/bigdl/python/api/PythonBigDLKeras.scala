@@ -16,17 +16,21 @@
 
 package com.intel.analytics.bigdl.python.api
 
-import java.util.{ArrayList => JArrayList, HashMap => JHashMap, List => JList, Map => JMap}
+import java.util.{List => JList}
 
+import com.intel.analytics.bigdl.{Criterion, DataSet, nn}
+import com.intel.analytics.bigdl.dataset.{DataSet, LocalDataSet, MiniBatch}
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.nn.{Container, SpatialBatchNormalization}
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.nn.keras._
 import com.intel.analytics.bigdl.numeric._
-import com.intel.analytics.bigdl.optim.Regularizer
+import com.intel.analytics.bigdl.optim.{OptimMethod, Regularizer, ValidationMethod}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.{MultiShape, Shape, SingleShape}
+import com.intel.analytics.bigdl.transform.vision.image.{ImageFeature, ImageFeatureToMiniBatch}
+import com.intel.analytics.bigdl.utils.{Engine, MultiShape, Shape, SingleShape}
+import org.apache.spark.api.java.JavaRDD
 
 import scala.collection.JavaConverters._
 import scala.language.existentials
@@ -66,6 +70,15 @@ class PythonBigDLKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends Pytho
     }
   }
 
+  def createKerasModel(input: JList[ModuleNode[T]],
+      output: JList[ModuleNode[T]]): Model[T] = {
+      nn.keras.Model(input.asScala.toArray, output.asScala.toArray)
+  }
+
+  def createKerasSequential(): nn.keras.Sequential[T] = {
+      nn.keras.Sequential[T]()
+  }
+
   def createKerasInput(
     name : String = null,
     inputShape: JList[Int] = null): ModuleNode[T] = {
@@ -73,7 +86,7 @@ class PythonBigDLKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends Pytho
   }
 
   def createKerasInputLayer(
-    inputShape: JList[Int] = null): Input[T] = {
+    inputShape: JList[Int] = null): KerasLayer[Activity, Activity, T] = {
     InputLayer(inputShape = toScalaShape(inputShape))
   }
 
@@ -130,22 +143,22 @@ class PythonBigDLKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends Pytho
       gammaInit, dimOrdering, toScalaShape(inputShape))
   }
 
-  def setKerasRunningMean(module: BatchNormalization[T], runningMean: JTensor): Unit = {
+  def setRunningMean(module: BatchNormalization[T], runningMean: JTensor): Unit = {
     module.labor.asInstanceOf[SpatialBatchNormalization[T]]
       .runningMean.set(toTensor(runningMean))
   }
 
-  def setKerasRunningStd(module: BatchNormalization[T], runningStd: JTensor): Unit = {
+  def setRunningStd(module: BatchNormalization[T], runningStd: JTensor): Unit = {
     module.labor.asInstanceOf[SpatialBatchNormalization[T]]
       .runningVar.set(toTensor(runningStd))
   }
 
-  def getKerasRunningMean(module: BatchNormalization[T]): JTensor = {
+  def getRunningMean(module: BatchNormalization[T]): JTensor = {
     toJTensor(module.labor.asInstanceOf[SpatialBatchNormalization[T]]
       .runningMean)
   }
 
-  def getKerasRunningStd(module: BatchNormalization[T]): JTensor = {
+  def getRunningStd(module: BatchNormalization[T]): JTensor = {
     toJTensor(module.labor.asInstanceOf[SpatialBatchNormalization[T]]
       .runningVar)
   }
@@ -155,7 +168,9 @@ class PythonBigDLKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends Pytho
     mode: String = "sum",
     concatAxis: Int = -1,
     inputShape: JList[JList[Int]]): Merge[T] = {
-    Merge[T](layers.asScala.toList, mode, concatAxis, toScalaMultiShape(inputShape))
+    val layersList = if (layers != null) layers.asScala.toList
+                     else null
+    Merge[T](layersList, mode, concatAxis, toScalaMultiShape(inputShape))
   }
 
   def createKerasConvolution2D(
@@ -172,7 +187,7 @@ class PythonBigDLKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends Pytho
     bias: Boolean = true,
     inputShape: JList[Int] = null): Convolution2D[T] = {
     new Convolution2D(nbFilter, nbRow, nbCol, KerasUtils.getInitMethod(init),
-      KerasUtils.getActivation(activation), borderMode,
+      KerasUtils.getKerasActivation(activation), borderMode,
       toScalaArray(subsample), KerasUtils.toBigDLFormat(dimOrdering),
       wRegularizer, bRegularizer, bias, toScalaShape(inputShape))
   }
@@ -337,7 +352,7 @@ class PythonBigDLKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends Pytho
     bias: Boolean = true,
     inputShape: JList[Int] = null): Convolution3D[T] = {
     new Convolution3D(nbFilter, kernelDim1, kernelDim2, kernelDim3,
-      KerasUtils.getInitMethod(init), KerasUtils.getActivation(activation),
+      KerasUtils.getInitMethod(init), KerasUtils.getKerasActivation(activation),
       borderMode, toScalaArray(subsample), KerasUtils.toBigDLFormat5D(dimOrdering),
       wRegularizer, bRegularizer, bias, toScalaShape(inputShape))
   }
@@ -462,7 +477,7 @@ class PythonBigDLKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends Pytho
     bRegularizer: Regularizer[T] = null,
     inputShape: JList[Int] = null): AtrousConvolution2D[T] = {
     new AtrousConvolution2D(nbFilter, nbRow, nbCol, KerasUtils.getInitMethod(init),
-      KerasUtils.getActivation(activation), toScalaArray(subsample),
+      KerasUtils.getKerasActivation(activation), toScalaArray(subsample),
       toScalaArray(atrousRate), KerasUtils.toBigDLFormat(dimOrdering),
       wRegularizer, bRegularizer, toScalaShape(inputShape))
   }
@@ -480,7 +495,7 @@ class PythonBigDLKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends Pytho
     bias: Boolean = true,
     inputShape: JList[Int] = null): Deconvolution2D[T] = {
     new Deconvolution2D(nbFilter, nbRow, nbCol, KerasUtils.getInitMethod(init),
-      KerasUtils.getActivation(activation), toScalaArray(subsample),
+      KerasUtils.getKerasActivation(activation), toScalaArray(subsample),
       KerasUtils.toBigDLFormat(dimOrdering), wRegularizer, bRegularizer,
       bias, toScalaShape(inputShape))
   }
@@ -528,7 +543,7 @@ class PythonBigDLKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends Pytho
     bRegularizer: Regularizer[T] = null,
     bias: Boolean = true,
     inputShape: JList[Int] = null): LocallyConnected2D[T] = {
-    new LocallyConnected2D(nbFilter, nbRow, nbCol, KerasUtils.getActivation(activation),
+    new LocallyConnected2D(nbFilter, nbRow, nbCol, KerasUtils.getKerasActivation(activation),
       borderMode, toScalaArray(subsample), KerasUtils.toBigDLFormat(dimOrdering),
       wRegularizer, bRegularizer, bias, toScalaShape(inputShape))
   }
@@ -549,7 +564,7 @@ class PythonBigDLKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends Pytho
     bias: Boolean = true,
     inputShape: JList[Int] = null): SeparableConvolution2D[T] = {
     new SeparableConvolution2D(nbFilter, nbRow, nbCol, KerasUtils.getInitMethod(init),
-      KerasUtils.getActivation(activation), borderMode, toScalaArray(subsample),
+      KerasUtils.getKerasActivation(activation), borderMode, toScalaArray(subsample),
       depthMultiplier, KerasUtils.toBigDLFormat(dimOrdering),
       depthwiseRegularizer, pointwiseRegularizer, bRegularizer, bias, toScalaShape(inputShape))
   }
@@ -662,6 +677,70 @@ class PythonBigDLKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends Pytho
     mergeMode: String = "concat",
     inputShape: JList[Int] = null): Bidirectional[T] = {
     Bidirectional(layer, mergeMode, toScalaShape(inputShape))
+  }
+
+  def compile(
+    module: KerasModel[T],
+    optimizer: OptimMethod[T],
+    loss: Criterion[T],
+    metrics: JList[ValidationMethod[T]] = null): Unit = {
+    module.compile(optimizer, loss,
+      if (metrics == null) null else metrics.asScala.toArray)
+  }
+
+  def fit(
+    module: KerasModel[T],
+    x: JavaRDD[Sample],
+    batchSize: Int = 32,
+    epochs: Int = 10,
+    validationData: JavaRDD[Sample] = null): Unit = {
+    module.fit(toJSample(x), batchSize, epochs,
+      if (validationData == null) null else toJSample(validationData))
+  }
+
+  def fit(
+    module: KerasModel[T],
+    x: DataSet[ImageFeature],
+    batchSize: Int,
+    epochs: Int,
+    validationData: DataSet[ImageFeature]): Unit = {
+    val trainData = x -> ImageFeatureToMiniBatch[T](batchSize)
+    val valData =
+      if (validationData != null) validationData -> ImageFeatureToMiniBatch[T](batchSize)
+      else null
+    module.fit(trainData, epochs, valData)
+  }
+
+  def fit(
+    module: KerasModel[T],
+    xTrain: JList[JTensor],
+    yTrain: JTensor,
+    batchSize: Int,
+    epochs: Int,
+    xVal: JList[JTensor],
+    yVal: JTensor,
+    localCores: Int): Unit = {
+    val trainArray = toSampleArray(xTrain.asScala.toList.map{f => toTensor(f)}, toTensor(yTrain))
+    val trainData = batching(DataSet.array(trainArray), batchSize)
+      .asInstanceOf[LocalDataSet[MiniBatch[T]]]
+    val valData = if (xVal != null && yVal != null) {
+      val valArray = toSampleArray(xVal.asScala.toList.map{f => toTensor(f)}, toTensor(yVal))
+      batching(DataSet.array(valArray), batchSize)
+    } else null
+    Engine.setNodeAndCore(1, localCores)
+    module.fit(trainData, epochs, valData)
+  }
+
+  def evaluate(
+    module: KerasModel[T],
+    x: JavaRDD[Sample],
+    batchSize: Int = 32): JList[EvaluatedResult] = {
+    val resultArray = module.evaluate(toJSample(x), batchSize)
+    val testResultArray = resultArray.map { result =>
+      EvaluatedResult(result._1.result()._1, result._1.result()._2,
+        result._2.toString())
+    }
+    testResultArray.toList.asJava
   }
 
 }

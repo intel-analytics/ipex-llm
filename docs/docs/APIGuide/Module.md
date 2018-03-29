@@ -170,7 +170,7 @@ val testSet = sc.parallelize(Seq(testSample))
 
 //train a new model or load an existing model
 //val model=...
-val evaluateResult = model.evaluate(testSet, Array(new Top1Accuracy), None)
+val evaluateResult = model.evaluate(testSet, Array(new Top1Accuracy))
 ```
 
 **Python example**
@@ -207,6 +207,8 @@ model.predict(data_rdd)
 model.predict_class(data_rdd)
 ```
 Use `predict` or `predictClass` or `predict_class` on model for Prediction. `predict` returns return the probability distribution of each class, and `predictClass`/`predict_class` returns the predict label. They both accepts the test dataset as parameter.
+
+Please note that the sequence and the partitions of the output rdd will keep the same with input. So you can zip the output rdd with input rdd to get a (data, result) pair rdd.
 
 **Scala example**
 ```scala

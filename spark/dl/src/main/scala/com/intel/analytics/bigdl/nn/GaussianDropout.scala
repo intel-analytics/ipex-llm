@@ -15,7 +15,7 @@
  */
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.nn.abstractnn.{IdentityOutputShape, TensorModule}
+import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
@@ -37,7 +37,7 @@ import scala.reflect.ClassTag
 @SerialVersionUID(- 1575781981601306833L)
 class GaussianDropout[T: ClassTag](
    val rate: Double
-  )(implicit ev: TensorNumeric[T]) extends TensorModule[T] with IdentityOutputShape{
+  )(implicit ev: TensorNumeric[T]) extends TensorModule[T] {
 
   require(rate < 1 && rate >= 0, s"rate should be in range [0,1)")
   val stddev: Double = Math.sqrt(rate / (1.0-rate))

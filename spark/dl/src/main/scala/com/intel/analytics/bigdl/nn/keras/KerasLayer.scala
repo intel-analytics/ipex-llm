@@ -18,16 +18,17 @@ package com.intel.analytics.bigdl.nn.keras
 
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.nn.Graph._
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.nn.keras.{Sequential => KSequential}
-import com.intel.analytics.bigdl.nn.{Container, Sequential => TSequential}
+import com.intel.analytics.bigdl.nn.{Container => TContainer}
+import com.intel.analytics.bigdl.serialization.Bigdl.{AttrValue, BigDLModule}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.serializer._
 import com.intel.analytics.bigdl.utils.serializer.converters.DataConverter
-import com.intel.analytics.bigdl.utils.{Shape, SingleShape, Util}
-import serialization.Bigdl.{AttrValue, BigDLModule}
+import com.intel.analytics.bigdl.utils.{MultiShape, Shape, SingleShape}
 
+import scala.collection.JavaConverters._
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
@@ -41,7 +42,21 @@ private[bigdl] trait TKerasSerializerHelper {
   }
 }
 
-object KerasLayerSerializer extends ContainerSerializable with TKerasSerializerHelper{
+object KerasLayerSerializer extends KerasLayerSerializable
+
+trait KerasLayerSerializable extends ContainerSerializable with TKerasSerializerHelper{
+
+  override def loadSubModules[T: ClassTag](context : DeserializeContext,
+      module : AbstractModule[Activity, Activity, T])
+    (implicit ev: TensorNumeric[T]) : Unit = {
+    val klayer = module.asInstanceOf[KerasLayer[Activity, Activity, T]]
+    val subModules = context.bigdlModule.getSubModulesList.asScala
+    subModules.foreach(module => {
+      val subModuleData = ModuleSerializer.load(DeserializeContext(module,
+        context.storages, context.storageType, _copyWeightAndBias))
+      klayer.labor = subModuleData.module
+    })
+  }
 
   override def doSerializeModule[T: ClassTag](context: SerializeContext[T],
                                               moduleBuilder : BigDLModule.Builder)
@@ -51,23 +66,69 @@ object KerasLayerSerializer extends ContainerSerializable with TKerasSerializerH
   }
 }
 
-private[bigdl] object KerasLayer {
-    def fuse[T: ClassTag](sLayer: AbstractModule[Activity, Activity, T],
-        activation: AbstractModule[Tensor[T], Tensor[T], T],
-        inputShape: Shape)
-        (implicit ev: TensorNumeric[T]): AbstractModule[Activity, Activity, T] = {
-      if (activation == null) {
-        return sLayer
-      }
-      val seq = KSequential[T]()
-      seq.add(InputLayer(inputShape = KerasLayer.removeBatch(inputShape)))
-      seq.add(sLayer)
-      seq.add(activation)
-      seq.setName(sLayer.getName())
-      seq
-    }
+/**
+ * Wrap a torch style layer to keras style layer.
+ * This layer can be built multiple times.
+ * We are supposing the inputshape and the outputshape keep the same in this layer.
+ * @param layer a torch style layer
+ * @return a keras compatible layer
+ */
+class KerasIdentityWrapper[T: ClassTag]
+(val layer: AbstractModule[Activity, Activity, T])(implicit ev: TensorNumeric[T])
+  extends KerasLayer[Activity, Activity, T](null) {
+  if (layer.isKerasStyle()) {
+    throw new RuntimeException(s"We only accept torch layer here, but got: $layer")
+  }
+  override def computeOutputShape(inputShape: Shape): Shape = {
+    inputShape
+  }
+  override def doBuild(inputShape: Shape): AbstractModule[Activity, Activity, T] = layer
+}
 
-   def addBatch(shape: Shape): Shape = {
+/**
+ * Wrap a torch style layer to keras style layer.
+ * This layer can be built multiple times.
+ * @param torchLayer a torch style layer
+ *   i.e If the input data is (2, 3, 4) and 2 is the batch size, you should input: (3, 4) here.
+ * @return a keras compatible layer
+ */
+class KerasLayerWrapper[T: ClassTag]
+(val torchLayer: AbstractModule[Activity, Activity, T],
+    val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
+  extends KerasLayer[Activity, Activity, T](KerasLayer.addBatch(inputShape)) {
+
+  require(!torchLayer.isKerasStyle(), s"We only accept torch layer here, but got: $torchLayer")
+
+  override def computeOutputShape(calcInputShape: Shape): Shape = {
+    val dummyOutTensor =
+      torchLayer.cloneModule().forward(Tensor[T](
+        (List(2) ++ KerasLayer.removeBatch(calcInputShape).toSingle()).toArray).fill(ev.one))
+    val outSize = dummyOutTensor.toTensor.size()
+    KerasLayer.addBatch(Shape(outSize.slice(1, outSize.length)))
+  }
+
+  override def doBuild(inputShape: Shape): AbstractModule[Activity, Activity, T] = torchLayer
+}
+
+private[bigdl] object KerasLayer {
+  private[bigdl] def fuse[T: ClassTag](torchLayer: AbstractModule[Activity, Activity, T],
+        kerasActivation: KerasLayer[Tensor[T], Tensor[T], T],
+        batchInputShape: Shape)
+        (implicit ev: TensorNumeric[T]): AbstractModule[Activity, Activity, T] = {
+    if (kerasActivation == null) {
+      torchLayer
+    } else {
+      val wrapper = KSequential[T]()
+      wrapper.add(new KerasLayerWrapper[T](torchLayer,
+        KerasLayer.removeBatch(batchInputShape)))
+      wrapper.add(kerasActivation)
+      wrapper.setName(torchLayer.getName())
+      wrapper.build(batchInputShape)
+      wrapper
+    }
+  }
+
+  private[bigdl] def addBatch(shape: Shape): Shape = {
      // simply return null here as null is the default value
      if (shape == null) {
       return null
@@ -79,7 +140,7 @@ private[bigdl] object KerasLayer {
     }
   }
 
-  def removeBatch(shape: Shape): Shape = {
+  private[bigdl] def removeBatch(shape: Shape): Shape = {
     // simply return null here as null is the default value
     if (shape == null) {
       return null
@@ -87,7 +148,7 @@ private[bigdl] object KerasLayer {
     if (shape.isInstanceOf[SingleShape]) {
       Shape((shape.toSingle().slice(1, shape.toSingle().length)).toArray)
     } else {
-      Shape(shape.toMulti().map {addBatch(_)})
+      Shape(shape.toMulti().map {removeBatch(_)})
     }
   }
 }
@@ -102,7 +163,9 @@ private[bigdl] object KerasLayer {
  * @param batchInputShape the first dim is batch
  */
 abstract class KerasLayer[A <: Activity: ClassTag, B <: Activity: ClassTag, T: ClassTag]
-(batchInputShape: Shape = null)(implicit ev: TensorNumeric[T]) extends Container[A, B, T]{
+(batchInputShape: Shape = null)(implicit ev: TensorNumeric[T]) extends TContainer[A, B, T] {
+
+  inputShapeValue = batchInputShape
 
   def labor: AbstractModule[A, B, T] = {
     if (this.modules.isEmpty) {
@@ -118,22 +181,7 @@ abstract class KerasLayer[A <: Activity: ClassTag, B <: Activity: ClassTag, T: C
     modules.clear()
     modules.append(value)
   }
-  // scalastyle:on
-  override def inputShapeValue: Shape = labor.inputShapeValue
-
-  override def outputShapeValue: Array[Shape] = labor.outputShapeValue
-
-  // scalastyle:off
-  override def inputShapeValue_=(value: Shape): Unit = {
-    labor.inputShapeValue = value
-    this._inputShapeValue = value
-  }
-
-  override def outputShapeValue_=(value: Array[Shape]): Unit = {
-   labor.outputShapeValue = value
-   this._outputShapeValue = value
-  }
-  // scalastyle:on
+ // scalastyle:on
 
   override def updateOutput(input: A): B = {
     output = labor.updateOutput(input)
@@ -149,35 +197,39 @@ abstract class KerasLayer[A <: Activity: ClassTag, B <: Activity: ClassTag, T: C
     labor.accGradParameters(input, gradOutput)
   }
 
-  override def isCompatibleWithKeras(): Boolean = true
+  override def isBuilt(): Boolean = {
+    !this.modules.isEmpty && super.isBuilt()
+  }
 
-  override def isCompatibleWithTorch(): Boolean = false
+  override def isKerasStyle(): Boolean = true
 
-  override def getInputShape(): Shape = {
-    if (batchInputShape != null) {
-      batchInputShape
-    } else if (this.labor == null) {
-      null
-    } else {
-      this.labor.getInputShape()
+  override def computeOutputShape(inputShape: Shape): Shape = {
+    labor.computeOutputShape(inputShape)
+  }
+
+  private[bigdl] def checkWithCurrentInputShape(calcInputShape: Shape): Unit = {
+    if (getInputShape() != null) {
+      val withoutBatchInputShape = KerasLayer.removeBatch(getInputShape())
+      val withoutBatchCalcInputShape = KerasLayer.removeBatch(calcInputShape)
+      require(withoutBatchInputShape == withoutBatchCalcInputShape,
+        s"InputShape from constructor ${withoutBatchInputShape}" +
+          s"should be the same with the calculated inputShape: ${withoutBatchCalcInputShape}")
     }
   }
 
-  override def computeOutputShape(inputShape: Shape): Shape = {
-    this.labor.computeOutputShape(inputShape)
+  override def build(calcInputShape: Shape): Shape = {
+    // Input would be reused multiple time in inputs for StaticGraph
+    if (isBuilt() && !this.allowRebuilt()) {
+      throw new RuntimeException(s"Should not build this module: $this multiple times")
+    }
+    labor = doBuild(calcInputShape)
+    checkWithCurrentInputShape(calcInputShape)
+    super.build(calcInputShape)
   }
 
-  override def getOutputShape(): Shape = labor.getOutputShape()
-
-  override def build(inputShape: Shape): Shape = {
-    this.labor = doBuild(inputShape)
-    val outputShape = computeOutputShape(inputShape)
-    this.outputShapeValue ++= Array(outputShape)
-    this.inputShapeValue = inputShape
-    isBuilt = true
-    outputShape // we cannot use getOutputShape here as it may containing multiple value
-  }
-
+  /**
+   * The value return by this method should be able to execute `forward` directly.
+   */
   def doBuild(inputShape: Shape): AbstractModule[A, B, T]
 
   /**
@@ -186,12 +238,13 @@ abstract class KerasLayer[A <: Activity: ClassTag, B <: Activity: ClassTag, T: C
    * @return node containing current module
    */
   override def inputs(nodes : ModuleNode[T]*): ModuleNode[T] = {
-    Util.excludeNotKeras(nodes.map(_.element))
-    if (!nodes.isEmpty) { // as there's  Identity().inputs() within Graph
+    validateInput(nodes.map(_.element))
+    if (!nodes.isEmpty) { // as there's Identity().inputs() within Graph
     val inputShape = Shape(nodes.map{_.element.getOutputShape()}.toList)
       this.build(inputShape)
     }
-    super.inputs(nodes: _*)
+
+    processInputs(nodes)
   }
 
   /**
@@ -200,12 +253,24 @@ abstract class KerasLayer[A <: Activity: ClassTag, B <: Activity: ClassTag, T: C
    * @return node containing current module
    */
   override def inputs(nodes : Array[ModuleNode[T]]): ModuleNode[T] = {
-    Util.excludeNotKeras(nodes.map(_.element))
-    if (!nodes.isEmpty) { // as there's  Identity().inputs() within Graph
+    validateInput(nodes.map(_.element))
+    if (!nodes.isEmpty) {
     val inputShape = Shape(nodes.map{_.element.getOutputShape()}.toList)
       this.build(inputShape)
     }
-    super.inputs(nodes)
+    processInputs(nodes)
+  }
+
+  private def getShapeByIndex(shape: Shape, index: Int): Shape = {
+    shape match {
+      case s: SingleShape =>
+        require(index == 1, s"Getting singleshape but with index: $index")
+        s
+      case m: MultiShape =>
+        val multiShape = m.toMulti()
+        require(index >= 1 && index <= multiShape.length)
+        multiShape(index - 1)
+    }
   }
 
   /**
@@ -216,14 +281,16 @@ abstract class KerasLayer[A <: Activity: ClassTag, B <: Activity: ClassTag, T: C
    */
   override def inputs(first: (ModuleNode[T], Int),
      nodesWithIndex : (ModuleNode[T], Int)*): ModuleNode[T] = {
-    Util.excludeNotKeras(List(first._1.element))
-    Util.excludeNotKeras(nodesWithIndex.map(_._1.element))
+    validateInput(List(first._1.element))
     val shapes = ArrayBuffer[Shape]()
-    shapes.append(first._1.element.getOutputShapeFor(first._2))
+    shapes += getShapeByIndex(first._1.element.getOutputShape(), first._2)
     if (!nodesWithIndex.isEmpty) {
-      shapes ++= nodesWithIndex.map{t => t._1.element.getOutputShapeFor(t._2)}
+      validateInput(nodesWithIndex.map(_._1.element))
+      shapes ++= nodesWithIndex.map{t =>
+        getShapeByIndex(first._1.element.getOutputShape(), first._2)
+      }
     }
     this.build(Shape(shapes.toList))
-    super.inputs(first, nodesWithIndex : _*)
+    processInputs(first, nodesWithIndex : _*)
   }
 }

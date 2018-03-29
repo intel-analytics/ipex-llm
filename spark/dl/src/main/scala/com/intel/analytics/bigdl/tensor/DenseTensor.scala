@@ -68,7 +68,9 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
     result.squeeze()
   }
 
-  override def size(): Array[Int] = _size.slice(0, this.nDimension)
+  override def size(): Array[Int] = {
+    if (_size == null) null else _size.slice(0, this.nDimension)
+  }
 
   override def size(dim: Int): Int = {
     require(dim > 0 && dim <= this.nDimension,
@@ -76,7 +78,9 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
     _size(dim - 1)
   }
 
-  override def stride(): Array[Int] = _stride.slice(0, this.nDimension)
+  override def stride(): Array[Int] = {
+    if (_stride == null) null else _stride.slice(0, this.nDimension)
+  }
 
   override def stride(dim: Int): Int = {
     require(dim > 0 && dim <= this.nDimension,

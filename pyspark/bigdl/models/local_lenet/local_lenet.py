@@ -46,8 +46,7 @@ if __name__ == "__main__":
     show_bigdl_info_logs()
     init_engine()
 
-    (X_train, Y_train) = get_mnist("train", options.dataPath)
-    (X_test, Y_test) = get_mnist("test", options.dataPath)
+    (X_train, Y_train), (X_test, Y_test) = mnist.load_data(options.dataPath)
 
     # The model used here is exactly the same as the model in ../lenet/lenet5.py
     optimizer = Optimizer.create(

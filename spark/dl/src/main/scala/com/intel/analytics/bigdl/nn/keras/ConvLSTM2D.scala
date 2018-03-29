@@ -17,7 +17,7 @@
 package com.intel.analytics.bigdl.nn.keras
 
 import com.intel.analytics.bigdl.nn.{ConvLSTMPeephole, Reverse, Select, Sequential => TSequential}
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, TensorModule}
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
 import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -61,8 +61,8 @@ import scala.reflect.ClassTag
 class ConvLSTM2D[T: ClassTag](
    val nbFilter: Int,
    val nbKernel: Int,
-   val activation: AbstractModule[Tensor[T], Tensor[T], T] = null,
-   val innerActivation: AbstractModule[Tensor[T], Tensor[T], T] = null,
+   val activation: KerasLayer[Tensor[T], Tensor[T], T] = null,
+   val innerActivation: KerasLayer[Tensor[T], Tensor[T], T] = null,
    val dimOrdering: String = "CHANNEL_FIRST",
    val subsample: Int = 1,
    var wRegularizer: Regularizer[T] = null,
@@ -97,8 +97,8 @@ class ConvLSTM2D[T: ClassTag](
       kernelI = nbKernel,
       kernelC = nbKernel,
       stride = subsample,
-      activation = activation.asInstanceOf[TensorModule[T]],
-      innerActivation = innerActivation.asInstanceOf[TensorModule[T]],
+      activation = activation.doBuild(inputShape).asInstanceOf[TensorModule[T]],
+      innerActivation = innerActivation.doBuild(inputShape).asInstanceOf[TensorModule[T]],
       wRegularizer = wRegularizer,
       uRegularizer = uRegularizer,
       bRegularizer = bRegularizer,
@@ -124,8 +124,8 @@ object ConvLSTM2D {
     returnSequences: Boolean = false,
     goBackwards: Boolean = false,
     inputShape: Shape = null)(implicit ev: TensorNumeric[T]): ConvLSTM2D[T] = {
-    new ConvLSTM2D[T](nbFilter, nbKernel, KerasUtils.getActivation(activation),
-      KerasUtils.getActivation(innerActivation),
+    new ConvLSTM2D[T](nbFilter, nbKernel, KerasUtils.getKerasActivation(activation),
+      KerasUtils.getKerasActivation(innerActivation),
       KerasUtils.toBigDLFormat5D(dimOrdering),
       subsample, wRegularizer, uRegularizer, bRegularizer,
       returnSequences, goBackwards, inputShape)

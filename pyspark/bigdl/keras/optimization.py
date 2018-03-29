@@ -18,7 +18,7 @@ import keras.optimizers as koptimizers
 
 import bigdl.nn.criterion as bcriterion
 import bigdl.optim.optimizer as boptimizer
-import bigdl.util.common as bcommon
+from bigdl.util.common import to_list
 from bigdl.keras.converter import *
 from keras.objectives import *
 import six
@@ -28,7 +28,7 @@ class OptimConverter:
 
     @staticmethod
     def to_bigdl_metrics(metrics):
-        metrics = bcommon.to_list(metrics)
+        metrics = to_list(metrics)
         bmetrics = []
         for metric in metrics:
             if metric == "accuracy":
@@ -42,7 +42,6 @@ class OptimConverter:
     def to_bigdl_criterion(kloss):
         if isinstance(kloss, six.string_types):
             kloss = kloss.lower()
-
         if kloss == "categorical_crossentropy" or kloss == categorical_crossentropy:
             return bcriterion.CategoricalCrossEntropy()
         elif kloss == "mse" or kloss == "mean_squared_error" or kloss == mse:

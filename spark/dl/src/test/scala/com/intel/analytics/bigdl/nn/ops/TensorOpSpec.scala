@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.nn.ops
 import com.intel.analytics.bigdl.nn.Sigmoid
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
 
 import scala.util.Random
@@ -109,27 +109,13 @@ class TensorOpSpec extends FlatSpec with Matchers {
     op2.forward(tt) shouldEqual Sigmoid[Float]().forward(cpy).inv().sqrt()
   }
 
-  private val t1 = Tensor[Float](3, 4).randn()
-  private val t2 = Tensor[Double](2, 3).randn()
-  private val table = T().update(Tensor.scalar(1), t1).update(Tensor.scalar("2"), t2)
+}
 
-  "SelectedTensor without transformer" should "work correctly" in {
-    val t1Copy = SelectTensor[Float](Tensor.scalar(1)).forward(table)
-    t1Copy shouldEqual t1
-    val t1Values = t1.storage().array().clone()
-    t1Copy.square()
-    t1.storage().array() shouldEqual t1Values
-    t1Copy.storage().array() shouldEqual t1Values.map(e => e * e)
+class TensorOpSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val op = (((TensorOp[Float]() + 1.5f) ** 2) -> TensorOp.sigmoid()
+      ).setName("TensorOP")
+    val input = Tensor[Float](3, 3).apply1(_ => Random.nextFloat())
+    runSerializationTest(op, input)
   }
-
-  "SelectedTensor with transformer" should "work correctly" in {
-    val transformer = (TensorOp[Double]() ** 3 * 4.5).ceil
-    val select = SelectTensor(Tensor.scalar("2"), transformer)
-    val t2Values = t2.storage().array().clone()
-    val t2Convert = select.forward(table)
-    t2.storage().array() shouldEqual t2Values
-    t2Convert.storage().array() shouldEqual
-      t2Values.map(e => math.ceil(math.pow(e, 3) * 4.5))
-  }
-
 }

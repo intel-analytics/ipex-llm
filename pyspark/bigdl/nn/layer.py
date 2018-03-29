@@ -16,6 +16,7 @@
 
 
 import sys
+import importlib
 
 import numpy as np
 import six
@@ -32,6 +33,7 @@ from bigdl.optim.optimizer import L1Regularizer, L2Regularizer, L1L2Regularizer
 from py4j.java_gateway import JavaObject
 from pyspark.rdd import RDD
 from bigdl.transform.vision.image import ImageFrame
+from bigdl.dataset.dataset import DataSet
 
 if sys.version >= '3':
     long = int
@@ -60,8 +62,60 @@ class Node(JavaValue):
         callJavaFunc(self.value.removeNextEdges)
 
 
+class SharedStaticUtils():
 
-class Layer(JavaValue):
+    @staticmethod
+    def load(path, bigdl_type="float"):
+        """
+        Load a pre-trained Bigdl model.
+
+        :param path: The path containing the pre-trained model.
+        :return: A pre-trained model.
+        """
+        jmodel = callBigDlFunc(bigdl_type, "loadBigDL", path)
+        return Layer.of(jmodel)
+
+
+    @staticmethod
+    def of(jvalue, bigdl_type="float"):
+        """
+        Create a Python Layer base on the given java value and the real type.
+        :param jvalue: Java object create by Py4j
+        :return: A Python Layer
+        """
+        def get_py_name(jclass_name):
+            if jclass_name == "StaticGraph" or jclass_name == "DynamicGraph":
+                return "Model"
+            elif jclass_name == "Input":
+                return "Layer"
+            else:
+                return jclass_name
+
+        jname = callBigDlFunc(bigdl_type,
+                                      "getRealClassNameOfJValue",
+                                      jvalue)
+
+        jpackage_name = ".".join(jname.split(".")[:-1])
+        pclass_name = get_py_name(jname.split(".")[-1])
+
+        if "com.intel.analytics.bigdl.nn.keras.Model" == jname or \
+                        "com.intel.analytics.bigdl.nn.keras.Sequential" == jname:
+            base_module = importlib.import_module('bigdl.nn.keras.topology')
+        elif "com.intel.analytics.bigdl.nn.keras" == jpackage_name:
+            base_module = importlib.import_module('bigdl.nn.keras.layer')
+        else:
+            base_module = importlib.import_module('bigdl.nn.layer')
+
+        realClassName = "Layer" # The top base class
+        if pclass_name in dir(base_module):
+            realClassName = pclass_name
+        module = getattr(base_module, realClassName)
+        jvalue_creator = getattr(module, "from_jvalue")
+        model = jvalue_creator(jvalue, bigdl_type)
+        return model
+
+
+class Layer(JavaValue, SharedStaticUtils):
     """
     Layer is the basic component of a neural network
     and it's also the base class of layers.
@@ -79,7 +133,9 @@ class Layer(JavaValue):
 
     def set_running_mean(self, running_mean):
         """
-        :param running_mean: a ndarray
+        Set the running mean of the layer.
+        Only use this method for a BatchNormalization layer.
+        :param running_mean: a Numpy array.
         """
         callBigDlFunc(self.bigdl_type, "setRunningMean",
                       self.value, JTensor.from_ndarray(running_mean))
@@ -87,7 +143,9 @@ class Layer(JavaValue):
 
     def set_running_std(self, running_std):
         """
-        :param running_mean: a ndarray
+        Set the running variance of the layer.
+        Only use this method for a BatchNormalization layer.
+        :param running_std: a Numpy array.
         """
         callBigDlFunc(self.bigdl_type, "setRunningStd",
                       self.value, JTensor.from_ndarray(running_std))
@@ -115,14 +173,15 @@ class Layer(JavaValue):
                                      self,
                                      to_list(x)))
 
-    @classmethod
-    def of(cls, jvalue, bigdl_type="float"):
+    @staticmethod
+    def from_jvalue(jvalue, bigdl_type="float"):
         """
-        Create a Python Layer base on the given java value
+        Create a Python Model base on the given java value
         :param jvalue: Java object create by Py4j
-        :return: A Python Layer
+        :return: A Python Model
         """
-        model = Layer(jvalue, bigdl_type)
+        model = Layer(jvalue=jvalue, bigdl_type=bigdl_type)
+        model.value = jvalue
         return model
 
     def set_name(self, name):
@@ -276,7 +335,7 @@ class Layer(JavaValue):
         Three arguments passed in:
         A method to benchmark the model quality.
 
-        :param val_rdd: the input data
+        :param dataset: the input data
         :param batch_size: batch size
         :param val_methods: a list of validation methods. i.e: Top1Accuracy,Top5Accuracy and Loss.
         :return: a list of the metrics result
@@ -286,11 +345,17 @@ class Layer(JavaValue):
                           "evaluate", self.value)
             return self
         elif len(args) == 3:
-            val_rdd, batch_size, val_methods = args
-            return callBigDlFunc(self.bigdl_type,
-                                 "modelEvaluate",
-                                 self.value,
-                                 val_rdd, batch_size, val_methods)
+            dataset, batch_size, val_methods = args
+            if (isinstance(dataset, ImageFrame)):
+                return callBigDlFunc(self.bigdl_type,
+                                    "modelEvaluateImageFrame",
+                                    self.value,
+                                    dataset, batch_size, val_methods)
+            else:
+                return callBigDlFunc(self.bigdl_type,
+                                     "modelEvaluate",
+                                     self.value,
+                                     dataset, batch_size, val_methods)
         else:
             raise Exception("Error when calling evaluate(): it takes no argument or exactly three arguments only")
 
@@ -365,7 +430,7 @@ class Layer(JavaValue):
         :return: An RDD represent the predict result.
         """
         result = callBigDlFunc(self.bigdl_type,
-                             "modelPredictRDD", self.value, data_rdd)
+                               "modelPredictRDD", self.value, data_rdd)
         return result.map(lambda data: data.to_ndarray())
 
     def predict_class_distributed(self, data_rdd):
@@ -654,7 +719,6 @@ class Model(Container):
     def __init__(self,
                  inputs,
                  outputs,
-                 is_keras=False,
                  jvalue=None,
                  bigdl_type="float", byte_order="little_endian", model_type="bigdl"):
         if jvalue:
@@ -663,8 +727,7 @@ class Model(Container):
         elif model_type == "bigdl":
             super(Model, self).__init__(None, bigdl_type,
                                         to_list(inputs),
-                                        to_list(outputs),
-                                        is_keras)
+                                        to_list(outputs))
         else:
             from bigdl.util.tf_utils import convert
             model = convert(to_list(inputs), to_list(outputs), byte_order, bigdl_type)
@@ -685,16 +748,6 @@ class Model(Container):
     def __str__(self):
         return "->".join(self.layers())
 
-    @staticmethod
-    def load(path, bigdl_type="float"):
-        """
-        Load a pre-trained Bigdl model.
-
-        :param path: The path containing the pre-trained model.
-        :return: A pre-trained model.
-        """
-        jmodel = callBigDlFunc(bigdl_type, "loadBigDL", path)
-        return Layer.of(jmodel)
 
     @staticmethod
     def loadModel(modelPath, weightPath =None, bigdl_type="float"):
@@ -1062,8 +1115,19 @@ class Sequential(Container):
 
     '''
 
-    def __init__(self, bigdl_type="float", is_keras=False):
-        super(Sequential, self).__init__(None, bigdl_type, is_keras)
+    def __init__(self, jvalue=None, bigdl_type="float"):
+        super(Sequential, self).__init__(jvalue, bigdl_type)
+
+    @staticmethod
+    def from_jvalue(jvalue, bigdl_type="float"):
+        """
+        Create a Python Model base on the given java value
+        :param jvalue: Java object create by Py4j
+        :return: A Python Model
+        """
+        model = Sequential(jvalue=jvalue)
+        model.value = jvalue
+        return model
 
 class TemporalConvolution(Layer):
 
@@ -3606,7 +3670,7 @@ class RReLU(Layer):
                                     upper,
                                     inplace)
 
-class SpatialSeperableConvolution(Layer):
+class SpatialSeparableConvolution(Layer):
 
     '''
     Separable convolutions consist in first performing a depthwise spatial convolution (which acts
@@ -3631,17 +3695,17 @@ class SpatialSeperableConvolution(Layer):
     :param b_regularizer: instance of [[Regularizer]]applied to the pointwise bias.
     :param p_regularizer: instance of [[Regularizer]]applied to the pointwise weights.
 
-    >>> conv = SpatialSeperableConvolution(6, 12, 1, 5, 5)
-    creating: createSpatialSeperableConvolution
+    >>> conv = SpatialSeparableConvolution(6, 12, 1, 5, 5)
+    creating: createSpatialSeparableConvolution
     >>> conv.setWRegularizer(L1Regularizer(0.5))
     creating: createL1Regularizer
     >>> conv.setBRegularizer(L1Regularizer(0.5))
     creating: createL1Regularizer
-    >>> conv = SpatialSeperableConvolution(6, 12, 1, 5, 5, 1, 1, 0, 0, True, "NCHW", L1Regularizer(0.5), L1Regularizer(0.5), L1Regularizer(0.5))
+    >>> conv = SpatialSeparableConvolution(6, 12, 1, 5, 5, 1, 1, 0, 0, True, "NCHW", L1Regularizer(0.5), L1Regularizer(0.5), L1Regularizer(0.5))
     creating: createL1Regularizer
     creating: createL1Regularizer
     creating: createL1Regularizer
-    creating: createSpatialSeperableConvolution
+    creating: createSpatialSeparableConvolution
     '''
 
     def __init__(self,
@@ -3660,22 +3724,22 @@ class SpatialSeperableConvolution(Layer):
                  b_regularizer=None,
                  p_regularizer=None,
                  bigdl_type="float"):
-        super(SpatialSeperableConvolution, self).__init__(None, bigdl_type,
-                                                 n_input_channel,
-                                                 n_output_channel,
-                                                 depth_multiplier,
-                                                 kernel_w,
-                                                 kernel_h,
-                                                 stride_w,
-                                                 stride_h,
-                                                 pad_w,
-                                                 pad_h,
-                                                 with_bias,
-                                                 data_format,
-                                                 w_regularizer,
-                                                 b_regularizer,
-                                                 p_regularizer,
-                                                 )
+        super(SpatialSeparableConvolution, self).__init__(None, bigdl_type,
+                                                          n_input_channel,
+                                                          n_output_channel,
+                                                          depth_multiplier,
+                                                          kernel_w,
+                                                          kernel_h,
+                                                          stride_w,
+                                                          stride_h,
+                                                          pad_w,
+                                                          pad_h,
+                                                          with_bias,
+                                                          data_format,
+                                                          w_regularizer,
+                                                          b_regularizer,
+                                                          p_regularizer,
+                                                          )
 
 class ReLU6(Layer):
 

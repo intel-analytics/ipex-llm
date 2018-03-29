@@ -73,7 +73,55 @@ class TestSimple():
         print(cadd.get_weights()[0])
         assert_allclose(cadd.get_weights()[0],
                         np.array([1, 2, 3, 4, 5]).reshape((5, 1)),
+
                         rtol=1.e-1)
+
+    def test_load_keras_model_of(self):
+        from bigdl.nn.keras.topology import Model as KModel
+        from bigdl.nn.keras.layer import Input as KInput
+        from bigdl.nn.keras.layer import Dense
+
+        input = KInput(shape=[2, 3])
+        fc1 = Dense(2)(input)
+        model = KModel(input, fc1)
+        tmp_path = tempfile.mktemp()
+        model.save(tmp_path, True)
+        model_loaded = KModel.load(tmp_path)
+        assert "bigdl.nn.keras.topology.Model" in str(type(model_loaded))
+        assert len(model_loaded.layers) == 2
+
+    def test_load_keras_seq_of(self):
+        from bigdl.nn.keras.topology import Sequential as KSequential
+        from bigdl.nn.keras.layer import Dense
+
+        model = KSequential()
+        fc1 = Dense(2, input_shape=[2, 3])
+        model.add(fc1)
+        tmp_path = tempfile.mktemp()
+        model.save(tmp_path, True)
+        model_loaded = KSequential.load(tmp_path)
+        assert "bigdl.nn.keras.topology.Sequential" in str(type(model_loaded))
+        assert len(model_loaded.layers) == 1
+
+    def test_load_model_of(self):
+        input = Input()
+        fc1 = Linear(4, 2)(input)
+        model = Model(input, fc1)
+        tmp_path = tempfile.mktemp()
+        model.save(tmp_path, True)
+        model_loaded = Model.load(tmp_path)
+        assert "Model" in str(type(model_loaded))
+        assert len(model_loaded.layers) == 2
+
+    def test_load_sequential_of(self):
+        fc1 = Linear(4, 2)
+        model = Sequential()
+        model.add(fc1)
+        tmp_path = tempfile.mktemp()
+        model.save(tmp_path, True)
+        model_loaded = Model.load(tmp_path)
+        assert "Sequential" in str(type(model_loaded))
+        assert len(model_loaded.layers) == 1
 
     def test_load_model(self):
         fc1 = Linear(4, 2)
@@ -665,6 +713,13 @@ class TestSimple():
         assert node == 1
         assert core == 4
 
+    def tes_read_image_frame(self):
+        init_engine()
+        resource_path = os.path.join(os.path.split(__file__)[0], "resources")
+        image_path = os.path.join(resource_path, "pascal/000025.jpg")
+        image_frame = ImageFrame.read(image_path, self.sc)
+        count = image_frame.get_image().count()
+        assert count == 1
 
 if __name__ == "__main__":
     pytest.main([__file__])

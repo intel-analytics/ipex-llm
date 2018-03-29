@@ -33,8 +33,9 @@ import org.apache.spark.rdd.RDD
 import java.lang.{Boolean => JBoolean}
 import java.nio.ByteOrder
 
-import com.intel.analytics.bigdl.dlframes.{DLClassifier, DLClassifierModel, DLEstimator, DLModel}
+import com.intel.analytics.bigdl.dlframes._
 import com.intel.analytics.bigdl.nn.Graph._
+import com.intel.analytics.bigdl.nn.keras.{KerasLayer, KerasModel}
 import com.intel.analytics.bigdl.optim.SGD.{LearningRateSchedule, SequentialSchedule}
 import com.intel.analytics.bigdl.transform.vision.image._
 import com.intel.analytics.bigdl.transform.vision.image.augmentation._
@@ -215,7 +216,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   // The first dimension is batch for both X and y
-  private def toSampleArray(Xs: List[Tensor[T]], y: Tensor[T] = null): Array[JSample[T]] = {
+  def toSampleArray(Xs: List[Tensor[T]], y: Tensor[T] = null): Array[JSample[T]] = {
     require(!Xs.isEmpty, "Xs should not be empty")
     val totalNum = Xs(0).size()(0)
     var i = 1
@@ -258,13 +259,8 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     optimizer
   }
 
-  def createSequential(isKeras: Boolean = false): Sequential[T] = {
-    if (isKeras) {
-      nn.keras.Sequential[T]()
-    }
-    else {
+  def createSequential(): Container[Activity, Activity, T] = {
       Sequential[T]()
-    }
   }
 
   def createLinear(inputSize: Int, outputSize: Int,
@@ -547,7 +543,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     )
   }
 
-  def createSpatialSeperableConvolution(
+  def createSpatialSeparableConvolution(
     nInputChannel: Int,
     nOutputChannel: Int,
     depthMultiplier: Int,
@@ -563,8 +559,8 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     bRegularizer: Regularizer[T] = null,
     pRegularizer: Regularizer[T] = null
   )
-  : SpatialSeperableConvolution[T] = {
-    SpatialSeperableConvolution[T](nInputChannel,
+  : SpatialSeparableConvolution[T] = {
+    SpatialSeparableConvolution[T](nInputChannel,
       nOutputChannel,
       depthMultiplier,
       kW,
@@ -1835,6 +1831,21 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     testResultArray.toList.asJava
   }
 
+
+  def modelEvaluateImageFrame(model: AbstractModule[Activity, Activity, T],
+                    imageFrame: ImageFrame,
+                    batchSize: Int,
+                    valMethods: JList[ValidationMethod[T]])
+  : JList[EvaluatedResult] = {
+    val resultArray = model.evaluateImage(imageFrame,
+      valMethods.asScala.toArray, Some(batchSize))
+    val testResultArray = resultArray.map { result =>
+      EvaluatedResult(result._1.result()._1, result._1.result()._2,
+        result._2.toString())
+    }
+    testResultArray.toList.asJava
+  }
+
   def loadBigDL(path: String): AbstractModule[Activity, Activity, T] = {
     Module.load[T](path)
   }
@@ -2316,14 +2327,8 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def createModel(input: JList[ModuleNode[T]],
-                  output: JList[ModuleNode[T]],
-                  isKeras: Boolean = false): Graph[T] = {
-    if (isKeras) {
-      nn.keras.Model(input.asScala.toArray, output.asScala.toArray)
-    }
-    else {
-      Graph(input.asScala.toArray, output.asScala.toArray)
-    }
+                  output: JList[ModuleNode[T]]): Graph[T] = {
+    Graph(input.asScala.toArray, output.asScala.toArray)
   }
 
   def createNode(module: AbstractModule[Activity, Activity, T],
@@ -2605,7 +2610,14 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
 
   def getContainerModules(module: Container[Activity, Activity, T])
   : JList[AbstractModule[Activity, Activity, T]] = {
-    module.modules.toList.asJava
+    module match {
+      case m: KerasModel[T] =>
+        m.getSubModules().asJava
+      case kl: KerasLayer[Activity, Activity, T] =>
+        throw new RuntimeException(s"There's no sub modules for ${kl}")
+      case _ =>
+        module.modules.toList.asJava
+    }
   }
 
   def getFlattenModules(module: Container[Activity, Activity, T],
@@ -2616,11 +2628,21 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     result.toList.asJava
   }
 
+  // TODO: refactor Container and KerasLayer to simplify this logic
+  private def hasSubModules(module: AbstractModule[Activity, Activity, T]) = {
+    module match {
+      case km: KerasModel[T] => true
+      case kl: KerasLayer[Activity, Activity, T] => false
+      case c: Container[_, _, _] => true
+      case _ => false
+    }
+  }
+
   private def doGetFlattenModules(module: Container[Activity, Activity, T],
     includeContainer: Boolean,
     result: ArrayBuffer[AbstractModule[Activity, Activity, T]]): Unit = {
-    module.modules.foreach {m =>
-      if (m.isInstanceOf[Container[Activity, Activity, T]]) {
+    getContainerModules(module).asScala.foreach {m =>
+      if (hasSubModules(m)) {
         doGetFlattenModules(m.asInstanceOf[Container[Activity, Activity, T]],
           includeContainer,
           result)
@@ -2644,6 +2666,14 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
 
   def setRunningStd(module: BatchNormalization[T], runningStd: JTensor): Unit = {
     module.runningVar.set(toTensor(runningStd))
+  }
+
+  def getRunningMean(module: BatchNormalization[T]): JTensor = {
+    toJTensor(module.runningMean)
+  }
+
+  def getRunningStd(module: BatchNormalization[T]): JTensor = {
+    toJTensor(module.runningVar)
   }
 
   def createMasking(maskValue: Double)
@@ -2914,6 +2944,27 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     })
   }
 
+  def distributedImageFrameToSample(imageFrame: DistributedImageFrame, key: String):
+  JavaRDD[Sample] = {
+    imageFrame.rdd.map(x => {
+      if (x.isValid && x.contains(key)) {
+        toPySample(x[JSample[T]](key))
+      } else {
+        null
+      }
+    })
+  }
+
+  def localImageFrameToSample(imageFrame: LocalImageFrame, key: String): JList[Sample] = {
+    imageFrame.array.map(x => {
+      if (x.isValid && x.contains(key)) {
+        toPySample(x[JSample[T]](key))
+      } else {
+        null
+      }
+    }).toList.asJava
+  }
+
   def localImageFrameToPredict(imageFrame: LocalImageFrame, key: String)
   : JList[JList[Any]] = {
     imageFrame.array.map(x =>
@@ -2955,8 +3006,15 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     }
   }
 
-  def readParquet(path: String, sqlContext: SQLContext): DistributedImageFrame = {
+  def readParquet(path: String, sc: JavaSparkContext): DistributedImageFrame = {
+    val sqlContext = new SQLContext(sc)
     ImageFrame.readParquet(path, sqlContext)
+  }
+
+  def writeParquet(path: String, output: String,
+                   sc: JavaSparkContext, partitionNum: Int = 1): Unit = {
+    val sqlContext = new SQLContext(sc)
+    ImageFrame.writeParquet(path, output, sqlContext, partitionNum)
   }
 
   def createBytesToMat(byteKey: String): BytesToMat = {
@@ -3016,6 +3074,23 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
 
   def createDatasetFromImageFrame(imageFrame: ImageFrame): DataSet[ImageFeature] = {
     DataSet.imageFrame(imageFrame)
+  }
+
+  def dlReadImage(path: String, sc: JavaSparkContext, minParitions: Int): DataFrame = {
+    val df = DLImageReader.readImages(path, sc.sc, minParitions)
+    df
+  }
+
+  def createDLImageTransformer(transformer: FeatureTransformer): DLImageTransformer = {
+    new DLImageTransformer(transformer)
+  }
+
+  def dlImageTransform(dlImageTransformer: DLImageTransformer, dataSet: DataFrame): DataFrame = {
+    dlImageTransformer.transform(dataSet)
+  }
+
+  def getRealClassNameOfJValue(module: AbstractModule[Activity, Activity, T]): String = {
+    module.getClass.getCanonicalName
   }
 }
 

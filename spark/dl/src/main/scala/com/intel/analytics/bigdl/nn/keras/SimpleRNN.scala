@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.nn.keras
 
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, TensorModule}
+import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.nn.{Cell, RnnCell}
 import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.Tensor
@@ -49,7 +49,7 @@ import scala.reflect.ClassTag
  */
 class SimpleRNN[T: ClassTag](
    outputDim: Int,
-   val activation: AbstractModule[Tensor[T], Tensor[T], T],
+   val activation: KerasLayer[Tensor[T], Tensor[T], T],
    returnSequences: Boolean = false,
    goBackwards: Boolean = false,
    var wRegularizer: Regularizer[T] = null,
@@ -62,7 +62,7 @@ class SimpleRNN[T: ClassTag](
     RnnCell(
       inputSize = input(2),
       hiddenSize = outputDim,
-      activation = activation.asInstanceOf[TensorModule[T]],
+      activation = activation.doBuild(inputShape).asInstanceOf[TensorModule[T]],
       isInputWithBias = false,
       wRegularizer = wRegularizer,
       uRegularizer = uRegularizer,
@@ -80,7 +80,7 @@ object SimpleRNN {
     uRegularizer: Regularizer[T] = null,
     bRegularizer: Regularizer[T] = null,
     inputShape: Shape = null)(implicit ev: TensorNumeric[T]) : SimpleRNN[T] = {
-    new SimpleRNN[T](outputDim, KerasUtils.getActivation(activation),
+    new SimpleRNN[T](outputDim, KerasUtils.getKerasActivation(activation),
       returnSequences, goBackwards, wRegularizer,
       uRegularizer, bRegularizer, inputShape)
   }

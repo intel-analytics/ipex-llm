@@ -54,4 +54,19 @@ class DepthwiseConv2DNativeSpec extends TensorflowSpecHelper {
       0
     )
   }
+
+  "DepthwiseConv2DNative forward" should "be correct when use default data_format" in {
+    RNG.setSeed(100)
+    val filter = Tensor[Float](2, 2, 3, 2).rand()
+    compare[Float](
+      NodeDef.newBuilder()
+        .setName("depthwise_conv2d_test")
+        .putAttr("T", typeAttr(DataType.DT_FLOAT))
+        .putAttr("padding", PaddingType.PADDING_VALID.value)
+        .putAttr("strides", listIntAttr(Seq(1, 1, 1, 1)))
+        .setOp("DepthwiseConv2dNative"),
+      Seq(Tensor[Float](4, 24, 24, 3).rand(), filter),
+      0
+    )
+  }
 }

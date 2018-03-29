@@ -81,6 +81,7 @@ pages:
   - Optim Methods:
     - OptimMethod: APIGuide/Optimizers/OptimMethod.md 
     - Optimization Algorithms: APIGuide/Optimizers/Optim-Methods.md
+    - LearningRate Scheduler: APIGuide/Optimizers/Learningrate-Scheduler.md
   - Triggers: APIGuide/Triggers.md
   - Metrics:  APIGuide/Metrics.md
   - ML Pipeline: APIGuide/DLFrames/DLEstimator_DLClassifier.md
@@ -90,6 +91,25 @@ pages:
   - Full API docs:
     - Scala Docs: APIGuide/scaladoc.md
     - Python API Docs: APIGuide/python-api-doc.md
+- Keras-Style API Guide:
+  - Python Guide: KerasStyleAPIGuide/keras-api-python.md
+  - Scala Guide: KerasStyleAPIGuide/keras-api-scala.md
+  - Layers:
+    - Activation: KerasStyleAPIGuide/Layers/activation.md
+    - Initialization: KerasStyleAPIGuide/Layers/initialization.md
+    - Core Layers: KerasStyleAPIGuide/Layers/core.md
+    - Convolutional Layers: KerasStyleAPIGuide/Layers/convolutional.md
+    - Pooling Layers: KerasStyleAPIGuide/Layers/pooling.md
+    - Recurrent Layers: KerasStyleAPIGuide/Layers/recurrent.md
+    - Normalization Layers: KerasStyleAPIGuide/Layers/normalization.md
+    - Embedding Layers: KerasStyleAPIGuide/Layers/embedding.md
+    - Dropout Layers: KerasStyleAPIGuide/Layers/dropout.md
+    - Advanced Activations: KerasStyleAPIGuide/Layers/advanced-activation.md
+    - Layer Wrappers: KerasStyleAPIGuide/Layers/wrappers.md
+  - Optimization:
+    - Train, evaluate or predict a model: KerasStyleAPIGuide/Optimization/training.md
+    - Optimizers: KerasStyleAPIGuide/Optimization/optimizer.md
+    - Losses: KerasStyleAPIGuide/Optimization/loss.md
 - Powered by: powered-by.md
 - Known Issues: known-issues.md
 - Presentations: presentations.md
