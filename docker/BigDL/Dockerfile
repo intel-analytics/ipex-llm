@@ -39,8 +39,12 @@ RUN wget http://ftp.osuosl.org/pub/funtoo/distfiles/oracle-java/jdk-8u152-linux-
     rm jdk-8u152-linux-x64.tar && \
     ln -s /opt/jdk1.8.0_152 /opt/jdk
 #python
-RUN apt-get install -y build-essential python python-setuptools python-dev && \
-    easy_install pip && \
+RUN apt-get install -y software-properties-common python-software-properties python-pkg-resources && \
+    add-apt-repository -y ppa:jonathonf/python-2.7 && \
+    apt-get update && \
+    apt-get install -y build-essential python python-setuptools python-dev && \
+    wget https://bootstrap.pypa.io/get-pip.py && \
+    python2 get-pip.py && \
     pip install numpy scipy pandas scikit-learn matplotlib seaborn jupyter wordcloud && \
     python2 -m pip install ipykernel && \
     python2 -m ipykernel install --user
