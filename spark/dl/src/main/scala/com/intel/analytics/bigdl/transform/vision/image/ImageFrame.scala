@@ -75,13 +75,6 @@ trait ImageFrame extends Serializable {
 
   def setLabel(labelMap: mutable.Map[String, Float]): Unit
 
-  def setLabel(labelMap: mutable.Map[String, Float],
-               imageFeature: ImageFeature): Unit = {
-    val uri = imageFeature.uri
-    if (labelMap.contains(uri)) {
-      imageFeature(ImageFeature.label) = Tensor[Float](T(labelMap(uri)))
-    }
-  }
 }
 
 object ImageFrame {
@@ -206,7 +199,7 @@ class LocalImageFrame(var array: Array[ImageFeature]) extends ImageFrame {
 
   override def setLabel(labelMap: mutable.Map[String, Float]): Unit = {
     array = array.map(imageFeature => {
-      setLabel(labelMap, imageFeature)
+      imageFeature.setLabel(labelMap)
       imageFeature
     })
   }
@@ -229,7 +222,7 @@ class DistributedImageFrame(var rdd: RDD[ImageFeature]) extends ImageFrame {
 
   override def setLabel(labelMap: mutable.Map[String, Float]): Unit = {
     rdd = rdd.map(imageFeature => {
-      setLabel(labelMap, imageFeature)
+      imageFeature.setLabel(labelMap)
       imageFeature
     })
   }

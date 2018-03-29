@@ -321,6 +321,17 @@ class ImageFeature extends Serializable {
     }
     image
   }
+
+  /**
+   * set label for imagefeature from label map
+   */
+
+  def setLabel(labelMap: mutable.Map[String, Float]): Unit = {
+    val uri = this.uri
+    if (labelMap.contains(uri)) {
+      this(ImageFeature.label) = Tensor[Float](T(labelMap(uri)))
+    }
+  }
 }
 
 object ImageFeature {
