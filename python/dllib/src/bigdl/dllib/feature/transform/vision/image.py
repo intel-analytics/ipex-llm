@@ -197,6 +197,9 @@ class ImageFrame(JavaValue):
         return callBigDlFunc(bigdl_type,
                              "setLabel", label, self.value)
 
+    def random_split(self, weights):
+        return self.image_frame.random_split(weights)
+
 class LocalImageFrame(ImageFrame):
     """
     LocalImageFrame wraps a list of ImageFeature
@@ -241,6 +244,9 @@ class LocalImageFrame(ImageFrame):
 
     def get_uri(self, key = "uri"):
         return callBigDlFunc(self.bigdl_type, "localImageFrameToUri", self.value, key)
+
+    def random_split(self, weights):
+        raise "random split not supported in LocalImageFrame"
 
 class DistributedImageFrame(ImageFrame):
     """
@@ -287,6 +293,9 @@ class DistributedImageFrame(ImageFrame):
 
     def get_uri(self, key = "uri"):
         return callBigDlFunc(self.bigdl_type, "distributedImageFrameToUri", self.value, key)
+
+    def random_split(self, weights):
+        return callBigDlFunc(self.bigdl_type, "distributedImageFrameRandomSplit", self.value, weights)
 
 class HFlip(FeatureTransformer):
     """
