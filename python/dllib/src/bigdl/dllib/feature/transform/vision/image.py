@@ -184,6 +184,18 @@ class ImageFrame(JavaValue):
         """
         return self.image_frame.get_sample()
 
+    def get_uri(self):
+        """
+        get uri from imageframe
+        """
+        return self.image_frame.get_uri()
+
+    def set_label(self, label, bigdl_type="float"):
+        """
+        set label for imageframe
+        """
+        return callBigDlFunc(bigdl_type,
+                             "setLabel", label, self.value)
 
 class LocalImageFrame(ImageFrame):
     """
@@ -227,6 +239,9 @@ class LocalImageFrame(ImageFrame):
     def get_sample(self,  key="sample"):
         return callBigDlFunc(self.bigdl_type, "localImageFrameToSample", self.value, key)
 
+    def get_uri(self, key = "uri"):
+        return callBigDlFunc(self.bigdl_type, "localImageFrameToUri", self.value, key)
+
 class DistributedImageFrame(ImageFrame):
     """
     DistributedImageFrame wraps an RDD of ImageFeature
@@ -266,8 +281,12 @@ class DistributedImageFrame(ImageFrame):
         """
         predicts = callBigDlFunc(self.bigdl_type, "distributedImageFrameToPredict", self.value, key)
         return predicts.map(lambda predict: (predict[0], predict[1].to_ndarray()) if predict[1] else (predict[0], None))
+
     def get_sample(self,  key="sample"):
         return callBigDlFunc(self.bigdl_type, "distributedImageFrameToSample", self.value, key)
+
+    def get_uri(self, key = "uri"):
+        return callBigDlFunc(self.bigdl_type, "distributedImageFrameToUri", self.value, key)
 
 class HFlip(FeatureTransformer):
     """
