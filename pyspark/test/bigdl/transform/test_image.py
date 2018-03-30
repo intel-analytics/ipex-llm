@@ -214,6 +214,10 @@ class TestLayer():
             label[uri] = 10
         imageFrame.set_label(label)
 
+    def test_random_split(self):
+        resource_path = os.path.join(os.path.split(__file__)[0], "../resources/pascal")
+        imageFrame = ImageFrame.read(resource_path, self.sc)
+        splits = imageFrame.random_split([1.0])
 
 if __name__ == "__main__":
     pytest.main([__file__])
