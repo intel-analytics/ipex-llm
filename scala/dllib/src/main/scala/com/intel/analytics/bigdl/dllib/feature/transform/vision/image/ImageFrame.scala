@@ -226,4 +226,9 @@ class DistributedImageFrame(var rdd: RDD[ImageFeature]) extends ImageFrame {
       imageFeature
     })
   }
+
+  def randomSplit(weights: Array[Double]): Array[ImageFrame] = {
+    val splitRDD = rdd.randomSplit(weights)
+    splitRDD.map(new DistributedImageFrame(_))
+  }
 }
