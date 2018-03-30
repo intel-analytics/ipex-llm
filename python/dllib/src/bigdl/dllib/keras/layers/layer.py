@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
 from bigdl.nn.keras.layer import *
 
 if sys.version >= '3':
@@ -20,14 +21,14 @@ if sys.version >= '3':
     unicode = str
 
 
-class KerasCreator(JavaValue):
+class ZooKerasLayer(KerasLayer):
     def jvm_class_constructor(self):
         name = "createZooKeras" + self.__class__.__name__
         print("creating: " + name)
         return name
 
 
-class Dense(KerasLayer):
+class Dense(ZooKerasLayer):
     """
     A densely-connected NN layer.
     The most common input is 2D.
