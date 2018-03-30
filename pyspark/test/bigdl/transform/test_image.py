@@ -205,6 +205,15 @@ class TestLayer():
         ImageFrame.write_parquet(resource_path, temp, self.sc, 1)
         read_image_frame = ImageFrame.read_parquet(temp, self.sc)
 
+    def test_set_label(self):
+        resource_path = os.path.join(os.path.split(__file__)[0], "../resources/pascal")
+        imageFrame = ImageFrame.read(resource_path, self.sc)
+        uris = imageFrame.get_uri().collect()
+        label = {}
+        for uri in uris:
+            label[uri] = 10
+        imageFrame.set_label(label)
+
 
 if __name__ == "__main__":
     pytest.main([__file__])
