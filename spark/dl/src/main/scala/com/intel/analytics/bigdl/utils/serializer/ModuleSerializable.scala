@@ -353,10 +353,10 @@ trait ModuleSerializable extends Loadable with Savable{
    */
   protected def copyFromBigDL[T: ClassTag](context : SerializeContext[T],
     modelBuilder : BigDLModule.Builder)(implicit ev : TensorNumeric[T]) : Unit = {
-    val parameters = context.moduleData.module.parameters._1
-    if (parameters != null) {
+    val parameters = context.moduleData.module.parameters
+    if (parameters != null && parameters._1 != null) {
       modelBuilder.setHasParameters(true)
-      parameters.foreach(parameter => {
+      parameters._1.foreach(parameter => {
         val tensorAttr = AttrValue.newBuilder
         TensorConverter.setAttributeValue(context, tensorAttr, parameter)
         modelBuilder.addParameters(tensorAttr.getTensorValue)
