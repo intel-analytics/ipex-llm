@@ -2970,6 +2970,11 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     })
   }
 
+  def distributedImageFrameRandomSplit(imageFrame: DistributedImageFrame,
+    weights: JList[Double]): Array[ImageFrame] = {
+    return imageFrame.randomSplit(weights.asScala.toArray)
+  }
+
   def localImageFrameToUri(imageFrame: LocalImageFrame, key: String): JList[String] = {
     imageFrame.array.map(x => {
       if (x.contains(key)) {
