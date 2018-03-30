@@ -18,6 +18,8 @@ package com.intel.analytics.bigdl.transform.vision.image
 
 import java.io.{File, FilenameFilter}
 
+import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.utils.T
 import org.apache.commons.io.FileUtils
 import org.apache.commons.io.filefilter.WildcardFileFilter
 import org.apache.log4j.Logger
@@ -25,6 +27,7 @@ import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SQLContext
 
+import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 
 /**
@@ -64,6 +67,14 @@ trait ImageFrame extends Serializable {
    * return DistributedImageFrame
    */
   def toDistributed(): DistributedImageFrame = this.asInstanceOf[DistributedImageFrame]
+
+  /**
+   * set label for ImageFrame
+   * @param labelMap label map : uri to label mapping
+   */
+
+  def setLabel(labelMap: mutable.Map[String, Float]): Unit
+
 }
 
 object ImageFrame {
@@ -185,6 +196,13 @@ class LocalImageFrame(var array: Array[ImageFeature]) extends ImageFrame {
   override def isLocal(): Boolean = true
 
   override def isDistributed(): Boolean = false
+
+  override def setLabel(labelMap: mutable.Map[String, Float]): Unit = {
+    array = array.map(imageFeature => {
+      imageFeature.setLabel(labelMap)
+      imageFeature
+    })
+  }
 }
 
 /**
@@ -201,4 +219,11 @@ class DistributedImageFrame(var rdd: RDD[ImageFeature]) extends ImageFrame {
   override def isLocal(): Boolean = false
 
   override def isDistributed(): Boolean = true
+
+  override def setLabel(labelMap: mutable.Map[String, Float]): Unit = {
+    rdd = rdd.map(imageFeature => {
+      imageFeature.setLabel(labelMap)
+      imageFeature
+    })
+  }
 }
