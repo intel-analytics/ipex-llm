@@ -2864,6 +2864,10 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     imageFrame.transform(transformer)
   }
 
+  def setLabel(labelMap: JMap[String, Float], imageFrame: ImageFrame): Unit = {
+    imageFrame.setLabel(labelMap.asScala)
+  }
+
   def createDistributedImageFrame(imageRdd: JavaRDD[JTensor], labelRdd: JavaRDD[JTensor])
   : DistributedImageFrame = {
     require(null != imageRdd, "imageRdd cannot be null")
@@ -2953,6 +2957,27 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
         null
       }
     })
+  }
+
+  def distributedImageFrameToUri(imageFrame: DistributedImageFrame, key: String):
+    JavaRDD[String] = {
+    imageFrame.rdd.map(x => {
+      if (x.contains(key)) {
+        x[String](key)
+      } else {
+        null
+      }
+    })
+  }
+
+  def localImageFrameToUri(imageFrame: LocalImageFrame, key: String): JList[String] = {
+    imageFrame.array.map(x => {
+      if (x.contains(key)) {
+        x[String](key)
+      } else {
+        null
+      }
+    }).toList.asJava
   }
 
   def localImageFrameToSample(imageFrame: LocalImageFrame, key: String): JList[Sample] = {
