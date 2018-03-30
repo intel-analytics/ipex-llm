@@ -15,13 +15,13 @@ This excample load ImageNet validation dataset directly from hadoop sequence fil
 
 BigDL provides a rich set of pre-trained models, please check [BigDL Models](https://github.com/intel-analytics/analytics-zoo/tree/master/models) for details
 
-Downloade inception-v1 model bi running
+Download inception-v1 model by running
 
 wget https://s3-ap-southeast-1.amazonaws.com/bigdl-models/imageclassification/imagenet/bigdl_inception-v1_imagenet_0.4.0.model
 
 ### Run validation program
 
-Run the program as a spark application with below command
+Run the program as a spark application with below command in standalone mode
 
 ```shell
   master=spark://xxx.xxx.xxx.xxx:xxxx # please set your own spark master
