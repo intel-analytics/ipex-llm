@@ -74,8 +74,8 @@ class ConcatDnn(val dimension: Int) extends Container[Tensor[Float], Tensor[Floa
 
   val stream_fwd = new ArrayBuffer[Long]
   private var stream_reOrder: Array[Array[Long]] = null
-  private val reorder_src_memory: Array[Long] = null
-  private val reorder_dst_memory: Array[Long] = null
+  private var reorder_src_memory: Array[Long] = null
+  private var reorder_dst_memory: Array[Long] = null
 
   val dataType = MklDnn.DataType.f32
 
@@ -105,8 +105,14 @@ class ConcatDnn(val dimension: Int) extends Container[Tensor[Float], Tensor[Floa
     if (outBuffers == null) outBuffers = new Array[MklDnnTensor[Float]](modules.length)
     if (resultsMPD == null) resultsMPD = new Array[Long](this.modules.length)
     if (resultsPrimitive == null) resultsPrimitive = new Array[Long](this.modules.length)
-    if (stream_reOrder == null) stream_reOrder = new Array[Array[Long]](this.modules.length)
-
+    if (stream_reOrder == null) {
+      stream_reOrder = new Array[Array[Long]](this.modules.length)
+      for (i <- 0 until this.modules.length) {
+        stream_reOrder(i) = new Array[Long](1)
+      }
+    }
+    if (reorder_dst_memory == null) { reorder_dst_memory = new Array[Long](modules.length) }
+    if (reorder_src_memory == null) { reorder_src_memory = new Array[Long](modules.length) }
 
     if (engine == 0L) engine = this.getDnnEngine(0)
     if (stream == 0L) stream = this.getStream()
