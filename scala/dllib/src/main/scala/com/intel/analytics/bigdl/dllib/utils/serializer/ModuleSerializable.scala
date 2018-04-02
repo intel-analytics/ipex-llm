@@ -21,6 +21,7 @@ import com.intel.analytics.bigdl.nn.Container
 
 import scala.collection.JavaConverters._
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
+import com.intel.analytics.bigdl.serialization.Bigdl.AttrValue.ArrayValue
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{Table, Shape => BigDLShape}
@@ -246,7 +247,9 @@ trait ModuleSerializable extends Loadable with Savable{
     }
     module.inputShapeValue = ShapeConverter.shapeToBigDL(context, model, "input")
     module.outputShapeValue = ShapeConverter.shapeToBigDL(context, model, "output")
-    if (_copyWeightAndBias) {
+
+    // container does not need to be copied paramters again
+    if (_copyWeightAndBias && context.bigdlModule.getSubModulesCount == 0) {
       copy2BigDL(context, bigDLModule)
     }
     bigDLModule
@@ -272,7 +275,8 @@ trait ModuleSerializable extends Loadable with Savable{
     if (outputShape != null) {
       modelBuilder.setOutputShape(ShapeConverter.shapeToProto(context, outputShape))
     }
-    if (_copyWeightAndBias) {
+    // container does not need to be copied paramters again
+    if (_copyWeightAndBias && !module.isInstanceOf[Container[_, _, _]]) {
       copyFromBigDL(context, modelBuilder)
     }
     SerializeResult(modelBuilder, context.storages)
@@ -285,6 +289,43 @@ trait ModuleSerializable extends Loadable with Savable{
    */
   protected def copy2BigDL[T: ClassTag](context: DeserializeContext, module : ModuleData[T])
                                        (implicit ev: TensorNumeric[T]): Unit = {
+
+    if (context.bigdlModule.getHasParameters) {
+      copyParameters2BigDL(context, module)
+    } else {
+      // for legacy format models
+      copyWeightAndBias(context, module)
+    }
+  }
+
+  private def copyParameters2BigDL[T: ClassTag]
+    (context: DeserializeContext, module : ModuleData[T])
+    (implicit ev: TensorNumeric[T]): Unit = {
+
+    val serializedParameters = context.bigdlModule.getParametersList.asScala.toArray
+
+    val arrayValue = ArrayValue.newBuilder
+    arrayValue.setDatatype(DataType.TENSOR)
+    serializedParameters.foreach(param => arrayValue.addTensor(param))
+    arrayValue.setSize(serializedParameters.length)
+    val attrValue = AttrValue.newBuilder
+    attrValue.setArrayValue(arrayValue.build)
+    attrValue.setDataType(DataType.ARRAY_VALUE)
+    val convertedParameters = DataConverter.getAttributeValue(context, attrValue.build).
+      asInstanceOf[Array[Tensor[T]]]
+
+    val parameters = module.module.parameters()._1
+
+    var i = 0
+    while (i < parameters.length) {
+      parameters(i).copy(convertedParameters(i))
+      i += 1
+    }
+  }
+
+  // to keep compatible with models saved by release <= 0.5.0
+  private def copyWeightAndBias[T: ClassTag](context: DeserializeContext, module : ModuleData[T])
+                                            (implicit ev: TensorNumeric[T]): Unit = {
     val paramTable : Table = module.module.getParametersTable
     if (paramTable != null && paramTable.contains(module.module.getName)) {
       val modulePramTable : Table = paramTable(module.module.getName)
@@ -312,29 +353,14 @@ trait ModuleSerializable extends Loadable with Savable{
    */
   protected def copyFromBigDL[T: ClassTag](context : SerializeContext[T],
     modelBuilder : BigDLModule.Builder)(implicit ev : TensorNumeric[T]) : Unit = {
-    val module = context.moduleData
-    val paramTable : Table = module.module.getParametersTable
-    if (paramTable != null && paramTable.contains(module.module.getName)) {
-      val modulePramTable: Table = paramTable(module.module.getName)
-      val weight: Tensor[T] = if (modulePramTable.contains("weight")) {
-        modulePramTable("weight")
-      }
-      else null
-      val bias: Tensor[T] = if (modulePramTable.contains("bias")) {
-        modulePramTable("bias")
-      }
-      else null
-      val storageType = context.storageType
-      if (weight != null) {
-        val weightAttr = AttrValue.newBuilder
-        TensorConverter.setAttributeValue(context, weightAttr, weight)
-        modelBuilder.setWeight(weightAttr.getTensorValue)
-      }
-      if (bias != null) {
-        val biasAttr = AttrValue.newBuilder
-        TensorConverter.setAttributeValue(context, biasAttr, bias)
-        modelBuilder.setBias(biasAttr.getTensorValue)
-      }
+    val parameters = context.moduleData.module.parameters
+    if (parameters != null && parameters._1 != null) {
+      modelBuilder.setHasParameters(true)
+      parameters._1.foreach(parameter => {
+        val tensorAttr = AttrValue.newBuilder
+        TensorConverter.setAttributeValue(context, tensorAttr, parameter)
+        modelBuilder.addParameters(tensorAttr.getTensorValue)
+      })
     }
   }
 

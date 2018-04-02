@@ -967,7 +967,7 @@ public final class Bigdl {
 
     /**
      * <pre>
-     * weight for each layer, serialized data are stored as either float or double
+     * deprecated, please use parameters
      * </pre>
      *
      * <code>.com.intel.analytics.bigdl.serialization.BigDLTensor weight = 3;</code>
@@ -975,7 +975,7 @@ public final class Bigdl {
     boolean hasWeight();
     /**
      * <pre>
-     * weight for each layer, serialized data are stored as either float or double
+     * deprecated, please use parameters
      * </pre>
      *
      * <code>.com.intel.analytics.bigdl.serialization.BigDLTensor weight = 3;</code>
@@ -983,7 +983,7 @@ public final class Bigdl {
     com.intel.analytics.bigdl.serialization.Bigdl.BigDLTensor getWeight();
     /**
      * <pre>
-     * weight for each layer, serialized data are stored as either float or double
+     * deprecated, please use parameters
      * </pre>
      *
      * <code>.com.intel.analytics.bigdl.serialization.BigDLTensor weight = 3;</code>
@@ -992,7 +992,7 @@ public final class Bigdl {
 
     /**
      * <pre>
-     * bias for each layer
+     * deprecated, please use parameters
      * </pre>
      *
      * <code>.com.intel.analytics.bigdl.serialization.BigDLTensor bias = 4;</code>
@@ -1000,7 +1000,7 @@ public final class Bigdl {
     boolean hasBias();
     /**
      * <pre>
-     * bias for each layer
+     * deprecated, please use parameters
      * </pre>
      *
      * <code>.com.intel.analytics.bigdl.serialization.BigDLTensor bias = 4;</code>
@@ -1008,7 +1008,7 @@ public final class Bigdl {
     com.intel.analytics.bigdl.serialization.Bigdl.BigDLTensor getBias();
     /**
      * <pre>
-     * bias for each layer
+     * deprecated, please use parameters
      * </pre>
      *
      * <code>.com.intel.analytics.bigdl.serialization.BigDLTensor bias = 4;</code>
@@ -1260,6 +1260,59 @@ public final class Bigdl {
      * <code>.com.intel.analytics.bigdl.serialization.Shape outputShape = 14;</code>
      */
     com.intel.analytics.bigdl.serialization.Bigdl.ShapeOrBuilder getOutputShapeOrBuilder();
+
+    /**
+     * <pre>
+     * indicator if module has parameters
+     * </pre>
+     *
+     * <code>bool hasParameters = 15;</code>
+     */
+    boolean getHasParameters();
+
+    /**
+     * <pre>
+     * parameters, e.g., weight and bias
+     * </pre>
+     *
+     * <code>repeated .com.intel.analytics.bigdl.serialization.BigDLTensor parameters = 16;</code>
+     */
+    java.util.List<com.intel.analytics.bigdl.serialization.Bigdl.BigDLTensor> 
+        getParametersList();
+    /**
+     * <pre>
+     * parameters, e.g., weight and bias
+     * </pre>
+     *
+     * <code>repeated .com.intel.analytics.bigdl.serialization.BigDLTensor parameters = 16;</code>
+     */
+    com.intel.analytics.bigdl.serialization.Bigdl.BigDLTensor getParameters(int index);
+    /**
+     * <pre>
+     * parameters, e.g., weight and bias
+     * </pre>
+     *
+     * <code>repeated .com.intel.analytics.bigdl.serialization.BigDLTensor parameters = 16;</code>
+     */
+    int getParametersCount();
+    /**
+     * <pre>
+     * parameters, e.g., weight and bias
+     * </pre>
+     *
+     * <code>repeated .com.intel.analytics.bigdl.serialization.BigDLTensor parameters = 16;</code>
+     */
+    java.util.List<? extends com.intel.analytics.bigdl.serialization.Bigdl.BigDLTensorOrBuilder> 
+        getParametersOrBuilderList();
+    /**
+     * <pre>
+     * parameters, e.g., weight and bias
+     * </pre>
+     *
+     * <code>repeated .com.intel.analytics.bigdl.serialization.BigDLTensor parameters = 16;</code>
+     */
+    com.intel.analytics.bigdl.serialization.Bigdl.BigDLTensorOrBuilder getParametersOrBuilder(
+        int index);
   }
   /**
    * Protobuf type {@code com.intel.analytics.bigdl.serialization.BigDLModule}
@@ -1283,6 +1336,8 @@ public final class Bigdl {
       train_ = false;
       namePostfix_ = "";
       id_ = 0;
+      hasParameters_ = false;
+      parameters_ = java.util.Collections.emptyList();
     }
 
     @java.lang.Override
@@ -1439,6 +1494,20 @@ public final class Bigdl {
 
               break;
             }
+            case 120: {
+
+              hasParameters_ = input.readBool();
+              break;
+            }
+            case 130: {
+              if (!((mutable_bitField0_ & 0x00008000) == 0x00008000)) {
+                parameters_ = new java.util.ArrayList<com.intel.analytics.bigdl.serialization.Bigdl.BigDLTensor>();
+                mutable_bitField0_ |= 0x00008000;
+              }
+              parameters_.add(
+                  input.readMessage(com.intel.analytics.bigdl.serialization.Bigdl.BigDLTensor.parser(), extensionRegistry));
+              break;
+            }
           }
         }
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
@@ -1455,6 +1524,9 @@ public final class Bigdl {
         }
         if (((mutable_bitField0_ & 0x00000020) == 0x00000020)) {
           nextModules_ = nextModules_.getUnmodifiableView();
+        }
+        if (((mutable_bitField0_ & 0x00008000) == 0x00008000)) {
+          parameters_ = java.util.Collections.unmodifiableList(parameters_);
         }
         this.unknownFields = unknownFields.build();
         makeExtensionsImmutable();
@@ -1585,7 +1657,7 @@ public final class Bigdl {
     private com.intel.analytics.bigdl.serialization.Bigdl.BigDLTensor weight_;
     /**
      * <pre>
-     * weight for each layer, serialized data are stored as either float or double
+     * deprecated, please use parameters
      * </pre>
      *
      * <code>.com.intel.analytics.bigdl.serialization.BigDLTensor weight = 3;</code>
@@ -1595,7 +1667,7 @@ public final class Bigdl {
     }
     /**
      * <pre>
-     * weight for each layer, serialized data are stored as either float or double
+     * deprecated, please use parameters
      * </pre>
      *
      * <code>.com.intel.analytics.bigdl.serialization.BigDLTensor weight = 3;</code>
@@ -1605,7 +1677,7 @@ public final class Bigdl {
     }
     /**
      * <pre>
-     * weight for each layer, serialized data are stored as either float or double
+     * deprecated, please use parameters
      * </pre>
      *
      * <code>.com.intel.analytics.bigdl.serialization.BigDLTensor weight = 3;</code>
@@ -1618,7 +1690,7 @@ public final class Bigdl {
     private com.intel.analytics.bigdl.serialization.Bigdl.BigDLTensor bias_;
     /**
      * <pre>
-     * bias for each layer
+     * deprecated, please use parameters
      * </pre>
      *
      * <code>.com.intel.analytics.bigdl.serialization.BigDLTensor bias = 4;</code>
@@ -1628,7 +1700,7 @@ public final class Bigdl {
     }
     /**
      * <pre>
-     * bias for each layer
+     * deprecated, please use parameters
      * </pre>
      *
      * <code>.com.intel.analytics.bigdl.serialization.BigDLTensor bias = 4;</code>
@@ -1638,7 +1710,7 @@ public final class Bigdl {
     }
     /**
      * <pre>
-     * bias for each layer
+     * deprecated, please use parameters
      * </pre>
      *
      * <code>.com.intel.analytics.bigdl.serialization.BigDLTensor bias = 4;</code>
@@ -2047,6 +2119,74 @@ public final class Bigdl {
       return getOutputShape();
     }
 
+    public static final int HASPARAMETERS_FIELD_NUMBER = 15;
+    private boolean hasParameters_;
+    /**
+     * <pre>
+     * indicator if module has parameters
+     * </pre>
+     *
+     * <code>bool hasParameters = 15;</code>
+     */
+    public boolean getHasParameters() {
+      return hasParameters_;
+    }
+
+    public static final int PARAMETERS_FIELD_NUMBER = 16;
+    private java.util.List<com.intel.analytics.bigdl.serialization.Bigdl.BigDLTensor> parameters_;
+    /**
+     * <pre>
+     * parameters, e.g., weight and bias
+     * </pre>
+     *
+     * <code>repeated .com.intel.analytics.bigdl.serialization.BigDLTensor parameters = 16;</code>
+     */
+    public java.util.List<com.intel.analytics.bigdl.serialization.Bigdl.BigDLTensor> getParametersList() {
+      return parameters_;
+    }
+    /**
+     * <pre>
+     * parameters, e.g., weight and bias
+     * </pre>
+     *
+     * <code>repeated .com.intel.analytics.bigdl.serialization.BigDLTensor parameters = 16;</code>
+     */
+    public java.util.List<? extends com.intel.analytics.bigdl.serialization.Bigdl.BigDLTensorOrBuilder> 
+        getParametersOrBuilderList() {
+      return parameters_;
+    }
+    /**
+     * <pre>
+     * parameters, e.g., weight and bias
+     * </pre>
+     *
+     * <code>repeated .com.intel.analytics.bigdl.serialization.BigDLTensor parameters = 16;</code>
+     */
+    public int getParametersCount() {
+      return parameters_.size();
+    }
+    /**
+     * <pre>
+     * parameters, e.g., weight and bias
+     * </pre>
+     *
+     * <code>repeated .com.intel.analytics.bigdl.serialization.BigDLTensor parameters = 16;</code>
+     */
+    public com.intel.analytics.bigdl.serialization.Bigdl.BigDLTensor getParameters(int index) {
+      return parameters_.get(index);
+    }
+    /**
+     * <pre>
+     * parameters, e.g., weight and bias
+     * </pre>
+     *
+     * <code>repeated .com.intel.analytics.bigdl.serialization.BigDLTensor parameters = 16;</code>
+     */
+    public com.intel.analytics.bigdl.serialization.Bigdl.BigDLTensorOrBuilder getParametersOrBuilder(
+        int index) {
+      return parameters_.get(index);
+    }
+
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
@@ -2103,6 +2243,12 @@ public final class Bigdl {
       }
       if (outputShape_ != null) {
         output.writeMessage(14, getOutputShape());
+      }
+      if (hasParameters_ != false) {
+        output.writeBool(15, hasParameters_);
+      }
+      for (int i = 0; i < parameters_.size(); i++) {
+        output.writeMessage(16, parameters_.get(i));
       }
       unknownFields.writeTo(output);
     }
@@ -2178,6 +2324,14 @@ public final class Bigdl {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(14, getOutputShape());
       }
+      if (hasParameters_ != false) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBoolSize(15, hasParameters_);
+      }
+      for (int i = 0; i < parameters_.size(); i++) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeMessageSize(16, parameters_.get(i));
+      }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
       return size;
@@ -2234,6 +2388,10 @@ public final class Bigdl {
         result = result && getOutputShape()
             .equals(other.getOutputShape());
       }
+      result = result && (getHasParameters()
+          == other.getHasParameters());
+      result = result && getParametersList()
+          .equals(other.getParametersList());
       result = result && unknownFields.equals(other.unknownFields);
       return result;
     }
@@ -2289,6 +2447,13 @@ public final class Bigdl {
       if (hasOutputShape()) {
         hash = (37 * hash) + OUTPUTSHAPE_FIELD_NUMBER;
         hash = (53 * hash) + getOutputShape().hashCode();
+      }
+      hash = (37 * hash) + HASPARAMETERS_FIELD_NUMBER;
+      hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
+          getHasParameters());
+      if (getParametersCount() > 0) {
+        hash = (37 * hash) + PARAMETERS_FIELD_NUMBER;
+        hash = (53 * hash) + getParametersList().hashCode();
       }
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
@@ -2438,6 +2603,7 @@ public final class Bigdl {
         if (com.google.protobuf.GeneratedMessageV3
                 .alwaysUseFieldBuilders) {
           getSubModulesFieldBuilder();
+          getParametersFieldBuilder();
         }
       }
       public Builder clear() {
@@ -2488,6 +2654,14 @@ public final class Bigdl {
         } else {
           outputShape_ = null;
           outputShapeBuilder_ = null;
+        }
+        hasParameters_ = false;
+
+        if (parametersBuilder_ == null) {
+          parameters_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00008000);
+        } else {
+          parametersBuilder_.clear();
         }
         return this;
       }
@@ -2559,6 +2733,16 @@ public final class Bigdl {
           result.outputShape_ = outputShape_;
         } else {
           result.outputShape_ = outputShapeBuilder_.build();
+        }
+        result.hasParameters_ = hasParameters_;
+        if (parametersBuilder_ == null) {
+          if (((bitField0_ & 0x00008000) == 0x00008000)) {
+            parameters_ = java.util.Collections.unmodifiableList(parameters_);
+            bitField0_ = (bitField0_ & ~0x00008000);
+          }
+          result.parameters_ = parameters_;
+        } else {
+          result.parameters_ = parametersBuilder_.build();
         }
         result.bitField0_ = to_bitField0_;
         onBuilt();
@@ -2683,6 +2867,35 @@ public final class Bigdl {
         }
         if (other.hasOutputShape()) {
           mergeOutputShape(other.getOutputShape());
+        }
+        if (other.getHasParameters() != false) {
+          setHasParameters(other.getHasParameters());
+        }
+        if (parametersBuilder_ == null) {
+          if (!other.parameters_.isEmpty()) {
+            if (parameters_.isEmpty()) {
+              parameters_ = other.parameters_;
+              bitField0_ = (bitField0_ & ~0x00008000);
+            } else {
+              ensureParametersIsMutable();
+              parameters_.addAll(other.parameters_);
+            }
+            onChanged();
+          }
+        } else {
+          if (!other.parameters_.isEmpty()) {
+            if (parametersBuilder_.isEmpty()) {
+              parametersBuilder_.dispose();
+              parametersBuilder_ = null;
+              parameters_ = other.parameters_;
+              bitField0_ = (bitField0_ & ~0x00008000);
+              parametersBuilder_ = 
+                com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
+                   getParametersFieldBuilder() : null;
+            } else {
+              parametersBuilder_.addAllMessages(other.parameters_);
+            }
+          }
         }
         this.mergeUnknownFields(other.unknownFields);
         onChanged();
@@ -3118,7 +3331,7 @@ public final class Bigdl {
           com.intel.analytics.bigdl.serialization.Bigdl.BigDLTensor, com.intel.analytics.bigdl.serialization.Bigdl.BigDLTensor.Builder, com.intel.analytics.bigdl.serialization.Bigdl.BigDLTensorOrBuilder> weightBuilder_;
       /**
        * <pre>
-       * weight for each layer, serialized data are stored as either float or double
+       * deprecated, please use parameters
        * </pre>
        *
        * <code>.com.intel.analytics.bigdl.serialization.BigDLTensor weight = 3;</code>
@@ -3128,7 +3341,7 @@ public final class Bigdl {
       }
       /**
        * <pre>
-       * weight for each layer, serialized data are stored as either float or double
+       * deprecated, please use parameters
        * </pre>
        *
        * <code>.com.intel.analytics.bigdl.serialization.BigDLTensor weight = 3;</code>
@@ -3142,7 +3355,7 @@ public final class Bigdl {
       }
       /**
        * <pre>
-       * weight for each layer, serialized data are stored as either float or double
+       * deprecated, please use parameters
        * </pre>
        *
        * <code>.com.intel.analytics.bigdl.serialization.BigDLTensor weight = 3;</code>
@@ -3162,7 +3375,7 @@ public final class Bigdl {
       }
       /**
        * <pre>
-       * weight for each layer, serialized data are stored as either float or double
+       * deprecated, please use parameters
        * </pre>
        *
        * <code>.com.intel.analytics.bigdl.serialization.BigDLTensor weight = 3;</code>
@@ -3180,7 +3393,7 @@ public final class Bigdl {
       }
       /**
        * <pre>
-       * weight for each layer, serialized data are stored as either float or double
+       * deprecated, please use parameters
        * </pre>
        *
        * <code>.com.intel.analytics.bigdl.serialization.BigDLTensor weight = 3;</code>
@@ -3202,7 +3415,7 @@ public final class Bigdl {
       }
       /**
        * <pre>
-       * weight for each layer, serialized data are stored as either float or double
+       * deprecated, please use parameters
        * </pre>
        *
        * <code>.com.intel.analytics.bigdl.serialization.BigDLTensor weight = 3;</code>
@@ -3220,7 +3433,7 @@ public final class Bigdl {
       }
       /**
        * <pre>
-       * weight for each layer, serialized data are stored as either float or double
+       * deprecated, please use parameters
        * </pre>
        *
        * <code>.com.intel.analytics.bigdl.serialization.BigDLTensor weight = 3;</code>
@@ -3232,7 +3445,7 @@ public final class Bigdl {
       }
       /**
        * <pre>
-       * weight for each layer, serialized data are stored as either float or double
+       * deprecated, please use parameters
        * </pre>
        *
        * <code>.com.intel.analytics.bigdl.serialization.BigDLTensor weight = 3;</code>
@@ -3247,7 +3460,7 @@ public final class Bigdl {
       }
       /**
        * <pre>
-       * weight for each layer, serialized data are stored as either float or double
+       * deprecated, please use parameters
        * </pre>
        *
        * <code>.com.intel.analytics.bigdl.serialization.BigDLTensor weight = 3;</code>
@@ -3271,7 +3484,7 @@ public final class Bigdl {
           com.intel.analytics.bigdl.serialization.Bigdl.BigDLTensor, com.intel.analytics.bigdl.serialization.Bigdl.BigDLTensor.Builder, com.intel.analytics.bigdl.serialization.Bigdl.BigDLTensorOrBuilder> biasBuilder_;
       /**
        * <pre>
-       * bias for each layer
+       * deprecated, please use parameters
        * </pre>
        *
        * <code>.com.intel.analytics.bigdl.serialization.BigDLTensor bias = 4;</code>
@@ -3281,7 +3494,7 @@ public final class Bigdl {
       }
       /**
        * <pre>
-       * bias for each layer
+       * deprecated, please use parameters
        * </pre>
        *
        * <code>.com.intel.analytics.bigdl.serialization.BigDLTensor bias = 4;</code>
@@ -3295,7 +3508,7 @@ public final class Bigdl {
       }
       /**
        * <pre>
-       * bias for each layer
+       * deprecated, please use parameters
        * </pre>
        *
        * <code>.com.intel.analytics.bigdl.serialization.BigDLTensor bias = 4;</code>
@@ -3315,7 +3528,7 @@ public final class Bigdl {
       }
       /**
        * <pre>
-       * bias for each layer
+       * deprecated, please use parameters
        * </pre>
        *
        * <code>.com.intel.analytics.bigdl.serialization.BigDLTensor bias = 4;</code>
@@ -3333,7 +3546,7 @@ public final class Bigdl {
       }
       /**
        * <pre>
-       * bias for each layer
+       * deprecated, please use parameters
        * </pre>
        *
        * <code>.com.intel.analytics.bigdl.serialization.BigDLTensor bias = 4;</code>
@@ -3355,7 +3568,7 @@ public final class Bigdl {
       }
       /**
        * <pre>
-       * bias for each layer
+       * deprecated, please use parameters
        * </pre>
        *
        * <code>.com.intel.analytics.bigdl.serialization.BigDLTensor bias = 4;</code>
@@ -3373,7 +3586,7 @@ public final class Bigdl {
       }
       /**
        * <pre>
-       * bias for each layer
+       * deprecated, please use parameters
        * </pre>
        *
        * <code>.com.intel.analytics.bigdl.serialization.BigDLTensor bias = 4;</code>
@@ -3385,7 +3598,7 @@ public final class Bigdl {
       }
       /**
        * <pre>
-       * bias for each layer
+       * deprecated, please use parameters
        * </pre>
        *
        * <code>.com.intel.analytics.bigdl.serialization.BigDLTensor bias = 4;</code>
@@ -3400,7 +3613,7 @@ public final class Bigdl {
       }
       /**
        * <pre>
-       * bias for each layer
+       * deprecated, please use parameters
        * </pre>
        *
        * <code>.com.intel.analytics.bigdl.serialization.BigDLTensor bias = 4;</code>
@@ -4477,6 +4690,356 @@ public final class Bigdl {
           outputShape_ = null;
         }
         return outputShapeBuilder_;
+      }
+
+      private boolean hasParameters_ ;
+      /**
+       * <pre>
+       * indicator if module has parameters
+       * </pre>
+       *
+       * <code>bool hasParameters = 15;</code>
+       */
+      public boolean getHasParameters() {
+        return hasParameters_;
+      }
+      /**
+       * <pre>
+       * indicator if module has parameters
+       * </pre>
+       *
+       * <code>bool hasParameters = 15;</code>
+       */
+      public Builder setHasParameters(boolean value) {
+        
+        hasParameters_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <pre>
+       * indicator if module has parameters
+       * </pre>
+       *
+       * <code>bool hasParameters = 15;</code>
+       */
+      public Builder clearHasParameters() {
+        
+        hasParameters_ = false;
+        onChanged();
+        return this;
+      }
+
+      private java.util.List<com.intel.analytics.bigdl.serialization.Bigdl.BigDLTensor> parameters_ =
+        java.util.Collections.emptyList();
+      private void ensureParametersIsMutable() {
+        if (!((bitField0_ & 0x00008000) == 0x00008000)) {
+          parameters_ = new java.util.ArrayList<com.intel.analytics.bigdl.serialization.Bigdl.BigDLTensor>(parameters_);
+          bitField0_ |= 0x00008000;
+         }
+      }
+
+      private com.google.protobuf.RepeatedFieldBuilderV3<
+          com.intel.analytics.bigdl.serialization.Bigdl.BigDLTensor, com.intel.analytics.bigdl.serialization.Bigdl.BigDLTensor.Builder, com.intel.analytics.bigdl.serialization.Bigdl.BigDLTensorOrBuilder> parametersBuilder_;
+
+      /**
+       * <pre>
+       * parameters, e.g., weight and bias
+       * </pre>
+       *
+       * <code>repeated .com.intel.analytics.bigdl.serialization.BigDLTensor parameters = 16;</code>
+       */
+      public java.util.List<com.intel.analytics.bigdl.serialization.Bigdl.BigDLTensor> getParametersList() {
+        if (parametersBuilder_ == null) {
+          return java.util.Collections.unmodifiableList(parameters_);
+        } else {
+          return parametersBuilder_.getMessageList();
+        }
+      }
+      /**
+       * <pre>
+       * parameters, e.g., weight and bias
+       * </pre>
+       *
+       * <code>repeated .com.intel.analytics.bigdl.serialization.BigDLTensor parameters = 16;</code>
+       */
+      public int getParametersCount() {
+        if (parametersBuilder_ == null) {
+          return parameters_.size();
+        } else {
+          return parametersBuilder_.getCount();
+        }
+      }
+      /**
+       * <pre>
+       * parameters, e.g., weight and bias
+       * </pre>
+       *
+       * <code>repeated .com.intel.analytics.bigdl.serialization.BigDLTensor parameters = 16;</code>
+       */
+      public com.intel.analytics.bigdl.serialization.Bigdl.BigDLTensor getParameters(int index) {
+        if (parametersBuilder_ == null) {
+          return parameters_.get(index);
+        } else {
+          return parametersBuilder_.getMessage(index);
+        }
+      }
+      /**
+       * <pre>
+       * parameters, e.g., weight and bias
+       * </pre>
+       *
+       * <code>repeated .com.intel.analytics.bigdl.serialization.BigDLTensor parameters = 16;</code>
+       */
+      public Builder setParameters(
+          int index, com.intel.analytics.bigdl.serialization.Bigdl.BigDLTensor value) {
+        if (parametersBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureParametersIsMutable();
+          parameters_.set(index, value);
+          onChanged();
+        } else {
+          parametersBuilder_.setMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <pre>
+       * parameters, e.g., weight and bias
+       * </pre>
+       *
+       * <code>repeated .com.intel.analytics.bigdl.serialization.BigDLTensor parameters = 16;</code>
+       */
+      public Builder setParameters(
+          int index, com.intel.analytics.bigdl.serialization.Bigdl.BigDLTensor.Builder builderForValue) {
+        if (parametersBuilder_ == null) {
+          ensureParametersIsMutable();
+          parameters_.set(index, builderForValue.build());
+          onChanged();
+        } else {
+          parametersBuilder_.setMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <pre>
+       * parameters, e.g., weight and bias
+       * </pre>
+       *
+       * <code>repeated .com.intel.analytics.bigdl.serialization.BigDLTensor parameters = 16;</code>
+       */
+      public Builder addParameters(com.intel.analytics.bigdl.serialization.Bigdl.BigDLTensor value) {
+        if (parametersBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureParametersIsMutable();
+          parameters_.add(value);
+          onChanged();
+        } else {
+          parametersBuilder_.addMessage(value);
+        }
+        return this;
+      }
+      /**
+       * <pre>
+       * parameters, e.g., weight and bias
+       * </pre>
+       *
+       * <code>repeated .com.intel.analytics.bigdl.serialization.BigDLTensor parameters = 16;</code>
+       */
+      public Builder addParameters(
+          int index, com.intel.analytics.bigdl.serialization.Bigdl.BigDLTensor value) {
+        if (parametersBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          ensureParametersIsMutable();
+          parameters_.add(index, value);
+          onChanged();
+        } else {
+          parametersBuilder_.addMessage(index, value);
+        }
+        return this;
+      }
+      /**
+       * <pre>
+       * parameters, e.g., weight and bias
+       * </pre>
+       *
+       * <code>repeated .com.intel.analytics.bigdl.serialization.BigDLTensor parameters = 16;</code>
+       */
+      public Builder addParameters(
+          com.intel.analytics.bigdl.serialization.Bigdl.BigDLTensor.Builder builderForValue) {
+        if (parametersBuilder_ == null) {
+          ensureParametersIsMutable();
+          parameters_.add(builderForValue.build());
+          onChanged();
+        } else {
+          parametersBuilder_.addMessage(builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <pre>
+       * parameters, e.g., weight and bias
+       * </pre>
+       *
+       * <code>repeated .com.intel.analytics.bigdl.serialization.BigDLTensor parameters = 16;</code>
+       */
+      public Builder addParameters(
+          int index, com.intel.analytics.bigdl.serialization.Bigdl.BigDLTensor.Builder builderForValue) {
+        if (parametersBuilder_ == null) {
+          ensureParametersIsMutable();
+          parameters_.add(index, builderForValue.build());
+          onChanged();
+        } else {
+          parametersBuilder_.addMessage(index, builderForValue.build());
+        }
+        return this;
+      }
+      /**
+       * <pre>
+       * parameters, e.g., weight and bias
+       * </pre>
+       *
+       * <code>repeated .com.intel.analytics.bigdl.serialization.BigDLTensor parameters = 16;</code>
+       */
+      public Builder addAllParameters(
+          java.lang.Iterable<? extends com.intel.analytics.bigdl.serialization.Bigdl.BigDLTensor> values) {
+        if (parametersBuilder_ == null) {
+          ensureParametersIsMutable();
+          com.google.protobuf.AbstractMessageLite.Builder.addAll(
+              values, parameters_);
+          onChanged();
+        } else {
+          parametersBuilder_.addAllMessages(values);
+        }
+        return this;
+      }
+      /**
+       * <pre>
+       * parameters, e.g., weight and bias
+       * </pre>
+       *
+       * <code>repeated .com.intel.analytics.bigdl.serialization.BigDLTensor parameters = 16;</code>
+       */
+      public Builder clearParameters() {
+        if (parametersBuilder_ == null) {
+          parameters_ = java.util.Collections.emptyList();
+          bitField0_ = (bitField0_ & ~0x00008000);
+          onChanged();
+        } else {
+          parametersBuilder_.clear();
+        }
+        return this;
+      }
+      /**
+       * <pre>
+       * parameters, e.g., weight and bias
+       * </pre>
+       *
+       * <code>repeated .com.intel.analytics.bigdl.serialization.BigDLTensor parameters = 16;</code>
+       */
+      public Builder removeParameters(int index) {
+        if (parametersBuilder_ == null) {
+          ensureParametersIsMutable();
+          parameters_.remove(index);
+          onChanged();
+        } else {
+          parametersBuilder_.remove(index);
+        }
+        return this;
+      }
+      /**
+       * <pre>
+       * parameters, e.g., weight and bias
+       * </pre>
+       *
+       * <code>repeated .com.intel.analytics.bigdl.serialization.BigDLTensor parameters = 16;</code>
+       */
+      public com.intel.analytics.bigdl.serialization.Bigdl.BigDLTensor.Builder getParametersBuilder(
+          int index) {
+        return getParametersFieldBuilder().getBuilder(index);
+      }
+      /**
+       * <pre>
+       * parameters, e.g., weight and bias
+       * </pre>
+       *
+       * <code>repeated .com.intel.analytics.bigdl.serialization.BigDLTensor parameters = 16;</code>
+       */
+      public com.intel.analytics.bigdl.serialization.Bigdl.BigDLTensorOrBuilder getParametersOrBuilder(
+          int index) {
+        if (parametersBuilder_ == null) {
+          return parameters_.get(index);  } else {
+          return parametersBuilder_.getMessageOrBuilder(index);
+        }
+      }
+      /**
+       * <pre>
+       * parameters, e.g., weight and bias
+       * </pre>
+       *
+       * <code>repeated .com.intel.analytics.bigdl.serialization.BigDLTensor parameters = 16;</code>
+       */
+      public java.util.List<? extends com.intel.analytics.bigdl.serialization.Bigdl.BigDLTensorOrBuilder> 
+           getParametersOrBuilderList() {
+        if (parametersBuilder_ != null) {
+          return parametersBuilder_.getMessageOrBuilderList();
+        } else {
+          return java.util.Collections.unmodifiableList(parameters_);
+        }
+      }
+      /**
+       * <pre>
+       * parameters, e.g., weight and bias
+       * </pre>
+       *
+       * <code>repeated .com.intel.analytics.bigdl.serialization.BigDLTensor parameters = 16;</code>
+       */
+      public com.intel.analytics.bigdl.serialization.Bigdl.BigDLTensor.Builder addParametersBuilder() {
+        return getParametersFieldBuilder().addBuilder(
+            com.intel.analytics.bigdl.serialization.Bigdl.BigDLTensor.getDefaultInstance());
+      }
+      /**
+       * <pre>
+       * parameters, e.g., weight and bias
+       * </pre>
+       *
+       * <code>repeated .com.intel.analytics.bigdl.serialization.BigDLTensor parameters = 16;</code>
+       */
+      public com.intel.analytics.bigdl.serialization.Bigdl.BigDLTensor.Builder addParametersBuilder(
+          int index) {
+        return getParametersFieldBuilder().addBuilder(
+            index, com.intel.analytics.bigdl.serialization.Bigdl.BigDLTensor.getDefaultInstance());
+      }
+      /**
+       * <pre>
+       * parameters, e.g., weight and bias
+       * </pre>
+       *
+       * <code>repeated .com.intel.analytics.bigdl.serialization.BigDLTensor parameters = 16;</code>
+       */
+      public java.util.List<com.intel.analytics.bigdl.serialization.Bigdl.BigDLTensor.Builder> 
+           getParametersBuilderList() {
+        return getParametersFieldBuilder().getBuilderList();
+      }
+      private com.google.protobuf.RepeatedFieldBuilderV3<
+          com.intel.analytics.bigdl.serialization.Bigdl.BigDLTensor, com.intel.analytics.bigdl.serialization.Bigdl.BigDLTensor.Builder, com.intel.analytics.bigdl.serialization.Bigdl.BigDLTensorOrBuilder> 
+          getParametersFieldBuilder() {
+        if (parametersBuilder_ == null) {
+          parametersBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
+              com.intel.analytics.bigdl.serialization.Bigdl.BigDLTensor, com.intel.analytics.bigdl.serialization.Bigdl.BigDLTensor.Builder, com.intel.analytics.bigdl.serialization.Bigdl.BigDLTensorOrBuilder>(
+                  parameters_,
+                  ((bitField0_ & 0x00008000) == 0x00008000),
+                  getParentForChildren(),
+                  isClean());
+          parameters_ = null;
+        }
+        return parametersBuilder_;
       }
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
@@ -21581,7 +22144,7 @@ public final class Bigdl {
     java.lang.String[] descriptorData = {
       "\n\013bigdl.proto\022\'com.intel.analytics.bigdl" +
       ".serialization\032\031google/protobuf/any.prot" +
-      "o\"\245\005\n\013BigDLModule\022\014\n\004name\030\001 \001(\t\022H\n\nsubMo" +
+      "o\"\206\006\n\013BigDLModule\022\014\n\004name\030\001 \001(\t\022H\n\nsubMo" +
       "dules\030\002 \003(\01324.com.intel.analytics.bigdl." +
       "serialization.BigDLModule\022D\n\006weight\030\003 \001(" +
       "\01324.com.intel.analytics.bigdl.serializat" +
@@ -21595,105 +22158,108 @@ public final class Bigdl {
       "d\030\014 \001(\005\022B\n\ninputShape\030\r \001(\0132..com.intel." +
       "analytics.bigdl.serialization.Shape\022C\n\013o" +
       "utputShape\030\016 \001(\0132..com.intel.analytics.b" +
-      "igdl.serialization.Shape\032_\n\tAttrEntry\022\013\n" +
-      "\003key\030\001 \001(\t\022A\n\005value\030\002 \001(\01322.com.intel.an" +
-      "alytics.bigdl.serialization.AttrValue:\0028" +
-      "\001\"g\n\nInitMethod\022K\n\nmethodType\030\001 \001(\01627.co",
-      "m.intel.analytics.bigdl.serialization.In" +
-      "itMethodType\022\014\n\004data\030\002 \003(\001\"\326\002\n\013BigDLTens" +
-      "or\022C\n\010datatype\030\001 \001(\01621.com.intel.analyti" +
-      "cs.bigdl.serialization.DataType\022\014\n\004size\030" +
-      "\002 \003(\005\022\016\n\006stride\030\003 \003(\005\022\016\n\006offset\030\004 \001(\005\022\021\n" +
-      "\tdimension\030\005 \001(\005\022\021\n\tnElements\030\006 \001(\005\022\020\n\010i" +
-      "sScalar\030\007 \001(\010\022G\n\007storage\030\010 \001(\01326.com.int" +
-      "el.analytics.bigdl.serialization.TensorS" +
-      "torage\022\n\n\002id\030\t \001(\005\022G\n\ntensorType\030\n \001(\01623" +
-      ".com.intel.analytics.bigdl.serialization",
-      ".TensorType\"\352\001\n\rTensorStorage\022C\n\010datatyp" +
-      "e\030\001 \001(\01621.com.intel.analytics.bigdl.seri" +
-      "alization.DataType\022\022\n\nfloat_data\030\002 \003(\002\022\023" +
-      "\n\013double_data\030\003 \003(\001\022\021\n\tbool_data\030\004 \003(\010\022\023" +
-      "\n\013string_data\030\005 \003(\t\022\020\n\010int_data\030\006 \003(\005\022\021\n" +
-      "\tlong_data\030\007 \003(\003\022\022\n\nbytes_data\030\010 \003(\014\022\n\n\002" +
-      "id\030\t \001(\005\"u\n\013Regularizer\022Q\n\017regularizerTy" +
-      "pe\030\001 \001(\01628.com.intel.analytics.bigdl.ser" +
-      "ialization.RegularizerType\022\023\n\013regularDat" +
-      "a\030\002 \003(\001\"\224\016\n\tAttrValue\022C\n\010dataType\030\001 \001(\0162",
-      "1.com.intel.analytics.bigdl.serializatio" +
-      "n.DataType\022\017\n\007subType\030\002 \001(\t\022\024\n\nint32Valu" +
-      "e\030\003 \001(\005H\000\022\024\n\nint64Value\030\004 \001(\003H\000\022\024\n\nfloat" +
-      "Value\030\005 \001(\002H\000\022\025\n\013doubleValue\030\006 \001(\001H\000\022\025\n\013" +
-      "stringValue\030\007 \001(\tH\000\022\023\n\tboolValue\030\010 \001(\010H\000" +
-      "\022P\n\020regularizerValue\030\t \001(\01324.com.intel.a" +
-      "nalytics.bigdl.serialization.Regularizer" +
-      "H\000\022K\n\013tensorValue\030\n \001(\01324.com.intel.anal" +
-      "ytics.bigdl.serialization.BigDLTensorH\000\022" +
-      "Q\n\023variableFormatValue\030\013 \001(\01622.com.intel",
-      ".analytics.bigdl.serialization.VarFormat" +
-      "H\000\022N\n\017initMethodValue\030\014 \001(\01323.com.intel." +
-      "analytics.bigdl.serialization.InitMethod" +
-      "H\000\022P\n\020bigDLModuleValue\030\r \001(\01324.com.intel" +
-      ".analytics.bigdl.serialization.BigDLModu" +
-      "leH\000\022R\n\021nameAttrListValue\030\016 \001(\01325.com.in" +
-      "tel.analytics.bigdl.serialization.NameAt" +
-      "trListH\000\022S\n\narrayValue\030\017 \001(\0132=.com.intel" +
-      ".analytics.bigdl.serialization.AttrValue" +
-      ".ArrayValueH\000\022S\n\017dataFormatValue\030\020 \001(\01628",
-      ".com.intel.analytics.bigdl.serialization" +
-      ".InputDataFormatH\000\022+\n\013customValue\030\021 \001(\0132" +
-      "\024.google.protobuf.AnyH\000\022?\n\005shape\030\022 \001(\0132." +
-      ".com.intel.analytics.bigdl.serialization" +
-      ".ShapeH\000\032\242\006\n\nArrayValue\022\014\n\004size\030\001 \001(\005\022C\n" +
-      "\010datatype\030\002 \001(\01621.com.intel.analytics.bi" +
-      "gdl.serialization.DataType\022\013\n\003i32\030\003 \003(\005\022" +
-      "\013\n\003i64\030\004 \003(\003\022\013\n\003flt\030\005 \003(\002\022\013\n\003dbl\030\006 \003(\001\022\013" +
-      "\n\003str\030\007 \003(\t\022\017\n\007boolean\030\010 \003(\010\022I\n\013Regulari" +
-      "zer\030\t \003(\01324.com.intel.analytics.bigdl.se",
-      "rialization.Regularizer\022D\n\006tensor\030\n \003(\0132" +
-      "4.com.intel.analytics.bigdl.serializatio" +
-      "n.BigDLTensor\022J\n\016variableFormat\030\013 \003(\01622." +
+      "igdl.serialization.Shape\022\025\n\rhasParameter" +
+      "s\030\017 \001(\010\022H\n\nparameters\030\020 \003(\01324.com.intel." +
+      "analytics.bigdl.serialization.BigDLTenso" +
+      "r\032_\n\tAttrEntry\022\013\n\003key\030\001 \001(\t\022A\n\005value\030\002 \001",
+      "(\01322.com.intel.analytics.bigdl.serializa" +
+      "tion.AttrValue:\0028\001\"g\n\nInitMethod\022K\n\nmeth" +
+      "odType\030\001 \001(\01627.com.intel.analytics.bigdl" +
+      ".serialization.InitMethodType\022\014\n\004data\030\002 " +
+      "\003(\001\"\326\002\n\013BigDLTensor\022C\n\010datatype\030\001 \001(\01621." +
       "com.intel.analytics.bigdl.serialization." +
-      "VarFormat\022G\n\ninitMethod\030\014 \003(\01323.com.inte" +
-      "l.analytics.bigdl.serialization.InitMeth" +
-      "od\022I\n\013bigDLModule\030\r \003(\01324.com.intel.anal" +
-      "ytics.bigdl.serialization.BigDLModule\022K\n" +
-      "\014nameAttrList\030\016 \003(\01325.com.intel.analytic" +
-      "s.bigdl.serialization.NameAttrList\022L\n\nda",
-      "taFormat\030\017 \003(\01628.com.intel.analytics.big" +
-      "dl.serialization.InputDataFormat\022$\n\006cust" +
-      "om\030\020 \003(\0132\024.google.protobuf.Any\022=\n\005shape\030" +
-      "\021 \003(\0132..com.intel.analytics.bigdl.serial" +
-      "ization.ShapeB\007\n\005value\"\314\001\n\014NameAttrList\022" +
-      "\014\n\004name\030\001 \001(\t\022M\n\004attr\030\002 \003(\0132?.com.intel." +
-      "analytics.bigdl.serialization.NameAttrLi" +
-      "st.AttrEntry\032_\n\tAttrEntry\022\013\n\003key\030\001 \001(\t\022A" +
-      "\n\005value\030\002 \001(\01322.com.intel.analytics.bigd" +
-      "l.serialization.AttrValue:\0028\001\"\332\001\n\005Shape\022",
-      "K\n\tshapeType\030\001 \001(\01628.com.intel.analytics" +
-      ".bigdl.serialization.Shape.ShapeType\022\r\n\005" +
-      "ssize\030\002 \001(\005\022\022\n\nshapeValue\030\003 \003(\005\022=\n\005shape" +
-      "\030\004 \003(\0132..com.intel.analytics.bigdl.seria" +
-      "lization.Shape\"\"\n\tShapeType\022\n\n\006SINGLE\020\000\022" +
-      "\t\n\005MULTI\020\001*\260\001\n\tVarFormat\022\020\n\014EMPTY_FORMAT" +
-      "\020\000\022\013\n\007DEFAULT\020\001\022\t\n\005ONE_D\020\002\022\n\n\006IN_OUT\020\003\022\n" +
-      "\n\006OUT_IN\020\004\022\020\n\014IN_OUT_KW_KH\020\005\022\020\n\014OUT_IN_K" +
-      "W_KH\020\006\022\023\n\017GP_OUT_IN_KW_KH\020\007\022\023\n\017GP_IN_OUT" +
-      "_KW_KH\020\010\022\023\n\017OUT_IN_KT_KH_KW\020\t*\253\001\n\016InitMe",
-      "thodType\022\030\n\024EMPTY_INITIALIZATION\020\000\022\022\n\016RA" +
-      "NDOM_UNIFORM\020\001\022\030\n\024RANDOM_UNIFORM_PARAM\020\002" +
-      "\022\021\n\rRANDOM_NORMAL\020\003\022\t\n\005ZEROS\020\004\022\010\n\004ONES\020\005" +
-      "\022\t\n\005CONST\020\006\022\n\n\006XAVIER\020\007\022\022\n\016BILINEARFILLE" +
-      "R\020\010*L\n\017RegularizerType\022\023\n\017L1L2Regularize" +
-      "r\020\000\022\021\n\rL1Regularizer\020\001\022\021\n\rL2Regularizer\020" +
-      "\002*%\n\017InputDataFormat\022\010\n\004NCHW\020\000\022\010\n\004NHWC\020\001" +
-      "*\"\n\nTensorType\022\t\n\005DENSE\020\000\022\t\n\005QUANT\020\001*\210\002\n" +
-      "\010DataType\022\t\n\005INT32\020\000\022\t\n\005INT64\020\001\022\t\n\005FLOAT" +
-      "\020\002\022\n\n\006DOUBLE\020\003\022\n\n\006STRING\020\004\022\010\n\004BOOL\020\005\022\010\n\004",
-      "CHAR\020\006\022\t\n\005SHORT\020\007\022\t\n\005BYTES\020\010\022\017\n\013REGULARI" +
-      "ZER\020\t\022\n\n\006TENSOR\020\n\022\023\n\017VARIABLE_FORMAT\020\013\022\016" +
-      "\n\nINITMETHOD\020\014\022\n\n\006MODULE\020\r\022\022\n\016NAME_ATTR_" +
-      "LIST\020\016\022\017\n\013ARRAY_VALUE\020\017\022\017\n\013DATA_FORMAT\020\020" +
-      "\022\n\n\006CUSTOM\020\021\022\t\n\005SHAPE\020\022b\006proto3"
+      "DataType\022\014\n\004size\030\002 \003(\005\022\016\n\006stride\030\003 \003(\005\022\016" +
+      "\n\006offset\030\004 \001(\005\022\021\n\tdimension\030\005 \001(\005\022\021\n\tnEl" +
+      "ements\030\006 \001(\005\022\020\n\010isScalar\030\007 \001(\010\022G\n\007storag" +
+      "e\030\010 \001(\01326.com.intel.analytics.bigdl.seri",
+      "alization.TensorStorage\022\n\n\002id\030\t \001(\005\022G\n\nt" +
+      "ensorType\030\n \001(\01623.com.intel.analytics.bi" +
+      "gdl.serialization.TensorType\"\352\001\n\rTensorS" +
+      "torage\022C\n\010datatype\030\001 \001(\01621.com.intel.ana" +
+      "lytics.bigdl.serialization.DataType\022\022\n\nf" +
+      "loat_data\030\002 \003(\002\022\023\n\013double_data\030\003 \003(\001\022\021\n\t" +
+      "bool_data\030\004 \003(\010\022\023\n\013string_data\030\005 \003(\t\022\020\n\010" +
+      "int_data\030\006 \003(\005\022\021\n\tlong_data\030\007 \003(\003\022\022\n\nbyt" +
+      "es_data\030\010 \003(\014\022\n\n\002id\030\t \001(\005\"u\n\013Regularizer" +
+      "\022Q\n\017regularizerType\030\001 \001(\01628.com.intel.an",
+      "alytics.bigdl.serialization.RegularizerT" +
+      "ype\022\023\n\013regularData\030\002 \003(\001\"\224\016\n\tAttrValue\022C" +
+      "\n\010dataType\030\001 \001(\01621.com.intel.analytics.b" +
+      "igdl.serialization.DataType\022\017\n\007subType\030\002" +
+      " \001(\t\022\024\n\nint32Value\030\003 \001(\005H\000\022\024\n\nint64Value" +
+      "\030\004 \001(\003H\000\022\024\n\nfloatValue\030\005 \001(\002H\000\022\025\n\013double" +
+      "Value\030\006 \001(\001H\000\022\025\n\013stringValue\030\007 \001(\tH\000\022\023\n\t" +
+      "boolValue\030\010 \001(\010H\000\022P\n\020regularizerValue\030\t " +
+      "\001(\01324.com.intel.analytics.bigdl.serializ" +
+      "ation.RegularizerH\000\022K\n\013tensorValue\030\n \001(\013",
+      "24.com.intel.analytics.bigdl.serializati" +
+      "on.BigDLTensorH\000\022Q\n\023variableFormatValue\030" +
+      "\013 \001(\01622.com.intel.analytics.bigdl.serial" +
+      "ization.VarFormatH\000\022N\n\017initMethodValue\030\014" +
+      " \001(\01323.com.intel.analytics.bigdl.seriali" +
+      "zation.InitMethodH\000\022P\n\020bigDLModuleValue\030" +
+      "\r \001(\01324.com.intel.analytics.bigdl.serial" +
+      "ization.BigDLModuleH\000\022R\n\021nameAttrListVal" +
+      "ue\030\016 \001(\01325.com.intel.analytics.bigdl.ser" +
+      "ialization.NameAttrListH\000\022S\n\narrayValue\030",
+      "\017 \001(\0132=.com.intel.analytics.bigdl.serial" +
+      "ization.AttrValue.ArrayValueH\000\022S\n\017dataFo" +
+      "rmatValue\030\020 \001(\01628.com.intel.analytics.bi" +
+      "gdl.serialization.InputDataFormatH\000\022+\n\013c" +
+      "ustomValue\030\021 \001(\0132\024.google.protobuf.AnyH\000" +
+      "\022?\n\005shape\030\022 \001(\0132..com.intel.analytics.bi" +
+      "gdl.serialization.ShapeH\000\032\242\006\n\nArrayValue" +
+      "\022\014\n\004size\030\001 \001(\005\022C\n\010datatype\030\002 \001(\01621.com.i" +
+      "ntel.analytics.bigdl.serialization.DataT" +
+      "ype\022\013\n\003i32\030\003 \003(\005\022\013\n\003i64\030\004 \003(\003\022\013\n\003flt\030\005 \003",
+      "(\002\022\013\n\003dbl\030\006 \003(\001\022\013\n\003str\030\007 \003(\t\022\017\n\007boolean\030" +
+      "\010 \003(\010\022I\n\013Regularizer\030\t \003(\01324.com.intel.a" +
+      "nalytics.bigdl.serialization.Regularizer" +
+      "\022D\n\006tensor\030\n \003(\01324.com.intel.analytics.b" +
+      "igdl.serialization.BigDLTensor\022J\n\016variab" +
+      "leFormat\030\013 \003(\01622.com.intel.analytics.big" +
+      "dl.serialization.VarFormat\022G\n\ninitMethod" +
+      "\030\014 \003(\01323.com.intel.analytics.bigdl.seria" +
+      "lization.InitMethod\022I\n\013bigDLModule\030\r \003(\013" +
+      "24.com.intel.analytics.bigdl.serializati",
+      "on.BigDLModule\022K\n\014nameAttrList\030\016 \003(\01325.c" +
+      "om.intel.analytics.bigdl.serialization.N" +
+      "ameAttrList\022L\n\ndataFormat\030\017 \003(\01628.com.in" +
+      "tel.analytics.bigdl.serialization.InputD" +
+      "ataFormat\022$\n\006custom\030\020 \003(\0132\024.google.proto" +
+      "buf.Any\022=\n\005shape\030\021 \003(\0132..com.intel.analy" +
+      "tics.bigdl.serialization.ShapeB\007\n\005value\"" +
+      "\314\001\n\014NameAttrList\022\014\n\004name\030\001 \001(\t\022M\n\004attr\030\002" +
+      " \003(\0132?.com.intel.analytics.bigdl.seriali" +
+      "zation.NameAttrList.AttrEntry\032_\n\tAttrEnt",
+      "ry\022\013\n\003key\030\001 \001(\t\022A\n\005value\030\002 \001(\01322.com.int" +
+      "el.analytics.bigdl.serialization.AttrVal" +
+      "ue:\0028\001\"\332\001\n\005Shape\022K\n\tshapeType\030\001 \001(\01628.co" +
+      "m.intel.analytics.bigdl.serialization.Sh" +
+      "ape.ShapeType\022\r\n\005ssize\030\002 \001(\005\022\022\n\nshapeVal" +
+      "ue\030\003 \003(\005\022=\n\005shape\030\004 \003(\0132..com.intel.anal" +
+      "ytics.bigdl.serialization.Shape\"\"\n\tShape" +
+      "Type\022\n\n\006SINGLE\020\000\022\t\n\005MULTI\020\001*\260\001\n\tVarForma" +
+      "t\022\020\n\014EMPTY_FORMAT\020\000\022\013\n\007DEFAULT\020\001\022\t\n\005ONE_" +
+      "D\020\002\022\n\n\006IN_OUT\020\003\022\n\n\006OUT_IN\020\004\022\020\n\014IN_OUT_KW",
+      "_KH\020\005\022\020\n\014OUT_IN_KW_KH\020\006\022\023\n\017GP_OUT_IN_KW_" +
+      "KH\020\007\022\023\n\017GP_IN_OUT_KW_KH\020\010\022\023\n\017OUT_IN_KT_K" +
+      "H_KW\020\t*\253\001\n\016InitMethodType\022\030\n\024EMPTY_INITI" +
+      "ALIZATION\020\000\022\022\n\016RANDOM_UNIFORM\020\001\022\030\n\024RANDO" +
+      "M_UNIFORM_PARAM\020\002\022\021\n\rRANDOM_NORMAL\020\003\022\t\n\005" +
+      "ZEROS\020\004\022\010\n\004ONES\020\005\022\t\n\005CONST\020\006\022\n\n\006XAVIER\020\007" +
+      "\022\022\n\016BILINEARFILLER\020\010*L\n\017RegularizerType\022" +
+      "\023\n\017L1L2Regularizer\020\000\022\021\n\rL1Regularizer\020\001\022" +
+      "\021\n\rL2Regularizer\020\002*%\n\017InputDataFormat\022\010\n" +
+      "\004NCHW\020\000\022\010\n\004NHWC\020\001*\"\n\nTensorType\022\t\n\005DENSE",
+      "\020\000\022\t\n\005QUANT\020\001*\210\002\n\010DataType\022\t\n\005INT32\020\000\022\t\n" +
+      "\005INT64\020\001\022\t\n\005FLOAT\020\002\022\n\n\006DOUBLE\020\003\022\n\n\006STRIN" +
+      "G\020\004\022\010\n\004BOOL\020\005\022\010\n\004CHAR\020\006\022\t\n\005SHORT\020\007\022\t\n\005BY" +
+      "TES\020\010\022\017\n\013REGULARIZER\020\t\022\n\n\006TENSOR\020\n\022\023\n\017VA" +
+      "RIABLE_FORMAT\020\013\022\016\n\nINITMETHOD\020\014\022\n\n\006MODUL" +
+      "E\020\r\022\022\n\016NAME_ATTR_LIST\020\016\022\017\n\013ARRAY_VALUE\020\017" +
+      "\022\017\n\013DATA_FORMAT\020\020\022\n\n\006CUSTOM\020\021\022\t\n\005SHAPE\020\022" +
+      "b\006proto3"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -21713,7 +22279,7 @@ public final class Bigdl {
     internal_static_com_intel_analytics_bigdl_serialization_BigDLModule_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_com_intel_analytics_bigdl_serialization_BigDLModule_descriptor,
-        new java.lang.String[] { "Name", "SubModules", "Weight", "Bias", "PreModules", "NextModules", "ModuleType", "Attr", "Version", "Train", "NamePostfix", "Id", "InputShape", "OutputShape", });
+        new java.lang.String[] { "Name", "SubModules", "Weight", "Bias", "PreModules", "NextModules", "ModuleType", "Attr", "Version", "Train", "NamePostfix", "Id", "InputShape", "OutputShape", "HasParameters", "Parameters", });
     internal_static_com_intel_analytics_bigdl_serialization_BigDLModule_AttrEntry_descriptor =
       internal_static_com_intel_analytics_bigdl_serialization_BigDLModule_descriptor.getNestedTypes().get(0);
     internal_static_com_intel_analytics_bigdl_serialization_BigDLModule_AttrEntry_fieldAccessorTable = new
