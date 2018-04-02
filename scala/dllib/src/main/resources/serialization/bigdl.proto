@@ -5,7 +5,9 @@ message BigDLModule
 {
     string name = 1; //module name
     repeated BigDLModule subModules = 2; // sub modules
+    // deprecated, please use parameters
     BigDLTensor weight = 3; // weight for each layer, serialized data are stored as either float or double
+    // deprecated, please use parameters
     BigDLTensor bias = 4; // bias for each layer
     repeated string preModules = 5; //pre modules of the same hierarchy
     repeated string nextModules = 6; //next modules of the same hierachy
@@ -17,6 +19,8 @@ message BigDLModule
     int32 id = 12; // unique ID of this module , used for shared modules
     Shape inputShape = 13; // input shape
     Shape outputShape = 14; //output shape
+    bool hasParameters  = 15; // indicator if module has parameters
+    repeated BigDLTensor parameters = 16; // parameters, e.g., weight and bias
 }
 enum VarFormat {
     EMPTY_FORMAT = 0;
