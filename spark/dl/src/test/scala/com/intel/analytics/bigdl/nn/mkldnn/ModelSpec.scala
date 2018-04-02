@@ -313,7 +313,7 @@ class ModelSpec extends FlatSpec with Matchers {
     dnn.getParameters()._1 should be (blas.getParameters()._1)
 
     val input = Tensor[Float](4, 3, 32, 32).rand(-1, 1)
-    val gradOutput = Tensor[Float](4, 256, 4, 4).rand(-1, 1)
+    val gradOutput = Tensor[Float](4, 10).rand(-1, 1)
 
     for (i <- 0 until 1) {
       blas.forward(input)
@@ -323,6 +323,8 @@ class ModelSpec extends FlatSpec with Matchers {
       dnn.gradInput.toTensor[Float].storage()
     }
 
+    DnnUtils.nearequals(blas.output.toTensor, dnn.output.toTensor, 1e-3) should be (true)
+    DnnUtils.nearequals(blas.gradInput.toTensor, dnn.gradInput.toTensor, 1e-3) should be (true)
     DnnUtils.getunequals(blas.getParameters()._2, dnn.getParameters()._2, 1e-3) should be (true)
 
     println("done")

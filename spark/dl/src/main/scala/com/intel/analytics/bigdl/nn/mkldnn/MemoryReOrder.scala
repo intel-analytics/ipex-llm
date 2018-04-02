@@ -60,6 +60,12 @@ class MemoryReOrder(inputFormat: Int = MklDnn.MemoryFormat.any,
   private val dataType = MklDnn.DataType.f32
 
   private var internal_inputFormat = this.inputFormat
+  // This helper attribute and method are for test. We can check the output at the end of seq.
+  private var _shouldConvert = false
+  def setShouldConvert(value: Boolean): this.type = {
+    _shouldConvert = true
+    this
+  }
 
   require(outputFormat != MklDnn.MemoryFormat.any,
           "output format in MemoryReOrder should not be any")
@@ -119,6 +125,10 @@ class MemoryReOrder(inputFormat: Int = MklDnn.MemoryFormat.any,
     val end1 = (System.nanoTime() - s1)/1e6
     if (System.getProperty("debug") == "2") {
       DnnTools.debugFwInfo(this.getName(), end1, input.getFormat(), output.getFormat())
+    }
+
+    if (_shouldConvert) {
+      output.asInstanceOf[MklDnnTensor[Float]].syncToHeap()
     }
     output
   }
