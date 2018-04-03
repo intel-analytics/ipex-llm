@@ -16,9 +16,8 @@
 
 package com.intel.analytics.zoo.pipeline.api.keras.layers
 
-import com.intel.analytics.bigdl.nn.{InferReshape, InitializationMethod, Linear, Xavier, Zeros, Sequential => TSequential}
-import com.intel.analytics.bigdl.nn.abstractnn._
 import com.intel.analytics.bigdl.nn.keras.{KerasLayer, Dense => BigDLDense}
+import com.intel.analytics.bigdl.nn.{InitializationMethod, Xavier}
 import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
