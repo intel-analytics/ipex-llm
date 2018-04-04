@@ -16,14 +16,18 @@
 
 package com.intel.analytics.zoo.pipeline.api.keras.python
 
+import java.util.{List => JList}
+import scala.collection.JavaConverters._
+
 import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.python.api.PythonBigDLKeras
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.zoo.pipeline.api.keras.layers.{Dense => ZDense}
+import com.intel.analytics.bigdl.nn.Graph.ModuleNode
+import com.intel.analytics.bigdl.nn.abstractnn.Activity
+import com.intel.analytics.bigdl.nn.keras.KerasLayer
+import com.intel.analytics.zoo.pipeline.api.keras.layers._
 
 import scala.reflect.ClassTag
-import java.util.{List => JList}
-
 
 object PythonZooKeras {
 
@@ -34,6 +38,27 @@ object PythonZooKeras {
 
 class PythonZooKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonBigDLKeras[T] {
 
+  def createZooKerasModel(
+      input: JList[ModuleNode[T]],
+      output: JList[ModuleNode[T]]): Model[T] = {
+    Model[T](input.asScala.toArray, output.asScala.toArray)
+  }
+
+  def createZooKerasSequential(): Sequential[T] = {
+    Sequential[T]()
+  }
+
+  def createZooKerasInput(
+      name : String = null,
+      inputShape: JList[Int] = null): ModuleNode[T] = {
+    Input(name = name, inputShape = toScalaShape(inputShape))
+  }
+
+  def createZooKerasInputLayer(
+      inputShape: JList[Int] = null): KerasLayer[Activity, Activity, T] = {
+    InputLayer(inputShape = toScalaShape(inputShape))
+  }
+
   def createZooKerasDense(
       outputDim: Int,
       init: String = "glorot_uniform",
@@ -41,8 +66,8 @@ class PythonZooKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonB
       wRegularizer: Regularizer[T] = null,
       bRegularizer: Regularizer[T] = null,
       bias: Boolean = true,
-      inputShape: JList[Int] = null): ZDense[T] = {
-    ZDense(outputDim, init, activation, wRegularizer,
+      inputShape: JList[Int] = null): Dense[T] = {
+    Dense(outputDim, init, activation, wRegularizer,
       bRegularizer, bias, toScalaShape(inputShape))
   }
 
