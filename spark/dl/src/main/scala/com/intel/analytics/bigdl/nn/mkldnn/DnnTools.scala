@@ -17,27 +17,19 @@
 package com.intel.analytics.bigdl.nn.mkldnn
 
 import breeze.numerics._
-import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.nn.Graph._
-import com.intel.analytics.bigdl.nn.{Graph, Linear, SpatialBatchNormalization, Module => _, _}
-import com.intel.analytics.bigdl.utils.{T, Table}
-import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.numeric.NumericFloat
-import com.intel.analytics.bigdl.utils.{T, Table}
-import com.intel.analytics.bigdl.nn.Graph.ModuleNode
-import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.mkl.MklDnn
-import com.intel.analytics.bigdl.models.inception.Inception_Layer_v2
-import com.intel.analytics.bigdl.models.resnet.Convolution
-import com.intel.analytics.bigdl.models.resnet.ResNet.{apply => _, _}
+import com.intel.analytics.bigdl.models.resnet.ResNet.{apply => _}
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
+import com.intel.analytics.bigdl.nn.{Module => _, _}
+import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.optim.L2Regularizer
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.tensor.{DenseTensorMath, Storage, Tensor}
+import com.intel.analytics.bigdl.tensor.{DenseTensorMath, Tensor}
 import com.intel.analytics.bigdl.utils.RandomGenerator._
+import com.intel.analytics.bigdl.utils.{T, Table}
+import com.intel.analytics.bigdl.{Module, _}
 import org.apache.log4j.Logger
 
-import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
@@ -688,7 +680,6 @@ object ResNet_dnn {
           val n: Float = curModel.kernelW * curModel.kernelW * curModel.nOutputPlane
           curModel.weight.apply1(_ => RNG.normal(0, Math.sqrt(2.0f / n)).toFloat)
           curModel.bias.apply1(_ => 0.0f)
-          curModel
         case spatialBatchNormalization
           if (spatialBatchNormalization.isInstanceOf[mkldnn.SpatialBatchNormalization[Float]]) =>
           val curModel =

@@ -702,11 +702,6 @@ class Linear[T: ClassTag](
       biasPtr)
   }
 
-  override def updateParameters(learningRate: T): Unit = {
-    weight.add(ev.negative(learningRate), gradWeight)
-    if (withBias) bias.add(ev.negative(learningRate), gradBias)
-  }
-
   override def zeroGradParameters(): Unit = {
     gradWeight.zero()
     if (withBias) {

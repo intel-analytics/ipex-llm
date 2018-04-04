@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.nn.mkldnn
 import breeze.linalg.dim
 import com.intel.analytics.bigdl.mkl.MklDnn
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
-import com.intel.analytics.bigdl.nn.{Container, JoinTable}
+import com.intel.analytics.bigdl.nn.{Container, DynamicContainer, JoinTable}
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.{MklDnnTensor, MklDnnType, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -44,7 +44,7 @@ import scala.reflect.ClassTag
  * @param dimension dimension
  */
 @SerialVersionUID(- 5218461876031660707L)
-class ConcatDnn(val dimension: Int) extends Container[Tensor[Float], Tensor[Float], Float] {
+class ConcatDnn(val dimension: Int) extends DynamicContainer[Tensor[Float], Tensor[Float], Float] {
   private var size: Array[Int] = null
   @transient
   private var resultsMPD: Array[Long] = null

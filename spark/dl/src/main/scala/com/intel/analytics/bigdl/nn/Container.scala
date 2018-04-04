@@ -16,6 +16,7 @@
 
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.mkl.MklDnn
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -226,5 +227,27 @@ abstract class Container[A <: Activity : ClassTag,
   ): Unit = {
     super.checkDuplicate(record)
     if (!skipDuplicateCheck()) modules.foreach(_.checkDuplicate(record))
+  }
+
+  override def setDnnEngine(loc : Long): this.type = {
+    this.engineLocation = loc
+    this.modules.map(_.setDnnEngine(loc))
+    this
+  }
+
+  override def createDnnEngine(index : Int): Unit = {
+    engineLocation = MklDnn.EngineCreate(mkldnn_engine_type, index)
+    modules.map(_.setDnnEngine(engineLocation))
+  }
+
+  override def setStream(loc: Long): this.type = {
+    this.streamLocation = loc
+    this.modules.map(_.setStream(loc))
+    this
+  }
+
+  override def createStream(): Unit = {
+    this.streamLocation = MklDnn.StreamCreate(MklDnn.StreamType.eager)
+    this.modules.map(_.setStream(streamLocation))
   }
 }

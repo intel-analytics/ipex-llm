@@ -839,13 +839,6 @@ class ConvolutionDnn(
     }
   }
 
-  override def updateParameters(learningRate: Float): Unit = {
-    weight.map(gradWeight, (a, b) => a - learningRate * b)
-    if (withBias) {
-      bias.map(gradBias, (a, b) => a - learningRate * b)
-    }
-  }
-
   override def zeroGradParameters(): Unit = {
     gradWeight.zero()
     if (withBias) {

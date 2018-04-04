@@ -322,8 +322,10 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
   /**
    * If the module has parameters, this will zero the accumulation of the gradients with respect
    * to these parameters. Otherwise, it does nothing.
+   *
+   * TODO MKL-DNN should not use override this method.
    */
-  final def zeroGradParameters(): Unit = {
+  def zeroGradParameters(): Unit = {
     if (parameters() != null) {
       parameters()._1.zip(parameters()._2)foreach{ case (weight, grad) =>
         grad.resizeAs(weight).zero()
@@ -1095,8 +1097,8 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
   val isMklDnnModel = false
 
   // for mkl dnn engine
-  private val mkldnn_engine_type: Int = MklDnn.EngineType.cpu
-  private var engineLocation: Long = 0L
+  protected val mkldnn_engine_type: Int = MklDnn.EngineType.cpu
+  protected var engineLocation: Long = 0L
   def getDnnEngine(index : Int): Long = {
     if (engineLocation == 0L) {
       require(MklDnn.isLoaded, "mkldnn isn't loaded")
@@ -1107,24 +1109,16 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
 
   def setDnnEngine(loc : Long): this.type = {
     this.engineLocation = loc
-    if (this.isInstanceOf[Container[Activity, Activity, T]]) {
-      this.asInstanceOf[Container[Activity, Activity, T]].
-        modules.map(_.setDnnEngine(loc))
-    }
     this
   }
 
   def createDnnEngine(index : Int): Unit = {
     require(MklDnn.isLoaded, "mkldnn isn't loaded")
     engineLocation = MklDnn.EngineCreate(mkldnn_engine_type, index)
-    if (this.isInstanceOf[Container[Activity, Activity, T]]) {
-      this.asInstanceOf[Container[Activity, Activity, T]].
-        modules.map(_.setDnnEngine(engineLocation))
-    }
   }
 
   // for mkl dnn stream
-  private var streamLocation: Long = 0L
+  protected var streamLocation: Long = 0L
   def getStream(): Long = {
     if (streamLocation == 0L) {
       require(MklDnn.isLoaded, "mkldnn isn't loaded")
@@ -1135,20 +1129,12 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
 
   def setStream(loc: Long): this.type = {
     this.streamLocation = loc
-    if (this.isInstanceOf[Container[Activity, Activity, T]]) {
-      this.asInstanceOf[Container[Activity, Activity, T]].
-        modules.map(_.setStream(loc))
-    }
     this
   }
 
   def createStream(): Unit = {
     require(MklDnn.isLoaded, "mkldnn isn't loaded")
     streamLocation = MklDnn.StreamCreate(MklDnn.StreamType.eager)
-    if (this.isInstanceOf[Container[Activity, Activity, T]]) {
-      this.asInstanceOf[Container[Activity, Activity, T]].
-        modules.map(_.setStream(streamLocation))
-    }
   }
 
   // for mkl dnn format

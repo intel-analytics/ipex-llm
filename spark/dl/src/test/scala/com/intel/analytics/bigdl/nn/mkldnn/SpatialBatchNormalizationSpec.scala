@@ -159,7 +159,6 @@ class SpatialBatchNormalizationSpec extends FlatSpec with Matchers {
 
   "Convolution + SpatialBarchNormalization" should "work correctly" in {
     MKL.setNumThreads(1)
-    import MklDnn.{MemoryFormat => format}
     val dnn = Sequential()
       .add(ConvolutionDnn(3, 64, 7, 7, 2, 2, 3, 3).setName("conv1/7x7_s2"))
       .add(SpatialBatchNormalization(64, 1e-3).setName("conv1/7x7_s2/bn"))

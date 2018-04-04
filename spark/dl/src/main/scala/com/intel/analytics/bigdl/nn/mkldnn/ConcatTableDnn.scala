@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.nn.mkldnn
 
-import com.intel.analytics.bigdl.nn.{ConcatTable, Container}
+import com.intel.analytics.bigdl.nn.{ConcatTable, Container, DynamicContainer}
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.tensor.{MklDnnTensor, Tensor}
@@ -35,7 +35,7 @@ import scala.reflect.ClassTag
  */
 @SerialVersionUID(- 704681653938468956L)
 class ConcatTableDnn[T : ClassTag]
-(implicit ev: TensorNumeric[T]) extends Container[Tensor[T], Table, T] {
+(implicit ev: TensorNumeric[T]) extends DynamicContainer[Tensor[T], Table, T] {
   override def updateOutput(input: Tensor[T]): Table = {
     val s1 = System.nanoTime()
     require(modules.length > 0, "empty modules of concat table")
