@@ -11,7 +11,9 @@ extra:
 
 
 pages:
-- Overview: index.md 
+- Overview: 
+  - ReadMe: index.md
+  - White Paper: whitepaper.md 
 - Releases: 
   - Download: release-download.md 
   - Documentation: release-docs.md
