@@ -59,7 +59,6 @@ BigDL is implemented on Apache Spark, a widely used cluster computing engine for
 25   //model prediction
 26   test_rdd = …
 27   prediction_rdd = trained_model.predict(test_rdd)
-
 ```
 
 *Figure 1. The end-to-end text classification pipeline (including data loading, tokenization, word vectorization, training, prediction, etc.) on Spark and BigDL.*
@@ -121,7 +120,6 @@ for (i <- 1 to N) {
   aggregate (sum) all the gradients
   update the weights per specified optimization method
 }
-
 ```
  
 
@@ -152,7 +150,6 @@ For each task n in the ”parameter synchronization” job
    aggregate (sum) the gradients
    updates the nth partition of the weights
    broadcast the nth partition of the updated weights
-
 ```
 
 *Figure 6. The “parameter synchronization” Spark job, manages the nth petition of the parameters (similar to a parameter server).*
