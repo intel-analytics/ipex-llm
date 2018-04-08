@@ -99,7 +99,7 @@ Besides RDD, Spark provides a high level *DataFrame* abstraction [13], which is 
 
 Similar to other Big Data systems (such as MapReduce [28]), a Spark cluster consists of a single driver node and multiple worker nodes, as shown in Figure 2.  The driver node is responsible for coordinating the tasks in a Spark job (e.g., scheduling and dispatching), while the worker nodes are responsible for the actual computation and physical data storage. To automatically parallelize the large-scale data processing across the cluster in a fault-tolerant fashion, Spark provides a functional compute model where immutable RDDs are transformed through coarse-grained operators (i.e., applying the same operation to all data items). 
 
-![fig2](../Image/WP/fig2.jpg) 
+ ![fig2](Image/WP/fig2.jpg) 
  
 *Figure 2. A Spark job contains many Spark tasks; the driver node is responsible for scheduling and dispatching the tasks to worker nodes, which runs the actual Spark tasks.*
 
@@ -129,7 +129,7 @@ for (i <- 1 to N) {
 
 As described in Section 2, BigDL models the training data as an RDD of Samples, which are automatically partitioned and potentially cached in memory across the Spark cluster. In addition, to implement the data-parallel training, BigDL also constructs an RDD of models, each of which is a replica of the original neural network model. The model and sample RDDs are co-partitioned and co-located [14] across the cluster; consequently, in each iteration of the model training, a single “model forward-backward” Spark job can apply the functional zip operator to the partitions of model and sample RDDs, and compute in parallel the gradients for each model replica (using a small batch of data in the co-located sample partition), as illustrated in Figure 4.
 
-![fig4](../Image/WP/fig4.jpg) 
+![fig4](Image/WP/fig4.jpg) 
  
 *Figure 4. The “model forward-backward” spark job, which computes the local gradients for each model replica in parallel.*
 
@@ -140,7 +140,7 @@ In BigDL, we have adapted the primitives available in the Spark (e.g., shuffle, 
 
 * **A Spark job has N tasks,** each of which is assigned a unique Id ranging from 1 to N in BigDL. After each task in the “model forward-backward” job computes the local gradients (as described in section 3.1), it evenly divides the local gradients into N partitions, as illustrated in Figure 5.
  
-![fig5](../Image/WP/fig5.jpg) 
+![fig5](Image/WP/fig5.jpg) 
 
 *Figure 5. Parameter synchronization in BigDL. Each local gradient (computed by a task in the “model forward-backward” job) is evenly divided into N partitions; then each task n in the “parameter synchronization” job aggregates these local gradients and update the weights for the nth partition.*
 
@@ -163,7 +163,7 @@ For each task n in the ”parameter synchronization” job
 
 By implementing the AllReduce operation using primitives in Spark, BigDL provides a highly efficiently “parameter server” style architecture directly on top of Big Data frameworks. As a result, it is demonstrated to support highly scalable distributed training on up to 256-node, as reported by Cray [35] and shown in Figure 7. 
  
- ![fig7](../Image/WP/fig7.jpg) 
+ ![fig7](Image/WP/fig7.jpg) 
 
 *Figure 7. Throughput of ImageNet Inception v1 training reported by Cary [35](using BigDL 0.3.0 and dual-socket Intel Broadwell 2.1 GHz); the training throughput scales almost linear up to 128 nodes (and continue to scale reasonably up to 256 nodes).*
 
@@ -176,7 +176,7 @@ In contrast, BigDL runs a series of short-lived Spark jobs (e.g., two jobs per m
 
 To scale to an even larger number (e.g., 500) of workers, one can potentially leverages the iterative nature of the model training (in which the same operations are executed repeatedly). For instance, group scheduling introduced by Drizzle [36] (a low latency execution engine for Spark) can help schedule multiple iterations (or a group) of computations at once, so as to greatly reduce scheduling overheads even if there are a large number of tasks [37], as shown in Figure 8.
 
-![fig8](../Image/WP/fig8.jpg) 
+![fig8](Image/WP/fig8.jpg) 
   
 *Figure 8. Overheads of task scheduling and dispatch (as a fraction of average compute time) for ImageNet Inception v1 training in BigDL [37].*
 
@@ -195,7 +195,7 @@ Math.round(1.0 * value
 
 Unlike many existing quantization implementations, BigDL adopts a new local quantization scheme. That is, it performs the quantization and dequantization operations (as described above) in each small local quantization window, a small sub-block (such as a patch or kernel in convolution) of the parameters or input data. As a result, BigDL can use very low bit integers, such as 8-bit, in model quantization with extremely low model accuracy drop (less than 0.1%), 4x model size reduction, and up to 2x inference speedup, as benchmarked on AWS EC2 [38] and shown in Figure 10.
 
-![fig10](../Image/WP/fig10.jpg)
+![fig10](Image/WP/fig10.jpg)
    
 *Figure 10. Model quantization results (accuracy, inference speed and model size) for SSD, VGG16 and VGG19 (using BigDL 0.3.0 and AWS EC2 C5.18xlarge instances) [38].*
 
@@ -212,7 +212,7 @@ Since its initial open source release (on Dec 30, 2016), BigDL users have built 
 JD.com [39] is one of the largest online retailers in the world. It has built an end-to-end *object detection and image feature extraction* pipeline [40] on top of BigDL and Spark, as illustrated in Figure 11.
 
 
-![fig11](../Image/WP/fig11.jpg) 
+![fig11](Image/WP/fig11.jpg) 
  
 *Figure 11. End-to-end object detection and image feature extraction pipeline (using SSD and DeepBit models) on top of Spark and BigDL [40].*
 
@@ -227,7 +227,7 @@ JD.com [39] is one of the largest online retailers in the world. It has built an
 The entire data analytics and deep learning pipeline, including data loading, partitioning, preprocessing, model inference, and storing the results, can be easily implemented under a unified programming paradigm (using Spark and BigDL). In addition, the end-to-end pipeline also delivers ~3.83x speedup compared to running the same solution on a GPU cluster, as reported by JD [40] and shown in Figure 12.
 
 
-![fig12](../Image/WP/fig12.jpg) 
+![fig12](Image/WP/fig12.jpg) 
  
 *Figure 12. Throughput of GPU clusters and Xeon clusters for the image feature extraction pipeline benchmarked by JD [40]; the GPU throughput is tested on 20 NVIDIA Tesla K40 cards, and the Xeon throughput is tested on 1200 logical cores (where each dual-socket Intel Xeon E5-2650 v4 server runs 50 logical cores).*
 
@@ -236,7 +236,7 @@ The entire data analytics and deep learning pipeline, including data loading, pa
 Cray has integrated BigDL to their Urika-XC analytics software suite, and built an end-to-end precipitation nowcasting (*predicting short-term precipitation*) workflow [35] on spark and BigDL, including data preparation, model training and inference, as illustrated in Figure 13. 
 
 
-![fig13](../Image/WP/fig13.jpg) 
+![fig13](Image/WP/fig13.jpg) 
  
 *Figure 13. End-to-end precipitation nowcasting workflow (using sequence-to-sequence model) [35] on Spark and BigDL.*
 
@@ -246,7 +246,7 @@ Cray has integrated BigDL to their Urika-XC analytics software suite, and built 
 
 * **After the model is trained, it can be used to predict,** say, precipitation patterns for the next hour, as illustrated in Figure 14.
  
-![fig14](../Image/WP/fig14.jpg) 
+![fig14](Image/WP/fig14.jpg) 
 
 *Figure 14. Predicting precipitation patterns for the next hour [35] on Spark and BigDL.*
 
