@@ -23,6 +23,8 @@ You may want to write your deep learning programs using BigDL if:
 * You want to leverage existing Hadoop/Spark clusters to run your deep learning applications, which can be then dynamically shared with other workloads (e.g., ETL, data warehouse, feature engineering, classical machine learning, graph analytics, etc.)
 
 ## How to use BigDL?
+* For the technical overview of BigDL, please refer to the [BigDL white paper](https://bigdl-project.github.io/master/#whitepaper/)
+
 * More information can be found at the BigDL project website:
   
   https://bigdl-project.github.io/
