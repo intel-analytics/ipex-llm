@@ -273,7 +273,7 @@ We gratefully acknowledge contributions from our (current and former) colleagues
 
 [7]	Apache Spark. [https://spark.apache.org](https://spark.apache.org)
 
-[8]	Matei Zaharia , et al. “Resilient Distributed Datasets: A Fault-Tolerant Abstraction for In-Memory Cluster Computing”, NSDI 2015.
+[8]	Matei Zaharia , et al. “Resilient Distributed Datasets: A Fault-Tolerant Abstraction for In-Memory Cluster Computing”, NSDI 2012.
 
 [9]	Priya Goyal, et al. “Accurate, Large Minibatch SGD: Training ImageNet in 1 Hour”, arXiv: 1706.02677 [cs.CV]
 
