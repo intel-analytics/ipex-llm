@@ -4,7 +4,7 @@ Jason (Jinquan) Dai<sup>1</sup>, Yiheng Wang<sup>1</sup>, Xin Qiu<sup>1</sup>, D
 
 <sup>1</sup>Intel Corporation,    <sup>2</sup>Tencent Inc.,    <sup>3</sup>Alibaba Group
 
-<sup>ǂ</sup> Work was done when the author worked at Intel
+<sup>ǂ</sup>Work was done when the author worked at Intel
 
 ---
 
