@@ -1,6 +1,6 @@
 ---
 ## **BigDL: A Distributed Deep Learning Framework for Big Data**
-Jason (Jinquan) Dai<sup>1</sup>, Yiheng Wang<sup>1</sup>, Xin Qiu<sup>1</sup>, Ding Ding<sup>1</sup>, Yao Zhang<sup>2ǂ</sup>, Yanzhang Wang<sup>1</sup>, Xianyan Jia<sup>2ǂ</sup>, Cherry (Li) Zhang<sup>1</sup>, Yan Wan<sup>3ǂ</sup>, Zhichao Li<sup>1</sup>, Jiao Wang<sup>1</sup>, Shengsheng Huang<sup>1</sup>, Zhongyuan Wu<sup>1</sup>, Yang Wang<sup>1</sup>, Yuhao Yang<sup>1</sup>, Bowen She<sup>1</sup>, Dongjie Shi<sup>1</sup>, Qi Lu<sup>1</sup>, Kai Huang<sup>1</sup>, Guoqiong Song<sup>1</sup>
+Jason (Jinquan) Dai<sup>1</sup>, Yiheng Wang<sup>1</sup>, Xin Qiu<sup>1</sup>, Ding Ding<sup>1</sup>, Yao Zhang<sup>2 ǂ</sup>, Yanzhang Wang<sup>1</sup>, Xianyan Jia<sup>2 ǂ</sup>, Cherry (Li) Zhang<sup>1</sup>, Yan Wan<sup>3 ǂ</sup>, Zhichao Li<sup>1</sup>, Jiao Wang<sup>1</sup>, Shengsheng Huang<sup>1</sup>, Zhongyuan Wu<sup>1</sup>, Yang Wang<sup>1</sup>, Yuhao Yang<sup>1</sup>, Bowen She<sup>1</sup>, Dongjie Shi<sup>1</sup>, Qi Lu<sup>1</sup>, Kai Huang<sup>1</sup>, Guoqiong Song<sup>1</sup>
 
 <sup>1</sup>Intel Corporation,    <sup>2</sup>Tencent Inc.,    <sup>3</sup>Alibaba Group
 
@@ -10,7 +10,7 @@ Jason (Jinquan) Dai<sup>1</sup>, Yiheng Wang<sup>1</sup>, Xin Qiu<sup>1</sup>, D
 
 ## **Abstract**
 
-In this paper, we present BigDL, a distributed deep learning framework for Big Data platforms and workflows. It is implemented on top of Apache Spark, and allows users to write their deep learning applications as standard Spark programs (running directly on large-scale big data clusters in a distributed fashion). It provides an expressive, “data-analytics integrated” deep learning programming model, so that users can easily build the end-to-end analytics + AI pipelines under a unified programing paradigm; by implementing an *AllReduce* like operation using existing primitives in Spark (e.g., shuffle, broadcast, and in-memory data persistence), it also provides a highly efficient “parameter server” style architecture, so as to achieve highly scalable, data-parallel distributed training. Since its initial open source release, BigDL users have built many analytics and deep learning applications (e.g., object detection, sequence-to-sequence generation, neural recommendations, fraud detection, etc.) on Spark.
+*In this paper, we present BigDL, a distributed deep learning framework for Big Data platforms and workflows. It is implemented on top of Apache Spark, and allows users to write their deep learning applications as standard Spark programs (running directly on large-scale big data clusters in a distributed fashion). It provides an expressive, “data-analytics integrated” deep learning programming model, so that users can easily build the end-to-end analytics + AI pipelines under a unified programing paradigm; by implementing an *AllReduce* like operation using existing primitives in Spark (e.g., shuffle, broadcast, and in-memory data persistence), it also provides a highly efficient “parameter server” style architecture, so as to achieve highly scalable, data-parallel distributed training. Since its initial open source release, BigDL users have built many analytics and deep learning applications (e.g., object detection, sequence-to-sequence generation, neural recommendations, fraud detection, etc.) on Spark.*
 
 ## **1.	Introduction**
 
@@ -98,7 +98,7 @@ Besides RDD, Spark provides a high level *DataFrame* abstraction [13], which is 
 
 Similar to other Big Data systems (such as MapReduce [28]), a Spark cluster consists of a single driver node and multiple worker nodes, as shown in Figure 2.  The driver node is responsible for coordinating the tasks in a Spark job (e.g., scheduling and dispatching), while the worker nodes are responsible for the actual computation and physical data storage. To automatically parallelize the large-scale data processing across the cluster in a fault-tolerant fashion, Spark provides a functional compute model where immutable RDDs are transformed through coarse-grained operators (i.e., applying the same operation to all data items). 
 
-![fig2](Image/WP/fig2.jpg) 
+ ![fig2](Image/WP/fig2.jpg) 
  
 *Figure 2. A Spark job contains many Spark tasks; the driver node is responsible for scheduling and dispatching the tasks to worker nodes, which runs the actual Spark tasks.*
 
@@ -127,7 +127,7 @@ for (i <- 1 to N) {
 
 As described in Section 2, BigDL models the training data as an RDD of Samples, which are automatically partitioned and potentially cached in memory across the Spark cluster. In addition, to implement the data-parallel training, BigDL also constructs an RDD of models, each of which is a replica of the original neural network model. The model and sample RDDs are co-partitioned and co-located [14] across the cluster; consequently, in each iteration of the model training, a single “model forward-backward” Spark job can apply the functional zip operator to the partitions of model and sample RDDs, and compute in parallel the gradients for each model replica (using a small batch of data in the co-located sample partition), as illustrated in Figure 4.
 
-![fig4](Image/WP/fig4.jpg)
+![fig4](Image/WP/fig4.jpg) 
  
 *Figure 4. The “model forward-backward” spark job, which computes the local gradients for each model replica in parallel.*
 
@@ -158,11 +158,11 @@ For each task n in the "parameter synchronization" job
 
 * **The shuffle and task-side broadcast operations described above are implemented on top of the distributed in-memory storage in Spark:** both the shuffled gradients and broadcasted weights are materialized in memory, which can be read remotely by the Spark tasks with extremely low latency.
 
-By implementing the AllReduce operation using primitives in Spark, BigDL provides a highly efficiently “parameter server” style architecture directly on top of Big Data frameworks. As a result, it is demonstrated to support highly scalable distributed training on up to 256-node, as reported by Cray [35] and shown in Figure 7. 
+By implementing the AllReduce operation using primitives in Spark, BigDL provides a highly efficient “parameter server” style architecture directly on top of Big Data frameworks. As a result, it is demonstrated to support highly scalable distributed training on up to 256-node, as reported by Cray [35] and shown in Figure 7. 
  
  ![fig7](Image/WP/fig7.jpg) 
 
-*Figure 7. Throughput of ImageNet Inception v1 training reported by Cary [35](using BigDL 0.3.0 and dual-socket Intel Broadwell 2.1 GHz); the training throughput scales almost linear up to 128 nodes (and continue to scale reasonably up to 256 nodes).*
+*Figure 7. Throughput of ImageNet Inception v1 training reported by Cary [35] (using BigDL 0.3.0 and dual-socket Intel Broadwell 2.1 GHz); the training throughput scales almost linear up to 128 nodes (and continue to scale reasonably up to 256 nodes).*
 
 
 ### **3.3. Task scheduling**
@@ -171,7 +171,7 @@ While BigDL provides a highly efficient “parameter server” style architectur
 
 In contrast, BigDL runs a series of short-lived Spark jobs (e.g., two jobs per mini-batch as described in earlier sections), and each task in the job is stateless and non-blocking. As a result, BigDL programs can automatically adapt to the dynamic resource changes (e.g., preemption, failures, incremental scaling, resource sharing, etc.) in a timely fashion. On the other hand, task scheduling in Spark can become a potential bottleneck of the distributed training on a large cluster. For instance, Figure 8 shows that, for ImageNet Inception v1 training, the overhead of launching tasks (as a fraction of average compute time) in BigDL, while low for 100~200 tasks, can grows to over 10% when there are close to 500 tasks [37]. To address this issue, BigDL will launch a single, multi-threaded task on each worker, so as to achieve high scalability (e.g., up to 256 servers as shown in Figure 7 above). 
 
-To scale to an even larger number (e.g., 500) of workers, one can potentially leverages the iterative nature of the model training (in which the same operations are executed repeatedly). For instance, group scheduling introduced by Drizzle [36] (a low latency execution engine for Spark) can help schedule multiple iterations (or a group) of computations at once, so as to greatly reduce scheduling overheads even if there are a large number of tasks [37], as shown in Figure 8.
+To scale to an even larger number (e.g., 500) of workers, one can potentially leverages the iterative nature of the model training (in which the same operations are executed repeatedly). For instance, group scheduling introduced by Drizzle [36] (a low latency execution engine for Spark) can help schedule multiple iterations (or a group) of computations at once, so as to greatly reduce scheduling overheads even if there are a large number of tasks, as benchmarked by RISELab [37] and shown in Figure 8.
 
 ![fig8](Image/WP/fig8.jpg) 
   
