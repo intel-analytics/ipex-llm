@@ -136,13 +136,13 @@ As described in Section 2, BigDL models the training data as an RDD of Samples, 
 Parameter synchronization is a performance critical operation for data-parallel training (in terms of speed and scalability). To support efficient parameter synchronization, existing deep learning frameworks usually implement the parameter server [31][32][33] architecture or AllReduce [34] operation, which unfortunately cannot be directly supported by the functional compute model provided by the Big Data systems.
 In BigDL, we have adapted the primitives available in the Spark (e.g., shuffle, broadcast, in-memory cache, etc.) to implement an efficient AllReduce-like operation, so as to mimic the functionality of a parameter server architecture.
 
-* **A Spark job has N tasks,** each of which is assigned a unique Id ranging from 1 to N in BigDL. After each task in the “model forward-backward” job computes the local gradients (as described in section 3.1), it evenly divides the local gradients into N partitions, as illustrated in Figure 5.
+* A Spark job has *N* tasks, each of which is assigned a unique Id ranging from *1* to *N* in BigDL. After each task in the “*model forward-backward*” job computes the local gradients (as described in section 3.1), it evenly divides the local gradients into *N* partitions, as illustrated in Figure 5.
  
 ![fig5](Image/WP/fig5.jpg) 
 
 *Figure 5. Parameter synchronization in BigDL. Each local gradient (computed by a task in the “model forward-backward” job) is evenly divided into N partitions; then each task n in the “parameter synchronization” job aggregates these local gradients and update the weights for the nth partition.*
 
-* **Next, another “parameter synchronization” job is launched;** each task n in the “parameter synchronization” job is responsible for managing the nth partition of the parameters, just like a parameter server (as shown in Figure 6). Specifically, the nth partition of the gradients (from all the tasks of the previous “model forward-backward” job) are first shuffled to task n, which then aggregates (sums) these gradients, and applies the updates to the nth partition of the weights (using the specific optimization method), as illustrated in Figure 5.
+* Next, another “*parameter synchronization*” job is launched; each task *n* in the “*parameter synchronization*” job is responsible for managing the n<sup>th</sup> partition of the parameters, just like a parameter server (as shown in Figure 6). Specifically, the n<sup>th</sup> partition of the gradients (from all the tasks of the previous “*model forward-backward*” job) are first **shuffled** to task n, which then aggregates (sums) these gradients, and applies the updates to the n<sup>th</sup> partition of the weights (using the specific optimization method), as illustrated in Figure 5.
 
 ```
 For each task n in the "parameter synchronization" job
@@ -152,11 +152,11 @@ For each task n in the "parameter synchronization" job
    broadcast the nth partition of the updated weights
 ```
 
-*Figure 6. The “parameter synchronization” Spark job, manages the nth petition of the parameters (similar to a parameter server).*
+*Figure 6. The “parameter synchronization” Spark job, manages the n<sup>th</sup> partition of the parameters (similar to a parameter server).*
  
-* **After that, each task n in the “parameter synchronization” job broadcasts the nth partition of the updated weights;** consequently, tasks in the “model forward-backward” job in the next iteration can read the latest value of all the weights before the next training step begins.
+* After that, each task *n* in the “*parameter synchronization*” job **broadcasts** the n<sup>th</sup> partition of the updated weights; consequently, tasks in the “*model forward-backward*” job in the next iteration can read the latest value of all the weights before the next training step begins.
 
-* **The shuffle and task-side broadcast operations described above are implemented on top of the distributed in-memory storage in Spark:** both the shuffled gradients and broadcasted weights are materialized in memory, which can be read remotely by the Spark tasks with extremely low latency.
+* The *shuffle* and *task-side broadcast* operations described above are implemented on top of the distributed **in-memory** storage in Spark: both the shuffled gradients and broadcasted weights are materialized in memory, which can be read remotely by the Spark tasks with extremely low latency.
 
 By implementing the AllReduce operation using primitives in Spark, BigDL provides a highly efficient “parameter server” style architecture directly on top of Big Data frameworks. As a result, it is demonstrated to support highly scalable distributed training on up to 256-node, as reported by Cray [35] and shown in Figure 7. 
  
@@ -213,13 +213,13 @@ JD.com [39] is one of the largest online retailers in the world. It has built an
  
 *Figure 11. End-to-end object detection and image feature extraction pipeline (using SSD and DeepBit models) on top of Spark and BigDL [40].*
 
-* **The pipeline first reads hundreds of millions of pictures from a distributed database into Spark (as an RDD of pictures),** and then pre-processes the RDD of pictures (including *resizing, normalization, and batching*) in a distributed fashion using Spark.
+* The pipeline first reads hundreds of millions of pictures from a distributed database into Spark (as an RDD of pictures), and then pre-processes the RDD of pictures (including *resizing*, *normalization*, and *batching*) in a distributed fashion using Spark.
 
-* **After that, it uses BigDL to load a SSD [41] model (pre-trained in Caffe) for large scale,** distributed object detection on Spark, which generates the coordinates and scores for the detected objects in each of the pictures.
+* After that, it uses BigDL to load a *SSD* [41] model (pre-trained in Caffe) for large scale, distributed object detection on Spark, which generates the coordinates and scores for the detected objects in each of the pictures.
 
-* **It then generates the target images** (by keeping the object with highest score as the target, and cropping the original picture based on the coordinates of the target), and further pre-processes the RDD of target images (including *resizing and batching*).
+* It then generates the target images (by keeping the object with highest score as the target, and cropping the original picture based on the coordinates of the target), and further pre-processes the RDD of target images (including *resizing* and *batching*).
 
-* **Finally it uses BigDL to load a *DeepBit* [42] model (again pre-trained in Caffe) for distributed feature extraction of the target images to generate the corresponding features,** and stores the results (RDD of extracted object features) in the Hadoop Distributed File System (HDFS).
+* Finally it uses BigDL to load a *DeepBit* [42] model (again pre-trained in Caffe) for distributed feature extraction of the target images to generate the corresponding features, and stores the results (RDD of extracted object features) in the Hadoop Distributed File System (HDFS).
 
 The entire data analytics and deep learning pipeline, including data loading, partitioning, preprocessing, model inference, and storing the results, can be easily implemented under a unified programming paradigm (using Spark and BigDL). In addition, the end-to-end pipeline also delivers ~3.83x speedup compared to running the same solution on a GPU cluster, as reported by JD [40] and shown in Figure 12.
 
@@ -237,11 +237,11 @@ Cray has integrated BigDL to their Urika-XC analytics software suite, and built 
  
 *Figure 13. End-to-end precipitation nowcasting workflow (using sequence-to-sequence model) [35] on Spark and BigDL.*
 
-* **The application first reads over a terabyte of raw radar scan data into Spark (as an RDD of radar images),** and then converts it into an RDD of *NumPy ndarrays*.
+* The application first reads over a terabyte of raw radar scan data into Spark (as an RDD of radar images), and then converts it into an RDD of *NumPy ndarrays*.
 
-* **It then trains a sequence-to-sequence model [43][44] (as illustrated in Figure 13),** using sequence of images leading up to the current time as the input, and sequence of predicted images arbitrarily far in the future as the output.
+* It then trains a *sequence-to-sequence* model [43][44] (as illustrated in Figure 13), using sequence of images leading up to the current time as the input, and sequence of predicted images arbitrarily far in the future as the output.
 
-* **After the model is trained, it can be used to predict,** say, precipitation patterns for the next hour, as illustrated in Figure 14.
+* After the model is trained, it can be used to predict, say, precipitation patterns for the next hour, as illustrated in Figure 14.
  
 ![fig14](Image/WP/fig14.jpg) 
 
