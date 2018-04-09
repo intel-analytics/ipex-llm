@@ -198,7 +198,13 @@ class ImageFrame(JavaValue):
                              "setLabel", label, self.value)
 
     def random_split(self, weights):
-        return self.image_frame.random_split(weights)
+        """
+        Random split imageframes according to weights
+        :param weights: weights for each ImageFrame
+        :return: 
+        """
+        jvalues =  self.image_frame.random_split(weights)
+        return [ImageFrame(jvalue) for jvalue in jvalues]
 
 class LocalImageFrame(ImageFrame):
     """
