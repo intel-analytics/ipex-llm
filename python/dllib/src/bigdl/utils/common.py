@@ -609,6 +609,9 @@ def _java2py(gateway, r, encoding="bytes"):
         if clsName == 'Dataset':
             return DataFrame(r, get_spark_sql_context(get_spark_context()))
 
+        if clsName == "ImageFrame[]":
+            return r
+
         if clsName in _picklable_classes:
             r = gateway.jvm.org.apache.spark.bigdl.api.python.BigDLSerDe.dumps(r)
         elif isinstance(r, (JavaArray, JavaList, JavaMap)):
