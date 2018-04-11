@@ -13,35 +13,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.intel.analytics.zoo.pipeline.api.keras.layers
-
-import scala.reflect.ClassTag
 
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Shape
 
+import scala.reflect.ClassTag
+
 /**
- * Simple activation function to be applied to the output.
- * Available activations: 'tanh', 'relu', 'sigmoid', 'softmax', 'softplus',
- * 'softsign', 'hard_sigmoid'.
+ * Applies Dropout to the input by randomly setting a fraction 'p' of input units to 0 at each
+ * update during training time in order to prevent overfitting.
  *
  * When you use this layer as the first layer of a model, you need to provide the argument
  * inputShape (a Single Shape, does not include the batch dimension).
  *
- * @param activation Name of the activation function as string.
+ * @param p Fraction of the input units to drop. Double between 0 and 1.
  * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now.
  */
-class Activation[T: ClassTag](
-  override val activation: String,
-  override val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
-  extends com.intel.analytics.bigdl.nn.keras.Activation[T](activation, inputShape) {
-}
+class Dropout[T: ClassTag](
+  override val p: Double,
+  override val inputShape: Shape = null)
+  (implicit ev: TensorNumeric[T])
+  extends com.intel.analytics.bigdl.nn.keras.Dropout[T](p, inputShape) {}
 
-object Activation {
+object Dropout {
   def apply[@specialized(Float, Double) T: ClassTag](
-    activation: String,
-    inputShape: Shape = null)(implicit ev: TensorNumeric[T]): Activation[T] = {
-    new Activation[T](activation, inputShape)
+    p: Double,
+    inputShape: Shape = null)
+    (implicit ev: TensorNumeric[T]): Dropout[T] = {
+    new Dropout[T](p, inputShape)
   }
 }
