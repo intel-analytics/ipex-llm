@@ -13,10 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.intel.analytics.zoo.pipeline.api.keras.layers
 
-import com.intel.analytics.bigdl.nn.keras.{KerasLayer, Dense => BigDLDense}
+import com.intel.analytics.bigdl.nn.keras.KerasLayer
 import com.intel.analytics.bigdl.nn.{InitializationMethod, Xavier}
 import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.Tensor
@@ -27,19 +26,23 @@ import com.intel.analytics.zoo.pipeline.api.keras.layers.utils.KerasUtils
 import scala.reflect.ClassTag
 
 /**
- * A densely-connected NN layer.
- * The most common input is 2D.
+ * Applies convolution operator for filtering neighborhoods of 1-D inputs.
+ * You can also use Conv1D as an alias of this layer.
+ * The input of this layer should be 3D.
  *
  * When you use this layer as the first layer of a model, you need to provide the argument
  * inputShape (a Single Shape, does not include the batch dimension).
  *
- * @param outputDim The size of output dimension.
+ * @param nbFilter Number of convolution filters to use.
+ * @param filterLength The extension (spatial or temporal) of each filter.
  * @param init Initialization method for the weights of the layer. Default is Xavier.
  *             You can also pass in corresponding string representations such as 'glorot_uniform'
  *             or 'normal', etc. for simple init methods in the factory method.
  * @param activation Activation function to use. Default is null.
  *                   You can also pass in corresponding string representations such as 'relu'
  *                   or 'sigmoid', etc. for simple activations in the factory method.
+ * @param borderMode Either 'valid' or 'same'. Default is 'valid'.
+ * @param subsampleLength Factor by which to subsample output. Integer. Default is 1.
  * @param wRegularizer An instance of [[Regularizer]], (eg. L1 or L2 regularization),
  *                     applied to the input weights matrices. Default is null.
  * @param bRegularizer An instance of [[Regularizer]], applied to the bias. Default is null.
@@ -47,31 +50,37 @@ import scala.reflect.ClassTag
  *             Default is true.
  * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now.
  */
-class Dense[T: ClassTag](
-  override val outputDim: Int,
+class Convolution1D[T: ClassTag](
+  override val nbFilter: Int,
+  override val filterLength: Int,
   override val init: InitializationMethod = Xavier,
   override val activation: KerasLayer[Tensor[T], Tensor[T], T] = null,
+  override val borderMode: String = "valid",
+  override val subsampleLength: Int = 1,
   wRegularizer: Regularizer[T] = null,
   bRegularizer: Regularizer[T] = null,
   override val bias: Boolean = true,
-  override val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
-  extends BigDLDense[T](outputDim, init, activation, wRegularizer, bRegularizer, bias,
-    inputShape) {
-}
+  override val inputShape: Shape = null)
+  (implicit ev: TensorNumeric[T])
+  extends com.intel.analytics.bigdl.nn.keras.Convolution1D[T](nbFilter, filterLength, init,
+    activation, borderMode, subsampleLength, wRegularizer, bRegularizer, bias, inputShape) {}
 
-object Dense {
+object Convolution1D {
   def apply[@specialized(Float, Double) T: ClassTag](
-    outputDim: Int,
+    nbFilter: Int,
+    filterLength: Int,
     init: String = "glorot_uniform",
     activation: String = null,
+    borderMode: String = "valid",
+    subsampleLength: Int = 1,
     wRegularizer: Regularizer[T] = null,
     bRegularizer: Regularizer[T] = null,
     bias: Boolean = true,
-    inputShape: Shape = null)(implicit ev: TensorNumeric[T]): Dense[T] = {
-    new Dense[T](outputDim, KerasUtils.getInitMethod(init),
-      KerasUtils.getKerasActivation(activation),
-      wRegularizer, bRegularizer, bias, inputShape)
+    inputShape: Shape = null)
+    (implicit ev: TensorNumeric[T]): Convolution1D[T] = {
+    val initValue = KerasUtils.getInitMethod(init)
+    val activationValue = KerasUtils.getKerasActivation(activation)
+    new Convolution1D[T](nbFilter, filterLength, initValue, activationValue, borderMode,
+      subsampleLength, wRegularizer, bRegularizer, bias, inputShape)
   }
 }
-
-
