@@ -19,4 +19,5 @@ package com.intel.analytics.zoo.pipeline.api.keras
 package object layers {
    val Conv1D = Convolution1D
    val Conv2D = Convolution2D
+   val Conv3D = Convolution3D
 }
