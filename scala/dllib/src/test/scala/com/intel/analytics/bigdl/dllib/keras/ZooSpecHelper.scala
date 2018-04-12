@@ -17,6 +17,10 @@ package com.intel.analytics.zoo.pipeline.api.keras
 
 import java.io.{File => JFile}
 
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
+import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.utils.RandomGenerator
+import com.intel.analytics.zoo.models.common.ZooModel
 import org.apache.log4j.Logger
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
@@ -60,5 +64,50 @@ abstract class ZooSpecHelper extends FlatSpec with Matchers with BeforeAndAfter 
         logger.info(s"deleted file $f")
       }
     })
+  }
+
+  def compareOutputAndGradInput(model1: AbstractModule[Tensor[Float], Tensor[Float], Float],
+                                model2: AbstractModule[Tensor[Float], Tensor[Float], Float],
+                                input: Tensor[Float],
+                                precision: Double = 1e-5): Unit = {
+    // Set seed in case of random factors such as dropout
+    RandomGenerator.RNG.setSeed(1000)
+    val toutput = model1.forward(input)
+    RandomGenerator.RNG.setSeed(1000)
+    val koutput = model2.forward(input)
+    koutput.almostEqual(toutput, precision) should be (true)
+    RandomGenerator.RNG.setSeed(1000)
+    val tgradInput = model1.backward(input, toutput)
+    RandomGenerator.RNG.setSeed(1000)
+    val kgradInput = model2.backward(input, koutput)
+    kgradInput.almostEqual(tgradInput, precision) should be (true)
+  }
+
+  def compareOutputAndGradInputSetWeights(
+      model1: AbstractModule[Tensor[Float], Tensor[Float], Float],
+      model2: AbstractModule[Tensor[Float], Tensor[Float], Float],
+      input: Tensor[Float],
+      precision: Double = 1e-5): Unit = {
+    if (model1.getWeightsBias() != null) {
+      model2.setWeightsBias(model1.getWeightsBias())
+    }
+    compareOutputAndGradInput(model1, model2, input, precision)
+  }
+
+  def testZooModelLoadSave(model: AbstractModule[Tensor[Float], Tensor[Float], Float],
+                           input: Tensor[Float],
+                           loader: (String, String) => AbstractModule[Activity, Activity, Float],
+                           precision: Double = 1e-5): Unit = {
+    val serFile = JFile.createTempFile(model.getName(), "model")
+    model.saveModule(serFile.getAbsolutePath, overWrite = true)
+    val loadedModel = loader(serFile.getAbsolutePath, null)
+      .asInstanceOf[ZooModel[Activity, Activity, Float]]
+    require(loadedModel.modules.length == 1)
+    compareOutputAndGradInput(model,
+      loadedModel.asInstanceOf[AbstractModule[Tensor[Float], Tensor[Float], Float]],
+      input, precision)
+    if (serFile.exists) {
+      serFile.delete
+    }
   }
 }
