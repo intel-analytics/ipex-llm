@@ -37,17 +37,10 @@ class Convolution2DSpec extends KerasBaseSpec {
         |model = Model(input=input_tensor, output=output_tensor)
       """.stripMargin
     val seq = Sequential[Float]()
-    val layer = Convolution2D[Float](64,
-      2,
-      5,
-      activation = "relu",
-      inputShape = Shape(3, 24, 24))
+    val layer = Convolution2D[Float](64, 2, 5, activation = "relu", inputShape = Shape(3, 24, 24))
     seq.add(layer)
-    checkOutputAndGrad(
-      seq.asInstanceOf[AbstractModule[Tensor[Float], Tensor[Float], Float]],
-      kerasCode,
-      weightConverter,
-      1e-3)
+    checkOutputAndGrad(seq.asInstanceOf[AbstractModule[Tensor[Float], Tensor[Float], Float]],
+      kerasCode, weightConverter, 1e-3)
   }
 
   "Convolution2D NHWC" should "be the same as Keras" in {
@@ -60,18 +53,11 @@ class Convolution2DSpec extends KerasBaseSpec {
         |model = Model(input=input_tensor, output=output_tensor)
       """.stripMargin
     val seq = Sequential[Float]()
-    val layer = Convolution2D[Float](32,
-      4,
-      6,
-      dimOrdering = "tf",
-      borderMode = "same",
-      inputShape = Shape(24, 24, 3))
+    val layer = Convolution2D[Float](32, 4, 6, dimOrdering = "tf",
+      borderMode = "same", inputShape = Shape(24, 24, 3))
     seq.add(layer)
-    checkOutputAndGrad(
-      seq.asInstanceOf[AbstractModule[Tensor[Float], Tensor[Float], Float]],
-      kerasCode,
-      weightConverter,
-      1e-3)
+    checkOutputAndGrad(seq.asInstanceOf[AbstractModule[Tensor[Float], Tensor[Float], Float]],
+      kerasCode, weightConverter, 1e-3)
   }
 
   "Conv2D without bias" should "be the same as Keras" in {
@@ -84,18 +70,10 @@ class Convolution2DSpec extends KerasBaseSpec {
         |model = Model(input=input_tensor, output=output_tensor)
       """.stripMargin
     val seq = Sequential[Float]()
-    val layer = Conv2D[Float](64,
-      2,
-      5,
-      subsample = (2, 3),
-      init = "normal",
-      bias = false,
-      inputShape = Shape(3, 24, 24))
+    val layer = Conv2D[Float](64, 2, 5, subsample = (2, 3),
+      init = "normal", bias = false, inputShape = Shape(3, 24, 24))
     seq.add(layer)
-    checkOutputAndGrad(
-      seq.asInstanceOf[AbstractModule[Tensor[Float], Tensor[Float], Float]],
-      kerasCode,
-      weightConverter,
-      1e-4)
+    checkOutputAndGrad(seq.asInstanceOf[AbstractModule[Tensor[Float], Tensor[Float], Float]],
+      kerasCode, weightConverter, 1e-4)
   }
 }
