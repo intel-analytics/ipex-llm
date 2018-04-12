@@ -19,10 +19,13 @@ package com.intel.analytics.zoo.pipeline.nnframes
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.{Criterion, Module}
+import com.intel.analytics.zoo.pipeline.nnframes.NNModel.NNModelWriter
+import org.apache.spark.ml.DefaultParamsWriterWrapper
 import org.apache.spark.ml.adapter.SchemaUtils
 import org.apache.spark.ml.param.ParamMap
-import org.apache.spark.ml.util.Identifiable
+import org.apache.spark.ml.util.{Identifiable, MLReadable, MLReader}
 import org.apache.spark.sql.types._
+import org.json4s.DefaultFormats
 
 import scala.reflect.ClassTag
 
@@ -79,5 +82,34 @@ class NNClassifierModel[T: ClassTag](
   override def transformSchema(schema : StructType): StructType = {
     validateDataType(schema, $(featuresCol))
     SchemaUtils.appendColumn(schema, $(predictionCol), DoubleType)
+  }
+}
+
+object NNClassifierModel extends MLReadable[NNClassifierModel[_]] {
+  private[nnframes] class NNClassifierModelReader() extends MLReader[NNClassifierModel[_]] {
+    import scala.language.existentials
+    implicit val format: DefaultFormats.type = DefaultFormats
+    override def load(path: String): NNClassifierModel[_] = {
+      val (meta, model, typeTag) = NNModel.getMetaAndModel(path, sc)
+      val featureSize = (meta.metadata \ "featureSize").extract[Seq[Int]].toArray
+      val nnModel = typeTag match {
+        case "TensorDouble" =>
+          new NNClassifierModel[Double](model.asInstanceOf[Module[Double]], featureSize)
+        case "TensorFloat" =>
+          new NNClassifierModel[Float](model.asInstanceOf[Module[Float]], featureSize)
+        case _ =>
+          throw new Exception("Only support float and double for now")
+      }
+
+      DefaultParamsWriterWrapper.getAndSetParams(nnModel, meta)
+      nnModel
+    }
+  }
+
+  class NNClassifierModelWriter[T: ClassTag]
+  (instance: NNClassifierModel[T])(implicit ev: TensorNumeric[T]) extends NNModelWriter[T](instance)
+
+  override def read: MLReader[NNClassifierModel[_]] = {
+    new NNClassifierModel.NNClassifierModelReader
   }
 }
