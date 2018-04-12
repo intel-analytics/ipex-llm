@@ -16,10 +16,11 @@
 
 package com.intel.analytics.zoo.pipeline.nnframes
 
-import com.intel.analytics.bigdl.dlframes.DLModel
+import java.io.File
+
 import com.intel.analytics.bigdl.models.inception.Inception_v1
 import com.intel.analytics.bigdl.nn._
-import com.intel.analytics.bigdl.optim.{LBFGS, Loss, Trigger}
+import com.intel.analytics.bigdl.optim.{LBFGS, Loss, SGD, Trigger}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
 import com.intel.analytics.bigdl.transform.vision.image.MatToTensor
@@ -34,6 +35,7 @@ import org.apache.spark.mllib.linalg.Vectors
 import org.apache.spark.sql.{DataFrame, Row, SQLContext}
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
+import scala.reflect.io.Path
 import scala.util.Random
 
 class NNEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
@@ -85,9 +87,9 @@ class NNEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val data = sc.parallelize(smallData)
     val df = sqlContext.createDataFrame(data).toDF("features", "label")
 
-    val dlModel = estimator.fit(df)
-    dlModel.isInstanceOf[DLModel[_]] should be(true)
-    val correct = dlModel.transform(df).select("label", "prediction").rdd.filter {
+    val nnModel = estimator.fit(df)
+    nnModel.isInstanceOf[NNModel[_]] should be(true)
+    val correct = nnModel.transform(df).select("label", "prediction").rdd.filter {
       case Row(label: Double, prediction: Seq[_]) =>
         label == prediction.indexOf(prediction.asInstanceOf[Seq[Double]].max) + 1
     }.count()
@@ -111,8 +113,8 @@ class NNEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
         .toDF("features", "label") // MLlib Vector
       // TODO: add ML Vector when ut for Spark 2.0+ is ready
     ).foreach { df =>
-      val dlModel = estimator.fit(df)
-      dlModel.transform(df).collect()
+      val nnModel = estimator.fit(df)
+      nnModel.transform(df).collect()
     }
   }
 
@@ -131,8 +133,8 @@ class NNEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
         .toDF("features", "label") // Double
       // TODO: add ML Vector when ut for Spark 2.0+ is ready
     ).foreach { df =>
-      val dlModel = estimator.fit(df)
-      dlModel.transform(df).collect()
+      val nnModel = estimator.fit(df)
+      nnModel.transform(df).collect()
     }
   }
 
@@ -153,8 +155,8 @@ class NNEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
         Vectors.dense(p._2, p._2))))).toDF("features", "label") // MLlib Vector
       // TODO: add ML Vector when ut for Spark 2.0+ is ready
     ).foreach { df =>
-      val dlModel = estimator.fit(df)
-      dlModel.transform(df).collect()
+      val nnModel = estimator.fit(df)
+      nnModel.transform(df).collect()
     }
   }
 
@@ -173,8 +175,8 @@ class NNEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
         .toDF("features", "label") // Double
       // TODO: add ML Vector when ut for Spark 2.0+ is ready
     ).foreach { df =>
-      val dlModel = estimator.fit(df)
-      dlModel.transform(df).collect()
+      val nnModel = estimator.fit(df)
+      nnModel.transform(df).collect()
     }
   }
 
@@ -194,8 +196,8 @@ class NNEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
     )
     val trainingDF: DataFrame = sqlContext.createDataFrame(miniBatch).toDF("features", "label")
 
-    val dlModel = estimator.fit(trainingDF)
-    dlModel.transform(trainingDF).collect()
+    val nnModel = estimator.fit(trainingDF)
+    nnModel.transform(trainingDF).collect()
   }
 
   "An NNEstimator" should "support different batchSize" in {
@@ -207,9 +209,9 @@ class NNEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val data = sc.parallelize(smallData)
     val df: DataFrame = sqlContext.createDataFrame(data).toDF("features", "label")
 
-    val dlModel = estimator.fit(df)
-    dlModel.isInstanceOf[DLModel[_]] should be(true)
-    dlModel.transform(df).count()
+    val nnModel = estimator.fit(df)
+    nnModel.isInstanceOf[NNModel[_]] should be(true)
+    nnModel.transform(df).count()
   }
 
   "An NNModel" should "support transform with different batchSize" in {
@@ -220,8 +222,8 @@ class NNEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
       .setMaxEpoch(maxEpoch)
     val data = sc.parallelize(smallData)
     val df: DataFrame = sqlContext.createDataFrame(data).toDF("features", "label")
-    val dlModel = estimator.fit(df)
-    assert(df.count() == dlModel.setBatchSize(51).transform(df).count())
+    val nnModel = estimator.fit(df)
+    assert(df.count() == nnModel.setBatchSize(51).transform(df).count())
   }
 
   "An NNEstimator" should "throws exception without correct inputs" in {
@@ -254,7 +256,7 @@ class NNEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val data = sc.parallelize(smallData)
     val df = sqlContext.createDataFrame(data).toDF("features", "label")
 
-    val dlModel = estimator.fit(df)
+    val nnModel = estimator.fit(df)
     val trainSummary = estimator.getTrainSummary.get
     val losses = trainSummary.readScalar("Loss")
     assert(losses.length == 5)
@@ -274,7 +276,7 @@ class NNEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
       .setValidation(Trigger.severalIteration(1), df, Array(new Loss[Float]()), 2)
       .setValidationSummary(ValidationSummary(logdir.getPath, "NNEstimatorValidation"))
 
-    val dlModel = estimator.fit(df)
+    val nnModel = estimator.fit(df)
     val validationSummary = estimator.getValidationSummary.get
     val losses = validationSummary.readScalar("Loss")
     assert(losses.length == 5)
@@ -346,6 +348,36 @@ class NNEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
     pipeline.fit(imageDF)
   }
 
+  "An NNModel" should "return same results after saving and loading" in {
+    val data = sqlContext.createDataFrame(smallData).toDF("features", "label")
+    val module = new Sequential[Double]().add(Linear[Double](6, 2)).add(LogSoftMax[Double])
+    val nnModel = new NNModel[Double](module, Array(6))
+
+    val tmpFile = File.createTempFile("DLModel", "bigdl")
+    val filePath = tmpFile.getPath + Random.nextLong().toString
+    nnModel.setBatchSize(10).setFeatureSize(Array(10, 100))
+      .setFeaturesCol("test123").setPredictionCol("predict123")
+    nnModel.write.overwrite().save(filePath)
+    val nnModel2 = try {
+      NNModel.load(filePath)
+    } finally {
+      Path(tmpFile).deleteRecursively()
+      Path(filePath).deleteRecursively()
+    }
+
+    nnModel2.uid shouldEqual nnModel.uid
+    nnModel2.getBatchSize shouldEqual nnModel.getBatchSize
+    nnModel2.getFeaturesCol shouldEqual nnModel.getFeaturesCol
+    nnModel2.getPredictionCol shouldEqual nnModel.getPredictionCol
+    nnModel2.getFeatureSize shouldEqual nnModel.getFeatureSize
+    nnModel2.setFeatureSize(Array(6)).setFeaturesCol("features").setPredictionCol("prediction")
+    val result2 = nnModel2.transform(data).rdd.map(_.getSeq[Double](2).head).collect()
+
+    nnModel.setFeatureSize(Array(6)).setFeaturesCol("features").setPredictionCol("prediction")
+    val result = nnModel.transform(data).rdd.map(_.getSeq[Double](2).head).collect()
+
+    result2 shouldEqual result
+  }
 }
 
 private case class MinibatchData[T](featureData : Array[T], labelData : Array[T])

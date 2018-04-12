@@ -16,6 +16,8 @@
 
 package com.intel.analytics.zoo.pipeline.nnframes
 
+import java.io.File
+
 import com.intel.analytics.bigdl.models.inception.Inception_v1
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.optim.Trigger
@@ -24,12 +26,12 @@ import com.intel.analytics.bigdl.transform.vision.image.MatToTensor
 import com.intel.analytics.bigdl.transform.vision.image.augmentation.{CenterCrop, ChannelNormalize, Resize}
 import com.intel.analytics.bigdl.utils.Engine
 import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
-
 import org.apache.spark.SparkContext
 import org.apache.spark.sql.functions._
-import org.apache.spark.sql.{SQLContext}
+import org.apache.spark.sql.SQLContext
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
+import scala.reflect.io.Path
 import scala.util.Random
 
 class NNClassifierSpec extends FlatSpec with Matchers with BeforeAndAfter {
@@ -43,6 +45,8 @@ class NNClassifierSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val conf = Engine.createSparkConf().setAppName("Test DLEstimator").setMaster("local[1]")
     sc = SparkContext.getOrCreate(conf)
     sqlContext = new SQLContext(sc)
+    smallData = NNEstimatorSpec.generateTestInput(
+      nRecords, Array(1.0, 2.0, 3.0, 4.0, 5.0, 6.0), -1.0, 42L)
     Random.setSeed(42)
     RNG.setSeed(42)
     Engine.init
@@ -70,5 +74,32 @@ class NNClassifierSpec extends FlatSpec with Matchers with BeforeAndAfter {
       .setBatchSize(1)
       .setEndWhen(Trigger.maxIteration(1))
     estimator.fit(transformedDF)
+  }
+
+  "An NNClasifierModel" should "return same results after saving and loading" in {
+    val data = sqlContext.createDataFrame(smallData).toDF("features", "label")
+    val module = new Sequential[Double]().add(Linear[Double](6, 2)).add(LogSoftMax[Double])
+    val nnModel = new NNClassifierModel[Double](module, Array(6))
+    val result = nnModel.transform(data).rdd.map(_.getAs[Double](2)).collect().sorted
+
+    val tmpFile = File.createTempFile("DLModel", "bigdl")
+    val filePath = File.createTempFile("DLModel", "bigdl").getPath + Random.nextLong().toString
+    nnModel.setBatchSize(10).setFeatureSize(Array(10, 100))
+      .setFeaturesCol("test123").setPredictionCol("predict123")
+    nnModel.write.overwrite().save(filePath)
+    val nnModel2 = try {
+      NNClassifierModel.load(filePath)
+    } finally {
+     Path(tmpFile).deleteRecursively()
+     Path(filePath).deleteRecursively()
+    }
+    nnModel2.uid shouldEqual nnModel.uid
+    nnModel2.getBatchSize shouldEqual nnModel.getBatchSize
+    nnModel2.getFeaturesCol shouldEqual nnModel.getFeaturesCol
+    nnModel2.getPredictionCol shouldEqual nnModel.getPredictionCol
+    nnModel2.getFeatureSize shouldEqual nnModel.getFeatureSize
+    nnModel2.setFeatureSize(Array(6)).setFeaturesCol("features").setPredictionCol("prediction")
+    val result2 = nnModel2.transform(data).rdd.map(_.getAs[Double](2)).collect().sorted
+    result2 shouldEqual result
   }
 }
