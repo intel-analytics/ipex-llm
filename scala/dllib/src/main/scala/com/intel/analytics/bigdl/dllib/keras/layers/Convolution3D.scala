@@ -67,7 +67,7 @@ class Convolution3D[T: ClassTag](
     override val borderMode: String = "valid",
     override val subsample: Array[Int] = Array(1, 1, 1),
     override val dimOrdering: String = "CHANNEL_FIRST",
-    override val wRegularizer: Regularizer[T] = null,
+    wRegularizer: Regularizer[T] = null,
     bRegularizer: Regularizer[T] = null,
     override val bias: Boolean = true,
     override val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
@@ -91,6 +91,11 @@ object Convolution3D {
       bRegularizer: Regularizer[T] = null,
       bias: Boolean = true,
       inputShape: Shape = null)(implicit ev: TensorNumeric[T]): Convolution3D[T] = {
+    val subsampleArray = subsample match {
+      case null => throw new IllegalArgumentException("For Convolution3D, " +
+        "subsample can not be null, please input int tuple of length 3")
+      case _ => Array(subsample._1, subsample._2, subsample._3)
+    }
     new Convolution3D[T](nbFilter, kernelDim1, kernelDim2, kernelDim3,
       KerasUtils.getInitMethod(init), KerasUtils.getKerasActivation(activation),
       borderMode, Array(subsample._1, subsample._2, subsample._3),

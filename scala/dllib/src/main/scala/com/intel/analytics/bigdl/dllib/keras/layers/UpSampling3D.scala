@@ -49,8 +49,8 @@ object UpSampling3D {
     dimOrdering: String = "th",
     inputShape: Shape = null)(implicit ev: TensorNumeric[T]): UpSampling3D[T] = {
     val sizeArray = size match {
-      case null => throw new IllegalArgumentException("" +
-        "size can not be null, please input int tuple of length 3.")
+      case null => throw new IllegalArgumentException("For UpSampling3D, " +
+        "size can not be null, please input int tuple of length 3")
       case _ => Array(size._1, size._2, size._3)
     }
     new UpSampling3D[T](sizeArray, KerasUtils.toBigDLFormat5D(dimOrdering), inputShape)

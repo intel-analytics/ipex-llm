@@ -16,22 +16,7 @@
 
 package com.intel.analytics.zoo.pipeline.api.keras.layers
 
-import scala.reflect.ClassTag
-
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.Shape
-
-/**
- * Just a wrapper class. Please use Activation('softmax') instead.
- */
-class SoftMax[T: ClassTag](
-    override val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
-  extends com.intel.analytics.bigdl.nn.keras.SoftMax[T](inputShape) {
-}
-
-object SoftMax {
-  def apply[@specialized(Float, Double) T: ClassTag](
-    inputShape: Shape = null)(implicit ev: TensorNumeric[T]): SoftMax[T] = {
-    new SoftMax[T](inputShape)
-  }
+package object extra {
+  // Alias
+  val ShareConv2D = ShareConvolution2D
 }

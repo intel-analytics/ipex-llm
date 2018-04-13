@@ -57,14 +57,14 @@ object AveragePooling2D {
     borderMode: String = "valid",
     dimOrdering: String = "th",
     inputShape: Shape = null)(implicit ev: TensorNumeric[T]): AveragePooling2D[T] = {
+    val poolSizeArray = poolSize match {
+      case null => throw new IllegalArgumentException("For AveragePooling2D, " +
+        "poolSize can not be null, please input int tuple of length 2")
+      case _ => Array(poolSize._1, poolSize._2)
+    }
     val strideArray = strides match {
       case null => null
       case _ => Array(strides._1, strides._2)
-    }
-    val poolSizeArray = poolSize match {
-      case null => throw new IllegalArgumentException("" +
-        "poolSize can not be null, please input int tuple of length 2.")
-      case _ => Array(poolSize._1, poolSize._2)
     }
     new AveragePooling2D[T](
       poolSizeArray, strideArray,

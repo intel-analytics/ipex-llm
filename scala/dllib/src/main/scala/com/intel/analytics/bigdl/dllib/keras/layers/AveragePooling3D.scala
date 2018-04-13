@@ -52,14 +52,14 @@ object AveragePooling3D {
     strides: (Int, Int, Int) = null,
     dimOrdering: String = "th",
     inputShape: Shape = null)(implicit ev: TensorNumeric[T]): AveragePooling3D[T] = {
+    val poolSizeArray = poolSize match {
+      case null => throw new IllegalArgumentException("For AveragePooling3D, " +
+        "poolSize can not be null, please input int tuple of length 3")
+      case _ => Array(poolSize._1, poolSize._2, poolSize._3)
+    }
     val strideArray = strides match {
       case null => null
       case _ => Array(strides._1, strides._2, strides._3)
-    }
-    val poolSizeArray = poolSize match {
-      case null => throw new IllegalArgumentException("" +
-        "poolSize can not be null, please input int tuple of length 3.")
-      case _ => Array(poolSize._1, poolSize._2, poolSize._3)
     }
     new AveragePooling3D[T](poolSizeArray, strideArray,
                             KerasUtils.toBigDLFormat5D(dimOrdering), inputShape)
