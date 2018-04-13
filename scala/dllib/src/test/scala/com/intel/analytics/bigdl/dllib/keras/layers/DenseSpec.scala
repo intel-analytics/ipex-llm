@@ -17,7 +17,6 @@
 package com.intel.analytics.zoo.pipeline.api.keras.layers
 
 import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
-import com.intel.analytics.zoo.pipeline.api.keras.layers.{Input => ZInput, InputLayer => ZInputLayer, Dense => ZDense, Sequential => ZSequential, Model => ZModel}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.Shape
 
@@ -33,10 +32,10 @@ class DenseSpec extends KerasBaseSpec {
         |output_tensor = Dense(2, activation="relu")(input_tensor)
         |model = Model(input=input_tensor, output=output_tensor)
       """.stripMargin
-    val seq = ZSequential[Float]()
-    val input = ZInputLayer[Float](inputShape = Shape(3), name = "input1")
+    val seq = Sequential[Float]()
+    val input = InputLayer[Float](inputShape = Shape(3), name = "input1")
     seq.add(input)
-    val dense = ZDense[Float](2, activation = "relu")
+    val dense = Dense[Float](2, activation = "relu")
     seq.add(dense)
     seq.getOutputShape().toSingle().toArray should be (Array(-1, 2))
     checkOutputAndGrad(seq.asInstanceOf[AbstractModule[Tensor[Float], Tensor[Float], Float]],
@@ -52,9 +51,9 @@ class DenseSpec extends KerasBaseSpec {
         |Dense(2, init='one', input_shape=(10, 5, 7))(input_tensor)
         |model = Model(input=input_tensor, output=output_tensor)
       """.stripMargin
-    val input = ZInput[Float](inputShape = Shape(10, 5, 7))
-    val dense = ZDense[Float](2, init = "one").inputs(input)
-    val model = ZModel(input, dense)
+    val input = Input[Float](inputShape = Shape(10, 5, 7))
+    val dense = Dense[Float](2, init = "one").inputs(input)
+    val model = Model(input, dense)
     model.getOutputShape().toSingle().toArray should be (Array(-1, 10, 5, 2))
     checkOutputAndGrad(model.asInstanceOf[AbstractModule[Tensor[Float], Tensor[Float], Float]],
       kerasCode, weightConverter, precision = 1e-4)

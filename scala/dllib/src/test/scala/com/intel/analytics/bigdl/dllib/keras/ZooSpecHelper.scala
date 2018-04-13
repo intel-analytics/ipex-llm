@@ -26,7 +26,6 @@ import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.collection.mutable.ArrayBuffer
 
-
 abstract class ZooSpecHelper extends FlatSpec with Matchers with BeforeAndAfter {
   protected val logger = Logger.getLogger(getClass)
 

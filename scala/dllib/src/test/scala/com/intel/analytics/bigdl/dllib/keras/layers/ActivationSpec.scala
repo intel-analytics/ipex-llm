@@ -21,6 +21,7 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.Shape
 
 class ActivationSpec extends KerasBaseSpec {
+
   "tanh" should "be the same as Keras" in {
     val kerasCode =
       """
@@ -140,4 +141,20 @@ class ActivationSpec extends KerasBaseSpec {
     checkOutputAndGrad(seq.asInstanceOf[AbstractModule[Tensor[Float], Tensor[Float], Float]],
       kerasCode)
   }
+
+  "linear" should "be the same as Keras" in {
+    val kerasCode =
+      """
+        |input_tensor = Input(shape=[4, 5])
+        |input = np.random.random([2, 4, 5])
+        |output_tensor = Activation('linear')(input_tensor)
+        |model = Model(input=input_tensor, output=output_tensor)
+      """.stripMargin
+    val seq = Sequential[Float]()
+    val layer = Activation[Float]("linear", inputShape = Shape(4, 5))
+    seq.add(layer)
+    checkOutputAndGrad(seq.asInstanceOf[AbstractModule[Tensor[Float], Tensor[Float], Float]],
+      kerasCode)
+  }
+
 }
