@@ -49,8 +49,8 @@ object ZeroPadding3D {
     dimOrdering: String = "th",
     inputShape: Shape = null)(implicit ev: TensorNumeric[T]) : ZeroPadding3D[T] = {
     val paddingArray = padding match {
-      case null => throw new IllegalArgumentException("" +
-        "padding can not be null, please input int tuple of length 3.")
+      case null => throw new IllegalArgumentException("For ZeroPadding3D, " +
+        "padding can not be null, please input int tuple of length 3")
       case _ => Array(padding._1, padding._2, padding._3)
     }
     new ZeroPadding3D[T](paddingArray, KerasUtils.toBigDLFormat5D(dimOrdering), inputShape)

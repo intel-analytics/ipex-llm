@@ -16,15 +16,20 @@
 
 package com.intel.analytics.zoo.pipeline.api.keras.layers
 
-import scala.reflect.ClassTag
-
+import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
+import com.intel.analytics.bigdl.nn.keras.{Activation => BigDLActivation}
+import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.zoo.pipeline.api.keras.layers.utils.KerasUtils
+
+import scala.reflect.ClassTag
 
 /**
  * Simple activation function to be applied to the output.
- * Available activations: 'tanh', 'relu', 'sigmoid', 'softmax', 'softplus',
- * 'softsign', 'hard_sigmoid'.
+ * Available activations: 'tanh', 'relu', 'sigmoid', 'softmax', 'softplus', 'softsign',
+ *                        'hard_sigmoid', 'linear', 'relu6', 'tanh_shrink', 'softmin',
+ *                        'log_sigmoid' and 'log_softmax'.
  *
  * When you use this layer as the first layer of a model, you need to provide the argument
  * inputShape (a Single Shape, does not include the batch dimension).
@@ -33,9 +38,14 @@ import com.intel.analytics.bigdl.utils.Shape
  * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now.
  */
 class Activation[T: ClassTag](
-  override val activation: String,
-  override val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
-  extends com.intel.analytics.bigdl.nn.keras.Activation[T](activation, inputShape) {
+    override val activation: String,
+    override val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
+  extends BigDLActivation[T](activation, inputShape) {
+
+  override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
+    val kerasActivation = KerasUtils.getKerasActivation(activation)
+    kerasActivation.doBuild(inputShape)
+  }
 }
 
 object Activation {

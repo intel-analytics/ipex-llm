@@ -89,13 +89,13 @@ object AtrousConvolution2D {
     bRegularizer: Regularizer[T] = null,
     inputShape: Shape = null)(implicit ev: TensorNumeric[T]): AtrousConvolution2D[T] = {
     val subsampleArray = subsample match {
-      case null => throw new IllegalArgumentException("" +
-        "subsample can not be null, please input int tuple of length 2.")
+      case null => throw new IllegalArgumentException("For AtrousConvolution2D, " +
+        "subsample can not be null, please input int tuple of length 2")
       case _ => Array(subsample._1, subsample._2)
     }
     val atrousRateArray = atrousRate match {
-      case null => throw new IllegalArgumentException("" +
-        "atrousRate can not be null, please input int tuple of length 2.")
+      case null => throw new IllegalArgumentException("For AtrousConvolution2D, " +
+        "atrousRate can not be null, please input int tuple of length 2")
       case _ => Array(atrousRate._1, atrousRate._2)
     }
     new AtrousConvolution2D[T](nbFilter, nbRow, nbCol, KerasUtils.getInitMethod(init),

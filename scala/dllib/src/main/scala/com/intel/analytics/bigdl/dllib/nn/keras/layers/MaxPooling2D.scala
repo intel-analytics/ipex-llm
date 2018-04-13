@@ -56,8 +56,8 @@ object MaxPooling2D {
     inputShape: Shape = null)
     (implicit ev: TensorNumeric[T]): MaxPooling2D[T] = {
     val poolSizeArray = poolSize match {
-      case null => throw new IllegalArgumentException("" +
-        "poolSize can not be null, please input int tuple of length 2.")
+      case null => throw new IllegalArgumentException("For MaxPooling2D, " +
+        "poolSize can not be null, please input int tuple of length 2")
       case _ => Array(poolSize._1, poolSize._2)
     }
     val stridesArray = strides match {

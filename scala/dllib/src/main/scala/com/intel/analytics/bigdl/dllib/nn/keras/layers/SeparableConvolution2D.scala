@@ -99,10 +99,10 @@ object SeparableConvolution2D {
     pointwiseRegularizer: Regularizer[T] = null,
     bRegularizer: Regularizer[T] = null,
     bias: Boolean = true,
-    inputShape: Shape = null)(implicit ev: TensorNumeric[T]) : SeparableConvolution2D[T] = {
+    inputShape: Shape = null)(implicit ev: TensorNumeric[T]): SeparableConvolution2D[T] = {
     val subsampleArray = subsample match {
-      case null => throw new IllegalArgumentException("" +
-        "subsample can not be null, please input int tuple of length 2.")
+      case null => throw new IllegalArgumentException("For SeparableConvolution2D, " +
+        "subsample can not be null, please input int tuple of length 2")
       case _ => Array(subsample._1, subsample._2)
     }
     new SeparableConvolution2D[T](nbFilter, nbRow, nbCol,

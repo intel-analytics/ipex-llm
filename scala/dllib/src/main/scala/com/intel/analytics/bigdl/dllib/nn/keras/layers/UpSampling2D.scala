@@ -50,8 +50,8 @@ object UpSampling2D {
     dimOrdering: String = "th",
     inputShape: Shape = null)(implicit ev: TensorNumeric[T]): UpSampling2D[T] = {
     val sizeArray = size match {
-      case null => throw new IllegalArgumentException("" +
-        "size can not be null, please input int tuple of length 2.")
+      case null => throw new IllegalArgumentException("For UpSampling2D, " +
+        "size can not be null, please input int tuple of length 2")
       case _ => Array(size._1, size._2)
     }
     new UpSampling2D[T](sizeArray, KerasUtils.toBigDLFormat(dimOrdering), inputShape)

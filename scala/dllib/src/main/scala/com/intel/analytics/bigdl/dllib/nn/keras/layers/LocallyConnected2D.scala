@@ -82,8 +82,8 @@ object LocallyConnected2D {
     bias: Boolean = true,
     inputShape: Shape = null)(implicit ev: TensorNumeric[T]): LocallyConnected2D[T] = {
     val subsampleArray = subsample match {
-      case null => throw new IllegalArgumentException("" +
-        "subsample can not be null, please input int tuple of length 2.")
+      case null => throw new IllegalArgumentException("For LocallyConnected2D, " +
+        "subsample can not be null, please input int tuple of length 2")
       case _ => Array(subsample._1, subsample._2)
     }
     new LocallyConnected2D[T](nbFilter, nbRow, nbCol,

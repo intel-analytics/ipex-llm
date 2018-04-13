@@ -14,41 +14,42 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.zoo.pipeline.api.keras.layers
+package com.intel.analytics.zoo.pipeline.api.keras.layers.extra
 
-import com.intel.analytics.bigdl.nn.keras.{Cropping1D => BigDLCropping1D}
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, IdentityOutputShape}
+import com.intel.analytics.bigdl.nn.keras.KerasLayer
+import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.zoo.pipeline.api.keras.layers.utils.KerasUtils
 
 import scala.reflect.ClassTag
 
 /**
- * Cropping layer for 1D input (e.g. temporal sequence).
- * The input of this layer should be 3D.
+ * Add a (non-learnable) scalar constant to the input.
  *
  * When you use this layer as the first layer of a model, you need to provide the argument
  * inputShape (a Single Shape, does not include the batch dimension).
  *
- * @param cropping Int array of length 2. How many units should be trimmed off
- *                 at the beginning and end of the cropping dimension. Default is (1, 1).
+ * @param constant The scalar constant to be added.
  * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now.
  */
-class Cropping1D[T: ClassTag](
-    override val cropping: Array[Int] = Array(1, 1),
-    override val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
-  extends BigDLCropping1D[T](
-    cropping, inputShape) {
+class AddConstant[T: ClassTag](
+    val constant: Double,
+    val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
+  extends KerasLayer[Tensor[T], Tensor[T], T](KerasUtils.addBatch(inputShape))
+    with IdentityOutputShape {
+
+  override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
+    val layer = com.intel.analytics.bigdl.nn.AddConstant(constant)
+    layer.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
+  }
 }
 
-object Cropping1D {
+object AddConstant {
   def apply[@specialized(Float, Double) T: ClassTag](
-    cropping: (Int, Int) = (1, 1),
-    inputShape: Shape = null)(implicit ev: TensorNumeric[T]): Cropping1D[T] = {
-    val croppingArray = cropping match {
-      case null => throw new IllegalArgumentException("For Cropping1D, " +
-        "cropping can not be null, please input int tuple of length 2")
-      case _ => Array(cropping._1, cropping._2)
-    }
-    new Cropping1D[T](croppingArray, inputShape)
+    constant: Double,
+    inputShape: Shape = null)(implicit ev: TensorNumeric[T]): AddConstant[T] = {
+    new AddConstant[T](constant, inputShape)
   }
 }

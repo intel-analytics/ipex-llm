@@ -18,12 +18,12 @@ package com.intel.analytics.zoo.pipeline.api.keras.layers.utils
 
 import com.intel.analytics.bigdl.Criterion
 import com.intel.analytics.bigdl.nn._
-import com.intel.analytics.bigdl.nn.keras.{SoftMax => KSoftMax}
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, DataFormat}
-import com.intel.analytics.bigdl.nn.keras.{KerasIdentityWrapper, KerasLayer}
+import com.intel.analytics.bigdl.nn.keras.{KerasIdentityWrapper, KerasLayer, KerasLayerWrapper, SoftMax => KSoftMax, Sequential => KSequential}
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, DataFormat}
 import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.{Shape, SingleShape}
 
 import scala.reflect.ClassTag
 
@@ -75,6 +75,12 @@ object KerasUtils {
           case "softplus" => SoftPlus[T]()
           case "softsign" => SoftSign[T]()
           case "hard_sigmoid" => HardSigmoid[T]()
+          case "relu6" => ReLU6[T]()
+          case "tanh_shrink" => TanhShrink[T]()
+          case "softmin" => SoftMin[T]()
+          case "log_sigmoid" => LogSigmoid[T]()
+          case "log_softmax" => LogSoftMax[T]()
+          case "linear" => Identity[T]().asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
           case _ => throw new IllegalArgumentException(s"Invalid activation: " +
             s"${activation.toLowerCase}. Only simple activations can be constructed using string")
       }
@@ -169,6 +175,46 @@ object KerasUtils {
     }
     else {
       throw new IllegalArgumentException(s"Unsupported metrics: ${metrics.mkString(", ")}")
+    }
+  }
+
+  def addBatch(shape: Shape): Shape = {
+    if (shape == null) {
+      return null
+    }
+    if (shape.isInstanceOf[SingleShape]) {
+      Shape((List(-1) ++ shape.toSingle()).toArray)
+    } else {
+      Shape(shape.toMulti().map {addBatch})
+    }
+  }
+
+  def removeBatch(shape: Shape): Shape = {
+    if (shape == null) {
+      return null
+    }
+    if (shape.isInstanceOf[SingleShape]) {
+      Shape(shape.toSingle().slice(1, shape.toSingle().length).toArray)
+    } else {
+      Shape(shape.toMulti().map {removeBatch})
+    }
+  }
+
+  def fuse[T: ClassTag](
+      torchLayer: AbstractModule[Activity, Activity, T],
+      kerasActivation: KerasLayer[Tensor[T], Tensor[T], T],
+      batchInputShape: Shape)
+      (implicit ev: TensorNumeric[T]): AbstractModule[Activity, Activity, T] = {
+    if (kerasActivation == null) {
+      torchLayer
+    } else {
+      val wrapper = KSequential[T]()
+      wrapper.add(new KerasLayerWrapper[T](torchLayer,
+        removeBatch(batchInputShape)))
+      wrapper.add(kerasActivation)
+      wrapper.setName(torchLayer.getName())
+      wrapper.build(batchInputShape)
+      wrapper
     }
   }
 
