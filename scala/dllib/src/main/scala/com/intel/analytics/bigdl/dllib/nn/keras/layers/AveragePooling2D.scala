@@ -62,7 +62,8 @@ object AveragePooling2D {
       case _ => Array(strides._1, strides._2)
     }
     val poolSizeArray = poolSize match {
-      case null => null
+      case null => throw new IllegalArgumentException("" +
+        "poolSize can not be null, please input int tuple of length 2.")
       case _ => Array(poolSize._1, poolSize._2)
     }
     new AveragePooling2D[T](
