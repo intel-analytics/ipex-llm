@@ -34,7 +34,8 @@ object BigDLStorage extends StorageType
 case class SerializeContext[T: ClassTag](moduleData: ModuleData[T],
                                          storages: mutable.HashMap[Int, Any],
                                          storageType: StorageType,
-                                         copyWeightAndBias : Boolean = true)
+                                         copyWeightAndBias : Boolean = true,
+                                         groupType : String = null)
 case class DeserializeContext(bigdlModule : BigDLModule,
                               storages: mutable.HashMap[Int, Any],
                               storageType: StorageType,
@@ -56,6 +57,7 @@ object SerConst {
   val GLOBAL_STORAGE = "global_storage"
   val MODULE_TAGES = "module_tags"
   val MODULE_NUMERICS = "module_numerics"
+  val GROUP_TYPE = "group_type"
 }
 
 object ClassTagMapper {
