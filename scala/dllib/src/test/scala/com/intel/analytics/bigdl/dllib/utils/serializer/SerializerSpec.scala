@@ -15,16 +15,25 @@
  */
 package com.intel.analytics.bigdl.utils.serializer
 
+import java.io.File
 import java.lang.reflect.Modifier
 
-import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
+import com.intel.analytics.bigdl.Module
+import com.intel.analytics.bigdl.nn.Module
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
+import com.intel.analytics.bigdl.serialization.Bigdl.{AttrValue, BigDLModule}
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.tensor.{Tensor, TensorNumericMath}
 import com.intel.analytics.bigdl.utils.BigDLSpecHelper
+import com.intel.analytics.bigdl.utils.serializer.converters.DataConverter
 import org.reflections.Reflections
 import org.reflections.scanners.SubTypesScanner
 import org.reflections.util.{ClasspathHelper, ConfigurationBuilder, FilterBuilder}
 
 import collection.JavaConverters._
 import scala.collection.mutable
+import scala.reflect.ClassTag
+import scala.reflect.runtime.universe
 
 class SerializerSpec extends BigDLSpecHelper {
 
@@ -33,7 +42,9 @@ class SerializerSpec extends BigDLSpecHelper {
     "com.intel.analytics.bigdl.nn.tf.ControlDependency",
     "com.intel.analytics.bigdl.utils.tf.AdapterForTest",
     "com.intel.analytics.bigdl.utils.serializer.TestModule",
-    "com.intel.analytics.bigdl.utils.ExceptionTest"
+    "com.intel.analytics.bigdl.utils.ExceptionTest",
+    "com.intel.analytics.bigdl.utils.serializer.SubModuleOne",
+    "com.intel.analytics.bigdl.utils.serializer.SubModuleTwo"
   )
 
   // Maybe one serial test class contains multiple module test
@@ -267,6 +278,71 @@ class SerializerSpec extends BigDLSpecHelper {
       }
     }
   })
+
+  "Group serializer" should "work properly" in {
+    ModuleSerializer.
+      registerGroupModules("com.intel.analytics.bigdl.utils.serializer.ParentModule",
+      ParentModuleSerializer)
+    val subOne = new SubModuleOne[Float]()
+    val subTwo = new SubModuleTwo[Float]()
+    val serFileOne = File.createTempFile("SubOne", "bigdl")
+    val serFileTwo = File.createTempFile("SubTwo", "bigdl")
+    subOne.saveModule(serFileOne.getAbsolutePath, overWrite = true)
+    subTwo.saveModule(serFileTwo.getAbsolutePath, overWrite = true)
+
+    val loadedOne = Module.loadModule[Float](serFileOne.getAbsolutePath).
+      asInstanceOf[SubModuleOne[Float]]
+
+    val loadedTwo = Module.loadModule[Float](serFileTwo.getAbsolutePath).
+      asInstanceOf[SubModuleTwo[Float]]
+
+    loadedOne.value should be ("test_value")
+
+    loadedTwo.value should be ("test_value")
+  }
+}
+
+abstract class ParentModule[T: ClassTag](implicit ev: TensorNumeric[T]) extends
+  AbstractModule[Tensor[T], Tensor[T], T] {
+
+  override def updateOutput(input: Tensor[T]): Tensor[T] = {
+    null
+  }
+
+  override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
+    null
+  }
+
+  var value : String = null
+}
+
+class SubModuleOne[T: ClassTag](implicit ev: TensorNumeric[T]) extends ParentModule[T] {
+
+}
+
+class SubModuleTwo[T: ClassTag](implicit ev: TensorNumeric[T]) extends ParentModule[T] {
+
+}
+
+object ParentModuleSerializer extends ModuleSerializable {
+  override def doSerializeModule[T: ClassTag](context: SerializeContext[T],
+  bigDLModelBuilder: BigDLModule.Builder)(implicit ev: TensorNumericMath.TensorNumeric[T]): Unit = {
+    val groupTypeAttrValue = AttrValue.newBuilder
+    DataConverter.setAttributeValue[T](context, groupTypeAttrValue,
+      "test_value", universe.typeOf[String])
+    bigDLModelBuilder.putAttr("groupValue", groupTypeAttrValue.build)
+  }
+
+  override def doLoadModule[T: ClassTag](context: DeserializeContext)
+    (implicit ev: TensorNumericMath.TensorNumeric[T]): AbstractModule[Activity, Activity, T] = {
+    val module = super.doLoadModule(context).asInstanceOf[ParentModule[T]]
+    val attrMap = context.bigdlModule.getAttrMap
+    val valueAttr = attrMap.get("groupValue")
+    val value = DataConverter.getAttributeValue(context, valueAttr).
+      asInstanceOf[String]
+    module.value = value
+    module
+  }
 }
 
 private[bigdl] abstract class ModuleSerializationTest extends SerializerSpecHelper {
