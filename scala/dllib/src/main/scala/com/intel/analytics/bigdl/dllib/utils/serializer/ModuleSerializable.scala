@@ -175,14 +175,23 @@ trait ModuleSerializable extends Loadable with Savable{
     // step 2: set module type
     bigDLModelBuilder.setModuleType(cls.getName)
 
+    // step 3 : set group information
+
+    if (context.groupType != null) {
+      val groupTypeAttrValue = AttrValue.newBuilder
+      DataConverter.setAttributeValue[T](context, groupTypeAttrValue,
+        context.groupType, universe.typeOf[String])
+      bigDLModelBuilder.putAttr(SerConst.GROUP_TYPE, groupTypeAttrValue.build)
+    }
+
     getLock.synchronized {
-      // step 3 : set data types (ClassTag and TensorNumric)
+      // step 4 : set data types (ClassTag and TensorNumric)
       setDataTypes(context, bigDLModelBuilder)
-      // step 4 : apply module specific logic to create module
+      // step 5 : apply module specific logic to create module
       doSerializeModule(context, bigDLModelBuilder)
     }
 
-    // step 5 : copy params (weight & bias) a and linkage
+    // step 6 : copy params (weight & bias) a and linkage
     createSerializeBigDLModule(bigDLModelBuilder, context)
   }
 

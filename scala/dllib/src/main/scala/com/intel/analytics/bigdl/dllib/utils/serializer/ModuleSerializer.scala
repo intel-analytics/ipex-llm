@@ -20,10 +20,11 @@ import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
 import com.intel.analytics.bigdl.nn.keras.{KerasLayer, KerasLayerSerializer, Model, Sequential => KSequential}
 import com.intel.analytics.bigdl.nn.ops.{RandomUniform => RandomUniformOps}
-import com.intel.analytics.bigdl.nn.tf.{StrideSlice, ParseExample, DecodeRawSerializer}
+import com.intel.analytics.bigdl.nn.tf.{DecodeRawSerializer, ParseExample, StrideSlice}
 import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.serializer.converters.DataConverter
 
 import scala.collection.mutable
 import scala.language.existentials
@@ -34,7 +35,13 @@ object ModuleSerializer extends ModuleSerializable{
 
   private val runtimeMirror = universe.runtimeMirror(getClass.getClassLoader)
 
-  private val serializerMaps = new mutable.HashMap[String, ModuleSerializable]()
+  private val serializerMaps = new mutable.HashMap[String, ModuleSerializable]
+
+  // group serializer for one serializer to handle multiple layers of the same super type
+
+  // super type class to serializer
+
+  private val groupSerializerMaps = new mutable.HashMap[String, ModuleSerializable]()
 
   private[serializer] val _lock = new Object
 
@@ -62,22 +69,45 @@ object ModuleSerializer extends ModuleSerializable{
     val module = serializerContext.moduleData.module
     // For those layers which have their own serialization/deserialization methods
     val clsName = module.getClass.getName
-    val serializer = if (serializerMaps.contains(clsName)) {
-      serializerMaps(clsName)
+    val (serializer, serContext) = if (serializerMaps.contains(clsName)) {
+      (serializerMaps(clsName), serializerContext)
     } else {
+      // if no layer specific implementation, check if serializer of the same type exists
+      val (groupSerializer, group) = findGroupSerializer(serializerContext.moduleData.module)
+      if (groupSerializer != null) {
+        val context = SerializeContext[T](serializerContext.moduleData,
+        serializerContext.storages, serializerContext.storageType,
+          serializerContext.copyWeightAndBias, group)
+        (groupSerializer, context)
+      } else {
       val m = module.asInstanceOf[AbstractModule[_, _, _]]
       m match {
         case kerasLayer: KerasLayer[_, _, _] =>
-          KerasLayerSerializer
-        case container : Container[_, _, _] =>
-          ContainerSerializer
-        case cell : Cell[_] =>
-          CellSerializer
-        case _ => ModuleSerializer
+          (KerasLayerSerializer, serializerContext)
+        case container: Container[_, _, _] =>
+          (ContainerSerializer, serializerContext)
+        case cell: Cell[_] =>
+          (CellSerializer, serializerContext)
+        case _ => (ModuleSerializer, serializerContext)
+        }
       }
     }
-    serializer.setCopyWeightAndBias(serializerContext.copyWeightAndBias).
-      serializeModule(serializerContext)
+    serializer.setCopyWeightAndBias(serContext.copyWeightAndBias).
+      serializeModule(serContext)
+  }
+
+  private def findGroupSerializer[T: ClassTag](module : Module[T])
+    (implicit ev: TensorNumeric[T]): (ModuleSerializable, String) = {
+    var cls : Class[_] = module.getClass.getSuperclass
+    var clsName = cls.getName
+    while (clsName != "java.lang.Object") {
+      if (groupSerializerMaps.contains(clsName)) {
+        return (groupSerializerMaps(clsName), clsName)
+      }
+      cls = cls.getSuperclass
+      clsName = cls.getName
+    }
+    (null, null)
   }
 
   /**
@@ -93,16 +123,25 @@ object ModuleSerializer extends ModuleSerializable{
         serializerMaps(model.getModuleType)
       } else {
         val attrMap = model.getAttrMap
-        val subModuleCount = model.getSubModulesCount
-        if (subModuleCount > 0) {
-          ContainerSerializer
+        if (attrMap.containsKey(SerConst.GROUP_TYPE)) {
+          val groupTypeAttr = attrMap.get(SerConst.GROUP_TYPE)
+          val groupType = DataConverter.getAttributeValue(context, groupTypeAttr).
+            asInstanceOf[String]
+          require(groupSerializerMaps.contains(groupType), s" Group serializer does" +
+            s" not exist for $groupType")
+          groupSerializerMaps(groupType)
         } else {
-          if (attrMap.containsKey("is_cell_module")) {
-            CellSerializer
-          } else if (attrMap.containsKey("is_keras_module")) {
-            KerasLayerSerializer
+          val subModuleCount = model.getSubModulesCount
+          if (subModuleCount > 0) {
+            ContainerSerializer
           } else {
-            ModuleSerializer
+            if (attrMap.containsKey("is_cell_module")) {
+              CellSerializer
+            } else if (attrMap.containsKey("is_keras_module")) {
+              KerasLayerSerializer
+            } else {
+              ModuleSerializer
+            }
           }
         }
       }
@@ -115,7 +154,6 @@ object ModuleSerializer extends ModuleSerializable{
     }
   }
 
-
   /**
    * register module for single module, used for standard BigDL module and user defined module
    * @param moduleType,must be unique
@@ -123,7 +161,24 @@ object ModuleSerializer extends ModuleSerializable{
    */
   def registerModule(moduleType : String, serializer : ModuleSerializable) : Unit = {
     require(!serializerMaps.contains(moduleType), s"$moduleType already registered!")
+    require(!groupSerializerMaps.contains(moduleType), s"$moduleType already " +
+      s"registered with group serializer!")
     serializerMaps(moduleType) = serializer
+  }
+
+  /**
+   * register module for modules of the same type, used for
+   * standard BigDL module and user defined module
+   * @param superModuleType,must be unique
+   * @param groupSerializer serialzable implementation for this module
+   */
+  def registerGroupModules(superModuleType : String, groupSerializer :
+    ModuleSerializable) : Unit = {
+    require(!serializerMaps.contains(superModuleType), s"$moduleType already " +
+      s"registered with single serializer!")
+    require(!groupSerializerMaps.contains(superModuleType), s"$moduleType already " +
+      s"registered with group serializer!")
+    groupSerializerMaps(superModuleType) = groupSerializer
   }
 
   private[serializer] def getCostructorMirror[T : ClassTag](cls : Class[_]):
