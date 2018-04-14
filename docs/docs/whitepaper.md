@@ -125,7 +125,7 @@ for (i <- 1 to N) {
 
 *Figure 3. BigDL provides efficient, data-parallel, synchronous mini-batch SGD, where each iteration runs two Spark jobs for “model forward-backward” and “parameter synchronization”.*
 
-As described in Section 2, BigDL models the training data as an RDD of Samples, which are automatically partitioned and potentially cached in memory across the Spark cluster. In addition, to implement the data-parallel training, BigDL also constructs an RDD of models, each of which is a replica of the original neural network model. The model and sample RDDs are co-partitioned and co-located [14] across the cluster; consequently, in each iteration of the model training, a single “model forward-backward” Spark job can apply the functional zip operator to the partitions of model and sample RDDs, and compute in parallel the gradients for each model replica (using a small batch of data in the co-located sample partition), as illustrated in Figure 4.
+As described in Section 2, BigDL models the training data as an RDD of Samples, which are automatically partitioned and potentially cached in memory across the Spark cluster. In addition, to implement the data-parallel training, BigDL also constructs an RDD of models, each of which is a replica of the original neural network model. The model and sample RDDs are co-partitioned and co-located [14] across the cluster, as shown in Figure 4; consequently, in each iteration of the model training, a single “model forward-backward” Spark job can apply the functional zip operator to the partitions of model and sample RDDs, and compute the gradients in parallel for each model replica (using a small batch of data in the co-located sample partition), as illustrated in Figure 4.
 
 ![fig4](Image/WP/fig4.jpg) 
  
@@ -239,13 +239,13 @@ Cray has integrated BigDL to their Urika-XC analytics software suite, and built 
 
 * The application first reads over a terabyte of raw radar scan data into Spark (as an RDD of radar images), and then converts it into an RDD of *NumPy ndarrays*.
 
-* It then trains a *sequence-to-sequence* model [43][44] (as illustrated in Figure 13), using sequence of images leading up to the current time as the input, and sequence of predicted images arbitrarily far in the future as the output.
+* It then trains a *sequence-to-sequence* model [43][44] (as illustrated in Figure 13), using a sequence of images leading up to the current time as the input, and a sequence of predicted images arbitrarily far in the future as the output.
 
 * After the model is trained, it can be used to predict, say, precipitation patterns for the next hour, as illustrated in Figure 14.
  
 ![fig14](Image/WP/fig14.jpg) 
 
-*Figure 14. Predicting precipitation patterns for the next hour [35] on Spark and BigDL.*
+*Figure 14. Predicting precipitation patterns for the next hour [35] on Spark and BigDL (i.e., a sequence of images for the future time steps of the next hour).*
 
 ## **5.	Summary**
 
