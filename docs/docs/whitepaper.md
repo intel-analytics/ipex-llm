@@ -134,13 +134,13 @@ As described in Section 2, BigDL models the training data as an RDD of Samples, 
 ### **3.2. Parameter synchronization**
 
 Parameter synchronization is a performance critical operation for data-parallel training (in terms of speed and scalability). To support efficient parameter synchronization, existing deep learning frameworks usually implement the parameter server [31][32][33] architecture or AllReduce [34] operation, which unfortunately cannot be directly supported by the functional compute model provided by the Big Data systems.
-In BigDL, we have adapted the primitives available in the Spark (e.g., shuffle, broadcast, in-memory cache, etc.) to implement an efficient AllReduce-like operation, so as to mimic the functionality of a parameter server architecture.
-
-* A Spark job has *N* tasks, each of which is assigned a unique Id ranging from *1* to *N* in BigDL. After each task in the “*model forward-backward*” job computes the local gradients (as described in section 3.1), it evenly divides the local gradients into *N* partitions, as illustrated in Figure 5.
+In BigDL, we have adapted the primitives available in the Spark (e.g., shuffle, broadcast, in-memory cache, etc.) to implement an efficient AllReduce-like operation, so as to mimic the functionality of a parameter server architecture (as illustrated in Figure 5).
  
 ![fig5](Image/WP/fig5.jpg) 
 
 *Figure 5. Parameter synchronization in BigDL. Each local gradient (computed by a task in the “model forward-backward” job) is evenly divided into N partitions; then each task n in the “parameter synchronization” job aggregates these local gradients and update the weights for the nth partition.*
+
+* A Spark job has *N* tasks, each of which is assigned a unique Id ranging from *1* to *N* in BigDL. After each task in the “*model forward-backward*” job computes the local gradients (as described in section 3.1), it evenly divides the local gradients into *N* partitions, as shown in Figure 5.
 
 * Next, another “*parameter synchronization*” job is launched; each task *n* in the “*parameter synchronization*” job is responsible for managing the n<sup>th</sup> partition of the parameters, just like a parameter server (as shown in Figure 6). Specifically, the n<sup>th</sup> partition of the gradients (from all the tasks of the previous “*model forward-backward*” job) are first **shuffled** to task n, which then aggregates (sums) these gradients, and applies the updates to the n<sup>th</sup> partition of the weights (using the specific optimization method), as illustrated in Figure 5.
 
@@ -255,7 +255,7 @@ BigDL is a work in progress, but our initial experience is encouraging. Since it
 	
 ## **6.	Acknowledgement**
 
-We gratefully acknowledge contributions from our (current and former) colleagues at Intel (including Jun Wang, Liangying Lv, Andy Chen, Sergey Ermolin, Zewei Chen, Ning Wang, Yulia Tell, Pengfei Yue, Wesley Du, Erjin Ren, Xiao Dong Wang, Radhika Rangarajan, Jack Chen, Milind Damle and Dave Nielsen), and numerous users and collaborators from the open source community (including Shivaram Venkataraman, Zhenhua Wang, Alex Heye, Omid Khanmohamadi, Mike Ringenburg, Xiao Xu, Suqiang Song, etc.) to the BigDL project.
+We gratefully acknowledge contributions from our (current and former) colleagues at Intel (including Jun Wang, Liangying Lv, Andy Chen, Sergey Ermolin, Zewei Chen, Ning Wang, Yulia Tell, Pengfei Yue, Wesley Du, Erjin Ren, Xiao Dong Wang, Radhika Rangarajan, Jack Chen, Milind Damle and Dave Nielsen), and numerous users and collaborators from the open source community (including Shivaram Venkataraman, Zhenhua Wang, Alex Heye, Omid Khanmohamadi, Mike Ringenburg, Gopi Kumar, Xiao Xu, Suqiang Song, etc.) to the BigDL project.
 
 ## **7.	Reference**
 
