@@ -16,6 +16,7 @@
 
 from bigdl.util.common import *
 
+
 def get_nncontext(conf=None):
     """
     Gets a SparkContext with optimized configuration for BigDL performance. The method
@@ -30,4 +31,4 @@ def get_nncontext(conf=None):
 
     sc = get_spark_context(conf)
     init_engine()
-    sc
+    return sc
