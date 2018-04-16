@@ -21,6 +21,7 @@ import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Shape
 import com.intel.analytics.bigdl.nn.{InitializationMethod, RandomUniform}
+import com.intel.analytics.zoo.pipeline.api.Net
 import com.intel.analytics.zoo.pipeline.api.keras.layers.utils.KerasUtils
 
 import scala.reflect.ClassTag
@@ -48,7 +49,7 @@ class Embedding[T: ClassTag](
    wRegularizer: Regularizer[T] = null,
    inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends BEmbedding[T] (
-    inputDim, outputDim, init, wRegularizer, inputShape) {
+    inputDim, outputDim, init, wRegularizer, inputShape) with Net {
 }
 
 object Embedding {

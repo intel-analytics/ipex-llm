@@ -19,6 +19,7 @@ package com.intel.analytics.zoo.pipeline.api.keras.layers
 import com.intel.analytics.bigdl.nn.keras.{AveragePooling3D => BigDLAveragePooling3D}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.zoo.pipeline.api.Net
 import com.intel.analytics.zoo.pipeline.api.keras.layers.utils.KerasUtils
 
 import scala.reflect.ClassTag
@@ -44,7 +45,7 @@ class AveragePooling3D[T: ClassTag](
    strides: Array[Int] = null,
    dimOrdering: String = "CHANNEL_FIRST",
    inputShape: Shape = null)(implicit ev: TensorNumeric[T])
-  extends BigDLAveragePooling3D[T](poolSize, strides, dimOrdering, inputShape) {}
+  extends BigDLAveragePooling3D[T](poolSize, strides, dimOrdering, inputShape) with Net {}
 
 object AveragePooling3D {
   def apply[@specialized(Float, Double) T: ClassTag](

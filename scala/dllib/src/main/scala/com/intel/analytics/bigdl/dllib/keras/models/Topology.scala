@@ -19,6 +19,7 @@ package com.intel.analytics.zoo.pipeline.api.keras.models
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.nn.keras.{Model => BModel, Sequential => BSequential}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.zoo.pipeline.api.Net
 
 import scala.reflect.ClassTag
 
@@ -26,7 +27,7 @@ import scala.reflect.ClassTag
  * Container for a sequential model.
  */
 class Sequential[T: ClassTag]()
-  (implicit ev: TensorNumeric[T]) extends BSequential[T] {
+  (implicit ev: TensorNumeric[T]) extends BSequential[T] with Net{
 }
 
 object Sequential {
@@ -45,7 +46,7 @@ object Sequential {
 class Model[T: ClassTag](
     private val _inputs: Seq[ModuleNode[T]],
     private val _outputs: Seq[ModuleNode[T]])(implicit ev: TensorNumeric[T])
-  extends BModel[T](_inputs, _outputs) {
+  extends BModel[T](_inputs, _outputs) with Net {
 }
 
 object Model {

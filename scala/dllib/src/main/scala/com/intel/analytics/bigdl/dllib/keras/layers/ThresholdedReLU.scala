@@ -19,6 +19,7 @@ package com.intel.analytics.zoo.pipeline.api.keras.layers
 import com.intel.analytics.bigdl.nn.keras.{ThresholdedReLU => BigDLThresholdedReLU}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.zoo.pipeline.api.Net
 
 import scala.reflect.ClassTag
 
@@ -37,8 +38,8 @@ import scala.reflect.ClassTag
 class ThresholdedReLU[T: ClassTag](
     override val theta: Double = 1.0,
     override val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
-  extends BigDLThresholdedReLU[T](
-    theta, inputShape) {
+  extends BigDLThresholdedReLU[T] (
+    theta, inputShape) with Net {
 }
 
 object ThresholdedReLU {

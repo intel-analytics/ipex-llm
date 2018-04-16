@@ -20,6 +20,7 @@ import com.intel.analytics.bigdl.nn.keras.{BatchNormalization => BBatchNormaliza
 import com.intel.analytics.bigdl.nn.abstractnn.DataFormat
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.zoo.pipeline.api.Net
 import com.intel.analytics.zoo.pipeline.api.keras.layers.utils.KerasUtils
 
 import scala.reflect.ClassTag
@@ -54,7 +55,7 @@ class BatchNormalization[T: ClassTag](
    override val dimOrdering: DataFormat = DataFormat.NCHW,
    override val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends BBatchNormalization[T](
-    epsilon, momentum, betaInit, gammaInit, dimOrdering, inputShape) {
+    epsilon, momentum, betaInit, gammaInit, dimOrdering, inputShape) with Net {
 }
 
 object BatchNormalization {

@@ -21,6 +21,7 @@ import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.zoo.pipeline.api.Net
 import com.intel.analytics.zoo.pipeline.api.keras.layers.utils.KerasUtils
 
 import scala.reflect.ClassTag
@@ -61,9 +62,9 @@ class LSTM[T: ClassTag](
    uRegularizer: Regularizer[T] = null,
    bRegularizer: Regularizer[T] = null,
    override val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
-  extends BLSTM[T](
+  extends BLSTM[T] (
     outputDim, activation, innerActivation, returnSequences, goBackwards,
-    wRegularizer, uRegularizer, bRegularizer, inputShape) {
+    wRegularizer, uRegularizer, bRegularizer, inputShape) with Net {
 }
 
 object LSTM {

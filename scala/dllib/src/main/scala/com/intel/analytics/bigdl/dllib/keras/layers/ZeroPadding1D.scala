@@ -19,6 +19,7 @@ package com.intel.analytics.zoo.pipeline.api.keras.layers
 import com.intel.analytics.bigdl.nn.keras.{ZeroPadding1D => BigDLZeroPadding1D}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.zoo.pipeline.api.Net
 
 import scala.reflect.ClassTag
 
@@ -37,7 +38,7 @@ import scala.reflect.ClassTag
 class ZeroPadding1D[T: ClassTag](
    override val padding: Array[Int] = Array(1, 1),
    override val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
-  extends BigDLZeroPadding1D[T](padding, inputShape) {}
+  extends BigDLZeroPadding1D[T](padding, inputShape) with Net {}
 
 object ZeroPadding1D {
   def apply[@specialized(Float, Double) T: ClassTag](

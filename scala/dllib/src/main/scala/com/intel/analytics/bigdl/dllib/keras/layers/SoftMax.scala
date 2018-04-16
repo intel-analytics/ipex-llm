@@ -17,16 +17,16 @@
 package com.intel.analytics.zoo.pipeline.api.keras.layers
 
 import scala.reflect.ClassTag
-
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.zoo.pipeline.api.Net
 
 /**
  * Just a wrapper class. Please use Activation('softmax') instead.
  */
 class SoftMax[T: ClassTag](
     override val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
-  extends com.intel.analytics.bigdl.nn.keras.SoftMax[T](inputShape) {
+  extends com.intel.analytics.bigdl.nn.keras.SoftMax[T](inputShape) with Net {
 }
 
 object SoftMax {

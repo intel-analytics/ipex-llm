@@ -23,6 +23,7 @@ import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.zoo.pipeline.api.Net
 import com.intel.analytics.zoo.pipeline.api.keras.layers.utils.KerasUtils
 
 import scala.reflect.ClassTag
@@ -75,7 +76,7 @@ class ShareConvolution2D[T: ClassTag](
     var bRegularizer: Regularizer[T] = null,
     val bias: Boolean = true,
     val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
-  extends KerasLayer[Tensor[T], Tensor[T], T](KerasUtils.addBatch(inputShape)) {
+  extends KerasLayer[Tensor[T], Tensor[T], T](KerasUtils.addBatch(inputShape)) with Net {
 
   require(dimOrdering == DataFormat.NCHW, s"ShareConvolution2D currently only supports " +
     s"format NCHW, but got format $dimOrdering")

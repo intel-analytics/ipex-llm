@@ -19,6 +19,7 @@ package com.intel.analytics.zoo.pipeline.api.keras.layers
 import com.intel.analytics.bigdl.nn.keras.{ELU => BigDLELU}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.zoo.pipeline.api.Net
 
 import scala.reflect.ClassTag
 
@@ -38,7 +39,7 @@ class ELU[T: ClassTag](
     override val alpha: Double = 1.0,
     override val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends BigDLELU[T](
-    alpha, inputShape) {
+    alpha, inputShape) with Net {
 }
 
 object ELU {

@@ -19,6 +19,7 @@ package com.intel.analytics.zoo.pipeline.api.keras.layers
 import com.intel.analytics.bigdl.nn.keras.{Recurrent, Bidirectional => BBidirectional}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.zoo.pipeline.api.Net
 
 import scala.reflect.ClassTag
 
@@ -41,8 +42,8 @@ class Bidirectional[T: ClassTag](
    override val layer: Recurrent[T],
    override val mergeMode: String = "concat",
    override val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
-  extends BBidirectional[T](
-    layer, mergeMode, inputShape) {
+  extends BBidirectional[T] (
+    layer, mergeMode, inputShape) with Net {
 }
 
 object Bidirectional {

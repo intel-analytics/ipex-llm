@@ -19,6 +19,7 @@ package com.intel.analytics.zoo.pipeline.api.keras.layers
 import com.intel.analytics.bigdl.nn.keras.{Cropping1D => BigDLCropping1D}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.zoo.pipeline.api.Net
 
 import scala.reflect.ClassTag
 
@@ -37,7 +38,7 @@ class Cropping1D[T: ClassTag](
     override val cropping: Array[Int] = Array(1, 1),
     override val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends BigDLCropping1D[T](
-    cropping, inputShape) {
+    cropping, inputShape) with Net {
 }
 
 object Cropping1D {

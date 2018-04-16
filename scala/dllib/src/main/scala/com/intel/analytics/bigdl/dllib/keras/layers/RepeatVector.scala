@@ -19,6 +19,7 @@ package com.intel.analytics.zoo.pipeline.api.keras.layers
 import com.intel.analytics.bigdl.nn.keras.{RepeatVector => BigDLRepeatVector}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.zoo.pipeline.api.Net
 
 import scala.reflect.ClassTag
 
@@ -35,8 +36,8 @@ import scala.reflect.ClassTag
 class RepeatVector[T: ClassTag](
     override val n: Int,
     override val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
-  extends BigDLRepeatVector[T](
-    n, inputShape) {
+  extends BigDLRepeatVector[T] (
+    n, inputShape) with Net {
 }
 
 object RepeatVector {

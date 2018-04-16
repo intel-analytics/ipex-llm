@@ -22,6 +22,7 @@ import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.zoo.pipeline.api.Net
 import com.intel.analytics.zoo.pipeline.api.keras.layers.utils.KerasUtils
 
 import scala.reflect.ClassTag
@@ -73,7 +74,7 @@ class Convolution3D[T: ClassTag](
     override val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends BigDLConvolution3D[T](
     nbFilter, kernelDim1, kernelDim2, kernelDim3, init, activation, borderMode,
-    subsample, dimOrdering, wRegularizer, bRegularizer, bias, inputShape) {
+    subsample, dimOrdering, wRegularizer, bRegularizer, bias, inputShape) with Net {
 }
 
 object Convolution3D {

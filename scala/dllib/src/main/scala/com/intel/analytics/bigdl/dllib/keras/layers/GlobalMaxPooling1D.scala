@@ -19,6 +19,7 @@ package com.intel.analytics.zoo.pipeline.api.keras.layers
 import com.intel.analytics.bigdl.nn.keras.{GlobalMaxPooling1D => BigDLGlobalMaxPooling1D}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.zoo.pipeline.api.Net
 
 import scala.reflect.ClassTag
 
@@ -33,7 +34,7 @@ import scala.reflect.ClassTag
  */
 class GlobalMaxPooling1D[T: ClassTag](
     inputShape: Shape = null)(implicit ev: TensorNumeric[T])
-  extends BigDLGlobalMaxPooling1D[T](inputShape) {
+  extends BigDLGlobalMaxPooling1D[T](inputShape) with Net {
 }
 
 object GlobalMaxPooling1D {

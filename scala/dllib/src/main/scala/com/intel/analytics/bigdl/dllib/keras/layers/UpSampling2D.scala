@@ -20,6 +20,7 @@ import com.intel.analytics.bigdl.nn.keras.{UpSampling2D => BigDLUpSampling2D}
 import com.intel.analytics.bigdl.nn.abstractnn.DataFormat
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.zoo.pipeline.api.Net
 import com.intel.analytics.zoo.pipeline.api.keras.layers.utils.KerasUtils
 
 import scala.reflect.ClassTag
@@ -42,7 +43,7 @@ class UpSampling2D[T: ClassTag](
    override val size: Array[Int] = Array(2, 2),
    override val dimOrdering: DataFormat = DataFormat.NCHW,
    override val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
-  extends BigDLUpSampling2D[T](size, dimOrdering, inputShape) {}
+  extends BigDLUpSampling2D[T](size, dimOrdering, inputShape) with Net {}
 
 object UpSampling2D {
   def apply[@specialized(Float, Double) T: ClassTag](

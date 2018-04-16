@@ -19,6 +19,7 @@ package com.intel.analytics.zoo.pipeline.api.keras.layers
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.nn.keras.{SpatialDropout3D => BigDLSpatialDropout3D}
 import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.zoo.pipeline.api.Net
 import com.intel.analytics.zoo.pipeline.api.keras.layers.utils.KerasUtils
 
 import scala.reflect.ClassTag
@@ -47,7 +48,7 @@ class SpatialDropout3D[T: ClassTag](
     override val dimOrdering: String = "CHANNEL_FIRST",
     override val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends BigDLSpatialDropout3D[T](
-    p, dimOrdering, inputShape) {
+    p, dimOrdering, inputShape) with Net {
 }
 
 object SpatialDropout3D {

@@ -17,11 +17,12 @@
 
 package com.intel.analytics.zoo.pipeline.api.keras.layers
 
-import com.intel.analytics.bigdl.nn.keras.{LocallyConnected1D => BigDLLocallyConnected1D, KerasLayer}
+import com.intel.analytics.bigdl.nn.keras.{KerasLayer, LocallyConnected1D => BigDLLocallyConnected1D}
 import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.zoo.pipeline.api.Net
 import com.intel.analytics.zoo.pipeline.api.keras.layers.utils.KerasUtils
 
 import scala.reflect.ClassTag
@@ -59,7 +60,7 @@ class LocallyConnected1D[T: ClassTag](
    override val bias: Boolean = true,
    override val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends BigDLLocallyConnected1D[T](nbFilter, filterLength, activation, subsampleLength,
-                                      wRegularizer, bRegularizer, bias, inputShape) {}
+                                      wRegularizer, bRegularizer, bias, inputShape) with Net {}
 
 object LocallyConnected1D {
   def apply[@specialized(Float, Double) T: ClassTag](

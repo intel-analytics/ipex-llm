@@ -16,12 +16,13 @@
 
 package com.intel.analytics.zoo.pipeline.api.keras.layers
 
-import com.intel.analytics.bigdl.nn.keras.{AtrousConvolution1D => BigDLAtrousConvolution1D, KerasLayer}
+import com.intel.analytics.bigdl.nn.keras.{KerasLayer, AtrousConvolution1D => BigDLAtrousConvolution1D}
 import com.intel.analytics.bigdl.nn.{InitializationMethod, Xavier}
 import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.zoo.pipeline.api.Net
 import com.intel.analytics.zoo.pipeline.api.keras.layers.utils.KerasUtils
 
 import scala.reflect.ClassTag
@@ -64,7 +65,7 @@ class AtrousConvolution1D[T: ClassTag](
    bRegularizer: Regularizer[T] = null,
    override val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends BigDLAtrousConvolution1D[T](nbFilter, filterLength, init, activation, subsampleLength,
-                                      atrousRate, wRegularizer, bRegularizer, inputShape) {}
+    atrousRate, wRegularizer, bRegularizer, inputShape) with Net {}
 
 object AtrousConvolution1D {
   def apply[@specialized(Float, Double) T: ClassTag](

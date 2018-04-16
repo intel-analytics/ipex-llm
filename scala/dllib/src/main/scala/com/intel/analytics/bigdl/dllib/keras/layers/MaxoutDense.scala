@@ -20,6 +20,7 @@ import com.intel.analytics.bigdl.nn.keras.{MaxoutDense => BigDLMaxoutDense}
 import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.zoo.pipeline.api.Net
 
 import scala.reflect.ClassTag
 
@@ -47,7 +48,8 @@ class MaxoutDense[T: ClassTag](
    bRegularizer: Regularizer[T] = null,
    override val bias: Boolean = true,
    override val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
-  extends BigDLMaxoutDense[T](outputDim, nbFeature, wRegularizer, bRegularizer, bias, inputShape) {}
+  extends BigDLMaxoutDense[T](outputDim, nbFeature, wRegularizer,
+    bRegularizer, bias, inputShape) with Net {}
 
 object MaxoutDense {
   def apply[@specialized(Float, Double) T: ClassTag](
