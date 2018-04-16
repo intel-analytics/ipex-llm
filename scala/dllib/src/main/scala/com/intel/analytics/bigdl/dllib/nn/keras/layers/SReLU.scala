@@ -20,6 +20,7 @@ import com.intel.analytics.bigdl.nn.{InitializationMethod, Ones, Xavier, Zeros}
 import com.intel.analytics.bigdl.nn.keras.{SReLU => BigDLSReLU}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.zoo.pipeline.api.Net
 import com.intel.analytics.zoo.pipeline.api.keras.layers.utils.KerasUtils
 
 import scala.reflect.ClassTag
@@ -63,7 +64,7 @@ class SReLU[T: ClassTag](
     override val sharedAxes: Array[Int] = null,
     override val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends BigDLSReLU[T](
-    tLeftInit, aLeftInit, tRightInit, aRightInit, sharedAxes, inputShape) {
+    tLeftInit, aLeftInit, tRightInit, aRightInit, sharedAxes, inputShape) with Net {
 }
 
 object SReLU {

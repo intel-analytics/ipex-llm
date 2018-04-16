@@ -20,6 +20,7 @@ import com.intel.analytics.bigdl.nn.abstractnn.DataFormat
 import com.intel.analytics.bigdl.nn.keras.{GlobalAveragePooling2D => BigDLGlobalAveragePooling2D}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.zoo.pipeline.api.Net
 import com.intel.analytics.zoo.pipeline.api.keras.layers.utils.KerasUtils
 
 import scala.reflect.ClassTag
@@ -39,7 +40,7 @@ class GlobalAveragePooling2D[T: ClassTag](
     dimOrdering: DataFormat = DataFormat.NCHW,
     inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends BigDLGlobalAveragePooling2D[T](
-    dimOrdering, inputShape) {
+    dimOrdering, inputShape) with Net {
 }
 
 object GlobalAveragePooling2D {

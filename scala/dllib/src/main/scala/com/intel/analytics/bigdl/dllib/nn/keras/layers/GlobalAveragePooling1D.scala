@@ -19,6 +19,7 @@ package com.intel.analytics.zoo.pipeline.api.keras.layers
 import com.intel.analytics.bigdl.nn.keras.{GlobalAveragePooling1D => BigDLGlobalAveragePooling1D}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.zoo.pipeline.api.Net
 
 import scala.reflect.ClassTag
 
@@ -33,7 +34,7 @@ import scala.reflect.ClassTag
  */
 class GlobalAveragePooling1D[T: ClassTag](
    inputShape: Shape = null)(implicit ev: TensorNumeric[T])
-  extends BigDLGlobalAveragePooling1D[T](inputShape) {}
+  extends BigDLGlobalAveragePooling1D[T](inputShape) with Net {}
 
 object GlobalAveragePooling1D {
   def apply[@specialized(Float, Double) T: ClassTag](

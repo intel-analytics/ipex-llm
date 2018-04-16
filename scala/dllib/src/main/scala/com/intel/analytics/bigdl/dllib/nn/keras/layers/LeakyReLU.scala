@@ -19,6 +19,7 @@ package com.intel.analytics.zoo.pipeline.api.keras.layers
 import com.intel.analytics.bigdl.nn.keras.{LeakyReLU => BigDLLeakyReLU}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.zoo.pipeline.api.Net
 
 import scala.reflect.ClassTag
 
@@ -38,7 +39,7 @@ class LeakyReLU[T: ClassTag](
     private val alpha: Double = 0.3,
     override val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends BigDLLeakyReLU[T](
-    alpha, inputShape) {
+    alpha, inputShape) with Net {
 }
 
 object LeakyReLU {

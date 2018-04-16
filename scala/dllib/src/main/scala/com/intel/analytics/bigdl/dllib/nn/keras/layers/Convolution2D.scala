@@ -23,6 +23,7 @@ import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.zoo.pipeline.api.Net
 import com.intel.analytics.zoo.pipeline.api.keras.layers.utils.KerasUtils
 
 import scala.reflect.ClassTag
@@ -72,7 +73,8 @@ class Convolution2D[T: ClassTag](
   override val inputShape: Shape = null)
   (implicit ev: TensorNumeric[T])
   extends com.intel.analytics.bigdl.nn.keras.Convolution2D[T](nbFilter, nbRow, nbCol, init,
-    activation, borderMode, subsample, dimOrdering, wRegularizer, bRegularizer, bias, inputShape) {}
+    activation, borderMode, subsample, dimOrdering,
+    wRegularizer, bRegularizer, bias, inputShape) with Net {}
 
 object Convolution2D {
   def apply[@specialized(Float, Double) T: ClassTag](

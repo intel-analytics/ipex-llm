@@ -20,6 +20,7 @@ import com.intel.analytics.bigdl.nn.abstractnn.DataFormat
 import com.intel.analytics.bigdl.nn.keras.{Cropping2D => BigDLCropping2D}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.zoo.pipeline.api.Net
 import com.intel.analytics.zoo.pipeline.api.keras.layers.utils.KerasUtils
 
 import scala.reflect.ClassTag
@@ -43,7 +44,7 @@ class Cropping2D[T: ClassTag](
     override val dimOrdering: DataFormat = DataFormat.NCHW,
     override val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends BigDLCropping2D[T](
-    heightCrop, widthCrop, dimOrdering, inputShape) {
+    heightCrop, widthCrop, dimOrdering, inputShape) with Net {
 }
 
 object Cropping2D {

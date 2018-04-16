@@ -18,6 +18,7 @@ package com.intel.analytics.zoo.pipeline.api.keras.layers
 import com.intel.analytics.bigdl.nn.abstractnn.DataFormat
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.zoo.pipeline.api.Net
 import com.intel.analytics.zoo.pipeline.api.keras.layers.utils.KerasUtils
 
 import scala.reflect.ClassTag
@@ -45,7 +46,7 @@ class MaxPooling2D[T: ClassTag](
   dimOrdering: DataFormat = DataFormat.NCHW,
   inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends com.intel.analytics.bigdl.nn.keras.MaxPooling2D[T](poolSize, strides, borderMode,
-    dimOrdering, inputShape) {}
+    dimOrdering, inputShape) with Net {}
 
 object MaxPooling2D {
   def apply[@specialized(Float, Double) T: ClassTag](

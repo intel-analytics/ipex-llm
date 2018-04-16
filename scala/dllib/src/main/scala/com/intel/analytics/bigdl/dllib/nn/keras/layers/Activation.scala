@@ -21,6 +21,7 @@ import com.intel.analytics.bigdl.nn.keras.{Activation => BigDLActivation}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.zoo.pipeline.api.Net
 import com.intel.analytics.zoo.pipeline.api.keras.layers.utils.KerasUtils
 
 import scala.reflect.ClassTag
@@ -40,7 +41,7 @@ import scala.reflect.ClassTag
 class Activation[T: ClassTag](
     override val activation: String,
     override val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
-  extends BigDLActivation[T](activation, inputShape) {
+  extends BigDLActivation[T](activation, inputShape) with Net {
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
     val kerasActivation = KerasUtils.getKerasActivation(activation)

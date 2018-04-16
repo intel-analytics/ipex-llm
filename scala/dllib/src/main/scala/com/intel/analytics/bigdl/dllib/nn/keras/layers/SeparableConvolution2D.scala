@@ -23,6 +23,7 @@ import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.zoo.pipeline.api.Net
 import com.intel.analytics.zoo.pipeline.api.keras.layers.utils.KerasUtils
 
 import scala.reflect.ClassTag
@@ -82,7 +83,7 @@ class SeparableConvolution2D[T: ClassTag](
    override val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends BigDLSeparableConvolution2D[T](nbFilter, nbRow, nbCol, init, activation, borderMode,
     subsample, depthMultiplier, dimOrdering, depthwiseRegularizer, pointwiseRegularizer,
-    bRegularizer, bias, inputShape) {}
+    bRegularizer, bias, inputShape) with Net {}
 
 object SeparableConvolution2D {
   def apply[@specialized(Float, Double) T: ClassTag](

@@ -16,11 +16,12 @@
 
 package com.intel.analytics.zoo.pipeline.api.keras.layers
 
-import com.intel.analytics.bigdl.nn.keras.{ConvLSTM2D => BigDLConvLSTM2D, KerasLayer}
+import com.intel.analytics.bigdl.nn.keras.{KerasLayer, ConvLSTM2D => BigDLConvLSTM2D}
 import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.zoo.pipeline.api.Net
 import com.intel.analytics.zoo.pipeline.api.keras.layers.utils.KerasUtils
 
 import scala.reflect.ClassTag
@@ -73,7 +74,7 @@ class ConvLSTM2D[T: ClassTag](
    override val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends BigDLConvLSTM2D[T](nbFilter, nbKernel, activation, innerActivation, dimOrdering,
                               subsample, wRegularizer, uRegularizer, bRegularizer, returnSequences,
-                              goBackwards, inputShape) {}
+                              goBackwards, inputShape) with Net {}
 
 object ConvLSTM2D {
   def apply[@specialized(Float, Double) T: ClassTag](

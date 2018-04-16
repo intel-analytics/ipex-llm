@@ -19,6 +19,7 @@ package com.intel.analytics.zoo.pipeline.api.keras.layers
 import com.intel.analytics.bigdl.nn.keras.{GaussianDropout => BigDLGaussianDropout}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.zoo.pipeline.api.Net
 
 import scala.reflect.ClassTag
 
@@ -36,8 +37,8 @@ import scala.reflect.ClassTag
 class GaussianDropout[T: ClassTag](
     override val p: Double,
     override val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
-  extends BigDLGaussianDropout[T](
-    p, inputShape) {
+  extends BigDLGaussianDropout[T] (
+    p, inputShape) with Net {
 }
 
 object GaussianDropout {

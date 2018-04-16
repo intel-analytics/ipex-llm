@@ -19,6 +19,7 @@ package com.intel.analytics.zoo.pipeline.api.keras.layers
 import com.intel.analytics.bigdl.nn.keras.{UpSampling1D => BigDLUpSampling1D}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.zoo.pipeline.api.Net
 
 import scala.reflect.ClassTag
 
@@ -36,7 +37,7 @@ import scala.reflect.ClassTag
 class UpSampling1D[T: ClassTag](
    override val length: Int = 2,
    override val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
-  extends BigDLUpSampling1D[T](length, inputShape) {}
+  extends BigDLUpSampling1D[T](length, inputShape) with Net {}
 
 object UpSampling1D {
   def apply[@specialized(Float, Double) T: ClassTag](

@@ -19,6 +19,7 @@ package com.intel.analytics.zoo.pipeline.api.keras.layers
 import com.intel.analytics.bigdl.nn.keras.{MaxPooling3D => BigDLMaxPooling3D}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.zoo.pipeline.api.Net
 import com.intel.analytics.zoo.pipeline.api.keras.layers.utils.KerasUtils
 
 import scala.reflect.ClassTag
@@ -45,7 +46,7 @@ class MaxPooling3D[T: ClassTag](
     dimOrdering: String = "CHANNEL_FIRST",
     inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends BigDLMaxPooling3D[T](
-    poolSize, strides, dimOrdering, inputShape) {
+    poolSize, strides, dimOrdering, inputShape) with Net {
 }
 
 object MaxPooling3D {

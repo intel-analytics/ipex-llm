@@ -16,13 +16,14 @@
 
 package com.intel.analytics.zoo.pipeline.api.keras.layers
 
-import com.intel.analytics.bigdl.nn.keras.{Deconvolution2D => BigDLDeconvolution2D, KerasLayer}
+import com.intel.analytics.bigdl.nn.keras.{KerasLayer, Deconvolution2D => BigDLDeconvolution2D}
 import com.intel.analytics.bigdl.nn.abstractnn.DataFormat
 import com.intel.analytics.bigdl.nn.{InitializationMethod, Xavier}
 import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.zoo.pipeline.api.Net
 import com.intel.analytics.zoo.pipeline.api.keras.layers.utils.KerasUtils
 
 import scala.reflect.ClassTag
@@ -75,7 +76,7 @@ class Deconvolution2D[T: ClassTag](
    override val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends BigDLDeconvolution2D[T](nbFilter, nbRow, nbCol, init, activation,
                                   subsample, dimOrdering, wRegularizer, bRegularizer,
-                                  bias, inputShape) {}
+                                  bias, inputShape) with Net {}
 
 object Deconvolution2D {
   def apply[@specialized(Float, Double) T: ClassTag](

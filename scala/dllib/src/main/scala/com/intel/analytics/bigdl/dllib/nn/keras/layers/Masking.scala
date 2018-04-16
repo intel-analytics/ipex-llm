@@ -19,6 +19,7 @@ package com.intel.analytics.zoo.pipeline.api.keras.layers
 import com.intel.analytics.bigdl.nn.keras.{Masking => BigDLMasking}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.zoo.pipeline.api.Net
 
 import scala.reflect.ClassTag
 
@@ -39,7 +40,7 @@ class Masking[T: ClassTag](
     override val maskValue: Double = 0.0,
     override val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends BigDLMasking[T](
-    maskValue, inputShape) {
+    maskValue, inputShape) with Net {
 }
 
 object Masking {

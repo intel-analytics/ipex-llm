@@ -19,6 +19,7 @@ package com.intel.analytics.zoo.pipeline.api.keras.layers
 import com.intel.analytics.bigdl.nn.keras.{SpatialDropout1D => BigDLSpatialDropout1D}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.zoo.pipeline.api.Net
 
 import scala.reflect.ClassTag
 
@@ -42,8 +43,8 @@ import scala.reflect.ClassTag
 class SpatialDropout1D[T: ClassTag](
     override val p: Double = 0.5,
     override val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
-  extends BigDLSpatialDropout1D[T](
-    p, inputShape) {
+  extends BigDLSpatialDropout1D[T] (
+    p, inputShape) with Net {
 }
 
 object SpatialDropout1D {
