@@ -18,8 +18,8 @@ import pytest
 
 import numpy as np
 
-from zoo.pipeline.api.keras.layers.layer import *
-from zoo.pipeline.api.keras.engine.topology import Sequential, Model
+from zoo.pipeline.api.keras.layers import *
+from zoo.pipeline.api.keras.models import *
 
 np.random.seed(1337)  # for reproducibility
 
