@@ -50,10 +50,12 @@ abstract class KerasBaseSpec extends ZooSpecHelper {
     }
 
     val boutput = bmodel.forward(input)
-    boutput.almostEqual(output, precision) should be(true)
+    boutput.size().sameElements(output.size()) should be (true)
+    boutput.almostEqual(output, precision) should be (true)
 
     val bgradInput = bmodel.backward(input, boutput.clone())
-    bgradInput.almostEqual(gradInput, precision) should be(true)
+    bgradInput.size().sameElements(gradInput.size()) should be (true)
+    bgradInput.almostEqual(gradInput, precision) should be (true)
 
     val parameters = bmodel.parameters()
     if (gradWeight != null) {

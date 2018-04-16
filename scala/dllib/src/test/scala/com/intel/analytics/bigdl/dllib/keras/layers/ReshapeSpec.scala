@@ -21,47 +21,38 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.Shape
 import com.intel.analytics.zoo.pipeline.api.keras.models.Sequential
 
-class Deconvolution2DSpec extends KerasBaseSpec {
+class ReshapeSpec extends KerasBaseSpec {
 
-  def weightConverter(in: Array[Tensor[Float]]): Array[Tensor[Float]] = {
-    var w = in(0).transpose(1, 2)
-    if (in.length > 1) Array(w, in(1)) // with bias
-    else Array(w) // without bias
-  }
-
-  "Deconvolution2D" should "be the same as Keras" in {
+  "Reshape" should "be the same as Keras" in {
     val kerasCode =
       """
-        |input_tensor = Input(shape=[3, 12, 12])
-        |input = np.random.random([8, 3, 12, 12])
-        |output_tensor = Deconvolution2D(3, 3, 3, activation="relu", dim_ordering="th",
-        |                                output_shape=(None, 3, 14, 14))(input_tensor)
+        |input_tensor = Input(shape=[3, 4, 5])
+        |input = np.random.random([2, 3, 4, 5])
+        |output_tensor = Reshape((4, 15))(input_tensor)
         |model = Model(input=input_tensor, output=output_tensor)
       """.stripMargin
     val seq = Sequential[Float]()
-    val layer = Deconvolution2D[Float](3, 3, 3, activation = "relu",
-      inputShape = Shape(3, 12, 12))
+    val layer = Reshape[Float](Array(4, 15), inputShape = Shape(3, 4, 5))
     seq.add(layer)
+    seq.getOutputShape().toSingle().toArray should be (Array(-1, 4, 15))
     checkOutputAndGrad(seq.asInstanceOf[AbstractModule[Tensor[Float], Tensor[Float], Float]],
-      kerasCode, weightConverter, precision = 1e-3)
+      kerasCode)
   }
 
-  "Deconvolution2D without bias" should "be the same as Keras" in {
+  "Reshape inference" should "be the same as Keras" in {
     val kerasCode =
       """
-        |input_tensor = Input(shape=[3, 12, 12])
-        |input = np.random.random([32, 3, 12, 12])
-        |output_tensor = Deconvolution2D(3, 3, 3, dim_ordering="th",
-        |                                subsample=(2, 2), bias=False,
-        |                                output_shape=(None, 3, 25, 25))(input_tensor)
+        |input_tensor = Input(shape=[12, ])
+        |input = np.random.random([3, 12])
+        |output_tensor = Reshape((-1, 2, 2))(input_tensor)
         |model = Model(input=input_tensor, output=output_tensor)
       """.stripMargin
     val seq = Sequential[Float]()
-    val layer = Deconv2D[Float](3, 3, 3, subsample = (2, 2), bias = false,
-      inputShape = Shape(3, 12, 12))
+    val layer = Reshape[Float](Array(-1, 2, 2), inputShape = Shape(12))
     seq.add(layer)
+    seq.getOutputShape().toSingle().toArray should be (Array(-1, 3, 2, 2))
     checkOutputAndGrad(seq.asInstanceOf[AbstractModule[Tensor[Float], Tensor[Float], Float]],
-      kerasCode, weightConverter, precision = 1e-3)
+      kerasCode)
   }
 
 }
