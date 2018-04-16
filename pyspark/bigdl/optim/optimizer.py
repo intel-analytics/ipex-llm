@@ -511,6 +511,34 @@ class Adam(OptimMethod):
         super(Adam, self).__init__(None, bigdl_type, learningrate, learningrate_decay,
                            beta1, beta2, epsilon)
 
+class Ftrl(OptimMethod):
+    """
+    An implementation of Ftrl https://www.eecs.tufts.edu/~dsculley/papers/ad-click-prediction.pdf.
+    Support L1 penalty, L2 penalty and shrinkage-type L2 penalty.
+
+    :param learningRate learning rate
+    :param learningRatePower double, must be less or equal to zero.
+    :param initialAccumulatorValue double, the starting value for accumulators,
+        require zero or positive values.
+    :param l1RegularizationStrength double, must be greater or equal to zero.
+    :param l2RegularizationStrength double, must be greater or equal to zero.
+    :param l2ShrinkageRegularizationStrength double, must be greater or equal to zero.
+        This differs from l2RegularizationStrength above. L2 above is a stabilization
+        penalty, whereas this one is a magnitude penalty.
+    >>> adagrad = Ftrl()
+    creating: createFtrl
+    """
+    def __init__(self,
+                 learningrate = 1e-3,
+                 learningrate_power = 0.0,
+
+                 l1_regu = 0.9,
+                 beta2 = 0.999,
+                 epsilon = 1e-8,
+                 bigdl_type="float"):
+        super(Adam, self).__init__(None, bigdl_type, learningrate, learningrate_decay,
+                                   beta1, beta2, epsilon)
+
 class Adamax(OptimMethod):
     """
     An implementation of Adamax http://arxiv.org/pdf/1412.6980.pdf
