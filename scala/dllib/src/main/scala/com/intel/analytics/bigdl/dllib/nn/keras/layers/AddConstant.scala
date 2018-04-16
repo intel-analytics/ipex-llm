@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.zoo.pipeline.api.keras.layers.extra
+package com.intel.analytics.zoo.pipeline.api.keras.layers
 
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, IdentityOutputShape}
 import com.intel.analytics.bigdl.nn.keras.KerasLayer
@@ -26,30 +26,31 @@ import com.intel.analytics.zoo.pipeline.api.keras.layers.utils.KerasUtils
 import scala.reflect.ClassTag
 
 /**
- * Multiply the input by a (non-learnable) scalar constant.
+ * Add a (non-learnable) scalar constant to the input.
  *
  * When you use this layer as the first layer of a model, you need to provide the argument
  * inputShape (a Single Shape, does not include the batch dimension).
  *
- * @param constant The scalar constant to be multiplied.
+ * @param constant The scalar constant to be added.
  * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now.
+ * Remark: This layer is from Torch and wrapped in Keras style.
  */
-class MulConstant[T: ClassTag](
+class AddConstant[T: ClassTag](
     val constant: Double,
     val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends KerasLayer[Tensor[T], Tensor[T], T](KerasUtils.addBatch(inputShape))
-  with IdentityOutputShape {
+    with IdentityOutputShape {
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
-    val layer = com.intel.analytics.bigdl.nn.MulConstant(constant)
+    val layer = com.intel.analytics.bigdl.nn.AddConstant(constant)
     layer.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
   }
 }
 
-object MulConstant {
+object AddConstant {
   def apply[@specialized(Float, Double) T: ClassTag](
     constant: Double,
-    inputShape: Shape = null)(implicit ev: TensorNumeric[T]): MulConstant[T] = {
-    new MulConstant[T](constant, inputShape)
+    inputShape: Shape = null)(implicit ev: TensorNumeric[T]): AddConstant[T] = {
+    new AddConstant[T](constant, inputShape)
   }
 }

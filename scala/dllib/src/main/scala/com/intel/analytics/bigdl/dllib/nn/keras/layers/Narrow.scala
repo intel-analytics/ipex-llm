@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.zoo.pipeline.api.keras.layers.extra
+package com.intel.analytics.zoo.pipeline.api.keras.layers
 
 import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.nn.keras.KerasLayer
@@ -47,6 +47,7 @@ import scala.reflect.ClassTag
  * @param length The length to narrow. Default is 1.
  *               Can use a negative length such as -1 in the case where input size is unknown.
  * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now.
+ * Remark: This layer is from Torch and wrapped in Keras style.
  */
 class Narrow[T: ClassTag](
     val dim: Int,

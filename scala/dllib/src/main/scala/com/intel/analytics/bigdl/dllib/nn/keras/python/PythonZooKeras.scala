@@ -26,8 +26,8 @@ import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.nn.keras.KerasLayer
 import com.intel.analytics.zoo.pipeline.api.keras.layers._
-import com.intel.analytics.zoo.pipeline.api.keras.layers.extra._
 import com.intel.analytics.zoo.pipeline.api.keras.layers.utils.KerasUtils
+import com.intel.analytics.zoo.pipeline.api.keras.models.{Model, Sequential}
 
 import scala.reflect.ClassTag
 
@@ -74,7 +74,7 @@ class PythonZooKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonB
   }
 
 
-  // ================================= Torch layers in Keras Style =================================
+  // ================================= Torch layers in Keras style =================================
 
   def createZooKerasSelect(
       dim: Int,

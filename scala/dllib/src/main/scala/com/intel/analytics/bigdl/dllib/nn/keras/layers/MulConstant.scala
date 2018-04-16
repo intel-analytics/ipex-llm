@@ -14,10 +14,9 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.zoo.pipeline.api.keras.layers.extra
+package com.intel.analytics.zoo.pipeline.api.keras.layers
 
-import com.intel.analytics.bigdl.nn.SpatialCrossMapLRN
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, DataFormat, IdentityOutputShape}
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, IdentityOutputShape}
 import com.intel.analytics.bigdl.nn.keras.KerasLayer
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -27,43 +26,31 @@ import com.intel.analytics.zoo.pipeline.api.keras.layers.utils.KerasUtils
 import scala.reflect.ClassTag
 
 /**
- * Local Response Normalization between different feature maps.
+ * Multiply the input by a (non-learnable) scalar constant.
  *
  * When you use this layer as the first layer of a model, you need to provide the argument
  * inputShape (a Single Shape, does not include the batch dimension).
  *
- * @param alpha Double. The scaling parameter. Default is 0.0001.
- * @param k Double. A constant.
- * @param beta Double. The exponent. Default is 0.75.
- * @param n The number of channels to sum over.
- * @param dimOrdering Format of input data. Either DataFormat.NCHW (dimOrdering='th') or
- *                    DataFormat.NHWC (dimOrdering='tf'). Default is NCHW.
+ * @param constant The scalar constant to be multiplied.
  * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now.
+ * Remark: This layer is from Torch and wrapped in Keras style.
  */
-class LRN2D[T: ClassTag](
-    val alpha: Double = 1e-4,
-    val k: Double = 1.0,
-    val beta: Double = 0.75,
-    val n: Int = 5,
-    val dimOrdering: DataFormat = DataFormat.NCHW,
+class MulConstant[T: ClassTag](
+    val constant: Double,
     val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends KerasLayer[Tensor[T], Tensor[T], T](KerasUtils.addBatch(inputShape))
-    with IdentityOutputShape {
+  with IdentityOutputShape {
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
-    val layer = SpatialCrossMapLRN(n, alpha, beta, k, dimOrdering)
+    val layer = com.intel.analytics.bigdl.nn.MulConstant(constant)
     layer.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
   }
 }
 
-object LRN2D {
+object MulConstant {
   def apply[@specialized(Float, Double) T: ClassTag](
-    alpha: Double = 1e-4,
-    k: Double = 1.0,
-    beta: Double = 0.75,
-    n: Int = 5,
-    dimOrdering: String = "th",
-    inputShape: Shape = null)(implicit ev: TensorNumeric[T]): LRN2D[T] = {
-    new LRN2D[T](alpha, k, beta, n, KerasUtils.toBigDLFormat(dimOrdering), inputShape)
+    constant: Double,
+    inputShape: Shape = null)(implicit ev: TensorNumeric[T]): MulConstant[T] = {
+    new MulConstant[T](constant, inputShape)
   }
 }
