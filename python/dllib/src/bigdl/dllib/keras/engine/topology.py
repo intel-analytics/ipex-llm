@@ -14,66 +14,62 @@
 # limitations under the License.
 #
 
-from zoo.pipeline.api.keras.layers.layer import ZooKerasCreator
-from bigdl.nn.keras.topology import KerasModel as BKerasModel
-from bigdl.util.common import to_list
+import sys
+
+from bigdl.nn.keras.topology import KerasModel as BigDLKerasModel
+from bigdl.nn.keras.layer import KerasLayer
+from bigdl.nn.layer import Node
+from bigdl.util.common import JavaValue
+
+if sys.version >= '3':
+    long = int
+    unicode = str
 
 
-class ZooKerasModel(ZooKerasCreator, BKerasModel):
+class ZooKerasCreator(JavaValue):
+    def jvm_class_constructor(self):
+        name = "createZooKeras" + self.__class__.__name__
+        print("creating: " + name)
+        return name
+
+
+class ZooKerasLayer(ZooKerasCreator, KerasLayer):
     pass
 
 
-class Sequential(ZooKerasModel):
+class ZooKerasModel(ZooKerasCreator, BigDLKerasModel):
+    pass
+
+
+class Input(ZooKerasCreator, Node):
     """
-    Container for a sequential model.
+    Used to instantiate an input node.
 
     # Arguments
-    name: String to specify the name of the sequential model. Default is None.
+    shape: A shape tuple, not including batch.
+    name: String to set the name of the input node. If not specified, its name will by default to be a generated string.
 
-    >>> sequential = Sequential(name="seq1")
-    creating: createZooKerasSequential
+    >>> input = Input(name="input1", shape=(3, 5))
+    creating: createZooKerasInput
     """
-    def __init__(self, jvalue=None, **kwargs):
-        super(Sequential, self).__init__(jvalue, **kwargs)
-
-    def add(self, model):
-        self.value.add(model.value)
-        return self
-
-    @staticmethod
-    def from_jvalue(jvalue, bigdl_type="float"):
-        """
-        Create a Python Model base on the given java value
-        :param jvalue: Java object create by Py4j
-        :return: A Python Model
-        """
-        model = Sequential(jvalue=jvalue)
-        model.value = jvalue
-        return model
+    def __init__(self, shape=None, name=None, bigdl_type="float"):
+        super(Input, self).__init__(None, bigdl_type,
+                                    name,
+                                    list(shape) if shape else None)
 
 
-class Model(ZooKerasModel):
+class InputLayer(ZooKerasLayer):
     """
-    Container for a graph model.
+    Used as an entry point into a model.
 
     # Arguments
-    input: An input node or a list of input nodes.
-    output: An output node or a list of output nodes.
-    name: String to specify the name of the graph model. Default is None.
-    """
-    def __init__(self, input, output, jvalue=None, **kwargs):
-        super(Model, self).__init__(jvalue,
-                                    to_list(input),
-                                    to_list(output),
-                                    **kwargs)
+    input_shape: A shape tuple, not including batch.
+    name: String to set the name of the input layer. If not specified, its name will by default to be a generated string.
 
-    @staticmethod
-    def from_jvalue(jvalue, bigdl_type="float"):
-        """
-        Create a Python Model base on the given java value
-        :param jvalue: Java object create by Py4j
-        :return: A Python Model
-        """
-        model = Model([], [], jvalue=jvalue)
-        model.value = jvalue
-        return model
+    >>> inputlayer = InputLayer(input_shape=(3, 5), name="input1")
+    creating: createZooKerasInputLayer
+    """
+    def __init__(self, input_shape=None, **kwargs):
+        super(InputLayer, self).__init__(None,
+                                         list(input_shape) if input_shape else None,
+                                         **kwargs)

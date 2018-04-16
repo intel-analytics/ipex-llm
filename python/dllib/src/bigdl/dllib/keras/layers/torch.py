@@ -14,7 +14,15 @@
 # limitations under the License.
 #
 
-from zoo.pipeline.api.keras.layers import ZooKerasLayer
+# Torch layers in Keras style.
+
+import sys
+
+from ..engine.topology import ZooKerasLayer
+
+if sys.version >= '3':
+    long = int
+    unicode = str
 
 
 class Select(ZooKerasLayer):

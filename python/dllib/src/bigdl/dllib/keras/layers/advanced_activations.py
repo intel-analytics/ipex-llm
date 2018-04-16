@@ -14,16 +14,10 @@
 # limitations under the License.
 #
 
-from ..engine import Input, InputLayer
-from .core import *
-from .convolutional import *
-from .pooling import *
-from .local import *
-from .recurrent import *
-from .normalization import *
-from .embeddings import *
-from .noise import *
-from .advanced_activations import *
-from .wrappers import *
-from .convolutional_recurrent import *
-from .torch import *
+import sys
+
+from ..engine.topology import ZooKerasLayer
+
+if sys.version >= '3':
+    long = int
+    unicode = str
