@@ -20,6 +20,7 @@ import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.nn.keras.Deconv2D
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.zoo.pipeline.api.keras.models.Sequential
 
 class Deconvolution2DSpec extends KerasBaseSpec {
 

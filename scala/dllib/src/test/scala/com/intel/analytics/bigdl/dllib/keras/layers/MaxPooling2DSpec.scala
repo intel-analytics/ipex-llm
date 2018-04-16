@@ -18,6 +18,7 @@ package com.intel.analytics.zoo.pipeline.api.keras.layers
 import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.zoo.pipeline.api.keras.models.Sequential
 
 class MaxPooling2DSpec extends KerasBaseSpec {
   "MaxPooling2D NCHW" should "be the same as Keras" in {

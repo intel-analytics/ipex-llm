@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.zoo.pipeline.api.keras.layers.extra
+package com.intel.analytics.zoo.pipeline.api.keras.layers
 
 import com.intel.analytics.bigdl.nn.{Narrow => BNarrow}
-import com.intel.analytics.zoo.pipeline.api.keras.layers.extra.{Narrow => ZNarrow}
+import com.intel.analytics.zoo.pipeline.api.keras.layers.{Narrow => ZNarrow}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.Shape
 import com.intel.analytics.zoo.pipeline.api.keras.ZooSpecHelper

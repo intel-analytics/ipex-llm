@@ -14,28 +14,28 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.zoo.pipeline.api.keras.layers.extra
+package com.intel.analytics.zoo.pipeline.api.keras.layers
 
-import com.intel.analytics.bigdl.nn.{AddConstant => BAddConstant}
-import com.intel.analytics.zoo.pipeline.api.keras.layers.extra.{AddConstant => ZAddConstant}
+import com.intel.analytics.bigdl.nn.{MulConstant => BMulConstant}
+import com.intel.analytics.zoo.pipeline.api.keras.layers.{MulConstant => ZMulConstant}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.Shape
 import com.intel.analytics.zoo.pipeline.api.keras.ZooSpecHelper
 
-class AddConstantSpec extends ZooSpecHelper {
+class MulConstantSpec extends ZooSpecHelper {
 
-  "AddConstant 1 Zoo" should "be the same as BigDL" in {
-    val blayer = BAddConstant[Float](1)
-    val zlayer = ZAddConstant[Float](1, inputShape = Shape(4, 5))
+  "MulConstant 0 Zoo" should "be the same as BigDL" in {
+    val blayer = BMulConstant[Float](0f)
+    val zlayer = ZMulConstant[Float](0f, inputShape = Shape(4, 5))
     zlayer.build(Shape(-1, 4, 5))
     zlayer.getOutputShape().toSingle().toArray should be (Array(-1, 4, 5))
     val input = Tensor[Float](Array(3, 4, 5)).rand()
     compareOutputAndGradInput(blayer, zlayer, input)
   }
 
-  "AddConstant -0.4 Zoo" should "be the same as BigDL" in {
-    val blayer = BAddConstant[Float](-0.4)
-    val zlayer = ZAddConstant[Float](-0.4, inputShape = Shape(4, 8, 8))
+  "MulConstant -1 Zoo" should "be the same as BigDL" in {
+    val blayer = BMulConstant[Float](-1)
+    val zlayer = ZMulConstant[Float](-1, inputShape = Shape(4, 8, 8))
     zlayer.build(Shape(-1, 4, 8, 8))
     zlayer.getOutputShape().toSingle().toArray should be (Array(-1, 4, 8, 8))
     val input = Tensor[Float](Array(3, 4, 8, 8)).rand()

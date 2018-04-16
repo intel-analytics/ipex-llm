@@ -16,9 +16,11 @@
 
 package com.intel.analytics.zoo.pipeline.api.keras.layers
 
+import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.zoo.pipeline.api.keras.models.Sequential
 
 class ActivationSpec extends KerasBaseSpec {
 
@@ -155,6 +157,51 @@ class ActivationSpec extends KerasBaseSpec {
     seq.add(layer)
     checkOutputAndGrad(seq.asInstanceOf[AbstractModule[Tensor[Float], Tensor[Float], Float]],
       kerasCode)
+  }
+
+  "ReLU6 Zoo" should "be the same as BigDL" in {
+    val blayer = ReLU6[Float]()
+    val zlayer = Activation[Float]("relu6", inputShape = Shape(4, 5))
+    zlayer.build(Shape(-1, 4, 5))
+    zlayer.getOutputShape().toSingle().toArray should be (Array(-1, 4, 5))
+    val input = Tensor[Float](Array(2, 4, 5)).rand()
+    compareOutputAndGradInput(blayer, zlayer, input)
+  }
+
+  "TanhShrink Zoo" should "be the same as BigDL" in {
+    val blayer = TanhShrink[Float]()
+    val zlayer = Activation[Float]("tanh_shrink", inputShape = Shape(4, 5))
+    zlayer.build(Shape(-1, 4, 5))
+    zlayer.getOutputShape().toSingle().toArray should be (Array(-1, 4, 5))
+    val input = Tensor[Float](Array(2, 4, 5)).rand()
+    compareOutputAndGradInput(blayer, zlayer, input)
+  }
+
+  "SoftMin Zoo" should "be the same as BigDL" in {
+    val blayer = SoftMin[Float]()
+    val zlayer = Activation[Float]("softmin", inputShape = Shape(4, 5))
+    zlayer.build(Shape(-1, 4, 5))
+    zlayer.getOutputShape().toSingle().toArray should be (Array(-1, 4, 5))
+    val input = Tensor[Float](Array(2, 4, 5)).rand()
+    compareOutputAndGradInput(blayer, zlayer, input)
+  }
+
+  "LogSigmoid Zoo" should "be the same as BigDL" in {
+    val blayer = LogSigmoid[Float]()
+    val zlayer = Activation[Float]("log_sigmoid", inputShape = Shape(4, 5))
+    zlayer.build(Shape(-1, 4, 5))
+    zlayer.getOutputShape().toSingle().toArray should be (Array(-1, 4, 5))
+    val input = Tensor[Float](Array(2, 4, 5)).rand()
+    compareOutputAndGradInput(blayer, zlayer, input)
+  }
+
+  "LogSoftMax Zoo" should "be the same as BigDL" in {
+    val blayer = LogSoftMax[Float]()
+    val zlayer = Activation[Float]("log_softmax", inputShape = Shape(10))
+    zlayer.build(Shape(-1, 10))
+    zlayer.getOutputShape().toSingle().toArray should be (Array(-1, 10))
+    val input = Tensor[Float](Array(2, 10)).rand()
+    compareOutputAndGradInput(blayer, zlayer, input)
   }
 
 }
