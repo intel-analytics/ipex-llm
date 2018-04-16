@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.zoo.pipeline.api.keras.layers.extra
+package com.intel.analytics.zoo.pipeline.api.keras.layers
 
 import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.nn.keras.KerasLayer
@@ -39,6 +39,7 @@ import scala.reflect.ClassTag
  *             The selected dimensions must be singleton, i.e. having size 1. Default is null,
  *             and in this case all the non-batch singleton dimensions will be deleted.
  * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now.
+ * Remark: This layer is from Torch and wrapped in Keras style.
  */
 class Squeeze[T: ClassTag](
     val dims: Array[Int] = null,

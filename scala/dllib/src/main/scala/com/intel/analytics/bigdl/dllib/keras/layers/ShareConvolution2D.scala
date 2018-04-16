@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.zoo.pipeline.api.keras.layers.extra
+package com.intel.analytics.zoo.pipeline.api.keras.layers
 
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, DataFormat}
 import com.intel.analytics.bigdl.nn.keras.KerasLayer
@@ -58,6 +58,7 @@ import scala.reflect.ClassTag
  * @param bias Whether to include a bias (i.e. make the layer affine rather than linear).
  *             Default is true.
  * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now.
+ * Remark: This layer is from Torch and wrapped in Keras style.
  */
 class ShareConvolution2D[T: ClassTag](
     val nbFilter: Int,

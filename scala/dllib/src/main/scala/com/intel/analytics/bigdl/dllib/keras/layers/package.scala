@@ -25,4 +25,5 @@ package object layers {
   val AtrousConv1D = AtrousConvolution1D
   val AtrousConv2D = AtrousConvolution2D
   val Deconv2D = Deconvolution2D
+  val ShareConv2D = ShareConvolution2D
 }
