@@ -20,7 +20,7 @@ import java.nio.ByteOrder
 
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.File
+import com.intel.analytics.bigdl.utils.{File, Shape}
 import com.intel.analytics.bigdl.utils.caffe.CaffeLoader
 import com.intel.analytics.bigdl.utils.serializer.ModuleLoader
 import com.intel.analytics.bigdl.utils.tf.{Session, TensorflowLoader}
@@ -32,6 +32,18 @@ import scala.reflect.ClassTag
  */
 trait Net {
 
+  private def toClazz(obj: Object) = {
+    obj match {
+      case s: Shape => Class.forName("com.intel.analytics.bigdl.utils.Shape")
+      case _ => obj.getClass()
+    }
+  }
+
+  private[zoo] def callByName(methodName: String, args: Object*): Object = {
+    val clazz = Class.forName("com.intel.analytics.bigdl.nn.keras.KerasLayer")
+    val method = clazz.getMethod(methodName, args.map(toClazz(_)): _*)
+    method.invoke(this, args: _*)
+  }
 }
 
 object Net {
