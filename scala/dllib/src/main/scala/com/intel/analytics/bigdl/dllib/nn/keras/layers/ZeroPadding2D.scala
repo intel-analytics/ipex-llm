@@ -38,6 +38,7 @@ import scala.reflect.ClassTag
  *                Default is (1, 1, 1, 1).
  * @param dimOrdering Format of the input data. Either DataFormat.NCHW (dimOrdering='th') or
  *                    DataFormat.NHWC (dimOrdering='tf'). Default is NCHW.
+ * @param inputShape A Single Shape, does not include the batch dimension.
  * @tparam T The numeric type of parameter(e.g. weight, bias). Only support float/double now.
  */
 class ZeroPadding2D[T: ClassTag](

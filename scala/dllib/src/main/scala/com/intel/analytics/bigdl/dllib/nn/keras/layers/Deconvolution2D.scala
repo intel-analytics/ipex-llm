@@ -60,6 +60,7 @@ import scala.reflect.ClassTag
  * @param bRegularizer An instance of [[Regularizer]], applied to the bias. Default is null.
  * @param bias Whether to include a bias (i.e. make the layer affine rather than linear).
  *             Default is true.
+ * @param inputShape A Single Shape, does not include the batch dimension.
  * @tparam T The numeric type of parameter(e.g. weight, bias). Only support float/double now.
  */
 class Deconvolution2D[T: ClassTag](

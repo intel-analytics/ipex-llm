@@ -45,6 +45,7 @@ import scala.reflect.ClassTag
  * @param dimOrdering Format of input data. Either DataFormat.NCHW (dimOrdering='th') or
  *                    DataFormat.NHWC (dimOrdering='tf'). Default is NCHW.
  *                    For NCHW, axis along which to normalize is 1. For NHWC, axis is 3.
+ * @param inputShape A Single Shape, does not include the batch dimension.
  * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now.
  */
 class BatchNormalization[T: ClassTag](

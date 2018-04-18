@@ -38,6 +38,7 @@ import scala.reflect.ClassTag
  *
  * @param targetShape Array of int. The target shape that you desire to have.
  *                    Batch dimension should be excluded.
+ * @param inputShape A Single Shape, does not include the batch dimension.
  * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now.
  */
 class Reshape[T: ClassTag](

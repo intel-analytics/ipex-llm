@@ -54,6 +54,7 @@ import scala.reflect.ClassTag
  *                   and you wish to share parameters across space
  *                   so that each filter only has one set of parameters,
  *                   set 'sharedAxes = Array(1,2)'.
+ * @param inputShape A Single Shape, does not include the batch dimension.
  * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now.
  */
 class SReLU[T: ClassTag](

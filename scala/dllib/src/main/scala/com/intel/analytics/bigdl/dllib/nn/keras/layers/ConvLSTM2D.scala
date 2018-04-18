@@ -57,6 +57,7 @@ import scala.reflect.ClassTag
  * @param returnSequences Whether to return the full sequence or the last output
  *                        in the output sequence. Default is false.
  * @param goBackwards Whether the input sequence will be processed backwards. Default is false.
+ * @param inputShape A Single Shape, does not include the batch dimension.
  * @tparam T The numeric type of parameter(e.g. weight, bias). Only support float/double now.
  */
 class ConvLSTM2D[T: ClassTag](

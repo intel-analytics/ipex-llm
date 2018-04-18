@@ -32,6 +32,7 @@ import scala.reflect.ClassTag
  *
  * @param dims Int array. Permutation pattern, does not include the batch dimension.
  *             Indexing starts at 1.
+ * @param inputShape A Single Shape, does not include the batch dimension.
  * @tparam T The numeric type of parameter(e.g. weight, bias). Only support float/double now.
  */
 class Permute[T: ClassTag](

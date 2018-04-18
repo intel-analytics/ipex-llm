@@ -36,6 +36,7 @@ import scala.reflect.ClassTag
  * TimeDistributed(Dense(8), inputShape = Shape(10, 12))
  *
  * @param layer A layer instance.
+ * @param inputShape A Single Shape, does not include the batch dimension.
  * @tparam T The numeric type of parameter(e.g. weight, bias). Only support float/double now.
  */
 class TimeDistributed[T: ClassTag](

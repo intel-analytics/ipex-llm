@@ -36,6 +36,7 @@ import scala.reflect.ClassTag
  * @param layer An instance of a recurrent layer.
  * @param mergeMode Mode by which outputs of the forward and backward RNNs will be combined.
  *                  Must be one of: 'sum', 'mul', 'concat', 'ave'. Default is 'concat'.
+ * @param inputShape A Single Shape, does not include the batch dimension.
  * @tparam T The numeric type of parameter(e.g. weight, bias). Only support float/double now.
  */
 class Bidirectional[T: ClassTag](

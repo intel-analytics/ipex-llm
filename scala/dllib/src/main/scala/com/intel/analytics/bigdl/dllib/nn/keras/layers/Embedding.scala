@@ -40,6 +40,7 @@ import scala.reflect.ClassTag
  *             or 'normal', etc. for simple init methods in the factory method.
  * @param wRegularizer An instance of [[Regularizer]], (eg. L1 or L2 regularization),
  *                     applied to the embedding matrix. Default is null.
+ * @param inputShape A Single Shape, does not include the batch dimension.
  * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now.
  */
 class Embedding[T: ClassTag](

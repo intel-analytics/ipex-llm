@@ -35,6 +35,7 @@ import scala.reflect.ClassTag
  *               If -1, it will default to poolLength. Default is -1, and in this case it will
  *               be equal to poolSize.
  * @param borderMode Either 'valid' or 'same'. Default is 'valid'.
+ * @param inputShape A Single Shape, does not include the batch dimension.
  * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now.
  */
 class AveragePooling1D[T: ClassTag](

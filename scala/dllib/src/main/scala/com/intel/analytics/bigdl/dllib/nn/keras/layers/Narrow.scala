@@ -42,13 +42,15 @@ import scala.reflect.ClassTag
  * When you use this layer as the first layer of a model, you need to provide the argument
  * inputShape (a Single Shape, does not include the batch dimension).
  *
+ * Remark: This layer is from Torch and wrapped in Keras style.
+ *
  * @param dim The dimension to narrow. 0-based index. Cannot narrow the batch dimension.
  *            -1 means the last dimension of the input.
  * @param offset Non-negative integer. The start index on the given dimension. 0-based index.
  * @param length The length to narrow. Default is 1.
  *               Can use a negative length such as -1 in the case where input size is unknown.
+ * @param inputShape A Single Shape, does not include the batch dimension.
  * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now.
- * Remark: This layer is from Torch and wrapped in Keras style.
  */
 class Narrow[T: ClassTag](
     val dim: Int,
