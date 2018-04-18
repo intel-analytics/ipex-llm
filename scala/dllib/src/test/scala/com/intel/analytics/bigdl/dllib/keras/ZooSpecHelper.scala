@@ -71,15 +71,17 @@ abstract class ZooSpecHelper extends FlatSpec with Matchers with BeforeAndAfter 
                                 precision: Double = 1e-5): Unit = {
     // Set seed in case of random factors such as dropout
     RandomGenerator.RNG.setSeed(1000)
-    val toutput = model1.forward(input)
+    val output1 = model1.forward(input)
     RandomGenerator.RNG.setSeed(1000)
-    val koutput = model2.forward(input)
-    koutput.almostEqual(toutput, precision) should be (true)
+    val output2 = model2.forward(input)
+    output2.size().sameElements(output1.size()) should be (true)
+    output2.almostEqual(output1, precision) should be (true)
     RandomGenerator.RNG.setSeed(1000)
-    val tgradInput = model1.backward(input, toutput)
+    val gradInput1 = model1.backward(input, output1)
     RandomGenerator.RNG.setSeed(1000)
-    val kgradInput = model2.backward(input, koutput)
-    kgradInput.almostEqual(tgradInput, precision) should be (true)
+    val gradInput2 = model2.backward(input, output2)
+    gradInput2.size().sameElements(gradInput1.size()) should be (true)
+    gradInput2.almostEqual(gradInput1, precision) should be (true)
   }
 
   def compareOutputAndGradInputSetWeights(
@@ -93,20 +95,15 @@ abstract class ZooSpecHelper extends FlatSpec with Matchers with BeforeAndAfter 
     compareOutputAndGradInput(model1, model2, input, precision)
   }
 
-  def testZooModelLoadSave(model: AbstractModule[Tensor[Float], Tensor[Float], Float],
-                           input: Tensor[Float],
-                           loader: (String, String) => AbstractModule[Activity, Activity, Float],
-                           precision: Double = 1e-5): Unit = {
-    val serFile = JFile.createTempFile(model.getName(), "model")
-    model.saveModule(serFile.getAbsolutePath, overWrite = true)
+  def testZooModelLoadSave[Model](model: ZooModel[Tensor[Float], Tensor[Float], Float],
+                                  input: Tensor[Float],
+                                  loader: (String, String) => Model,
+                                  precision: Double = 1e-5): Unit = {
+    val serFile = createTmpFile()
+    model.saveModel(serFile.getAbsolutePath, overWrite = true)
     val loadedModel = loader(serFile.getAbsolutePath, null)
-      .asInstanceOf[ZooModel[Activity, Activity, Float]]
+      .asInstanceOf[ZooModel[Tensor[Float], Tensor[Float], Float]]
     require(loadedModel.modules.length == 1)
-    compareOutputAndGradInput(model,
-      loadedModel.asInstanceOf[AbstractModule[Tensor[Float], Tensor[Float], Float]],
-      input, precision)
-    if (serFile.exists) {
-      serFile.delete
-    }
+    compareOutputAndGradInput(model, loadedModel, input, precision)
   }
 }

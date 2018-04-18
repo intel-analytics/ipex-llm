@@ -35,10 +35,10 @@ class ShareConvolution2DSpec extends ZooSpecHelper {
 
   "ShareConv2D Zoo with activation" should "be the same as BigDL" in {
     val bmodel = BSequential[Float]()
-      .add(SpatialShareConvolution(3, 64, 7, 7, 2, 1, 2, 3, propagateBack = false))
+      .add(SpatialShareConvolution(3, 64, 7, 7, 2, 1, 2, 3))
       .add(ReLU())
     val zlayer = ShareConv2D[Float](64, 7, 7, activation = "relu", subsample = (1, 2),
-      padH = 3, padW = 2, propagateBack = false, inputShape = Shape(3, 24, 32))
+      padH = 3, padW = 2, inputShape = Shape(3, 24, 32))
     zlayer.build(Shape(-1, 3, 24, 32))
     zlayer.getOutputShape().toSingle().toArray should be (Array(-1, 64, 24, 15))
     val input = Tensor[Float](Array(2, 3, 24, 32)).rand()
