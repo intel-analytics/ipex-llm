@@ -17,20 +17,24 @@
 package com.intel.analytics.zoo.pipeline.api.keras.models
 
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
-import com.intel.analytics.bigdl.nn.keras.{Model => BModel, Sequential => BSequential}
+import com.intel.analytics.bigdl.nn.keras.{KerasLayerSerializer, Model => BModel, Sequential => BSequential}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.zoo.pipeline.api.Net
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializer
 
 import scala.reflect.ClassTag
 
 /**
  * Container for a sequential model.
  */
-class Sequential[T: ClassTag]()
-  (implicit ev: TensorNumeric[T]) extends BSequential[T] with Net{
+class Sequential[T: ClassTag] private ()
+  (implicit ev: TensorNumeric[T]) extends BSequential[T] with Net {
 }
 
 object Sequential {
+  ModuleSerializer.registerModule("com.intel.analytics.zoo.pipeline.api.keras.models.Sequential",
+    KerasLayerSerializer)
+
   def apply[@specialized(Float, Double) T: ClassTag]()
   (implicit ev: TensorNumeric[T]): Sequential[T] = {
     new Sequential[T]()
@@ -69,5 +73,4 @@ object Model {
     (implicit ev: TensorNumeric[T]) : Model[T] = {
     new Model[T](Seq(input), Seq(output))
   }
-
 }
