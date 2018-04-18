@@ -32,9 +32,11 @@ import scala.reflect.ClassTag
  * When you use this layer as the first layer of a model, you need to provide the argument
  * inputShape (a Single Shape, does not include the batch dimension).
  *
- * @param constant The scalar constant to be added.
- * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now.
  * Remark: This layer is from Torch and wrapped in Keras style.
+ *
+ * @param constant The scalar constant to be added.
+ * @param inputShape A Single Shape, does not include the batch dimension.
+ * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now.
  */
 class AddConstant[T: ClassTag](
     val constant: Double,
