@@ -38,6 +38,7 @@ import scala.reflect.ClassTag
  * @param strides Int array of length 3. Stride values. Default is null, and in this case it will
  *                be equal to poolSize.
  * @param dimOrdering Format of input data. Please use 'CHANNEL_FIRST' (dimOrdering='th').
+ * @param inputShape A Single Shape, does not include the batch dimension.
  * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now
  */
 class MaxPooling3D[T: ClassTag](

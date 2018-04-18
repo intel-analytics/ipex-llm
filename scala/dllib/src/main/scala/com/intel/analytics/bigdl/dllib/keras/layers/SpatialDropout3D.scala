@@ -41,6 +41,7 @@ import scala.reflect.ClassTag
  * @param p Fraction of the input units to drop. Double between 0 and 1.
  * @param dimOrdering Format of input data. Either 'CHANNEL_FIRST' (dimOrdering='th') or
  *                    'CHANNEL_LAST' (dimOrdering='tf'). Default is 'CHANNEL_FIRST'.
+ * @param inputShape A Single Shape, does not include the batch dimension.
  * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now.
  */
 class SpatialDropout3D[T: ClassTag](

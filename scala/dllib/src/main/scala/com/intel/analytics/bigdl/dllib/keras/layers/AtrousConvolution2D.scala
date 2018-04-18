@@ -58,6 +58,7 @@ import scala.reflect.ClassTag
  * @param wRegularizer An instance of [[Regularizer]], (eg. L1 or L2 regularization),
  *                     applied to the input weights matrices. Default is null.
  * @param bRegularizer An instance of [[Regularizer]], applied to the bias. Default is null.
+ * @param inputShape A Single Shape, does not include the batch dimension.
  * @tparam T The numeric type of parameter(e.g. weight, bias). Only support float/double now.
  */
 class AtrousConvolution2D[T: ClassTag](

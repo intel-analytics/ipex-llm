@@ -34,6 +34,7 @@ import scala.reflect.ClassTag
  *                  For each timestep in the input (the second dimension),
  *                  if all the values in the input at that timestep are equal to 'maskValue',
  *                  then the timestep will masked (skipped) in all downstream layers.
+ * @param inputShape A Single Shape, does not include the batch dimension.
  * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now.
  */
 class Masking[T: ClassTag](

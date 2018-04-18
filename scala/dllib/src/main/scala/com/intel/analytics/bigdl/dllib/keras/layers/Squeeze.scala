@@ -36,11 +36,13 @@ import scala.reflect.ClassTag
  * When you use this layer as the first layer of a model, you need to provide the argument
  * inputShape (a Single Shape, does not include the batch dimension).
  *
+ * Remark: This layer is from Torch and wrapped in Keras style.
+ *
  * @param dims The dimension(s) to squeeze. 0-based index. Cannot squeeze the batch dimension.
  *             The selected dimensions must be singleton, i.e. having size 1. Default is null,
  *             and in this case all the non-batch singleton dimensions will be deleted.
+ * @param inputShape A Single Shape, does not include the batch dimension.
  * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now.
- * Remark: This layer is from Torch and wrapped in Keras style.
  */
 class Squeeze[T: ClassTag](
     val dims: Array[Int] = null,

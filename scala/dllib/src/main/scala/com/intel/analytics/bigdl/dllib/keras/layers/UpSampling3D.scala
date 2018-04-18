@@ -36,6 +36,7 @@ import scala.reflect.ClassTag
  * @param size Int array of length 3. UpSampling factors for dim1, dim2 and dim3.
  *             Default is (2, 2, 2).
  * @param dimOrdering Format of the input data. Please use "CHANNEL_FIRST" (dimOrdering='th').
+ * @param inputShape A Single Shape, does not include the batch dimension.
  * @tparam T The numeric type of parameter(e.g. weight, bias). Only support float/double now.
  */
 class UpSampling3D[T: ClassTag](

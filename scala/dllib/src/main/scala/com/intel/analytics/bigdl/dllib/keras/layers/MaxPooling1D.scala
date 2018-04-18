@@ -34,6 +34,7 @@ import scala.reflect.ClassTag
  * @param stride Factor by which to downscale. Integer, or -1. 2 will halve the input.
  *               If -1, it will default to poolLength. Default is -1.
  * @param borderMode Either 'valid' or 'same'. Default is 'valid'.
+ * @param inputShape A Single Shape, does not include the batch dimension.
  * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now
  */
 class MaxPooling1D[T: ClassTag](

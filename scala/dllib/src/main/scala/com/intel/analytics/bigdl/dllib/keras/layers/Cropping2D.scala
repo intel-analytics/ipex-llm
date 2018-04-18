@@ -36,6 +36,7 @@ import scala.reflect.ClassTag
  * @param widthCrop Int array of length 2. Width of the 2 cropping dimension. Default is (0, 0).
  * @param dimOrdering Format of input data. Either DataFormat.NCHW (dimOrdering='th') or
  *                    DataFormat.NHWC (dimOrdering='tf'). Default is NCHW.
+ * @param inputShape A Single Shape, does not include the batch dimension.
  * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now.
  */
 class Cropping2D[T: ClassTag](

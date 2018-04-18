@@ -33,6 +33,7 @@ import scala.reflect.ClassTag
  * inputShape (a Single Shape, does not include the batch dimension).
  *
  * @param theta Double >= 0. Threshold location of activation. Default is 1.0.
+ * @param inputShape A Single Shape, does not include the batch dimension.
  * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now.
  */
 class ThresholdedReLU[T: ClassTag](

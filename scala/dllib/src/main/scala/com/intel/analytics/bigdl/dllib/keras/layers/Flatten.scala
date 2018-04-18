@@ -32,6 +32,7 @@ import scala.reflect.ClassTag
  * When you use this layer as the first layer of a model, you need to provide the argument
  * inputShape (a Single Shape, does not include the batch dimension).
  *
+ * @param inputShape A Single Shape, does not include the batch dimension.
  * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now.
  */
 class Flatten[T: ClassTag](

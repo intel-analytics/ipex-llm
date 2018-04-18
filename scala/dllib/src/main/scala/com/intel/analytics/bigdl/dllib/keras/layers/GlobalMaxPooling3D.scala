@@ -34,6 +34,7 @@ import scala.reflect.ClassTag
  * inputShape (a Single Shape, does not include the batch dimension).
  *
  * @param dimOrdering Format of input data. Please use 'CHANNEL_FIRST' (dimOrdering='th').
+ * @param inputShape A Single Shape, does not include the batch dimension.
  * @tparam T The numeric type of parameter(e.g. weight, bias). Only support float/double now.
  */
 class GlobalMaxPooling3D[T: ClassTag](

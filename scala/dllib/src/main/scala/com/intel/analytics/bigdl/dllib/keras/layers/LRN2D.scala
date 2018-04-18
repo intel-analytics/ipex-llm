@@ -33,14 +33,16 @@ import scala.reflect.ClassTag
  * When you use this layer as the first layer of a model, you need to provide the argument
  * inputShape (a Single Shape, does not include the batch dimension).
  *
+ * Remark: This layer is from Torch and wrapped in Keras style.
+ *
  * @param alpha Double. The scaling parameter. Default is 0.0001.
  * @param k Double. A constant.
  * @param beta Double. The exponent. Default is 0.75.
  * @param n The number of channels to sum over.
  * @param dimOrdering Format of input data. Either DataFormat.NCHW (dimOrdering='th') or
  *                    DataFormat.NHWC (dimOrdering='tf'). Default is NCHW.
+ * @param inputShape A Single Shape, does not include the batch dimension.
  * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now.
- * Remark: This layer is from Torch and wrapped in Keras style.
  */
 class LRN2D[T: ClassTag](
     val alpha: Double = 1e-4,

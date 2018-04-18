@@ -38,6 +38,8 @@ import scala.reflect.ClassTag
  * inputShape (a Single Shape, does not include the batch dimension),
  * e.g. inputShape=Shape(3, 128, 128) for 128x128 RGB pictures.
  *
+ * Remark: This layer is from Torch and wrapped in Keras style.
+ *
  * @param nbFilter Number of convolution filters to use.
  * @param nbRow Number of rows in the convolution kernel.
  * @param nbCol Number of columns in the convolution kernel.
@@ -58,8 +60,8 @@ import scala.reflect.ClassTag
  * @param bRegularizer An instance of [[Regularizer]], applied to the bias. Default is null.
  * @param bias Whether to include a bias (i.e. make the layer affine rather than linear).
  *             Default is true.
+ * @param inputShape A Single Shape, does not include the batch dimension.
  * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now.
- * Remark: This layer is from Torch and wrapped in Keras style.
  */
 class ShareConvolution2D[T: ClassTag](
     val nbFilter: Int,

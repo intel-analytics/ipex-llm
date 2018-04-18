@@ -38,12 +38,14 @@ import scala.reflect.ClassTag
  * When you use this layer as the first layer of a model, you need to provide the argument
  * inputShape (a Single Shape, does not include the batch dimension).
  *
+ * Remark: This layer is from Torch and wrapped in Keras style.
+ *
  * @param dim The dimension to select. 0-based index. Cannot select the batch dimension.
  *            -1 means the last dimension of the input.
  * @param index The index of the dimension to be selected. 0-based index.
  *              -1 means the last dimension of the input.
+ * @param inputShape A Single Shape, does not include the batch dimension.
  * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now.
- * Remark: This layer is from Torch and wrapped in Keras style.
  */
 class Select[T: ClassTag](
     val dim: Int,

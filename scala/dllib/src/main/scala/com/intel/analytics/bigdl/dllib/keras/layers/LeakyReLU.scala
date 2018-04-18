@@ -33,6 +33,7 @@ import scala.reflect.ClassTag
  * inputShape (a Single Shape, does not include the batch dimension).
  *
  * @param alpha Double >= 0. Negative slope coefficient. Default is 0.3.
+ * @param inputShape A Single Shape, does not include the batch dimension.
  * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now.
  */
 class LeakyReLU[T: ClassTag](

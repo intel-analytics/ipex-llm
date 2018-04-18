@@ -31,6 +31,7 @@ import scala.reflect.ClassTag
  * inputShape (a Single Shape, does not include the batch dimension).
  *
  * @param n Repetition factor. Integer.
+ * @param inputShape A Single Shape, does not include the batch dimension.
  * @tparam T The numeric type of parameter(e.g. weight, bias). Only support float/double now.
  */
 class RepeatVector[T: ClassTag](
