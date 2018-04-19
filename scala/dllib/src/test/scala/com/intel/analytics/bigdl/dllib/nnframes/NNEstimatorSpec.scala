@@ -31,6 +31,7 @@ import com.intel.analytics.bigdl.visualization.{TrainSummary, ValidationSummary}
 import org.apache.spark.SparkContext
 import org.apache.spark.ml.{Pipeline, PipelineModel}
 import org.apache.spark.ml.feature.MinMaxScaler
+import org.apache.spark.ml.param.{ParamMap, Params}
 import org.apache.spark.mllib.linalg.Vectors
 import org.apache.spark.sql.{DataFrame, Row, SQLContext}
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
@@ -378,6 +379,71 @@ class NNEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
     result2 shouldEqual result
   }
+
+  "An NNEstimator" should "supports deep copy" in {
+    val model = new Sequential().add(Linear[Float](6, 2)).add(LogSoftMax[Float])
+    val criterion = ClassNLLCriterion[Float]()
+    val data = sc.parallelize(
+      smallData.map(p => (org.apache.spark.mllib.linalg.Vectors.dense(p._1), p._2)))
+    val df: DataFrame = sqlContext.createDataFrame(data).toDF("features", "label")
+    val estimator = new NNEstimator[Float](model, criterion, Array(6), Array(1))
+      .setBatchSize(31)
+      .setOptimMethod(new LBFGS[Float]())
+      .setLearningRate(0.123)
+      .setLearningRateDecay(0.432)
+      .setMaxEpoch(2)
+      .setFeaturesCol("abc")
+      .setTrainSummary(new TrainSummary("/tmp", "1"))
+      .setValidationSummary(new ValidationSummary("/tmp", "2"))
+      .setValidation(Trigger.maxIteration(3), df, Array(new Loss[Float]()), 2)
+    val copied = estimator.copy(ParamMap.empty)
+    assert(estimator.model ne copied.model)
+    assert(estimator.criterion ne copied.criterion)
+    assert(estimator.featureSize ne copied.featureSize)
+
+    assert(estimator.model == copied.model)
+    assert(estimator.criterion == copied.criterion)
+    assert(estimator.featureSize.deep == copied.featureSize.deep)
+
+    NNEstimatorSpec.compareParams(estimator, copied)
+
+    val estVal = estimator.getValidation.get
+    val copiedVal = copied.getValidation.get
+    assert(estVal._1 == copiedVal._1)
+    assert(estVal._2 == copiedVal._2)
+    assert(estVal._3.deep == copiedVal._3.deep)
+    assert(estVal._4 == copiedVal._4)
+
+    // train Summary and validation Summary are not copied since they are not thread-safe and cannot
+    // be shared among estimators
+    assert(copied.getTrainSummary.isEmpty)
+    assert(copied.getValidationSummary.isEmpty)
+  }
+
+  "An NNModel" should "supports deep copy" in {
+    val model = new Sequential().add(Linear[Float](6, 2)).add(LogSoftMax[Float])
+    val criterion = ClassNLLCriterion[Float]()
+    val data = sc.parallelize(
+      smallData.map(p => (org.apache.spark.mllib.linalg.Vectors.dense(p._1), p._2)))
+    val df: DataFrame = sqlContext.createDataFrame(data).toDF("abc", "la")
+    val estimator = new NNEstimator[Float](model, criterion, Array(6), Array(1))
+      .setBatchSize(31)
+      .setOptimMethod(new LBFGS[Float]())
+      .setLearningRate(0.123)
+      .setLearningRateDecay(0.432)
+      .setMaxEpoch(3)
+      .setFeaturesCol("abc")
+      .setLabelCol("la")
+
+    val nnModel = estimator.fit(df)
+    val copied = nnModel.copy(ParamMap.empty)
+    assert(nnModel.model ne copied.model)
+    assert(nnModel.featureSize ne copied.featureSize)
+
+    assert(nnModel.model == copied.model)
+    assert(nnModel.featureSize.deep == copied.featureSize.deep)
+    NNEstimatorSpec.compareParams(nnModel, copied)
+  }
 }
 
 private case class MinibatchData[T](featureData : Array[T], labelData : Array[T])
@@ -385,10 +451,10 @@ private case class MinibatchData[T](featureData : Array[T], labelData : Array[T]
 object NNEstimatorSpec {
   // Generate noisy input of the form Y = signum(x.dot(weights) + intercept + noise)
   def generateTestInput(
-                         numRecords: Int,
-                         weight: Array[Double],
-                         intercept: Double,
-                         seed: Long): Seq[(Array[Double], Double)] = {
+      numRecords: Int,
+      weight: Array[Double],
+      intercept: Double,
+      seed: Long): Seq[(Array[Double], Double)] = {
     val rnd = new Random(seed)
     val data = (1 to numRecords)
       .map( i => Array.tabulate(weight.length)(index => rnd.nextDouble() * 2 - 1))
@@ -399,5 +465,20 @@ object NNEstimatorSpec {
         (record, label)
       }
     data
+  }
+
+  def compareParams(original: Params, copied: Params): Unit = {
+    original.params.foreach { p =>
+      if (original.isDefined(p)) {
+        (original.getOrDefault(p), copied.getOrDefault(p)) match {
+          case (Array(values), Array(newValues)) =>
+            assert(values == newValues, s"Values do not match on param ${p.name}.")
+          case (value, newValue) =>
+            assert(value == newValue, s"Values do not match on param ${p.name}.")
+        }
+      } else {
+        assert(!copied.isDefined(p), s"Param ${p.name} shouldn't be defined.")
+      }
+    }
   }
 }
