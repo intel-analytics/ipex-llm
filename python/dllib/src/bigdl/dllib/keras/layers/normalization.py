@@ -17,6 +17,7 @@
 import sys
 
 from ..engine.topology import ZooKerasLayer
+from bigdl.util.common import callBigDlFunc, JTensor
 
 if sys.version >= '3':
     long = int
