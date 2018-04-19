@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-from ..engine import Input, InputLayer
+from ..engine import *
 from .core import *
 from .convolutional import *
 from .pooling import *

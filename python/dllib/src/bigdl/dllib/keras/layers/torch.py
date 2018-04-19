@@ -282,7 +282,7 @@ class CAdd(ZooKerasLayer):
     def __init__(self, size, b_regularizer=None, input_shape=None, **kwargs):
         super(CAdd, self).__init__(None,
                                    size,
-                                   to_bigdl_reg(b_regularizer),
+                                   b_regularizer,
                                    list(input_shape) if input_shape else None,
                                    **kwargs)
 
@@ -302,7 +302,7 @@ class CMul(ZooKerasLayer):
 
     # Arguments
     size: The size of the bias.
-    w_regularizer: An instance of [[Regularizer]], (eg. L1 or L2 regularization),
+    W_regularizer: An instance of [[Regularizer]], (eg. L1 or L2 regularization),
                    applied to the input weights matrices. Default is null.
     input_shape: A shape tuple, not including batch.
     name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
@@ -310,10 +310,10 @@ class CMul(ZooKerasLayer):
     >>> cmul = CMul((2, 1), input_shape=(3, ))
     creating: createZooKerasCMul
     """
-    def __init__(self, size, w_regularizer=None, input_shape=None, **kwargs):
+    def __init__(self, size, W_regularizer=None, input_shape=None, **kwargs):
         super(CMul, self).__init__(None,
                                    size,
-                                   to_bigdl_reg(w_regularizer),
+                                   W_regularizer,
                                    list(input_shape) if input_shape else None,
                                    **kwargs)
 

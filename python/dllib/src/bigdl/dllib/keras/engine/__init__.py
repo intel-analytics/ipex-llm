@@ -14,4 +14,4 @@
 # limitations under the License.
 #
 
-from .topology import Input, InputLayer
+from .topology import *
