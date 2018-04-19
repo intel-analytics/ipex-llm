@@ -177,7 +177,8 @@ class NNEstimator[T: ClassTag](
     val criterion : Criterion[T],
     val featureSize : Array[Int],
     val labelSize : Array[Int],
-    val uid: String = "DLEstimator")(implicit ev: TensorNumeric[T])
+    override val uid: String = Identifiable.randomUID("nnEstimator")
+  )(implicit ev: TensorNumeric[T])
   extends DLEstimatorBase[NNEstimator[T], NNModel[T]] with NNParams[T] with TrainingParams[T] {
 
   def setFeaturesCol(featuresColName: String): this.type = set(featuresCol, featuresColName)
@@ -239,10 +240,10 @@ class NNEstimator[T: ClassTag](
     this
   }
 
-  @transient private var validationTrigger: Option[Trigger] = None
-  @transient private var validationDF: DataFrame = _
-  @transient private var validationMethods: Array[ValidationMethod[T]] = _
-  @transient private var validationBatchSize: Int = 0
+  @transient protected var validationTrigger: Option[Trigger] = None
+  @transient protected var validationDF: DataFrame = _
+  @transient protected var validationMethods: Array[ValidationMethod[T]] = _
+  @transient protected var validationBatchSize: Int = 0
   /**
    * Set a validate evaluation during training
    *
@@ -260,6 +261,15 @@ class NNEstimator[T: ClassTag](
     this.validationMethods = vMethods
     this.validationBatchSize = batchSize
     this
+  }
+
+  def getValidation: Option[(Trigger, DataFrame, Array[ValidationMethod[T]], Int)] = {
+    if (validationTrigger.isDefined) {
+      Some(validationTrigger.get, validationDF, validationMethods, validationBatchSize)
+    }
+    else {
+      None
+    }
   }
 
   protected def validateParams(schema : StructType): Unit = {
@@ -352,8 +362,27 @@ class NNEstimator[T: ClassTag](
     copyValues(dlModel.setParent(this))
   }
 
+  /**
+   * Return a deep copy for DLEstimator.
+   * Note that trainSummary and validationSummary will not be copied to the new instance since
+   * currently they are not thread-safe.
+   */
   override def copy(extra: ParamMap): NNEstimator[T] = {
-    copyValues(new NNEstimator(model, criterion, featureSize, labelSize), extra)
+    val copied = copyValues(
+      new NNEstimator(
+        model.cloneModule(),
+        criterion.cloneCriterion(),
+        featureSize.clone(),
+        labelSize.clone(),
+        this.uid
+      ),
+      extra)
+
+    if (this.validationTrigger.isDefined) {
+      copied.setValidation(
+        validationTrigger.get, validationDF, validationMethods.clone(), validationBatchSize)
+    }
+    copied
   }
 }
 
@@ -440,7 +469,7 @@ class NNModel[T: ClassTag](
   }
 
   override def copy(extra: ParamMap): NNModel[T] = {
-    val copied = new NNModel(model, featureSize, uid).setParent(parent)
+    val copied = new NNModel(model.cloneModule(), featureSize.clone(), uid).setParent(parent)
     copyValues(copied, extra)
   }
 

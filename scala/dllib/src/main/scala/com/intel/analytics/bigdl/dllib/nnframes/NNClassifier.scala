@@ -42,7 +42,7 @@ class NNClassifier[T: ClassTag](
     @transient override val model: Module[T],
     override val criterion : Criterion[T],
     override val featureSize : Array[Int],
-    override val uid: String = Identifiable.randomUID("dlClassifier")
+    override val uid: String = Identifiable.randomUID("nnClassifier")
   )(implicit ev: TensorNumeric[T])
   extends NNEstimator[T](model, criterion, featureSize, Array(1)) {
 
@@ -58,7 +58,20 @@ class NNClassifier[T: ClassTag](
   }
 
   override def copy(extra: ParamMap): NNClassifier[T] = {
-    copyValues(new NNClassifier(model, criterion, featureSize), extra)
+    val copied = copyValues(
+      new NNClassifier(
+        model.cloneModule(),
+        criterion.cloneCriterion(),
+        featureSize.clone(),
+        this.uid
+      ),
+      extra)
+
+    if (this.validationTrigger.isDefined) {
+      copied.setValidation(
+        validationTrigger.get, validationDF, validationMethods.clone(), validationBatchSize)
+    }
+    copied
   }
 }
 
@@ -82,6 +95,12 @@ class NNClassifierModel[T: ClassTag](
   override def transformSchema(schema : StructType): StructType = {
     validateDataType(schema, $(featuresCol))
     SchemaUtils.appendColumn(schema, $(predictionCol), DoubleType)
+  }
+
+  override def copy(extra: ParamMap): NNClassifierModel[T] = {
+    val copied = new NNClassifierModel(model.cloneModule(), featureSize.clone(), uid)
+      .setParent(parent)
+    copyValues(copied, extra).asInstanceOf[NNClassifierModel[T]]
   }
 }
 
