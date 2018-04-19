@@ -13,28 +13,35 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
 from __future__ import print_function
-import numpy as np
+
+from unittest import TestCase
+from bigdl.keras.converter import WeightLoader
+import keras.backend as K
+from bigdl.util.common import *
+
 np.random.seed(1337)  # for reproducibility
 
 
 class ZooTestCase(TestCase):
 
     def setup_method(self, method):
-        """ setup any state tied to the execution of the given method in a
-        class.  setup_method is invoked for every test method of a class.
         """
-        keras.backend.set_image_dim_ordering("th")
-        sparkConf = create_spark_conf().setMaster("local[4]").setAppName("test model")
+        Setup any state tied to the execution of the given method in a class.
+        It is invoked for every test method of a class.
+        """
+        K.set_image_dim_ordering("th")
+        sparkConf = create_spark_conf().setMaster("local[4]").setAppName("zoo test case")
         self.sc = get_spark_context(sparkConf)
         self.sqlContext = SQLContext(self.sc)
         init_engine()
 
     def teardown_method(self, method):
-        """ teardown any state that was previously setup with a setup_method
-        call.
         """
-        keras.backend.set_image_dim_ordering("th")
+        Teardown any state that was previously setup with a setup_method call.
+        """
+        K.set_image_dim_ordering("th")
         self.sc.stop()
 
     def assert_allclose(self, a, b, rtol=1e-6, atol=1e-6, msg=None):
@@ -58,34 +65,41 @@ class ZooTestCase(TestCase):
             print("dtype = %s, shape = %s" % (a.dtype, a.shape))
             np.testing.assert_allclose(a, b, rtol=rtol, atol=atol, err_msg=msg)
 
+    def compare_loss(self, y_a, y_b, kloss, zloss, rtol=1e-6, atol=1e-6):
+        """
+        Compare forward results for Keras loss against Zoo loss.
 
-    def compare_loss(self, y_a, y_b, kloss, bloss, rtol=1e-6, atol=1e-6):
-        # y_a: input/y_pred; y_b: target/y_true
+        # Arguments
+        y_a: input/y_pred
+        y_b: target/y_true
+        """
         keras_output = np.mean(K.eval(kloss(K.variable(y_b), K.variable(y_a))))
-        bigdl_output = bloss.forward(y_a, y_b)
-        np.testing.assert_allclose(bigdl_output, keras_output, rtol=rtol, atol=atol)
+        zoo_output = zloss.forward(y_a, y_b)
+        np.testing.assert_allclose(zoo_output, keras_output, rtol=rtol, atol=atol)
 
-    # Compare forward results with Keras for new Keras-like API layers.
-    def compare_newapi(self, klayer, blayer, input_data, weight_converter=None,
-                       is_training=False, rtol=1e-6, atol=1e-6):
+    def compare_layer(self, klayer, zlayer, input_data, weight_converter=None,
+                      is_training=False, rtol=1e-6, atol=1e-6):
+        """
+        Compare forward results for Keras layer against Zoo Keras API layer.
+        """
         from keras.models import Sequential as KSequential
-        from bigdl.nn.keras.topology import Sequential as BSequential
-        bmodel = BSequential()
-        bmodel.add(blayer)
+        from zoo.pipeline.api.keras.models import Sequential as ZSequential
+        zmodel = ZSequential()
+        zmodel.add(zlayer)
         kmodel = KSequential()
         kmodel.add(klayer)
         koutput = kmodel.predict(input_data)
-        from bigdl.nn.keras.layer import BatchNormalization
-        if isinstance(blayer, BatchNormalization):
+        from zoo.pipeline.api.keras.layers import BatchNormalization
+        if isinstance(zlayer, BatchNormalization):
             k_running_mean = K.eval(klayer.running_mean)
             k_running_std = K.eval(klayer.running_std)
-            blayer.set_running_mean(k_running_mean)
-            blayer.set_running_std(k_running_std)
+            zlayer.set_running_mean(k_running_mean)
+            zlayer.set_running_std(k_running_std)
         if kmodel.get_weights():
-            bmodel.set_weights(weight_converter(klayer, kmodel.get_weights()))
-        bmodel.training(is_training)
-        boutput = bmodel.forward(input_data)
-        self.assert_allclose(boutput, koutput, rtol=rtol, atol=atol)
+            zmodel.set_weights(weight_converter(klayer, kmodel.get_weights()))
+        zmodel.training(is_training)
+        zoutput = zmodel.forward(input_data)
+        self.assert_allclose(zoutput, koutput, rtol=rtol, atol=atol)
 
     def compare_model(self, bmodel, kmodel, input_data, rtol=1e-5, atol=1e-5):
         WeightLoader.load_weights_from_kmodel(bmodel, kmodel)
