@@ -39,10 +39,16 @@ trait Net {
     }
   }
 
-  private[zoo] def callByName(methodName: String, args: Object*): Object = {
+  private[zoo] def invokeMethod(methodName: String, args: Object*): Object = {
     val clazz = Class.forName("com.intel.analytics.bigdl.nn.keras.KerasLayer")
     val method = clazz.getMethod(methodName, args.map(toClazz(_)): _*)
     method.invoke(this, args: _*)
+  }
+
+  private[zoo] def invokeMethodForSeq(methodName: String, arg: Seq[Object]): Object = {
+    val clazz = Class.forName("com.intel.analytics.bigdl.nn.keras.KerasLayer")
+    val method = clazz.getMethods().filter(_.getName() == methodName)(0)
+    method.invoke(this, arg, ClassTag(clazz))
   }
 }
 
