@@ -38,14 +38,17 @@ class TestSimpleIntegration(ZooTestCase):
         np.testing.assert_allclose((12,), output_shape[1:])
 
     def test_graph(self):
-        input = Input(shape=(8, ))
-        dense = Dense(10)(input)
-        output = Dense(12)(dense)
-        model = Model(input, output)
-        input_shape = model.get_input_shape()
-        output_shape = model.get_output_shape()
-        np.testing.assert_allclose((8,), input_shape[1:])
-        np.testing.assert_allclose((12,), output_shape[1:])
+        x1 = Input(shape=(8, ))
+        x2 = Input(shape=(6, ))
+        y1 = Dense(10)(x1)
+        y2 = Dense(10)(x2)
+        model = Model([x1, x2], [y1, y2])
+        input_shapes = model.get_input_shape()
+        output_shapes = model.get_output_shape()
+        np.testing.assert_allclose((8, ), input_shapes[0][1:])
+        np.testing.assert_allclose((6, ), input_shapes[1][1:])
+        np.testing.assert_allclose((10, ), output_shapes[0][1:])
+        np.testing.assert_allclose((10, ), output_shapes[1][1:])
 
     def test_training(self):
         model = Sequential()
