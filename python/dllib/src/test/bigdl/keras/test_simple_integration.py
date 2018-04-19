@@ -20,11 +20,12 @@ import numpy as np
 
 from zoo.pipeline.api.keras.layers import *
 from zoo.pipeline.api.keras.models import *
+from test.zoo.pipeline.utils.test_utils import ZooTestCase
 
 np.random.seed(1337)  # for reproducibility
 
 
-class TestKerasAPI():
+class TestSimpleIntegration(ZooTestCase):
 
     def test_sequential(self):
         model = Sequential()
