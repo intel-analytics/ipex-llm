@@ -126,12 +126,12 @@ class PythonZooKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonB
   def createZooKerasActivation(
       activation: String,
       inputShape: JList[Int] = null): Activation[T] = {
-      Activation(activation, toScalaShape(inputShape))
+    Activation(activation, toScalaShape(inputShape))
   }
 
   def createZooKerasReshape(
-    targetShape: JList[Int],
-    inputShape: JList[Int] = null): Reshape[T] = {
+      targetShape: JList[Int],
+      inputShape: JList[Int] = null): Reshape[T] = {
     Reshape(toScalaArray(targetShape), toScalaShape(inputShape))
   }
 
@@ -142,8 +142,17 @@ class PythonZooKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonB
   }
 
   def createZooKerasFlatten(
-    inputShape: JList[Int] = null): Flatten[T] = {
+      inputShape: JList[Int] = null): Flatten[T] = {
     Flatten(toScalaShape(inputShape))
+  }
+
+  def createZooKerasMerge(
+      layers: JList[KerasLayer[Activity, Activity, T]] = null,
+      mode: String = "sum",
+      concatAxis: Int = -1,
+      inputShape: JList[JList[Int]]): Merge[T] = {
+    val layersList = if (layers != null) layers.asScala.toList else null
+    Merge[T](layersList, mode, concatAxis, toScalaMultiShape(inputShape))
   }
 
   def createZooKerasConvolution1D(

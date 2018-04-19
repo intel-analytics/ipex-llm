@@ -29,6 +29,7 @@ import scala.reflect.ClassTag
  * Apply a layer to every temporal slice of an input.
  * The input should be at least 3D, and the dimension of index one
  * will be considered to be the temporal dimension.
+ *
  * When using this layer as the first layer in a model, you need to provide the argument
  * inputShape (a Single Shape, does not include the batch dimension).
  *
