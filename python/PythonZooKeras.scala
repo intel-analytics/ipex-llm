@@ -667,4 +667,56 @@ class PythonZooKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonB
       wRegularizer, bRegularizer, bias, toScalaShape(inputShape))
   }
 
+  def createZooKerasCAdd(
+      size: JList[Int],
+      bRegularizer: Regularizer[T] = null,
+      inputShape: JList[Int] = null): CAdd[T] = {
+    CAdd(toScalaArray(size), bRegularizer, toScalaShape(inputShape))
+  }
+
+  def createZooKerasCMul(
+      size: JList[Int],
+      wRegularizer: Regularizer[T] = null,
+      inputShape: JList[Int] = null): CMul[T] = {
+    CMul(toScalaArray(size), wRegularizer, toScalaShape(inputShape))
+  }
+
+  def createZooKerasExp(
+      inputShape: JList[Int] = null): Exp[T] = {
+    Exp(toScalaShape(inputShape))
+  }
+
+  def createZooKerasLog(
+      inputShape: JList[Int] = null): Log[T] = {
+    Log(toScalaShape(inputShape))
+  }
+
+  def createZooKerasMul(
+      inputShape: JList[Int] = null): Mul[T] = {
+    Mul(toScalaShape(inputShape))
+  }
+
+  def createZooKerasPower(
+      power: Double,
+      scale: Double = 1,
+      shift: Double = 0,
+      inputShape: JList[Int] = null): Power[T] = {
+    Power(power, scale, shift, toScalaShape(inputShape))
+  }
+
+  def createZooKerasScale(
+      size: JList[Int],
+      inputShape: JList[Int] = null): Scale[T] = {
+    Scale(toScalaArray(size), toScalaShape(inputShape))
+  }
+
+  def createZooKerasSqrt(
+      inputShape: JList[Int] = null): Sqrt[T] = {
+    Sqrt(toScalaShape(inputShape))
+  }
+
+  def createZooKerasSquare(
+      inputShape: JList[Int] = null): Square[T] = {
+    Square(toScalaShape(inputShape))
+  }
 }
