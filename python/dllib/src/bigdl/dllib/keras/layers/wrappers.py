@@ -21,3 +21,60 @@ from ..engine.topology import ZooKerasLayer
 if sys.version >= '3':
     long = int
     unicode = str
+
+
+class TimeDistributed(ZooKerasLayer):
+    """
+    TimeDistributed wrapper.
+    Apply a layer to every temporal slice of an input.
+    The input should be at least 3D, and the dimension of index one will be considered to be the temporal dimension.
+
+    When you use this layer as the first layer of a model, you need to provide the argument
+    input_shape (a shape tuple, does not include the batch dimension).
+    name: String to specify the name of the wrapper. Default is None.
+
+    # Arguments
+    layer: A layer instance.
+    input_shape: A shape tuple, not including batch.
+    name: String to set the name of the wrapper. If not specified, its name will by default to be a generated string.
+
+    >>> from zoo.pipeline.api.keras.layers import Dense
+    >>> timedistributed = TimeDistributed(Dense(8), input_shape=(10, 12), name="timedistributeddense")
+    creating: createZooKerasDense
+    creating: createZooKerasTimeDistributed
+    """
+    def __init__(self, layer, input_shape=None, **kwargs):
+        super(TimeDistributed, self).__init__(None,
+                                              layer,
+                                              list(input_shape) if input_shape else None,
+                                              **kwargs)
+
+
+class Bidirectional(ZooKerasLayer):
+    """
+    Bidirectional wrapper for RNNs.
+    Bidirectional currently requires RNNs to return the full sequence, i.e. return_sequences = True.
+
+    When you use this layer as the first layer of a model, you need to provide the argument
+    input_shape (a shape tuple, does not include the batch dimension).
+    Example of creating a bidirectional LSTM:
+    Bidirectiona(LSTM(12, return_sequences=True), merge_mode="sum", input_shape=(32, 32))
+
+    # Arguments
+    layer: An instance of a recurrent layer.
+    merge_mode: Mode by which outputs of the forward and backward RNNs will be combined.
+                Must be one of: 'sum', 'mul', 'concat', 'ave'. Default is 'concat'.
+    input_shape: A shape tuple, not including batch.
+    name: String to set the name of the wrapper. If not specified, its name will by default to be a generated string.
+
+    >>> from zoo.pipeline.api.keras.layers import LSTM
+    >>> bidiretional = Bidirectional(LSTM(10, return_sequences=True), input_shape=(12, 16), name="bidirectionallstm")
+    creating: createZooKerasLSTM
+    creating: createZooKerasBidirectional
+    """
+    def __init__(self, layer, merge_mode="concat", input_shape=None, **kwargs):
+        super(Bidirectional, self).__init__(None,
+                                            layer,
+                                            merge_mode,
+                                            list(input_shape) if input_shape else None,
+                                            **kwargs)
