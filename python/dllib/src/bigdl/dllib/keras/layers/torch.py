@@ -256,3 +256,217 @@ class ShareConvolution2D(ZooKerasLayer):
 
 
 ShareConv2D = ShareConvolution2D
+
+
+class CAdd(ZooKerasLayer):
+    """
+    This layer has a bias with given size.
+    The bias will be added element-wise to the input.
+    If the element number of the bias matches the input, a simple element-wise addition will be done.
+    Or the bias will be expanded to the same size of the input.
+    The expand means repeat on unmatched singleton dimension (if some unmatched dimension
+    isn't a singleton dimension, an error will be raised).
+
+    When you use this layer as the first layer of a model, you need to provide the argument
+    input_shape (a shape tuple, does not include the batch dimension).
+
+    # Arguments
+    size: The size of the bias.
+    b_regularizer: An instance of [[Regularizer]], applied to the bias. Default is null.
+    input_shape: A shape tuple, not including batch.
+    name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
+
+    >>> cadd = CAdd((2, 1), input_shape=(3, ))
+    creating: createZooKerasCAdd
+    """
+    def __init__(self, size, b_regularizer=None, input_shape=None, **kwargs):
+        super(CAdd, self).__init__(None,
+                                   size,
+                                   to_bigdl_reg(b_regularizer),
+                                   list(input_shape) if input_shape else None,
+                                   **kwargs)
+
+
+class CMul(ZooKerasLayer):
+    """
+    This layer has a weight with given size.
+    The weight will be multiplied element-wise to the input.
+    If the element number of the weight matches the input,
+    a simple element-wise multiplication will be done.
+    Or the bias will be expanded to the same size of the input.
+    The expand means repeat on unmatched singleton dimension (if some unmatched dimension isn't
+    singleton dimension, an error will be raised).
+
+    When you use this layer as the first layer of a model, you need to provide the argument
+    input_shape (a shape tuple, does not include the batch dimension).
+
+    # Arguments
+    size: The size of the bias.
+    w_regularizer: An instance of [[Regularizer]], (eg. L1 or L2 regularization),
+                   applied to the input weights matrices. Default is null.
+    input_shape: A shape tuple, not including batch.
+    name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
+
+    >>> cmul = CMul((2, 1), input_shape=(3, ))
+    creating: createZooKerasCMul
+    """
+    def __init__(self, size, w_regularizer=None, input_shape=None, **kwargs):
+        super(CMul, self).__init__(None,
+                                   size,
+                                   to_bigdl_reg(w_regularizer),
+                                   list(input_shape) if input_shape else None,
+                                   **kwargs)
+
+
+class Exp(ZooKerasLayer):
+    """
+    Applies element-wise exp to the input.
+
+    When you use this layer as the first layer of a model, you need to provide the argument
+    input_shape (a shape tuple, does not include the batch dimension).
+
+    # Arguments
+    input_shape: A shape tuple, not including batch.
+    name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
+
+    >>> exp = Exp(input_shape=(2, 3, 4))
+    creating: createZooKerasExp
+    """
+    def __init__(self, input_shape=None, **kwargs):
+        super(Exp, self).__init__(None,
+                                  list(input_shape) if input_shape else None,
+                                  **kwargs)
+
+
+class Log(ZooKerasLayer):
+    """
+    Applies a log transformation to the input.
+
+    When you use this layer as the first layer of a model, you need to provide the argument
+    input_shape (a shape tuple, does not include the batch dimension).
+
+    # Arguments
+    input_shape: A shape tuple, not including batch.
+    name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
+
+    >>> log = Log(input_shape=(4, 8, 8))
+    creating: createZooKerasLog
+    """
+    def __init__(self, input_shape=None, **kwargs):
+        super(Log, self).__init__(None,
+                                  list(input_shape) if input_shape else None,
+                                  **kwargs)
+
+
+class Mul(ZooKerasLayer):
+    """
+    Multiply a single scalar factor to the input.
+
+    When you use this layer as the first layer of a model, you need to provide the argument
+    input_shape (a shape tuple, does not include the batch dimension).
+
+    # Arguments
+    input_shape: A shape tuple, not including batch.
+    name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
+
+    >>> mul = Mul(input_shape=(3, 4, 5))
+    creating: createZooKerasMul
+    """
+    def __init__(self, input_shape=None, **kwargs):
+        super(Mul, self).__init__(None,
+                                  list(input_shape) if input_shape else None,
+                                  **kwargs)
+
+
+class Power(ZooKerasLayer):
+    """
+    Applies an element-wise power operation with scale and shift to the input.
+
+    f(x) = (shift + scale * x)^power^
+
+    When you use this layer as the first layer of a model, you need to provide the argument
+    input_shape (a shape tuple, does not include the batch dimension).
+
+    # Arguments
+    power: The exponent.
+    scale: The scale parameter. Default is 1.
+    shift: The shift parameter. Default is 0.
+    input_shape: A shape tuple, not including batch.
+    name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
+
+    >>> power = Power(3, input_shape=(3, ))
+    creating: createZooKerasPower
+    """
+    def __init__(self, power, scale=1, shift=0, input_shape=None, **kwargs):
+        super(Power, self).__init__(None,
+                                    float(power),
+                                    float(scale),
+                                    float(shift),
+                                    list(input_shape) if input_shape else None,
+                                    **kwargs)
+
+
+class Scale(ZooKerasLayer):
+    """
+    Scale is the combination of CMul and CAdd.
+
+    Computes the element-wise product of the input and weight,
+    with the shape of the weight "expand" to match the shape of the input.
+    Similarly, perform an expanded bias and perform an element-wise add.
+
+    When you use this layer as the first layer of a model, you need to provide the argument
+    input_shape (a shape tuple, does not include the batch dimension).
+
+    # Arguments
+    size: Size of the weight and bias.
+    input_shape: A shape tuple, not including batch.
+    name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
+
+    >>> scale = Scale((2, 1), input_shape=(3, ))
+    creating: createZooKerasScale
+    """
+    def __init__(self, size, input_shape=None, **kwargs):
+        super(Scale, self).__init__(None,
+                                    size,
+                                    list(input_shape) if input_shape else None,
+                                    **kwargs)
+
+
+class Sqrt(ZooKerasLayer):
+    """
+    Applies an element-wise square root operation to the input.
+
+    When you use this layer as the first layer of a model, you need to provide the argument
+    input_shape (a shape tuple, does not include the batch dimension).
+
+    # Arguments
+    input_shape: A shape tuple, not including batch.
+    name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
+
+    >>> sqrt = Sqrt(input_shape=(3, ))
+    creating: createZooKerasSqrt
+    """
+    def __init__(self, input_shape=None, **kwargs):
+        super(Sqrt, self).__init__(None,
+                                   list(input_shape) if input_shape else None,
+                                   **kwargs)
+
+
+class Square(ZooKerasLayer):
+    """
+    Applies an element-wise square operation to the input.
+
+    When you use this layer as the first layer of a model, you need to provide the argument
+    input_shape (a shape tuple, does not include the batch dimension).
+
+    # Arguments
+    input_shape: A shape tuple, not including batch.
+    name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
+
+    >>> square = Square(input_shape=(5, ))
+    creating: createZooKerasSquare
+    """
+    def __init__(self, input_shape=None, **kwargs):
+        super(Square, self).__init__(None,
+                                     list(input_shape) if input_shape else None,
+                                     **kwargs)
