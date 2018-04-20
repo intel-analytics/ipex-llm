@@ -446,8 +446,15 @@ class NNModel[T: ClassTag](
           Sample(Tensor(featureBuffer.toArray, featureSize))
         }.toIterator
         val predictions = transformer(samples).flatMap { batch =>
-          val batchResult = localModel.forward(batch.getInput())
-          batchResult.toTensor.split(1).map(outputToPrediction)
+          val batchResult = localModel.forward(batch.getInput()).toTensor.squeeze()
+          if (batchResult.size().length == 2) {
+            batchResult.split(1).map(outputToPrediction)
+          } else if (batchResult.size().length == 1) {
+            Array(outputToPrediction(batchResult))
+          } else {
+            throw new RuntimeException(
+              "unexpected batchResult dimension: " + batchResult.size().mkString(", "))
+          }
         }
         rowBatch.toIterator.zip(predictions).map { case (row, predict) =>
           Row.fromSeq(row.toSeq ++ Seq(predict))
