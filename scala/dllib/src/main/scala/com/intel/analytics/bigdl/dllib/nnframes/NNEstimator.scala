@@ -512,7 +512,6 @@ object NNModel extends MLReadable[NNModel[_]] {
       new Path(path, "module").toString -> new Path(path, "weight").toString
     val typeTag = (meta.metadata \ "tensorDataType").extract[String]
 
-
     val model = typeTag match {
       case "TensorDouble" =>
         ModuleLoader.loadFromFile[Double](modulePath, weightPath)

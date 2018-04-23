@@ -18,6 +18,7 @@ package com.intel.analytics.zoo.pipeline.nnframes.python
 
 import java.util.{ArrayList => JArrayList}
 
+import com.intel.analytics.bigdl.optim.OptimMethod
 import com.intel.analytics.bigdl.{Criterion, Module}
 import com.intel.analytics.bigdl.python.api.PythonBigDL
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -80,5 +81,9 @@ class PythonNNFrames[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonB
         nnClassifierModel: NNClassifierModel[T],
         featureSize: JArrayList[Int]): NNClassifierModel[T] = {
     nnClassifierModel.setFeatureSize(featureSize.asScala.toArray)
+  }
+
+  def setOptimMethod(estimator: NNEstimator[T], optimMethod: OptimMethod[T]): NNEstimator[T] = {
+    estimator.setOptimMethod(optimMethod)
   }
 }
