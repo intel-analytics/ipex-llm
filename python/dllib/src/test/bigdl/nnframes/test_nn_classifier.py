@@ -17,6 +17,7 @@
 import pytest
 from bigdl.nn.criterion import *
 from bigdl.nn.layer import *
+from bigdl.optim.optimizer import SGD, Adam, LBFGS, Adagrad, Adadelta
 from bigdl.util.common import *
 from numpy.testing import assert_allclose
 from pyspark.ml import Pipeline
@@ -57,6 +58,8 @@ class TestNNClassifer():
         assert estimator.setLearningRate(1e-4).getLearningRate() == 1e-4
         assert estimator.setFeaturesCol("abcd").getFeaturesCol() == "abcd"
         assert estimator.setLabelCol("xyz").getLabelCol() == "xyz"
+
+        assert isinstance(estimator.setOptimMethod(Adam()).getOptimMethod(), Adam)
 
         nn_model = NNModel(model=linear_model, featureSize=[1])
         assert nn_model.setFeatureSize([2]).getFeatureSize() == [2]
@@ -131,6 +134,31 @@ class TestNNClassifer():
         assert type(res).__name__ == 'DataFrame'
         assert res.select("abcd", "xyz", "tt").count() == 4
 
+    def test_nnEstimator_fit_with_different_OptimMethods(self):
+        model = Sequential().add(Linear(2, 2))
+        criterion = MSECriterion()
+        estimator = NNEstimator(model, criterion, [2], [2]).setBatchSize(4)\
+            .setLearningRate(0.01).setMaxEpoch(1) \
+            .setFeaturesCol("abcd").setLabelCol("xyz").setPredictionCol("tt")
+
+        data = self.sc.parallelize([
+            ((2.0, 1.0), (1.0, 2.0)),
+            ((1.0, 2.0), (2.0, 1.0)),
+            ((2.0, 1.0), (1.0, 2.0)),
+            ((1.0, 2.0), (2.0, 1.0))])
+
+        schema = StructType([
+            StructField("abcd", ArrayType(DoubleType(), False), False),
+            StructField("xyz", ArrayType(DoubleType(), False), False)])
+        df = self.sqlContext.createDataFrame(data, schema)
+
+        for opt in [SGD(learningrate=1e-3, learningrate_decay=0.0,),
+                    Adam(), LBFGS(), Adagrad(), Adadelta()]:
+            nnModel = estimator.setOptimMethod(opt).fit(df)
+            res = nnModel.transform(df)
+            assert type(res).__name__ == 'DataFrame'
+            assert res.select("abcd", "xyz", "tt").count() == 4
+
     def test_NNModel_transform_with_nonDefault_featureCol(self):
         model = Sequential().add(Linear(2, 2))
         nnModel = NNModel(model, [2]).setFeaturesCol("abcd").setPredictionCol("dcba")
@@ -178,6 +206,29 @@ class TestNNClassifer():
             row_label = data[i][1]
             row_prediction = data[i][2]
             assert row_label == row_prediction
+
+    def test_nnclassifier_fit_different_optimMethods(self):
+        model = Sequential().add(Linear(2, 2))
+        criterion = ClassNLLCriterion()
+        classifier = NNClassifier(model, criterion, [2]).setBatchSize(4) \
+            .setLearningRate(0.2).setMaxEpoch(1)
+        data = self.sc.parallelize([
+            ((2.0, 1.0), 1.0),
+            ((1.0, 2.0), 2.0),
+            ((2.0, 1.0), 1.0),
+            ((1.0, 2.0), 2.0)])
+
+        schema = StructType([
+            StructField("features", ArrayType(DoubleType(), False), False),
+            StructField("label", DoubleType(), False)])
+        df = self.sqlContext.createDataFrame(data, schema)
+
+        for opt in [Adam(), SGD(learningrate=1e-2, learningrate_decay=1e-6,),
+                    LBFGS(), Adagrad(), Adadelta()]:
+            nnClassifierModel = classifier.setOptimMethod(opt).fit(df)
+            res = nnClassifierModel.transform(df)
+            res.collect()
+            assert type(res).__name__ == 'DataFrame'
 
     def test_nnclassifier_in_pipeline(self):
         if self.sc.version.startswith("1"):
