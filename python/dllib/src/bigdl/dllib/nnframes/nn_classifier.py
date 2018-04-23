@@ -16,6 +16,7 @@
 
 from pyspark.ml.param.shared import *
 from pyspark.ml.wrapper import JavaModel, JavaEstimator, JavaTransformer
+from bigdl.optim.optimizer import SGD
 from bigdl.util.common import *
 
 
@@ -52,7 +53,31 @@ class HasBatchSize(Params):
         return self.getOrDefault(self.batchSize)
 
 
-class NNEstimator(JavaEstimator, HasFeaturesCol, HasLabelCol, HasPredictionCol, HasBatchSize, JavaValue):
+class HasOptimMethod:
+
+    optimMethod = SGD()
+
+    def __init__(self):
+        super(HasOptimMethod, self).__init__()
+
+    def setOptimMethod(self, val):
+        """
+        Sets optimization method. E.g. SGD, Adam, LBFGS etc. from bigdl.optim.optimizer.
+        default: SGD()
+        """
+        pythonBigDL_method_name = "setOptimMethod"
+        callBigDlFunc(self.bigdl_type, pythonBigDL_method_name, self.value, val)
+        self.optimMethod = val
+        return self
+
+    def getOptimMethod(self):
+        """
+        Gets the optimization method
+        """
+        return self.optimMethod
+
+
+class NNEstimator(JavaEstimator, HasFeaturesCol, HasLabelCol, HasPredictionCol, HasBatchSize, HasOptimMethod, JavaValue):
     """
     NNEstimator provides DataFrame-based API that allows users to train a BigDL
     Model with the Spark ML Estimator/Transfomer pattern, thus Spark users can conveniently fit
