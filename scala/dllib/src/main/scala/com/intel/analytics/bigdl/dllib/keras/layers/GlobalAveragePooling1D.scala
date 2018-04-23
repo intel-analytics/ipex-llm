@@ -16,7 +16,11 @@
 
 package com.intel.analytics.zoo.pipeline.api.keras.layers
 
-import com.intel.analytics.bigdl.nn.keras.{GlobalAveragePooling1D => BigDLGlobalAveragePooling1D}
+import com.intel.analytics.bigdl.nn.abstractnn._
+import com.intel.analytics.bigdl.nn.SpatialAveragePooling
+import com.intel.analytics.bigdl.nn.keras.GlobalPooling1D
+import com.intel.analytics.bigdl.nn.{Sequential => TSequential}
+import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Shape
 import com.intel.analytics.zoo.pipeline.api.Net
@@ -34,8 +38,24 @@ import scala.reflect.ClassTag
  * @tparam T The numeric type of parameter(e.g. weight, bias). Only support float/double now.
  */
 class GlobalAveragePooling1D[T: ClassTag](
-   inputShape: Shape = null)(implicit ev: TensorNumeric[T])
-  extends BigDLGlobalAveragePooling1D[T](inputShape) with Net {}
+   override val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
+  extends GlobalPooling1D[T](inputShape) with Net {
+
+  override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
+    val input = inputShape.toSingle().toArray
+    val model = TSequential[T]()
+    model.add(com.intel.analytics.bigdl.nn.Reshape(Array(input(1), 1, input(2)), Some(true)))
+    val layer = SpatialAveragePooling(
+      kW = 1,
+      kH = input(1),
+      countIncludePad = false,
+      format = DataFormat.NHWC)
+    model.add(layer)
+    model.add(com.intel.analytics.bigdl.nn.Squeeze(3))
+    model.add(com.intel.analytics.bigdl.nn.Squeeze(2))
+    model.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
+  }
+}
 
 object GlobalAveragePooling1D {
   def apply[@specialized(Float, Double) T: ClassTag](

@@ -15,7 +15,9 @@
  */
 package com.intel.analytics.zoo.pipeline.api.keras.layers
 
-import com.intel.analytics.bigdl.nn.keras.{KerasLayer, SimpleRNN => BSimpleRNN}
+import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
+import com.intel.analytics.bigdl.nn.{Cell, RnnCell}
+import com.intel.analytics.bigdl.nn.keras.{KerasLayer, SimpleRNN}
 import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -50,16 +52,26 @@ import scala.reflect.ClassTag
  */
 class SimpleRNN[T: ClassTag](
    override val outputDim: Int,
-   override val activation: KerasLayer[Tensor[T], Tensor[T], T],
+   val activation: KerasLayer[Tensor[T], Tensor[T], T],
    override val returnSequences: Boolean = false,
-   goBackwards: Boolean = false,
-   wRegularizer: Regularizer[T] = null,
-   uRegularizer: Regularizer[T] = null,
-   bRegularizer: Regularizer[T] = null,
+   override val goBackwards: Boolean = false,
+   var wRegularizer: Regularizer[T] = null,
+   var uRegularizer: Regularizer[T] = null,
+   var bRegularizer: Regularizer[T] = null,
    override val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
-  extends BSimpleRNN[T](
-    outputDim, activation, returnSequences, goBackwards, wRegularizer,
-    uRegularizer, bRegularizer, inputShape) with Net {
+  extends Recurrent[T](
+    outputDim, returnSequences, goBackwards, inputShape) with Net {
+
+  override def buildCell(input: Array[Int]): Cell[T] = {
+    RnnCell(
+      inputSize = input(2),
+      hiddenSize = outputDim,
+      activation = activation.doBuild(inputShape).asInstanceOf[TensorModule[T]],
+      isInputWithBias = false,
+      wRegularizer = wRegularizer,
+      uRegularizer = uRegularizer,
+      bRegularizer = bRegularizer)
+  }
 }
 
 object SimpleRNN {

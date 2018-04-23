@@ -16,7 +16,9 @@
 
 package com.intel.analytics.zoo.pipeline.api.keras.layers
 
-import com.intel.analytics.bigdl.nn.keras.{KerasLayer, GRU => BGRU}
+import com.intel.analytics.bigdl.nn.Cell
+import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
+import com.intel.analytics.bigdl.nn.keras.KerasLayer
 import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -55,17 +57,27 @@ import scala.reflect.ClassTag
  */
 class GRU[T: ClassTag](
    override val outputDim: Int,
-   override val activation: KerasLayer[Tensor[T], Tensor[T], T] = null,
-   override val innerActivation: KerasLayer[Tensor[T], Tensor[T], T] = null,
+   val activation: KerasLayer[Tensor[T], Tensor[T], T] = null,
+   val innerActivation: KerasLayer[Tensor[T], Tensor[T], T] = null,
    override val returnSequences: Boolean = false,
    override val goBackwards: Boolean = false,
-   wRegularizer: Regularizer[T] = null,
-   uRegularizer: Regularizer[T] = null,
-   bRegularizer: Regularizer[T] = null,
+   var wRegularizer: Regularizer[T] = null,
+   var uRegularizer: Regularizer[T] = null,
+   var bRegularizer: Regularizer[T] = null,
    override val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
-  extends BGRU[T] (
-    outputDim, activation, innerActivation, returnSequences, goBackwards,
-    wRegularizer, uRegularizer, bRegularizer, inputShape) with Net {
+  extends Recurrent[T] (
+    outputDim, returnSequences, goBackwards, inputShape) with Net {
+
+  override def buildCell(input: Array[Int]): Cell[T] = {
+    com.intel.analytics.bigdl.nn.GRU[T](
+      inputSize = input(2),
+      outputSize = outputDim,
+      activation = activation.doBuild(inputShape).asInstanceOf[TensorModule[T]],
+      innerActivation = innerActivation.doBuild(inputShape).asInstanceOf[TensorModule[T]],
+      wRegularizer = wRegularizer,
+      uRegularizer = uRegularizer,
+      bRegularizer = bRegularizer)
+  }
 }
 
 object GRU {

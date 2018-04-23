@@ -16,8 +16,11 @@
 
 package com.intel.analytics.zoo.pipeline.api.keras.layers
 
+import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
+import com.intel.analytics.bigdl.nn.{SpatialMaxPooling, Sequential => TSequential}
 import com.intel.analytics.bigdl.nn.abstractnn.DataFormat
-import com.intel.analytics.bigdl.nn.keras.{GlobalMaxPooling2D => BigDLGlobalMaxPooling2D}
+import com.intel.analytics.bigdl.nn.keras.GlobalPooling2D
+import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Shape
 import com.intel.analytics.zoo.pipeline.api.Net
@@ -38,9 +41,25 @@ import scala.reflect.ClassTag
  * @tparam T The numeric type of parameter(e.g. weight, bias). Only support float/double now.
  */
 class GlobalMaxPooling2D[T: ClassTag](
-    dimOrdering: DataFormat = DataFormat.NCHW,
-    inputShape: Shape = null)(implicit ev: TensorNumeric[T])
-  extends BigDLGlobalMaxPooling2D[T](dimOrdering, inputShape) with Net {
+    override val dimOrdering: DataFormat = DataFormat.NCHW,
+    override val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
+  extends GlobalPooling2D[T](dimOrdering, inputShape) with Net {
+
+  override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
+    val input = inputShape.toSingle().toArray
+    val (dimH, dimW, dimC) = dimOrdering.getHWCDims(4)
+    val model = TSequential[T]()
+    val layer = SpatialMaxPooling(
+      kW = input(dimW -1),
+      kH = input(dimH -1),
+      dW = input(dimW -1),
+      dH = input(dimH -1),
+      format = dimOrdering)
+    model.add(layer)
+    model.add(com.intel.analytics.bigdl.nn.Squeeze(dimW))
+    model.add(com.intel.analytics.bigdl.nn.Squeeze(dimH))
+    model.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
+  }
 }
 
 object GlobalMaxPooling2D {
