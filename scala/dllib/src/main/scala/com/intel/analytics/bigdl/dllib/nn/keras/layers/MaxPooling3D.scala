@@ -16,7 +16,10 @@
 
 package com.intel.analytics.zoo.pipeline.api.keras.layers
 
-import com.intel.analytics.bigdl.nn.keras.{MaxPooling3D => BigDLMaxPooling3D}
+import com.intel.analytics.bigdl.nn.VolumetricMaxPooling
+import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
+import com.intel.analytics.bigdl.nn.keras.Pooling3D
+import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Shape
 import com.intel.analytics.zoo.pipeline.api.Net
@@ -42,12 +45,23 @@ import scala.reflect.ClassTag
  * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now
  */
 class MaxPooling3D[T: ClassTag](
-    poolSize: Array[Int] = Array(2, 2, 2),
-    strides: Array[Int] = null,
-    dimOrdering: String = "CHANNEL_FIRST",
-    inputShape: Shape = null)(implicit ev: TensorNumeric[T])
-  extends BigDLMaxPooling3D[T](
+    override val poolSize: Array[Int] = Array(2, 2, 2),
+    override val strides: Array[Int] = null,
+    override val dimOrdering: String = "CHANNEL_FIRST",
+    override val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
+  extends Pooling3D[T](
     poolSize, strides, dimOrdering, inputShape) with Net {
+
+  override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
+    val layer = VolumetricMaxPooling(
+      kT = poolSize(0),
+      kW = poolSize(2),
+      kH = poolSize(1),
+      dT = strideValues(0),
+      dW = strideValues(2),
+      dH = strideValues(1))
+    layer.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
+  }
 }
 
 object MaxPooling3D {

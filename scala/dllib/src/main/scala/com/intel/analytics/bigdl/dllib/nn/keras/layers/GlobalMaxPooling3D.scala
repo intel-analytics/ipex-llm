@@ -16,7 +16,11 @@
 
 package com.intel.analytics.zoo.pipeline.api.keras.layers
 
-import com.intel.analytics.bigdl.nn.keras.{GlobalMaxPooling3D => BigDLGlobalMaxPooling3D}
+import com.intel.analytics.bigdl.nn.abstractnn._
+import com.intel.analytics.bigdl.nn.VolumetricMaxPooling
+import com.intel.analytics.bigdl.nn.{Sequential => TSequential}
+import com.intel.analytics.bigdl.nn.keras.GlobalPooling3D
+import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Shape
 import com.intel.analytics.zoo.pipeline.api.Net
@@ -38,9 +42,27 @@ import scala.reflect.ClassTag
  * @tparam T The numeric type of parameter(e.g. weight, bias). Only support float/double now.
  */
 class GlobalMaxPooling3D[T: ClassTag](
-   dimOrdering: String = "CHANNEL_FIRST",
-   inputShape: Shape = null)(implicit ev: TensorNumeric[T])
-  extends BigDLGlobalMaxPooling3D[T](dimOrdering, inputShape) with Net {}
+   override val dimOrdering: String = "CHANNEL_FIRST",
+   override val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
+  extends GlobalPooling3D[T](dimOrdering, inputShape) with Net {
+
+  override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
+    val input = inputShape.toSingle().toArray
+    val model = TSequential[T]()
+    val layer = VolumetricMaxPooling(
+      kT = input(2),
+      kW = input(4),
+      kH = input(3),
+      dT = 1,
+      dW = 1,
+      dH = 1)
+    model.add(layer)
+    model.add(com.intel.analytics.bigdl.nn.Squeeze(5))
+    model.add(com.intel.analytics.bigdl.nn.Squeeze(4))
+    model.add(com.intel.analytics.bigdl.nn.Squeeze(3))
+    model.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
+  }
+}
 
 object GlobalMaxPooling3D {
   def apply[@specialized(Float, Double) T: ClassTag](

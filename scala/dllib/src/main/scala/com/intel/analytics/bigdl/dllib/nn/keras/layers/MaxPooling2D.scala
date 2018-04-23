@@ -15,7 +15,10 @@
  */
 package com.intel.analytics.zoo.pipeline.api.keras.layers
 
-import com.intel.analytics.bigdl.nn.abstractnn.DataFormat
+import com.intel.analytics.bigdl.nn.SpatialMaxPooling
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, DataFormat}
+import com.intel.analytics.bigdl.nn.keras.Pooling2D
+import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Shape
 import com.intel.analytics.zoo.pipeline.api.Net
@@ -41,13 +44,27 @@ import scala.reflect.ClassTag
  * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now.
  */
 class MaxPooling2D[T: ClassTag](
-  poolSize: Array[Int] = Array(2, 2),
-  strides: Array[Int] = null,
-  borderMode: String = "valid",
-  dimOrdering: DataFormat = DataFormat.NCHW,
-  inputShape: Shape = null)(implicit ev: TensorNumeric[T])
-  extends com.intel.analytics.bigdl.nn.keras.MaxPooling2D[T](poolSize, strides, borderMode,
-    dimOrdering, inputShape) with Net {}
+  override val poolSize: Array[Int] = Array(2, 2),
+  override val strides: Array[Int] = null,
+  override val borderMode: String = "valid",
+  override val dimOrdering: DataFormat = DataFormat.NCHW,
+  override val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
+  extends Pooling2D[T](poolSize, strides, borderMode,
+    dimOrdering, inputShape) with Net {
+
+  override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
+    val pads = KerasUtils.getPadsFromBorderMode(borderMode)
+    val layer = SpatialMaxPooling(
+      kW = poolSize(1),
+      kH = poolSize(0),
+      dW = strideValues(1),
+      dH = strideValues(0),
+      padW = pads._2,
+      padH = pads._1,
+      format = dimOrdering)
+    layer.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
+  }
+}
 
 object MaxPooling2D {
   def apply[@specialized(Float, Double) T: ClassTag](

@@ -16,10 +16,15 @@
 
 package com.intel.analytics.zoo.pipeline.api.keras.layers
 
-import com.intel.analytics.bigdl.nn.keras.{AveragePooling1D => BigDLAveragePooling1D}
+import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.nn.{Sequential => TSequential}
+import com.intel.analytics.bigdl.nn.keras.Pooling1D
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, DataFormat}
+import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Shape
 import com.intel.analytics.zoo.pipeline.api.Net
+import com.intel.analytics.zoo.pipeline.api.keras.layers.utils.KerasUtils
 
 import scala.reflect.ClassTag
 
@@ -39,12 +44,31 @@ import scala.reflect.ClassTag
  * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now.
  */
 class AveragePooling1D[T: ClassTag](
-    poolLength: Int = 2,
-    stride: Int = -1,
-    borderMode: String = "valid",
-    inputShape: Shape = null)(implicit ev: TensorNumeric[T])
-  extends BigDLAveragePooling1D[T](
+    override val poolLength: Int = 2,
+    override val stride: Int = -1,
+    override val borderMode: String = "valid",
+    override val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
+  extends Pooling1D[T](
     poolLength, stride, borderMode, inputShape) with Net {
+
+  override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
+    val input = inputShape.toSingle().toArray
+    val pads = KerasUtils.getPadsFromBorderMode(borderMode)
+    val model = TSequential[T]()
+    model.add(com.intel.analytics.bigdl.nn.Reshape(Array(input(1), 1, input(2)), Some(true)))
+    val layer = SpatialAveragePooling(
+      kW = 1,
+      kH = poolLength,
+      dW = 1,
+      dH = strideValue,
+      padW = pads._2,
+      padH = pads._1,
+      countIncludePad = false,
+      format = DataFormat.NHWC)
+    model.add(layer)
+    model.add(com.intel.analytics.bigdl.nn.Squeeze(3))
+    model.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
+  }
 }
 
 object AveragePooling1D {
