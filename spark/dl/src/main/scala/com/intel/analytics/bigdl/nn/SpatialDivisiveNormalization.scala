@@ -137,7 +137,7 @@ class SpatialDivisiveNormalization[T: ClassTag](
   private var localstds: Tensor[T] = _
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
-    localstds = stdestimator.updateOutput(input).toTensor[T]
+    localstds = stdestimator.forward(input).toTensor[T]
 
     // compute side coefficients
     val dim = input.dim()
@@ -146,18 +146,18 @@ class SpatialDivisiveNormalization[T: ClassTag](
       if (dim == 4) {
         // batch mode
         ones.resizeAs(input(1)).fill(ev.fromType[Int](1))
-        val _coef = meanestimator.updateOutput(ones).toTensor[T]
+        val _coef = meanestimator.forward(ones).toTensor[T]
         coef = coef.resizeAs(_coef).copy(_coef).view(Array(1) ++ _coef.size()).expandAs(localstds)
       } else {
         ones.resizeAs(input).fill(ev.fromType[Int](1))
-        coef = meanestimator.updateOutput(ones).toTensor[T]
+        coef = meanestimator.forward(ones).toTensor[T]
       }
     }
 
     // normalize std dev
-    adjustedstds = divider.updateOutput(T(localstds, coef)).asInstanceOf[Tensor[T]]
-    thresholdedstds = thresholder.updateOutput(adjustedstds)
-    output = normalizer.updateOutput(T(input, thresholdedstds)).asInstanceOf[Tensor[T]]
+    adjustedstds = divider.forward(T(localstds, coef)).asInstanceOf[Tensor[T]]
+    thresholdedstds = thresholder.forward(adjustedstds)
+    output = normalizer.forward(T(input, thresholdedstds)).asInstanceOf[Tensor[T]]
 
     output
   }

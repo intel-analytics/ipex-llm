@@ -59,11 +59,13 @@ class ParallelTable[T: ClassTag]
   }
 
   override def backward(input: Table, gradOutput: Table): Table = {
+    val before = System.nanoTime()
     var i = 0
     while (i < input.length()) {
       gradInput.update(i + 1, modules(i).backward(input(i + 1), gradOutput(i + 1)))
       i += 1
     }
+    backwardTime += System.nanoTime() - before
     gradInput
   }
 

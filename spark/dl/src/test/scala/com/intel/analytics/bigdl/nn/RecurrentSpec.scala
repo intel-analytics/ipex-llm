@@ -77,10 +77,6 @@ class RecurrentSpec extends FlatSpec with Matchers {
       backwardSum(i) += rnnCell4.getTimes()(i)._3
     }
 
-    rnnCell1.addTimes(rnnCell2)
-    rnnCell1.addTimes(rnnCell3)
-    rnnCell1.addTimes(rnnCell4)
-
     for (i <- 0 until 6) {
       forwardSum(i) should be (rnnCell1.getTimes()(i)._2)
       backwardSum(i) should be (rnnCell1.getTimes()(i)._3)
@@ -138,7 +134,7 @@ class RecurrentSpec extends FlatSpec with Matchers {
     output.toTensor[Double].select(1, 2).select(1, seqLength).abs().max() should be (0)
   }
 
-  "A Recurrent" should " call getTimes correctly" in {
+  "A Recurrent" should "call getTimes correctly" in {
     val hiddenSize = 128
     val inputSize = 1280
     val outputSize = 128
@@ -150,7 +146,6 @@ class RecurrentSpec extends FlatSpec with Matchers {
 
     val model = Sequential[Double]()
       .add(Recurrent[Double]()
-
         .add(LSTM[Double](inputSize, hiddenSize)))
       .add(Select(2, 1))
     //      .add(Linear[Double](hiddenSize, outputSize))
@@ -160,16 +155,12 @@ class RecurrentSpec extends FlatSpec with Matchers {
 
     model.clearState()
 
-    model.resetTimes
-    model.getTimes
-
     for (i <- 1 to 10) {
-      model.resetTimes
       model.forward(input)
       model.backward(input, gradOutput)
-      model.getTimes()
     }
     model.resetTimes()
+    val a = model.getTimesGroupByModuleType()
 
     var st = System.nanoTime()
     model.forward(input)
@@ -188,7 +179,7 @@ class RecurrentSpec extends FlatSpec with Matchers {
       forwardSum += x._2
       backwardSum += x._3
     })
-    println()
+    val t = model.getTimesGroupByModuleType()
     println(s"forwardSum = ${forwardSum}")
     println(s"backwardSum = ${backwardSum}")
 

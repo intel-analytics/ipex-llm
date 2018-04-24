@@ -159,6 +159,7 @@ class ConcatTable[T : ClassTag]
   }
 
   override def backward(input: Activity, gradOutput: Table): Activity = {
+    val before = System.nanoTime()
     require(modules.length > 0, "empty modules of concat table")
     val isInputTable = input.isInstanceOf[Table]
     val wasGradInputTable = gradInput.isInstanceOf[Table]
@@ -202,6 +203,7 @@ class ConcatTable[T : ClassTag]
         i += 1
       }
     }
+    backwardTime += System.nanoTime() - before
     gradInput
   }
 

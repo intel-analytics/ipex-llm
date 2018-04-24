@@ -139,6 +139,7 @@ class MultiRNNCell[T : ClassTag](val cells: Array[Cell[T]])(implicit ev: TensorN
   }
 
   override def backward(input: Table, gradOutput: Table): Table = {
+    val before = System.nanoTime()
     var i = cells.length - 1
     var error = T()
     error(inputDim) = gradOutput(inputDim)
@@ -162,6 +163,7 @@ class MultiRNNCell[T : ClassTag](val cells: Array[Cell[T]])(implicit ev: TensorN
 
     this.gradInput = error
     gradInput(hidDim) = outputGradStates
+    backwardTime += System.nanoTime() - before
     gradInput
   }
 
