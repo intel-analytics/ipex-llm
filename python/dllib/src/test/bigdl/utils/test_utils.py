@@ -101,9 +101,43 @@ class ZooTestCase(TestCase):
         zoutput = zmodel.forward(input_data)
         self.assert_allclose(zoutput, koutput, rtol=rtol, atol=atol)
 
-    def compare_model(self, bmodel, kmodel, input_data, rtol=1e-5, atol=1e-5):
-        WeightLoader.load_weights_from_kmodel(bmodel, kmodel)
-        bmodel.training(is_training=False)
-        bigdl_output = bmodel.forward(input_data)
+    def compare_model(self, zmodel, kmodel, input_data, rtol=1e-5, atol=1e-5):
+        """
+        Compare forward results for Keras model against Zoo Keras API model.
+        """
+        WeightLoader.load_weights_from_kmodel(zmodel, kmodel)
+        zmodel.training(is_training=False)
+        bigdl_output = zmodel.forward(input_data)
         keras_output = kmodel.predict(input_data)
         self.assert_allclose(bigdl_output, keras_output, rtol=rtol, atol=atol)
+
+    def assert_forward_backward(self, model, input):
+        """
+        Test whether forward and backward can work properly.
+        """
+        output = model.forward(input)
+        grad_input = model.backward(input, output)
+
+    def assert_save_load(self, model, input, rtol=1e-6, atol=1e-6):
+        """
+        Test for model save and load.
+        The loaded model should have the same class as the original model.
+        The loaded model should produce the same forward and backward results as the original model.
+        """
+        model_class = model.__class__
+        tmp_path = create_tmp_path() + ".bigdl"
+        model.save_model(tmp_path)
+        loaded_model = model_class.load_model(tmp_path)
+        assert isinstance(loaded_model, model_class)
+        rng = RNG()
+        rng.set_seed(1000)
+        output1 = model.forward(input)
+        rng.set_seed(1000)
+        output2 = loaded_model.forward(input)
+        self.assert_allclose(output1, output2, rtol, atol)
+        rng.set_seed(1000)
+        grad_input1 = model.backward(input, output1)
+        rng.set_seed(1000)
+        grad_input2 = loaded_model.backward(input, output1)
+        self.assert_allclose(grad_input1, grad_input2, rtol, atol)
+        os.remove(tmp_path)
