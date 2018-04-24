@@ -82,11 +82,11 @@ Similar to Torch and Keras, BigDL uses a dataflow representation for the neural 
 
 ### **2.4. Model training**
 
-The transformed input data (RDD of Samples) and the constructed model can then be passed over to the *Optimizer* in BigDL, which automatically performs distributed model training across the cluster, as illustrated by lines 19 ~ 254 in *Figure 1.*
+The transformed input data (RDD of Samples) and the constructed model can then be passed over to the *Optimizer* in BigDL, which automatically performs distributed model training across the cluster, as illustrated by lines 19 ~ 25 in *Figure 1.*
 
 * **Optimizer:** In BigDL, the distributed training process is modelled by the Optimizer abstraction, which runs multiple, iterative Spark jobs to minimize the loss (as defined by the user specified Criterion) using specific optimization method (such as *SGD, AdaGrad [24], Adam [25], etc.*).
 
-* **Visualization:** To make it easy for users to understand the behaviors of model training, the *optimizer* in BigDL can be configured to produce a *TrainSummay* that contains various summary data (e.g., loss, weight, etc.), as illustrated by line 24 in Figure 1; the summary data can then be visualized in, for instance, TensorBoard [26] or Jupytor Notebooks [27].
+* **Visualization:** To make it easy for users to understand the behaviors of model training, the *optimizer* in BigDL can be configured to produce a *TrainSummary* that contains various summary data (e.g., loss, weight, etc.), as illustrated by line 24 in Figure 1; the summary data can then be visualized in, for instance, TensorBoard [26] or Jupytor Notebooks [27].
 
 ### **2.5. Model Inference**
 BigDL also allows users to directly use existing models (pre-trained by Caffe, Keras, TensorFlow, Torch or BigDL) in Spark, so as to directly perform model prediction in a distributed fashion (using RDD transformations), as illustrated by lines 26 ~ 28 in Figure 1. 
