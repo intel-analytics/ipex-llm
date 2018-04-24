@@ -387,8 +387,6 @@ class ResNetSpec extends TorchSpec {
 
     val (modelF, modelB) = model.getTimes().map(v => (v._2, v._3))
       .reduce((a, b) => (a._1 + b._1, a._2 + b._2))
-//    val modelTimes = model.getTimesGroupByModuleType()
-//    val graphTimes = graphModel.getTimesGroupByModuleType()
     val (graphF, graphB) = graphModel.getTimes().map(v => (v._2, v._3))
       .reduce((a, b) => (a._1 + b._1, a._2 + b._2))
     modelForwardTime should be (modelF +- modelF / 100)

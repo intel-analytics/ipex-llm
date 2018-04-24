@@ -473,7 +473,7 @@ object Utils {
   }
 
   /**
-   * add forward time and backward time.
+   * Calculate forward time and backward time.
    * @param times
    * @tparam T
    * @return
