@@ -19,6 +19,7 @@ package com.intel.analytics.zoo.pipeline.nnframes
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.transform.vision.image.{BytesToMat, ImageFeature, ImageFrame}
 import org.apache.spark.SparkContext
+import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{DataFrame, Row, SQLContext}
 import org.opencv.core.CvType
@@ -110,6 +111,30 @@ object NNImageSchema {
     }
     imf
   }
+
+  /**
+   * Gets the origin of the image
+   *
+   * @return The origin of the image
+   */
+  def getOrigin(row: Row): String = row.getString(0)
+
+  /**
+   * Extracts the origin info from Image column and add it to a new column.
+   *
+   * @param imageDF input DataFrame that contains an image column
+   * @param imageColumn image column name
+   * @param originColumn name of new column
+   * @return The origin of the image
+   */
+  def withOriginColumn(
+      imageDF: DataFrame,
+      imageColumn: String = "image",
+      originColumn: String = "origin"): DataFrame = {
+    val getPathUDF = udf { row: Row => getOrigin(row) }
+    imageDF.withColumn(originColumn, getPathUDF(col(imageColumn)))
+  }
+
 }
 
 /**
@@ -141,4 +166,5 @@ object NNImageReader {
     }
     SQLContext.getOrCreate(sc).createDataFrame(rowRDD, imageColumnSchema)
   }
+
 }

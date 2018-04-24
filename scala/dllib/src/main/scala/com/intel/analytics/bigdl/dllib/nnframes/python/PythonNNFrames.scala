@@ -86,4 +86,8 @@ class PythonNNFrames[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonB
   def setOptimMethod(estimator: NNEstimator[T], optimMethod: OptimMethod[T]): NNEstimator[T] = {
     estimator.setOptimMethod(optimMethod)
   }
+
+  def withOriginColumn(imageDF: DataFrame, imageColumn: String, originColumn: String): DataFrame = {
+    NNImageSchema.withOriginColumn(imageDF, imageColumn, originColumn)
+  }
 }
