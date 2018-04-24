@@ -106,7 +106,7 @@ class NNImageReaderSpec extends FlatSpec with Matchers with BeforeAndAfter {
   }
 
   "read gray scale image" should "work" in {
-    val resource = getClass().getClassLoader().getResource("gray/gray.bmp")
+    val resource = getClass.getClassLoader.getResource("gray/gray.bmp")
     val df = NNImageReader.readImages(resource.getFile, sc)
     assert(df.count() == 1)
     val r = df.head().getAs[Row](0)
@@ -116,4 +116,14 @@ class NNImageReaderSpec extends FlatSpec with Matchers with BeforeAndAfter {
     assert(r.getInt(3) == 1)
     assert(r.getInt(4) == CvType.CV_8UC1)
   }
+
+  "NNImageReader" should "support withOriginColumn" in {
+    val imageDF = NNImageReader.readImages(pascalResource.getFile, sc)
+    val withOriginDF = NNImageSchema.withOriginColumn(imageDF)
+
+    val imageOrigin = imageDF.head().getAs[Row](0).getString(0)
+    val extractedOrigin = withOriginDF.select("origin").head().getString(0)
+    assert(imageOrigin == extractedOrigin)
+  }
+
 }
