@@ -22,6 +22,7 @@ from pyspark.sql.types import *
 
 from zoo.common.nncontext import *
 from zoo.pipeline.nnframes.nn_image_reader import *
+from zoo.pipeline.nnframes.nn_image_schema import *
 
 
 class TestNNImageReader():
@@ -54,6 +55,18 @@ class TestNNImageReader():
         assert first_row[3] == 3
         assert first_row[4] == 16
         assert len(first_row[5]) == 95959
+
+    def test_read_image_withOriginColumn(self):
+        image_path = os.path.join(self.resource_path, "pascal/000025.jpg")
+        image_frame = NNImageReader.readImages(image_path, self.sc)
+        first_row = image_frame.take(1)[0][0]
+        image_origin = first_row[0]
+
+        originDF = with_origin_column(image_frame).select("origin")
+        origin = originDF.take(1)[0][0]
+
+        assert image_origin == origin
+
 
 if __name__ == "__main__":
     pytest.main([__file__])
