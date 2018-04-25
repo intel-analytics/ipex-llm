@@ -177,7 +177,9 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
       Array[(String, Long, Long)] = {
     this.getTimes().map(v => (v._1.getClass().getName(), v._2, v._3)).groupBy(_._1)
       .map(v => (v._1, v._2.reduce((a, b) => (v._1, a._2 + b._2, a._3 + b._3))))
-      .map(v => (v._1, v._2._2, v._2._3)).toArray
+      .map(v => (v._1, v._2._2, v._2._3))
+      .toArray
+      .sortWith((a, b) => (a._2 + a._3) > (b._2 + b._3))
   }
 
   /**
