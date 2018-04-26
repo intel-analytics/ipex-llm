@@ -73,7 +73,7 @@ class MapTable[T: ClassTag](
     extend(input.length())
     var i = 0
     while (i < input.length()) {
-      output.update(i + 1, modules(i).updateOutput(input(i + 1)))
+      output.update(i + 1, modules(i).forward(input(i + 1)))
       i += 1
     }
     output

@@ -169,6 +169,20 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
   }
 
   /**
+   * Get the forward/backward cost time for the module or its submodules
+   * and group by module type.
+   * @return (module type name, forward time, backward time)
+   */
+  final def getTimesGroupByModuleType():
+      Array[(String, Long, Long)] = {
+    this.getTimes().map(v => (v._1.getClass().getName(), v._2, v._3)).groupBy(_._1)
+      .map(v => (v._1, v._2.reduce((a, b) => (v._1, a._2 + b._2, a._3 + b._3))))
+      .map(v => (v._1, v._2._2, v._2._3))
+      .toArray
+      .sortWith((a, b) => (a._2 + a._3) > (b._2 + b._3))
+  }
+
+  /**
    * Reset the forward/backward record time for the module or its submodules
    * @return
    */

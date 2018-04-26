@@ -352,22 +352,47 @@ class ResNetSpec extends TorchSpec {
     RNG.setSeed(1000)
     val graphModel = ResNet.graph(classNum, T("shortcutType" -> ShortcutType.B,
       "depth" -> depth, "dataset" -> DatasetType.ImageNet))
+    var modelForwardTime = 0L
+    var modelBackwardTime = 0L
+    var graphForwardTime = 0L
+    var graphBackwardTime = 0L
 
     var output1: Tensor[Float] = null
     var output2: Tensor[Float] = null
+    var st = System.nanoTime()
     for (i <- 1 to 3) {
       output1 = model.forward(input).toTensor[Float]
+    }
+    modelForwardTime += System.nanoTime() - st
+    st = System.nanoTime()
+    for (i <- 1 to 3) {
       output2 = graphModel.forward(input).toTensor[Float]
     }
+    graphForwardTime += System.nanoTime() - st
     output1 should be(output2)
 
     var gradInput1: Tensor[Float] = null
     var gradInput2: Tensor[Float] = null
+    st = System.nanoTime()
     for (i <- 1 to 3) {
       gradInput1 = model.backward(input, gradOutput).toTensor[Float]
+    }
+    modelBackwardTime += System.nanoTime() - st
+    st = System.nanoTime()
+    for (i <- 1 to 3) {
       gradInput2 = graphModel.backward(input, gradOutput).toTensor[Float]
     }
+    graphBackwardTime += System.nanoTime() - st
     gradInput1 should be(gradInput2)
+
+    val (modelF, modelB) = model.getTimes().map(v => (v._2, v._3))
+      .reduce((a, b) => (a._1 + b._1, a._2 + b._2))
+    val (graphF, graphB) = graphModel.getTimes().map(v => (v._2, v._3))
+      .reduce((a, b) => (a._1 + b._1, a._2 + b._2))
+    modelForwardTime should be (modelF +- modelF / 100)
+    modelBackwardTime should be (modelB +- modelB / 100)
+    graphForwardTime should be (graphF +- graphF / 100)
+    graphBackwardTime should be (graphB +- graphB / 100)
   }
 
 

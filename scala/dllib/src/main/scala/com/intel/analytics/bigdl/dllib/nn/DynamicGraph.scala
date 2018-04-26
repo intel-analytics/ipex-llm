@@ -62,7 +62,7 @@ private[bigdl] class DynamicGraph[T: ClassTag](
   override def backward(input: Activity, gradOutput: Activity): Activity = {
     val before = System.nanoTime()
     val result = backwardExecution(input, gradOutput, true)
-    backwardTime = System.nanoTime() - before
+    backwardTime += System.nanoTime() - before
     result
   }
 
