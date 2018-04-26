@@ -37,7 +37,7 @@ import scala.reflect.ClassTag
  * @tparam T Numeric type of parameter(e.g. weight, bias). Only support float/double now.
  */
 class LeakyReLU[T: ClassTag](
-    private val alpha: Double = 0.3,
+    val alpha: Double = 0.3,
     override val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends BigDLLeakyReLU[T](
     alpha, inputShape) with Net {

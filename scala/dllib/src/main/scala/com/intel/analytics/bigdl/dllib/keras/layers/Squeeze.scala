@@ -78,7 +78,12 @@ class Squeeze[T: ClassTag](
   }
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
-    val layer = com.intel.analytics.bigdl.nn.Squeeze(dims, batchMode = true)
+    val layer = if (dims != null) {
+      com.intel.analytics.bigdl.nn.Squeeze(dims.map(x => x + 1), batchMode = false)
+    }
+    else {
+      com.intel.analytics.bigdl.nn.Squeeze(null, batchMode = true)
+    }
     layer.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
   }
 }

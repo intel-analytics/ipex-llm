@@ -51,8 +51,14 @@ class LRN2D[T: ClassTag](
     val n: Int = 5,
     val dimOrdering: DataFormat = DataFormat.NCHW,
     val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
-  extends KerasLayer[Tensor[T], Tensor[T], T](KerasUtils.addBatch(inputShape))
-    with IdentityOutputShape with Net {
+  extends KerasLayer[Tensor[T], Tensor[T], T](KerasUtils.addBatch(inputShape)) with Net {
+
+  override def computeOutputShape(inputShape: Shape): Shape = {
+    val input = inputShape.toSingle().toArray
+    require(input.length == 4,
+      s"LRN2D requires 4D input, but got input dim ${input.length}")
+    inputShape
+  }
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
     val layer = SpatialCrossMapLRN(n, alpha, beta, k, dimOrdering)
