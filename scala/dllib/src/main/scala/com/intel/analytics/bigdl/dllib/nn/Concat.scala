@@ -50,14 +50,12 @@ class Concat[T: ClassTag](val dimension: Int)(
   @transient
   private var gradouts: Array[Tensor[T]] = null
 
-  protected var forwardTimeOverhead = 0L
-
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
     val outs = new Array[Tensor[T]](this.modules.length)
     var i = 0
     while (i < this.modules.length) {
       val currentOutput = this.modules(i)
-        .updateOutput(input.asInstanceOf[Activity])
+        .forward(input.asInstanceOf[Activity])
         .asInstanceOf[Tensor[T]]
 
       outs(i) = currentOutput.asInstanceOf[Tensor[T]]
@@ -81,7 +79,6 @@ class Concat[T: ClassTag](val dimension: Int)(
       }
       i += 1
     }
-    val before = System.nanoTime()
     this.output.resize(this.size)
     if (results == null || results.length != this.modules.length) {
       results = new Array[Future[Unit]](this.modules.length)
@@ -117,14 +114,8 @@ class Concat[T: ClassTag](val dimension: Int)(
     }
 
     Engine.model.sync(results)
-    forwardTimeOverhead += System.nanoTime() - before
 
     this.output
-  }
-
-  override def getTimes(): Array[(AbstractModule[_ <: Activity, _ <: Activity, T], Long, Long)] = {
-    this.modules.flatMap(_.getTimes()).toArray ++
-      Array((this, forwardTimeOverhead, backwardTime))
   }
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
@@ -199,7 +190,7 @@ class Concat[T: ClassTag](val dimension: Int)(
   }
 
   override def backward(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
-    var before = System.nanoTime()
+    val before = System.nanoTime()
     this.gradInput.resizeAs(input)
     var offset = 1
     if (gradouts == null || gradouts.length != this.modules.length) {
@@ -229,7 +220,6 @@ class Concat[T: ClassTag](val dimension: Int)(
       offset += currentOutput.size(dimension)
     }
     Engine.model.sync(results)
-    backwardTime += System.nanoTime() - before
 
     i = 0
     offset = 1
@@ -239,7 +229,6 @@ class Concat[T: ClassTag](val dimension: Int)(
         .backward(input.asInstanceOf[Activity], gradouts(i).asInstanceOf[Activity])
         .asInstanceOf[Tensor[T]]
 
-      before = System.nanoTime()
       if (currentGradInput != null) {
         if (i == 0) {
           require(this.gradInput.isContiguous())
@@ -251,8 +240,8 @@ class Concat[T: ClassTag](val dimension: Int)(
       }
       i += 1
       offset += currentOutput.size(dimension)
-      backwardTime += System.nanoTime() - before
     }
+    backwardTime += System.nanoTime() - before
 
     this.gradInput
   }
@@ -325,7 +314,6 @@ class Concat[T: ClassTag](val dimension: Int)(
   }
 
   override def resetTimes(): Unit = {
-    forwardTimeOverhead = 0
     forwardTime = 0
     backwardTime = 0
   }

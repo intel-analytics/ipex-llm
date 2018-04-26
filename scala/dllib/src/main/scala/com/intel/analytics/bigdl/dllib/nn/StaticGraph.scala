@@ -67,7 +67,7 @@ class StaticGraph[T: ClassTag](
   override def backward(input: Activity, gradOutput: Activity): Activity = {
     val before = System.nanoTime()
     val gradients = backwardExecution(input, gradOutput, true)
-    backwardTime = System.nanoTime() - before
+    backwardTime += System.nanoTime() - before
     gradients
   }
 

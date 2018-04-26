@@ -50,8 +50,6 @@ class TimeDistributed[T : ClassTag] (
   private var inputSize: Array[Int] = _
   private var gradOutputSize: Array[Int] = _
   private var outputSize: Array[Int] = _
-  private val timeBuffer =
-    new ArrayBuffer[(AbstractModule[_ <: Activity, _ <: Activity, T], Long, Long)]
   private var maskBuffer: Tensor[T] = _
   private var indexBuffer: Tensor[T] = _
   private var inputBuffer: Tensor[T] = _
@@ -163,7 +161,7 @@ class TimeDistributed[T : ClassTag] (
   }
 
   override def backward(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
-    val st = System.nanoTime
+    val before = System.nanoTime
     if (gradOutputSize == null) {
       gradOutputSize = new Array[Int](gradOutput.size.length - 1)
     }
@@ -177,7 +175,6 @@ class TimeDistributed[T : ClassTag] (
     gradInput.set(_gradInput).resize(_inputSize)
     input.resize(_inputSize)
     gradOutput.resize(_gradOutputSize)
-    backwardTime += System.nanoTime - st
 
     if (maskZero) {
       for (i <- 1 to maskBuffer.size(1)) {
@@ -188,6 +185,7 @@ class TimeDistributed[T : ClassTag] (
         }
       }
     }
+    backwardTime += System.nanoTime - before
 
     gradInput
   }
@@ -208,13 +206,13 @@ class TimeDistributed[T : ClassTag] (
   }
 
   override def resetTimes(): Unit = {
+    super.resetTimes()
     layer.resetTimes()
-    this.forwardTime = 0
-    this.backwardTime = 0
   }
 
   override def getTimes(): Array[(AbstractModule[_ <: Activity, _ <: Activity, T], Long, Long)] = {
-    timeBuffer.clear
+    val timeBuffer =
+      new ArrayBuffer[(AbstractModule[_ <: Activity, _ <: Activity, T], Long, Long)]
     var modulesForwardTime = 0L
     var modulesBackwardTime = 0L
     layer.getTimes.foreach(x => {
@@ -257,7 +255,6 @@ class TimeDistributed[T : ClassTag] (
     inputSize = null
     gradOutputSize = null
     outputSize = null
-    timeBuffer.clear
     maskBuffer = null
     inputBuffer = null
     indexBuffer = null

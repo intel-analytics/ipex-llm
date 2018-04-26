@@ -104,7 +104,7 @@ class Euclidean[T: ClassTag](val inputSize: Int, val outputSize: Int,
     s"input dim ${input.dim()}")
 
     if (!fastBackward) {
-      updateOutput(input)
+      forward(input)
     }
     // to prevent div by zero (NaN) bugs
     outputBuffer.resizeAs(output).copy(output).add(ev.fromType(0.0000001))
