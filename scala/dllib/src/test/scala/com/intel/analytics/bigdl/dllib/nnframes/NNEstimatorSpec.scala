@@ -18,9 +18,10 @@ package com.intel.analytics.zoo.pipeline.nnframes
 
 import java.io.File
 
+import com.intel.analytics.bigdl.dataset.{DataSet, Sample, SampleToMiniBatch}
 import com.intel.analytics.bigdl.models.inception.Inception_v1
 import com.intel.analytics.bigdl.nn._
-import com.intel.analytics.bigdl.optim.{LBFGS, Loss, SGD, Trigger}
+import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
 import com.intel.analytics.bigdl.transform.vision.image.MatToTensor
@@ -28,6 +29,7 @@ import com.intel.analytics.bigdl.transform.vision.image.augmentation.{CenterCrop
 import com.intel.analytics.bigdl.utils.Engine
 import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
 import com.intel.analytics.bigdl.visualization.{TrainSummary, ValidationSummary}
+import com.intel.analytics.zoo.pipeline.nnframes.transformers.{NumToTensor, SeqToTensor, MLlibVectorToTensor}
 import org.apache.spark.SparkContext
 import org.apache.spark.ml.{Pipeline, PipelineModel}
 import org.apache.spark.ml.feature.MinMaxScaler
@@ -67,7 +69,7 @@ class NNEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
   "An NNEstimator" should "has correct default params" in {
     val model = Linear[Float](10, 1)
     val criterion = ClassNLLCriterion[Float]()
-    val estimator = new NNEstimator[Float](model, criterion, Array(10), Array(1))
+    val estimator = new NNEstimator(model, criterion, SeqToTensor(Array(10)), NumToTensor())
     assert(estimator.getFeaturesCol == "features")
     assert(estimator.getLabelCol == "label")
     assert(estimator.getMaxEpoch == 50)
@@ -80,16 +82,16 @@ class NNEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
   "An NNEstimator" should "get reasonable accuracy" in {
     val model = new Sequential().add(Linear[Float](6, 2)).add(LogSoftMax[Float])
     val criterion = ClassNLLCriterion[Float]()
-    val estimator = new NNEstimator[Float](model, criterion, Array(6), Array(1))
-      .setBatchSize(nRecords)
-      .setOptimMethod(new LBFGS[Float]())
-      .setLearningRate(0.1)
-      .setMaxEpoch(maxEpoch)
-    val data = sc.parallelize(smallData)
+    val estimator = new NNEstimator(model, criterion, SeqToTensor(Array(6)), NumToTensor())
+      .setBatchSize(4)
+      .setOptimMethod(new Adam[Float]())
+      .setLearningRate(0.02)
+      .setMaxEpoch(20)
+    val data = sc.parallelize(smallData).coalesce(1)
     val df = sqlContext.createDataFrame(data).toDF("features", "label")
 
     val nnModel = estimator.fit(df)
-    nnModel.isInstanceOf[NNModel[_]] should be(true)
+    nnModel.isInstanceOf[NNModel[_, _]] should be(true)
     val correct = nnModel.transform(df).select("label", "prediction").rdd.filter {
       case Row(label: Double, prediction: Seq[_]) =>
         label == prediction.indexOf(prediction.asInstanceOf[Seq[Double]].max) + 1
@@ -100,7 +102,7 @@ class NNEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
   "An NNEstimator" should "support different FEATURE types" in {
     val model = new Sequential().add(Linear[Float](6, 2)).add(LogSoftMax[Float])
     val criterion = ClassNLLCriterion[Float]()
-    val estimator = new NNEstimator[Float](model, criterion, Array(6), Array(1))
+    val estimator = new NNEstimator(model, criterion, SeqToTensor(Array(6)), NumToTensor())
       .setBatchSize(2)
       // intentionally set low since this only validates data format compatibility
       .setEndWhen(Trigger.maxIteration(1))
@@ -109,20 +111,28 @@ class NNEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
       sqlContext.createDataFrame(sc.parallelize(smallData.map(p => (p._1, p._2))))
         .toDF("features", "label"), // Array[Double]
       sqlContext.createDataFrame(sc.parallelize(smallData.map(p => (p._1.map(_.toFloat), p._2))))
-        .toDF("features", "label"), // Array[Float]
-      sqlContext.createDataFrame(sc.parallelize(smallData.map(p => (Vectors.dense(p._1), p._2))))
-        .toDF("features", "label") // MLlib Vector
-      // TODO: add ML Vector when ut for Spark 2.0+ is ready
+        .toDF("features", "label") // Array[Float]
     ).foreach { df =>
       val nnModel = estimator.fit(df)
       nnModel.transform(df).collect()
     }
+
+    // TODO: add ML Vector when ut for Spark 2.0+ is ready
+    val vecEstimator = new NNEstimator(
+        model, criterion, MLlibVectorToTensor(Array(6)), NumToTensor())
+      .setBatchSize(2)
+      .setEndWhen(Trigger.maxIteration(1))
+
+    val vectorDF = sqlContext.createDataFrame(sc.parallelize(smallData.map(p => (Vectors.dense(p._1), p._2))))
+      .toDF("features", "label") // MLlib Vector
+    vecEstimator.fit(vectorDF)
+
   }
 
   "An NNEstimator" should "support scalar FEATURE types" in {
     val model = new Sequential().add(Linear[Float](1, 2)).add(LogSoftMax[Float])
     val criterion = ClassNLLCriterion[Float]()
-    val estimator = new NNEstimator[Float](model, criterion, Array(1), Array(1))
+    val estimator = new NNEstimator(model, criterion, NumToTensor(), NumToTensor())
       .setBatchSize(2)
       // intentionally set low since this only validates data format compatibility
       .setEndWhen(Trigger.maxIteration(1))
@@ -142,7 +152,8 @@ class NNEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
   "An NNEstimator" should "support different LABEL types" in {
     val model = new Sequential().add(Linear[Float](6, 2)).add(LogSoftMax[Float])
     val criterion = MultiLabelSoftMarginCriterion[Float]()
-    val estimator = new NNEstimator[Float](model, criterion, Array(6), Array(2))
+    val estimator = new NNEstimator(
+      model, criterion, SeqToTensor(Array(6)), SeqToTensor(Array(2)))
       // intentionally set low since this only validates data format compatibitliy
       .setEndWhen(Trigger.maxIteration(1))
       .setBatchSize(2)
@@ -151,10 +162,7 @@ class NNEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
       sqlContext.createDataFrame(sc.parallelize(smallData.map(p => (p._1, Array(p._2, p._2)))))
         .toDF("features", "label"), // Array[Double]
       sqlContext.createDataFrame(sc.parallelize(smallData.map(p => (p._1,
-        Array(p._2.toFloat, p._2.toFloat))))).toDF("features", "label"), // Array[Float]
-      sqlContext.createDataFrame(sc.parallelize(smallData.map(p => (p._1,
-        Vectors.dense(p._2, p._2))))).toDF("features", "label") // MLlib Vector
-      // TODO: add ML Vector when ut for Spark 2.0+ is ready
+        Array(p._2.toFloat, p._2.toFloat))))).toDF("features", "label") // Array[Float]
     ).foreach { df =>
       val nnModel = estimator.fit(df)
       nnModel.transform(df).collect()
@@ -164,7 +172,8 @@ class NNEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
   "An NNEstimator" should "support scalar LABEL types" in {
     val model = new Sequential().add(Linear[Float](6, 2)).add(LogSoftMax[Float])
     val criterion = ClassNLLCriterion[Float]()
-    val estimator = new NNEstimator[Float](model, criterion, Array(6), Array(1))
+    val estimator = new NNEstimator(
+      model, criterion, SeqToTensor(Array(6)), NumToTensor())
       // intentionally set low since this only validates data format compatibitliy
       .setEndWhen(Trigger.maxIteration(1))
       .setBatchSize(2)
@@ -185,9 +194,10 @@ class NNEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
     val model = Linear[Float](10, 1)
     val criterion = ClassNLLCriterion[Float]()
-    val estimator = new NNEstimator[Float](model, criterion, Array(10), Array(1))
+    val estimator = new NNEstimator(
+      model, criterion, SeqToTensor(Array(10)), SeqToTensor(Array(1)))
       .setMaxEpoch(1)
-      .setBatchSize(nRecords)
+      .setBatchSize(20)
 
     val featureData = Array.tabulate(100)(_ => Tensor(10))
     val labelData = Array.tabulate(100)(_ => Tensor(1).fill(1.0f))
@@ -204,22 +214,23 @@ class NNEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
   "An NNEstimator" should "support different batchSize" in {
     val model = new Sequential().add(Linear[Float](6, 2)).add(LogSoftMax[Float])
     val criterion = ClassNLLCriterion[Float]()
-    val estimator = new NNEstimator[Float](model, criterion, Array(6), Array(1))
-      .setBatchSize(51)
+    val estimator = new NNEstimator(
+      model, criterion, SeqToTensor(Array(6)), NumToTensor())
+      .setBatchSize(49)
       .setMaxEpoch(maxEpoch)
     val data = sc.parallelize(smallData)
     val df: DataFrame = sqlContext.createDataFrame(data).toDF("features", "label")
 
     val nnModel = estimator.fit(df)
-    nnModel.isInstanceOf[NNModel[_]] should be(true)
+    nnModel.isInstanceOf[NNModel[_, _]] should be(true)
     nnModel.transform(df).count()
   }
 
   "An NNModel" should "support transform with different batchSize" in {
     val model = new Sequential().add(Linear[Float](6, 2)).add(LogSoftMax[Float])
     val criterion = ClassNLLCriterion[Float]()
-    val estimator = new NNEstimator[Float](model, criterion, Array(6), Array(1))
-      .setBatchSize(nRecords)
+    val estimator = new NNEstimator(model, criterion, SeqToTensor(Array(6)), NumToTensor())
+      .setBatchSize(20)
       .setMaxEpoch(maxEpoch)
     val data = sc.parallelize(smallData)
     val df: DataFrame = sqlContext.createDataFrame(data).toDF("features", "label")
@@ -227,11 +238,12 @@ class NNEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
     assert(df.count() == nnModel.setBatchSize(51).transform(df).count())
   }
 
-  "An NNEstimator" should "throws exception without correct inputs" in {
+  "An NNEstimator" should "throws exception with incorrect inputs" in {
     val model = Linear[Float](10, 1)
     val criterion = ClassNLLCriterion[Float]()
     val inputs = Array[String]("Feature data", "Label data")
-    var estimator = new NNEstimator[Float](model, criterion, Array(10), Array(2, 1)).
+    var estimator = new NNEstimator(
+      model, criterion, SeqToTensor(Array(10)), SeqToTensor(Array(2, 1))).
       setFeaturesCol(inputs(0)).setLabelCol(inputs(1))
 
     val featureData = Tensor(2, 10)
@@ -250,9 +262,10 @@ class NNEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val model = new Sequential().add(Linear[Float](6, 2)).add(LogSoftMax[Float])
     val criterion = ClassNLLCriterion[Float]()
     val logdir = com.google.common.io.Files.createTempDir()
-    val estimator = new NNEstimator[Float](model, criterion, Array(6), Array(1))
-      .setBatchSize(nRecords)
-      .setMaxEpoch(5)
+    val estimator = new NNEstimator(
+      model, criterion, SeqToTensor(Array(6)), NumToTensor())
+      .setBatchSize(50)
+      .setMaxEpoch(2)
       .setTrainSummary(TrainSummary(logdir.getPath, "DLEstimatorTrain"))
     val data = sc.parallelize(smallData)
     val df = sqlContext.createDataFrame(data).toDF("features", "label")
@@ -260,7 +273,7 @@ class NNEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val nnModel = estimator.fit(df)
     val trainSummary = estimator.getTrainSummary.get
     val losses = trainSummary.readScalar("Loss")
-    assert(losses.length == 5)
+    assert(losses.length > 0)
     trainSummary.close()
     logdir.deleteOnExit()
   }
@@ -271,7 +284,8 @@ class NNEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val logdir = com.google.common.io.Files.createTempDir()
     val data = sc.parallelize(smallData)
     val df = sqlContext.createDataFrame(data).toDF("features", "label")
-    val estimator = new NNEstimator[Float](model, criterion, Array(6), Array(1))
+    val estimator = new NNEstimator(
+      model, criterion, SeqToTensor(Array(6)), NumToTensor())
       .setBatchSize(4)
       .setEndWhen(Trigger.maxIteration(5))
       .setValidation(Trigger.severalIteration(1), df, Array(new Loss[Float]()), 2)
@@ -292,7 +306,8 @@ class NNEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
     val data = sc.parallelize(smallData)
     val df = sqlContext.createDataFrame(data).toDF("features", "label")
-    val estimator = new NNEstimator[Float](model, criterion, Array(6), Array(1))
+    val estimator = new NNEstimator(
+      model, criterion, SeqToTensor(Array(6)), NumToTensor())
       .setBatchSize(4)
       .setEndWhen(Trigger.maxIteration(5))
       .setMaxEpoch(5)
@@ -313,7 +328,8 @@ class NNEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
         .setMax(1).setMin(-1)
       val model = new Sequential().add(Linear[Float](6, 2)).add(LogSoftMax[Float])
       val criterion = ClassNLLCriterion[Float]()
-      val estimator = new NNEstimator[Float](model, criterion, Array(6), Array(1))
+      val estimator = new NNEstimator(
+        model, criterion, SeqToTensor(Array(6)), NumToTensor())
         .setOptimMethod(new LBFGS[Float]())
         .setLearningRate(0.1)
         .setBatchSize(nRecords)
@@ -341,8 +357,8 @@ class NNEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
       .setInputCol("image")
       .setOutputCol("features")
 
-    val featurizer = new NNModel[Float](
-      Inception_v1(1000), Array(3, 224, 224))
+    val featurizer = new NNModel(
+      Inception_v1(1000), SeqToTensor(Array(3, 224, 224)))
       .setBatchSize(1)
 
     val pipeline = new Pipeline().setStages(Array(transformedDF, featurizer))
@@ -352,11 +368,11 @@ class NNEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
   "An NNModel" should "return same results after saving and loading" in {
     val data = sqlContext.createDataFrame(smallData).toDF("features", "label")
     val module = new Sequential[Double]().add(Linear[Double](6, 2)).add(LogSoftMax[Double])
-    val nnModel = new NNModel[Double](module, Array(6))
+    val nnModel = new NNModel(module, SeqToTensor[Double](Array(6)))
 
     val tmpFile = File.createTempFile("DLModel", "bigdl")
     val filePath = tmpFile.getPath + Random.nextLong().toString
-    nnModel.setBatchSize(10).setFeatureSize(Array(10, 100))
+    nnModel.setBatchSize(10)
       .setFeaturesCol("test123").setPredictionCol("predict123")
     nnModel.write.overwrite().save(filePath)
     val nnModel2 = try {
@@ -370,11 +386,10 @@ class NNEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
     nnModel2.getBatchSize shouldEqual nnModel.getBatchSize
     nnModel2.getFeaturesCol shouldEqual nnModel.getFeaturesCol
     nnModel2.getPredictionCol shouldEqual nnModel.getPredictionCol
-    nnModel2.getFeatureSize shouldEqual nnModel.getFeatureSize
-    nnModel2.setFeatureSize(Array(6)).setFeaturesCol("features").setPredictionCol("prediction")
+    nnModel2.setFeaturesCol("features").setPredictionCol("prediction")
     val result2 = nnModel2.transform(data).rdd.map(_.getSeq[Double](2).head).collect()
 
-    nnModel.setFeatureSize(Array(6)).setFeaturesCol("features").setPredictionCol("prediction")
+    nnModel.setFeaturesCol("features").setPredictionCol("prediction")
     val result = nnModel.transform(data).rdd.map(_.getSeq[Double](2).head).collect()
 
     result2 shouldEqual result
@@ -386,7 +401,8 @@ class NNEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val data = sc.parallelize(
       smallData.map(p => (org.apache.spark.mllib.linalg.Vectors.dense(p._1), p._2)))
     val df: DataFrame = sqlContext.createDataFrame(data).toDF("features", "label")
-    val estimator = new NNEstimator[Float](model, criterion, Array(6), Array(1))
+    val estimator = new NNEstimator(
+      model, criterion, SeqToTensor(Array(6)), SeqToTensor(Array(1)))
       .setBatchSize(31)
       .setOptimMethod(new LBFGS[Float]())
       .setLearningRate(0.123)
@@ -399,11 +415,9 @@ class NNEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val copied = estimator.copy(ParamMap.empty)
     assert(estimator.model ne copied.model)
     assert(estimator.criterion ne copied.criterion)
-    assert(estimator.featureSize ne copied.featureSize)
 
     assert(estimator.model == copied.model)
     assert(estimator.criterion == copied.criterion)
-    assert(estimator.featureSize.deep == copied.featureSize.deep)
 
     NNEstimatorSpec.compareParams(estimator, copied)
 
@@ -426,7 +440,8 @@ class NNEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val data = sc.parallelize(
       smallData.map(p => (org.apache.spark.mllib.linalg.Vectors.dense(p._1), p._2)))
     val df: DataFrame = sqlContext.createDataFrame(data).toDF("abc", "la")
-    val estimator = new NNEstimator[Float](model, criterion, Array(6), Array(1))
+    val estimator = new NNEstimator(
+      model, criterion, MLlibVectorToTensor(Array(6)), NumToTensor())
       .setBatchSize(31)
       .setOptimMethod(new LBFGS[Float]())
       .setLearningRate(0.123)
@@ -438,10 +453,8 @@ class NNEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val nnModel = estimator.fit(df)
     val copied = nnModel.copy(ParamMap.empty)
     assert(nnModel.model ne copied.model)
-    assert(nnModel.featureSize ne copied.featureSize)
 
     assert(nnModel.model == copied.model)
-    assert(nnModel.featureSize.deep == copied.featureSize.deep)
     NNEstimatorSpec.compareParams(nnModel, copied)
   }
 }
