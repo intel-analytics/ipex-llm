@@ -21,6 +21,9 @@ import com.intel.analytics.zoo.pipeline.api.keras.layers.{Scale => ZScale}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.Shape
 import com.intel.analytics.zoo.pipeline.api.keras.ZooSpecHelper
+import com.intel.analytics.zoo.pipeline.api.keras.serializer.ModuleSerializationTest
+
+import scala.util.Random
 
 class ScaleSpec extends ZooSpecHelper {
 
@@ -42,4 +45,13 @@ class ScaleSpec extends ZooSpecHelper {
     compareOutputAndGradInputSetWeights(blayer, zlayer, input)
   }
 
+}
+
+class ScaleSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val layer = ZScale[Float](Array(2, 1), inputShape = Shape(3))
+    layer.build(Shape(2, 3))
+    val input = Tensor[Float](2, 3).apply1(_ => Random.nextFloat())
+    runSerializationTest(layer, input)
+  }
 }

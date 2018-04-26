@@ -20,6 +20,9 @@ import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.Shape
 import com.intel.analytics.zoo.pipeline.api.keras.models.Sequential
+import com.intel.analytics.zoo.pipeline.api.keras.serializer.ModuleSerializationTest
+
+import scala.util.Random
 
 class SReLUSpec extends KerasBaseSpec{
 
@@ -53,4 +56,13 @@ class SReLUSpec extends KerasBaseSpec{
       kerasCode)
   }
 
+}
+
+class SReLUSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val layer = SReLU[Float](sharedAxes = Array(1, 2), inputShape = Shape(4, 32))
+    layer.build(Shape(2, 4, 32))
+    val input = Tensor[Float](2, 4, 32).apply1(_ => Random.nextFloat())
+    runSerializationTest(layer, input)
+  }
 }

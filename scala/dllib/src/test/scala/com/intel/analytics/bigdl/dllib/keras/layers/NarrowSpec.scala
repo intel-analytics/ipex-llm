@@ -21,6 +21,9 @@ import com.intel.analytics.zoo.pipeline.api.keras.layers.{Narrow => ZNarrow}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.Shape
 import com.intel.analytics.zoo.pipeline.api.keras.ZooSpecHelper
+import com.intel.analytics.zoo.pipeline.api.keras.serializer.ModuleSerializationTest
+
+import scala.util.Random
 
 class NarrowSpec extends ZooSpecHelper {
 
@@ -90,4 +93,13 @@ class NarrowSpec extends ZooSpecHelper {
     }
   }
 
+}
+
+class NarrowSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val layer = ZNarrow[Float](1, 1, inputShape = Shape(5, 6))
+    layer.build(Shape(2, 5, 6))
+    val input = Tensor[Float](2, 5, 6).apply1(_ => Random.nextFloat())
+    runSerializationTest(layer, input)
+  }
 }

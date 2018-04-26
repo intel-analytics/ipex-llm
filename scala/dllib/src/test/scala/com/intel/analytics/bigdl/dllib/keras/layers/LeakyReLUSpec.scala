@@ -20,6 +20,9 @@ import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.Shape
 import com.intel.analytics.zoo.pipeline.api.keras.models.Sequential
+import com.intel.analytics.zoo.pipeline.api.keras.serializer.ModuleSerializationTest
+
+import scala.util.Random
 
 class LeakyReLUSpec extends KerasBaseSpec{
 
@@ -53,4 +56,13 @@ class LeakyReLUSpec extends KerasBaseSpec{
       kerasCode)
   }
 
+}
+
+class LeakyReLUSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val layer = LeakyReLU[Float](1.27, inputShape = Shape(8, 24))
+    layer.build(Shape(2, 8, 24))
+    val input = Tensor[Float](2, 8, 24).apply1(_ => Random.nextFloat())
+    runSerializationTest(layer, input)
+  }
 }

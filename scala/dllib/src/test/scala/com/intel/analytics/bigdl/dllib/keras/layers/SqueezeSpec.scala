@@ -22,6 +22,9 @@ import com.intel.analytics.zoo.pipeline.api.keras.layers.{Squeeze => ZSqueeze}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.Shape
 import com.intel.analytics.zoo.pipeline.api.keras.ZooSpecHelper
+import com.intel.analytics.zoo.pipeline.api.keras.serializer.ModuleSerializationTest
+
+import scala.util.Random
 
 class SqueezeSpec extends ZooSpecHelper {
 
@@ -76,4 +79,13 @@ class SqueezeSpec extends ZooSpecHelper {
     }
   }
 
+}
+
+class SqueezeSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val squeeze = ZSqueeze[Float](dim = 2, inputShape = Shape(1, 1, 3))
+    squeeze.build(Shape(2, 1, 1, 3))
+    val input = Tensor[Float](2, 1, 1, 3).apply1(_ => Random.nextFloat())
+    runSerializationTest(squeeze, input)
+  }
 }

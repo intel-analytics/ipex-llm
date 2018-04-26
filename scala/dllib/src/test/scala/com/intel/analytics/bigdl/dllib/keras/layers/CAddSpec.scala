@@ -21,6 +21,9 @@ import com.intel.analytics.zoo.pipeline.api.keras.layers.{CAdd => ZCAdd}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.Shape
 import com.intel.analytics.zoo.pipeline.api.keras.ZooSpecHelper
+import com.intel.analytics.zoo.pipeline.api.keras.serializer.ModuleSerializationTest
+
+import scala.util.Random
 
 class CAddSpec extends ZooSpecHelper {
 
@@ -42,4 +45,13 @@ class CAddSpec extends ZooSpecHelper {
     compareOutputAndGradInputSetWeights(blayer, zlayer, input)
   }
 
+}
+
+class CAddSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val layer = ZCAdd[Float](Array(1, 1, 1), inputShape = Shape(4, 8, 8))
+    layer.build(Shape(2, 4, 8, 8))
+    val input = Tensor[Float](2, 4, 8, 8).apply1(_ => Random.nextFloat())
+    runSerializationTest(layer, input)
+  }
 }

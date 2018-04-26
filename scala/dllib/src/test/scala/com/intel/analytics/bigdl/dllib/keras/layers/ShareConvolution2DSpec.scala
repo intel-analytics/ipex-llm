@@ -21,6 +21,9 @@ import com.intel.analytics.bigdl.nn.{ReLU, SpatialShareConvolution, Sequential =
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.Shape
 import com.intel.analytics.zoo.pipeline.api.keras.ZooSpecHelper
+import com.intel.analytics.zoo.pipeline.api.keras.serializer.ModuleSerializationTest
+
+import scala.util.Random
 
 class ShareConvolution2DSpec extends ZooSpecHelper {
 
@@ -46,4 +49,14 @@ class ShareConvolution2DSpec extends ZooSpecHelper {
       bmodel.asInstanceOf[AbstractModule[Tensor[Float], Tensor[Float], Float]], zlayer, input)
   }
 
+}
+
+class ShareConvolution2DSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val layer = ShareConv2D[Float](64, 7, 7, activation = "relu", subsample = (1, 2),
+      padH = 3, padW = 2, inputShape = Shape(3, 24, 32))
+    layer.build(Shape(2, 3, 24, 32))
+    val input = Tensor[Float](2, 3, 24, 32).apply1(_ => Random.nextFloat())
+    runSerializationTest(layer, input)
+  }
 }

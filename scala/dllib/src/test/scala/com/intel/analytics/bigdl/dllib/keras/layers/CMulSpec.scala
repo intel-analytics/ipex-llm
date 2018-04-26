@@ -21,6 +21,9 @@ import com.intel.analytics.zoo.pipeline.api.keras.layers.{CMul => ZCMul}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.Shape
 import com.intel.analytics.zoo.pipeline.api.keras.ZooSpecHelper
+import com.intel.analytics.zoo.pipeline.api.keras.serializer.ModuleSerializationTest
+
+import scala.util.Random
 
 class CMulSpec extends ZooSpecHelper {
 
@@ -42,4 +45,13 @@ class CMulSpec extends ZooSpecHelper {
     compareOutputAndGradInputSetWeights(blayer, zlayer, input)
   }
 
+}
+
+class CMulSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val layer = ZCMul[Float](Array(1, 1, 1), inputShape = Shape(3, 4))
+    layer.build(Shape(2, 3, 4))
+    val input = Tensor[Float](2, 3, 4).apply1(_ => Random.nextFloat())
+    runSerializationTest(layer, input)
+  }
 }

@@ -21,6 +21,9 @@ import com.intel.analytics.zoo.pipeline.api.keras.layers.{Select => ZSelect}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.Shape
 import com.intel.analytics.zoo.pipeline.api.keras.ZooSpecHelper
+import com.intel.analytics.zoo.pipeline.api.keras.serializer.ModuleSerializationTest
+
+import scala.util.Random
 
 class SelectSpec extends ZooSpecHelper {
 
@@ -81,4 +84,13 @@ class SelectSpec extends ZooSpecHelper {
     }
   }
 
+}
+
+class SelectSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val layer = ZSelect[Float](-1, -1, inputShape = Shape(3, 4, 5))
+    layer.build(Shape(2, 3, 4, 5))
+    val input = Tensor[Float](2, 3, 4, 5).apply1(_ => Random.nextFloat())
+    runSerializationTest(layer, input)
+  }
 }

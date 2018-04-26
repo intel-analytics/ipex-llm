@@ -18,9 +18,12 @@ package com.intel.analytics.zoo.pipeline.api.keras.layers
 
 import com.intel.analytics.bigdl.nn.{Sqrt => BSqrt}
 import com.intel.analytics.zoo.pipeline.api.keras.layers.{Sqrt => ZSqrt}
-import com.intel.analytics.bigdl.tensor.{Tensor}
+import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.Shape
 import com.intel.analytics.zoo.pipeline.api.keras.ZooSpecHelper
+import com.intel.analytics.zoo.pipeline.api.keras.serializer.ModuleSerializationTest
+
+import scala.util.Random
 
 class SqrtSpec extends ZooSpecHelper {
 
@@ -42,4 +45,13 @@ class SqrtSpec extends ZooSpecHelper {
     compareOutputAndGradInputSetWeights(blayer, zlayer, input)
   }
 
+}
+
+class SqrtSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val layer = ZSqrt[Float](inputShape = Shape(3))
+    layer.build(Shape(2, 3))
+    val input = Tensor[Float](2, 3).apply1(_ => Random.nextFloat())
+    runSerializationTest(layer, input)
+  }
 }

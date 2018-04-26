@@ -67,9 +67,9 @@ class DenseSpec extends KerasBaseSpec {
 
 class DenseSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
-    val dense = Dense[Float](10, inputShape = Shape(20))
-    dense.build(Shape(2, 20))
+    val layer = Dense[Float](10, inputShape = Shape(20))
+    layer.build(Shape(2, 20))
     val input = Tensor[Float](2, 20).apply1(_ => Random.nextFloat())
-    runSerializationTest(dense, input)
+    runSerializationTest(layer, input)
   }
 }

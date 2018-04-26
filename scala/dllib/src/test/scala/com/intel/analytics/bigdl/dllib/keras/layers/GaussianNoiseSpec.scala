@@ -19,6 +19,9 @@ package com.intel.analytics.zoo.pipeline.api.keras.layers
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.Shape
 import com.intel.analytics.zoo.pipeline.api.keras.models.Sequential
+import com.intel.analytics.zoo.pipeline.api.keras.serializer.ModuleSerializationTest
+
+import scala.util.Random
 
 class GaussianNoiseSpec extends KerasBaseSpec {
 
@@ -32,4 +35,13 @@ class GaussianNoiseSpec extends KerasBaseSpec {
     val gradInput = seq.backward(input, output)
   }
 
+}
+
+class GaussianNoiseSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val layer = GaussianNoise[Float](0.8, inputShape = Shape(12, 24))
+    layer.build(Shape(2, 12, 24))
+    val input = Tensor[Float](2, 12, 24).apply1(_ => Random.nextFloat())
+    runSerializationTest(layer, input)
+  }
 }
