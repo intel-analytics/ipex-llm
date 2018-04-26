@@ -16,8 +16,8 @@
 
 package com.intel.analytics.zoo.pipeline.nnframes
 
-import com.intel.analytics.bigdl.dataset.{Sample, SampleToMiniBatch}
-import com.intel.analytics.bigdl.{Criterion, Module}
+import com.intel.analytics.bigdl.dataset._
+import com.intel.analytics.bigdl.{Criterion, DataSet, Module}
 import com.intel.analytics.bigdl.models.utils.ModelBroadcast
 import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -27,8 +27,9 @@ import com.intel.analytics.bigdl.tensor.{Tensor, DoubleType => TensorDouble, Flo
 import com.intel.analytics.bigdl.utils.T
 import com.intel.analytics.bigdl.utils.serializer.ModuleLoader
 import com.intel.analytics.bigdl.visualization.{TrainSummary, ValidationSummary}
+import com.intel.analytics.zoo.pipeline.nnframes.transformers.FeatureLabelTransformer
 import org.apache.spark.ml.adapter.{HasFeaturesCol, HasPredictionCol, SchemaUtils}
-import org.apache.spark.ml.{DLEstimatorBase, DLTransformerBase, VectorCompatibility, DefaultParamsWriterWrapper}
+import org.apache.spark.ml.{DLEstimatorBase, DLTransformerBase, DefaultParamsWriterWrapper, VectorCompatibility}
 import org.apache.spark.ml.param._
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{DataFrame, Row}
@@ -46,7 +47,7 @@ private[nnframes] trait HasBatchSize extends Params {
   def getBatchSize: Int = $(batchSize)
 }
 
-private[nnframes] trait TrainingParams[@specialized(Float, Double) T] extends Params {
+private[nnframes] trait TrainingParams[L, @specialized(Float, Double) T] extends Params {
   /**
    * When to stop the training, passed in a [[Trigger]]. E.g. Trigger.maxIterations
    */
@@ -92,62 +93,11 @@ private[nnframes] trait TrainingParams[@specialized(Float, Double) T] extends Pa
 /**
  * Common trait for NNEstimator and NNModel
  */
-private[nnframes] trait NNParams[@specialized(Float, Double) T] extends HasFeaturesCol
+private[nnframes] trait NNParams[F, @specialized(Float, Double) T] extends HasFeaturesCol
   with HasPredictionCol with VectorCompatibility with HasBatchSize {
 
   setDefault(batchSize -> 1)
 
-  /**
-   * Validate if feature and label columns are of supported data types.
-   * Default: 0
-   */
-  protected def validateDataType(schema: StructType, colName: String): Unit = {
-    val dataTypes = Seq(
-      new ArrayType(DoubleType, false),
-      new ArrayType(DoubleType, true),
-      new ArrayType(FloatType, false),
-      new ArrayType(FloatType, true),
-      DoubleType,
-      FloatType,
-      NNImageSchema.floatSchema
-    ) ++ validVectorTypes
-
-    // TODO use SchemaUtils.checkColumnTypes after convert to 2.0
-    val actualDataType = schema(colName).dataType
-    require(dataTypes.exists(actualDataType.equals),
-      s"Column $colName must be of type equal to one of the following types: " +
-        s"${dataTypes.mkString("[", ", ", "]")} but was actually of type $actualDataType.")
-  }
-
-  /**
-   * Get conversion function to extract data from original DataFrame
-   * Default: 0
-   */
-  protected def getConvertFunc(colType: DataType): (Row, Int) => Seq[AnyVal] = {
-    colType match {
-      case ArrayType(DoubleType, false) =>
-        (row: Row, index: Int) => row.getSeq[Double](index)
-      case ArrayType(DoubleType, true) =>
-        (row: Row, index: Int) => row.getSeq[Double](index)
-      case ArrayType(FloatType, false) =>
-        (row: Row, index: Int) => row.getSeq[Float](index)
-      case ArrayType(FloatType, true) =>
-        (row: Row, index: Int) => row.getSeq[Float](index)
-      case DoubleType =>
-        (row: Row, index: Int) => Seq[Double](row.getDouble(index))
-      case FloatType =>
-        (row: Row, index: Int) => Seq[Float](row.getFloat(index))
-      case NNImageSchema.floatSchema =>
-        (row: Row, index: Int) => row.getAs[Row](index).getSeq[Float](5)
-      case _ =>
-        if (colType.typeName.contains("vector")) {
-          (row: Row, index: Int) => getVectorSeq(row, colType, index)
-        } else {
-          throw new IllegalArgumentException(
-            s"$colType is not a supported (Unexpected path).")
-        }
-    }
-  }
 }
 
 /**
@@ -168,18 +118,16 @@ private[nnframes] trait NNParams[@specialized(Float, Double) T] extends HasFeatu
  *
  * @param model BigDL module to be optimized
  * @param criterion  BigDL criterion method
- * @param featureSize The size (Tensor dimensions) of the feature data. e.g. an image may be with
- *                    width * height = 28 * 28, featureSize = Array(28, 28).
- * @param labelSize The size (Tensor dimensions) of the label data.
  */
-class NNEstimator[T: ClassTag](
+class NNEstimator[F, L, T: ClassTag](
     @transient val model: Module[T],
     val criterion : Criterion[T],
-    val featureSize : Array[Int],
-    val labelSize : Array[Int],
+    val featureTransformers: Transformer[F, Tensor[T]],
+    val labelTransformers: Transformer[L, Tensor[T]],
     override val uid: String = Identifiable.randomUID("nnEstimator")
   )(implicit ev: TensorNumeric[T])
-  extends DLEstimatorBase[NNEstimator[T], NNModel[T]] with NNParams[T] with TrainingParams[T] {
+  extends DLEstimatorBase[NNEstimator[F, L, T], NNModel[F, T]] with NNParams[F, T]
+    with TrainingParams[L, T] {
 
   def setFeaturesCol(featuresColName: String): this.type = set(featuresCol, featuresColName)
 
@@ -273,8 +221,6 @@ class NNEstimator[T: ClassTag](
   }
 
   protected def validateParams(schema : StructType): Unit = {
-    validateDataType(schema, $(featuresCol))
-    validateDataType(schema, $(labelCol))
     if(isSet(endWhen) && isSet(maxEpoch)) {
       throw new IllegalArgumentException(s"endWhen and maxEpoch cannot be both set")
     }
@@ -289,58 +235,39 @@ class NNEstimator[T: ClassTag](
     SchemaUtils.appendColumn(schema, $(predictionCol), ArrayType(DoubleType, false))
   }
 
-  protected override def internalFit(dataFrame: DataFrame): NNModel[T] = {
-    val localFeatureCol = $(featuresCol)
-    val localLabelCol = $(labelCol)
-
-    def getSamples(dataFrame: DataFrame): RDD[Sample[T]] = {
-      val featureType = dataFrame.schema(localFeatureCol).dataType
-      val featureColIndex = dataFrame.schema.fieldIndex(localFeatureCol)
-      val labelType = dataFrame.schema(localLabelCol).dataType
-      val labelColIndex = dataFrame.schema.fieldIndex(localLabelCol)
-
-      val featureFunc = getConvertFunc(featureType)
-      val labelFunc = getConvertFunc(labelType)
-
-      val featureAndLabel: RDD[(Seq[AnyVal], Seq[AnyVal])] = dataFrame.rdd.map { row =>
-        val features = featureFunc(row, featureColIndex)
-        val labels = labelFunc(row, labelColIndex)
-        (features, labels)
-      }
-
-      val samples = featureAndLabel.map { case (f, l) =>
-        // convert feature and label data type to the same type with model
-        // TODO: investigate to reduce memory consumption during conversion.
-        val feature = f.head match {
-          case dd: Double => f.asInstanceOf[Seq[Double]].map(ev.fromType(_))
-          case ff: Float => f.asInstanceOf[Seq[Float]].map(ev.fromType(_))
-        }
-        val label = l.head match {
-          case dd: Double => l.asInstanceOf[Seq[Double]].map(ev.fromType(_))
-          case ff: Float => l.asInstanceOf[Seq[Float]].map(ev.fromType(_))
-        }
-        (feature, label)
-      }.map { case (feature, label) =>
-        Sample(Tensor(feature.toArray, featureSize), Tensor(label.toArray, labelSize))
-      }
-      samples
+  private def getDataSet(
+      dataFrame: DataFrame,
+      batchSize: Int): DataSet[MiniBatch[T]] = {
+    val featureColIndex = dataFrame.schema.fieldIndex($(featuresCol))
+    val labelColIndex = dataFrame.schema.fieldIndex($(labelCol))
+    val featureAndLabel: RDD[(F, L)] = dataFrame.rdd.map { row =>
+      val features = row.getAs[F](featureColIndex)
+      val labels = row.getAs[L](labelColIndex)
+      (features, labels)
     }
+    val flTransformer = new FeatureLabelTransformer[F, L, T](
+      featureTransformers, labelTransformers)
+    val ds = DataSet.rdd(featureAndLabel)
+      .transform(flTransformer)
+      .transform(SampleToMiniBatch[T](batchSize, None, None, Some(1)))
+    ds
+  }
 
-    val trainingSamples = getSamples(dataFrame)
+  protected override def internalFit(dataFrame: DataFrame): NNModel[F, T] = {
+    val trainingDataSet = getDataSet(dataFrame, $(batchSize))
     val state = T("learningRate" -> $(learningRate), "learningRateDecay" -> $(learningRateDecay))
     val endTrigger = if (isSet(endWhen)) $(endWhen) else Trigger.maxEpoch($(maxEpoch))
-    val optimizer = Optimizer(model, trainingSamples, criterion, $(batchSize))
+    val optimizer = Optimizer(model, trainingDataSet, criterion)
       .setState(state)
       .setOptimMethod($(optimMethod))
       .setEndWhen(endTrigger)
 
     if (validationTrigger.isDefined) {
-      val validationSamples = getSamples(validationDF)
+      val validationSamples = getDataSet(validationDF, validationBatchSize)
       optimizer.setValidation(
         validationTrigger.get,
         validationSamples,
-        validationMethods,
-        validationBatchSize)
+        validationMethods)
       if (this.validationSummary.isDefined) {
         optimizer.setValidationSummary(this.validationSummary.get)
       }
@@ -351,14 +278,14 @@ class NNEstimator[T: ClassTag](
     }
 
     val optimizedModel = optimizer.optimize()
-    wrapBigDLModel(optimizedModel, featureSize)
+    wrapBigDLModel(optimizedModel)
   }
 
   /**
    * sub classes can extend the method and return required model for different transform tasks
    */
-  protected def wrapBigDLModel(m: Module[T], featureSize: Array[Int]): NNModel[T] = {
-    val dlModel = new NNModel[T](m, featureSize)
+  protected def wrapBigDLModel(m: Module[T]): NNModel[F, T] = {
+    val dlModel = new NNModel[F, T](m, featureTransformers)
     copyValues(dlModel.setParent(this))
   }
 
@@ -367,13 +294,13 @@ class NNEstimator[T: ClassTag](
    * Note that trainSummary and validationSummary will not be copied to the new instance since
    * currently they are not thread-safe.
    */
-  override def copy(extra: ParamMap): NNEstimator[T] = {
+  override def copy(extra: ParamMap): NNEstimator[F, L, T] = {
     val copied = copyValues(
-      new NNEstimator(
+      new NNEstimator[F, L, T](
         model.cloneModule(),
         criterion.cloneCriterion(),
-        featureSize.clone(),
-        labelSize.clone(),
+        featureTransformers.cloneTransformer(),
+        labelTransformers.cloneTransformer(),
         this.uid
       ),
       extra)
@@ -397,55 +324,42 @@ class NNEstimator[T: ClassTag](
  *
  * [[NNModel]] is compatible with both spark 1.5-plus and 2.0 by extending ML Transformer.
  * @param model trainned BigDL models to use in prediction.
- * @param featureSize The size (Tensor dimensions) of the feature data. (e.g. an image may be with
- * featureSize = 28 * 28).
  */
-class NNModel[T: ClassTag](
+class NNModel[F, T: ClassTag](
     @transient val model: Module[T],
-    var featureSize : Array[Int],
+    @transient val featureTransformers: Transformer[F, Tensor[T]],
     override val uid: String = "DLModel")(implicit ev: TensorNumeric[T])
-  extends DLTransformerBase[NNModel[T]] with NNParams[T]
+  extends DLTransformerBase[NNModel[F, T]] with NNParams[F, T]
     with HasBatchSize with MLWritable {
 
   def setFeaturesCol(featuresColName: String): this.type = set(featuresCol, featuresColName)
 
   def setPredictionCol(value: String): this.type = set(predictionCol, value)
 
-  def setFeatureSize(value: Array[Int]): this.type = {
-    this.featureSize = value
-    this
-  }
-
   def setBatchSize(value: Int): this.type = set(batchSize, value)
-
-  def getFeatureSize: Array[Int] = this.featureSize
 
   /**
    * Perform a prediction on featureCol, and write result to the predictionCol.
    */
   protected override def internalTransform(dataFrame: DataFrame): DataFrame = {
-    val featureType = dataFrame.schema($(featuresCol)).dataType
+
     val featureColIndex = dataFrame.schema.fieldIndex($(featuresCol))
-    val featureFunc = getConvertFunc(featureType)
+
     val sc = dataFrame.sqlContext.sparkContext
     val modelBroadCast = ModelBroadcast[T]().broadcast(sc, model.evaluate())
     val localBatchSize = $(batchSize)
-    val transformerBC = sc.broadcast(SampleToMiniBatch[T](localBatchSize))
+    val featureTransformersBC = sc.broadcast(featureTransformers)
+    val toBatchBC = sc.broadcast(SampleToMiniBatch[T](localBatchSize))
 
     val resultRDD = dataFrame.rdd.mapPartitions { rowIter =>
       val localModel = modelBroadCast.value()
+      val featureSteps = featureTransformersBC.value.cloneTransformer()
+      val toBatch = toBatchBC.value.cloneTransformer()
 
-      val transformer = transformerBC.value.cloneTransformer()
       rowIter.grouped(localBatchSize).flatMap { rowBatch =>
-        val samples = rowBatch.map { row =>
-          val features = featureFunc(row, featureColIndex)
-          val featureBuffer = features.head match {
-            case dd: Double => features.asInstanceOf[Seq[Double]].map(ev.fromType(_))
-            case ff: Float => features.asInstanceOf[Seq[Float]].map(ev.fromType(_))
-          }
-          Sample(Tensor(featureBuffer.toArray, featureSize))
-        }.toIterator
-        val predictions = transformer(samples).flatMap { batch =>
+        val featureSeq = rowBatch.map(r => r.getAs[F](featureColIndex))
+        val samples = featureSteps(featureSeq.iterator).map(Sample(_))
+        val predictions = toBatch(samples).flatMap { batch =>
           val batchResult = localModel.forward(batch.getInput()).toTensor.squeeze()
           if (batchResult.size().length == 2) {
             batchResult.split(1).map(outputToPrediction)
@@ -471,35 +385,37 @@ class NNModel[T: ClassTag](
   }
 
   override def transformSchema(schema : StructType): StructType = {
-    validateDataType(schema, $(featuresCol))
     SchemaUtils.appendColumn(schema, $(predictionCol), ArrayType(DoubleType, containsNull = false))
   }
 
-  override def copy(extra: ParamMap): NNModel[T] = {
-    val copied = new NNModel(model.cloneModule(), featureSize.clone(), uid).setParent(parent)
+  override def copy(extra: ParamMap): NNModel[F, T] = {
+    val copied = new NNModel[F, T](model.cloneModule(), featureTransformers.cloneTransformer(), uid)
+      .setParent(parent)
     copyValues(copied, extra)
   }
 
   override def write: MLWriter = new NNModel.NNModelWriter[T](this)
 }
 
-object NNModel extends MLReadable[NNModel[_]] {
+object NNModel extends MLReadable[NNModel[_, _]] {
 
   import scala.language.existentials
   implicit val format: DefaultFormats.type = DefaultFormats
 
-  private[nnframes] class NNModelReader() extends MLReader[NNModel[_]] {
-    override def load(path: String): NNModel[_] = {
+  private[nnframes] class NNModelReader() extends MLReader[NNModel[_, _]] {
+    override def load(path: String): NNModel[_, _] = {
       val (meta, model, typeTag) = NNModel.getMetaAndModel(path, sc)
       val featureSize = (meta.metadata \ "featureSize").extract[Seq[Int]].toArray
-      val nnModel = typeTag match {
-        case "TensorDouble" =>
-          new NNModel[Double](model.asInstanceOf[Module[Double]], featureSize)
-        case "TensorFloat" =>
-          new NNModel[Float](model.asInstanceOf[Module[Float]], featureSize)
-        case _ =>
-          throw new Exception("Only support float and double for now")
-      }
+      val nnModel = null
+
+//      typeTag match {
+//        case "TensorDouble" =>
+//          new NNModel[Array[Double], Double](model.asInstanceOf[Module[Double]], ArrayToTensor(Array(1)))
+//        case "TensorFloat" =>
+//          new NNModel[Array[Float], Float](model.asInstanceOf[Module[Float]], null)
+//        case _ =>
+//          throw new Exception("Only support float and double for now")
+//      }
 
       DefaultParamsWriterWrapper.getAndSetParams(nnModel, meta)
       nnModel
@@ -524,11 +440,10 @@ object NNModel extends MLReadable[NNModel[_]] {
   }
 
   class NNModelWriter[@specialized(Float, Double) T: ClassTag](
-    instance: NNModel[T])(implicit ev: TensorNumeric[T]) extends MLWriter {
+    instance: NNModel[_, T])(implicit ev: TensorNumeric[T]) extends MLWriter {
     override protected def saveImpl(path: String): Unit = {
-      val extraMetaData: JObject = "featureSize" -> instance.featureSize.toSeq
       NNModel.saveImpl[T](instance, instance.model,
-        path, sc, shouldOverwrite, Some(extraMetaData))
+        path, sc, shouldOverwrite)
     }
   }
 
@@ -542,7 +457,7 @@ object NNModel extends MLReadable[NNModel[_]] {
    * @param extraMetadata  Metadata such as featureSize.
    */
   private[nnframes] def saveImpl[@specialized(Float, Double) T: ClassTag](
-      instance: NNModel[T],
+      instance: NNModel[ _, T],
       module: Module[T],
       path: String,
       sc: SparkContext,
@@ -559,10 +474,13 @@ object NNModel extends MLReadable[NNModel[_]] {
     val (modulePath, weightPath) =
       new Path(path, "module").toString -> new Path(path, "weight").toString
     module.saveModule(modulePath, weightPath, isOverWrite)
+
+    val featureTransformersPath = new Path(path, "featureTransformers").toString
+    instance.featureTransformers
   }
 
-  override def read: MLReader[NNModel[_]] = new NNModelReader
+  override def read: MLReader[NNModel[_, _]] = new NNModelReader
 
-  override def load(path: String): NNModel[_] = read.load(path)
+  override def load(path: String): NNModel[_, _] = read.load(path)
 }
 

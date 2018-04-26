@@ -16,10 +16,12 @@
 
 package com.intel.analytics.zoo.pipeline.nnframes
 
+import com.intel.analytics.bigdl.dataset.Transformer
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.{Criterion, Module}
 import com.intel.analytics.zoo.pipeline.nnframes.NNModel.NNModelWriter
+import com.intel.analytics.zoo.pipeline.nnframes.transformers.NumToTensor
 import org.apache.spark.ml.DefaultParamsWriterWrapper
 import org.apache.spark.ml.adapter.SchemaUtils
 import org.apache.spark.ml.param.ParamMap
@@ -36,20 +38,18 @@ import scala.reflect.ClassTag
  *
  * @param model BigDL module to be optimized
  * @param criterion  BigDL criterion method
- * @param featureSize The size (Tensor dimensions) of the feature data.
  */
-class NNClassifier[T: ClassTag](
+class NNClassifier[F, T: ClassTag](
     @transient override val model: Module[T],
     override val criterion : Criterion[T],
-    override val featureSize : Array[Int],
+    override val featureTransformers: Transformer[F, Tensor[T]],
     override val uid: String = Identifiable.randomUID("nnClassifier")
   )(implicit ev: TensorNumeric[T])
-  extends NNEstimator[T](model, criterion, featureSize, Array(1)) {
+  extends NNEstimator[F, AnyVal, T](model, criterion, featureTransformers, NumToTensor()) {
 
-  override protected def wrapBigDLModel(
-      m: Module[T], featureSize: Array[Int]): NNClassifierModel[T] = {
-    val dlModel = new NNClassifierModel[T](m, featureSize)
-    copyValues(dlModel.setParent(this)).asInstanceOf[NNClassifierModel[T]]
+  override protected def wrapBigDLModel(m: Module[T]): NNClassifierModel[F, T] = {
+    val dlModel = new NNClassifierModel[F, T](m, featureTransformers)
+    copyValues(dlModel.setParent(this)).asInstanceOf[NNClassifierModel[F, T]]
   }
 
   override def transformSchema(schema : StructType): StructType = {
@@ -57,12 +57,12 @@ class NNClassifier[T: ClassTag](
     SchemaUtils.appendColumn(schema, $(predictionCol), DoubleType)
   }
 
-  override def copy(extra: ParamMap): NNClassifier[T] = {
+  override def copy(extra: ParamMap): NNClassifier[F, T] = {
     val copied = copyValues(
-      new NNClassifier(
+      new NNClassifier[F, T](
         model.cloneModule(),
         criterion.cloneCriterion(),
-        featureSize.clone(),
+        featureTransformers.cloneTransformer(),
         this.uid
       ),
       extra)
@@ -80,55 +80,55 @@ class NNClassifier[T: ClassTag](
  * The prediction column will have the datatype of Double.
  *
  * @param model BigDL module to be optimized
- * @param featureSize The size (Tensor dimensions) of the feature data.
  */
-class NNClassifierModel[T: ClassTag](
+class NNClassifierModel[F, T: ClassTag](
     @transient override val model: Module[T],
-    featureSize : Array[Int],
+    featureTransformers: Transformer[F, Tensor[T]],
     override val uid: String = "DLClassifierModel"
-  )(implicit ev: TensorNumeric[T]) extends NNModel[T](model, featureSize) {
+  )(implicit ev: TensorNumeric[T]) extends NNModel[F, T](model, featureTransformers) {
 
   protected override def outputToPrediction(output: Tensor[T]): Any = {
     ev.toType[Double](output.max(1)._2.valueAt(1))
   }
 
   override def transformSchema(schema : StructType): StructType = {
-    validateDataType(schema, $(featuresCol))
     SchemaUtils.appendColumn(schema, $(predictionCol), DoubleType)
   }
 
-  override def copy(extra: ParamMap): NNClassifierModel[T] = {
-    val copied = new NNClassifierModel(model.cloneModule(), featureSize.clone(), uid)
+  override def copy(extra: ParamMap): NNClassifierModel[F, T] = {
+    val copied = new NNClassifierModel(
+      model.cloneModule(), featureTransformers.cloneTransformer(), uid)
       .setParent(parent)
-    copyValues(copied, extra).asInstanceOf[NNClassifierModel[T]]
+    copyValues(copied, extra).asInstanceOf[NNClassifierModel[F, T]]
   }
 }
 
-object NNClassifierModel extends MLReadable[NNClassifierModel[_]] {
-  private[nnframes] class NNClassifierModelReader() extends MLReader[NNClassifierModel[_]] {
+object NNClassifierModel extends MLReadable[NNClassifierModel[_, _]] {
+  private[nnframes] class NNClassifierModelReader() extends MLReader[NNClassifierModel[_, _]] {
     import scala.language.existentials
     implicit val format: DefaultFormats.type = DefaultFormats
-    override def load(path: String): NNClassifierModel[_] = {
+    override def load(path: String): NNClassifierModel[_, _] = {
       val (meta, model, typeTag) = NNModel.getMetaAndModel(path, sc)
-      val featureSize = (meta.metadata \ "featureSize").extract[Seq[Int]].toArray
-      val nnModel = typeTag match {
-        case "TensorDouble" =>
-          new NNClassifierModel[Double](model.asInstanceOf[Module[Double]], featureSize)
-        case "TensorFloat" =>
-          new NNClassifierModel[Float](model.asInstanceOf[Module[Float]], featureSize)
-        case _ =>
-          throw new Exception("Only support float and double for now")
-      }
+      val nnModel = null
+//        typeTag match {
+//        case "TensorDouble" =>
+//          new NNClassifierModel[_, Double](model.asInstanceOf[Module[Double]], null)
+//        case "TensorFloat" =>
+//          new NNClassifierModel[_, Float](model.asInstanceOf[Module[Float]], null)
+//        case _ =>
+//          throw new Exception("Only support float and double for now")
+//      }
 
       DefaultParamsWriterWrapper.getAndSetParams(nnModel, meta)
       nnModel
     }
   }
 
-  class NNClassifierModelWriter[T: ClassTag]
-  (instance: NNClassifierModel[T])(implicit ev: TensorNumeric[T]) extends NNModelWriter[T](instance)
+  class NNClassifierModelWriter[T: ClassTag](
+      instance: NNClassifierModel[_, T])(implicit ev: TensorNumeric[T])
+    extends NNModelWriter[T](instance)
 
-  override def read: MLReader[NNClassifierModel[_]] = {
+  override def read: MLReader[NNClassifierModel[_, _]] = {
     new NNClassifierModel.NNClassifierModelReader
   }
 }
