@@ -100,6 +100,79 @@ class RecurrentDecoderSpec extends FlatSpec with BeforeAndAfter with Matchers {
     })
   }
 
+  "A LSTM " should "count time correctly" in {
+    import com.intel.analytics.bigdl.numeric.NumericDouble
+    val hiddenSize = 7
+    val inputSize = 7
+    val seqLength = 5
+    val seed = 100
+    val batchSize = 4
+
+    RNG.setSeed(seed)
+    val input = Tensor[Double](batchSize, inputSize).rand
+    val gradOutput = Tensor[Double](batchSize, seqLength, hiddenSize).rand
+    val rec = RecurrentDecoder(seqLength)
+    val model = rec
+      .add(LSTM(inputSize, hiddenSize))
+
+    var ft = 0L
+    var bt = 0L
+    (0 until 10).foreach { _ =>
+      var st = System.nanoTime()
+      model.forward(input)
+      ft += System.nanoTime() - st
+      st = System.nanoTime()
+      model.backward(input, gradOutput)
+      bt += System.nanoTime() - st
+    }
+
+    val times = model.getTimes()
+    val modelFt = times.map(v => v._2).sum
+    val modelBt = times.map(v => v._3).sum
+    modelFt should be (ft +- ft / 100)
+    modelBt should be (bt +- bt / 100)
+  }
+
+  "A LSTM " should "reset time correctly" in {
+    import com.intel.analytics.bigdl.numeric.NumericDouble
+    val hiddenSize = 7
+    val inputSize = 7
+    val seqLength = 5
+    val seed = 100
+    val batchSize = 4
+
+    RNG.setSeed(seed)
+    val input = Tensor[Double](batchSize, inputSize).rand
+    val gradOutput = Tensor[Double](batchSize, seqLength, hiddenSize).rand
+    val rec = RecurrentDecoder(seqLength)
+    val model = rec
+      .add(LSTM(inputSize, hiddenSize))
+
+    (0 until 10).foreach { _ =>
+      model.forward(input)
+      model.backward(input, gradOutput)
+    }
+    model.resetTimes()
+    val a = model.getTimes()
+
+    var ft = 0L
+    var bt = 0L
+    (0 until 10).foreach { _ =>
+      var st = System.nanoTime()
+      model.forward(input)
+      ft += System.nanoTime() - st
+      st = System.nanoTime()
+      model.backward(input, gradOutput)
+      bt += System.nanoTime() - st
+    }
+
+    val times = model.getTimes()
+    val modelFt = times.map(v => v._2).sum
+    val modelBt = times.map(v => v._3).sum
+    modelFt should be (ft +- ft / 100)
+    modelBt should be (bt +- bt / 100)
+  }
+
   "A LSTMPeepwhole " should "work with feedbackOutput correctly" in {
     import com.intel.analytics.bigdl.numeric.NumericDouble
     val hiddenSize = 3

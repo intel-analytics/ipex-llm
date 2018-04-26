@@ -75,6 +75,7 @@ class Sequential[T: ClassTag]
   }
 
   override def backward(input: Activity, nextError: Activity): Activity = {
+    val before = System.nanoTime()
     var i = modules.length - 1
     var error = nextError.asInstanceOf[Activity]
     while (i > 0) {
@@ -85,6 +86,7 @@ class Sequential[T: ClassTag]
     error = modules(0).backward(input, error)
 
     this.gradInput = error
+    backwardTime += System.nanoTime() - before
     gradInput
   }
 

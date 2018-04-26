@@ -161,6 +161,7 @@ class SpatialSeparableConvolution[T: ClassTag](
   }
 
   override def backward(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
+    val before = System.nanoTime()
     require(input.nDimension() == 4, "SpatialSeparableConvolution only accept 4D input")
     require(input.isContiguous(), "SpatialSeparableConvolution require contiguous input")
     require(nInputChannel == input.size(channelDim),
@@ -175,6 +176,7 @@ class SpatialSeparableConvolution[T: ClassTag](
     gradInput = depthConv.backward(input, pointWiseConv2D.gradInput)
     SpatialSeparableConvolution.copyDepthGradWeight(nInputChannel, depthMultiplier,
       depthConv.gradWeight, depthGradWeight, dataFormat)
+    backwardTime += System.nanoTime() - before
     gradInput
   }
 

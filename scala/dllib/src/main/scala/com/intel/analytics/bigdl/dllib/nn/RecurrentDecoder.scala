@@ -109,7 +109,7 @@ class RecurrentDecoder[T : ClassTag](val seqLength: Int)
         // input at t(i) is output at t(i-1)
         cells(i - 2).output
       }
-      cells(i - 1).updateOutput(currentInput)
+      cells(i - 1).forward(currentInput)
       i += 1
     }
 
@@ -170,7 +170,7 @@ class RecurrentDecoder[T : ClassTag](val seqLength: Int)
   }
 
   override def backward(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
-    val st = System.nanoTime
+    val before = System.nanoTime
     gradInput.resizeAs(output)
     currentGradOutput(hidDim) = gradHidden
     var i = times
@@ -197,7 +197,7 @@ class RecurrentDecoder[T : ClassTag](val seqLength: Int)
       i -= 1
     }
     Recurrent.copy(cells.map(x => x.gradInput.toTable[Tensor[T]](inputDim)), gradInput)
-    this.backwardTime = System.nanoTime - st
+    this.backwardTime += System.nanoTime - before
     gradInput
   }
 
