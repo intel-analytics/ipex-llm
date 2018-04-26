@@ -64,7 +64,7 @@ class Bottle[T: ClassTag](
 
       // Forward with the module's dimension
       val newInput = input.view(inShape.storage().array().map(_.toInt))
-      val output1 = modules(0).updateOutput(newInput).toTensor[T]
+      val output1 = modules(0).forward(newInput).toTensor[T]
       require(output1.dim() == nOutputDim,
         s"Bottle: output dims on module should be $nOutputDim, but get ${output1.dim()}")
 
@@ -76,7 +76,7 @@ class Bottle[T: ClassTag](
 
       output.set(output1.view(inSize.storage().array().map(_.toInt)))
     } else {
-      output.set(modules(0).updateOutput(input).toTensor[T])
+      output.set(modules(0).forward(input).toTensor[T])
     }
     output
   }

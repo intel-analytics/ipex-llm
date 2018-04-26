@@ -33,7 +33,7 @@ class TanhShrink[T: ClassTag](
   private val tanh = new Tanh[T]()
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
-    val th = tanh.updateOutput(input)
+    val th = tanh.forward(input)
     output.resizeAs(input).copy(input)
     output.add(ev.fromType[Int](-1), th)
     output

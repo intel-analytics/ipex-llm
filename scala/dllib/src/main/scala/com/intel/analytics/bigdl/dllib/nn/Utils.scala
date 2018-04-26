@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.nn
 
 import com.google.protobuf.ByteString
 import com.intel.analytics.bigdl.Module
-import com.intel.analytics.bigdl.nn.abstractnn.{Activity, DataFormat}
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, DataFormat}
 import com.intel.analytics.bigdl.tensor._
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{T, Table}
@@ -470,5 +470,16 @@ object Utils {
     }
 
     out
+  }
+
+  /**
+   * Calculate forward time and backward time.
+   * @param times
+   * @tparam T
+   * @return
+   */
+  def calculateFwdBwdTime[T: ClassTag](
+    times: Array[(AbstractModule[_ <: Activity, _ <: Activity, T], Long, Long)]): (Long, Long) = {
+      times.map(t => (t._2, t._3)).reduce((a, b) => (a._1 + b._1, a._2 + b._2))
   }
 }

@@ -114,12 +114,6 @@ abstract class Graph[T: ClassTag](
     timesOfAllNodes ++ Array((this, this.forwardTime - sumForward, this.backwardTime - sumBackward))
   }
 
-  override def resetTimes(): Unit = {
-    super.resetTimes()
-    this.forwardTime = 0L
-    this.backwardTime = 0L
-  }
-
   override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
     variables match {
       case None => super.parameters()

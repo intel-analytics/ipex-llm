@@ -73,7 +73,7 @@ class BiRecurrent[T : ClassTag] (
   }
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
-    output = birnn.updateOutput(input).toTensor[T]
+    output = birnn.forward(input).toTensor[T]
     output
   }
 
@@ -83,6 +83,13 @@ class BiRecurrent[T : ClassTag] (
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
     gradInput = birnn.updateGradInput(input, gradOutput).toTensor[T]
+    gradInput
+  }
+
+  override def backward(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
+    val before = System.nanoTime()
+    gradInput = birnn.backward(input, gradOutput).toTensor[T]
+    backwardTime += System.nanoTime() - before
     gradInput
   }
 
