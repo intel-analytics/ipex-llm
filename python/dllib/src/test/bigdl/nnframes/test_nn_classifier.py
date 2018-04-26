@@ -25,6 +25,7 @@ from pyspark.ml.feature import MinMaxScaler
 from pyspark.sql.types import *
 
 from zoo.common.nncontext import *
+from zoo.pipeline.nnframes.nn_transformers import *
 from zoo.pipeline.nnframes.nn_classifier import *
 
 
@@ -42,6 +43,27 @@ class TestNNClassifer():
         call.
         """
         self.sc.stop()
+
+    def test_first(self):
+        linear_model = Sequential().add(Linear(2, 2))
+        mse_criterion = MSECriterion()
+
+        estimator = NNEstimator(model=linear_model, criterion=mse_criterion,
+                                feature_transformer=SeqToTensor([2]), label_transformer=SeqToTensor([2]))
+        data = self.sc.parallelize([
+            ((2.0, 1.0), (1.0, 2.0)),
+            ((1.0, 2.0), (2.0, 1.0)),
+            ((2.0, 1.0), (1.0, 2.0)),
+            ((1.0, 2.0), (2.0, 1.0))])
+
+        schema = StructType([
+            StructField("features", ArrayType(DoubleType(), False), False),
+            StructField("label", ArrayType(DoubleType(), False), False)])
+        df = self.sqlContext.createDataFrame(data, schema)
+        nnModel = estimator.fit(df)
+
+        res = nnModel.transform(df)
+        assert type(res).__name__ == 'DataFrame'
 
     def test_all_set_get_methods(self):
         """ run tests for all the set and get methods involved in NNEstimator, NNModel,
