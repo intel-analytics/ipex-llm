@@ -26,6 +26,7 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.transform.vision.image.FeatureTransformer
 import com.intel.analytics.zoo.pipeline.nnframes._
+import com.intel.analytics.zoo.pipeline.nnframes.transformers.{NumToTensor, SeqToTensor}
 import org.apache.spark.api.java.JavaSparkContext
 import org.apache.spark.sql.DataFrame
 
@@ -68,6 +69,14 @@ class PythonNNFrames[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonB
   def createNNModel(
       model: Module[T], featureTransformer: Transformer[Any, Tensor[T]]): NNModel[Any, T] = {
     new NNModel(model, featureTransformer)
+  }
+
+  def createNumToTensor(): NumToTensor[T] = {
+    new NumToTensor()
+  }
+
+  def createSeqToTensor(size: JArrayList[Int]): SeqToTensor[T] = {
+    SeqToTensor(size.asScala.toArray)
   }
 
 //  def createNNClassifierModel(
