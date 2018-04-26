@@ -88,7 +88,7 @@ class NNEstimator(JavaEstimator, HasFeaturesCol, HasLabelCol, HasPredictionCol, 
     Double, Float and ImageSchema (refer to NNImageReader).
     """
 
-    def __init__(self,  model, criterion, feature_size, label_size, jvalue=None, bigdl_type="float"):
+    def __init__(self,  model, criterion, feature_transformer, label_transformer, jvalue=None, bigdl_type="float"):
         """
         create a NNEstimator with BigDL Model.
         :param model: BigDL Model to be trained.
@@ -101,13 +101,12 @@ class NNEstimator(JavaEstimator, HasFeaturesCol, HasLabelCol, HasPredictionCol, 
         """
         super(NNEstimator, self).__init__()
         self.value = jvalue if jvalue else callBigDlFunc(
-            bigdl_type, self.jvm_class_constructor(), model, criterion, feature_size, label_size)
+            bigdl_type, self.jvm_class_constructor(), model, criterion, feature_transformer, label_transformer)
         self.bigdl_type = bigdl_type
         self._java_obj = self.value
         self.maxEpoch = Param(self, "maxEpoch", "number of max Epoch")
         self.learningRate = Param(self, "learningRate", "learning rate")
         self._setDefault(maxEpoch=50, learningRate=1e-3, batchSize=1)
-        self.featureSize = feature_size
 
     def setMaxEpoch(self, val):
         """
@@ -151,7 +150,7 @@ class NNModel(JavaTransformer, HasFeaturesCol, HasPredictionCol, HasBatchSize, J
     Internally NNModel use features column as storage of the feature data, and create
     Tensors according to the constructor parameter featureSize.
     """
-    def __init__(self,  model, featureSize, jvalue=None, bigdl_type="float"):
+    def __init__(self,  model, feature_transformer, jvalue=None, bigdl_type="float"):
         """
         create a NNModel with a BigDL model
         :param model: trained BigDL model to use in prediction.
@@ -162,24 +161,14 @@ class NNModel(JavaTransformer, HasFeaturesCol, HasPredictionCol, HasBatchSize, J
         """
         super(NNModel, self).__init__()
         self.value = jvalue if jvalue else callBigDlFunc(
-            bigdl_type, self.jvm_class_constructor(), model, featureSize)
+            bigdl_type, self.jvm_class_constructor(), model, feature_transformer)
         self._java_obj = self.value
         self.bigdl_type = bigdl_type
-        self.setFeatureSize(featureSize)
 
     @classmethod
-    def of(self, jvalue, feature_size=None, bigdl_type="float"):
-        model = NNModel(model=None, featureSize=feature_size, jvalue=jvalue, bigdl_type=bigdl_type)
+    def of(self, jvalue, feature_transformer=None, bigdl_type="float"):
+        model = NNModel(model=None, feature_transformer=feature_transformer, jvalue=jvalue, bigdl_type=bigdl_type)
         return model
-
-    def setFeatureSize(self, val):
-        pythonBigDL_method_name = "setFeatureSize" + self.__class__.__name__
-        self.__featuresize = val
-        callBigDlFunc(self.bigdl_type, pythonBigDL_method_name, self.value, val)
-        return self
-
-    def getFeatureSize(self):
-        return self.__featuresize
 
 
 class NNClassifier(NNEstimator):
