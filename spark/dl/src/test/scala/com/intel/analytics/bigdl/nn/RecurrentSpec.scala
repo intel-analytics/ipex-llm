@@ -30,59 +30,6 @@ import scala.util.Random
 @com.intel.analytics.bigdl.tags.Serial
 class RecurrentSpec extends FlatSpec with Matchers {
 
-  "A Cell class " should "call addTimes() correctly" in {
-    val hiddenSize = 5
-    val inputSize = 5
-    val outputSize = 5
-    val batchSize = 5
-    val time = 4
-    val seed = 100
-    RNG.setSeed(seed)
-    val rnnCell1 = RnnCell[Double](inputSize, hiddenSize, Tanh[Double]())
-    val rnnCell2 = RnnCell[Double](inputSize, hiddenSize, Tanh[Double]())
-    val rnnCell3 = RnnCell[Double](inputSize, hiddenSize, Tanh[Double]())
-    val rnnCell4 = RnnCell[Double](inputSize, hiddenSize, Tanh[Double]())
-
-    val input = Tensor[Double](batchSize, inputSize).randn
-    val hidden = Tensor[Double](batchSize, hiddenSize).randn
-    val gradOutput = Tensor[Double](batchSize, outputSize).randn
-    val gradHidden = Tensor[Double](batchSize, outputSize).randn
-
-    rnnCell1.forward(T(input, hidden))
-    rnnCell1.backward(T(input, hidden), T(gradOutput, gradHidden))
-    rnnCell2.forward(T(input, hidden))
-    rnnCell2.backward(T(input, hidden), T(gradOutput, gradHidden))
-    rnnCell3.forward(T(input, hidden))
-    rnnCell3.backward(T(input, hidden), T(gradOutput, gradHidden))
-    rnnCell4.forward(T(input, hidden))
-    rnnCell4.backward(T(input, hidden), T(gradOutput, gradHidden))
-
-    val forwardSum = new Array[Long](6)
-    val backwardSum = new Array[Long](6)
-
-    for (i <- 0 until 6) {
-      forwardSum(i) += rnnCell1.getTimes()(i)._2
-      backwardSum(i) += rnnCell1.getTimes()(i)._3
-    }
-    for (i <- 0 until 6) {
-      forwardSum(i) += rnnCell2.getTimes()(i)._2
-      backwardSum(i) += rnnCell2.getTimes()(i)._3
-    }
-    for (i <- 0 until 6) {
-      forwardSum(i) += rnnCell3.getTimes()(i)._2
-      backwardSum(i) += rnnCell3.getTimes()(i)._3
-    }
-    for (i <- 0 until 6) {
-      forwardSum(i) += rnnCell4.getTimes()(i)._2
-      backwardSum(i) += rnnCell4.getTimes()(i)._3
-    }
-
-    for (i <- 0 until 6) {
-      forwardSum(i) should be (rnnCell1.getTimes()(i)._2)
-      backwardSum(i) should be (rnnCell1.getTimes()(i)._3)
-    }
-  }
-
   "Recurrent" should "outputs correct hiddens" in {
     val hiddenSize = 4
     val batchSize = 3
@@ -160,7 +107,6 @@ class RecurrentSpec extends FlatSpec with Matchers {
       model.backward(input, gradOutput)
     }
     model.resetTimes()
-    val a = model.getTimesGroupByModuleType()
 
     var st = System.nanoTime()
     model.forward(input)
@@ -179,15 +125,19 @@ class RecurrentSpec extends FlatSpec with Matchers {
       forwardSum += x._2
       backwardSum += x._3
     })
-    val t = model.getTimesGroupByModuleType()
     println(s"forwardSum = ${forwardSum}")
     println(s"backwardSum = ${backwardSum}")
 
-    assert(abs((etaForward - forwardSum) / etaForward) < 0.1)
-    assert(abs((etaBackward - backwardSum) / etaBackward) < 0.1)
+    assert(abs((etaForward - forwardSum) / etaForward) < 0.01)
+    assert(abs((etaBackward - backwardSum) / etaBackward) < 0.01)
+
+    val times = model.getTimesGroupByModuleType()
+    times.length should be (6)
+    times.map(_._2).sum should be (etaForward +- etaForward / 100)
+    times.map(_._3).sum should be (etaBackward +- etaBackward / 100)
   }
 
-  "A Recurrent with LSTMPeephole cell " should " add batchNormalization correctly" in {
+  "A Recurrent with LSTMPeephole cell" should "add batchNormalization correctly" in {
     val hiddenSize = 4
     val inputSize = 5
     val outputSize = 5
@@ -212,7 +162,7 @@ class RecurrentSpec extends FlatSpec with Matchers {
     println("add normalization")
   }
 
-  "A Recurrent with GRU cell " should " add batchNormalization correctly" in {
+  "A Recurrent with GRU cell" should "add batchNormalization correctly" in {
     val hiddenSize = 4
     val inputSize = 5
     val outputSize = 5
@@ -237,7 +187,7 @@ class RecurrentSpec extends FlatSpec with Matchers {
     println("add normalization")
   }
 
-  "A Recurrent with LSTM cell " should " add batchNormalization correctly" in {
+  "A Recurrent with LSTM cell" should "add batchNormalization correctly" in {
     val hiddenSize = 4
     val inputSize = 5
     val outputSize = 5
@@ -262,7 +212,7 @@ class RecurrentSpec extends FlatSpec with Matchers {
     println("add normalization")
   }
 
-  "A Recurrent with SimpleRNN cell " should " add batchNormalization correctly" in {
+  "A Recurrent with SimpleRNN cell" should "add batchNormalization correctly" in {
     val hiddenSize = 4
     val inputSize = 5
     val batchSize = 2
@@ -340,7 +290,7 @@ class RecurrentSpec extends FlatSpec with Matchers {
       Array(batchSize, time, inputSize)))
   }
 
-  "A Recurrent" should " converge when batchSize changes" in {
+  "A Recurrent" should "converge when batchSize changes" in {
     val hiddenSize = 4
     val inputSize = 5
     val outputSize = 5
@@ -401,7 +351,7 @@ class RecurrentSpec extends FlatSpec with Matchers {
     gradInput2 should be (gradInput2compare)
   }
 
-  "A Recurrent Language Model Module " should "converge" in {
+  "A Recurrent Language Model Module" should "converge" in {
 
     val hiddenSize = 4
     val inputSize = 5
@@ -456,7 +406,7 @@ class RecurrentSpec extends FlatSpec with Matchers {
     labels.squeeze() should be (prediction.squeeze())
   }
 
-  "A Recurrent Module " should "converge in batch mode" in {
+  "A Recurrent Module" should "converge in batch mode" in {
 
     val batchSize = 10
     val nWords = 5
@@ -535,7 +485,7 @@ class RecurrentSpec extends FlatSpec with Matchers {
     labels.squeeze() should be (prediction.squeeze())
   }
 
-  "A Recurrent Module " should "perform correct gradient check" in {
+  "A Recurrent Module" should "perform correct gradient check" in {
 
     val hiddenSize = 4
     val inputSize = 5
@@ -628,7 +578,7 @@ class RecurrentSpec extends FlatSpec with Matchers {
     flag should be (false)
   }
 
-  "A Recurrent Module " should "work with get/set state " in {
+  "A Recurrent Module" should "work with get/set state " in {
     val hiddenSize = 4
     val inputSize = 5
     val outputSize = 5
@@ -657,7 +607,7 @@ class RecurrentSpec extends FlatSpec with Matchers {
     model.forward(input)
   }
 
-  "A Recurrent Module " should " work good with copy " in {
+  "A Recurrent Module" should "work good with copy " in {
     val input = Tensor[Float](3, 2, 6, 10).randn()
     val input1 = input.select(2, 1).clone()
     val input2 = input.select(2, 2).clone()
@@ -676,7 +626,7 @@ class RecurrentSpec extends FlatSpec with Matchers {
     output2 should be (input)
   }
 
-  "A Recurrent Module " should " work after reset " in {
+  "A Recurrent Module" should "work after reset " in {
     val hiddenSize = 4
     val inputSize = 5
     val outputSize = 5
