@@ -29,7 +29,8 @@ import com.intel.analytics.bigdl.tensor.{Tensor, DoubleType => TensorDouble, Flo
 import com.intel.analytics.bigdl.utils.T
 import com.intel.analytics.bigdl.utils.serializer.ModuleLoader
 import com.intel.analytics.bigdl.visualization.{TrainSummary, ValidationSummary}
-import com.intel.analytics.zoo.pipeline.nnframes.transformers.{FeatureLabelTransformer}
+import com.intel.analytics.zoo.pipeline.nnframes.transformers.{FeatureLabelTransformer, SampleToFeatureAdapter, TensorToSampleAdapter}
+import org.apache.spark.annotation.Since
 import org.apache.spark.ml.adapter.{HasFeaturesCol, HasPredictionCol, SchemaUtils}
 import org.apache.spark.ml.{DLEstimatorBase, DLTransformerBase, DefaultParamsWriterWrapper}
 import org.apache.spark.ml.param._
@@ -49,7 +50,7 @@ private[nnframes] trait HasBatchSize extends Params {
   def getBatchSize: Int = $(batchSize)
 }
 
-private[nnframes] trait TrainingParams[L, @specialized(Float, Double) T] extends Params {
+private[nnframes] trait TrainingParams[@specialized(Float, Double) T] extends Params {
 
   /**
    * When to stop the training, passed in a [[Trigger]]. E.g. Trigger.maxIterations
@@ -116,33 +117,47 @@ private[nnframes] trait NNParams[F, @specialized(Float, Double) T] extends HasFe
  * Tensor, as model training data.
  *
  * Internally both the feature data and label data are converted to Tensor with batch optimization.
- * Using the featureTransformer allows [[NNEstimator]] to cache only the raw data and decrease the
- * memory consumption during training.
+ * Using the transformers allows [[NNEstimator]] to cache only the raw data and decrease the
+ * memory consumption during feature conversion and training.
  *
  * For details usage, please refer to examples in package
  * com.intel.analytics.zoo.pipeline.example.nnframes
  *
  * @param model BigDL module to be optimized
  * @param criterion  BigDL criterion method
- * @param featureTransformer A transformer that transforms the feature data to a Tensor[T].
- *        featureTransformer should be a subClass of com.intel.analytics.bigdl.dataset.Transformer.
- *        Some common transformers have been defined in package
- *        com.intel.analytics.zoo.pipeline.nnframes.transformers. E.g. SeqToTensor is used
- *        to transform Array[_] to Tensor, and NumToTensor transform a number to a Tensor. Multiple
- *        Transformer can be combined as a Pipeline Transformer.
- * @param labelTransformer similar to featureTransformer, but applies to Label column.
+ * @param sampleTransformer A transformer that transforms the (feature, label) tuple to a Sample[T].
+ *        sampleTransformer should be a subClass of com.intel.analytics.bigdl.dataset.Transformer.
  * @tparam F data type from feature column, E.g. Array[_] or Vector
  * @tparam L data type from label column, E.g. Float, Double, Array[_] or Vector
+ * @tparam T data type of BigDL Model
  */
 class NNEstimator[F, L, T: ClassTag](
     @transient val model: Module[T],
     val criterion : Criterion[T],
-    val featureTransformer: Transformer[F, Tensor[T]],
-    val labelTransformer: Transformer[L, Tensor[T]],
+    val sampleTransformer: Transformer[(F, L), Sample[T]],
     override val uid: String = Identifiable.randomUID("nnEstimator")
   )(implicit ev: TensorNumeric[T])
   extends DLEstimatorBase[NNEstimator[F, L, T], NNModel[F, T]] with NNParams[F, T]
-    with TrainingParams[L, T] {
+    with TrainingParams[T] {
+
+  /**
+   * @param model BigDL module to be optimized
+   * @param criterion  BigDL criterion method
+   * @param featureTransformer A transformer that transforms the feature data to a Tensor[T].
+   *        featureTransformer should be a subClass of com.intel.analytics.bigdl.dataset.Transformer.
+   *        Some common transformers have been defined in package
+   *        com.intel.analytics.zoo.pipeline.nnframes.transformers. E.g. SeqToTensor is used
+   *        to transform Array[_] to Tensor, and NumToTensor transform a number to a Tensor. Multiple
+   *        Transformer can be combined as a Pipeline Transformer.
+   * @param labelTransformer similar to featureTransformer, but applies to Label column.
+   */
+  def this(
+      model: Module[T],
+      criterion: Criterion[T],
+      featureTransformer: Transformer[F, Tensor[T]],
+      labelTransformer: Transformer[L, Tensor[T]]
+    )(implicit ev: TensorNumeric[T]) =
+    this(model, criterion, FeatureLabelTransformer(featureTransformer, labelTransformer))
 
   def setFeaturesCol(featuresColName: String): this.type = set(featuresCol, featuresColName)
 
@@ -260,10 +275,8 @@ class NNEstimator[F, L, T: ClassTag](
       val labels = row.getAs[L](labelColIndex)
       (features, labels)
     }
-    val flTransformer = new FeatureLabelTransformer[F, L, T](
-      featureTransformer, labelTransformer)
     val ds = DataSet.rdd(featureAndLabel)
-      .transform(flTransformer -> SampleToMiniBatch[T](batchSize))
+      .transform(sampleTransformer -> SampleToMiniBatch[T](batchSize))
     ds
   }
 
@@ -299,7 +312,8 @@ class NNEstimator[F, L, T: ClassTag](
    * sub classes can extend the method and return required model for different transform tasks
    */
   protected def wrapBigDLModel(m: Module[T]): NNModel[F, T] = {
-    val dlModel = new NNModel[F, T](m, featureTransformer)
+    val dlModel = new NNModel[F, T](
+      m, SampleToFeatureAdapter(sampleTransformer.asInstanceOf[Transformer[(F, Any), Sample[T]]]))
     copyValues(dlModel.setParent(this))
   }
 
@@ -313,8 +327,7 @@ class NNEstimator[F, L, T: ClassTag](
       new NNEstimator[F, L, T](
         model.cloneModule(),
         criterion.cloneCriterion(),
-        featureTransformer.cloneTransformer(),
-        labelTransformer.cloneTransformer(),
+        sampleTransformer.cloneTransformer(),
         this.uid
       ),
       extra)
@@ -348,10 +361,25 @@ class NNEstimator[F, L, T: ClassTag](
  */
 class NNModel[F, T: ClassTag](
     @transient val model: Module[T],
-    @transient val featureTransformer: Transformer[F, Tensor[T]],
+    @transient val featureTransformer: Transformer[F, Sample[T]],
     override val uid: String = "DLModel")(implicit ev: TensorNumeric[T])
   extends DLTransformerBase[NNModel[F, T]] with NNParams[F, T]
     with HasBatchSize with MLWritable {
+
+  /**
+   * @param model trainned BigDL models to use in prediction.
+   * @param featureTransformer A transformer that transforms the feature data to a Tensor[T].
+   *        featureTransformer should be a subClass of com.intel.analytics.bigdl.dataset.Transformer.
+   *        Some common transformers have been defined in package
+   *        com.intel.analytics.zoo.pipeline.nnframes.transformers. E.g. SeqToTensor is used
+   *        to transform Array[_] to Tensor, and NumToTensor transform a number to a Tensor. Multiple
+   *        Transformer can be combined as a Pipeline Transformer.
+   */
+  def this(
+      model: Module[T],
+      featureTransformer: Transformer[F, Tensor[T]]
+    )(implicit ev: TensorNumeric[T]) =
+    this(model, TensorToSampleAdapter(featureTransformer))
 
   def setFeaturesCol(featuresColName: String): this.type = set(featuresCol, featuresColName)
 
@@ -380,7 +408,7 @@ class NNModel[F, T: ClassTag](
 
       rowIter.grouped(localBatchSize).flatMap { rowBatch =>
         val featureSeq = rowBatch.map(r => r.getAs[F](featureColIndex))
-        val samples = featureSteps(featureSeq.iterator).map(Sample(_))
+        val samples = featureSteps(featureSeq.iterator)
         val predictions = toBatch(samples).flatMap { batch =>
           val batchResult = localModel.forward(batch.getInput()).toTensor.squeeze()
           if (batchResult.size().length == 2) {
@@ -431,10 +459,10 @@ object NNModel extends MLReadable[NNModel[_, _]] {
       val nnModel = typeTag match {
         case "TensorDouble" =>
           new NNModel[Any, Double](model.asInstanceOf[Module[Double]],
-            feaTran.asInstanceOf[Transformer[Any, Tensor[Double]]])
+            feaTran.asInstanceOf[Transformer[Any, Sample[Double]]])
         case "TensorFloat" =>
           new NNModel[Any, Float](model.asInstanceOf[Module[Float]],
-            feaTran.asInstanceOf[Transformer[Any, Tensor[Float]]])
+            feaTran.asInstanceOf[Transformer[Any, Sample[Float]]])
         case _ =>
           throw new Exception("Only support float and double for now")
       }

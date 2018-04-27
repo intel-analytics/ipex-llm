@@ -42,7 +42,7 @@ import scala.reflect.ClassTag
 class NNClassifier[F, T: ClassTag](
     @transient override val model: Module[T],
     override val criterion : Criterion[T],
-    override val featureTransformer: Transformer[F, Tensor[T]],
+    val featureTransformer: Transformer[F, Tensor[T]],
     override val uid: String = Identifiable.randomUID("nnClassifier")
   )(implicit ev: TensorNumeric[T])
   extends NNEstimator[F, AnyVal, T](model, criterion, featureTransformer, NumToTensor()) {
