@@ -18,7 +18,7 @@ package com.intel.analytics.zoo.pipeline.nnframes
 
 import java.io.File
 
-import com.intel.analytics.bigdl.dataset.{DataSet, Sample, SampleToMiniBatch}
+import com.intel.analytics.bigdl.dataset.{ChainedTransformer, DataSet, Sample, SampleToMiniBatch}
 import com.intel.analytics.bigdl.models.inception.Inception_v1
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.optim._
@@ -29,7 +29,7 @@ import com.intel.analytics.bigdl.transform.vision.image.augmentation.{CenterCrop
 import com.intel.analytics.bigdl.utils.Engine
 import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
 import com.intel.analytics.bigdl.visualization.{TrainSummary, ValidationSummary}
-import com.intel.analytics.zoo.pipeline.nnframes.transformers.{NumToTensor, SeqToTensor, MLlibVectorToTensor}
+import com.intel.analytics.zoo.pipeline.nnframes.transformers._
 import org.apache.spark.SparkContext
 import org.apache.spark.ml.{Pipeline, PipelineModel}
 import org.apache.spark.ml.feature.MinMaxScaler
@@ -83,9 +83,9 @@ class NNEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val model = new Sequential().add(Linear[Float](6, 2)).add(LogSoftMax[Float])
     val criterion = ClassNLLCriterion[Float]()
     val estimator = new NNEstimator(model, criterion, SeqToTensor(Array(6)), NumToTensor())
-      .setBatchSize(4)
-      .setOptimMethod(new Adam[Float]())
-      .setLearningRate(0.02)
+      .setBatchSize(nRecords)
+      .setOptimMethod(new LBFGS[Float]())
+      .setLearningRate(0.1)
       .setMaxEpoch(20)
     val data = sc.parallelize(smallData).coalesce(1)
     val df = sqlContext.createDataFrame(data).toDF("features", "label")
@@ -351,18 +351,12 @@ class NNEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val pascalResource = getClass.getClassLoader.getResource("pascal/")
     val imageDF = NNImageReader.readImages(pascalResource.getFile, sc)
     assert(imageDF.count() == 1)
-    val transformer = Resize(256, 256) -> CenterCrop(224, 224) ->
-      ChannelNormalize(123, 117, 104, 1, 1, 1) -> MatToTensor()
-    val transformedDF = new NNImageTransformer(transformer)
-      .setInputCol("image")
-      .setOutputCol("features")
-
-    val featurizer = new NNModel(
-      Inception_v1(1000), SeqToTensor(Array(3, 224, 224)))
+    val transformer = RowToImageFeature() -> Resize(256, 256) -> CenterCrop(224, 224) ->
+      ChannelNormalize(123, 117, 104) -> MatToTensor() -> ImageFeatureToTensor()
+    val featurizer = new NNModel(Inception_v1(1000), transformer)
       .setBatchSize(1)
-
-    val pipeline = new Pipeline().setStages(Array(transformedDF, featurizer))
-    pipeline.fit(imageDF)
+      .setFeaturesCol("image")
+    featurizer.transform(imageDF).show()
   }
 
   "An NNModel" should "return same results after saving and loading" in {
