@@ -20,6 +20,9 @@ import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.Shape
 import com.intel.analytics.zoo.pipeline.api.keras.models.Sequential
+import com.intel.analytics.zoo.pipeline.api.keras.serializer.ModuleSerializationTest
+
+import scala.util.Random
 
 class GRUSpec extends KerasBaseSpec {
 
@@ -88,4 +91,14 @@ class GRUSpec extends KerasBaseSpec {
       kerasCode, weightConverter)
   }
 
+}
+
+class GRUSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val layer = GRU[Float](16, returnSequences = true,
+      goBackwards = true, inputShape = Shape(28, 32))
+    layer.build(Shape(2, 28, 32))
+    val input = Tensor[Float](2, 28, 32).apply1(_ => Random.nextFloat())
+    runSerializationTest(layer, input)
+  }
 }

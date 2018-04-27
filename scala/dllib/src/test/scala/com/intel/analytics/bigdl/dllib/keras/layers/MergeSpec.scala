@@ -20,6 +20,9 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.{MultiShape, Shape, T}
 import com.intel.analytics.zoo.pipeline.api.keras.models._
 import com.intel.analytics.zoo.pipeline.api.keras.layers.Merge.merge
+import com.intel.analytics.zoo.pipeline.api.keras.serializer.ModuleSerializationTest
+
+import scala.util.Random
 
 
 class MergeSpec extends KerasBaseSpec {
@@ -157,3 +160,4 @@ class MergeSpec extends KerasBaseSpec {
   }
 
 }
+

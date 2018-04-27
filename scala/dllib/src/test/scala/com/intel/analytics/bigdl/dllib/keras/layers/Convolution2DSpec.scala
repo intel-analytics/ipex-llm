@@ -19,6 +19,9 @@ import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.Shape
 import com.intel.analytics.zoo.pipeline.api.keras.models.Sequential
+import com.intel.analytics.zoo.pipeline.api.keras.serializer.ModuleSerializationTest
+
+import scala.util.Random
 
 class Convolution2DSpec extends KerasBaseSpec {
   def weightConverter(in: Array[Tensor[Float]]): Array[Tensor[Float]] = {
@@ -38,7 +41,8 @@ class Convolution2DSpec extends KerasBaseSpec {
         |model = Model(input=input_tensor, output=output_tensor)
       """.stripMargin
     val seq = Sequential[Float]()
-    val layer = Convolution2D[Float](64, 2, 5, activation = "relu", inputShape = Shape(3, 24, 24))
+    val layer = Convolution2D[Float](64, 2, 5, activation = "relu",
+      inputShape = Shape(3, 24, 24))
     seq.add(layer)
     checkOutputAndGrad(seq.asInstanceOf[AbstractModule[Tensor[Float], Tensor[Float], Float]],
       kerasCode, weightConverter, 1e-3)
@@ -76,5 +80,15 @@ class Convolution2DSpec extends KerasBaseSpec {
     seq.add(layer)
     checkOutputAndGrad(seq.asInstanceOf[AbstractModule[Tensor[Float], Tensor[Float], Float]],
       kerasCode, weightConverter, 1e-4)
+  }
+}
+
+class Convolution2DSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val layer = Convolution2D[Float](64, 2, 5, inputShape =
+      Shape(3, 24, 24))
+    layer.build(Shape(2, 3, 24, 24))
+    val input = Tensor[Float](2, 3, 24, 24).apply1(_ => Random.nextFloat())
+    runSerializationTest(layer, input)
   }
 }

@@ -19,6 +19,9 @@ import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.Shape
 import com.intel.analytics.zoo.pipeline.api.keras.models.Sequential
+import com.intel.analytics.zoo.pipeline.api.keras.serializer.ModuleSerializationTest
+
+import scala.util.Random
 
 class MaxPooling2DSpec extends KerasBaseSpec {
   "MaxPooling2D NCHW" should "be the same as Keras" in {
@@ -68,5 +71,14 @@ class MaxPooling2DSpec extends KerasBaseSpec {
     seq.add(layer)
     checkOutputAndGrad(seq.asInstanceOf[AbstractModule[Tensor[Float], Tensor[Float], Float]],
       kerasCode)
+  }
+}
+
+class MaxPooling2DSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val layer = MaxPooling2D[Float](inputShape = Shape(3, 24, 24))
+    layer.build(Shape(2, 3, 24, 24))
+    val input = Tensor[Float](2, 3, 24, 24).apply1(_ => Random.nextFloat())
+    runSerializationTest(layer, input)
   }
 }

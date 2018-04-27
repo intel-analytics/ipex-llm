@@ -20,6 +20,9 @@ import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.Shape
 import com.intel.analytics.zoo.pipeline.api.keras.models.Sequential
+import com.intel.analytics.zoo.pipeline.api.keras.serializer.ModuleSerializationTest
+
+import scala.util.Random
 
 class MaxoutDenseSpec extends KerasBaseSpec {
 
@@ -69,4 +72,13 @@ class MaxoutDenseSpec extends KerasBaseSpec {
       kerasCode, weightConverter)
   }
 
+}
+
+class MaxoutDenseSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val layer = MaxoutDense[Float](8, inputShape = Shape(12))
+    layer.build(Shape(3, 12))
+    val input = Tensor[Float](3, 12).apply1(_ => Random.nextFloat())
+    runSerializationTest(layer, input)
+  }
 }

@@ -20,6 +20,9 @@ import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.Shape
 import com.intel.analytics.zoo.pipeline.api.keras.models.Sequential
+import com.intel.analytics.zoo.pipeline.api.keras.serializer.ModuleSerializationTest
+
+import scala.util.Random
 
 class AveragePooling1DSpec extends KerasBaseSpec {
 
@@ -56,4 +59,13 @@ class AveragePooling1DSpec extends KerasBaseSpec {
       kerasCode)
   }
 
+}
+
+class AveragePooling1DSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val layer = AveragePooling1D[Float](inputShape = Shape(12, 16))
+    layer.build(Shape(2, 12, 16))
+    val input = Tensor[Float](2, 12, 16).apply1(_ => Random.nextFloat())
+    runSerializationTest(layer, input)
+  }
 }

@@ -20,6 +20,9 @@ import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.Shape
 import com.intel.analytics.zoo.pipeline.api.keras.models.Sequential
+import com.intel.analytics.zoo.pipeline.api.keras.serializer.ModuleSerializationTest
+
+import scala.util.Random
 
 class AtrousConvolution2DSpec extends KerasBaseSpec {
 
@@ -41,4 +44,14 @@ class AtrousConvolution2DSpec extends KerasBaseSpec {
       kerasCode, precision = 1e-2)
   }
 
+}
+
+class AtrousConvolution2DSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val layer = AtrousConvolution2D[Float](32, 2, 4, atrousRate = (2, 2),
+      inputShape = Shape(3, 64, 64))
+    layer.build(Shape(2, 3, 64, 64))
+    val input = Tensor[Float](2, 3, 64, 64).apply1(_ => Random.nextFloat())
+    runSerializationTest(layer, input)
+  }
 }
