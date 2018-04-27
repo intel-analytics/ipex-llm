@@ -49,7 +49,9 @@ class TestNNClassifer():
         mse_criterion = MSECriterion()
 
         estimator = NNEstimator(model=linear_model, criterion=mse_criterion,
-                                feature_transformer=SeqToTensor([2]), label_transformer=SeqToTensor([2]))
+                                feature_transformer=SeqToTensor([2]),
+                                label_transformer=SeqToTensor([2]))\
+            .setBatchSize(4)
         data = self.sc.parallelize([
             ((2.0, 1.0), (1.0, 2.0)),
             ((1.0, 2.0), (2.0, 1.0)),
@@ -74,7 +76,8 @@ class TestNNClassifer():
         mse_criterion = MSECriterion()
 
         estimator = NNEstimator(model=linear_model, criterion=mse_criterion,
-                                feature_size=[2], label_size=[2])
+                                feature_transformer=SeqToTensor([2]),
+                                label_transformer=SeqToTensor([2]))
         assert estimator.setBatchSize(30).getBatchSize() == 30
         assert estimator.setMaxEpoch(40).getMaxEpoch() == 40
         assert estimator.setLearningRate(1e-4).getLearningRate() == 1e-4
@@ -83,27 +86,25 @@ class TestNNClassifer():
 
         assert isinstance(estimator.setOptimMethod(Adam()).getOptimMethod(), Adam)
 
-        nn_model = NNModel(model=linear_model, featureSize=[1])
-        assert nn_model.setFeatureSize([2]).getFeatureSize() == [2]
+        nn_model = NNModel(model=linear_model, feature_transformer=SeqToTensor([2]))
         assert nn_model.setBatchSize(20).getBatchSize() == 20
 
         linear_model = Sequential().add(Linear(2, 2))
         classNLL_criterion = ClassNLLCriterion()
 
         classifier = NNClassifier(model=linear_model, criterion=classNLL_criterion,
-                                  feature_size=[2])
+                                  feature_transformer = SeqToTensor([2]))
         assert classifier.setBatchSize(20).getBatchSize() == 20
         assert classifier.setMaxEpoch(50).getMaxEpoch() == 50
         assert classifier.setLearningRate(1e-5).getLearningRate() == 1e-5
 
-        nn_classifier_model = NNClassifierModel(model=linear_model, featureSize=[1])
-        assert nn_classifier_model.setFeatureSize([2]).getFeatureSize() == [2]
+        nn_classifier_model = NNClassifierModel(model=linear_model, feature_transformer=SeqToTensor([2]))
         assert nn_classifier_model.setBatchSize((20)).getBatchSize() == 20
 
     def test_nnEstimator_fit_nnmodel_transform(self):
         model = Sequential().add(Linear(2, 2))
         criterion = MSECriterion()
-        estimator = NNEstimator(model, criterion, [2], [2]).setBatchSize(4) \
+        estimator = NNEstimator(model, criterion, SeqToTensor([2]), SeqToTensor([2])).setBatchSize(4) \
             .setLearningRate(0.2).setMaxEpoch(40)
 
         data = self.sc.parallelize([
@@ -136,7 +137,7 @@ class TestNNClassifer():
     def test_nnEstimator_fit_with_non_default_featureCol(self):
         model = Sequential().add(Linear(2, 2))
         criterion = MSECriterion()
-        estimator = NNEstimator(model, criterion, [2], [2]).setBatchSize(4)\
+        estimator = NNEstimator(model, criterion, SeqToTensor([2]), SeqToTensor([2])).setBatchSize(4)\
             .setLearningRate(0.01).setMaxEpoch(1) \
             .setFeaturesCol("abcd").setLabelCol("xyz").setPredictionCol("tt")
 
@@ -159,7 +160,7 @@ class TestNNClassifer():
     def test_nnEstimator_fit_with_different_OptimMethods(self):
         model = Sequential().add(Linear(2, 2))
         criterion = MSECriterion()
-        estimator = NNEstimator(model, criterion, [2], [2]).setBatchSize(4)\
+        estimator = NNEstimator(model, criterion, SeqToTensor([2]), SeqToTensor([2])).setBatchSize(4)\
             .setLearningRate(0.01).setMaxEpoch(1) \
             .setFeaturesCol("abcd").setLabelCol("xyz").setPredictionCol("tt")
 
@@ -183,7 +184,7 @@ class TestNNClassifer():
 
     def test_NNModel_transform_with_nonDefault_featureCol(self):
         model = Sequential().add(Linear(2, 2))
-        nnModel = NNModel(model, [2]).setFeaturesCol("abcd").setPredictionCol("dcba")
+        nnModel = NNModel(model, SeqToTensor([2])).setFeaturesCol("abcd").setPredictionCol("dcba")
 
         data = self.sc.parallelize([
             ((2.0, 1.0), (1.0, 2.0)),
@@ -202,7 +203,8 @@ class TestNNClassifer():
     def test_nnclassifier_fit_nnclassifiermodel_transform(self):
         model = Sequential().add(Linear(2, 2))
         criterion = ClassNLLCriterion()
-        classifier = NNClassifier(model, criterion, [2]).setBatchSize(4) \
+        classifier = NNClassifier(model, criterion, SeqToTensor([2])) \
+            .setBatchSize(4) \
             .setLearningRate(0.2).setMaxEpoch(40)
         data = self.sc.parallelize([
             ((2.0, 1.0), 1.0),
@@ -232,7 +234,7 @@ class TestNNClassifer():
     def test_nnclassifier_fit_different_optimMethods(self):
         model = Sequential().add(Linear(2, 2))
         criterion = ClassNLLCriterion()
-        classifier = NNClassifier(model, criterion, [2]).setBatchSize(4) \
+        classifier = NNClassifier(model, criterion, SeqToTensor([2])).setBatchSize(4) \
             .setLearningRate(0.2).setMaxEpoch(1)
         data = self.sc.parallelize([
             ((2.0, 1.0), 1.0),
@@ -252,30 +254,7 @@ class TestNNClassifer():
             res.collect()
             assert type(res).__name__ == 'DataFrame'
 
-    def test_nnclassifier_in_pipeline(self):
-        if self.sc.version.startswith("1"):
-            from pyspark.mllib.linalg import Vectors
-        else:
-            from pyspark.ml.linalg import Vectors
-
-        df = self.sqlContext.createDataFrame([(Vectors.dense([2.0, 1.0]), 1.0),
-                                              (Vectors.dense([1.0, 2.0]), 2.0),
-                                              (Vectors.dense([2.0, 1.0]), 1.0),
-                                              (Vectors.dense([1.0, 2.0]), 2.0),
-                                              ], ["features", "label"])
-
-        scaler = MinMaxScaler().setInputCol("features").setOutputCol("scaled")
-        model = Sequential().add(Linear(2, 2))
-        criterion = ClassNLLCriterion()
-        classifier = NNClassifier(model, criterion, [2]).setBatchSize(4) \
-            .setLearningRate(0.01).setMaxEpoch(10).setFeaturesCol("scaled")
-
-        pipeline = Pipeline(stages=[scaler, classifier])
-
-        pipelineModel = pipeline.fit(df)
-
-        res = pipelineModel.transform(df)
-        assert type(res).__name__ == 'DataFrame'
+    #TODO: add unit test for ML Vector
 
 if __name__ == "__main__":
     pytest.main()
