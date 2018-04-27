@@ -40,7 +40,7 @@ import scala.reflect.ClassTag
  * @tparam T The numeric type of parameter(e.g. weight, bias). Only support float/double now.
  */
 class Bidirectional[T: ClassTag](
-   override val layer: Recurrent[T],
+   override val layer: com.intel.analytics.bigdl.nn.keras.Recurrent[T],
    override val mergeMode: String = "concat",
    override val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends BBidirectional[T] (
@@ -49,7 +49,7 @@ class Bidirectional[T: ClassTag](
 
 object Bidirectional {
   def apply[@specialized(Float, Double) T: ClassTag](
-    layer: Recurrent[T],
+    layer: com.intel.analytics.bigdl.nn.keras.Recurrent[T],
     mergeMode: String = "concat",
     inputShape: Shape = null)(implicit ev: TensorNumeric[T]): Bidirectional[T] = {
     new Bidirectional[T](layer, mergeMode, inputShape)
