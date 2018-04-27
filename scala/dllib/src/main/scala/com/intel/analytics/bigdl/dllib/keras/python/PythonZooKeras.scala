@@ -729,4 +729,56 @@ class PythonZooKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonB
       inputShape: JList[Int] = null): Square[T] = {
     Square(toScalaShape(inputShape))
   }
+
+  def createZooKerasHardShrink(
+      value: Double = 0.5,
+      inputShape: JList[Int] = null): HardShrink[T] = {
+    HardShrink(value, toScalaShape(inputShape))
+  }
+
+  def createZooKerasHardTanh(
+      minValue: Double = -1,
+      maxValue: Double = 1,
+      inputShape: JList[Int] = null): HardTanh[T] = {
+    HardTanh(minValue, maxValue, toScalaShape(inputShape))
+  }
+
+  def createZooKerasNegative(
+      inputShape: JList[Int] = null): Negative[T] = {
+    Negative(toScalaShape(inputShape))
+  }
+
+  def createZooKerasPReLU(
+      nOutputPlane: Int = 0,
+      inputShape: JList[Int] = null): PReLU[T] = {
+    PReLU(nOutputPlane, toScalaShape(inputShape))
+  }
+
+  def createZooKerasRReLU(
+      lower: Double = 1.0/8,
+      upper: Double = 1.0/3,
+      inputShape: JList[Int] = null): RReLU[T] = {
+    RReLU(lower, upper, toScalaShape(inputShape))
+  }
+
+  def createZooKerasSoftShrink(
+      value: Double = 0.5,
+      inputShape: JList[Int] = null): SoftShrink[T] = {
+    SoftShrink(value, toScalaShape(inputShape))
+  }
+
+  def createZooKerasWithinChannelLRN2D(
+      size: Int = 5,
+      alpha: Double = 1.0,
+      beta: Double = 0.75,
+      inputShape: JList[Int] = null): WithinChannelLRN2D[T] = {
+    WithinChannelLRN2D(size, alpha, beta, toScalaShape(inputShape))
+  }
+
+  def createZooKerasBinaryThreshold(
+      th: Double = 1e-6,
+      inputShape: JList[Int] = null): BinaryThreshold[T] = {
+    BinaryThreshold(th, toScalaShape(inputShape))
+  }
+
 }
