@@ -18,7 +18,7 @@ from pyspark.ml.param.shared import *
 from pyspark.ml.wrapper import JavaModel, JavaEstimator, JavaTransformer
 from bigdl.optim.optimizer import SGD
 from bigdl.util.common import *
-
+from zoo.pipeline.nnframes.nn_transformers import *
 
 if sys.version >= '3':
     long = int
@@ -107,6 +107,7 @@ class NNEstimator(JavaEstimator, HasFeaturesCol, HasLabelCol, HasPredictionCol, 
         self.maxEpoch = Param(self, "maxEpoch", "number of max Epoch")
         self.learningRate = Param(self, "learningRate", "learning rate")
         self._setDefault(maxEpoch=50, learningRate=1e-3, batchSize=1)
+        self.feature_transformer = feature_transformer
 
     def setMaxEpoch(self, val):
         """
@@ -135,7 +136,7 @@ class NNEstimator(JavaEstimator, HasFeaturesCol, HasLabelCol, HasPredictionCol, 
         return self.getOrDefault(self.learningRate)
 
     def _create_model(self, java_model):
-        nnModel = NNModel.of(java_model, self.featureSize, self.bigdl_type)
+        nnModel = NNModel.of(java_model, self.feature_transformer, self.bigdl_type)
         nnModel.setFeaturesCol(self.getFeaturesCol()) \
             .setPredictionCol(self.getPredictionCol()) \
             .setBatchSize(self.getBatchSize())
@@ -154,8 +155,6 @@ class NNModel(JavaTransformer, HasFeaturesCol, HasPredictionCol, HasBatchSize, J
         """
         create a NNModel with a BigDL model
         :param model: trained BigDL model to use in prediction.
-        :param featureSize: The size (Tensor dimensions) of the feature data. (e.g. an
-                            image may be with featureSize = 28 * 28).
         :param jvalue: Java object create by Py4j
         :param bigdl_type: optional parameter. data type of model, "float"(default) or "double".
         """
@@ -177,7 +176,7 @@ class NNClassifier(NNEstimator):
     classification tasks. It only supports label column of DoubleType, and the fitted
     NNClassifierModel will have the prediction column of DoubleType.
     """
-    def __init__(self,  model, criterion, feature_size,  bigdl_type="float"):
+    def __init__(self,  model, criterion, feature_transformer, bigdl_type="float"):
         """
         :param model: BigDL module to be optimized
         :param criterion: BigDL criterion method
@@ -185,7 +184,7 @@ class NNClassifier(NNEstimator):
                              image may be with featureSize = 28 * 28).
         :param bigdl_type(optional): Data type of BigDL model, "float"(default) or "double".
         """
-        super(NNClassifier, self).__init__(model, criterion, feature_size, [1], None, bigdl_type)
+        super(NNClassifier, self).__init__(model, criterion, feature_transformer, NumToTensor(), None, bigdl_type)
 
 
 class NNClassifierModel(NNModel):
@@ -193,7 +192,7 @@ class NNClassifierModel(NNModel):
     NNClassifierModel is a specialized [[NNModel]] for classification tasks. The prediction
     column will have the datatype of Double.
     """
-    def __init__(self,  model, featureSize, jvalue=None, bigdl_type="float"):
+    def __init__(self,  model, feature_transformer, jvalue=None, bigdl_type="float"):
         """
         :param model: trained BigDL model to use in prediction.
         :param featureSize: The size (Tensor dimensions) of the feature data. (e.g. an
@@ -201,9 +200,9 @@ class NNClassifierModel(NNModel):
         :param jvalue: Java object create by Py4j
         :param bigdl_type(optional): Data type of BigDL model, "float"(default) or "double".
         """
-        super(NNClassifierModel, self).__init__(model, featureSize, jvalue, bigdl_type)
+        super(NNClassifierModel, self).__init__(model, feature_transformer, jvalue, bigdl_type)
 
     @classmethod
-    def of(self, jvalue, feature_size=None, bigdl_type="float"):
-        model = NNClassifierModel(model=None, featureSize=feature_size, jvalue=jvalue, bigdl_type=bigdl_type)
+    def of(self, jvalue, feaTran=None, bigdl_type="float"):
+        model = NNClassifierModel(model=None, feature_transformer=feaTran, jvalue=jvalue, bigdl_type=bigdl_type)
         return model
