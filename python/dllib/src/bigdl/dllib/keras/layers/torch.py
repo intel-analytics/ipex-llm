@@ -470,3 +470,202 @@ class Square(ZooKerasLayer):
         super(Square, self).__init__(None,
                                      list(input_shape) if input_shape else None,
                                      **kwargs)
+
+
+class HardShrink(ZooKerasLayer):
+    """
+    Applies the hard shrinkage function element-wise to the input.
+
+    When you use this layer as the first layer of a model, you need to provide the argument
+    input_shape (a shape tuple, does not include the batch dimension).
+
+    # Arguments
+    value: The threshold value. Default is 0.5.
+    input_shape: A shape tuple, not including batch.
+    name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
+
+    >>> hardshrink = HardShrink(input_shape=(2, 4, 8))
+    creating: createZooKerasHardShrink
+    """
+    def __init__(self, value=0.5, input_shape=None, **kwargs):
+        super(HardShrink, self).__init__(None,
+                                         float(value),
+                                         list(input_shape) if input_shape else None,
+                                         **kwargs)
+
+
+class HardTanh(ZooKerasLayer):
+    """
+    Applies the hard tanh function element-wise to the input.
+
+    When you use this layer as the first layer of a model, you need to provide the argument
+    input_shape (a shape tuple, does not include the batch dimension).
+
+    # Arguments
+    min_value: The minimum threshold value. Default is -1.
+    max_value: The maximum threshold value. Default is 1.
+    input_shape: A shape tuple, not including batch.
+    name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
+
+    >>> hardtanh = HardTanh(input_shape=(3, 4))
+    creating: createZooKerasHardTanh
+    """
+    def __init__(self, min_value=-1, max_value=1, input_shape=None, **kwargs):
+        super(HardTanh, self).__init__(None,
+                                       float(min_value),
+                                       float(max_value),
+                                       list(input_shape) if input_shape else None,
+                                       **kwargs)
+
+
+class Negative(ZooKerasLayer):
+    """
+    Computes the negative value of each element of the input.
+
+    When you use this layer as the first layer of a model, you need to provide the argument
+    input_shape (a shape tuple, does not include the batch dimension).
+
+    # Arguments
+    input_shape: A shape tuple, not including batch.
+    name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
+
+    >>> negative = Negative(input_shape=(4, 5, 8))
+    creating: createZooKerasNegative
+    """
+    def __init__(self, input_shape=None,**kwargs):
+        super(Negative, self).__init__(None,
+                                       list(input_shape) if input_shape else None,
+                                       **kwargs)
+
+
+class PReLU(ZooKerasLayer):
+    """
+    Applies parametric ReLU, where parameter varies the slope of the negative part.
+
+    Notice: Please don't use weight decay on this.
+
+    When you use this layer as the first layer of a model, you need to provide the argument
+    input_shape (a shape tuple, does not include the batch dimension).
+
+    # Arguments
+    n_output_plane: Input map number. Default is 0,
+                    which means using PReLU in shared version and has only one parameter.
+    input_shape: A shape tuple, not including batch.
+    name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
+
+    >>> prelu = PReLU(input_shape=(3, 4, 8, 8))
+    creating: createZooKerasPReLU
+    """
+    def __init__(self, n_output_plane=0, input_shape=None, **kwargs):
+        super(PReLU, self).__init__(None,
+                                    n_output_plane,
+                                    list(input_shape) if input_shape else None,
+                                    **kwargs)
+
+
+class RReLU(ZooKerasLayer):
+    """
+    Applies the randomized leaky rectified linear unit element-wise to the input.
+
+    In the training mode, negative inputs are multiplied by a factor drawn
+    from a uniform random distribution U(l, u).
+    In the evaluation mode, a RReLU behaves like a LeakyReLU with a constant mean
+    factor a = (l + u) / 2.
+    If l == u, a RReLU essentially becomes a LeakyReLU.
+    Regardless of operating in in-place mode a RReLU will internally
+    allocate an input-sized noise tensor to store random factors for negative inputs.
+    For reference see [Empirical Evaluation of Rectified Activations in Convolutional
+    Network](http://arxiv.org/abs/1505.00853).
+
+    When you use this layer as the first layer of a model, you need to provide the argument
+    input_shape (a shape tuple, does not include the batch dimension).
+
+    # Arguments
+    lower: Lower boundary of the uniform random distribution. Default is 1.0/8.
+    upper: Upper boundary of the uniform random distribution. Default is 1.0/3.
+    input_shape: A shape tuple, not including batch.
+    name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
+
+    >>> rrelu = RReLU(input_shape=(3, 4))
+    creating: createZooKerasRReLU
+    """
+    def __init__(self, lower=1.0/8, upper=1.0/3, input_shape=None, **kwargs):
+        super(RReLU, self).__init__(None,
+                                    float(lower),
+                                    float(upper),
+                                    list(input_shape) if input_shape else None,
+                                    **kwargs)
+
+
+class SoftShrink(ZooKerasLayer):
+    """
+    Applies the soft shrinkage function element-wise to the input.
+
+    When you use this layer as the first layer of a model, you need to provide the argument
+    input_shape (a shape tuple, does not include the batch dimension).
+
+    # Arguments
+    value: The threshold value. Default is 0.5.
+    input_shape: A shape tuple, not including batch.
+    name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
+
+    >>> softshrink = SoftShrink(input_shape=(4, 4, 8, 8))
+    creating: createZooKerasSoftShrink
+    """
+    def __init__(self, value=0.5, input_shape=None, **kwargs):
+        super(SoftShrink, self).__init__(None,
+                                         float(value),
+                                         list(input_shape) if input_shape else None,
+                                         **kwargs)
+
+
+class WithinChannelLRN2D(ZooKerasLayer):
+    """
+    The local response normalization layer performs a kind of "lateral inhibition"
+    by normalizing over local input regions. The local regions extend spatially,
+    in separate channels (i.e., they have shape 1 x size x size).
+
+    When you use this layer as the first layer of a model, you need to provide the argument
+    input_shape (a shape tuple, does not include the batch dimension).
+
+    # Arguments
+    size: The side length of the square region to sum over. Default is 5.
+    alpha: The scaling parameter. Default is 1.0.
+    beta: The exponent. Default is 0.75.
+    input_shape: A shape tuple, not including batch.
+    name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
+
+    >>> withinchannellrn2d = WithinChannelLRN2D(input_shape=(2, 3, 8, 8))
+    creating: createZooKerasWithinChannelLRN2D
+    """
+    def __init__(self, size=5, alpha=1.0, beta=0.75, input_shape=None, **kwargs):
+        super(WithinChannelLRN2D, self).__init__(None,
+                                                 size,
+                                                 float(alpha),
+                                                 float(beta),
+                                                 list(input_shape) if input_shape else None,
+                                                 **kwargs)
+
+
+class BinaryThreshold(ZooKerasLayer):
+    """
+    Threshold the input.
+    If an input element is smaller than the threshold value,
+    it will be replaced by 0; otherwise, it will be replaced by 1.
+
+    When you use this layer as the first layer of a model, you need to provide the argument
+    input_shape (a shape tuple, does not include the batch dimension).
+
+    # Arguments
+    value: The threshold value to compare with. Default is 1e-6.
+    input_shape: A shape tuple, not including batch.
+    name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
+
+    >>> binarythreshold = BinaryThreshold(input_shape=(2, 3, 4, 5))
+    creating: createZooKerasBinaryThreshold
+    """
+    def __init__(self, value=1e-6, input_shape=None, **kwargs):
+        super(BinaryThreshold, self).__init__(None,
+                                              float(value),
+                                              list(input_shape) if input_shape else None,
+                                              **kwargs)
