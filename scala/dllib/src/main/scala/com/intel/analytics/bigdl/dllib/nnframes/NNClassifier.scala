@@ -42,13 +42,13 @@ import scala.reflect.ClassTag
 class NNClassifier[F, T: ClassTag](
     @transient override val model: Module[T],
     override val criterion : Criterion[T],
-    override val featureTransformers: Transformer[F, Tensor[T]],
+    override val featureTransformer: Transformer[F, Tensor[T]],
     override val uid: String = Identifiable.randomUID("nnClassifier")
   )(implicit ev: TensorNumeric[T])
-  extends NNEstimator[F, AnyVal, T](model, criterion, featureTransformers, NumToTensor()) {
+  extends NNEstimator[F, AnyVal, T](model, criterion, featureTransformer, NumToTensor()) {
 
   override protected def wrapBigDLModel(m: Module[T]): NNClassifierModel[F, T] = {
-    val dlModel = new NNClassifierModel[F, T](m, featureTransformers)
+    val dlModel = new NNClassifierModel[F, T](m, featureTransformer)
     copyValues(dlModel.setParent(this)).asInstanceOf[NNClassifierModel[F, T]]
   }
 
@@ -62,7 +62,7 @@ class NNClassifier[F, T: ClassTag](
       new NNClassifier[F, T](
         model.cloneModule(),
         criterion.cloneCriterion(),
-        featureTransformers.cloneTransformer(),
+        featureTransformer.cloneTransformer(),
         this.uid
       ),
       extra)
@@ -108,16 +108,17 @@ object NNClassifierModel extends MLReadable[NNClassifierModel[_, _]] {
     import scala.language.existentials
     implicit val format: DefaultFormats.type = DefaultFormats
     override def load(path: String): NNClassifierModel[_, _] = {
-      val (meta, model, typeTag) = NNModel.getMetaAndModel(path, sc)
-      val nnModel = null
-//        typeTag match {
-//        case "TensorDouble" =>
-//          new NNClassifierModel[_, Double](model.asInstanceOf[Module[Double]], null)
-//        case "TensorFloat" =>
-//          new NNClassifierModel[_, Float](model.asInstanceOf[Module[Float]], null)
-//        case _ =>
-//          throw new Exception("Only support float and double for now")
-//      }
+      val (meta, model, typeTag, feaTran) = NNModel.getMetaAndModel(path, sc)
+      val nnModel = typeTag match {
+        case "TensorDouble" =>
+          new NNClassifierModel[Any, Double](model.asInstanceOf[Module[Double]],
+            feaTran.asInstanceOf[Transformer[Any, Tensor[Double]]])
+        case "TensorFloat" =>
+          new NNClassifierModel[Any, Float](model.asInstanceOf[Module[Float]],
+            feaTran.asInstanceOf[Transformer[Any, Tensor[Float]]])
+        case _ =>
+          throw new Exception("Only support float and double for now")
+      }
 
       DefaultParamsWriterWrapper.getAndSetParams(nnModel, meta)
       nnModel

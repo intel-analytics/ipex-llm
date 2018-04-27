@@ -16,7 +16,7 @@
 
 package com.intel.analytics.zoo.pipeline.nnframes.python
 
-import java.util.{ArrayList => JArrayList}
+import java.util.{ArrayList => JArrayList, List => JList}
 
 import com.intel.analytics.bigdl.dataset.Transformer
 import com.intel.analytics.bigdl.optim.OptimMethod
@@ -26,7 +26,7 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.transform.vision.image.FeatureTransformer
 import com.intel.analytics.zoo.pipeline.nnframes._
-import com.intel.analytics.zoo.pipeline.nnframes.transformers.{NumToTensor, SeqToTensor}
+import com.intel.analytics.zoo.pipeline.nnframes.transformers.{MLlibVectorToTensor, NumToTensor, SeqToTensor}
 import org.apache.spark.api.java.JavaSparkContext
 import org.apache.spark.sql.DataFrame
 
@@ -51,24 +51,38 @@ class PythonNNFrames[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonB
   }
 
   def createNNEstimator(
-        model: Module[T],
-        criterion: Criterion[T],
-        featureTransformer: Transformer[Any, Tensor[T]],
-        labelTransformer: Transformer[Any, Tensor[T]]): NNEstimator[Any, Any, T] = {
+      model: Module[T],
+      criterion: Criterion[T],
+      featureTransformer: Transformer[Any, Tensor[T]],
+      labelTransformer: Transformer[Any, Tensor[T]]): NNEstimator[Any, Any, T] = {
     new NNEstimator(model, criterion, featureTransformer, labelTransformer)
   }
 
-//  def createNNClassifier(
-//        model: Module[T],
-//        criterion: Criterion[T],
-//        featureSize: JArrayList[Int],
-//        labelSize: JArrayList[Int]): NNClassifier[T] = {
-//    new NNClassifier[T](model, criterion, featureSize.asScala.toArray)
-//  }
+  def createNNClassifier(
+        model: Module[T],
+        criterion: Criterion[T],
+        featureTransformer: Transformer[Any, Tensor[T]],
+        labelTransformer: Transformer[Any, Tensor[T]]): NNClassifier[Any, T] = {
+    new NNClassifier(model, criterion, featureTransformer)
+  }
 
   def createNNModel(
       model: Module[T], featureTransformer: Transformer[Any, Tensor[T]]): NNModel[Any, T] = {
     new NNModel(model, featureTransformer)
+  }
+
+  def createNNClassifierModel(
+      model: Module[T],
+      featureTransformer: Transformer[Any, Tensor[T]]): NNClassifierModel[Any, T]  = {
+    new NNClassifierModel(model, featureTransformer)
+  }
+
+  def setOptimMethod(estimator: NNEstimator[Any, Any, T], optimMethod: OptimMethod[T]): NNEstimator[Any, Any, T] = {
+    estimator.setOptimMethod(optimMethod)
+  }
+
+  def withOriginColumn(imageDF: DataFrame, imageColumn: String, originColumn: String): DataFrame = {
+    NNImageSchema.withOriginColumn(imageDF, imageColumn, originColumn)
   }
 
   def createNumToTensor(): NumToTensor[T] = {
@@ -79,17 +93,7 @@ class PythonNNFrames[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonB
     SeqToTensor(size.asScala.toArray)
   }
 
-//  def createNNClassifierModel(
-//      model: Module[T],
-//      featureSize: JArrayList[Int]): NNClassifierModel[T] = {
-//    new NNClassifierModel[T](model, featureSize.asScala.toArray)
-//  }
-
-//  def setOptimMethod(estimator: NNEstimator[T], optimMethod: OptimMethod[T]): NNEstimator[T] = {
-//    estimator.setOptimMethod(optimMethod)
-//  }
-//
-//  def withOriginColumn(imageDF: DataFrame, imageColumn: String, originColumn: String): DataFrame = {
-//    NNImageSchema.withOriginColumn(imageDF, imageColumn, originColumn)
-//  }
+  def createMLlibVectorToTensor(size: JArrayList[Int]): MLlibVectorToTensor[T] = {
+    MLlibVectorToTensor(size.asScala.toArray)
+  }
 }
