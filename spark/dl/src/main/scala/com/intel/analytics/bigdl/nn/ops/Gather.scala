@@ -21,6 +21,11 @@ import com.intel.analytics.bigdl.utils.Table
 
 import scala.reflect.ClassTag
 
+/**
+ * Gather slices from first input tensor according to the second input tensor.
+ * Input should be two tensors, the first one is the tensor which to gather values;
+ * the second one is Index tensor.
+ */
 class Gather[T: ClassTag, D: ClassTag]()(implicit ev: TensorNumeric[T], ev2: TensorNumeric[D])
   extends Operation[Table, Tensor[D], T]{
   output = Tensor[D]()
