@@ -27,7 +27,6 @@ import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.nn.keras.KerasLayer
 import com.intel.analytics.zoo.pipeline.api.keras.layers._
-import com.intel.analytics.zoo.pipeline.api.keras.layers.Recurrent
 import com.intel.analytics.zoo.pipeline.api.keras.layers.utils.KerasUtils
 import com.intel.analytics.zoo.pipeline.api.keras.models.{Model, Sequential}
 
@@ -604,7 +603,7 @@ class PythonZooKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonB
   }
 
   def createZooKerasBidirectional(
-      layer: Recurrent[T],
+      layer: com.intel.analytics.bigdl.nn.keras.Recurrent[T],
       mergeMode: String = "concat",
       inputShape: JList[Int] = null): Bidirectional[T] = {
     Bidirectional(layer, mergeMode, toScalaShape(inputShape))
