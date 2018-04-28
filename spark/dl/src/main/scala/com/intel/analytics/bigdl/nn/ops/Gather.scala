@@ -15,7 +15,7 @@
  */
 package com.intel.analytics.bigdl.nn.ops
 
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.tensor.{IntType, Tensor, TensorDataType}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Table
 
@@ -30,9 +30,19 @@ class Gather[T: ClassTag, D: ClassTag]()(implicit ev: TensorNumeric[T], ev2: Ten
   extends Operation[Table, Tensor[D], T]{
   output = Tensor[D]()
 
+  protected val intBuffer = Tensor[Int]()
+
   override def updateOutput(input: Table): Tensor[D] = {
     val inputTensor = input[Tensor[D]](1)
-    val indices = input[Tensor[Int]](2)
+    val input2 = input[Tensor[_]](2)
+    // support floatType indices.
+    val indices = if (input2.getType() == IntType) {
+      input2.asInstanceOf[Tensor[Int]]
+    } else {
+      intBuffer.resizeAs(input2)
+      input2.cast[Int](intBuffer)
+      intBuffer
+    }
     val inputSizes = inputTensor.size()
 
     if (indices.isScalar) {
@@ -67,6 +77,12 @@ class Gather[T: ClassTag, D: ClassTag]()(implicit ev: TensorNumeric[T], ev2: Ten
   override def getClassTagNumerics() : (Array[ClassTag[_]], Array[TensorNumeric[_]]) = {
     (Array[ClassTag[_]](scala.reflect.classTag[T], scala.reflect.classTag[D]),
       Array[TensorNumeric[_]](ev, ev2))
+  }
+
+  override def clearState() : this.type = {
+    super.clearState()
+    intBuffer.set()
+    this
   }
 
 }

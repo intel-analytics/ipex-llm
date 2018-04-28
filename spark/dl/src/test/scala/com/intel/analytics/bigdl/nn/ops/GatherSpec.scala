@@ -52,4 +52,17 @@ class GatherSpec extends FlatSpec with Matchers {
     output should be (exceptedOutput)
   }
 
+  "gather with Float input" should "works fine" in {
+    val gather = Gather[Float, Float]()
+    val indices = Tensor[Float](T(T(0f, 1f), T(0f, 1f)))
+    val input = Tensor.range(1, 24).resize(2, 3, 4)
+    val output = gather.forward(T(input, indices))
+
+    val exceptedOutput = Tensor(2, 2, 3, 4)
+    exceptedOutput.select(1, 1).copy(input)
+    exceptedOutput.select(1, 2).copy(input)
+
+    output should be (exceptedOutput)
+  }
+
 }
