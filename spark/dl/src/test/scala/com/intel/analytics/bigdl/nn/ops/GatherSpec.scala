@@ -19,6 +19,7 @@ import org.scalatest.{FlatSpec, Matchers}
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 
 class GatherSpec extends FlatSpec with Matchers {
   "gather with scalar" should "works fine" in {
@@ -65,4 +66,14 @@ class GatherSpec extends FlatSpec with Matchers {
     output should be (exceptedOutput)
   }
 
+}
+
+class FloorDivSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val gather = Gather[Float, Float]().setName("floorDiv")
+    val input1 = Tensor[Float].range(1, 6).resize(2, 3)
+    val input2 = Tensor[Int](2).fill(1)
+    val input = T(input1, input2)
+    runSerializationTest(gather, input)
+  }
 }
