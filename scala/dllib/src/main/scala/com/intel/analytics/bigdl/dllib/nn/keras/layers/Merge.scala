@@ -45,7 +45,7 @@ import scala.reflect.ClassTag
  * @tparam T The numeric type of parameter(e.g. weight, bias). Only support float/double now.
  */
 class Merge[T: ClassTag](
-    val layers: Array[KerasLayer[Activity, Activity, T]] = null,
+    val layers: Array[AbstractModule[Activity, Activity, T]] = null,
     val mode: String = "sum",
     val concatAxis: Int = -1,
     // MultiShape isn't directly supported for serialization. Use Shape instead.
@@ -62,6 +62,8 @@ class Merge[T: ClassTag](
   if (layers != null) {
     require(layers.length >= 2, s"Merge must take at least two input layers " +
       s"but found ${layers.length}")
+    layers.foreach(layer => require(layer.isInstanceOf[KerasLayer[Activity, Activity, T]],
+      "Each input layer for Merge should be a Keras-Style layer"))
     this.invokeMethodForSeq("excludeInvalidLayers", layers)
   }
 
@@ -148,7 +150,7 @@ class Merge[T: ClassTag](
         seq.add(com.intel.analytics.bigdl.nn.Reshape(Array(1, 1), Some(true)))
         seq
     }
-    if (layers != null) { // In the case `layers != null`, return a ParallelTable to merge layers
+    if (layers != null) { // In the case `layers != null`, return a ParallelTable to merge layers.
       val model = TSequential[T]()
       val parallel = ParallelTable()
       var i = 0
@@ -169,14 +171,17 @@ class Merge[T: ClassTag](
 object Merge {
   def calcBatchInputShape[T: ClassTag](
     inputShape: Shape = null,
-    layers: Array[KerasLayer[Activity, Activity, T]]): Shape = {
+    layers: Array[AbstractModule[Activity, Activity, T]]): Shape = {
     val batchInputShape = KerasUtils.addBatch(inputShape)
     val actualInputShape = if (layers != null) {
+      layers.foreach(layer => require(layer.isInstanceOf[KerasLayer[Activity, Activity, T]],
+        "Each input layer for Merge should be a Keras-Style layer"))
       MultiShape(layers.map { layer =>
-        if (layer.isBuilt()) {  // it's possible while reloaded from file
+        if (layer.asInstanceOf[KerasLayer[Activity, Activity, T]]
+          .isBuilt()) {  // it's possible while reloaded from file
           layer.getOutputShape()
         } else {
-          layer.build(layer.getInputShape())
+          layer.asInstanceOf[KerasLayer[Activity, Activity, T]].build(layer.getInputShape())
         }
       }.toList)
     } else null
@@ -195,7 +200,7 @@ object Merge {
     concatAxis: Int = -1,
     inputShape: Shape = null)(implicit ev: TensorNumeric[T]): Merge[T] = {
     val layersArray = if (layers != null) {
-      layers.toArray.map(_.asInstanceOf[KerasLayer[Activity, Activity, T]])
+      layers.toArray
     } else null
     new Merge[T](layersArray, mode, concatAxis, inputShape)
   }
