@@ -70,11 +70,6 @@ class SerializerSpec extends ZooSpecHelper {
           s"ModuleSerializationTest")
         testClass.asInstanceOf[ModuleSerializationTest].test()
       } catch {
-        case e: ClassNotFoundException =>
-          cancel(s"Serialization test of module $cls has not " +
-            s"been implemented. Please consider creating a serialization test class with name " +
-            s"$clsWholeName which extend com.intel.analytics.zoo.pipeline.api.keras.serializer." +
-            s"ModuleSerializationTest")
         case t: Throwable => throw t
       }
     }
