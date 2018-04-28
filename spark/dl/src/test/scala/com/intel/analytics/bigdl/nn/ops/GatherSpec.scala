@@ -68,7 +68,7 @@ class GatherSpec extends FlatSpec with Matchers {
 
 }
 
-class FloorDivSerialTest extends ModuleSerializationTest {
+class GatherSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val gather = Gather[Float, Float]().setName("floorDiv")
     val input1 = Tensor[Float].range(1, 6).resize(2, 3)
