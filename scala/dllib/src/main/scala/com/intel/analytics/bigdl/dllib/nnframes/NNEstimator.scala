@@ -29,8 +29,7 @@ import com.intel.analytics.bigdl.tensor.{Tensor, DoubleType => TensorDouble, Flo
 import com.intel.analytics.bigdl.utils.T
 import com.intel.analytics.bigdl.utils.serializer.ModuleLoader
 import com.intel.analytics.bigdl.visualization.{TrainSummary, ValidationSummary}
-import com.intel.analytics.zoo.pipeline.nnframes.transformers.{FeatureLabelTransformer, SampleToFeatureAdapter, TensorToSampleAdapter}
-import org.apache.spark.annotation.Since
+import com.intel.analytics.zoo.pipeline.nnframes.transformers.{FeatureLabelTransformer, SampleToFeatureAdapter, TensorToSample, TupleToFeature}
 import org.apache.spark.ml.adapter.{HasFeaturesCol, HasPredictionCol, SchemaUtils}
 import org.apache.spark.ml.{DLEstimatorBase, DLTransformerBase, DefaultParamsWriterWrapper}
 import org.apache.spark.ml.param._
@@ -379,7 +378,7 @@ class NNModel[F, T: ClassTag](
       model: Module[T],
       featureTransformer: Transformer[F, Tensor[T]]
     )(implicit ev: TensorNumeric[T]) =
-    this(model, TensorToSampleAdapter(featureTransformer))
+    this(model, featureTransformer -> TensorToSample())
 
   def setFeaturesCol(featuresColName: String): this.type = set(featuresCol, featuresColName)
 
