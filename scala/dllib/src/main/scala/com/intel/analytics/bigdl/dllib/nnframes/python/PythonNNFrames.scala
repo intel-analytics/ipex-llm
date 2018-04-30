@@ -27,6 +27,7 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.transform.vision.image.FeatureTransformer
 import com.intel.analytics.zoo.pipeline.nnframes._
 import com.intel.analytics.zoo.pipeline.nnframes.transformers._
+import com.intel.analytics.zoo.pipeline.nnframes.transformers.internal.FeatureToTupleAdapter
 import org.apache.spark.api.java.JavaSparkContext
 import org.apache.spark.sql.DataFrame
 

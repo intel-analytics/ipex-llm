@@ -25,13 +25,12 @@ import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import org.apache.hadoop.fs.Path
 import org.apache.spark.SparkContext
-import com.intel.analytics.bigdl.tensor.{Tensor, DoubleType => TensorDouble,
-  FloatType => TensorFloat}
+import com.intel.analytics.bigdl.tensor.{Tensor, DoubleType => TensorDouble, FloatType => TensorFloat}
 import com.intel.analytics.bigdl.utils.T
 import com.intel.analytics.bigdl.utils.serializer.ModuleLoader
 import com.intel.analytics.bigdl.visualization.{TrainSummary, ValidationSummary}
-import com.intel.analytics.zoo.pipeline.nnframes.transformers.{FeatureLabelTransformer,
-  FeatureToTupleAdapter, TensorToSample}
+import com.intel.analytics.zoo.pipeline.nnframes.transformers.internal.FeatureToTupleAdapter
+import com.intel.analytics.zoo.pipeline.nnframes.transformers.{FeatureLabelTransformer, TensorToSample}
 import org.apache.spark.ml.adapter.{HasFeaturesCol, HasPredictionCol, SchemaUtils}
 import org.apache.spark.ml.{DLEstimatorBase, DLTransformerBase, DefaultParamsWriterWrapper}
 import org.apache.spark.ml.param._
@@ -115,8 +114,7 @@ private[nnframes] trait NNParams[F, @specialized(Float, Double) T] extends HasFe
  * memory consumption during feature conversion and training.
  * 
  * For details usage, please refer to examples in package
- * com.intel.analytics.zoo.pipeline.example.nnframes
- *
+ *com.intel.analytics.zoo.examples.nnframes
  * 
  * Construct a NNEstimator with BigDL model, criterion and a sampleTransformer that transform a 
  * (feature, label) tuple to a BigDL Sample. This constructor is only recommended for the expert
@@ -290,6 +288,7 @@ class NNEstimator[F, L, T: ClassTag](
   private def getDataSet(
       dataFrame: DataFrame,
       batchSize: Int): DataSet[MiniBatch[T]] = {
+
     val featureColIndex = dataFrame.schema.fieldIndex($(featuresCol))
     val labelColIndex = if (dataFrame.columns.contains($(labelCol))) {
       dataFrame.schema.fieldIndex($(labelCol))
@@ -378,12 +377,8 @@ class NNEstimator[F, L, T: ClassTag](
  * T (Double or Float) is decided by the model type.
  *
  * @param model trainned BigDL models to use in prediction.
- * @param sampleTransformer A transformer that transforms the feature data to a Tensor[T].
+ * @param sampleTransformer A transformer that transforms the feature data to a Sample[T].
  *        featureTransformer should be a subClass of com.intel.analytics.bigdl.dataset.Transformer.
- *        Some common transformers have been defined in package
- *        com.intel.analytics.zoo.pipeline.nnframes.transformers. E.g. SeqToTensor is used
- *        to transform Array[_] to Tensor, and NumToTensor transform a number to a Tensor. Multiple
- *        Transformer can be combined as a Pipeline Transformer.
  */
 class NNModel[F, T: ClassTag](
     @transient val model: Module[T],
@@ -393,13 +388,14 @@ class NNModel[F, T: ClassTag](
     with HasBatchSize with MLWritable {
 
   /**
+   * Construct NNModel with a BigDL model and a feature-to-tensor transformer
    * @param model trainned BigDL models to use in prediction.
    * @param featureTransformer A transformer that transforms the feature data to a Tensor[T].
    *        featureTransformer should be a subClass of com.intel.analytics.bigdl.dataset.Transformer.
    *        Some common transformers have been defined in package
    *        com.intel.analytics.zoo.pipeline.nnframes.transformers. E.g. SeqToTensor is used
    *        to transform Array[_] to Tensor, and NumToTensor transform a number to a Tensor. Multiple
-   *        Transformer can be combined as a Pipeline Transformer.
+   *        Transformer can be combined as a Chained Transformer.
    */
   def this(
       model: Module[T],

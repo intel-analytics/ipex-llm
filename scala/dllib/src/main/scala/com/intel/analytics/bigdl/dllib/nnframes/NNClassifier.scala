@@ -38,6 +38,15 @@ import scala.reflect.ClassTag
  *
  * @param model BigDL module to be optimized
  * @param criterion  BigDL criterion method
+ * @param featureTransformer A transformer that transforms the feature data to a Tensor[T].
+ *        featureTransformer should be a subClass of com.intel.analytics.bigdl.dataset.Transformer.
+ *        Some common transformers have been defined in package
+ *        com.intel.analytics.zoo.pipeline.nnframes.transformers. E.g. SeqToTensor is used
+ *        to transform Array[_] to Tensor, and NumToTensor transform a number to a Tensor. Multiple
+ *        Transformer can be combined as a ChainedTransformer.
+ *        E.g. For a feature column that contains 28 * 28 floats in an Array, Users can set
+ *        SeqToTensor(Array(28, 28)) as featureTransformer, which will convert the feature data into
+ *        Tensors with dimension 28 * 28 to be processed by Model.
  */
 class NNClassifier[F, T: ClassTag](
     @transient override val model: Module[T],
@@ -79,7 +88,9 @@ class NNClassifier[F, T: ClassTag](
  * [[NNClassifierModel]] is a specialized [[NNModel]] for classification tasks.
  * The prediction column will have the data type of Double.
  *
- * @param model BigDL module to be optimized
+ * @param model trainned BigDL models to use in prediction.
+ * @param sampleTransformer A transformer that transforms the feature data to a Tensor[T].
+ *        featureTransformer should be a subClass of com.intel.analytics.bigdl.dataset.Transformer.
  */
 class NNClassifierModel[F, T: ClassTag](
     @transient override val model: Module[T],
@@ -87,6 +98,15 @@ class NNClassifierModel[F, T: ClassTag](
     override val uid: String = "DLClassifierModel"
   )(implicit ev: TensorNumeric[T]) extends NNModel[F, T](model, sampleTransformer) {
 
+  /**
+   * @param model trainned BigDL models to use in prediction.
+   * @param featureTransformer A transformer that transforms the feature data to a Tensor[T].
+   *        featureTransformer should be a subClass of com.intel.analytics.bigdl.dataset.Transformer.
+   *        Some common transformers have been defined in package
+   *        com.intel.analytics.zoo.pipeline.nnframes.transformers. E.g. SeqToTensor is used
+   *        to transform Array[_] to Tensor, and NumToTensor transform a number to a Tensor. Multiple
+   *        Transformer can be combined as a Chained Transformer.
+   */
   def this(
       model: Module[T],
       featureTransformer: Transformer[F, Tensor[T]]
