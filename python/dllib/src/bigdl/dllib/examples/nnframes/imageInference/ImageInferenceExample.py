@@ -23,15 +23,14 @@ from pyspark.sql.types import StringType
 from zoo.common.nncontext import *
 from zoo.pipeline.nnframes.nn_classifier import *
 from zoo.pipeline.nnframes.nn_image_reader import *
-from zoo.pipeline.nnframes.nn_image_transformer import *
 
 def inference(image_path, model_path, sc):
 
     imageDF = NNImageReader.readImages(image_path, sc)
     getName = udf(lambda row: row[0], StringType())
-    transformer = ChainedTransformer([RowToImageFeature(), Resize(256, 256), CenterCrop(224, 224),
-                                      ChannelNormalize(123.0, 117.0, 104.0),
-                                      MatToTensor(), ImageFeatureToTensor()])
+    transformer = ChainedTransformer(
+        [RowToImageFeature(), Resize(256, 256), CenterCrop(224, 224),
+         ChannelNormalize(123.0, 117.0, 104.0), MatToTensor(), ImageFeatureToTensor()])
 
     model = Model.loadModel(model_path)
     classifier_model = NNClassifierModel(model, transformer)\
