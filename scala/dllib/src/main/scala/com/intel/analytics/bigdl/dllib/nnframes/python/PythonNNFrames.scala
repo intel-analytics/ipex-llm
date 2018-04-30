@@ -18,7 +18,7 @@ package com.intel.analytics.zoo.pipeline.nnframes.python
 
 import java.util.{ArrayList => JArrayList, List => JList}
 
-import com.intel.analytics.bigdl.dataset.Transformer
+import com.intel.analytics.bigdl.dataset.{Sample, Transformer}
 import com.intel.analytics.bigdl.optim.OptimMethod
 import com.intel.analytics.bigdl.{Criterion, Module}
 import com.intel.analytics.bigdl.python.api.PythonBigDL
@@ -26,7 +26,7 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.transform.vision.image.FeatureTransformer
 import com.intel.analytics.zoo.pipeline.nnframes._
-import com.intel.analytics.zoo.pipeline.nnframes.transformers.{MLlibVectorToTensor, NumToTensor, SeqToTensor}
+import com.intel.analytics.zoo.pipeline.nnframes.transformers._
 import org.apache.spark.api.java.JavaSparkContext
 import org.apache.spark.sql.DataFrame
 
@@ -53,22 +53,22 @@ class PythonNNFrames[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonB
   def createNNEstimator(
       model: Module[T],
       criterion: Criterion[T],
-      featureTransformer: Transformer[Any, Tensor[T]],
-      labelTransformer: Transformer[Any, Tensor[T]]): NNEstimator[Any, Any, T] = {
-    new NNEstimator(model, criterion, featureTransformer, labelTransformer)
+      sampleTransformer: Transformer[(Any, Any), Sample[T]]
+    ): NNEstimator[Any, Any, T] = {
+    new NNEstimator(model, criterion, sampleTransformer)
   }
 
   def createNNClassifier(
         model: Module[T],
         criterion: Criterion[T],
-        featureTransformer: Transformer[Any, Tensor[T]],
-        labelTransformer: Transformer[Any, Tensor[T]]): NNClassifier[Any, T] = {
+        featureTransformer: Transformer[Any, Tensor[T]]): NNClassifier[Any, T] = {
     new NNClassifier(model, criterion, featureTransformer)
   }
 
   def createNNModel(
-      model: Module[T], featureTransformer: Transformer[Any, Tensor[T]]): NNModel[Any, T] = {
-    new NNModel(model, featureTransformer)
+      model: Module[T],
+      sampleTransformer: Transformer[Any, Sample[T]]): NNModel[Any, T] = {
+    new NNModel(model, sampleTransformer)
   }
 
   def createNNClassifierModel(
@@ -95,5 +95,36 @@ class PythonNNFrames[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonB
 
   def createMLlibVectorToTensor(size: JArrayList[Int]): MLlibVectorToTensor[T] = {
     MLlibVectorToTensor(size.asScala.toArray)
+  }
+
+  def createImageFeatureToTensor(): ImageFeatureToTensor[T] = {
+    ImageFeatureToTensor()
+  }
+
+  def createRowToImageFeature(): RowToImageFeature[T] = {
+    RowToImageFeature()
+  }
+
+  def createFeatureLabelTransformer(
+      featureTransfomer: Transformer[Any, Tensor[T]],
+      labelTransformer: Transformer[Any, Tensor[T]]
+    ): FeatureLabelTransformer[Any, Any, Sample[T]] = {
+    FeatureLabelTransformer(featureTransfomer, labelTransformer)
+      .asInstanceOf[FeatureLabelTransformer[Any, Any, Sample[T]]]
+  }
+
+  def createChainedTransformer(list: JList[Transformer[Any, Any]]): Transformer[Any, Any] = {
+    var cur = list.get(0)
+    (1 until list.size()).foreach(t => cur = cur -> list.get(t))
+    cur
+  }
+  
+  def createTensorToSample(): TensorToSample[T] = {
+    TensorToSample()
+  }
+  
+  def createFeatureToTupleAdapter(
+      sampleTransformer: Transformer[(Any, Any), Sample[T]]): FeatureToTupleAdapter[Any, Sample[T]] = {
+    FeatureToTupleAdapter(sampleTransformer).asInstanceOf[FeatureToTupleAdapter[Any, Sample[T]]]
   }
 }

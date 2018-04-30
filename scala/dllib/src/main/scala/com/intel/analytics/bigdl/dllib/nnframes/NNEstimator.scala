@@ -25,11 +25,13 @@ import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import org.apache.hadoop.fs.Path
 import org.apache.spark.SparkContext
-import com.intel.analytics.bigdl.tensor.{Tensor, DoubleType => TensorDouble, FloatType => TensorFloat}
+import com.intel.analytics.bigdl.tensor.{Tensor, DoubleType => TensorDouble,
+  FloatType => TensorFloat}
 import com.intel.analytics.bigdl.utils.T
 import com.intel.analytics.bigdl.utils.serializer.ModuleLoader
 import com.intel.analytics.bigdl.visualization.{TrainSummary, ValidationSummary}
-import com.intel.analytics.zoo.pipeline.nnframes.transformers.{FeatureLabelTransformer, SampleToFeatureAdapter, TensorToSample, TupleToFeature}
+import com.intel.analytics.zoo.pipeline.nnframes.transformers.{FeatureLabelTransformer,
+  FeatureToTupleAdapter, TensorToSample}
 import org.apache.spark.ml.adapter.{HasFeaturesCol, HasPredictionCol, SchemaUtils}
 import org.apache.spark.ml.{DLEstimatorBase, DLTransformerBase, DefaultParamsWriterWrapper}
 import org.apache.spark.ml.param._
@@ -103,28 +105,34 @@ private[nnframes] trait NNParams[F, @specialized(Float, Double) T] extends HasFe
 }
 
 /**
- * [[NNEstimator]] extends Spark ML Estimator and supports training of a BigDL model with
+ * [[NNEstimator]] extends org.apache.spark.ml.Estimator and supports training a BigDL model with
  * Spark DataFrame. It can also be integrated into a standard Spark ML Pipeline to allow
- * users to combine the usage of BigDL and Spark MLlib.
+ * users to combine BigDL and Spark MLlib.
  *
  * [[NNEstimator]] supports different feature and label data type through transformers. Some common
  * transformers have been defined in package com.intel.analytics.zoo.pipeline.nnframes.transformers.
- *
- * E.g. SeqToTensor is used to transform Array[_] to Tensor, and NumToTensor transforms a number
- * to a Tensor. For a feature column that contains 28 * 28 floats in an Array, Users can set
- * SeqToTensor(Array(28, 28)) as featureTransformer, which will convert the feature data into
- * Tensor, as model training data.
- *
- * Internally both the feature data and label data are converted to Tensor with batch optimization.
- * Using the transformers allows [[NNEstimator]] to cache only the raw data and decrease the
+ * Using the transformers allows NNEstimator to cache only the raw data and decrease the
  * memory consumption during feature conversion and training.
- *
+ * 
  * For details usage, please refer to examples in package
  * com.intel.analytics.zoo.pipeline.example.nnframes
  *
+ * 
+ * Construct a NNEstimator with BigDL model, criterion and a sampleTransformer that transform a 
+ * (feature, label) tuple to a BigDL Sample. This constructor is only recommended for the expert
+ * users. Most users should use the other constructor with featureTransformer and labelTransformer.
  * @param model BigDL module to be optimized
  * @param criterion  BigDL criterion method
- * @param sampleTransformer A transformer that transforms the (feature, label) tuple to a Sample[T].
+ * @param sampleTransformer Expert param. A transformer that transforms the (feature, label) tuple
+ *        to a BigDL Sample[T], where T is decided by the BigDL model.
+ *
+ *        Note that sampleTransformer should be able to handle the case that label = null.
+ *        During fit, NNEstimator will extract (feature, label) tuple from input DataFrame and use
+ *        sampleTransformer to transform the tuple into BigDL Sample to be ingested by the model.
+ *        If Label column is not available, (feature, null) will be sent to sampleTransformer.
+ *
+ *        The sampleTransformer will also be copied to the generated NNModel and applied to feature
+ *        column during transform, where (feature, null) will be passed to the sampleTransformer.
  *        sampleTransformer should be a subClass of com.intel.analytics.bigdl.dataset.Transformer.
  * @tparam F data type from feature column, E.g. Array[_] or Vector
  * @tparam L data type from label column, E.g. Float, Double, Array[_] or Vector
@@ -140,6 +148,12 @@ class NNEstimator[F, L, T: ClassTag](
     with TrainingParams[T] {
 
   /**
+   * Construct a NNEstimator with a featureTransformer and a labelTransformer, which convert the
+   * data in feature column and label column to Tensors (Multi-dimension array) for model.
+   *
+   * The featureTransformer will be copied to the fitted NNModel, and apply to feature
+   * column data during transform. This is the the recommended constructor for most users. 
+   * 
    * @param model BigDL module to be optimized
    * @param criterion  BigDL criterion method
    * @param featureTransformer A transformer that transforms the feature data to a Tensor[T].
@@ -147,8 +161,11 @@ class NNEstimator[F, L, T: ClassTag](
    *        Some common transformers have been defined in package
    *        com.intel.analytics.zoo.pipeline.nnframes.transformers. E.g. SeqToTensor is used
    *        to transform Array[_] to Tensor, and NumToTensor transform a number to a Tensor. Multiple
-   *        Transformer can be combined as a Pipeline Transformer.
-   * @param labelTransformer similar to featureTransformer, but applies to Label column.
+   *        Transformer can be combined as a ChainedTransformer.
+   *        E.g. For a feature column that contains 28 * 28 floats in an Array, Users can set
+   *        SeqToTensor(Array(28, 28)) as featureTransformer, which will convert the feature data into
+   *        Tensors with dimension 28 * 28 to be processed by Model.
+   * @param labelTransformer similar to featureTransformer, but applies to Label data.
    */
   def this(
       model: Module[T],
@@ -261,17 +278,28 @@ class NNEstimator[F, L, T: ClassTag](
 
   override def transformSchema(schema : StructType): StructType = {
     validateParams(schema)
-    SchemaUtils.appendColumn(schema, $(predictionCol), ArrayType(DoubleType, false))
+    ev.getType() match {
+      case TensorDouble =>
+        SchemaUtils.appendColumn(schema, $(predictionCol), ArrayType(DoubleType, false))
+      case TensorFloat =>
+        SchemaUtils.appendColumn(schema, $(predictionCol), ArrayType(FloatType, false))
+      case _ => throw new Exception("Only support Double and Float for now")
+    }
   }
 
   private def getDataSet(
       dataFrame: DataFrame,
       batchSize: Int): DataSet[MiniBatch[T]] = {
     val featureColIndex = dataFrame.schema.fieldIndex($(featuresCol))
-    val labelColIndex = dataFrame.schema.fieldIndex($(labelCol))
+    val labelColIndex = if (dataFrame.columns.contains($(labelCol))) {
+      dataFrame.schema.fieldIndex($(labelCol))
+    } else {
+      -1
+    }
+    
     val featureAndLabel: RDD[(F, L)] = dataFrame.rdd.map { row =>
       val features = row.getAs[F](featureColIndex)
-      val labels = row.getAs[L](labelColIndex)
+      val labels = if (labelColIndex >= 0) row.getAs[L](labelColIndex) else null.asInstanceOf[L]
       (features, labels)
     }
     val ds = DataSet.rdd(featureAndLabel)
@@ -311,8 +339,9 @@ class NNEstimator[F, L, T: ClassTag](
    * sub classes can extend the method and return required model for different transform tasks
    */
   protected def wrapBigDLModel(m: Module[T]): NNModel[F, T] = {
-    val dlModel = new NNModel[F, T](
-      m, SampleToFeatureAdapter(sampleTransformer.asInstanceOf[Transformer[(F, Any), Sample[T]]]))
+    val clonedTransformer = FeatureToTupleAdapter(
+      sampleTransformer.cloneTransformer().asInstanceOf[Transformer[(F, Any), Sample[T]]])
+    val dlModel = new NNModel[F, T](m, clonedTransformer)
     copyValues(dlModel.setParent(this))
   }
 
@@ -345,13 +374,11 @@ class NNEstimator[F, L, T: ClassTag](
  * [[NNModel]] supports different feature data type through transformers. Some common
  * transformers have been defined in com.intel.analytics.zoo.pipeline.nnframes.transformers.
  *
- * E.g. SeqToTensor is used to transform Array[_] to Tensor, and NumToTensor transforms a number
- * to a Tensor. For a feature column that contains 28 * 28 floats in an Array, Users can set
- * SeqToTensor(Array(28, 28)) as featureTransformer, which will convert the feature data into
- * Tensor of 28 * 28 dimension, as model input data.
+ * After transform, the prediction column contains the output of the model as Array[T], where
+ * T (Double or Float) is decided by the model type.
  *
  * @param model trainned BigDL models to use in prediction.
- * @param featureTransformer A transformer that transforms the feature data to a Tensor[T].
+ * @param sampleTransformer A transformer that transforms the feature data to a Tensor[T].
  *        featureTransformer should be a subClass of com.intel.analytics.bigdl.dataset.Transformer.
  *        Some common transformers have been defined in package
  *        com.intel.analytics.zoo.pipeline.nnframes.transformers. E.g. SeqToTensor is used
@@ -360,7 +387,7 @@ class NNEstimator[F, L, T: ClassTag](
  */
 class NNModel[F, T: ClassTag](
     @transient val model: Module[T],
-    @transient val featureTransformer: Transformer[F, Sample[T]],
+    @transient val sampleTransformer: Transformer[F, Sample[T]],
     override val uid: String = "DLModel")(implicit ev: TensorNumeric[T])
   extends DLTransformerBase[NNModel[F, T]] with NNParams[F, T]
     with HasBatchSize with MLWritable {
@@ -396,7 +423,7 @@ class NNModel[F, T: ClassTag](
     val sc = dataFrame.sqlContext.sparkContext
     val modelBroadCast = ModelBroadcast[T]().broadcast(sc, model.evaluate())
     val localBatchSize = $(batchSize)
-    val featureTransformersBC = sc.broadcast(featureTransformer)
+    val featureTransformersBC = sc.broadcast(sampleTransformer)
     val toBatchBC = sc.broadcast(SampleToMiniBatch[T](localBatchSize))
 
     // concat the prediction and other columns in DF. avoid zip between RDD
@@ -430,15 +457,21 @@ class NNModel[F, T: ClassTag](
   }
 
   protected def outputToPrediction(output: Tensor[T]): Any = {
-    output.clone().storage().array().map(ev.toType[Double])
+    output.clone().storage().array()
   }
 
   override def transformSchema(schema : StructType): StructType = {
-    SchemaUtils.appendColumn(schema, $(predictionCol), ArrayType(DoubleType, containsNull = false))
+    ev.getType() match {
+      case TensorDouble =>
+        SchemaUtils.appendColumn(schema, $(predictionCol), ArrayType(DoubleType, false))
+      case TensorFloat =>
+        SchemaUtils.appendColumn(schema, $(predictionCol), ArrayType(FloatType, false))
+      case _ => throw new Exception("Only support Double and Float for now")
+    }
   }
 
   override def copy(extra: ParamMap): NNModel[F, T] = {
-    val copied = new NNModel[F, T](model.cloneModule(), featureTransformer.cloneTransformer(), uid)
+    val copied = new NNModel[F, T](model.cloneModule(), sampleTransformer.cloneTransformer(), uid)
       .setParent(parent)
     copyValues(copied, extra)
   }
@@ -534,7 +567,7 @@ object NNModel extends MLReadable[NNModel[_, _]] {
     val fos = new FileOutputStream(new Path(path, "featureTransformer").toString)
     val oos = new ObjectOutputStream(fos)
     try {
-      oos.writeObject(instance.featureTransformer)
+      oos.writeObject(instance.sampleTransformer)
     } finally {
       oos.close()
     }

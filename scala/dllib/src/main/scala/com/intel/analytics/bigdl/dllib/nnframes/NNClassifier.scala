@@ -77,7 +77,7 @@ class NNClassifier[F, T: ClassTag](
 
 /**
  * [[NNClassifierModel]] is a specialized [[NNModel]] for classification tasks.
- * The prediction column will have the datatype of Double.
+ * The prediction column will have the data type of Double.
  *
  * @param model BigDL module to be optimized
  */
@@ -103,7 +103,7 @@ class NNClassifierModel[F, T: ClassTag](
 
   override def copy(extra: ParamMap): NNClassifierModel[F, T] = {
     val copied = new NNClassifierModel(
-      model.cloneModule(), featureTransformer.cloneTransformer(), uid)
+      model.cloneModule(), sampleTransformer.cloneTransformer(), uid)
       .setParent(parent)
     copyValues(copied, extra).asInstanceOf[NNClassifierModel[F, T]]
   }
