@@ -68,7 +68,7 @@ class NNClassifierSpec extends FlatSpec with Matchers with BeforeAndAfter {
     }
   }
 
-  "An NNClassifier" should "has correct default params" in {
+  "NNClassifier" should "has correct default params" in {
     val model = Linear[Float](10, 1)
     val criterion = ClassNLLCriterion[Float]()
     val estimator = new NNClassifier(model, criterion, SeqToTensor(Array(10)))
@@ -80,7 +80,7 @@ class NNClassifierSpec extends FlatSpec with Matchers with BeforeAndAfter {
     assert(estimator.getLearningRateDecay == 0)
   }
 
-  "An NNClassifier" should "get reasonable accuracy" in {
+  "NNClassifier" should "get reasonable accuracy" in {
     val model = new Sequential().add(Linear[Float](6, 2)).add(LogSoftMax[Float])
     val criterion = ClassNLLCriterion[Float]()
     val classifier = new NNClassifier(model, criterion,  SeqToTensor(Array(6)))
@@ -96,7 +96,7 @@ class NNClassifierSpec extends FlatSpec with Matchers with BeforeAndAfter {
     assert(nnModel.transform(df).where("prediction=label").count() > nRecords * 0.8)
   }
 
-  "An NNClassifier" should "support different FEATURE types" in {
+  "NNClassifier" should "support different FEATURE types" in {
     val model = new Sequential().add(Linear[Float](6, 2)).add(LogSoftMax[Float])
     val criterion = ClassNLLCriterion[Float]()
     val classifier = new NNClassifier(model, criterion, SeqToTensor(Array(6)))
@@ -116,7 +116,7 @@ class NNClassifierSpec extends FlatSpec with Matchers with BeforeAndAfter {
     }
   }
 
-  "An NNClassifier" should "support scalar FEATURE" in {
+  "NNClassifier" should "support scalar FEATURE" in {
     val model = new Sequential().add(Linear[Float](1, 2)).add(LogSoftMax[Float])
     val criterion = ClassNLLCriterion[Float]()
     val classifier = new NNClassifier(model, criterion, NumToTensor())
@@ -136,7 +136,7 @@ class NNClassifierSpec extends FlatSpec with Matchers with BeforeAndAfter {
     }
   }
 
-  "An NNClassifier" should "fit with adam and LBFGS" in {
+  "NNClassifier" should "fit with adam and LBFGS" in {
     val model = new Sequential().add(Linear[Float](6, 2)).add(LogSoftMax[Float])
     val criterion = ClassNLLCriterion[Float]()
     Seq(new LBFGS[Float], new Adam[Float]).foreach { optimMethod =>
@@ -152,7 +152,7 @@ class NNClassifierSpec extends FlatSpec with Matchers with BeforeAndAfter {
     }
   }
 
-  "An NNClassifier" should "supports validation data and summary" in {
+  "NNClassifier" should "supports validation data and summary" in {
     val data = sc.parallelize(smallData)
     val df = sqlContext.createDataFrame(data).toDF("features", "label")
 
@@ -174,7 +174,7 @@ class NNClassifierSpec extends FlatSpec with Matchers with BeforeAndAfter {
     logdir.deleteOnExit()
   }
 
-  "An NNClassifier" should "get the same classification result with BigDL model" in {
+  "NNClassifier" should "get the same classification result with BigDL model" in {
     Logger.getLogger("org").setLevel(Level.WARN)
     Logger.getLogger("akka").setLevel(Level.WARN)
 
@@ -200,7 +200,7 @@ class NNClassifierSpec extends FlatSpec with Matchers with BeforeAndAfter {
     tensorBuffer.clear()
   }
 
-  "An NNClassifier" should "works in ML pipeline" in {
+  "NNClassifier" should "works in ML pipeline" in {
     val appSparkVersion = org.apache.spark.SPARK_VERSION
     if (appSparkVersion.trim.startsWith("1")) {
       val data = sc.parallelize(
@@ -240,7 +240,7 @@ class NNClassifierSpec extends FlatSpec with Matchers with BeforeAndAfter {
     estimator.fit(imageDF)
   }
 
-  "An NNClasifierModel" should "return same results after saving and loading" in {
+  "NNClasifierModel" should "return same results after saving and loading" in {
     val data = sqlContext.createDataFrame(smallData).toDF("features", "label")
     val module = new Sequential[Double]().add(Linear[Double](6, 2)).add(LogSoftMax[Double])
     val nnModel = new NNClassifierModel(module, SeqToTensor[Double](Array(6)))
@@ -301,7 +301,18 @@ class NNClassifierSpec extends FlatSpec with Matchers with BeforeAndAfter {
     assert(copied.getValidationSummary.isEmpty)
   }
 
-  "A NNClassifierModel" should "supports deep copy" in {
+  "NNClassifierModel" should "construct with sampleTransformer" in {
+    val model = new Sequential().add(Linear[Float](6, 2)).add(LogSoftMax[Float])
+    val sampleTransformer = SeqToTensor(Array(6)) -> TensorToSample()
+
+    val nnModel = new NNClassifierModel(model, sampleTransformer).setBatchSize(nRecords)
+    val data = sc.parallelize(smallData)
+    val df = sqlContext.createDataFrame(data).toDF("features", "label")
+
+    assert(nnModel.transform(df).count() == nRecords)
+  }
+
+  "NNClassifierModel" should "supports deep copy" in {
     val model = new Sequential().add(Linear[Float](6, 2)).add(LogSoftMax[Float])
     val criterion = ClassNLLCriterion[Float]()
     val data = sc.parallelize(

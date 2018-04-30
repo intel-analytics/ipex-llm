@@ -59,7 +59,6 @@ class NNEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
     Engine.init
   }
 
-
   after{
     if (sc != null) {
       sc.stop()
@@ -102,7 +101,7 @@ class NNEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
     assert(correct > nRecords * 0.8)
   }
 
-  "An NNEstimator" should "support sampleTransformer" in {
+  "An NNEstimator" should "construct with sampleTransformer" in {
     val model = new Sequential().add(Linear[Float](6, 2)).add(LogSoftMax[Float])
     val criterion = ClassNLLCriterion[Float]()
     val sampleTransformer = FeatureLabelTransformer(SeqToTensor(Array(6)), NumToTensor())
@@ -381,6 +380,17 @@ class NNEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
       .setBatchSize(1)
       .setFeaturesCol("image")
     featurizer.transform(imageDF).show()
+  }
+
+  "NNModel" should "construct with sampleTransformer" in {
+    val model = new Sequential().add(Linear[Float](6, 2)).add(LogSoftMax[Float])
+    val sampleTransformer = SeqToTensor(Array(6)) -> TensorToSample()
+
+    val nnModel = new NNModel(model, sampleTransformer).setBatchSize(nRecords)
+    val data = sc.parallelize(smallData)
+    val df = sqlContext.createDataFrame(data).toDF("features", "label")
+
+    assert(nnModel.transform(df).count() == nRecords)
   }
 
   "An NNModel" should "return same results after saving and loading" in {
