@@ -51,7 +51,6 @@ if __name__ == "__main__":
         exit(-1)
 
     sc = get_nncontext()
-    redire_spark_logs()
 
     model_path = sys.argv[1]
     image_path = sys.argv[2]
