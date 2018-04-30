@@ -101,11 +101,12 @@ class NNClassifierModel[F, T: ClassTag](
   /**
    * @param model trainned BigDL models to use in prediction.
    * @param featureTransformer A transformer that transforms the feature data to a Tensor[T].
-   *        featureTransformer should be a subClass of com.intel.analytics.bigdl.dataset.Transformer.
+   *        featureTransformer should be a subClass of
+   *        com.intel.analytics.bigdl.dataset.Transformer.
    *        Some common transformers have been defined in package
    *        com.intel.analytics.zoo.pipeline.nnframes.transformers. E.g. SeqToTensor is used
-   *        to transform Array[_] to Tensor, and NumToTensor transform a number to a Tensor. Multiple
-   *        Transformer can be combined as a Chained Transformer.
+   *        to transform Array[_] to Tensor, and NumToTensor transform a number to a Tensor.
+   *        Multiple transformer can be combined as a Chained Transformer.
    */
   def this(
       model: Module[T],

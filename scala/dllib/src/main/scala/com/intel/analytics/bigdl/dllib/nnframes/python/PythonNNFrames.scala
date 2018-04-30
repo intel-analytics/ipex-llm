@@ -74,11 +74,13 @@ class PythonNNFrames[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonB
 
   def createNNClassifierModel(
       model: Module[T],
-      featureTransformer: Transformer[Any, Tensor[T]]): NNClassifierModel[Any, T]  = {
+      featureTransformer: Transformer[Any, Tensor[T]]): NNClassifierModel[Any, T] = {
     new NNClassifierModel(model, featureTransformer)
   }
 
-  def setOptimMethod(estimator: NNEstimator[Any, Any, T], optimMethod: OptimMethod[T]): NNEstimator[Any, Any, T] = {
+  def setOptimMethod(
+      estimator: NNEstimator[Any, Any, T],
+      optimMethod: OptimMethod[T]): NNEstimator[Any, Any, T] = {
     estimator.setOptimMethod(optimMethod)
   }
 
@@ -119,13 +121,14 @@ class PythonNNFrames[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonB
     (1 until list.size()).foreach(t => cur = cur -> list.get(t))
     cur
   }
-  
+
   def createTensorToSample(): TensorToSample[T] = {
     TensorToSample()
   }
-  
+
   def createFeatureToTupleAdapter(
-      sampleTransformer: Transformer[(Any, Any), Sample[T]]): FeatureToTupleAdapter[Any, Sample[T]] = {
+      sampleTransformer: Transformer[(Any, Any), Sample[T]]
+    ): FeatureToTupleAdapter[Any, Sample[T]] = {
     FeatureToTupleAdapter(sampleTransformer).asInstanceOf[FeatureToTupleAdapter[Any, Sample[T]]]
   }
 }

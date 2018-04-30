@@ -112,11 +112,11 @@ private[nnframes] trait NNParams[F, @specialized(Float, Double) T] extends HasFe
  * transformers have been defined in package com.intel.analytics.zoo.pipeline.nnframes.transformers.
  * Using the transformers allows NNEstimator to cache only the raw data and decrease the
  * memory consumption during feature conversion and training.
- * 
+ *
  * For details usage, please refer to examples in package
  *com.intel.analytics.zoo.examples.nnframes
- * 
- * Construct a NNEstimator with BigDL model, criterion and a sampleTransformer that transform a 
+ *
+ * Construct a NNEstimator with BigDL model, criterion and a sampleTransformer that transform a
  * (feature, label) tuple to a BigDL Sample. This constructor is only recommended for the expert
  * users. Most users should use the other constructor with featureTransformer and labelTransformer.
  * @param model BigDL module to be optimized
@@ -150,19 +150,20 @@ class NNEstimator[F, L, T: ClassTag](
    * data in feature column and label column to Tensors (Multi-dimension array) for model.
    *
    * The featureTransformer will be copied to the fitted NNModel, and apply to feature
-   * column data during transform. This is the the recommended constructor for most users. 
-   * 
+   * column data during transform. This is the the recommended constructor for most users.
+   *
    * @param model BigDL module to be optimized
    * @param criterion  BigDL criterion method
    * @param featureTransformer A transformer that transforms the feature data to a Tensor[T].
-   *        featureTransformer should be a subClass of com.intel.analytics.bigdl.dataset.Transformer.
+   *        featureTransformer should be a subClass of
+   *        com.intel.analytics.bigdl.dataset.Transformer.
    *        Some common transformers have been defined in package
    *        com.intel.analytics.zoo.pipeline.nnframes.transformers. E.g. SeqToTensor is used
-   *        to transform Array[_] to Tensor, and NumToTensor transform a number to a Tensor. Multiple
-   *        Transformer can be combined as a ChainedTransformer.
+   *        to transform Array[_] to Tensor, and NumToTensor transform a number to a Tensor.
+   *        Multiple transformer can be combined as a ChainedTransformer.
    *        E.g. For a feature column that contains 28 * 28 floats in an Array, Users can set
-   *        SeqToTensor(Array(28, 28)) as featureTransformer, which will convert the feature data into
-   *        Tensors with dimension 28 * 28 to be processed by Model.
+   *        SeqToTensor(Array(28, 28)) as featureTransformer, which will convert the feature
+   *        data into Tensors with dimension 28 * 28 to be processed by Model.
    * @param labelTransformer similar to featureTransformer, but applies to Label data.
    */
   def this(
@@ -265,7 +266,7 @@ class NNEstimator[F, L, T: ClassTag](
   }
 
   protected def validateParams(schema : StructType): Unit = {
-    if(isSet(endWhen) && isSet(maxEpoch)) {
+    if (isSet(endWhen) && isSet(maxEpoch)) {
       throw new IllegalArgumentException(s"endWhen and maxEpoch cannot be both set")
     }
     if (validationTrigger.isEmpty && validationSummary.isDefined) {
@@ -295,7 +296,7 @@ class NNEstimator[F, L, T: ClassTag](
     } else {
       -1
     }
-    
+
     val featureAndLabel: RDD[(F, L)] = dataFrame.rdd.map { row =>
       val features = row.getAs[F](featureColIndex)
       val labels = if (labelColIndex >= 0) row.getAs[L](labelColIndex) else null.asInstanceOf[L]
@@ -391,11 +392,12 @@ class NNModel[F, T: ClassTag](
    * Construct NNModel with a BigDL model and a feature-to-tensor transformer
    * @param model trainned BigDL models to use in prediction.
    * @param featureTransformer A transformer that transforms the feature data to a Tensor[T].
-   *        featureTransformer should be a subClass of com.intel.analytics.bigdl.dataset.Transformer.
+   *        featureTransformer should be a subClass of
+   *        com.intel.analytics.bigdl.dataset.Transformer.
    *        Some common transformers have been defined in package
    *        com.intel.analytics.zoo.pipeline.nnframes.transformers. E.g. SeqToTensor is used
-   *        to transform Array[_] to Tensor, and NumToTensor transform a number to a Tensor. Multiple
-   *        Transformer can be combined as a Chained Transformer.
+   *        to transform Array[_] to Tensor, and NumToTensor transform a number to a Tensor.
+   *        Multiple transformer can be combined as a Chained Transformer.
    */
   def this(
       model: Module[T],
@@ -514,7 +516,8 @@ object NNModel extends MLReadable[NNModel[_, _]] {
         throw new Exception("Only support float and double for now")
     }
 
-    val ois = new ObjectInputStream(new FileInputStream(new Path(path, "featureTransformer").toString))
+    val ois = new ObjectInputStream(
+      new FileInputStream(new Path(path, "featureTransformer").toString))
     val featureTransformer = try {
       ois.readObject.asInstanceOf[Transformer[Any, Any]]
     } finally {
@@ -542,7 +545,7 @@ object NNModel extends MLReadable[NNModel[_, _]] {
    * @param extraMetadata  Metadata such as featureSize.
    */
   private[nnframes] def saveImpl[@specialized(Float, Double) T: ClassTag](
-      instance: NNModel[ _, T],
+      instance: NNModel[_, T],
       module: Module[T],
       path: String,
       sc: SparkContext,
