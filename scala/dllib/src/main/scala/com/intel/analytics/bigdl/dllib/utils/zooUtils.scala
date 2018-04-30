@@ -19,6 +19,7 @@ package com.intel.analytics.zoo.common
 import java.io._
 
 import com.intel.analytics.bigdl.utils.File
+
 import org.apache.commons.io.filefilter.WildcardFileFilter
 
 import scala.collection.mutable.ArrayBuffer
