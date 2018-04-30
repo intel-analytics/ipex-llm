@@ -25,7 +25,6 @@ from pyspark.ml.feature import MinMaxScaler
 from pyspark.sql.types import *
 
 from zoo.common.nncontext import *
-from zoo.pipeline.nnframes.nn_transformers import *
 from zoo.pipeline.nnframes.nn_classifier import *
 
 
@@ -44,13 +43,12 @@ class TestNNClassifer():
         """
         self.sc.stop()
 
-    def test_first(self):
+    def test_nnEstimator_construct_with_sample_transformer(self):
         linear_model = Sequential().add(Linear(2, 2))
         mse_criterion = MSECriterion()
 
-        estimator = NNEstimator.withTensorTransformer(model=linear_model, criterion=mse_criterion,
-                                feature_transformer=SeqToTensor([2]),
-                                label_transformer=SeqToTensor([2]))\
+        estimator = NNEstimator(linear_model, mse_criterion,
+                                FeatureLabelTransformer(SeqToTensor([2]), SeqToTensor([2]))) \
             .setBatchSize(4)
         data = self.sc.parallelize([
             ((2.0, 1.0), (1.0, 2.0)),
@@ -254,7 +252,31 @@ class TestNNClassifer():
             res.collect()
             assert type(res).__name__ == 'DataFrame'
 
-    #TODO: add unit test for ML Vector
+    def test_nnclassifier_in_pipeline(self):
+
+        if self.sc.version.startswith("1"):
+            from pyspark.mllib.linalg import Vectors
+
+            df = self.sqlContext.createDataFrame(
+                [(Vectors.dense([2.0, 1.0]), 1.0),
+                 (Vectors.dense([1.0, 2.0]), 2.0),
+                 (Vectors.dense([2.0, 1.0]), 1.0),
+                 (Vectors.dense([1.0, 2.0]), 2.0),
+                 ], ["features", "label"])
+
+            scaler = MinMaxScaler().setInputCol("features").setOutputCol("scaled")
+            model = Sequential().add(Linear(2, 2))
+            criterion = ClassNLLCriterion()
+            classifier = NNClassifier(model, criterion, MLlibVectorToTensor([2])).setBatchSize(4) \
+                .setLearningRate(0.01).setMaxEpoch(10).setFeaturesCol("scaled")
+
+            pipeline = Pipeline(stages=[scaler, classifier])
+
+            pipelineModel = pipeline.fit(df)
+
+            res = pipelineModel.transform(df)
+            assert type(res).__name__ == 'DataFrame'
+        #TODO: Add test for ML Vector once infra is ready.
 
 if __name__ == "__main__":
     pytest.main()
