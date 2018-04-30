@@ -146,8 +146,9 @@ class NNEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
       .setBatchSize(2)
       .setEndWhen(Trigger.maxIteration(1))
 
-    val vectorDF = sqlContext.createDataFrame(sc.parallelize(smallData.map(p => (Vectors.dense(p._1), p._2))))
-      .toDF("features", "label") // MLlib Vector
+    val vectorDF = sqlContext.createDataFrame(sc.parallelize(
+      smallData.map(p => (Vectors.dense(p._1), p._2))
+    )).toDF("features", "label") // MLlib Vector
     vecEstimator.fit(vectorDF)
 
   }

@@ -83,7 +83,7 @@ class NNClassifierSpec extends FlatSpec with Matchers with BeforeAndAfter {
   "NNClassifier" should "get reasonable accuracy" in {
     val model = new Sequential().add(Linear[Float](6, 2)).add(LogSoftMax[Float])
     val criterion = ClassNLLCriterion[Float]()
-    val classifier = new NNClassifier(model, criterion,  SeqToTensor(Array(6)))
+    val classifier = new NNClassifier(model, criterion, SeqToTensor(Array(6)))
       .setOptimMethod(new LBFGS[Float]())
       .setLearningRate(0.1)
       .setBatchSize(nRecords)
@@ -227,9 +227,10 @@ class NNClassifierSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
   "NNClasifier" should "support image FEATURE types" in {
     val pascalResource = getClass.getClassLoader.getResource("pascal/")
-    val imageDF = NNImageReader.readImages(pascalResource.getFile, sc).withColumn("label", lit(2.0f))
+    val imageDF = NNImageReader.readImages(pascalResource.getFile, sc)
+      .withColumn("label", lit(2.0f))
     assert(imageDF.count() == 1)
-    val transformer =  RowToImageFeature() -> Resize(256, 256) -> CenterCrop(224, 224) ->
+    val transformer = RowToImageFeature() -> Resize(256, 256) -> CenterCrop(224, 224) ->
       ChannelNormalize(123, 117, 104, 1, 1, 1) -> MatToTensor() -> ImageFeatureToTensor()
 
     val estimator = new NNClassifier(
