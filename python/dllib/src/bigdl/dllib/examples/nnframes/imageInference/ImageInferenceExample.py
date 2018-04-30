@@ -25,22 +25,18 @@ from zoo.pipeline.nnframes.nn_classifier import *
 from zoo.pipeline.nnframes.nn_image_reader import *
 from zoo.pipeline.nnframes.nn_image_transformer import *
 
-
 def inference(image_path, model_path, sc):
 
     imageDF = NNImageReader.readImages(image_path, sc)
     getName = udf(lambda row: row[0], StringType())
-    transformer = NNImageTransformer(
-        Pipeline([Resize(256, 256), CenterCrop(224, 224),
-                  ChannelNormalize(123.0, 117.0, 104.0),
-                  MatToTensor()])
-    ).setInputCol("image").setOutputCol("features")
-    featureDF = transformer.transform(imageDF).withColumn("name", getName(col("image")))
+    transformer = ChainedTransformer([RowToImageFeature(), Resize(256, 256), CenterCrop(224, 224),
+                                      ChannelNormalize(123.0, 117.0, 104.0),
+                                      MatToTensor(), ImageFeatureToTensor()])
 
     model = Model.loadModel(model_path)
-    classifierModel = NNClassifierModel(model, [3, 224, 224]).setBatchSize(4)
-
-    predictionDF = classifierModel.transform(featureDF)
+    classifier_model = NNClassifierModel(model, transformer)\
+        .setFeaturesCol("image").setBatchSize(4)
+    predictionDF = classifier_model.transform(imageDF).withColumn("name", getName(col("image")))
     return predictionDF
 
 
