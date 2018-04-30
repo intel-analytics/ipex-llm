@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.intel.analytics.zoo.examples.nnframes.imageInference
 
 import com.intel.analytics.bigdl.nn.Module
@@ -28,13 +27,13 @@ import org.apache.spark.sql.Row
 import org.apache.spark.sql.functions._
 import scopt.OptionParser
 
-object ImageInference {
+object ImageInferenceExample {
   LoggerFilter.redirectSparkInfoLogs()
 
   def main(args: Array[String]): Unit = {
 
     val defaultParams = Utils.LocalParams()
-    Utils.parser.parse(args, defaultParams).map { params =>
+    Utils.parser.parse(args, defaultParams).foreach { params =>
       val sc = NNContext.getNNContext()
 
       val getImageName = udf { row: Row => row.getString(0)}
@@ -47,7 +46,7 @@ object ImageInference {
       val model = Module.loadCaffeModel[Float](params.caffeDefPath, params.modelPath)
       val dlmodel = new NNClassifierModel(model, transformer)
         .setBatchSize(params.batchSize)
-        .setFeaturesCol("features")
+        .setFeaturesCol("image")
         .setPredictionCol("prediction")
 
       val resultDF = dlmodel.transform(imageDF)

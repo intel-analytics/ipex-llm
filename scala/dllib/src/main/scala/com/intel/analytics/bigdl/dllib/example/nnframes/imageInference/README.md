@@ -34,7 +34,7 @@ Command to run the example in Spark local mode:
     spark-submit \
     --master local[physcial_core_number] \
     --driver-memory 10g --executor-memory 20g \
-    --class com.intel.analytics.zoo.example.nnframes.ImageInference.ImageInference \
+    --class com.intel.analytics.zoo.example.nnframes.imageInference.ImageInferenceExample \
     ./dist/lib/zoo-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
     --modelPath ./model/bvlc_googlenet.caffemodel \
     --caffeDefPath ./model/deploy.prototxt \

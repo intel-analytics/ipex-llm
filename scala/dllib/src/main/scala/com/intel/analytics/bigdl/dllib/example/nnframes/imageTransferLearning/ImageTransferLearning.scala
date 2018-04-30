@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.zoo.example.nnframes.ImageTransferLearning
+package com.intel.analytics.zoo.examples.nnframes.imageTransferLearning
 
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.transform.vision.image._
@@ -37,8 +37,7 @@ object ImageTransferLearning {
 
     val defaultParams = Utils.LocalParams()
 
-    Utils.parser.parse(args, defaultParams).map { params =>
-
+    Utils.parser.parse(args, defaultParams).foreach { params =>
       val sc = NNContext.getNNContext()
 
       val createLabel = udf { row: Row => if (row.getString(0).contains("cat")) 1.0 else 2.0 }
@@ -47,22 +46,16 @@ object ImageTransferLearning {
 
       val Array(validationDF, trainingDF) = imagesDF.randomSplit(Array(0.20, 0.80), seed = 1L)
 
-      validationDF.persist()
-      trainingDF.persist()
-
       val transformer = RowToImageFeature() -> Resize(256, 256) -> CenterCrop(224, 224) ->
         ChannelNormalize(123, 117, 104) -> MatToTensor() -> ImageFeatureToTensor()
-
       val loadedModel = Module
         .loadCaffeModel[Float](params.caffeDefPath, params.modelPath)
-
       val featurizer = new NNModel(loadedModel, transformer)
         .setBatchSize(params.batchSize)
-        .setFeaturesCol("output")
+        .setFeaturesCol("image")
         .setPredictionCol("embedding")
 
       val lrModel = Sequential().add(Linear(1000, 2)).add(LogSoftMax())
-
       val classifier = new NNClassifier(
           lrModel, ClassNLLCriterion[Float](), SeqToTensor(Array(1000)))
         .setFeaturesCol("embedding")
@@ -71,19 +64,13 @@ object ImageTransferLearning {
         .setMaxEpoch(params.nEpochs)
 
       val pipeline = new Pipeline().setStages(Array(featurizer, classifier))
-
       val pipelineModel = pipeline.fit(trainingDF)
-      trainingDF.unpersist()
-
       val predictions = pipelineModel.transform(validationDF)
 
       predictions.show(20)
-
       val evaluation = new MulticlassClassificationEvaluator().setPredictionCol("prediction")
         .setMetricName("weightedPrecision").evaluate(predictions)
       println("evaluation result on validationDF: " + evaluation)
-
-      validationDF.unpersist()
     }
   }
 
