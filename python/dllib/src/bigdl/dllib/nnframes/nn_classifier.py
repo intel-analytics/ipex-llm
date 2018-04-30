@@ -77,24 +77,32 @@ class HasOptimMethod:
         return self.optimMethod
 
 
-class NNEstimator(JavaEstimator, HasFeaturesCol, HasLabelCol, HasPredictionCol, HasBatchSize, HasOptimMethod, JavaValue):
+class NNEstimator(JavaEstimator, HasFeaturesCol, HasLabelCol, HasPredictionCol, HasBatchSize,
+                  HasOptimMethod, JavaValue):
     """
-    NNEstimator provides DataFrame-based API that allows users to train a BigDL
-    Model with the Spark ML Estimator/Transfomer pattern, thus Spark users can conveniently fit
-    BigDL into Spark ML pipeline.
+    NNEstimator extends org.apache.spark.ml.Estimator and supports training a BigDL model with
+    Spark DataFrame. It can also be integrated into a standard Spark ML Pipeline to allow
+    users to combine BigDL and Spark MLlib.
 
-    NNEstimator supports feature and label data in the format of Array[Double], Array[Float],
-    org.apache.spark.mllib.linalg.{Vector, VectorUDT}, org.apache.spark.ml.linalg.{Vector, VectorUDT},
-    Double, Float and ImageSchema (refer to NNImageReader).
+    NNEstimator supports different feature and label data type through transformers. Some common
+    transformers have been defined in package com.intel.analytics.zoo.pipeline.nnframes.transformers.
+    Using the transformers allows NNEstimator to cache only the raw data and decrease the
+    memory consumption during feature conversion and training.
+
+    For details usage, please refer to examples in package
+    com.intel.analytics.zoo.examples.nnframes
     """
 
     def __init__(self,  model, criterion, sample_transformer, jvalue=None, bigdl_type="float"):
         """
-        create a NNEstimator with BigDL Model.
+        Construct a NNEstimator with BigDL model, criterion and a sampleTransformer that transform a
+        (feature, label) tuple to a BigDL Sample. This constructor is only recommended for the expert
+        users. Most users should use class method withTensorTransformer with featureTransformer
+        and labelTransformer.
         :param model: BigDL Model to be trained.
         :param criterion: BigDL criterion.
-        :param sample_transformer: Expert param. A transformer that transforms the (feature, label) tuple
-               to a BigDL Sample[T], where T is decided by the BigDL model.
+        :param sample_transformer: Expert param. A transformer that transforms the (feature, label)
+               tuple to a BigDL Sample[T], where T is decided by the BigDL model.
 
                Note that sampleTransformer should be able to handle the case that label = null.
                During fit, NNEstimator will extract (feature, label) tuple from input DataFrame and use
@@ -104,7 +112,6 @@ class NNEstimator(JavaEstimator, HasFeaturesCol, HasLabelCol, HasPredictionCol, 
                The sampleTransformer will also be copied to the generated NNModel and applied to feature
                column during transform, where (feature, null) will be passed to the sampleTransformer.
                sampleTransformer should be a subClass of com.intel.analytics.bigdl.dataset.Transformer.
-        :param label_size: The size (Tensor dimensions) of the feature data.
         :param jvalue: Java object create by Py4j
         :param bigdl_type: optional parameter. data type of model, "float"(default) or "double".
         """
@@ -119,10 +126,16 @@ class NNEstimator(JavaEstimator, HasFeaturesCol, HasLabelCol, HasPredictionCol, 
         self.sample_transformer = sample_transformer
 
     @classmethod
-    def withTensorTransformer(cls, model, criterion, feature_transformer, label_transformer, jvalue=None,
-                              bigdl_type="float"):
+    def withTensorTransformer(cls, model, criterion, feature_transformer, label_transformer,
+                              jvalue=None, bigdl_type="float"):
         """
-        create a NNEstimator with BigDL Model.
+        Construct a NNEstimator with a featureTransformer and a labelTransformer, which convert the
+        data in feature column and label column to Tensors (Multi-dimension array) for model. This is
+        the the recommended constructor for most users.
+
+        The featureTransformer will be copied to the fitted NNModel, and apply to feature
+        column data during transform.
+
         :param model: BigDL Model to be trained.
         :param criterion: BigDL criterion.
         :param feature_transformer: A transformer that transforms the feature data to a Tensor[T].
@@ -134,12 +147,12 @@ class NNEstimator(JavaEstimator, HasFeaturesCol, HasLabelCol, HasPredictionCol, 
                E.g. For a feature column that contains 28 * 28 floats in an Array, Users can set
                SeqToTensor(Array(28, 28)) as featureTransformer, which will convert the feature data into
                Tensors with dimension 28 * 28 to be processed by Model.
-        :param label_size: The size (Tensor dimensions) of the feature data.
+        :param label_transformer: similar to featureTransformer, but applies to Label data.
         :param jvalue: Java object create by Py4j
         :param bigdl_type: optional parameter. data type of model, "float"(default) or "double".
         """
-        return cls(model, criterion, FeatureLabelTransformer(feature_transformer, label_transformer), jvalue,
-                   bigdl_type)
+        return cls(model, criterion, FeatureLabelTransformer(feature_transformer, label_transformer),
+                   jvalue, bigdl_type)
 
     def setMaxEpoch(self, val):
         """
@@ -176,17 +189,20 @@ class NNEstimator(JavaEstimator, HasFeaturesCol, HasLabelCol, HasPredictionCol, 
 
 class NNModel(JavaTransformer, HasFeaturesCol, HasPredictionCol, HasBatchSize, JavaValue):
     """
-    NNModel helps embed a BigDL model into a Spark Transformer, thus Spark users can
-    conveniently merge BigDL into Spark ML pipeline. NNModel supports feature data in
-    the format of Array[Double], Array[Float], org.apache.spark.mllib.linalg.{Vector, VectorUDT},
-    org.apache.spark.ml.linalg.{Vector, VectorUDT}, Double, Float and image schema.
-    Internally NNModel use features column as storage of the feature data, and create
-    Tensors according to the constructor parameter featureSize.
+    NNModel extends Spark ML Transformer and supports BigDL model with Spark DataFrame.
+
+    NNModel supports different feature data type through transformers. Some common
+    transformers have been defined in com.intel.analytics.zoo.pipeline.nnframes.transformers.
+
+    After transform, the prediction column contains the output of the model as Array[T], where
+    T (Double or Float) is decided by the model type.
     """
     def __init__(self,  model, sample_transformer, jvalue=None, bigdl_type="float"):
         """
         create a NNModel with a BigDL model
         :param model: trained BigDL model to use in prediction.
+        :param sample_transformer: A transformer that transforms the feature data to a Sample[T].
+               featureTransformer should be a subClass of com.intel.analytics.bigdl.dataset.Transformer.
         :param jvalue: Java object create by Py4j
         :param bigdl_type: optional parameter. data type of model, "float"(default) or "double".
         """
@@ -198,6 +214,19 @@ class NNModel(JavaTransformer, HasFeaturesCol, HasPredictionCol, HasBatchSize, J
 
     @classmethod
     def withTensorTransformer(cls, model, feature_transformer, jvalue=None, bigdl_type="float"):
+        """
+        Construct NNModel with a BigDL model and a feature-to-tensor transformer
+        :param model: trainned BigDL models to use in prediction.
+        :param feature_transformer: A transformer that transforms the feature data to a Tensor[T].
+               featureTransformer should be a subClass of com.intel.analytics.bigdl.dataset.Transformer.
+               Some common transformers have been defined in package
+               com.intel.analytics.zoo.pipeline.nnframes.transformers. E.g. SeqToTensor is used
+               to transform Array[_] to Tensor, and NumToTensor transform a number to a Tensor. Multiple
+               Transformer can be combined as a Chained Transformer.
+        :param jvalue: Java object create by Py4j
+        :param bigdl_type(optional): Data type of BigDL model, "float"(default) or "double".
+        :return:
+        """
         chained_transformer = ChainedTransformer([feature_transformer, TensorToSample()])
         return NNModel(model, chained_transformer, jvalue, bigdl_type)
 
@@ -217,8 +246,12 @@ class NNClassifier(NNEstimator):
         """
         :param model: BigDL module to be optimized
         :param criterion: BigDL criterion method
-        :param feature_size: The size (Tensor dimensions) of the feature data. (e.g. an
-                             image may be with featureSize = 28 * 28).
+        :param feature_transformer:  A transformer that transforms the feature data to a Tensor[T].
+               featureTransformer should be a subClass of com.intel.analytics.bigdl.dataset.Transformer.
+               Some common transformers have been defined in package
+               com.intel.analytics.zoo.pipeline.nnframes.transformers. E.g. SeqToTensor is used
+               to transform Array[_] to Tensor, and NumToTensor transform a number to a Tensor. Multiple
+               Transformer can be combined as a Chained Transformer.
         :param bigdl_type(optional): Data type of BigDL model, "float"(default) or "double".
         """
         super(NNClassifier, self).__init__(model, criterion, feature_transformer, None, bigdl_type)
@@ -232,8 +265,12 @@ class NNClassifierModel(NNModel):
     def __init__(self,  model, feature_transformer, jvalue=None, bigdl_type="float"):
         """
         :param model: trained BigDL model to use in prediction.
-        :param featureSize: The size (Tensor dimensions) of the feature data. (e.g. an
-                            image may be with featureSize = 28 * 28).
+        :param feature_transformer:  A transformer that transforms the feature data to a Tensor[T].
+               featureTransformer should be a subClass of com.intel.analytics.bigdl.dataset.Transformer.
+               Some common transformers have been defined in package
+               com.intel.analytics.zoo.pipeline.nnframes.transformers. E.g. SeqToTensor is used
+               to transform Array[_] to Tensor, and NumToTensor transform a number to a Tensor. Multiple
+               Transformer can be combined as a Chained Transformer.
         :param jvalue: Java object create by Py4j
         :param bigdl_type(optional): Data type of BigDL model, "float"(default) or "double".
         """
