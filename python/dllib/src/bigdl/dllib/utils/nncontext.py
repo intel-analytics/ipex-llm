@@ -30,5 +30,7 @@ def get_nncontext(conf=None):
     """
 
     sc = get_spark_context(conf)
+    redire_spark_logs()
+    show_bigdl_info_logs()
     init_engine()
     return sc
