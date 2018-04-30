@@ -201,7 +201,7 @@ class NNClassifierSpec extends FlatSpec with Matchers with BeforeAndAfter {
   }
 
   "An NNClassifier" should "works in ML pipeline" in {
-    var appSparkVersion = org.apache.spark.SPARK_VERSION
+    val appSparkVersion = org.apache.spark.SPARK_VERSION
     if (appSparkVersion.trim.startsWith("1")) {
       val data = sc.parallelize(
         smallData.map(p => (org.apache.spark.mllib.linalg.Vectors.dense(p._1), p._2)))
@@ -211,7 +211,7 @@ class NNClassifierSpec extends FlatSpec with Matchers with BeforeAndAfter {
         .setMax(1).setMin(-1)
       val model = new Sequential().add(Linear[Float](6, 2)).add(LogSoftMax[Float])
       val criterion = ClassNLLCriterion[Float]()
-      val estimator = new NNClassifier(model, criterion, SeqToTensor(Array(6)))
+      val estimator = new NNClassifier(model, criterion, MLlibVectorToTensor(Array(6)))
         .setBatchSize(nRecords)
         .setOptimMethod(new LBFGS[Float]())
         .setLearningRate(0.1)

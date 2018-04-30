@@ -86,17 +86,41 @@ class NNEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
       .setBatchSize(nRecords)
       .setOptimMethod(new LBFGS[Float]())
       .setLearningRate(0.1)
-      .setMaxEpoch(20)
-    val data = sc.parallelize(smallData).coalesce(1)
+      .setMaxEpoch(maxEpoch)
+    val data = sc.parallelize(smallData)
     val df = sqlContext.createDataFrame(data).toDF("features", "label")
 
     val nnModel = estimator.fit(df)
-    nnModel.isInstanceOf[NNModel[_, _]] should be(true)
+    nnModel.isInstanceOf[NNModel[Seq[Any], Float]] should be(true)
+    val predictionDF = nnModel.transform(df)
+    predictionDF.show()
+    predictionDF.printSchema()
     val correct = nnModel.transform(df).select("label", "prediction").rdd.filter {
       case Row(label: Double, prediction: Seq[_]) =>
-        label == prediction.indexOf(prediction.asInstanceOf[Seq[Double]].max) + 1
+        label == prediction.indexOf(prediction.asInstanceOf[Seq[Float]].max) + 1
     }.count()
     assert(correct > nRecords * 0.8)
+  }
+
+  "An NNEstimator" should "support sampleTransformer" in {
+    val model = new Sequential().add(Linear[Float](6, 2)).add(LogSoftMax[Float])
+    val criterion = ClassNLLCriterion[Float]()
+    val sampleTransformer = FeatureLabelTransformer(SeqToTensor(Array(6)), NumToTensor())
+
+    val estimator = new NNEstimator(model, criterion, sampleTransformer)
+      .setBatchSize(nRecords)
+      .setOptimMethod(new LBFGS[Float]())
+      .setLearningRate(0.1)
+      .setMaxEpoch(1)
+    val data = sc.parallelize(smallData)
+    val df = sqlContext.createDataFrame(data).toDF("features", "label")
+
+    val nnModel = estimator.fit(df)
+    nnModel.isInstanceOf[NNModel[Seq[Any], Float]] should be(true)
+    val predictionDF = nnModel.transform(df)
+    predictionDF.show()
+    predictionDF.printSchema()
+    assert(nnModel.transform(df).count() == nRecords)
   }
 
   "An NNEstimator" should "support different FEATURE types" in {
@@ -216,14 +240,14 @@ class NNEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val criterion = ClassNLLCriterion[Float]()
     val estimator = new NNEstimator(
       model, criterion, SeqToTensor(Array(6)), NumToTensor())
-      .setBatchSize(49)
+      .setBatchSize(51)
       .setMaxEpoch(maxEpoch)
     val data = sc.parallelize(smallData)
     val df: DataFrame = sqlContext.createDataFrame(data).toDF("features", "label")
 
     val nnModel = estimator.fit(df)
     nnModel.isInstanceOf[NNModel[_, _]] should be(true)
-    nnModel.transform(df).count()
+    assert(nnModel.transform(df).count() == nRecords)
   }
 
   "An NNModel" should "support transform with different batchSize" in {
@@ -238,11 +262,11 @@ class NNEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
     assert(df.count() == nnModel.setBatchSize(51).transform(df).count())
   }
 
-  "An NNEstimator" should "throws exception with incorrect inputs" in {
+  "An NNEstimator" should "throw exception with incorrect inputs" in {
     val model = Linear[Float](10, 1)
     val criterion = ClassNLLCriterion[Float]()
     val inputs = Array[String]("Feature data", "Label data")
-    var estimator = new NNEstimator(
+    val estimator = new NNEstimator(
       model, criterion, SeqToTensor(Array(10)), SeqToTensor(Array(2, 1))).
       setFeaturesCol(inputs(0)).setLabelCol(inputs(1))
 
@@ -299,7 +323,7 @@ class NNEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
     logdir.deleteOnExit()
   }
 
-  "An NNEstimator" should "throws exception when EndWhen and MaxEpoch are set" in {
+  "An NNEstimator" should "throw exception when EndWhen and MaxEpoch are set" in {
     val model = new Sequential().add(Linear[Float](6, 2)).add(LogSoftMax[Float])
     val criterion = ClassNLLCriterion[Float]()
     val logdir = com.google.common.io.Files.createTempDir()
@@ -329,7 +353,7 @@ class NNEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
       val model = new Sequential().add(Linear[Float](6, 2)).add(LogSoftMax[Float])
       val criterion = ClassNLLCriterion[Float]()
       val estimator = new NNEstimator(
-        model, criterion, SeqToTensor(Array(6)), NumToTensor())
+        model, criterion, MLlibVectorToTensor(Array(6)), NumToTensor())
         .setOptimMethod(new LBFGS[Float]())
         .setLearningRate(0.1)
         .setBatchSize(nRecords)
@@ -340,8 +364,8 @@ class NNEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
       val pipelineModel = pipeline.fit(df)
       pipelineModel.isInstanceOf[PipelineModel] should be(true)
       val correct = pipelineModel.transform(df).select("label", "prediction").rdd.filter {
-        case Row(label: Double, prediction: Seq[_]) =>
-          label == prediction.indexOf(prediction.asInstanceOf[Seq[Double]].max) + 1
+        case Row(label: Double, prediction: Seq[Float]) =>
+          label == prediction.indexOf(prediction.max) + 1
       }.count()
       assert(correct > nRecords * 0.8)
     }
