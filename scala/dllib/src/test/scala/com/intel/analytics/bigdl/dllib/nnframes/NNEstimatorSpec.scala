@@ -18,14 +18,14 @@ package com.intel.analytics.zoo.pipeline.nnframes
 
 import java.io.File
 
-import com.intel.analytics.bigdl.dataset.{ChainedTransformer, DataSet, Sample, SampleToMiniBatch}
 import com.intel.analytics.bigdl.models.inception.Inception_v1
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
 import com.intel.analytics.bigdl.transform.vision.image.MatToTensor
-import com.intel.analytics.bigdl.transform.vision.image.augmentation.{CenterCrop, ChannelNormalize, Resize}
+import com.intel.analytics.bigdl.transform.vision.image.augmentation.{CenterCrop,
+  ChannelNormalize, Resize}
 import com.intel.analytics.bigdl.utils.Engine
 import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
 import com.intel.analytics.bigdl.visualization.{TrainSummary, ValidationSummary}
@@ -81,7 +81,7 @@ class NNEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
   "An NNEstimator" should "get reasonable accuracy" in {
     val model = new Sequential().add(Linear[Float](6, 2)).add(LogSoftMax[Float])
     val criterion = ClassNLLCriterion[Float]()
-    val estimator = new NNEstimator(model, criterion, SeqToTensor(Array(6)), NumToTensor())
+    val estimator = new NNEstimator(model, criterion, ArrayToTensor(Array(6)), NumToTensor())
       .setBatchSize(nRecords)
       .setOptimMethod(new LBFGS[Float]())
       .setLearningRate(0.1)
@@ -150,7 +150,6 @@ class NNEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
       smallData.map(p => (Vectors.dense(p._1), p._2))
     )).toDF("features", "label") // MLlib Vector
     vecEstimator.fit(vectorDF)
-
   }
 
   "An NNEstimator" should "support scalar FEATURE types" in {
