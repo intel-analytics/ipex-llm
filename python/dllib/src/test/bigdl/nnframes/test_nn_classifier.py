@@ -103,7 +103,7 @@ class TestNNClassifer():
         model = Sequential().add(Linear(2, 2))
         criterion = MSECriterion()
         estimator = NNEstimator.withTensorTransformer(
-            model, criterion, SeqToTensor([2]), SeqToTensor([2])).setBatchSize(4) \
+            model, criterion, SeqToTensor([2]), ArrayToTensor([2])).setBatchSize(4) \
             .setLearningRate(0.2).setMaxEpoch(40)
 
         data = self.sc.parallelize([
