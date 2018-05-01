@@ -25,12 +25,14 @@ import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import org.apache.hadoop.fs.Path
 import org.apache.spark.SparkContext
-import com.intel.analytics.bigdl.tensor.{Tensor, DoubleType => TensorDouble, FloatType => TensorFloat}
+import com.intel.analytics.bigdl.tensor.{Tensor, DoubleType => TensorDouble,
+  FloatType => TensorFloat}
 import com.intel.analytics.bigdl.utils.T
 import com.intel.analytics.bigdl.utils.serializer.ModuleLoader
 import com.intel.analytics.bigdl.visualization.{TrainSummary, ValidationSummary}
 import com.intel.analytics.zoo.pipeline.nnframes.transformers.internal.FeatureToTupleAdapter
-import com.intel.analytics.zoo.pipeline.nnframes.transformers.{FeatureLabelTransformer, TensorToSample}
+import com.intel.analytics.zoo.pipeline.nnframes.transformers.{ArrayToTensor,
+  FeatureLabelTransformer, MLlibVectorToTensor, NumToTensor, TensorToSample}
 import org.apache.spark.ml.adapter.{HasFeaturesCol, HasPredictionCol, SchemaUtils}
 import org.apache.spark.ml.{DLEstimatorBase, DLTransformerBase, DefaultParamsWriterWrapper}
 import org.apache.spark.ml.param._
@@ -104,34 +106,40 @@ private[nnframes] trait NNParams[F, @specialized(Float, Double) T] extends HasFe
 }
 
 /**
- * [[NNEstimator]] extends org.apache.spark.ml.Estimator and supports training a BigDL model with
- * Spark DataFrame. It can also be integrated into a standard Spark ML Pipeline to allow
- * users to combine BigDL and Spark MLlib.
+ * [[NNEstimator]] extends [[org.apache.spark.ml.Estimator]] and supports training a BigDL
+ * model with Spark DataFrame data. It can be integrated into a standard Spark ML Pipeline
+ * to enable users for combined usage with Spark MLlib.
  *
- * [[NNEstimator]] supports different feature and label data type through transformers. Some common
- * transformers have been defined in package com.intel.analytics.zoo.pipeline.nnframes.transformers.
- * Using the transformers allows NNEstimator to cache only the raw data and decrease the
- * memory consumption during feature conversion and training.
+ * [[NNEstimator]] supports different feature and label data type through transformers. We
+ * provide pre-defined transformers for popular data types like Array or Vector in package
+ * [[com.intel.analytics.zoo.pipeline.nnframes.transformers]], while user can also develop
+ * customized Transformer which extends from [[com.intel.analytics.bigdl.dataset.Transformer]].
+ * During fit, NNEstimator will extract feature and label data from input DataFrame and use
+ * the transformers to prepare data for the model.
  *
- * For details usage, please refer to examples in package
- *com.intel.analytics.zoo.examples.nnframes
+ * Using the transformers allows [[NNEstimator]] to cache only the raw data and decrease
+ * the memory consumption during feature conversion and training.
+ *
+ * More concrete examples are available in package [[com.intel.analytics.zoo.examples.nnframes]]
  *
  * Construct a NNEstimator with BigDL model, criterion and a sampleTransformer that transform a
  * (feature, label) tuple to a BigDL Sample. This constructor is only recommended for the expert
- * users. Most users should use the other constructor with featureTransformer and labelTransformer.
+ * users. Most users should use the other constructor with featureTransformer and
+ * labelTransformer.
  * @param model BigDL module to be optimized
  * @param criterion  BigDL criterion method
  * @param sampleTransformer Expert param. A transformer that transforms the (feature, label) tuple
  *        to a BigDL Sample[T], where T is decided by the BigDL model.
  *
- *        Note that sampleTransformer should be able to handle the case that label = null.
- *        During fit, NNEstimator will extract (feature, label) tuple from input DataFrame and use
- *        sampleTransformer to transform the tuple into BigDL Sample to be ingested by the model.
- *        If Label column is not available, (feature, null) will be sent to sampleTransformer.
+ *        Note: sampleTransformer should be able to handle the case that label = null.
+ *        During fit, [[NNEstimator]] will extract (feature, label) tuple from input
+ *        DataFrame and use sampleTransformer to transform the tuple into BigDL Sample to be
+ *        ingested by the model. If Label column is not available, (feature, null) will be
+ *        sent to sampleTransformer.
  *
- *        The sampleTransformer will also be copied to the generated NNModel and applied to feature
- *        column during transform, where (feature, null) will be passed to the sampleTransformer.
- *        sampleTransformer should be a subClass of com.intel.analytics.bigdl.dataset.Transformer.
+ *        The sampleTransformer will also be copied to the generated [[NNModel]] and applied
+ *        to feature column during transform, where (feature, null) will be passed to the
+ *        sampleTransformer.
  * @tparam F data type from feature column, E.g. Array[_] or Vector
  * @tparam L data type from label column, E.g. Float, Double, Array[_] or Vector
  * @tparam T data type of BigDL Model
@@ -155,15 +163,18 @@ class NNEstimator[F, L, T: ClassTag](
    * @param model BigDL module to be optimized
    * @param criterion  BigDL criterion method
    * @param featureTransformer A transformer that transforms the feature data to a Tensor[T].
-   *        featureTransformer should be a subClass of
-   *        com.intel.analytics.bigdl.dataset.Transformer.
-   *        Some common transformers have been defined in package
-   *        com.intel.analytics.zoo.pipeline.nnframes.transformers. E.g. SeqToTensor is used
-   *        to transform Array[_] to Tensor, and NumToTensor transform a number to a Tensor.
+   *        Some pre-defined transformers are provided in package
+   *        [[com.intel.analytics.zoo.pipeline.nnframes.transformers]]. E.g.
+   *        [[ArrayToTensor]] is used to transform Array[_] in DataFrame to Tensor. For a feature
+   *        column that contains 576 floats in an Array, Users can set ArrayToTensor(Array(28, 28))
+   *        as featureTransformer, which will convert the feature data into Tensors with dimension
+   *        28 * 28 to be processed by a convolution Model. For a simple linear model, user may
+   *        just use ArrayToTensor(Array(576)), which will convert the data into Tensors with
+   *        single dimension (576).
+   *        [[MLlibVectorToTensor]] is used to transform [[org.apache.spark.mllib.linalg.Vector]]
+   *        to a Tensor.
+   *        [[NumToTensor]] transform a number to a Tensor with single dimension of length 1.
    *        Multiple transformer can be combined as a ChainedTransformer.
-   *        E.g. For a feature column that contains 28 * 28 floats in an Array, Users can set
-   *        SeqToTensor(Array(28, 28)) as featureTransformer, which will convert the feature
-   *        data into Tensors with dimension 28 * 28 to be processed by Model.
    * @param labelTransformer similar to featureTransformer, but applies to Label data.
    */
   def this(
@@ -292,19 +303,20 @@ class NNEstimator[F, L, T: ClassTag](
 
     val featureColIndex = dataFrame.schema.fieldIndex($(featuresCol))
     val labelColIndex = if (dataFrame.columns.contains($(labelCol))) {
-      dataFrame.schema.fieldIndex($(labelCol))
+      Some(dataFrame.schema.fieldIndex($(labelCol)))
     } else {
-      -1
+      None
     }
 
     val featureAndLabel: RDD[(F, L)] = dataFrame.rdd.map { row =>
       val features = row.getAs[F](featureColIndex)
-      val labels = if (labelColIndex >= 0) row.getAs[L](labelColIndex) else null.asInstanceOf[L]
+      val labels = labelColIndex match {
+        case Some(i) => row.getAs[L](i)
+        case None => null.asInstanceOf[L]
+      }
       (features, labels)
     }
-    val ds = DataSet.rdd(featureAndLabel)
-      .transform(sampleTransformer -> SampleToMiniBatch[T](batchSize))
-    ds
+    DataSet.rdd(featureAndLabel).transform(sampleTransformer -> SampleToMiniBatch[T](batchSize))
   }
 
   protected override def internalFit(dataFrame: DataFrame): NNModel[F, T] = {
@@ -369,17 +381,20 @@ class NNEstimator[F, L, T: ClassTag](
 }
 
 /**
- * [[NNModel]] extends Spark ML Transformer and supports BigDL model with Spark DataFrame.
+ * [[NNModel]] extends Spark ML Transformer and supports BigDL model with Spark DataFrame data.
  *
- * [[NNModel]] supports different feature data type through transformers. Some common
- * transformers have been defined in com.intel.analytics.zoo.pipeline.nnframes.transformers.
+ * [[NNModel]] supports different feature data type through transformers. We
+ * provide pre-defined transformers for popular data types like Array or Vector in package
+ * [[com.intel.analytics.zoo.pipeline.nnframes.transformers]], while user can also develop
+ * customized Transformer which extends from [[com.intel.analytics.bigdl.dataset.Transformer]].
+ * During transform, [[NNModel]] will extract feature data from input DataFrame and use
+ * the transformer to prepare data for the model.
  *
  * After transform, the prediction column contains the output of the model as Array[T], where
  * T (Double or Float) is decided by the model type.
  *
  * @param model trainned BigDL models to use in prediction.
  * @param sampleTransformer A transformer that transforms the feature data to a Sample[T].
- *        featureTransformer should be a subClass of com.intel.analytics.bigdl.dataset.Transformer.
  */
 class NNModel[F, T: ClassTag](
     @transient val model: Module[T],
@@ -392,12 +407,18 @@ class NNModel[F, T: ClassTag](
    * Construct NNModel with a BigDL model and a feature-to-tensor transformer
    * @param model trainned BigDL models to use in prediction.
    * @param featureTransformer A transformer that transforms the feature data to a Tensor[T].
-   *        featureTransformer should be a subClass of
-   *        com.intel.analytics.bigdl.dataset.Transformer.
-   *        Some common transformers have been defined in package
-   *        com.intel.analytics.zoo.pipeline.nnframes.transformers. E.g. SeqToTensor is used
-   *        to transform Array[_] to Tensor, and NumToTensor transform a number to a Tensor.
-   *        Multiple transformer can be combined as a Chained Transformer.
+   *        Some pre-defined transformers are provided in package
+   *        [[com.intel.analytics.zoo.pipeline.nnframes.transformers]]. E.g.
+   *        [[ArrayToTensor]] is used to transform Array[_] in DataFrame to Tensor. For a feature
+   *        column that contains 576 floats in an Array, Users can set ArrayToTensor(Array(28, 28))
+   *        as featureTransformer, which will convert the feature data into Tensors with dimension
+   *        28 * 28 to be processed by a convolution Model. For a simple linear model, user may
+   *       just use ArrayToTensor(Array(576)), which will convert the data into Tensors with
+   *       single dimension (576).
+   *        [[MLlibVectorToTensor]] is used to transform [[org.apache.spark.mllib.linalg.Vector]]
+   *        to a Tensor.
+   *        [[NumToTensor]] transform a number to a Tensor with singel dimension of length 1.
+   *        Multiple transformer can be combined as a ChainedTransformer.
    */
   def this(
       model: Module[T],

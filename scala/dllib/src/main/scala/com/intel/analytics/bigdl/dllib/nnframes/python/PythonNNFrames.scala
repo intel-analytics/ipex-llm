@@ -96,6 +96,10 @@ class PythonNNFrames[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonB
     SeqToTensor(size.asScala.toArray)
   }
 
+  def createArrayToTensor(size: JArrayList[Int]): ArrayToTensor[T] = {
+    ArrayToTensor(size.asScala.toArray)
+  }
+
   def createMLlibVectorToTensor(size: JArrayList[Int]): MLlibVectorToTensor[T] = {
     MLlibVectorToTensor(size.asScala.toArray)
   }
