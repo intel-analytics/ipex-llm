@@ -19,15 +19,22 @@ import java.io.{File => JFile}
 
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.RandomGenerator
+import com.intel.analytics.bigdl.utils.{RandomGenerator, Table}
 import com.intel.analytics.zoo.models.common.ZooModel
 import org.apache.log4j.Logger
+import org.scalactic.TolerantNumerics
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.collection.mutable.ArrayBuffer
 
 abstract class ZooSpecHelper extends FlatSpec with Matchers with BeforeAndAfter {
   protected val logger = Logger.getLogger(getClass)
+
+  private val epsilon = 1e-4f
+
+  implicit val doubleEq = TolerantNumerics.tolerantDoubleEquality(epsilon)
+
+  implicit val floatEq = TolerantNumerics.tolerantFloatEquality(epsilon)
 
   private val tmpFiles : ArrayBuffer[JFile] = new ArrayBuffer[JFile]()
 
