@@ -16,11 +16,15 @@
 
 package com.intel.analytics.zoo.pipeline.api.keras.models
 
+import com.intel.analytics.bigdl.nn.Graph
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.nn.keras.{KerasLayerSerializer, Model => BModel, Sequential => BSequential}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.zoo.pipeline.api.Net
 import com.intel.analytics.bigdl.utils.serializer.ModuleSerializer
+import com.intel.analytics.bigdl.utils.tf.Tensorflow
+import com.intel.analytics.bigdl.visualization.tensorboard.FileWriter
+import org.tensorflow.framework.GraphDef
 
 import scala.reflect.ClassTag
 
@@ -51,6 +55,19 @@ class Model[T: ClassTag](
     private val _inputs: Seq[ModuleNode[T]],
     private val _outputs: Seq[ModuleNode[T]])(implicit ev: TensorNumeric[T])
   extends BModel[T](_inputs, _outputs) with Net {
+
+  /**
+   * Save current model graph to a folder, which can be display in tensorboard by running
+   *   tensorboard --logdir logPath
+   * @param logPath
+   * @param backward Draw backward graph instead of forward
+   * @return
+   */
+  def saveGraphTopology(logPath: String, backward: Boolean = false): this.type = {
+    this.labor.asInstanceOf[Graph[T]].saveGraphTopology(logPath, backward)
+    this
+  }
+
 }
 
 object Model {
