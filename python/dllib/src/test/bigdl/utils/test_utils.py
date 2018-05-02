@@ -17,14 +17,19 @@
 from __future__ import print_function
 
 from unittest import TestCase
-from bigdl.keras.converter import WeightLoader
+
 import keras.backend as K
+from bigdl.keras.converter import WeightLoader
 from bigdl.util.common import *
+
+import logging
 
 np.random.seed(1337)  # for reproducibility
 
 
 class ZooTestCase(TestCase):
+    logging.basicConfig(level=logging.DEBUG)
+    logging.getLogger('py4j').setLevel(logging.INFO)
 
     def setup_method(self, method):
         """
@@ -34,6 +39,8 @@ class ZooTestCase(TestCase):
         K.set_image_dim_ordering("th")
         sparkConf = create_spark_conf().setMaster("local[4]").setAppName("zoo test case")
         self.sc = get_spark_context(sparkConf)
+        self.sc.setLogLevel("ERROR")
+
         self.sqlContext = SQLContext(self.sc)
         init_engine()
 
