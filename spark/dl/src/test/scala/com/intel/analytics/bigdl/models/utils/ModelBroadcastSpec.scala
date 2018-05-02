@@ -43,22 +43,6 @@ class ModelBroadcastSpec extends FlatSpec with Matchers with BeforeAndAfter {
     modelBroadCast.value().parameters()._1 should be(model.parameters()._1)
   }
 
-  "model broadcast graph model" should "work properly" in {
-//    val model = LeNet5.graph(10)
-    val modelPath = "/tmp/sg/model.pb"
-    val inputs = Seq("input_x", "dropout_keep_prob")
-    val outputs = Seq("textCnn/output/predictions")
-    val binPath = "/tmp/sg/model.bin"
-    val model = Module.loadTF[Float](modelPath, inputs, outputs,
-      ByteOrder.LITTLE_ENDIAN, Some(binPath))
-
-    val modelBroadCast = ModelBroadcast[Float]().broadcast(sc, model)
-    val model1 = modelBroadCast.value()
-    val model2 = modelBroadCast.value()
-    modelBroadCast.value().toString should be(model.toString)
-    modelBroadCast.value().parameters()._1 should be(model.parameters()._1)
-  }
-
   "model broadcast with const" should "forward properly" in {
     val input1 = Identity[Float]().inputs()
     val input2 = Const[Float, Float](Tensor[Float].range(1, 6, 1)).setName("const").inputs()
