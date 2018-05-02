@@ -105,7 +105,7 @@ class ModelBroadcastSpec extends FlatSpec with Matchers with BeforeAndAfter {
   "model broadcast with applyProtoBuffer" should "work properly" in {
     val model = LeNet5(10)
 
-    val modelBroadCast = ModelBroadcast[Float]().broadcast(sc, model)
+    val modelBroadCast = ModelBroadcast[Float](true).broadcast(sc, model)
     modelBroadCast.value().toString should be(model.toString)
     modelBroadCast.value().parameters()._1 should be(model.parameters()._1)
   }

@@ -60,10 +60,11 @@ class ModelBroadcast[T: ClassTag](applyProtoBuffer: Boolean = false)
         val moduleConsts = getAndClearConsts(model.asInstanceOf[Container[_, _, T]])
         broadcastConsts = sc.broadcast(moduleConsts)
       }
-      // broadcast weight
+      // broadcast weight and model
       val weightsBias = getAndClearWeightBias(model.parameters())
       broadcastModel = sc.broadcast(model.cloneModule())
       broadcastParameters = sc.broadcast(weightsBias)
+
       putWeightBias(weightsBias, model)
       initGradWeightBias(weightsBias, model)
     }
