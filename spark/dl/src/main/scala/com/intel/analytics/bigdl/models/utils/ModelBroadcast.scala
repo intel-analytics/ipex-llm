@@ -17,6 +17,7 @@
 package com.intel.analytics.bigdl.models.utils
 
 import com.intel.analytics.bigdl.Module
+import com.intel.analytics.bigdl.nn.{Container, Graph}
 import com.intel.analytics.bigdl.tensor.{QuantizedTensor, QuantizedType, Storage, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import org.apache.spark.SparkContext
@@ -38,6 +39,7 @@ class ModelBroadcast[T: ClassTag](applyProtoBuffer: Boolean = false)
   (implicit ev: TensorNumeric[T]) extends Serializable {
 
   private var broadcastModel: Broadcast[Module[T]] = _
+  private var broadcastConsts: Broadcast[Map[String, Tensor[_]]] = _
   private var broadcastParameters: Broadcast[Array[Tensor[T]]] = _
 
 
@@ -53,6 +55,12 @@ class ModelBroadcast[T: ClassTag](applyProtoBuffer: Boolean = false)
     if (applyProtoBuffer) {
       broadcastModel = sc.broadcast(model)
     } else {
+      // broadcast Consts
+      if (model.isInstanceOf[Container[_, _, T]]) {
+        val moduleConsts = getAndClearConsts(model.asInstanceOf[Container[_, _, T]])
+        broadcastConsts = sc.broadcast(moduleConsts)
+      }
+      // broadcast weight
       val weightsBias = getAndClearWeightBias(model.parameters())
       broadcastModel = sc.broadcast(model.cloneModule())
       broadcastParameters = sc.broadcast(weightsBias)
@@ -78,7 +86,13 @@ class ModelBroadcast[T: ClassTag](applyProtoBuffer: Boolean = false)
       localModel
     } else {
       val localModel = broadcastModel.value.cloneModule()
+      // share weight
       putWeightBias(broadcastParameters.value, localModel)
+      // share Consts
+      if (localModel.isInstanceOf[Container[_, _, T]] && broadcastConsts.value.nonEmpty) {
+        putConsts(localModel.asInstanceOf[Container[_, _, T]], broadcastConsts.value)
+      }
+      // init gradient
       if (initGradient) {
         initGradWeightBias(broadcastParameters.value, localModel)
       }
