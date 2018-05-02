@@ -218,4 +218,18 @@ object KerasUtils {
     }
   }
 
+  private[zoo] def invokeMethod(obj: Object, methodName: String, args: Object*): Object = {
+    val clazz = obj.getClass()
+    val method =
+      try {
+      clazz.getMethod(methodName, args.map(_.getClass): _*)
+    } catch {
+        case _: Throwable =>
+          val methods = clazz.getMethods().filter(_.getName() == methodName)
+          require(methods.length == 1,
+            s"We should only found one result, but got ${methodName}: ${methods.length}")
+          methods(0)
+    }
+    method.invoke(obj, args: _*)
+  }
 }

@@ -24,7 +24,7 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{MultiShape, Shape}
 import com.intel.analytics.zoo.pipeline.api.Net
-import com.intel.analytics.zoo.pipeline.api.keras.layers.utils.KerasUtils
+import com.intel.analytics.zoo.pipeline.api.keras.layers.utils.{KerasLayerRef, KerasUtils}
 
 import scala.reflect.ClassTag
 
@@ -64,7 +64,7 @@ class Merge[T: ClassTag](
       s"but found ${layers.length}")
     layers.foreach(layer => require(layer.isInstanceOf[KerasLayer[Activity, Activity, T]],
       "Each input layer for Merge should be a Keras-Style layer"))
-    this.invokeMethodForSeq("excludeInvalidLayers", layers)
+    KerasLayerRef(this).excludeInvalidLayers(layers)
   }
 
   private def computeOutputShapeForConcat(input: List[Shape]): Shape = {
