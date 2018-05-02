@@ -20,10 +20,11 @@ import java.nio.ByteOrder
 
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.{File, Shape}
+import com.intel.analytics.bigdl.utils.File
 import com.intel.analytics.bigdl.utils.caffe.CaffeLoader
 import com.intel.analytics.bigdl.utils.serializer.ModuleLoader
 import com.intel.analytics.bigdl.utils.tf.{Session, TensorflowLoader}
+import com.intel.analytics.zoo.pipeline.api.keras.models.KerasNet
 
 import scala.reflect.ClassTag
 
@@ -32,24 +33,6 @@ import scala.reflect.ClassTag
  */
 trait Net {
 
-  private def toClazz(obj: Object) = {
-    obj match {
-      case s: Shape => Class.forName("com.intel.analytics.bigdl.utils.Shape")
-      case _ => obj.getClass()
-    }
-  }
-
-  private[zoo] def invokeMethod(methodName: String, args: Object*): Object = {
-    val clazz = Class.forName("com.intel.analytics.bigdl.nn.keras.KerasLayer")
-    val method = clazz.getMethod(methodName, args.map(toClazz(_)): _*)
-    method.invoke(this, args: _*)
-  }
-
-  private[zoo] def invokeMethodForSeq(methodName: String, arg: Seq[Object]): Object = {
-    val clazz = Class.forName("com.intel.analytics.bigdl.nn.keras.KerasLayer")
-    val method = clazz.getMethods().filter(_.getName() == methodName)(0)
-    method.invoke(this, arg, ClassTag(clazz))
-  }
 }
 
 object Net {
@@ -63,7 +46,28 @@ object Net {
    * @tparam T numeric type
    * @return model loaded from path
    */
-  def loadModule[T: ClassTag](path : String,
+  def load[T: ClassTag](path : String,
+      weightPath : String = null)(implicit ev: TensorNumeric[T])
+  : KerasNet[T] = {
+    val model = ModuleLoader.loadFromFile(path, weightPath)
+    if (!model.isInstanceOf[KerasNet[T]]) {
+      throw new RuntimeException(
+        "Not a Zoo model. Please use loadBigDL, loadCaffe or loadTF instead")
+    }
+    model.asInstanceOf[KerasNet[T]]
+  }
+
+  /**
+   * Load model from path.
+   *
+   * @param path path to save module, local file system, HDFS and Amazon S3 is supported.
+   *             HDFS path should be like "hdfs://[host]:[port]/xxx"
+   *             Amazon S3 path should be like "s3a://bucket/xxx"
+   * @param weightPath : where weight is stored
+   * @tparam T numeric type
+   * @return model loaded from path
+   */
+  def loadBigDL[T: ClassTag](path : String,
       weightPath : String = null)(implicit ev: TensorNumeric[T])
   : AbstractModule[Activity, Activity, T] = {
     ModuleLoader.loadFromFile(path, weightPath)
@@ -78,7 +82,7 @@ object Net {
    * @param defPath  caffe model definition file path
    * @param modelPath caffe model binary file containing weight and bias
    */
-  def loadCaffeModel[T: ClassTag](defPath: String, modelPath: String)(
+  def loadCaffe[T: ClassTag](defPath: String, modelPath: String)(
       implicit ev: TensorNumeric[T]): AbstractModule[Activity, Activity, T] = {
     CaffeLoader.loadCaffe[T](defPath, modelPath)._1
       .asInstanceOf[AbstractModule[Activity, Activity, T]]
@@ -109,7 +113,7 @@ object Net {
    * @tparam T
    * @return
    */
-  def tensorflowCheckpoints[T: ClassTag](graphFile: String, binFile: String,
+  def loadTFCheckpoints[T: ClassTag](graphFile: String, binFile: String,
       byteOrder: ByteOrder = ByteOrder.LITTLE_ENDIAN)(implicit ev: TensorNumeric[T]): Session[T] = {
     TensorflowLoader.checkpoints(graphFile, binFile, byteOrder)
   }
