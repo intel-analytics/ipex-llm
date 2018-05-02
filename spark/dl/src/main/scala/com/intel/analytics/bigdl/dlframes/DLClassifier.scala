@@ -15,13 +15,16 @@
  */
 package com.intel.analytics.bigdl.dlframes
 
+import com.intel.analytics.bigdl.dlframes.DLModel.DLModelWriter
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.{Criterion, Module}
+import org.apache.spark.ml.MLParams
 import org.apache.spark.ml.adapter.SchemaUtils
 import org.apache.spark.ml.param.ParamMap
-import org.apache.spark.ml.util.Identifiable
+import org.apache.spark.ml.util.{Identifiable, MLReadable, MLReader}
 import org.apache.spark.sql.types._
+import org.json4s.DefaultFormats
 
 import scala.reflect.ClassTag
 
@@ -81,3 +84,29 @@ class DLClassifierModel[T: ClassTag](
   }
 }
 
+object DLClassifierModel extends MLReadable[DLClassifierModel[_]] {
+  private[dlframes] class DLClassifierModelReader() extends MLReader[DLClassifierModel[_]] {
+    override def load(path: String): DLClassifierModel[_] = {
+      implicit val format: DefaultFormats.type = DefaultFormats
+      import scala.language.existentials
+      val (meta, module, typeTag) = DLModel.loadImpl(path, sc)
+      val featureSize = (meta.metadata \ "featureSize").extract[Seq[Int]].toArray
+      val dlModel = typeTag match {
+        case "TensorDouble" =>
+          new DLClassifierModel[Double](module.asInstanceOf[Module[Double]], featureSize)
+        case "TensorFloat" =>
+          new DLClassifierModel[Float](module.asInstanceOf[Module[Float]], featureSize)
+      }
+      MLParams.getDefaultParamsReader.getAndSetParams(dlModel, meta)
+      dlModel
+    }
+  }
+
+  private[dlframes] class DLClassifierModelWriter[T: ClassTag](
+      instance: DLClassifierModel[T])
+    (implicit ev: TensorNumeric[T]) extends DLModelWriter[T](instance)
+
+  override def read: MLReader[DLClassifierModel[_]] = {
+    new DLClassifierModel.DLClassifierModelReader
+  }
+}
