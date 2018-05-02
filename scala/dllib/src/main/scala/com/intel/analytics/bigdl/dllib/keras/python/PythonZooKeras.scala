@@ -19,7 +19,7 @@ package com.intel.analytics.zoo.pipeline.api.keras.python
 import java.util.{List => JList}
 
 import scala.collection.JavaConverters._
-import com.intel.analytics.bigdl.optim.Regularizer
+import com.intel.analytics.bigdl.optim.{Regularizer, Top1Accuracy, ValidationMethod}
 import com.intel.analytics.bigdl.python.api.PythonBigDLKeras
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -28,6 +28,7 @@ import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.nn.keras.KerasLayer
 import com.intel.analytics.zoo.pipeline.api.keras.layers._
 import com.intel.analytics.zoo.pipeline.api.keras.layers.utils.KerasUtils
+import com.intel.analytics.zoo.pipeline.api.keras.metrics.AUC
 import com.intel.analytics.zoo.pipeline.api.keras.models.{Model, Sequential}
 
 import scala.reflect.ClassTag
@@ -729,6 +730,10 @@ class PythonZooKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonB
     Square(toScalaShape(inputShape))
   }
 
+  def createAUC(thresholdNum: Int): ValidationMethod[T] = {
+    new AUC[T](thresholdNum)
+  }
+
   def createZooKerasHardShrink(
       value: Double = 0.5,
       inputShape: JList[Int] = null): HardShrink[T] = {
@@ -779,5 +784,4 @@ class PythonZooKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonB
       inputShape: JList[Int] = null): BinaryThreshold[T] = {
     BinaryThreshold(th, toScalaShape(inputShape))
   }
-
 }
