@@ -49,7 +49,7 @@ object SeqToTensor {
  * @param size dimensions of target Tensor.
  */
 class ArrayToTensor[T: ClassTag](size: Array[Int])(implicit ev: TensorNumeric[T])
-  extends SeqToTensor(size)
+  extends SeqToTensor[T](size)
 
 object ArrayToTensor {
   def apply[T: ClassTag](size: Array[Int])(implicit ev: TensorNumeric[T]): ArrayToTensor[T] =
