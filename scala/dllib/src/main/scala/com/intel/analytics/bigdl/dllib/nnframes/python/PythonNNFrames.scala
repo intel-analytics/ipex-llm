@@ -84,8 +84,8 @@ class PythonNNFrames[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonB
     NNImageSchema.withOriginColumn(imageDF, imageColumn, originColumn)
   }
 
-  def createNumToTensor(): NumToTensor[T] = {
-    new NumToTensor()
+  def createScalarToTensor(): ScalarToTensor[T] = {
+    new ScalarToTensor()
   }
 
   def createSeqToTensor(size: JArrayList[Int]): SeqToTensor[T] = {
@@ -140,7 +140,7 @@ class PythonNNFrames[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonB
       meanR: Double, meanG: Double, meanB: Double,
       stdR: Double = 1, stdG: Double = 1, stdB: Double = 1
     ): ChannelNormalizer = {
-    
+
     ChannelNormalizer(meanR.toFloat, meanG.toFloat, meanB.toFloat,
       stdR.toFloat, stdG.toFloat, stdB.toFloat)
   }
@@ -152,5 +152,5 @@ class PythonNNFrames[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonB
   def createCenterCrop(cropWidth: Int, cropHeight: Int): CenterCrop = {
     CenterCrop(cropWidth, cropHeight)
   }
-  
+
 }
