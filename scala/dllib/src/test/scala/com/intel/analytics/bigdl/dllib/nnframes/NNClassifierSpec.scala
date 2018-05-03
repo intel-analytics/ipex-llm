@@ -24,12 +24,11 @@ import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.optim.{Adam, LBFGS, Loss, Trigger}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
-import com.intel.analytics.bigdl.transform.vision.image.MatToTensor
-import com.intel.analytics.bigdl.transform.vision.image.augmentation.{CenterCrop, ChannelNormalize, Resize}
 import com.intel.analytics.bigdl.utils.Engine
 import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
 import com.intel.analytics.bigdl.visualization.{TrainSummary, ValidationSummary}
-import com.intel.analytics.zoo.pipeline.nnframes.transformers._
+import com.intel.analytics.zoo.feature.common._
+import com.intel.analytics.zoo.feature.image._
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
 import org.apache.spark.ml.feature.MinMaxScaler
@@ -231,7 +230,7 @@ class NNClassifierSpec extends FlatSpec with Matchers with BeforeAndAfter {
       .withColumn("label", lit(2.0f))
     assert(imageDF.count() == 1)
     val transformer = RowToImageFeature() -> Resize(256, 256) -> CenterCrop(224, 224) ->
-      ChannelNormalize(123, 117, 104, 1, 1, 1) -> MatToTensor() -> ImageFeatureToTensor()
+      ChannelNormalizer(123, 117, 104, 1, 1, 1) -> MatToTensor() -> ImageFeatureToTensor()
 
     val estimator = new NNClassifier(
       Inception_v1(1000), ClassNLLCriterion[Float](), transformer)

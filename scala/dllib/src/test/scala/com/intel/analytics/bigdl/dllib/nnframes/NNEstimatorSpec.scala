@@ -23,13 +23,11 @@ import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
-import com.intel.analytics.bigdl.transform.vision.image.MatToTensor
-import com.intel.analytics.bigdl.transform.vision.image.augmentation.{CenterCrop,
-  ChannelNormalize, Resize}
 import com.intel.analytics.bigdl.utils.Engine
 import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
 import com.intel.analytics.bigdl.visualization.{TrainSummary, ValidationSummary}
-import com.intel.analytics.zoo.pipeline.nnframes.transformers._
+import com.intel.analytics.zoo.feature.common._
+import com.intel.analytics.zoo.feature.image._
 import org.apache.spark.SparkContext
 import org.apache.spark.ml.{Pipeline, PipelineModel}
 import org.apache.spark.ml.feature.MinMaxScaler
@@ -104,7 +102,7 @@ class NNEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
   "An NNEstimator" should "construct with sampleTransformer" in {
     val model = new Sequential().add(Linear[Float](6, 2)).add(LogSoftMax[Float])
     val criterion = ClassNLLCriterion[Float]()
-    val sampleTransformer = FeatureLabelTransformer(SeqToTensor(Array(6)), NumToTensor())
+    val sampleTransformer = FeatureLabelPreprocessing(SeqToTensor(Array(6)), NumToTensor())
 
     val estimator = new NNEstimator(model, criterion, sampleTransformer)
       .setBatchSize(nRecords)
@@ -375,7 +373,7 @@ class NNEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val imageDF = NNImageReader.readImages(pascalResource.getFile, sc)
     assert(imageDF.count() == 1)
     val transformer = RowToImageFeature() -> Resize(256, 256) -> CenterCrop(224, 224) ->
-      ChannelNormalize(123, 117, 104) -> MatToTensor() -> ImageFeatureToTensor()
+      ChannelNormalizer(123, 117, 104) -> MatToTensor() -> ImageFeatureToTensor()
     val featurizer = new NNModel(Inception_v1(1000), transformer)
       .setBatchSize(1)
       .setFeaturesCol("image")
