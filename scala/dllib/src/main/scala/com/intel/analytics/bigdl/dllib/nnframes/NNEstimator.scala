@@ -106,18 +106,15 @@ private[nnframes] trait NNParams[F, @specialized(Float, Double) T] extends HasFe
 /**
  * [[NNEstimator]] extends [[org.apache.spark.ml.Estimator]] and supports training a BigDL
  * model with Spark DataFrame data. It can be integrated into a standard Spark ML Pipeline
- * to enable users for combined usage with Spark MLlib.
+ * to allow users combine the components of BigDL and Spark MLlib.
  *
  * [[NNEstimator]] supports different feature and label data type through [[Preprocessing]]. We
  * provide pre-defined [[Preprocessing]] for popular data types like Array or Vector in package
- * [[com.intel.analytics.zoo.feature]], while user can also develop
- * customized [[Preprocessing]].
+ * [[com.intel.analytics.zoo.feature]], while user can also develop customized [[Preprocessing]].
  * During fit, NNEstimator will extract feature and label data from input DataFrame and use
- * the [[Preprocessing]] to prepare data for the model.
- *
- * Using the [[Preprocessing]] allows [[NNEstimator]] to cache only the raw data and decrease
- * the memory consumption during feature conversion and training.
- *
+ * the [[Preprocessing]] to prepare data for the model. Using the [[Preprocessing]] allows
+ * [[NNEstimator]] to cache only the raw data and decrease the memory consumption during feature
+ * conversion and training.
  * More concrete examples are available in package [[com.intel.analytics.zoo.examples.nnframes]]
  *
  * Construct a NNEstimator with BigDL model, criterion and a samplePreprocessing that transform a

@@ -57,7 +57,7 @@ class NNClassifier[F, T: ClassTag](
     override val samplePreprocessing: Preprocessing[(F, Option[AnyVal]), Sample[T]],
     override val uid: String = Identifiable.randomUID("nnClassifier")
   )(implicit ev: TensorNumeric[T])
-  extends NNEstimator(model, criterion, samplePreprocessing) {
+  extends NNEstimator[F, AnyVal, T](model, criterion, samplePreprocessing) {
 
   /**
    * Construct a [[NNClassifier]] with a featurePreprocessing, which convert the data in
