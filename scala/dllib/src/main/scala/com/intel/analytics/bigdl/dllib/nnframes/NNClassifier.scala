@@ -33,35 +33,62 @@ import scala.reflect.ClassTag
 
 /**
  * [[NNClassifier]] is a specialized [[NNEstimator]] that simplifies the data format for
- * classification tasks. It only supports label column of DoubleType.
+ * classification tasks. It explicitly supports label column of DoubleType.
  * and the fitted [[NNClassifierModel]] will have the prediction column of DoubleType.
  *
  * @param model BigDL module to be optimized
  * @param criterion  BigDL criterion method
- * @param featurePreprocessing A [[Preprocessing]] that transforms the feature data to a
- *        Tensor[T]. Some pre-defined [[Preprocessing]] are provided in package
- *        [[com.intel.analytics.zoo.feature]]. E.g.
- *        [[ArrayToTensor]] is used to transform Array[_] in DataFrame to Tensor. For a feature
- *        column that contains 576 floats in an Array, Users can set ArrayToTensor(Array(28, 28))
- *        as featurePreprocessing, which will convert the feature data into Tensors with dimension
- *        28 * 28 to be processed by a convolution Model. For a simple linear model, user may
- *        just use ArrayToTensor(Array(576)), which will convert the data into Tensors with
- *        single dimension (576).
- *        [[MLlibVectorToTensor]] is used to transform [[org.apache.spark.mllib.linalg.Vector]]
- *        to a Tensor.
- *        [[ScalarToTensor]] transform a number to a Tensor with singel dimension of length 1.
- *        Multiple [[Preprocessing]]  can be combined as a [[ChainedPreprocessing]].
+ * @param samplePreprocessing Expert param. A [[Preprocessing]] that transforms the
+ *        (feature, Option[label]) tuple to a BigDL Sample[T], where T is decided by the BigDL
+ *        model.
+ *        Note: [[samplePreprocessing]] should be able to handle the case that label = None.
+ *        During fit, [[NNEstimator]] will extract (feature, Option[label]) tuple from input
+ *        DataFrame and use [[samplePreprocessing]] to transform the tuple into BigDL Sample to be
+ *        ingested by the model. If Label column is not available, (feature, None) will be
+ *        sent to [[samplePreprocessing]].
+ *
+ *        The [[samplePreprocessing]] will also be copied to the generated [[NNModel]] and applied
+ *        to feature column during transform, where (feature, None) will be passed to the
+ *        [[samplePreprocessing]].
  */
 class NNClassifier[F, T: ClassTag](
     @transient override val model: Module[T],
     override val criterion : Criterion[T],
-    val featurePreprocessing: Preprocessing[F, Tensor[T]],
+    override val samplePreprocessing: Preprocessing[(F, Option[AnyVal]), Sample[T]],
     override val uid: String = Identifiable.randomUID("nnClassifier")
   )(implicit ev: TensorNumeric[T])
-  extends NNEstimator[F, AnyVal, T](model, criterion, featurePreprocessing, ScalarToTensor()) {
+  extends NNEstimator(model, criterion, samplePreprocessing) {
+
+  /**
+   * Construct a [[NNClassifier]] with a featurePreprocessing, which convert the data in
+   * feature column to Tensors (Multi-dimension array) for model.
+   * @param model BigDL module to be optimized
+   * @param criterion  BigDL criterion method
+   * @param featurePreprocessing A [[Preprocessing]] that transforms the feature data to a
+   *        Tensor[T]. Some pre-defined [[Preprocessing]] are provided in package
+   *        [[com.intel.analytics.zoo.feature]]. E.g.
+   *        [[ArrayToTensor]] is used to transform Array[_] in DataFrame to Tensor. For a feature
+   *        column that contains 576 floats in an Array, Users can set ArrayToTensor(Array(28, 28))
+   *        as featurePreprocessing, which will convert the feature data into Tensors with dimension
+   *        28 * 28 to be processed by a convolution Model. For a simple linear model, user may
+   *        just use ArrayToTensor(Array(576)), which will convert the data into Tensors with
+   *        single dimension (576).
+   *        [[MLlibVectorToTensor]] is used to transform [[org.apache.spark.mllib.linalg.Vector]]
+   *        to a Tensor.
+   *        [[ScalarToTensor]] transform a number to a Tensor with singel dimension of length 1.
+   *        Multiple [[Preprocessing]]  can be combined as a [[ChainedPreprocessing]].
+   */
+  def this(
+      model: Module[T],
+      criterion : Criterion[T],
+      featurePreprocessing: Preprocessing[F, Tensor[T]])(implicit ev: TensorNumeric[T]) = {
+    this(model, criterion, FeatureLabelPreprocessing(featurePreprocessing, ScalarToTensor()))
+  }
 
   override protected def wrapBigDLModel(m: Module[T]): NNClassifierModel[F, T] = {
-    val dlModel = new NNClassifierModel[F, T](m, featurePreprocessing)
+    val clonedTransformer = FeatureToTupleAdapter(
+      samplePreprocessing.clonePreprocessing().asInstanceOf[Preprocessing[(F, Any), Sample[T]]])
+    val dlModel = new NNClassifierModel[F, T](m, clonedTransformer)
     copyValues(dlModel.setParent(this)).asInstanceOf[NNClassifierModel[F, T]]
   }
 
@@ -75,7 +102,7 @@ class NNClassifier[F, T: ClassTag](
       new NNClassifier[F, T](
         model.cloneModule(),
         criterion.cloneCriterion(),
-        featurePreprocessing.clonePreprocessing(),
+        samplePreprocessing.clonePreprocessing(),
         this.uid
       ),
       extra)
@@ -118,8 +145,8 @@ class NNClassifierModel[F, T: ClassTag](
    *        Multiple [[Preprocessing]]  can be combined as a [[ChainedPreprocessing]].
    */
   def this(
-            model: Module[T],
-            featurePreprocessing: Preprocessing[F, Tensor[T]]
+      model: Module[T],
+      featurePreprocessing: Preprocessing[F, Tensor[T]]
     )(implicit ev: TensorNumeric[T]) =
     this(model, featurePreprocessing -> TensorToSample())
 

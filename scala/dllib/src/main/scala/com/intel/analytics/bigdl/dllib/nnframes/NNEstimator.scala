@@ -123,20 +123,20 @@ private[nnframes] trait NNParams[F, @specialized(Float, Double) T] extends HasFe
  * Construct a NNEstimator with BigDL model, criterion and a samplePreprocessing that transform a
  * (feature, Option[label]) tuple to a BigDL Sample. This constructor is only recommended for the
  * expert users. Most users should use the other constructor with featurePreprocessing and
- * labelPreprocessing.
+ * labelPreprocessing when applicable.
  * @param model BigDL module to be optimized
- * @param criterion  BigDL criterion method
+ * @param criterion BigDL criterion
  * @param samplePreprocessing Expert param. A [[Preprocessing]] that transforms the
  *        (feature, Option[label]) tuple to a BigDL Sample[T], where T is decided by the BigDL
  *        model.
- *        Note: [[samplePreprocessing]] should be able to handle the case that label = null.
+ *        Note: [[samplePreprocessing]] should be able to handle the case that label = None.
  *        During fit, [[NNEstimator]] will extract (feature, Option[label]) tuple from input
  *        DataFrame and use [[samplePreprocessing]] to transform the tuple into BigDL Sample to be
- *        ingested by the model. If Label column is not available, (feature, null) will be
+ *        ingested by the model. If Label column is not available, (feature, None) will be
  *        sent to [[samplePreprocessing]].
  *
  *        The [[samplePreprocessing]] will also be copied to the generated [[NNModel]] and applied
- *        to feature column during transform, where (feature, null) will be passed to the
+ *        to feature column during transform, where (feature, None) will be passed to the
  *        [[samplePreprocessing]].
  * @tparam F data type from feature column, E.g. Array[_] or Vector
  * @tparam L data type from label column, E.g. Float, Double, Array[_] or Vector
@@ -160,7 +160,7 @@ class NNEstimator[F, L, T: ClassTag](
    * column data during transform. This is the the recommended constructor for most users.
    *
    * @param model BigDL module to be optimized
-   * @param criterion  BigDL criterion method
+   * @param criterion BigDL criterion
    * @param featurePreprocessing A [[Preprocessing]] that transforms the feature data to a
    *        Tensor[T]. Some pre-defined [[Preprocessing]] are provided in package
    *        [[com.intel.analytics.zoo.feature]]. E.g.
@@ -174,7 +174,7 @@ class NNEstimator[F, L, T: ClassTag](
    *        to a Tensor.
    *        [[ScalarToTensor]] transform a number to a Tensor with single dimension of length 1.
    *        Multiple [[Preprocessing]] can be combined as a [[ChainedPreprocessing]].
-   * @param labelPreprocessing   similar to featurePreprocessing, but applies to Label data.
+   * @param labelPreprocessing similar to featurePreprocessing, but applies to Label data.
    */
   def this(
       model: Module[T],
@@ -390,7 +390,7 @@ object NNEstimator {
    * @param featurePreprocessing A [[Preprocessing]] that transforms the feature data to a
    *        Sample[T].
    */
-  def createNNEstimatorWithFeaturePreprocessing[F, T: ClassTag](
+  def apply[F, T: ClassTag](
       model: Module[T],
       criterion: Criterion[T],
       featurePreprocessing: Preprocessing[F, Sample[T]]
@@ -398,7 +398,6 @@ object NNEstimator {
     
     new NNEstimator(model, criterion, TupleToFeatureAdapter(featurePreprocessing))
   }
-  
 }
 
 /**
@@ -443,8 +442,8 @@ class NNModel[F, T: ClassTag](
    *        Multiple [[Preprocessing]]  can be combined as a [[ChainedPreprocessing]].
    */
   def this(
-            model: Module[T],
-            featurePreprocessing: Preprocessing[F, Tensor[T]]
+      model: Module[T],
+      featurePreprocessing: Preprocessing[F, Tensor[T]]
     )(implicit ev: TensorNumeric[T]) =
     this(model, featurePreprocessing -> TensorToSample())
 
