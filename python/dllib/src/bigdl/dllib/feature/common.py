@@ -117,3 +117,6 @@ class FeatureToTupleAdapter(Preprocessing):
     def __init__(self, sample_transformer, bigdl_type="float"):
         super(FeatureToTupleAdapter, self).__init__(bigdl_type, sample_transformer)
 
+class BigDLAdapter(Preprocessing):
+    def __init__(self, bigdl_transformer, bigdl_type="float"):
+        super(BigDLAdapter, self).__init__(bigdl_type, bigdl_transformer)
