@@ -29,7 +29,8 @@ from pyspark.ml.evaluation import MulticlassClassificationEvaluator
 from zoo.common.nncontext import *
 from zoo.pipeline.nnframes.nn_classifier import *
 from zoo.pipeline.nnframes.nn_image_reader import *
-from zoo.pipeline.nnframes.nn_image_transformer import *
+from zoo.feature.common import *
+from zoo.feature.image.imagePreprocessing import *
 
 
 if __name__ == "__main__":
@@ -53,7 +54,7 @@ if __name__ == "__main__":
     (trainingDF, validationDF) = labelDF.randomSplit([0.9, 0.1])
 
     # compose a pipeline that includes feature transform, pretrained model and Logistic Regression
-    transformer = ChainedTransformer([RowToImageFeature(), Resize(256, 256), CenterCrop(224, 224),
+    transformer = ChainedPreprocessing([RowToImageFeature(), Resize(256, 256), CenterCrop(224, 224),
                                       ChannelNormalize(123.0, 117.0, 104.0),
                                       MatToTensor(), ImageFeatureToTensor()])
 
