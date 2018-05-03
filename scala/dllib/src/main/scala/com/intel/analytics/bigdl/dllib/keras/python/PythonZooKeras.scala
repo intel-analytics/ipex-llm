@@ -18,18 +18,23 @@ package com.intel.analytics.zoo.pipeline.api.keras.python
 
 import java.util.{List => JList}
 
+import com.intel.analytics.bigdl.{Criterion, DataSet}
+import com.intel.analytics.bigdl.dataset.{DataSet, LocalDataSet, MiniBatch}
+
 import scala.collection.JavaConverters._
-import com.intel.analytics.bigdl.optim.{Regularizer, Top1Accuracy, ValidationMethod}
-import com.intel.analytics.bigdl.python.api.PythonBigDLKeras
+import com.intel.analytics.bigdl.optim.{OptimMethod, Regularizer, ValidationMethod}
+import com.intel.analytics.bigdl.python.api.{EvaluatedResult, JTensor, PythonBigDLKeras, Sample}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.nn.keras.KerasLayer
+import com.intel.analytics.bigdl.transform.vision.image.{ImageFeature, ImageFeatureToMiniBatch}
 import com.intel.analytics.zoo.pipeline.api.keras.layers._
 import com.intel.analytics.zoo.pipeline.api.keras.layers.utils.KerasUtils
 import com.intel.analytics.zoo.pipeline.api.keras.metrics.AUC
-import com.intel.analytics.zoo.pipeline.api.keras.models.{Model, Sequential}
+import com.intel.analytics.zoo.pipeline.api.keras.models.{KerasNet, Model, Sequential}
+import org.apache.spark.api.java.JavaRDD
 
 import scala.reflect.ClassTag
 
@@ -61,6 +66,89 @@ class PythonZooKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonB
   def createZooKerasInputLayer(
       inputShape: JList[Int] = null): KerasLayer[Activity, Activity, T] = {
     InputLayer(inputShape = toScalaShape(inputShape))
+  }
+
+  def zooCompile(
+      module: KerasNet[T],
+      optimizer: OptimMethod[T],
+      loss: Criterion[T],
+      metrics: JList[ValidationMethod[T]] = null): Unit = {
+    module.compile(optimizer, loss,
+      if (metrics == null) null else metrics.asScala.toList)
+  }
+
+  def zooFit(
+      module: KerasNet[T],
+      x: JavaRDD[Sample],
+      batchSize: Int = 32,
+      epochs: Int = 10,
+      validationData: JavaRDD[Sample] = null): Unit = {
+    module.fit(toJSample(x), batchSize, epochs,
+      if (validationData == null) null else toJSample(validationData))
+  }
+
+  def zooFit(
+      module: KerasNet[T],
+      x: DataSet[ImageFeature],
+      batchSize: Int,
+      epochs: Int,
+      validationData: DataSet[ImageFeature]): Unit = {
+    val trainData = x -> ImageFeatureToMiniBatch[T](batchSize)
+    val valData =
+      if (validationData != null) validationData -> ImageFeatureToMiniBatch[T](batchSize)
+      else null
+    module.fit(trainData, epochs, valData)
+  }
+
+  def zooFit(
+      module: KerasNet[T],
+      xTrain: JList[JTensor],
+      yTrain: JTensor,
+      batchSize: Int,
+      epochs: Int,
+      xVal: JList[JTensor],
+      yVal: JTensor): Unit = {
+    val trainArray = toSampleArray(xTrain.asScala.toList.map{f => toTensor(f)}, toTensor(yTrain))
+    val trainData = batching(DataSet.array(trainArray), batchSize)
+      .asInstanceOf[LocalDataSet[MiniBatch[T]]]
+    val valData = if (xVal != null && yVal != null) {
+      val valArray = toSampleArray(xVal.asScala.toList.map{f => toTensor(f)}, toTensor(yVal))
+      batching(DataSet.array(valArray), batchSize)
+    } else null
+    module.fit(trainData, epochs, valData)
+  }
+
+  def zooEvaluate(
+      module: KerasNet[T],
+      x: JavaRDD[Sample],
+      batchSize: Int = 32): JList[EvaluatedResult] = {
+    val resultArray = module.evaluate(toJSample(x), batchSize)
+    val testResultArray = resultArray.map { result =>
+      EvaluatedResult(result._1.result()._1, result._1.result()._2,
+        result._2.toString())
+    }
+    testResultArray.toList.asJava
+  }
+
+  def zooSetTensorBoard(
+      module: KerasNet[T],
+      logDir: String,
+      appName: String): Unit = {
+    module.setTensorBoard(logDir, appName)
+  }
+
+  def zooSetCheckpoint(
+      module: KerasNet[T],
+      path: String,
+      overWrite: Boolean = true): Unit = {
+    module.setCheckpoint(path, overWrite)
+  }
+
+  def zooSaveGraphTopology(
+      module: Model[T],
+      logPath: String,
+      backward: Boolean = false): Model[T] = {
+    module.saveGraphTopology(logPath, backward)
   }
 
   def createZooKerasDense(
