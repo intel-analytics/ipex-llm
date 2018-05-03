@@ -153,4 +153,8 @@ class PythonNNFrames[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonB
     CenterCrop(cropWidth, cropHeight)
   }
 
+  def createBigDLAdapter(bt: Transformer[Any, Any]): BigDLAdapter[Any, Any] = {
+    BigDLAdapter(bt)
+  }
+
 }

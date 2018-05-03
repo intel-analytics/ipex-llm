@@ -392,7 +392,6 @@ object NNEstimator {
       criterion: Criterion[T],
       featurePreprocessing: Preprocessing[F, Sample[T]]
     )(implicit ev: TensorNumeric[T]): NNEstimator[F, Any, T] = {
-    
     new NNEstimator(model, criterion, TupleToFeatureAdapter(featurePreprocessing))
   }
 }
@@ -616,4 +615,3 @@ object NNModel extends MLReadable[NNModel[_, _]] {
 
   override def load(path: String): NNModel[_, _] = read.load(path)
 }
-
