@@ -86,7 +86,7 @@ class NNEstimator(JavaEstimator, HasFeaturesCol, HasLabelCol, HasPredictionCol, 
 
     NNEstimator supports different feature and label data type through operation defined in 
     Preprocessing. We provide pre-defined Preprocessing for popular data types like Array
-    or Vector in package zoo.feature, while user can also develop customized Transformer
+    or Vector in package zoo.feature, while user can also develop customized Preprocess
     which extends from feature.common.Preprocessing. During fit, NNEstimator
     will extract feature and label data from input DataFrame and use the Preprocessing to prepare
     data for the model.
@@ -101,7 +101,7 @@ class NNEstimator(JavaEstimator, HasFeaturesCol, HasLabelCol, HasPredictionCol, 
         Construct a NNEstimator with BigDL model, criterion and a sample_preprocessing that
         transform a (feature, Option[label]) tuple to a BigDL Sample. This constructor is only 
         recommended for the expert users. Most users should use class method
-        NNEstimator.withTensorTransformer.
+        NNEstimator.create.
         :param model: BigDL Model to be trained.
         :param criterion: BigDL criterion.
         :param sample_preprocessing: Expert param. A Preprocessing that transforms the (feature, 
@@ -110,14 +110,12 @@ class NNEstimator(JavaEstimator, HasFeaturesCol, HasLabelCol, HasPredictionCol, 
                Note that sample_preprocessing should be able to handle the case that label = None.
                During fit, NNEstimator will extract (feature, Option[label]) tuple from input 
                DataFrame and use sample_preprocessing to transform the tuple into BigDL Sample  
-               to be ingested by the model. If Label column is not available, 
-               (feature, None) will be sent to
-               sample_preprocessing.
+               to be ingested by the model. If Label column is not available, (feature, None)
+               will be sent to sample_preprocessing.
  
                The sample_preprocessing will also be copied to the generated NNModel and applied
                to feature column during transform, where (feature, None) will be passed to the
-               sample_preprocessing. sample_preprocessing should be a subClass of
-                zoo.pipeline.nnframes.nn_transformers.NNTransformer
+               sample_preprocessing.
         :param jvalue: Java object create by Py4j
         :param bigdl_type: optional parameter. data type of model, "float"(default) or "double".
         """
@@ -132,37 +130,38 @@ class NNEstimator(JavaEstimator, HasFeaturesCol, HasLabelCol, HasPredictionCol, 
         self.sample_preprocessing = sample_preprocessing
 
     @classmethod
-    def withTensorTransformer(cls, model, criterion, feature_Preprocessing, label_Preprocessing,
-                              jvalue=None, bigdl_type="float"):
+    def create(cls, model, criterion, feature_preprocessing, label_preprocessing,
+               jvalue=None, bigdl_type="float"):
         """
-        Construct a NNEstimator with a featureTransformer and a labelTransformer, which convert the
-        data in feature column and label column to Tensors (Multi-dimension array) for model. This
-        is the the recommended constructor for most users.
+        Construct a NNEstimator with a feature_preprocessing and a label_Preprocessing, which
+        convert the data in feature column and label column to Tensors (Multi-dimension array)
+        for model. This is the the recommended constructor for most users.
 
-        The featureTransformer will be copied to the fitted NNModel, and apply to feature
+        The feature_preprocessing will be copied to the fitted NNModel, and apply to feature
         column data during transform.
 
         :param model: BigDL Model to be trained.
         :param criterion: BigDL criterion.
-        :param feature_Preprocessing: A transformer that transforms the feature data to a Tensor[T].
-               Some pre-defined transformers are provided in package
-               zoo.pipeline.nnframes.nn_transformers. E.g.
+        :param feature_preprocessing: A Preprocessing that transforms the feature data to a
+               Tensor[T]. Some pre-defined Preprocessing are provided in package
+               zoo.feature. E.g.
                ArrayToTensor is used to transform Array[_] in DataFrame to Tensor. For a feature
                column that contains 576 floats in an Array, Users can set
-               ArrayToTensor(Array(28, 28)) as featureTransformer, which will convert the feature
+               ArrayToTensor(Array(28, 28)) as feature_preprocessing, which will convert the feature
                data into Tensors with dimension 28 * 28 to be processed by a convolution Model.
                For a simple linear model, user may just use ArrayToTensor(Array(576)), which will
                convert the data into Tensors with single dimension (576).
                MLlibVectorToTensor is used to transform org.apache.spark.mllib.linalg.Vector
                to a Tensor.
                ScalarToTensor transform a number to a Tensor with single dimension of length 1.
-               Multiple transformer can be combined as a ChainedPreprocessing.
-        :param label_Preprocessing: similar to featureTransformer, but applies to Label data.
+               Multiple Preprocessing can be combined as a ChainedPreprocessing.
+        :param label_preprocessing: similar to feature_preprocessing, but applies to Label data.
         :param jvalue: Java object create by Py4j
         :param bigdl_type: optional parameter. data type of model, "float"(default) or "double".
         """
-        return cls(model, criterion, FeatureLabelPreprocessing(
-            feature_Preprocessing, label_Preprocessing), jvalue, bigdl_type)
+        return cls(model, criterion,
+                   FeatureLabelPreprocessing(feature_preprocessing, label_preprocessing),
+                   jvalue, bigdl_type)
 
     def setMaxEpoch(self, val):
         """
@@ -202,8 +201,8 @@ class NNModel(JavaTransformer, HasFeaturesCol, HasPredictionCol, HasBatchSize, J
     """
     NNModel extends Spark ML Transformer and supports BigDL model with Spark DataFrame.
 
-    NNModel supports different feature data type through transformers. Some common
-    transformers have been defined in com.intel.analytics.zoo.feature.
+    NNModel supports different feature data type through Preprocessing. Some common
+    Preprocessing have been defined in com.intel.analytics.zoo.feature.
 
     After transform, the prediction column contains the output of the model as Array[T], where
     T (Double or Float) is decided by the model type.
@@ -212,9 +211,8 @@ class NNModel(JavaTransformer, HasFeaturesCol, HasPredictionCol, HasBatchSize, J
         """
         create a NNModel with a BigDL model
         :param model: trained BigDL model to use in prediction.
-        :param sample_preprocessing: A transformer that transforms the feature data to a Sample[T].
-               featureTransformer should be a subClass of
-               com.intel.analytics.zoo.feature.NNTransformer
+        :param sample_preprocessing: A Preprocessing that transforms the feature data to a
+               Sample[T].
         :param jvalue: Java object create by Py4j
         :param bigdl_type: optional parameter. data type of model, "float"(default) or "double".
         """
@@ -225,23 +223,23 @@ class NNModel(JavaTransformer, HasFeaturesCol, HasPredictionCol, HasBatchSize, J
         self.bigdl_type = bigdl_type
 
     @classmethod
-    def withTensorTransformer(cls, model, feature_preprocessing, jvalue=None, bigdl_type="float"):
+    def create(cls, model, feature_preprocessing, jvalue=None, bigdl_type="float"):
         """
-        Construct NNModel with a BigDL model and a feature-to-tensor transformer
+        Construct NNModel with a BigDL model and a feature-to-tensor Preprocessing
         :param model: trainned BigDL models to use in prediction.
-        :param feature_Preprocessing: A transformer that transforms the feature data to a Tensor[T].
-               Some pre-defined transformers are provided in package
-               zoo.pipeline.nnframes.nn_transformers. E.g.
+        :param feature_preprocessing: A Preprocessing that transforms the feature data to a
+               Tensor[T]. Some pre-defined Preprocessing are provided in package
+               zoo.feature. E.g.
                ArrayToTensor is used to transform Array[_] in DataFrame to Tensor. For a feature
                column that contains 576 floats in an Array, Users can set
-               ArrayToTensor(Array(28, 28)) as featureTransformer, which will convert the feature
+               ArrayToTensor(Array(28, 28)) as feature_preprocessing, which will convert the feature
                data into Tensors with dimension 28 * 28 to be processed by a convolution Model.
                For a simple linear model, user may just use ArrayToTensor(Array(576)), which will
                convert the data into Tensors with single dimension (576).
                MLlibVectorToTensor is used to transform org.apache.spark.mllib.linalg.Vector
                to a Tensor.
                ScalarToTensor transform a number to a Tensor with single dimension of length 1.
-               Multiple transformer can be combined as a ChainedPreprocessing.
+               Multiple Preprocessing can be combined as a ChainedPreprocessing.
         :param jvalue: Java object create by Py4j
         :param bigdl_type(optional): Data type of BigDL model, "float"(default) or "double".
         :return:
@@ -266,22 +264,23 @@ class NNClassifier(NNEstimator):
         """
         :param model: BigDL module to be optimized
         :param criterion: BigDL criterion method
-        :param feature_Preprocessing: A transformer that transforms the feature data to a Tensor[T].
-               Some pre-defined transformers are provided in package
-               zoo.pipeline.nnframes.nn_transformers. E.g.
+        :param feature_Preprocessing: A Preprocessing that transforms the feature data to a
+               Tensor[T]. Some pre-defined Preprocessing are provided in package
+               zoo.feature. E.g.
                ArrayToTensor is used to transform Array[_] in DataFrame to Tensor. For a feature
                column that contains 576 floats in an Array, Users can set
-               ArrayToTensor(Array(28, 28)) as featureTransformer, which will convert the feature
+               ArrayToTensor(Array(28, 28)) as feature_Preprocessing, which will convert the feature
                data into Tensors with dimension 28 * 28 to be processed by a convolution Model.
                For a simple linear model, user may just use ArrayToTensor(Array(576)), which will
                convert the data into Tensors with single dimension (576).
                MLlibVectorToTensor is used to transform org.apache.spark.mllib.linalg.Vector
                to a Tensor.
                ScalarToTensor transform a number to a Tensor with single dimension of length 1.
-               Multiple transformer can be combined as a ChainedPreprocessing.
+               Multiple Preprocessing can be combined as a ChainedPreprocessing.
         :param bigdl_type(optional): Data type of BigDL model, "float"(default) or "double".
         """
-        super(NNClassifier, self).__init__(model, criterion, feature_preprocessing, None, bigdl_type)
+        super(NNClassifier, self).__init__(
+            model, criterion, feature_preprocessing, None, bigdl_type)
 
 
 class NNClassifierModel(NNModel):
@@ -292,19 +291,19 @@ class NNClassifierModel(NNModel):
     def __init__(self,  model, feature_preprocessing, jvalue=None, bigdl_type="float"):
         """
         :param model: trained BigDL model to use in prediction.
-        :param feature_Preprocessing: A transformer that transforms the feature data to a Tensor[T].
-               Some pre-defined transformers are provided in package
-               zoo.pipeline.nnframes.nn_transformers. E.g.
+        :param feature_Preprocessing: A Preprocessing that transforms the feature data to a
+               Tensor[T]. Some pre-defined Preprocessing are provided in package
+               zoo.feature. E.g.
                ArrayToTensor is used to transform Array[_] in DataFrame to Tensor. For a feature
                column that contains 576 floats in an Array, Users can set
-               ArrayToTensor(Array(28, 28)) as featureTransformer, which will convert the feature
+               ArrayToTensor(Array(28, 28)) as feature_Preprocessing, which will convert the feature
                data into Tensors with dimension 28 * 28 to be processed by a convolution Model.
                For a simple linear model, user may just use ArrayToTensor(Array(576)), which will
                convert the data into Tensors with single dimension (576).
                MLlibVectorToTensor is used to transform org.apache.spark.mllib.linalg.Vector
                to a Tensor.
                ScalarToTensor transform a number to a Tensor with single dimension of length 1.
-               Multiple transformer can be combined as a ChainedPreprocessing.
+               Multiple Preprocessing can be combined as a ChainedPreprocessing.
         :param jvalue: Java object create by Py4j
         :param bigdl_type(optional): Data type of BigDL model, "float"(default) or "double".
         """
@@ -312,5 +311,6 @@ class NNClassifierModel(NNModel):
 
     @classmethod
     def of(self, jvalue, feaTran=None, bigdl_type="float"):
-        model = NNClassifierModel(model=None, feature_preprocessing=feaTran, jvalue=jvalue, bigdl_type=bigdl_type)
+        model = NNClassifierModel(
+            model=None, feature_preprocessing=feaTran, jvalue=jvalue, bigdl_type=bigdl_type)
         return model
