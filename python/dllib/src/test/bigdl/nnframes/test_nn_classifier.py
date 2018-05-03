@@ -26,6 +26,8 @@ from pyspark.sql.types import *
 
 from zoo.common.nncontext import *
 from zoo.pipeline.nnframes.nn_classifier import *
+from zoo.feature.common import *
+from zoo.feature.image.imagePreprocessing import *
 
 
 class TestNNClassifer():
@@ -48,7 +50,7 @@ class TestNNClassifer():
         mse_criterion = MSECriterion()
 
         estimator = NNEstimator(linear_model, mse_criterion,
-                                FeatureLabelTransformer(SeqToTensor([2]), SeqToTensor([2]))) \
+                                FeatureLabelPreprocessing(SeqToTensor([2]), SeqToTensor([2]))) \
             .setBatchSize(4)
         data = self.sc.parallelize([
             ((2.0, 1.0), (1.0, 2.0)),
@@ -74,8 +76,8 @@ class TestNNClassifer():
         mse_criterion = MSECriterion()
 
         estimator = NNEstimator.withTensorTransformer(model=linear_model, criterion=mse_criterion,
-                                feature_transformer=SeqToTensor([2]),
-                                label_transformer=SeqToTensor([2]))
+                                                      feature_Preprocessing=SeqToTensor([2]),
+                                                      label_Preprocessing=SeqToTensor([2]))
         assert estimator.setBatchSize(30).getBatchSize() == 30
         assert estimator.setMaxEpoch(40).getMaxEpoch() == 40
         assert estimator.setLearningRate(1e-4).getLearningRate() == 1e-4
@@ -91,7 +93,7 @@ class TestNNClassifer():
         classNLL_criterion = ClassNLLCriterion()
 
         classifier = NNClassifier(model=linear_model, criterion=classNLL_criterion,
-                                  feature_transformer = SeqToTensor([2]))
+                                  feature_preprocessing = SeqToTensor([2]))
         assert classifier.setBatchSize(20).getBatchSize() == 20
         assert classifier.setMaxEpoch(50).getMaxEpoch() == 50
         assert classifier.setLearningRate(1e-5).getLearningRate() == 1e-5
