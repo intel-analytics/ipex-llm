@@ -165,13 +165,13 @@ object KerasUtils {
     }
   }
 
-  def toBigDLMetrics[T: ClassTag](metrics: Array[String])
-    (implicit ev: TensorNumeric[T]): Array[ValidationMethod[T]] = {
+  def toBigDLMetrics[T: ClassTag](metrics: List[String])
+    (implicit ev: TensorNumeric[T]): List[ValidationMethod[T]] = {
     if (metrics == null) {
       null
     }
-    else if (metrics.sameElements(Array("accuracy"))) {
-      Array(new Top1Accuracy[T]())
+    else if (metrics.equals(List("accuracy"))) {
+      List(new Top1Accuracy[T]())
     }
     else {
       throw new IllegalArgumentException(s"Unsupported metrics: ${metrics.mkString(", ")}")
