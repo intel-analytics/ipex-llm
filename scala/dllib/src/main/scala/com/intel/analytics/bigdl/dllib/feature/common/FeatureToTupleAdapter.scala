@@ -35,3 +35,19 @@ object FeatureToTupleAdapter {
     )(implicit ev: TensorNumeric[T]): FeatureToTupleAdapter[F, T] =
     new FeatureToTupleAdapter(sampleTransformer)
 }
+
+class TupleToFeatureAdapter[F, L, T](
+    featureTransformer: Transformer[F, Sample[T]]
+  )(implicit ev: TensorNumeric[T]) extends Preprocessing[(F, Option[L]), Sample[T]] {
+
+  override def apply(prev: Iterator[(F, Option[L])]): Iterator[Sample[T]] = {
+    featureTransformer.apply(prev.map(_._1))
+  }
+}
+
+object TupleToFeatureAdapter {
+  def apply[F, L, T: ClassTag](
+      featureTransformer: Transformer[F, Sample[T]]
+    )(implicit ev: TensorNumeric[T]): TupleToFeatureAdapter[F, L, T] =
+    new TupleToFeatureAdapter(featureTransformer)
+}
