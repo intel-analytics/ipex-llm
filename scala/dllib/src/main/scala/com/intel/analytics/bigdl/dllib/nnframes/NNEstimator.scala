@@ -162,18 +162,18 @@ class NNEstimator[F, L, T: ClassTag](
    * @param model BigDL module to be optimized
    * @param criterion  BigDL criterion method
    * @param featurePreprocessing A [[Preprocessing]] that transforms the feature data to a
-   *                             Tensor[T]. Some pre-defined [[Preprocessing]] are provided in package
-   *                             [[com.intel.analytics.zoo.feature]]. E.g.
-   *                             [[ArrayToTensor]] is used to transform Array[_] in DataFrame to Tensor. For a feature
-   *                             column that contains 576 floats in an Array, Users can set ArrayToTensor(Array(28, 28))
-   *                             as featurePreprocessing, which will convert the feature data into Tensors with dimension
-   *                             28 * 28 to be processed by a convolution Model. For a simple linear model, user may
-   *                             just use ArrayToTensor(Array(576)), which will convert the data into Tensors with
-   *                             single dimension (576).
-   *                             [[MLlibVectorToTensor]] is used to transform [[org.apache.spark.mllib.linalg.Vector]]
-   *                             to a Tensor.
-   *                             [[ScalarToTensor]] transform a number to a Tensor with single dimension of length 1.
-   *                             Multiple [[Preprocessing]] can be combined as a [[ChainedPreprocessing]].
+   *        Tensor[T]. Some pre-defined [[Preprocessing]] are provided in package
+   *        [[com.intel.analytics.zoo.feature]]. E.g.
+   *        [[ArrayToTensor]] is used to transform Array[_] in DataFrame to Tensor. For a feature
+   *        column that contains 576 floats in an Array, Users can set ArrayToTensor(Array(28, 28))
+   *        as featurePreprocessing, which will convert the feature data into Tensors with dimension
+   *        28 * 28 to be processed by a convolution Model. For a simple linear model, user may
+   *        just use ArrayToTensor(Array(576)), which will convert the data into Tensors with
+   *        single dimension (576).
+   *        [[MLlibVectorToTensor]] is used to transform [[org.apache.spark.mllib.linalg.Vector]]
+   *        to a Tensor.
+   *        [[ScalarToTensor]] transform a number to a Tensor with single dimension of length 1.
+   *        Multiple [[Preprocessing]] can be combined as a [[ChainedPreprocessing]].
    * @param labelPreprocessing   similar to featurePreprocessing, but applies to Label data.
    */
   def this(
@@ -379,6 +379,28 @@ class NNEstimator[F, L, T: ClassTag](
   }
 }
 
+object NNEstimator {
+
+  /**
+   * Construct a [[NNEstimator]] with a featurePreprocessing only. The constructor is useful
+   * when both feature and label are derived from the same column of the original DataFrame.
+   *
+   * @param model BigDL module to be optimized
+   * @param criterion  BigDL criterion method
+   * @param featurePreprocessing A [[Preprocessing]] that transforms the feature data to a
+   *        Sample[T].
+   */
+  def createNNEstimatorWithFeaturePreprocessing[F, T: ClassTag](
+      model: Module[T],
+      criterion: Criterion[T],
+      featurePreprocessing: Preprocessing[F, Sample[T]]
+    )(implicit ev: TensorNumeric[T]): NNEstimator[F, Any, T] = {
+    
+    new NNEstimator(model, criterion, TupleToFeatureAdapter(featurePreprocessing))
+  }
+  
+}
+
 /**
  * [[NNModel]] extends Spark ML Transformer and supports BigDL model with Spark DataFrame data.
  *
@@ -404,21 +426,21 @@ class NNModel[F, T: ClassTag](
 
   /**
    * Construct NNModel with a BigDL model and a feature-to-tensor [[Preprocessing]]
- *
+   *
    * @param model trainned BigDL models to use in prediction.
    * @param featurePreprocessing A [[Preprocessing]] that transforms the feature data to a
-   *                             Tensor[T]. Some pre-defined [[Preprocessing]] are provided in package
-   *                             [[com.intel.analytics.zoo.feature]]. E.g.
-   *                             [[ArrayToTensor]] is used to transform Array[_] in DataFrame to Tensor. For a feature
-   *                             column that contains 576 floats in an Array, Users can set ArrayToTensor(Array(28, 28))
-   *                             as featurePreprocessing, which will convert the feature data into Tensors with dimension
-   *                             28 * 28 to be processed by a convolution Model. For a simple linear model, user may
-   *                             just use ArrayToTensor(Array(576)), which will convert the data into Tensors with
-   *                             single dimension (576).
-   *                             [[MLlibVectorToTensor]] is used to transform [[org.apache.spark.mllib.linalg.Vector]]
-   *                             to a Tensor.
-   *                             [[ScalarToTensor]] transform a number to a Tensor with singel dimension of length 1.
-   *                             Multiple [[Preprocessing]]  can be combined as a [[ChainedPreprocessing]].
+   *        Tensor[T]. Some pre-defined [[Preprocessing]] are provided in package
+   *        [[com.intel.analytics.zoo.feature]]. E.g.
+   *        [[ArrayToTensor]] is used to transform Array[_] in DataFrame to Tensor. For a feature
+   *        column that contains 576 floats in an Array, Users can set ArrayToTensor(Array(28, 28))
+   *        as featurePreprocessing, which will convert the feature data into Tensors with dimension
+   *        28 * 28 to be processed by a convolution Model. For a simple linear model, user may
+   *        just use ArrayToTensor(Array(576)), which will convert the data into Tensors with
+   *        single dimension (576).
+   *        [[MLlibVectorToTensor]] is used to transform [[org.apache.spark.mllib.linalg.Vector]]
+   *        to a Tensor.
+   *        [[ScalarToTensor]] transform a number to a Tensor with singel dimension of length 1.
+   *        Multiple [[Preprocessing]]  can be combined as a [[ChainedPreprocessing]].
    */
   def this(
             model: Module[T],
