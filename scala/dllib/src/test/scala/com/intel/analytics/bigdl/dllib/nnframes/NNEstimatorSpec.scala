@@ -23,7 +23,6 @@ import com.intel.analytics.bigdl.models.inception.Inception_v1
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
 import com.intel.analytics.bigdl.utils.Engine
 import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
@@ -38,7 +37,6 @@ import org.apache.spark.mllib.linalg.Vectors
 import org.apache.spark.sql.{DataFrame, Row, SQLContext}
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
-import scala.reflect.ClassTag
 import scala.reflect.io.Path
 import scala.util.Random
 
@@ -123,7 +121,7 @@ class NNEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
     assert(nnModel.transform(df).count() == nRecords)
   }
 
-  "An NNEstimator" should "construct with sampleTransformer2" in {
+  "An NNEstimator" should "works without label column" in {
     val model = new Sequential().add(Linear[Float](6, 2)).add(LogSoftMax[Float])
     val criterion = ClassNLLCriterion[Float]()
     val estimator = NNEstimator(
@@ -134,13 +132,11 @@ class NNEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
       .setLearningRate(0.1)
       .setMaxEpoch(1)
     val data = sc.parallelize(smallData)
-    val df = sqlContext.createDataFrame(data).toDF("features", "label")
+    val df = sqlContext.createDataFrame(data).toDF("features", "label").drop("label")
 
     val nnModel = estimator.fit(df)
     nnModel.isInstanceOf[NNModel[Seq[Any], Float]] should be(true)
     val predictionDF = nnModel.transform(df)
-    predictionDF.show()
-    predictionDF.printSchema()
     assert(nnModel.transform(df).count() == nRecords)
   }
 
@@ -546,7 +542,7 @@ object NNEstimatorSpec {
   }
 }
 
-
+// F --> Sample[T]
 class SeqToSample extends Preprocessing[Seq[Any], Sample[Float]] {
   override def apply(prev: Iterator[Seq[Any]]): Iterator[Sample[Float]] = {
     prev.map { case s =>
