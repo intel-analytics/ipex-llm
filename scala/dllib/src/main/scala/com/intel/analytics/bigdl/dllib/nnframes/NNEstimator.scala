@@ -30,9 +30,7 @@ import com.intel.analytics.bigdl.tensor.{Tensor, DoubleType => TensorDouble,
 import com.intel.analytics.bigdl.utils.T
 import com.intel.analytics.bigdl.utils.serializer.ModuleLoader
 import com.intel.analytics.bigdl.visualization.{TrainSummary, ValidationSummary}
-import com.intel.analytics.zoo.pipeline.nnframes.transformers.internal.FeatureToTupleAdapter
-import com.intel.analytics.zoo.pipeline.nnframes.transformers.{ArrayToTensor,
-  FeatureLabelTransformer, MLlibVectorToTensor, NumToTensor, TensorToSample}
+import com.intel.analytics.zoo.feature.common.{FeatureToTupleAdapter, _}
 import org.apache.spark.ml.adapter.{HasFeaturesCol, HasPredictionCol, SchemaUtils}
 import org.apache.spark.ml.{DLEstimatorBase, DLTransformerBase, DefaultParamsWriterWrapper}
 import org.apache.spark.ml.param._
@@ -110,36 +108,36 @@ private[nnframes] trait NNParams[F, @specialized(Float, Double) T] extends HasFe
  * model with Spark DataFrame data. It can be integrated into a standard Spark ML Pipeline
  * to enable users for combined usage with Spark MLlib.
  *
- * [[NNEstimator]] supports different feature and label data type through transformers. We
- * provide pre-defined transformers for popular data types like Array or Vector in package
- * [[com.intel.analytics.zoo.pipeline.nnframes.transformers]], while user can also develop
- * customized Transformer which extends from [[com.intel.analytics.bigdl.dataset.Transformer]].
+ * [[NNEstimator]] supports different feature and label data type through [[Preprocessing]]. We
+ * provide pre-defined [[Preprocessing]] for popular data types like Array or Vector in package
+ * [[com.intel.analytics.zoo.feature]], while user can also develop
+ * customized [[Preprocessing]].
  * During fit, NNEstimator will extract feature and label data from input DataFrame and use
- * the transformers to prepare data for the model.
+ * the [[Preprocessing]] to prepare data for the model.
  *
- * Using the transformers allows [[NNEstimator]] to cache only the raw data and decrease
+ * Using the [[Preprocessing]] allows [[NNEstimator]] to cache only the raw data and decrease
  * the memory consumption during feature conversion and training.
  *
  * More concrete examples are available in package [[com.intel.analytics.zoo.examples.nnframes]]
  *
- * Construct a NNEstimator with BigDL model, criterion and a sampleTransformer that transform a
- * (feature, label) tuple to a BigDL Sample. This constructor is only recommended for the expert
- * users. Most users should use the other constructor with featureTransformer and
- * labelTransformer.
+ * Construct a NNEstimator with BigDL model, criterion and a samplePreprocessing that transform a
+ * (feature, Option[label]) tuple to a BigDL Sample. This constructor is only recommended for the 
+ * expert users. Most users should use the other constructor with featurePreprocessing and
+ * labelPreprocessing.
  * @param model BigDL module to be optimized
  * @param criterion  BigDL criterion method
- * @param sampleTransformer Expert param. A transformer that transforms the (feature, label) tuple
- *        to a BigDL Sample[T], where T is decided by the BigDL model.
+ * @param samplePreprocessing Expert param. A [[Preprocessing]] that transforms the
+ *        (feature, Option[label]) tuple to a BigDL Sample[T], where T is decided by the BigDL model.
  *
- *        Note: sampleTransformer should be able to handle the case that label = null.
- *        During fit, [[NNEstimator]] will extract (feature, label) tuple from input
- *        DataFrame and use sampleTransformer to transform the tuple into BigDL Sample to be
+ *        Note: [[samplePreprocessing]] should be able to handle the case that label = null.
+ *        During fit, [[NNEstimator]] will extract (feature, Option[label]) tuple from input
+ *        DataFrame and use [[samplePreprocessing]] to transform the tuple into BigDL Sample to be
  *        ingested by the model. If Label column is not available, (feature, null) will be
- *        sent to sampleTransformer.
+ *        sent to [[samplePreprocessing]].
  *
- *        The sampleTransformer will also be copied to the generated [[NNModel]] and applied
+ *        The [[samplePreprocessing]] will also be copied to the generated [[NNModel]] and applied
  *        to feature column during transform, where (feature, null) will be passed to the
- *        sampleTransformer.
+ *        [[samplePreprocessing]].
  * @tparam F data type from feature column, E.g. Array[_] or Vector
  * @tparam L data type from label column, E.g. Float, Double, Array[_] or Vector
  * @tparam T data type of BigDL Model
@@ -147,43 +145,44 @@ private[nnframes] trait NNParams[F, @specialized(Float, Double) T] extends HasFe
 class NNEstimator[F, L, T: ClassTag](
     @transient val model: Module[T],
     val criterion : Criterion[T],
-    val sampleTransformer: Transformer[(F, L), Sample[T]],
+    val samplePreprocessing: Preprocessing[(F, Option[L]), Sample[T]],
     override val uid: String = Identifiable.randomUID("nnEstimator")
   )(implicit ev: TensorNumeric[T])
   extends DLEstimatorBase[NNEstimator[F, L, T], NNModel[F, T]] with NNParams[F, T]
     with TrainingParams[T] {
 
   /**
-   * Construct a NNEstimator with a featureTransformer and a labelTransformer, which convert the
-   * data in feature column and label column to Tensors (Multi-dimension array) for model.
+   * Construct a [[NNEstimator]] with a featurePreprocessing and a labelPreprocessing, which 
+   * convert the data in feature column and label column to Tensors (Multi-dimension array) for
+   * model.
    *
-   * The featureTransformer will be copied to the fitted NNModel, and apply to feature
+   * The featurePreprocessing will be copied to the fitted NNModel, and apply to feature
    * column data during transform. This is the the recommended constructor for most users.
    *
    * @param model BigDL module to be optimized
    * @param criterion  BigDL criterion method
-   * @param featureTransformer A transformer that transforms the feature data to a Tensor[T].
-   *        Some pre-defined transformers are provided in package
-   *        [[com.intel.analytics.zoo.pipeline.nnframes.transformers]]. E.g.
+   * @param featurePreprocessing A [[Preprocessing]] that transforms the feature data to a Tensor[T].
+   *        Some pre-defined [[Preprocessing]] are provided in package
+   *        [[com.intel.analytics.zoo.feature]]. E.g.
    *        [[ArrayToTensor]] is used to transform Array[_] in DataFrame to Tensor. For a feature
    *        column that contains 576 floats in an Array, Users can set ArrayToTensor(Array(28, 28))
-   *        as featureTransformer, which will convert the feature data into Tensors with dimension
+   *        as featurePreprocessing, which will convert the feature data into Tensors with dimension
    *        28 * 28 to be processed by a convolution Model. For a simple linear model, user may
    *        just use ArrayToTensor(Array(576)), which will convert the data into Tensors with
    *        single dimension (576).
    *        [[MLlibVectorToTensor]] is used to transform [[org.apache.spark.mllib.linalg.Vector]]
    *        to a Tensor.
    *        [[NumToTensor]] transform a number to a Tensor with single dimension of length 1.
-   *        Multiple transformer can be combined as a ChainedTransformer.
-   * @param labelTransformer similar to featureTransformer, but applies to Label data.
+   *        Multiple [[Preprocessing]] can be combined as a [[ChainedPreprocessing]].
+   * @param labelPreprocessing similar to featurePreprocessing, but applies to Label data.
    */
   def this(
       model: Module[T],
       criterion: Criterion[T],
-      featureTransformer: Transformer[F, Tensor[T]],
-      labelTransformer: Transformer[L, Tensor[T]]
+      featurePreprocessing: Preprocessing[F, Tensor[T]],
+      labelPreprocessing: Preprocessing[L, Tensor[T]]
     )(implicit ev: TensorNumeric[T]) =
-    this(model, criterion, FeatureLabelTransformer(featureTransformer, labelTransformer))
+    this(model, criterion, FeatureLabelPreprocessing(featurePreprocessing, labelPreprocessing))
 
   def setFeaturesCol(featuresColName: String): this.type = set(featuresCol, featuresColName)
 
@@ -308,15 +307,15 @@ class NNEstimator[F, L, T: ClassTag](
       None
     }
 
-    val featureAndLabel: RDD[(F, L)] = dataFrame.rdd.map { row =>
+    val featureAndLabel: RDD[(F, Option[L])] = dataFrame.rdd.map { row =>
       val features = row.getAs[F](featureColIndex)
       val labels = labelColIndex match {
-        case Some(i) => row.getAs[L](i)
-        case None => null.asInstanceOf[L]
+        case Some(i) => Some(row.getAs[L](i))
+        case None => None
       }
       (features, labels)
     }
-    DataSet.rdd(featureAndLabel).transform(sampleTransformer -> SampleToMiniBatch[T](batchSize))
+    DataSet.rdd(featureAndLabel).transform(samplePreprocessing -> SampleToMiniBatch[T](batchSize))
   }
 
   protected override def internalFit(dataFrame: DataFrame): NNModel[F, T] = {
@@ -352,7 +351,7 @@ class NNEstimator[F, L, T: ClassTag](
    */
   protected def wrapBigDLModel(m: Module[T]): NNModel[F, T] = {
     val clonedTransformer = FeatureToTupleAdapter(
-      sampleTransformer.cloneTransformer().asInstanceOf[Transformer[(F, Any), Sample[T]]])
+      samplePreprocessing.clonePreprocessing().asInstanceOf[Preprocessing[(F, Any), Sample[T]]])
     val dlModel = new NNModel[F, T](m, clonedTransformer)
     copyValues(dlModel.setParent(this))
   }
@@ -367,7 +366,7 @@ class NNEstimator[F, L, T: ClassTag](
       new NNEstimator[F, L, T](
         model.cloneModule(),
         criterion.cloneCriterion(),
-        sampleTransformer.cloneTransformer(),
+        samplePreprocessing.clonePreprocessing(),
         this.uid
       ),
       extra)
@@ -383,48 +382,48 @@ class NNEstimator[F, L, T: ClassTag](
 /**
  * [[NNModel]] extends Spark ML Transformer and supports BigDL model with Spark DataFrame data.
  *
- * [[NNModel]] supports different feature data type through transformers. We
- * provide pre-defined transformers for popular data types like Array or Vector in package
- * [[com.intel.analytics.zoo.pipeline.nnframes.transformers]], while user can also develop
- * customized Transformer which extends from [[com.intel.analytics.bigdl.dataset.Transformer]].
+ * [[NNModel]] supports different feature data type through [[Preprocessing]]. We
+ * provide pre-defined [[Preprocessing]] for popular data types like Array or Vector in package
+ * [[com.intel.analytics.zoo.feature]], while user can also develop
+ * customized [[Preprocessing]].
  * During transform, [[NNModel]] will extract feature data from input DataFrame and use
- * the transformer to prepare data for the model.
+ * the [[Preprocessing]] to prepare data for the model.
  *
  * After transform, the prediction column contains the output of the model as Array[T], where
  * T (Double or Float) is decided by the model type.
  *
  * @param model trainned BigDL models to use in prediction.
- * @param sampleTransformer A transformer that transforms the feature data to a Sample[T].
+ * @param samplePreprocessing A [[Preprocessing]] that transforms the feature data to a Sample[T].
  */
 class NNModel[F, T: ClassTag](
     @transient val model: Module[T],
-    @transient val sampleTransformer: Transformer[F, Sample[T]],
+    @transient val samplePreprocessing: Preprocessing[F, Sample[T]],
     override val uid: String = "DLModel")(implicit ev: TensorNumeric[T])
   extends DLTransformerBase[NNModel[F, T]] with NNParams[F, T]
     with HasBatchSize with MLWritable {
 
   /**
-   * Construct NNModel with a BigDL model and a feature-to-tensor transformer
+   * Construct NNModel with a BigDL model and a feature-to-tensor [[Preprocessing]]
    * @param model trainned BigDL models to use in prediction.
-   * @param featureTransformer A transformer that transforms the feature data to a Tensor[T].
-   *        Some pre-defined transformers are provided in package
-   *        [[com.intel.analytics.zoo.pipeline.nnframes.transformers]]. E.g.
+   * @param featurePreprocessing A [[Preprocessing]] that transforms the feature data to a Tensor[T].
+   *        Some pre-defined [[Preprocessing]] are provided in package
+   *        [[com.intel.analytics.zoo.feature]]. E.g.
    *        [[ArrayToTensor]] is used to transform Array[_] in DataFrame to Tensor. For a feature
    *        column that contains 576 floats in an Array, Users can set ArrayToTensor(Array(28, 28))
-   *        as featureTransformer, which will convert the feature data into Tensors with dimension
+   *        as featurePreprocessing, which will convert the feature data into Tensors with dimension
    *        28 * 28 to be processed by a convolution Model. For a simple linear model, user may
-   *       just use ArrayToTensor(Array(576)), which will convert the data into Tensors with
-   *       single dimension (576).
+   *        just use ArrayToTensor(Array(576)), which will convert the data into Tensors with
+   *        single dimension (576).
    *        [[MLlibVectorToTensor]] is used to transform [[org.apache.spark.mllib.linalg.Vector]]
    *        to a Tensor.
    *        [[NumToTensor]] transform a number to a Tensor with singel dimension of length 1.
-   *        Multiple transformer can be combined as a ChainedTransformer.
+   *        Multiple [[Preprocessing]]  can be combined as a [[ChainedPreprocessing]].
    */
   def this(
-      model: Module[T],
-      featureTransformer: Transformer[F, Tensor[T]]
+            model: Module[T],
+            featurePreprocessing: Preprocessing[F, Tensor[T]]
     )(implicit ev: TensorNumeric[T]) =
-    this(model, featureTransformer -> TensorToSample())
+    this(model, featurePreprocessing -> TensorToSample())
 
   def setFeaturesCol(featuresColName: String): this.type = set(featuresCol, featuresColName)
 
@@ -442,7 +441,7 @@ class NNModel[F, T: ClassTag](
     val sc = dataFrame.sqlContext.sparkContext
     val modelBroadCast = ModelBroadcast[T]().broadcast(sc, model.evaluate())
     val localBatchSize = $(batchSize)
-    val featureTransformersBC = sc.broadcast(sampleTransformer)
+    val featureTransformersBC = sc.broadcast(samplePreprocessing)
     val toBatchBC = sc.broadcast(SampleToMiniBatch[T](localBatchSize))
 
     // concat the prediction and other columns in DF. avoid zip between RDD
@@ -490,7 +489,7 @@ class NNModel[F, T: ClassTag](
   }
 
   override def copy(extra: ParamMap): NNModel[F, T] = {
-    val copied = new NNModel[F, T](model.cloneModule(), sampleTransformer.cloneTransformer(), uid)
+    val copied = new NNModel[F, T](model.cloneModule(), samplePreprocessing.clonePreprocessing(), uid)
       .setParent(parent)
     copyValues(copied, extra)
   }
@@ -510,10 +509,10 @@ object NNModel extends MLReadable[NNModel[_, _]] {
       val nnModel = typeTag match {
         case "TensorDouble" =>
           new NNModel[Any, Double](model.asInstanceOf[Module[Double]],
-            feaTran.asInstanceOf[Transformer[Any, Sample[Double]]])
+            feaTran.asInstanceOf[Preprocessing[Any, Sample[Double]]])
         case "TensorFloat" =>
           new NNModel[Any, Float](model.asInstanceOf[Module[Float]],
-            feaTran.asInstanceOf[Transformer[Any, Sample[Float]]])
+            feaTran.asInstanceOf[Preprocessing[Any, Sample[Float]]])
         case _ =>
           throw new Exception("Only support float and double for now")
       }
@@ -538,14 +537,14 @@ object NNModel extends MLReadable[NNModel[_, _]] {
     }
 
     val ois = new ObjectInputStream(
-      new FileInputStream(new Path(path, "featureTransformer").toString))
-    val featureTransformer = try {
-      ois.readObject.asInstanceOf[Transformer[Any, Any]]
+      new FileInputStream(new Path(path, "featurePreprocessing").toString))
+    val featurePreprocessing = try {
+      ois.readObject.asInstanceOf[Preprocessing[Any, Any]]
     } finally {
       ois.close()
     }
 
-    (meta, model, typeTag, featureTransformer)
+    (meta, model, typeTag, featurePreprocessing)
   }
 
   class NNModelWriter[@specialized(Float, Double) T: ClassTag](
@@ -584,10 +583,10 @@ object NNModel extends MLReadable[NNModel[_, _]] {
       new Path(path, "module").toString -> new Path(path, "weight").toString
     module.saveModule(modulePath, weightPath, isOverWrite)
 
-    val fos = new FileOutputStream(new Path(path, "featureTransformer").toString)
+    val fos = new FileOutputStream(new Path(path, "featurePreprocessing").toString)
     val oos = new ObjectOutputStream(fos)
     try {
-      oos.writeObject(instance.sampleTransformer)
+      oos.writeObject(instance.samplePreprocessing)
     } finally {
       oos.close()
     }

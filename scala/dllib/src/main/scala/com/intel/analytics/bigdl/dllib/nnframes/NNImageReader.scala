@@ -56,7 +56,7 @@ object NNImageSchema {
       // floats in OpenCV-compatible order: row-wise BGR in most cases
       StructField("data", new ArrayType(FloatType, false), false) :: Nil)
 
-  private[nnframes] def imf2Row(imf: ImageFeature): Row = {
+  private[zoo] def imf2Row(imf: ImageFeature): Row = {
     val (mode, data) = if (imf.contains(ImageFeature.imageTensor)) {
       val floatData = imf(ImageFeature.imageTensor).asInstanceOf[Tensor[Float]].storage().array()
       val cvType = imf.getChannel() match {
@@ -91,7 +91,7 @@ object NNImageSchema {
     )
   }
 
-  private[nnframes] def row2IMF(row: Row): ImageFeature = {
+  private[zoo] def row2IMF(row: Row): ImageFeature = {
     val (origin, h, w, c) = (row.getString(0), row.getInt(1), row.getInt(2), row.getInt(3))
     val imf = ImageFeature()
     imf.update(ImageFeature.uri, origin)

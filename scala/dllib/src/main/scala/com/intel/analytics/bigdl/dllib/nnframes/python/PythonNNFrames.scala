@@ -24,10 +24,10 @@ import com.intel.analytics.bigdl.{Criterion, Module}
 import com.intel.analytics.bigdl.python.api.PythonBigDL
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.transform.vision.image.FeatureTransformer
+import com.intel.analytics.bigdl.transform.vision.image.{FeatureTransformer, ImageFeature}
+import com.intel.analytics.zoo.feature.common._
+import com.intel.analytics.zoo.feature.image.{CenterCrop, ChannelNormalizer, MatToTensor, Resize}
 import com.intel.analytics.zoo.pipeline.nnframes._
-import com.intel.analytics.zoo.pipeline.nnframes.transformers._
-import com.intel.analytics.zoo.pipeline.nnframes.transformers.internal.FeatureToTupleAdapter
 import org.apache.spark.api.java.JavaSparkContext
 import org.apache.spark.sql.DataFrame
 
@@ -47,14 +47,10 @@ class PythonNNFrames[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonB
     NNImageReader.readImages(path, sc.sc, minParitions)
   }
 
-  def createNNImageTransformer(transformer: FeatureTransformer): NNImageTransformer = {
-    new NNImageTransformer(transformer)
-  }
-
   def createNNEstimator(
       model: Module[T],
       criterion: Criterion[T],
-      sampleTransformer: Transformer[(Any, Any), Sample[T]]
+      sampleTransformer: Preprocessing[(Any, Option[Any]), Sample[T]]
     ): NNEstimator[Any, Any, T] = {
     new NNEstimator(model, criterion, sampleTransformer)
   }
@@ -62,19 +58,19 @@ class PythonNNFrames[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonB
   def createNNClassifier(
         model: Module[T],
         criterion: Criterion[T],
-        featureTransformer: Transformer[Any, Tensor[T]]): NNClassifier[Any, T] = {
+        featureTransformer: Preprocessing[Any, Tensor[T]]): NNClassifier[Any, T] = {
     new NNClassifier(model, criterion, featureTransformer)
   }
 
   def createNNModel(
       model: Module[T],
-      sampleTransformer: Transformer[Any, Sample[T]]): NNModel[Any, T] = {
+      sampleTransformer: Preprocessing[Any, Sample[T]]): NNModel[Any, T] = {
     new NNModel(model, sampleTransformer)
   }
 
   def createNNClassifierModel(
       model: Module[T],
-      featureTransformer: Transformer[Any, Tensor[T]]): NNClassifierModel[Any, T] = {
+      featureTransformer: Preprocessing[Any, Tensor[T]]): NNClassifierModel[Any, T] = {
     new NNClassifierModel(model, featureTransformer)
   }
 
@@ -112,15 +108,15 @@ class PythonNNFrames[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonB
     RowToImageFeature()
   }
 
-  def createFeatureLabelTransformer(
-      featureTransfomer: Transformer[Any, Tensor[T]],
-      labelTransformer: Transformer[Any, Tensor[T]]
-    ): FeatureLabelTransformer[Any, Any, Sample[T]] = {
-    FeatureLabelTransformer(featureTransfomer, labelTransformer)
-      .asInstanceOf[FeatureLabelTransformer[Any, Any, Sample[T]]]
+  def createFeatureLabelPreprocessing(
+      featureTransfomer: Preprocessing[Any, Tensor[T]],
+      labelTransformer: Preprocessing[Any, Tensor[T]]
+    ): FeatureLabelPreprocessing[Any, Any, Sample[T]] = {
+    FeatureLabelPreprocessing(featureTransfomer, labelTransformer)
+      .asInstanceOf[FeatureLabelPreprocessing[Any, Any, Sample[T]]]
   }
 
-  def createChainedTransformer(list: JList[Transformer[Any, Any]]): Transformer[Any, Any] = {
+  def createChainedPreprocessing(list: JList[Preprocessing[Any, Any]]): Preprocessing[Any, Any] = {
     var cur = list.get(0)
     (1 until list.size()).foreach(t => cur = cur -> list.get(t))
     cur
@@ -131,8 +127,30 @@ class PythonNNFrames[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonB
   }
 
   def createFeatureToTupleAdapter(
-      sampleTransformer: Transformer[(Any, Any), Sample[T]]
+      sampleTransformer: Preprocessing[(Any, Any), Sample[T]]
     ): FeatureToTupleAdapter[Any, Sample[T]] = {
     FeatureToTupleAdapter(sampleTransformer).asInstanceOf[FeatureToTupleAdapter[Any, Sample[T]]]
   }
+
+  def createResize(resizeH: Int, resizeW: Int): Resize = {
+    Resize(resizeH, resizeW)
+  }
+
+  def createChannelNormalizer(
+      meanR: Double, meanG: Double, meanB: Double,
+      stdR: Double = 1, stdG: Double = 1, stdB: Double = 1
+    ): ChannelNormalizer = {
+    
+    ChannelNormalizer(meanR.toFloat, meanG.toFloat, meanB.toFloat,
+      stdR.toFloat, stdG.toFloat, stdB.toFloat)
+  }
+
+  def createMatToTensor(): MatToTensor[T] = {
+    MatToTensor()
+  }
+
+  def createCenterCrop(cropWidth: Int, cropHeight: Int): CenterCrop = {
+    CenterCrop(cropWidth, cropHeight)
+  }
+  
 }
