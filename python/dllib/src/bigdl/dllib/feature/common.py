@@ -46,12 +46,12 @@ class ChainedPreprocessing(Preprocessing):
         super(ChainedPreprocessing, self).__init__(bigdl_type, transformers)
 
 
-class NumToTensor(Preprocessing):
+class ScalarToTensor(Preprocessing):
     """
-    a Transformer that converts a number to a Tensor.
+    a Preprocessing that converts a number to a Tensor.
     """
     def __init__(self, bigdl_type="float"):
-        super(NumToTensor, self).__init__(bigdl_type)
+        super(ScalarToTensor, self).__init__(bigdl_type)
 
 
 class SeqToTensor(Preprocessing):
