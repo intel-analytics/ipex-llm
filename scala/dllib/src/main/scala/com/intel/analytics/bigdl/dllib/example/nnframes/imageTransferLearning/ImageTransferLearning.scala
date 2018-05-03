@@ -17,13 +17,12 @@
 package com.intel.analytics.zoo.examples.nnframes.imageTransferLearning
 
 import com.intel.analytics.bigdl.nn._
-import com.intel.analytics.bigdl.transform.vision.image._
-import com.intel.analytics.bigdl.transform.vision.image.augmentation._
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
 import com.intel.analytics.bigdl.utils.LoggerFilter
 import com.intel.analytics.zoo.pipeline.nnframes._
 import com.intel.analytics.zoo.common.NNContext
-import com.intel.analytics.zoo.pipeline.nnframes.transformers.{ImageFeatureToTensor, RowToImageFeature, SeqToTensor}
+import com.intel.analytics.zoo.feature.common.{ImageFeatureToTensor, RowToImageFeature, SeqToTensor}
+import com.intel.analytics.zoo.feature.image._
 import org.apache.spark.ml.evaluation.MulticlassClassificationEvaluator
 import org.apache.spark.ml.Pipeline
 import org.apache.spark.sql.functions.{col, udf}
@@ -47,7 +46,7 @@ object ImageTransferLearning {
       val Array(validationDF, trainingDF) = imagesDF.randomSplit(Array(0.20, 0.80), seed = 1L)
 
       val transformer = RowToImageFeature() -> Resize(256, 256) -> CenterCrop(224, 224) ->
-        ChannelNormalize(123, 117, 104) -> MatToTensor() -> ImageFeatureToTensor()
+        ChannelNormalizer(123, 117, 104) -> MatToTensor() -> ImageFeatureToTensor()
       val loadedModel = Module
         .loadCaffeModel[Float](params.caffeDefPath, params.modelPath)
       val featurizer = new NNModel(loadedModel, transformer)
