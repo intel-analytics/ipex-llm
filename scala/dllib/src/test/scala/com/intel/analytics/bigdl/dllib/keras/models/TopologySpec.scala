@@ -21,7 +21,7 @@ import com.intel.analytics.zoo.pipeline.api.Net
 import com.intel.analytics.zoo.pipeline.api.keras.ZooSpecHelper
 import com.intel.analytics.zoo.pipeline.api.keras.layers.{Dense, Input}
 
-class TopologySpec extends ZooSpecHelper{
+class TopologySpec extends ZooSpecHelper {
 
   "model saving and reloading" should "work properly" in {
     val input = Input[Float](inputShape = Shape(2))
