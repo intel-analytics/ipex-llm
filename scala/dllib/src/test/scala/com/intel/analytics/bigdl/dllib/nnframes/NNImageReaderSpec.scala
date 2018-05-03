@@ -16,8 +16,6 @@
 
 package com.intel.analytics.zoo.pipeline.nnframes
 
-import com.intel.analytics.bigdl.transform.vision.image.{ImageFrame, MatToTensor}
-import com.intel.analytics.bigdl.transform.vision.image.augmentation.Resize
 import com.intel.analytics.bigdl.utils.Engine
 import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
 import org.apache.spark.SparkContext
