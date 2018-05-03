@@ -16,15 +16,15 @@
 
 import sys
 
-from .engine.topology import ZooKerasModel
-from bigdl.util.common import to_list
+from .engine.topology import KerasNet
+from bigdl.util.common import to_list, callBigDlFunc
 
 if sys.version >= '3':
     long = int
     unicode = str
 
 
-class Sequential(ZooKerasModel):
+class Sequential(KerasNet):
     """
     Container for a sequential model.
 
@@ -53,7 +53,7 @@ class Sequential(ZooKerasModel):
         return model
 
 
-class Model(ZooKerasModel):
+class Model(KerasNet):
     """
     Container for a graph model.
 
@@ -67,6 +67,20 @@ class Model(ZooKerasModel):
                                     to_list(input),
                                     to_list(output),
                                     **kwargs)
+
+    def save_graph_topology(self, log_path, backward=False):
+        """
+        Save the current model graph to a folder, which can be displayed in TensorBoard by running the command:
+        tensorboard --logdir log_path
+
+        # Arguments
+        log_path: The path to save the model graph.
+        backward: The name of the application.
+        """
+        callBigDlFunc(self.bigdl_type, "zooSaveGraphTopology",
+                      self.value,
+                      log_path,
+                      backward)
 
     @staticmethod
     def from_jvalue(jvalue, bigdl_type="float"):
