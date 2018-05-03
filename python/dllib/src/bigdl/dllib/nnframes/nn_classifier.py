@@ -155,7 +155,7 @@ class NNEstimator(JavaEstimator, HasFeaturesCol, HasLabelCol, HasPredictionCol, 
                convert the data into Tensors with single dimension (576).
                MLlibVectorToTensor is used to transform org.apache.spark.mllib.linalg.Vector
                to a Tensor.
-               NumToTensor transform a number to a Tensor with single dimension of length 1.
+               ScalarToTensor transform a number to a Tensor with single dimension of length 1.
                Multiple transformer can be combined as a ChainedPreprocessing.
         :param label_Preprocessing: similar to featureTransformer, but applies to Label data.
         :param jvalue: Java object create by Py4j
@@ -240,7 +240,7 @@ class NNModel(JavaTransformer, HasFeaturesCol, HasPredictionCol, HasBatchSize, J
                convert the data into Tensors with single dimension (576).
                MLlibVectorToTensor is used to transform org.apache.spark.mllib.linalg.Vector
                to a Tensor.
-               NumToTensor transform a number to a Tensor with single dimension of length 1.
+               ScalarToTensor transform a number to a Tensor with single dimension of length 1.
                Multiple transformer can be combined as a ChainedPreprocessing.
         :param jvalue: Java object create by Py4j
         :param bigdl_type(optional): Data type of BigDL model, "float"(default) or "double".
@@ -277,7 +277,7 @@ class NNClassifier(NNEstimator):
                convert the data into Tensors with single dimension (576).
                MLlibVectorToTensor is used to transform org.apache.spark.mllib.linalg.Vector
                to a Tensor.
-               NumToTensor transform a number to a Tensor with single dimension of length 1.
+               ScalarToTensor transform a number to a Tensor with single dimension of length 1.
                Multiple transformer can be combined as a ChainedPreprocessing.
         :param bigdl_type(optional): Data type of BigDL model, "float"(default) or "double".
         """
@@ -303,7 +303,7 @@ class NNClassifierModel(NNModel):
                convert the data into Tensors with single dimension (576).
                MLlibVectorToTensor is used to transform org.apache.spark.mllib.linalg.Vector
                to a Tensor.
-               NumToTensor transform a number to a Tensor with single dimension of length 1.
+               ScalarToTensor transform a number to a Tensor with single dimension of length 1.
                Multiple transformer can be combined as a ChainedPreprocessing.
         :param jvalue: Java object create by Py4j
         :param bigdl_type(optional): Data type of BigDL model, "float"(default) or "double".
