@@ -516,13 +516,13 @@ class Ftrl(OptimMethod):
     An implementation of Ftrl https://www.eecs.tufts.edu/~dsculley/papers/ad-click-prediction.pdf.
     Support L1 penalty, L2 penalty and shrinkage-type L2 penalty.
 
-    :param learningRate learning rate
-    :param learningRatePower double, must be less or equal to zero.
-    :param initialAccumulatorValue double, the starting value for accumulators,
+    :param learningrate learning rate
+    :param learningrate_power double, must be less or equal to zero.
+    :param initial_accumulator_value double, the starting value for accumulators,
         require zero or positive values.
-    :param l1RegularizationStrength double, must be greater or equal to zero.
-    :param l2RegularizationStrength double, must be greater or equal to zero.
-    :param l2ShrinkageRegularizationStrength double, must be greater or equal to zero.
+    :param l1_regularization_strength double, must be greater or equal to zero.
+    :param l2_regularization_strength double, must be greater or equal to zero.
+    :param l2_shrinkage_regularization_strength double, must be greater or equal to zero.
         This differs from l2RegularizationStrength above. L2 above is a stabilization
         penalty, whereas this one is a magnitude penalty.
     >>> adagrad = Ftrl()
@@ -531,13 +531,16 @@ class Ftrl(OptimMethod):
     def __init__(self,
                  learningrate = 1e-3,
                  learningrate_power = 0.0,
-
-                 l1_regu = 0.9,
-                 beta2 = 0.999,
-                 epsilon = 1e-8,
+                 initial_accumulator_value = 0.1,
+                 l1_regularization_strength = 0.0,
+                 l2_regularization_strength = 0.0,
+                 l2_shrinkage_regularization_strength = 0.0,
                  bigdl_type="float"):
-        super(Adam, self).__init__(None, bigdl_type, learningrate, learningrate_decay,
-                                   beta1, beta2, epsilon)
+        super(Ftrl, self).__init__(None, bigdl_type, learningrate, learningrate_power,
+                                   initial_accumulator_value,
+                                   l1_regularization_strength,
+                                   l2_regularization_strength,
+                                   l2_shrinkage_regularization_strength)
 
 class Adamax(OptimMethod):
     """

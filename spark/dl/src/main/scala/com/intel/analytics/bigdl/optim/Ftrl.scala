@@ -48,13 +48,14 @@ class Ftrl[@specialized(Float, Double) T: ClassTag](
   @transient var accumNew: Tensor[T] = _
   @transient var buffer: Tensor[T] = _
   @transient var quadratic: Tensor[T] = _
+  @transient var gradWithStrinkage: Tensor[T] = _
 
-  def checkParam(learningRate: Double,
-  learningRatePower: Double,
-  initialAccumulatorValue: Double,
-  l1RegularizationStrength: Double,
-  l2RegularizationStrength: Double,
-  l2ShrinkageRegularizationStrength: Double): Unit = {
+  protected def checkParam(learningRate: Double,
+         learningRatePower: Double,
+         initialAccumulatorValue: Double,
+         l1RegularizationStrength: Double,
+         l2RegularizationStrength: Double,
+         l2ShrinkageRegularizationStrength: Double): Unit = {
     require(learningRate >= 0.0, s"Ftrl: learning rate should be greater or equal to zero." +
       s" but got $learningRate")
     require(learningRatePower <= 0.0,
@@ -138,12 +139,9 @@ class Ftrl[@specialized(Float, Double) T: ClassTag](
     } else {
       // TODO: result is different compared with tensorflow, waitting for
       // https://github.com/tensorflow/tensorflow/issues/18317
-      val gradWithStrinkage = if (state.get[Tensor[T]]("gradWithStrinkage").isDefined) {
-        state.get[Tensor[T]]("gradWithStrinkage").get
-      } else {
-        Tensor[T]().resizeAs(dfdx)
-      }
+
       // gradWithShrinkage = dfdx + 2 * l2srs * parameter
+      gradWithStrinkage.resizeAs(dfdx)
       gradWithStrinkage.copy(dfdx)
       gradWithStrinkage.add(ev.times(ev.fromType(2), l2srs), parameter)
       // accumNew = accum + gradWithShrinkage * gradWithShrinkage
