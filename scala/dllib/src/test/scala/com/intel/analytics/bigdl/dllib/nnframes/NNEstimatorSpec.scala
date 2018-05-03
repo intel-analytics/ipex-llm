@@ -126,9 +126,8 @@ class NNEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
   "An NNEstimator" should "construct with sampleTransformer2" in {
     val model = new Sequential().add(Linear[Float](6, 2)).add(LogSoftMax[Float])
     val criterion = ClassNLLCriterion[Float]()
-
-
-    val estimator = new NNEstimator(model, criterion, new SeqToSample())
+    val estimator = NNEstimator.createNNEstimatorWithFeaturePreprocessing(
+      model, criterion, new SeqToSample())
       .setBatchSize(nRecords)
       .setOptimMethod(new LBFGS[Float]())
       .setLearningRate(0.1)
@@ -547,10 +546,10 @@ object NNEstimatorSpec {
 }
 
 
-class SeqToSample extends Preprocessing[(Seq[Any], Option[Any]), Sample[Float]] {
-  override def apply(prev: Iterator[(Seq[Any], Option[Any])]): Iterator[Sample[Float]] = {
-    prev.map { case (s, l) =>
-      val t = Tensor(Array(6)).zero()
+class SeqToSample extends Preprocessing[Seq[Any], Sample[Float]] {
+  override def apply(prev: Iterator[Seq[Any]]): Iterator[Sample[Float]] = {
+    prev.map { case s =>
+      val t = Tensor(s.length).zero()
       Sample(t, Tensor(Array(1)).fill(1f))
     }
   }
