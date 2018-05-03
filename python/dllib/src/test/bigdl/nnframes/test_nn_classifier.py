@@ -48,10 +48,9 @@ class TestNNClassifer():
     def test_nnEstimator_construct_with_sample_transformer(self):
         linear_model = Sequential().add(Linear(2, 2))
         mse_criterion = MSECriterion()
-
-        estimator = NNEstimator(linear_model, mse_criterion,
-                                FeatureLabelPreprocessing(SeqToTensor([2]), SeqToTensor([2]))) \
-            .setBatchSize(4)
+        estimator = NNEstimator(
+            linear_model, mse_criterion, FeatureLabelPreprocessing(SeqToTensor([2]), SeqToTensor([2]))
+        ).setBatchSize(4).setMaxEpoch(1)
         data = self.sc.parallelize([
             ((2.0, 1.0), (1.0, 2.0)),
             ((1.0, 2.0), (2.0, 1.0)),
@@ -68,32 +67,28 @@ class TestNNClassifer():
         assert type(res).__name__ == 'DataFrame'
 
     def test_all_set_get_methods(self):
-        """ run tests for all the set and get methods involved in NNEstimator, NNModel,
-            DLClassifier, DLClassifierModel
-        """
-
         linear_model = Sequential().add(Linear(2, 2))
         mse_criterion = MSECriterion()
 
-        estimator = NNEstimator.withTensorTransformer(model=linear_model, criterion=mse_criterion,
-                                                      feature_Preprocessing=SeqToTensor([2]),
-                                                      label_Preprocessing=SeqToTensor([2]))
+        estimator = NNEstimator.create(
+            linear_model, mse_criterion, SeqToTensor([2]), SeqToTensor([2])
+        )
         assert estimator.setBatchSize(30).getBatchSize() == 30
         assert estimator.setMaxEpoch(40).getMaxEpoch() == 40
         assert estimator.setLearningRate(1e-4).getLearningRate() == 1e-4
         assert estimator.setFeaturesCol("abcd").getFeaturesCol() == "abcd"
         assert estimator.setLabelCol("xyz").getLabelCol() == "xyz"
-
         assert isinstance(estimator.setOptimMethod(Adam()).getOptimMethod(), Adam)
 
-        nn_model = NNModel.withTensorTransformer(linear_model, SeqToTensor([2]))
+        nn_model = NNModel.create(linear_model, SeqToTensor([2]))
         assert nn_model.setBatchSize(20).getBatchSize() == 20
 
         linear_model = Sequential().add(Linear(2, 2))
         classNLL_criterion = ClassNLLCriterion()
-
-        classifier = NNClassifier(model=linear_model, criterion=classNLL_criterion,
-                                  feature_preprocessing = SeqToTensor([2]))
+        classifier = NNClassifier(
+            model=linear_model, criterion=classNLL_criterion,
+            feature_preprocessing = SeqToTensor([2])
+        )
         assert classifier.setBatchSize(20).getBatchSize() == 20
         assert classifier.setMaxEpoch(50).getMaxEpoch() == 50
         assert classifier.setLearningRate(1e-5).getLearningRate() == 1e-5
@@ -104,9 +99,9 @@ class TestNNClassifer():
     def test_nnEstimator_fit_nnmodel_transform(self):
         model = Sequential().add(Linear(2, 2))
         criterion = MSECriterion()
-        estimator = NNEstimator.withTensorTransformer(
-            model, criterion, SeqToTensor([2]), ArrayToTensor([2])).setBatchSize(4) \
-            .setLearningRate(0.2).setMaxEpoch(40)
+        estimator = NNEstimator.create(
+            model, criterion, SeqToTensor([2]), ArrayToTensor([2])
+        ).setBatchSize(4).setLearningRate(0.2).setMaxEpoch(40)
 
         data = self.sc.parallelize([
             ((2.0, 1.0), (1.0, 2.0)),
@@ -138,9 +133,9 @@ class TestNNClassifer():
     def test_nnEstimator_fit_with_non_default_featureCol(self):
         model = Sequential().add(Linear(2, 2))
         criterion = MSECriterion()
-        estimator = NNEstimator.withTensorTransformer(
-            model, criterion, SeqToTensor([2]), SeqToTensor([2]))\
-            .setBatchSize(4)\
+        estimator = NNEstimator.create(
+            model, criterion, SeqToTensor([2]), SeqToTensor([2])
+        ).setBatchSize(4)\
             .setLearningRate(0.01).setMaxEpoch(1) \
             .setFeaturesCol("abcd").setLabelCol("xyz").setPredictionCol("tt")
 
@@ -163,7 +158,7 @@ class TestNNClassifer():
     def test_nnEstimator_fit_with_different_OptimMethods(self):
         model = Sequential().add(Linear(2, 2))
         criterion = MSECriterion()
-        estimator = NNEstimator.withTensorTransformer(
+        estimator = NNEstimator.create(
             model, criterion, SeqToTensor([2]), SeqToTensor([2]))\
             .setBatchSize(4)\
             .setLearningRate(0.01).setMaxEpoch(1) \
@@ -189,7 +184,7 @@ class TestNNClassifer():
 
     def test_NNModel_transform_with_nonDefault_featureCol(self):
         model = Sequential().add(Linear(2, 2))
-        nnModel = NNModel.withTensorTransformer(model, SeqToTensor([2]))\
+        nnModel = NNModel.create(model, SeqToTensor([2]))\
             .setFeaturesCol("abcd").setPredictionCol("dcba")
 
         data = self.sc.parallelize([
@@ -278,7 +273,7 @@ class TestNNClassifer():
             criterion = ClassNLLCriterion()
             classifier = NNClassifier(model, criterion, MLlibVectorToTensor([2]))\
                 .setBatchSize(4) \
-                .setLearningRate(0.01).setMaxEpoch(10).setFeaturesCol("scaled")
+                .setLearningRate(0.01).setMaxEpoch(1).setFeaturesCol("scaled")
 
             pipeline = Pipeline(stages=[scaler, classifier])
 
