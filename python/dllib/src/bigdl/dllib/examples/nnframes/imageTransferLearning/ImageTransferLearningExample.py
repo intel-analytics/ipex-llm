@@ -54,11 +54,11 @@ if __name__ == "__main__":
     (trainingDF, validationDF) = labelDF.randomSplit([0.9, 0.1])
 
     # compose a pipeline that includes feature transform, pretrained model and Logistic Regression
-    transformer = ChainedPreprocessing([RowToImageFeature(), Resize(256, 256), CenterCrop(224, 224),
-                                      ChannelNormalize(123.0, 117.0, 104.0),
-                                      MatToTensor(), ImageFeatureToTensor()])
+    transformer = ChainedPreprocessing(
+        [RowToImageFeature(), Resize(256, 256), CenterCrop(224, 224),
+         ChannelNormalize(123.0, 117.0, 104.0), MatToTensor(), ImageFeatureToTensor()])
 
-    preTrainedNNModel = NNModel.withTensorTransformer(Model.loadModel(model_path), transformer) \
+    preTrainedNNModel = NNModel.create(Model.loadModel(model_path), transformer) \
         .setFeaturesCol("image") \
         .setPredictionCol("embedding")
 
