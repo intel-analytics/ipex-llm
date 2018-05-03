@@ -20,16 +20,20 @@ import org.apache.commons.lang3.SerializationUtils
 
 /**
  * [[Preprocessing]] defines data transform action during feature preprocessing.
- * Multiple [[Preprocessing]] can be combined into a [[ChainedPreprocessing]]. 
+ * Multiple [[Preprocessing]] can be combined into a [[ChainedPreprocessing]].
  * E.g., FeatureStep1[A, B] -> FeatureStep2[B, C] yield a ChainedFeatureSteps[A, C]
  *
  * @tparam A input data type
  * @tparam B output data type
  */
 trait Preprocessing[A, B] extends Transformer[A, B] {
+  // scalastyle:off methodName
+  // scalastyle:off noSpaceBeforeLeftBracket
   def -> [C](other: Preprocessing[B, C]): Preprocessing[A, C] = {
     new ChainedPreprocessing(this, other)
   }
+  // scalastyle:on noSpaceBeforeLeftBracket
+  // scalastyle:on methodName
 
   def clonePreprocessing(): Preprocessing[A, B] = {
     SerializationUtils.clone(this)
@@ -43,7 +47,7 @@ trait Preprocessing[A, B] extends Transformer[A, B] {
  * @param first first Preprocessing
  * @param last last Preprocessing
  * @tparam A input type of the first Preprocessing
- * @tparam B output type of the first Preprocessing, as well as the input type of the last 
+ * @tparam B output type of the first Preprocessing, as well as the input type of the last
  *           Preprocessing
  * @tparam C output of the last Preprocessing
  */

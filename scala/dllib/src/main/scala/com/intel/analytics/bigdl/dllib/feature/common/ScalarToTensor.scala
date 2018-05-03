@@ -23,7 +23,7 @@ import scala.reflect.ClassTag
 /**
  * converts numbers to Tensors.
  */
-class NumToTensor[T: ClassTag]()(implicit ev: TensorNumeric[T])
+class ScalarToTensor[T: ClassTag]()(implicit ev: TensorNumeric[T])
   extends Preprocessing[AnyVal, Tensor[T]] {
 
   override def apply(prev: Iterator[AnyVal]): Iterator[Tensor[T]] = {
@@ -31,13 +31,14 @@ class NumToTensor[T: ClassTag]()(implicit ev: TensorNumeric[T])
       val feature = f match {
         case dd: Double => ev.fromType(f.asInstanceOf[Double])
         case ff: Float => ev.fromType(f.asInstanceOf[Float])
-        case _ => throw new IllegalArgumentException("NumToTensor only supports Float and Double")
+        case _ =>
+          throw new IllegalArgumentException("ScalarToTensor only supports Float and Double")
       }
       Tensor(Array(feature), Array(1))
     }
   }
 }
 
-object NumToTensor {
-  def apply[T: ClassTag]()(implicit ev: TensorNumeric[T]): NumToTensor[T] = new NumToTensor[T]()
+object ScalarToTensor {
+  def apply[T: ClassTag]()(implicit ev: TensorNumeric[T]): ScalarToTensor[T] = new ScalarToTensor[T]()
 }

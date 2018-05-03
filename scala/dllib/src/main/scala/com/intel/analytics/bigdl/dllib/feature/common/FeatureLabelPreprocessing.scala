@@ -49,7 +49,6 @@ class FeatureLabelPreprocessing[F, L, T: ClassTag](
   }
 }
 
-
 object FeatureLabelPreprocessing {
   def apply[F, L, T: ClassTag](
       featureStep: Preprocessing[F, Tensor[T]],
