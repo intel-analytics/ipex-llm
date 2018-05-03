@@ -40,5 +40,6 @@ class ScalarToTensor[T: ClassTag]()(implicit ev: TensorNumeric[T])
 }
 
 object ScalarToTensor {
-  def apply[T: ClassTag]()(implicit ev: TensorNumeric[T]): ScalarToTensor[T] = new ScalarToTensor[T]()
+  def apply[T: ClassTag]()(implicit ev: TensorNumeric[T]): ScalarToTensor[T] =
+    new ScalarToTensor[T]()
 }
