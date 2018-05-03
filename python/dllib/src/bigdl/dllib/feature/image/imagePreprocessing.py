@@ -40,6 +40,7 @@ class ChannelNormalizer(Preprocessing):
     def __init__(self, meanR, meanG, meanB, stdR, stdG, stdB, bigdl_type="float"):
         super(ChannelNormalizer, self).__init__(bigdl_type, meanR, meanG, meanB, stdR, stdG, stdB)
 
+
 class MatToTensor(Preprocessing):
     """
     MatToTensor
@@ -47,9 +48,10 @@ class MatToTensor(Preprocessing):
     def __init__(self, bigdl_type="float"):
         super(MatToTensor, self).__init__(bigdl_type)
 
+
 class CenterCrop(Preprocessing):
     """
     CenterCrop
     """
     def __init__(self, cropWidth, cropHeight, bigdl_type="float"):
-        super(CenterCrop, self).__init__(bigdl_type, cropWidth, cropHeight)        
+        super(CenterCrop, self).__init__(bigdl_type, cropWidth, cropHeight)
