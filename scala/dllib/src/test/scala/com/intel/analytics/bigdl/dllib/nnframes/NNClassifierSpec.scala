@@ -118,7 +118,7 @@ class NNClassifierSpec extends FlatSpec with Matchers with BeforeAndAfter {
   "NNClassifier" should "support scalar FEATURE" in {
     val model = new Sequential().add(Linear[Float](1, 2)).add(LogSoftMax[Float])
     val criterion = ClassNLLCriterion[Float]()
-    val classifier = new NNClassifier(model, criterion, NumToTensor())
+    val classifier = new NNClassifier(model, criterion, ScalarToTensor())
       .setLearningRate(0.1)
       .setBatchSize(2)
       .setEndWhen(Trigger.maxIteration(2))
