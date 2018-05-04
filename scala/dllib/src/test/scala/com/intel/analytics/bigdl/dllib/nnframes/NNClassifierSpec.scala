@@ -230,7 +230,7 @@ class NNClassifierSpec extends FlatSpec with Matchers with BeforeAndAfter {
       .withColumn("label", lit(2.0f))
     assert(imageDF.count() == 1)
     val transformer = RowToImageFeature() -> Resize(256, 256) -> CenterCrop(224, 224) ->
-      ChannelNormalizer(123, 117, 104, 1, 1, 1) -> MatToTensor() -> ImageFeatureToTensor()
+      ChannelNormalize(123, 117, 104, 1, 1, 1) -> MatToTensor() -> ImageFeatureToTensor()
 
     val estimator = new NNClassifier(
       Inception_v1(1000), ClassNLLCriterion[Float](), transformer)
