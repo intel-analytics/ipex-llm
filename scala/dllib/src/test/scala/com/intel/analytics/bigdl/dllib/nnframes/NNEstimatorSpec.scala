@@ -121,7 +121,7 @@ class NNEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
     assert(nnModel.transform(df).count() == nRecords)
   }
 
-  "An NNEstimator" should "works without label column" in {
+  "An NNEstimator" should "apply work with Preprocessing[F, Sample[T]]" in {
     val model = new Sequential().add(Linear[Float](6, 2)).add(LogSoftMax[Float])
     val criterion = ClassNLLCriterion[Float]()
     val estimator = NNEstimator(
