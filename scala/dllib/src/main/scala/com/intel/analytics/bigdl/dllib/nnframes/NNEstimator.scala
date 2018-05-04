@@ -97,7 +97,7 @@ private[nnframes] trait TrainingParams[@specialized(Float, Double) T] extends Pa
 /**
  * Common trait for NNEstimator and NNModel
  */
-private[nnframes] trait NNParams[F, @specialized(Float, Double) T] extends HasFeaturesCol
+private[nnframes] trait NNParams[@specialized(Float, Double) T] extends HasFeaturesCol
   with HasPredictionCol with HasBatchSize {
 
   setDefault(batchSize -> 1)
@@ -145,7 +145,7 @@ class NNEstimator[F, L, T: ClassTag](
     val samplePreprocessing: Preprocessing[(F, Option[L]), Sample[T]],
     override val uid: String = Identifiable.randomUID("nnEstimator")
   )(implicit ev: TensorNumeric[T])
-  extends DLEstimatorBase[NNEstimator[F, L, T], NNModel[F, T]] with NNParams[F, T]
+  extends DLEstimatorBase[NNEstimator[F, L, T], NNModel[F, T]] with NNParams[T]
     with TrainingParams[T] {
 
   /**
@@ -416,7 +416,7 @@ class NNModel[F, T: ClassTag](
     @transient val model: Module[T],
     @transient val samplePreprocessing: Preprocessing[F, Sample[T]],
     override val uid: String = "DLModel")(implicit ev: TensorNumeric[T])
-  extends DLTransformerBase[NNModel[F, T]] with NNParams[F, T]
+  extends DLTransformerBase[NNModel[F, T]] with NNParams[T]
     with HasBatchSize with MLWritable {
 
   /**
