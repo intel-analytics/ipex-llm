@@ -21,7 +21,7 @@ import com.intel.analytics.zoo.feature.common.Preprocessing
 /**
  * image channel normalize
  */
-class ChannelNormalizer(
+class ChannelNormalize(
     means: Array[Float],
     stds: Array[Float]
   ) extends Preprocessing[ImageFeature, ImageFeature] {
@@ -32,7 +32,7 @@ class ChannelNormalizer(
   }
 }
 
-object ChannelNormalizer {
+object ChannelNormalize {
   /**
    * image channel normalize
    *
@@ -44,11 +44,11 @@ object ChannelNormalizer {
    * @param stdB  std value in B channel
    */
   def apply(meanR: Float, meanG: Float, meanB: Float,
-            stdR: Float = 1, stdG: Float = 1, stdB: Float = 1): ChannelNormalizer = {
-    new ChannelNormalizer(Array(meanB, meanG, meanR), Array(stdR, stdG, stdB))
+            stdR: Float = 1, stdG: Float = 1, stdB: Float = 1): ChannelNormalize = {
+    new ChannelNormalize(Array(meanB, meanG, meanR), Array(stdR, stdG, stdB))
   }
 
-  def apply(mean: Float, std: Float): ChannelNormalizer = {
-    new ChannelNormalizer(Array(mean), Array(std))
+  def apply(mean: Float, std: Float): ChannelNormalize = {
+    new ChannelNormalize(Array(mean), Array(std))
   }
 }
