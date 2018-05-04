@@ -5,7 +5,7 @@ Before you run this example, you need to install tensorflow on your machine. Thi
 by
 
 ```bash
-pip install tensorflow
+pip install tensorflow==1.2.0
 ```
 
 ## Load tensorflow model
@@ -22,13 +22,13 @@ python freeze_graph.py --input_graph model/model.pbtxt --input_checkpoint model/
 
 3. Run BigDL
 ```bash
-spark-submit --master local[1] --class com.intel.analytics.bigdl.example.tensorflow.Load BigDL_jar_file ./model.pb
+spark-submit --master local[1] --class com.intel.analytics.bigdl.example.tensorflow.loadandsave.Load BigDL_jar_file ./model.pb
 ```
 
 ## Save BigDL model as tensorflow model
 1. Run BigDL
 ```bash
-spark-submit --master local[1] --class com.intel.analytics.bigdl.example.tensorflow.Save BigDL_jar_file
+spark-submit --master local[1] --class com.intel.analytics.bigdl.example.tensorflow.loadandsave.Save BigDL_jar_file
 ```
 
 2. Generate summary file, you can find the dump_tf_graph.py in the bin folder of the dist package, or script folder of
