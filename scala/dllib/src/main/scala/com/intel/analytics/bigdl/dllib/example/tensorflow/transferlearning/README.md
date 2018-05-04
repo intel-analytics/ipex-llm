@@ -19,6 +19,10 @@ Please refer to [BigDL](https://bigdl-project.github.io/master/), [Tensorflow](h
 
 We currently support Tensorflow r1.2.
 
+```shell
+pip install tensorflow==1.2.0
+```
+
 ## Install the TF-slim image models library
 
 Please checkout this [page](https://github.com/tensorflow/models/tree/master/research/slim#installing-the-tf-slim-image-models-library)
@@ -142,7 +146,7 @@ $SPARK_HOME/bin/spark-submit \
 --executor-cores cores_per_executor \
 --total-executor-cores total_cores_for_the_job \
 --driver-class-path $BIGDL_HOME/lib/bigdl-$BIGDL_VERSION-jar-with-dependencies.jar \
---class com.intel.analytics.bigdl.example.tensorflow.transferLearning.TransferLearning  \
+--class com.intel.analytics.bigdl.example.tensorflow.transferlearning.TransferLearning  \
 $BIGDL_HOME/lib/bigdl-$BIGDL_VERSION-jar-with-dependencies.jar \
 -t /tmp/tf_model_train/ -v /tmp/tf_model_validation/ \
 -b batch_size -e nEpochs
