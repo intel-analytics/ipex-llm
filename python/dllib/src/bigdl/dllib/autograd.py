@@ -99,11 +99,14 @@ class Variable(ZooKerasCreator):
 
 class CustomLoss(ZooKerasCreator):
 
-    # loss is a variable
-    def __init__(self, loss_func):
-        from bigdl.nn.layer import Input
-        y_real = Variable(input_shape=[3])  # [None, 3]
-        y_pred = Variable(input_shape=[3])
+    def __init__(self, loss_func, input_shape):
+        """
+        :param loss_func: a function which accept y_true and y_pred
+        :param input_shape: a shape without batch dim.
+        i.e input_shape=[3], then the feeding data would be [None, 3]
+        """
+        y_real = Variable(input_shape=input_shape)
+        y_pred = Variable(input_shape=input_shape)
         loss_var = loss_func(y_real, y_pred)
         super(CustomLoss, self).__init__(None, "float", [y_real, y_pred], loss_var)
 
