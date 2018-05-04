@@ -26,7 +26,7 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.transform.vision.image.{FeatureTransformer, ImageFeature}
 import com.intel.analytics.zoo.feature.common._
-import com.intel.analytics.zoo.feature.image.{CenterCrop, ChannelNormalizer, MatToTensor, Resize}
+import com.intel.analytics.zoo.feature.image.{CenterCrop, ChannelNormalize, MatToTensor, Resize}
 import com.intel.analytics.zoo.pipeline.nnframes._
 import org.apache.spark.api.java.JavaSparkContext
 import org.apache.spark.sql.DataFrame
@@ -136,12 +136,12 @@ class PythonNNFrames[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonB
     Resize(resizeH, resizeW)
   }
 
-  def createChannelNormalizer(
+  def createImgChannelNormalizer(
       meanR: Double, meanG: Double, meanB: Double,
       stdR: Double = 1, stdG: Double = 1, stdB: Double = 1
-    ): ChannelNormalizer = {
+    ): ChannelNormalize = {
 
-    ChannelNormalizer(meanR.toFloat, meanG.toFloat, meanB.toFloat,
+    ChannelNormalize(meanR.toFloat, meanG.toFloat, meanB.toFloat,
       stdR.toFloat, stdG.toFloat, stdB.toFloat)
   }
 
