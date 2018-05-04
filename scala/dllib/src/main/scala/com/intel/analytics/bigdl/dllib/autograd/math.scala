@@ -132,7 +132,7 @@ object Variable {
 }
 
 class Variable[T: ClassTag](val node: ModuleNode[T])(
-    implicit ev: TensorNumeric[T]) {
+    implicit ev: TensorNumeric[T]) extends Serializable{
 
   require(node.element.isInstanceOf[KerasLayer[Activity, Activity, T]])
   require(node.element.asInstanceOf[InferShape].getOutputShape() != null)
