@@ -30,7 +30,7 @@ import com.intel.analytics.bigdl.tensor.{Tensor, DoubleType => TensorDouble,
 import com.intel.analytics.bigdl.utils.T
 import com.intel.analytics.bigdl.utils.serializer.ModuleLoader
 import com.intel.analytics.bigdl.visualization.{TrainSummary, ValidationSummary}
-import com.intel.analytics.zoo.feature.common.{FeatureToTupleAdapter, _}
+import com.intel.analytics.zoo.feature.common._
 import org.apache.spark.ml.adapter.{HasFeaturesCol, HasPredictionCol, SchemaUtils}
 import org.apache.spark.ml.{DLEstimatorBase, DLTransformerBase, DefaultParamsWriterWrapper}
 import org.apache.spark.ml.param._
