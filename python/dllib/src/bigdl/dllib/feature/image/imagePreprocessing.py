@@ -33,12 +33,19 @@ class Resize(Preprocessing):
         super(Resize, self).__init__(bigdl_type, resizeH, resizeW)
 
 
-class ChannelNormalizer(Preprocessing):
+class ChannelNormalize(Preprocessing):
     """
-     image norm
+    image channel normalize
+    :param mean_r mean value in R channel
+    :param mean_g mean value in G channel
+    :param meanB_b mean value in B channel
+    :param std_r std value in R channel
+    :param std_g std value in G channel
+    :param std_b std value in B channel
     """
-    def __init__(self, meanR, meanG, meanB, stdR, stdG, stdB, bigdl_type="float"):
-        super(ChannelNormalizer, self).__init__(bigdl_type, meanR, meanG, meanB, stdR, stdG, stdB)
+    def __init__(self, mean_r, mean_b, mean_g, std_r=1.0, std_g=1.0, std_b=1.0, bigdl_type="float"):
+        self.value = callBigDlFunc(
+            bigdl_type, "createImgChannelNormalizer", mean_r, mean_g, mean_b, std_r, std_g, std_b)
 
 
 class MatToTensor(Preprocessing):
