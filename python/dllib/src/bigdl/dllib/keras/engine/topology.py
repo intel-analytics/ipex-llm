@@ -14,9 +14,9 @@
 # limitations under the License.
 #
 
-from bigdl.nn.keras.topology import KerasModel as BigDLKerasModel
 from bigdl.nn.keras.layer import KerasLayer
 from bigdl.nn.layer import Node
+
 from zoo.pipeline.api.keras.utils import *
 
 if sys.version >= '3':
@@ -52,6 +52,9 @@ class KerasNet(ZooKerasLayer):
             optimizer = to_bigdl_optim_method(optimizer)
         if isinstance(loss, six.string_types):
             loss = to_bigdl_criterion(loss)
+        if callable(loss):
+            from zoo.pipeline.api.autograd import CustomLoss
+            loss = CustomLoss(loss, self.get_output_shape()[1:])
         if metrics and all(isinstance(metric, six.string_types) for metric in metrics):
             metrics = to_bigdl_metrics(metrics)
         callBigDlFunc(self.bigdl_type, "zooCompile",
@@ -134,8 +137,7 @@ class KerasNet(ZooKerasLayer):
                           batch_size,
                           nb_epoch,
                           val_x,
-                          val_y,
-                          multiprocessing.cpu_count())
+                          val_y)
 
     def evaluate(self, x, y=None, batch_size=32):
         """
