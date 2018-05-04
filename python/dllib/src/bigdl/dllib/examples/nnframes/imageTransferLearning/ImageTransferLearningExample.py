@@ -16,8 +16,6 @@
 
 import re
 from bigdl.util.common import *
-from bigdl.transform.vision.image import *
-from bigdl.transform.vision import image
 from pyspark.sql.functions import col, udf
 from pyspark.sql.types import DoubleType, StringType
 from bigdl.nn.layer import *

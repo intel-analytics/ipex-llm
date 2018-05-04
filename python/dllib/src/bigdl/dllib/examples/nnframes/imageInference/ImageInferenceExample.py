@@ -15,7 +15,6 @@
 #
 
 from bigdl.nn.layer import Model
-from bigdl.transform.vision.image import *
 from bigdl.util.common import *
 from pyspark.sql.functions import col, udf
 from pyspark.sql.types import StringType
