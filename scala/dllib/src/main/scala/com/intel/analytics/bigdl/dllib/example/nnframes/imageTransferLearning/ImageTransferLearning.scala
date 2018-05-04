@@ -46,7 +46,7 @@ object ImageTransferLearning {
       val Array(validationDF, trainingDF) = imagesDF.randomSplit(Array(0.20, 0.80), seed = 1L)
 
       val transformer = RowToImageFeature() -> Resize(256, 256) -> CenterCrop(224, 224) ->
-        ChannelNormalizer(123, 117, 104) -> MatToTensor() -> ImageFeatureToTensor()
+        ChannelNormalize(123, 117, 104) -> MatToTensor() -> ImageFeatureToTensor()
       val loadedModel = Module
         .loadCaffeModel[Float](params.caffeDefPath, params.modelPath)
       val featurizer = new NNModel(loadedModel, transformer)
