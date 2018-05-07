@@ -412,6 +412,10 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
     DenseTensor.newClone(this)
   }
 
+  override def shallowClone(): Tensor[T] = {
+    Tensor(Storage(this.storage().array()), storageOffset(), size(), stride())
+  }
+
   override def emptyInstance(): Tensor[T] = {
     Tensor[T]()
   }

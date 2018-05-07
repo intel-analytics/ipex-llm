@@ -15,9 +15,12 @@
  */
 package com.intel.analytics.bigdl.models.utils
 
+import java.nio.ByteOrder
+
 import com.intel.analytics.bigdl.models.lenet.LeNet5
-import com.intel.analytics.bigdl.nn.Sequential
-import com.intel.analytics.bigdl.nn.SpatialConvolution
+import com.intel.analytics.bigdl.nn.tf.Const
+import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.tensor.Tensor
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.{SparkConf, SparkContext}
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
@@ -38,6 +41,49 @@ class ModelBroadcastSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val modelBroadCast = ModelBroadcast[Float]().broadcast(sc, model)
     modelBroadCast.value().toString should be(model.toString)
     modelBroadCast.value().parameters()._1 should be(model.parameters()._1)
+  }
+
+  "model broadcast with const" should "forward properly" in {
+    val input1 = Identity[Float]().inputs()
+    val input2 = Const[Float, Float](Tensor[Float].range(1, 6, 1)).setName("const").inputs()
+    val output = CAddTable[Float]().inputs(input1, input2)
+    val model = Graph(input1, output)
+    val modelBroadCast = ModelBroadcast[Float](true).broadcast(sc, model)
+
+    val testModel = modelBroadCast.value()
+    val testInput = Tensor[Float].range(2, 7, 1)
+    val testOutput = testModel.forward(testInput)
+    testOutput should be (Tensor[Float].range(3, 13, 2))
+  }
+
+  "model broadcast with const" should "const shared properly" in {
+    val input1 = Identity[Float]().inputs()
+    val input2 = Const[Float, Float](Tensor[Float].range(1, 6, 1)).setName("const").inputs()
+    val output = CAddTable[Float]().inputs(input1, input2)
+    val model = Graph(input1, output)
+
+    val modelBroadCast = ModelBroadcast[Float]().broadcast(sc, model)
+    val model1 = modelBroadCast.value().asInstanceOf[Graph[Float]]
+    val model2 = modelBroadCast.value().asInstanceOf[Graph[Float]]
+    val const1 = model1.findModules("Const")(0).asInstanceOf[Const[Float, Float]]
+    val const2 = model2.findModules("Const")(0).asInstanceOf[Const[Float, Float]]
+    const1.value should be (const2.value)
+    const1.value.storage() should be (const2.value.storage())
+  }
+
+  "model broadcast with const" should "const shared properly 2" in {
+    val input1 = Identity[Float]().inputs()
+    val input2 = Const[Float, Float](Tensor[Float].range(1, 6, 1)).setName("const").inputs()
+    val output = CAddTable[Float]().inputs(input1, input2)
+    val model = Sequential[Float]().add(Graph(input1, output))
+
+    val modelBroadCast = ModelBroadcast[Float]().broadcast(sc, model)
+    val model1 = modelBroadCast.value().asInstanceOf[Sequential[Float]]
+    val model2 = modelBroadCast.value().asInstanceOf[Sequential[Float]]
+    val const1 = model1.findModules("Const")(0).asInstanceOf[Const[Float, Float]]
+    val const2 = model2.findModules("Const")(0).asInstanceOf[Const[Float, Float]]
+    const1.value should be (const2.value)
+    const1.value.storage() should be (const2.value.storage())
   }
 
   "model broadcast with applyProtoBuffer" should "work properly" in {
