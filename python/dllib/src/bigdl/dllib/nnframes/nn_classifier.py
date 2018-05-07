@@ -162,6 +162,28 @@ class NNEstimator(JavaEstimator, HasFeaturesCol, HasLabelCol, HasPredictionCol, 
         return cls(model, criterion,
                    FeatureLabelPreprocessing(feature_preprocessing, label_preprocessing),
                    jvalue, bigdl_type)
+    
+    @classmethod
+    def createWithSize(cls, model, criterion, feature_size, label_size,
+               jvalue=None, bigdl_type="float"):
+        """
+        Construct a NNEstimator with a feature size and label size. The constructor is useful
+        when the feature column and label column contains the following data types:
+        Float, Double, Int, Array[Float], Array[Double], Array[Int] and MLlib Vector. The
+        feature and label data are converted to Tensors with the specified sizes before sending
+        to the model.
+
+        :param model: BigDL Model to be trained.
+        :param criterion: BigDL criterion.
+        :param feature_size: The size (Tensor dimensions) of the feature data. e.g. an image
+                            may be with width * height = 28 * 28, featureSize = Array(28, 28).
+        :param label_size: The size (Tensor dimensions) of the label data.
+        :param jvalue: Java object create by Py4j
+        :param bigdl_type: optional parameter. data type of model, "float"(default) or "double".
+        """
+        return cls(model, criterion,
+                   FeatureLabelPreprocessing(SeqToTensor(feature_size), SeqToTensor(label_size)),
+                   jvalue, bigdl_type)
 
     def setMaxEpoch(self, val):
         """
@@ -260,8 +282,35 @@ class NNClassifier(NNEstimator):
     classification tasks. It only supports label column of DoubleType, and the fitted
     NNClassifierModel will have the prediction column of DoubleType.
     """
-    def __init__(self,  model, criterion, feature_preprocessing, bigdl_type="float"):
+    def __init__(self, model, criterion, sample_preprocessing, jvalue=None, bigdl_type="float"):
         """
+        :param model: BigDL module to be optimized
+        :param criterion: BigDL criterion method
+        :param sample_preprocessing: Expert param. A Preprocessing that transforms the (feature, 
+               Option[label]) tuple to a BigDL Sample[T], where T is decided by the BigDL model.
+
+               Note that sample_preprocessing should be able to handle the case that label = None.
+               During fit, NNEstimator will extract (feature, Option[label]) tuple from input 
+               DataFrame and use sample_preprocessing to transform the tuple into BigDL Sample  
+               to be ingested by the model. If Label column is not available, (feature, None)
+               will be sent to sample_preprocessing.
+ 
+               The sample_preprocessing will also be copied to the generated NNModel and applied
+               to feature column during transform, where (feature, None) will be passed to the
+               sample_preprocessing.
+               Multiple Preprocessing can be combined as a ChainedPreprocessing.
+        :param bigdl_type(optional): Data type of BigDL model, "float"(default) or "double".
+        """
+        super(NNClassifier, self).__init__(
+            model, criterion, sample_preprocessing, jvalue, bigdl_type)
+
+    @classmethod
+    def create(cls, model, criterion, feature_preprocessing, jvalue=None, bigdl_type="float"):
+        """
+        Construct a NNEstimator with a feature_preprocessing and a label_Preprocessing, which
+        convert the data in feature column and label column to Tensors (Multi-dimension array)
+        for model. This is the the recommended constructor for most users.
+
         :param model: BigDL module to be optimized
         :param criterion: BigDL criterion method
         :param feature_Preprocessing: A Preprocessing that transforms the feature data to a
@@ -277,10 +326,30 @@ class NNClassifier(NNEstimator):
                to a Tensor.
                ScalarToTensor transform a number to a Tensor with single dimension of length 1.
                Multiple Preprocessing can be combined as a ChainedPreprocessing.
-        :param bigdl_type(optional): Data type of BigDL model, "float"(default) or "double".
         """
-        super(NNClassifier, self).__init__(
-            model, criterion, feature_preprocessing, None, bigdl_type)
+        return NNClassifier(model, criterion,
+                            FeatureLabelPreprocessing(feature_preprocessing, ScalarToTensor()),
+                            jvalue, bigdl_type)
+
+    @classmethod
+    def createWithSize(cls, model, criterion, feature_size, jvalue=None, bigdl_type="float"):
+        """
+        Construct a NNClassifier with a feature size. The constructor is useful
+        when the feature column contains the following data types:
+        Float, Double, Int, Array[Float], Array[Double], Array[Int] and MLlib Vector. The
+        feature data are converted to Tensors with the specified sizes before sending
+        to the model.
+        :param model: BigDL Model to be trained.
+        :param criterion: BigDL criterion.
+        :param feature_size: The size (Tensor dimensions) of the feature data. e.g. an image
+                            may be with width * height = 28 * 28, featureSize = Array(28, 28).
+        :param label_size: The size (Tensor dimensions) of the label data.
+        :param jvalue: Java object create by Py4j
+        :param bigdl_type: optional parameter. data type of model, "float"(default) or "double".
+        """
+        return cls(model, criterion,
+                   FeatureLabelPreprocessing(SeqToTensor(feature_size), ScalarToTensor()),
+                   jvalue, bigdl_type)
 
 
 class NNClassifierModel(NNModel):
