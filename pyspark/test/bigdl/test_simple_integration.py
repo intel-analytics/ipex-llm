@@ -320,7 +320,7 @@ class TestSimple():
 
         assert parameters["linear1"] is not None
         print("parameters %s" % parameters["linear1"])
-        predict_result = trained_model.predict(trainingData)
+        predict_result = trained_model.predict(trainingData, batch_size = 4)
         p = predict_result.take(2)
         print("predict predict: \n")
         for i in p:
@@ -645,7 +645,7 @@ class TestSimple():
         assert result2.shape == (4,)
 
         result3 = model.predict_local([JTensor.from_ndarray(np.ones([4, 3])),
-                                       JTensor.from_ndarray(np.ones([4, 3]))])
+                                       JTensor.from_ndarray(np.ones([4, 3]))], batch_size = 4)
         assert result3.shape == (4, 5)
         result4 = model.predict_class([JTensor.from_ndarray(np.ones([4, 3])),
                                        JTensor.from_ndarray(np.ones([4, 3]))])
