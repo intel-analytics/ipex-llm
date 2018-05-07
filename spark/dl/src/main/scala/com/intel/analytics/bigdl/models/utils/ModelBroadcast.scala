@@ -17,6 +17,7 @@
 package com.intel.analytics.bigdl.models.utils
 
 import com.intel.analytics.bigdl.Module
+import com.intel.analytics.bigdl.nn.{Container, Graph}
 import com.intel.analytics.bigdl.tensor.{QuantizedTensor, QuantizedType, Storage, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import org.apache.spark.SparkContext
@@ -38,13 +39,15 @@ class ModelBroadcast[T: ClassTag](applyProtoBuffer: Boolean = false)
   (implicit ev: TensorNumeric[T]) extends Serializable {
 
   private var broadcastModel: Broadcast[Module[T]] = _
+  private var broadcastConsts: Broadcast[Map[String, Tensor[_]]] = _
   private var broadcastParameters: Broadcast[Array[Tensor[T]]] = _
 
 
   /**
    * broadcast the model
-   * first get and clear the weight and bias parameters from the model
-   * then broadcast the parameters and model(without parameters) separately
+   * first get and clear Const values from the model
+   * then get and clear the weight and bias parameters from the model
+   * finally broadcast Const values, the parameters and model(without parameters) separately
    * @param sc    SparkContext
    * @param model model to broadcast
    * @return this
@@ -53,9 +56,17 @@ class ModelBroadcast[T: ClassTag](applyProtoBuffer: Boolean = false)
     if (applyProtoBuffer) {
       broadcastModel = sc.broadcast(model)
     } else {
+      // broadcast Consts
+      if (model.isInstanceOf[Container[_, _, T]]) {
+        val moduleConsts = getAndClearConsts(model.asInstanceOf[Container[_, _, T]])
+        // TODO: broadcast Const, model structure and weight in the same broadcast.
+        broadcastConsts = sc.broadcast(moduleConsts)
+      }
+      // broadcast weight and model
       val weightsBias = getAndClearWeightBias(model.parameters())
       broadcastModel = sc.broadcast(model.cloneModule())
       broadcastParameters = sc.broadcast(weightsBias)
+
       putWeightBias(weightsBias, model)
       initGradWeightBias(weightsBias, model)
     }
@@ -78,7 +89,13 @@ class ModelBroadcast[T: ClassTag](applyProtoBuffer: Boolean = false)
       localModel
     } else {
       val localModel = broadcastModel.value.cloneModule()
+      // share weight
       putWeightBias(broadcastParameters.value, localModel)
+      // share Consts
+      if (localModel.isInstanceOf[Container[_, _, T]] && broadcastConsts.value.nonEmpty) {
+        putConsts(localModel.asInstanceOf[Container[_, _, T]], broadcastConsts.value)
+      }
+      // init gradient
       if (initGradient) {
         initGradWeightBias(broadcastParameters.value, localModel)
       }

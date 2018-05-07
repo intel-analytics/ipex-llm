@@ -351,6 +351,15 @@ trait Tensor[T] extends Serializable with TensorMath[T] with Activity {
   }
 
   /**
+   * Get a new tensor with same storage.
+   *
+   * @return new tensor
+   */
+  def shallowClone(): Tensor[T] = {
+    this
+  }
+
+  /**
    * return a new empty tensor of the same type
    *
    * @return new tensor
