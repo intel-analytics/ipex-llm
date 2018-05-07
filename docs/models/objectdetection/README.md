@@ -6,7 +6,7 @@ Analytics Zoo provides a collection of pre-trained models for Object Detection. 
 
 Analytics Zoo provides two typical kind of pre-trained Object Detection models : [SSD](https://arxiv.org/abs/1512.02325) and [Faster-RCNN](https://arxiv.org/abs/1506.01497) on dataset [PASCAL](http://host.robots.ox.ac.uk/pascal/VOC/) and [COCO](http://cocodataset.org/#home). For the usage of these models, please check below examples.
 
-[Scala example](../../zoo/src/main/scala/com/intel/analytics/zoo/examples/objectdetection/Predict.scala)
+[Scala example](https://github.com/intel-analytics/zoo/blob/master/zoo/src/main/scala/com/intel/analytics/zoo/examples/objectdetection/Predict.scala)
 
 It's very easy to apply the model for inference with below code piece.
 
@@ -16,7 +16,7 @@ val data = ImageSet.read(params.image, sc, params.nPartition)
 val output = model.predictImageSet(data)
 ```
 
-For preprocessors for Object Detection models, please check [Object Detection Config](../../zoo/src/main/scala/com/intel/analytics/zoo/models/image/objectdetection/ObjectDetectionConfig.scala)
+For preprocessors for Object Detection models, please check [Object Detection Config](https://github.com/intel-analytics/zoo/blob/master/zoo/src/main/scala/com/intel/analytics/zoo/models/image/objectdetection/ObjectDetectionConfig.scala)
 
 Users can also do the inference directly using Analytics zoo.
 Sample code for SSD VGG on PASCAL as below:
