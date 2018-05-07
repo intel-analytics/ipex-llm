@@ -1,2 +1,2 @@
 # Analytics Zoo
-Zoo for deep learning powered big data analytics using [BigDL](https://github.com/intel-analytics/BigDL) on Apache Spark
+Analytics + AI pipelines for Apache Spark and [BigDL](https://bigdl-project.github.io/master/#whitepaper/)
