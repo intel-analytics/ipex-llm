@@ -829,3 +829,15 @@ object ResNet_dnn {
     case object C extends ShortcutType(2)
   }
 }
+
+object PartialLayers {
+  def apply(): Module[Float] = {
+    val model = Sequential()
+      .add(mkldnn.Convolution(3, 64, 7, 7, 2, 2, 3, 3, propagateBack = false).setName("conv1"))
+      .add(mkldnn.SbnDnn(64).setName("bn_conv1"))
+      .add(ReLUDnn(true).setName("conv1_relu"))
+      .add(PoolingDnn(3, 3, 2, 2, 1, 1).setName("pool1"))
+
+    model
+  }
+}

@@ -19,6 +19,7 @@ package com.intel.analytics.bigdl.utils
 import java.util.concurrent._
 
 import com.intel.analytics.bigdl.mkl.{MKL, MklDnn}
+import com.intel.analytics.bigdl.mkl.hardware.{Affinity, NativeUtils}
 import org.apache.commons.lang.exception.ExceptionUtils
 import org.apache.log4j.Logger
 
@@ -29,7 +30,7 @@ import scala.collection.JavaConverters._
 /**
  * A thread pool wrapper, provide some helper functions for multi-threading
  */
-class ThreadPool(private var poolSize: Int) {
+class ThreadPool(private var poolSize: Int, affinity: Boolean = false) {
 
   import ThreadPool._
 
@@ -47,7 +48,16 @@ class ThreadPool(private var poolSize: Int) {
         if (threadPool != null) threadPool.shutdown()
         threadPool = Executors.newFixedThreadPool(poolSize, new ThreadFactory {
           override def newThread(r: Runnable): Thread = {
-            val t = Executors.defaultThreadFactory().newThread(r)
+            val t = Executors.defaultThreadFactory().newThread(new Runnable() {
+                override def run(): Unit = {
+                  if (affinity) {
+                    val bind = Affinity.setAffinity()
+                    println(
+                      s"thread mapping ${NativeUtils.getTaskId} -> $bind")
+                  }
+                  r.run()
+                }
+              })
             t.setDaemon(true)
             t
           }

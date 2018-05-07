@@ -77,9 +77,6 @@ class ConvolutionDnn(
   private var gradOutputBuffer_sync : Boolean = false
   private var weightsBuffer_sync : Boolean = false
 
-  private val original_gradWeights = Tensor[Float]()
-  private val original_gradBias = Tensor[Float]()
-
   require(nOutputPlane % nGroup == 0, s"Number of input channels " +
     s"should be multiples of group " +
     s"number of input channels ${nInputPlane}, " +
@@ -156,6 +153,10 @@ class ConvolutionDnn(
     }
     zeroGradParameters()
   }
+
+
+  private val original_gradWeights = Tensor[Float]().resizeAs(gradWeight).copy(gradWeight)
+  private val original_gradBias = Tensor[Float]().resizeAs(gradBias).copy(gradBias)
 
   private val weightSize = weight.size()
   private val dimWeight = weight.dim()
@@ -757,6 +758,10 @@ class ConvolutionDnn(
         input.asInstanceOf[MklDnnTensor[Float]].ptr == inputBuffer.asInstanceOf[MklDnnTensor[Float]].ptr) {
         inputBuffer = MklDnnTensor[Float](input.size())
       }
+    }
+
+    if (!propagateBack) {
+      return
     }
     /* build a simple net */
     // keep original data

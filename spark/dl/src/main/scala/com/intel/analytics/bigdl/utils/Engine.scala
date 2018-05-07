@@ -310,7 +310,7 @@ object Engine {
 
   private def initThreadPool(core : Int) : Unit = {
     val defaultPoolSize: Int = System.getProperty("bigdl.utils.Engine.defaultPoolSize",
-      (core * 50).toString).toInt
+      (core).toString).toInt
     if(_default == null || _default.getPoolSize != defaultPoolSize) {
       _default = new ThreadPool(defaultPoolSize)
       _default.setMKLThread(MKL.getMklNumThreads)

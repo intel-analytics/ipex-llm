@@ -17,29 +17,20 @@ package com.intel.analytics.bigdl.nn.mkldnn
 
 import java.util.concurrent.atomic.AtomicInteger
 
-import breeze.linalg.all
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dataset.{LocalDataSet, MiniBatch}
 import com.intel.analytics.bigdl.example.loadmodel.AlexNet
 import com.intel.analytics.bigdl.models.inception.{Inception_v1, Inception_v1_NoAuxClassifier, Inception_v2}
-import com.intel.analytics.bigdl.models.lenet.LeNet5
 import com.intel.analytics.bigdl.models.resnet.ResNet
 import com.intel.analytics.bigdl.models.resnet.ResNet.DatasetType
 import com.intel.analytics.bigdl.models.vgg.{Vgg_16, Vgg_19}
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
-import com.intel.analytics.bigdl.nn.{Utils, Module => _, _}
+import com.intel.analytics.bigdl.nn.{Module => _, _}
 import com.intel.analytics.bigdl.numeric.NumericFloat
-import com.intel.analytics.bigdl.optim.Optimizer._
 import com.intel.analytics.bigdl.optim.{Optimizer, Trigger}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils._
 import org.apache.log4j.Logger
-import org.apache.spark.sql.execution.streaming
-import org.apache.spark.sql.execution.streaming.state
 import scopt.OptionParser
-
-import scala.collection.mutable.ArrayBuffer
-import scala.util.Random
 
 object LocalOptimizerPerf {
   val logger = Logger.getLogger(getClass)
@@ -125,7 +116,7 @@ object LocalOptimizerPerf {
 
       case "resnet_50_dnn" =>
         val model = ResNet_dnn(classNum = 1000, T("depth" -> 50, "optnet" -> true,
-          "dataset" -> ResNet_dnn.DatasetType.ImageNet))
+          "dataSet" -> ResNet_dnn.DatasetType.ImageNet))
 //        ResNet_dnn.shareGradInput(model)
         ResNet_dnn.modelInit(model)
         (model, MiniBatch(Tensor(batchSize, 3, 224, 224).randn(),
@@ -294,7 +285,7 @@ object LocalOptimizerPerf {
   */
 case class LocalOptimizerPerfParam(
     batchSize: Int = 16,
-    coreNumber: Int = Runtime.getRuntime.availableProcessors() / 2,
+    coreNumber: Int = 1, // Runtime.getRuntime.availableProcessors() / 2,
     iteration: Int = 50,
     dataType: String = "float",
     module: String = "resnet_50_dnn", // "alexnetDnn"
