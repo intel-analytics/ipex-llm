@@ -45,8 +45,9 @@ class ModelBroadcast[T: ClassTag](applyProtoBuffer: Boolean = false)
 
   /**
    * broadcast the model
-   * first get and clear the weight and bias parameters from the model
-   * then broadcast the parameters and model(without parameters) separately
+   * first get and clear Const values from the model
+   * then get and clear the weight and bias parameters from the model
+   * finally broadcast Const values, the parameters and model(without parameters) separately
    * @param sc    SparkContext
    * @param model model to broadcast
    * @return this
@@ -58,6 +59,7 @@ class ModelBroadcast[T: ClassTag](applyProtoBuffer: Boolean = false)
       // broadcast Consts
       if (model.isInstanceOf[Container[_, _, T]]) {
         val moduleConsts = getAndClearConsts(model.asInstanceOf[Container[_, _, T]])
+        // TODO: broadcast Const, model structure and weight in the same broadcast.
         broadcastConsts = sc.broadcast(moduleConsts)
       }
       // broadcast weight and model

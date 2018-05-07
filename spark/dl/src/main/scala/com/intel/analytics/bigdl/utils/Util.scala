@@ -21,7 +21,7 @@ import java.io._
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.nn.{Container, Graph}
 import com.intel.analytics.bigdl.nn.tf.Const
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.{NumericWildcard, TensorNumeric}
 import com.intel.analytics.bigdl.tensor._
 import org.apache.commons.lang3.SerializationException
 
@@ -140,41 +140,12 @@ object Util {
         model: Container[_, _, T])(implicit ev: TensorNumeric[T]): Map[String, Tensor[_]] = {
     val moduleConsts = model.findModules("Const")
       .map(_.asInstanceOf[Const[T, _]])
-      .map(v => (v, newTensor(v.value)))
+      .map(v => (v, v.value.shallowClone()))
     moduleConsts.foreach(_._1.value.set())
     val result = moduleConsts.map(v => (v._1.getName(), v._2)).toMap[String, Tensor[_]]
     require(result.size == moduleConsts.length, s"${model}'s Const node's name is duplicated," +
       s"please check your model.")
     result
-  }
-
-  protected def newTensor(tensor: Tensor[_]): Tensor[_] = {
-    tensor.getType() match {
-      case BooleanType =>
-        val storage = tensor.asInstanceOf[Tensor[Boolean]].storage().array()
-        Tensor[Boolean](Storage(storage), tensor.storageOffset(), tensor.size(), tensor.stride())
-      case CharType =>
-        val storage = tensor.asInstanceOf[Tensor[Char]].storage().array()
-        Tensor[Char](Storage(storage), tensor.storageOffset(), tensor.size(), tensor.stride())
-      case StringType =>
-        val storage = tensor.asInstanceOf[Tensor[String]].storage().array()
-        Tensor[String](Storage(storage), tensor.storageOffset(), tensor.size(), tensor.stride())
-      case IntType =>
-        val storage = tensor.asInstanceOf[Tensor[Int]].storage().array()
-        Tensor[Int](Storage(storage), tensor.storageOffset(), tensor.size(), tensor.stride())
-      case ShortType =>
-        val storage = tensor.asInstanceOf[Tensor[Short]].storage().array()
-        Tensor[Short](Storage(storage), tensor.storageOffset(), tensor.size(), tensor.stride())
-      case LongType =>
-        val storage = tensor.asInstanceOf[Tensor[Long]].storage().array()
-        Tensor[Long](Storage(storage), tensor.storageOffset(), tensor.size(), tensor.stride())
-      case FloatType =>
-        val storage = tensor.asInstanceOf[Tensor[Float]].storage().array()
-        Tensor[Float](Storage(storage), tensor.storageOffset(), tensor.size(), tensor.stride())
-      case DoubleType =>
-        val storage = tensor.asInstanceOf[Tensor[Double]].storage().array()
-        Tensor[Double](Storage(storage), tensor.storageOffset(), tensor.size(), tensor.stride())
-    }
   }
 
   private[bigdl] def putConsts[T: ClassTag](
@@ -183,34 +154,10 @@ object Util {
     val moduleConsts = model.findModules("Const")
       .map(_.asInstanceOf[Const[T, _]])
     moduleConsts.foreach{const =>
-      val constValue = const.value
+      val constValue = const.value.asInstanceOf[NumericWildcard]
       val constName = const.getName()
-      constValue.getType() match {
-        case BooleanType =>
-          constValue.asInstanceOf[Tensor[Boolean]]
-            .set(consts(constName).asInstanceOf[Tensor[Boolean]])
-        case CharType =>
-          constValue.asInstanceOf[Tensor[Char]]
-            .set(consts(constName).asInstanceOf[Tensor[Char]])
-        case StringType =>
-          constValue.asInstanceOf[Tensor[String]]
-            .set(consts(constName).asInstanceOf[Tensor[String]])
-        case IntType =>
-          constValue.asInstanceOf[Tensor[Int]]
-            .set(consts(constName).asInstanceOf[Tensor[Int]])
-        case ShortType =>
-          constValue.asInstanceOf[Tensor[Short]]
-            .set(consts(constName).asInstanceOf[Tensor[Short]])
-        case LongType =>
-          constValue.asInstanceOf[Tensor[Long]]
-            .set(consts(constName).asInstanceOf[Tensor[Long]])
-        case FloatType =>
-          constValue.asInstanceOf[Tensor[Float]]
-            .set(consts(constName).asInstanceOf[Tensor[Float]])
-        case DoubleType =>
-          constValue.asInstanceOf[Tensor[Double]]
-            .set(consts(constName).asInstanceOf[Tensor[Double]])
-      }
+      constValue.asInstanceOf[Tensor[NumericWildcard]]
+        .set(consts(constName).asInstanceOf[Tensor[NumericWildcard]])
     }
   }
 
