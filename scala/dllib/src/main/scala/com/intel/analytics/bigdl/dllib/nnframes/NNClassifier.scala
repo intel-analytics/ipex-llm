@@ -115,6 +115,27 @@ class NNClassifier[F, T: ClassTag](
   }
 }
 
+object NNClassifier {
+  /**
+   * Construct a [[NNClassifier]] with a feature size. The constructor is useful
+   * when the feature column contains the following data types:
+   * Float, Double, Int, Array[Float], Array[Double], Array[Int] and MLlib Vector. The feature
+   * data are converted to Tensors with the specified sizes before sending to the model.
+   *
+   * @param model BigDL module to be optimized
+   * @param criterion  BigDL criterion method
+   * @param featureSize The size (Tensor dimensions) of the feature data. e.g. an image may be with
+   *                    width * height = 28 * 28, featureSize = Array(28, 28).
+   */
+  def apply[F, T: ClassTag](
+      model: Module[T],
+      criterion: Criterion[T],
+      featureSize : Array[Int]
+    )(implicit ev: TensorNumeric[T]): NNClassifier[Any, T] = {
+    new NNClassifier(model, criterion, SeqToTensor(featureSize))
+  }
+}
+
 /**
  * [[NNClassifierModel]] is a specialized [[NNModel]] for classification tasks.
  * The prediction column will have the data type of Double.

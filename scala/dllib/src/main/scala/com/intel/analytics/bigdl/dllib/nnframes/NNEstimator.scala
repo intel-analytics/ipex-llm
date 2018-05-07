@@ -394,6 +394,27 @@ object NNEstimator {
     )(implicit ev: TensorNumeric[T]): NNEstimator[F, Any, T] = {
     new NNEstimator(model, criterion, TupleToFeatureAdapter(featurePreprocessing))
   }
+
+  /**
+   * Construct a [[NNEstimator]] with a feature size and label size. The constructor is useful
+   * when the feature column and label column contains the following data types:
+   * Float, Double, Int, Array[Float], Array[Double], Array[Int] and MLlib Vector. The feature and
+   * label data are converted to Tensors with the specified sizes before sending to the model.
+   *
+   * @param model BigDL module to be optimized
+   * @param criterion  BigDL criterion method
+   * @param featureSize The size (Tensor dimensions) of the feature data. e.g. an image may be with
+   *                    width * height = 28 * 28, featureSize = Array(28, 28).
+   * @param labelSize The size (Tensor dimensions) of the label data.
+   */
+  def apply[F, T: ClassTag](
+      model: Module[T],
+      criterion: Criterion[T],
+      featureSize : Array[Int],
+      labelSize : Array[Int]
+    )(implicit ev: TensorNumeric[T]): NNEstimator[Any, Any, T] = {
+    new NNEstimator(model, criterion, SeqToTensor(featureSize), SeqToTensor(labelSize))
+  }
 }
 
 /**

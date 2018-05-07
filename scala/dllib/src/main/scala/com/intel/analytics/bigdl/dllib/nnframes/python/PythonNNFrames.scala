@@ -56,10 +56,11 @@ class PythonNNFrames[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonB
   }
 
   def createNNClassifier(
-        model: Module[T],
-        criterion: Criterion[T],
-        featureTransformer: Preprocessing[Any, Tensor[T]]): NNClassifier[Any, T] = {
-    new NNClassifier(model, criterion, featureTransformer)
+      model: Module[T],
+      criterion: Criterion[T],
+      samplePreprocessing: Preprocessing[(Any, Option[AnyVal]), Sample[T]]
+    ): NNClassifier[Any, T] = {
+    new NNClassifier(model, criterion, samplePreprocessing)
   }
 
   def createNNModel(
