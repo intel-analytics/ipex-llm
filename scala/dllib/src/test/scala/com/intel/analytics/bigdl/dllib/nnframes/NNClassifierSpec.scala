@@ -95,10 +95,10 @@ class NNClassifierSpec extends FlatSpec with Matchers with BeforeAndAfter {
     assert(nnModel.transform(df).where("prediction=label").count() > nRecords * 0.8)
   }
 
-  "NNClassifier" should "support different FEATURE types" in {
+  "NNClassifier" should "apply with size support different FEATURE types" in {
     val model = new Sequential().add(Linear[Float](6, 2)).add(LogSoftMax[Float])
     val criterion = ClassNLLCriterion[Float]()
-    val classifier = new NNClassifier(model, criterion, SeqToTensor(Array(6)))
+    val classifier = NNClassifier(model, criterion, Array(6))
       .setLearningRate(0.1)
       .setBatchSize(2)
       .setEndWhen(Trigger.maxIteration(2))
