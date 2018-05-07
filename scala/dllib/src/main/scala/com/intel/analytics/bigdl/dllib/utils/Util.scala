@@ -19,8 +19,10 @@ package com.intel.analytics.bigdl.utils
 import java.io._
 
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.tensor.{QuantizedTensor, QuantizedType, Storage, Tensor}
+import com.intel.analytics.bigdl.nn.{Container, Graph}
+import com.intel.analytics.bigdl.nn.tf.Const
+import com.intel.analytics.bigdl.tensor.TensorNumericMath.{NumericWildcard, TensorNumeric}
+import com.intel.analytics.bigdl.tensor._
 import org.apache.commons.lang3.SerializationException
 
 import scala.reflect.ClassTag
@@ -131,6 +133,31 @@ object Util {
     } else {
       // just return an empty array when parameters is empty.
       Array()
+    }
+  }
+
+  private[bigdl] def getAndClearConsts[T: ClassTag](
+        model: Container[_, _, T])(implicit ev: TensorNumeric[T]): Map[String, Tensor[_]] = {
+    val moduleConsts = model.findModules("Const")
+      .map(_.asInstanceOf[Const[T, _]])
+      .map(v => (v, v.value.shallowClone()))
+    moduleConsts.foreach(_._1.value.set())
+    val result = moduleConsts.map(v => (v._1.getName(), v._2)).toMap[String, Tensor[_]]
+    require(result.size == moduleConsts.length, s"${model}'s Const node's name is duplicated," +
+      s"please check your model.")
+    result
+  }
+
+  private[bigdl] def putConsts[T: ClassTag](
+        model: Container[_, _, T],
+        consts: Map[String, Tensor[_]])(implicit ev: TensorNumeric[T]) : Unit = {
+    val moduleConsts = model.findModules("Const")
+      .map(_.asInstanceOf[Const[T, _]])
+    moduleConsts.foreach{const =>
+      val constValue = const.value.asInstanceOf[NumericWildcard]
+      val constName = const.getName()
+      constValue.asInstanceOf[Tensor[NumericWildcard]]
+        .set(consts(constName).asInstanceOf[Tensor[NumericWildcard]])
     }
   }
 
