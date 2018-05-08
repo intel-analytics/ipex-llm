@@ -1,5 +1,0 @@
-*.log
-metastore_db/
-*.model
-*.gif
-.ipynb_checkpoints/
