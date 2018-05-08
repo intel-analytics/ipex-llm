@@ -59,7 +59,7 @@ class TrainingSpec extends FlatSpec with Matchers with BeforeAndAfter  {
   "sequential compile and fit" should "work properly" in {
     val trainingData = generateData(Array(10), 40)
     val model = Sequential[Float]()
-    model.add(Dense(8, inputShape = Shape(10)))
+    model.add(Dense[Float](8, inputShape = Shape(10)))
     model.compile(optimizer = "sgd", loss = "mse", metrics = null)
     model.fit(trainingData, batchSize = 8, nbEpoch = 2)
   }
@@ -78,9 +78,9 @@ class TrainingSpec extends FlatSpec with Matchers with BeforeAndAfter  {
     val trainingData = generateData(Array(12, 12), 100)
     val testData = generateData(Array(12, 12), 16)
     val model = Sequential[Float]()
-    model.add(Dense(8, activation = "relu", inputShape = Shape(12, 12)))
-    model.add(Flatten())
-    model.add(Dense(2, activation = "softmax"))
+    model.add(Dense[Float](8, activation = "relu", inputShape = Shape(12, 12)))
+    model.add(Flatten[Float]())
+    model.add(Dense[Float](2, activation = "softmax"))
     model.compile(optimizer = "sgd", loss = "sparse_categorical_crossentropy",
       metrics = List("accuracy"))
     val tmpLogDir = Files.createTempDir()
@@ -97,7 +97,7 @@ class TrainingSpec extends FlatSpec with Matchers with BeforeAndAfter  {
   "compile, fit, evaluate and predict in local mode" should "work properly" in {
     val localData = DummyDataSet.mseDataSet
     val model = Sequential[Float]()
-    model.add(Dense(8, activation = "relu", inputShape = Shape(4)))
+    model.add(Dense[Float](8, activation = "relu", inputShape = Shape(4)))
     model.compile(optimizer = new SGD[Float](), loss = MSECriterion[Float](),
       metrics = List(new Top1Accuracy[Float]))
     model.fit(localData, nbEpoch = 2, validationData = null)
