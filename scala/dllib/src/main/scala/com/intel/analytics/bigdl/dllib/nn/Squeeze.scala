@@ -34,12 +34,16 @@ class Squeeze[T: ClassTag](
   val dims : Array[Int] = null, val batchMode: Boolean = false
   )(implicit ev: TensorNumeric[T]) extends AbstractModule[Tensor[_], Tensor[_], T]  {
 
-  if (batchMode && dims != null) {
+  val dimensions = if (batchMode && dims != null) {
+    val newDims = new Array[Int](dims.length)
     var i = 0
-    while(i < dims.length) {
-      dims(i) += 1
+    while(i < newDims.length) {
+      newDims(i) = dims(i) + 1
       i += 1
     }
+    newDims
+  } else {
+    dims
   }
 
   override def updateOutput(input: Tensor[_]): Tensor[_] = {
@@ -47,17 +51,17 @@ class Squeeze[T: ClassTag](
       output = input.emptyInstance()
     }
     output.asInstanceOf[Tensor[NumericWildcard]].set(input.asInstanceOf[Tensor[NumericWildcard]])
-    if (dims != null) {
+    if (dimensions != null) {
       var i = 0
-      while(i < dims.length) {
-        output.squeeze(dims(i))
+      while(i < dimensions.length) {
+        output.squeeze(dimensions(i))
         i += 1
       }
     } else {
       output.squeeze()
     }
 
-    if (batchMode && dims == null && input.size(1) == 1) {
+    if (batchMode && dimensions == null && input.size(1) == 1) {
       output.addSingletonDimension()
     }
     output
@@ -76,7 +80,7 @@ class Squeeze[T: ClassTag](
   }
 
   override def toString(): String = {
-    s"${getPrintName}(${if (dims != null) dims.mkString(",") + ", " else ""}" +
+    s"${getPrintName}(${if (dimensions != null) dimensions.mkString(",") + ", " else ""}" +
       s"${if (batchMode) "batch" else ""})"
   }
 
@@ -86,13 +90,13 @@ class Squeeze[T: ClassTag](
     case that: Squeeze[T] =>
       super.equals(that) &&
         (that canEqual this) &&
-        (dims.zip(that.dims).map(a => a._1 == a._2).reduce(_ && _)) &&
+        (dims.zip(that.dimensions).map(a => a._1 == a._2).reduce(_ && _)) &&
         batchMode == that.batchMode
     case _ => false
   }
 
   override def hashCode(): Int = {
-    val state = Seq(super.hashCode(), dims, batchMode)
+    val state = Seq(super.hashCode(), dimensions, batchMode)
     state.map(_.hashCode()).foldLeft(0)((a, b) => 31 * a + b)
   }
 }

@@ -23,8 +23,11 @@ import scala.util.Random
 
 class SqueezeSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
-    val squeeze = Squeeze[Float](2).setName("squeeze")
+    var squeeze = Squeeze[Float](2).setName("squeeze")
     val input = Tensor[Float](2, 1, 2).apply1( e => Random.nextFloat())
+    runSerializationTest(squeeze, input)
+
+    squeeze = Squeeze[Float](Array(2), batchMode = true).setName("squeeze")
     runSerializationTest(squeeze, input)
   }
 }
