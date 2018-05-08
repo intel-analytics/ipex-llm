@@ -263,6 +263,12 @@ class NNEstimator[F, L, T: ClassTag](
     this
   }
 
+  /**
+   * get the validate configuration during training
+   *
+   * @return an Option of Tuple(ValidationTrigger, Validation data, Array[ValidationMethod[T]],
+   *         batchsize)
+   */
   def getValidation: Option[(Trigger, DataFrame, Array[ValidationMethod[T]], Int)] = {
     if (validationTrigger.isDefined) {
       Some(validationTrigger.get, validationDF, validationMethods, validationBatchSize)
