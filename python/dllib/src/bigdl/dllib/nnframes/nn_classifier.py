@@ -128,6 +128,9 @@ class NNEstimator(JavaEstimator, HasFeaturesCol, HasLabelCol, HasPredictionCol, 
         self.learningRate = Param(self, "learningRate", "learning rate")
         self._setDefault(maxEpoch=50, learningRate=1e-3, batchSize=1)
         self.sample_preprocessing = sample_preprocessing
+        self.train_summary = None
+        self.validation_config = None
+        self.validation_summary = None
 
     @classmethod
     def create(cls, model, criterion, feature_preprocessing, label_preprocessing,
@@ -210,6 +213,69 @@ class NNEstimator(JavaEstimator, HasFeaturesCol, HasLabelCol, HasPredictionCol, 
         Gets the value of learningRate or its default value.
         """
         return self.getOrDefault(self.learningRate)
+
+    def setTrainSummary(self, val):
+        """
+        Statistics (LearningRate, Loss, Throughput, Parameters) collected during training for the
+        training data, which can be used for visualization via Tensorboard.
+        Use setTrainSummary to enable train logger. Then the log will be saved to
+        logDir/appName/train as specified by the parameters of TrainSummary.
+        Default: Not enabled
+
+        :param summary: a TrainSummary object
+        """
+        pythonBigDL_method_name = "setTrainSummary"
+        callBigDlFunc(self.bigdl_type, pythonBigDL_method_name, self.value, val)
+        self.train_summary = val
+        return self
+
+    def getTrainSummary(self):
+        """
+        Gets the train summary
+        """
+        return self.train_summary
+
+    def setValidationSummary(self, val):
+        """
+        Statistics (LearningRate, Loss, Throughput, Parameters) collected during training for the
+        validation data if validation data is set, which can be used for visualization via
+        Tensorboard. Use setValidationSummary to enable validation logger. Then the log will be
+        saved to logDir/appName/ as specified by the parameters of validationSummary.
+        Default: None
+        """
+        pythonBigDL_method_name = "setValidationSummary"
+        callBigDlFunc(self.bigdl_type, pythonBigDL_method_name, self.value, val)
+        self.validation_summary = val
+        return self
+
+    def getValidationSummary(self):
+        """
+        Gets the Validation summary
+        """
+        return self.validation_summary
+
+    def setValidation(self, trigger, val_df, val_method, batch_size):
+        """
+        Set a validate evaluation during training
+
+        :param trigger: validation interval
+        :param val_df: validation dataset
+        :param val_method: the ValidationMethod to use,e.g. "Top1Accuracy", "Top5Accuracy", "Loss"
+        :param batch_size: validation batch size
+        """
+        pythonBigDL_method_name = "setValidation"
+        callBigDlFunc(self.bigdl_type, pythonBigDL_method_name, self.value,
+                      trigger, val_df, val_method, batch_size)
+        self.validation_config = [trigger, val_df, val_method, batch_size]
+        return self
+
+    def getValidation(self):
+        """
+        Gets the validate configuration. If validation config has been set, getValidation will
+        return a List of [ValidationTrigger, Validation data, Array[ValidationMethod[T]],
+        batchsize]
+        """
+        return self.validation_config
 
     def _create_model(self, java_model):
         nnModel = NNModel.of(java_model, FeatureToTupleAdapter(self.sample_preprocessing),
