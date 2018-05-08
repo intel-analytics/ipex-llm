@@ -72,9 +72,16 @@ abstract class Sample[T: ClassTag] extends Serializable {
    * a default implement to throw exception.
    * @return feature tensor
    */
-  @deprecated("Old interface", "0.2.0")
   def feature()(implicit ev: TensorNumeric[T]): Tensor[T] = {
-    throw new UnsupportedOperationException("Sample.feature(): unimplemented deprecated method")
+    throw new UnsupportedOperationException("Sample.feature(): Not implemented")
+  }
+
+  /**
+   * Get feature tensor for given index
+   * @param index index of specific sample
+   */
+  def feature(index: Int)(implicit ev: TensorNumeric[T]): Tensor[T] = {
+    throw new UnsupportedOperationException("Sample.feature(): Not implemented")
   }
 
   /**
@@ -83,9 +90,16 @@ abstract class Sample[T: ClassTag] extends Serializable {
    * a default implement to throw exception.
    * @return label tensor
    */
-  @deprecated("Old interface", "0.2.0")
   def label()(implicit ev: TensorNumeric[T]): Tensor[T] = {
-    throw new UnsupportedOperationException("Sample.label(): unimplemented deprecated method")
+    throw new UnsupportedOperationException("Sample.label(): Not implemented")
+  }
+
+  /**
+   * Get label tensor for given index
+   * @param index index of specific sample
+   */
+  def label(index: Int)(implicit ev: TensorNumeric[T]): Tensor[T] = {
+    throw new UnsupportedOperationException("Sample.label(): Not implemented")
   }
 
   /**
@@ -173,19 +187,34 @@ class ArraySample[T: ClassTag] private[bigdl](
     }
   }
 
-  @deprecated("Old interface", "0.2.0")
   override def feature()(implicit ev: TensorNumeric[T]): Tensor[T] = {
-    require(featureSize.length == 1, "Old interface for 1 feature Sample. " +
-      s"got ${featureSize.length} feature Sample")
-    Tensor[T](Storage(data), 1, getFeatureSize()(0))
+    require(this.numFeature == 1, "Only one Sample required in total" +
+      s"got ${featureSize.length} feature Sample, please use feature(index) instead")
+    feature(0)
   }
 
-  @deprecated("Old interface", "0.2.0")
+  override def feature(index: Int)(implicit ev: TensorNumeric[T]): Tensor[T] = {
+    require(this.numFeature > index, "feature index out of range")
+    val featureOffSet = 1 + getFeatureSize().zipWithIndex.
+      filter(_._2 < index).map(_._1.product).sum
+    Tensor[T](Storage(data), featureOffSet, getFeatureSize()(index))
+  }
+
+  override def label(index: Int)(implicit ev: TensorNumeric[T]): Tensor[T] = {
+    require(this.numFeature > index, "label index out of range")
+    if (this.numLabel > index) {
+      val labelOffSet = 1 + getFeatureSize().map(_.product).sum + getLabelSize().zipWithIndex
+        .filter(_._2 < index).map(_._1.product).sum
+      Tensor[T](Storage[T](data), labelOffSet, labelSize(index))
+    } else {
+      null
+    }
+  }
+
   override def label()(implicit ev: TensorNumeric[T]): Tensor[T] = {
-    require(labelSize.length == 1, "Old interface for 1 label Sample. " +
-      s"got ${labelSize.length} label Sample")
-    Tensor[T](Storage(data), getFeatureSize().map(_.product).sum + 1,
-      labelSize(0))
+    require(this.numLabel <= 1, "Only one Sample required in total " +
+      s"got ${labelSize.length} label Sample, please use label(index) instead")
+    label(0)
   }
 
   @deprecated("Old interface", "0.2.0")
