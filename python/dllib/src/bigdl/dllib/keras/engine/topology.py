@@ -32,7 +32,9 @@ class ZooKerasCreator(JavaValue):
 
 
 class ZooKerasLayer(ZooKerasCreator, KerasLayer):
-    pass
+    @classmethod
+    def of(cls, jvalue, bigdl_type="float"):
+        return KerasLayer(jvalue, bigdl_type)
 
 
 class KerasNet(ZooKerasLayer):
