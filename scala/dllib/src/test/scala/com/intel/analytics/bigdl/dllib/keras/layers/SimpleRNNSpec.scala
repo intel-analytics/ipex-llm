@@ -30,7 +30,7 @@ class SimpleRNNSpec extends KerasBaseSpec {
     val seq = Sequential[Float]()
     val rnn = SimpleRNN[Float](10, inputShape = Shape(3, 6))
     seq.add(rnn)
-    seq.add(Dense(5))
+    seq.add(Dense[Float](5))
     seq.getOutputShape().toSingle().toArray should be (Array(-1, 5))
   }
 

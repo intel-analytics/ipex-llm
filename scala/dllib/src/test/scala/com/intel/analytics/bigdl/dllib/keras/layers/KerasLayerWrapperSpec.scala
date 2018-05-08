@@ -32,7 +32,7 @@ class KerasLayerWrapperSpec extends KerasBaseSpec {
     val dense = new KerasLayerWrapper[Float](Linear[Float](3, 2)
       .asInstanceOf[AbstractModule[Activity, Activity, Float]], inputShape = Shape(3))
     seq.add(dense)
-    seq.add(Dense(10))
+    seq.add(Dense[Float](10))
     seq.getOutputShape().toSingle().toArray should be (Array(-1, 10))
   }
 }

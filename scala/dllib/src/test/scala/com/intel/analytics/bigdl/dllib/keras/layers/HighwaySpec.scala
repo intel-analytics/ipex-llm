@@ -37,7 +37,7 @@ class HighwaySpec extends KerasBaseSpec {
     val seq = Sequential[Float]()
     val klayer = Highway[Float](inputShape = Shape(6))
     seq.add(klayer)
-    seq.add(Dense(5))
+    seq.add(Dense[Float](5))
     seq.getOutputShape().toSingle().toArray should be (Array(-1, 5))
   }
 

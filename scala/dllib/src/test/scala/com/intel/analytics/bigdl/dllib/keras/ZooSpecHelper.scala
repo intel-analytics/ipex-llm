@@ -91,6 +91,33 @@ abstract class ZooSpecHelper extends FlatSpec with Matchers with BeforeAndAfter 
     gradInput2.almostEqual(gradInput1, precision) should be (true)
   }
 
+  def compareOutputAndGradInputTable2Tensor(model1: AbstractModule[Table, Tensor[Float], Float],
+      model2: AbstractModule[Table, Tensor[Float], Float],
+      input: Table,
+      precision: Double = 1e-5): Unit = {
+    // Set seed in case of random factors such as dropout
+    RandomGenerator.RNG.setSeed(1000)
+    val output1 = model1.forward(input)
+    RandomGenerator.RNG.setSeed(1000)
+    val output2 = model2.forward(input)
+    output2.size().sameElements(output1.size()) should be (true)
+    output2.almostEqual(output1, precision) should be (true)
+    RandomGenerator.RNG.setSeed(1000)
+    val gradInput1 = model1.backward(input, output1)
+    RandomGenerator.RNG.setSeed(1000)
+    val gradInput2 = model2.backward(input, output2)
+    gradInput1.length() == gradInput2.length() should be (true)
+    var i = 1
+    while (i < gradInput1.length() + 1) {
+      val gtensor2 = gradInput2.get[Tensor[Float]](i).get
+      val gtensor1 = gradInput1.get[Tensor[Float]](i).get
+      gtensor2.size.sameElements(gtensor1.size) should be (true)
+      gtensor2.almostEqual(gtensor1, precision) should be (true)
+      i += 1
+    }
+
+  }
+
   def compareOutputAndGradInputSetWeights(
       model1: AbstractModule[Tensor[Float], Tensor[Float], Float],
       model2: AbstractModule[Tensor[Float], Tensor[Float], Float],
