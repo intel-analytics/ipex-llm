@@ -28,6 +28,7 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{LoggerFilter, Shape}
 import com.intel.analytics.bigdl.utils.serializer.{DeserializeContext, ModuleData, ModuleSerializer, SerializeContext}
 import com.intel.analytics.bigdl.visualization.{TrainSummary, ValidationSummary}
+import com.intel.analytics.zoo.pipeline.api.autograd.{CustomLossWithFunc, Lambda, Variable}
 import com.intel.analytics.zoo.pipeline.api.keras.layers.utils.{AbstractModuleRef, GraphRef, KerasLayerRef}
 import com.intel.analytics.zoo.pipeline.api.keras.layers.utils.KerasUtils
 import org.apache.spark.rdd.RDD
@@ -265,7 +266,7 @@ class Model[T: ClassTag] private (private val _inputs : Seq[ModuleNode[T]],
   }
 }
 
-object Model extends KerasLayerSerializable{
+object Model extends KerasLayerSerializable {
   ModuleSerializer.registerModule(
     "com.intel.analytics.zoo.pipeline.api.keras.models.Model",
     Model)
@@ -346,7 +347,7 @@ class Sequential[T: ClassTag] private ()
 
   this.labor = doBuild(null)
 
-  private def triggerBuilding(module: AbstractModule[_ <: Activity, _ <: Activity, T]): Unit = {
+  private def buildModule(module: AbstractModule[_ <: Activity, _ <: Activity, T]): Unit = {
     val absModuleRef =
       new AbstractModuleRef(module.asInstanceOf[AbstractModule[Activity, Activity, T]])
     val kerasLayerRef = KerasLayerRef(this)
@@ -367,6 +368,24 @@ class Sequential[T: ClassTag] private ()
     }
   }
 
+  private def getLambdaLayer(lambda: Lambda[T]):
+  AbstractModule[_ <: Activity, _ <: Activity, T] = {
+    val inputShape = if (!this.isBuilt()) {
+      if (lambda.getInputShape() == null) {
+        throw new RuntimeException("The first layer should explicitly declare inputshape")
+      }
+      lambda.getInputShape()
+    } else {
+      this.getOutputShape()
+    }
+    return lambda.create(
+      KerasUtils.removeBatch(inputShape))
+  }
+
+  def add(lambda: Lambda[T]): Sequential[T] = {
+    add(getLambdaLayer(lambda))
+  }
+
   /**
    * Add a sub-module to the sequential container.
    *
@@ -378,16 +397,18 @@ class Sequential[T: ClassTag] private ()
       throw new RuntimeException(
         "This Sequential has been frozen, as it has been added into other container")
     }
+
     if (module.isInstanceOf[Sequential[T]]) {
       module.asInstanceOf[Sequential[T]].frozen = true
     }
+    val mModule = module
     val kerasLayerRef = KerasLayerRef(this)
-    kerasLayerRef.validateInput[T](Seq(module))
+    kerasLayerRef.validateInput[T](Seq(mModule))
 
-    triggerBuilding(module)
+    buildModule(mModule)
 
     labor.asInstanceOf[TSequential[T]].modules +=
-      module.asInstanceOf[AbstractModule[Activity, Activity, T]]
+      mModule.asInstanceOf[AbstractModule[Activity, Activity, T]]
     kerasLayerRef.checkDuplicate()
     this
   }

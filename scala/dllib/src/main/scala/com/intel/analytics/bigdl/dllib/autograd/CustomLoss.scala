@@ -30,11 +30,11 @@ object CustomLoss {
       func: (Variable[T], Variable[T]) => Variable[T],
       sizeAverage: Boolean = true)(
       implicit ev: TensorNumeric[T]): TensorCriterion[T] = {
-      new CustomLossWithFuc[T](func, sizeAverage)
+      new CustomLossWithFunc[T](func, sizeAverage)
   }
 }
 
-class CustomLossWithFuc[T: ClassTag](func: (Variable[T], Variable[T]) => Variable[T],
+class CustomLossWithFunc[T: ClassTag](func: (Variable[T], Variable[T]) => Variable[T],
     sizeAverage: Boolean = true)(
     implicit ev: TensorNumeric[T]) extends CustomLoss[T](sizeAverage = sizeAverage) {
   @volatile var lossInstance: AbstractModule[Activity, Activity, T] = null

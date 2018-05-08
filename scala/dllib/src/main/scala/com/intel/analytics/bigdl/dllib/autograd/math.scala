@@ -16,11 +16,13 @@
 
 package com.intel.analytics.zoo.pipeline.api.autograd
 
+import com.intel.analytics.bigdl.nn.Container
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, InferShape}
 import com.intel.analytics.bigdl.nn.keras.KerasLayer
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.utils.serializer.{ModuleSerializable, ModuleSerializer}
 import com.intel.analytics.bigdl.utils.{Engine, Shape}
 import com.intel.analytics.bigdl.{nn => bnn}
 import com.intel.analytics.zoo.pipeline.api.keras.layers._
@@ -59,7 +61,9 @@ object AutoGrad {
   def clip[T: ClassTag](a: Variable[T], min: Double, max: Double)(
       implicit ev: TensorNumeric[T]): Variable[T] = {
     val o: KerasLayer[Activity, Activity, T] =
-      new KerasLayerWrapper(bnn.HardTanh[T]().asInstanceOf[AbstractModule[Activity, Activity, T]])
+      new KerasLayerWrapper(
+        bnn.HardTanh[T](minValue = min,
+          maxValue = max).asInstanceOf[AbstractModule[Activity, Activity, T]])
     Variable(o.inputs(a.node))
   }
 
@@ -100,12 +104,12 @@ object AutoGrad {
     val o: KerasLayer[Activity, Activity, T] =
       new KerasLayerWrapper(bnn.Mean[T](dimension = normalizeAxis(axis) + 1,
         squeeze = !keepDims).asInstanceOf[AbstractModule[Activity, Activity, T]])
-    new Variable(o.inputs(x.node))
+    Variable(o.inputs(x.node))
   }
 
   def log[T: ClassTag](a: Variable[T])(
       implicit ev: TensorNumeric[T]): Variable[T] = {
-    new Variable(Log[T]().inputs(a.node))
+    Variable(Log[T]().inputs(a.node))
   }
 
   def epsilon[T: ClassTag]()(
@@ -117,9 +121,15 @@ object AutoGrad {
       implicit ev: TensorNumeric[T]): Variable[T] = {
     Variable(Exp[T]().inputs(x.node))
   }
+
+  def pow[T: ClassTag](x: Variable[T], a: Double)(
+      implicit ev: TensorNumeric[T]): Variable[T] = {
+    Variable(Power[T](a).inputs(x.node))
+  }
 }
 
-object Variable {
+object Variable extends {
+
   private[zoo] def apply[T: ClassTag](node: ModuleNode[T])(
       implicit ev: TensorNumeric[T]) = {
     new Variable[T](node)
@@ -131,8 +141,8 @@ object Variable {
   }
 }
 
-class Variable[T: ClassTag](val node: ModuleNode[T])(
-    implicit ev: TensorNumeric[T]) extends Serializable{
+class Variable[T: ClassTag] private (val node: ModuleNode[T])(
+    implicit ev: TensorNumeric[T]) extends Serializable {
 
   require(node.element.isInstanceOf[KerasLayer[Activity, Activity, T]])
   require(node.element.asInstanceOf[InferShape].getOutputShape() != null)
@@ -191,6 +201,10 @@ class Variable[T: ClassTag](val node: ModuleNode[T])(
     x + y
   }
 
+  def -(a: Double): Variable[T] = {
+    Variable(AddConstant[T](-a).inputs(Array(this.node)))
+  }
+
   def unary_-(): Variable[T] = {
     val o =
       new KerasLayerWrapper(bnn.Negative[T]().asInstanceOf[AbstractModule[Activity, Activity, T]])
@@ -213,6 +227,10 @@ class Variable[T: ClassTag](val node: ModuleNode[T])(
       new KerasLayerWrapper(bnn.CDivTable[T]().asInstanceOf[AbstractModule[Activity, Activity, T]])
     val (x, y) = broadcast(this, other)
     Variable(o.inputs(Array(x.node, y.node)))
+  }
+
+  def /(a: Double): Variable[T] = {
+    this * (1/a)
   }
 
   private[zoo] def broadcast(x: Variable[T], y: Variable[T]): (Variable[T], Variable[T]) = {
