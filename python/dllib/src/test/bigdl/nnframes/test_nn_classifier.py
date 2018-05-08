@@ -17,12 +17,13 @@
 import pytest
 from bigdl.nn.criterion import *
 from bigdl.nn.layer import *
-from bigdl.optim.optimizer import SGD, Adam, LBFGS, Adagrad, Adadelta
+from bigdl.optim.optimizer import *
 from bigdl.util.common import *
 from numpy.testing import assert_allclose
 from pyspark.ml import Pipeline
 from pyspark.ml.feature import MinMaxScaler
 from pyspark.sql.types import *
+import tempfile
 
 from zoo.common.nncontext import *
 from zoo.pipeline.nnframes.nn_classifier import *
@@ -201,6 +202,45 @@ class TestNNClassifer():
         nnModel = estimator.fit(df)
         assert nnModel.getBatchSize() == 4
 
+    def test_nnEstimator_fit_with_train_val_summary(self):
+        model = Sequential().add(Linear(2, 2))
+        criterion = MSECriterion()
+        data = self.sc.parallelize([
+            ((2.0, 1.0), (1.0, 2.0)),
+            ((1.0, 2.0), (2.0, 1.0)),
+            ((2.0, 1.0), (1.0, 2.0)),
+            ((1.0, 2.0), (2.0, 1.0))])
+        val_data = self.sc.parallelize([
+            ((2.0, 1.0), (1.0, 2.0)),
+            ((1.0, 2.0), (2.0, 1.0))])
+        schema = StructType([
+            StructField("features", ArrayType(DoubleType(), False), False),
+            StructField("label", ArrayType(DoubleType(), False), False)])
+        df = self.sqlContext.createDataFrame(data, schema)
+        val_df = self.sqlContext.createDataFrame(val_data, schema)
+
+        tmp_dir = tempfile.mkdtemp()
+        train_summary = TrainSummary(log_dir=tmp_dir, app_name="estTest")
+        train_summary.set_summary_trigger("LearningRate", SeveralIteration(1))
+        val_summary = ValidationSummary(log_dir=tmp_dir, app_name="estTest")
+        estimator = NNEstimator.create(model, criterion, SeqToTensor([2]), SeqToTensor([2]))\
+            .setBatchSize(4) \
+            .setMaxEpoch(5) \
+            .setTrainSummary(train_summary)
+        assert (estimator.getValidation() is None)
+        estimator.setValidation(EveryEpoch(), val_df, [MAE()], 2) \
+            .setValidationSummary(val_summary)
+        assert (estimator.getValidation() is not None)
+
+        nnModel = estimator.fit(df)
+        res = nnModel.transform(df)
+        lr_result = train_summary.read_scalar("LearningRate")
+        mae_result = val_summary.read_scalar("MAE")
+        assert isinstance(estimator.getTrainSummary(), TrainSummary)
+        assert type(res).__name__ == 'DataFrame'
+        assert len(lr_result) == 5
+        assert len(mae_result) == 4
+
     def test_NNModel_transform_with_nonDefault_featureCol(self):
         model = Sequential().add(Linear(2, 2))
         nnModel = NNModel.create(model, SeqToTensor([2]))\
@@ -295,6 +335,45 @@ class TestNNClassifer():
             res = nnClassifierModel.transform(df)
             res.collect()
             assert type(res).__name__ == 'DataFrame'
+
+    def test_nnClassifier_fit_with_train_val_summary(self):
+        model = Sequential().add(Linear(2, 2))
+        criterion = MSECriterion()
+        data = self.sc.parallelize([
+            ((2.0, 1.0), 1.0),
+            ((1.0, 2.0), 2.0),
+            ((2.0, 1.0), 1.0),
+            ((1.0, 2.0), 2.0)])
+
+        val_data = self.sc.parallelize([
+            ((2.0, 1.0), 1.0),
+            ((1.0, 2.0), 2.0)])
+
+        schema = StructType([
+            StructField("features", ArrayType(DoubleType(), False), False),
+            StructField("label", DoubleType(), False)])
+        df = self.sqlContext.createDataFrame(data, schema)
+        val_df = self.sqlContext.createDataFrame(val_data, schema)
+
+        tmp_dir = tempfile.mkdtemp()
+        train_summary = TrainSummary(log_dir=tmp_dir, app_name="nnTest")
+        train_summary.set_summary_trigger("LearningRate", SeveralIteration(1))
+        val_summary = ValidationSummary(log_dir=tmp_dir, app_name="nnTest")
+
+        classfier = NNClassifier.create(model, criterion, SeqToTensor([2])).setBatchSize(4) \
+            .setTrainSummary(train_summary).setMaxEpoch(5) \
+            .setValidation(EveryEpoch(), val_df, [Top1Accuracy()], 2) \
+            .setValidationSummary(val_summary)
+
+        nnModel = classfier.fit(df)
+        res = nnModel.transform(df)
+        lr_result = train_summary.read_scalar("LearningRate")
+        top1_result = val_summary.read_scalar("Top1Accuracy")
+
+        assert isinstance(classfier.getTrainSummary(), TrainSummary)
+        assert type(res).__name__ == 'DataFrame'
+        assert len(lr_result) == 5
+        assert len(top1_result) == 4
 
     def test_nnclassifier_in_pipeline(self):
 
