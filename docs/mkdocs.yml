@@ -1,0 +1,57 @@
+site_name: Analytics-Zoo Project
+theme: null
+extra_css: [extra.css]
+theme_dir: mkdocs_windmill 
+repo_name: 'Fork on GitHub '
+repo_url: 'https://github.com/intel-analytics/analytics-zoo'
+extra:
+    version: latest
+    article_nav_top: false
+    article_nav_bottom: false
+
+
+pages:
+- Overview: 
+  - What is Zoo and Why: index.md 
+  - Getting Help: gettinghelp.md
+- Releases: 
+  - Download: release-download.md 
+  - Documentation: release-docs.md
+- Getting Started: getting-started.md
+- Scala User Guide: 
+  - Examples: ScalaUserGuide/examples.md
+  - Model API: ScalaUserGuide/modelapi.md
+  - Pipeline API:
+    - Keras-Style: ScalaUserGuide/PipelineAPI/keras-style.md
+    - NNFrames: ScalaUserGuide/PipelineAPI/nnframes.md
+- Python User Guide: 
+  - Examples: PythonUserGuide/python-examples.md
+  - Model API: PythonUserGuide/model-api.md
+  - Pipeline API:
+    - Keras: PythonUserGuide/PipelineAPI/keras.md
+    - NNFrames: PythonUserGuide/PipelineAPI/nnframes.md
+- Programming Guide: programming-guide.md
+- Keras-Style API Guide:
+  - Python Guide: KerasStyleAPIGuide/keras-api-python.md
+  - Scala Guide: KerasStyleAPIGuide/keras-api-scala.md
+  - Layers:
+    - Activation: KerasStyleAPIGuide/Layers/activation.md
+    - Initialization: KerasStyleAPIGuide/Layers/initialization.md
+    - Core Layers: KerasStyleAPIGuide/Layers/core.md
+    - Convolutional Layers: KerasStyleAPIGuide/Layers/convolutional.md
+    - Pooling Layers: KerasStyleAPIGuide/Layers/pooling.md
+    - Recurrent Layers: KerasStyleAPIGuide/Layers/recurrent.md
+    - Normalization Layers: KerasStyleAPIGuide/Layers/normalization.md
+    - Embedding Layers: KerasStyleAPIGuide/Layers/embedding.md
+    - Dropout Layers: KerasStyleAPIGuide/Layers/dropout.md
+    - Advanced Activations: KerasStyleAPIGuide/Layers/advanced-activation.md
+    - Layer Wrappers: KerasStyleAPIGuide/Layers/wrappers.md
+  - Optimization:
+    - Train, evaluate or predict a model: KerasStyleAPIGuide/Optimization/training.md
+    - Optimizers: KerasStyleAPIGuide/Optimization/optimizer.md
+    - Losses: KerasStyleAPIGuide/Optimization/loss.md
+- Notebooks: 
+  - Scala: Notebooks/scala.md
+  - Python: Notebooks/python.md
+- Powered by: powered-by.md
+- FAQ and Known Issues: known-issues.md
