@@ -16,6 +16,8 @@
 
 import sys
 
+from zoo.pipeline.api.autograd import LambdaLayer, Variable
+from zoo.pipeline.api.utils import remove_batch
 from .engine.topology import KerasNet
 from bigdl.util.common import to_list, callBigDlFunc
 
@@ -37,7 +39,24 @@ class Sequential(KerasNet):
     def __init__(self, jvalue=None, **kwargs):
         super(Sequential, self).__init__(jvalue, **kwargs)
 
+    # TODO: expose is_built from scala side
+    def is_built(self):
+        try:
+            self.get_output_shape()
+            return True
+        except:
+            return False
+
     def add(self, model):
+        from zoo.pipeline.api.autograd import Lambda
+        if (isinstance(model, Lambda)):
+            if not self.is_built():
+                if not model.input_shape:
+                    raise Exception("You should specify inputShape for the first layer")
+                input_shapes = model.input_shape
+            else:
+                input_shapes = self.get_output_shape()
+            model = model.create(remove_batch(input_shapes))
         self.value.add(model.value)
         return self
 
