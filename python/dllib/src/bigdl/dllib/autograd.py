@@ -14,13 +14,14 @@
 # limitations under the License.
 #
 
-from zoo.pipeline.api.keras.engine.topology import ZooKerasCreator
-from bigdl.util.common import callBigDlFunc
+from zoo.pipeline.api.keras.engine.topology import ZooKerasCreator, ZooKerasLayer
+from bigdl.util.common import callBigDlFunc, to_list
 from bigdl.nn.criterion import Criterion
-from bigdl.nn.layer import Layer
-
+from bigdl.nn.layer import Layer, Node
 
 import sys
+
+from zoo.pipeline.api.utils import remove_batch, toMultiShape
 
 if sys.version >= '3':
     long = int
@@ -51,6 +52,10 @@ def sqrt(a):
     return Variable.from_jvalue(callBigDlFunc("float", "sqrt", a))
 
 
+def exp(a):
+    return Variable.from_jvalue(callBigDlFunc("float", "exp", a))
+
+
 def maximum(a, b):
     return Variable.from_jvalue(callBigDlFunc("float", "maximum", a, b))
 
@@ -73,9 +78,9 @@ class Variable(ZooKerasCreator):
             self.bigdl_type = "float"
         else:
             if node:
-                super(Variable, self).__init__(jvalue, "float", input_shape)
+                super(Variable, self).__init__(jvalue, "float", node)
             else:
-                super(Variable, self).__init__(jvalue, "float", input_shape)
+                super(Variable, self).__init__(jvalue, "float", toMultiShape(input_shape))
 
     @staticmethod
     def from_jvalue(jvalue):
@@ -95,6 +100,70 @@ class Variable(ZooKerasCreator):
 
     def __mul__(self, other):
         return Variable.from_jvalue(callBigDlFunc("float", "mul", self, other))
+
+    def __div__(self, other):
+        return Variable.from_jvalue(callBigDlFunc("float", "div", self, other))
+
+    def __truediv__(self, other):
+        return Variable.from_jvalue(callBigDlFunc("float", "div", self, other))
+
+
+class Lambda(ZooKerasCreator):
+    """Used for evaluating an arbitrary expressions on an input.
+
+       # Examples
+
+       ```python
+           # add a x -> x + 2 layer
+           model.add(Lambda(lambda x: x + 2))
+       ```
+       # Arguments
+           function: The function to be evaluated.
+               Takes input tensor as first argument.
+
+       # Input shape
+           Arbitrary. Use the keyword argument input_shape
+           (tuple of integers, does not include the samples axis)
+           when using this layer as the first layer in a model.
+       """
+    def __init__(self, function, input_shape=None, bigdl_type="float"):
+        self.function = function
+        self.input_shape=input_shape
+        self.bigdl_type=bigdl_type
+
+
+    def __call__(self, x=None):
+        """
+        Some other modules point to current module
+        :param x: upstream module nodes. x is either a Node or list of Node.
+        :return: node containing current module
+        """
+        x = to_list(x if x else [])
+        layer = self
+        if (isinstance(self, Lambda)):
+            input_shapes = [ZooKerasLayer.of(node.element().value).get_output_shape() for node in x]
+            layer = self.create(remove_batch(input_shapes))
+        return Node.of(callBigDlFunc(self.bigdl_type,
+                                     "createNode",
+                                     layer,
+                                     to_list(x)))
+
+    # input_shapes should not contain batch dim
+    def create(self, input_shapes):
+        input_shapes = toMultiShape(input_shapes)
+        inputs = [Variable(list(output_shape)) for output_shape in input_shapes]
+        return LambdaLayer(input_vars=inputs,
+                           out_var=self.function(*inputs),
+                           input_shape=input_shapes)
+
+
+class LambdaLayer(ZooKerasLayer):
+    def __init__(self, input_vars, out_var, input_shape=None, **kwargs):
+        super(LambdaLayer, self).__init__(None,
+                                          input_vars,
+                                          out_var,
+                                          list(input_shape) if input_shape else None,
+                                          **kwargs)
 
 
 class CustomLoss(ZooKerasCreator):
