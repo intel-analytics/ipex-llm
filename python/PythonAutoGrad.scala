@@ -19,10 +19,11 @@ package com.intel.analytics.zoo.pipeline.api.keras.python
 import java.util.{List => JList}
 
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorCriterion}
+import com.intel.analytics.bigdl.nn.keras.KerasLayer
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Node
 import com.intel.analytics.zoo.pipeline.api.autograd
-import com.intel.analytics.zoo.pipeline.api.autograd.{CustomLossWithVariable, Variable}
+import com.intel.analytics.zoo.pipeline.api.autograd.{CustomLossWithVariable, LambdaLayer, Variable}
 
 import scala.collection.JavaConverters._
 import scala.reflect.ClassTag
@@ -41,25 +42,67 @@ class PythonAutoGrad[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZ
     new CustomLossWithVariable[T](inputs.asScala.toArray, loss)
   }
 
+  def createZooKerasLambdaLayer(inputs: JList[Variable[T]],
+      outVar: Variable[T],
+      inputShape: JList[JList[Int]] = null): KerasLayer[Activity, Activity, T] = {
+    LambdaLayer[T](inputs.asScala.toArray, outVar, toScalaMultiShape(inputShape))
+  }
+
   def createZooKerasVariable(a: Node[AbstractModule[Activity, Activity, T]]): Variable[T] = {
     Variable[T](a)
   }
 
 
-  def createZooKerasVariable(inputShape: JList[Int]): Variable[T] = {
-    Variable[T](toScalaShape(inputShape))
+  def createZooKerasVariable(inputShape: JList[JList[Int]]): Variable[T] = {
+    Variable[T](toScalaMultiShape(inputShape))
   }
 
   def add(a: Variable[T], b: Variable[T]): Variable[T] = {
     a + b
   }
 
+  def add(a: Variable[T], b: Double): Variable[T] = {
+    a + b
+  }
+
+  def add(a: Double, b: Variable[T]): Variable[T] = {
+    b + a
+  }
+
   def sub(a: Variable[T], b: Variable[T]): Variable[T] = {
     a - b
   }
 
+  def sub(a: Variable[T], b: Double): Variable[T] = {
+    a - b
+  }
+
+  def sub(a: Double, b: Variable[T]): Variable[T] = {
+    -b + a
+  }
+
   def mul(a: Variable[T], b: Variable[T]): Variable[T] = {
     a * b
+  }
+
+  def mul(a: Variable[T], b: Double): Variable[T] = {
+    a * b
+  }
+
+  def mul(a: Double, b: Variable[T]): Variable[T] = {
+    b * a
+  }
+
+  def div(a: Variable[T], b: Variable[T]): Variable[T] = {
+    a / b
+  }
+
+  def div(a: Variable[T], b: Double): Variable[T] = {
+    a / b
+  }
+
+  def div(a: Double, b: Variable[T]): Variable[T] = {
+    autograd.AutoGrad.pow(b, -1.0) * a
   }
 
   def abs(a: Variable[T]): Variable[T] = {
@@ -80,6 +123,10 @@ class PythonAutoGrad[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZ
 
   def sqrt(a: Variable[T]): Variable[T] = {
     autograd.AutoGrad.sqrt(a)
+  }
+
+  def exp(a: Variable[T]): Variable[T] = {
+    autograd.AutoGrad.exp(a)
   }
 
   def maximum(a: Variable[T], b: Variable[T]): Variable[T] = {
