@@ -23,8 +23,10 @@ def mean_absolute_error(y_true, y_pred):
     result = mean(abs(y_true - y_pred), axis=1)
     return result
 
+
 def add_one_func(x):
     return x + 1.0
+
 
 if __name__ == "__main__":
     data_len = 1000
