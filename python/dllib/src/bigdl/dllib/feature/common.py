@@ -14,9 +14,6 @@
 # limitations under the License.
 #
 
-import sys
-from bigdl.util.common import JavaValue
-from bigdl.util.common import callBigDlFunc
 from bigdl.util.common import *
 
 if sys.version >= '3':
@@ -26,12 +23,12 @@ if sys.version >= '3':
 
 class Preprocessing(JavaValue):
     """
-    Preprocessing defines data transform action during feature preprocessing. Python wrapper for 
+    Preprocessing defines data transform action during feature preprocessing. Python wrapper for
     the scala Preprocessing
     """
     def __init__(self, bigdl_type="float", *args):
-        self.value = callBigDlFunc(
-                bigdl_type, JavaValue.jvm_class_constructor(self), *args)
+        self.value = callBigDlFunc(bigdl_type, JavaValue.jvm_class_constructor(self), *args)
+
 
 class ChainedPreprocessing(Preprocessing):
     """
@@ -88,12 +85,14 @@ class ImageFeatureToTensor(Preprocessing):
     def __init__(self, bigdl_type="float"):
         super(ImageFeatureToTensor, self).__init__(bigdl_type)
 
+
 class RowToImageFeature(Preprocessing):
     """
     a Transformer that converts a Spark Row to a BigDL ImageFeature.
     """
     def __init__(self, bigdl_type="float"):
         super(RowToImageFeature, self).__init__(bigdl_type)
+
 
 class FeatureLabelPreprocessing(Preprocessing):
     """
@@ -104,7 +103,9 @@ class FeatureLabelPreprocessing(Preprocessing):
     :param label_transformer transformer for label, transform L to Tensor[T]
     """
     def __init__(self, feature_transformer, label_transformer, bigdl_type="float"):
-        super(FeatureLabelPreprocessing, self).__init__(bigdl_type, feature_transformer, label_transformer)
+        super(FeatureLabelPreprocessing, self).__init__(bigdl_type,
+                                                        feature_transformer, label_transformer)
+
 
 class TensorToSample(Preprocessing):
     """
@@ -112,10 +113,12 @@ class TensorToSample(Preprocessing):
     """
     def __init__(self, bigdl_type="float"):
         super(TensorToSample, self).__init__(bigdl_type)
-        
+
+
 class FeatureToTupleAdapter(Preprocessing):
     def __init__(self, sample_transformer, bigdl_type="float"):
         super(FeatureToTupleAdapter, self).__init__(bigdl_type, sample_transformer)
+
 
 class BigDLAdapter(Preprocessing):
     def __init__(self, bigdl_transformer, bigdl_type="float"):
