@@ -45,7 +45,9 @@ if __name__ == "__main__":
     image_path = sys.argv[2] + '/*/*'
     imageDF = NNImageReader.readImages(image_path, sc)
 
-    getName = udf(lambda row: re.search(r'(cat|dog)\.([\d]*)\.jpg', row[0], re.IGNORECASE).group(0), StringType())
+    getName = udf(lambda row:
+                  re.search(r'(cat|dog)\.([\d]*)\.jpg', row[0], re.IGNORECASE).group(0),
+                  StringType())
     getLabel = udf(lambda name: 1.0 if name.startswith('cat') else 2.0, DoubleType())
     labelDF = imageDF.withColumn("name", getName(col("image"))) \
         .withColumn("label", getLabel(col('name')))

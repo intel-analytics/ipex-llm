@@ -25,6 +25,7 @@ from zoo.pipeline.nnframes.nn_image_reader import *
 from zoo.feature.common import *
 from zoo.feature.image.imagePreprocessing import *
 
+
 def inference(image_path, model_path, sc):
 
     imageDF = NNImageReader.readImages(image_path, sc)
