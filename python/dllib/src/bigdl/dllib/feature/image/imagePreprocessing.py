@@ -13,12 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import sys
-from bigdl.util.common import JavaValue
-from bigdl.util.common import callBigDlFunc
-from bigdl.util.common import *
 
-from zoo.feature.common import Preprocessing 
+from bigdl.util.common import *
+from zoo.feature.common import Preprocessing
 
 if sys.version >= '3':
     long = int

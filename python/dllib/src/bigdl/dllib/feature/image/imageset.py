@@ -16,6 +16,7 @@
 
 from bigdl.util.common import *
 
+
 class ImageSet(JavaValue):
     """
     ImageSet wraps a set of ImageFeature
@@ -60,8 +61,7 @@ class ImageSet(JavaValue):
         """
         transformImageSet
         """
-        self.value = callBigDlFunc(bigdl_type,
-                                 "transformImageSet", transformer, self.value)
+        self.value = callBigDlFunc(bigdl_type, "transformImageSet", transformer, self.value)
         return self
 
     def get_image(self, float_key="floats", to_chw=True):
@@ -82,6 +82,7 @@ class ImageSet(JavaValue):
         """
         return self.image_set.get_predict(key)
 
+
 class LocalImageSet(ImageSet):
     """
     LocalImageSet wraps a list of ImageFeature
@@ -93,7 +94,8 @@ class LocalImageSet(ImageSet):
         else:
             # init from image ndarray list and label rdd(optional)
             image_tensor_list = map(lambda image: JTensor.from_ndarray(image), image_list)
-            label_tensor_list = map(lambda label: JTensor.from_ndarray(label), label_list) if label_list else None
+            label_tensor_list = map(lambda label: JTensor.from_ndarray(label), label_list)\
+                if label_list else None
             self.value = callBigDlFunc(bigdl_type, JavaValue.jvm_class_constructor(self),
                                        image_tensor_list, label_tensor_list)
 
@@ -103,8 +105,8 @@ class LocalImageSet(ImageSet):
         """
         get image list from ImageSet
         """
-        tensors = callBigDlFunc(self.bigdl_type,
-                                   "localImageSetToImageTensor", self.value, float_key, to_chw)
+        tensors = callBigDlFunc(self.bigdl_type, "localImageSetToImageTensor",
+                                self.value, float_key, to_chw)
         return map(lambda tensor: tensor.to_ndarray(), tensors)
 
     def get_label(self):
@@ -119,7 +121,10 @@ class LocalImageSet(ImageSet):
         get prediction list from ImageSet
         """
         predicts = callBigDlFunc(self.bigdl_type, "localImageSetToPredict", self.value, key)
-        return map(lambda predict: (predict[0], predict[1].to_ndarray()) if predict[1] else (predict[0], None), predicts)
+        return map(lambda predict:
+                   (predict[0], predict[1].to_ndarray()) if predict[1]
+                   else (predict[0], None), predicts)
+
 
 class DistributedImageSet(ImageSet):
     """
@@ -133,7 +138,8 @@ class DistributedImageSet(ImageSet):
         else:
             # init from image ndarray rdd and label rdd(optional)
             image_tensor_rdd = image_rdd.map(lambda image: JTensor.from_ndarray(image))
-            label_tensor_rdd = label_rdd.map(lambda label: JTensor.from_ndarray(label)) if label_rdd else None
+            label_tensor_rdd = label_rdd.map(lambda label: JTensor.from_ndarray(label))\
+                if label_rdd else None
             self.value = callBigDlFunc(bigdl_type, JavaValue.jvm_class_constructor(self),
                                        image_tensor_rdd, label_tensor_rdd)
 
@@ -143,15 +149,16 @@ class DistributedImageSet(ImageSet):
         """
         get image rdd from ImageSet
         """
-        tensor_rdd = callBigDlFunc(self.bigdl_type,
-                               "distributedImageSetToImageTensorRdd", self.value, float_key, to_chw)
+        tensor_rdd = callBigDlFunc(self.bigdl_type, "distributedImageSetToImageTensorRdd",
+                                   self.value, float_key, to_chw)
         return tensor_rdd.map(lambda tensor: tensor.to_ndarray())
 
     def get_label(self):
         """
         get label rdd from ImageSet
         """
-        tensor_rdd = callBigDlFunc(self.bigdl_type, "distributedImageSetToLabelTensorRdd", self.value)
+        tensor_rdd = callBigDlFunc(self.bigdl_type, "distributedImageSetToLabelTensorRdd",
+                                   self.value)
         return tensor_rdd.map(lambda tensor: tensor.to_ndarray())
 
     def get_predict(self, key="predict"):
@@ -159,4 +166,6 @@ class DistributedImageSet(ImageSet):
         get prediction rdd from ImageSet
         """
         predicts = callBigDlFunc(self.bigdl_type, "distributedImageSetToPredict", self.value, key)
-        return predicts.map(lambda predict: (predict[0], predict[1].to_ndarray()) if predict[1] else (predict[0], None))
+        return predicts.map(lambda predict:
+                            (predict[0], predict[1].to_ndarray()) if predict[1]
+                            else (predict[0], None))
