@@ -61,7 +61,9 @@ class TestSimpleIntegration(ZooTestCase):
         y_train = np.random.randint(4, size=(200, )) + 1
         X_test = np.random.random([40, 32, 32])
         y_test = np.random.randint(4, size=(40, )) + 1
-        model.compile(optimizer="adam", loss="sparse_categorical_crossentropy", metrics=['accuracy'])
+        model.compile(optimizer="adam",
+                      loss="sparse_categorical_crossentropy",
+                      metrics=['accuracy'])
         tmp_log_dir = create_tmp_path()
         tmp_checkpoint_path = create_tmp_path()
         os.mkdir(tmp_checkpoint_path)
@@ -112,4 +114,4 @@ class TestSimpleIntegration(ZooTestCase):
 
 
 if __name__ == "__main__":
-   pytest.main([__file__])
+    pytest.main([__file__])
