@@ -40,8 +40,10 @@ def predict(model_path, img_path, topN):
 
 if __name__ == "__main__":
     parser = OptionParser()
-    parser.add_option("-f", "--folder", type=str, dest="img_path", default=".", help="Path where the images are stored")
-    parser.add_option("--model", type=str, dest="model_path", default="", help="Path where the model is stored")
+    parser.add_option("-f", "--folder", type=str, dest="img_path", default=".",
+                      help="Path where the images are stored")
+    parser.add_option("--model", type=str, dest="model_path", default="",
+                      help="Path where the model is stored")
     parser.add_option("--topN", type=int, dest="topN", default=1, help="top N number")
     (options, args) = parser.parse_args(sys.argv)
 
