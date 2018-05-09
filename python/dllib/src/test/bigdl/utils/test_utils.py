@@ -118,16 +118,16 @@ class ZooTestCase(TestCase):
         keras_output = kmodel.predict(input_data)
         self.assert_allclose(bigdl_output, keras_output, rtol=rtol, atol=atol)
 
-    def assert_forward_backward(self, model, input):
+    def assert_forward_backward(self, model, input_data):
         """
         Test whether forward and backward can work properly.
         """
-        output = model.forward(input)
-        grad_input = model.backward(input, output)
+        output = model.forward(input_data)
+        grad_input = model.backward(input_data, output)
 
-    def assert_save_load(self, model, input, rtol=1e-6, atol=1e-6):
+    def assert_zoo_model_save_load(self, model, input_data, rtol=1e-6, atol=1e-6):
         """
-        Test for model save and load.
+        Test for ZooModel save and load.
         The loaded model should have the same class as the original model.
         The loaded model should produce the same forward and backward results as the original model.
         """
@@ -136,15 +136,25 @@ class ZooTestCase(TestCase):
         model.save_model(tmp_path)
         loaded_model = model_class.load_model(tmp_path)
         assert isinstance(loaded_model, model_class)
+        self.compare_output_and_grad_input(model, loaded_model, input_data, rtol, atol)
+        os.remove(tmp_path)
+
+    def compare_output_and_grad_input(self, model1, model2, input_data, rtol=1e-6, atol=1e-6):
+        # Set seed in case of random factors such as dropout.
         rng = RNG()
         rng.set_seed(1000)
-        output1 = model.forward(input)
+        output1 = model1.forward(input_data)
         rng.set_seed(1000)
-        output2 = loaded_model.forward(input)
+        output2 = model2.forward(input_data)
         self.assert_allclose(output1, output2, rtol, atol)
         rng.set_seed(1000)
-        grad_input1 = model.backward(input, output1)
+        grad_input1 = model1.backward(input_data, output1)
         rng.set_seed(1000)
-        grad_input2 = loaded_model.backward(input, output1)
+        grad_input2 = model2.backward(input_data, output1)
         self.assert_allclose(grad_input1, grad_input2, rtol, atol)
-        os.remove(tmp_path)
+
+    def compare_output_and_grad_input_set_weights(self, model1, model2, input_data,
+                                                  rtol=1e-6, atol=1e-6):
+        if model1.get_weights():
+            model2.set_weights(model1.get_weights())
+        self.compare_output_and_grad_input(model1, model2, input_data, rtol, atol)
