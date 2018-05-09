@@ -1,8 +1,11 @@
-## **Build BigDL-core on Different Platforms**
+BigDL-core provides a lot of native methods including math processing routines,
+quantized operation and so on. It will increase the performance of neuroal
+networks. The math processing routines will call [Intel MKL](https://software.intel.com/en-us/mkl),
+including gemm, add operations and so on.
 
-### **Setup Build Environment**
-
-For building BigDL-core, there should have
+BigDL-core is a JNI project, `mkl2017-xeon-blas` needs MKL libraries with icc and 
+`bigquant` needs g++-7. We use `maven` + `make` to control the build process where
+maven for java and make for c/c++ code. For building BigDL-core, there should have
 
 + JDK 1.7+
 + maven
@@ -11,9 +14,13 @@ For building BigDL-core, there should have
 + Intel Parallel Studio
 + Git.
 
-BigDL-core is a JNI project, `mkl2017-xeon-blas` needs MKL libraries with icc and `bigquant` needs g++-7. We use `maven` + `make` to control the build process where maven for java and make for c/c++ code.
+## **Environment on CentOS**
 
-### **Environment on CentOS**
+You should build the environment with CentOS 7 final. BigQuant depends the GCC 7.2,
+and it's hard to find the a GCC7.2 repo or rpm package that supports this version
+OS. So you should build it from source. Another thing you should pay attention is,
+you should build a new version binutils because the old version doesn't support to
+assemble the code generated from GCC 7.2.
 
 * **Build GCC-7.2**
 
@@ -65,7 +72,7 @@ export LD_LIBRARY_PATH=${BINUTILS_HOME}/lib:${LD_LIBRARY_PATH}
 export PATH=${BINUTILS_HOME}/bin:${PATH}
 ```
 
-### **Environment on Ubuntu/Debian**
+## **Environment on Ubuntu/Debian**
 
 * **Install g++-7**
 
@@ -76,15 +83,23 @@ sudo apt-get install gcc-7 g++-7
 sudo apt-get install build-essential
 ```
 
-* **Install Parallel Studio XE**
+* **Install Intel Parallel Studio XE**
 
-### **Environment on Windows**
+## **Environment on Windows 10**
 
-* **Install Visual Studio 2015**
-* **Install Intel Parallel Studio XE 2018**
-* **Install [MinGW](https://sourceforge.net/projects/mingw-w64/files/Toolchains%20targetting%20Win64/Personal%20Builds/mingw-builds/7.2.0/threads-win32/sjlj/x86_64-7.2.0-release-win32-sjlj-rt_v5-rev0.7z)**
-* **Copy `ming32-make.exe` to `make.exe`**
-* **Copy `g++` to `g++-7`**
+For this platform, you should install Visual Studio 2015. We have not built
+successfully with much newer VS. When you do the installation, you need only
+forllow the default steps and click *next*.
+
+Please pay attention, the MinGW must follows the link below. Otherwise it maybe
+can't work. By default, the `make` names with `ming32-make.exe`, and `g++-7` names with `g++`.
+You should change the name at last as follows.
+
+1. **Install Visual Studio 2015**
+2. **Install Intel Parallel Studio XE 2018**
+3. **Install [MinGW](https://sourceforge.net/projects/mingw-w64/files/Toolchains%20targetting%20Win64/Personal%20Builds/mingw-builds/7.2.0/threads-win32/sjlj/x86_64-7.2.0-release-win32-sjlj-rt_v5-rev0.7z)**
+4. **Copy `ming32-make.exe` to `make.exe`**
+5. **Copy `g++` to `g++-7`**
 
 At the end, open a cmd terminal and input `g++-7 -v` , should output like below,
       
@@ -98,26 +113,34 @@ Thread model: win32
 gcc version 7.1.0 (x86_64-win32-sjlj-rev2, Built by MinGW-W64 project)
 ```
 
-### **Environment on macOS**
+## **Environment on macOS (after Sierra / 10.12.1)**
 
-* **Install Parallel Studio XE.**
-* **Install g++-7:** `brew install gcc@7`.
+On macOS, you can install Intel Parallell Studio XE as normal. And for gcc, you
+can use `brew`.
 
-### **Build & Deploy**
+1. **Install Intel Parallel Studio XE.**
+2. **Install g++-7:** `brew install gcc@7`.
+
+## **Build and Deploy**
 
 We use maven profile to control the build process. For different platforms has different profiles.
 
-| Platform | Profile | Command                      |
-| -----    | :--:    | :--:                         |
-| Linux    | linux   | `mvn clean package -P linux` |
-| RedHat5  | rh5     | `mvn clean package -P rh5`   |
-| macOS    | mac     | `mvn clean package -P mac`   |
-| Windows  | win64   | `mvn clean package -P win64` |
+| Platform      | Profile | Command                      |
+| -----         | :--:    | :--:                         |
+| Linux         | linux   | `mvn clean package -P linux` |
+| RedHat5       | rh5     | `mvn clean package -P rh5`   |
+| macOS         | mac     | `mvn clean package -P mac`   |
+| Windows       | win64   | `mvn clean package -P win64` |
+| All Platforms | -       | `mvn clean package`          |
 
-There two ways to deploy. We should use `mvn deploy -P deploy` at the end.
+Note, the default command whithout any profile will generate a jar package which should contain
+all libraries of different OS. But it requires you put the relevant libraries into the folder.
+For example, for biquant, you should put the .so, .dylib, .dll to `bigquant/bigquant-java-<os>/target/clases`.
+
+There two ways to deploy. You can use `mvn deploy -P deploy` at the end.
 
 * Copy the prebuilt libraries from every platform to a main machine, and deploy it.
-* Build the jar on specific platform and deploy it. For example, we want to deploy bigquant of linux.
+* Build the jar on specific platform and deploy it. For example, you want to deploy bigquant of linux.
     
 ```
 mvn clean deploy -P 'linux' -pl 'bigquant/bigquant-java-x86_64-linux'
