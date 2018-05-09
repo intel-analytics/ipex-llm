@@ -23,6 +23,9 @@ def mean_absolute_error(y_true, y_pred):
     result = mean(abs(y_true - y_pred), axis=1)
     return result
 
+def add_one_func(x):
+    return x + 1.0
+
 if __name__ == "__main__":
     data_len = 1000
     X_ = np.random.uniform(0, 1, (1000, 2))
@@ -30,19 +33,20 @@ if __name__ == "__main__":
 
     a = Input(shape=(2,))
     b = Dense(1)(a)
-    model = Model(input=a, output=b)
+    c = Lambda(function=add_one_func)(b)
+    model = Model(input=a, output=c)
 
     model.compile(optimizer=SGD(learningrate=1e-2),
-                  loss=mean_absolute_error,
-                  metrics=None)
+                  loss=mean_absolute_error)
+
+    model.set_tensorboard('./log', 'customized layer and loss')
+
     model.fit(x=X_,
               y=Y_,
               batch_size=32,
               nb_epoch=500,
-              validation_data=None,
               distributed=False)
 
-    model.set_tensorboard('./log', 'customized layer and loss')
     model.save_graph_topology('./log')
 
     w = model.get_weights()
