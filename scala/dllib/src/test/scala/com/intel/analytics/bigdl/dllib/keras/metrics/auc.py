@@ -14,13 +14,12 @@
 # limitations under the License.
 #
 
-import sys
-
 from bigdl.util.common import *
 
 if sys.version >= '3':
     long = int
     unicode = str
+
 
 class AUC(JavaValue):
     """

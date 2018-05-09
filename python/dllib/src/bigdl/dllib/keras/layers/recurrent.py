@@ -33,17 +33,19 @@ class SimpleRNN(ZooKerasLayer):
 
     # Arguments
     output_dim: Hidden unit size. Dimension of internal projections and final output.
-    activation: String representation of the activation function to use (such as 'relu' or 'sigmoid').
-                Default is 'tanh'.
-    return_sequences: Whether to return the full sequence or only return the last output in the output sequence.
-                      Default is False.
+    activation: String representation of the activation function to use
+                (such as 'relu' or 'sigmoid'). Default is 'tanh'.
+    return_sequences: Whether to return the full sequence or only return the last output
+                      in the output sequence. Default is False.
     go_backwards: Whether the input sequence will be processed backwards. Default is False.
     W_regularizer: An instance of [[Regularizer]], (eg. L1 or L2 regularization),
                    applied to the input weights matrices. Default is None.
-    U_regularizer: An instance of [[Regularizer]], applied the recurrent weights matrices. Default is None.
+    U_regularizer: An instance of [[Regularizer]], applied the recurrent weights matrices.
+                   Default is None.
     b_regularizer: An instance of [[Regularizer]], applied to the bias. Default is None.
     input_shape: A shape tuple, not including batch.
-    name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
+    name: String to set the name of the layer.
+          If not specified, its name will by default to be a generated string.
 
     >>> simplernn = SimpleRNN(16, input_shape=(3, 32))
     creating: createZooKerasSimpleRNN
@@ -73,18 +75,21 @@ class GRU(ZooKerasLayer):
 
     # Arguments
     output_dim: Hidden unit size. Dimension of internal projections and final output.
-    activation: String representation of the activation function to use (such as 'relu' or 'sigmoid').
-                Default is 'tanh'.
-    inner_activation: String representation of the activation function for inner cells. Default is 'hard_sigmoid'.
-    return_sequences: Whether to return the full sequence or only return the last output in the output sequence.
-                      Default is False.
+    activation: String representation of the activation function to use
+                (such as 'relu' or 'sigmoid'). Default is 'tanh'.
+    inner_activation: String representation of the activation function for inner cells.
+                      Default is 'hard_sigmoid'.
+    return_sequences: Whether to return the full sequence or only return the last output
+                      in the output sequence. Default is False.
     go_backwards: Whether the input sequence will be processed backwards. Default is False.
     W_regularizer: An instance of [[Regularizer]], (eg. L1 or L2 regularization),
                    applied to the input weights matrices. Default is None.
-    U_regularizer: An instance of [[Regularizer]], applied the recurrent weights matrices. Default is None.
+    U_regularizer: An instance of [[Regularizer]], applied the recurrent weights matrices.
+                   Default is None.
     b_regularizer: An instance of [[Regularizer]], applied to the bias. Default is None.
     input_shape: A shape tuple, not including batch.
-    name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
+    name: String to set the name of the layer.
+          If not specified, its name will by default to be a generated string.
 
     >>> gru = GRU(24, input_shape=(32, 32))
     creating: createZooKerasGRU
@@ -115,18 +120,21 @@ class LSTM(ZooKerasLayer):
 
     # Arguments
     output_dim: Hidden unit size. Dimension of internal projections and final output.
-    activation: String representation of the activation function to use (such as 'relu' or 'sigmoid').
-                Default is 'tanh'.
-    inner_activation: String representation of the activation function for inner cells. Default is 'hard_sigmoid'.
-    return_sequences: Whether to return the full sequence or only return the last output in the output sequence.
-                      Default is False.
+    activation: String representation of the activation function to use
+                (such as 'relu' or 'sigmoid'). Default is 'tanh'.
+    inner_activation: String representation of the activation function for inner cells.
+                      Default is 'hard_sigmoid'.
+    return_sequences: Whether to return the full sequence or only return the last output
+                      in the output sequence. Default is False.
     go_backwards: Whether the input sequence will be processed backwards. Default is False.
     W_regularizer: An instance of [[Regularizer]], (eg. L1 or L2 regularization),
                    applied to the input weights matrices. Default is None.
-    U_regularizer: An instance of [[Regularizer]], applied the recurrent weights matrices. Default is None.
+    U_regularizer: An instance of [[Regularizer]], applied the recurrent weights matrices.
+                   Default is None.
     b_regularizer: An instance of [[Regularizer]], applied to the bias. Default is None.
     input_shape: A shape tuple, not including batch.
-    name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
+    name: String to set the name of the layer.
+          If not specified, its name will by default to be a generated string.
 
     >>> lstm = LSTM(32, input_shape=(8, 16), name="lstm1")
     creating: createZooKerasLSTM

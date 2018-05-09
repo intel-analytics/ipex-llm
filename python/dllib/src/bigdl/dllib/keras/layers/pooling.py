@@ -37,7 +37,8 @@ class MaxPooling1D(ZooKerasLayer):
              Default is None, and in this case it will be equal to pool_length..
     border_mode: Either 'valid' or 'same'. Default is 'valid'.
     input_shape: A shape tuple, not including batch.
-    name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
+    name: String to set the name of the layer.
+          If not specified, its name will by default to be a generated string.
 
     >>> maxpooling1d = MaxPooling1D(3, input_shape=(3, 24))
     creating: createZooKerasMaxPooling1D
@@ -68,7 +69,8 @@ class AveragePooling1D(ZooKerasLayer):
              Default is None, and in this case it will be equal to pool_length..
     border_mode: Either 'valid' or 'same'. Default is 'valid'.
     input_shape: A shape tuple, not including batch.
-    name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
+    name: String to set the name of the layer.
+          If not specified, its name will by default to be a generated string.
 
     >>> averagepooling1d = AveragePooling1D(input_shape=(3, 24))
     creating: createZooKerasAveragePooling1D
@@ -96,11 +98,14 @@ class MaxPooling2D(ZooKerasLayer):
     # Arguments
     pool_size: Int tuple of length 2 corresponding to the downscale vertically and horizontally.
                Default is (2, 2), which will halve the image in each dimension.
-    strides: Int tuple of length 2. Stride values. Default is None, and in this case it will be equal to pool_size.
+    strides: Int tuple of length 2. Stride values.
+             Default is None, and in this case it will be equal to pool_size.
     border_mode: Either 'valid' or 'same'. Default is 'valid'.
-    dim_ordering: Format of input data. Either 'th' (Channel First) or 'tf' (Channel Last). Default is 'th'.
+    dim_ordering: Format of input data. Either 'th' (Channel First) or 'tf' (Channel Last).
+                  Default is 'th'.
     input_shape: A shape tuple, not including batch.
-    name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
+    name: String to set the name of the layer.
+          If not specified, its name will by default to be a generated string.
 
     >>> maxpooling2d = MaxPooling2D((2, 2), input_shape=(3, 32, 32), name="maxpooling2d_1")
     creating: createZooKerasMaxPooling2D
@@ -128,11 +133,14 @@ class AveragePooling2D(ZooKerasLayer):
     # Arguments
     pool_size: Int tuple of length 2 corresponding to the downscale vertically and horizontally.
                Default is (2, 2), which will halve the image in each dimension.
-    strides: Int tuple of length 2. Stride values. Default is None, and in this case it will be equal to pool_size.
+    strides: Int tuple of length 2. Stride values.
+             Default is None, and in this case it will be equal to pool_size.
     border_mode: Either 'valid' or 'same'. Default is 'valid'.
-    dim_ordering: Format of input data. Either 'th' (Channel First) or 'tf' (Channel Last). Default is 'th'.
+    dim_ordering: Format of input data. Either 'th' (Channel First) or 'tf' (Channel Last).
+                  Default is 'th'.
     input_shape: A shape tuple, not including batch.
-    name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
+    name: String to set the name of the layer.
+          If not specified, its name will by default to be a generated string.
 
     >>> averagepooling2d = AveragePooling2D((1, 2), input_shape=(2, 28, 32))
     creating: createZooKerasAveragePooling2D
@@ -161,11 +169,13 @@ class MaxPooling3D(ZooKerasLayer):
     # Arguments
     pool_size: Int tuple of length 3. Factors by which to downscale (dim1, dim2, dim3).
                Default is (2, 2, 2), which will halve the image in each dimension.
-    strides: Int tuple of length 3. Stride values. Default is None, and in this case it will be equal to pool_size.
+    strides: Int tuple of length 3. Stride values.
+             Default is None, and in this case it will be equal to pool_size.
     border_mode: Only 'valid' is supported for now.
     dim_ordering: Format of input data. Only 'th' (Channel First) is supported for now.
     input_shape: A shape tuple, not including batch.
-    name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
+    name: String to set the name of the layer.
+          If not specified, its name will by default to be a generated string.
 
     >>> maxpooling3d = MaxPooling3D((2, 1, 3), input_shape=(3, 32, 32, 32))
     creating: createZooKerasMaxPooling3D
@@ -195,11 +205,13 @@ class AveragePooling3D(ZooKerasLayer):
     # Arguments
     pool_size: Int tuple of length 3. Factors by which to downscale (dim1, dim2, dim3).
                Default is (2, 2, 2), which will halve the image in each dimension.
-    strides: Int tuple of length 3. Stride values. Default is None, and in this case it will be equal to pool_size.
+    strides: Int tuple of length 3. Stride values.
+             Default is None, and in this case it will be equal to pool_size.
     border_mode: Only 'valid' is supported for now.
     dim_ordering: Format of input data. Only 'th' (Channel First) is supported for now.
     input_shape: A shape tuple, not including batch.
-    name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
+    name: String to set the name of the layer.
+          If not specified, its name will by default to be a generated string.
 
     >>> averagepooling3d = AveragePooling3D((1, 1, 2), input_shape=(3, 28, 32, 36))
     creating: createZooKerasAveragePooling3D
@@ -226,7 +238,8 @@ class GlobalAveragePooling1D(ZooKerasLayer):
 
     # Arguments
     input_shape: A shape tuple, not including batch.
-    name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
+    name: String to set the name of the layer.
+          If not specified, its name will by default to be a generated string.
 
     >>> globalaveragepooling1d = GlobalAveragePooling1D(input_shape=(12, 12))
     creating: createZooKerasGlobalAveragePooling1D
@@ -247,7 +260,8 @@ class GlobalMaxPooling1D(ZooKerasLayer):
 
     # Arguments
     input_shape: A shape tuple, not including batch.
-    name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
+    name: String to set the name of the layer.
+          If not specified, its name will by default to be a generated string.
 
     >>> globalmaxpooling1d = GlobalMaxPooling1D(input_shape=(4, 8))
     creating: createZooKerasGlobalMaxPooling1D
@@ -267,9 +281,11 @@ class GlobalAveragePooling2D(ZooKerasLayer):
     input_shape (a shape tuple, does not include the batch dimension).
 
     # Arguments
-    dim_ordering: Format of input data. Either 'th' (Channel First) or 'tf' (Channel Last). Default is 'th'.
+    dim_ordering: Format of input data. Either 'th' (Channel First) or 'tf' (Channel Last).
+                  Default is 'th'.
     input_shape: A shape tuple, not including batch.
-    name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
+    name: String to set the name of the layer.
+          If not specified, its name will by default to be a generated string.
 
     >>> globalaveragepooling2d = GlobalAveragePooling2D(input_shape=(4, 32, 32))
     creating: createZooKerasGlobalAveragePooling2D
@@ -290,9 +306,11 @@ class GlobalMaxPooling2D(ZooKerasLayer):
     input_shape (a shape tuple, does not include the batch dimension).
 
     # Arguments
-    dim_ordering: Format of input data. Either 'th' (Channel First) or 'tf' (Channel Last). Default is 'th'.
+    dim_ordering: Format of input data. Either 'th' (Channel First) or 'tf' (Channel Last).
+                  Default is 'th'.
     input_shape: A shape tuple, not including batch.
-    name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
+    name: String to set the name of the layer.
+          If not specified, its name will by default to be a generated string.
 
     >>> globalmaxpooling2d = GlobalMaxPooling2D(input_shape=(4, 32, 32))
     creating: createZooKerasGlobalMaxPooling2D
@@ -317,7 +335,8 @@ class GlobalAveragePooling3D(ZooKerasLayer):
     # Arguments
     dim_ordering: Format of input data. Only 'th' (Channel First) is supported for now.
     input_shape: A shape tuple, not including batch.
-    name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
+    name: String to set the name of the layer.
+          If not specified, its name will by default to be a generated string.
 
     >>> globalaveragepooling3d = GlobalAveragePooling3D(input_shape=(4, 16, 16, 20))
     creating: createZooKerasGlobalAveragePooling3D
@@ -342,7 +361,8 @@ class GlobalMaxPooling3D(ZooKerasLayer):
     # Arguments
     dim_ordering: Format of input data. Only 'th' (Channel First) is supported for now.
     input_shape: A shape tuple, not including batch.
-    name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
+    name: String to set the name of the layer.
+          If not specified, its name will by default to be a generated string.
 
     >>> globalmaxpooling3d = GlobalMaxPooling3D(input_shape=(4, 32, 32, 32))
     creating: createZooKerasGlobalMaxPooling3D

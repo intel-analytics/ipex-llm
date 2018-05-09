@@ -36,7 +36,8 @@ class LeakyReLU(ZooKerasLayer):
     # Arguments
     alpha: Float >= 0. Negative slope coefficient. Default is 0.3.
     input_shape: A shape tuple, not including batch.
-    name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
+    name: String to set the name of the layer.
+          If not specified, its name will by default to be a generated string.
 
     >>> leakyrelu = LeakyReLU(0.02, input_shape=(4, 5))
     creating: createZooKerasLeakyReLU
@@ -61,7 +62,8 @@ class ELU(ZooKerasLayer):
     # Arguments
     alpha: Float, scale for the negative factor. Default is 1.0.
     input_shape: A shape tuple, not including batch.
-    name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
+    name: String to set the name of the layer.
+          If not specified, its name will by default to be a generated string.
 
     >>> elu = ELU(1.2, input_shape=(4, 5))
     creating: createZooKerasELU
@@ -86,7 +88,8 @@ class ThresholdedReLU(ZooKerasLayer):
     # Arguments
     theta: Float >= 0. Threshold location of activation. Default is 1.0.
     input_shape: A shape tuple, not including batch.
-    name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
+    name: String to set the name of the layer.
+          If not specified, its name will by default to be a generated string.
 
     >>> thresholdedrelu = ThresholdedReLU(input_shape=(10, 12))
     creating: createZooKerasThresholdedReLU
@@ -114,17 +117,18 @@ class SReLU(ZooKerasLayer):
                  Default is 'zero'.
     a_left_init: String representation of the initialization method for the left part slope.
                  Default is 'glorot_uniform'.
-    t_right_init: String representation of ithe nitialization method for the right part intercept.
+    t_right_init: String representation of the nitialization method for the right part intercept.
                   Default is 'glorot_uniform'.
     a_right_init: String representation of the initialization method for the right part slope.
                   Default is 'one'.
-    shared_axes: Int tuple. The axes along which to share learnable parameters for the activation function.
-                 Default is None.
-                 For example, if the incoming feature maps are from a 2D convolution with output shape
-                 (batch, height, width, channels), and you wish to share parameters across space so that
-                 each filter only has one set of parameters, set 'shared_axes=(1,2)'.
+    shared_axes: Int tuple. The axes along which to share learnable parameters for the
+                 activation function. Default is None.
+                 For example, if the incoming feature maps are from a 2D convolution with output
+                 shape (batch, height, width, channels), and you wish to share parameters across
+                 space so that each filter only has one set of parameters, set 'shared_axes=(1,2)'.
     input_shape: A shape tuple, not including batch.
-    name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
+    name: String to set the name of the layer.
+          If not specified, its name will by default to be a generated string.
 
     >>> srelu = SReLU(input_shape=(4, 5))
     creating: createZooKerasSReLU
