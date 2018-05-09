@@ -27,7 +27,8 @@ class TimeDistributed(ZooKerasLayer):
     """
     TimeDistributed wrapper.
     Apply a layer to every temporal slice of an input.
-    The input should be at least 3D, and the dimension of index one will be considered to be the temporal dimension.
+    The input should be at least 3D.
+    The dimension of index one will be considered as the temporal dimension.
 
     When you use this layer as the first layer of a model, you need to provide the argument
     input_shape (a shape tuple, does not include the batch dimension).
@@ -36,10 +37,11 @@ class TimeDistributed(ZooKerasLayer):
     # Arguments
     layer: A layer instance.
     input_shape: A shape tuple, not including batch.
-    name: String to set the name of the wrapper. If not specified, its name will by default to be a generated string.
+    name: String to set the name of the wrapper.
+          If not specified, its name will by default to be a generated string.
 
     >>> from zoo.pipeline.api.keras.layers import Dense
-    >>> timedistributed = TimeDistributed(Dense(8), input_shape=(10, 12), name="timedistributeddense")
+    >>> timedistributed = TimeDistributed(Dense(8), input_shape=(10, 12))
     creating: createZooKerasDense
     creating: createZooKerasTimeDistributed
     """
@@ -65,10 +67,11 @@ class Bidirectional(ZooKerasLayer):
     merge_mode: Mode by which outputs of the forward and backward RNNs will be combined.
                 Must be one of: 'sum', 'mul', 'concat', 'ave'. Default is 'concat'.
     input_shape: A shape tuple, not including batch.
-    name: String to set the name of the wrapper. If not specified, its name will by default to be a generated string.
+    name: String to set the name of the wrapper.
+          If not specified, its name will by default to be a generated string.
 
     >>> from zoo.pipeline.api.keras.layers import LSTM
-    >>> bidiretional = Bidirectional(LSTM(10, return_sequences=True), input_shape=(12, 16), name="bidirectionallstm")
+    >>> bidiretional = Bidirectional(LSTM(10, return_sequences=True), input_shape=(12, 16))
     creating: createZooKerasLSTM
     creating: createZooKerasBidirectional
     """

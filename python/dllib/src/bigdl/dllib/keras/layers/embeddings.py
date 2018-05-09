@@ -39,7 +39,8 @@ class Embedding(ZooKerasLayer):
     W_regularizer: An instance of [[Regularizer]], (eg. L1 or L2 regularization),
                    applied to the embedding matrix. Default is None.
     input_shape: A shape tuple, not including batch.
-    name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
+    name: String to set the name of the layer.
+          If not specified, its name will by default to be a generated string.
 
     >>> embedding = Embedding(1000, 32, input_shape=(10, ), name="embedding1")
     creating: createZooKerasEmbedding

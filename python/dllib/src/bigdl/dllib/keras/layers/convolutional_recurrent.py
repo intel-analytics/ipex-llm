@@ -37,23 +37,28 @@ class ConvLSTM2D(ZooKerasLayer):
     # Arguments
     nb_filter: Number of convolution filters to use.
     nb_row: Number of rows in the convolution kernel.
-    nb_col: Number of cols in the convolution kernel. Should be equal to nb_row as for a square kernel.
-    activation: String representation of the activation function to use (such as 'relu' or 'sigmoid').
-                Default is 'tanh'.
-    inner_activation: String representation of the activation function for inner cells. Default is 'hard_sigmoid'.
+    nb_col: Number of cols in the convolution kernel.
+            Should be equal to nb_row as for a square kernel.
+    activation: String representation of the activation function to use
+                (such as 'relu' or 'sigmoid'). Default is 'tanh'.
+    inner_activation: String representation of the activation function for inner cells.
+                      Default is 'hard_sigmoid'.
     dim_ordering: Format of input data. Only 'th' (Channel First) is supported for now.
     border_mode: Only 'same' is supported for now.
-    subsample: Tuple of length 2. Factor by which to subsample output. Also called strides elsewhere.
+    subsample: Tuple of length 2. Factor by which to subsample output.
+               Also called strides elsewhere.
                Only support subsample[0] equal to subsample[1] for now. Default is (1, 1).
     W_regularizer: An instance of [[Regularizer]], (eg. L1 or L2 regularization),
                    applied to the input weights matrices. Default is None.
-    U_regularizer: An instance of [[Regularizer]], applied the recurrent weights matrices. Default is None.
+    U_regularizer: An instance of [[Regularizer]], applied the recurrent weights matrices.
+                   Default is None.
     b_regularizer: An instance of [[Regularizer]], applied to the bias. Default is None.
-    return_sequences: Whether to return the full sequence or only return the last output in the output sequence.
-                      Default is False.
+    return_sequences: Whether to return the full sequence or only return the last output
+                      in the output sequence. Default is False.
     go_backwards: Whether the input sequence will be processed backwards. Default is False.
     input_shape: A shape tuple, not including batch.
-    name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
+    name: String to set the name of the layer.
+          If not specified, its name will by default to be a generated string.
 
     >>> convlstm2d = ConvLSTM2D(24, 3, 3, input_shape=(4, 32, 32, 32))
     creating: createZooKerasConvLSTM2D
