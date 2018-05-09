@@ -84,7 +84,7 @@ class NNEstimator(JavaEstimator, HasFeaturesCol, HasLabelCol, HasPredictionCol, 
     Spark DataFrame data. It can be integrated into a standard Spark ML Pipeline to enable
     users for combined usage with Spark MLlib.
 
-    NNEstimator supports different feature and label data type through operation defined in 
+    NNEstimator supports different feature and label data type through operation defined in
     Preprocessing. We provide pre-defined Preprocessing for popular data types like Array
     or Vector in package zoo.feature, while user can also develop customized Preprocess
     which extends from feature.common.Preprocessing. During fit, NNEstimator
@@ -99,20 +99,20 @@ class NNEstimator(JavaEstimator, HasFeaturesCol, HasLabelCol, HasPredictionCol, 
     def __init__(self, model, criterion, sample_preprocessing, jvalue=None, bigdl_type="float"):
         """
         Construct a NNEstimator with BigDL model, criterion and a sample_preprocessing that
-        transform a (feature, Option[label]) tuple to a BigDL Sample. This constructor is only 
+        transform a (feature, Option[label]) tuple to a BigDL Sample. This constructor is only
         recommended for the expert users. Most users should use class method
         NNEstimator.create.
         :param model: BigDL Model to be trained.
         :param criterion: BigDL criterion.
-        :param sample_preprocessing: Expert param. A Preprocessing that transforms the (feature, 
+        :param sample_preprocessing: Expert param. A Preprocessing that transforms the (feature,
                Option[label]) tuple to a BigDL Sample[T], where T is decided by the BigDL model.
 
                Note that sample_preprocessing should be able to handle the case that label = None.
-               During fit, NNEstimator will extract (feature, Option[label]) tuple from input 
-               DataFrame and use sample_preprocessing to transform the tuple into BigDL Sample  
+               During fit, NNEstimator will extract (feature, Option[label]) tuple from input
+               DataFrame and use sample_preprocessing to transform the tuple into BigDL Sample
                to be ingested by the model. If Label column is not available, (feature, None)
                will be sent to sample_preprocessing.
- 
+
                The sample_preprocessing will also be copied to the generated NNModel and applied
                to feature column during transform, where (feature, None) will be passed to the
                sample_preprocessing.
@@ -165,10 +165,10 @@ class NNEstimator(JavaEstimator, HasFeaturesCol, HasLabelCol, HasPredictionCol, 
         return cls(model, criterion,
                    FeatureLabelPreprocessing(feature_preprocessing, label_preprocessing),
                    jvalue, bigdl_type)
-    
+
     @classmethod
     def createWithSize(cls, model, criterion, feature_size, label_size,
-               jvalue=None, bigdl_type="float"):
+                       jvalue=None, bigdl_type="float"):
         """
         Construct a NNEstimator with a feature size and label size. The constructor is useful
         when the feature column and label column contains the following data types:
@@ -285,6 +285,7 @@ class NNEstimator(JavaEstimator, HasFeaturesCol, HasLabelCol, HasPredictionCol, 
             .setBatchSize(self.getBatchSize())
         return nnModel
 
+
 class NNModel(JavaTransformer, HasFeaturesCol, HasPredictionCol, HasBatchSize, JavaValue):
     """
     NNModel extends Spark ML Transformer and supports BigDL model with Spark DataFrame.
@@ -352,15 +353,15 @@ class NNClassifier(NNEstimator):
         """
         :param model: BigDL module to be optimized
         :param criterion: BigDL criterion method
-        :param sample_preprocessing: Expert param. A Preprocessing that transforms the (feature, 
+        :param sample_preprocessing: Expert param. A Preprocessing that transforms the (feature,
                Option[label]) tuple to a BigDL Sample[T], where T is decided by the BigDL model.
 
                Note that sample_preprocessing should be able to handle the case that label = None.
-               During fit, NNEstimator will extract (feature, Option[label]) tuple from input 
-               DataFrame and use sample_preprocessing to transform the tuple into BigDL Sample  
+               During fit, NNEstimator will extract (feature, Option[label]) tuple from input
+               DataFrame and use sample_preprocessing to transform the tuple into BigDL Sample
                to be ingested by the model. If Label column is not available, (feature, None)
                will be sent to sample_preprocessing.
- 
+
                The sample_preprocessing will also be copied to the generated NNModel and applied
                to feature column during transform, where (feature, None) will be passed to the
                sample_preprocessing.

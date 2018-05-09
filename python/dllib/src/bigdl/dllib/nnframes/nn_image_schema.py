@@ -21,5 +21,6 @@ if sys.version >= '3':
     long = int
     unicode = str
 
+
 def with_origin_column(dataset, imageColumn="image", originColumn="origin", bigdl_type="float"):
     return callBigDlFunc(bigdl_type, "withOriginColumn", dataset, imageColumn, originColumn)
