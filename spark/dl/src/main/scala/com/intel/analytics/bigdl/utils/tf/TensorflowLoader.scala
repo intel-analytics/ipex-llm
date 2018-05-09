@@ -268,7 +268,7 @@ object TensorflowLoader{
                     s" ${inputNum - 1}"))
                 var i = 0
                 while (i < inputNum) {
-                  if(selectInputs.contains(i)) {
+                  if (selectInputs.contains(i)) {
                     val name = s"input$inputCounter"
                     val placeholder = NodeDef.newBuilder()
                       .setName(name)
