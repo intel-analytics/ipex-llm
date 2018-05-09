@@ -41,22 +41,26 @@ class BatchNormalization(ZooKerasLayer):
               standard deviation of the data, for feature-wise normalization. Default is 0.99.
     beta_init: Name of the initialization function for shift parameter. Default is 'zero'.
     gamma_init: Name of the initialization function for scale parameter. Default is 'one'.
-    dim_ordering: Format of input data. Either 'th' (Channel First) or 'tf' (Channel Last). Default is 'th'.
-                  For 'th', axis along which to normalize is 1. For 'tf', axis is 3.
+    dim_ordering: Format of input data. Either 'th' (Channel First) or 'tf' (Channel Last).
+                  Default is 'th'. For 'th', axis along which to normalize is 1.
+                  For 'tf', axis is 3.
     input_shape: A shape tuple, not including batch.
-    name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
+    name: String to set the name of the layer.
+          If not specified, its name will by default to be a generated string.
 
     >>> batchnormalization = BatchNormalization(input_shape=(3, 12, 12), name="bn1")
     creating: createZooKerasBatchNormalization
     """
-    def __init__(self, epsilon=0.001, mode=0, axis=1, momentum=0.99, beta_init="zero", gamma_init="one",
-                 dim_ordering="th", input_shape=None, **kwargs):
+    def __init__(self, epsilon=0.001, mode=0, axis=1, momentum=0.99, beta_init="zero",
+                 gamma_init="one", dim_ordering="th", input_shape=None, **kwargs):
         if mode != 0:
             raise ValueError("For BatchNormalization, only mode=0 is supported for now")
         if dim_ordering == "th" and axis != 1:
-            raise ValueError("For BatchNormalization with th dim ordering, only axis=1 is supported for now")
+            raise ValueError("For BatchNormalization with th dim ordering, "
+                             "only axis=1 is supported for now")
         if dim_ordering == "tf" and axis != -1 and axis != 3:
-            raise ValueError("For BatchNormalization with tf dim ordering, only axis=-1 is supported for now")
+            raise ValueError("For BatchNormalization with tf dim ordering, "
+                             "only axis=-1 is supported for now")
         super(BatchNormalization, self).__init__(None,
                                                  float(epsilon),
                                                  float(momentum),

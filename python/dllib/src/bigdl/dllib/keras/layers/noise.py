@@ -36,7 +36,8 @@ class GaussianNoise(ZooKerasLayer):
     # Arguments
     sigma: Float, standard deviation of the noise distribution.
     input_shape: A shape tuple, not including batch.
-    name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
+    name: String to set the name of the layer.
+          If not specified, its name will by default to be a generated string.
 
     >>> gaussiannoise = GaussianNoise(0.45, input_shape=(3, 4, 5), name="gaussiannoise1")
     creating: createZooKerasGaussianNoise
@@ -60,7 +61,8 @@ class GaussianDropout(ZooKerasLayer):
     p: Drop probability. Float between 0 and 1.
        The multiplicative noise will have standard deviation 'sqrt(p/(1-p))'.
     input_shape: A shape tuple, not including batch.
-    name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
+    name: String to set the name of the layer.
+          If not specified, its name will by default to be a generated string.
 
     >>> gaussiandropout = GaussianDropout(0.45, input_shape=(4, 8))
     creating: createZooKerasGaussianDropout

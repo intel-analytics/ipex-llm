@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-# Torch layers in Keras style.
+# Layers from Torch wrapped in Keras style.
 
 import sys
 
@@ -42,7 +42,8 @@ class Select(ZooKerasLayer):
     index: The index of the dimension to be selected. 0-based index.
            -1 means the last dimension of the input.
     input_shape: A shape tuple, not including batch.
-    name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
+    name: String to set the name of the wrapper.
+          If not specified, its name will by default to be a generated string.
 
     >>> select = Select(0, -1, input_shape=(3, 4), name="select1")
     creating: createZooKerasSelect
@@ -73,7 +74,8 @@ class Narrow(ZooKerasLayer):
     length: The length to narrow. Default is 1.
             Can use a negative length such as -1 in the case where input size is unknown.
     input_shape: A shape tuple, not including batch.
-    name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
+    name: String to set the name of the layer.
+          If not specified, its name will by default to be a generated string.
 
     >>> narrow = Narrow(1, 3, input_shape=(5, 6, 7), name="narrow1")
     creating: createZooKerasNarrow
@@ -104,7 +106,8 @@ class Squeeze(ZooKerasLayer):
          The selected dimensions must be singleton, i.e. having size 1.
          Default is None, and in this case all the non-batch singleton dimensions will be deleted.
     input_shape: A shape tuple, not including batch.
-    name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
+    name: String to set the name of the layer.
+          If not specified, its name will by default to be a generated string.
 
     >>> squeeze1 = Squeeze(1, input_shape=(1, 4, 5))
     creating: createZooKerasSqueeze
@@ -132,7 +135,8 @@ class AddConstant(ZooKerasLayer):
     # Arguments
     constant: The scalar constant to be added.
     input_shape: A shape tuple, not including batch.
-    name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
+    name: String to set the name of the layer.
+          If not specified, its name will by default to be a generated string.
 
     >>> addconstant = AddConstant(1, input_shape=(1, 4, 5))
     creating: createZooKerasAddConstant
@@ -154,7 +158,8 @@ class MulConstant(ZooKerasLayer):
     # Arguments
     constant: The scalar constant to be multiplied.
     input_shape: A shape tuple, not including batch.
-    name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
+    name: String to set the name of the layer.
+          If not specified, its name will by default to be a generated string.
 
     >>> mulconstant = MulConstant(2.2, input_shape=(3, 4))
     creating: createZooKerasMulConstant
@@ -178,9 +183,11 @@ class LRN2D(ZooKerasLayer):
     k: Float. A constant.
     beta: Float. The exponent. Default is 0.75.
     n: The number of channels to sum over.
-    dim_ordering: Format of input data. Either 'th' (Channel First) or 'tf' (Channel Last). Default is 'th'.
+    dim_ordering: Format of input data. Either 'th' (Channel First) or 'tf' (Channel Last).
+                  Default is 'th'.
     input_shape: A shape tuple, not including batch.
-    name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
+    name: String to set the name of the layer.
+          If not specified, its name will by default to be a generated string.
 
     >>> lrn2d = LRN2D(1e-3, 1.2, 0.4, 4, dim_ordering="tf", input_shape=(4, 5, 6))
     creating: createZooKerasLRN2D
@@ -214,8 +221,8 @@ class ShareConvolution2D(ZooKerasLayer):
     nb_col: Number of cols in the convolution kernel.
     init: String representation of the initialization method for the weights of the layer.
           Default is 'glorot_uniform'.
-    activation: String representation of the activation function to use (such as 'relu' or 'sigmoid').
-                Default is None.
+    activation: String representation of the activation function to use
+                (such as 'relu' or 'sigmoid'). Default is None.
     subsample: Int tuple of length 2 corresponding to the step of the convolution in the
                height and width dimension. Also called strides elsewhere. Default is (1, 1).
     pad_h: The additional zeros added to the height dimension. Default is 0.
@@ -228,7 +235,8 @@ class ShareConvolution2D(ZooKerasLayer):
     bias: Whether to include a bias (i.e. make the layer affine rather than linear).
           Default is True.
     input_shape: A shape tuple, not including batch.
-    name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
+    name: String to set the name of the layer.
+          If not specified, its name will by default to be a generated string.
 
     >>> shareconv2d = ShareConvolution2D(32, 3, 4, activation="tanh", input_shape=(3, 128, 128))
     creating: createZooKerasShareConvolution2D
@@ -262,7 +270,8 @@ class CAdd(ZooKerasLayer):
     """
     This layer has a bias with given size.
     The bias will be added element-wise to the input.
-    If the element number of the bias matches the input, a simple element-wise addition will be done.
+    If the element number of the bias matches the input, a simple element-wise addition
+    will be done.
     Or the bias will be expanded to the same size of the input.
     The expand means repeat on unmatched singleton dimension (if some unmatched dimension
     isn't a singleton dimension, an error will be raised).
@@ -274,7 +283,8 @@ class CAdd(ZooKerasLayer):
     size: The size of the bias.
     b_regularizer: An instance of [[Regularizer]], applied to the bias. Default is null.
     input_shape: A shape tuple, not including batch.
-    name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
+    name: String to set the name of the layer.
+          If not specified, its name will by default to be a generated string.
 
     >>> cadd = CAdd((2, 1), input_shape=(3, ))
     creating: createZooKerasCAdd
@@ -305,7 +315,8 @@ class CMul(ZooKerasLayer):
     W_regularizer: An instance of [[Regularizer]], (eg. L1 or L2 regularization),
                    applied to the input weights matrices. Default is null.
     input_shape: A shape tuple, not including batch.
-    name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
+    name: String to set the name of the layer.
+          If not specified, its name will by default to be a generated string.
 
     >>> cmul = CMul((2, 1), input_shape=(3, ))
     creating: createZooKerasCMul
@@ -327,7 +338,8 @@ class Exp(ZooKerasLayer):
 
     # Arguments
     input_shape: A shape tuple, not including batch.
-    name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
+    name: String to set the name of the layer.
+          If not specified, its name will by default to be a generated string.
 
     >>> exp = Exp(input_shape=(2, 3, 4))
     creating: createZooKerasExp
@@ -347,7 +359,8 @@ class Log(ZooKerasLayer):
 
     # Arguments
     input_shape: A shape tuple, not including batch.
-    name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
+    name: String to set the name of the layer.
+          If not specified, its name will by default to be a generated string.
 
     >>> log = Log(input_shape=(4, 8, 8))
     creating: createZooKerasLog
@@ -367,7 +380,8 @@ class Mul(ZooKerasLayer):
 
     # Arguments
     input_shape: A shape tuple, not including batch.
-    name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
+    name: String to set the name of the layer.
+          If not specified, its name will by default to be a generated string.
 
     >>> mul = Mul(input_shape=(3, 4, 5))
     creating: createZooKerasMul
@@ -392,7 +406,8 @@ class Power(ZooKerasLayer):
     scale: The scale parameter. Default is 1.
     shift: The shift parameter. Default is 0.
     input_shape: A shape tuple, not including batch.
-    name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
+    name: String to set the name of the layer.
+          If not specified, its name will by default to be a generated string.
 
     >>> power = Power(3, input_shape=(3, ))
     creating: createZooKerasPower
@@ -420,7 +435,8 @@ class Scale(ZooKerasLayer):
     # Arguments
     size: Size of the weight and bias.
     input_shape: A shape tuple, not including batch.
-    name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
+    name: String to set the name of the layer.
+          If not specified, its name will by default to be a generated string.
 
     >>> scale = Scale((2, 1), input_shape=(3, ))
     creating: createZooKerasScale
@@ -441,7 +457,8 @@ class Sqrt(ZooKerasLayer):
 
     # Arguments
     input_shape: A shape tuple, not including batch.
-    name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
+    name: String to set the name of the layer.
+          If not specified, its name will by default to be a generated string.
 
     >>> sqrt = Sqrt(input_shape=(3, ))
     creating: createZooKerasSqrt
@@ -461,7 +478,8 @@ class Square(ZooKerasLayer):
 
     # Arguments
     input_shape: A shape tuple, not including batch.
-    name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
+    name: String to set the name of the layer.
+          If not specified, its name will by default to be a generated string.
 
     >>> square = Square(input_shape=(5, ))
     creating: createZooKerasSquare
@@ -482,7 +500,8 @@ class HardShrink(ZooKerasLayer):
     # Arguments
     value: The threshold value. Default is 0.5.
     input_shape: A shape tuple, not including batch.
-    name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
+    name: String to set the name of the layer.
+          If not specified, its name will by default to be a generated string.
 
     >>> hardshrink = HardShrink(input_shape=(2, 4, 8))
     creating: createZooKerasHardShrink
@@ -505,7 +524,8 @@ class HardTanh(ZooKerasLayer):
     min_value: The minimum threshold value. Default is -1.
     max_value: The maximum threshold value. Default is 1.
     input_shape: A shape tuple, not including batch.
-    name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
+    name: String to set the name of the layer.
+          If not specified, its name will by default to be a generated string.
 
     >>> hardtanh = HardTanh(input_shape=(3, 4))
     creating: createZooKerasHardTanh
@@ -527,12 +547,13 @@ class Negative(ZooKerasLayer):
 
     # Arguments
     input_shape: A shape tuple, not including batch.
-    name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
+    name: String to set the name of the layer.
+          If not specified, its name will by default to be a generated string.
 
     >>> negative = Negative(input_shape=(4, 5, 8))
     creating: createZooKerasNegative
     """
-    def __init__(self, input_shape=None,**kwargs):
+    def __init__(self, input_shape=None, **kwargs):
         super(Negative, self).__init__(None,
                                        list(input_shape) if input_shape else None,
                                        **kwargs)
@@ -551,7 +572,8 @@ class PReLU(ZooKerasLayer):
     n_output_plane: Input map number. Default is 0,
                     which means using PReLU in shared version and has only one parameter.
     input_shape: A shape tuple, not including batch.
-    name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
+    name: String to set the name of the layer.
+          If not specified, its name will by default to be a generated string.
 
     >>> prelu = PReLU(input_shape=(3, 4, 8, 8))
     creating: createZooKerasPReLU
@@ -584,7 +606,8 @@ class RReLU(ZooKerasLayer):
     lower: Lower boundary of the uniform random distribution. Default is 1.0/8.
     upper: Upper boundary of the uniform random distribution. Default is 1.0/3.
     input_shape: A shape tuple, not including batch.
-    name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
+    name: String to set the name of the layer.
+          If not specified, its name will by default to be a generated string.
 
     >>> rrelu = RReLU(input_shape=(3, 4))
     creating: createZooKerasRReLU
@@ -607,7 +630,8 @@ class SoftShrink(ZooKerasLayer):
     # Arguments
     value: The threshold value. Default is 0.5.
     input_shape: A shape tuple, not including batch.
-    name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
+    name: String to set the name of the layer.
+          If not specified, its name will by default to be a generated string.
 
     >>> softshrink = SoftShrink(input_shape=(4, 4, 8, 8))
     creating: createZooKerasSoftShrink
@@ -633,7 +657,8 @@ class WithinChannelLRN2D(ZooKerasLayer):
     alpha: The scaling parameter. Default is 1.0.
     beta: The exponent. Default is 0.75.
     input_shape: A shape tuple, not including batch.
-    name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
+    name: String to set the name of the layer.
+          If not specified, its name will by default to be a generated string.
 
     >>> withinchannellrn2d = WithinChannelLRN2D(input_shape=(2, 3, 8, 8))
     creating: createZooKerasWithinChannelLRN2D
@@ -659,7 +684,8 @@ class BinaryThreshold(ZooKerasLayer):
     # Arguments
     value: The threshold value to compare with. Default is 1e-6.
     input_shape: A shape tuple, not including batch.
-    name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
+    name: String to set the name of the layer.
+          If not specified, its name will by default to be a generated string.
 
     >>> binarythreshold = BinaryThreshold(input_shape=(2, 3, 4, 5))
     creating: createZooKerasBinaryThreshold

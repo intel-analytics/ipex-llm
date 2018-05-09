@@ -191,7 +191,8 @@ class Input(ZooKerasCreator, Node):
 
     # Arguments
     shape: A shape tuple, not including batch.
-    name: String to set the name of the input node. If not specified, its name will by default to be a generated string.
+    name: String to set the name of the layer.
+          If not specified, its name will by default to be a generated string.
 
     >>> input = Input(name="input1", shape=(3, 5))
     creating: createZooKerasInput
@@ -208,7 +209,8 @@ class InputLayer(ZooKerasLayer):
 
     # Arguments
     input_shape: A shape tuple, not including batch.
-    name: String to set the name of the input layer. If not specified, its name will by default to be a generated string.
+    name: String to set the name of the layer.
+          If not specified, its name will by default to be a generated string.
 
     >>> inputlayer = InputLayer(input_shape=(3, 5), name="input1")
     creating: createZooKerasInputLayer
@@ -231,10 +233,12 @@ class Merge(ZooKerasLayer):
     layers: A list of layer instances. Must be more than one layer.
     mode: Merge mode. String, must be one of: 'sum', 'mul', 'concat', 'ave', 'cos',
           'dot', 'max', 'sub', 'div', 'min'. Default is 'sum'.
-    concat_axis: Int, axis to use when concatenating layers. Only specify this when merge mode is 'concat'.
+    concat_axis: Int, axis to use when concatenating layers.
+                 Only specify this when merge mode is 'concat'.
                  Default is -1, meaning the last axis of the input.
     input_shape: A list of shape tuples, each not including batch.
-    name: String to set the name of the layer. If not specified, its name will by default to be a generated string.
+    name: String to set the name of the layer.
+          If not specified, its name will by default to be a generated string.
 
     >>> l1 = InputLayer(input_shape=(3, 5))
     creating: createZooKerasInputLayer
@@ -263,8 +267,10 @@ def merge(inputs, mode="sum", concat_axis=-1, name=None):
     inputs: A list of node instances. Must be more than one node.
     mode: Merge mode. String, must be one of: 'sum', 'mul', 'concat', 'ave', 'cos',
           'dot', 'max', 'sub', 'div', 'min'. Default is 'sum'.
-    concat_axis: Int, axis to use when concatenating nodes. Only specify this when merge mode is 'concat'.
+    concat_axis: Int, axis to use when concatenating nodes.
+                 Only specify this when merge mode is 'concat'.
                  Default is -1, meaning the last axis of the input.
-    name: String to set the name of the merge. If not specified, its name will by default to be a generated string.
+    name: String to set the name of the functional merge.
+          If not specified, its name will by default to be a generated string.
     """
     return Merge(mode=mode, concat_axis=concat_axis, name=name)(list(inputs))

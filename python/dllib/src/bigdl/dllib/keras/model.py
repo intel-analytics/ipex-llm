@@ -89,7 +89,8 @@ class Model(KerasNet):
 
     def save_graph_topology(self, log_path, backward=False):
         """
-        Save the current model graph to a folder, which can be displayed in TensorBoard by running the command:
+        Save the current model graph to a folder, which can be displayed in TensorBoard
+        by running the command:
         tensorboard --logdir log_path
 
         # Arguments
