@@ -72,17 +72,13 @@ abstract class Sample[T: ClassTag] extends Serializable {
    * a default implement to throw exception.
    * @return feature tensor
    */
-  def feature()(implicit ev: TensorNumeric[T]): Tensor[T] = {
-    throw new UnsupportedOperationException("Sample.feature(): Not implemented")
-  }
+  def feature()(implicit ev: TensorNumeric[T]): Tensor[T]
 
   /**
    * Get feature tensor for given index
    * @param index index of specific sample
    */
-  def feature(index: Int)(implicit ev: TensorNumeric[T]): Tensor[T] = {
-    throw new UnsupportedOperationException("Sample.feature(): Not implemented")
-  }
+  def feature(index: Int)(implicit ev: TensorNumeric[T]): Tensor[T]
 
   /**
    * Get label tensor, for one label Sample only.
@@ -90,17 +86,13 @@ abstract class Sample[T: ClassTag] extends Serializable {
    * a default implement to throw exception.
    * @return label tensor
    */
-  def label()(implicit ev: TensorNumeric[T]): Tensor[T] = {
-    throw new UnsupportedOperationException("Sample.label(): Not implemented")
-  }
+  def label()(implicit ev: TensorNumeric[T]): Tensor[T]
 
   /**
    * Get label tensor for given index
    * @param index index of specific sample
    */
-  def label(index: Int)(implicit ev: TensorNumeric[T]): Tensor[T] = {
-    throw new UnsupportedOperationException("Sample.label(): Not implemented")
-  }
+  def label(index: Int)(implicit ev: TensorNumeric[T]): Tensor[T]
 
   /**
    * Set data of feature and label.
@@ -483,6 +475,26 @@ class TensorSample[T: ClassTag] private[bigdl] (
 
   def getData(): Array[T] = {
     throw new UnimplementedException()
+  }
+
+  override def feature()(implicit ev: TensorNumeric[T]): Tensor[T] = {
+    require(this.numFeature == 1, "only sample with one feature supported")
+    this.feature(0)
+  }
+
+  override def feature(index: Int)(implicit ev: TensorNumeric[T]): Tensor[T] = {
+    require(index < this.numFeature, "Index out of range")
+    this.features(index)
+  }
+
+  override def label()(implicit ev: TensorNumeric[T]): Tensor[T] = {
+    require(this.numLabel <= 1, "only sample with at most one label supported")
+    if (this.numLabel == 1) this.label(0) else null
+  }
+
+  override def label(index: Int)(implicit ev: TensorNumeric[T]): Tensor[T] = {
+    require(index < this.numFeature, "Index out of range")
+    if (index < this.numLabel) this.labels(index) else null
   }
 }
 
