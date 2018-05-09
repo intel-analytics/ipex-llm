@@ -11,7 +11,7 @@ maven for java and make for c/c++ code. For building BigDL-core, there should ha
 + maven
 + make
 + g++-7
-+ Intel Parallel Studio
++ [Intel Parallel Studio](https://software.intel.com/en-us/parallel-studio-xe/choose-download)
 + Git.
 
 ## **Environment on CentOS**
