@@ -62,6 +62,84 @@ class SampleSpec extends FlatSpec with Matchers {
       Some(featureParam), Some(labelParam)).set(samples)
   }
 
+  "Get feature and label from single sample" should "work fine" in {
+    val feature = Tensor[Float](2, 2).fill(1.0f)
+    val label = Tensor[Float](2).fill(1.0f)
+    val sample = ArraySample(feature, label)
+
+    val fetchedFeature = sample.feature()
+
+    val fetchedLabel = sample.label()
+
+    fetchedFeature should be (feature)
+
+    fetchedLabel should be (label)
+  }
+
+  "Get label from single sample without label" should "work fine" in {
+    val feature = Tensor[Float](2, 2).fill(1.0f)
+    val sample = ArraySample(feature)
+    val fetchedFeature = sample.feature()
+
+    val fetchedLabel = sample.label()
+
+    fetchedFeature should be (feature)
+
+    fetchedLabel should be (null)
+  }
+
+  "Get feature and label from multiple samples" should "work fine" in {
+    val feature1 = Tensor[Float](2, 2).fill(1.0f)
+    val label1 = Tensor[Float](2).fill(1.0f)
+
+    val feature2 = Tensor[Float](2, 2).fill(2.0f)
+
+    val sample = ArraySample(Array(feature1, feature2), Array(label1))
+
+    val fetchedFeature1 = sample.feature(0)
+
+    val fetchedLabel1 = sample.label(0)
+
+    val fetchedFeature2 = sample.feature(1)
+
+    val fetchedLabel2 = sample.label(1)
+
+    fetchedFeature1 should be (feature1)
+
+    fetchedLabel1 should be (label1)
+
+    fetchedFeature2 should be (feature2)
+
+    fetchedLabel2 should be (null)
+
+  }
+
+  "Get feature and label from TensorSample" should "work properly" in {
+    val feature1 = Tensor[Float](2, 2).fill(1.0f)
+    val label1 = Tensor[Float](2).fill(1.0f)
+
+    val feature2 = Tensor[Float](2, 2).fill(2.0f)
+
+    val sample = TensorSample(Array(feature1, feature2), Array(label1))
+
+    val fetchedFeature1 = sample.feature(0)
+
+    val fetchedLabel1 = sample.label(0)
+
+    val fetchedFeature2 = sample.feature(1)
+
+    val fetchedLabel2 = sample.label(1)
+
+    fetchedFeature1 should be (feature1)
+
+    fetchedLabel1 should be (label1)
+
+    fetchedFeature2 should be (feature2)
+
+    fetchedLabel2 should be (null)
+
+  }
+
   "create Sample" should "work fine" in {
     val st1 = Tensor.sparse(Tensor.range(1, 10, 1))
     val st2 = Tensor.sparse(Tensor.range(1, 10, 1))
