@@ -40,7 +40,7 @@ Please update it according to your bigdl version. As we only distribute jar with
 bigdl-VERSION-jar-with-dependencies-and-spark.jar from the source.
 
 ```bash
-java -cp bigdl_source_folder/spark/dl/target/bigdl-VERSION-jar-with-dependencies-and-spark.jar com.intel.analytics.bigdl.models.utils.ImageNetSeqFileGenerator -f imagenet_folder -o output_folder -p cores_number
+scala -cp bigdl_source_folder/spark/dl/target/bigdl-VERSION-jar-with-dependencies-and-spark.jar com.intel.analytics.bigdl.models.utils.ImageNetSeqFileGenerator -f imagenet_folder -o output_folder -p cores_number
 ```
 
 It will generate the hadoop sequence files in the output folder.
