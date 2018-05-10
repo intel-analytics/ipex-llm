@@ -22,6 +22,7 @@ pages:
   - Install: 
     - Use Pre-built Libs: ScalaUserGuide/install-pre-built.md
     - Build from Source Code: ScalaUserGuide/install-build-src.md 
+    - Build BigDL-core: ScalaUserGuide/build-bigdl-core.md 
   - Run: ScalaUserGuide/run.md
   - Configuration: ScalaUserGuide/configuration.md
   - Examples: ScalaUserGuide/examples.md
