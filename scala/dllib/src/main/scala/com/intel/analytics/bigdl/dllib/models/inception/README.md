@@ -35,12 +35,12 @@ Now all the images belonging to the same category are moved to the same folder.
 This command will transform the images into hadoop sequence files, which are 
 more suitable for a distributed training.
 
-Bigdl has different versions, bigdl-VERSION-jar-with-dependencies-and-spark.jar used in the following command is a general name.
-Please update it according to your bigdl version. As we only distribute jar without spark dependency, you need to build the
-bigdl-VERSION-jar-with-dependencies-and-spark.jar from the source.
+Bigdl has different versions, bigdl-VERSION-jar-with-dependencies.jar used in the following command is a general name.
+Please update it according to your bigdl version. It can be found in the **lib** folder of the distributed package.
+If you build from source, it can be found in the **dist/lib** folder.
 
 ```bash
-java -cp bigdl_source_folder/spark/dl/target/bigdl-VERSION-jar-with-dependencies-and-spark.jar com.intel.analytics.bigdl.models.utils.ImageNetSeqFileGenerator -f imagenet_folder -o output_folder -p cores_number
+spark-submit --class com.intel.analytics.bigdl.models.utils.ImageNetSeqFileGenerator bigdl-VERSION-jar-with-dependencies.jar -f imagenet_folder -o output_folder -p cores_number
 ```
 
 It will generate the hadoop sequence files in the output folder.
