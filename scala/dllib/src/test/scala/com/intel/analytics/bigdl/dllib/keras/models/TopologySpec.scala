@@ -16,19 +16,42 @@
 
 package com.intel.analytics.zoo.pipeline.api.keras.models
 
+import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
+import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.Shape
 import com.intel.analytics.zoo.pipeline.api.Net
 import com.intel.analytics.zoo.pipeline.api.keras.ZooSpecHelper
 import com.intel.analytics.zoo.pipeline.api.keras.layers.{Dense, Input}
+import com.intel.analytics.zoo.pipeline.api.keras.serializer.ModuleSerializationTest
 
-class TopologySpec extends ZooSpecHelper {
+import scala.util.Random
 
-  "model saving and reloading" should "work properly" in {
-    val input = Input[Float](inputShape = Shape(2))
-    val model = Model(input, Dense[Float](3).inputs(input))
-    val tmpFile = createTmpFile()
+class ModelSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val input = Input[Float](inputShape = Shape(10))
+    val model = Model(input, Dense[Float](8).inputs(input))
+    val tmpFile = ZooSpecHelper.createTmpFile()
     model.saveModule(tmpFile.getAbsolutePath, overWrite = true)
     val reloadModel = Net.load[Float](tmpFile.getAbsolutePath)
+    val inputData = Tensor[Float](2, 10).apply1(_ => Random.nextFloat())
+    ZooSpecHelper.compareOutputAndGradInput(
+      model.asInstanceOf[AbstractModule[Tensor[Float], Tensor[Float], Float]],
+      reloadModel.asInstanceOf[AbstractModule[Tensor[Float], Tensor[Float], Float]],
+      inputData)
   }
+}
 
+class SequentialSerialTest extends ModuleSerializationTest {
+  override def test(): Unit = {
+    val model = Sequential[Float]()
+    model.add(Dense[Float](8, inputShape = Shape(10)))
+    val tmpFile = ZooSpecHelper.createTmpFile()
+    model.saveModule(tmpFile.getAbsolutePath, overWrite = true)
+    val reloadModel = Net.load[Float](tmpFile.getAbsolutePath)
+    val inputData = Tensor[Float](2, 10).apply1(_ => Random.nextFloat())
+    ZooSpecHelper.compareOutputAndGradInput(
+      model.asInstanceOf[AbstractModule[Tensor[Float], Tensor[Float], Float]],
+      reloadModel.asInstanceOf[AbstractModule[Tensor[Float], Tensor[Float], Float]],
+      inputData)
+  }
 }

@@ -37,7 +37,7 @@ class KerasLayerWrapperSpec extends KerasBaseSpec {
   }
 }
 
-class KerasLayerWrapperSpecSerialTest extends ModuleSerializationTest {
+class KerasLayerWrapperSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val layer = new KerasLayerWrapper[Float](ReLU[Float]()
       .asInstanceOf[AbstractModule[Activity, Activity, Float]], inputShape = Shape(8, 12))

@@ -38,7 +38,7 @@ abstract class ZooSpecHelper extends FlatSpec with Matchers with BeforeAndAfter 
 
   private val tmpFiles : ArrayBuffer[JFile] = new ArrayBuffer[JFile]()
 
-  protected def createTmpFile(): JFile = {
+  def createTmpFile(): JFile = {
     val file = java.io.File.createTempFile("UnitTest", "BigDLSpecBase")
     logger.info(s"created file $file")
     tmpFiles.append(file)
@@ -140,4 +140,11 @@ abstract class ZooSpecHelper extends FlatSpec with Matchers with BeforeAndAfter 
     require(loadedModel.modules.length == 1)
     compareOutputAndGradInput(model, loadedModel, input, precision)
   }
+}
+
+trait SerialSpecHelper extends ZooSpecHelper {
+}
+
+// Make methods in ZooSpecHelper static so that SerialTest classes can call directly
+object ZooSpecHelper extends SerialSpecHelper {
 }
