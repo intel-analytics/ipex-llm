@@ -342,6 +342,16 @@ class NNModel(JavaTransformer, HasFeaturesCol, HasPredictionCol, HasBatchSize, J
                         bigdl_type=bigdl_type)
         return model
 
+    def setPreprocessing(self, val):
+        """
+        set Preprocessing.
+        :param value: A [[Preprocessing]] that transforms the feature data to a Sample[T].
+        """
+        pythonBigDL_method_name = "setNNModelPreprocessing"
+        callBigDlFunc(self.bigdl_type, pythonBigDL_method_name, self.value, val)
+        self.validation_summary = val
+        return self
+
 
 class NNClassifier(NNEstimator):
     """
