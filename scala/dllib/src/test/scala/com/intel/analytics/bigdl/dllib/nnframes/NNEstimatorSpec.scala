@@ -274,6 +274,20 @@ class NNEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
     assert(df.count() == nnModel.setBatchSize(51).transform(df).count())
   }
 
+  "An NNModel" should "supports set Preprocessing" in {
+    val model = new Sequential().add(Linear[Float](6, 2)).add(LogSoftMax[Float])
+    val criterion = ClassNLLCriterion[Float]()
+    val estimator = new NNEstimator(model, criterion, SeqToTensor(Array(6)), ScalarToTensor())
+      .setBatchSize(20)
+      .setMaxEpoch(maxEpoch)
+    val data = sc.parallelize(smallData)
+    val df: DataFrame = sqlContext.createDataFrame(data).toDF("features", "label")
+    val nnModel = estimator.fit(df)
+    val newPreprocessing = ArrayToTensor(Array(6)) -> TensorToSample()
+    nnModel.setPreprocessing(newPreprocessing)
+    assert(df.count() == nnModel.transform(df).count())
+  }
+
   "An NNEstimator" should "throw exception with incorrect inputs" in {
     val model = Linear[Float](10, 1)
     val criterion = ClassNLLCriterion[Float]()
