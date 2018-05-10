@@ -14,10 +14,10 @@ maven for java and make for c/c++ code. For building BigDL-core, there should ha
 + [Intel Parallel Studio](https://software.intel.com/en-us/parallel-studio-xe/choose-download)
 + Git.
 
-## **Environment on CentOS**
+## **Environment on CentOS** (after 6.8 final)
 
-You should build the environment with CentOS 7 final. BigQuant depends the GCC 7.2,
-and it's hard to find the a GCC7.2 repo or rpm package that supports this version
+You should build the environment with CentOS 6.8 final. BigQuant depends the GCC 7.2,
+and it's hard to find the a GCC 7.2 repo or rpm package that supports this version
 OS. So you should build it from source. Another thing you should pay attention is,
 you should build a new version binutils because the old version doesn't support to
 assemble the code generated from GCC 7.2.
