@@ -441,7 +441,7 @@ object NNEstimator {
  */
 class NNModel[F, T: ClassTag](
     @transient val model: Module[T],
-    @transient val samplePreprocessing: Preprocessing[F, Sample[T]],
+    @transient var samplePreprocessing: Preprocessing[F, Sample[T]],
     override val uid: String = "DLModel")(implicit ev: TensorNumeric[T])
   extends DLTransformerBase[NNModel[F, T]] with NNParams[T]
     with HasBatchSize with MLWritable {
@@ -475,6 +475,15 @@ class NNModel[F, T: ClassTag](
   def setPredictionCol(value: String): this.type = set(predictionCol, value)
 
   def setBatchSize(value: Int): this.type = set(batchSize, value)
+
+  /**
+   * set Preprocessing.
+   * @param value: A [[Preprocessing]] that transforms the feature data to a Sample[T].
+   */
+  def setPreprocessing[FF <: Any](value: Preprocessing[FF, Sample[T]]): this.type = {
+    this.samplePreprocessing = value.asInstanceOf[Preprocessing[F, Sample[T]]]
+    this
+  }
 
   /**
    * Perform a prediction on featureCol, and write result to the predictionCol.

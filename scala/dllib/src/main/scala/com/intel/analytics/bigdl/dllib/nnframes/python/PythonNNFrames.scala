@@ -182,4 +182,10 @@ class PythonNNFrames[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonB
       value: ValidationSummary): NNEstimator[Any, Any, T] = {
     estimator.setValidationSummary(value)
   }
+
+  def setNNModelPreprocessing(
+      model: NNModel[Any, T],
+      sampleTransformer: Preprocessing[Any, Sample[T]]): NNModel[Any, T] = {
+    model.setPreprocessing(sampleTransformer)
+  }
 }
