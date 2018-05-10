@@ -28,12 +28,10 @@ import scala.collection.JavaConverters._
 import scala.collection.mutable
 
 class SerializerSpec extends ZooSpecHelper {
-  private val excluded = Set[String]()
+  private val excluded = Set[String](
+    "com.intel.analytics.zoo.pipeline.api.autograd.LambdaTorch")
 
-  private val unRegularNameMapping = Map[String, String](
-    "com.intel.analytics.zoo.pipeline.api.keras.layers.KerasLayerWrapper" ->
-      "com.intel.analytics.zoo.pipeline.api.keras.layers.KerasLayerWrapperSpecSerialTest"
-  )
+  private val unRegularNameMapping = Map[String, String]()
 
   private val suffix = "SerialTest"
 
@@ -43,14 +41,14 @@ class SerializerSpec extends ZooSpecHelper {
     val filterBuilder = new FilterBuilder()
     val reflections = new Reflections(new ConfigurationBuilder()
       .filterInputsBy(filterBuilder)
-      .addUrls(ClasspathHelper.forPackage("com.intel.analytics.zoo.pipeline.api.keras.layers"))
+      .addUrls(ClasspathHelper.forPackage("com.intel.analytics.zoo"))
       .addUrls(ClasspathHelper.forPackage("com.intel.analytics.bigdl.nn"))
       .setScanners(new SubTypesScanner()))
 
     val subTypes = reflections.getSubTypesOf(classOf[AbstractModule[_, _, _]]).asScala
       .filter(sub => !Modifier.isAbstract(sub.getModifiers))
       .filter(sub => !excluded.contains(sub.getName))
-      .filter(sub => sub.getName.contains("com.intel.analytics.zoo.pipeline.api.keras.layers"))
+      .filter(sub => sub.getName.contains("com.intel.analytics.zoo"))
     subTypes.foreach(sub => testClasses.add(sub.getName))
   }
 
