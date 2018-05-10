@@ -19,12 +19,15 @@ package com.intel.analytics.zoo.common
 import java.io._
 
 import com.intel.analytics.bigdl.utils.File
-
+import com.intel.analytics.zoo.common.NNContext.getClass
 import org.apache.commons.io.filefilter.WildcardFileFilter
+import org.apache.log4j.Logger
 
 import scala.collection.mutable.ArrayBuffer
 
 private[zoo] object Utils {
+
+  private val logger = Logger.getLogger(getClass)
 
   def listLocalFiles(path: String): Array[File] = {
     val files = new ArrayBuffer[File]()
@@ -49,4 +52,18 @@ private[zoo] object Utils {
   def saveBytes(bytes: Array[Byte], fileName: String, isOverwrite: Boolean = false) : Unit = {
     File.saveBytes(bytes, fileName, isOverwrite)
   }
+
+  def logUsageErrorAndThrowException(errMessage: String, cause: Throwable = null): Unit = {
+    logger.error(s"********************************Usage Error****************************\n"
+      + errMessage)
+    throw new AnalyticsZooException(errMessage, cause)
+  }
+
 }
+
+class AnalyticsZooException(message: String, cause: Throwable)
+  extends Exception(message, cause) {
+
+  def this(message: String) = this(message, null)
+}
+
