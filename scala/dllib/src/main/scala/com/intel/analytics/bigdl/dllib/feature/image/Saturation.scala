@@ -18,24 +18,19 @@ package com.intel.analytics.zoo.feature.image
 import com.intel.analytics.bigdl.transform.vision.image.ImageFeature
 import com.intel.analytics.zoo.feature.common.{ImageProcessing}
 import com.intel.analytics.bigdl.transform.vision.image.augmentation
-import org.opencv.imgproc.Imgproc
 
-class Resize(
-    resizeH: Int,
-    resizeW: Int,
-    resizeMode: Int = Imgproc.INTER_LINEAR,
-    useScaleFactor: Boolean = true) extends ImageProcessing {
+/**
+ * Adjust image saturation
+ */
+class Saturation(deltaLow: Double, deltaHigh: Double) extends ImageProcessing {
 
-  private val internalResize = augmentation.Resize(resizeH, resizeW)
+  private val internalCrop = augmentation.Saturation(deltaLow, deltaHigh)
   override def apply(prev: Iterator[ImageFeature]): Iterator[ImageFeature] = {
-    internalResize.apply(prev)
+    internalCrop.apply(prev)
   }
 }
 
-object Resize {
-
-  def apply(resizeH: Int, resizeW: Int,
-            resizeMode: Int = Imgproc.INTER_LINEAR, useScaleFactor: Boolean = true): Resize =
-    new Resize(resizeH, resizeW, resizeMode, useScaleFactor)
-
+object Saturation {
+  def apply(deltaLow: Double, deltaHigh: Double): Saturation =
+    new Saturation(deltaLow, deltaHigh)
 }

@@ -14,28 +14,28 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.zoo.feature.image.python
+package com.intel.analytics.zoo.feature.python
 
 import java.util.{List => JList}
 
 import com.intel.analytics.bigdl.python.api.{JTensor, PythonBigDL}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.transform.vision.image.{FeatureTransformer, ImageFeature, ImageFrame}
-import com.intel.analytics.zoo.feature.image.{DistributedImageSet, ImageSet, LocalImageSet}
+import com.intel.analytics.bigdl.transform.vision.image.{FeatureTransformer, ImageFeature}
+import com.intel.analytics.zoo.feature.image._
 import org.apache.spark.api.java.{JavaRDD, JavaSparkContext}
 
 import scala.collection.JavaConverters._
 import scala.reflect.ClassTag
 
-object PythonImageSet {
+object PythonImageFeature {
 
-  def ofFloat(): PythonImageSet[Float] = new PythonImageSet[Float]()
+  def ofFloat(): PythonImageFeature[Float] = new PythonImageFeature[Float]()
 
-  def ofDouble(): PythonImageSet[Double] = new PythonImageSet[Double]()
+  def ofDouble(): PythonImageFeature[Double] = new PythonImageFeature[Double]()
 }
 
-class PythonImageSet[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonBigDL[T] {
+class PythonImageFeature[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonBigDL[T] {
   def transformImageSet(transformer: FeatureTransformer,
                           imageSet: ImageSet): ImageSet = {
     imageSet.transform(transformer)
@@ -121,5 +121,39 @@ class PythonImageSet[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonB
       })
     }
     new LocalImageSet(features.toArray)
+  }
+
+
+  def createResize(resizeH: Int, resizeW: Int): Resize = {
+    Resize(resizeH, resizeW)
+  }
+
+  def createImgBrightness(deltaLow: Double, deltaHigh: Double): Brightness = {
+    Brightness(deltaLow, deltaHigh)
+  }
+
+  def createImgChannelNormalizer(
+                                  meanR: Double, meanG: Double, meanB: Double,
+                                  stdR: Double = 1, stdG: Double = 1, stdB: Double = 1
+                                ): ChannelNormalize = {
+
+    ChannelNormalize(meanR.toFloat, meanG.toFloat, meanB.toFloat,
+      stdR.toFloat, stdG.toFloat, stdB.toFloat)
+  }
+
+  def createMatToTensor(): MatToTensor[T] = {
+    MatToTensor()
+  }
+
+  def createCenterCrop(cropWidth: Int, cropHeight: Int): CenterCrop = {
+    CenterCrop(cropWidth, cropHeight)
+  }
+
+  def createImgHue(deltaLow: Double, deltaHigh: Double): Hue = {
+    Hue(deltaLow, deltaHigh)
+  }
+
+  def createImgSaturation(deltaLow: Double, deltaHigh: Double): Saturation = {
+    Saturation(deltaLow, deltaHigh)
   }
 }

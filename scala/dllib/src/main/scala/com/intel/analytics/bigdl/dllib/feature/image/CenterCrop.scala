@@ -16,14 +16,14 @@
 package com.intel.analytics.zoo.feature.image
 
 import com.intel.analytics.bigdl.transform.vision.image.{ImageFeature, augmentation}
-import com.intel.analytics.zoo.feature.common.Preprocessing
+import com.intel.analytics.zoo.feature.common.{ImageProcessing}
 class CenterCrop(
     cropWidth: Int,
     cropHeight: Int,
-    isClip: Boolean = true) extends Preprocessing[ImageFeature, ImageFeature] {
+    isClip: Boolean = true) extends ImageProcessing {
 
   private val internalCrop = augmentation.CenterCrop(cropWidth, cropHeight)
-  def apply(prev: Iterator[ImageFeature]): Iterator[ImageFeature] = {
+  override def apply(prev: Iterator[ImageFeature]): Iterator[ImageFeature] = {
     internalCrop.apply(prev)
   }
 }

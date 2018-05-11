@@ -16,18 +16,17 @@
 package com.intel.analytics.zoo.feature.image
 
 import com.intel.analytics.bigdl.transform.vision.image.{ImageFeature, augmentation}
-import com.intel.analytics.zoo.feature.common.Preprocessing
+import com.intel.analytics.zoo.feature.common.ImageProcessing
 
 /**
  * image channel normalize
  */
 class ChannelNormalize(
     means: Array[Float],
-    stds: Array[Float]
-  ) extends Preprocessing[ImageFeature, ImageFeature] {
+    stds: Array[Float]) extends ImageProcessing {
 
   private val internalCrop = new augmentation.ChannelNormalize(means, stds)
-  def apply(prev: Iterator[ImageFeature]): Iterator[ImageFeature] = {
+  override def apply(prev: Iterator[ImageFeature]): Iterator[ImageFeature] = {
     internalCrop.apply(prev)
   }
 }

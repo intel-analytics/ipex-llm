@@ -16,6 +16,8 @@
 package com.intel.analytics.zoo.feature.common
 
 import com.intel.analytics.bigdl.dataset.Transformer
+import com.intel.analytics.bigdl.transform.vision.image.{FeatureTransformer, ImageFeature}
+import com.intel.analytics.zoo.feature.image.ImageSet
 import org.apache.commons.lang3.SerializationUtils
 
 /**
@@ -58,5 +60,10 @@ class ChainedPreprocessing[A, B, C](first: Preprocessing[A, B], last: Preprocess
   }
 }
 
-
+abstract class ImageProcessing extends FeatureTransformer
+  with Preprocessing[ImageFeature, ImageFeature] {
+  def apply(imageSet: ImageSet): ImageSet = {
+    imageSet.transform(this)
+  }
+}
 
