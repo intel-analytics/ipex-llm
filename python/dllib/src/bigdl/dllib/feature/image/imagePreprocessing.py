@@ -16,13 +16,30 @@
 
 from bigdl.util.common import *
 from zoo.feature.common import Preprocessing
+from zoo.feature.image.imageset import ImageSet
 
 if sys.version >= '3':
     long = int
     unicode = str
 
 
-class Resize(Preprocessing):
+class ImagePreprocessing(Preprocessing):
+    """
+    ImagePreprocessing is a transformer that transform ImageFeature
+    """
+    def __init__(self, bigdl_type="float"):
+        super(ImagePreprocessing, self).__init__(bigdl_type)
+
+    def __call__(self, image_set, bigdl_type="float"):
+        """
+        transform ImageSet
+        """
+        jset = callBigDlFunc(bigdl_type,
+                             "transformImageSet", self.value, image_set)
+        return ImageSet(jvalue=jset)
+
+
+class Resize(ImagePreprocessing):
     """
      image resize
     """
@@ -30,7 +47,18 @@ class Resize(Preprocessing):
         super(Resize, self).__init__(bigdl_type, resizeH, resizeW)
 
 
-class ChannelNormalize(Preprocessing):
+class Brightness(ImagePreprocessing):
+    """
+    adjust the image brightness
+    :param deltaLow brightness parameter: low bound
+    :param deltaHigh brightness parameter: high bound
+    """
+    def __init__(self, delta_low, delta_high, bigdl_type="float"):
+        self.value = callBigDlFunc(
+            bigdl_type, "createImgBrightness", delta_low, delta_high)
+
+
+class ChannelNormalize(ImagePreprocessing):
     """
     image channel normalize
     :param mean_r mean value in R channel
@@ -45,7 +73,7 @@ class ChannelNormalize(Preprocessing):
             bigdl_type, "createImgChannelNormalizer", mean_r, mean_g, mean_b, std_r, std_g, std_b)
 
 
-class MatToTensor(Preprocessing):
+class MatToTensor(ImagePreprocessing):
     """
     MatToTensor
     """
@@ -53,9 +81,31 @@ class MatToTensor(Preprocessing):
         super(MatToTensor, self).__init__(bigdl_type)
 
 
-class CenterCrop(Preprocessing):
+class CenterCrop(ImagePreprocessing):
     """
     CenterCrop
     """
     def __init__(self, cropWidth, cropHeight, bigdl_type="float"):
         super(CenterCrop, self).__init__(bigdl_type, cropWidth, cropHeight)
+
+
+class Hue(ImagePreprocessing):
+    """
+    adjust the image hue
+    :param deltaLow hue parameter: low bound
+    :param deltaHigh hue parameter: high bound
+    """
+    def __init__(self, delta_low, delta_high, bigdl_type="float"):
+        self.value = callBigDlFunc(
+            bigdl_type, "createImgHue", delta_low, delta_high)
+
+
+class Saturation(ImagePreprocessing):
+    """
+    adjust the image Saturation
+    :param deltaLow brightness parameter: low bound
+    :param deltaHigh brightness parameter: high bound
+    """
+    def __init__(self, delta_low, delta_high, bigdl_type="float"):
+        self.value = callBigDlFunc(
+            bigdl_type, "createImgSaturation", delta_low, delta_high)
