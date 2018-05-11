@@ -12,7 +12,7 @@ def run_cmd(cmds, err_msg, s=False):
     if s:
         cmd = ' '.join(cmds)
     try:
-        # print cmd
+        print cmd
         p = Popen(cmd, shell=s)
         p.communicate()
         if p.returncode != 0:
@@ -91,10 +91,10 @@ run_cmd(['cp', '/tmp/zoo-doc/version-list', '{}/site'.format(dir_name)],
 
 if scaladocs:
     print 'build scala doc'
-    bigdl_dir = os.path.dirname(dir_name)
-    os.chdir(bigdl_dir)
+    zoo_dir = os.path.dirname(dir_name)
+    os.chdir(zoo_dir)
     run_cmd(['mvn', 'scala:doc'], 'Build scala doc error')
-    scaladocs_dir = bigdl_dir + '/spark/dl/target/site/scaladocs/*'
+    scaladocs_dir = zoo_dir + '/spark/dl/target/site/scaladocs/*'
     target_dir = dir_name + '/site/APIGuide/scaladoc/'
     run_cmd(['cp', '-r', scaladocs_dir, target_dir],
         'mv scaladocs error', s=True)
