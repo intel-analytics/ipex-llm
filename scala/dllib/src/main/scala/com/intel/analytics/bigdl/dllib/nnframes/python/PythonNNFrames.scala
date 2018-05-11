@@ -19,16 +19,12 @@ package com.intel.analytics.zoo.pipeline.nnframes.python
 import java.util.{ArrayList => JArrayList, List => JList}
 
 import com.intel.analytics.bigdl.dataset.{Sample, Transformer}
-import com.intel.analytics.bigdl.optim.OptimMethod
 import com.intel.analytics.bigdl.optim.{OptimMethod, Trigger, ValidationMethod}
 import com.intel.analytics.bigdl.{Criterion, Module}
 import com.intel.analytics.bigdl.python.api.PythonBigDL
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.transform.vision.image.{FeatureTransformer, ImageFeature}
 import com.intel.analytics.zoo.feature.common._
-import com.intel.analytics.zoo.feature.image.{CenterCrop, ChannelNormalize, MatToTensor, Resize}
-import com.intel.analytics.bigdl.transform.vision.image.FeatureTransformer
 import com.intel.analytics.bigdl.visualization.{TrainSummary, ValidationSummary}
 import com.intel.analytics.zoo.pipeline.nnframes._
 import org.apache.spark.api.java.JavaSparkContext
@@ -134,27 +130,6 @@ class PythonNNFrames[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonB
       sampleTransformer: Preprocessing[(Any, Any), Sample[T]]
     ): FeatureToTupleAdapter[Any, Sample[T]] = {
     FeatureToTupleAdapter(sampleTransformer).asInstanceOf[FeatureToTupleAdapter[Any, Sample[T]]]
-  }
-
-  def createResize(resizeH: Int, resizeW: Int): Resize = {
-    Resize(resizeH, resizeW)
-  }
-
-  def createImgChannelNormalizer(
-      meanR: Double, meanG: Double, meanB: Double,
-      stdR: Double = 1, stdG: Double = 1, stdB: Double = 1
-    ): ChannelNormalize = {
-
-    ChannelNormalize(meanR.toFloat, meanG.toFloat, meanB.toFloat,
-      stdR.toFloat, stdG.toFloat, stdB.toFloat)
-  }
-
-  def createMatToTensor(): MatToTensor[T] = {
-    MatToTensor()
-  }
-
-  def createCenterCrop(cropWidth: Int, cropHeight: Int): CenterCrop = {
-    CenterCrop(cropWidth, cropHeight)
   }
 
   def createBigDLAdapter(bt: Transformer[Any, Any]): BigDLAdapter[Any, Any] = {
