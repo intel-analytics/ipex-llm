@@ -4,29 +4,47 @@ Quantization is a method that will use low-precision caculations to substitute f
 
 ## Quantize the pretrained model
 
-BigDL provide command line tools for converting the pretrained (BigDL, Caffe, Torch and Tensorflow) model to quantized model with parameter `--quantize true`.
+BigDL provide command line tools for converting the pretrained
+(BigDL, Caffe, Torch and Tensorflow) model to quantized model with
+parameter `--quantize true`. You can modify the script below to convert a model to
+quantized model.
+
+By default, you should set some shell variables below. The `BIGDL_HOME` is the 
+`dist` directory. If the spark version you use is after 2.0, you should add
+spark jars directory to `SPARK_JAR`.
 
 ```bash
 #!/bin/bash
 
 set -x
 
+VERSION=0.6.0-SNAPSHOT
 BIGDL_HOME=${WORKSPACE}/dist
-JAR_HOME=${BIGDL_HOME}/spark/dl/target
+JAR_HOME=${BIGDL_HOME}/lib/target
 SPARK_JAR=/opt/spark/jars/*
-JAR=${JAR_HOME}/bigdl-0.6.0-SNAPSHOT-jar-with-dependencies.jar:${SPARK_JAR}
-CLASS=com.intel.analytics.bigdl.utils.ConvertModel
+JAR=${JAR_HOME}/bigdl-${VERSION}-jar-with-dependencies.jar:${SPARK_JAR}
+```
 
+For example, we want to convert a caffe model to a bigdl model.
+
+```bash
 FROM=caffe
 TO=bigdl
 MODEL=bvlc_alexnet.caffemodel
+```
+
+And the last commands are as follows.
+
+```bash
+CLASS=com.intel.analytics.bigdl.utils.ConvertModel
+
 
 java -cp ${JAR} ${CLASS} --from ${FROM} --to ${TO} \
     --input ${MODEL} --output ${MODEL%%.caffemodel}.bigdlmodel \
     --prototxt ${PWD}/deploy.prototxt --quantize true
 ```
 
-ConvertModel supports converting different types of pretrained models to bigdlmodel.
+` ConvertModel` supports converting different types of pretrained models to bigdlmodel.
 It also supports converting bigdlmodel to other types. The help is
 
 ```
