@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericF
 import com.intel.analytics.bigdl.utils.LoggerFilter
 import com.intel.analytics.zoo.pipeline.nnframes._
 import com.intel.analytics.zoo.common.NNContext
-import com.intel.analytics.zoo.feature.common.{ImageFeatureToTensor, RowToImageFeature, SeqToTensor}
+import com.intel.analytics.zoo.feature.common.{ImageFeatureToTensor, RowToImageFeature}
 import com.intel.analytics.zoo.feature.image._
 import org.apache.spark.ml.evaluation.MulticlassClassificationEvaluator
 import org.apache.spark.ml.Pipeline
@@ -49,14 +49,13 @@ object ImageTransferLearning {
         ChannelNormalize(123, 117, 104) -> MatToTensor() -> ImageFeatureToTensor()
       val loadedModel = Module
         .loadCaffeModel[Float](params.caffeDefPath, params.modelPath)
-      val featurizer = new NNModel(loadedModel, transformer)
+      val featurizer = NNModel(loadedModel, transformer)
         .setBatchSize(params.batchSize)
         .setFeaturesCol("image")
         .setPredictionCol("embedding")
 
       val lrModel = Sequential().add(Linear(1000, 2)).add(LogSoftMax())
-      val classifier = new NNClassifier(
-          lrModel, ClassNLLCriterion[Float](), SeqToTensor(Array(1000)))
+      val classifier = NNClassifier(lrModel, ClassNLLCriterion[Float](), Array(1000))
         .setFeaturesCol("embedding")
         .setLearningRate(0.003)
         .setBatchSize(params.batchSize)
