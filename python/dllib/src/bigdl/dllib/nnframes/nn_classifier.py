@@ -53,6 +53,28 @@ class HasBatchSize(Params):
         return self.getOrDefault(self.batchSize)
 
 
+class HasSamplePreprocessing:
+    """
+    Mixin for param samplePreprocessing
+    """
+    samplePreprocessing = None
+
+    def __init__(self):
+        super(HasSamplePreprocessing, self).__init__()
+
+    def setSamplePreprocessing(self, val):
+        """
+        Sets samplePreprocessing
+        """
+        pythonBigDL_method_name = "setSamplePreprocessing"
+        callBigDlFunc(self.bigdl_type, pythonBigDL_method_name, self.value, val)
+        self.samplePreprocessing = val
+        return self
+
+    def getSamplePreprocessing(self):
+        return self.samplePreprocessing
+
+
 class HasOptimMethod:
 
     optimMethod = SGD()
@@ -78,7 +100,7 @@ class HasOptimMethod:
 
 
 class NNEstimator(JavaEstimator, HasFeaturesCol, HasLabelCol, HasPredictionCol, HasBatchSize,
-                  HasOptimMethod, JavaValue):
+                  HasOptimMethod, HasSamplePreprocessing, JavaValue):
     """
     NNEstimator extends org.apache.spark.ml.Estimator and supports training a BigDL model with
     Spark DataFrame data. It can be integrated into a standard Spark ML Pipeline to enable
@@ -96,97 +118,69 @@ class NNEstimator(JavaEstimator, HasFeaturesCol, HasLabelCol, HasPredictionCol, 
     More concrete examples are available in package com.intel.analytics.zoo.examples.nnframes
     """
 
-    def __init__(self, model, criterion, sample_preprocessing, jvalue=None, bigdl_type="float"):
+    def __init__(self, model, criterion,
+                 feature_preprocessing=SeqToTensor(),
+                 label_preprocessing=SeqToTensor(),
+                 jvalue=None, bigdl_type="float"):
         """
-        Construct a NNEstimator with BigDL model, criterion and a sample_preprocessing that
-        transform a (feature, Option[label]) tuple to a BigDL Sample. This constructor is only
-        recommended for the expert users. Most users should use class method
-        NNEstimator.create.
+        Construct a NNEstimator with BigDL model, criterion and Preprocessing for feature and label
+        data.
         :param model: BigDL Model to be trained.
         :param criterion: BigDL criterion.
-        :param sample_preprocessing: Expert param. A Preprocessing that transforms the (feature,
-               Option[label]) tuple to a BigDL Sample[T], where T is decided by the BigDL model.
+        :param feature_preprocessing: The param converts the data in feature column to a
+               Tensor or to a Sample directly. It expects a List of Int as the size of the
+               converted Tensor, or a Preprocessing[F, Tensor[T]]
 
-               Note that sample_preprocessing should be able to handle the case that label = None.
-               During fit, NNEstimator will extract (feature, Option[label]) tuple from input
-               DataFrame and use sample_preprocessing to transform the tuple into BigDL Sample
-               to be ingested by the model. If Label column is not available, (feature, None)
-               will be sent to sample_preprocessing.
+               If a List of Int is set as feature_preprocessing, it can only handle the case that
+               feature column contains the following data types:
+               Float, Double, Int, Array[Float], Array[Double], Array[Int] and MLlib Vector. The
+               feature data are converted to Tensors with the specified sizes before
+               sending to the model. Internally, a SeqToTensor is generated according to the
+               size, and used as the feature_preprocessing.
 
-               The sample_preprocessing will also be copied to the generated NNModel and applied
-               to feature column during transform, where (feature, None) will be passed to the
-               sample_preprocessing.
-        :param jvalue: Java object create by Py4j
-        :param bigdl_type: optional parameter. data type of model, "float"(default) or "double".
-        """
-        super(NNEstimator, self).__init__()
-        self.value = jvalue if jvalue else callBigDlFunc(
-            bigdl_type, self.jvm_class_constructor(), model, criterion, sample_preprocessing)
-        self.bigdl_type = bigdl_type
-        self._java_obj = self.value
-        self.maxEpoch = Param(self, "maxEpoch", "number of max Epoch")
-        self.learningRate = Param(self, "learningRate", "learning rate")
-        self._setDefault(maxEpoch=50, learningRate=1e-3, batchSize=1)
-        self.sample_preprocessing = sample_preprocessing
-        self.train_summary = None
-        self.validation_config = None
-        self.validation_summary = None
+               Alternatively, user can set feature_preprocessing as Preprocessing[F, Tensor[T]]
+               that transforms the feature data to a Tensor[T]. Some pre-defined Preprocessing are
+               provided in package zoo.feature. Multiple Preprocessing can be combined as a
+               ChainedPreprocessing.
 
-    @classmethod
-    def create(cls, model, criterion, feature_preprocessing, label_preprocessing,
-               jvalue=None, bigdl_type="float"):
-        """
-        Construct a NNEstimator with a feature_preprocessing and a label_Preprocessing, which
-        convert the data in feature column and label column to Tensors (Multi-dimension array)
-        for model. This is the the recommended constructor for most users.
-
-        The feature_preprocessing will be copied to the fitted NNModel, and apply to feature
-        column data during transform.
-
-        :param model: BigDL Model to be trained.
-        :param criterion: BigDL criterion.
-        :param feature_preprocessing: A Preprocessing that transforms the feature data to a
-               Tensor[T]. Some pre-defined Preprocessing are provided in package
-               zoo.feature. E.g.
-               ArrayToTensor is used to transform Array[_] in DataFrame to Tensor. For a feature
-               column that contains 576 floats in an Array, Users can set
-               ArrayToTensor(Array(28, 28)) as feature_preprocessing, which will convert the feature
-               data into Tensors with dimension 28 * 28 to be processed by a convolution Model.
-               For a simple linear model, user may just use ArrayToTensor(Array(576)), which will
-               convert the data into Tensors with single dimension (576).
-               MLlibVectorToTensor is used to transform org.apache.spark.mllib.linalg.Vector
-               to a Tensor.
-               ScalarToTensor transform a number to a Tensor with single dimension of length 1.
-               Multiple Preprocessing can be combined as a ChainedPreprocessing.
+               The feature_preprocessing will also be copied to the generated NNModel and applied
+               to feature column during transform.
         :param label_preprocessing: similar to feature_preprocessing, but applies to Label data.
         :param jvalue: Java object create by Py4j
         :param bigdl_type: optional parameter. data type of model, "float"(default) or "double".
         """
-        return cls(model, criterion,
-                   FeatureLabelPreprocessing(feature_preprocessing, label_preprocessing),
-                   jvalue, bigdl_type)
+        super(NNEstimator, self).__init__()
+        if type(feature_preprocessing) is list:
+            assert(all(isinstance(x, int) for x in feature_preprocessing))
+            feature_preprocessing = SeqToTensor(feature_preprocessing)
 
-    @classmethod
-    def createWithSize(cls, model, criterion, feature_size, label_size,
-                       jvalue=None, bigdl_type="float"):
-        """
-        Construct a NNEstimator with a feature size and label size. The constructor is useful
-        when the feature column and label column contains the following data types:
-        Float, Double, Int, Array[Float], Array[Double], Array[Int] and MLlib Vector. The
-        feature and label data are converted to Tensors with the specified sizes before sending
-        to the model.
+        if type(label_preprocessing) is list:
+            assert(all(isinstance(x, int) for x in label_preprocessing))
+            label_preprocessing = SeqToTensor(label_preprocessing)
 
-        :param model: BigDL Model to be trained.
-        :param criterion: BigDL criterion.
-        :param feature_size: The size (Tensor dimensions) of the feature data. e.g. an image
-                            may be with width * height = 28 * 28, featureSize = Array(28, 28).
-        :param label_size: The size (Tensor dimensions) of the label data.
-        :param jvalue: Java object create by Py4j
-        :param bigdl_type: optional parameter. data type of model, "float"(default) or "double".
+        sample_preprocessing = FeatureLabelPreprocessing(feature_preprocessing, label_preprocessing)
+
+        self.value = jvalue if jvalue else callBigDlFunc(
+            bigdl_type, self.jvm_class_constructor(), model, criterion, sample_preprocessing)
+        self.samplePreprocessing = sample_preprocessing
+        self.bigdl_type = bigdl_type
+        self._java_obj = self.value
+
+        self.maxEpoch = Param(self, "maxEpoch", "number of max Epoch")
+        self.learningRate = Param(self, "learningRate", "learning rate")
+        self._setDefault(maxEpoch=50, learningRate=1e-3, batchSize=1)
+
+        self.train_summary = None
+        self.validation_config = None
+        self.validation_summary = None
+
+    def setSamplePreprocessing(self, val):
         """
-        return cls(model, criterion,
-                   FeatureLabelPreprocessing(SeqToTensor(feature_size), SeqToTensor(label_size)),
-                   jvalue, bigdl_type)
+        Sets the value of sample_preprocessing
+        :param val: a Preprocesing[(Feature, Option(Label), Sample]
+        """
+        super(NNEstimator, self).setSamplePreprocessing(val)
+        return self
 
     def setMaxEpoch(self, val):
         """
@@ -278,7 +272,8 @@ class NNEstimator(JavaEstimator, HasFeaturesCol, HasLabelCol, HasPredictionCol, 
         return self.validation_config
 
     def _create_model(self, java_model):
-        nnModel = NNModel.of(java_model, FeatureToTupleAdapter(self.sample_preprocessing),
+        nnModel = NNModel.of(java_model,
+                             ChainedPreprocessing([ToTuple(), self.getSamplePreprocessing()]),
                              self.bigdl_type)
         nnModel.setFeaturesCol(self.getFeaturesCol()) \
             .setPredictionCol(self.getPredictionCol()) \
@@ -286,7 +281,8 @@ class NNEstimator(JavaEstimator, HasFeaturesCol, HasLabelCol, HasPredictionCol, 
         return nnModel
 
 
-class NNModel(JavaTransformer, HasFeaturesCol, HasPredictionCol, HasBatchSize, JavaValue):
+class NNModel(JavaTransformer, HasFeaturesCol, HasPredictionCol, HasBatchSize,
+              HasSamplePreprocessing, JavaValue):
     """
     NNModel extends Spark ML Transformer and supports BigDL model with Spark DataFrame.
 
@@ -296,60 +292,42 @@ class NNModel(JavaTransformer, HasFeaturesCol, HasPredictionCol, HasBatchSize, J
     After transform, the prediction column contains the output of the model as Array[T], where
     T (Double or Float) is decided by the model type.
     """
-    def __init__(self, model, sample_preprocessing, jvalue=None, bigdl_type="float"):
+    def __init__(self, model, feature_preprocessing=SeqToTensor(), jvalue=None, bigdl_type="float"):
         """
         create a NNModel with a BigDL model
         :param model: trained BigDL model to use in prediction.
-        :param sample_preprocessing: A Preprocessing that transforms the feature data to a
-               Sample[T].
+        :param feature_preprocessing: The param converts the data in feature column to a
+                                      Tensor. It expects a List of Int as
+                                      the size of the converted Tensor, or a
+                                      Preprocessing[F, Tensor[T]]
         :param jvalue: Java object create by Py4j
         :param bigdl_type: optional parameter. data type of model, "float"(default) or "double".
         """
         super(NNModel, self).__init__()
+        if type(feature_preprocessing) is list:
+            assert(all(isinstance(x, int) for x in feature_preprocessing))
+            feature_preprocessing = SeqToTensor(feature_preprocessing)
+
+        sample_preprocessing = ChainedPreprocessing([feature_preprocessing, TensorToSample()])
+
         self.value = jvalue if jvalue else callBigDlFunc(
             bigdl_type, self.jvm_class_constructor(), model, sample_preprocessing)
+        self.samplePreprocessing = sample_preprocessing
         self._java_obj = self.value
         self.bigdl_type = bigdl_type
 
     @classmethod
-    def create(cls, model, feature_preprocessing, jvalue=None, bigdl_type="float"):
-        """
-        Construct NNModel with a BigDL model and a feature-to-tensor Preprocessing
-        :param model: trainned BigDL models to use in prediction.
-        :param feature_preprocessing: A Preprocessing that transforms the feature data to a
-               Tensor[T]. Some pre-defined Preprocessing are provided in package
-               zoo.feature. E.g.
-               ArrayToTensor is used to transform Array[_] in DataFrame to Tensor. For a feature
-               column that contains 576 floats in an Array, Users can set
-               ArrayToTensor(Array(28, 28)) as feature_preprocessing, which will convert the feature
-               data into Tensors with dimension 28 * 28 to be processed by a convolution Model.
-               For a simple linear model, user may just use ArrayToTensor(Array(576)), which will
-               convert the data into Tensors with single dimension (576).
-               MLlibVectorToTensor is used to transform org.apache.spark.mllib.linalg.Vector
-               to a Tensor.
-               ScalarToTensor transform a number to a Tensor with single dimension of length 1.
-               Multiple Preprocessing can be combined as a ChainedPreprocessing.
-        :param jvalue: Java object create by Py4j
-        :param bigdl_type(optional): Data type of BigDL model, "float"(default) or "double".
-        :return:
-        """
-        chained_transformer = ChainedPreprocessing([feature_preprocessing, TensorToSample()])
-        return NNModel(model, chained_transformer, jvalue, bigdl_type)
-
-    @classmethod
     def of(self, jvalue, sample_preprocessing=None, bigdl_type="float"):
-        model = NNModel(model=None, sample_preprocessing=sample_preprocessing, jvalue=jvalue,
-                        bigdl_type=bigdl_type)
+        model = NNModel(model=None, jvalue=jvalue, bigdl_type=bigdl_type)\
+            .setSamplePreprocessing(sample_preprocessing)
         return model
 
-    def setPreprocessing(self, val):
+    def setSamplePreprocessing(self, val):
         """
-        set Preprocessing.
-        :param value: A [[Preprocessing]] that transforms the feature data to a Sample[T].
+        Sets the value of sample_preprocessing
+        :param val: a Preprocesing[Feature, Sample]
         """
-        pythonBigDL_method_name = "setNNModelPreprocessing"
-        callBigDlFunc(self.bigdl_type, pythonBigDL_method_name, self.value, val)
-        self.validation_summary = val
+        super(NNModel, self).setSamplePreprocessing(val)
         return self
 
 
@@ -359,74 +337,35 @@ class NNClassifier(NNEstimator):
     classification tasks. It only supports label column of DoubleType, and the fitted
     NNClassifierModel will have the prediction column of DoubleType.
     """
-    def __init__(self, model, criterion, sample_preprocessing, jvalue=None, bigdl_type="float"):
+    def __init__(self, model, criterion, feature_preprocessing=SeqToTensor(),
+                 jvalue=None, bigdl_type="float"):
         """
         :param model: BigDL module to be optimized
         :param criterion: BigDL criterion method
-        :param sample_preprocessing: Expert param. A Preprocessing that transforms the (feature,
-               Option[label]) tuple to a BigDL Sample[T], where T is decided by the BigDL model.
-
-               Note that sample_preprocessing should be able to handle the case that label = None.
-               During fit, NNEstimator will extract (feature, Option[label]) tuple from input
-               DataFrame and use sample_preprocessing to transform the tuple into BigDL Sample
-               to be ingested by the model. If Label column is not available, (feature, None)
-               will be sent to sample_preprocessing.
-
-               The sample_preprocessing will also be copied to the generated NNModel and applied
-               to feature column during transform, where (feature, None) will be passed to the
-               sample_preprocessing.
-               Multiple Preprocessing can be combined as a ChainedPreprocessing.
+        :param feature_preprocessing: The param converts the data in feature column to a
+                                      Tensor. It expects a List of Int as
+                                      the size of the converted Tensor, or a
+                                      Preprocessing[F, Tensor[T]]
         :param bigdl_type(optional): Data type of BigDL model, "float"(default) or "double".
         """
         super(NNClassifier, self).__init__(
-            model, criterion, sample_preprocessing, jvalue, bigdl_type)
+            model, criterion, feature_preprocessing, ScalarToTensor(), jvalue, bigdl_type)
 
-    @classmethod
-    def create(cls, model, criterion, feature_preprocessing, jvalue=None, bigdl_type="float"):
+    def setSamplePreprocessing(self, val):
         """
-        Construct a NNEstimator with a feature_preprocessing and a label_Preprocessing, which
-        convert the data in feature column and label column to Tensors (Multi-dimension array)
-        for model. This is the the recommended constructor for most users.
+        Sets the value of sample_preprocessing
+        :param val: a Preprocesing[(Feature, Option(Label), Sample]
+        """
+        super(NNClassifier, self).setSamplePreprocessing(val)
+        return self
 
-        :param model: BigDL module to be optimized
-        :param criterion: BigDL criterion method
-        :param feature_Preprocessing: A Preprocessing that transforms the feature data to a
-               Tensor[T]. Some pre-defined Preprocessing are provided in package
-               zoo.feature. E.g.
-               ArrayToTensor is used to transform Array[_] in DataFrame to Tensor. For a feature
-               column that contains 576 floats in an Array, Users can set
-               ArrayToTensor(Array(28, 28)) as feature_Preprocessing, which will convert the feature
-               data into Tensors with dimension 28 * 28 to be processed by a convolution Model.
-               For a simple linear model, user may just use ArrayToTensor(Array(576)), which will
-               convert the data into Tensors with single dimension (576).
-               MLlibVectorToTensor is used to transform org.apache.spark.mllib.linalg.Vector
-               to a Tensor.
-               ScalarToTensor transform a number to a Tensor with single dimension of length 1.
-               Multiple Preprocessing can be combined as a ChainedPreprocessing.
-        """
-        return NNClassifier(model, criterion,
-                            FeatureLabelPreprocessing(feature_preprocessing, ScalarToTensor()),
-                            jvalue, bigdl_type)
-
-    @classmethod
-    def createWithSize(cls, model, criterion, feature_size, jvalue=None, bigdl_type="float"):
-        """
-        Construct a NNClassifier with a feature size. The constructor is useful
-        when the feature column contains the following data types:
-        Float, Double, Int, Array[Float], Array[Double], Array[Int] and MLlib Vector. The
-        feature data are converted to Tensors with the specified sizes before sending
-        to the model.
-        :param model: BigDL Model to be trained.
-        :param criterion: BigDL criterion.
-        :param feature_size: The size (Tensor dimensions) of the feature data. e.g. an image
-                            may be with width * height = 28 * 28, featureSize = Array(28, 28).
-        :param label_size: The size (Tensor dimensions) of the label data.
-        :param jvalue: Java object create by Py4j
-        :param bigdl_type: optional parameter. data type of model, "float"(default) or "double".
-        """
-        return cls(model, criterion,
-                   FeatureLabelPreprocessing(SeqToTensor(feature_size), ScalarToTensor()),
-                   jvalue, bigdl_type)
+    def _create_model(self, java_model):
+        classifierModel = NNClassifierModel.of(java_model, ChainedPreprocessing(
+            [ToTuple(), self.getSamplePreprocessing()]), self.bigdl_type)
+        classifierModel.setFeaturesCol(self.getFeaturesCol()) \
+            .setPredictionCol(self.getPredictionCol()) \
+            .setBatchSize(self.getBatchSize())
+        return classifierModel
 
 
 class NNClassifierModel(NNModel):
@@ -434,29 +373,29 @@ class NNClassifierModel(NNModel):
     NNClassifierModel is a specialized [[NNModel]] for classification tasks. The prediction
     column will have the datatype of Double.
     """
-    def __init__(self,  model, feature_preprocessing, jvalue=None, bigdl_type="float"):
+    def __init__(self,  model, feature_preprocessing=SeqToTensor(), jvalue=None,
+                 bigdl_type="float"):
         """
         :param model: trained BigDL model to use in prediction.
-        :param feature_Preprocessing: A Preprocessing that transforms the feature data to a
-               Tensor[T]. Some pre-defined Preprocessing are provided in package
-               zoo.feature. E.g.
-               ArrayToTensor is used to transform Array[_] in DataFrame to Tensor. For a feature
-               column that contains 576 floats in an Array, Users can set
-               ArrayToTensor(Array(28, 28)) as feature_Preprocessing, which will convert the feature
-               data into Tensors with dimension 28 * 28 to be processed by a convolution Model.
-               For a simple linear model, user may just use ArrayToTensor(Array(576)), which will
-               convert the data into Tensors with single dimension (576).
-               MLlibVectorToTensor is used to transform org.apache.spark.mllib.linalg.Vector
-               to a Tensor.
-               ScalarToTensor transform a number to a Tensor with single dimension of length 1.
-               Multiple Preprocessing can be combined as a ChainedPreprocessing.
+        :param feature_preprocessing: The param converts the data in feature column to a
+                                      Tensor. It expects a List of Int as
+                                      the size of the converted Tensor, or a
+                                      Preprocessing[F, Tensor[T]]
         :param jvalue: Java object create by Py4j
         :param bigdl_type(optional): Data type of BigDL model, "float"(default) or "double".
         """
         super(NNClassifierModel, self).__init__(model, feature_preprocessing, jvalue, bigdl_type)
 
     @classmethod
-    def of(self, jvalue, feaTran=None, bigdl_type="float"):
-        model = NNClassifierModel(
-            model=None, feature_preprocessing=feaTran, jvalue=jvalue, bigdl_type=bigdl_type)
+    def of(self, jvalue, sample_preprocessing=None, bigdl_type="float"):
+        model = NNClassifierModel(model=None, jvalue=jvalue, bigdl_type=bigdl_type) \
+            .setSamplePreprocessing(sample_preprocessing)
         return model
+
+    def setSamplePreprocessing(self, val):
+        """
+        Sets the value of sample_preprocessing
+        :param val: a Preprocesing[Feature, Sample]
+        """
+        super(NNClassifierModel, self).setSamplePreprocessing(val)
+        return self
