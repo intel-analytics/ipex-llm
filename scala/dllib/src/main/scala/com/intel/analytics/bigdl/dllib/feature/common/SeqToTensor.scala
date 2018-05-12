@@ -36,9 +36,10 @@ class SeqToTensor[T: ClassTag](size: Array[Int])(implicit ev: TensorNumeric[T])
         case sd: Seq[Any] => matchSeq(sd)
         case mllibVec: org.apache.spark.mllib.linalg.Vector =>
           f.asInstanceOf[org.apache.spark.mllib.linalg.Vector ].toArray.map(ev.fromType(_))
-        case _ => throw new IllegalArgumentException("SeqToTensor only supports Float and Double")
+        case _ => throw new IllegalArgumentException("SeqToTensor only supports Float, Double, " +
+          s"Array[Float], Array[Double] or MLlib Vector but got $f")
       }
-      Tensor(feature, size)
+      Tensor(feature, if (size.isEmpty) Array(feature.length) else size).contiguous()
     }
   }
 
@@ -53,6 +54,7 @@ class SeqToTensor[T: ClassTag](size: Array[Int])(implicit ev: TensorNumeric[T])
 
 
 object SeqToTensor {
-  def apply[T: ClassTag](size: Array[Int])(implicit ev: TensorNumeric[T]): SeqToTensor[T] =
-    new SeqToTensor[T](size)
+  def apply[T: ClassTag](
+      size: Array[Int] = Array()
+    )(implicit ev: TensorNumeric[T]): SeqToTensor[T] = new SeqToTensor[T](size)
 }
