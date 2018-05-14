@@ -70,6 +70,7 @@ class TrainingSpec extends FlatSpec with Matchers with BeforeAndAfter  {
     val output = Dense[Float](8, activation = "relu").inputs(input)
     val model = Model[Float](input, output)
     model.compile(optimizer = "adam", loss = "mae", metrics = null)
+    model.disableGradientClipping()
     model.fit(trainingData, batchSize = 8, nbEpoch = 2)
   }
 
@@ -85,6 +86,7 @@ class TrainingSpec extends FlatSpec with Matchers with BeforeAndAfter  {
       metrics = List("accuracy"))
     val tmpLogDir = Files.createTempDir()
     val tmpCheckpointDir = Files.createTempDir()
+    model.setConstantGradientClipping(0.01f, 0.03f)
     model.setTensorBoard(tmpLogDir.getAbsolutePath, "TrainingSpec")
     model.setCheckpoint(tmpCheckpointDir.getAbsolutePath)
     model.fit(trainingData, batchSize = 8, validationData = testData, nbEpoch = 2)
@@ -100,6 +102,7 @@ class TrainingSpec extends FlatSpec with Matchers with BeforeAndAfter  {
     model.add(Dense[Float](8, activation = "relu", inputShape = Shape(4)))
     model.compile(optimizer = new SGD[Float](), loss = MSECriterion[Float](),
       metrics = List(new Top1Accuracy[Float]))
+    model.setGradientClippingByL2Norm(0.01f)
     model.fit(localData, nbEpoch = 2, validationData = null)
     val accuracy = model.evaluate(localData)
     val predictResults = model.predict(localData)
