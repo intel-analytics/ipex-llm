@@ -1,0 +1,1 @@
+SPARK_OPTS='--master=local[1] --jars /home/yuhao/workspace/lib/bigdl0.4/dist-spark-2.1.1-scala-2.11.8-all-0.4.0-dist/lib/bigdl-SPARK_2.1-0.4.0-jar-with-dependencies.jar,./fraud-1.0.1-SNAPSHOT.jar' TOREE_OPTS='--nosparkcontext' jupyter notebook
