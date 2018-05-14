@@ -30,3 +30,48 @@ ${SPARK_HOME}/bin/spark-submit \
         --conf spark.driver.extraClassPath=${ANALYTICS_ZOO_JAR} \
         --conf spark.executor.extraClassPath=${ANALYTICS_ZOO_JAR} \
         ${ANALYTICS_ZOO_HOME}/apps/anomaly-detection/anomaly-detection-nyc-taxi.py
+
+./apps/ipynb2py.sh ./apps/object-detection/object-detection
+
+echo "#2 start app test for object-detection"
+FILENAME="$ANALYTICS_ZOO_HOME/apps/object-detection/analytics-zoo_ssd-mobilenet-300x300_PASCAL_0.1.0.model"
+if [ -f "$FILENAME" ]
+then
+    echo "$FILENAME already exists" 
+else
+    wget $FTP_URI/analytics-zoo-models-new/analytics-zoo_ssd-mobilenet-300x300_PASCAL_0.1.0.model -P $ANALYTICS_ZOO_HOME/apps/object-detection/
+fi 
+if [ -f "$FILENAME" ]
+then
+    echo "$FILENAME already exists" 
+else
+    wget https://s3-ap-southeast-1.amazonaws.com/analytics-zoo-models/object-detection/analytics-zoo_ssd-mobilenet-300x300_PASCAL_0.1.0.model -P $ANALYTICS_ZOO_HOME/apps/object-detection/
+fi 
+FILENAME="$ANALYTICS_ZOO_HOME/apps/object-detection/train_dog.mp4"
+if [ -f "$FILENAME" ]
+then
+    echo "$FILENAME already exists" 
+else
+    wget $FTP_URI/analytics-zoo-data/data/apps/object-detection/train_dog.mp4 -P $ANALYTICS_ZOO_HOME/apps/object-detection/
+fi 
+if [ -f "$FILENAME" ]
+then
+    echo "$FILENAME already exists" 
+else
+    wget https://s3.amazonaws.com/analytics-zoo-data/train_dog.mp4 -P $ANALYTICS_ZOO_HOME/apps/object-detection/
+fi 
+${SPARK_HOME}/bin/spark-submit \
+        --master ${MASTER} \
+        --driver-cores 2  \
+        --driver-memory 12g  \
+        --total-executor-cores 2  \
+        --executor-cores 2  \
+        --executor-memory 12g \
+        --conf spark.akka.frameSize=64 \
+        --py-files ${ANALYTICS_ZOO_PYZIP},${ANALYTICS_ZOO_HOME}/apps/object-detection/object-detection.py  \
+        --properties-file ${ANALYTICS_ZOO_CONF} \
+        --jars ${ANALYTICS_ZOO_JAR} \
+        --conf spark.driver.extraClassPath=${ANALYTICS_ZOO_JAR} \
+        --conf spark.executor.extraClassPath=${ANALYTICS_ZOO_JAR} \
+        ${ANALYTICS_ZOO_HOME}/apps/object-detection/object-detection.py
+
