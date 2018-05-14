@@ -1,5 +1,15 @@
 #!/usr/bin/env python
 
+## Usage ###################
+# Run ./gen_site.py to build site with ZOO docs with following commands
+# -s: add scala docs
+# -p: add python docs
+# -m [port]: --startserver
+# -h: help
+# Example
+# ./gen_site.py -s -p -m 8080
+############################
+
 import argparse
 import sys
 import os
