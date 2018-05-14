@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 ## Usage ###################
-# Run ./gen_site.py to build site with ZOO docs with following commands
+# Run ./gen_site.py to build site with Analytics Zoo docs with following commands
 # -s: add scala docs
 # -p: add python docs
 # -m [port]: --startserver
