@@ -94,9 +94,11 @@ if scaladocs:
     zoo_dir = os.path.dirname(dir_name)
     os.chdir(zoo_dir)
     run_cmd(['mvn', 'scala:doc'], 'Build scala doc error')
-    scaladocs_dir = zoo_dir + '/zoo/target/site/scaladocs/*'
-    target_dir = dir_name + '/site/APIGuide/scaladoc/'
-    run_cmd(['cp', '-r', scaladocs_dir, target_dir],
+    scaladocs_dir = zoo_dir + '/zoo/target/site/scaladocs/'
+    target_dir = dir_name + '/site/APIGuide/'
+    if (os.path.exists(target_dir) == False):
+        run_cmd(['mkdir', target_dir], 'mkdir APIGuide error')
+    run_cmd(['cp', '-r', scaladocs_dir, target_dir + 'scaladoc/'],
         'mv scaladocs error', s=True)
 
 if pythondocs:
@@ -106,7 +108,8 @@ if pythondocs:
     os.chdir(pyspark_dir)
     run_cmd(['./doc-gen.sh'], 'Build python doc error')
     pythondocs_dir = pyspark_dir + '_build/html/'
-    run_cmd(['mkdir', target_dir], 'mkdir APIGuide error')
+    if(os.path.exists(target_dir) == False):
+        run_cmd(['mkdir', target_dir], 'mkdir APIGuide error')
     run_cmd(['cp', '-r', pythondocs_dir, target_dir + 'python-api-doc/'],
         'mv pythondocs error', s=True)
 
