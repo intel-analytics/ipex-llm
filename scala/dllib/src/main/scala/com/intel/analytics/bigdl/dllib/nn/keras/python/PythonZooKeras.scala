@@ -137,6 +137,23 @@ class PythonZooKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonB
     module.setTensorBoard(logDir, appName)
   }
 
+  def zooDisableGradientClipping(module: KerasNet[T]): Unit = {
+    module.disableGradientClipping()
+  }
+
+  def zooSetConstantGradientClipping(
+      module: KerasNet[T],
+      min: Float,
+      max: Float): Unit = {
+    module.setConstantGradientClipping(min, max)
+  }
+
+  def zooSetGradientClippingByL2Norm(
+      module: KerasNet[T],
+      clipNorm: Float): Unit = {
+    module.setGradientClippingByL2Norm(clipNorm)
+  }
+
   def zooSetCheckpoint(
       module: KerasNet[T],
       path: String,
