@@ -97,6 +97,41 @@ class KerasNet(ZooKerasLayer):
                       path,
                       over_write)
 
+    def disable_gradient_clipping(self):
+        """
+        Call this if you would like to disable gradient clipping during the training process.
+        In order to take effect, it needs to be called before fit.
+        """
+        callBigDlFunc(self.bigdl_type, "zooDisableGradientClipping",
+                      self.value)
+
+    def set_constant_gradient_clipping(self, min, max):
+        """
+        Call this if you would like to set constant gradient clipping during the training process.
+        In order to take effect, it needs to be called before fit.
+
+        # Arguments
+        min: The minimum value to clip by. Float.
+        max: The maximum value to clip by. Float.
+        """
+        callBigDlFunc(self.bigdl_type, "zooSetConstantGradientClipping",
+                      self.value,
+                      float(min),
+                      float(max))
+
+    def set_gradient_clipping_by_l2_norm(self, clip_norm):
+        """
+        Call this if you would like to clip gradient to a maximum L2-Norm
+        during the training process.
+        In order to take effect, it needs to be called before fit.
+
+        # Arguments
+        clip_norm: Gradient L2-Norm threshold. Float.
+        """
+        callBigDlFunc(self.bigdl_type, "zooSetGradientClippingByL2Norm",
+                      self.value,
+                      float(clip_norm))
+
     def fit(self, x, y=None, batch_size=32, nb_epoch=10, validation_data=None, distributed=True):
         """
         Train a model for a fixed number of epochs on a dataset.
