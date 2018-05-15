@@ -70,7 +70,7 @@ run_cmd(['mkdocs', '--version'],
 if not (local_doc and os.path.isdir("/tmp/zoo-doc")):
     run_cmd(['rm', '-rf', '/tmp/zoo-doc'],
         'rm doc repo error')
-    run_cmd(['git', 'clone', 'https://github.com/analytics-zoo/analytics-zoo.github.io.git', '/tmp/zoo-doc'],
+    run_cmd(['git', 'clone', 'https://github.com/simanw304/analytics-zoo.github.io.git', '/tmp/zoo-doc'],
         'git clone doc repo error')
 
 # refresh theme folder
@@ -89,15 +89,15 @@ run_cmd(['mkdocs', 'build'],
 
 # replace resources folder in site
 run_cmd(['cp', '/tmp/zoo-doc/css/*', '{}/site/css'.format(dir_name)],
-    'mv theme foler error', s=True)
+    'mv theme folder error', s=True)
 run_cmd(['cp', '/tmp/zoo-doc/js/*', '{}/site/js'.format(dir_name)],
-    'mv theme foler error', s=True)
+    'mv theme folder error', s=True)
 run_cmd(['cp', '/tmp/zoo-doc/fonts/*', '{}/site/fonts'.format(dir_name)],
-    'mv theme foler error', s=True)
+    'mv theme folder error', s=True)
 run_cmd(['cp', '/tmp/zoo-doc/img/*', '{}/site/img'.format(dir_name)],
-    'mv theme foler error', s=True)
+    'mv theme folder error', s=True)
 run_cmd(['cp', '/tmp/zoo-doc/version-list', '{}/site'.format(dir_name)],
-    'mv theme foler error', s=True)
+    'mv theme folder error', s=True)
 
 if scaladocs:
     print 'build scala doc'
