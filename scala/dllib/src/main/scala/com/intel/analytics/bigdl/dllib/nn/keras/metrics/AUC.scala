@@ -23,6 +23,16 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
 import scala.collection.mutable.ArrayBuffer
 
+/**
+ * Represent an accuracy result. It's equal to the probability that a
+ * classifier will rank a randomly chosen positive instance higher
+ * than a randomly chosen negative one.
+ * Refer: https://en.wikipedia.org/wiki/Receiver_operating_characteristic
+ * @param tp True positive numbers
+ * @param fp False positive numbers
+ * @param po Positive numbers
+ * @param ne Negative numbers
+ */
 class AucScore(private val tp: Tensor[Float], private val fp: Tensor[Float],
                private var po: Tensor[Float], private var ne: Tensor[Float])
   extends ValidationResult {
@@ -110,6 +120,7 @@ class AucScore(private val tp: Tensor[Float], private val fp: Tensor[Float],
 }
 
 /**
+ * Area under ROC cure.
  * Metric for binary(0/1) classification, support single label and multiple labels.
  * @param thresholdNum The number of thresholds. The quality of approximation
  *                     may vary depending on thresholdNum.
@@ -173,10 +184,12 @@ class AUC[T](thresholdNum: Int)(implicit ev: TensorNumeric[T])
     while (j < thresholdNum) {
       output.map(target, (a, b) => {
         val fb = ev.toType[Float](b)
+        if (fb != 1 && fb != 0) {
+          throw new UnsupportedOperationException("Only support binary(0/1) target")
+        }
         if (ev.isGreaterEq(a, ev.fromType[Float](thresholds(j)))) {
           if (fb == 1) tp(j) += 1
-          else if (fb == 0) fp(j) += 1
-          else throw new UnsupportedOperationException("Only support binary(0/1) target")
+          else fp(j) += 1
         }
         a })
       j += 1
