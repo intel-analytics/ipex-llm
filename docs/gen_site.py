@@ -70,7 +70,7 @@ run_cmd(['mkdocs', '--version'],
 if not (local_doc and os.path.isdir("/tmp/zoo-doc")):
     run_cmd(['rm', '-rf', '/tmp/zoo-doc'],
         'rm doc repo error')
-    run_cmd(['git', 'clone', 'https://github.com/simanw304/analytics-zoo.github.io.git', '/tmp/zoo-doc'],
+    run_cmd(['git', 'clone', 'https://github.com/analytics-zoo/analytics-zoo.github.io.git', '/tmp/zoo-doc'],
         'git clone doc repo error')
 
 # refresh theme folder
