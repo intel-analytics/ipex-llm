@@ -17,7 +17,7 @@
 from zoo.pipeline.api.autograd import *
 from zoo.pipeline.api.keras.layers import *
 from zoo.pipeline.api.keras.models import *
-
+from optparse import OptionParser
 
 def mean_absolute_error(y_true, y_pred):
     result = mean(abs(y_true - y_pred), axis=1)
@@ -29,6 +29,11 @@ def add_one_func(x):
 
 
 if __name__ == "__main__":
+    parser = OptionParser()
+    parser.add_option("--nb_epoch", dest="nb_epoch", default="500")
+
+    (options, args) = parser.parse_args(sys.argv)
+
     data_len = 1000
     X_ = np.random.uniform(0, 1, (1000, 2))
     Y_ = ((2 * X_).sum(1) + 0.4).reshape([data_len, 1])
@@ -46,7 +51,7 @@ if __name__ == "__main__":
     model.fit(x=X_,
               y=Y_,
               batch_size=32,
-              nb_epoch=500,
+              nb_epoch=int(options.nb_epoch),
               distributed=False)
 
     model.save_graph_topology('./log')
