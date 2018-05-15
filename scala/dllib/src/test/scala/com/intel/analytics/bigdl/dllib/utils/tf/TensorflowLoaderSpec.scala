@@ -182,6 +182,59 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
     output1 should be(output2)
   }
 
+  "TensorFlow loader" should "throw exception if input contain duplicate names" in {
+    val resource = getClass().getClassLoader().getResource("tf")
+    val path = processPath(resource.getPath()) + JFile.separator + "test.pb"
+    intercept[IllegalArgumentException] {
+      val model = TensorflowLoader.load(path, Seq("Placeholder", "Placeholder"), Seq("output"),
+        ByteOrder.LITTLE_ENDIAN)
+    }
+  }
+
+  "TensorFlow loader" should "throw exception if input contain conflict names" in {
+    val resource = getClass().getClassLoader().getResource("tf")
+    val path = processPath(resource.getPath()) + JFile.separator + "test.pb"
+    intercept[IllegalArgumentException] {
+      val model = TensorflowLoader.load(path, Seq("Placeholder", "Placeholder:0"), Seq("output"),
+        ByteOrder.LITTLE_ENDIAN)
+    }
+  }
+
+  "TensorFlow loader" should "throw exception if input location is incorrect" in {
+    val resource = getClass().getClassLoader().getResource("tf")
+    val path = processPath(resource.getPath()) + JFile.separator + "test.pb"
+    intercept[IllegalArgumentException] {
+      val model = TensorflowLoader.load(path, Seq("MatMul:2"), Seq("output"),
+        ByteOrder.LITTLE_ENDIAN)
+    }
+  }
+
+  "TensorFlow loader" should "be able to build a BigDL graph with specify input location" in {
+    val resource = getClass().getClassLoader().getResource("tf")
+    val path = processPath(resource.getPath()) + JFile.separator + "test.pb"
+    val model = TensorflowLoader.load(path, Seq("MatMul:0"), Seq("output"),
+      ByteOrder.LITTLE_ENDIAN)
+    val container = model.asInstanceOf[Graph[Float]]
+    container.modules.length should be(4)
+    RandomGenerator.RNG.setSeed(100)
+    val input = Tensor[Float](4, 1).rand()
+    val output1 = container.forward(input)
+
+    val model2 = Sequential[Float]()
+    val fc1 = Linear[Float](1, 10)
+    fc1.parameters()._1(0).fill(0.2f)
+    fc1.parameters()._1(1).fill(0.1f)
+    model2.add(fc1).add(Tanh())
+
+    val fc2 = Linear[Float](10, 1)
+    fc2.parameters()._1(0).fill(0.2f)
+    fc2.parameters()._1(1).fill(0.1f)
+    model2.add(fc2)
+
+    val output2 = model2.forward(input)
+    output1 should be(output2)
+  }
+
   "TensorFlow loader" should "be able to build a BigDL graph from a subset of a tf graph" in {
     val resource = getClass().getClassLoader().getResource("tf")
     val path = processPath(resource.getPath()) + JFile.separator + "test.pb"
