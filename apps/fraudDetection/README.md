@@ -17,14 +17,9 @@ pip install https://dist.apache.org/repos/dist/dev/incubator/toree/0.2.0/snapsho
 3. To support the training for imbalanced data set in fraud detection, some Transformers and algorithms are developed in 
 https://github.com/intel-analytics/analytics-zoo/tree/legacy/pipeline/fraudDetection.
 
-4. build jar file with maven under the directory
+
+4. Start the notebook.
 
 ```
-mvn package
-```
-
-5. Start the notebook.
-
-```
-SPARK_OPTS='--master=local[1] --jars /path/to/zoo/jar/file,/.../target/fraud-1.0.1-SNAPSHOT-jar-with-dependencies.jar' TOREE_OPTS='--nosparkcontext' jupyter notebook
+SPARK_OPTS='--master=local[1] --jars /path/to/zoo/jar/file,/.../fraud-1.0.1-SNAPSHOT.jar' TOREE_OPTS='--nosparkcontext' jupyter notebook
 ```
