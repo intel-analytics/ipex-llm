@@ -27,8 +27,8 @@ class ImagePreprocessing(Preprocessing):
     """
     ImagePreprocessing is a transformer that transform ImageFeature
     """
-    def __init__(self, bigdl_type="float"):
-        super(ImagePreprocessing, self).__init__(bigdl_type)
+    def __init__(self, bigdl_type="float", *args):
+        super(ImagePreprocessing, self).__init__(bigdl_type, *args)
 
     def __call__(self, image_set, bigdl_type="float"):
         """
