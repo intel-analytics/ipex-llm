@@ -58,7 +58,7 @@ if __name__ == "__main__":
         [RowToImageFeature(), Resize(256, 256), CenterCrop(224, 224),
          ChannelNormalize(123.0, 117.0, 104.0), MatToTensor(), ImageFeatureToTensor()])
 
-    preTrainedNNModel = NNModel.create(Model.loadModel(model_path), transformer) \
+    preTrainedNNModel = NNModel(Model.loadModel(model_path), transformer) \
         .setFeaturesCol("image") \
         .setPredictionCol("embedding")
 
