@@ -46,7 +46,8 @@ ${SPARK_HOME}/bin/spark-submit \
     --jars ${ANALYTICS_ZOO_JAR} \
     --conf spark.driver.extraClassPath=${ANALYTICS_ZOO_JAR} \
     --conf spark.executor.extraClassPath=${ANALYTICS_ZOO_JAR} \
-    ${ANALYTICS_ZOO_HOME}/pyzoo/zoo/examples/autograd/custom.py
+    ${ANALYTICS_ZOO_HOME}/pyzoo/zoo/examples/autograd/custom.py \
+    --nb_epoch 2
 
 
 
