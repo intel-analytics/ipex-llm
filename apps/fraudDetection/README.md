@@ -1,8 +1,6 @@
-ZOO has been used in the Fraud Detection system for one of the top payment companies. As a highly simplified
-demo, this notebook uses the public data set to build a fraud detection example on Apache Spark.
+As a highly simplified demo, this notebook uses the public data set to build a fraud detection example on Apache Spark.
 
-The notebook is developed using Scala with Apache Spark 2.1 and ZOO 0.1.0. Refer to
-https://github.com/intel-analytics/analytics-zoo/tree/master/pipeline/fraudDetection for the extra feature transformers.
+The notebook is developed using Scala with Analytics Zoo for Spark 2.1 and BigDL.
 
 How to run the notebook:
 
@@ -14,7 +12,7 @@ An outline is:
 pip install https://dist.apache.org/repos/dist/dev/incubator/toree/0.2.0/snapshots/dev1/toree-pip/toree-0.2.0.dev1.tar.gz
 ```
 
-2. Build zoo jar file under Spark 2.x
+2. Build Analytics Zoo jar file under Spark 2.x.
 
 3. To support the training for imbalanced data set in fraud detection, some Transformers and algorithms are developed in 
 https://github.com/intel-analytics/analytics-zoo/tree/legacy/pipeline/fraudDetection.
