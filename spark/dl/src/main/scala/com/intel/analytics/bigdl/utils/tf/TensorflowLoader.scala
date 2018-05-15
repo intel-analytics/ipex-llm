@@ -44,7 +44,9 @@ object TensorflowLoader{
   /**
    * Load tensorflow model from a prototxt file
    * @param graphPrototxt where is the tensorflow protobuf file
-   * @param inputs input node names
+   * @param inputs input node names, where feed in the data. You can feed data into an internal
+   *               node. If the internal node has multiple dependency, you can use name:n to specify
+   *               which dependency you choose to feed
    * @param outputs output node names
    * @param byteOrder file byteOrder
    * @return
@@ -55,21 +57,29 @@ object TensorflowLoader{
     // Get node list
     val nodeList = parse(graphPrototxt)
 
-    // Construct tf node graph
-    val (tfGraph, adjustedInputsMap, _) =
-      buildTFGraph(nodeList, outputs, (node: NodeDef) => inputs.contains(node.getName))
+    // Input name remove the port
+    val realInputNames = inputs.map(i => if (i.split(":").length == 2) i.split(":")(0) else i)
+      .distinct
 
-    val adjustedInputs = ArrayBuffer[String]()
-    inputs.foreach(i => {
-      if (adjustedInputsMap.isDefinedAt(i)) {
-        adjustedInputsMap(i).foreach(n => adjustedInputs.append(n))
+    // Construct tf node graph
+    val (tfGraph, newInputMap, _) =
+      buildTFGraph(nodeList, outputs, (node: NodeDef) => realInputNames.contains(node.getName),
+        Some(getInputPorts(inputs)))
+
+    // If you choose an internal node with multiple inputs, extra placeholder will be insert into
+    // the model
+    // Keep the order with the inputs list
+    val newInputs = ArrayBuffer[String]()
+    realInputNames.foreach(i => {
+      if (newInputMap.isDefinedAt(i)) {
+        newInputMap(i).foreach(n => newInputs.append(n))
       }
     })
     // Try to load variables
     val context = binFile.map(loadBinFiles(_))
 
     // Build BigDL model from the tf node graph
-    buildBigDLModel(tfGraph, adjustedInputs, outputs, byteOrder, graphPrototxt, context)
+    buildBigDLModel(tfGraph, newInputs, outputs, byteOrder, graphPrototxt, context)
   }
 
   def checkpoints[T: ClassTag](graphFile: String, binFile: String, byteOrder: ByteOrder)(
@@ -78,6 +88,29 @@ object TensorflowLoader{
     val nodeList = parse(graphFile)
 
     new BigDLSessionImpl[T](nodeList.asScala, loadBinFiles(binFile), byteOrder)
+  }
+
+  /**
+   * Get the input ports if user specify. It will also check the input name list.
+   * @param inputs
+   * @return
+   */
+  private def getInputPorts(inputs: Seq[String]): mutable.Map[String, ArrayBuffer[Int]] = {
+    require(inputs.distinct.length == inputs.length,
+      "input should not contain duplicated names")
+    val inputPorts = inputs.filter(_.split(":").length == 2)
+    val result = mutable.HashMap[String, ArrayBuffer[Int]]()
+    inputPorts.foreach(s => {
+      val name = s.split(":")(0)
+      val pos = s.split(":")(1)
+      require(!inputs.contains(name), "You should not specify node name and node name " +
+        "with port at same time")
+      if (!result.isDefinedAt(name)) {
+        result(name) = ArrayBuffer[Int]()
+      }
+      result(name).append(pos.toInt)
+    })
+    result
   }
 
   /**
@@ -154,117 +187,160 @@ object TensorflowLoader{
   }
 
   /**
-   * Build tf ops graph from a given node list
-   * @param nodes
-   * @param outputNodeNames
+   * Build tf ops graph from a given node list. The graph output is the outputs.
+   *
+   * @param nodes Tensorflow NodeDefs
+   * @param outputs output node names
+   * @param isInput check if a node is input
+   * @param inputPorts if user want to use a part of the node input as model input
    * @return
    */
-  private[bigdl] def buildTFGraph(nodes : List[NodeDef], outputNodeNames: Seq[String],
-                                  isInput: (NodeDef) => Boolean = (_: NodeDef) => false)
-  : (DirectedGraph[NodeDef], mutable.HashMap[String, ArrayBuffer[String]], Seq[String]) = {
+  private[bigdl] def buildTFGraph(
+    nodes : List[NodeDef], outputs: Seq[String],
+    isInput: (NodeDef) => Boolean = (_: NodeDef) => false,
+    inputPorts: Option[mutable.Map[String, ArrayBuffer[Int]]] = None
+  ): (DirectedGraph[NodeDef], mutable.HashMap[String, ArrayBuffer[String]], Seq[String]) = {
     val name2Node = nodes.asScala.map(n => n.getName -> new Node(n)).toMap
 
     // Build graph
-    val outputNodes = if (outputNodeNames == null) {
+    val outputNodes = if (outputs == null) {
       name2Node.valuesIterator.filter(_.nextNodes.isEmpty).toArray
     } else {
       val results = name2Node.valuesIterator.toArray.filter(n =>
-        outputNodeNames.contains(n.element.getName))
-      require(results.length == outputNodeNames.length, "Invalid outputNode names")
+        outputs.contains(n.element.getName))
+      require(results.length == outputs.length, "Invalid outputNode names")
       results
     }
-
-    def connect(nodes: Seq[Node[NodeDef]]): (mutable.HashMap[String, ArrayBuffer[String]],
-      Seq[String]) = {
-
-      var inputCounter = 0
-      var depCounter = 0
-      val queue = new mutable.Queue[Node[NodeDef]]()
-      val visited = mutable.Set[Node[NodeDef]]()
-      val inputs = new mutable.HashMap[String, ArrayBuffer[String]]()
-      val originInputs = new mutable.ArrayBuffer[String]()
-
-      // Do a BFS to connect the nodes
-      queue.enqueue(nodes: _*)
-      while(queue.nonEmpty) {
-        val node = queue.dequeue()
-        if (!visited(node)) {
-          visited += node
-          if (!isInput(node.element) && !node.element.getInputList.isEmpty) {
-            // continue to traverse
-            node.element.getInputList.asScala.foreach { preNodeName =>
-              // It is tricky here, remove the first char in the name of control dep node
-              var realName = preNodeName
-              var controlDep = false
-              var channel = 0
-
-              if (realName.charAt(0) == '^') {
-                realName = realName.substring(1)
-                controlDep = true
-              }
-              if (realName.split(":").length > 1) {
-                val pair = realName.split(":")
-                realName = pair(0)
-                channel = pair(1).toInt
-              }
-
-              val preNode = name2Node(realName)
-
-              val currNode = if (controlDep) {
-                val dependencyNode = Node(NodeDef.newBuilder()
-                  .setOp("DependencyNode")
-                  .addInput(preNode.element.getName)
-                  .setName(s"depends_on_${preNode.element.getName}$depCounter")
-                  .build())
-                depCounter += 1
-                dependencyNode -> node
-                dependencyNode
-              } else {
-                node
-              }
-
-              preNode.add(currNode, Edge(channel + 1))
-              queue.enqueue(preNode)
-            }
-          } else {
-            if (inputs.get(node.element.getName).isEmpty) {
-              inputs(node.element.getName) = new ArrayBuffer[String]()
-            }
-            if (isInput(node.element) && node.element.getOp != "Placeholder") {
-              // if the predefined input node is not a Placeholder, add one to match the Input node
-              val inputNum = getInputNumber(node.element)
-              if (inputNum == 0) {
-                inputs(node.element.getName).append(node.element.getName)
-              } else {
-                var i = 0
-                while (i < inputNum) {
-                  val name = s"input$inputCounter"
-                  val placeholder = NodeDef.newBuilder()
-                    .setName(name)
-                    .setOp("Placeholder").build()
-                  inputCounter = inputCounter + 1
-                  val n = Node(placeholder)
-                  n -> node
-                  inputs(node.element.getName).append(name)
-                  i = i + 1
-                }
-              }
-              originInputs += node.element.getName
-            } else if (node.element.getOp == "Placeholder") {
-              inputs(node.element.getName).append(node.element.getName)
-              originInputs += node.element.getName
-            }
-          }
-        }
-      }
-      (inputs, originInputs)
-    }
-
-    val (inputs, originInputs) = connect(outputNodes)
+    val (inputs, originInputs) = connect(outputNodes, name2Node, isInput, inputPorts)
 
     val dummyOutput = new Node[NodeDef](null)
     outputNodes.foreach(_ -> dummyOutput)
     (dummyOutput.graph(reverse = true), inputs, originInputs)
+  }
+
+  /**
+   * Build a graph from the output. The build process will stop when met node without inputs
+   * or specified input node
+   */
+  private[bigdl] def connect(
+    nodes: Seq[Node[NodeDef]],
+    name2Node: Map[String, Node[NodeDef]],
+    isInput: (NodeDef) => Boolean,
+    inputPorts: Option[mutable.Map[String, ArrayBuffer[Int]]]
+  ): (mutable.HashMap[String, ArrayBuffer[String]], Seq[String]) = {
+
+    var inputCounter = 0
+    var depCounter = 0
+    val queue = new mutable.Queue[Node[NodeDef]]()
+    val visited = mutable.Set[Node[NodeDef]]()
+    val newInputs = new mutable.HashMap[String, ArrayBuffer[String]]()
+    val originInputs = new mutable.ArrayBuffer[String]()
+
+    // Do a BFS to connect the nodes
+    queue.enqueue(nodes: _*)
+    while(queue.nonEmpty) {
+      val node = queue.dequeue()
+      if (!visited(node)) {
+        visited += node
+        if (!isInput(node.element) && !node.element.getInputList.isEmpty) {
+          // continue to traverse
+          node.element.getInputList.asScala.foreach { preNodeName =>
+            depCounter = pushPreNode(preNodeName, name2Node, depCounter, node, queue)
+          }
+        } else {
+          if (newInputs.get(node.element.getName).isEmpty) {
+            newInputs(node.element.getName) = new ArrayBuffer[String]()
+          }
+          if (isInput(node.element) && node.element.getOp != "Placeholder") {
+            // if the predefined input node is not a Placeholder, add one to match the Input node
+            val inputNum = getInputNumber(node.element)
+            if (inputNum == 0) {
+              require(!inputPorts.isDefined ||
+                !inputPorts.get.isDefinedAt(node.element.getName),
+                  s"node ${node.element.getName} has no input")
+              newInputs(node.element.getName).append(node.element.getName)
+            } else {
+              if (inputPorts.isDefined &&
+                inputPorts.get.isDefinedAt(node.element.getName)) {
+                val selectInputs = inputPorts.get(node.element.getName)
+                selectInputs.foreach(i => require(i < inputNum && i >= 0,
+                  s"invalid input port $i at ${node.element.getName}, it should between 0 and" +
+                    s" ${inputNum - 1}"))
+                var i = 0
+                while (i < inputNum) {
+                  if (selectInputs.contains(i)) {
+                    val name = s"input$inputCounter"
+                    val placeholder = NodeDef.newBuilder()
+                      .setName(name)
+                      .setOp("Placeholder").build()
+                    inputCounter = inputCounter + 1
+                    val n = Node(placeholder)
+                    n -> node
+                    newInputs(node.element.getName).append(name)
+                  } else {
+                    val preNodeName = node.element.getInputList.asScala.apply(i)
+                    depCounter = pushPreNode(preNodeName, name2Node, depCounter, node, queue)
+                  }
+                  i = i + 1
+                }
+              } else {
+                val name = s"input$inputCounter"
+                val placeholder = NodeDef.newBuilder()
+                  .setName(name)
+                  .setOp("Placeholder").build()
+                inputCounter = inputCounter + 1
+                val n = Node(placeholder)
+                n -> node
+                newInputs(node.element.getName).append(name)
+              }
+            }
+            originInputs += node.element.getName
+          } else if (node.element.getOp == "Placeholder") {
+            newInputs(node.element.getName).append(node.element.getName)
+            originInputs += node.element.getName
+          }
+        }
+      }
+    }
+    (newInputs, originInputs)
+  }
+
+  private def pushPreNode(name: String, name2Node: Map[String, Node[NodeDef]],
+    depCounter: Int, node: Node[NodeDef], queue: mutable.Queue[Node[NodeDef]]): Int = {
+    // It is tricky here, remove the first char in the name of control dep node
+    var realName = name
+    var controlDep = false
+    var channel = 0
+    var _depCounter = depCounter
+
+    if (realName.charAt(0) == '^') {
+      realName = realName.substring(1)
+      controlDep = true
+    }
+    if (realName.split(":").length > 1) {
+      val pair = realName.split(":")
+      realName = pair(0)
+      channel = pair(1).toInt
+    }
+
+    val preNode = name2Node(realName)
+
+    val curNode = if (controlDep) {
+      val dependencyNode = Node(NodeDef.newBuilder()
+        .setOp("DependencyNode")
+        .addInput(preNode.element.getName)
+        .setName(s"depends_on_${preNode.element.getName}$depCounter")
+        .build())
+      _depCounter += 1
+      dependencyNode -> node
+      dependencyNode
+    } else {
+      node
+    }
+
+    preNode.add(curNode, Edge(channel + 1))
+    queue.enqueue(preNode)
+    _depCounter
   }
 
   private def getInputNumber(nodeDef: NodeDef): Int = {
