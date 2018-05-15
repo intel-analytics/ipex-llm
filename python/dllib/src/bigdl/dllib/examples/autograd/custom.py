@@ -19,6 +19,7 @@ from zoo.pipeline.api.keras.layers import *
 from zoo.pipeline.api.keras.models import *
 from optparse import OptionParser
 
+
 def mean_absolute_error(y_true, y_pred):
     result = mean(abs(y_true - y_pred), axis=1)
     return result
