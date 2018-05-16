@@ -591,6 +591,9 @@ object NNModel extends MLReadable[NNModel[_]] {
     new NNModel(model).setSamplePreprocessing(featurePreprocessing -> TensorToSample())
   }
 
+  import scala.language.existentials
+  implicit val format: DefaultFormats.type = DefaultFormats
+
   private[nnframes] class NNModelReader() extends MLReader[NNModel[_]] {
     override def load(path: String): NNModel[_] = {
       val (meta, model, typeTag, feaTran) = NNModel.getMetaAndModel(path, sc)
@@ -611,8 +614,6 @@ object NNModel extends MLReadable[NNModel[_]] {
     }
   }
 
-  import scala.language.existentials
-  implicit val format: DefaultFormats.type = DefaultFormats
   private[nnframes] def getMetaAndModel(path: String, sc: SparkContext) = {
     val meta = DefaultParamsWriterWrapper.loadMetadata(path, sc)
     val (modulePath, weightPath) =
