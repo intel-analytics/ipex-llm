@@ -159,6 +159,20 @@ class TestNNClassifer():
             assert_allclose(row_label[0], row_prediction[0], atol=0, rtol=1e-1)
             assert_allclose(row_label[1], row_prediction[1], atol=0, rtol=1e-1)
 
+    def test_nnEstimator_fit_gradient_clipping(self):
+        model = Sequential().add(Linear(2, 2))
+        criterion = MSECriterion()
+        estimator = NNEstimator(model, criterion, SeqToTensor([2]), ArrayToTensor([2])) \
+            .setBatchSize(4).setLearningRate(0.2).setMaxEpoch(2)\
+            .setConstantGradientClipping(0.1, 0.2)
+
+        df = self.get_estimator_df()
+        estimator.fit(df)
+        estimator.clearGradientClippingParams()
+        estimator.fit(df)
+        estimator.setGradientClippingByL2Norm(1.2)
+        estimator.fit(df)
+
     def test_nnEstimator_fit_with_non_default_featureCol(self):
         model = Sequential().add(Linear(2, 2))
         criterion = MSECriterion()
