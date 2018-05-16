@@ -34,7 +34,8 @@ object CustomLoss {
   }
 }
 
-class CustomLossWithFunc[T: ClassTag](func: (Variable[T], Variable[T]) => Variable[T],
+private[zoo] class CustomLossWithFunc[T: ClassTag](
+    func: (Variable[T], Variable[T]) => Variable[T],
     sizeAverage: Boolean = true)(
     implicit ev: TensorNumeric[T]) extends CustomLoss[T](sizeAverage = sizeAverage) {
   @volatile var lossInstance: AbstractModule[Activity, Activity, T] = null
