@@ -93,8 +93,8 @@ class LocalImageSet(ImageSet):
             self.value = jvalue
         else:
             # init from image ndarray list and label rdd(optional)
-            image_tensor_list = map(lambda image: JTensor.from_ndarray(image), image_list)
-            label_tensor_list = map(lambda label: JTensor.from_ndarray(label), label_list)\
+            image_tensor_list = list(map(lambda image: JTensor.from_ndarray(image), image_list))
+            label_tensor_list = list(map(lambda label: JTensor.from_ndarray(label), label_list))\
                 if label_list else None
             self.value = callBigDlFunc(bigdl_type, JavaValue.jvm_class_constructor(self),
                                        image_tensor_list, label_tensor_list)
@@ -107,7 +107,7 @@ class LocalImageSet(ImageSet):
         """
         tensors = callBigDlFunc(self.bigdl_type, "localImageSetToImageTensor",
                                 self.value, float_key, to_chw)
-        return map(lambda tensor: tensor.to_ndarray(), tensors)
+        return list(map(lambda tensor: tensor.to_ndarray(), tensors))
 
     def get_label(self):
         """
