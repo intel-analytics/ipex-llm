@@ -25,6 +25,20 @@ else
     wget $FTP_URI/analytics-zoo-data/data/news20/20news-18828.tar.gz -P analytics-zoo-data/data 
     tar zxf analytics-zoo-data/data/20news-18828.tar.gz -C analytics-zoo-data/data/
 fi
+
+echo "check if model directory exists"
+if [ ! -d analytics-zoo-models ]
+then
+    mkdir analytics-zoo-models
+fi
+if [ -f analytics-zoo-models/analytics-zoo_squeezenet_imagenet_0.1.0 ]
+then
+    echo "analytics-zoo-models/analytics-zoo_squeezenet_imagenet_0.1.0 already exists"
+else
+    wget $FTP_URI/analytics-zoo-models/imageclassification/imagenet/analytics-zoo_squeezenet_imagenet_0.1.0 \
+    -P analytics-zoo-models
+fi
+
 ${SPARK_HOME}/bin/spark-submit \
     --master ${MASTER} \
     --driver-memory 20g \
@@ -49,5 +63,15 @@ ${SPARK_HOME}/bin/spark-submit \
     ${ANALYTICS_ZOO_HOME}/pyzoo/zoo/examples/autograd/custom.py \
     --nb_epoch 2
 
-
-
+${SPARK_HOME}/bin/spark-submit \
+    --master ${MASTER} \
+    --driver-memory 20g \
+    --executor-memory 20g \
+    --py-files ${ANALYTICS_ZOO_PYZIP},${ANALYTICS_ZOO_HOME}/pyzoo/zoo/examples/imageclassification/predict.py \
+    --jars ${ANALYTICS_ZOO_JAR} \
+    --conf spark.driver.extraClassPath=${ANALYTICS_ZOO_JAR} \
+    --conf spark.executor.extraClassPath=${ANALYTICS_ZOO_JAR} \
+    ${ANALYTICS_ZOO_HOME}/pyzoo/zoo/examples/imageclassification/predict.py \
+    -f hdfs://172.168.2.181:9000/kaggle/train_100 \
+    --model analytics-zoo-models/analytics-zoo_squeezenet_imagenet_0.1.0 \
+    --topN 5
