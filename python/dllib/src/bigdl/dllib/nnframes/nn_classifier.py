@@ -273,7 +273,7 @@ class NNEstimator(JavaEstimator, HasFeaturesCol, HasLabelCol, HasPredictionCol, 
 
     def clearGradientClippingParams(self):
         """
-        Clear clipping params, in this case, clipping will not be applied. 
+        Clear clipping params, in this case, clipping will not be applied.
         In order to take effect, it needs to be called before fit.
         """
         callBigDlFunc(self.bigdl_type, "nnEstimatorClearGradientClippingParams",
