@@ -115,6 +115,13 @@ class TestSimpleIntegration(ZooTestCase):
         assert remove_batch([2, 3, 4]) == [3, 4]
         assert remove_batch([[2, 6, 7], [2, 3, 4]]) == [[6, 7], [3, 4]]
 
+    def test_sequential_to_model(self):
+        seq = Sequential()
+        seq.add(Dense(8, input_shape=(32, 32, )))
+        seq.add(Flatten())
+        seq.add(Dense(4, activation="softmax"))
+        seq.to_model()
+
 
 if __name__ == "__main__":
     pytest.main([__file__])
