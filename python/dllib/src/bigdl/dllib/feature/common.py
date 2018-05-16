@@ -39,7 +39,8 @@ class ChainedPreprocessing(Preprocessing):
         for transfomer in transformers:
             assert transfomer.__class__.__bases__[0].__name__ in [
                 "Preprocessing", "ImagePreprocessing"], \
-                str(transfomer) + " should be subclass of Preprocessing"
+                str(transfomer) + " should be subclass of Preprocessing "
+
         super(ChainedPreprocessing, self).__init__(bigdl_type, transformers)
 
 
