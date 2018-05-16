@@ -102,6 +102,16 @@ class Model(KerasNet):
                       log_path,
                       backward)
 
+    def new_graph(self, outputs):
+        value = callBigDlFunc(self.bigdl_type, "newGraph", self.value, outputs)
+        return self.from_jvalue(value)
+
+    def freeze_up_to(self, names):
+        callBigDlFunc(self.bigdl_type, "freezeUpTo", self.value, names)
+
+    def unfreeze(self, names):
+        callBigDlFunc(self.bigdl_type, "unFreeze", self.value, names)
+
     @staticmethod
     def from_jvalue(jvalue, bigdl_type="float"):
         """
