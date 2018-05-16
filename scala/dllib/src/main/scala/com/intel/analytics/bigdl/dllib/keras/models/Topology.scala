@@ -25,12 +25,14 @@ import com.intel.analytics.bigdl.nn.{Container, Graph, StaticGraph, Sequential =
 import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.serialization.Bigdl.BigDLModule
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.{LoggerFilter, Shape}
+import com.intel.analytics.bigdl.utils.{Edge, LoggerFilter, Node, Shape}
 import com.intel.analytics.bigdl.utils.serializer.{DeserializeContext, ModuleData, ModuleSerializer, SerializeContext}
 import com.intel.analytics.bigdl.visualization.{TrainSummary, ValidationSummary}
 import com.intel.analytics.zoo.pipeline.api.autograd.{CustomLossWithVariable, Lambda, Variable}
+import com.intel.analytics.zoo.pipeline.api.keras.layers.Input
 import com.intel.analytics.zoo.pipeline.api.keras.layers.utils.{AbstractModuleRef, GraphRef, KerasLayerRef}
 import com.intel.analytics.zoo.pipeline.api.keras.layers.utils.KerasUtils
+import com.intel.analytics.zoo.pipeline.api.net.NetUtils
 import org.apache.spark.rdd.RDD
 
 import scala.collection.JavaConverters._
@@ -296,11 +298,13 @@ abstract class KerasNet[T: ClassTag](implicit ev: TensorNumeric[T])
     val localPredictor = LocalPredictor(this)
     localPredictor.predict(x)
   }
+
+  def toModel(): Model[T]
 }
 
 class Model[T: ClassTag] private (private val _inputs : Seq[ModuleNode[T]],
     private val _outputs : Seq[ModuleNode[T]])(implicit ev: TensorNumeric[T])
-  extends KerasNet[T] {
+  extends KerasNet[T] with NetUtils[T, Model[T]] {
   this.labor = doBuild(null)
   KerasLayerRef(this).excludeInvalidLayers(this.labor.asInstanceOf[StaticGraph[T]].
     getForwardExecutions().map {_.element})
@@ -336,6 +340,33 @@ class Model[T: ClassTag] private (private val _inputs : Seq[ModuleNode[T]],
     this.labor.asInstanceOf[Graph[T]].saveGraphTopology(logPath, backward)
     this
   }
+
+  override def unFreeze(names: String*): Model.this.type = {
+    labor.unFreeze(names: _*)
+    this
+  }
+
+  private val graph = labor.asInstanceOf[Graph[T]]
+
+  override def nodes(names: Seq[String]): Seq[ModuleNode[T]] = {
+    names.map(graph.node)
+  }
+
+  override def node(name: String): ModuleNode[T] = {
+    graph.node(name)
+  }
+
+  override def newGraph(output: String): Model[T] = {
+    new Model[T](_inputs, nodes(Seq(output)))
+  }
+
+  override def newGraph(outputs: Seq[String]): Model[T] = {
+    new Model[T](_inputs, nodes(outputs))
+  }
+
+  override def toModel(): Model[T] = this
+
+  override def toKeras(): Model[T] = this
 }
 
 object Model extends KerasLayerSerializable {
@@ -500,6 +531,21 @@ class Sequential[T: ClassTag] private ()
     kerasLayerRef.checkWithCurrentInputShape(calcInputShape)
     getOutputShape()
   }
+
+  override def toModel(): Model[T] = {
+    val input = Input[T](this.getInputShape())
+
+    // the is reason we do not use .inputs here is
+    // layers in modules cannot be rebuilt
+    val output = this.modules(0)
+      .asInstanceOf[TSequential[T]]
+      .modules.foldLeft(input) { (i1, i2) =>
+      val out = Node(i2)
+      i1.add(out, Edge())
+      out
+    }
+    Model(input, output)
+  }
 }
 
 object Sequential extends KerasLayerSerializable{
@@ -512,4 +558,3 @@ object Sequential extends KerasLayerSerializable{
     new Sequential[T]()
   }
 }
-
