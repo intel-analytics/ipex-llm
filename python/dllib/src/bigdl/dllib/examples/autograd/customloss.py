@@ -23,6 +23,7 @@ def mean_absolute_error(y_true, y_pred):
     result = mean(abs(y_true - y_pred), axis=1)
     return result
 
+
 if __name__ == "__main__":
     data_len = 1000
     X_ = np.random.uniform(0, 1, (1000, 2))
