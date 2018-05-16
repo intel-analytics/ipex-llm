@@ -90,6 +90,18 @@ private[nnframes] trait TrainingParams[@specialized(Float, Double) T] extends Pa
   final val optimMethod = new Param[OptimMethod[T]](this, "optimMethod", "optimMethod")
 
   def getOptimMethod: OptimMethod[T] = $(optimMethod)
+
+  /**
+   * Constant gradient clipping thresholds.
+   */
+  final val constantGradientClippingParams = new Param[(Float, Float)](this,
+    "threshold for constant clipping", "constantGradientClippingParams")
+
+  /**
+   * L2 norm gradient clipping threshold.
+   */
+  final val l2GradientClippingParams = new FloatParam(this,
+    "threshold for l2 norm gradient clipping", "l2GradientClippingParams")
 }
 
 /**
@@ -157,6 +169,22 @@ class NNEstimator[T: ClassTag] private[zoo] (
 
   def setOptimMethod(value: OptimMethod[T]): this.type = set(optimMethod, value)
   set(optimMethod, new SGD[T])
+
+  def setConstantGradientClipping(min: Float, max: Float): this.type = {
+    set(constantGradientClippingParams, (min, max))
+  }
+
+  def setGradientClippingByL2Norm(clipNorm: Float): this.type = {
+    set(l2GradientClippingParams, clipNorm)
+  }
+
+  /**
+   * Clear clipping params, in this case, clipping will not be applied.
+   */
+  def clearGradientClippingParams(): this.type = {
+    clear(l2GradientClippingParams)
+    clear(constantGradientClippingParams)
+  }
 
   @transient private var trainSummary: Option[TrainSummary] = None
 
@@ -285,6 +313,15 @@ class NNEstimator[T: ClassTag] private[zoo] (
       .setState(state)
       .setOptimMethod($(optimMethod))
       .setEndWhen(endTrigger)
+
+    if (isSet(l2GradientClippingParams)) {
+      optimizer.setGradientClippingByl2Norm($(l2GradientClippingParams))
+    }
+
+    if (isSet(constantGradientClippingParams)) {
+      val constantClippingValues = $(constantGradientClippingParams)
+      optimizer.setConstantGradientClipping(constantClippingValues._1, constantClippingValues._2)
+    }
 
     if (validationTrigger.isDefined) {
       val validationSamples = getDataSet(validationDF, validationBatchSize)

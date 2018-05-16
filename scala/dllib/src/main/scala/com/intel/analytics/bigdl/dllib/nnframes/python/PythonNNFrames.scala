@@ -173,4 +173,21 @@ class PythonNNFrames[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonB
       sampleTransformer: Preprocessing[Any, Sample[T]]): NNModel[T] = {
     model.setSamplePreprocessing(sampleTransformer)
   }
+
+  def nnEstimatorClearGradientClippingParams(estimator: NNEstimator[T]): Unit = {
+    estimator.clearGradientClippingParams()
+  }
+
+  def nnEstimatorSetConstantGradientClipping(
+    estimator: NNEstimator[T],
+    min: Float,
+    max: Float): Unit = {
+    estimator.setConstantGradientClipping(min, max)
+  }
+
+  def nnEstimatorSetGradientClippingByL2Norm(
+    estimator: NNEstimator[T],
+    clipNorm: Float): Unit = {
+    estimator.setGradientClippingByL2Norm(clipNorm)
+  }
 }
