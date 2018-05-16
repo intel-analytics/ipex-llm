@@ -23,6 +23,7 @@ import com.intel.analytics.zoo.pipeline.api.Net
 import com.intel.analytics.zoo.pipeline.api.keras.ZooSpecHelper
 import com.intel.analytics.zoo.pipeline.api.keras.layers.{Dense, Input}
 import com.intel.analytics.zoo.pipeline.api.keras.serializer.ModuleSerializationTest
+import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.util.Random
 
@@ -53,5 +54,16 @@ class SequentialSerialTest extends ModuleSerializationTest {
       model.asInstanceOf[AbstractModule[Tensor[Float], Tensor[Float], Float]],
       reloadModel.asInstanceOf[AbstractModule[Tensor[Float], Tensor[Float], Float]],
       inputData)
+  }
+}
+
+class TopologySpec extends FlatSpec with Matchers with BeforeAndAfter {
+
+  "Sequential to Model" should "work" in {
+    val model = Sequential[Float]()
+    model.add(Dense[Float](8, inputShape = Shape(10)))
+    model.toModel()
+    val output = model.forward(Tensor[Float](Array(4, 10)).rand())
+    output.toTensor[Float].size() should be (Array(4, 8))
   }
 }
