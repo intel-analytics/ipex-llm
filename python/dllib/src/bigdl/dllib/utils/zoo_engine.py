@@ -30,14 +30,14 @@ def exist_pyspark():
 
 
 def check_spark_source_conflict(spark_home, pyspark_path):
-    # check if both spark_home env var and pyspark package exist
-    # trigger a warning if two spark sources don't match
+    # Check if both $SPARK_HOME and pyspark package exist.
+    # Trigger a warning if two spark sources don't match.
     if spark_home and not pyspark_path.startswith(spark_home):
         warning_msg = "Find both SPARK_HOME and pyspark. You may need to check whether they " + \
-                      "match with each other. SPARK_HOME environment variable" + \
+                      "match with each other. SPARK_HOME environment variable " + \
                       "is set to: " + spark_home + \
                       ", and pyspark is found in: " + pyspark_path + ". If they are unmatched, " + \
-                      "please use one source only to avoid conflict. " + \
+                      "you are recommended to use one source only to avoid conflict. " + \
                       "For example, you can unset SPARK_HOME and use pyspark only."
         warnings.warn(warning_msg)
 
@@ -49,7 +49,7 @@ def __prepare_spark_env():
         import pyspark
         check_spark_source_conflict(spark_home, pyspark.__file__)
     else:
-        # use SPARK_HOME as the spark source
+        # use $SPARK_HOME as the spark source
         if not spark_home:
             raise ValueError(
                 """Could not find Spark. Please make sure SPARK_HOME env is set:
@@ -64,7 +64,8 @@ def __prepare_spark_env():
 def __prepare_analytics_zoo_env():
     jar_dir = os.path.abspath(__file__ + "/../../")
     conf_paths = glob.glob(os.path.join(jar_dir, "share/conf/*.conf"))
-    bigdl_classpath = get_bigdl_classpath()
+    extra_resources_paths = glob.glob(os.path.join(jar_dir, "share/extra-resources/*"))
+    analytics_zoo_classpath = get_analytics_zoo_classpath()
 
     def append_path(env_var_name, path):
         try:
@@ -73,13 +74,18 @@ def __prepare_analytics_zoo_env():
         except KeyError:
             os.environ[env_var_name] = path
 
-    if bigdl_classpath:
-        append_path("BIGDL_JARS", bigdl_classpath)
+    if analytics_zoo_classpath:
+        append_path("BIGDL_JARS", analytics_zoo_classpath)
 
     if conf_paths:
-        assert len(conf_paths) == 1, "Expecting one conf: %s" % len(conf_paths)
+        assert len(conf_paths) == 1, "Expecting one conf, but got: %s" % len(conf_paths)
         print("Prepending %s to sys.path" % conf_paths[0])
         sys.path.insert(0, conf_paths[0])
+
+    if extra_resources_paths:
+        for resource in extra_resources_paths:
+            print("Prepending %s to sys.path" % resource)
+            sys.path.insert(0, resource)
 
     if os.environ.get("BIGDL_JARS", None) and is_spark_below_2_2():
         for jar in os.environ["BIGDL_JARS"].split(":"):
@@ -90,9 +96,9 @@ def __prepare_analytics_zoo_env():
             sys.path.insert(0, package)
 
 
-def get_bigdl_classpath():
+def get_analytics_zoo_classpath():
     """
-    Get and return the jar path for bigdl if exists.
+    Get and return the jar path for analytics-zoo if exists.
     """
     if os.getenv("BIGDL_CLASSPATH"):
         return os.environ["BIGDL_CLASSPATH"]
@@ -106,15 +112,15 @@ def get_bigdl_classpath():
 
 def is_spark_below_2_2():
     """
-    Check if spark version is below 2.2
+    Check if spark version is below 2.2.
     """
     import pyspark
-    if(hasattr(pyspark, "version")):
+    if hasattr(pyspark, "version"):
         full_version = pyspark.version.__version__
         # We only need the general spark version (eg, 1.6, 2.2).
         parts = full_version.split(".")
         spark_version = parts[0] + "." + parts[1]
-        if(compare_version(spark_version, "2.2") >= 0):
+        if compare_version(spark_version, "2.2") >= 0:
             return False
     return True
 
@@ -122,27 +128,25 @@ def is_spark_below_2_2():
 def compare_version(version1, version2):
     """
     Compare version strings.
-    :param version1;
-    :param version2;
-    :return: 1 if version1 is after version2;
-             -1 if version1 is before version2;
-             0 if two versions are the same.
+    Return 1 if version1 is after version2;
+          -1 if version1 is before version2;
+           0 if two versions are the same.
     """
-    v1Arr = version1.split(".")
-    v2Arr = version2.split(".")
-    len1 = len(v1Arr)
-    len2 = len(v2Arr)
-    lenMax = max(len1, len2)
-    for x in range(lenMax):
-        v1Token = 0
+    v1_arr = version1.split(".")
+    v2_arr = version2.split(".")
+    len1 = len(v1_arr)
+    len2 = len(v2_arr)
+    len_max = max(len1, len2)
+    for x in range(len_max):
+        v1_token = 0
         if x < len1:
-            v1Token = int(v1Arr[x])
-        v2Token = 0
+            v1_token = int(v1_arr[x])
+        v2_token = 0
         if x < len2:
-            v2Token = int(v2Arr[x])
-        if v1Token < v2Token:
+            v2_token = int(v2_arr[x])
+        if v1_token < v2_token:
             return -1
-        if v1Token > v2Token:
+        if v1_token > v2_token:
             return 1
     return 0
 
