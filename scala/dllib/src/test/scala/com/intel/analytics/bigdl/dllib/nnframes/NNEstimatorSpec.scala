@@ -376,8 +376,8 @@ class NNEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
       val pipelineModel = pipeline.fit(df)
       pipelineModel.isInstanceOf[PipelineModel] should be(true)
       val correct = pipelineModel.transform(df).select("label", "prediction").rdd.filter {
-        case Row(label: Double, prediction: Seq[Float]) =>
-          label == prediction.indexOf(prediction.max) + 1
+        case Row(label: Double, prediction: Seq[_]) =>
+          label == prediction.indexOf(prediction.asInstanceOf[Seq[Float]].max) + 1
       }.count()
       assert(correct > nRecords * 0.8)
     }
