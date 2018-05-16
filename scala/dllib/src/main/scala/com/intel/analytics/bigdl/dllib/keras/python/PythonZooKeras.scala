@@ -16,6 +16,7 @@
 
 package com.intel.analytics.zoo.pipeline.api.keras.python
 
+import java.nio.ByteOrder
 import java.util.{List => JList}
 
 import com.intel.analytics.bigdl.{Criterion, DataSet}
@@ -27,13 +28,16 @@ import com.intel.analytics.bigdl.python.api.{EvaluatedResult, JTensor, PythonBig
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
-import com.intel.analytics.bigdl.nn.abstractnn.Activity
+import com.intel.analytics.bigdl.nn.{Graph, Module}
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.nn.keras.KerasLayer
 import com.intel.analytics.bigdl.transform.vision.image.{ImageFeature, ImageFeatureToMiniBatch}
+import com.intel.analytics.zoo.pipeline.api.Net
 import com.intel.analytics.zoo.pipeline.api.keras.layers._
 import com.intel.analytics.zoo.pipeline.api.keras.layers.utils.KerasUtils
 import com.intel.analytics.zoo.pipeline.api.keras.metrics.AUC
 import com.intel.analytics.zoo.pipeline.api.keras.models.{KerasNet, Model, Sequential}
+import com.intel.analytics.zoo.pipeline.api.net.NetUtils
 import org.apache.spark.api.java.JavaRDD
 
 import scala.reflect.ClassTag
@@ -166,6 +170,56 @@ class PythonZooKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonB
       logPath: String,
       backward: Boolean = false): Model[T] = {
     module.saveGraphTopology(logPath, backward)
+  }
+
+  def newGraph(model: NetUtils[T, _],
+               outputs: JList[String]): NetUtils[T, _] = {
+    model.newGraph(outputs.asScala).asInstanceOf[NetUtils[T, _]]
+  }
+
+  def freezeUpTo(model: NetUtils[T, _], names: JList[String]): Unit = {
+    model.freezeUpTo(names.asScala: _*)
+  }
+
+  def netLoadBigDL(
+          modulePath: String,
+          weightPath : String): AbstractModule[Activity, Activity, T] = {
+    Net.loadBigDL[T](modulePath, weightPath)
+  }
+
+  def netLoadCaffe(
+                    defPath: String,
+                    modelPath : String): AbstractModule[Activity, Activity, T] = {
+    Net.loadCaffe[T](defPath, modelPath)
+  }
+
+  def netLoad(
+               modulePath: String,
+               weightPath : String): AbstractModule[Activity, Activity, T] = {
+    Net.load[T](modulePath, weightPath)
+  }
+
+  def netLoadTorch(
+               path: String): AbstractModule[Activity, Activity, T] = {
+    Net.loadTorch[T](path)
+  }
+
+  def netLoadTF(path: String, inputs: JList[String], outputs: JList[String],
+             byteOrder: String, binFile: String = null): AbstractModule[Activity, Activity, T] = {
+    val order = byteOrder match {
+      case "little_endian" => ByteOrder.LITTLE_ENDIAN
+      case "big_endian" => ByteOrder.BIG_ENDIAN
+      case _ => throw new IllegalArgumentException(s"No support byte order $byteOrder")
+    }
+    Net.loadTF[T](path, inputs.asScala, outputs.asScala, order, Option(binFile))
+  }
+
+  def kerasNetToModel(value: KerasNet[T]): Model[T] = {
+    value.toModel()
+  }
+
+  def netToKeras(value: NetUtils[T, _]): KerasLayer[Activity, Activity, T] = {
+    value.toKeras()
   }
 
   def createZooKerasDense(
