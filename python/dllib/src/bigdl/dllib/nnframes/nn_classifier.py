@@ -271,6 +271,43 @@ class NNEstimator(JavaEstimator, HasFeaturesCol, HasLabelCol, HasPredictionCol, 
         """
         return self.validation_config
 
+    def clearGradientClippingParams(self):
+        """
+        Clear clipping params, in this case, clipping will not be applied. 
+        In order to take effect, it needs to be called before fit.
+        """
+        callBigDlFunc(self.bigdl_type, "nnEstimatorClearGradientClippingParams",
+                      self.value)
+        return self
+
+    def setConstantGradientClipping(self, min, max):
+        """
+        Set constant gradient clipping during the training process.
+        In order to take effect, it needs to be called before fit.
+
+        # Arguments
+        min: The minimum value to clip by. Float.
+        max: The maximum value to clip by. Float.
+        """
+        callBigDlFunc(self.bigdl_type, "nnEstimatorSetConstantGradientClipping",
+                      self.value,
+                      float(min),
+                      float(max))
+        return self
+
+    def setGradientClippingByL2Norm(self, clip_norm):
+        """
+        Clip gradient to a maximum L2-Norm during the training process.
+        In order to take effect, it needs to be called before fit.
+
+        # Arguments
+        clip_norm: Gradient L2-Norm threshold. Float.
+        """
+        callBigDlFunc(self.bigdl_type, "nnEstimatorSetGradientClippingByL2Norm",
+                      self.value,
+                      float(clip_norm))
+        return self
+
     def _create_model(self, java_model):
         nnModel = NNModel.of(java_model,
                              ChainedPreprocessing([ToTuple(), self.getSamplePreprocessing()]),
