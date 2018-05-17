@@ -38,6 +38,13 @@ else
     wget $FTP_URI/analytics-zoo-models/imageclassification/imagenet/analytics-zoo_squeezenet_imagenet_0.1.0 \
     -P analytics-zoo-models
 fi
+if [ -f analytics-zoo-models-new/analytics-zoo_ssd-mobilenet-300x300_PASCAL_0.1.0.model ]
+then
+    echo "analytics-zoo-models-new/analytics-zoo_ssd-mobilenet-300x300_PASCAL_0.1.0.model already exists"
+else
+    wget $FTP_URI/analytics-zoo-models-new/object-detection/analytics-zoo_ssd-mobilenet-300x300_PASCAL_0.1.0.model \
+    -P analytics-zoo-models-new
+fi
 
 ${SPARK_HOME}/bin/spark-submit \
     --master ${MASTER} \
@@ -75,3 +82,14 @@ ${SPARK_HOME}/bin/spark-submit \
     -f hdfs://172.168.2.181:9000/kaggle/train_100 \
     --model analytics-zoo-models/analytics-zoo_squeezenet_imagenet_0.1.0 \
     --topN 5
+
+${SPARK_HOME}/bin/spark-submit \
+    --master ${MASTER} \
+    --driver-memory 20g \
+    --executor-memory 20g \
+    --py-files ${ANALYTICS_ZOO_PYZIP},${ANALYTICS_ZOO_HOME}/pyzoo/zoo/examples/objectdetection/predict.py \
+    --jars ${ANALYTICS_ZOO_JAR} \
+    --conf spark.driver.extraClassPath=${ANALYTICS_ZOO_JAR} \
+    --conf spark.executor.extraClassPath=${ANALYTICS_ZOO_JAR} \
+    ${ANALYTICS_ZOO_HOME}/pyzoo/zoo/examples/objectdetection/predict.py \
+    analytics-zoo-models-new/analytics-zoo_ssd-mobilenet-300x300_PASCAL_0.1.0.model hdfs://172.168.2.181:9000/kaggle/train_100 /tmp
