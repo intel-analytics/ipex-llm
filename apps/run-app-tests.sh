@@ -11,9 +11,9 @@ export ANALYTICS_ZOO_CONF=${ANALYTICS_ZOO_HOME_DIST}/conf/spark-bigdl.conf
 export PYTHONPATH=${ANALYTICS_ZOO_PYZIP}:$PYTHONPATH
 
 chmod +x ./apps/ipynb2py.sh
-./apps/ipynb2py.sh ./apps/anomaly-detection/anomaly-detection-nyc-taxi
 
 echo "#1 start app test for anomaly-detection-nyc-taxi"
+./apps/ipynb2py.sh ./apps/anomaly-detection/anomaly-detection-nyc-taxi
 chmod +x $ANALYTICS_ZOO_HOME/data/NAB/nyc_taxi/get_nyc_taxi.sh
 $ANALYTICS_ZOO_HOME/data/NAB/nyc_taxi/get_nyc_taxi.sh
 ${SPARK_HOME}/bin/spark-submit \
@@ -31,9 +31,8 @@ ${SPARK_HOME}/bin/spark-submit \
         --conf spark.executor.extraClassPath=${ANALYTICS_ZOO_JAR} \
         ${ANALYTICS_ZOO_HOME}/apps/anomaly-detection/anomaly-detection-nyc-taxi.py
 
-./apps/ipynb2py.sh ./apps/object-detection/object-detection
-
 echo "#2 start app test for object-detection"
+./apps/ipynb2py.sh ./apps/object-detection/object-detection
 FILENAME="$ANALYTICS_ZOO_HOME/apps/object-detection/analytics-zoo_ssd-mobilenet-300x300_PASCAL_0.1.0.model"
 if [ -f "$FILENAME" ]
 then
@@ -52,7 +51,7 @@ if [ -f "$FILENAME" ]
 then
     echo "$FILENAME already exists" 
 else
-    wget $FTP_URI/analytics-zoo-data/data/apps/object-detection/train_dog.mp4 -P $ANALYTICS_ZOO_HOME/apps/object-detection/
+    wget $FTP_URI/analytics-zoo-data/apps/object-detection/train_dog.mp4 -P $ANALYTICS_ZOO_HOME/apps/object-detection/
 fi 
 if [ -f "$FILENAME" ]
 then
@@ -75,9 +74,8 @@ ${SPARK_HOME}/bin/spark-submit \
         --conf spark.executor.extraClassPath=${ANALYTICS_ZOO_JAR} \
         ${ANALYTICS_ZOO_HOME}/apps/object-detection/object-detection.py
 
-./apps/ipynb2py.sh ./apps/recommendation/ncf-explicit-feedback
-
 echo "#3 start app test for ncf-explicit-feedback"
+./apps/ipynb2py.sh ./apps/recommendation/ncf-explicit-feedback
 ${SPARK_HOME}/bin/spark-submit \
         --master ${MASTER} \
         --driver-cores 2  \
@@ -93,9 +91,8 @@ ${SPARK_HOME}/bin/spark-submit \
         --conf spark.executor.extraClassPath=${ANALYTICS_ZOO_JAR} \
         ${ANALYTICS_ZOO_HOME}/apps/recommendation/ncf-explicit-feedback.py
 
-./apps/ipynb2py.sh ./apps/recommendation/wide_n_deep
-
 echo "#4 start app test for wide_n_deep"
+./apps/ipynb2py.sh ./apps/recommendation/wide_n_deep
 ${SPARK_HOME}/bin/spark-submit \
         --master ${MASTER} \
         --driver-cores 2  \
