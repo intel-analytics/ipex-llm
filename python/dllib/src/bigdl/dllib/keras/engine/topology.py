@@ -16,7 +16,6 @@
 
 from bigdl.nn.keras.layer import KerasLayer
 from bigdl.nn.layer import Node
-# from zoo.pipeline.api.keras.models import Model
 
 from zoo.pipeline.api.keras.utils import *
 
