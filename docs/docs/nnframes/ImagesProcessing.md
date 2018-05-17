@@ -31,34 +31,5 @@ type: CV_8UC3, CV_8UC1 in most cases.
       StructField("data", BinaryType, false) :: Nil)
 ```
 
-## NNImageTransformer
-
-`NNImageTransformer` provides DataFrame-based API for image pre-processing and feature transformation.
-`NNImageTransformer` follows the Spark Transformer API pattern and can be used as one stage in
-Spark ML pipeline.
-
-The input column can be either DLImageSchema.byteSchema or DLImageSchema.floatSchema. If
-using NNImageReader, the default format is DLImageSchema.byteSchema The output column is always
- DLImageSchema.floatSchema.
-
-`NNImageTransformer` takes BigDL transfomer as the contructor params.
-Scala:
-```
-val transformer = Resize(256, 256) -> CenterCrop(224, 224) ->
-  ChannelNormalize(123, 117, 104, 1, 1, 1)
-val transformedDF = new NNImageTransformer(transformer)
-  .setInputCol("image")
-  .setOutputCol("features")
-  .transform(imageDF)
-```
-Python:
-```python
-image_frame = NNImageReader.readImages(self.image_path, self.sc)
-transformer = NNImageTransformer(
-    Pipeline([Resize(256, 256), CenterCrop(224, 224),
-              ChannelNormalize(0.485, 0.456, 0.406, 0.229, 0.224, 0.225),
-              MatToTensor()])
-).setInputCol("image").setOutputCol("output")
-
-result = transformer.transform(image_frame)
-```
+After loading the image, user can compose the preprocess process with the `Preprocessing` defined
+in `com.intel.analytics.zoo.feature.image`.

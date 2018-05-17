@@ -2,9 +2,10 @@
 ## Overview
 
 NNFrames is a package in Analytics Zoo which is designed to provide DataFrame-based API in order to
-facilitate Spark users and speed-up development. It extends DLFrame in BigDL and supports native integration with Spark ML Pipeline, which allows user to combine the
-power of Analytics Zoo and Apache Spark MLlib for their application. NNFrames provides both Python and
-Scala interfaces, and is compatible with both Spark 1.6 and Spark 2.x.
+facilitate Spark users and speed-up development. It supports native integration with Spark ML
+Pipeline, which allows user to combine the power of Analytics Zoo, BigDL and Apache Spark MLlib.
+NNFrames provides both Python and Scala interfaces, and is compatible with both Spark 1.6 and
+Spark 2.x.
 
 
 **Highlights**
@@ -19,30 +20,31 @@ Scala interfaces, and is compatible with both Spark 1.6 and Spark 2.x.
 The examples are included in the Analytics Zoo source code.
 
 1. image classification: model inference using pre-trained Inception v1 model.
-    [Scala version](https://github.com/intel-analytics/zoo/tree/master/zoo/src/main/scala/com/intel/analytics/zoo/examples/nnframes/imageInference)
-
+    [Scala version](https://github.com/intel-analytics/analytics-zoo/tree/master/zoo/src/main/scala/com/intel/analytics/zoo/examples/nnframes/imageInference)
+    [Python version](https://github.com/intel-analytics/analytics-zoo/tree/master/pyzoo/zoo/examples/nnframes/imageInference)
 2. image classification: transfer learning from pre-trained Inception v1 model.
-    [Scala version](https://github.com/intel-analytics/zoo/tree/master/zoo/src/main/scala/com/intel/analytics/zoo/examples/nnframes/transferLearning)
-
+    [Scala version](https://github.com/intel-analytics/analytics-zoo/tree/master/zoo/src/main/scala/com/intel/analytics/zoo/examples/nnframes/imageTransferLearning)
+    [Python version](https://github.com/intel-analytics/analytics-zoo/tree/master/pyzoo/zoo/examples/nnframes/imageTransferLearning)
 ## Primary APIs
 
-**NNEstimator**
+**NNEstimator and NNModel**
 
-Analytics Zoo provides `NNEstimator` for users with Apache Spark MLlib experience, which
+Analytics Zoo provides `NNEstimator` for model training with Spark DataFrame, which
 provides high level API for training a BigDL Model with the Apache Spark
 [Estimator](https://spark.apache.org/docs/2.1.1/ml-pipeline.html#estimators)/
 [Transfomer](https://spark.apache.org/docs/2.1.1/ml-pipeline.html#transformers)
-pattern, thus users can conveniently fit Analytics Zoo into a ML pipeline.
-
-**NNClassifier and NNClassifierModel**
-`NNClassifier` and `NNClassifierModel`extends `NNEstimator` and `DLModel` and focus on classification
-tasks.
+pattern, thus users can conveniently fit Analytics Zoo into a ML pipeline. The fit result of
+`NNEstimator` is a NNModel, which is a Spark ML Transformer.
 
 please check our
 [NNEstimator API](NNEstimator.md) for detailed usage.
 
-**NNImageReader and NNImageTransformer**
-NNImageReader loads image into Spark DataFrame, and NNImageTransformer are used to perform the image pre-processing.
+**NNClassifier and NNClassifierModel**
+`NNClassifier` and `NNClassifierModel`extends `NNEstimator` and `NNModel` and focus on 
+classification tasks, where both label column and prediction column are of Double type.
+
+**NNImageReader**
+NNImageReader loads image into Spark DataFrame.
 
 please check our
 [ImageProcessing](ImagesProcessing.md) for detailed usage.
