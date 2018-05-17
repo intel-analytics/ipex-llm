@@ -382,7 +382,7 @@ object NNEstimator {
    * @param model BigDL module to be optimized
    * @param criterion  BigDL criterion method
    */
-  def apply[F, T: ClassTag](
+  def apply[T: ClassTag](
       model: Module[T],
       criterion: Criterion[T]
     )(implicit ev: TensorNumeric[T]): NNEstimator[T] = {
@@ -402,7 +402,7 @@ object NNEstimator {
    *                    width * height = 28 * 28, featureSize = Array(28, 28).
    * @param labelSize The size (Tensor dimensions) of the label data.
    */
-  def apply[F, T: ClassTag](
+  def apply[T: ClassTag](
       model: Module[T],
       criterion: Criterion[T],
       featureSize : Array[Int],
@@ -420,16 +420,16 @@ object NNEstimator {
    * @param model BigDL module to be optimized
    * @param criterion BigDL criterion method
    * @param featurePreprocessing Preprocessing[Any, Tensor[T] ]
-   * @param laeblPreprocessing Preprocessing[Any, Tensor[T] ]
+   * @param labelPreprocessing Preprocessing[Any, Tensor[T] ]
    */
   def apply[F, T: ClassTag](
       model: Module[T],
       criterion: Criterion[T],
-      featurePreprocessing: Preprocessing[Any, Tensor[T]],
-      laeblPreprocessing: Preprocessing[Any, Tensor[T]]
+      featurePreprocessing: Preprocessing[F, Tensor[T]],
+      labelPreprocessing: Preprocessing[F, Tensor[T]]
     )(implicit ev: TensorNumeric[T]): NNEstimator[T] = {
     new NNEstimator(model, criterion)
-      .setSamplePreprocessing(FeatureLabelPreprocessing(featurePreprocessing, laeblPreprocessing))
+      .setSamplePreprocessing(FeatureLabelPreprocessing(featurePreprocessing, labelPreprocessing))
   }
 
   /**
@@ -556,7 +556,7 @@ object NNModel extends MLReadable[NNModel[_]] {
    *
    * @param model BigDL module to be optimized
    */
-  def apply[F, T: ClassTag](
+  def apply[T: ClassTag](
       model: Module[T]
     )(implicit ev: TensorNumeric[T]): NNModel[T] = {
     new NNModel(model)

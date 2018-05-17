@@ -84,7 +84,7 @@ object NNClassifier {
    * @param model BigDL module to be optimized
    * @param criterion  BigDL criterion method
    */
-  def apply[F, T: ClassTag](
+  def apply[T: ClassTag](
       model: Module[T],
       criterion: Criterion[T]
     )(implicit ev: TensorNumeric[T]): NNClassifier[T] = {
@@ -103,7 +103,7 @@ object NNClassifier {
    * @param featureSize The size (Tensor dimensions) of the feature data. e.g. an image may be with
    *                    width * height = 28 * 28, featureSize = Array(28, 28).
    */
-  def apply[F, T: ClassTag](
+  def apply[T: ClassTag](
       model: Module[T],
       criterion: Criterion[T],
       featureSize: Array[Int]
@@ -163,7 +163,7 @@ object NNClassifierModel extends MLReadable[NNClassifierModel[_]] {
    *
    * @param model BigDL module to be optimized
    */
-  def apply[F, T: ClassTag](
+  def apply[T: ClassTag](
       model: Module[T]
     )(implicit ev: TensorNumeric[T]): NNClassifierModel[T] = {
     new NNClassifierModel(model)
@@ -180,7 +180,7 @@ object NNClassifierModel extends MLReadable[NNClassifierModel[_]] {
    * @param featureSize The size (Tensor dimensions) of the feature data. e.g. an image may be with
    *                    width * height = 28 * 28, featureSize = Array(28, 28).
    */
-  def apply[F, T: ClassTag](
+  def apply[T: ClassTag](
       model: Module[T],
       featureSize : Array[Int]
     )(implicit ev: TensorNumeric[T]): NNClassifierModel[T] = {
