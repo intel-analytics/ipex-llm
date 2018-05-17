@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, TensorModule}
 import com.intel.analytics.bigdl.nn.keras.{KerasLayer, KerasLayerSerializer, Model, Sequential => KSequential}
 import com.intel.analytics.bigdl.nn.ops.{RandomUniform => RandomUniformOps}
-import com.intel.analytics.bigdl.nn.tf.{DecodeRawSerializer, ParseExample, StrideSlice}
+import com.intel.analytics.bigdl.nn.tf.{DecodeRawSerializer, ParseExample, StridedSlice}
 import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -274,7 +274,7 @@ object ModuleSerializer extends ModuleSerializable{
     registerModule("com.intel.analytics.bigdl.nn.SReLU", SReLU)
     registerModule("com.intel.analytics.bigdl.nn.tf.DecodeRaw", DecodeRawSerializer)
     registerModule("com.intel.analytics.bigdl.nn.ops.RandomUniform", RandomUniformOps)
-    registerModule("com.intel.analytics.bigdl.nn.tf.StrideSlice", StrideSlice)
+    registerModule("com.intel.analytics.bigdl.nn.tf.StrideSlice", StridedSlice)
     registerModule("com.intel.analytics.bigdl.nn.MultiRNNCell", MultiRNNCell)
     registerModule("com.intel.analytics.bigdl.nn.SpatialSeparableConvolution",
       SpatialSeparableConvolution)
