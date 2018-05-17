@@ -52,7 +52,7 @@ class MaxSpec extends FlatSpec with Matchers {
   }
 }
 
-class GatherSerialTest extends ModuleSerializationTest {
+class MaxSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val max = Max[Float, Float]().setName("max_pool")
     val input1 = Tensor[Float].range(1, 6).resize(2, 3)
