@@ -181,7 +181,7 @@ class NNEstimator[T: ClassTag] private[zoo] (
   /**
    * Clear clipping params, in this case, clipping will not be applied.
    */
-  def clearGradientClippingParams(): this.type = {
+  def clearGradientClipping(): this.type = {
     clear(l2GradientClippingParams)
     clear(constantGradientClippingParams)
   }

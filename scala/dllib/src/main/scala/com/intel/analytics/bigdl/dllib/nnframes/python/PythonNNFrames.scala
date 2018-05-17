@@ -174,8 +174,8 @@ class PythonNNFrames[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonB
     model.setSamplePreprocessing(sampleTransformer)
   }
 
-  def nnEstimatorClearGradientClippingParams(estimator: NNEstimator[T]): Unit = {
-    estimator.clearGradientClippingParams()
+  def nnEstimatorClearGradientClipping(estimator: NNEstimator[T]): Unit = {
+    estimator.clearGradientClipping()
   }
 
   def nnEstimatorSetConstantGradientClipping(
