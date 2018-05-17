@@ -56,7 +56,6 @@ abstract class KerasNet[T: ClassTag](implicit ev: TensorNumeric[T])
   private var tensorBoardAppName: String = null
   private var checkpointPath: String = null
   private var overWriteCheckPoint: Boolean = true
-  private var gradiantClipping: Boolean = true
   private var constantGradientClippingParams: (Float, Float) = null
   private var clipNorm: Option[Float] = None
 
@@ -147,15 +146,16 @@ abstract class KerasNet[T: ClassTag](implicit ev: TensorNumeric[T])
   }
 
   /**
-   * Call this if you would like to disable gradient clipping during the training process.
+   * Clear gradient clipping parameters. In this case, gradient clipping will not be applied.
    * In order to take effect, it needs to be called before fit.
    */
-  def disableGradientClipping(): Unit = {
-    this.gradiantClipping = false
+  def clearGradientClipping(): Unit = {
+    this.constantGradientClippingParams = null
+    this.clipNorm = None
   }
 
   /**
-   * Call this if you would like to set constant gradient clipping during the training process.
+   * Set constant gradient clipping during the training process.
    * In order to take effect, it needs to be called before fit.
    *
    * @param min The minimum value to clip by. Double.
@@ -166,7 +166,7 @@ abstract class KerasNet[T: ClassTag](implicit ev: TensorNumeric[T])
   }
 
   /**
-   * Call this if you would like to clip gradient to a maximum L2-Norm during the training process.
+   * Clip gradient to a maximum L2-Norm during the training process.
    * In order to take effect, it needs to be called before fit.
    *
    * @param clipNorm Gradient L2-Norm threshold. Double.
@@ -206,9 +206,6 @@ abstract class KerasNet[T: ClassTag](implicit ev: TensorNumeric[T])
     if (this.tensorBoardLogDir != null && this.tensorBoardAppName != null) {
       optimizer.setTrainSummary(TrainSummary(tensorBoardLogDir, tensorBoardAppName))
     }
-    if (!this.gradiantClipping) {
-      optimizer.disableGradientClipping()
-    }
     if (this.constantGradientClippingParams != null) {
       optimizer.setConstantGradientClipping(this.constantGradientClippingParams._1,
         this.constantGradientClippingParams._2)
@@ -225,7 +222,7 @@ abstract class KerasNet[T: ClassTag](implicit ev: TensorNumeric[T])
         dataset = validationData,
         vMethods = this.vMethods)
     }
-    optimizer.setOptimMethod(this.optimMethod)
+    optimizer.setOptimMethod(this.optimMethod.clone())
       .setEndWhen(Trigger.maxEpoch(nbEpoch))
     optimizer.optimize()
   }
