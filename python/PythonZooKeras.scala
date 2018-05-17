@@ -141,8 +141,8 @@ class PythonZooKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonB
     module.setTensorBoard(logDir, appName)
   }
 
-  def zooDisableGradientClipping(module: KerasNet[T]): Unit = {
-    module.disableGradientClipping()
+  def zooClearGradientClipping(module: KerasNet[T]): Unit = {
+    module.clearGradientClipping()
   }
 
   def zooSetConstantGradientClipping(
