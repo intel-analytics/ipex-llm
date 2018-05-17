@@ -168,7 +168,7 @@ class TestNNClassifer():
 
         df = self.get_estimator_df()
         estimator.fit(df)
-        estimator.clearGradientClippingParams()
+        estimator.clearGradientClipping()
         estimator.fit(df)
         estimator.setGradientClippingByL2Norm(1.2)
         estimator.fit(df)
