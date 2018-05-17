@@ -20,11 +20,16 @@ import com.intel.analytics.zoo.feature.common.{ImageProcessing}
 import com.intel.analytics.bigdl.transform.vision.image.augmentation
 
 /**
- * Adjust image saturation
+ * Random crop a `cropWidth` x `cropHeight` patch from an image.
+ * The patch size should be less than the image size.
+ *
+ * @param cropWidth width after crop
+ * @param cropHeight height after crop
+ * @param isClip whether to clip the roi to image boundaries
  */
-class Saturation(deltaLow: Double, deltaHigh: Double) extends ImageProcessing {
+class RandomCrop(cropWidth: Int, cropHeight: Int, isClip: Boolean = true) extends ImageProcessing {
 
-  private val internalCrop = augmentation.Saturation(deltaLow, deltaHigh)
+  private val internalCrop = new augmentation.RandomCrop(cropWidth, cropHeight, isClip)
   override def apply(prev: Iterator[ImageFeature]): Iterator[ImageFeature] = {
     internalCrop.apply(prev)
   }
@@ -34,7 +39,7 @@ class Saturation(deltaLow: Double, deltaHigh: Double) extends ImageProcessing {
   }
 }
 
-object Saturation {
-  def apply(deltaLow: Double, deltaHigh: Double): Saturation =
-    new Saturation(deltaLow, deltaHigh)
+object RandomCrop {
+  def apply(cropWidth: Int, cropHeight: Int, isClip: Boolean = true): RandomCrop =
+    new RandomCrop(cropWidth, cropHeight, isClip)
 }

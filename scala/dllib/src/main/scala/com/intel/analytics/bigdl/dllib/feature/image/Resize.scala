@@ -30,6 +30,10 @@ class Resize(
   override def apply(prev: Iterator[ImageFeature]): Iterator[ImageFeature] = {
     internalResize.apply(prev)
   }
+
+  override def transformMat(feature: ImageFeature): Unit = {
+    internalResize.transformMat(feature)
+  }
 }
 
 object Resize {
@@ -38,4 +42,52 @@ object Resize {
             resizeMode: Int = Imgproc.INTER_LINEAR, useScaleFactor: Boolean = true): Resize =
     new Resize(resizeH, resizeW, resizeMode, useScaleFactor)
 
+}
+
+class AspectScale(minSize: Int,
+                  scaleMultipleOf: Int = 1,
+                  maxSize: Int = 1000,
+                  resizeMode: Int = Imgproc.INTER_LINEAR,
+                  useScaleFactor: Boolean = true,
+                  minScale: Option[Float] = None)
+  extends ImageProcessing {
+
+  private val internalCrop = augmentation.AspectScale(minSize, scaleMultipleOf,
+    maxSize, resizeMode, useScaleFactor, minScale)
+  override def apply(prev: Iterator[ImageFeature]): Iterator[ImageFeature] = {
+    internalCrop.apply(prev)
+  }
+
+  override def transformMat(feature: ImageFeature): Unit = {
+    internalCrop.transformMat(feature)
+  }
+}
+
+object AspectScale {
+  def apply(minSize: Int,
+            scaleMultipleOf: Int = 1,
+            maxSize: Int = 1000,
+            mode: Int = Imgproc.INTER_LINEAR,
+            useScaleFactor: Boolean = true,
+            minScale: Option[Float] = None): AspectScale =
+    new AspectScale(minSize, scaleMultipleOf, maxSize, mode, useScaleFactor, minScale)
+}
+
+class RandomAspectScale(scales: Array[Int], scaleMultipleOf: Int = 1,
+                        maxSize: Int = 1000) extends ImageProcessing {
+
+  private val internalCrop = augmentation.RandomAspectScale(scales, scaleMultipleOf, maxSize)
+  override def apply(prev: Iterator[ImageFeature]): Iterator[ImageFeature] = {
+    internalCrop.apply(prev)
+  }
+
+  override def transformMat(feature: ImageFeature): Unit = {
+    internalCrop.transformMat(feature)
+  }
+}
+
+object RandomAspectScale {
+  def apply(scales: Array[Int], scaleMultipleOf: Int = 1,
+            maxSize: Int = 1000): RandomAspectScale =
+    new RandomAspectScale(scales, scaleMultipleOf, maxSize)
 }

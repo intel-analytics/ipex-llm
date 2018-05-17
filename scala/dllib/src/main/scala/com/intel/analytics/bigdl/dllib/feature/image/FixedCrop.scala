@@ -20,11 +20,20 @@ import com.intel.analytics.zoo.feature.common.{ImageProcessing}
 import com.intel.analytics.bigdl.transform.vision.image.augmentation
 
 /**
- * Adjust image saturation
+ * Crop a fixed area of image
+ *
+ * @param x1 start in width
+ * @param y1 start in height
+ * @param x2 end in width
+ * @param y2 end in height
+ * @param normalized whether args are normalized, i.e. in range [0, 1]
+ * @param isClip whether to clip the roi to image boundaries
  */
-class Saturation(deltaLow: Double, deltaHigh: Double) extends ImageProcessing {
+class FixedCrop(x1: Float, y1: Float, x2: Float, y2: Float, normalized: Boolean,
+                isClip: Boolean = true)
+  extends ImageProcessing {
 
-  private val internalCrop = augmentation.Saturation(deltaLow, deltaHigh)
+  private val internalCrop = new augmentation.FixedCrop(x1, y1, x2, y2, normalized, isClip)
   override def apply(prev: Iterator[ImageFeature]): Iterator[ImageFeature] = {
     internalCrop.apply(prev)
   }
@@ -34,7 +43,8 @@ class Saturation(deltaLow: Double, deltaHigh: Double) extends ImageProcessing {
   }
 }
 
-object Saturation {
-  def apply(deltaLow: Double, deltaHigh: Double): Saturation =
-    new Saturation(deltaLow, deltaHigh)
+object FixedCrop {
+  def apply(x1: Float, y1: Float, x2: Float, y2: Float, normalized: Boolean,
+            isClip: Boolean = true)
+  : FixedCrop = new FixedCrop(x1, y1, x2, y2, normalized, isClip)
 }

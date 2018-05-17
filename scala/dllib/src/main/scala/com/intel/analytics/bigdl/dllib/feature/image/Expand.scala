@@ -20,11 +20,20 @@ import com.intel.analytics.zoo.feature.common.{ImageProcessing}
 import com.intel.analytics.bigdl.transform.vision.image.augmentation
 
 /**
- * Adjust image saturation
+ * expand image, fill the blank part with the meanR, meanG, meanB
+ *
+ * @param meansR means in R channel
+ * @param meansG means in G channel
+ * @param meansB means in B channel
+ * @param minExpandRatio min expand ratio
+ * @param maxExpandRatio max expand ratio
  */
-class Saturation(deltaLow: Double, deltaHigh: Double) extends ImageProcessing {
+class Expand(meansR: Int = 123, meansG: Int = 117, meansB: Int = 104,
+             minExpandRatio: Double = 1, maxExpandRatio: Double = 4.0)
+  extends ImageProcessing {
 
-  private val internalCrop = augmentation.Saturation(deltaLow, deltaHigh)
+  private val internalCrop = new augmentation.Expand(meansR, meansG, meansB,
+    minExpandRatio, maxExpandRatio)
   override def apply(prev: Iterator[ImageFeature]): Iterator[ImageFeature] = {
     internalCrop.apply(prev)
   }
@@ -34,7 +43,8 @@ class Saturation(deltaLow: Double, deltaHigh: Double) extends ImageProcessing {
   }
 }
 
-object Saturation {
-  def apply(deltaLow: Double, deltaHigh: Double): Saturation =
-    new Saturation(deltaLow, deltaHigh)
+object Expand {
+  def apply(meansR: Int = 123, meansG: Int = 117, meansB: Int = 104,
+            minExpandRatio: Double = 1.0, maxExpandRatio: Double = 4.0): Expand =
+    new Expand(meansR, meansG, meansB, minExpandRatio, maxExpandRatio)
 }

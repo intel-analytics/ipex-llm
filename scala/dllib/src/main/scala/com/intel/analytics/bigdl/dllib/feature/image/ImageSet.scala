@@ -16,8 +16,7 @@
 
 package com.intel.analytics.zoo.feature.image
 
-import com.intel.analytics.bigdl.transform.vision.image.{FeatureTransformer,
-       ImageFeature, ImageFrame, BytesToMat, LocalImageFrame, DistributedImageFrame}
+import com.intel.analytics.bigdl.transform.vision.image._
 import com.intel.analytics.zoo.common.Utils
 
 import org.apache.commons.io.FileUtils
@@ -70,10 +69,6 @@ abstract class ImageSet {
   def toImageFrame(): ImageFrame
 }
 
-/**
- * Local ImageSet, keeps an array of ImageFeature
- * @param array array of ImageFeature
- */
 class LocalImageSet(var array: Array[ImageFeature]) extends ImageSet {
   override def transform(transformer: FeatureTransformer): ImageSet = {
     array = array.map(transformer.transform)
@@ -89,10 +84,6 @@ class LocalImageSet(var array: Array[ImageFeature]) extends ImageSet {
   }
 }
 
-/**
- * Distributerd ImageSet, it keeps an rdd of ImageFeature
- * @param rdd rdd of ImageFeature
- */
 class DistributedImageSet(var rdd: RDD[ImageFeature]) extends ImageSet {
   override def transform(transformer: FeatureTransformer): ImageSet = {
     rdd = transformer(rdd)

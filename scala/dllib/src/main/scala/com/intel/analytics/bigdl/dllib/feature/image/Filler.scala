@@ -20,11 +20,18 @@ import com.intel.analytics.zoo.feature.common.{ImageProcessing}
 import com.intel.analytics.bigdl.transform.vision.image.augmentation
 
 /**
- * Adjust image saturation
+ * Fill part of image with certain pixel value
+ *
+ * @param startX start x ratio
+ * @param startY start y ratio
+ * @param endX end x ratio
+ * @param endY end y ratio
+ * @param value filling value
  */
-class Saturation(deltaLow: Double, deltaHigh: Double) extends ImageProcessing {
+class Filler(startX: Float, startY: Float, endX: Float, endY: Float, value: Int = 255)
+  extends ImageProcessing {
 
-  private val internalCrop = augmentation.Saturation(deltaLow, deltaHigh)
+  private val internalCrop = new augmentation.Filler(startX, startY, endX, endY, value)
   override def apply(prev: Iterator[ImageFeature]): Iterator[ImageFeature] = {
     internalCrop.apply(prev)
   }
@@ -34,7 +41,7 @@ class Saturation(deltaLow: Double, deltaHigh: Double) extends ImageProcessing {
   }
 }
 
-object Saturation {
-  def apply(deltaLow: Double, deltaHigh: Double): Saturation =
-    new Saturation(deltaLow, deltaHigh)
+object Filler {
+  def apply(startX: Float, startY: Float, endX: Float, endY: Float, value: Int = 255): Filler
+  = new Filler(startX, startY, endX, endY, value)
 }

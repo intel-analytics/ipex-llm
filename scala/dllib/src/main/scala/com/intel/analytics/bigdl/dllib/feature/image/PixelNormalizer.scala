@@ -20,11 +20,13 @@ import com.intel.analytics.zoo.feature.common.{ImageProcessing}
 import com.intel.analytics.bigdl.transform.vision.image.augmentation
 
 /**
- * Adjust image saturation
+ * Pixel level normalizer, data(i) = data(i) - mean(i)
+ *
+ * @param means pixel level mean, following H * W * C order
  */
-class Saturation(deltaLow: Double, deltaHigh: Double) extends ImageProcessing {
+class PixelNormalizer(means: Array[Float]) extends ImageProcessing {
 
-  private val internalCrop = augmentation.Saturation(deltaLow, deltaHigh)
+  private val internalCrop = new augmentation.PixelNormalizer(means)
   override def apply(prev: Iterator[ImageFeature]): Iterator[ImageFeature] = {
     internalCrop.apply(prev)
   }
@@ -34,7 +36,6 @@ class Saturation(deltaLow: Double, deltaHigh: Double) extends ImageProcessing {
   }
 }
 
-object Saturation {
-  def apply(deltaLow: Double, deltaHigh: Double): Saturation =
-    new Saturation(deltaLow, deltaHigh)
+object PixelNormalizer {
+  def apply(means: Array[Float]): PixelNormalizer = new PixelNormalizer(means)
 }

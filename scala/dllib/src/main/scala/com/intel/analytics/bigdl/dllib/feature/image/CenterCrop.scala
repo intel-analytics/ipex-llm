@@ -26,6 +26,10 @@ class CenterCrop(
   override def apply(prev: Iterator[ImageFeature]): Iterator[ImageFeature] = {
     internalCrop.apply(prev)
   }
+
+  override def transformMat(feature: ImageFeature): Unit = {
+    internalCrop.transformMat(feature)
+  }
 }
 
 object CenterCrop {

@@ -31,6 +31,10 @@ class Brightness(deltaLow: Double, deltaHigh: Double) extends ImageProcessing {
   override def apply(prev: Iterator[ImageFeature]): Iterator[ImageFeature] = {
     internalCrop.apply(prev)
   }
+
+  override def transformMat(feature: ImageFeature): Unit = {
+    internalCrop.transformMat(feature)
+  }
 }
 
 object Brightness {
