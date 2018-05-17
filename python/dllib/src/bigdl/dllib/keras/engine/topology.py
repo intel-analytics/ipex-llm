@@ -97,17 +97,17 @@ class KerasNet(ZooKerasLayer):
                       path,
                       over_write)
 
-    def disable_gradient_clipping(self):
+    def clear_gradient_clipping(self):
         """
-        Call this if you would like to disable gradient clipping during the training process.
+        Clear gradient clipping parameters. In this case, gradient clipping will not be applied.
         In order to take effect, it needs to be called before fit.
         """
-        callBigDlFunc(self.bigdl_type, "zooDisableGradientClipping",
+        callBigDlFunc(self.bigdl_type, "zooClearGradientClipping",
                       self.value)
 
     def set_constant_gradient_clipping(self, min, max):
         """
-        Call this if you would like to set constant gradient clipping during the training process.
+        Set constant gradient clipping during the training process.
         In order to take effect, it needs to be called before fit.
 
         # Arguments
@@ -121,8 +121,7 @@ class KerasNet(ZooKerasLayer):
 
     def set_gradient_clipping_by_l2_norm(self, clip_norm):
         """
-        Call this if you would like to clip gradient to a maximum L2-Norm
-        during the training process.
+        Clip gradient to a maximum L2-Norm during the training process.
         In order to take effect, it needs to be called before fit.
 
         # Arguments
