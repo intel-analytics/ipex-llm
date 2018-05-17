@@ -27,6 +27,7 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericF
 import com.intel.analytics.bigdl.utils.Engine
 import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
 import com.intel.analytics.bigdl.visualization.{TrainSummary, ValidationSummary}
+import com.intel.analytics.zoo.common.NNContext
 import com.intel.analytics.zoo.feature.common.{TensorToSample, _}
 import com.intel.analytics.zoo.feature.image._
 import org.apache.spark.SparkContext
@@ -51,11 +52,10 @@ class NNEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
     Random.setSeed(42)
     RNG.setSeed(42)
     val conf = Engine.createSparkConf().setAppName("Test NNEstimator").setMaster("local[1]")
-    sc = SparkContext.getOrCreate(conf)
+    sc = NNContext.getNNContext(conf)
     sqlContext = new SQLContext(sc)
     smallData = NNEstimatorSpec.generateTestInput(
       nRecords, Array(1.0, 2.0, 3.0, 4.0, 5.0, 6.0), -1.0, 42L)
-    Engine.init
   }
 
   after{
