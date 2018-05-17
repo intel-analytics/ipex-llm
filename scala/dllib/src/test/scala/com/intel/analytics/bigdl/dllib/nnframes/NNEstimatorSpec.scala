@@ -525,7 +525,7 @@ class NNEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
     val nnModel = estimator.fit(df)
 
-    estimator.clearGradientClippingParams()
+    estimator.clearGradientClipping()
     estimator.fit(df)
     estimator.setGradientClippingByL2Norm(0.2f)
     estimator.fit(df)
