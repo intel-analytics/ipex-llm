@@ -78,12 +78,11 @@ class TrainingSpec extends FlatSpec with Matchers with BeforeAndAfter  {
     val output = Dense[Float](8, activation = "relu").inputs(input)
     val model = Model[Float](input, output)
     model.compile(optimizer = "adam", loss = "mae")
-    model.disableGradientClipping()
     model.fit(trainingData, batchSize = 8, nbEpoch = 2)
   }
 
-  "compile, fit with validation, evaluate, predict, setTensorBoard, setCheckPoint" should
-    "work properly" in {
+  "compile, fit with validation, evaluate, predict, setTensorBoard, " +
+    "setCheckPoint, gradientClipping" should "work properly" in {
     val trainingData = generateData(Array(12, 12), 1, 100)
     val testData = generateData(Array(12, 12), 1, 16)
     val model = Sequential[Float]()
@@ -94,9 +93,13 @@ class TrainingSpec extends FlatSpec with Matchers with BeforeAndAfter  {
       metrics = List("accuracy"))
     val tmpLogDir = Files.createTempDir()
     val tmpCheckpointDir = Files.createTempDir()
-    model.setConstantGradientClipping(0.01f, 0.03f)
     model.setTensorBoard(tmpLogDir.getAbsolutePath, "TrainingSpec")
     model.setCheckpoint(tmpCheckpointDir.getAbsolutePath)
+    model.setGradientClippingByL2Norm(0.2f)
+    model.fit(trainingData, batchSize = 8, validationData = testData, nbEpoch = 2)
+    model.clearGradientClipping()
+    model.fit(trainingData, batchSize = 8, validationData = testData, nbEpoch = 2)
+    model.setGradientClippingByL2Norm(0.2f)
     model.fit(trainingData, batchSize = 8, validationData = testData, nbEpoch = 2)
     val accuracy = model.evaluate(testData, batchSize = 8)
     val predictResults = model.predict(testData, batchSize = 8)
@@ -110,7 +113,9 @@ class TrainingSpec extends FlatSpec with Matchers with BeforeAndAfter  {
     model.add(Dense[Float](8, activation = "relu", inputShape = Shape(4)))
     model.compile(optimizer = new SGD[Float](), loss = MSECriterion[Float](),
       metrics = List(new Top1Accuracy[Float]))
-    model.setGradientClippingByL2Norm(0.01f)
+    model.setConstantGradientClipping(0.01f, 0.03f)
+    model.fit(localData, nbEpoch = 2)
+    model.clearGradientClipping()
     model.fit(localData, nbEpoch = 2)
     val accuracy = model.evaluate(localData)
     val predictResults = model.predict(localData)
