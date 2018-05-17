@@ -19,7 +19,7 @@ import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.nn.keras.KerasLayer
-import com.intel.analytics.bigdl.nn.{Container, Graph, StaticGraph}
+import com.intel.analytics.bigdl.nn.{Container, DynamicGraph, Graph, StaticGraph}
 import com.intel.analytics.bigdl.serialization.Bigdl.BigDLModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -27,8 +27,8 @@ import com.intel.analytics.bigdl.utils.serializer._
 import com.intel.analytics.zoo.pipeline.api.keras.layers.KerasLayerWrapper
 import com.intel.analytics.zoo.pipeline.api.keras.layers.utils.{GraphRef, KerasUtils}
 import com.intel.analytics.zoo.pipeline.api.keras.models.Model
-import scala.collection.JavaConverters._
 
+import scala.collection.JavaConverters._
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
@@ -73,8 +73,10 @@ class GraphNet[T: ClassTag](graph: Graph[T])(implicit ev: TensorNumeric[T])
       case g: StaticGraph[T] =>
         val newGraph = Graph(inputs.toArray, nodes(outputs).toArray, variables)
         new GraphNet[T](newGraph)
-      case _ =>
-        throw new IllegalArgumentException("Dynamic graph is not supported for now.")
+      case g =>
+        val newGraph = NetUtils.dynamic[T](inputs.toArray, nodes(outputs).toArray,
+          variables, NetUtils.getGenerateBackward(g))
+        new GraphNet[T](newGraph)
     }
   }
 
@@ -123,6 +125,29 @@ object NetUtils {
   private[zoo] def getGraphVariables[T](graph: Graph[T]) = {
     KerasUtils.invokeMethod(graph, "variables")
       .asInstanceOf[Option[(Array[Tensor[T]], Array[Tensor[T]])]]
+  }
+
+  private[zoo] def getGenerateBackward[T](graph: Graph[T]): Boolean = {
+    KerasUtils.invokeMethod(graph, "generateBackward").asInstanceOf[Boolean]
+  }
+
+  private[zoo] def dynamic[T](
+       input : Array[ModuleNode[T]],
+       output : Array[ModuleNode[T]],
+       variables: Option[(Array[Tensor[T]], Array[Tensor[T]])] = None,
+       generateBackward: Boolean = true)
+       (implicit ev: TensorNumeric[T], ev2: ClassTag[T]): Graph[T] = {
+    import scala.reflect.runtime.{universe => ru}
+    val m = ru.runtimeMirror(Graph.getClass.getClassLoader)
+    val mirror = m.reflect(Graph)
+    val dynamic = mirror.symbol.typeSignature
+      .member(ru.newTermName("dynamic"))
+      .filter(_.asMethod.paramss.flatten.length == 6)
+
+    val result = mirror.reflectMethod(dynamic.asMethod)(input, output,
+      variables, generateBackward, ev2, ev)
+
+    result.asInstanceOf[Graph[T]]
   }
 }
 
