@@ -21,20 +21,31 @@ import com.intel.analytics.bigdl.utils.Table
 
 import scala.reflect.ClassTag
 
+/**
+ * Computes the maximum of elements across dimensions of a tensor.
+ * @param keepDims if keepDims is false, will delete the singleton dimension
+ *                 in output.
+ */
 class Max[T: ClassTag, D: ClassTag](
-        keepDims: Boolean = false
+        keepDims: Boolean = false,
+        startFromZero: Boolean = false
       )(implicit ev: TensorNumeric[T], ev2: TensorNumeric[D]
       ) extends Operation[Table, Tensor[D], T] {
 
   output = Tensor[D]()
+  // just a buffer using in tensor.max.
   protected val indices: Tensor[D] = Tensor[D]()
 
   override def updateOutput(input: Table): Tensor[D] = {
     val x = input[Tensor[D]](1)
     val y = input[Tensor[Int]](2)
 
-    require(y.dim() == 1 && y.nElement() == 1, s"reduction indices should be a scalar")
-    val reductionIndices = y.valueAt(1) + 1
+    require(y.isScalar, s"reduction indices should be a scalar")
+    val reductionIndices = if (startFromZero) {
+      y.value() + 1
+    } else {
+      y.value()
+    }
     require(reductionIndices <= x.nDimension(), s"reduction indices should smaller than" +
       s" input's dimension, excepted smaller than ${x.dim()}, but got ${reductionIndices}")
 
@@ -56,7 +67,9 @@ class Max[T: ClassTag, D: ClassTag](
 
 object Max {
   def apply[T: ClassTag, D: ClassTag](
-    keepDims: Boolean = false)(implicit ev: TensorNumeric[T], ev2: TensorNumeric[D]): Max[T, D] = {
-    new Max[T, D](keepDims)
+    keepDims: Boolean = false,
+    startFromZero: Boolean = false)(
+      implicit ev: TensorNumeric[T], ev2: TensorNumeric[D]): Max[T, D] = {
+    new Max[T, D](keepDims, startFromZero)
   }
 }

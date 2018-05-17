@@ -34,11 +34,11 @@ class Max extends TensorflowOpsLoader {
     val t = getType(nodeDef.getAttrMap, "T")
     val keepDims = getBoolean(nodeDef.getAttrMap, "keep_dims")
     if (t == DataType.DT_FLOAT) {
-      MaxOps[T, Float](keepDims)
+      MaxOps[T, Float](keepDims, true)
     } else if (t == DataType.DT_DOUBLE) {
-      MaxOps[T, Double](keepDims)
+      MaxOps[T, Double](keepDims, true)
     } else if (t == DataType.DT_INT32) {
-      MaxOps[T, Int](keepDims)
+      MaxOps[T, Int](keepDims, true)
     } else {
       throw new UnsupportedOperationException(s"Not support load Gather when type is ${t}")
     }
