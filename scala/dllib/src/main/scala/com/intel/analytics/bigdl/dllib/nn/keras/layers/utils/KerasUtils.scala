@@ -224,7 +224,7 @@ object KerasUtils {
       try {
       clazz.getMethod(methodName, args.map(_.getClass): _*)
     } catch {
-        case _: Throwable =>
+        case t: Throwable =>
           val methods = clazz.getMethods().filter(_.getName() == methodName)
           require(methods.length == 1,
             s"We should only found one result, but got ${methodName}: ${methods.length}")
