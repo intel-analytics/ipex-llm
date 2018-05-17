@@ -2,8 +2,8 @@
 
 This directory contains three notebooks to show you how to use
 [Variational Autoencoders](https://arxiv.org/pdf/1606.05908.pdf)
-in Zoo. These notebooks are developed on Apache Spark 1.6
-and Zoo 0.1.0.
+in Analytics Zoo. These notebooks are developed on Apache Spark 1.6
+and Analytics Zoo 0.1.0.
 
 1. [Using Variational Autoencoder to Generate Digital Numbers](./using_variational_autoencoder_to_generate_digital_numbers.ipynb)
    This notebook used the [MNIST](http://yann.lecun.com/exdb/mnist/)
@@ -18,11 +18,11 @@ and Zoo 0.1.0.
    more vivid images at the cost of more training time.
 
 To run this example, you should 
-* Download Zoo and build it.
-* Set the environment variable `ZOO_HOME` to `/your_zoo_directory/dist` 
+* Download Analytics Zoo and build it.
+* Set the environment variable `ANALYTICS_ZOO_HOME` to the root directory of the Analytics Zoo project
 * Run the bash command to start the notebook.
 ```Bash
-${ZOO_HOME}/scripts/jupyter-with-zoo.sh \
+${ANALYTICS_ZOO_HOME}/scripts/jupyter-with-zoo.sh \
     --master local[4] \
     --driver-cores 4  \
     --driver-memory 22g  \
