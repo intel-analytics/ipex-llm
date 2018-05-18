@@ -57,6 +57,14 @@ class PythonAutoGrad[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZ
     Variable[T](toScalaMultiShape(inputShape))
   }
 
+  def varGetInputShape(v: Variable[T]): JList[JList[Int]] = {
+    shapeToJList(v.getInputShape())
+  }
+
+  def varGetOutputShape(v: Variable[T]): JList[JList[Int]] = {
+    shapeToJList(v.getOutputShape())
+  }
+
   def add(a: Variable[T], b: Variable[T]): Variable[T] = {
     a + b
   }
