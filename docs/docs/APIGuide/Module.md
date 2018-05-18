@@ -107,7 +107,7 @@ val model = Module.loadTF(modelPath, inputs, outputs, ByteOrder.LITTLE_ENDIAN)
 // For tensorflow graph with Variables
 val model = Module.loadTF(modelPath, inputs, outputs, ByteOrder.LITTLE_ENDIAN, Some(binPath))
 
-// For tensorflow forward graph only
+// For tensorflow model inference only
 val model = Module.loadTF(modelPath, inputs, outputs, ByteOrder.LITTLE_ENDIAN, generateBackward=false)
 ```
 
@@ -123,7 +123,7 @@ model = Model.load_tensorflow(model_def, inputs, outputs, byte_order = "little_e
 # For tensorflow graph with Variables
 model = Model.load_tensorflow(model_def, inputs, outputs, byte_order = "little_endian", bigdl_type="float", bin_file=model_variable)
 
-# For tensorflow forward graph only
+# For tensorflow model inference only
 model = Model.load_tensorflow(model_def, inputs, outputs, byte_order = "little_endian", generated_backward=False, bigdl_type="float")
 ```
 
