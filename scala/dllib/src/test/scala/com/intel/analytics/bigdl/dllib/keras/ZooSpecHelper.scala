@@ -39,7 +39,7 @@ abstract class ZooSpecHelper extends FlatSpec with Matchers with BeforeAndAfter 
   private val tmpFiles : ArrayBuffer[JFile] = new ArrayBuffer[JFile]()
 
   def createTmpFile(): JFile = {
-    val file = java.io.File.createTempFile("UnitTest", "BigDLSpecBase")
+    val file = java.io.File.createTempFile("UnitTest", "AnalyticsZooSpecBase")
     logger.info(s"created file $file")
     tmpFiles.append(file)
     file
