@@ -49,10 +49,12 @@ object TensorflowLoader{
    *               which dependency you choose to feed
    * @param outputs output node names
    * @param byteOrder file byteOrder
+   * @param generatedBackward if generate backward graph
    * @return
    */
   def load[T: ClassTag](graphPrototxt: String, inputs: Seq[String], outputs: Seq[String],
-        byteOrder: ByteOrder, binFile: Option[String] = None)(
+        byteOrder: ByteOrder, binFile: Option[String] = None,
+        generatedBackward: Boolean = true)(
     implicit ev: TensorNumeric[T]): Module[T] = {
     // Get node list
     val nodeList = parse(graphPrototxt)
