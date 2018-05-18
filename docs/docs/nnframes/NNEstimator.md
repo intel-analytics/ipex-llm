@@ -13,12 +13,12 @@ estimator = NNEstimator(model, criterion)
 
 `NNEstimator` extends `org.apache.spark.ml.Estimator` and supports training a BigDL
 model with Spark DataFrame data. It can be integrated into a standard Spark ML Pipeline
-to allow users combine the components of BigDL and Spark MLlib.
+to allow users to combine the components of BigDL and Spark MLlib.
 
 `NNEstimator` supports different feature and label data type through `Preprocessing`.
 During fit (training), NNEstimator will extract feature and label data from input DataFrame and use
 the `Preprocessing` to prepare data for the model, typically converts the feature and label
-to Tensors or convert the (feature, option[Label]) tuple to a BigDL Sample. Each
+to Tensors or converts the (feature, option[Label]) tuple to a BigDL Sample. Each
 `Preprocessing` conducts a data conversion step in the preprocessing process, multiple
 `Preprocessing` can be combined into a `ChainedPreprocessing`. Some pre-defined 
 `Preprocessing` for popular data types like Image, Array or Vector are provided in package
@@ -50,7 +50,7 @@ More concrete examples are available in package `com.intel.analytics.zoo.example
    with the featurePreprocessing and labelPreprocessing. This constructor provides more flexibility
    in supporting extra data types.
 
-Meanwhile, for advanced use case (e.g. model with multiple input tensor), `NNEstimator` supports:
+Meanwhile, for advanced use cases (e.g. model with multiple input tensor), `NNEstimator` supports:
 `setSamplePreprocessing(value: Preprocessing[(Any, Option[Any]), Sample[T]])` to directly compose
 Sample according to user-specified Preprocessing.
 
@@ -137,7 +137,7 @@ and use it as a transformer in your Spark ML pipeline to predict the results.
    and convert each feature to Tensor with the featurePreprocessing. This constructor provides
    more flexibility in supporting extra data types.
 
-Meanwhile, for advanced use case (e.g. model with multiple input tensor), `NNModel` supports:
+Meanwhile, for advanced use cases (e.g. model with multiple input tensor), `NNModel` supports:
 `setSamplePreprocessing(value: Preprocessing[Any, Sample[T]])`to directly compose
 Sample according to user-specified Preprocessing.
 
@@ -184,7 +184,7 @@ DoubleType.
    with the featurePreprocessing. This constructor provides more flexibility
    in supporting extra data types.
 
-Meanwhile, for advanced use case (e.g. model with multiple input tensor), `NNClassifier` supports:
+Meanwhile, for advanced use cases (e.g. model with multiple input tensor), `NNClassifier` supports:
 `setSamplePreprocessing(value: Preprocessing[(Any, Option[Any]), Sample[T]])` to directly compose
 Sample with user-specified Preprocessing.
 
@@ -269,7 +269,7 @@ Both label and prediction column will have the datatype of Double.
    column and convert each feature to Tensor with the featurePreprocessing. This constructor provides
    more flexibility in supporting extra data types.
 
-Meanwhile, for advanced use case (e.g. model with multiple input tensor), `NNClassifierModel`
+Meanwhile, for advanced use cases (e.g. model with multiple input tensor), `NNClassifierModel`
 supports:
 `setSamplePreprocessing(value: Preprocessing[Any, Sample[T]])`to directly compose
 Sample according to user-specified Preprocessing.
