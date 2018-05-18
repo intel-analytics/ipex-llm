@@ -7,7 +7,7 @@ export ANALYTICS_ZOO_HOME=$ANALYTICS_ZOO_HOME
 export ANALYTICS_ZOO_HOME_DIST=$ANALYTICS_ZOO_HOME/dist
 export ANALYTICS_ZOO_JAR=`find ${ANALYTICS_ZOO_HOME_DIST}/lib -type f -name "analytics-zoo*jar-with-dependencies.jar"`
 export ANALYTICS_ZOO_PYZIP=`find ${ANALYTICS_ZOO_HOME_DIST}/lib -type f -name "analytics-zoo*python-api.zip"`
-export ANALYTICS_ZOO_CONF=${ANALYTICS_ZOO_HOME_DIST}/conf/spark-bigdl.conf
+export ANALYTICS_ZOO_CONF=${ANALYTICS_ZOO_HOME_DIST}/conf/spark-analytics-zoo.conf
 export PYTHONPATH=${ANALYTICS_ZOO_PYZIP}:$PYTHONPATH
 
 echo "#1 start example test for textclassification"
