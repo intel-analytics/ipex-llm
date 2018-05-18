@@ -25,6 +25,10 @@ pages:
     - Keras-Style: ScalaUserGuide/PipelineAPI/keras-style.md
     - NNFrames: ScalaUserGuide/PipelineAPI/nnframes.md
 - Python User Guide: 
+  - Install:
+    - From pip: PythonUserGuide/InstallAndRun/install-from-pip.md
+  - Run:
+    - After pip install: PythonUserGuide/InstallAndRun/run-from-pip.md
   - Examples: PythonUserGuide/python-examples.md
   - Model API: PythonUserGuide/model-api.md
   - Pipeline API:
