@@ -2,13 +2,14 @@
 
 Python demo of transfer Learning based on Spark DataFrame (Dataset). 
 
-Zoo provides the DataFrame-based API for image reading, preprocessing, model training and inference. The related
-classes followed the typical estimator/transformer pattern of Spark ML and can be used in a standard Spark ML pipeline.
+Analytics Zoo provides the DataFrame-based API for image reading, preprocessing, model training
+and inference. The related classes followed the typical estimator/transformer pattern of Spark ML
+and can be used in a standard Spark ML pipeline.
 
 In this example, we will show you how to use a pre-trained inception-v1 model trained on
-imagenet dataset to solve the dogs-vs-cats classification problem by transfer learning with Analytics Zoo.
-For transfer learning, we will treat the inception-v1 model as a feature extractor and only
-train a linear model on these features.
+imagenet dataset to solve the dogs-vs-cats classification problem by transfer learning with
+Analytics Zoo. For transfer learning, we will treat the inception-v1 model as a feature extractor
+and only train a linear model on these features.
 
 # Preparation
 
