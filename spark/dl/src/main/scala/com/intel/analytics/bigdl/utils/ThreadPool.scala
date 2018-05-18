@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.utils
 import java.util.concurrent._
 
 import com.intel.analytics.bigdl.mkl.{MKL, MklDnn}
-import com.intel.analytics.bigdl.mkl.hardware.{Affinity, NativeUtils}
+import com.intel.analytics.bigdl.mkl.hardware.{Affinity, CpuInfo, NativeUtils}
 import org.apache.commons.lang.exception.ExceptionUtils
 import org.apache.log4j.Logger
 

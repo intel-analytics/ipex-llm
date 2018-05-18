@@ -17,7 +17,7 @@
 package com.intel.analytics.bigdl.nn.mkldnn
 
 import breeze.linalg.max
-import com.intel.analytics.bigdl.mkl.MklDnn
+import com.intel.analytics.bigdl.mkl.{Memory, MklDnn}
 import com.intel.analytics.bigdl.nn.abstractnn._
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.optim.Regularizer
@@ -763,11 +763,6 @@ class ConvolutionDnn(
     if (!propagateBack) {
       return
     }
-    /* build a simple net */
-    // keep original data
-    original_gradWeights.resizeAs(gradWeight).copy(gradWeight)
-    original_gradBias.resizeAs(gradBias).copy(gradBias)
-
     val n_bwd = stream_acc.length
     memoryPrimitives.clear()
     buffer.clear()
@@ -832,9 +827,6 @@ class ConvolutionDnn(
     if (System.getProperty("debug") == "2") {
       DnnTools.debugBwInfo(this.getName(), end1, gradOutput.getFormat(), gradInput.getFormat())
     }
-
-    gradWeight.add(original_gradWeights)
-    gradBias.add(original_gradBias)
 
     if (null != wRegularizer) {
       wRegularizer.accRegularization(weight, gradWeight, scaleW)

@@ -19,6 +19,7 @@ package com.intel.analytics.bigdl.optim
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dataset.{LocalDataSet, MiniBatch}
 import com.intel.analytics.bigdl.nn.Utils
+import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils._
 import org.apache.log4j.Logger
@@ -98,6 +99,7 @@ class LocalOptimizer[T: ClassTag] (
     val numSamples = dataset.data(train = false).map(_.size()).reduce(_ + _)
     var iter = dataset.data(train = true)
     logger.info("model thread pool size is " + Engine.model.getPoolSize)
+    val gradOutput = Tensor[T]()
     while (!endWhen(state)) {
       val start = System.nanoTime()
 
@@ -116,22 +118,26 @@ class LocalOptimizer[T: ClassTag] (
       }
       val dataFetchTime = System.nanoTime()
 
-      val lossSum = Engine.default.invokeAndWait(
-        (0 until parallelism).map(i =>
-          () => {
-            val localModel = workingModels(i)
-            localModel.zeroGradParameters()
-            localModel.training()
-            val localCriterion = workingCriterion(i)
-            val input = miniBatchBuffer(i).getInput()
-            val target = miniBatchBuffer(i).getTarget()
-            val output = localModel.forward(input)
-            val _loss = ev.toType[Double](localCriterion.forward(output, target))
-            val errors = localCriterion.backward(output, target)
-            localModel.backward(input, errors)
-            _loss
-          })
-      ).sum
+//      val lossSum = Engine.default.invokeAndWait(
+//        (0 until parallelism).map(i =>
+//          () => {
+      val i = 0
+      val localModel = workingModels(i)
+//      localModel.zeroGradParameters()
+      localModel.training()
+      localModel.resetTimes()
+      val localCriterion = workingCriterion(i)
+      val input = miniBatchBuffer(i).getInput()
+      val target = miniBatchBuffer(i).getTarget()
+      val output = localModel.forward(input)
+      val lossSum = ev.toType[Double](localCriterion.forward(output, target))
+//      val errors = localCriterion.backward(output, target)
+//      if (gradOutput.isEmpty) {
+//        gradOutput.resizeAs(output.toTensor).rand(-1, 1)
+//      }
+//      localModel.backward(input, gradOutput)
+//          })
+//      ).sum
 
       // copy multi-model gradient to the buffer
 //      Engine.default.invokeAndWait(
@@ -152,7 +158,8 @@ class LocalOptimizer[T: ClassTag] (
 //            }
 //          })
 //      )
-      val loss = lossSum / parallelism
+      val loss = 0.0
+//      val loss = lossSum / parallelism
 //      var scale = ev.fromType(parallelism)
 //      if (gradientClippingParams.enableL2NormClipping) {
 //        val squares = new Array[Double](syncGradParallelNum)

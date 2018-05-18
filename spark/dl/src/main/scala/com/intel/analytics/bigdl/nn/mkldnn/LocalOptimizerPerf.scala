@@ -232,6 +232,7 @@ object LocalOptimizerPerf {
 
     val (_model, miniBatch, criterion) = getModel(param.module, param.batchSize)
     val model = _model
+    println(model)
     println(param.coreNumber)
 
     val dummyDataSet = new LocalDataSet[MiniBatch[Float]] {

@@ -636,8 +636,8 @@ object SbnDnn {
     //    momentum: Double = 0.9,
     affine: Boolean = true)
   (implicit ev: TensorNumeric[T]): SpatialBatchNormalization[T] = {
-    mkldnn.SpatialBatchNormalization[T](nOutput, eps, momentum, affine).setInitMethod(Ones, Zeros)
-    //    SpatialBatchNormalization[T](nOutput, eps, momentum, affine).setInitMethod(Ones)
+    mkldnn.SpatialBatchNormalization[T](nOutput, eps, momentum, affine).setInitMethod(Zeros, Zeros)
+      .setShouldConvert(false)
   }
 }
 
@@ -678,13 +678,12 @@ object ResNet_dnn {
           if (convolutionDnn.isInstanceOf[mkldnn.ConvolutionDnn]) =>
           val curModel = convolutionDnn.asInstanceOf[mkldnn.ConvolutionDnn]
           val n: Float = curModel.kernelW * curModel.kernelW * curModel.nOutputPlane
-          curModel.weight.apply1(_ => RNG.normal(0, Math.sqrt(2.0f / n)).toFloat)
+           curModel.weight.apply1(_ => RNG.normal(0, Math.sqrt(2.0f / n)).toFloat)
           curModel.bias.apply1(_ => 0.0f)
         case spatialBatchNormalization
           if (spatialBatchNormalization.isInstanceOf[mkldnn.SpatialBatchNormalization[Float]]) =>
           val curModel =
             spatialBatchNormalization.asInstanceOf[mkldnn.SpatialBatchNormalization[Float]]
-          curModel.weight.apply1(_ => 1.0f)
           curModel.bias.apply1(_ => 0.0f)
         case linear
           if (linear.isInstanceOf[mkldnn.Linear[Float]]) =>

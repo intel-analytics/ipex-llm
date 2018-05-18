@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.nn.mkldnn
 import java.io.{IOException, ObjectInputStream, ObjectOutputStream}
 
 import com.intel.analytics.bigdl.mkl.{Memory, MklDnn}
-import com.intel.analytics.bigdl.nn.{RandomUniform, VariableFormat, Zeros}
+import com.intel.analytics.bigdl.nn.{Ones, RandomUniform, VariableFormat, Zeros}
 import com.intel.analytics.bigdl.nn.abstractnn.{Initializable, TensorModule}
 import com.intel.analytics.bigdl.tensor._
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -72,7 +72,7 @@ class SpatialBatchNormalization[T: ClassTag](
   @transient var forwardInferPrimDesc = 0L
 
   {
-    val wInit = RandomUniform(0, 1)
+    val wInit = Ones // RandomUniform(0, 1)
     val bInit = Zeros
     setInitMethod(wInit, bInit)
   }
@@ -537,7 +537,7 @@ class SpatialBatchNormalization[T: ClassTag](
     MklDnn.StreamSubmit(stream, backwardPrims.length, backwardPrims.toArray)
 
     diffAll.syncToHeap()
-    gradAll.add(diffAll)
+//    gradAll.add(diffAll)
 
     if (shouldConvert) {
       gradInput.asInstanceOf[MklDnnTensor[T]].syncToHeap()
