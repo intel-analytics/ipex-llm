@@ -29,6 +29,8 @@ class Select(ZooKerasLayer):
     """
     Select an index of the input in the given dim and return the subset part.
     The batch dimension needs to be unchanged.
+    The returned tensor has one less dimension: the dimension dim is removed.
+    As a result, it is not possible to select() on a 1D tensor.
     For example, if input is: [[1 2 3], [4 5 6]]
     Select(1, 1) will give output [2 5]
     Select(1, -1) will give output [3 6]
