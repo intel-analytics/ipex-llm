@@ -62,8 +62,8 @@ class TopologySpec extends FlatSpec with Matchers with BeforeAndAfter {
   "Sequential to Model" should "work" in {
     val model = Sequential[Float]()
     model.add(Dense[Float](8, inputShape = Shape(10)))
-    model.toModel()
-    val output = model.forward(Tensor[Float](Array(4, 10)).rand())
+    val newModel = model.toModel()
+    val output = newModel.forward(Tensor[Float](Array(4, 10)).rand())
     output.toTensor[Float].size() should be (Array(4, 8))
   }
 }
