@@ -16,11 +16,14 @@
 
 import pytest
 
-import numpy as np
-
+import keras.layers as KLayer
+from keras.models import Sequential as KSequential
 from test.zoo.pipeline.utils.test_utils import ZooTestCase
-import os
+import zoo.pipeline.api.keras.layers as ZLayer
+from zoo.pipeline.api.keras.models import Model as ZModel
 from zoo.pipeline.api.net import Net
+from bigdl.nn.layer import Linear, Sigmoid, SoftMax, Model as BModel
+from bigdl.util.common import *
 
 np.random.seed(1337)  # for reproducibility
 
@@ -47,6 +50,50 @@ class TestLayer(ZooTestCase):
         model2 = model.new_graph(["ip"])
         model2.freeze_up_to(["conv2"])
         model2.unfreeze()
+
+    def test_load(self):
+        input = ZLayer.Input(shape=(5,))
+        output = ZLayer.Dense(10)(input)
+        zmodel = ZModel(input, output, name="graph1")
+
+        tmp_path = create_tmp_path()
+        zmodel.saveModel(tmp_path, None, True)
+
+        model_reloaded = Net.load(tmp_path)
+
+        input_data = np.random.random([3, 5])
+        self.compare_output_and_grad_input(zmodel, model_reloaded, input_data)
+
+    def test_load_keras(self):
+        model = KSequential()
+        model.add(KLayer.Dense(32, activation='relu', input_dim=100))
+
+        tmp_path_json = create_tmp_path() + ".json"
+        model_json = model.to_json()
+        with open(tmp_path_json, "w") as json_file:
+            json_file.write(model_json)
+        reloaded_json_model = Net.load_keras(json_path=tmp_path_json)
+
+        tmp_path_hdf5 = create_tmp_path() + ".h5"
+        model.save(tmp_path_hdf5)
+        reloaded_hdf5_model = Net.load_keras(hdf5_path=tmp_path_hdf5)
+
+    def test_load_tf(self):
+        linear = Linear(10, 2)()
+        sigmoid = Sigmoid()(linear)
+        softmax = SoftMax().set_name("output")(sigmoid)
+        model = BModel(linear, softmax)
+        input = np.random.random((4, 10))
+
+        tmp_path = create_tmp_path() + "/model.pb"
+
+        model.save_tensorflow([("input", [4, 10])], tmp_path)
+
+        model_reloaded = Net.load_tf(tmp_path, ["input"], ["output"])
+        expected_output = model.forward(input)
+        output = model_reloaded.forward(input)
+        self.assert_allclose(output, expected_output)
+
 
 if __name__ == "__main__":
     pytest.main([__file__])
