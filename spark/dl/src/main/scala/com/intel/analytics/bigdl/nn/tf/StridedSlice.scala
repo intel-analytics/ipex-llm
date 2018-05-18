@@ -52,12 +52,12 @@ import scala.reflect.runtime.universe
  */
 @SerialVersionUID(4436600172725317184L)
 private[bigdl] class StridedSlice[T: ClassTag, D: ClassTag](
-    beginMask: Int = 0,
-    endMask: Int = 0,
-    ellipsisMask: Int = 0,
-    newAxisMask: Int = 0,
-    shrinkAxisMask: Int = 0,
-    startFromZero: Boolean = false)(implicit ev: TensorNumeric[T], ev2: TensorNumeric[D])
+    val beginMask: Int = 0,
+    val endMask: Int = 0,
+    val ellipsisMask: Int = 0,
+    val newAxisMask: Int = 0,
+    val shrinkAxisMask: Int = 0,
+    val startFromZero: Boolean = false)(implicit ev: TensorNumeric[T], ev2: TensorNumeric[D])
   extends AbstractModule[Table, Tensor[D], T] {
 
   // TODO: support ellipsisMask and newAxisMask
@@ -188,7 +188,7 @@ private[bigdl] class StridedSlice[T: ClassTag, D: ClassTag](
   }
 }
 
-private[bigdl] object StridedSlice extends ModuleSerializable {
+private[bigdl] object StridedSlice {
   def apply[T: ClassTag, D: ClassTag](
       beginMask: Int = 0,
       endMask: Int = 0,
