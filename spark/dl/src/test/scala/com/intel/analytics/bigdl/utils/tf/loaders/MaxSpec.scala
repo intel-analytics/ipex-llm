@@ -31,7 +31,7 @@ class MaxSpec extends TensorflowSpecHelper{
         .putAttr("Tidx", typeAttr(DataType.DT_INT32))
         .setOp("Max"),
       Seq(Tensor[Float].range(1, 10).resize(5, 2),
-        Tensor[Int](T(1))),
+        Tensor.scalar[Int](1)),
       0
     )
   }
@@ -45,7 +45,7 @@ class MaxSpec extends TensorflowSpecHelper{
         .putAttr("Tidx", typeAttr(DataType.DT_INT32))
         .setOp("Max"),
       Seq(Tensor[Int].range(1, 10).resize(5, 2),
-        Tensor[Int](T(1))),
+        Tensor.scalar[Int](1)),
       0
     )
   }
@@ -59,7 +59,7 @@ class MaxSpec extends TensorflowSpecHelper{
         .putAttr("Tidx", typeAttr(DataType.DT_INT32))
         .setOp("Max"),
       Seq(Tensor[Double].range(1, 10).resize(5, 2),
-        Tensor[Int](T(1))),
+        Tensor.scalar[Int](1)),
       0
     )
   }
