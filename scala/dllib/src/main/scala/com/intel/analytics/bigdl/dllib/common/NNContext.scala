@@ -129,9 +129,9 @@ object NNContext {
    */
   def getNNContext(conf: SparkConf = null): SparkContext = {
     val bigdlConf = Engine.createSparkConf(conf)
-    if (bigdlConf.getBoolean("spark.analytics.zoo.versionCheck", true)) {
+    if (bigdlConf.getBoolean("spark.analytics.zoo.versionCheck", defaultValue = false)) {
       val reportWarning =
-        bigdlConf.getBoolean("spark.analytics.zoo.versionCheck.warning", false)
+        bigdlConf.getBoolean("spark.analytics.zoo.versionCheck.warning", defaultValue = false)
       checkSparkVersion(reportWarning)
       checkScalaVersion(reportWarning)
     }
