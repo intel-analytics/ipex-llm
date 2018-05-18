@@ -23,8 +23,11 @@ import scala.reflect.ClassTag
 
 /**
  * Computes the maximum of elements across dimensions of a tensor.
+ * The input of Max should be two tensor, the first one is data,
+ * the second one is the dimension to compute maximum.
  * @param keepDims if keepDims is false, will delete the singleton dimension
  *                 in output.
+ * @param startFromZero if the dimension count from zero.
  */
 class Max[T: ClassTag, D: ClassTag](
         keepDims: Boolean = false,

@@ -71,7 +71,7 @@ class MaxSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val max = Max[Float, Float](startFromZero = true).setName("max_pool")
     val input1 = Tensor[Float].range(1, 6).resize(2, 3)
-    val input2 = Tensor[Int](2).fill(1)
+    val input2 = Tensor.scalar[Int](1)
     val input = T(input1, input2)
     runSerializationTest(max, input)
   }
