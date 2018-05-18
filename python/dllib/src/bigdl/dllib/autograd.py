@@ -79,6 +79,30 @@ class Variable(ZooKerasCreator):
             else:
                 super(Variable, self).__init__(jvalue, "float", toMultiShape(input_shape))
 
+    @classmethod
+    def from_node(cls, node):
+        return cls(input_shape=None, node=node)
+
+    @property
+    def node(self):
+        return Node.of(self.value.node())
+
+    # TODO: we need to add a mapping for Shape here.
+    def __to_batch_shape(cls, shape):
+        return tuple([None] + shape[1:])
+
+    def __process_shape(self, shape):
+        if len(shape) == 1:
+            return self.__to_batch_shape(shape[0])
+        else:
+            return [self.__to_batch_shape(s) for s in shape]
+
+    def get_input_shape(self):
+        return self.__process_shape(callBigDlFunc("float", "varGetInputShape", self))
+
+    def get_output_shape(self):
+        return self.__process_shape(callBigDlFunc("float", "varGetOutputShape", self))
+
     @staticmethod
     def from_jvalue(jvalue):
         return Variable(input_shape=None, node=None, jvalue=jvalue)
