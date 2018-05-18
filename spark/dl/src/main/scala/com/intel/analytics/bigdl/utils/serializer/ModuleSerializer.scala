@@ -274,7 +274,6 @@ object ModuleSerializer extends ModuleSerializable{
     registerModule("com.intel.analytics.bigdl.nn.SReLU", SReLU)
     registerModule("com.intel.analytics.bigdl.nn.tf.DecodeRaw", DecodeRawSerializer)
     registerModule("com.intel.analytics.bigdl.nn.ops.RandomUniform", RandomUniformOps)
-    registerModule("com.intel.analytics.bigdl.nn.tf.StrideSlice", StridedSlice)
     registerModule("com.intel.analytics.bigdl.nn.MultiRNNCell", MultiRNNCell)
     registerModule("com.intel.analytics.bigdl.nn.SpatialSeparableConvolution",
       SpatialSeparableConvolution)

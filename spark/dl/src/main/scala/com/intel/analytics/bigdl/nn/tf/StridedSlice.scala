@@ -28,8 +28,27 @@ import scala.reflect.ClassTag
 import scala.reflect.runtime.universe
 
 /**
- * Extracts a strided slice from a tensor.
-// * @param sliceSpecs Array(dim, begin_index, end_index, stride)
+ * Extracts a strided slice of a tensor.
+ * The input of this layer should have 4 input, the first one is input data,
+ * the second one is begin index of slicing, the third one is end index of slicing,
+ * the third one is strides.
+ * begin, end and strides should be 1D tensor, and have.
+ *
+ * In each mask field (beginMask, endMask, ellipsisMask, newAxisMask, shrinkAxisMask)
+ * the ith bit will correspond to the ith spec.
+ * @param beginMask If ith bit is set, begin(i) is ignored and the fullest possible
+ *                  range in that dimension is used instead.
+ * @param endMask If ith bit is set, end(i) is ignored and the fullest possible
+ *                range in that dimension is used instead.
+ * @param ellipsisMask Unsupported currently.
+ *                     If ith bit is set, as many unspecified dimensions as needed
+ *                     will be inserted between other dimensions.
+ * @param newAxisMask Unsupported currently.
+ *                    If ith bit is set, begin, end, and stride are ignored and a
+ *                    new length 1 dimension is added at this point in the output tensor.
+ * @param shrinkAxisMask If the ith bit is set, it implies that the ith specification
+ *                       shrinks the dimensionality by 1.
+ * @param startFromZero if begin, end is counted from zero.
  */
 @SerialVersionUID(4436600172725317184L)
 private[bigdl] class StridedSlice[T: ClassTag, D: ClassTag](
@@ -100,7 +119,6 @@ private[bigdl] class StridedSlice[T: ClassTag, D: ClassTag](
     val inputSize = inputs.size()
     getPositiveIndices(inputSize, begin, beginBuffer)
     getPositiveIndices(inputSize, end, endBuffer)
-    getPositiveIndices(inputSize, strides, stridesBuffer)
 
     var tmp: Tensor[D] = inputs
     var i = 0
