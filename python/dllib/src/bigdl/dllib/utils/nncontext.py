@@ -40,7 +40,7 @@ def get_nncontext(conf=None):
 def check_version():
     sc = get_spark_context()
     conf = sc._conf
-    if conf.get("spark.analytics.zoo.versionCheck", "True").lower() == "true":
+    if conf.get("spark.analytics.zoo.versionCheck", "False").lower() == "true":
         report_warn = conf.get(
             "spark.analytics.zoo.versionCheck.warning", "False").lower() == "true"
         _check_spark_version(sc, report_warn)
