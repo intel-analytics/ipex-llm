@@ -1,15 +1,15 @@
 # Overview
-This is a Scala example for image transfer learning with a pre-trained caffe Inception_V1 model based
-on Spark DataFrame (Dataset).
+This is a Scala example for image transfer learning with a pre-trained caffe Inception_V1 model
+based on Spark DataFrame (Dataset).
 
-Analytics Zoo provides the DataFrame-based API for image reading, pre-processing.
-The related classes followed the typical estimator/transformer pattern of Spark ML and can be used in
-a standard Spark ML pipeline.
+Analytics Zoo provides the DataFrame-based API for image reading, preprocessing, model training
+and inference. The related classes followed the typical estimator/transformer pattern of Spark
+ML and can be used in a standard Spark ML pipeline.
 
 In this example, we will show you how to use a pre-trained inception-v1 model trained on
-imagenet dataset to solve the dogs-vs-cats classification problem by transfer learning with Analytics Zoo.
-For transfer learning, we will treat the inception-v1 model as a feature extractor and only
-train a linear model on these features.
+imagenet dataset to solve the dogs-vs-cats classification problem by transfer learning with
+Analytics Zoo. For transfer learning, we will treat the inception-v1 model as a feature extractor
+and only train a linear model on these features.
 
 # Run the example
 
@@ -23,10 +23,15 @@ when submitting spark jobs.
 2. Prepare dataset
 Put your image data for training and validation in the ./data folder. For this example we
 use kaggle [Dogs vs. Cats](https://www.kaggle.com/c/dogs-vs-cats/data) train dataset.
-After you download the file (train.zip), run the follow commands to extract the data.
+The following commands copy about 1100 images of cats and dogs into demo/cats and demo/dogs
+separately.
 
 ```bash
-    unzip train.zip
+unzip train.zip
+mkdir -p demo/dogs
+mkdir -p demo/cats
+cp train/cat.7* demo/cats
+cp train/dog.7* demo/dogs
 ```
 
 2.3 Run this example
@@ -34,14 +39,14 @@ After you download the file (train.zip), run the follow commands to extract the 
 Command to run the example in Spark local mode:
 ```
     spark-submit \
-    --master local[physcial_core_number] \
-    --driver-memory 10g --executor-memory 20g \
+    --master local[2] \
+    --driver-memory 2g \
     --class com.intel.analytics.zoo.example.nnframes.ImageTransferLearning.ImageTransferLearning \
     ./dist/lib/zoo-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
     --modelPath ./model/bvlc_googlenet.caffemodel \
     --caffeDefPath ./model/deploy.prototxt \
     --batchSize 40 \
-    --folder ./train \
+    --folder ./demo \
     --nEpochs 20
 ```
 
@@ -50,10 +55,10 @@ Command to run the example in Spark yarn mode(TODO):
     spark-submit \
     --master yarn \
     --deploy-mode client \
-    --executor-cores 10 \
+    --executor-cores 1 \
     --num-executors 4 \
-    --driver-memory 10g \
-    --executor-memory 150g \
+    --driver-memory 2g \
+    --executor-memory 2g \
     --class com.intel.analytics.zoo.example.nnframes.ImageTransferLearning.ImageTransferLearning \
     ./dist/lib/zoo-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
     --modelPath ./model/bvlc_googlenet.caffemodel \
@@ -64,30 +69,31 @@ Command to run the example in Spark yarn mode(TODO):
 ```
 
 ```
-+--------------------+-----+--------------------+--------------------+----------+
-|               image|label|              output|           embedding|prediction|
-+--------------------+-----+--------------------+--------------------+----------+
-|[hdfs://Almaren-N...|  2.0|[hdfs://Almaren-N...|[2.62691912666923...|       2.0|
-|[hdfs://Almaren-N...|  1.0|[hdfs://Almaren-N...|[2.93451139441458...|       1.0|
-|[hdfs://Almaren-N...|  1.0|[hdfs://Almaren-N...|[1.25100280001788...|       1.0|
-|[hdfs://Almaren-N...|  1.0|[hdfs://Almaren-N...|[4.53599341199151...|       1.0|
-|[hdfs://Almaren-N...|  2.0|[hdfs://Almaren-N...|[4.58738832094240...|       2.0|
-|[hdfs://Almaren-N...|  1.0|[hdfs://Almaren-N...|[7.65169474448157...|       1.0|
-|[hdfs://Almaren-N...|  2.0|[hdfs://Almaren-N...|[6.49528055873815...|       2.0|
-|[hdfs://Almaren-N...|  2.0|[hdfs://Almaren-N...|[1.21466446216800...|       2.0|
-|[hdfs://Almaren-N...|  2.0|[hdfs://Almaren-N...|[9.85538548547992...|       2.0|
-|[hdfs://Almaren-N...|  2.0|[hdfs://Almaren-N...|[2.19180151361797...|       2.0|
-|[hdfs://Almaren-N...|  2.0|[hdfs://Almaren-N...|[1.00327188192750...|       2.0|
-|[hdfs://Almaren-N...|  1.0|[hdfs://Almaren-N...|[1.75065979419741...|       1.0|
-|[hdfs://Almaren-N...|  2.0|[hdfs://Almaren-N...|[1.64268567459657...|       2.0|
-|[hdfs://Almaren-N...|  2.0|[hdfs://Almaren-N...|[2.35099932410776...|       1.0|
-|[hdfs://Almaren-N...|  2.0|[hdfs://Almaren-N...|[1.04405044112354...|       2.0|
-|[hdfs://Almaren-N...|  1.0|[hdfs://Almaren-N...|[1.14560577912925...|       1.0|
-|[hdfs://Almaren-N...|  1.0|[hdfs://Almaren-N...|[4.64494623884093...|       2.0|
-|[hdfs://Almaren-N...|  2.0|[hdfs://Almaren-N...|[1.37401173105899...|       2.0|
-|[hdfs://Almaren-N...|  1.0|[hdfs://Almaren-N...|[4.58144455706133...|       1.0|
-|[hdfs://Almaren-N...|  1.0|[hdfs://Almaren-N...|[2.21465052163694...|       1.0|
-+--------------------+-----+--------------------+--------------------+----------+
++--------------------+-----+--------------------+----------+
+|               image|label|           embedding|prediction|
++--------------------+-----+--------------------+----------+
+|[file:/some/path...|  1.0|[8.865501E-6, 1.3...|       1.0|
+|[file:/some/path...|  1.0|[5.498128E-6, 1.8...|       1.0|
+|[file:/some/path...|  1.0|[1.594756E-5, 4.1...|       1.0|
+|[file:/some/path...|  1.0|[1.6185285E-6, 3....|       1.0|
+|[file:/some/path...|  1.0|[2.6421341E-5, 7....|       1.0|
+|[file:/some/path...|  1.0|[1.9225668E-6, 4....|       1.0|
+|[file:/some/path...|  1.0|[2.7568094E-5, 1....|       1.0|
+|[file:/some/path...|  1.0|[3.545212E-4, 1.4...|       1.0|
+|[file:/some/path...|  1.0|[3.261492E-5, 3.8...|       1.0|
+|[file:/some/path...|  1.0|[2.6861264E-6, 1....|       1.0|
+|[file:/some/path...|  1.0|[4.7644085E-6, 8....|       1.0|
+|[file:/some/path...|  1.0|[2.7128006E-5, 1....|       2.0|
+|[file:/some/path...|  1.0|[4.6807084E-8, 7....|       1.0|
+|[file:/some/path...|  1.0|[2.6069986E-6, 6....|       1.0|
+|[file:/some/path...|  1.0|[2.586313E-7, 1.6...|       1.0|
+|[file:/some/path...|  1.0|[5.149611E-6, 1.1...|       1.0|
+|[file:/some/path...|  1.0|[1.3761636E-5, 6....|       1.0|
+|[file:/some/path...|  1.0|[1.2598471E-6, 6....|       2.0|
+|[file:/some/path...|  1.0|[2.3851356E-7, 3....|       1.0|
+|[file:/some/path...|  1.0|[1.426664E-6, 2.1...|       1.0|
++--------------------+-----+--------------------+----------+
+
 only showing top 20 rows
 
 evaluation result on validationDF: 0.9623

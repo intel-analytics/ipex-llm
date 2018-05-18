@@ -18,11 +18,11 @@ package com.intel.analytics.zoo.examples.nnframes.imageTransferLearning
 
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
-import com.intel.analytics.bigdl.utils.LoggerFilter
 import com.intel.analytics.zoo.pipeline.nnframes._
 import com.intel.analytics.zoo.common.NNContext
 import com.intel.analytics.zoo.feature.common.{ImageFeatureToTensor, RowToImageFeature}
 import com.intel.analytics.zoo.feature.image._
+import org.apache.log4j.{Level, Logger}
 import org.apache.spark.ml.evaluation.MulticlassClassificationEvaluator
 import org.apache.spark.ml.Pipeline
 import org.apache.spark.sql.functions.{col, udf}
@@ -30,25 +30,26 @@ import org.apache.spark.sql.{DataFrame, Row}
 import scopt.OptionParser
 
 object ImageTransferLearning {
-  LoggerFilter.redirectSparkInfoLogs()
 
   def main(args: Array[String]): Unit = {
 
     val defaultParams = Utils.LocalParams()
+    Logger.getLogger("org").setLevel(Level.WARN)
 
     Utils.parser.parse(args, defaultParams).foreach { params =>
       val sc = NNContext.getNNContext()
 
-      val createLabel = udf { row: Row => if (row.getString(0).contains("cat")) 1.0 else 2.0 }
-      val imagesDF: DataFrame = NNImageReader.readImages(params.folder, sc)
+      val createLabel = udf { row: Row =>
+        if (row.getString(0).contains("demo/cats")) 1.0 else 2.0
+      }
+      val imagesDF: DataFrame = NNImageReader.readImages(params.folder + "/*/*", sc)
         .withColumn("label", createLabel(col("image")))
 
-      val Array(validationDF, trainingDF) = imagesDF.randomSplit(Array(0.20, 0.80), seed = 1L)
+      val Array(validationDF, trainingDF) = imagesDF.randomSplit(Array(0.1, 0.9), seed = 42L)
 
       val transformer = RowToImageFeature() -> Resize(256, 256) -> CenterCrop(224, 224) ->
         ChannelNormalize(123, 117, 104) -> MatToTensor() -> ImageFeatureToTensor()
-      val loadedModel = Module
-        .loadCaffeModel[Float](params.caffeDefPath, params.modelPath)
+      val loadedModel = Module.loadCaffeModel[Float](params.caffeDefPath, params.modelPath)
       val featurizer = NNModel(loadedModel, transformer)
         .setBatchSize(params.batchSize)
         .setFeaturesCol("image")
@@ -63,7 +64,7 @@ object ImageTransferLearning {
 
       val pipeline = new Pipeline().setStages(Array(featurizer, classifier))
       val pipelineModel = pipeline.fit(trainingDF)
-      val predictions = pipelineModel.transform(validationDF)
+      val predictions = pipelineModel.transform(validationDF).cache()
 
       predictions.show(20)
       val evaluation = new MulticlassClassificationEvaluator().setPredictionCol("prediction")
@@ -71,7 +72,6 @@ object ImageTransferLearning {
       println("evaluation result on validationDF: " + evaluation)
     }
   }
-
 }
 
 
