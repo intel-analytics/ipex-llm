@@ -40,6 +40,15 @@ trait Preprocessing[A, B] extends Transformer[A, B] {
   def clonePreprocessing(): Preprocessing[A, B] = {
     SerializationUtils.clone(this)
   }
+
+  def apply(imageSet: ImageSet): ImageSet = {
+    if (this.isInstanceOf[Preprocessing[ImageFeature, ImageFeature]]) {
+      imageSet.transform(this.asInstanceOf[Preprocessing[ImageFeature, ImageFeature]])
+    } else {
+      throw new IllegalArgumentException("We expect " +
+        "Preprocessing[ImageFeature, ImageFeature] here")
+    }
+  }
 }
 
 /**
@@ -60,10 +69,13 @@ class ChainedPreprocessing[A, B, C](first: Preprocessing[A, B], last: Preprocess
   }
 }
 
-abstract class ImageProcessing extends FeatureTransformer
-  with Preprocessing[ImageFeature, ImageFeature] {
-  def apply(imageSet: ImageSet): ImageSet = {
-    imageSet.transform(this)
+abstract class ImageProcessing extends FeatureTransformer with
+   Preprocessing[ImageFeature, ImageFeature] {
+  // scalastyle:off methodName
+  // scalastyle:off noSpaceBeforeLeftBracket
+  def -> (other: ImageProcessing): Preprocessing[ImageFeature, ImageFeature] = {
+    new ChainedPreprocessing(this, other)
   }
+  // scalastyle:on noSpaceBeforeLeftBracket
+  // scalastyle:on methodName
 }
-

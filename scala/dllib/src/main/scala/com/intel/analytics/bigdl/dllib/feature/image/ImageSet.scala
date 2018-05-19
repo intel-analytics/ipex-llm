@@ -16,9 +16,10 @@
 
 package com.intel.analytics.zoo.feature.image
 
-import com.intel.analytics.bigdl.transform.vision.image._
+import com.intel.analytics.bigdl.transform.vision.image.{DistributedImageFrame,
+       ImageFeature, ImageFrame, LocalImageFrame}
 import com.intel.analytics.zoo.common.Utils
-
+import com.intel.analytics.zoo.feature.common.Preprocessing
 import org.apache.commons.io.FileUtils
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
@@ -32,11 +33,11 @@ abstract class ImageSet {
    * @param transformer FeatureTransformer
    * @return transformed ImageSet
    */
-  def transform(transformer: FeatureTransformer): ImageSet
+  def transform(transformer: Preprocessing[ImageFeature, ImageFeature]): ImageSet
 
   // scalastyle:off methodName
   // scalastyle:off noSpaceBeforeLeftBracket
-  def -> (transformer: FeatureTransformer): ImageSet = {
+  def -> (transformer: Preprocessing[ImageFeature, ImageFeature]): ImageSet = {
     this.transform(transformer)
   }
 
@@ -70,8 +71,8 @@ abstract class ImageSet {
 }
 
 class LocalImageSet(var array: Array[ImageFeature]) extends ImageSet {
-  override def transform(transformer: FeatureTransformer): ImageSet = {
-    array = array.map(transformer.transform)
+  override def transform(transformer: Preprocessing[ImageFeature, ImageFeature]): ImageSet = {
+    array = transformer.apply(array.toIterator).toArray
     this
   }
 
@@ -85,7 +86,7 @@ class LocalImageSet(var array: Array[ImageFeature]) extends ImageSet {
 }
 
 class DistributedImageSet(var rdd: RDD[ImageFeature]) extends ImageSet {
-  override def transform(transformer: FeatureTransformer): ImageSet = {
+  override def transform(transformer: Preprocessing[ImageFeature, ImageFeature]): ImageSet = {
     rdd = transformer(rdd)
     this
   }
@@ -134,13 +135,13 @@ object ImageSet {
       val images = sc.binaryFiles(path, minPartitions).map { case (p, stream) =>
         ImageFeature(stream.toArray(), uri = p)
       }
-      ImageSet.rdd(images) -> BytesToMat()
+      ImageSet.rdd(images) -> ImageBytesToMat()
     } else {
       val files = Utils.listLocalFiles(path)
       val images = files.map { p =>
         ImageFeature(FileUtils.readFileToByteArray(p), uri = p.getAbsolutePath)
       }
-      ImageSet.array(images) -> BytesToMat()
+      ImageSet.array(images) -> ImageBytesToMat()
     }
   }
 
