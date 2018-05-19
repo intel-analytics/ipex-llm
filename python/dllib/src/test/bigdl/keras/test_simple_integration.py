@@ -19,6 +19,7 @@ import shutil
 
 from zoo.pipeline.api.keras.layers import *
 from zoo.pipeline.api.keras.models import *
+from bigdl.nn.layer import Layer
 from test.zoo.pipeline.utils.test_utils import ZooTestCase
 
 np.random.seed(1337)  # for reproducibility
@@ -123,6 +124,22 @@ class TestSimpleIntegration(ZooTestCase):
         seq.add(Flatten())
         seq.add(Dense(4, activation="softmax"))
         seq.to_model()
+
+    def test_keras_net_layers(self):
+        x1 = Input(shape=(8, ))
+        x2 = Input(shape=(6, ))
+        y1 = Dense(10)(x1)
+        y2 = Dense(10)(x2)
+        model = Model([x1, x2], [y1, y2])
+        assert len(model.layers) == 4
+
+    def test_keras_net_flatten_layers(self):
+        x1 = Input(shape=(8, ))
+        x2 = Input(shape=(6, ))
+        y1 = Dense(10)(x1)
+        y2 = Dense(10)(x2)
+        model = Model([x1, x2], [y1, y2])
+        assert len(model.flattened_layers()) == 4
 
 
 if __name__ == "__main__":

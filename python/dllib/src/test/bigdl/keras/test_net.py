@@ -24,6 +24,7 @@ from zoo.pipeline.api.keras.models import Model as ZModel
 from zoo.pipeline.api.net import Net
 from bigdl.nn.layer import Linear, Sigmoid, SoftMax, Model as BModel
 from bigdl.util.common import *
+from bigdl.nn.layer import Sequential
 
 np.random.seed(1337)  # for reproducibility
 
@@ -94,6 +95,18 @@ class TestLayer(ZooTestCase):
         output = model_reloaded.forward(input)
         self.assert_allclose(output, expected_output)
 
+    def test_layers_method(self):
+        resource_path = os.path.join(os.path.split(__file__)[0], "../../../resources")
+        model_path = os.path.join(resource_path, "models/bigdl/bigdl_lenet.model")
+        model = Net.load_bigdl(model_path)
+        assert len(model.layers) == 12
+
+    def test_flatten_layers_method(self):
+        resource_path = os.path.join(os.path.split(__file__)[0], "../../../resources")
+        model_path = os.path.join(resource_path, "models/bigdl/bigdl_lenet.model")
+        model = Net.load_bigdl(model_path)
+
+        assert len(Sequential().add(model).flattened_layers()) == 12
 
 if __name__ == "__main__":
     pytest.main([__file__])
