@@ -37,7 +37,15 @@ import scala.reflect.ClassTag
 class GraphNet[T: ClassTag](graph: Graph[T])(implicit ev: TensorNumeric[T])
   extends Container[Activity, Activity, T] with NetUtils[T, GraphNet[T]] {
 
+  // need to refer this object to make the register effective
+  GraphNet
+
   private val labor = graph
+  modules.append(labor)
+
+  def getSubModules(): List[AbstractModule[Activity, Activity, T]] = {
+    this.labor.modules.toList
+  }
 
   val outputNodes = NetUtils.getGraphOutputs(graph)
 
@@ -96,7 +104,7 @@ object GraphNet extends ContainerSerializable {
                                               builder: BigDLModule.Builder)
                                              (implicit ev: TensorNumeric[T]): Unit = {
     val labor = context.moduleData.module.
-      asInstanceOf[KerasLayer[Activity, Activity, T]].labor
+      asInstanceOf[GraphNet[T]].labor
     val subModule = ModuleSerializer.serialize(SerializeContext(ModuleData(labor,
       new ArrayBuffer[String](), new ArrayBuffer[String]()), context.storages,
       context.storageType, _copyWeightAndBias))
@@ -111,7 +119,7 @@ object GraphNet extends ContainerSerializable {
         context.storages, context.storageType, _copyWeightAndBias))
       subModuleData.module
     })
-    val tGraph = subModules(0).asInstanceOf[StaticGraph[T]]
+    val tGraph = subModules.head.asInstanceOf[StaticGraph[T]]
     tGraph
   }
 }
