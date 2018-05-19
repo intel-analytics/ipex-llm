@@ -21,8 +21,29 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.zoo.pipeline.api.Net
 import com.intel.analytics.zoo.pipeline.api.keras.ZooSpecHelper
 import com.intel.analytics.zoo.pipeline.api.keras.serializer.ModuleSerializationTest
+import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.util.Random
+
+class GraphNetSpec extends FlatSpec with Matchers with BeforeAndAfter {
+
+  "GraphNet " should "return correct parameters" in {
+    val resource = getClass().getClassLoader().getResource("models")
+    val path = resource.getPath + "/" + "bigdl"
+    val model = Net.loadBigDL[Float](s"$path/bigdl_lenet.model")
+
+    model.parameters()._1.length should be (8)
+  }
+
+  "GraphNet" should "return correct submodules" in {
+    val resource = getClass().getClassLoader().getResource("models")
+    val path = resource.getPath + "/" + "bigdl"
+    val model = Net.loadBigDL[Float](s"$path/bigdl_lenet.model")
+
+    model.getSubModules().length should be (12)
+  }
+
+}
 
 class GraphNetSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
