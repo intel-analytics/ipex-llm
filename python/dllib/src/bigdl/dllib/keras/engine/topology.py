@@ -222,6 +222,17 @@ class KerasNet(ZooKerasLayer):
         from zoo.pipeline.api.keras.models import Model
         return Model.from_jvalue(callBigDlFunc(self.bigdl_type, "kerasNetToModel", self.value))
 
+    @property
+    def layers(self):
+        jlayers = callBigDlFunc(self.bigdl_type, "getSubModules", self)
+        layers = [Layer.of(jlayer) for jlayer in jlayers]
+        return layers
+
+    def flattened_layers(self, include_container=False):
+        jlayers = callBigDlFunc(self.bigdl_type, "getFlattenSubModules", self, include_container)
+        layers = [Layer.of(jlayer) for jlayer in jlayers]
+        return layers
+
 
 class Input(ZooKerasCreator, Node):
     """
