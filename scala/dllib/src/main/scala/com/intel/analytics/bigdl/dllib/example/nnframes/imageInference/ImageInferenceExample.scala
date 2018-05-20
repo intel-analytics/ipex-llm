@@ -39,8 +39,8 @@ object ImageInferenceExample {
       val imageDF = NNImageReader.readImages(params.folder, sc)
         .withColumn("imageName", getImageName(col("image")))
 
-      val transformer = RowToImageFeature() -> Resize(256, 256) -> CenterCrop(224, 224) ->
-        ChannelNormalize(123, 117, 104) -> MatToTensor() -> ImageFeatureToTensor()
+      val transformer = RowToImageFeature() -> ImageResize(256, 256) -> ImageCenterCrop(224, 224) ->
+        ImageChannelNormalize(123, 117, 104) -> ImageMatToTensor() -> ImageFeatureToTensor()
 
       val model = Module.loadCaffeModel[Float](params.caffeDefPath, params.modelPath)
       val dlmodel = NNClassifierModel(model, transformer)
