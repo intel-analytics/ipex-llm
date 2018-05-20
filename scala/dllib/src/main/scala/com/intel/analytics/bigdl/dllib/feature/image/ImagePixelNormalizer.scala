@@ -15,14 +15,18 @@
  */
 package com.intel.analytics.zoo.feature.image
 
-import com.intel.analytics.bigdl.transform.vision.image.{ImageFeature, augmentation}
+import com.intel.analytics.bigdl.transform.vision.image.ImageFeature
 import com.intel.analytics.zoo.feature.common.{ImageProcessing}
-class CenterCrop(
-    cropWidth: Int,
-    cropHeight: Int,
-    isClip: Boolean = true) extends ImageProcessing {
+import com.intel.analytics.bigdl.transform.vision.image.augmentation
 
-  private val internalCrop = augmentation.CenterCrop(cropWidth, cropHeight)
+/**
+ * Pixel level normalizer, data(i) = data(i) - mean(i)
+ *
+ * @param means pixel level mean, following H * W * C order
+ */
+class ImagePixelNormalizer(means: Array[Float]) extends ImageProcessing {
+
+  private val internalCrop = new augmentation.PixelNormalizer(means)
   override def apply(prev: Iterator[ImageFeature]): Iterator[ImageFeature] = {
     internalCrop.apply(prev)
   }
@@ -32,8 +36,6 @@ class CenterCrop(
   }
 }
 
-object CenterCrop {
-  def apply(cropWidth: Int, cropHeight: Int, isClip: Boolean = true)
-  : CenterCrop = new CenterCrop(cropWidth, cropHeight, isClip)
+object ImagePixelNormalizer {
+  def apply(means: Array[Float]): ImagePixelNormalizer = new ImagePixelNormalizer(means)
 }
-

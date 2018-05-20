@@ -20,18 +20,20 @@ import com.intel.analytics.zoo.feature.common.{ImageProcessing}
 import com.intel.analytics.bigdl.transform.vision.image.augmentation
 
 /**
- * Fill part of image with certain pixel value
+ * Crop a fixed area of image
  *
- * @param startX start x ratio
- * @param startY start y ratio
- * @param endX end x ratio
- * @param endY end y ratio
- * @param value filling value
+ * @param x1 start in width
+ * @param y1 start in height
+ * @param x2 end in width
+ * @param y2 end in height
+ * @param normalized whether args are normalized, i.e. in range [0, 1]
+ * @param isClip whether to clip the roi to image boundaries
  */
-class Filler(startX: Float, startY: Float, endX: Float, endY: Float, value: Int = 255)
+class ImageFixedCrop(x1: Float, y1: Float, x2: Float, y2: Float, normalized: Boolean,
+                     isClip: Boolean = true)
   extends ImageProcessing {
 
-  private val internalCrop = new augmentation.Filler(startX, startY, endX, endY, value)
+  private val internalCrop = new augmentation.FixedCrop(x1, y1, x2, y2, normalized, isClip)
   override def apply(prev: Iterator[ImageFeature]): Iterator[ImageFeature] = {
     internalCrop.apply(prev)
   }
@@ -41,7 +43,8 @@ class Filler(startX: Float, startY: Float, endX: Float, endY: Float, value: Int 
   }
 }
 
-object Filler {
-  def apply(startX: Float, startY: Float, endX: Float, endY: Float, value: Int = 255): Filler
-  = new Filler(startX, startY, endX, endY, value)
+object ImageFixedCrop {
+  def apply(x1: Float, y1: Float, x2: Float, y2: Float, normalized: Boolean,
+            isClip: Boolean = true)
+  : ImageFixedCrop = new ImageFixedCrop(x1, y1, x2, y2, normalized, isClip)
 }

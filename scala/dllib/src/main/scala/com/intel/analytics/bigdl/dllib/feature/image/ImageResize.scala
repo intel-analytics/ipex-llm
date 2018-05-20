@@ -20,7 +20,7 @@ import com.intel.analytics.zoo.feature.common.{ImageProcessing}
 import com.intel.analytics.bigdl.transform.vision.image.augmentation
 import org.opencv.imgproc.Imgproc
 
-class Resize(
+class ImageResize(
     resizeH: Int,
     resizeW: Int,
     resizeMode: Int = Imgproc.INTER_LINEAR,
@@ -36,20 +36,20 @@ class Resize(
   }
 }
 
-object Resize {
+object ImageResize {
 
   def apply(resizeH: Int, resizeW: Int,
-            resizeMode: Int = Imgproc.INTER_LINEAR, useScaleFactor: Boolean = true): Resize =
-    new Resize(resizeH, resizeW, resizeMode, useScaleFactor)
+            resizeMode: Int = Imgproc.INTER_LINEAR, useScaleFactor: Boolean = true): ImageResize =
+    new ImageResize(resizeH, resizeW, resizeMode, useScaleFactor)
 
 }
 
-class AspectScale(minSize: Int,
-                  scaleMultipleOf: Int = 1,
-                  maxSize: Int = 1000,
-                  resizeMode: Int = Imgproc.INTER_LINEAR,
-                  useScaleFactor: Boolean = true,
-                  minScale: Option[Float] = None)
+class ImageAspectScale(minSize: Int,
+                       scaleMultipleOf: Int = 1,
+                       maxSize: Int = 1000,
+                       resizeMode: Int = Imgproc.INTER_LINEAR,
+                       useScaleFactor: Boolean = true,
+                       minScale: Option[Float] = None)
   extends ImageProcessing {
 
   private val internalCrop = augmentation.AspectScale(minSize, scaleMultipleOf,
@@ -63,17 +63,17 @@ class AspectScale(minSize: Int,
   }
 }
 
-object AspectScale {
+object ImageAspectScale {
   def apply(minSize: Int,
             scaleMultipleOf: Int = 1,
             maxSize: Int = 1000,
             mode: Int = Imgproc.INTER_LINEAR,
             useScaleFactor: Boolean = true,
-            minScale: Option[Float] = None): AspectScale =
-    new AspectScale(minSize, scaleMultipleOf, maxSize, mode, useScaleFactor, minScale)
+            minScale: Option[Float] = None): ImageAspectScale =
+    new ImageAspectScale(minSize, scaleMultipleOf, maxSize, mode, useScaleFactor, minScale)
 }
 
-class RandomAspectScale(scales: Array[Int], scaleMultipleOf: Int = 1,
+class ImageRandomAspectScale(scales: Array[Int], scaleMultipleOf: Int = 1,
                         maxSize: Int = 1000) extends ImageProcessing {
 
   private val internalCrop = augmentation.RandomAspectScale(scales, scaleMultipleOf, maxSize)
@@ -86,8 +86,8 @@ class RandomAspectScale(scales: Array[Int], scaleMultipleOf: Int = 1,
   }
 }
 
-object RandomAspectScale {
+object ImageRandomAspectScale {
   def apply(scales: Array[Int], scaleMultipleOf: Int = 1,
-            maxSize: Int = 1000): RandomAspectScale =
-    new RandomAspectScale(scales, scaleMultipleOf, maxSize)
+            maxSize: Int = 1000): ImageRandomAspectScale =
+    new ImageRandomAspectScale(scales, scaleMultipleOf, maxSize)
 }

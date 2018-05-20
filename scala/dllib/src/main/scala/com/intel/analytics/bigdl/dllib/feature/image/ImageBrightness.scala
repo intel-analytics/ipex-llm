@@ -20,13 +20,14 @@ import com.intel.analytics.zoo.feature.common.{ImageProcessing}
 import com.intel.analytics.bigdl.transform.vision.image.augmentation
 
 /**
- * Pixel level normalizer, data(i) = data(i) - mean(i)
+ * adjust the image brightness
  *
- * @param means pixel level mean, following H * W * C order
+ * @param deltaLow brightness parameter: low bound
+ * @param deltaHigh brightness parameter: high bound
  */
-class PixelNormalizer(means: Array[Float]) extends ImageProcessing {
+class ImageBrightness(deltaLow: Double, deltaHigh: Double) extends ImageProcessing {
 
-  private val internalCrop = new augmentation.PixelNormalizer(means)
+  private val internalCrop = augmentation.Brightness(deltaLow, deltaHigh)
   override def apply(prev: Iterator[ImageFeature]): Iterator[ImageFeature] = {
     internalCrop.apply(prev)
   }
@@ -36,6 +37,7 @@ class PixelNormalizer(means: Array[Float]) extends ImageProcessing {
   }
 }
 
-object PixelNormalizer {
-  def apply(means: Array[Float]): PixelNormalizer = new PixelNormalizer(means)
+object ImageBrightness {
+  def apply(deltaLow: Double, deltaHigh: Double): ImageBrightness =
+    new ImageBrightness(deltaLow, deltaHigh)
 }

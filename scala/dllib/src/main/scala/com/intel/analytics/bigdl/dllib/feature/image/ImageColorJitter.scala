@@ -35,7 +35,7 @@ import com.intel.analytics.bigdl.transform.vision.image.augmentation
  * @param randomChannelOrderProb random order for different operation
  * @param shuffle shuffle the transformers
  */
-class ColorJitter(
+class ImageColorJitter(
                    brightnessProb: Double, brightnessDelta: Double,
                    contrastProb: Double, contrastLower: Double, contrastUpper: Double,
                    hueProb: Double, hueDelta: Double,
@@ -57,7 +57,7 @@ class ColorJitter(
   }
 }
 
-object ColorJitter {
+object ImageColorJitter {
   def apply(
              brightnessProb: Double = 0.5, brightnessDelta: Double = 32,
              contrastProb: Double = 0.5, contrastLower: Double = 0.5, contrastUpper: Double = 1.5,
@@ -66,8 +66,8 @@ object ColorJitter {
              saturationLower: Double = 0.5,
              saturationUpper: Double = 1.5,
              randomOrderProb: Double = 0, shuffle: Boolean = false
-           ): ColorJitter =
-    new ColorJitter(brightnessProb, brightnessDelta, contrastProb,
+           ): ImageColorJitter =
+    new ImageColorJitter(brightnessProb, brightnessDelta, contrastProb,
       contrastLower, contrastUpper, hueProb, hueDelta, saturationProb,
       saturationLower, saturationUpper, randomOrderProb, shuffle)
 }

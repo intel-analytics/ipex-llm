@@ -15,25 +15,14 @@
  */
 package com.intel.analytics.zoo.feature.image
 
-import com.intel.analytics.bigdl.transform.vision.image.ImageFeature
+import com.intel.analytics.bigdl.transform.vision.image.{ImageFeature, augmentation}
 import com.intel.analytics.zoo.feature.common.{ImageProcessing}
-import com.intel.analytics.bigdl.transform.vision.image.augmentation
+class ImageCenterCrop(
+    cropWidth: Int,
+    cropHeight: Int,
+    isClip: Boolean = true) extends ImageProcessing {
 
-/**
- * expand image, fill the blank part with the meanR, meanG, meanB
- *
- * @param meansR means in R channel
- * @param meansG means in G channel
- * @param meansB means in B channel
- * @param minExpandRatio min expand ratio
- * @param maxExpandRatio max expand ratio
- */
-class Expand(meansR: Int = 123, meansG: Int = 117, meansB: Int = 104,
-             minExpandRatio: Double = 1, maxExpandRatio: Double = 4.0)
-  extends ImageProcessing {
-
-  private val internalCrop = new augmentation.Expand(meansR, meansG, meansB,
-    minExpandRatio, maxExpandRatio)
+  private val internalCrop = augmentation.CenterCrop(cropWidth, cropHeight)
   override def apply(prev: Iterator[ImageFeature]): Iterator[ImageFeature] = {
     internalCrop.apply(prev)
   }
@@ -43,8 +32,8 @@ class Expand(meansR: Int = 123, meansG: Int = 117, meansB: Int = 104,
   }
 }
 
-object Expand {
-  def apply(meansR: Int = 123, meansG: Int = 117, meansB: Int = 104,
-            minExpandRatio: Double = 1.0, maxExpandRatio: Double = 4.0): Expand =
-    new Expand(meansR, meansG, meansB, minExpandRatio, maxExpandRatio)
+object ImageCenterCrop {
+  def apply(cropWidth: Int, cropHeight: Int, isClip: Boolean = true)
+  : ImageCenterCrop = new ImageCenterCrop(cropWidth, cropHeight, isClip)
 }
+

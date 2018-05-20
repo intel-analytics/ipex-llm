@@ -22,7 +22,7 @@ import com.intel.analytics.zoo.feature.common.{ImageProcessing}
 
 import scala.reflect.ClassTag
 
-class MatToTensor[T: ClassTag](
+class ImageMatToTensor[T: ClassTag](
     toRGB: Boolean = false,
     tensorKey: String = ImageFeature.imageTensor,
     shareBuffer: Boolean = true)(implicit ev: TensorNumeric[T])
@@ -34,12 +34,12 @@ class MatToTensor[T: ClassTag](
   }
 }
 
-object MatToTensor {
+object ImageMatToTensor {
 
   def apply[T: ClassTag](
       toRGB: Boolean = false,
       tensorKey: String = ImageFeature.imageTensor,
       shareBuffer: Boolean = true
-  )(implicit ev: TensorNumeric[T]): MatToTensor[T] =
-    new MatToTensor[T](toRGB, tensorKey, shareBuffer)
+  )(implicit ev: TensorNumeric[T]): ImageMatToTensor[T] =
+    new ImageMatToTensor[T](toRGB, tensorKey, shareBuffer)
 }

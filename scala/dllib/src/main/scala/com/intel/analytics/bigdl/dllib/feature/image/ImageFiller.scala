@@ -20,16 +20,18 @@ import com.intel.analytics.zoo.feature.common.{ImageProcessing}
 import com.intel.analytics.bigdl.transform.vision.image.augmentation
 
 /**
- * Random crop a `cropWidth` x `cropHeight` patch from an image.
- * The patch size should be less than the image size.
+ * Fill part of image with certain pixel value
  *
- * @param cropWidth width after crop
- * @param cropHeight height after crop
- * @param isClip whether to clip the roi to image boundaries
+ * @param startX start x ratio
+ * @param startY start y ratio
+ * @param endX end x ratio
+ * @param endY end y ratio
+ * @param value filling value
  */
-class RandomCrop(cropWidth: Int, cropHeight: Int, isClip: Boolean = true) extends ImageProcessing {
+class ImageFiller(startX: Float, startY: Float, endX: Float, endY: Float, value: Int = 255)
+  extends ImageProcessing {
 
-  private val internalCrop = new augmentation.RandomCrop(cropWidth, cropHeight, isClip)
+  private val internalCrop = new augmentation.Filler(startX, startY, endX, endY, value)
   override def apply(prev: Iterator[ImageFeature]): Iterator[ImageFeature] = {
     internalCrop.apply(prev)
   }
@@ -39,7 +41,7 @@ class RandomCrop(cropWidth: Int, cropHeight: Int, isClip: Boolean = true) extend
   }
 }
 
-object RandomCrop {
-  def apply(cropWidth: Int, cropHeight: Int, isClip: Boolean = true): RandomCrop =
-    new RandomCrop(cropWidth, cropHeight, isClip)
+object ImageFiller {
+  def apply(startX: Float, startY: Float, endX: Float, endY: Float, value: Int = 255): ImageFiller
+  = new ImageFiller(startX, startY, endX, endY, value)
 }

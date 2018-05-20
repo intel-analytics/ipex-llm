@@ -15,16 +15,19 @@
  */
 package com.intel.analytics.zoo.feature.image
 
-import com.intel.analytics.bigdl.transform.vision.image.ImageFeature
 import com.intel.analytics.zoo.feature.common.{ImageProcessing}
 import com.intel.analytics.bigdl.transform.vision.image.augmentation
+import com.intel.analytics.bigdl.transform.vision.image.ImageFeature
+
 
 /**
- * Flip the image horizontally
+ * Adjust image hue
+ * @param deltaLow hue parameter: low bound
+ * @param deltaHigh hue parameter: high bound
  */
-class HFlip() extends ImageProcessing {
+class ImageHue(deltaLow: Double, deltaHigh: Double) extends ImageProcessing {
 
-  private val internalCrop = new augmentation.HFlip()
+  private val internalCrop = augmentation.Hue(deltaLow, deltaHigh)
   override def apply(prev: Iterator[ImageFeature]): Iterator[ImageFeature] = {
     internalCrop.apply(prev)
   }
@@ -34,6 +37,7 @@ class HFlip() extends ImageProcessing {
   }
 }
 
-object HFlip {
-  def apply(): HFlip = new HFlip()
+object ImageHue {
+  def apply(deltaLow: Double, deltaHigh: Double): ImageHue =
+    new ImageHue(deltaLow, deltaHigh)
 }

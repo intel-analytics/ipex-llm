@@ -20,14 +20,20 @@ import com.intel.analytics.zoo.feature.common.{ImageProcessing}
 import com.intel.analytics.bigdl.transform.vision.image.augmentation
 
 /**
- * adjust the image brightness
+ * expand image, fill the blank part with the meanR, meanG, meanB
  *
- * @param deltaLow brightness parameter: low bound
- * @param deltaHigh brightness parameter: high bound
+ * @param meansR means in R channel
+ * @param meansG means in G channel
+ * @param meansB means in B channel
+ * @param minExpandRatio min expand ratio
+ * @param maxExpandRatio max expand ratio
  */
-class Brightness(deltaLow: Double, deltaHigh: Double) extends ImageProcessing {
+class ImageExpand(meansR: Int = 123, meansG: Int = 117, meansB: Int = 104,
+                  minExpandRatio: Double = 1, maxExpandRatio: Double = 4.0)
+  extends ImageProcessing {
 
-  private val internalCrop = augmentation.Brightness(deltaLow, deltaHigh)
+  private val internalCrop = new augmentation.Expand(meansR, meansG, meansB,
+    minExpandRatio, maxExpandRatio)
   override def apply(prev: Iterator[ImageFeature]): Iterator[ImageFeature] = {
     internalCrop.apply(prev)
   }
@@ -37,7 +43,8 @@ class Brightness(deltaLow: Double, deltaHigh: Double) extends ImageProcessing {
   }
 }
 
-object Brightness {
-  def apply(deltaLow: Double, deltaHigh: Double): Brightness =
-    new Brightness(deltaLow, deltaHigh)
+object ImageExpand {
+  def apply(meansR: Int = 123, meansG: Int = 117, meansB: Int = 104,
+            minExpandRatio: Double = 1.0, maxExpandRatio: Double = 4.0): ImageExpand =
+    new ImageExpand(meansR, meansG, meansB, minExpandRatio, maxExpandRatio)
 }

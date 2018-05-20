@@ -21,7 +21,7 @@ import com.intel.analytics.zoo.feature.common.ImageProcessing
 /**
  * image channel normalize
  */
-class ChannelNormalize(
+class ImageChannelNormalize(
     means: Array[Float],
     stds: Array[Float]) extends ImageProcessing {
 
@@ -35,7 +35,7 @@ class ChannelNormalize(
   }
 }
 
-object ChannelNormalize {
+object ImageChannelNormalize {
   /**
    * image channel normalize
    *
@@ -47,11 +47,11 @@ object ChannelNormalize {
    * @param stdB  std value in B channel
    */
   def apply(meanR: Float, meanG: Float, meanB: Float,
-            stdR: Float = 1, stdG: Float = 1, stdB: Float = 1): ChannelNormalize = {
-    new ChannelNormalize(Array(meanB, meanG, meanR), Array(stdR, stdG, stdB))
+            stdR: Float = 1, stdG: Float = 1, stdB: Float = 1): ImageChannelNormalize = {
+    new ImageChannelNormalize(Array(meanB, meanG, meanR), Array(stdR, stdG, stdB))
   }
 
-  def apply(mean: Float, std: Float): ChannelNormalize = {
-    new ChannelNormalize(Array(mean), Array(std))
+  def apply(mean: Float, std: Float): ImageChannelNormalize = {
+    new ImageChannelNormalize(Array(mean), Array(std))
   }
 }
