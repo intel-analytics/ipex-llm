@@ -55,8 +55,8 @@ if __name__ == "__main__":
 
     # compose a pipeline that includes feature transform, pretrained model and Logistic Regression
     transformer = ChainedPreprocessing(
-        [RowToImageFeature(), Resize(256, 256), CenterCrop(224, 224),
-         ChannelNormalize(123.0, 117.0, 104.0), MatToTensor(), ImageFeatureToTensor()])
+        [RowToImageFeature(), ImageResize(256, 256), ImageCenterCrop(224, 224),
+         ImageChannelNormalize(123.0, 117.0, 104.0), ImageMatToTensor(), ImageFeatureToTensor()])
 
     preTrainedNNModel = NNModel(Model.loadModel(model_path), transformer) \
         .setFeaturesCol("image") \
