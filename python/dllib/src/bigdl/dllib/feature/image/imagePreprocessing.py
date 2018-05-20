@@ -27,11 +27,11 @@ class ImagePreprocessing(Preprocessing):
     """
     ImagePreprocessing is a transformer that transform ImageFeature
     """
-    def __init__(self, bigdl_type="float"):
-        super(ImagePreprocessing, self).__init__(bigdl_type)
+    def __init__(self, bigdl_type="float", *args):
+        super(ImagePreprocessing, self).__init__(bigdl_type, *args)
 
 
-class Resize(ImagePreprocessing):
+class ImageResize(ImagePreprocessing):
     """
     Resize image
     :param resize_h height after resize
@@ -45,22 +45,21 @@ class Resize(ImagePreprocessing):
     """
     def __init__(self, resize_h, resize_w, resize_mode=1, use_scale_factor=True,
                  bigdl_type="float"):
-        self.value = callBigDlFunc(
-            bigdl_type, "createImgResize", resize_h, resize_w, resize_mode, use_scale_factor)
+        super(ImageResize, self).__init__(bigdl_type, resize_h, resize_w,
+                                          resize_mode, use_scale_factor)
 
 
-class Brightness(ImagePreprocessing):
+class ImageBrightness(ImagePreprocessing):
     """
     adjust the image brightness
     :param deltaLow brightness parameter: low bound
     :param deltaHigh brightness parameter: high bound
     """
     def __init__(self, delta_low, delta_high, bigdl_type="float"):
-        self.value = callBigDlFunc(
-            bigdl_type, "createImgBrightness", delta_low, delta_high)
+        super(ImageBrightness, self).__init__(bigdl_type, delta_low, delta_high)
 
 
-class ChannelNormalize(ImagePreprocessing):
+class ImageChannelNormalize(ImagePreprocessing):
     """
     image channel normalize
     :param mean_r mean value in R channel
@@ -70,59 +69,61 @@ class ChannelNormalize(ImagePreprocessing):
     :param std_g std value in G channel
     :param std_b std value in B channel
     """
-    def __init__(self, mean_r, mean_b, mean_g, std_r=1.0, std_g=1.0, std_b=1.0, bigdl_type="float"):
-        self.value = callBigDlFunc(
-            bigdl_type, "createImgChannelNormalizer", mean_r, mean_g, mean_b, std_r, std_g, std_b)
+    def __init__(self, mean_r, mean_g, mean_b, std_r=1.0,
+                 std_g=1.0, std_b=1.0, bigdl_type="float"):
+        super(ImageChannelNormalize, self).__init__(bigdl_type, mean_r, mean_g,
+                                                    mean_b, std_r, std_g, std_b)
 
 
-class MatToTensor(ImagePreprocessing):
+class ImageMatToTensor(ImagePreprocessing):
     """
     MatToTensor
     """
     def __init__(self, bigdl_type="float"):
-        super(MatToTensor, self).__init__(bigdl_type)
+        super(ImageMatToTensor, self).__init__(bigdl_type)
 
 
-class CenterCrop(ImagePreprocessing):
+class ImageSetToSample(ImagePreprocessing):
     """
-    CenterCrop
+    transform imageframe to samples
+    :param input_keys keys that maps inputs (each input should be a tensor)
+    :param target_keys keys that maps targets (each target should be a tensor)
+    :param sample_key key to store sample
     """
-    def __init__(self, cropWidth, cropHeight, bigdl_type="float"):
-        super(CenterCrop, self).__init__(bigdl_type, cropWidth, cropHeight)
+    def __init__(self, input_keys=["imageTensor"], target_keys=None,
+                 sample_key="sample", bigdl_type="float"):
+        super(ImageSetToSample, self).__init__(bigdl_type, input_keys, target_keys, sample_key)
 
 
-class Hue(ImagePreprocessing):
+class ImageHue(ImagePreprocessing):
     """
     adjust the image hue
     :param deltaLow hue parameter: low bound
     :param deltaHigh hue parameter: high bound
     """
     def __init__(self, delta_low, delta_high, bigdl_type="float"):
-        self.value = callBigDlFunc(
-            bigdl_type, "createImgHue", delta_low, delta_high)
+        super(ImageHue, self).__init__(bigdl_type, delta_low, delta_high)
 
 
-class Saturation(ImagePreprocessing):
+class ImageSaturation(ImagePreprocessing):
     """
     adjust the image Saturation
     :param deltaLow brightness parameter: low bound
     :param deltaHigh brightness parameter: high bound
     """
     def __init__(self, delta_low, delta_high, bigdl_type="float"):
-        self.value = callBigDlFunc(
-            bigdl_type, "createImgSaturation", delta_low, delta_high)
+        super(ImageSaturation, self).__init__(bigdl_type, delta_low, delta_high)
 
 
-class ChannelOrder(ImagePreprocessing):
+class ImageChannelOrder(ImagePreprocessing):
     """
     random change the channel of an image
     """
     def __init__(self, bigdl_type="float"):
-        self.value = callBigDlFunc(
-            bigdl_type, "createImgChannelOrder")
+        super(ImageChannelOrder, self).__init__(bigdl_type)
 
 
-class ColorJitter(ImagePreprocessing):
+class ImageColorJitter(ImagePreprocessing):
     """
     Random adjust brightness, contrast, hue, saturation
     :param brightness_prob probability to adjust brightness
@@ -151,16 +152,15 @@ class ColorJitter(ImagePreprocessing):
                  random_order_prob=0.0,
                  shuffle=False,
                  bigdl_type="float"):
-        self.value = callBigDlFunc(
-            bigdl_type, "createImgColorJitter",
-            brightness_prob, brightness_delta,
-            contrast_prob, contrast_lower, contrast_upper,
-            hue_prob, hue_delta,
-            saturation_prob, saturation_lower, saturation_upper,
-            random_order_prob, shuffle)
+        super(ImageColorJitter, self).__init__(bigdl_type,
+                                               brightness_prob, brightness_delta,
+                                               contrast_prob, contrast_lower, contrast_upper,
+                                               hue_prob, hue_delta,
+                                               saturation_prob, saturation_lower, saturation_upper,
+                                               random_order_prob, shuffle)
 
 
-class AspectScale(ImagePreprocessing):
+class ImageAspectScale(ImagePreprocessing):
     """
     Resize the image, keep the aspect ratio. scale according to the short edge
     :param min_size scale size, apply to short edge
@@ -176,12 +176,12 @@ class AspectScale(ImagePreprocessing):
     def __init__(self, min_size, scale_multiple_of=1, max_size=1000,
                  resize_mode=1, use_scale_factor=True, min_scale=-1.0,
                  bigdl_type="float"):
-        self.value = callBigDlFunc(bigdl_type, "createImgAspectScale",
-                                   min_size, scale_multiple_of, max_size,
-                                   resize_mode, use_scale_factor, min_scale)
+        super(ImageAspectScale, self).__init__(bigdl_type,
+                                               min_size, scale_multiple_of, max_size,
+                                               resize_mode, use_scale_factor, min_scale)
 
 
-class RandomAspectScale(ImagePreprocessing):
+class ImageRandomAspectScale(ImagePreprocessing):
     """
     resize the image by randomly choosing a scale
     :param scales array of scale options that for random choice
@@ -189,26 +189,11 @@ class RandomAspectScale(ImagePreprocessing):
     :param maxSize Max pixel size of the longest side of a scaled input image
     """
     def __init__(self, scales, scale_multiple_of=1, max_size=1000, bigdl_type="float"):
-        self.value = callBigDlFunc(bigdl_type, "createImgRandomAspectScale",
-                                   scales, scale_multiple_of, max_size)
+        super(ImageRandomAspectScale, self).__init__(bigdl_type,
+                                                     scales, scale_multiple_of, max_size)
 
 
-class ChannelNormalize(ImagePreprocessing):
-    """
-    image channel normalize
-    :param mean_r mean value in R channel
-    :param mean_g mean value in G channel
-    :param meanB_b mean value in B channel
-    :param std_r std value in R channel
-    :param std_g std value in G channel
-    :param std_b std value in B channel
-    """
-    def __init__(self, mean_r, mean_b, mean_g, std_r=1.0, std_g=1.0, std_b=1.0, bigdl_type="float"):
-        self.value = callBigDlFunc(bigdl_type, "createImgChannelNormalize",
-                                   mean_r, mean_g, mean_b, std_r, std_g, std_b)
-
-
-class PixelNormalize(ImagePreprocessing):
+class ImagePixelNormalize(ImagePreprocessing):
     """
     Pixel level normalizer, data(i) = data(i) - mean(i)
 
@@ -216,10 +201,10 @@ class PixelNormalize(ImagePreprocessing):
     """
 
     def __init__(self, means, bigdl_type="float"):
-        self.value = callBigDlFunc(bigdl_type, "createImgPixelNormalize", means)
+        super(ImagePixelNormalize, self).__init__(bigdl_type, means)
 
 
-class RandomCrop(ImagePreprocessing):
+class ImageRandomCrop(ImagePreprocessing):
     """
     Random crop a `cropWidth` x `cropHeight` patch from an image.
     The patch size should be less than the image size.
@@ -230,11 +215,11 @@ class RandomCrop(ImagePreprocessing):
     """
 
     def __init__(self, crop_width, crop_height, is_clip=True, bigdl_type="float"):
-        self.value = callBigDlFunc(bigdl_type, "createImgRandomCrop",
-                                   crop_width, crop_height, is_clip)
+        super(ImageRandomCrop, self).__init__(bigdl_type,
+                                              crop_width, crop_height, is_clip)
 
 
-class CenterCrop(ImagePreprocessing):
+class ImageCenterCrop(ImagePreprocessing):
     """
     Crop a `cropWidth` x `cropHeight` patch from center of image.
     The patch size should be less than the image size.
@@ -244,11 +229,11 @@ class CenterCrop(ImagePreprocessing):
     """
 
     def __init__(self, crop_width, crop_height, is_clip=True, bigdl_type="float"):
-        self.value = callBigDlFunc(bigdl_type, "createImgCenterCrop",
-                                   crop_width, crop_height, is_clip)
+        super(ImageCenterCrop, self).__init__(bigdl_type,
+                                              crop_width, crop_height, is_clip)
 
 
-class FixedCrop(ImagePreprocessing):
+class ImageFixedCrop(ImagePreprocessing):
     """
     Crop a fixed area of image
 
@@ -261,11 +246,11 @@ class FixedCrop(ImagePreprocessing):
     """
 
     def __init__(self, x1, y1, x2, y2, normalized=True, is_clip=True, bigdl_type="float"):
-        self.value = callBigDlFunc(bigdl_type, "createImgFixedCrop",
-                                   x1, y1, x2, y2, normalized, is_clip)
+        super(ImageFixedCrop, self).__init__(bigdl_type,
+                                             x1, y1, x2, y2, normalized, is_clip)
 
 
-class Expand(ImagePreprocessing):
+class ImageExpand(ImagePreprocessing):
     """
     expand image, fill the blank part with the meanR, meanG, meanB
 
@@ -279,11 +264,11 @@ class Expand(ImagePreprocessing):
     def __init__(self, means_r=123, means_g=117, means_b=104,
                  min_expand_ratio=1.0,
                  max_expand_ratio=4.0, bigdl_type="float"):
-        self.value = callBigDlFunc(bigdl_type, "createImgExpand", means_r, means_g, means_b,
-                                   min_expand_ratio, max_expand_ratio)
+        super(ImageExpand, self).__init__(bigdl_type, means_r, means_g, means_b,
+                                          min_expand_ratio, max_expand_ratio)
 
 
-class Filler(ImagePreprocessing):
+class ImageFiller(ImagePreprocessing):
     """
     Fill part of image with certain pixel value
     :param start_x start x ratio
@@ -294,18 +279,14 @@ class Filler(ImagePreprocessing):
     """
 
     def __init__(self, start_x, start_y, end_x, end_y, value=255, bigdl_type="float"):
-        self.value = callBigDlFunc(bigdl_type, "createImgFiller",
-                                   start_x,
-                                   start_y,
-                                   end_x,
-                                   end_y,
-                                   value)
+        super(ImageFiller, self).__init__(bigdl_type, start_x, start_y,
+                                          end_x, end_y, value)
 
 
-class HFlip(ImagePreprocessing):
+class ImageHFlip(ImagePreprocessing):
     """
     Flip the image horizontally
     """
 
     def __init__(self, bigdl_type="float"):
-        self.value = callBigDlFunc(bigdl_type, "createImgHFlip")
+        super(ImageHFlip, self).__init__(bigdl_type)
