@@ -387,8 +387,8 @@ class NNEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val pascalResource = getClass.getClassLoader.getResource("pascal/")
     val imageDF = NNImageReader.readImages(pascalResource.getFile, sc)
     assert(imageDF.count() == 1)
-    val transformer = RowToImageFeature() -> Resize(256, 256) -> CenterCrop(224, 224) ->
-      ChannelNormalize(123, 117, 104) -> MatToTensor() -> ImageFeatureToTensor()
+    val transformer = RowToImageFeature() -> ImageResize(256, 256) -> ImageCenterCrop(224, 224) ->
+      ImageChannelNormalize(123, 117, 104) -> ImageMatToTensor() -> ImageFeatureToTensor()
     val featurizer = NNModel(Inception_v1(1000), transformer)
       .setBatchSize(1)
       .setFeaturesCol("image")
