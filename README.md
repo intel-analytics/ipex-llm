@@ -64,59 +64,59 @@ Analytics Zoo provides a set of easy-to-use, high level pipeline APIs that nativ
 `autograd` provides automatic differentiation for math operations, so that you can easily build your own *custom loss and layer* (in both Python and Scala), as illustracted below.
 
 1. Define custom functions using `autograd`
-```
-from zoo.pipeline.api.autograd import *
-def mean_absolute_error(y_true, y_pred):
-    return mean(abs(y_true - y_pred), axis=1)
-def add_one_func(x):
-    return x + 1.0
-```
+   ```
+   from zoo.pipeline.api.autograd import *
+   def mean_absolute_error(y_true, y_pred):
+       return mean(abs(y_true - y_pred), axis=1)
+   def add_one_func(x):
+       return x + 1.0
+   ```
 
-2. Define model with custom layer
-```
-from zoo.pipeline.api.keras.layers import *
-from zoo.pipeline.api.keras.models import *
-model = Sequential().add(Dense(1, input_shape=(2,)))
-                    .add(Lambda(function=add_one_func))
-```
+   2. Define model with custom layer
+   ```
+   from zoo.pipeline.api.keras.layers import *
+   from zoo.pipeline.api.keras.models import *
+   model = Sequential().add(Dense(1, input_shape=(2,)))
+                       .add(Lambda(function=add_one_func))
+   ```
 
 3. Train model with custom loss
-```
-model.compile(optimizer = SGD(), loss = mean_absolute_error)
-model.fit(x = ..., y = ...)
-```
+   ```
+   model.compile(optimizer = SGD(), loss = mean_absolute_error)
+   model.fit(x = ..., y = ...)
+   ```
 
 ### Transfer learning
 Using the high level transfer learning APIs, you can easily customize pretrained models for *feature extraction or fine-tuning*.
 
 1. Load an existing model (pretrained in Caffe)
-```
-from zoo.pipeline.api.net import *
-full_model = Net.load_caffe(model_path)
-```
+   ```
+   from zoo.pipeline.api.net import *
+   full_model = Net.load_caffe(model_path)
+   ```
 
 2. Remove last few layers
-```
-# create a new model by remove layers after pool5/drop_7x7_s1
-model = full_model.new_graph(["pool5/drop_7x7_s1"])
-```
+   ```
+   # create a new model by remove layers after pool5/drop_7x7_s1
+   model = full_model.new_graph(["pool5/drop_7x7_s1"])
+   ```
 
 3. Freeze first few layers
-```
-# freeze layers from input to pool4/3x3_s2 inclusive
-model.freeze_up_to(["pool4/3x3_s2"])
-```
+   ```
+   # freeze layers from input to pool4/3x3_s2 inclusive
+   model.freeze_up_to(["pool4/3x3_s2"])
+   ```
 
 4. Add a few new layers
-```
-from zoo.pipeline.api.keras.layers import *
-from zoo.pipeline.api.keras.models import *
-input = Input(name="input", shape=(3, 224, 224))
-inception = model.to_keras()(input)
-flatten = Flatten()(inception)
-logits = Dense(2)(flatten)
-newModel = Model(inputNode, logits)
-```
+   ```
+   from zoo.pipeline.api.keras.layers import *
+   from zoo.pipeline.api.keras.models import *
+   input = Input(name="input", shape=(3, 224, 224))
+   inception = model.to_keras()(input)
+   flatten = Flatten()(inception)
+   logits = Dense(2)(flatten)
+   newModel = Model(inputNode, logits)
+   ```
 
 ## Built-in deep learning models
 Analytics Zoo provides several built-in deep learning models that you can use for a variety of problem types, such as *object detection*, *image classification*, *text classification*, *recommedation*, etc.
@@ -126,30 +126,30 @@ Using *Analytics Zoo Object Detection API* (including a set of pretrained detect
 
 1. Download object detection models in Analytics Zoo
 
-You can download a collection of detection models (pretrained on the PSCAL VOC dataset and COCO dataset) from [detection model zoo](docs/docs/models/objectdetection/README.md#download-link).
+   You can download a collection of detection models (pretrained on the PSCAL VOC dataset and COCO dataset) from [detection model zoo](docs/docs/models/objectdetection/README.md#download-link).
 
 2. Use *Zoo Object Detection API* for off-the-shell inference
-```
-from zoo.models.image.objectdetection.object_detector import *
-model = ObjectDetector.load_model(model_path)
-image_set = ImageSet.read(img_path, sc)
-output = model.predict_image_set(image_set)
-```
+   ```
+   from zoo.models.image.objectdetection.object_detector import *
+   model = ObjectDetector.load_model(model_path)
+   image_set = ImageSet.read(img_path, sc)
+   output = model.predict_image_set(image_set)
+   ```
 
 ### Image classification API
 Using *Analytics Zoo Image Classification API* (including a set of pretrained detection models such as VGG, Inception, ResNet, MobileNet,  etc.), you can easily build your image classification applications, as illustrated below.
 
 1. Download image classification models in Analytics Zoo
 
-You can download a collection of image classification models (pretrained on the ImageNet dataset) from [image image classification model zoo](docs/docs/models/imageclassification/README.md#download-link).
+   You can download a collection of image classification models (pretrained on the ImageNet dataset) from [image image classification model zoo](docs/docs/models/imageclassification/README.md#download-link).
 
 2. Use *Image classification API* for off-the-shell inference
-```
-from zoo.models.image.imageclassification.image_classification import *
-model = ImageClassifier.load_model(model_path)
-image_set = ImageSet.read(img_path, sc)
-output = model.predict_image_set(image_set)
-```
+   ```
+   from zoo.models.image.imageclassification.image_classification import *
+   model = ImageClassifier.load_model(model_path)
+   image_set = ImageSet.read(img_path, sc)
+   output = model.predict_image_set(image_set)
+   ```
 
 ### Text classification API
 *Analytics Zoo Text Classification API* provides a set of pre-defined models (using CNN, LSTM, etc.) for text classifications.
