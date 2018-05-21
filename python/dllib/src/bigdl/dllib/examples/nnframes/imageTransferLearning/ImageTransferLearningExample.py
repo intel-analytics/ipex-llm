@@ -25,9 +25,8 @@ from pyspark.sql.functions import col, udf
 from pyspark.sql.types import DoubleType, StringType
 
 from zoo.common.nncontext import *
-from zoo.feature.image.imagePreprocessing import *
-from zoo.pipeline.nnframes.nn_classifier import *
-from zoo.pipeline.nnframes.nn_image_reader import *
+from zoo.feature.image import *
+from zoo.pipeline.nnframes import *
 
 if __name__ == "__main__":
 
