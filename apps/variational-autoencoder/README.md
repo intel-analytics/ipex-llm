@@ -19,16 +19,18 @@ and Analytics Zoo 0.1.0.
 
 To run this example, you should 
 * Download Analytics Zoo and build it.
-* Set the environment variable `ANALYTICS_ZOO_HOME` to the root directory of the Analytics Zoo project
-* Run the bash command to start the notebook.
+* Run `export SPARK_HOME=the root directory of Spark`.
+* Run `export ANALYTICS_ZOO_HOME=the dist directory under the Analytics Zoo project`.
+* Run the following bash command to start the jupyter notebook. Change parameter settings as you need, ie `MASTER = local[physcial_core_number]`.
 ```Bash
-${ANALYTICS_ZOO_HOME}/scripts/jupyter-with-zoo.sh \
-    --master local[4] \
+MASTER=local[*]
+${ANALYTICS_ZOO_HOME}/bin/jupyter-with-zoo.sh \
+    --master ${MASTER} \
     --driver-cores 4  \
     --driver-memory 22g  \
     --total-executor-cores 4  \
     --executor-cores 4  \
-    --executor-memory 22g \
+    --executor-memory 22g
 ```
 
 
