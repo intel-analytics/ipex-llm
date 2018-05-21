@@ -39,7 +39,6 @@ Analytics Zoo provides a set of easy-to-use, high level pipeline APIs that nativ
 
 3. Processing image using built-in *feature engineering operations*
    ```
-   from zoo.feature.common import RowToImageFeature
    from zoo.feature.image.imagePreprocessing import *
    transformer = RowToImageFeature() -> ImageResize(64, 64) -> ImageChannelNormalize(123.0, 117.0, 104.0) \
                  -> ImageMatToTensor() -> ImageFeatureToTensor())
