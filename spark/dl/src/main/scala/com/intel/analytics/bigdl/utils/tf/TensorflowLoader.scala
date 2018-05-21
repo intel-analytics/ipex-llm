@@ -81,7 +81,8 @@ object TensorflowLoader{
     val context = binFile.map(loadBinFiles(_))
 
     // Build BigDL model from the tf node graph
-    buildBigDLModel(tfGraph, newInputs, outputs, byteOrder, graphPrototxt, context)
+    buildBigDLModel(tfGraph, newInputs, outputs, byteOrder, graphPrototxt,
+      context, generatedBackward)
   }
 
   def checkpoints[T: ClassTag](graphFile: String, binFile: String, byteOrder: ByteOrder)(
