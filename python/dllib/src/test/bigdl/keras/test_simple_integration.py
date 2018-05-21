@@ -19,7 +19,6 @@ import shutil
 
 from zoo.pipeline.api.keras.layers import *
 from zoo.pipeline.api.keras.models import *
-from bigdl.nn.layer import Layer
 from test.zoo.pipeline.utils.test_utils import ZooTestCase
 
 np.random.seed(1337)  # for reproducibility
