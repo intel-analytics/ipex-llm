@@ -18,12 +18,13 @@ package com.intel.analytics.zoo.pipeline.api.keras.layers.utils
 
 import com.intel.analytics.bigdl.Criterion
 import com.intel.analytics.bigdl.nn._
-import com.intel.analytics.bigdl.nn.keras.{KerasIdentityWrapper, KerasLayer, KerasLayerWrapper, SoftMax => KSoftMax, Sequential => KSequential}
+import com.intel.analytics.bigdl.nn.keras.{KerasIdentityWrapper, KerasLayer, KerasLayerWrapper, Sequential => KSequential, SoftMax => KSoftMax}
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, DataFormat}
 import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{Shape, SingleShape}
+import com.intel.analytics.zoo.pipeline.api.keras.metrics.AUC
 
 import scala.reflect.ClassTag
 
@@ -169,12 +170,17 @@ object KerasUtils {
     (implicit ev: TensorNumeric[T]): List[ValidationMethod[T]] = {
     if (metrics == null) {
       null
-    }
-    else if (metrics.equals(List("accuracy"))) {
-      List(new Top1Accuracy[T]())
-    }
-    else {
-      throw new IllegalArgumentException(s"Unsupported metrics: ${metrics.mkString(", ")}")
+    } else {
+      metrics.map { metric =>
+        metric.toLowerCase() match {
+          case "accuracy" => new Top1Accuracy[T]()
+          case "mae" => new MAE[T]()
+          case "auc" => new AUC[T](1000)
+          case "loss" => new Loss[T]()
+          case "treennaccuracy" => new TreeNNAccuracy[T]()
+          case _ => throw new IllegalArgumentException(s"Unsupported metric: ${metric}")
+        }
+      }
     }
   }
 
