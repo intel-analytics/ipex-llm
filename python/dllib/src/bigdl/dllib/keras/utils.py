@@ -66,12 +66,22 @@ def to_bigdl_criterion(criterion):
         raise TypeError("Unsupported loss: %s" % criterion)
 
 
+def to_bigdl_metric(metric):
+    from zoo.pipeline.api.keras.metrics.auc import AUC
+    metric = metric.lower()
+    if metric == "accuracy":
+        return Top1Accuracy()
+    elif metric == "mae":
+        return MAE()
+    elif metric == "auc":
+        return AUC(1000)
+    elif metric == "loss":
+        return Loss()
+    elif metric == "treennaccuracy":
+        return TreeNNAccuracy()
+    else:
+        raise TypeError("Unsupported metric: %s" % metric)
+
+
 def to_bigdl_metrics(metrics):
-    metrics = to_list(metrics)
-    bmetrics = []
-    for metric in metrics:
-        if metric.lower() == "accuracy":
-            bmetrics.append(Top1Accuracy())
-        else:
-            raise TypeError("Unsupported metrics: %s" % metric)
-    return bmetrics
+    return [to_bigdl_metric(m) for m in metrics]
