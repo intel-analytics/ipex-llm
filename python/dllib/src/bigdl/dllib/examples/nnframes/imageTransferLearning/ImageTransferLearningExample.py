@@ -15,21 +15,19 @@
 #
 
 import re
-from bigdl.util.common import *
-from pyspark.sql.functions import col, udf
-from pyspark.sql.types import DoubleType, StringType
-from bigdl.nn.layer import *
+
 from bigdl.nn.criterion import *
+from bigdl.nn.layer import *
 from pyspark import SparkConf
 from pyspark.ml import Pipeline
 from pyspark.ml.evaluation import MulticlassClassificationEvaluator
+from pyspark.sql.functions import col, udf
+from pyspark.sql.types import DoubleType, StringType
 
 from zoo.common.nncontext import *
+from zoo.feature.image.imagePreprocessing import *
 from zoo.pipeline.nnframes.nn_classifier import *
 from zoo.pipeline.nnframes.nn_image_reader import *
-from zoo.feature.common import *
-from zoo.feature.image.imagePreprocessing import *
-
 
 if __name__ == "__main__":
 
