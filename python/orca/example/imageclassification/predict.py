@@ -16,7 +16,7 @@
 
 from optparse import OptionParser
 from zoo.common.nncontext import get_nncontext
-from zoo.models.image.imageclassification.image_classification import *
+from zoo.models.image.imageclassification import *
 
 
 def predict(model_path, img_path, topN):
