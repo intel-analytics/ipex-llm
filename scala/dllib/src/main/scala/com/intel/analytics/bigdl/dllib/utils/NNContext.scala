@@ -125,10 +125,14 @@ object NNContext {
    * or properties file, and init BigDL engine manually.
    *
    * @param conf User defined Spark conf
+   * @param appName name of the current context
    * @return Spark Context
    */
-  def getNNContext(conf: SparkConf = null): SparkContext = {
+  def getNNContext(conf: SparkConf, appName: String): SparkContext = {
     val bigdlConf = Engine.createSparkConf(conf)
+    if (appName != null) {
+      bigdlConf.setAppName(appName)
+    }
     if (bigdlConf.getBoolean("spark.analytics.zoo.versionCheck", defaultValue = false)) {
       val reportWarning =
         bigdlConf.getBoolean("spark.analytics.zoo.versionCheck.warning", defaultValue = false)
@@ -138,6 +142,40 @@ object NNContext {
     val sc = SparkContext.getOrCreate(bigdlConf)
     Engine.init
     sc
+  }
+
+  /**
+   * Gets a SparkContext with optimized configuration for BigDL performance. The method
+   * will also initialize the BigDL engine.
+
+   * Note: if you use spark-shell or Jupyter notebook, as the Spark context is created
+   * before your code, you have to set Spark conf values through command line options
+   * or properties file, and init BigDL engine manually.
+   *
+   * @param conf User defined Spark conf
+   * @return Spark Context
+   */
+  def getNNContext(conf: SparkConf): SparkContext = {
+    getNNContext(conf = conf, appName = null)
+  }
+
+  /**
+   * Gets a SparkContext with optimized configuration for BigDL performance. The method
+   * will also initialize the BigDL engine.
+
+   * Note: if you use spark-shell or Jupyter notebook, as the Spark context is created
+   * before your code, you have to set Spark conf values through command line options
+   * or properties file, and init BigDL engine manually.
+   *
+   * @param appName name of the current context
+   * @return Spark Context
+   */
+  def getNNContext(appName: String): SparkContext = {
+    getNNContext(conf = null, appName = appName)
+  }
+
+  def getNNContext(): SparkContext = {
+    getNNContext(null, null)
   }
 
 }
