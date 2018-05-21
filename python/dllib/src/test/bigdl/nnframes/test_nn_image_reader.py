@@ -21,8 +21,7 @@ from bigdl.util.common import *
 from pyspark.sql.types import *
 
 from zoo.common.nncontext import *
-from zoo.pipeline.nnframes.nn_image_reader import *
-from zoo.pipeline.nnframes.nn_image_schema import *
+from zoo.pipeline.nnframes import *
 
 
 class TestNNImageReader():

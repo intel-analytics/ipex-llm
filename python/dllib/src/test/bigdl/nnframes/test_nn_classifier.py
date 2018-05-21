@@ -24,9 +24,9 @@ from pyspark.ml.feature import MinMaxScaler
 from pyspark.sql.types import *
 
 from zoo.common.nncontext import *
-from zoo.pipeline.nnframes.nn_classifier import *
+from zoo.pipeline.nnframes import *
 from zoo.feature.common import *
-from zoo.feature.image.imagePreprocessing import *
+from zoo.feature.image import *
 
 
 class TestNNClassifer():
