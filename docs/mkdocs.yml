@@ -24,8 +24,8 @@ pages:
   - Built-in Models:
     - Object Detection: programming-guide.md
     - Image Classification: programming-guide.md
-    - Text Classification: programming-guide.md
-    - Recommedation: programming-guide.md
+    - Text Classification: models/textclassification/programming-guide.md
+    - Recommedation: models/recommendation/programming-guide.md
   - Use Cases:
     - overview: programming-guide.md
     - Anomaly Detection: programming-guide.md
@@ -48,7 +48,7 @@ pages:
   - Models
     - Object Detection: programming-guide.md
     - Image Classification: programming-guide.md
-    - Text Classification: programming-guide.md
-    - Recommedation: programming-guide.md
+    - Text Classification: models/textclassification/programming-guide.md
+    - Recommedation: models/recommendation/programming-guide.md
 - Powered by: powered-by.md
 - FAQ and Known Issues: known-issues.md
