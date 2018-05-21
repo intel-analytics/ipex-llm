@@ -13,3 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
+from .nn_classifier import *
+from .nn_image_reader import *
+from .nn_image_schema import *
