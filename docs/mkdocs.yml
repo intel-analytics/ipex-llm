@@ -1,4 +1,4 @@
-site_name: Analytics-Zoo Project
+site_name: Analytics Zoo
 theme: null
 extra_css: [extra.css]
 theme_dir: mkdocs_windmill 
@@ -9,34 +9,46 @@ extra:
     article_nav_top: false
     article_nav_bottom: false
 
-
 pages:
-- Overview: 
-  - What is Zoo and Why: index.md 
-  - Getting Help: gettinghelp.md
+- Overview: index.md 
 - Releases: 
   - Download: release-download.md 
   - Documentation: release-docs.md
-- Getting Started: getting-started.md
-- Scala User Guide: 
-  - Examples: ScalaUserGuide/examples.md
-  - Model API: ScalaUserGuide/modelapi.md
-  - Pipeline API:
-    - Keras-Style: ScalaUserGuide/PipelineAPI/keras-style.md
-    - NNFrames: ScalaUserGuide/PipelineAPI/nnframes.md
-- Python User Guide: 
-  - Install:
-    - From pip: PythonUserGuide/InstallAndRun/install-from-pip.md
-  - Run:
-    - After pip install: PythonUserGuide/InstallAndRun/run-from-pip.md
-  - Examples: PythonUserGuide/python-examples.md
-  - Model API: PythonUserGuide/model-api.md
-  - Pipeline API:
-    - Keras: PythonUserGuide/PipelineAPI/keras.md
-    - NNFrames: PythonUserGuide/PipelineAPI/nnframes.md
-- Programming Guide: programming-guide.md
-- Notebooks: 
-  - Scala: Notebooks/scala.md
-  - Python: Notebooks/python.md
+- Programming Guide: 
+  - Pipeline APIs:
+    - DataFrame and ML Pipeline: programming-guide.md
+    - Autograd: programming-guide.md
+    - Transfer Learning: programming-guide.md
+  - Feature Engineering:
+    - Working with Images: programming-guide.md
+  - Built-in Models:
+    - Object Detection: programming-guide.md
+    - Image Classification: programming-guide.md
+    - Text Classification: programming-guide.md
+    - Recommedation: programming-guide.md
+  - Use Cases:
+    - overview: programming-guide.md
+    - Anomaly Detection: programming-guide.md
+- User Guide:
+  - Python
+    - Install: PythonUserGuide/install.md
+    - Run: PythonUserGuide/install.md
+    - Examples: PythonUserGuide/python-examples.md
+  - Scala 
+    - Install: ScalaUserGuide/install.md
+    - Run: ScalaUserGuide/install.md
+    - Examples: ScalaUserGuide/examples.md
+- API Guide:
+  - Pipeline APIs
+    - NNFrames: APIGuide/PipelineAPI/nnframes.md
+    - Autograd: APIGuide/PipelineAPI/nnframes.md
+    - Net: APIGuide/PipelineAPI/nnframes.md
+  - Feature Engineering
+    - Image: APIGuide/PipelineAPI/nnframes.md
+  - Models
+    - Object Detection: programming-guide.md
+    - Image Classification: programming-guide.md
+    - Text Classification: programming-guide.md
+    - Recommedation: programming-guide.md
 - Powered by: powered-by.md
 - FAQ and Known Issues: known-issues.md
