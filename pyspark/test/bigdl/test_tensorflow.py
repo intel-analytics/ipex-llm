@@ -39,7 +39,8 @@ class TestTensorflow():
 
         model_loaded = Model.load_tensorflow(temp + "/model.pb", ["input"], ["output"])
         model_loaded_without_backwardgraph = Model.load_tensorflow(temp + "/model.pb",
-            ["input"], ["output"], generated_backward=False)
+                                                                   ["input"], ["output"],
+                                                                   generated_backward=False)
         expected_output = model_original.forward(input)
         output = model_loaded.forward(input)
         output_without_backwardgraph = model_loaded_without_backwardgraph.forward(input)
