@@ -652,11 +652,14 @@ class TestSimple():
         assert result2.shape == (4,)
 
         result3 = model.predict_local([JTensor.from_ndarray(np.ones([4, 3])),
-                                       JTensor.from_ndarray(np.ones([4, 3]))], batch_size = 4)
+                                       JTensor.from_ndarray(np.ones([4, 3]))])
         assert result3.shape == (4, 5)
         result4 = model.predict_class([JTensor.from_ndarray(np.ones([4, 3])),
                                        JTensor.from_ndarray(np.ones([4, 3]))])
         assert result4.shape == (4,)
+        result5 = model.predict_local([JTensor.from_ndarray(np.ones([4, 3])),
+                                       JTensor.from_ndarray(np.ones([4, 3]))], batch_size=2)
+        assert result5.shape == (4, 5)
 
     def test_model_broadcast(self):
 
