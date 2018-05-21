@@ -140,6 +140,15 @@ class TestSimpleIntegration(ZooTestCase):
         model = Model([x1, x2], [y1, y2])
         assert len(model.flattened_layers()) == 4
 
+    def test_create_image_config(self):
+        from zoo.models.image.common.image_config import ImageConfigure
+        from zoo.feature.image.imagePreprocessing import ImageResize
+        from zoo.feature.common import ChainedPreprocessing
+        ImageConfigure(
+            pre_processor=ImageResize(224, 224))
+        ImageConfigure(
+            pre_processor=ChainedPreprocessing([ImageResize(224, 224), ImageResize(224, 224)]))
+
 
 if __name__ == "__main__":
     pytest.main([__file__])
