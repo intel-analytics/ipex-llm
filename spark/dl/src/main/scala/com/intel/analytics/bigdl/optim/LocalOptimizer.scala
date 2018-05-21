@@ -131,11 +131,11 @@ class LocalOptimizer[T: ClassTag] (
       val target = miniBatchBuffer(i).getTarget()
       val output = localModel.forward(input)
       val lossSum = ev.toType[Double](localCriterion.forward(output, target))
-//      val errors = localCriterion.backward(output, target)
-//      if (gradOutput.isEmpty) {
-//        gradOutput.resizeAs(output.toTensor).rand(-1, 1)
-//      }
-//      localModel.backward(input, gradOutput)
+      val errors = localCriterion.backward(output, target)
+      if (gradOutput.isEmpty) {
+        gradOutput.resizeAs(output.toTensor).rand(-1, 1)
+      }
+      localModel.backward(input, gradOutput)
 //          })
 //      ).sum
 
