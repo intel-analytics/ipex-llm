@@ -29,12 +29,30 @@ def get_nncontext(conf=None):
 
     :param conf: User defined Spark conf
     """
-
-    sc = get_spark_context(conf)
+    if isinstance(conf, six.string_types):
+        sc = getOrCreateSparkContext(conf=None, appName=conf)
+    else:
+        sc = getOrCreateSparkContext(conf=conf)
     redire_spark_logs()
     show_bigdl_info_logs()
     init_engine()
     return sc
+
+
+def getOrCreateSparkContext(conf=None, appName=None):
+    """
+    Get the current active spark context and create one if no active instance
+    :param conf: combining bigdl configs into spark conf
+    :return: SparkContext
+    """
+    with SparkContext._lock:
+        if SparkContext._active_spark_context is None:
+            spark_conf = create_spark_conf() if conf is None else conf
+            if appName:
+                spark_conf.setAppName(appName)
+            return SparkContext.getOrCreate(spark_conf)
+        else:
+            return SparkContext.getOrCreate()
 
 
 def check_version():
