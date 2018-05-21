@@ -320,7 +320,7 @@ class TestSimple():
 
         assert parameters["linear1"] is not None
         print("parameters %s" % parameters["linear1"])
-        predict_result = trained_model.predict(trainingData, batch_size = 4)
+        predict_result = trained_model.predict(trainingData)
         p = predict_result.take(2)
         print("predict predict: \n")
         for i in p:
@@ -523,6 +523,13 @@ class TestSimple():
                                  [-0.5906958], [-0.12307882], [-0.77907401]], dtype="float32")
         for i in range(0, total_length):
             assert_allclose(p[i], ground_label[i], atol=1e-6, rtol=0)
+
+        predict_result_with_batch = model.predict(features = predict_data,
+                                                  batch_size = 2)
+        p_with_batch = predict_result_with_batch.take(6)
+        for i in range(0, total_length):
+            assert_allclose(p_with_batch[i], ground_label[i], atol=1e-6, rtol=0)
+
         predict_class = model.predict_class(predict_data)
         predict_labels = predict_class.take(6)
         for i in range(0, total_length):
