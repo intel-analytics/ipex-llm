@@ -18,7 +18,6 @@ package com.intel.analytics.zoo.feature.image
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.transform.vision.image.ImageFeature
 import com.intel.analytics.bigdl.transform.vision.image
-import com.intel.analytics.zoo.feature.common.{ImageProcessing}
 
 import scala.reflect.ClassTag
 

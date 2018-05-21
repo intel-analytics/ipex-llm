@@ -13,26 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.intel.analytics.zoo.feature.image
 
-import com.intel.analytics.bigdl.transform.vision.image.ImageFeature
-import com.intel.analytics.bigdl.transform.vision.image.augmentation
+import com.intel.analytics.bigdl.transform.vision.image.{FeatureTransformer, ImageFeature}
+import com.intel.analytics.zoo.feature.common.{ChainedPreprocessing, Preprocessing}
 
-/**
- * Flip the image horizontally
- */
-class ImageHFlip() extends ImageProcessing {
 
-  private val internalCrop = new augmentation.HFlip()
-  override def apply(prev: Iterator[ImageFeature]): Iterator[ImageFeature] = {
-    internalCrop.apply(prev)
+abstract class ImageProcessing extends FeatureTransformer with
+   Preprocessing[ImageFeature, ImageFeature] {
+  // scalastyle:off methodName
+  // scalastyle:off noSpaceBeforeLeftBracket
+  def -> (other: ImageProcessing): Preprocessing[ImageFeature, ImageFeature] = {
+    new ChainedPreprocessing(this, other)
   }
-
-  override def transformMat(feature: ImageFeature): Unit = {
-    internalCrop.transformMat(feature)
-  }
-}
-
-object ImageHFlip {
-  def apply(): ImageHFlip = new ImageHFlip()
+  // scalastyle:on noSpaceBeforeLeftBracket
+  // scalastyle:on methodName
 }

@@ -17,7 +17,6 @@ package com.intel.analytics.zoo.feature.image
 
 import com.intel.analytics.bigdl.transform.vision.image.ImageFeature
 import com.intel.analytics.bigdl.transform.vision.image.{MatToFloats => BMatToFloats}
-import com.intel.analytics.zoo.feature.common.{ImageProcessing}
 
 import scala.reflect.ClassTag
 

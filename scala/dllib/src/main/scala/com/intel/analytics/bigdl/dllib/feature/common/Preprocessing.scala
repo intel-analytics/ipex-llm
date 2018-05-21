@@ -69,13 +69,4 @@ class ChainedPreprocessing[A, B, C](first: Preprocessing[A, B], last: Preprocess
   }
 }
 
-abstract class ImageProcessing extends FeatureTransformer with
-   Preprocessing[ImageFeature, ImageFeature] {
-  // scalastyle:off methodName
-  // scalastyle:off noSpaceBeforeLeftBracket
-  def -> (other: ImageProcessing): Preprocessing[ImageFeature, ImageFeature] = {
-    new ChainedPreprocessing(this, other)
-  }
-  // scalastyle:on noSpaceBeforeLeftBracket
-  // scalastyle:on methodName
-}
+
