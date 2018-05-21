@@ -20,7 +20,6 @@ import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
 import com.intel.analytics.zoo.pipeline.nnframes._
 import com.intel.analytics.zoo.common.NNContext
-import com.intel.analytics.zoo.feature.common.{ImageFeatureToTensor, RowToImageFeature}
 import com.intel.analytics.zoo.feature.image._
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.ml.evaluation.MulticlassClassificationEvaluator
