@@ -86,9 +86,7 @@ private[bigdl] class Scheduler[T] (
   }
 
   private def skipExecution(node: ModuleNode[T]): Boolean = {
-    if (nodeStatus.isConst(node)) return true
-
-    if (node.element.isInstanceOf[ControlDependency[_]]) {
+    if (node.element.isInstanceOf[ControlDependency[_]] || nodeStatus.isConst(node)) {
       schedule(node)
       return true
     }
