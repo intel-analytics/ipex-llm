@@ -32,5 +32,5 @@ class AUC(JavaValue):
     >>> meter = AUC(20)
     creating: createAUC
     """
-    def __init__(self, threshold_num, bigdl_type="float"):
+    def __init__(self, threshold_num=200, bigdl_type="float"):
         JavaValue.__init__(self, None, bigdl_type, threshold_num)
