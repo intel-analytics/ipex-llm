@@ -125,7 +125,7 @@ class AucScore(private val tp: Tensor[Float], private val fp: Tensor[Float],
  * @param thresholdNum The number of thresholds. The quality of approximation
  *                     may vary depending on thresholdNum.
  */
-class AUC[T](thresholdNum: Int)(implicit ev: TensorNumeric[T])
+class AUC[T](thresholdNum: Int = 200)(implicit ev: TensorNumeric[T])
   extends ValidationMethod[T] {
 
   override def apply(output: Activity, target: Activity):
