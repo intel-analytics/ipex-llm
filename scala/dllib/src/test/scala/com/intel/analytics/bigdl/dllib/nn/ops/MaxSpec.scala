@@ -36,6 +36,21 @@ class MaxSpec extends FlatSpec with Matchers {
     output should be(expectOutput)
   }
 
+  "Max operation forward one-element tensor index" should "works correctly" in {
+    import com.intel.analytics.bigdl.numeric.NumericFloat
+    RandomGenerator.RNG.setSeed(10)
+    val input =
+      T(
+        Tensor.range(1, 10).resize(2, 5),
+        Tensor[Int](1).fill(1)
+      )
+
+    val expectOutput = Tensor(T(5f, 10f))
+
+    val output = Max(startFromZero = true).forward(input)
+    output should be(expectOutput)
+  }
+
   "Max keepDims" should "works correctly" in {
     import com.intel.analytics.bigdl.numeric.NumericFloat
     RandomGenerator.RNG.setSeed(10)
