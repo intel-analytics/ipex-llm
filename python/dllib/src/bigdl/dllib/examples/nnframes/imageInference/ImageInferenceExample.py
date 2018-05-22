@@ -44,7 +44,7 @@ if __name__ == "__main__":
         print("Need parameters: <modelPath> <imagePath>")
         exit(-1)
 
-    sc = get_nncontext()
+    sc = get_nncontext("image_inference")
 
     model_path = sys.argv[1]
     image_path = sys.argv[2]
