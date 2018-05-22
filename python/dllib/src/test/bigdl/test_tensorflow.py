@@ -38,9 +38,14 @@ class TestTensorflow():
         model_original.save_tensorflow([("input", [4, 10])], temp + "/model.pb")
 
         model_loaded = Model.load_tensorflow(temp + "/model.pb", ["input"], ["output"])
+        model_loaded_without_backwardgraph = Model.load_tensorflow(temp + "/model.pb",
+                                                                   ["input"], ["output"],
+                                                                   generated_backward=False)
         expected_output = model_original.forward(input)
         output = model_loaded.forward(input)
+        output_without_backwardgraph = model_loaded_without_backwardgraph.forward(input)
         assert_allclose(output, expected_output, atol=1e-6, rtol=0)
+        assert_allclose(output_without_backwardgraph, expected_output, atol=1e-6, rtol=0)
 
 
 if __name__ == "__main__":
