@@ -175,7 +175,7 @@ object KerasUtils {
         metric.toLowerCase() match {
           case "accuracy" => new Top1Accuracy[T]()
           case "mae" => new MAE[T]()
-          case "auc" => new AUC[T](1000)
+          case "auc" => new AUC[T]()
           case "loss" => new Loss[T]()
           case "treennaccuracy" => new TreeNNAccuracy[T]()
           case _ => throw new IllegalArgumentException(s"Unsupported metric: ${metric}")
