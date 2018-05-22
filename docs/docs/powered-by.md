@@ -8,5 +8,5 @@
 * __Microsoft__: [Running BigDL on Microsoft Data Science Virtual Machine](https://blogs.technet.microsoft.com/machinelearning/2017/06/20/running-bigdl-apache-spark-deep-learning-library-on-microsoft-data-science-virtual-machine/)
 * __Lightbend__: [Using Apache Spark with Intel BigDL on Mesosphere DC/OS](http://developer.lightbend.com/blog/2017-06-22-bigdl-on-mesos/)
 * __Qubole__: Deep Learning on Qubole Using BigDL for Apache Spark ([Part 1](https://www.qubole.com/blog/deep-learning-qubole-using-intels-bigdl-apache-spark-part-1/) and [Part 2](https://www.qubole.com/blog/deep-learning-qubole-using-bigdl-apache-spark-part-2/))
-* __Telefonica Open Cloud__: [Using BigDL in Telefonica Open Cloud](https://support.telefonicaopencloud.com/en-us/ecs/doc/download/20180319/20180319092309_b68a5e76da.pdf)
+* __Telefonica Open Cloud__: [Using BigDL in Telefonica Open Cloud](https://support.telefonicaopencloud.com/en-us/ecs/doc/download/20180329/20180329111611_166372a698.pdf)
 * __Google Cloud Dataproc__: [Using BigDL for deep learning with Apache Spark and Google Cloud Dataproc](https://cloud.google.com/blog/big-data/2018/04/using-bigdl-for-deep-learning-with-apache-spark-and-google-cloud-dataproc)
