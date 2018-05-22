@@ -88,14 +88,14 @@ object Module {
    * @param outputs output node names, the output tensor order is same with the node order
    * @param byteOrder byte order in the tensorflow file. The default value is little endian
    * @param binFile where is the model variable file
+   * @param generatedBackward if generate backward graph
    * @return BigDL model
    */
   def loadTF[T: ClassTag](graphFile: String, inputs: Seq[String], outputs: Seq[String],
-            byteOrder: ByteOrder = ByteOrder.LITTLE_ENDIAN,
-            binFile: Option[String] = None)(
-    implicit ev: TensorNumeric[T]): Module[T] = {
-
-    TensorflowLoader.load(graphFile, inputs, outputs, byteOrder, binFile)
+        byteOrder: ByteOrder = ByteOrder.LITTLE_ENDIAN,
+        binFile: Option[String] = None, generatedBackward: Boolean = true)(
+        implicit ev: TensorNumeric[T]): Module[T] = {
+    TensorflowLoader.load(graphFile, inputs, outputs, byteOrder, binFile, generatedBackward)
   }
 
   /**
