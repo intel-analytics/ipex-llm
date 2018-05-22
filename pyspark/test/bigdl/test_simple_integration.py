@@ -525,7 +525,7 @@ class TestSimple():
             assert_allclose(p[i], ground_label[i], atol=1e-6, rtol=0)
 
         predict_result_with_batch = model.predict(features=predict_data,
-                                                  batch_size=2)
+                                                  batch_size=4)
         p_with_batch = predict_result_with_batch.take(6)
         for i in range(0, total_length):
             assert_allclose(p_with_batch[i], ground_label[i], atol=1e-6, rtol=0)
