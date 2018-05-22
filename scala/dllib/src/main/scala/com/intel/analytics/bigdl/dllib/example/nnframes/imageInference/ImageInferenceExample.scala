@@ -32,7 +32,7 @@ object ImageInferenceExample {
 
     val defaultParams = Utils.LocalParams()
     Utils.parser.parse(args, defaultParams).foreach { params =>
-      val sc = NNContext.getNNContext()
+      val sc = NNContext.getNNContext("ImageInference")
 
       val getImageName = udf { row: Row => row.getString(0)}
       val imageDF = NNImageReader.readImages(params.folder, sc)
