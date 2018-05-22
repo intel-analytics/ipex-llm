@@ -523,6 +523,13 @@ class TestSimple():
                                  [-0.5906958], [-0.12307882], [-0.77907401]], dtype="float32")
         for i in range(0, total_length):
             assert_allclose(p[i], ground_label[i], atol=1e-6, rtol=0)
+
+        predict_result_with_batch = model.predict(features=predict_data,
+                                                  batch_size=4)
+        p_with_batch = predict_result_with_batch.take(6)
+        for i in range(0, total_length):
+            assert_allclose(p_with_batch[i], ground_label[i], atol=1e-6, rtol=0)
+
         predict_class = model.predict_class(predict_data)
         predict_labels = predict_class.take(6)
         for i in range(0, total_length):
@@ -650,6 +657,9 @@ class TestSimple():
         result4 = model.predict_class([JTensor.from_ndarray(np.ones([4, 3])),
                                        JTensor.from_ndarray(np.ones([4, 3]))])
         assert result4.shape == (4,)
+        result5 = model.predict_local([JTensor.from_ndarray(np.ones([4, 3])),
+                                       JTensor.from_ndarray(np.ones([4, 3]))], batch_size=2)
+        assert result5.shape == (4, 5)
 
     def test_model_broadcast(self):
 

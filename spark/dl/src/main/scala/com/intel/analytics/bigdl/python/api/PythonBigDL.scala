@@ -1908,9 +1908,18 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def predictLocal(model: AbstractModule[Activity, Activity, T],
-                   features: JList[JTensor]): JList[JTensor] = {
+                   features: JList[JTensor], batchSize: Int = -1): JList[JTensor] = {
     val sampleArray = toSampleArray(features.asScala.toList.map{f => toTensor(f)})
-    val localPredictor = LocalPredictor(model)
+    val localPredictor = if (batchSize > 0) {
+      val batchPerCore = batchSize / Engine.coreNumber()
+      if (batchPerCore < 1) {
+        LocalPredictor(model, batchPerCore = 1)
+      } else {
+        LocalPredictor(model, batchPerCore = batchPerCore)
+      }
+    } else {
+      LocalPredictor(model)
+    }
     val result = localPredictor.predict(sampleArray)
     result.map{a => toJTensor(a.asInstanceOf[Tensor[T]])}.toList.asJava
   }
@@ -1924,8 +1933,8 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def modelPredictRDD(model: AbstractModule[Activity, Activity, T],
-                      dataRdd: JavaRDD[Sample]): JavaRDD[JTensor] = {
-    val tensorRDD = model.predict(dataRdd.rdd.map(toJSample(_)))
+                      dataRdd: JavaRDD[Sample], batchSize: Int = -1): JavaRDD[JTensor] = {
+    val tensorRDD = model.predict(dataRdd.rdd.map(toJSample(_)), batchSize)
     val listRDD = tensorRDD.map { res =>
       val tensor = res.asInstanceOf[Tensor[T]]
       val cloneTensor = tensor.clone()
