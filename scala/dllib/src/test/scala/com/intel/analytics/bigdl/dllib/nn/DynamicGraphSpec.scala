@@ -1320,6 +1320,33 @@ class DynamicGraphSpec  extends FlatSpec with Matchers {
     count should be(1)
   }
 
+  "Dynamic Graph" should "support loop twice and merge after const node should be triggered" in {
+    val input = new com.intel.analytics.bigdl.nn.tf.Const(Tensor(T(1))).inputs()
+
+    val conditionInput = Input()
+    val const = new com.intel.analytics.bigdl.nn.tf.Const(Tensor(T(9))).inputs()
+    var count = 0
+    def feval(module: Echo[Float], input: Tensor[Float]): Unit = {
+      count += 1
+    }
+    val echo = Echo(feval).inputs(const)
+    val less = Less().inputs(echo, conditionInput)
+
+    val updateInput = Input()
+    val add = AddConstant(1).inputs(updateInput)
+
+    val exit = ControlNodes.whileLoop(
+      (Seq(conditionInput), less),
+      Seq((updateInput, add)),
+      Seq(input)
+    )
+    val model = Graph.dynamic(Array[ModuleNode[Float]](), Array(exit(0)), None, false)
+    model.forward(null)
+    val result = model.forward(null)
+    result.toTensor.valueAt(1) should be(10)
+    count should be(1)
+  }
+
   "Dynamic Graph" should "support while loop with multiple loop vars" in {
     val input1 = Input("Input1")
     val input2 = Input("Input2")
