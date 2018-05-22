@@ -74,7 +74,7 @@ def to_bigdl_metric(metric):
     elif metric == "mae":
         return MAE()
     elif metric == "auc":
-        return AUC(1000)
+        return AUC()
     elif metric == "loss":
         return Loss()
     elif metric == "treennaccuracy":
