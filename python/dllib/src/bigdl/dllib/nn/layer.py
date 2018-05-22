@@ -369,17 +369,19 @@ class Layer(JavaValue, SharedStaticUtils):
             raise Exception("Not supported type: %s" % type(x[0]))
 
 
-    def predict_local(self, X):
+    def predict_local(self, X, batch_size = -1):
         """
         :param X: X can be a ndarray or list of ndarray if the model has multiple inputs.
                   The first dimension of X should be batch.
+        :param batch_size: total batch size of prediction.
         :return: a ndarray as the prediction result.
         """
 
         jresults = callBigDlFunc(self.bigdl_type,
                              "predictLocal",
                                self.value,
-                               self._to_jtensors(X))
+                               self._to_jtensors(X),
+                               batch_size)
 
         return np.stack([j.to_ndarray()for j in jresults])
 
@@ -396,17 +398,18 @@ class Layer(JavaValue, SharedStaticUtils):
                                self._to_jtensors(X))
         return np.stack(result)
 
-    def predict(self, features):
+    def predict(self, features, batch_size = -1):
         """
         Model inference base on the given data.
         :param features: it can be a ndarray or list of ndarray for locally inference
                          or RDD[Sample] for running in distributed fashion
+        :param batch_size: total batch size of prediction.
         :return: ndarray or RDD[Sample] depend on the the type of features.
         """
         if isinstance(features, RDD):
-            return self.predict_distributed(features)
+            return self.predict_distributed(features, batch_size)
         else:
-            return self.predict_local(features)
+            return self.predict_local(features, batch_size)
 
     def predict_class(self, features):
         """
@@ -420,17 +423,18 @@ class Layer(JavaValue, SharedStaticUtils):
         else:
             return self.predict_class_local(features)
 
-    def predict_distributed(self, data_rdd):
+    def predict_distributed(self, data_rdd, batch_size = -1):
         """
         Model inference base on the given data.
         You need to invoke collect() to trigger those action \
         as the returning result is an RDD.
 
         :param data_rdd: the data to be predict.
+        :param batch_size: total batch size of prediction.
         :return: An RDD represent the predict result.
         """
         result = callBigDlFunc(self.bigdl_type,
-                               "modelPredictRDD", self.value, data_rdd)
+                               "modelPredictRDD", self.value, data_rdd, batch_size)
         return result.map(lambda data: data.to_ndarray())
 
     def predict_class_distributed(self, data_rdd):
