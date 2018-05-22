@@ -43,7 +43,8 @@ class Max[T: ClassTag, D: ClassTag](
     val x = input[Tensor[D]](1)
     val y = input[Tensor[Int]](2)
 
-    require(y.isScalar, s"reduction indices should be a scalar")
+    require(y.isScalar || (y.nElement() == 1 && y.dim() == 1),
+      s"reduction indices should be a scalar or one-element tensor")
     val reductionIndices = if (startFromZero) {
       y.value() + 1
     } else {
