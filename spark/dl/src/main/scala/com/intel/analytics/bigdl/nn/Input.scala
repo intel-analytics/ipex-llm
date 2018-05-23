@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, Tensor
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Node
-
+import com.intel.analytics.bigdl.utils.Shape
 import scala.reflect.ClassTag
 
 /**
@@ -36,7 +36,7 @@ import scala.reflect.ClassTag
  * @tparam T The numeric type in the criterion, usually which are [[Float]] or [[Double]]
  */
 @SerialVersionUID(- 8525406230282608924L)
-class Input[T: ClassTag]()(implicit ev: TensorNumeric[T])
+class Input[T: ClassTag](val shape : Shape = null)(implicit ev: TensorNumeric[T])
   extends AbstractModule[Activity, Activity, T] {
   override def updateOutput(input: Activity): Activity = {
     output = input
@@ -55,8 +55,9 @@ class Input[T: ClassTag]()(implicit ev: TensorNumeric[T])
 }
 
 object Input {
-  def apply[T: ClassTag](name : String = null)(implicit ev: TensorNumeric[T]): ModuleNode[T] = {
-    val module = new Input()
+  def apply[T: ClassTag](name : String = null, shape : Shape = null
+                        )(implicit ev: TensorNumeric[T]): ModuleNode[T] = {
+    val module = new Input(shape)
     if (name != null) {
       module.setName(name)
     }

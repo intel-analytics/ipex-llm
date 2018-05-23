@@ -389,7 +389,14 @@ class V1LayerConverter[T: ClassTag](implicit ev: TensorNumeric[T]) extends Conve
   override protected def toCaffeLogSoftMax(module : AbstractModule[Activity, Activity, T],
     bottoms : ArrayBuffer[String], nextSize : Int): Seq[GeneratedMessage] = {
 
-    Seq(toCaffeWithWeightAndBiasOnly(module, bottoms, nextSize).setType(LayerType.SOFTMAX).build)
+    Seq(toCaffeWithWeightAndBiasOnly(module, bottoms, nextSize).
+      setType(LayerType.SOFTMAX_LOSS).build)
+  }
+
+  override protected def toCaffeSoftMax(module : AbstractModule[Activity, Activity, T],
+    bottoms : ArrayBuffer[String], nextSize : Int): Seq[GeneratedMessage] = {
+    Seq(toCaffeWithWeightAndBiasOnly(module, bottoms, nextSize).
+      setType(LayerType.SOFTMAX).build)
   }
 
   override protected def toCaffeTanh(module : AbstractModule[Activity, Activity, T],
@@ -569,6 +576,24 @@ class V1LayerConverter[T: ClassTag](implicit ev: TensorNumeric[T]) extends Conve
     layerParameter
   }
 
+  override  protected def toCaffeInput(module : AbstractModule[Activity, Activity, T],
+    bottoms : ArrayBuffer[String], nextSize : Int,
+    netparam: NetParameter.Builder = null): Seq[GeneratedMessage] = {
+    if (netparam == null) {
+      throw new CaffeConversionException(
+        "Netparam should not be null in Input layer conversion to V1")
+    }
+    val input = module.asInstanceOf[Input[T]]
+    val sizes = input.shape.toSingle
+    if (sizes == null) {
+      throw new CaffeConversionException(
+        "Input size shoud not be null when converted to Caffe")
+    }
+    netparam.addInput(input.getName)
+    sizes.foreach(size => {netparam.addInputDim(size)})
+    null
+  }
+
   private def setConnections(layerParameter : V1LayerParameter.Builder,
                              bottoms : ArrayBuffer[String], nextSize : Int) : Unit = {
 
@@ -582,11 +607,7 @@ class V1LayerConverter[T: ClassTag](implicit ev: TensorNumeric[T]) extends Conve
     })
 
     // set top list
-    i = 0
-    while (i < nextSize) {
-      layerParameter.addTop(s"$layerName$i")
-      i += 1
-    }
+    layerParameter.addTop(layerName)
   }
 
   private def setBlobs(layerParameterBuilder: V1LayerParameter.Builder,
