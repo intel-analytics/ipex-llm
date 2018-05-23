@@ -1,3 +1,4 @@
+# Fraud Detection
 As a highly simplified demo, this notebook uses the public data set to build a fraud detection example on Apache Spark.
 
 The notebook is developed using Scala with Analytics Zoo for Spark 2.1 and BigDL.
