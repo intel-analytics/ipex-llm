@@ -44,8 +44,8 @@ pages:
     - Autograd: APIGuide/PipelineAPI/autograd.md
     - Net: APIGuide/PipelineAPI/net.md
   - Feature Engineering
-    - Image: APIGuide/PipelineAPI/image.md
-    - Preprocessing: APIGuide/PipelineAPI/preprocessing.md
+    - Image: APIGuide/FeatureEngineering/image.md
+    - Preprocessing: APIGuide/FeatureEngineering/preprocessing.md
   - Models
     - Object Detection: APIGuide/Models/object-detection.md
     - Image Classification: APIGuide/Models/image-classification.md
