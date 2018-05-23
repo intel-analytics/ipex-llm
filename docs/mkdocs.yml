@@ -16,39 +16,40 @@ pages:
   - Documentation: release-docs.md
 - Programming Guide: 
   - Pipeline APIs:
-    - DataFrame and ML Pipeline: programming-guide.md
-    - Autograd: programming-guide.md
-    - Transfer Learning: programming-guide.md
+    - DataFrame and ML Pipeline: ProgrammingGuide/DataFrameandMLPipeline.md
+    - Autograd: ProgrammingGuide/autograd.md
+    - Transfer Learning: ProgrammingGuide/transferlearning.md
   - Feature Engineering:
-    - Working with Images: programming-guide.md
+    - Working with Images: ProgrammingGuide/workingwithimages.md
+    - Pre-processing: ProgrammingGuide/.md
   - Built-in Models:
-    - Object Detection: programming-guide.md
-    - Image Classification: programming-guide.md
-    - Text Classification: models/textclassification/programming-guide.md
-    - Recommedation: models/recommendation/programming-guide.md
+    - Object Detection: ProgrammingGuide/object-detection.md
+    - Image Classification: ProgrammingGuide/image-classification.md
+    - Text Classification: ProgrammingGuide/text-classification.md
+    - Recommendation: ProgrammingGuide/recommendation.md
   - Use Cases:
-    - overview: programming-guide.md
-    - Anomaly Detection: programming-guide.md
+    - overview: ProgrammingGuide/overview.md
+    - Anomaly Detection: ProgrammingGuide/anomaly-detection.md
 - User Guide:
   - Python
     - Install: PythonUserGuide/install.md
-    - Run: PythonUserGuide/install.md
-    - Examples: PythonUserGuide/python-examples.md
+    - Run: PythonUserGuide/run.md
+    - Examples: PythonUserGuide/examples.md
   - Scala 
     - Install: ScalaUserGuide/install.md
-    - Run: ScalaUserGuide/install.md
+    - Run: ScalaUserGuide/run.md
     - Examples: ScalaUserGuide/examples.md
 - API Guide:
   - Pipeline APIs
     - NNFrames: APIGuide/PipelineAPI/nnframes.md
-    - Autograd: APIGuide/PipelineAPI/nnframes.md
-    - Net: APIGuide/PipelineAPI/nnframes.md
+    - Autograd: APIGuide/PipelineAPI/autograd.md
+    - Net: APIGuide/PipelineAPI/net.md
   - Feature Engineering
-    - Image: APIGuide/PipelineAPI/nnframes.md
+    - Image: APIGuide/PipelineAPI/image.md
   - Models
-    - Object Detection: programming-guide.md
-    - Image Classification: programming-guide.md
-    - Text Classification: models/textclassification/programming-guide.md
-    - Recommedation: models/recommendation/programming-guide.md
+    - Object Detection: APIGuide/Models/object-detection.md
+    - Image Classification: APIGuide/Models/image-classification.md
+    - Text Classification: APIGuide/Models/text-classification.md
+    - Recommendation: APIGuide/Models/recommendation.md
 - Powered by: powered-by.md
 - FAQ and Known Issues: known-issues.md
