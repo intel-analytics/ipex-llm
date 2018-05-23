@@ -36,21 +36,22 @@ object RandomAlterAspect {
   def apply(min_area_ratio: Float = 0.08f,
             max_area_ratio: Int = 1,
             min_aspect_ratio_change: Float = 0.75f,
-            interp_mode: String = "CUBIC"): RandomAlterAspect = {
+            interp_mode: String = "CUBIC",
+            cropLength: Int = 224): RandomAlterAspect = {
     OpenCV.isOpenCVLoaded
-    new RandomAlterAspect(min_area_ratio, max_area_ratio, min_aspect_ratio_change, interp_mode)
+    new RandomAlterAspect(min_area_ratio, max_area_ratio,
+      min_aspect_ratio_change, interp_mode, cropLength)
   }
 }
 
 class RandomAlterAspect(min_area_ratio: Float = 0.08f,
                            max_area_ratio: Int = 1,
                            min_aspect_ratio_change: Float = 0.75f,
-                           interp_mode: String = "CUBIC")
+                           interp_mode: String = "CUBIC",
+                           cropLength: Int = 224)
   extends FeatureTransformer {
 
   import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
-
-  private val cropLength: Int = 224
 
   def randRatio(min: Float, max: Float): Float = {
     val res = (RNG.uniform(1e-2, (max - min) * 1000 + 1) + min * 1000) / 1000

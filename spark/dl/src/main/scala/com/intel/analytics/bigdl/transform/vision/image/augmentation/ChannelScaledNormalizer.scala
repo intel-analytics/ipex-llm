@@ -61,7 +61,7 @@ class ChannelScaledNormalizer(meanR: Int, meanG: Int, meanB: Int, scale: Double)
     if (mat != null) {
       mat.release()
     }
-    val newMat = OpenCVMat.fromFloats(bufferContent, width, height)
+    val newMat = OpenCVMat.fromFloats(bufferContent, height, width)
     feature(ImageFeature.mat) = newMat
   }
 
