@@ -21,7 +21,7 @@ pages:
     - Transfer Learning: ProgrammingGuide/transferlearning.md
   - Feature Engineering:
     - Working with Images: ProgrammingGuide/workingwithimages.md
-    - Pre-processing: ProgrammingGuide/.md
+    - Pre-processing: ProgrammingGuide/pre-processing.md
   - Built-in Models:
     - Object Detection: ProgrammingGuide/object-detection.md
     - Image Classification: ProgrammingGuide/image-classification.md
