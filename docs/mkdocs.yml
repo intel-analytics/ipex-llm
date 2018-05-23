@@ -16,19 +16,18 @@ pages:
   - Documentation: release-docs.md
 - Programming Guide: 
   - Pipeline APIs:
-    - DataFrame and ML Pipeline: ProgrammingGuide/DataFrameandMLPipeline.md
+    - DataFrame and ML Pipeline: ProgrammingGuide/nnframes.md
     - Autograd: ProgrammingGuide/autograd.md
     - Transfer Learning: ProgrammingGuide/transferlearning.md
   - Feature Engineering:
     - Working with Images: ProgrammingGuide/workingwithimages.md
-    - Pre-processing: ProgrammingGuide/pre-processing.md
   - Built-in Models:
     - Object Detection: ProgrammingGuide/object-detection.md
     - Image Classification: ProgrammingGuide/image-classification.md
     - Text Classification: ProgrammingGuide/text-classification.md
     - Recommendation: ProgrammingGuide/recommendation.md
   - Use Cases:
-    - overview: ProgrammingGuide/overview.md
+    - overview: ProgrammingGuide/usercases-overview.md
     - Anomaly Detection: ProgrammingGuide/anomaly-detection.md
 - User Guide:
   - Python
@@ -46,6 +45,7 @@ pages:
     - Net: APIGuide/PipelineAPI/net.md
   - Feature Engineering
     - Image: APIGuide/PipelineAPI/image.md
+    - Preprocessing: APIGuide/PipelineAPI/preprocessing.md
   - Models
     - Object Detection: APIGuide/Models/object-detection.md
     - Image Classification: APIGuide/Models/image-classification.md
