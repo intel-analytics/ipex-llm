@@ -19,6 +19,16 @@ package com.intel.analytics.bigdl.transform.vision.image.augmentation
 import com.intel.analytics.bigdl.transform.vision.image.{FeatureTransformer, ImageFeature}
 import com.intel.analytics.bigdl.utils.RandomGenerator
 import org.opencv.imgproc.Imgproc
+
+object RandomResize {
+  def apply(minSize: Int, maxSize: Int): RandomResize = new RandomResize(minSize, maxSize)
+}
+
+/**
+ * Random resize between minSize and maxSize and scale height and width to each other
+ * @param minSize min size to resize to
+ * @param maxSize max size to resize to
+ */
 class RandomResize(minSize: Int, maxSize : Int) extends FeatureTransformer {
   override def transformMat(feature: ImageFeature): Unit = {
     if (feature.isValid) {
@@ -36,8 +46,4 @@ class RandomResize(minSize: Int, maxSize : Int) extends FeatureTransformer {
       Resize.transform(feature.opencvMat(), feature.opencvMat(), width, height, Imgproc.INTER_CUBIC)
     }
   }
-}
-
-object RandomResize {
-  def apply(minSize: Int, maxSize: Int): RandomResize = new RandomResize(minSize, maxSize)
 }

@@ -44,6 +44,14 @@ object RandomAlterAspect {
   }
 }
 
+/**
+ * Apply random crop based on area ratio and resize to cropLenth size
+ * @param min_area_ratio  min area ratio
+ * @param max_area_ratio  max area ratio
+ * @param min_aspect_ratio_change factor applied to ratio area
+ * @param interp_mode   interp mode applied in resize
+ * @param cropLength final size resized to
+ */
 class RandomAlterAspect(min_area_ratio: Float = 0.08f,
                            max_area_ratio: Int = 1,
                            min_aspect_ratio_change: Float = 0.75f,

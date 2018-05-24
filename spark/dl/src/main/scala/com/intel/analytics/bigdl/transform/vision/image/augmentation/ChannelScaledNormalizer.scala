@@ -25,12 +25,19 @@ import org.apache.log4j.Logger
 import scala.collection.Iterator
 
 object ChannelScaledNormalizer {
-  val logger = Logger.getLogger(getClass)
 
   def apply(meanR: Int, meanG: Int, meanB: Int, scale: Double): ChannelScaledNormalizer = {
     new ChannelScaledNormalizer(meanR, meanG, meanB, scale)
   }
 }
+
+/**
+ * Channel normalization with scale factor
+ * @param meanR mean value for channel R
+ * @param meanG mean value for channel G
+ * @param meanB mean value for channel B
+ * @param scale scale value applied for all channels
+ */
 
 class ChannelScaledNormalizer(meanR: Int, meanG: Int, meanB: Int, scale: Double)
   extends FeatureTransformer {

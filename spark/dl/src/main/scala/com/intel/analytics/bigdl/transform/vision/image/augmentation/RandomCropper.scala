@@ -27,6 +27,13 @@ object RandomCropper {
     new RandomCropper(cropHeight, cropWidth, mirror, cropperMethod)
 }
 
+/**
+ * Random cropper on uniform distribution with fixed height & width
+ * @param cropWidth  width cropped to
+ * @param cropHeight height cropped to
+ * @param mirror   whether mirror
+ * @param cropperMethod crop method
+ */
 class RandomCropper(cropWidth: Int, cropHeight: Int,
                       mirror: Boolean, cropperMethod: CropperMethod = CropRandom)
   extends FeatureTransformer {
