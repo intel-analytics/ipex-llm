@@ -33,8 +33,9 @@ Analytics Zoo provides a set of easy-to-use, high level pipeline APIs that nativ
 
 2. Process loaded data using *DataFrames transformations*
    ```
-   getLabel = udf(lambda row: ...)
-   df = imageDF.withColumn("label", getLabel(col('image')))
+   getName = udf(lambda row: ...)
+   getLabel = udf(lambda name: ...)
+   df = imageDF.withColumn("name", getName(col("image"))).withColumn("label", getLabel(col('name')))
    ```
 
 3. Processing image using built-in *feature engineering operations*
@@ -54,8 +55,8 @@ Analytics Zoo provides a set of easy-to-use, high level pipeline APIs that nativ
 
 5. Train model using *Spark ML Pipelines*
    ```
-   classifier = NNClassifier(model, CrossEntropyCriterion(),transformer) \
-                   .setLearningRate(0.003).setBatchSize(40).setMaxEpoch(1).setFeaturesCol("image")
+   classifier = NNClassifier(model, CrossEntropyCriterion(),transformer).setLearningRate(0.003) \
+                   .setBatchSize(40).setMaxEpoch(1).setFeaturesCol("image").setCachingSample(False)
    nnModel = classifier.fit(df)
    ```
    
@@ -142,7 +143,7 @@ Using *Analytics Zoo Image Classification API* (including a set of pretrained de
 
 1. Download image classification models in Analytics Zoo
 
-   You can download a collection of image classification models (pretrained on the ImageNet dataset) from [image image classification model zoo](docs/docs/models/imageclassification/README.md#download-link).
+   You can download a collection of image classification models (pretrained on the ImageNet dataset) from [image classification model zoo](docs/docs/models/imageclassification/README.md#download-link).
 
 2. Use *Image classification API* for off-the-shell inference
    ```
