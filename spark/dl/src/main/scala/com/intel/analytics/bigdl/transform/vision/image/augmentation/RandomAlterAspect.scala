@@ -26,7 +26,6 @@ import org.opencv.imgproc.Imgproc
 import scala.collection.Iterator
 import com.intel.analytics.bigdl.opencv
 import com.intel.analytics.bigdl.transform.vision.image.{FeatureTransformer, ImageFeature}
-import com.intel.analytics.bigdl.transform.vision.image.augmentation.Crop
 import com.intel.analytics.bigdl.transform.vision.image.opencv.OpenCVMat
 import org.apache.spark.ml
 import org.apache.spark.ml.feature
