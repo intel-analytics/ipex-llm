@@ -60,7 +60,7 @@ class RandomAlterAspect(min_area_ratio: Float = 0.08f,
 
   import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
 
-  def randRatio(min: Float, max: Float): Float = {
+  private @inline def randRatio(min: Float, max: Float): Float = {
     val res = (RNG.uniform(1e-2, (max - min) * 1000 + 1) + min * 1000) / 1000
     res.toFloat
   }
@@ -103,7 +103,7 @@ class RandomAlterAspect(min_area_ratio: Float = 0.08f,
     }
   }
 
-  def resizeImagePerShorterSize(img: Mat, shorter_size: Int) : (Int, Int) = {
+  private def resizeImagePerShorterSize(img: Mat, shorter_size: Int) : (Int, Int) = {
     val h = img.size().height
     val w = img.size().width
     var new_h = shorter_size

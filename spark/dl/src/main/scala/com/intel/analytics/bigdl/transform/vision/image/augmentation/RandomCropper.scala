@@ -23,8 +23,9 @@ import org.opencv.core.CvType
 
 object RandomCropper {
   def apply(cropWidth: Int, cropHeight: Int,
-            mirror: Boolean, cropperMethod: CropperMethod = CropRandom): RandomCropper =
-    new RandomCropper(cropHeight, cropWidth, mirror, cropperMethod)
+            mirror: Boolean, cropperMethod: CropperMethod = CropRandom,
+            channels: Int = 3): RandomCropper =
+    new RandomCropper(cropHeight, cropWidth, mirror, cropperMethod, channels)
 }
 
 /**
@@ -35,10 +36,13 @@ object RandomCropper {
  * @param cropperMethod crop method
  */
 class RandomCropper(cropWidth: Int, cropHeight: Int,
-                      mirror: Boolean, cropperMethod: CropperMethod = CropRandom)
+                      mirror: Boolean, cropperMethod: CropperMethod = CropRandom,
+                      channels: Int = 3)
   extends FeatureTransformer {
 
   import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
+
+  val buffer = new Array[Float](cropWidth * cropHeight * channels)
 
   override protected def transformMat(feature: ImageFeature): Unit = {
     val openCVMat = feature.opencvMat()
@@ -51,7 +55,6 @@ class RandomCropper(cropWidth: Int, cropHeight: Int,
 
     openCVMat.get(0, 0, tmp)
 
-    val buffer = new Array[Float](cropWidth * cropHeight * openCVMat.channels)
     val height = openCVMat.size().height.toInt
     val width = openCVMat.size().width.toInt
 
@@ -81,7 +84,7 @@ class RandomCropper(cropWidth: Int, cropHeight: Int,
     feature(ImageFeature.mat) = mate
   }
 
-  def cropper(source: Array[Float], target: Array[Float], srcSize: Array[Int],
+  private def cropper(source: Array[Float], target: Array[Float], srcSize: Array[Int],
               tarSize: Array[Int], startH: Int, startW: Int, mirror: Boolean = false): Unit = {
     val height = srcSize(0)
     val width = srcSize(1)
