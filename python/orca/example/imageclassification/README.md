@@ -19,9 +19,9 @@ imagePath=... // image path
 
 topN=... // top n prediction
 
-ZOO_HOME=
-PYTHON_API_ZIP_PATH=${ZOO_HOME}/dist/lib/zoo-VERSION-SNAPSHOT-python-api.zip
-ZOO_JAR_PATH=${ZOO_HOME}/dist/lib/zoo-VERSION-SNAPSHOT-jar-with-dependencies.jar
+ANALYTICS_ZOO_HOME=
+PYTHON_API_ZIP_PATH=${ANALYTICS_ZOO_HOME}/lib/zoo-VERSION-SNAPSHOT-python-api.zip
+ZOO_JAR_PATH=${ANALYTICS_ZOO_HOME}/lib/zoo-VERSION-SNAPSHOT-jar-with-dependencies.jar
 PYTHONPATH=${PYTHON_API_ZIP_PATH}:$PYTHONPATH
 
 spark-submit \
@@ -32,5 +32,5 @@ spark-submit \
     --jars ${ZOO_JAR_PATH} \
     --conf spark.driver.extraClassPath=${ZOO_JAR_PATH} \
     --conf spark.executor.extraClassPath=${ZOO_JAR_PATH} \
-    ${ZOO_HOME}/pyzoo/zoo/examples/imageclassification/predict.py -f $imagePath --model $modelPath --topN 5
+    path/to/predict.py -f $imagePath --model $modelPath --topN 5
 ```
