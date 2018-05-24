@@ -25,7 +25,7 @@ ImageInferenceExample.py takes 2 parameters:
 2. Path to the folder of the images. (E.g. path/to/data/imagenet/validation)
 
 User may submit ImageInferenceExample.py via spark-submit. An example script is provided in zoo/scripts, please set
-SPARK_HOME and ZOO_HOME accordingly.
+SPARK_HOME and ANALYTICS_ZOO_HOME accordingly.
 E.g.
 ```
 some/path/spark-submit-with-zoo.sh --master local[1]
