@@ -60,7 +60,8 @@ class RandomAlterAspect(min_area_ratio: Float = 0.08f,
 
   import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
 
-  private @inline def randRatio(min: Float, max: Float): Float = {
+  @inline
+  private def randRatio(min: Float, max: Float): Float = {
     val res = (RNG.uniform(1e-2, (max - min) * 1000 + 1) + min * 1000) / 1000
     res.toFloat
   }
