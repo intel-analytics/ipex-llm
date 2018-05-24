@@ -29,7 +29,8 @@ import scala.collection.mutable
 
 class SerializerSpec extends ZooSpecHelper {
   private val excluded = Set[String](
-    "com.intel.analytics.zoo.pipeline.api.autograd.LambdaTorch")
+    "com.intel.analytics.zoo.pipeline.api.autograd.LambdaTorch",
+    "com.intel.analytics.zoo.pipeline.api.net.TFNet")
 
   private val unRegularNameMapping = Map[String, String]()
 
