@@ -263,17 +263,25 @@ At *model serving* time, the user can select a house listing photo, and have the
  
 *Figure 16. Automatically recommending “Similar Houses” with similar visual characteristics [47]*
 
-## **5.	Summary**
+## **5.Related Work**
+
+Existing big data systems, such as MapReduce [30], Dryad [51] and Spark [8], provide a data-parallel, functional compute model (with potentially dataflow DAG support), so as to efficiently support data partitioning, parallel and distributed computing, fault tolerance, incremental scale-out, etc., in an automatic and transparent fashion. BigDL is built on top of this data-parallel, functional compute model, and adds new support of deep learning technologies to Apache Spark, so as to provide the “data-analytics integrated” deep learning programming model.
+
+Existing deep learning frameworks, such as Caffe [1], Torch [2], TensorFlow [3], Keras [12], MXNet [4] and DL4J [52], usually use a dataflow graph (of either primitive operators or more complex layers) to represent neural network models. For distributed training, they typically implement the parameter server architecture or AllReduce operation (with fine-grained data access and in-place data mutation [3]), which are however not supported by existing big data systems. In contrast, BigDL adopts the similar dataflow representation of neural network models, but provides efficient distributed training directly on top of Apache Spark.
+
+Recently there are also a lot of efforts to bring existing deep learning frameworks to Apache Spark. For instance, TensorFrames [53] and Deep Learning Pipelines [54] allow users to directly run TensorFlow or Keras models on each individual partition of Spark Dataframes, for both model inference and single-node model tuning; however, they do not support distributed model training or fine-tuning across multiple machines in a cluster. CaffeOnSpark [55] and TensorFlowOnSpark [56] frameworks use Spark as the orchestration layer to allocate resources from the cluster, and then launch the distributed Caffe or TensorFlow job on the allocated machines; however, the Caffe or TensorFlow job still runs outside of the big data framework, and has very limited interactions with the analytics pipelines. SparkNet [57] uses asynchronous SGD for distributed training on Spark; the master first broadcasts weights to the workers, and each work then trains its own Caffe model for a certain period of time, after which the weights on each worker are sent to the master and averaged to form the new weights; however, the broadcast and weight averaging is very inefficient in SparkNet (e.g., ~20 seconds with just 5 workers [57]). In contrast, BigDL provides highly efficient and scalable distributed training, directly on top of big data framework (using the primitives available in Spark). 
+
+## **6.	Summary**
 
 We have described BigDL, including its programming model, execution model and typical use cases. It combines the benefits of big data and HPC (high performance computing) architecture, so as to provide both an expressive, “data-analytics integrated” deep learning programing model for users to build their analytics + AI pipelines, and a highly efficient “parameter server” style architecture directly on top of Big Data platforms for scalable data-parallel training. 
 
 BigDL is a work in progress, but our initial experience is encouraging. Since its initial open source release (on Dec 30, 2016), it has received over 2400 stars on Github; and it have enabled many users to build new analytics and deep learning applications, which can directly run on top of existing Hadoop and/or Spark clusters.
 	
-## **6.	Acknowledgement**
+## **7.	Acknowledgement**
 
-We gratefully acknowledge contributions from our (current and former) colleagues at Intel (including Jun Wang, Liangying Lv, Andy Chen, Yan Dai, Sergey Ermolin, Zewei Chen, Ning Wang, Yulia Tell, Pengfei Yue, Wesley Du, Erjin Ren, Xiao Dong Wang, Radhika Rangarajan, Jack Chen, Milind Damle and Dave Nielsen), and numerous users and collaborators from the open source community (including Shivaram Venkataraman, Zhenhua Wang, Alex Heye, Omid Khanmohamadi, Mike Ringenburg, Gopi Kumar, Xiao Xu, Suqiang Song, Karthik Palaniappan, etc.) to the BigDL project.
+We gratefully acknowledge contributions from our (current and former) colleagues at Intel (including Jun Wang, Liangying Lv, Andy Chen, Yan Dai, Sergey Ermolin, Zewei Chen, Ning Wang, Yulia Tell, Pengfei Yue, Wesley Du, Erjin Ren, Xiao Dong Wang, Radhika Rangarajan, Jack Chen, Milind Damle and Dave Nielsen), and numerous users and collaborators from the open source community (including Shivaram Venkataraman,  Xiao Xu, Zhenhua Wang, Alex Heye, Omid Khanmohamadi, Mike Ringenburg, Joseph Spisak, Gopi Kumar, Suqiang Song, Karthik Palaniappan, Rong Gu, etc.) to the BigDL project.
 
-## **7.	Reference**
+## **8.	Reference**
 
 [1] Caffe. [http://caffe.berkeleyvision.org](http://caffe.berkeleyvision.org)
 
@@ -374,3 +382,17 @@ We gratefully acknowledge contributions from our (current and former) colleagues
 [49] B. Zhou, et al. “Places: A 10 million Image Database for Scene Recognition”, IEEE Transactions on Pattern Analysis and Machine Intelligence (TPAMI), 2017.
 
 [50] Karen Simonyan, at al. [“Very Deep Convolutional Networks for Large-Scale Image Recognition”](https://arxiv.org/abs/1409.1556), 2014.
+
+[51]	Michael Isard, et al. “Dryad: distributed data-parallel programs from sequential building blocks”, EuroSys 2017.
+
+[52]	DJ4J. https://deeplearning4j.org/
+
+[53]	TensorFrames. https://github.com/databricks/tensorframes
+
+[54]	Deep Learning Pipelines. https://github.com/databricks/spark-deep-learning
+
+[55]	CaffeOnSpark. https://github.com/yahoo/CaffeOnSpark
+
+[56]	TensorFlowOnSpark. https://github.com/yahoo/TensorFlowOnSpark
+
+[57]	Philipp Moritz, et al.  “SparkNet: Training Deep Networks in Spark”, ICLR 2016.
