@@ -697,3 +697,52 @@ class BinaryThreshold(ZooKerasLayer):
                                               float(value),
                                               list(input_shape) if input_shape else None,
                                               **kwargs)
+
+
+class GaussianSampler(ZooKerasLayer):
+    """
+    Takes {mean, log_variance} as input and samples from the Gaussian distribution
+
+    When you use this layer as the first layer of a model, you need to provide the argument
+    input_shape (a shape tuple, does not include the batch dimension).
+
+    # Arguments
+    input_shape: A shape tuple, not including batch.
+
+    >>> gaussianSampler = GaussianSampler(input_shape=(2, 3, 5, 7))
+    creating: createZooKerasGaussianSampler
+    """
+    def __init__(self, input_shape=None, **kwargs):
+        super(GaussianSampler, self).__init__(None,
+                                              list(input_shape) if input_shape else None,
+                                              **kwargs)
+
+
+class ResizeBilinear(ZooKerasLayer):
+    """
+    Resize the input image with bilinear interpolation. The input image must be a float tensor with
+    NHWC or NCHW layout
+
+    When you use this layer as the first layer of a model, you need to provide the argument
+    input_shape (a shape tuple, does not include the batch dimension).
+
+    # Arguments
+    output_height: output height
+    output_width: output width
+    align_corner: align corner or not
+    dim_ordering: Format of input data. Either 'th' (Channel First) or 'tf' (Channel Last).
+                  Default is 'th'.
+    input_shape: A shape tuple, not including batch.
+
+    >>> resizeBilinear = ResizeBilinear(10, 20, input_shape=(2, 3, 5, 7))
+    creating: createZooKerasResizeBilinear
+    """
+    def __init__(self, output_height, output_width, align_corner=False,
+                 dim_ordering="th", input_shape=(2, 3, 5, 7), **kwargs):
+        super(ResizeBilinear, self).__init__(None,
+                                             output_height,
+                                             output_width,
+                                             align_corner,
+                                             dim_ordering,
+                                             list(input_shape) if input_shape else None,
+                                             **kwargs)
