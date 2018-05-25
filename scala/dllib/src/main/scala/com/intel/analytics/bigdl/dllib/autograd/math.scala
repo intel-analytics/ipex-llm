@@ -46,14 +46,14 @@ object AutoGrad {
   def abs[T: ClassTag](a: Variable[T])(
       implicit ev: TensorNumeric[T]): Variable[T] = {
     val o: KerasLayer[Activity, Activity, T] =
-      new KerasLayerWrapper(bnn.Abs[T]().asInstanceOf[AbstractModule[Activity, Activity, T]])
+      new KerasLayerWrapper[T](bnn.Abs[T]().asInstanceOf[AbstractModule[Activity, Activity, T]])
     Variable(o.inputs(a.node))
   }
 
   def sum[T: ClassTag](a: Variable[T], axis: Int = 0, keepdims: Boolean = false)(
       implicit ev: TensorNumeric[T]): Variable[T] = {
     val o: KerasLayer[Activity, Activity, T] =
-      new KerasLayerWrapper(bnn.Sum[T](dimension = normalizeAxis(axis) + 1,
+      new KerasLayerWrapper[T](bnn.Sum[T](dimension = normalizeAxis(axis) + 1,
         squeeze = !keepdims).asInstanceOf[AbstractModule[Activity, Activity, T]])
     Variable(o.inputs(a.node))
   }
@@ -61,7 +61,7 @@ object AutoGrad {
   def clip[T: ClassTag](a: Variable[T], min: Double, max: Double)(
       implicit ev: TensorNumeric[T]): Variable[T] = {
     val o: KerasLayer[Activity, Activity, T] =
-      new KerasLayerWrapper(
+      new KerasLayerWrapper[T](
         bnn.HardTanh[T](minValue = min,
           maxValue = max).asInstanceOf[AbstractModule[Activity, Activity, T]])
     Variable(o.inputs(a.node))
@@ -80,7 +80,8 @@ object AutoGrad {
   def maximum[T: ClassTag](x: Variable[T], y: Variable[T])(
       implicit ev: TensorNumeric[T]): Variable[T] = {
     val o: KerasLayer[Activity, Activity, T] =
-      new KerasLayerWrapper(bnn.CMaxTable[T]().asInstanceOf[AbstractModule[Activity, Activity, T]])
+      new KerasLayerWrapper[T](
+        bnn.CMaxTable[T]().asInstanceOf[AbstractModule[Activity, Activity, T]])
     Variable(o.inputs(x.node, y.node))
   }
 
@@ -102,7 +103,7 @@ object AutoGrad {
   def mean[T: ClassTag](x: Variable[T], axis: Int = 0, keepDims: Boolean = false)(
       implicit ev: TensorNumeric[T]): Variable[T] = {
     val o: KerasLayer[Activity, Activity, T] =
-      new KerasLayerWrapper(bnn.Mean[T](dimension = normalizeAxis(axis) + 1,
+      new KerasLayerWrapper[T](bnn.Mean[T](dimension = normalizeAxis(axis) + 1,
         squeeze = !keepDims).asInstanceOf[AbstractModule[Activity, Activity, T]])
     Variable(o.inputs(x.node))
   }
@@ -184,7 +185,7 @@ class Variable[T: ClassTag] private (val node: ModuleNode[T])(
   // scalastyle:off
   def +(a: Variable[T]): Variable[T] = {
     val o =
-      new KerasLayerWrapper(bnn.CAddTable[T]().asInstanceOf[AbstractModule[Activity, Activity, T]])
+      new KerasLayerWrapper[T](bnn.CAddTable[T]().asInstanceOf[AbstractModule[Activity, Activity, T]])
     val (x, y) = broadcast(this, a)
     Variable(o.inputs(Array(x.node, y.node)))
   }
@@ -195,7 +196,7 @@ class Variable[T: ClassTag] private (val node: ModuleNode[T])(
 
   def -(a: Variable[T]): Variable[T] = {
     val o =
-      new KerasLayerWrapper(bnn.Negative[T]().asInstanceOf[AbstractModule[Activity, Activity, T]])
+      new KerasLayerWrapper[T](bnn.Negative[T]().asInstanceOf[AbstractModule[Activity, Activity, T]])
     val neg = new Variable(o.inputs(a.node))
     val (x, y) = broadcast(this, neg)
     x + y
@@ -207,13 +208,13 @@ class Variable[T: ClassTag] private (val node: ModuleNode[T])(
 
   def unary_-(): Variable[T] = {
     val o =
-      new KerasLayerWrapper(bnn.Negative[T]().asInstanceOf[AbstractModule[Activity, Activity, T]])
+      new KerasLayerWrapper[T](bnn.Negative[T]().asInstanceOf[AbstractModule[Activity, Activity, T]])
     Variable(o.inputs(this.node))
   }
 
   def *(a: Variable[T]): Variable[T] = {
     val o =
-      new KerasLayerWrapper(bnn.CMulTable[T]().asInstanceOf[AbstractModule[Activity, Activity, T]])
+      new KerasLayerWrapper[T](bnn.CMulTable[T]().asInstanceOf[AbstractModule[Activity, Activity, T]])
     val (x, y) = broadcast(this, a)
     Variable(o.inputs(Array(x.node, y.node)))
   }
@@ -224,7 +225,7 @@ class Variable[T: ClassTag] private (val node: ModuleNode[T])(
 
   def /(other: Variable[T]): Variable[T] = {
     val o =
-      new KerasLayerWrapper(bnn.CDivTable[T]().asInstanceOf[AbstractModule[Activity, Activity, T]])
+      new KerasLayerWrapper[T](bnn.CDivTable[T]().asInstanceOf[AbstractModule[Activity, Activity, T]])
     val (x, y) = broadcast(this, other)
     Variable(o.inputs(Array(x.node, y.node)))
   }
@@ -261,7 +262,7 @@ class Variable[T: ClassTag] private (val node: ModuleNode[T])(
 
   def replicate(axis: Int, times: Int): Variable[T] = {
     val o =
-      new KerasLayerWrapper(
+      new KerasLayerWrapper[T](
         bnn.Replicate[T](dim = axis + 1,
           nFeatures = times).asInstanceOf[AbstractModule[Activity, Activity, T]])
     Variable(o.inputs(this.node))
