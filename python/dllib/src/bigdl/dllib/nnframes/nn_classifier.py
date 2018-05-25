@@ -168,7 +168,10 @@ class NNEstimator(JavaEstimator, HasFeaturesCol, HasLabelCol, HasPredictionCol, 
 
         self.maxEpoch = Param(self, "maxEpoch", "number of max Epoch")
         self.learningRate = Param(self, "learningRate", "learning rate")
-        self._setDefault(maxEpoch=50, learningRate=1e-3, batchSize=1)
+        self.learningRateDecay = Param(self, "learningRateDecay", "learning rate decay")
+        self.cachingSample = Param(self, "cachingSample", "cachingSample")
+        self._setDefault(maxEpoch=50, learningRate=1e-3, batchSize=1, learningRateDecay=0.0,
+                         cachingSample=True)
 
         self.train_summary = None
         self.validation_config = None
@@ -207,6 +210,32 @@ class NNEstimator(JavaEstimator, HasFeaturesCol, HasLabelCol, HasPredictionCol, 
         Gets the value of learningRate or its default value.
         """
         return self.getOrDefault(self.learningRate)
+
+    def setLearningRateDecay(self, val):
+        """
+        Sets the value of :py:attr:`learningRateDecay`.
+        """
+        self._paramMap[self.learningRateDecay] = val
+        return self
+
+    def getLearningRateDecay(self):
+        """
+        Gets the value of learningRateDecay or its default value.
+        """
+        return self.getOrDefault(self.learningRateDecay)
+
+    def setCachingSample(self, val):
+        """
+        whether to cache the Samples after preprocessing. Default: True
+        """
+        self._paramMap[self.cachingSample] = val
+        return self
+
+    def isCachingSample(self):
+        """
+        Gets the value of cachingSample or its default value.
+        """
+        return self.getOrDefault(self.cachingSample)
 
     def setTrainSummary(self, val):
         """
