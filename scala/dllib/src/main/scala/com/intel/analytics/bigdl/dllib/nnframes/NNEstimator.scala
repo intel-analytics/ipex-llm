@@ -102,6 +102,15 @@ private[nnframes] trait TrainingParams[@specialized(Float, Double) T] extends Pa
    */
   final val l2GradientClippingParams = new FloatParam(this,
     "threshold for l2 norm gradient clipping", "l2GradientClippingParams")
+
+  /**
+   * whether to cache the Samples after preprocessing.
+   * Default: true
+   */
+  final val cachingSample = new BooleanParam(
+    this, "cachingSample", "whether to cache the Samples after preprocessing")
+
+  def isCachingSample: Boolean = $(cachingSample)
 }
 
 /**
@@ -177,6 +186,11 @@ class NNEstimator[T: ClassTag] private[zoo] (
   def setGradientClippingByL2Norm(clipNorm: Float): this.type = {
     set(l2GradientClippingParams, clipNorm)
   }
+
+  def setCachingSample(value: Boolean): this.type = {
+    set(cachingSample, value)
+  }
+  setDefault(cachingSample, true)
 
   /**
    * Clear clipping params, in this case, clipping will not be applied.
@@ -302,7 +316,13 @@ class NNEstimator[T: ClassTag] private[zoo] (
       }
       (features, labels)
     }
-    DataSet.rdd(featureAndLabel).transform(sp -> SampleToMiniBatch[T](batchSize))
+    val initialDataSet = if ($(cachingSample)) {
+      DataSet.rdd(sp.apply(featureAndLabel))
+    } else {
+      DataSet.rdd(featureAndLabel).transform(sp)
+    }
+
+    initialDataSet.transform(SampleToMiniBatch[T](batchSize))
   }
 
   protected override def internalFit(dataFrame: DataFrame): NNModel[T] = {
