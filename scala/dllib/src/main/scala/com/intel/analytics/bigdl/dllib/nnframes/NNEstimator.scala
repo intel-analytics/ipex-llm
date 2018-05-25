@@ -422,11 +422,11 @@ object NNEstimator {
    * @param featurePreprocessing Preprocessing[Any, Tensor[T] ]
    * @param labelPreprocessing Preprocessing[Any, Tensor[T] ]
    */
-  def apply[F, T: ClassTag](
+  def apply[F, L, T: ClassTag](
       model: Module[T],
       criterion: Criterion[T],
       featurePreprocessing: Preprocessing[F, Tensor[T]],
-      labelPreprocessing: Preprocessing[F, Tensor[T]]
+      labelPreprocessing: Preprocessing[L, Tensor[T]]
     )(implicit ev: TensorNumeric[T]): NNEstimator[T] = {
     new NNEstimator(model, criterion)
       .setSamplePreprocessing(FeatureLabelPreprocessing(featurePreprocessing, labelPreprocessing))
