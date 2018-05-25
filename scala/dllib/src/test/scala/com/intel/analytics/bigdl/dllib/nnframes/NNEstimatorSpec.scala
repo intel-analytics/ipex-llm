@@ -74,6 +74,7 @@ class NNEstimatorSpec extends FlatSpec with Matchers with BeforeAndAfter {
     assert(estimator.getBatchSize == 1)
     assert(estimator.getLearningRate == 1e-3)
     assert(estimator.getLearningRateDecay == 0)
+    assert(estimator.isCachingSample)
   }
 
   "NNEstimator" should "apply with differnt params" in {
