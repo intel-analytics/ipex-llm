@@ -29,7 +29,7 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.nn.{Container, Graph, Module}
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, DataFormat}
 import com.intel.analytics.bigdl.nn.keras.{KerasLayer, KerasModel}
 import com.intel.analytics.bigdl.transform.vision.image.{ImageFeature, ImageFeatureToMiniBatch}
 import com.intel.analytics.zoo.pipeline.api.Net
@@ -992,5 +992,19 @@ class PythonZooKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonB
     if (includeContainer) {
       result.append(module)
     }
+  }
+
+  def createZooKerasGaussianSampler(
+      inputShape: JList[Int] = null): GaussianSampler[T] = {
+    GaussianSampler(toScalaShape(inputShape))
+  }
+
+  def createZooKerasResizeBilinear(
+      outputHeight: Int,
+      outputWidth: Int,
+      alignCorners: Boolean,
+      dimOrdering: String = "th",
+      inputShape: JList[Int] = null): ResizeBilinear[T] = {
+    ResizeBilinear(outputHeight, outputWidth, alignCorners, dimOrdering)
   }
 }
