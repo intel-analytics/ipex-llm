@@ -16,7 +16,7 @@
 
 package com.intel.analytics.zoo.pipeline.api.keras.layers
 
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, InferShape}
 import com.intel.analytics.bigdl.nn.keras.KerasLayer
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -26,25 +26,25 @@ import com.intel.analytics.zoo.pipeline.api.keras.layers.utils.KerasUtils
 
 import scala.reflect.ClassTag
 
+abstract class LayerWrapperByForward[T: ClassTag](
+      val batchInputShape: Shape)(implicit ev: TensorNumeric[T])
+  extends KerasLayer[Activity, Activity, T](batchInputShape) with Net {
 
-/**
- * Wrap a torch style layer to keras style layer.
- * This layer can be built multiple times.
- * @param torchLayer a torch style layer
- *   i.e If the input data is (2, 3, 4) and 2 is the batch size, you should input: (3, 4) here.
- * @return a keras compatible layer
- */
-class KerasLayerWrapper[T: ClassTag]
-(val torchLayer: AbstractModule[Activity, Activity, T],
-    val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
-  extends KerasLayer[Activity, Activity, T](KerasUtils.addBatch(inputShape)) with Net{
+  override def computeOutputShape(calcInputShape: Shape): Shape = {
+    LayerWrapperByForward.computeOutputShape[T](doBuild(calcInputShape), calcInputShape)
+  }
+}
 
-  private def singleShapeDummyValue(singleShape: Shape): Tensor[T] = {
+private[zoo] object LayerWrapperByForward {
+
+  private def singleShapeDummyValue[T: ClassTag](
+     singleShape: Shape)(implicit ev: TensorNumeric[T]): Tensor[T] = {
     Tensor[T](
       (List(2) ++ KerasUtils.removeBatch(singleShape).toSingle()).toArray).fill(ev.one)
   }
 
-  override def computeOutputShape(calcInputShape: Shape): Shape = {
+  def computeOutputShape[T: ClassTag](torchLayer: AbstractModule[Activity, Activity, T],
+                         calcInputShape: Shape)(implicit ev: TensorNumeric[T]): Shape = {
     val input: Activity = calcInputShape match {
       case s: SingleShape => singleShapeDummyValue(s)
       case m: MultiShape =>
@@ -55,6 +55,18 @@ class KerasLayerWrapper[T: ClassTag]
     val outSize = dummyOutTensor.toTensor.size()
     KerasUtils.addBatch(Shape(outSize.slice(1, outSize.length)))
   }
+}
 
+/**
+ * Wrap a torch style layer to keras style layer.
+ * This layer can be built multiple times.
+ * @param torchLayer a torch style layer
+ *   i.e If the input data is (2, 3, 4) and 2 is the batch size, you should input: (3, 4) here.
+ * @return a keras compatible layer
+ */
+class KerasLayerWrapper[T: ClassTag]
+(val torchLayer: AbstractModule[Activity, Activity, T],
+ val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
+  extends LayerWrapperByForward[T](KerasUtils.addBatch(inputShape)) {
   override def doBuild(inputShape: Shape): AbstractModule[Activity, Activity, T] = torchLayer
 }
