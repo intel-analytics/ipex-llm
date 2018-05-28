@@ -78,7 +78,7 @@ Analytics Zoo provides a set of easy-to-use, high level pipeline APIs that nativ
    ```
    from zoo.pipeline.api.keras.layers import *
    from zoo.pipeline.api.keras.models import *
-   model = Sequential().add(Dense(1, input_shape=(2,)))
+   model = Sequential().add(Dense(1, input_shape=(2,))) \
                        .add(Lambda(function=add_one_func))
    ```
 
@@ -130,7 +130,7 @@ Using *Analytics Zoo Object Detection API* (including a set of pretrained detect
 
    You can download a collection of detection models (pretrained on the PSCAL VOC dataset and COCO dataset) from [detection model zoo](docs/docs/ProgrammingGuide/object-detection.md#download-link).
 
-2. Use *Zoo Object Detection API* for off-the-shell inference
+2. Use *Object Detection API* for off-the-shell inference
    ```
    from zoo.models.image.objectdetection import *
    model = ObjectDetector.load_model(model_path)
@@ -154,7 +154,7 @@ Using *Analytics Zoo Image Classification API* (including a set of pretrained de
    ```
 
 ### Text classification API
-*Analytics Zoo Text Classification API* provides a set of pre-defined models (using CNN, LSTM, etc.) for text classifications. (See more details [here](docs/docs/ProgrammingGuide/text-classification.md))
+*Analytics Zoo Text Classification API* provides a set of pre-defined models (using CNN, LSTM, etc.) for text classifications. (See more details [here](/docs/docs/APIGuide/Models/text-classification.md))
 
 ### Recommendation API
 *Analytics Zoo Recommendation API* provides a set of pre-defined models (such as Neural Collaborative Filtering, Wide and Deep Learning, etc.) for receommendations. (See more details [here](docs/docs/ProgrammingGuide/recommendation.md))
