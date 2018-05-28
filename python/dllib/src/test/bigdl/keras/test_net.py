@@ -108,5 +108,6 @@ class TestLayer(ZooTestCase):
 
         assert len(Sequential().add(model).flattened_layers()) == 12
 
+
 if __name__ == "__main__":
     pytest.main([__file__])
