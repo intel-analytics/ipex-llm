@@ -58,8 +58,6 @@ class RandomCropper(cropWidth: Int, cropHeight: Int,
     val height = openCVMat.size().height.toInt
     val width = openCVMat.size().width.toInt
 
-    val bytes = new Array[Float](height * width * 3)
-
     val (startH, startW) = cropperMethod match {
       case CropRandom =>
         val indexH = math.ceil(RNG.uniform(0, height - cropHeight)).toInt
