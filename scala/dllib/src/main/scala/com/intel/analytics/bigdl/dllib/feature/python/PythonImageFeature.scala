@@ -21,7 +21,7 @@ import java.util.{List => JList}
 import com.intel.analytics.bigdl.python.api.{JTensor, PythonBigDL}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.transform.vision.image.ImageFeature
+import com.intel.analytics.bigdl.transform.vision.image._
 import com.intel.analytics.zoo.feature.common.Preprocessing
 import com.intel.analytics.zoo.feature.image._
 import org.apache.spark.api.java.{JavaRDD, JavaSparkContext}
@@ -234,5 +234,9 @@ class PythonImageFeature[T: ClassTag](implicit ev: TensorNumeric[T]) extends Pyt
                              sampleKey: String): ImageSetToSample[T] = {
     val targets = if (targetKeys == null) null else targetKeys.asScala.toArray
     ImageSetToSample[T](inputKeys.asScala.toArray, targets, sampleKey)
+  }
+
+  def imageSetToImageFrame(imageSet: ImageSet): ImageFrame = {
+    imageSet.toImageFrame()
   }
 }
