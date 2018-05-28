@@ -26,11 +26,10 @@ import org.tensorflow.{Graph, Session, Tensor => TTensor}
 
 import scala.collection.JavaConverters._
 
-class TFNet(graphDef: GraphDef,
+class TFNet private(graphDef: Array[Byte],
             val inputNames: Seq[String],
             val outputNames: Seq[String])
   extends AbstractModule[Activity, Activity, Float] {
-
 
 
   output = {
@@ -48,22 +47,19 @@ class TFNet(graphDef: GraphDef,
   }
 
   private def getOutput(idx: Int): Tensor[Float] = {
-    output match {
-      case t: Tensor[Float] => t
-      case t: Table => t[Tensor[Float]](idx)
+    if (output.isTable) {
+      output.toTable[Tensor[Float]](idx)
+    } else {
+      output.toTensor[Float]
     }
   }
 
   @transient
-  private lazy val graph = {
-    val g = new Graph()
-    g.importGraphDef(graphDef.toByteArray)
-    g
-  }
-
-  @transient
-  private lazy val sess = {
-    new Session(graph)
+  private lazy val (graph, sess) = {
+    val graph = new Graph()
+    graph.importGraphDef(graphDef)
+    val sess = new Session(graph)
+    (graph, sess)
   }
 
   private def getShape(names: Seq[String]) = {
@@ -102,14 +98,14 @@ class TFNet(graphDef: GraphDef,
   }
 
   override def updateOutput(input: Activity): Activity = {
-    val data = input match {
-      case t: Tensor[Float] =>
-        val tfTensor = bigdl2Tf(t)
-        Seq(tfTensor)
-      case t: Table =>
-        for (i <- 1 to t.length()) yield {
-          bigdl2Tf(t[Tensor[Float]](i))
-        }
+    val data = if (input.isTensor) {
+      val tfTensor = bigdl2Tf(input.toTensor[Float])
+      Seq(tfTensor)
+    } else {
+      val t = input.toTable
+      for (i <- 1 to t.length()) yield {
+        bigdl2Tf(t[Tensor[Float]](i))
+      }
     }
 
     val runner = sess.runner()
@@ -122,6 +118,9 @@ class TFNet(graphDef: GraphDef,
     outputs.asScala.zipWithIndex.foreach { case (t, idx) =>
       tf2bigdl(t.asInstanceOf[TTensor[Float]], getOutput(idx + 1))
     }
+    // clean up resources
+    data.foreach(_.close())
+    outputs.asScala.foreach(_.close())
     output
   }
 
@@ -131,15 +130,16 @@ class TFNet(graphDef: GraphDef,
 }
 
 object TFNet {
+
   def apply(graphDef: GraphDef, inputNames: Seq[String],
             outputNames: Seq[String]): TFNet = {
-    new TFNet(graphDef, inputNames, outputNames)
+    new TFNet(graphDef.toByteArray, inputNames, outputNames)
   }
 
   def apply(path: String, inputNames: Seq[String],
             outputNames: Seq[String]): TFNet = {
     val graphDef = parse(path)
-    new TFNet(graphDef, inputNames, outputNames)
+    TFNet(graphDef, inputNames, outputNames)
   }
 
   private def parse(graphProtoTxt: String) : GraphDef = {
