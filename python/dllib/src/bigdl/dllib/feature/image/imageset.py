@@ -82,6 +82,9 @@ class ImageSet(JavaValue):
         """
         return self.image_set.get_predict(key)
 
+    def to_image_frame(self, bigdl_type="float"):
+        return callBigDlFunc(bigdl_type, "imageSetToImageFrame", self.value)
+
 
 class LocalImageSet(ImageSet):
     """
