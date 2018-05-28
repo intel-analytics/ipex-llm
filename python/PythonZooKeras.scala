@@ -28,8 +28,8 @@ import com.intel.analytics.bigdl.python.api.{EvaluatedResult, JTensor, PythonBig
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
-import com.intel.analytics.bigdl.nn.{Container, Graph, Module}
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, DataFormat}
+import com.intel.analytics.bigdl.nn.Container
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.nn.keras.{KerasLayer, KerasModel}
 import com.intel.analytics.bigdl.transform.vision.image.{ImageFeature, ImageFeatureToMiniBatch}
 import com.intel.analytics.zoo.pipeline.api.Net
@@ -37,7 +37,7 @@ import com.intel.analytics.zoo.pipeline.api.keras.layers._
 import com.intel.analytics.zoo.pipeline.api.keras.layers.utils.KerasUtils
 import com.intel.analytics.zoo.pipeline.api.keras.metrics.AUC
 import com.intel.analytics.zoo.pipeline.api.keras.models.{KerasNet, Model, Sequential}
-import com.intel.analytics.zoo.pipeline.api.net.{GraphNet, NetUtils}
+import com.intel.analytics.zoo.pipeline.api.net.{GraphNet, NetUtils, TFNet}
 import org.apache.spark.api.java.JavaRDD
 
 import scala.collection.mutable.ArrayBuffer
@@ -1006,5 +1006,12 @@ class PythonZooKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonB
       dimOrdering: String = "th",
       inputShape: JList[Int] = null): ResizeBilinear[T] = {
     ResizeBilinear(outputHeight, outputWidth, alignCorners, dimOrdering)
+  }
+
+  def createTFNet(
+      path: String,
+      inputNames: JList[String],
+      outputNames: JList[String]): TFNet = {
+    TFNet(path, inputNames.asScala, outputNames.asScala)
   }
 }
