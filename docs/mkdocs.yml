@@ -30,23 +30,23 @@ pages:
     - overview: ProgrammingGuide/usercases-overview.md
     - Anomaly Detection: ProgrammingGuide/anomaly-detection.md
 - User Guide:
-  - Python
+  - Python:
     - Install: PythonUserGuide/install.md
     - Run: PythonUserGuide/run.md
     - Examples: PythonUserGuide/examples.md
-  - Scala 
+  - Scala: 
     - Install: ScalaUserGuide/install.md
     - Run: ScalaUserGuide/run.md
     - Examples: ScalaUserGuide/examples.md
 - API Guide:
-  - Pipeline APIs
+  - Pipeline APIs:
     - NNFrames: APIGuide/PipelineAPI/nnframes.md
     - Autograd: APIGuide/PipelineAPI/autograd.md
     - Net: APIGuide/PipelineAPI/net.md
-  - Feature Engineering
+  - Feature Engineering:
     - Image: APIGuide/FeatureEngineering/image.md
     - Preprocessing: APIGuide/FeatureEngineering/preprocessing.md
-  - Models
+  - Model:
     - Object Detection: APIGuide/Models/object-detection.md
     - Image Classification: APIGuide/Models/image-classification.md
     - Text Classification: APIGuide/Models/text-classification.md
