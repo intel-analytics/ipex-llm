@@ -94,7 +94,7 @@ Using the high level transfer learning APIs, you can easily customize pretrained
 1. Load an existing model (pretrained in Caffe)
    ```
    from zoo.pipeline.api.net import *
-   full_model = Net.load_caffe(model_path)
+   full_model = Net.load_caffe(def_path, model_path)
    ```
 
 2. Remove last few layers
