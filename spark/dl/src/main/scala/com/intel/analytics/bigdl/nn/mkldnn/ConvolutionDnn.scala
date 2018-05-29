@@ -78,6 +78,8 @@ class ConvolutionDnn(
   private var gradOutputBuffer_sync : Boolean = false
   private var weightsBuffer_sync : Boolean = false
 
+  private var _init: Boolean = false
+
   require(nOutputPlane % nGroup == 0, s"Number of input channels " +
     s"should be multiples of group " +
     s"number of input channels ${nInputPlane}, " +
@@ -495,38 +497,41 @@ class ConvolutionDnn(
     memoryPrimitives.append(bias_memory, dst_memory)
     buffer.append(bias, output)
 
-    if (reorder_src_memory == 0L) {
-      // sync here
-      if (input.getTensorType != MklDnnType) {
-        MklDnnTensor.syncFromHeap(inputBuffer, input.storage().array(), input.storageOffset() - 1)
-      } else {
-        if (inputBuffer != null && inputBuffer.ptr != 0 &&
-          inputBuffer.ptr != input.asInstanceOf[MklDnnTensor[Float]].ptr) {
-          inputBuffer.release()
+    if (!_init) {
+      if (reorder_src_memory == 0L) {
+        // sync here
+        if (input.getTensorType != MklDnnType) {
+          MklDnnTensor.syncFromHeap(inputBuffer, input.storage().array(), input.storageOffset() - 1)
+        } else {
+          if (inputBuffer != null && inputBuffer.ptr != 0 &&
+            inputBuffer.ptr != input.asInstanceOf[MklDnnTensor[Float]].ptr) {
+            inputBuffer.release()
+          }
+          inputBuffer = input.asInstanceOf[MklDnnTensor[Float]]
         }
-        inputBuffer = input.asInstanceOf[MklDnnTensor[Float]]
-      }
-      inputBuffer_sync = true
-      memoryPrimitives.append(src_memory)
-      buffer.append(inputBuffer)
-    } else {
-      memoryPrimitives.append(src_memory, reorder_src_memory)
-      buffer.append(input, inputBuffer)
-    }
-
-    if (reorder_weights_memory == 0L) {
-      // sync here
-      if (weight.getTensorType != MklDnnType) {
-        MklDnnTensor.syncFromHeap(weightsBuffer, weight.storage().array(), weight.storageOffset() - 1)
+        inputBuffer_sync = true
+        memoryPrimitives.append(src_memory)
+        buffer.append(inputBuffer)
       } else {
-        weightsBuffer = weight.asInstanceOf[MklDnnTensor[Float]]
+        memoryPrimitives.append(src_memory, reorder_src_memory)
+        buffer.append(input, inputBuffer)
       }
-      weightsBuffer_sync = true
-      memoryPrimitives.append(weights_memory)
-      buffer.append(weightsBuffer)
-    } else {
-      memoryPrimitives.append(weights_memory, reorder_weights_memory)
-      buffer.append(weight, weightsBuffer)
+
+      if (reorder_weights_memory == 0L) {
+        // sync here
+        if (weight.getTensorType != MklDnnType) {
+          MklDnnTensor.syncFromHeap(weightsBuffer, weight.storage().array(), weight.storageOffset() - 1)
+        } else {
+          weightsBuffer = weight.asInstanceOf[MklDnnTensor[Float]]
+        }
+        weightsBuffer_sync = true
+        memoryPrimitives.append(weights_memory)
+        buffer.append(weightsBuffer)
+      } else {
+        memoryPrimitives.append(weights_memory, reorder_weights_memory)
+        buffer.append(weight, weightsBuffer)
+      }
+      _init = true
     }
 
     MklDnnOps.streamSubmit(stream, n_fwd, stream_fwd.toArray, n_fwd,
