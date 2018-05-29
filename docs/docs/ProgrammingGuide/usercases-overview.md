@@ -10,7 +10,7 @@ analytics-zoo provides a collection of reference user applications and demos, wh
  
    * [Object Detection](https://github.com/intel-analytics/analytics-zoo/tree/master/apps/object-detection) demonstrates how to use Analytics Zoo Object Detection API (and pretrained SSD model) on videos. 
   
-   * [Recommendation](https://github.com/intel-analytics/analytics-zoo/tree/master/apps/recommendation): demonstrates how to use neural network models (i.e.Neural Collaborative Filtering, Wide and Deep Learning) to do recommendation on data with explicit feedback. 
+   * [Recommendation](https://github.com/intel-analytics/analytics-zoo/tree/master/apps/recommendation): demonstrates how to use Analytics Zoo Recommendation APIs (i.e.Neural Collaborative Filtering, Wide and Deep Learning) to do recommendation on data with explicitfeedback. 
 
    * [Sentiment Analysis](https://github.com/intel-analytics/analytics-zoo/tree/master/apps/sentiment-analysis) demostrates how to do sentiment analysis using neural network models (e.g. CNN, LSTM, GRU,Bi-LSTM).  
 
