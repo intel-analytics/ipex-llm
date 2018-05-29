@@ -39,7 +39,8 @@ object Options {
     warmupEpoch: Option[Int] = None,
     gradientL2NormThreshold: Option[Double] = None,
     gradientMin: Option[Double] = None,
-    gradientMax: Option[Double] = None
+    gradientMax: Option[Double] = None,
+    visualization: Boolean = true
   )
 
   val trainParser = new OptionParser[TrainParams]("BigDL Inception Example") {
