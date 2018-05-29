@@ -22,8 +22,9 @@ import java.nio.file.{Files, Path, Paths}
 import com.intel.analytics.bigdl.DataSet
 import com.intel.analytics.bigdl.dataset._
 import com.intel.analytics.bigdl.dataset.image.{BGRImgCropper, BGRImgNormalizer, BGRImgPixelNormalizer, BytesToBGRImg, _}
+import com.intel.analytics.bigdl.example.loadmodel.ModelValidator.{BigDlModel, ModelType, TorchModel}
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.transform.vision.image.augmentation.{CenterCrop, ChannelNormalize, PixelNormalizer, Resize}
+import com.intel.analytics.bigdl.transform.vision.image.augmentation._
 import com.intel.analytics.bigdl.transform.vision.image._
 import com.intel.analytics.bigdl.utils.File
 import org.apache.spark.SparkContext
@@ -102,12 +103,26 @@ object ResNetPreprocessor {
       BGRImgToBatch(batchSize)
   }
 
-  def rdd(path: String, batchSize: Int, sc: SparkContext)
+  def rdd(path: String, batchSize: Int, sc: SparkContext, modelType : ModelType = TorchModel)
   : RDD[Sample[Float]] = {
-    val dataSet = DataSet.SeqFileFolder.filesToRdd(path, sc, classNum = 1000)
-    val transfomer = BytesToBGRImg() ->
-      BGRImgCropper(cropWidth = imageSize, cropHeight = imageSize, CropCenter) ->
-      BGRImgNormalizer(0.485, 0.456, 0.406, 0.229, 0.224, 0.225) -> BGRImgToSample()
-    transfomer(dataSet)
+    if (modelType == TorchModel) {
+      val dataSet = DataSet.SeqFileFolder.filesToRdd(path, sc, classNum = 1000)
+      val transfomer = BytesToBGRImg() ->
+        BGRImgCropper(cropWidth = imageSize, cropHeight = imageSize, CropCenter) ->
+        BGRImgNormalizer(0.485, 0.456, 0.406, 0.229, 0.224, 0.225) -> BGRImgToSample()
+      transfomer(dataSet)
+    } else if (modelType == BigDlModel) {
+      val data = DataSet.SeqFileFolder.filesToImageFrame(path, sc, 1000)
+      val transfomer = PixelBytesToMat() ->
+        RandomResize(256, 256) ->
+        RandomCropper(224, 224, false, CropCenter) ->
+        ChannelScaledNormalizer(104, 117, 123, 0.0078125) ->
+        MatToTensor[Float]() -> ImageFrameToSample[Float](targetKeys = Array(ImageFeature.label))
+      val imgFrame = data -> transfomer
+      val validImageFeatures = imgFrame.toDistributed().rdd
+      validImageFeatures.map(x => x[Sample[Float]](ImageFeature.sample))
+    } else {
+      throw new IllegalArgumentException(s"${modelType} not recognized")
+    }
   }
 }
