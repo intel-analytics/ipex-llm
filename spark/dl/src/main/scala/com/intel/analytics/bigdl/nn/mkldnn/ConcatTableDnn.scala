@@ -127,6 +127,13 @@ class ConcatTableDnn[T : ClassTag]
     str = str + line + "}"
     str
   }
+
+  override def optimize(): ConcatTableDnn.this.type = {
+    for (i <- modules.indices) {
+      modules(i).optimize()
+    }
+    this
+  }
 }
 
 object ConcatTableDnn {

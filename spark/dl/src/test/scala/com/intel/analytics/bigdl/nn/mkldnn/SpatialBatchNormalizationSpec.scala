@@ -722,4 +722,34 @@ class SpatialBatchNormalizationSpec extends FlatSpec with Matchers {
 
     DnnUtils.nearequals(dnn.output.toTensor, blas.output.toTensor, 1e-4) should be (true)
   }
+
+  "Sbn with relu fusion" should "work correctly" in {
+    val (batchSize, channel, height, width) = (4, 64, 112, 112)
+    val epsilon = 1e-5
+
+    val initWeight = Tensor(channel).rand(-1, 1)
+    val initBias = Tensor(channel).fill(0)
+
+    val bn = SpatialBatchNormalization(channel, epsilon, initWeight = initWeight,
+      initBias = initBias).setShouldConvert(true)
+    val input = Tensor(batchSize, channel, height, width).rand(-1, 1)
+
+    bn.forward(input)
+    println()
+
+    val model = Sequential().add(bn).add(ReLUDnn())
+
+    bn.relu = false
+    model.evaluate()
+
+    model.forward(input)
+
+    bn.relu = true
+    bn.evaluate()
+    bn.forward(input)
+
+    model.output.toTensor.storage()
+
+    model.output should be (bn.output)
+  }
 }

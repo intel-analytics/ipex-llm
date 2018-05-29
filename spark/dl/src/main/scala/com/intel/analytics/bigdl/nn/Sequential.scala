@@ -16,10 +16,12 @@
 
 package com.intel.analytics.bigdl.nn
 
+import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
+import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
 /**
@@ -158,6 +160,174 @@ class Sequential[T: ClassTag]
       startnodes = curNodes
     }
     curNodes
+  }
+
+  type ArrayBufferModules[T] = ArrayBuffer[AbstractModule[Activity, Activity, T]]
+  private def doConvBn(modules: ArrayBufferModules[T]): this.type = {
+    var i = 0
+    while (i < modules.length) {
+      val convMaybeIndex = i
+      val bnMaybeIndex = i + 1
+      val matched = bnMaybeIndex < modules.length &&
+        modules(convMaybeIndex).isInstanceOf[mkldnn.ConvolutionDnn] &&
+        modules(bnMaybeIndex).isInstanceOf[mkldnn.SpatialBatchNormalization[T]]
+
+      if (matched) {
+        // TODO transform weight and bias
+        val bn = modules(bnMaybeIndex).asInstanceOf[mkldnn.SpatialBatchNormalization[T]]
+        val conv = modules(convMaybeIndex).asInstanceOf[mkldnn.ConvolutionDnn]
+
+        bn.runningVar.syncToHeap()
+        bn.runningMean.syncToHeap()
+
+        (0 until bn.nOutput).foreach { j =>
+          val variance = bn.runningVar.storage().array()(j + bn.runningVar.storageOffset() - 1)
+          val base = Math.sqrt(variance.asInstanceOf[Float] + bn.eps).toFloat
+
+          val weight = if (conv.nGroup == 1) {
+            conv.weight.select(1, j + 1)
+          } else {
+            conv.weight.select(2, j + 1)
+          }
+          weight.div(base)
+
+          val bias = conv.bias.storage().array()(j)
+          val mean = ev.toType[Float](bn.runningMean.storage().array()(i))
+          conv.bias.storage().array()(j) = (bias - mean) / base
+        }
+
+        modules.remove(bnMaybeIndex)
+      } else {
+        modules(i).optimize()
+        i += 1
+      }
+    }
+    this
+  }
+
+  private def doConvRelu(modules: ArrayBufferModules[T]): this.type = {
+    var i = 0
+    while (i < modules.length) {
+      val convMaybeIndex = i
+      val reluMaybeIndex = i + 1
+      val matched = reluMaybeIndex < modules.length &&
+        modules(convMaybeIndex).isInstanceOf[mkldnn.ConvolutionDnn] &&
+        modules(reluMaybeIndex).isInstanceOf[mkldnn.ReLUDnn[T]]
+
+      if (matched) {
+        modules(convMaybeIndex).asInstanceOf[mkldnn.ConvolutionDnn].setRelu(true)
+        modules.remove(reluMaybeIndex)
+      } else {
+        modules(i).optimize()
+        i += 1
+      }
+    }
+    this
+  }
+
+  private def getLast(module: Module[T]): Module[T] = {
+    module match {
+      case _: Container[_, _, _] if module.isInstanceOf[Sequential[_]] =>
+        module.asInstanceOf[Sequential[T]].modules.last
+      case _ =>
+        module
+    }
+  }
+
+  private def doConvSum(modules: ArrayBufferModules[T]): this.type = {
+    var i = 0
+    val length = modules.length - 2
+    while (i < length) {
+      val concatTableMaybeIndex = i
+      val caddTableMaybeIndex = i + 1
+      val reluMaybeIndex = i + 2
+
+      // check the two last elements of CAddTable.modules
+      var shouldContinue = false
+      shouldContinue = modules(concatTableMaybeIndex).isInstanceOf[mkldnn.ConcatTableDnn[T]] &&
+        modules(caddTableMaybeIndex).isInstanceOf[mkldnn.CAddTableDnn[T]] &&
+        modules(reluMaybeIndex).isInstanceOf[mkldnn.ReLUDnn[T]]
+
+      var branch1: Module[T] = null
+      var branch2: Module[T] = null
+      if (shouldContinue) {
+        val concatTable = modules(concatTableMaybeIndex).asInstanceOf[mkldnn.ConcatTableDnn[T]]
+
+        if (concatTable.modules.length == 2) {
+          branch1 = getLast(concatTable.modules(0))
+          branch2 = getLast(concatTable.modules(1))
+
+          def isConvOrIdentity(module: Module[T]): Boolean = {
+            module.isInstanceOf[mkldnn.ConvolutionDnn] || module.isInstanceOf[Identity[T]]
+          }
+
+          shouldContinue = isConvOrIdentity(branch1) && isConvOrIdentity(branch2)
+
+          // make sure the last module is conv
+          if (!branch2.isInstanceOf[mkldnn.ConvolutionDnn]) {
+            // swap the modules
+            var tmp: Module[T] = null
+
+            tmp = concatTable.modules(0)
+            concatTable.modules(0) = concatTable.modules(1)
+            concatTable.modules(1) = tmp
+
+            tmp = branch1
+            branch1 = branch2
+            branch2 = tmp
+          }
+        }
+      }
+
+      if (shouldContinue) {
+        // get the index of conv, by default the output should be the first conv.
+        val (convIndex, conv, theOther) = (1, branch2.asInstanceOf[mkldnn.ConvolutionDnn], branch1)
+
+        // delete CAddTable and ReLU
+        modules.remove(caddTableMaybeIndex)
+        modules.insert(caddTableMaybeIndex,
+          mkldnn.DummyCAddTable[T](convIndex).asInstanceOf[Module[T]])
+        modules.remove(reluMaybeIndex)
+        // change the branch2's output to branch1's output
+        conv.setSumOp(theOther.asInstanceOf[Module[Float]])
+        conv.setSum(true)
+      } else {
+        modules(i).optimize()
+        i += 1
+      }
+    }
+    this
+  }
+
+  private def doBnRelu(modules: ArrayBufferModules[T]): this.type = {
+    var i = 0
+    while (i < modules.length) {
+      val bnMaybeIndex = i
+      val reluMaybeIndex = i + 1
+      val matched = reluMaybeIndex < modules.length &&
+        modules(bnMaybeIndex).isInstanceOf[mkldnn.SpatialBatchNormalization[T]] &&
+        modules(reluMaybeIndex).isInstanceOf[mkldnn.ReLUDnn[T]]
+
+      if (matched) {
+        // TODO transform weight and bias
+        modules(bnMaybeIndex).asInstanceOf[mkldnn.SpatialBatchNormalization[T]].relu = true
+        modules.remove(reluMaybeIndex)
+      } else {
+        modules(i).optimize()
+        i += 1
+      }
+    }
+    this
+  }
+
+  override def optimize(): this.type = {
+    if (modules.length >= 2) {
+      doConvBn(modules).
+        doConvRelu(modules).
+        doBnRelu(modules).
+        doConvSum(modules) // TODO
+    }
+    this
   }
 }
 

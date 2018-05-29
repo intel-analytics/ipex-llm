@@ -100,6 +100,7 @@ class LocalOptimizer[T: ClassTag] (
     var iter = dataset.data(train = true)
     logger.info("model thread pool size is " + Engine.model.getPoolSize)
     val gradOutput = Tensor[T]()
+    var init = false
     while (!endWhen(state)) {
       val start = System.nanoTime()
 
@@ -129,13 +130,22 @@ class LocalOptimizer[T: ClassTag] (
       val localCriterion = workingCriterion(i)
       val input = miniBatchBuffer(i).getInput()
       val target = miniBatchBuffer(i).getTarget()
+      if (!init) {
+        localModel.forward(input)
+        println("=" * 80)
+        println(localModel)
+        localModel.optimize()
+        println("-" * 80)
+        println(localModel)
+        init = true
+      }
       val output = localModel.forward(input)
       val lossSum = ev.toType[Double](localCriterion.forward(output, target))
-      val errors = localCriterion.backward(output, target)
-      if (gradOutput.isEmpty) {
-        gradOutput.resizeAs(output.toTensor).rand(-1, 1)
-      }
-      localModel.backward(input, gradOutput)
+//      val errors = localCriterion.backward(output, target)
+//      if (gradOutput.isEmpty) {
+//        gradOutput.resizeAs(output.toTensor).rand(-1, 1)
+//      }
+//      localModel.backward(input, gradOutput)
 //          })
 //      ).sum
 

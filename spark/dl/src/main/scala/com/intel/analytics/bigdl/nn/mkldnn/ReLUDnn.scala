@@ -63,7 +63,17 @@ class ReLUDnn[T: ClassTag](ip: Boolean = false, value: Float = 0.0f)(
     private var inputBuffer : MklDnnTensor[Float] = null
     private var gradOutputBuffer : MklDnnTensor[Float] = null
 
+  var _skip = false
+  def setSkip(value: Boolean): this.type = {
+    _skip = value
+    this
+  }
+
   override def updateOutput(input: Tensor[Float]): Tensor[Float] = {
+    if (_skip) {
+      this.output = input
+      return input
+    }
       val s1 = System.nanoTime()
       if (engine == 0L) engine = this.getDnnEngine(0)
       if (stream == 0L) stream = this.getStream()

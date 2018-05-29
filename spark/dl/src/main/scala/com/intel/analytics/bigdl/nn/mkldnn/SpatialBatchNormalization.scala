@@ -38,6 +38,7 @@ class SpatialBatchNormalization[T: ClassTag](
   private val initGradWeight: Tensor[T] = null,
   private val initGradBias: Tensor[T] = null
 )(implicit ev: TensorNumeric[T]) extends TensorModule[T] with Initializable {
+  var relu = false // use bn->relu
   val mean: MklDnnTensor[T] = MklDnnTensor[T](Array(nOutput))
   val variance: MklDnnTensor[T] = MklDnnTensor[T](Array(nOutput))
 
@@ -249,7 +250,16 @@ class SpatialBatchNormalization[T: ClassTag](
           MklDnn.BatchNormFlag.mkldnn_use_global_stats | MklDnn.BatchNormFlag.mkldnn_use_scaleshift)
 
       val opTrainPrimDesc = MklDnn.PrimitiveDescCreate(bnTrainDesc, engine, 0)
-      val opInferPrimDesc = MklDnn.PrimitiveDescCreate(bnInferDesc, engine, 0)
+      val opInferPrimDesc = if (relu) {
+        val postOps = MklDnn.CreatePostOps()
+        MklDnn.PostOpsAppendEltwise(postOps, 1.0f, MklDnn.AlgKind.eltwiseRelu, 0.0f, 0.0f)
+        val attr = MklDnn.CreateAttr()
+        MklDnn.AttrSetPostOps(attr, postOps)
+        MklDnn.PrimitiveDescCreateV2(bnInferDesc, attr, engine, 0)
+        // TODO we should destroy these ops
+      } else {
+        MklDnn.PrimitiveDescCreate(bnInferDesc, engine, 0)
+      }
 
       forwardTrainPrimDesc = opTrainPrimDesc
       forwardInferPrimDesc = opInferPrimDesc

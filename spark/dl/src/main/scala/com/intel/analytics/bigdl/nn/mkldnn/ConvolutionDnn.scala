@@ -17,6 +17,7 @@
 package com.intel.analytics.bigdl.nn.mkldnn
 
 import breeze.linalg.max
+import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.mkl.{Memory, MklDnn}
 import com.intel.analytics.bigdl.nn.abstractnn._
 import com.intel.analytics.bigdl.nn._
@@ -116,6 +117,25 @@ class ConvolutionDnn(
       }
     case DataFormat.NHWC =>
       VariableFormat.GP_KH_KW_IN_OUT
+  }
+
+  var relu = false
+  var sum = false
+
+  def setRelu(value: Boolean): this.type = {
+    relu = value
+    this
+  }
+
+  def setSum(value: Boolean): this.type = {
+    sum = value
+    this
+  }
+
+  var sumOp: Module[Float] = null
+  def setSumOp(conv: Module[Float]): this.type = {
+    sumOp = conv
+    this
   }
 
   val weight: Tensor[Float] = if (initWeight != null) {
@@ -341,10 +361,18 @@ class ConvolutionDnn(
       val dst_sizes = getOutputShape(outputHeight, outputWidth, input_size(0))
       // todo: output with Dense Tensor
       if (output.getTensorType != MklDnnType) {
-        output = MklDnnTensor[Float](dst_sizes)
+        output = if (sumOp != null) {
+          sumOp.output
+        } else {
+          MklDnnTensor[Float](dst_sizes)
+        }
       } else if (output.nElement() != dst_sizes.product) {
         output.asInstanceOf[MklDnnTensor[Float]].release()
-        output = MklDnnTensor[Float](dst_sizes)
+        output = if (sumOp != null) {
+          sumOp.output
+        } else {
+          MklDnnTensor[Float](dst_sizes)
+        }
       }
 
       src_md = MklDnnOps.memoryDescInit(input.dim(), input_size, dataType, this.internal_format)
@@ -358,7 +386,27 @@ class ConvolutionDnn(
                                 MklDnn.PropKind.forwardTraining, MklDnn.AlgKind.convolutionDirect,
                                 src_md, weights_md, bias_md, dst_md,
                                 strides, padding, padding, MklDnn.PaddingKind.mkldnnPaddingZero)
-      fwd_pd = MklDnnOps.primitiveDescCreate(conv_desc, engine, 0L)
+
+      fwd_pd = if (relu || sum) {
+        val postOps = MklDnn.CreatePostOps()
+
+        if (sum) {
+          MklDnn.PostOpsAppendSum(postOps, 1.0f)
+        }
+
+        if (relu) {
+          MklDnn.PostOpsAppendEltwise(postOps, 1.0f, MklDnn.AlgKind.eltwiseRelu, 0.0f, 0.0f)
+        }
+
+
+        val attr = MklDnn.CreateAttr()
+        MklDnn.AttrSetPostOps(attr, postOps)
+
+        MklDnn.PrimitiveDescCreateV2(conv_desc, attr, engine, 0)
+        // TODO we should destroy these ops
+      } else {
+        MklDnnOps.primitiveDescCreate(conv_desc, engine, 0L)
+      }
 
       // create memory desc, for input
       if (input.getPrimitiveDesc() != 0L) {

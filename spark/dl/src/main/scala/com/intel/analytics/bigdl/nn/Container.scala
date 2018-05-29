@@ -250,4 +250,6 @@ abstract class Container[A <: Activity : ClassTag,
     this.streamLocation = MklDnn.StreamCreate(MklDnn.StreamType.eager)
     this.modules.map(_.setStream(streamLocation))
   }
+
+  override def optimize(): this.type = this
 }

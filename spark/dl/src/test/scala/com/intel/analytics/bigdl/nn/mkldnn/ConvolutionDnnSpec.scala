@@ -25,8 +25,8 @@ import com.intel.analytics.bigdl.models.resnet.ResNet
 import com.intel.analytics.bigdl.models.resnet.ResNet.DatasetType
 import com.intel.analytics.bigdl.models.vgg.{Vgg_16, Vgg_19}
 import com.intel.analytics.bigdl.nn.{Module => _, _}
-import com.intel.analytics.bigdl.nn.abstractnn.DataFormat
-import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
+import com.intel.analytics.bigdl.nn.abstractnn.{Activity, DataFormat}
+import com.intel.analytics.bigdl.tensor.{MklDnnTensor, Storage, Tensor}
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import com.intel.analytics.bigdl.utils.T
 import org.scalatest.{FlatSpec, Matchers}
@@ -783,5 +783,90 @@ class ConvolutionDnnSpec extends FlatSpec with Matchers {
     DnnUtils.getunequals(biasAll1, biasAll2, 1e-2) should be(true)
 
     println("done")
+  }
+
+  "Conv with fusion" should "work correctly" in {
+    import com.intel.analytics.bigdl.numeric.NumericFloat
+    val batchSize = 2
+    val input = Tensor[Float](batchSize, 3, 224, 224).fill(1.0f)
+
+    val conv = ConvolutionDnn(3, 64, 7, 7, 2, 2, 3, 3, 1, false)
+    val model = Sequential().add(conv).add(ReLUDnn())
+
+    conv.forward(input)
+
+    model.evaluate()
+    conv.relu = false
+    model.forward(input)
+
+    conv.evaluate()
+    conv.relu = true
+    conv.forward(input)
+
+    model.output.toTensor.storage()
+    conv.output.storage()
+
+    model.output.toTensor should be (conv.output)
+  }
+
+  "Conv Bn merge" should "work correctly" in {
+    import com.intel.analytics.bigdl.numeric.NumericFloat
+//    val dnn = Sequential()
+//      .add(ConvolutionDnn(3, 2, 7, 7, 2, 2, 3, 3, 1, false).setRelu(false))
+//      .add(mkldnn.SpatialBatchNormalization[Float](2, eps = 0.0))
+
+    val batchSize = 2
+    val input = Tensor[Float](batchSize, 1, 6, 6).rand(-1, 1)
+    val dnn = Sequential()
+      .add(ConvolutionDnn(1, 3, 2, 2, 2, 2, 1, 1, 1).setRelu(false))
+      .add(mkldnn.SpatialBatchNormalization[Float](3, eps = 0.0))
+    dnn.forward(input)
+
+    val merge = dnn.cloneModule().optimize()
+
+    dnn.evaluate()
+    merge.evaluate()
+
+    dnn.forward(input)
+    merge.forward(input)
+
+    dnn.output.toTensor.storage()
+    merge.output.toTensor.storage()
+
+    println()
+  }
+
+  "Conv sum fusion" should "work correctly" in {
+    import com.intel.analytics.bigdl.numeric.NumericFloat
+
+    val input = Tensor[Float](2, 1, 6, 6).rand(0-1, 1)
+    val conv = ConvolutionDnn(1, 3, 2, 2, 2, 2, 1, 1, 1)
+    val conv2 = conv.cloneModule().asInstanceOf[mkldnn.ConvolutionDnn]
+    val conv3 = conv.cloneModule().asInstanceOf[mkldnn.ConvolutionDnn]
+    val conv4 = conv.cloneModule().asInstanceOf[mkldnn.ConvolutionDnn]
+
+    conv.setRelu(false)
+    conv.setSum(false)
+
+    conv2.setRelu(false)
+    conv2.setSum(true).setSumOp(conv)
+
+    conv.forward(input)
+    conv2.forward(input)
+
+    val caddTable = CAddTableDnn()
+    val model2 = Sequential()
+      .add(ConcatTableDnn()
+        .add(conv3)
+        .add(conv4))
+      .add(caddTable)
+      .add(ReLUDnn())
+    model2.forward(input)
+    caddTable.output.toTensor.asInstanceOf[MklDnnTensor[Float]].storage()
+
+    println(model2)
+  }
+
+  "conv + sum" should "work correctly" in {
   }
 }

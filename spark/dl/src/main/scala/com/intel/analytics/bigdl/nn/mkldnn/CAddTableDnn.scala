@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.nn.mkldnn
 
-import com.intel.analytics.bigdl.mkl.MKL
+import com.intel.analytics.bigdl.mkl.{MKL, Memory}
 import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.tensor.{MklDnnTensor, MklDnnType, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -42,11 +42,12 @@ class CAddTableDnn[T: ClassTag](val inplace: Boolean = false)(
       output = input[Tensor[T]](1)
     } else if (output.getTensorType != MklDnnType) {
       output = MklDnnTensor[T](input[Tensor[T]](1).size())
+      Memory.Zero(output.asInstanceOf[MklDnnTensor[T]].ptr, output.nElement(), 4)
     }
 
     // default: all tensor in inputTable should have same format
     val format : Int = input[Tensor[T]](1).getFormat()
-    var i = 2
+    var i = if (inplace) { 2 } else { 1 }
     while (i <= input.length()) {
       val curTensor = input[Tensor[T]](i)
       require(curTensor.getFormat() == format, "all tensor in inputTable should have same format")

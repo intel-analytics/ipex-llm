@@ -290,7 +290,7 @@ case class LocalOptimizerPerfParam(
     iteration: Int = 50,
     dataType: String = "float",
     module: String = "resnet_50_dnn", // "alexnetDnn"
-    trainModel: Boolean = false,
+    trainModel: Boolean = true,
     numThreads: Int = 1,
     needDebug: Boolean = false
   )

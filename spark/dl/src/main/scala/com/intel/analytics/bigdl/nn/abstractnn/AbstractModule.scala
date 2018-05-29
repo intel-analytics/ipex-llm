@@ -1159,5 +1159,7 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
    * @return
    */
   private[nn] def skipDuplicateCheck(): Boolean = false
+
+  def optimize(): this.type = this
 }
 
