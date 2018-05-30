@@ -16,16 +16,27 @@
 package com.intel.analytics.zoo.pipeline.api.net
 
 import java.io.{File, FileInputStream, InputStream}
-import java.nio.FloatBuffer
+import java.nio._
 
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.{MultiShape, Shape, T, Table}
+import com.intel.analytics.bigdl.utils.{MultiShape, Shape, T}
 import org.tensorflow.framework.GraphDef
-import org.tensorflow.{Graph, Session, Tensor => TTensor}
+import org.tensorflow.types.UInt8
+import org.tensorflow.{DataType, Graph, Session, Tensor => TTensor}
 
 import scala.collection.JavaConverters._
 
+/**
+ * [[TFNet]] wraps a tensorflow subgraph as a layer, and use tensorflow to
+ * calculate the layer's output.
+ *
+ * This subgraph should not contain any tensorflow Variable and the input/output
+ * must be numeric types
+ * @param graphDef serialized representation of a graph
+ * @param inputNames the input tensor names of this subgraph
+ * @param outputNames the output tensor names of this subgraph
+ */
 class TFNet private(graphDef: Array[Byte],
             val inputNames: Seq[String],
             val outputNames: Seq[String])
@@ -62,6 +73,33 @@ class TFNet private(graphDef: Array[Byte],
     (graph, sess)
   }
 
+  @transient
+  private lazy val inputTypes = inputNames.map { name =>
+    val Array(op, idx) = name.split(":")
+    val operation = graph.operation(op)
+    val output = operation.output(idx.toInt)
+    output.dataType()
+  }
+
+  // add Cast Operation if the output tensor is not of type Float
+  @transient
+  private lazy val floatOutputNames = outputNames.map { name =>
+    val Array(op, idx) = name.split(":")
+    val operation = graph.operation(op)
+    val output = operation.output(idx.toInt)
+    if (output.dataType() != DataType.FLOAT) {
+      val name = graph.opBuilder("Cast", s"${op}_to_float")
+        .addInput(output)
+        .setAttr("DstT", DataType.FLOAT)
+        .setAttr("SrcT", output.dataType())
+        .build()
+        .name()
+      s"$name:0"
+    } else {
+      name
+    }
+  }
+
   private def getShape(names: Seq[String]) = {
     val shapes = names.map { name =>
       val Array(op, idx) = name.split(":")
@@ -80,11 +118,28 @@ class TFNet private(graphDef: Array[Byte],
     (Array(), Array())
   }
 
-  private def bigdl2Tf(t: Tensor[Float]) = {
+  private def bigdl2Tf(t: Tensor[Float], dataType: DataType): TTensor[_] = {
     val shape = t.size().map(_.toLong)
     val arr = t.storage().array()
-    val buffer = FloatBuffer.wrap(arr)
-    TTensor.create(shape, buffer)
+    if (dataType == DataType.FLOAT) {
+      val buffer = FloatBuffer.wrap(arr)
+      TTensor.create(shape, buffer)
+    } else if (dataType == DataType.UINT8) {
+      val buffer = ByteBuffer.wrap(TFNet.floatToUint8(arr))
+      TTensor.create(classOf[UInt8], shape, buffer)
+    } else if (dataType == DataType.INT32) {
+      val buffer = IntBuffer.wrap(TFNet.floatToInt(arr))
+      TTensor.create(shape, buffer)
+    } else if (dataType == DataType.INT64) {
+      val buffer = LongBuffer.wrap(TFNet.floatToLong(arr))
+      TTensor.create(shape, buffer)
+    } else if (dataType == DataType.DOUBLE) {
+      val buffer = DoubleBuffer.wrap(TFNet.floatToDouble(arr))
+      TTensor.create(shape, buffer)
+    } else {
+      throw new Exception(s"data type ${dataType} are not supported")
+    }
+
   }
 
   private def tf2bigdl(t: TTensor[Float], output: Tensor[Float]) = {
@@ -99,17 +154,17 @@ class TFNet private(graphDef: Array[Byte],
 
   override def updateOutput(input: Activity): Activity = {
     val data = if (input.isTensor) {
-      val tfTensor = bigdl2Tf(input.toTensor[Float])
+      val tfTensor = bigdl2Tf(input.toTensor[Float], inputTypes.head)
       Seq(tfTensor)
     } else {
       val t = input.toTable
       for (i <- 1 to t.length()) yield {
-        bigdl2Tf(t[Tensor[Float]](i))
+        bigdl2Tf(t[Tensor[Float]](i), inputTypes(i-1))
       }
     }
 
     val runner = sess.runner()
-    outputNames.foreach(runner.fetch)
+    floatOutputNames.foreach(runner.fetch)
     inputNames.zipWithIndex.foreach { case (name, idx) =>
       runner.feed(name, data(idx))
     }
@@ -131,11 +186,65 @@ class TFNet private(graphDef: Array[Byte],
 
 object TFNet {
 
+  private def floatToInt(array: Array[Float]): Array[Int] = {
+    val result = new Array[Int](array.length)
+    var i = 0
+    while (i < array.length) {
+      result(i) = array(i).toInt
+      i = i + 1
+    }
+    result
+  }
+
+  private def floatToLong(array: Array[Float]): Array[Long] = {
+    val result = new Array[Long](array.length)
+    var i = 0
+    while (i < array.length) {
+      result(i) = array(i).toLong
+      i = i + 1
+    }
+    result
+  }
+
+  private def floatToDouble(array: Array[Float]): Array[Double] = {
+    val result = new Array[Double](array.length)
+    var i = 0
+    while (i < array.length) {
+      result(i) = array(i).toDouble
+      i = i + 1
+    }
+    result
+  }
+
+  private def floatToUint8(array: Array[Float]): Array[Byte] = {
+    val result = new Array[Byte](array.length)
+    var i = 0
+    while (i < array.length) {
+      result(i) = array(i).toByte
+      i = i + 1
+    }
+    result
+  }
+
+  /**
+   * Create a TFNet
+   * @param graphDef the tensorflow GraphDef object
+   * @param inputNames the input tensor names of this subgraph
+   * @param outputNames the output tensor names of this subgraph
+   * @return
+   */
   def apply(graphDef: GraphDef, inputNames: Seq[String],
             outputNames: Seq[String]): TFNet = {
     new TFNet(graphDef.toByteArray, inputNames, outputNames)
   }
 
+  /**
+   * Create a TFNet
+   * @param path the file path of a graphDef
+   * @param inputNames the input tensor names of this subgraph
+   * @param outputNames the output tensor names of this subgraph
+   * @return
+   */
   def apply(path: String, inputNames: Seq[String],
             outputNames: Seq[String]): TFNet = {
     val graphDef = parse(path)
@@ -153,6 +262,5 @@ object TFNet {
     } finally {
       if (in != null) in.close()
     }
-
   }
 }
