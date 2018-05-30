@@ -19,6 +19,7 @@ package com.intel.analytics.zoo.pipeline.inference
 import com.intel.analytics.bigdl.nn.Module
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.utils.Engine
+import com.intel.analytics.zoo.pipeline.api.Net
 import org.slf4j.LoggerFactory
 
 object ModelLoader extends InferenceSupportive {
@@ -34,7 +35,7 @@ object ModelLoader extends InferenceSupportive {
     AbstractModule[Activity, Activity, Float] = {
     timing(s"load model") {
       logger.info(s"load model from $modelPath and $weightPath")
-      val model = Module.loadModule[Float](modelPath, weightPath)
+      val model = Net.load[Float](modelPath, weightPath)
       logger.info(s"loaded model as $model")
       model
     }
