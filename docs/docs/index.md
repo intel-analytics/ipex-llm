@@ -2,7 +2,8 @@
 # Analytics Zoo
 
 *Analytics + AI Platform for Apache Spark and [BigDL](https://bigdl-project.github.io/master/#whitepaper/)*
-___
+
+---
 
 Analytics Zoo makes it easy to build deep learning application on Spark and BigDL, by providing an end-to-end analytics + AI Platform (including *high level pipeline APIs*, *built-in deep learning models*, *reference use cases*, etc.).
 
@@ -127,11 +128,11 @@ Using the high level transfer learning APIs, you can easily customize pretrained
 ```
    from zoo.pipeline.api.keras.layers import *
    from zoo.pipeline.api.keras.models import *
-   input = Input(name="input", shape=(3, 224, 224))
-   inception = model.to_keras()(input)
+   inputs = Input(name="input", shape=(3, 224, 224))
+   inception = model.to_keras()(inputs)
    flatten = Flatten()(inception)
    logits = Dense(2)(flatten)
-   newModel = Model(inputNode, logits)
+   newModel = Model(inputs, logits)
 ```
 
 ---
