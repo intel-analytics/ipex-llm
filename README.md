@@ -154,10 +154,10 @@ Using *Analytics Zoo Image Classification API* (including a set of pretrained de
    ```
 
 ### Text classification API
-*Analytics Zoo Text Classification API* provides a set of pre-defined models (using CNN, LSTM, etc.) for text classifications. (See more details [here](/docs/docs/APIGuide/Models/text-classification.md))
+*Analytics Zoo Text Classification API* provides a set of pre-defined models (using CNN, LSTM, etc.) for text classifications. (See more details [here](docs/docs/ProgrammingGuide/text-classification.md))
 
 ### Recommendation API
-*Analytics Zoo Recommendation API* provides a set of pre-defined models (such as Neural Collaborative Filtering, Wide and Deep Learning, etc.) for receommendations. (See more details [here](docs/docs/ProgrammingGuide/recommendation.md))
+*Analytics Zoo Recommendation API* provides a set of pre-defined models (such as Neural Collaborative Filtering, Wide and Deep Learning, etc.) for recommendations. (See more details [here](docs/docs/ProgrammingGuide/recommendation.md))
 
 ## Reference use cases
 Analytics Zoo provides a collection of end-to-end reference use cases, including *anomaly detection (for time series data)*, *sentiment analysis*, *fraud detection*, *image augmentation*, *object detection*, *variational autoencoder*, etc. (See more details [here](docs/docs/ProgrammingGuide/usercases-overview.md))

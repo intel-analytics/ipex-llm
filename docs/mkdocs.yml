@@ -27,7 +27,7 @@ pages:
     - Text Classification: ProgrammingGuide/text-classification.md
     - Recommendation: ProgrammingGuide/recommendation.md
   - Use Cases:
-    - overview: ProgrammingGuide/usercases-overview.md
+    - Overview: ProgrammingGuide/usercases-overview.md
     - Anomaly Detection: ProgrammingGuide/anomaly-detection.md
 - User Guide:
   - Python:
@@ -46,7 +46,7 @@ pages:
   - Feature Engineering:
     - Image: APIGuide/FeatureEngineering/image.md
     - Preprocessing: APIGuide/FeatureEngineering/preprocessing.md
-  - Model:
+  - Models:
     - Object Detection: APIGuide/Models/object-detection.md
     - Image Classification: APIGuide/Models/image-classification.md
     - Text Classification: APIGuide/Models/text-classification.md

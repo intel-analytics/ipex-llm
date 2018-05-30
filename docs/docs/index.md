@@ -1,7 +1,7 @@
 
-# Analytics Zoo
+## Analytics Zoo
 
-*Analytics + AI Platform for Apache Spark and [BigDL](https://bigdl-project.github.io/master/#whitepaper/)*
+*Analytics + AI Platform for Apache Spark and [BigDL](https://bigdl-project.github.io/master/#whitepaper/).*
 
 ---
 
@@ -173,11 +173,11 @@ Using *Analytics Zoo Image Classification API* (including a set of pretrained de
 
 ### Text classification API
 
-*Analytics Zoo Text Classification API* provides a set of pre-defined models (using CNN, LSTM, etc.) for text classifications. (See more details [here](APIGuide/Models/text-classification.md))
+*Analytics Zoo Text Classification API* provides a set of pre-defined models (using CNN, LSTM, etc.) for text classifications. (See more details [here](ProgrammingGuide/text-classification.md))
 
 ### Recommendation API
 
-*Analytics Zoo Recommendation API* provides a set of pre-defined models (such as Neural Collaborative Filtering, Wide and Deep Learning, etc.) for receommendations. (See more details [here](ProgrammingGuide/recommendation.md))
+*Analytics Zoo Recommendation API* provides a set of pre-defined models (such as Neural Collaborative Filtering, Wide and Deep Learning, etc.) for recommendations. (See more details [here](ProgrammingGuide/recommendation.md))
 
 ---
 ## Reference use cases

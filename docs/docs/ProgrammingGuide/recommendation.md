@@ -1,11 +1,10 @@
-# Analytics Zoo Recommender
-
 Analytics Zoo provides two Recommender models, including Wide and Deep(WND) learning model and Neural network-based Collaborative Filtering (NCF) model. 
 
 **Highlights**
-1. Easy-to-use models, could be fed into NNFrames and BigDL Optimizer for training..
+
+1. Easy-to-use models, could be fed into NNFrames or BigDL Optimizer for training.
 2. Recommenders can handle either explict or implicit feedback, given corresponding features.
-3. It provides three user-friendly APIs to predict user item pairs, and recommend items (users) for users (items). 
+3. It provides three user-friendly APIs to predict user item pairs, and recommend items (users) for users (items).
 
 The examples/notebooks are included in the Analytics Zoo source code.
 
@@ -16,7 +15,8 @@ The examples/notebooks are included in the Analytics Zoo source code.
     [Scala example](https://github.com/intel-analytics/analytics-zoo/tree/master/zoo/src/main/scala/com/intel/analytics/zoo/examples/models/recommendation/NeuralCFexample.scala)
     [Python notebook](https://github.com/intel-analytics/analytics-zoo/tree/master/apps/recommendation/ncf-explicit-feedback.ipynb)
 
-## Wide and Deep Recommender model
+---
+## Wide and Deep
 
 **Scala**
 
@@ -43,7 +43,7 @@ val userItemPairPrediction = wideAndDeep.predictUserItemPair(validationpairFeatu
 val userRecs = wideAndDeep.recommendForUser(validationpairFeatureRdds, 3)
 val itemRecs = wideAndDeep.recommendForItem(validationpairFeatureRdds, 3)
 ``` 
-See more details in our[Recommender API](../APIGuide/Models/recommendation.md) and [Scala example](https://github.com/intel-analytics/analytics-zoo/tree/master/zoo/src/main/scala/com/intel/analytics/zoo/examples/models/recommendation/WideAndDeepExample.scala)
+See more details in our[Recommender API](../APIGuide/Models/recommendation.md) and [Scala example](https://github.com/intel-analytics/analytics-zoo/tree/master/zoo/src/main/scala/com/intel/analytics/zoo/examples/models/recommendation/WideAndDeepExample.scala).
 
 **Python**
 
@@ -68,8 +68,9 @@ userItemPairPrediction = wide_n_deep.predict_user_item_pair(valPairFeatureRdds)
 userRecs = wide_n_deep.recommend_for_user(valPairFeatureRdds, 3)
 itemRecs = wide_n_deep.recommend_for_item(valPairFeatureRdds, 3)
 ``` 
-See more details in our[Recommender API](../APIGuide/Models/recommendation.md) and [Python notebook](https://github.com/intel-analytics/analytics-zoo/tree/master/apps/recommendation/wide_n_deep.ipynb)
+See more details in our [Recommender API](../APIGuide/Models/recommendation.md) and [Python notebook](https://github.com/intel-analytics/analytics-zoo/tree/master/apps/recommendation/wide_n_deep.ipynb).
 
+---
 ## Neural network-based Collaborative Filtering
 
 **Scala**
@@ -122,4 +123,4 @@ userItemPairPrediction = ncf.predict_user_item_pair(valPairFeatureRdds)
 userRecs = ncf.recommend_for_user(valPairFeatureRdds, 3)
 itemRecs = ncf.recommend_for_item(valPairFeatureRdds, 3)
 ``` 
-See more details in our[Recommender API](../APIGuide/Models/recommendation.md) and [Python notebook](https://github.com/intel-analytics/analytics-zoo/tree/master/apps/recommendation/ncf-explicit-feedback.ipynb)
+See more details in our [Recommender API](../APIGuide/Models/recommendation.md) and [Python notebook](https://github.com/intel-analytics/analytics-zoo/tree/master/apps/recommendation/ncf-explicit-feedback.ipynb).

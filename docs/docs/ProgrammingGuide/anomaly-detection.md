@@ -1,7 +1,5 @@
-# Analytics Zoo Anomaly detection
-
-Analytics Zoo shows how to detect anomalies in time series data based on RNN network. Currently, a [python notebook](https://github.com/intel-analytics/analytics-zoo/tree/master/apps/anomaly-detection) is provided. 
-In the example, a RNN network using Analytics Zoo Keras-Style API is built, and [NYC taxi passengers dataset](raw.githubusercontent.com/numenta/NAB/master/data/realKnownCause/nyc_taxi.csv) is used to train and test the model.
+Analytics Zoo shows how to detect anomalies in time series data based on RNN network. Currently, a [Python notebook](https://github.com/intel-analytics/analytics-zoo/tree/master/apps/anomaly-detection) is provided. 
+In the example, a RNN network using Analytics Zoo Keras-Style API is built, and [NYC taxi passengers dataset](https://raw.githubusercontent.com/numenta/NAB/master/data/realKnownCause/nyc_taxi.csv) is used to train and test the model.
 
 We split the entire curve into 2 sections - training data and testing data. The training data section is treated all as normal and an RNN model is trained to fit the training data, the model has three LSTM layers followed by one Dense layer at the end.
 ```python
