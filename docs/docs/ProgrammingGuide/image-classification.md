@@ -1,8 +1,6 @@
-# Analytics Zoo Image Classification
-
 Analytics Zoo provides a collection of pre-trained models for Image Classification. These models can be used for out-of-the-box inference if you are interested in categories already in the corresponding datasets. According to the business scenarios, users can embed the models locally, distributedly in Spark such as Apache Storm and Apache Flink.
 
-***Image Classification models***
+## Image Classification examples
 
 Analytics Zoo provides several typical kind of pre-trained Image Classfication models : [Alexnet](http://papers.nips.cc/paper/4824-imagenet-classification-with-deep-convolutional-neural-networksese), [Inception-V1](https://arxiv.org/abs/1409.4842), [VGG](https://arxiv.org/abs/1409.1556), [Resnet](https://arxiv.org/abs/1512.03385), [Densenet](https://arxiv.org/abs/1608.06993), [Mobilenet](https://arxiv.org/abs/1704.04861), [Squeezenet](https://arxiv.org/abs/1602.07360) models. To use these models, please check below examples.
 

@@ -1,5 +1,3 @@
-# Analytics Zoo Image Classification API
-
 Analytics Zoo provides a collection of pre-trained models for Image Classification. These models can be used for out-of-the-box inference if you are interested in categories already in the corresponding datasets. According to the business scenarios, users can embed the models locally, distributedly in Spark such as Apache Storm and Apache Flink.
 
 ## Model Load

@@ -10,11 +10,17 @@ Spark 2.x.
 
 
 **Highlights**
+
 1. Easy-to-use DataFrame(DataSet)-based API for training, prediction and evaluation with deep learning models.
+
 2. Effortless integration with Spark ML pipeline and compatibility with other feature transformers and algorithms in Spark ML.
+
 3. In a few lines, run large scale inference or transfer learning from pre-trained models of Caffe, Keras, Tensorflow or BigDL.
+
 4. Training of customized model or BigDL built-in neural models (e.g. Inception, ResNet, Wide And Deep).
+
 5. Rich toolset for feature extraction and processing, including image, audio and texts.
+
 
 ## Examples:
 

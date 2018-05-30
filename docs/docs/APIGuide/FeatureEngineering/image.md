@@ -1,5 +1,3 @@
-# Analytics Zoo Image API
-
 Analytics Zoo provides a series of Image APIs for end-to-end image processing pipeline, including image loading, pre-processing, inference/training and some utilities on different formats.
 
 ## Load Image
