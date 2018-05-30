@@ -113,11 +113,11 @@ Using the high level transfer learning APIs, you can easily customize pretrained
    ```
    from zoo.pipeline.api.keras.layers import *
    from zoo.pipeline.api.keras.models import *
-   input = Input(name="input", shape=(3, 224, 224))
-   inception = model.to_keras()(input)
+   inputs = Input(name="input", shape=(3, 224, 224))
+   inception = model.to_keras()(inputs)
    flatten = Flatten()(inception)
    logits = Dense(2)(flatten)
-   newModel = Model(inputNode, logits)
+   newModel = Model(inputs, logits)
    ```
 
 ## Built-in deep learning models
