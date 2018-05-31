@@ -32,6 +32,14 @@ object MTImageFeatureToBatch {
   }
 }
 
+/**
+ * A transformer pipleline wrapper to create Minibatch in multiple threads
+ * @param width final image width
+ * @param height final image height
+ * @param totalBatchSize global batch size
+ * @param transformer pipleline for pre-processing
+ * @param toRGB  if converted to RGB, default format is BGR
+ */
 class MTImageFeatureToBatch private[bigdl](width: Int, height: Int,
   totalBatchSize: Int, transformer: FeatureTransformer, toRGB: Boolean = true)
   extends Transformer[ImageFeature, MiniBatch[Float]] {

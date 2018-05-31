@@ -127,3 +127,25 @@ dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
     --depth         [number of layers for resnet, default to 50]
     --classes       [number of classes, default to 1000]
 ```
+### Training reference
+#### Hyper Parameters
+
+**Global batch** : 8192
+
+**Single batch per core** : 32
+
+**Epochs** : 90
+
+**Initial learning rate**: 0.1
+
+**Warmup epochs**: 5
+
+**Max learning rate**: 3.2
+
+#### Training result (90 epochs)
+
+**Top1 accuracy**: 0.76088
+
+**Top5 accuracy**: 0.92802
+
+

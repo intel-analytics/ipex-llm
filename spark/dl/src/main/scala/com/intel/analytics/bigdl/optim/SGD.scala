@@ -662,6 +662,12 @@ object SGD {
     }
   }
 
+  /**
+   * Learning rate schedule based on warm up Iterations
+   * @param warmUpIteration  Warm up iteration number
+   * @param warmUpDelta Warm up dealta value applied to warm up iteration
+   * @param decayType A function to calculate decay on epochs
+   */
   case class EpochDecayWithWarmUp(
     warmUpIteration: Int,
     warmUpDelta: Double,
