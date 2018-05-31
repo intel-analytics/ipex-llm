@@ -1,6 +1,5 @@
 
-## Analytics Zoo
-
+# <font size="6">Analytics Zoo</font>
 *Analytics + AI Platform for Apache Spark and [BigDL](https://bigdl-project.github.io/master/#whitepaper/).*
 
 ---
