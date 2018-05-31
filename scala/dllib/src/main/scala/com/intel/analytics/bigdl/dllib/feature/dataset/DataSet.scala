@@ -586,6 +586,11 @@ object DataSet {
       ImageFrame.rdd(rawData)
     }
 
+    private[bigdl] def filesToImageFeatureDataset(url: String, sc: SparkContext,
+      classNum: Int, partitionNum: Option[Int] = None): DistributedDataSet[ImageFeature] = {
+      rdd[ImageFeature](filesToImageFrame(url, sc, classNum, partitionNum).toDistributed().rdd)
+    }
+
     private[bigdl] def findFiles(path: Path): Array[LocalSeqFilePath] = {
       val directoryStream = Files.newDirectoryStream(path)
       import scala.collection.JavaConverters._

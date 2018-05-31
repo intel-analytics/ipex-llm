@@ -25,7 +25,7 @@ import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric._
 
-object Train {
+object TrainCIFAR10 {
   LoggerFilter.redirectSparkInfoLogs()
 
 
