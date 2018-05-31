@@ -73,11 +73,13 @@ class TestLayer(ZooTestCase):
         model_json = model.to_json()
         with open(tmp_path_json, "w") as json_file:
             json_file.write(model_json)
-        reloaded_json_model = Net.load_keras(json_path=tmp_path_json)
+        zmodel = Net.load_keras(json_path=tmp_path_json)
+        assert isinstance(zmodel, Sequential)
 
         tmp_path_hdf5 = create_tmp_path() + ".h5"
         model.save(tmp_path_hdf5)
-        reloaded_hdf5_model = Net.load_keras(hdf5_path=tmp_path_hdf5)
+        zmodel2 = Net.load_keras(hdf5_path=tmp_path_hdf5)
+        assert isinstance(zmodel2, Sequential)
 
     def test_load_tf(self):
         linear = Linear(10, 2)()
