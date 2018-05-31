@@ -661,4 +661,30 @@ object SGD {
       currentRate = schedules(cur).currentRate
     }
   }
+
+  /**
+   * Learning rate schedule based on warm up Iterations
+   * @param warmUpIteration  Warm up iteration number
+   * @param warmUpDelta Warm up dealta value applied to warm up iteration
+   * @param decayType A function to calculate decay on epochs
+   */
+  case class EpochDecayWithWarmUp(
+    warmUpIteration: Int,
+    warmUpDelta: Double,
+    decayType: (Int) => Double) extends LearningRateSchedule {
+    override def updateHyperParameter[T](optimMethod: SGD[T]): Unit = {
+      val lr = optimMethod.learningRate
+      val nevals = optimMethod.state.get[Int]("evalCounter").getOrElse(0)
+      val clr = if (nevals < warmUpIteration) {
+        - lr - warmUpDelta * nevals
+      } else {
+        val epoch = optimMethod.state[Int]("epoch")
+        val decay = decayType(epoch)
+        val maxLr = lr + warmUpDelta * warmUpIteration
+        - maxLr * math.pow(0.1, decay)
+      }
+      optimMethod.state("evalCounter") = nevals + 1
+      currentRate = clr
+    }
+  }
 }

@@ -42,7 +42,9 @@ object Utils {
     momentum: Double = 0.9,
     dampening: Double = 0.0,
     nesterov: Boolean = true,
-    graphModel: Boolean = false)
+    graphModel: Boolean = false,
+    warmupEpoch: Int = 0,
+    maxLr: Double = 0.0)
 
   val trainParser = new OptionParser[TrainParams]("BigDL ResNet Example") {
     head("Train ResNet model on single node")
@@ -94,6 +96,12 @@ object Utils {
     opt[Unit]('g', "graphModel")
       .text("use graph model")
       .action((x, c) => c.copy(graphModel = true))
+    opt[Int]("warmupEpoch")
+      .text("warmup epoch")
+      .action((x, c) => c.copy(warmupEpoch = x))
+    opt[Double]("maxLr")
+      .text("maxLr")
+      .action((x, c) => c.copy(maxLr = x))
   }
 
   case class TestParams(
