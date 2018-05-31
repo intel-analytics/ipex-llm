@@ -1,4 +1,4 @@
-* If you encounter the following exception when calling the Python API of Analytics Zoo:
+* If you encounter the following exception when calling the Python API of Analytics Zoo when you are using Python 3.5 or 3.6:
 ```
 Py4JJavaError: An error occurred while calling z:org.apache.spark.bigdl.api.python.BigDLSerDe.loads.
 : net.razorvine.pickle.PickleException: expected zero arguments for construction of ClassDict (for numpy.dtype)
