@@ -110,7 +110,7 @@ object TrainImageNet {
       if (param.checkpoint.isDefined) {
         optimizer.setCheckpoint(param.checkpoint.get, Trigger.everyEpoch)
       }
-      
+
       val logdir = "resnet-imagenet"
       val appName = s"${sc.applicationId}"
       val trainSummary = TrainSummary(logdir, appName)
