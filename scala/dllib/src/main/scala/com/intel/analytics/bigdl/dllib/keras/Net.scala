@@ -25,7 +25,7 @@ import com.intel.analytics.bigdl.utils.File
 import com.intel.analytics.bigdl.utils.caffe.CaffeLoader
 import com.intel.analytics.bigdl.utils.serializer.ModuleLoader
 import com.intel.analytics.bigdl.utils.tf.{Session, TensorflowLoader}
-import com.intel.analytics.zoo.pipeline.api.keras.models.KerasNet
+import com.intel.analytics.zoo.pipeline.api.keras.models.{KerasNet, Model, Sequential}
 import com.intel.analytics.zoo.pipeline.api.net.GraphNet
 
 import scala.reflect.ClassTag
@@ -38,6 +38,9 @@ trait Net {
 }
 
 object Net {
+  Model
+  Sequential
+  GraphNet
   /**
    * Load model from path.
    *
