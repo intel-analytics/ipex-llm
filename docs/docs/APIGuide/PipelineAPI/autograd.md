@@ -5,7 +5,6 @@ Those are supported as element-wise operation.
 ```scala
 x + 1.0
 x + y
-1.0 + x
 ```
 
 
@@ -13,7 +12,6 @@ x + y
 ```python
 x + 1.0
 x + y
-1.0 + x
 ```
 
 
