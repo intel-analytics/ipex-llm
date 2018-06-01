@@ -28,56 +28,143 @@ if sys.version >= '3':
     unicode = str
 
 
-def mean(a, axis=0, keepDims=False):
-    return Variable.from_jvalue(callBigDlFunc("float", "mean", a, axis, keepDims))
+def mean(x, axis=0, keepDims=False):
+    """
+    Mean of a variable, alongside the specified axis.
+    :param x: A variable.
+    :param axis: A list of integer. Axes to compute the mean.
+    :param keepDims: A boolean, whether to keep the dimensions or not.
+            If `keepDims` is `False`, the rank of the variable is reduced
+            by 1 for each entry in `axis`. If `keepDims` is `True`,
+            the reduced dimensions are retained with length 1.
+    :return: A variable with the mean of elements of `x`.
+    """
+    return Variable.from_jvalue(callBigDlFunc("float", "mean", x, axis, keepDims))
 
 
-def abs(a):
-    return Variable.from_jvalue(callBigDlFunc("float", "abs", a))
+def abs(x):
+    """
+    Element-wise absolute value.
+    :param x: A variable.
+    :return: A variable.
+    """
+    return Variable.from_jvalue(callBigDlFunc("float", "abs", x))
 
 
-def sum(a, axis=0, keepdims=False):
-    return Variable.from_jvalue(callBigDlFunc("float", "sum", a, axis, keepdims))
+def sum(x, axis=0, keepDims=False):
+    """
+    Sum of the values in a a variable, alongside the specified axis.
+    :param x: A variable.
+    :param axis: An integer. Axes to compute the sum over.
+    :param keepDims: A boolean, whether to keep the dimensions or not.
+            If `keepDims` is `False`, the rank of the variable is reduced
+            by 1 for each entry in `axis`. If `keepDims` is `True`,
+            the reduced dimensions are retained with length 1.
+    :return: A variable with sum of `x`.
+    """
+    return Variable.from_jvalue(callBigDlFunc("float", "sum", x, axis, keepDims))
 
 
-def clip(a, min, max):
-    return Variable.from_jvalue(callBigDlFunc("float", "clip", a, float(min), float(max)))
+def clip(x, min, max):
+    """
+    Element-wise value clipping.
+    :param x: A variable.
+    :param min: Python float or integer.
+    :param max: Python float or integer.
+    :return: A variable.
+    """
+    return Variable.from_jvalue(callBigDlFunc("float", "clip", x, float(min), float(max)))
 
 
-def square(a):
-    return Variable.from_jvalue(callBigDlFunc("float", "square", a))
+def square(x):
+    """
+    Element-wise square.
+    :param x: A variable.
+    :return: A variable.
+    """
+    return Variable.from_jvalue(callBigDlFunc("float", "square", x))
 
 
-def sqrt(a):
-    return Variable.from_jvalue(callBigDlFunc("float", "sqrt", a))
+def sqrt(x):
+    """
+    Element-wise square root.
+    :param x: A variable.
+    :return: A variable.
+    """
+    return Variable.from_jvalue(callBigDlFunc("float", "sqrt", x))
 
 
-def exp(a):
-    return Variable.from_jvalue(callBigDlFunc("float", "exp", a))
+def exp(x):
+    """
+    Element-wise exponential.
+    :param x: A variable.
+    :return: A variable.
+    """
+    return Variable.from_jvalue(callBigDlFunc("float", "exp", x))
 
 
-def maximum(a, b):
-    return Variable.from_jvalue(callBigDlFunc("float", "maximum", a, b))
+def maximum(x, y):
+    """
+    Element-wise maximum of two variables.
+    :param x: A variable.
+    :param y: A variable.
+    :return: A variable.
+    """
+    return Variable.from_jvalue(callBigDlFunc("float", "maximum", x, y))
 
 
-def log(a):
-    return Variable.from_jvalue(callBigDlFunc("float", "log", a))
+def log(x):
+    """
+    Element-wise log.
+    :param x: A variable.
+    :return: A variable.
+    """
+    return Variable.from_jvalue(callBigDlFunc("float", "log", x))
+
+
+def pow(x, a):
+    """
+    Element-wise exponentiation.
+    :param x: A variable.
+    :param a: Python integer.
+    :return: A variable.
+    """
+    return Variable.from_jvalue(callBigDlFunc("float", "pow", x, float(a)))
 
 
 def epsilon():
+    """
+    Define the value of epsilon.
+    :return: A value of type Double.
+    """
     return Variable.from_jvalue(callBigDlFunc("float", "epsilon"))
 
 
-def neg(a):
-    return Variable.from_jvalue(callBigDlFunc("float", "neg", a))
+def neg(x):
+    """
+    Computes numerical negative value element-wise.
+    :param x: A variable.
+    :return: A variable.
+    """
+    return Variable.from_jvalue(callBigDlFunc("float", "neg", x))
 
 
-def softsign(a):
-    return Variable.from_jvalue(callBigDlFunc("float", "softsign", a))
+def softsign(x):
+    """
+    Softsign of a variable.
+    :param x: A variable.
+    :return: A variable.
+    """
+    return Variable.from_jvalue(callBigDlFunc("float", "softsign", x))
 
 
-def softplus(a):
-    return Variable.from_jvalue(callBigDlFunc("float", "softplus", a))
+def softplus(x):
+    """
+    Softplus of a variable.
+    :param x: A variable.
+    :return: A variable.
+    """
+    return Variable.from_jvalue(callBigDlFunc("float", "softplus", x))
 
 
 class Variable(ZooKerasCreator):
