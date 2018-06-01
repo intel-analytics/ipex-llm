@@ -68,6 +68,10 @@ def epsilon():
     return Variable.from_jvalue(callBigDlFunc("float", "epsilon"))
 
 
+def neg(a):
+    return Variable.from_jvalue(callBigDlFunc("float", "neg", a))
+
+
 def softsign(a):
     return Variable.from_jvalue(callBigDlFunc("float", "softsign", a))
 
@@ -125,17 +129,31 @@ class Variable(ZooKerasCreator):
     def __sub__(self, other):
         return self.sub(other)
 
+    def __rsub__(self, other):
+        return Variable.from_jvalue(callBigDlFunc("float", "sub", other, self))
+
     def __add__(self, other):
         return self.add(other)
+
+    __radd__ = __add__
 
     def __mul__(self, other):
         return Variable.from_jvalue(callBigDlFunc("float", "mul", self, other))
 
+    __rmul__ = __mul__
+
     def __div__(self, other):
         return Variable.from_jvalue(callBigDlFunc("float", "div", self, other))
 
-    def __truediv__(self, other):
-        return Variable.from_jvalue(callBigDlFunc("float", "div", self, other))
+    __truediv__ = __div__
+
+    def __rdiv__(self, other):
+        return Variable.from_jvalue(callBigDlFunc("float", "div", other, self))
+
+    __rtruediv__ = __rdiv__
+
+    def __neg__(self):
+        return neg(self)
 
 
 class Lambda(ZooKerasCreator):
