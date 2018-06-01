@@ -21,6 +21,7 @@ import com.intel.analytics.bigdl.nn.keras.{Flatten => BigDLFlatten}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.zoo.pipeline.api.Net
 
 import scala.reflect.ClassTag
 
@@ -37,7 +38,7 @@ import scala.reflect.ClassTag
  */
 class Flatten[T: ClassTag](
     override val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
-  extends BigDLFlatten[T](inputShape) {
+  extends BigDLFlatten[T](inputShape) with Net {
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
     val input = inputShape.toSingle().toArray
