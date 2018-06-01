@@ -32,7 +32,7 @@ Analytics Zoo makes it easy to build deep learning application on Spark and BigD
 Analytics Zoo provides a set of easy-to-use, high level pipeline APIs that natively support Spark DataFrames and ML Pipelines, autograd and custom layer/loss, trasnfer learning, etc.
 
 ### _`nnframes`_
-`nnframes` provides *native deep learning support in Spark DataFrames and ML Pipelines*, so that you can easily build complex deep learning pipelines in just a few lines, as illustracted below. (See more details [here](docs/docs/ProgrammingGuide/nnframes.md))
+`nnframes` provides *native deep learning support in Spark DataFrames and ML Pipelines*, so that you can easily build complex deep learning pipelines in just a few lines, as illustracted below. (See more details [here](https://analytics-zoo.github.io/master/#ProgrammingGuide/nnframes/))
 
 1. Load images into DataFrames using `NNImageReader`
    ```
@@ -72,7 +72,7 @@ Analytics Zoo provides a set of easy-to-use, high level pipeline APIs that nativ
    ```
    
 ### _`autograd`_
-`autograd` provides automatic differentiation for math operations, so that you can easily build your own *custom loss and layer* (in both Python and Scala), as illustracted below. (See more details [here](docs/docs/ProgrammingGuide/autograd.md))
+`autograd` provides automatic differentiation for math operations, so that you can easily build your own *custom loss and layer* (in both Python and Scala), as illustracted below. (See more details [here](https://analytics-zoo.github.io/master/#ProgrammingGuide/autograd/))
 
 1. Define custom functions using `autograd`
    ```
@@ -100,7 +100,7 @@ Analytics Zoo provides a set of easy-to-use, high level pipeline APIs that nativ
    ```
 
 ### _Transfer learning_
-Using the high level transfer learning APIs, you can easily customize pretrained models for *feature extraction or fine-tuning*. (See more details [here](docs/docs/ProgrammingGuide/transferlearning.md))
+Using the high level transfer learning APIs, you can easily customize pretrained models for *feature extraction or fine-tuning*. (See more details [here](https://analytics-zoo.github.io/master/#ProgrammingGuide/transferlearning/))
 
 1. Load an existing model (pretrained in Caffe)
    ```
@@ -135,11 +135,11 @@ Using the high level transfer learning APIs, you can easily customize pretrained
 Analytics Zoo provides several built-in deep learning models that you can use for a variety of problem types, such as *object detection*, *image classification*, *text classification*, *recommendation*, etc.
 
 ### _Object detection API_
-Using *Analytics Zoo Object Detection API* (including a set of pretrained detection models such as SSD and Faster-RCNN), you can easily build your object detection applications (e.g., localizing and identifying multiple objects in images and videos), as illustrated below. (See more details [here](docs/docs/ProgrammingGuide/object-detection.md))
+Using *Analytics Zoo Object Detection API* (including a set of pretrained detection models such as SSD and Faster-RCNN), you can easily build your object detection applications (e.g., localizing and identifying multiple objects in images and videos), as illustrated below. (See more details [here](https://analytics-zoo.github.io/master/#ProgrammingGuide/object-detection/))
 
 1. Download object detection models in Analytics Zoo
 
-   You can download a collection of detection models (pretrained on the PSCAL VOC dataset and COCO dataset) from [detection model zoo](docs/docs/ProgrammingGuide/object-detection.md#download-link).
+   You can download a collection of detection models (pretrained on the PSCAL VOC dataset and COCO dataset) from [detection model zoo](https://analytics-zoo.github.io/master/#ProgrammingGuide/object-detection/#download-link).
 
 2. Use *Object Detection API* for off-the-shell inference
    ```
@@ -150,11 +150,11 @@ Using *Analytics Zoo Object Detection API* (including a set of pretrained detect
    ```
 
 ### _Image classification API_
-Using *Analytics Zoo Image Classification API* (including a set of pretrained detection models such as VGG, Inception, ResNet, MobileNet,  etc.), you can easily build your image classification applications, as illustrated below. (See more details [here](docs/docs/ProgrammingGuide/image-classification.md))
+Using *Analytics Zoo Image Classification API* (including a set of pretrained detection models such as VGG, Inception, ResNet, MobileNet,  etc.), you can easily build your image classification applications, as illustrated below. (See more details [here](https://analytics-zoo.github.io/master/#ProgrammingGuide/image-classification/))
 
 1. Download image classification models in Analytics Zoo
 
-   You can download a collection of image classification models (pretrained on the ImageNet dataset) from [image classification model zoo](docs/docs/ProgrammingGuide/image-classification.md#download-link).
+   You can download a collection of image classification models (pretrained on the ImageNet dataset) from [image classification model zoo](https://analytics-zoo.github.io/master/#ProgrammingGuide/image-classification/#download-link).
 
 2. Use *Image classification API* for off-the-shell inference
    ```
@@ -165,10 +165,10 @@ Using *Analytics Zoo Image Classification API* (including a set of pretrained de
    ```
 
 ### _Text classification API_
-*Analytics Zoo Text Classification API* provides a set of pre-defined models (using CNN, LSTM, etc.) for text classifications. (See more details [here](docs/docs/ProgrammingGuide/text-classification.md))
+*Analytics Zoo Text Classification API* provides a set of pre-defined models (using CNN, LSTM, etc.) for text classifications. (See more details [here](https://analytics-zoo.github.io/master/#ProgrammingGuide/text-classification/))
 
 ### _Recommendation API_
-*Analytics Zoo Recommendation API* provides a set of pre-defined models (such as Neural Collaborative Filtering, Wide and Deep Learning, etc.) for recommendations. (See more details [here](docs/docs/ProgrammingGuide/recommendation.md))
+*Analytics Zoo Recommendation API* provides a set of pre-defined models (such as Neural Collaborative Filtering, Wide and Deep Learning, etc.) for recommendations. (See more details [here](https://analytics-zoo.github.io/master/#ProgrammingGuide/recommendation/))
 
 ## _Reference use cases_
-Analytics Zoo provides a collection of end-to-end reference use cases, including *anomaly detection (for time series data)*, *sentiment analysis*, *fraud detection*, *image augmentation*, *object detection*, *variational autoencoder*, etc. (See more details [here](docs/docs/ProgrammingGuide/usercases-overview.md))
+Analytics Zoo provides a collection of end-to-end reference use cases, including *anomaly detection (for time series data)*, *sentiment analysis*, *fraud detection*, *image augmentation*, *object detection*, *variational autoencoder*, etc. (See more details [here](https://analytics-zoo.github.io/master/#ProgrammingGuide/usercases-overview/))
