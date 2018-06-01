@@ -829,6 +829,8 @@ trait Tensor[T] extends Serializable with TensorMath[T] with Activity {
   def setFormat(f: Int): Unit = {
     format = f
   }
+
+  def toDenseTensor(): Tensor[T] = { this }
   // test for debug
   var layer_name : String = ""
 }

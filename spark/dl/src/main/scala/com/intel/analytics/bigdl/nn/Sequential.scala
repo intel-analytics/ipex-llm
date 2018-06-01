@@ -285,8 +285,7 @@ class Sequential[T: ClassTag]
 
         // delete CAddTable and ReLU
         modules.remove(caddTableMaybeIndex)
-        modules.insert(caddTableMaybeIndex,
-          mkldnn.DummyCAddTable[T](convIndex).asInstanceOf[Module[T]])
+        modules.insert(caddTableMaybeIndex, SelectTable[T](convIndex))
         modules.remove(reluMaybeIndex)
         // change the branch2's output to branch1's output
         conv.setSumOp(theOther.asInstanceOf[Module[Float]])

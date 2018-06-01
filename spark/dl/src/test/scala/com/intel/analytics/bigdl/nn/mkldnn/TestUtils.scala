@@ -21,11 +21,12 @@ import java.nio.channels.FileChannel
 import java.nio.file.{Files, Paths, StandardOpenOption}
 import java.nio.{ByteBuffer, ByteOrder}
 
+import breeze.numerics.abs
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.nn.Container
 import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
+import com.intel.analytics.bigdl.tensor.{DenseTensorMath, MklDnnType, Storage, Tensor}
 
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
@@ -113,6 +114,7 @@ object Tools {
     val file = fileName(name, identity)
 
     if (Files.exists(Paths.get(file))) {
+      println(s"[INFO] load $file")
       setTensorFloat()
 
       def loadData(name: String): ByteBuffer = {
@@ -151,6 +153,104 @@ object Tools {
   }
 
   def randTimes(): Int = 10
+
+  def compare(prototxt: String, model: Module[Float], inputShape: Array[Int],
+    outputShape: Array[Int]): Unit = {
+    val identity = Collect.run(prototxt)
+    val modules = ArrayBuffer[TensorModule[Float]]()
+    Tools.flattenModules(model, modules)
+
+    val input = Tools.getTensor("Fwrd_data", inputShape, identity)
+    val gradOutput = Tools.getTensor(s"Bwrd_${modules.last.getName()}.loss", outputShape,
+      identity)
+
+    for (i <- modules.indices) {
+      if (modules(i).parameters() != null) {
+        val params = modules(i).parameters()._1
+        val name = modules(i).getName()
+        for (j <- params.indices) {
+          val w = Tools.getTensor(s"Fwrd_$name.Wght.$j", params(j).size(), identity)
+          params(j).copy(w)
+        }
+      }
+    }
+
+    model.forward(input)
+    model.backward(input, gradOutput)
+
+    for (i <- modules.indices) {
+      compareSingleLayer(modules(i), identity)
+    }
+
+    def compareSingleLayer(module: TensorModule[Float], identity: String): Boolean = {
+      val name = module.getName()
+      val output = Tools.getTensor(s"Fwrd_$name", module.output.size(), identity)
+      val gradInput = Tools.getTensor(s"Bwrd_$name", module.gradInput.size(), identity)
+      var ret = true
+
+      ret &= compare2Tensors(output, module.output.toDenseTensor())
+      assert(ret, s"${module.getName()} output can't pass, please check")
+
+      ret &= compare2Tensors(gradInput, module.gradInput.toDenseTensor())
+      assert(ret, s"${module.getName()} gradInput can't pass, please check")
+
+
+      if (module.parameters() == null) {
+        return ret
+      }
+
+      val params = module.parameters()._2
+      for (j <- params.indices) {
+        val w = Tools.getTensor(s"Bwrd_$name.Grad.$j", params(j).size(), identity)
+        ret &= compare2Tensors(params(j), w)
+        assert(ret, s"${module.getName()} gradient $j can't pass, please check")
+      }
+
+      ret
+    }
+  }
+
+  private def compare2Tensors(src: Tensor[Float], dst: Tensor[Float]): Boolean = {
+    // todo the sync should be deleted.
+    for (i <- List(src, dst)) {
+      if (i.getTensorType == MklDnnType) {
+        i.storage()
+      }
+    }
+
+    src.almostEqual(dst, 1e-6)
+  }
+
+  def nearlyEqual(a: Float, b: Float, epsilon: Double): Boolean = {
+    val absA = math.abs(a)
+    val absB = math.abs(b)
+    val diff = math.abs(a - b)
+
+    val result = if (a == b) {
+      true
+    } else {
+      math.min(diff / (absA + absB), diff) < epsilon
+    }
+
+    result
+  }
+
+  def nearequals(t1: Tensor[Float], t2: Tensor[Float],
+    epsilon: Double = DenseTensorMath.floatEpsilon): Boolean = {
+    var result = true
+    t1.map(t2, (a, b) => {
+      if (result) {
+        result = nearlyEqual(a, b, epsilon)
+        if (!result) {
+          val diff = math.abs(a - b)
+          println("epsilon " + a + "***" + b + "***" + diff / (abs(a) + abs(b)) + "***" + diff)
+        }
+      }
+      a
+    })
+    return result
+  }
+
 }
 
 /**
@@ -159,8 +259,8 @@ object Tools {
  * single layers output and gradient through make a fake gradOutput/top_diff.
  */
 object Collect {
-  val tmpdir = System.getProperty("java.io.tmpdir")
-  val collectPath = s"/home/yanzhang/workspace/dl_frameworks/intel.caffe.test/build/tools/collect"
+  val tmpdir: String = System.getProperty("java.io.tmpdir")
+  val collectPath: String = System.getProperty("collect.location")
 
   def hasCollect: Boolean = {
     val exitValue = if (collectPath != null) s"ls $collectPath".! else "which collect".!
@@ -203,5 +303,8 @@ object Collect {
     require(exitValue == 0, s"Something wrong with collect command. Please check it.")
 
     identity
+  }
+
+  def compare(prototxt: String, module: Module[Float] => Unit): Unit = {
   }
 }

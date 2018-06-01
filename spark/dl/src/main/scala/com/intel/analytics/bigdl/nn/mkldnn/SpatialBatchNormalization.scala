@@ -58,7 +58,7 @@ class SpatialBatchNormalization[T: ClassTag](
   var useGlobalStats: Boolean = false
 
   Memory.Zero(runningMean.ptr, runningMean.nElement(), 4)
-  Memory.set(runningVar.ptr, 1.0f, runningVar.nElement(), 4)
+  Memory.Zero(runningVar.ptr, runningVar.nElement(), 4)
 
   @transient var engine = 0L
   @transient var stream = 0L
@@ -416,9 +416,11 @@ class SpatialBatchNormalization[T: ClassTag](
     if (this.isTraining()) {
       // update running(Mean, Var) and scaleFactor
       scaleFactor = scaleFactor * momentum.toFloat + 1
+      val m = input.nElement() / this.nOutput
+      val biasFactor = if (m > 1) { m.toFloat / (m - 1) } else { 1 }
 
-      Memory.axpby(nOutput, momentum.toFloat, mean.ptr, 1 - momentum.toFloat, runningMean.ptr)
-      Memory.axpby(nOutput, momentum.toFloat, variance.ptr, 1 - momentum.toFloat, runningVar.ptr)
+      Memory.axpby(nOutput, 1, mean.ptr, momentum.toFloat, runningMean.ptr)
+      Memory.axpby(nOutput, biasFactor, variance.ptr, momentum.toFloat, runningVar.ptr)
     }
 
     val end1 = (System.nanoTime() - s1)/1e6

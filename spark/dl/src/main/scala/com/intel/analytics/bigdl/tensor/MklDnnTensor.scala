@@ -19,6 +19,7 @@ package com.intel.analytics.bigdl.tensor
 import java.io.{IOException, ObjectInputStream}
 
 import com.intel.analytics.bigdl.mkl.{Memory, MklDnn}
+import com.intel.analytics.bigdl.nn.mkldnn.MemoryReOrder
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import org.apache.log4j.{Level, Logger}
 
@@ -195,6 +196,23 @@ class MklDnnTensor[T: ClassTag](
     println("load mkldnn")
     in.defaultReadObject()
     this._pointer = allocate(_size.product)
+  }
+
+  var reorder: MemoryReOrder = null
+
+  override def toDenseTensor(): Tensor[T] = {
+    val dst = if (size().length == 4) {
+      Memory.Format.nchw
+    } else {
+      Memory.Format.nc
+    }
+    if (reorder == null) {
+      reorder = MemoryReOrder(getFormat(), dst)
+    }
+
+    val ret = reorder.forward(this).toTensor
+    ret.storage()
+    ret
   }
 
 }
