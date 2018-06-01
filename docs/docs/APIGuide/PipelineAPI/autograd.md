@@ -1,3 +1,22 @@
+## Basic operators: `+ - * /`
+Those are supported as element-wise operation.
+
+**Scala example**
+```scala
+x + 1.0
+x + y
+1.0 + x
+```
+
+
+**Python example**
+```python
+x + 1.0
+x + y
+1.0 + x
+```
+
+
 ## mean
 
  Mean of a `Variable`, alongside the specified axis.
