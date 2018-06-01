@@ -1,4 +1,4 @@
-## **User Cases**
+## Overview
 
 Analytics Zoo provides a collection of reference user applications and demos, which can be modified or even used off-the-shelf in real world applications. Some are listed below. See all in [analytics-zoo/apps](https://github.com/intel-analytics/analytics-zoo/tree/master/apps).
 
