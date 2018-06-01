@@ -68,6 +68,14 @@ def epsilon():
     return Variable.from_jvalue(callBigDlFunc("float", "epsilon"))
 
 
+def softsign(a):
+    return Variable.from_jvalue(callBigDlFunc("float", "softsign", a))
+
+
+def softplus(a):
+    return Variable.from_jvalue(callBigDlFunc("float", "softplus", a))
+
+
 class Variable(ZooKerasCreator):
     def __init__(self, input_shape, node=None, jvalue=None):
         if jvalue:
