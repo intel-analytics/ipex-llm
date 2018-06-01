@@ -218,6 +218,36 @@ class KerasNet(ZooKerasLayer):
             else:
                 raise TypeError("Unsupported prediction data type: %s" % type(x))
 
+    def summary(self, line_length=120, positions=[.33, .55, .67, 1.]):
+        """
+        Print out the summary information of an Analytics Zoo Keras Model.
+
+        For each layer in the model, there will be a separate row containing four columns:
+        ________________________________________________________________________________
+        Layer (type)          Output Shape          Param #     Connected to
+        ================================================================================
+
+        In addition, total number of parameters of this model, separated into trainable and
+        non-trainable counts, will be printed out after the table.
+
+        # Arguments
+        line_length The total length of one row. Default is 120.
+        positions: The maximum absolute length proportion(%) of each field.
+                   List of Float of length 4.
+                   Usually you don't need to adjust this parameter.
+                   Default is [.33, .55, .67, 1.], meaning that
+                   the first field will occupy up to 33% of line_length,
+                   the second field will occupy up to (55-33)% of line_length,
+                   the third field will occupy up to (67-55)% of line_length,
+                   the fourth field will occupy the remaining line (100-67)%.
+                   If the field has a larger length, the remaining part will be trimmed.
+                   If the field has a smaller length, the remaining part will be white spaces.
+        """
+        callBigDlFunc(self.bigdl_type, "zooKerasNetSummary",
+                      self.value,
+                      line_length,
+                      [float(p) for p in positions])
+
     def to_model(self):
         from zoo.pipeline.api.keras.models import Model
         return Model.from_jvalue(callBigDlFunc(self.bigdl_type, "kerasNetToModel", self.value))
