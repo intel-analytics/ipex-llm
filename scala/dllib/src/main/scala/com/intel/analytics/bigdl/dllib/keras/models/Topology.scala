@@ -28,6 +28,7 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{Edge, LoggerFilter, Node, Shape}
 import com.intel.analytics.bigdl.utils.serializer.{DeserializeContext, ModuleData, ModuleSerializer, SerializeContext}
 import com.intel.analytics.bigdl.visualization.{TrainSummary, ValidationSummary}
+import com.intel.analytics.zoo.pipeline.api.Net
 import com.intel.analytics.zoo.pipeline.api.autograd.{CustomLossWithVariable, Lambda, Variable}
 import com.intel.analytics.zoo.pipeline.api.keras.layers.Input
 import com.intel.analytics.zoo.pipeline.api.keras.layers.utils.{AbstractModuleRef, GraphRef, KerasLayerRef}
@@ -41,7 +42,7 @@ import scala.reflect.ClassTag
 
 
 abstract class KerasNet[T: ClassTag](implicit ev: TensorNumeric[T])
-  extends KerasLayer[Activity, Activity, T] {
+  extends KerasLayer[Activity, Activity, T] with Net {
 
   def getSubModules(): List[AbstractModule[Activity, Activity, T]] = {
     require(this.labor.isInstanceOf[Container[Activity, Activity, T]],
@@ -297,6 +298,33 @@ abstract class KerasNet[T: ClassTag](implicit ev: TensorNumeric[T])
   }
 
   def toModel(): Model[T]
+
+  /**
+   * Print out the summary information of an Analytics Zoo Keras Model.
+   *
+   * For each layer in the model, there will be a separate row containing four columns:
+   * ________________________________________________________________________________
+   * Layer (type)          Output Shape          Param #     Connected to
+   * ================================================================================
+   *
+   * In addition, total number of parameters of this model, separated into trainable and
+   * non-trainable counts, will be printed out after the table.
+   *
+   * @param lineLength The total length of one row. Default is 120.
+   * @param positions The maximum absolute length proportion(%) of each field.
+   *                  Array of Double of length 4.
+   *                  Usually you don't need to adjust this parameter.
+   *                  Default is Array(.33, .55, .67, 1), meaning that
+   *                  the first field will occupy up to 33% of lineLength,
+   *                  the second field will occupy up to (55-33)% of lineLength,
+   *                  the third field will occupy up to (67-55)% of lineLength,
+   *                  the fourth field will occupy the remaining line (100-67)%.
+   *                  If the field has a larger length, the remaining part will be trimmed.
+   *                  If the field has a smaller length, the remaining part will be white spaces.
+   */
+  def summary(
+      lineLength: Int = 120,
+      positions: Array[Double] = Array(.33, .55, .67, 1)): Unit
 }
 
 class Model[T: ClassTag] private (private val _inputs : Seq[ModuleNode[T]],
@@ -364,6 +392,27 @@ class Model[T: ClassTag] private (private val _inputs : Seq[ModuleNode[T]],
   override def toModel(): Model[T] = this
 
   override def toKeras(): Model[T] = this
+
+  override def summary(
+      lineLength: Int = 120,
+      positions: Array[Double] = Array(.33, .55, .67, 1)): Unit = {
+    println("Model Summary:")
+    KerasUtils.printSplitLine('-', lineLength)
+    val toDisplay = Array("Layer (type)", "Output Shape", "Param #", "Connected to")
+    KerasUtils.printRow(toDisplay, lineLength, positions, splitChar = '=')
+    val nodes = labor.asInstanceOf[StaticGraph[T]].getSortedForwardExecutions()
+    var totalParams = 0
+    var trainableParams = 0
+    for (node <- nodes) {
+      val (total, trainable) = KerasUtils.printNodeSummary(node, lineLength, positions)
+      totalParams += total
+      trainableParams += trainable
+    }
+    println("Total params: " + "%,d".format(totalParams))
+    println("Trainable params: " + "%,d".format(trainableParams))
+    println("Non-trainable params: " + "%,d".format(totalParams - trainableParams))
+    KerasUtils.printSplitLine('-', lineLength)
+  }
 }
 
 object Model extends KerasLayerSerializable {
@@ -530,7 +579,7 @@ class Sequential[T: ClassTag] private ()
   }
 
   override def toModel(): Model[T] = {
-    val input = Input[T](this.getInputShape())
+    val input = Input[T](KerasUtils.removeBatch(this.getInputShape()))
 
     // the is reason we do not use .inputs here is
     // layers in modules cannot be rebuilt
@@ -542,6 +591,13 @@ class Sequential[T: ClassTag] private ()
       out
     }
     Model(input, output)
+  }
+
+  override def summary(
+      lineLength: Int = 120,
+      positions: Array[Double] = Array(.33, .55, .67, 1)): Unit = {
+    val graph = this.toModel()
+    graph.summary(lineLength, positions)
   }
 }
 

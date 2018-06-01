@@ -17,15 +17,19 @@
 package com.intel.analytics.zoo.pipeline.api.keras.layers.utils
 
 import com.intel.analytics.bigdl.Criterion
+import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.nn.keras.{KerasIdentityWrapper, KerasLayer, KerasLayerWrapper, Sequential => KSequential, SoftMax => KSoftMax}
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, DataFormat}
 import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.{Shape, SingleShape}
+import com.intel.analytics.bigdl.utils.{MultiShape, Shape, SingleShape}
+import com.intel.analytics.zoo.pipeline.api.Net
 import com.intel.analytics.zoo.pipeline.api.keras.metrics.AUC
+import com.intel.analytics.zoo.pipeline.api.keras.models.KerasNet
 
+import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
 object KerasUtils {
@@ -237,5 +241,165 @@ object KerasUtils {
           methods(0)
     }
     method.invoke(obj, args: _*)
+  }
+
+  /**
+   * Count the total number of parameters for a KerasLayer.
+   * Return a tuple (total params #, trainable params #)
+   */
+  def countParams[T: ClassTag](layer: KerasLayer[Activity, Activity, T]): (Int, Int) = {
+    val (weights, gradWeights) = layer.parameters()
+    var count = 0
+    for (w <- weights) {
+      count += w.nElement()
+    }
+    if (layer.isInstanceOf[KerasNet[T]]) {
+      val modules = layer.labor.asInstanceOf[Container[Activity, Activity, T]].modules
+      var trainable = 0
+      for (module <- modules) {
+        trainable += countParams[T](module.asInstanceOf[KerasLayer[Activity, Activity, T]])._2
+      }
+      (count, trainable)
+    }
+    else {
+      if (layer.asInstanceOf[Net].isFrozen()) {
+        (count, 0)
+      }
+      else {
+        (count, count)
+      }
+    }
+  }
+
+  /**
+   * Return the layer summary information as an array of String, in the order of:
+   * Layer (type), OutputShape, Param #
+   */
+  def getLayerSummary[T: ClassTag](layer: KerasLayer[Activity, Activity, T]): Array[String] = {
+    val outputShape = strShape(layer.getOutputShape())
+    val name = layer.getName
+    val className = layer.getClass.getSimpleName
+    Array(name + " (" + className + ")", outputShape.toString,
+      KerasUtils.countParams(layer)._1.toString)
+  }
+
+  /**
+   * Together with the layer summary of a node, also return the name of the node(s)
+   * that it is connected to.
+   * If there are multiple connected nodes, they will be combined by ", "
+   */
+  def getNodeSummary[T: ClassTag](node: ModuleNode[T]): Array[String] = {
+    val layer = node.element.asInstanceOf[KerasLayer[Activity, Activity, T]]
+    val results = getLayerSummary(layer)
+    var connectedTo = ""
+    val prevNodes = node.prevNodes
+    for (i <- prevNodes.indices) {
+      if (i > 0) connectedTo += ", "
+      connectedTo += prevNodes(i).element.getName
+    }
+    results ++ Array(connectedTo)
+  }
+
+  /**
+   * Print the summary of a node in a line.
+   * Return a tuple (total params #, trainable params #) of this node.
+   */
+  def printNodeSummary[T: ClassTag](
+      node: ModuleNode[T],
+      lineLength: Int = 120,
+      positions: Array[Double] = Array(.33, .55, .67, 1)): (Int, Int) = {
+    printRow(getNodeSummary(node), lineLength, positions)
+    countParams(node.element.asInstanceOf[KerasLayer[Activity, Activity, T]])
+  }
+
+  /**
+   * Print a row containing several fields.
+   *
+   * @param fields The fields to be printed out.
+   * @param lineLength The total length of a printed line.
+   * @param positions The maximum absolute length proportion(%) of each field.
+   *                  Default is Array(.33, .55, .67, 1), meaning that
+   *                  the first field will occupy up to 33% of lineLength,
+   *                  the second field will occupy up to (55-33)% of lineLength,
+   *                  the third field will occupy up to (67-55)% of lineLength,
+   *                  the fourth field will occupy the remaining line (100-67)%.
+   *                  If the field has a larger length, the remaining part will be trimmed.
+   *                  If the field has a smaller length, the remaining part will be white spaces.
+   * @param includeSplitLine Whether to add a split line after printing one row.
+   * @param splitChar The character to compose the split line.
+   */
+  def printRow(
+      fields: Array[String],
+      lineLength: Int = 120,
+      positions: Array[Double] = Array(.33, .55, .67, 1),
+      includeSplitLine: Boolean = true,
+      splitChar: Char = '_'): Unit = {
+    val fieldLengths = ArrayBuffer[Int]()
+    for (i <- positions.indices) {
+      if (i > 0) {
+        val len = (positions(i) - positions(i-1)) * lineLength
+        require(len > 0, s"Invalid positions specified: ${positions(i)} < ${positions(i-1)}")
+        fieldLengths.append(len.toInt)
+      }
+      else fieldLengths.append((positions(i)*lineLength).toInt)
+    }
+    var line = ""
+    // If there are multiple connected to nodes, each will be printed in a separate line.
+    var nodes = Array[String]()
+    for (i <- fields.indices) {
+      if (i > 0) line += " "
+      if (i == 3) {
+        nodes = fields(i).split(", ")
+        line += nodes(0)
+      }
+      else {
+        line += fields(i)
+      }
+      val maxLength = fieldLengths.take(i + 1).sum
+      if (line.length > maxLength) {
+        line = line.substring(0, maxLength)
+      }
+      else {
+        line += " " * (maxLength - line.length)
+      }
+
+    }
+    println(line)
+    // If there are multiple connected to nodes, print the remaining each in a separate line
+    // without the split line.
+    for (node <- nodes.slice(1, nodes.length)) {
+      printRow(Array("", "", "", node), lineLength, positions, includeSplitLine = false)
+    }
+    if (includeSplitLine) printSplitLine(splitChar, lineLength)
+  }
+
+  /**
+   * Print a split line that repeats the 'char' for 'lineLength' times.
+   */
+  def printSplitLine(char: Char, lineLength: Int = 120): Unit = {
+    val str = char.toString
+    println(str * lineLength)
+  }
+
+  /**
+   * Convert a Shape to String format using 'None' to indicate batch,
+   * which is the same as Keras. Used to print out the shape.
+   *
+   * For example,
+   * (None, 10) will be returned for Shape(-1, 10), a SingleShape.
+   * (None, 10) (None, 8) will be returned for a MultiShape which consists of
+   * Shape(-1, 10), Shape(-1, 8).
+   */
+  def strShape(shape: Shape): String = {
+    shape match {
+      case s: SingleShape =>
+        val res = "(" + s.toSingle().mkString(", ") + ")"
+        res.replaceFirst("-1", "None")
+      case m: MultiShape =>
+        val shapes = m.toMulti()
+        var res = ""
+        for (shape <- shapes) res = res + strShape(shape) + " "
+        res
+    }
   }
 }
