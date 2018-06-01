@@ -14,21 +14,6 @@ pages:
 - Releases: 
   - Download: release-download.md 
   - Documentation: release-docs.md
-- Programming Guide: 
-  - Pipeline APIs:
-    - DataFrame and ML Pipeline: ProgrammingGuide/nnframes.md
-    - Autograd: ProgrammingGuide/autograd.md
-    - Transfer Learning: ProgrammingGuide/transferlearning.md
-  - Feature Engineering:
-    - Working with Images: ProgrammingGuide/workingwithimages.md
-  - Built-in Models:
-    - Object Detection: ProgrammingGuide/object-detection.md
-    - Image Classification: ProgrammingGuide/image-classification.md
-    - Text Classification: ProgrammingGuide/text-classification.md
-    - Recommendation: ProgrammingGuide/recommendation.md
-  - Use Cases:
-    - Overview: ProgrammingGuide/usercases-overview.md
-    - Anomaly Detection: ProgrammingGuide/anomaly-detection.md
 - User Guide:
   - Python:
     - Install: PythonUserGuide/install.md
@@ -39,6 +24,21 @@ pages:
     - Install: ScalaUserGuide/install.md
     - Run: ScalaUserGuide/run.md
     - Examples: ScalaUserGuide/examples.md
+- Programming Guide: 
+  - Pipeline APIs:
+    - DataFrame and ML Pipeline: ProgrammingGuide/nnframes.md
+    - Autograd: ProgrammingGuide/autograd.md
+    - Transfer Learning: ProgrammingGuide/transferlearning.md
+  - Feature Engineering:
+    - Working with Images: ProgrammingGuide/workingwithimages.md
+  - Built-in Models:
+    - Object Detection API: ProgrammingGuide/object-detection.md
+    - Image Classification API: ProgrammingGuide/image-classification.md
+    - Text Classification API: ProgrammingGuide/text-classification.md
+    - Recommendation API: ProgrammingGuide/recommendation.md
+  - Reference Use Cases:
+    - Use Cases: ProgrammingGuide/usercases-overview.md
+    - Anomaly Detection: ProgrammingGuide/anomaly-detection.md
 - API Guide:
   - Pipeline APIs:
     - NNFrames: APIGuide/PipelineAPI/nnframes.md
