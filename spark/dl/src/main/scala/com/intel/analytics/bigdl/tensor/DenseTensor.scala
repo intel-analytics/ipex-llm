@@ -28,7 +28,7 @@ import scala.reflect.ClassTag
 
 @SerialVersionUID(5876322619614900645L)
 private[tensor] class DenseTensor[@specialized T: ClassTag](
-  private[tensor] var _storage: Storage[T],
+  private[tensor] var _storage: ArrayStorage[T],
   private[tensor] var _storageOffset: Int,
   private[tensor] var _size: Array[Int],
   private[tensor] var _stride: Array[Int],
@@ -64,7 +64,7 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
   override def squeeze(dim: Int): Tensor[T] = DenseTensor.squeeze(this, dim - 1)
 
   override def squeezeNewTensor(): Tensor[T] = {
-    val result = new DenseTensor(this.storage(), this.storageOffset(), this._size, this._stride)
+    val result = new DenseTensor(this._storage, this.storageOffset(), this._size, this._stride)
     result.squeeze()
   }
 
@@ -171,7 +171,7 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
     require(this.isContiguous(), "current tensor is not contiguous")
     require(sizes.product == this.nElement(), "invalid size eElement")
 
-    new DenseTensor(this.storage(), this.storageOffset(), sizes.clone())
+    new DenseTensor(this._storage, this.storageOffset(), sizes.clone())
   }
 
   override def unfold(dim: Int, size: Int, step: Int): Tensor[T] = {
@@ -228,7 +228,7 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
     this(new ArrayStorage[T](new Array[T](dims.product)), 0, dims.toArray,
       DenseTensor.size2Stride(dims.toArray), dims.length)
 
-  private[tensor] def this(storage: Storage[T])(implicit ev: TensorNumeric[T]) = {
+  private[tensor] def this(storage: ArrayStorage[T])(implicit ev: TensorNumeric[T]) = {
     this(null, 0, null, null, 0)
     val _storageOffset = 0
     val _size = Array(storage.length)
@@ -236,7 +236,7 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
     DenseTensor.newWithStorage(this, storage, _storageOffset, _size, _stride, ev)
   }
 
-  private[tensor] def this(storage: Storage[T], storageOffset: Int, size: Array[Int] = null,
+  private[tensor] def this(storage: ArrayStorage[T], storageOffset: Int, size: Array[Int] = null,
     stride: Array[Int] = null)(implicit ev: TensorNumeric[T]) = {
     this(null, 0, null, null, 0)
     if (storage != null) {
@@ -249,7 +249,8 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
 
   private[tensor] def this(other: Tensor[T])(implicit ev: TensorNumeric[T]) = {
     this(null, 0, null, null, 0)
-    val _storage = other.storage()
+    require(other.isInstanceOf[DenseTensor[_]], "Only support dense tensor in this operation")
+    val _storage = other.storage().asInstanceOf[ArrayStorage[T]]
     val _storageOffset = other.storageOffset() - 1
     val _size = other.size()
     val _stride = other.stride()
@@ -363,8 +364,9 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
   }
 
   override def set(other: Tensor[T]): Tensor[T] = {
-    DenseTensor.rawSet(this, other.storage(), other.storageOffset() - 1, other.nDimension(),
-      other.size(), other.stride())
+    require(other.isInstanceOf[DenseTensor[_]], "Only support dense tensor in this operation")
+    DenseTensor.rawSet(this, other.storage().asInstanceOf[ArrayStorage[T]],
+      other.storageOffset() - 1, other.nDimension(), other.size(), other.stride())
   }
 
   override def set(storage: Storage[T], storageOffset: Int = 1, sizes: Array[Int] = null,
@@ -373,7 +375,8 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
       require(sizes.length == strides.length)
     }
 
-    DenseTensor.rawSet(this, storage, storageOffset - 1,
+    require(storage.isInstanceOf[ArrayStorage[_]], "Only support array storage in this operation")
+    DenseTensor.rawSet(this, storage.asInstanceOf[ArrayStorage[T]], storageOffset - 1,
       if (sizes == null) 0 else sizes.length,
       sizes, strides)
   }
@@ -421,7 +424,15 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
   }
 
   override def copy(other: Tensor[T]): Tensor[T] = {
-    DenseTensor.copy(this, other)
+    other match {
+      case t: DnnTensor[_] =>
+        require(this.nElement() == other.nElement(), "tensor size must match")
+        this.storage().copy(other.storage(), this.storageOffset() - 1, 0, other.nElement())
+      case t: DenseTensor[_] =>
+        DenseTensor.copy(this, other)
+      case _ => throw new UnsupportedOperationException(
+        "only support copy from dense tensor or dnn tensor")
+    }
     this
   }
 
@@ -934,6 +945,7 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
   override def add(value: T, y: Tensor[T]): Tensor[T] = DenseTensorMath.cadd(this, this, value, y)
 
   override def add(x: Tensor[T]): Tensor[T] = {
+    require(x.isInstanceOf[DenseTensor[_]], "Only support dense tensor in this operation")
     if (this.nElement() == x.nElement()) {
       if (MKL.isMKLLoaded && this.isContiguous() && x.isContiguous()) {
         ev.vAdd(this.nElement(), this.storage().array(), this.storageOffset() - 1,
@@ -955,12 +967,12 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
         i += 1
       }
     } else {
-      this.add(expandTensor(x))
+      this.add(expandTensor(x.asInstanceOf[DenseTensor[T]]))
     }
     this
   }
 
-  private[tensor] def expandTensor(x: Tensor[T]): Tensor[T] = {
+  private[tensor] def expandTensor(x: DenseTensor[T]): Tensor[T] = {
     val targetSize = DenseTensor.expandSize(this, x)
     val expandStrides = new Array[Int](targetSize.length)
 
@@ -972,7 +984,7 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
       i -= 1
     }
     val expandX = new DenseTensor[T](
-      x.storage(),
+      x.storage().asInstanceOf[ArrayStorage[T]],
       x.storageOffset(),
       targetSize,
       expandStridesX
@@ -985,7 +997,7 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
         i -= 1
       }
       val tensor1 = new DenseTensor[T](
-        this.storage(),
+        this._storage,
         this.storageOffset(),
         targetSize,
         expandStrides
@@ -1031,6 +1043,7 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
     DenseTensorMath.csub(this, this, ev.negative(value), y)
 
   override def sub(x: Tensor[T]): Tensor[T] = {
+    require(x.isInstanceOf[DenseTensor[T]], "Only dense tensor is supported in this operation")
     if (this.nElement() == x.nElement()) {
       if (MKL.isMKLLoaded && this.isContiguous() && x.isContiguous() &&
         (x.getType() == DoubleType || x.getType() == FloatType)) {
@@ -1055,7 +1068,7 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
         i += 1
       }
     } else {
-      this.sub(expandTensor(x))
+      this.sub(expandTensor(x.asInstanceOf[DenseTensor[T]]))
     }
 
     this
@@ -1162,9 +1175,16 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
     this
   }
 
-  override def cmul(y: Tensor[T]): Tensor[T] = DenseTensorMath.cmul(this, this, y)
+  override def cmul(y: Tensor[T]): Tensor[T] = {
+    require(y.isInstanceOf[DenseTensor[_]], "Only support dense tensor in this operation")
+    DenseTensorMath.cmul(this, this, y.asInstanceOf[DenseTensor[T]])
+  }
 
-  override def cmul(x: Tensor[T], y: Tensor[T]): Tensor[T] = DenseTensorMath.cmul(this, x, y)
+  override def cmul(x: Tensor[T], y: Tensor[T]): Tensor[T] = {
+    require(x.isInstanceOf[DenseTensor[_]], "Only support dense tensor in this operation")
+    require(y.isInstanceOf[DenseTensor[_]], "Only support dense tensor in this operation")
+    DenseTensorMath.cmul(this, x.asInstanceOf[DenseTensor[T]], y.asInstanceOf[DenseTensor[T]])
+  }
 
   override def cdiv(y: Tensor[T]): Tensor[T] = DenseTensorMath.cdiv(this, this, y)
 
@@ -1199,6 +1219,7 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
   override def div(value: T): Tensor[T] = DenseTensorMath.mul(this, null, ev.inv(value))
 
   override def div(x: Tensor[T]): Tensor[T] = {
+    require(x.isInstanceOf[DenseTensor[_]], "Only dense tensor is supported in this operation")
     if (this.nElement() == x.nElement()) {
       if (MKL.isMKLLoaded && this.isContiguous() && x.isContiguous()) {
         ev.vDiv(this.nElement(), this.storage().array(), this.storageOffset() - 1,
@@ -1222,7 +1243,7 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
         i += 1
       }
     } else {
-      this.div(expandTensor(x))
+      this.div(expandTensor(x.asInstanceOf[DenseTensor[T]]))
     }
 
     this
@@ -1316,8 +1337,8 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
       xSize = Array(1) ++ xSize
       i += 1
     }
-    val size = new DenseTensor(Storage[T](xSize.map(x => ev.fromType[Int](x)))).
-      cmul(new DenseTensor(Storage[T](sizes.map(x => ev.fromType[Int](x))))).
+    val size = new DenseTensor(new ArrayStorage[T](xSize.map(x => ev.fromType[Int](x)))).
+      cmul(new DenseTensor(new ArrayStorage[T](sizes.map(x => ev.fromType[Int](x))))).
       storage().array().map(x => ev.toType[Int](x))
     xTensor.resize(xSize)
     result.resize(size)
@@ -2255,7 +2276,7 @@ object DenseTensor {
   }
 
   private[tensor] def newWithStorage[@specialized(Float, Double) T: ClassTag](
-    tensor: DenseTensor[T], storage: Storage[T], storageOffset: Int, size: Array[Int],
+    tensor: DenseTensor[T], storage: ArrayStorage[T], storageOffset: Int, size: Array[Int],
     stride: Array[Int], ev: TensorNumeric[T]): DenseTensor[T] = {
     if (size != null && stride != null) {
       require(size.length == stride.length, "inconsistent size")
@@ -2276,7 +2297,7 @@ object DenseTensor {
   }
 
   private[tensor] def rawSet[@specialized(Float, Double) T: ClassTag](
-    self: DenseTensor[T], storage: Storage[T], storageOffset: Int,
+    self: DenseTensor[T], storage: ArrayStorage[T], storageOffset: Int,
     nDimension: Int, _size: Array[Int], _stride: Array[Int]): DenseTensor[T] = {
     self._storage = storage
     require(storageOffset >= 0, "Tensor: invalid storage offset")
@@ -2465,9 +2486,9 @@ object DenseTensor {
   }
 
   private[tensor] def set[@specialized(Float, Double) T: ClassTag](
-    self: DenseTensor[T], other: Tensor[T]): Tensor[T] = {
+    self: DenseTensor[T], other: DenseTensor[T]): Tensor[T] = {
     if (self != other) {
-      DenseTensor.rawSet(self, other.storage, other.storageOffset,
+      DenseTensor.rawSet(self, other.storage.asInstanceOf[ArrayStorage[T]], other.storageOffset,
         other.nDimension, other.size, other.stride)
     } else {
       self
@@ -2486,11 +2507,11 @@ object DenseTensor {
   }
 
   private[tensor] def select[@specialized(Float, Double) T: ClassTag](
-    self: DenseTensor[T], source: Tensor[T], _dimension: Int, _sliceIndex: Int): Unit = {
+    self: DenseTensor[T], source: DenseTensor[T], _dimension: Int, _sliceIndex: Int): Unit = {
     var src = source
     if (src == null) src = self
-    require(src.nDimension() > 0, "cannot select on a scalar")
-    require(_dimension >= 0 && _dimension < src.nDimension(), "out of range")
+    require(src.nDimension > 0, "cannot select on a scalar")
+    require(_dimension >= 0 && _dimension < src.nDimension, "out of range")
     require(_sliceIndex >= 0 && _sliceIndex < src.size(_dimension + 1),
       s"${_sliceIndex} out of range 0 to ${src.size(_dimension + 1) - 1}")
 
@@ -2508,14 +2529,14 @@ object DenseTensor {
   }
 
   private[tensor] def narrow[@specialized(Float, Double) T: ClassTag](
-    self: DenseTensor[T], source: Tensor[T], _dimension: Int, _firstIndex: Int, size: Int)
+    self: DenseTensor[T], source: DenseTensor[T], _dimension: Int, _firstIndex: Int, size: Int)
   : Unit = {
     var src = source
     if (src == null) {
       src = self
     }
 
-    require(_dimension >= 0 && _dimension < src.nDimension(), "dimension out of range")
+    require(_dimension >= 0 && _dimension < src.nDimension, "dimension out of range")
     require(_firstIndex >= 0 && _firstIndex < src.size(_dimension + 1),
       s"firstIndex(${_firstIndex}) out of range [0, ${src.size(_dimension + 1)})")
     require(size > 0 && _firstIndex + size <= src.size(_dimension + 1),
@@ -2530,7 +2551,7 @@ object DenseTensor {
   }
 
   private[tensor] def transpose[@specialized(Float, Double) T: ClassTag](
-    self: DenseTensor[T], source: Tensor[T], _dimension1: Int, _dimension2: Int): Unit = {
+    self: DenseTensor[T], source: DenseTensor[T], _dimension1: Int, _dimension2: Int): Unit = {
     var src = source
     if (src == null) src = self
     require(_dimension1 >= 0 && _dimension1 < src.nDimension, "out of range")

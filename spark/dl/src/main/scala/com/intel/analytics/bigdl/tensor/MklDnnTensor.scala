@@ -26,7 +26,7 @@ import org.apache.log4j.{Level, Logger}
 import scala.reflect.ClassTag
 
 class MklDnnTensor[T: ClassTag](
-  _dnnstorage: Storage[T],
+  _dnnstorage: ArrayStorage[T],
   _dnnstorageOffset: Int,
   _dnnsize: Array[Int],
   _dnnstride: Array[Int],
@@ -55,7 +55,7 @@ class MklDnnTensor[T: ClassTag](
   private def allocate(capacity: Int): Long = {
     require(capacity != 0, s"capacity should not be 0")
     val ptr = Memory.AlignedMalloc(capacity * ELEMENT_SIZE, CACHE_LINE_SIZE)
-    require(ptr != 0L, s"allocate native aligned memory failed")
+    require(ptr  != 0L, s"allocate native aligned memory failed")
     ptr
   }
 
@@ -71,7 +71,7 @@ class MklDnnTensor[T: ClassTag](
 
   def syncFromHeap(): this.type = {
     if (this._storage == null) {
-      this._storage = Storage[T](size().product)
+      this._storage = new ArrayStorage[T](new Array[T](size().product))
     }
     MklDnnTensor.syncFromHeap(this, this._storage.array(), storageOffset() - 1)
     this
@@ -79,7 +79,7 @@ class MklDnnTensor[T: ClassTag](
 
   def syncToHeap(): Storage[T] = {
     if (_storage == null || _storage.length() != nElement()) {
-      this._storage = Storage[T](nElement())
+      this._storage = new ArrayStorage[T](new Array[T](nElement()))
     }
     MklDnnTensor.syncToHeap(this, this._storage.array(), storageOffset() - 1)
     this._storage
@@ -91,7 +91,7 @@ class MklDnnTensor[T: ClassTag](
 
   override def storage(): Storage[T] = {
     if (_storage == null || _storage.length() != nElement()) {
-      this._storage = Storage[T](nElement())
+      this._storage = new ArrayStorage[T](new Array[T](nElement()))
       println("****allocate****************")
       MklDnnTensor.backtrace()
     }
