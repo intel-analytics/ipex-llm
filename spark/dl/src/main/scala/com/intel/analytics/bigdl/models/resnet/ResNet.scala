@@ -21,6 +21,7 @@ import com.intel.analytics.bigdl.nn.Graph._
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.numeric.NumericFloat
+import com.intel.analytics.bigdl.optim.L2Regularizer
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.utils.Table
@@ -43,15 +44,31 @@ object Convolution {
      padH: Int = 0,
      nGroup: Int = 1,
      propagateBack: Boolean = true,
-     optnet: Boolean = true)
+     optnet: Boolean = true,
+     weightDecay: Double = 1e-4)
      (implicit ev: TensorNumeric[T]): SpatialConvolution[T] = {
-    if (optnet) {
+    val wReg = L2Regularizer[T](weightDecay)
+    val bReg = L2Regularizer[T](weightDecay)
+    val conv = if (optnet) {
       SpatialShareConvolution[T](nInputPlane, nOutputPlane, kernelW, kernelH,
-        strideW, strideH, padW, padH, nGroup, propagateBack)
+        strideW, strideH, padW, padH, nGroup, propagateBack, wReg, bReg)
     } else {
       SpatialConvolution[T](nInputPlane, nOutputPlane, kernelW, kernelH,
-        strideW, strideH, padW, padH, nGroup, propagateBack)
+        strideW, strideH, padW, padH, nGroup, propagateBack, wReg, bReg)
     }
+    conv.setInitMethod(MsraFiller(false), Zeros)
+    conv
+  }
+}
+
+object Sbn {
+  def apply[@specialized(Float, Double) T: ClassTag](
+    nOutput: Int,
+    eps: Double = 1e-3,
+    momentum: Double = 0.1,
+    affine: Boolean = true)
+  (implicit ev: TensorNumeric[T]): SpatialBatchNormalization[T] = {
+    SpatialBatchNormalization[T](nOutput, eps, momentum, affine).setInitMethod(Ones, Zeros)
   }
 }
 
@@ -135,8 +152,7 @@ object ResNet {
     val depth = opt.get("depth").getOrElse(18)
     val shortCutType = opt.get("shortcutType")
     val shortcutType = shortCutType.getOrElse(ShortcutType.B).asInstanceOf[ShortcutType]
-    val dataSet = opt.get("dataset")
-    val dataset = dataSet.getOrElse(DatasetType.CIFAR10).asInstanceOf[DatasetType]
+    val dataSet = opt.getOrElse[DatasetType]("dataSet", DatasetType.CIFAR10)
     val optnet = opt.get("optnet").getOrElse(true)
 
     def shortcut(nInputPlane: Int, nOutputPlane: Int, stride: Int): Module[Float] = {
@@ -146,7 +162,7 @@ object ResNet {
       if (useConv) {
         Sequential()
           .add(Convolution(nInputPlane, nOutputPlane, 1, 1, stride, stride, optnet = optnet))
-          .add(SpatialBatchNormalization(nOutputPlane))
+          .add(Sbn(nOutputPlane))
       } else if (nInputPlane != nOutputPlane) {
         Sequential()
           .add(SpatialAveragePooling(1, 1, stride, stride))
@@ -164,10 +180,10 @@ object ResNet {
 
       val s = Sequential()
       s.add(Convolution(nInputPlane, n, 3, 3, stride, stride, 1, 1, optnet = optnet))
-      s.add(SpatialBatchNormalization(n))
+      s.add(Sbn(n))
       s.add(ReLU(true))
       s.add(Convolution(n, n, 3, 3, 1, 1, 1, 1, optnet = optnet))
-      s.add(SpatialBatchNormalization(n))
+      s.add(Sbn(n))
 
       Sequential()
         .add(ConcatTable()
@@ -183,14 +199,13 @@ object ResNet {
 
       val s = Sequential()
       s.add(Convolution(nInputPlane, n, 1, 1, 1, 1, 0, 0, optnet = optnet))
-        .add(SpatialBatchNormalization(n))
+        .add(Sbn(n))
         .add(ReLU(true))
         .add(Convolution(n, n, 3, 3, stride, stride, 1, 1, optnet = optnet))
-        .add(SpatialBatchNormalization(n))
+        .add(Sbn(n))
         .add(ReLU(true))
         .add(Convolution(n, n*4, 1, 1, 1, 1, 0, 0, optnet = optnet))
-        .add(SpatialBatchNormalization(n * 4))
-
+        .add(Sbn(n * 4).setInitMethod(Zeros, Zeros))
       Sequential()
         .add(ConcatTable()
           .add(s)
@@ -209,7 +224,7 @@ object ResNet {
     }
 
     val model = Sequential()
-    if (dataset == DatasetType.ImageNet) {
+    if (dataSet == DatasetType.ImageNet) {
       val cfg = Map(
         18 -> ((2, 2, 2, 2), 512,
           basicBlock: (Int, Int) => Module[Float]),
@@ -232,7 +247,7 @@ object ResNet {
       logger.info(" | ResNet-" + depth + " ImageNet")
 
       model.add(Convolution(3, 64, 7, 7, 2, 2, 3, 3, optnet = optnet, propagateBack = false))
-        .add(SpatialBatchNormalization(64))
+        .add(Sbn(64))
         .add(ReLU(true))
         .add(SpatialMaxPooling(3, 3, 2, 2, 1, 1))
         .add(layer(block, 64, loopConfig._1))
@@ -241,8 +256,9 @@ object ResNet {
         .add(layer(block, 512, loopConfig._4, 2))
         .add(SpatialAveragePooling(7, 7, 1, 1))
         .add(View(nFeatures).setNumInputDims(3))
-        .add(Linear(nFeatures, classNum))
-    } else if (dataset == DatasetType.CIFAR10) {
+        .add(Linear(nFeatures, classNum, true, L2Regularizer(1e-4), L2Regularizer(1e-4))
+          .setInitMethod(RandomNormal(0.0, 0.01), Zeros))
+    } else if (dataSet == DatasetType.CIFAR10) {
       require((depth - 2)%6 == 0,
         "depth should be one of 20, 32, 44, 56, 110, 1202")
       val n = (depth-2)/6
@@ -259,7 +275,7 @@ object ResNet {
       model.add(View(64).setNumInputDims(3))
       model.add(Linear(64, 10))
     } else {
-      throw new IllegalArgumentException(s"Invalid dataset ${dataset}")
+      throw new IllegalArgumentException(s"Invalid dataset ${dataSet}")
     }
     model
   }
