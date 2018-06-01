@@ -223,6 +223,13 @@ class PythonZooKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonB
     value.toKeras()
   }
 
+  def zooKerasNetSummary(
+      model: KerasNet[T],
+      lineLength: Int = 120,
+      positions: JList[Double]): Unit = {
+    model.summary(lineLength, positions.asScala.toArray)
+  }
+
   def createZooKerasDense(
       outputDim: Int,
       init: String = "glorot_uniform",
