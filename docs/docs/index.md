@@ -3,12 +3,12 @@
 *Analytics + AI Platform for Apache Spark and [BigDL](https://bigdl-project.github.io/master/#whitepaper/).*
 
 ---
-
+## What is Analytics Zoo?
 Analytics Zoo makes it easy to build deep learning application on Spark and BigDL, by providing an end-to-end analytics + AI Platform (including *high level pipeline APIs*, *built-in deep learning models*, *reference use cases*, etc.).
 
  * [High level pipeline APIs](#high-level-pipeline-apis)
-    * [`nnframes`](#nnframes): native deep learning support in *Spark DataFrames and ML Pipelines*
-    * [`autograd`](#autograd): build custom layer/loss using *auto differentiation operations* 
+    * [nnframes](#nnframes): native deep learning support in *Spark DataFrames and ML Pipelines*
+    * [autograd](#autograd): build custom layer/loss using *auto differentiation operations* 
     * [Transfer learning](#transfer-learning): customize pretained model for *feature extraction or fine-tuning*
   
  - [Built-in deep learning models](#built-in-deep-learning-models)
@@ -19,11 +19,18 @@ Analytics Zoo makes it easy to build deep learning application on Spark and BigD
   
  - [Reference use cases](#reference-use-cases): a collection of end-to-end *reference use cases* (e.g., anomaly detection, sentiment analysis, fraud detection, image augmentation, object detection, variational autoencoder, etc.)
 
+## How to use Analytics Zoo?
+- To get started, please refer to the [Python install guide](https://analytics-zoo.github.io/master/#PythonUserGuide/install/) or [Scala install guide](https://analytics-zoo.github.io/master/#ScalaUserGuide/install/).
+
+- For more information, You may refer to the [Analytis Zoo document website](https://analytics-zoo.github.io/)
+
+- For additional questions and discussions, you can join the [Google User Group](https://groups.google.com/forum/#!forum/bigdl-user-group) (or subscribe to the [Mail List](bigdl-user-group+subscribe@googlegroups.com)) 
+
 ---
 ## High level pipeline APIs
 Analytics Zoo provides a set of easy-to-use, high level pipeline APIs that natively support Spark DataFrames and ML Pipelines, autograd and custom layer/loss, trasnfer learning, etc.
 
-### `nnframes`
+### nnframes
 `nnframes` provides *native deep learning support in Spark DataFrames and ML Pipelines*, so that you can easily build complex deep learning pipelines in just a few lines, as illustracted below. (See more details [here](ProgrammingGuide/nnframes.md))
 
  1.Load images into DataFrames using `NNImageReader`
@@ -67,7 +74,7 @@ Analytics Zoo provides a set of easy-to-use, high level pipeline APIs that nativ
    nnModel = classifier.fit(df)
 ```
    
-### `autograd`
+### autograd
 `autograd` provides automatic differentiation for math operations, so that you can easily build your own *custom loss and layer* (in both Python and Scala), as illustracted below. (See more details [here](ProgrammingGuide/autograd.md))
 
  1.Define custom functions using `autograd`
