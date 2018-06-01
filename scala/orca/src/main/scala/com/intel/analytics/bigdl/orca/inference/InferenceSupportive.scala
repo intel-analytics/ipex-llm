@@ -16,9 +16,13 @@
 
 package com.intel.analytics.zoo.pipeline.inference
 
+import com.intel.analytics.bigdl.dataset.Sample
 import org.slf4j.LoggerFactory
+
 import scala.collection.JavaConverters._
 import com.intel.analytics.bigdl.tensor.Tensor
+import java.util.{List => JList}
+import java.lang.{Float => JFloat}
 
 trait InferenceSupportive {
 
@@ -33,26 +37,11 @@ trait InferenceSupportive {
     result
   }
 
-  def transferInferenceInputToTensor(input: java.util.List[java.util.List[java.lang.Float]]):
-    Tensor[Float] = {
-    val arrays = input.asScala.map(_.asScala.toArray.map(_.asInstanceOf[Float]))
-    val _buffer = Tensor[Float]()
-    arrays.length match {
-      case 0 => ;
-      case 1 => val size = arrays.head.length
-        _buffer.resize(size)
-        System.arraycopy(arrays.head, 0, _buffer.storage().array(), 0, size)
-      case _ =>
-        val size = arrays.head.length
-        arrays.map(arr => require(size == arr.length, "input array have different lengths"))
-        _buffer.resize(Array(arrays.length, size))
-        var d = 0
-        while (d < arrays.length) {
-          System.arraycopy(arrays(d), 0, _buffer.storage().array(), d * size, size)
-          d += 1
-        }
-    }
-    _buffer
+  def transferInputToSample(input: JList[JFloat], inputShape: Array[Int]):
+    Sample[Float] = {
+    require(input.size() == inputShape.reduce(_ * _), "data size not fit shape")
+    val inputData = input.asScala.toArray.map(_.asInstanceOf[Float])
+    Sample(Tensor(data = inputData, shape = inputShape))
   }
 
 }
