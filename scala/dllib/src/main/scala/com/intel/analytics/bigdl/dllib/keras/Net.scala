@@ -20,6 +20,7 @@ import java.nio.ByteOrder
 
 import com.intel.analytics.bigdl.nn.Graph
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
+import com.intel.analytics.bigdl.nn.keras.KerasLayer
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.File
 import com.intel.analytics.bigdl.utils.caffe.CaffeLoader
@@ -34,6 +35,11 @@ import scala.reflect.ClassTag
  * A placeholder to add layer's utilities
  */
 trait Net {
+
+  def isFrozen[T: ClassTag](): Boolean = {
+    val labor = this.asInstanceOf[KerasLayer[Activity, Activity, T]].labor
+    (labor.getScaleW() == 0) && (labor.getScaleB() == 0)
+  }
 
 }
 
