@@ -4,7 +4,7 @@
 
 ---
 ## What is Analytics Zoo?
-Analytics Zoo makes it easy to build deep learning application on Spark and BigDL, by providing an end-to-end analytics + AI Platform (including *high level pipeline APIs*, *built-in deep learning models*, *reference use cases*, etc.).
+Analytics Zoo makes it easy to build deep learning application on Spark and BigDL, by providing an end-to-end *Analytics + AI Platform* (including high level pipeline APIs, built-in deep learning models, reference use cases, etc.).
 
  * [High level pipeline APIs](#high-level-pipeline-apis)
     * [nnframes](#nnframes): native deep learning support in *Spark DataFrames and ML Pipelines*
