@@ -128,6 +128,20 @@ object AutoGrad {
       implicit ev: TensorNumeric[T]): Variable[T] = {
     Variable(Power[T](a).inputs(x.node))
   }
+
+  def softsign[T: ClassTag](a: Variable[T])(
+    implicit ev: TensorNumeric[T]): Variable[T] = {
+    val o: KerasLayer[Activity, Activity, T] =
+      new KerasLayerWrapper(bnn.SoftSign[T]().asInstanceOf[AbstractModule[Activity, Activity, T]])
+    Variable(o.inputs(a.node))
+  }
+
+  def softplus[T: ClassTag](a: Variable[T])(
+    implicit ev: TensorNumeric[T]): Variable[T] = {
+    val o: KerasLayer[Activity, Activity, T] =
+      new KerasLayerWrapper(bnn.SoftPlus[T]().asInstanceOf[AbstractModule[Activity, Activity, T]])
+    Variable(o.inputs(a.node))
+  }
 }
 
 object Variable extends {
@@ -281,3 +295,4 @@ class Variable[T: ClassTag] private (val node: ModuleNode[T])(
     Tensor[T](getInputShape().copyAndUpdate(0, batchSize).toSingle().toArray).fill(fillValue)
   }
 }
+
