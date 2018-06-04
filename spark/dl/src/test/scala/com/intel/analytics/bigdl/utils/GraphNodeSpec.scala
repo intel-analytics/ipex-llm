@@ -80,10 +80,10 @@ class GraphNodeSpec extends FlatSpec with Matchers {
     val seed = modelSeed
     RNG.setSeed(seed)
     val model = ResNet(classNum, T("shortcutType" -> ShortcutType.B,
-      "depth" -> depth, "dataset" -> DatasetType.ImageNet))
+      "depth" -> depth, "dataSet" -> DatasetType.ImageNet))
     RNG.setSeed(seed)
     val model2 = ResNet(classNum, T("shortcutType" -> ShortcutType.B,
-      "depth" -> depth, "dataset" -> DatasetType.ImageNet))
+      "depth" -> depth, "dataSet" -> DatasetType.ImageNet))
 
     val (weights, grad) = model.getParameters()
     val (w, g) = model2.getParameters()
