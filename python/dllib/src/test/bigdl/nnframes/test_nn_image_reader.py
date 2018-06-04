@@ -32,7 +32,7 @@ class TestNNImageReader():
         class. setup_method is invoked for every test method of a class.
         """
         sparkConf = create_spark_conf().setMaster("local[1]").setAppName("TestNNImageReader")
-        self.sc = get_nncontext(sparkConf)
+        self.sc = init_nncontext(sparkConf)
         self.resource_path = os.path.join(os.path.split(__file__)[0], "../../resources")
 
     def teardown_method(self, method):

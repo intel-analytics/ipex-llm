@@ -35,7 +35,7 @@ class TestNNClassifer():
         class.  setup_method is invoked for every test method of a class.
         """
         sparkConf = create_spark_conf().setMaster("local[1]").setAppName("testNNClassifer")
-        self.sc = get_nncontext(sparkConf)
+        self.sc = init_nncontext(sparkConf)
         self.sqlContext = SQLContext(self.sc)
 
     def teardown_method(self, method):
