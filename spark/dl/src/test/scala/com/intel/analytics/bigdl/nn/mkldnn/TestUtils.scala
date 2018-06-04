@@ -132,6 +132,7 @@ object Tools {
         val data = loadData(file).asFloatBuffer()
         val array = new Array[Float](data.limit())
         data.get(array)
+        assert(size.product == array.length, s"the data length is not correct")
         tensor.set(Storage(array), sizes = size)
       }
     }
@@ -139,7 +140,7 @@ object Tools {
     tensor
   }
 
-  def flattenModules(model: Module[Float], modules: ArrayBuffer[TensorModule[Float]]): Unit = {
+  def flattenModules(model: Module[Float], modules: ArrayBuffer[Module[Float]]): Unit = {
     model match {
       case container : Container[_, _, _] =>
         if (container.modules.nonEmpty) {
@@ -148,7 +149,7 @@ object Tools {
           }
         }
       case _ =>
-        modules += model.asInstanceOf[TensorModule[Float]]
+        modules += model
     }
   }
 
@@ -156,8 +157,8 @@ object Tools {
 
   def compare(prototxt: String, model: Module[Float], inputShape: Array[Int],
     outputShape: Array[Int]): Unit = {
-    val identity = Collect.run(prototxt)
-    val modules = ArrayBuffer[TensorModule[Float]]()
+    val identity = Collect.run(prototxt, singleLayer = true)
+    val modules = ArrayBuffer[Module[Float]]()
     Tools.flattenModules(model, modules)
 
     val input = Tools.getTensor("Fwrd_data", inputShape, identity)
@@ -178,20 +179,28 @@ object Tools {
     model.forward(input)
     model.backward(input, gradOutput)
 
-    for (i <- modules.indices) {
+    for (i <- modules.indices.reverse) {
       compareSingleLayer(modules(i), identity)
     }
 
-    def compareSingleLayer(module: TensorModule[Float], identity: String): Boolean = {
+    def compareSingleLayer(module: Module[Float], identity: String): Boolean = {
       val name = module.getName()
-      val output = Tools.getTensor(s"Fwrd_$name", module.output.size(), identity)
-      val gradInput = Tools.getTensor(s"Bwrd_$name", module.gradInput.size(), identity)
+      val bigdlOutput = module.output.toTensor[Float]
+      val bigdlGradInput = if (module.isInstanceOf[CAddTableDnn[Float]]) {
+        module.gradInput.toTable.apply[Tensor[Float]](1)
+      } else {
+        module.gradInput.toTensor[Float]
+      }
+
+      val output = Tools.getTensor(s"Fwrd_$name", module.output.toTensor[Float].size(), identity)
+      val gradInput = Tools.getTensor(s"Bwrd_$name", bigdlGradInput.size(), identity)
+
       var ret = true
 
-      ret &= compare2Tensors(output, module.output.toDenseTensor())
+      ret &= compare2Tensors(output, module.output.toTensor[Float].toDenseTensor())
       assert(ret, s"${module.getName()} output can't pass, please check")
 
-      ret &= compare2Tensors(gradInput, module.gradInput.toDenseTensor())
+      ret &= compare2Tensors(gradInput, bigdlGradInput.toDenseTensor())
       assert(ret, s"${module.getName()} gradInput can't pass, please check")
 
 
@@ -218,7 +227,7 @@ object Tools {
       }
     }
 
-    src.almostEqual(dst, 1e-6)
+    DnnTools.nearequals(src, dst)
   }
 
   def nearlyEqual(a: Float, b: Float, epsilon: Double): Boolean = {

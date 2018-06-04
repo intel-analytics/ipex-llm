@@ -54,10 +54,10 @@ class SingleLayer extends FlatSpec with Matchers {
          |  name: "$name"
          |  type: "Convolution"
          |  convolution_param {
-         |    num_output: 2
-         |    kernel_size: 3
-         |    pad: 1
-         |    stride: 2
+         |    num_output: $nOutput
+         |    kernel_size: $kernel
+         |    pad: $pad
+         |    stride: $stride
          |    weight_filler {
          |      type: "msra"
          |      variance_norm: FAN_OUT
