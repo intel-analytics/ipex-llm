@@ -344,15 +344,16 @@ Support L1 penalty, L2 penalty and shrinkage-type L2 penalty.
 
 **Scala example:**
 ```scala
-val optimMethod = new LBFGS(learningRate = 5e-3, learningRatePower = -0.5,
+val optimMethod = new Ftrl(learningRate = 5e-3, learningRatePower = -0.5,
   initialAccumulatorValue = 0.01)
 optimizer.setOptimMethod(optimMethod)
 ```
 
 **Python example:**
 ```python
-optim_method = LBFGS(learningrate = 5e-3, learningrate_power = -0.5,
-                 initial_accumulator_value = 0.01)
+optim_method = Ftrl(learningrate = 5e-3, \
+    learningrate_power = -0.5, \
+    initial_accumulator_value = 0.01)
                   
 optimizer = Optimizer(
     model=mlp_model,
