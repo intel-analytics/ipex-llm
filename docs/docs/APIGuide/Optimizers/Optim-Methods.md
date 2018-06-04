@@ -322,9 +322,9 @@ val optimMethod = new Ftrl(
 
 **Python:**
 ```python
-optim_method = LBFGS(learningrate = 1e-3, learningrate_power = 0.0, \
+optim_method = Ftrl(learningrate = 1e-3, learningrate_power = 0.0, \
                  initial_accumulator_value = 0.1, l1_regularization_strength = 0.0, \
-                 l2_regularization_strength = 0.0, l2_shrinkage_regularization_strength = 0.0,)
+                 l2_regularization_strength = 0.0, l2_shrinkage_regularization_strength = 0.0)
 ```
 
 An implementation of (Ftrl)[https://www.eecs.tufts.edu/~dsculley/papers/ad-click-prediction.pdf.]
