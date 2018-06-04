@@ -27,7 +27,7 @@ class TFNetSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
   before {
     val conf = new SparkConf().setAppName("Test ObjectDetector").setMaster("local[1]")
-    sc = NNContext.getNNContext(conf)
+    sc = NNContext.initNNContext(conf)
   }
 
   after {
