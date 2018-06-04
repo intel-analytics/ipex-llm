@@ -17,6 +17,12 @@ pip install analytics-zoo==0.1.0.dev0     # for Python 2.7
 pip3 install analytics-zoo==0.1.0.dev0    # for Python 3.5 and Python 3.6
 ```
 
+**Important:** Please always first call `init_nncontext()` at the very beginning of your code after pip install. This will create a SparkContext with optimized performance configuration and initialize the BigDL engine.
+```python
+from zoo.common.nncontext import *
+sc = init_nncontext()
+```
+
 **Remarks:**
 
 1. Pip install supports __Mac__ and __Linux__ platforms.

@@ -17,7 +17,7 @@ example
 val conf = Engine.createSparkConf()
   .setAppName("AUC test")
   .setMaster("local[1]")
-val sc = NNContext.getNNContext(conf)
+val sc = NNContext.initNNContext(conf)
 val data = new Array[Sample[Float]](4)
 var i = 0
 while (i < data.length) {
@@ -38,11 +38,11 @@ validation = AUC(20)
 ```
 example
 ```
+from zoo.common.nncontext import *
 from bigdl.nn.layer import *
-from zoo.common.nncontext import get_nncontext
 from zoo.pipeline.api.keras.metrics.auc import *
 
-sc = get_nncontext()
+sc = init_nncontext()
 
 data_len = 4
 batch_size = 8

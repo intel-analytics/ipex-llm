@@ -83,7 +83,6 @@ You can run a analytics zoo program, e.g., the [Object Detection](https://github
 
 If you are to run your own program, do remember to create SparkContext and initialize before calling other Analytics Zoo API's, as shown below.
 ```scala
- import com.intel.analytics.zoo.common.NNContext
- // Scala code example
- val sc = NNContext.getNNContext(conf)
+import com.intel.analytics.zoo.common.NNContext
+val sc = NNContext.initNNContext(conf)
 ```

@@ -34,11 +34,11 @@ Analytics Zoo provides a set of easy-to-use, high level pipeline APIs that nativ
 ### _`nnframes`_
 `nnframes` provides *native deep learning support in Spark DataFrames and ML Pipelines*, so that you can easily build complex deep learning pipelines in just a few lines, as illustracted below. (See more details [here](https://analytics-zoo.github.io/master/#ProgrammingGuide/nnframes/))
 
-1. Load images into DataFrames using `NNImageReader`
+1. Initialize *NNContext* and load images into *DataFrames* using `NNImageReader`
    ```
    from zoo.common.nncontext import *
    from zoo.pipeline.nnframes import *
-   sc = get_nncontext()
+   sc = init_nncontext()
    imageDF = NNImageReader.readImages(image_path, sc)
    ```
 

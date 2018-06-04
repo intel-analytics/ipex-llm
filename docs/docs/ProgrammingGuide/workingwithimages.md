@@ -14,7 +14,7 @@ Scala example:
 import com.intel.analytics.zoo.common.NNContext
 import com.intel.analytics.zoo.pipeline.nnframes.NNImageReader
 
-val sc = NNContext.getNNContext("app")
+val sc = NNContext.initNNContext("app")
 val imageDF1 = NNImageReader.readImages("/tmp", sc)
 val imageDF2 = NNImageReader.readImages("/tmp/*.jpg", sc)
 val imageDF3 = NNImageReader.readImages("/tmp/a.jpg, /tmp/b.jpg", sc)
@@ -26,7 +26,7 @@ Python:
 from zoo.common.nncontext import *
 from zoo.pipeline.nnframes import *
 
-sc = get_nncontext(create_spark_conf().setAppName("app"))
+sc = init_nncontext(create_spark_conf().setAppName("app"))
 imageDF1 = NNImageReader.readImages("/tmp", sc)
 imageDF2 = NNImageReader.readImages("/tmp/*.jpg", sc)
 imageDF3 = NNImageReader.readImages("/tmp/a.jpg, /tmp/b.jpg", sc)
@@ -200,7 +200,7 @@ You can train Zoo Keras model with ImageSet. Just call `fit` method to let Analy
 **Python example:**
 
 ```python
-from zoo.common.nncontext import get_nncontext
+from zoo.common.nncontext import *
 from zoo.feature.common import *
 from zoo.feature.image.imagePreprocessing import *
 from zoo.pipeline.api.keras.layers import Dense, Input, Flatten
@@ -208,7 +208,7 @@ from zoo.pipeline.api.keras.models import *
 from zoo.pipeline.api.net import *
 from bigdl.optim.optimizer import *
 
-sc = get_nncontext(create_spark_conf().setAppName("train keras"))
+sc = init_nncontext(create_spark_conf().setAppName("train keras"))
 img_path="/tmp/image"
 image_set = ImageSet.read(img_path,sc, min_partitions=1)
 transformer = ChainedPreprocessing(
@@ -314,7 +314,7 @@ Or you can load pre-trained Analytics-Zoo/BigDL model. Then call to `predictImag
 **Python example:**
 
 ```python
-from zoo.common.nncontext import get_nncontext
+from zoo.common.nncontext import *
 from zoo.feature.common import *
 from zoo.feature.image.imagePreprocessing import *
 from zoo.pipeline.api.keras.layers import Dense, Input, Flatten
@@ -322,7 +322,7 @@ from zoo.pipeline.api.keras.models import *
 from zoo.pipeline.api.net import *
 from bigdl.optim.optimizer import *
 
-sc = get_nncontext(create_spark_conf().setAppName("train keras"))
+sc = init_nncontext(create_spark_conf().setAppName("train keras"))
 img_path="/tmp/image"
 image_set = ImageSet.read(img_path,sc, min_partitions=1)
 transformer = ChainedPreprocessing(
