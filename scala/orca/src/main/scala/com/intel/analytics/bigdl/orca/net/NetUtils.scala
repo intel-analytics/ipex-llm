@@ -79,10 +79,12 @@ class GraphNet[T: ClassTag](graph: Graph[T])(implicit ev: TensorNumeric[T])
 
     graph match {
       case g: StaticGraph[T] =>
-        val newGraph = Graph(inputs.toArray, nodes(outputs).toArray, variables)
+        val newGraph = Graph(inputs.toArray, nodes(outputs)
+          .map(_.removeNextEdges()).toArray, variables)
         new GraphNet[T](newGraph)
       case g =>
-        val newGraph = NetUtils.dynamic[T](inputs.toArray, nodes(outputs).toArray,
+        val newGraph = NetUtils.dynamic[T](inputs.toArray, nodes(outputs)
+          .map(_.removeNextEdges()).toArray,
           variables, NetUtils.getGenerateBackward(g))
         new GraphNet[T](newGraph)
     }
