@@ -517,15 +517,17 @@ class Ftrl(OptimMethod):
     Support L1 penalty, L2 penalty and shrinkage-type L2 penalty.
 
     :param learningrate learning rate
-    :param learningrate_power double, must be less or equal to zero.
+    :param learningrate_power double, must be less or equal to zero. Default is zero.
     :param initial_accumulator_value double, the starting value for accumulators,
         require zero or positive values.
-    :param l1_regularization_strength double, must be greater or equal to zero.
-    :param l2_regularization_strength double, must be greater or equal to zero.
+    :param l1_regularization_strength double, must be greater or equal to zero. Default is zero.
+    :param l2_regularization_strength double, must be greater or equal to zero. Default is zero.
     :param l2_shrinkage_regularization_strength double, must be greater or equal to zero.
-        This differs from l2RegularizationStrength above. L2 above is a stabilization
-        penalty, whereas this one is a magnitude penalty.
-    >>> adagrad = Ftrl()
+        Default is zero. This differs from l2RegularizationStrength above. L2 above is a
+        stabilization penalty, whereas this one is a magnitude penalty.
+    >>> ftrl = Ftrl()
+    creating: createFtrl
+    >>> ftrl2 = Ftrl(1e-2, 0.1, 0.2, 0.3, 0.4, 0.5)
     creating: createFtrl
     """
     def __init__(self,

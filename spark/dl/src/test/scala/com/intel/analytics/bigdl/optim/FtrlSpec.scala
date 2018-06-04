@@ -123,11 +123,24 @@ class FtrlSpec extends FlatSpec with Matchers {
 
     weights.valueAt(1) should be (-0.219319f +- 0.000001f)
     weights.valueAt(2) should be (-0.406429f +- 0.000001f)
+  }
 
-    // TODO: this result is different from tensorflow's result. It seems a bug of tensorflow.
-    // Waiting for their reply: https://github.com/tensorflow/tensorflow/issues/18317
-//    weights.valueAt(1) should be (-0.220788f +- 0.000001f)
-//    weights.valueAt(2) should be (-0.413781f +- 0.000001f)
+  "Ftrl save/load" should "works fine" in {
+    val weights = Tensor[Float](T(1.0f, 2.0f))
+    val grads = Tensor[Float](T(0.1f, 0.2f))
+    val ftrl = new Ftrl[Float](3.0, initialAccumulatorValue = 0.1, l1RegularizationStrength = 0.001,
+      l2RegularizationStrength = 2.0, l2ShrinkageRegularizationStrength = 0.1f)
+    val tmpFile = java.io.File.createTempFile("ftrl", ".optim")
+    ftrl.save(tmpFile.getAbsolutePath, true)
+    val loaded = OptimMethod.load[Float](tmpFile.getAbsolutePath)
+
+    (1 to 10).foreach{_ =>
+      loaded.optimize(_ => (0.0f, grads), weights)
+    }
+
+    weights.valueAt(1) should be (-0.219319f +- 0.000001f)
+    weights.valueAt(2) should be (-0.406429f +- 0.000001f)
+
   }
 }
 

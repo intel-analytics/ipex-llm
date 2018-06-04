@@ -27,14 +27,14 @@ import scala.reflect.ClassTag
  * Support L1 penalty, L2 penalty and shrinkage-type L2 penalty.
  *
  * @param learningRate learning rate
- * @param learningRatePower double, must be less or equal to zero.
+ * @param learningRatePower double, must be less or equal to zero. Default is zero.
  * @param initialAccumulatorValue double, the starting value for accumulators,
- *     require zero or positive values.
- * @param l1RegularizationStrength double, must be greater or equal to zero.
- * @param l2RegularizationStrength double, must be greater or equal to zero.
+ *     require zero or positive values. Default is 0.1.
+ * @param l1RegularizationStrength double, must be greater or equal to zero. Default is zero.
+ * @param l2RegularizationStrength double, must be greater or equal to zero. Default is zero.
  * @param l2ShrinkageRegularizationStrength double, must be greater or equal to zero.
- *     This differs from l2RegularizationStrength above. L2 above is a stabilization
- *     penalty, whereas this one is a magnitude penalty.
+ *     Default is zero. This differs from l2RegularizationStrength above. L2 above is a
+ *     stabilization penalty, whereas this one is a magnitude penalty.
  */
 class Ftrl[@specialized(Float, Double) T: ClassTag](
   var learningRate: Double = 1e-3,
@@ -103,6 +103,10 @@ class Ftrl[@specialized(Float, Double) T: ClassTag](
 
     if (quadratic == null || !quadratic.isSameSizeAs(dfdx)) quadratic = Tensor[T]().resizeAs(dfdx)
 
+    if (gradWithStrinkage == null || !gradWithStrinkage.isSameSizeAs(dfdx)) {
+      gradWithStrinkage = Tensor[T]().resizeAs(dfdx)
+    }
+
     val computeParameter = new TensorFunc6[T]() {
       // parameter = (sign(linear) * l1rs - linear) / quadratic if |linear| > l1rs else 0.0
       override def apply(data1: Array[T], offset1: Int, data2: Array[T], offset2: Int,
@@ -137,11 +141,7 @@ class Ftrl[@specialized(Float, Double) T: ClassTag](
       // parameter = (sign(linear) * l1 - linear) / quadratic if |linear| > l1 else 0.0
       DenseTensorApply.apply3(parameter, linear, quadratic, computeParameter)
     } else {
-      // TODO: result is different compared with tensorflow, waitting for
-      // https://github.com/tensorflow/tensorflow/issues/18317
-
       // gradWithShrinkage = dfdx + 2 * l2srs * parameter
-      gradWithStrinkage.resizeAs(dfdx)
       gradWithStrinkage.copy(dfdx)
       gradWithStrinkage.add(ev.times(ev.fromType(2), l2srs), parameter)
       // accumNew = accum + gradWithShrinkage * gradWithShrinkage
