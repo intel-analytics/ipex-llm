@@ -27,7 +27,7 @@ import scala.reflect.ClassTag
  * Support L1 penalty, L2 penalty and shrinkage-type L2 penalty.
  *
  * @param learningRate learning rate
- * @param learningRatePower double, must be less or equal to zero. Default is zero.
+ * @param learningRatePower double, must be less or equal to zero. Default is -0.5.
  * @param initialAccumulatorValue double, the starting value for accumulators,
  *     require zero or positive values. Default is 0.1.
  * @param l1RegularizationStrength double, must be greater or equal to zero. Default is zero.
