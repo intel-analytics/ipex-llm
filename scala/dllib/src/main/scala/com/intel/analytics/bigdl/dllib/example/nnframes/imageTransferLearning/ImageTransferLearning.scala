@@ -36,7 +36,7 @@ object ImageTransferLearning {
     Logger.getLogger("org").setLevel(Level.WARN)
 
     Utils.parser.parse(args, defaultParams).foreach { params =>
-      val sc = NNContext.getNNContext()
+      val sc = NNContext.initNNContext()
 
       val createLabel = udf { row: Row =>
         if (row.getString(0).contains("demo/cats")) 1.0 else 2.0
