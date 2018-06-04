@@ -58,12 +58,12 @@ For preprocessors for Image Classification models, please check [Image Classific
 
 ## Download link
 
-* [Alexnet](https://s3-ap-southeast-1.amazonaws.com/analytics-zoo-models/imageclassification/imagenet/analytics-zoo_alexnet_imagenet_0.1.0)
-* [Inception-V1](https://s3-ap-southeast-1.amazonaws.com/analytics-zoo-models/imageclassification/imagenet/analytics-zoo_inception-v1_imagenet_0.1.0)
-* [VGG-16](https://s3-ap-southeast-1.amazonaws.com/analytics-zoo-models/imageclassification/imagenet/analytics-zoo_vgg-16_imagenet_0.1.0)
-* [VGG-19](https://s3-ap-southeast-1.amazonaws.com/analytics-zoo-models/imageclassification/imagenet/analytics-zoo_vgg-19_imagenet_0.1.0)
-* [Resnet-50](https://s3-ap-southeast-1.amazonaws.com/analytics-zoo-models/imageclassification/imagenet/analytics-zoo_resnet-50_imagenet_0.1.0)
-* [Densenet-161](https://s3-ap-southeast-1.amazonaws.com/analytics-zoo-models/imageclassification/imagenet/analytics-zoo_densenet-161_imagenet_0.1.0)
-* [Mobilenet](https://s3-ap-southeast-1.amazonaws.com/analytics-zoo-models/imageclassification/imagenet/analytics-zoo_mobilenet_imagenet_0.1.0)
-* [Squeezenet](https://s3-ap-southeast-1.amazonaws.com/analytics-zoo-models/imageclassification/imagenet/analytics-zoo_squeezenet_imagenet_0.1.0)
+* [Alexnet](https://s3-ap-southeast-1.amazonaws.com/analytics-zoo-models/imageclassification/imagenet/analytics-zoo_alexnet_imagenet_0.1.0.model)
+* [Inception-V1](https://s3-ap-southeast-1.amazonaws.com/analytics-zoo-models/imageclassification/imagenet/analytics-zoo_inception-v1_imagenet_0.1.0.model)
+* [VGG-16](https://s3-ap-southeast-1.amazonaws.com/analytics-zoo-models/imageclassification/imagenet/analytics-zoo_vgg-16_imagenet_0.1.0.model)
+* [VGG-19](https://s3-ap-southeast-1.amazonaws.com/analytics-zoo-models/imageclassification/imagenet/analytics-zoo_vgg-19_imagenet_0.1.0.model)
+* [Resnet-50](https://s3-ap-southeast-1.amazonaws.com/analytics-zoo-models/imageclassification/imagenet/analytics-zoo_resnet-50_imagenet_0.1.0.model)
+* [Densenet-161](https://s3-ap-southeast-1.amazonaws.com/analytics-zoo-models/imageclassification/imagenet/analytics-zoo_densenet-161_imagenet_0.1.0.model)
+* [Mobilenet](https://s3-ap-southeast-1.amazonaws.com/analytics-zoo-models/imageclassification/imagenet/analytics-zoo_mobilenet_imagenet_0.1.0.model)
+* [Squeezenet](https://s3-ap-southeast-1.amazonaws.com/analytics-zoo-models/imageclassification/imagenet/analytics-zoo_squeezenet_imagenet_0.1.0.model)
 
