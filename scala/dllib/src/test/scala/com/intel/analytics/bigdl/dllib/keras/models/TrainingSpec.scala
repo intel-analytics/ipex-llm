@@ -50,7 +50,7 @@ class TrainingSpec extends FlatSpec with Matchers with BeforeAndAfter  {
   before {
     val conf = new SparkConf()
       .setMaster("local[4]")
-    sc = NNContext.getNNContext(conf, appName = "TrainingSpec")
+    sc = NNContext.initNNContext(conf, appName = "TrainingSpec")
   }
 
   after {
@@ -59,12 +59,12 @@ class TrainingSpec extends FlatSpec with Matchers with BeforeAndAfter  {
     }
   }
 
-  "getNNContext" should "work properly" in {
+  "initNNContext" should "work properly" in {
     sc = SparkContext.getOrCreate()
     sc.stop()
     val conf = new SparkConf()
       .setMaster("local[4]")
-    sc = NNContext.getNNContext(conf, "hello")
+    sc = NNContext.initNNContext(conf, "hello")
     assert(sc.appName == "hello")
   }
 
