@@ -169,10 +169,10 @@ class SpatialShareConvolutionSpec extends FlatSpec with Matchers {
 
   "Resnet 18" should "return right result" in {
     val resnet = ResNet(1000, T("shortcutType" -> ShortcutType.B,
-      "depth" -> 18, "dataset" -> DatasetType.ImageNet))
+      "depth" -> 18, "dataSet" -> DatasetType.ImageNet))
     val sharedResnet = SpatialShareConvolution.shareConvolution(
       ResNet(1000, T("shortcutType" -> ShortcutType.B,
-      "depth" -> 18, "dataset" -> DatasetType.ImageNet)))
+      "depth" -> 18, "dataSet" -> DatasetType.ImageNet)))
     sharedResnet.getParameters()._1.copy(resnet.getParameters()._1)
 
     Random.setSeed(100)
