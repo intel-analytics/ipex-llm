@@ -382,11 +382,11 @@ class Model[T: ClassTag] private (private val _inputs : Seq[ModuleNode[T]],
   }
 
   override def newGraph(output: String): Model[T] = {
-    new Model[T](_inputs, nodes(Seq(output)))
+    new Model[T](_inputs, nodes(Seq(output)).map(_.removeNextEdges()))
   }
 
   override def newGraph(outputs: Seq[String]): Model[T] = {
-    new Model[T](_inputs, nodes(outputs))
+    new Model[T](_inputs, nodes(outputs).map(_.removeNextEdges()))
   }
 
   override def toModel(): Model[T] = this
