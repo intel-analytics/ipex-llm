@@ -117,9 +117,9 @@ object NNContext {
   }
 
   /**
-   * Gets a SparkContext with optimized configuration for BigDL performance. The method
-   * will also initialize the BigDL engine.
-
+   * Creates or gets a SparkContext with optimized configuration for BigDL performance.
+   * The method will also initialize the BigDL engine.
+   *
    * Note: if you use spark-shell or Jupyter notebook, as the Spark context is created
    * before your code, you have to set Spark conf values through command line options
    * or properties file, and init BigDL engine manually.
@@ -128,7 +128,7 @@ object NNContext {
    * @param appName name of the current context
    * @return Spark Context
    */
-  def getNNContext(conf: SparkConf, appName: String): SparkContext = {
+  def initNNContext(conf: SparkConf, appName: String): SparkContext = {
     val bigdlConf = Engine.createSparkConf(conf)
     if (appName != null) {
       bigdlConf.setAppName(appName)
@@ -145,9 +145,9 @@ object NNContext {
   }
 
   /**
-   * Gets a SparkContext with optimized configuration for BigDL performance. The method
-   * will also initialize the BigDL engine.
-
+   * Creates or gets SparkContext with optimized configuration for BigDL performance.
+   * The method will also initialize the BigDL engine.
+   *
    * Note: if you use spark-shell or Jupyter notebook, as the Spark context is created
    * before your code, you have to set Spark conf values through command line options
    * or properties file, and init BigDL engine manually.
@@ -155,14 +155,14 @@ object NNContext {
    * @param conf User defined Spark conf
    * @return Spark Context
    */
-  def getNNContext(conf: SparkConf): SparkContext = {
-    getNNContext(conf = conf, appName = null)
+  def initNNContext(conf: SparkConf): SparkContext = {
+    initNNContext(conf = conf, appName = null)
   }
 
   /**
-   * Gets a SparkContext with optimized configuration for BigDL performance. The method
-   * will also initialize the BigDL engine.
-
+   * Creates or gets a SparkContext with optimized configuration for BigDL performance.
+   * The method will also initialize the BigDL engine.
+   *
    * Note: if you use spark-shell or Jupyter notebook, as the Spark context is created
    * before your code, you have to set Spark conf values through command line options
    * or properties file, and init BigDL engine manually.
@@ -170,12 +170,12 @@ object NNContext {
    * @param appName name of the current context
    * @return Spark Context
    */
-  def getNNContext(appName: String): SparkContext = {
-    getNNContext(conf = null, appName = appName)
+  def initNNContext(appName: String): SparkContext = {
+    initNNContext(conf = null, appName = appName)
   }
 
-  def getNNContext(): SparkContext = {
-    getNNContext(null, null)
+  def initNNContext(): SparkContext = {
+    initNNContext(null, null)
   }
 
 }
