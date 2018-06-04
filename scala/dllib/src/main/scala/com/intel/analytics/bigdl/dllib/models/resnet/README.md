@@ -26,7 +26,7 @@ The dataset contains two sub-directories, namely, train and val. Users need to s
 ```shell
 spark-submit --master local[physical_core_number] \
 --driver-memory 3G \
---class com.intel.analytics.bigdl.models.resnet.Train \
+--class com.intel.analytics.bigdl.models.resnet.TrainCIFAR10 \
 dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
 -f Cifar-10/ \
 --batchSize 448 --optnet true --depth 20 --classes 10 --shortcutType A --nEpochs 156 \
@@ -37,7 +37,7 @@ dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
 spark-submit --master spark://xxx.xxx.xxx.xxx:xxxx \
 --driver-memory 5g --executor-memory 5g \
 --total-executor-cores 32 --executor-cores 8 \
---class com.intel.analytics.bigdl.models.resnet.Train \
+--class com.intel.analytics.bigdl.models.resnet.TrainCIFAR10 \
 dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
 -f Cifar-10/ \
 --batchSize 448 --optnet true --depth 20 --classes 10 --shortcutType A --nEpochs 156 \
@@ -48,7 +48,7 @@ dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
 spark-submit --master yarn \
 --driver-memory 5g --executor-memory 5g \
 --num-executors 4 --executor-cores 8 \
---class com.intel.analytics.bigdl.models.resnet.Train \
+--class com.intel.analytics.bigdl.models.resnet.TrainCIFAR10 \
 dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
 -f Cifar-10/ \
 --batchSize 448 --optnet true --depth 20 --classes 10 --shortcutType A --nEpochs 156 \
