@@ -334,13 +334,10 @@ Support L1 penalty, L2 penalty and shrinkage-type L2 penalty.
 
 * learningRate: learning rate
 * learningRatePower: double, must be less or equal to zero. Default is -0.5.
-* initialAccumulatorValue: double, the starting value for accumulators,
-*     require zero or positive values. Default is 0.1.
+* initialAccumulatorValue: double, the starting value for accumulators, require zero or positive values. Default is 0.1.
 * l1RegularizationStrength: double, must be greater or equal to zero. Default is zero.
 * l2RegularizationStrength: double, must be greater or equal to zero. Default is zero.
-* l2ShrinkageRegularizationStrength: double, must be greater or equal to zero.
-*     Default is zero. This differs from l2RegularizationStrength above. L2 above is a
-*     stabilization penalty, whereas this one is a magnitude penalty.
+* l2ShrinkageRegularizationStrength: double, must be greater or equal to zero. Default is zero. This differs from l2RegularizationStrength above. L2 above is a stabilization penalty, whereas this one is a magnitude penalty.
 
 **Scala example:**
 ```scala
