@@ -18,10 +18,10 @@ from bigdl.util.common import *
 import warnings
 
 
-def get_nncontext(conf=None):
+def init_nncontext(conf=None):
     """
-    Gets a SparkContext with optimized configuration for BigDL performance. The method
-    will also initialize the BigDL engine.
+    Creates or gets a SparkContext with optimized configuration for BigDL performance.
+    The method will also initialize the BigDL engine.
 
     Note: if you use spark-shell or Jupyter notebook, as the Spark context is created
     before your code, you have to set Spark conf values through command line options
