@@ -42,6 +42,7 @@ class CAddTableDnn[T: ClassTag](val inplace: Boolean = false)(
       output = input[Tensor[T]](1)
     } else if (output.getTensorType != MklDnnType) {
       output = MklDnnTensor[T](input[Tensor[T]](1).size())
+      output.setFormat(input[Tensor[T]](1).getFormat())
       Memory.Zero(output.asInstanceOf[MklDnnTensor[T]].ptr, output.nElement(), 4)
     }
 
@@ -68,12 +69,16 @@ class CAddTableDnn[T: ClassTag](val inplace: Boolean = false)(
     var sum = ev.zero
     var calculateSum = false
 
-    require(inplace == true, s"just supoort inplace=true ${this.getName()}")
     while (i <= input.length()) {
       if (i > gradInput.length) gradInput.insert(i, Tensor[T]().resizeAs(input(1)))
       if (inplace) {
         require(input[Tensor[T]](1).isSameSizeAs(gradOutput), "cannot use inplace for broadcast")
         gradInput(i) = gradOutput
+      } else {
+        val t = MklDnnTensor[T](gradOutput.size())
+        t.copy(gradOutput)
+        t.setFormat(gradOutput.getFormat())
+        gradInput(i) = t
       }
       i += 1
     }
