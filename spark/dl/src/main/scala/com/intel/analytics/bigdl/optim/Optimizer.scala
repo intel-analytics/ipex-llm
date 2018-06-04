@@ -241,38 +241,25 @@ abstract class Optimizer[T: ClassTag, D](
 
 
   /**
-   * Set a model to the optimizer
+   * Set a model to the optimizer.
+   * Notice: if current optimMethod in this optimizer is not a global optimMethod,
+   * the optimMethod will be cleared. You should set new OptimMethods for this optimizer.
    *
    * @param newModel new model
    */
   def setModel(newModel: Module[T]): this.type = {
-    // check if the old optimMethods works for this new model.
-    try {
-      // Print some warning if model changed.
-      if (newModel.getName != model.getName() && optimMethods.size == 1
-        && optimMethods.contains(model.getName())) {
-        if (newModel(model.getName()).isEmpty) {
-          logger.info(s"Set a new model with a different name from the old one." +
-            s" Automatically associate the current optimMethod with the new model name.")
-          optimMethods = Map(newModel.getName() -> optimMethods(model.getName()))
-        } else {
-          logger.warn(s"Detect the old model is the new model's submodel, please" +
-            s" set a new optimMethods if you want to optimize the hole new model.")
-        }
+    // check if the old optimMethods is a global one.
+    if (optimMethods.size == 1 && optimMethods.contains(model.getName())) {
+      if (newModel.getName() != model.getName()) {
+        optimMethods = Map(newModel.getName() -> optimMethods(model.getName()))
       }
-    } catch {
-      case IllegalArgumentException =>
-        logger.warn(s"New model have an duplicated submodel name ${model.getName()}")
-    }
-
-    try {
-      logger.info(s"Starting to verify if optimMethods fit this new model...")
-      checkSubModules(newModel, optimMethods.keys.toSeq)
-      logger.info(s"${optimMethods.mkString} fits this new model...")
-    } catch {
-      case IllegalArgumentException =>
-        logger.warn(s"Old model's optimMethods doesn't match the new model, " +
-          s"please set optimMethods for this new model.")
+      logger.info(s"Optimizer.setModel: Detect current optimMethod is a global optimMethod." +
+        s" Automatically associate the current optimMethod with the new model.")
+    } else {
+      logger.warn(s"Optimizer.setModel: Detect current optimMethod is not a global optimMethod." +
+        s" Clearing the old optimMethod.")
+      optimMethods = _
+      logger.warn(s"Optimizer.setModel: old optimMethod cleared.")
     }
 
     model = newModel
@@ -449,6 +436,14 @@ object Optimizer {
     s"[Epoch $epoch $count/$total][Iteration $iter][Wall Clock ${wallClockTime / 1e9}s]"
   }
 
+  /**
+   * Check if the sub modules are in the model, if each sub modules' parameter
+   * is contiguous, if sub modules' parameter is duplicated.
+   * @param model
+   * @param subModuleNames
+   * @param ev
+   * @tparam T
+   */
   private[bigdl] def checkSubModules[T: ClassTag](
         model: Module[T],
         subModuleNames: Seq[String])(implicit ev: TensorNumeric[T]): Unit = {
@@ -459,6 +454,8 @@ object Optimizer {
       val subModuleWeights = subModule.get.getParameters()._1
       require(subModuleWeights.nElement() > 0, s"Optimizer: $subModuleName doesn't have" +
         s" any trainable parameters, please check your model and optimMethods.")
+      // If the storage subModule's parameter is the same with the storage of the submodule,
+      // then subModule
       require(modelParameters._1.storage() == subModuleWeights.storage(), s"Optimizer:" +
         s" $subModuleName's parameter is not contiguous.")
       (subModuleName, subModuleWeights)

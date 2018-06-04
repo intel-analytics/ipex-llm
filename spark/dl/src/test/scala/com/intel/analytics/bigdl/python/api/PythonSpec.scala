@@ -196,8 +196,9 @@ class PythonSpec extends FlatSpec with Matchers with BeforeAndAfter {
     model.add(LogSoftMax[Double]())
     val batchSize = 32
     val pp = PythonBigDL.ofDouble()
-    val optimMethod = new SGD[Double]()
-    optimMethod.learningRateSchedule = SGD.Poly(0.5, math.ceil(1281167.toDouble / batchSize).toInt)
+    val optimMethod = Map(model.getName -> new SGD[Double]())
+    optimMethod(model.getName()).learningRateSchedule =
+      SGD.Poly(0.5, math.ceil(1281167.toDouble / batchSize).toInt)
     val optimizer = pp.createDistriOptimizer(
       model,
       data.toJavaRDD(),
@@ -274,7 +275,7 @@ class PythonSpec extends FlatSpec with Matchers with BeforeAndAfter {
     model.add(ReLU[Double]())
     model.add(LogSoftMax[Double]())
     val batchSize = 32
-    val optimMethod = new SGD[Double]()
+    val optimMethod = Map(model.getName() -> new SGD[Double]())
     val optimizer = pp.createLocalOptimizer(
       List(X).asJava,
       y,
@@ -314,7 +315,7 @@ class PythonSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val optimizer = pythonBigDL.createDistriOptimizerFromDataSet(model,
       imageFrame,
       criterion = ClassNLLCriterion[Float](),
-      optimMethod = sgd,
+      optimMethod = Map(model.getName() -> sgd),
       endTrigger = Trigger.maxEpoch(2),
       batchSize = 8)
     optimizer.optimize()
