@@ -2130,6 +2130,21 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     new Adam[T](learningRate, learningRateDecay, beta1, beta2, Epsilon)
   }
 
+  def createFtrl(
+      learningRate: Double = 1e-3,
+      learningRatePower: Double = -0.5,
+      initialAccumulatorValue: Double = 0.1,
+      l1RegularizationStrength: Double = 0.0,
+      l2RegularizationStrength: Double = 0.0,
+      l2ShrinkageRegularizationStrength: Double = 0.0): Ftrl[T] = {
+    new Ftrl[T](learningRate,
+      learningRatePower,
+      initialAccumulatorValue,
+      l1RegularizationStrength,
+      l2RegularizationStrength,
+      l2ShrinkageRegularizationStrength)
+  }
+
   def createAdamax(
     learningRate: Double = 0.002,
     beta1: Double = 0.9,
