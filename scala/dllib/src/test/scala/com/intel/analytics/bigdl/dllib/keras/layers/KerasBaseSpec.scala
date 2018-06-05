@@ -21,6 +21,11 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericF
 import com.intel.analytics.zoo.pipeline.api.keras.ZooSpecHelper
 
 import scala.sys.process._
+import org.scalatest.Tag
+
+object Keras2Test extends Tag("com.intel.analytics.zoo.pipeline.api.keras2")
+object NoKeras2 extends Tag("com.intel.analytics.zoo.pipeline.api")
+
 
 abstract class KerasBaseSpec extends ZooSpecHelper {
 
@@ -83,3 +88,4 @@ abstract class KerasBaseSpec extends ZooSpecHelper {
   }
 }
 
+abstract class Keras2BaseSpec extends KerasBaseSpec
