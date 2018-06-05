@@ -16,69 +16,50 @@
 
 package com.intel.analytics.zoo.pipeline.api.keras.serializer
 
-import java.lang.reflect.Modifier
+import java.io.File
 
-import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
-import com.intel.analytics.zoo.pipeline.api.keras.ZooSpecHelper
-import org.reflections.Reflections
-import org.reflections.scanners.SubTypesScanner
-import org.reflections.util.{ClasspathHelper, ConfigurationBuilder, FilterBuilder}
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
+import com.intel.analytics.bigdl.utils.RandomGenerator._
+import com.intel.analytics.bigdl.utils.serializer.{ModuleLoader, ModulePersister}
+import org.scalatest.{BeforeAndAfterAll, FlatSpec, Matchers}
 
-import scala.collection.JavaConverters._
-import scala.collection.mutable
 
-class SerializerSpec extends ZooSpecHelper {
-  private val excluded = Set[String](
-    "com.intel.analytics.zoo.pipeline.api.autograd.LambdaTorch",
-    "com.intel.analytics.zoo.pipeline.api.net.TFNet")
-
-  private val unRegularNameMapping = Map[String, String]()
-
-  private val suffix = "SerialTest"
-
-  private val testClasses = new mutable.HashSet[String]()
-
-  {
-    val filterBuilder = new FilterBuilder()
-    val reflections = new Reflections(new ConfigurationBuilder()
-      .filterInputsBy(filterBuilder)
-      .addUrls(ClasspathHelper.forPackage("com.intel.analytics.zoo"))
-      .addUrls(ClasspathHelper.forPackage("com.intel.analytics.bigdl.nn"))
-      .setScanners(new SubTypesScanner()))
-
-    val subTypes = reflections.getSubTypesOf(classOf[AbstractModule[_, _, _]]).asScala
-      .filter(sub => !Modifier.isAbstract(sub.getModifiers))
-      .filter(sub => !excluded.contains(sub.getName))
-      .filter(sub => sub.getName.contains("com.intel.analytics.zoo"))
-    subTypes.foreach(sub => testClasses.add(sub.getName))
-  }
-
-  private def getTestClassName(clsName: String): String = {
-    if (unRegularNameMapping.contains(clsName)) {
-      unRegularNameMapping(clsName)
-    } else {
-      clsName + suffix
-    }
-  }
-
-  testClasses.foreach(cls => {
-    "Serialization test of module " + cls should "be correct" in {
-      val clsWholeName = getTestClassName(cls)
-      try {
-        val ins = Class.forName(clsWholeName)
-        val testClass = ins.getConstructors()(0).newInstance()
-        require(testClass.isInstanceOf[ModuleSerializationTest], s"$clsWholeName should be a " +
-          s"subclass of com.intel.analytics.zoo.pipeline.api.keras.layers.serializer." +
-          s"ModuleSerializationTest")
-        testClass.asInstanceOf[ModuleSerializationTest].test()
-      } catch {
-        case t: Throwable => throw t
-      }
-    }
-  })
-
+class SerializerSpec extends SerializerSpecHelper {
+  runTests(getExpectedTests())
 }
 
-private[zoo] abstract class ModuleSerializationTest extends SerializerSpecHelper {
+private[zoo] abstract class ModuleSerializationTest
+  extends FlatSpec with Matchers with BeforeAndAfterAll{
+
+  val postFix = "analytics-zoo"
+
   def test(): Unit
+
+  protected def runSerializationTest(
+      module: AbstractModule[_, _, Float],
+      input: Activity, cls: Class[_] = null) : Unit = {
+    runSerializationTestWithMultiClass(module, input,
+      if (cls == null) Array(module.getClass) else Array(cls))
+  }
+
+  protected def runSerializationTestWithMultiClass(
+      module: AbstractModule[_, _, Float],
+      input: Activity, classes: Array[Class[_]]) : Unit = {
+    val name = module.getName
+    val serFile = File.createTempFile(name, postFix)
+    val originForward = module.evaluate().forward(input)
+
+    ModulePersister.saveToFile[Float](serFile.getAbsolutePath, null, module.evaluate(), true)
+    RNG.setSeed(1000)
+    val loadedModule = ModuleLoader.loadFromFile[Float](serFile.getAbsolutePath)
+
+    val afterLoadForward = loadedModule.forward(input)
+
+    if (serFile.exists) {
+      serFile.delete
+    }
+
+    afterLoadForward should be (originForward)
+  }
+
 }
