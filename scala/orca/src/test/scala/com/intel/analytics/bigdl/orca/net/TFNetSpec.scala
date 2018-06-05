@@ -53,7 +53,14 @@ class TFNetSpec extends FlatSpec with Matchers with BeforeAndAfter {
       Tensor[Float](Array[Float](255.0f), Array(1, 1))
     )
     val result = net.forward(data)
+    val gradInput = net.backward(data, null)
 
     result should be (data)
+    var i = 0
+    while (i < 5) {
+      gradInput.toTable[Tensor[Float]](i + 1).sum() should be (0.0f)
+      i = i + 1
+    }
+
   }
 }
