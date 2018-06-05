@@ -40,6 +40,7 @@ object KerasRunner {
       |import keras.backend as K
       |import numpy as np
       |import tempfile
+      |import keras
       |
       |np.random.seed(1337) # for reproducibility
       |
