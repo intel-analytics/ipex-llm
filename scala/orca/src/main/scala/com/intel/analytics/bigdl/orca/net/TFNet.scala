@@ -33,13 +33,18 @@ import scala.collection.JavaConverters._
  *
  * This subgraph should not contain any tensorflow Variable and the input/output
  * must be numeric types
+ *
+ * When used with other layers for training, there should be no trainable layer
+ * before this one, as the gradInput of this layer is always zero.
+ *
  * @param graphDef serialized representation of a graph
  * @param inputNames the input tensor names of this subgraph
  * @param outputNames the output tensor names of this subgraph
  */
 class TFNet private(graphDef: Array[Byte],
             val inputNames: Seq[String],
-            val outputNames: Seq[String])
+            val outputNames: Seq[String],
+                    config: Array[Byte])
   extends AbstractModule[Activity, Activity, Float] {
 
 
@@ -50,6 +55,20 @@ class TFNet private(graphDef: Array[Byte],
       val t = T()
       var i = 0
       while (i < outputNames.length) {
+        t.insert(Tensor[Float]())
+        i = i + 1
+      }
+      t
+    }
+  }
+
+  gradInput = {
+    if (inputNames.length == 1) {
+      Tensor[Float]()
+    } else {
+      val t = T()
+      var i = 0
+      while (i < inputNames.length) {
         t.insert(Tensor[Float]())
         i = i + 1
       }
@@ -69,7 +88,7 @@ class TFNet private(graphDef: Array[Byte],
   private lazy val (graph, sess) = {
     val graph = new Graph()
     graph.importGraphDef(graphDef)
-    val sess = new Session(graph)
+    val sess = new Session(graph, config)
     (graph, sess)
   }
 
@@ -180,11 +199,33 @@ class TFNet private(graphDef: Array[Byte],
   }
 
   override def updateGradInput(input: Activity, gradOutput: Activity): Activity = {
-    throw new Exception("Not Supported Yet")
+    if (gradInput.isTable) {
+      var i = 0
+      while (i < gradInput.toTable.length()) {
+        gradInput.toTable[Tensor[Float]](i + 1)
+          .resizeAs(input.toTable[Tensor[Float]](i + 1))
+        i = i + 1
+      }
+    } else {
+      gradInput.toTensor[Float]
+        .resizeAs(input.toTensor[Float])
+    }
+
+    gradInput
   }
 }
 
 object TFNet {
+
+  val defaultSessionConfig = Seq(16, 1, 40, 1, 72, 1).map(_.toByte).toArray
+  // Ideally we should use the following code, however, importing tensorflow proto
+  // will conflict with bigdl.
+
+//  val defaultSessionConfig = ConfigProto.newBuilder()
+//    .setInterOpParallelismThreads(1)
+//    .setIntraOpParallelismThreads(1)
+//    .setUsePerSessionThreads(true)
+//    .build().toByteArray
 
   private def floatToInt(array: Array[Float]): Array[Int] = {
     val result = new Array[Int](array.length)
@@ -234,8 +275,8 @@ object TFNet {
    * @return
    */
   def apply(graphDef: GraphDef, inputNames: Seq[String],
-            outputNames: Seq[String]): TFNet = {
-    new TFNet(graphDef.toByteArray, inputNames, outputNames)
+            outputNames: Seq[String], config: Array[Byte] = defaultSessionConfig): TFNet = {
+    new TFNet(graphDef.toByteArray, inputNames, outputNames, config)
   }
 
   /**
@@ -245,10 +286,25 @@ object TFNet {
    * @param outputNames the output tensor names of this subgraph
    * @return
    */
-  def apply(path: String, inputNames: Seq[String],
+  def apply(path: String,
+            inputNames: Seq[String],
+            outputNames: Seq[String], config: Array[Byte]): TFNet = {
+    val graphDef = parse(path)
+    TFNet(graphDef, inputNames, outputNames, config)
+  }
+
+  /**
+   * Create a TFNet
+   * @param path the file path of a graphDef
+   * @param inputNames the input tensor names of this subgraph
+   * @param outputNames the output tensor names of this subgraph
+   * @return
+   */
+  def apply(path: String,
+            inputNames: Seq[String],
             outputNames: Seq[String]): TFNet = {
     val graphDef = parse(path)
-    TFNet(graphDef, inputNames, outputNames)
+    TFNet(graphDef, inputNames, outputNames, defaultSessionConfig)
   }
 
   private def parse(graphProtoTxt: String) : GraphDef = {
