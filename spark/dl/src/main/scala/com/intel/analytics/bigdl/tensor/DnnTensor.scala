@@ -98,6 +98,11 @@ object DnnTensor {
     return true
   }
 
+  def apply[T: ClassTag](sizes: Array[Int])(implicit ev: TensorNumeric[T]): DnnTensor[T] = {
+    val storage = new DnnStorage[T](sizes.product)
+    new DnnTensor[T](storage, sizes)
+  }
+
   class DnnTensorUnsupportOperations[T: ClassTag](implicit ev: TensorNumeric[T]) extends Tensor[T] {
     override def isEmpty: Boolean = ???
     override def isScalar: Boolean = ???

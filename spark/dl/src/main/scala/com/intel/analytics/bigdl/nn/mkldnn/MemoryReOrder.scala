@@ -20,7 +20,7 @@ import breeze.linalg
 import breeze.linalg.dim
 import com.intel.analytics.bigdl.mkl.MklDnn
 import com.intel.analytics.bigdl.nn.abstractnn.{DataFormat, TensorModule}
-import com.intel.analytics.bigdl.tensor.{MklDnnTensor, Tensor}
+import com.intel.analytics.bigdl.tensor.{DnnTensor, MklDnnTensor, Tensor}
 
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
@@ -186,5 +186,76 @@ object MemoryReOrder {
   def apply[T: ClassTag](inputFormat: Int = MklDnn.MemoryFormat.any,
       outputFormat: Int = MklDnn.MemoryFormat.nchw): MemoryReOrder = {
     new MemoryReOrder(inputFormat, outputFormat)
+  }
+}
+
+class MemoryReOrder2(inputFormat: MemoryFormat, outputFormat: MemoryFormat)
+  extends TensorModule[Float] with MklDnnModule {
+
+  override def updateOutput(input: Tensor[Float]): Tensor[Float] = {
+    MklDnnOps.streamSubmit(
+      runtime.stream, 1, forwardPrimitives, 1, Array(inputPrimitives(0), outputPrimitives(0)),
+      Array(input, output)
+    )
+    output
+  }
+
+  override def updateGradInput(input: Tensor[Float], gradOutput: Tensor[Float]): Tensor[Float] = {
+    MklDnnOps.streamSubmit(runtime.stream, 1, backwardPrimitives, 1,
+      Array(outputPrimitives(0), inputPrimitives(0)), Array(gradOutput, gradInput))
+    gradInput
+  }
+
+  override private[mkldnn] def inferOutputFormats(): Array[MemoryFormat] = {
+    Array(outputFormat)
+  }
+
+  /**
+   * Init the MKL-DNN primitives for the model
+   * @param runtime
+   */
+  override private[mkldnn] def initPrimitives(runtime: MklDnnRuntime) = {
+    val inputMemDesc = MklDnn.MemoryDescInit(inputFormat.shape.length, inputFormat.shape,
+      MklDnn.DataType.f32, inputFormat.layout)
+    val inputPrimDesc = MklDnn.MemoryPrimitiveDescCreate(inputMemDesc, runtime.engine)
+    inputPrimitives = Array(MklDnn.PrimitiveCreate0(inputPrimDesc))
+
+    val outputMemDesc = MklDnn.MemoryDescInit(outputFormat.shape.length, outputFormat.shape,
+      MklDnn.DataType.f32, outputFormat.layout)
+    val outputPrimDesc = MklDnn.MemoryPrimitiveDescCreate(outputMemDesc, runtime.engine)
+    outputPrimitives = Array(MklDnn.PrimitiveCreate0(outputPrimDesc))
+
+    val fwdReorderPrimDesc = MklDnn.ReorderPrimitiveDescCreate(inputPrimDesc, outputPrimDesc)
+    val fwdReorderPrim = MklDnnOps.primitiveCreate2(fwdReorderPrimDesc, inputPrimitives,
+      Array(0), 1, outputPrimitives, 1)
+
+    forwardPrimitives = Array(fwdReorderPrim)
+
+    val bwdReorderPrimDesc = MklDnn.ReorderPrimitiveDescCreate(outputPrimDesc, inputPrimDesc)
+    val bwdReorderPrim = MklDnnOps.primitiveCreate2(bwdReorderPrimDesc, outputPrimitives,
+      Array(0), 1, inputPrimitives, 1)
+
+    backwardPrimitives = Array(bwdReorderPrim)
+  }
+
+  override private[mkldnn] def allocateMemory() = {
+    inputFormat match {
+      case d: NativeData =>
+        gradInput = DnnTensor[Float](d.shape)
+      case d: HeapData =>
+        gradInput = Tensor[Float](d.shape)
+      case _ => throw new UnsupportedOperationException("memory format is not supported")
+    }
+    outputFormat match {
+      case d: NativeData =>
+        output = DnnTensor[Float](d.shape)
+      case d: HeapData =>
+        output = Tensor[Float](d.shape)
+      case _ => throw new UnsupportedOperationException("memory format is not supported")
+    }
+  }
+
+  override private[mkldnn] def expectInputFormats = {
+    Array(inputFormat)
   }
 }
