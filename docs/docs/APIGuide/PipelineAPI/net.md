@@ -71,7 +71,7 @@ model = Net.loadCaffe("s3://def/path", "s3://model/path") //load from s3
 We also provides utilities to load tensorflow model.
 for more information.
 
-If we already have a freezed graph protobuf file, we can use the `loadTF` api directly to
+If we already have a frozen graph protobuf file, we can use the `loadTF` api directly to
 load the tensorflow model. 
 
 Otherwise, we should first use the `export_tf_checkpoint.py` script provided by BigDL's distribution
@@ -115,7 +115,7 @@ val binPath = "/tmp/model/model.bin"
 val inputs = Seq("Placeholder")
 val outputs = Seq("output")
 
-// For tensorflow freezed graph or graph without Variables
+// For tensorflow frozen graph or graph without Variables
 val model = Net.loadTF(modelPath, inputs, outputs, ByteOrder.LITTLE_ENDIAN)
                             
 // For tensorflow graph with Variables
@@ -128,7 +128,7 @@ model_def = "/tmp/model/model.pb"
 model_variable = "/tmp/model/model.bin"
 inputs = ["Placeholder"]
 outputs = ["output"]
-# For tensorflow freezed graph or graph without Variables
+# For tensorflow frozen graph or graph without Variables
 model = Net.load_tensorflow(model_def, inputs, outputs, byte_order = "little_endian", bigdl_type="float")
 
 # For tensorflow graph with Variables
@@ -139,14 +139,14 @@ model = Net.load_tensorflow(model_def, inputs, outputs, byte_order = "little_end
 
 **Scala:**
 ```scala
-val m = TFNet(freezedModelPath, inputs, outputs)
+val m = TFNet(frozenModelPath, inputs, outputs)
 ```
 **Python:**
 ```python
-m = TFNet(freezed_model_path, inputs, outputs)
+m = TFNet(frozen_model_path, inputs, outputs)
 ```
 
-This is a layer that wraps a tensorflow freezed sub graph as a layer and run tensorflow in parallel.
+This is a layer that wraps a tensorflow frozen sub graph as a layer and run tensorflow in parallel.
 
 
 
