@@ -59,7 +59,8 @@ private[mkldnn] object MemoryFormat {
   }
 
   def isSizeCompatible(actual: MemoryFormat, expect: MemoryFormat): Boolean = {
-    if (actual == null || expect == null) return true
+    if (expect == null) return true
+    if (actual == null) return false
     if (actual.shape.length != expect.shape.length) return false
     actual.shape.zip(expect.shape).foreach {case (a, e) => if (a != e) return false}
     return true
@@ -140,9 +141,9 @@ class Sequential[T: ClassTag](implicit ev: TensorNumeric[T]) extends Seq[T] with
       require(m.isInstanceOf[MklDnnModule], "layer should be MklDnnModule")
       val _m = m.asInstanceOf[MklDnnModule]
 
-      _m.setInputFormats(lastOutputFormats)
       require(MemoryFormat.isCompatible(lastOutputFormats, _m.expectInputFormats),
         "memory format is not compatible with expected one")
+      _m.setInputFormats(lastOutputFormats)
       lastOutputFormats = _m.inferOutputFormats()
       executionsBuffer.append(_m)
     })
