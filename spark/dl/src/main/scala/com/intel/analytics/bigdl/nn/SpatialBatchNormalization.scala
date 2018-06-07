@@ -19,6 +19,7 @@ package com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.nn.abstractnn.DataFormat
 import com.intel.analytics.bigdl.tensor.{FloatType, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import org.apache.spark.TaskContext
 
 import scala.reflect.ClassTag
 
@@ -50,6 +51,31 @@ class SpatialBatchNormalization[T: ClassTag](
   override val nDim = 4
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
+
+    val partition = TaskContext.getPartitionId
+
+    if (partition != 0) {
+      println()
+    }
+
+    val partitionKey = s"${partition}_${this.getName}"
+    val isRegistered = SynchronizerOnCount.partitionMap.get(partitionKey)
+
+    val partitionMeanKey = s"${partition}_${meanKey}"
+
+    val partitionStdKey = s"${partition}_${stdKey}"
+
+    if (!isRegistered) {
+      SynchronizerOnCount.partitionMap.synchronized {
+        if (!isRegistered)
+        {
+          SynchronizerOnCount.register(partitionMeanKey)
+          SynchronizerOnCount.register(partitionStdKey)
+          SynchronizerOnCount.partitionMap.put(partitionKey, true)
+        }
+      }
+    }
+
     checkInputDim(input)
     output.resizeAs(input)
 
@@ -72,7 +98,8 @@ class SpatialBatchNormalization[T: ClassTag](
             saveMean.asInstanceOf[Tensor[Float]], saveStd.asInstanceOf[Tensor[Float]],
             runningMean.asInstanceOf[Tensor[Float]], runningVar.asInstanceOf[Tensor[Float]],
             weight.asInstanceOf[Tensor[Float]], bias.asInstanceOf[Tensor[Float]],
-            eps.toFloat, momentum.toFloat, needFix = needFix)
+            eps.toFloat, momentum.toFloat, needFix = needFix,
+            meanKey = partitionMeanKey, stdKey = partitionStdKey)
         } else {
           SpatialBatchNormalization.updateOutputNCHWTrainDouble(
             _input.asInstanceOf[Tensor[Double]], output.asInstanceOf[Tensor[Double]],
@@ -1040,7 +1067,6 @@ object SpatialBatchNormalization {
       gxMeanData(c) /= size
       c += 1
     }
-
     i = 0
     b = 0
     if (scale != null) {
@@ -1089,7 +1115,9 @@ object SpatialBatchNormalization {
     saveMean: Tensor[Float], saveStd: Tensor[Float], runningMean: Tensor[Float],
     runningVar: Tensor[Float], scale: Tensor[Float], offset: Tensor[Float],
     eps: Float, momentum: Float,
-    batchVar: Tensor[Float] = null, saveVar: Tensor[Float] = null, needFix: Boolean = false)
+    batchVar: Tensor[Float] = null, saveVar: Tensor[Float] = null, needFix: Boolean = false,
+                                               meanKey: String = null,
+                                               stdKey: String = null)
   : Unit = {
     require(input.isContiguous(), "BatchNorm NCHW require a contiguous input")
     val inputData = input.storage().array()
@@ -1125,9 +1153,36 @@ object SpatialBatchNormalization {
       b += 1
     }
 
+    SynchronizerOnCount.sendSyncData(meanKey, meanData.slice(meanOffset, meanOffset + nChannels))
+
+    val meanEvent = SynchronizerOnCount.collect(meanKey)
+
+    val eventData = meanEvent.data
+
+    var  c = 0
+    while(c < nChannels) {
+      if (eventData.length != 0) {
+        meanData(c + meanOffset) = 0
+        eventData.foreach(ed => {
+          meanData(c + meanOffset) += ed(c)
+        })
+      }
+      c += 1
+    }
+
+    c = 0
+    while(c < nChannels) {
+      if (eventData.length != 0) {
+        meanData(c + meanOffset) /= eventData.length
+      }
+      c += 1
+    }
+
+    meanEvent.reset
+
     val n = input.nElement()
     val frameSize = n / nChannels
-    var c = 0
+    c = 0
     val runningMeanData = runningMean.storage().array()
     val runningMeanOffset = runningMean.storageOffset() - 1
     while(c < nChannels) {
@@ -1158,6 +1213,27 @@ object SpatialBatchNormalization {
       b += 1
     }
 
+    SynchronizerOnCount.sendSyncData(stdKey, stdData.slice(stdOffset, stdOffset + nChannels))
+
+    val stdEvent = SynchronizerOnCount.collect(stdKey)
+
+    val stdEventData = stdEvent.data
+
+    c = 0
+    while(c < nChannels) {
+      if (stdEventData.length != 0) {
+        stdData(c + stdOffset) = 0
+        stdEventData.foreach(ed => {
+          stdData(c + stdOffset) += ed(c)
+        })
+      }
+      c += 1
+    }
+
+    val eventLegth = if (stdEventData.length == 0)  1 else stdEventData.length
+
+    stdEvent.reset
+
     c = 0
     val runningVarData = runningVar.storage().array()
     val runningVarOffset = runningVar.storageOffset() - 1
@@ -1179,7 +1255,7 @@ object SpatialBatchNormalization {
         if (batchVar != null) {
           batchVar.setValue(c + 1, unbiasedVar)
         }
-        stdData(c + stdOffset) = 1.0f / Math.sqrt(s / frameSize + eps).toFloat
+        stdData(c + stdOffset) = 1.0f / Math.sqrt(s / eventLegth * frameSize + eps).toFloat
         runningVarData(c + runningVarOffset) = momentum * unbiasedVar +
           (1 - momentum) * runningVarData(c + runningVarOffset)
       }

@@ -16,15 +16,19 @@
 
 package com.intel.analytics.bigdl.nn
 
+import java.util.concurrent.{ConcurrentHashMap, CyclicBarrier}
+
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.nn.abstractnn._
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.{FloatType, Tensor}
 import com.intel.analytics.bigdl.utils.serializer._
 import com.intel.analytics.bigdl.utils.serializer.converters.DataConverter
-import com.intel.analytics.bigdl.utils.{T, Table}
+import com.intel.analytics.bigdl.utils.{Engine, T, Table}
 import com.intel.analytics.bigdl.serialization.Bigdl.{AttrValue, BigDLModule}
+import org.apache.spark.TaskContext
 
+import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
 /**
@@ -60,6 +64,13 @@ class BatchNormalization[T: ClassTag](
 )(implicit ev: TensorNumeric[T]) extends TensorModule[T] with Initializable {
 
   require(nOutput > 0, "output feature map number must be greater than zero")
+
+ // @volatile var registered: Boolean = false
+
+  var partitionRegistryMap: ConcurrentHashMap[Int, Boolean] = new ConcurrentHashMap[Int, Boolean]
+
+  val meanKey: String = s"${this.getName}_mean"
+  val stdKey: String = s"${this.getName}_std"
 
   val nDim = 2
   val channelDim = 2
@@ -193,6 +204,29 @@ class BatchNormalization[T: ClassTag](
   }
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
+
+    println(s"~~~~~~~~~~~~~~~~~~~~~update for ${this.getName()}")
+
+    val partition = TaskContext.getPartitionId
+
+    val partitionKey = s"${partition}_${this.getName}"
+    val isRegistered = SynchronizerOnCount.partitionMap.get(partitionKey)
+
+    val partitionMeanKey = s"${partition}_${meanKey}"
+
+    val partitionStdKey = s"${partition}_${stdKey}"
+
+    if (!isRegistered) {
+      SynchronizerOnCount.partitionMap.synchronized {
+        if (!isRegistered)
+        {
+          SynchronizerOnCount.register(partitionMeanKey)
+          SynchronizerOnCount.register(partitionStdKey)
+          SynchronizerOnCount.partitionMap.put(partitionKey, true)
+        }
+      }
+    }
+
     checkInputDim(input)
     output.resizeAs(input)
 
@@ -216,7 +250,7 @@ class BatchNormalization[T: ClassTag](
           saveMean.asInstanceOf[Tensor[Float]], saveStd.asInstanceOf[Tensor[Float]],
           runningMean.asInstanceOf[Tensor[Float]], runningVar.asInstanceOf[Tensor[Float]],
           weight.asInstanceOf[Tensor[Float]], bias.asInstanceOf[Tensor[Float]],
-          eps.toFloat, momentum.toFloat)
+          eps.toFloat, momentum.toFloat, meanKey = partitionMeanKey, stdKey = partitionStdKey)
       } else {
         SpatialBatchNormalization.updateOutputNCHWTrainDouble(
           _input.asInstanceOf[Tensor[Double]], output.asInstanceOf[Tensor[Double]],
@@ -370,5 +404,48 @@ object BatchNormalization extends ModuleSerializable {
     DataConverter.setAttributeValue(context, saveStdBuilder,
       batchNorm.saveStd, ModuleSerializer.tensorType)
     batchNormBuilder.putAttr("saveStd", saveStdBuilder.build)
+  }
+}
+
+object SynchronizerOnCount {
+
+  val partitionMap = new java.util.concurrent.ConcurrentHashMap[String, Boolean]
+
+  val events = new java.util.concurrent.ConcurrentHashMap[String, Event]
+
+  def register(key: String): Unit = {
+    val event = new Event
+    events.putIfAbsent(key, event)
+  }
+
+  def collect(key: String): Event = events.get(key)
+
+  def sendSyncData(key: String, dt: Array[Float]): Unit = {
+    val event = events.get(key)
+    event.addData(dt)
+  }
+}
+
+class Event {
+  val coresPerNo = Engine.coreNumber()
+  val barrier = new CyclicBarrier(coresPerNo)
+  val data: ArrayBuffer[Array[Float]] = new ArrayBuffer[Array[Float]]()
+  def addData(dt: Array[Float]): Unit = {
+    barrier.await
+    this.synchronized {
+      data.append(dt)
+    }
+    barrier.await
+  }
+  def reset(): Unit = {
+    barrier.await
+    if (data.size != 0) {
+      data.synchronized {
+        if (data.size != 0) {
+          data.clear
+        }
+      }
+    }
+    barrier.await
   }
 }
