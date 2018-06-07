@@ -4,7 +4,7 @@ This example illustrates how to do the image classification with pre-trained mod
 ### Run steps
 1. Prepare pre-trained models
 
-Download pre-trained models from https://github.com/intel-analytics/zoo/tree/master/docs/models/imageclassification
+Download pre-trained models from [Image Classification](https://github.com/intel-analytics/analytics-zoo/blob/master/docs/docs/ProgrammingGuide/image-classification.md)
 
 2. Prepare predict dataset
 
@@ -20,8 +20,8 @@ imagePath=... // image path
 topN=... // top n prediction
 
 ANALYTICS_ZOO_HOME=
-PYTHON_API_ZIP_PATH=${ANALYTICS_ZOO_HOME}/lib/zoo-VERSION-SNAPSHOT-python-api.zip
-ZOO_JAR_PATH=${ANALYTICS_ZOO_HOME}/lib/zoo-VERSION-SNAPSHOT-jar-with-dependencies.jar
+PYTHON_API_ZIP_PATH=${ANALYTICS_ZOO_HOME}/lib/analytics-zoo-VERSION-python-api.zip
+ZOO_JAR_PATH=${ANALYTICS_ZOO_HOME}/lib/analytics-zoo-VERSION-jar-with-dependencies.jar
 PYTHONPATH=${PYTHON_API_ZIP_PATH}:$PYTHONPATH
 
 spark-submit \
