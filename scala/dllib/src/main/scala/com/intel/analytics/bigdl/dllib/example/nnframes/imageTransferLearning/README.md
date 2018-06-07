@@ -41,8 +41,8 @@ Command to run the example in Spark local mode:
     spark-submit \
     --master local[2] \
     --driver-memory 2g \
-    --class com.intel.analytics.zoo.example.nnframes.ImageTransferLearning.ImageTransferLearning \
-    ./dist/lib/zoo-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
+    --class com.intel.analytics.zoo.examples.nnframes.imageTransferLearning.ImageTransferLearning \
+    ./dist/lib/analytics-zoo-VERSION-jar-with-dependencies.jar \
     --modelPath ./model/bvlc_googlenet.caffemodel \
     --caffeDefPath ./model/deploy.prototxt \
     --batchSize 40 \
@@ -59,8 +59,8 @@ Command to run the example in Spark yarn mode(TODO):
     --num-executors 4 \
     --driver-memory 2g \
     --executor-memory 2g \
-    --class com.intel.analytics.zoo.example.nnframes.ImageTransferLearning.ImageTransferLearning \
-    ./dist/lib/zoo-0.1.0-SNAPSHOT-jar-with-dependencies.jar \
+    --class com.intel.analytics.zoo.examples.nnframes.imageTransferLearning.ImageTransferLearning \
+    ./dist/lib/analytics-zoo-VERSION-jar-with-dependencies.jar \
     --modelPath ./model/bvlc_googlenet.caffemodel \
     --caffeDefPath ./model/deploy.prototxt \
     --batchSize 40 \
