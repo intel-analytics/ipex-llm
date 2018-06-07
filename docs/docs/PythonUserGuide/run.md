@@ -5,7 +5,11 @@ You need to first [install](install.md) analytics-zoo, either [from pip](install
 ---
 ## **Run after pip install**
 
-**Important:** Please always first call `init_nncontext()` at the very beginning of your code after pip install. This will create a SparkContext with optimized performance configuration and initialize the BigDL engine.
+**Important:**
+
+1. Installing analytics-zoo from pip will automatically install `pyspark`. To avoid possible conflicts, you are highly recommended to __unset `SPARK_HOME`__ if it exists in your environment.
+
+2. Please always first call `init_nncontext()` at the very beginning of your code after pip install. This will create a SparkContext with optimized performance configuration and initialize the BigDL engine.
 ```python
 from zoo.common.nncontext import *
 sc = init_nncontext()

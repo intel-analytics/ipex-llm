@@ -17,7 +17,11 @@ pip install analytics-zoo==0.1.0.dev2     # for Python 2.7
 pip3 install analytics-zoo==0.1.0.dev2    # for Python 3.5 and Python 3.6
 ```
 
-**Important:** Please always first call `init_nncontext()` at the very beginning of your code after pip install. This will create a SparkContext with optimized performance configuration and initialize the BigDL engine.
+**Important:**
+
+1. Installing analytics-zoo from pip will automatically install `pyspark`. To avoid possible conflicts, you are highly recommended to __unset `SPARK_HOME`__ if it exists in your environment.
+
+2. Please always first call `init_nncontext()` at the very beginning of your code after pip install. This will create a SparkContext with optimized performance configuration and initialize the BigDL engine.
 ```python
 from zoo.common.nncontext import *
 sc = init_nncontext()
@@ -25,12 +29,11 @@ sc = init_nncontext()
 
 **Remarks:**
 
-1. Pip install supports __Mac__ and __Linux__ platforms.
-2. Pip install only supports __local__ mode. Cluster mode might be supported in the future. For those who want to use Analytics Zoo in cluster mode, please try to [install without pip](#install-without-pip).
-3. If you use pip install, it is __not__ necessary to set `SPARK_HOME`.
-4. You need to install Java __>= JDK8__ before running Analytics Zoo, which is required by __pyspark__.
-5. We've tested this package with pip 9.0.1.
-6. `bigdl==0.5.0` and its dependencies will be automatically installed first before installing analytics-zoo if they haven't been detected in the current Python environment.
+1. We've tested this package with pip 9.0.1.
+2. Pip install supports __Mac__ and __Linux__ platforms.
+3. Pip install only supports __local__ mode. Cluster mode might be supported in the future. For those who want to use Analytics Zoo in cluster mode, please try to [install without pip](#install-without-pip).
+4. You need to install Java __>= JDK8__ before running Analytics Zoo, which is required by `pyspark`.
+5. `bigdl==0.5.0` and its dependencies will be automatically installed if they haven't been detected in the current Python environment.
 
 
 ---
