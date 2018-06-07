@@ -17,10 +17,9 @@
 package com.intel.analytics.zoo.pipeline.inference
 
 import com.intel.analytics.bigdl.optim.LocalPredictor
-import com.intel.analytics.bigdl.nn.Module
-import org.slf4j.LoggerFactory
 
-object InferenceModelFactory{
+object InferenceModelFactory {
+
   def loadFloatInferenceModel(modelPath: String): FloatInferenceModel = {
     loadFloatInferenceModel(modelPath, null)
   }

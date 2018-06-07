@@ -16,14 +16,19 @@
 
 package com.intel.analytics.zoo.pipeline.inference
 
-import com.intel.analytics.bigdl.nn.Module
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.utils.Engine
-import com.intel.analytics.zoo.pipeline.api.Net
+import com.intel.analytics.bigdl.utils.serializer.ModuleLoader
+import com.intel.analytics.zoo.pipeline.api.keras.models.{Model, Sequential}
+import com.intel.analytics.zoo.pipeline.api.net.GraphNet
 import org.slf4j.LoggerFactory
 
 object ModelLoader extends InferenceSupportive {
   override val logger = LoggerFactory.getLogger(getClass)
+
+  Model
+  Sequential
+  GraphNet
 
   timing("bigdl init engine") {
     System.setProperty("bigdl.localMode", System.getProperty("bigdl.localMode", "true"))
@@ -32,10 +37,10 @@ object ModelLoader extends InferenceSupportive {
   }
 
   def loadFloatModel(modelPath: String, weightPath: String):
-    AbstractModule[Activity, Activity, Float] = {
+  AbstractModule[Activity, Activity, Float] = {
     timing(s"load model") {
       logger.info(s"load model from $modelPath and $weightPath")
-      val model = Net.load[Float](modelPath, weightPath)
+      val model = ModuleLoader.loadFromFile[Float](modelPath, weightPath)
       logger.info(s"loaded model as $model")
       model
     }
