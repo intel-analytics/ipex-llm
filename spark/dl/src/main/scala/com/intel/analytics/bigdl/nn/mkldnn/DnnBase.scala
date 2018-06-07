@@ -35,8 +35,8 @@ trait MklDnnModule {
   /**
    * Module input formats
    */
-  private[mkldnn] def expectInputFormats: Array[Memory]
-  private[mkldnn] def setInputFormats(formats: Array[Memory]): Unit = {
+  private[mkldnn] def expectInputFormats: Array[MemoryData]
+  private[mkldnn] def setInputFormats(formats: Array[MemoryData]): Unit = {
     // Override this method for layer which allow to modify the input formats
     // The default behavior is skip
   }
@@ -44,7 +44,7 @@ trait MklDnnModule {
   /**
    * Compute the output formats based on the input formats
    */
-  private[mkldnn] def inferOutputFormats(): Array[Memory]
+  private[mkldnn] def inferOutputFormats(): Array[MemoryData]
 
   /**
    * MKL-DNN primitives of the module. Note you should only initialize this field by calling
@@ -84,7 +84,7 @@ trait MklDnnContainer extends MklDnnModule {
    * @param phase
    * @param inputFormats
    */
-  def compile(phase: Phase, inputFormats: Array[Memory]): Unit = {
+  def compile(phase: Phase, inputFormats: Array[MemoryData]): Unit = {
     compile(phase, inputFormats, new MklDnnRuntime())
   }
 
@@ -95,7 +95,7 @@ trait MklDnnContainer extends MklDnnModule {
    * @param inputFormats
    * @param runtime
    */
-  def compile(phase: Phase, inputFormats: Array[Memory], runtime: MklDnnRuntime): Unit = {
+  def compile(phase: Phase, inputFormats: Array[MemoryData], runtime: MklDnnRuntime): Unit = {
     this.phase = phase
     inferOutputFormats()
     fusion()

@@ -38,14 +38,14 @@ class Sequential[T: ClassTag](implicit ev: TensorNumeric[T]) extends Seq[T] with
     modules.appendAll(executions.map(_.asInstanceOf[AbstractModule[Activity, Activity, T]]))
   }
 
-  override private[mkldnn] def inferOutputFormats(): Array[Memory] = {
+  override private[mkldnn] def inferOutputFormats(): Array[MemoryData] = {
     var lastOutputFormats = expectInputFormats
     val executionsBuffer = new ArrayBuffer[MklDnnModule]()
     modules.foreach(m => {
       require(m.isInstanceOf[MklDnnModule], "layer should be MklDnnModule")
       val _m = m.asInstanceOf[MklDnnModule]
 
-      require(Memory.isCompatible(lastOutputFormats, _m.expectInputFormats),
+      require(MemoryData.isCompatible(lastOutputFormats, _m.expectInputFormats),
         "memory format is not compatible with expected one")
       _m.setInputFormats(lastOutputFormats)
       lastOutputFormats = _m.inferOutputFormats()
@@ -55,7 +55,7 @@ class Sequential[T: ClassTag](implicit ev: TensorNumeric[T]) extends Seq[T] with
     lastOutputFormats
   }
 
-  override private[mkldnn] def setInputFormats(formats: Array[Memory]): Unit = {
+  override private[mkldnn] def setInputFormats(formats: Array[MemoryData]): Unit = {
     modules(0).asInstanceOf[MklDnnModule].setInputFormats(formats)
   }
 

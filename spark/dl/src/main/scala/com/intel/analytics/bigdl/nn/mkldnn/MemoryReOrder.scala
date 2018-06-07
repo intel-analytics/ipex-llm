@@ -189,7 +189,7 @@ object MemoryReOrder {
   }
 }
 
-class MemoryReOrder2(inputFormat: Memory, outputFormat: Memory)
+class MemoryReOrder2(inputFormat: MemoryData, outputFormat: MemoryData)
   extends TensorModule[Float] with MklDnnModule {
 
   override def updateOutput(input: Tensor[Float]): Tensor[Float] = {
@@ -206,7 +206,7 @@ class MemoryReOrder2(inputFormat: Memory, outputFormat: Memory)
     gradInput
   }
 
-  override private[mkldnn] def inferOutputFormats(): Array[Memory] = {
+  override private[mkldnn] def inferOutputFormats(): Array[MemoryData] = {
     Array(outputFormat)
   }
 

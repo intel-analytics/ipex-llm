@@ -28,6 +28,8 @@ private[tensor] class DnnStorage[T: ClassTag](size: Int) extends Storage[T] {
 
   require(classTag[T] == ClassTag.Float, "DnnStorage only support float")
 
+  private var _isReleased: Boolean = false
+
   // Hold the address of the native array
   val ptr: Pointer = new Pointer(allocate(size))
 
@@ -80,7 +82,10 @@ private[tensor] class DnnStorage[T: ClassTag](size: Int) extends Storage[T] {
    */
   def release(): Unit = {
     Memory.AlignedFree(ptr.address)
+    _isReleased = true
   }
+
+  def isReleased(): Boolean = _isReleased
 
 
   private def allocate(capacity: Int): Long = {

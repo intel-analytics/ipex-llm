@@ -17,14 +17,14 @@ package com.intel.analytics.bigdl.nn.mkldnn
 
 import com.intel.analytics.bigdl.mkl.MklDnn
 
-sealed class Memory(val shape: Array[Int], val layout: Int)
+sealed class MemoryData(val shape: Array[Int], val layout: Int)
 
-case class HeapData(_shape: Array[Int], _layout: Int) extends Memory(_shape, _layout)
+case class HeapData(_shape: Array[Int], _layout: Int) extends MemoryData(_shape, _layout)
 
-case class NativeData(_shape: Array[Int], _layout: Int) extends Memory(_shape, _layout)
+case class NativeData(_shape: Array[Int], _layout: Int) extends MemoryData(_shape, _layout)
 
-private[mkldnn] object Memory {
-  def isCompatible(actuals: Array[Memory], expects: Array[Memory]): Boolean = {
+private[mkldnn] object MemoryData {
+  def isCompatible(actuals: Array[MemoryData], expects: Array[MemoryData]): Boolean = {
     if (actuals.length != expects.length) return false
     actuals.zip(expects).foreach { case (actual, expect) =>
       if (!isSizeCompatible(actual, expect)) return false
@@ -49,7 +49,7 @@ private[mkldnn] object Memory {
     return true
   }
 
-  def isSizeCompatible(actual: Memory, expect: Memory): Boolean = {
+  def isSizeCompatible(actual: MemoryData, expect: MemoryData): Boolean = {
     if (expect == null) return true
     if (actual == null) return false
     if (actual.shape.length != expect.shape.length) return false

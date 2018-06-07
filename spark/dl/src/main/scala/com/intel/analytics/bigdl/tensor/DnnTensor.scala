@@ -31,7 +31,6 @@ class DnnTensor[T: ClassTag](
 ) (implicit ev: TensorNumeric[T])
   extends DnnTensorUnsupportOperations[T]{
 
-
   override def nElement(): Int = storage.length()
 
   override def copy(other: Tensor[T]): Tensor[T] = {
@@ -53,11 +52,13 @@ class DnnTensor[T: ClassTag](
     _storage.release()
   }
 
+  def isReleased(): Boolean = _storage.isReleased()
+
   override def storage(): Storage[T] = _storage
 
   override def resize(s: Array[Int], stride: Array[Int] = null): this.type = {
     require(stride == null, "dnn tensor doesn't have stride")
-    if (s.product != nElement()) {
+    if (s.product > nElement()) {
       _storage.release()
       _storage = new DnnStorage[T](s.product)
     }
@@ -66,7 +67,7 @@ class DnnTensor[T: ClassTag](
   }
 
   override def resize(s: Int): this.type = {
-    if (s != nElement()) {
+    if (s > nElement()) {
       _storage.release()
       _storage = new DnnStorage[T](s)
     }
@@ -80,6 +81,10 @@ class DnnTensor[T: ClassTag](
       x.asInstanceOf[DnnTensor[T]]._storage.ptr.address, 0, this._storage.ptr.address, 0)
     this
   }
+
+  override def size(): Array[Int] = sizes.clone()
+
+  override def size(d: Int): Int = sizes(d - 1)
 }
 
 object DnnTensor {
@@ -101,6 +106,33 @@ object DnnTensor {
   def apply[T: ClassTag](sizes: Array[Int])(implicit ev: TensorNumeric[T]): DnnTensor[T] = {
     val storage = new DnnStorage[T](sizes.product)
     new DnnTensor[T](storage, sizes)
+  }
+
+  def apply[T: ClassTag](d1: Int)(implicit ev: TensorNumeric[T]): DnnTensor[T] = {
+    val storage = new DnnStorage[T](d1)
+    new DnnTensor[T](storage, Array(d1))
+  }
+
+  def apply[T: ClassTag](d1: Int, d2: Int)(implicit ev: TensorNumeric[T]): DnnTensor[T] = {
+    val storage = new DnnStorage[T](d1 * d2)
+    new DnnTensor[T](storage, Array(d1, d2))
+  }
+
+  def apply[T: ClassTag](d1: Int, d2: Int, d3: Int)(implicit ev: TensorNumeric[T]): DnnTensor[T] = {
+    val storage = new DnnStorage[T](d1 * d2 * d3)
+    new DnnTensor[T](storage, Array(d1, d2, d3))
+  }
+
+  def apply[T: ClassTag](d1: Int, d2: Int, d3: Int, d4: Int)(
+    implicit ev: TensorNumeric[T]): DnnTensor[T] = {
+    val storage = new DnnStorage[T](d1 * d2 * d3 * d4)
+    new DnnTensor[T](storage, Array(d1, d2, d3, d4))
+  }
+
+  def apply[T: ClassTag](d1: Int, d2: Int, d3: Int, d4: Int, d5: Int)(
+    implicit ev: TensorNumeric[T]): DnnTensor[T] = {
+    val storage = new DnnStorage[T](d1 * d2 * d3 * d4 * d5)
+    new DnnTensor[T](storage, Array(d1, d2, d3, d4, d5))
   }
 
   class DnnTensorUnsupportOperations[T: ClassTag](implicit ev: TensorNumeric[T]) extends Tensor[T] {
