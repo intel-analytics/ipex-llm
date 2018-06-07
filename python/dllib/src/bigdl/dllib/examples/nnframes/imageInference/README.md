@@ -13,7 +13,7 @@ Download the validation dataset from http://image-net.org/download-images. For t
 
 ## Get the pre-trained Inception-V1 model
 
-Download the pre-trained Inception-V1 model from [Zoo](https://s3-ap-southeast-1.amazonaws.com/bigdl-models/imageclassification/imagenet/bigdl_inception-v1_imagenet_0.4.0.model)
+Download the pre-trained Inception-V1 model from [Analytics Zoo](https://s3-ap-southeast-1.amazonaws.com/bigdl-models/imageclassification/imagenet/bigdl_inception-v1_imagenet_0.4.0.model)
 
 Alternatively, user may also download pre-trained caffe/Tensorflow/keras model. Please refer to
 programming guide in [BigDL](https://bigdl-project.github.io/) 
