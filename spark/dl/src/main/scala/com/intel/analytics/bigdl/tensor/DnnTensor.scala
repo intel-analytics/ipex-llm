@@ -52,6 +52,8 @@ class DnnTensor[T: ClassTag](
     _storage.release()
   }
 
+  def storageAddress(): Long = _storage.ptr.address
+
   def isReleased(): Boolean = _storage.isReleased()
 
   override def storage(): Storage[T] = _storage

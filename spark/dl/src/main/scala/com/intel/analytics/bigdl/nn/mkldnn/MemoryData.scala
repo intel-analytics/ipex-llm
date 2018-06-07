@@ -17,11 +17,33 @@ package com.intel.analytics.bigdl.nn.mkldnn
 
 import com.intel.analytics.bigdl.mkl.MklDnn
 
-sealed class MemoryData(val shape: Array[Int], val layout: Int)
+sealed trait MemoryData {
+  def shape: Array[Int]
+  def layout: Int
+  def setShape(shape: Array[Int]): Unit
+  def setLayout(layout: Int): Unit
+}
 
-case class HeapData(_shape: Array[Int], _layout: Int) extends MemoryData(_shape, _layout)
+case class HeapData(private var _shape: Array[Int], private var _layout: Int) extends MemoryData {
 
-case class NativeData(_shape: Array[Int], _layout: Int) extends MemoryData(_shape, _layout)
+  override def setShape(shape: Array[Int]): Unit = _shape = shape.clone()
+
+  override def setLayout(layout: Int): Unit = _layout = layout
+
+  override def shape: Array[Int] = _shape.clone()
+
+  override def layout: Int = _layout
+}
+
+case class NativeData(private var _shape: Array[Int], private var _layout: Int) extends MemoryData {
+  override def shape: Array[Int] = _shape.clone()
+
+  override def layout: Int = _layout
+
+  override def setShape(shape: Array[Int]): Unit = _shape = shape.clone()
+
+  override def setLayout(layout: Int): Unit = _layout = layout
+}
 
 private[mkldnn] object MemoryData {
   def isCompatible(actuals: Array[MemoryData], expects: Array[MemoryData]): Boolean = {
