@@ -16,10 +16,8 @@
 
 package com.intel.analytics.bigdl.nn.mkldnn
 
-import breeze.linalg.{*, dim}
 import com.intel.analytics.bigdl.mkl.MklDnn
-import com.intel.analytics.bigdl.mkl.MklDnn.MemoryFormat
-import com.intel.analytics.bigdl.nn.{SpatialMaxPooling, Utils}
+import com.intel.analytics.bigdl.nn.Utils
 import com.intel.analytics.bigdl.nn.abstractnn.{DataFormat, Initializable, TensorModule}
 import com.intel.analytics.bigdl.tensor.{MklDnnTensor, MklDnnType, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
