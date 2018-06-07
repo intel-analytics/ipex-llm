@@ -7,14 +7,14 @@ For Python users, Analytics Zoo can be installed either [from pip](#install-from
 
 Analytics Zoo can be installed via pip easily using the following command.
 
-***Install analytics-zoo-0.1.0.dev0***
+***Install analytics-zoo-0.1.0.dev2***
 
 * Note that you might need to add `sudo` if you don't have the permission for installation.
 
 ```bash
 pip install --upgrade pip
-pip install analytics-zoo==0.1.0.dev0     # for Python 2.7
-pip3 install analytics-zoo==0.1.0.dev0    # for Python 3.5 and Python 3.6
+pip install analytics-zoo==0.1.0.dev2     # for Python 2.7
+pip3 install analytics-zoo==0.1.0.dev2    # for Python 3.5 and Python 3.6
 ```
 
 **Important:** Please always first call `init_nncontext()` at the very beginning of your code after pip install. This will create a SparkContext with optimized performance configuration and initialize the BigDL engine.
