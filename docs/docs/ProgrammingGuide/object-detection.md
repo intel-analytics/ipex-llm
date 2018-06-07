@@ -8,7 +8,7 @@ Analytics Zoo provides two typical kind of pre-trained Object Detection models :
 **Scala**
 
 
-[Scala example](https://github.com/intel-analytics/zoo/blob/master/zoo/src/main/scala/com/intel/analytics/zoo/examples/objectdetection/Predict.scala)
+[Scala example](https://github.com/intel-analytics/analytics-zoo/blob/master/zoo/src/main/scala/com/intel/analytics/zoo/examples/objectdetection/Predict.scala)
 
 It's very easy to apply the model for inference with below code piece.
 
@@ -18,7 +18,7 @@ val data = ImageSet.read(params.image, sc, params.nPartition)
 val output = model.predictImageSet(data)
 ```
 
-For preprocessors for Object Detection models, please check [Object Detection Config](https://github.com/intel-analytics/zoo/blob/master/zoo/src/main/scala/com/intel/analytics/zoo/models/image/objectdetection/ObjectDetectionConfig.scala)
+For preprocessors for Object Detection models, please check [Object Detection Config](https://github.com/intel-analytics/analytics-zoo/blob/master/zoo/src/main/scala/com/intel/analytics/zoo/models/image/objectdetection/ObjectDetectionConfig.scala)
 
 Users can also do the inference directly using Analytics zoo.
 Sample code for SSD VGG on PASCAL as below:
@@ -34,7 +34,7 @@ val output = model.predictImageset(data)
 
 **Python**
 
-[Python example](https://github.com/intel-analytics/zoo/tree/master/pyzoo/zoo/examples/objectdetection)
+[Python example](https://github.com/intel-analytics/analytics-zoo/tree/master/pyzoo/zoo/examples/objectdetection)
 
 It's very easy to apply the model for inference with below code piece.
 ```

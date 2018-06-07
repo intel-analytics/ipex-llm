@@ -48,7 +48,7 @@ scala> ObjectDetector.loadModel[Float](params.modelPath)
 ## **Run as a Spark Program**
 You can run a analytics zoo program, e.g., the [Object Detection](https://github.com/intel-analytics/analytics-zoo/tree/master/zoo/src/main/scala/com/intel/analytics/zoo/examples/objectdetection), as a standard Spark program (running in either local mode or cluster mode) as follows:
 
-1. Download the pre-trained model from [here](https://github.com/intel-analytics/zoo/tree/master/docs/models/objectdetection).
+1. Download the pre-trained model from [here](https://github.com/intel-analytics/analytics-zoo/blob/master/docs/docs/ProgrammingGuide/object-detection.md).
 2. Prepare predict images
 3. Run the following command:
 ```bash

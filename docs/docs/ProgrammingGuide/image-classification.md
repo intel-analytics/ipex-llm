@@ -8,7 +8,7 @@ Analytics Zoo provides several typical kind of pre-trained Image Classfication m
 **Scala**
 
 
-[Scala example](https://github.com/intel-analytics/zoo/tree/master/zoo/src/main/scala/com/intel/analytics/zoo/examples/imageclassification)
+[Scala example](https://github.com/intel-analytics/analytics-zoo/tree/master/zoo/src/main/scala/com/intel/analytics/zoo/examples/imageclassification)
 
 It's very easy to apply the model for inference with below code piece.
 
@@ -33,7 +33,7 @@ val output = imc.predictImageSet(data, config)
 
 **Python**
 
-[Python example](https://github.com/intel-analytics/zoo/tree/master/pyzoo/zoo/examples/imageclassification)
+[Python example](https://github.com/intel-analytics/analytics-zoo/tree/master/pyzoo/zoo/examples/imageclassification)
 
 It's very easy to apply the model for inference with below code piece.
 ```
