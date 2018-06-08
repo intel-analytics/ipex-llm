@@ -14,27 +14,13 @@
 # limitations under the License.
 #
 
-from bigdl.nn.keras.layer import KerasLayer
-from bigdl.nn.layer import Node
-
+import zoo.pipeline.api.autograd as autograd
+from zoo.pipeline.api.keras.base import ZooKerasLayer
 from zoo.pipeline.api.keras.utils import *
 
 if sys.version >= '3':
     long = int
     unicode = str
-
-
-class ZooKerasCreator(JavaValue):
-    def jvm_class_constructor(self):
-        name = "createZooKeras" + self.__class__.__name__
-        print("creating: " + name)
-        return name
-
-
-class ZooKerasLayer(ZooKerasCreator, KerasLayer):
-    @classmethod
-    def of(cls, jvalue, bigdl_type="float"):
-        return KerasLayer(jvalue, bigdl_type)
 
 
 class KerasNet(ZooKerasLayer):
@@ -264,7 +250,7 @@ class KerasNet(ZooKerasLayer):
         return layers
 
 
-class Input(ZooKerasCreator, Node):
+class Input(autograd.Variable):
     """
     Used to instantiate an input node.
 
@@ -277,9 +263,8 @@ class Input(ZooKerasCreator, Node):
     creating: createZooKerasInput
     """
     def __init__(self, shape=None, name=None, bigdl_type="float"):
-        super(Input, self).__init__(None, bigdl_type,
-                                    name,
-                                    list(shape) if shape else None)
+        super(Input, self).__init__(input_shape=list(shape) if shape else None,
+                                    node=None, jvalue=None, name=name)
 
 
 class InputLayer(ZooKerasLayer):
