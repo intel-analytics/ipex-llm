@@ -63,4 +63,12 @@ class TFNetSpec extends FlatSpec with Matchers with BeforeAndAfter {
     }
 
   }
+
+  "TFNet " should "be able to load from a folder" in {
+    val resource = getClass().getClassLoader().getResource("tfnet")
+    val net = TFNet(resource.getPath)
+    val result = net.forward(Tensor[Float](4, 28, 28, 1).rand())
+
+    result.toTensor[Float].size() should be (Array(4, 10))
+  }
 }
