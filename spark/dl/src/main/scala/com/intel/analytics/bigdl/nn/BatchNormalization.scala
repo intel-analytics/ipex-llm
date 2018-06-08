@@ -63,14 +63,12 @@ class BatchNormalization[T: ClassTag](
   private val initGradBias: Tensor[T] = null
 )(implicit ev: TensorNumeric[T]) extends TensorModule[T] with Initializable {
 
-  require(nOutput > 0, "output feature map number must be greater than zero")
-
- // @volatile var registered: Boolean = false
-
-  var partitionRegistryMap: ConcurrentHashMap[Int, Boolean] = new ConcurrentHashMap[Int, Boolean]
-
   val meanKey: String = s"${this.getName}_mean"
   val stdKey: String = s"${this.getName}_std"
+  val gmKey: String = s"${this.getName}_gm"
+  val gxmKey: String = s"${this.getName}_gxm"
+
+  require(nOutput > 0, "output feature map number must be greater than zero")
 
   val nDim = 2
   val channelDim = 2
@@ -143,7 +141,7 @@ class BatchNormalization[T: ClassTag](
 
   protected val gMean = Tensor[T]()
   protected val gxMean = Tensor[T]()
-  protected val _input = Tensor[T]()
+  protected var _input = Tensor[T]()
   protected val _gradOutput = Tensor[T]()
 
   override def clearState(): this.type = {
@@ -205,8 +203,6 @@ class BatchNormalization[T: ClassTag](
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
 
-    println(s"~~~~~~~~~~~~~~~~~~~~~update for ${this.getName()}")
-
     val partition = TaskContext.getPartitionId
 
     val partitionKey = s"${partition}_${this.getName}"
@@ -216,12 +212,17 @@ class BatchNormalization[T: ClassTag](
 
     val partitionStdKey = s"${partition}_${stdKey}"
 
+    val partitionGmKey = s"${partition}_${gmKey}"
+    val partitionGxmKey = s"${partition}_${gxmKey}"
+
     if (!isRegistered) {
       SynchronizerOnCount.partitionMap.synchronized {
         if (!isRegistered)
         {
           SynchronizerOnCount.register(partitionMeanKey)
           SynchronizerOnCount.register(partitionStdKey)
+          SynchronizerOnCount.register(gmKey)
+          SynchronizerOnCount.register(gxmKey)
           SynchronizerOnCount.partitionMap.put(partitionKey, true)
         }
       }
@@ -422,6 +423,12 @@ object SynchronizerOnCount {
 
   def sendSyncData(key: String, dt: Array[Float]): Unit = {
     val event = events.get(key)
+    if (key.contains("_gxm")) {
+      println(s"Receive gxm ~ ${key}")
+      val tensor = Tensor[Float](dt, Array(dt.length))
+      println(tensor)
+      println(event)
+    }
     event.addData(dt)
   }
 }
@@ -429,12 +436,15 @@ object SynchronizerOnCount {
 class Event {
   val coresPerNo = Engine.coreNumber()
   val barrier = new CyclicBarrier(coresPerNo)
-  val data: ArrayBuffer[Array[Float]] = new ArrayBuffer[Array[Float]]()
+  val data = new ConcurrentHashMap[String, Array[Float]]()
   def addData(dt: Array[Float]): Unit = {
     barrier.await
-    this.synchronized {
-      data.append(dt)
+    val currentId = Thread.currentThread().getId.toString
+    if(dt(0) == -0.25f) {
+      println("where am I from")
     }
+    println(s"put with ${currentId}")
+    data.put(currentId, dt)
     barrier.await
   }
   def reset(): Unit = {

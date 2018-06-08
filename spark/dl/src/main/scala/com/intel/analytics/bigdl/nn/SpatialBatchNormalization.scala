@@ -20,6 +20,7 @@ import com.intel.analytics.bigdl.nn.abstractnn.DataFormat
 import com.intel.analytics.bigdl.tensor.{FloatType, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import org.apache.spark.TaskContext
+import scala.collection.JavaConverters._
 
 import scala.reflect.ClassTag
 
@@ -54,10 +55,6 @@ class SpatialBatchNormalization[T: ClassTag](
 
     val partition = TaskContext.getPartitionId
 
-    if (partition != 0) {
-      println()
-    }
-
     val partitionKey = s"${partition}_${this.getName}"
     val isRegistered = SynchronizerOnCount.partitionMap.get(partitionKey)
 
@@ -65,21 +62,27 @@ class SpatialBatchNormalization[T: ClassTag](
 
     val partitionStdKey = s"${partition}_${stdKey}"
 
+    val partitionGmKey = s"${partition}_${gmKey}"
+    val partitionGxmKey = s"${partition}_${gxmKey}"
+
+
     if (!isRegistered) {
       SynchronizerOnCount.partitionMap.synchronized {
         if (!isRegistered)
         {
           SynchronizerOnCount.register(partitionMeanKey)
           SynchronizerOnCount.register(partitionStdKey)
+          SynchronizerOnCount.register(gmKey)
+          SynchronizerOnCount.register(gxmKey)
           SynchronizerOnCount.partitionMap.put(partitionKey, true)
         }
       }
     }
-
     checkInputDim(input)
     output.resizeAs(input)
 
-    _input.set(input)
+   // _input.set(input)
+    _input = input
     makeBatch(_input)
     val nInput = _input.size(channelDim)
 
@@ -168,7 +171,8 @@ class SpatialBatchNormalization[T: ClassTag](
             _input.asInstanceOf[Tensor[Float]], _gradOutput.asInstanceOf[Tensor[Float]],
             gradInput.asInstanceOf[Tensor[Float]], weight.asInstanceOf[Tensor[Float]],
             saveMean.asInstanceOf[Tensor[Float]], saveStd.asInstanceOf[Tensor[Float]],
-            gMean.asInstanceOf[Tensor[Float]], gxMean.asInstanceOf[Tensor[Float]])
+            gMean.asInstanceOf[Tensor[Float]], gxMean.asInstanceOf[Tensor[Float]],
+          gMeanKey = gmKey, gxMeanKey = gxmKey)
         } else {
           SpatialBatchNormalization.updateGradInputNCHWTrainDouble(
             _input.asInstanceOf[Tensor[Double]], _gradOutput.asInstanceOf[Tensor[Double]],
@@ -1010,7 +1014,10 @@ object SpatialBatchNormalization {
     saveMean: Tensor[Float],
     saveStd: Tensor[Float],
     gMean: Tensor[Float],
-    gxMean: Tensor[Float]
+    gxMean: Tensor[Float],
+    gMeanKey: String = null,
+    gxMeanKey: String = null
+
   ): Unit = {
     require(input.nDimension() == 4, "BN require a 4D input")
     require(input.isContiguous(), "input is not contiguous")
@@ -1027,6 +1034,9 @@ object SpatialBatchNormalization {
     }
 
     val inputData = input.storage().array()
+    if (inputData(0) == 2.0f) {
+      println
+    }
     val inputOffset = input.storageOffset() - 1
     val gradOutputData = gradOutput.storage().array()
     val gradOutputOffset = gradOutput.storageOffset() - 1
@@ -1042,6 +1052,7 @@ object SpatialBatchNormalization {
     val nBatch = gradOutput.size(1)
     val frameSize = gradOutput.size(3) * gradOutput.size(4)
     val n = gradOutput.nElement()
+    val currentId = Thread.currentThread.getId.toString
     var b = 0
     var i = 0
     while(b < nBatch) {
@@ -1052,6 +1063,7 @@ object SpatialBatchNormalization {
           gMeanData(c) += gradOutputData(i + gradOutputOffset)
           gxMeanData(c) += gradOutputData(i + gradOutputOffset) *
             (inputData(i + inputOffset) - saveMeanData(c + saveMeanOffset))
+          println("calculating again")
           k += 1
           i += 1
         }
@@ -1060,6 +1072,68 @@ object SpatialBatchNormalization {
       b += 1
     }
 
+    SynchronizerOnCount.sendSyncData(gMeanKey, gMeanData)
+
+    val gMeanEvent = SynchronizerOnCount.collect(gMeanKey)
+
+    gMeanEvent.synchronized {
+
+      val eventData = gMeanEvent.data
+      //      require(eventData.size == 32, "Event length not correct")
+      var c = 0
+      while (c < nChannel) {
+        eventData.keySet.asScala.foreach(threadId => {
+          if (!threadId.equals(currentId)) {
+            gMeanData(c) += eventData.get(threadId)(c)
+          }
+        })
+
+        c += 1
+      }
+
+      c = 0
+      val total = eventData.keys.asScala.filter(!_.equals(currentId)).size + 1
+      while (c < nChannel) {
+        gMeanData(c) /= total
+        c += 1
+      }
+    }
+
+    gMeanEvent.reset
+
+   // println(gxMean)
+
+    SynchronizerOnCount.sendSyncData(gxMeanKey, gxMeanData)
+
+
+    val gxMeanEvent = SynchronizerOnCount.collect(gxMeanKey)
+
+    println(Tensor[Float](gxMeanData, Array(gxMeanData.length)))
+
+    gxMeanEvent.synchronized {
+
+      val eventData = gxMeanEvent.data
+      //      require(eventData.size == 32, "Event length not correct")
+      var c = 0
+      while (c < nChannel) {
+        eventData.keySet.asScala.foreach(threadId => {
+          if (!threadId.equals(currentId)) {
+            gxMeanData(c) += eventData.get(threadId)(c)
+          }
+        })
+        c += 1
+      }
+
+      c = 0
+      val total = eventData.keys.asScala.filter(!_.equals(currentId)).size + 1
+      while (c < nChannel) {
+        gxMeanData(c) /= total
+        c += 1
+      }
+    }
+
+    gxMeanEvent.reset
+
     var c = 0
     val size = n / nChannel
     while(c < nChannel) {
@@ -1067,6 +1141,7 @@ object SpatialBatchNormalization {
       gxMeanData(c) /= size
       c += 1
     }
+
     i = 0
     b = 0
     if (scale != null) {
@@ -1116,8 +1191,8 @@ object SpatialBatchNormalization {
     runningVar: Tensor[Float], scale: Tensor[Float], offset: Tensor[Float],
     eps: Float, momentum: Float,
     batchVar: Tensor[Float] = null, saveVar: Tensor[Float] = null, needFix: Boolean = false,
-                                               meanKey: String = null,
-                                               stdKey: String = null)
+                                                meanKey: String = null,
+                                                stdKey: String = null)
   : Unit = {
     require(input.isContiguous(), "BatchNorm NCHW require a contiguous input")
     val inputData = input.storage().array()
@@ -1135,6 +1210,7 @@ object SpatialBatchNormalization {
     }
     val meanData = saveMean.storage().array()
     val meanOffset = saveMean.storageOffset() - 1
+    val currentId = Thread.currentThread.getId.toString
     var i = 0
     var b = 0
     while(b < nBatch) {
@@ -1147,7 +1223,15 @@ object SpatialBatchNormalization {
           k += 1
           i += 1
         }
+        if (meanSum.toString == "NaN") {
+          println(s"NaN for mean sum : ${meanSum}")
+          throw new RuntimeException("Mean sum error")
+        }
         meanData(c + meanOffset) += meanSum
+        if (meanData(c + meanOffset).toString == "NaN") {
+          println(s"NaN for mean sum : ${meanSum}")
+          throw new RuntimeException("Mean sum meanData error")
+        }
         c += 1
       }
       b += 1
@@ -1157,32 +1241,37 @@ object SpatialBatchNormalization {
 
     val meanEvent = SynchronizerOnCount.collect(meanKey)
 
-    val eventData = meanEvent.data
+    meanEvent.synchronized {
 
-    var  c = 0
-    while(c < nChannels) {
-      if (eventData.length != 0) {
-        meanData(c + meanOffset) = 0
-        eventData.foreach(ed => {
-          meanData(c + meanOffset) += ed(c)
+      val eventData = meanEvent.data
+//      require(eventData.size == 32, "Event length not correct")
+      var c = 0
+      while (c < nChannels) {
+        require(meanData(c + meanOffset).toString != "NaN",
+          "Before checking NAN issue ~~~~~~~~~~~``")
+        eventData.keySet.asScala.foreach(threadId => {
+          if (!threadId.equals(currentId)) {
+            meanData(c + meanOffset) += eventData.get(threadId)(c)
+          }
         })
+        c += 1
       }
-      c += 1
-    }
-
-    c = 0
-    while(c < nChannels) {
-      if (eventData.length != 0) {
-        meanData(c + meanOffset) /= eventData.length
+      c = 0
+      val total = eventData.keys.asScala.filter(!_.
+        equals(currentId)).size + 1
+      while (c < nChannels) {
+        meanData(c + meanOffset) /= total
+        require(meanData(c + meanOffset).toString != "NaN",
+          "After checking NAN issue ~~~~~~~~~~~``")
+        c += 1
       }
-      c += 1
     }
 
     meanEvent.reset
 
     val n = input.nElement()
     val frameSize = n / nChannels
-    c = 0
+    var c = 0
     val runningMeanData = runningMean.storage().array()
     val runningMeanOffset = runningMean.storageOffset() - 1
     while(c < nChannels) {
@@ -1202,12 +1291,31 @@ object SpatialBatchNormalization {
         var k = 0
         var stdSum = 0f
         while(k < nFrame) {
+          require(meanData(c + meanOffset).toString != "NaN", "mean cal error")
+          require(meanData(c + meanOffset).toString != "Infinity",
+            s"mean cal error")
           val diff = (inputData(i + inputOffset) - meanData(c + meanOffset))
+          require(diff.toString != "NaN", "diff cal error")
+          require(diff.toString != "Infinity",
+            s"diff cal error")
+          val diff2 = diff * diff
+          require(diff2.toString != "NaN", s"diff2 cal error," +
+            s"mean : ${meanData(c + meanOffset)}," +
+            s"input : ${inputData(i + inputOffset)}" +
+            s"diff : ${diff}")
+          require(diff2.toString != "Infinity",
+            s"diff2 cal error," +
+              s"mean : ${meanData(c + meanOffset)}," +
+              s"input : ${inputData(i + inputOffset)}" +
+              s"diff : ${diff}")
           stdSum += diff * diff
           k += 1
           i += 1
         }
         stdData(c + stdOffset) += stdSum
+        require(stdData(c + stdOffset).toString != "NaN", s"$stdData(c + stdOffset)} is nan")
+        require(stdData(c + stdOffset).toString != "Infinity",
+          s"${stdData(c + stdOffset)} is infinity")
         c += 1
       }
       b += 1
@@ -1217,20 +1325,26 @@ object SpatialBatchNormalization {
 
     val stdEvent = SynchronizerOnCount.collect(stdKey)
 
-    val stdEventData = stdEvent.data
+    stdEvent.synchronized {
 
-    c = 0
-    while(c < nChannels) {
-      if (stdEventData.length != 0) {
-        stdData(c + stdOffset) = 0
-        stdEventData.foreach(ed => {
-          stdData(c + stdOffset) += ed(c)
+      val stdEventData = stdEvent.data
+
+      c = 0
+      while (c < nChannels) {
+        require(stdData(c + stdOffset).toString != "NaN",
+          "Before STD checking NAN issue ~~~~~~~~~~~``")
+        stdEventData.keySet.asScala.foreach(threadId => {
+          if (!threadId.equals(currentId)) {
+            stdData(c + stdOffset) += stdEventData.get(threadId)(c)
+          }
         })
+        require(stdData(c + stdOffset).toString != "NaN",
+          "After STD checking NAN issue ~~~~~~~~~~~``")
+        c += 1
       }
-      c += 1
     }
 
-    val eventLegth = if (stdEventData.length == 0)  1 else stdEventData.length
+    val total = stdEvent.data.keys.asScala.filter(!_.equals(currentId)).size + 1
 
     stdEvent.reset
 
@@ -1248,14 +1362,14 @@ object SpatialBatchNormalization {
         }
       } else {
         val s = stdData(c + stdOffset)
-        val unbiasedVar = s / (frameSize - 1)
+        val unbiasedVar = s / (frameSize * total - 1)
         if (saveVar != null) {
-          saveVar.setValue(c + 1, s / frameSize)
+          saveVar.setValue(c + 1, s / (frameSize * total))
         }
         if (batchVar != null) {
           batchVar.setValue(c + 1, unbiasedVar)
         }
-        stdData(c + stdOffset) = 1.0f / Math.sqrt(s / eventLegth * frameSize + eps).toFloat
+        stdData(c + stdOffset) = 1.0f / Math.sqrt(s / (frameSize * total) + eps).toFloat
         runningVarData(c + runningVarOffset) = momentum * unbiasedVar +
           (1 - momentum) * runningVarData(c + runningVarOffset)
       }
