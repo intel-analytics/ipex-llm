@@ -33,6 +33,7 @@ import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.nn.keras.{KerasLayer, KerasModel}
 import com.intel.analytics.bigdl.transform.vision.image.{ImageFeature, ImageFeatureToMiniBatch}
 import com.intel.analytics.zoo.pipeline.api.Net
+import com.intel.analytics.zoo.pipeline.api.autograd._
 import com.intel.analytics.zoo.pipeline.api.keras.layers._
 import com.intel.analytics.zoo.pipeline.api.keras.layers.utils.KerasUtils
 import com.intel.analytics.zoo.pipeline.api.keras.metrics.AUC
@@ -53,9 +54,9 @@ object PythonZooKeras {
 class PythonZooKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonBigDLKeras[T] {
 
   def createZooKerasModel(
-      input: JList[ModuleNode[T]],
-      output: JList[ModuleNode[T]]): Model[T] = {
-    Model[T](input.asScala.toArray, output.asScala.toArray)
+      input: JList[Variable[T]],
+      output: JList[Variable[T]]): Model[T] = {
+    Model[T](input.asScala.map(_.node).toArray, output.asScala.map(_.node).toArray)
   }
 
   def createZooKerasSequential(): Sequential[T] = {
@@ -63,9 +64,9 @@ class PythonZooKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonB
   }
 
   def createZooKerasInput(
-      name : String = null,
-      inputShape: JList[Int] = null): ModuleNode[T] = {
-    Input(name = name, inputShape = toScalaShape(inputShape))
+      inputShape: JList[JList[Int]] = null,
+      name : String = null): Variable[T] = {
+    new Variable[T](Input[T](name = name, inputShape = toScalaMultiShape(inputShape)), name)
   }
 
   def createZooKerasInputLayer(
@@ -1020,5 +1021,11 @@ class PythonZooKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonB
       inputNames: JList[String],
       outputNames: JList[String]): TFNet = {
     TFNet(path, inputNames.asScala, outputNames.asScala)
+  }
+
+  def connectInputs(module: AbstractModule[Activity, Activity, T],
+      x: JList[Variable[T]]): Variable[T] = {
+    require(!x.isEmpty, "We don't accept empty inputs")
+    Variable(module.inputs(x.asScala.map(_.node): _*))
   }
 }
