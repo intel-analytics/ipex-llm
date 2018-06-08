@@ -18,6 +18,7 @@ package com.intel.analytics.zoo.pipeline.api
 
 import java.nio.ByteOrder
 
+import com.intel.analytics.bigdl.nn.Graph._
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, Initializable}
 import com.intel.analytics.bigdl.nn.keras.KerasLayer
 import com.intel.analytics.bigdl.nn.{Container, Graph, InitializationMethod}
@@ -26,6 +27,7 @@ import com.intel.analytics.bigdl.utils.File
 import com.intel.analytics.bigdl.utils.caffe.CaffeLoader
 import com.intel.analytics.bigdl.utils.serializer.ModuleLoader
 import com.intel.analytics.bigdl.utils.tf.{Session, TensorflowLoader}
+import com.intel.analytics.zoo.pipeline.api.autograd.Variable
 import com.intel.analytics.zoo.pipeline.api.keras.models.{KerasNet, Model, Sequential}
 import com.intel.analytics.zoo.pipeline.api.net.GraphNet
 
@@ -41,13 +43,21 @@ trait Net {
     (labor.getScaleW() == 0) && (labor.getScaleB() == 0)
   }
 
+  /**
+   * Build graph: some other modules point to current module
+   * @param vars upstream variables
+   * @return Variable containing current module
+   */
+  def from[T: ClassTag](vars : Variable[T]*)(implicit ev: TensorNumeric[T]): Variable[T] = {
+    new Variable(
+      this.asInstanceOf[AbstractModule[Activity, Activity, T]].inputs(vars.map(_.node): _*))
+  }
 }
 
 object Net {
   Model
   Sequential
   GraphNet
-
   def setInitMethod(module: AbstractModule[_, _, _],
       weightInitMethod: InitializationMethod = null,
       biasInitMethod: InitializationMethod = null, throwException: Boolean = true): Unit = {
