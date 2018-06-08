@@ -36,7 +36,7 @@ object KerasRunner {
       |from keras.layers import *
       |from keras.objectives import *
       |from keras.regularizers import *
-      |from keras.models import Model
+      |from keras.models import Model, Sequential
       |import keras.backend as K
       |import numpy as np
       |import tempfile

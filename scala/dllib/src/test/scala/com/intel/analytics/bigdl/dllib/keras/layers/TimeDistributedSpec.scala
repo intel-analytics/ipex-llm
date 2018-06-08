@@ -17,6 +17,7 @@
 package com.intel.analytics.zoo.pipeline.api.keras.layers
 
 import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
+import com.intel.analytics.bigdl.nn.keras.KerasLayer
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.Shape
 import com.intel.analytics.zoo.pipeline.api.keras.models.Sequential
@@ -58,6 +59,38 @@ class TimeDistributedSpec extends KerasBaseSpec {
     seq.getOutputShape().toSingle().toArray should be (Array(-1, 4, 8, 10, 10))
     checkOutputAndGrad(seq.asInstanceOf[AbstractModule[Tensor[Float], Tensor[Float], Float]],
       kerasCode, precision = 1e-3)
+  }
+
+  "TimeDistributed Convolution2D + dense" should "be the same as Keras" in {
+
+    def converter(weights: Array[Tensor[Float]]): Array[Tensor[Float]] = {
+      weights(2) = weights(2).t() // for dense
+      weights
+    }
+
+    val kerasCode =
+      """
+        |input_tensor = Input(shape=[4, 3, 12, 12])
+        |input = np.random.random([2, 4, 3, 12, 12])
+        |seq = Sequential()
+        |seq.add(Convolution2D(8, 3, 3, dim_ordering="th", input_shape=[3, 12, 12]))
+        |seq.add(Flatten())
+        |seq.add(Dense(10))
+        |output_tensor = TimeDistributed(seq)(input_tensor)
+        |model = Model(input=input_tensor, output=output_tensor)
+      """.stripMargin
+    val stepLayer = Sequential[Float]()
+    stepLayer.add(Convolution2D[Float](8, 3, 3, inputShape = Shape(3, 12, 12)))
+    stepLayer.add(Flatten[Float]())
+    stepLayer.add(Dense[Float](10))
+    val layer = TimeDistributed[Float](
+      stepLayer.asInstanceOf[KerasLayer[Tensor[Float], Tensor[Float], Float]],
+      inputShape = Shape(4, 3, 12, 12))
+    val seq = Sequential[Float]()
+    seq.add(layer)
+    seq.getOutputShape().toSingle().toArray should be (Array(-1, 4, 10))
+    checkOutputAndGrad(seq.asInstanceOf[AbstractModule[Tensor[Float], Tensor[Float], Float]],
+      kerasCode, weightConverter = converter, precision = 1e-3)
   }
 
 }
