@@ -16,11 +16,13 @@
 
 package com.intel.analytics.zoo.pipeline.api.keras.layers
 
+import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.nn.keras.{KerasLayer, TimeDistributed => BTimeDistributed}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Shape
 import com.intel.analytics.zoo.pipeline.api.Net
+import com.intel.analytics.zoo.pipeline.api.keras.layers.utils.KerasUtils
 
 import scala.reflect.ClassTag
 
@@ -41,10 +43,34 @@ import scala.reflect.ClassTag
  * @tparam T The numeric type of parameter(e.g. weight, bias). Only support float/double now.
  */
 class TimeDistributed[T: ClassTag](
-   override val layer: KerasLayer[Tensor[T], Tensor[T], T],
-   override val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
-  extends BTimeDistributed[T](
-    layer, inputShape) with Net {
+   val layer: KerasLayer[Tensor[T], Tensor[T], T],
+   val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
+  extends KerasLayer[Tensor[T], Tensor[T], T](KerasUtils.addBatch(inputShape)) with Net {
+
+  private def getInnerInput(input: Array[Int]): Array[Int] = {
+    Array(input(0)) ++ input.slice(2, input.length)
+  }
+
+  override def computeOutputShape(inputShape: Shape): Shape = {
+    val input = inputShape.toSingle().toArray
+    require(input.length >=3,
+      s"TimeDistributed requires at least 3D input, but got input dim ${input.length}")
+    val innerInput = getInnerInput(input)
+    val innerOutput = layer.computeOutputShape(Shape(innerInput)).toSingle()
+    val batch = innerOutput.take(1)
+    val steps = List(input(1))
+    val output = batch ++ steps ++ innerOutput.drop(1)
+    Shape(output.toArray)
+  }
+
+  override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
+    val input = inputShape.toSingle().toArray
+    val innerInput = getInnerInput(input)
+    layer.build(Shape(innerInput))
+    layer.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
+    val timedistributed = com.intel.analytics.zoo.pipeline.api.torch.TimeDistributed[T](layer)
+    timedistributed.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
+  }
 }
 
 object TimeDistributed {
