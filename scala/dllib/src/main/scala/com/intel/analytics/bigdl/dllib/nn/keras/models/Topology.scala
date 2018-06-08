@@ -18,7 +18,7 @@ package com.intel.analytics.zoo.pipeline.api.keras.models
 
 import com.intel.analytics.bigdl.dataset._
 import com.intel.analytics.bigdl.{Criterion, DataSet}
-import com.intel.analytics.bigdl.nn.Graph.ModuleNode
+import com.intel.analytics.bigdl.nn.Graph._
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.nn.keras.{KerasLayer, KerasLayerSerializable}
 import com.intel.analytics.bigdl.nn.{Container, Graph, StaticGraph, Sequential => TSequential}
@@ -30,6 +30,7 @@ import com.intel.analytics.bigdl.utils.serializer.{DeserializeContext, ModuleDat
 import com.intel.analytics.bigdl.visualization.{TrainSummary, ValidationSummary}
 import com.intel.analytics.zoo.pipeline.api.Net
 import com.intel.analytics.zoo.pipeline.api.autograd.{CustomLossWithVariable, Lambda, Variable}
+import com.intel.analytics.zoo.pipeline.api.autograd._
 import com.intel.analytics.zoo.pipeline.api.keras.layers.Input
 import com.intel.analytics.zoo.pipeline.api.keras.layers.utils.{AbstractModuleRef, GraphRef, KerasLayerRef}
 import com.intel.analytics.zoo.pipeline.api.keras.layers.utils.KerasUtils
@@ -39,6 +40,8 @@ import org.apache.spark.rdd.RDD
 import scala.collection.JavaConverters._
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
+import scala.language.implicitConversions
+
 
 
 abstract class KerasNet[T: ClassTag](implicit ev: TensorNumeric[T])
@@ -462,6 +465,51 @@ object Model extends KerasLayerSerializable {
   def apply[T: ClassTag](input : ModuleNode[T], output : ModuleNode[T])
     (implicit ev: TensorNumeric[T]) : Model[T] = {
     new Model[T](Seq(input), Seq(output))
+  }
+
+   /* ------------------------ factory methods for variables--------------------- */
+  /**
+   * Build a multiple-input, multiple-output graph container.
+   * @param input Array of input variables.
+   * @param output Array of output variables.
+   * @return A graph container.
+   */
+  def apply[T: ClassTag](
+      input : Array[Variable[T]],
+      output : Array[Variable[T]])(implicit ev: TensorNumeric[T]) : Model[T] = {
+    new Model[T](input.map(_.node), output.map(_.node))
+  }
+
+  /**
+   * Build a single-input, multiple-output graph container
+   * @param input The input variable.
+   * @param output Array of output variables.
+   * @return A graph container.
+   */
+  def apply[T: ClassTag](input : Variable[T], output : Array[Variable[T]])
+    (implicit ev: TensorNumeric[T]) : Model[T] = {
+    new Model[T](Seq(input.node), output.map(_.node))
+  }
+
+  /**
+   * Build a multiple-input, single-output graph container.
+   * @param input Array of input variables.
+   * @param output The output variables.
+   * @return A graph container.
+   */
+  def apply[T: ClassTag](input : Array[Variable[T]], output : Variable[T])
+    (implicit ev: TensorNumeric[T]) : Model[T] = {
+    new Model[T](input.map(_.node), Seq(output.node))
+  }
+  /**
+   * Build a single-input, single-output graph container
+   * @param input The input variable.
+   * @param output The output variable.
+   * @return A graph container.
+   */
+  def apply[T: ClassTag](input : Variable[T], output : Variable[T])
+    (implicit ev: TensorNumeric[T]) : Model[T] = {
+    new Model[T](Seq(input.node), Seq(output.node))
   }
 
   override def doSerializeModule[T: ClassTag](context: SerializeContext[T],

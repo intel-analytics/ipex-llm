@@ -157,8 +157,14 @@ object Variable extends {
   }
 }
 
-class Variable[T: ClassTag] private (val node: ModuleNode[T])(
+class Variable[T: ClassTag] private[zoo] (val node: ModuleNode[T], var name: String = null)(
     implicit ev: TensorNumeric[T]) extends Serializable {
+
+  if (name == null) {
+    name = node.element.getName()
+  } else {
+    node.element.setName(name)
+  }
 
   require(node.element.isInstanceOf[KerasLayer[Activity, Activity, T]])
   require(node.element.asInstanceOf[InferShape].getOutputShape() != null)
@@ -247,6 +253,59 @@ class Variable[T: ClassTag] private (val node: ModuleNode[T])(
 
   def /(a: Double): Variable[T] = {
     this * (1/a)
+  }
+
+  /**
+   * Delete the singleton dimension(s).
+   * The batch dimension needs to be unchanged.
+   * For example, if input has size (2, 1, 3, 4, 1):
+   * Squeeze(dim = 1) will give output size (2, 3, 4, 1)
+   * Squeeze(dims = null) will give output size (2, 3, 4)
+   */
+  def squeeze(dim: Int): Variable[T] = {
+    val layer = Squeeze[T](dim)
+    Variable(layer.inputs(this.node))
+  }
+
+  /**
+   * Narrow the input with the number of dimensions not being reduced.
+   * The batch dimension needs to be unchanged.
+   * For example, if input is:
+   * 1 2 3
+   * 4 5 6
+   * Narrow(1, 1, 2) will give output
+   * 2 3
+   * 5 6
+   * Narrow(1, 2, -1) will give output
+   * 3
+   * 6
+   */
+  def narrow(dim: Int, startIndex: Int, length: Int): Variable[T] = {
+    val layer = Narrow[T](dim = dim,
+      offset = startIndex,
+      length = length)
+    Variable(layer.inputs(this.node))
+  }
+
+  /**
+   * Select an index of the input in the given dim and return the subset part.
+   * The batch dimension needs to be unchanged.
+   * The selected dim would be remove after this operation.
+   * For example, if input is:
+   * 1 2 3
+   * 4 5 6
+   * Select(1, 1) will give output [2 5]
+   * Select(1, -1) will give output [3 6]
+   *
+   * @param dim The dimension to select. 0-based index. Cannot select the batch dimension.
+   *            -1 means the last dimension of the input.
+   * @param index The index of the dimension to be selected. 0-based index.
+   *              -1 means the last dimension of the input.
+   */
+  def indexSelect(dim: Int, index: Int): Variable[T] = {
+    val layer = Select[T](dim = dim,
+      index = index)
+    Variable(layer.inputs(this.node))
   }
 
   private[zoo] def broadcast(x: Variable[T], y: Variable[T]): (Variable[T], Variable[T]) = {
