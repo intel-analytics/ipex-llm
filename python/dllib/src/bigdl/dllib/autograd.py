@@ -14,13 +14,12 @@
 # limitations under the License.
 #
 
-from zoo.pipeline.api.keras.engine.topology import ZooKerasCreator, ZooKerasLayer
-from bigdl.util.common import callBigDlFunc, to_list
-from bigdl.nn.criterion import Criterion
-from bigdl.nn.layer import Layer, Node
-
 import sys
 
+from bigdl.nn.layer import Layer, Node
+from bigdl.util.common import callBigDlFunc, to_list
+
+import zoo.pipeline.api.keras.base as kbase
 from zoo.pipeline.api.utils import remove_batch, toMultiShape
 
 if sys.version >= '3':
@@ -167,16 +166,16 @@ def softplus(x):
     return Variable.from_jvalue(callBigDlFunc("float", "softplus", x))
 
 
-class Variable(ZooKerasCreator):
-    def __init__(self, input_shape, node=None, jvalue=None):
+class Variable(kbase.ZooKerasCreator):
+    def __init__(self, input_shape, node=None, jvalue=None, name=None):
         if jvalue:
             self.value = jvalue
             self.bigdl_type = "float"
         else:
             if node:
-                super(Variable, self).__init__(jvalue, "float", node)
+                super(Variable, self).__init__(jvalue, "float", node, name)
             else:
-                super(Variable, self).__init__(jvalue, "float", toMultiShape(input_shape))
+                super(Variable, self).__init__(jvalue, "float", toMultiShape(input_shape), name)
 
     @classmethod
     def from_node(cls, node):
@@ -242,8 +241,33 @@ class Variable(ZooKerasCreator):
     def __neg__(self):
         return neg(self)
 
+    def squeeze(self, dim=None):
+        return Variable.from_jvalue(callBigDlFunc("float", "squeeze", self, dim))
 
-class Lambda(ZooKerasCreator):
+    def narrow(self, dim, start_index, length):
+        return Variable.from_jvalue(callBigDlFunc("float", "narrow", self, start_index, length))
+
+    def index_select(self, dim, index):
+        return Variable.from_jvalue(callBigDlFunc("float", "indexSelect", self, dim, index))
+
+    # TODO: we need a Shape mapping here.
+    def __to_batch_shape(cls, shape):
+        return tuple([None] + shape[1:])
+
+    def __process_shape(self, shape):
+        if len(shape) == 1:
+            return self.__to_batch_shape(shape[0])
+        else:
+            return [self.__to_batch_shape(s) for s in shape]
+
+    def get_input_shape(self):
+        return self.__process_shape(callBigDlFunc("float", "varGetInputShape", self))
+
+    def get_output_shape(self):
+        return self.__process_shape(callBigDlFunc("float", "varGetOutputShape", self))
+
+
+class Lambda(kbase.ZooKerasCreator):
     """Used for evaluating an arbitrary expressions on an input.
 
        # Examples
@@ -261,6 +285,7 @@ class Lambda(ZooKerasCreator):
            (tuple of integers, does not include the samples axis)
            when using this layer as the first layer in a model.
        """
+
     def __init__(self, function, input_shape=None, bigdl_type="float"):
         self.function = function
         self.input_shape = input_shape
@@ -275,12 +300,12 @@ class Lambda(ZooKerasCreator):
         x = to_list(x if x else [])
         layer = self
         if isinstance(self, Lambda):
-            input_shapes = [ZooKerasLayer.of(node.element().value).get_output_shape() for node in x]
+            input_shapes = [var.get_output_shape() for var in x]
             layer = self.create(remove_batch(input_shapes))
-        return Node.of(callBigDlFunc(self.bigdl_type,
-                                     "createNode",
-                                     layer,
-                                     to_list(x)))
+        return Variable.from_jvalue(callBigDlFunc(self.bigdl_type,
+                                                  "connectInputs",
+                                                  layer,
+                                                  to_list(x)))
 
     # input_shapes should not contain batch dim
     def create(self, input_shapes):
@@ -291,7 +316,7 @@ class Lambda(ZooKerasCreator):
                            input_shape=input_shapes)
 
 
-class LambdaLayer(ZooKerasLayer):
+class LambdaLayer(kbase.ZooKerasLayer):
     def __init__(self, input_vars, out_var, input_shape=None, **kwargs):
         super(LambdaLayer, self).__init__(None,
                                           input_vars,
@@ -300,8 +325,7 @@ class LambdaLayer(ZooKerasLayer):
                                           **kwargs)
 
 
-class CustomLoss(ZooKerasCreator):
-
+class CustomLoss(kbase.ZooKerasCreator):
     def __init__(self, loss_func, input_shape):
         """
         :param loss_func: a function which accept y_true and y_pred
