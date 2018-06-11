@@ -649,7 +649,7 @@ class Sequential[T: ClassTag] private ()
   }
 }
 
-object Sequential extends KerasLayerSerializable{
+object Sequential extends KerasLayerSerializable {
   ModuleSerializer.registerModule(
     "com.intel.analytics.zoo.pipeline.api.keras.models.Sequential",
     Sequential)
