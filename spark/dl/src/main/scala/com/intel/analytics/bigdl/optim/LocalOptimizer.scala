@@ -75,14 +75,14 @@ class LocalOptimizer[T: ClassTag] (
     Util.initGradWeightBias(wb, model)
     models
   }
-  private val (weight, grad) = model.getParameters()
-  private val gradLength = grad.nElement()
-  private val syncGradTaskSize = gradLength / subModelNumber
-  private val syncGradExtraTask = gradLength % subModelNumber
-  private val syncGradParallelNum =
-    if (syncGradTaskSize == 0) syncGradExtraTask else subModelNumber
+//  private val (weight, grad) = model.getParameters()
+//  private val gradLength = grad.nElement()
+//  private val syncGradTaskSize = gradLength / subModelNumber
+//  private val syncGradExtraTask = gradLength % subModelNumber
+//  private val syncGradParallelNum =
+//    if (syncGradTaskSize == 0) syncGradExtraTask else subModelNumber
 
-  private val workingModelWAndG = workingModels.map(_.getParameters())
+//  private val workingModelWAndG = workingModels.map(_.getParameters())
 
   private val workingCriterion =
     (1 to subModelNumber).map(_ => criterion.cloneCriterion()).toArray

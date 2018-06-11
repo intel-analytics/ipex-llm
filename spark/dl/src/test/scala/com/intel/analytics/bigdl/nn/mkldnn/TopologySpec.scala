@@ -17,7 +17,6 @@
 package com.intel.analytics.bigdl.nn.mkldnn
 
 import com.intel.analytics.bigdl.nn
-import com.intel.analytics.bigdl.nn.Sequential
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import org.scalatest.{FlatSpec, Matchers}
 
@@ -166,7 +165,7 @@ class TopologySpec extends FlatSpec with Matchers {
 //      |}
 //    |
 
-    val bigdl = Sequential()
+    val bigdl = nn.Sequential()
       .add(ConvolutionDnn(1, 20, 5, 5).setName("conv1"))
       .add(PoolingDnn(2, 2, 2, 2).setName("pool1"))
       .add(ConvolutionDnn(20, 50, 5, 5).setName("conv2"))
@@ -269,7 +268,7 @@ class TopologySpec extends FlatSpec with Matchers {
       .setName("conv1")
     val conv2 = ConvolutionDnn(nInput, nOutput, kernel, kernel, stride, stride, pad, pad, 1)
       .setName("conv2")
-    val model = Sequential()
+    val model = nn.Sequential()
       .add(ConcatTableDnn().add(conv2).add(conv1))
       .add(CAddTableDnn().setName("eltwise"))
 
