@@ -103,7 +103,7 @@ Analytics Zoo has many pre-defined image processing transformers built on top of
 * `MatToTensor`: Transform opencv mat to tensor, note that in this transformer, the mat is released.
 * `ImageFrameToSample`: Transforms tensors that map inputKeys and targetKeys to sample, note that in this transformer, the mat has been released.
 
-More examples can be found [here](../APIGuide/image.md)
+More examples can be found [here](../APIGuide/FeatureEngineering/image.md)
 
 You can also define your own Transformer by extending `ImageProcessing`,
 and override the function `transformMat` to do the actual transformation to `ImageFeature`.
