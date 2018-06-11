@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.nn.Sequential
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import org.scalatest.{FlatSpec, Matchers}
 
-class Topology extends FlatSpec with Matchers {
+class TopologySpec extends FlatSpec with Matchers {
   "LeNet5 has no tanh" should "work correctly" in {
     val inputShape = Array(4, 1, 28, 28)
     val outputShape = Array(4, 10)

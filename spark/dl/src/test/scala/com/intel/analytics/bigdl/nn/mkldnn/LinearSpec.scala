@@ -47,6 +47,7 @@ class LinearSpec extends FlatSpec with Matchers {
       val initBias = Tensor[Float](outputSize).rand()
 
       val linear = Linear(inputSize, outputSize, initWeight = initWeight, initBias = initBias)
+        .setShouldConvert(true)
       val input = Tensor[Float](batchSize, inputSize).rand()
 
       val output = linear.forward(input)
@@ -77,6 +78,7 @@ class LinearSpec extends FlatSpec with Matchers {
     }
 
     val linear = Linear(inputSize, outputSize, initWeight = initWeight, initBias = initBias)
+      .setShouldConvert(true)
 
     for (in <- inputs) {
       linear.forward(in)
@@ -103,6 +105,7 @@ class LinearSpec extends FlatSpec with Matchers {
     val input = Tensor[Float](batchSize, inputSize)
 
     val linear = Linear(inputSize, outputSize, initWeight = initWeight, initBias = initBias)
+      .setShouldConvert(true)
 
     val warm = 10
     val iters = 100
@@ -143,6 +146,7 @@ class LinearSpec extends FlatSpec with Matchers {
     val initBias = Tensor[Float](outputSize).rand()
 
     val linear = Linear(inputSize, outputSize, initWeight = initWeight, initBias = initBias)
+      .setShouldConvert(true)
     val input = Tensor[Float](batchSize, inputSize).rand()
     val output = linear.forward(input)
 
@@ -372,7 +376,7 @@ class LinearSpec extends FlatSpec with Matchers {
     linear.getTimes()
     println(linear.getTimes().mkString("\n"))
     println(nnLinear.getTimes().mkString("\n"))
-    (nnCosts - costs) / nnCosts should be > -0.05
+    Math.abs((nnCosts - costs) / nnCosts) should be > 0.05
   }
 
   "linear with maxpooling" should "work correctly" in {

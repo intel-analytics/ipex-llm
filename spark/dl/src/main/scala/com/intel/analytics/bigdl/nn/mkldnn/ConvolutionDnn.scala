@@ -813,9 +813,6 @@ class ConvolutionDnn(
       }
     }
 
-    if (!propagateBack) {
-      return
-    }
     val n_bwd = stream_acc.length
     memoryPrimitives.clear()
     buffer.clear()

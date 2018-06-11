@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.nn.mkldnn
 import com.intel.analytics.bigdl.tensor.{MklDnnType, Tensor}
 import org.scalatest.{FlatSpec, Matchers}
 
-class SingleLayer extends FlatSpec with Matchers {
+class SingleLayerSpec extends FlatSpec with Matchers {
   "convolution" should "work correctly" in {
     val inputShape = Array(4, 3, 5, 5)
     val outputShape = Array(4, 2, 3, 3)
@@ -73,8 +73,61 @@ class SingleLayer extends FlatSpec with Matchers {
     Tools.compare(prototxt, conv, inputShape, outputShape)
   }
 
+  "convolution2" should "work correctly" in {
+    val inputShape = Array(4, 3, 224, 224)
+    val outputShape = Array(4, 64, 112, 112)
+    val name = "conv"
+    val nOutput = 64
+    val kernel = 7
+    val pad = 3
+    val stride = 2
+
+    val prototxt =
+      s"""
+         |name: "conv-simple"
+         |force_backward: true
+         |layer {
+         |  name: "data"
+         |  type: "DummyData"
+         |  top: "data"
+         |  include {
+         |    phase: TRAIN
+         |  }
+         |  dummy_data_param {
+         |    data_filler {
+         |      type: "xavier"
+         |    }
+         |    shape: { ${shape2Dim(inputShape)} }
+         |  }
+         |}
+         |
+         |layer {
+         |  bottom: "data"
+         |  top: "conv"
+         |  name: "$name"
+         |  type: "Convolution"
+         |  convolution_param {
+         |    num_output: $nOutput
+         |    kernel_size: $kernel
+         |    pad: $pad
+         |    stride: $stride
+         |    weight_filler {
+         |      type: "msra"
+         |      variance_norm: FAN_OUT
+         |    }
+         |    bias_filler {
+         |      type: "gaussian"
+         |    }
+         |  }
+         |}
+       """.stripMargin
+
+    val conv = ConvolutionDnn(3, nOutput, kernel, kernel, stride, stride, pad, pad, 1).setName(name)
+    Tools.compare(prototxt, conv, inputShape, outputShape)
+  }
+
   "batch norm" should "work correctly" in {
-    val (batchSize, channel, height, width) = (4, 64, 2, 2)
+    val (batchSize, channel, height, width) = (4, 64, 112, 112)
     val shape = Array(batchSize, channel, height, width)
     val prototxt = s"""
          |name: "relu-simple"
@@ -135,11 +188,11 @@ class SingleLayer extends FlatSpec with Matchers {
 
     compare(weight, bn.weight)
     compare(bias, bn.bias)
-    compare(bn.output, output)
-    compare(runningMean, bn.runningMean)
-    compare(runningVariance, bn.runningVar)
-    compare(bn.diffAll, gradient.view(Array(2 * channel)))
-    compare(bn.gradInput, gradInput)
+    Tools.compare2Tensors(bn.output, output)
+    Tools.compare2Tensors(runningMean, bn.runningMean)
+    Tools.compare2Tensors(runningVariance, bn.runningVar)
+    Tools.compare2Tensors(bn.diffAll, gradient.view(Array(2 * channel)))
+    Tools.compare2Tensors(bn.gradInput, gradInput)
   }
 
   "max pooling" should "work correctly" in {

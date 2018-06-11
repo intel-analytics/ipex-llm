@@ -606,12 +606,13 @@ class SpatialBatchNormalization[T: ClassTag](
     if (affine) {
       gradAll.zero()
       diffAll.zero()
+      Memory.Zero(diffAll.ptr, diffAll.nElement(), 4)
     }
   }
 
   override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
     if (affine) {
-      (Array(all), Array(gradAll))
+      (Array(all), Array(diffAll))
     } else {
       null
     }
@@ -620,7 +621,7 @@ class SpatialBatchNormalization[T: ClassTag](
   override def getParametersTable(): Table = {
     if (affine) {
       T(getName() -> T("weight" -> all,
-        "gradWeight" -> gradAll,
+        "gradWeight" -> diffAll,
         "runningMean" -> mean, "runningVar" -> variance))
     } else {
       T(getName() -> T("runningMean" -> mean, "runningVar" -> variance))

@@ -183,6 +183,7 @@ class Sequential[T: ClassTag]
         (0 until bn.nOutput).foreach { j =>
           val variance = bn.runningVar.storage().array()(j + bn.runningVar.storageOffset() - 1)
           val base = Math.sqrt(variance.asInstanceOf[Float] + bn.eps).toFloat
+          require(base != 0.0, s"the eps of ${bn.getName()} should be more than 0")
 
           val weight = if (conv.nGroup == 1) {
             conv.weight.select(1, j + 1)

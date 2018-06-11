@@ -219,7 +219,7 @@ object Tools {
     }
   }
 
-  private def compare2Tensors(src: Tensor[Float], dst: Tensor[Float]): Boolean = {
+  def compare2Tensors(src: Tensor[Float], dst: Tensor[Float]): Boolean = {
     // todo the sync should be deleted.
     for (i <- List(src, dst)) {
       if (i.getTensorType == MklDnnType) {
@@ -229,37 +229,6 @@ object Tools {
 
     DnnTools.nearequals(src, dst)
   }
-
-  def nearlyEqual(a: Float, b: Float, epsilon: Double): Boolean = {
-    val absA = math.abs(a)
-    val absB = math.abs(b)
-    val diff = math.abs(a - b)
-
-    val result = if (a == b) {
-      true
-    } else {
-      math.min(diff / (absA + absB), diff) < epsilon
-    }
-
-    result
-  }
-
-  def nearequals(t1: Tensor[Float], t2: Tensor[Float],
-    epsilon: Double = DenseTensorMath.floatEpsilon): Boolean = {
-    var result = true
-    t1.map(t2, (a, b) => {
-      if (result) {
-        result = nearlyEqual(a, b, epsilon)
-        if (!result) {
-          val diff = math.abs(a - b)
-          println("epsilon " + a + "***" + b + "***" + diff / (abs(a) + abs(b)) + "***" + diff)
-        }
-      }
-      a
-    })
-    return result
-  }
-
 }
 
 /**
