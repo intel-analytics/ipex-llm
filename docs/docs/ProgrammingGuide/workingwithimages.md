@@ -1,5 +1,3 @@
-# Working with images
-
 Analytics Zoo provides supports for end-to-end image processing pipeline, including image loading, pre-processing, inference/training and some utilities on different formats.
 
 ## Load Image
