@@ -190,7 +190,7 @@ class KerasNet(ZooKerasLayer):
         distributed: Boolean. Whether to do prediction in distributed mode or local mode.
                      Default is True. In local mode, x must be a Numpy array.
         """
-        if is_distributed:
+        if distributed:
             if isinstance(x, np.ndarray):
                 features = to_sample_rdd(x, np.zeros([x.shape[0]]))
             elif isinstance(x, RDD):
