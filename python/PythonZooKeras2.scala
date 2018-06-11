@@ -21,7 +21,7 @@ import java.util.{List => JList}
 import com.intel.analytics.bigdl.optim.Regularizer
 import com.intel.analytics.bigdl.python.api.PythonBigDLKeras
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.zoo.pipeline.api.keras2.layers.Dense
+import com.intel.analytics.zoo.pipeline.api.keras2.layers.{Dense, Conv1D}
 
 import scala.reflect.ClassTag
 
@@ -52,6 +52,32 @@ class PythonZooKeras2[T: ClassTag](implicit ev: TensorNumeric[T]) extends Python
       biasRegularizer = biasRegularizer,
       useBias = useBias,
       inputShape = toScalaShape(inputShape))
+  }
+
+  def createZooKeras2Conv1D(
+      filters: Int,
+      kernelSize: Int,
+      strides: Int = 1,
+      padding: String = "valid",
+      activation: String = null,
+      useBias: Boolean = true,
+      kernelInitializer: String = "glorot_uniform",
+      biasInitializer: String = "zero",
+      kernelRegularizer: Regularizer[T] = null,
+      biasRegularizer: Regularizer[T] = null,
+      inputShape: JList[Int] = null): Conv1D[T] = {
+    Conv1D(
+      filters,
+      kernelSize,
+      strides,
+      padding,
+      activation,
+      useBias,
+      kernelInitializer,
+      biasInitializer,
+      kernelRegularizer,
+      biasRegularizer,
+      toScalaShape(inputShape))
   }
 
 }
