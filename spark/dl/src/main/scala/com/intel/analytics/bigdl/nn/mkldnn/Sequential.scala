@@ -15,51 +15,174 @@
  */
 package com.intel.analytics.bigdl.nn.mkldnn
 
+import com.intel.analytics.bigdl.mkl.MklDnn
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
-import com.intel.analytics.bigdl.nn.{Sequential => Seq}
+import com.intel.analytics.bigdl.nn.{DynamicContainer, Sequential => Seq}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
-class Sequential[T: ClassTag](implicit ev: TensorNumeric[T]) extends Seq[T] with MklDnnContainer {
-  override def add(module: AbstractModule[_ <: Activity, _ <: Activity, T]): this.type = {
-    require(executions == null, "You should not call add after compilation")
+class Sequential(implicit ev: TensorNumeric[Float])
+  extends DynamicContainer[Activity, Activity, Float] with MklDnnContainer {
+
+  private val reorderManager = new ReorderManager()
+  private var mklDnnModules : Array[MklDnnModule] = _
+
+  override def add(module: AbstractModule[_ <: Activity, _ <: Activity, Float]): this.type = {
+    require(mklDnnModules == null, "You should not call add after compilation")
     require(module.isInstanceOf[MklDnnModule], "layer should be MklDnnModule")
     super.add(module)
   }
 
-  override private[mkldnn] def initPrimitives(runtime: MklDnnRuntime) = {
-    executions.foreach(m => {
-      m.phase = phase
-      m.initPrimitives(runtime)
-    })
-    modules.clear()
-    modules.appendAll(executions.map(_.asInstanceOf[AbstractModule[Activity, Activity, T]]))
+  override private[mkldnn] def fusion(phase: Phase): Unit = {
+    modules.filter(_.isInstanceOf[MklDnnContainer])
+      .map { case mc: MklDnnContainer => mc.fusion(phase) }
   }
 
-  override private[mkldnn] def inferOutputFormats(): Array[MemoryData] = {
-    var lastOutputFormats = expectInputFormats
-    val executionsBuffer = new ArrayBuffer[MklDnnModule]()
-    modules.foreach(m => {
-      require(m.isInstanceOf[MklDnnModule], "layer should be MklDnnModule")
-      val _m = m.asInstanceOf[MklDnnModule]
-
-      require(MemoryData.isCompatible(lastOutputFormats, _m.expectInputFormats),
-        "memory format is not compatible with expected one")
-      _m.setInputFormats(lastOutputFormats)
-      lastOutputFormats = _m.inferOutputFormats()
-      executionsBuffer.append(_m)
-    })
-    executions = executionsBuffer.toArray
-    lastOutputFormats
+  override private[mkldnn] def inferShape(shapes: Array[Array[Int]]) = {
+    var lastShape = shapes
+    modules.foreach { case m: MklDnnModule => lastShape = m.inferShape(lastShape)}
+    mklDnnModules = modules.map(_.asInstanceOf[MklDnnModule]).toArray
+    lastShape
   }
 
-  override private[mkldnn] def setInputFormats(formats: Array[MemoryData]): Unit = {
-    modules(0).asInstanceOf[MklDnnModule].setInputFormats(formats)
+  override private[mkldnn] def initFwdPrimitives(runtime: MklDnnRuntime, phase: Phase) = {
+    require(MemoryData.noUndef(mklDnnModules(0).inputFormats()), "Memory formats should be inited")
+    mklDnnModules(0).initFwdPrimitives(runtime, phase)
+    var lastOutputFormats = mklDnnModules(0).outputFormats()
+    for (i <- 1 until mklDnnModules.length) {
+      val m = mklDnnModules(i)
+      lastOutputFormats.zip(m.inputFormats()).foreach {
+        case (o, i) => if (i.layout == MklDnn.MemoryFormat.format_undef) {
+          i.setLayout(o.layout)
+        }
+      }
+      m.initFwdPrimitives(runtime, phase)
+      lastOutputFormats.zip(m.inputFormats()).foreach {
+        case (o, i) => reorderManager.register(o, i, runtime, phase)
+      }
+      lastOutputFormats = m.outputFormats()
+    }
   }
 
-  override private[mkldnn] def expectInputFormats = {
-    modules(0).asInstanceOf[MklDnnModule].expectInputFormats
+  override private[mkldnn] def inputFormats() = {
+    modules(0).asInstanceOf[MklDnnModule].inputFormats()
+  }
+
+  override private[mkldnn] def gradInputFormats() = {
+    modules(0).asInstanceOf[MklDnnModule].gradInputFormats()
+  }
+
+  override private[mkldnn] def outputFormats() = {
+    modules.last.asInstanceOf[MklDnnModule].outputFormats()
+  }
+
+  override private[mkldnn] def gradOutputFormats() = {
+    modules.last.asInstanceOf[MklDnnModule].gradOutputFormats()
+  }
+
+  override private[mkldnn] def initMemory() = {
+    modules.foreach { case m: MklDnnModule => m.initMemory() }
+  }
+
+  override private[mkldnn] def initBwdPrimitives(runtime: MklDnnRuntime, phase: Phase) = {
+    require(MemoryData.noUndef(mklDnnModules.last.gradOutputFormats()._1),
+      "Memory formats should be inited")
+    mklDnnModules.last.initBwdPrimitives(runtime, phase)
+    var lastGradInputFormats = mklDnnModules.last.gradInputFormats()
+    for (i <- mklDnnModules.length - 2 to 0 by -1) {
+      val m = mklDnnModules(i)
+      lastGradInputFormats.zip(m.gradOutputFormats()._1).foreach {
+        case (gi, go) => if (go.layout == MklDnn.MemoryFormat.format_undef) {
+          go.setLayout(gi.layout)
+        }
+      }
+      m.initBwdPrimitives(runtime, phase)
+      lastGradInputFormats.zip(m.gradOutputFormats()._1).foreach {
+        case (gi, go) => reorderManager.register(gi, go, runtime, phase)
+      }
+      lastGradInputFormats = m.gradOutputFormats()._1
+    }
+  }
+
+  override private[mkldnn] def initGradWPrimitives(runtime: MklDnnRuntime, phase: Phase) = {
+    require(MemoryData.noUndef(mklDnnModules.last.gradOutputFormats()._2),
+      "Memory formats should be inited")
+    mklDnnModules.last.initGradWPrimitives(runtime, phase)
+    var lastGradInputFormats = mklDnnModules.last.gradInputFormats()
+    for (i <- mklDnnModules.length - 2 to 0 by -1) {
+      val m = mklDnnModules(i)
+      lastGradInputFormats.zip(m.gradOutputFormats()._2).foreach {
+        case (gi, go2) => if (go2.layout == MklDnn.MemoryFormat.format_undef) {
+          go2.setLayout(gi.layout)
+        }
+      }
+      m.initGradWPrimitives(runtime, phase)
+      lastGradInputFormats.zip(m.gradOutputFormats()._2).foreach {
+        case (gi, go2) => reorderManager.register(gi, go2, runtime, phase)
+      }
+      lastGradInputFormats = m.gradOutputFormats()._2
+    }
+  }
+
+  override def updateOutput(input: Activity): Activity = {
+    var i = 0
+    var lastOutput = input
+    while (i < mklDnnModules.length - 1) {
+      lastOutput = reorderManager.infer(
+        mklDnnModules(i).outputFormats(),
+        mklDnnModules(i + 1).inputFormats(),
+        modules(i).forward(lastOutput)
+      )
+      i += 1
+    }
+
+    this.output = modules(i).forward(lastOutput)
+    output
+  }
+
+  override def updateGradInput(input: Activity, gradOutput: Activity): Activity = {
+    var i = modules.length - 1
+    var lastGradInput = gradOutput
+    while (i > 0) {
+      val curInput = reorderManager.infer(
+        mklDnnModules(i - 1).outputFormats(),
+        mklDnnModules(i).inputFormats(),
+        modules(i - 1).output
+      )
+      lastGradInput = reorderManager.infer(
+        mklDnnModules(i).gradInputFormats(),
+        mklDnnModules(i - 1).gradOutputFormats()._1,
+        modules(i).updateGradInput(curInput, lastGradInput)
+      )
+      i -= 1
+    }
+    lastGradInput = modules(0).updateGradInput(input, lastGradInput)
+
+    this.gradInput = lastGradInput
+    gradInput
+  }
+
+  override def accGradParameters(input: Activity, gradOutput: Activity): Unit = {
+    var i = modules.length - 1
+    var currentModule = modules(i)
+    var lastGradInput = gradOutput
+    while (i > 0) {
+      val curInput = reorderManager.infer(
+        mklDnnModules(i - 1).outputFormats(),
+        mklDnnModules(i).inputFormats(),
+        modules(i - 1).output
+      )
+      currentModule.accGradParameters(curInput, lastGradInput)
+      lastGradInput = reorderManager.infer(
+        mklDnnModules(i).gradInputFormats(),
+        mklDnnModules(i - 1).gradOutputFormats()._2,
+        modules(i).gradInput
+      )
+      i -= 1
+    }
+
+    currentModule.accGradParameters(input, lastGradInput)
   }
 }

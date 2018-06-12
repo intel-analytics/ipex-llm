@@ -17,6 +17,9 @@ package com.intel.analytics.bigdl.nn.mkldnn
 
 sealed class Phase
 
-case object TrainingPhase extends Phase
+object Phase {
+  case object TrainingPhase extends Phase
 
-case object InferencePhase extends Phase
+  case object InferencePhase extends Phase
+
+}

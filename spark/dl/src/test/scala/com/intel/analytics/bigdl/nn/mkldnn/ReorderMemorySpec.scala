@@ -24,9 +24,10 @@ class ReorderMemorySpec extends BigDLSpecHelper {
     val layer = ReorderMemory(new HeapData(Array(3, 4), MklDnn.MemoryFormat.nc),
       new NativeData(Array(3, 4), MklDnn.MemoryFormat.nc))
 
-    layer.inferOutputFormats()
-    layer.initPrimitives(new MklDnnRuntime())
-    layer.allocateMemory()
+    layer.initFwdPrimitives(new MklDnnRuntime(), Phase.TrainingPhase)
+    layer.initBwdPrimitives(new MklDnnRuntime(), Phase.TrainingPhase)
+    layer.initGradWPrimitives(new MklDnnRuntime(), Phase.TrainingPhase)
+    layer.initMemory()
     val input = Tensor[Float](3, 4).rand()
     val output = layer.forward(input)
     val grad = layer.backward(input, output)

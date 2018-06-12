@@ -22,6 +22,10 @@ sealed trait MemoryData {
   def layout: Int
   def setShape(shape: Array[Int]): Unit
   def setLayout(layout: Int): Unit
+
+  def isLayoutFixed(): Boolean = {
+    layout != MklDnn.MemoryFormat.format_undef && layout != MklDnn.MemoryFormat.any
+  }
 }
 
 case class HeapData(private var _shape: Array[Int], private var _layout: Int) extends MemoryData {
@@ -33,6 +37,53 @@ case class HeapData(private var _shape: Array[Int], private var _layout: Int) ex
   override def shape: Array[Int] = _shape.clone()
 
   override def layout: Int = _layout
+
+  override def hashCode(): Int = {
+    val seed = 37
+    var hash = 1
+    hash = hash * seed + this.layout
+    var d = 0
+    while (d < this.shape.length) {
+      hash = hash * seed + this.shape(d)
+      d += 1
+    }
+
+    hash
+  }
+
+  override def equals(obj: scala.Any): Boolean = {
+    if (obj == null) {
+      return false
+    }
+    if (!obj.isInstanceOf[HeapData]) {
+      return false
+    }
+    val other = obj.asInstanceOf[HeapData]
+    if (this.eq(other)) {
+      return true
+    }
+    if (this.layout != other.layout) {
+      return false
+    }
+    if (this.shape == null && other.shape == null) {
+      return true
+    }
+    if (this.shape != null && other.shape != null) {
+      if (this.shape.length != other.shape.length) return false
+      var i = 0
+      while(i < this.shape.length) {
+        if (this.shape(i) != other.shape(i)) return false
+        i += 1
+      }
+      return true
+    } else {
+      return false
+    }
+  }
+
+  override def toString: String = {
+    s"HeapData([${shape.mkString("x")}], ${layout})"
+  }
 }
 
 case class NativeData(private var _shape: Array[Int], private var _layout: Int) extends MemoryData {
@@ -43,31 +94,60 @@ case class NativeData(private var _shape: Array[Int], private var _layout: Int) 
   override def setShape(shape: Array[Int]): Unit = _shape = shape.clone()
 
   override def setLayout(layout: Int): Unit = _layout = layout
+
+  override def hashCode(): Int = {
+    val seed = 41
+    var hash = 1
+    hash = hash * seed + this.layout
+    var d = 0
+    while (d < this.shape.length) {
+      hash = hash * seed + this.shape(d)
+      d += 1
+    }
+
+    hash
+  }
+
+  override def equals(obj: scala.Any): Boolean = {
+    if (obj == null) {
+      return false
+    }
+    if (!obj.isInstanceOf[NativeData]) {
+      return false
+    }
+    val other = obj.asInstanceOf[NativeData]
+    if (this.eq(other)) {
+      return true
+    }
+    if (this.layout != other.layout) {
+      return false
+    }
+    if (this.shape == null && other.shape == null) {
+      return true
+    }
+    if (this.shape != null && other.shape != null) {
+      if (this.shape.length != other.shape.length) return false
+      var i = 0
+      while(i < this.shape.length) {
+        if (this.shape(i) != other.shape(i)) return false
+        i += 1
+      }
+      return true
+    } else {
+      return false
+    }
+  }
+
+  override def toString: String = {
+    s"NativeData([${shape.mkString("x")}], ${layout})"
+  }
 }
 
 private[mkldnn] object MemoryData {
-  def isCompatible(actuals: Array[MemoryData], expects: Array[MemoryData]): Boolean = {
-    if (actuals.length != expects.length) return false
-    actuals.zip(expects).foreach { case (actual, expect) =>
-      if (!isSizeCompatible(actual, expect)) return false
-      actual match {
-        case h: HeapData =>
-          expect match {
-            case hh: HeapData =>
-              if (hh.layout != MklDnn.MemoryFormat.any && hh.layout != h.layout) return false
-            case nn: NativeData => return false
-            case _ => throw new UnsupportedOperationException("Not support such memory format")
-          }
-        case n: NativeData =>
-          expect match {
-            case hh: HeapData => return false
-            case nn: NativeData =>
-              if (nn.layout != MklDnn.MemoryFormat.any && nn.layout != n.layout) return false
-            case _ => throw new UnsupportedOperationException("Not support such memory format")
-          }
-        case _ => throw new UnsupportedOperationException("Not support such memory format")
-      }
-    }
+
+  def noUndef(formats: Array[MemoryData]): Boolean = {
+    if (formats == null || formats.length == 0) return true
+    formats.foreach(f => if (f.layout == MklDnn.MemoryFormat.format_undef) return false)
     return true
   }
 
