@@ -108,7 +108,7 @@ trait OptimMethod[@specialized(Float, Double) T] extends Serializable {
    *
    * @return
    */
-  def getParameterProcessor(): ParameterProcessor = null
+  def getParameterProcessor(): Option[ParameterProcessor] = None
 
   /**
    * Optimize the model parameter

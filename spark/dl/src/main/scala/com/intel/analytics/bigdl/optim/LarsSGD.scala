@@ -32,7 +32,7 @@ import scala.reflect.ClassTag
  * @param momentum momentum
  * @tparam T
  */
-class LarsSGD[@specialized(Float, Double) T: ClassTag](
+class LarsSGD[T: ClassTag](
   learningRate: Double = 1e-3,
   learningRateDecay: Double = 0.0,
   weightDecay: Double = 0.0,
@@ -98,5 +98,7 @@ class LarsSGD[@specialized(Float, Double) T: ClassTag](
     (x, Array(fx))
   }
 
-  override def getParameterProcessor(): ParameterProcessor = new LarsProcessor()
+  override def getParameterProcessor(): Option[ParameterProcessor] = {
+    Some(new LarsProcessor())
+  }
 }

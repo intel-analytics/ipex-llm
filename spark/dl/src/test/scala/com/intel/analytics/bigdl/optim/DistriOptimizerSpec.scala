@@ -715,12 +715,12 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
       val clr = _learningRate * (wNorm2(i) / (gNorm2(i) + _weightDecay * wNorm2(i))) * _gwRation
       newG(i).add(_weightDecay, oriW(i))
       val expectW = oriW(i).add(-1.0, newG(i).mul(clr))
-      assert(expectW.almostEqual(newW(i), 1e-6) == true, "should generate correct weight")
+      assert(expectW.almostEqual(newW(i), 1e-6), "should generate correct weight")
       i += 1
     }
   }
 
-  "Train with MSE and LarsSGD" should "be be able to train with more than 1 iteration" in {
+  "Train with MSE and LarsSGD" should "be able to converge with more than 1 iteration" in {
     val mm = mse
     mm.getParameters()._1.fill(0.125)
     // update below parameters if mse model has been changed
@@ -749,6 +749,12 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
         gwRation = _gwRation))
 
     val model = optimizer.optimize()
+
+    val result1 = model.forward(input1).asInstanceOf[Tensor[Double]]
+    result1(Array(1)) should be(0.0 +- 1e-2)
+
+    val result2 = model.forward(input2).asInstanceOf[Tensor[Double]]
+    result2(Array(1)) should be(1.0 +- 1e-2)
   }
 
   "Train with MSE " should "generate correct gradients with constant clipping" in {
@@ -767,11 +773,11 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val newW = model.getParameters()._1
     val newG = model.getParameters()._2
 
-    assert(newW.almostEqual(oriW, 0.0) == true, "weight should keep the same")
-    assert(newG.almostEqual(oriW.fill(0.0), 0.0) == true, "gradient should be 0")
+    assert(newW.almostEqual(oriW, 0.0), "weight should keep the same")
+    assert(newG.almostEqual(oriW.fill(0.0), 0.0), "gradient should be 0")
   }
 
-  "Train with MSE " should "generate correct gradients with l2norm clipping" in {
+  "Train with MSE" should "generate correct gradients with l2norm clipping" in {
     val mm = mse
     mm.getParameters()._1.fill(0.125)
 
@@ -799,7 +805,7 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
     assert(expectedG.almostEqual(newG, 0.0), "clipbynorm2 should generate correct gradient")
   }
 
-  "optimMethod state " should "be updated correctly after optimize" in {
+  "optimMethod state" should "be updated correctly after optimize" in {
     LoggerFilter.redirectSparkInfoLogs()
     Logger.getLogger("com.intel.analytics.bigdl.optim").setLevel(Level.INFO)
     Logger.getLogger("com.intel.analytics.bigdl").setLevel(Level.INFO)

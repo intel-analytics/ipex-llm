@@ -319,8 +319,8 @@ abstract class Optimizer[T: ClassTag, D](
   def setOptimMethod(method : OptimMethod[T]): this.type = {
     this.optimMethod = method
     val processor = method.getParameterProcessor()
-    if (processor != null) {
-      parameterProcessors += processor
+    if (processor.isDefined) {
+      parameterProcessors += processor.get
     }
     this
   }
