@@ -16,7 +16,7 @@
 package com.intel.analytics.bigdl.parameters
 
 import java.util.concurrent.atomic.AtomicLong
-import java.util.concurrent.{Callable, Executors, ExecutorService, Future, ThreadFactory}
+import java.util.concurrent.{Callable, ExecutorService, Executors, Future, ThreadFactory}
 
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -28,6 +28,8 @@ import org.apache.spark.storage.{BlockId, BlockManagerWrapper, StorageLevel}
 import org.apache.spark.TaskContext
 
 import scala.collection.JavaConverters._
+import scala.collection.mutable
+import scala.collection.mutable.ArrayBuffer
 import scala.reflect._
 
 object AllReduceParameter {
@@ -55,8 +57,9 @@ object AllReduceParameter {
 
   private val nextId = new AtomicLong(0)
 
-  def newParameter[T: ClassTag](partitionNum: Int, size: Int): AllReduceParameter[T] = {
-    new AllReduceParameter(nextId.getAndIncrement(), partitionNum, size)
+  def newParameter[T: ClassTag](partitionNum: Int, size: Int)
+    (implicit ev: TensorNumeric[T]): AllReduceParameter[T] = {
+    new AllReduceParameter[T](nextId.getAndIncrement(), partitionNum, size)
   }
 }
 
@@ -75,12 +78,13 @@ object AllReduceParameter {
  * @param size size of the parameter (1D vector)
  * @tparam T Tensor element type
  */
-class AllReduceParameter[T: ClassTag](id: Long, partitionNum: Int, size: Int) extends Serializable {
+private[bigdl] class AllReduceParameter[T: ClassTag](id: Long, partitionNum: Int, size: Int)
+  (implicit ev: TensorNumeric[T]) extends Serializable {
   import AllReduceParameter._
 
   @transient private var taskSize = 0
   @transient private var extraSize = 0
-  @transient private var partitionId: Int = 0
+  @transient var partitionId: Int = 0
 
   /** Tensor to hold a slice of the global weights. */
   @transient lazy val weightPartition: Tensor[T] = readWeightPartition()
@@ -134,7 +138,8 @@ class AllReduceParameter[T: ClassTag](id: Long, partitionNum: Int, size: Int) ex
    * @param parameter A tensor representing the initial underlying weights of this
    *                  `AllReduceParameter`
    */
-  def init(parameter: Tensor[T])(implicit ev: TensorNumeric[T]): Unit = {
+  def init(parameter: Tensor[T])(implicit ev: TensorNumeric[T]):
+    (Int, Int, Int) = {
     val _classTag = classTag[T]
     val start = partitionId * taskSize + math.min(partitionId, extraSize)
     val length = taskSize + (if (partitionId < extraSize) 1 else 0)
@@ -152,6 +157,7 @@ class AllReduceParameter[T: ClassTag](id: Long, partitionNum: Int, size: Int) ex
     val fp16param = new FP16CompressedTensor[T](length)(_classTag)
     fp16param.compress(0, parameter, start, length)
     BlockManagerWrapper.putBytes(blockId, fp16param.bytes(), StorageLevel.MEMORY_ONLY_SER)
+    (partitionId, start, length)
   }
 
   private def getWeightBlockId(pid: Int): BlockId = {
@@ -211,8 +217,9 @@ class AllReduceParameter[T: ClassTag](id: Long, partitionNum: Int, size: Int) ex
    * Retrieve gradients for the slice of the model that this node is responsible for from all the
    * other nodes. A new thread is created for each separate node. The gradients are then summed
    * and then stored in decompressed form in `gradientPartition`.
+   * @param avgNumbers average numbers.
    */
-  def aggregateGradientPartition(): Unit = {
+  def aggregateGradientPartition(avgNumbers: Int): Unit = {
     require(partitionId < partitionNum, s"This parameter was created with $partitionNum " +
       s"partitions. It cannot be used on RDDs with > $partitionNum partitions.")
     val params = new Array[CompressedTensor[T]](partitionNum)
@@ -253,6 +260,7 @@ class AllReduceParameter[T: ClassTag](id: Long, partitionNum: Int, size: Int) ex
       }
     ).asJava)
     params.head.deCompress(gradientPartition)
+    gradientPartition.div(ev.fromType(avgNumbers))
   }
 
   /**
@@ -303,6 +311,28 @@ class AllReduceParameter[T: ClassTag](id: Long, partitionNum: Int, size: Int) ex
       .map(_.data.next().asInstanceOf[Tensor[T]])
       .getOrElse(throw new IllegalStateException("Please initialize AllReduceParameter first!"))
     weights.copy(weightPartition)
+  }
+
+  /**
+   * Get square sum for given region
+   *
+   * @param lookupDic A list of region information.
+   *                  Array index is partition number,
+   *                  key for hashmap is layerId, value is (start, length)
+   * @return a list of square sum of weights and gradients with given region information
+   */
+  def squareSumForRegion(lookupDic: Array[mutable.HashMap[Int, (Int, Int)]]):
+    Array[(Int, (Float, Float))] = {
+    val lookupMap = lookupDic(partitionId)
+    val list = new Array[(Int, (Float, Float))](lookupMap.size)
+    var i = 0
+    for ((k, v) <- lookupMap) {
+      list(i) = (k,
+        (ev.toType[Float](weightPartition.narrow(1, v._1, v._2).sumSquare()),
+         ev.toType[Float](gradientPartition.narrow(1, v._1, v._2).sumSquare())))
+      i += 1
+    }
+    list
   }
 }
 

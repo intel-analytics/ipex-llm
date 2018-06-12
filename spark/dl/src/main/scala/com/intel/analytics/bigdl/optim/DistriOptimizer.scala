@@ -17,10 +17,9 @@
 package com.intel.analytics.bigdl.optim
 
 import com.intel.analytics.bigdl.{Module, _}
-import com.intel.analytics.bigdl.dataset.{DataSet, DistributedDataSet,
-                        MiniBatch, SampleToMiniBatch, Sample, PaddingParam}
+import com.intel.analytics.bigdl.dataset.{DataSet, DistributedDataSet, MiniBatch, PaddingParam, Sample, SampleToMiniBatch}
 import com.intel.analytics.bigdl.nn.{Module, Utils}
-import com.intel.analytics.bigdl.parameters.AllReduceParameter
+import com.intel.analytics.bigdl.parameters.{AllReduceParameter, ParameterProcessor}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils._
@@ -84,8 +83,8 @@ object DistriOptimizer {
    * @param cachePath cache path
    * @param trainSummary train summary
    * @param validationSummary validation summary
-   * @param isOverWrite  if overwrite the checkpoint
-   * @param clippingParams  gradient clipping configurations
+   * @param isOverWrite if overwrite the checkpoint
+   * @param parameterProcessers a list of ParameterProcessor used to process parameters
    */
   private[optim] def optimize[T: ClassTag](
     trainingModel: Module[T],
@@ -105,7 +104,7 @@ object DistriOptimizer {
     trainSummary: Option[TrainSummary],
     validationSummary: Option[ValidationSummary],
     isOverWrite: Boolean,
-    clippingParams: GradientClippingParams
+    parameterProcessers: Array[ParameterProcessor]
   )(implicit ev: TensorNumeric[T]): Unit = {
     val sc = dataset.originRDD().sparkContext
     val partitionNum = dataset.originRDD().partitions.length
@@ -122,16 +121,20 @@ object DistriOptimizer {
     if (!optimMethod.state.contains("recordsProcessedThisEpoch")) {
       optimMethod.state.update("recordsProcessedThisEpoch", 0)
     }
-    val driverState = T(
-      "epoch" -> optimMethod.state("epoch"),
-      "neval" -> optimMethod.state("neval"),
-      "Loss" -> optimMethod.state("Loss"),
-      "score" -> optimMethod.state("score")
-    )
 
     val _subModelNumber = Engine.getEngineType() match {
       case MklBlas => coresPerNode
     }
+    val driverState = T(
+      "epoch" -> optimMethod.state("epoch"),
+      "neval" -> optimMethod.state("neval"),
+      "Loss" -> optimMethod.state("Loss"),
+      "score" -> optimMethod.state("score"),
+      "parallelism" -> _subModelNumber
+    )
+    driverState("lookupDic") = state("lookupDic")
+    // remove lookup Dic in state to avoid log too much log
+    state.delete("lookupDic")
 
     logger.info("Count dataset")
     val countBefore = System.nanoTime()
@@ -153,7 +156,6 @@ object DistriOptimizer {
       dataset.shuffle()
       val shuffleEnd = System.nanoTime()
       logger.info(s"Shuffle data complete. Takes ${(shuffleEnd - shuffleBefore) / 1e9}s")
-
     }
 
     var tasks: ArrayBuffer[Future[_]] = new ArrayBuffer()
@@ -167,13 +169,6 @@ object DistriOptimizer {
     val driverSubModelNum = partitionNum * _subModelNumber
     var dropModelNumBatch = 0
     var lossArray = new Array[Double](_subModelNumber)
-
-    // gradient clip settings
-    val constantClippingEnable = clippingParams.enableConstantClipping
-    val normClippingEnable = clippingParams.enableL2NormClipping
-    val maxValueClip = clippingParams.maxValueClip
-    val minValueClip = clippingParams.minValueClip
-    val normValueClip = clippingParams.normValueClip
 
     var epochStart = System.nanoTime()
     var dataRDD = dataset.data(train = true)
@@ -309,7 +304,7 @@ object DistriOptimizer {
           }
           Iterator.single(finishedThreads.size)
         }
-        }.reduce(_ + _)
+      }.reduce(_ + _)
 
       dropModelNumBatch += (driverSubModelNum - numFinishedModelUpdates)
       if (dropPercentage == 0.0 ||
@@ -317,49 +312,23 @@ object DistriOptimizer {
         // enough records were processed for this batch, so update the model
         val value = lossSum.value / numFinishedModelUpdates
 
-        var l2Norm = 0.0f
-        var scale = ev.fromType(numFinishedModelUpdates)
-        if (normClippingEnable) {
-          val sumSquare = models.mapPartitions(modelIter => {
-            val getG = System.nanoTime()
-            parameters.aggregateGradientPartition()
-            driverMetrics.add("aggregrateGradientParition average executor",
-              System.nanoTime() - getG)
-
-            val gradLength = parameters.gradientPartition.nElement()
-            val taskSize = gradLength / _subModelNumber
-            val extraTask = gradLength % _subModelNumber
-            val parallelNum = if (taskSize == 0) extraTask else _subModelNumber
-            val squares = new Array[Double](parallelNum)
-            Engine.default.invokeAndWait((0 until parallelNum).map(tid => () => {
-              val offset = tid * taskSize + math.min(tid, extraTask)
-              val length = taskSize + (if (tid < extraTask) 1 else 0)
-              squares(tid) = ev.toType[Double](
-                parameters.gradientPartition.narrow(1, offset + 1, length).sumSquare())
-            }))
-            var sum = 0.0
-            var i = 0
-            while (i < parallelNum) {
-              sum += squares(i)
-              i += 1
-            }
-            Iterator.single(sum)
-          }).reduce(_ + _)
-          l2Norm = (math.sqrt(sumSquare) / numFinishedModelUpdates).toFloat
-          if (l2Norm > normValueClip) {
-            scale = ev.fromType[Double]((l2Norm * numFinishedModelUpdates) / normValueClip)
-          }
-        }
+        driverState("numFinishedModel") = numFinishedModelUpdates
+        driverState("aggregateG") = false
+        parameterProcessers.foreach(_.collectGlobalData(models, parameters, metrics, driverState))
+        val stateBroadcast = sc.broadcast(driverState)
 
         models.mapPartitions { modelIter =>
           val modelCache = modelIter.next()
-          if (!normClippingEnable) {
+          val driveState = stateBroadcast.value
+          val aggregateG = driveState.get[Boolean]("aggregateG").get
+          if (!aggregateG) {
             val getG = System.nanoTime()
-            parameters.aggregateGradientPartition()
+            parameters.aggregateGradientPartition(numFinishedModelUpdates)
             driverMetrics.add("aggregrateGradientParition average executor",
               System.nanoTime() - getG)
           }
-          parameters.gradientPartition.div(scale)
+          parameterProcessers.foreach(_.processParameters(parameters, modelCache, driveState))
+
           modelCache.optimMethod.state.update("epoch", driverState[Int]("epoch"))
           modelCache.optimMethod.state.update("neval", driverState[Int]("neval"))
           modelCache.optimMethod.state.update("Loss", driverState[Float]("Loss"))
@@ -367,10 +336,6 @@ object DistriOptimizer {
             modelCache.optimMethod.state.update("score", driverState[Float]("score"))
           }
           var time = System.nanoTime()
-          // gradient clipping
-          if (constantClippingEnable) {
-            parameters.gradientPartition.clamp(minValueClip, maxValueClip)
-          }
           modelCache.optimMethod.optimize(_ => (ev.fromType(value), parameters.gradientPartition),
             parameters.weightPartition)
           driverMetrics.add("compute weight average", System.nanoTime() - time)
@@ -380,9 +345,11 @@ object DistriOptimizer {
           Iterator.empty
         }.count()
 
+        stateBroadcast.destroy()
         recordsProcessedThisEpoch += recordsNum.value
         val end = System.nanoTime()
         wallClockTime += end - start
+        driverState("aggregateG") = true
         driverState("Loss") = lossSum.value.toFloat / numFinishedModelUpdates
         optimMethod.updateHyperParameter()
         driverState("Throughput") = recordsNum.value.toFloat / ((end - start) / 1e9f)
@@ -581,6 +548,8 @@ object DistriOptimizer {
    * @param checkSingleton if checkSingleton
    * @param parameters all reduce parameter instance
    * @param validationMethods validation methods
+   * @param optimMethod optimization method
+   * @param parameterProcessors a list of ParameterProcessor used to process parameters
    * @return cached models
    */
   private def initThreadModels[T: ClassTag](
@@ -593,7 +562,8 @@ object DistriOptimizer {
     checkSingleton: Boolean,
     parameters: AllReduceParameter[T],
     validationMethods: Option[Array[ValidationMethod[T]]],
-    optimMethod: OptimMethod[T]
+    optimMethod: OptimMethod[T],
+    parameterProcessors: ArrayBuffer[ParameterProcessor]
   )(implicit ev: TensorNumeric[T]) = {
     val sc = dataset.originRDD().sparkContext
     val broadcast = sc.broadcast((criterion, state, validationMethods, optimMethod))
@@ -614,14 +584,12 @@ object DistriOptimizer {
       s"Passed in rdd partition number ${dataset.originRDD().partitions.length}" +
         s" is not equal to configured node number ${nodeNumber}")
 
-    val partitionNum = dataset.originRDD().partitions.length
+
     val computeThresholdbatchSize = state.get[Int]("computeThresholdbatchSize").get
     val nExecutor = Engine.nodeNumber()
     val executorCores = Engine.coreNumber()
 
-    val models = dataset.originRDD().mapPartitions(_ => {
-      val (broadcastCriterion, broadcastState, broadcastMethod,
-      broadcastOptim) = broadcast.value
+    val parameterPerNodeSizes = dataset.originRDD().mapPartitions { _ =>
       if (!Engine.checkSingleton()) {
         if (checkSingleton) {
           require(Engine.checkSingleton(), "Partitions of the training data are not evenly" +
@@ -635,6 +603,18 @@ object DistriOptimizer {
         }
       }
       Engine.setNodeAndCore(nExecutor, executorCores)
+      val weights = modelBroadcast.value(false).getParameters()._1
+      Iterator.single(parameters.init(weights))
+    }.collect()
+
+    val initState = T("parameterPerNodeSizes" -> parameterPerNodeSizes,
+    "weights" -> model.parameters()._1)
+    parameterProcessors.foreach(_.init(dataset, parameters, initState))
+    state("lookupDic") = initState.getOrElse("lookupDic", null)
+
+    val models = dataset.originRDD().mapPartitions(_ => {
+      val (broadcastCriterion, broadcastState, broadcastMethod,
+      broadcastOptim) = broadcast.value
       val cached = (0 until _subModelNumber).map { _ =>
         val localModel = modelBroadcast.value(true)
         val localCriterion = broadcastCriterion.cloneCriterion()
@@ -646,8 +626,6 @@ object DistriOptimizer {
       }.toArray
 
       logger.info("model thread pool size is " + Engine.model.getPoolSize)
-      val weights = cached.head._2
-      parameters.init(weights)
 
       Iterator.single(Cache(
         cached.map(_._1), // models
@@ -666,7 +644,6 @@ object DistriOptimizer {
     logger.info("Cache thread models... done")
     models
   }
-
 
   /**
    * Validate current model and save the result.
@@ -895,7 +872,8 @@ class DistriOptimizer[T: ClassTag] (
     prepareInput()
 
     models = DistriOptimizer.initThreadModels(model, distDataset, criterion, state,
-      nodeNumber, coresPerNode, checkSingleton, parameters, validationMethods, optimMethod)
+      nodeNumber, coresPerNode, checkSingleton, parameters, validationMethods,
+      optimMethod, parameterProcessors)
 
     if (checkpointPath.isDefined) {
       val file = checkpointPath.get + "/" +
@@ -929,7 +907,7 @@ class DistriOptimizer[T: ClassTag] (
           trainSummary,
           validationSummary,
           isOverWrite,
-          gradientClippingParams
+          parameterProcessors.toArray
         )
         retryNum = Int.MaxValue
       } catch {
@@ -967,8 +945,9 @@ class DistriOptimizer[T: ClassTag] (
               DistriOptimizer.logger.info("Recover from origin model")
             }
             optimMethod.clearHistory()
-            models = DistriOptimizer.initThreadModels(newModel, distDataset, criterion, state,
-              nodeNumber, coresPerNode, checkSingleton, parameters, validationMethods, optimMethod)
+            models = DistriOptimizer.initThreadModels(newModel, distDataset, criterion,
+              state, nodeNumber, coresPerNode, checkSingleton, parameters, validationMethods,
+              optimMethod, parameterProcessors)
           } else {
             throw t
           }
@@ -1006,5 +985,3 @@ class DistriOptimizer[T: ClassTag] (
     return choice;
   }
 }
-
-

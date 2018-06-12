@@ -23,7 +23,8 @@ import com.intel.analytics.bigdl.dataset.image.{BGRImgToBatch, LabeledBGRImage}
 import com.intel.analytics.bigdl.dataset.{DataSet, DistributedDataSet, MiniBatch, Sample}
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
-import com.intel.analytics.bigdl.tensor.{Storage, Tensor, DenseTensor}
+import com.intel.analytics.bigdl.parameters.AllReduceParameter
+import com.intel.analytics.bigdl.tensor.{DenseTensor, Storage, Tensor}
 import com.intel.analytics.bigdl.utils._
 import com.intel.analytics.bigdl.visualization.TrainSummary
 import org.apache.log4j.{Level, Logger}
@@ -116,7 +117,7 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
     dataSet = new DistributedDataSet[MiniBatch[Double]] {
       override def originRDD(): RDD[_] = rdd
 
-      override def data(train : Boolean): RDD[MiniBatch[Double]] = rdd
+      override def data(train: Boolean): RDD[MiniBatch[Double]] = rdd
 
       override def size(): Long = rdd.count()
 
@@ -372,7 +373,7 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val dataSet = new DistributedDataSet[MiniBatch[Double]] {
       override def originRDD(): RDD[_] = rdd
 
-      override def data(train : Boolean): RDD[MiniBatch[Double]] = rdd
+      override def data(train: Boolean): RDD[MiniBatch[Double]] = rdd
 
       override def size(): Long = 256 * nodeNumber
 
@@ -408,8 +409,8 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val optimMethod = OptimMethod.load[Double](optimizer.getCheckpointPath().get +
       s"/optimMethod.$numIterations")
 
-    optimMethod.state.get[Int]("epoch").get should be (2)
-    optimMethod.state.get[Int]("neval").get should be (numIterations)
+    optimMethod.state.get[Int]("epoch").get should be(2)
+    optimMethod.state.get[Int]("neval").get should be(numIterations)
   }
 
   "TrainSummary with MSE and LBFGS" should "work correctly" in {
@@ -430,7 +431,7 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
     val result2 = model.forward(input2).asInstanceOf[Tensor[Double]]
     result2(Array(1)) should be(1.0 +- 1e-2)
-    trainSummary.readScalar("Loss").last._2 should be (0.0f +- 1e-3f)
+    trainSummary.readScalar("Loss").last._2 should be(0.0f +- 1e-3f)
     trainSummary.close()
   }
 
@@ -452,7 +453,7 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
     val result2 = model.forward(input2).asInstanceOf[Tensor[Double]]
     result2(Array(1)) should be(1.0 +- 5e-2)
-    trainSummary.readScalar("Loss").last._2 should be (0.0f +- 1e-3f)
+    trainSummary.readScalar("Loss").last._2 should be(0.0f +- 1e-3f)
     trainSummary.close()
   }
 
@@ -475,7 +476,7 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
     val result2 = model.forward(input2).asInstanceOf[Tensor[Double]]
     result2(Array(1)) should be(1.0 +- 5e-2)
-    trainSummary.readScalar("Loss").last._2 should be (0.0f +- 1e-3f)
+    trainSummary.readScalar("Loss").last._2 should be(0.0f +- 1e-3f)
     trainSummary.close()
   }
 
@@ -650,26 +651,152 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
 
     val myOpt = new DistriOptimizer[Double](Identity[Double](), dataSet, null) {
-        override def optimize(): Module[Double] = {
-          val dds = this.dataset.asInstanceOf[DistributedDataSet[MiniBatch[Double]]]
-          val rdd = dds.data(train = false)
-          // flatmap to break minibatches into single tensors
-          val input = rdd.flatMap[Tensor[Double]]{
-            data => data.getInput().asInstanceOf[Tensor[Double]].split(dim = 1)}
-          val target = rdd.flatMap[Tensor[Double]]{
-            data => data.getTarget().asInstanceOf[Tensor[Double]].split(dim = 1)}
-          val inputArr = input.collect()
-          val targetArr = target.collect()
+      override def optimize(): Module[Double] = {
+        val dds = this.dataset.asInstanceOf[DistributedDataSet[MiniBatch[Double]]]
+        val rdd = dds.data(train = false)
+        // flatmap to break minibatches into single tensors
+        val input = rdd.flatMap[Tensor[Double]]{
+          data => data.getInput().asInstanceOf[Tensor[Double]].split(dim = 1)}
+        val target = rdd.flatMap[Tensor[Double]]{
+          data => data.getTarget().asInstanceOf[Tensor[Double]].split(dim = 1)}
+        val inputArr = input.collect()
+        val targetArr = target.collect()
 
-          inputArr.sameElements(inputOriArr) should be (true)
-          targetArr.sameElements(targetOriArr) should be (true)
+        inputArr.sameElements(inputOriArr) should be (true)
+        targetArr.sameElements(targetOriArr) should be (true)
 
-          model
-        }
+        model
+      }
     }
 
     myOpt.setTrainData(rdd, 2*nodeNumber)
     myOpt.optimize()
+  }
+
+  "Train with MSE and LarsSGD" should "be trained with good result in 1 iteration" in {
+    val _learningRate = 20.0
+    val _weightDecay = 0.1
+    val _momentum = 0.05
+    val _gwRation = 0.8
+
+    val mm = mse
+    mm.getParameters()._1.fill(0.125)
+    val oriW = mm.parameters()._1
+    // update below parameters if mse model has been changed
+    val layerNum = 4
+    val layer_0Num = 8
+    val layer_1Num = 2
+    val layer_2Num = 2
+    val layer_3Num = 1
+    require(mm.parameters()._1.length == layerNum && mm.parameters()._1(0).nElement() == layer_0Num
+      && mm.parameters()._1(1).nElement() == layer_1Num &&
+      mm.parameters()._1(2).nElement() == layer_2Num &&
+      mm.parameters()._1(3).nElement() == layer_3Num,
+      "if mse model has been chaged, this test case must needed updated accordingly!")
+
+    val wNorm2 = oriW.map(x => math.sqrt(x.sumSquare()))
+
+    val optimizer = new DistriOptimizer[Double](mm, dataSet, new MSECriterion[Double]())
+      .setEndWhen(Trigger.maxIteration(1))
+      .setOptimMethod(new LarsSGD[Double](
+        learningRate = _learningRate,
+        learningRateDecay = 0.0,
+        weightDecay = _weightDecay,
+        momentum = _momentum,
+        gwRation = _gwRation))
+
+    val model = optimizer.optimize()
+    val newW = model.parameters()._1.clone()
+    val newG = model.parameters()._2.clone()
+
+    val gNorm2 = newG.map(x => math.sqrt(x.sumSquare()))
+    var i = 0
+    while (i < wNorm2.length) {
+      val clr = _learningRate * (wNorm2(i) / (gNorm2(i) + _weightDecay * wNorm2(i))) * _gwRation
+      newG(i).add(_weightDecay, oriW(i))
+      val expectW = oriW(i).add(-1.0, newG(i).mul(clr))
+      assert(expectW.almostEqual(newW(i), 1e-6) == true, "should generate correct weight")
+      i += 1
+    }
+  }
+
+  "Train with MSE and LarsSGD" should "be be able to train with more than 1 iteration" in {
+    val mm = mse
+    mm.getParameters()._1.fill(0.125)
+    // update below parameters if mse model has been changed
+    val layerNum = 4
+    val layer_0Num = 8
+    val layer_1Num = 2
+    val layer_2Num = 2
+    val layer_3Num = 1
+    require(mm.parameters()._1.length == layerNum && mm.parameters()._1(0).nElement() == layer_0Num
+      && mm.parameters()._1(1).nElement() == layer_1Num &&
+      mm.parameters()._1(2).nElement() == layer_2Num &&
+      mm.parameters()._1(3).nElement() == layer_3Num,
+      "if mse model has been chaged, this test case must needed updated accordingly!")
+
+    val _learningRate = 20.0
+    val _weightDecay = 0.1
+    val _momentum = 0.05
+    val _gwRation = 0.8
+    val optimizer = new DistriOptimizer[Double](mm, dataSet, new MSECriterion[Double]())
+      .setEndWhen(Trigger.maxEpoch(1))
+      .setOptimMethod(new LarsSGD[Double](
+        learningRate = _learningRate,
+        learningRateDecay = 0.0,
+        weightDecay = _weightDecay,
+        momentum = _momentum,
+        gwRation = _gwRation))
+
+    val model = optimizer.optimize()
+  }
+
+  "Train with MSE " should "generate correct gradients with constant clipping" in {
+    val mm = mse
+    mm.getParameters()._1.fill(0.125)
+    val oriW = mm.getParameters()._1.clone()
+
+    val _learningRate = 20.0
+    val optimizationMethod = new SGD[Double](learningRate = _learningRate)
+    val optimizer = new DistriOptimizer[Double](mm, dataSet, new MSECriterion[Double]())
+      .setEndWhen(Trigger.maxEpoch(1))
+      .setOptimMethod(optimizationMethod)
+      .setConstantGradientClipping(-0.0, 0.0)
+
+    val model = optimizer.optimize()
+    val newW = model.getParameters()._1
+    val newG = model.getParameters()._2
+
+    assert(newW.almostEqual(oriW, 0.0) == true, "weight should keep the same")
+    assert(newG.almostEqual(oriW.fill(0.0), 0.0) == true, "gradient should be 0")
+  }
+
+  "Train with MSE " should "generate correct gradients with l2norm clipping" in {
+    val mm = mse
+    mm.getParameters()._1.fill(0.125)
+
+    val _learningRate = 20.0
+    val optimizationMethod = new SGD[Double](learningRate = _learningRate)
+    val optimizer = new DistriOptimizer[Double](mm, dataSet, new MSECriterion[Double]())
+      .setEndWhen(Trigger.maxIteration(1))
+      .setOptimMethod(optimizationMethod)
+
+    val model = optimizer.optimize()
+    val gradient = model.getParameters()._2.clone()
+    val scale = math.sqrt(gradient.sumSquare()) / 0.03
+    val expectedG = gradient.clone().div(scale)
+
+    val mm2 = mse
+    mm2.getParameters()._1.fill(0.125)
+    val optimizationMethod2 = new SGD[Double](learningRate = _learningRate)
+    val optimizer2 = new DistriOptimizer[Double](mm2, dataSet, new MSECriterion[Double]())
+      .setEndWhen(Trigger.maxIteration(1))
+      .setOptimMethod(optimizationMethod2)
+      .setGradientClippingByl2Norm(0.03)
+
+    val model2 = optimizer2.optimize()
+    val newG = model2.getParameters()._2
+    assert(expectedG.almostEqual(newG, 0.0), "clipbynorm2 should generate correct gradient")
   }
 
   "optimMethod state " should "be updated correctly after optimize" in {
@@ -692,33 +819,33 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
       .setEndWhen(Trigger.maxIteration(10))
     val model = optimizer.optimize()
 
-    optimMethod.state[Int]("epoch") should be (1)
-    optimMethod.state[Int]("neval") should be (11)
-    optimMethod.state[Int]("recordsProcessedThisEpoch") should be (320)
+    optimMethod.state[Int]("epoch") should be(1)
+    optimMethod.state[Int]("neval") should be(11)
+    optimMethod.state[Int]("recordsProcessedThisEpoch") should be(320)
 
     optimizer.setEndWhen(Trigger.maxIteration(20))
     optimizer.optimize()
 
-    optimMethod.state[Int]("epoch") should be (1)
-    optimMethod.state[Int]("neval") should be (21)
-    optimMethod.state[Int]("recordsProcessedThisEpoch") should be (640)
+    optimMethod.state[Int]("epoch") should be(1)
+    optimMethod.state[Int]("neval") should be(21)
+    optimMethod.state[Int]("recordsProcessedThisEpoch") should be(640)
 
     val rdd = sc.parallelize(1 to (160 * nodeNumber), nodeNumber)
       .map(_ => Sample[Double](Tensor[Double](4).fill(2.0), Tensor[Double](1).fill(1.0)))
 
     optimizer.setTrainData(rdd, 16 * nodeNumber)
 
-    optimMethod.state[Int]("epoch") should be (2)
-    optimMethod.state[Int]("neval") should be (21)
-    optimMethod.state[Int]("recordsProcessedThisEpoch") should be (0)
+    optimMethod.state[Int]("epoch") should be(2)
+    optimMethod.state[Int]("neval") should be(21)
+    optimMethod.state[Int]("recordsProcessedThisEpoch") should be(0)
 
     optimizer.setEndWhen(Trigger.maxEpoch(2))
     optimizer.optimize()
 
-    optimMethod.state[Int]("epoch") should be (3)
-    optimMethod.state[Int]("neval") should be (31)
-    optimMethod.state[Int]("recordsProcessedThisEpoch") should be (0)
-
-
+    optimMethod.state[Int]("epoch") should be(3)
+    optimMethod.state[Int]("neval") should be(31)
+    optimMethod.state[Int]("recordsProcessedThisEpoch") should be(0)
   }
 }
+
+
