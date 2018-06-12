@@ -52,6 +52,11 @@ class TFNet private(graphDef: Array[Byte],
                     config: Array[Byte])
   extends AbstractModule[Activity, Activity, Float] {
 
+  // this is a workaround for a bug in scala 2.10
+  // transient lazy vals will null constructor fields
+  // https://issues.scala-lang.org/browse/SI-8453
+  private def size = graphDef.length
+
 
   output = {
     if (outputNames.length == 1) {
@@ -90,11 +95,16 @@ class TFNet private(graphDef: Array[Byte],
   }
 
   @transient
-  private lazy val (graph, sess) = {
+  private lazy val graph = {
     val graph = new Graph()
     graph.importGraphDef(graphDef)
+    graph
+  }
+
+  @transient
+  private lazy val sess = {
     val sess = new Session(graph, config)
-    (graph, sess)
+    sess
   }
 
   @transient
