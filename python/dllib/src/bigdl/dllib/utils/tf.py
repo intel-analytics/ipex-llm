@@ -14,7 +14,6 @@
 # limitations under the License.
 #
 
-from tensorflow.python.framework import dtypes
 from tensorflow.core.framework import attr_value_pb2
 from tensorflow.core.framework import graph_pb2
 from tensorflow.core.framework import node_def_pb2
@@ -60,7 +59,7 @@ def export_tf(sess, folder, inputs, outputs):
             non_placeholder_input_names.append(input_tensor.name)
             type_enums.append(input_tensor.dtype.as_datatype_enum)
 
-    output_names = map(lambda o: o.name, outputs)
+    output_names = list(map(lambda o: o.name, outputs))
 
     # freeze graph
     frozen_graph_def = graph_util.convert_variables_to_constants(
