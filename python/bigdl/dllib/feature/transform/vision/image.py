@@ -384,7 +384,7 @@ class ChannelNormalize(FeatureTransformer):
     :param std_g std value in G channel
     :param std_b std value in B channel
     """
-    def __init__(self, mean_r, mean_b, mean_g, std_r=1.0, std_g=1.0, std_b=1.0, bigdl_type="float"):
+    def __init__(self, mean_r, mean_g, mean_b, std_r=1.0, std_g=1.0, std_b=1.0, bigdl_type="float"):
         super(ChannelNormalize, self).__init__(bigdl_type, mean_r, mean_g, mean_b, std_r, std_g, std_b)
         
 class PixelNormalize(FeatureTransformer):
