@@ -29,11 +29,7 @@ class ZooKerasCreator(JavaValue):
         return name
 
 
-class ZooKerasLayer(ZooKerasCreator, KerasLayer):
-    @classmethod
-    def of(cls, jvalue, bigdl_type="float"):
-        return KerasLayer(jvalue, bigdl_type)
-
+class ZooCallable(object):
     def __call__(self, x):
         """
         Some other modules point to current module
@@ -45,3 +41,9 @@ class ZooKerasLayer(ZooKerasCreator, KerasLayer):
                                                   "connectInputs",
                                                   self,
                                                   to_list(x)))
+
+
+class ZooKerasLayer(ZooKerasCreator, ZooCallable, KerasLayer):
+    @classmethod
+    def of(cls, jvalue, bigdl_type="float"):
+        return KerasLayer(jvalue, bigdl_type)
