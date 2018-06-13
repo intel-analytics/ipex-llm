@@ -54,14 +54,14 @@ You can run a analytics zoo program, e.g., the [Object Detection](https://github
 ```bash
   # Spark local mode
   spark-submit --master local[core_number] --class com.intel.analytics.zoo.examples.objectdetection.Predict \
-  dist/lib/analytics-zoo-VERSION-SNAPSHOT-jar-with-dependencies.jar \
+  dist/lib/analytics-zoo-VERSION-jar-with-dependencies.jar \
   --image path_to_your_images --output path_to_output --model path_to_model
 
   # Spark standalone mode
   spark-submit --master spark://... --executor-cores cores_per_executor \
   --total-executor-cores total_cores_for_the_job \
   --class com.intel.analytics.zoo.examples.objectdetection.Predict \
-  dist/lib/analytics-zoo-VERSION-SNAPSHOT-jar-with-dependencies.jar \
+  dist/lib/analytics-zoo-VERSION-jar-with-dependencies.jar \
   --image path_to_your_images --output path_to_output --model path_to_model
 
   # Spark yarn client mode
@@ -69,7 +69,7 @@ You can run a analytics zoo program, e.g., the [Object Detection](https://github
   --executor-cores cores_per_executor \
   --num-executors executors_number \
   --class com.intel.analytics.zoo.examples.objectdetection.Predict \
-  dist/lib/analytics-zoo-VERSION-SNAPSHOT-jar-with-dependencies.jar \
+  dist/lib/analytics-zoo-VERSION-jar-with-dependencies.jar \
   --image path_to_your_images --output path_to_output --model path_to_model
 
   # Spark yarn cluster mode
@@ -77,7 +77,7 @@ You can run a analytics zoo program, e.g., the [Object Detection](https://github
   --executor-cores cores_per_executor \
   --num-executors executors_number \
   --class com.intel.analytics.zoo.examples.objectdetection.Predict \
-  dist/lib/analytics-zoo-VERSION-SNAPSHOT-jar-with-dependencies.jar \
+  dist/lib/analytics-zoo-VERSION-jar-with-dependencies.jar \
   --image path_to_your_images --output path_to_output --model path_to_model
 ```
 
