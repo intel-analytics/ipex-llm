@@ -84,7 +84,7 @@ private[bigdl] class AllReduceParameter[T: ClassTag](id: Long, partitionNum: Int
 
   @transient private var taskSize = 0
   @transient private var extraSize = 0
-  @transient var partitionId: Int = 0
+  @transient private var partitionId: Int = 0
 
   /** Tensor to hold a slice of the global weights. */
   @transient lazy val weightPartition: Tensor[T] = readWeightPartition()
@@ -311,28 +311,6 @@ private[bigdl] class AllReduceParameter[T: ClassTag](id: Long, partitionNum: Int
       .map(_.data.next().asInstanceOf[Tensor[T]])
       .getOrElse(throw new IllegalStateException("Please initialize AllReduceParameter first!"))
     weights.copy(weightPartition)
-  }
-
-  /**
-   * Get square sum for given region
-   *
-   * @param lookupDic A list of region information.
-   *                  Array index is partition number,
-   *                  key for hashmap is layerId, value is (start, length)
-   * @return a list of square sum of weights and gradients with given region information
-   */
-  def squareSumForRegion(lookupDic: Array[mutable.HashMap[Int, (Int, Int)]]):
-    Array[(Int, (Float, Float))] = {
-    val lookupMap = lookupDic(partitionId)
-    val list = new Array[(Int, (Float, Float))](lookupMap.size)
-    var i = 0
-    for ((k, v) <- lookupMap) {
-      list(i) = (k,
-        (ev.toType[Float](weightPartition.narrow(1, v._1, v._2).sumSquare()),
-         ev.toType[Float](gradientPartition.narrow(1, v._1, v._2).sumSquare())))
-      i += 1
-    }
-    list
   }
 }
 
