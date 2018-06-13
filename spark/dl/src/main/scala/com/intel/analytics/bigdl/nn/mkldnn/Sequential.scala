@@ -15,7 +15,7 @@
  */
 package com.intel.analytics.bigdl.nn.mkldnn
 
-import com.intel.analytics.bigdl.mkl.MklDnn
+import com.intel.analytics.bigdl.mkl.{Memory, MklDnn}
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.nn.{DynamicContainer, Sequential => Seq}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -54,7 +54,7 @@ class Sequential(implicit ev: TensorNumeric[Float])
     for (i <- 1 until mklDnnModules.length) {
       val m = mklDnnModules(i)
       lastOutputFormats.zip(m.inputFormats()).foreach {
-        case (o, i) => if (i.layout == MklDnn.MemoryFormat.format_undef) {
+        case (o, i) => if (i.layout == Memory.Format.format_undef) {
           i.setLayout(o.layout)
         }
       }
@@ -94,7 +94,7 @@ class Sequential(implicit ev: TensorNumeric[Float])
     for (i <- mklDnnModules.length - 2 to 0 by -1) {
       val m = mklDnnModules(i)
       lastGradInputFormats.zip(m.gradOutputFormats()._1).foreach {
-        case (gi, go) => if (go.layout == MklDnn.MemoryFormat.format_undef) {
+        case (gi, go) => if (go.layout == Memory.Format.format_undef) {
           go.setLayout(gi.layout)
         }
       }
@@ -114,7 +114,7 @@ class Sequential(implicit ev: TensorNumeric[Float])
     for (i <- mklDnnModules.length - 2 to 0 by -1) {
       val m = mklDnnModules(i)
       lastGradInputFormats.zip(m.gradOutputFormats()._2).foreach {
-        case (gi, go2) => if (go2.layout == MklDnn.MemoryFormat.format_undef) {
+        case (gi, go2) => if (go2.layout == Memory.Format.format_undef) {
           go2.setLayout(gi.layout)
         }
       }

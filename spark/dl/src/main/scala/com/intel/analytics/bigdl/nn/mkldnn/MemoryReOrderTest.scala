@@ -16,10 +16,8 @@
 
 package com.intel.analytics.bigdl.nn.mkldnn
 
-import breeze.linalg
-import breeze.linalg.dim
-import com.intel.analytics.bigdl.mkl.MklDnn
-import com.intel.analytics.bigdl.nn.abstractnn.{DataFormat, TensorModule}
+import com.intel.analytics.bigdl.mkl.{DataType, Memory, MklDnn}
+import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.tensor.Tensor
 
 import scala.collection.mutable.ArrayBuffer
@@ -28,8 +26,8 @@ import scala.reflect.ClassTag
 /**
  * when from mkldnn layer to bigdl layer, there need to do reorder for input or gradOutput
  */
-class MemoryReOrderTest(inputFormat: Int = MklDnn.MemoryFormat.any,
-                    outputFormat: Int = MklDnn.MemoryFormat.nchw) extends TensorModule[Float] {
+class MemoryReOrderTest(inputFormat: Int = Memory.Format.any,
+                    outputFormat: Int = Memory.Format.nchw) extends TensorModule[Float] {
 
   @transient
   private var engine: Long = 0L
@@ -57,9 +55,9 @@ class MemoryReOrderTest(inputFormat: Int = MklDnn.MemoryFormat.any,
   val stream_fwd = new ArrayBuffer[Long]
   val stream_bwd = new ArrayBuffer[Long]
 
-  private val dataType = MklDnn.DataType.f32
+  private val dataType = DataType.F32
 
-  require(outputFormat != MklDnn.MemoryFormat.any, "output format in" +
+  require(outputFormat != Memory.Format.any, "output format in" +
     "MemoryReOrder should not be any")
 
   // convert input from input format to output format
@@ -83,7 +81,7 @@ class MemoryReOrderTest(inputFormat: Int = MklDnn.MemoryFormat.any,
       val src_pd = if (input.getPrimitiveDesc() != 0L) {
         input.getPrimitiveDesc()
       } else {
-        require(inputFormat != MklDnn.MemoryFormat.any, "input format in" +
+        require(inputFormat != Memory.Format.any, "input format in" +
           "MemoryReOrder should not be any")
         val prim_md = MklDnn.MemoryDescInit(dim, sizes, dataType, this.inputFormat)
         MklDnn.MemoryPrimitiveDescCreate(prim_md, engine)
@@ -129,7 +127,7 @@ class MemoryReOrderTest(inputFormat: Int = MklDnn.MemoryFormat.any,
 
     // gradInput.copy(gradOutput)
 
-    if (gradOutput.getPrimitiveDesc() == 0L && inputFormat == MklDnn.MemoryFormat.any) {
+    if (gradOutput.getPrimitiveDesc() == 0L && inputFormat == Memory.Format.any) {
       gradInput.resizeAs(gradOutput).copy(gradOutput)
       return gradInput
     }
@@ -174,8 +172,8 @@ class MemoryReOrderTest(inputFormat: Int = MklDnn.MemoryFormat.any,
 }
 
 object MemoryReOrderTest {
-  def apply[T: ClassTag](inputFormat: Int = MklDnn.MemoryFormat.any,
-                         outputFormat: Int = MklDnn.MemoryFormat.nhwc): MemoryReOrderTest = {
+  def apply[T: ClassTag](inputFormat: Int = Memory.Format.any,
+                         outputFormat: Int = Memory.Format.nhwc): MemoryReOrderTest = {
     new MemoryReOrderTest(inputFormat, outputFormat)
   }
 }

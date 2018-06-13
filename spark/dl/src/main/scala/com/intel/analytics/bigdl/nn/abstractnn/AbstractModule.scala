@@ -21,8 +21,7 @@ import java.nio.ByteOrder
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dataset.{LocalDataSet, MiniBatch, PaddingParam, Sample}
 import com.intel.analytics.bigdl.dataset.{LocalDataSet, MiniBatch, Sample}
-import com.intel.analytics.bigdl.mkl.MklDnn
-import com.intel.analytics.bigdl.mkl.MklDnn.MemoryFormat
+import com.intel.analytics.bigdl.mkl.{Memory, MklDnn}
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.nn.quantized.Quantization
 import com.intel.analytics.bigdl.nn.{Module, _}
@@ -35,6 +34,7 @@ import com.intel.analytics.bigdl.utils._
 import com.intel.analytics.bigdl.utils.caffe.CaffePersister
 import com.intel.analytics.bigdl.utils.serializer._
 import com.intel.analytics.bigdl.utils.tf.{TensorflowDataFormat, TensorflowSaver}
+import com.intel.analytics.bigdl.mkl.{Engine => DnnEngine, Stream => DnnStream}
 import org.apache.commons.lang3.SerializationUtils
 import org.apache.spark.rdd.RDD
 
@@ -1097,12 +1097,12 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
   val isMklDnnModel = false
 
   // for mkl dnn engine
-  protected val mkldnn_engine_type: Int = MklDnn.EngineType.cpu
+  protected val mkldnn_engine_type: Int = DnnEngine.Kind.Cpu
   protected var engineLocation: Long = 0L
   def getDnnEngine(index : Int): Long = {
     if (engineLocation == 0L) {
       require(MklDnn.isLoaded, "mkldnn isn't loaded")
-      engineLocation = MklDnn.EngineCreate(mkldnn_engine_type, index)
+      engineLocation = DnnEngine.Create(mkldnn_engine_type, index)
     }
     engineLocation
   }
@@ -1114,7 +1114,7 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
 
   def createDnnEngine(index : Int): Unit = {
     require(MklDnn.isLoaded, "mkldnn isn't loaded")
-    engineLocation = MklDnn.EngineCreate(mkldnn_engine_type, index)
+    engineLocation = DnnEngine.Create(mkldnn_engine_type, index)
   }
 
   // for mkl dnn stream
@@ -1122,7 +1122,7 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
   def getStream(): Long = {
     if (streamLocation == 0L) {
       require(MklDnn.isLoaded, "mkldnn isn't loaded")
-      streamLocation = MklDnn.StreamCreate(MklDnn.StreamType.eager)
+      streamLocation = DnnStream.Create(DnnStream.Kind.Eager)
     }
     streamLocation
   }
@@ -1134,11 +1134,11 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
 
   def createStream(): Unit = {
     require(MklDnn.isLoaded, "mkldnn isn't loaded")
-    streamLocation = MklDnn.StreamCreate(MklDnn.StreamType.eager)
+    streamLocation = DnnStream.Create(DnnStream.Kind.Eager)
   }
 
   // for mkl dnn format
-  var output_format : Int = MklDnn.MemoryFormat.any
+  var output_format : Int = Memory.Format.any
 
 
   /**

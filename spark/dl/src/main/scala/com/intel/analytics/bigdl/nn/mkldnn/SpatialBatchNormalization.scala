@@ -18,11 +18,11 @@ package com.intel.analytics.bigdl.nn.mkldnn
 
 import java.io.{IOException, ObjectInputStream, ObjectOutputStream}
 
-import com.intel.analytics.bigdl.mkl.{Memory, MklDnn}
-import com.intel.analytics.bigdl.nn.{Ones, RandomUniform, VariableFormat, Zeros}
+import com.intel.analytics.bigdl.mkl.{AlgKind, DataType, Memory, MklDnn, PropKind, Query, Stream => DnnStream}
 import com.intel.analytics.bigdl.nn.abstractnn.{Initializable, TensorModule}
-import com.intel.analytics.bigdl.tensor._
+import com.intel.analytics.bigdl.nn.{Ones, VariableFormat, Zeros}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.tensor._
 import com.intel.analytics.bigdl.utils.{T, Table}
 
 import scala.collection.mutable.ArrayBuffer
@@ -143,10 +143,10 @@ class SpatialBatchNormalization[T: ClassTag](
 
   private def init4(tensor: Tensor[T], dataType: Int, format: Int, engine: Long): Long = {
     // TODO refactor for linear
-    val (dim, size) = if (tensor.dim() == 1 && (format == MklDnn.MemoryFormat.nc ||
-      format == MklDnn.MemoryFormat.oi)) {
+    val (dim, size) = if (tensor.dim() == 1 && (format == Memory.Format.nc ||
+      format == Memory.Format.oi)) {
       (2, Array(1) ++ tensor.size())
-    } else if (tensor.dim() == 2 && (format == MklDnn.MemoryFormat.oihw)) {
+    } else if (tensor.dim() == 2 && (format == Memory.Format.oihw)) {
       (4, tensor.size() ++ Array(1, 1))
     } else {
       (tensor.dim(), tensor.size())
@@ -190,7 +190,7 @@ class SpatialBatchNormalization[T: ClassTag](
 
   @transient var internalInput, internalOutput: MklDnnTensor[T] = _
 
-  var defaultFormat = MklDnn.MemoryFormat.nchw
+  var defaultFormat = Memory.Format.nchw
 
   private def toMklDnnTensor(t: Tensor[T]): MklDnnTensor[T] = t.asInstanceOf[MklDnnTensor[T]]
 
@@ -234,25 +234,25 @@ class SpatialBatchNormalization[T: ClassTag](
       stream = this.getStream()
 
       val srcMemDesc = if (input.getPrimitiveDesc() == 0L) {
-        MklDnn.MemoryDescInit(input.dim(), input.size(), MklDnn.DataType.f32, defaultFormat)
+        MklDnn.MemoryDescInit(input.dim(), input.size(), DataType.F32, defaultFormat)
       } else {
         MklDnnOps.primitiveDescQueryMemory(input.getPrimitiveDesc())
       }
 
       val bnTrainDesc =
-        MklDnn.BatchNormForwardDescInit(MklDnn.PropKind.forward,
+        MklDnn.BatchNormForwardDescInit(PropKind.Forward,
           srcMemDesc, eps.toFloat, MklDnn.BatchNormFlag.mkldnn_use_scaleshift)
       // we always use the weight and bias / scale and offset. So the flags should be combined
       // with use_scaleshift and use_global_stats.
       val bnInferDesc =
-        MklDnn.BatchNormForwardDescInit(MklDnn.PropKind.forwardInference,
+        MklDnn.BatchNormForwardDescInit(PropKind.ForwardInference,
           srcMemDesc, eps.toFloat,
           MklDnn.BatchNormFlag.mkldnn_use_global_stats | MklDnn.BatchNormFlag.mkldnn_use_scaleshift)
 
       val opTrainPrimDesc = MklDnn.PrimitiveDescCreate(bnTrainDesc, engine, 0)
       val opInferPrimDesc = if (relu) {
         val postOps = MklDnn.CreatePostOps()
-        MklDnn.PostOpsAppendEltwise(postOps, 1.0f, MklDnn.AlgKind.eltwiseRelu, 0.0f, 0.0f)
+        MklDnn.PostOpsAppendEltwise(postOps, 1.0f, AlgKind.EltwiseRelu, 0.0f, 0.0f)
         val attr = MklDnn.CreateAttr()
         MklDnn.AttrSetPostOps(attr, postOps)
         MklDnn.PrimitiveDescCreateV2(bnInferDesc, attr, engine, 0)
@@ -265,18 +265,18 @@ class SpatialBatchNormalization[T: ClassTag](
       forwardInferPrimDesc = opInferPrimDesc
 
       val dataFormat = defaultFormat
-      val paramsFormat = MklDnn.MemoryFormat.x
-      val dataType = MklDnn.DataType.f32
+      val paramsFormat = Memory.Format.x
+      val dataType = DataType.F32
 
       inputUserPrim = initUser(input, dataType, dataFormat, engine)
-      val i1t = initInternal(inputUserPrim, opTrainPrimDesc, MklDnn.Query.src_pd)
+      val i1t = initInternal(inputUserPrim, opTrainPrimDesc, Query.SrcPd)
       inputTrainReorderMemoryPrim = i1t._1
       inputTrainReorderPrim = i1t._2
-      val i1i = initInternal(inputUserPrim, opInferPrimDesc, MklDnn.Query.src_pd)
+      val i1i = initInternal(inputUserPrim, opInferPrimDesc, Query.SrcPd)
       inputInferReorderMemoryPrim = i1i._1
       inputInferReorderPrim = i1i._2
-      outputTrainUserPrim = initUser(output, opTrainPrimDesc, MklDnn.Query.dst_pd, 0)
-      outputInferUserPrim = initUser(output, opInferPrimDesc, MklDnn.Query.dst_pd, 0)
+      outputTrainUserPrim = initUser(output, opTrainPrimDesc, Query.DstPd, 0)
+      outputInferUserPrim = initUser(output, opInferPrimDesc, Query.DstPd, 0)
 
       // because they're 1-d, so we need not to initialize it.
       weightAndBiasUserPrim = initUser(all, dataType, paramsFormat, engine)
@@ -386,7 +386,7 @@ class SpatialBatchNormalization[T: ClassTag](
     if (isTraining()) {
       Memory.SetDataHandle(outputTrainUserPrim, output.asInstanceOf[MklDnnTensor[T]].ptr, 0)
       if (inputTrainReorderPrim != 0) {
-        MklDnn.StreamSubmit(stream, forwardTrainReorderPrims.length,
+        DnnStream.Submit(stream, forwardTrainReorderPrims.length,
           forwardTrainReorderPrims.toArray)
         if (input.getTensorType == DenseType && inputPtr != 0) {
           MklDnn.MemoryReleaseDataHandle(input.storage().array().asInstanceOf[Array[Float]],
@@ -394,11 +394,11 @@ class SpatialBatchNormalization[T: ClassTag](
         }
       }
 
-      MklDnn.StreamSubmit(stream, forwardTrainPrims.length, forwardTrainPrims.toArray)
+      DnnStream.Submit(stream, forwardTrainPrims.length, forwardTrainPrims.toArray)
     } else {
       Memory.SetDataHandle(outputInferUserPrim, output.asInstanceOf[MklDnnTensor[T]].ptr, 0)
       if (inputInferReorderPrim != 0) {
-        MklDnn.StreamSubmit(stream, forwardInferReorderPrims.length,
+        DnnStream.Submit(stream, forwardInferReorderPrims.length,
           forwardInferReorderPrims.toArray)
         if (input.getTensorType == DenseType && inputPtr != 0) {
           MklDnn.MemoryReleaseDataHandle(input.storage().array().asInstanceOf[Array[Float]],
@@ -406,7 +406,7 @@ class SpatialBatchNormalization[T: ClassTag](
         }
       }
 
-      MklDnn.StreamSubmit(stream, forwardInferPrims.length, forwardInferPrims.toArray)
+      DnnStream.Submit(stream, forwardInferPrims.length, forwardInferPrims.toArray)
     }
 
     if (shouldConvert) {
@@ -419,8 +419,8 @@ class SpatialBatchNormalization[T: ClassTag](
       val m = input.nElement() / this.nOutput
       val biasFactor = if (m > 1) { m.toFloat / (m - 1) } else { 1 }
 
-      Memory.axpby(nOutput, 1, mean.ptr, momentum.toFloat, runningMean.ptr)
-      Memory.axpby(nOutput, biasFactor, variance.ptr, momentum.toFloat, runningVar.ptr)
+      Memory.Axpby(nOutput, 1, mean.ptr, momentum.toFloat, runningMean.ptr)
+      Memory.Axpby(nOutput, biasFactor, variance.ptr, momentum.toFloat, runningVar.ptr)
     }
 
     val end1 = (System.nanoTime() - s1)/1e6
@@ -446,29 +446,29 @@ class SpatialBatchNormalization[T: ClassTag](
 
       val srcMemDesc = if (input.getPrimitiveDesc() == 0) {
         MklDnn.MemoryDescInit(input.dim(), input.size(),
-          MklDnn.DataType.f32, defaultFormat)
+          DataType.F32, defaultFormat)
       } else {
         MklDnnOps.primitiveDescQueryMemory(input.getPrimitiveDesc())
       }
 
       // [PERF] the format of gradInput should be the same as input
       val diffDstMemDesc = MklDnn.MemoryDescInit(input.dim(), input.size(),
-        MklDnn.DataType.f32, MklDnn.getFormat(srcMemDesc))
+        DataType.F32, MklDnn.getFormat(srcMemDesc))
 
-      val desc = MklDnn.BatchNormBackwardDescInit(MklDnn.PropKind.backward,
+      val desc = MklDnn.BatchNormBackwardDescInit(PropKind.Backward,
         diffDstMemDesc, srcMemDesc, eps.toFloat, MklDnn.BatchNormFlag.mkldnn_use_scaleshift)
       val primDesc = MklDnn.PrimitiveDescCreate(desc, engine, forwardTrainPrimDesc)
 
       val dataFormat = defaultFormat
-      val paramsFormat = MklDnn.MemoryFormat.x
-      val dataType = MklDnn.DataType.f32
+      val paramsFormat = Memory.Format.x
+      val dataType = DataType.F32
 
       gradOutputUserPrim = initUser(gradOutput, dataType, dataFormat, engine)
-      val g1 = initInternal(gradOutputUserPrim, primDesc, MklDnn.Query.diff_dst_pd)
+      val g1 = initInternal(gradOutputUserPrim, primDesc, Query.DiffDstPd)
       gradOutputReorderMemoryPrim = g1._1
       gradOutputReorderPrim = g1._2
       gradWeightAndBiasUserPrim = initUser(diffAll, dataType, paramsFormat, engine)
-      gradInputUserPrim = initUser(gradInput, primDesc, MklDnn.Query.diff_src_pd, 0)
+      gradInputUserPrim = initUser(gradInput, primDesc, Query.DiffSrcPd, 0)
 
       val inputMemoryPrim = if (inputTrainReorderPrim != 0) {
         inputTrainReorderMemoryPrim
@@ -540,13 +540,13 @@ class SpatialBatchNormalization[T: ClassTag](
     Memory.SetDataHandle(gradInputUserPrim, gradInput.asInstanceOf[MklDnnTensor[T]].ptr, 0)
 
     if (gradOutputReorderPrim != 0) {
-      MklDnn.StreamSubmit(stream, backwardReorderPrims.length, backwardReorderPrims.toArray)
+      DnnStream.Submit(stream, backwardReorderPrims.length, backwardReorderPrims.toArray)
       if (gradOutput.getTensorType == DenseType && gradOutputPtr != 0) {
         MklDnn.MemoryReleaseDataHandle(gradOutput.storage().array().asInstanceOf[Array[Float]],
           gradOutputPtr)
       }
     }
-    MklDnn.StreamSubmit(stream, backwardPrims.length, backwardPrims.toArray)
+    DnnStream.Submit(stream, backwardPrims.length, backwardPrims.toArray)
 
     diffAll.syncToHeap()
 //    gradAll.add(diffAll)

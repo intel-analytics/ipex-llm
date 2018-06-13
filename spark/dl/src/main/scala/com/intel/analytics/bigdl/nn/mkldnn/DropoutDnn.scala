@@ -15,7 +15,7 @@
  */
 package com.intel.analytics.bigdl.nn.mkldnn
 
-import com.intel.analytics.bigdl.mkl.MklDnn
+import com.intel.analytics.bigdl.mkl.{DataType, Memory, MklDnn}
 import com.intel.analytics.bigdl.nn.Dropout
 import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.tensor.Tensor
@@ -77,7 +77,7 @@ class DropoutDnn(
   private var engine: Long = 0L
   @transient
   private var stream: Long = 0L
-  val dataType = MklDnn.DataType.f32
+  val dataType = DataType.F32
   val stream_fwd = new ArrayBuffer[Long]
 
   def reorderTwoTensor(input: Tensor[Float], inputFormat: Int,
@@ -202,9 +202,9 @@ class DropoutDnn(
     if (stream == 0L) stream = this.getStream()
 
     val default_format = input.dim() match {
-      case 1 => MklDnn.MemoryFormat.x
-      case 2 => MklDnn.MemoryFormat.nc
-      case 4 => MklDnn.MemoryFormat.nchw
+      case 1 => Memory.Format.x
+      case 2 => Memory.Format.nc
+      case 4 => Memory.Format.nchw
     }
     val user_format = input.getFormat() match {
       case -1 => default_format

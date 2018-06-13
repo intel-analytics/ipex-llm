@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.nn.mkldnn
 
-import com.intel.analytics.bigdl.mkl.MklDnn
+import com.intel.analytics.bigdl.mkl.{Memory, MklDnn}
 import com.intel.analytics.bigdl.tensor.{FloatType, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
@@ -90,8 +90,8 @@ class MemoryPrimitive[T: ClassTag]()(implicit ev: TensorNumeric[T]) extends Seri
       user.primitive = MklDnn.PrimitiveCreate0(primDesc)
       user.desc = MklDnnOps.primitiveDescQueryMemory(primDesc)
     } else {
-      val (dim, size) = if (tensor.dim() == 1 && (format == MklDnn.MemoryFormat.nc ||
-        format == MklDnn.MemoryFormat.oi)) {
+      val (dim, size) = if (tensor.dim() == 1 && (format == Memory.Format.nc ||
+        format == Memory.Format.oi)) {
         (2, Array(1) ++ tensor.size())
       } else {
         (tensor.dim(), tensor.size())

@@ -15,9 +15,9 @@
  */
 package com.intel.analytics.bigdl.nn.mkldnn
 
-import com.intel.analytics.bigdl.mkl.MklDnn
+import com.intel.analytics.bigdl.mkl.{Engine, Stream}
 
 class MklDnnRuntime {
-  val engine : Long = MklDnn.EngineCreate(MklDnn.EngineType.cpu, 0)
-  val stream : Long = MklDnn.StreamCreate(MklDnn.StreamType.eager)
+  val engine : Long = Engine.Create(Engine.Kind.Cpu, 0)
+  val stream : Long = Stream.Create(Stream.Kind.Eager)
 }

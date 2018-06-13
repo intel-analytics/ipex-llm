@@ -16,13 +16,12 @@
 
 package com.intel.analytics.bigdl.nn.mkldnn
 
-import com.intel.analytics.bigdl.mkl.MklDnn.MemoryFormat
-import com.intel.analytics.bigdl.mkl.{MKL, MklDnn}
-import com.intel.analytics.bigdl.{Module, nn}
+import com.intel.analytics.bigdl.mkl.{MKL, Memory}
 import com.intel.analytics.bigdl.nn._
-import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.numeric.NumericFloat
+import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.RandomGenerator._
+import com.intel.analytics.bigdl.{Module, nn}
 import org.scalatest.{FlatSpec, Matchers}
 
 class SpatialBatchNormalizationSpec extends FlatSpec with Matchers {
@@ -102,7 +101,7 @@ class SpatialBatchNormalizationSpec extends FlatSpec with Matchers {
 
     val bn = SpatialBatchNormalization(channel, epsilon, initWeight = initWeight,
       initBias = initBias)
-    bn.defaultFormat = MklDnn.MemoryFormat.nChw8c
+    bn.defaultFormat = Memory.Format.nChw8c
     val input = Tensor(batchSize, channel, height, width).rand(-1, 1)
     val gradOutput = Tensor().resizeAs(input).rand(-1, 1)
 
@@ -134,7 +133,7 @@ class SpatialBatchNormalizationSpec extends FlatSpec with Matchers {
     val dnn = Sequential()
       .add(ConvolutionDnn(3, 64, 7, 7, 2, 2, 3, 3).setName("conv1/7x7_s2"))
       .add(SpatialBatchNormalization(64, 1e-3).setName("conv1/7x7_s2/bn"))
-      .add(MemoryReOrder(inputFormat = MemoryFormat.any, outputFormat = MemoryFormat.nchw))
+      .add(MemoryReOrder(inputFormat = Memory.Format.any, outputFormat = Memory.Format.nchw))
 
     val blas = Sequential()
       .add(nn.SpatialConvolution(3, 64, 7, 7, 2, 2, 3, 3).setName("conv1/7x7_s2"))
@@ -237,7 +236,7 @@ class SpatialBatchNormalizationSpec extends FlatSpec with Matchers {
 
     val bn1 = SpatialBatchNormalization(64, initWeight = initWeight1, initBias = initBias1)
         .setShouldConvert(false)
-    bn1.defaultFormat = MklDnn.MemoryFormat.nChw8c
+    bn1.defaultFormat = Memory.Format.nChw8c
     val seq = Sequential()
       .add(bn1)
       .add(SpatialBatchNormalization(64, initWeight = initWeight1, initBias = initBias1)

@@ -17,7 +17,7 @@
 package com.intel.analytics.bigdl.nn.mkldnn
 
 import breeze.numerics._
-import com.intel.analytics.bigdl.mkl.MklDnn
+import com.intel.analytics.bigdl.mkl.{DataType, MklDnn, Engine => DnnEngine, Stream => DnnStream}
 import com.intel.analytics.bigdl.models.resnet.ResNet.{apply => _}
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.nn.{Module => _, _}
@@ -76,9 +76,9 @@ object DnnTools {
 
   def reorderTwoTensor(input: Tensor[Float], inputFormat: Int,
                        output: Tensor[Float], outputFormat: Int): Unit = {
-    val dataType = MklDnn.DataType.f32
-    val engine = MklDnn.EngineCreate( MklDnn.EngineType.cpu, 0)
-    val stream = MklDnn.StreamCreate(MklDnn.StreamType.eager)
+    val dataType = DataType.F32
+    val engine = DnnEngine.Create(DnnEngine.Kind.Cpu, 0)
+    val stream = DnnStream.Create(DnnStream.Kind.Eager)
     val stream_fwd = new ArrayBuffer[Long]
     val sizes = input.size()
     val dim = input.dim()

@@ -15,7 +15,7 @@
  */
 package com.intel.analytics.bigdl.nn.mkldnn
 
-import com.intel.analytics.bigdl.mkl.MklDnn
+import com.intel.analytics.bigdl.mkl.{DataType, Memory, MklDnn}
 import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.tensor.{DnnTensor, Tensor}
 
@@ -46,12 +46,12 @@ class ReorderMemory(inputFormat: MemoryData, outputFormat: MemoryData)
   override private[mkldnn] def initFwdPrimitives(runtime: MklDnnRuntime, phase: Phase) = {
     this.runtime = runtime
     val inputMemDesc = MklDnn.MemoryDescInit(_inputFormat.shape.length, _inputFormat.shape,
-      MklDnn.DataType.f32, _inputFormat.layout)
+      DataType.F32, _inputFormat.layout)
     val inputPrimDesc = MklDnn.MemoryPrimitiveDescCreate(inputMemDesc, runtime.engine)
     inputPrimitives = Array(MklDnn.PrimitiveCreate0(inputPrimDesc))
 
     val outputMemDesc = MklDnn.MemoryDescInit(_outputFormat.shape.length, _outputFormat.shape,
-      MklDnn.DataType.f32, _outputFormat.layout)
+      DataType.F32, _outputFormat.layout)
     val outputPrimDesc = MklDnn.MemoryPrimitiveDescCreate(outputMemDesc, runtime.engine)
     outputPrimitives = Array(MklDnn.PrimitiveCreate0(outputPrimDesc))
 
@@ -65,12 +65,12 @@ class ReorderMemory(inputFormat: MemoryData, outputFormat: MemoryData)
   override private[mkldnn] def initBwdPrimitives(runtime: MklDnnRuntime, phase: Phase) = {
     this.runtime = runtime
     val gradInputMemDesc = MklDnn.MemoryDescInit(_inputFormat.shape.length, _inputFormat.shape,
-      MklDnn.DataType.f32, _inputFormat.layout)
+      DataType.F32, _inputFormat.layout)
     val gradInputPrimDesc = MklDnn.MemoryPrimitiveDescCreate(gradInputMemDesc, runtime.engine)
     gradInputPrimitives = Array(MklDnn.PrimitiveCreate0(gradInputPrimDesc))
 
     val gradOutputMemDesc = MklDnn.MemoryDescInit(_outputFormat.shape.length, _outputFormat.shape,
-      MklDnn.DataType.f32, _outputFormat.layout)
+      DataType.F32, _outputFormat.layout)
     val gradOutputPrimDesc = MklDnn.MemoryPrimitiveDescCreate(gradOutputMemDesc, runtime.engine)
     gradOutputPrimitives = Array(MklDnn.PrimitiveCreate0(gradOutputPrimDesc))
 

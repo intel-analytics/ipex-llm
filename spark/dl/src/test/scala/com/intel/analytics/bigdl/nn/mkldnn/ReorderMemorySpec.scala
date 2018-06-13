@@ -15,14 +15,14 @@
  */
 package com.intel.analytics.bigdl.nn.mkldnn
 
-import com.intel.analytics.bigdl.mkl.MklDnn
+import com.intel.analytics.bigdl.mkl.Memory
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.BigDLSpecHelper
 
 class ReorderMemorySpec extends BigDLSpecHelper {
   "From heap to native" should "be correct" in {
-    val layer = ReorderMemory(new HeapData(Array(3, 4), MklDnn.MemoryFormat.nc),
-      new NativeData(Array(3, 4), MklDnn.MemoryFormat.nc))
+    val layer = ReorderMemory(new HeapData(Array(3, 4), Memory.Format.nc),
+      new NativeData(Array(3, 4), Memory.Format.nc))
 
     layer.initFwdPrimitives(new MklDnnRuntime(), Phase.TrainingPhase)
     layer.initBwdPrimitives(new MklDnnRuntime(), Phase.TrainingPhase)

@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.nn.mkldnn
 
 import breeze.numerics.abs
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.mkl.MklDnn
+import com.intel.analytics.bigdl.mkl.{DataType, Engine, MklDnn, Stream => DnnStream}
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.{DenseTensorMath, Tensor}
@@ -92,9 +92,9 @@ object DnnUtils {
   }
 
   def reorderToUser(input: Tensor[Float], output: Tensor[Float], outputFormat: Int): Unit = {
-    val dataType = MklDnn.DataType.f32
-    val engine = MklDnn.EngineCreate( MklDnn.EngineType.cpu, 0)
-    val stream = MklDnn.StreamCreate(MklDnn.StreamType.eager)
+    val dataType = DataType.F32
+    val engine = Engine.Create(Engine.Kind.Cpu, 0)
+    val stream = DnnStream.Create(DnnStream.Kind.Eager)
     val stream_fwd = new ArrayBuffer[Long]
     val sizes = input.size()
     val dim = input.dim()
@@ -118,9 +118,9 @@ object DnnUtils {
 
   def reorderTwoTensor(input: Tensor[Float], inputFormat: Int,
                        output: Tensor[Float], outputFormat: Int): Unit = {
-    val dataType = MklDnn.DataType.f32
-    val engine = MklDnn.EngineCreate( MklDnn.EngineType.cpu, 0)
-    val stream = MklDnn.StreamCreate(MklDnn.StreamType.eager)
+    val dataType = DataType.F32
+    val engine = Engine.Create(Engine.Kind.Cpu, 0)
+    val stream = DnnStream.Create(DnnStream.Kind.Eager)
     val stream_fwd = new ArrayBuffer[Long]
     val sizes = input.size()
     val dim = input.dim()

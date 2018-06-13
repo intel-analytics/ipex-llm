@@ -15,7 +15,7 @@
  */
 package com.intel.analytics.bigdl.nn.mkldnn
 
-import com.intel.analytics.bigdl.mkl.MklDnn
+import com.intel.analytics.bigdl.mkl.Memory
 
 sealed trait MemoryData {
   def shape: Array[Int]
@@ -24,7 +24,7 @@ sealed trait MemoryData {
   def setLayout(layout: Int): Unit
 
   def isLayoutFixed(): Boolean = {
-    layout != MklDnn.MemoryFormat.format_undef && layout != MklDnn.MemoryFormat.any
+    layout != Memory.Format.format_undef && layout != Memory.Format.any
   }
 }
 
@@ -147,7 +147,7 @@ private[mkldnn] object MemoryData {
 
   def noUndef(formats: Array[MemoryData]): Boolean = {
     if (formats == null || formats.length == 0) return true
-    formats.foreach(f => if (f.layout == MklDnn.MemoryFormat.format_undef) return false)
+    formats.foreach(f => if (f.layout == Memory.Format.format_undef) return false)
     return true
   }
 

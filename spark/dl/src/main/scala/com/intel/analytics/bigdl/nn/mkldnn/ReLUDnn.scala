@@ -16,10 +16,10 @@
 
 package com.intel.analytics.bigdl.nn.mkldnn
 
-import com.intel.analytics.bigdl.mkl.{Memory, MklDnn}
+import com.intel.analytics.bigdl.mkl._
 import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
-import com.intel.analytics.bigdl.tensor.{MklDnnTensor, MklDnnType, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.tensor.{MklDnnTensor, MklDnnType, Tensor}
 
 import scala.reflect.ClassTag
 
@@ -54,7 +54,7 @@ class ReLUDnn[T: ClassTag](ip: Boolean = false, value: Float = 0.0f)(
     private var update_primitive: Boolean = true
 
     // for relu, just keep internal format same with input format
-    private var input_format = MklDnn.MemoryFormat.nchw
+    private var input_format = Memory.Format.nchw
 
 
     @transient
@@ -95,9 +95,9 @@ class ReLUDnn[T: ClassTag](ip: Boolean = false, value: Float = 0.0f)(
         }
 
         input_format = input.dim() match {
-          case 1 => MklDnn.MemoryFormat.nc
-          case 2 => MklDnn.MemoryFormat.nc
-          case 4 => MklDnn.MemoryFormat.nchw
+          case 1 => Memory.Format.nc
+          case 2 => Memory.Format.nc
+          case 4 => Memory.Format.nchw
         }
         if (input.getPrimitiveDesc() != 0L) {
           val input_pd = input.getPrimitiveDesc()
@@ -106,20 +106,20 @@ class ReLUDnn[T: ClassTag](ip: Boolean = false, value: Float = 0.0f)(
         } else {
           if (input.dim() == 1) {
             src_md = MklDnnOps.memoryDescInit(1 + input.dim(), Array(1) ++ input.size(),
-              MklDnn.DataType.f32, this.input_format)
+              DataType.F32, this.input_format)
           } else {
-            src_md = MklDnnOps.memoryDescInit(input.dim(), input.size(), MklDnn.DataType.f32,
+            src_md = MklDnnOps.memoryDescInit(input.dim(), input.size(), DataType.F32,
               this.input_format)
           }
           src_memory = MklDnnOps.createMemoryPrimitive(src_md, engine)
         }
 
-        val relu_desc = MklDnnOps.eltwiseForwardDescInit(MklDnn.PropKind.forward,
-          MklDnn.AlgKind.eltwiseRelu, src_md, value, 0)
+        val relu_desc = MklDnnOps.eltwiseForwardDescInit(PropKind.Forward,
+          AlgKind.EltwiseRelu, src_md, value, 0)
         relu_fwd_pd = MklDnnOps.primitiveDescCreate(relu_desc, engine, 0L)
 
         /* create relu dst memory primitive */
-        val dst_pd = MklDnnOps.primitiveDescQueryPd(relu_fwd_pd, MklDnn.Query.dst_pd, 0)
+        val dst_pd = MklDnnOps.primitiveDescQueryPd(relu_fwd_pd, Query.DstPd, 0)
         dst_memory = MklDnn.PrimitiveCreate0(dst_pd)
         output.setPrimitiveDesc(dst_pd)
 
@@ -178,14 +178,14 @@ class ReLUDnn[T: ClassTag](ip: Boolean = false, value: Float = 0.0f)(
             // todo: refactor
             if (gradOutput.dim() == 1) {
               gradOutput_md = MklDnn.MemoryDescInit(gradOutput.dim() + 1,
-                Array(1) ++ gradOutput.size(), MklDnn.DataType.f32, this.input_format)
+                Array(1) ++ gradOutput.size(), DataType.F32, this.input_format)
             } else {
               gradOutput_md = MklDnnOps.memoryDescInit(gradOutput.dim(), gradOutput.size(),
-                MklDnn.DataType.f32, this.input_format)
+                DataType.F32, this.input_format)
             }
           } else {
             gradOutput_md = MklDnnOps.memoryDescInit(gradOutput.dim(), gradOutput.size(),
-              MklDnn.DataType.f32, input.getFormat())
+              DataType.F32, input.getFormat())
           }
         } else {
           val gradOutputFormat =
@@ -196,31 +196,31 @@ class ReLUDnn[T: ClassTag](ip: Boolean = false, value: Float = 0.0f)(
           }
           if (gradOutput.dim() == 1) {
             gradOutput_md = MklDnn.MemoryDescInit(gradOutput.dim() + 1,
-              Array(1) ++ gradOutput.size(), MklDnn.DataType.f32, gradOutputFormat)
+              Array(1) ++ gradOutput.size(), DataType.F32, gradOutputFormat)
           } else {
             gradOutput_md = MklDnn.MemoryDescInit(gradOutput.dim(), gradOutput.size(),
-              MklDnn.DataType.f32, gradOutputFormat)
+              DataType.F32, gradOutputFormat)
           }
           gradOutput_memory = MklDnnOps.initDataMemory(gradOutput.dim(), gradOutput.size(),
-            this.input_format, MklDnn.DataType.f32, engine)
+            this.input_format, DataType.F32, engine)
           // gradOutput_memory = MklDnnOps.createMemoryPrimitive(gradOutput_md, engine)
         }
 
         /* create backward relu descriptor */
-        val bwd_desc = MklDnnOps.eltwiseBackwardDescInit(MklDnn.AlgKind.eltwiseRelu, gradOutput_md,
+        val bwd_desc = MklDnnOps.eltwiseBackwardDescInit(AlgKind.EltwiseRelu, gradOutput_md,
           src_md, value, 0)
         val bwd_pd = MklDnnOps.primitiveDescCreate(bwd_desc, engine, relu_fwd_pd)
 
         /* create memory primities for relu diff src */
         // todo: output with Dense Tensor
         gradInput = MklDnnTensor[Float](input.size())
-        val gradInput_pd = MklDnnOps.primitiveDescQueryPd(bwd_pd, MklDnn.Query.diff_src_pd, 0)
+        val gradInput_pd = MklDnnOps.primitiveDescQueryPd(bwd_pd, Query.DiffSrcPd, 0)
         gradInput_memory = MklDnn.PrimitiveCreate0(gradInput_pd)
         gradInput.setPrimitiveDesc(gradInput_pd)
 
 
         /* create reorder primitives between user gradOutput and pooling gradOutput */
-        val res = MklDnnOps.reorderToInternal(gradOutput_memory, bwd_pd, MklDnn.Query.diff_dst_pd,
+        val res = MklDnnOps.reorderToInternal(gradOutput_memory, bwd_pd, Query.DiffDstPd,
           gradOutputBuffer, gradOutput.size())
         reorder_gradOutput = res._1
         reorder_gradOutput_memory = res._2

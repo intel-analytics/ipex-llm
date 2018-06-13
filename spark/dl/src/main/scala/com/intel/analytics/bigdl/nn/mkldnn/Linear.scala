@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.nn.mkldnn
 
-import com.intel.analytics.bigdl.mkl.{Memory, MklDnn}
+import com.intel.analytics.bigdl.mkl.{DataType, Memory, MklDnn, PropKind, Query, Stream => DnnStream}
 import com.intel.analytics.bigdl.nn.abstractnn.{Initializable, TensorModule}
 import com.intel.analytics.bigdl.nn.{InitializationMethod, RandomUniform, VariableFormat}
 import com.intel.analytics.bigdl.optim.Regularizer
@@ -99,10 +99,10 @@ class Linear[T: ClassTag](
 
   private def init4(tensor: Tensor[T], dataType: Int, format: Int, engine: Long): Long = {
     // TODO refactor for linear
-    val (dim, size) = if (tensor.dim() == 1 && (format == MklDnn.MemoryFormat.nc ||
-      format == MklDnn.MemoryFormat.oi)) {
+    val (dim, size) = if (tensor.dim() == 1 && (format == Memory.Format.nc ||
+      format == Memory.Format.oi)) {
       (2, Array(1) ++ tensor.size())
-//    } else if (tensor.dim() == 2 && (format == MklDnn.MemoryFormat.oihw)) {
+//    } else if (tensor.dim() == 2 && (format == Memory.Format.oihw)) {
 //      (4, tensor.size() ++ Array(1, 1))
     } else {
       (tensor.dim(), tensor.size())
@@ -207,60 +207,60 @@ class Linear[T: ClassTag](
 
       val srcMemDesc = if (input.dim() == 1) {
         MklDnn.MemoryDescInit(input.dim() + 1, Array(1) ++ input.size(),
-          MklDnn.DataType.f32, MklDnn.MemoryFormat.any)
+          DataType.F32, Memory.Format.any)
       } else {
         MklDnn.MemoryDescInit(input.dim(), input.size(),
-          MklDnn.DataType.f32, MklDnn.MemoryFormat.any)
+          DataType.F32, Memory.Format.any)
       }
       val weightMemDesc = if (input.dim() == 4) {
         MklDnn.MemoryDescInit(4, weight.size() ++ Array(1, 1),
-          MklDnn.DataType.f32, MklDnn.MemoryFormat.any)
+          DataType.F32, Memory.Format.any)
       } else {
         MklDnn.MemoryDescInit(weight.dim(), weight.size(),
-          MklDnn.DataType.f32, MklDnn.MemoryFormat.any)
+          DataType.F32, Memory.Format.any)
       }
       val biasMemDesc = MklDnn.MemoryDescInit(bias.dim(), bias.size(),
-        MklDnn.DataType.f32, MklDnn.MemoryFormat.x)
+        DataType.F32, Memory.Format.x)
 
       val dstMemDesc = if (input.dim() == 1) {
         MklDnn.MemoryDescInit(output.dim() + 1, Array(1) ++ output.size(),
-          MklDnn.DataType.f32, MklDnn.MemoryFormat.any)
+          DataType.F32, Memory.Format.any)
       } else {
         MklDnn.MemoryDescInit(output.dim(), output.size(),
-          MklDnn.DataType.f32, MklDnn.MemoryFormat.any)
+          DataType.F32, Memory.Format.any)
       }
 
       val format = input.dim() match {
-        case 1 => MklDnn.MemoryFormat.nc
-        case 2 => MklDnn.MemoryFormat.nc
-        case 4 => MklDnn.MemoryFormat.nchw
+        case 1 => Memory.Format.nc
+        case 2 => Memory.Format.nc
+        case 4 => Memory.Format.nchw
       }
 
       val weightFormat = input.dim() match {
-        case 1 => MklDnn.MemoryFormat.oi
-        case 2 => MklDnn.MemoryFormat.oi
-        case 4 => MklDnn.MemoryFormat.oihw
+        case 1 => Memory.Format.oi
+        case 2 => Memory.Format.oi
+        case 4 => Memory.Format.oihw
       }
 
-      val opDesc = MklDnn.LinearForwardDescInit(MklDnn.PropKind.forward,
+      val opDesc = MklDnn.LinearForwardDescInit(PropKind.Forward,
         srcMemDesc, weightMemDesc, biasMemDesc, dstMemDesc)
       val opPrimDesc = MklDnn.PrimitiveDescCreate(opDesc, engine, 0)
       forwardPrimDesc = opPrimDesc
 
-      inputUserPrim = initUser(input, MklDnn.DataType.f32, format, engine)
+      inputUserPrim = initUser(input, DataType.F32, format, engine)
       val i1 = initInternal(inputUserPrim, opPrimDesc,
-        MklDnn.Query.src_pd)
+        Query.SrcPd)
       inputReorderMemoryPrim = i1._1
       inputReorderPrim = i1._2
-      weightUserPrim = initUser(weight, MklDnn.DataType.f32, weightFormat, engine)
+      weightUserPrim = initUser(weight, DataType.F32, weightFormat, engine)
       val w1 = initInternal(weightUserPrim, opPrimDesc,
-        MklDnn.Query.weights_pd)
+        Query.WeightsPd)
       weightReorderMemoryPrim = w1._1
       weightReorderPrim = w1._2
-      biasUserPrim = initUser(bias, MklDnn.DataType.f32, MklDnn.MemoryFormat.x, engine)
+      biasUserPrim = initUser(bias, DataType.F32, Memory.Format.x, engine)
 
       // we create output primitive with any format
-      outputUserPrim = initUser(output, opPrimDesc, MklDnn.Query.dst_pd, 0)
+      outputUserPrim = initUser(output, opPrimDesc, Query.DstPd, 0)
 
       // ------------------------------------------------------------------------------------------
       val inputMemoryPrim = if (inputReorderPrim != 0) {
@@ -345,7 +345,7 @@ class Linear[T: ClassTag](
     Memory.SetDataHandle(biasUserPrim, prvBias.ptr, 0)
     Memory.SetDataHandle(outputUserPrim, output.asInstanceOf[MklDnnTensor[T]].ptr, 0)
     if (forwardReorderPrimBuffer.nonEmpty) {
-      MklDnn.StreamSubmit(stream, forwardReorderPrimBuffer.length, forwardReorderPrimBuffer.toArray)
+      DnnStream.Submit(stream, forwardReorderPrimBuffer.length, forwardReorderPrimBuffer.toArray)
     }
 
     if (inputReorderPrim != 0L) {
@@ -359,7 +359,7 @@ class Linear[T: ClassTag](
         weightPtr)
     }
 
-    MklDnn.StreamSubmit(stream, forwardPrimBuffer.length, forwardPrimBuffer.toArray)
+    DnnStream.Submit(stream, forwardPrimBuffer.length, forwardPrimBuffer.toArray)
 
     if (shouldConvert) {
       output.asInstanceOf[MklDnnTensor[T]].syncToHeap()
@@ -385,51 +385,51 @@ class Linear[T: ClassTag](
       backwardDataReorderPrimBuffer = ArrayBuffer.empty[Long]
       val diffSrcMemDesc = if (gradInput.dim() == 1) {
         MklDnn.MemoryDescInit(gradInput.dim() + 1, Array(1) ++ gradInput.size(),
-          MklDnn.DataType.f32, MklDnn.MemoryFormat.any)
+          DataType.F32, Memory.Format.any)
       } else {
         MklDnn.MemoryDescInit(gradInput.dim(), gradInput.size(),
-          MklDnn.DataType.f32, MklDnn.MemoryFormat.any)
+          DataType.F32, Memory.Format.any)
       }
 
       val weightMemDesc = if (input.dim() == 4) {
         MklDnn.MemoryDescInit(4,
 //          Array(outputSize) ++ input.size().slice(1, input.dim()),
           weight.size() ++ Array(1, 1),
-          MklDnn.DataType.f32, MklDnn.MemoryFormat.any)
+          DataType.F32, Memory.Format.any)
       } else {
         MklDnn.MemoryDescInit(weight.dim(), weight.size(),
-          MklDnn.DataType.f32, MklDnn.MemoryFormat.any)
+          DataType.F32, Memory.Format.any)
       }
 
       val diffDstMemDesc = if (input.dim() == 1) {
         MklDnn.MemoryDescInit(gradOutput.dim() + 1, Array(1) ++ gradOutput.size(),
-          MklDnn.DataType.f32, MklDnn.MemoryFormat.any)
+          DataType.F32, Memory.Format.any)
       } else {
         MklDnn.MemoryDescInit(gradOutput.dim(), gradOutput.size(),
-          MklDnn.DataType.f32, MklDnn.MemoryFormat.any)
+          DataType.F32, Memory.Format.any)
       }
 
       val format = input.dim() match {
-        case 1 => MklDnn.MemoryFormat.nc
-        case 2 => MklDnn.MemoryFormat.nc
-        case 4 => MklDnn.MemoryFormat.nchw
+        case 1 => Memory.Format.nc
+        case 2 => Memory.Format.nc
+        case 4 => Memory.Format.nchw
       }
 
       val weightFormat = input.dim() match {
-        case 1 => MklDnn.MemoryFormat.oi
-        case 2 => MklDnn.MemoryFormat.oi
-        case 4 => MklDnn.MemoryFormat.oihw
+        case 1 => Memory.Format.oi
+        case 2 => Memory.Format.oi
+        case 4 => Memory.Format.oihw
       }
 
       val opDesc = MklDnn.LinearBackwardDataDescInit(diffSrcMemDesc, weightMemDesc,
         diffDstMemDesc)
       val opPrimDesc = MklDnn.PrimitiveDescCreate(opDesc, engine, forwardPrimDesc)
 
-      gradOutputUserPrim = initUser(gradOutput, MklDnn.DataType.f32, MklDnn.MemoryFormat.nc, engine)
-      val g1 = initInternal(gradOutputUserPrim, opPrimDesc, MklDnn.Query.diff_dst_pd)
+      gradOutputUserPrim = initUser(gradOutput, DataType.F32, Memory.Format.nc, engine)
+      val g1 = initInternal(gradOutputUserPrim, opPrimDesc, Query.DiffDstPd)
       gradOutputReorderMemoryPrim = g1._1
       gradOutputReorderPrim = g1._2
-      gradInputUserPrim = initUser(gradInput, opPrimDesc, MklDnn.Query.diff_src_pd, 0)
+      gradInputUserPrim = initUser(gradInput, opPrimDesc, Query.DiffSrcPd, 0)
 
       val gradOutputMemoryPrim = if (gradOutputReorderPrim != 0) {
         backwardDataReorderPrimBuffer += gradOutputReorderPrim
@@ -505,11 +505,11 @@ class Linear[T: ClassTag](
     Memory.SetDataHandle(biasUserPrim, prvBias.ptr, 0)
     Memory.SetDataHandle(gradInputUserPrim, gradInput.asInstanceOf[MklDnnTensor[T]].ptr, 0)
     if (backwardDataReorderPrimBuffer.nonEmpty) {
-      MklDnn.StreamSubmit(stream, backwardDataReorderPrimBuffer.length,
+      DnnStream.Submit(stream, backwardDataReorderPrimBuffer.length,
         backwardDataReorderPrimBuffer.toArray)
     }
 
-    MklDnn.StreamSubmit(stream, backwardDataPrimBuffer.length, backwardDataPrimBuffer.toArray)
+    DnnStream.Submit(stream, backwardDataPrimBuffer.length, backwardDataPrimBuffer.toArray)
 
     if (gradOutputReorderPrim != 0) {
       if (gradOutput.getTensorType == DenseType && gradOutputPtr != 0) {
@@ -541,29 +541,29 @@ class Linear[T: ClassTag](
       val diffWeightMemDesc = if (input.dim() == 4) {
         MklDnn.MemoryDescInit(4,
           weight.size() ++ Array(1, 1),
-          MklDnn.DataType.f32, MklDnn.MemoryFormat.any)
+          DataType.F32, Memory.Format.any)
       } else {
         MklDnn.MemoryDescInit(gradWeight.dim(), gradWeight.size(),
-          MklDnn.DataType.f32, MklDnn.MemoryFormat.any)
+          DataType.F32, Memory.Format.any)
       }
 
       val diffBiasMemDesc = MklDnn.MemoryDescInit(gradBias.dim(), gradBias.size(),
-        MklDnn.DataType.f32, MklDnn.MemoryFormat.x)
+        DataType.F32, Memory.Format.x)
 
       val srcMemDesc = if (input.dim() == 1) {
         MklDnn.MemoryDescInit(input.dim() + 1, Array(1) ++ input.size(),
-          MklDnn.DataType.f32, MklDnn.MemoryFormat.any)
+          DataType.F32, Memory.Format.any)
       } else {
         MklDnn.MemoryDescInit(input.dim(), input.size(),
-          MklDnn.DataType.f32, MklDnn.MemoryFormat.any)
+          DataType.F32, Memory.Format.any)
       }
 
       val diffDstMemDesc = if (input.dim() == 1) {
         MklDnn.MemoryDescInit(gradOutput.dim() + 1, Array(1) ++ gradOutput.size(),
-          MklDnn.DataType.f32, MklDnn.MemoryFormat.any)
+          DataType.F32, Memory.Format.any)
       } else {
         MklDnn.MemoryDescInit(gradOutput.dim(), gradOutput.size(),
-          MklDnn.DataType.f32, MklDnn.MemoryFormat.any)
+          DataType.F32, Memory.Format.any)
       }
 
       val opDesc = MklDnn.LinearBackwardWeightsDescInit(
@@ -571,22 +571,22 @@ class Linear[T: ClassTag](
       val opPrimDesc = MklDnn.PrimitiveDescCreate(opDesc, engine, forwardPrimDesc)
 
       val weightFormat = input.dim() match {
-        case 1 => MklDnn.MemoryFormat.oi
-        case 2 => MklDnn.MemoryFormat.oi
-        case 4 => MklDnn.MemoryFormat.oihw
+        case 1 => Memory.Format.oi
+        case 2 => Memory.Format.oi
+        case 4 => Memory.Format.oihw
       }
 
       diffWeightUserPrim = if (input.dim() == 4) {
         init4(4, Array(outputSize) ++ input.size().slice(1, input.dim())
-          , MklDnn.DataType.f32, weightFormat, engine)
+          , DataType.F32, weightFormat, engine)
       } else {
-        initUser(diffWeight, MklDnn.DataType.f32, weightFormat, engine)
+        initUser(diffWeight, DataType.F32, weightFormat, engine)
       }
-      val d1 = initInternal(diffWeightUserPrim, opPrimDesc, MklDnn.Query.diff_weights_pd,
+      val d1 = initInternal(diffWeightUserPrim, opPrimDesc, Query.DiffWeightsPd,
         userToPrim = false)
       diffWeightReorderMemoryPrim = d1._1
       diffWeightReorderPrim = d1._2
-      diffBiasUserPrim = initUser(diffBias, MklDnn.DataType.f32, MklDnn.MemoryFormat.x, engine)
+      diffBiasUserPrim = initUser(diffBias, DataType.F32, Memory.Format.x, engine)
 
       val diffWeightMemoryPrim = if (diffWeightReorderPrim != 0) {
         diffWeightReorderMemoryPrim
@@ -674,10 +674,10 @@ class Linear[T: ClassTag](
       gradWeight.storage().array().asInstanceOf[Array[Float]],
       gradWeight.storageOffset() - 1)
 
-    MklDnn.StreamSubmit(stream, backwardWeightPrimBuffer.length, backwardWeightPrimBuffer.toArray)
+    DnnStream.Submit(stream, backwardWeightPrimBuffer.length, backwardWeightPrimBuffer.toArray)
 
     if (backwardWeightReorderPrimBuffer.nonEmpty) {
-      MklDnn.StreamSubmit(stream, backwardWeightReorderPrimBuffer.length,
+      DnnStream.Submit(stream, backwardWeightReorderPrimBuffer.length,
         backwardWeightReorderPrimBuffer.toArray)
     }
 

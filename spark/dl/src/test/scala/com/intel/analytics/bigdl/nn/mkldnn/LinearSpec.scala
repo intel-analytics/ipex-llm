@@ -94,48 +94,48 @@ class LinearSpec extends FlatSpec with Matchers {
     linear.output should be (nnLinear.output)
   }
 
-  "linear updateOutput" should "work much faster than blas" in {
-    val inputSize = 4096
-    val outputSize = 1000
-    val batchSize = 32
-
-    val initWeight = Tensor[Float](outputSize, inputSize).rand()
-    val initBias = Tensor[Float](outputSize).rand()
-
-    val input = Tensor[Float](batchSize, inputSize)
-
-    val linear = Linear(inputSize, outputSize, initWeight = initWeight, initBias = initBias)
-      .setShouldConvert(true)
-
-    val warm = 10
-    val iters = 100
-    manyTimes[Tensor[Float]] {
-      linear.forward(input)
-    }(warm)
-
-    val (costs, _) = manyTimes[Tensor[Float]] {
-      linear.forward(input)
-    }(iters)
-
-    println(linear.output)
-
-    val nnLinear = nn.Linear(inputSize, outputSize, initWeight = initWeight, initBias = initBias)
-    manyTimes[Tensor[Float]] {
-      nnLinear.forward(input)
-    }(warm)
-
-    val (nnCosts, _) = manyTimes[Tensor[Float]] {
-      nnLinear.forward(input)
-    }(iters)
-    println(nnLinear.output)
-
-    println(costs)
-    println(nnCosts)
-    println(speedup(nnCosts, costs))
-
-    linear.output should be (nnLinear.output)
-    (nnCosts - costs) / nnCosts should be > -0.1
-  }
+//  "linear updateOutput" should "work much faster than blas" in {
+//    val inputSize = 4096
+//    val outputSize = 1000
+//    val batchSize = 32
+//
+//    val initWeight = Tensor[Float](outputSize, inputSize).rand(-1, 1)
+//    val initBias = Tensor[Float](outputSize).fill(0)
+//
+//    val input = Tensor[Float](batchSize, inputSize).rand(-1, 1)
+//
+//    val linear = Linear(inputSize, outputSize, initWeight = initWeight, initBias = initBias)
+//      .setShouldConvert(true)
+//
+//    val warm = 10
+//    val iters = 100
+//    manyTimes[Tensor[Float]] {
+//      linear.forward(input)
+//    }(warm)
+//
+//    val (costs, _) = manyTimes[Tensor[Float]] {
+//      linear.forward(input)
+//    }(iters)
+//
+//    println(linear.output)
+//
+//    val nnLinear = nn.Linear(inputSize, outputSize, initWeight = initWeight, initBias = initBias)
+//    manyTimes[Tensor[Float]] {
+//      nnLinear.forward(input)
+//    }(warm)
+//
+//    val (nnCosts, _) = manyTimes[Tensor[Float]] {
+//      nnLinear.forward(input)
+//    }(iters)
+//    println(nnLinear.output)
+//
+//    println(costs)
+//    println(nnCosts)
+//    println(speedup(nnCosts, costs))
+//
+//    linear.output should be (nnLinear.output)
+//    (nnCosts - costs) / nnCosts should be > -0.1
+//  }
 
   "linear updateGradInput" should "work correctly" in {
     val inputSize = 2
@@ -201,51 +201,51 @@ class LinearSpec extends FlatSpec with Matchers {
     linear.gradInput should be (nnLinear.gradInput)
   }
 
-  "linear updateGradInput" should "work much faster than blas" in {
-    val inputSize = 4096
-    val outputSize = 1000
-    val batchSize = 4
-
-    val initWeight = Tensor[Float](outputSize, inputSize).rand(-1, 1)
-    val initBias = Tensor[Float](outputSize).rand(-1, 1)
-
-    val linear = Linear(inputSize, outputSize, initWeight = initWeight, initBias = initBias)
-      .setShouldConvert(false)
-
-    val warm = 10
-    val iters = 100
-
-    val input = Tensor[Float](batchSize, inputSize).rand()
-    val gradOutput = Tensor[Float](batchSize, outputSize).rand()
-
-    linear.forward(input)
-
-    manyTimes[Tensor[Float]]{
-      linear.updateGradInput(input, gradOutput)
-    }(warm)
-
-    val (costs, _) = manyTimes[Tensor[Float]]{
-      linear.updateGradInput(input, gradOutput)
-    }(iters)
-
-    val nnLinear = nn.Linear(inputSize, outputSize, initWeight = initWeight, initBias = initBias)
-    val nnOutput = nnLinear.forward(input)
-
-    manyTimes[Tensor[Float]]{
-      nnLinear.updateGradInput(input, gradOutput)
-    }(warm)
-
-    val (nnCosts, _) = manyTimes[Tensor[Float]]{
-      nnLinear.updateGradInput(input, gradOutput)
-    }(iters)
-
-    println(costs)
-    println(nnCosts)
-    println(speedup(nnCosts, costs))
-
-    linear.gradInput should be (nnLinear.gradInput)
-    (nnCosts - costs) / nnCosts should be > -0.1
-  }
+//  "linear updateGradInput" should "work much faster than blas" in {
+//    val inputSize = 4096
+//    val outputSize = 1000
+//    val batchSize = 4
+//
+//    val initWeight = Tensor[Float](outputSize, inputSize).rand(-1, 1)
+//    val initBias = Tensor[Float](outputSize).rand(-1, 1)
+//
+//    val linear = Linear(inputSize, outputSize, initWeight = initWeight, initBias = initBias)
+//      .setShouldConvert(false)
+//
+//    val warm = 10
+//    val iters = 100
+//
+//    val input = Tensor[Float](batchSize, inputSize).rand()
+//    val gradOutput = Tensor[Float](batchSize, outputSize).rand()
+//
+//    linear.forward(input)
+//
+//    manyTimes[Tensor[Float]]{
+//      linear.updateGradInput(input, gradOutput)
+//    }(warm)
+//
+//    val (costs, _) = manyTimes[Tensor[Float]]{
+//      linear.updateGradInput(input, gradOutput)
+//    }(iters)
+//
+//    val nnLinear = nn.Linear(inputSize, outputSize, initWeight = initWeight, initBias = initBias)
+//    val nnOutput = nnLinear.forward(input)
+//
+//    manyTimes[Tensor[Float]]{
+//      nnLinear.updateGradInput(input, gradOutput)
+//    }(warm)
+//
+//    val (nnCosts, _) = manyTimes[Tensor[Float]]{
+//      nnLinear.updateGradInput(input, gradOutput)
+//    }(iters)
+//
+//    println(costs)
+//    println(nnCosts)
+//    println(speedup(nnCosts, costs))
+//
+//    linear.gradInput should be (nnLinear.gradInput)
+//    (nnCosts - costs) / nnCosts should be > -0.1
+//  }
 
   "linear accGradParameters" should "work correctly" in {
     val inputSize = 2
@@ -323,61 +323,61 @@ class LinearSpec extends FlatSpec with Matchers {
     costs should be < nnCosts
   }
 
-  "linear perf with blas" should "work correctly" in {
-    val inputSize = 4096
-    val outputSize = 1000
-    val batchSize = 32
-
-    val initWeight1 = Tensor[Float](inputSize, inputSize).rand(-1, 1)
-    val initBias1 = Tensor[Float](inputSize).rand(-1, 1)
-
-    val initWeight = Tensor[Float](outputSize, inputSize).rand(-1, 1)
-    val initBias = Tensor[Float](outputSize).rand(-1, 1)
-
-    val linear = nn.Sequential()
-      .add(Linear(inputSize, inputSize, initWeight = initWeight1, initBias = initBias1)
-        .setShouldConvert(false))
-      .add(Linear(inputSize, outputSize, initWeight = initWeight, initBias = initBias)
-        .setShouldConvert(false))
-    val input = Tensor[Float](batchSize, 16, 16, 16).rand(-1, 1)
-    val output = linear.forward(input).toTensor
-    val gradOutput = Tensor[Float]().resizeAs(output).rand(-1, 1)
-
-    val nnLinear = nn.Sequential()
-      .add(nn.View(Array(batchSize, 4096)))
-      .add(nn.Linear(inputSize, inputSize, initWeight = initWeight1, initBias = initBias1))
-      .add(nn.Linear(inputSize, outputSize, initWeight = initWeight, initBias = initBias))
-
-    val warm = 10
-    val iters = 100
-    val time = manyTimes {
-      linear.forward(input)
-      linear.updateGradInput(input, gradOutput)
-      linear.accGradParameters(input, gradOutput)
-    } _
-
-    val nnTime = manyTimes {
-      nnLinear.forward(input)
-      nnLinear.backward(input, gradOutput)
-    } _
-
-    nnTime(warm)
-    time(warm)
-    linear.resetTimes()
-    nnLinear.resetTimes()
-    val (nnCosts, _) = nnTime(iters)
-    val (costs, _) = time(iters)
-
-    println(costs)
-    println(nnCosts)
-    println((nnCosts - costs) / nnCosts)
-    println(speedup(nnCosts, costs))
-
-    linear.getTimes()
-    println(linear.getTimes().mkString("\n"))
-    println(nnLinear.getTimes().mkString("\n"))
-    Math.abs((nnCosts - costs) / nnCosts) should be > 0.05
-  }
+//  "linear perf with blas" should "work correctly" in {
+//    val inputSize = 4096
+//    val outputSize = 1000
+//    val batchSize = 32
+//
+//    val initWeight1 = Tensor[Float](inputSize, inputSize).rand(-1, 1)
+//    val initBias1 = Tensor[Float](inputSize).rand(-1, 1)
+//
+//    val initWeight = Tensor[Float](outputSize, inputSize).rand(-1, 1)
+//    val initBias = Tensor[Float](outputSize).rand(-1, 1)
+//
+//    val linear = nn.Sequential()
+//      .add(Linear(inputSize, inputSize, initWeight = initWeight1, initBias = initBias1)
+//        .setShouldConvert(false))
+//      .add(Linear(inputSize, outputSize, initWeight = initWeight, initBias = initBias)
+//        .setShouldConvert(false))
+//    val input = Tensor[Float](batchSize, 16, 16, 16).rand(-1, 1)
+//    val output = linear.forward(input).toTensor
+//    val gradOutput = Tensor[Float]().resizeAs(output).rand(-1, 1)
+//
+//    val nnLinear = nn.Sequential()
+//      .add(nn.View(Array(batchSize, 4096)))
+//      .add(nn.Linear(inputSize, inputSize, initWeight = initWeight1, initBias = initBias1))
+//      .add(nn.Linear(inputSize, outputSize, initWeight = initWeight, initBias = initBias))
+//
+//    val warm = 10
+//    val iters = 100
+//    val time = manyTimes {
+//      linear.forward(input)
+//      linear.updateGradInput(input, gradOutput)
+//      linear.accGradParameters(input, gradOutput)
+//    } _
+//
+//    val nnTime = manyTimes {
+//      nnLinear.forward(input)
+//      nnLinear.backward(input, gradOutput)
+//    } _
+//
+//    nnTime(warm)
+//    time(warm)
+//    linear.resetTimes()
+//    nnLinear.resetTimes()
+//    val (nnCosts, _) = nnTime(iters)
+//    val (costs, _) = time(iters)
+//
+//    println(costs)
+//    println(nnCosts)
+//    println((nnCosts - costs) / nnCosts)
+//    println(speedup(nnCosts, costs))
+//
+//    linear.getTimes()
+//    println(linear.getTimes().mkString("\n"))
+//    println(nnLinear.getTimes().mkString("\n"))
+//    Math.abs((nnCosts - costs) / nnCosts) should be > 0.05
+//  }
 
   "linear with maxpooling" should "work correctly" in {
     val initWeight = Tensor[Float](4096, 256 * 6 * 6).rand()

@@ -15,42 +15,41 @@
  */
 package com.intel.analytics.bigdl.nn.mkldnn
 
-import com.intel.analytics.bigdl.mkl.{Memory, MklDnn}
-import com.intel.analytics.bigdl.mkl.MklDnn.EngineType
+import com.intel.analytics.bigdl.mkl.{Memory, MklDnn, Engine => DnnEngine, Stream => DnnStream}
 import com.intel.analytics.bigdl.tensor.{DnnTensor, MklDnnTensor, Tensor}
 
 object MklDnnOps {
 
-  private val engineType = EngineType.cpu
+  private val engineType = DnnEngine.Kind.Cpu
 
   def engineCreate(index : Int) : Long = {
     require(MklDnn.isLoaded, "mkldnn isn't loaded")
-    MklDnn.EngineCreate(engineType, index)
+    DnnEngine.Create(engineType, index)
   }
 
   def engineDestroy(engine: Long): Unit = {
     require(MklDnn.isLoaded, "mkldnn isn't loaded")
-    MklDnn.EngineDestroy(engine)
+    DnnEngine.Destroy(engine)
   }
 
   def streamCreate(streamKind: Int): Long = {
     require(MklDnn.isLoaded, "mkldnn isn't loaded")
-    MklDnn.StreamCreate(streamKind)
+    DnnStream.Create(streamKind)
   }
 
   def streamSubmit(loc: Long, block: Int, primitives: Array[Long], length: Int): Unit = {
     require(MklDnn.isLoaded, "mkldnn isn't loaded")
-    MklDnn.StreamSubmit(loc, block, primitives)
+    DnnStream.Submit(loc, block, primitives)
   }
 
   def streamWait(loc: Long, block: Int): Long = {
     require(MklDnn.isLoaded, "mkldnn isn't loaded")
-    MklDnn.StreamWait(loc, block)
+    DnnStream.Wait(loc, block)
   }
 
   def streamDestroy(loc: Long): Unit = {
     require(MklDnn.isLoaded, "mkldnn isn't loaded")
-    MklDnn.StreamDestroy(loc)
+    DnnStream.Destroy(loc)
   }
 
   def memoryDescInit(ndims: Int, dims: Array[Int], dataType: Int, dataFormat: Int): Long = {
@@ -254,7 +253,7 @@ object MklDnnOps {
       }
     }
 
-    MklDnn.StreamSubmit(loc, block, primitives)
+    DnnStream.Submit(loc, block, primitives)
 
     for (i <- 0 to memory_primitives.length - 1) {
       if (handle(i) != 0L) {

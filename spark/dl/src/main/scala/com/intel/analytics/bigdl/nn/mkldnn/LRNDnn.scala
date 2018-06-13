@@ -17,7 +17,7 @@
 package com.intel.analytics.bigdl.nn.mkldnn
 
 import breeze.linalg.*
-import com.intel.analytics.bigdl.mkl.MklDnn
+import com.intel.analytics.bigdl.mkl._
 import com.intel.analytics.bigdl.nn.{SpatialCrossMapLRN, SpatialMaxPooling, Utils}
 import com.intel.analytics.bigdl.nn.abstractnn.{DataFormat, Initializable, TensorModule}
 import com.intel.analytics.bigdl.tensor.{MklDnnTensor, MklDnnType, Tensor}
@@ -70,8 +70,8 @@ class LRNDnn[T: ClassTag](
   var fwd : Long = 0L
 
   //
-  private var input_format = MklDnn.MemoryFormat.nchw
-  private val dataType = MklDnn.DataType.f32
+  private var input_format = Memory.Format.nchw
+  private val dataType = DataType.F32
 
   private var workSpace : MklDnnTensor[Float] = null
   private var inputBuffer : MklDnnTensor[Float] = null
@@ -94,9 +94,9 @@ class LRNDnn[T: ClassTag](
 
     if (update_primitive) {
       input_format = input.dim() match {
-        case 1 => MklDnn.MemoryFormat.x
-        case 2 => MklDnn.MemoryFormat.nc
-        case 4 => MklDnn.MemoryFormat.nchw
+        case 1 => Memory.Format.x
+        case 2 => Memory.Format.nc
+        case 4 => Memory.Format.nchw
       }
       val nbatch = input.size(1)
       val input_size = input.size()
@@ -121,17 +121,17 @@ class LRNDnn[T: ClassTag](
 
       /* create a convolution */
       val lrn_desc = MklDnn.LRNForwardDescInit(
-                        MklDnn.PropKind.forwardTraining, MklDnn.AlgKind.lrnAcrossChannels,
+                        PropKind.ForwardTraining, AlgKind.LrnAcrossChannels,
                         src_md, size, alpha.toFloat, beta.toFloat, k.toFloat)
 
       fwd_pd = MklDnnOps.primitiveDescCreate(lrn_desc, engine, 0L)
 
       /* create memory for dst data, we don't need to reorder it to user data */
-      dst_pd = MklDnnOps.primitiveDescQueryPd(fwd_pd, MklDnn.Query.dst_pd, 0)
+      dst_pd = MklDnnOps.primitiveDescQueryPd(fwd_pd, Query.DstPd, 0)
       dst_memory = MklDnn.PrimitiveCreate0(dst_pd)
       output.setPrimitiveDesc(dst_pd)
 
-      val workdspace_pd = MklDnnOps.primitiveDescQueryPd(fwd_pd, MklDnn.Query.workspace_pd, 0)
+      val workdspace_pd = MklDnnOps.primitiveDescQueryPd(fwd_pd, Query.WorkspacePd, 0)
       work_memory = MklDnn.PrimitiveCreate0(workdspace_pd)
       val workdspace_size = MklDnn.PrimitiveDescGetSize(workdspace_pd)
       // todo: support resize
@@ -185,25 +185,25 @@ class LRNDnn[T: ClassTag](
         gradOutput_memory = MklDnn.PrimitiveCreate0(gradOutput_pd)
       } else {
         gradOutput_md = MklDnn.MemoryDescInit(gradOutput.dim(), gradOutput.size(),
-          MklDnn.DataType.f32, this.input_format)
+          DataType.F32, this.input_format)
         gradOutput_memory = MklDnnOps.createMemoryPrimitive(gradOutput_md, engine)
       }
 
       /* create backward descriptor */
-      val bwd_desc = MklDnn.LRNBackwardDescInit(MklDnn.AlgKind.lrnAcrossChannels, src_md,
+      val bwd_desc = MklDnn.LRNBackwardDescInit(AlgKind.LrnAcrossChannels, src_md,
                             gradOutput_md, size, alpha.toFloat, beta.toFloat, k.toFloat)
       val bwd_pd = MklDnnOps.primitiveDescCreate(bwd_desc, engine, fwd_pd)
 
       /* create memory primities for relu gradInput */
       // todo: output with Dense Tensor
       gradInput = MklDnnTensor[Float](input.size())
-      val gradInput_pd = MklDnnOps.primitiveDescQueryPd(bwd_pd, MklDnn.Query.diff_src_pd, 0)
+      val gradInput_pd = MklDnnOps.primitiveDescQueryPd(bwd_pd, Query.DiffSrcPd, 0)
       gradInput_memory = MklDnn.PrimitiveCreate0(gradInput_pd)
       gradInput.setPrimitiveDesc(gradInput_pd)
       // gradInput.setPrimitiveDesc(MklDnn.PrimitiveDescQueryMemory(dst_pd))
 
       var reorder_gradOutput: Long = 0L
-      val res = MklDnnOps.reorderToInternal(gradOutput_memory, bwd_pd, MklDnn.Query.diff_dst_pd,
+      val res = MklDnnOps.reorderToInternal(gradOutput_memory, bwd_pd, Query.DiffDstPd,
         gradOutputBuffer, gradOutput.size())
       reorder_gradOutput = res._1
       reorder_gradOutput_memory = res._2

@@ -17,7 +17,7 @@
 package com.intel.analytics.bigdl.nn.mkldnn
 
 import breeze.linalg.{*, dim}
-import com.intel.analytics.bigdl.mkl.MklDnn
+import com.intel.analytics.bigdl.mkl._
 import com.intel.analytics.bigdl.nn.{SpatialAveragePooling, SpatialMaxPooling, Utils}
 import com.intel.analytics.bigdl.nn.abstractnn.{DataFormat, Initializable, TensorModule}
 import com.intel.analytics.bigdl.tensor.{MklDnnTensor, MklDnnType, Tensor}
@@ -34,7 +34,7 @@ class PoolingDnnAverage[T: ClassTag](
   padW: Int = 0,
   padH: Int = 0,
   format: DataFormat = DataFormat.NCHW,
-  algKind : Int = MklDnn.AlgKind.poolingAvgExcludePadding)(implicit ev: TensorNumeric[T])
+  algKind : Int = AlgKind.PoolingAvgExcludePadding)(implicit ev: TensorNumeric[T])
   extends TensorModule[Float] with Initializable {
 
   var ceilMode = false
@@ -95,9 +95,9 @@ class PoolingDnnAverage[T: ClassTag](
   val stream_bwd = new ArrayBuffer[Long]
   val stream_acc = new ArrayBuffer[Long]
 
-  private val input_format = MklDnn.MemoryFormat.nchw
-  private val internal_format = MklDnn.MemoryFormat.any
-  private val dataType = MklDnn.DataType.f32
+  private val input_format = Memory.Format.nchw
+  private val internal_format = Memory.Format.any
+  private val dataType = DataType.F32
 
   private val strides = Array(dW, dH)
   private val kernel = Array(kH, kW)
@@ -186,14 +186,14 @@ class PoolingDnnAverage[T: ClassTag](
 
       /* create a convolution */
       val pool_desc = MklDnnOps.poolingForwardDescInit(
-                        MklDnn.PropKind.forwardTraining, algKind,
+                        PropKind.ForwardTraining, algKind,
                         src_md, dst_md, strides, kernel, paddingTL, paddingBR,
                         MklDnn.PaddingKind.mkldnnPaddingZero)
 
       fwd_pd = MklDnnOps.primitiveDescCreate(pool_desc, engine, 0L)
 
       /* create memory for dst data, we don't need to reorder it to user data */
-      dst_pd = MklDnnOps.primitiveDescQueryPd(fwd_pd, MklDnn.Query.dst_pd, 0)
+      dst_pd = MklDnnOps.primitiveDescQueryPd(fwd_pd, Query.DstPd, 0)
       val t1 = MklDnnOps.primitiveDescQueryMemory(dst_pd)
       val gradOutput_format = MklDnnOps.getFormat(t1)
       // println("dst format " + gradOutput_format + this.getName())
@@ -261,13 +261,13 @@ class PoolingDnnAverage[T: ClassTag](
 
 
       /* create memory primities for relu diff src */
-      val gradInput_pd = MklDnnOps.primitiveDescQueryPd(bwd_pd, MklDnn.Query.diff_src_pd, 0)
+      val gradInput_pd = MklDnnOps.primitiveDescQueryPd(bwd_pd, Query.DiffSrcPd, 0)
       gradInput_memory = MklDnn.PrimitiveCreate0(gradInput_pd)
       gradInput.setPrimitiveDesc(gradInput_pd)
 
       /* create reorder primitives between user gradOutput and pooling gradOutput */
       var reorder_gradOutput: Long = 0L
-      val res = MklDnnOps.reorderToInternal(gradOutput_memory, bwd_pd, MklDnn.Query.diff_dst_pd,
+      val res = MklDnnOps.reorderToInternal(gradOutput_memory, bwd_pd, Query.DiffDstPd,
         gradOutputBuffer, gradOutput.size())
       reorder_gradOutput = res._1
       reorder_gradOutput_memory = res._2

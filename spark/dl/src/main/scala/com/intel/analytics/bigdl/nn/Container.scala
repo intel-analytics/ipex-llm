@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.nn
 
-import com.intel.analytics.bigdl.mkl.MklDnn
+import com.intel.analytics.bigdl.mkl.{Engine, Stream => DnnStream}
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -236,7 +236,7 @@ abstract class Container[A <: Activity : ClassTag,
   }
 
   override def createDnnEngine(index : Int): Unit = {
-    engineLocation = MklDnn.EngineCreate(mkldnn_engine_type, index)
+    engineLocation = Engine.Create(mkldnn_engine_type, index)
     modules.map(_.setDnnEngine(engineLocation))
   }
 
@@ -247,7 +247,8 @@ abstract class Container[A <: Activity : ClassTag,
   }
 
   override def createStream(): Unit = {
-    this.streamLocation = MklDnn.StreamCreate(MklDnn.StreamType.eager)
+    import com.intel.analytics.bigdl.mkl
+    this.streamLocation = DnnStream.Create(mkl.Stream.Kind.Eager)
     this.modules.map(_.setStream(streamLocation))
   }
 

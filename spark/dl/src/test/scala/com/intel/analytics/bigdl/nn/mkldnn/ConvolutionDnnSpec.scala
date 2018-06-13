@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.nn.mkldnn
 
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dataset.MiniBatch
-import com.intel.analytics.bigdl.mkl.{Memory, MklDnn}
+import com.intel.analytics.bigdl.mkl._
 import com.intel.analytics.bigdl.models.inception.{Inception_v1, Inception_v2}
 import com.intel.analytics.bigdl.models.resnet.ResNet
 import com.intel.analytics.bigdl.models.resnet.ResNet.DatasetType
@@ -62,13 +62,13 @@ class ConvolutionDnnSpec extends FlatSpec with Matchers {
     val conv_strides = Array(1, 1)
     val conv_padding = Array(1, 1)
 
-    val conv_src_md = MklDnnOps.memoryDescInit(4, conv_src_sizes, MklDnn.DataType.f32, MklDnn.MemoryFormat.any)
-    val conv_weights_md = MklDnnOps.memoryDescInit(4, conv_weights_sizes, MklDnn.DataType.f32, MklDnn.MemoryFormat.any)
-    val conv_bias_md = MklDnnOps.memoryDescInit(1, conv_bias_sizes, MklDnn.DataType.f32, MklDnn.MemoryFormat.x)
-    val conv_dst_md = MklDnnOps.memoryDescInit(4, conv_dst_sizes, MklDnn.DataType.f32, MklDnn.MemoryFormat.any)
+    val conv_src_md = MklDnnOps.memoryDescInit(4, conv_src_sizes, DataType.F32, Memory.Format.any)
+    val conv_weights_md = MklDnnOps.memoryDescInit(4, conv_weights_sizes, DataType.F32, Memory.Format.any)
+    val conv_bias_md = MklDnnOps.memoryDescInit(1, conv_bias_sizes, DataType.F32, Memory.Format.x)
+    val conv_dst_md = MklDnnOps.memoryDescInit(4, conv_dst_sizes, DataType.F32, Memory.Format.any)
 
     val conv_any_desc = MklDnnOps.convForwardDescInit(
-                    MklDnn.PropKind.forward, MklDnn.AlgKind.convolutionDirect,
+                    PropKind.Forward, AlgKind.ConvolutionDirect,
                     conv_src_md, conv_weights_md, conv_bias_md, conv_dst_md,
                     conv_strides, conv_padding, conv_padding, MklDnn.PaddingKind.mkldnnPaddingZero)
 
@@ -79,10 +79,10 @@ class ConvolutionDnnSpec extends FlatSpec with Matchers {
     val dstBuffer = Tensor[Float](conv_dst_sizes)
 
 
-    val engine = MklDnn.EngineCreate(MklDnn.EngineType.cpu, 0)
+    val engine = Engine.Create(Engine.Kind.Cpu, 0)
     val conv_pd = MklDnnOps.primitiveDescCreate(conv_any_desc, engine, 0L)
 
-    var internal_weightFormat = MklDnnOps.queryFormat(conv_pd, MklDnn.Query.weights_pd)
+    var internal_weightFormat = MklDnnOps.queryFormat(conv_pd, Query.WeightsPd)
 
     println("fwd weight format %d ", internal_weightFormat)
   }
