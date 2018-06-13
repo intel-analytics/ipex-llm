@@ -44,6 +44,9 @@ class ZooCallable(object):
 
 
 class ZooKerasLayer(ZooKerasCreator, ZooCallable, KerasLayer):
+    def __init__(self, jvalue, *args, **kwargs):
+        super(ZooKerasLayer, self).__init__(jvalue, *args, **kwargs)
+
     @classmethod
     def of(cls, jvalue, bigdl_type="float"):
-        return KerasLayer(jvalue, bigdl_type)
+        return ZooKerasLayer(jvalue, bigdl_type)
