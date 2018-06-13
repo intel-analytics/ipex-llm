@@ -132,9 +132,6 @@ object DistriOptimizer {
       "score" -> optimMethod.state("score"),
       "parallelism" -> _subModelNumber
     )
-    driverState("lookupDic") = state("lookupDic")
-    // remove lookup Dic in state to avoid log too much log
-    state.delete("lookupDic")
 
     logger.info("Count dataset")
     val countBefore = System.nanoTime()
@@ -610,7 +607,6 @@ object DistriOptimizer {
     val initState = T("parameterPerNodeSizes" -> parameterPerNodeSizes,
     "weights" -> model.parameters()._1)
     parameterProcessors.foreach(_.init(dataset, parameters, initState))
-    state("lookupDic") = initState.getOrElse("lookupDic", null)
 
     val models = dataset.originRDD().mapPartitions(_ => {
       val (broadcastCriterion, broadcastState, broadcastMethod,
