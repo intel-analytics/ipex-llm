@@ -33,17 +33,6 @@ import scala.collection.mutable
 private[bigdl] trait ParameterProcessor
   extends Serializable {
   /**
-   * Get meta data, only executed once in driver
-   *
-   * @param dataset a RDD of training data
-   * @param parameters [[AllReduceParameter]]
-   * @param state A table contained needed information
-   */
-  def init[T](dataset: DistributedDataSet[MiniBatch[T]],
-    parameters: AllReduceParameter[T],
-    state: Table)(implicit ev: TensorNumeric[T]) : Unit = {}
-
-  /**
    * Collect global data according to operations list, usually executed in driver
    *
    * @param models cached models

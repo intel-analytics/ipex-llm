@@ -586,7 +586,9 @@ object DistriOptimizer {
     val nExecutor = Engine.nodeNumber()
     val executorCores = Engine.coreNumber()
 
-    val parameterPerNodeSizes = dataset.originRDD().mapPartitions { _ =>
+    val models = dataset.originRDD().mapPartitions(_ => {
+      val (broadcastCriterion, broadcastState, broadcastMethod,
+      broadcastOptim) = broadcast.value
       if (!Engine.checkSingleton()) {
         if (checkSingleton) {
           require(Engine.checkSingleton(), "Partitions of the training data are not evenly" +
@@ -600,17 +602,6 @@ object DistriOptimizer {
         }
       }
       Engine.setNodeAndCore(nExecutor, executorCores)
-      val weights = modelBroadcast.value(false).getParameters()._1
-      Iterator.single(parameters.init(weights))
-    }.collect()
-
-    val initState = T("parameterPerNodeSizes" -> parameterPerNodeSizes,
-    "weights" -> model.parameters()._1)
-    parameterProcessors.foreach(_.init(dataset, parameters, initState))
-
-    val models = dataset.originRDD().mapPartitions(_ => {
-      val (broadcastCriterion, broadcastState, broadcastMethod,
-      broadcastOptim) = broadcast.value
       val cached = (0 until _subModelNumber).map { _ =>
         val localModel = modelBroadcast.value(true)
         val localCriterion = broadcastCriterion.cloneCriterion()
