@@ -1126,6 +1126,9 @@ private[tensor] class SparseTensor[@specialized(Float, Double) T: ClassTag](
 
   override def sumSquare(): T =
     throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+
+  override def toQuantizedTensor: QuantizedTensor[T] =
+    throw new IllegalArgumentException("SparseTensor cannot be cast to QuantizedTensor")
 }
 
 object SparseTensor{

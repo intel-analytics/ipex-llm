@@ -18,11 +18,13 @@ package com.intel.analytics.bigdl.optim
 
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dataset.{SampleToMiniBatch, _}
+import com.intel.analytics.bigdl.nn.Container
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
+import com.intel.analytics.bigdl.nn.quantized.QuantizedModule
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.{Engine, MklBlas, Util}
-import com.intel.analytics.bigdl.utils.Util._
 import com.intel.analytics.bigdl.transform.vision.image.{ImageFeature, ImageFrame, LocalImageFrame}
+import com.intel.analytics.bigdl.utils.Util._
+import com.intel.analytics.bigdl.utils.{Engine, MklBlas, Util}
 import org.apache.log4j.Logger
 
 import scala.reflect.ClassTag
@@ -175,6 +177,26 @@ class LocalPredictor[T: ClassTag] private[optim](model: Module[T],
     }).flatten
 
     ImageFrame.array(result.toArray)
+  }
+
+  /**
+   * if the model is a quantized model, we should release the native resources except the weights
+   */
+  def shutdown(): Unit = {
+    def release(model: Module[T]): Unit = {
+      model match {
+        case container: Container[_, _, T] => container.modules.foreach(release)
+        case module if module.isInstanceOf[QuantizedModule[T]] =>
+          // Only release the buffer except weights. Because `workingModels` will share the weights
+          // with the original model
+          module.asInstanceOf[QuantizedModule[T]].releaseExceptWeights()
+        case _ =>
+      }
+    }
+
+    workingModels.foreach { model =>
+      release(model)
+    }
   }
 }
 

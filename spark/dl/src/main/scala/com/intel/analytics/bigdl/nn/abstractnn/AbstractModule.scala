@@ -665,8 +665,11 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
         Predictor(this, featurePaddingParam, batchPerPartition)
           .predictImage(distributedImageFrame, outputLayer, shareBuffer, predictKey)
       case localImageFrame: LocalImageFrame =>
-        LocalPredictor(this, featurePaddingParam, batchPerPartition)
-          .predictImage(localImageFrame, outputLayer, shareBuffer, predictKey)
+        val predictor = LocalPredictor(this, featurePaddingParam, batchPerPartition)
+        val imageFrame = predictor.predictImage(localImageFrame, outputLayer, shareBuffer,
+          predictKey)
+        predictor.shutdown()
+        imageFrame
     }
   }
 
