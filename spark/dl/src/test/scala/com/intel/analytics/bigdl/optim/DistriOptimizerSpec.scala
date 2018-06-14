@@ -230,6 +230,7 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
   }
 
   "Train with MSE and LBFGS" should "be good" in {
+    LoggerFilter.redirectSparkInfoLogs()
     RandomGenerator.RNG.setSeed(10)
     val optimizer = new DistriOptimizer(
       mse,
@@ -246,6 +247,7 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
   }
 
   "Train with MSE and SGD" should "be trained with good result" in {
+    LoggerFilter.redirectSparkInfoLogs()
     val mm = mse
     mm.getParameters()._1.fill(0.125)
     val optimizer = new DistriOptimizer[Double](mm, dataSet, new MSECriterion[Double]())
@@ -261,6 +263,7 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
   }
 
   "Train with MSE and SGD" should "be trained with good result after reset model" in {
+    LoggerFilter.redirectSparkInfoLogs()
     var mm = bn
     val optimizer = new DistriOptimizer[Double](mm, dataSet, new MSECriterion[Double]())
       .setState(T("learningRate" -> 20.0))
@@ -730,6 +733,42 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val model2 = optimizer2.optimize()
     val newG = model2.getParameters()._2
     assert(expectedG.almostEqual(newG, 0.0), "clipbynorm2 should generate correct gradient")
+  }
+
+  "Train with MSE and SGD with constant clipping" should "be trained with good result" in {
+    LoggerFilter.redirectSparkInfoLogs()
+    val mm = mse
+    mm.getParameters()._1.fill(0.125)
+    val optimizer = new DistriOptimizer[Double](mm, dataSet, new MSECriterion[Double]())
+      .setState(T("learningRate" -> 20.0))
+      .setEndWhen(Trigger.maxEpoch(1))
+      .setConstantGradientClipping(-0.001, 0.001)
+
+    val model = optimizer.optimize()
+
+    val result1 = model.forward(input1).asInstanceOf[Tensor[Double]]
+    result1(Array(1)) should be(0.0 +- 5e-2)
+
+    val result2 = model.forward(input2).asInstanceOf[Tensor[Double]]
+    result2(Array(1)) should be(1.0 +- 5e-2)
+  }
+
+  "Train with MSE and SGD with l2 clipping" should "be trained with good result" in {
+    LoggerFilter.redirectSparkInfoLogs()
+    val mm = mse
+    mm.getParameters()._1.fill(0.125)
+    val optimizer = new DistriOptimizer[Double](mm, dataSet, new MSECriterion[Double]())
+      .setState(T("learningRate" -> 20.0))
+      .setEndWhen(Trigger.maxEpoch(1))
+      .setGradientClippingByl2Norm(0.002)
+
+    val model = optimizer.optimize()
+
+    val result1 = model.forward(input1).asInstanceOf[Tensor[Double]]
+    result1(Array(1)) should be(0.0 +- 5e-2)
+
+    val result2 = model.forward(input2).asInstanceOf[Tensor[Double]]
+    result2(Array(1)) should be(1.0 +- 5e-2)
   }
 
   "optimMethod state" should "be updated correctly after optimize" in {
