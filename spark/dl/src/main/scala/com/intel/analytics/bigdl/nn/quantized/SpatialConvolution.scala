@@ -274,10 +274,6 @@ private[bigdl] class SpatialConvolution[T: ClassTag](
     weight.foreach(_.asInstanceOf[QuantizedTensor[T]].release())
     data.release()
   }
-
-  override def releaseExceptWeights(): Unit = {
-    data.release()
-  }
 }
 
 object SpatialConvolution extends QuantSerializer {

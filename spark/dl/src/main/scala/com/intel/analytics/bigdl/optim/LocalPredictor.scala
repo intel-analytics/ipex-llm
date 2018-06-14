@@ -60,15 +60,19 @@ class LocalPredictor[T: ClassTag] private[optim](model: Module[T],
     case _ => throw new IllegalArgumentException
   }
 
+  // we should clone a new model which has no impact to origin model
+  private val clonedModel = model.cloneModule()
+
   private val workingModels = {
-    val weightsBias = Util.getAndClearWeightBias(model.parameters())
+
+    val weightsBias = Util.getAndClearWeightBias(clonedModel.parameters())
     val models = (1 to subModelNumber).map(_ => {
-      val submodel = model.cloneModule().evaluate()
+      val submodel = clonedModel.cloneModule().evaluate()
       putWeightBias(weightsBias, submodel)
       submodel
     }).toArray
-    Util.putWeightBias(weightsBias, model)
-    Util.initGradWeightBias(weightsBias, model)
+    Util.putWeightBias(weightsBias, clonedModel)
+    Util.initGradWeightBias(weightsBias, clonedModel)
     models
   }
 
@@ -187,9 +191,7 @@ class LocalPredictor[T: ClassTag] private[optim](model: Module[T],
       model match {
         case container: Container[_, _, T] => container.modules.foreach(release)
         case module if module.isInstanceOf[QuantizedModule[T]] =>
-          // Only release the buffer except weights. Because `workingModels` will share the weights
-          // with the original model
-          module.asInstanceOf[QuantizedModule[T]].releaseExceptWeights()
+          module.asInstanceOf[QuantizedModule[T]].release()
         case _ =>
       }
     }
@@ -197,6 +199,8 @@ class LocalPredictor[T: ClassTag] private[optim](model: Module[T],
     workingModels.foreach { model =>
       release(model)
     }
+
+    release(clonedModel)
   }
 }
 

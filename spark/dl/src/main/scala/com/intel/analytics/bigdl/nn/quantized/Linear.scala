@@ -145,10 +145,6 @@ private[bigdl] class Linear[T: ClassTag](
     weight.release()
     data.release()
   }
-
-  override def releaseExceptWeights(): Unit = {
-    data.release()
-  }
 }
 
 

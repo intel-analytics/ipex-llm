@@ -26,5 +26,4 @@ abstract class QuantizedModule[T: ClassTag](length: Int)(
   val empty: Tensor[T] = Tensor[T](1)
 
   def release(): Unit
-  def releaseExceptWeights(): Unit
 }
