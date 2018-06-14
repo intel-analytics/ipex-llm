@@ -153,22 +153,27 @@ class TFNet private(graphDef: Array[Byte],
   }
 
   private def bigdl2Tf(t: Tensor[Float], dataType: DataType): TTensor[_] = {
+
+    require(t.isContiguous(), "input to tfnet must be contiguous")
     val shape = t.size().map(_.toLong)
     val arr = t.storage().array()
+    val offset: Int = t.storageOffset() - 1
+    val length: Int = shape.product.toInt
+
     if (dataType == DataType.FLOAT) {
-      val buffer = FloatBuffer.wrap(arr)
+      val buffer = FloatBuffer.wrap(arr, offset, length)
       TTensor.create(shape, buffer)
     } else if (dataType == DataType.UINT8) {
-      val buffer = ByteBuffer.wrap(TFNet.floatToUint8(arr))
+      val buffer = ByteBuffer.wrap(TFNet.floatToUint8(arr), offset, length)
       TTensor.create(classOf[UInt8], shape, buffer)
     } else if (dataType == DataType.INT32) {
-      val buffer = IntBuffer.wrap(TFNet.floatToInt(arr))
+      val buffer = IntBuffer.wrap(TFNet.floatToInt(arr), offset, length)
       TTensor.create(shape, buffer)
     } else if (dataType == DataType.INT64) {
-      val buffer = LongBuffer.wrap(TFNet.floatToLong(arr))
+      val buffer = LongBuffer.wrap(TFNet.floatToLong(arr), offset, length)
       TTensor.create(shape, buffer)
     } else if (dataType == DataType.DOUBLE) {
-      val buffer = DoubleBuffer.wrap(TFNet.floatToDouble(arr))
+      val buffer = DoubleBuffer.wrap(TFNet.floatToDouble(arr), offset, length)
       TTensor.create(shape, buffer)
     } else {
       throw new Exception(s"data type ${dataType} are not supported")
