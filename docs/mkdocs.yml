@@ -27,7 +27,7 @@ pages:
 - Programming Guide: 
   - Pipeline APIs:
     - DataFrame and ML Pipeline: ProgrammingGuide/nnframes.md
-    - Autograd: ProgrammingGuide/autograd.md
+    - Autograd: ProgrammingGuide/math.md
     - Transfer Learning: ProgrammingGuide/transferlearning.md
   - Feature Engineering:
     - Working with Images: ProgrammingGuide/workingwithimages.md
@@ -42,7 +42,9 @@ pages:
 - API Guide:
   - Pipeline APIs:
     - NNFrames: APIGuide/PipelineAPI/nnframes.md
-    - Autograd: APIGuide/PipelineAPI/autograd.md
+    - Autograd:
+        - Math: APIGuide/PipelineAPI/math.md
+        - Variable: APIGuide/PipelineAPI/variable.md
     - Net: APIGuide/PipelineAPI/net.md
   - Feature Engineering:
     - Image: APIGuide/FeatureEngineering/image.md

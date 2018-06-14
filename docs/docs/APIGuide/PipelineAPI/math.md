@@ -1,19 +1,3 @@
-## Basic operators: `+ - * /`
-Those are supported as element-wise operation.
-
-**Scala example**
-```scala
-x + 1.0
-x + y
-```
-
-
-**Python example**
-```python
-x + 1.0
-x + y
-```
-
 
 ## mean
 
@@ -227,4 +211,56 @@ softplus(x: Variable[T])
 softplus(x):
 ```
 
+
+## stack
+
+   Stacks a list of rank `R` tensors into a rank `R+1` tensor.
+   You should start from 1 as dim 0 is for batch.
+   - inputs: List of variables (tensors)
+   - axis: xis along which to perform stacking.
+   
+**Scala example**
+```scala
+def stack[T: ClassTag](inputs: List[Variable[T]], axis: Int = 1)
+```
+
+
+**Python example**
+```python
+def stack(inputs, axis=1)
+```
+
+
+## expand_dims
+
+   Adds a 1-sized dimension at index "axis".
+   
+   
+**Scala example**
+```scala
+def expandDims[T: ClassTag](x: Variable[T], axis: Int)
+```
+
+
+**Python example**
+```python
+expand_dims(x, axis)
+```
+
+
+## contiguous
+
+  Turn the output and grad to be contiguous for the input Variable
+   
+   
+**Scala example**
+```scala
+def contiguous[T: ClassTag](input: Variable[T])
+```
+
+
+**Python example**
+```python
+def contiguous(x)
+```
 
