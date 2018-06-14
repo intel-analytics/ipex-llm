@@ -164,14 +164,13 @@ class PythonAutoGrad[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZ
     a.squeeze(dim)
   }
 
-  def narrow(a: Variable[T], dim: Int, startIndex: Int, length: Int): Variable[T] = {
-    a.narrow(dim, startIndex, length)
+  def slice(a: Variable[T], dim: Int, startIndex: Int, length: Int): Variable[T] = {
+    a.slice(dim, startIndex, length)
   }
 
   def indexSelect(a: Variable[T], dim: Int, index: Int): Variable[T] = {
     a.indexSelect(dim, index)
   }
-
 
   def neg(a: Variable[T]): Variable[T] = {
     a.unary_-()
@@ -187,5 +186,17 @@ class PythonAutoGrad[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZ
 
   def softplus(a: Variable[T]): Variable[T] = {
     autograd.AutoGrad.softplus(a)
+  }
+
+  def expandDims(a: Variable[T], axis: Int): Variable[T] = {
+    autograd.AutoGrad.expandDims(a, axis)
+  }
+
+  def stack(inputs: JList[Variable[T]], axis: Int): Variable[T] = {
+    autograd.AutoGrad.stack(inputs.asScala.toList, axis)
+  }
+
+  def contiguous(input: Variable[T]): Variable[T] = {
+    autograd.AutoGrad.contiguous(input)
   }
 }
