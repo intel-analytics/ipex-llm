@@ -106,10 +106,7 @@ abstract class KerasNet[T: ClassTag](implicit ev: TensorNumeric[T])
       loss: (Variable[T], Variable[T]) => Variable[T],
       metrics: List[ValidationMethod[T]])(implicit ev: TensorNumeric[T]): Unit = {
     LoggerFilter.redirectSparkInfoLogs()
-    val yReal = Variable(KerasUtils.removeBatch(this.getOutputShape()))
-    val yPred = Variable(KerasUtils.removeBatch(this.getOutputShape()))
-    val lossVar = loss(yReal, yPred)
-    val customLoss = new CustomLossWithVariable(Array(yReal, yPred), lossVar)
+    val customLoss = CustomLoss[T](loss, KerasUtils.removeBatch(this.getOutputShape()))
     this.compile(optimizer, customLoss, metrics)
   }
 
