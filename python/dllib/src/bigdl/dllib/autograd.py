@@ -64,6 +64,27 @@ def sum(x, axis=0, keepDims=False):
     return Variable.from_jvalue(callBigDlFunc("float", "sum", x, axis, keepDims))
 
 
+def stack(inputs, axis=1):
+    """
+    Stacks a list of rank `R` tensors into a rank `R+1` tensor.
+    You should start from 1 as dim 0 is for batch.
+    :param inputs: List of variables (tensors).
+    :param axis: xis along which to perform stacking.
+    :return:
+    """
+    return Variable.from_jvalue(callBigDlFunc("float", "stack", inputs, axis))
+
+
+def expand_dims(x, axis):
+    """
+   Adds a 1-sized dimension at index "axis".
+    :param x: a Variable to be expanded
+    :param axis: axis Position where to add a new axis.
+    You should start from 1 as dim 0 is for batch.
+    """
+    return Variable.from_jvalue(callBigDlFunc("float", "expandDims", x, axis))
+
+
 def clip(x, min, max):
     """
     Element-wise value clipping.
@@ -73,6 +94,14 @@ def clip(x, min, max):
     :return: A variable.
     """
     return Variable.from_jvalue(callBigDlFunc("float", "clip", x, float(min), float(max)))
+
+
+def contiguous(x):
+    """
+    Turn the output and grad to be contiguous for the input Variable
+    :param x: A variable.
+    """
+    return Variable.from_jvalue(callBigDlFunc("float", "softplus", x))
 
 
 def square(x):
@@ -242,12 +271,54 @@ class Variable(kbase.ZooKerasCreator):
         return neg(self)
 
     def squeeze(self, dim=None):
+        """
+        Delete the singleton dimension(s).
+        The batch dimension needs to be unchanged.
+        For example, if input has size (2, 1, 3, 4, 1):
+        Squeeze(dim = 1) will give output size (2, 3, 4, 1)
+        Squeeze(dims = null) will give output size (2, 3, 4)
+        """
         return Variable.from_jvalue(callBigDlFunc("float", "squeeze", self, dim))
 
-    def narrow(self, dim, start_index, length):
-        return Variable.from_jvalue(callBigDlFunc("float", "narrow", self, start_index, length))
+    def slice(self, dim, start_index, length):
+        """
+        Same as narrow in Torch.
+        Slice the input with the number of dimensions not being reduced.
+        The batch dimension needs to be unchanged.
+        For example, if input is:
+        1 2 3
+        4 5 6
+        slice(1, 1, 2) will give output
+        2 3
+        5 6
+        slice(1, 2, -1) will give output
+        3
+        6
+        :param  dim The dimension to narrow. 0-based index. Cannot narrow the batch dimension.
+                -1 means the last dimension of the input.
+        :param  startIndex Non-negative integer.
+                The start index on the given dimension. 0-based index.
+        :param length The length to be sliced. Default is 1.
+        """
+        return Variable.from_jvalue(
+            callBigDlFunc("float", "slice", self, dim, start_index, length))
 
     def index_select(self, dim, index):
+        """
+           Select an index of the input in the given dim and return the subset part.
+           The batch dimension needs to be unchanged.
+           The selected dim would be remove after this operation.
+           For example, if input is:
+           1 2 3
+           4 5 6
+           Select(1, 1) will give output [2 5]
+           Select(1, -1) will give output [3 6]
+        :param dim: The dimension to select. 0-based index. Cannot select the batch dimension.
+                -1 means the last dimension of the input.
+        :param index: The index of the dimension to be selected. 0-based index.
+               -1 means the last dimension of the input.
+        :return:
+        """
         return Variable.from_jvalue(callBigDlFunc("float", "indexSelect", self, dim, index))
 
     # TODO: we need a Shape mapping here.
