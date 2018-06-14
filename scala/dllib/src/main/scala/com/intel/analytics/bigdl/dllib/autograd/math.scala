@@ -16,7 +16,7 @@
 
 package com.intel.analytics.zoo.pipeline.api.autograd
 
-import com.intel.analytics.bigdl.nn.Container
+import com.intel.analytics.bigdl.nn.{Container, Unsqueeze}
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, InferShape}
 import com.intel.analytics.bigdl.nn.keras.KerasLayer
@@ -141,6 +141,39 @@ object AutoGrad {
     val o: KerasLayer[Activity, Activity, T] =
       new KerasLayerWrapper(bnn.SoftPlus[T]().asInstanceOf[AbstractModule[Activity, Activity, T]])
     Variable(o.inputs(a.node))
+  }
+
+  /**
+   * Stacks a list of rank `R` tensors into a rank `R+1` tensor.
+   * @param inputs: List of variables (tensors).
+   * @param axis xis along which to perform stacking.
+   */
+  def stack[T: ClassTag](inputs: List[Variable[T]], axis: Int = 1)(
+      implicit ev: TensorNumeric[T]): Variable[T] = {
+    val stacked = Variable(Merge.merge[T](inputs.map(expandDims(_, axis).node), mode = "concat",
+      concatAxis = axis))
+    contiguous(stacked)
+  }
+
+  /**
+   * Adds a 1-sized dimension at index "axis".
+   * @param axis Position where to add a new axis. You should start from 1 as dim 0 is for batch.
+   */
+  def expandDims[T: ClassTag](x: Variable[T], axis: Int)(
+      implicit ev: TensorNumeric[T]): Variable[T] = {
+    val layer = new KerasLayerWrapper[T](
+      bnn.Unsqueeze[T](pos = axis + 1).asInstanceOf[AbstractModule[Activity, Activity, T]])
+    val expanded = Variable(layer.inputs(x.node))
+    contiguous(expanded)
+  }
+
+  /**
+   * Turn the output and grad to be contiguous for the input Variable
+   */
+  def contiguous[T: ClassTag](input: Variable[T])(implicit ev: TensorNumeric[T]): Variable[T] = {
+    val contiguousNode = new KerasLayerWrapper(
+      bnn.Contiguous[T]().asInstanceOf[AbstractModule[Activity, Activity, T]]).inputs(input.node)
+    Variable(contiguousNode)
   }
 }
 
@@ -268,19 +301,24 @@ class Variable[T: ClassTag] private[zoo] (val node: ModuleNode[T], var name: Str
   }
 
   /**
-   * Narrow the input with the number of dimensions not being reduced.
+   * Same as Narrow in torch.
+   * Slice the input with the number of dimensions not being reduced.
    * The batch dimension needs to be unchanged.
    * For example, if input is:
    * 1 2 3
    * 4 5 6
-   * Narrow(1, 1, 2) will give output
+   * slice(1, 1, 2) will give output
    * 2 3
    * 5 6
-   * Narrow(1, 2, -1) will give output
+   * slice(1, 2, -1) will give output
    * 3
    * 6
+   *  @param dim The dimension to narrow. 0-based index. Cannot narrow the batch dimension.
+   *            -1 means the last dimension of the input.
+   * @param startIndex Non-negative integer. The start index on the given dimension. 0-based index.
+   * @param length The length to be sliced. Default is 1.
    */
-  def narrow(dim: Int, startIndex: Int, length: Int): Variable[T] = {
+  def slice(dim: Int, startIndex: Int, length: Int): Variable[T] = {
     val layer = Narrow[T](dim = dim,
       offset = startIndex,
       length = length)
