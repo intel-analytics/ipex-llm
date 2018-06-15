@@ -43,8 +43,9 @@ object PythonNNFrames {
 
 class PythonNNFrames[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonBigDL[T] {
 
-  def nnReadImage(path: String, sc: JavaSparkContext, minParitions: Int): DataFrame = {
-    NNImageReader.readImages(path, sc.sc, minParitions)
+  def nnReadImage(path: String, sc: JavaSparkContext, minParitions: Int,
+                  resizeH: Int, resizeW: Int): DataFrame = {
+    NNImageReader.readImages(path, sc.sc, minParitions, resizeH, resizeW)
   }
 
   def createNNEstimator(
