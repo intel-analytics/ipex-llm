@@ -43,11 +43,12 @@ class PythonImageFeature[T: ClassTag](implicit ev: TensorNumeric[T]) extends Pyt
     imageSet.transform(transformer)
   }
 
-  def readImageSet(path: String, sc: JavaSparkContext, minPartitions: Int): ImageSet = {
+  def readImageSet(path: String, sc: JavaSparkContext, minPartitions: Int,
+                   resizeH: Int, resizeW: Int): ImageSet = {
     if (sc == null) {
-      ImageSet.read(path, null, minPartitions)
+      ImageSet.read(path, null, minPartitions, resizeH, resizeW)
     } else {
-      ImageSet.read(path, sc.sc, minPartitions)
+      ImageSet.read(path, sc.sc, minPartitions, resizeH, resizeW)
     }
   }
 
