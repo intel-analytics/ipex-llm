@@ -124,4 +124,9 @@ class NNImageReaderSpec extends FlatSpec with Matchers with BeforeAndAfter {
     assert(imageOrigin == extractedOrigin)
   }
 
+  "image reader with resize" should "work" in {
+    val imageDF = NNImageReader.readImages(pascalResource.getFile, sc,
+      resizeH = 128, resizeW = 128)
+    assert(imageDF.count() == 1)
+  }
 }
