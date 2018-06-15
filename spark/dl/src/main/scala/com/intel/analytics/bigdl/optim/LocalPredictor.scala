@@ -184,23 +184,11 @@ class LocalPredictor[T: ClassTag] private[optim](model: Module[T],
   }
 
   /**
-   * if the model is a quantized model, we should release the native resources except the weights
+   * `shutdown` will release all native resources.
    */
   def shutdown(): Unit = {
-    def release(model: Module[T]): Unit = {
-      model match {
-        case container: Container[_, _, T] => container.modules.foreach(release)
-        case module if module.isInstanceOf[QuantizedModule[T]] =>
-          module.asInstanceOf[QuantizedModule[T]].release()
-        case _ =>
-      }
-    }
-
-    workingModels.foreach { model =>
-      release(model)
-    }
-
-    release(clonedModel)
+    workingModels.foreach(_.release())
+    clonedModel.release()
   }
 }
 

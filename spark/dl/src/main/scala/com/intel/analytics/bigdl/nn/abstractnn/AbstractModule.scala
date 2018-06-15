@@ -1097,5 +1097,11 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
    * @return
    */
   private[nn] def skipDuplicateCheck(): Boolean = false
+
+  /**
+   * if the model contains native resources such as aligned memory, we should release it by manual.
+   * JVM GC can't release them reliably.
+   */
+  def release(): Unit = {}
 }
 

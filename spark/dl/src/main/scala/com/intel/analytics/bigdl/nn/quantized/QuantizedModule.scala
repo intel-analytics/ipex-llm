@@ -24,6 +24,4 @@ import scala.reflect.ClassTag
 abstract class QuantizedModule[T: ClassTag](length: Int)(
   implicit ev: TensorNumeric[T]) extends TensorModule[T] {
   val empty: Tensor[T] = Tensor[T](1)
-
-  def release(): Unit
 }
