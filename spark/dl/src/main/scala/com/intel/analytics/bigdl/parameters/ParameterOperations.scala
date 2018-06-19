@@ -94,10 +94,10 @@ private[bigdl] class L2NormClippingProcessor(l2NormThreshold: Double)
     state: Table)(implicit ev: TensorNumeric[T]) : Unit = {
     val numFinishedModel = state.get[Int]("numFinishedModel").get
     val parallelism = state.get[Int]("parallelism").get
-    val aggregatedG = state.get[Boolean]("aggregateG").get
+    val isGradientUpdated = state.get[Boolean]("isGradientUpdated").get
 
     val sumSquare = models.mapPartitions(modelIter => {
-      if (!aggregatedG) {
+      if (!isGradientUpdated) {
         val getG = System.nanoTime()
         parameters.aggregateGradientPartition(numFinishedModel)
         metrics.add("aggregrateGradientParition average executor",
@@ -107,7 +107,7 @@ private[bigdl] class L2NormClippingProcessor(l2NormThreshold: Double)
       Iterator.single(sum)
     }).reduce(_ + _)
 
-    state("aggregateG") = true
+    state("isGradientUpdated") = true
     state("l2Norm") = math.sqrt(sumSquare)
   }
 

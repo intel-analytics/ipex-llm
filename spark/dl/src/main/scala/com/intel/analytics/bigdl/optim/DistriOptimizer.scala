@@ -310,18 +310,18 @@ object DistriOptimizer {
         val value = lossSum.value / numFinishedModelUpdates
 
         driverState("numFinishedModel") = numFinishedModelUpdates
-        // aggregateG is flag to mark whether gradient is updated. May changed in the future.
-        driverState("aggregateG") = false
-        // parameterProcesser may aggregate gradient,
-        // and change the value of aggregateG in driverState.
+        // isGradientUpdated is flag to mark whether gradient is updated. May changed in the future.
+        driverState("isGradientUpdated") = false
+        // parameterProcesser like L2NormClippingProcessor may aggregate gradient,
+        // and change the value of isGradientUpdated in driverState.
         parameterProcessers.foreach(_.collectGlobalData(models, parameters, metrics, driverState))
-        val aggregateG = driverState[Boolean]("aggregateG")
+        val isGradientUpdated = driverState[Boolean]("isGradientUpdated")
         val stateBroadcast = sc.broadcast(driverState)
 
         models.mapPartitions { modelIter =>
           val modelCache = modelIter.next()
           // if parameterProcesser has aggregated gradient, we can skip this aggregation.
-          if (!aggregateG) {
+          if (!isGradientUpdated) {
             val getG = System.nanoTime()
             parameters.aggregateGradientPartition(numFinishedModelUpdates)
             driverMetrics.add("aggregrateGradientParition average executor",
@@ -350,7 +350,7 @@ object DistriOptimizer {
         recordsProcessedThisEpoch += recordsNum.value
         val end = System.nanoTime()
         wallClockTime += end - start
-        driverState("aggregateG") = true
+        driverState("isGradientUpdated") = true
         driverState("Loss") = lossSum.value.toFloat / numFinishedModelUpdates
         optimMethod.updateHyperParameter()
         driverState("Throughput") = recordsNum.value.toFloat / ((end - start) / 1e9f)
