@@ -397,14 +397,17 @@ class LambdaLayer(kbase.ZooKerasLayer):
 
 
 class CustomLoss(kbase.ZooKerasCreator):
-    def __init__(self, loss_func, input_shape):
+    def __init__(self, loss_func, y_pred_shape, y_true_shape=None):
         """
         :param loss_func: a function which accept y_true and y_pred
-        :param input_shape: a shape without batch dim.
+        :param y_pred_shape: The pred shape without batch dim.
+        :param y_true_shape: The target shape without batch dim.
+               It should be the same as y_pred_shape by default.
         i.e input_shape=[3], then the feeding data would be [None, 3]
         """
-        y_real = Variable(input_shape=input_shape)
-        y_pred = Variable(input_shape=input_shape)
+
+        y_real = Variable(input_shape=y_true_shape if y_true_shape else y_pred_shape)
+        y_pred = Variable(input_shape=y_pred_shape)
         loss_var = loss_func(y_real, y_pred)
         super(CustomLoss, self).__init__(None, "float", [y_real, y_pred], loss_var)
 
