@@ -54,8 +54,8 @@ class ImageSet(JavaValue):
         if sc is null, path is local directory/image file/image file with wildcard character
         :param sc SparkContext
         :param min_partitions A suggestion value of the minimal splitting number for input data.
-        :param resize_height height after resize
-        :param resize_width width after resize
+        :param resize_height height after resize, by default is -1 which will not resize the image
+        :param resize_width width after resize, by default is -1 which will not resize the image
         :return ImageSet
         """
         return ImageSet(jvalue=callBigDlFunc(bigdl_type, "readImageSet", path,
