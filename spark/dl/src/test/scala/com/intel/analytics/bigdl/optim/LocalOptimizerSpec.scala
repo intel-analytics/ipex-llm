@@ -109,6 +109,14 @@ object LocalOptimizerSpecModel {
       .add(new Linear(2, 1))
       .add(new Sigmoid)
   }
+
+  def mlpModel : Module[Float] = {
+    Sequential[Float]()
+      .add(Linear[Float](4, 4).setName("fc_1"))
+      .add(Sigmoid[Float]())
+      .add(Linear[Float](4, 1).setName("fc_2"))
+      .add(Sigmoid[Float]())
+  }
 }
 
 @com.intel.analytics.bigdl.tags.Serial
@@ -309,6 +317,25 @@ class LocalOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter{
       )), storageOffset = 1, size = Array(2, 4)))
     test.toTensor[Float].max(1)._2.valueAt(1, 1) should be(1.0)
     test.toTensor[Float].max(1)._2.valueAt(1, 2) should be(2.0)
+  }
+
+  "Train model with multi optimMethods" should "be good" in {
+    RandomGenerator.RNG.setSeed(1000)
+
+    val optimizer = new LocalOptimizer[Float](
+      mlpModel,
+      mseDataSet,
+      MSECriterion[Float]()
+    ).setOptimMethods(Map("fc_1" -> new LBFGS[Float](), "fc_2" -> new LBFGS[Float]()))
+
+    val result = optimizer.optimize()
+    val test = result.forward(Tensor[Float](Storage[Float](
+      Array[Float](
+        0, 1, 0, 1,
+        1, 0, 1, 0
+      )), storageOffset = 1, size = Array(2, 4)))
+    test.toTensor[Float].valueAt(1, 1) < 0.5 should be(true)
+    test.toTensor[Float].valueAt(2, 1) > 0.5 should be(true)
   }
 
   it should "be same compare to ref optimizer" in {

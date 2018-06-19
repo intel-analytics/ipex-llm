@@ -63,11 +63,19 @@ object DistriOptimizerSpec {
 
 object DistriOptimizerSpecModel {
   def mse: Module[Double] = {
-    new Sequential[Double]
-      .add(new Linear(4, 2))
-      .add(new Sigmoid)
-      .add(new Linear(2, 1))
-      .add(new Sigmoid)
+    Sequential[Double]()
+      .add(Linear[Double](4, 4).setName("fc_1"))
+      .add(Sigmoid())
+      .add(Linear[Double](4, 1).setName("fc_2"))
+      .add(Sigmoid())
+  }
+
+  def mse2: Module[Double] = {
+    Sequential[Double]()
+      .add(Linear[Double](4, 8).setName("fc_1"))
+      .add(Sigmoid())
+      .add(Linear[Double](8, 1).setName("fc_2"))
+      .add(Sigmoid())
   }
 
   def bn: Module[Double] = {
@@ -236,11 +244,66 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
     result2(Array(1)) should be(1.0 +- 1e-2)
   }
 
+  "Train with MSE with two LBFGS" should "be good" in {
+    RandomGenerator.RNG.setSeed(10)
+    val optimizer = new DistriOptimizer(
+      mse,
+      dataSet,
+      new MSECriterion[Double]())
+      .setOptimMethods(
+        Map("fc_1" -> new LBFGS(), "fc_2" -> new LBFGS()))
+    val model = optimizer.optimize()
+
+    val result1 = model.forward(input1).asInstanceOf[Tensor[Double]]
+    result1(Array(1)) should be(0.0 +- 1e-2)
+
+    val result2 = model.forward(input2).asInstanceOf[Tensor[Double]]
+    result2(Array(1)) should be(1.0 +- 1e-2)
+  }
+
+  "Train with MSE with two LBFGS after set a new Model" should "be good" in {
+    RandomGenerator.RNG.setSeed(10)
+    val optimizer = new DistriOptimizer[Double](
+      mse,
+      dataSet,
+      new MSECriterion[Double]())
+      .setOptimMethods(
+        Map("fc_1" -> new LBFGS(), "fc_2" -> new LBFGS()))
+    optimizer.optimize()
+
+    Array(mse, mse2).foreach { mse =>
+      optimizer.setModel(mse)
+      val model = optimizer.optimize()
+
+      val result1 = model.forward(input1).asInstanceOf[Tensor[Double]]
+      result1(Array(1)) should be(0.0 +- 1e-2)
+
+      val result2 = model.forward(input2).asInstanceOf[Tensor[Double]]
+      result2(Array(1)) should be(1.0 +- 1e-2)
+    }
+  }
+
   "Train with MSE and SGD" should "be trained with good result" in {
     val mm = mse
     mm.getParameters()._1.fill(0.125)
     val optimizer = new DistriOptimizer[Double](mm, dataSet, new MSECriterion[Double]())
       .setState(T("learningRate" -> 20.0))
+      .setEndWhen(Trigger.maxEpoch(1))
+    val model = optimizer.optimize()
+
+    val result1 = model.forward(input1).asInstanceOf[Tensor[Double]]
+    result1(Array(1)) should be(0.0 +- 5e-2)
+
+    val result2 = model.forward(input2).asInstanceOf[Tensor[Double]]
+    result2(Array(1)) should be(1.0 +- 5e-2)
+  }
+
+  "Train with MSE and two SGD" should "be trained with good result" in {
+    val mm = mse
+    mm.getParameters()._1.fill(0.125)
+    val optimizer = new DistriOptimizer[Double](mm, dataSet, new MSECriterion[Double]())
+      .setOptimMethods(Map("fc_1" -> new SGD(learningRate = 20),
+        "fc_2" -> new SGD(learningRate = 20)))
       .setEndWhen(Trigger.maxEpoch(1))
     val model = optimizer.optimize()
 
@@ -394,8 +457,9 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
     import com.intel.analytics.bigdl._
     plusOne = 1.0
     RandomGenerator.RNG.setSeed(10)
+    val model = cre
     val optimizer = new DistriOptimizer[Double](
-      cre,
+      model,
       dataSet,
       new ClassNLLCriterion[Double]()
     )
@@ -406,7 +470,7 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
     val numIterations = dataSet.data(train = false).count() / nodeNumber + 1
     val optimMethod = OptimMethod.load[Double](optimizer.getCheckpointPath().get +
-      s"/optimMethod.$numIterations")
+      s"/optimMethod-${model.getName()}.$numIterations")
 
     optimMethod.state.get[Int]("epoch").get should be (2)
     optimMethod.state.get[Int]("neval").get should be (numIterations)
