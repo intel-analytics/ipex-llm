@@ -128,8 +128,8 @@ object ImageSet {
    * if sc is null, path is local directory/image file/image file with wildcard character
    * @param sc SparkContext
    * @param minPartitions A suggestion value of the minimal splitting number for input data.
-   * @param resizeH height after resize
-   * @param resizeW width after resize
+   * @param resizeH height after resize, by default is -1 which will not resize the image
+   * @param resizeW width after resize, by default is -1 which will not resize the image
    * @return ImageSet
    */
   def read(path: String, sc: SparkContext = null, minPartitions: Int = 1,
