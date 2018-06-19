@@ -158,6 +158,8 @@ object NNImageReader {
    * @param sc SparkContext to be used.
    * @param minPartitions Number of the DataFrame partitions,
    *                      if omitted uses defaultParallelism instead
+   * @param resizeH height after resize, by default is -1 which will not resize the image
+   * @param resizeW width after resize, by default is -1 which will not resize the image
    * @return DataFrame with a single column "image" of images;
    *         see DLImageSchema.byteSchema for the details
    */
