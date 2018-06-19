@@ -310,21 +310,25 @@ object DistriOptimizer {
         val value = lossSum.value / numFinishedModelUpdates
 
         driverState("numFinishedModel") = numFinishedModelUpdates
+        // aggregateG is flag to mark whether gradient is updated. May changed in the future.
         driverState("aggregateG") = false
+        // parameterProcesser may aggregate gradient,
+        // and change the value of aggregateG in driverState.
         parameterProcessers.foreach(_.collectGlobalData(models, parameters, metrics, driverState))
+        val aggregateG = driverState[Boolean]("aggregateG")
         val stateBroadcast = sc.broadcast(driverState)
 
         models.mapPartitions { modelIter =>
           val modelCache = modelIter.next()
-          val driveState = stateBroadcast.value
-          val aggregateG = driveState.get[Boolean]("aggregateG").get
+          // if parameterProcesser has aggregated gradient, we can skip this aggregation.
           if (!aggregateG) {
             val getG = System.nanoTime()
             parameters.aggregateGradientPartition(numFinishedModelUpdates)
             driverMetrics.add("aggregrateGradientParition average executor",
               System.nanoTime() - getG)
           }
-          parameterProcessers.foreach(_.processParameters(parameters, modelCache, driveState))
+          parameterProcessers.foreach(
+            _.processParameters(parameters, modelCache, stateBroadcast.value))
 
           modelCache.optimMethod.state.update("epoch", driverState[Int]("epoch"))
           modelCache.optimMethod.state.update("neval", driverState[Int]("neval"))
@@ -613,6 +617,8 @@ object DistriOptimizer {
       }.toArray
 
       logger.info("model thread pool size is " + Engine.model.getPoolSize)
+      val weights = cached.head._2
+      parameters.init(weights)
 
       Iterator.single(Cache(
         cached.map(_._1), // models
