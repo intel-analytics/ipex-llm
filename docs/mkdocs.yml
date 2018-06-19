@@ -43,8 +43,8 @@ pages:
   - Pipeline APIs:
     - NNFrames: APIGuide/PipelineAPI/nnframes.md
     - Autograd:
-        - Math: APIGuide/PipelineAPI/math.md
-        - Variable: APIGuide/PipelineAPI/variable.md
+      - Math: APIGuide/PipelineAPI/math.md
+      - Variable: APIGuide/PipelineAPI/variable.md
     - Net: APIGuide/PipelineAPI/net.md
   - Feature Engineering:
     - Image: APIGuide/FeatureEngineering/image.md
