@@ -35,8 +35,8 @@ class NNImageReader:
         :param path Directory to the input data files, the path can be comma separated paths as the
                 list of inputs. Wildcards path are supported similarly to sc.binaryFiles(path).
         :param min_partitions A suggestion value of the minimal splitting number for input data.
-        :param resizeH height after resize
-        :param resizeW width after resize
+        :param resizeH height after resize, by default is -1 which will not resize the image
+        :param resizeW width after resize, by default is -1 which will not resize the image
         :return DataFrame with a single column "image"; Each record in the column represents
                 one image record: Row (uri, height, width, channels, CvType, bytes).
         """
