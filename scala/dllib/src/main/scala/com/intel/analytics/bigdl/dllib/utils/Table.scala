@@ -113,7 +113,7 @@ class Table private[bigdl](
   }
 
   override def toString: String = {
-    s" {\n\t${state.map{case (key: Any, value: Any) =>
+    s" {\n\t${state.filter(_._2 != null).map{case (key: Any, value: Any) =>
       s"$key: " + s"$value".split("\n").mkString(s"\n\t${key.toString.replaceAll(".", " ")}  ")
     }.mkString("\n\t")}\n }"
   }

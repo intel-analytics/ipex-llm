@@ -371,4 +371,52 @@ class LocalOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter{
     val weightRef = modelRef.getParameters()._1
     weight should be(weightRef)
   }
+
+  "Train model with CrossEntropy and SGD" should "be good with constant clipping" in {
+    val _learningRate = 20.0
+    val optimizationMethod = new SGD[Float](learningRate = _learningRate)
+    val optimizer = new LocalOptimizer[Float](
+      creModel,
+      creDataSet,
+      new ClassNLLCriterion[Float].asInstanceOf[Criterion[Float]]
+    ).setConstantGradientClipping(0.0, 0.0)
+      .setEndWhen(Trigger.maxEpoch(1))
+      .setOptimMethod(optimizationMethod)
+
+
+    val model = optimizer.optimize()
+    val newG = model.getParameters()._2
+
+    assert(newG.sumSquare() == 0, "gradient should be 0")
+  }
+
+  "Train model with CrossEntropy and SGD" should "be good with l2norm clipping" in {
+    RandomGenerator.RNG.setSeed(1000)
+    val linear = Linear[Float](4, 2)
+    val _learningRate = 0.0
+    val optimizationMethod = new SGD[Float](learningRate = _learningRate)
+    val optimizer = new LocalOptimizer[Float](
+      linear,
+      creDataSet,
+      new ClassNLLCriterion[Float].asInstanceOf[Criterion[Float]]
+    ).setEndWhen(Trigger.maxIteration(1))
+      .setOptimMethod(optimizationMethod)
+
+    val model = optimizer.optimize()
+    val gradient = model.getParameters()._2.clone()
+    val scale = math.sqrt(gradient.sumSquare()) / 0.03
+    val expectedG = gradient.clone().div(scale.toFloat)
+
+    val optimizationMethod2 = new SGD[Float](learningRate = _learningRate)
+    linear.getParameters()._1.fill(2.5f)
+    val optimizer2 = new LocalOptimizer[Float](linear, creDataSet,
+      new ClassNLLCriterion[Float]().asInstanceOf[Criterion[Float]])
+      .setEndWhen(Trigger.maxIteration(1))
+      .setOptimMethod(optimizationMethod2)
+      .setGradientClippingByl2Norm(0.03)
+
+    val model2 = optimizer2.optimize()
+    val newG = model2.getParameters()._2
+    assert(expectedG.almostEqual(newG, 0.0), "clipbynorm2 should generate correct gradient")
+  }
 }

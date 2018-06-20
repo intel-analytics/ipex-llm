@@ -92,6 +92,7 @@ class LocalOptimizer[T: ClassTag] (
     state("epoch") = state.get[Int]("epoch").getOrElse(1)
     state("neval") = state.get[Int]("neval").getOrElse(1)
     state("isLayerwiseScaled") = Utils.isLayerwiseScaled(model)
+
     dataset.shuffle()
     val numSamples = dataset.data(train = false).map(_.size()).reduce(_ + _)
     var iter = dataset.data(train = true)
@@ -105,6 +106,7 @@ class LocalOptimizer[T: ClassTag] (
       val stackSize = batch.size() / subModelNumber
       val extraSize = batch.size() % subModelNumber
       val parallelism = if (stackSize == 0) extraSize else subModelNumber
+      state("parallelism") = parallelism
       val miniBatchBuffer = new Array[MiniBatch[T]](parallelism)
       while (b < parallelism) {
         val offset = b * stackSize + math.min(b, extraSize) + 1
@@ -151,31 +153,10 @@ class LocalOptimizer[T: ClassTag] (
           })
       )
       val loss = lossSum / parallelism
-      var scale = ev.fromType(parallelism)
-      if (gradientClippingParams.enableL2NormClipping) {
-        val squares = new Array[Double](syncGradParallelNum)
-        Engine.default.invokeAndWait((0 until syncGradParallelNum).map(tid => () => {
-          val offset = tid * syncGradTaskSize + math.min(tid, syncGradExtraTask)
-          val length = syncGradTaskSize + (if (tid < syncGradExtraTask) 1 else 0)
-          squares(tid) = ev.toType[Double](grad.narrow(1, offset + 1, length).sumSquare())
-        }))
-        var sum = 0.0
-        var i = 0
-        while (i < squares.size) {
-          sum += squares(i)
-          i += 1
-        }
-        val l2Norm = (math.sqrt(sum) / parallelism).toFloat
+      grad.div(ev.fromType(parallelism))
 
-        if (l2Norm > gradientClippingParams.normValueClip) {
-          scale = ev.fromType[Float]((l2Norm * parallelism) / gradientClippingParams.normValueClip)
-        }
-      }
-      grad.div(scale)
+      parameterProcessors.foreach(_.processParameters(model, state))
 
-      if (gradientClippingParams.enableConstantClipping) {
-        grad.clamp(gradientClippingParams.minValueClip, gradientClippingParams.maxValueClip)
-      }
       optimMethod.state.update("epoch", state.get("epoch"))
       optimMethod.state.update("neval", state.get("neval"))
       optimMethod.optimize(_ => (ev.fromType(loss), grad), weight)
