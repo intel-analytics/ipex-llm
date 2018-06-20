@@ -878,9 +878,9 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
     this.dot(this)
   }
 
-  override def clamp(min: Float, max: Float): Tensor[T] = {
-    val maxT = ev.fromType[Float](max)
-    val minT = ev.fromType[Float](min)
+  override def clamp(min: Double, max: Double): Tensor[T] = {
+    val maxT = ev.fromType[Double](max)
+    val minT = ev.fromType[Double](min)
     val func = new TensorFunc2[T] {
       override def apply(data1: Array[T], offset1: Int): Unit = {
         if (ev.isGreater(data1(offset1), maxT)) data1(offset1) = maxT
