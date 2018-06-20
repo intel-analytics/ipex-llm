@@ -771,7 +771,9 @@ class Optimizer(BaseOptimizer):
         if not end_trigger:
             end_trigger = MaxEpoch(1)
         if not optim_method:
-            optim_method = SGD()
+            optim_method = {model.name: SGD()}
+        if isinstance(optim_method, OptimMethod):
+            optim_method = {model.name: optim_method}
         if isinstance(training_set, RDD) or isinstance(training_set, DataSet):
             return DistriOptimizer(model=model,
                                    training_rdd=training_set,
@@ -846,16 +848,19 @@ class DistriOptimizer(Optimizer):
         :param end_trigger: when to end the optimization
         :param batch_size: training batch size
         """
+        if not optim_method:
+            optim_method = {model.name: SGD()}
+        if isinstance(optim_method, OptimMethod):
+            optim_method = {model.name: optim_method}
         if isinstance(training_rdd, RDD):
             JavaValue.__init__(self, None, bigdl_type, model.value,
                                training_rdd, criterion,
-                               optim_method if optim_method else SGD(), end_trigger, batch_size)
+                               optim_method, end_trigger, batch_size)
         elif isinstance(training_rdd, DataSet):
             self.bigdl_type = bigdl_type
             self.value = callBigDlFunc(self.bigdl_type, "createDistriOptimizerFromDataSet",
                                        model.value, training_rdd, criterion,
-                                       optim_method if optim_method else SGD(),
-                                       end_trigger, batch_size)
+                                       optim_method, end_trigger, batch_size)
 
 
 class LocalOptimizer(BaseOptimizer):
@@ -883,6 +888,10 @@ class LocalOptimizer(BaseOptimizer):
                  optim_method=None,
                  cores=None,
                  bigdl_type="float"):
+        if not optim_method:
+            optim_method = {model.name: SGD()}
+        if isinstance(optim_method, OptimMethod):
+            optim_method = {model.name: optim_method}
         if cores is None:
             cores = multiprocessing.cpu_count()
         JavaValue.__init__(self, None, bigdl_type,
@@ -890,7 +899,7 @@ class LocalOptimizer(BaseOptimizer):
                            JTensor.from_ndarray(Y),
                            model.value,
                            criterion,
-                           optim_method if optim_method else SGD(), end_trigger, batch_size, cores)
+                           optim_method, end_trigger, batch_size, cores)
 
     def set_validation(self, batch_size, X_val, Y_val, trigger, val_method=None):
         """
