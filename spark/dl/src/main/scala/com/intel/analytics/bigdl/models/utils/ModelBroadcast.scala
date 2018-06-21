@@ -16,14 +16,18 @@
 
 package com.intel.analytics.bigdl.models.utils
 
+import java.io.{IOException, ObjectInputStream, ObjectOutputStream}
+
 import com.intel.analytics.bigdl.Module
-import com.intel.analytics.bigdl.nn.{Container, Graph}
-import com.intel.analytics.bigdl.tensor.{QuantizedTensor, QuantizedType, Storage, Tensor}
+import com.intel.analytics.bigdl.nn.Container
+import com.intel.analytics.bigdl.nn.quantized.StorageManager
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.tensor._
+import com.intel.analytics.bigdl.utils.Util._
 import org.apache.spark.SparkContext
 import org.apache.spark.broadcast.Broadcast
-import com.intel.analytics.bigdl.utils.Util._
 
+import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
 /**
@@ -38,10 +42,9 @@ import scala.reflect.ClassTag
 class ModelBroadcast[T: ClassTag](applyProtoBuffer: Boolean = false)
   (implicit ev: TensorNumeric[T]) extends Serializable {
 
-  private var broadcastModel: Broadcast[Module[T]] = _
+  private var broadcastModel: Broadcast[ModelInfo[T]] = _
   private var broadcastConsts: Broadcast[Map[String, Tensor[_]]] = _
   private var broadcastParameters: Broadcast[Array[Tensor[T]]] = _
-
 
   /**
    * broadcast the model
@@ -54,7 +57,7 @@ class ModelBroadcast[T: ClassTag](applyProtoBuffer: Boolean = false)
    */
   def broadcast(sc: SparkContext, model: Module[T]): this.type = {
     if (applyProtoBuffer) {
-      broadcastModel = sc.broadcast(model)
+      broadcastModel = sc.broadcast(ModelInfo("1", model))
     } else {
       // broadcast Consts
       if (model.isInstanceOf[Container[_, _, T]]) {
@@ -64,7 +67,15 @@ class ModelBroadcast[T: ClassTag](applyProtoBuffer: Boolean = false)
       }
       // broadcast weight and model
       val weightsBias = getAndClearWeightBias(model.parameters())
-      broadcastModel = sc.broadcast(model.cloneModule())
+      // We broadcast weight and model separately because of the memory limit of serialization.
+      // And we should clone the model structure (without weight) first because of lazy evaluation
+      // of broadcast. As you see, we have to put weights back to the model after broadcast call.
+      // As a quantized model, it will create relevant memory after clone because of
+      // `QuantizedTensor`. So we should release it first.
+      val cloned = model.cloneModule()
+      cloned.release()
+
+      broadcastModel = sc.broadcast(ModelInfo[T]("1", cloned))
       broadcastParameters = sc.broadcast(weightsBias)
 
       putWeightBias(weightsBias, model)
@@ -72,6 +83,45 @@ class ModelBroadcast[T: ClassTag](applyProtoBuffer: Boolean = false)
     }
     this
   }
+
+  def broadcast(sc: SparkContext, modelInfo: ModelInfo[T]): this.type = {
+    if (applyProtoBuffer) {
+      broadcastModel = sc.broadcast(modelInfo)
+    } else {
+      // We should clone a new model which will maintain the origin model.
+      // Otherwise, the origin model's resources will be cleaned.
+      val model = modelInfo.model.cloneModule()
+      CachedModels.add(modelInfo.uuid, model)
+
+      // broadcast Consts
+      if (model.isInstanceOf[Container[_, _, T]]) {
+        val moduleConsts = getAndClearConsts(model.asInstanceOf[Container[_, _, T]])
+        // TODO: broadcast Const, model structure and weight in the same broadcast.
+        broadcastConsts = sc.broadcast(moduleConsts)
+      }
+
+      // broadcast weight and model
+      val weightsBias = getAndClearWeightBias(model.parameters())
+
+      // We broadcast weight and model separately because of the memory limit of serialization.
+      // And we should clone the model structure (without weight) first because of lazy evaluation
+      // of broadcast. As you see, we have to put weights back to the model after broadcast call.
+      // As a quantized model, it will create relevant memory after clone because of
+      // `QuantizedTensor`. So we should release it first.
+      val cloned = model.cloneModule()
+      cloned.release()
+      CachedModels.add(modelInfo.uuid, cloned)
+
+      val info = ModelInfo[T](modelInfo.uuid, cloned)
+      broadcastModel = sc.broadcast(info)
+      broadcastParameters = sc.broadcast(weightsBias)
+
+      putWeightBias(weightsBias, model)
+      initGradWeightBias(weightsBias, model)
+    }
+    this
+  }
+
 
   /**
    * get the broadcast model
@@ -82,13 +132,19 @@ class ModelBroadcast[T: ClassTag](applyProtoBuffer: Boolean = false)
    */
   def value(initGradient: Boolean = false): Module[T] = {
     if (applyProtoBuffer) {
-      val localModel = broadcastModel.value.clone(false)
+      val localModel = broadcastModel.value.model.clone(false)
+      val uuid = broadcastModel.value.uuid
+      CachedModels.add(uuid, localModel)
+
       if (initGradient) {
         initGradWeightBias(getWeightBias(localModel.parameters()), localModel)
       }
       localModel
     } else {
-      val localModel = broadcastModel.value.cloneModule()
+      val localModel = broadcastModel.value.model.cloneModule()
+      val uuid = broadcastModel.value.uuid
+      CachedModels.add(uuid, localModel)
+
       // share weight
       putWeightBias(broadcastParameters.value, localModel)
       // share Consts
@@ -141,13 +197,92 @@ class ModelBroadcast[T: ClassTag](applyProtoBuffer: Boolean = false)
       Array()
     }
   }
-
 }
-
 
 object ModelBroadcast {
   def apply[@specialized(Float, Double) T: ClassTag](applyProtoBuffer: Boolean = false)
         (implicit ev: TensorNumeric[T]) : ModelBroadcast[T] = {
     new ModelBroadcast(applyProtoBuffer)
   }
+}
+
+class ModelInfo[T: ClassTag](val uuid: String, @transient var model: Module[T])(
+  implicit ev: TensorNumeric[T]) extends Serializable {
+  @throws(classOf[IOException])
+  private def writeObject(out: ObjectOutputStream): Unit = {
+    out.defaultWriteObject()
+    val cloned = model.cloneModule()
+    out.writeObject(cloned)
+    CachedModels.add(uuid, cloned)
+  }
+}
+
+object ModelInfo {
+  def apply[T: ClassTag](uuid: String, model: Module[T])(
+    implicit ev: TensorNumeric[T]): ModelInfo[T] = new ModelInfo[T](uuid, model)
+}
+
+object CachedModels {
+  import java.util.concurrent.ConcurrentHashMap
+
+  import scala.collection._
+  import scala.collection.convert.decorateAsScala._
+
+  val lock = new AnyRef
+
+  type FloatValues = ArrayBuffer[Module[Float]]
+  type DoubleValues = ArrayBuffer[Module[Double]]
+
+  private val cachedFloatModels: concurrent.Map[String, FloatValues] =
+    new ConcurrentHashMap[String, FloatValues]().asScala
+  private val cachedDoubleModels: concurrent.Map[String, DoubleValues] =
+    new ConcurrentHashMap[String, DoubleValues]().asScala
+
+  def add[T: ClassTag](uuid: String, model: Module[T])( implicit ev: TensorNumeric[T]): Unit =
+    lock.synchronized {
+      ev.getType() match {
+        case FloatType =>
+          val models = cachedFloatModels.get(uuid) match {
+            case Some(values) => values += model.asInstanceOf[Module[Float]]
+            case _ => ArrayBuffer(model.asInstanceOf[Module[Float]])
+          }
+          cachedFloatModels.put(uuid, models)
+        case DoubleType =>
+          val models = cachedDoubleModels.get(uuid) match {
+            case Some(values) => values += model.asInstanceOf[Module[Double]]
+            case _ => ArrayBuffer(model.asInstanceOf[Module[Double]])
+          }
+          cachedDoubleModels.put(uuid, models)
+        case _ => throw new UnsupportedOperationException(s"unsupported type")
+      }
+    }
+
+  def deleteAll[T: ClassTag](currentKey: String)(implicit ev: TensorNumeric[T]): Unit =
+    lock.synchronized {
+      ev.getType() match {
+        case FloatType =>
+          val keys = cachedFloatModels.keys
+          for (key <- keys) {
+            if (key != currentKey) {
+              val models = cachedFloatModels(key)
+              println(s"delete key = $key ${models.length}")
+              for (model <- models) { model.release()
+                println(StorageManager.get().count(!_._2.isFreed))
+              }
+              cachedFloatModels.remove(key)
+              println(StorageManager.get().count(!_._2.isFreed))
+            }
+          }
+        case DoubleType =>
+          val keys = cachedDoubleModels.keys
+          for (key <- keys) {
+            if (key != currentKey) {
+              val models = cachedDoubleModels(key)
+              for (model <- models) { model.release() }
+              cachedDoubleModels.remove(key)
+            }
+          }
+        case _ => throw new UnsupportedOperationException(s"unsupported type")
+      }
+    }
 }

@@ -16,9 +16,11 @@
 
 package com.intel.analytics.bigdl.optim
 
+import java.util.UUID
+
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dataset.{MiniBatch, PaddingParam, Sample, SampleToMiniBatch, Transformer, Utils, DataSet => _}
-import com.intel.analytics.bigdl.models.utils.ModelBroadcast
+import com.intel.analytics.bigdl.models.utils.{CachedModels, ModelBroadcast, ModelInfo}
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -147,7 +149,10 @@ class Predictor[T: ClassTag] private[optim](
 
   def predict(dataSet: RDD[Sample[T]], batchSize: Int = -1,
               shareBuffer: Boolean = false): RDD[Activity] = {
-    val modelBroad = ModelBroadcast[T]().broadcast(dataSet.sparkContext, model.evaluate())
+    val uuid = UUID.randomUUID().toString
+    val modelBroad = ModelBroadcast[T]().broadcast(dataSet.sparkContext, ModelInfo(uuid,
+      model.evaluate()))
+    CachedModels.deleteAll(uuid)
     val partitionNum = dataSet.partitions.length
     val totalBatch = if (batchSize > 0) {
       require(batchSize % partitionNum == 0, s"Predictor.predict: total batch size $batchSize " +
@@ -161,6 +166,9 @@ class Predictor[T: ClassTag] private[optim](
       partitionNum = Some(partitionNum),
       featurePaddingParam = featurePaddingParam))
     dataSet.mapPartitions { partition =>
+      CachedModels.add(uuid, model)
+      CachedModels.deleteAll(uuid)
+
       val localModel = modelBroad.value()
       val localTransformer = otherBroad.value.cloneTransformer()
       val miniBatch = localTransformer(partition)
@@ -185,13 +193,20 @@ class Predictor[T: ClassTag] private[optim](
     shareBuffer: Boolean = false,
     predictKey: String = ImageFeature.predict): DistributedImageFrame = {
     val rdd = imageFrame.asInstanceOf[DistributedImageFrame].rdd
-    val modelBroad = ModelBroadcast[T]().broadcast(rdd.sparkContext, model.evaluate())
+    val uuid = UUID.randomUUID().toString
+    val modelBroad = ModelBroadcast[T]().broadcast(rdd.sparkContext, ModelInfo(uuid,
+      model.evaluate()))
+    CachedModels.deleteAll(uuid)
     val partitionNum = rdd.partitions.length
     val toBatchBroad = rdd.sparkContext.broadcast(SampleToMiniBatch(
       batchSize = partitionNum * batchPerPartition,
       partitionNum = Some(partitionNum),
       featurePaddingParam = featurePaddingParam), shareBuffer)
     val result = rdd.mapPartitions(partition => {
+      // By default, the `model` will be deserialized on worker, which will create new resources.
+      CachedModels.add(uuid, model)
+      CachedModels.deleteAll(uuid)
+
       val localModel = modelBroad.value()
       val localToBatch = toBatchBroad.value._1.cloneTransformer()
 
