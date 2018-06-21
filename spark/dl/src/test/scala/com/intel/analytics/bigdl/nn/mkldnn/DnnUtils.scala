@@ -20,6 +20,7 @@ import breeze.numerics.abs
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.mkl.{DataType, Engine, MklDnn, Stream => DnnStream}
 import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.nn.{Sequential => Seq}
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.{DenseTensorMath, Tensor}
 
@@ -167,7 +168,7 @@ object DnnUtils {
     sortData.foreach(println)
   }
   def dnnAlexNet(classNum: Int, hasDropout : Boolean = true): Module[Float] = {
-    val model = Sequential[Float]()
+    val model = Seq[Float]()
     model.add(ConvolutionDnn(3, 96, 11, 11, 4, 4, 0, 0, 1, false).setName("conv1"))
     model.add(ReLUDnn[Float](true).setName("relu1")) // ????
     model.add(LRNDnn[Float](5, 0.0001, 0.75).setName("norm1"))

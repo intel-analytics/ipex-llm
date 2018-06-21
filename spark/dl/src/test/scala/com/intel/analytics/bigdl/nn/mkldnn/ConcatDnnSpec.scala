@@ -16,7 +16,7 @@
 package com.intel.analytics.bigdl.nn.mkldnn
 
 import com.intel.analytics.bigdl.mkl.MklDnn
-import com.intel.analytics.bigdl.nn.{Concat, Identity}
+import com.intel.analytics.bigdl.nn.{Concat => Concat2, Identity}
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import org.scalatest.{FlatSpec, Matchers}
 
@@ -29,7 +29,7 @@ class ConcatDnnSpec extends FlatSpec with Matchers {
     model.add(Identity[Float]())
     model.add(Identity[Float]())
 
-    val model2 = Concat[Float](2)
+    val model2 = Concat2[Float](2)
     model2.add(Identity[Float]())
     model2.add(Identity[Float]())
 

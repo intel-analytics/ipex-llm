@@ -23,11 +23,7 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
-class Sequential(implicit ev: TensorNumeric[Float])
-  extends DynamicContainer[Activity, Activity, Float] with MklDnnContainer {
-
-  private val reorderManager = new ReorderManager()
-  private var mklDnnModules : Array[MklDnnModule] = _
+class Sequential extends MklDnnContainer {
 
   override def add(module: AbstractModule[_ <: Activity, _ <: Activity, Float]): this.type = {
     require(mklDnnModules == null, "You should not call add after compilation")
@@ -43,7 +39,6 @@ class Sequential(implicit ev: TensorNumeric[Float])
   override private[mkldnn] def inferShape(shapes: Array[Array[Int]]) = {
     var lastShape = shapes
     modules.foreach { case m: MklDnnModule => lastShape = m.inferShape(lastShape)}
-    mklDnnModules = modules.map(_.asInstanceOf[MklDnnModule]).toArray
     lastShape
   }
 
@@ -185,4 +180,8 @@ class Sequential(implicit ev: TensorNumeric[Float])
 
     currentModule.accGradParameters(input, lastGradInput)
   }
+}
+
+object Sequential {
+  def apply(): Sequential = new Sequential()
 }

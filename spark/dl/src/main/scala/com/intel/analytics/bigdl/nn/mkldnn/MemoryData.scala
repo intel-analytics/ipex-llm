@@ -26,6 +26,8 @@ sealed trait MemoryData {
   def isLayoutFixed(): Boolean = {
     layout != Memory.Format.format_undef && layout != Memory.Format.any
   }
+
+  def cloneFormat(): MemoryData
 }
 
 case class HeapData(private var _shape: Array[Int], private var _layout: Int) extends MemoryData {
@@ -84,6 +86,8 @@ case class HeapData(private var _shape: Array[Int], private var _layout: Int) ex
   override def toString: String = {
     s"HeapData([${shape.mkString("x")}], ${layout})"
   }
+
+  override def cloneFormat(): MemoryData = new HeapData(_shape, _layout)
 }
 
 case class NativeData(private var _shape: Array[Int], private var _layout: Int) extends MemoryData {
@@ -141,6 +145,8 @@ case class NativeData(private var _shape: Array[Int], private var _layout: Int) 
   override def toString: String = {
     s"NativeData([${shape.mkString("x")}], ${layout})"
   }
+
+  override def cloneFormat(): MemoryData = new NativeData(_shape, _layout)
 }
 
 private[mkldnn] object MemoryData {

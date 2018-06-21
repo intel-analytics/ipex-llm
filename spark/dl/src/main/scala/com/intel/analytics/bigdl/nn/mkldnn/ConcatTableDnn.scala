@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.nn.mkldnn
 
-import com.intel.analytics.bigdl.nn.{ConcatTable, Container, DynamicContainer}
+import com.intel.analytics.bigdl.nn.DynamicContainer
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.tensor.{MklDnnTensor, Tensor}

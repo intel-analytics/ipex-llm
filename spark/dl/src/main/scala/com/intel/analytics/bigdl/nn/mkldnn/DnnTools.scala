@@ -21,6 +21,7 @@ import com.intel.analytics.bigdl.mkl.{DataType, MklDnn, Engine => DnnEngine, Str
 import com.intel.analytics.bigdl.models.resnet.ResNet.{apply => _}
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.nn.{Module => _, _}
+import com.intel.analytics.bigdl.nn.{Sequential => Seq}
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.optim.L2Regularizer
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -66,7 +67,7 @@ object DnnTools {
   }
 
   def dnnModel(classNum: Int): Module[Float] = {
-    val model = Sequential[Float]()
+    val model = Seq[Float]()
       .add(ConvolutionDnn(3, 96, 11, 11, 4, 4, propagateBack = false))
       .add(ReLUDnn[Float](false))
       .add(LRNDnn[Float](5, 0.0001, 0.75, 1.0))
