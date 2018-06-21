@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.nn.mkldnn
 import breeze.linalg.dim
 import com.intel.analytics.bigdl.mkl.{DataType, Memory, MklDnn, Query}
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
-import com.intel.analytics.bigdl.nn.{Container, DynamicContainer, JoinTable}
+import com.intel.analytics.bigdl.nn.{Container, DynamicContainer}
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.tensor.{MklDnnTensor, MklDnnType, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric

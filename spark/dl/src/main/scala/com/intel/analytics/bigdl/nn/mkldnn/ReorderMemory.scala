@@ -19,73 +19,58 @@ import com.intel.analytics.bigdl.mkl.{DataType, Memory, MklDnn}
 import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.tensor.{DnnTensor, Tensor}
 
-class ReorderMemory(inputFormat: MemoryData, outputFormat: MemoryData,
-  gradInputFormat: MemoryData, gradOutputFormat: MemoryData) extends MklDnnLayer {
+class ReorderMemory(outputFormat: MemoryData, gradInputFormat: MemoryData) extends MklDnnLayer {
 
-  _inputFormats = Array(inputFormat)
-  _gradInputFormats = Array(gradInputFormat)
   _outputFormats = Array(outputFormat)
-  _gradOutputFormats = Array(gradOutputFormat)
-  _gradOutputFormatsForWeight = Array(gradOutputFormat)
+  _gradInputFormats = Array(gradInputFormat)
 
-  override private[mkldnn] def inferShape(shapes: Array[Array[Int]]): Array[Array[Int]] = {
-    Array(outputFormat.shape)
-  }
 
-  override private[mkldnn] def initFwdPrimitives(runtime: MklDnnRuntime, phase: Phase) = {
-    this.runtime = runtime
-    val inputMemDesc = MklDnn.MemoryDescInit(inputFormat.shape.length, inputFormat.shape,
-      DataType.F32, inputFormat.layout)
-    val inputPrimDesc = MklDnn.MemoryPrimitiveDescCreate(inputMemDesc, runtime.engine)
-    val inputPrimitives = Array(MklDnn.PrimitiveCreate0(inputPrimDesc))
+  override private[mkldnn] def initFwdPrimitives(inputs: Array[MemoryData], phase: Phase) = {
+    require(inputs.length == 1, "Only accept one tensor as input")
+    _inputFormats = inputs
 
-    val outputMemDesc = MklDnn.MemoryDescInit(outputFormat.shape.length, outputFormat.shape,
-      DataType.F32, outputFormat.layout)
-    val outputPrimDesc = MklDnn.MemoryPrimitiveDescCreate(outputMemDesc, runtime.engine)
-    val outputPrimitives = Array(MklDnn.PrimitiveCreate0(outputPrimDesc))
+    val fwdReorderPrimDesc = MklDnn.ReorderPrimitiveDescCreate(
+      inputs(0).getPrimitiveDescription(runtime), outputFormat.getPrimitiveDescription(runtime))
+    val fwdReorderPrim = MklDnnOps.primitiveCreate2(fwdReorderPrimDesc,
+      Array(inputs(0).getPrimitive(runtime)), Array(0), 1,
+      Array(outputFormat.getPrimitive(runtime)), 1)
 
-    val fwdReorderPrimDesc = MklDnn.ReorderPrimitiveDescCreate(inputPrimDesc, outputPrimDesc)
-    val fwdReorderPrim = MklDnnOps.primitiveCreate2(fwdReorderPrimDesc, inputPrimitives,
-      Array(0), 1, outputPrimitives, 1)
-
-    fwdMemPrims = inputPrimitives ++ outputPrimitives
     updateOutputPrimitives = Array(fwdReorderPrim)
+    output = initTensor(outputFormat)
+    (inputs, _outputFormats)
   }
 
-  override private[mkldnn] def initBwdPrimitives(runtime: MklDnnRuntime, phase: Phase) = {
-    this.runtime = runtime
-    val gradInputMemDesc = MklDnn.MemoryDescInit(gradInputFormat.shape.length,
-      gradInputFormat.shape, DataType.F32, gradInputFormat.layout)
-    val gradInputPrimDesc = MklDnn.MemoryPrimitiveDescCreate(gradInputMemDesc, runtime.engine)
-    val gradInputPrimitives = Array(MklDnn.PrimitiveCreate0(gradInputPrimDesc))
+  override private[mkldnn] def initBwdPrimitives(grads: Array[MemoryData], phase: Phase) = {
+    require(grads.length == 1, "Only accept one tensor as input")
+    _gradOutputFormats = grads
+    _gradOutputFormatsForWeight = grads
 
-    val gradOutputMemDesc = MklDnn.MemoryDescInit(gradOutputFormat.shape.length,
-      gradOutputFormat.shape, DataType.F32, gradOutputFormat.layout)
-    val gradOutputPrimDesc = MklDnn.MemoryPrimitiveDescCreate(gradOutputMemDesc, runtime.engine)
-    val gradOutputPrimitives = Array(MklDnn.PrimitiveCreate0(gradOutputPrimDesc))
+    val bwdReorderPrimDesc = MklDnn.ReorderPrimitiveDescCreate(
+      grads(0).getPrimitiveDescription(runtime), gradInputFormat.getPrimitiveDescription(runtime))
+    val bwdReorderPrim = MklDnnOps.primitiveCreate2(bwdReorderPrimDesc,
+      grads.map(_.getPrimitive(runtime)), Array(0), 1,
+      _gradInputFormats.map(_.getPrimitive(runtime)), 1)
 
-    val bwdReorderPrimDesc = MklDnn.ReorderPrimitiveDescCreate(gradOutputPrimDesc,
-      gradInputPrimDesc)
-    val bwdReorderPrim = MklDnnOps.primitiveCreate2(bwdReorderPrimDesc, gradOutputPrimitives,
-      Array(0), 1, gradInputPrimitives, 1)
-
-    bwdMemPrims = gradOutputPrimitives ++ gradInputPrimitives
     updateGradInputPrimitives = Array(bwdReorderPrim)
+    gradInput = initTensor(gradInputFormat)
+    (grads, _gradInputFormats)
   }
 
   override def toString(): String = {
-    s"nn.mkl.ReorderMemory(${inputFormat} -> ${outputFormat})"
+    if (_inputFormats != null) {
+      s"nn.mkl.ReorderMemory(${_inputFormats(0)} -> ${outputFormat})"
+    } else {
+      s"nn.mkl.ReorderMemory(_ -> ${outputFormat})"
+    }
   }
 }
 
 object ReorderMemory {
-  def apply(inputFormat: MemoryData, outputFormat: MemoryData): ReorderMemory = {
-    new ReorderMemory(inputFormat, outputFormat,
-      inputFormat.cloneFormat(), outputFormat.cloneFormat())
+  def apply(outputFormat: MemoryData): ReorderMemory = {
+    new ReorderMemory(outputFormat, outputFormat.cloneFormat())
   }
 
-  def apply(inputFormat: MemoryData, outputFormat: MemoryData, gradInputFormat: MemoryData,
-    gradOutputFormat: MemoryData): ReorderMemory = {
-    new ReorderMemory(inputFormat, outputFormat, gradInputFormat, gradOutputFormat)
+  def apply(outputFormat: MemoryData, gradInputFormat: MemoryData): ReorderMemory = {
+    new ReorderMemory(outputFormat, gradInputFormat)
   }
 }

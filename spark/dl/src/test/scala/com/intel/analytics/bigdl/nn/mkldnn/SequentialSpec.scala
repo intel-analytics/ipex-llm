@@ -21,10 +21,8 @@ import com.intel.analytics.bigdl.utils.BigDLSpecHelper
 
 class SequentialSpec extends BigDLSpecHelper {
   "Sequential" should "not be called add after compilation" in {
-    val layer = ReorderMemory(new HeapData(Array(3, 4), Memory.Format.nc),
-      new NativeData(Array(3, 4), Memory.Format.nc))
-    val layer2 = ReorderMemory(new HeapData(Array(3, 4), Memory.Format.nc),
-      new NativeData(Array(3, 4), Memory.Format.nc))
+    val layer = ReorderMemory(NativeData(Array(3, 4), Memory.Format.nc))
+    val layer2 = ReorderMemory(NativeData(Array(3, 4), Memory.Format.nc))
     val seq = new Sequential()
     seq.add(layer)
     seq.compile(Phase.TrainingPhase)

@@ -18,53 +18,42 @@ package com.intel.analytics.bigdl.nn.mkldnn
 import com.intel.analytics.bigdl.mkl.{Memory, MklDnn, Query}
 
 class JoinTable(val dimension: Int) extends MklDnnLayer {
+  override private[mkldnn] def initFwdPrimitives(inputs: Array[MemoryData], phase: Phase) = {
+    require(inputs.length > 0, "at least one tensor")
+    _inputFormats = inputs
 
-  override private[mkldnn] def inferShape(shapes: Array[Array[Int]]) = {
-    require(shapes.length > 0, "at least one tensor")
-    _inputFormats = new Array[MemoryData](shapes.length)
-    _gradInputFormats = new Array[MemoryData](shapes.length)
-    val result = shapes(0).clone()
-    _inputFormats(0) = NativeData(shapes(0), Memory.Format.format_undef)
-    _gradInputFormats(0) = NativeData(shapes(0), Memory.Format.format_undef)
+    val totalShape = inputs(0).shape.clone()
+    val layout = inputs(0).layout
     var i = 1
-    while(i < shapes.length) {
-      val curShape = shapes(i)
-      require(result.length == curShape.length, "tensor dimension not match")
+    while(i < inputs.length) {
+      val curShape = inputs(i).shape
+      require(totalShape.length == inputs(i).layout, "layout not match")
+      require(totalShape.length == curShape.length, "tensor dimension not match")
+      require(inputs(i).isInstanceOf[NativeData], "memory should be native")
       var j = 0
       while(j < curShape.length) {
         if (j == dimension - 1) {
-          result(j) += curShape(j)
+          totalShape(j) += curShape(j)
         } else {
-          require(result(j) == curShape(j), "tensor size not match")
+          require(totalShape(j) == curShape(j), "tensor size not match")
         }
         j += 1
       }
-      _inputFormats(i) = NativeData(curShape, Memory.Format.format_undef)
-      _gradInputFormats(i) = NativeData(curShape, Memory.Format.format_undef)
       i += 1
     }
-    _outputFormats = Array(NativeData(result, Memory.Format.format_undef))
-    _gradOutputFormats = Array(NativeData(result, Memory.Format.format_undef))
-    _gradOutputFormatsForWeight = Array(NativeData(result, Memory.Format.format_undef))
-    Array(result)
+    _outputFormats = Array(NativeData(totalShape, layout))
+    val primDesc = MklDnn.ConcatPrimitiveDescCreate(
+      _outputFormats(0).getMemoryDescription(),
+      inputs.length, dimension - 1, _inputFormats.map(_.getPrimitiveDescription(runtime)))
+
+    updateOutputPrimitives = Array(MklDnnOps.primitiveCreate2(primDesc,
+      _inputFormats.map(_.getPrimitive(runtime)),
+      new Array[Int](inputs.length), inputs.length, _outputFormats.map(_.getPrimitive(runtime)), 1))
+    output = initTensor(_outputFormats(0))
+    (_inputFormats, _outputFormats)
   }
 
-  override private[mkldnn] def initFwdPrimitives(runtime: MklDnnRuntime, phase: Phase) = {
-    this.runtime = runtime
-    outputFormats()(0).setLayout(inputFormats()(0).layout)
-    val inputPrimitiveDescs = initMemPrimDescFromFormat(inputFormats())
-    val inputPrimitives = initMemPrimFromPrimDesc(inputPrimitiveDescs)
-    val outputMemDesc = initMemDescFromFormat(outputFormats())(0)
-    val primDesc = MklDnn.ConcatPrimitiveDescCreate(outputMemDesc,
-      inputPrimitiveDescs.length, dimension - 1, inputPrimitiveDescs)
-    val outputPrimDesc = MklDnnOps.primitiveDescQueryPd(primDesc, Query.DstPd, 0)
-    val outputPrimitives = initMemPrimFromPrimDesc(Array(outputPrimDesc))
-    fwdMemPrims = inputPrimitives ++ outputPrimitives
-
-    updateOutputPrimitives = Array(MklDnnOps.primitiveCreate2(primDesc, inputPrimitives,
-      new Array[Int](inputPrimitiveDescs.length), inputPrimitiveDescs.length, outputPrimitives, 1))
-  }
-
-  override private[mkldnn] def initBwdPrimitives(runtime: MklDnnRuntime, phase: Phase) = {
+  override private[mkldnn] def initBwdPrimitives(grads: Array[MemoryData], phase: Phase) = {
+    null
   }
 }

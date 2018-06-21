@@ -28,21 +28,28 @@ private[mkldnn] class ReorderManager() {
   val refCounts = mutable.HashMap[Int, Int]()
   val useCounts = mutable.HashMap[Int, Int]()
 
-  def register(from: MemoryData, to: MemoryData, runtime: MklDnnRuntime, phase: Phase): Unit = {
+  private var runtime: MklDnnRuntime = _
+
+  def register(from: MemoryData, to: MemoryData): Unit = {
+    require(runtime != null, "Please call setRuntime first")
     val mId = System.identityHashCode(from)
     if (needReorder(from, to)) {
       if (reorders.contains((mId, to))) {
         refCounts(System.identityHashCode(reorders((mId, to)))) += 1
       } else {
-        val reorder = ReorderMemory(from, to)
-        reorder.initFwdPrimitives(runtime, phase)
-        reorder.initMemory()
+        val reorder = ReorderMemory(to)
+        reorder.setRuntime(runtime)
+        reorder.initFwdPrimitives(Array(from), Phase.InferencePhase)
         reorders((mId, to)) = reorder
         val reorderId = System.identityHashCode(reorder)
         refCounts(reorderId) = 1
         useCounts(reorderId) = 0
       }
     }
+  }
+
+  def setRuntime(runtime: MklDnnRuntime): Unit = {
+    this.runtime = runtime
   }
 
   def infer(from: Array[MemoryData], to: Array[MemoryData], output: Activity)

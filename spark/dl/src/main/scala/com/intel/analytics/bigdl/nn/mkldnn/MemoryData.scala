@@ -15,9 +15,10 @@
  */
 package com.intel.analytics.bigdl.nn.mkldnn
 
-import com.intel.analytics.bigdl.mkl.Memory
+import com.intel.analytics.bigdl.mkl.{DataType, Memory, MklDnn}
+import com.intel.analytics.bigdl.tensor.{DnnTensor, Tensor}
 
-sealed trait MemoryData {
+sealed trait MemoryData extends Serializable {
   def shape: Array[Int]
   def layout: Int
   def setShape(shape: Array[Int]): Unit
@@ -28,6 +29,38 @@ sealed trait MemoryData {
   }
 
   def cloneFormat(): MemoryData
+
+  private val UNDEFINED: Long = -1
+
+  @transient
+  private var primitive: Long = UNDEFINED
+  @transient
+  private var primitiveDesc: Long = UNDEFINED
+  @transient
+  private var description: Long = UNDEFINED
+
+  def getMemoryDescription(): Long = {
+    if (description == UNDEFINED) {
+      description = MklDnn.MemoryDescInit(shape.length, shape, DataType.F32, layout)
+    }
+    description
+  }
+
+  def getPrimitiveDescription(runtime: MklDnnRuntime): Long = {
+    if (primitiveDesc == UNDEFINED) {
+      primitiveDesc =
+        MklDnn.MemoryPrimitiveDescCreate(getMemoryDescription(), runtime.engine)
+    }
+    primitiveDesc
+  }
+
+  def getPrimitive(runtime: MklDnnRuntime): Long = {
+    if (primitive == UNDEFINED) {
+      primitive =
+        MklDnn.PrimitiveCreate0(getPrimitiveDescription(runtime))
+    }
+    primitive
+  }
 }
 
 case class HeapData(private var _shape: Array[Int], private var _layout: Int) extends MemoryData {

@@ -19,17 +19,15 @@ import com.intel.analytics.bigdl.mkl.Memory
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.BigDLSpecHelper
 
-class ReorderMemorySpec extends BigDLSpecHelper {
-  "From heap to native" should "be correct" in {
-    val layer = ReorderMemory(new NativeData(Array(3, 4), Memory.Format.nc),
-      HeapData(Array(3, 4), Memory.Format.nc))
+class InputSpec extends BigDLSpecHelper {
+  "Input" should "be correct" in {
+    val layer = Input(Array(2, 2), Memory.Format.nc)
     layer.setRuntime(new MklDnnRuntime())
-    layer.initFwdPrimitives(Array(HeapData(Array(3, 4), Memory.Format.nc)), Phase.TrainingPhase)
-    layer.initBwdPrimitives(Array(NativeData(Array(3, 4), Memory.Format.nc)), Phase.TrainingPhase)
-    val input = Tensor[Float](3, 4).rand()
-    val output = layer.forward(input)
-    val grad = layer.backward(input, output)
-    grad should be(input)
+    layer.initFwdPrimitives(null, Phase.TrainingPhase)
+    layer.initBwdPrimitives(null, Phase.TrainingPhase)
+    val tensor = Tensor[Float](2, 2).rand()
+    val grad = Tensor[Float](2, 2).rand()
+    layer.forward(tensor) should be(tensor)
+    layer.backward(tensor, grad) should be(grad)
   }
-
 }

@@ -35,33 +35,26 @@ trait MklDnnModule {
   @transient
   protected var runtime : MklDnnRuntime = _
 
-  /**
-   * Compute the output shape based on the input shape
-   */
-  private[mkldnn] def inferShape(shapes: Array[Array[Int]]): Array[Array[Int]]
+  def setRuntime(runtime: MklDnnRuntime): Unit = {
+    this.runtime = runtime
+  }
 
   /**
    * Init the MKL-DNN primitives for the layer. Note that these primitives will be erased when
    * sent to a remote worker.
-   * @param runtime
    */
-  private[mkldnn] def initFwdPrimitives(runtime: MklDnnRuntime, phase: Phase): Unit
-  private[mkldnn] def initBwdPrimitives(runtime: MklDnnRuntime, phase: Phase): Unit
-  private[mkldnn] def initGradWPrimitives(runtime: MklDnnRuntime, phase: Phase): Unit = {}
+  private[mkldnn] def initFwdPrimitives(inputs: Array[MemoryData], phase: Phase)
+  : (Array[MemoryData], Array[MemoryData])
+  private[mkldnn] def initBwdPrimitives(grad: Array[MemoryData], phase: Phase)
+  : (Array[MemoryData], Array[MemoryData])
+  private[mkldnn] def initGradWPrimitives(grad: Array[MemoryData], phase: Phase): Array[MemoryData]
+  = grad
 
-  /**
-   * Allocate memory. Note that these primitives will be erased when sent to a remote worker.
-   */
-  private[mkldnn] def initMemory(): Unit
-
-  /**
-   * Memory formats
-   * @return
-   */
   private[mkldnn] def inputFormats(): Array[MemoryData]
   private[mkldnn] def gradInputFormats(): Array[MemoryData]
   private[mkldnn] def outputFormats(): Array[MemoryData]
-  private[mkldnn] def gradOutputFormats(): (Array[MemoryData], Array[MemoryData])
+  private[mkldnn] def gradOutputFormats(): Array[MemoryData]
+  private[mkldnn] def gradOutputWeightFormats(): Array[MemoryData]
 }
 
 trait MklDnnLayer extends AbstractModule[Activity, Activity, Float] with MklDnnModule {
@@ -76,20 +69,6 @@ trait MklDnnLayer extends AbstractModule[Activity, Activity, Float] with MklDnnM
   protected var updateGradInputPrimitives: Array[Long] = _
   @transient
   protected var accGradientPrimitives: Array[Long] = _
-  @transient
-  protected var fwdMemPrims: Array[Long] = _
-  @transient
-  private var cachedInput: Activity = _
-  @transient
-  private var fwdTensors: Array[Tensor[Float]] = _
-  @transient
-  protected var bwdMemPrims: Array[Long] = _
-  @transient
-  private var cachedGradOutput: Activity = _
-  @transient
-  private var bwdTensors: Array[Tensor[Float]] = _
-  @transient
-  protected var gradOutputPrimitivesWeight: Array[Long] = _
 
   protected var _inputFormats: Array[MemoryData] = _
   protected var _gradInputFormats: Array[MemoryData] = _
@@ -97,77 +76,25 @@ trait MklDnnLayer extends AbstractModule[Activity, Activity, Float] with MklDnnM
   protected var _gradOutputFormats: Array[MemoryData] = _
   protected var _gradOutputFormatsForWeight: Array[MemoryData] = _
 
-  protected def initMemPrimFromFormat(formats: Array[MemoryData]): Array[Long] = {
-    formats.map(format => {
-      val memDesc = MklDnn.MemoryDescInit(format.shape.length, format.shape,
-        DataType.F32, format.layout)
-      val primDesc = MklDnn.MemoryPrimitiveDescCreate(memDesc, runtime.engine)
-      MklDnn.PrimitiveCreate0(primDesc)
-    })
-  }
-
-  protected def initMemPrimFromPrimDesc(primDescs: Array[Long]): Array[Long] = {
-    primDescs.map(primDesc => {
-      MklDnn.PrimitiveCreate0(primDesc)
-    })
-  }
-
-  protected def initMemPrimDescFromFormat(formats: Array[MemoryData]): Array[Long] = {
-    formats.map(format => {
-      val memDesc = MklDnn.MemoryDescInit(format.shape.length, format.shape,
-        DataType.F32, format.layout)
-      MklDnn.MemoryPrimitiveDescCreate(memDesc, runtime.engine)
-    })
-  }
-
-  protected def initMemDescFromFormat(formats: Array[MemoryData]): Array[Long] = {
-    formats.map(format => {
-      MklDnn.MemoryDescInit(format.shape.length, format.shape,
-        DataType.F32, format.layout)
-    })
-  }
-
-  protected def initActivity(formats: Array[MemoryData]): Activity = {
-    if (formats.length == 1) {
-      initTensor(formats(0))
-    } else {
-      T.array(formats.map(initTensor(_)))
-    }
-  }
-
-  protected def initTensor(format: MemoryData): Tensor[Float] = {
-    format match {
-      case d: NativeData =>
-        DnnTensor[Float](d.shape)
-      case d: HeapData =>
-        Tensor[Float](d.shape)
-      case _ => throw new UnsupportedOperationException("memory format is not supported")
-    }
-  }
-
-  override private[mkldnn] def inputFormats() = {
-    require(_inputFormats != null, "You must call infershape first")
-    _inputFormats
-  }
-
-  override private[mkldnn] def gradInputFormats() = {
-    require(_gradInputFormats != null, "You must call infershape first")
-    _gradInputFormats
-  }
-
-  override private[mkldnn] def outputFormats() = {
-    require(_outputFormats != null, "You must call infershape first")
-    _outputFormats
-  }
-
-  override private[mkldnn] def gradOutputFormats() = {
-    require(_gradOutputFormats != null, "You must call infershape first")
-    require(_gradOutputFormatsForWeight != null, "You must call infershape first")
-    (_gradOutputFormats, _gradOutputFormatsForWeight)
-  }
+  @transient
+  private var updateOutputMemoryPrimitives: Array[Long] = _
+  @transient
+  private var updateOutputTensors: Array[Tensor[Float]] = _
+  @transient
+  private var updateGradInputMemoryPrimitives: Array[Long] = _
+  @transient
+  private var updateGradInputTensors: Array[Tensor[Float]] = _
+  @transient
+  private var cachedInput: Activity = _
+  @transient
+  private var cachedGradOutput: Activity = _
 
   override def updateOutput(input: Activity): Activity = {
-    if (fwdTensors == null || cachedInput == null || !cachedInput.eq(input)) {
+    if (updateOutputMemoryPrimitives == null) {
+      updateOutputMemoryPrimitives =
+        inputFormats().map(_.getPrimitive(runtime)) ++ outputFormats().map(_.getPrimitive(runtime))
+    }
+    if (updateOutputTensors == null || cachedInput == null || !cachedInput.eq(input)) {
       val buffer = new ArrayBuffer[Tensor[Float]]()
       if (input.isTensor) {
         buffer.append(input.asInstanceOf[Tensor[Float]])
@@ -189,17 +116,23 @@ trait MklDnnLayer extends AbstractModule[Activity, Activity, Float] with MklDnnM
           i += 1
         }
       }
-      fwdTensors = buffer.toArray
+      updateOutputTensors = buffer.toArray
       cachedInput = input
     }
     MklDnnOps.streamSubmit(
-      runtime.stream, 1, updateOutputPrimitives, 1, fwdMemPrims, fwdTensors
+      runtime.stream, 1, updateOutputPrimitives, 1, updateOutputMemoryPrimitives,
+      updateOutputTensors
     )
     output
   }
 
   override def updateGradInput(input: Activity, gradOutput: Activity): Activity = {
-    if (bwdTensors == null || cachedInput == null || !cachedInput.eq(input) ||
+    if (updateGradInputMemoryPrimitives == null) {
+      updateGradInputMemoryPrimitives =
+        gradOutputFormats().map(_.getPrimitive(runtime)) ++
+          gradInputFormats().map(_.getPrimitive(runtime))
+    }
+    if (updateGradInputTensors == null || cachedInput == null || !cachedInput.eq(input) ||
       cachedGradOutput == null || !cachedGradOutput.eq(gradOutput)) {
       val buffer = new ArrayBuffer[Tensor[Float]]()
       if (gradOutput.isTensor) {
@@ -222,19 +155,58 @@ trait MklDnnLayer extends AbstractModule[Activity, Activity, Float] with MklDnnM
           i += 1
         }
       }
-      bwdTensors = buffer.toArray
+      updateGradInputTensors = buffer.toArray
       cachedInput = input
       cachedGradOutput = gradOutput
     }
-    MklDnnOps.streamSubmit(runtime.stream, 1, updateGradInputPrimitives, 1, bwdMemPrims, bwdTensors)
+    MklDnnOps.streamSubmit(runtime.stream, 1, updateGradInputPrimitives, 1,
+      updateGradInputMemoryPrimitives, updateGradInputTensors)
     gradInput
   }
 
-  override def initMemory(): Unit = {
-    gradInput = initActivity(gradInputFormats())
-    output = initActivity(outputFormats())
+
+  override private[mkldnn] def inputFormats() = {
+    require(_inputFormats != null, "You should call initFwdPrimitives first")
+    _inputFormats
   }
 
+  override private[mkldnn] def gradInputFormats() = {
+    require(_gradInputFormats != null, "You should call initBwdPrimitives first")
+    _gradInputFormats
+  }
+
+  override private[mkldnn] def outputFormats() = {
+    require(_outputFormats != null, "You should call initFwdPrimitives first")
+    _outputFormats
+  }
+
+  override private[mkldnn] def gradOutputFormats() = {
+    require(_gradOutputFormats != null, "You should call initBwdPrimitives first")
+    _gradOutputFormats
+  }
+
+  override private[mkldnn] def gradOutputWeightFormats() = {
+    require(_gradOutputFormatsForWeight != null, "You should call initGradPrimitives first")
+    _gradOutputFormatsForWeight
+  }
+
+  protected def initActivity(formats: Array[MemoryData]): Activity = {
+    if (formats.length == 1) {
+      initTensor(formats(0))
+    } else {
+      T.array(formats.map(initTensor(_)))
+    }
+  }
+
+  protected def initTensor(format: MemoryData): Tensor[Float] = {
+    format match {
+      case d: NativeData =>
+        DnnTensor[Float](d.shape)
+      case d: HeapData =>
+        Tensor[Float](d.shape)
+      case _ => throw new UnsupportedOperationException("memory format is not supported")
+    }
+  }
 }
 
 /**
@@ -266,15 +238,23 @@ trait MklDnnContainer extends DynamicContainer[Activity, Activity, Float] with M
    */
   final def compile(phase: Phase, runtime: MklDnnRuntime): Unit = {
     freeze()
-    inputFormats().foreach(f => require(f.isLayoutFixed(), "Model input layout should be fixed"))
     fusion(phase)
-    inferShape(inputFormats.map(_.shape))
-    initFwdPrimitives(runtime, phase)
+    initPrimitives(phase, runtime)
+  }
+
+  final def initPrimitives(phase: Phase, runtime: MklDnnRuntime): Unit = {
+    setRuntime(runtime)
+    initFwdPrimitives(null, phase)
     if (phase == Phase.TrainingPhase) {
-      initBwdPrimitives(runtime, phase)
-      initGradWPrimitives(runtime, phase)
+      initBwdPrimitives(null, phase)
+      initGradWPrimitives(null, phase)
     }
-    initMemory()
+  }
+
+  override def setRuntime(runtime: MklDnnRuntime): Unit = {
+    super.setRuntime(runtime)
+    reorderManager.setRuntime(runtime)
+    modules.foreach { case m: MklDnnModule => m.setRuntime(runtime) }
   }
 
   /**
@@ -291,9 +271,5 @@ trait MklDnnContainer extends DynamicContainer[Activity, Activity, Float] with M
     }
     modules.filter(_.isInstanceOf[MklDnnContainer])
       .map { case mc: MklDnnContainer => mc.freeze() }
-  }
-
-  override private[mkldnn] def initMemory() = {
-    modules.foreach { case m: MklDnnModule => m.initMemory() }
   }
 }

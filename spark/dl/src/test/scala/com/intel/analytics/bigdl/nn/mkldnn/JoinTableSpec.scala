@@ -24,14 +24,13 @@ class JoinTableSpec extends BigDLSpecHelper {
     val layer = new JoinTable(1)
     val model = Sequential()
     val concat = ConcatTable()
-    concat.add(ReorderMemory(HeapData(Array(2, 2), Memory.Format.nc),
-      NativeData(Array(2, 2), Memory.Format.nc)))
-    concat.add(ReorderMemory(HeapData(Array(2, 2), Memory.Format.nc),
-      NativeData(Array(2, 2), Memory.Format.nc)))
+    concat.add(ReorderMemory(NativeData(Array(2, 2), Memory.Format.nc)))
+    concat.add(ReorderMemory(NativeData(Array(2, 2), Memory.Format.nc)))
+    val input = Input(Array(2, 2), Memory.Format.nc)
+    model.add(input)
     model.add(concat)
     model.add(layer)
-    model.add(ReorderMemory(NativeData(Array(4, 2), Memory.Format.nc),
-      HeapData(Array(4, 2), Memory.Format.nc)))
+    model.add(ReorderMemory(HeapData(Array(4, 2), Memory.Format.nc)))
     model.compile(Phase.TrainingPhase)
     model.forward(Tensor[Float](T(T(1, 2), T(3, 4)))) should be(Tensor[Float](T(
       T(1, 2),
