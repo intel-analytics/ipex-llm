@@ -124,6 +124,104 @@ class SpatialBatchNormalizationSpec extends FlatSpec with Matchers {
     gin2.squeeze should be (gradInput2.squeeze)
   }
 
+  "SpatialBacthNormalization parameter sync double" should "work properly" in {
+    val conf = Engine.createSparkConf().setAppName("Test sync")
+      .set("spark.rpc.message.maxSize", "200").setMaster("local[*]")
+    val sc = new SparkContext(conf)
+    Engine.setCoreNumber(1)
+    val bn = SpatialBatchNormalization[Double](2)
+    bn.weight.fill(1.0)
+    bn.bias.fill(1.0)
+
+    val input = Tensor[Double](2, 2, 1, 1)
+    input.select(1, 1).fill(1.0)
+    input.select(1, 2).fill(2.0)
+
+    val gradOutput = Tensor[Double](2, 2, 1, 1)
+
+    gradOutput.select(1, 1).fill(2.0)
+    gradOutput.select(1, 2).fill(1.0)
+
+    val output = bn.forward(input)
+
+    val gradInput = bn.backward(input, gradOutput)
+
+    val saveMean = bn.globalMean
+    val saveStd = bn.globalStd
+    val runningMean = bn.runningMean
+    val runningVar = bn.runningVar
+
+    Engine.setCoreNumber(2)
+
+    val bn1 = SpatialBatchNormalization[Double](2)
+
+    bn1.weight.fill(1.0)
+    bn1.bias.fill(1.0)
+
+    val bn2 = bn1.cloneModule().asInstanceOf[BatchNormalization[Double]]
+
+    val modules = Array(bn1, bn2)
+
+    val input1 = Tensor[Double](1, 2, 1, 1).fill(1.0)
+
+    val input2 = Tensor[Double](1, 2, 1, 1).fill(2.0)
+
+    val inputs = Array(input1, input2)
+
+    val gradOutput1 = Tensor[Double](1, 2, 1, 1).fill(2.0)
+    val gradOutput2 = Tensor[Double](1, 2, 1, 1).fill(1.0)
+
+    val gradOutputs = Array(gradOutput1, gradOutput2)
+
+    Engine.default.invokeAndWait2((0 until modules.size).map(i =>
+      () => {
+        val trainStart = System.nanoTime()
+        val sub = modules(i)
+        val subInput = inputs(i)
+        val subGradOutput = gradOutputs(i)
+        sub.forward(subInput)
+        sub.backward(subInput, subGradOutput)
+      }
+    ))
+
+    val saveMean1 = bn1.globalMean
+    val saveStd1 = bn1.globalStd
+    val runningMean1 = bn1.runningMean
+    val runningVar1 = bn1.runningVar
+    val gradInput1 = bn1.gradInput
+    val out1 = bn1.output.squeeze
+
+    val saveMean2 = bn2.globalMean
+    val saveStd2 = bn2.globalStd
+    val runningMean2 = bn2.runningMean
+    val runningVar2 = bn2.runningVar
+    val gradInput2 = bn2.gradInput
+    val out2 = bn2.output.squeeze()
+
+    saveMean should be (saveMean1)
+    saveMean should be (saveMean2)
+    saveStd should be (saveStd1)
+    saveStd should be (saveStd2)
+    runningMean should be (runningMean1)
+    runningMean should be (runningMean2)
+    runningVar should be (runningVar1)
+    runningVar should be (runningVar2)
+
+    val sout1 = output.select(1, 1).squeeze()
+    sout1  should be (out1)
+
+    val sout2 = output.select(1, 2).squeeze()
+    sout2 should be (bn2.output)
+
+    val gin1 = gradInput.select(1, 1)
+
+    val gin2 = gradInput.select(1, 2)
+
+    gin1.squeeze should be (gradInput1.squeeze)
+    gin2.squeeze should be (gradInput2.squeeze)
+  }
+
+
   "SpatialBatchNormalization module in batch mode" should "be good in gradient check " +
     "for input" in {
     val seed = 100

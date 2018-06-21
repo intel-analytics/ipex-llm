@@ -365,7 +365,7 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val batchNormalization = model.asInstanceOf[Sequential[Double]].modules(1).
       asInstanceOf[BatchNormalization[Double]]
     val expectedMeans = Array(0.37499998210083496, 0.37499998210083496)
-    val expectedVariances = Array(1188.2811870277535, 1188.2811870277535)
+    val expectedVariances = Array(679.017857141401, 679.017857141401)
     batchNormalization.runningMean.storage().array().zip(expectedMeans).foreach {
       case (actual, expected) => actual should be(expected +- 1e-4)
     }

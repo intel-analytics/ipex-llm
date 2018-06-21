@@ -1660,9 +1660,9 @@ object SpatialBatchNormalization {
     c = 0
     val size = n / nChannel
     while(c < nChannel) {
-      gMeanData(c) /= (size * gmeanEventLen)
+      gMeanData(c) = globalGmean(c) / (size * gmeanEventLen)
       val invStd = saveStdData(saveStdOffset + c)
-      gxMeanData(c) = gxMeanData(c) * invStd * invStd / (size * gmxmeanEventLen)
+      gxMeanData(c) = globalGxmean(c) * invStd * invStd / (size * gmxmeanEventLen)
       c += 1
     }
 
