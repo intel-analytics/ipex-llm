@@ -343,7 +343,7 @@ object DistriOptimizer {
               System.nanoTime() - getG)
           }
           parameters.foreach { p =>
-            parameterProcessers.foreach(_.collectGlobalData(models, p._2, metrics, driverState))
+            parameterProcessers.foreach(_.processParameters(p._2, modelCache, driverState))
           }
           modelCache.optimMethod.foreach{ case (name, optimMethod) =>
             var time = System.nanoTime()

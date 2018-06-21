@@ -64,7 +64,7 @@ object DistriOptimizerSpec {
 
 object DistriOptimizerSpecModel {
   def mse: Module[Double] = {
-    Sequential[Double]()
+    Sequential[Double]().setName("mse")
       .add(Linear[Double](4, 4).setName("fc_1"))
       .add(Sigmoid())
       .add(Linear[Double](4, 1).setName("fc_2"))
@@ -283,6 +283,7 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
     Array(mse, mse2).foreach { mse =>
       optimizer.setModel(mse)
+        .setOptimMethods(Map("fc_1" -> new LBFGS(), "fc_2" -> new LBFGS()))
       val model = optimizer.optimize()
 
       val result1 = model.forward(input1).asInstanceOf[Tensor[Double]]

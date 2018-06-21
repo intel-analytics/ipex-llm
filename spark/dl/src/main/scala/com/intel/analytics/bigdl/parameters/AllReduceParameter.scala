@@ -60,7 +60,7 @@ object AllReduceParameter {
   def newParameter[T: ClassTag](
         partitionNum: Int,
         size: Int,
-        offset: Int = 0)(implicit ev: TensorNumeric[T]): AllReduceParameter[T] = {
+        offset: Int = 1)(implicit ev: TensorNumeric[T]): AllReduceParameter[T] = {
     new AllReduceParameter(nextId.getAndIncrement(), partitionNum, size, offset)
   }
 }
@@ -85,7 +85,7 @@ class AllReduceParameter[T: ClassTag](
       id: Long,
       partitionNum: Int,
       val size: Int,
-      val paramOffset: Int = 0)(implicit ev: TensorNumeric[T]) extends Serializable {
+      val paramOffset: Int = 1)(implicit ev: TensorNumeric[T]) extends Serializable {
   import AllReduceParameter._
 
   @transient private var taskSize = 0

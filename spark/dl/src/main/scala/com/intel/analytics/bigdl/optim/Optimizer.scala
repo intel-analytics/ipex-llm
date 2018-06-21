@@ -31,7 +31,7 @@ import org.apache.log4j.Logger
 import org.apache.spark.rdd.RDD
 
 import scala.collection.mutable.ArrayBuffer
-import scala.reflect.ClassTag
+import scala.reflect.{ClassTag, classTag}
 
 /**
  * [[Optimizer]] is an abstract class which is used to train a model automatically
@@ -71,6 +71,11 @@ abstract class Optimizer[T: ClassTag, D](
   protected var maxDropPercentage: Double = 0.0
   protected var computeThresholdbatchSize: Int = 100
   protected var warmupIterationNum: Int = 200
+
+  /**
+   * a list of ParameterProcessor, orders matter
+   */
+  protected var parameterProcessors = ArrayBuffer[ParameterProcessor]()
 
   model.checkDuplicate()
 
@@ -259,7 +264,7 @@ abstract class Optimizer[T: ClassTag, D](
     } else {
       logger.warn(s"Optimizer.setModel: Detect current optimMethod is not a global optimMethod." +
         s" Clearing the old optimMethod.")
-      optimMethods = null
+      optimMethods = Map[String, OptimMethod[T]]()
       logger.warn(s"Optimizer.setModel: old optimMethod cleared.")
     }
 
@@ -343,10 +348,6 @@ abstract class Optimizer[T: ClassTag, D](
   def setOptimMethod(method : OptimMethod[T]): this.type = {
     checkSubModules(model, Array(model.getName()))
     this.optimMethods = Map(model.getName -> method.clone())
-    val processor = method.getParameterProcessor()
-    if (processor.isDefined) {
-      parameterProcessors += processor.get
-    }
     this
   }
 
@@ -415,12 +416,15 @@ abstract class Optimizer[T: ClassTag, D](
   def setConstantGradientClipping(min: Double, max: Double)
   : this.type = {
     require(min <= max, "min value can not be larger than max")
-    parameterProcessors.append(new ConstantClippingProcessor(min, max))
-//    optimMethods.keys.foreach{name =>
-//      parameterProcessors(name) = new ConstantClippingProcessor(min, max))
-//    }
+    val index = Optimizer.findIndex[ConstantClippingProcessor](parameterProcessors)
+    if (index == -1) {
+      parameterProcessors.append(new ConstantClippingProcessor(min, max))
+    } else {
+      parameterProcessors(index) = new ConstantClippingProcessor(min, max)
+    }
     this
   }
+
 
   /**
    * Clip gradient to a maximum L2-norm
@@ -429,19 +433,17 @@ abstract class Optimizer[T: ClassTag, D](
    */
   def setGradientClippingByl2Norm(l2NormThreshold: Double)
   : this.type = {
+    require(optimMethods.size == 1, "Only support 1 optimMethod.")
     require(l2NormThreshold > 0, "l2NormThreshold should larger than zero")
-    parameterProcessors.append(new L2NormClippingProcessor(l2NormThreshold))
-//    optimMethods.keys.foreach{name =>
-//      parameterProcessors(name) = new ConstantClippingProcessor(min, max))
-//    }
+    val index = Optimizer.findIndex[L2NormClippingProcessor](parameterProcessors)
+    if (index == -1) {
+      parameterProcessors.append(new L2NormClippingProcessor(l2NormThreshold))
+    } else {
+      parameterProcessors(index) = new L2NormClippingProcessor(l2NormThreshold)
+    }
     this
   }
 
-  /**
-   * a list of ParameterProcessor, orders matter
-   */
-  protected var parameterProcessors = ArrayBuffer[ParameterProcessor]()
-//  protected val parameterProcessors: mutable.Map[String, ParameterProcessor] = _
 }
 
 object Optimizer {
@@ -650,5 +652,22 @@ object Optimizer {
       case _ =>
         throw new UnsupportedOperationException
     }
+  }
+
+  /**
+   * find the index of type T
+   * @param parameterProcessors
+   * @return index
+   */
+  private[Optimizer] def findIndex[T <: ParameterProcessor: ClassTag](
+        parameterProcessors: ArrayBuffer[ParameterProcessor]): Int = {
+    var i = 0
+    while(i < parameterProcessors.size) {
+      if (classTag[T].runtimeClass.isInstance(parameterProcessors(i))) {
+        return i
+      }
+      i += 1
+    }
+    return -1
   }
 }
