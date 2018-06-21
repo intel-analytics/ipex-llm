@@ -347,7 +347,7 @@ abstract class Optimizer[T: ClassTag, D](
    */
   def setOptimMethod(method : OptimMethod[T]): this.type = {
     checkSubModules(model, Array(model.getName()))
-    this.optimMethods = Map(model.getName -> method.clone())
+    this.optimMethods = Map(model.getName -> method)
     this
   }
 
@@ -358,7 +358,7 @@ abstract class Optimizer[T: ClassTag, D](
    */
   def setOptimMethods(method: Map[String, OptimMethod[T]]): this.type = {
     checkSubModules(model, method.keys.toSeq)
-    this.optimMethods = method.map(v => (v._1, v._2.clone()))
+    this.optimMethods = method
     this
   }
 
