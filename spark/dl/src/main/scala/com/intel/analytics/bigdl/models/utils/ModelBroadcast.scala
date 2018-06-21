@@ -17,6 +17,7 @@
 package com.intel.analytics.bigdl.models.utils
 
 import java.io.{IOException, ObjectInputStream, ObjectOutputStream}
+import java.util.UUID
 
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.nn.Container
@@ -46,6 +47,8 @@ class ModelBroadcast[T: ClassTag](applyProtoBuffer: Boolean = false)
   private var broadcastConsts: Broadcast[Map[String, Tensor[_]]] = _
   private var broadcastParameters: Broadcast[Array[Tensor[T]]] = _
 
+  val uuid: String = UUID.randomUUID().toString
+
   /**
    * broadcast the model
    * first get and clear Const values from the model
@@ -56,68 +59,40 @@ class ModelBroadcast[T: ClassTag](applyProtoBuffer: Boolean = false)
    * @return this
    */
   def broadcast(sc: SparkContext, model: Module[T]): this.type = {
+    CachedModels.deleteAll(uuid) // delete the models on driver
+
     if (applyProtoBuffer) {
-      broadcastModel = sc.broadcast(ModelInfo("1", model))
-    } else {
-      // broadcast Consts
-      if (model.isInstanceOf[Container[_, _, T]]) {
-        val moduleConsts = getAndClearConsts(model.asInstanceOf[Container[_, _, T]])
-        // TODO: broadcast Const, model structure and weight in the same broadcast.
-        broadcastConsts = sc.broadcast(moduleConsts)
-      }
-      // broadcast weight and model
-      val weightsBias = getAndClearWeightBias(model.parameters())
-      // We broadcast weight and model separately because of the memory limit of serialization.
-      // And we should clone the model structure (without weight) first because of lazy evaluation
-      // of broadcast. As you see, we have to put weights back to the model after broadcast call.
-      // As a quantized model, it will create relevant memory after clone because of
-      // `QuantizedTensor`. So we should release it first.
-      val cloned = model.cloneModule()
-      cloned.release()
-
-      broadcastModel = sc.broadcast(ModelInfo[T]("1", cloned))
-      broadcastParameters = sc.broadcast(weightsBias)
-
-      putWeightBias(weightsBias, model)
-      initGradWeightBias(weightsBias, model)
-    }
-    this
-  }
-
-  def broadcast(sc: SparkContext, modelInfo: ModelInfo[T]): this.type = {
-    if (applyProtoBuffer) {
-      broadcastModel = sc.broadcast(modelInfo)
+      broadcastModel = sc.broadcast(ModelInfo(uuid, model))
     } else {
       // We should clone a new model which will maintain the origin model.
       // Otherwise, the origin model's resources will be cleaned.
-      val model = modelInfo.model.cloneModule()
-      CachedModels.add(modelInfo.uuid, model)
+      val newModel = model.cloneModule()
+      CachedModels.add(uuid, newModel)
 
       // broadcast Consts
-      if (model.isInstanceOf[Container[_, _, T]]) {
-        val moduleConsts = getAndClearConsts(model.asInstanceOf[Container[_, _, T]])
+      if (newModel.isInstanceOf[Container[_, _, T]]) {
+        val moduleConsts = getAndClearConsts(newModel.asInstanceOf[Container[_, _, T]])
         // TODO: broadcast Const, model structure and weight in the same broadcast.
         broadcastConsts = sc.broadcast(moduleConsts)
       }
 
       // broadcast weight and model
-      val weightsBias = getAndClearWeightBias(model.parameters())
+      val weightsBias = getAndClearWeightBias(newModel.parameters())
 
       // We broadcast weight and model separately because of the memory limit of serialization.
       // And we should clone the model structure (without weight) first because of lazy evaluation
       // of broadcast. As you see, we have to put weights back to the model after broadcast call.
       // As a quantized model, it will create relevant memory after clone because of
       // `QuantizedTensor`. So we should release it first.
-      val cloned = model.cloneModule()
+      val cloned = newModel.cloneModule()
       cloned.release()
-      CachedModels.add(modelInfo.uuid, cloned)
+      CachedModels.add(uuid, cloned)
 
-      val info = ModelInfo[T](modelInfo.uuid, cloned)
-      broadcastModel = sc.broadcast(info)
+      broadcastModel = sc.broadcast(ModelInfo[T](uuid, cloned))
       broadcastParameters = sc.broadcast(weightsBias)
 
-      putWeightBias(weightsBias, model)
-      initGradWeightBias(weightsBias, model)
+      putWeightBias(weightsBias, newModel)
+      initGradWeightBias(weightsBias, newModel)
     }
     this
   }
@@ -131,6 +106,7 @@ class ModelBroadcast[T: ClassTag](applyProtoBuffer: Boolean = false)
    * @return model
    */
   def value(initGradient: Boolean = false): Module[T] = {
+    CachedModels.deleteAll(uuid)
     if (applyProtoBuffer) {
       val localModel = broadcastModel.value.model.clone(false)
       val uuid = broadcastModel.value.uuid

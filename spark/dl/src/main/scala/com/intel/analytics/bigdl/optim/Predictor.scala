@@ -149,10 +149,7 @@ class Predictor[T: ClassTag] private[optim](
 
   def predict(dataSet: RDD[Sample[T]], batchSize: Int = -1,
               shareBuffer: Boolean = false): RDD[Activity] = {
-    val uuid = UUID.randomUUID().toString
-    val modelBroad = ModelBroadcast[T]().broadcast(dataSet.sparkContext, ModelInfo(uuid,
-      model.evaluate()))
-    CachedModels.deleteAll(uuid)
+    val modelBroad = ModelBroadcast[T]().broadcast(dataSet.sparkContext, model.evaluate())
     val partitionNum = dataSet.partitions.length
     val totalBatch = if (batchSize > 0) {
       require(batchSize % partitionNum == 0, s"Predictor.predict: total batch size $batchSize " +
@@ -166,8 +163,7 @@ class Predictor[T: ClassTag] private[optim](
       partitionNum = Some(partitionNum),
       featurePaddingParam = featurePaddingParam))
     dataSet.mapPartitions { partition =>
-      CachedModels.add(uuid, model)
-      CachedModels.deleteAll(uuid)
+      CachedModels.add(modelBroad.uuid, model)
 
       val localModel = modelBroad.value()
       val localTransformer = otherBroad.value.cloneTransformer()
@@ -193,10 +189,7 @@ class Predictor[T: ClassTag] private[optim](
     shareBuffer: Boolean = false,
     predictKey: String = ImageFeature.predict): DistributedImageFrame = {
     val rdd = imageFrame.asInstanceOf[DistributedImageFrame].rdd
-    val uuid = UUID.randomUUID().toString
-    val modelBroad = ModelBroadcast[T]().broadcast(rdd.sparkContext, ModelInfo(uuid,
-      model.evaluate()))
-    CachedModels.deleteAll(uuid)
+    val modelBroad = ModelBroadcast[T]().broadcast(rdd.sparkContext, model.evaluate())
     val partitionNum = rdd.partitions.length
     val toBatchBroad = rdd.sparkContext.broadcast(SampleToMiniBatch(
       batchSize = partitionNum * batchPerPartition,
@@ -204,8 +197,7 @@ class Predictor[T: ClassTag] private[optim](
       featurePaddingParam = featurePaddingParam), shareBuffer)
     val result = rdd.mapPartitions(partition => {
       // By default, the `model` will be deserialized on worker, which will create new resources.
-      CachedModels.add(uuid, model)
-      CachedModels.deleteAll(uuid)
+      CachedModels.add(modelBroad.uuid, model)
 
       val localModel = modelBroad.value()
       val localToBatch = toBatchBroad.value._1.cloneTransformer()
