@@ -21,28 +21,30 @@ import com.intel.analytics.bigdl.utils.BigDLSpecHelper
 
 class SequentialSpec extends BigDLSpecHelper {
   "Sequential" should "not be called add after compilation" in {
-    val layer = ReorderMemory(NativeData(Array(3, 4), Memory.Format.nc))
-    val layer2 = ReorderMemory(NativeData(Array(3, 4), Memory.Format.nc))
+    val layer = ReorderMemory(NativeData(Array(3, 4), Memory.Format.nc),
+      HeapData(Array(3, 4), Memory.Format.nc))
+    val layer2 = ReorderMemory(NativeData(Array(3, 4), Memory.Format.nc),
+      NativeData(Array(3, 4), Memory.Format.nc))
     val seq = new Sequential()
     seq.add(layer)
-    seq.compile(Phase.TrainingPhase)
+    seq.compile(Phase.TrainingPhase, Array(HeapData(Array(3, 4), Memory.Format.nc)))
     intercept[IllegalArgumentException] {
       seq.add(layer2)
     }
   }
 
   "Sequential" should "be correct when no memory reorder happened" in {
-    val layer1 = ReorderMemory(new HeapData(Array(3, 4), Memory.Format.nc),
-      new NativeData(Array(3, 4), Memory.Format.nc))
-    val layer2 = ReorderMemory(new NativeData(Array(3, 4), Memory.Format.nc),
-      new NativeData(Array(3, 4), Memory.Format.io))
-    val layer3 = ReorderMemory(new NativeData(Array(3, 4), Memory.Format.io),
-      new HeapData(Array(3, 4), Memory.Format.nc))
+    val layer1 = ReorderMemory(NativeData(Array(3, 4), Memory.Format.nc),
+      HeapData(Array(3, 4), Memory.Format.nc))
+    val layer2 = ReorderMemory(NativeData(Array(3, 4), Memory.Format.io),
+      NativeData(Array(3, 4), Memory.Format.nc))
+    val layer3 = ReorderMemory(HeapData(Array(3, 4), Memory.Format.nc),
+      NativeData(Array(3, 4), Memory.Format.io))
     val seq = new Sequential()
     seq.add(layer1)
     seq.add(layer2)
     seq.add(layer3)
-    seq.compile(Phase.TrainingPhase)
+    seq.compile(Phase.TrainingPhase, Array(HeapData(Array(3, 4), Memory.Format.nc)))
     val input1 = Tensor[Float](3, 4).rand()
     val input2 = Tensor[Float](3, 4).rand()
     val output1 = seq.forward(input1)
@@ -60,17 +62,26 @@ class SequentialSpec extends BigDLSpecHelper {
   }
 
   "Sequential" should "be correct when auto add memory reorder" in {
-    val layer1 = ReorderMemory(new HeapData(Array(3, 4), Memory.Format.nc),
-      new HeapData(Array(3, 4), Memory.Format.nc))
-    val layer2 = ReorderMemory(new NativeData(Array(3, 4), Memory.Format.nc),
-      new NativeData(Array(3, 4), Memory.Format.io))
-    val layer3 = ReorderMemory(new HeapData(Array(3, 4), Memory.Format.nc),
-      new HeapData(Array(3, 4), Memory.Format.nc))
-    val seq = new Sequential()
+    val layer1 = ReorderMemory(
+      HeapData(Array(3, 4), Memory.Format.nc),
+      HeapData(Array(3, 4), Memory.Format.nc),
+      HeapData(Array(3, 4), Memory.Format.nc),
+      HeapData(Array(3, 4), Memory.Format.nc))
+    val layer2 = ReorderMemory(
+      NativeData(Array(3, 4), Memory.Format.nc),
+      NativeData(Array(3, 4), Memory.Format.io),
+      NativeData(Array(3, 4), Memory.Format.nc),
+      NativeData(Array(3, 4), Memory.Format.io))
+    val layer3 = ReorderMemory(
+      HeapData(Array(3, 4), Memory.Format.nc),
+      HeapData(Array(3, 4), Memory.Format.nc),
+      HeapData(Array(3, 4), Memory.Format.nc),
+      HeapData(Array(3, 4), Memory.Format.nc))
+    val seq = Sequential()
     seq.add(layer1)
     seq.add(layer2)
     seq.add(layer3)
-    seq.compile(Phase.TrainingPhase)
+    seq.compile(Phase.TrainingPhase, Array(HeapData(Array(3, 4), Memory.Format.nc)))
     val input1 = Tensor[Float](3, 4).rand()
     val input2 = Tensor[Float](3, 4).rand()
     println(s"Input1 is $input1")

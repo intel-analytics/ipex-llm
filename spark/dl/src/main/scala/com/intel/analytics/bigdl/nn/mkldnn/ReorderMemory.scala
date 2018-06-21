@@ -19,41 +19,49 @@ import com.intel.analytics.bigdl.mkl.{DataType, Memory, MklDnn}
 import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.tensor.{DnnTensor, Tensor}
 
-class ReorderMemory(outputFormat: MemoryData, gradInputFormat: MemoryData) extends MklDnnLayer {
+class ReorderMemory(inputFormat: MemoryData, outputFormat: MemoryData,
+  gradInputFormat: MemoryData, gradOutputFormat: MemoryData
+) extends MklDnnLayer {
 
   _outputFormats = Array(outputFormat)
   _gradInputFormats = Array(gradInputFormat)
 
 
   override private[mkldnn] def initFwdPrimitives(inputs: Array[MemoryData], phase: Phase) = {
-    require(inputs.length == 1, "Only accept one tensor as input")
-    _inputFormats = inputs
+    _inputFormats = if (inputFormat == null) inputs else Array(inputFormat)
+    require(_inputFormats.length == 1, "Only accept one tensor as input")
 
+    require(_inputFormats(0).shape.product == outputFormat.shape.product,
+      "input output memory not match")
     val fwdReorderPrimDesc = MklDnn.ReorderPrimitiveDescCreate(
-      inputs(0).getPrimitiveDescription(runtime), outputFormat.getPrimitiveDescription(runtime))
+      _inputFormats(0).getPrimitiveDescription(runtime), outputFormat.getPrimitiveDescription(runtime))
     val fwdReorderPrim = MklDnnOps.primitiveCreate2(fwdReorderPrimDesc,
-      Array(inputs(0).getPrimitive(runtime)), Array(0), 1,
+      Array(_inputFormats(0).getPrimitive(runtime)), Array(0), 1,
       Array(outputFormat.getPrimitive(runtime)), 1)
 
     updateOutputPrimitives = Array(fwdReorderPrim)
     output = initTensor(outputFormat)
-    (inputs, _outputFormats)
+    (_inputFormats, _outputFormats)
   }
 
   override private[mkldnn] def initBwdPrimitives(grads: Array[MemoryData], phase: Phase) = {
-    require(grads.length == 1, "Only accept one tensor as input")
-    _gradOutputFormats = grads
-    _gradOutputFormatsForWeight = grads
+    require(gradInputFormat != null, "You should specify the backward shape")
+    _gradOutputFormats = if(gradOutputFormat == null) grads else Array(gradOutputFormat)
+    _gradOutputFormatsForWeight = if(gradOutputFormat == null) grads else Array(gradOutputFormat)
+    require(_gradOutputFormats.length == 1, "Only accept one tensor as input")
 
+    require(_gradOutputFormats(0).shape.product == gradInputFormat.shape.product,
+      "input output memory not match")
     val bwdReorderPrimDesc = MklDnn.ReorderPrimitiveDescCreate(
-      grads(0).getPrimitiveDescription(runtime), gradInputFormat.getPrimitiveDescription(runtime))
+      _gradOutputFormats(0).getPrimitiveDescription(runtime),
+      gradInputFormat.getPrimitiveDescription(runtime))
     val bwdReorderPrim = MklDnnOps.primitiveCreate2(bwdReorderPrimDesc,
-      grads.map(_.getPrimitive(runtime)), Array(0), 1,
+      _gradOutputFormats.map(_.getPrimitive(runtime)), Array(0), 1,
       _gradInputFormats.map(_.getPrimitive(runtime)), 1)
 
     updateGradInputPrimitives = Array(bwdReorderPrim)
     gradInput = initTensor(gradInputFormat)
-    (grads, _gradInputFormats)
+    (_gradOutputFormats, _gradInputFormats)
   }
 
   override def toString(): String = {
@@ -66,11 +74,16 @@ class ReorderMemory(outputFormat: MemoryData, gradInputFormat: MemoryData) exten
 }
 
 object ReorderMemory {
-  def apply(outputFormat: MemoryData): ReorderMemory = {
-    new ReorderMemory(outputFormat, outputFormat.cloneFormat())
+  def apply(inputFormat: MemoryData, outputFormat: MemoryData, gradInputFormat: MemoryData,
+    gradOutputFomat: MemoryData): ReorderMemory = {
+    new ReorderMemory(inputFormat, outputFormat, gradInputFormat, gradOutputFomat)
   }
 
   def apply(outputFormat: MemoryData, gradInputFormat: MemoryData): ReorderMemory = {
-    new ReorderMemory(outputFormat, gradInputFormat)
+    new ReorderMemory(null, outputFormat, gradInputFormat, null)
+  }
+
+  def apply(outputFormat: MemoryData): ReorderMemory = {
+    new ReorderMemory(null, outputFormat, null, null)
   }
 }

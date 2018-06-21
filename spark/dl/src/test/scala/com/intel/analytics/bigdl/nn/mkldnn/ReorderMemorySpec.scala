@@ -32,4 +32,20 @@ class ReorderMemorySpec extends BigDLSpecHelper {
     grad should be(input)
   }
 
+  "From heap to heap" should "be correct" in {
+    val layer = ReorderMemory(
+      HeapData(Array(3, 4), Memory.Format.nc),
+      HeapData(Array(3, 4), Memory.Format.nc),
+      HeapData(Array(3, 4), Memory.Format.nc),
+      HeapData(Array(3, 4), Memory.Format.nc)
+    )
+    layer.setRuntime(new MklDnnRuntime())
+    layer.initFwdPrimitives(Array(HeapData(Array(3, 4), Memory.Format.nc)), Phase.TrainingPhase)
+    layer.initBwdPrimitives(Array(NativeData(Array(3, 4), Memory.Format.nc)), Phase.TrainingPhase)
+    val input = Tensor[Float](3, 4).rand()
+    val output = layer.forward(input)
+    val grad = layer.backward(input, output)
+    grad should be(input)
+  }
+
 }

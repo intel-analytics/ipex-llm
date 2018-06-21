@@ -68,7 +68,7 @@ class ConcatTable extends MklDnnContainer {
     mklDnnModules.foreach(m => {
       val (realInput, out) = m.initFwdPrimitives(inputs, phase)
       require(out.length == 1, "output should be one tensor")
-      reorderManager.register(inputs(0), realInput(0))
+      inputs.zip(realInput).map {case(f, t) => reorderManager.register(f, t)}
       buffer.append(out(0))
     })
     _outputFormats = buffer.toArray
@@ -88,10 +88,11 @@ class ConcatTable extends MklDnnContainer {
       if (_gradInputFormats == null) {
         _gradInputFormats = gradInput
       } else {
-        require(_gradInputFormats(0) == gradInput(0), "reorder backward should be same")
+        require(_gradInputFormats(0) == gradInput(0), "backward grad formats should be same")
       }
     }
     _gradOutputFormats = realGradsBuffer.toArray
+    gradInput = initTensor(_gradInputFormats(0))
     (realGradsBuffer.toArray, _gradInputFormats)
   }
 
@@ -99,8 +100,9 @@ class ConcatTable extends MklDnnContainer {
     val realGradsBuffer = new ArrayBuffer[MemoryData]()
     for(i <- 0 until grads.length) {
       val m = mklDnnModules(i)
-      val realGradOutput = m.initGradWPrimitives(grads, phase)
-      require(realGradOutput.length == 1, "real grad length should be 1")
+      val realGradOutput = m.initGradWPrimitives(Array(grads(i)), phase)
+      require(realGradOutput.length == 1, s"real grad length should be 1, " +
+        s"but it's ${realGradOutput.length}")
       realGradsBuffer.append(realGradOutput(0))
     }
     _gradOutputWeightFormats = realGradsBuffer.toArray

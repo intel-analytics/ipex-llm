@@ -55,6 +55,24 @@ trait MklDnnModule {
   private[mkldnn] def outputFormats(): Array[MemoryData]
   private[mkldnn] def gradOutputFormats(): Array[MemoryData]
   private[mkldnn] def gradOutputWeightFormats(): Array[MemoryData]
+
+  protected def initActivity(formats: Array[MemoryData]): Activity = {
+    if (formats.length == 1) {
+      initTensor(formats(0))
+    } else {
+      T.array(formats.map(initTensor(_)))
+    }
+  }
+
+  protected def initTensor(format: MemoryData): Tensor[Float] = {
+    format match {
+      case d: NativeData =>
+        DnnTensor[Float](d.shape)
+      case d: HeapData =>
+        Tensor[Float](d.shape)
+      case _ => throw new UnsupportedOperationException("memory format is not supported")
+    }
+  }
 }
 
 trait MklDnnLayer extends AbstractModule[Activity, Activity, Float] with MklDnnModule {
@@ -189,24 +207,6 @@ trait MklDnnLayer extends AbstractModule[Activity, Activity, Float] with MklDnnM
     require(_gradOutputFormatsForWeight != null, "You should call initGradPrimitives first")
     _gradOutputFormatsForWeight
   }
-
-  protected def initActivity(formats: Array[MemoryData]): Activity = {
-    if (formats.length == 1) {
-      initTensor(formats(0))
-    } else {
-      T.array(formats.map(initTensor(_)))
-    }
-  }
-
-  protected def initTensor(format: MemoryData): Tensor[Float] = {
-    format match {
-      case d: NativeData =>
-        DnnTensor[Float](d.shape)
-      case d: HeapData =>
-        Tensor[Float](d.shape)
-      case _ => throw new UnsupportedOperationException("memory format is not supported")
-    }
-  }
 }
 
 /**
@@ -226,8 +226,8 @@ trait MklDnnContainer extends DynamicContainer[Activity, Activity, Float] with M
    * Create MklDnnRuntime and compile the model
    * @param phase
    */
-  final def compile(phase: Phase): Unit = {
-    compile(phase, new MklDnnRuntime())
+  final def compile(phase: Phase, formats: Array[MemoryData]): Unit = {
+    compile(phase, new MklDnnRuntime(), formats)
   }
 
   /**
@@ -236,18 +236,19 @@ trait MklDnnContainer extends DynamicContainer[Activity, Activity, Float] with M
    * @param phase
    * @param runtime
    */
-  final def compile(phase: Phase, runtime: MklDnnRuntime): Unit = {
+  final def compile(phase: Phase, runtime: MklDnnRuntime, formats: Array[MemoryData]): Unit = {
     freeze()
     fusion(phase)
-    initPrimitives(phase, runtime)
+    initPrimitives(phase, runtime, formats)
   }
 
-  final def initPrimitives(phase: Phase, runtime: MklDnnRuntime): Unit = {
+  final def initPrimitives(phase: Phase, runtime: MklDnnRuntime, formats: Array[MemoryData])
+  : Unit = {
     setRuntime(runtime)
-    initFwdPrimitives(null, phase)
+    val outputFormats = initFwdPrimitives(formats, phase)._2
     if (phase == Phase.TrainingPhase) {
-      initBwdPrimitives(null, phase)
-      initGradWPrimitives(null, phase)
+      initBwdPrimitives(outputFormats, phase)
+      initGradWPrimitives(outputFormats, phase)
     }
   }
 

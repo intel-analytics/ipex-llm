@@ -23,8 +23,8 @@ class InputSpec extends BigDLSpecHelper {
   "Input" should "be correct" in {
     val layer = Input(Array(2, 2), Memory.Format.nc)
     layer.setRuntime(new MklDnnRuntime())
-    layer.initFwdPrimitives(null, Phase.TrainingPhase)
-    layer.initBwdPrimitives(null, Phase.TrainingPhase)
+    layer.initFwdPrimitives(Array(), Phase.TrainingPhase)
+    layer.initBwdPrimitives(Array(), Phase.TrainingPhase)
     val tensor = Tensor[Float](2, 2).rand()
     val grad = Tensor[Float](2, 2).rand()
     layer.forward(tensor) should be(tensor)

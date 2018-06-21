@@ -20,56 +20,62 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.{BigDLSpecHelper, T}
 
 class ConcatTableSpec extends BigDLSpecHelper {
-  "ConcatTable" should "throw exception when input format is different" in {
+  "ConcatTable" should "throw exception when input layout is different" in {
     val container = ConcatTable()
-    container.add(ReorderMemory(HeapData(Array(1, 2, 3, 4), Memory.Format.nchw),
-      HeapData(Array(1, 2, 3, 4), Memory.Format.nchw)))
-    container.add(ReorderMemory(NativeData(Array(1, 2, 3, 4), Memory.Format.nchw),
-      HeapData(Array(1, 2, 3, 4), Memory.Format.nchw)))
+    container.add(Input(Array(1, 2, 3, 4), Memory.Format.nchw))
+    container.add(Input(Array(1, 2, 3, 4), Memory.Format.nhwc))
 
     intercept[IllegalArgumentException] {
-      container.compile(Phase.TrainingPhase)
+      container.compile(Phase.TrainingPhase, Array(HeapData(Array(1, 2, 3, 4), Memory.Format.nchw)))
     }
   }
 
-  "ConcatTable" should "throw exception when input layout is different" in {
+  "ConcatTable" should "throw exception when input format is different" in {
     val container = ConcatTable()
     container.add(ReorderMemory(HeapData(Array(1, 2, 3, 4), Memory.Format.nchw),
+      HeapData(Array(1, 2, 3, 4), Memory.Format.nchw),
+      HeapData(Array(1, 2, 3, 4), Memory.Format.nchw),
       HeapData(Array(1, 2, 3, 4), Memory.Format.nchw)))
-    container.add(ReorderMemory(HeapData(Array(1, 2, 3, 4), Memory.Format.nhwc),
+    container.add(ReorderMemory(NativeData(Array(1, 2, 3, 4), Memory.Format.nchw),
+      HeapData(Array(1, 2, 3, 4), Memory.Format.nchw),
+      NativeData(Array(1, 2, 3, 4), Memory.Format.nchw),
       HeapData(Array(1, 2, 3, 4), Memory.Format.nchw)))
 
     intercept[IllegalArgumentException] {
-      container.compile(Phase.TrainingPhase)
+      container.compile(Phase.TrainingPhase, Array(HeapData(Array(1, 2, 3, 4), Memory.Format.nchw)))
     }
   }
 
   "ConcatTable" should "throw exception when input shape is different" in {
     val container = ConcatTable()
-    container.add(ReorderMemory(HeapData(Array(1, 2, 3, 4), Memory.Format.nchw),
-      HeapData(Array(1, 2, 3, 4), Memory.Format.nchw)))
-    container.add(ReorderMemory(HeapData(Array(2, 2, 3, 4), Memory.Format.nchw),
-      HeapData(Array(2, 2, 3, 4), Memory.Format.nchw)))
+    container.add(Input(Array(1, 2, 3, 4), Memory.Format.nchw))
+    container.add(Input(Array(1, 3, 4, 2), Memory.Format.nchw))
 
     intercept[IllegalArgumentException] {
-      container.compile(Phase.TrainingPhase)
+      container.compile(Phase.TrainingPhase, Array(HeapData(Array(1, 2, 3, 4), Memory.Format.nchw)))
     }
   }
 
   "ConcatTable" should "be good" in {
     val container = ConcatTable()
-    container.add(ReorderMemory(HeapData(Array(3, 4), Memory.Format.nc),
+    container.add(ReorderMemory(
+      HeapData(Array(3, 4), Memory.Format.nc),
+      HeapData(Array(3, 4), Memory.Format.nc),
+      HeapData(Array(3, 4), Memory.Format.nc),
       HeapData(Array(3, 4), Memory.Format.nc)))
     val subcontainer = Sequential()
-    subcontainer.add(ReorderMemory(HeapData(Array(3, 4), Memory.Format.nc),
+    subcontainer.add(ReorderMemory(
+      HeapData(Array(3, 4), Memory.Format.nc),
+      NativeData(Array(3, 4), Memory.Format.nc),
+      HeapData(Array(3, 4), Memory.Format.nc),
       NativeData(Array(3, 4), Memory.Format.nc)))
-    subcontainer.add(ReorderMemory(NativeData(Array(3, 4), Memory.Format.nc),
-      NativeData(Array(3, 4), Memory.Format.io)))
     subcontainer.add(ReorderMemory(NativeData(Array(3, 4), Memory.Format.io),
-      HeapData(Array(3, 4), Memory.Format.nc)))
+      NativeData(Array(3, 4), Memory.Format.nc)))
+    subcontainer.add(ReorderMemory(HeapData(Array(3, 4), Memory.Format.nc),
+      NativeData(Array(3, 4), Memory.Format.io)))
     container.add(subcontainer)
 
-    container.compile(Phase.TrainingPhase)
+    container.compile(Phase.TrainingPhase, Array(HeapData(Array(3, 4), Memory.Format.nc)))
     val input1 = Tensor[Float](3, 4).rand()
     val output1 = container.forward(input1).toTable
     output1(1).asInstanceOf[Tensor[Float]] should be(input1)
