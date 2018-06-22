@@ -216,6 +216,10 @@ class PythonZooKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonB
     Net.loadTF[T](path, inputs.asScala, outputs.asScala, order, Option(binFile))
   }
 
+  def netLoadTF(folder: String): AbstractModule[Activity, Activity, T] = {
+    Net.loadTF[T](folder)
+  }
+
   def kerasNetToModel(value: KerasNet[T]): Model[T] = {
     value.toModel()
   }
