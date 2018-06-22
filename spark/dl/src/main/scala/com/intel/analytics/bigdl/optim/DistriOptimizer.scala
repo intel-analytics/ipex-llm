@@ -55,6 +55,9 @@ object DistriOptimizer {
    * @param modelGradients gradients of the cached models
    * @param localCriterions cached criterion
    * @param localStates cached state
+   * @param moduleTimeList module running time
+   * @param localMethods cached validation methods
+   * @param optimMethods cached optim methods
    * @tparam T Tensor element type
    */
   case class Cache[T](
@@ -65,7 +68,7 @@ object DistriOptimizer {
     localStates: Array[Table],
     var moduleTimeList: Array[Long] = null,
     localMethods: Array[Option[Array[ValidationMethod[T]]]],
-    optimMethod: Map[String, OptimMethod[T]]
+    optimMethods: Map[String, OptimMethod[T]]
   )
 
   /**
@@ -77,7 +80,7 @@ object DistriOptimizer {
    * @param endWhen trigger to stop training
    * @param metrics metrics
    * @param models cached models
-   * @param optimMethods optimization method
+   * @param optimMethods optimization methods
    * @param parameters [[AllReduceParameter]]
    * @param validationTrigger validation trigger
    * @param validationDataSet validation dataset
@@ -345,7 +348,7 @@ object DistriOptimizer {
           parameters.foreach { p =>
             parameterProcessers.foreach(_.processParameters(p._2, modelCache, driverState))
           }
-          modelCache.optimMethod.foreach{ case (name, optimMethod) =>
+          modelCache.optimMethods.foreach{ case (name, optimMethod) =>
             var time = System.nanoTime()
             optimMethod.state.update("epoch", driverState[Int]("epoch"))
             optimMethod.state.update("neval", driverState[Int]("neval"))

@@ -849,18 +849,18 @@ class DistriOptimizer(Optimizer):
         :param batch_size: training batch size
         """
         if not optim_method:
-            optim_method = {model.name: SGD()}
+            optim_methods = {model.name: SGD()}
         if isinstance(optim_method, OptimMethod):
-            optim_method = {model.name: optim_method}
+            optim_methods = {model.name: optim_method}
         if isinstance(training_rdd, RDD):
             JavaValue.__init__(self, None, bigdl_type, model.value,
                                training_rdd, criterion,
-                               optim_method, end_trigger, batch_size)
+                               optim_methods, end_trigger, batch_size)
         elif isinstance(training_rdd, DataSet):
             self.bigdl_type = bigdl_type
             self.value = callBigDlFunc(self.bigdl_type, "createDistriOptimizerFromDataSet",
                                        model.value, training_rdd, criterion,
-                                       optim_method, end_trigger, batch_size)
+                                       optim_methods, end_trigger, batch_size)
 
 
 class LocalOptimizer(BaseOptimizer):
@@ -889,9 +889,9 @@ class LocalOptimizer(BaseOptimizer):
                  cores=None,
                  bigdl_type="float"):
         if not optim_method:
-            optim_method = {model.name: SGD()}
+            optim_methods = {model.name: SGD()}
         if isinstance(optim_method, OptimMethod):
-            optim_method = {model.name: optim_method}
+            optim_methods = {model.name: optim_method}
         if cores is None:
             cores = multiprocessing.cpu_count()
         JavaValue.__init__(self, None, bigdl_type,
@@ -899,7 +899,7 @@ class LocalOptimizer(BaseOptimizer):
                            JTensor.from_ndarray(Y),
                            model.value,
                            criterion,
-                           optim_method, end_trigger, batch_size, cores)
+                           optim_methods, end_trigger, batch_size, cores)
 
     def set_validation(self, batch_size, X_val, Y_val, trigger, val_method=None):
         """
