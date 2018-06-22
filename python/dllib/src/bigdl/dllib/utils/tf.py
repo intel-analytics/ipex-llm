@@ -89,7 +89,7 @@ def export_tf(sess, folder, inputs, outputs):
                 % (node.name, inputs))
 
     if not os.path.isdir(folder):
-        os.mkdir(folder)
+        os.makedirs(folder)
 
     with gfile.GFile(os.path.join(folder, "frozen_inference_graph.pb"), "wb") as f:
         f.write(optimized_graph_def.SerializeToString())
