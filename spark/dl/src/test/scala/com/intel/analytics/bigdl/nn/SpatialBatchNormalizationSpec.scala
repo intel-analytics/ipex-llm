@@ -53,8 +53,8 @@ class SpatialBatchNormalizationSpec extends FlatSpec with Matchers {
 
     val gradInput = bn.backward(input, gradOutput)
 
-    val saveMean = bn.globalMean
-    val saveStd = bn.globalStd
+    val saveMean = bn.saveMean
+    val saveStd = bn.saveStd
     val runningMean = bn.runningMean
     val runningVar = bn.runningVar
 
@@ -90,15 +90,15 @@ class SpatialBatchNormalizationSpec extends FlatSpec with Matchers {
       }
     ))
 
-    val saveMean1 = bn1.globalMean
-    val saveStd1 = bn1.globalStd
+    val saveMean1 = bn1.saveMean
+    val saveStd1 = bn1.saveStd
     val runningMean1 = bn1.runningMean
     val runningVar1 = bn1.runningVar
     val gradInput1 = bn1.gradInput
     val out1 = bn1.output.squeeze
 
-    val saveMean2 = bn2.globalMean
-    val saveStd2 = bn2.globalStd
+    val saveMean2 = bn2.saveMean
+    val saveStd2 = bn2.saveStd
     val runningMean2 = bn2.runningMean
     val runningVar2 = bn2.runningVar
     val gradInput2 = bn2.gradInput

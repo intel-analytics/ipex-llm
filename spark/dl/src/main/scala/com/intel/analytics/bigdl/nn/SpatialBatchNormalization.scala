@@ -54,11 +54,13 @@ class SpatialBatchNormalization[T: ClassTag](
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
 
     val parallism = getParallism().getOrElse(1)
-
-    ParameterSynchronizer.register(this.meanKey, parallism)
-    ParameterSynchronizer.register(this.stdKey, parallism)
-    ParameterSynchronizer.register(this.gmKey, parallism)
-    ParameterSynchronizer.register(this.gxmKey, parallism)
+    val needSync = if (parallism != 1) {
+      ParameterSynchronizer.register(this.meanKey, parallism)
+      ParameterSynchronizer.register(this.stdKey, parallism)
+      ParameterSynchronizer.register(this.gmKey, parallism)
+      ParameterSynchronizer.register(this.gxmKey, parallism)
+      true
+    } else false
 
     checkInputDim(input)
     output.resizeAs(input)
@@ -95,7 +97,7 @@ class SpatialBatchNormalization[T: ClassTag](
             eps.toFloat, momentum.toFloat, needFix = needFix,
             globalMean = globalMean.asInstanceOf[Array[Float]],
             globalStd = globalStd.asInstanceOf[Array[Float]],
-            meanKey = this.meanKey, stdKey = this.stdKey)
+            meanKey = this.meanKey, stdKey = this.stdKey, needSync = needSync)
         } else {
           SpatialBatchNormalization.updateOutputNCHWTrainDouble(
             _input.asInstanceOf[Tensor[Double]], output.asInstanceOf[Tensor[Double]],
@@ -105,7 +107,7 @@ class SpatialBatchNormalization[T: ClassTag](
             eps, momentum, needFix = needFix,
             globalMean = globalMean.asInstanceOf[Array[Double]],
             globalStd = globalStd.asInstanceOf[Array[Double]],
-            meanKey = this.meanKey, stdKey = this.stdKey)
+            meanKey = this.meanKey, stdKey = this.stdKey, needSync = needSync)
         }
       } else {
         if (ev.getType() == FloatType) {
@@ -156,6 +158,7 @@ class SpatialBatchNormalization[T: ClassTag](
   }
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
+    val needSync = getParallism() != None && getParallism().get > 1
     _gradOutput.set(gradOutput)
     makeBatch(_gradOutput)
     gxMean.zero()
@@ -176,7 +179,7 @@ class SpatialBatchNormalization[T: ClassTag](
             saveMean.asInstanceOf[Tensor[Float]], saveStd.asInstanceOf[Tensor[Float]],
             gMean.asInstanceOf[Tensor[Float]], gxMean.asInstanceOf[Tensor[Float]],
             globalGMean.asInstanceOf[Array[Float]], globalGxmMean.asInstanceOf[Array[Float]],
-            gMeanKey = gmKey, gxMeanKey = gxmKey)
+            gMeanKey = gmKey, gxMeanKey = gxmKey, needSync = needSync)
         } else {
           SpatialBatchNormalization.updateGradInputNCHWTrainDouble(
             _input.asInstanceOf[Tensor[Double]], _gradOutput.asInstanceOf[Tensor[Double]],
@@ -184,7 +187,7 @@ class SpatialBatchNormalization[T: ClassTag](
             saveMean.asInstanceOf[Tensor[Double]], saveStd.asInstanceOf[Tensor[Double]],
             gMean.asInstanceOf[Tensor[Double]], gxMean.asInstanceOf[Tensor[Double]],
             globalGMean.asInstanceOf[Array[Double]], globalGxmMean.asInstanceOf[Array[Double]],
-            gMeanKey = gmKey, gxMeanKey = gxmKey)
+            gMeanKey = gmKey, gxMeanKey = gxmKey, needSync = needSync)
         }
       } else {
         if (ev.getType() == FloatType) {
@@ -1024,7 +1027,8 @@ object SpatialBatchNormalization {
     globalGmean: Array[Float],
     globalGxmean: Array[Float],
     gMeanKey: String = null,
-    gxMeanKey: String = null
+    gxMeanKey: String = null,
+    needSync: Boolean = false
   ): Unit = {
     require(input.nDimension() == 4, "BN require a 4D input")
     require(input.isContiguous(), "input is not contiguous")
@@ -1074,48 +1078,59 @@ object SpatialBatchNormalization {
       b += 1
     }
 
-    ParameterSynchronizer.syncData(gMeanKey, gMean)
+    var gmeanEventLen = 1
+    var gmxmeanEventLen = 1
 
-    val gMeanEventData = ParameterSynchronizer.collect[Float](gMeanKey)
+    if (needSync) {
+
+      ParameterSynchronizer.syncData(gMeanKey, gMean)
+
+      val gMeanEventData = ParameterSynchronizer.collect[Float](gMeanKey)
+      var c = 0
+      while (c < nChannel) {
+        globalGmean(c) = 0.0f
+        gMeanEventData.keySet.asScala.foreach(threadId => {
+          val localGmean = gMeanEventData.get(threadId)
+          val localGmeanOffset = localGmean.storageOffset() - 1
+          globalGmean(c) += localGmean.storage.array()(c + localGmeanOffset)
+        })
+        c += 1
+      }
+
+      gmeanEventLen = gMeanEventData.size
+
+      ParameterSynchronizer.reset[Float](gMeanKey)
+
+      ParameterSynchronizer.syncData(gxMeanKey, gxMean)
+
+      val gxMeanEventData = ParameterSynchronizer.collect[Float](gxMeanKey)
+
+      c = 0
+      while (c < nChannel) {
+        globalGxmean(c) = 0.0f
+        gxMeanEventData.keySet.asScala.foreach(threadId => {
+          val localGxmean = gxMeanEventData.get(threadId)
+          val localGxmeanOffset = localGxmean.storageOffset() - 1
+          globalGxmean(c) += localGxmean.storage.array()(c + localGxmeanOffset)
+        })
+        c += 1
+      }
+
+      gmxmeanEventLen = gxMeanEventData.size
+
+      ParameterSynchronizer.reset[Float](gxMeanKey)
+    }
+
     var c = 0
-    while (c < nChannel) {
-      globalGmean(c) = 0.0f
-      gMeanEventData.keySet.asScala.foreach(threadId => {
-        val localGmean = gMeanEventData.get(threadId)
-        val localGmeanOffset = localGmean.storageOffset() - 1
-        globalGmean(c) += localGmean.storage.array()(c + localGmeanOffset)
-      })
-      c += 1
-    }
-
-    val gmeanEventLen = gMeanEventData.size
-
-    ParameterSynchronizer.reset[Float](gMeanKey)
-
-    ParameterSynchronizer.syncData(gxMeanKey, gxMean)
-
-    val gxMeanEventData = ParameterSynchronizer.collect[Float](gxMeanKey)
-
-    c = 0
-    while (c < nChannel) {
-      globalGxmean(c) = 0.0f
-      gxMeanEventData.keySet.asScala.foreach(threadId => {
-        val localGxmean = gxMeanEventData.get(threadId)
-        val localGxmeanOffset = localGxmean.storageOffset() - 1
-        globalGxmean(c) += localGxmean.storage.array()(c + localGxmeanOffset)
-      })
-      c += 1
-    }
-
-    val gmxmeanEventLen = gxMeanEventData.size
-
-    ParameterSynchronizer.reset[Float](gxMeanKey)
-
-    c = 0
     val size = n / nChannel
     while(c < nChannel) {
-      gMeanData(c) = globalGmean(c) / (size * gmeanEventLen)
-      gxMeanData(c) = globalGxmean(c) / (size * gmxmeanEventLen)
+      if(needSync) {
+        gMeanData(c) = globalGmean(c) / (size * gmeanEventLen)
+        gxMeanData(c) = globalGxmean(c) / (size * gmxmeanEventLen)
+      } else {
+        gMeanData(c) = gMeanData(c) / (size * gmeanEventLen)
+        gxMeanData(c) = gxMeanData(c) / (size * gmxmeanEventLen)
+      }
       c += 1
     }
 
@@ -1171,7 +1186,8 @@ object SpatialBatchNormalization {
                                                 globalMean: Array[Float] = null,
                                                 globalStd: Array[Float] = null,
                                                 meanKey: String = null,
-                                                stdKey: String = null)
+                                                stdKey: String = null,
+                                                needSync: Boolean = false)
   : Unit = {
     require(input.isContiguous(), "BatchNorm NCHW require a contiguous input")
     val inputData = input.storage().array()
@@ -1207,30 +1223,29 @@ object SpatialBatchNormalization {
       b += 1
     }
 
-    ParameterSynchronizer.syncData(meanKey, saveMean)
+    var meanLen = 1
+    if (needSync) {
+      ParameterSynchronizer.syncData(meanKey, saveMean)
+      val meanEventData = ParameterSynchronizer.collect[Float](meanKey)
+      meanLen = meanEventData.size
+      var c = 0
+      while (c < nChannels) {
+        globalMean(c) = 0.0f
+        meanEventData.keySet.asScala.foreach(threadId => {
+          val localMean = meanEventData.get(threadId)
+          val localOffset = localMean.storageOffset() - 1
+          globalMean(c) += localMean.storage.array()(c + localOffset)
+        })
+        c += 1
+      }
 
-    val meanEventData = ParameterSynchronizer.collect[Float](meanKey)
-
-    val meanLen = meanEventData.size
-
-    var c = 0
-    while (c < nChannels) {
-      globalMean(c) = 0.0f
-      meanEventData.keySet.asScala.foreach(threadId => {
-        val localMean = meanEventData.get(threadId)
-        val localOffset = localMean.storageOffset() - 1
-        globalMean(c) += localMean.storage.array()(c + localOffset)
-      })
-      c += 1
+      ParameterSynchronizer.reset[Float](meanKey)
+      System.arraycopy(globalMean, 0, meanData, meanOffset, nChannels)
     }
-
-    ParameterSynchronizer.reset[Float](meanKey)
-
-    System.arraycopy(globalMean, 0, meanData, meanOffset, nChannels)
 
     val n = input.nElement()
     val frameSize = n / nChannels
-    c = 0
+    var c = 0
     val runningMeanData = runningMean.storage().array()
     val runningMeanOffset = runningMean.storageOffset() - 1
     while(c < nChannels) {
@@ -1261,26 +1276,30 @@ object SpatialBatchNormalization {
       b += 1
     }
 
-    ParameterSynchronizer.syncData(stdKey, saveStd)
+    var stdLen = 1
 
-    val stdEventData = ParameterSynchronizer.collect[Float](stdKey)
+    if (needSync) {
+      ParameterSynchronizer.syncData(stdKey, saveStd)
 
-    c = 0
-    while (c < nChannels) {
-      globalStd(c) = 0.0f
-      stdEventData.keySet.asScala.foreach(threadId => {
-        val localStd = stdEventData.get(threadId)
-        val localStdOffSet = localStd.storageOffset() - 1
-        globalStd(c) += localStd.storage.array()(c + localStdOffSet)
-      })
-      c += 1
+      val stdEventData = ParameterSynchronizer.collect[Float](stdKey)
+
+      c = 0
+      while (c < nChannels) {
+        globalStd(c) = 0.0f
+        stdEventData.keySet.asScala.foreach(threadId => {
+          val localStd = stdEventData.get(threadId)
+          val localStdOffSet = localStd.storageOffset() - 1
+          globalStd(c) += localStd.storage.array()(c + localStdOffSet)
+        })
+        c += 1
+      }
+
+      stdLen = stdEventData.size
+
+      ParameterSynchronizer.reset[Float](stdKey)
+
+      System.arraycopy(globalStd, 0, stdData, stdOffset, nChannels)
     }
-
-    val stdLen = stdEventData.size
-
-    ParameterSynchronizer.reset[Float](stdKey)
-
-    System.arraycopy(globalStd, 0, stdData, stdOffset, nChannels)
 
     c = 0
     val runningVarData = runningVar.storage().array()
@@ -1369,7 +1388,8 @@ object SpatialBatchNormalization {
                                                  globalMean: Array[Double] = null,
                                                  globalStd: Array[Double] = null,
                                                  meanKey: String = null,
-                                                 stdKey: String = null)
+                                                 stdKey: String = null,
+                                                 needSync: Boolean = false)
   : Unit = {
     require(input.isContiguous(), "BatchNorm NCHW require a contiguous input")
     val inputData = input.storage().array()
@@ -1404,32 +1424,33 @@ object SpatialBatchNormalization {
       }
       b += 1
     }
+    var meanLen = 1
+    if (needSync) {
+      ParameterSynchronizer.syncData(meanKey, saveMean)
 
-    ParameterSynchronizer.syncData(meanKey, saveMean)
+      val meanEventData = ParameterSynchronizer.collect[Double](meanKey)
 
-    val meanEventData = ParameterSynchronizer.collect[Double](meanKey)
+      meanLen = meanEventData.size
 
-    val meanLen = meanEventData.size
+      var c = 0
+      while (c < nChannels) {
+        globalMean(c) = 0.0
+        meanEventData.keySet.asScala.foreach(threadId => {
+          val localMean = meanEventData.get(threadId)
+          val localOffset = localMean.storageOffset() - 1
+          globalMean(c) += localMean.storage.array()(c + localOffset)
+        })
+        c += 1
+      }
 
-    var c = 0
-    while (c < nChannels) {
-      globalMean(c) = 0.0
-      meanEventData.keySet.asScala.foreach(threadId => {
-        val localMean = meanEventData.get(threadId)
-        val localOffset = localMean.storageOffset() - 1
-        globalMean(c) += localMean.storage.array()(c + localOffset)
-      })
-      c += 1
+      ParameterSynchronizer.reset[Double](meanKey)
+
+      System.arraycopy(globalMean, 0, meanData, meanOffset, nChannels)
     }
-
-    ParameterSynchronizer.reset[Double](meanKey)
-
-    System.arraycopy(globalMean, 0, meanData, meanOffset, nChannels)
-
 
     val n = input.nElement()
     val frameSize = n / nChannels
-    c = 0
+    var c = 0
     val runningMeanData = runningMean.storage().array()
     val runningMeanOffset = runningMean.storageOffset() - 1
     while(c < nChannels) {
@@ -1457,27 +1478,24 @@ object SpatialBatchNormalization {
       }
       b += 1
     }
-
-    ParameterSynchronizer.syncData(stdKey, saveStd)
-
-    val stdEventData = ParameterSynchronizer.collect[Double](stdKey)
-
-    c = 0
-    while (c < nChannels) {
-      globalStd(c) = 0.0
-      stdEventData.keySet.asScala.foreach(threadId => {
-        val localStd = stdEventData.get(threadId)
-        val localStdOffSet = localStd.storageOffset() - 1
-        globalStd(c) += localStd.storage.array()(c + localStdOffSet)
-      })
-      c += 1
+    var stdLen = 1
+    if (needSync) {
+      ParameterSynchronizer.syncData(stdKey, saveStd)
+      val stdEventData = ParameterSynchronizer.collect[Double](stdKey)
+      c = 0
+      while (c < nChannels) {
+        globalStd(c) = 0.0
+        stdEventData.keySet.asScala.foreach(threadId => {
+          val localStd = stdEventData.get(threadId)
+          val localStdOffSet = localStd.storageOffset() - 1
+          globalStd(c) += localStd.storage.array()(c + localStdOffSet)
+        })
+        c += 1
+      }
+      stdLen = stdEventData.size
+      ParameterSynchronizer.reset[Double](stdKey)
+      System.arraycopy(globalStd, 0, stdData, stdOffset, nChannels)
     }
-
-    val stdLen = stdEventData.size
-
-    ParameterSynchronizer.reset[Double](stdKey)
-
-    System.arraycopy(globalStd, 0, stdData, stdOffset, nChannels)
 
     c = 0
     val runningVarData = runningVar.storage().array()
@@ -1570,7 +1588,8 @@ object SpatialBatchNormalization {
     globalGmean: Array[Double],
     globalGxmean: Array[Double],
     gMeanKey: String = null,
-    gxMeanKey: String = null
+    gxMeanKey: String = null,
+    needSync: Boolean = false
   ): Unit = {
     require(input.nDimension() == 4, "BN require a 4D input")
     require(input.isContiguous(), "input is not contiguous")
@@ -1619,50 +1638,58 @@ object SpatialBatchNormalization {
       }
       b += 1
     }
+    var gmeanEventLen = 1
+    var gmxmeanEventLen = 1
+    if (needSync) {
+      ParameterSynchronizer.syncData(gMeanKey, gMean)
+      val gMeanEventData = ParameterSynchronizer.collect[Double](gMeanKey)
+      var c = 0
+      while (c < nChannel) {
+        globalGmean(c) = 0.0
+        gMeanEventData.keySet.asScala.foreach(threadId => {
+          val localGmean = gMeanEventData.get(threadId)
+          val localGmeanOffset = localGmean.storageOffset() - 1
+          globalGmean(c) += localGmean.storage.array()(c + localGmeanOffset)
+        })
+        c += 1
+      }
 
-    ParameterSynchronizer.syncData(gMeanKey, gMean)
+      gmeanEventLen = gMeanEventData.size
 
-    val gMeanEventData = ParameterSynchronizer.collect[Double](gMeanKey)
+      ParameterSynchronizer.reset[Double](gMeanKey)
+
+      ParameterSynchronizer.syncData(gxMeanKey, gxMean)
+
+      val gxMeanEventData = ParameterSynchronizer.collect[Double](gxMeanKey)
+
+      c = 0
+      while (c < nChannel) {
+        globalGxmean(c) = 0.0
+        gxMeanEventData.keySet.asScala.foreach(threadId => {
+          val localGxmean = gxMeanEventData.get(threadId)
+          val localGxmeanOffset = localGxmean.storageOffset() - 1
+          globalGxmean(c) += localGxmean.storage.array()(c + localGxmeanOffset)
+        })
+        c += 1
+      }
+
+      gmxmeanEventLen = gxMeanEventData.size
+
+      ParameterSynchronizer.reset[Double](gxMeanKey)
+    }
+
     var c = 0
-    while (c < nChannel) {
-      globalGmean(c) = 0.0
-      gMeanEventData.keySet.asScala.foreach(threadId => {
-        val localGmean = gMeanEventData.get(threadId)
-        val localGmeanOffset = localGmean.storageOffset() - 1
-        globalGmean(c) += localGmean.storage.array()(c + localGmeanOffset)
-      })
-      c += 1
-    }
-
-    val gmeanEventLen = gMeanEventData.size
-
-    ParameterSynchronizer.reset[Double](gMeanKey)
-
-    ParameterSynchronizer.syncData(gxMeanKey, gxMean)
-
-    val gxMeanEventData = ParameterSynchronizer.collect[Double](gxMeanKey)
-
-    c = 0
-    while (c < nChannel) {
-      globalGxmean(c) = 0.0
-      gxMeanEventData.keySet.asScala.foreach(threadId => {
-        val localGxmean = gxMeanEventData.get(threadId)
-        val localGxmeanOffset = localGxmean.storageOffset() - 1
-        globalGxmean(c) += localGxmean.storage.array()(c + localGxmeanOffset)
-      })
-      c += 1
-    }
-
-    val gmxmeanEventLen = gxMeanEventData.size
-
-    ParameterSynchronizer.reset[Double](gxMeanKey)
-
-    c = 0
     val size = n / nChannel
     while(c < nChannel) {
-      gMeanData(c) = globalGmean(c) / (size * gmeanEventLen)
-      val invStd = saveStdData(saveStdOffset + c)
-      gxMeanData(c) = globalGxmean(c) * invStd * invStd / (size * gmxmeanEventLen)
+      if (needSync) {
+        gMeanData(c) = globalGmean(c) / (size * gmeanEventLen)
+        val invStd = saveStdData(saveStdOffset + c)
+        gxMeanData(c) = globalGxmean(c) * invStd * invStd / (size * gmxmeanEventLen)
+      } else {
+        gMeanData(c) = gMeanData(c) / (size * gmeanEventLen)
+        val invStd = saveStdData(saveStdOffset + c)
+        gxMeanData(c) = gxMeanData(c) * invStd * invStd / (size * gmxmeanEventLen)
+      }
       c += 1
     }
 
