@@ -371,6 +371,12 @@ object DistriOptimizer {
         wallClockTime += end - start
         driverState("isGradientUpdated") = true
         driverState("Loss") = lossSum.value.toFloat / numFinishedModelUpdates
+        optimMethods.foreach{ v =>
+          v._2.updateHyperParameter()
+        }
+        // TODO: Support show learningrate for multiOptimMethod
+        driverState(s"LearningRate") = optimMethods.head._2.getLearningRate().toFloat
+
         driverState("Throughput") = recordsNum.value.toFloat / ((end - start) / 1e9f)
         val _header = header(driverState[Int]("epoch"), recordsProcessedThisEpoch, numSamples,
           driverState[Int]("neval"), wallClockTime)
@@ -549,6 +555,7 @@ object DistriOptimizer {
     // Not parallelizable, because driverState is changing each iteration.
     scalarTrigger.foreach { v =>
       if (v._2(driverState)) {
+        // TODO: Support show learningrate for multiOptimMethod
         require(driverState.contains(v._1), s"DistriOptimizer.saveSummary: Summary ${v._1} " +
           s"is not supported now.")
         trainSummary.addScalar(
