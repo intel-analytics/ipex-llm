@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.nn.mkldnn
 
-import com.intel.analytics.bigdl.nn.ReLU
+import com.intel.analytics.bigdl.nn.{ReLU => OReLU}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import org.apache.spark.sql.catalyst.expressions.Conv
@@ -27,7 +27,7 @@ import scala.util.Random
 class ReLUSpec extends FlatSpec with Matchers {
 
   "Relu dnn should be same with bigdl relu" should "work correctly" in {
-    val relu = ReLU[Float](ip = false)
+    val relu = OReLU[Float](ip = false)
     val reludnn = ReLUDnn[Float](ip = false)
     val input = Tensor[Float](4, 96, 55, 55).rand(-1, 1)
     val gradOutput = Tensor[Float](4, 96, 55, 55).rand(-1, 1)
@@ -44,7 +44,7 @@ class ReLUSpec extends FlatSpec with Matchers {
     println("done")
   }
   "ReLU forward" should "work correctly" in {
-    val relu = ReLU[Float](ip = false)
+    val relu = OReLU[Float](ip = false)
     val input = Tensor[Float](4, 96, 55, 55).rand(-1, 1)
     val gradOutput = Tensor[Float](4, 96, 55, 55).rand(-1, 1)
     // warm up

@@ -24,6 +24,7 @@ import com.intel.analytics.bigdl.models.resnet.ResNet
 import com.intel.analytics.bigdl.models.resnet.ResNet.DatasetType
 import com.intel.analytics.bigdl.models.vgg.{Vgg_16, Vgg_19}
 import com.intel.analytics.bigdl.nn.{Module => _, _}
+import com.intel.analytics.bigdl.nn.{ReLU => OReLU}
 import com.intel.analytics.bigdl.tensor.{MklDnnTensor, Tensor}
 import com.intel.analytics.bigdl.utils.RandomGenerator._
 import com.intel.analytics.bigdl.utils.T
@@ -195,7 +196,7 @@ class ConvolutionDnnSpec extends FlatSpec with Matchers {
     val layer = SpatialConvolution[Float](nInputPlane, nOutputPlane, kW, kH,
       dW, dH, padW, padH, ngroup)
     val relu = ReLUDnn[Float](ip = false)
-    val relu1 = ReLU[Float](ip = false)
+    val relu1 = OReLU[Float](ip = false)
 
     var output = conv.forward(input)
     relu.forward(output)
@@ -472,7 +473,7 @@ class ConvolutionDnnSpec extends FlatSpec with Matchers {
     val (model1, batch1) = getModel("inception_v1", batchSize)
     val (model2, batch2) = getModel("inception_v1_dnn", batchSize)
 
-    val relu1 = ReLU[Float](true)
+    val relu1 = OReLU[Float](true)
     val relu2 = ReLUDnn[Float](true)
 
     RNG.setSeed(1)

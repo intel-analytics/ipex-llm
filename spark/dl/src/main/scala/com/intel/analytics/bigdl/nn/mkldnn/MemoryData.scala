@@ -15,7 +15,7 @@
  */
 package com.intel.analytics.bigdl.nn.mkldnn
 
-import com.intel.analytics.bigdl.mkl.{DataType, Memory, MklDnn}
+import com.intel.analytics.bigdl.mkl.{DataType, Memory, MklDnn, Query}
 import com.intel.analytics.bigdl.tensor.{DnnTensor, Tensor}
 
 sealed trait MemoryData extends Serializable {
@@ -60,6 +60,14 @@ sealed trait MemoryData extends Serializable {
         MklDnn.PrimitiveCreate0(getPrimitiveDescription(runtime))
     }
     primitive
+  }
+
+  def setPrimitiveDescription(desc: Long): Unit = {
+    primitiveDesc = desc
+  }
+
+  def setMemoryDescription(desc: Long): Unit = {
+    description = desc
   }
 }
 
@@ -121,6 +129,10 @@ case class HeapData(private var _shape: Array[Int], private var _layout: Int) ex
   }
 
   override def cloneFormat(): MemoryData = new HeapData(_shape, _layout)
+
+  def toNative(): NativeData = {
+    NativeData(shape, layout)
+  }
 }
 
 case class NativeData(private var _shape: Array[Int], private var _layout: Int) extends MemoryData {
@@ -183,7 +195,6 @@ case class NativeData(private var _shape: Array[Int], private var _layout: Int) 
 }
 
 private[mkldnn] object MemoryData {
-
   def noUndef(formats: Array[MemoryData]): Boolean = {
     if (formats == null || formats.length == 0) return true
     formats.foreach(f => if (f.layout == Memory.Format.format_undef) return false)
@@ -196,5 +207,41 @@ private[mkldnn] object MemoryData {
     if (actual.shape.length != expect.shape.length) return false
     actual.shape.zip(expect.shape).foreach {case (a, e) => if (a != e) return false}
     return true
+  }
+
+  def primitiveOutput(pd: Long): NativeData = {
+    val outputPD = MklDnnOps.primitiveDescQueryPd(pd, Query.DstPd, 0)
+    val memoryDesc = MklDnnOps.primitiveDescQueryMemory(outputPD)
+    val shape = Memory.GetShape(memoryDesc)
+    val layout = Memory.GetLayout(memoryDesc)
+
+    val memory = NativeData(shape, layout)
+    memory.setMemoryDescription(memoryDesc)
+    memory.setPrimitiveDescription(outputPD)
+    memory
+  }
+
+  def primitiveGradInput(pd: Long): NativeData = {
+    val gradInputPD = MklDnnOps.primitiveDescQueryPd(pd, Query.DiffSrcPd, 0)
+    val memoryDesc = MklDnnOps.primitiveDescQueryMemory(gradInputPD)
+    val shape = Memory.GetShape(memoryDesc)
+    val layout = Memory.GetLayout(memoryDesc)
+
+    val memory = NativeData(shape, layout)
+    memory.setMemoryDescription(memoryDesc)
+    memory.setPrimitiveDescription(gradInputPD)
+    memory
+  }
+
+  def primitiveWorkSpace(pd: Long): NativeData = {
+    val workspacePD = MklDnnOps.primitiveDescQueryPd(pd, Query.WorkspacePd, 0)
+    val memoryDesc = MklDnnOps.primitiveDescQueryMemory(workspacePD)
+    val shape = Memory.GetShape(memoryDesc)
+    val layout = Memory.GetLayout(memoryDesc)
+
+    val memory = NativeData(shape, layout)
+    memory.setMemoryDescription(memoryDesc)
+    memory.setPrimitiveDescription(workspacePD)
+    memory
   }
 }

@@ -26,7 +26,7 @@ import scala.collection.mutable.ArrayBuffer
 /**
  * Helper utilities when integrating Module with MKL-DNN
  */
-trait MklDnnModule {
+trait MklDnnModule extends MklDnnModuleHelper {
   /**
    * MklDnn runtime, which includes a MKL-DNN engine and a MKL-DNN stream.
    * Note that this instance will be erased when send to remote worker, so you
@@ -55,7 +55,9 @@ trait MklDnnModule {
   private[mkldnn] def outputFormats(): Array[MemoryData]
   private[mkldnn] def gradOutputFormats(): Array[MemoryData]
   private[mkldnn] def gradOutputWeightFormats(): Array[MemoryData]
+}
 
+trait MklDnnModuleHelper {
   protected def initActivity(formats: Array[MemoryData]): Activity = {
     if (formats.length == 1) {
       initTensor(formats(0))
@@ -71,6 +73,14 @@ trait MklDnnModule {
       case d: HeapData =>
         Tensor[Float](d.shape)
       case _ => throw new UnsupportedOperationException("memory format is not supported")
+    }
+  }
+  protected def singleNativeData(formats: Array[MemoryData]): Array[MemoryData] = {
+    require(formats.length == 1, "Only accept one tensor as input")
+    formats(0) match {
+      case i: NativeData => Array(i)
+      case i: HeapData => Array(i.toNative())
+      case _ => throw new UnsupportedOperationException("Not support memory format")
     }
   }
 }

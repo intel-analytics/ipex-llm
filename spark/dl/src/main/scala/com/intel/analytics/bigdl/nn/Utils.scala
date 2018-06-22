@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.nn
 
 import com.google.protobuf.ByteString
 import com.intel.analytics.bigdl.Module
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, DataFormat}
+import com.intel.analytics.bigdl.nn.abstractnn.{Activity, DataFormat}
 import com.intel.analytics.bigdl.tensor._
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{T, Table}
@@ -520,14 +520,39 @@ object Utils {
     out
   }
 
-  /**
-   * Calculate forward time and backward time.
-   * @param times
-   * @tparam T
-   * @return
-   */
-  def calculateFwdBwdTime[T: ClassTag](
-    times: Array[(AbstractModule[_ <: Activity, _ <: Activity, T], Long, Long)]): (Long, Long) = {
-      times.map(t => (t._2, t._3)).reduce((a, b) => (a._1 + b._1, a._2 + b._2))
+  private[nn] def getPaddingAndOutputSize(
+    inputHeight: Int,
+    inputWidth: Int,
+    dH: Int,
+    dW: Int,
+    kH: Int,
+    kW: Int,
+    padH: Int,
+    padW: Int
+  ): (Int, Int, Int, Int, Int, Int) = {
+    // compute padding left, right, top and bottom
+    var pad_t = padH
+    var pad_b = padH
+    var pad_l = padW
+    var pad_r = padW
+
+    var oheight = 0
+    var owidth = 0
+    var odepth = 0
+
+    oheight = math.ceil(1.0 * (inputHeight - kH + 2*padH) / dH).toInt + 1
+    owidth = math.ceil(1.0 * (inputWidth - kW + 2*padW) / dW).toInt + 1
+
+    if (padH != 0 || padW != 0 || kH == 1 || kW == 1) {
+      if ((oheight - 1) * dH >= inputHeight + padH) oheight -= 1
+      if ((owidth - 1) * dW >= inputWidth + padW) owidth -= 1
+    }
+
+    val h = inputHeight + pad_t
+    while ((h + pad_b) < (dH * (oheight - 1) + kH)) pad_b = pad_b + 1
+    val w = inputWidth + pad_l
+    while ((w + pad_r) < (dW * (owidth - 1) + kW)) pad_r = pad_r + 1
+
+    (pad_t, pad_b, pad_l, pad_r, oheight, owidth)
   }
 }
