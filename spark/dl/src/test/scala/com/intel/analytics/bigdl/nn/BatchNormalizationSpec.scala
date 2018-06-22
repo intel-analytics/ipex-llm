@@ -30,7 +30,7 @@ class BatchNormalizationSpec extends FlatSpec with Matchers {
   "BacthNormalization parameter sync" should "work properly" in {
     val conf = Engine.createSparkConf().setAppName("Test sync")
       .set("spark.rpc.message.maxSize", "200").setMaster("local[*]")
-    val sc = new SparkContext(conf)
+    val sc = SparkContext.getOrCreate(conf)
     Engine.setCoreNumber(1)
     val bn = BatchNormalization[Float](2)
     bn.weight.fill(1.0f)
@@ -128,7 +128,7 @@ class BatchNormalizationSpec extends FlatSpec with Matchers {
   "BacthNormalization parameter sync double" should "work properly" in {
     val conf = Engine.createSparkConf().setAppName("Test sync")
       .set("spark.rpc.message.maxSize", "200").setMaster("local[*]")
-    val sc = new SparkContext(conf)
+    val sc = SparkContext.getOrCreate(conf)
     Engine.setCoreNumber(1)
     val bn = BatchNormalization[Double](2)
     bn.weight.fill(1.0)

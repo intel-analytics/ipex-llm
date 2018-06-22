@@ -30,7 +30,7 @@ class SpatialBatchNormalizationSpec extends FlatSpec with Matchers {
   "SpatialBacthNormalization parameter sync" should "work properly" in {
     val conf = Engine.createSparkConf().setAppName("Test sync")
       .set("spark.rpc.message.maxSize", "200").setMaster("local[*]")
-    val sc = new SparkContext(conf)
+    val sc = SparkContext.getOrCreate(conf)
     Engine.setCoreNumber(1)
     val bn = SpatialBatchNormalization[Float](2)
     bn.weight.fill(1.0f)
@@ -127,7 +127,7 @@ class SpatialBatchNormalizationSpec extends FlatSpec with Matchers {
   "SpatialBacthNormalization parameter sync double" should "work properly" in {
     val conf = Engine.createSparkConf().setAppName("Test sync")
       .set("spark.rpc.message.maxSize", "200").setMaster("local[*]")
-    val sc = new SparkContext(conf)
+    val sc = SparkContext.getOrCreate(conf)
     Engine.setCoreNumber(1)
     val bn = SpatialBatchNormalization[Double](2)
     bn.weight.fill(1.0)
