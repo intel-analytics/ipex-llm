@@ -117,5 +117,13 @@ class TestLayer(ZooTestCase):
         output = net.forward(np.random.rand(32, 28, 28, 1))
         assert output.shape == (32, 10)
 
+    def test_load_tf_from_folder(self):
+        resource_path = os.path.join(os.path.split(__file__)[0], "../../../resources")
+        tfnet_path = os.path.join(resource_path, "tf")
+        net = Net.load_tf(tfnet_path)
+        output = net.forward(np.random.rand(4, 1, 28, 28))
+        assert output.shape == (4, 10)
+
+
 if __name__ == "__main__":
     pytest.main([__file__])
