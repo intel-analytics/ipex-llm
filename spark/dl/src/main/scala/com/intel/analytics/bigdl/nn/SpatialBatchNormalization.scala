@@ -53,7 +53,7 @@ class SpatialBatchNormalization[T: ClassTag](
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
 
-    val parallism = getParallism().getOrElse(Engine.coreNumber)
+    val parallism = getParallism().getOrElse(1)
 
     ParameterSynchronizer.register(this.meanKey, parallism)
     ParameterSynchronizer.register(this.stdKey, parallism)
@@ -74,7 +74,7 @@ class SpatialBatchNormalization[T: ClassTag](
     saveMean.resizeAs(runningMean).zero
     saveStd.resizeAs(runningVar).fill(ev.zero)
 
-    val nChannels = input.size(2)
+    val nChannels = _input.size(2)
 
     if (globalMean.size < nChannels) {
       globalMean = new Array[T](nChannels)
@@ -160,7 +160,7 @@ class SpatialBatchNormalization[T: ClassTag](
     makeBatch(_gradOutput)
     gxMean.zero()
     gMean.zero()
-    val nChannel = gradOutput.size(2)
+    val nChannel = _gradOutput.size(2)
     if (globalGMean.size < nChannel) {
       globalGMean = new Array[T](nChannel)
     }
