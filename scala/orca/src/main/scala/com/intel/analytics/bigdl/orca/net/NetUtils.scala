@@ -19,19 +19,22 @@ import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.nn.keras.KerasLayer
-import com.intel.analytics.bigdl.nn.{Container, DynamicGraph, Graph, StaticGraph}
+import com.intel.analytics.bigdl.nn.{Container, Graph, StaticGraph}
 import com.intel.analytics.bigdl.serialization.Bigdl.BigDLModule
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.serializer._
 import com.intel.analytics.zoo.pipeline.api.keras.layers.KerasLayerWrapper
-import com.intel.analytics.zoo.pipeline.api.keras.layers.utils.{GraphRef, KerasUtils}
-import com.intel.analytics.zoo.pipeline.api.keras.models.Model
+import com.intel.analytics.zoo.pipeline.api.keras.layers.utils.KerasUtils
+import org.json4s._
+import org.json4s.jackson.JsonMethods._
 
 import scala.collection.JavaConverters._
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
+import scala.io.Source
 import scala.reflect.ClassTag
+import scala.reflect.io.Path
 
 
 class GraphNet[T: ClassTag](graph: Graph[T])(implicit ev: TensorNumeric[T])
@@ -159,7 +162,38 @@ object NetUtils {
 
     result.asInstanceOf[Graph[T]]
   }
+
+  implicit val formats = DefaultFormats
+
+  private[zoo] def processTFFolder(folder: String): (String, Seq[String], Seq[String]) = {
+    val folderPath = Path(folder)
+    if (!folderPath.exists) {
+      throw new IllegalArgumentException(s"$folder does not exist")
+    }
+
+    val modelPath = folderPath / Path("frozen_inference_graph.pb")
+    if (!modelPath.exists) {
+      throw new IllegalArgumentException(
+        s"${modelPath.path} does not exist")
+    }
+    val metaPath = folderPath / Path("graph_meta.json")
+    if (!metaPath.exists) {
+      throw new IllegalArgumentException(
+        s"${metaPath.path} does not exist")
+    }
+
+    val jsonStr = Source.fromFile(metaPath.jfile).getLines().mkString
+
+    val meta = parse(jsonStr).camelizeKeys.extract[Meta]
+    (modelPath.toString(), meta.inputNames, meta.outputNames)
+  }
+
+  private[zoo] def removePort(nodes: Seq[String]): Seq[String] = {
+    nodes.map(node => if (node contains ":") node.split(":")(0) else node)
+  }
 }
+
+private[zoo] case class Meta(inputNames: Array[String], outputNames: Array[String])
 
 
 trait NetUtils[T, D <: Module[T] with NetUtils[T, D]] {

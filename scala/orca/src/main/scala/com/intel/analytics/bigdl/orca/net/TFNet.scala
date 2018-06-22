@@ -26,11 +26,6 @@ import org.tensorflow.types.UInt8
 import org.tensorflow.{DataType, Graph, Session, Tensor => TTensor}
 
 import scala.collection.JavaConverters._
-import scala.io.Source
-import scala.reflect.io.Path
-
-import org.json4s._
-import org.json4s.jackson.JsonMethods._
 
 /**
  * [[TFNet]] wraps a tensorflow subgraph as a layer, and use tensorflow to
@@ -237,8 +232,6 @@ class TFNet private(graphDef: Array[Byte],
 
 object TFNet {
 
-  implicit val formats = DefaultFormats
-
   val defaultSessionConfig = Seq(16, 1, 40, 1, 72, 1).map(_.toByte).toArray
   // Ideally we should use the following code, however, importing tensorflow proto
   // will conflict with bigdl.
@@ -331,22 +324,9 @@ object TFNet {
 
 
   def apply(folder: String): TFNet = {
-    val folderPath = Path(folder)
-    if (!folderPath.exists) {
-      throw new IllegalArgumentException(s"$folder does not exists")
-    }
-
-    val modelPath = folderPath / Path("frozen_inference_graph.pb")
-    val metaPath = folderPath / Path("graph_meta.json")
-
-    val jsonStr = Source.fromFile(metaPath.jfile).getLines().mkString
-
-    val meta = parse(jsonStr).camelizeKeys.extract[Meta]
-
-    TFNet(modelPath.toString(), meta.inputNames, meta.outputNames, defaultSessionConfig)
+    val (model, inputs, outputs) = NetUtils.processTFFolder(folder)
+    TFNet(model, inputs, outputs, defaultSessionConfig)
   }
-
-  private case class Meta(inputNames: Array[String], outputNames: Array[String])
 
   private def parseGraph(graphProtoTxt: String) : GraphDef = {
     var fr: File = null
