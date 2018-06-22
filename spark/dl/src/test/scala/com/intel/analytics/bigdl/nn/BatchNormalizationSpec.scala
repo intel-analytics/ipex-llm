@@ -24,7 +24,7 @@ import org.scalatest.{FlatSpec, Matchers}
 
 import scala.util.Random
 
-@com.intel.analytics.bigdl.tags.Parallel
+@com.intel.analytics.bigdl.tags.Serial
 class BatchNormalizationSpec extends FlatSpec with Matchers {
 
   "BacthNormalization parameter sync" should "work properly" in {
