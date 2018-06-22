@@ -28,11 +28,15 @@ import scala.util.Random
 class SpatialBatchNormalizationSpec extends FlatSpec with Matchers {
 
   "SpatialBacthNormalization parameter sync" should "work properly" in {
+
     val conf = Engine.createSparkConf().setAppName("Test sync")
       .set("spark.rpc.message.maxSize", "200").setMaster("local[*]")
     val sc = SparkContext.getOrCreate(conf)
-    Engine.setCoreNumber(1)
+
+    Engine.init
+
     val bn = SpatialBatchNormalization[Float](2)
+    bn.setParallism(Some(1))
     bn.weight.fill(1.0f)
     bn.bias.fill(1.0f)
 
@@ -54,9 +58,8 @@ class SpatialBatchNormalizationSpec extends FlatSpec with Matchers {
     val runningMean = bn.runningMean
     val runningVar = bn.runningVar
 
-    Engine.setCoreNumber(2)
-
     val bn1 = SpatialBatchNormalization[Float](2)
+    bn1.setParallism(Some(2))
 
     bn1.weight.fill(1.0f)
     bn1.bias.fill(1.0f)
@@ -123,7 +126,7 @@ class SpatialBatchNormalizationSpec extends FlatSpec with Matchers {
     gin1.squeeze should be (gradInput1.squeeze)
     gin2.squeeze should be (gradInput2.squeeze)
   }
-  
+
   "SpatialBatchNormalization module in batch mode" should "be good in gradient check " +
     "for input" in {
     val seed = 100

@@ -53,7 +53,7 @@ class SpatialBatchNormalization[T: ClassTag](
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
 
-    val parallism = Engine.coreNumber
+    val parallism = getParallism().getOrElse(Engine.coreNumber)
 
     ParameterSynchronizer.register(this.meanKey, parallism)
     ParameterSynchronizer.register(this.stdKey, parallism)

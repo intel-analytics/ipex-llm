@@ -61,6 +61,14 @@ class BatchNormalization[T: ClassTag](
 
   require(nOutput > 0, "output feature map number must be greater than zero")
 
+  private var parallism : Option[Int] = None
+
+  def setParallism(parallism: Option[Int]): Unit = {
+    this.parallism = parallism
+  }
+
+  def getParallism(): Option[Int] = this.parallism
+
   val meanKey: String = s"${this.getName}_mean"
   val stdKey: String = s"${this.getName}_std"
   val gmKey: String = s"${this.getName}_gm"
@@ -207,7 +215,7 @@ class BatchNormalization[T: ClassTag](
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
 
-    val parallism = Engine.coreNumber
+    val parallism = getParallism().getOrElse(Engine.coreNumber)
 
     ParameterSynchronizer.register(this.meanKey, parallism)
     ParameterSynchronizer.register(this.stdKey, parallism)

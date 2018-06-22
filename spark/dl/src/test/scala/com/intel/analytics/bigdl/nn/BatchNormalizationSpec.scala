@@ -31,8 +31,13 @@ class BatchNormalizationSpec extends FlatSpec with Matchers {
     val conf = Engine.createSparkConf().setAppName("Test sync")
       .set("spark.rpc.message.maxSize", "200").setMaster("local[*]")
     val sc = SparkContext.getOrCreate(conf)
-    Engine.setCoreNumber(1)
+
+    Engine.init
+
     val bn = BatchNormalization[Float](2)
+
+    bn.setParallism(Some(1))
+
     bn.weight.fill(1.0f)
     bn.bias.fill(1.0f)
 
@@ -55,9 +60,9 @@ class BatchNormalizationSpec extends FlatSpec with Matchers {
     val runningMean = bn.runningMean
     val runningVar = bn.runningVar
 
-    Engine.setCoreNumber(2)
-
     val bn1 = BatchNormalization[Float](2)
+
+    bn1.setParallism(Some(2))
 
     bn1.weight.fill(1.0f)
     bn1.bias.fill(1.0f)
