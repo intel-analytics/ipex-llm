@@ -54,11 +54,17 @@ class SpatialBatchNormalization[T: ClassTag](
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
 
     val parallism = getParallism().getOrElse(1)
+
+    val meanKeyWithId = s"${this.meanKey}_${this.getId}"
+    val stdKeyWithId = s"${this.stdKey}_${this.getId}"
+    val gmKeyWithId = s"${this.gmKey}_${this.getId}"
+    val gxmKeyWithId = s"${this.gxmKey}_${this.getId}"
+
     val needSync = if (parallism != 1) {
-      ParameterSynchronizer.register(this.meanKey, parallism)
-      ParameterSynchronizer.register(this.stdKey, parallism)
-      ParameterSynchronizer.register(this.gmKey, parallism)
-      ParameterSynchronizer.register(this.gxmKey, parallism)
+      ParameterSynchronizer.register(meanKeyWithId, parallism)
+      ParameterSynchronizer.register(stdKeyWithId, parallism)
+      ParameterSynchronizer.register(gmKeyWithId, parallism)
+      ParameterSynchronizer.register(gxmKeyWithId, parallism)
       true
     } else false
 
@@ -97,7 +103,7 @@ class SpatialBatchNormalization[T: ClassTag](
             eps.toFloat, momentum.toFloat, needFix = needFix,
             globalMean = globalMean.asInstanceOf[Array[Float]],
             globalStd = globalStd.asInstanceOf[Array[Float]],
-            meanKey = this.meanKey, stdKey = this.stdKey, needSync = needSync)
+            meanKey = meanKeyWithId, stdKey = stdKeyWithId, needSync = needSync)
         } else {
           SpatialBatchNormalization.updateOutputNCHWTrainDouble(
             _input.asInstanceOf[Tensor[Double]], output.asInstanceOf[Tensor[Double]],
@@ -107,7 +113,7 @@ class SpatialBatchNormalization[T: ClassTag](
             eps, momentum, needFix = needFix,
             globalMean = globalMean.asInstanceOf[Array[Double]],
             globalStd = globalStd.asInstanceOf[Array[Double]],
-            meanKey = this.meanKey, stdKey = this.stdKey, needSync = needSync)
+            meanKey = meanKeyWithId, stdKey = stdKeyWithId, needSync = needSync)
         }
       } else {
         if (ev.getType() == FloatType) {
@@ -158,6 +164,8 @@ class SpatialBatchNormalization[T: ClassTag](
   }
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
+    val gmKeyWithId = s"${this.gmKey}_${this.getId}"
+    val gxmKeyWithId = s"${this.gxmKey}_${this.getId}"
     val needSync = getParallism() != None && getParallism().get > 1
     _gradOutput.set(gradOutput)
     makeBatch(_gradOutput)
@@ -179,7 +187,7 @@ class SpatialBatchNormalization[T: ClassTag](
             saveMean.asInstanceOf[Tensor[Float]], saveStd.asInstanceOf[Tensor[Float]],
             gMean.asInstanceOf[Tensor[Float]], gxMean.asInstanceOf[Tensor[Float]],
             globalGMean.asInstanceOf[Array[Float]], globalGxmMean.asInstanceOf[Array[Float]],
-            gMeanKey = gmKey, gxMeanKey = gxmKey, needSync = needSync)
+            gMeanKey = gmKeyWithId, gxMeanKey = gxmKeyWithId, needSync = needSync)
         } else {
           SpatialBatchNormalization.updateGradInputNCHWTrainDouble(
             _input.asInstanceOf[Tensor[Double]], _gradOutput.asInstanceOf[Tensor[Double]],
@@ -187,7 +195,7 @@ class SpatialBatchNormalization[T: ClassTag](
             saveMean.asInstanceOf[Tensor[Double]], saveStd.asInstanceOf[Tensor[Double]],
             gMean.asInstanceOf[Tensor[Double]], gxMean.asInstanceOf[Tensor[Double]],
             globalGMean.asInstanceOf[Array[Double]], globalGxmMean.asInstanceOf[Array[Double]],
-            gMeanKey = gmKey, gxMeanKey = gxmKey, needSync = needSync)
+            gMeanKey = gmKeyWithId, gxMeanKey = gxmKeyWithId, needSync = needSync)
         }
       } else {
         if (ev.getType() == FloatType) {

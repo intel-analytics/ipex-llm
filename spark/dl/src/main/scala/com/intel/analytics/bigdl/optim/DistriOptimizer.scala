@@ -610,7 +610,7 @@ object DistriOptimizer {
       val cached = (0 until _subModelNumber).map { _ =>
         val localModel = modelBroadcast.value(true)
         // differentiate partition models from each other by partition ID
-        renameWithPartitionId(localModel, partitionId)
+        setModelId(localModel, partitionId)
         val localCriterion = broadcastCriterion.cloneCriterion()
         val localState = broadcastState.clone()
         val localMethod =
@@ -641,11 +641,11 @@ object DistriOptimizer {
     models
   }
 
-  private def renameWithPartitionId[T: ClassTag](model: Module[T], partitionId: Int): Unit = {
-    model.setName(s"${model.getName}_${partitionId}")
+  private def setModelId[T: ClassTag](model: Module[T], partitionId: Int): Unit = {
+    model.setId(partitionId)
     if (model.isInstanceOf[Container[_, _, T]]) {
       model.asInstanceOf[Container[_, _, T]].modules.
-        foreach(sub => renameWithPartitionId(sub, partitionId))
+        foreach(sub => setModelId(sub, partitionId))
     }
   }
 

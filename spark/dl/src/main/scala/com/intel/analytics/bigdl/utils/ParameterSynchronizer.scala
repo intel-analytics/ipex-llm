@@ -23,12 +23,21 @@ import org.apache.spark.TaskContext
 
 import scala.reflect._
 
+/**
+ * A parameter synchronizer among threads per task
+ */
 object ParameterSynchronizer {
 
   val fEvents = new java.util.concurrent.ConcurrentHashMap[String, Event[Float]]
 
   val dEvents = new java.util.concurrent.ConcurrentHashMap[String, Event[Double]]
 
+  /**
+   * Register event with key and total thread number
+   * @param eventKey key to specify an event
+   * @param threadNum total thread number synchronizing on this key
+   * @tparam T
+   */
   def register[T: ClassTag](eventKey: String, threadNum: Int): Unit = {
     if (classTag[T] ==  classTag[Float]) {
       var event = fEvents.get(eventKey)
@@ -45,6 +54,11 @@ object ParameterSynchronizer {
     }
   }
 
+  /**
+   * Reset event with given key
+   * @param eventKey Event key
+   * @tparam T
+   */
   def reset[T: ClassTag](eventKey: String): Unit = {
     if (classTag[T] ==  classTag[Float]) {
       fEvents.get(eventKey).reset
@@ -53,6 +67,12 @@ object ParameterSynchronizer {
     }
   }
 
+  /**
+   * Sync data per thread
+   * @param eventKey Event key
+   * @param dt  data to be synchronized
+   * @tparam T
+   */
   def syncData[T: ClassTag](eventKey: String, dt: Tensor[T]): Unit = {
     val partitionKey = TaskContext.getPartitionId.toString
     if (classTag[T] ==  classTag[Float]) {
@@ -62,6 +82,12 @@ object ParameterSynchronizer {
     }
   }
 
+  /**
+   * Collect all data synchronized
+   * @param eventKey Event key
+   * @tparam T
+   * @return Data list from waiting threads
+   */
   def collect[T: ClassTag](eventKey: String): java.util.Map[String, Tensor[T]] = {
     val partitionKey = TaskContext.getPartitionId.toString
     if (classTag[T] ==  classTag[Float]) {
@@ -77,12 +103,21 @@ object ParameterSynchronizer {
 class Event[T: ClassTag](threadNum: Int) {
   val barrier = new CyclicBarrier(threadNum)
   val data = new ConcurrentHashMap[String, Tensor[T]]()
+
+  /**
+   * Add data to sync list for current thread
+   * @param dt data to be added
+   */
   def addData(dt: Tensor[T]): Unit = {
     barrier.await
     val currentId = Thread.currentThread().getId.toString
     data.put(currentId, dt)
     barrier.await
   }
+
+  /**
+   * Reset event, clear the data
+   */
   def reset(): Unit = {
     barrier.await
     if (data.size != 0) {
