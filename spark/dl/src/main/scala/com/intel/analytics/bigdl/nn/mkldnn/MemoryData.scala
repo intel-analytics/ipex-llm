@@ -41,7 +41,6 @@ sealed trait MemoryData extends Serializable {
 
   def getMemoryDescription(): Long = {
     if (description == UNDEFINED) {
-      MklDnn.MemoryDescInit(shape.length, shape, DataType.F32, Memory.Format.any)
       description = MklDnn.MemoryDescInit(shape.length, shape, DataType.F32, layout)
     }
     description
