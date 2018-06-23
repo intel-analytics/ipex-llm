@@ -22,7 +22,7 @@ import com.intel.analytics.bigdl.mkl._
 import com.intel.analytics.bigdl.nn.abstractnn._
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.optim.Regularizer
-import com.intel.analytics.bigdl.tensor.{MklDnnTensor, MklDnnType, Tensor}
+import com.intel.analytics.bigdl.tensor.{DnnTensor, MklDnnTensor, MklDnnType, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{T, Table}
 import org.dmg.pmml.False
@@ -958,5 +958,276 @@ object ConvolutionDnn {
     new ConvolutionDnn(nInputPlane, nOutputPlane, kW, kH, dW,
     dH, padW, padH, nGroup, propagateBack, wRegularizer, bRegularizer,
       initWeight, initBias, initGradWeight, initGradBias, withBias, format)
+  }
+}
+
+class RefactorConvolution(
+  val nInputPlane: Int,
+  val nOutputPlane: Int,
+  val kernelW: Int,
+  val kernelH: Int,
+  val strideW: Int = 1,
+  val strideH: Int = 1,
+  val padW: Int = 0,
+  val padH: Int = 0,
+  val nGroup: Int = 1,
+  val propagateBack: Boolean = true,
+  val initWeight: Tensor[Float] = null,
+  val initBias: Tensor[Float] = null,
+  val initGradWeight: Tensor[Float] = null,
+  val initGradBias: Tensor[Float] = null,
+  val withBias: Boolean = true,
+  val format: DataFormat = DataFormat.NCHW
+) extends MklDnnLayer with Initializable {
+  private val weightShape = if (nGroup == 1) {
+    Array(nOutputPlane, nInputPlane, kernelH, kernelW)
+  } else {
+    Array (nGroup, nOutputPlane / nGroup, nInputPlane / nGroup, kernelH, kernelW)
+  }
+
+  val weight: DnnTensor[Float] = DnnTensor[Float](weightShape)
+  val bias: DnnTensor[Float] = DnnTensor[Float](Array(nOutputPlane))
+  val gradWeight: DnnTensor[Float] = DnnTensor[Float](weightShape)
+  val gradBias: DnnTensor[Float] = DnnTensor[Float](Array(nOutputPlane))
+
+  var forwardPrimDesc: Long = 0L
+
+  var updateOutputMemoryPrimitives: Array[Long] = _
+  var updateOutputTensors: Array[Tensor[Float]] = _
+  var updateGradInputMemoryPrimitives: Array[Long] = _
+  var updateGradInputTensors: Array[Tensor[Float]] = _
+  var updateGradWMemoryPrimitives: Array[Long] = _
+  var updateGradWTensors: Array[Tensor[Float]] = _
+
+  private def getOutputShape(oh: Int, ow: Int, batchSize: Int = -1): Array[Int] = {
+    format match {
+      case DataFormat.NCHW =>
+        if (batchSize == -1) {
+          Array(nOutputPlane, oh, ow)
+        } else {
+          Array(batchSize, nOutputPlane, oh, ow)
+        }
+      case DataFormat.NHWC =>
+        if (batchSize == -1) {
+          Array(oh, ow, nOutputPlane)
+        } else {
+          Array(batchSize, oh, ow, nOutputPlane)
+        }
+
+    }
+  }
+
+  override def reset(): Unit = {
+    if (initWeight == null) { // TODO only support oihw format weights
+      val t = Tensor[Float](weightShape)
+      weightInitMethod.init(t, VariableFormat.OUT_IN)
+      weight.copy(t)
+    }
+
+    if (initBias == null) {
+      val t = Tensor[Float](Array(nOutputPlane))
+      biasInitMethod.init(t, VariableFormat.ONE_D)
+      bias.copy(t)
+    }
+
+    zeroGradParameters()
+  }
+
+  override private[mkldnn] def initFwdPrimitives(inputs: Array[MemoryData], phase: Phase) = {
+    val inputHeight = inputs(0).shape(2) // TODO only supports 4-D and nchw
+    val inputWidth = inputs(0).shape(3)
+
+    val sizes = if (padW == -1 && padH == -1) {
+        Utils.getSAMEOutSizeAndPadding(inputHeight, inputWidth, strideH, strideW, kernelH, kernelW)
+      } else {
+        Utils.getOutSizeAndPadding(inputHeight, inputWidth, strideH, strideW, kernelH, kernelW,
+          padH, padW, ceilMode = false)
+      }
+
+    val padTop = sizes(0)
+    val padBottom = sizes(1)
+    val padLeft = sizes(2)
+    val padRight = sizes(3)
+    val outputHeight = sizes(4)
+    val outputWidth = sizes(5)
+
+    val inputShape = inputs(0).shape
+    val outputShape = Array(inputs(0).shape(0), nOutputPlane, outputHeight, outputWidth)
+
+    val src = NativeData(inputShape, Memory.Format.any)
+    val wei = NativeData(weightShape, Memory.Format.any)
+    val bis = NativeData(bias.size(), Memory.Format.x)
+    val dst = NativeData(outputShape, Memory.Format.any)
+
+    val desc = MklDnn.ConvForwardDescInit(
+      PropKind.ForwardTraining, AlgKind.ConvolutionDirect,
+      src.getMemoryDescription(),
+      wei.getMemoryDescription(),
+      bis.getMemoryDescription(),
+      dst.getMemoryDescription(),
+      Array(strideW, strideH), Array(padH, padW), Array(padH, padW), // TODO check the meaning
+      MklDnn.PaddingKind.mkldnnPaddingZero)
+
+    forwardPrimDesc = MklDnn.PrimitiveDescCreate(desc, runtime.engine, 0)
+
+    val realSrc = NativeData(MklDnnOps.queryShape(forwardPrimDesc, Query.SrcPd),
+      MklDnnOps.queryFormat(forwardPrimDesc, Query.SrcPd))
+    val realWei = NativeData(MklDnnOps.queryShape(forwardPrimDesc, Query.WeightsPd),
+      MklDnnOps.queryFormat(forwardPrimDesc, Query.WeightsPd))
+    val realDst = NativeData(MklDnnOps.queryShape(forwardPrimDesc, Query.DstPd),
+      MklDnnOps.queryFormat(forwardPrimDesc, Query.DstPd))
+
+    val srcs = Array(realSrc.getPrimitive(runtime), realWei.getPrimitive(runtime),
+      bis.getPrimitive(runtime))
+    val indexes = Array.fill(srcs.length)(0)
+    val dsts = Array(realDst.getPrimitive(runtime))
+
+    val primitive = MklDnn.PrimitiveCreate2(forwardPrimDesc, srcs, indexes, srcs.length,
+      dsts, dsts.length)
+
+    updateOutputMemoryPrimitives = srcs ++ dsts
+    updateOutputPrimitives = Array(primitive)
+    output = initTensor(dst)
+
+    _inputFormats = Array(realSrc)
+    _outputFormats = Array(realDst)
+    (_inputFormats, _outputFormats)
+  }
+
+  override def updateOutput(input: Activity): Activity = {
+    if (updateOutputTensors == null) {
+      val buffer = new ArrayBuffer[Tensor[Float]]()
+      buffer.append(input.asInstanceOf[Tensor[Float]])
+      buffer.append(weight)
+      buffer.append(bias)
+      buffer.append(output.asInstanceOf[Tensor[Float]])
+      updateOutputTensors = buffer.toArray
+    }
+    MklDnnOps.streamSubmit(runtime.stream, 1, updateOutputPrimitives, updateOutputPrimitives.length,
+      updateOutputMemoryPrimitives, updateOutputTensors)
+
+    output
+  }
+
+  override private[mkldnn] def initBwdPrimitives(grad: Array[MemoryData], phase: Phase) = {
+    val inputShape = inputFormats()(0).shape.length match {
+      case 1 => inputFormats()(0).shape ++ Array(1) // TODO Test
+      case _ => inputFormats()(0).shape
+    }
+
+    val outputShape = outputFormats()(0).shape
+
+    val src = NativeData(inputShape, Memory.Format.any)
+    val wei = NativeData(weightShape, Memory.Format.any)
+    val bis = NativeData(bias.size(), Memory.Format.x)
+    val dst = NativeData(outputShape, Memory.Format.any)
+
+    val desc = MklDnn.ConvBackwardDataDescInit(
+      AlgKind.ConvolutionDirect,
+      src.getMemoryDescription(),
+      wei.getMemoryDescription(), // TODO check correctness of strides and padding
+      dst.getMemoryDescription(), Array(strideW, strideH), Array(padH, padW), Array(padH, padW),
+      MklDnn.PaddingKind.mkldnnPaddingZero)
+    val backwardPrimDesc = MklDnn.PrimitiveDescCreate(desc, runtime.engine, forwardPrimDesc)
+
+    val realDiffSrc = NativeData(MklDnnOps.queryShape(backwardPrimDesc, Query.DiffSrcPd),
+      MklDnnOps.queryFormat(backwardPrimDesc, Query.DiffSrcPd))
+    val realWei = NativeData(MklDnnOps.queryShape(backwardPrimDesc, Query.WeightsPd),
+      MklDnnOps.queryFormat(backwardPrimDesc, Query.WeightsPd))
+    val realDiffDst = NativeData(MklDnnOps.queryShape(backwardPrimDesc, Query.DiffDstPd),
+      MklDnnOps.queryFormat(backwardPrimDesc, Query.DiffDstPd))
+
+    val srcs = Array(realDiffDst.getPrimitive(runtime), realWei.getPrimitive(runtime),
+      inputFormats()(0).getPrimitive(runtime))
+    val indexes = Array.fill(srcs.length)(0)
+    val dsts = Array(realDiffSrc.getPrimitive(runtime))
+
+    val primitive = MklDnn.PrimitiveCreate2(backwardPrimDesc, srcs, indexes, srcs.length,
+      dsts, dsts.length)
+
+    updateGradInputMemoryPrimitives = srcs ++ dsts
+    updateGradInputPrimitives = Array(primitive)
+    gradInput = initTensor(realDiffSrc)
+
+    _gradInputFormats = Array(realDiffSrc)
+    _gradOutputFormats = Array(realDiffDst)
+    (_gradOutputFormats, _gradInputFormats)
+  }
+
+  override def updateGradInput(input: Activity, gradOutput: Activity): Activity = {
+    if (updateGradInputTensors == null) {
+      val buffer = new ArrayBuffer[Tensor[Float]]()
+      buffer.append(gradOutput.asInstanceOf[Tensor[Float]])
+      buffer.append(weight)
+      buffer.append(input.asInstanceOf[Tensor[Float]])
+      buffer.append(gradInput.asInstanceOf[Tensor[Float]])
+      updateGradInputTensors = buffer.toArray
+    }
+    MklDnnOps.streamSubmit(runtime.stream, 1, updateGradInputPrimitives,
+      updateGradInputPrimitives.length, updateGradInputMemoryPrimitives, updateGradInputTensors)
+
+    gradInput
+  }
+  override private[mkldnn] def initGradWPrimitives(grad: Array[MemoryData],
+    phase: Phase): Array[MemoryData] = {
+    val inputShape = inputFormats()(0).shape
+    val outputShape = inputFormats()(0).shape
+
+    val src = NativeData(inputShape, Memory.Format.any)
+    val wei = NativeData(weightShape, Memory.Format.any)
+    val bis = NativeData(bias.size(), Memory.Format.x)
+//    val dst = NativeData(outputShape, Memory.Format.any)
+
+    val desc = MklDnn.ConvBackwardWeightsDescInit(
+      AlgKind.ConvolutionDirect,
+      src.getMemoryDescription(),
+      wei.getMemoryDescription(),
+      bis.getMemoryDescription(),
+      grad(0).getMemoryDescription(), Array(strideW, strideH), Array(padH, padW), Array(padH, padW),
+      MklDnn.PaddingKind.mkldnnPaddingZero)
+    val gradWeightPrimDesc = MklDnn.PrimitiveDescCreate(desc, runtime.engine, forwardPrimDesc)
+
+    // TODO here seems some errors ?????? check the realSrc format.
+    val realSrc = NativeData(MklDnnOps.queryShape(gradWeightPrimDesc, Query.SrcPd),
+      MklDnnOps.queryFormat(gradWeightPrimDesc, Query.SrcPd))
+    val realWei = NativeData(MklDnnOps.queryShape(gradWeightPrimDesc, Query.DiffWeightsPd),
+      MklDnnOps.queryFormat(gradWeightPrimDesc, Query.DiffWeightsPd))
+    val realDiffDst = NativeData(MklDnnOps.queryShape(gradWeightPrimDesc, Query.DiffDstPd),
+      MklDnnOps.queryFormat(gradWeightPrimDesc, Query.DiffDstPd))
+
+    val srcs = Array(realSrc.getPrimitive(runtime), realDiffDst.getPrimitive(runtime))
+    val indexes = Array.fill(srcs.length)(0)
+    val dsts = Array(realWei.getPrimitive(runtime), bis.getPrimitive(runtime))
+
+    val primitive = MklDnn.PrimitiveCreate2(gradWeightPrimDesc, srcs, indexes, srcs.length,
+      dsts, dsts.length)
+
+    updateGradWMemoryPrimitives = srcs ++ dsts
+    accGradientPrimitives = Array(primitive)
+
+    _gradOutputFormatsForWeight = Array(realDiffDst)
+    (_gradOutputFormatsForWeight)
+  }
+
+  override def accGradParameters(input: Activity, gradOutput: Activity): Unit = {
+    if (updateGradWTensors == null) {
+      val buffer = new ArrayBuffer[Tensor[Float]]()
+      buffer.append(input.asInstanceOf[Tensor[Float]])
+      buffer.append(gradOutput.asInstanceOf[Tensor[Float]])
+      buffer.append(gradWeight)
+      buffer.append(gradBias)
+      updateGradWTensors = buffer.toArray
+    }
+    MklDnnOps.streamSubmit(runtime.stream, 1, accGradientPrimitives,
+      accGradientPrimitives.length, updateGradWMemoryPrimitives, updateGradWTensors)
+  }
+
+  override def parameters(): (Array[Tensor[Float]], Array[Tensor[Float]]) = {
+    (Array(weight, bias), Array(gradWeight, gradBias))
+  }
+
+  override def zeroGradParameters(): Unit = {
+    gradWeight.zero()
+    gradBias.zero()
   }
 }

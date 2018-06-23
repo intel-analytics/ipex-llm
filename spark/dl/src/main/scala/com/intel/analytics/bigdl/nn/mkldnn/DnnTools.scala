@@ -570,7 +570,7 @@ object Vgg_16_dnn {
 
 object Vgg_19_dnn {
   def apply(classNum: Int, hasDropout: Boolean = true): Module[Float] = {
-    val model = Sequential()
+    val model = Seq()
     model.add(ConvolutionDnn(3, 64, 3, 3, 1, 1, 1, 1))
     model.add(ReLUDnn(true))
     model.add(ConvolutionDnn(64, 64, 3, 3, 1, 1, 1, 1))

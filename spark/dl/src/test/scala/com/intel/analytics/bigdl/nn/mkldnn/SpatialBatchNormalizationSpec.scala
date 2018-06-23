@@ -18,12 +18,17 @@ package com.intel.analytics.bigdl.nn.mkldnn
 
 import com.intel.analytics.bigdl.mkl.{MKL, Memory}
 import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.numeric.NumericFloat
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.tensor.{DnnTensor, MklDnnType, Tensor}
 import com.intel.analytics.bigdl.utils.RandomGenerator._
+import com.intel.analytics.bigdl.utils.{T, Table}
 import com.intel.analytics.bigdl.{Module, nn}
 import org.scalatest.{FlatSpec, Matchers}
 
+import scala.annotation.strictfp
+
+@strictfp
 class SpatialBatchNormalizationSpec extends FlatSpec with Matchers {
   "bn updateOutput" should "work correctly" in {
     val (batchSize, channel, height, width) = (4, 64, 112, 112)
@@ -668,5 +673,182 @@ class SpatialBatchNormalizationSpec extends FlatSpec with Matchers {
 
     model.output.toTensor.storage()
     model.output should be (bn2.output)
+  }
+
+  "refactor of bach norm" should "work correctly" in {
+    val (batchSize, channel, height, width) = (4, 64, 2, 2)
+    val shape = Array(batchSize, channel, height, width)
+    val prototxt = s"""
+         |name: "relu-simple"
+         |force_backward: true
+         |layer {
+         |  name: "data"
+         |  type: "DummyData"
+         |  top: "data"
+         |  include {
+         |    phase: TRAIN
+         |  }
+         |  dummy_data_param {
+         |    data_filler {
+         |      type: "xavier"
+         |    }
+         |    shape: { dim: $batchSize dim: $channel dim: $height dim: $width }
+         |  }
+         |}
+         |
+         |layer {
+         |  bottom: "data"
+         |  top: "bn"
+         |  name: "bn"
+         |  type: "BatchNorm"
+         |
+         |  batch_norm_param {
+         |    moving_average_fraction: 1.0
+         |    filler { value: 1 }
+         |    bias_filler { value: 1 }
+         |    relu: false
+         |    eps: 0.0
+         |  }
+         |}
+       """.stripMargin
+
+    val identity = Collect.run(prototxt)
+
+    val input = Tools.getTensor("Fwrd_data", shape, identity)
+    val output = Tools.getTensor("Fwrd_bn", shape, identity)
+    val weight = Tools.getTensor("Fwrd_bn.Wght.3", Array(channel), identity)
+    val bias = Tools.getTensor("Fwrd_bn.Wght.4", Array(channel), identity)
+    val scale = Tools.getTensor("Fwrd_bn.Wght.2", Array(1), identity)
+    val runningMean = Tools.getTensor("Fwrd_bn.Wght.0", Array(channel), identity)
+    val runningVariance = Tools.getTensor("Fwrd_bn.Wght.1", Array(channel), identity)
+    val gradOutput = Tools.getTensor("Bwrd_bn.loss", shape, identity)
+    val gradInput = Tools.getTensor("Bwrd_bn", shape, identity)
+    val gradWeight = Tools.getTensor("Bwrd_bn.Grad.3", Array(channel), identity)
+    val gradBias = Tools.getTensor("Bwrd_bn.Grad.4", Array(channel), identity)
+
+    val bn = new RefactorSpatialBatchNormalization(channel, eps = 0.0, momentum = 1.0,
+      affine = true, initWeight = weight, initBias = bias)
+    bn.setRuntime(new MklDnnRuntime)
+    bn.initFwdPrimitives(Array(HeapData(input.size(), Memory.Format.nchw)), Phase.TrainingPhase)
+    bn.initBwdPrimitives(Array(HeapData(gradOutput.size(), Memory.Format.nchw)),
+      Phase.TrainingPhase)
+    bn.zeroGradParameters()
+
+    bn.forward(input)
+    bn.backward(input, gradOutput)
+
+    val weightAndBias = Tensor[Float](Array(2, channel))
+    weightAndBias.select(1, 1).copy(weight)
+    weightAndBias.select(1, 2).copy(bias)
+
+    val gradWeightAndBias = Tensor[Float](Array(2, channel))
+    gradWeightAndBias.select(1, 1).copy(gradWeight)
+    gradWeightAndBias.select(1, 2).copy(gradBias)
+
+    compare(weightAndBias.view(Array(2 * channel)), bn.weightAndBias)
+    compare(output, bn.output)
+    compare(runningMean, bn.runningMean)
+    compare(runningVariance, bn.runningVariance)
+    compare(gradWeightAndBias.view(Array(2 * channel)), bn.gradWeightAndBias)
+    compare(gradInput, bn.gradInput)
+  }
+
+  "refactor of bach norm inference" should "work correctly" in {
+    val (batchSize, channel, height, width) = (4, 64, 2, 2)
+    val shape = Array(batchSize, channel, height, width)
+    val prototxt = s"""
+         |name: "relu-simple"
+         |force_backward: true
+         |state {
+         |  phase: TEST
+         |}
+         |layer {
+         |  name: "data"
+         |  type: "DummyData"
+         |  top: "data"
+         |  include {
+         |    phase: TRAIN
+         |  }
+         |  dummy_data_param {
+         |    data_filler {
+         |      type: "xavier"
+         |    }
+         |    shape: { dim: $batchSize dim: $channel dim: $height dim: $width }
+         |  }
+         |}
+         |
+         |layer {
+         |  bottom: "data"
+         |  top: "bn"
+         |  name: "bn"
+         |  type: "BatchNorm"
+         |
+         |  batch_norm_param {
+         |    moving_average_fraction: 1.0
+         |    filler { value: 1 }
+         |    bias_filler { value: 0 }
+         |    relu: false
+         |    eps: 0.0
+         |  }
+         |
+         |  phase: TEST
+         |}
+       """.stripMargin
+
+    val identity = Collect.run(prototxt)
+
+    val input = Tools.getTensor("Fwrd_data", shape, identity)
+    val output = Tools.getTensor("Fwrd_bn", shape, identity)
+    val weight = Tools.getTensor("Fwrd_bn.Wght.3", Array(channel), identity)
+    val bias = Tools.getTensor("Fwrd_bn.Wght.4", Array(channel), identity)
+    val scale = Tools.getTensor("Fwrd_bn.Wght.2", Array(1), identity)
+    val runningMean = Tools.getTensor("Fwrd_bn.Wght.0", Array(channel), identity)
+    val runningVariance = Tools.getTensor("Fwrd_bn.Wght.1", Array(channel), identity)
+
+    val bn = new RefactorSpatialBatchNormalization(channel, eps = 0.0, momentum = 1.0,
+      affine = true, initWeight = weight, initBias = bias)
+    bn.setRuntime(new MklDnnRuntime)
+    bn.initFwdPrimitives(Array(HeapData(input.size(), Memory.Format.nchw)), Phase.InferencePhase)
+    bn.evaluate()
+    bn.runningMean.copy(runningMean)
+    bn.runningVariance.copy(runningVariance)
+
+    bn.forward(input)
+
+    val weightAndBias = Tensor[Float](Array(2, channel))
+    weightAndBias.select(1, 1).copy(weight)
+    weightAndBias.select(1, 2).copy(bias)
+
+    compare(weightAndBias.view(Array(2 * channel)), bn.weightAndBias)
+    compare(runningMean, bn.runningMean)
+    compare(runningVariance, bn.runningVariance)
+
+    val denseOutput = dense(bn.output).toTensor
+
+    denseOutput.storage().array().zip(output.storage().array()).foreach { x =>
+      if (x._2.isInfinity)   x._1.isNaN should be (true)
+    }
+  }
+
+  private def compare(src: Activity, dst: Activity): Unit = {
+    if (src.isTensor) {
+      DnnTools.nearequals(dense(src).toTensor, dense(dst).toTensor) should be (true)
+    }
+  }
+
+  def dense(t: Activity): Activity = {
+    val ret = if (t.isTensor) {
+      val tt = t.asInstanceOf[Tensor[Float]]
+      Tensor[Float]().resize(tt.size()).copy(tt)
+    } else {
+      throw new UnsupportedOperationException
+    }
+
+    ret
+  }
+
+
+  private def shape2Dim(shape: Array[Int]): String = {
+    shape.map(x => "dim: " + x).mkString(" ")
   }
 }

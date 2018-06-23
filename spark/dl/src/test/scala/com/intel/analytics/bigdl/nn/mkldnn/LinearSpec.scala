@@ -20,8 +20,9 @@ import java.util.concurrent.atomic.AtomicInteger
 
 import com.intel.analytics.bigdl.dataset.{LocalDataSet, MiniBatch}
 import com.intel.analytics.bigdl.example.loadmodel.AlexNet
-import com.intel.analytics.bigdl.mkl.MKL
+import com.intel.analytics.bigdl.mkl.{MKL, Memory}
 import com.intel.analytics.bigdl.nn
+import com.intel.analytics.bigdl.nn.mkldnn.Phase.TrainingPhase
 import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, SpatialMaxPooling}
 import com.intel.analytics.bigdl.nn.mkldnn.Utils.{manyTimes, speedup}
 import com.intel.analytics.bigdl.tensor.{MklDnnTensor, Tensor}
@@ -599,5 +600,62 @@ class LinearSpec extends FlatSpec with Matchers {
     model.resetTimes()
     val optimizer = Optimizer(model, dummyDataSet, criterion)
     val optimizedModel = optimizer.setEndWhen(Trigger.maxIteration(50)).optimize()
+  }
+
+  "linear " should "work correctly" in {
+    val (batchSize, nInput) = (4, 64)
+    val inputShape = Array(batchSize, nInput)
+    val nOutput = 1000
+    val outputShape = Array(batchSize, nOutput)
+    val name = "fc"
+
+    val prototxt =
+      s"""
+         |name: "relu-simple"
+         |force_backward: true
+         |layer {
+         |  name: "data"
+         |  type: "DummyData"
+         |  top: "data"
+         |  include {
+         |    phase: TRAIN
+         |  }
+         |  dummy_data_param {
+         |    data_filler {
+         |      type: "xavier"
+         |    }
+         |    shape: { ${shape2Dim(inputShape)} }
+         |  }
+         |}
+         |
+         |layer {
+         |  bottom: "data"
+         |  top: "$name"
+         |  name: "$name"
+         |  type: "InnerProduct"
+         |  inner_product_param {
+         |    num_output: $nOutput
+         |    weight_filler {
+         |      type: "gaussian"
+         |      std: 0.01
+         |    }
+         |    bias_filler {
+         |      type: "constant"
+         |      value: 0
+         |    }
+         |  }
+         |}
+       """.stripMargin
+    val linear = new RefactorLinear(nInput, nOutput).setName(name)
+    linear.setRuntime(new MklDnnRuntime)
+    linear.initFwdPrimitives(Array(HeapData(inputShape, Memory.Format.nc)), TrainingPhase)
+    linear.initBwdPrimitives(Array(HeapData(outputShape, Memory.Format.nc)), TrainingPhase)
+    linear.initGradWPrimitives(Array(HeapData(outputShape, Memory.Format.nc)), TrainingPhase)
+
+    Tools.compare(prototxt, linear, inputShape, outputShape)
+  }
+
+  private def shape2Dim(shape: Array[Int]): String = {
+    shape.map(x => "dim: " + x).mkString(" ")
   }
 }

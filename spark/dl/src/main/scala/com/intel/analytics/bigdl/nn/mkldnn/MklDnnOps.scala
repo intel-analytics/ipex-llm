@@ -280,4 +280,11 @@ object MklDnnOps {
     val format = MklDnnOps.getFormat(mpd)
     format
   }
+
+  def queryShape(pd: Long, queryType: Int, index: Int = 0): Array[Int] = {
+    val internal_pd = MklDnnOps.primitiveDescQueryPd(pd, queryType, index)
+    val mpd = MklDnnOps.primitiveDescQueryMemory(internal_pd)
+    val format = Memory.GetShape(mpd)
+    format
+  }
 }

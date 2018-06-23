@@ -24,10 +24,11 @@ import java.nio.{ByteBuffer, ByteOrder}
 import breeze.numerics.abs
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.nn.Container
-import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
+import com.intel.analytics.bigdl.nn.abstractnn.{Activity, TensorModule}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.{DenseTensorMath, MklDnnType, Storage, Tensor}
 
+import scala.annotation.strictfp
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 import scala.sys.process._
@@ -109,6 +110,7 @@ object Tools {
    * @brief read binary in tmp dir to Tensor, which is used for comparing
    *        with Intel Caffe with MKL-DNN
    */
+  @strictfp
   def getTensor(name: String, size: Array[Int], identity: String): Tensor[Float] = {
     val tensor = Tensor[Float]()
     val file = fileName(name, identity)
@@ -203,7 +205,6 @@ object Tools {
       ret &= compare2Tensors(gradInput, bigdlGradInput.toDenseTensor())
       assert(ret, s"${module.getName()} gradInput can't pass, please check")
 
-
       if (module.parameters() == null) {
         return ret
       }
@@ -220,14 +221,18 @@ object Tools {
   }
 
   def compare2Tensors(src: Tensor[Float], dst: Tensor[Float]): Boolean = {
-    // todo the sync should be deleted.
-    for (i <- List(src, dst)) {
-      if (i.getTensorType == MklDnnType) {
-        i.storage()
-      }
+    DnnTools.nearequals(dense(src).toTensor, dense(dst).toTensor)
+  }
+
+  def dense(t: Activity): Activity = {
+    val ret = if (t.isTensor) {
+      val tt = t.asInstanceOf[Tensor[Float]]
+      Tensor[Float]().resize(tt.size()).copy(tt)
+    } else {
+      throw new UnsupportedOperationException
     }
 
-    DnnTools.nearequals(src, dst)
+    ret
   }
 }
 

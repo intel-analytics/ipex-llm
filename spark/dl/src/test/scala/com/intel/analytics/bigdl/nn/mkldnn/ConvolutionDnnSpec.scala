@@ -23,6 +23,7 @@ import com.intel.analytics.bigdl.models.inception.{Inception_v1, Inception_v2}
 import com.intel.analytics.bigdl.models.resnet.ResNet
 import com.intel.analytics.bigdl.models.resnet.ResNet.DatasetType
 import com.intel.analytics.bigdl.models.vgg.{Vgg_16, Vgg_19}
+import com.intel.analytics.bigdl.nn.mkldnn.Phase.TrainingPhase
 import com.intel.analytics.bigdl.nn.{Module => _, _}
 import com.intel.analytics.bigdl.nn.{ReLU => OReLU}
 import com.intel.analytics.bigdl.tensor.{MklDnnTensor, Tensor}
@@ -862,5 +863,66 @@ class ConvolutionDnnSpec extends FlatSpec with Matchers {
     caddTable.output.toTensor.asInstanceOf[MklDnnTensor[Float]].storage()
 
     conv2.output should be (caddTable.output)
+  }
+
+  "convolution" should "work correctly" in {
+    val inputShape = Array(4, 3, 5, 5)
+    val outputShape = Array(4, 2, 3, 3)
+    val name = "conv"
+    val nOutput = 2
+    val kernel = 3
+    val pad = 1
+    val stride = 2
+
+    val prototxt =
+      s"""
+         |name: "conv-simple"
+         |force_backward: true
+         |layer {
+         |  name: "data"
+         |  type: "DummyData"
+         |  top: "data"
+         |  include {
+         |    phase: TRAIN
+         |  }
+         |  dummy_data_param {
+         |    data_filler {
+         |      type: "xavier"
+         |    }
+         |    shape: { ${shape2Dim(inputShape)} }
+         |  }
+         |}
+         |
+         |layer {
+         |  bottom: "data"
+         |  top: "conv"
+         |  name: "$name"
+         |  type: "Convolution"
+         |  convolution_param {
+         |    num_output: $nOutput
+         |    kernel_size: $kernel
+         |    pad: $pad
+         |    stride: $stride
+         |    weight_filler {
+         |      type: "msra"
+         |      variance_norm: FAN_OUT
+         |    }
+         |    bias_filler {
+         |      type: "gaussian"
+         |    }
+         |  }
+         |}
+       """.stripMargin
+
+    val conv = new RefactorConvolution(3, nOutput, kernel, kernel, stride, stride, pad, pad, 1)
+    conv.setName(name)
+    conv.setRuntime(new MklDnnRuntime)
+    conv.initFwdPrimitives(Array(HeapData(inputShape, Memory.Format.nchw)), TrainingPhase)
+    conv.initBwdPrimitives(Array(HeapData(outputShape, Memory.Format.nchw)), TrainingPhase)
+    conv.initGradWPrimitives(Array(HeapData(outputShape, Memory.Format.nchw)), TrainingPhase)
+    Tools.compare(prototxt, conv, inputShape, outputShape)
+  }
+  private def shape2Dim(shape: Array[Int]): String = {
+    shape.map(x => "dim: " + x).mkString(" ")
   }
 }

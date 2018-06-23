@@ -84,6 +84,21 @@ class DnnTensor[T: ClassTag](
     this
   }
 
+  override def zero(): Tensor[T] = {
+    Memory.Zero(this._storage.ptr.address, this.nElement(), DnnStorage.FLOAT_BYTES)
+    this
+  }
+
+  def axpby(a: Float, b: Float, to: DnnTensor[T]): Unit = {
+    val x = this._storage.ptr.address
+    val y = to._storage.ptr.address
+    Memory.Axpby(this.nElement(), a, x, b, y)
+  }
+
+  override def toTensor[D](implicit ev: TensorNumeric[D]): DnnTensor[D] = {
+    this.asInstanceOf[DnnTensor[D]]
+  }
+
   override def size(): Array[Int] = sizes.clone()
 
   override def size(d: Int): Int = sizes(d - 1)
