@@ -20,32 +20,6 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.{BigDLSpecHelper, T}
 
 class ConcatTableSpec extends BigDLSpecHelper {
-  "ConcatTable" should "throw exception when input layout is different" in {
-    val container = ConcatTable()
-    container.add(Input(Array(1, 2, 3, 4), Memory.Format.nchw))
-    container.add(Input(Array(1, 2, 3, 4), Memory.Format.nhwc))
-
-    intercept[IllegalArgumentException] {
-      container.compile(Phase.TrainingPhase, Array(HeapData(Array(1, 2, 3, 4), Memory.Format.nchw)))
-    }
-  }
-
-  "ConcatTable" should "throw exception when input format is different" in {
-    val container = ConcatTable()
-    container.add(ReorderMemory(HeapData(Array(1, 2, 3, 4), Memory.Format.nchw),
-      HeapData(Array(1, 2, 3, 4), Memory.Format.nchw),
-      HeapData(Array(1, 2, 3, 4), Memory.Format.nchw),
-      HeapData(Array(1, 2, 3, 4), Memory.Format.nchw)))
-    container.add(ReorderMemory(NativeData(Array(1, 2, 3, 4), Memory.Format.nchw),
-      HeapData(Array(1, 2, 3, 4), Memory.Format.nchw),
-      NativeData(Array(1, 2, 3, 4), Memory.Format.nchw),
-      HeapData(Array(1, 2, 3, 4), Memory.Format.nchw)))
-
-    intercept[IllegalArgumentException] {
-      container.compile(Phase.TrainingPhase, Array(HeapData(Array(1, 2, 3, 4), Memory.Format.nchw)))
-    }
-  }
-
   "ConcatTable" should "throw exception when input shape is different" in {
     val container = ConcatTable()
     container.add(Input(Array(1, 2, 3, 4), Memory.Format.nchw))
@@ -82,7 +56,9 @@ class ConcatTableSpec extends BigDLSpecHelper {
     output1(2).asInstanceOf[Tensor[Float]] should be(input1)
 
     val grad1 = Tensor[Float](3, 4).rand()
-    container.backward(input1, T(grad1, grad1)) should be(grad1 * 2)
+    val nativeGrad = container.backward(input1, T(grad1, grad1)).asInstanceOf[Tensor[Float]]
+    val heapGrad = Tensor[Float](3, 4).copy(nativeGrad)
+    heapGrad should be(grad1 * 2)
     
     val input2 = Tensor[Float](3, 4).rand()
     val output2 = container.forward(input2).toTable
@@ -90,6 +66,8 @@ class ConcatTableSpec extends BigDLSpecHelper {
     output2(2).asInstanceOf[Tensor[Float]] should be(input2)
 
     val grad2 = Tensor[Float](3, 4).rand()
-    container.backward(input1, T(grad2, grad2)) should be(grad2 * 2)
+    val nativeGrad2 = container.backward(input1, T(grad2, grad2)).asInstanceOf[Tensor[Float]]
+    val heapGrad2 = Tensor[Float](3, 4).copy(nativeGrad2)
+    heapGrad2 should be(grad2 * 2)
   }
 }

@@ -19,9 +19,9 @@ import com.intel.analytics.bigdl.mkl.Memory
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.{BigDLSpecHelper, T}
 
-class JoinTableSpec extends BigDLSpecHelper {
-  "Join table" should "work correctly" in {
-    val layer = JoinTable(1)
+class CAddTableSpec extends BigDLSpecHelper {
+  "CAddTable" should "be correct" in {
+    val layer = CAddTable()
     val model = Sequential()
     val concat = ConcatTable()
     concat.add(ReorderMemory(HeapData(Array(2, 2), Memory.Format.nc),
@@ -32,28 +32,24 @@ class JoinTableSpec extends BigDLSpecHelper {
       NativeData(Array(2, 2), Memory.Format.nc)))
     model.add(concat)
     model.add(layer)
-    model.add(ReorderMemory(NativeData(Array(4, 2), Memory.Format.nc),
-      HeapData(Array(4, 2), Memory.Format.nc),NativeData(Array(4, 2), Memory.Format.nc),
-      HeapData(Array(4, 2), Memory.Format.nc)))
+    model.add(ReorderMemory(NativeData(Array(2, 2), Memory.Format.nc),
+      HeapData(Array(2, 2), Memory.Format.nc),NativeData(Array(2, 2), Memory.Format.nc),
+      HeapData(Array(2, 2), Memory.Format.nc)))
     model.compile(Phase.TrainingPhase, Array(HeapData(Array(2, 2), Memory.Format.nc)))
     model.forward(Tensor[Float](T(T(1, 2), T(3, 4)))) should be(Tensor[Float](T(
-      T(1, 2),
-      T(3, 4),
-      T(1, 2),
-      T(3, 4)
+      T(2, 4),
+      T(6, 8)
     )))
     val dnnGrad = model.backward(Tensor[Float](T(T(1, 2), T(3, 4))), T(
       Tensor[Float](T(
         T(4, 5),
-        T(6, 7),
-        T(1, 3),
-        T(4, 2)
+        T(6, 7)
       ))
     )).asInstanceOf[Tensor[Float]]
     val heapGrad = Tensor[Float](2, 2)
     heapGrad.copy(dnnGrad)
-    heapGrad should be(
-      Tensor[Float](T(T(5, 8), T(10, 9)))
+    heapGrad should be (
+      Tensor[Float](T(T(8, 10), T(12, 14)))
     )
   }
 }

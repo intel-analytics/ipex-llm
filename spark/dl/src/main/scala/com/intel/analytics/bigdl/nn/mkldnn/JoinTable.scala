@@ -109,3 +109,7 @@ class JoinTable(val dimension: Int) extends MklDnnLayer {
     gradInput
   }
 }
+
+object JoinTable {
+  def apply(dimension: Int): JoinTable = new JoinTable(dimension)
+}

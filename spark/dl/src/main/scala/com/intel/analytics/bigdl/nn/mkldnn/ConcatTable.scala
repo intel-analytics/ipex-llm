@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 package com.intel.analytics.bigdl.nn.mkldnn
+import com.intel.analytics.bigdl.mkl.{DataType, Memory, MklDnn}
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.tensor.{DnnTensor, Tensor}
 import com.intel.analytics.bigdl.utils.{T, Table}
@@ -23,6 +24,13 @@ import scala.collection.mutable.ArrayBuffer
 class ConcatTable extends MklDnnContainer {
 
   output = T()
+
+  @transient
+  private var sumPrimitive: Array[Long] = null
+  @transient
+  private var tensors: Array[Tensor[Float]] = null
+  @transient
+  private var tensorPrimitives: Array[Long] = null
 
   override def updateOutput(input: Activity): Activity = {
     require(modules.length > 0, "empty modules of concat table")
@@ -41,15 +49,14 @@ class ConcatTable extends MklDnnContainer {
 
     var i = 0
     while (i < modules.length) {
-      val currentGradInput = modules(i).updateGradInput(input, gradOutput.toTable(i + 1))
+      tensors(i) = modules(i).updateGradInput(input, gradOutput.toTable(i + 1))
         .asInstanceOf[Tensor[Float]]
-      if (i == 0) {
-        gradInput.toTensor[Float].resizeAs(currentGradInput).copy(currentGradInput)
-      } else {
-        gradInput.toTensor[Float].add(currentGradInput)
-      }
       i += 1
     }
+    MklDnnOps.streamSubmit(
+      runtime.stream, 1, sumPrimitive, 1,  tensorPrimitives,
+      tensors
+    )
     gradInput
   }
 
@@ -78,22 +85,40 @@ class ConcatTable extends MklDnnContainer {
 
   override private[mkldnn] def initBwdPrimitives(grads: Array[MemoryData], phase: Phase) = {
     require(grads.length == mklDnnModules.length, "grad tensor number is not correct")
-    val realGradsBuffer = new ArrayBuffer[MemoryData]()
+    _gradOutputFormats = new Array[MemoryData](grads.length)
+    val subGradInputs = new Array[MemoryData](grads.length)
+    tensorPrimitives = new Array[Long](grads.length + 1)
+    var shape: Array[Int] = null
     for(i <- 0 until grads.length) {
       val m = mklDnnModules(i)
       val (realGrads, gradInput) = m.initBwdPrimitives(Array(grads(i)), phase)
       require(realGrads.length == 1, "real grad length should be 1")
-      realGradsBuffer.append(realGrads(0))
+      _gradOutputFormats(i) = realGrads(0)
       require(gradInput.length == 1, "real grad length should be 1")
-      if (_gradInputFormats == null) {
-        _gradInputFormats = gradInput
+      subGradInputs(i) = gradInput(0)
+      tensorPrimitives(i) = gradInput(0).getPrimitive(runtime)
+      if (shape == null) {
+        shape = gradInput(0).shape.clone()
       } else {
-        require(_gradInputFormats(0) == gradInput(0), "backward grad formats should be same")
+        require(shape.length == gradInput(0).shape.length, "backward grad shape should be same")
+        for(j <- 0 until shape.length) {
+          require(shape(j) == gradInput(0).shape(j), "backward grad shape size should be same")
+        }
       }
     }
-    _gradOutputFormats = realGradsBuffer.toArray
+    val outputMD = MklDnnOps.memoryDescInit(shape.length, shape, DataType.F32, Memory.Format.any)
+    val scales = grads.map(_ => 1f)
+    val pd = MklDnn.SumPrimitiveDescCreate(outputMD, grads.length, scales,
+      subGradInputs.map(_.getPrimitiveDescription(runtime)))
+    _gradInputFormats = Array(MemoryData.primitiveOutput(pd))
+    tensorPrimitives(grads.length) = _gradInputFormats(0).getPrimitive(runtime)
+    sumPrimitive = Array(MklDnnOps.primitiveCreate2(pd,
+      subGradInputs.map(_.getPrimitive(runtime)), new Array[Int](grads.length),
+      grads.length, _gradInputFormats.map(_.getPrimitive(runtime)), 1))
     gradInput = initTensor(_gradInputFormats(0))
-    (realGradsBuffer.toArray, _gradInputFormats)
+    tensors= new Array[Tensor[Float]](grads.length + 1)
+    tensors(grads.length) = gradInput.asInstanceOf[Tensor[Float]]
+    (_gradOutputFormats, _gradInputFormats)
   }
 
   override private[mkldnn] def initGradWPrimitives(grads: Array[MemoryData], phase: Phase) = {
@@ -125,7 +150,7 @@ class ConcatTable extends MklDnnContainer {
   }
 
   override private[mkldnn] def gradOutputFormats() = {
-    require(_gradInputFormats != null, "You should call initBwdPrimitives first")
+    require(_gradOutputFormats != null, "You should call initBwdPrimitives first")
     _gradOutputFormats
   }
 
