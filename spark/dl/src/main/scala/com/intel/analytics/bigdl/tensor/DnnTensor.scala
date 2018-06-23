@@ -23,8 +23,10 @@ import com.intel.analytics.bigdl.utils.Table
 import org.apache.spark.mllib.linalg
 import org.apache.spark.mllib.linalg.Matrix
 
+import scala.annotation.strictfp
 import scala.reflect.ClassTag
 
+@strictfp
 class DnnTensor[T: ClassTag](
   private var _storage: DnnStorage[T],
   private var sizes: Array[Int]
