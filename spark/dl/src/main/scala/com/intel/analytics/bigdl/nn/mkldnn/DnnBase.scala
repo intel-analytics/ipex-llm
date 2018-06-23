@@ -77,11 +77,18 @@ trait MklDnnModuleHelper {
   }
   protected def singleNativeData(formats: Array[MemoryData]): Array[MemoryData] = {
     require(formats.length == 1, "Only accept one tensor as input")
-    formats(0) match {
-      case i: NativeData => Array(i)
-      case i: HeapData => Array(i.toNative())
-      case _ => throw new UnsupportedOperationException("Not support memory format")
-    }
+    nativeData(formats)
+  }
+  protected def nativeData(formats: Array[MemoryData]): Array[MemoryData] = {
+    formats.map(
+      f => {
+        f match {
+          case i: NativeData => i
+          case i: HeapData => i.toNative()
+          case _ => throw new UnsupportedOperationException("Not support memory format")
+        }
+      }
+    )
   }
 }
 
@@ -148,7 +155,8 @@ trait MklDnnLayer extends AbstractModule[Activity, Activity, Float] with MklDnnM
       cachedInput = input
     }
     MklDnnOps.streamSubmit(
-      runtime.stream, 1, updateOutputPrimitives, 1, updateOutputMemoryPrimitives,
+      runtime.stream, 1, updateOutputPrimitives, updateOutputPrimitives.length,
+      updateOutputMemoryPrimitives,
       updateOutputTensors
     )
     output
@@ -187,7 +195,8 @@ trait MklDnnLayer extends AbstractModule[Activity, Activity, Float] with MklDnnM
       cachedInput = input
       cachedGradOutput = gradOutput
     }
-    MklDnnOps.streamSubmit(runtime.stream, 1, updateGradInputPrimitives, 1,
+    MklDnnOps.streamSubmit(runtime.stream, 1, updateGradInputPrimitives,
+      updateGradInputPrimitives.length,
       updateGradInputMemoryPrimitives, updateGradInputTensors)
     gradInput
   }
@@ -214,7 +223,6 @@ trait MklDnnLayer extends AbstractModule[Activity, Activity, Float] with MklDnnM
   }
 
   override private[mkldnn] def gradOutputWeightFormats() = {
-    require(_gradOutputFormatsForWeight != null, "You should call initGradPrimitives first")
     _gradOutputFormatsForWeight
   }
 }

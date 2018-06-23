@@ -35,12 +35,22 @@ class JoinTableSpec extends BigDLSpecHelper {
     model.add(ReorderMemory(NativeData(Array(4, 2), Memory.Format.nc),
       HeapData(Array(4, 2), Memory.Format.nc),NativeData(Array(4, 2), Memory.Format.nc),
       HeapData(Array(4, 2), Memory.Format.nc)))
-    model.compile(Phase.InferencePhase, Array(HeapData(Array(2, 2), Memory.Format.nc)))
+    model.compile(Phase.TrainingPhase, Array(HeapData(Array(2, 2), Memory.Format.nc)))
     model.forward(Tensor[Float](T(T(1, 2), T(3, 4)))) should be(Tensor[Float](T(
       T(1, 2),
       T(3, 4),
       T(1, 2),
       T(3, 4)
     )))
+    model.backward(Tensor[Float](T(T(1, 2), T(3, 4))), T(
+      Tensor[Float](T(
+        T(4, 5),
+        T(6, 7),
+        T(1, 3),
+        T(4, 2)
+      ))
+    )) should be(
+      Tensor[Float](T(T(5, 8), T(10, 9)))
+    )
   }
 }
