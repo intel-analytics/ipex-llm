@@ -781,7 +781,6 @@ class ConvolutionDnnSpec extends FlatSpec with Matchers {
     model2.accGradParameters(input, out1)
 
 
-
     println("compare params")
     DnnUtils.nearequals(weightAll1, weightAll2, 1e-4) should be(true)
     DnnUtils.getunequals(biasAll1, biasAll2, 1e-2) should be(true)
@@ -874,7 +873,119 @@ class ConvolutionDnnSpec extends FlatSpec with Matchers {
     val pad = 1
     val stride = 2
 
-    val prototxt =
+    val txt = prototxt(inputShape, name, nOutput, kernel, pad, stride)
+
+    val conv = new RefactorConvolution(3, nOutput, kernel, kernel, stride, stride, pad, pad, 1)
+    conv.setName(name)
+    conv.setRuntime(new MklDnnRuntime)
+    conv.initFwdPrimitives(Array(HeapData(inputShape, Memory.Format.nchw)), TrainingPhase)
+    conv.initBwdPrimitives(Array(HeapData(outputShape, Memory.Format.nchw)), TrainingPhase)
+    conv.initGradWPrimitives(Array(HeapData(outputShape, Memory.Format.nchw)), TrainingPhase)
+    Tools.compare(txt, conv, inputShape, outputShape)
+  }
+
+  "conv exists some format conversion" should "work correctly" in {
+    val inputShape = Array(4, 3, 224, 224)
+    val outputShape = Array(4, 64, 112, 112)
+
+    val name = "conv"
+    val conv = RefactorConvolution(3, 64, 7, 7, 2, 2, 3, 3).setName(name)
+    // TODO we should insert a reorder manually
+    val reorder1 = ReorderMemory(HeapData(inputShape, Memory.Format.nchw))
+    val reorder2 = ReorderMemory(HeapData(outputShape, Memory.Format.nchw))
+
+    val seq = Sequential()
+    seq.add(reorder1)
+    seq.add(conv)
+    seq.add(reorder2)
+    seq.compile(Phase.TrainingPhase, Array(HeapData(inputShape, Memory.Format.nchw)))
+    seq.reset()
+
+    val txt = prototxt(inputShape, name, outputShape(1), 7, 3, 2)
+    val identity = Collect.run(txt)
+
+    val input = Tools.getTensor("Fwrd_data", inputShape, identity)
+    val gradOutput = Tools.getTensor(s"Bwrd_$name.loss", outputShape, identity)
+    val output = Tools.getTensor(s"Fwrd_$name", outputShape, identity)
+    val gradInput = Tools.getTensor(s"Bwrd_$name", inputShape, identity)
+
+    if (conv.parameters() != null) {
+      val params = conv.parameters()._1
+      val infos = conv.parametersWithShape()._1
+      val name = conv.getName()
+
+      for (j <- params.indices) {
+        val w = Tools.getTensor(s"Fwrd_$name.Wght.$j", params(j).size(), identity)
+        params(j).copy(normal(w, infos(j)))
+      }
+    }
+
+    seq.forward(input)
+    seq.backward(input, gradOutput)
+
+    Tools.compare2Tensors(Tools.dense(seq.output).toTensor, output) should be (true)
+    Tools.compare2Tensors(Tools.dense(seq.gradInput).toTensor, gradInput) should be (true)
+
+    val params = seq.parameters()._2
+    val infos = conv.parametersWithShape()._2
+    for (j <- params.indices) {
+      val w = Tools.getTensor(s"Bwrd_$name.Grad.$j", params(j).size(), identity)
+      Tools.compare2Tensors(params(j), normal(w, infos(j))) should be (true)
+    }
+  }
+
+  "conv kernel 1x1 with reorder in container" should "work correctly" in {
+    val inputShape = Array(4, 64, 56, 56)
+    val outputShape = Array(4, 64, 56, 56)
+
+    val name = "conv"
+    val conv = RefactorConvolution(64, 64, 1, 1, 1, 1, 0, 0).setName(name)
+    // TODO we should insert a reorder manually
+    val reorder1 = ReorderMemory(HeapData(inputShape, Memory.Format.nchw))
+    val reorder2 = ReorderMemory(HeapData(outputShape, Memory.Format.nchw))
+
+    val seq = Sequential()
+    seq.add(reorder1)
+    seq.add(conv)
+    seq.add(reorder2)
+    seq.compile(Phase.TrainingPhase, Array(HeapData(inputShape, Memory.Format.nchw)))
+    seq.reset()
+
+    val txt = prototxt(inputShape, name, outputShape(1), 1, 0, 1)
+    val identity = Collect.run(txt)
+
+    val input = Tools.getTensor("Fwrd_data", inputShape, identity)
+    val gradOutput = Tools.getTensor(s"Bwrd_$name.loss", outputShape, identity)
+    val output = Tools.getTensor(s"Fwrd_$name", outputShape, identity)
+    val gradInput = Tools.getTensor(s"Bwrd_$name", inputShape, identity)
+
+    if (conv.parameters() != null) {
+      val params = conv.parameters()._1
+      val infos = conv.parametersWithShape()._1
+      val name = conv.getName()
+
+      for (j <- params.indices) {
+        val w = Tools.getTensor(s"Fwrd_$name.Wght.$j", params(j).size(), identity)
+        params(j).copy(normal(w, infos(j)))
+      }
+    }
+
+    seq.forward(input)
+    seq.backward(input, gradOutput)
+
+    Tools.compare2Tensors(Tools.dense(seq.output).toTensor, output) should be (true)
+    Tools.compare2Tensors(Tools.dense(seq.gradInput).toTensor, gradInput) should be (true)
+
+    val params = seq.parameters()._2
+    val infos = conv.parametersWithShape()._2
+    for (j <- params.indices.reverse) {
+      val w = Tools.getTensor(s"Bwrd_$name.Grad.$j", params(j).size(), identity)
+      Tools.compare2Tensors(params(j), normal(w, infos(j))) should be (true)
+    }
+  }
+
+  def prototxt(inputShape: Array[Int], name: String,
+    nOutput: Int, kernel: Int, pad: Int, stride: Int): String =  {
       s"""
          |name: "conv-simple"
          |force_backward: true
@@ -913,15 +1024,26 @@ class ConvolutionDnnSpec extends FlatSpec with Matchers {
          |  }
          |}
        """.stripMargin
-
-    val conv = new RefactorConvolution(3, nOutput, kernel, kernel, stride, stride, pad, pad, 1)
-    conv.setName(name)
-    conv.setRuntime(new MklDnnRuntime)
-    conv.initFwdPrimitives(Array(HeapData(inputShape, Memory.Format.nchw)), TrainingPhase)
-    conv.initBwdPrimitives(Array(HeapData(outputShape, Memory.Format.nchw)), TrainingPhase)
-    conv.initGradWPrimitives(Array(HeapData(outputShape, Memory.Format.nchw)), TrainingPhase)
-    Tools.compare(prototxt, conv, inputShape, outputShape)
   }
+
+  def normal(src: Tensor[Float], outputFormat: MemoryData): Tensor[Float] = {
+    val defaultFormat = src.size().length match {
+      case 1 => Memory.Format.x
+      case 2 => Memory.Format.oi
+      case 4 => Memory.Format.oihw
+    }
+
+    if (defaultFormat != outputFormat.layout) {
+      val inputFormat = HeapData(src.size(), defaultFormat)
+      val reorder = ReorderMemory(inputFormat, outputFormat, null, null)
+      reorder.setRuntime(new MklDnnRuntime)
+      reorder.initFwdPrimitives(Array(inputFormat), TrainingPhase)
+      reorder.updateOutput(src).toTensor
+    } else {
+      src
+    }
+  }
+
   private def shape2Dim(shape: Array[Int]): String = {
     shape.map(x => "dim: " + x).mkString(" ")
   }

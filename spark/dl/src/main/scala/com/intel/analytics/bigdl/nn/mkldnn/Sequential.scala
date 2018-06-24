@@ -124,6 +124,7 @@ class Sequential extends MklDnnContainer {
     var currentModule = modules(i)
     var lastGradInput = gradOutput
     while (i > 0) {
+      currentModule = modules(i)
       val curInput = reorderManager.infer(
         mklDnnModules(i - 1).outputFormats(),
         mklDnnModules(i).inputFormats(),

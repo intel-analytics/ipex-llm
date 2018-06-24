@@ -985,7 +985,12 @@ class RefactorConvolution(
     Array (nGroup, nOutputPlane / nGroup, nInputPlane / nGroup, kernelH, kernelW)
   }
 
+  // !!!important!!! this is for weight conversion. The weights in forward and backward is
+  // different.
+  val reorderManager = new ReorderManager
+
   val weight: DnnTensor[Float] = DnnTensor[Float](weightShape)
+  var weightForBackward: DnnTensor[Float] = _
   val bias: DnnTensor[Float] = DnnTensor[Float](Array(nOutputPlane))
   val gradWeight: DnnTensor[Float] = DnnTensor[Float](weightShape)
   val gradBias: DnnTensor[Float] = DnnTensor[Float](Array(nOutputPlane))
@@ -998,6 +1003,14 @@ class RefactorConvolution(
   var updateGradInputTensors: Array[Tensor[Float]] = _
   var updateGradWMemoryPrimitives: Array[Long] = _
   var updateGradWTensors: Array[Tensor[Float]] = _
+
+  object ParamsShape {
+    var weight: MemoryData = _
+    var weightForBackward: MemoryData = _
+    var bias: MemoryData = _
+    var gradWeight: MemoryData = _
+    var gradBias: MemoryData = _
+  }
 
   private def getOutputShape(oh: Int, ow: Int, batchSize: Int = -1): Array[Int] = {
     format match {
@@ -1017,6 +1030,14 @@ class RefactorConvolution(
     }
   }
 
+  {
+    val stdv = 1.0 / math.sqrt(kernelW * kernelH * nInputPlane)
+    val wInit: InitializationMethod = RandomUniform(-stdv, stdv)
+    val bInit: InitializationMethod = if (withBias) RandomUniform(-stdv, stdv)
+    else null
+    setInitMethod(wInit, bInit)
+  }
+
   override def reset(): Unit = {
     if (initWeight == null) { // TODO only support oihw format weights
       val t = Tensor[Float](weightShape)
@@ -1034,6 +1055,8 @@ class RefactorConvolution(
   }
 
   override private[mkldnn] def initFwdPrimitives(inputs: Array[MemoryData], phase: Phase) = {
+    reorderManager.setRuntime(runtime)
+
     val inputHeight = inputs(0).shape(2) // TODO only supports 4-D and nchw
     val inputWidth = inputs(0).shape(3)
 
@@ -1076,6 +1099,8 @@ class RefactorConvolution(
       MklDnnOps.queryFormat(forwardPrimDesc, Query.WeightsPd))
     val realDst = NativeData(MklDnnOps.queryShape(forwardPrimDesc, Query.DstPd),
       MklDnnOps.queryFormat(forwardPrimDesc, Query.DstPd))
+    ParamsShape.weight = realWei
+    ParamsShape.bias = bis
 
     val srcs = Array(realSrc.getPrimitive(runtime), realWei.getPrimitive(runtime),
       bis.getPrimitive(runtime))
@@ -1137,6 +1162,10 @@ class RefactorConvolution(
     val realDiffDst = NativeData(MklDnnOps.queryShape(backwardPrimDesc, Query.DiffDstPd),
       MklDnnOps.queryFormat(backwardPrimDesc, Query.DiffDstPd))
 
+    ParamsShape.weightForBackward = realWei
+
+    reorderManager.register(ParamsShape.weight, realWei)
+
     val srcs = Array(realDiffDst.getPrimitive(runtime), realWei.getPrimitive(runtime),
       inputFormats()(0).getPrimitive(runtime))
     val indexes = Array.fill(srcs.length)(0)
@@ -1155,14 +1184,18 @@ class RefactorConvolution(
   }
 
   override def updateGradInput(input: Activity, gradOutput: Activity): Activity = {
+    weightForBackward = reorderManager.infer(Array(ParamsShape.weight),
+      Array(ParamsShape.weightForBackward), weight).asInstanceOf[DnnTensor[Float]]
+
     if (updateGradInputTensors == null) {
       val buffer = new ArrayBuffer[Tensor[Float]]()
       buffer.append(gradOutput.asInstanceOf[Tensor[Float]])
-      buffer.append(weight)
+      buffer.append(weightForBackward)
       buffer.append(input.asInstanceOf[Tensor[Float]])
       buffer.append(gradInput.asInstanceOf[Tensor[Float]])
       updateGradInputTensors = buffer.toArray
     }
+
     MklDnnOps.streamSubmit(runtime.stream, 1, updateGradInputPrimitives,
       updateGradInputPrimitives.length, updateGradInputMemoryPrimitives, updateGradInputTensors)
 
@@ -1176,7 +1209,6 @@ class RefactorConvolution(
     val src = NativeData(inputShape, Memory.Format.any)
     val wei = NativeData(weightShape, Memory.Format.any)
     val bis = NativeData(bias.size(), Memory.Format.x)
-//    val dst = NativeData(outputShape, Memory.Format.any)
 
     val desc = MklDnn.ConvBackwardWeightsDescInit(
       AlgKind.ConvolutionDirect,
@@ -1194,6 +1226,9 @@ class RefactorConvolution(
       MklDnnOps.queryFormat(gradWeightPrimDesc, Query.DiffWeightsPd))
     val realDiffDst = NativeData(MklDnnOps.queryShape(gradWeightPrimDesc, Query.DiffDstPd),
       MklDnnOps.queryFormat(gradWeightPrimDesc, Query.DiffDstPd))
+
+    ParamsShape.gradWeight = realWei
+    ParamsShape.gradBias = bis
 
     val srcs = Array(realSrc.getPrimitive(runtime), realDiffDst.getPrimitive(runtime))
     val indexes = Array.fill(srcs.length)(0)
@@ -1229,5 +1264,33 @@ class RefactorConvolution(
   override def zeroGradParameters(): Unit = {
     gradWeight.zero()
     gradBias.zero()
+  }
+
+  def parametersWithShape(): (Array[MemoryData], Array[MemoryData]) = {
+    (Array(ParamsShape.weight, ParamsShape.bias), Array(ParamsShape.gradWeight, ParamsShape.bias))
+  }
+}
+
+object RefactorConvolution {
+  def apply(
+    nInputPlane: Int,
+    nOutputPlane: Int,
+    kW: Int,
+    kH: Int,
+    dW: Int = 1,
+    dH: Int = 1,
+    padW: Int = 0,
+    padH: Int = 0,
+    nGroup: Int = 1,
+    propagateBack: Boolean = true,
+    initWeight: Tensor[Float] = null,
+    initBias: Tensor[Float] = null,
+    initGradWeight: Tensor[Float] = null,
+    initGradBias: Tensor[Float] = null,
+    withBias: Boolean = true,
+    format: DataFormat = DataFormat.NCHW): RefactorConvolution = {
+    new RefactorConvolution(nInputPlane, nOutputPlane, kW, kH, dW,
+      dH, padW, padH, nGroup, propagateBack,
+      initWeight, initBias, initGradWeight, initGradBias, withBias, format)
   }
 }
