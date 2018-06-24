@@ -830,6 +830,9 @@ class RefactorSpatialBatchNormalization(
         updateOutputTensors = buffer.toArray
       }
     }
+
+    updateWithNewTensor(updateOutputTensors, 0, input)
+
     MklDnnOps.streamSubmit(runtime.stream, 1, updateOutputPrimitives, updateOutputPrimitives.length,
       updateOutputMemoryPrimitives, updateOutputTensors)
 
@@ -900,6 +903,10 @@ class RefactorSpatialBatchNormalization(
       buffer.append(gradWeightAndBias.asInstanceOf[Tensor[Float]])
       updateGradInputTensors = buffer.toArray
     }
+
+    updateWithNewTensor(updateGradInputTensors, 0, input)
+    updateWithNewTensor(updateGradInputTensors, 3, gradOutput)
+
     MklDnnOps.streamSubmit(runtime.stream, 1, updateGradInputPrimitives,
       updateGradInputPrimitives.length, updateGradInputMemoryPrimitives, updateGradInputTensors)
 

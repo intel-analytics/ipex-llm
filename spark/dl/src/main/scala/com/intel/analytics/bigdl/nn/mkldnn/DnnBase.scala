@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.nn.mkldnn
 import com.intel.analytics.bigdl.mkl.{DataType, MklDnn}
 import com.intel.analytics.bigdl.nn.DynamicContainer
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
-import com.intel.analytics.bigdl.tensor.{DnnTensor, Tensor}
+import com.intel.analytics.bigdl.tensor.{DenseType, DnnTensor, Tensor}
 import com.intel.analytics.bigdl.utils.T
 
 import scala.collection.mutable.ArrayBuffer
@@ -225,6 +225,15 @@ trait MklDnnLayer extends AbstractModule[Activity, Activity, Float] with MklDnnM
   override private[mkldnn] def gradOutputWeightFormats() = {
     _gradOutputFormatsForWeight
   }
+
+  def updateWithNewTensor(from: Array[Tensor[Float]], index: Int,
+    value: Activity): Unit = {
+    from(index).getTensorType match {
+      case DenseType => from(index) = value.toTensor[Float]
+      case _ =>
+    }
+  }
+
 }
 
 /**

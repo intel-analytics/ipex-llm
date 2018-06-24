@@ -1128,6 +1128,9 @@ class RefactorConvolution(
       buffer.append(output.asInstanceOf[Tensor[Float]])
       updateOutputTensors = buffer.toArray
     }
+
+    updateWithNewTensor(updateOutputTensors, 0, input)
+
     MklDnnOps.streamSubmit(runtime.stream, 1, updateOutputPrimitives, updateOutputPrimitives.length,
       updateOutputMemoryPrimitives, updateOutputTensors)
 
@@ -1196,6 +1199,9 @@ class RefactorConvolution(
       updateGradInputTensors = buffer.toArray
     }
 
+    updateWithNewTensor(updateGradInputTensors, 2, input)
+    updateWithNewTensor(updateGradInputTensors, 0, gradOutput)
+
     MklDnnOps.streamSubmit(runtime.stream, 1, updateGradInputPrimitives,
       updateGradInputPrimitives.length, updateGradInputMemoryPrimitives, updateGradInputTensors)
 
@@ -1253,6 +1259,10 @@ class RefactorConvolution(
       buffer.append(gradBias)
       updateGradWTensors = buffer.toArray
     }
+
+    updateWithNewTensor(updateGradWTensors, 0, input)
+    updateWithNewTensor(updateGradWTensors, 1, gradOutput)
+
     MklDnnOps.streamSubmit(runtime.stream, 1, accGradientPrimitives,
       accGradientPrimitives.length, updateGradWMemoryPrimitives, updateGradWTensors)
   }
