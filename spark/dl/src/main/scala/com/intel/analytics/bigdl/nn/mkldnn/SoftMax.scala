@@ -18,10 +18,12 @@ package com.intel.analytics.bigdl.nn.mkldnn
 
 import com.intel.analytics.bigdl.mkl.{DataType, Engine, Memory, MklDnn, PropKind, Stream => DnnStream}
 import com.intel.analytics.bigdl.nn
-import com.intel.analytics.bigdl.nn.abstractnn.TensorModule
-import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.nn.abstractnn.{Activity, TensorModule}
+import com.intel.analytics.bigdl.nn.mkldnn.Phase.{InferencePhase, TrainingPhase}
+import com.intel.analytics.bigdl.tensor.{DenseType, Tensor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 
+import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
 class SoftMax[T: ClassTag]()(implicit ev: TensorNumeric[T]) extends TensorModule[T] {
@@ -119,5 +121,89 @@ class SoftMax[T: ClassTag]()(implicit ev: TensorNumeric[T]) extends TensorModule
 object SoftMax {
   def apply[T: ClassTag]()(implicit ev: TensorNumeric[T]): SoftMax[T] = {
     new SoftMax[T]()
+  }
+}
+
+class RefactorSoftMax() extends MklDnnLayer {
+  val nnSoftMax = nn.SoftMax[Float]()
+
+  var updateOutputTensors: Array[Tensor[Float]] = _
+  var updateOutputMemoryPrimitives: Array[Long] = _
+
+  override private[mkldnn] def initFwdPrimitives(inputs: Array[MemoryData], phase: Phase) = {
+    phase match {
+      case TrainingPhase => (inputs, inputs) // do nothing, because mkl dnn doesn't support training
+      case InferencePhase =>
+        val axis = inputs(0).shape.length match {
+          case 1 => 0
+          case 2 => 1
+//          case 3 => 1 // TODO should support this?
+          case 4 => 1
+          case _ => throw new UnsupportedOperationException("1D, 2D, or 4D tensor expected")
+        }
+
+        _inputFormats = singleNativeData(inputs)
+        val desc = MklDnn.SoftMaxForwardDescInit(PropKind.ForwardInference,
+          inputFormats()(0).getMemoryDescription(), axis)
+        val forwardPrimDesc = MklDnnOps.primitiveDescCreate(desc, runtime.engine, 0L)
+
+        _outputFormats = Array(MemoryData.primitiveOutput(forwardPrimDesc))
+
+        val srcs = Array(inputs(0).getPrimitive(runtime))
+        val indexes = Array(0)
+        val dsts = Array(_outputFormats(0).getPrimitive(runtime))
+
+        val primitive = MklDnn.PrimitiveCreate2(forwardPrimDesc, srcs, indexes, srcs.length, dsts,
+          dsts.length)
+
+        updateOutputPrimitives = Array(primitive)
+        updateOutputMemoryPrimitives = srcs ++ dsts
+
+        output = initTensor(_outputFormats(0))
+
+        (_inputFormats, _outputFormats)
+      case _ => throw new UnsupportedOperationException
+    }
+  }
+
+  override private[mkldnn] def initBwdPrimitives(grad: Array[MemoryData], phase: Phase) = {
+    (grad, grad)
+  }
+
+  override def updateOutput(input: Activity): Activity = {
+      if (this.isTraining()) {
+        nnSoftMax.forward(input)
+        output = nnSoftMax.output
+      } else {
+        if (updateOutputTensors == null) {
+          val buffer = new ArrayBuffer[Tensor[Float]]()
+          buffer.append(input.asInstanceOf[Tensor[Float]])
+          buffer.append(output.asInstanceOf[Tensor[Float]])
+          updateOutputTensors = buffer.toArray
+        }
+
+        input.toTensor[Float].getTensorType match {
+          case DenseType => updateOutputTensors(0) = input.toTensor
+          case _ =>
+        }
+
+        MklDnnOps.streamSubmit(runtime.stream, 1,
+          updateOutputPrimitives,
+          updateOutputPrimitives.length,
+          updateOutputMemoryPrimitives, updateOutputTensors)
+    }
+
+    output
+  }
+
+  override def updateGradInput(input: Activity, gradOutput: Activity): Activity = {
+    gradInput = nnSoftMax.backward(input, gradOutput)
+    gradInput
+  }
+}
+
+object RefactorSoftMax{
+  def apply(): RefactorSoftMax = {
+    new RefactorSoftMax()
   }
 }
