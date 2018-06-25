@@ -773,7 +773,7 @@ class Optimizer(BaseOptimizer):
         if not end_trigger:
             end_trigger = MaxEpoch(1)
         if not optim_method:
-            SGD()
+            optim_method = SGD()
         if isinstance(training_set, RDD) or isinstance(training_set, DataSet):
             return DistriOptimizer(model=model,
                                    training_rdd=training_set,
