@@ -1132,7 +1132,7 @@ object SpatialBatchNormalization {
     var c = 0
     val size = n / nChannel
     while(c < nChannel) {
-      if(needSync) {
+      if (needSync) {
         gMeanData(c) = globalGmean(c) / (size * gmeanEventLen)
         gxMeanData(c) = globalGxmean(c) / (size * gmxmeanEventLen)
       } else {
