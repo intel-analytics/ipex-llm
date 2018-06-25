@@ -37,11 +37,20 @@ trait InferenceSupportive {
     result
   }
 
-  def transferInputToSample(input: JList[JFloat], inputShape: Array[Int]):
-    Sample[Float] = {
+  def transferInputToSample(input: JList[JFloat], inputShape: Array[Int])
+    : Sample[Float] = {
     require(input.size() == inputShape.reduce(_ * _), "data size not fit shape")
     val inputData = input.asScala.toArray.map(_.asInstanceOf[Float])
     Sample(Tensor(data = inputData, shape = inputShape))
+  }
+
+  def transferTensorToJTensor(input: Tensor[Float]): JTensor = {
+    val storageOffset = input.storageOffset - 1
+    val res = new Array[Float](input.nElement())
+    System.arraycopy(input.storage().array(), storageOffset, res, 0, res.length)
+    val outputData = res.toList.asJava.asInstanceOf[JList[JFloat]]
+    val outputShape = input.size()
+    new JTensor(outputData, outputShape)
   }
 
 }

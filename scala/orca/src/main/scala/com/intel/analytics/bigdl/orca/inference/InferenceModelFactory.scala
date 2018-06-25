@@ -24,8 +24,17 @@ object InferenceModelFactory {
     loadFloatInferenceModel(modelPath, null)
   }
 
-  def loadFloatInferenceModel(modelPath: String, weightPath: String): FloatInferenceModel = {
+  def loadFloatInferenceModel(modelPath: String, weightPath: String)
+    : FloatInferenceModel = {
     val model = ModelLoader.loadFloatModel(modelPath, weightPath)
+    val predictor = LocalPredictor(model)
+    model.evaluate()
+    FloatInferenceModel(model, predictor)
+  }
+
+  def loadFloatInferenceModelForCaffe(modelPath: String, weightPath: String)
+    : FloatInferenceModel = {
+    val model = ModelLoader.loadFloatModelForCaffe(modelPath, weightPath)
     val predictor = LocalPredictor(model)
     model.evaluate()
     FloatInferenceModel(model, predictor)
