@@ -36,7 +36,7 @@ class BatchNormalizationSpec extends FlatSpec with Matchers {
 
     val bn = BatchNormalization[Float](2)
 
-    bn.setParallism(Some(1))
+    bn.setParallism(1)
 
     bn.weight.fill(1.0f)
     bn.bias.fill(1.0f)
@@ -62,7 +62,7 @@ class BatchNormalizationSpec extends FlatSpec with Matchers {
 
     val bn1 = BatchNormalization[Float](2)
 
-    bn1.setParallism(Some(2))
+    bn1.setParallism(2)
 
     bn1.weight.fill(1.0f)
     bn1.bias.fill(1.0f)

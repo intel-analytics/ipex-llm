@@ -36,7 +36,7 @@ class SpatialBatchNormalizationSpec extends FlatSpec with Matchers {
     Engine.init
 
     val bn = SpatialBatchNormalization[Float](2)
-    bn.setParallism(Some(1))
+    bn.setParallism(1)
     bn.weight.fill(1.0f)
     bn.bias.fill(1.0f)
 
@@ -59,7 +59,7 @@ class SpatialBatchNormalizationSpec extends FlatSpec with Matchers {
     val runningVar = bn.runningVar
 
     val bn1 = SpatialBatchNormalization[Float](2)
-    bn1.setParallism(Some(2))
+    bn1.setParallism(2)
 
     bn1.weight.fill(1.0f)
     bn1.bias.fill(1.0f)

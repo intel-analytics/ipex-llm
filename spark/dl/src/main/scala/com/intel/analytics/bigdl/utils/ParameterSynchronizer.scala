@@ -26,7 +26,7 @@ import scala.reflect._
 /**
  * A parameter synchronizer among threads per task
  */
-object ParameterSynchronizer {
+private[bigdl] object ParameterSynchronizer {
 
   val fEvents = new java.util.concurrent.ConcurrentHashMap[String, Event[Float]]
 
@@ -100,7 +100,7 @@ object ParameterSynchronizer {
   }
 }
 
-class Event[T: ClassTag](threadNum: Int) {
+private class Event[T: ClassTag](threadNum: Int) {
   val barrier = new CyclicBarrier(threadNum)
   val data = new ConcurrentHashMap[String, Tensor[T]]()
 

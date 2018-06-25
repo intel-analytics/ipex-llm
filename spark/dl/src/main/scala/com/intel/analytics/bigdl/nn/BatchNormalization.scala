@@ -63,8 +63,13 @@ class BatchNormalization[T: ClassTag](
 
   private var parallism : Option[Int] = None
 
-  def setParallism(parallism: Option[Int]): Unit = {
-    this.parallism = parallism
+
+  /**
+   * Set parameter sync parallisim number
+   * @param parallism Concurrent sync threads number
+   */
+  def setParallism(parallism: Int): Unit = {
+    this.parallism = Some(parallism)
   }
 
   def getParallism(): Option[Int] = this.parallism
