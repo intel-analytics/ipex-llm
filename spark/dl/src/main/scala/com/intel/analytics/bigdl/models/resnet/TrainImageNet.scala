@@ -78,6 +78,14 @@ object TrainImageNet {
 
       println(model)
 
+      /* Here we set parallism specifically for BatchNormalization and its Sub Layers,
+      this is very useful especially when you want to leverage more computing resources like you want to use
+      as many cores as possible but you cannot set batch size too big for each core due to the memory limitation
+      , so you can set batch size per core smaller, but the smaller batch size will increase the instability of
+      convergence, the synchronization among BN layers basically do the parameters synchronization among cores
+       and thus will avoid the instability while improves the performance a lot.
+       */
+
       val parallisim = Engine.coreNumber
 
       setParallism(model, parallisim)
