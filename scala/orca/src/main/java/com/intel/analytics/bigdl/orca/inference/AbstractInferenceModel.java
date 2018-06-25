@@ -21,7 +21,6 @@ import java.util.List;
 
 public abstract class AbstractInferenceModel {
   private FloatInferenceModel model;
-
   private int supportedConcurrentNum = 1;
 
   public AbstractInferenceModel() {
@@ -39,6 +38,14 @@ public abstract class AbstractInferenceModel {
     this.model = InferenceModelFactory.loadFloatInferenceModel(modelPath, weightPath);
   }
 
+  public void loadCaffe(String modelPath) {
+    loadCaffe(modelPath, null);
+  }
+
+  public void loadCaffe(String modelPath, String weightPath) {
+    this.model = InferenceModelFactory.loadFloatInferenceModelForCaffe(modelPath, weightPath);
+  }
+
   public void reload(String modelPath) {
     load(modelPath, null);
   }
@@ -47,12 +54,8 @@ public abstract class AbstractInferenceModel {
     this.model = InferenceModelFactory.loadFloatInferenceModel(modelPath, weightPath);
   }
 
-  public List<Float> predict(List<Float> input, int... shape) {
-    List<Integer> inputShape = new ArrayList<Integer>();
-    for (int s : shape) {
-      inputShape.add(s);
-    }
-    return model.predict(input, inputShape);
+  public List<List<JTensor>> predict(List<JTensor> inputs) {
+    return model.predict(inputs);
   }
 
 }
