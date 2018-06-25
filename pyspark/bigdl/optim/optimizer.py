@@ -374,6 +374,8 @@ class OptimMethod(JavaValue):
         load optim method
         :param path: file path
         """
+        # jOptimMethod = callBigDlFunc(bigdl_type, "loadOptimMethod", path)
+        # return OptimMethod(jOptimMethod, bigdl_type)
         return callBigDlFunc(bigdl_type, "loadOptimMethod", path)
 
     def save(self, path, overWrite):
@@ -771,9 +773,7 @@ class Optimizer(BaseOptimizer):
         if not end_trigger:
             end_trigger = MaxEpoch(1)
         if not optim_method:
-            optim_method = {model.name: SGD()}
-        if isinstance(optim_method, OptimMethod):
-            optim_method = {model.name: optim_method}
+            SGD()
         if isinstance(training_set, RDD) or isinstance(training_set, DataSet):
             return DistriOptimizer(model=model,
                                    training_rdd=training_set,
@@ -849,9 +849,13 @@ class DistriOptimizer(Optimizer):
         :param batch_size: training batch size
         """
         if not optim_method:
-            optim_methods = {model.name: SGD()}
-        if isinstance(optim_method, OptimMethod):
-            optim_methods = {model.name: optim_method}
+            optim_methods = {model.name(): SGD()}
+        elif isinstance(optim_method, OptimMethod):
+            optim_methods = {model.name(): optim_method}
+        elif isinstance(optim_method, JavaObject):
+            optim_methods = {model.name(): OptimMethod(optim_method, bigdl_type)}
+        else:
+            optim_methods = optim_method
         if isinstance(training_rdd, RDD):
             JavaValue.__init__(self, None, bigdl_type, model.value,
                                training_rdd, criterion,
@@ -889,9 +893,13 @@ class LocalOptimizer(BaseOptimizer):
                  cores=None,
                  bigdl_type="float"):
         if not optim_method:
-            optim_methods = {model.name: SGD()}
-        if isinstance(optim_method, OptimMethod):
-            optim_methods = {model.name: optim_method}
+            optim_methods = {model.name(): SGD()}
+        elif isinstance(optim_method, OptimMethod):
+            optim_methods = {model.name(): optim_method}
+        elif isinstance(optim_method, JavaObject):
+            optim_methods = {model.name(): OptimMethod(optim_method, bigdl_type)}
+        else:
+            optim_methods = optim_method
         if cores is None:
             cores = multiprocessing.cpu_count()
         JavaValue.__init__(self, None, bigdl_type,
