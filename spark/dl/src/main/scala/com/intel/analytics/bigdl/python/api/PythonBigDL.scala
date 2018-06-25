@@ -2236,7 +2236,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   def createDistriOptimizerFromDataSet(model: AbstractModule[Activity, Activity, T],
     trainDataSet: DataSet[ImageFeature],
     criterion: Criterion[T],
-    optimMethod: Map[String, OptimMethod[T]],
+    optimMethod: JMap[String, OptimMethod[T]],
     endTrigger: Trigger,
     batchSize: Int): Optimizer[T, MiniBatch[T]] = {
     val dataSet = trainDataSet -> ImageFeatureToMiniBatch[T](batchSize)
@@ -2246,7 +2246,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
       _dataset = dataSet.asInstanceOf[DistributedDataSet[MiniBatch[T]]],
       _criterion = criterion
     ).asInstanceOf[Optimizer[T, MiniBatch[T]]]
-    enrichOptimizer(optimizer, endTrigger, optimMethod)
+    enrichOptimizer(optimizer, endTrigger, optimMethod.asScala.toMap)
   }
 
   def featureTransformDataset(dataset: DataSet[ImageFeature],

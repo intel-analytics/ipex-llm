@@ -374,8 +374,6 @@ class OptimMethod(JavaValue):
         load optim method
         :param path: file path
         """
-        # jOptimMethod = callBigDlFunc(bigdl_type, "loadOptimMethod", path)
-        # return OptimMethod(jOptimMethod, bigdl_type)
         return callBigDlFunc(bigdl_type, "loadOptimMethod", path)
 
     def save(self, path, overWrite):

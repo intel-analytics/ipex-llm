@@ -314,11 +314,13 @@ class PythonSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
     val sgd = new SGD[Float](0.01)
 
+
+    val optimMethod: Map[String, OptimMethod[Float]] = Map(model.getName() -> sgd)
     val pythonBigDL = PythonBigDL.ofFloat()
     val optimizer = pythonBigDL.createDistriOptimizerFromDataSet(model,
       imageFrame,
       criterion = ClassNLLCriterion[Float](),
-      optimMethod = Map(model.getName() -> sgd),
+      optimMethod = optimMethod.asJava,
       endTrigger = Trigger.maxEpoch(2),
       batchSize = 8)
     optimizer.optimize()
