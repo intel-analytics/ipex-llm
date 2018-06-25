@@ -18,7 +18,8 @@ package com.intel.analytics.bigdl.models.resnet
 
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.models.resnet.ResNet.{DatasetType, ShortcutType}
-import com.intel.analytics.bigdl.nn.{CrossEntropyCriterion, Module}
+import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
+import com.intel.analytics.bigdl.nn.{BatchNormalization, Container, CrossEntropyCriterion, Module}
 import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric._
 import com.intel.analytics.bigdl.utils.{Engine, LoggerFilter, T}
@@ -77,6 +78,10 @@ object TrainImageNet {
 
       println(model)
 
+      val parallisim = Engine.coreNumber
+
+      setParallism(model, parallisim)
+
       val optimMethod = if (param.stateSnapshot.isDefined) {
         val optim = OptimMethod.load[Float](param.stateSnapshot.get).asInstanceOf[SGD[Float]]
         val baseLr = param.learningRate
@@ -126,5 +131,15 @@ object TrainImageNet {
         .optimize()
       sc.stop()
     })
+  }
+
+  private def setParallism(model: AbstractModule[_, _, Float], parallism: Int): Unit = {
+    if (model.isInstanceOf[BatchNormalization[Float]]) {
+      model.asInstanceOf[BatchNormalization[Float]].setParallism(parallism)
+    }
+    if(model.isInstanceOf[Container[_, _, Float]]) {
+      model.asInstanceOf[Container[_, _, Float]].
+        modules.foreach(sub => setParallism(sub, parallism))
+    }
   }
 }
