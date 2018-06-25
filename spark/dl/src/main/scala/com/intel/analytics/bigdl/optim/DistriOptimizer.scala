@@ -997,6 +997,8 @@ class DistriOptimizer[T: ClassTag] (
             lastFailureTimestamp = System.nanoTime()
 
             val modelFile = getLatestFile(checkpointPath.get, "model")
+            clearState()
+            models.unpersist()
             val newModel = if (modelFile != null) {
               DistriOptimizer.logger.info("Model recover from last snapshot")
               Module.load[T](modelFile)
@@ -1006,8 +1008,6 @@ class DistriOptimizer[T: ClassTag] (
             }
             optimMethods = optimMethods.map { case (moduleName, optimMethod) =>
               val methodFile = getLatestFile(checkpointPath.get, s"optimMethod-$moduleName")
-              clearState()
-              models.unpersist()
 
               val newOptimMethod = if (methodFile != null) {
                 DistriOptimizer.logger.info(s"$moduleName's OptimMethod recover from last snapshot")
@@ -1018,9 +1018,6 @@ class DistriOptimizer[T: ClassTag] (
               }
               newOptimMethod.clearHistory()
               (moduleName, newOptimMethod)
-            }
-            optimMethods.values.foreach{
-              _.clearHistory()
             }
             models = DistriOptimizer.initThreadModels(newModel, distDataset, criterion, state,
               nodeNumber, coresPerNode, checkSingleton, parameters, validationMethods,

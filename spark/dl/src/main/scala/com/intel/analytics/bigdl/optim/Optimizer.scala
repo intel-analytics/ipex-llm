@@ -249,7 +249,7 @@ abstract class Optimizer[T: ClassTag, D](
   /**
    * Set a model to the optimizer.
    * Notice: if current optimMethod in this optimizer is not a global optimMethod,
-   * the optimMethod will be cleared. You should set new OptimMethods for this optimizer.
+   * this setModel will throw an exception. You should use setModelAndOptimMethods instead.
    *
    * @param newModel new model
    */
@@ -262,13 +262,31 @@ abstract class Optimizer[T: ClassTag, D](
       logger.info(s"Optimizer.setModel: Detect current optimMethod is a global optimMethod." +
         s" Automatically associate the current optimMethod with the new model.")
     } else {
-      logger.warn(s"Optimizer.setModel: Detect current optimMethod is not a global optimMethod." +
-        s" Clearing the old optimMethod.")
-      optimMethods = Map[String, OptimMethod[T]]()
-      logger.warn(s"Optimizer.setModel: old optimMethod cleared.")
+      throw new IllegalArgumentException("Optimizer.setModel: Detect current optimMethod" +
+        " is not a global optimMethod. Please use setModelAndOptimMethods")
     }
 
     model = newModel
+
+    model.checkDuplicate()
+
+    // if a new Model is set, then reset "epoch", "neval" .etc.
+    resetEpoch()
+    this
+  }
+
+  /**
+   * Set new model and new optimMethods to the optimizer.
+   *
+   * @param newModel new model
+   * @param newOptimMethods new optimMethods
+   */
+  def setModelAndOptimMethods(
+        newModel: Module[T],
+        newOptimMethods: Map[String, OptimMethod[T]]): this.type = {
+    // check if the old optimMethods is a global one.
+    model = newModel
+    optimMethods = newOptimMethods
 
     model.checkDuplicate()
 
@@ -473,7 +491,7 @@ object Optimizer {
       require(subModuleWeights.nElement() > 0, s"Optimizer: $subModuleName doesn't have" +
         s" any trainable parameters, please check your model and optimMethods.")
       // If the storage subModule's parameter is the same with the storage of the submodule,
-      // then subModule
+      // then subModule's parameter is contiguous.
       require(modelParameters._1.storage() == subModuleWeights.storage(), s"Optimizer:" +
         s" $subModuleName's parameter is not contiguous.")
       (subModuleName, subModuleWeights)
