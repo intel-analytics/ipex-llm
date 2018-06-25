@@ -100,7 +100,7 @@ private[bigdl] object ParameterSynchronizer {
   }
 }
 
-private class Event[T: ClassTag](threadNum: Int) {
+private[bigdl] class Event[T: ClassTag](threadNum: Int) {
   val barrier = new CyclicBarrier(threadNum)
   val data = new ConcurrentHashMap[String, Tensor[T]]()
 
