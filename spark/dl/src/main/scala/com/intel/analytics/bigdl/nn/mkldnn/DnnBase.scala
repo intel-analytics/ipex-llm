@@ -124,6 +124,12 @@ trait MklDnnLayer extends AbstractModule[Activity, Activity, Float] with MklDnnM
   @transient
   private var cachedGradOutput: Activity = _
 
+  override private[mkldnn] def initGradWPrimitives(grad: Array[MemoryData],
+    phase: Phase): Array[MemoryData] = {
+    _gradOutputFormatsForWeight = grad
+    grad
+  }
+
   override def updateOutput(input: Activity): Activity = {
     if (updateOutputMemoryPrimitives == null) {
       updateOutputMemoryPrimitives =
@@ -234,6 +240,9 @@ trait MklDnnLayer extends AbstractModule[Activity, Activity, Float] with MklDnnM
     }
   }
 
+  def parametersWithShape(): (Array[MemoryData], Array[MemoryData]) = {
+    (null, null)
+  }
 }
 
 /**

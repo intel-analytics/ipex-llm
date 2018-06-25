@@ -809,6 +809,13 @@ class RefactorLinear(
   var updateGradWMemoryPrimitives: Array[Long] = _
   var updateGradWTensors: Array[Tensor[Float]] = _
 
+  object ParamsShape {
+    var weight: MemoryData = _
+    var bias: MemoryData = _
+    var gradWeight: MemoryData = _
+    var gradBias: MemoryData = _
+  }
+
   {
     val stdv = 1.0 / math.sqrt(weight.size(2))
     val wInit: InitializationMethod = RandomUniform(-stdv, stdv)
@@ -864,12 +871,12 @@ class RefactorLinear(
       dst.getMemoryDescription())
     forwardPrimDesc = MklDnn.PrimitiveDescCreate(desc, runtime.engine, 0)
 
-    val realSrc = NativeData(MklDnnOps.queryShape(forwardPrimDesc, Query.SrcPd),
-      MklDnnOps.queryFormat(forwardPrimDesc, Query.SrcPd))
-    val realWei = NativeData(MklDnnOps.queryShape(forwardPrimDesc, Query.WeightsPd),
-      MklDnnOps.queryFormat(forwardPrimDesc, Query.WeightsPd))
-    val realDst = NativeData(MklDnnOps.queryShape(forwardPrimDesc, Query.DstPd),
-      MklDnnOps.queryFormat(forwardPrimDesc, Query.DstPd))
+    val List(realSrc, realWei, realDst) = List(Query.SrcPd, Query.WeightsPd, Query.DstPd).map {x =>
+      MemoryData.operationWant(forwardPrimDesc, x)
+    }
+
+    ParamsShape.weight = realWei
+    ParamsShape.bias = bis
 
     val srcs = Array(realSrc.getPrimitive(runtime), realWei.getPrimitive(runtime),
       bis.getPrimitive(runtime))
@@ -933,12 +940,10 @@ class RefactorLinear(
       grad(0).getMemoryDescription())
     val backwardPrimDesc = MklDnn.PrimitiveDescCreate(desc, runtime.engine, forwardPrimDesc)
 
-    val realDiffSrc = NativeData(MklDnnOps.queryShape(backwardPrimDesc, Query.DiffSrcPd),
-      MklDnnOps.queryFormat(backwardPrimDesc, Query.DiffSrcPd))
-    val realWei = NativeData(MklDnnOps.queryShape(backwardPrimDesc, Query.WeightsPd),
-      MklDnnOps.queryFormat(backwardPrimDesc, Query.WeightsPd))
-    val realDiffDst = NativeData(MklDnnOps.queryShape(backwardPrimDesc, Query.DiffDstPd),
-      MklDnnOps.queryFormat(backwardPrimDesc, Query.DiffDstPd))
+    val List(realDiffSrc, realWei, realDiffDst) =
+      List(Query.DiffSrcPd, Query.WeightsPd, Query.DiffDstPd).map { x =>
+        MemoryData.operationWant(backwardPrimDesc, x)
+      }
 
     val srcs = Array(realDiffDst.getPrimitive(runtime), realWei.getPrimitive(runtime))
     val indexes = Array.fill(srcs.length)(0)
@@ -983,10 +988,12 @@ class RefactorLinear(
       dst.getMemoryDescription())
     val gradWeightPrimDesc = MklDnn.PrimitiveDescCreate(desc, runtime.engine, forwardPrimDesc)
 
-    val realWei = NativeData(MklDnnOps.queryShape(gradWeightPrimDesc, Query.DiffWeightsPd),
-      MklDnnOps.queryFormat(gradWeightPrimDesc, Query.DiffWeightsPd))
-    val realDiffDst = NativeData(MklDnnOps.queryShape(gradWeightPrimDesc, Query.DiffDstPd),
-      MklDnnOps.queryFormat(gradWeightPrimDesc, Query.DiffDstPd))
+    val List(realWei, realDiffDst) = List(Query.DiffWeightsPd, Query.DiffDstPd).map { x =>
+      MemoryData.operationWant(gradWeightPrimDesc, x)
+    }
+
+    ParamsShape.gradWeight = realWei
+    ParamsShape.bias = bis
 
     val srcs = Array(inputFormats()(0).getPrimitive(runtime), realDiffDst.getPrimitive(runtime))
     val indexes = Array.fill(srcs.length)(0)
@@ -1038,6 +1045,11 @@ class RefactorLinear(
 
   override def parameters(): (Array[Tensor[Float]], Array[Tensor[Float]]) = {
     (Array(weight, bias), Array(gradWeight, gradBias))
+  }
+
+  override def parametersWithShape(): (Array[MemoryData], Array[MemoryData]) = {
+    (Array(ParamsShape.weight, ParamsShape.bias), Array(ParamsShape.gradWeight,
+      ParamsShape.gradBias))
   }
 
   override def zeroGradParameters(): Unit = {

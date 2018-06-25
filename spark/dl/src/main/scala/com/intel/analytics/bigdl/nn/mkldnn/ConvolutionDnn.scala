@@ -1067,10 +1067,6 @@ class RefactorConvolution(
           padH, padW, ceilMode = false)
       }
 
-    val padTop = sizes(0)
-    val padBottom = sizes(1)
-    val padLeft = sizes(2)
-    val padRight = sizes(3)
     val outputHeight = sizes(4)
     val outputWidth = sizes(5)
 
@@ -1093,12 +1089,10 @@ class RefactorConvolution(
 
     forwardPrimDesc = MklDnn.PrimitiveDescCreate(desc, runtime.engine, 0)
 
-    val realSrc = NativeData(MklDnnOps.queryShape(forwardPrimDesc, Query.SrcPd),
-      MklDnnOps.queryFormat(forwardPrimDesc, Query.SrcPd))
-    val realWei = NativeData(MklDnnOps.queryShape(forwardPrimDesc, Query.WeightsPd),
-      MklDnnOps.queryFormat(forwardPrimDesc, Query.WeightsPd))
-    val realDst = NativeData(MklDnnOps.queryShape(forwardPrimDesc, Query.DstPd),
-      MklDnnOps.queryFormat(forwardPrimDesc, Query.DstPd))
+    val List(realSrc, realWei, realDst) = List(Query.SrcPd, Query.WeightsPd, Query.DstPd).map {x =>
+      MemoryData.operationWant(forwardPrimDesc, x)
+    }
+
     ParamsShape.weight = realWei
     ParamsShape.bias = bis
 
@@ -1158,12 +1152,10 @@ class RefactorConvolution(
       MklDnn.PaddingKind.mkldnnPaddingZero)
     val backwardPrimDesc = MklDnn.PrimitiveDescCreate(desc, runtime.engine, forwardPrimDesc)
 
-    val realDiffSrc = NativeData(MklDnnOps.queryShape(backwardPrimDesc, Query.DiffSrcPd),
-      MklDnnOps.queryFormat(backwardPrimDesc, Query.DiffSrcPd))
-    val realWei = NativeData(MklDnnOps.queryShape(backwardPrimDesc, Query.WeightsPd),
-      MklDnnOps.queryFormat(backwardPrimDesc, Query.WeightsPd))
-    val realDiffDst = NativeData(MklDnnOps.queryShape(backwardPrimDesc, Query.DiffDstPd),
-      MklDnnOps.queryFormat(backwardPrimDesc, Query.DiffDstPd))
+    val List(realDiffSrc, realWei, realDiffDst) =
+      List(Query.DiffSrcPd, Query.WeightsPd, Query.DiffDstPd).map {x =>
+        MemoryData.operationWant(backwardPrimDesc, x)
+      }
 
     ParamsShape.weightForBackward = realWei
 
@@ -1226,12 +1218,10 @@ class RefactorConvolution(
     val gradWeightPrimDesc = MklDnn.PrimitiveDescCreate(desc, runtime.engine, forwardPrimDesc)
 
     // TODO here seems some errors ?????? check the realSrc format.
-    val realSrc = NativeData(MklDnnOps.queryShape(gradWeightPrimDesc, Query.SrcPd),
-      MklDnnOps.queryFormat(gradWeightPrimDesc, Query.SrcPd))
-    val realWei = NativeData(MklDnnOps.queryShape(gradWeightPrimDesc, Query.DiffWeightsPd),
-      MklDnnOps.queryFormat(gradWeightPrimDesc, Query.DiffWeightsPd))
-    val realDiffDst = NativeData(MklDnnOps.queryShape(gradWeightPrimDesc, Query.DiffDstPd),
-      MklDnnOps.queryFormat(gradWeightPrimDesc, Query.DiffDstPd))
+    val List(realSrc, realWei, realDiffDst) =
+      List(Query.SrcPd, Query.DiffWeightsPd, Query.DiffDstPd).map { x =>
+        MemoryData.operationWant(gradWeightPrimDesc, x)
+      }
 
     ParamsShape.gradWeight = realWei
     ParamsShape.gradBias = bis
@@ -1276,7 +1266,7 @@ class RefactorConvolution(
     gradBias.zero()
   }
 
-  def parametersWithShape(): (Array[MemoryData], Array[MemoryData]) = {
+  override def parametersWithShape(): (Array[MemoryData], Array[MemoryData]) = {
     (Array(ParamsShape.weight, ParamsShape.bias), Array(ParamsShape.gradWeight, ParamsShape.bias))
   }
 }

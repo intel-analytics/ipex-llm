@@ -130,7 +130,7 @@ object DnnTools {
       }
       a
     })
-    return result
+    result
   }
 
   def getunequals(t1: Tensor[Float], t2: Tensor[Float],

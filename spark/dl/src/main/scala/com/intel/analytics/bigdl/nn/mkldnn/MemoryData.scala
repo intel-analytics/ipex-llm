@@ -233,6 +233,18 @@ private[mkldnn] object MemoryData {
     memory
   }
 
+  def operationWant(primDesc: Long, queryType: Int): NativeData = {
+    val memoryPrimDesc = MklDnnOps.primitiveDescQueryPd(primDesc, queryType, 0)
+    val memoryDesc = MklDnnOps.primitiveDescQueryMemory(memoryPrimDesc)
+    val shape = Memory.GetShape(memoryDesc)
+    val layout = Memory.GetLayout(memoryDesc)
+
+    val memory = NativeData(shape, layout)
+    memory.setMemoryDescription(memoryDesc)
+    memory.setPrimitiveDescription(memoryPrimDesc)
+    memory
+  }
+
   def primitiveWorkSpace(pd: Long): NativeData = {
     val workspacePD = MklDnnOps.primitiveDescQueryPd(pd, Query.WorkspacePd, 0)
     val memoryDesc = MklDnnOps.primitiveDescQueryMemory(workspacePD)

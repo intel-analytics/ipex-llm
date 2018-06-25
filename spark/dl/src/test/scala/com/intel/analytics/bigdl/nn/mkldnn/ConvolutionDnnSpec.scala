@@ -984,6 +984,47 @@ class ConvolutionDnnSpec extends FlatSpec with Matchers {
     }
   }
 
+  "conv + bn" should "work correctly" in {
+    val inputShape = Array(4, 3, 224, 224)
+    val outputShape = Array(4, 64, 112, 112)
+    val channel = 64
+
+    val name = "conv"
+    val conv = RefactorConvolution(3, 64, 7, 7, 2, 2, 3, 3).setName("conv")
+    val bn = RefactorSpatialBatchNormalization(64, momentum = 1.0, eps = 100).setName("bn")
+    // TODO we should insert a reorder manually
+    val reorder1 = ReorderMemory(HeapData(inputShape, Memory.Format.nchw)).setName("reorder1")
+    val reorder2 = ReorderMemory(HeapData(outputShape, Memory.Format.nchw)).setName("reorder2")
+
+    val seq = Sequential()
+    seq.add(reorder1)
+    seq.add(conv)
+    seq.add(bn)
+    seq.add(reorder2)
+    seq.compile(Phase.TrainingPhase, Array(HeapData(inputShape, Memory.Format.nchw)))
+    seq.reset()
+    seq.training()
+
+    val txt = prototxt2(inputShape, name, outputShape(1), 7, 3, 2) +
+              """
+                |layer {
+                |  bottom: "conv"
+                |  top: "bn"
+                |  name: "bn"
+                |  type: "BatchNorm"
+                |
+                |  batch_norm_param {
+                |    moving_average_fraction: 1.0
+                |    filler { value: 1 }
+                |    bias_filler { value: 0 }
+                |    relu: false
+                |    eps: 100
+                |  }
+                |}
+              """.stripMargin
+    Tools.compare(txt, seq, inputShape, outputShape)
+  }
+
   def prototxt(inputShape: Array[Int], name: String,
     nOutput: Int, kernel: Int, pad: Int, stride: Int): String =  {
       s"""
@@ -1023,6 +1064,50 @@ class ConvolutionDnnSpec extends FlatSpec with Matchers {
          |    }
          |  }
          |}
+       """.stripMargin
+  }
+
+  def prototxt2(inputShape: Array[Int], name: String,
+    nOutput: Int, kernel: Int, pad: Int, stride: Int): String =  {
+    s"""
+       |name: "conv-simple"
+       |force_backward: true
+       |layer {
+       |  name: "data"
+       |  type: "DummyData"
+       |  top: "data"
+       |  include {
+       |    phase: TRAIN
+       |  }
+       |  dummy_data_param {
+       |    data_filler {
+       |      type: "uniform"
+       |      min: -1000
+       |      max: 1000
+       |    }
+       |    shape: { ${shape2Dim(inputShape)} }
+       |  }
+       |}
+       |
+         |layer {
+       |  bottom: "data"
+       |  top: "conv"
+       |  name: "$name"
+       |  type: "Convolution"
+       |  convolution_param {
+       |    num_output: $nOutput
+       |    kernel_size: $kernel
+       |    pad: $pad
+       |    stride: $stride
+       |    weight_filler {
+       |      type: "msra"
+       |      variance_norm: FAN_OUT
+       |    }
+       |    bias_filler {
+       |      type: "gaussian"
+       |    }
+       |  }
+       |}
        """.stripMargin
   }
 

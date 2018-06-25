@@ -728,14 +728,24 @@ class SpatialBatchNormalizationSpec extends FlatSpec with Matchers {
 
     val bn = new RefactorSpatialBatchNormalization(channel, eps = 0.0, momentum = 1.0,
       affine = true, initWeight = weight, initBias = bias)
-    bn.setRuntime(new MklDnnRuntime)
-    bn.initFwdPrimitives(Array(HeapData(input.size(), Memory.Format.nchw)), Phase.TrainingPhase)
-    bn.initBwdPrimitives(Array(HeapData(gradOutput.size(), Memory.Format.nchw)),
-      Phase.TrainingPhase)
+
+    val reorder1 = ReorderMemory(HeapData(shape, Memory.Format.nchw)).setName("reorder1")
+    val reorder2 = ReorderMemory(HeapData(shape, Memory.Format.nchw)).setName("reorder2")
+    val reorder3 = ReorderMemory(HeapData(shape, Memory.Format.nChw8c)).setName("reorder3")
+    val reorder4 = ReorderMemory(HeapData(shape, Memory.Format.nchw)).setName("reorder4")
+
+    val seq = Sequential()
+    seq.add(reorder1)
+    seq.add(reorder3)
+    seq.add(bn)
+    seq.add(reorder2)
+    seq.compile(Phase.TrainingPhase, Array(HeapData(shape, Memory.Format.nchw)))
+    seq.reset()
+
     bn.zeroGradParameters()
 
-    bn.forward(input)
-    bn.backward(input, gradOutput)
+    seq.forward(input)
+    seq.backward(input, gradOutput)
 
     val weightAndBias = Tensor[Float](Array(2, channel))
     weightAndBias.select(1, 1).copy(weight)
@@ -746,15 +756,15 @@ class SpatialBatchNormalizationSpec extends FlatSpec with Matchers {
     gradWeightAndBias.select(1, 2).copy(gradBias)
 
     compare(weightAndBias.view(Array(2 * channel)), bn.weightAndBias)
-    compare(output, bn.output)
+    compare(output, seq.output)
     compare(runningMean, bn.runningMean)
     compare(runningVariance, bn.runningVariance)
     compare(gradWeightAndBias.view(Array(2 * channel)), bn.gradWeightAndBias)
-    compare(gradInput, bn.gradInput)
+    compare(gradInput, seq.gradInput)
   }
 
   "refactor of bach norm inference" should "work correctly" in {
-    val (batchSize, channel, height, width) = (4, 64, 2, 2)
+    val (batchSize, channel, height, width) = (4, 64, 112, 112)
     val shape = Array(batchSize, channel, height, width)
     val prototxt = s"""
          |name: "relu-simple"
@@ -807,13 +817,21 @@ class SpatialBatchNormalizationSpec extends FlatSpec with Matchers {
 
     val bn = new RefactorSpatialBatchNormalization(channel, eps = 0.0, momentum = 1.0,
       affine = true, initWeight = weight, initBias = bias)
-    bn.setRuntime(new MklDnnRuntime)
-    bn.initFwdPrimitives(Array(HeapData(input.size(), Memory.Format.nchw)), Phase.InferencePhase)
-    bn.evaluate()
     bn.runningMean.copy(runningMean)
     bn.runningVariance.copy(runningVariance)
 
-    bn.forward(input)
+    val reorder1 = ReorderMemory(HeapData(shape, Memory.Format.nchw)).setName("reorder1")
+    val reorder2 = ReorderMemory(HeapData(shape, Memory.Format.nchw)).setName("reorder2")
+
+    val seq = Sequential()
+    seq.add(reorder1)
+    seq.add(bn)
+    seq.add(reorder2)
+    seq.compile(Phase.InferencePhase, Array(HeapData(shape, Memory.Format.nchw)))
+    seq.reset()
+    seq.evaluate()
+
+    seq.forward(input)
 
     val weightAndBias = Tensor[Float](Array(2, channel))
     weightAndBias.select(1, 1).copy(weight)

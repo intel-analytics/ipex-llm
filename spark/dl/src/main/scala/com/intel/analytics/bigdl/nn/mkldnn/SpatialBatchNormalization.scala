@@ -657,7 +657,6 @@ object SpatialBatchNormalization {
   }
 }
 
-@strictfp
 class RefactorSpatialBatchNormalization(
   val nOutput: Int,
   val eps: Double = 1e-5,
@@ -736,18 +735,12 @@ class RefactorSpatialBatchNormalization(
     val m = inputFormats()(0).shape.product / this.nOutput
     biasFactor = if (m > 1) { m.toFloat / (m - 1) } else { 1 }
 
-    val mean: NativeData = NativeData(Array(nOutput), Memory.Format.x)
-    val variance: NativeData = NativeData(Array(nOutput), Memory.Format.x)
-    val runningMean: NativeData = NativeData(Array(nOutput), Memory.Format.x)
-    val runningVariance: NativeData = NativeData(Array(nOutput), Memory.Format.x)
+    val List(mean, variance, runningMean, runningVariance): List[NativeData] =
+      (0 until 4).map { _ =>
+        NativeData(Array(nOutput), Memory.Format.x)
+      }.toList
     // weight and bias should be combined
     val weightAndBias: NativeData = NativeData(Array(nOutput * 2), Memory.Format.x)
-
-    val weightPrimitive = weightAndBias.getPrimitive(runtime)
-
-    val meanPrimitive = mean.getPrimitive(runtime)
-
-    val variancePrimitive = variance.getPrimitive(runtime)
 
     forwardDesc = phase match {
       case TrainingPhase =>
@@ -773,26 +766,23 @@ class RefactorSpatialBatchNormalization(
       MklDnn.PrimitiveDescCreate(forwardDesc, runtime.engine, 0)
     }
 
-    val outputPrimDesc = MklDnnOps.primitiveDescQueryPd(primDesc, Query.DstPd, 0)
-    val outputPrimitive = MklDnn.PrimitiveCreate0(outputPrimDesc)
-    val outputDesc = MklDnn.PrimitiveDescQueryMemory(outputPrimDesc)
+    _inputFormats = Array(MemoryData.operationWant(primDesc, Query.SrcPd))
+    _outputFormats = Array(MemoryData.operationWant(primDesc, Query.DstPd))
 
     val (srcs, dsts) = if (phase == TrainingPhase) {
-      val srcs = Array(inputs(0).getPrimitive(runtime), weightPrimitive)
-      val dsts = Array(outputPrimitive, meanPrimitive, variancePrimitive)
+      val srcs = Array(inputFormats()(0), weightAndBias).map(_.getPrimitive(runtime))
+      val dsts = Array(outputFormats()(0), mean, variance).map(_.getPrimitive(runtime))
       (srcs, dsts)
     } else {
-        val srcs = Array(inputs(0).getPrimitive(runtime), runningMean.getPrimitive(runtime),
-          runningVariance.getPrimitive(runtime), weightPrimitive)
-        val dsts = Array(outputPrimitive)
+      val srcs = Array(inputFormats()(0), runningMean, runningVariance, weightAndBias).map { x =>
+        x.getPrimitive(runtime)
+      }
+      val dsts = Array(outputFormats()(0).getPrimitive(runtime))
       (srcs, dsts)
     }
     val indexes = Array.fill(srcs.length)(0)
 
-    val primitive = MklDnn.PrimitiveCreate2(primDesc, srcs, indexes, srcs.length,
-      dsts, dsts.length)
-
-    _outputFormats = Array(NativeData(Memory.GetShape(outputDesc), Memory.GetLayout(outputDesc)))
+    val primitive = MklDnn.PrimitiveCreate2(primDesc, srcs, indexes, srcs.length, dsts, dsts.length)
 
     updateOutputMemoryPrimitives = srcs ++ dsts
     updateOutputPrimitives = Array(primitive)
@@ -807,7 +797,7 @@ class RefactorSpatialBatchNormalization(
       updateOutputTensors = Array.empty
     }
 
-    (inputs, outputFormats())
+    (inputFormats(), outputFormats())
   }
 
   override def updateOutput(input: Activity): Activity = {
@@ -865,9 +855,7 @@ class RefactorSpatialBatchNormalization(
 
     val primDesc = MklDnn.PrimitiveDescCreate(backwardDesc, runtime.engine, 0)
 
-    val gradInputPrimDesc = MklDnnOps.primitiveDescQueryPd(primDesc, Query.DiffSrcPd, 0)
-    val gradInputPrimitive = MklDnn.PrimitiveCreate0(gradInputPrimDesc)
-    val gradInputDesc = MklDnn.PrimitiveDescQueryMemory(gradInputPrimDesc)
+    _gradInputFormats = Array(MemoryData.operationWant(primDesc, Query.DiffSrcPd))
 
     // maybe will throw null exception
     val srcs = Array(updateOutputMemoryPrimitives(Index.input),
@@ -876,13 +864,10 @@ class RefactorSpatialBatchNormalization(
       grad(0).getPrimitive(runtime),
       updateOutputMemoryPrimitives(Index.weight))
     val indexes = Array.fill(srcs.length)(0)
-    val dsts = Array(gradInputPrimitive, gradWeightPrimitive)
+    val dsts = Array(gradInputFormats()(0), gradWeightAndBias).map(_.getPrimitive(runtime))
 
     val primitive = MklDnn.PrimitiveCreate2(primDesc, srcs, indexes, srcs.length,
       dsts, dsts.length)
-
-    _gradInputFormats = Array(NativeData(Memory.GetShape(gradInputDesc),
-      Memory.GetLayout(gradInputDesc)))
 
     updateGradInputMemoryPrimitives = srcs ++ dsts
     updateGradInputPrimitives = Array(primitive)
@@ -913,12 +898,40 @@ class RefactorSpatialBatchNormalization(
     gradInput
   }
 
+  override def accGradParameters(input: Activity, gradOutput: Activity): Unit = {
+    // do nothing
+  }
+
   override def zeroGradParameters(): Unit = {
     if (affine) { gradWeightAndBias.zero() }
     if (gradInput != null) { gradInput.asInstanceOf[DnnTensor[Float]].zero() }
   }
 
+  override def parameters(): (Array[Tensor[Float]], Array[Tensor[Float]]) = {
+    (Array(weightAndBias), Array(gradWeightAndBias))
+  }
+
+  override def parametersWithShape(): (Array[MemoryData], Array[MemoryData]) = {
+    (Array(NativeData(weightAndBias.size(), Memory.Format.x)),
+      Array(NativeData(gradWeightAndBias.size(), Memory.Format.x)))
+  }
+
   override def toString(): String = {
     s"nn.mkl.SpatialBatchNormalization($nOutput, $eps, $momentum, $affine)"
+  }
+}
+
+object RefactorSpatialBatchNormalization {
+  def apply(
+    nOutput: Int,
+    eps: Double = 1e-5,
+    momentum: Double = 0.1,
+    affine: Boolean = true,
+    initWeight: Tensor[Float] = null,
+    initBias: Tensor[Float] = null,
+    initGradWeight: Tensor[Float] = null,
+    initGradBias: Tensor[Float] = null): RefactorSpatialBatchNormalization = {
+    new RefactorSpatialBatchNormalization(nOutput, eps, momentum, affine,
+      initWeight, initBias, initGradWeight, initGradBias)
   }
 }

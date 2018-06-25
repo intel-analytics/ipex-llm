@@ -16,19 +16,19 @@
 
 package com.intel.analytics.bigdl.nn.mkldnn
 
-import java.io.{File, PrintWriter}
+import java.io.{DataInputStream, File, FileInputStream, PrintWriter}
 import java.nio.channels.FileChannel
 import java.nio.file.{Files, Paths, StandardOpenOption}
 import java.nio.{ByteBuffer, ByteOrder}
 
-import breeze.numerics.abs
 import com.intel.analytics.bigdl.Module
-import com.intel.analytics.bigdl.nn.Container
-import com.intel.analytics.bigdl.nn.abstractnn.{Activity, TensorModule}
+import com.intel.analytics.bigdl.mkl.Memory
+import com.intel.analytics.bigdl.nn.{Container, Identity}
+import com.intel.analytics.bigdl.nn.abstractnn.Activity
+import com.intel.analytics.bigdl.nn.mkldnn.Phase.TrainingPhase
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.tensor.{DenseTensorMath, MklDnnType, Storage, Tensor}
+import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 
-import scala.annotation.strictfp
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 import scala.sys.process._
@@ -110,7 +110,6 @@ object Tools {
    * @brief read binary in tmp dir to Tensor, which is used for comparing
    *        with Intel Caffe with MKL-DNN
    */
-  @strictfp
   def getTensor(name: String, size: Array[Int], identity: String): Tensor[Float] = {
     val tensor = Tensor[Float]()
     val file = fileName(name, identity)
@@ -120,8 +119,10 @@ object Tools {
       setTensorFloat()
 
       def loadData(name: String): ByteBuffer = {
-        val fileChannel: FileChannel =
-          Files.newByteChannel(Paths.get(name), StandardOpenOption.READ).asInstanceOf[FileChannel]
+        val fileChannel: FileChannel = Files.newByteChannel(
+          Paths.get(name),
+          StandardOpenOption.READ,
+          StandardOpenOption.DELETE_ON_CLOSE).asInstanceOf[FileChannel]
         val byteBuffer: ByteBuffer = ByteBuffer.allocate(fileChannel.size().toInt)
         byteBuffer.order(ByteOrder.nativeOrder())
         fileChannel.read(byteBuffer)
@@ -150,12 +151,83 @@ object Tools {
             flattenModules(i.asInstanceOf[Module[Float]], modules)
           }
         }
-      case _ =>
+      case x => if (!x.isInstanceOf[ReorderMemory]) {
         modules += model
+      }
     }
   }
 
   def randTimes(): Int = 10
+
+  def loadWeights(module: Module[Float], identity: String): Unit = {
+    val params = module.parameters()._1
+    val name = module.getName()
+    module match {
+      case bn: RefactorSpatialBatchNormalization =>
+        val channel = bn.weightAndBias.size(1) / 2
+
+        val weight = Tools.getTensor(s"Fwrd_${bn.getName}.Wght.3", Array(channel), identity)
+        val bias = Tools.getTensor(s"Fwrd_${bn.getName}.Wght.4", Array(channel), identity)
+        val weightAndBias = Tensor[Float].resize(Array(2, channel))
+        weightAndBias.select(1, 1).copy(weight)
+        weightAndBias.select(1, 2).copy(bias)
+        bn.weightAndBias.copy(weightAndBias.view(bn.weightAndBias.size()))
+      case _ =>
+        for (j <- params.indices) {
+          val w = Tools.getTensor(s"Fwrd_$name.Wght.$j", params(j).size(), identity)
+          module match {
+            case layer: MklDnnLayer =>
+              val infos = layer.parametersWithShape()._1
+              params(j).copy(fromOIHW(w, infos(j)))
+            case _ =>
+              params(j).copy(w)
+          }
+        }
+    }
+  }
+
+  def compareGradients(module: Module[Float], epsilon: Float, identity: String): Boolean = {
+    var ret = true
+
+    val name = module.getName()
+    val params = module.parameters()._2
+
+    module match {
+      case bn: RefactorSpatialBatchNormalization =>
+        val channel = bn.weightAndBias.size(1) / 2
+
+        val weight = Tools.getTensor(s"Bwrd_${bn.getName}.Grad.3", Array(channel), identity)
+        val bias = Tools.getTensor(s"Bwrd_${bn.getName}.Grad.4", Array(channel), identity)
+        val weightAndBias = Tensor[Float].resize(Array(2, channel))
+        weightAndBias.select(1, 1).copy(weight)
+        weightAndBias.select(1, 2).copy(bias)
+
+        ret &= DnnTools.nearequals(weightAndBias.view(bn.gradWeightAndBias.size()),
+          dense(bn.gradWeightAndBias).toTensor, epsilon)
+        val runningMean = Tools.getTensor(s"Fwrd_$name.Wght.0", Array(channel), identity)
+        val runningVariance = Tools.getTensor(s"Fwrd_$name.Wght.1", Array(channel), identity)
+
+        ret &= compare2Tensors(runningMean, dense(bn.runningMean).toTensor)
+        ret &= compare2Tensors(runningVariance, dense(bn.runningVariance).toTensor)
+
+        assert(ret, s"${module.getName()} gradient can't pass, please check")
+      case _ =>
+        for (j <- params.indices) {
+          val w = Tools.getTensor(s"Bwrd_$name.Grad.$j", params(j).size(), identity)
+          module match {
+            case layer: MklDnnLayer =>
+              val infos = layer.parametersWithShape()._2
+              ret &= DnnTools.nearequals(dense(params(j)).toTensor,
+                dense(fromOIHW(w, infos(j))).toTensor, epsilon)
+            case _ => ret &= compare2Tensors(params(j), w)
+          }
+
+          assert(ret, s"${module.getName()} gradient $j can't pass, please check")
+        }
+    }
+
+    ret
+  }
 
   def compare(prototxt: String, model: Module[Float], inputShape: Array[Int],
     outputShape: Array[Int]): Unit = {
@@ -163,20 +235,17 @@ object Tools {
     val modules = ArrayBuffer[Module[Float]]()
     Tools.flattenModules(model, modules)
 
-    val input = Tools.getTensor("Fwrd_data", inputShape, identity)
-    val gradOutput = Tools.getTensor(s"Bwrd_${modules.last.getName()}.loss", outputShape,
-      identity)
-
-    for (i <- modules.indices) {
-      if (modules(i).parameters() != null) {
-        val params = modules(i).parameters()._1
-        val name = modules(i).getName()
-        for (j <- params.indices) {
-          val w = Tools.getTensor(s"Fwrd_$name.Wght.$j", params(j).size(), identity)
-          params(j).copy(w)
-        }
-      }
+    // if there's bn, the precision will be make the result not very close
+    val epsilon = if (!prototxt.replaceAll("\n", " ").contains("BatchNorm")) {
+      1e-7
+    } else {
+      1e-2
     }
+
+    val input = Tools.getTensor("Fwrd_data", inputShape, identity)
+    val gradOutput = Tools.getTensor(s"Bwrd_${modules.last.getName()}.loss", outputShape, identity)
+
+    modules.filter(_.parameters() != null).foreach(loadWeights(_, identity))
 
     model.forward(input)
     model.backward(input, gradOutput)
@@ -194,27 +263,32 @@ object Tools {
         module.gradInput.toTensor[Float]
       }
 
-      val output = Tools.getTensor(s"Fwrd_$name", module.output.toTensor[Float].size(), identity)
+      val output = Tools.getTensor(s"Fwrd_$name", bigdlOutput.size(), identity)
       val gradInput = Tools.getTensor(s"Bwrd_$name", bigdlGradInput.size(), identity)
 
       var ret = true
 
-      ret &= compare2Tensors(output, module.output.toTensor[Float].toDenseTensor())
-      assert(ret, s"${module.getName()} output can't pass, please check")
+      module match {
+        case layer: MklDnnLayer =>
+          ret &= compare2Tensors(output, toNCHW(bigdlOutput, layer.outputFormats()(0)))
+          assert(ret, s"${module.getName()} output can't pass, please check")
 
-      ret &= compare2Tensors(gradInput, bigdlGradInput.toDenseTensor())
-      assert(ret, s"${module.getName()} gradInput can't pass, please check")
+          ret &= compare2Tensors(gradInput, toNCHW(bigdlGradInput, layer.gradInputFormats()(0)))
+          assert(ret, s"${module.getName()} gradInput can't pass, please check")
+        case _ =>
+          ret &= compare2Tensors(output, bigdlOutput.toDenseTensor())
+          assert(ret, s"${module.getName()} output can't pass, please check")
+
+          ret &= compare2Tensors(gradInput, bigdlGradInput.toDenseTensor())
+          assert(ret, s"${module.getName()} gradInput can't pass, please check")
+      }
 
       if (module.parameters() == null) {
         return ret
       }
 
       val params = module.parameters()._2
-      for (j <- params.indices) {
-        val w = Tools.getTensor(s"Bwrd_$name.Grad.$j", params(j).size(), identity)
-        ret &= compare2Tensors(params(j), w)
-        assert(ret, s"${module.getName()} gradient $j can't pass, please check")
-      }
+      compareGradients(module, epsilon.toFloat, identity)
 
       ret
     }
@@ -233,6 +307,43 @@ object Tools {
     }
 
     ret
+  }
+
+  def toNCHW(src: Tensor[Float], inputFormat: MemoryData): Tensor[Float] = {
+    val outputFormat = HeapData(inputFormat.shape, Memory.Format.nchw)
+    val reorder = ReorderMemory(inputFormat, outputFormat, null, null)
+
+    reorder.setRuntime(new MklDnnRuntime)
+    reorder.initFwdPrimitives(Array(inputFormat), TrainingPhase)
+    reorder.forward(src).toTensor
+  }
+
+  def fromNCHW(src: Tensor[Float], outputFormat: MemoryData): Tensor[Float] = {
+    val defaultFormat = src.size().length match {
+      case 1 => Memory.Format.x
+      case 2 => Memory.Format.nc
+      case 4 => Memory.Format.nchw
+    }
+
+    val inputFormat = HeapData(src.size(), defaultFormat)
+    val reorder = ReorderMemory(inputFormat, outputFormat, null, null)
+    reorder.setRuntime(new MklDnnRuntime)
+    reorder.initFwdPrimitives(Array(inputFormat), TrainingPhase)
+    reorder.forward(src).toTensor
+  }
+
+  def fromOIHW(src: Tensor[Float], outputFormat: MemoryData): Tensor[Float] = {
+    val defaultFormat = src.size().length match {
+      case 1 => Memory.Format.x
+      case 2 => Memory.Format.oi
+      case 4 => Memory.Format.oihw
+    }
+
+    val inputFormat = HeapData(src.size(), defaultFormat)
+    val reorder = ReorderMemory(inputFormat, outputFormat, null, null)
+    reorder.setRuntime(new MklDnnRuntime)
+    reorder.initFwdPrimitives(Array(inputFormat), TrainingPhase)
+    reorder.updateOutput(src).toTensor
   }
 }
 
@@ -283,11 +394,9 @@ object Collect {
       Process(cmd, new File(tmpdir)).!
     }
 
+    Files.deleteIfExists(Paths.get(file))
     require(exitValue == 0, s"Something wrong with collect command. Please check it.")
 
     identity
-  }
-
-  def compare(prototxt: String, module: Module[Float] => Unit): Unit = {
   }
 }

@@ -102,6 +102,8 @@ class DnnTensor[T: ClassTag](
   override def size(): Array[Int] = sizes.clone()
 
   override def size(d: Int): Int = sizes(d - 1)
+
+  override def getTensorType: TensorType = MklDnnType
 }
 
 object DnnTensor {
