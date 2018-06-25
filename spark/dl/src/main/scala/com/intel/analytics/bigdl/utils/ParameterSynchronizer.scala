@@ -28,9 +28,7 @@ import scala.reflect._
  */
 private[bigdl] object ParameterSynchronizer {
 
-  val fEvents = new java.util.concurrent.ConcurrentHashMap[String, Event[Float]]
-
-  val dEvents = new java.util.concurrent.ConcurrentHashMap[String, Event[Double]]
+  private val events = new java.util.concurrent.ConcurrentHashMap[String, Event[_]]
 
   /**
    * Register event with key and total thread number
@@ -39,18 +37,10 @@ private[bigdl] object ParameterSynchronizer {
    * @tparam T
    */
   def register[T: ClassTag](eventKey: String, threadNum: Int): Unit = {
-    if (classTag[T] ==  classTag[Float]) {
-      var event = fEvents.get(eventKey)
-      if (event == null) {
-        event = new Event[Float](threadNum)
-        fEvents.putIfAbsent(eventKey, event)
-      }
-    } else if (classTag[T] ==  classTag[Double]) {
-      var event = dEvents.get(eventKey)
-      if (event == null) {
-        event = new Event[Double](threadNum)
-        dEvents.putIfAbsent(eventKey, event)
-      }
+    var event = events.get(eventKey)
+    if (event == null) {
+      event = new Event[T](threadNum)
+      events.putIfAbsent(eventKey, event)
     }
   }
 
@@ -60,11 +50,7 @@ private[bigdl] object ParameterSynchronizer {
    * @tparam T
    */
   def reset[T: ClassTag](eventKey: String): Unit = {
-    if (classTag[T] ==  classTag[Float]) {
-      fEvents.get(eventKey).reset
-    } else if (classTag[T] ==  classTag[Double]) {
-      dEvents.get(eventKey).reset
-    }
+    events.get(eventKey).reset
   }
 
   /**
@@ -74,12 +60,7 @@ private[bigdl] object ParameterSynchronizer {
    * @tparam T
    */
   def syncData[T: ClassTag](eventKey: String, dt: Tensor[T]): Unit = {
-    val partitionKey = TaskContext.getPartitionId.toString
-    if (classTag[T] ==  classTag[Float]) {
-      fEvents.get(eventKey).asInstanceOf[Event[T]].addData(dt)
-    } else if (classTag[T] ==  classTag[Double]) {
-      dEvents.get(eventKey).asInstanceOf[Event[T]].addData(dt)
-    }
+    events.get(eventKey).asInstanceOf[Event[T]].addData(dt)
   }
 
   /**
@@ -89,14 +70,7 @@ private[bigdl] object ParameterSynchronizer {
    * @return Data list from waiting threads
    */
   def collect[T: ClassTag](eventKey: String): java.util.Map[String, Tensor[T]] = {
-    val partitionKey = TaskContext.getPartitionId.toString
-    if (classTag[T] ==  classTag[Float]) {
-      fEvents.get(eventKey).data.asInstanceOf[java.util.Map[String, Tensor[T]]]
-    } else if (classTag[T] ==  classTag[Double]) {
-      dEvents.get(eventKey).data.asInstanceOf[java.util.Map[String, Tensor[T]]]
-    } else {
-      null
-    }
+    events.get(eventKey).data.asInstanceOf[java.util.Map[String, Tensor[T]]]
   }
 }
 
