@@ -24,7 +24,7 @@ import com.intel.analytics.bigdl.python.api.PythonBigDLKeras
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.zoo.pipeline.api.Net
 import com.intel.analytics.zoo.pipeline.api.autograd.Variable
-import com.intel.analytics.zoo.pipeline.api.keras2.layers.{Conv1D, Dense, MaxPooling1D, Maximum, Minimum}
+import com.intel.analytics.zoo.pipeline.api.keras2.layers.{Conv1D, Dense, MaxPooling1D, AveragePooling1D, Maximum, Minimum}
 import scala.collection.JavaConverters._
 
 
@@ -91,6 +91,18 @@ class PythonZooKeras2[T: ClassTag](implicit ev: TensorNumeric[T]) extends Python
       padding: String = "valid",
       inputShape: JList[Int] = null): MaxPooling1D[T] = {
     MaxPooling1D(
+      poolSize,
+      strides,
+      padding,
+      toScalaShape(inputShape))
+  }
+
+  def createZooKeras2AveragePooling1D(
+      poolSize: Int = 2,
+      strides: Int = -1,
+      padding: String = "valid",
+      inputShape: JList[Int] = null): AveragePooling1D[T] = {
+    AveragePooling1D(
       poolSize,
       strides,
       padding,

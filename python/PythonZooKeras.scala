@@ -957,6 +957,13 @@ class PythonZooKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonB
     BinaryThreshold(th, toScalaShape(inputShape))
   }
 
+  def createZooKerasThreshold(
+       th: Double = 1e-6,
+       v: Double = 0.0,
+       inputShape: JList[Int] = null): Threshold[T] = {
+    Threshold(th, v, toScalaShape(inputShape))
+  }
+
   def getSubModules(module: AbstractModule[Activity, Activity, T]):
   JList[AbstractModule[Activity, Activity, T]] = {
     module match {
