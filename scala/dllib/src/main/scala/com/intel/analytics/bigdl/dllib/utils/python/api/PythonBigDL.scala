@@ -246,12 +246,13 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     dataset -> SampleToMiniBatch[T](batchSize)
   }
 
-  private def enrichOptimizer[T](optimizer: Optimizer[T, MiniBatch[T]],
-                                 endTrigger: Trigger,
-                                 optimMethod: OptimMethod[T]): Optimizer[T, MiniBatch[T]] = {
+  private def enrichOptimizer[T](
+        optimizer: Optimizer[T, MiniBatch[T]],
+        endTrigger: Trigger,
+        optimMethod: Map[String, OptimMethod[T]]): Optimizer[T, MiniBatch[T]] = {
     optimizer.setEndWhen(endTrigger)
 
-    optimizer.setOptimMethod(optimMethod)
+    optimizer.setOptimMethods(optimMethod)
 
     // TODO: remove this
     optimizer.disableCheckSingleton()
@@ -2200,7 +2201,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
                            y: JTensor,
                            model: AbstractModule[Activity, Activity, T],
                            criterion: Criterion[T],
-                           optimMethod: OptimMethod[T],
+                           optimMethod: JMap[String, OptimMethod[T]],
                            endTrigger: Trigger,
                            batchSize: Int,
                            localCores: Int): Optimizer[T, MiniBatch[T]] = {
@@ -2212,13 +2213,13 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
       criterion
     ).asInstanceOf[Optimizer[T, MiniBatch[T]]]
     Engine.setNodeAndCore(1, localCores)
-    enrichOptimizer(optimizer, endTrigger, optimMethod)
+    enrichOptimizer[T](optimizer, endTrigger, optimMethod.asScala.toMap)
   }
 
   def createDistriOptimizer(model: AbstractModule[Activity, Activity, T],
                             trainingRdd: JavaRDD[Sample],
                             criterion: Criterion[T],
-                            optimMethod: OptimMethod[T],
+                            optimMethod: JMap[String, OptimMethod[T]],
                             endTrigger: Trigger,
                             batchSize: Int): Optimizer[T, MiniBatch[T]] = {
     val sampleRDD = toJSample(trainingRdd)
@@ -2229,13 +2230,13 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
         .asInstanceOf[DistributedDataSet[MiniBatch[T]]],
       _criterion = criterion
     ).asInstanceOf[Optimizer[T, MiniBatch[T]]]
-    enrichOptimizer(optimizer, endTrigger, optimMethod)
+    enrichOptimizer(optimizer, endTrigger, optimMethod.asScala.toMap)
   }
 
   def createDistriOptimizerFromDataSet(model: AbstractModule[Activity, Activity, T],
     trainDataSet: DataSet[ImageFeature],
     criterion: Criterion[T],
-    optimMethod: OptimMethod[T],
+    optimMethod: JMap[String, OptimMethod[T]],
     endTrigger: Trigger,
     batchSize: Int): Optimizer[T, MiniBatch[T]] = {
     val dataSet = trainDataSet -> ImageFeatureToMiniBatch[T](batchSize)
@@ -2245,7 +2246,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
       _dataset = dataSet.asInstanceOf[DistributedDataSet[MiniBatch[T]]],
       _criterion = criterion
     ).asInstanceOf[Optimizer[T, MiniBatch[T]]]
-    enrichOptimizer(optimizer, endTrigger, optimMethod)
+    enrichOptimizer(optimizer, endTrigger, optimMethod.asScala.toMap)
   }
 
   def featureTransformDataset(dataset: DataSet[ImageFeature],

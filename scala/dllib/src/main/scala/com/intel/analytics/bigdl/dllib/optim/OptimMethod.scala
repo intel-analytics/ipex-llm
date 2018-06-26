@@ -16,7 +16,6 @@
 
 package com.intel.analytics.bigdl.optim
 
-import com.intel.analytics.bigdl.parameters.ParameterProcessor
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.{File, T, Table}
 import org.apache.commons.lang3.SerializationUtils
@@ -102,13 +101,6 @@ trait OptimMethod[@specialized(Float, Double) T] extends Serializable {
    * @return
    */
   def loadFromTable(config: Table): this.type
-
-  /**
-   * get parameter processor
-   *
-   * @return
-   */
-  def getParameterProcessor(): Option[ParameterProcessor] = None
 
   /**
    * Optimize the model parameter
