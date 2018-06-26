@@ -54,6 +54,15 @@ public abstract class AbstractInferenceModel {
     this.model = InferenceModelFactory.loadFloatInferenceModel(modelPath, weightPath);
   }
 
+  @Deprecated
+  public List<Float> predict(List<Float> input, int... shape) {
+    List<Integer> inputShape = new ArrayList<Integer>();
+    for (int s : shape) {
+      inputShape.add(s);
+    }
+    return model.predict(input, inputShape);
+  }
+
   public List<List<JTensor>> predict(List<JTensor> inputs) {
     return model.predict(inputs);
   }
