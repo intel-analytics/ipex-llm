@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.optim
 
 import com.intel.analytics.bigdl.{Module, _}
 import com.intel.analytics.bigdl.dataset.{DataSet, DistributedDataSet, MiniBatch, PaddingParam, Sample, SampleToMiniBatch}
-import com.intel.analytics.bigdl.nn.{Module, Utils}
+import com.intel.analytics.bigdl.nn.{Container, Module, Utils}
 import com.intel.analytics.bigdl.parameters.{AllReduceParameter, ParameterProcessor}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -591,6 +591,7 @@ object DistriOptimizer {
     val executorCores = Engine.coreNumber()
 
     val models = dataset.originRDD().mapPartitions(_ => {
+      val partitionId = TaskContext.getPartitionId
       val (broadcastCriterion, broadcastState, broadcastMethod,
       broadcastOptim) = broadcast.value
       if (!Engine.checkSingleton()) {
@@ -608,6 +609,8 @@ object DistriOptimizer {
       Engine.setNodeAndCore(nExecutor, executorCores)
       val cached = (0 until _subModelNumber).map { _ =>
         val localModel = modelBroadcast.value(true)
+        // differentiate partition models from each other by partition ID
+        setModelId(localModel, partitionId)
         val localCriterion = broadcastCriterion.cloneCriterion()
         val localState = broadcastState.clone()
         val localMethod =
@@ -636,6 +639,14 @@ object DistriOptimizer {
     models.count()
     logger.info("Cache thread models... done")
     models
+  }
+
+  private def setModelId[T: ClassTag](model: Module[T], partitionId: Int): Unit = {
+    model.setId(partitionId)
+    if (model.isInstanceOf[Container[_, _, T]]) {
+      model.asInstanceOf[Container[_, _, T]].modules.
+        foreach(sub => setModelId(sub, partitionId))
+    }
   }
 
   /**
