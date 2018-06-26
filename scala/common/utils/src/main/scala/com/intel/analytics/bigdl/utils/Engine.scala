@@ -115,7 +115,6 @@ object Engine {
 
   @volatile
   private var gatewayServer: py4j.GatewayServer = null
-  private val driverPortFileCreated = new AtomicBoolean()
 
   private def createGatewayPortFile(port: Int): Unit = {
     val file = new java.io.File(SparkFiles.getRootDirectory(), "gateway_port")
@@ -135,17 +134,6 @@ object Engine {
   }
 
   private[bigdl] def createJavaGateway(driverPort: Int): Unit = {
-    if (SparkUtils.isDriver) {
-      if (driverPortFileCreated.compareAndSet(false, true)) {
-        try {
-          createGatewayPortFile(driverPort)
-        } catch {
-          case NonFatal(e) =>
-            throw new Exception("Could not create java gateway port file", e)
-        }
-      }
-      return
-    }
     if (gatewayServer != null) return
     this.synchronized {
       if (gatewayServer != null) return
