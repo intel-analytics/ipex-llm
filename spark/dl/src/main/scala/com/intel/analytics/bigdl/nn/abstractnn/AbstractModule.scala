@@ -920,6 +920,14 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
    */
   private var name : String = null
 
+  private var id: Int = 0
+
+  private[bigdl] def setId(id: Int): Unit = {
+    this.id = id
+  }
+
+  private[bigdl] def getId(): Int = this.id
+
   protected final def getPrintName(): String = {
     val postfix = if (name == null) {
       namePostfix

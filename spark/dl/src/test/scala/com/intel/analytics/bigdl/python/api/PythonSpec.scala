@@ -26,7 +26,7 @@ import com.intel.analytics.bigdl.optim.{Loss, SGD, Top1Accuracy, Trigger}
 import com.intel.analytics.bigdl.utils.{Engine, T, Table, TestUtils}
 import com.intel.analytics.bigdl.visualization.{TrainSummary, ValidationSummary}
 import org.apache.log4j.{Level, Logger}
-import org.apache.spark.SparkContext
+import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.api.java.JavaRDD
 import org.apache.spark.bigdl.api.python.BigDLSerDe
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
@@ -43,11 +43,11 @@ class PythonSpec extends FlatSpec with Matchers with BeforeAndAfter {
   var sc: SparkContext = null
 
   before {
-    sc = new SparkContext(
-      Engine.init(1, 4, true).get
-        .setAppName("Text classification")
-        .set("spark.akka.frameSize", 64.toString)
-        .setMaster("local[2]"))
+    val conf = new SparkConf().setAppName("Text classification")
+      .set("spark.akka.frameSize", 64.toString)
+      .setMaster("local[2]")
+    sc = SparkContext.getOrCreate(conf)
+    Engine.init(1, 4, true)
   }
 
   after {
