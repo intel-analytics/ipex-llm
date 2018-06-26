@@ -42,7 +42,7 @@ class RefDistriOptimizer[T: ClassTag](
       model,
       dataset,
       criterion,
-      optimMethod,
+      optimMethods.head._2,
       state,
       endWhen,
       ev
