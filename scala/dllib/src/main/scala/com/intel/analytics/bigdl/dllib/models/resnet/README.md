@@ -89,8 +89,8 @@ spark-submit \
 --conf "spark.serializer=org.apache.spark.serializer.JavaSerializer" \
 --conf "spark.network.timeout=1000000" \
 --executor-memory 200g \
---executor-cores 4 \
---total-executor-cores 256 \
+--executor-cores 32 \
+--total-executor-cores 2048 \
 --class com.intel.analytics.bigdl.models.resnet.TrainImageNet \
 dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
 -f hdfs://xxx.xxx.xxx.xxx:xxxx/imagenet \
@@ -107,8 +107,8 @@ spark-submit \
 --conf "spark.serializer=org.apache.spark.serializer.JavaSerializer" \
 --conf "spark.network.timeout=1000000" \
 --executor-memory 200g \
---executor-cores 4 \
---total-executor-cores 256 \
+--executor-cores 32 \
+--total-executor-cores 2048 \
 --class com.intel.analytics.bigdl.models.resnet.TrainImageNet \
 dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
 -f hdfs://xxx.xxx.xxx.xxx:xxxx/imagenet \
@@ -132,7 +132,7 @@ dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
 
 **Global batch** : 8192
 
-**Single batch per core** : 32
+**Single batch per core** : 4
 
 **Epochs** : 90
 
@@ -144,8 +144,8 @@ dist/lib/bigdl-VERSION-jar-with-dependencies.jar \
 
 #### Training result (90 epochs)
 
-**Top1 accuracy**: 0.76088
+**Top1 accuracy**: 0.76114
 
-**Top5 accuracy**: 0.92802
+**Top5 accuracy**: 0.92724
 
 
