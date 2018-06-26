@@ -699,6 +699,29 @@ class BinaryThreshold(ZooKerasLayer):
                                               **kwargs)
 
 
+class Threshold(ZooKerasLayer):
+    """
+    Threshold input Tensor.
+    If values in the Tensor smaller than or equal to th, then replace it with v.
+    When you use this layer as the first layer of a model, you need to provide the argument
+    input_shape (a shape tuple, does not include the batch dimension).
+    # Arguments
+    th: The threshold value to compare with. Default is 1e-6.
+    v: the value to replace with.
+    input_shape: A shape tuple, not including batch.
+    name: String to set the name of the layer.
+          If not specified, its name will by default to be a generated string.
+    >>> threshold = Threshold(input_shape=(2, 3, 4, 5))
+    creating: createZooKerasThreshold
+    """
+    def __init__(self, th=1e-6, v=0.0, input_shape=None, **kwargs):
+        super(Threshold, self).__init__(None,
+                                        float(th),
+                                        float(v),
+                                        list(input_shape) if input_shape else None,
+                                        **kwargs)
+
+
 class GaussianSampler(ZooKerasLayer):
     """
     Takes {mean, log_variance} as input and samples from the Gaussian distribution
