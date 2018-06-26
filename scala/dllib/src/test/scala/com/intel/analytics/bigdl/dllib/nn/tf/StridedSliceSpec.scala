@@ -16,25 +16,30 @@
 package com.intel.analytics.bigdl.nn.tf
 
 import com.intel.analytics.bigdl.tensor.Tensor
+import com.intel.analytics.bigdl.utils.T
 import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
 
 import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Parallel
-class StrideSliceSpec extends FlatSpec with Matchers {
+class StridedSliceSpec extends FlatSpec with Matchers {
 
   "StrideSlice " should "compute correct output and gradient" in {
-    val module1 = new StrideSlice[Double, Double](Array((1, 1, 2, 1)))
-    val input = Tensor[Double](2, 2, 2)
-    input(Array(1, 1, 1)) = -0.17020166106522
-    input(Array(1, 1, 2)) = 0.57785657607019
-    input(Array(1, 2, 1)) = -1.3404131438583
-    input(Array(1, 2, 2)) = 1.0938102817163
-    input(Array(2, 1, 1)) = 1.120370157063
-    input(Array(2, 1, 2)) = -1.5014141565189
-    input(Array(2, 2, 1)) = 0.3380249235779
-    input(Array(2, 2, 2)) = -0.625677742064
+    val module1 = new StridedSlice[Double, Double]()
+    val inputTensor = Tensor[Double](2, 2, 2)
+    inputTensor(Array(1, 1, 1)) = -0.17020166106522
+    inputTensor(Array(1, 1, 2)) = 0.57785657607019
+    inputTensor(Array(1, 2, 1)) = -1.3404131438583
+    inputTensor(Array(1, 2, 2)) = 1.0938102817163
+    inputTensor(Array(2, 1, 1)) = 1.120370157063
+    inputTensor(Array(2, 1, 2)) = -1.5014141565189
+    inputTensor(Array(2, 2, 1)) = 0.3380249235779
+    inputTensor(Array(2, 2, 2)) = -0.625677742064
+    val begin = Tensor[Int](3).fill(1)
+    val end = Tensor[Int](3).fill(3)
+    end.setValue(1, 2)
+    val strides = Tensor[Int](3).fill(1)
 
     val expectOutput1 = Tensor[Double](1, 2, 2)
     expectOutput1(Array(1, 1, 1)) = -0.17020166106522
@@ -52,9 +57,9 @@ class StrideSliceSpec extends FlatSpec with Matchers {
     expectedGradInput(Array(2, 2, 1)) = 0.0
     expectedGradInput(Array(2, 2, 2)) = 0.0
 
-
+    val input = T(inputTensor, begin, end, strides)
     val output1 = module1.forward(input)
-    val gradInput = module1.backward(input, output1)
+    val gradInput = module1.backward(input, output1).toTable[Tensor[Double]](1)
 
     output1 should be(expectOutput1)
     gradInput should be(expectedGradInput)
@@ -62,10 +67,14 @@ class StrideSliceSpec extends FlatSpec with Matchers {
 
 }
 
-class StrideSliceSerialTest extends ModuleSerializationTest {
+class StridedSliceSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
-    val strideSlice = new StrideSlice[Float, Float](Array((1, 1, 2, 1))).setName("strideSlice")
+    val stridedSlice = StridedSlice[Float, Float]().setName("stridedSlice")
     val input = Tensor[Float](2, 2, 2).apply1(_ => Random.nextFloat())
-    runSerializationTest(strideSlice, input)
+    val begin = Tensor[Int](3).fill(1)
+    val end = Tensor[Int](3).fill(3)
+    end.setValue(1, 2)
+    val strides = Tensor[Int](3).fill(1)
+    runSerializationTest(stridedSlice, T(input, begin, end, strides))
   }
 }
