@@ -22,7 +22,7 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.{FloatType, Tensor}
 import com.intel.analytics.bigdl.utils.serializer._
 import com.intel.analytics.bigdl.utils.serializer.converters.DataConverter
-import com.intel.analytics.bigdl.utils.{T, Table}
+import com.intel.analytics.bigdl.utils.{Engine, ParameterSynchronizer, T, Table}
 import com.intel.analytics.bigdl.serialization.Bigdl.{AttrValue, BigDLModule}
 
 import scala.reflect.ClassTag
@@ -60,6 +60,24 @@ class BatchNormalization[T: ClassTag](
 )(implicit ev: TensorNumeric[T]) extends TensorModule[T] with Initializable {
 
   require(nOutput > 0, "output feature map number must be greater than zero")
+
+  private var parallism : Option[Int] = None
+
+
+  /**
+   * Set parameter sync parallisim number
+   * @param parallism Concurrent sync threads number
+   */
+  def setParallism(parallism: Int): Unit = {
+    this.parallism = Some(parallism)
+  }
+
+  def getParallism(): Option[Int] = this.parallism
+
+  val meanKey: String = s"${this.getName}_mean"
+  val stdKey: String = s"${this.getName}_std"
+  val gmKey: String = s"${this.getName}_gm"
+  val gxmKey: String = s"${this.getName}_gxm"
 
   val nDim = 2
   val channelDim = 2
@@ -135,6 +153,14 @@ class BatchNormalization[T: ClassTag](
   protected val _input = Tensor[T]()
   protected val _gradOutput = Tensor[T]()
 
+  var globalMean: Array[T] = new Array[T](0)
+
+  var globalStd: Array[T] = new Array[T](0)
+
+  var globalGMean: Array[T] = new Array[T](0)
+
+  var globalGxmMean: Array[T] = new Array[T](0)
+
   override def clearState(): this.type = {
     super.clearState()
     gMean.set()
@@ -193,6 +219,22 @@ class BatchNormalization[T: ClassTag](
   }
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
+
+    val parallism = getParallism().getOrElse(1)
+
+    val meanKeyWithId = s"${this.meanKey}_${this.getId}"
+    val stdKeyWithId = s"${this.stdKey}_${this.getId}"
+    val gmKeyWithId = s"${this.gmKey}_${this.getId}"
+    val gxmKeyWithId = s"${this.gxmKey}_${this.getId}"
+
+    val needSync = if (parallism != 1) {
+      ParameterSynchronizer.register(meanKeyWithId, parallism)
+      ParameterSynchronizer.register(stdKeyWithId, parallism)
+      ParameterSynchronizer.register(gmKeyWithId, parallism)
+      ParameterSynchronizer.register(gxmKeyWithId, parallism)
+      true
+    } else false
+
     checkInputDim(input)
     output.resizeAs(input)
 
@@ -209,6 +251,16 @@ class BatchNormalization[T: ClassTag](
     saveMean.resizeAs(runningMean).zero
     saveStd.resizeAs(runningVar).fill(ev.zero)
 
+    val nChannels = _input.size(2)
+
+    if (globalMean.size < nChannels) {
+      globalMean = new Array[T](nChannels)
+    }
+
+    if (globalStd.size < nChannels) {
+      globalStd = new Array[T](nChannels)
+    }
+
     if (train) {
       if (ev.getType() == FloatType) {
         SpatialBatchNormalization.updateOutputNCHWTrainFloat(
@@ -216,14 +268,20 @@ class BatchNormalization[T: ClassTag](
           saveMean.asInstanceOf[Tensor[Float]], saveStd.asInstanceOf[Tensor[Float]],
           runningMean.asInstanceOf[Tensor[Float]], runningVar.asInstanceOf[Tensor[Float]],
           weight.asInstanceOf[Tensor[Float]], bias.asInstanceOf[Tensor[Float]],
-          eps.toFloat, momentum.toFloat)
+          eps.toFloat, momentum.toFloat,
+          globalMean = globalMean.asInstanceOf[Array[Float]],
+          globalStd = globalStd.asInstanceOf[Array[Float]],
+          meanKey = meanKeyWithId, stdKey = stdKeyWithId, needSync = needSync)
       } else {
         SpatialBatchNormalization.updateOutputNCHWTrainDouble(
           _input.asInstanceOf[Tensor[Double]], output.asInstanceOf[Tensor[Double]],
           saveMean.asInstanceOf[Tensor[Double]], saveStd.asInstanceOf[Tensor[Double]],
           runningMean.asInstanceOf[Tensor[Double]], runningVar.asInstanceOf[Tensor[Double]],
           weight.asInstanceOf[Tensor[Double]], bias.asInstanceOf[Tensor[Double]],
-          eps, momentum)
+          eps, momentum,
+          globalMean = globalMean.asInstanceOf[Array[Double]],
+          globalStd = globalStd.asInstanceOf[Array[Double]],
+          meanKey = meanKeyWithId, stdKey = stdKeyWithId, needSync = needSync)
       }
     } else {
       if (ev.getType() == FloatType) {
@@ -243,25 +301,39 @@ class BatchNormalization[T: ClassTag](
   }
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
+    val gmKeyWithId = s"${this.gmKey}_${this.getId}"
+    val gxmKeyWithId = s"${this.gxmKey}_${this.getId}"
+    val needSync = getParallism() != None && getParallism().get > 1
     _gradOutput.set(gradOutput)
     makeBatch(_gradOutput)
     _gradOutput.addSingletonDimension(_gradOutput, 3)
     _gradOutput.addSingletonDimension(_gradOutput, 4)
     gxMean.zero()
     gMean.zero()
+    val nChannel = _gradOutput.size(2)
+    if (globalGMean.size < nChannel) {
+      globalGMean = new Array[T](nChannel)
+    }
+    if (globalGxmMean.size < nChannel) {
+      globalGxmMean = new Array[T](nChannel)
+    }
     if (train) {
       if (ev.getType() == FloatType) {
         SpatialBatchNormalization.updateGradInputNCHWTrainFloat(
           _input.asInstanceOf[Tensor[Float]], _gradOutput.asInstanceOf[Tensor[Float]],
           gradInput.asInstanceOf[Tensor[Float]], weight.asInstanceOf[Tensor[Float]],
           saveMean.asInstanceOf[Tensor[Float]], saveStd.asInstanceOf[Tensor[Float]],
-          gMean.asInstanceOf[Tensor[Float]], gxMean.asInstanceOf[Tensor[Float]])
+          gMean.asInstanceOf[Tensor[Float]], gxMean.asInstanceOf[Tensor[Float]],
+          globalGMean.asInstanceOf[Array[Float]], globalGxmMean.asInstanceOf[Array[Float]],
+          gMeanKey = gmKeyWithId, gxMeanKey = gxmKeyWithId, needSync = needSync)
       } else {
         SpatialBatchNormalization.updateGradInputNCHWTrainDouble(
           _input.asInstanceOf[Tensor[Double]], _gradOutput.asInstanceOf[Tensor[Double]],
           gradInput.asInstanceOf[Tensor[Double]], weight.asInstanceOf[Tensor[Double]],
           saveMean.asInstanceOf[Tensor[Double]], saveStd.asInstanceOf[Tensor[Double]],
-          gMean.asInstanceOf[Tensor[Double]], gxMean.asInstanceOf[Tensor[Double]])
+          gMean.asInstanceOf[Tensor[Double]], gxMean.asInstanceOf[Tensor[Double]],
+          globalGMean.asInstanceOf[Array[Double]], globalGxmMean.asInstanceOf[Array[Double]],
+          gMeanKey = gmKeyWithId, gxMeanKey = gxmKeyWithId, needSync = needSync)
       }
     } else {
       if (ev.getType() == FloatType) {
