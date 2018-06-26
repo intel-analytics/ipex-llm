@@ -17,14 +17,119 @@
 package com.intel.analytics.bigdl.nn
 
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
-import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.utils.{Engine, T}
 import com.intel.analytics.bigdl.utils.serializer.ModuleSerializationTest
+import org.apache.spark.SparkContext
 import org.scalatest.{FlatSpec, Matchers}
 
 import scala.util.Random
 
 @com.intel.analytics.bigdl.tags.Parallel
 class BatchNormalizationSpec extends FlatSpec with Matchers {
+
+  "BacthNormalization parameter sync" should "work properly" in {
+    val conf = Engine.createSparkConf().setAppName("Test sync")
+      .set("spark.rpc.message.maxSize", "200").setMaster("local[*]")
+    val sc = SparkContext.getOrCreate(conf)
+
+    Engine.init
+
+    val bn = BatchNormalization[Float](2)
+
+    bn.setParallism(1)
+
+    bn.weight.fill(1.0f)
+    bn.bias.fill(1.0f)
+
+    val input = Tensor[Float](2, 2)
+
+    input.select(1, 1).fill(1.0f)
+    input.select(1, 2).fill(2.0f)
+
+    val gradOutput = Tensor[Float](2, 2)
+
+    gradOutput.select(1, 1).fill(2.0f)
+    gradOutput.select(1, 2).fill(1.0f)
+
+    val output = bn.forward(input)
+
+    val gradInput = bn.backward(input, gradOutput)
+
+    val saveMean = bn.saveMean
+    val saveStd = bn.saveStd
+    val runningMean = bn.runningMean
+    val runningVar = bn.runningVar
+
+    val bn1 = BatchNormalization[Float](2)
+
+    bn1.setParallism(2)
+
+    bn1.weight.fill(1.0f)
+    bn1.bias.fill(1.0f)
+
+    val bn2 = bn1.cloneModule().asInstanceOf[BatchNormalization[Float]]
+
+    val modules = Array(bn1, bn2)
+
+    val input1 = Tensor[Float](1, 2).fill(1.0f)
+
+    val input2 = Tensor[Float](1, 2).fill(2.0f)
+
+    val inputs = Array(input1, input2)
+
+    val gradOutput1 = Tensor[Float](1, 2).fill(2.0f)
+    val gradOutput2 = Tensor[Float](1, 2).fill(1.0f)
+
+    val gradOutputs = Array(gradOutput1, gradOutput2)
+
+    Engine.default.invokeAndWait2((0 until modules.size).map(i =>
+      () => {
+        val trainStart = System.nanoTime()
+        val sub = modules(i)
+        val subInput = inputs(i)
+        val subGradOutput = gradOutputs(i)
+        sub.forward(subInput)
+        sub.backward(subInput, subGradOutput)
+      }
+    ))
+
+    val saveMean1 = bn1.saveMean
+    val saveStd1 = bn1.saveStd
+    val runningMean1 = bn1.runningMean
+    val runningVar1 = bn1.runningVar
+    val gradInput1 = bn1.gradInput
+    val out1 = bn1.output.squeeze
+
+    val saveMean2 = bn2.saveMean
+    val saveStd2 = bn2.saveStd
+    val runningMean2 = bn2.runningMean
+    val runningVar2 = bn2.runningVar
+    val gradInput2 = bn2.gradInput
+    val out2 = bn2.output.squeeze()
+
+    saveMean should be (saveMean1)
+    saveMean should be (saveMean2)
+    saveStd should be (saveStd1)
+    saveStd should be (saveStd2)
+    runningMean should be (runningMean1)
+    runningMean should be (runningMean2)
+    runningVar should be (runningVar1)
+    runningVar should be (runningVar2)
+
+    val sout1 = output.select(1, 1).squeeze()
+    sout1  should be (out1)
+
+    val sout2 = output.select(1, 2).squeeze()
+    sout2 should be (bn2.output)
+
+    val gin1 = gradInput.select(1, 1)
+
+    val gin2 = gradInput.select(1, 2)
+
+    gin1.squeeze should be (gradInput1.squeeze)
+    gin2.squeeze should be (gradInput2.squeeze)
+  }
+
   "A BatchNormalization" should "generate correct output using default arguments" in {
     val bn = BatchNormalization[Double](None)
     val input = Tensor[Double](3, 3)
