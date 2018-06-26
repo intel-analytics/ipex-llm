@@ -20,15 +20,18 @@ import java.nio.file.{Files, Paths}
 
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dataset.{DataSet, SampleToMiniBatch, _}
+
+import scala.collection.mutable
 import com.intel.analytics.bigdl.parameters.{ConstantClippingProcessor,
   L2NormClippingProcessor, ParameterProcessor}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils._
 import com.intel.analytics.bigdl.visualization.{TrainSummary, ValidationSummary}
+import org.apache.log4j.Logger
 import org.apache.spark.rdd.RDD
 
 import scala.collection.mutable.ArrayBuffer
-import scala.reflect.ClassTag
+import scala.reflect.{ClassTag, classTag}
 
 /**
  * [[Optimizer]] is an abstract class which is used to train a model automatically
@@ -46,8 +49,9 @@ abstract class Optimizer[T: ClassTag, D](
   protected var dataset: DataSet[D],
   protected var criterion: Criterion[T])(implicit ev : TensorNumeric[T])
 {
+  import Optimizer.{logger, checkSubModules}
   protected var state: Table = T()
-  protected var optimMethod: OptimMethod[T] = new SGD[T]()
+  protected var optimMethods: Map[String, OptimMethod[T]] = Map(model.getName -> new SGD())
   protected var endWhen: Trigger = Trigger.maxIteration(100)
 
   protected var checkpointTrigger: Option[Trigger] = None
@@ -67,6 +71,11 @@ abstract class Optimizer[T: ClassTag, D](
   protected var maxDropPercentage: Double = 0.0
   protected var computeThresholdbatchSize: Int = 100
   protected var warmupIterationNum: Int = 200
+
+  /**
+   * a list of ParameterProcessor, orders matter
+   */
+  protected var parameterProcessors = ArrayBuffer[ParameterProcessor]()
 
   model.checkDuplicate()
 
@@ -227,22 +236,60 @@ abstract class Optimizer[T: ClassTag, D](
   }
 
   private def resetEpoch(): Unit = {
-    optimMethod.state.update("epoch", 1)
-    optimMethod.state.update("neval", 1)
-    optimMethod.state.update("Loss", Float.PositiveInfinity)
-    optimMethod.state.update("score", 0f)
-    optimMethod.state.update("recordsProcessedThisEpoch", 0)
+    optimMethods.foreach{ case (moduleName, optimMethod) =>
+      optimMethod.state.update("epoch", 1)
+      optimMethod.state.update("neval", 1)
+      optimMethod.state.update("Loss", Float.PositiveInfinity)
+      optimMethod.state.update("score", 0f)
+      optimMethod.state.update("recordsProcessedThisEpoch", 0)
+    }
   }
 
 
   /**
-   * Set a model to the optimizer
+   * Set a model to the optimizer.
+   * Notice: if current optimMethod in this optimizer is not a global optimMethod,
+   * this setModel will throw an exception. You should use setModelAndOptimMethods instead.
    *
    * @param newModel new model
    */
   def setModel(newModel: Module[T]): this.type = {
+    // check if the old optimMethods is a global one.
+    if (optimMethods.size == 1 && optimMethods.contains(model.getName())) {
+      if (newModel.getName() != model.getName()) {
+        optimMethods = Map(newModel.getName() -> optimMethods(model.getName()))
+      }
+      logger.info(s"Optimizer.setModel: Detect current optimMethod is a global optimMethod." +
+        s" Automatically associate the current optimMethod with the new model.")
+    } else {
+      throw new IllegalArgumentException("Optimizer.setModel: Detect current optimMethod" +
+        " is not a global optimMethod. Please use setModelAndOptimMethods")
+    }
+
     model = newModel
+
     model.checkDuplicate()
+
+    // if a new Model is set, then reset "epoch", "neval" .etc.
+    resetEpoch()
+    this
+  }
+
+  /**
+   * Set new model and new optimMethods to the optimizer.
+   *
+   * @param newModel new model
+   * @param newOptimMethods new optimMethods
+   */
+  def setModelAndOptimMethods(
+        newModel: Module[T],
+        newOptimMethods: Map[String, OptimMethod[T]]): this.type = {
+    // check if the old optimMethods is a global one.
+    model = newModel
+    optimMethods = newOptimMethods
+
+    model.checkDuplicate()
+
     // if a new Model is set, then reset "epoch", "neval" .etc.
     resetEpoch()
     this
@@ -317,11 +364,19 @@ abstract class Optimizer[T: ClassTag, D](
    * @param method optimization method
    */
   def setOptimMethod(method : OptimMethod[T]): this.type = {
-    this.optimMethod = method
-    val processor = method.getParameterProcessor()
-    if (processor.isDefined) {
-      parameterProcessors += processor.get
-    }
+    checkSubModules(model, Array(model.getName()))
+    this.optimMethods = Map(model.getName -> method)
+    this
+  }
+
+  /**
+   * Set optimization methods for each submodule.
+   *
+   * @param method A mapping of submodule -> OptimMethod
+   */
+  def setOptimMethods(method: Map[String, OptimMethod[T]]): this.type = {
+    checkSubModules(model, method.keys.toSeq)
+    this.optimMethods = method
     this
   }
 
@@ -379,9 +434,15 @@ abstract class Optimizer[T: ClassTag, D](
   def setConstantGradientClipping(min: Double, max: Double)
   : this.type = {
     require(min <= max, "min value can not be larger than max")
-    parameterProcessors.append(new ConstantClippingProcessor(min, max))
+    val index = Optimizer.findIndex[ConstantClippingProcessor](parameterProcessors)
+    if (index == -1) {
+      parameterProcessors.append(new ConstantClippingProcessor(min, max))
+    } else {
+      parameterProcessors(index) = new ConstantClippingProcessor(min, max)
+    }
     this
   }
+
 
   /**
    * Clip gradient to a maximum L2-norm
@@ -390,20 +451,80 @@ abstract class Optimizer[T: ClassTag, D](
    */
   def setGradientClippingByl2Norm(l2NormThreshold: Double)
   : this.type = {
-    parameterProcessors.append(new L2NormClippingProcessor(l2NormThreshold))
+    require(optimMethods.size == 1, "Only support 1 optimMethod.")
+    require(l2NormThreshold > 0, "l2NormThreshold should larger than zero")
+    val index = Optimizer.findIndex[L2NormClippingProcessor](parameterProcessors)
+    if (index == -1) {
+      parameterProcessors.append(new L2NormClippingProcessor(l2NormThreshold))
+    } else {
+      parameterProcessors(index) = new L2NormClippingProcessor(l2NormThreshold)
+    }
     this
   }
 
-  /**
-   * a list of ParameterProcessor, orders matter
-   */
-  protected var parameterProcessors = ArrayBuffer[ParameterProcessor]()
 }
 
 object Optimizer {
+  private val logger: Logger = Logger.getLogger(getClass)
+
   private[bigdl] def header(epoch: Int, count: Int, total: Long, iter: Int, wallClockTime: Long)
   : String = {
     s"[Epoch $epoch $count/$total][Iteration $iter][Wall Clock ${wallClockTime / 1e9}s]"
+  }
+
+  /**
+   * Check if the sub modules are in the model, if each sub modules' parameter
+   * is contiguous, if sub modules' parameter is duplicated.
+   * @param model
+   * @param subModuleNames
+   * @param ev
+   * @tparam T
+   */
+  private[bigdl] def checkSubModules[T: ClassTag](
+        model: Module[T],
+        subModuleNames: Seq[String])(implicit ev: TensorNumeric[T]): Unit = {
+    val modelParameters = model.getParameters()
+    val p = subModuleNames.map{subModuleName =>
+      val subModule = model(subModuleName)
+      require(subModule.isDefined, s"Optimizer: couldn't find $subModuleName in $model")
+      val subModuleWeights = subModule.get.getParameters()._1
+      require(subModuleWeights.nElement() > 0, s"Optimizer: $subModuleName doesn't have" +
+        s" any trainable parameters, please check your model and optimMethods.")
+      // If the storage subModule's parameter is the same with the storage of the submodule,
+      // then subModule's parameter is contiguous.
+      require(modelParameters._1.storage() == subModuleWeights.storage(), s"Optimizer:" +
+        s" $subModuleName's parameter is not contiguous.")
+      (subModuleName, subModuleWeights)
+    }.toArray
+
+    // make sure if parameters in submodules aren't duplicated.
+    if (p.length != 1) {
+      val sortedWeights = p.sortWith((a, b) => a._2.storageOffset() < b._2.storageOffset())
+      var i = 0
+      while (i < sortedWeights.length - 1) {
+        val current = sortedWeights(i)
+        val next = sortedWeights(i + 1)
+        require(current._2.storageOffset() + current._2.nElement() <= next._2.storageOffset(),
+          s"Optimizer: ${current._1} and ${next._1}'s parameters are duplicated." +
+            s" Please check your model and optimMethods.")
+        i += 1
+      }
+    }
+  }
+
+  /**
+   * Combine the hyper parameters in optimMethods.
+   */
+  private[bigdl] def getHyperParameterLog(optimMethods: Map[String, OptimMethod[_]]): String = {
+    optimMethods.map{ case (moduleName, optimMethod) =>
+        optimMethod.updateHyperParameter()
+        val log = optimMethod.getHyperParameter()
+        if (log.isEmpty) {
+          log
+        } else {
+          s"${moduleName}'s hyper parameters: ${log} "
+        }
+      }.reduce(_ + _)
   }
 
   /**
@@ -549,5 +670,22 @@ object Optimizer {
       case _ =>
         throw new UnsupportedOperationException
     }
+  }
+
+  /**
+   * find the index of type T
+   * @param parameterProcessors
+   * @return index
+   */
+  private[Optimizer] def findIndex[T <: ParameterProcessor: ClassTag](
+        parameterProcessors: ArrayBuffer[ParameterProcessor]): Int = {
+    var i = 0
+    while(i < parameterProcessors.size) {
+      if (classTag[T].runtimeClass.isInstance(parameterProcessors(i))) {
+        return i
+      }
+      i += 1
+    }
+    return -1
   }
 }

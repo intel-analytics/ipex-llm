@@ -57,9 +57,11 @@ object AllReduceParameter {
 
   private val nextId = new AtomicLong(0)
 
-  def newParameter[T: ClassTag](partitionNum: Int, size: Int)
-    (implicit ev: TensorNumeric[T]): AllReduceParameter[T] = {
-    new AllReduceParameter[T](nextId.getAndIncrement(), partitionNum, size)
+  def newParameter[T: ClassTag](
+        partitionNum: Int,
+        size: Int,
+        offset: Int = 1)(implicit ev: TensorNumeric[T]): AllReduceParameter[T] = {
+    new AllReduceParameter(nextId.getAndIncrement(), partitionNum, size, offset)
   }
 }
 
@@ -76,10 +78,14 @@ object AllReduceParameter {
  * @param id distinguish from other parameters
  * @param partitionNum how many partitions will use this parameter
  * @param size size of the parameter (1D vector)
+ * @param paramOffset start index in the origin parameter.
  * @tparam T Tensor element type
  */
-private[bigdl] class AllReduceParameter[T: ClassTag](id: Long, partitionNum: Int, size: Int)
-  (implicit ev: TensorNumeric[T]) extends Serializable {
+class AllReduceParameter[T: ClassTag](
+      id: Long,
+      partitionNum: Int,
+      val size: Int,
+      val paramOffset: Int = 1)(implicit ev: TensorNumeric[T]) extends Serializable {
   import AllReduceParameter._
 
   @transient private var taskSize = 0

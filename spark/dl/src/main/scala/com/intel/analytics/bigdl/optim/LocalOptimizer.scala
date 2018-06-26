@@ -48,7 +48,7 @@ class LocalOptimizer[T: ClassTag] (
     model, dataset, criterion) {
 
   import LocalOptimizer._
-  import Optimizer._
+  import Optimizer.{header, saveModel, saveState, checkSubModules, getHyperParameterLog}
 
   private val coreNumber = Engine.coreNumber()
 
@@ -87,8 +87,20 @@ class LocalOptimizer[T: ClassTag] (
   override def optimize(): Module[T] = {
     var wallClockTime = 0L
     var count = 0
-    optimMethod.clearHistory()
-    optimMethod.loadFromTable(state)
+    optimMethods.values.foreach{ optimMethod =>
+      optimMethod.clearHistory()
+    }
+
+    // To be compatible with the old usage that user define hyperparameters in a table.
+    if (optimMethods.size == 1) {
+      optimMethods.head._2.loadFromTable(state)
+    }
+
+    checkSubModules(model, optimMethods.keys.toSeq)
+    val currentOptimMethods = optimMethods.map{case (subModuleName, optimMethod) =>
+      val subModule = model(subModuleName)
+      (optimMethod, subModule.get.getParameters())
+    }
     state("epoch") = state.get[Int]("epoch").getOrElse(1)
     state("neval") = state.get[Int]("neval").getOrElse(1)
     state("isLayerwiseScaled") = Utils.isLayerwiseScaled(model)
@@ -157,9 +169,11 @@ class LocalOptimizer[T: ClassTag] (
 
       parameterProcessors.foreach(_.processParameters(model, state))
 
-      optimMethod.state.update("epoch", state.get("epoch"))
-      optimMethod.state.update("neval", state.get("neval"))
-      optimMethod.optimize(_ => (ev.fromType(loss), grad), weight)
+      currentOptimMethods.foreach { case (optimMethod, (weight, grad)) =>
+        optimMethod.state.update("epoch", state.get("epoch"))
+        optimMethod.state.update("neval", state.get("neval"))
+        optimMethod.optimize(_ => (ev.fromType(loss), grad), weight)
+      }
       val end = System.nanoTime()
       wallClockTime += end - start
       count += batch.size()
@@ -169,7 +183,7 @@ class LocalOptimizer[T: ClassTag] (
         s"data fetch time is ${(dataFetchTime - start) / 1e9}s, " +
         s"train time ${(end - dataFetchTime) / 1e9}s. " +
         s"Throughput is ${batch.size().toDouble / (end - start) * 1e9} record / second. " +
-        optimMethod.getHyperParameter()
+        getHyperParameterLog(optimMethods)
         )
       state("neval") = state[Int]("neval") + 1
 
