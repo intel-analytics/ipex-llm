@@ -282,8 +282,7 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
     optimizer.optimize()
 
     Array(mse, mse2).foreach { mse =>
-      optimizer.setModel(mse)
-        .setOptimMethods(Map("fc_1" -> new LBFGS(), "fc_2" -> new LBFGS()))
+      optimizer.setModelAndOptimMethods(mse, Map("fc_1" -> new LBFGS(), "fc_2" -> new LBFGS()))
       val model = optimizer.optimize()
 
       val result1 = model.forward(input1).asInstanceOf[Tensor[Double]]
