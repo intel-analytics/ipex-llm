@@ -6,8 +6,8 @@ Suite Teardown   Delete All Sessions
 Test template    BigDL Test
 
 *** Test Cases ***   SuiteName
-#1                    Spark2.2 Test Suite
-#2                    Hdfs Test Suite
+1                    Spark2.2 Test Suite
+2                    Hdfs Test Suite
 3                    Spark1.6 on Yarn Test Suite
 4                    Spark2.3 on Yarn Test Suite
 5                    Quantization Test Suite
@@ -80,13 +80,6 @@ Run Spark Test
    Run Shell                        ${submit} --master ${spark_master} --driver-memory 5g --executor-memory 5g --total-executor-cores 32 --executor-cores 8 --class com.intel.analytics.bigdl.example.textclassification.TextClassifier ${jar_path} --batchSize 128 --baseDir /tmp/text_data --partitionNum 32
    Remove Input
 
-
-Spark2.0 Test Suite
-   Build SparkJar                   spark_2.x 
-   Set Environment Variable         SPARK_HOME               /opt/work/spark-2.0.0-bin-hadoop2.7  
-   ${submit}=                       Catenate                 SEPARATOR=/    /opt/work/spark-2.0.0-bin-hadoop2.7/bin    spark-submit
-   Run Spark Test                   ${submit}                ${spark_200_3_master} 
-
 Spark2.2 Test Suite
    Log To Console	1234
    Build SparkJar                   spark_2.x
@@ -95,16 +88,16 @@ Spark2.2 Test Suite
    Run Spark Test                   ${submit}                ${spark_21_3_master} 
 
 Hdfs Test Suite
-   Set Environment Variable         hdfsMaster               ${hdfs_264_3_master}
+   Set Environment Variable         hdfsMaster               ${hdfs_272_master}
    Set Environment Variable         mnist                    ${mnist_data_source}
    Set Environment Variable         s3aPath                  ${s3a_path}
-   Run Shell                        mvn clean test -Dsuites=com.intel.analytics.bigdl.integration.HdfsSpec -DhdfsMaster=${hdfs_264_3_master} -Dmnist=${mnist_data_source} -P integration-test -DforkMode=never
+   Run Shell                        mvn clean test -Dsuites=com.intel.analytics.bigdl.integration.HdfsSpec -DhdfsMaster=${hdfs_272_master} -Dmnist=${mnist_data_source} -P integration-test -DforkMode=never
    Run Shell                        mvn clean test -Dsuites=com.intel.analytics.bigdl.integration.S3Spec -Ds3aPath=${s3a_path} -P integration-test -DforkMode=never
    Remove Environment Variable      hdfsMaster               mnist                   s3aPath
 
 
 Quantization Test Suite
-   ${hadoop}=                       Catenate                 SEPARATOR=/             /opt/work/hadoop-2.6.5/bin        hadoop
+   ${hadoop}=                       Catenate                 SEPARATOR=/             /opt/work/hadoop-2.7.2/bin        hadoop
    Run                              ${hadoop} fs -get ${mnist_data_source} /tmp/
    Log To Console                   got mnist data!!
    Run                              ${hadoop} fs -get ${cifar_data_source} /tmp/
@@ -119,7 +112,7 @@ Spark1.6 on Yarn Test Suite
    Yarn Test Suite	spark_1.6	/opt/work/spark-1.6.0-bin-hadoop2.6
    
 Spark2.3 on Yarn Test Suite
-   Yarn Test Suite	spark_2.x	/opt/work/spark-2.3.0-bin-hadoop2.6
+   Yarn Test Suite	spark_2.x	/opt/work/spark-2.3.1-bin-hadoop2.7
 
 Yarn Test Suite
    [Arguments]                      ${bigdl_spark_version}                ${spark_home}
@@ -156,14 +149,6 @@ PySpark2.2 Test Suite
    Build SparkJar                   spark_2.x
    Set Environment Variable         SPARK_HOME     /opt/work/spark-2.2.0-bin-hadoop2.7
    ${submit}=                       Catenate       SEPARATOR=/    /opt/work/spark-2.2.0-bin-hadoop2.7/bin    spark-submit
-   Run Shell                        ${submit} --master ${spark_tf_210_3_master} --conf "spark.serializer=org.apache.spark.serializer.JavaSerializer" --driver-memory 150g --executor-cores 28 --total-executor-cores 56 --py-files ${curdir}/dist/lib/bigdl-${version}-python-api.zip --jars ${jar_path} --properties-file ${curdir}/dist/conf/spark-bigdl.conf ${curdir}/pyspark/bigdl/models/lenet/lenet5.py -b 224 --action train --endTriggerType epoch --endTriggerNum 1
- 
-PySpark1.6 Test Suite
-   DownLoad Input
-   Build SparkJar                   spark_1.6
-   Set Environment Variable         SPARK_HOME     /opt/work/spark-1.6.3-bin-hadoop2.6
-   ${submit}=                       Catenate       SEPARATOR=/    /opt/work/spark-1.6.3-bin-hadoop2.6/bin    spark-submit
-   Run Shell                        ${submit} --master ${spark_tf_163_3_master} --conf "spark.serializer=org.apache.spark.serializer.JavaSerializer" --driver-memory 150g --executor-cores 28 --total-executor-cores 56 --py-files ${curdir}/dist/lib/bigdl-${version}-python-api.zip --jars ${jar_path} --properties-file ${curdir}/dist/conf/spark-bigdl.conf --conf spark.driver.extraClassPath=${jar_path} --conf spark.executor.extraClassPath=bigdl-${version}-jar-with-dependencies.jar ${curdir}/pyspark/bigdl/models/lenet/lenet5.py -b 224 --action train --endTriggerType epoch --endTriggerNum 1
-   Remove Input
+   Run Shell                        ${submit} --master ${spark_master} --conf "spark.serializer=org.apache.spark.serializer.JavaSerializer" --driver-memory 10g --executor-cores 14 --total-executor-cores 28 --py-files ${curdir}/dist/lib/bigdl-${version}-python-api.zip --jars ${jar_path} --properties-file ${curdir}/dist/conf/spark-bigdl.conf ${curdir}/pyspark/bigdl/models/lenet/lenet5.py -b 224 --action train --endTriggerType epoch --endTriggerNum 1
 
 
