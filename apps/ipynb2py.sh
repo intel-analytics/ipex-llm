@@ -12,7 +12,7 @@ else
     sed -i 's/%%/#/' $1.tmp.ipynb
     sed -i 's/%pylab/#/' $1.tmp.ipynb
 
-    jupyter nbconvert --to script $1.tmp.ipynb
+    jupyter nbconvert $1.tmp.ipynb --to python
 
     mv $1.tmp.py $1.py
     sed -i '1i# -*- coding: utf-8 -*-' $1.py
