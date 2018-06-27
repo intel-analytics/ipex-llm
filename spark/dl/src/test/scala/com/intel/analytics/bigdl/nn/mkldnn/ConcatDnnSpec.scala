@@ -16,7 +16,7 @@
 package com.intel.analytics.bigdl.nn.mkldnn
 
 import com.intel.analytics.bigdl.mkl.MklDnn
-import com.intel.analytics.bigdl.nn.{Concat => Concat2, Identity}
+import com.intel.analytics.bigdl.nn.{Concat => Concat2}
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
 import org.scalatest.{FlatSpec, Matchers}
 

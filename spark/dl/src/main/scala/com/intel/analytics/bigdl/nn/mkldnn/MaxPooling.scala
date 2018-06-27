@@ -51,8 +51,9 @@ class MaxPooling(
     val c = _inputFormats(0).shape(1)
     val h = _inputFormats(0).shape(2)
     val w = _inputFormats(0).shape(3)
-    val (pt, pb, pl, pr, oh, ow) =
-      Utils.getPaddingAndOutputSize(h, w, dH, dW, kH, kW, padH, padW)
+    val Array(pt, pb, pl, pr, oh, ow) =
+      Utils.getSAMEOutSizeAndPadding(h, w, dH, dW, kH, kW)
+//      Utils.getPaddingAndOutputSize(h, w, dH, dW, kH, kW, padH, padW)
     paddingTL = Array(pt, pl)
     paddingBR = Array(pb, pr)
     val outputMD = MklDnnOps.memoryDescInit(4, Array(n, c, oh, ow), DataType.F32, Memory.Format.any)

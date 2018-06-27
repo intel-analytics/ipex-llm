@@ -633,12 +633,11 @@ object SbnDnn {
   def apply[@specialized(Float, Double) T: ClassTag](
     nOutput: Int,
     eps: Double = 1e-3,
-    momentum: Double = 0.1,
-    //    momentum: Double = 0.9,
+    momentum: Double = 0.9,
     affine: Boolean = true)
-  (implicit ev: TensorNumeric[T]): SpatialBatchNormalization[T] = {
-    mkldnn.SpatialBatchNormalization[T](nOutput, eps, momentum, affine).setInitMethod(Zeros, Zeros)
-      .setShouldConvert(false)
+  (implicit ev: TensorNumeric[T]): RefactorSpatialBatchNormalization = {
+    mkldnn.RefactorSpatialBatchNormalization(nOutput, eps, momentum, affine)
+      .setInitMethod(Ones, Zeros)
   }
 }
 
@@ -655,11 +654,11 @@ object Convolution {
       nGroup: Int = 1,
       propagateBack: Boolean = true,
       optnet: Boolean = true,
-      weightDecay: Double = 1e-4): ConvolutionDnn = {
+      weightDecay: Double = 1e-4): RefactorConvolution = {
     val wReg = L2Regularizer[Float](weightDecay)
     val bReg = L2Regularizer[Float](weightDecay)
-    val conv = mkldnn.ConvolutionDnn(nInputPlane, nOutputPlane, kernelW, kernelH,
-        strideW, strideH, padW, padH, nGroup, propagateBack, wReg, bReg)
+    val conv = mkldnn.RefactorConvolution(nInputPlane, nOutputPlane, kernelW, kernelH,
+        strideW, strideH, padW, padH, nGroup, propagateBack)
     conv.setInitMethod(MsraFiller(false), Zeros)
     //    conv.setInitMethod(MsraFiller(false))
     conv
@@ -686,6 +685,25 @@ object ResNet_dnn {
           val curModel =
             spatialBatchNormalization.asInstanceOf[mkldnn.SpatialBatchNormalization[Float]]
           curModel.bias.apply1(_ => 0.0f)
+        case convolutionDnn
+          if (convolutionDnn.isInstanceOf[mkldnn.RefactorConvolution]) =>
+          val curModel = convolutionDnn.asInstanceOf[mkldnn.RefactorConvolution]
+          val n: Float = curModel.kernelW * curModel.kernelW * curModel.nOutputPlane
+          val weight = Tensor[Float].resize(curModel.weight.size())
+          val bias = Tensor[Float].resize(curModel.bias.size())
+          weight.apply1(_ => RNG.normal(0, Math.sqrt(2.0f / n)).toFloat)
+          bias.apply1(_ => 0.0f)
+          curModel.weight.copy(weight)
+          curModel.bias.copy(bias)
+        case bn
+          if (bn.isInstanceOf[mkldnn.RefactorSpatialBatchNormalization]) =>
+          val curModel = bn.asInstanceOf[mkldnn.RefactorSpatialBatchNormalization]
+          val runningMean = Tensor[Float].resize(curModel.runningMean.size())
+          val runningVairance = Tensor[Float].resize(curModel.runningVariance.size())
+          runningMean.fill(0)
+          runningVairance.fill(1)
+          curModel.runningMean.copy(runningMean)
+          curModel.runningVariance.copy(runningVairance)
         case linear
           if (linear.isInstanceOf[mkldnn.Linear[Float]]) =>
           linear.asInstanceOf[Linear[Float]].bias.apply1(_ => 0.0f)
@@ -728,21 +746,22 @@ object ResNet_dnn {
       s.add(mkldnn.Convolution(nInputPlane, n, 1, 1, 1, 1, 0, 0,
         optnet = optnet).setName(s"res${name}_branch2a"))
         .add(mkldnn.SbnDnn(n).setName(s"bn${name}_branch2a"))
-        .add(ReLUDnn(true).setName(s"res${name}_branch2a_relu"))
+        .add(ReLU().setName(s"res${name}_branch2a_relu"))
         .add(mkldnn.Convolution(n, n, 3, 3, stride, stride, 1, 1,
           optnet = optnet).setName(s"res${name}_branch2b"))
         .add(mkldnn.SbnDnn(n).setName(s"bn${name}_branch2b"))
-        .add(ReLUDnn(true).setName(s"res${name}_branch2b_relu"))
+        .add(ReLU().setName(s"res${name}_branch2b_relu"))
         .add(mkldnn.Convolution(n, n*4, 1, 1, 1, 1, 0, 0,
           optnet = optnet).setName(s"res${name}_branch2c"))
         .add(mkldnn.SbnDnn(n * 4).setInitMethod(Zeros, Zeros).setName(s"bn${name}_branch2c"))
 
       val model = Sequential()
-        .add(ConcatTableDnn().
+        .add(ConcatTable().
           add(s).
           add(shortcut(nInputPlane, n*4, stride, name)).setName(s"$name/concatTable"))
-        .add(CAddTableDnn(true).setName(s"$name/caddTable"))
-        .add(ReLUDnn(true).setName(s"res${name}_relu"))
+        .add(CAddTable().setName(s"$name/caddTable"))
+        .add(CAddTable().setName(s"res$name"))
+        .add(ReLU().setName(s"res${name}_relu"))
       model
     }
 
@@ -779,17 +798,17 @@ object ResNet_dnn {
       iChannels = 64
       logger.info(" | ResNet-" + depth + " ImageNet")
 
-      model.add(mkldnn.Convolution(3, 64, 7, 7, 2, 2, 3, 3, propagateBack = false,
-        optnet = optnet).setName("conv1"))
-        .add(mkldnn.SbnDnn(64).setName("bn_conv1"))
-        .add(ReLUDnn(true).setName("conv1_relu"))
-        .add(PoolingDnn(3, 3, 2, 2, 1, 1).setName("pool1"))
+      model.add(mkldnn.RefactorConvolution(3, 64, 7, 7, 2, 2, 3, 3, propagateBack = false)
+        .setName("conv1").setReLU(true))
+//        .add(mkldnn.SbnDnn(64).setName("bn_conv1"))
+        .add(ReLU().setName("conv1_relu"))
+        .add(MaxPooling(3, 3, 2, 2, 1, 1).setName("pool1"))
         .add(layer(block, 64, loopConfig._1, name = "2"))
         .add(layer(block, 128, loopConfig._2, 2, name = "3"))
         .add(layer(block, 256, loopConfig._3, 2, name = "4"))
         .add(layer(block, 512, loopConfig._4, 2, name = "5"))
-        .add(PoolingDnnAverage(7, 7, 1, 1).setName("pool5"))
-        .add(mkldnn.Linear(nFeatures, classNum, true, L2Regularizer(1e-4), L2Regularizer(1e-4))
+        .add(AvgPooling(7, 7, 1, 1).setName("pool5"))
+        .add(mkldnn.RefactorLinear(nFeatures, classNum)
           .setInitMethod(RandomNormal(0.0, 0.01), Zeros).setName("fc1000"))
     } else {
       throw new IllegalArgumentException(s"Invalid dataset ${dataSet}")

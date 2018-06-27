@@ -103,6 +103,10 @@ class DnnTensor[T: ClassTag](
 
   override def size(d: Int): Int = sizes(d - 1)
 
+  override def dim(): Int = size().length
+
+  override def nDimension(): Int = size().length
+
   override def getTensorType: TensorType = MklDnnType
 }
 

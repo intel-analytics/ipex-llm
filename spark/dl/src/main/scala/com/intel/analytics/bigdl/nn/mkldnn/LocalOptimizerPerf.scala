@@ -20,10 +20,12 @@ import java.util.concurrent.atomic.AtomicInteger
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dataset.{LocalDataSet, MiniBatch}
 import com.intel.analytics.bigdl.example.loadmodel.AlexNet
+import com.intel.analytics.bigdl.mkl.Memory
 import com.intel.analytics.bigdl.models.inception.{Inception_v1, Inception_v1_NoAuxClassifier, Inception_v2}
 import com.intel.analytics.bigdl.models.resnet.ResNet
 import com.intel.analytics.bigdl.models.resnet.ResNet.DatasetType
 import com.intel.analytics.bigdl.models.vgg.{Vgg_16, Vgg_19}
+import com.intel.analytics.bigdl.nn.mkldnn.Phase.{InferencePhase, TrainingPhase}
 import com.intel.analytics.bigdl.nn.{Module => _, _}
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.optim.{Optimizer, Trigger}
@@ -111,7 +113,7 @@ object LocalOptimizerPerf {
           "dataset" -> DatasetType.ImageNet))
         ResNet.shareGradInput(model)
         ResNet.modelInit(model)
-        (model, MiniBatch(Tensor(batchSize, 3, 224, 224).randn(),
+        (model, MiniBatch(Tensor(batchSize, 3, 224, 224).fill(0),
           Tensor(batchSize).fill(1)), CrossEntropyCriterion())
 
       case "resnet_50_dnn" =>
@@ -230,10 +232,20 @@ object LocalOptimizerPerf {
     System.setProperty("bigdl.mklNumThreads", param.numThreads.toString)
     Engine.setCoreNumber(param.coreNumber)
 
+    System.setProperty("bigdl.mkldnn.fusion.convbn", "true")
+    System.setProperty("bigdl.mkldnn.fusion.bnrelu", "true")
+    System.setProperty("bigdl.mkldnn.fusion.convrelu", "true")
+    System.setProperty("bigdl.mkldnn.fusion.convsum", "true")
+
     val (_model, miniBatch, criterion) = getModel(param.module, param.batchSize)
     val model = _model
-    println(model)
     println(param.coreNumber)
+    val seqModel = model.asInstanceOf[Sequential]
+//    seqModel.add(ReorderMemory(HeapData(Array(param.batchSize, 1000), Memory.Format.nc)))
+    model.asInstanceOf[MklDnnContainer].compile(InferencePhase,
+      Array(HeapData(Array(param.batchSize, 3, 224, 224), Memory.Format.nchw)))
+    model.evaluate()
+    println(model)
 
     val dummyDataSet = new LocalDataSet[MiniBatch[Float]] {
       override def data(train : Boolean): Iterator[MiniBatch[Float]] = {

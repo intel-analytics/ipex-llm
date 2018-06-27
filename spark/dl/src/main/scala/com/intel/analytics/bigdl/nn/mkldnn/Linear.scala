@@ -993,7 +993,7 @@ class RefactorLinear(
     }
 
     ParamsShape.gradWeight = realWei
-    ParamsShape.bias = bis
+    ParamsShape.gradBias = bis
 
     val srcs = Array(inputFormats()(0).getPrimitive(runtime), realDiffDst.getPrimitive(runtime))
     val indexes = Array.fill(srcs.length)(0)
@@ -1055,5 +1055,18 @@ class RefactorLinear(
   override def zeroGradParameters(): Unit = {
     gradWeight.zero()
     gradBias.zero()
+  }
+}
+
+object RefactorLinear {
+  def apply(
+    inputSize: Int,
+    outputSize: Int,
+    withBias: Boolean = true,
+    initWeight: Tensor[Float] = null,
+    initBias: Tensor[Float] = null,
+    initGradWeight: Tensor[Float] = null,
+    initGradBias: Tensor[Float] = null): RefactorLinear = {
+    new RefactorLinear(inputSize, outputSize, initWeight, initBias, initGradWeight, initGradBias)
   }
 }

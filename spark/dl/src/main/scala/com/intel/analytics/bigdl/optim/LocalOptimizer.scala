@@ -58,22 +58,23 @@ class LocalOptimizer[T: ClassTag] (
   private val subModelNumber = 1
 
   private val workingModels = {
-    model.getParameters()
-    val wb = Util.getAndClearWeightBias(model.parameters())
-
-    val models = (1 to subModelNumber).map(i => {
-      logger.info(s"Clone $i model...")
-      val m = model.cloneModule()
-      Util.putWeightBias(wb, m)
-      Util.initGradWeightBias(wb, m)
-      // for dnn create engine and stream
-      m.createDnnEngine(0)
-      m.createStream()
-      m
-    }).toArray
-    Util.putWeightBias(wb, model)
-    Util.initGradWeightBias(wb, model)
-    models
+//    model.getParameters()
+//    val wb = Util.getAndClearWeightBias(model.parameters())
+//
+//    val models = (1 to subModelNumber).map(i => {
+//      logger.info(s"Clone $i model...")
+//      val m = model.cloneModule()
+//      Util.putWeightBias(wb, m)
+//      Util.initGradWeightBias(wb, m)
+//      // for dnn create engine and stream
+//      m.createDnnEngine(0)
+//      m.createStream()
+//      m
+//    }).toArray
+//    Util.putWeightBias(wb, model)
+//    Util.initGradWeightBias(wb, model)
+//    models
+    Array(model)
   }
 //  private val (weight, grad) = model.getParameters()
 //  private val gradLength = grad.nElement()
@@ -125,27 +126,24 @@ class LocalOptimizer[T: ClassTag] (
       val i = 0
       val localModel = workingModels(i)
 //      localModel.zeroGradParameters()
-      localModel.training()
+//      localModel.training()
       localModel.resetTimes()
       val localCriterion = workingCriterion(i)
       val input = miniBatchBuffer(i).getInput()
       val target = miniBatchBuffer(i).getTarget()
-      if (!init) {
-        localModel.forward(input)
-        println("=" * 80)
-        println(localModel)
-        localModel.optimize()
-        println("-" * 80)
-        println(localModel)
-        init = true
-      }
-      val output = localModel.forward(input)
-      val lossSum = ev.toType[Double](localCriterion.forward(output, target))
-//      val errors = localCriterion.backward(output, target)
-//      if (gradOutput.isEmpty) {
-//        gradOutput.resizeAs(output.toTensor).rand(-1, 1)
+//      if (!init) {
+//        localModel.forward(input)
+//        println("=" * 80)
+//        println(localModel)
+//        localModel.optimize()
+//        println("-" * 80)
+//        println(localModel)
+//        init = true
 //      }
-//      localModel.backward(input, gradOutput)
+      val output = localModel.forward(input)
+//      val lossSum = ev.toType[Double](localCriterion.forward(output, target))
+//      val errors = localCriterion.backward(output, target)
+//      localModel.backward(input, output)
 //          })
 //      ).sum
 
