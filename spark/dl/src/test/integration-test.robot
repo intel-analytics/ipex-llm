@@ -27,7 +27,7 @@ Build SparkJar
    Log To Console    build jar finished
 
 DownLoad Input
-   ${hadoop}=                       Catenate       SEPARATOR=/    /opt/work/hadoop-2.7.3/bin    hadoop
+   ${hadoop}=                       Catenate       SEPARATOR=/    /opt/work/hadoop-2.7.2/bin    hadoop
    Run                              ${hadoop} fs -get ${mnist_data_source} /tmp/mnist
    Log To Console                   got mnist data!! ${hadoop} fs -get ${mnist_data_source} /tmp/mnist
    Run                              ${hadoop} fs -get ${cifar_data_source} /tmp/cifar
