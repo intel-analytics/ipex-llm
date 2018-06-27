@@ -2204,7 +2204,7 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
     this.apply1(a => ev.digamma(a))
   }
 
-  override def toQuantizedTensor: QuantizedTensor[T] =
+  override private[bigdl] def toQuantizedTensor: QuantizedTensor[T] =
     throw new IllegalArgumentException("DenseTensor cannot be cast to QuantizedTensor")
 }
 

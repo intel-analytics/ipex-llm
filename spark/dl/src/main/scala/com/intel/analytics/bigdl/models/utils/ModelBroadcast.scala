@@ -47,7 +47,7 @@ class ModelBroadcast[T: ClassTag](applyProtoBuffer: Boolean = false)
   private var broadcastConsts: Broadcast[Map[String, Tensor[_]]] = _
   private var broadcastParameters: Broadcast[Array[Tensor[T]]] = _
 
-  val uuid: String = UUID.randomUUID().toString
+  private[bigdl] val uuid: String = UUID.randomUUID().toString
 
   /**
    * broadcast the model
@@ -182,7 +182,7 @@ object ModelBroadcast {
   }
 }
 
-class ModelInfo[T: ClassTag](val uuid: String, @transient var model: Module[T])(
+private[bigdl] class ModelInfo[T: ClassTag](val uuid: String, @transient var model: Module[T])(
   implicit ev: TensorNumeric[T]) extends Serializable {
   @throws(classOf[IOException])
   private def writeObject(out: ObjectOutputStream): Unit = {
@@ -193,7 +193,7 @@ class ModelInfo[T: ClassTag](val uuid: String, @transient var model: Module[T])(
   }
 }
 
-object ModelInfo {
+private[bigdl] object ModelInfo {
   def apply[T: ClassTag](uuid: String, model: Module[T])(
     implicit ev: TensorNumeric[T]): ModelInfo[T] = new ModelInfo[T](uuid, model)
 }
@@ -204,61 +204,31 @@ object CachedModels {
   import scala.collection._
   import scala.collection.convert.decorateAsScala._
 
-  val lock = new AnyRef
+  type Modles = ArrayBuffer[Module[_]]
 
-  type FloatValues = ArrayBuffer[Module[Float]]
-  type DoubleValues = ArrayBuffer[Module[Double]]
-
-  private val cachedFloatModels: concurrent.Map[String, FloatValues] =
-    new ConcurrentHashMap[String, FloatValues]().asScala
-  private val cachedDoubleModels: concurrent.Map[String, DoubleValues] =
-    new ConcurrentHashMap[String, DoubleValues]().asScala
+  private val cachedModels: concurrent.Map[String, Modles] =
+    new ConcurrentHashMap[String, Modles]().asScala
 
   def add[T: ClassTag](uuid: String, model: Module[T])( implicit ev: TensorNumeric[T]): Unit =
-    lock.synchronized {
-      ev.getType() match {
-        case FloatType =>
-          val models = cachedFloatModels.get(uuid) match {
-            case Some(values) => values += model.asInstanceOf[Module[Float]]
-            case _ => ArrayBuffer(model.asInstanceOf[Module[Float]])
-          }
-          cachedFloatModels.put(uuid, models)
-        case DoubleType =>
-          val models = cachedDoubleModels.get(uuid) match {
-            case Some(values) => values += model.asInstanceOf[Module[Double]]
-            case _ => ArrayBuffer(model.asInstanceOf[Module[Double]])
-          }
-          cachedDoubleModels.put(uuid, models)
-        case _ => throw new UnsupportedOperationException(s"unsupported type")
+    CachedModels.synchronized {
+      val models = cachedModels.get(uuid) match {
+        case Some(values) => values += model
+        case _ => ArrayBuffer(model)
       }
     }
 
   def deleteAll[T: ClassTag](currentKey: String)(implicit ev: TensorNumeric[T]): Unit =
-    lock.synchronized {
-      ev.getType() match {
-        case FloatType =>
-          val keys = cachedFloatModels.keys
-          for (key <- keys) {
-            if (key != currentKey) {
-              val models = cachedFloatModels(key)
-              println(s"delete key = $key ${models.length}")
-              for (model <- models) { model.release()
-                println(StorageManager.get().count(!_._2.isFreed))
-              }
-              cachedFloatModels.remove(key)
-              println(StorageManager.get().count(!_._2.isFreed))
-            }
+    CachedModels.synchronized {
+      val keys = cachedModels.keys
+      for (key <- keys) {
+        if (key != currentKey) {
+          val models = cachedModels(key)
+          println(s"delete key = $key ${models.length}")
+          for (model <- models) {
+            model.release()
           }
-        case DoubleType =>
-          val keys = cachedDoubleModels.keys
-          for (key <- keys) {
-            if (key != currentKey) {
-              val models = cachedDoubleModels(key)
-              for (model <- models) { model.release() }
-              cachedDoubleModels.remove(key)
-            }
-          }
-        case _ => throw new UnsupportedOperationException(s"unsupported type")
+          cachedModels.remove(key)
+        }
       }
     }
 }

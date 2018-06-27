@@ -181,9 +181,9 @@ object QuantParams {
   val THRESHOLD = 127.0f
 }
 
-case class StorageInfo(descType: DescType, isFreed: Boolean)
+private[bigdl] case class StorageInfo(descType: DescType, isFreed: Boolean)
 
-object StorageManager {
+private[bigdl] object StorageManager {
   import java.util.concurrent.ConcurrentHashMap
   private val nativeStorages: ConcurrentHashMap[Long, StorageInfo] = new ConcurrentHashMap()
 
