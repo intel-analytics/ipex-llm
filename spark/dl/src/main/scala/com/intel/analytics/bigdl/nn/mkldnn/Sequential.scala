@@ -15,15 +15,19 @@
  */
 package com.intel.analytics.bigdl.nn.mkldnn
 
-import com.intel.analytics.bigdl.mkl.{Memory, MklDnn}
+import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
-import com.intel.analytics.bigdl.nn.{DynamicContainer, Sequential => Seq}
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.nn.{Sequential => Seq}
+import com.intel.analytics.bigdl.tensor.Tensor
 
 import scala.collection.mutable.ArrayBuffer
-import scala.reflect.ClassTag
 
 class Sequential extends MklDnnContainer {
+
+  val fuseConvBn = System.getProperty("bigdl.mkldnn.fusion.convbn", "false").toBoolean
+  val fuseBnRelu = System.getProperty("bigdl.mkldnn.fusion.bnrelu", "false").toBoolean
+  val fuseConvRelu = System.getProperty("bigdl.mkldnn.fusion.convrelu", "false").toBoolean
+  val fuseConvSum = System.getProperty("bigdl.mkldnn.fusion.convsum", "false").toBoolean
 
   override def add(module: AbstractModule[_ <: Activity, _ <: Activity, Float]): this.type = {
     require(mklDnnModules == null, "You should not call add after compilation")
@@ -32,8 +36,11 @@ class Sequential extends MklDnnContainer {
   }
 
   override private[mkldnn] def fusion(phase: Phase): Unit = {
-    modules.filter(_.isInstanceOf[MklDnnContainer])
-      .map { case mc: MklDnnContainer => mc.fusion(phase) }
+    modules.clear()
+    modules.appendAll(getFusedModules(phase).map {x =>
+      x.asInstanceOf[AbstractModule[Activity, Activity, Float]]
+    })
+    mklDnnModules = modules.map(_.asInstanceOf[MklDnnModule]).toArray
   }
 
   override private[mkldnn] def initFwdPrimitives(inputs: Array[MemoryData], phase: Phase) = {
@@ -139,7 +146,7 @@ class Sequential extends MklDnnContainer {
       i -= 1
     }
 
-    currentModule.accGradParameters(input, lastGradInput)
+    modules(i).accGradParameters(input, lastGradInput)
   }
 
   override private[mkldnn] def inputFormats() = {
@@ -160,6 +167,222 @@ class Sequential extends MklDnnContainer {
 
   override private[mkldnn] def gradOutputWeightFormats() = {
     modules.last.asInstanceOf[MklDnnModule].gradOutputWeightFormats()
+  }
+
+  type ArrayBufferModules[Float] = ArrayBuffer[AbstractModule[Activity, Activity, Float]]
+  private def convWithBn(modules: Array[MklDnnModule], phase: Phase): Array[MklDnnModule] = {
+    if (fuseConvBn) {
+      val newModules: ArrayBuffer[MklDnnModule] = ArrayBuffer.empty
+      var lastBn: RefactorSpatialBatchNormalization = null
+
+      modules.zip(modules.drop(1) ++ Array(null)).foreach { case (f, s) =>
+        (f, s) match {
+          case (conv: RefactorConvolution, bn: RefactorSpatialBatchNormalization) =>
+            mergeConvBn(conv, bn)
+            newModules.append(conv)
+            lastBn = bn
+          case (f: MklDnnContainer, s) => f.fusion(phase); newModules.append(f)
+          case _ => if (lastBn != f) { newModules.append(f) }
+        }
+      }
+
+      newModules.toArray
+    } else {
+      modules
+    }
+  }
+
+  private def convWithReLU(modules: Array[MklDnnModule], phase: Phase): Array[MklDnnModule] = {
+    if (fuseConvRelu) {
+      val newModules: ArrayBuffer[MklDnnModule] = ArrayBuffer.empty
+      var lastReLU: ReLU = null
+
+      modules.zip(modules.drop(1) ++ Array(null)).foreach { case (f, s) =>
+        (f, s) match {
+          case (conv: RefactorConvolution, relu: ReLU) =>
+            newModules.append(conv)
+            conv.setReLU()
+            lastReLU = relu
+          case (f: MklDnnContainer, s) =>
+            f.fusion(phase)
+            newModules.append(f)
+          case _ => if (lastReLU != f) {
+            newModules.append(f)
+          }
+        }
+      }
+
+      newModules.toArray
+    } else {
+      modules
+    }
+  }
+
+  private def bnWithReLU(modules: Array[MklDnnModule], phase: Phase): Array[MklDnnModule] = {
+    if (fuseBnRelu) {
+      val newModules: ArrayBuffer[MklDnnModule] = ArrayBuffer.empty
+      var lastReLU: ReLU = null
+
+      modules.zip(modules.drop(1) ++ Array(null)).foreach { case (f, s) =>
+        (f, s) match {
+          case (bn: RefactorSpatialBatchNormalization, relu: ReLU) =>
+            newModules.append(bn)
+            bn.setReLU(true)
+            lastReLU = relu
+          case (f: MklDnnContainer, s) => f.fusion(phase); newModules.append(f)
+          case _ => if (lastReLU != f) { newModules.append(f) }
+        }
+      }
+
+      newModules.toArray
+    } else {
+      modules
+    }
+  }
+
+  private def convWithSum(modules: Array[MklDnnModule], phase: Phase): Array[MklDnnModule] = {
+    val newModules: ArrayBuffer[MklDnnModule] = ArrayBuffer.empty
+    if (!fuseConvSum || modules.length <= 2) {
+      newModules.appendAll(modules)
+    } else {
+      var lastConv: RefactorConvolution = null
+      var lastReLU: ReLU = null
+
+      modules.zip(modules.drop(1) ++ Array(null)).foreach {
+        case (f: ConcatTable, s: CAddTable) => val (conv, sbt) = convSum(f, s)
+          newModules.append(f)
+          lastConv = conv
+          if (sbt != null) {
+            newModules.append(sbt)
+          }
+        case (f: MklDnnContainer, s) => f.fusion(phase); newModules.append(f)
+        case (f: CAddTable, s: ReLU) => if (lastConv != null) {
+          lastConv.setReLU()
+          lastReLU = s
+          lastConv = null
+        } else {
+          newModules.append(f)
+        }
+        case (f, s) => if (lastReLU != f) { newModules.append(f); lastReLU = null}
+      }
+    }
+
+    newModules.toArray
+  }
+
+  private def getFusedModules(phase: Phase): Array[MklDnnModule] = {
+    val f1Modules = convWithBn(mklDnnModules, phase)
+    val f2Modules = convWithReLU(f1Modules, phase)
+    val f3Modules = bnWithReLU(f2Modules, phase)
+    val f4Modules = convWithSum(f3Modules, phase)
+    f4Modules
+  }
+
+  private def mergeConvBn(conv: RefactorConvolution, bn: RefactorSpatialBatchNormalization)
+  : Unit = {
+
+    val originVar = Tensor[Float].resize(bn.runningVariance.size()).copy(bn.runningVariance)
+    val originMean = Tensor[Float].resize(bn.runningMean.size()).copy(bn.runningMean)
+
+    val convWeight = Tensor[Float].resize(conv.weight.size()).copy(conv.weight)
+    val convBias = Tensor[Float].resize(conv.bias.size()).copy(conv.bias)
+
+    (0 until bn.nOutput).foreach { j =>
+      val variance = originVar.storage().array()(j + originVar.storageOffset() - 1)
+      val base = Math.sqrt(variance.asInstanceOf[Float] + bn.eps).toFloat
+      require(base != 0.0, s"the eps of ${bn.getName()} should be more than 0")
+
+      val weight = if (conv.nGroup == 1) {
+        convWeight.select(1, j + 1)
+      } else {
+        convWeight.select(2, j + 1)
+      }
+      weight.div(base)
+
+      val bias = convBias.storage().array()(j)
+      val mean = originMean.storage().array()(j)
+      convBias.storage().array()(j) = (bias - mean) / base
+    }
+
+    conv.weight.copy(convWeight)
+    conv.bias.copy(convBias)
+  }
+
+  private def getLast(
+    module: AbstractModule[Activity, Activity, Float]): AbstractModule[Activity, Activity, Any] = {
+    val ret = module match {
+      case sequential: Sequential => sequential.modules.last
+      case _ => module
+    }
+
+    ret.asInstanceOf[AbstractModule[Activity, Activity, Any]]
+  }
+
+  private def convSum(concatTable: ConcatTable, cAddTable: CAddTable): (RefactorConvolution,
+    SelectTable) = {
+    var branch1: AbstractModule[Activity, Activity, Any] = null
+    var branch2: AbstractModule[Activity, Activity, Any] = null
+
+    var continue = concatTable.modules.length == 2
+
+    if (continue) {
+      branch1 = getLast(concatTable.modules(0))
+      branch2 = getLast(concatTable.modules(1))
+
+      def isConvOrIdentity(module: AbstractModule[Activity, Activity, Any]): Boolean = {
+        module.isInstanceOf[RefactorConvolution] || module.isInstanceOf[Identity]
+      }
+
+      continue = continue && isConvOrIdentity(branch1) && isConvOrIdentity(branch2)
+    }
+
+    if (continue) {
+      // make sure the last module is conv
+      if (!branch2.isInstanceOf[RefactorConvolution]) {
+        // swap the modules
+        var tmp: AbstractModule[Activity, Activity, Float] = null
+
+        tmp = concatTable.modules(0)
+        concatTable.modules(0) = concatTable.modules(1)
+        concatTable.modules(1) = tmp
+
+        tmp = branch1.asInstanceOf[AbstractModule[Activity, Activity, Float]]
+        branch1 = branch2
+        branch2 = tmp.asInstanceOf[AbstractModule[Activity, Activity, Any]]
+      }
+
+      // get the index of conv, by default the output should be the first conv.
+      val (convIndex, conv, theOther) = (1, branch2.asInstanceOf[RefactorConvolution], branch1)
+      conv.setSum()
+
+      // delete CAddTable
+      val selectTable = SelectTable(convIndex)
+
+      // change the branch2's output to branch1's output
+      // FIXME maybe we should not set the conv operation
+      conv.setSumOp(theOther.asInstanceOf[Module[Float]])
+      (conv, selectTable)
+    } else {
+      (null, null)
+    }
+  }
+
+  override def toString(): String = {
+    val tab = "  "
+
+    s"${getPrintName}{${line + tab}[input -> ${
+      modules.zipWithIndex.map {
+        case (m: AbstractModule[Activity, Activity, Float], i: Int) => "(" + (i + 1) + ")"
+      }.
+        mkString(" -> ")
+    } -> output]${line + tab}" +
+      s"${
+        modules.zipWithIndex.map {
+          case (model: AbstractModule[Activity, Activity, Float], index: Int)
+          => s"(${index + 1}): ${model.setLine(line + tab)}"
+        }.
+          mkString(line + tab)
+      }$line}"
   }
 }
 

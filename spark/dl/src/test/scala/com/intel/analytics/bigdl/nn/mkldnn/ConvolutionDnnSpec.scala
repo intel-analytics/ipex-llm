@@ -23,7 +23,7 @@ import com.intel.analytics.bigdl.models.inception.{Inception_v1, Inception_v2}
 import com.intel.analytics.bigdl.models.resnet.ResNet
 import com.intel.analytics.bigdl.models.resnet.ResNet.DatasetType
 import com.intel.analytics.bigdl.models.vgg.{Vgg_16, Vgg_19}
-import com.intel.analytics.bigdl.nn.mkldnn.Phase.TrainingPhase
+import com.intel.analytics.bigdl.nn.mkldnn.Phase.{InferencePhase, TrainingPhase}
 import com.intel.analytics.bigdl.nn.{Module => _, _}
 import com.intel.analytics.bigdl.nn.{ReLU => OReLU}
 import com.intel.analytics.bigdl.tensor.{MklDnnTensor, Tensor}
@@ -788,80 +788,134 @@ class ConvolutionDnnSpec extends FlatSpec with Matchers {
     println("done")
   }
 
-  "Conv with fusion" should "work correctly" in {
+  "Conv with relu" should "work correctly" in {
     import com.intel.analytics.bigdl.numeric.NumericFloat
     val batchSize = 2
     val input = Tensor[Float](batchSize, 3, 224, 224).fill(1.0f)
 
-    val conv = ConvolutionDnn(3, 64, 7, 7, 2, 2, 3, 3, 1, false)
-    val conv2 = conv.cloneModule().asInstanceOf[ConvolutionDnn]
-    val model = Sequential().add(conv2).add(ReLUDnn())
+    val inputShape = Array(batchSize, 3, 224, 224)
+    val outputShape = Array(batchSize, 64, 112, 112)
 
-    model.evaluate()
-    model.forward(input)
+    val conv1 = RefactorConvolution(3, 64, 7, 7, 2, 2, 3, 3, 1, false)
+    val reorder1 = ReorderMemory(HeapData(inputShape, Memory.Format.nchw))
+    val reorder11 = ReorderMemory(HeapData(outputShape, Memory.Format.nchw))
+    val model1 = Sequential().add(reorder1).add(conv1).add(ReLU()).add(reorder11)
+    model1.compile(InferencePhase, Array(HeapData(inputShape, Memory.Format.nchw)))
 
-    conv.evaluate()
-    conv.relu = true
-    conv.forward(input)
+    System.setProperty("bigdl.mkldnn.fusion.convrelu", "true")
+    val conv2 = RefactorConvolution(3, 64, 7, 7, 2, 2, 3, 3, 1, false, initWeight = conv1.weight,
+      initBias = conv1.bias)
+    val reorder2 = ReorderMemory(HeapData(inputShape, Memory.Format.nchw))
+    val reorder22 = ReorderMemory(HeapData(outputShape, Memory.Format.nchw))
+    val model2 = Sequential().add(reorder2).add(conv2).add(ReLU()).add(reorder22)
+    model2.compile(InferencePhase, Array(HeapData(inputShape, Memory.Format.nchw)))
+    System.setProperty("bigdl.mkldnn.fusion.convrelu", "false")
 
-    model.output.toTensor.storage()
-    conv.output.storage()
+    model1.evaluate()
+    model2.evaluate()
 
-    model.output.toTensor should be (conv.output)
+    model1.forward(input)
+    model2.forward(input)
+
+    model1.output should be (model2.output)
+    model1.modules.length should be (model2.modules.length + 1)
   }
 
   "Conv Bn merge" should "work correctly" in {
-    import com.intel.analytics.bigdl.numeric.NumericFloat
-    val batchSize = 2
-    val input = Tensor[Float](batchSize, 1, 6, 6).rand(-1, 1)
-    val dnn = Sequential()
-      .add(ConvolutionDnn(1, 3, 2, 2, 2, 2, 1, 1, 1))
-      .add(mkldnn.SpatialBatchNormalization[Float](3, eps = 1e-3))
-    val merge = dnn.cloneModule() // .optimize()
+    val batchSize = 4
+    val inputShape = Array(batchSize, 3, 224, 224)
+    val outputShape = Array(batchSize, 64, 112, 112)
+    val input = Tensor[Float](batchSize, 3, 224, 224).fill(1.0f)
 
-    dnn.evaluate()
-    dnn.forward(input)
+    val runningMean = Tensor[Float](64).rand(-1, 1)
+    val runningVar = Tensor[Float](64).fill(100)
+    val initWeight = Tensor[Float]().resize(Array(64, 3, 7, 7)).rand(-1, 1)
+    val initBias = Tensor[Float]().resize(Array(64)).rand(-100, 100)
 
-    merge.evaluate()
-    merge.optimize()
-    merge.forward(input)
+    val conv1 = RefactorConvolution(3, 64, 7, 7, 2, 2, 3, 3, 1, false, initWeight = initWeight,
+      initBias = initBias)
+    val bn1 = RefactorSpatialBatchNormalization(64, eps = 0.0)
+    bn1.runningMean.copy(runningMean)
+    bn1.runningVariance.copy(runningVar)
+    val reorder1 = ReorderMemory(HeapData(inputShape, Memory.Format.nchw))
+    val reorder11 = ReorderMemory(HeapData(outputShape, Memory.Format.nchw))
+    val model1 = Sequential().add(reorder1).add(conv1).add(bn1).add(reorder11)
+    model1.compile(InferencePhase, Array(HeapData(inputShape, Memory.Format.nchw)))
 
-    dnn.output.toTensor.storage()
-    merge.output.toTensor.storage()
+    System.setProperty("bigdl.mkldnn.fusion.convbn", "true")
+    val conv2 = RefactorConvolution(3, 64, 7, 7, 2, 2, 3, 3, 1, false, initWeight = conv1.weight,
+      initBias = conv1.bias)
+    val bn2 = RefactorSpatialBatchNormalization(64, eps = 0.0)
+    bn2.runningMean.copy(runningMean)
+    bn2.runningVariance.copy(runningVar)
+    val reorder2 = ReorderMemory(HeapData(inputShape, Memory.Format.nchw))
+    val reorder22 = ReorderMemory(HeapData(outputShape, Memory.Format.nchw))
+    val model2 = Sequential().add(reorder2).add(conv2).add(bn2).add(reorder22)
+    model2.compile(InferencePhase, Array(HeapData(inputShape, Memory.Format.nchw)))
+    System.setProperty("bigdl.mkldnn.fusion.convbn", "false")
 
-    dnn.output should be (merge.output)
+    model1.evaluate()
+    model2.evaluate()
+
+    model1.forward(input)
+    model2.forward(input)
+
+    DnnTools.nearequals(model1.output.toTensor, model2.output.toTensor, 1e-5) should be (true)
+    model1.modules.length should be (model2.modules.length + 1)
   }
 
   "Conv sum fusion" should "work correctly" in {
     import com.intel.analytics.bigdl.numeric.NumericFloat
 
-    val input = Tensor[Float](2, 1, 6, 6).rand(0-1, 1)
-    val conv = ConvolutionDnn(1, 3, 2, 2, 2, 2, 1, 1, 1)
-    val conv2 = conv.cloneModule().asInstanceOf[mkldnn.ConvolutionDnn]
-    val conv3 = conv.cloneModule().asInstanceOf[mkldnn.ConvolutionDnn]
-    val conv4 = conv.cloneModule().asInstanceOf[mkldnn.ConvolutionDnn]
+    val input = Tensor[Float](2, 1, 6, 6).rand(-1, 1)
+    val inputShape = Array(2, 1, 6, 6)
+    val outputShape = Array(2, 3, 4, 4)
 
-    conv.setRelu(false)
-    conv.setSum(false)
+    val initWeight = Tensor[Float](3, 1, 2, 2).fill(1)
+    val initBias = Tensor[Float](3).fill(0)
 
-    conv2.setRelu(false)
-    conv2.setSum(true).setSumOp(conv)
+    val conv1 = RefactorConvolution(1, 3, 2, 2, 2, 2, 1, 1, 1, initWeight = initWeight,
+      initBias = initBias)
+    val conv2 = RefactorConvolution(1, 3, 2, 2, 2, 2, 1, 1, 1, initWeight = initWeight,
+      initBias = initBias)
+    val conv3 = RefactorConvolution(1, 3, 2, 2, 2, 2, 1, 1, 1, initWeight = initWeight,
+      initBias = initBias)
+    val conv4 = RefactorConvolution(1, 3, 2, 2, 2, 2, 1, 1, 1, initWeight = initWeight,
+      initBias = initBias)
 
-    conv.forward(input)
-    conv2.forward(input)
-    conv2.output.storage()
+    val reorder1 = ReorderMemory(HeapData(outputShape, Memory.Format.nchw))
+    val reorder2 = ReorderMemory(HeapData(outputShape, Memory.Format.nchw))
 
-    val caddTable = CAddTableDnn()
+    val model1 = Sequential()
+      .add(ConcatTable()
+          .add(conv1)
+          .add(conv2))
+      .add(CAddTable())
+      .add(ReLU())
+      .add(reorder1)
+    model1.compile(InferencePhase, Array(HeapData(inputShape, Memory.Format.nchw)))
+
+    System.setProperty("bigdl.mkldnn.fusion.convsum", "true")
+    System.setProperty("bigdl.mkldnn.fusion.convrelu", "true")
     val model2 = Sequential()
-      .add(ConcatTableDnn()
+      .add(ConcatTable()
         .add(conv3)
         .add(conv4))
-      .add(caddTable)
-      .add(ReLUDnn())
-    model2.forward(input)
-    caddTable.output.toTensor.asInstanceOf[MklDnnTensor[Float]].storage()
+      .add(CAddTable())
+      .add(ReLU())
+      .add(reorder2)
 
-    conv2.output should be (caddTable.output)
+    model1.evaluate()
+    model2.evaluate()
+
+    model2.compile(InferencePhase, Array(HeapData(inputShape, Memory.Format.nchw)))
+    System.setProperty("bigdl.mkldnn.fusion.convsum", "false")
+    System.setProperty("bigdl.mkldnn.fusion.convrelu", "false")
+
+    model1.forward(input)
+    model2.forward(input)
+
+    model1.output should be (model2.output)
   }
 
   "convolution" should "work correctly" in {

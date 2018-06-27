@@ -671,7 +671,10 @@ class RefactorSpatialBatchNormalization(
   private var forwardDesc: Long = 0L
   private var _relu: Boolean = false
 
-  def setReLU(): Unit = _relu = true
+  def setReLU(value: Boolean): this.type = {
+    _relu = value
+    this
+  }
   def relu: Boolean = _relu
 
   var updateOutputTensors: Array[Tensor[Float]] = _
@@ -755,7 +758,7 @@ class RefactorSpatialBatchNormalization(
       case _ => throw new UnsupportedOperationException
     }
 
-    val primDesc = if (phase == InferencePhase && relu) {
+    val primDesc = if (relu) {
       val postOps = MklDnn.CreatePostOps()
       MklDnn.PostOpsAppendEltwise(postOps, 1.0f, AlgKind.EltwiseRelu, 0.0f, 0.0f)
       val attr = MklDnn.CreateAttr()
@@ -788,7 +791,7 @@ class RefactorSpatialBatchNormalization(
     updateOutputPrimitives = Array(primitive)
     output = initTensor(outputFormats()(0))
 
-    if (this.isTraining()) {
+    if (phase == TrainingPhase) {
       this.runningMean.zero()
       this.runningVariance.zero()
     }
@@ -913,7 +916,7 @@ class RefactorSpatialBatchNormalization(
 
   override def parametersWithShape(): (Array[MemoryData], Array[MemoryData]) = {
     (Array(NativeData(weightAndBias.size(), Memory.Format.x)),
-      Array(NativeData(gradWeightAndBias.size(), Memory.Format.x)))
+    Array(NativeData(gradWeightAndBias.size(), Memory.Format.x)))
   }
 
   override def toString(): String = {

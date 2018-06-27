@@ -19,6 +19,7 @@ package com.intel.analytics.bigdl.nn.mkldnn
 import com.intel.analytics.bigdl.mkl.{MKL, Memory}
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
+import com.intel.analytics.bigdl.nn.mkldnn.Phase.{InferencePhase, TrainingPhase}
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.tensor.{DnnTensor, MklDnnType, Tensor}
 import com.intel.analytics.bigdl.utils.RandomGenerator._
@@ -651,28 +652,33 @@ class SpatialBatchNormalizationSpec extends FlatSpec with Matchers {
 
   "Sbn with relu fusion" should "work correctly" in {
     val (batchSize, channel, height, width) = (4, 64, 112, 112)
+    val shape = Array(batchSize, channel, height, width)
     val epsilon = 1e-5
 
     val initWeight = Tensor(channel).rand(-1, 1)
     val initBias = Tensor(channel).fill(0)
 
-    val bn1 = SpatialBatchNormalization(channel, epsilon, initWeight = initWeight,
-      initBias = initBias).setShouldConvert(true)
-    val bn2 = SpatialBatchNormalization(channel, epsilon, initWeight = initWeight,
-      initBias = initBias).setShouldConvert(true)
+    val bn1 = RefactorSpatialBatchNormalization(channel, epsilon, initWeight = initWeight,
+      initBias = initBias)
+    val reorder1 = ReorderMemory(HeapData(shape, Memory.Format.nchw))
+    val bn2 = RefactorSpatialBatchNormalization(channel, epsilon, initWeight = initWeight,
+      initBias = initBias)
+    val reorder2 = ReorderMemory(HeapData(shape, Memory.Format.nchw))
+
+    val model1 = Sequential().add(bn1).add(ReLU()).add(ReLU()).add(reorder1)
+    model1.compile(TrainingPhase, Array(HeapData(shape, Memory.Format.nchw)))
+
+    System.setProperty("bigdl.mkldnn.fusion.bnrelu", "true")
+    val model2 = Sequential().add(bn2).add(ReLU()).add(ReLU()).add(reorder2)
+    model2.compile(TrainingPhase, Array(HeapData(shape, Memory.Format.nchw)))
+    System.setProperty("bigdl.mkldnn.fusion.bnrelu", "false")
+
     val input = Tensor(batchSize, channel, height, width).rand(-1, 1)
 
-    val model = Sequential().add(bn1).add(ReLUDnn())
+    model1.forward(input)
+    model2.forward(input)
 
-    model.evaluate()
-    model.forward(input)
-
-    bn2.relu = true
-    bn2.evaluate()
-    bn2.forward(input)
-
-    model.output.toTensor.storage()
-    model.output should be (bn2.output)
+    model1.output should be (model2.output)
   }
 
   "refactor of bach norm" should "work correctly" in {

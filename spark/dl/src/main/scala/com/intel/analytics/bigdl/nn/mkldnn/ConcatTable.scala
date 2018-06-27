@@ -161,6 +161,32 @@ class ConcatTable extends MklDnnContainer {
   private var _gradOutputWeightFormats: Array[MemoryData] = _
 
   override private[mkldnn] def gradOutputWeightFormats() = _gradOutputWeightFormats
+
+  override def toString(): String = {
+    val tab = "\t"
+    val line = "\n"
+    val next = "  |`-> "
+    val lastNext = "   `-> "
+    val ext = "  |    "
+    val extlast = "       "
+    val last = "   ... -> "
+    var str = s"${getPrintName}"
+    str = str + " {" + line + tab + "input"
+    var i = 1
+    while (i <= modules.length) {
+      if (i == modules.length) {
+        str = str + line + tab + lastNext + "(" + i + "): " +
+          modules(i-1).toString.replace(line, line + tab + extlast)
+      } else {
+        str = str + line + tab + next + "(" + i + "): " +
+          modules(i-1).toString.replace(line, line + tab + ext)
+      }
+      i += 1
+    }
+    str = str + line + tab + last + "output"
+    str = str + line + "}"
+    str
+  }
 }
 
 object ConcatTable {

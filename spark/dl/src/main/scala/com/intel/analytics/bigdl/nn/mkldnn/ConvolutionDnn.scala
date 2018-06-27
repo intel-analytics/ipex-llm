@@ -1004,6 +1004,27 @@ class RefactorConvolution(
   var updateGradWMemoryPrimitives: Array[Long] = _
   var updateGradWTensors: Array[Tensor[Float]] = _
 
+  var _relu = false
+  var _sum = false
+
+  def relu: Boolean = _relu
+  def setReLU(value: Boolean = true): this.type = {
+    _relu = value
+    this
+  }
+
+  def sum: Boolean = _sum
+  def setSum(value: Boolean = true): this.type = {
+    _sum = value
+    this
+  }
+
+  var sumOp: MklDnnLayer = null
+  def setSumOp(conv: Module[Float]): this.type = {
+    sumOp = conv.asInstanceOf[MklDnnLayer]
+    this
+  }
+
   object ParamsShape {
     var weight: MemoryData = _
     var weightForBackward: MemoryData = _
@@ -1043,12 +1064,16 @@ class RefactorConvolution(
       val t = Tensor[Float](weightShape)
       weightInitMethod.init(t, VariableFormat.OUT_IN)
       weight.copy(t)
+    } else {
+      weight.copy(initWeight)
     }
 
     if (initBias == null) {
       val t = Tensor[Float](Array(nOutputPlane))
       biasInitMethod.init(t, VariableFormat.ONE_D)
       bias.copy(t)
+    } else {
+      bias.copy(initBias)
     }
 
     zeroGradParameters()
@@ -1087,7 +1112,22 @@ class RefactorConvolution(
       Array(strideW, strideH), Array(padH, padW), Array(padH, padW), // TODO check the meaning
       MklDnn.PaddingKind.mkldnnPaddingZero)
 
-    forwardPrimDesc = MklDnn.PrimitiveDescCreate(desc, runtime.engine, 0)
+    forwardPrimDesc = if (relu || sum) {
+      val postOps = MklDnn.CreatePostOps()
+      if (sum) {
+        MklDnn.PostOpsAppendSum(postOps, 1.0f)
+      }
+      if (relu) {
+        MklDnn.PostOpsAppendEltwise(postOps, 1.0f, AlgKind.EltwiseRelu, 0.0f, 0.0f)
+      }
+      val attr = MklDnn.CreateAttr()
+      MklDnn.AttrSetPostOps(attr, postOps)
+
+      MklDnn.PrimitiveDescCreateV2(desc, attr, runtime.engine, 0)
+      // TODO we should destroy these ops
+    } else {
+      MklDnn.PrimitiveDescCreate(desc, runtime.engine, 0)
+    }
 
     val List(realSrc, realWei, realDst) = List(Query.SrcPd, Query.WeightsPd, Query.DstPd).map {x =>
       MemoryData.operationWant(forwardPrimDesc, x)
@@ -1119,6 +1159,9 @@ class RefactorConvolution(
       buffer.append(input.asInstanceOf[Tensor[Float]])
       buffer.append(weight)
       buffer.append(bias)
+      if (sum) {
+        output = sumOp.output
+      }
       buffer.append(output.asInstanceOf[Tensor[Float]])
       updateOutputTensors = buffer.toArray
     }
