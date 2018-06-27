@@ -20,8 +20,6 @@ import java.nio.ByteOrder
 
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dataset.{LocalDataSet, MiniBatch, PaddingParam, Sample}
-import com.intel.analytics.bigdl.dataset.{LocalDataSet, MiniBatch, Sample}
-import com.intel.analytics.bigdl.mkl.{Memory, MklDnn}
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.nn.quantized.Quantization
 import com.intel.analytics.bigdl.nn.{Module, _}
@@ -34,7 +32,6 @@ import com.intel.analytics.bigdl.utils._
 import com.intel.analytics.bigdl.utils.caffe.CaffePersister
 import com.intel.analytics.bigdl.utils.serializer._
 import com.intel.analytics.bigdl.utils.tf.{TensorflowDataFormat, TensorflowSaver}
-import com.intel.analytics.bigdl.mkl.{Engine => DnnEngine, Stream => DnnStream}
 import org.apache.commons.lang3.SerializationUtils
 import org.apache.spark.rdd.RDD
 
@@ -322,8 +319,6 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
   /**
    * If the module has parameters, this will zero the accumulation of the gradients with respect
    * to these parameters. Otherwise, it does nothing.
-   *
-   * TODO MKL-DNN should not use override this method.
    */
   def zeroGradParameters(): Unit = {
     if (parameters() != null) {
@@ -1093,54 +1088,6 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
     (Array(scala.reflect.classTag[T]), Array(ev))
   }
 
-  // for mkl dnn model
-  val isMklDnnModel = false
-
-  // for mkl dnn engine
-  protected val mkldnn_engine_type: Int = DnnEngine.Kind.Cpu
-  protected var engineLocation: Long = 0L
-  def getDnnEngine(index : Int): Long = {
-    if (engineLocation == 0L) {
-      require(MklDnn.isLoaded, "mkldnn isn't loaded")
-      engineLocation = DnnEngine.Create(mkldnn_engine_type, index)
-    }
-    engineLocation
-  }
-
-  def setDnnEngine(loc : Long): this.type = {
-    this.engineLocation = loc
-    this
-  }
-
-  def createDnnEngine(index : Int): Unit = {
-    require(MklDnn.isLoaded, "mkldnn isn't loaded")
-    engineLocation = DnnEngine.Create(mkldnn_engine_type, index)
-  }
-
-  // for mkl dnn stream
-  protected var streamLocation: Long = 0L
-  def getStream(): Long = {
-    if (streamLocation == 0L) {
-      require(MklDnn.isLoaded, "mkldnn isn't loaded")
-      streamLocation = DnnStream.Create(DnnStream.Kind.Eager)
-    }
-    streamLocation
-  }
-
-  def setStream(loc: Long): this.type = {
-    this.streamLocation = loc
-    this
-  }
-
-  def createStream(): Unit = {
-    require(MklDnn.isLoaded, "mkldnn isn't loaded")
-    streamLocation = DnnStream.Create(DnnStream.Kind.Eager)
-  }
-
-  // for mkl dnn format
-  var output_format : Int = Memory.Format.any
-
-
   /**
    * Check if some module is duplicated in the model. For a layer it cannot be duplicated.
    * Container should override this method
@@ -1159,7 +1106,5 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
    * @return
    */
   private[nn] def skipDuplicateCheck(): Boolean = false
-
-  def optimize(): this.type = this
 }
 

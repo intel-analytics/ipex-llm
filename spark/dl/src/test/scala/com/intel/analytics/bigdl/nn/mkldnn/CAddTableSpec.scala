@@ -33,7 +33,7 @@ class CAddTableSpec extends BigDLSpecHelper {
     model.add(concat)
     model.add(layer)
     model.add(ReorderMemory(NativeData(Array(2, 2), Memory.Format.nc),
-      HeapData(Array(2, 2), Memory.Format.nc),NativeData(Array(2, 2), Memory.Format.nc),
+      HeapData(Array(2, 2), Memory.Format.nc), NativeData(Array(2, 2), Memory.Format.nc),
       HeapData(Array(2, 2), Memory.Format.nc)))
     model.compile(Phase.TrainingPhase, Array(HeapData(Array(2, 2), Memory.Format.nc)))
     model.forward(Tensor[Float](T(T(1, 2), T(3, 4)))) should be(Tensor[Float](T(

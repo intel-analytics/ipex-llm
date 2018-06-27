@@ -21,13 +21,14 @@ import java.nio.channels.FileChannel
 import java.nio.file.{Files, Paths, StandardOpenOption}
 import java.nio.{ByteBuffer, ByteOrder}
 
+import breeze.numerics.abs
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.mkl.Memory
 import com.intel.analytics.bigdl.nn.Container
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.nn.mkldnn.Phase.TrainingPhase
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
+import com.intel.analytics.bigdl.tensor.{DenseTensorMath, Storage, Tensor}
 
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
@@ -163,7 +164,7 @@ object Tools {
     val params = module.parameters()._1
     val name = module.getName()
     module match {
-      case bn: RefactorSpatialBatchNormalization =>
+      case bn: SpatialBatchNormalization =>
         val channel = bn.weightAndBias.size(1) / 2
 
         val weight = Tools.getTensor(s"Fwrd_${bn.getName}.Wght.3", Array(channel), identity)
@@ -202,7 +203,7 @@ object Tools {
     val params = module.parameters()._2
 
     module match {
-      case bn: RefactorSpatialBatchNormalization =>
+      case bn: SpatialBatchNormalization =>
         val channel = bn.weightAndBias.size(1) / 2
 
         val weight = Tools.getTensor(s"Bwrd_${bn.getName}.Grad.3", Array(channel), identity)
@@ -211,7 +212,7 @@ object Tools {
         weightAndBias.select(1, 1).copy(weight)
         weightAndBias.select(1, 2).copy(bias)
 
-        ret &= DnnTools.nearequals(weightAndBias.view(bn.gradWeightAndBias.size()),
+        ret &= Equivalent.nearequals(weightAndBias.view(bn.gradWeightAndBias.size()),
           dense(bn.gradWeightAndBias).toTensor, epsilon)
         val runningMean = Tools.getTensor(s"Fwrd_$name.Wght.0", Array(channel), identity)
         val runningVariance = Tools.getTensor(s"Fwrd_$name.Wght.1", Array(channel), identity)
@@ -226,8 +227,8 @@ object Tools {
           module match {
             case layer: MklDnnLayer =>
               val infos = layer.parametersWithShape()._2
-              ret &= DnnTools.nearequals(dense(params(j)).toTensor,
-                dense(fromOIHW(w, infos(j))).toTensor, 1e-5)
+              ret &= Equivalent.nearequals(dense(params(j)).toTensor,
+                dense(fromOIHW(w, infos(j))).toTensor, epsilon)
             case _ => ret &= compare2Tensors(params(j), w)
           }
 
@@ -239,17 +240,10 @@ object Tools {
   }
 
   def compare(prototxt: String, model: Module[Float], inputShape: Array[Int],
-    outputShape: Array[Int]): Unit = {
+    outputShape: Array[Int], epsilon: Double = 1e-7): Unit = {
     val identity = Collect.run(prototxt, singleLayer = true)
     val modules = ArrayBuffer[Module[Float]]()
     Tools.flattenModules(model, modules)
-
-    // if there's bn, the precision will be make the result not very close
-    val epsilon = if (!prototxt.replaceAll("\n", " ").contains("BatchNorm")) {
-      1e-7
-    } else {
-      1e-2
-    }
 
     val input = Tools.getTensor("Fwrd_data", inputShape, identity)
     val gradOutput = Tools.getTensor(s"Bwrd_${modules.last.getName()}.loss", outputShape, identity)
@@ -285,10 +279,10 @@ object Tools {
           ret &= compare2Tensors(gradInput, toNCHW(bigdlGradInput, layer.gradInputFormats()(0)))
           assert(ret, s"${module.getName()} gradInput can't pass, please check")
         case _ =>
-          ret &= compare2Tensors(output, bigdlOutput.toDenseTensor())
+          ret &= compare2Tensors(output, bigdlOutput)
           assert(ret, s"${module.getName()} output can't pass, please check")
 
-          ret &= compare2Tensors(gradInput, bigdlGradInput.toDenseTensor())
+          ret &= compare2Tensors(gradInput, bigdlGradInput)
           assert(ret, s"${module.getName()} gradInput can't pass, please check")
       }
 
@@ -304,7 +298,7 @@ object Tools {
   }
 
   def compare2Tensors(src: Tensor[Float], dst: Tensor[Float]): Boolean = {
-    DnnTools.nearequals(dense(src).toTensor, dense(dst).toTensor)
+    Equivalent.nearequals(dense(src).toTensor, dense(dst).toTensor)
   }
 
   def dense(t: Activity): Activity = {
@@ -350,6 +344,21 @@ object Tools {
     }
 
     val inputFormat = HeapData(outputFormat.shape, defaultFormat)
+    val reorder = ReorderMemory(inputFormat, outputFormat, null, null)
+    reorder.setRuntime(new MklDnnRuntime)
+    reorder.initFwdPrimitives(Array(inputFormat), TrainingPhase)
+    reorder.updateOutput(src).toTensor
+  }
+
+  def toOIHW(src: Tensor[Float], inputFormat: MemoryData): Tensor[Float] = {
+    val defaultFormat = inputFormat.shape.length match {
+      case 1 => Memory.Format.x
+      case 2 => Memory.Format.oi
+      case 4 => Memory.Format.oihw
+      case 5 => Memory.Format.goihw
+    }
+
+    val outputFormat = HeapData(inputFormat.shape, defaultFormat)
     val reorder = ReorderMemory(inputFormat, outputFormat, null, null)
     reorder.setRuntime(new MklDnnRuntime)
     reorder.initFwdPrimitives(Array(inputFormat), TrainingPhase)
@@ -408,5 +417,98 @@ object Collect {
     require(exitValue == 0, s"Something wrong with collect command. Please check it.")
 
     identity
+  }
+}
+
+object Utils {
+  def time[R](block: => R): (Double, R) = {
+    val t0 = System.nanoTime()
+    val result = block
+    val t1 = System.nanoTime()
+    val takes = (t1 - t0) / 1e9
+    (takes, result)
+  }
+
+  def manyTimes[R](block: => R)(iters: Int): (Double, R) = {
+    time[R] {
+      var i = 0
+      while (i < iters - 1) {
+        block
+        i += 1
+      }
+      block
+    }
+  }
+
+  def speedup(base: Double, after: Double): String = {
+    val result = (base - after) / base
+    ((result * 1000).toInt / 10.0).toString + "%"
+  }
+}
+
+object Equivalent {
+
+  def nearlyEqual(a: Float, b: Float, epsilon: Double): Boolean = {
+    val absA = math.abs(a)
+    val absB = math.abs(b)
+    val diff = math.abs(a - b)
+
+    val result = if (a == b) {
+      true
+    } else {
+      math.min(diff / (absA + absB), diff) < epsilon
+    }
+
+    result
+  }
+
+  def nearequals(t1: Tensor[Float], t2: Tensor[Float],
+    epsilon: Double = DenseTensorMath.floatEpsilon): Boolean = {
+    var result = true
+    t1.map(t2, (a, b) => {
+      if (result) {
+        result = nearlyEqual(a, b, epsilon)
+        if (!result) {
+          val diff = math.abs(a - b)
+          println("epsilon " + a + "***" + b + "***" + diff / (abs(a) + abs(b)) + "***" + diff)
+        }
+      }
+      a
+    })
+    result
+  }
+
+  def getunequals(t1: Tensor[Float], t2: Tensor[Float],
+    epsilon: Double = DenseTensorMath.floatEpsilon): Boolean = {
+    var result = true
+    var num = 0
+    t1.map(t2, (a, b) => {
+      if (true) {
+        result = nearlyEqual(a, b, epsilon)
+        if (!result) {
+          num += 1
+          val diff = math.abs(a - b)
+          println("epsilon " + a + "***" + b + "***" + diff / (abs(a) + abs(b)) + "***" + diff)
+        }
+      }
+      a
+    })
+    println("diff num " + num)
+    return true
+  }
+
+  def isEquals(t1: Tensor[Float], t2: Tensor[Float]): Boolean = {
+    var result = true
+    t1.map(t2, (a, b) => {
+      if (result) {
+        result = if (a == b) true else false
+        if (!result) {
+          val diff = Math.abs(a - b)
+          println("epsilon " + a + "***" + b + "***" + diff / (abs(a) + abs(b)) + "***" + diff)
+        }
+      }
+      a
+    })
+    return result
   }
 }

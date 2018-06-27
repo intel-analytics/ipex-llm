@@ -51,22 +51,23 @@ class MaxPooling(
     val c = _inputFormats(0).shape(1)
     val h = _inputFormats(0).shape(2)
     val w = _inputFormats(0).shape(3)
-    val Array(pt, pb, pl, pr, oh, ow) =
-      Utils.getSAMEOutSizeAndPadding(h, w, dH, dW, kH, kW)
-//      Utils.getPaddingAndOutputSize(h, w, dH, dW, kH, kW, padH, padW)
+    val (pt, pb, pl, pr, oh, ow) =
+      Utils.getPaddingAndOutputSize(h, w, dH, dW, kH, kW, padH, padW)
     paddingTL = Array(pt, pl)
     paddingBR = Array(pb, pr)
-    val outputMD = MklDnnOps.memoryDescInit(4, Array(n, c, oh, ow), DataType.F32, Memory.Format.any)
-    val description = MklDnnOps.poolingForwardDescInit(
+          Utils.getSAMEOutSizeAndPadding(h, w, dH, dW, kH, kW)
+          Utils.getOutSizeAndPaddingForDNN(h, w, dH, dW, kH, kW, padH, padW, true)
+    val outputMD = MklDnn.MemoryDescInit(4, Array(n, c, oh, ow), DataType.F32, Memory.Format.any)
+    val description = MklDnn.PoolingForwardDescInit(
       PropKind.Forward, AlgKind.PoolingMax,
       _inputFormats(0).getMemoryDescription(), outputMD, strides, kernel, paddingTL, paddingBR,
       MklDnn.PaddingKind.mkldnnPaddingZero)
-    fwdPD = MklDnnOps.primitiveDescCreate(description, runtime.engine, 0L)
+    fwdPD = MklDnn.PrimitiveDescCreate(description, runtime.engine, 0L)
     _outputFormats = Array(MemoryData.primitiveOutput(fwdPD))
     output = initTensor(_outputFormats(0))
     workSpaceFormat = MemoryData.primitiveWorkSpace(fwdPD)
     workSpace = initTensor(workSpaceFormat)
-    updateOutputPrimitives = Array(MklDnnOps.primitiveCreate2(fwdPD,
+    updateOutputPrimitives = Array(MklDnn.PrimitiveCreate2(fwdPD,
       _inputFormats.map(_.getPrimitive(runtime)), Array(0), 1,
       Array(_outputFormats(0), workSpaceFormat).map(_.getPrimitive(runtime)), 2))
     fwdMemPrims = Array(_inputFormats(0), _outputFormats(0), workSpaceFormat)
@@ -79,14 +80,14 @@ class MaxPooling(
     _gradOutputFormatsForWeight = _gradOutputFormats
     val strides = Array(dW, dH)
     val kernel = Array(kH, kW)
-    val description = MklDnnOps.poolingBackwardDescInit(AlgKind.PoolingMax,
+    val description = MklDnn.PoolingBackwardDescInit(AlgKind.PoolingMax,
       _inputFormats(0).getMemoryDescription(),
       _gradOutputFormats(0).getMemoryDescription(),
       strides, kernel, paddingTL, paddingBR, MklDnn.PaddingKind.mkldnnPaddingZero)
 
-    val pd = MklDnnOps.primitiveDescCreate(description, runtime.engine, fwdPD)
+    val pd = MklDnn.PrimitiveDescCreate(description, runtime.engine, fwdPD)
     _gradInputFormats = Array(MemoryData.primitiveGradInput(pd))
-    updateGradInputPrimitives = Array(MklDnnOps.primitiveCreate2(pd,
+    updateGradInputPrimitives = Array(MklDnn.PrimitiveCreate2(pd,
       Array(_gradOutputFormats(0), workSpaceFormat).map(_.getPrimitive(runtime)),
       Array(0, 0), 2, _gradInputFormats.map(_.getPrimitive(runtime)), 1))
     gradInput = initTensor(_gradInputFormats(0))

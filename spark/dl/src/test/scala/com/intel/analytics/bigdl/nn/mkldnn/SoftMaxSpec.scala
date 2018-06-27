@@ -70,32 +70,6 @@ class SoftMaxSpec extends FlatSpec with Matchers {
     }
   }
 
-//  "SoftMax forward 3-D" should "work correctly" in {
-//    // we should test the cases which contain 1
-//    val tests = List(
-//      (2, 3, 1),
-//      (1, 3, 2),
-//      (1, 1, 1),
-//      (2, 1, 1),
-//      (2, 3, 4))
-//
-//    for ((channel, height, width) <- tests) {
-//      val sm = RefactorSoftMax()
-//      sm.setRuntime(new MklDnnRuntime)
-//      sm.initFwdPrimitives(Array(HeapData(Array(1, channel, height, width), Memory.Format.nchw)),
-//        InferencePhase)
-//      sm.evaluate()
-//      val input = Tensor(channel, height, width).rand()
-//
-//      val output = sm.forward(input)
-//
-//      val nnSm = nn.SoftMax()
-//      val nnOutput = nnSm.forward(input)
-//
-//      Tools.dense(output) should be (nnOutput)
-//    }
-//  }
-
   "SoftMax forward 4-D" should "work correctly" in {
     // we should test the cases which contain 1
     val tests = List(

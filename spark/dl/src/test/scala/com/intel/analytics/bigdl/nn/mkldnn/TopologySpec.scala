@@ -19,11 +19,14 @@ package com.intel.analytics.bigdl.nn.mkldnn
 import com.intel.analytics.bigdl.mkl.Memory
 import com.intel.analytics.bigdl.nn.mkldnn.Phase.TrainingPhase
 import com.intel.analytics.bigdl.numeric.NumericFloat
-import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.{Module, nn}
 import org.scalatest.{FlatSpec, Matchers}
 
 class TopologySpec extends FlatSpec with Matchers {
+
+  System.setProperty("collect.location",
+    "/home/yanzhang/workspace/dl_frameworks/intel.caffe.test/build/tools/collect")
+
   "LeNet5 has no tanh" should "work correctly" in {
     val inputShape = Array(4, 1, 28, 28)
     val outputShape = Array(4, 10)
@@ -169,18 +172,18 @@ class TopologySpec extends FlatSpec with Matchers {
 //    |
 
     val bigdl = Sequential()
-      .add(RefactorConvolution(1, 20, 5, 5).setName("conv1"))
+      .add(SpatialConvolution(1, 20, 5, 5).setName("conv1"))
       .add(MaxPooling(2, 2, 2, 2).setName("pool1"))
-      .add(RefactorConvolution(20, 50, 5, 5).setName("conv2"))
+      .add(SpatialConvolution(20, 50, 5, 5).setName("conv2"))
       .add(MaxPooling(2, 2, 2, 2).setName("pool2"))
-      .add(RefactorLinear(50 * 4 * 4, 500).setName("ip1"))
+      .add(Linear(50 * 4 * 4, 500).setName("ip1"))
       .add(ReLU().setName("relu1"))
-      .add(RefactorLinear(500, 10).setName("ip2"))
+      .add(Linear(500, 10).setName("ip2"))
       .add(ReorderMemory(HeapData(outputShape, Memory.Format.nc)))
 //      .add(SoftMax().setName("prob")) // TODO SoftMax is totally different with Caffe.
     bigdl.compile(TrainingPhase, Array(HeapData(inputShape, Memory.Format.nchw)))
 
-    Tools.compare(prototxt, bigdl, inputShape, outputShape)
+    Tools.compare(prototxt, bigdl, inputShape, outputShape, 1e-6)
   }
 
   "eltwise" should "work correctly" in {
@@ -269,13 +272,16 @@ class TopologySpec extends FlatSpec with Matchers {
           |
        """.stripMargin
 
-    val conv1 = ConvolutionDnn(nInput, nOutput, kernel, kernel, stride, stride, pad, pad, 1)
+    val conv1 = SpatialConvolution(nInput, nOutput, kernel, kernel, stride, stride, pad, pad, 1)
       .setName("conv1")
-    val conv2 = ConvolutionDnn(nInput, nOutput, kernel, kernel, stride, stride, pad, pad, 1)
+    val conv2 = SpatialConvolution(nInput, nOutput, kernel, kernel, stride, stride, pad, pad, 1)
       .setName("conv2")
-    val model = nn.Sequential()
-      .add(ConcatTableDnn().add(conv2).add(conv1))
-      .add(CAddTableDnn().setName("eltwise"))
+    val model = Sequential()
+      .add(ConcatTable().add(conv2).add(conv1))
+      .add(CAddTable().setName("eltwise"))
+      .add(ReorderMemory(HeapData(outputShape, Memory.Format.nchw)))
+
+    model.compile(TrainingPhase, Array(HeapData(inputShape, Memory.Format.nchw)))
 
     Tools.compare(prototxt, model, inputShape, outputShape)
   }
@@ -393,10 +399,9 @@ class TopologySpec extends FlatSpec with Matchers {
     val outputShape = Array(4, 64, 56, 56)
 
     val model = Sequential()
-      .add(RefactorConvolution(3, 64, 7, 7, 2, 2, 3, 3, propagateBack = true).setName("conv1"))
-//      .add(RefactorSpatialBatchNormalization(64, momentum = 0.9).setName("bn_conv1"))
+      .add(SpatialConvolution(3, 64, 7, 7, 2, 2, 3, 3, propagateBack = true).setName("conv1"))
       .add(ReLU().setName("conv1_relu"))
-      .add(MaxPooling(3, 3, 2, 2, 1, 1).setName("pool1"))
+      .add(MaxPooling(3, 3, 2, 2).setName("pool1"))
       .add(ReorderMemory(HeapData(outputShape, Memory.Format.nchw)))
     model.compile(TrainingPhase, Array(HeapData(inputShape, Memory.Format.nchw)))
 
@@ -927,16 +932,10 @@ class TopologySpec extends FlatSpec with Matchers {
     val inputShape = Array(4, 3, 224, 224)
     val outputShape = Array(4, 256, 56, 56)
 
-//    val model = Sequential()
-//    val resnet50 = ResNet_dnn(classNum = 1000, T("depth" -> 50, "optnet" -> true,
-//      "dataSet" -> ResNet_dnn.DatasetType.ImageNet))
-//    for (i <- 0 until 4) {
-//      model.add(resnet50.asInstanceOf[Sequential].modules(i))
-//    }
     val model = ResNet50.getModel(inputShape, outputShape)
     model.compile(TrainingPhase, Array(HeapData(inputShape, Memory.Format.nchw)))
 
-    Tools.compare(prototxt, model, inputShape, outputShape)
+    Tools.compare(prototxt, model, inputShape, outputShape, 1e-5)
   }
 
   object ResNet50 {
@@ -947,7 +946,7 @@ class TopologySpec extends FlatSpec with Matchers {
 
       if (useConv) {
         Sequential()
-          .add(RefactorConvolution(nInputPlane, nOutputPlane, 1, 1, stride, stride)
+          .add(SpatialConvolution(nInputPlane, nOutputPlane, 1, 1, stride, stride)
             .setName(s"res${name}_branch1"))
       } else if (nInputPlane != nOutputPlane) {
         throw new IllegalArgumentException(s"useConv false")
@@ -961,11 +960,11 @@ class TopologySpec extends FlatSpec with Matchers {
       iChannels = n * 4
 
       val s = Sequential()
-      s.add(RefactorConvolution(nInputPlane, n, 1, 1, 1, 1, 0, 0).setName(s"res${name}_branch2a"))
+      s.add(SpatialConvolution(nInputPlane, n, 1, 1, 1, 1, 0, 0).setName(s"res${name}_branch2a"))
         .add(ReLU().setName(s"res${name}_branch2a_relu"))
-        .add(RefactorConvolution(n, n, 3, 3, stride, stride, 1, 1).setName(s"res${name}_branch2b"))
+        .add(SpatialConvolution(n, n, 3, 3, stride, stride, 1, 1).setName(s"res${name}_branch2b"))
         .add(ReLU().setName(s"res${name}_branch2b_relu"))
-        .add(RefactorConvolution(n, n*4, 1, 1, 1, 1, 0, 0).setName(s"res${name}_branch2c"))
+        .add(SpatialConvolution(n, n*4, 1, 1, 1, 1, 0, 0).setName(s"res${name}_branch2c"))
 
       val model = Sequential()
         .add(ConcatTable().
@@ -1000,9 +999,9 @@ class TopologySpec extends FlatSpec with Matchers {
       iChannels = 64
 
       Sequential()
-        .add(RefactorConvolution(3, 64, 7, 7, 2, 2, 3, 3).setName("conv1").setReLU(true))
+        .add(SpatialConvolution(3, 64, 7, 7, 2, 2, 3, 3).setName("conv1").setReLU(true))
         .add(ReLU().setName("conv1_relu"))
-        .add(MaxPooling(3, 3, 2, 2, 1, 1).setName("pool1"))
+        .add(MaxPooling(3, 3, 2, 2).setName("pool1"))
         .add(layer(bottleneck, 64, 3, name = "2"))
         .add(ReorderMemory(HeapData(outputShape, Memory.Format.nchw)))
     }

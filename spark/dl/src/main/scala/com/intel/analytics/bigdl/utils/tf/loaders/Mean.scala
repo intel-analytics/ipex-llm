@@ -55,7 +55,6 @@ class Mean extends TensorflowOpsLoader {
         "Float"
       case DataType.DT_DOUBLE =>
         "Double"
-      case _ => throw new UnsupportedOperationException("Not supported data type")
     }
     new MeanLoadTF[T](dt, squeeze)
   }
@@ -80,7 +79,6 @@ class MeanLoadTF[T: ClassTag](val dataType: String,
         dim.foreach(i => mean.add(Mean[T, Float](i, squeeze = squeeze)))
       case "Double" =>
         dim.foreach(i => mean.add(Mean[T, Double](i, squeeze = squeeze)))
-      case _ => throw new UnsupportedOperationException("Not supported data type")
     }
     mean
   }

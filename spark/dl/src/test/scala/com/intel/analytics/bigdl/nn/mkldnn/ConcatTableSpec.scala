@@ -59,7 +59,6 @@ class ConcatTableSpec extends BigDLSpecHelper {
     val nativeGrad = container.backward(input1, T(grad1, grad1)).asInstanceOf[Tensor[Float]]
     val heapGrad = Tensor[Float](3, 4).copy(nativeGrad)
     heapGrad should be(grad1 * 2)
-    
     val input2 = Tensor[Float](3, 4).rand()
     val output2 = container.forward(input2).toTable
     output2(1).asInstanceOf[Tensor[Float]] should be(input2)

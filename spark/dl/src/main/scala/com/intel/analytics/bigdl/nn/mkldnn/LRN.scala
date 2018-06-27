@@ -43,11 +43,11 @@ class LRN(
     val description = MklDnn.LRNForwardDescInit(
       PropKind.ForwardTraining, AlgKind.LrnAcrossChannels,
       _inputFormats(0).getMemoryDescription(), size, alpha.toFloat, beta.toFloat, k.toFloat)
-    fwdPrimDesc = MklDnnOps.primitiveDescCreate(description, runtime.engine, 0L)
+    fwdPrimDesc = MklDnn.PrimitiveDescCreate(description, runtime.engine, 0L)
     _outputFormats = Array(MemoryData.primitiveOutput(fwdPrimDesc))
     workSpaceFormat = MemoryData.primitiveWorkSpace(fwdPrimDesc)
     workSpace = initTensor(workSpaceFormat)
-    updateOutputPrimitives = Array(MklDnnOps.primitiveCreate2(fwdPrimDesc,
+    updateOutputPrimitives = Array(MklDnn.PrimitiveCreate2(fwdPrimDesc,
       _inputFormats.map(_.getPrimitive(runtime)), Array(0), 1, Array(_outputFormats(0),
         workSpaceFormat).map(_.getPrimitive(runtime)), 2))
     output = initTensor(_outputFormats(0))
@@ -63,9 +63,9 @@ class LRN(
       _inputFormats(0).getMemoryDescription(),
       _gradOutputFormats(0).getMemoryDescription(), size, alpha.toFloat, beta.toFloat, k.toFloat)
     require(fwdPrimDesc != UNDEFINED, "You should call initFwdPrimitives first")
-    val primDesc = MklDnnOps.primitiveDescCreate(description, runtime.engine, fwdPrimDesc)
+    val primDesc = MklDnn.PrimitiveDescCreate(description, runtime.engine, fwdPrimDesc)
     _gradInputFormats = Array(MemoryData.primitiveGradInput(primDesc))
-    updateGradInputPrimitives = Array(MklDnnOps.primitiveCreate2(primDesc,
+    updateGradInputPrimitives = Array(MklDnn.PrimitiveCreate2(primDesc,
       Array(_inputFormats(0), _gradOutputFormats(0), workSpaceFormat).map(_.getPrimitive(runtime)),
       Array(0, 0, 0), 3, _gradInputFormats.map(_.getPrimitive(runtime)), 1))
     gradInput = initTensor(_gradInputFormats(0))

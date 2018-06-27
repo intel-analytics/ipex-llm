@@ -145,7 +145,7 @@ class RefactorSoftMax() extends MklDnnLayer {
         _inputFormats = singleNativeData(inputs)
         val desc = MklDnn.SoftMaxForwardDescInit(PropKind.ForwardInference,
           inputFormats()(0).getMemoryDescription(), axis)
-        val forwardPrimDesc = MklDnnOps.primitiveDescCreate(desc, runtime.engine, 0L)
+        val forwardPrimDesc = MklDnn.PrimitiveDescCreate(desc, runtime.engine, 0L)
 
         _outputFormats = Array(MemoryData.primitiveOutput(forwardPrimDesc))
 

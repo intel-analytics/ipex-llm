@@ -16,7 +16,7 @@
 package com.intel.analytics.bigdl.nn.mkldnn
 
 import com.intel.analytics.bigdl.mkl.Memory
-import com.intel.analytics.bigdl.nn.{SpatialAveragePooling, SpatialMaxPooling}
+import com.intel.analytics.bigdl.nn.SpatialAveragePooling
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.BigDLSpecHelper
 import com.intel.analytics.bigdl.utils.RandomGenerator.RNG

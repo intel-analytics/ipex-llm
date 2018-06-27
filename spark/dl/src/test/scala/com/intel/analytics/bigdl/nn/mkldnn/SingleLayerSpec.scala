@@ -22,12 +22,6 @@ import com.intel.analytics.bigdl.tensor.{MklDnnType, Tensor}
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 class SingleLayerSpec extends FlatSpec with Matchers with BeforeAndAfter {
-
-  before {
-    System.setProperty("collect.location",
-      "/home/yanzhang/workspace/dl_frameworks/intel.caffe.test/build/tools/collect")
-  }
-
   "convolution" should "work correctly" in {
     val inputShape = Array(4, 3, 5, 5)
     val outputShape = Array(4, 2, 3, 3)
@@ -77,7 +71,7 @@ class SingleLayerSpec extends FlatSpec with Matchers with BeforeAndAfter {
          |}
        """.stripMargin
 
-    val conv = RefactorConvolution(3, nOutput, kernel, kernel, stride, stride, pad, pad, 1)
+    val conv = SpatialConvolution(3, nOutput, kernel, kernel, stride, stride, pad, pad, 1)
       .setName(name)
     conv.setRuntime(new MklDnnRuntime)
     conv.initFwdPrimitives(Array(HeapData(inputShape, Memory.Format.nchw)), TrainingPhase)
@@ -135,82 +129,15 @@ class SingleLayerSpec extends FlatSpec with Matchers with BeforeAndAfter {
          |}
        """.stripMargin
 
-    val conv = RefactorConvolution(3, nOutput, kernel, kernel, stride, stride, pad, pad, 1)
+    val conv = SpatialConvolution(3, nOutput, kernel, kernel, stride, stride, pad, pad, 1)
       .setName(name)
-    conv.setRuntime(new MklDnnRuntime)
-    conv.initFwdPrimitives(Array(HeapData(inputShape, Memory.Format.nchw)), TrainingPhase)
-    conv.initBwdPrimitives(Array(HeapData(outputShape, Memory.Format.nchw)), TrainingPhase)
-    conv.initGradWPrimitives(Array(HeapData(outputShape, Memory.Format.nchw)), TrainingPhase)
-    Tools.compare(prototxt, conv, inputShape, outputShape)
-  }
+    val seq = Sequential()
+      .add(conv)
+      .add(ReorderMemory(HeapData(outputShape, Memory.Format.nchw)))
 
-  "batch norm" should "work correctly" in {
-    val (batchSize, channel, height, width) = (4, 64, 112, 112)
-    val shape = Array(batchSize, channel, height, width)
-    val prototxt = s"""
-         |name: "relu-simple"
-         |force_backward: true
-         |layer {
-         |  name: "data"
-         |  type: "DummyData"
-         |  top: "data"
-         |  include {
-         |    phase: TRAIN
-         |  }
-         |  dummy_data_param {
-         |    data_filler {
-         |      type: "xavier"
-         |    }
-         |    shape: { dim: $batchSize dim: $channel dim: $height dim: $width }
-         |  }
-         |}
-         |
-         |layer {
-         |  bottom: "data"
-         |  top: "bn"
-         |  name: "bn"
-         |  type: "BatchNorm"
-         |
-         |  batch_norm_param {
-         |    moving_average_fraction: 1.0
-         |    filler { value: 1 }
-         |    bias_filler { value: 0 }
-         |    relu: false
-         |    eps: 0.0
-         |  }
-         |}
-       """.stripMargin
+    seq.compile(TrainingPhase, Array(HeapData(inputShape, Memory.Format.nchw)))
 
-    val identity = Collect.run(prototxt)
-
-    val input = Tools.getTensor("Fwrd_data", shape, identity)
-    val output = Tools.getTensor("Fwrd_bn", shape, identity)
-    val weight = Tools.getTensor("Fwrd_bn.Wght.3", Array(channel), identity)
-    val bias = Tools.getTensor("Fwrd_bn.Wght.4", Array(channel), identity)
-    val scale = Tools.getTensor("Fwrd_bn.Wght.2", Array(1), identity)
-    val runningMean = Tools.getTensor("Fwrd_bn.Wght.0", Array(channel), identity)
-    val runningVariance = Tools.getTensor("Fwrd_bn.Wght.1", Array(channel), identity)
-    val gradOutput = Tools.getTensor("Bwrd_bn.loss", shape, identity)
-    val gradInput = Tools.getTensor("Bwrd_bn", shape, identity)
-    val gradWeight = Tools.getTensor("Bwrd_bn.Grad.3", Array(channel), identity)
-    val gradBias = Tools.getTensor("Bwrd_bn.Grad.4", Array(channel), identity)
-    val gradient = Tensor[Float](Array(2, channel))
-    gradient.select(1, 1).copy(gradWeight)
-    gradient.select(1, 2).copy(gradBias)
-
-    val bn = SpatialBatchNormalization[Float](channel, eps = 0.0, momentum = 1.0, affine = true,
-      initWeight = weight, initBias = bias).setShouldConvert(true)
-
-    bn.forward(input)
-    bn.backward(input, gradOutput)
-
-    compare(weight, bn.weight)
-    compare(bias, bn.bias)
-    Tools.compare2Tensors(bn.output, output)
-    Tools.compare2Tensors(runningMean, bn.runningMean)
-    Tools.compare2Tensors(runningVariance, bn.runningVar)
-    Tools.compare2Tensors(bn.diffAll, gradient.view(Array(2 * channel)))
-    Tools.compare2Tensors(bn.gradInput, gradInput)
+    Tools.compare(prototxt, seq, inputShape, outputShape)
   }
 
   "max pooling" should "work correctly" in {
@@ -293,7 +220,10 @@ class SingleLayerSpec extends FlatSpec with Matchers with BeforeAndAfter {
          |}
        """.stripMargin
 
-    val avgPooling = PoolingDnnAverage[Float](3, 3, 2, 2).ceil().setName(name)
+    val avgPooling = AvgPooling(3, 3, 2, 2).setName(name)
+    avgPooling.setRuntime(new MklDnnRuntime)
+    avgPooling.initFwdPrimitives(Array(HeapData(inputShape, Memory.Format.nchw)), TrainingPhase)
+    avgPooling.initBwdPrimitives(Array(HeapData(outputShape, Memory.Format.nchw)), TrainingPhase)
     Tools.compare(prototxt, avgPooling, inputShape, outputShape)
   }
 
@@ -341,7 +271,11 @@ class SingleLayerSpec extends FlatSpec with Matchers with BeforeAndAfter {
          |  }
          |}
        """.stripMargin
-    val linear = Linear[Float](nInput, nOutput).setName(name)
+    val linear = Linear(nInput, nOutput).setName(name)
+    linear.setRuntime(new MklDnnRuntime)
+    linear.initFwdPrimitives(Array(HeapData(inputShape, Memory.Format.nc)), TrainingPhase)
+    linear.initBwdPrimitives(Array(HeapData(outputShape, Memory.Format.nc)), TrainingPhase)
+    linear.initGradWPrimitives(Array(HeapData(outputShape, Memory.Format.nc)), TrainingPhase)
 
     Tools.compare(prototxt, linear, inputShape, outputShape)
   }
@@ -380,19 +314,11 @@ class SingleLayerSpec extends FlatSpec with Matchers with BeforeAndAfter {
          |}
        """.stripMargin
 
-    val relu = ReLUDnn[Float]().setName(name)
+    val relu = ReLU().setName(name)
+    relu.setRuntime(new MklDnnRuntime)
+    relu.initFwdPrimitives(Array(HeapData(inputShape, Memory.Format.nchw)), TrainingPhase)
+    relu.initBwdPrimitives(Array(HeapData(outputShape, Memory.Format.nchw)), TrainingPhase)
     Tools.compare(prototxt, relu, inputShape, outputShape)
-  }
-
-  private def compare(src: Tensor[Float], dst: Tensor[Float]): Unit = {
-    // todo the sync should be deleted.
-    for (i <- List(src, dst)) {
-      if (i.getTensorType == MklDnnType) {
-        i.storage()
-      }
-    }
-
-    src should be (dst)
   }
 
   private def shape2Dim(shape: Array[Int]): String = {

@@ -34,8 +34,9 @@ class ReorderMemory(inputFormat: MemoryData, outputFormat: MemoryData,
     require(_inputFormats(0).shape.product == outputFormat.shape.product,
       "input output memory not match")
     val fwdReorderPrimDesc = MklDnn.ReorderPrimitiveDescCreate(
-      _inputFormats(0).getPrimitiveDescription(runtime), outputFormat.getPrimitiveDescription(runtime))
-    val fwdReorderPrim = MklDnnOps.primitiveCreate2(fwdReorderPrimDesc,
+      _inputFormats(0).getPrimitiveDescription(runtime),
+      outputFormat.getPrimitiveDescription(runtime))
+    val fwdReorderPrim = MklDnn.PrimitiveCreate2(fwdReorderPrimDesc,
       Array(_inputFormats(0).getPrimitive(runtime)), Array(0), 1,
       Array(outputFormat.getPrimitive(runtime)), 1)
 
@@ -60,7 +61,7 @@ class ReorderMemory(inputFormat: MemoryData, outputFormat: MemoryData,
     val bwdReorderPrimDesc = MklDnn.ReorderPrimitiveDescCreate(
       _gradOutputFormats(0).getPrimitiveDescription(runtime),
       _gradInputFormats(0).getPrimitiveDescription(runtime))
-    val bwdReorderPrim = MklDnnOps.primitiveCreate2(bwdReorderPrimDesc,
+    val bwdReorderPrim = MklDnn.PrimitiveCreate2(bwdReorderPrimDesc,
       _gradOutputFormats.map(_.getPrimitive(runtime)), Array(0), 1,
       _gradInputFormats.map(_.getPrimitive(runtime)), 1)
 

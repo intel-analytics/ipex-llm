@@ -111,9 +111,11 @@ class DnnTensor[T: ClassTag](
 }
 
 object DnnTensor {
+  // scalastyle:off
   private def ???(): Nothing = {
     throw new UnsupportedOperationException("DnnTensor doesn't support this operation")
   }
+  // scalastyle:on
 
   private[tensor] def noTransposed(t: DenseTensor[_]): Boolean = {
     var product = 1
@@ -159,6 +161,7 @@ object DnnTensor {
   }
 
   class DnnTensorUnsupportOperations[T: ClassTag](implicit ev: TensorNumeric[T]) extends Tensor[T] {
+    // scalastyle:off
     override def isEmpty: Boolean = ???
     override def isScalar: Boolean = ???
     override def nDimension(): Int = ???
@@ -359,7 +362,8 @@ object DnnTensor {
     override def negative(x: Tensor[T]): Tensor[T] = ???
     override def reduce(dim: Int, result: Tensor[T], reducer: (T, T) => T): Tensor[T] = ???
     override def sumSquare(): T = ???
-    override def clamp(min: Float, max: Float): Tensor[T] = ???
+    override def clamp(min: Double, max: Double): Tensor[T] = ???
     override def toTensor[D](implicit ev: TensorNumeric[D]): Tensor[D] = ???
+    // scalastyle: on
   }
 }

@@ -17,15 +17,13 @@ package com.intel.analytics.bigdl.models.utils
 
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dataset.{DistributedDataSet, MiniBatch}
-import com.intel.analytics.bigdl.models.inception.{Inception_v1, Inception_v1_NoAuxClassifier, Inception_v2}
-import com.intel.analytics.bigdl.models.resnet.ResNet
+import com.intel.analytics.bigdl.models.inception.{Inception_v1, Inception_v2}
 import com.intel.analytics.bigdl.models.vgg.{Vgg_16, Vgg_19}
 import com.intel.analytics.bigdl.nn.ClassNLLCriterion
-import com.intel.analytics.bigdl.nn.mkldnn._
 import com.intel.analytics.bigdl.numeric.NumericFloat
-import com.intel.analytics.bigdl.optim.{Optimizer, Top1Accuracy, Top5Accuracy, Trigger}
+import com.intel.analytics.bigdl.optim.{Optimizer, Trigger}
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.{Engine, T}
+import com.intel.analytics.bigdl.utils.Engine
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
@@ -60,7 +58,13 @@ object DistriOptimizerPerf {
         "vgg19")
       .action((v, p) => p.copy(module = v))
       .validate(v =>
+        if (Set("inception_v1", "inception_v2", "vgg16", "vgg19").
+          contains(v.toLowerCase())) {
           success
+        } else {
+          failure("Data type can only be inception_v1 | " +
+            "vgg16 | vgg19 | inception_v2 now")
+        }
       )
     opt[String]('d', "inputdata")
       .text("Input data type. One of constant | random")
@@ -86,25 +90,9 @@ object DistriOptimizerPerf {
 
     val (_model, input) = param.module match {
       case "inception_v1" => (Inception_v1(1000), Tensor(param.batchSize, 3, 224, 224))
-      case "inception_v1_dnn" => (Inception_v1_dnn(1000), Tensor(param.batchSize, 3, 224, 224))
       case "inception_v2" => (Inception_v2(1000), Tensor(param.batchSize, 3, 224, 224))
-      case "inception_v2_dnn" => (Inception_v2_dnn(1000), Tensor(param.batchSize, 3, 224, 224))
-      case "inception_no_dnn" =>
-        (Inception_v1_NoAuxClassifier_dnn(1000, true), Tensor(param.batchSize, 3, 224, 224))
-      case "inception_no" =>
-        (Inception_v1_NoAuxClassifier(1000, true), Tensor(param.batchSize, 3, 224, 224))
       case "vgg16" => (Vgg_16(1000), Tensor(param.batchSize, 3, 224, 224))
       case "vgg19" => (Vgg_19(1000), Tensor(param.batchSize, 3, 224, 224))
-      case "vgg16_dnn" => (Vgg_16_dnn(1000), Tensor(param.batchSize, 3, 224, 224))
-      case "vgg19_dnn" => (Vgg_19_dnn(1000), Tensor(param.batchSize, 3, 224, 224))
-      case "resnet_50" =>
-        val model = ResNet(1000, T("depth" -> 50, "optnet" -> true,
-        "dataSet" -> ResNet.DatasetType.ImageNet))
-        ResNet.shareGradInput(model)
-        ResNet.modelInit(model)
-        (model, Tensor(param.batchSize, 3, 224, 224))
-      case "resnet_50_dnn" => (ResNet_dnn(1000, T("depth" -> 50, "optnet" -> true,
-        "dataSet" -> ResNet_dnn.DatasetType.ImageNet)), Tensor(param.batchSize, 3, 224, 224))
     }
     param.inputData match {
       case "constant" => input.fill(0.01f)
@@ -122,7 +110,7 @@ object DistriOptimizerPerf {
       .mapPartitions(iter => {
         Iterator.single((broadcast.value))
       }).persist()
-    println("rdd count " + rdd.count())
+    rdd.count()
     val dummyDataSet = new DistributedDataSet[MiniBatch[Float]] {
       override def size(): Long = 10000
       override def shuffle(): Unit = {}
@@ -135,12 +123,7 @@ object DistriOptimizerPerf {
       dummyDataSet,
       criterion
     )
-
-    optimizer
-      .setValidation(Trigger.maxEpoch(param.maxEpoch),
-        dummyDataSet, Array(new Top1Accuracy[Float], new Top5Accuracy[Float]))
-      .setEndWhen(Trigger.maxEpoch(param.maxEpoch))
-      .optimize()
+    optimizer.setEndWhen(Trigger.maxEpoch(param.maxEpoch)).optimize()
     sc.stop()
   }
 }
@@ -158,6 +141,6 @@ case class DistriOptimizerPerfParam(
   batchSize: Int = 128,
   maxEpoch: Int = 5,
   dataType: String = "float",
-  module: String = "resnet_50_dnn",
+  module: String = "inception_v1",
   inputData: String = "random"
 )

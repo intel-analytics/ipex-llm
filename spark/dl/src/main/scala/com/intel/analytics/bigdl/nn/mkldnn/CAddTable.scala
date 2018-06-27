@@ -30,12 +30,12 @@ class CAddTable extends MklDnnLayer {
       }
     }
 
-    val outputMD = MklDnnOps.memoryDescInit(shape.length, shape, DataType.F32, Memory.Format.any)
+    val outputMD = MklDnn.MemoryDescInit(shape.length, shape, DataType.F32, Memory.Format.any)
     val scales = inputs.map(_ => 1f)
     val pd = MklDnn.SumPrimitiveDescCreate(outputMD, inputs.length, scales,
       inputs.map(_.getPrimitiveDescription(runtime)))
     _outputFormats = Array(MemoryData.primitiveOutput(pd))
-    updateOutputPrimitives = Array(MklDnnOps.primitiveCreate2(pd,
+    updateOutputPrimitives = Array(MklDnn.PrimitiveCreate2(pd,
       _inputFormats.map(_.getPrimitive(runtime)), new Array[Int](inputs.length),
       _inputFormats.length, _outputFormats.map(_.getPrimitive(runtime)), 1))
     output = initTensor(_outputFormats(0))

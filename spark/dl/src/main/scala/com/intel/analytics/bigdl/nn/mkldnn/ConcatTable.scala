@@ -53,10 +53,7 @@ class ConcatTable extends MklDnnContainer {
         .asInstanceOf[Tensor[Float]]
       i += 1
     }
-    MklDnnOps.streamSubmit(
-      runtime.stream, 1, sumPrimitive, 1,  tensorPrimitives,
-      tensors
-    )
+    MklDnnOps.streamSubmit(runtime.stream, 1, sumPrimitive, 1, tensorPrimitives, tensors)
     gradInput
   }
 
@@ -106,17 +103,17 @@ class ConcatTable extends MklDnnContainer {
         }
       }
     }
-    val outputMD = MklDnnOps.memoryDescInit(shape.length, shape, DataType.F32, Memory.Format.any)
+    val outputMD = MklDnn.MemoryDescInit(shape.length, shape, DataType.F32, Memory.Format.any)
     val scales = grads.map(_ => 1f)
     val pd = MklDnn.SumPrimitiveDescCreate(outputMD, grads.length, scales,
       subGradInputs.map(_.getPrimitiveDescription(runtime)))
     _gradInputFormats = Array(MemoryData.primitiveOutput(pd))
     tensorPrimitives(grads.length) = _gradInputFormats(0).getPrimitive(runtime)
-    sumPrimitive = Array(MklDnnOps.primitiveCreate2(pd,
+    sumPrimitive = Array(MklDnn.PrimitiveCreate2(pd,
       subGradInputs.map(_.getPrimitive(runtime)), new Array[Int](grads.length),
       grads.length, _gradInputFormats.map(_.getPrimitive(runtime)), 1))
     gradInput = initTensor(_gradInputFormats(0))
-    tensors= new Array[Tensor[Float]](grads.length + 1)
+    tensors = new Array[Tensor[Float]](grads.length + 1)
     tensors(grads.length) = gradInput.asInstanceOf[Tensor[Float]]
     (_gradOutputFormats, _gradInputFormats)
   }

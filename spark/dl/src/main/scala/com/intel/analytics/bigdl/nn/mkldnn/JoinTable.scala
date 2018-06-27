@@ -53,7 +53,7 @@ class JoinTable(val dimension: Int) extends MklDnnLayer {
       inputs.length, dimension - 1, _inputFormats.map(_.getPrimitiveDescription(runtime)))
 
     _outputFormats = Array(MemoryData.primitiveOutput(primDesc))
-    updateOutputPrimitives = Array(MklDnnOps.primitiveCreate2(primDesc,
+    updateOutputPrimitives = Array(MklDnn.PrimitiveCreate2(primDesc,
       _inputFormats.map(_.getPrimitive(runtime)),
       new Array[Int](inputs.length), inputs.length,
       _outputFormats.map(_.getPrimitive(runtime)), 1)
@@ -78,7 +78,7 @@ class JoinTable(val dimension: Int) extends MklDnnLayer {
       val reorderPD = MklDnn.ReorderPrimitiveDescCreate(
         viewFormat.getPrimitiveDescription(runtime),
         _gradInputFormats(i).getPrimitiveDescription(runtime))
-      val reorderPrim = MklDnnOps.primitiveCreate2(reorderPD,
+      val reorderPrim = MklDnn.PrimitiveCreate2(reorderPD,
         Array(viewFormat.getPrimitive(runtime)), Array(0), 1,
         Array(_gradInputFormats(i).getPrimitive(runtime)), 1)
       prims.append(reorderPrim)

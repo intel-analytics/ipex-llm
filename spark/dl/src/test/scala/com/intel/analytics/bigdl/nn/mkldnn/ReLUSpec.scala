@@ -16,21 +16,52 @@
 
 package com.intel.analytics.bigdl.nn.mkldnn
 
-import com.intel.analytics.bigdl.nn.{ReLU => OReLU}
+import com.intel.analytics.bigdl.mkl.Memory
+import com.intel.analytics.bigdl.nn
+import com.intel.analytics.bigdl.nn.mkldnn.Phase.TrainingPhase
+import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.RandomGenerator._
-import org.apache.spark.sql.catalyst.expressions.Conv
+import com.intel.analytics.bigdl.utils.T
 import org.scalatest.{FlatSpec, Matchers}
 
-import scala.util.Random
-
 class ReLUSpec extends FlatSpec with Matchers {
+  "a simple relu" should "be correct" in {
+    val layer = ReLU(0.0f)
+    val input = Tensor[Float](T(
+      T(1.0, 2.0),
+      T(-1.0, -2.0)
+    ))
+    val seq = Sequential()
+    seq.add(ReorderMemory(HeapData(Array(2, 2), Memory.Format.nc),
+      HeapData(Array(2, 2), Memory.Format.nc)))
+    seq.add(layer)
+    seq.add(ReorderMemory(HeapData(Array(2, 2), Memory.Format.nc),
+      HeapData(Array(2, 2), Memory.Format.nc)))
+    seq.compile(Phase.TrainingPhase, Array(HeapData(Array(2, 2), Memory.Format.nc)))
+    seq.forward(input) should be(Tensor[Float](T(
+      T(1.0, 2.0),
+      T(0.0, 0.0)
+    )))
+    val grad = Tensor[Float](T(
+      T(-1.0, -2.0),
+      T(1.0, 2.0)
+    ))
+    seq.backward(input, grad) should be(Tensor[Float](T(
+      T(-1.0, -2.0),
+      T(0.0, 0.0)
+    )))
+  }
 
   "Relu dnn should be same with bigdl relu" should "work correctly" in {
-    val relu = OReLU[Float](ip = false)
-    val reludnn = ReLUDnn[Float](ip = false)
-    val input = Tensor[Float](4, 96, 55, 55).rand(-1, 1)
-    val gradOutput = Tensor[Float](4, 96, 55, 55).rand(-1, 1)
+    val input = Tensor(4, 96, 55, 55).rand(-1, 1)
+    val gradOutput = Tensor(4, 96, 55, 55).rand(-1, 1)
+
+    val relu = nn.ReLU(ip = false)
+    val reludnn = ReLU()
+    val defaultFormat = HeapData(input.size(), Memory.Format.nchw)
+    reludnn.setRuntime(new MklDnnRuntime)
+    reludnn.initFwdPrimitives(Array(defaultFormat), TrainingPhase)
+    reludnn.initBwdPrimitives(Array(defaultFormat), TrainingPhase)
 
     val output = relu.forward(input)
     val gradInput = relu.backward(input, gradOutput)
@@ -38,47 +69,8 @@ class ReLUSpec extends FlatSpec with Matchers {
     val outputdnn = reludnn.forward(input)
     val gradInputdnn = reludnn.backward(input, gradOutput)
 
-    DnnUtils.nearequals(output, outputdnn) should be(true)
-    DnnUtils.nearequals(gradInput, gradInputdnn) should be(true)
-
-    println("done")
-  }
-  "ReLU forward" should "work correctly" in {
-    val relu = OReLU[Float](ip = false)
-    val input = Tensor[Float](4, 96, 55, 55).rand(-1, 1)
-    val gradOutput = Tensor[Float](4, 96, 55, 55).rand(-1, 1)
-    // warm up
-    for (i <- 1 to 50) {
-      val output = relu.forward(input)
-      val gradInput = relu.backward(input, gradOutput)
-    }
-
-    val s1 = System.nanoTime()
-    for (i <- 1 to 50) {
-      val output = relu.forward(input)
-      val gradInput = relu.backward(input, gradOutput)
-    }
-    val end1 = System.nanoTime() - s1
-    println(s"relu time ${end1/1e9}")
+    Equivalent.nearequals(output, Tools.dense(outputdnn).toTensor) should be(true)
+    Equivalent.nearequals(gradInput, Tools.dense(gradInputdnn).toTensor) should be(true)
   }
 
-  "ReLU dnn forward" should "work correctly" in {
-    val relu = ReLUDnn[Float](ip = false)
-    val input = Tensor[Float](4, 96, 55, 55).rand(-1, 1)
-    val gradOutput = Tensor[Float](4, 96, 55, 55).rand(-1, 1)
-    // warm up
-    for (i <- 1 to 50) {
-      val output = relu.forward(input)
-      val gradInput = relu.backward(input, gradOutput)
-    }
-
-    var output : Tensor[Float] = null
-    val s1 = System.nanoTime()
-    for (i <- 1 to 50) {
-      val output = relu.forward(input)
-      val gradInput = relu.backward(input, gradOutput)
-    }
-    val end1 = System.nanoTime() - s1
-    println(s"relu dnn time ${end1/1e9}")
-  }
 }

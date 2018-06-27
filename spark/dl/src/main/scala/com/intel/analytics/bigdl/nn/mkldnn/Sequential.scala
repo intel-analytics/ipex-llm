@@ -17,6 +17,7 @@ package com.intel.analytics.bigdl.nn.mkldnn
 
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
+import com.intel.analytics.bigdl.nn.mkldnn.Phase.{InferencePhase, TrainingPhase}
 import com.intel.analytics.bigdl.nn.{Sequential => Seq}
 import com.intel.analytics.bigdl.tensor.Tensor
 
@@ -171,13 +172,13 @@ class Sequential extends MklDnnContainer {
 
   type ArrayBufferModules[Float] = ArrayBuffer[AbstractModule[Activity, Activity, Float]]
   private def convWithBn(modules: Array[MklDnnModule], phase: Phase): Array[MklDnnModule] = {
-    if (fuseConvBn) {
+    if (fuseConvBn && phase == InferencePhase) {
       val newModules: ArrayBuffer[MklDnnModule] = ArrayBuffer.empty
-      var lastBn: RefactorSpatialBatchNormalization = null
+      var lastBn: SpatialBatchNormalization = null
 
       modules.zip(modules.drop(1) ++ Array(null)).foreach { case (f, s) =>
         (f, s) match {
-          case (conv: RefactorConvolution, bn: RefactorSpatialBatchNormalization) =>
+          case (conv: SpatialConvolution, bn: SpatialBatchNormalization) =>
             mergeConvBn(conv, bn)
             newModules.append(conv)
             lastBn = bn
@@ -199,7 +200,7 @@ class Sequential extends MklDnnContainer {
 
       modules.zip(modules.drop(1) ++ Array(null)).foreach { case (f, s) =>
         (f, s) match {
-          case (conv: RefactorConvolution, relu: ReLU) =>
+          case (conv: SpatialConvolution, relu: ReLU) =>
             newModules.append(conv)
             conv.setReLU()
             lastReLU = relu
@@ -225,7 +226,7 @@ class Sequential extends MklDnnContainer {
 
       modules.zip(modules.drop(1) ++ Array(null)).foreach { case (f, s) =>
         (f, s) match {
-          case (bn: RefactorSpatialBatchNormalization, relu: ReLU) =>
+          case (bn: SpatialBatchNormalization, relu: ReLU) =>
             newModules.append(bn)
             bn.setReLU(true)
             lastReLU = relu
@@ -242,10 +243,10 @@ class Sequential extends MklDnnContainer {
 
   private def convWithSum(modules: Array[MklDnnModule], phase: Phase): Array[MklDnnModule] = {
     val newModules: ArrayBuffer[MklDnnModule] = ArrayBuffer.empty
-    if (!fuseConvSum || modules.length <= 2) {
+    if (!fuseConvSum || modules.length <= 2 || phase == TrainingPhase) {
       newModules.appendAll(modules)
     } else {
-      var lastConv: RefactorConvolution = null
+      var lastConv: SpatialConvolution = null
       var lastReLU: ReLU = null
 
       modules.zip(modules.drop(1) ++ Array(null)).foreach {
@@ -278,8 +279,7 @@ class Sequential extends MklDnnContainer {
     f4Modules
   }
 
-  private def mergeConvBn(conv: RefactorConvolution, bn: RefactorSpatialBatchNormalization)
-  : Unit = {
+  private def mergeConvBn(conv: SpatialConvolution, bn: SpatialBatchNormalization): Unit = {
 
     val originVar = Tensor[Float].resize(bn.runningVariance.size()).copy(bn.runningVariance)
     val originMean = Tensor[Float].resize(bn.runningMean.size()).copy(bn.runningMean)
@@ -318,7 +318,7 @@ class Sequential extends MklDnnContainer {
     ret.asInstanceOf[AbstractModule[Activity, Activity, Any]]
   }
 
-  private def convSum(concatTable: ConcatTable, cAddTable: CAddTable): (RefactorConvolution,
+  private def convSum(concatTable: ConcatTable, cAddTable: CAddTable): (SpatialConvolution,
     SelectTable) = {
     var branch1: AbstractModule[Activity, Activity, Any] = null
     var branch2: AbstractModule[Activity, Activity, Any] = null
@@ -330,7 +330,7 @@ class Sequential extends MklDnnContainer {
       branch2 = getLast(concatTable.modules(1))
 
       def isConvOrIdentity(module: AbstractModule[Activity, Activity, Any]): Boolean = {
-        module.isInstanceOf[RefactorConvolution] || module.isInstanceOf[Identity]
+        module.isInstanceOf[SpatialConvolution] || module.isInstanceOf[Identity]
       }
 
       continue = continue && isConvOrIdentity(branch1) && isConvOrIdentity(branch2)
@@ -338,7 +338,7 @@ class Sequential extends MklDnnContainer {
 
     if (continue) {
       // make sure the last module is conv
-      if (!branch2.isInstanceOf[RefactorConvolution]) {
+      if (!branch2.isInstanceOf[SpatialConvolution]) {
         // swap the modules
         var tmp: AbstractModule[Activity, Activity, Float] = null
 
@@ -352,7 +352,7 @@ class Sequential extends MklDnnContainer {
       }
 
       // get the index of conv, by default the output should be the first conv.
-      val (convIndex, conv, theOther) = (1, branch2.asInstanceOf[RefactorConvolution], branch1)
+      val (convIndex, conv, theOther) = (1, branch2.asInstanceOf[SpatialConvolution], branch1)
       conv.setSum()
 
       // delete CAddTable

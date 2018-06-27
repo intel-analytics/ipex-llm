@@ -16,9 +16,11 @@
 
 package com.intel.analytics.bigdl.optim
 
-import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dataset.{LocalDataSet, MiniBatch}
+import com.intel.analytics.bigdl._
+import com.intel.analytics.bigdl.models.utils.ModelBroadcast
 import com.intel.analytics.bigdl.nn.Utils
+import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils._
@@ -46,44 +48,38 @@ class LocalOptimizer[T: ClassTag] (
     model, dataset, criterion) {
 
   import LocalOptimizer._
-  import Optimizer._
+  import Optimizer.{header, saveModel, saveState, checkSubModules, getHyperParameterLog}
 
   private val coreNumber = Engine.coreNumber()
 
-//  private val subModelNumber = Engine.getEngineType match {
-//    case MklBlas => coreNumber
-//    case _ => 1 // throw new IllegalArgumentException
-//  }
-
-  private val subModelNumber = 1
+  private val subModelNumber = Engine.getEngineType match {
+    case MklBlas => coreNumber
+    case _ => throw new IllegalArgumentException
+  }
 
   private val workingModels = {
-//    model.getParameters()
-//    val wb = Util.getAndClearWeightBias(model.parameters())
-//
-//    val models = (1 to subModelNumber).map(i => {
-//      logger.info(s"Clone $i model...")
-//      val m = model.cloneModule()
-//      Util.putWeightBias(wb, m)
-//      Util.initGradWeightBias(wb, m)
-//      // for dnn create engine and stream
-//      m.createDnnEngine(0)
-//      m.createStream()
-//      m
-//    }).toArray
-//    Util.putWeightBias(wb, model)
-//    Util.initGradWeightBias(wb, model)
-//    models
-    Array(model)
-  }
-//  private val (weight, grad) = model.getParameters()
-//  private val gradLength = grad.nElement()
-//  private val syncGradTaskSize = gradLength / subModelNumber
-//  private val syncGradExtraTask = gradLength % subModelNumber
-//  private val syncGradParallelNum =
-//    if (syncGradTaskSize == 0) syncGradExtraTask else subModelNumber
+    model.getParameters()
+    val wb = Util.getAndClearWeightBias(model.parameters())
 
-//  private val workingModelWAndG = workingModels.map(_.getParameters())
+    val models = (1 to subModelNumber).map(i => {
+      logger.info(s"Clone $i model...")
+      val m = model.cloneModule()
+      Util.putWeightBias(wb, m)
+      Util.initGradWeightBias(wb, m)
+      m
+    }).toArray
+    Util.putWeightBias(wb, model)
+    Util.initGradWeightBias(wb, model)
+    models
+  }
+  private val (weight, grad) = model.getParameters()
+  private val gradLength = grad.nElement()
+  private val syncGradTaskSize = gradLength / subModelNumber
+  private val syncGradExtraTask = gradLength % subModelNumber
+  private val syncGradParallelNum =
+    if (syncGradTaskSize == 0) syncGradExtraTask else subModelNumber
+
+  private val workingModelWAndG = workingModels.map(_.getParameters())
 
   private val workingCriterion =
     (1 to subModelNumber).map(_ => criterion.cloneCriterion()).toArray
@@ -91,17 +87,28 @@ class LocalOptimizer[T: ClassTag] (
   override def optimize(): Module[T] = {
     var wallClockTime = 0L
     var count = 0
-    optimMethod.clearHistory()
-    optimMethod.loadFromTable(state)
+    optimMethods.values.foreach{ optimMethod =>
+      optimMethod.clearHistory()
+    }
+
+    // To be compatible with the old usage that user define hyperparameters in a table.
+    if (optimMethods.size == 1) {
+      optimMethods.head._2.loadFromTable(state)
+    }
+
+    checkSubModules(model, optimMethods.keys.toSeq)
+    val currentOptimMethods = optimMethods.map{case (subModuleName, optimMethod) =>
+      val subModule = model(subModuleName)
+      (optimMethod, subModule.get.getParameters())
+    }
     state("epoch") = state.get[Int]("epoch").getOrElse(1)
     state("neval") = state.get[Int]("neval").getOrElse(1)
     state("isLayerwiseScaled") = Utils.isLayerwiseScaled(model)
+
     dataset.shuffle()
     val numSamples = dataset.data(train = false).map(_.size()).reduce(_ + _)
     var iter = dataset.data(train = true)
     logger.info("model thread pool size is " + Engine.model.getPoolSize)
-    val gradOutput = Tensor[T]()
-    var init = false
     while (!endWhen(state)) {
       val start = System.nanoTime()
 
@@ -111,6 +118,7 @@ class LocalOptimizer[T: ClassTag] (
       val stackSize = batch.size() / subModelNumber
       val extraSize = batch.size() % subModelNumber
       val parallelism = if (stackSize == 0) extraSize else subModelNumber
+      state("parallelism") = parallelism
       val miniBatchBuffer = new Array[MiniBatch[T]](parallelism)
       while (b < parallelism) {
         val offset = b * stackSize + math.min(b, extraSize) + 1
@@ -120,82 +128,52 @@ class LocalOptimizer[T: ClassTag] (
       }
       val dataFetchTime = System.nanoTime()
 
-//      val lossSum = Engine.default.invokeAndWait(
-//        (0 until parallelism).map(i =>
-//          () => {
-      val i = 0
-      val localModel = workingModels(i)
-//      localModel.zeroGradParameters()
-//      localModel.training()
-      localModel.resetTimes()
-      val localCriterion = workingCriterion(i)
-      val input = miniBatchBuffer(i).getInput()
-      val target = miniBatchBuffer(i).getTarget()
-//      if (!init) {
-//        localModel.forward(input)
-//        println("=" * 80)
-//        println(localModel)
-//        localModel.optimize()
-//        println("-" * 80)
-//        println(localModel)
-//        init = true
-//      }
-      val output = localModel.forward(input)
-//      val lossSum = ev.toType[Double](localCriterion.forward(output, target))
-//      val errors = localCriterion.backward(output, target)
-//      localModel.backward(input, output)
-//          })
-//      ).sum
+      val lossSum = Engine.default.invokeAndWait(
+        (0 until parallelism).map(i =>
+          () => {
+            val localModel = workingModels(i)
+            localModel.zeroGradParameters()
+            localModel.training()
+            val localCriterion = workingCriterion(i)
+            val input = miniBatchBuffer(i).getInput()
+            val target = miniBatchBuffer(i).getTarget()
+            val output = localModel.forward(input)
+            val _loss = ev.toType[Double](localCriterion.forward(output, target))
+            val errors = localCriterion.backward(output, target)
+            localModel.backward(input, errors)
+            _loss
+          })
+      ).sum
 
       // copy multi-model gradient to the buffer
-//      Engine.default.invokeAndWait(
-//        (0 until syncGradParallelNum).map(tid =>
-//          () => {
-//            val offset = tid * syncGradTaskSize + math.min(tid, syncGradExtraTask)
-//            val length = syncGradTaskSize + (if (tid < syncGradExtraTask) 1 else 0)
-//            var i = 0
-//            while (i < parallelism) {
-//              if (i == 0) {
-//                grad.narrow(1, offset + 1, length)
-//                  .copy(workingModelWAndG(i)._2.narrow(1, offset + 1, length))
-//              } else {
-//                grad.narrow(1, offset + 1, length)
-//                  .add(workingModelWAndG(i)._2.narrow(1, offset + 1, length))
-//              }
-//              i += 1
-//            }
-//          })
-//      )
-      val loss = 0.0
-//      val loss = lossSum / parallelism
-//      var scale = ev.fromType(parallelism)
-//      if (gradientClippingParams.enableL2NormClipping) {
-//        val squares = new Array[Double](syncGradParallelNum)
-//        Engine.default.invokeAndWait((0 until syncGradParallelNum).map(tid => () => {
-//          val offset = tid * syncGradTaskSize + math.min(tid, syncGradExtraTask)
-//          val length = syncGradTaskSize + (if (tid < syncGradExtraTask) 1 else 0)
-//          squares(tid) = ev.toType[Double](grad.narrow(1, offset + 1, length).sumSquare())
-//        }))
-//        var sum = 0.0
-//        var i = 0
-//        while (i < squares.size) {
-//          sum += squares(i)
-//          i += 1
-//        }
-//        val l2Norm = (math.sqrt(sum) / parallelism).toFloat
-//
-//        if (l2Norm > gradientClippingParams.normValueClip) {
-//          scale = ev.fromType[Float]((l2Norm * parallelism) / gradientClippingParams.normValueClip)
-//        }
-//      }
-//      grad.div(scale)
-//
-//      if (gradientClippingParams.enableConstantClipping) {
-//        grad.clamp(gradientClippingParams.minValueClip, gradientClippingParams.maxValueClip)
-//      }
-      optimMethod.state.update("epoch", state.get("epoch"))
-      optimMethod.state.update("neval", state.get("neval"))
-//      optimMethod.optimize(_ => (ev.fromType(loss), grad), weight)
+      Engine.default.invokeAndWait(
+        (0 until syncGradParallelNum).map(tid =>
+          () => {
+            val offset = tid * syncGradTaskSize + math.min(tid, syncGradExtraTask)
+            val length = syncGradTaskSize + (if (tid < syncGradExtraTask) 1 else 0)
+            var i = 0
+            while (i < parallelism) {
+              if (i == 0) {
+                grad.narrow(1, offset + 1, length)
+                  .copy(workingModelWAndG(i)._2.narrow(1, offset + 1, length))
+              } else {
+                grad.narrow(1, offset + 1, length)
+                  .add(workingModelWAndG(i)._2.narrow(1, offset + 1, length))
+              }
+              i += 1
+            }
+          })
+      )
+      val loss = lossSum / parallelism
+      grad.div(ev.fromType(parallelism))
+
+      parameterProcessors.foreach(_.processParameters(model, state))
+
+      currentOptimMethods.foreach { case (optimMethod, (weight, grad)) =>
+        optimMethod.state.update("epoch", state.get("epoch"))
+        optimMethod.state.update("neval", state.get("neval"))
+        optimMethod.optimize(_ => (ev.fromType(loss), grad), weight)
+      }
       val end = System.nanoTime()
       wallClockTime += end - start
       count += batch.size()
@@ -205,7 +183,7 @@ class LocalOptimizer[T: ClassTag] (
         s"data fetch time is ${(dataFetchTime - start) / 1e9}s, " +
         s"train time ${(end - dataFetchTime) / 1e9}s. " +
         s"Throughput is ${batch.size().toDouble / (end - start) * 1e9} record / second. " +
-        optimMethod.getHyperParameter()
+        getHyperParameterLog(optimMethods)
         )
       state("neval") = state[Int]("neval") + 1
 
