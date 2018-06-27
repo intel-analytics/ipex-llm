@@ -69,7 +69,6 @@ model = Net.loadCaffe("s3://def/path", "s3://model/path") //load from s3
 ### Load Tensorflow model
 
 We also provides utilities to load tensorflow model.
-for more information.
 
 If we already have a frozen graph protobuf file, we can use the `loadTF` api directly to
 load the tensorflow model. 
@@ -137,16 +136,57 @@ model = Net.load_tensorflow(model_def, inputs, outputs, byte_order = "little_end
 
 ## TFNet
 
+TFNet is a analytics-zoo layer that wraps a tensorflow frozen graph and can easily run in parallel.
+
+The difference between Net.loadTF() is that TFNet will call tensorflow's java api to do the computation.
+
+TFNet cannot be trained, so it can only be used for inference or as a feature extractor for fine tuning a model.
+When used as feature extractor, there should not be any trainable layers before TFNet, as all the gradient
+from TFNet is set to zero.
+
+
+### Export tensorflow model to frozen inference graph
+
+Analytics-zoo provides a useful utility function, `export_tf`, to export a tensorflow model
+to frozen inference graph.
+
+For example:
+
+**Python:**
+
+```python
+import tensorflow as tf
+from nets import inception
+slim = tf.contrib.slim
+
+images = tf.placeholder(dtype=tf.float32, shape=(None, 224, 224, 3))
+
+with slim.arg_scope(inception.inception_v1_arg_scope()):
+    logits, end_points = inception.inception_v1(images, num_classes=1001, is_training=False)
+
+sess = tf.Session()
+saver = tf.train.Saver()
+saver.restore(sess, "/tmp/models/inception_v1.ckpt")
+
+from zoo.util.tf import export_tf
+export_tf(sess, "/tmp/models/tfnet", inputs=[images], outputs=[logits])
+```
+
+In the above code, the `export_tf` utility function will frozen the tensorflow graph, strip unused operation according to the inputs and outputs and save it to the specified directory along with the input/output tensor names. 
+
+
+### Creating a TFNet
+
+After we have export the tensorflow model, we can easily create a TFNet.
+
 **Scala:**
 ```scala
-val m = TFNet(frozenModelPath, inputs, outputs)
+val m = TFNet("/tmp/models/tfnet")
 ```
 **Python:**
 ```python
-m = TFNet(frozen_model_path, inputs, outputs)
+m = TFNet.from_export_folder("/tmp/models/tfnet")
 ```
 
-This is a layer that wraps a tensorflow frozen sub graph as a layer and run tensorflow in parallel.
-
-
-
+Please refer to [TFNet Object Detection Example](https://github.com/intel-analytics/analytics-zoo/tree/master/zoo/src/main/scala/com/intel/analytics/zoo/examples/tfnet) and
+the [Image Classification Using TFNet Notebook](https://github.com/intel-analytics/analytics-zoo/tree/master/apps/tfnet) for more information.
