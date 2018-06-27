@@ -212,9 +212,10 @@ object CachedModels {
   def add[T: ClassTag](uuid: String, model: Module[T])( implicit ev: TensorNumeric[T]): Unit =
     CachedModels.synchronized {
       val models = cachedModels.get(uuid) match {
-        case Some(values) => values += model
-        case _ => ArrayBuffer(model)
+        case Some(values) => values += model.asInstanceOf[Module[_]]
+        case _ => ArrayBuffer(model.asInstanceOf[Module[_]])
       }
+      cachedModels.put(uuid, models.asInstanceOf[Modles])
     }
 
   def deleteAll[T: ClassTag](currentKey: String)(implicit ev: TensorNumeric[T]): Unit =
