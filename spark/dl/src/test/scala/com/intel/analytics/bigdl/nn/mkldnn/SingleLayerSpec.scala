@@ -16,10 +16,18 @@
 
 package com.intel.analytics.bigdl.nn.mkldnn
 
+import com.intel.analytics.bigdl.mkl.Memory
+import com.intel.analytics.bigdl.nn.mkldnn.Phase.TrainingPhase
 import com.intel.analytics.bigdl.tensor.{MklDnnType, Tensor}
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
-class SingleLayerSpec extends FlatSpec with Matchers {
+class SingleLayerSpec extends FlatSpec with Matchers with BeforeAndAfter {
+
+  before {
+    System.setProperty("collect.location",
+      "/home/yanzhang/workspace/dl_frameworks/intel.caffe.test/build/tools/collect")
+  }
+
   "convolution" should "work correctly" in {
     val inputShape = Array(4, 3, 5, 5)
     val outputShape = Array(4, 2, 3, 3)
@@ -69,7 +77,12 @@ class SingleLayerSpec extends FlatSpec with Matchers {
          |}
        """.stripMargin
 
-    val conv = ConvolutionDnn(3, nOutput, kernel, kernel, stride, stride, pad, pad, 1).setName(name)
+    val conv = RefactorConvolution(3, nOutput, kernel, kernel, stride, stride, pad, pad, 1)
+      .setName(name)
+    conv.setRuntime(new MklDnnRuntime)
+    conv.initFwdPrimitives(Array(HeapData(inputShape, Memory.Format.nchw)), TrainingPhase)
+    conv.initBwdPrimitives(Array(HeapData(outputShape, Memory.Format.nchw)), TrainingPhase)
+    conv.initGradWPrimitives(Array(HeapData(outputShape, Memory.Format.nchw)), TrainingPhase)
     Tools.compare(prototxt, conv, inputShape, outputShape)
   }
 
@@ -122,7 +135,12 @@ class SingleLayerSpec extends FlatSpec with Matchers {
          |}
        """.stripMargin
 
-    val conv = ConvolutionDnn(3, nOutput, kernel, kernel, stride, stride, pad, pad, 1).setName(name)
+    val conv = RefactorConvolution(3, nOutput, kernel, kernel, stride, stride, pad, pad, 1)
+      .setName(name)
+    conv.setRuntime(new MklDnnRuntime)
+    conv.initFwdPrimitives(Array(HeapData(inputShape, Memory.Format.nchw)), TrainingPhase)
+    conv.initBwdPrimitives(Array(HeapData(outputShape, Memory.Format.nchw)), TrainingPhase)
+    conv.initGradWPrimitives(Array(HeapData(outputShape, Memory.Format.nchw)), TrainingPhase)
     Tools.compare(prototxt, conv, inputShape, outputShape)
   }
 
@@ -231,7 +249,10 @@ class SingleLayerSpec extends FlatSpec with Matchers {
          |}
        """.stripMargin
 
-    val maxPooling = PoolingDnn[Float](3, 3, 2, 2).ceil().setName(name)
+    val maxPooling = MaxPooling(3, 3, 2, 2).setName(name)
+    maxPooling.setRuntime(new MklDnnRuntime)
+    maxPooling.initFwdPrimitives(Array(HeapData(inputShape, Memory.Format.nchw)), TrainingPhase)
+    maxPooling.initBwdPrimitives(Array(HeapData(outputShape, Memory.Format.nchw)), TrainingPhase)
 
     Tools.compare(prototxt, maxPooling, inputShape, outputShape)
   }

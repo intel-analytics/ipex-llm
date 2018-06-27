@@ -16,14 +16,14 @@
 
 package com.intel.analytics.bigdl.nn.mkldnn
 
-import java.io.{DataInputStream, File, FileInputStream, PrintWriter}
+import java.io.{File, PrintWriter}
 import java.nio.channels.FileChannel
 import java.nio.file.{Files, Paths, StandardOpenOption}
 import java.nio.{ByteBuffer, ByteOrder}
 
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.mkl.Memory
-import com.intel.analytics.bigdl.nn.{Container, Identity}
+import com.intel.analytics.bigdl.nn.Container
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.nn.mkldnn.Phase.TrainingPhase
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -151,7 +151,7 @@ object Tools {
             flattenModules(i.asInstanceOf[Module[Float]], modules)
           }
         }
-      case x => if (!x.isInstanceOf[ReorderMemory]) {
+      case x => if (!x.isInstanceOf[ReorderMemory] && !x.isInstanceOf[Identity]) {
         modules += model
       }
     }
@@ -169,7 +169,11 @@ object Tools {
         val weight = Tools.getTensor(s"Fwrd_${bn.getName}.Wght.3", Array(channel), identity)
         val bias = Tools.getTensor(s"Fwrd_${bn.getName}.Wght.4", Array(channel), identity)
         val weightAndBias = Tensor[Float].resize(Array(2, channel))
+        if (weight.isEmpty) {weight.resize(Array(channel)).fill(1)}
         weightAndBias.select(1, 1).copy(weight)
+        if (bias.isEmpty) {
+          bias.resize(Array(channel)).fill(0)
+        }
         weightAndBias.select(1, 2).copy(bias)
         bn.weightAndBias.copy(weightAndBias.view(bn.weightAndBias.size()))
       case _ =>
@@ -178,7 +182,12 @@ object Tools {
           module match {
             case layer: MklDnnLayer =>
               val infos = layer.parametersWithShape()._1
-              params(j).copy(fromOIHW(w, infos(j)))
+              val weights = if (!w.isEmpty) {
+                params(j).copy(fromOIHW(w, infos(j)))
+              } else {
+                val zeros = Tensor[Float]().resize(params(j).size()).fill(0)
+                params(j).copy(zeros)
+              }
             case _ =>
               params(j).copy(w)
           }
@@ -218,7 +227,7 @@ object Tools {
             case layer: MklDnnLayer =>
               val infos = layer.parametersWithShape()._2
               ret &= DnnTools.nearequals(dense(params(j)).toTensor,
-                dense(fromOIHW(w, infos(j))).toTensor, epsilon)
+                dense(fromOIHW(w, infos(j))).toTensor, 1e-5)
             case _ => ret &= compare2Tensors(params(j), w)
           }
 
@@ -250,14 +259,14 @@ object Tools {
     model.forward(input)
     model.backward(input, gradOutput)
 
-    for (i <- modules.indices.reverse) {
+    for (i <- modules.indices) {
       compareSingleLayer(modules(i), identity)
     }
 
     def compareSingleLayer(module: Module[Float], identity: String): Boolean = {
       val name = module.getName()
       val bigdlOutput = module.output.toTensor[Float]
-      val bigdlGradInput = if (module.isInstanceOf[CAddTableDnn[Float]]) {
+      val bigdlGradInput = if (module.isInstanceOf[CAddTable]) {
         module.gradInput.toTable.apply[Tensor[Float]](1)
       } else {
         module.gradInput.toTensor[Float]
@@ -310,7 +319,8 @@ object Tools {
   }
 
   def toNCHW(src: Tensor[Float], inputFormat: MemoryData): Tensor[Float] = {
-    val outputFormat = HeapData(inputFormat.shape, Memory.Format.nchw)
+    val outputFormat = HeapData(inputFormat.shape,
+      if (src.size().length == 2) { Memory.Format.nc } else { Memory.Format.nchw })
     val reorder = ReorderMemory(inputFormat, outputFormat, null, null)
 
     reorder.setRuntime(new MklDnnRuntime)
@@ -333,13 +343,13 @@ object Tools {
   }
 
   def fromOIHW(src: Tensor[Float], outputFormat: MemoryData): Tensor[Float] = {
-    val defaultFormat = src.size().length match {
+    val defaultFormat = outputFormat.shape.length match {
       case 1 => Memory.Format.x
       case 2 => Memory.Format.oi
       case 4 => Memory.Format.oihw
     }
 
-    val inputFormat = HeapData(src.size(), defaultFormat)
+    val inputFormat = HeapData(outputFormat.shape, defaultFormat)
     val reorder = ReorderMemory(inputFormat, outputFormat, null, null)
     reorder.setRuntime(new MklDnnRuntime)
     reorder.initFwdPrimitives(Array(inputFormat), TrainingPhase)
