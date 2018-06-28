@@ -364,6 +364,7 @@ object DnnTensor {
     override def sumSquare(): T = ???
     override def clamp(min: Double, max: Double): Tensor[T] = ???
     override def toTensor[D](implicit ev: TensorNumeric[D]): Tensor[D] = ???
+    override private[bigdl] def toQuantizedTensor = ???
     // scalastyle: on
   }
 }
