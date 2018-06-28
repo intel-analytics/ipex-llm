@@ -68,5 +68,6 @@ class KerasLayerWrapper[T: ClassTag]
 (val torchLayer: AbstractModule[Activity, Activity, T],
  val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends LayerWrapperByForward[T](KerasUtils.addBatch(inputShape)) {
+  setName(torchLayer.getName() + "_wrapper")
   override def doBuild(inputShape: Shape): AbstractModule[Activity, Activity, T] = torchLayer
 }
