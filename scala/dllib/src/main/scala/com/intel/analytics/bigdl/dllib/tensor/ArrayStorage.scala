@@ -18,7 +18,9 @@ package com.intel.analytics.bigdl.tensor
 
 import java.util
 
-import scala.reflect.ClassTag
+import com.intel.analytics.bigdl.mkl.Memory
+
+import scala.reflect._
 
 private[tensor] class ArrayStorage[@specialized(Double, Float) T: ClassTag](
   private[tensor] var values: Array[T]) extends Storage[T] {
@@ -38,12 +40,12 @@ private[tensor] class ArrayStorage[@specialized(Double, Float) T: ClassTag](
     source match {
       case s: ArrayStorage[T] => System.arraycopy(s.values, sourceOffset,
         this.values, offset, length)
-      case s: Storage[T] =>
-        var i = 0
-        while (i < length) {
-          this.values(i + offset) = s(i + sourceOffset)
-          i += 1
-        }
+      case s: DnnStorage[T] =>
+        require(classTag[T] == ClassTag.Float, "Only support copy float dnn storage")
+        require(sourceOffset == 0, "dnn storage offset should be 0")
+        Memory.CopyPtr2Array(s.ptr.address, 0, values.asInstanceOf[Array[Float]], offset, length,
+          DnnStorage.FLOAT_BYTES)
+      case _ => throw new UnsupportedOperationException("Only support dnn or array storage")
     }
     this
   }

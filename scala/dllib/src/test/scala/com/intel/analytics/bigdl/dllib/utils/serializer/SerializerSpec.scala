@@ -44,7 +44,24 @@ class SerializerSpec extends BigDLSpecHelper {
     "com.intel.analytics.bigdl.utils.serializer.TestModule",
     "com.intel.analytics.bigdl.utils.ExceptionTest",
     "com.intel.analytics.bigdl.utils.serializer.SubModuleOne",
-    "com.intel.analytics.bigdl.utils.serializer.SubModuleTwo"
+    "com.intel.analytics.bigdl.utils.serializer.SubModuleTwo",
+    "com.intel.analytics.bigdl.nn.mkldnn.AvgPooling",
+    "com.intel.analytics.bigdl.nn.mkldnn.CAddTable",
+    "com.intel.analytics.bigdl.nn.mkldnn.ConcatTable",
+    "com.intel.analytics.bigdl.nn.mkldnn.DnnBase",
+    "com.intel.analytics.bigdl.nn.mkldnn.Identity",
+    "com.intel.analytics.bigdl.nn.mkldnn.Input",
+    "com.intel.analytics.bigdl.nn.mkldnn.JoinTable",
+    "com.intel.analytics.bigdl.nn.mkldnn.Linear",
+    "com.intel.analytics.bigdl.nn.mkldnn.LRN",
+    "com.intel.analytics.bigdl.nn.mkldnn.MaxPooling",
+    "com.intel.analytics.bigdl.nn.mkldnn.ReLU",
+    "com.intel.analytics.bigdl.nn.mkldnn.ReorderMemory",
+    "com.intel.analytics.bigdl.nn.mkldnn.SelectTable",
+    "com.intel.analytics.bigdl.nn.mkldnn.Sequential",
+    "com.intel.analytics.bigdl.nn.mkldnn.SoftMax",
+    "com.intel.analytics.bigdl.nn.mkldnn.SpatialBatchNormalization",
+    "com.intel.analytics.bigdl.nn.mkldnn.SpatialConvolution"
   )
 
   // Maybe one serial test class contains multiple module test
