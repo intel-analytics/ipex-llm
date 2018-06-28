@@ -320,7 +320,7 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
    * If the module has parameters, this will zero the accumulation of the gradients with respect
    * to these parameters. Otherwise, it does nothing.
    */
-  final def zeroGradParameters(): Unit = {
+  def zeroGradParameters(): Unit = {
     if (parameters() != null) {
       parameters()._1.zip(parameters()._2)foreach{ case (weight, grad) =>
         grad.resizeAs(weight).zero()
