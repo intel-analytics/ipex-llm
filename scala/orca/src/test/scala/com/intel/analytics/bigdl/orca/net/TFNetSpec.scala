@@ -16,29 +16,15 @@
 package com.intel.analytics.zoo.pipeline.api.net
 
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.T
+import com.intel.analytics.bigdl.utils.{LayerException, T}
 import com.intel.analytics.zoo.common.NNContext
+import org.apache.spark.serializer.KryoSerializer
 import org.apache.spark.{SparkConf, SparkContext, SparkEnv}
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 class TFNetSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
-  var sc : SparkContext = _
-  var conf: SparkConf = _
-
-  before {
-    conf = new SparkConf().setAppName("Test TFNet").setMaster("local[1]")
-    conf.set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
-    sc = NNContext.initNNContext(conf)
-  }
-
-  after {
-    if (sc != null) {
-      sc.stop()
-    }
-  }
-
-  "TFNet " should "work with different data types" in  {
+  "TFNet " should "work with different data types" in {
 
     val resource = getClass().getClassLoader().getResource("tf")
     val path = resource.getPath + "/" + "multi_type_inputs_outputs.pb"
@@ -57,10 +43,10 @@ class TFNetSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val result = net.forward(data)
     val gradInput = net.backward(data, null)
 
-    result should be (data)
+    result should be(data)
     var i = 0
     while (i < 5) {
-      gradInput.toTable[Tensor[Float]](i + 1).sum() should be (0.0f)
+      gradInput.toTable[Tensor[Float]](i + 1).sum() should be(0.0f)
       i = i + 1
     }
 
@@ -71,11 +57,11 @@ class TFNetSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val net = TFNet(resource.getPath)
     val result = net.forward(Tensor[Float](4, 28, 28, 1).rand())
 
-    result.toTensor[Float].size() should be (Array(4, 10))
+    result.toTensor[Float].size() should be(Array(4, 10))
   }
 
 
-  "TFNet" should "should be serializable" in  {
+  "TFNet" should "should be serializable by java" in {
 
     val resource = getClass().getClassLoader().getResource("tfnet")
     val net = TFNet(resource.getPath)
@@ -83,31 +69,56 @@ class TFNetSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val result = net.forward(input).toTensor[Float].clone()
     val net2 = net.cloneModule()
     val result2 = net2.forward(input).toTensor[Float].clone()
-    result should be (result2)
+    result should be(result2)
   }
 
-  "TFNet" should "should be able to work on shrunk tensor " in  {
+  "TFNet" should "should be able to work on shrunk tensor " in {
 
     val resource = getClass().getClassLoader().getResource("tfnet")
     val net = TFNet(resource.getPath)
     val input = Tensor[Float](4, 28, 28, 1).rand()
     input.resize(2, 28, 28, 1)
     val result = net.forward(input).toTensor[Float].clone()
-    result.size() should be (Array(2, 10))
+    result.size() should be(Array(2, 10))
   }
 
-  "TFNet " should "work for kyro serializer" in  {
+  "TFNet " should "work for kyro serializer" in {
 
     val resource = getClass().getClassLoader().getResource("tfnet")
     val net = TFNet(resource.getPath)
     val input = Tensor[Float](4, 28, 28, 1).rand()
     val result = net.forward(input).toTensor[Float].clone()
 
-    val serde = SparkEnv.get.serializer.newInstance()
+    val serde = new  KryoSerializer(new SparkConf()).newInstance()
     val buff = serde.serialize(net)
     val net2 = serde.deserialize[TFNet](buff)
 
     val result2 = net2.forward(input).toTensor[Float].clone()
-    result should be (result2)
+    result should be(result2)
+  }
+
+  "TFNet " should "check input number" in {
+    val resource = getClass().getClassLoader().getResource("tf")
+    val path = resource.getPath + "/" + "multi_type_inputs_outputs.pb"
+
+    val inputs = Seq("float_input:0", "double_input:0",
+      "int_input:0", "long_input:0", "uint8_input:0")
+    val outputs = Seq("float_output:0", "double_output:0",
+      "int_output:0", "long_output:0", "uint8_output:0")
+    val net = TFNet(path, inputs, outputs)
+    val data1 = T(Tensor[Float](Array[Float](1.0f), Array(1, 1)),
+      Tensor[Float](Array[Float](2.0f), Array(1, 1)),
+      Tensor[Float](Array[Float](3.0f), Array(1, 1)),
+      Tensor[Float](Array[Float](4.0f), Array(1, 1))
+    )
+    val data2 = T(Tensor[Float](Array[Float](1.0f), Array(1, 1)))
+
+    intercept[LayerException] {
+      net.forward(data1) // this is not allowed
+    }
+
+    intercept[LayerException] {
+      net.forward(data2) // this is not allowed
+    }
   }
 }
