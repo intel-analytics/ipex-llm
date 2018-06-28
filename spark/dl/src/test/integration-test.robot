@@ -147,6 +147,6 @@ PySpark2.2 Test Suite
    Build SparkJar                   spark_2.x
    Set Environment Variable         SPARK_HOME     /opt/work/spark-2.2.0-bin-hadoop2.7
    ${submit}=                       Catenate       SEPARATOR=/    /opt/work/spark-2.2.0-bin-hadoop2.7/bin    spark-submit
-   Run Shell                        ${submit} --master ${spark_master} --conf "spark.serializer=org.apache.spark.serializer.JavaSerializer" --driver-memory 10g --executor-cores 14 --total-executor-cores 28 --py-files ${curdir}/dist/lib/bigdl-${version}-python-api.zip --jars ${jar_path} --properties-file ${curdir}/dist/conf/spark-bigdl.conf ${curdir}/pyspark/bigdl/models/lenet/lenet5.py -b 224 --action train --endTriggerType epoch --endTriggerNum 1
+   Run Shell                        ${submit} --master ${spark_22_master} --conf "spark.serializer=org.apache.spark.serializer.JavaSerializer" --driver-memory 10g --executor-cores 14 --total-executor-cores 28 --py-files ${curdir}/dist/lib/bigdl-${version}-python-api.zip --jars ${jar_path} --properties-file ${curdir}/dist/conf/spark-bigdl.conf ${curdir}/pyspark/bigdl/models/lenet/lenet5.py -b 224 --action train --endTriggerType epoch --endTriggerNum 1
 
 
