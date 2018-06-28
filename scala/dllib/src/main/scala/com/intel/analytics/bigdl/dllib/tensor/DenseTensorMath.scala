@@ -45,7 +45,7 @@ object DenseTensorMath {
     self
   }
 
-  def cmul[@specialized T](self: DenseTensor[T], x: Tensor[T], y: Tensor[T])
+  def cmul[@specialized T](self: DenseTensor[T], x: DenseTensor[T], y: DenseTensor[T])
     (implicit ev: TensorNumeric[T]): Tensor[T] = {
     if (x.nElement() != y.nElement() && DenseTensor.canFastBroadcast(x, y)) {
       require(self.nElement() == x.nElement(), "the self tensor nElement is not same as x" +
@@ -53,7 +53,8 @@ object DenseTensorMath {
       // recursive cmul
       var i = 0
       while(i < x.size(1)) {
-        cmul(self.select(1, i + 1).asInstanceOf[DenseTensor[T]], x.select(1, i + 1), y)
+        cmul(self.select(1, i + 1).asInstanceOf[DenseTensor[T]],
+          x.select(1, i + 1).asInstanceOf[DenseTensor[T]], y)
         i += 1
       }
     } else if (x.nElement() != y.nElement() && DenseTensor.canFastBroadcast(y, x)) {
@@ -62,7 +63,8 @@ object DenseTensorMath {
       // recursive cmul
       var i = 0
       while(i < y.size(1)) {
-        cmul(self.select(1, i + 1).asInstanceOf[DenseTensor[T]], x, y.select(1, i + 1))
+        cmul(self.select(1, i + 1).asInstanceOf[DenseTensor[T]], x,
+          y.select(1, i + 1).asInstanceOf[DenseTensor[T]])
         i += 1
       }
     } else if (x.nElement() != y.nElement()) {

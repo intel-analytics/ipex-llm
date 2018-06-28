@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.utils
 
 import java.util.concurrent._
 
-import com.intel.analytics.bigdl.mkl.MKL
+import com.intel.analytics.bigdl.mkl.{MKL, MklDnn}
 import org.apache.commons.lang.exception.ExceptionUtils
 import org.apache.log4j.Logger
 
