@@ -2,8 +2,8 @@
 
 OptimMethod is used to update model gradient parameters.We have defined SGD method, Adagrad method, etc.
 Details about those optim methods, you can refer to [Optim-Methods](Optim-Methods.md).
-Now, method construct parameters(e.g."learningRate") and internal training parameters(e.g."epoch") store in optim method instead of state(since version 0.2.0)
-Here is mainly to describe how to use those methods when training
+Now, method construct parameters(e.g."learningRate") and internal training parameters(e.g."epoch") store in optim method instead of state(since version 0.2.0).
+Here is mainly to describe how to use those methods when training.
 ### Set method ###
 **scala**
 ```scala
@@ -19,7 +19,22 @@ optimizer = Optimizer(
     end_trigger,
     batch_size)
 ```
-in python, you can set optim method when creating an optimizer
+in python, you can set optim method when creating an optimizer.
+
+Sometimes, people want to apply different optimization algorithms for the submodules of the neural network model. 
+BigDL provide a method to set optimMethod for submoduels by submodules' name.
+
+**scala**
+```scala
+val optimMethods = Map("wide" -> new Ftrl[Float](), "deep" -> new Adagrad[Float]())
+optimizer.setOptimMethods(optimMethods)
+```
+
+**python**
+```python
+optimMethods = {"wide": Ftrl(), "deep": Adagrad()}
+optimizer.setOptimMethods(optimMethods)
+```
 
 ### Save method ###
 ```scala

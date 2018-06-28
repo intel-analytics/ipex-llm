@@ -141,6 +141,20 @@ optimizer.setOptimMethod(new Adam())  // Change to adam
 # Python need to define the optimization algorithm in the constructor
 optimizer = Optimizer(model, train_data, MSECriterion(), MaxIteration(100), 4, optim_method = Adam())
 ```
+Sometimes, people want to apply different optimization algorithms for the submodules of the neural network model. 
+BigDL provide a method to set optimMethod for submoduels by submodules' name.
+
+**scala**
+```scala
+val optimMethods = Map("wide" -> new Ftrl[Float](), "deep" -> new Adagrad[Float]())
+optimizer.setOptimMethods(optimMethods)
+```
+
+**python**
+```python
+optimMethods = {"wide": Ftrl(), "deep": Adagrad()}
+optimizer.setOptimMethods(optimMethods)
+```
 
 ## Validate your model in training
 Sometimes, people want to evaluate the model with a separated dataset. When model
