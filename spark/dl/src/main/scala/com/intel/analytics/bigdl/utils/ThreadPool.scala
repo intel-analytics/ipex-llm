@@ -75,7 +75,6 @@ class ThreadPool(private var poolSize: Int) {
     mklPoolSize = Some(size)
     (1 to poolSize).map(i => Future {
       MKL.setNumThreads(size)
-      MklDnn.setNumThreads(size)
       val tid = Thread.currentThread().getId()
       logger.info(s"Set mkl threads to $size on thread $tid")
     }(context)).foreach(Await.result(_, Duration.Inf))

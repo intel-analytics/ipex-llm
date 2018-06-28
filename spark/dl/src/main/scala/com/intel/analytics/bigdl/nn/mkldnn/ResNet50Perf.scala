@@ -17,7 +17,7 @@
 package com.intel.analytics.bigdl.nn.mkldnn
 
 import com.intel.analytics.bigdl.Module
-import com.intel.analytics.bigdl.mkl.Memory
+import com.intel.analytics.bigdl.mkl.{Memory, MklDnn}
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.nn.mkldnn.Phase.{InferencePhase, TrainingPhase}
@@ -57,6 +57,7 @@ object ResNet50Perf {
     val coreNumber: Int = Runtime.getRuntime.availableProcessors() / 2
     System.setProperty("bigdl.mklNumThreads", s"$coreNumber")
     Engine.setCoreNumber(1)
+    MklDnn.setNumThreads(coreNumber)
 
     parser.parse(argv, new ResNet50PerfParams()).foreach { params =>
       val batchSize = params.batchSize
