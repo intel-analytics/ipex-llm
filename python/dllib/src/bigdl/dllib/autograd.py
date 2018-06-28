@@ -50,6 +50,41 @@ def abs(x):
     return Variable.from_jvalue(callBigDlFunc("float", "abs", x))
 
 
+def batch_dot(x, y, axes=1, normalize=False):
+    """
+    Operator that computes a dot product between samples in two tensors.
+
+    E.g. if applied to two tensors `a` and `b` of shape `(batch_size, n)`,
+    the output will be a tensor of shape `(batch_size, 1)`
+    where each entry `i` will be the dot product between
+    `a[i]` and `b[i]`.
+
+    :param x: Shape should only be [batch, xx]
+    :param y: Shape should only be [batch, xx]
+    :param axes: Integer or tuple of integers,
+                axis or axes along which to take the dot product.
+    :param normalize: Whether to L2-normalize samples along the
+                dot product axis before taking the dot product.
+                If set to True, then the output of the dot product
+                is the cosine proximity between the two samples.
+    :return: A variable.
+    """
+    if not normalize:
+        if isinstance(axes, int):
+            axes = [axes] * 2
+    return Variable.from_jvalue(callBigDlFunc("float", "batchDot", x, y, axes, normalize))
+
+
+def l2_normalize(x, axis):
+    """
+    Normalizes a tensor wrt the L2 norm alongside the specified axis.
+    :param x: A variable. Shape should only be [batch, xx]
+    :param axis: axis along which to perform normalization.
+    :return: A variable.
+    """
+    return Variable.from_jvalue(callBigDlFunc("float", "l2Normalize", x, int(axis)))
+
+
 def sum(x, axis=0, keepDims=False):
     """
     Sum of the values in a a variable, alongside the specified axis.
@@ -69,7 +104,7 @@ def stack(inputs, axis=1):
     Stacks a list of rank `R` tensors into a rank `R+1` tensor.
     You should start from 1 as dim 0 is for batch.
     :param inputs: List of variables (tensors).
-    :param axis: xis along which to perform stacking.
+    :param axis: axis along which to perform stacking.
     :return:
     """
     return Variable.from_jvalue(callBigDlFunc("float", "stack", inputs, axis))
@@ -193,6 +228,18 @@ def softplus(x):
     :return: A variable.
     """
     return Variable.from_jvalue(callBigDlFunc("float", "softplus", x))
+
+
+def mm(x, y, axes):
+    """
+    Module to perform matrix multiplication on two mini-batch inputs,
+    producing a mini-batch.
+    :param x: A variable.
+    :param y: A variable.
+    :param axes: Axes along which to perform multiplication.
+    :return: A variable.
+    """
+    return Variable.from_jvalue(callBigDlFunc("float", "mm", x, y, axes))
 
 
 class Variable(kbase.ZooKerasCreator):
