@@ -21,6 +21,21 @@ optimizer = Optimizer(
 ```
 in python, you can set optim method when creating an optimizer
 
+Sometimes, people want to apply different optimization algorithms for the submodules of the neural network model. 
+BigDL provide a method to set optimMethod for submoduels by submodules' name.
+
+**scala**
+```scala
+val optimMethods = Map("wide" -> new Ftrl[Float](), "deep" -> new Adagrad[Float]())
+optimizer.setOptimMethods(optimMethods)
+```
+
+**python**
+```python
+optimMethods = {"wide": Ftrl(), "deep": Adagrad()}
+optimizer.setOptimMethods(optimMethods)
+```
+
 ### Save method ###
 ```scala
 method.save(path: String, overWrite: Boolean = false)
