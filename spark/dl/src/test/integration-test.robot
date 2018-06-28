@@ -60,14 +60,14 @@ Remove Input
 Run Spark Test 
    [Arguments]                      ${submit}                   ${spark_master}
    DownLoad Input
-   # Log To Console                   begin lenet Train ${submit} --master ${spark_master} --conf "spark.serializer=org.apache.spark.serializer.JavaSerializer" --driver-memory 5g --executor-cores 16 --total-executor-cores 32 --class com.intel.analytics.bigdl.models.lenet.Train ${jar_path} -f ${mnist_data_source} -b 256 -e 3
-   # Run Shell                        ${submit} --master ${spark_master} --conf "spark.serializer=org.apache.spark.serializer.JavaSerializer" --driver-memory 5g --executor-cores 16 --total-executor-cores 32 --class com.intel.analytics.bigdl.models.lenet.Train ${jar_path} -f ${mnist_data_source} -b 256 -e 3
-   # Log To Console                   begin lenet Train local[4]
-   # Run Shell                        ${submit} --master local[4] --class com.intel.analytics.bigdl.models.lenet.Train ${jar_path} -f /tmp/mnist -b 120 -e 1    
-   # Log To Console                   begin autoencoder Train 
-   # Run Shell                        ${submit} --master ${spark_master} --executor-cores 4 --total-executor-cores 8 --class com.intel.analytics.bigdl.models.autoencoder.Train ${jar_path} -b 120 -e 1 -f /tmp/mnist
-   # Log To Console                   begin PTBWordLM
-   # Run Shell                        ${submit} --master ${spark_master} --conf "spark.serializer=org.apache.spark.serializer.JavaSerializer" --driver-memory 40g --executor-memory 100g --executor-cores 8 --total-executor-cores 8 --class com.intel.analytics.bigdl.example.languagemodel.PTBWordLM ${jar_path} -f ./simple-examples/data -b 120 --numLayers 2 --vocab 10001 --hidden 650 --numSteps 35 --learningRate 0.005 -e 1 --learningRateDecay 0.001 --keepProb 0.5 --overWrite
+   Log To Console                   begin lenet Train ${submit} --master ${spark_master} --conf "spark.serializer=org.apache.spark.serializer.JavaSerializer" --driver-memory 5g --executor-cores 16 --total-executor-cores 32 --class com.intel.analytics.bigdl.models.lenet.Train ${jar_path} -f ${mnist_data_source} -b 256 -e 3
+   Run Shell                        ${submit} --master ${spark_master} --conf "spark.serializer=org.apache.spark.serializer.JavaSerializer" --driver-memory 5g --executor-cores 16 --total-executor-cores 32 --class com.intel.analytics.bigdl.models.lenet.Train ${jar_path} -f ${mnist_data_source} -b 256 -e 3
+   Log To Console                   begin lenet Train local[4]
+   Run Shell                        ${submit} --master local[4] --class com.intel.analytics.bigdl.models.lenet.Train ${jar_path} -f /tmp/mnist -b 120 -e 1    
+   Log To Console                   begin autoencoder Train 
+   Run Shell                        ${submit} --master ${spark_master} --executor-cores 4 --total-executor-cores 8 --class com.intel.analytics.bigdl.models.autoencoder.Train ${jar_path} -b 120 -e 1 -f /tmp/mnist
+   Log To Console                   begin PTBWordLM
+   Run Shell                        ${submit} --master ${spark_master} --conf "spark.serializer=org.apache.spark.serializer.JavaSerializer" --driver-memory 40g --executor-memory 100g --executor-cores 8 --total-executor-cores 8 --class com.intel.analytics.bigdl.example.languagemodel.PTBWordLM ${jar_path} -f ./simple-examples/data -b 120 --numLayers 2 --vocab 10001 --hidden 650 --numSteps 35 --learningRate 0.005 -e 1 --learningRateDecay 0.001 --keepProb 0.5 --overWrite
    Log To Console                   begin resnet Train
    Run Shell                        ${submit} --master ${spark_master} --conf "spark.serializer=org.apache.spark.serializer.JavaSerializer" --driver-memory 5g --executor-memory 5g --executor-cores 8 --total-executor-cores 32 --class com.intel.analytics.bigdl.models.resnet.TrainCIFAR10 ${jar_path} -f /tmp/cifar --batchSize 448 --optnet true --depth 20 --classes 10 --shortcutType A --nEpochs 1 --learningRate 0.1
    Log To Console                   begin DLClassifierLeNet
@@ -85,7 +85,7 @@ Spark2.2 Test Suite
    Build SparkJar                   spark_2.x
    Set Environment Variable         SPARK_HOME               /opt/work/spark-2.2.0-bin-hadoop2.7
    ${submit}=                       Catenate                 SEPARATOR=/    /opt/work/spark-2.2.0-bin-hadoop2.7/bin    spark-submit
-   Run Spark Test                   ${submit}                ${spark_21_3_master} 
+   Run Spark Test                   ${submit}                ${spark_22_master} 
 
 Hdfs Test Suite
    Set Environment Variable         hdfsMaster               ${hdfs_272_master}
