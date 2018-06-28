@@ -19,8 +19,7 @@ Build SparkJar
    [Arguments]       ${spark_version}
    ${build}=         Catenate                        SEPARATOR=/    ${curdir}    make-dist.sh
    Log To Console    ${spark_version}
-   Log To Console    start to build jar
-   Log To Console    ${build} -P ${spark_version}
+   Log To Console    start to build jar ${build} -P ${spark_version}
    Run               ${build} -P ${spark_version}
    Remove File       ${jar_path}
    Copy File         spark/dl/target/bigdl-${version}-jar-with-dependencies.jar    ${jar_path}
@@ -81,7 +80,6 @@ Run Spark Test
    Remove Input
 
 Spark2.2 Test Suite
-   Log To Console	1234
    Build SparkJar                   spark_2.x
    Set Environment Variable         SPARK_HOME               /opt/work/spark-2.2.0-bin-hadoop2.7
    ${submit}=                       Catenate                 SEPARATOR=/    /opt/work/spark-2.2.0-bin-hadoop2.7/bin    spark-submit
