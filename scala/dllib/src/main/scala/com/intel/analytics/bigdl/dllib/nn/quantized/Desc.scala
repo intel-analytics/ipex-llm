@@ -147,6 +147,9 @@ object Desc {
         desc
     }
 
+    // add every native memory allocation.
+    StorageManager.add(desc, params.getType)
+
     desc
   }
 
@@ -178,3 +181,28 @@ object QuantParams {
   val THRESHOLD = 127.0f
 }
 
+private[bigdl] case class StorageInfo(descType: DescType, isFreed: Boolean)
+
+private[bigdl] object StorageManager {
+  import java.util.concurrent.ConcurrentHashMap
+  private val nativeStorages: ConcurrentHashMap[Long, StorageInfo] = new ConcurrentHashMap()
+
+  def isFreed(nativeStorage: Long): Boolean = {
+    nativeStorages.get(nativeStorage).isFreed
+  }
+
+  // atomically set the value
+  def checkAndSet(nativeStorage: Long): Boolean = {
+    val descType = nativeStorages.get(nativeStorage).descType
+    nativeStorages.replace(nativeStorage, StorageInfo(descType, false), StorageInfo(descType, true))
+  }
+
+  def get(): Map[Long, StorageInfo] = {
+    import scala.collection.JavaConverters._
+    nativeStorages.asScala.toMap
+  }
+
+  def add(key: Long, descType: DescType): Unit = {
+    nativeStorages.put(key, StorageInfo(descType, false))
+  }
+}
