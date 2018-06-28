@@ -136,7 +136,7 @@ optimizer.setModelAndOptimMethods(newModel: Module[T], newOptimMethods: Map[Stri
 ```
 Function setModelAndOptimMethods will set a new model and new OptimMethods to the optimizer.  
 `newModel`: a model will replace the old model in optimizer.  
-`newOptimMethods`: new OptimMethods will replace the old model in optimizer. It's a mapping of submodules -> OptimMethod.
+`newOptimMethods`: new OptimMethods will replace the old model in optimizer. It's a mapping of submodule -> OptimMethod.
  <br>
 ```scala
 
@@ -181,7 +181,7 @@ Function setOptimMethod is used to set an optimization method in this `optimizer
 optimizer.setOptimMethods(method: Map[String, OptimMethod[T]])
 ```
 Function setOptimMethods is used to set different optimization methods for submodules in this `optimizer`.  
-`method`: the mapping of submodules -> OptimMethod  
+`method`: the mapping of submodule -> OptimMethod  
  <br>
 ```scala
 optimizer.setEndWhen(endWhen: Trigger)
