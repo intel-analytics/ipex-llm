@@ -665,8 +665,11 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
         Predictor(this, featurePaddingParam, batchPerPartition)
           .predictImage(distributedImageFrame, outputLayer, shareBuffer, predictKey)
       case localImageFrame: LocalImageFrame =>
-        LocalPredictor(this, featurePaddingParam, batchPerPartition)
-          .predictImage(localImageFrame, outputLayer, shareBuffer, predictKey)
+        val predictor = LocalPredictor(this, featurePaddingParam, batchPerPartition)
+        val imageFrame = predictor.predictImage(localImageFrame, outputLayer, shareBuffer,
+          predictKey)
+        predictor.shutdown()
+        imageFrame
     }
   }
 
@@ -1106,5 +1109,11 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
    * @return
    */
   private[nn] def skipDuplicateCheck(): Boolean = false
+
+  /**
+   * if the model contains native resources such as aligned memory, we should release it by manual.
+   * JVM GC can't release them reliably.
+   */
+  def release(): Unit = {}
 }
 

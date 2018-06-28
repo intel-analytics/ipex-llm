@@ -804,6 +804,8 @@ trait Tensor[T] extends Serializable with TensorMath[T] with Activity {
     }
     return false
   }
+
+  private[bigdl] def toQuantizedTensor: QuantizedTensor[T]
 }
 
 /**

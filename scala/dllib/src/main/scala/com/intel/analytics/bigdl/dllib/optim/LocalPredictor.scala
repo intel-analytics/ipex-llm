@@ -18,11 +18,13 @@ package com.intel.analytics.bigdl.optim
 
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dataset.{SampleToMiniBatch, _}
+import com.intel.analytics.bigdl.nn.Container
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
+import com.intel.analytics.bigdl.nn.quantized.QuantizedModule
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.{Engine, MklBlas, Util}
-import com.intel.analytics.bigdl.utils.Util._
 import com.intel.analytics.bigdl.transform.vision.image.{ImageFeature, ImageFrame, LocalImageFrame}
+import com.intel.analytics.bigdl.utils.Util._
+import com.intel.analytics.bigdl.utils.{Engine, MklBlas, Util}
 import org.apache.log4j.Logger
 
 import scala.reflect.ClassTag
@@ -58,15 +60,19 @@ class LocalPredictor[T: ClassTag] private[optim](model: Module[T],
     case _ => throw new IllegalArgumentException
   }
 
+  // we should clone a new model which has no impact to origin model
+  private val clonedModel = model.cloneModule()
+
   private val workingModels = {
-    val weightsBias = Util.getAndClearWeightBias(model.parameters())
+
+    val weightsBias = Util.getAndClearWeightBias(clonedModel.parameters())
     val models = (1 to subModelNumber).map(_ => {
-      val submodel = model.cloneModule().evaluate()
+      val submodel = clonedModel.cloneModule().evaluate()
       putWeightBias(weightsBias, submodel)
       submodel
     }).toArray
-    Util.putWeightBias(weightsBias, model)
-    Util.initGradWeightBias(weightsBias, model)
+    Util.putWeightBias(weightsBias, clonedModel)
+    Util.initGradWeightBias(weightsBias, clonedModel)
     models
   }
 
@@ -175,6 +181,14 @@ class LocalPredictor[T: ClassTag] private[optim](model: Module[T],
     }).flatten
 
     ImageFrame.array(result.toArray)
+  }
+
+  /**
+   * `shutdown` will release all native resources.
+   */
+  def shutdown(): Unit = {
+    workingModels.foreach(_.release())
+    clonedModel.release()
   }
 }
 
