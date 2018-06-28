@@ -131,7 +131,7 @@ Yarn Test Suite
    Log To Console                   begin autoencoder Train 
    Run Shell                        ${submit} --master yarn --deploy-mode client --conf "spark.serializer=org.apache.spark.serializer.JavaSerializer" --executor-cores 10 --num-executors 3 --driver-memory 20g --class com.intel.analytics.bigdl.models.autoencoder.Train ${jar_path} -b 120 -e 1 -f /tmp/mnist
    Log To Console                   begin resnet Train
-   Run Shell                        ${submit} --master yarn --deploy-mode client --conf "spark.serializer=org.apache.spark.serializer.JavaSerializer" --executor-cores 10 --num-executors 3 --driver-memory 20g --class com.intel.analytics.bigdl.models.resnet.Train ${jar_path} -f /tmp/cifar --batchSize 120 --optnet true --depth 20 --classes 10 --shortcutType A --nEpochs 1 --learningRate 0.1
+   Run Shell                        ${submit} --master yarn --deploy-mode client --conf "spark.serializer=org.apache.spark.serializer.JavaSerializer" --executor-cores 10 --num-executors 3 --driver-memory 20g --class com.intel.analytics.bigdl.models.resnet.TrainCIFAR10 ${jar_path} -f /tmp/cifar --batchSize 120 --optnet true --depth 20 --classes 10 --shortcutType A --nEpochs 1 --learningRate 0.1
    Log To Console                   begin rnn Train
    Run Shell                        ${submit} --master yarn --deploy-mode client --conf "spark.serializer=org.apache.spark.serializer.JavaSerializer" --executor-cores 10 --num-executors 3 --driver-memory 20g --class com.intel.analytics.bigdl.models.rnn.Train ${jar_path} -f ./ -s ./models --nEpochs 1 --checkpoint ./model/ -b 120
    Log To Console                   begin PTBWordLM
