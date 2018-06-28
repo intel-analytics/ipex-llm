@@ -199,7 +199,7 @@ class KerasNet(ZooKerasLayer):
                 raise TypeError("Unsupported prediction data type: %s" % type(x))
             return self.predict_distributed(features)
         else:
-            if isinstance(x, np.ndarray):
+            if isinstance(x, np.ndarray) or isinstance(x, list):
                 return self.predict_local(x)
             else:
                 raise TypeError("Unsupported prediction data type: %s" % type(x))
