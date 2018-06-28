@@ -24,7 +24,6 @@ import scala.reflect.ClassTag
  * Identity just return the input to output.
  * It's useful in same parallel container to get an origin input.
  */
-@SerialVersionUID(- 6800138303171905948L)
 class Identity() extends MklDnnLayer {
 
   override def updateOutput(input: Activity): Activity = {

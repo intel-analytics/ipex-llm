@@ -23,7 +23,7 @@ import com.intel.analytics.bigdl.nn.mkldnn.Phase.TrainingPhase
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.RandomGenerator._
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.{FlatSpec, Ignore, Matchers}
 
 class SpatialBatchNormalizationSpec extends FlatSpec with Matchers {
   "a simple bn with random input" should "work correctly" in {
@@ -350,7 +350,7 @@ class SpatialBatchNormalizationSpec extends FlatSpec with Matchers {
     model1.output should be (model2.output)
   }
 
-  "a simple bach norm" should "work correctly" in {
+  "a simple bach norm" should "work correctly" ignore {
     val (batchSize, channel, height, width) = (4, 64, 2, 2)
     val shape = Array(batchSize, channel, height, width)
     val prototxt = s"""
@@ -438,7 +438,7 @@ class SpatialBatchNormalizationSpec extends FlatSpec with Matchers {
     compare(gradInput, seq.gradInput)
   }
 
-  "a simple bach norm inference" should "work correctly" in {
+  "a simple bach norm inference" should "work correctly" ignore {
     val (batchSize, channel, height, width) = (4, 64, 112, 112)
     val shape = Array(batchSize, channel, height, width)
     val prototxt = s"""

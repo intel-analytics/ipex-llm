@@ -20,12 +20,10 @@ import com.intel.analytics.bigdl.mkl.Memory
 import com.intel.analytics.bigdl.nn.mkldnn.Phase.TrainingPhase
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.{Module, nn}
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.{FlatSpec, Ignore, Matchers}
 
+@Ignore
 class TopologySpec extends FlatSpec with Matchers {
-
-  System.setProperty("collect.location",
-    "/home/yanzhang/workspace/dl_frameworks/intel.caffe.test/build/tools/collect")
 
   "LeNet5 has no tanh" should "work correctly" in {
     val inputShape = Array(4, 1, 28, 28)
