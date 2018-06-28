@@ -22,29 +22,29 @@ import org.scalatest.{FlatSpec, Matchers}
 @com.intel.analytics.bigdl.tags.Parallel
 class DenseTensorMathSpec extends FlatSpec with Matchers {
   "a.dist(b, 1)" should "be correct" in {
-    val a: Tensor[Double] = new DenseTensor(Storage(Array(1.0, 2.0, 3.0)))
-    val b: Tensor[Double] = new DenseTensor(Storage(Array(2.0, 3.0, 4.0)))
+    val a: Tensor[Double] = new DenseTensor(new ArrayStorage(Array(1.0, 2.0, 3.0)))
+    val b: Tensor[Double] = new DenseTensor(new ArrayStorage(Array(2.0, 3.0, 4.0)))
 
     a.dist(b, 1) should equal(3)
   }
 
   "a.dist(b, 2)" should "be correct" in {
-    val a: Tensor[Double] = new DenseTensor(Storage(Array(1.0, 2.0, 3.0)))
-    val b: Tensor[Double] = new DenseTensor(Storage(Array(3.0, 4.0, 5.0)))
+    val a: Tensor[Double] = new DenseTensor(new ArrayStorage(Array(1.0, 2.0, 3.0)))
+    val b: Tensor[Double] = new DenseTensor(new ArrayStorage(Array(3.0, 4.0, 5.0)))
 
     a.dist(b, 2) should equal(math.sqrt(12))
   }
 
   "a.dist(b, 3)" should "be correct" in {
-    val a: Tensor[Double] = new DenseTensor(Storage(Array(1.0, 2.0, 3.0)))
-    val b: Tensor[Double] = new DenseTensor(Storage(Array(3.0, 4.0, 5.0)))
+    val a: Tensor[Double] = new DenseTensor(new ArrayStorage(Array(1.0, 2.0, 3.0)))
+    val b: Tensor[Double] = new DenseTensor(new ArrayStorage(Array(3.0, 4.0, 5.0)))
 
     a.dist(b, 3) should equal(math.pow(24, 1.0 / 3))
   }
 
   "vector + scalar" should "be correct" in {
     val s = 2.0
-    val v: Tensor[Double] = new DenseTensor(Storage(Array(1.0, 2.0, 3.0)))
+    val v: Tensor[Double] = new DenseTensor(new ArrayStorage(Array(1.0, 2.0, 3.0)))
     val r = v + s
     r(Array(1)) should be(3.0)
     r(Array(2)) should be(4.0)
@@ -52,8 +52,8 @@ class DenseTensorMathSpec extends FlatSpec with Matchers {
   }
 
   "vector + vector" should "be correct" in {
-    val v1: Tensor[Double] = new DenseTensor(Storage(Array(1.0, 2.0, 3.0)))
-    val v2: Tensor[Double] = new DenseTensor(Storage(Array(1.0, 2.0, 3.0)))
+    val v1: Tensor[Double] = new DenseTensor(new ArrayStorage(Array(1.0, 2.0, 3.0)))
+    val v2: Tensor[Double] = new DenseTensor(new ArrayStorage(Array(1.0, 2.0, 3.0)))
     val r = v1 + v2
     r(Array(1)) should be(2.0)
     r(Array(2)) should be(4.0)
@@ -63,7 +63,7 @@ class DenseTensorMathSpec extends FlatSpec with Matchers {
   "vector + vector which is not contiguous" should "be correct" in {
     val v1: Tensor[Double] = new DenseTensor[Double](2, 4).fill(1)
     v1.t()
-    val v2: Tensor[Double] = new DenseTensor(Storage(
+    val v2: Tensor[Double] = new DenseTensor(new ArrayStorage(
       Array(1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0)))
     val r = v1 + v2
     r(Array(1, 1)) should be(2.0)
@@ -78,7 +78,7 @@ class DenseTensorMathSpec extends FlatSpec with Matchers {
 
   "vector - scalar" should "be correct" in {
     val s = 2.0
-    val v: Tensor[Double] = new DenseTensor(Storage(Array(1.0, 2.0, 3.0)))
+    val v: Tensor[Double] = new DenseTensor(new ArrayStorage(Array(1.0, 2.0, 3.0)))
     val r = v - s
     r(Array(1)) should be(-1.0)
     r(Array(2)) should be(0.0)
@@ -86,8 +86,8 @@ class DenseTensorMathSpec extends FlatSpec with Matchers {
   }
 
   "vector - vector" should "be correct" in {
-    val v1: Tensor[Double] = new DenseTensor(Storage(Array(1.0, 2.0, 3.0)))
-    val v2: Tensor[Double] = new DenseTensor(Storage(Array(2.0, 0.0, -1.0)))
+    val v1: Tensor[Double] = new DenseTensor(new ArrayStorage(Array(1.0, 2.0, 3.0)))
+    val v2: Tensor[Double] = new DenseTensor(new ArrayStorage(Array(2.0, 0.0, -1.0)))
     val r = v1 - v2
     r(Array(1)) should be(-1.0)
     r(Array(2)) should be(2.0)
@@ -96,7 +96,7 @@ class DenseTensorMathSpec extends FlatSpec with Matchers {
 
   "vector * scalar" should "be correct" in {
     val s = 2.0
-    val v: Tensor[Double] = new DenseTensor(Storage(Array(1.0, 2.0, 3.0)))
+    val v: Tensor[Double] = new DenseTensor(new ArrayStorage(Array(1.0, 2.0, 3.0)))
     val r = v * s
     r(Array(1)) should be(2.0)
     r(Array(2)) should be(4.0)
@@ -104,8 +104,8 @@ class DenseTensorMathSpec extends FlatSpec with Matchers {
   }
 
   "vector * vector" should "be correct" in {
-    val v1: Tensor[Double] = new DenseTensor(Storage(Array(1.0, 2.0, 3.0)))
-    val v2: Tensor[Double] = new DenseTensor(Storage(Array(2.0, 0.0, -1.0)))
+    val v1: Tensor[Double] = new DenseTensor(new ArrayStorage(Array(1.0, 2.0, 3.0)))
+    val v2: Tensor[Double] = new DenseTensor(new ArrayStorage(Array(2.0, 0.0, -1.0)))
     val r = v1 * v2
     r(Array(1)) should be(-1.0)
   }
@@ -119,7 +119,7 @@ class DenseTensorMathSpec extends FlatSpec with Matchers {
     mat(Array(2, 2)) = 6
     mat(Array(2, 3)) = 1
 
-    val vec: Tensor[Double] = new DenseTensor(Storage(Array(3.0, 1, 1)))
+    val vec: Tensor[Double] = new DenseTensor(new ArrayStorage(Array(3.0, 1, 1)))
     val r = mat * vec
     r(Array(1)) should be(13.0)
     r(Array(2)) should be(22.0)
@@ -136,7 +136,7 @@ class DenseTensorMathSpec extends FlatSpec with Matchers {
 
     val mat1 = mat.t
 
-    val vec: Tensor[Double] = new DenseTensor(Storage(Array(3.0, 1, 1)))
+    val vec: Tensor[Double] = new DenseTensor(new ArrayStorage(Array(3.0, 1, 1)))
     val r = mat1 * vec
     r(Array(1)) should be(15.0)
     r(Array(2)) should be(18.0)
@@ -153,7 +153,7 @@ class DenseTensorMathSpec extends FlatSpec with Matchers {
 
     val matrix = tensor(T(T(), T(), 1)).t()
 
-    val vec: Tensor[Double] = new DenseTensor(Storage(Array(3.0, 1, 1)))
+    val vec: Tensor[Double] = new DenseTensor(new ArrayStorage(Array(3.0, 1, 1)))
     val r = matrix * vec
     r(Array(1)) should be(15.0)
     r(Array(2)) should be(18.0)
@@ -260,7 +260,7 @@ class DenseTensorMathSpec extends FlatSpec with Matchers {
 
   "vector / scalar" should "be correct" in {
     val s = 2.0
-    val v: Tensor[Double] = new DenseTensor(Storage(Array(1.0, 2.0, 3.0)))
+    val v: Tensor[Double] = new DenseTensor(new ArrayStorage(Array(1.0, 2.0, 3.0)))
     val r = v / s
     r(Array(1)) should be(0.5)
     r(Array(2)) should be(1.0)
@@ -268,8 +268,8 @@ class DenseTensorMathSpec extends FlatSpec with Matchers {
   }
 
   "vector / vector" should "be correct" in {
-    val v1: Tensor[Double] = new DenseTensor(Storage(Array(1.0, 2.0, 3.0)))
-    val v2: Tensor[Double] = new DenseTensor(Storage(Array(2.0, 1.0, -1.0)))
+    val v1: Tensor[Double] = new DenseTensor(new ArrayStorage(Array(1.0, 2.0, 3.0)))
+    val v2: Tensor[Double] = new DenseTensor(new ArrayStorage(Array(2.0, 1.0, -1.0)))
     val r = v1 / v2
     r(Array(1)) should be(0.5)
     r(Array(2)) should be(2.0)
@@ -277,7 +277,7 @@ class DenseTensorMathSpec extends FlatSpec with Matchers {
   }
 
   "-vector" should "be correct" in {
-    val v: Tensor[Double] = new DenseTensor(Storage(Array(1.0, 2.0, 3.0)))
+    val v: Tensor[Double] = new DenseTensor(new ArrayStorage(Array(1.0, 2.0, 3.0)))
     val r = -v
     r(Array(1)) should be(-1.0)
     r(Array(2)) should be(-2.0)
@@ -345,7 +345,7 @@ class DenseTensorMathSpec extends FlatSpec with Matchers {
       1, 2, 3, 4,
       1, 2, 3, 4
     )
-    val a = new DenseTensor[Double](Storage(a_data), 1, Array(3, 4))
+    val a = new DenseTensor[Double](new ArrayStorage(a_data), 1, Array(3, 4))
 
 
     val b_data = Array(
@@ -354,7 +354,7 @@ class DenseTensorMathSpec extends FlatSpec with Matchers {
       1, 2,
       1, 2
     )
-    val b = new DenseTensor[Double](Storage(b_data), 1, Array(4, 2))
+    val b = new DenseTensor[Double](new ArrayStorage(b_data), 1, Array(4, 2))
 
     val c = Tensor[Double]()
     c.resize(Array(3, 2))
@@ -366,7 +366,7 @@ class DenseTensorMathSpec extends FlatSpec with Matchers {
       10, 20
     )
 
-    val expect_c = new DenseTensor[Double](Storage(expect_c_data), 1, Array(3, 2))
+    val expect_c = new DenseTensor[Double](new ArrayStorage(expect_c_data), 1, Array(3, 2))
     c.map(expect_c, (a, b) => {
       a should be(b +- 1e-6)
       a
@@ -379,7 +379,7 @@ class DenseTensorMathSpec extends FlatSpec with Matchers {
       1, 2, 3, 4,
       1, 2, 3, 4
     )
-    val a = new DenseTensor[Double](Storage(a_data), 1, Array(3, 4))
+    val a = new DenseTensor[Double](new ArrayStorage(a_data), 1, Array(3, 4))
 
 
     val b_data = Array(
@@ -388,14 +388,14 @@ class DenseTensorMathSpec extends FlatSpec with Matchers {
       1, 2,
       1, 2
     )
-    val b = new DenseTensor[Double](Storage(b_data), 1, Array(4, 2))
+    val b = new DenseTensor[Double](new ArrayStorage(b_data), 1, Array(4, 2))
 
     val m_data = Array(
       1.0, 2,
       1, 2,
       1, 2
     )
-    val m = new DenseTensor[Double](Storage(m_data), 1, Array(3, 2))
+    val m = new DenseTensor[Double](new ArrayStorage(m_data), 1, Array(3, 2))
 
     val c = Tensor[Double]()
     c.addmm(m, a, b)
@@ -406,7 +406,7 @@ class DenseTensorMathSpec extends FlatSpec with Matchers {
       11, 22
     )
 
-    val expect_c = new DenseTensor[Double](Storage(expect_c_data), 1, Array(3, 2))
+    val expect_c = new DenseTensor[Double](new ArrayStorage(expect_c_data), 1, Array(3, 2))
     c.map(expect_c, (a, b) => {
       a should be(b +- 1e-6)
       a
@@ -414,8 +414,8 @@ class DenseTensorMathSpec extends FlatSpec with Matchers {
   }
 
   "addr transpose" should "return correct value" in {
-    val v1: Tensor[Double] = new DenseTensor(Storage(Array(1.0, 2.0, 3.0)))
-    val v2: Tensor[Double] = new DenseTensor(Storage(Array(2.0, 0.0, -1.0)))
+    val v1: Tensor[Double] = new DenseTensor(new ArrayStorage(Array(1.0, 2.0, 3.0)))
+    val v2: Tensor[Double] = new DenseTensor(new ArrayStorage(Array(2.0, 0.0, -1.0)))
     val tensor: Tensor[Double] = new DenseTensor(3, 3)
     tensor(Array(1, 1)) = 1
     tensor(Array(1, 2)) = 2
@@ -430,26 +430,26 @@ class DenseTensorMathSpec extends FlatSpec with Matchers {
     val r = Tensor[Double]()
     r.resize(Array(3, 3))
     r.addr(1.0, mat, 1.0, v1, v2)
-    val expect_r = new DenseTensor(Storage(Array(3.0, 3.0, 4.0,
+    val expect_r = new DenseTensor(new ArrayStorage(Array(3.0, 3.0, 4.0,
       6.0, 4.0, 4.0,
       8.0, 4.0, 3.0)), 1, Array(3, 3))
     r should be (expect_r)
   }
 
   "addr" should "return correct value" in {
-    val v1: Tensor[Double] = new DenseTensor(Storage(Array(1.0, 2.0, 3.0)))
-    val v2: Tensor[Double] = new DenseTensor(Storage(Array(2.0, 0.0, -1.0)))
+    val v1: Tensor[Double] = new DenseTensor(new ArrayStorage(Array(1.0, 2.0, 3.0)))
+    val v2: Tensor[Double] = new DenseTensor(new ArrayStorage(Array(2.0, 0.0, -1.0)))
     val r = Tensor[Double]()
     r.resize(Array(3, 3))
     r.addr(v1, v2)
-    r should be (new DenseTensor[Double](Storage(Array(2.0, 0.0, -1.0,
+    r should be (new DenseTensor[Double](new ArrayStorage(Array(2.0, 0.0, -1.0,
       4.0, 0.0, -2.0,
       6.0, 0.0, -3.0)), 1, Array(3, 3)))
   }
 
   "addr noncontiguous" should "return correct value" in {
-    val v1: Tensor[Double] = new DenseTensor(Storage(Array(1.0, 2.0, 3.0)))
-    val v2: Tensor[Double] = new DenseTensor(Storage(Array(2.0, 0.0, -1.0)))
+    val v1: Tensor[Double] = new DenseTensor(new ArrayStorage(Array(1.0, 2.0, 3.0)))
+    val v2: Tensor[Double] = new DenseTensor(new ArrayStorage(Array(2.0, 0.0, -1.0)))
     val tensor: Tensor[Double] = new DenseTensor(3, 3, 2)
     tensor(Array(1, 1, 1)) = 1
     tensor(Array(1, 2, 1)) = 2
@@ -465,7 +465,7 @@ class DenseTensorMathSpec extends FlatSpec with Matchers {
     val r = Tensor[Double]()
     r.resize(Array(3, 3))
     r.addr(1, mat, 1, v1, v2)
-    r should be (new DenseTensor[Double](Storage(Array(3.0, 3.0, 4.0,
+    r should be (new DenseTensor[Double](new ArrayStorage(Array(3.0, 3.0, 4.0,
       6.0, 4.0, 4.0,
       8.0, 4.0, 3.0)), 1, Array(3, 3)))
   }
