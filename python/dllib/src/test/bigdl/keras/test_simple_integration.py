@@ -140,6 +140,13 @@ class TestSimpleIntegration(ZooTestCase):
         model = Model([x1, x2], [y1, y2])
         assert len(model.flattened_layers()) == 4
 
+    def test_keras_get_layer(self):
+        x1 = Input(shape=(8,))
+        y1 = Dense(10, name="Dense")(x1)
+        model = Model([x1], [y1])
+        layer = model.get_layer("Dense")
+        assert layer.name() == "Dense"
+
     def test_create_image_config(self):
         from zoo.models.image.common.image_config import ImageConfigure
         from zoo.feature.image.imagePreprocessing import ImageResize
