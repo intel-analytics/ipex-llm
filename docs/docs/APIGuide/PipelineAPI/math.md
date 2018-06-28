@@ -264,3 +264,62 @@ def contiguous[T: ClassTag](input: Variable[T])
 def contiguous(x)
 ```
 
+
+## mm
+
+Module to perform matrix multiplication on two mini-batch inputs, producing a mini-batch.
+- `x` A variable.
+- `y` A variable.
+- `axes` Axes along which to perform multiplication.
+
+**Scala example**
+```scala
+def mm[T: ClassTag](x: Variable[T], y: Variable[T], axes: List[Int])
+```
+
+
+**Python example**
+```python
+def mm(x, y, axes)
+```
+
+
+## batch_dot
+
+Operator that computes a dot product between samples in two tensors.
+- `x` Shape should only be [batch, xx]
+- `y` Shape should only be [batch, xx]
+- `axes` Integer or tuple of integers, axis or axes along which to take the dot product.
+- `normalize` Whether to L2-normalize samples along the
+              dot product axis before taking the dot product.
+              If set to True, then the output of the dot product
+              is the cosine proximity between the two samples.
+
+**Scala example**
+```scala
+def batchDot[T: ClassTag](x: Variable[T], y: Variable[T], axes: List[Int], normalize: Boolean = false)
+```
+
+
+**Python example**
+```python
+def batch_dot(x, y, axes=1, normalize=False)
+```
+
+
+## l2_normalize
+
+Normalizes a tensor wrt the L2 norm alongside the specified axis.
+- `x` A variable.
+- `axis` Axis along which to perform normalization.
+
+**Scala example**
+```scala
+def l2Normalize[T: ClassTag](x: Variable[T], axis: Int)
+```
+
+
+**Python example**
+```python
+def l2_normalize(x, axis)
+```
