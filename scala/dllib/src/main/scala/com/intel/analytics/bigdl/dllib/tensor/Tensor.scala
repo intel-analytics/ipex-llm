@@ -837,6 +837,8 @@ object SparseType extends TensorType
 
 object QuantizedType extends TensorType
 
+object MklDnnType extends TensorType
+
 object Tensor {
 
   // pre-load MKL library. If we do not do it here,
@@ -960,7 +962,8 @@ object Tensor {
    */
   def apply[@specialized(Float, Double) T: ClassTag](storage: Storage[T])(
     implicit ev: TensorNumeric[T]): Tensor[T] = {
-    new DenseTensor(storage.asInstanceOf[Storage[T]])
+    require(storage.isInstanceOf[ArrayStorage[_]], "Only support array storage in this operaiton")
+    new DenseTensor(storage.asInstanceOf[ArrayStorage[T]])
   }
 
   /**
@@ -1002,12 +1005,12 @@ object Tensor {
    * @tparam T
    * @return
    */
-  def apply[@specialized(Float, Double) T: ClassTag](storage: Storage[T],
-                                                     storageOffset: Int,
-                                                     size: Array[Int] = null,
-                                                     stride: Array[Int] = null)
-                                                    (implicit ev: TensorNumeric[T]): Tensor[T] = {
-    new DenseTensor(storage.asInstanceOf[Storage[T]], storageOffset, size, stride)
+  def apply[@specialized(Float, Double) T: ClassTag](
+    storage: Storage[T],
+    storageOffset: Int,
+    size: Array[Int] = null,
+    stride: Array[Int] = null)(implicit ev: TensorNumeric[T]): Tensor[T] = {
+    new DenseTensor(storage.asInstanceOf[ArrayStorage[T]], storageOffset, size, stride)
   }
 
   /**
