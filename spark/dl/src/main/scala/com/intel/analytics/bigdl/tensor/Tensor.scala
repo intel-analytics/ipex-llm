@@ -1008,7 +1008,6 @@ object Tensor {
     storageOffset: Int,
     size: Array[Int] = null,
     stride: Array[Int] = null)(implicit ev: TensorNumeric[T]): Tensor[T] = {
-    require(storage.isInstanceOf[ArrayStorage[_]], "Only support array storage in this operation")
     new DenseTensor(storage.asInstanceOf[ArrayStorage[T]], storageOffset, size, stride)
   }
 

@@ -15,9 +15,10 @@
  */
 package com.intel.analytics.bigdl.nn.mkldnn
 
-import com.intel.analytics.bigdl.mkl.{Engine, Stream}
+import com.intel.analytics.bigdl.mkl.{Engine, MklDnn, Stream}
 
 class MklDnnRuntime {
+  MklDnn.isLoaded
   val engine : Long = Engine.Create(Engine.Kind.Cpu, 0)
   val stream : Long = Stream.Create(Stream.Kind.Eager)
 }

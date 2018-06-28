@@ -29,7 +29,7 @@ class SoftMaxSpec extends FlatSpec with Matchers {
     val tests = List(2, 1)
 
     for (x <- tests) {
-      val sm = RefactorSoftMax()
+      val sm = SoftMax()
       sm.evaluate()
       sm.setRuntime(new MklDnnRuntime)
       sm.initFwdPrimitives(Array(HeapData(Array(x), Memory.Format.x)), InferencePhase)
@@ -53,7 +53,7 @@ class SoftMaxSpec extends FlatSpec with Matchers {
       (2, 1))
 
     for ((batchSize, channel) <- tests) {
-      val sm = RefactorSoftMax()
+      val sm = SoftMax()
       sm.setRuntime(new MklDnnRuntime)
       sm.initFwdPrimitives(Array(HeapData(Array(batchSize, channel), Memory.Format.nc)),
         InferencePhase)
@@ -82,7 +82,7 @@ class SoftMaxSpec extends FlatSpec with Matchers {
       (2, 2, 1, 1))
 
     for ((batchSize, channel, height, width) <- tests) {
-      val sm = RefactorSoftMax()
+      val sm = SoftMax()
       sm.setRuntime(new MklDnnRuntime)
       sm.initFwdPrimitives(Array(HeapData(Array(batchSize, channel, height, width),
         Memory.Format.nchw)), InferencePhase)
@@ -101,7 +101,7 @@ class SoftMaxSpec extends FlatSpec with Matchers {
 
   "SoftMax backward" should "work correctly" in {
     val (batchSize, channel, height, width) = (2, 3, 4, 4)
-    val sm = RefactorSoftMax()
+    val sm = SoftMax()
     sm.setRuntime(new MklDnnRuntime)
     sm.initFwdPrimitives(Array(HeapData(Array(batchSize, channel, height, width),
       Memory.Format.nchw)), InferencePhase)
@@ -123,7 +123,7 @@ class SoftMaxSpec extends FlatSpec with Matchers {
 
   "SoftMax multi times forward" should "work correctly" in {
     val (batchSize, channel, height, width) = (2, 3, 4, 4)
-    val sm = RefactorSoftMax()
+    val sm = SoftMax()
     sm.setRuntime(new MklDnnRuntime)
     sm.initFwdPrimitives(Array(HeapData(Array(batchSize, channel, height, width),
       Memory.Format.nchw)), InferencePhase)
