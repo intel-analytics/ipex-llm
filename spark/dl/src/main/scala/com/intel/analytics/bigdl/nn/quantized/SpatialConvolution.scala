@@ -270,7 +270,7 @@ private[bigdl] class SpatialConvolution[T: ClassTag](
       s" $kernelH, $strideW, $strideH, $padW, $padH, $nGroup)"
   }
 
-  def release(): Unit = {
+  override def release(): Unit = {
     weight.foreach(_.asInstanceOf[QuantizedTensor[T]].release())
     data.release()
   }

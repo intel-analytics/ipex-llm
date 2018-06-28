@@ -141,7 +141,7 @@ private[bigdl] class Linear[T: ClassTag](
     s"quantized.${getPrintName()}($inputSize -> $outputSize)"
   }
 
-  def release(): Unit = {
+  override def release(): Unit = {
     weight.release()
     data.release()
   }
