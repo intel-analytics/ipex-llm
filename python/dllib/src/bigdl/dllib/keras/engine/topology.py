@@ -204,6 +204,15 @@ class KerasNet(ZooKerasLayer):
             else:
                 raise TypeError("Unsupported prediction data type: %s" % type(x))
 
+    def get_layer(self, name):
+        layer = [l for l in self.layers if l.name() == name]
+        if (len(layer) == 0):
+            raise Exception("Could not find a layer named: %s" + name)
+        elif (len(layer) > 1):
+            raise Exception("There are multiple layers named: %s" + name)
+        else:
+            return layer[0]
+
     def summary(self, line_length=120, positions=[.33, .55, .67, 1.]):
         """
         Print out the summary information of an Analytics Zoo Keras Model.
