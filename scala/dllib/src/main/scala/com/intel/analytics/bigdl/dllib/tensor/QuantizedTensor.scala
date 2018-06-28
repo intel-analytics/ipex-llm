@@ -45,7 +45,7 @@ private[bigdl] class QuantizedTensor[T: ClassTag](
   }
 
   def release(): this.type = {
-    if (desc != 0) {
+    if (desc != 0 && StorageManager.checkAndSet(desc)) {
       BigQuant.FreeMemory(desc)
     }
     desc = 0L
@@ -269,6 +269,8 @@ private[bigdl] class QuantizedTensor[T: ClassTag](
   }
 
   override def getTensorNumeric(): TensorNumeric[T] = ev
+
+  override def toQuantizedTensor: QuantizedTensor[T] = this.asInstanceOf[QuantizedTensor[T]]
 
   @throws(classOf[IOException])
   private def readObject(in: ObjectInputStream): Unit = {

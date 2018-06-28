@@ -19,12 +19,15 @@ package com.intel.analytics.bigdl.optim
 import com.intel.analytics.bigdl.dataset.{PaddingParam, Sample}
 import com.intel.analytics.bigdl.models.inception.Inception_v1_NoAuxClassifier
 import com.intel.analytics.bigdl.models.lenet.LeNet5
+import com.intel.analytics.bigdl.models.utils.CachedModels
 import com.intel.analytics.bigdl.nn._
+import com.intel.analytics.bigdl.nn.quantized.{StorageInfo, StorageManager}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.transform.vision.image._
 import com.intel.analytics.bigdl.transform.vision.image.augmentation.{CenterCrop, ChannelNormalize, Resize}
-import com.intel.analytics.bigdl.utils.{Engine, Table}
+import com.intel.analytics.bigdl.utils.{Engine, LoggerFilter, Table}
 import com.intel.analytics.bigdl.utils.RandomGenerator._
+import org.apache.log4j.{Level, Logger}
 import org.apache.spark.{SparkConf, SparkContext}
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
@@ -210,5 +213,32 @@ class PredictorSpec extends FlatSpec with Matchers with BeforeAndAfter{
       assert(imageFeatures(x - 1).predict() != null)
       assert(imageFeatures(x - 1).predict().asInstanceOf[Table].length() == 2)
     })
+  }
+
+  "model predict should have no memory leak" should "be correct" in {
+    import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+    LoggerFilter.redirectSparkInfoLogs()
+    Logger.getLogger("com.intel.analytics.bigdl.optim").setLevel(Level.INFO)
+    RNG.setSeed(100)
+    val resource = getClass.getClassLoader.getResource("pascal/")
+    val imageFrame = ImageFrame.read(resource.getFile, sc) ->
+      Resize(256, 256) -> CenterCrop(224, 224) ->
+      ChannelNormalize(0.485f, 0.456f, 0.406f, 0.229f, 0.224f, 0.225f) ->
+      MatToTensor() -> ImageFrameToSample()
+    val model = Inception_v1_NoAuxClassifier(classNum = 1000)
+    val quant = model.quantize()
+    val init = StorageManager.get()
+    println(s"init count ${init.count(!_._2.isFreed)}")
+    var second: Map[Long, StorageInfo] = null
+    (0 until 20).foreach { i =>
+      val detection = quant.predictImage(imageFrame, batchPerPartition = 16).toDistributed()
+      detection.rdd.first()
+      detection.rdd.collect()
+      println("=" * 80)
+      println(StorageManager.get().count(!_._2.isFreed))
+      println("-" * 80)
+    }
+    CachedModels.deleteAll("")
+    StorageManager.get().count(!_._2.isFreed) should be (init.count(!_._2.isFreed))
   }
 }

@@ -227,4 +227,8 @@ abstract class Container[A <: Activity : ClassTag,
     super.checkDuplicate(record)
     if (!skipDuplicateCheck()) modules.foreach(_.checkDuplicate(record))
   }
+
+  override def release(): Unit = {
+    modules.foreach(_.release())
+  }
 }
