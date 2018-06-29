@@ -191,6 +191,13 @@ private[bigdl] class ModelInfo[T: ClassTag](val uuid: String, @transient var mod
     out.writeObject(cloned)
     CachedModels.add(uuid, cloned)
   }
+
+  @throws(classOf[IOException])
+  private def readObject(in: ObjectInputStream): Unit = {
+    in.defaultReadObject()
+    model = in.readObject().asInstanceOf[Module[T]]
+    CachedModels.add(uuid, model)
+  }
 }
 
 private[bigdl] object ModelInfo {
