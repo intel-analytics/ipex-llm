@@ -21,6 +21,7 @@ import com.intel.analytics.bigdl.models.lenet.LeNet5
 import com.intel.analytics.bigdl.nn.tf.Const
 import com.intel.analytics.bigdl.nn._
 import com.intel.analytics.bigdl.tensor.Tensor
+import org.apache.commons.lang3.SerializationUtils
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.{SparkConf, SparkContext}
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
@@ -136,6 +137,18 @@ class ModelBroadcastSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val modelBroadCast = ModelBroadcast[Float]().broadcast(sc, model)
     modelBroadCast.value().toString should be(model.toString)
     modelBroadCast.value().parameters()._1 should be(model.parameters()._1)
+  }
+
+  "model info serialized" should "not be null" in {
+    val model = LeNet5(10).cloneModule()
+    val info = ModelInfo[Float]("124339", model)
+
+    val newInfo = SerializationUtils.clone(info)
+
+    newInfo.model should not be (null)
+    info.model.toString() should be (newInfo.model.toString())
+    info.model.parameters()._1 should be (newInfo.model.parameters()._1)
+    info.model.parameters()._2 should be (newInfo.model.parameters()._2)
   }
 
   after {
