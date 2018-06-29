@@ -517,7 +517,6 @@ object Optimizer {
    */
   private[bigdl] def getHyperParameterLog(optimMethods: Map[String, OptimMethod[_]]): String = {
     optimMethods.map{ case (moduleName, optimMethod) =>
-        optimMethod.updateHyperParameter()
         val log = optimMethod.getHyperParameter()
         if (log.isEmpty) {
           log
