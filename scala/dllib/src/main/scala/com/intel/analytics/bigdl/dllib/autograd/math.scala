@@ -271,7 +271,8 @@ object AutoGrad {
     require(axes(1) >= 1 && axes(1) <= 2, s"axes should between [1, 2], not ${axes(1)}")
     val transposeX = if (axes(0) != 2) {true} else {false}
     val transposeY = if (axes(1) == 2) {true} else {false}
-    val mm = MM[T](transA = transposeX, transB = transposeY)
+    val mm = com.intel.analytics.zoo.pipeline.api.torch.MM[T](transA = transposeX,
+      transB = transposeY)
     val kmm = new KerasLayerWrapper[T](mm.asInstanceOf[AbstractModule[Activity, Activity, T]])
     kmm.from(x, y)
   }
