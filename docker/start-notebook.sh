@@ -25,7 +25,6 @@ SPARK_MAJOR_VERSION=${SPARK_VERSION_ENV%%.[0-9]}
 export PYSPARK_DRIVER_PYTHON=jupyter
 export PYSPARK_DRIVER_PYTHON_OPTS="notebook --notebook-dir=$ANALYTICS_ZOO_TUTORIALS_HOME --ip=* --port=$NotebookPort --no-browser --NotebookApp.token=$NotebookToken --allow-root"
 
-source activate py36
 ${SPARK_HOME}/bin/pyspark \
   --master local[4] \
   --driver-memory 4g \
