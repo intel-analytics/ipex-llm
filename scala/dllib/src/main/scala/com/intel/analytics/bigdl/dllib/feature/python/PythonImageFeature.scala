@@ -18,12 +18,12 @@ package com.intel.analytics.zoo.feature.python
 
 import java.util.{List => JList}
 
+import com.intel.analytics.bigdl.nn.abstractnn.DataFormat
 import com.intel.analytics.bigdl.python.api.{JTensor, PythonBigDL}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.transform.vision.image._
 import com.intel.analytics.zoo.feature.common.Preprocessing
 import com.intel.analytics.zoo.feature.image._
-
 import org.apache.spark.api.java.{JavaRDD, JavaSparkContext}
 import org.opencv.imgproc.Imgproc
 
@@ -136,8 +136,16 @@ class PythonImageFeature[T: ClassTag](implicit ev: TensorNumeric[T]) extends Pyt
       stdR.toFloat, stdG.toFloat, stdB.toFloat)
   }
 
-  def createImageMatToTensor(): ImageMatToTensor[T] = {
-    ImageMatToTensor()
+  def createImageMatToTensor(toRGB: Boolean = false,
+                             tensorKey: String = ImageFeature.imageTensor,
+                             shareBuffer: Boolean = true,
+                             format: String = "NCHW"): ImageMatToTensor[T] = {
+    format match {
+      case "NCHW" => ImageMatToTensor(toRGB, tensorKey, shareBuffer, DataFormat.NCHW)
+      case "NHWC" => ImageMatToTensor(toRGB, tensorKey, shareBuffer, DataFormat.NHWC)
+      case other => throw new IllegalArgumentException(s"Unsupported format:" +
+        s" $format. Only NCHW and NHWC are supported.")
+    }
   }
 
   def createImageHue(deltaLow: Double, deltaHigh: Double): ImageHue = {
