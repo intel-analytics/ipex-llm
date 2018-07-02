@@ -77,9 +77,14 @@ class ImageChannelNormalize(ImagePreprocessing):
 class ImageMatToTensor(ImagePreprocessing):
     """
     MatToTensor
+    :param toRGB BGR to RGB (default is BGR)
+    :param tensorKey key to store transformed tensor
+    :param format DataFormat.NCHW or DataFormat.NHWC
     """
-    def __init__(self, bigdl_type="float"):
-        super(ImageMatToTensor, self).__init__(bigdl_type)
+    def __init__(self, to_RGB=False, tensor_key="imageTensor",
+                 share_buffer=True, format="NCHW", bigdl_type="float"):
+        super(ImageMatToTensor, self).__init__(bigdl_type, to_RGB, tensor_key,
+                                               share_buffer, format)
 
 
 class ImageSetToSample(ImagePreprocessing):
