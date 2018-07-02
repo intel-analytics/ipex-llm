@@ -23,6 +23,7 @@ import com.intel.analytics.bigdl.nn.{Xavier, Zeros}
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.RandomGenerator._
+import org.apache.commons.lang3.SerializationUtils
 import org.scalatest.{FlatSpec, Matchers}
 
 import scala.util.Random
@@ -402,6 +403,36 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
                 |}
               """.stripMargin
     Tools.compare(txt, seq, inputShape, outputShape, 1e-2)
+  }
+
+  "conv serialized with java serialization method" should "work correctly" in {
+    val inputShape = Array(4, 3, 5, 5)
+    val outputShape = Array(4, 2, 3, 3)
+    val name = "conv"
+    val nOutput = 2
+    val kernel = 3
+    val pad = 1
+    val stride = 2
+
+    val conv = new SpatialConvolution(3, nOutput, kernel, kernel, stride, stride, pad, pad, 1)
+    conv.setName(name)
+    conv.setRuntime(new MklDnnRuntime)
+    conv.initFwdPrimitives(Array(HeapData(inputShape, Memory.Format.nchw)), TrainingPhase)
+    conv.initBwdPrimitives(Array(HeapData(outputShape, Memory.Format.nchw)), TrainingPhase)
+    conv.initGradWPrimitives(Array(HeapData(outputShape, Memory.Format.nchw)), TrainingPhase)
+
+    val input = Tensor(inputShape).rand(-1, 1)
+    conv.forward(input)
+
+    val cloned = SerializationUtils.clone(conv)
+    cloned.setRuntime(new MklDnnRuntime)
+    cloned.initFwdPrimitives(Array(HeapData(inputShape, Memory.Format.nchw)), TrainingPhase)
+    cloned.initBwdPrimitives(Array(HeapData(outputShape, Memory.Format.nchw)), TrainingPhase)
+    cloned.initGradWPrimitives(Array(HeapData(outputShape, Memory.Format.nchw)), TrainingPhase)
+
+    cloned.forward(input)
+
+    Tools.dense(conv.output) should be (Tools.dense(cloned.output))
   }
 
   def prototxt(inputShape: Array[Int], name: String,

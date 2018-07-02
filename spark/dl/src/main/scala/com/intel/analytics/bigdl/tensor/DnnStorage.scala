@@ -15,6 +15,8 @@
  */
 package com.intel.analytics.bigdl.tensor
 
+import java.io.{IOException, ObjectInputStream, ObjectOutputStream}
+
 import com.intel.analytics.bigdl.mkl.Memory
 
 import scala.reflect._
@@ -31,7 +33,7 @@ private[tensor] class DnnStorage[T: ClassTag](size: Int) extends Storage[T] {
   private var _isReleased: Boolean = false
 
   // Hold the address of the native array
-  val ptr: Pointer = new Pointer(allocate(size))
+  @transient lazy val ptr: Pointer = new Pointer(allocate(size))
 
   override def length(): Int = size
 
@@ -87,12 +89,26 @@ private[tensor] class DnnStorage[T: ClassTag](size: Int) extends Storage[T] {
 
   def isReleased(): Boolean = _isReleased
 
-
   private def allocate(capacity: Int): Long = {
     require(capacity > 0, s"capacity should not be larger than 0")
     val ptr = Memory.AlignedMalloc(capacity * DnnStorage.FLOAT_BYTES, DnnStorage.CACHE_LINE_SIZE)
     require(ptr != 0L, s"allocate native aligned memory failed")
     ptr
+  }
+
+  @throws(classOf[IOException])
+  private def readObject(in: ObjectInputStream): Unit = {
+    in.defaultReadObject()
+    val elements = in.readObject().asInstanceOf[Array[Float]]
+    Memory.CopyArray2Ptr(elements, 0, ptr.address, 0, size, DnnStorage.FLOAT_BYTES)
+  }
+
+  @throws(classOf[IOException])
+  private def writeObject(out: ObjectOutputStream): Unit = {
+    out.defaultWriteObject()
+    val elements = new Array[Float](this.length())
+    Memory.CopyPtr2Array(this.ptr.address, 0, elements, 0, size, DnnStorage.FLOAT_BYTES)
+    out.writeObject(elements)
   }
 }
 

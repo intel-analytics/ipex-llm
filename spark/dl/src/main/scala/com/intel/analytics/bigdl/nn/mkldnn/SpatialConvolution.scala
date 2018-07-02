@@ -24,6 +24,7 @@ import com.intel.analytics.bigdl.tensor.{DnnTensor, Tensor}
 
 import scala.collection.mutable.ArrayBuffer
 
+@SerialVersionUID(- 8655278118600401806L)
 class SpatialConvolution(
   val nInputPlane: Int,
   val nOutputPlane: Int,
@@ -41,7 +42,7 @@ class SpatialConvolution(
   val initGradBias: Tensor[Float] = null,
   val withBias: Boolean = true,
   val format: DataFormat = DataFormat.NCHW
-) extends MklDnnLayer with Initializable {
+) extends MklDnnLayer with Initializable with Serializable {
   private val weightShape = if (nGroup == 1) {
     Array(nOutputPlane, nInputPlane, kernelH, kernelW)
   } else {
@@ -50,7 +51,7 @@ class SpatialConvolution(
 
   // !!!important!!! this is for weight conversion. The weights in forward and backward is
   // different.
-  val reorderManager = new ReorderManager
+  @transient private lazy val reorderManager = new ReorderManager
 
   val weight: DnnTensor[Float] = DnnTensor[Float](weightShape)
   var weightForBackward: DnnTensor[Float] = _
@@ -58,14 +59,14 @@ class SpatialConvolution(
   val gradWeight: DnnTensor[Float] = DnnTensor[Float](weightShape)
   val gradBias: DnnTensor[Float] = DnnTensor[Float](Array(nOutputPlane))
 
-  var forwardPrimDesc: Long = 0L
+  @transient var forwardPrimDesc: Long = 0L
 
-  var updateOutputMemoryPrimitives: Array[Long] = _
-  var updateOutputTensors: Array[Tensor[Float]] = _
-  var updateGradInputMemoryPrimitives: Array[Long] = _
-  var updateGradInputTensors: Array[Tensor[Float]] = _
-  var updateGradWMemoryPrimitives: Array[Long] = _
-  var updateGradWTensors: Array[Tensor[Float]] = _
+  @transient var updateOutputMemoryPrimitives: Array[Long] = _
+  @transient var updateOutputTensors: Array[Tensor[Float]] = _
+  @transient var updateGradInputMemoryPrimitives: Array[Long] = _
+  @transient var updateGradInputTensors: Array[Tensor[Float]] = _
+  @transient var updateGradWMemoryPrimitives: Array[Long] = _
+  @transient var updateGradWTensors: Array[Tensor[Float]] = _
 
   var _relu = false
   var _sum = false
@@ -88,7 +89,7 @@ class SpatialConvolution(
     this
   }
 
-  object ParamsShape {
+  object ParamsShape extends Serializable {
     var weight: MemoryData = _
     var weightForBackward: MemoryData = _
     var bias: MemoryData = _

@@ -17,6 +17,7 @@ package com.intel.analytics.bigdl.tensor
 
 import com.intel.analytics.bigdl.mkl.MklDnn
 import com.intel.analytics.bigdl.utils.{BigDLSpecHelper, T}
+import org.apache.commons.lang3.SerializationUtils
 
 class DnnTensorSpec extends BigDLSpecHelper {
   "nElement" should "be correct" in {
@@ -68,5 +69,19 @@ class DnnTensorSpec extends BigDLSpecHelper {
     dnnTensor1.add(dnnTensor2)
     val heapTensor3 = Tensor[Float](4).copy(dnnTensor1)
     heapTensor3 should be(Tensor[Float](T(3, 7, 4, 11)))
+  }
+
+  "tensor clone with java serialization" should "work correctly" in {
+    val heapTensor = Tensor[Float](T(1, 2, 3, 4)).rand(-1, 1)
+    val dnnTensor = DnnTensor[Float](4).copy(heapTensor)
+
+    val cloned = SerializationUtils.clone(dnnTensor).asInstanceOf[DnnTensor[Float]]
+    val heapCloned = Tensor[Float](4).copy(cloned)
+
+    println(heapTensor)
+    println("=" * 80)
+    println(heapCloned)
+
+    heapCloned should be (heapTensor)
   }
 }

@@ -23,6 +23,7 @@ import com.intel.analytics.bigdl.nn.mkldnn.Phase.TrainingPhase
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.RandomGenerator._
+import org.apache.commons.lang3.SerializationUtils
 import org.scalatest.{FlatSpec, Ignore, Matchers}
 
 class SpatialBatchNormalizationSpec extends FlatSpec with Matchers {
@@ -64,6 +65,36 @@ class SpatialBatchNormalizationSpec extends FlatSpec with Matchers {
     Equivalent.nearequals(gradWeight1, gradWeight2) should be (true)
 
     Equivalent.nearequals(Tools.dense(bn.gradInput).toTensor, nnBn.gradInput) should be (true)
+  }
+
+  "batch norm cloned" should "work correctly" in {
+    val batchSize = 2
+    RNG.setSeed(100)
+    val input = Tensor(100, 1, 10, 10).rand(-1, 1)
+    val (channel, height, width) = (1, 10, 10)
+
+    val initWeight = Tensor(channel).rand(-1, 1)
+    val initBias = Tensor(channel).fill(0)
+
+    val bn = SpatialBatchNormalization(1, 0.0, initWeight = initWeight, initBias = initBias)
+
+    val inputShape = Array(100, 1, 10, 10)
+    bn.setRuntime(new MklDnnRuntime)
+    bn.initFwdPrimitives(Array(HeapData(inputShape, Memory.Format.nchw)), TrainingPhase)
+    bn.initBwdPrimitives(Array(HeapData(inputShape, Memory.Format.nchw)), TrainingPhase)
+    bn.initGradWPrimitives(Array(HeapData(inputShape, Memory.Format.nchw)), TrainingPhase)
+
+    bn.forward(input)
+
+    val cloned = SerializationUtils.clone(bn)
+    cloned.setRuntime(new MklDnnRuntime)
+    cloned.initFwdPrimitives(Array(HeapData(inputShape, Memory.Format.nchw)), TrainingPhase)
+    cloned.initBwdPrimitives(Array(HeapData(inputShape, Memory.Format.nchw)), TrainingPhase)
+    cloned.initGradWPrimitives(Array(HeapData(inputShape, Memory.Format.nchw)), TrainingPhase)
+
+    cloned.forward(input)
+
+    Tools.dense(bn.output) should be (Tools.dense(cloned.output))
   }
 
   "bn updateOutput" should "work correctly" in {
