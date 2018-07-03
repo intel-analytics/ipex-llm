@@ -39,4 +39,11 @@ object InferenceModelFactory {
     model.evaluate()
     FloatInferenceModel(model, predictor)
   }
+
+  def loadFloatInferenceModelForTF(modelPath: String): FloatInferenceModel = {
+    val model = ModelLoader.loadFloatModelForTF(modelPath)
+    val predictor = LocalPredictor(model)
+    model.evaluate()
+    FloatInferenceModel(model, predictor)
+  }
 }

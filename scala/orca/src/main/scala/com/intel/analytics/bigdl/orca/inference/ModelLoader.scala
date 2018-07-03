@@ -22,7 +22,7 @@ import com.intel.analytics.bigdl.utils.Engine
 import com.intel.analytics.bigdl.utils.caffe.CaffeLoader
 import com.intel.analytics.bigdl.utils.serializer.ModuleLoader
 import com.intel.analytics.zoo.pipeline.api.keras.models.{Model, Sequential}
-import com.intel.analytics.zoo.pipeline.api.net.GraphNet
+import com.intel.analytics.zoo.pipeline.api.net.{GraphNet, TFNet}
 import org.slf4j.LoggerFactory
 
 object ModelLoader extends InferenceSupportive {
@@ -53,6 +53,16 @@ object ModelLoader extends InferenceSupportive {
     timing(s"load model") {
       logger.info(s"load model from $modelPath and $weightPath")
       val model = CaffeLoader.loadCaffe[Float](modelPath, weightPath)._1.asInstanceOf[Graph[Float]]
+      logger.info(s"loaded model as $model")
+      model
+    }
+  }
+
+  def loadFloatModelForTF(modelPath: String)
+  : AbstractModule[Activity, Activity, Float] = {
+    timing("load model") {
+      logger.info(s"load model from $modelPath")
+      val model = TFNet(modelPath)
       logger.info(s"loaded model as $model")
       model
     }
