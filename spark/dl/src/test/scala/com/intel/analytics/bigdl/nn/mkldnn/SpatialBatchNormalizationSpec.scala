@@ -95,6 +95,12 @@ class SpatialBatchNormalizationSpec extends FlatSpec with Matchers {
     cloned.forward(input)
 
     Tools.dense(bn.output) should be (Tools.dense(cloned.output))
+
+    val gradOutput = Tensor(inputShape).rand(-1, 1)
+    bn.backward(input, gradOutput)
+    cloned.backward(input, gradOutput)
+    Tools.dense(bn.gradInput) should be (Tools.dense(cloned.gradInput))
+    Tools.dense(bn.gradWeightAndBias) should be (Tools.dense(cloned.gradWeightAndBias))
   }
 
   "bn updateOutput" should "work correctly" in {

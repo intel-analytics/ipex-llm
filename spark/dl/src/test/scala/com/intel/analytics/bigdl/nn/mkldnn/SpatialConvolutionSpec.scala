@@ -433,6 +433,15 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
     cloned.forward(input)
 
     Tools.dense(conv.output) should be (Tools.dense(cloned.output))
+
+    val gradOutput = Tensor(outputShape).rand(-1, 1)
+
+    conv.backward(input, gradOutput)
+    cloned.backward(input, gradOutput)
+
+    Tools.dense(conv.gradInput) should be (Tools.dense(cloned.gradInput))
+    Tools.dense(conv.gradWeight) should be (Tools.dense(cloned.gradWeight))
+    Tools.dense(conv.gradBias) should be (Tools.dense(cloned.gradBias))
   }
 
   def prototxt(inputShape: Array[Int], name: String,

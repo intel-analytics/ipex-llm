@@ -27,8 +27,8 @@ import scala.collection.mutable.ArrayBuffer
 class SoftMax() extends MklDnnLayer {
   val nnSoftMax = nn.SoftMax[Float]()
 
-  var updateOutputTensors: Array[Tensor[Float]] = _
-  var updateOutputMemoryPrimitives: Array[Long] = _
+  @transient var updateOutputTensors: Array[Tensor[Float]] = _
+  @transient var updateOutputMemoryPrimitives: Array[Long] = _
 
   override private[mkldnn] def initFwdPrimitives(inputs: Array[MemoryData], phase: Phase) = {
     phase match {

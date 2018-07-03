@@ -241,6 +241,13 @@ class LinearSpec extends FlatSpec with Matchers {
     cloned.forward(input)
 
     Tools.dense(linear.output) should be (Tools.dense(cloned.output))
+
+    linear.backward(input, gradOutput)
+    cloned.backward(input, gradOutput)
+
+    Tools.dense(linear.gradInput) should be (Tools.dense(cloned.gradInput))
+    Tools.dense(linear.gradWeight) should be (Tools.dense(cloned.gradWeight))
+    Tools.dense(linear.gradBias) should be (Tools.dense(cloned.gradBias))
   }
 
   "linear with maxpooling" should "work correctly" in {

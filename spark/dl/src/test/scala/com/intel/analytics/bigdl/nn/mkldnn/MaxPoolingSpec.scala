@@ -16,10 +16,12 @@
 package com.intel.analytics.bigdl.nn.mkldnn
 
 import com.intel.analytics.bigdl.mkl.{AlgKind, Memory}
+import com.intel.analytics.bigdl.nn.mkldnn.Phase.TrainingPhase
 import com.intel.analytics.bigdl.nn.{SpatialAveragePooling, SpatialMaxPooling}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.BigDLSpecHelper
 import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
+import org.apache.commons.lang3.SerializationUtils
 
 import scala.util.Random
 
@@ -76,5 +78,35 @@ class MaxPoolingSpec extends BigDLSpecHelper {
     val grad2 = layer.backward(input, output2).toTensor[Float]
     val grad1 = seq.backward(input, output2)
     grad1 should be(grad2)
+  }
+
+  "max pooling with java serialization" should "be correct" in {
+    val batchSize = 2
+    val inputShape = Array(batchSize, 64, 112, 112)
+    val outputShape = Array(batchSize, 64, 56, 56)
+    val input = Tensor[Float](batchSize, 64, 112, 112).rand(-1, 1)
+
+    val pool = MaxPooling(3, 3, 2, 2)
+    pool.setRuntime(new MklDnnRuntime)
+    pool.initFwdPrimitives(Array(HeapData(inputShape, Memory.Format.nchw)), TrainingPhase)
+    pool.initBwdPrimitives(Array(HeapData(outputShape, Memory.Format.nchw)), TrainingPhase)
+    pool.initGradWPrimitives(Array(HeapData(outputShape, Memory.Format.nchw)), TrainingPhase)
+
+    val cloned = SerializationUtils.clone(pool)
+    cloned.setRuntime(new MklDnnRuntime)
+    cloned.initFwdPrimitives(Array(HeapData(inputShape, Memory.Format.nchw)), TrainingPhase)
+    cloned.initBwdPrimitives(Array(HeapData(outputShape, Memory.Format.nchw)), TrainingPhase)
+    cloned.initGradWPrimitives(Array(HeapData(outputShape, Memory.Format.nchw)), TrainingPhase)
+
+    pool.forward(input)
+    cloned.forward(input)
+
+    Tools.dense(pool.output) should be (Tools.dense(cloned.output))
+
+    val gradOutput = Tensor[Float](outputShape).rand(-1, 1)
+    pool.backward(input, gradOutput)
+    cloned.backward(input, gradOutput)
+
+    Tools.dense(pool.gradInput) should be (Tools.dense(cloned.gradInput))
   }
 }
