@@ -192,4 +192,18 @@ class PythonNNFrames[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonB
       clipNorm: Float): Unit = {
     estimator.setGradientClippingByL2Norm(clipNorm)
   }
+
+  def saveNNModel(model: NNModel[T], path: String): Unit = {
+    model.save(path)
+  }
+
+  def loadNNModel(path: String): NNModel[_] = {
+    val loaded = NNModel.load(path)
+    println(loaded)
+    loaded
+  }
+
+  def loadNNClassifierModel(path: String): NNClassifierModel[_] = {
+    NNClassifierModel.load(path)
+  }
 }
