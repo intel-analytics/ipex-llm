@@ -421,15 +421,40 @@ object TFNet {
 
   implicit val formats = DefaultFormats
 
-  val defaultSessionConfig = Seq(16, 1, 40, 1, 72, 1).map(_.toByte).toArray
-  // Ideally we should use the following code, however, importing tensorflow proto
-  // will conflict with bigdl.
+  case class SessionConfig(intraOpParallelismThreads: Int = 1,
+                           interOpParallelismThreads: Int = 1,
+                           usePerSessionThreads: Boolean = true) {
 
-//  val defaultSessionConfig = ConfigProto.newBuilder()
-//    .setInterOpParallelismThreads(1)
-//    .setIntraOpParallelismThreads(1)
-//    .setUsePerSessionThreads(true)
-//    .build().toByteArray
+    // Ideally we should use the following code, however, importing tensorflow proto
+    // will conflict with bigdl.
+
+    //  val defaultSessionConfig = ConfigProto.newBuilder()
+    //    .setInterOpParallelismThreads(1)
+    //    .setIntraOpParallelismThreads(1)
+    //    .setUsePerSessionThreads(true)
+    //    .build().toByteArray
+
+    def toByteArray(): Array[Byte] = {
+      val intraSeq = if (intraOpParallelismThreads > 0) {
+        Seq(16, intraOpParallelismThreads)
+      } else {
+        Seq[Int]()
+      }
+      val interSeq = if (interOpParallelismThreads > 0) {
+        Seq(40, interOpParallelismThreads)
+      } else {
+        Seq[Int]()
+      }
+      val perSessSeq = if (usePerSessionThreads) {
+        Seq(72, 1)
+      } else {
+        Seq[Int]()
+      }
+
+      (intraSeq ++ interSeq ++ perSessSeq).map(_.toByte).toArray
+    }
+  }
+
 
   private def floatToInt(array: Array[Float]): Array[Int] = {
     val result = new Array[Int](array.length)
@@ -479,7 +504,7 @@ object TFNet {
    * @return
    */
   private def apply(graphDef: GraphDef, graphId: String, inputNames: Seq[String],
-            outputNames: Seq[String], config: Array[Byte] = defaultSessionConfig): TFNet = {
+            outputNames: Seq[String], config: Array[Byte]): TFNet = {
     val graph = new Graph()
     graph.importGraphDef(graphDef.toByteArray)
 
@@ -495,9 +520,9 @@ object TFNet {
    */
   def apply(path: String,
             inputNames: Seq[String],
-            outputNames: Seq[String], config: Array[Byte]): TFNet = {
+            outputNames: Seq[String], config: SessionConfig): TFNet = {
     val graphDef = parseGraph(path)
-    TFNet(graphDef, path, inputNames, outputNames, config)
+    TFNet(graphDef, path, inputNames, outputNames, config.toByteArray())
   }
 
   /**
@@ -511,13 +536,14 @@ object TFNet {
             inputNames: Seq[String],
             outputNames: Seq[String]): TFNet = {
     val graphDef = parseGraph(path)
-    TFNet(graphDef, path, inputNames, outputNames, defaultSessionConfig)
+    val config = SessionConfig()
+    TFNet(graphDef, path, inputNames, outputNames, config = config.toByteArray())
   }
 
 
-  def apply(folder: String): TFNet = {
+  def apply(folder: String, config: SessionConfig = SessionConfig()): TFNet = {
     val (model, inputs, outputs) = NetUtils.processTFFolder(folder)
-    TFNet(model, inputs, outputs, defaultSessionConfig)
+    TFNet(model, inputs, outputs, config)
   }
 
   private def parseGraph(graphProtoTxt: String) : GraphDef = {
