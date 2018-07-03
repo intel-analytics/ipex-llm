@@ -66,10 +66,10 @@ If sc is null, Read image as LocalImageSet from local file system
 Example:
 ```
 // create LocalImageSet from an image folder
-val localImageFrame = ImageSet.read("/tmp/image/")
+val localImageSet = ImageSet.read("/tmp/image/")
 
-// create DistributedImageFrame from an image folder
-val distributedImageFrame2 = ImageSet.read("/tmp/image/", sc, 2)
+// create DistributedImageSet from an image folder
+val distributedImageSet2 = ImageSet.read("/tmp/image/", sc, 2)
 ```
 
 **Python APIs:**
@@ -92,11 +92,11 @@ If sc is null, Read image as LocalImageSet from local file system
 
 Python example:
 ```python
-# create LocalImageFrame from an image folder
-local_image_frame2 = ImageSet.read("/tmp/image/")
+# create LocalImageSet from an image folder
+local_image_set2 = ImageSet.read("/tmp/image/")
 
-# create DistributedImageFrame from an image folder
-distributed_image_frame = ImageSet.read("/tmp/image/", sc, 2)
+# create DistributedImageSet from an image folder
+distributed_image_set = ImageSet.read("/tmp/image/", sc, 2)
 ```
 
 ## Image Transformer
@@ -136,4 +136,32 @@ Example:
 ```
 transformer = ImageBrightness(0.0, 32.0)
 transformed = imageSet.transform(transformer)
+```
+
+**Scala APIs:**
+```
+package com.intel.analytics.zoo.feature.image
+
+object ImageBytesToMat
+
+def apply(byteKey: String = ImageFeature.bytes,
+          imageCodec: Int = Imgcodecs.CV_LOAD_IMAGE_UNCHANGED): ImageBytesToMat
+```
+Transform byte array(original image file in byte) to OpenCVMat
+
+* byteKey: key that maps byte array. Default value is ImageFeature.bytes
+* imageCodec: specifying the color type of a loaded image, same as in OpenCV.imread.
+              1. CV_LOAD_IMAGE_ANYDEPTH - If set, return 16-bit/32-bit image when the input has the corresponding depth, otherwise convert it to 8-bit.
+              2. CV_LOAD_IMAGE_COLOR - If set, always convert image to the color one
+              3. CV_LOAD_IMAGE_GRAYSCALE - If set, always convert image to the grayscale one
+              4. >0 Return a 3-channel color image.
+              Note The alpha channel is stripped from the output image. Use negative value if you need the alpha channel.
+              5. =0 Return a grayscale image.
+              6. <0 Return the loaded image as is (with alpha channel).
+              Default value is Imgcodecs.CV_LOAD_IMAGE_UNCHANGED.
+
+Example:
+```
+val imageSet = ImageSet.read(path, sc)
+imageSet -> ImageBytesToMat()
 ```

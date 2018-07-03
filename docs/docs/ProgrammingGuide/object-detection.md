@@ -20,6 +20,8 @@ val output = model.predictImageSet(data)
 
 For preprocessors for Object Detection models, please check [Object Detection Config](https://github.com/intel-analytics/analytics-zoo/blob/master/zoo/src/main/scala/com/intel/analytics/zoo/models/image/objectdetection/ObjectDetectionConfig.scala)
 
+Note: We expect the loaded images has 3 channels. If the channel is not 3(eg, gray/png images), please set `imageCodec` when loading images `ImageSet.read`. See https://analytics-zoo.github.io/0.1.0/#ProgrammingGuide/object-detection/#object-detection-examples
+
 Users can also do the inference directly using Analytics zoo.
 Sample code for SSD VGG on PASCAL as below:
 
