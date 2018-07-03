@@ -47,6 +47,10 @@ public abstract class AbstractInferenceModel implements Serializable {
     this.model = InferenceModelFactory.loadFloatInferenceModelForCaffe(modelPath, weightPath);
   }
 
+  public void loadTF(String modelPath) {
+    this.model = InferenceModelFactory.loadFloatInferenceModelForTF(modelPath);
+  }
+
   public void reload(String modelPath) {
     load(modelPath, null);
   }
