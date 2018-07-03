@@ -15,6 +15,8 @@
 #
 
 import pytest
+import shutil
+import errno
 from bigdl.nn.criterion import *
 from bigdl.nn.layer import *
 from bigdl.optim.optimizer import *
@@ -298,6 +300,47 @@ class TestNNClassifer():
         assert type(res).__name__ == 'DataFrame'
         assert res.count() == 4
 
+    def test_NNModel_save_load_BigDL_model(self):
+        model = Sequential().add(Linear(2, 2))
+        criterion = MSECriterion()
+        estimator = NNEstimator(model, criterion).setMaxEpoch(1).setBatchSize(4)
+
+        df = self.get_estimator_df()
+        nnModel = estimator.fit(df)
+        try:
+            tmp_dir = tempfile.mkdtemp()
+            modelPath = os.path.join(tmp_dir, "model")
+            nnModel.model.save(modelPath)
+            loaded_model = Model.load(modelPath)
+            resultDF = NNModel(loaded_model).transform(df)
+            assert resultDF.count() == 4
+        finally:
+            try:
+                shutil.rmtree(tmp_dir)  # delete directory
+            except OSError as exc:
+                if exc.errno != errno.ENOENT:  # ENOENT - no such file or directory
+                    raise  # re-raise exception
+
+    def test_NNModel_save_load(self):
+        model = Sequential().add(Linear(2, 2))
+        criterion = MSECriterion()
+        estimator = NNEstimator(model, criterion).setMaxEpoch(1)
+
+        df = self.get_estimator_df()
+        nnModel = estimator.fit(df)
+        try:
+            tmp_dir = tempfile.mkdtemp()
+            modelPath = os.path.join(tmp_dir, "model")
+            nnModel.save(modelPath)
+            loaded_model = NNModel.load(modelPath)
+            assert loaded_model.transform(df).count() == 4
+        finally:
+            try:
+                shutil.rmtree(tmp_dir)  # delete directory
+            except OSError as exc:
+                if exc.errno != errno.ENOENT:  # ENOENT - no such file or directory
+                    raise  # re-raise exception
+
     def test_nnclassifier_fit_nnclassifiermodel_transform(self):
         model = Sequential().add(Linear(2, 2))
         criterion = ClassNLLCriterion()
@@ -432,6 +475,48 @@ class TestNNClassifer():
             res = pipelineModel.transform(df)
             assert type(res).__name__ == 'DataFrame'
         # TODO: Add test for ML Vector once infra is ready.
+
+    def test_NNClassifierModel_save_load_BigDL_model(self):
+        model = Sequential().add(Linear(2, 2))
+        criterion = MSECriterion()
+        classifier = NNClassifier(model, criterion).setMaxEpoch(1).setBatchSize(4)
+
+        df = self.get_classifier_df()
+        nnClassifierModel = classifier.fit(df)
+        try:
+            tmp_dir = tempfile.mkdtemp()
+            modelPath = os.path.join(tmp_dir, "model")
+            nnClassifierModel.model.save(modelPath)
+            loaded_model = Model.load(modelPath)
+            resultDF = NNClassifierModel(loaded_model).transform(df)
+            assert resultDF.count() == 4
+        finally:
+            try:
+                shutil.rmtree(tmp_dir)  # delete directory
+            except OSError as exc:
+                if exc.errno != errno.ENOENT:  # ENOENT - no such file or directory
+                    raise  # re-raise exception
+
+    def test_NNClassifierModel_save_load(self):
+        model = Sequential().add(Linear(2, 2))
+        criterion = ClassNLLCriterion()
+        classifier = NNClassifier(model, criterion, [2]).setMaxEpoch(1)
+
+        df = self.get_classifier_df()
+        nnClassifierModel = classifier.fit(df)
+        try:
+            tmp_dir = tempfile.mkdtemp()
+            modelPath = os.path.join(tmp_dir, "model")
+            nnClassifierModel.save(modelPath)
+            loaded_model = NNClassifierModel.load(modelPath)
+            assert (isinstance(loaded_model, NNClassifierModel))
+            assert loaded_model.transform(df).count() == 4
+        finally:
+            try:
+                shutil.rmtree(tmp_dir)  # delete directory
+            except OSError as exc:
+                if exc.errno != errno.ENOENT:  # ENOENT - no such file or directory
+                    raise  # re-raise exception
 
 if __name__ == "__main__":
     pytest.main()
