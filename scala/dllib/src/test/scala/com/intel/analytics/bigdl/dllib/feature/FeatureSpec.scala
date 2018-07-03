@@ -17,13 +17,29 @@ package com.intel.analytics.zoo.feature
 
 import com.intel.analytics.zoo.common.NNContext
 import com.intel.analytics.zoo.feature.common.{BigDLAdapter, Preprocessing}
-import com.intel.analytics.zoo.feature.image.{ImageResize, ImageSet}
-import org.apache.spark.SparkConf
+import com.intel.analytics.zoo.feature.image.{ImageBytesToMat, ImageResize, ImageSet}
+
+import org.apache.spark.{SparkConf, SparkContext}
+
+import org.opencv.imgcodecs.Imgcodecs
+
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 
 class FeatureSpec extends FlatSpec with Matchers with BeforeAndAfter {
   val resource = getClass.getClassLoader.getResource("imagenet/n04370456/")
+  var sc : SparkContext = _
+
+  before {
+    val conf = new SparkConf().setAppName("Test Feature Engineering").setMaster("local[1]")
+    sc = NNContext.initNNContext(conf)
+  }
+
+  after {
+    if (sc != null) {
+      sc.stop()
+    }
+  }
 
   "BigDLAdapter" should "adapt BigDL Transformer" in {
     val newResize = BigDLAdapter(ImageResize(1, 1))
@@ -38,12 +54,23 @@ class FeatureSpec extends FlatSpec with Matchers with BeforeAndAfter {
   }
 
   "Distribute ImageSet" should "work with resize" in {
-    val conf = new SparkConf().setAppName("Feature Test").setMaster("local[1]")
-    val sc = NNContext.initNNContext(conf)
     val image = ImageSet.read(resource.getFile, sc, resizeH = 200, resizeW = 200)
     val imf = image.toDistributed().rdd.collect().head
     require(imf.getHeight() == 200)
     require(imf.getWidth() == 200)
-    sc.stop()
+  }
+
+  "ImageBytesToMat" should "work with png and jpg" in {
+    val path = getClass.getClassLoader.getResource("png").getFile
+    val image = ImageSet.read(path, sc)
+    val image2 = ImageSet.read(path, sc)
+    val jpg = image -> ImageBytesToMat(imageCodec = Imgcodecs.CV_LOAD_IMAGE_COLOR)
+    val png = image2 -> ImageBytesToMat()
+    val imfJpg = jpg.toDistributed().rdd.collect().head
+    val imfPng = png.toDistributed().rdd.collect().head
+    val (height, width, channel) = imfJpg.opencvMat().shape()
+    val (height2, width2, channel2) = imfPng.opencvMat().shape()
+    require(height == height2 && width == width2)
+    require(channel == 3 && channel2 == 4)
   }
 }
