@@ -16,10 +16,11 @@
 
 package com.intel.analytics.zoo.pipeline.inference;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class AbstractInferenceModel {
+public abstract class AbstractInferenceModel implements Serializable {
   private FloatInferenceModel model;
   private int supportedConcurrentNum = 1;
 
