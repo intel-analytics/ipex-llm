@@ -24,6 +24,7 @@ import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{DataFrame, Row, SQLContext}
 import org.opencv.core.CvType
+import org.opencv.imgcodecs.Imgcodecs
 
 import scala.language.existentials
 
@@ -160,12 +161,15 @@ object NNImageReader {
    *                      if omitted uses defaultParallelism instead
    * @param resizeH height after resize, by default is -1 which will not resize the image
    * @param resizeW width after resize, by default is -1 which will not resize the image
+   * @param imageCodec specifying the color type of a loaded image, same as in OpenCV.imread.
+   *              By default is Imgcodecs.CV_LOAD_IMAGE_UNCHANGED
    * @return DataFrame with a single column "image" of images;
    *         see DLImageSchema.byteSchema for the details
    */
   def readImages(path: String, sc: SparkContext, minPartitions: Int = 1,
-                 resizeH: Int = -1, resizeW: Int = -1): DataFrame = {
-    val imageSet = ImageSet.read(path, sc, minPartitions, resizeH, resizeW)
+                 resizeH: Int = -1, resizeW: Int = -1,
+                 imageCodec: Int = Imgcodecs.CV_LOAD_IMAGE_UNCHANGED): DataFrame = {
+    val imageSet = ImageSet.read(path, sc, minPartitions, resizeH, resizeW, imageCodec)
     val rowRDD = imageSet.toDistributed().rdd.map { imf =>
       Row(NNImageSchema.imf2Row(imf))
     }
