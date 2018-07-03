@@ -162,6 +162,7 @@ class NNEstimator(JavaEstimator, HasFeaturesCol, HasLabelCol, HasPredictionCol, 
 
         self.value = jvalue if jvalue else callBigDlFunc(
             bigdl_type, self.jvm_class_constructor(), model, criterion, sample_preprocessing)
+        self.model = model
         self.samplePreprocessing = sample_preprocessing
         self.bigdl_type = bigdl_type
         self._java_obj = self.value
@@ -338,9 +339,13 @@ class NNEstimator(JavaEstimator, HasFeaturesCol, HasLabelCol, HasPredictionCol, 
         return self
 
     def _create_model(self, java_model):
-        nnModel = NNModel.of(java_model,
-                             ChainedPreprocessing([ToTuple(), self.getSamplePreprocessing()]),
-                             self.bigdl_type)
+        # explicity reset SamplePreprocessing even though java_model already has the preprocessing,
+        # so that python NNModel also has sample_preprocessing
+        estPreprocessing = self.getSamplePreprocessing()
+        nnModel = NNModel(model=self.model, feature_preprocessing=None, jvalue=java_model,
+                          bigdl_type=self.bigdl_type) \
+            .setSamplePreprocessing(ChainedPreprocessing([ToTuple(), estPreprocessing]))
+
         nnModel.setFeaturesCol(self.getFeaturesCol()) \
             .setPredictionCol(self.getPredictionCol()) \
             .setBatchSize(self.getBatchSize())
@@ -370,31 +375,34 @@ class NNModel(JavaTransformer, HasFeaturesCol, HasPredictionCol, HasBatchSize,
         :param bigdl_type: optional parameter. data type of model, "float"(default) or "double".
         """
         super(NNModel, self).__init__()
-        if type(feature_preprocessing) is list:
-            assert(all(isinstance(x, int) for x in feature_preprocessing))
-            feature_preprocessing = SeqToTensor(feature_preprocessing)
+        # initialize with Java NNModel
+        if jvalue:
+            assert feature_preprocessing is None
+            self.value = jvalue
+        # initialize with Python Model and preprocessing
+        else:
+            if type(feature_preprocessing) is list:
+                assert(all(isinstance(x, int) for x in feature_preprocessing))
+                feature_preprocessing = SeqToTensor(feature_preprocessing)
 
-        sample_preprocessing = ChainedPreprocessing([feature_preprocessing, TensorToSample()])
+            sample_preprocessing = ChainedPreprocessing([feature_preprocessing, TensorToSample()])
+            self.value = callBigDlFunc(
+                bigdl_type, self.jvm_class_constructor(), model, sample_preprocessing)
+            self.samplePreprocessing = sample_preprocessing
 
-        self.value = jvalue if jvalue else callBigDlFunc(
-            bigdl_type, self.jvm_class_constructor(), model, sample_preprocessing)
-        self.samplePreprocessing = sample_preprocessing
+        self.model = model
         self._java_obj = self.value
         self.bigdl_type = bigdl_type
 
-    @classmethod
-    def of(self, jvalue, sample_preprocessing=None, bigdl_type="float"):
-        model = NNModel(model=None, jvalue=jvalue, bigdl_type=bigdl_type)\
-            .setSamplePreprocessing(sample_preprocessing)
-        return model
-
-    def setSamplePreprocessing(self, val):
-        """
-        Sets the value of sample_preprocessing
-        :param val: a Preprocesing[Feature, Sample]
-        """
-        super(NNModel, self).setSamplePreprocessing(val)
+    def save(self, path):
+        self._transfer_params_to_java()
+        callBigDlFunc(self.bigdl_type, "saveNNModel", self.value, path)
         return self
+
+    @staticmethod
+    def load(path):
+        jvalue = callBigDlFunc("float", "loadNNModel", path)
+        return NNModel(model=None, feature_preprocessing=None, jvalue=jvalue)
 
 
 class NNClassifier(NNEstimator):
@@ -426,8 +434,13 @@ class NNClassifier(NNEstimator):
         return self
 
     def _create_model(self, java_model):
-        classifierModel = NNClassifierModel.of(java_model, ChainedPreprocessing(
-            [ToTuple(), self.getSamplePreprocessing()]), self.bigdl_type)
+        # explicity reset SamplePreprocessing even though java_model already has the preprocessing,
+        # so that python NNClassifierModel also has sample_preprocessing
+        estPreprocessing = self.getSamplePreprocessing()
+        classifierModel = NNClassifierModel(model=self.model, feature_preprocessing=None,
+                                            jvalue=java_model, bigdl_type=self.bigdl_type) \
+            .setSamplePreprocessing(ChainedPreprocessing([ToTuple(), estPreprocessing]))
+
         classifierModel.setFeaturesCol(self.getFeaturesCol()) \
             .setPredictionCol(self.getPredictionCol()) \
             .setBatchSize(self.getBatchSize())
@@ -452,16 +465,7 @@ class NNClassifierModel(NNModel):
         """
         super(NNClassifierModel, self).__init__(model, feature_preprocessing, jvalue, bigdl_type)
 
-    @classmethod
-    def of(self, jvalue, sample_preprocessing=None, bigdl_type="float"):
-        model = NNClassifierModel(model=None, jvalue=jvalue, bigdl_type=bigdl_type) \
-            .setSamplePreprocessing(sample_preprocessing)
-        return model
-
-    def setSamplePreprocessing(self, val):
-        """
-        Sets the value of sample_preprocessing
-        :param val: a Preprocesing[Feature, Sample]
-        """
-        super(NNClassifierModel, self).setSamplePreprocessing(val)
-        return self
+    @staticmethod
+    def load(path):
+        jvalue = callBigDlFunc("float", "loadNNClassifierModel", path)
+        return NNClassifierModel(model=None, feature_preprocessing=None, jvalue=jvalue)
