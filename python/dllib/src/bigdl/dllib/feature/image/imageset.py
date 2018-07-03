@@ -44,7 +44,7 @@ class ImageSet(JavaValue):
 
     @classmethod
     def read(cls, path, sc=None, min_partitions=1, resize_height=-1,
-             resize_width=-1, bigdl_type="float"):
+             resize_width=-1, image_codec=-1, bigdl_type="float"):
         """
         Read images as Image Set
         if sc is defined, Read image as DistributedImageSet from local file system or HDFS
@@ -56,10 +56,13 @@ class ImageSet(JavaValue):
         :param min_partitions A suggestion value of the minimal splitting number for input data.
         :param resize_height height after resize, by default is -1 which will not resize the image
         :param resize_width width after resize, by default is -1 which will not resize the image
+        :param image_codec specifying the color type of a loaded image, same as in OpenCV.imread.
+               By default is Imgcodecs.CV_LOAD_IMAGE_UNCHANGED(-1)
         :return ImageSet
         """
         return ImageSet(jvalue=callBigDlFunc(bigdl_type, "readImageSet", path,
-                                             sc, min_partitions, resize_height, resize_width))
+                                             sc, min_partitions, resize_height,
+                                             resize_width, image_codec))
 
     @classmethod
     def from_image_frame(cls, image_frame, bigdl_type="float"):
