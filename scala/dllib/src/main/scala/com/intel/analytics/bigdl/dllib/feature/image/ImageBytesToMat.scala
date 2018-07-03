@@ -15,22 +15,55 @@
  */
 package com.intel.analytics.zoo.feature.image
 
+import org.apache.log4j.Logger
+
 import com.intel.analytics.bigdl.transform.vision.image.ImageFeature
-import com.intel.analytics.bigdl.transform.vision.image.{BytesToMat => BBytesToMat}
+import com.intel.analytics.bigdl.transform.vision.image.opencv.OpenCVMat
+
+import org.opencv.imgcodecs.Imgcodecs
 
 /**
  * Transform byte array(original image file in byte) to OpenCVMat
  * @param byteKey key that maps byte array
+ * @param imageCodec specifying the color type of a loaded image, same as in OpenCV.imread.
+ *              By default is Imgcodecs.CV_LOAD_IMAGE_UNCHANGED
  */
-class ImageBytesToMat(byteKey: String = ImageFeature.bytes) extends ImageProcessing {
+class ImageBytesToMat(byteKey: String = ImageFeature.bytes,
+                      imageCodec: Int = Imgcodecs.CV_LOAD_IMAGE_UNCHANGED) extends ImageProcessing {
 
-  private val internalCrop = BBytesToMat(byteKey)
   override def apply(prev: Iterator[ImageFeature]): Iterator[ImageFeature] = {
-    internalCrop.apply(prev)
+    prev.map(transform(_))
+  }
+
+  override def transform(feature: ImageFeature): ImageFeature = {
+    ImageBytesToMat.transform(feature, byteKey, imageCodec)
   }
 }
 
 object ImageBytesToMat {
-  def apply(byteKey: String = ImageFeature.bytes): ImageBytesToMat =
-    new ImageBytesToMat(byteKey)
+  val logger = Logger.getLogger(getClass)
+
+  def apply(byteKey: String = ImageFeature.bytes,
+            imageCodec: Int = Imgcodecs.CV_LOAD_IMAGE_UNCHANGED): ImageBytesToMat =
+    new ImageBytesToMat(byteKey, imageCodec)
+
+  def transform(feature: ImageFeature, byteKey: String, imageCodec: Int): ImageFeature = {
+    if (!feature.isValid) return feature
+    val bytes = feature[Array[Byte]](byteKey)
+    var mat: OpenCVMat = null
+    try {
+      require(null != bytes && bytes.length > 0, "image file bytes should not be empty")
+      mat = OpenCVMethod.fromImageBytes(bytes, imageCodec)
+      feature(ImageFeature.mat) = mat
+      feature(ImageFeature.originalSize) = mat.shape()
+    } catch {
+      case e: Exception =>
+        e.printStackTrace()
+        val uri = feature.uri()
+        logger.warn(s"convert byte to mat fail for $uri")
+        feature(ImageFeature.originalSize) = (-1, -1, -1)
+        feature.isValid = false
+    }
+    feature
+  }
 }

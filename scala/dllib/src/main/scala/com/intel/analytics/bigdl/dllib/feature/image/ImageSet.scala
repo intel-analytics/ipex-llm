@@ -16,13 +16,13 @@
 
 package com.intel.analytics.zoo.feature.image
 
-import com.intel.analytics.bigdl.transform.vision.image.{DistributedImageFrame,
-       ImageFeature, ImageFrame, LocalImageFrame}
+import com.intel.analytics.bigdl.transform.vision.image.{DistributedImageFrame, ImageFeature, ImageFrame, LocalImageFrame}
 import com.intel.analytics.zoo.common.Utils
 import com.intel.analytics.zoo.feature.common.Preprocessing
 import org.apache.commons.io.FileUtils
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
+import org.opencv.imgcodecs.Imgcodecs
 
 /**
  * ImageSet wraps a set of ImageFeature
@@ -130,10 +130,13 @@ object ImageSet {
    * @param minPartitions A suggestion value of the minimal splitting number for input data.
    * @param resizeH height after resize, by default is -1 which will not resize the image
    * @param resizeW width after resize, by default is -1 which will not resize the image
+   * @param imageCodec specifying the color type of a loaded image, same as in OpenCV.imread.
+   *              By default is Imgcodecs.CV_LOAD_IMAGE_UNCHANGED
    * @return ImageSet
    */
   def read(path: String, sc: SparkContext = null, minPartitions: Int = 1,
-           resizeH: Int = -1, resizeW: Int = -1): ImageSet = {
+           resizeH: Int = -1, resizeW: Int = -1,
+           imageCodec: Int = Imgcodecs.CV_LOAD_IMAGE_UNCHANGED): ImageSet = {
     val imageSet = if (null != sc) {
       val images = sc.binaryFiles(path, minPartitions).map { case (p, stream) =>
           ImageFeature(stream.toArray(), uri = p)
@@ -146,10 +149,10 @@ object ImageSet {
       }
       ImageSet.array(images)
     }
-    if (resizeW == -1 && resizeH == -1) {
-      imageSet -> ImageBytesToMat()
+    if (resizeW == -1 || resizeH == -1) {
+      imageSet -> ImageBytesToMat(imageCodec = imageCodec)
     } else {
-      imageSet -> BufferedImageResize(resizeH, resizeW) -> ImageBytesToMat()
+      imageSet -> BufferedImageResize(resizeH, resizeW) -> ImageBytesToMat(imageCodec = imageCodec)
     }
   }
 
