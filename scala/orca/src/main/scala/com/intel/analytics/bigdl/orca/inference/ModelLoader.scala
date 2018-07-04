@@ -58,11 +58,12 @@ object ModelLoader extends InferenceSupportive {
     }
   }
 
-  def loadFloatModelForTF(modelPath: String)
+  def loadFloatModelForTF(modelPath: String,
+                          config: TFNet.SessionConfig = TFNet.defaultSessionConfig)
   : AbstractModule[Activity, Activity, Float] = {
     timing("load model") {
       logger.info(s"load model from $modelPath")
-      val model = TFNet(modelPath)
+      val model = TFNet(modelPath, config)
       logger.info(s"loaded model as $model")
       model
     }
