@@ -421,6 +421,8 @@ object TFNet {
 
   implicit val formats = DefaultFormats
 
+  val defaultSessionConfig = SessionConfig()
+
   case class SessionConfig(intraOpParallelismThreads: Int = 1,
                            interOpParallelismThreads: Int = 1,
                            usePerSessionThreads: Boolean = true) {
@@ -536,12 +538,12 @@ object TFNet {
             inputNames: Seq[String],
             outputNames: Seq[String]): TFNet = {
     val graphDef = parseGraph(path)
-    val config = SessionConfig()
+    val config = defaultSessionConfig
     TFNet(graphDef, path, inputNames, outputNames, config = config.toByteArray())
   }
 
 
-  def apply(folder: String, config: SessionConfig = SessionConfig()): TFNet = {
+  def apply(folder: String, config: SessionConfig = defaultSessionConfig): TFNet = {
     val (model, inputs, outputs) = NetUtils.processTFFolder(folder)
     TFNet(model, inputs, outputs, config)
   }
