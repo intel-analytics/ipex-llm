@@ -16,6 +16,8 @@
 
 package com.intel.analytics.zoo.pipeline.inference;
 
+import com.intel.analytics.zoo.pipeline.api.net.TFNet;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -48,7 +50,16 @@ public abstract class AbstractInferenceModel implements Serializable {
   }
 
   public void loadTF(String modelPath) {
-    this.model = InferenceModelFactory.loadFloatInferenceModelForTF(modelPath);
+    this.model = InferenceModelFactory.loadFloatInferenceModelForTF(modelPath,
+            1, 1, true);
+  }
+
+  public void loadTF(String modelPath,
+                     int intraOpParallelismThreads,
+                     int interOpParallelismThreads,
+                     boolean usePerSessionThreads) {
+    this.model = InferenceModelFactory.loadFloatInferenceModelForTF(modelPath,
+            intraOpParallelismThreads, interOpParallelismThreads, usePerSessionThreads);
   }
 
   public void reload(String modelPath) {
