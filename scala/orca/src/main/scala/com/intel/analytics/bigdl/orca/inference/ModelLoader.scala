@@ -26,7 +26,7 @@ import com.intel.analytics.zoo.pipeline.api.net.{GraphNet, TFNet}
 import org.slf4j.LoggerFactory
 
 object ModelLoader extends InferenceSupportive {
-  override val logger = LoggerFactory.getLogger(getClass)
+  val logger = LoggerFactory.getLogger(getClass)
 
   Model
   Sequential
