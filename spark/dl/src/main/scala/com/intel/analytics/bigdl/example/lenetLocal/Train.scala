@@ -69,7 +69,7 @@ object Train {
       if (param.checkpoint.isDefined) {
         optimizer.setCheckpoint(param.checkpoint.get, Trigger.everyEpoch)
       }
-      if(param.overWriteCheckpoint) {
+      if (param.overWriteCheckpoint) {
         optimizer.overWriteCheckpoint()
       }
 
