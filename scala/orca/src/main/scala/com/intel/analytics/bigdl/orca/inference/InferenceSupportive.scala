@@ -28,14 +28,12 @@ import java.lang.{Integer => JInt}
 
 trait InferenceSupportive {
 
-  val logger = LoggerFactory.getLogger(getClass)
-
   def timing[T](name: String)(f: => T): T = {
     val begin = System.currentTimeMillis
     val result = f
     val end = System.currentTimeMillis
     val cost = (end - begin)
-    logger.info(s"$name time elapsed [${cost / 1000} s, ${cost % 1000} ms].")
+    InferenceSupportive.logger.info(s"$name time elapsed [${cost / 1000} s, ${cost % 1000} ms].")
     result
   }
 
@@ -92,4 +90,8 @@ trait InferenceSupportive {
     new JTensor(outputData, outputShape)
   }
 
+}
+
+object InferenceSupportive {
+  val logger = LoggerFactory.getLogger(getClass)
 }
