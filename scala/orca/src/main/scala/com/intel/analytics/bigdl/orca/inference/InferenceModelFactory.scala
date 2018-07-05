@@ -30,7 +30,7 @@ object InferenceModelFactory {
     val model = ModelLoader.loadFloatModel(modelPath, weightPath)
     val predictor = LocalPredictor(model = model, batchPerCore = 1)
     model.evaluate()
-    FloatInferenceModel(model, predictor)
+    new FloatInferenceModel(model, predictor)
   }
 
   def loadFloatInferenceModelForCaffe(modelPath: String, weightPath: String)
@@ -38,7 +38,7 @@ object InferenceModelFactory {
     val model = ModelLoader.loadFloatModelForCaffe(modelPath, weightPath)
     val predictor = LocalPredictor(model = model, batchPerCore = 1)
     model.evaluate()
-    FloatInferenceModel(model, predictor)
+    new FloatInferenceModel(model, predictor)
   }
 
   def loadFloatInferenceModelForTF(modelPath: String,
@@ -50,6 +50,6 @@ object InferenceModelFactory {
     val model = ModelLoader.loadFloatModelForTF(modelPath, sessionConfig)
     val predictor = LocalPredictor(model = model, batchPerCore = 1)
     model.evaluate()
-    FloatInferenceModel(model, predictor)
+    new FloatInferenceModel(model, predictor)
   }
 }
