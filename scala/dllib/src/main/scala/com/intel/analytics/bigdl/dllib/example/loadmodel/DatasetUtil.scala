@@ -126,3 +126,19 @@ object ResNetPreprocessor {
     }
   }
 }
+
+object VGGPreprocessor {
+  val imageSize = 224
+
+  def rdd(path: String, batchSize: Int, sc: SparkContext)
+  : RDD[Sample[Float]] = {
+    val data = DataSet.SeqFileFolder.filesToImageFrame(path, sc, 1000)
+    val transfomer = PixelBytesToMat() -> Resize(256, 256) ->
+      CenterCrop(imageSize, imageSize) -> ChannelNormalize(123, 117, 104) ->
+      MatToTensor[Float]() -> ImageFrameToSample[Float](targetKeys = Array(ImageFeature.label))
+    val imgFrame = transfomer(data)
+    val validImageFeatures = imgFrame.toDistributed().rdd
+    validImageFeatures.map(x => x[Sample[Float]](ImageFeature.sample))
+  }
+}
+
