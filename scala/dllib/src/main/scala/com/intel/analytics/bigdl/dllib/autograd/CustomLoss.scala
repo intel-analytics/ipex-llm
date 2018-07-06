@@ -22,6 +22,7 @@ import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{Shape, T}
 import com.intel.analytics.zoo.pipeline.api.autograd.{AutoGrad => AG}
 import com.intel.analytics.zoo.pipeline.api.keras.models.Model
+import com.intel.analytics.zoo.pipeline.api.keras.objectives.TensorLossFunction
 
 import scala.reflect.ClassTag
 
@@ -39,7 +40,7 @@ object CustomLoss {
       yPredShape: Shape,
       yTrueShape: Shape = null,
       sizeAverage: Boolean = true)(
-      implicit ev: TensorNumeric[T]): TensorCriterion[T] = {
+      implicit ev: TensorNumeric[T]): TensorLossFunction[T] = {
     val yTrue = Variable(if (null == yTrueShape) {yPredShape} else {yTrueShape})
     val yPred = Variable(yPredShape)
     val lossVar = lossFunc (yTrue, yPred)
@@ -50,6 +51,8 @@ object CustomLoss {
 class CustomLossWithVariable[T: ClassTag](inputs: Array[Variable[T]], lossVar: Variable[T],
     sizeAverage: Boolean = true)(
     implicit ev: TensorNumeric[T]) extends CustomLoss[T](sizeAverage = sizeAverage) {
+  override val loss = this
+
   private val lossInstance = generateLossFromVars(this.inputs, this.lossVar)
 
   override protected def doGetLoss(
@@ -61,7 +64,7 @@ class CustomLossWithVariable[T: ClassTag](inputs: Array[Variable[T]], lossVar: V
 }
 
 abstract class CustomLoss[T: ClassTag](sizeAverage: Boolean)(
-    implicit ev: TensorNumeric[T]) extends TensorCriterion[T] {
+    implicit ev: TensorNumeric[T]) extends TensorLossFunction[T] {
 
   protected def doGetLoss(inputs: Array[Variable[T]]): AbstractModule[Activity, Activity, T]
 
