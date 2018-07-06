@@ -20,6 +20,7 @@ from bigdl.nn.layer import Layer, Node
 from bigdl.util.common import callBigDlFunc, to_list
 
 import zoo.pipeline.api.keras.base as kbase
+from zoo.pipeline.api.keras.objectives import LossFunction
 from zoo.pipeline.api.utils import remove_batch, toMultiShape
 
 if sys.version >= '3':
@@ -443,7 +444,7 @@ class LambdaLayer(kbase.ZooKerasLayer):
                                           **kwargs)
 
 
-class CustomLoss(kbase.ZooKerasCreator):
+class CustomLoss(LossFunction):
     def __init__(self, loss_func, y_pred_shape, y_true_shape=None):
         """
         :param loss_func: a function which accept y_true and y_pred
