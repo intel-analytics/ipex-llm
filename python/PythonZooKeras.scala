@@ -27,7 +27,6 @@ import com.intel.analytics.bigdl.optim.{OptimMethod, Regularizer, ValidationMeth
 import com.intel.analytics.bigdl.python.api.{EvaluatedResult, JTensor, PythonBigDLKeras, Sample}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.nn.Container
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.nn.keras.{KerasLayer, KerasModel}
@@ -36,10 +35,12 @@ import com.intel.analytics.zoo.pipeline.api.Net
 import com.intel.analytics.zoo.pipeline.api.autograd._
 import com.intel.analytics.zoo.pipeline.api.keras.layers._
 import com.intel.analytics.zoo.pipeline.api.keras.layers.utils.KerasUtils
-import com.intel.analytics.zoo.pipeline.api.keras.metrics.AUC
+import com.intel.analytics.zoo.pipeline.api.keras.metrics.{AUC, Accuracy, Top5Accuracy}
 import com.intel.analytics.zoo.pipeline.api.keras.models.{KerasNet, Model, Sequential}
+import com.intel.analytics.zoo.pipeline.api.keras.objectives.{MeanAbsoluteError, SparseCategoricalCrossEntropy}
 import com.intel.analytics.zoo.pipeline.api.net.{GraphNet, NetUtils, TFNet}
 import org.apache.spark.api.java.JavaRDD
+import org.apache.spark.rdd.RDD
 
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
@@ -172,6 +173,14 @@ class PythonZooKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonB
       logPath: String,
       backward: Boolean = false): Model[T] = {
     module.saveGraphTopology(logPath, backward)
+  }
+
+  def zooPredictClasses(
+      module: KerasNet[T],
+      x: JavaRDD[Sample],
+      batchSize: Int = 32,
+      zeroBasedLabel: Boolean = true): JavaRDD[Int] = {
+    module.predictClasses(toJSample(x), batchSize, zeroBasedLabel).toJavaRDD()
   }
 
   def newGraph(model: NetUtils[T, _],
@@ -1038,5 +1047,30 @@ class PythonZooKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonB
       x: JList[Variable[T]]): Variable[T] = {
     require(!x.isEmpty, "We don't accept empty inputs")
     Variable(module.inputs(x.asScala.map(_.node): _*))
+  }
+
+  def createZooKerasSparseCategoricalCrossEntropy(
+      logProbAsInput: Boolean = false,
+      zeroBasedLabel: Boolean = true,
+      weights: Tensor[T] = null,
+      sizeAverage: Boolean = true,
+      paddingValue: Int = -1): SparseCategoricalCrossEntropy[T] = {
+    SparseCategoricalCrossEntropy(logProbAsInput, zeroBasedLabel, weights,
+      sizeAverage, paddingValue)
+  }
+
+  def createZooKerasMeanAbsoluteError(
+      sizeAverage: Boolean = true): MeanAbsoluteError[T] = {
+    MeanAbsoluteError[T](sizeAverage)
+  }
+
+  def createZooKerasAccuracy(
+      zeroBasedLabel: Boolean = true): ValidationMethod[T] = {
+    new Accuracy[T](zeroBasedLabel)
+  }
+
+  def createZooKerasTop5Accuracy(
+      zeroBasedLabel: Boolean = true): ValidationMethod[T] = {
+    new Top5Accuracy[T](zeroBasedLabel)
   }
 }

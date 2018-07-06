@@ -26,8 +26,10 @@ import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{MultiShape, Shape, SingleShape}
 import com.intel.analytics.zoo.pipeline.api.Net
-import com.intel.analytics.zoo.pipeline.api.keras.metrics.AUC
+import com.intel.analytics.zoo.pipeline.api.keras.metrics.{AUC, Accuracy, Top5Accuracy => ZooTop5Accuracy}
 import com.intel.analytics.zoo.pipeline.api.keras.models.KerasNet
+import com.intel.analytics.zoo.pipeline.api.keras.objectives._
+import org.apache.spark.rdd.RDD
 
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
@@ -141,20 +143,20 @@ object KerasUtils {
       case "categorical_crossentropy" => CategoricalCrossEntropy[T]()
       case "mse" => MSECriterion[T]()
       case "mean_squared_error" => MSECriterion[T]()
-      case "mae" => AbsCriterion[T]()
-      case "mean_absolute_error" => AbsCriterion[T]()
+      case "mae" => MeanAbsoluteError[T]()
+      case "mean_absolute_error" => MeanAbsoluteError[T]()
       case "hinge" => MarginCriterion[T]()
       case "mape" => MeanAbsolutePercentageCriterion[T]()
       case "mean_absolute_percentage_error" => MeanAbsolutePercentageCriterion[T]()
       case "msle" => MeanSquaredLogarithmicCriterion[T]()
       case "mean_squared_logarithmic_error" => MeanSquaredLogarithmicCriterion[T]()
       case "squared_hinge" => MarginCriterion[T](squared = true)
-      case "sparse_categorical_crossentropy" => ClassNLLCriterion[T](logProbAsInput = false)
+      case "sparse_categorical_crossentropy" => SparseCategoricalCrossEntropy[T]()
       case "kld" => KullbackLeiblerDivergenceCriterion[T]()
       case "kullback_leibler_divergence" => KullbackLeiblerDivergenceCriterion[T]()
       case "cosine_proximity" => CosineProximityCriterion[T]()
       case "poisson" => PoissonCriterion[T]()
-      case _ => throw new IllegalArgumentException(s"Invalid loss: ${loss.toLowerCase()}")
+      case _ => throw new IllegalArgumentException(s"Unsupported loss: $loss")
     }
   }
 
@@ -177,12 +179,15 @@ object KerasUtils {
     } else {
       metrics.map { metric =>
         metric.toLowerCase() match {
-          case "accuracy" => new Top1Accuracy[T]()
+          case "accuracy" => new Accuracy[T]()
+          case "acc" => new Accuracy[T]()
+          case "top5accuracy" => new ZooTop5Accuracy[T]()
+          case "top5acc" => new ZooTop5Accuracy[T]()
           case "mae" => new MAE[T]()
           case "auc" => new AUC[T]()
           case "loss" => new Loss[T]()
           case "treennaccuracy" => new TreeNNAccuracy[T]()
-          case _ => throw new IllegalArgumentException(s"Unsupported metric: ${metric}")
+          case _ => throw new IllegalArgumentException(s"Unsupported metric: $metric")
         }
       }
     }
@@ -400,6 +405,22 @@ object KerasUtils {
         var res = ""
         for (shape <- shapes) res = res + strShape(shape) + " "
         res
+    }
+  }
+
+  /**
+   * classes: RDD of 1-based label.
+   * If zeroBasedLabel is true, convert to RDD of 0-based label.
+   * Otherwise, just return classes itself.
+   */
+  def toZeroBasedLabel(
+      zeroBasedLabel: Boolean = true,
+      classes: RDD[Int]): RDD[Int] = {
+    if (zeroBasedLabel) {
+      classes.map(_ - 1)
+    }
+    else {
+      classes
     }
   }
 }
