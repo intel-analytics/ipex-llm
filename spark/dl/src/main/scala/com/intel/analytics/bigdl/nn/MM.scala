@@ -53,8 +53,6 @@ class MM[T: ClassTag](
   override def updateOutput(input: Table): Tensor[T] = {
     var (ma, mb) = checkInputFormat(input)
 
-    output.set
-
     if (ma.dim() == 2) {
       require(mb.dim() == 2, "second input tensor must be 2D" +
         s"second input dim ${mb.dim()}")
@@ -86,16 +84,13 @@ class MM[T: ClassTag](
         s"the matrix sizes are ${ma.size(3)} and ${mb.size(2)}")
 
       output.resize(ma.size(1), ma.size(2), mb.size(3))
-      output.bmm(ma, mb)
+      output.baddbmm(ev.fromType[Float](0.0f), ev.fromType[Float](1.0f), ma, mb)
     }
 
     output
   }
 
   override def updateGradInput(input: Table, gradOutput: Tensor[T]): Table = {
-
-    gradInput[Tensor[T]](1).set
-    gradInput[Tensor[T]](2).set
 
     var (ma, mb) = checkInputFormat(input)
 
@@ -121,7 +116,8 @@ class MM[T: ClassTag](
         require(mb.dim() == 3, "second input tensor must be 3D" +
           s"second input dim ${mb.dim()}")
 
-        (2, 3, t => m1 => m2 => t.bmm(m1, m2))
+        (2, 3, t => m1 => m2 => t.baddbmm(ev.fromType[Float](0.0f), ev.fromType[Float](1.0f),
+          m1, m2))
       }
 
 
