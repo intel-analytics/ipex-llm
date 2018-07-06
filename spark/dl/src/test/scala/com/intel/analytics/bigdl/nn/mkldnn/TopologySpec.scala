@@ -16,13 +16,12 @@
 
 package com.intel.analytics.bigdl.nn.mkldnn
 
+import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.mkl.Memory
 import com.intel.analytics.bigdl.nn.mkldnn.Phase.TrainingPhase
 import com.intel.analytics.bigdl.numeric.NumericFloat
-import com.intel.analytics.bigdl.{Module, nn}
-import org.scalatest.{FlatSpec, Ignore, Matchers}
+import org.scalatest.{FlatSpec, Matchers}
 
-@Ignore
 class TopologySpec extends FlatSpec with Matchers {
 
   "LeNet5 has no tanh" should "work correctly" in {
