@@ -74,18 +74,18 @@ After training the model, it can be used to predict probabilities or class label
 
 **Scala**
 ```scala
-// Predict for probability distributions
+// Predict for probability distributions.
 val results = textClassifier.predict(rdd)
-// Predict for class labels
-val resultClasses = textClassifier.predictClass(rdd)
+// Predict for class labels. By default, label starts from 0.
+val resultClasses = textClassifier.predictClasses(rdd)
 ```
 
 **Python**
 ```python
-# Predict for probability distributions
+# Predict for probability distributions.
 results = text_classifier.predict(rdd)
-# Predict for class labels
-result_classes = text_classifier.predict_class(rdd)
+# Predict for class labels. By default, label starts from 0.
+result_classes = text_classifier.predict_classes(rdd)
 ```
 
 ---

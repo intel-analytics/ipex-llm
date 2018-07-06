@@ -40,7 +40,7 @@ example
 ```
 from zoo.common.nncontext import *
 from bigdl.nn.layer import *
-from zoo.pipeline.api.keras.metrics.auc import *
+from zoo.pipeline.api.keras.metrics import AUC
 
 sc = init_nncontext()
 
