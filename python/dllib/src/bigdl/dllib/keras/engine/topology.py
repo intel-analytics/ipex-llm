@@ -124,7 +124,7 @@ class KerasNet(ZooKerasLayer):
         # Arguments
         x: Input data. A Numpy array or RDD of Sample or Image DataSet.
         y: Labels. A Numpy array. Default is None if x is already RDD of Sample or Image DataSet.
-        batch_size: Number of samples per gradient update.
+        batch_size: Number of samples per gradient update. Default is 32.
         nb_epoch: Number of iterations to train.
         validation_data: Tuple (x_val, y_val) where x_val and y_val are both Numpy arrays.
                          Or RDD of Sample. Default is None if no validation is involved.
@@ -166,19 +166,19 @@ class KerasNet(ZooKerasLayer):
         Evaluate a model on a given dataset in distributed mode.
 
         # Arguments
-        x: Input data. A Numpy array or RDD of Sample.
+        x: Evaluation data. A Numpy array or RDD of Sample.
         y: Labels. A Numpy array. Default is None if x is already RDD of Sample.
-        batch_size: Number of samples per gradient update.
+        batch_size: Number of samples per batch. Default is 32.
         """
         if isinstance(x, np.ndarray) and isinstance(y, np.ndarray):
-            evaluation_data = to_sample_rdd(x, y)
+            data_rdd = to_sample_rdd(x, y)
         elif isinstance(x, RDD) and not y:
-            evaluation_data = x
+            data_rdd = x
         else:
             raise TypeError("Unsupported evaluation data type: %s" % type(x))
         return callBigDlFunc(self.bigdl_type, "zooEvaluate",
                              self.value,
-                             evaluation_data,
+                             data_rdd,
                              batch_size)
 
     def predict(self, x, distributed=True):
@@ -186,23 +186,45 @@ class KerasNet(ZooKerasLayer):
         Use a model to do prediction.
 
         # Arguments
-        x: Input data. A Numpy array or RDD of Sample.
+        x: Prediction data. A Numpy array or RDD of Sample.
         distributed: Boolean. Whether to do prediction in distributed mode or local mode.
                      Default is True. In local mode, x must be a Numpy array.
         """
         if distributed:
             if isinstance(x, np.ndarray):
-                features = to_sample_rdd(x, np.zeros([x.shape[0]]))
+                data_rdd = to_sample_rdd(x, np.zeros([x.shape[0]]))
             elif isinstance(x, RDD):
-                features = x
+                data_rdd = x
             else:
                 raise TypeError("Unsupported prediction data type: %s" % type(x))
-            return self.predict_distributed(features)
+            return self.predict_distributed(data_rdd)
         else:
             if isinstance(x, np.ndarray) or isinstance(x, list):
                 return self.predict_local(x)
             else:
                 raise TypeError("Unsupported prediction data type: %s" % type(x))
+
+    def predict_classes(self, x, batch_size=32, zero_based_label=True):
+        """
+        Use a model to predict for classes. By default, label predictions start from 0.
+
+        # Arguments
+        x: Prediction data. A Numpy array or RDD of Sample.
+        batch_size: Number of samples per batch. Default is 32.
+        zero_based_label: Boolean. Whether result labels start from 0.
+                          Default is True. If False, result labels start from 1.
+        """
+        if isinstance(x, np.ndarray):
+            data_rdd = to_sample_rdd(x, np.zeros([x.shape[0]]))
+        elif isinstance(x, RDD):
+            data_rdd = x
+        else:
+            raise TypeError("Unsupported prediction data type: %s" % type(x))
+        return callBigDlFunc(self.bigdl_type, "zooPredictClasses",
+                             self.value,
+                             data_rdd,
+                             batch_size,
+                             zero_based_label)
 
     def get_layer(self, name):
         layer = [l for l in self.layers if l.name() == name]
