@@ -16,7 +16,6 @@
 
 import sys
 
-from zoo.pipeline.api.autograd import LambdaLayer, Variable
 from zoo.pipeline.api.utils import remove_batch
 from .engine.topology import KerasNet
 from bigdl.util.common import to_list, callBigDlFunc
