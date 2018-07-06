@@ -467,7 +467,7 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
    * Clone the model
    * @return
    */
-  final def cloneModule(): AbstractModule[A, B, T] = {
+  final def cloneModule(): this.type = {
     SerializationUtils.clone(this)
   }
 

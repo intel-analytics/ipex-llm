@@ -173,6 +173,8 @@ class Recurrent[T : ClassTag](
       val cloneCell = cells.head.cloneModule()
       cloneCell.parameters()._1.map(_.set())
       cloneCell.parameters()._2.map(_.set())
+      // preTopology's output is useless here, clear it.
+      cloneCell.preTopology.output.set()
       while (t < times) {
         cells += cloneCell.cloneModule()
           .asInstanceOf[Cell[T]]
