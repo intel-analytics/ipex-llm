@@ -15,7 +15,7 @@
 #
 
 from bigdl.nn.keras.layer import KerasLayer
-from zoo.pipeline.api.keras.utils import *
+from bigdl.util.common import *
 
 if sys.version >= '3':
     long = int

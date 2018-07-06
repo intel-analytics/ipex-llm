@@ -16,6 +16,7 @@
 
 from bigdl.optim.optimizer import *
 from bigdl.nn.criterion import *
+from zoo.pipeline.api.keras import objectives, metrics
 
 
 def to_bigdl_optim_method(optimizer):
@@ -45,7 +46,7 @@ def to_bigdl_criterion(criterion):
     elif criterion == "binary_crossentropy":
         return BCECriterion()
     elif criterion == "mae" or criterion == "mean_absolute_error":
-        return AbsCriterion()
+        return objectives.mae()
     elif criterion == "hinge":
         return MarginCriterion()
     elif criterion == "mean_absolute_percentage_error" or criterion == "mape":
@@ -55,7 +56,7 @@ def to_bigdl_criterion(criterion):
     elif criterion == "squared_hinge":
         return MarginCriterion(squared=True)
     elif criterion == "sparse_categorical_crossentropy":
-        return ClassNLLCriterion(logProbAsInput=False)
+        return objectives.SparseCategoricalCrossEntropy()
     elif criterion == "kullback_leibler_divergence" or criterion == "kld":
         return KullbackLeiblerDivergenceCriterion()
     elif criterion == "poisson":
@@ -67,14 +68,15 @@ def to_bigdl_criterion(criterion):
 
 
 def to_bigdl_metric(metric):
-    from zoo.pipeline.api.keras.metrics.auc import AUC
     metric = metric.lower()
-    if metric == "accuracy":
-        return Top1Accuracy()
+    if metric == "accuracy" or metric == "acc":
+        return metrics.Accuracy()
+    elif metric == "top5accuracy" or metric == "top5acc":
+        return metrics.Top5Accuracy()
     elif metric == "mae":
         return MAE()
     elif metric == "auc":
-        return AUC()
+        return metrics.AUC()
     elif metric == "loss":
         return Loss()
     elif metric == "treennaccuracy":
