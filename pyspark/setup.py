@@ -94,6 +94,7 @@ def setup_package():
                   'bigdl.models.textclassifier',
                   'bigdl.optim',
                   'bigdl.util',
+                  'bigdl.dlframes',
                   'bigdl.share'],
         install_requires=['numpy>=1.7', 'pyspark>=2.2', 'six>=1.10.0'],
         dependency_links=['https://d3kbcqa49mib13.cloudfront.net/spark-2.0.0-bin-hadoop2.7.tgz'],
