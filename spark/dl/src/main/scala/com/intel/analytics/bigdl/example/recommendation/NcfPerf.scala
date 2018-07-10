@@ -17,6 +17,7 @@
 package com.intel.analytics.bigdl.example.recommendation
 
 import com.intel.analytics.bigdl.nn.BCECriterion
+import com.intel.analytics.bigdl.optim.Adam
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.Engine
 
@@ -32,36 +33,70 @@ object NcfPerf {
     val userCount = 138493
     val itemCount = 26744
 
-    val model = NeuralCFV2[Float](userCount, itemCount, 1, 64, 128, hiddenLayers = Array(128, 64))
+    val model = NeuralCFV2[Float](userCount, itemCount, 1, 128, 128,
+      hiddenLayers = Array(128, 64),
+      mfEmbed = 64)
         .buildModel()
     val criterion = BCECriterion[Float]()
+    val optimMethod = new Adam[Float]()
 
     val input = Tensor[Float](batchSize * core, 2)
     input.select(2, 1).apply1(_ => Random.nextInt(userCount) + 1)
     input.select(2, 2).apply1(_ => Random.nextInt(itemCount) + 1)
     val target = Tensor[Float](batchSize * core, 1).apply1(_ => Random.nextInt(2))
 
-    var modelForwardTime = new Array[Long](core)
-    var modelBackwardTime = new Array[Long](core)
-    var criterionForwardTime = new Array[Long](core)
-    var criterionBackwardTime = new Array[Long](core)
+    val modelForwardTime = new Array[Long](core)
+    val modelBackwardTime = new Array[Long](core)
+    val criterionForwardTime = new Array[Long](core)
+    val criterionBackwardTime = new Array[Long](core)
+    var accgradientTime = 0L
+    var updateWeightTime = 0L
+
+
     val (w, g) = model.getParameters()
-    val models = (0 until core).map{i =>
+    println(s"model weight length ${w.nElement()}")
+    val workingModels = (0 until core).map{i =>
       val newmodel = model.cloneModule()
       newmodel.getParameters()._1.set(w)
       newmodel
+    }
+    val workingModelWAndG = workingModels.map(_.getParameters())
+
+    val subModelNumber = core
+    val parallelism = core
+    val gradLength = g.nElement()
+    val syncGradTaskSize = gradLength / subModelNumber
+    val syncGradExtraTask = gradLength % subModelNumber
+    val syncGradParallelNum =
+      if (syncGradTaskSize == 0) syncGradExtraTask else subModelNumber
+
+    // warm up
+    (0 until 5).foreach{i =>
+      Engine.default.invokeAndWait((0 until core).map { tid =>
+        () =>
+          val currentInput = input.narrow(1, tid * batchSize + 1, batchSize)
+          val currentTarget = target.narrow(1, tid * batchSize + 1, batchSize)
+          val currentModel = workingModels(tid)
+
+          val output = currentModel.forward(currentInput)
+          val loss = criterion.forward(output, currentTarget)
+          val gradOutput = criterion.backward(output, currentTarget)
+          val gradInput = currentModel.backward(currentInput, gradOutput)
+
+      })
     }
 
     (0 until iteration).foreach { i =>
       input.select(2, 1).apply1(_ => Random.nextInt(userCount) + 1)
       input.select(2, 2).apply1(_ => Random.nextInt(itemCount) + 1)
       target.apply1(_ => Random.nextInt(2))
+      println(i)
 
       Engine.default.invokeAndWait((0 until core).map { tid =>
         () =>
           val currentInput = input.narrow(1, tid * batchSize + 1, batchSize)
           val currentTarget = target.narrow(1, tid * batchSize + 1, batchSize)
-          val currentModel = models(tid)
+          val currentModel = workingModels(tid)
 
 
           var start = System.nanoTime()
@@ -82,15 +117,44 @@ object NcfPerf {
           modelBackwardTime(tid) += System.nanoTime() - start
 
       })
+
+      var start = System.nanoTime()
+      val grad = g
+      Engine.default.invokeAndWait(
+        (0 until syncGradParallelNum).map(tid =>
+          () => {
+            val offset = tid * syncGradTaskSize + math.min(tid, syncGradExtraTask)
+            val length = syncGradTaskSize + (if (tid < syncGradExtraTask) 1 else 0)
+            var i = 0
+            while (i < parallelism) {
+              val sliceG = workingModelWAndG(i)._2.narrow(1, offset + 1, length)
+              if (i == 0) {
+                grad.narrow(1, offset + 1, length)
+                  .copy(sliceG)
+                sliceG.zero()
+              } else {
+                grad.narrow(1, offset + 1, length)
+                  .add(sliceG)
+                sliceG.zero()
+              }
+              i += 1
+            }
+          })
+      )
+      grad.div(parallelism)
+      accgradientTime += System.nanoTime() - start
+
+      start = System.nanoTime()
+      optimMethod.optimize(_ => (1, grad), w)
+      updateWeightTime += System.nanoTime() - start
     }
 
-    println(s"${modelForwardTime.sum / 1e6 / iteration}ms")
-    println(s"${criterionForwardTime.sum / 1e6 / iteration}ms")
-    println(s"${criterionBackwardTime.sum / 1e6 / iteration}ms")
-    println(s"${modelBackwardTime.sum / 1e6 / iteration}ms")
-
-
-
+    println(s"${modelForwardTime.max / 1e6 / iteration}ms")
+    println(s"${criterionForwardTime.max / 1e6 / iteration}ms")
+    println(s"${criterionBackwardTime.max / 1e6 / iteration}ms")
+    println(s"${modelBackwardTime.max / 1e6 / iteration}ms")
+    println(s"${accgradientTime / 1e6 / iteration}ms")
+    println(s"${updateWeightTime / 1e6 / iteration}ms")
 
   }
 
