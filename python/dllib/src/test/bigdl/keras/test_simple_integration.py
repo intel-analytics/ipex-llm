@@ -78,10 +78,26 @@ class TestSimpleIntegration(ZooTestCase):
         model.set_gradient_clipping_by_l2_norm(0.2)
         model.fit(X_train, y_train, batch_size=112, nb_epoch=2, validation_data=(X_test, y_test))
         model.evaluate(X_test, y_test, batch_size=112)
-        model.predict(X_test)
-        model.predict_classes(X_test)
+        result = model.predict(X_test).collect()
+        for res in result:
+            assert isinstance(res, np.ndarray)
+        result2 = model.predict(X_test, distributed=False)
+        result_classes = model.predict_classes(X_test)
         shutil.rmtree(tmp_log_dir)
         shutil.rmtree(tmp_checkpoint_path)
+
+    def test_multiple_outputs_predict(self):
+        input = Input(shape=(32, ))
+        dense1 = Dense(10)(input)
+        dense2 = Dense(12)(input)
+        model = Model(input, [dense1, dense2])
+        data = np.random.random([10, 32])
+        result = model.predict(data).collect()
+        for res in result:
+            assert isinstance(res, list) and len(res) == 2
+        result2 = model.predict(data, distributed=False)
+        for res in result2:
+            assert isinstance(res, list) and len(res) == 2
 
     def test_training_without_validation(self):
         model = Sequential()
