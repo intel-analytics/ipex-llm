@@ -25,6 +25,7 @@ import com.intel.analytics.bigdl.transform.vision.image._
 import com.intel.analytics.zoo.feature.common.Preprocessing
 import com.intel.analytics.zoo.feature.image._
 import org.apache.spark.api.java.{JavaRDD, JavaSparkContext}
+import org.opencv.imgcodecs.Imgcodecs
 import org.opencv.imgproc.Imgproc
 
 import scala.collection.JavaConverters._
@@ -121,6 +122,12 @@ class PythonImageFeature[T: ClassTag](implicit ev: TensorNumeric[T]) extends Pyt
       })
     }
     new LocalImageSet(features.toArray)
+  }
+
+  def createImageBytesToMat(
+      byteKey: String = ImageFeature.bytes,
+      imageCodec: Int = Imgcodecs.CV_LOAD_IMAGE_UNCHANGED): ImageBytesToMat = {
+    ImageBytesToMat(byteKey, imageCodec)
   }
 
   def createImageBrightness(deltaLow: Double, deltaHigh: Double): ImageBrightness = {

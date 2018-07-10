@@ -16,6 +16,8 @@
 
 package com.intel.analytics.zoo.feature.image
 
+import com.intel.analytics.bigdl.DataSet
+import com.intel.analytics.bigdl.dataset.DataSet
 import com.intel.analytics.bigdl.transform.vision.image.{DistributedImageFrame, ImageFeature, ImageFrame, LocalImageFrame}
 import com.intel.analytics.zoo.common.Utils
 import com.intel.analytics.zoo.feature.common.Preprocessing
@@ -68,6 +70,11 @@ abstract class ImageSet {
    * @return ImageSet
    */
   def toImageFrame(): ImageFrame
+
+  /**
+   * Convert ImageSet to DataSet of ImageFeature.
+   */
+  def toDataSet(): DataSet[ImageFeature]
 }
 
 class LocalImageSet(var array: Array[ImageFeature]) extends ImageSet {
@@ -83,6 +90,10 @@ class LocalImageSet(var array: Array[ImageFeature]) extends ImageSet {
   override def toImageFrame(): ImageFrame = {
     ImageFrame.array(array)
   }
+
+  override def toDataSet(): DataSet[ImageFeature] = {
+    DataSet.array(array)
+  }
 }
 
 class DistributedImageSet(var rdd: RDD[ImageFeature]) extends ImageSet {
@@ -97,6 +108,10 @@ class DistributedImageSet(var rdd: RDD[ImageFeature]) extends ImageSet {
 
   override def toImageFrame(): ImageFrame = {
     ImageFrame.rdd(rdd)
+  }
+
+  override def toDataSet(): DataSet[ImageFeature] = {
+    DataSet.rdd[ImageFeature](rdd)
   }
 }
 
