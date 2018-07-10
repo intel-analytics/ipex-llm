@@ -68,7 +68,7 @@ class SparseCategoricalCrossEntropy(LossFunction):
                    return zero output and the backward process will also return
                    zero grad_input. Default is -1.
 
-    >>> acc = SparseCategoricalCrossEntropy()
+    >>> metrics = SparseCategoricalCrossEntropy()
     creating: createZooKerasSparseCategoricalCrossEntropy
     """
     def __init__(self, log_prob_as_input=False, zero_based_label=True,
@@ -90,6 +90,9 @@ class MeanAbsoluteError(LossFunction):
     size_average: Boolean. Whether losses are averaged over observations for each
               mini-batch. Default is True. If False, the losses are instead
               summed for each mini-batch.
+
+    >>> metrics = MeanAbsoluteError()
+    creating: createZooKerasMeanAbsoluteError
     """
     def __init__(self, size_average=True, bigdl_type="float"):
         super(MeanAbsoluteError, self).__init__(None, bigdl_type,
