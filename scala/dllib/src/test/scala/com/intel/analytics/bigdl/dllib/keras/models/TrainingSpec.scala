@@ -22,9 +22,12 @@ import com.intel.analytics.bigdl.nn.MSECriterion
 import com.intel.analytics.bigdl.optim.{SGD, Top1Accuracy}
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.tensor.{Storage, Tensor}
+import com.intel.analytics.bigdl.transform.vision.image.opencv.OpenCVMat
+import com.intel.analytics.bigdl.transform.vision.image.ImageFeature
 import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
 import com.intel.analytics.bigdl.utils.Shape
 import com.intel.analytics.zoo.common.NNContext
+import com.intel.analytics.zoo.feature.image._
 import com.intel.analytics.zoo.pipeline.api.autograd.{Variable, AutoGrad => A}
 import com.intel.analytics.zoo.pipeline.api.keras.layers._
 import org.apache.spark.{SparkConf, SparkContext}
@@ -151,6 +154,45 @@ class TrainingSpec extends FlatSpec with Matchers with BeforeAndAfter {
         .toTensor[Float].squeeze().max(1)._2.valueAt(1).toInt
       (res-1) should be (item._1)
     })
+  }
+
+  "fit on ImageSet" should "work properly" in {
+
+    def createImageFeature(): ImageFeature = {
+      val feature = new ImageFeature()
+      val data = Tensor[Float](200, 200, 3).rand()
+      val mat = OpenCVMat.fromFloats(data.storage.toArray, 200, 200, 3)
+      feature(ImageFeature.bytes) = OpenCVMat.imencode(mat)
+      feature(ImageFeature.mat) = mat
+      feature(ImageFeature.originalSize) = mat.shape()
+      val labelTensor = Tensor[Float](1)
+      labelTensor(Array(1)) = Math.round(scala.util.Random.nextInt(20))
+      feature(ImageFeature.label) = labelTensor
+      feature
+    }
+
+    def createImageSet(dataSize: Int): ImageSet = {
+      val rdd = sc.range(0, dataSize, 1).map { _ =>
+        createImageFeature()
+      }
+      ImageSet.rdd(rdd)
+    }
+
+    val trainingData = createImageSet(64)
+    val testData = createImageSet(16)
+    val transformer = ImageBytesToMat() -> ImageResize(256, 256) ->
+      ImageCenterCrop(224, 224) -> ImageMatToTensor[Float]() ->
+      ImageSetToSample[Float](targetKeys = Array("label"))
+    trainingData.transform(transformer)
+    testData.transform(transformer)
+    val model = Sequential[Float]()
+    model.add(Convolution2D[Float](1, 5, 5, inputShape = Shape(3, 224, 224)))
+    model.add(MaxPooling2D[Float]())
+    model.add(Flatten[Float]())
+    model.add(Dense[Float](20, activation = "softmax"))
+    model.compile(optimizer = "sgd", loss = "sparse_categorical_crossentropy",
+      metrics = List("accuracy"))
+    model.fit(trainingData, nbEpoch = 2, batchSize = 8, validationData = testData)
   }
 
 }
