@@ -62,6 +62,8 @@ For preprocessors for Image Classification models, please check [Image Classific
 * [Alexnet Quantize](https://s3-ap-southeast-1.amazonaws.com/analytics-zoo-models/imageclassification/imagenet/analytics-zoo_alexnet-quantize_imagenet_0.1.0.model)
 * [Inception-V1](https://s3-ap-southeast-1.amazonaws.com/analytics-zoo-models/imageclassification/imagenet/analytics-zoo_inception-v1_imagenet_0.1.0.model)
 * [Inception-V1 Quantize](https://s3-ap-southeast-1.amazonaws.com/analytics-zoo-models/imageclassification/imagenet/analytics-zoo_inception-v1-quantize_imagenet_0.1.0.model)
+* [Inception-V3](https://s3-ap-southeast-1.amazonaws.com/analytics-zoo-models/analytics-zoo_inception-v3_imagenet_0.1.0.model)
+* [Inception-V3 Quantize](https://s3-ap-southeast-1.amazonaws.com/analytics-zoo-models/analytics-zoo_inception-v3-quantize_imagenet_0.1.0.model)
 * [VGG-16](https://s3-ap-southeast-1.amazonaws.com/analytics-zoo-models/imageclassification/imagenet/analytics-zoo_vgg-16_imagenet_0.1.0.model)
 * [VGG-16 Quantize](https://s3-ap-southeast-1.amazonaws.com/analytics-zoo-models/imageclassification/imagenet/analytics-zoo_vgg-16-quantize_imagenet_0.1.0.model)
 * [VGG-19](https://s3-ap-southeast-1.amazonaws.com/analytics-zoo-models/imageclassification/imagenet/analytics-zoo_vgg-19_imagenet_0.1.0.model)
