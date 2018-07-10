@@ -23,7 +23,7 @@ import com.intel.analytics.bigdl.{Criterion, DataSet}
 import com.intel.analytics.bigdl.dataset.{DataSet, LocalDataSet, MiniBatch}
 
 import scala.collection.JavaConverters._
-import com.intel.analytics.bigdl.optim.{OptimMethod, Regularizer, ValidationMethod}
+import com.intel.analytics.bigdl.optim.{LocalPredictor, OptimMethod, Regularizer, ValidationMethod}
 import com.intel.analytics.bigdl.python.api.{EvaluatedResult, JTensor, PythonBigDLKeras, Sample}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -41,7 +41,6 @@ import com.intel.analytics.zoo.pipeline.api.keras.models.{KerasNet, Model, Seque
 import com.intel.analytics.zoo.pipeline.api.keras.objectives.{MeanAbsoluteError, SparseCategoricalCrossEntropy}
 import com.intel.analytics.zoo.pipeline.api.net.{GraphNet, NetUtils, TFNet}
 import org.apache.spark.api.java.JavaRDD
-import org.apache.spark.rdd.RDD
 
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
@@ -120,6 +119,25 @@ class PythonZooKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonB
       batching(DataSet.array(valArray), batchSize)
     } else null
     module.fit(trainData, nbEpoch, valData)
+  }
+
+  def zooPredict(
+      module: KerasNet[T],
+      x: JavaRDD[Sample],
+      batchSize: Int = 32): JavaRDD[JList[JTensor]] = {
+    val resRDD = module.predict(x.rdd.map(toJSample), batchSize)
+    resRDD.map(activityToJTensors).toJavaRDD()
+  }
+
+  def zooPredict(
+      module: KerasNet[T],
+      x: JList[JTensor],
+      batchSize: Int): JList[JList[JTensor]] = {
+    val sampleArray = toSampleArray(x.asScala.toList.map{f => toTensor(f)})
+    val localPredictor = LocalPredictor(module,
+      batchPerCore = KerasUtils.calBatchPerCore(batchSize))
+    val result = localPredictor.predict(sampleArray)
+    result.map(activityToJTensors).toList.asJava
   }
 
   def zooEvaluate(

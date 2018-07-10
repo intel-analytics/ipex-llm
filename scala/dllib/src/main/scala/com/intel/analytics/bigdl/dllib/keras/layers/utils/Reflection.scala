@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl.nn.Graph
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.nn.keras.KerasLayer
-import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.bigdl.utils.{Engine, Shape}
 
 import scala.collection.mutable
 import scala.reflect.ClassTag
@@ -74,4 +74,9 @@ class GraphRef[T: ClassTag](instance: Graph[T]) {
   }
 }
 
+class EngineRef {
+  def getCoreNumber(): Int = {
+    KerasUtils.invokeMethod(Engine, "coreNumber").asInstanceOf[Int]
+  }
+}
 
