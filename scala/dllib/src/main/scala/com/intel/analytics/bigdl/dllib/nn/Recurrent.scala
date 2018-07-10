@@ -173,6 +173,12 @@ class Recurrent[T : ClassTag](
       val cloneCell = cells.head.cloneModule()
       cloneCell.parameters()._1.map(_.set())
       cloneCell.parameters()._2.map(_.set())
+      // preTopology's output is useless here, clear it.
+      // Notice: preTopology is a merge output of all i2h,
+      // it's a bigdl tensor, and shouldn't be cloned.
+      if (cloneCell.preTopology != null) {
+        cloneCell.preTopology.output.set()
+      }
       while (t < times) {
         cells += cloneCell.cloneModule()
           .asInstanceOf[Cell[T]]
