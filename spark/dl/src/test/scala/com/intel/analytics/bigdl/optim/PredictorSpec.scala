@@ -239,6 +239,9 @@ class PredictorSpec extends FlatSpec with Matchers with BeforeAndAfter{
       println("-" * 80)
     }
     CachedModels.deleteAll("")
+    // NOTE: if this case failed, please check,
+    // 1. mapPartition, does it used the variable out side of the method scope.
+    // 2. ModelBroadcast, does it add the ref correctly
     StorageManager.get().count(!_._2.isFreed) should be (init.count(!_._2.isFreed))
   }
 }
