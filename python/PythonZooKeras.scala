@@ -31,6 +31,7 @@ import com.intel.analytics.bigdl.nn.Container
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.nn.keras.{KerasLayer, KerasModel}
 import com.intel.analytics.bigdl.transform.vision.image.{ImageFeature, ImageFeatureToMiniBatch}
+import com.intel.analytics.zoo.feature.image.ImageSet
 import com.intel.analytics.zoo.pipeline.api.Net
 import com.intel.analytics.zoo.pipeline.api.autograd._
 import com.intel.analytics.zoo.pipeline.api.keras.layers._
@@ -88,23 +89,19 @@ class PythonZooKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonB
       module: KerasNet[T],
       x: JavaRDD[Sample],
       batchSize: Int = 32,
-      epochs: Int = 10,
+      nbEpoch: Int = 10,
       validationData: JavaRDD[Sample] = null): Unit = {
-    module.fit(toJSample(x), batchSize, epochs,
+    module.fit(toJSample(x), batchSize, nbEpoch,
       if (validationData == null) null else toJSample(validationData))
   }
 
   def zooFit(
       module: KerasNet[T],
-      x: DataSet[ImageFeature],
+      x: ImageSet,
       batchSize: Int,
-      epochs: Int,
-      validationData: DataSet[ImageFeature]): Unit = {
-    val trainData = x -> ImageFeatureToMiniBatch[T](batchSize)
-    val valData =
-      if (validationData != null) validationData -> ImageFeatureToMiniBatch[T](batchSize)
-      else null
-    module.fit(trainData, epochs, valData)
+      nbEpoch: Int,
+      validationData: ImageSet): Unit = {
+    module.fit(x, batchSize, nbEpoch, validationData)
   }
 
   def zooFit(
@@ -112,7 +109,7 @@ class PythonZooKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonB
       xTrain: JList[JTensor],
       yTrain: JTensor,
       batchSize: Int,
-      epochs: Int,
+      nbEpoch: Int,
       xVal: JList[JTensor],
       yVal: JTensor): Unit = {
     val trainArray = toSampleArray(xTrain.asScala.toList.map{f => toTensor(f)}, toTensor(yTrain))
@@ -122,7 +119,7 @@ class PythonZooKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonB
       val valArray = toSampleArray(xVal.asScala.toList.map{f => toTensor(f)}, toTensor(yVal))
       batching(DataSet.array(valArray), batchSize)
     } else null
-    module.fit(trainData, epochs, valData)
+    module.fit(trainData, nbEpoch, valData)
   }
 
   def zooEvaluate(
