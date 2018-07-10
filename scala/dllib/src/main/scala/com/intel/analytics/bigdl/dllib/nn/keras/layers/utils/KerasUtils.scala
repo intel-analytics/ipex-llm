@@ -423,4 +423,17 @@ object KerasUtils {
       classes
     }
   }
+
+  def calBatchPerCore(batchSize: Int): Int = {
+    if (batchSize > 0) {
+      val batchPerCore = batchSize / new EngineRef().getCoreNumber()
+      if (batchPerCore < 1) {
+        1
+      } else {
+        batchPerCore
+      }
+    } else {
+      4
+    }
+  }
 }
