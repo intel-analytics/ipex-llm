@@ -17,6 +17,8 @@
 import pytest
 import shutil
 
+from zoo.feature.common import ChainedPreprocessing
+from zoo.feature.image import *
 from zoo.pipeline.api.keras.layers import *
 from zoo.pipeline.api.keras.models import *
 from test.zoo.pipeline.utils.test_utils import ZooTestCase
@@ -90,28 +92,29 @@ class TestSimpleIntegration(ZooTestCase):
         model.fit(x, y, batch_size=112, nb_epoch=2)
         model.predict(x)
 
-    def test_training_imagefeature_dataset(self):
+    def test_training_imageset(self):
         images = []
         labels = []
-        for i in range(0, 8):
+        for i in range(0, 32):
             features = np.random.uniform(0, 1, (200, 200, 3))
             label = np.array([2])
             images.append(features)
             labels.append(label)
-        image_frame = DistributedImageFrame(self.sc.parallelize(images),
-                                            self.sc.parallelize(labels))
+        image_set = DistributedImageSet(self.sc.parallelize(images),
+                                        self.sc.parallelize(labels))
 
-        transformer = Pipeline([BytesToMat(), Resize(256, 256), CenterCrop(224, 224),
-                                ChannelNormalize(0.485, 0.456, 0.406, 0.229, 0.224, 0.225),
-                                MatToTensor(), ImageFrameToSample(target_keys=['label'])])
-        data_set = DataSet.image_frame(image_frame).transform(transformer)
+        transformer = ChainedPreprocessing(
+            [ImageBytesToMat(), ImageResize(256, 256), ImageCenterCrop(224, 224),
+             ImageChannelNormalize(0.485, 0.456, 0.406, 0.229, 0.224, 0.225),
+             ImageMatToTensor(), ImageSetToSample(target_keys=['label'])])
+        data_rdd = image_set.transform(transformer)
 
         model = Sequential()
         model.add(Convolution2D(1, 5, 5, input_shape=(3, 224, 224)))
         model.add(Reshape((1*220*220, )))
         model.add(Dense(20, activation="softmax"))
         model.compile(optimizer="sgd", loss="sparse_categorical_crossentropy", metrics=["accuracy"])
-        model.fit(data_set, batch_size=8, nb_epoch=2, validation_data=data_set)
+        model.fit(data_rdd, batch_size=8, nb_epoch=2, validation_data=data_rdd)
 
     def test_remove_batch(self):
         from zoo.pipeline.api.utils import remove_batch
