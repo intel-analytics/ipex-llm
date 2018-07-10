@@ -130,7 +130,7 @@ class TrainingSpec extends FlatSpec with Matchers with BeforeAndAfter {
     model.clearGradientClipping()
     model.fit(localData, nbEpoch = 2)
     val accuracy = model.evaluate(localData)
-    val predictResults = model.predict(localData)
+    val predictResults = model.predict(localData, 32)
   }
 
   "model predictClass giving zero-based label" should "work properly" in {

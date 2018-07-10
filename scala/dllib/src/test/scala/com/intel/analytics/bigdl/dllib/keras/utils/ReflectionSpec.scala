@@ -19,10 +19,12 @@ package com.intel.analytics.zoo.pipeline.api.keras.utils
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.nn.keras.{Input, KerasLayer, Model}
 import com.intel.analytics.bigdl.nn.{Graph, Linear}
-import com.intel.analytics.bigdl.utils.Shape
+import com.intel.analytics.bigdl.utils.{Engine, Shape}
+import com.intel.analytics.zoo.common.NNContext
 import com.intel.analytics.zoo.pipeline.api.keras.ZooSpecHelper
 import com.intel.analytics.zoo.pipeline.api.keras.layers.Dense
-import com.intel.analytics.zoo.pipeline.api.keras.layers.utils.{AbstractModuleRef, GraphRef, KerasLayerRef}
+import com.intel.analytics.zoo.pipeline.api.keras.layers.utils.{AbstractModuleRef, EngineRef, GraphRef, KerasLayerRef}
+import org.apache.spark.{SparkConf, SparkContext}
 
 import scala.collection.mutable
 
@@ -84,3 +86,26 @@ class GraphRefSpec extends ZooSpecHelper {
   }
 }
 
+class EngineRefSpec extends ZooSpecHelper {
+
+  private var sc: SparkContext = _
+
+  override def doBefore(): Unit = {
+    val conf = new SparkConf()
+      .setMaster("local[4]")
+    sc = NNContext.initNNContext(conf, appName = "TrainingSpec")
+  }
+
+  override def doAfter(): Unit = {
+    if (sc != null) {
+      sc.stop()
+    }
+  }
+
+  "invokeMethod set and coreNumber" should "work properly" in {
+    Engine.init
+    val engineRef = new EngineRef()
+    val num = engineRef.getCoreNumber()
+    print(num)
+  }
+}
