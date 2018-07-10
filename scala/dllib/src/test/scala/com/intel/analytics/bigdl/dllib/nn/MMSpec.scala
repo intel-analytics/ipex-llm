@@ -61,6 +61,45 @@ class MMSpec extends FlatSpec with Matchers {
     m1 should not equal m3
     m1 should not equal m4
   }
+
+  "MM forward multi times" should "work properly" in {
+    val mm = MM[Float]()
+    val input1 = Tensor[Float](2, 3, 3).randn()
+    val input2 = Tensor[Float](2, 3, 3).randn()
+    val input = T(1 -> input1, 2 -> input2)
+
+    val res1 = Tensor[Float](2, 3, 3)
+
+    val res2 = Tensor[Float](2, 3, 3)
+
+    res1.copy(mm.forward(input))
+
+    res2.copy(mm.forward(input))
+
+    res1 should be (res2)
+  }
+
+  "MM backward multi times" should "work properly" in {
+    val mm = MM[Float]()
+    val input1 = Tensor[Float](2, 3, 3).randn()
+    val input2 = Tensor[Float](2, 3, 3).randn()
+    val input = T(1 -> input1, 2 -> input2)
+
+    val gradOutput = Tensor[Float](2, 3, 3).randn()
+
+    val bres1 = mm.backward(input, gradOutput)
+
+    val res1 = T(1 -> Tensor[Float](2, 3, 3).copy(bres1(1)),
+      2 -> Tensor[Float](2, 3, 3).copy(bres1(2)))
+
+    val bres2 = mm.backward(input, gradOutput)
+
+    val res2 = T(1 -> Tensor[Float](2, 3, 3).copy(bres2(1)),
+      2 -> Tensor[Float](2, 3, 3).copy(bres2(2)))
+
+    res1 should be (res2)
+
+  }
 }
 
 class MMSerialTest extends ModuleSerializationTest {
