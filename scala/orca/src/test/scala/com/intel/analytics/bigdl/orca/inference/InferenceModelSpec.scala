@@ -18,15 +18,25 @@ package com.intel.analytics.zoo.pipeline.inference
 
 import java.io.{ByteArrayInputStream, ByteArrayOutputStream, ObjectInputStream, ObjectOutputStream}
 
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
-class InferenceModelSpec extends FlatSpec with Matchers {
+class InferenceModelSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
-  val resource = getClass().getClassLoader().getResource("models")
-  val modelPath = resource.getPath + "/caffe/test_persist.prototxt"
-  val weightPath = resource.getPath + "/caffe/test_persist.caffemodel"
-  val floatInferenceModel = InferenceModelFactory.
-    loadFloatInferenceModelForCaffe(modelPath, weightPath)
+  var floatInferenceModel: FloatInferenceModel = _
+
+  before {
+    val resource = getClass().getClassLoader().getResource("models")
+    val modelPath = resource.getPath + "/caffe/test_persist.prototxt"
+    val weightPath = resource.getPath + "/caffe/test_persist.caffemodel"
+    floatInferenceModel = InferenceModelFactory.
+      loadFloatInferenceModelForCaffe(modelPath, weightPath)
+  }
+
+  after {
+    System.clearProperty("bigdl.localMode")
+    System.clearProperty("bigdl.coreNumber")
+  }
+
 
   "model " should "serialize" in {
     val bos = new ByteArrayOutputStream
