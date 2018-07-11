@@ -306,7 +306,7 @@ class LinearSpec extends FlatSpec with Matchers {
   }
 
 
-  "linear " should "work correctly" ignore {
+  "linear " should "work correctly" in {
     val (batchSize, nInput) = (4, 64)
     val inputShape = Array(batchSize, nInput)
     val nOutput = 1000
