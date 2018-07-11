@@ -27,6 +27,7 @@ import com.intel.analytics.bigdl.transform.vision.image._
 import com.intel.analytics.bigdl.transform.vision.image.augmentation.{CenterCrop, ChannelNormalize, Resize}
 import com.intel.analytics.bigdl.utils.{Engine, LoggerFilter, Table}
 import com.intel.analytics.bigdl.utils.RandomGenerator._
+import org.apache.commons.lang3.SerializationUtils
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.{SparkConf, SparkContext}
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
@@ -240,5 +241,10 @@ class PredictorSpec extends FlatSpec with Matchers with BeforeAndAfter{
     }
     CachedModels.deleteAll("")
     StorageManager.get().count(!_._2.isFreed) should be (init.count(!_._2.isFreed))
+  }
+
+  "localpredictor" should "serialize successfully" in {
+    val localPredictor = LocalPredictor(Linear[Float](3, 10))
+    SerializationUtils.clone(localPredictor)
   }
 }
