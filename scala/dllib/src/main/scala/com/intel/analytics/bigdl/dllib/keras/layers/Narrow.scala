@@ -63,16 +63,18 @@ class Narrow[T: ClassTag](
     val input = inputShape.toSingle().toArray
     require(input.length >= 2, s"Narrow requires >= 2D input, but got input dim ${input.length}")
     val positiveDim = if (dim < 0) dim + input.length else dim
-    require(positiveDim != 0, "Cannot narrow the batch dimension")
-    require(positiveDim > 0 && positiveDim <= input.length - 1,
-      s"Invalid select dim: $dim, dim should be within range (0, ${input.length - 1}]")
-    require(offset >= 0 && offset <= input(positiveDim) -1,
-      s"Invalid narrow offset for dim $dim: $offset, " +
-        s"offset should be within range [0, ${input(positiveDim) - 1}]")
+    require(positiveDim >= 0 && positiveDim <= input.length - 1,
+      s"Invalid select dim: $dim, dim should be within range [0, ${input.length - 1}]")
     val positiveLength = if (length < 0) length + input(positiveDim) - offset + 1 else length
-    require(positiveLength > 0 && positiveLength <= input(positiveDim) - offset,
-      s"Invalid narrow length for dim $dim with offset $offset: $length, " +
-        s"length should be within range (0, ${input(positiveDim) - offset}]")
+    //batch dimension is always -1 for now, so we skip the checking here.
+    if(dim > 0) {
+      require(offset >= 0 && offset <= input(positiveDim) -1,
+        s"Invalid narrow offset for dim $dim: $offset, " +
+          s"offset should be within range [0, ${input(positiveDim) - 1}]")
+      require(positiveLength > 0 && positiveLength <= input(positiveDim) - offset,
+        s"Invalid narrow length for dim $dim with offset $offset: $length, " +
+          s"length should be within range (0, ${input(positiveDim) - offset}]")
+    }
     (positiveDim, positiveLength)
   }
 
