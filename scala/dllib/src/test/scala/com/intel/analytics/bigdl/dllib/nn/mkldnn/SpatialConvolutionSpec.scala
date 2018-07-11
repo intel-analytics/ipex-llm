@@ -243,7 +243,7 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
     Equivalent.nearequals(gb1, gb2, 1e-3) should be(true)
   }
 
-  "a simple convolution compared with caffe" should "work correctly" ignore {
+  "a simple convolution compared with caffe" should "work correctly" in {
     val inputShape = Array(4, 3, 5, 5)
     val outputShape = Array(4, 2, 3, 3)
     val name = "conv"
@@ -263,7 +263,7 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
     Tools.compare(txt, conv, inputShape, outputShape)
   }
 
-  "conv exists some format conversion" should "work correctly" ignore {
+  "conv exists some format conversion" should "work correctly" in {
     val inputShape = Array(4, 3, 224, 224)
     val outputShape = Array(4, 64, 112, 112)
 
@@ -313,7 +313,7 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
     }
   }
 
-  "conv kernel 1x1 with reorder in container" should "work correctly" ignore {
+  "conv kernel 1x1 with reorder in container" should "work correctly" in {
     val inputShape = Array(4, 64, 56, 56)
     val outputShape = Array(4, 64, 56, 56)
 
@@ -363,7 +363,7 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
     }
   }
 
-  "conv + bn" should "work correctly" ignore {
+  "conv + bn" should "work correctly" in {
     val inputShape = Array(4, 3, 224, 224)
     val outputShape = Array(4, 64, 112, 112)
     val channel = 64
