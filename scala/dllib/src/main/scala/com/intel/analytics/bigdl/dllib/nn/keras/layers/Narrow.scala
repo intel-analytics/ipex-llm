@@ -66,7 +66,7 @@ class Narrow[T: ClassTag](
     require(positiveDim >= 0 && positiveDim <= input.length - 1,
       s"Invalid select dim: $dim, dim should be within range [0, ${input.length - 1}]")
     val positiveLength = if (length < 0) length + input(positiveDim) - offset + 1 else length
-    //batch dimension is always -1 for now, so we skip the checking here.
+    // batch dimension is always -1 for now, so we skip the checking here.
     if(dim > 0) {
       require(offset >= 0 && offset <= input(positiveDim) -1,
         s"Invalid narrow offset for dim $dim: $offset, " +
