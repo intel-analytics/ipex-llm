@@ -67,6 +67,17 @@ def init_env():
     else:
         print("Do nothing for release installation")
 
+def get_bigdl_packages():
+    bigdl_python_home = os.path.abspath(__file__)[:-8]
+    bigdl_packages = ['bigdl.share']
+    for dirpath, dirs, files in os.walk(bigdl_python_home + "bigdl"):
+        package = dirpath.split(bigdl_python_home)[1].replace('/', '.')
+        if "__pycache__" not in package:
+            bigdl_packages.append(package)
+    print "=========================bigdl packages========================="
+    print "\n".join(bigdl_packages)
+    print "================================================================"
+    return bigdl_packages
 
 def setup_package():
     metadata = dict(
@@ -77,24 +88,7 @@ def setup_package():
         author_email='bigdl-user-group@googlegroups.com',
         license='Apache License, Version 2.0',
         url='https://github.com/intel-analytics/Bigdl',
-        packages=['bigdl',
-                  'bigdl.dataset',
-                  'bigdl.nn',
-                  'bigdl.nn.keras',
-                  'bigdl.transform',
-                  'bigdl.transform.vision',
-                  'bigdl.keras',
-                  'bigdl.examples',
-                  'bigdl.examples.keras',
-                  'bigdl.models',
-                  'bigdl.models.lenet',
-                  'bigdl.models.local_lenet',
-                  'bigdl.models.ml_pipeline',
-                  'bigdl.models.rnn',
-                  'bigdl.models.textclassifier',
-                  'bigdl.optim',
-                  'bigdl.util',
-                  'bigdl.share'],
+        packages=get_bigdl_packages(),
         install_requires=['numpy>=1.7', 'pyspark>=2.2', 'six>=1.10.0'],
         dependency_links=['https://d3kbcqa49mib13.cloudfront.net/spark-2.0.0-bin-hadoop2.7.tgz'],
         include_package_data=True,
