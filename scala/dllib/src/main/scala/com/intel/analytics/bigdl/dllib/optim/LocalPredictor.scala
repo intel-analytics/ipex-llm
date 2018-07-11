@@ -52,7 +52,6 @@ class LocalPredictor[T: ClassTag] private[optim](model: Module[T],
   batchPerCore: Int = 4)
   (implicit ev: TensorNumeric[T]) extends Serializable {
 
-  val logger = LocalPredictor.logger
   private val coreNumber = Engine.coreNumber()
 
   private val subModelNumber = Engine.getEngineType match {
