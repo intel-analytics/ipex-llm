@@ -350,7 +350,7 @@ class SpatialBatchNormalizationSpec extends FlatSpec with Matchers {
     model1.output should be (model2.output)
   }
 
-  "a simple bach norm" should "work correctly" ignore {
+  "a simple bach norm" should "work correctly" in {
     val (batchSize, channel, height, width) = (4, 64, 2, 2)
     val shape = Array(batchSize, channel, height, width)
     val prototxt = s"""
@@ -438,7 +438,7 @@ class SpatialBatchNormalizationSpec extends FlatSpec with Matchers {
     compare(gradInput, seq.gradInput)
   }
 
-  "a simple bach norm inference" should "work correctly" ignore {
+  "a simple bach norm inference" should "work correctly" in {
     val (batchSize, channel, height, width) = (4, 64, 112, 112)
     val shape = Array(batchSize, channel, height, width)
     val prototxt = s"""
@@ -519,7 +519,7 @@ class SpatialBatchNormalizationSpec extends FlatSpec with Matchers {
     val denseOutput = Tools.dense(bn.output).toTensor
 
     denseOutput.storage().array().zip(output.storage().array()).foreach { x =>
-      if (x._2.isInfinity)   x._1.isNaN should be (true)
+      if (x._2.isInfinity)  x._1.isInfinity should be (true)
     }
   }
 
