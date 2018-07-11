@@ -137,7 +137,7 @@ def contiguous(x):
     Turn the output and grad to be contiguous for the input Variable
     :param x: A variable.
     """
-    return Variable.from_jvalue(callBigDlFunc("float", "softplus", x))
+    return Variable.from_jvalue(callBigDlFunc("float", "contiguous", x))
 
 
 def square(x):
