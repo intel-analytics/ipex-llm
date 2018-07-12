@@ -6,10 +6,11 @@
 ## What is Analytics Zoo?
 Analytics Zoo makes it easy to build deep learning application on Spark and BigDL, by providing an end-to-end *Analytics + AI Platform* (including high level pipeline APIs, built-in deep learning models, reference use cases, etc.).
 
- * [High level pipeline APIs](#high-level-pipeline-apis)
-    * [nnframes](#nnframes): native deep learning support in *Spark DataFrames and ML Pipelines*
-    * [autograd](#autograd): build custom layer/loss using *auto differentiation operations* 
-    * [Transfer learning](#transfer-learning): customize pretained model for *feature extraction or fine-tuning*
+ - [High level pipeline APIs](#high-level-pipeline-apis)
+    - [nnframes](#nnframes): native deep learning support in *Spark DataFrames and ML Pipelines*
+    - [autograd](#autograd): build custom layer/loss using *auto differentiation operations* 
+    - [Transfer learning](#transfer-learning): customize pretained model for *feature extraction or fine-tuning*
+    - [Model serving](#model-serving): productionize model serving using [POJO](https://en.wikipedia.org/wiki/Plain_old_Java_object) APIs
   
  - [Built-in deep learning models](#built-in-deep-learning-models)
     - [Object detection API](#object-detection-api): high-level API and pretrained models (e.g., SSD and Faster-RCNN) for *object detection*
@@ -33,7 +34,7 @@ Analytics Zoo provides a set of easy-to-use, high level pipeline APIs that nativ
 ### nnframes
 `nnframes` provides *native deep learning support in Spark DataFrames and ML Pipelines*, so that you can easily build complex deep learning pipelines in just a few lines, as illustracted below. (See more details [here](ProgrammingGuide/nnframes.md))
 
- 1.Initialize *NNContext* and load images into *DataFrames* using `NNImageReader`
+1. Initialize *NNContext* and load images into *DataFrames* using `NNImageReader`
 
 ```
    from zoo.common.nncontext import *
@@ -42,7 +43,7 @@ Analytics Zoo provides a set of easy-to-use, high level pipeline APIs that nativ
    imageDF = NNImageReader.readImages(image_path, sc)
 ```
 
- 2.Process loaded data using *DataFrames transformations*
+2. Process loaded data using *DataFrames transformations*
 
 ```
    getName = udf(lambda row: ...)
@@ -50,7 +51,7 @@ Analytics Zoo provides a set of easy-to-use, high level pipeline APIs that nativ
    df = imageDF.withColumn("name", getName(col("image"))).withColumn("label", getLabel(col('name')))
 ```
 
- 3.Processing image using built-in *feature engineering operations*
+3. Processing image using built-in *feature engineering operations*
    
 ```
    from zoo.feature.image import *
@@ -58,7 +59,7 @@ Analytics Zoo provides a set of easy-to-use, high level pipeline APIs that nativ
                  -> ImageMatToTensor() -> ImageFeatureToTensor())
 ```
 
- 4.Define model using *Keras-style APIs*
+4. Define model using *Keras-style APIs*
   
 ```
    from zoo.pipeline.api.keras.layers import *
@@ -67,7 +68,7 @@ Analytics Zoo provides a set of easy-to-use, high level pipeline APIs that nativ
                    .add(MaxPooling2D(pool_size=(2, 2))).add(Flatten()).add(Dense(10, activation='softmax')))
 ```
 
- 5.Train model using *Spark ML Pipelines*
+5. Train model using *Spark ML Pipelines*
 ```
    classifier = NNClassifier(model, CrossEntropyCriterion(),transformer).setLearningRate(0.003) \
                    .setBatchSize(40).setMaxEpoch(1).setFeaturesCol("image").setCachingSample(False)
@@ -77,28 +78,29 @@ Analytics Zoo provides a set of easy-to-use, high level pipeline APIs that nativ
 ### autograd
 `autograd` provides automatic differentiation for math operations, so that you can easily build your own *custom loss and layer* (in both Python and Scala), as illustracted below. (See more details [here](ProgrammingGuide/autograd.md))
 
- 1.Define custom functions using `autograd`
+1. Define model using Keras-style API and `autograd` 
 
 ```
    from zoo.pipeline.api.autograd import *
-   
-   def mean_absolute_error(y_true, y_pred):
-       return mean(abs(y_true - y_pred), axis=1)
-   
-   def add_one_func(x):
-       return x + 1.0
-```
-
- 2.Define model using Keras-style API and *custom `Lambda` layer*
-
-```
    from zoo.pipeline.api.keras.layers import *
    from zoo.pipeline.api.keras.models import *
-   model = Sequential().add(Dense(1, input_shape=(2,))) \
-                       .add(Lambda(function=add_one_func))
+
+   input = Input(shape=[2, 20])
+   features = TimeDistributed(layer=Dense(30))(input)
+   f1 = features.index_select(1, 0)
+   f2 = features.index_select(1, 1)
+   diff = abs(f1 - f2)
+   model = Model(input, diff)
 ```
 
- 3.Train model with *custom loss function*
+2. Optionally define custom loss functions using `autograd`
+
+```
+   def mean_absolute_error(y_true, y_pred):
+       return mean(abs(y_true - y_pred), axis=1)
+```
+
+3. Train model with *custom loss function*
 
 ```
    model.compile(optimizer = SGD(), loss = mean_absolute_error)
@@ -108,28 +110,28 @@ Analytics Zoo provides a set of easy-to-use, high level pipeline APIs that nativ
 ### Transfer learning
 Using the high level transfer learning APIs, you can easily customize pretrained models for *feature extraction or fine-tuning*. (See more details [here](ProgrammingGuide/transferlearning.md))
 
- 1.Load an existing model (pretrained in Caffe)
+1. Load an existing model (pretrained in Caffe)
    
 ```
    from zoo.pipeline.api.net import *
    full_model = Net.load_caffe(def_path, model_path)
 ```
 
- 2.Remove last few layers
+2. Remove last few layers
 
 ```
    # create a new model by remove layers after pool5/drop_7x7_s1
    model = full_model.new_graph(["pool5/drop_7x7_s1"])
 ```
 
- 3.Freeze first few layers
+3. Freeze first few layers
 
 ```
    # freeze layers from input to pool4/3x3_s2 inclusive
    model.freeze_up_to(["pool4/3x3_s2"])
 ```
 
- 4.Add a few new layers
+4. Add a few new layers
 
 ```
    from zoo.pipeline.api.keras.layers import *
@@ -141,6 +143,27 @@ Using the high level transfer learning APIs, you can easily customize pretrained
    newModel = Model(inputs, logits)
 ```
 
+### _Model Serving_
+Using the [POJO](https://en.wikipedia.org/wiki/Plain_old_Java_object) model serving API, you can productionize model serving and infernece in any Java based frameworks (e.g., [Spring Framework](https://spring.io), Apache [Storm](http://storm.apache.org), [Kafka](http://kafka.apache.org) or [Flink](http://flink.apache.org), etc.), as illustrated below:
+
+```
+import com.intel.analytics.zoo.pipeline.inference.AbstractInferenceModel;
+import com.intel.analytics.zoo.pipeline.inference.JTensor;
+
+public class TextClassificationModel extends AbstractInferenceModel {
+    public TextClassificationModel() {
+        super();
+    }
+}
+
+TextClassificationModel model = new TextClassificationModel();
+model.load(modelPath, weightPath);
+
+List<JTensor> inputs = preprocess(...);
+List<List<JTensor>> result = model.predict(inputs);
+...
+```
+
 ---
 ## Built-in deep learning models
 Analytics Zoo provides several built-in deep learning models that you can use for a variety of problem types, such as *object detection*, *image classification*, *text classification*, *recommendation*, etc.
@@ -148,11 +171,11 @@ Analytics Zoo provides several built-in deep learning models that you can use fo
 ### Object detection API
 Using *Analytics Zoo Object Detection API* (including a set of pretrained detection models such as SSD and Faster-RCNN), you can easily build your object detection applications (e.g., localizing and identifying multiple objects in images and videos), as illustrated below. (See more details [here](ProgrammingGuide/object-detection.md))
 
- 1.Download object detection models in Analytics Zoo
+1. Download object detection models in Analytics Zoo
 
    You can download a collection of detection models (pretrained on the PSCAL VOC dataset and COCO dataset) from [detection model zoo](ProgrammingGuide/object-detection.md#download-link).
 
- 2.Use *Object Detection API* for off-the-shell inference
+2. Use *Object Detection API* for off-the-shell inference
 
 ```
    from zoo.models.image.objectdetection import *
@@ -164,11 +187,11 @@ Using *Analytics Zoo Object Detection API* (including a set of pretrained detect
 ### Image classification API
 Using *Analytics Zoo Image Classification API* (including a set of pretrained detection models such as VGG, Inception, ResNet, MobileNet,  etc.), you can easily build your image classification applications, as illustrated below. (See more details [here](ProgrammingGuide/image-classification.md))
 
- 1.Download image classification models in Analytics Zoo
+1. Download image classification models in Analytics Zoo
 
    You can download a collection of image classification models (pretrained on the ImageNet dataset) from [image classification model zoo](ProgrammingGuide/image-classification.md#download-link)
 
- 2.Use *Image classification API* for off-the-shell inference
+2. Use *Image classification API* for off-the-shell inference
 
 ```
    from zoo.models.image.imageclassification import *
