@@ -103,6 +103,46 @@ class SpatialBatchNormalizationSpec extends FlatSpec with Matchers {
     Tools.dense(bn.gradWeightAndBias) should be (Tools.dense(cloned.gradWeightAndBias))
   }
 
+  "batch norm with dense weights and gradients" should "work correctly" in {
+    val batchSize = 2
+    RNG.setSeed(100)
+    val input = Tensor(100, 1, 10, 10).rand(-1, 1)
+    val gradOutput = Tensor(100, 1, 10, 10).rand(-1, 1)
+    val (channel, height, width) = (1, 10, 10)
+
+    val initWeight1 = Tensor(channel).rand(-1, 1)
+    val initBias1 = Tensor(channel).fill(0)
+    val initWeight2 = Tensor(channel).rand(-1, 1)
+    val initBias2 = Tensor(channel).fill(0)
+
+    val bn1 = SpatialBatchNormalization(1, 0.0, initWeight = initWeight1, initBias = initBias1)
+    val bn2 = SpatialBatchNormalization(1, 0.0, initWeight = initWeight2, initBias = initBias2)
+
+    val inputShape = Array(100, 1, 10, 10)
+    for (bn <- List(bn1, bn2)) {
+      bn.setRuntime(new MklDnnRuntime)
+      bn.initFwdPrimitives(Array(HeapData(inputShape, Memory.Format.nchw)), TrainingPhase)
+      bn.initBwdPrimitives(Array(HeapData(inputShape, Memory.Format.nchw)), TrainingPhase)
+      bn.initGradWPrimitives(Array(HeapData(inputShape, Memory.Format.nchw)), TrainingPhase)
+    }
+
+    bn1.forward(input)
+    bn1.backward(input, gradOutput)
+
+    bn1.parameters()._1.zip(bn2.parameters()._1).foreach(x => x._1.copy(x._2))
+
+    bn1.forward(input)
+    bn1.backward(input, gradOutput)
+
+    bn2.forward(input)
+    bn2.backward(input, gradOutput)
+
+    Tools.dense(bn1.output) should be (Tools.dense(bn2.output))
+    Tools.dense(bn1.gradInput) should be (Tools.dense(bn2.gradInput))
+
+    bn1.parameters()._2.zip(bn2.parameters()._2).foreach(x => x._1 should be (x._2))
+  }
+
   "bn updateOutput" should "work correctly" in {
     val (batchSize, channel, height, width) = (4, 64, 112, 112)
     val inputShape = Array(batchSize, channel, height, width)

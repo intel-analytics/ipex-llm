@@ -201,6 +201,8 @@ class SpatialBatchNormalization(
       }
     }
 
+    weightAndBias.copy(Extend.weightAndBias)
+
     updateWithNewTensor(updateOutputTensors, 0, input)
 
     MklDnnOps.streamSubmit(runtime.stream, 1, updateOutputPrimitives, updateOutputPrimitives.length,
@@ -213,6 +215,9 @@ class SpatialBatchNormalization(
       mean.axpby(1, momentum.toFloat, runningMean)
       variance.axpby(biasFactor, momentum.toFloat, runningVariance)
     }
+
+    Extend.runningMean.copy(runningMean)
+    Extend.runningVariance.copy(runningVariance)
 
     output
   }
@@ -275,6 +280,8 @@ class SpatialBatchNormalization(
     MklDnnOps.streamSubmit(runtime.stream, 1, updateGradInputPrimitives,
       updateGradInputPrimitives.length, updateGradInputMemoryPrimitives, updateGradInputTensors)
 
+    Extend.gradWeightAndBias.copy(gradWeightAndBias)
+
     gradInput
   }
 
@@ -290,7 +297,7 @@ class SpatialBatchNormalization(
   }
 
   override def parameters(): (Array[Tensor[Float]], Array[Tensor[Float]]) = {
-    (Array(weightAndBias), Array(gradWeightAndBias))
+    (Array(Extend.weightAndBias), Array(Extend.gradWeightAndBias))
   }
 
   override def parametersWithShape(): (Array[MemoryData], Array[MemoryData]) = {
