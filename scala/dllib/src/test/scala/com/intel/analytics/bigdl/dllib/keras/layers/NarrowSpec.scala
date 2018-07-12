@@ -72,12 +72,13 @@ class NarrowSpec extends ZooSpecHelper {
     compareOutputAndGradInput(blayer, zlayer, input)
   }
 
-  "Narrow the batch dimension" should "raise an exception" in {
-    intercept[RuntimeException] {
-      val zlayer = ZNarrow[Float](0, 0, inputShape = Shape(2, 3, 4))
-      zlayer.build(Shape(-1, 2, 3, 4))
-    }
-  }
+// Open the restriction for batch dimension for now.
+//  "Narrow the batch dimension" should "raise an exception" in {
+//    intercept[RuntimeException] {
+//      val zlayer = ZNarrow[Float](0, 0, inputShape = Shape(2, 3, 4))
+//      zlayer.build(Shape(-1, 2, 3, 4))
+//    }
+//  }
 
   "Narrow offset too large" should "raise an exception" in {
     intercept[RuntimeException] {
