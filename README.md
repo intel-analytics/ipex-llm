@@ -10,7 +10,7 @@ Analytics Zoo makes it easy to build deep learning application on Spark and BigD
   - [`nnframes`](#nnframes): native deep learning support in *Spark DataFrames and ML Pipelines*
   - [`autograd`](#autograd): build custom layer/loss using *auto differentiation operations* 
   - [Transfer learning](#transfer-learning): customize pretained model for *feature extraction or fine-tuning*
-  - [Model serving](#model-serving): productionize model serving using [POJO](https://en.wikipedia.org/wiki/Plain_old_Java_object) APIs
+  - [Model serving](#model-serving): productionize *model serving and inference* using [POJO](https://en.wikipedia.org/wiki/Plain_old_Java_object) APIs
   
 - [Built-in deep learning models](#built-in-deep-learning-models)
   - [Object detection API](#object-detection-api): high-level API and pretrained models (e.g., SSD and Faster-RCNN) for *object detection*
