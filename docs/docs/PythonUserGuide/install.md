@@ -7,14 +7,14 @@ For Python users, Analytics Zoo can be installed either [from pip](#install-from
 
 Analytics Zoo can be installed via pip easily using the following command.
 
-***Install analytics-zoo-0.2.0.dev0***
+***Install analytics-zoo-0.2.0.dev1***
 
 * Note that you might need to add `sudo` if you don't have the permission for installation.
 
 ```bash
 pip install --upgrade pip
-pip install analytics-zoo==0.2.0.dev0     # for Python 2.7
-pip3 install analytics-zoo==0.2.0.dev0    # for Python 3.5 and Python 3.6
+pip install analytics-zoo==0.2.0.dev1     # for Python 2.7
+pip3 install analytics-zoo==0.2.0.dev1    # for Python 3.5 and Python 3.6
 ```
 
 **Important:**
