@@ -155,6 +155,9 @@ class Linear(
 
     updateWithNewTensor(updateOutputTensors, 0, input)
 
+    weight.copy(Extend.weight)
+    bias.copy(Extend.bias)
+
     MklDnnOps.streamSubmit(runtime.stream, 1, updateOutputPrimitives, updateOutputPrimitives.length,
       updateOutputMemoryPrimitives, updateOutputTensors)
 
@@ -278,10 +281,13 @@ class Linear(
 
     MklDnnOps.streamSubmit(runtime.stream, 1, accGradientPrimitives,
       accGradientPrimitives.length, updateGradWMemoryPrimitives, updateGradWTensors)
+
+    Extend.gradWeight.copy(gradWeight)
+    Extend.gradBias.copy(gradBias)
   }
 
   override def parameters(): (Array[Tensor[Float]], Array[Tensor[Float]]) = {
-    (Array(weight, bias), Array(gradWeight, gradBias))
+    (Array(Extend.weight, Extend.bias), Array(Extend.gradWeight, Extend.gradBias))
   }
 
   override def parametersWithShape(): (Array[MemoryData], Array[MemoryData]) = {
