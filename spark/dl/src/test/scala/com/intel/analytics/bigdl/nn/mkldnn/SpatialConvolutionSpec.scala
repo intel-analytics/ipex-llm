@@ -444,6 +444,52 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
     Tools.dense(conv.gradBias) should be (Tools.dense(cloned.gradBias))
   }
 
+  "conv with dense weights and gradients" should "work correctly" in {
+    val inputShape = Array(4, 3, 5, 5)
+    val outputShape = Array(4, 2, 3, 3)
+    val nOutput = 2
+    val kernel = 3
+    val pad = 1
+    val stride = 2
+
+    val input = Tensor(inputShape).rand(-1, 1)
+    val gradOutput = Tensor(outputShape).rand(-1, 1)
+
+    val initWeight1 = Tensor(Array(nOutput, inputShape(1), kernel, kernel)).rand(-1, 1)
+    val initWeight2 = Tensor(Array(nOutput, inputShape(1), kernel, kernel)).rand(-1, 1)
+    val initBias1 = Tensor(nOutput).rand(-1, 1)
+    val initBias2 = Tensor(nOutput).rand(-1, 1)
+
+    val conv1 = new SpatialConvolution(3, nOutput, kernel, kernel, stride, stride, pad, pad, 1,
+      initWeight = initWeight1, initBias = initBias1)
+    conv1.setRuntime(new MklDnnRuntime)
+    conv1.initFwdPrimitives(Array(HeapData(inputShape, Memory.Format.nchw)), TrainingPhase)
+    conv1.initBwdPrimitives(Array(HeapData(outputShape, Memory.Format.nchw)), TrainingPhase)
+    conv1.initGradWPrimitives(Array(HeapData(outputShape, Memory.Format.nchw)), TrainingPhase)
+
+    conv1.forward(input)
+    conv1.backward(input, gradOutput)
+
+    conv1.parameters()._1.zip(Array(initWeight2, initBias2)).foreach(x => x._1.copy(x._2))
+    conv1.forward(input)
+    conv1.backward(input, gradOutput)
+
+    val conv2 = new SpatialConvolution(3, nOutput, kernel, kernel, stride, stride, pad, pad, 1,
+      initWeight = initWeight2, initBias = initBias2)
+    conv2.setRuntime(new MklDnnRuntime)
+    conv2.initFwdPrimitives(Array(HeapData(inputShape, Memory.Format.nchw)), TrainingPhase)
+    conv2.initBwdPrimitives(Array(HeapData(outputShape, Memory.Format.nchw)), TrainingPhase)
+    conv2.initGradWPrimitives(Array(HeapData(outputShape, Memory.Format.nchw)), TrainingPhase)
+
+    conv2.forward(input)
+    conv2.backward(input, gradOutput)
+
+    Tools.dense(conv1.output) should be (Tools.dense(conv2.output))
+    Tools.dense(conv1.gradInput) should be (Tools.dense(conv2.gradInput))
+
+    conv1.parameters()._2.zip(conv2.parameters()._2).foreach(x => x._1 should be (x._2))
+  }
+
   def prototxt(inputShape: Array[Int], name: String,
     nOutput: Int, kernel: Int, pad: Int, stride: Int): String = {
       s"""
