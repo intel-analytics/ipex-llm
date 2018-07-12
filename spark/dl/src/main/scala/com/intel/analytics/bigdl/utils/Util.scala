@@ -91,49 +91,64 @@ object Util {
     }
   }
 
-
-  private[bigdl] def getAndClearWeightBias[T: ClassTag]
-  (parameters: (Array[Tensor[T]], Array[Tensor[T]]))(implicit ev: TensorNumeric[T])
-  : Array[Tensor[T]] = {
-    if (parameters._1.length != 0) {
-      var i = 0
-      val weightsBias = new Array[Tensor[T]](parameters._1.length)
-      val isQuantized = parameters._1.exists(_.getTensorType == QuantizedType)
+  private def getAndClear[T: ClassTag](tensors: Array[Tensor[T]])
+    (implicit ev: TensorNumeric[T]): Array[Tensor[T]] = {
+    if (tensors.length != 0) {
+      val newTensors = new Array[Tensor[T]](tensors.length)
+      val isQuantized = tensors.exists(_.getTensorType == QuantizedType)
       val (isCompacted, storage) = if (!isQuantized) {
-        val storage = Storage(parameters._1(0).storage.array())
-        (parameters._1.map(_.nElement()).sum == storage.length(), storage)
+        val storageArray = tensors(0).storage.array()
+        tensors.map(_.storage().array().eq(storageArray))
+          .reduce(_ & _)
+        val storage = Storage(storageArray)
+        (tensors.map(_.nElement()).sum < storage.length(), storage)
       } else {
         (false, null)
       }
 
+      var i = 0
       // get weight and bias
-      while (i < parameters._1.length) {
-        if (parameters._1(i) != null) {
-          val wb = parameters._1(i)
-          wb.getTensorType match {
+      while (i < tensors.length) {
+        if (tensors(i) != null) {
+          val ithTensor = tensors(i)
+          ithTensor.getTensorType match {
             case QuantizedType =>
-              val quantTensor = wb.asInstanceOf[QuantizedTensor[T]]
-              weightsBias(i) = QuantizedTensor[T](quantTensor.getStorage, quantTensor.maxOfRow,
+              val quantTensor = ithTensor.asInstanceOf[QuantizedTensor[T]]
+              newTensors(i) = QuantizedTensor[T](quantTensor.getStorage, quantTensor.maxOfRow,
                 quantTensor.minOfRow, quantTensor.sumOfRow, quantTensor.size(), quantTensor.params)
             case _ =>
-              weightsBias(i) = if (isCompacted) {
-                Tensor[T](storage, wb.storageOffset(), wb.size(), wb.stride())
+              newTensors(i) = if (isCompacted) {
+                Tensor[T](storage, ithTensor.storageOffset(), ithTensor.size(), ithTensor.stride())
               } else {
-                Tensor[T](Storage(wb.storage().array()), wb.storageOffset(), wb.size(), wb.stride())
+                Tensor[T](Storage(ithTensor.storage().array()),
+                  ithTensor.storageOffset(), ithTensor.size(), ithTensor.stride())
               }
           }
           i += 1
         }
       }
       // clear parameters
-      clearTensor(parameters._1)
-      clearTensor(parameters._2)
+      clearTensor(tensors)
 
-      weightsBias
+      newTensors
     } else {
       // just return an empty array when parameters is empty.
       Array()
     }
+
+  }
+
+  private[bigdl] def getAndClearWeightBiasGrad[T: ClassTag]
+  (parameters: (Array[Tensor[T]], Array[Tensor[T]]))(implicit ev: TensorNumeric[T])
+  : (Array[Tensor[T]], Array[Tensor[T]]) = {
+    (getAndClear(parameters._1), getAndClear(parameters._2))
+  }
+
+  private[bigdl] def getAndClearWeightBias[T: ClassTag]
+  (parameters: (Array[Tensor[T]], Array[Tensor[T]]))(implicit ev: TensorNumeric[T])
+  : Array[Tensor[T]] = {
+    clearTensor(parameters._2)
+    getAndClear(parameters._1)
   }
 
   private[bigdl] def getAndClearConsts[T: ClassTag](
@@ -176,6 +191,19 @@ object Util {
     }
   }
 
+  private[bigdl] def putGradWeightBias[T: ClassTag](
+      broadcastGradWeightBias: Array[Tensor[T]],
+      localModel: Module[T])(implicit ev: TensorNumeric[T]): Unit = {
+    val localWeightBias = localModel.parameters()._2
+    var i = 0
+    while (i < localWeightBias.length) {
+      if (localWeightBias(i) != null) {
+        clearAndSet(localWeightBias(i), broadcastGradWeightBias(i))
+      }
+      i += 1
+    }
+  }
+
   private[bigdl] def putWeightBias[T: ClassTag](
       broadcastWeightBias: Array[Tensor[T]],
       localModel: Module[T])(implicit ev: TensorNumeric[T]): Unit = {
@@ -187,19 +215,21 @@ object Util {
       }
       i += 1
     }
+  }
 
-    def clearAndSet(old: Tensor[T], other: Tensor[T]): Unit = {
-      if (old.getTensorType == QuantizedType && other.getTensorType == QuantizedType) {
-        val quantOld = old.asInstanceOf[QuantizedTensor[T]]
-        val quantOther = other.asInstanceOf[QuantizedTensor[T]]
+  private def clearAndSet[T: ClassTag](
+      old: Tensor[T],
+      other: Tensor[T])(implicit ev: TensorNumeric[T]): Unit = {
+    if (old.getTensorType == QuantizedType && other.getTensorType == QuantizedType) {
+      val quantOld = old.asInstanceOf[QuantizedTensor[T]]
+      val quantOther = other.asInstanceOf[QuantizedTensor[T]]
 
-        if (quantOld.getNativeStorage != quantOther.getNativeStorage) {
-          quantOld.release()
-        }
+      if (quantOld.getNativeStorage != quantOther.getNativeStorage) {
+        quantOld.release()
       }
-
-      old.set(other)
     }
+
+    old.set(other)
   }
 
   private[bigdl] def initGradWeightBias[T: ClassTag](
