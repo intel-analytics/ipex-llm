@@ -16,6 +16,8 @@
 
 package com.intel.analytics.bigdl.nn.mkldnn
 
+import java.io.{IOException, ObjectInputStream}
+
 import com.intel.analytics.bigdl.mkl.{DataType, Memory, MklDnn, PropKind, Query, Stream => DnnStream}
 import com.intel.analytics.bigdl.nn.abstractnn.{Activity, Initializable, TensorModule}
 import com.intel.analytics.bigdl.nn.{InitializationMethod, RandomUniform, VariableFormat}
@@ -34,6 +36,13 @@ class Linear(
   private val initBias: Tensor[Float] = null,
   private val initGradWeight: Tensor[Float] = null,
   private val initGradBias: Tensor[Float] = null) extends MklDnnLayer with Initializable {
+
+  object Extend extends Serializable {
+    val weight: Tensor[Float] = Tensor[Float](Array(outputSize, inputSize))
+    val bias: Tensor[Float] = Tensor[Float](Array(outputSize))
+    val gradWeight: Tensor[Float] = Tensor[Float](Array(outputSize, inputSize))
+    val gradBias: Tensor[Float] = Tensor[Float](Array(outputSize))
+  }
 
   val weight: DnnTensor[Float] = DnnTensor[Float](Array(outputSize, inputSize))
   val bias: DnnTensor[Float] = DnnTensor[Float](Array(outputSize))
@@ -65,19 +74,19 @@ class Linear(
 
   override def reset(): Unit = {
     if (initWeight == null) {
-      val t = Tensor[Float](Array(outputSize, inputSize))
-      weightInitMethod.init(t, VariableFormat.OUT_IN)
-      weight.copy(t)
+      weightInitMethod.init(Extend.weight, VariableFormat.OUT_IN)
+      weight.copy(Extend.weight)
     } else {
       weight.copy(initWeight)
+      Extend.weight.copy(initWeight)
     }
 
     if (initBias == null) {
-      val t = Tensor[Float](Array(outputSize))
-      biasInitMethod.init(t, VariableFormat.ONE_D)
-      bias.copy(t)
+      biasInitMethod.init(Extend.bias, VariableFormat.ONE_D)
+      bias.copy(Extend.bias)
     } else {
       bias.copy(initBias)
+      Extend.bias.copy(bias)
     }
 
     zeroGradParameters()
@@ -283,6 +292,16 @@ class Linear(
   override def zeroGradParameters(): Unit = {
     gradWeight.zero()
     gradBias.zero()
+
+    Extend.gradWeight.zero()
+    Extend.gradBias.zero()
+  }
+
+  @throws(classOf[IOException])
+  private def readObject(in: ObjectInputStream): Unit = {
+    in.defaultReadObject()
+    weight.copy(Extend.weight)
+    bias.copy(Extend.bias)
   }
 }
 

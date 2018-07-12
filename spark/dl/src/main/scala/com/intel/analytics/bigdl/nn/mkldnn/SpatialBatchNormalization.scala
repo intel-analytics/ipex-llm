@@ -16,6 +16,8 @@
 
 package com.intel.analytics.bigdl.nn.mkldnn
 
+import java.io.{IOException, ObjectInputStream}
+
 import com.intel.analytics.bigdl.mkl.{AlgKind, Memory, MklDnn, PropKind, Query}
 import com.intel.analytics.bigdl.nn.abstractnn.{Activity, Initializable}
 import com.intel.analytics.bigdl.nn.mkldnn.Phase.{InferencePhase, TrainingPhase}
@@ -56,6 +58,13 @@ class SpatialBatchNormalization(
   val weightAndBias: DnnTensor[Float] = DnnTensor[Float](Array(nOutput * 2))
   val gradWeightAndBias: DnnTensor[Float] = DnnTensor[Float](Array(nOutput * 2))
 
+  object Extend extends Serializable {
+    val runningMean: Tensor[Float] = Tensor[Float](nOutput)
+    val runningVariance: Tensor[Float] = Tensor[Float](nOutput)
+    val weightAndBias: Tensor[Float] = Tensor[Float](Array(nOutput * 2))
+    val gradWeightAndBias: Tensor[Float] = Tensor[Float](Array(nOutput * 2))
+  }
+
   var scaleFactor: Float = 0.0f
   var biasFactor: Float = 0.0f
 
@@ -85,6 +94,7 @@ class SpatialBatchNormalization(
     }
 
     weightAndBias.copy(init.view(2 * nOutput))
+    Extend.weightAndBias.copy(init.view(2 * nOutput))
 
     val zeros = Tensor[Float](Array(nOutput)).fill(0)
     mean.copy(zeros)
@@ -273,8 +283,10 @@ class SpatialBatchNormalization(
   }
 
   override def zeroGradParameters(): Unit = {
-    if (affine) { gradWeightAndBias.zero() }
-    if (gradInput != null) { gradInput.asInstanceOf[DnnTensor[Float]].zero() }
+    if (affine) {
+      gradWeightAndBias.zero()
+      Extend.gradWeightAndBias.zero()
+    }
   }
 
   override def parameters(): (Array[Tensor[Float]], Array[Tensor[Float]]) = {
@@ -288,6 +300,12 @@ class SpatialBatchNormalization(
 
   override def toString(): String = {
     s"nn.mkl.SpatialBatchNormalization($nOutput, $eps, $momentum, $affine)"
+  }
+
+  @throws(classOf[IOException])
+  private def readObject(in: ObjectInputStream): Unit = {
+    in.defaultReadObject()
+    weightAndBias.copy(Extend.weightAndBias)
   }
 }
 

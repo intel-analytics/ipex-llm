@@ -16,6 +16,8 @@
 
 package com.intel.analytics.bigdl.nn.mkldnn
 
+import java.io.{IOException, ObjectInputStream, ObjectOutputStream}
+
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.mkl._
 import com.intel.analytics.bigdl.nn._
@@ -52,6 +54,13 @@ class SpatialConvolution(
   // different.
   // It's `lazy` so the reordermanager need not serialized.
   @transient private lazy val reorderManager = new ReorderManager
+
+  object Extend extends Serializable {
+    val weight: Tensor[Float] = Tensor[Float](weightShape)
+    val bias: Tensor[Float] = Tensor[Float](Array(nOutputPlane))
+    val gradWeight: Tensor[Float] = Tensor[Float](weightShape)
+    val gradBias: Tensor[Float] = Tensor[Float](Array(nOutputPlane))
+  }
 
   val weight: DnnTensor[Float] = DnnTensor[Float](weightShape)
   private var weightForBackward: DnnTensor[Float] = _
@@ -125,19 +134,19 @@ class SpatialConvolution(
 
   override def reset(): Unit = {
     if (initWeight == null) { // TODO only support oihw format weights
-      val t = Tensor[Float](weightShape)
-      weightInitMethod.init(t, VariableFormat.OUT_IN)
-      weight.copy(t)
+      weightInitMethod.init(Extend.weight, VariableFormat.OUT_IN)
+      weight.copy(Extend.weight)
     } else {
       weight.copy(initWeight)
+      Extend.weight.copy(initWeight)
     }
 
     if (initBias == null) {
-      val t = Tensor[Float](Array(nOutputPlane))
-      biasInitMethod.init(t, VariableFormat.ONE_D)
-      bias.copy(t)
+      biasInitMethod.init(Extend.bias, VariableFormat.ONE_D)
+      bias.copy(Extend.bias)
     } else {
       bias.copy(initBias)
+      Extend.bias.copy(initBias)
     }
 
     zeroGradParameters()
@@ -371,10 +380,20 @@ class SpatialConvolution(
   override def zeroGradParameters(): Unit = {
     gradWeight.zero()
     gradBias.zero()
+
+    Extend.gradWeight.zero()
+    Extend.gradBias.zero()
   }
 
   override def parametersWithShape(): (Array[MemoryData], Array[MemoryData]) = {
     (Array(ParamsShape.weight, ParamsShape.bias), Array(ParamsShape.gradWeight, ParamsShape.bias))
+  }
+
+  @throws(classOf[IOException])
+  private def readObject(in: ObjectInputStream): Unit = {
+    in.defaultReadObject()
+    weight.copy(Extend.weight)
+    bias.copy(Extend.bias)
   }
 }
 
