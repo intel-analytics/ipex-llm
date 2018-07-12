@@ -29,6 +29,7 @@ pages:
     - DataFrame and ML Pipeline: ProgrammingGuide/nnframes.md
     - Autograd: ProgrammingGuide/autograd.md
     - Transfer Learning: ProgrammingGuide/transferlearning.md
+    - Inference: ProgrammingGuide/inference.md
   - Feature Engineering:
     - Working with Images: ProgrammingGuide/workingwithimages.md
   - Built-in Models:
@@ -45,6 +46,7 @@ pages:
     - Autograd-Math: APIGuide/PipelineAPI/math.md
     - Autograd-Variable: APIGuide/PipelineAPI/variable.md
     - Net: APIGuide/PipelineAPI/net.md
+    - Inference: APIGuide/PipelineAPI/inference.md
   - Feature Engineering:
     - Image: APIGuide/FeatureEngineering/image.md
     - Preprocessing: APIGuide/FeatureEngineering/preprocessing.md
