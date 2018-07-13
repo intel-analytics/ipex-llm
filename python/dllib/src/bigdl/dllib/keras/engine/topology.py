@@ -182,6 +182,31 @@ class KerasNet(ZooKerasLayer):
                              data_rdd,
                              batch_size)
 
+    def forward(self, input):
+        """
+        NB: It's for debug only, please use optimizer.optimize() in production.
+        Takes an input object, and computes the corresponding output of the module
+        :param input: ndarray or list of ndarray
+        :param input: ndarray or list of ndarray or JTensor or list of JTensor.
+        :return: ndarray or list of ndarray
+        """
+        jinput, input_is_table = self.check_input(input)
+        output = callBigDlFunc(self.bigdl_type,
+                               "zooForward",
+                               self.value,
+                               jinput,
+                               input_is_table)
+        return self.convert_output(output)
+
+    @staticmethod
+    def convert_output(output):
+        if type(output) is JTensor:
+            return output.to_ndarray()
+        elif(len(output) == 1):
+            return KerasNet.convert_output(output[0])
+        else:
+            return [KerasNet.convert_output(x) for x in output]
+
     def predict(self, x, batch_size=32, distributed=True):
         """
         Use a model to do prediction.
