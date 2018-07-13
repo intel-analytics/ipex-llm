@@ -49,13 +49,14 @@ object ResNet50Perf {
   }
 
   def main(argv: Array[String]): Unit = {
+    System.setProperty("bigdl.disable.mklBlockTime", "true");
     System.setProperty("bigdl.mkldnn.fusion.convbn", "true")
     System.setProperty("bigdl.mkldnn.fusion.bnrelu", "true")
     System.setProperty("bigdl.mkldnn.fusion.convrelu", "true")
     System.setProperty("bigdl.mkldnn.fusion.convsum", "true")
 
-    val coreNumber: Int = Runtime.getRuntime.availableProcessors() / 2
-    System.setProperty("bigdl.mklNumThreads", s"$coreNumber")
+    val coreNumber: Int = System.getProperty("bigdl.mklNumThreads",
+      s"${Runtime.getRuntime.availableProcessors() / 2}").toInt
     Engine.setCoreNumber(1)
     MklDnn.setNumThreads(coreNumber)
 

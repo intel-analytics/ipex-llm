@@ -18,9 +18,12 @@ package com.intel.analytics.bigdl.optim
 
 import com.intel.analytics.bigdl.dataset.{LocalDataSet, MiniBatch}
 import com.intel.analytics.bigdl._
+import com.intel.analytics.bigdl.mkl.Memory
 import com.intel.analytics.bigdl.models.utils.ModelBroadcast
 import com.intel.analytics.bigdl.nn.Utils
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
+import com.intel.analytics.bigdl.nn.mkldnn.{HeapData, MemoryData}
+import com.intel.analytics.bigdl.nn.mkldnn.Phase.{InferencePhase, TrainingPhase}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils._
@@ -42,7 +45,8 @@ object LocalOptimizer {
 class LocalOptimizer[T: ClassTag] (
   model: Module[T],
   dataset: LocalDataSet[MiniBatch[T]],
-  criterion: Criterion[T]
+  criterion: Criterion[T],
+  inputFormats: Array[MemoryData] = null
 )(implicit ev: TensorNumeric[T])
   extends Optimizer[T, MiniBatch[T]](
     model, dataset, criterion) {
@@ -54,7 +58,7 @@ class LocalOptimizer[T: ClassTag] (
 
   private val subModelNumber = Engine.getEngineType match {
     case MklBlas => coreNumber
-    case _ => throw new IllegalArgumentException
+    case _ => 1
   }
 
   private val workingModels = {
@@ -66,6 +70,7 @@ class LocalOptimizer[T: ClassTag] (
       val m = model.cloneModule()
       Util.putWeightBias(wb, m)
       Util.initGradWeightBias(wb, m)
+      m.asInstanceOf[nn.mkldnn.Sequential].compile(TrainingPhase, inputFormats)
       m
     }).toArray
     Util.putWeightBias(wb, model)
@@ -231,6 +236,11 @@ class LocalOptimizer[T: ClassTag] (
     logger.info(s"$header Validate model...")
 
     workingModels.foreach(_.evaluate())
+    val localWorkingModels = workingModels.map { x =>
+      val _x = x.cloneModule()
+      _x.asInstanceOf[nn.mkldnn.Sequential].compile(InferencePhase, inputFormats)
+      _x
+    }
 
     var count = 0
     dataIter.map(batch => {
@@ -246,7 +256,7 @@ class LocalOptimizer[T: ClassTag] (
             val currentMiniBatch = batch.slice(offset, length)
             val input = currentMiniBatch.getInput()
             val target = currentMiniBatch.getTarget()
-            val output = workingModels(b).forward(input)
+            val output = localWorkingModels(b).forward(input)
             val validatMethods = vMethodsArr(b)
             validatMethods.map(validation => {
               validation(output, target)

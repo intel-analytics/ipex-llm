@@ -306,8 +306,8 @@ class Linear(
   @throws(classOf[IOException])
   private def readObject(in: ObjectInputStream): Unit = {
     in.defaultReadObject()
-    weight.copy(Extend.weight)
-    bias.copy(Extend.bias)
+    if (!Extend.weight.isEmpty) { weight.copy(Extend.weight) }
+    if (!Extend.bias.isEmpty) { bias.copy(Extend.bias) }
   }
 }
 

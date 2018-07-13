@@ -17,14 +17,14 @@
 package com.intel.analytics.bigdl.example.lenetLocal
 
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.dataset.DataSet
+import com.intel.analytics.bigdl.dataset.{DataSet, LocalDataSet, MiniBatch}
 import com.intel.analytics.bigdl.dataset.image.{BytesToGreyImg, GreyImgNormalizer, GreyImgToBatch}
-import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, Module}
+import com.intel.analytics.bigdl.mkl.MklDnn
+import com.intel.analytics.bigdl.models.lenet.LeNet5
+import com.intel.analytics.bigdl.nn.{CrossEntropyCriterion, Module}
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.utils.{Engine, LoggerFilter}
-import com.intel.analytics.bigdl.models.lenet.LeNet5
-import org.apache.log4j.{Level, Logger}
 
 
 object Train {
@@ -36,8 +36,14 @@ object Train {
   def main(args: Array[String]): Unit = {
     trainParser.parse(args, new TrainParams()).map(param => {
 
+      System.setProperty("bigdl.disable.mklBlockTime", "true");
       System.setProperty("bigdl.localMode", "true")
       System.setProperty("bigdl.coreNumber", param.coreNumber.toString)
+      val coreNumber: Int = System.getProperty("bigdl.mklNumThreads",
+        s"${Runtime.getRuntime.availableProcessors() / 2}").toInt
+      Engine.setCoreNumber(1)
+      MklDnn.setNumThreads(coreNumber)
+
       Engine.init
 
       val trainData = param.folder + "/train-images-idx3-ubyte"
@@ -45,10 +51,11 @@ object Train {
       val validationData = param.folder + "/t10k-images-idx3-ubyte"
       val validationLabel = param.folder + "/t10k-labels-idx1-ubyte"
 
-      val model = if (param.modelSnapshot.isDefined) {
-        Module.load[Float](param.modelSnapshot.get)
+      val (model, inputFormats) = if (param.modelSnapshot.isDefined) {
+        (Module.load[Float](param.modelSnapshot.get), null)
       } else {
-        LeNet5(classNum = 10)
+//        LeNet5(classNum = 10)
+        LeNet5.dnn(classNum = 10, batchSize = param.batchSize)
       }
 
       val optimMethod = if (param.stateSnapshot.isDefined) {
@@ -62,10 +69,12 @@ object Train {
         BytesToGreyImg(28, 28) -> GreyImgNormalizer(trainMean, trainStd) -> GreyImgToBatch(
         param.batchSize)
 
-      val optimizer = Optimizer(
+      val optimizer = new LocalOptimizer[Float](
         model = model,
-        dataset = trainSet,
-        criterion = ClassNLLCriterion[Float]())
+        dataset = trainSet.asInstanceOf[LocalDataSet[MiniBatch[Float]]],
+        criterion = CrossEntropyCriterion[Float](),
+        inputFormats)
+//        criterion = ClassNLLCriterion[Float]())
       if (param.checkpoint.isDefined) {
         optimizer.setCheckpoint(param.checkpoint.get, Trigger.everyEpoch)
       }

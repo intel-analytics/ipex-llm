@@ -32,7 +32,10 @@ class SoftMax() extends MklDnnLayer {
 
   override private[mkldnn] def initFwdPrimitives(inputs: Array[MemoryData], phase: Phase) = {
     phase match {
-      case TrainingPhase => (inputs, inputs) // do nothing, because mkl dnn doesn't support training
+      case TrainingPhase =>
+        _inputFormats = inputs
+        _outputFormats = inputs
+        (inputs, inputs) // do nothing, because mkl dnn doesn't support training
       case InferencePhase =>
         val axis = inputs(0).shape.length match {
           case 1 => 0
@@ -67,6 +70,8 @@ class SoftMax() extends MklDnnLayer {
   }
 
   override private[mkldnn] def initBwdPrimitives(grad: Array[MemoryData], phase: Phase) = {
+    _gradInputFormats = grad
+    _gradOutputFormats = grad
     (grad, grad)
   }
 

@@ -312,7 +312,7 @@ class SpatialBatchNormalization(
   @throws(classOf[IOException])
   private def readObject(in: ObjectInputStream): Unit = {
     in.defaultReadObject()
-    weightAndBias.copy(Extend.weightAndBias)
+    if (!Extend.weightAndBias.isEmpty) { weightAndBias.copy(Extend.weightAndBias) }
   }
 }
 

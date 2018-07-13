@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.mkl.Memory
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.nn._
-import com.intel.analytics.bigdl.nn.mkldnn.HeapData
+import com.intel.analytics.bigdl.nn.mkldnn.{HeapData, MemoryData}
 import com.intel.analytics.bigdl.nn.mkldnn.Phase.TrainingPhase
 
 object LeNet5 {
@@ -88,7 +88,7 @@ object LeNet5 {
     Model(input, fc2)
   }
 
-  def dnn(classNum: Int, batchSize: Int): Module[Float] = {
+  def dnn(classNum: Int, batchSize: Int): (mkldnn.Sequential, Array[MemoryData]) = {
     val inputShape = Array(batchSize, 1, 28, 28)
     val outputShape = Array(batchSize, 10)
 
@@ -102,8 +102,6 @@ object LeNet5 {
       .add(mkldnn.ReLU().setName("relu1"))
       .add(mkldnn.Linear(500, 10).setName("ip2"))
       .add(mkldnn.ReorderMemory(mkldnn.HeapData(outputShape, Memory.Format.nc)))
-      .add(mkldnn.SoftMax().setName("prob"))
-    model.compile(TrainingPhase, Array(HeapData(inputShape, Memory.Format.nchw)))
-    model
+    (model, Array(HeapData(inputShape, Memory.Format.nchw)))
   }
 }

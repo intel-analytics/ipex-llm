@@ -33,9 +33,14 @@ trait MklDnnModule extends MklDnnModuleHelper {
    * should recreate a MklDnnRuntime.
    */
   @transient protected var runtime : MklDnnRuntime = _
+  protected var formats: Array[MemoryData] = _
 
   def setRuntime(runtime: MklDnnRuntime): Unit = {
     this.runtime = runtime
+  }
+
+  def setFormats(formats: Array[MemoryData]): Unit = {
+    this.formats = formats
   }
 
   /**
@@ -255,6 +260,10 @@ trait MklDnnContainer extends DynamicContainer[Activity, Activity, Float] with M
     require(mklDnnModules == null, "You should not call add after compilation")
     require(module.isInstanceOf[MklDnnModule], "layer should be MklDnnModule")
     super.add(module)
+  }
+
+  final def compile(phase: Phase): Unit = {
+    compile(phase, new MklDnnRuntime, formats = this.formats)
   }
 
   /**
