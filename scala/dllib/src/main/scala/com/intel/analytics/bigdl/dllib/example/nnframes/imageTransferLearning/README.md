@@ -42,7 +42,7 @@ Command to run the example in Spark local mode:
     --master local[2] \
     --driver-memory 2g \
     --class com.intel.analytics.zoo.examples.nnframes.imageTransferLearning.ImageTransferLearning \
-    ./dist/lib/analytics-zoo-VERSION-jar-with-dependencies.jar \
+    ./dist/lib/analytics-zoo-bigdl_BIGDL_VERSION-spark_SPARK_VERSION-ZOO_VERSION-jar-with-dependencies.jar \
     --modelPath ./model/bvlc_googlenet.caffemodel \
     --caffeDefPath ./model/deploy.prototxt \
     --batchSize 40 \
@@ -60,7 +60,7 @@ Command to run the example in Spark yarn mode(TODO):
     --driver-memory 2g \
     --executor-memory 2g \
     --class com.intel.analytics.zoo.examples.nnframes.imageTransferLearning.ImageTransferLearning \
-    ./dist/lib/analytics-zoo-VERSION-jar-with-dependencies.jar \
+    ./dist/lib/analytics-zoo-bigdl_BIGDL_VERSION-spark_SPARK_VERSION-ZOO_VERSION-jar-with-dependencies.jar \
     --modelPath ./model/bvlc_googlenet.caffemodel \
     --caffeDefPath ./model/deploy.prototxt \
     --batchSize 40 \

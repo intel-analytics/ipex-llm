@@ -35,7 +35,7 @@ Command to run the example in Spark local mode:
     --master local[physcial_core_number] \
     --driver-memory 10g --executor-memory 20g \
     --class com.intel.analytics.zoo.examples.nnframes.imageInference.ImageInferenceExample \
-    ./dist/lib/analytics-zoo-VERSION-jar-with-dependencies.jar \
+    ./dist/lib/analytics-zoo-bigdl_BIGDL_VERSION-spark_SPARK_VERSION-ZOO_VERSION-jar-with-dependencies.jar \
     --modelPath ./model/bvlc_googlenet.caffemodel \
     --caffeDefPath ./model/deploy.prototxt \
     --batchSize 32 \
@@ -52,7 +52,7 @@ Command to run the example in Spark yarn mode:
     --driver-memory 10g \
     --executor-memory 150g \
     --class com.intel.analytics.zoo.examples.nnframes.imageInference.ImageInference \
-    ./dist/lib/analytics-zoo-VERSION-jar-with-dependencies.jar \
+    ./dist/lib/analytics-zoo-bigdl_BIGDL_VERSION-spark_SPARK_VERSION-ZOO_VERSION-jar-with-dependencies.jar \
     --modelPath ./model/bvlc_googlenet.caffemodel \
     --caffeDefPath ./model/deploy.prototxt \
     --batchSize 32 \
