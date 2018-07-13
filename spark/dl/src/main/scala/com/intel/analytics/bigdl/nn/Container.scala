@@ -49,6 +49,9 @@ abstract class Container[A <: Activity : ClassTag,
     modules.foreach(_.reset())
   }
 
+  override protected def broadCast(): Unit = {
+  }
+
   final override def training(): this.type = {
     train = true
     modules.foreach(_.training())
