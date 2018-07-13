@@ -17,6 +17,7 @@
 package com.intel.analytics.zoo.pipeline.api.keras.python
 
 import java.nio.ByteOrder
+import java.util
 import java.util.{List => JList}
 
 import com.intel.analytics.bigdl.{Criterion, DataSet}
@@ -31,6 +32,7 @@ import com.intel.analytics.bigdl.nn.Container
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.nn.keras.{KerasLayer, KerasModel}
 import com.intel.analytics.bigdl.transform.vision.image.{ImageFeature, ImageFeatureToMiniBatch}
+import com.intel.analytics.bigdl.utils.Table
 import com.intel.analytics.zoo.feature.image.ImageSet
 import com.intel.analytics.zoo.pipeline.api.Net
 import com.intel.analytics.zoo.pipeline.api.autograd._
@@ -124,20 +126,55 @@ class PythonZooKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonB
   def zooPredict(
       module: KerasNet[T],
       x: JavaRDD[Sample],
-      batchSize: Int = 32): JavaRDD[JList[JTensor]] = {
+      batchSize: Int = 32): JavaRDD[JList[Object]] = {
     val resRDD = module.predict(x.rdd.map(toJSample), batchSize)
-    resRDD.map(activityToJTensors).toJavaRDD()
+    resRDD.map(activityToList).toJavaRDD()
+  }
+
+  def zooForward(model: AbstractModule[Activity, Activity, T],
+                   input: JList[JTensor],
+                   inputIsTable: Boolean): JList[Object] = {
+    val inputActivity = jTensorsToActivity(input, inputIsTable)
+    val outputActivity = model.forward(inputActivity)
+    activityToList(outputActivity)
+  }
+
+  def activityToList(outputActivity: Activity): JList[Object] = {
+    if (outputActivity.isInstanceOf[Tensor[T]]) {
+      val list = new util.ArrayList[Object]()
+      list.add(toJTensor(outputActivity.toTensor))
+      list
+    } else {
+      table2JList(outputActivity.toTable)
+    }
+  }
+
+  private def table2JList(t: Table): JList[Object] = {
+    var i = 1
+    val list = new util.ArrayList[Object]()
+    while (i <= t.length()) {
+      val item = t[Object](i)
+      if (item.isInstanceOf[Tensor[T]]) {
+        list.add(toJTensor(item.asInstanceOf[Tensor[T]]))
+      } else if (item.isInstanceOf[Table]) {
+        list.add(table2JList(item.asInstanceOf[Table]))
+      } else {
+        throw new IllegalArgumentException(s"Table contains unrecognizable objects $item")
+      }
+      i += 1
+    }
+    list
   }
 
   def zooPredict(
       module: KerasNet[T],
       x: JList[JTensor],
-      batchSize: Int): JList[JList[JTensor]] = {
+      batchSize: Int): JList[JList[Object]] = {
     val sampleArray = toSampleArray(x.asScala.toList.map{f => toTensor(f)})
     val localPredictor = LocalPredictor(module,
       batchPerCore = KerasUtils.calBatchPerCore(batchSize))
     val result = localPredictor.predict(sampleArray)
-    result.map(activityToJTensors).toList.asJava
+    result.map(activityToList).toList.asJava
   }
 
   def zooEvaluate(
