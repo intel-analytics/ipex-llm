@@ -2358,6 +2358,11 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     Graph(input.asScala.toArray, output.asScala.toArray)
   }
 
+  def createModelPreprocessor(preprocessor: AbstractModule[Activity, Activity, T],
+    trainable: AbstractModule[Activity, Activity, T]): Graph[T] = {
+    Graph(preprocessor, trainable)
+  }
+
   def createNode(module: AbstractModule[Activity, Activity, T],
     x: JList[ModuleNode[T]]): ModuleNode[T] = {
     if (null == x || x.isEmpty) {

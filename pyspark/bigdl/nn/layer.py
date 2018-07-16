@@ -728,10 +728,14 @@ class Model(Container):
         if jvalue:
             self.value = jvalue
             self.bigdl_type = bigdl_type
-        elif model_type == "bigdl":
+        elif model_type == "bigdl" and isinstance(inputs, list):
             super(Model, self).__init__(None, bigdl_type,
                                         to_list(inputs),
                                         to_list(outputs))
+        elif model_type == "bigdl":
+            self.value = callBigDlFunc(
+                bigdl_type, "createModelPreprocessor", inputs, outputs)
+            self.bigdl_type = bigdl_type
         else:
             from bigdl.util.tf_utils import convert
             model = convert(to_list(inputs), to_list(outputs), byte_order, bigdl_type)

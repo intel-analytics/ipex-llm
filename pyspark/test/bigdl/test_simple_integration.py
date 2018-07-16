@@ -230,6 +230,22 @@ class TestSimple():
         model = Model([fc1, fc2], [output1, output2])
         model.save_graph_topology(tempfile.mkdtemp())
 
+    def test_graph_preprocessor(self):
+        fc1 = Linear(4, 2)()
+        fc2 = Linear(4, 2)()
+        cadd = CAddTable()([fc1, fc2])
+        preprocessor = Model([fc1, fc2], [cadd])
+        relu = ReLU()()
+        fc3 = Linear(2, 1)(relu)
+        trainable = Model([relu], [fc3])
+        model = Model(preprocessor, trainable)
+        output = model.forward([np.array([0.1, 0.2, -0.3, -0.4]),
+                                np.array([0.5, 0.4, -0.2, -0.1])])
+        gradInput = model.backward([np.array([0.1, 0.2, -0.3, -0.4]),
+                                    np.array([0.5, 0.4, -0.2, -0.1])],
+                                   [np.array([1.0]),
+                                    np.array([3.0])])
+
     def test_load_zip_conf(self):
         from bigdl.util.common import get_bigdl_conf
         import sys
