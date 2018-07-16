@@ -16,6 +16,7 @@
 package com.intel.analytics.bigdl.nn.mkldnn
 
 import com.intel.analytics.bigdl.mkl.{Memory, MklDnn}
+import com.intel.analytics.bigdl.nn.mkldnn.Phase.TrainingPhase
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.BigDLSpecHelper
 import org.apache.commons.lang3.SerializationUtils
@@ -137,5 +138,29 @@ class SequentialSpec extends BigDLSpecHelper {
 
     Tools.dense(seq.output) should be (Tools.dense(cloned.output))
     Tools.dense(seq.gradInput) should be (Tools.dense(cloned.gradInput))
+  }
+
+  "compile with input" should "work correctly" in {
+    val inputShape = Array(4, 1, 28, 28)
+    val outputShape = Array(4, 10)
+
+    val model = Sequential()
+      .add(Input(inputShape, Memory.Format.nchw))
+      .add(SpatialConvolution(1, 20, 5, 5).setName("conv1"))
+      .add(MaxPooling(2, 2, 2, 2).setName("pool1"))
+      .add(SpatialConvolution(20, 50, 5, 5).setName("conv2"))
+      .add(MaxPooling(2, 2, 2, 2).setName("pool2"))
+      .add(Linear(50 * 4 * 4, 500).setName("ip1"))
+      .add(ReLU().setName("relu1"))
+      .add(Linear(500, 10).setName("ip2"))
+      .add(ReorderMemory(HeapData(outputShape, Memory.Format.nc)))
+
+    model.compile(TrainingPhase)
+
+    val input = Tensor[Float](inputShape).rand(-1, 1)
+    val gradOutput = Tensor[Float](outputShape).rand(-1, 1)
+
+    model.forward(input)
+    model.backward(input, gradOutput)
   }
 }

@@ -22,7 +22,7 @@ import com.intel.analytics.bigdl.mkl.Memory
 import com.intel.analytics.bigdl.models.utils.ModelBroadcast
 import com.intel.analytics.bigdl.nn.Utils
 import com.intel.analytics.bigdl.nn.abstractnn.Activity
-import com.intel.analytics.bigdl.nn.mkldnn.{HeapData, MemoryData}
+import com.intel.analytics.bigdl.nn.mkldnn.{HeapData, MemoryData, MklDnnContainer}
 import com.intel.analytics.bigdl.nn.mkldnn.Phase.{InferencePhase, TrainingPhase}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
@@ -58,7 +58,8 @@ class LocalOptimizer[T: ClassTag] (
 
   private val subModelNumber = Engine.getEngineType match {
     case MklBlas => coreNumber
-    case _ => 1
+    case MklDnn => 1
+    case _ => throw new IllegalArgumentException
   }
 
   private val workingModels = {
@@ -70,7 +71,10 @@ class LocalOptimizer[T: ClassTag] (
       val m = model.cloneModule()
       Util.putWeightBias(wb, m)
       Util.initGradWeightBias(wb, m)
-      m.asInstanceOf[nn.mkldnn.Sequential].compile(TrainingPhase, inputFormats)
+      m match {
+        case container: MklDnnContainer => container.compile(TrainingPhase)
+        case _ =>
+      }
       m
     }).toArray
     Util.putWeightBias(wb, model)
@@ -236,10 +240,12 @@ class LocalOptimizer[T: ClassTag] (
     logger.info(s"$header Validate model...")
 
     workingModels.foreach(_.evaluate())
-    val localWorkingModels = workingModels.map { x =>
-      val _x = x.cloneModule()
-      _x.asInstanceOf[nn.mkldnn.Sequential].compile(InferencePhase, inputFormats)
-      _x
+    val localWorkingModels = workingModels.map {
+      case container: MklDnnContainer =>
+        val _c = container.cloneModule()
+        _c.compile(InferencePhase)
+        _c
+      case default => default
     }
 
     var count = 0

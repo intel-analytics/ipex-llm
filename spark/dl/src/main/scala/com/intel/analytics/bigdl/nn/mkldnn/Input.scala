@@ -19,9 +19,9 @@ import com.intel.analytics.bigdl.tensor.Tensor
 
 class Input(shape: Array[Int], layout: Int) extends MklDnnLayer {
   override private[mkldnn] def initFwdPrimitives(inputs: Array[MemoryData], phase: Phase) = {
-    _outputFormats = Array(HeapData(shape, layout))
-    _inputFormats = inputs
-    (inputs, _outputFormats)
+    _outputFormats = Array(NativeData(shape, layout))
+    _inputFormats = Array(HeapData(shape, layout))
+    (_inputFormats, _outputFormats)
   }
 
   override private[mkldnn] def initBwdPrimitives(grad: Array[MemoryData], phase: Phase) = {

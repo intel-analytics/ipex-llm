@@ -38,7 +38,8 @@ object Train {
 
       System.setProperty("bigdl.disable.mklBlockTime", "true");
       System.setProperty("bigdl.localMode", "true")
-      System.setProperty("bigdl.coreNumber", param.coreNumber.toString)
+      System.setProperty("bigdl.coreNumber", "1") // param.coreNumber.toString)
+      System.setProperty("bigdl.engineType", "mkldnn")
       val coreNumber: Int = System.getProperty("bigdl.mklNumThreads",
         s"${Runtime.getRuntime.availableProcessors() / 2}").toInt
       Engine.setCoreNumber(1)
@@ -69,12 +70,10 @@ object Train {
         BytesToGreyImg(28, 28) -> GreyImgNormalizer(trainMean, trainStd) -> GreyImgToBatch(
         param.batchSize)
 
-      val optimizer = new LocalOptimizer[Float](
+      val optimizer = Optimizer(
         model = model,
-        dataset = trainSet.asInstanceOf[LocalDataSet[MiniBatch[Float]]],
-        criterion = CrossEntropyCriterion[Float](),
-        inputFormats)
-//        criterion = ClassNLLCriterion[Float]())
+        dataset = trainSet,
+        criterion = CrossEntropyCriterion[Float]())
       if (param.checkpoint.isDefined) {
         optimizer.setCheckpoint(param.checkpoint.get, Trigger.everyEpoch)
       }

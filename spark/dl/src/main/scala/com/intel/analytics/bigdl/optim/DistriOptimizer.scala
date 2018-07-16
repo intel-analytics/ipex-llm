@@ -132,6 +132,7 @@ object DistriOptimizer {
 
     val _subModelNumber = Engine.getEngineType() match {
       case MklBlas => coresPerNode
+      case MklDnn => 1
     }
     val driverState = T(
       "epoch" -> optimMethods.values.head.state("epoch"),
@@ -610,6 +611,7 @@ object DistriOptimizer {
     val modelBroadcast = ModelBroadcast[T]().broadcast(sc, model)
     val _subModelNumber = Engine.getEngineType match {
       case MklBlas => coresPerNode
+      case MklDnn => 1
       case _ => throw new IllegalArgumentException
     }
 
@@ -717,6 +719,7 @@ object DistriOptimizer {
     logger.info(s"$header Validate model...")
     val _subModelNumber = Engine.getEngineType match {
       case MklBlas => coresPerNode
+      case MklDnn => 1
       case _ => throw new IllegalArgumentException
     }
     val results = ZippedPartitionsWithLocalityRDD(models, validateRDD)((modelIter, dataIter) => {

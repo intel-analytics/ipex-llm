@@ -93,7 +93,7 @@ object LeNet5 {
     val outputShape = Array(batchSize, 10)
 
     val model = mkldnn.Sequential()
-      .add(mkldnn.ReorderMemory(mkldnn.NativeData(inputShape, Memory.Format.nchw)))
+      .add(mkldnn.Input(inputShape, Memory.Format.nchw))
       .add(mkldnn.SpatialConvolution(1, 20, 5, 5).setName("conv1"))
       .add(mkldnn.MaxPooling(2, 2, 2, 2).setName("pool1"))
       .add(mkldnn.SpatialConvolution(20, 50, 5, 5).setName("conv2"))

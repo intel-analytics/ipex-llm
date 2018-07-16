@@ -32,15 +32,10 @@ trait MklDnnModule extends MklDnnModuleHelper {
    * Note that this instance will be erased when send to remote worker, so you
    * should recreate a MklDnnRuntime.
    */
-  @transient protected var runtime : MklDnnRuntime = _
-  protected var formats: Array[MemoryData] = _
+  @transient protected var runtime: MklDnnRuntime = _
 
   def setRuntime(runtime: MklDnnRuntime): Unit = {
     this.runtime = runtime
-  }
-
-  def setFormats(formats: Array[MemoryData]): Unit = {
-    this.formats = formats
   }
 
   /**
@@ -49,15 +44,21 @@ trait MklDnnModule extends MklDnnModuleHelper {
    */
   private[mkldnn] def initFwdPrimitives(inputs: Array[MemoryData], phase: Phase)
   : (Array[MemoryData], Array[MemoryData])
+
   private[mkldnn] def initBwdPrimitives(grad: Array[MemoryData], phase: Phase)
   : (Array[MemoryData], Array[MemoryData])
+
   private[mkldnn] def initGradWPrimitives(grad: Array[MemoryData], phase: Phase): Array[MemoryData]
   = grad
 
   private[mkldnn] def inputFormats(): Array[MemoryData]
+
   private[mkldnn] def gradInputFormats(): Array[MemoryData]
+
   private[mkldnn] def outputFormats(): Array[MemoryData]
+
   private[mkldnn] def gradOutputFormats(): Array[MemoryData]
+
   private[mkldnn] def gradOutputWeightFormats(): Array[MemoryData]
 }
 
@@ -79,10 +80,12 @@ trait MklDnnModuleHelper {
       case _ => throw new UnsupportedOperationException("memory format is not supported")
     }
   }
+
   protected def singleNativeData(formats: Array[MemoryData]): Array[MemoryData] = {
     require(formats.length == 1, "Only accept one tensor as input")
     nativeData(formats)
   }
+
   protected def nativeData(formats: Array[MemoryData]): Array[MemoryData] = {
     formats.map(
       f => {
@@ -263,7 +266,8 @@ trait MklDnnContainer extends DynamicContainer[Activity, Activity, Float] with M
   }
 
   final def compile(phase: Phase): Unit = {
-    compile(phase, new MklDnnRuntime, formats = this.formats)
+    // TODO check whether existing Input
+    compile(phase, new MklDnnRuntime, Array[MemoryData]())
   }
 
   /**
