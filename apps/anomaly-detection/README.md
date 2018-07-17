@@ -4,7 +4,6 @@ This is a simple example of unsupervised anomaly detection using Analytics Zoo K
 ## Environment
 * Python 2.7/3.5/3.6 (pandas 0.22.0)
 * Apache Spark 1.6.0/2.1.0 (This version needs to be same with the version you use to build Analytics Zoo)
-* Analytics Zoo 0.1.0
 
 ## Run with Jupyter
 * Download Analytics Zoo and build it.

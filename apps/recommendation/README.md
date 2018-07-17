@@ -6,7 +6,6 @@ These two notebooks demonstrate how to build neural network recommendation syste
 * JDK 8
 * Spark 1.6.0/2.1.1/2.1.2/2.2.0(This version needs to be same with the version you use to build Analytics Zoo)
 (wide_n_deep needs to use Spark version >= 2.1.2)
-* Analytics Zoo 0.1.0
 * Jupyter Notebook 4.1
 
 ## Steps to run the notebook
