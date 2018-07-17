@@ -124,6 +124,22 @@ class TestLayer(ZooTestCase):
         output = net.forward(np.random.rand(4, 1, 28, 28))
         assert output.shape == (4, 10)
 
+    def test_init_tfnet_from_session(self):
+        import tensorflow as tf
+        input1 = tf.placeholder(dtype=tf.float32, shape=(None, 2))
+        label1 = tf.placeholder(dtype=tf.float32, shape=(None, 2))
+        hidden = tf.layers.dense(input1, 4)
+        output = tf.layers.dense(hidden, 1)
+        loss = tf.reduce_mean(tf.square(output - label1))
+        train_op = tf.train.GradientDescentOptimizer(1e-3).minimize(loss)
+        sess = tf.Session()
+        sess.run(tf.global_variables_initializer())
+        data = np.random.rand(2, 2)
+        output_value_ref = sess.run(output, feed_dict={input1: data})
+        net = TFNet.from_session(sess, [input1], [output])
+        output_value = net.forward(data)
+
+        self.assert_allclose(output_value, output_value_ref)
 
 if __name__ == "__main__":
     pytest.main([__file__])
