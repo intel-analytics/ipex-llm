@@ -160,6 +160,26 @@ class PythonZooKeras2[T: ClassTag](implicit ev: TensorNumeric[T]) extends Python
     Flatten(toScalaShape(inputShape))
   }
 
+  def createZooKeras2Cropping1D(
+      cropping: JList[Int],
+      inputShape: JList[Int] = null): Cropping1D[T] = {
+    new Cropping1D(toScalaArray(cropping), toScalaShape(inputShape))
+  }
+
+  def createZooKeras2LocallyConnected1D(
+      filters: Int,
+      kernelSize: Int,
+      strides: Int = 1,
+      padding: String = "valid",
+      activation: String = null,
+      kernelRegularizer: Regularizer[T] = null,
+      biasRegularizer: Regularizer[T] = null,
+      useBias: Boolean = true,
+      inputShape: JList[Int] = null): LocallyConnected1D[T] = {
+    LocallyConnected1D(filters, kernelSize, strides, padding, activation,
+      kernelRegularizer, biasRegularizer, useBias, toScalaShape(inputShape))
+  }
+
 
 
 }
