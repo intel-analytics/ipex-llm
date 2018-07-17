@@ -141,5 +141,25 @@ class PythonZooKeras2[T: ClassTag](implicit ev: TensorNumeric[T]) extends Python
       toScalaShape(inputShape))
   }
 
-
+  def createZooKeras2Activation(
+      activation: String,
+      inputShape: JList[Int] = null): Activation[T] = {
+    Activation(
+      activation,
+      toScalaShape(inputShape))
   }
+
+  def createZooKeras2Dropout(
+      rate: Double,
+      inputShape: JList[Int] = null): Dropout[T] = {
+    Dropout(rate, toScalaShape(inputShape))
+  }
+
+  def createZooKeras2Flatten(
+      inputShape: JList[Int] = null): Flatten[T] = {
+    Flatten(toScalaShape(inputShape))
+  }
+
+
+
+}
