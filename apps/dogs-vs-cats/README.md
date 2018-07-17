@@ -6,7 +6,6 @@ In this notebook, we will use a pre-trained Inception_V1 model. But we will oper
 * JDK 8
 * Apache Spark 2.x
 * Jupyter Notebook 4.1
-* Analytics Zoo 0.1.0
 
 ## Steps to run the notebook
 * Download Analytics Zoo and build it.
