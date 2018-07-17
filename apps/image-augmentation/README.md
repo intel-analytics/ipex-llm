@@ -4,7 +4,6 @@ This is a simple example of image augmentation using Analytics ZOO API. We use v
 ## Environment
 * Python 2.7/3.5/3.6 (numpy 1.11.1)
 * Apache Spark 1.6.0/2.1.0 (This version needs to be same with the version you use to build Analytics Zoo)
-* Analytics ZOO 0.1.0
 
 ## Run with Jupyter
 * Download Analytics Zoo and build it.
