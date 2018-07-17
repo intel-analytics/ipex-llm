@@ -732,7 +732,7 @@ class Model(Container):
             super(Model, self).__init__(None, bigdl_type,
                                         to_list(inputs),
                                         to_list(outputs))
-        elif model_type == "bigdl":
+        elif model_type == "bigdl" and isinstance(inputs, Layer):
             self.value = callBigDlFunc(
                 bigdl_type, "createModelPreprocessor", inputs, outputs)
             self.bigdl_type = bigdl_type
