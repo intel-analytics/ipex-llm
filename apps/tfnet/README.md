@@ -5,7 +5,6 @@ This example demonstrates how to do image classification inference using a pre-t
 ## Environment
 * Tensorflow 1.8.0
 * Apache Spark 1.6.0/2.1.0 (This version needs to be same with the version you use to build Analytics Zoo)
-* Analytics Zoo 0.2.0
 
 ## Install Tensorflow-Slim image classification model library and down the checkpoint
 
