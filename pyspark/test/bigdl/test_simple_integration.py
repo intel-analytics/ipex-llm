@@ -239,11 +239,9 @@ class TestSimple():
         fc3 = Linear(2, 1)(relu)
         trainable = Model([relu], [fc3])
         model = Model(preprocessor, trainable)
-        output = model.forward([np.array([0.1, 0.2, -0.3, -0.4]),
-                                np.array([0.5, 0.4, -0.2, -0.1])])
-        gradInput = model.backward([np.array([0.1, 0.2, -0.3, -0.4]),
-                                    np.array([0.5, 0.4, -0.2, -0.1])],
-                                   np.array([1.0]))
+        model.forward([np.array([0.1, 0.2, -0.3, -0.4]), np.array([0.5, 0.4, -0.2, -0.1])])
+        model.backward([np.array([0.1, 0.2, -0.3, -0.4]), np.array([0.5, 0.4, -0.2, -0.1])],
+                       np.array([1.0]))
 
     def test_load_zip_conf(self):
         from bigdl.util.common import get_bigdl_conf

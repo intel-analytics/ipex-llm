@@ -728,7 +728,7 @@ class Model(Container):
         if jvalue:
             self.value = jvalue
             self.bigdl_type = bigdl_type
-        elif model_type == "bigdl" and isinstance(inputs, list):
+        elif model_type == "bigdl" and (isinstance(inputs, list) or isinstance(inputs, Node)):
             super(Model, self).__init__(None, bigdl_type,
                                         to_list(inputs),
                                         to_list(outputs))
