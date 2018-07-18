@@ -42,12 +42,12 @@ class Linear(
 
   @transient private var forwardPrimDesc: Long = 0L
 
-  @transient var updateOutputMemoryPrimitives: Array[Long] = _
-  @transient var updateOutputTensors: Array[Tensor[Float]] = _
-  @transient var updateGradInputMemoryPrimitives: Array[Long] = _
-  @transient var updateGradInputTensors: Array[Tensor[Float]] = _
-  @transient var updateGradWMemoryPrimitives: Array[Long] = _
-  @transient var updateGradWTensors: Array[Tensor[Float]] = _
+  @transient private var updateOutputMemoryPrimitives: Array[Long] = _
+  @transient private var updateOutputTensors: Array[Tensor[Float]] = _
+  @transient private var updateGradInputMemoryPrimitives: Array[Long] = _
+  @transient private var updateGradInputTensors: Array[Tensor[Float]] = _
+  @transient private var updateGradWMemoryPrimitives: Array[Long] = _
+  @transient private var updateGradWTensors: Array[Tensor[Float]] = _
 
   object ParamsShape extends Serializable {
     var weight: MemoryData = _

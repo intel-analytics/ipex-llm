@@ -59,17 +59,17 @@ class SpatialConvolution(
   val gradWeight: DnnTensor[Float] = DnnTensor[Float](weightShape)
   val gradBias: DnnTensor[Float] = DnnTensor[Float](Array(nOutputPlane))
 
-  @transient var forwardPrimDesc: Long = 0L
+  @transient private var forwardPrimDesc: Long = 0L
 
-  @transient var updateOutputMemoryPrimitives: Array[Long] = _
-  @transient var updateOutputTensors: Array[Tensor[Float]] = _
-  @transient var updateGradInputMemoryPrimitives: Array[Long] = _
-  @transient var updateGradInputTensors: Array[Tensor[Float]] = _
-  @transient var updateGradWMemoryPrimitives: Array[Long] = _
-  @transient var updateGradWTensors: Array[Tensor[Float]] = _
+  @transient private var updateOutputMemoryPrimitives: Array[Long] = _
+  @transient private var updateOutputTensors: Array[Tensor[Float]] = _
+  @transient private var updateGradInputMemoryPrimitives: Array[Long] = _
+  @transient private var updateGradInputTensors: Array[Tensor[Float]] = _
+  @transient private var updateGradWMemoryPrimitives: Array[Long] = _
+  @transient private var updateGradWTensors: Array[Tensor[Float]] = _
 
-  var _relu = false
-  var _sum = false
+  private var _relu = false
+  private var _sum = false
 
   def relu: Boolean = _relu
   def setReLU(value: Boolean = true): this.type = {

@@ -44,10 +44,10 @@ class SpatialBatchNormalization(
   }
   def relu: Boolean = _relu
 
-  @transient var updateOutputTensors: Array[Tensor[Float]] = _
-  @transient var updateOutputMemoryPrimitives: Array[Long] = _
-  @transient var updateGradInputTensors: Array[Tensor[Float]] = _
-  @transient var updateGradInputMemoryPrimitives: Array[Long] = _
+  @transient private var updateOutputTensors: Array[Tensor[Float]] = _
+  @transient private var updateOutputMemoryPrimitives: Array[Long] = _
+  @transient private var updateGradInputTensors: Array[Tensor[Float]] = _
+  @transient private var updateGradInputMemoryPrimitives: Array[Long] = _
 
   var mean: DnnTensor[Float] = DnnTensor[Float](nOutput)
   var variance: DnnTensor[Float] = DnnTensor[Float](nOutput)
