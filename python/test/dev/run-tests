@@ -33,14 +33,14 @@ do
     export PYTHON_EXECUTABLE=$p
     export PYSPARK_PYTHON=$p
     export PYSPARK_DRIVER_PYTHON=$p
-    $p -m pytest -v --doctest-modules ../../../pyspark/bigdl \
+    $p -m pytest -v --junitxml result_bigdl_${p}.xml --doctest-modules ../../../pyspark/bigdl \
     --ignore=../../../pyspark/bigdl/dataset/ \
     --ignore=../../../pyspark/bigdl/util/tf_utils.py \
     --ignore=../../../pyspark/bigdl/keras \
     --ignore=../../../pyspark/test/bigdl/keras/test_application.py \
     --ignore=../../../pyspark/bigdl/examples/ \
     --ignore=../../../pyspark/bigdl/models/ && \
-    $p -m pytest -v ../../../pyspark/test/ \
+    $p -m pytest -v --junitxml result_test_${p}.xml  ../../../pyspark/test/ \
     --ignore=../../../pyspark/test/bigdl/caffe/ \
     --ignore=../../../pyspark/test/bigdl/keras/ \
     --ignore=../../../pyspark/test/bigdl/test_utils.py
