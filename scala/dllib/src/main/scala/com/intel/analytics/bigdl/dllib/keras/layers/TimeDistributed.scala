@@ -16,12 +16,13 @@
 
 package com.intel.analytics.zoo.pipeline.api.keras.layers
 
-import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
+import com.intel.analytics.bigdl.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.nn.keras.{KerasLayer, TimeDistributed => BTimeDistributed}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.Shape
 import com.intel.analytics.zoo.pipeline.api.Net
+import com.intel.analytics.zoo.pipeline.api.keras.layers.internal.InternalTimeDistributed
 import com.intel.analytics.zoo.pipeline.api.keras.layers.utils.KerasUtils
 
 import scala.reflect.ClassTag
@@ -43,8 +44,8 @@ import scala.reflect.ClassTag
  * @tparam T The numeric type of parameter(e.g. weight, bias). Only support float/double now.
  */
 class TimeDistributed[T: ClassTag](
-   val layer: KerasLayer[Tensor[T], Tensor[T], T],
-   val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
+    val layer: KerasLayer[Tensor[T], Tensor[T], T],
+    val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends KerasLayer[Tensor[T], Tensor[T], T](KerasUtils.addBatch(inputShape)) with Net {
 
   private def getInnerInput(input: Array[Int]): Array[Int] = {
@@ -53,7 +54,7 @@ class TimeDistributed[T: ClassTag](
 
   override def computeOutputShape(inputShape: Shape): Shape = {
     val input = inputShape.toSingle().toArray
-    require(input.length >=3,
+    require(input.length >= 3,
       s"TimeDistributed requires at least 3D input, but got input dim ${input.length}")
     val innerInput = getInnerInput(input)
     val innerOutput = layer.computeOutputShape(Shape(innerInput)).toSingle()
@@ -68,15 +69,16 @@ class TimeDistributed[T: ClassTag](
     val innerInput = getInnerInput(input)
     layer.build(Shape(innerInput))
     layer.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
-    val timedistributed = com.intel.analytics.zoo.pipeline.api.torch.TimeDistributed[T](layer)
+    val timedistributed = InternalTimeDistributed[T](layer)
     timedistributed.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
   }
 }
 
 object TimeDistributed {
-    def apply[@specialized(Float, Double) T: ClassTag](
-    layer: KerasLayer[Tensor[T], Tensor[T], T],
-    inputShape: Shape = null)(implicit ev: TensorNumeric[T]): TimeDistributed[T] = {
+  def apply[@specialized(Float, Double) T: ClassTag](
+      layer: KerasLayer[Tensor[T], Tensor[T], T],
+      inputShape: Shape = null)(implicit ev: TensorNumeric[T]): TimeDistributed[T] = {
     new TimeDistributed[T](layer, inputShape)
   }
 }
+
