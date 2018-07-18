@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-from bigdl.nn.keras.layer import KerasLayer
+from bigdl.nn.layer import Layer
 from bigdl.util.common import *
 
 if sys.version >= '3':
@@ -43,9 +43,52 @@ class ZooCallable(object):
                                                   to_list(x)))
 
 
-class ZooKerasLayer(ZooKerasCreator, ZooCallable, KerasLayer):
+class InferShape(JavaValue):
+    def __init__(self, bigdl_type="float"):
+        self.bigdl_type = bigdl_type
+
+    @classmethod
+    def __to_keras_shape(cls, shape):
+        return tuple([None] + shape[1:])
+
+    def __process_shape(self, shape):
+        if len(shape) == 1:
+            return self.__to_keras_shape(shape[0])
+        else:
+            return [self.__to_keras_shape(s) for s in shape]
+
+    def get_input_shape(self):
+        """
+        Return a list of shape tuples if there are multiple inputs.
+        Return one shape tuple otherwise.
+        """
+        input = callBigDlFunc(self.bigdl_type, "getInputShape",
+                              self.value)
+        return self.__process_shape(input)
+
+    def get_output_shape(self):
+        """
+        Return a list of shape tuples if there are multiple outputs.
+        Return one shape tuple otherwise.
+        """
+        output = callBigDlFunc(self.bigdl_type, "getOutputShape",
+                               self.value)
+        return self.__process_shape(output)
+
+
+class ZooKerasLayer(ZooKerasCreator, ZooCallable, Layer, InferShape):
     def __init__(self, jvalue, *args, **kwargs):
-        super(ZooKerasLayer, self).__init__(jvalue, *args, **kwargs)
+        allowed_kwargs = {"name", "bigdl_type"}
+        for kwarg in kwargs.keys():
+            if kwarg not in allowed_kwargs:
+                raise TypeError("Wrong argument for the layer:", kwarg)
+        bigdl_type = kwargs.get("bigdl_type")
+        if not bigdl_type:
+            bigdl_type = "float"
+        super(ZooKerasCreator, self).__init__(jvalue, bigdl_type, *args)
+        name = kwargs.get("name")
+        if name:
+            self.set_name(name)
 
     @classmethod
     def of(cls, jvalue, bigdl_type="float"):
