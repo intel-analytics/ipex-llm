@@ -52,8 +52,8 @@ object Train {
       val validationData = param.folder + "/t10k-images-idx3-ubyte"
       val validationLabel = param.folder + "/t10k-labels-idx1-ubyte"
 
-      val (model, inputFormats) = if (param.modelSnapshot.isDefined) {
-        (Module.load[Float](param.modelSnapshot.get), null)
+      val model = if (param.modelSnapshot.isDefined) {
+        Module.load[Float](param.modelSnapshot.get)
       } else {
 //        LeNet5(classNum = 10)
         LeNet5.dnn(classNum = 10, batchSize = param.batchSize)

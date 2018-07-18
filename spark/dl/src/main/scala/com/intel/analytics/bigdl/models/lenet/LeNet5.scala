@@ -88,7 +88,7 @@ object LeNet5 {
     Model(input, fc2)
   }
 
-  def dnn(classNum: Int, batchSize: Int): (mkldnn.Sequential, Array[MemoryData]) = {
+  def dnn(classNum: Int, batchSize: Int): mkldnn.Sequential = {
     val inputShape = Array(batchSize, 1, 28, 28)
     val outputShape = Array(batchSize, 10)
 
@@ -102,6 +102,6 @@ object LeNet5 {
       .add(mkldnn.ReLU().setName("relu1"))
       .add(mkldnn.Linear(500, 10).setName("ip2"))
       .add(mkldnn.ReorderMemory(mkldnn.HeapData(outputShape, Memory.Format.nc)))
-    (model, Array(HeapData(inputShape, Memory.Format.nchw)))
+    model
   }
 }

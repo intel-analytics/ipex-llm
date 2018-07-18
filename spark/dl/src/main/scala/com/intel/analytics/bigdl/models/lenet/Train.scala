@@ -19,7 +19,8 @@ package com.intel.analytics.bigdl.models.lenet
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dataset.DataSet
 import com.intel.analytics.bigdl.dataset.image.{BytesToGreyImg, GreyImgNormalizer, GreyImgToBatch}
-import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, Module}
+import com.intel.analytics.bigdl.mkl.MklDnn
+import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, CrossEntropyCriterion, Module}
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.utils.{Engine, LoggerFilter, T, Table}
@@ -33,6 +34,14 @@ object Train {
   import Utils._
 
   def main(args: Array[String]): Unit = {
+    System.setProperty("bigdl.disable.mklBlockTime", "true");
+    System.setProperty("bigdl.coreNumber", "1") // param.coreNumber.toString)
+    System.setProperty("bigdl.engineType", "mkldnn")
+    val coreNumber: Int = System.getProperty("bigdl.mklNumThreads",
+      s"${Runtime.getRuntime.availableProcessors() / 2}").toInt
+    Engine.setCoreNumber(1)
+    MklDnn.setNumThreads(coreNumber)
+
     trainParser.parse(args, new TrainParams()).map(param => {
       val conf = Engine.createSparkConf()
         .setAppName("Train Lenet on MNIST")
@@ -48,8 +57,15 @@ object Train {
       val model = if (param.modelSnapshot.isDefined) {
         Module.load[Float](param.modelSnapshot.get)
       } else {
-        if (param.graphModel) LeNet5.graph(classNum = 10) else LeNet5(classNum = 10)
+        if (param.graphModel) {
+          LeNet5.graph(classNum = 10)
+        } else {
+//          LeNet5(classNum = 10)
+          LeNet5.dnn(classNum = 10, batchSize = param.batchSize)
+        }
       }
+
+      println(model)
 
       val optimMethod = if (param.stateSnapshot.isDefined) {
         OptimMethod.load[Float](param.stateSnapshot.get)
@@ -65,7 +81,7 @@ object Train {
       val optimizer = Optimizer(
         model = model,
         dataset = trainSet,
-        criterion = ClassNLLCriterion[Float]())
+        criterion = CrossEntropyCriterion[Float]())
       if (param.checkpoint.isDefined) {
         optimizer.setCheckpoint(param.checkpoint.get, Trigger.everyEpoch)
       }
