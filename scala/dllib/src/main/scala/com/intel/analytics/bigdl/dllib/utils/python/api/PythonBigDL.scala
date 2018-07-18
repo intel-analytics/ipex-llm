@@ -113,10 +113,15 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   def activityToJTensors(outputActivity: Activity): JList[JTensor] = {
     if (outputActivity.isInstanceOf[Tensor[T]]) {
       List(toJTensor(outputActivity.toTensor)).asJava
-    } else {
+    } else if (outputActivity.isInstanceOf[Table]) {
       outputActivity.toTable.getState().toList.map {
         pair => (pair._1.asInstanceOf[Int], toJTensor(pair._2.asInstanceOf[Tensor[T]]))
       }.sortWith(_._1 < _._1).map(pair => pair._2).asJava
+    } else if (outputActivity.isInstanceOf[EmptyGradInput]) {
+      List[JTensor]().asJava
+    } else {
+      throw new UnsupportedOperationException(s"Activity type" +
+        s"(${outputActivity.getClass.getName}) not support")
     }
   }
 
@@ -2356,6 +2361,11 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   def createModel(input: JList[ModuleNode[T]],
                   output: JList[ModuleNode[T]]): Graph[T] = {
     Graph(input.asScala.toArray, output.asScala.toArray)
+  }
+
+  def createModelPreprocessor(preprocessor: AbstractModule[Activity, Activity, T],
+    trainable: AbstractModule[Activity, Activity, T]): Graph[T] = {
+    Graph(preprocessor, trainable)
   }
 
   def createNode(module: AbstractModule[Activity, Activity, T],
