@@ -16,16 +16,15 @@
 
 package com.intel.analytics.zoo.pipeline.api.autograd
 
-import com.intel.analytics.bigdl.nn.{Container, MM, Unsqueeze}
 import com.intel.analytics.bigdl.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity, InferShape}
 import com.intel.analytics.bigdl.nn.keras.KerasLayer
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.utils.serializer.{ModuleSerializable, ModuleSerializer}
-import com.intel.analytics.bigdl.utils.{Engine, Shape, SingleShape}
+import com.intel.analytics.bigdl.utils._
 import com.intel.analytics.bigdl.{nn => bnn}
 import com.intel.analytics.zoo.pipeline.api.keras.layers._
+import com.intel.analytics.zoo.pipeline.api.keras.layers.internal.InternalMM
 import com.intel.analytics.zoo.pipeline.api.keras.models._
 
 import scala.reflect.ClassTag
@@ -271,7 +270,7 @@ object AutoGrad {
     require(axes(1) >= 1 && axes(1) <= 2, s"axes should between [1, 2], not ${axes(1)}")
     val transposeX = if (axes(0) != 2) {true} else {false}
     val transposeY = if (axes(1) == 2) {true} else {false}
-    val mm = com.intel.analytics.zoo.pipeline.api.torch.MM[T](transA = transposeX,
+    val mm = InternalMM[T](transA = transposeX,
       transB = transposeY)
     val kmm = new KerasLayerWrapper[T](mm.asInstanceOf[AbstractModule[Activity, Activity, T]])
     kmm.from(x, y)
@@ -535,4 +534,3 @@ class Variable[T: ClassTag] private[zoo] (val node: ModuleNode[T], var name: Str
     Tensor[T](getInputShape().copyAndUpdate(0, batchSize).toSingle().toArray).fill(fillValue)
   }
 }
-
