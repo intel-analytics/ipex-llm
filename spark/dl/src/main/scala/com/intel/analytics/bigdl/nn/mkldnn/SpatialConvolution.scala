@@ -24,7 +24,6 @@ import com.intel.analytics.bigdl.tensor.{DnnTensor, Tensor}
 
 import scala.collection.mutable.ArrayBuffer
 
-@SerialVersionUID(- 8655278118600401806L)
 class SpatialConvolution(
   val nInputPlane: Int,
   val nOutputPlane: Int,
