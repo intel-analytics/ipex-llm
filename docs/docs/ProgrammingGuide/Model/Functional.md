@@ -144,3 +144,20 @@ model = Model([linear1, linear2], [add])
 In the above code, we define two input nodes linear1 and linear2 and put them
 into the first parameter when create the graph model.
 
+## **Define a model with data pre-processing**
+You can use a model as the data preprocessor for another model. In the training, the parameter of
+the preprocessor won't be updated. Here's how you can use it:
+
+**Scala:**
+```scala
+val preprocessor = Module.Load(...)
+val trainable = Module.Load(...)
+val model = Graph(preprocessor, trainable)
+```
+
+**Python:**
+```python
+preprocessor = Model.loadModel(...)
+trainable = Model.loadModel(...)
+model = Model(preprocessor, trainable)
+```
