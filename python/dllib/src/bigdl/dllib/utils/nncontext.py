@@ -33,6 +33,7 @@ def init_nncontext(conf=None):
         sc = getOrCreateSparkContext(conf=None, appName=conf)
     else:
         sc = getOrCreateSparkContext(conf=conf)
+    check_version()
     redire_spark_logs()
     show_bigdl_info_logs()
     init_engine()
