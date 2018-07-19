@@ -18,13 +18,16 @@ from tensorflow.core.framework import attr_value_pb2
 from tensorflow.core.framework import graph_pb2
 from tensorflow.core.framework import node_def_pb2
 from tensorflow.python.framework import graph_util
+from tensorflow.python.framework import ops
 from tensorflow.python.platform import gfile
+import tensorflow as tf
 import os
 import json
 import copy
 
 
-def export_tf(sess, folder, inputs, outputs):
+def export_tf(sess, folder, inputs, outputs,
+              generate_backward=False, allow_non_differentiable_input=True):
     """
     Export the frozen tensorflow graph as well as the inputs/outputs information
     to the folder for inference.
@@ -47,6 +50,7 @@ def export_tf(sess, folder, inputs, outputs):
     output_node_names = list({t.op.name for t in outputs})
 
     graph_def = sess.graph_def
+    graph = sess.graph
 
     # clear device specifications
     for node in graph_def.node:
@@ -59,7 +63,9 @@ def export_tf(sess, folder, inputs, outputs):
             non_placeholder_input_names.append(input_tensor.name)
             type_enums.append(input_tensor.dtype.as_datatype_enum)
 
-    output_names = list(map(lambda o: o.name, outputs))
+    output_names = [o.name for o in outputs]
+
+    all_variables = graph.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES)
 
     # freeze graph
     frozen_graph_def = graph_util.convert_variables_to_constants(
@@ -88,6 +94,63 @@ def export_tf(sess, folder, inputs, outputs):
                 "Node %s is a Placeholder but not listed in inputs, inputs are %s"
                 % (node.name, inputs))
 
+    temp_tensors = None
+    used_variables = []
+    grad_variables = []
+    grad_inputs = []
+    if generate_backward:
+        nodes = set([n.name for n in optimized_graph_def.node])
+        for v in all_variables:
+            if v.op.name in nodes:
+                used_variables.append(v.name)
+
+        with tf.Graph().as_default() as g:
+            tf.import_graph_def(optimized_graph_def, name='')
+            output_tensors = [g.get_tensor_by_name(x) for x in output_names]
+            grad_output_placeholders = [tf.placeholder(dtype=x.dtype,
+                                                       name=x.name.split(":")[0] + "_grad",
+                                                       shape=x.shape) for x in output_tensors]
+
+            variables = [g.get_tensor_by_name(x) for x in used_variables]
+
+            inputs = [g.get_tensor_by_name(x) for x in new_input_names]
+            grads = tf.gradients(output_tensors, variables + inputs,
+                                 grad_ys=grad_output_placeholders)
+
+            def process_grad(grad):
+                if grad is not None:
+                    grad = ops.convert_to_tensor_or_indexed_slices(grad)
+                    if isinstance(grad, ops.IndexedSlices):
+                        # In IndexedSlices is not supported in java api, we have to convert it to
+                        # a dense tensor. This operation is potentially expensive, but there seems
+                        # no work around
+                        grad = tf.unsorted_segment_sum(grad.values, grad.indices,
+                                                       grad.dense_shape[0])
+                return grad
+
+            grads = [process_grad(grad) for grad in grads]
+
+            temp_tensors = _find_temp_tensors(grads, nodes)
+
+            grad_variables = [x.name for x in grads[0:len(variables)]]
+
+            grad_inputs = []
+            for i in range(len(variables), len(grads)):
+                grad = grads[i]
+                if grad is not None:
+                    grad_inputs.append(grad.name)
+                else:
+                    # if input is not differentiable, we just return zero
+                    input_tensor = inputs[i - len(variables)]
+                    if allow_non_differentiable_input:
+                        zero_grad = tf.zeros(shape=tf.shape(input_tensor))
+                        grad_inputs.append(zero_grad.name)
+                    else:
+                        raise ValueError(
+                            "input tensor: %s is not differentiable" % input_tensor.name)
+
+            optimized_graph_def = g.as_graph_def()
+
     if not os.path.isdir(folder):
         os.makedirs(folder)
 
@@ -98,8 +161,54 @@ def export_tf(sess, folder, inputs, outputs):
         "input_names": new_input_names,
         "output_names": output_names
     }
+
+    if generate_backward:
+        meta["temp_tensors"] = list(temp_tensors)
+        meta["variables"] = used_variables
+        meta["grad_variables"] = grad_variables
+        meta["grad_inputs"] = grad_inputs
+
     with open(os.path.join(folder, "graph_meta.json"), "w") as f:
         f.write(json.dumps(meta))
+
+
+def _find_temp_tensors(grads, forward_ops):
+    '''
+    find all the tensors that are used for computing grads and has been
+    computed during forward
+    :param grads:
+    :param forward_ops:
+    :return:
+    '''
+    import sys
+    is_py2 = sys.version[0] == '2'
+    if is_py2:
+        import Queue as queue
+    else:
+        import queue as queue
+    queue = queue.Queue()
+    for grad in grads:
+        queue.put(grad)
+
+    temp_tensors = set()
+    visited = set()
+    while not queue.empty():
+        tensor = queue.get()
+        # this is necessary, because input may not be differentiable
+        if tensor is None:
+            continue
+        else:
+            visited.add(tensor.name)
+            if tensor.op.type == "Placeholder":
+                continue
+            if tensor.op.name in forward_ops:
+                temp_tensors.add(tensor.name)
+                continue
+            for input_tensor in tensor.op.inputs:
+                # this is necessary because there may be a cycle in the graph such as tf.while_loop
+                if input_tensor.name not in visited:
+                    queue.put(input_tensor)
+    return temp_tensors
 
 
 def strip_unused(input_graph_def, input_tensor_names, output_tensor_names,
