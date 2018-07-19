@@ -1092,7 +1092,11 @@ class PythonZooKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonB
       path: String,
       inputNames: JList[String],
       outputNames: JList[String]): TFNet = {
-    TFNet(path, inputNames.asScala, outputNames.asScala)
+    TFNet(path, inputNames.asScala.toArray, outputNames.asScala.toArray)
+  }
+
+  def createTFNet(path: String): TFNet = {
+    TFNet(path)
   }
 
   def connectInputs(module: AbstractModule[Activity, Activity, T],
