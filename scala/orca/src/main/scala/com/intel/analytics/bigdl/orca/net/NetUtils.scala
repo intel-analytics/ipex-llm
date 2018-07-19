@@ -165,7 +165,7 @@ object NetUtils {
 
   implicit val formats = DefaultFormats
 
-  private[zoo] def processTFFolder(folder: String): (String, Seq[String], Seq[String]) = {
+  private[zoo] def processTFFolder(folder: String): (String, Meta) = {
     val folderPath = Path(folder)
     if (!folderPath.exists) {
       throw new IllegalArgumentException(s"$folder does not exist")
@@ -185,7 +185,7 @@ object NetUtils {
     val jsonStr = Source.fromFile(metaPath.jfile).getLines().mkString
 
     val meta = parse(jsonStr).camelizeKeys.extract[Meta]
-    (modelPath.toString(), meta.inputNames, meta.outputNames)
+    (modelPath.toString(), meta)
   }
 
   private[zoo] def removePort(nodes: Seq[String]): Seq[String] = {
@@ -193,7 +193,13 @@ object NetUtils {
   }
 }
 
-private[zoo] case class Meta(inputNames: Array[String], outputNames: Array[String])
+private[zoo] case class Meta(inputNames: Array[String],
+                             outputNames: Array[String],
+                             tempTensors: Option[Array[String]] = None,
+                             variables: Option[Array[String]] = None,
+                             gradVariables: Option[Array[String]] = None,
+                             gradInputs: Option[Array[String]] = None
+                             )
 
 
 trait NetUtils[T, D <: Module[T] with NetUtils[T, D]] {
