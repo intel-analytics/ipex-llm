@@ -127,19 +127,26 @@ class TestLayer(ZooTestCase):
     def test_init_tfnet_from_session(self):
         import tensorflow as tf
         input1 = tf.placeholder(dtype=tf.float32, shape=(None, 2))
-        label1 = tf.placeholder(dtype=tf.float32, shape=(None, 2))
+        label1 = tf.placeholder(dtype=tf.float32, shape=(None, 1))
         hidden = tf.layers.dense(input1, 4)
         output = tf.layers.dense(hidden, 1)
         loss = tf.reduce_mean(tf.square(output - label1))
-        train_op = tf.train.GradientDescentOptimizer(1e-3).minimize(loss)
+        grad_inputs = tf.gradients(loss, input1)
         sess = tf.Session()
         sess.run(tf.global_variables_initializer())
         data = np.random.rand(2, 2)
         output_value_ref = sess.run(output, feed_dict={input1: data})
-        net = TFNet.from_session(sess, [input1], [output])
+        label_value = output_value_ref - 1.0
+        grad_input_value_ref = sess.run(grad_inputs[0],
+                                        feed_dict={input1: data,
+                                                   label1: label_value})
+        net = TFNet.from_session(sess, [input1], [output], generate_backward=True)
         output_value = net.forward(data)
 
+        grad_input_value = net.backward(data, np.ones(shape=(2, 1)))
+
         self.assert_allclose(output_value, output_value_ref)
+        self.assert_allclose(grad_input_value, grad_input_value_ref)
 
 if __name__ == "__main__":
     pytest.main([__file__])
