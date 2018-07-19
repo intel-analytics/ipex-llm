@@ -168,8 +168,8 @@ object Net {
    */
   def loadTF[T: ClassTag](folder: String)
       (implicit ev: TensorNumeric[T]): GraphNet[T] = {
-    val (model, inputs, outputs) = NetUtils.processTFFolder(folder)
-    loadTF[T](model, NetUtils.removePort(inputs), NetUtils.removePort(outputs))
+    val (model, meta) = NetUtils.processTFFolder(folder)
+    loadTF[T](model, NetUtils.removePort(meta.inputNames), NetUtils.removePort(meta.outputNames))
   }
 
   /**
