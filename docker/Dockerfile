@@ -20,10 +20,12 @@ MAINTAINER The Analytics-Zoo Authors https://github.com/intel-analytics/analytic
 
 WORKDIR /opt/work
 
-ARG ANALYTICS_ZOO_VERSION=0.2.0-SNAPSHOT
+ARG ANALYTICS_ZOO_VERSION=0.3.0-SNAPSHOT
+ARG BIGDL_VERSION=0.6.0
 ARG SPARK_VERSION=2.2.0
 ENV ANALYTICS_ZOO_VERSION_ENV   ${ANALYTICS_ZOO_VERSION}
 ENV SPARK_VERSION_ENV           ${SPARK_VERSION}
+ENV BIGDL_VERSION_ENV           ${BIGDL_VERSION}
 ENV SPARK_HOME                  /opt/work/spark-${SPARK_VERSION}
 ENV ANALYTICS_ZOO_HOME          /opt/work/analytics-zoo-${ANALYTICS_ZOO_VERSION}
 ENV JAVA_HOME                   /opt/jdk
@@ -45,7 +47,7 @@ RUN apt-get install -y software-properties-common python-software-properties pyt
     wget https://bootstrap.pypa.io/get-pip.py && \
     python2 get-pip.py && \
     pip2 install --upgrade setuptools && \
-    pip2 install numpy scipy pandas scikit-learn matplotlib seaborn jupyter wordcloud moviepy requests && \
+    pip2 install numpy scipy pandas scikit-learn matplotlib seaborn jupyter wordcloud moviepy requests opencv-python && \
     python2 -m pip install ipykernel && \
     python2 -m ipykernel install --user
 #spark
@@ -53,10 +55,6 @@ RUN wget https://d3kbcqa49mib13.cloudfront.net/spark-${SPARK_VERSION}-bin-hadoop
     tar -zxvf spark-${SPARK_VERSION}-bin-hadoop2.7.tgz && \
     mv spark-${SPARK_VERSION}-bin-hadoop2.7 spark-${SPARK_VERSION} && \
     rm spark-${SPARK_VERSION}-bin-hadoop2.7.tgz
-#analytics-zoo
-RUN git config --global http.proxy $http_proxy && \ 
-    git config --global https.proxy $https_proxy &&\
-    git clone https://github.com/intel-analytics/analytics-zoo.git
 
 ADD ./download-analytics-zoo.sh /opt/work
 ADD ./start-notebook.sh /opt/work

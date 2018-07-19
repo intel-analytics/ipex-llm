@@ -16,15 +16,16 @@
 # limitations under the License.
 #
 
-#echo $ANALYTICS_ZOO_VERSION
-#echo $SPARK_VERSION
+echo $ANALYTICS_ZOO_VERSION
+echo $BIGDL_VERSION
+echo $SPARK_VERSION
 SPARK_MAJOR_VERSION=${SPARK_VERSION_ENV%%.[0-9]}
 
 if [[ $ANALYTICS_ZOO_VERSION == *"SNAPSHOT"* ]]; then
-  NIGHTLY_VERSION=$(echo $(echo `wget -qO - https://oss.sonatype.org/content/repositories/snapshots/com/intel/analytics/zoo/analytics-zoo-SPARK_$SPARK_MAJOR_VERSION/$ANALYTICS_ZOO_VERSION/maven-metadata.xml | sed -n '/<value>[0-9]*\.[0-9]*\.[0-9]*-[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*.*value>/p' | head -n1 | awk -F'>' '{print $2}' | tr '</value' ' '`))
-  wget https://oss.sonatype.org/content/repositories/snapshots/com/intel/analytics/zoo/analytics-zoo-SPARK_$SPARK_MAJOR_VERSION/$ANALYTICS_ZOO_VERSION/analytics-zoo-SPARK_$SPARK_MAJOR_VERSION-$NIGHTLY_VERSION-dist.zip
-  unzip analytics-zoo-SPARK_$SPARK_MAJOR_VERSION-$NIGHTLY_VERSION-dist.zip -d $ANALYTICS_ZOO_HOME
+  NIGHTLY_VERSION=$(echo $(echo `wget -qO - https://oss.sonatype.org/content/groups/public/com/intel/analytics/zoo/analytics-zoo-bigdl_$BIGDL_VERSION-spark_$SPARK_VERSION/$ANALYTICS_ZOO_VERSION/maven-metadata.xml | sed -n '/<value>[0-9]*\.[0-9]*\.[0-9]*-[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*.*value>/p' | head -n1 | awk -F'>' '{print $2}' | tr '</value' ' '`))
+  wget https://oss.sonatype.org/content/groups/public/com/intel/analytics/zoo/analytics-zoo-bigdl_$BIGDL_VERSION-spark_$SPARK_VERSION/$ANALYTICS_ZOO_VERSION/analytics-zoo-bigdl_$BIGDL_VERSION-spark_$SPARK_VERSION-$NIGHTLY_VERSION-dist-all.zip
+  unzip analytics-zoo-bigdl_$BIGDL_VERSION-spark_$SPARK_VERSION-$NIGHTLY_VERSION-dist-all.zip -d $ANALYTICS_ZOO_HOME
 else
-  wget https://repo1.maven.org/maven2/com/intel/analytics/zoo/analytics-zoo-SPARK_$SPARK_MAJOR_VERSION/$ANALYTICS_ZOO_VERSION/analytics-zoo-SPARK_$SPARK_MAJOR_VERSION-$ANALYTICS_ZOO_VERSION-dist.zip
-  unzip analytics-zoo-SPARK_$SPARK_MAJOR_VERSION-$ANALYTICS_ZOO_VERSION-dist.zip -d $ANALYTICS_ZOO_HOME
+  wget https://repo1.maven.org/maven2/com/intel/analytics/zoo/analytics-zoo-bigdl_$BIGDL_VERSION-spark_$SPARK_VERSION/$ANALYTICS_ZOO_VERSION/analytics-zoo-bigdl_$BIGDL_VERSION-spark_$SPARK_VERSION-$ANALYTICS_ZOO_VERSION-dist-all.zip
+  unzip analytics-zoo-bigdl_$BIGDL_VERSION-spark_$SPARK_VERSION-$ANALYTICS_ZOO_VERSION-dist-all.zip -d $ANALYTICS_ZOO_HOME
 fi

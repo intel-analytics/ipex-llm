@@ -17,8 +17,9 @@
 #
 
 #setup pathes
-ANALYTICS_ZOO_TUTORIALS_HOME=/opt/work/analytics-zoo/apps
+ANALYTICS_ZOO_TUTORIALS_HOME=${ANALYTICS_ZOO_HOME}/apps
 ANALYTICS_ZOO_VERSION=${ANALYTICS_ZOO_VERSION_ENV}
+BIGDL_VERSION=${BIGDL_VERSION_ENV}
 SPARK_VERSION=${SPARK_VERSION_ENV}
 SPARK_MAJOR_VERSION=${SPARK_VERSION_ENV%%.[0-9]}
 
@@ -29,8 +30,8 @@ ${SPARK_HOME}/bin/pyspark \
   --master local[4] \
   --driver-memory 4g \
   --properties-file ${ANALYTICS_ZOO_HOME}/conf/spark-analytics-zoo.conf \
-  --py-files ${ANALYTICS_ZOO_HOME}/lib/analytics-zoo-SPARK_${SPARK_MAJOR_VERSION}-${ANALYTICS_ZOO_VERSION}-python-api.zip \
-  --jars ${ANALYTICS_ZOO_HOME}/lib/analytics-zoo-SPARK_${SPARK_MAJOR_VERSION}-${ANALYTICS_ZOO_VERSION}-jar-with-dependencies.jar \
-  --conf spark.driver.extraClassPath=${ANALYTICS_ZOO_HOME}/lib/analytics-zoo-SPARK_${SPARK_MAJOR_VERSION}-${ANALYTICS_ZOO_VERSION}-jar-with-dependencies.jar \
-  --conf spark.executor.extraClassPath=${ANALYTICS_ZOO_HOME}/lib/analytics-zoo-SPARK_${SPARK_MAJOR_VERSION}-${ANALYTICS_ZOO_VERSION}-jar-with-dependencies.jar \
+  --py-files ${ANALYTICS_ZOO_HOME}/lib/analytics-zoo-bigdl_${BIGDL_VERSION}-spark_${SPARK_VERSION}-${ANALYTICS_ZOO_VERSION}-python-api.zip \
+  --jars ${ANALYTICS_ZOO_HOME}/lib/analytics-zoo-bigdl_${BIGDL_VERSION}-spark_${SPARK_VERSION}-${ANALYTICS_ZOO_VERSION}-jar-with-dependencies.jar \
+  --conf spark.driver.extraClassPath=${ANALYTICS_ZOO_HOME}/lib/analytics-zoo-bigdl_${BIGDL_VERSION}-spark_${SPARK_VERSION}-${ANALYTICS_ZOO_VERSION}-jar-with-dependencies.jar \
+  --conf spark.executor.extraClassPath=${ANALYTICS_ZOO_HOME}/lib/analytics-zoo-bigdl_${BIGDL_VERSION}-spark_${SPARK_VERSION}-${ANALYTICS_ZOO_VERSION}-jar-with-dependencies.jar \
   --conf spark.driver.extraJavaOptions=-Dderby.stream.error.file=/tmp
