@@ -19,6 +19,7 @@ package com.intel.analytics.bigdl.optim
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.utils.{Engine, T, Table}
+import org.apache.log4j.Logger
 
 import scala.math._
 import scala.reflect.ClassTag
@@ -74,7 +75,10 @@ class Adam[@specialized(Float, Double) T: ClassTag](
       ones = Tensor[T]().resize(taskSize + 1).fill(ev.one)
     }
 
+    val times = new Array[Long](parallelNum)
+
     Engine.default.invokeAndWait((0 until parallelNum).map(tid => () => {
+      val start = System.nanoTime()
       val offset = tid * taskSize + math.min(tid, extraTask)
       val length = taskSize + (if (tid < extraTask) 1 else 0)
       val currentDfdx = dfdx.narrow(1, offset + 1, length)
@@ -96,7 +100,11 @@ class Adam[@specialized(Float, Double) T: ClassTag](
       state(s"s$tid") = _s // 1st moment variables
       state(s"r$tid") = _r // 2nd moment variables
       state(s"denom$tid") = _denom // 3nd moment variables
+      times(tid) = (System.nanoTime() - start) / 1000000L
     }))
+
+    Adam.logger.info(s"update ${parameter.nElement()} parameters, maximum time is ${times.max} ms")
+    Adam.logger.info(s"Time is ${times.mkString("\t")} ms")
 
 
     state("evalCounter") = timestep // A tmp tensor to hold the sqrt(v) + epsilon
@@ -123,6 +131,8 @@ class Adam[@specialized(Float, Double) T: ClassTag](
 }
 
 object Adam {
+  val logger = Logger.getLogger(this.getClass)
+
   private[optim] def updateFrame[T: ClassTag](_s: Tensor[T], _r: Tensor[T], _denom: Tensor[T],
                                               clr: Double, dfdx: Tensor[T], parameter: Tensor[T],
                                               beta1: Double, beta2: Double, timestep: Int,
@@ -143,6 +153,7 @@ object Adam {
     val biasCorrection1 = 1 - pow(beta1, timestep)
     val biasCorrection2 = 1 - pow(beta2, timestep)
     val stepSize = clr * sqrt(biasCorrection2) / biasCorrection1
-    parameter.addcdiv(ev.fromType[Double](-stepSize), _s, _denom)
+    _denom.cdiv(_s, _denom)
+    parameter.add(ev.fromType[Double](-stepSize), _denom)
   }
 }

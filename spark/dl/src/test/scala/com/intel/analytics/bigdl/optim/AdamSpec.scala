@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.optim
 
 import com.intel.analytics.bigdl.nn.{CrossEntropyCriterion, Linear, Sequential}
 import com.intel.analytics.bigdl.tensor.Tensor
-import com.intel.analytics.bigdl.utils.{RandomGenerator, T, TestUtils}
+import com.intel.analytics.bigdl.utils.{Engine, RandomGenerator, T, TestUtils}
 import org.scalatest.{FlatSpec, Matchers}
 
 import scala.collection.mutable.ArrayBuffer
@@ -28,8 +28,10 @@ import scala.util.Random
 class AdamSpec extends FlatSpec with Matchers {
   val start = System.currentTimeMillis()
   "adam" should "perform well on rosenbrock function" in {
+    System.setProperty("bigdl.localMode", "true")
+    Engine.init(1, 2, false)
     val x = Tensor[Double](2).fill(0)
-    val config = T("learningRate" -> 0.002)
+    val config = T("learningRate" -> 0.005)
     val optm = new Adam[Double]
     var fx = new ArrayBuffer[Double]
     for (i <- 1 to 10001) {
@@ -53,6 +55,8 @@ class AdamSpec extends FlatSpec with Matchers {
     x(Array(2)) should be(1.0 +- 0.01)
   }
   "adam" should " work fast with MKL" in {
+    System.setProperty("bigdl.localMode", "true")
+    Engine.init(1, 2, false)
     RandomGenerator.RNG.setSeed(100)
     val inputSize = 500
     val hiddenSize = 500

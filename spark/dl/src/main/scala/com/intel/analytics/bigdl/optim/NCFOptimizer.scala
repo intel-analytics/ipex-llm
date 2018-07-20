@@ -229,11 +229,13 @@ class NCFOptimizer[T: ClassTag] (
       optimMethod.state.update("neval", state.get("neval"))
       optimMethod.optimize(_ => (ev.fromType(loss), linearsGrad), linearsWeight)
 
+      val updateWeightTime1 = System.nanoTime()
+
       optimMethod2.state.update("epoch", state.get("epoch"))
       optimMethod2.state.update("neval", state.get("neval"))
       optimMethod2.optimize(_ => (ev.fromType(loss), embeddingGrad), embeddingWeight)
 
-      val updateWeightTime = System.nanoTime()
+      val updateWeightTime2 = System.nanoTime()
       println("update weight")
       val end = System.nanoTime()
       wallClockTime += end - start
@@ -250,7 +252,8 @@ class NCFOptimizer[T: ClassTag] (
         s"zero grad time is ${(zeroGradTime - computingTime) / 1e9}s \n" +
         s"acc embedding time is ${(computingTime2 - zeroGradTime) / 1e9}s \n" +
         s"aggregate linear is ${(aggTime - computingTime2) / 1e9}s \n" +
-        s"update weight time is ${(updateWeightTime - aggTime) / 1e9}s")
+        s"update linear time is ${(updateWeightTime1 - aggTime) / 1e9}s" +
+        s"update embedding time is ${(updateWeightTime2 - updateWeightTime1) / 1e9}s")
 
       state("neval") = state[Int]("neval") + 1
 
