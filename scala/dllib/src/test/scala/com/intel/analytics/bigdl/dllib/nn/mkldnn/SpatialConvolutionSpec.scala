@@ -23,6 +23,7 @@ import com.intel.analytics.bigdl.nn.{Xavier, Zeros}
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.RandomGenerator._
+import org.apache.commons.lang3.SerializationUtils
 import org.scalatest.{FlatSpec, Matchers}
 
 import scala.util.Random
@@ -55,8 +56,8 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
       conv.gradInputFormats()(0))
     conv.accGradParameters(input, gradOutput)
 
-    val weight1 = Tools.toOIHW(conv.weight, conv.ParamsShape.weight)
-    val gradweight1 = Tools.toOIHW(conv.gradWeight, conv.ParamsShape.gradWeight)
+    val weight1 = Tools.toOIHW(conv.weight, conv.parametersWithShape()._1(0))
+    val gradweight1 = Tools.toOIHW(conv.gradWeight, conv.parametersWithShape()._2(0))
     val bias1 = Tools.dense(conv.bias).toTensor[Float]
     val gradbias1 = Tools.dense(conv.gradBias).toTensor
 
@@ -114,8 +115,8 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
     val grad1 = Tools.toNCHW(conv.updateGradInput(input, gradOutput).toTensor,
       conv.gradInputFormats()(0))
     conv.accGradParameters(input, gradOutput)
-    val weight1 = Tools.toOIHW(conv.weight, conv.ParamsShape.weight)
-    val gradweight1 = Tools.toOIHW(conv.gradWeight, conv.ParamsShape.gradWeight)
+    val weight1 = Tools.toOIHW(conv.weight, conv.parametersWithShape()._1(0))
+    val gradweight1 = Tools.toOIHW(conv.gradWeight, conv.parametersWithShape()._2(0))
     val bias1 = Tools.dense(conv.bias).toTensor[Float]
     val gradbias1 = Tools.dense(conv.gradBias).toTensor[Float]
 
@@ -164,8 +165,8 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
     val output = Tools.toNCHW(conv.output.toTensor, conv.outputFormats()(0))
     val gradInput = Tools.toNCHW(conv.gradInput.toTensor, conv.gradInputFormats()(0))
 
-    val weight = Tools.toOIHW(conv.weight, conv.ParamsShape.weight)
-    val gradweight = Tools.toOIHW(conv.gradWeight, conv.ParamsShape.gradWeight)
+    val weight = Tools.toOIHW(conv.weight, conv.parametersWithShape()._1(0))
+    val gradweight = Tools.toOIHW(conv.gradWeight, conv.parametersWithShape()._2(0))
     val bias = Tools.dense(conv.bias).toTensor
     val gradbias = Tools.dense(conv.gradBias).toTensor
 
@@ -206,7 +207,7 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
     model2.initBwdPrimitives(Array(HeapData(outputShape, Memory.Format.nchw)), TrainingPhase)
     model2.initGradWPrimitives(Array(HeapData(outputShape, Memory.Format.nchw)), TrainingPhase)
 
-    val initWeight = Tools.fromOIHW(weightAll1(0), model2.ParamsShape.weight)
+    val initWeight = Tools.fromOIHW(weightAll1(0), model2.parametersWithShape()._1(0))
     model2.weight.copy(initWeight)
     model2.bias.copy(model1.bias)
 
@@ -236,7 +237,7 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
     val gw1 = model1.gradWeight
     val gb1 = model1.gradBias
 
-    val gw2 = Tools.toOIHW(model2.gradWeight, model2.ParamsShape.gradWeight)
+    val gw2 = Tools.toOIHW(model2.gradWeight, model2.parametersWithShape()._2(0))
     val gb2 = Tools.dense(model2.gradBias).toTensor
 
     Equivalent.nearequals(gw1, gw2, 1e-4) should be(true)
@@ -402,6 +403,45 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
                 |}
               """.stripMargin
     Tools.compare(txt, seq, inputShape, outputShape, 1e-2)
+  }
+
+  "conv serialized with java serialization method" should "work correctly" in {
+    val inputShape = Array(4, 3, 5, 5)
+    val outputShape = Array(4, 2, 3, 3)
+    val name = "conv"
+    val nOutput = 2
+    val kernel = 3
+    val pad = 1
+    val stride = 2
+
+    val conv = new SpatialConvolution(3, nOutput, kernel, kernel, stride, stride, pad, pad, 1)
+    conv.setName(name)
+    conv.setRuntime(new MklDnnRuntime)
+    conv.initFwdPrimitives(Array(HeapData(inputShape, Memory.Format.nchw)), TrainingPhase)
+    conv.initBwdPrimitives(Array(HeapData(outputShape, Memory.Format.nchw)), TrainingPhase)
+    conv.initGradWPrimitives(Array(HeapData(outputShape, Memory.Format.nchw)), TrainingPhase)
+
+    val input = Tensor(inputShape).rand(-1, 1)
+    conv.forward(input)
+
+    val cloned = SerializationUtils.clone(conv)
+    cloned.setRuntime(new MklDnnRuntime)
+    cloned.initFwdPrimitives(Array(HeapData(inputShape, Memory.Format.nchw)), TrainingPhase)
+    cloned.initBwdPrimitives(Array(HeapData(outputShape, Memory.Format.nchw)), TrainingPhase)
+    cloned.initGradWPrimitives(Array(HeapData(outputShape, Memory.Format.nchw)), TrainingPhase)
+
+    cloned.forward(input)
+
+    Tools.dense(conv.output) should be (Tools.dense(cloned.output))
+
+    val gradOutput = Tensor(outputShape).rand(-1, 1)
+
+    conv.backward(input, gradOutput)
+    cloned.backward(input, gradOutput)
+
+    Tools.dense(conv.gradInput) should be (Tools.dense(cloned.gradInput))
+    Tools.dense(conv.gradWeight) should be (Tools.dense(cloned.gradWeight))
+    Tools.dense(conv.gradBias) should be (Tools.dense(cloned.gradBias))
   }
 
   def prototxt(inputShape: Array[Int], name: String,

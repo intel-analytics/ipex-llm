@@ -16,8 +16,11 @@
 package com.intel.analytics.bigdl.nn.mkldnn
 
 import com.intel.analytics.bigdl.mkl.Memory
+import com.intel.analytics.bigdl.nn.mkldnn.Phase.TrainingPhase
+import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.{BigDLSpecHelper, T}
+import org.apache.commons.lang3.SerializationUtils
 
 class ConcatTableSpec extends BigDLSpecHelper {
   "ConcatTable" should "throw exception when input shape is different" in {
@@ -68,5 +71,31 @@ class ConcatTableSpec extends BigDLSpecHelper {
     val nativeGrad2 = container.backward(input1, T(grad2, grad2)).asInstanceOf[Tensor[Float]]
     val heapGrad2 = Tensor[Float](3, 4).copy(nativeGrad2)
     heapGrad2 should be(grad2 * 2)
+  }
+
+  "concat table with java serialization" should "work correctly" in {
+    val shape = Array(2, 2)
+    val input = Tensor(shape).fill(1)
+    val gradOutput = T(Tensor(shape).fill(2), Tensor(shape).fill(2))
+
+    val ct = ConcatTable()
+    ct.add(Identity())
+    ct.add(Identity())
+
+    ct.compile(TrainingPhase, Array(HeapData(shape, Memory.Format.nc)))
+
+    val cloned = SerializationUtils.clone(ct)
+    cloned.compile(TrainingPhase, Array(HeapData(shape, Memory.Format.nc)))
+
+    ct.forward(input)
+    ct.backward(input, gradOutput)
+
+    cloned.forward(input)
+    cloned.backward(input, gradOutput)
+
+    Tools.dense(ct.output.toTable(1)) should be(Tools.dense(cloned.output.toTable(1)))
+    Tools.dense(ct.output.toTable(2)) should be(Tools.dense(cloned.output.toTable(2)))
+
+    Tools.dense(ct.gradInput) should be(Tools.dense(cloned.gradInput))
   }
 }

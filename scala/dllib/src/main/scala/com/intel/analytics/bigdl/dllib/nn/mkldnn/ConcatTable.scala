@@ -25,12 +25,9 @@ class ConcatTable extends MklDnnContainer {
 
   output = T()
 
-  @transient
-  private var sumPrimitive: Array[Long] = null
-  @transient
-  private var tensors: Array[Tensor[Float]] = null
-  @transient
-  private var tensorPrimitives: Array[Long] = null
+  @transient private var sumPrimitive: Array[Long] = null
+  @transient private var tensors: Array[Tensor[Float]] = null
+  @transient private var tensorPrimitives: Array[Long] = null
 
   override def updateOutput(input: Activity): Activity = {
     require(modules.length > 0, "empty modules of concat table")
