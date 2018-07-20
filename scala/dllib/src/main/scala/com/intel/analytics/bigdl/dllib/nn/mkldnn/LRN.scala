@@ -27,16 +27,11 @@ class LRN(
 ) extends MklDnnLayer {
   private val UNDEFINED = 0
 
-  @transient
-  private var workSpace : Tensor[Float] = _
-  @transient
-  private var workSpaceFormat: MemoryData = _
-  @transient
-  private var fwdPrimDesc: Long = UNDEFINED
-  @transient
-  private var fwdMemPrims: Array[Long] = _
-  @transient
-  private var bwdMemPrims: Array[Long] = _
+  @transient private var workSpace : Tensor[Float] = _
+  @transient private var workSpaceFormat: MemoryData = _
+  @transient private var fwdPrimDesc: Long = UNDEFINED
+  @transient private var fwdMemPrims: Array[Long] = _
+  @transient private var bwdMemPrims: Array[Long] = _
 
   override private[mkldnn] def initFwdPrimitives(inputs: Array[MemoryData], phase: Phase) = {
     _inputFormats = singleNativeData(inputs)

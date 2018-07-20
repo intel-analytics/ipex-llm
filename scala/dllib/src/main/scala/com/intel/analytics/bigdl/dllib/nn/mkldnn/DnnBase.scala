@@ -32,8 +32,7 @@ trait MklDnnModule extends MklDnnModuleHelper {
    * Note that this instance will be erased when send to remote worker, so you
    * should recreate a MklDnnRuntime.
    */
-  @transient
-  protected var runtime : MklDnnRuntime = _
+  @transient protected var runtime : MklDnnRuntime = _
 
   def setRuntime(runtime: MklDnnRuntime): Unit = {
     this.runtime = runtime
@@ -249,7 +248,7 @@ trait MklDnnLayer extends AbstractModule[Activity, Activity, Float] with MklDnnM
  * Helper utilities when integrating containers with MKL-DNN
  */
 trait MklDnnContainer extends DynamicContainer[Activity, Activity, Float] with MklDnnModule {
-  protected val reorderManager = new ReorderManager()
+  @transient protected lazy val reorderManager = new ReorderManager()
   protected var mklDnnModules : Array[MklDnnModule] = _
 
   override def add(module: AbstractModule[_ <: Activity, _ <: Activity, Float]): this.type = {

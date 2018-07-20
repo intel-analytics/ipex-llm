@@ -28,12 +28,9 @@ class AvgPooling(
   padW: Int = 0,
   padH: Int = 0
 ) extends MklDnnLayer {
-  @transient
-  private var paddingTL: Array[Int] = _
-  @transient
-  private var paddingBR: Array[Int] = _
-  @transient
-  private var fwdPD: Long = _
+  @transient private var paddingTL: Array[Int] = _
+  @transient private var paddingBR: Array[Int] = _
+  @transient private var fwdPD: Long = _
 
   override private[mkldnn] def initFwdPrimitives(inputs: Array[MemoryData], phase: Phase) = {
     _inputFormats = singleNativeData(inputs)

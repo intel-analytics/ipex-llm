@@ -17,9 +17,11 @@ package com.intel.analytics.bigdl.nn.mkldnn
 
 import com.intel.analytics.bigdl.mkl.Memory
 import com.intel.analytics.bigdl.nn.SpatialCrossMapLRN
+import com.intel.analytics.bigdl.nn.mkldnn.Phase.TrainingPhase
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.BigDLSpecHelper
 import com.intel.analytics.bigdl.utils.RandomGenerator.RNG
+import org.apache.commons.lang3.SerializationUtils
 
 import scala.util.Random
 
@@ -50,4 +52,28 @@ class LRNSpec extends BigDLSpecHelper {
     grad1.asInstanceOf[Tensor[Float]] should be(grad2)
   }
 
+  "lrn with java serialization" should "work correctly" in {
+    val batchSize = 2
+    val inputShape = Array(batchSize, 7, 3, 3)
+    val input = Tensor[Float](batchSize, 7, 3, 3).rand(-1, 1)
+    val gradOutput = Tensor[Float](batchSize, 7, 3, 3).rand(-1, 1)
+
+    val lrn = LRN(5, 0.0001, 0.75, 1.0)
+    lrn.setRuntime(new MklDnnRuntime)
+    lrn.initFwdPrimitives(Array(HeapData(inputShape, Memory.Format.nchw)), TrainingPhase)
+    lrn.initBwdPrimitives(Array(HeapData(inputShape, Memory.Format.nchw)), TrainingPhase)
+    lrn.initGradWPrimitives(Array(HeapData(inputShape, Memory.Format.nchw)), TrainingPhase)
+
+    lrn.forward(input)
+
+    val cloned = SerializationUtils.clone(lrn)
+    cloned.setRuntime(new MklDnnRuntime)
+    cloned.initFwdPrimitives(Array(HeapData(inputShape, Memory.Format.nchw)), TrainingPhase)
+    cloned.initBwdPrimitives(Array(HeapData(inputShape, Memory.Format.nchw)), TrainingPhase)
+    cloned.initGradWPrimitives(Array(HeapData(inputShape, Memory.Format.nchw)), TrainingPhase)
+
+    cloned.forward(input)
+
+    Tools.dense(lrn.output) should be (Tools.dense(cloned.output))
+  }
 }

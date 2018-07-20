@@ -28,20 +28,13 @@ class MaxPooling(
   padW: Int = 0,
   padH: Int = 0
 ) extends MklDnnLayer {
-  @transient
-  private var workSpaceFormat: MemoryData = _
-  @transient
-  private var workSpace: Tensor[Float] = _
-  @transient
-  private var fwdMemPrims: Array[Long] = _
-  @transient
-  private var bwdMemPrims: Array[Long] = _
-  @transient
-  private var paddingTL: Array[Int] = _
-  @transient
-  private var paddingBR: Array[Int] = _
-  @transient
-  private var fwdPD: Long = _
+  @transient private var workSpaceFormat: MemoryData = _
+  @transient private var workSpace: Tensor[Float] = _
+  @transient private var fwdMemPrims: Array[Long] = _
+  @transient private var bwdMemPrims: Array[Long] = _
+  @transient private var paddingTL: Array[Int] = _
+  @transient private var paddingBR: Array[Int] = _
+  @transient private var fwdPD: Long = _
 
   override private[mkldnn] def initFwdPrimitives(inputs: Array[MemoryData], phase: Phase) = {
     _inputFormats = singleNativeData(inputs)

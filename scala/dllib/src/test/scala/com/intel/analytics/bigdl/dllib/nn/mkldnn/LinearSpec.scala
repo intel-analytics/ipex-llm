@@ -21,6 +21,7 @@ import com.intel.analytics.bigdl.nn
 import com.intel.analytics.bigdl.nn.mkldnn.Phase.TrainingPhase
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.tensor.Tensor
+import org.apache.commons.lang3.SerializationUtils
 import org.scalatest.{FlatSpec, Matchers}
 
 class LinearSpec extends FlatSpec with Matchers {
@@ -206,6 +207,47 @@ class LinearSpec extends FlatSpec with Matchers {
 
     Tools.dense(linear.gradWeight) should be (nnLinear.gradWeight)
     Tools.dense(linear.gradBias) should be (nnLinear.gradBias)
+  }
+
+  "linear cloned" should "work correctly" in {
+    val inputSize = 2
+    val outputSize = 2
+    val batchSize = 2
+
+    val inputFormat = HeapData(Array(batchSize, inputSize), Memory.Format.nc)
+    val outputFormat = HeapData(Array(batchSize, outputSize), Memory.Format.nc)
+    val input = Tensor[Float](batchSize, inputSize).rand()
+    val gradOutput = Tensor[Float]().resize(outputFormat.shape).rand()
+
+    val initWeight = Tensor[Float](outputSize, inputSize).rand()
+    val initBias = Tensor[Float](outputSize).rand()
+
+    val linear = Linear(inputSize, outputSize, initWeight = initWeight, initBias = initBias)
+    linear.setRuntime(new MklDnnRuntime)
+    linear.initFwdPrimitives(Array(inputFormat), TrainingPhase)
+    linear.initBwdPrimitives(Array(outputFormat), TrainingPhase)
+    linear.initGradWPrimitives(Array(outputFormat), TrainingPhase)
+
+    val output = linear.forward(input)
+    val gradInput = linear.updateGradInput(input, gradOutput)
+    linear.accGradParameters(input, gradOutput)
+
+    val cloned = SerializationUtils.clone(linear)
+    cloned.setRuntime(new MklDnnRuntime)
+    cloned.initFwdPrimitives(Array(inputFormat), TrainingPhase)
+    cloned.initBwdPrimitives(Array(outputFormat), TrainingPhase)
+    cloned.initGradWPrimitives(Array(outputFormat), TrainingPhase)
+
+    cloned.forward(input)
+
+    Tools.dense(linear.output) should be (Tools.dense(cloned.output))
+
+    linear.backward(input, gradOutput)
+    cloned.backward(input, gradOutput)
+
+    Tools.dense(linear.gradInput) should be (Tools.dense(cloned.gradInput))
+    Tools.dense(linear.gradWeight) should be (Tools.dense(cloned.gradWeight))
+    Tools.dense(linear.gradBias) should be (Tools.dense(cloned.gradBias))
   }
 
   "linear with maxpooling" should "work correctly" in {
