@@ -40,16 +40,16 @@ class Linear(
   val gradWeight: DnnTensor[Float] = DnnTensor[Float](Array(outputSize, inputSize))
   val gradBias: DnnTensor[Float] = DnnTensor[Float](Array(outputSize))
 
-  var forwardPrimDesc: Long = 0L
+  @transient private var forwardPrimDesc: Long = 0L
 
-  var updateOutputMemoryPrimitives: Array[Long] = _
-  var updateOutputTensors: Array[Tensor[Float]] = _
-  var updateGradInputMemoryPrimitives: Array[Long] = _
-  var updateGradInputTensors: Array[Tensor[Float]] = _
-  var updateGradWMemoryPrimitives: Array[Long] = _
-  var updateGradWTensors: Array[Tensor[Float]] = _
+  @transient private var updateOutputMemoryPrimitives: Array[Long] = _
+  @transient private var updateOutputTensors: Array[Tensor[Float]] = _
+  @transient private var updateGradInputMemoryPrimitives: Array[Long] = _
+  @transient private var updateGradInputTensors: Array[Tensor[Float]] = _
+  @transient private var updateGradWMemoryPrimitives: Array[Long] = _
+  @transient private var updateGradWTensors: Array[Tensor[Float]] = _
 
-  object ParamsShape {
+  private object ParamsShape extends Serializable {
     var weight: MemoryData = _
     var bias: MemoryData = _
     var gradWeight: MemoryData = _

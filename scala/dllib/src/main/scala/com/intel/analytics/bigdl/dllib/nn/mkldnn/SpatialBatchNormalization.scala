@@ -35,7 +35,7 @@ class SpatialBatchNormalization(
   private val initGradBias: Tensor[Float] = null
 ) extends MklDnnLayer with Initializable {
 
-  private var forwardDesc: Long = 0L
+  @transient private var forwardDesc: Long = 0L
   private var _relu: Boolean = false
 
   def setReLU(value: Boolean): this.type = {
@@ -44,17 +44,17 @@ class SpatialBatchNormalization(
   }
   def relu: Boolean = _relu
 
-  var updateOutputTensors: Array[Tensor[Float]] = _
-  var updateOutputMemoryPrimitives: Array[Long] = _
-  var updateGradInputTensors: Array[Tensor[Float]] = _
-  var updateGradInputMemoryPrimitives: Array[Long] = _
+  @transient private var updateOutputTensors: Array[Tensor[Float]] = _
+  @transient private var updateOutputMemoryPrimitives: Array[Long] = _
+  @transient private var updateGradInputTensors: Array[Tensor[Float]] = _
+  @transient private var updateGradInputMemoryPrimitives: Array[Long] = _
 
-  @transient var mean: DnnTensor[Float] = DnnTensor[Float](nOutput)
-  @transient var variance: DnnTensor[Float] = DnnTensor[Float](nOutput)
-  @transient var runningMean: DnnTensor[Float] = DnnTensor[Float](nOutput)
-  @transient var runningVariance: DnnTensor[Float] = DnnTensor[Float](nOutput)
-  @transient var weightAndBias: DnnTensor[Float] = DnnTensor[Float](Array(nOutput * 2))
-  @transient var gradWeightAndBias: DnnTensor[Float] = DnnTensor[Float](Array(nOutput * 2))
+  private val mean: DnnTensor[Float] = DnnTensor[Float](nOutput)
+  private val variance: DnnTensor[Float] = DnnTensor[Float](nOutput)
+  private[mkldnn] val runningMean: DnnTensor[Float] = DnnTensor[Float](nOutput)
+  private[mkldnn] val runningVariance: DnnTensor[Float] = DnnTensor[Float](nOutput)
+  val weightAndBias: DnnTensor[Float] = DnnTensor[Float](Array(nOutput * 2))
+  val gradWeightAndBias: DnnTensor[Float] = DnnTensor[Float](Array(nOutput * 2))
 
   var scaleFactor: Float = 0.0f
   var biasFactor: Float = 0.0f
@@ -91,7 +91,7 @@ class SpatialBatchNormalization(
     variance.copy(zeros)
   }
 
-  object Index {
+  private object Index extends Serializable {
     val input = 0
     val weight = 1
     val output = 2
