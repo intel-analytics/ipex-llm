@@ -20,8 +20,7 @@ import com.intel.analytics.bigdl.mkl.{AlgKind, MklDnn, PropKind, Query}
 class ReLU(value: Float = 0.0f) extends MklDnnLayer {
   private val UNDEFINED: Long = 0
 
-  @transient
-  private var fwdPrimDesc: Long = UNDEFINED
+  @transient private var fwdPrimDesc: Long = UNDEFINED
 
   override private[mkldnn] def initFwdPrimitives(inputs: Array[MemoryData], phase: Phase) = {
     _inputFormats = singleNativeData(inputs)

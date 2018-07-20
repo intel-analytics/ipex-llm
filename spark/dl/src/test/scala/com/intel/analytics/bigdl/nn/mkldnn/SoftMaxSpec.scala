@@ -18,9 +18,10 @@ package com.intel.analytics.bigdl.nn.mkldnn
 
 import com.intel.analytics.bigdl.mkl.Memory
 import com.intel.analytics.bigdl.nn
-import com.intel.analytics.bigdl.nn.mkldnn.Phase.InferencePhase
+import com.intel.analytics.bigdl.nn.mkldnn.Phase.{InferencePhase, TrainingPhase}
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.tensor.Tensor
+import org.apache.commons.lang3.SerializationUtils
 import org.scalatest.{FlatSpec, Matchers}
 
 class SoftMaxSpec extends FlatSpec with Matchers {
@@ -138,5 +139,33 @@ class SoftMaxSpec extends FlatSpec with Matchers {
 
       Tools.dense(sm.output) should be (nnSm.output)
     }
+  }
+
+  "softmax with java serialization" should "work correctly" in {
+    val inputShape = Array(2, 3, 4, 4)
+
+    val sm = SoftMax()
+    sm.setRuntime(new MklDnnRuntime)
+    sm.initFwdPrimitives(Array(HeapData(inputShape, Memory.Format.nchw)), TrainingPhase)
+    sm.initBwdPrimitives(Array(HeapData(inputShape, Memory.Format.nchw)), TrainingPhase)
+
+    val cloned = SerializationUtils.clone(sm)
+    cloned.setRuntime(new MklDnnRuntime)
+    cloned.initFwdPrimitives(Array(HeapData(inputShape, Memory.Format.nchw)), TrainingPhase)
+    cloned.initBwdPrimitives(Array(HeapData(inputShape, Memory.Format.nchw)), TrainingPhase)
+
+    val input = Tensor(inputShape).rand(-1, 1)
+    val gradOutput = Tensor(inputShape).rand(-1, 1)
+
+    sm.forward(input)
+    cloned.forward(input)
+
+    Tools.dense(sm.output) should be (Tools.dense(cloned.output))
+
+    sm.backward(input, gradOutput)
+    cloned.backward(input, gradOutput)
+
+    Tools.dense(sm.gradInput) should be (Tools.dense(cloned.gradInput))
+
   }
 }
