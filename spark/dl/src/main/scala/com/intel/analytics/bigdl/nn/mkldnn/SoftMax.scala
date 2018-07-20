@@ -25,10 +25,10 @@ import com.intel.analytics.bigdl.tensor.{DenseType, Tensor}
 import scala.collection.mutable.ArrayBuffer
 
 class SoftMax() extends MklDnnLayer {
-  val nnSoftMax = nn.SoftMax[Float]()
+  private val nnSoftMax = nn.SoftMax[Float]()
 
-  @transient var updateOutputTensors: Array[Tensor[Float]] = _
-  @transient var updateOutputMemoryPrimitives: Array[Long] = _
+  @transient private var updateOutputTensors: Array[Tensor[Float]] = _
+  @transient private var updateOutputMemoryPrimitives: Array[Long] = _
 
   override private[mkldnn] def initFwdPrimitives(inputs: Array[MemoryData], phase: Phase) = {
     phase match {

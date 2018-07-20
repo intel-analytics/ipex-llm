@@ -49,7 +49,7 @@ class Linear(
   @transient private var updateGradWMemoryPrimitives: Array[Long] = _
   @transient private var updateGradWTensors: Array[Tensor[Float]] = _
 
-  object ParamsShape extends Serializable {
+  private object ParamsShape extends Serializable {
     var weight: MemoryData = _
     var bias: MemoryData = _
     var gradWeight: MemoryData = _

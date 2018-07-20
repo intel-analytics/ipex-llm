@@ -50,10 +50,11 @@ class SpatialConvolution(
 
   // !!!important!!! this is for weight conversion. The weights in forward and backward is
   // different.
+  // It's `lazy` so the reordermanager need not serialized.
   @transient private lazy val reorderManager = new ReorderManager
 
   val weight: DnnTensor[Float] = DnnTensor[Float](weightShape)
-  var weightForBackward: DnnTensor[Float] = _
+  private var weightForBackward: DnnTensor[Float] = _
   val bias: DnnTensor[Float] = DnnTensor[Float](Array(nOutputPlane))
   val gradWeight: DnnTensor[Float] = DnnTensor[Float](weightShape)
   val gradBias: DnnTensor[Float] = DnnTensor[Float](Array(nOutputPlane))
@@ -88,7 +89,7 @@ class SpatialConvolution(
     this
   }
 
-  object ParamsShape extends Serializable {
+  private object ParamsShape extends Serializable {
     var weight: MemoryData = _
     var weightForBackward: MemoryData = _
     var bias: MemoryData = _

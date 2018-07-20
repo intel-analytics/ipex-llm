@@ -33,7 +33,7 @@ private[tensor] class DnnStorage[T: ClassTag](size: Int) extends Storage[T] {
   private var _isReleased: Boolean = false
 
   // Hold the address of the native array
-  @transient lazy val ptr: Pointer = new Pointer(allocate(size))
+  @transient var ptr: Pointer = new Pointer(allocate(size))
 
   override def length(): Int = size
 
@@ -99,6 +99,7 @@ private[tensor] class DnnStorage[T: ClassTag](size: Int) extends Storage[T] {
   @throws(classOf[IOException])
   private def readObject(in: ObjectInputStream): Unit = {
     in.defaultReadObject()
+    ptr = new Pointer(allocate(this.size))
     val elements = in.readObject().asInstanceOf[Array[Float]]
     Memory.CopyArray2Ptr(elements, 0, ptr.address, 0, size, DnnStorage.FLOAT_BYTES)
   }

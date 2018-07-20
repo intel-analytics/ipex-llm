@@ -49,12 +49,12 @@ class SpatialBatchNormalization(
   @transient private var updateGradInputTensors: Array[Tensor[Float]] = _
   @transient private var updateGradInputMemoryPrimitives: Array[Long] = _
 
-  var mean: DnnTensor[Float] = DnnTensor[Float](nOutput)
-  var variance: DnnTensor[Float] = DnnTensor[Float](nOutput)
-  var runningMean: DnnTensor[Float] = DnnTensor[Float](nOutput)
-  var runningVariance: DnnTensor[Float] = DnnTensor[Float](nOutput)
-  var weightAndBias: DnnTensor[Float] = DnnTensor[Float](Array(nOutput * 2))
-  var gradWeightAndBias: DnnTensor[Float] = DnnTensor[Float](Array(nOutput * 2))
+  private val mean: DnnTensor[Float] = DnnTensor[Float](nOutput)
+  private val variance: DnnTensor[Float] = DnnTensor[Float](nOutput)
+  private[mkldnn] val runningMean: DnnTensor[Float] = DnnTensor[Float](nOutput)
+  private[mkldnn] val runningVariance: DnnTensor[Float] = DnnTensor[Float](nOutput)
+  val weightAndBias: DnnTensor[Float] = DnnTensor[Float](Array(nOutput * 2))
+  val gradWeightAndBias: DnnTensor[Float] = DnnTensor[Float](Array(nOutput * 2))
 
   var scaleFactor: Float = 0.0f
   var biasFactor: Float = 0.0f
@@ -91,7 +91,7 @@ class SpatialBatchNormalization(
     variance.copy(zeros)
   }
 
-  object Index extends Serializable {
+  private object Index extends Serializable {
     val input = 0
     val weight = 1
     val output = 2
