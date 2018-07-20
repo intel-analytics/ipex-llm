@@ -41,7 +41,7 @@ class SpatialConvolution(
   val initGradBias: Tensor[Float] = null,
   val withBias: Boolean = true,
   val format: DataFormat = DataFormat.NCHW
-) extends MklDnnLayer with Initializable {
+) extends MklDnnLayer with Initializable with Serializable {
   private val weightShape = if (nGroup == 1) {
     Array(nOutputPlane, nInputPlane, kernelH, kernelW)
   } else {
@@ -50,25 +50,26 @@ class SpatialConvolution(
 
   // !!!important!!! this is for weight conversion. The weights in forward and backward is
   // different.
-  val reorderManager = new ReorderManager
+  // It's `lazy` so the reordermanager need not serialized.
+  @transient private lazy val reorderManager = new ReorderManager
 
   val weight: DnnTensor[Float] = DnnTensor[Float](weightShape)
-  var weightForBackward: DnnTensor[Float] = _
+  private var weightForBackward: DnnTensor[Float] = _
   val bias: DnnTensor[Float] = DnnTensor[Float](Array(nOutputPlane))
   val gradWeight: DnnTensor[Float] = DnnTensor[Float](weightShape)
   val gradBias: DnnTensor[Float] = DnnTensor[Float](Array(nOutputPlane))
 
-  var forwardPrimDesc: Long = 0L
+  @transient private var forwardPrimDesc: Long = 0L
 
-  var updateOutputMemoryPrimitives: Array[Long] = _
-  var updateOutputTensors: Array[Tensor[Float]] = _
-  var updateGradInputMemoryPrimitives: Array[Long] = _
-  var updateGradInputTensors: Array[Tensor[Float]] = _
-  var updateGradWMemoryPrimitives: Array[Long] = _
-  var updateGradWTensors: Array[Tensor[Float]] = _
+  @transient private var updateOutputMemoryPrimitives: Array[Long] = _
+  @transient private var updateOutputTensors: Array[Tensor[Float]] = _
+  @transient private var updateGradInputMemoryPrimitives: Array[Long] = _
+  @transient private var updateGradInputTensors: Array[Tensor[Float]] = _
+  @transient private var updateGradWMemoryPrimitives: Array[Long] = _
+  @transient private var updateGradWTensors: Array[Tensor[Float]] = _
 
-  var _relu = false
-  var _sum = false
+  private var _relu = false
+  private var _sum = false
 
   def relu: Boolean = _relu
   def setReLU(value: Boolean = true): this.type = {
@@ -88,7 +89,7 @@ class SpatialConvolution(
     this
   }
 
-  object ParamsShape {
+  private object ParamsShape extends Serializable {
     var weight: MemoryData = _
     var weightForBackward: MemoryData = _
     var bias: MemoryData = _

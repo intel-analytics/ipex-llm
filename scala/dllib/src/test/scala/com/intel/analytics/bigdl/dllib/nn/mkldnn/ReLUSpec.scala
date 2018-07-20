@@ -22,6 +22,7 @@ import com.intel.analytics.bigdl.nn.mkldnn.Phase.TrainingPhase
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.T
+import org.apache.commons.lang3.SerializationUtils
 import org.scalatest.{FlatSpec, Matchers}
 
 class ReLUSpec extends FlatSpec with Matchers {
@@ -73,4 +74,29 @@ class ReLUSpec extends FlatSpec with Matchers {
     Equivalent.nearequals(gradInput, Tools.dense(gradInputdnn).toTensor) should be(true)
   }
 
+  "relu with java serialization" should "work correctly" in {
+    val shape = Array(4, 96, 55, 55)
+    val input = Tensor(shape).rand(-1, 1)
+    val gradOutput = Tensor(shape).rand(-1, 1)
+
+    val relu = ReLU()
+    relu.setRuntime(new MklDnnRuntime)
+    relu.initFwdPrimitives(Array(HeapData(shape, Memory.Format.nchw)), TrainingPhase)
+    relu.initBwdPrimitives(Array(HeapData(shape, Memory.Format.nchw)), TrainingPhase)
+
+    val cloned = SerializationUtils.clone(relu)
+    cloned.setRuntime(new MklDnnRuntime)
+    cloned.initFwdPrimitives(Array(HeapData(shape, Memory.Format.nchw)), TrainingPhase)
+    cloned.initBwdPrimitives(Array(HeapData(shape, Memory.Format.nchw)), TrainingPhase)
+
+    relu.forward(input)
+    cloned.forward(input)
+
+    Tools.dense(relu.output) should be (Tools.dense(cloned.output))
+
+    relu.backward(input, gradOutput)
+    cloned.backward(input, gradOutput)
+
+    Tools.dense(relu.gradInput) should be (Tools.dense(cloned.gradInput))
+  }
 }

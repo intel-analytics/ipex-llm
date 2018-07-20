@@ -31,23 +31,22 @@ sealed trait MemoryData extends Serializable {
   def cloneFormat(): MemoryData
 
   private val UNDEFINED: Long = -1
+  private val ERROR: Long = 0
 
-  @transient
-  private var primitive: Long = UNDEFINED
-  @transient
-  private var primitiveDesc: Long = UNDEFINED
-  @transient
-  private var description: Long = UNDEFINED
+  @transient private var primitive: Long = UNDEFINED
+  @transient private var primitiveDesc: Long = UNDEFINED
+  @transient private var description: Long = UNDEFINED
 
   def getMemoryDescription(): Long = {
-    if (description == UNDEFINED) {
+    if (description == UNDEFINED || description == ERROR) {
       description = MklDnn.MemoryDescInit(shape.length, shape, DataType.F32, layout)
     }
     description
   }
 
   def getPrimitiveDescription(runtime: MklDnnRuntime): Long = {
-    if (primitiveDesc == UNDEFINED) {
+    require(runtime != null, s"Have you initialized the MklDnnRuntime?")
+    if (primitiveDesc == UNDEFINED || primitiveDesc == ERROR) {
       primitiveDesc =
         MklDnn.MemoryPrimitiveDescCreate(getMemoryDescription(), runtime.engine)
     }
@@ -55,7 +54,8 @@ sealed trait MemoryData extends Serializable {
   }
 
   def getPrimitive(runtime: MklDnnRuntime): Long = {
-    if (primitive == UNDEFINED) {
+    require(runtime != null, s"Have you initialized the MklDnnRuntime?")
+    if (primitive == UNDEFINED || primitive == ERROR) {
       primitive =
         MklDnn.PrimitiveCreate0(getPrimitiveDescription(runtime))
     }

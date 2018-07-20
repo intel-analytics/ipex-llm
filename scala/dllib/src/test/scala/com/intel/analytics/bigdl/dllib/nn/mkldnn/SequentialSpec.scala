@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.nn.mkldnn
 import com.intel.analytics.bigdl.mkl.{Memory, MklDnn}
 import com.intel.analytics.bigdl.tensor.Tensor
 import com.intel.analytics.bigdl.utils.BigDLSpecHelper
+import org.apache.commons.lang3.SerializationUtils
 
 class SequentialSpec extends BigDLSpecHelper {
   "Sequential" should "not be called add after compilation" in {
@@ -98,5 +99,43 @@ class SequentialSpec extends BigDLSpecHelper {
     val gradOutput2 = Tensor[Float](3, 4).rand()
     val gradInput2 = seq.backward(input2, gradOutput2)
     gradInput2 should be(gradOutput2)
+  }
+
+  "seq with java serialization" should "work correctly" in {
+    val layer1 = ReorderMemory(
+      HeapData(Array(3, 4), Memory.Format.nc),
+      HeapData(Array(3, 4), Memory.Format.nc),
+      HeapData(Array(3, 4), Memory.Format.nc),
+      HeapData(Array(3, 4), Memory.Format.nc))
+    val layer2 = ReorderMemory(
+      NativeData(Array(3, 4), Memory.Format.nc),
+      NativeData(Array(3, 4), Memory.Format.io),
+      NativeData(Array(3, 4), Memory.Format.nc),
+      NativeData(Array(3, 4), Memory.Format.io))
+    val layer3 = ReorderMemory(
+      HeapData(Array(3, 4), Memory.Format.nc),
+      HeapData(Array(3, 4), Memory.Format.nc),
+      HeapData(Array(3, 4), Memory.Format.nc),
+      HeapData(Array(3, 4), Memory.Format.nc))
+    val seq = Sequential()
+    seq.add(layer1)
+    seq.add(layer2)
+    seq.add(layer3)
+    seq.compile(Phase.TrainingPhase, Array(HeapData(Array(3, 4), Memory.Format.nc)))
+
+    val input = Tensor[Float](3, 4).rand()
+    val gradOutput = Tensor[Float](3, 4).rand()
+
+    seq.forward(input)
+    seq.backward(input, gradOutput)
+
+    val cloned = SerializationUtils.clone(seq)
+    cloned.compile(Phase.TrainingPhase, Array(HeapData(Array(3, 4), Memory.Format.nc)))
+
+    cloned.forward(input)
+    cloned.backward(input, gradOutput)
+
+    Tools.dense(seq.output) should be (Tools.dense(cloned.output))
+    Tools.dense(seq.gradInput) should be (Tools.dense(cloned.gradInput))
   }
 }
