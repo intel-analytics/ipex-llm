@@ -56,8 +56,8 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
       conv.gradInputFormats()(0))
     conv.accGradParameters(input, gradOutput)
 
-    val weight1 = Tools.toOIHW(conv.weight, conv.ParamsShape.weight)
-    val gradweight1 = Tools.toOIHW(conv.gradWeight, conv.ParamsShape.gradWeight)
+    val weight1 = Tools.toOIHW(conv.weight, conv.parametersWithShape()._1(0))
+    val gradweight1 = Tools.toOIHW(conv.gradWeight, conv.parametersWithShape()._2(0))
     val bias1 = Tools.dense(conv.bias).toTensor[Float]
     val gradbias1 = Tools.dense(conv.gradBias).toTensor
 
@@ -115,8 +115,8 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
     val grad1 = Tools.toNCHW(conv.updateGradInput(input, gradOutput).toTensor,
       conv.gradInputFormats()(0))
     conv.accGradParameters(input, gradOutput)
-    val weight1 = Tools.toOIHW(conv.weight, conv.ParamsShape.weight)
-    val gradweight1 = Tools.toOIHW(conv.gradWeight, conv.ParamsShape.gradWeight)
+    val weight1 = Tools.toOIHW(conv.weight, conv.parametersWithShape()._1(0))
+    val gradweight1 = Tools.toOIHW(conv.gradWeight, conv.parametersWithShape()._2(0))
     val bias1 = Tools.dense(conv.bias).toTensor[Float]
     val gradbias1 = Tools.dense(conv.gradBias).toTensor[Float]
 
@@ -165,8 +165,8 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
     val output = Tools.toNCHW(conv.output.toTensor, conv.outputFormats()(0))
     val gradInput = Tools.toNCHW(conv.gradInput.toTensor, conv.gradInputFormats()(0))
 
-    val weight = Tools.toOIHW(conv.weight, conv.ParamsShape.weight)
-    val gradweight = Tools.toOIHW(conv.gradWeight, conv.ParamsShape.gradWeight)
+    val weight = Tools.toOIHW(conv.weight, conv.parametersWithShape()._1(0))
+    val gradweight = Tools.toOIHW(conv.gradWeight, conv.parametersWithShape()._2(0))
     val bias = Tools.dense(conv.bias).toTensor
     val gradbias = Tools.dense(conv.gradBias).toTensor
 
@@ -207,7 +207,7 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
     model2.initBwdPrimitives(Array(HeapData(outputShape, Memory.Format.nchw)), TrainingPhase)
     model2.initGradWPrimitives(Array(HeapData(outputShape, Memory.Format.nchw)), TrainingPhase)
 
-    val initWeight = Tools.fromOIHW(weightAll1(0), model2.ParamsShape.weight)
+    val initWeight = Tools.fromOIHW(weightAll1(0), model2.parametersWithShape()._1(0))
     model2.weight.copy(initWeight)
     model2.bias.copy(model1.bias)
 
@@ -237,7 +237,7 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
     val gw1 = model1.gradWeight
     val gb1 = model1.gradBias
 
-    val gw2 = Tools.toOIHW(model2.gradWeight, model2.ParamsShape.gradWeight)
+    val gw2 = Tools.toOIHW(model2.gradWeight, model2.parametersWithShape()._2(0))
     val gb2 = Tools.dense(model2.gradBias).toTensor
 
     Equivalent.nearequals(gw1, gw2, 1e-4) should be(true)
