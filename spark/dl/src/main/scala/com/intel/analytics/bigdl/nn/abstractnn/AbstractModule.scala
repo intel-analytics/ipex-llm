@@ -71,6 +71,14 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
    */
   var gradInput: A = Activity.allocate[A, T]()
 
+  var paraAllReduce: ParaAllReduce = null
+
+  def setParaAllReduce(_paraAllReduce: ParaAllReduce): Unit = {
+    this.paraAllReduce = _paraAllReduce
+  }
+
+  def getParaAllReduce(): ParaAllReduce = this.paraAllReduce
+
   /**
    * Get the scale of gradientWeight
    */
@@ -253,6 +261,7 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
    */
   final def forward(input: A): B = {
     val before = System.nanoTime()
+    allReduce
     try {
       updateOutput(input)
     } catch {
@@ -263,8 +272,18 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
         throw new LayerException(this.toString(), e)
     }
     forwardTime += System.nanoTime() - before
-
     output
+  }
+
+  private def allReduce(): Unit = {
+    if (this.getParaAllReduce != null) {
+      val allReduce = this.getParaAllReduce
+    //  val ready = allReduce.test(this.getName())
+    //  println(s"layer  ${this.getName()} is ready : ${ready}")
+    //  if (!ready) {
+      allReduce.allReduce[B](this.getName())
+     // }
+    }
   }
 
   /**
@@ -282,8 +301,22 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
     updateGradInput(input, gradOutput)
     accGradParameters(input, gradOutput)
     backwardTime += System.nanoTime() - before
-
+    broadCast
     gradInput
+  }
+
+  protected def broadCast(): Unit = {
+    try {
+      if (this.getParaAllReduce != null) {
+        if (this.parameters() != null) {
+          val grads = this.getParameters()._2
+          this.getParaAllReduce.broadCast(this.getName(), grads.asInstanceOf[Tensor[_]])
+        }
+      }
+    } catch {
+      case e: Exception => println(s"broad casting error : ${this.getName()}")
+                          throw e
+    }
   }
 
   /**

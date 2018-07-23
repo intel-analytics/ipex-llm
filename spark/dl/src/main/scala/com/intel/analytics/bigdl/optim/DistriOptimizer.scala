@@ -268,7 +268,6 @@ object DistriOptimizer {
             lossSum += lossArray(finishedThreads(i))
             i += 1
           }
-
           if (finishedThreads.nonEmpty) {
             val finishedGradients = finishedThreads.map(cached.modelGradients(_))
             parameters.values.foreach { p =>
@@ -294,7 +293,7 @@ object DistriOptimizer {
               val putG = System.nanoTime()
               // Put first finished model's gradient who aggregated
               // all other models' gradient to AllReduceParameter
-              p.putGradients(finishedGradients(0).narrow(1, pOffset, pLength))
+         //     p.putGradients(finishedGradients(0).narrow(1, pOffset, pLength))
               driverMetrics.add("put gradient", System.nanoTime() - putG)
             }
           } else {
@@ -302,7 +301,7 @@ object DistriOptimizer {
             // zero gradient in BlockManager when no thread finished.
             cached.modelGradients(0).zero()
             parameters.values.foreach{p =>
-              p.putGradients(cached.modelGradients(0).narrow(1, p.paramOffset, p.size))
+         //     p.putGradients(cached.modelGradients(0).narrow(1, p.paramOffset, p.size))
             }
             driverMetrics.add("put gradient", System.nanoTime() - putG)
           }
@@ -317,7 +316,8 @@ object DistriOptimizer {
           }
           Iterator.single(finishedThreads.size)
         }
-      }.reduce(_ + _)
+      }
+        .reduce(_ + _)
 
       dropModelNumBatch += (driverSubModelNum - numFinishedModelUpdates)
       if (dropPercentage == 0.0 ||
@@ -330,9 +330,9 @@ object DistriOptimizer {
         driverState("isGradientUpdated") = false
         // parameterProcesser like L2NormClippingProcessor may aggregate gradient,
         // and change the value of isGradientUpdated in driverState.
-        parameters.foreach { p =>
-          parameterProcessers.foreach(_.collectGlobalData(models, p._2, metrics, driverState))
-        }
+     //   parameters.foreach { p =>
+      //    parameterProcessers.foreach(_.collectGlobalData(models, p._2, metrics, driverState))
+     //   }
         val isGradientUpdated = driverState[Boolean]("isGradientUpdated")
         val stateBroadcast = sc.broadcast(driverState)
 
@@ -341,13 +341,13 @@ object DistriOptimizer {
           // if parameterProcesser has aggregated gradient, we can skip this aggregation.
           if (!isGradientUpdated) {
             val getG = System.nanoTime()
-            parameters.values.foreach(_.aggregateGradientPartition(numFinishedModelUpdates))
+           // parameters.values.foreach(_.aggregateGradientPartition(numFinishedModelUpdates))
             driverMetrics.add("aggregrateGradientParition average executor",
               System.nanoTime() - getG)
           }
-          parameters.foreach { p =>
-            parameterProcessers.foreach(_.processParameters(p._2, modelCache, driverState))
-          }
+       //   parameters.foreach { p =>
+        //    parameterProcessers.foreach(_.processParameters(p._2, modelCache, driverState))
+       //   }
           modelCache.optimMethods.foreach{ case (name, optimMethod) =>
             var time = System.nanoTime()
             optimMethod.state.update("epoch", driverState[Int]("epoch"))
@@ -623,6 +623,8 @@ object DistriOptimizer {
     val executorCores = Engine.coreNumber()
 
     val models = dataset.originRDD().mapPartitions(_ => {
+      // Add simulated all reduce algo
+      val allReduce = new SimulatedParaAllReduce(nExecutor, executorCores)
       val partitionId = TaskContext.getPartitionId
       val (broadcastCriterion, broadcastState, broadcastMethod,
       broadcastOptim) = broadcast.value
@@ -643,6 +645,7 @@ object DistriOptimizer {
         val localModel = modelBroadcast.value(true)
         // differentiate partition models from each other by partition ID
         setModelId(localModel, partitionId)
+        setAllReduce(localModel, allReduce)
         val localCriterion = broadcastCriterion.cloneCriterion()
         val localState = broadcastState.clone()
         val localMethod =
@@ -680,6 +683,16 @@ object DistriOptimizer {
     if (model.isInstanceOf[Container[_, _, T]]) {
       model.asInstanceOf[Container[_, _, T]].modules.
         foreach(sub => setModelId(sub, partitionId))
+    }
+  }
+
+  private def setAllReduce[T: ClassTag](model: Module[T],
+                                        allReduce: ParaAllReduce): Unit = {
+    allReduce.init(model.getName)
+    model.setParaAllReduce(allReduce)
+    if (model.isInstanceOf[Container[_, _, T]]) {
+      model.asInstanceOf[Container[_, _, T]].modules.
+        foreach(sub => setAllReduce(sub, allReduce))
     }
   }
 

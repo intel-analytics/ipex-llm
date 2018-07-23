@@ -49,7 +49,7 @@ private[bigdl] object ParameterSynchronizer {
    * @param eventKey Event key
    * @tparam T
    */
-  def reset[T: ClassTag](eventKey: String): Unit = {
+  def reset[T: ClassTag](eventKey: String): Boolean = {
     events.get(eventKey).reset
   }
 
@@ -72,6 +72,10 @@ private[bigdl] object ParameterSynchronizer {
   def collect[T: ClassTag](eventKey: String): java.util.Map[String, Tensor[T]] = {
     events.get(eventKey).data.asInstanceOf[java.util.Map[String, Tensor[T]]]
   }
+
+  def sync(eventKey: String): Unit = {
+    events.get(eventKey).sync
+  }
 }
 
 private[bigdl] class Event[T: ClassTag](threadNum: Int) {
@@ -92,15 +96,22 @@ private[bigdl] class Event[T: ClassTag](threadNum: Int) {
   /**
    * Reset event, clear the data
    */
-  def reset(): Unit = {
+  def reset(): Boolean = {
+    var res = false
     barrier.await
     if (data.size != 0) {
       data.synchronized {
         if (data.size != 0) {
           data.clear
+          res = true
         }
       }
     }
+    barrier.await
+    res
+  }
+
+  def sync(): Unit = {
     barrier.await
   }
 }
