@@ -205,8 +205,8 @@ class LinearSpec extends FlatSpec with Matchers {
     println(nnLinear.gradWeight)
     println(nnLinear.gradBias)
 
-    Tools.dense(linear.gradWeight) should be (nnLinear.gradWeight)
-    Tools.dense(linear.gradBias) should be (nnLinear.gradBias)
+    Tools.dense(linear.gradWeight.native) should be (nnLinear.gradWeight)
+    Tools.dense(linear.gradBias.native) should be (nnLinear.gradBias)
   }
 
   "linear cloned" should "work correctly" in {
@@ -246,8 +246,8 @@ class LinearSpec extends FlatSpec with Matchers {
     cloned.backward(input, gradOutput)
 
     Tools.dense(linear.gradInput) should be (Tools.dense(cloned.gradInput))
-    Tools.dense(linear.gradWeight) should be (Tools.dense(cloned.gradWeight))
-    Tools.dense(linear.gradBias) should be (Tools.dense(cloned.gradBias))
+    Tools.dense(linear.gradWeight.native) should be (Tools.dense(cloned.gradWeight.native))
+    Tools.dense(linear.gradBias.native) should be (Tools.dense(cloned.gradBias.native))
   }
 
   "linear with dense weights" should "work correctly" in {
@@ -279,7 +279,7 @@ class LinearSpec extends FlatSpec with Matchers {
     linear1.forward(input)
     linear1.backward(input, gradOutput)
 
-    val linear2 = Linear(inputSize, outputSize, initWeight = initWeight1, initBias = initBias1)
+    val linear2 = Linear(inputSize, outputSize, initWeight = initWeight2, initBias = initBias2)
     linear2.setRuntime(new MklDnnRuntime)
     linear2.initFwdPrimitives(Array(inputFormat), TrainingPhase)
     linear2.initBwdPrimitives(Array(outputFormat), TrainingPhase)

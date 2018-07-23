@@ -281,11 +281,11 @@ class Sequential extends MklDnnContainer {
 
   private def mergeConvBn(conv: SpatialConvolution, bn: SpatialBatchNormalization): Unit = {
 
-    val originVar = Tensor[Float].resize(bn.runningVariance.size()).copy(bn.runningVariance)
-    val originMean = Tensor[Float].resize(bn.runningMean.size()).copy(bn.runningMean)
+    val originVar = Tensor[Float].resize(bn.runningVariance.size()).copy(bn.runningVariance.dense)
+    val originMean = Tensor[Float].resize(bn.runningMean.size()).copy(bn.runningMean.dense)
 
-    val convWeight = Tensor[Float].resize(conv.weight.size()).copy(conv.weight)
-    val convBias = Tensor[Float].resize(conv.bias.size()).copy(conv.bias)
+    val convWeight = Tensor[Float].resize(conv.weight.size()).copy(conv.weight.dense)
+    val convBias = Tensor[Float].resize(conv.bias.size()).copy(conv.bias.dense)
 
     (0 until bn.nOutput).foreach { j =>
       val variance = originVar.storage().array()(j + originVar.storageOffset() - 1)

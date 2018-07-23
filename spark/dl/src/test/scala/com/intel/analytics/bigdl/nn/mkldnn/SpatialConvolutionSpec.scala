@@ -56,10 +56,10 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
       conv.gradInputFormats()(0))
     conv.accGradParameters(input, gradOutput)
 
-    val weight1 = Tools.toOIHW(conv.weight, conv.parametersWithShape()._1(0))
-    val gradweight1 = Tools.toOIHW(conv.gradWeight, conv.parametersWithShape()._2(0))
-    val bias1 = Tools.dense(conv.bias).toTensor[Float]
-    val gradbias1 = Tools.dense(conv.gradBias).toTensor
+    val weight1 = Tools.toOIHW(conv.weight.native, conv.parametersWithShape()._1(0))
+    val gradweight1 = Tools.toOIHW(conv.gradWeight.native, conv.parametersWithShape()._2(0))
+    val bias1 = Tools.dense(conv.bias.native).toTensor[Float]
+    val gradbias1 = Tools.dense(conv.gradBias.dense).toTensor
 
     val output2 = layer.forward(input)
     val grad2 = layer.updateGradInput(input, gradOutput)
@@ -115,10 +115,10 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
     val grad1 = Tools.toNCHW(conv.updateGradInput(input, gradOutput).toTensor,
       conv.gradInputFormats()(0))
     conv.accGradParameters(input, gradOutput)
-    val weight1 = Tools.toOIHW(conv.weight, conv.parametersWithShape()._1(0))
-    val gradweight1 = Tools.toOIHW(conv.gradWeight, conv.parametersWithShape()._2(0))
-    val bias1 = Tools.dense(conv.bias).toTensor[Float]
-    val gradbias1 = Tools.dense(conv.gradBias).toTensor[Float]
+    val weight1 = Tools.toOIHW(conv.weight.native, conv.parametersWithShape()._1(0))
+    val gradweight1 = Tools.toOIHW(conv.gradWeight.native, conv.parametersWithShape()._2(0))
+    val bias1 = Tools.dense(conv.bias.native).toTensor[Float]
+    val gradbias1 = Tools.dense(conv.gradBias.native).toTensor[Float]
 
     Equivalent.nearequals(weight1, weight2) should be(true)
     Equivalent.nearequals(gradweight1, gradweight2) should be(true)
@@ -165,10 +165,10 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
     val output = Tools.toNCHW(conv.output.toTensor, conv.outputFormats()(0))
     val gradInput = Tools.toNCHW(conv.gradInput.toTensor, conv.gradInputFormats()(0))
 
-    val weight = Tools.toOIHW(conv.weight, conv.parametersWithShape()._1(0))
-    val gradweight = Tools.toOIHW(conv.gradWeight, conv.parametersWithShape()._2(0))
-    val bias = Tools.dense(conv.bias).toTensor
-    val gradbias = Tools.dense(conv.gradBias).toTensor
+    val weight = Tools.toOIHW(conv.weight.native, conv.parametersWithShape()._1(0))
+    val gradweight = Tools.toOIHW(conv.gradWeight.native, conv.parametersWithShape()._2(0))
+    val bias = Tools.dense(conv.bias.native).toTensor
+    val gradbias = Tools.dense(conv.gradBias.native).toTensor
 
     val output1 = conv1.output.toTensor
     val gradInput1 = conv1.gradInput
@@ -237,8 +237,8 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
     val gw1 = model1.gradWeight
     val gb1 = model1.gradBias
 
-    val gw2 = Tools.toOIHW(model2.gradWeight, model2.parametersWithShape()._2(0))
-    val gb2 = Tools.dense(model2.gradBias).toTensor
+    val gw2 = Tools.toOIHW(model2.gradWeight.native, model2.parametersWithShape()._2(0))
+    val gb2 = Tools.dense(model2.gradBias.native).toTensor
 
     Equivalent.nearequals(gw1, gw2, 1e-4) should be(true)
     Equivalent.nearequals(gb1, gb2, 1e-3) should be(true)
@@ -440,8 +440,8 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
     cloned.backward(input, gradOutput)
 
     Tools.dense(conv.gradInput) should be (Tools.dense(cloned.gradInput))
-    Tools.dense(conv.gradWeight) should be (Tools.dense(cloned.gradWeight))
-    Tools.dense(conv.gradBias) should be (Tools.dense(cloned.gradBias))
+    Tools.dense(conv.gradWeight.native) should be (Tools.dense(cloned.gradWeight.native))
+    Tools.dense(conv.gradBias.native) should be (Tools.dense(cloned.gradBias.native))
   }
 
   "conv with dense weights and gradients" should "work correctly" in {

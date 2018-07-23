@@ -53,17 +53,11 @@ class SpatialBatchNormalization(
 
   private val mean: DnnTensor[Float] = DnnTensor[Float](nOutput)
   private val variance: DnnTensor[Float] = DnnTensor[Float](nOutput)
-  private[mkldnn] val runningMean: DnnTensor[Float] = DnnTensor[Float](nOutput)
-  private[mkldnn] val runningVariance: DnnTensor[Float] = DnnTensor[Float](nOutput)
-  val weightAndBias: DnnTensor[Float] = DnnTensor[Float](Array(nOutput * 2))
-  val gradWeightAndBias: DnnTensor[Float] = DnnTensor[Float](Array(nOutput * 2))
 
-  object Extend extends Serializable {
-    val runningMean: Tensor[Float] = Tensor[Float](nOutput)
-    val runningVariance: Tensor[Float] = Tensor[Float](nOutput)
-    val weightAndBias: Tensor[Float] = Tensor[Float](Array(nOutput * 2))
-    val gradWeightAndBias: Tensor[Float] = Tensor[Float](Array(nOutput * 2))
-  }
+  private[mkldnn] val runningMean = new Blob(Array(nOutput))
+  private[mkldnn] val runningVariance = new Blob(Array(nOutput))
+  val weightAndBias = new Blob(Array(nOutput * 2))
+  val gradWeightAndBias = new Blob(Array(nOutput * 2))
 
   var scaleFactor: Float = 0.0f
   var biasFactor: Float = 0.0f
@@ -94,7 +88,6 @@ class SpatialBatchNormalization(
     }
 
     weightAndBias.copy(init.view(2 * nOutput))
-    Extend.weightAndBias.copy(init.view(2 * nOutput))
 
     val zeros = Tensor[Float](Array(nOutput)).fill(0)
     mean.copy(zeros)
@@ -185,7 +178,7 @@ class SpatialBatchNormalization(
       if (this.isTraining()) {
         val buffer = new ArrayBuffer[Tensor[Float]]()
         buffer.append(input.asInstanceOf[Tensor[Float]])
-        buffer.append(weightAndBias)
+        buffer.append(weightAndBias.native)
         buffer.append(output.asInstanceOf[Tensor[Float]])
         buffer.append(mean)
         buffer.append(variance)
@@ -193,15 +186,15 @@ class SpatialBatchNormalization(
       } else {
         val buffer = new ArrayBuffer[Tensor[Float]]()
         buffer.append(input.asInstanceOf[Tensor[Float]])
-        buffer.append(runningMean)
-        buffer.append(runningVariance)
-        buffer.append(weightAndBias)
+        buffer.append(runningMean.native)
+        buffer.append(runningVariance.native)
+        buffer.append(weightAndBias.native)
         buffer.append(output.asInstanceOf[Tensor[Float]])
         updateOutputTensors = buffer.toArray
       }
     }
 
-    weightAndBias.copy(Extend.weightAndBias)
+    weightAndBias.sync(isDense2Native = true)
 
     updateWithNewTensor(updateOutputTensors, 0, input)
 
@@ -212,12 +205,12 @@ class SpatialBatchNormalization(
       // update running(Mean, Var) and scaleFactor
       scaleFactor = scaleFactor * momentum.toFloat + 1
 
-      mean.axpby(1, momentum.toFloat, runningMean)
-      variance.axpby(biasFactor, momentum.toFloat, runningVariance)
+      mean.axpby(1, momentum.toFloat, runningMean.native)
+      variance.axpby(biasFactor, momentum.toFloat, runningVariance.native)
     }
 
-    Extend.runningMean.copy(runningMean)
-    Extend.runningVariance.copy(runningVariance)
+    runningMean.sync(isDense2Native = false)
+    runningVariance.sync(isDense2Native = false)
 
     output
   }
@@ -268,9 +261,9 @@ class SpatialBatchNormalization(
       buffer.append(mean)
       buffer.append(variance)
       buffer.append(gradOutput.asInstanceOf[Tensor[Float]])
-      buffer.append(weightAndBias)
+      buffer.append(weightAndBias.native)
       buffer.append(gradInput.asInstanceOf[Tensor[Float]])
-      buffer.append(gradWeightAndBias.asInstanceOf[Tensor[Float]])
+      buffer.append(gradWeightAndBias.native)
       updateGradInputTensors = buffer.toArray
     }
 
@@ -280,7 +273,7 @@ class SpatialBatchNormalization(
     MklDnnOps.streamSubmit(runtime.stream, 1, updateGradInputPrimitives,
       updateGradInputPrimitives.length, updateGradInputMemoryPrimitives, updateGradInputTensors)
 
-    Extend.gradWeightAndBias.copy(gradWeightAndBias)
+    gradWeightAndBias.sync(isDense2Native = false)
 
     gradInput
   }
@@ -292,12 +285,11 @@ class SpatialBatchNormalization(
   override def zeroGradParameters(): Unit = {
     if (affine) {
       gradWeightAndBias.zero()
-      Extend.gradWeightAndBias.zero()
     }
   }
 
   override def parameters(): (Array[Tensor[Float]], Array[Tensor[Float]]) = {
-    (Array(Extend.weightAndBias), Array(Extend.gradWeightAndBias))
+    (Array(weightAndBias.dense), Array(gradWeightAndBias.dense))
   }
 
   override def parametersWithShape(): (Array[MemoryData], Array[MemoryData]) = {
@@ -307,12 +299,6 @@ class SpatialBatchNormalization(
 
   override def toString(): String = {
     s"nn.mkl.SpatialBatchNormalization($nOutput, $eps, $momentum, $affine)"
-  }
-
-  @throws(classOf[IOException])
-  private def readObject(in: ObjectInputStream): Unit = {
-    in.defaultReadObject()
-    if (!Extend.weightAndBias.isEmpty) { weightAndBias.copy(Extend.weightAndBias) }
   }
 }
 
