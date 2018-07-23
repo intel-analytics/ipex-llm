@@ -35,7 +35,7 @@ object Utils {
     checkpoint: Option[String] = None,
     modelSnapshot: Option[String] = None,
     stateSnapshot: Option[String] = None,
-    batchSize: Int = 10,
+    batchSize: Int = 12,
     learningRate: Double = 0.05,
     learningRateDecay: Double = 0.0,
     maxEpoch: Int = 5,

@@ -17,14 +17,14 @@
 package com.intel.analytics.bigdl.example.lenetLocal
 
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.dataset.{DataSet, LocalDataSet, MiniBatch}
+import com.intel.analytics.bigdl.dataset.DataSet
 import com.intel.analytics.bigdl.dataset.image.{BytesToGreyImg, GreyImgNormalizer, GreyImgToBatch}
-import com.intel.analytics.bigdl.mkl.MklDnn
-import com.intel.analytics.bigdl.models.lenet.LeNet5
-import com.intel.analytics.bigdl.nn.{CrossEntropyCriterion, Module}
+import com.intel.analytics.bigdl.nn.{ClassNLLCriterion, Module}
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.utils.{Engine, LoggerFilter}
+import com.intel.analytics.bigdl.models.lenet.LeNet5
+import org.apache.log4j.{Level, Logger}
 
 
 object Train {
@@ -36,15 +36,8 @@ object Train {
   def main(args: Array[String]): Unit = {
     trainParser.parse(args, new TrainParams()).map(param => {
 
-      System.setProperty("bigdl.disable.mklBlockTime", "true");
       System.setProperty("bigdl.localMode", "true")
-      System.setProperty("bigdl.coreNumber", "1") // param.coreNumber.toString)
-      System.setProperty("bigdl.engineType", "mkldnn")
-      val coreNumber: Int = System.getProperty("bigdl.mklNumThreads",
-        s"${Runtime.getRuntime.availableProcessors() / 2}").toInt
-      Engine.setCoreNumber(1)
-      MklDnn.setNumThreads(coreNumber)
-
+      System.setProperty("bigdl.coreNumber", param.coreNumber.toString)
       Engine.init
 
       val trainData = param.folder + "/train-images-idx3-ubyte"
@@ -55,8 +48,7 @@ object Train {
       val model = if (param.modelSnapshot.isDefined) {
         Module.load[Float](param.modelSnapshot.get)
       } else {
-//        LeNet5(classNum = 10)
-        LeNet5.dnn(classNum = 10, batchSize = param.batchSize)
+        LeNet5(classNum = 10)
       }
 
       val optimMethod = if (param.stateSnapshot.isDefined) {
@@ -73,11 +65,11 @@ object Train {
       val optimizer = Optimizer(
         model = model,
         dataset = trainSet,
-        criterion = CrossEntropyCriterion[Float]())
+        criterion = ClassNLLCriterion[Float]())
       if (param.checkpoint.isDefined) {
         optimizer.setCheckpoint(param.checkpoint.get, Trigger.everyEpoch)
       }
-      if (param.overWriteCheckpoint) {
+      if(param.overWriteCheckpoint) {
         optimizer.overWriteCheckpoint()
       }
 
