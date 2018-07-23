@@ -14,31 +14,13 @@
  * limitations under the License.
  */
 package com.intel.analytics.bigdl.nn.mkldnn
-import com.intel.analytics.bigdl.nn.abstractnn.Activity
-import com.intel.analytics.bigdl.tensor.Tensor
 
-class Input(shape: Array[Int], layout: Int) extends MklDnnLayer {
-  override private[mkldnn] def initFwdPrimitives(inputs: Array[MemoryData], phase: Phase) = {
-    _outputFormats = Array(NativeData(shape, layout))
-    _inputFormats = Array(HeapData(shape, layout))
-    (_inputFormats, _outputFormats)
-  }
+class Input(shape: Array[Int], layout: Int) extends
+  ReorderMemory(HeapData(shape, layout), NativeData(shape, layout),
+    HeapData(shape, layout), NativeData(shape, layout)) {
 
-  override private[mkldnn] def initBwdPrimitives(grad: Array[MemoryData], phase: Phase) = {
-    _gradInputFormats = Array(HeapData(shape, layout))
-    _gradOutputFormats = grad
-    _gradOutputFormatsForWeight = grad
-    (grad, _gradInputFormats)
-  }
-
-  override def updateOutput(input: Activity): Activity = {
-    output = input
-    output
-  }
-
-  override def updateGradInput(input: Activity, gradOutput: Activity): Activity = {
-    gradInput = gradOutput
-    gradInput
+  override def toString(): String = {
+    s"nn.mkldnn.Input(${shape.mkString(",")}, $layout)"
   }
 }
 
