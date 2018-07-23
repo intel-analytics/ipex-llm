@@ -265,8 +265,21 @@ trait MklDnnContainer extends DynamicContainer[Activity, Activity, Float] with M
     super.add(module)
   }
 
+  private def checkInputs: Boolean = {
+    def recursive(module: AbstractModule[_ <: Activity, _ <: Activity, Float]): Array[Boolean] = {
+      module match {
+        case seq: Sequential => recursive(seq.modules.head)
+        case concat: ConcatTable => concat.modules.flatMap(x => recursive(x)).toArray
+        case _: Input => Array(true)
+        case _ => Array(false)
+      }
+    }
+
+    !recursive(this).contains(false)
+  }
+
   final def compile(phase: Phase): Unit = {
-    // TODO check whether existing Input
+    require(checkInputs, s"You should add Input for the container.")
     compile(phase, new MklDnnRuntime, Array[MemoryData]())
   }
 

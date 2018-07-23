@@ -163,4 +163,27 @@ class SequentialSpec extends BigDLSpecHelper {
     model.forward(input)
     model.backward(input, gradOutput)
   }
+
+  "no input" should "throw exception" in {
+    val inputShape = Array(4, 1, 2, 2)
+    val outputShape = Array(4, 1, 2, 2)
+
+    val model1 = Sequential()
+      .add(ReLU().setName("relu1"))
+      .add(ReorderMemory(HeapData(outputShape, Memory.Format.nc)))
+
+    val model2 = Sequential()
+      .add(Sequential()
+        .add(ReLU().setName("relu1"))
+        .add(ReorderMemory(HeapData(outputShape, Memory.Format.nc))))
+
+    val model3 = Sequential()
+        .add(ConcatTable().add(ReLU()).add(ReLU()))
+
+    List(model1, model2, model3).foreach { model =>
+      intercept[IllegalArgumentException] {
+        model.compile(TrainingPhase)
+      }
+    }
+  }
 }
