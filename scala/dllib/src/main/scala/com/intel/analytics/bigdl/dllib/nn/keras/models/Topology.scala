@@ -16,8 +16,8 @@
 
 package com.intel.analytics.zoo.pipeline.api.keras.models
 
-import com.intel.analytics.bigdl.dataset._
-import com.intel.analytics.bigdl.{Criterion, DataSet}
+import com.intel.analytics.bigdl.dataset.{MiniBatch, _}
+import com.intel.analytics.bigdl.{DataSet, _}
 import com.intel.analytics.bigdl.nn.Graph._
 import com.intel.analytics.bigdl.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.nn.keras.{KerasLayer, KerasLayerSerializable}
@@ -26,7 +26,7 @@ import com.intel.analytics.bigdl.optim._
 import com.intel.analytics.bigdl.serialization.Bigdl.BigDLModule
 import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.transform.vision.image.ImageFeatureToMiniBatch
-import com.intel.analytics.bigdl.utils.{Edge, LoggerFilter, Node, Shape}
+import com.intel.analytics.bigdl.utils._
 import com.intel.analytics.bigdl.utils.serializer.{DeserializeContext, ModuleData, ModuleSerializer, SerializeContext}
 import com.intel.analytics.bigdl.visualization.{TrainSummary, ValidationSummary}
 import com.intel.analytics.zoo.feature.image.ImageSet
@@ -55,6 +55,7 @@ abstract class KerasNet[T: ClassTag](implicit ev: TensorNumeric[T])
   }
 
   private var optimMethod: OptimMethod[T] = null
+  @transient private var internalOptimizer: Optimizer[T, MiniBatch[T]] = null
   private var criterion: Criterion[T] = null
   private var vMethods: Array[ValidationMethod[T]] = null
   private var tensorBoardLogDir: String = null
@@ -64,6 +65,39 @@ abstract class KerasNet[T: ClassTag](implicit ev: TensorNumeric[T])
   private var constantGradientClippingParams: (Float, Float) = null
   private var clipNorm: Option[Float] = None
 
+  private def getOrCreateOptimizer(x: DataSet[MiniBatch[T]]): Optimizer[T, MiniBatch[T]] = {
+    if (null != this.internalOptimizer) {
+      return internalOptimizer
+    }
+    this.internalOptimizer = x match {
+      case local: LocalDataSet[MiniBatch[T]] =>
+        new InternalLocalOptimizer(model = this,
+          ds = local,
+          criterion = this.criterion)
+      case distriDataSet: DistributedDataSet[MiniBatch[T]] =>
+        new InternalDistriOptimizer(_model = this,
+          _dataset = distriDataSet,
+          _criterion = this.criterion)
+    }
+
+    if (this.checkpointPath != null) {
+      internalOptimizer.setCheckpoint(this.checkpointPath, Trigger.everyEpoch)
+      if (this.overWriteCheckPoint) {
+        internalOptimizer.overWriteCheckpoint()
+      }
+    }
+    if (this.tensorBoardLogDir != null && this.tensorBoardAppName != null) {
+      internalOptimizer.setTrainSummary(TrainSummary(tensorBoardLogDir, tensorBoardAppName))
+    }
+    if (this.constantGradientClippingParams != null) {
+      internalOptimizer.setConstantGradientClipping(this.constantGradientClippingParams._1,
+        this.constantGradientClippingParams._2)
+    }
+    if (this.clipNorm.isDefined) {
+      internalOptimizer.setGradientClippingByl2Norm(this.clipNorm.get)
+    }
+    this.internalOptimizer
+  }
   /**
    * Configure the learning process. It MUST be called before fit or evaluate.
    *
@@ -131,6 +165,9 @@ abstract class KerasNet[T: ClassTag](implicit ev: TensorNumeric[T])
   def setTensorBoard(
       logDir: String,
       appName: String): Unit = {
+    if (this.internalOptimizer != null) {
+        internalOptimizer.setTrainSummary(TrainSummary(tensorBoardLogDir, tensorBoardAppName))
+    }
     this.tensorBoardLogDir = logDir
     this.tensorBoardAppName = appName
   }
@@ -145,6 +182,13 @@ abstract class KerasNet[T: ClassTag](implicit ev: TensorNumeric[T])
   def setCheckpoint(path: String, overWrite: Boolean = true): Unit = {
     this.checkpointPath = path
     this.overWriteCheckPoint = overWrite
+
+    if (this.internalOptimizer != null) {
+      internalOptimizer.setCheckpoint(this.checkpointPath, Trigger.everyEpoch)
+      if (this.overWriteCheckPoint) {
+        internalOptimizer.overWriteCheckpoint()
+      }
+    }
   }
 
   /**
@@ -164,6 +208,9 @@ abstract class KerasNet[T: ClassTag](implicit ev: TensorNumeric[T])
    * @param max The maximum value to clip by. Double.
    */
   def setConstantGradientClipping(min: Float, max: Float): Unit = {
+    if (this.internalOptimizer != null) {
+      internalOptimizer.setConstantGradientClipping(min, max)
+    }
     this.constantGradientClippingParams = (min, max)
   }
 
@@ -174,6 +221,9 @@ abstract class KerasNet[T: ClassTag](implicit ev: TensorNumeric[T])
    * @param clipNorm Gradient L2-Norm threshold. Double.
    */
   def setGradientClippingByL2Norm(clipNorm: Float): Unit = {
+    if (this.internalOptimizer != null) {
+      this.internalOptimizer.setGradientClippingByl2Norm(clipNorm)
+    }
     this.clipNorm = Some(clipNorm)
   }
 
@@ -200,48 +250,52 @@ abstract class KerasNet[T: ClassTag](implicit ev: TensorNumeric[T])
    * @param nbEpoch Number of iterations to train.
    * @param validationData Dataset for validation, or null if validation is not configured.
    */
-  def fit[D: ClassTag](
-      x: DataSet[D],
+  def fit(
+      x: DataSet[MiniBatch[T]],
       nbEpoch: Int,
       validationData: DataSet[MiniBatch[T]])(implicit ev: TensorNumeric[T]): Unit = {
     require(this.optimMethod != null && this.criterion != null,
       "compile must be called before fit")
-    val optimizer = Optimizer(
-      model = this,
-      dataset = x,
-      criterion = this.criterion)
-    if (this.checkpointPath != null) {
-      optimizer.setCheckpoint(this.checkpointPath, Trigger.everyEpoch)
-      if (this.overWriteCheckPoint) {
-        optimizer.overWriteCheckpoint()
-      }
-    }
-    if (this.tensorBoardLogDir != null && this.tensorBoardAppName != null) {
-      optimizer.setTrainSummary(TrainSummary(tensorBoardLogDir, tensorBoardAppName))
-    }
-    if (this.constantGradientClippingParams != null) {
-      optimizer.setConstantGradientClipping(this.constantGradientClippingParams._1,
-        this.constantGradientClippingParams._2)
-    }
-    if (this.clipNorm.isDefined) {
-      optimizer.setGradientClippingByl2Norm(this.clipNorm.get)
-    }
+    this.internalOptimizer = this.getOrCreateOptimizer(x)
     if (validationData != null) {
       require(this.vMethods != null, "Validation metrics haven't been set yet")
       if (this.tensorBoardLogDir != null && this.tensorBoardAppName != null) {
-        optimizer.setValidationSummary(ValidationSummary(tensorBoardLogDir, tensorBoardAppName))
+        internalOptimizer.setValidationSummary(
+          ValidationSummary(tensorBoardLogDir, tensorBoardAppName))
       }
-      optimizer.setValidation(trigger = Trigger.everyEpoch,
+      internalOptimizer.setValidation(trigger = Trigger.everyEpoch,
         dataset = validationData,
         vMethods = this.vMethods)
     }
-    optimizer.setOptimMethod(this.optimMethod.clone())
-      .setEndWhen(Trigger.maxEpoch(nbEpoch))
-    optimizer.optimize()
+    internalOptimizer.setOptimMethod(this.optimMethod)
+    .setEndWhen(Trigger.maxEpoch(getFinishedEpoch() + nbEpoch))
+
+    internalOptimizer match {
+      case local: InternalLocalOptimizer[T] =>
+        local.setTrainData(x)
+      case dis: InternalDistriOptimizer[T] =>
+        dis.setTrainData(x)
+    }
+    internalOptimizer.optimize()
   }
 
-  def fit[D: ClassTag](
-      x: DataSet[D],
+  private def getFinishedEpoch() = {
+    internalOptimizer match {
+      // epoch# from optimizer and optimMethod is not consistent in BigDL.
+      case local: LocalOptimizer[T] =>
+        val state = InternalOptimizerUtil.getStateFromOptimizer(this.internalOptimizer)
+        if (state.get[Int]("epoch").isDefined) {
+          state.get[Int]("epoch").get - 1
+        } else {
+          0
+        }
+      case dis: DistriOptimizer[T] =>
+        InternalOptimizerUtil.getStateFromOptiMethod(this.optimMethod).get[Int]("epoch").get - 1
+    }
+  }
+
+  def fit(
+      x: DataSet[MiniBatch[T]],
       nbEpoch: Int)(implicit ev: TensorNumeric[T]): Unit = {
     this.fit(x, nbEpoch, null)
   }
@@ -698,5 +752,61 @@ object Sequential extends KerasLayerSerializable {
   def apply[@specialized(Float, Double) T: ClassTag]()
     (implicit ev: TensorNumeric[T]) : Sequential[T] = {
     new Sequential[T]()
+  }
+}
+
+private[zoo] object InternalOptimizerUtil {
+
+  def getStateFromOptiMethod[T: ClassTag](optimMethod: OptimMethod[T]): Table = {
+    val method = classOf[OptimMethod[T]].getDeclaredMethod("state")
+    method.setAccessible(true)
+    val state = method.invoke(optimMethod).asInstanceOf[Table]
+    state
+  }
+
+  def getStateFromOptimizer[T: ClassTag](optimizer: Optimizer[T, MiniBatch[T]]): Table = {
+    val method = classOf[Optimizer[T, MiniBatch[T]]].getDeclaredMethod("state")
+    method.setAccessible(true)
+    val state = method.invoke(optimizer).asInstanceOf[Table]
+    state
+  }
+
+  def endEpoch[T: ClassTag](optimizer: DistriOptimizer[T]): Unit = {
+    val method = classOf[DistriOptimizer[T]].getDeclaredMethod("endEpoch")
+    method.setAccessible(true)
+    method.invoke(optimizer)
+  }
+}
+
+private[zoo] class InternalLocalOptimizer[T: ClassTag] (
+    model: Module[T],
+    ds: LocalDataSet[MiniBatch[T]],
+    criterion: Criterion[T]
+)(implicit ev: TensorNumeric[T]) extends LocalOptimizer[T](model, ds, criterion) {
+
+  def setTrainData(trainingDataSet: DataSet[MiniBatch[T]]): this.type = {
+     this.dataset = trainingDataSet
+    this.endEpoch()
+    this
+  }
+
+  // LocalOptimizer use this `optimizer.state` to control the training
+  // But there's no logic to update the "recordsProcessedThisEpoch"
+  // neither in optimizer.state nor optimMethod.state.
+  // So we can only simply suppose the `epoch` has been correctly updated.
+  def endEpoch[T: ClassTag](): Unit = {
+  }
+}
+
+private[zoo] class InternalDistriOptimizer[T: ClassTag] (
+    _model: Module[T],
+    _dataset: DistributedDataSet[MiniBatch[T]],
+    _criterion: Criterion[T]
+)(implicit ev: TensorNumeric[T]) extends DistriOptimizer[T](_model, _dataset, _criterion) {
+
+  def setTrainData(trainingDataSet: DataSet[MiniBatch[T]]): this.type = {
+    this.dataset = trainingDataSet
+    InternalOptimizerUtil.endEpoch(this)
+    this
   }
 }
